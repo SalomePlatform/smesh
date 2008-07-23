@@ -90,12 +90,14 @@ failure is provided.
 \image html meshcomputationfail.png
 
 After you select the error, <b>Show Subshape</b> button allows
-visualizing the mesh elements that cause it.
+visualizing the geometrical entity that causes it.
 
 \image html failed_computation.png
 
-<b>Publish Subshape</b> button allows importing it in a separate MED
-or UNV file.
+<b>Publish Subshape</b> button publishes the subshape, whose meshing
+failed, in GEOM component as a child of the mesh geometry, which
+allows analyzing the problem geometry and creating a submesh on it in
+order to locally tune hypotheses.
 
 <b>NOTE</b> It is possible to define a 1D or a 2D mesh in a
 python script and then use such submeshes in the construction of a 3D

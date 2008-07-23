@@ -846,6 +846,10 @@ Please enter correct values and try again</translation>
             <translation>&amp;Ok</translation>
         </message>
         <message>
+            <source>SMESH_BUT_APPLY_AND_CLOSE</source>
+            <translation>A&amp;pply and Close</translation>
+        </message>
+        <message>
             <source>SMESH_BUT_REMOVE</source>
             <translation>&amp;Remove</translation>
         </message>
@@ -950,8 +954,7 @@ so that the application may crash. Do you wish to continue visualization?</trans
         </message>
         <message>
             <source>SMESH_DRS_2</source>
-            <translation>MED file has overlapped ranges of element numbers,
-     the numbers from the file are ignored</translation>
+            <translation>MED file has overlapped ranges of element numbers, the numbers from the file are ignored</translation>
         </message>
         <message>
             <source>SMESH_DRS_3</source>
@@ -959,13 +962,11 @@ so that the application may crash. Do you wish to continue visualization?</trans
         </message>
         <message>
             <source>SMESH_DRS_4</source>
-            <translation>    The file is incorrect,
-some information will be missed</translation>
+            <translation>The file is incorrect, some data is missed</translation>
         </message>
         <message>
             <source>SMESH_DRS_EMPTY</source>
-            <translation>      The file is empty,
-there is nothing to be published</translation>
+            <translation>The file is empty, there is nothing to be published</translation>
         </message>
         <message>
             <source>SMESH_DX</source>
@@ -1159,6 +1160,10 @@ Are you sure want to export to MED 2.1 ?</translation>
         <message>
             <source>SMESH_HYP_12</source>
             <translation>Geomerty mismatches algorithm's expectation</translation>
+        </message>
+        <message>
+            <source>SMESH_HYP_13</source>
+            <translation>Algorithm can't work without shape</translation>
         </message>
         <message>
             <source>SMESH_HYP_2</source>
@@ -2731,6 +2736,42 @@ Consider saving your work before application crash</translation>
             <source>MEN_FILE_INFO</source>
             <translation>MED file information</translation>
         </message>
+        <message>
+            <source>SMESH_WRN_NO_APPROPRIATE_SELECTION</source>
+            <translation>No appropriate objects selected</translation>
+        </message>
+        <message>
+            <source>MEN_CLEAR_MESH</source>
+            <translation>Clear Mesh Data</translation>
+        </message>
+        <message>
+            <source>TOP_CLEAR_MESH</source>
+            <translation>Clear Mesh Data</translation>
+        </message>
+        <message>
+            <source>STB_CLEAR_MESH</source>
+            <translation>Clear Mesh Data</translation>
+        </message>
+        <message>
+            <source>SMESH_IMPORT_MESH</source>
+            <translation>Import mesh data from files</translation>
+        </message>
+        <message>
+            <source>SMESH_ERR_NOT_SUPPORTED_FORMAT</source>
+            <translation>Unsupported file format</translation>
+        </message>
+        <message>
+            <source>SMESH_ERR_UNKNOWN_IMPORT_ERROR</source>
+            <translation>Unknown error</translation>
+        </message>
+        <message>
+            <source>SMESH_IMPORT_ERRORS</source>
+            <translation>Import operation has finished with errors:</translation>
+        </message>
+        <message>
+            <source>SMESH_DRS_SOME_EMPTY</source>
+            <translation>One or more mesh files were empty, data has not been published</translation>
+        </message>
     </context>
     <context>
         <name>SMESHGUI</name>
@@ -2990,6 +3031,10 @@ Please, create VTK viewer and try again</translation>
         <message>
             <source>SHOW_SHAPE</source>
             <translation>Show SubShape</translation>
+        </message>
+        <message>
+            <source>SHOW_BAD_MESH</source>
+            <translation>Show bad Mesh</translation>
         </message>
     </context>
     <context>

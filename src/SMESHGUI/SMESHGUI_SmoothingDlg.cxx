@@ -185,7 +185,7 @@ SMESHGUI_SmoothingDlg::SMESHGUI_SmoothingDlg( SMESHGUI* theModule )
   GroupButtonsLayout->setSpacing(SPACING);
   GroupButtonsLayout->setMargin(MARGIN);
 
-  buttonOk = new QPushButton(tr("SMESH_BUT_OK"), GroupButtons);
+  buttonOk = new QPushButton(tr("SMESH_BUT_APPLY_AND_CLOSE"), GroupButtons);
   buttonOk->setAutoDefault(true);
   buttonOk->setDefault(true);
   buttonApply = new QPushButton(tr("SMESH_BUT_APPLY"), GroupButtons);
@@ -311,8 +311,7 @@ void SMESHGUI_SmoothingDlg::ClickOnApply()
   if (mySMESHGUI->isActiveStudyLocked())
     return;
 
-  if (myNbOkElements &&
-      (myNbOkNodes || LineEditNodes->text().trimmed().isEmpty())) {
+  if (myNbOkElements && (myNbOkNodes || LineEditNodes->text().trimmed().isEmpty())) {
     QStringList aListElementsId = myElementsId.split(" ", QString::SkipEmptyParts);
     QStringList aListNodesId    = LineEditNodes->text().split(" ", QString::SkipEmptyParts);
 
@@ -323,7 +322,7 @@ void SMESHGUI_SmoothingDlg::ClickOnApply()
     for (int i = 0; i < aListElementsId.count(); i++)
       anElementsId[i] = aListElementsId[i].toInt();
 
-    if (myNbOkNodes) {
+    if ( myNbOkNodes && aListNodesId.count() > 0 ) {
       aNodesId->length(aListNodesId.count());
       for (int i = 0; i < aListNodesId.count(); i++)
         aNodesId[i] = aListNodesId[i].toInt();
@@ -492,7 +491,6 @@ void SMESHGUI_SmoothingDlg::SelectionIntoArgument()
   if (myBusy) return;
 
   // clear
-  myActor = 0;
   QString aString = "";
 
   myBusy = true;
@@ -501,6 +499,7 @@ void SMESHGUI_SmoothingDlg::SelectionIntoArgument()
     myNbOkElements = 0;
     buttonOk->setEnabled(false);
     buttonApply->setEnabled(false);
+    myActor = 0;
   }
   myBusy = false;
 
@@ -593,7 +592,7 @@ void SMESHGUI_SmoothingDlg::SelectionIntoArgument()
   else if (myEditCurrentArgument == LineEditNodes)
     myNbOkNodes = true;
 
-  if (myNbOkElements) {
+  if (myNbOkElements && (myNbOkNodes || LineEditNodes->text().trimmed().isEmpty())) {
     buttonOk->setEnabled(true);
     buttonApply->setEnabled(true);
   }
@@ -618,17 +617,21 @@ void SMESHGUI_SmoothingDlg::SetEditCurrentArgument()
         myEditCurrentArgument = LineEditElements;
         SMESH::SetPointRepresentation(false);
         if (CheckBoxMesh->isChecked()) {
-          mySelectionMgr->setSelectionModes(ActorSelection);
-          mySelectionMgr->installFilter(myMeshOrSubMeshOrGroupFilter);
+	  //          mySelectionMgr->setSelectionModes(ActorSelection);
+	  if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+	    aViewWindow->SetSelectionMode(ActorSelection);
+	  mySelectionMgr->installFilter(myMeshOrSubMeshOrGroupFilter);
         } else {
 	  if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
-	    aViewWindow->SetSelectionMode(CellSelection);
+	    aViewWindow->SetSelectionMode(FaceSelection);
 	}
-      }	else if (send == SelectNodesButton) {
+      } else if (send == SelectNodesButton) {
+	LineEditNodes->clear();
         myEditCurrentArgument = LineEditNodes;
         SMESH::SetPointRepresentation(true);
-	if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+	if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI )) {
 	  aViewWindow->SetSelectionMode(NodeSelection);
+	}
       }
 
       myEditCurrentArgument->setFocus();
@@ -668,7 +671,7 @@ void SMESHGUI_SmoothingDlg::ActivateThisDialog()
 
   mySMESHGUI->SetActiveDialogBox(this);
   if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
-    aViewWindow->SetSelectionMode(CellSelection);
+    aViewWindow->SetSelectionMode(FaceSelection);
   SelectionIntoArgument();
 }
 
@@ -722,13 +725,15 @@ void SMESHGUI_SmoothingDlg::onSelectMesh (bool toSelectMesh)
   SMESH::SetPointRepresentation(false);
 
   if (toSelectMesh) {
-    mySelectionMgr->setSelectionModes(ActorSelection);
+    if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+      aViewWindow->SetSelectionMode(ActorSelection);
+    //    mySelectionMgr->setSelectionModes(ActorSelection);
     mySelectionMgr->installFilter(myMeshOrSubMeshOrGroupFilter);
     LineEditElements->setReadOnly(true);
     LineEditElements->setValidator(0);
   } else {
     if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
-      aViewWindow->SetSelectionMode(CellSelection);
+      aViewWindow->SetSelectionMode(FaceSelection);
     LineEditElements->setReadOnly(false);
     LineEditElements->setValidator(myIdValidator);
     onTextChange(LineEditElements->text());

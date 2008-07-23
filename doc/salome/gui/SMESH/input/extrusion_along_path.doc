@@ -135,6 +135,9 @@ button and remove them from the list by pressing the <em>"Remove"</em> button.
 \image html image106.gif
 <center><em>"Remove" button</em></center>
 
+<b>Linear variation of the angles</b> option allows defining the angle of gradual rotation for the whole path. 
+At each step the shape will be rotated by angle/nb. of steps. 
+
 </li>
 </ul>
 </li>

@@ -624,7 +624,7 @@ bool StdMeshers_Regular_1D::computeInternalParameters(SMESH_Mesh &     theMesh,
           double scale = _value[ SCALE_FACTOR_IND ];
 
           if (fabs(scale - 1.0) < Precision::Confusion()) {
-            // special case to avoid division on zero
+            // special case to avoid division by zero
             for (int i = 1; i < NbSegm; i++) {
               double param = f + (l - f) * i / NbSegm;
               theParams.push_back( param );

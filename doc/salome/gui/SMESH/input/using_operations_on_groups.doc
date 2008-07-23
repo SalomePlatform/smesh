@@ -41,7 +41,7 @@ For example, we have two groups Group1 and Group2.
 \image html image135.gif
 <center>Group12</center>
 </li>
-<li>Click the \b Ok or \b Apply button to confirm creation of the group.</li>
+<li>Click the \b Apply or <b>Apply and Close</b> button to confirm creation of the group.</li>
 </ol>
 
 <b>See Also</b> a sample TUI Script of a 
@@ -77,7 +77,7 @@ For example, we have two groups Group1 and Group2.
 \image html image136.gif
 <center>Group12a</center>
 </li>
-<li>Click the \b Ok or \b Apply button to confirm creation of the group.</li>
+<li>Click the \b Apply or <b>Apply and Close</b> button to confirm creation of the group.</li>
 </ol>
 
 <b>See Also</b> a sample TUI Script of an  
@@ -113,7 +113,7 @@ For example, we have two groups Group1 and Group2.
 \image html image137.gif
 <center>Group12b</center>
 </li>
-<li>Click the \b Ok or \b Apply button to confirm creation of the
+<li>Click the \b Apply or <b>Apply and Close</b> button to confirm creation of the
 group.</li>
 </ol>
 

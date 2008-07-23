@@ -40,6 +40,7 @@ StdMeshers_UseExisting_1D::StdMeshers_UseExisting_1D
 {
   _name = "UseExisting_1D";
   _shapeType = (1 << TopAbs_EDGE); // 1 bit per shape type
+  _requireShape = false;
 }
 
 //=======================================================================
@@ -76,6 +77,7 @@ StdMeshers_UseExisting_2D::StdMeshers_UseExisting_2D
 {
   _name = "UseExisting_2D";
   _shapeType = (1 << TopAbs_FACE); // 1 bit per shape type
+  _requireShape = false;
 }
 
 //=======================================================================

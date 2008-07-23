@@ -2062,11 +2062,11 @@ QWidget* SMESHGUI_FilterDlg::createButtonFrame (QWidget* theParent)
   aLay->setMargin(MARGIN);
   aLay->setSpacing(SPACING);
 
-  myButtons[ BTN_OK     ] = new QPushButton(tr("SMESH_BUT_OK"   ),  aGrp);
-  myButtons[ BTN_Apply  ] = new QPushButton(tr("SMESH_BUT_APPLY"),  aGrp);
-  myButtons[ BTN_Cancel ] = new QPushButton(tr("SMESH_BUT_CANCEL"), aGrp);
-  myButtons[ BTN_Close  ] = new QPushButton(tr("SMESH_BUT_CLOSE"),  aGrp);
-  myButtons[ BTN_Help   ] = new QPushButton(tr("SMESH_BUT_HELP"),   aGrp);
+  myButtons[ BTN_OK     ] = new QPushButton(tr("SMESH_BUT_APPLY_AND_CLOSE"), aGrp);
+  myButtons[ BTN_Apply  ] = new QPushButton(tr("SMESH_BUT_APPLY"),           aGrp);
+  myButtons[ BTN_Cancel ] = new QPushButton(tr("SMESH_BUT_CANCEL"),          aGrp);
+  myButtons[ BTN_Close  ] = new QPushButton(tr("SMESH_BUT_CLOSE"),           aGrp);
+  myButtons[ BTN_Help   ] = new QPushButton(tr("SMESH_BUT_HELP"),            aGrp);
 
   aLay->addWidget(myButtons[ BTN_OK     ]);
   aLay->addSpacing(10);
@@ -2460,9 +2460,13 @@ void SMESHGUI_FilterDlg::SetSourceWg (QWidget* theWg)
 // name    : SMESHGUI_FilterDlg::SetGroupIds
 // Purpose : Set mesh
 //=======================================================================
-void SMESHGUI_FilterDlg::SetMesh (SMESH::SMESH_Mesh_ptr theMesh)
+void SMESHGUI_FilterDlg::SetMesh (SMESH::SMESH_Mesh_var theMesh)
 {
   myMesh = theMesh;
+  if ( myMesh->_is_nil() ) {
+    myButtons[BTN_OK]->setEnabled(false);
+    myButtons[BTN_Apply]->setEnabled(false);
+  }
 }
 
 //=======================================================================
@@ -2797,6 +2801,14 @@ void SMESHGUI_FilterDlg::onSelectionDone()
   int aRow, aCol;
   const SALOME_ListIO& aList = mySelector->StoredIObjects();
 
+  if ( myMesh->_is_nil() && aList.Extent()>0 ) {
+    myMesh = SMESH::IObjectToInterface<SMESH::SMESH_Mesh>(aList.First());
+    if ( !(myMesh->_is_nil()) ) {
+      myButtons[BTN_OK]->setEnabled(true);
+      myButtons[BTN_Apply]->setEnabled(true);
+    }
+  }
+
   if (aList.Extent() != 1 ||
       !myTable->CurrentCell(aRow, aCol) ||
       myTable->GetCriterionType(aRow) != SMESH::FT_BelongToGeom &&
@@ -2815,6 +2827,7 @@ void SMESHGUI_FilterDlg::onSelectionDone()
       myTable->SetID(aRow, anIO->getEntry());
     }
 }
+
 
 //=======================================================================
 // name    : SMESHGUI_FilterDlg::onCriterionChanged

@@ -394,5 +394,9 @@
             <source>ICON_WIRE</source>
             <translation>mesh_wireframe.png</translation>
         </message>
+        <message>
+            <source>ICON_CLEAR_MESH</source>
+            <translation>mesh_clear.png</translation>
+        </message>
     </context>
 </TS>

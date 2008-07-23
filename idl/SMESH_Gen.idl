@@ -101,10 +101,11 @@ module SMESH
   };
   struct ComputeError
   {
-    short  code;       // ComputeErrorName or, if negative, algo specific code
-    string comment;    // textual problem description
-    string algoName;
-    short  subShapeID; // id of subshape of a shape to mesh
+    short   code;       // ComputeErrorName or, if negative, algo specific code
+    string  comment;    // textual problem description
+    string  algoName;
+    short   subShapeID; // id of subshape of a shape to mesh
+    boolean hasBadMesh; // there are elements preventing computation available for visualization
   };
   typedef sequence<ComputeError> compute_error_array;
 
@@ -234,6 +235,13 @@ module SMESH
      */
     compute_error_array GetComputeErrors( in SMESH_Mesh        theMesh, 
                                           in GEOM::GEOM_Object theSubObject )
+      raises ( SALOME::SALOME_Exception );
+
+    /*!
+     * Return mesh elements preventing computation of a subshape
+     */
+    MeshPreviewStruct GetBadInputElements( in SMESH_Mesh theMesh,
+                                           in short      theSubShapeID )
       raises ( SALOME::SALOME_Exception );
 
     /*!

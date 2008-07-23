@@ -41,7 +41,9 @@ usr_docs:
 	filesl=`find .`; \
 	for filen in $${filesl}; do \
 	  sed 's/\([^s1e]\)smeshDC\|^smeshDC/\1smesh/g' $${filen} > ./tmp; \
-	  mv -f tmp $${filen}; \
+	  sed 's/smesh:://g' ./tmp > ./tmp1; \
+	  rm -f tmp; \
+	  mv -f tmp1 $${filen}; \
 	done; \
 	cd ..; \
 	echo "Running doxygen in directory: "`pwd`; \

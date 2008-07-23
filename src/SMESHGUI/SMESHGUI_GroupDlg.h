@@ -120,6 +120,9 @@ private:
   void                          setSelectionMode( int );
   void                          updateButtons();
   void                          updateGeomPopup();
+  bool                          SetAppropriateActor();
+  void                          setShowEntityMode();
+  void                          restoreShowEntityMode();
   
   void                          setGroupColor( const SALOMEDS::Color& );
   SALOMEDS::Color               getGroupColor() const;
@@ -134,6 +137,7 @@ private:
   SMESH_Actor*                  myActor;                 /* Current mesh actor */
   int                           myGrpTypeId;             /* Current group type id : standalone or group on geometry */
   int                           myTypeId;                /* Current type id = radio button id */
+  int                           myStoredShownEntity;     /* Store ShowEntity mode of myMesh */
   QLineEdit*                    myCurrentLineEdit;       /* Current  LineEdit */
   SVTK_Selector*                mySelector;
   
@@ -194,6 +198,8 @@ private:
   QString                       myHelpFileName;
   
   QMap<QAction*, int>           myActions;
+
+  bool                          myNameChanged; //added by skl for IPAL19574
 };
 
 #endif // SMESHGUI_GROUPDLG_H

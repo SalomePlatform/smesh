@@ -17,7 +17,7 @@
 //  License along with this library; if not, write to the Free Software 
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 // 
-// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 //
 //
@@ -136,7 +136,7 @@ SMESH_2smeshpy::ConvertScript(const TCollection_AsciiString& theScript,
   // finish conversion
   theGen->Flush();
 #ifdef DUMP_CONVERSION
-  cout << endl << " ######## RESULT ######## " << endl<< endl;
+  MESSAGE_BEGIN ( std::endl << " ######## RESULT ######## " << std::endl<< std::endl );
 #endif
   // reorder commands after conversion
   list< Handle(_pyCommand) >::iterator cmd;
@@ -153,7 +153,7 @@ SMESH_2smeshpy::ConvertScript(const TCollection_AsciiString& theScript,
   for ( cmd = theGen->GetCommands().begin(); cmd != theGen->GetCommands().end(); ++cmd )
   {
 #ifdef DUMP_CONVERSION
-    cout << "## COM " << (*cmd)->GetOrderNb() << ": "<< (*cmd)->GetString() << endl;
+    MESSAGE_ADD ( "## COM " << (*cmd)->GetOrderNb() << ": "<< (*cmd)->GetString() << std::endl );
 #endif
     if ( !(*cmd)->IsEmpty() ) {
       aScript += "\n";
@@ -208,7 +208,7 @@ Handle(_pyCommand) _pyGen::AddCommand( const TCollection_AsciiString& theCommand
 
   Handle(_pyCommand) aCommand = myCommands.back();
 #ifdef DUMP_CONVERSION
-  cout << "## COM " << myNbCommands << ": "<< aCommand->GetString() << endl;
+  MESSAGE ( "## COM " << myNbCommands << ": "<< aCommand->GetString() );
 #endif
 
   _pyID objID = aCommand->GetObject();
@@ -753,7 +753,8 @@ bool _pyMesh::NeedMeshAccess( const Handle(_pyCommand)& theCommand )
         "GetNodeInverseElements","GetShapeID","GetShapeIDForElem","GetElemNbNodes",
         "GetElemNode","IsMediumNode","IsMediumNodeOfAnyElem","ElemNbEdges","ElemNbFaces",
         "IsPoly","IsQuadratic","BaryCenter","GetHypothesisList", "SetAutoColor", "GetAutoColor",
-        "" }; // <- mark of end
+        "Clear"
+        ,"" }; // <- mark of end
     sameMethods.Insert( names );
   }
 
@@ -887,11 +888,10 @@ void _pyMeshEditor::Process( const Handle(_pyCommand)& theCommand)
       "SewBorderToSide","SewSideElements","ChangeElemNodes","GetLastCreatedNodes",
       "GetLastCreatedElems",
       "MirrorMakeMesh","MirrorObjectMakeMesh","TranslateMakeMesh",
-      "TranslateObjectMakeMesh","RotateMakeMesh","RotateObjectMakeMesh",
-      "" }; // <- mark of the end
+      "TranslateObjectMakeMesh","RotateMakeMesh","RotateObjectMakeMesh"
+      ,"" }; // <- mark of the end
     sameMethods.Insert( names );
   }
-  //theGen->AddMeshAccessorMethod( theCommand ); // for *Object()
 
   if ( sameMethods.Contains( theCommand->GetMethod() )) {
     theCommand->SetObject( myMesh );
@@ -903,6 +903,7 @@ void _pyMeshEditor::Process( const Handle(_pyCommand)& theCommand)
   }
   else {
     // editor creation command is needed only if any editor function is called
+    theGen->AddMeshAccessorMethod( theCommand ); // for *Object()
     if ( !myCreationCmdStr.IsEmpty() ) {
       GetCreationCmd()->GetString() = myCreationCmdStr;
       myCreationCmdStr.Clear();

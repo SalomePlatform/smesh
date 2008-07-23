@@ -29,6 +29,8 @@
 #include "SMESHGUI_MeshUtils.h"
 #include "SMESHGUI_VTKUtils.h"
 #include "SMESHGUI_HypothesesUtils.h"
+#include "SMESHGUI_MeshEditPreview.h"
+#include "SMESH_ActorUtils.h"
 
 #include <SMDS_SetIterator.hxx>
 #include <SMDS_Mesh.hxx>
@@ -107,7 +109,9 @@ static void addSeparator( QWidget* parent )
   }
 }
 
-enum TCol { COL_ALGO = 0, COL_SHAPE, COL_ERROR, COL_SHAPEID, COL_PUBLISHED, NB_COLUMNS };
+enum TCol {
+  COL_ALGO = 0, COL_SHAPE, COL_ERROR, COL_SHAPEID, COL_PUBLISHED, COL_BAD_MESH, NB_COLUMNS
+};
 
 //using namespace SMESH;
 
@@ -125,7 +129,8 @@ namespace SMESH
   {
     char* myBuf;
     MemoryReserve(): myBuf( new char[1024*1024*1] ){} // 1M
-    ~MemoryReserve() { delete [] myBuf; }
+    void release() { delete [] myBuf; myBuf = 0; }
+    ~MemoryReserve() { release(); }
   };
 
   // =========================================================================================
@@ -266,8 +271,8 @@ namespace SMESH
       if ( !actor ) {
         actor = GEOM_Actor::New();
         if ( actor ) {
-          actor->setInputShape(shape,0,0);
-          //actor->SetProperty(myProperty);
+          actor->SetShape(shape,0,0);
+          actor->SetProperty(myProperty);
           actor->SetShadingProperty(myProperty);
           actor->SetWireframeProperty(myProperty);
           actor->SetPreviewProperty(myProperty);
@@ -429,7 +434,7 @@ namespace SMESH
   /*!
    * \brief Return a list of selected rows
    */
-  bool getSelectedRows(QTableWidget* table, QList<int>& rows)
+  int getSelectedRows(QTableWidget* table, QList<int>& rows)
   {
     rows.clear();
     QList<QTableWidgetSelectionRange> selRanges = table->selectedRanges();
@@ -442,7 +447,7 @@ namespace SMESH
     if ( rows.isEmpty() && table->currentRow() > -1 )
       rows.append( table->currentRow() );
 
-    return !rows.isEmpty();
+    return rows.count();
   }
 
 } // namespace SMESH
@@ -785,7 +790,7 @@ void SMESHGUI_MeshInfosBox::SetInfoByMesh(SMESH::SMESH_Mesh_var mesh)
  */
 //=======================================================================
 
-SMESHGUI_ComputeDlg::SMESHGUI_ComputeDlg(): SMESHGUI_Dialog( 0, false, true, OK/* | Help*/ )
+SMESHGUI_ComputeDlg::SMESHGUI_ComputeDlg(): SMESHGUI_Dialog( 0, false, true, Close/* | Help*/ )
 {
   QVBoxLayout* aDlgLay = new QVBoxLayout (mainFrame());
   aDlgLay->setMargin( 0 );
@@ -842,11 +847,13 @@ QFrame* SMESHGUI_ComputeDlg::createMainFrame (QWidget* theParent)
   myTable      = new QTableWidget( 1, NB_COLUMNS, myCompErrorGroup);
   myShowBtn    = new QPushButton(tr("SHOW_SHAPE"), myCompErrorGroup);
   myPublishBtn = new QPushButton(tr("PUBLISH_SHAPE"), myCompErrorGroup);
+  myBadMeshBtn = new QPushButton(tr("SHOW_BAD_MESH"), myCompErrorGroup);
 
   //myTable->setReadOnly( true ); // VSR: check
   myTable->setEditTriggers( QAbstractItemView::NoEditTriggers );
   myTable->hideColumn( COL_PUBLISHED );
   myTable->hideColumn( COL_SHAPEID );
+  myTable->hideColumn( COL_BAD_MESH );
   myTable->horizontalHeader()->setResizeMode( COL_ERROR, QHeaderView::Interactive );
 
   QStringList headers;
@@ -862,10 +869,11 @@ QFrame* SMESHGUI_ComputeDlg::createMainFrame (QWidget* theParent)
   QGridLayout* grpLayout = new QGridLayout(myCompErrorGroup);
   grpLayout->setSpacing(SPACING);
   grpLayout->setMargin(MARGIN);
-  grpLayout->addWidget( myTable,      0, 0, 3, 1 );
+  grpLayout->addWidget( myTable,      0, 0, 4, 1 );
   grpLayout->addWidget( myShowBtn,    0, 1 );
   grpLayout->addWidget( myPublishBtn, 1, 1 );
-  grpLayout->setRowStretch( 2, 1 );
+  grpLayout->addWidget( myBadMeshBtn, 2, 1 );
+  grpLayout->setRowStretch( 3, 1 );
 
   // Hypothesis definition errors
 
@@ -916,12 +924,15 @@ SMESHGUI_ComputeOp::SMESHGUI_ComputeOp()
 {
   myDlg = new SMESHGUI_ComputeDlg;
   myTShapeDisplayer = new SMESH::TShapeDisplayer();
+  myBadMeshDisplayer = 0;
+
   //myHelpFileName = "/files/about_meshes.htm"; // V3
   myHelpFileName = "about_meshes_page.html"; // V4
 
   // connect signals and slots
   connect(myDlg->myShowBtn,    SIGNAL (clicked()), SLOT(onPreviewShape()));
   connect(myDlg->myPublishBtn, SIGNAL (clicked()), SLOT(onPublishShape()));
+  connect(myDlg->myBadMeshBtn, SIGNAL (clicked()), SLOT(onShowBadMesh()));
   connect(table(), SIGNAL(itemSelectionChanged()), SLOT(currentCellChanged()));
   connect(table(), SIGNAL(currentCellChanged(int,int,int,int)), SLOT(currentCellChanged()));
 }
@@ -937,7 +948,7 @@ void SMESHGUI_ComputeOp::startOperation()
 
   // check selection
 
-  SMESH::SMESH_Mesh_var aMesh;
+  myMesh      = SMESH::SMESH_Mesh::_nil();
   myMainShape = GEOM::GEOM_Object::_nil();
 
   LightApp_SelectionMgr *Sel = selectionMgr();
@@ -953,8 +964,8 @@ void SMESHGUI_ComputeOp::startOperation()
   }
 
   Handle(SALOME_InteractiveObject) IObject = selected.First();
-  aMesh = SMESH::GetMeshByIO(IObject);
-  if (aMesh->_is_nil()) {
+  myMesh = SMESH::GetMeshByIO(IObject);
+  if (myMesh->_is_nil()) {
     SUIT_MessageBox::warning(desktop(),
 			     tr("SMESH_WRN_WARNING"),
 			     tr("SMESH_WRN_NO_AVAILABLE_DATA"));
@@ -971,15 +982,15 @@ void SMESHGUI_ComputeOp::startOperation()
 
   bool computeFailed = true, memoryLack = false;
 
-  _PTR(SObject) aMeshSObj = SMESH::FindSObject(aMesh);
-  myMainShape = aMesh->GetShapeToMesh();
-  bool hasShape = aMesh->HasShapeToMesh();
+  _PTR(SObject) aMeshSObj = SMESH::FindSObject(myMesh);
+  myMainShape = myMesh->GetShapeToMesh();
+  bool hasShape = myMesh->HasShapeToMesh();
   bool shapeOK = myMainShape->_is_nil() ? !hasShape : hasShape;
   if ( shapeOK && aMeshSObj )
   {
     myDlg->myMeshName->setText( aMeshSObj->GetName().c_str() );
     SMESH::SMESH_Gen_var gen = getSMESHGUI()->GetSMESHGen();
-    SMESH::algo_error_array_var errors = gen->GetAlgoState(aMesh,myMainShape);
+    SMESH::algo_error_array_var errors = gen->GetAlgoState(myMesh,myMainShape);
     if ( errors->length() > 0 ) {
       aHypErrors = SMESH::GetMessageOnAlgoStateErrors( errors.in() );
     }
@@ -988,7 +999,7 @@ void SMESHGUI_ComputeOp::startOperation()
 #if (OCC_VERSION_MAJOR << 16 | OCC_VERSION_MINOR << 8 | OCC_VERSION_MAINTENANCE) > 0x060100
       OCC_CATCH_SIGNALS;
 #endif
-      if (gen->Compute(aMesh, myMainShape))
+      if (gen->Compute(myMesh, myMainShape))
         computeFailed = false;
     }
     catch(const SALOME::SALOME_Exception & S_ex){
@@ -998,7 +1009,7 @@ void SMESHGUI_ComputeOp::startOperation()
 #if (OCC_VERSION_MAJOR << 16 | OCC_VERSION_MINOR << 8 | OCC_VERSION_MAINTENANCE) > 0x060100
       OCC_CATCH_SIGNALS;
 #endif
-      aCompErrors = gen->GetComputeErrors( aMesh, myMainShape );
+      aCompErrors = gen->GetComputeErrors( myMesh, myMainShape );
       // check if there are memory problems
       for ( int i = 0; (i < aCompErrors->length()) && !memoryLack; ++i )
         memoryLack = ( aCompErrors[ i ].code == SMESH::COMPERR_MEMORY_PB );
@@ -1009,7 +1020,7 @@ void SMESHGUI_ComputeOp::startOperation()
 
     // NPAL16631: if ( !memoryLack )
     {
-      SMESH::ModifiedMesh(aMeshSObj, !computeFailed, aMesh->NbNodes() == 0);
+      SMESH::ModifiedMesh(aMeshSObj, !computeFailed, myMesh->NbNodes() == 0);
       update( UF_ObjBrowser | UF_Model );
 
       // SHOW MESH
@@ -1024,7 +1035,7 @@ void SMESHGUI_ComputeOp::startOperation()
         }
         catch (...) {
 #ifdef _DEBUG_
-          cout << "Exception thrown during mesh visualization" << endl;
+          MESSAGE ( "Exception thrown during mesh visualization" );
 #endif
           if ( SMDS_Mesh::CheckMemory(true) ) { // has memory to show warning?
             SMESH::OnVisuException();
@@ -1037,6 +1048,10 @@ void SMESHGUI_ComputeOp::startOperation()
       Sel->setSelectedObjects( selected );
     }
   }
+
+  if ( memoryLack )
+    aMemoryReserve.release();
+
   myDlg->setWindowTitle(tr( computeFailed ? "SMESH_WRN_COMPUTE_FAILED" : "SMESH_COMPUTE_SUCCEED"));
   myDlg->myMemoryLackGroup->hide();
 
@@ -1055,7 +1070,7 @@ void SMESHGUI_ComputeOp::startOperation()
   }
   else if ( noCompError && noHypoError )
   {
-    myDlg->myFullInfo->SetInfoByMesh( aMesh );
+    myDlg->myFullInfo->SetInfoByMesh( myMesh );
     myDlg->myFullInfo->show();
     myDlg->myBriefInfo->hide();
     myDlg->myHypErrorGroup->hide();
@@ -1064,7 +1079,7 @@ void SMESHGUI_ComputeOp::startOperation()
   else
   {
     QTableWidget* tbl = myDlg->myTable;
-    myDlg->myBriefInfo->SetInfoByMesh( aMesh );
+    myDlg->myBriefInfo->SetInfoByMesh( myMesh );
     myDlg->myBriefInfo->show();
     myDlg->myFullInfo->hide();
 
@@ -1097,6 +1112,7 @@ void SMESHGUI_ComputeOp::startOperation()
       else             tbl->showColumn( COL_SHAPE );
       tbl->setColumnWidth( COL_ERROR, 200 );
 
+      bool hasBadMesh = false;
       for ( int row = 0; row < aCompErrors->length(); ++row )
       {
         SMESH::ComputeError & err = aCompErrors[ row ];
@@ -1121,11 +1137,21 @@ void SMESHGUI_ComputeOp::startOperation()
 	if ( !tbl->item( row, COL_PUBLISHED ) ) tbl->setItem( row, COL_PUBLISHED, new QTableWidgetItem( text ) );
 	else tbl->item( row, COL_PUBLISHED )->setText( text ); // if text=="", "PUBLISH" button enabled
 
+        text = err.hasBadMesh ? "hasBadMesh" : "";
+	if ( !tbl->item( row, COL_BAD_MESH ) ) tbl->setItem( row, COL_BAD_MESH, new QTableWidgetItem( text ) );
+	else tbl->item( row, COL_BAD_MESH )->setText( text );
+        if ( err.hasBadMesh ) hasBadMesh = true;
+
         //tbl->item( row, COL_ERROR )->setWordWrap( true ); // VSR: TODO ???
         tbl->resizeRowToContents( row );
       }
       tbl->resizeColumnToContents( COL_ALGO );
       tbl->resizeColumnToContents( COL_SHAPE );
+
+      if ( hasBadMesh )
+        myDlg->myBadMeshBtn->show();
+      else
+        myDlg->myBadMeshBtn->hide();
 
       tbl->setCurrentCell(0,0);
       currentCellChanged(); // to update buttons
@@ -1144,6 +1170,13 @@ void SMESHGUI_ComputeOp::stopOperation()
 {
   SMESHGUI_Operation::stopOperation();
   myTShapeDisplayer->SetVisibility( false );
+  if ( myBadMeshDisplayer ) {
+    myBadMeshDisplayer->SetVisibility( false );
+    // delete it in order not to have problems at its destruction when the viewer
+    // where it worked is dead due to e.g. study closing
+    delete myBadMeshDisplayer;
+    myBadMeshDisplayer = 0;
+  }
 }
 
 //================================================================================
@@ -1197,6 +1230,39 @@ void SMESHGUI_ComputeOp::onPublishShape()
 
 //================================================================================
 /*!
+ * \brief show mesh elements preventing computation of a submesh of current row
+ */
+//================================================================================
+
+void SMESHGUI_ComputeOp::onShowBadMesh()
+{
+  myTShapeDisplayer->SetVisibility( false );
+  QList<int> rows;
+  if ( SMESH::getSelectedRows( table(), rows ) == 1 ) {
+    bool hasBadMesh = ( !table()->item(rows.front(), COL_BAD_MESH)->text().isEmpty() );
+    if ( hasBadMesh ) {
+      int curSub = table()->item(rows.front(), COL_SHAPEID)->text().toInt();
+      SMESHGUI* gui = getSMESHGUI();
+      SMESH::SMESH_Gen_var gen = gui->GetSMESHGen();
+      SVTK_ViewWindow*    view = SMESH::GetViewWindow( gui );
+      if ( myBadMeshDisplayer ) delete myBadMeshDisplayer;
+      myBadMeshDisplayer = new SMESHGUI_MeshEditPreview( view );
+      SMESH::MeshPreviewStruct_var aMeshData = gen->GetBadInputElements(myMesh,curSub);
+      vtkFloatingPointType aPointSize = SMESH::GetFloat("SMESH:node_size",3);
+      vtkFloatingPointType aLineWidth = SMESH::GetFloat("SMESH:element_width",1);
+      // delete property !!!!!!!!!!
+      vtkProperty* prop = vtkProperty::New();
+      prop->SetLineWidth( aLineWidth * 3 );
+      prop->SetPointSize( aPointSize * 3 );
+      prop->SetColor( 250, 0, 250 );
+      myBadMeshDisplayer->GetActor()->SetProperty( prop );
+      myBadMeshDisplayer->SetData( aMeshData._retn() );
+    }
+  }
+}
+
+//================================================================================
+/*!
  * \brief SLOT called when a selected cell in table() changed
  */
 //================================================================================
@@ -1204,10 +1270,12 @@ void SMESHGUI_ComputeOp::onPublishShape()
 void SMESHGUI_ComputeOp::currentCellChanged()
 {
   myTShapeDisplayer->SetVisibility( false );
+  if ( myBadMeshDisplayer )
+    myBadMeshDisplayer->SetVisibility( false );
 
-  bool publishEnable = 0, showEnable = 0, showOnly = 1;
+  bool publishEnable = 0, showEnable = 0, showOnly = 1, hasBadMesh = 0;
   QList<int> rows;
-  SMESH::getSelectedRows( table(), rows );
+  int nbSelected = SMESH::getSelectedRows( table(), rows );
   int row;
   foreach ( row, rows )
   {
@@ -1225,9 +1293,13 @@ void SMESHGUI_ComputeOp::currentCellChanged()
     else {
       showEnable = true;
     }
+
+    if ( !table()->item(row, COL_BAD_MESH)->text().isEmpty() )
+      hasBadMesh = true;
   }
   myDlg->myPublishBtn->setEnabled( publishEnable );
-  myDlg->myShowBtn->setEnabled( showEnable );
+  myDlg->myShowBtn   ->setEnabled( showEnable );
+  myDlg->myBadMeshBtn->setEnabled( hasBadMesh && ( nbSelected == 1 ));
 }
 
 //================================================================================
@@ -1266,7 +1338,9 @@ void SMESHGUI_ComputeOp::onPreviewShape()
 
 SMESHGUI_ComputeOp::~SMESHGUI_ComputeOp()
 {
-  if ( myTShapeDisplayer ) delete myTShapeDisplayer;
+  delete myTShapeDisplayer;
+  if ( myBadMeshDisplayer )
+    delete myBadMeshDisplayer;
 }
 
 //================================================================================

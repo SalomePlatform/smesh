@@ -5,14 +5,25 @@
 \n Python package smesh defines several classes, destined for easy and
 clear mesh creation and edition (see the \ref introduction_to_mesh_python_page "example").
 
-\n Please draw your attention to the below notes before address to
-the \ref smeshDC "documentation for smesh.py"
+\n Documentation for smesh package is now available in two forms.
 
-\n 1. The main page of the \ref smeshDC "documentation for smesh.py"
-      contains a list of data structures and a list of functions,
-      provided by the package smesh.py. The first item in the data
-      structures list (\ref smeshDC::smeshDC "class smesh") also
-      represents documentation for methods of the package smesh.py itself.
+\n 1. Here you can find <a href="smeshpy_doc/modules.html">structured
+      documentation for smesh package</a>, where all methods and
+      classes are grouped by their functionality, like it is done in
+      the GUI documentation.
+
+\n 2. And here the \ref smeshDC "linear documentation for smesh package"
+      is represented, grouped only by classes, declared in the smesh.py file.
+
+\n Please draw your attention to the below notes before address to
+the documentation"
+
+\n 1. The main page of the \ref smeshDC "linear documentation for smesh package"
+      contains a list of data structures and a list of
+      functions, provided by the package smesh.py. The first item in
+      the data structures list (\ref smeshDC::smeshDC "class smesh")
+      also represents documentation for methods of the package
+      smesh.py itself.
 
 \n 2. Package smesh.py gives interface to create and manage
       meshes. Please, use it to create an empty mesh or to import
@@ -24,7 +35,7 @@ the \ref smeshDC "documentation for smesh.py"
       data structures list).
 
 \n 4. Class Mesh allows to assign algorithms to a mesh.
-\n \t Please note, that there are always available some algorithms,
+\n    Please note, that there are always available some algorithms,
       included in standard Salome installation:
          - REGULAR(1D), COMPOSITE(1D), MEFISTO(2D), Quadrangle(2D), Hexa(3D), etc.
 
@@ -33,9 +44,9 @@ the \ref smeshDC "documentation for smesh.py"
          - NETGEN(1D-2D,2D,1D-2D-3D,3D),
 
 \n others are based on commercial meshers:
-         - GHS3D(3D).
+         - GHS3D(3D), BLSURF(2D).
 
-\n \t To add hypotheses, please use interfaces, provided by the
+\n    To add hypotheses, please use interfaces, provided by the
       assigned algorithms.
 
 */

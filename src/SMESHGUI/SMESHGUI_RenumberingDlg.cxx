@@ -135,7 +135,7 @@ SMESHGUI_RenumberingDlg::SMESHGUI_RenumberingDlg( SMESHGUI* theModule, const int
   GroupButtonsLayout->setSpacing(SPACING);
   GroupButtonsLayout->setMargin(MARGIN);
 
-  buttonOk = new QPushButton(tr("SMESH_BUT_OK"), GroupButtons);
+  buttonOk = new QPushButton(tr("SMESH_BUT_APPLY_AND_CLOSE"), GroupButtons);
   buttonOk->setAutoDefault(true);
   buttonOk->setDefault(true);
   buttonApply = new QPushButton(tr("SMESH_BUT_APPLY"), GroupButtons);

@@ -32,13 +32,13 @@ using namespace std;
 #include <Bnd_Box.hxx>
 #include <Bnd_Box2d.hxx>
 #include <ElSLib.hxx>
+#include <Extrema_ExtPC.hxx>
 #include <Extrema_GenExtPS.hxx>
 #include <Extrema_POnSurf.hxx>
 #include <Geom2d_Curve.hxx>
 #include <GeomAdaptor_Surface.hxx>
 #include <Geom_Curve.hxx>
 #include <Geom_Surface.hxx>
-//#include <IntAna2d_AnaIntersection.hxx>
 #include <TopAbs_ShapeEnum.hxx>
 #include <TopExp.hxx>
 #include <TopExp_Explorer.hxx>
@@ -655,9 +655,7 @@ bool SMESH_Pattern::Load (SMESH_Mesh*        theMesh,
       TopoDS_Edge & edge = *elIt;
       list< TPoint* > & ePoints = getShapePoints( edge );
       double f, l;
-      Handle(Geom2d_Curve) C2d;
-      if ( !theProject )
-        C2d = BRep_Tool::CurveOnSurface( edge, face, f, l );
+      Handle(Geom2d_Curve) C2d = BRep_Tool::CurveOnSurface( edge, face, f, l );
       bool isForward = ( edge.Orientation() == TopAbs_FORWARD );
 
       TopoDS_Shape v1 = TopExp::FirstVertex( edge, true ); // always FORWARD
@@ -733,7 +731,30 @@ bool SMESH_Pattern::Load (SMESH_Mesh*        theMesh,
           const SMDS_EdgePosition* epos =
             static_cast<const SMDS_EdgePosition*>(node->GetPosition().get());
           double u = epos->GetUParameter();
-          paramNodeMap.insert( TParamNodeMap::value_type( u, node ));
+          paramNodeMap.insert( make_pair( u, node ));
+        }
+        if ( paramNodeMap.size() != eSubMesh->NbNodes() ) {
+          // wrong U on edge, project
+          Extrema_ExtPC proj;
+          BRepAdaptor_Curve aCurve( edge );
+          proj.Initialize( aCurve, f, l );
+          paramNodeMap.clear();
+          nIt = eSubMesh->GetNodes();
+          for ( int iNode = 0; nIt->more(); ++iNode ) {
+            const SMDS_MeshNode* node = smdsNode( nIt->next() );
+            proj.Perform( gp_Pnt( node->X(), node->Y(), node->Z()));
+            double u = 0;
+            if ( proj.IsDone() ) {
+              for ( int i = 1, nb = proj.NbExt(); i <= nb; ++i )
+                if ( proj.IsMin( i )) {
+                  u = proj.Point( i ).Parameter();
+                  break;
+                }
+            } else {
+              u = isForward ? iNode : eSubMesh->NbNodes() - iNode;
+            }
+            paramNodeMap.insert( make_pair( u, node ));
+          }
         }
         // put U in [0,1] so that the first key-point has U==0
         double du = l - f;
@@ -2093,8 +2114,8 @@ double SMESH_Pattern::setFirstEdge (list< TopoDS_Edge > & theWire, int theFirstE
   bndBox.Get( minPar[0], minPar[1], maxPar[0], maxPar[1] );
   eBndBox.Get( eMinPar[0], eMinPar[1], eMaxPar[0], eMaxPar[1] );
 #ifdef DBG_SETFIRSTEDGE
-  cout << "EDGES: X: " << eMinPar[0] << " - " << eMaxPar[0] << " Y: "
-    << eMinPar[1] << " - " << eMaxPar[1] << endl;
+  MESSAGE ( "EDGES: X: " << eMinPar[0] << " - " << eMaxPar[0] << " Y: "
+         << eMinPar[1] << " - " << eMaxPar[1] );
 #endif
   for ( int iC = 1, i = 0; i < 2; iC++, i++ ) // loop on 2 coordinates
   {
@@ -2120,7 +2141,7 @@ double SMESH_Pattern::setFirstEdge (list< TopoDS_Edge > & theWire, int theFirstE
   for ( iE = 0 ; iE < nbEdges; iE++ )
   {
 #ifdef DBG_SETFIRSTEDGE
-    cout << " VARIANT " << iE << endl;
+    MESSAGE ( " VARIANT " << iE );
 #endif
     // evaluate the distance between UV computed by the 2 methods:
     // by isos intersection ( myXYZ ) and by edge p-curves ( myUV )
@@ -2134,13 +2155,13 @@ double SMESH_Pattern::setFirstEdge (list< TopoDS_Edge > & theWire, int theFirstE
         TPoint* p = (*pIt);
         dist += ( p->myUV - gp_XY( p->myXYZ.X(), p->myXYZ.Y() )).SquareModulus();
 #ifdef DBG_SETFIRSTEDGE
-        cout << " ISO : ( " << p->myXYZ.X() << ", "<< p->myXYZ.Y() << " ) PCURVE : ( " <<
-          p->myUV.X() << ", " << p->myUV.Y() << ") " << endl;
+        MESSAGE ( " ISO : ( " << p->myXYZ.X() << ", "<< p->myXYZ.Y() << " ) PCURVE : ( " <<
+                  p->myUV.X() << ", " << p->myUV.Y() << ") " );
 #endif
       }
     }
 #ifdef DBG_SETFIRSTEDGE
-    cout << "dist -- " << dist << endl;
+    MESSAGE ( "dist -- " << dist );
 #endif
     if ( dist < minDist ) {
       minDist = dist;
@@ -4634,7 +4655,7 @@ void SMESH_Pattern::DumpPoints() const
 #ifdef _DEBUG_
   vector< TPoint >::const_iterator pVecIt = myPoints.begin();
   for ( int i = 0; pVecIt != myPoints.end(); pVecIt++, i++ )
-    cout << i << ": " << *pVecIt;
+    MESSAGE_ADD ( std::endl << i << ": " << *pVecIt );
 #endif
 }
 

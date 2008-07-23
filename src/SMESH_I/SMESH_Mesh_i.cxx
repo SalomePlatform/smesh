@@ -72,6 +72,7 @@
 #include <string>
 #include <iostream>
 #include <sstream>
+#include <sys/stat.h>
 
 #ifdef _DEBUG_
 static int MYDEBUG = 0;
@@ -175,7 +176,7 @@ CORBA::Boolean SMESH_Mesh_i::HasShapeToMesh()
 //=======================================================================
 
 GEOM::GEOM_Object_ptr SMESH_Mesh_i::GetShapeToMesh()
-    throw (SALOME::SALOME_Exception)
+  throw (SALOME::SALOME_Exception)
 {
   Unexpect aCatch(SALOME_SalomeException);
   GEOM::GEOM_Object_var aShapeObj;
@@ -188,6 +189,24 @@ GEOM::GEOM_Object_ptr SMESH_Mesh_i::GetShapeToMesh()
     THROW_SALOME_CORBA_EXCEPTION(S_ex.what(), SALOME::BAD_PARAM);
   }
   return aShapeObj._retn();
+}
+
+//================================================================================
+/*!
+ * \brief Remove all nodes and elements
+ */
+//================================================================================
+
+void SMESH_Mesh_i::Clear() throw (SALOME::SALOME_Exception)
+{
+  Unexpect aCatch(SALOME_SalomeException);
+  try {
+    _impl->Clear();
+  }
+  catch(SALOME_Exception & S_ex) {
+    THROW_SALOME_CORBA_EXCEPTION(S_ex.what(), SALOME::BAD_PARAM);
+  }
+  TPythonDump() <<  _this() << ".Clear()";
 }
 
 //=============================================================================
@@ -240,8 +259,25 @@ SMESH_Mesh_i::ImportMEDFile( const char* theFileName, const char* theMeshName )
     THROW_SALOME_CORBA_EXCEPTION("ImportMEDFile(): unknown exception", SALOME::BAD_PARAM);
   }
 
-  myFile = theFileName;
   CreateGroupServants();
+
+  int major, minor, release;
+  if( !MED::getMEDVersion( theFileName, major, minor, release ) )
+    major = minor = release = -1;
+  myFileInfo           = new SALOME_MED::MedFileInfo();
+  myFileInfo->fileName = theFileName;
+  myFileInfo->fileSize = 0;
+#ifdef WIN32
+  struct _stati64 d;
+  if ( ::_stati64( theFileName, &d ) != -1 )
+#else
+  struct stat64 d;
+  if ( ::stat64( theFileName, &d ) != -1 )
+#endif
+    myFileInfo->fileSize = d.st_size;
+  myFileInfo->major    = major;
+  myFileInfo->minor    = minor;
+  myFileInfo->release  = release;
 
   return ConvertDriverMEDReadStatus(status);
 }
@@ -336,6 +372,7 @@ SMESH::Hypothesis_Status SMESH_Mesh_i::ConvertHypothesisStatus
   RETURNCASE( HYP_BAD_DIM       );
   RETURNCASE( HYP_BAD_SUBSHAPE  );
   RETURNCASE( HYP_BAD_GEOMETRY  );
+  RETURNCASE( HYP_NEED_SHAPE    );
   default:;
   }
   return SMESH::HYP_UNKNOWN_FATAL;
@@ -725,7 +762,7 @@ void SMESH_Mesh_i::RemoveGroup( SMESH::SMESH_GroupBase_ptr theGroup )
       TPythonDump() << _this() << ".RemoveGroup( " << aGroupSO << " )";
 
       // Remove group's SObject
-      aStudy->NewBuilder()->RemoveObject( aGroupSO );
+      aStudy->NewBuilder()->RemoveObjectWithChildren( aGroupSO );
     }
   }
 
@@ -1438,7 +1475,7 @@ CORBA::Boolean SMESH_Mesh_i::HasDuplicatedGroupNamesMED()
   return _impl->HasDuplicatedGroupNamesMED();
 }
 
-static void PrepareForWriting (const char* file)
+void SMESH_Mesh_i::PrepareForWriting (const char* file)
 {
   TCollection_AsciiString aFullName ((char*)file);
   OSD_Path aPath (aFullName);
@@ -2009,7 +2046,8 @@ SMESH::ElementType SMESH_Mesh_i::GetSubMeshElementType(const CORBA::Long ShapeID
 CORBA::LongLong SMESH_Mesh_i::GetMeshPtr()
 {
   CORBA::LongLong pointeur = CORBA::LongLong(_impl);
-  cerr << "CORBA::LongLong SMESH_Mesh_i::GetMeshPtr() " << pointeur << endl;
+  if ( MYDEBUG )
+    MESSAGE("CORBA::LongLong SMESH_Mesh_i::GetMeshPtr() "<<pointeur);
   return pointeur;
 }
 
@@ -2486,22 +2524,14 @@ SMESH::ListOfGroups* SMESH_Mesh_i::GetGroups(const list<int>& groupIDs) const
  * \brief Return information about imported file
  */
 //=============================================================================
+
 SALOME_MED::MedFileInfo* SMESH_Mesh_i::GetMEDFileInfo()
 {
-  SALOME_MED::MedFileInfo_var res = new SALOME_MED::MedFileInfo();
-
-  const char* name = myFile.c_str();
-  res->fileName = name;
-  res->fileSize = 0;//myFileInfo.size();
-  int major, minor, release;
-  if( !MED::getMEDVersion( name, major, minor, release ) )
-  {
-    major = -1;
-    minor = -1;
-    release = -1;
+  SALOME_MED::MedFileInfo_var res( myFileInfo );
+  if ( !res.operator->() ) {
+    res = new SALOME_MED::MedFileInfo;
+    res->fileName = "";
+    res->fileSize = res->major = res->minor = res->release = -1;
   }
-  res->major = major;
-  res->minor = minor;
-  res->release = release;
   return res._retn();
 }

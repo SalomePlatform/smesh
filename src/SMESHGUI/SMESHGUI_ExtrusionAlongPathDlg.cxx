@@ -284,7 +284,7 @@ SMESHGUI_ExtrusionAlongPathDlg::SMESHGUI_ExtrusionAlongPathDlg( SMESHGUI* theMod
   QHBoxLayout* GroupButtonsLayout = new QHBoxLayout(GroupButtons);
   GroupButtonsLayout->setSpacing(SPACING); GroupButtonsLayout->setMargin(MARGIN);
 
-  OkButton = new QPushButton(tr("SMESH_BUT_OK"), GroupButtons);
+  OkButton = new QPushButton(tr("SMESH_BUT_APPLY_AND_CLOSE"), GroupButtons);
   OkButton->setAutoDefault(true);
   OkButton->setDefault(true);
 

@@ -610,14 +610,14 @@ FaceQuadStruct* StdMeshers_Quadrangle_2D::CheckNbEdges(SMESH_Mesh &         aMes
   }
   if (nbSides != 4) {
 #ifdef _DEBUG_
-    cout << endl << "StdMeshers_Quadrangle_2D. Edge IDs of " << nbSides << " sides:";
+    MESSAGE ( "StdMeshers_Quadrangle_2D. Edge IDs of " << nbSides << " sides:\n" );
     for ( int i = 0; i < nbSides; ++i ) {
-      cout << " ( ";
+      MESSAGE ( " ( " );
       for ( int e = 0; e < quad->side[i]->NbEdges(); ++e )
-        cout << myTool->GetMeshDS()->ShapeToIndex( quad->side[i]->Edge( e )) << " ";
-      cout << ")";
+        MESSAGE ( myTool->GetMeshDS()->ShapeToIndex( quad->side[i]->Edge( e )) << " " );
+      MESSAGE ( ")\n" );
     }
-    cout << endl;
+    //cout << endl;
 #endif
     if ( !nbSides )
       nbSides = nbEdgesInWire.front();

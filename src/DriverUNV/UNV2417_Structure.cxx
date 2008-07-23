@@ -92,7 +92,7 @@ void UNV2417::ReadGroup(const std::string& myGroupLabel, std::ifstream& in_strea
 
     std::getline(in_stream, aRec.GroupName, '\n'); // Finalise previous reading
     std::getline(in_stream, aRec.GroupName, '\n');
-    
+
     int aElType;
     int aElId;
     int aNum;

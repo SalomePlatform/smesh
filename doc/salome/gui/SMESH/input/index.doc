@@ -26,6 +26,8 @@
 <li>\ref a2d_meshing_hypo_page</li>
 <li>\ref max_element_volume_hypo_page</li>
 <li>\ref netgen_2d_3d_hypo_page</li>
+<li>\ref ghs3d_hypo_page</li>
+<li>\ref blsurf_hypo_page</li>
 <li>\ref additional_hypo_page</li>
 </ul>
 <li>\ref constructing_submeshes_page</li>

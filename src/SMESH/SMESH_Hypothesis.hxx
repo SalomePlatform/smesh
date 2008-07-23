@@ -55,7 +55,8 @@ public:
     HYP_ALREADY_EXIST,// such hypothesis already exist
     HYP_BAD_DIM,      // bad dimension
     HYP_BAD_SUBSHAPE, // shape is neither the main one, nor its subshape, nor a group
-    HYP_BAD_GEOMETRY  // shape geometry mismatches algorithm's expectation
+    HYP_BAD_GEOMETRY, // shape geometry mismatches algorithm's expectation
+    HYP_NEED_SHAPE    // algorithm can work on shape only
   };
   static bool IsStatusFatal(Hypothesis_Status theStatus)
   { return theStatus >= HYP_UNKNOWN_FATAL; }

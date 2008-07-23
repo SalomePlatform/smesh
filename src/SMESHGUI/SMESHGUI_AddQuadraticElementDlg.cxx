@@ -319,17 +319,48 @@ static int LastHexahedronIds[] =  {1,2,3,0,5,6,7,4,4,5,6,7};
 
 
 
-class SMESHGUI_IdEditItem: public QTableWidgetItem
+/*!
+  \class BusyLocker
+  \brief Simple 'busy state' flag locker.
+  \internal
+*/
+
+class BusyLocker
 {
 public:
-    SMESHGUI_IdEditItem(const QString& text ):
-      QTableWidgetItem(text, QTableWidgetItem::UserType+100) {};
-  ~SMESHGUI_IdEditItem() {};
+  //! Constructor. Sets passed boolean flag to \c true.
+  BusyLocker( bool& busy ) : myBusy( busy ) { myBusy = true; }
+  //! Destructor. Clear external boolean flag passed as parameter to the constructor to \c false.
+  ~BusyLocker() { myBusy = false; }
+private:
+  bool& myBusy; //! External 'busy state' boolean flag
+};
+
+/*!
+  \class IdEditItem
+  \brief Simple editable table item.
+  \internal
+*/
+
+class IdEditItem: public QTableWidgetItem
+{
+public:
+  IdEditItem(const QString& text );
+  ~IdEditItem();
 
   QWidget* createEditor() const;
 };
 
-QWidget* SMESHGUI_IdEditItem::createEditor() const
+IdEditItem::IdEditItem(const QString& text )
+  : QTableWidgetItem(text, QTableWidgetItem::UserType+100)
+{
+}
+
+IdEditItem::~IdEditItem()
+{
+}
+
+QWidget* IdEditItem::createEditor() const
 {
   QLineEdit *aLineEdit = new QLineEdit(text(), tableWidget());
   aLineEdit->setValidator( new SMESHGUI_IdValidator(tableWidget(), 1) );
@@ -345,7 +376,8 @@ SMESHGUI_AddQuadraticElementDlg::SMESHGUI_AddQuadraticElementDlg( SMESHGUI* theM
   : QDialog( SMESH::GetDesktop( theModule ) ),
     mySMESHGUI( theModule ),
     mySelectionMgr( SMESH::GetSelectionMgr( theModule ) ),
-    myType( theType )
+    myType( theType ),
+    myBusy( false )
 {
   setModal( false );
   setAttribute( Qt::WA_DeleteOnClose, true );
@@ -440,7 +472,7 @@ SMESHGUI_AddQuadraticElementDlg::SMESHGUI_AddQuadraticElementDlg( SMESHGUI* theM
   aGroupButtonsLayout->setSpacing(SPACING);
   aGroupButtonsLayout->setMargin(MARGIN);
 
-  buttonOk = new QPushButton(tr("SMESH_BUT_OK"), GroupButtons);
+  buttonOk = new QPushButton(tr("SMESH_BUT_APPLY_AND_CLOSE"), GroupButtons);
   buttonOk->setAutoDefault(true);
   buttonOk->setDefault(true);
   buttonApply = new QPushButton(tr("SMESH_BUT_APPLY"), GroupButtons);
@@ -482,7 +514,6 @@ SMESHGUI_AddQuadraticElementDlg::~SMESHGUI_AddQuadraticElementDlg()
 void SMESHGUI_AddQuadraticElementDlg::Init()
 {
   myRadioButton1->setChecked(true);
-  myIsEditCorners = true;
   mySMESHGUI->SetActiveDialogBox((QDialog*)this);
   
   myActor = 0;
@@ -550,12 +581,14 @@ void SMESHGUI_AddQuadraticElementDlg::Init()
   for ( int row = 0; row < myTable->rowCount(); row++ )
   {
     myTable->setItem( row, 0, new QTableWidgetItem( "" ) );
+    myTable->item( row, 0 )->setFlags(0);
 
-    SMESHGUI_IdEditItem* anEditItem = new SMESHGUI_IdEditItem( "" );
+    IdEditItem* anEditItem = new IdEditItem( "" );
     anEditItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEditable | Qt::ItemIsEnabled);
     myTable->setItem(row, 1, anEditItem);
 
     myTable->setItem( row, 2, new QTableWidgetItem( "" ) );
+    myTable->item( row, 2 )->setFlags(0);
   }
   
   /* signals and slots connections */
@@ -580,8 +613,6 @@ void SMESHGUI_AddQuadraticElementDlg::Init()
   if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
     aViewWindow->SetSelectionMode( NodeSelection );
 
-  myBusy = false;
-
   SetEditCorners();
 }
 
@@ -591,68 +622,66 @@ void SMESHGUI_AddQuadraticElementDlg::Init()
 //=================================================================================
 void SMESHGUI_AddQuadraticElementDlg::ClickOnApply()
 {
-  if (IsValid() && !mySMESHGUI->isActiveStudyLocked()) {
-    myBusy = true;
-    
-    std::vector<int> anIds;
+  if ( mySMESHGUI->isActiveStudyLocked() || myBusy || !IsValid() )
+    return;
 
-    switch (myType) {
-    case QUAD_EDGE:
-      anIds.push_back(myTable->item(0, 0)->text().toInt());
-      anIds.push_back(myTable->item(0, 2)->text().toInt());
-      anIds.push_back(myTable->item(0, 1)->text().toInt());
-      break;
-    case QUAD_TRIANGLE:
-    case QUAD_QUADRANGLE:
-    case QUAD_TETRAHEDRON:
-    case QUAD_PYRAMID:
-    case QUAD_PENTAHEDRON:
-    case QUAD_HEXAHEDRON:
-      for ( int row = 0; row < myNbCorners; row++ )
-	anIds.push_back(myTable->item(row, 0)->text().toInt());
-      for ( int row = 0; row < myTable->rowCount(); row++ )
-	anIds.push_back(myTable->item(row, 1)->text().toInt());
-      break;
-    }
-    if ( myReverseCB->isChecked())
-      SMESH::ReverseConnectivity( anIds, myType );
-    
-    int aNumberOfIds =  anIds.size();
-    SMESH::long_array_var anArrayOfIdeces = new SMESH::long_array;
-    anArrayOfIdeces->length( aNumberOfIds );
-    
-    for (int i = 0; i < aNumberOfIds; i++)
-      anArrayOfIdeces[i] = anIds[ i ];
+  BusyLocker lock( myBusy );
 
-    SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditor();
-    switch (myType) {
-    case QUAD_EDGE:
-      aMeshEditor->AddEdge(anArrayOfIdeces.inout()); break;
-    case QUAD_TRIANGLE:
-    case QUAD_QUADRANGLE:
-      aMeshEditor->AddFace(anArrayOfIdeces.inout()); break;
-    case QUAD_TETRAHEDRON:
-    case QUAD_PYRAMID:
-    case QUAD_PENTAHEDRON: 
-    case QUAD_HEXAHEDRON:
-      aMeshEditor->AddVolume(anArrayOfIdeces.inout()); break;
-    }
-    
-    SALOME_ListIO aList; aList.Append( myActor->getIO() );
-    mySelector->ClearIndex();
-    mySelectionMgr->setSelectedObjects( aList, false );
+  std::vector<int> anIds;
 
-    SMESH::UpdateView();
-    mySimulation->SetVisibility(false);
-    
-    buttonOk->setEnabled(false);
-    buttonApply->setEnabled(false);
-
-    UpdateTable();
-    SetEditCorners();
-
-    myBusy = false;
+  switch (myType) {
+  case QUAD_EDGE:
+    anIds.push_back(myTable->item(0, 0)->text().toInt());
+    anIds.push_back(myTable->item(0, 2)->text().toInt());
+    anIds.push_back(myTable->item(0, 1)->text().toInt());
+    break;
+  case QUAD_TRIANGLE:
+  case QUAD_QUADRANGLE:
+  case QUAD_TETRAHEDRON:
+  case QUAD_PYRAMID:
+  case QUAD_PENTAHEDRON:
+  case QUAD_HEXAHEDRON:
+    for ( int row = 0; row < myNbCorners; row++ )
+      anIds.push_back(myTable->item(row, 0)->text().toInt());
+    for ( int row = 0; row < myTable->rowCount(); row++ )
+      anIds.push_back(myTable->item(row, 1)->text().toInt());
+    break;
   }
+  if ( myReverseCB->isChecked())
+    SMESH::ReverseConnectivity( anIds, myType );
+    
+  int aNumberOfIds =  anIds.size();
+  SMESH::long_array_var anArrayOfIdeces = new SMESH::long_array;
+  anArrayOfIdeces->length( aNumberOfIds );
+    
+  for (int i = 0; i < aNumberOfIds; i++)
+    anArrayOfIdeces[i] = anIds[ i ];
+
+  SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditor();
+  switch (myType) {
+  case QUAD_EDGE:
+    aMeshEditor->AddEdge(anArrayOfIdeces.inout()); break;
+  case QUAD_TRIANGLE:
+  case QUAD_QUADRANGLE:
+    aMeshEditor->AddFace(anArrayOfIdeces.inout()); break;
+  case QUAD_TETRAHEDRON:
+  case QUAD_PYRAMID:
+  case QUAD_PENTAHEDRON: 
+  case QUAD_HEXAHEDRON:
+    aMeshEditor->AddVolume(anArrayOfIdeces.inout()); break;
+  }
+    
+  SALOME_ListIO aList; aList.Append( myActor->getIO() );
+  mySelector->ClearIndex();
+  mySelectionMgr->setSelectedObjects( aList, false );
+
+  mySimulation->SetVisibility(false);
+  SMESH::UpdateView();
+    
+  UpdateTable();
+  SetEditCorners();
+
+  updateButtons();
 }
 
 //=================================================================================
@@ -712,11 +741,8 @@ void SMESHGUI_AddQuadraticElementDlg::ClickOnHelp()
 void SMESHGUI_AddQuadraticElementDlg::onTextChange (const QString& theNewText)
 {
   if (myBusy) return;
-  myBusy = true;
+  BusyLocker lock( myBusy );
   
-  buttonOk->setEnabled(false);
-  buttonApply->setEnabled(false);
-
   mySimulation->SetVisibility(false);
 
   // hilight entered nodes
@@ -730,13 +756,15 @@ void SMESHGUI_AddQuadraticElementDlg::onTextChange (const QString& theNewText)
     QStringList aListId = theNewText.split(" ", QString::SkipEmptyParts);
     bool allOk = true;
     for (int i = 0; i < aListId.count(); i++) {
-      if( const SMDS_MeshNode * n = aMesh->FindNode( aListId[ i ].toInt() ) )
+      if ( const SMDS_MeshNode * n = aMesh->FindNode( aListId[ i ].toInt() ) )
+      {
 	newIndices.Add( n->GetID() );
+      }
       else
-	{
-	  allOk = false;
-	  break;
-	}
+      {
+	allOk = false;
+	break;
+      }
     }
     
     mySelector->AddOrRemoveIndex( myActor->getIO(), newIndices, false );
@@ -747,15 +775,8 @@ void SMESHGUI_AddQuadraticElementDlg::onTextChange (const QString& theNewText)
       UpdateTable( allOk );
   }
   
-  if( IsValid() ) {
-    buttonOk->setEnabled(true);
-    buttonApply->setEnabled(true);
-  }
-
-  if ( sender() == myTable )
-    displaySimulation();
-  
-  myBusy = false;
+  updateButtons();
+  displaySimulation();
 }
 
 //=================================================================================
@@ -765,73 +786,65 @@ void SMESHGUI_AddQuadraticElementDlg::onTextChange (const QString& theNewText)
 void SMESHGUI_AddQuadraticElementDlg::SelectionIntoArgument()
 {
   if (myBusy) return;
+  BusyLocker lock( myBusy );
   
   if ( myIsEditCorners )
+  {
+    // clear
+    myActor = 0;
+    
+    myCornerNodes->setText("");
+    
+    if (!GroupButtons->isEnabled()) // inactive
+      return;
+    
+    mySimulation->SetVisibility(false);
+      
+    // get selected mesh
+    SALOME_ListIO aList;
+    mySelectionMgr->selectedObjects(aList,SVTK_Viewer::Type());
+    
+    if (aList.Extent() != 1)
     {
-      // clear
-      myActor = 0;
-      
-      myBusy = true;
-      myCornerNodes->setText("");
-      myBusy = false;
-      
-      if (!GroupButtons->isEnabled()) // inactive
-	return;
-      
-      buttonOk->setEnabled(false);
-      buttonApply->setEnabled(false);
-      
-      mySimulation->SetVisibility(false);
-      
-      // get selected mesh
-      SALOME_ListIO aList;
-      mySelectionMgr->selectedObjects(aList,SVTK_Viewer::Type());
-      
-      if (aList.Extent() != 1)
-	{
-	  UpdateTable();
-	  return;
-	}
-      
-      Handle(SALOME_InteractiveObject) anIO = aList.First();
-      myMesh = SMESH::GetMeshByIO(anIO);
-      if (myMesh->_is_nil())
-	return;
-      
-      myActor = SMESH::FindActorByEntry(anIO->getEntry());
-  
+      UpdateTable();
+      updateButtons();
+      return;
     }
+      
+    Handle(SALOME_InteractiveObject) anIO = aList.First();
+    myMesh = SMESH::GetMeshByIO(anIO);
+    if (myMesh->_is_nil()) {
+      updateButtons();
+      return;
+    }
+      
+    myActor = SMESH::FindActorByEntry(anIO->getEntry());
   
-  if (!myActor)
+  }
+  
+  if (!myActor) {
+    updateButtons();
     return;
+  }
   
   // get selected nodes
   QString aString = "";
   int nbNodes = SMESH::GetNameOfSelectedNodes(mySelector,myActor->getIO(),aString);
   
   if ( myIsEditCorners )
-    {
-      myBusy = true;
-      myCornerNodes->setText(aString);
-      myBusy = false;
-      
-      UpdateTable();
-    }
+  {
+    myCornerNodes->setText(aString);
+    
+    UpdateTable();
+  }
   else if ( myTable->isEnabled() && nbNodes == 1 )
-    {
-      myBusy = true;
-      int theRow = myTable->currentRow(), theCol = myTable->currentColumn();
-      if ( theCol == 1 )
-	myTable->item(theRow, 1)->setText(aString);
-      myBusy = false;
-    }
+  {
+    int theRow = myTable->currentRow(), theCol = myTable->currentColumn();
+    if ( theCol == 1 )
+      myTable->item(theRow, 1)->setText(aString);
+  }
   
-  if ( IsValid() )
-    {
-      buttonOk->setEnabled( true );
-      buttonApply->setEnabled( true );
-    }
-
+  updateButtons();
   displaySimulation();
 }
 
@@ -841,42 +854,47 @@ void SMESHGUI_AddQuadraticElementDlg::SelectionIntoArgument()
 //=================================================================================
 void SMESHGUI_AddQuadraticElementDlg::displaySimulation()
 {
-  if (!myIsEditCorners) {
+  if ( IsValid() )
+  {
     SMESH::TElementSimulation::TVTKIds anIds;
     
     // Collect ids from the dialog
     int anID;
     bool ok;
     int aDisplayMode = VTK_SURFACE;
-
+    
     if ( myType == QUAD_EDGE )
-      {
-	anIds.push_back( myActor->GetObject()->GetNodeVTKId( myTable->item(0, 0)->text().toInt() ) );
-	anIds.push_back( myActor->GetObject()->GetNodeVTKId( myTable->item(0, 2)->text().toInt() ) );
-	anID = myTable->item(0, 1)->text().toInt(&ok);
-	if (!ok) anID = myTable->item(0, 0)->text().toInt();
-	anIds.push_back( myActor->GetObject()->GetNodeVTKId(anID) );
-	aDisplayMode = VTK_WIREFRAME;
-      }
+    {
+      anIds.push_back( myActor->GetObject()->GetNodeVTKId( myTable->item(0, 0)->text().toInt() ) );
+      anIds.push_back( myActor->GetObject()->GetNodeVTKId( myTable->item(0, 2)->text().toInt() ) );
+      anID = myTable->item(0, 1)->text().toInt(&ok);
+      if (!ok) anID = myTable->item(0, 0)->text().toInt();
+      anIds.push_back( myActor->GetObject()->GetNodeVTKId(anID) );
+      aDisplayMode = VTK_WIREFRAME;
+    }
     else
+    {
+      for ( int row = 0; row < myNbCorners; row++ )
+	anIds.push_back( myActor->GetObject()->GetNodeVTKId( myTable->item(row, 0)->text().toInt() ) );
+      
+      for ( int row = 0; row < myTable->rowCount(); row++ )
       {
-	for ( int row = 0; row < myNbCorners; row++ )
-	  anIds.push_back( myActor->GetObject()->GetNodeVTKId( myTable->item(row, 0)->text().toInt() ) );
-	
-	for ( int row = 0; row < myTable->rowCount(); row++ )
-	  {
-	    anID = myTable->item(row, 1)->text().toInt(&ok);
-	    if (!ok) {
-	      anID = myTable->item(row, 0)->text().toInt();
-	      aDisplayMode = VTK_WIREFRAME;
-	    }
-	    anIds.push_back( myActor->GetObject()->GetNodeVTKId(anID) );
-	  }
+	anID = myTable->item(row, 1)->text().toInt(&ok);
+	if (!ok) {
+	  anID = myTable->item(row, 0)->text().toInt();
+	  aDisplayMode = VTK_WIREFRAME;
+	}
+	anIds.push_back( myActor->GetObject()->GetNodeVTKId(anID) );
       }
+    }
     
     mySimulation->SetPosition(myActor,myType,anIds,aDisplayMode,myReverseCB->isChecked());
-    SMESH::UpdateView();
   }
+  else
+  {
+    mySimulation->SetVisibility(false);
+  }
+  SMESH::UpdateView();
 }
 
 //=================================================================================
@@ -887,8 +905,8 @@ void SMESHGUI_AddQuadraticElementDlg::SetEditCorners()
 {
   myCornerNodes->setFocus();
   myIsEditCorners = true;
-  
   SelectionIntoArgument();
+  updateButtons();
 }
 
 //=================================================================================
@@ -964,13 +982,9 @@ void SMESHGUI_AddQuadraticElementDlg::hideEvent (QHideEvent*)
 //=================================================================================
 void SMESHGUI_AddQuadraticElementDlg::onReverse (int state)
 {
-  if (!IsValid())
-    return;
-
-  if (state >= 0) {
-    mySimulation->SetVisibility(false);
-    displaySimulation();
-  }
+  mySimulation->SetVisibility(false);
+  displaySimulation();
+  updateButtons();
 }
 
 
@@ -989,15 +1003,15 @@ bool SMESHGUI_AddQuadraticElementDlg::IsValid()
   bool ok;
   
   for ( int row = 0; row < myTable->rowCount(); row++ )
-    {
-      int anID =  myTable->item(row, 1)->text().toInt(&ok);
-      if ( !ok )
-	return false;
-      
-      const SMDS_MeshNode * aNode = aMesh->FindNode(anID);
-      if ( !aNode )
-	return false;
-    }
+  {
+    int anID =  myTable->item(row, 1)->text().toInt(&ok);
+    if ( !ok )
+      return false;
+    
+    const SMDS_MeshNode * aNode = aMesh->FindNode(anID);
+    if ( !aNode )
+      return false;
+  }
   
   return true;
 }
@@ -1011,63 +1025,63 @@ void SMESHGUI_AddQuadraticElementDlg::UpdateTable( bool theConersValidity )
   QStringList aListCorners = myCornerNodes->text().split(" ", QString::SkipEmptyParts);
   
   if ( aListCorners.count() == myNbCorners && theConersValidity )
-    {
-      myTable->setEnabled( true );
-      
-      // clear the Middle column 
-      for ( int row = 0; row < myTable->rowCount(); row++ )
-	myTable->item( row, 1 )->setText("");
-      
-      int* aFirstColIds;
-      int* aLastColIds;
-
-      switch (myType) {
-      case QUAD_EDGE:
-	aFirstColIds = FirstEdgeIds;
-	aLastColIds  = LastEdgeIds;
-	break;
-      case QUAD_TRIANGLE:
-	aFirstColIds = FirstTriangleIds;
-	aLastColIds  = LastTriangleIds;
-	break;
-      case QUAD_QUADRANGLE:
-	aFirstColIds = FirstQuadrangleIds;
-	aLastColIds  = LastQuadrangleIds;
-	break;
-      case QUAD_TETRAHEDRON:
-	aFirstColIds = FirstTetrahedronIds;
-	aLastColIds  = LastTetrahedronIds;
-	break;
-      case QUAD_PYRAMID:
-	aFirstColIds = FirstPyramidIds;
-	aLastColIds  = LastPyramidIds;
-	break;
-      case QUAD_PENTAHEDRON:
-	aFirstColIds = FirstPentahedronIds;
-	aLastColIds  = LastPentahedronIds;
-	break; 
-      case QUAD_HEXAHEDRON:
-	aFirstColIds = FirstHexahedronIds;
-	aLastColIds  = LastHexahedronIds;
-	break;
-      }
-      
-      // fill the First and the Last columns
-      for (int i = 0, iEnd = myTable->rowCount(); i < iEnd; i++)
-	myTable->item( i, 0 )->setText( aListCorners[ aFirstColIds[i] ] );
-      
-      for (int i = 0, iEnd = myTable->rowCount(); i < iEnd; i++)
-	myTable->item( i, 2 )->setText( aListCorners[ aLastColIds[i] ] );
+  {
+    myTable->setEnabled( true );
+    
+    // clear the Middle column 
+    for ( int row = 0; row < myTable->rowCount(); row++ )
+      myTable->item( row, 1 )->setText("");
+    
+    int* aFirstColIds;
+    int* aLastColIds;
+    
+    switch (myType) {
+    case QUAD_EDGE:
+      aFirstColIds = FirstEdgeIds;
+      aLastColIds  = LastEdgeIds;
+      break;
+    case QUAD_TRIANGLE:
+      aFirstColIds = FirstTriangleIds;
+      aLastColIds  = LastTriangleIds;
+      break;
+    case QUAD_QUADRANGLE:
+      aFirstColIds = FirstQuadrangleIds;
+      aLastColIds  = LastQuadrangleIds;
+      break;
+    case QUAD_TETRAHEDRON:
+      aFirstColIds = FirstTetrahedronIds;
+      aLastColIds  = LastTetrahedronIds;
+      break;
+    case QUAD_PYRAMID:
+      aFirstColIds = FirstPyramidIds;
+      aLastColIds  = LastPyramidIds;
+      break;
+    case QUAD_PENTAHEDRON:
+      aFirstColIds = FirstPentahedronIds;
+      aLastColIds  = LastPentahedronIds;
+      break; 
+    case QUAD_HEXAHEDRON:
+      aFirstColIds = FirstHexahedronIds;
+      aLastColIds  = LastHexahedronIds;
+      break;
     }
+    
+    // fill the First and the Last columns
+    for (int i = 0, iEnd = myTable->rowCount(); i < iEnd; i++)
+      myTable->item( i, 0 )->setText( aListCorners[ aFirstColIds[i] ] );
+    
+    for (int i = 0, iEnd = myTable->rowCount(); i < iEnd; i++)
+      myTable->item( i, 2 )->setText( aListCorners[ aLastColIds[i] ] );
+  }
   else
-    {
-      // clear table
-      for ( int row = 0; row < myTable->rowCount(); row++ )
-        for ( int col = 0; col < myTable->columnCount(); col++ )
-	  if ( QTableWidgetItem* aTWI = myTable->item(row, col) ) aTWI->setText("");
-      
-      myTable->setEnabled( false );
-    }
+  {
+    // clear table
+    for ( int row = 0; row < myTable->rowCount(); row++ )
+      for ( int col = 0; col < myTable->columnCount(); col++ )
+	if ( QTableWidgetItem* aTWI = myTable->item(row, col) ) aTWI->setText("");
+    
+    myTable->setEnabled( false );
+  }
 }
 
 
@@ -1077,10 +1091,9 @@ void SMESHGUI_AddQuadraticElementDlg::UpdateTable( bool theConersValidity )
 //=================================================================================
 void SMESHGUI_AddQuadraticElementDlg::onCellDoubleClicked( int theRow, int theCol )
 {
-  if ( theCol == 1 )
-    myIsEditCorners = false;
-  
+  myIsEditCorners = false;
   displaySimulation();
+  updateButtons();
 }
 
 
@@ -1090,7 +1103,9 @@ void SMESHGUI_AddQuadraticElementDlg::onCellDoubleClicked( int theRow, int theCo
 //=================================================================================
 void SMESHGUI_AddQuadraticElementDlg::onCellTextChange(int theRow, int theCol)
 {
-  onTextChange( myTable->item(theRow, theCol)->text() );
+  myIsEditCorners = false;
+  displaySimulation();
+  updateButtons();
 }
 
 //=================================================================================
@@ -1107,4 +1122,11 @@ void SMESHGUI_AddQuadraticElementDlg::keyPressEvent( QKeyEvent* e )
     e->accept();
     ClickOnHelp();
   }
+}
+
+void SMESHGUI_AddQuadraticElementDlg::updateButtons()
+{
+  bool valid = IsValid();
+  buttonOk->setEnabled( valid );
+  buttonApply->setEnabled( valid );
 }

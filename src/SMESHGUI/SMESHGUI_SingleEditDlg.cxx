@@ -62,31 +62,20 @@
 #define MARGIN  11
 
 /*!
- *  Class       : SMESHGUI_DiagValidator
- *  Description : validate munual input of edge like "id1-id2"
- */
-class SMESHGUI_DiagValidator: public QValidator
+  \class BusyLocker
+  \brief Simple 'busy state' flag locker.
+  \internal
+*/
+
+class BusyLocker
 {
 public:
-  SMESHGUI_DiagValidator (QWidget* parent):
-    QValidator(parent) {}
-
-  State validate (QString& text, int& pos) const
-  {
-    text = text.trimmed();
-    text.replace(QRegExp("[^0-9]+"), "-");
-    if (text == "-")
-      text = "";
-    int ind = text.indexOf(QRegExp("-[0-9]+-"));
-    if (ind > 0) { // leave only two ids
-      ind = text.indexOf('-', ind + 1);
-      if (ind > 0)
-        text.truncate(ind);
-    }
-    if (pos > text.length())
-      pos = text.length();
-    return Acceptable;
-  }
+  //! Constructor. Sets passed boolean flag to \c true.
+  BusyLocker( bool& busy ) : myBusy( busy ) { myBusy = true; }
+  //! Destructor. Clear external boolean flag passed as parameter to the constructor to \c false.
+  ~BusyLocker() { myBusy = false; }
+private:
+  bool& myBusy; //! External 'busy state' boolean flag
 };
 
 /*!
@@ -138,7 +127,7 @@ QWidget* SMESHGUI_SingleEditDlg::createMainFrame (QWidget* theParent)
   QPushButton* aBtn = new QPushButton(aMainGrp);
   aBtn->setIcon(aPix);
   myEdge = new QLineEdit(aMainGrp);
-  myEdge->setValidator(new SMESHGUI_DiagValidator(this));
+  myEdge->setValidator(new QRegExpValidator(QRegExp("[\\d]*-[\\d]*"), this));
 
   aLay->addWidget(aLab);
   aLay->addWidget(aBtn);
@@ -155,7 +144,7 @@ QWidget* SMESHGUI_SingleEditDlg::createButtonFrame (QWidget* theParent)
 {
   QGroupBox* aFrame = new QGroupBox(theParent);
 
-  myOkBtn     = new QPushButton(tr("SMESH_BUT_OK"   ), aFrame);
+  myOkBtn     = new QPushButton(tr("SMESH_BUT_APPLY_AND_CLOSE"), aFrame);
   myApplyBtn  = new QPushButton(tr("SMESH_BUT_APPLY"), aFrame);
   myCloseBtn  = new QPushButton(tr("SMESH_BUT_CLOSE"), aFrame);
   myHelpBtn   = new QPushButton(tr("SMESH_BUT_HELP"),  aFrame);
@@ -339,6 +328,7 @@ static bool findTriangles (const SMDS_MeshNode *    theNode1,
 void SMESHGUI_SingleEditDlg::onTextChange (const QString& theNewText)
 {
   if (myBusy) return;
+  BusyLocker lock(myBusy);
 
   myOkBtn->setEnabled(false);
   myApplyBtn->setEnabled(false);
@@ -346,7 +336,6 @@ void SMESHGUI_SingleEditDlg::onTextChange (const QString& theNewText)
   // hilight entered edge
   if(myActor){
     if(SMDS_Mesh* aMesh = myActor->GetObject()->GetMesh()){
-      myBusy = true; // block onSelectionDone()
       Handle(SALOME_InteractiveObject) anIO = myActor->getIO();
       SALOME_ListIO aList;
       aList.Append(anIO);
@@ -355,42 +344,34 @@ void SMESHGUI_SingleEditDlg::onTextChange (const QString& theNewText)
       TColStd_IndexedMapOfInteger selectedIndices;
       TColStd_MapOfInteger newIndices;
       mySelector->GetIndex(anIO,selectedIndices);
-      myBusy = false;
 
-      QStringList aListId = theNewText.split("-", QString::SkipEmptyParts);
-      if (aListId.count() != 2)
+      int id1, id2;
+      if ( !getNodeIds(myEdge->text(), id1, id2) )
 	return;
 
-      int i;
-      bool allOk = true;
-      const SMDS_MeshNode* a2Nodes[2];
-      for (i = 0; i < aListId.count(); i++) {
-	if(const SMDS_MeshNode *aNode = aMesh->FindNode(aListId[ i ].toInt()))
-	  a2Nodes[ i ] = aNode;
-	else
-	  allOk = false;
-      }
-      
-      // find a triangle and an edge nb
-      const SMDS_MeshElement* tria[2];
-      allOk &= a2Nodes[0] != a2Nodes[1] && findTriangles(a2Nodes[0],a2Nodes[1],tria[0],tria[1]);
-      myBusy = true; // block onSelectionDone()
-      if(allOk)
-      {
-	newIndices.Add(tria[0]->GetID());
+      const SMDS_MeshNode* aNode1 = aMesh->FindNode( id1 );
+      const SMDS_MeshNode* aNode2 = aMesh->FindNode( id2 );
 
-	const SMDS_MeshNode* a3Nodes [3];
+      if ( !aNode1 || !aNode2 || aNode1 == aNode2 )
+	return;
+
+      // find a triangle and an edge index
+      const SMDS_MeshElement* tria1;
+      const SMDS_MeshElement* tria2;
+
+      if ( findTriangles(aNode1,aNode2,tria1,tria2) )
+      {
+	newIndices.Add(tria1->GetID());
+
+	const SMDS_MeshNode* a3Nodes[3];
 	SMDS_ElemIteratorPtr it;
-	int edgeInd = 2;
-	for (i = 0, it = tria[0]->nodesIterator(); it->more(); i++) {
+	int edgeInd = 2, i;
+	for (i = 0, it = tria1->nodesIterator(); it->more(); i++) {
 	  a3Nodes[ i ] = static_cast<const SMDS_MeshNode*>(it->next());
-	  if (i > 0) {
-	    allOk = (a3Nodes[ i ] == a2Nodes[ 0 ] && a3Nodes[ i - 1] == a2Nodes[ 1 ]) ||
-	      (a3Nodes[ i ] == a2Nodes[ 1 ] && a3Nodes[ i - 1] == a2Nodes[ 0 ]);
-	    if (allOk) {
-	      edgeInd = i - 1;
-	      break;
-	    }
+	  if (i > 0 && ( a3Nodes[ i ] == aNode1 && a3Nodes[ i - 1] == aNode2 ||
+			 a3Nodes[ i ] == aNode2 && a3Nodes[ i - 1] == aNode1 ) ) {
+	    edgeInd = i - 1;
+	    break;
 	  }
 	}
 	newIndices.Add(-edgeInd-1);
@@ -400,8 +381,6 @@ void SMESHGUI_SingleEditDlg::onTextChange (const QString& theNewText)
       }
       mySelector->AddOrRemoveIndex(anIO,newIndices, false);
       SMESH::GetViewWindow(mySMESHGUI)->highlight( anIO, true, true );
-
-      myBusy = false;
     }
   }
 }
@@ -413,6 +392,7 @@ void SMESHGUI_SingleEditDlg::onTextChange (const QString& theNewText)
 void SMESHGUI_SingleEditDlg::onSelectionDone()
 {
   if (myBusy) return;
+  BusyLocker lock(myBusy);
 
   int anId1 = 0, anId2 = 0;
 
@@ -438,9 +418,7 @@ void SMESHGUI_SingleEditDlg::onSelectionDone()
 	  findTriangles( aMesh->FindNode( anId1 ), aMesh->FindNode( anId2 ), tria[0],tria[1] ) )
       {
 	QString aText = QString("%1-%2").arg(anId1).arg(anId2);
-	myBusy = true;
 	myEdge->setText(aText);
-	myBusy = false;
 	
 	myOkBtn->setEnabled(true);
 	myApplyBtn->setEnabled(true);

@@ -230,8 +230,8 @@ namespace SMESH
 			       QObject::tr("SMESH_VISU_PROBLEM"));
     } catch (...) {
       // no more memory at all: last resort
-      cout<< "SMESHGUI_VTKUtils::OnVisuException(), exception even at showing a message!!!" <<endl;
-      cout<< "Try to remove all visual data..." <<endl;
+      MESSAGE_BEGIN ( "SMESHGUI_VTKUtils::OnVisuException(), exception even at showing a message!!!" <<
+    		      std::endl << "Try to remove all visual data..." );
       if (theVISU_MemoryReserve) {
         delete theVISU_MemoryReserve;
         theVISU_MemoryReserve = 0;
@@ -239,7 +239,7 @@ namespace SMESH
       RemoveAllObjectsWithActors();
       SUIT_MessageBox::warning(SMESHGUI::desktop(), QObject::tr("SMESH_WRN_WARNING"),
 			       QObject::tr("SMESH_VISU_PROBLEM_CLEAR"));
-      cout<< "...done" << endl;
+      MESSAGE_END ( "...done" );
     }
   }
   //================================================================================
@@ -326,7 +326,7 @@ namespace SMESH
       }
       catch (...) {
 #ifdef _DEBUG_
-        cout << "Exception in SMESHGUI_VTKUtils::GetVisualObj()" << endl;
+        MESSAGE ( "Exception in SMESHGUI_VTKUtils::GetVisualObj()" );
 #endif
         RemoveVisualObjectWithActors( theEntry ); // remove this object
         OnVisuException();
@@ -343,8 +343,8 @@ namespace SMESH
       int usedMB = aVisualObj->GetUnstructuredGrid()->GetActualMemorySize() / 1024;
       if ( freeMB > 0 && usedMB * 30 > freeMB ) {
 #ifdef _DEBUG_
-        cout << "SMESHGUI_VTKUtils::GetVisualObj(), freeMB=" << freeMB
-             << ", usedMB=" << usedMB<< endl;
+        MESSAGE ( "SMESHGUI_VTKUtils::GetVisualObj(), freeMB=" << freeMB
+               << ", usedMB=" << usedMB );
 #endif
         bool continu = false;
         if ( usedMB * 10 > freeMB )
@@ -451,7 +451,7 @@ namespace SMESH
       }
       catch (...) {
 #ifdef _DEBUG_
-        cout << "Exception in SMESHGUI_VTKUtils::RepaintCurrentView()" << endl;
+        MESSAGE ( "Exception in SMESHGUI_VTKUtils::RepaintCurrentView()" );
 #endif
         OnVisuException();
       }
@@ -469,7 +469,7 @@ namespace SMESH
     }
     catch (...) {
 #ifdef _DEBUG_
-        cout << "Exception in SMESHGUI_VTKUtils::RepaintViewWindow(SVTK_ViewWindow)" << endl;
+      MESSAGE ( "Exception in SMESHGUI_VTKUtils::RepaintViewWindow(SVTK_ViewWindow*)" );
 #endif
       OnVisuException();
     }
@@ -486,7 +486,7 @@ namespace SMESH
     }
     catch (...) {
 #ifdef _DEBUG_
-        cout << "Exception in SMESHGUI_VTKUtils::RenderViewWindow(SVTK_ViewWindow)" << endl;
+      MESSAGE ( "Exception in SMESHGUI_VTKUtils::RenderViewWindow(SVTK_ViewWindow*)" );
 #endif
       OnVisuException();
     }
@@ -503,7 +503,7 @@ namespace SMESH
       }
       catch (...) {
 #ifdef _DEBUG_
-        cout << "Exception in SMESHGUI_VTKUtils::FitAll()" << endl;
+        MESSAGE ( "Exception in SMESHGUI_VTKUtils::FitAll()" );
 #endif
         OnVisuException();
       }
@@ -609,7 +609,7 @@ namespace SMESH
       }
       catch (...) {
 #ifdef _DEBUG_
-        cout << "Exception in SMESHGUI_VTKUtils::DisplayActor()" << endl;
+        MESSAGE ( "Exception in SMESHGUI_VTKUtils::DisplayActor()" );
 #endif
         OnVisuException();
       }

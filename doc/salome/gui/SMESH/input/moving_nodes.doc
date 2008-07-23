@@ -23,7 +23,7 @@ The following dialog box shall appear:
 select this node in the 3D viewer. The coordinates of your node will
 be automatically displayed in the \b Coordinates set of fields.</li>
 <li>Set new coordinates for your node in the \b Coordinates set of fields.</li>
-<li>Click the \b Apply or \b OK button.</li>
+<li>Click the \b Apply or <b>Apply and Close</b> button.</li>
 </ol>
 
 \image html moving_nodes1.png

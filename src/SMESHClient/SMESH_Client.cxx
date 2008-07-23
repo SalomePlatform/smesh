@@ -623,9 +623,11 @@ SMESH_Client::SMESH_Client(CORBA::ORB_ptr theORB,
     // just set client mesh pointer to server mesh pointer
     //SMESH_Mesh* aMesh = reinterpret_cast<SMESH_Mesh*>(theMesh->GetMeshPtr());
     CORBA::LongLong pointeur = theMesh->GetMeshPtr();
-    cerr <<"SMESH_Client::SMESH_Client pointeur " << pointeur << endl;
+    if( MYDEBUG )
+      MESSAGE("SMESH_Client::SMESH_Client pointeur "<<pointeur);
     SMESH_Mesh* aMesh = reinterpret_cast<SMESH_Mesh*> (pointeur);
-    cerr <<"SMESH_Client::SMESH_Client aMesh " << aMesh << endl;
+    if ( MYDEBUG )
+      MESSAGE("SMESH_Client::SMESH_Client aMesh "<<aMesh);
     if(aMesh->GetMeshDS()->IsEmbeddedMode()){
       mySMESHDSMesh = aMesh->GetMeshDS();
       mySMDSMesh = mySMESHDSMesh;

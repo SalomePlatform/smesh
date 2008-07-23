@@ -253,7 +253,7 @@ QWidget* SMESHGUI_FilterLibraryDlg::createButtonFrame (QWidget* theParent)
   aLay->setMargin(MARGIN);
   aLay->setSpacing(SPACING);
 
-  myButtons[ BTN_OK    ] = new QPushButton(tr("SMESH_BUT_OK"   ), aGrp);
+  myButtons[ BTN_OK    ] = new QPushButton(tr("SMESH_BUT_APPLY_AND_CLOSE"), aGrp);
   myButtons[ BTN_Apply ] = new QPushButton(tr("SMESH_BUT_APPLY"), aGrp);
 
   myButtons[ BTN_Cancel ] = new QPushButton(tr("SMESH_BUT_CANCEL"), aGrp);

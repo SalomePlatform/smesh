@@ -170,6 +170,8 @@ libSMESH_la_CPPFLAGS = \
 	$(BOOST_CPPFLAGS) \
 	$(CORBA_CXXFLAGS) \
 	$(CORBA_INCLUDES) \
+	$(MED2_INCLUDES) \
+	$(HDF5_INCLUDES) \
 	-I$(srcdir)/../OBJECT \
 	-I$(srcdir)/../SMESHFiltersSelection \
 	-I$(srcdir)/../SMDS \

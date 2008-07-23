@@ -306,8 +306,9 @@ void SMESHGUI_ShapeByMeshOp::commitOperation()
     if (aListId.count() == 1)
       {
 	int elemID = (aListId.first()).toInt();
-	myGeomObj = SMESHGUI::GetSMESHGen()->GetGeometryByMeshElement
-	  ( myMesh.in(), elemID, myDlg->myGeomName->text().toLatin1().data());
+	myGeomObj = GEOM::GEOM_Object::_duplicate(
+	    SMESHGUI::GetSMESHGen()->GetGeometryByMeshElement
+	  ( myMesh.in(), elemID, myDlg->myGeomName->text().toLatin1().constData()) );
       }
     else
       {

@@ -76,6 +76,7 @@ private:
   void                        displaySimulation();
   void                        UpdateTable( bool = true );
   bool                        IsValid();
+  void                        updateButtons();
 
   SMESHGUI*                   mySMESHGUI;       /* Current SMESHGUI object */
   LightApp_SelectionMgr*      mySelectionMgr;   /* User shape selection */

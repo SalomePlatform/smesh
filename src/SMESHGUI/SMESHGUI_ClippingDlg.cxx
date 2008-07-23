@@ -276,7 +276,7 @@ SMESHGUI_ClippingDlg::SMESHGUI_ClippingDlg( SMESHGUI* theModule ):
   GroupButtonsLayout->setSpacing(SPACING);
   GroupButtonsLayout->setMargin(MARGIN);
   
-  buttonOk = new QPushButton(tr("SMESH_BUT_OK"), GroupButtons);
+  buttonOk = new QPushButton(tr("SMESH_BUT_APPLY_AND_CLOSE"), GroupButtons);
   buttonOk->setAutoDefault(true);
   buttonOk->setDefault(true);
   buttonApply = new QPushButton(tr("SMESH_BUT_APPLY"), GroupButtons);
@@ -344,7 +344,9 @@ SMESHGUI_ClippingDlg::~SMESHGUI_ClippingDlg()
 {
   // no need to delete child widgets, Qt does it all for us
   std::for_each(myPlanes.begin(),myPlanes.end(),TSetVisiblity(false));
-  SMESH::RenderViewWindow(SMESH::GetViewWindow(mySMESHGUI));
+  
+  if (SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow(mySMESHGUI))
+    SMESH::RenderViewWindow(aViewWindow);
 }
 
 double SMESHGUI_ClippingDlg::getDistance() const

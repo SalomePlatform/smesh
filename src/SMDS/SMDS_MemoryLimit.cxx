@@ -5,7 +5,7 @@
 // Executable to find out a lower RAM limit (MB), i.e. at what size of freeRAM
 // reported by sysinfo, no more memory can be allocated.
 // This is not done inside a function of SALOME because allocated memory is not returned
-// to the system
+// to the system. (PAL16631)
 
 #ifndef WIN32
 #include <sys/sysinfo.h>
@@ -15,7 +15,9 @@
 #include <iostream>
 #endif
 
-int main (int argc, char ** argv) {
+int main (int argc, char ** argv)
+{
+  // To better understand what is going on here, consult bug [SALOME platform 0019911]
 #ifndef WIN32
   struct sysinfo si;
   int err = sysinfo( &si );
@@ -23,8 +25,11 @@ int main (int argc, char ** argv) {
     return -1;
   unsigned long freeRamKb = ( si.freeram  * si.mem_unit ) / 1024;
 
-  const unsigned long stepKb = 8; // less nb leads to hung up on Mandriva2006 without swap
-  // (other platforms not tested w/o swap) 
+  // totat RAM size in Gb, float is in order not to have 1 instead of 1.9
+  float totalramGb = float( si.totalram * si.mem_unit ) / 1024 / 1024 / 1024;
+
+  // nb Kbites to allocate at one step. Small nb leads to hung up
+  const int stepKb = int( 5 * totalramGb );
 
   unsigned long nbSteps = freeRamKb / stepKb * 2;
   try {

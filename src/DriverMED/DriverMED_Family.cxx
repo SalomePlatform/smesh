@@ -318,9 +318,18 @@ DriverMED_Family::GetFamilyInfo(const MED::PWrapper& theWrapper,
   for(; aGrIter != myGroupNames.end(); aGrIter++){
     aStr << "_" << *aGrIter;
   }
+  string aValue = aStr.str();
+  // PAL19785,0019867 - med forbids whitespace to be the last char in the name
+  int maxSize;
+  if ( theWrapper->GetVersion() == MED::eV2_1 )
+    maxSize = MED::GetNOMLength<MED::eV2_1>();
+  else
+    maxSize = MED::GetNOMLength<MED::eV2_2>();
+  int lastCharPos = min( maxSize, (int) aValue.size() ) - 1;
+  while ( isspace( aValue[ lastCharPos ] ))
+    aValue.resize( lastCharPos-- );
 
   MED::PFamilyInfo anInfo;
-  string aValue = aStr.str();
   if(myId == 0 || myGroupAttributVal == 0){
     anInfo = theWrapper->CrFamilyInfo(theMeshInfo,
 				      aValue,
@@ -382,7 +391,17 @@ void DriverMED_Family::Init (SMESHDS_GroupBase* theGroup)
   myGroupNames.insert(string(theGroup->GetStoreName()));
 
   Quantity_Color aColor = theGroup->GetColor();
-  myGroupAttributVal = aColor.Hue();
+  double aRed = aColor.Red();
+  double aGreen = aColor.Green();
+  double aBlue = aColor.Blue();
+  int aR = int( aRed*255   );
+  int aG = int( aGreen*255 );
+  int aB = int( aBlue*255  );
+//   cout << "aRed = " << aR << endl;
+//   cout << "aGreen = " << aG << endl;
+//   cout << "aBlue = " << aB << endl;
+  myGroupAttributVal = (int)(aR*1000000 + aG*1000 + aB);
+  //cout << "myGroupAttributVal = " << myGroupAttributVal << endl;
 }
 
 //=============================================================================

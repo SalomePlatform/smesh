@@ -337,8 +337,8 @@ gp_XY SMESH_MesherHelper::GetNodeUV(const TopoDS_Face&   F,
           ok = ( V == vert.Current() );
         if ( !ok ) {
 #ifdef _DEBUG_
-          cout << "SMESH_MesherHelper::GetNodeUV(); Vertex " << vertexID
-               << " not in face " << GetMeshDS()->ShapeToIndex( F ) << endl;
+          MESSAGE ( "SMESH_MesherHelper::GetNodeUV(); Vertex " << vertexID
+               << " not in face " << GetMeshDS()->ShapeToIndex( F ) );
 #endif
           // get UV of a vertex closest to the node
           double dist = 1e100;

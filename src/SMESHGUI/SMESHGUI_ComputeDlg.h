@@ -42,6 +42,7 @@ class QPushButton;
 class QTableWidget;
 class QLabel;
 class SMESHGUI_ComputeDlg;
+class SMESHGUI_MeshEditPreview;
 
 namespace SMESH
 {
@@ -71,6 +72,7 @@ protected slots:
 private slots:
   void                           onPreviewShape();
   void                           onPublishShape();
+  void                           onShowBadMesh();
   void                           currentCellChanged();
 
 private:
@@ -78,8 +80,10 @@ private:
 
   SMESHGUI_ComputeDlg*           myDlg;
 
+  SMESH::SMESH_Mesh_var          myMesh;
   GEOM::GEOM_Object_var          myMainShape;
   SMESH::TShapeDisplayer*        myTShapeDisplayer;
+  SMESHGUI_MeshEditPreview*      myBadMeshDisplayer;
 };
 
 /*!
@@ -151,6 +155,7 @@ private:
   QTableWidget*                myTable;
   QPushButton*                 myShowBtn;
   QPushButton*                 myPublishBtn;
+  QPushButton*                 myBadMeshBtn;
 
   SMESHGUI_MeshInfosBox*       myBriefInfo;
   SMESHGUI_MeshInfosBox*       myFullInfo;

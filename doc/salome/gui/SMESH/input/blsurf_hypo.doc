@@ -1,0 +1,221 @@
+/*!
+
+\page blsurf_hypo_page BLSURF Parameters hypothesis
+
+\n BLSURF Parameters hypothesis works only with <b>BLSURF</b> 2d
+algorithm. This algorithm is a commercial software.
+
+\image html blsurf_parameters.png
+
+<ul>
+<li><b>Name</b> - allows to define the name of the hypothesis (BLSURF
+Parameters by default).</li>
+
+<li><b>Physical Mesh</b> - if is set to "Custom", allows to set size
+of mesh elements to generate in <b>User size</b> field.
+</li>
+
+<li><b>User size</b> - size of mesh elements to generate. </li>
+
+<li><b>Max Physical Size</b> - is an upper limit of mesh element size. </li>
+
+<li><b>Min Physical Size</b> - is a lower limit of mesh element size. </li>
+
+<li><b>Geometrical mesh</b> - if is set to "Custom", allows to set
+mesh element deflection from curves and surfaces and element
+size change rate in <b>Angle Mesh S</b>, <b>Angle Mesh C</b> and
+<b>Gradation</b> fields correspondingly. These fields control
+computation of element size, so called <i>geometrical size</i>, conform to
+the surface geometry considering local curvatures. \n
+The eventual element size at each point will be minimum of <b>User
+size</b>, if given, and the <i>geometrical size</i>. </li>
+
+<li><b>Angle Mesh S</b> - maximal allowed angle in degrees at a mesh
+node between the mesh face and the tangent to the geometrical surface. </li>
+
+<li><b>Angle Mesh C</b> - maximal allowed angle in degrees at a mesh
+node between the mesh edge and the tangent to the geometrical curve. </li>
+
+<li><b>Max Geometrical Size</b> - is an upper limit of <i>geometrical size</i>.</li>
+
+<li><b>Min Geometrical Size</b> - is a lower limit of <i>geometrical size</i>.</li>
+
+<li><b>Gradation</b> - maximal allowed ratio between the lengths of
+two adjacent edges. </li>
+
+<li><b>Allow Quadrangles</b> - to create quadrilateral elements.</li>
+
+<li><b>Patch independent</b> - if this box is checked on, geometrical
+edges are not respected and all geometrical faces are meshed as one
+hyper-face.</li>
+
+\image html blsurf_parameters_advanced.png
+
+<li><b>Topology</b> - allows creation of a conform mesh on a shell of
+not sewed faces. 
+<ul>
+  <li>"From CAD" means that mesh conformity is assured by conformity
+  of a shape.</li>
+  <li>"Pre-process" and "Pre-process++" let BLSURF software
+  pre-process the geometrical model to eventually produce a conform
+  mesh. </li>
+</ul>
+
+<li><b>Verbosity level</b> - Defines the percentage of "verbosity" of
+BLSURF [0-100].</li>
+
+<li><b>Add option</b> - provides a choice of multiple advanced
+options, each of which, if selected, appear in a table where you can
+enter a value of the option and edit it later.</li>
+
+<li><b>Clear option</b> - removes option selected in the table.
+
+</ul>
+
+\n
+Commonly usable options are following. The name <i>diag</i> stands there for
+the diagonal of the bounding box of the geometrical object to mesh.
+
+<ul>
+<li><b>topo_eps1</b> (real) - is the tolerance level inside a CAD
+patch. By default is equal to <i>diag</i> × 10-4. This tolerance is used to
+identify nodes to merge within one geometrical face when \b Topology
+option is to pre-process. Default is <i>diag</i>/10.0.</li>
+
+<li><b>topo_eps2</b> (real) - is the tolerance level between two CAD
+patches. By default is equal to <i>diag</i> × 10-4. This tolerance is used to
+identify nodes to merge over different geometrical faces when
+\b Topology option is to pre-process. Default is <i>diag</i>/10.0.</li>
+
+<li>\b LSS (real) - is an abbreviation for "length of sub-segment". It is
+a maximal allowed length of a mesh edge. Default is 0.5.</li>
+
+<li>\b frontal (integer)
+<ul>
+<li> 1 - the mesh generator inserts points with an advancing front method.</li>
+<li> 0 - it inserts them with an algebraic method (on internal edges). This method is
+slightly faster but generates less regular meshes. </li>
+</ul>
+Default is 0.</li>
+
+<li>\b hinterpol_flag (integer) - determines the computation of an
+interpolated value <i>v</i> between two points <i>P1</i> and <i>P2</i> on a
+curve. Let <i>h1</i> be the value at point <i>P1,</i> <i>h2</i> be the value at point
+<i>P2,</i> and <i>t</i> be a parameter varying from 0 to 1 when moving from <i>P1
+to</i> <i>P2</i> . 
+<ul>
+<li>0 - the interpolation is linear: <i>v = h1 + t (h2 - h1 )</i></li>
+<li>1 - the interpolation is geometric: <i>v = h1 * pow( h2/h1, t)</i></li>
+<li>2 - the interpolation is sinusoidal: <i>v = (h1+h2)/2 +
+(h1-h2)/2*cos(PI*t)</i></li>
+</ul>
+Default is 0.</li>
+
+<li>\b hmean_flag (integer) - determines the computation of the mean of several
+values:<ul>
+<li>-1 - the minimum is computed.</li>
+<li>0 or 2 - the arithmetic mean computed.
+<li>1 - the geometric mean is computed.</li>
+</ul>
+Default is 0.</li>
+
+<li>\b CheckAdjacentEdges, \b CheckCloseEdges and \b CheckWellDefined
+(integers) - give number of calls of equally named subroutines the
+purpose of which is to improve the mesh of domains having narrow
+parts. At each iteration,\b CheckCloseEdges decreases the sizes of the
+edges when two boundary curves are neighboring,\b CheckAdjacentEdges
+balances the sizes of adjacent edges, and \b CheckWellDefined checks if
+the parametric domain is well defined. Default values are 0.</li>
+
+
+<li>\b CoefRectangle (real)- defines the relative thickness of the rectangles
+used by subroutine \b CheckCloseEdges (see above). Default is 0.25.</li>
+
+<li>\b eps_collapse (real) - if is more than 0.0, BLSURF removes
+curves whose lengths are less than \b eps_collapse. Here, to obtain an
+approximate value of the length of a curve, the latter is arbitrarily
+split into 20 edges. Default is 0.0.</li>
+
+<li>\b eps_ends (real) - is used to detect curves whose lengths are very
+small, which sometimes constitutes an error. A message is printed
+if<i> fabs(P2-P1) < eps_ends</i>, where <i>P1</i> and <i>P2</i> are the
+extremities of a curve. Default is <i>diag</i>/500.0.</li>
+
+<li>\b prefix (char) - is a prefix of the files generated by
+BLSURF. Default is "x".</li>
+
+<li>\b refs (integer) - reference of a surface, used when exporting
+files. Default is 1.</li>
+</ul>
+
+\n
+The following advanced options are not documented and you can use them
+at your own risk.
+\n\n Interger variables:
+<ul>
+<li>    addsurf_ivertex</li>
+<li>    background     </li>
+<li>    coiter         </li>
+<li>    communication  </li>
+<li>    decim          </li>
+<li>    export_flag    </li>
+<li>    file_h         </li>
+<li>    gridnu         </li>
+<li>    gridnv         </li>
+<li>    intermedfile   </li>
+<li>    memory         </li>
+<li>    normals        </li>
+<li>    optim          </li>
+<li>    pardom_flag    </li>
+<li>    pinch          </li>
+<li>    rigid          </li>
+<li>    surforient     </li>
+<li>    tconf          </li>
+<li>    topo_collapse  </li>
+</ul>
+Real variables:
+<ul>
+<li>    addsurf_angle  </li>
+<li>    addsurf_R      </li>
+<li>    addsurf_H      </li>
+<li>    addsurf_FG     </li>
+<li>    addsurf_r      </li>
+<li>    addsurf_PA     </li>
+<li>    angle_compcurv </li>
+<li>    angle_ridge    </li>
+<li>    eps_pardom     </li>
+</ul>
+String variables:
+<ul>
+<li>    export_format  </li>
+<li>    export_option  </li>
+<li>    import_option  </li>  
+</ul>
+
+
+\n
+Currently BLSURF plugin has the following limitations.
+<ul>
+  <li>Mesh contains inverted elements, if it is based on shape,
+      consisting of more than one face (box, cone, torus...) and if
+      the option "Allow Quadrangles (Test)" was checked before
+      computation.</li>
+
+  <li>SIGFPE exception is raised at trying to compute mesh, based on
+      box, with checked option "Patch independent".</li>
+
+  <li>It has been found out that BLSURF algorithm can't be used as a
+      local algorithm (on sub-meshes) and as a provider of low-level
+      mesh for some 3D algorithms because BLSURF mesher (and
+      consequently plugin) does not provide information on node
+      parameters on edges (U) and faces (U,V). For example the
+      following combinations of algorithms are impossible:
+      <ul>
+        <li> global MEFISTO or Quadrangle(mapping) + local BLSURF;</li>
+        <li> BLSUFR + Projection 2D from faces meshed by BLSURF;</li>
+        <li> local BLSURF + Extrusion 3D;</li>
+      </ul>
+      </li>
+</ul>
+
+*/

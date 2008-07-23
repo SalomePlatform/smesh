@@ -103,6 +103,7 @@ public :
   void                            EmitSignalStudyFrameChanged();
   void                            EmitSignalCloseAllDialogs();
 
+  virtual void                    contextMenuPopup( const QString&, QMenu*, QString& );
   virtual void                    createPreferences();
   virtual void                    preferencesChanged( const QString&, const QString& );
   
@@ -140,6 +141,8 @@ protected:
 						   const int = -1 );
   
   virtual LightApp_Operation*     createOperation( const int ) const;
+
+  virtual bool                    isSelectionCompatible();
 
 private:
   void                            OnEditDelete();

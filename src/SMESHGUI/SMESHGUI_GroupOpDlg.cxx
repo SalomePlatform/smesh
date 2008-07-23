@@ -171,7 +171,7 @@ QWidget* SMESHGUI_GroupOpDlg::createButtonFrame (QWidget* theParent)
 {
   QGroupBox* aFrame = new QGroupBox(theParent);
 
-  myOkBtn    = new QPushButton(tr("SMESH_BUT_OK"   ), aFrame);
+  myOkBtn    = new QPushButton(tr("SMESH_BUT_APPLY_AND_CLOSE"), aFrame);
   myApplyBtn = new QPushButton(tr("SMESH_BUT_APPLY"), aFrame);
   myCloseBtn = new QPushButton(tr("SMESH_BUT_CLOSE"), aFrame);
   myHelpBtn  = new QPushButton(tr("SMESH_BUT_HELP"),  aFrame);

@@ -222,7 +222,7 @@ public:
   void                      Init( const int );
 
   void                      SetSelection();
-  void                      SetMesh( SMESH::SMESH_Mesh_ptr );
+  void                      SetMesh (SMESH::SMESH_Mesh_var);
   void                      SetSourceWg( QWidget* );
 
   static SMESH::Filter::Criterion createCriterion();
@@ -284,7 +284,7 @@ private:
   SMESHGUI*                 mySMESHGUI;
   LightApp_SelectionMgr*    mySelectionMgr;
   SVTK_Selector*            mySelector;
-  SMESH::SMESH_Mesh_ptr     myMesh;
+  SMESH::SMESH_Mesh_var     myMesh;
   QWidget*                  mySourceWg;
 
   SALOME_DataMapOfIOMapOfInteger myIObjects;

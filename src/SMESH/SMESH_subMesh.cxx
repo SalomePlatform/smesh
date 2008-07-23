@@ -497,16 +497,9 @@ const TopoDS_Shape & SMESH_subMesh::GetSubShape() const
 bool SMESH_subMesh::CanAddHypothesis(const SMESH_Hypothesis* theHypothesis) const
 {
   int aHypDim   = theHypothesis->GetDim();
-  if(_father->HasShapeToMesh()) {
-    int aShapeDim = SMESH_Gen::GetShapeDim(_subShape);
-    if ( aHypDim <= aShapeDim )
-      return true;
-  }
-  else
-    //Only 3D hypothesis may be assigned to the mesh w/o geometry
-    return aHypDim == 3;
-//   if ( aHypDim < aShapeDim )
-//     return ( _father->IsMainShape( _subShape ));
+  int aShapeDim = SMESH_Gen::GetShapeDim(_subShape);
+  if ( aHypDim <= aShapeDim )
+    return true;
 
   return false;
 }
@@ -607,9 +600,8 @@ SMESH_Hypothesis::Hypothesis_Status
     // check if a shape needed by algo is present
     // -------------------------------------------
     algo = static_cast< SMESH_Algo* >( anHyp );
-    if(_father->GetShapeToMesh() != SMESH_Mesh::PseudoShape())
-      if ( !_father->HasShapeToMesh() && algo->NeedShape() )
-        return SMESH_Hypothesis::HYP_BAD_GEOMETRY;
+    if ( !_father->HasShapeToMesh() && algo->NeedShape() )
+      return SMESH_Hypothesis::HYP_NEED_SHAPE;
     // ----------------------
     // check mesh conformity
     // ----------------------
@@ -625,17 +617,6 @@ SMESH_Hypothesis::Hypothesis_Status
     if ( ! CanAddHypothesis( anHyp )) // check dimension
       return SMESH_Hypothesis::HYP_BAD_DIM;
 
-    if(anHyp->GetDim() == 3 && !_father->HasShapeToMesh()
-       && event == ADD_ALGO) {
-      //Only NETGEN_3D and GHS3D_3D can be assigned to the Mesh w/o geometryy
-      bool isNetgen3D = (strcmp( "NETGEN_3D", anHyp->GetName()) == 0);
-      bool  isGhs3d = (strcmp( "GHS3D_3D", anHyp->GetName()) == 0);
-      if( !isNetgen3D && !isGhs3d)
-        return SMESH_Hypothesis::HYP_BAD_DIM;
-    }
-      
-
-    
     if ( /*!anHyp->IsAuxiliary() &&*/ GetSimilarAttached( _subShape, anHyp ) )
       return SMESH_Hypothesis::HYP_ALREADY_EXIST;
 
@@ -1223,7 +1204,12 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
     _computeState = READY_TO_COMPUTE;
     SMESHDS_SubMesh* smDS = GetSubMeshDS();
     if ( smDS && smDS->NbNodes() ) {
-      _computeState = COMPUTE_OK;
+      if ( event == CLEAN ) {
+        CleanDependants();
+        cleanSubMesh( this );
+      }
+      else
+        _computeState = COMPUTE_OK;
     }
     else if ( event == COMPUTE && !_alwaysComputed ) {
       const TopoDS_Vertex & V = TopoDS::Vertex( _subShape );
@@ -1309,9 +1295,14 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
           SetAlgoState(MISSING_HYP);
           break;
         }
+        TopoDS_Shape shape = _subShape;
         // check submeshes needed
         if (_father->HasShapeToMesh() ) {
-          bool subComputed = SubMeshesComputed();
+          bool subComputed = false;
+          if (!algo->OnlyUnaryInput())
+            shape = GetCollection( gen, algo, subComputed );
+          else
+            subComputed = SubMeshesComputed();
           ret = ( algo->NeedDescretBoundary() ? subComputed :
                   ( !subComputed || _father->IsNotConformAllowed() ));
           if (!ret) {
@@ -1329,7 +1320,6 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
         ret = false;
         _computeState = FAILED_TO_COMPUTE;
         _computeError = SMESH_ComputeError::New(COMPERR_OK,"",algo);
-        TopoDS_Shape shape = _subShape;
         try {
 #if (OCC_VERSION_MAJOR << 16 | OCC_VERSION_MINOR << 8 | OCC_VERSION_MAINTENANCE) > 0x060100
           OCC_CATCH_SIGNALS;
@@ -1346,16 +1336,13 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
           }
           else
           {
-            if (!algo->OnlyUnaryInput()) {
-              shape = GetCollection( gen, algo );
-            }
             ret = algo->Compute((*_father), shape);
           }
           if ( !ret )
             _computeError = algo->GetComputeError();
         }
         catch ( std::bad_alloc& exc ) {
-          printf("std::bad_alloc thrown inside algo->Compute()\n");
+          MESSAGE("std::bad_alloc thrown inside algo->Compute()");
           if ( _computeError ) {
             _computeError->myName = COMPERR_MEMORY_PB;
             //_computeError->myComment = exc.what();
@@ -1364,7 +1351,7 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
           throw exc;
         }
         catch ( Standard_OutOfMemory& exc ) {
-          printf("Standard_OutOfMemory thrown inside algo->Compute()\n");
+          MESSAGE("Standard_OutOfMemory thrown inside algo->Compute()");
           if ( _computeError ) {
             _computeError->myName = COMPERR_MEMORY_PB;
             //_computeError->myComment = exc.what();
@@ -1505,6 +1492,9 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
     switch (event)
     {
     case MODIF_ALGO_STATE:
+      algo = gen->GetAlgo((*_father), _subShape);
+      if (algo && !algo->NeedDescretBoundary())
+        CleanDependsOn(); // clean sub-meshes with event CLEAN
       if (_algoState == HYP_OK)
         _computeState = READY_TO_COMPUTE;
       else
@@ -1613,15 +1603,15 @@ bool SMESH_subMesh::CheckComputeError(SMESH_Algo* theAlgo, const TopoDS_Shape& t
         text << " \"" << _computeError->myComment << "\"";
 
 #ifdef _DEBUG_
-      cout << text << endl;
+      MESSAGE_BEGIN ( text );
       // Show vertices location of a failed shape
       TopTools_IndexedMapOfShape vMap;
       TopExp::MapShapes( _subShape, TopAbs_VERTEX, vMap );
-      cout << "Subshape vertices " << ( vMap.Extent()>10 ? "(first 10):" : ":") << endl;
+      MESSAGE_ADD ( "Subshape vertices " << ( vMap.Extent()>10 ? "(first 10):" : ":") );
       for ( int iv = 1; iv <= vMap.Extent() && iv < 11; ++iv ) {
         gp_Pnt P( BRep_Tool::Pnt( TopoDS::Vertex( vMap( iv ) )));
-        cout << "#" << _father->GetMeshDS()->ShapeToIndex( vMap( iv )) << " ";
-        cout << P.X() << " " << P.Y() << " " << P.Z() << " " << endl;
+        MESSAGE_ADD ( "#" << _father->GetMeshDS()->ShapeToIndex( vMap( iv )) << " "
+                   << P.X() << " " << P.Y() << " " << P.Z() << " " );
       }
 #else
       INFOS( text );
@@ -1777,9 +1767,13 @@ void SMESH_subMesh::RemoveSubMeshElementsAndNodes()
 //           meshed at once along with _subShape
 //=======================================================================
 
-TopoDS_Shape SMESH_subMesh::GetCollection(SMESH_Gen * theGen, SMESH_Algo* theAlgo)
+TopoDS_Shape SMESH_subMesh::GetCollection(SMESH_Gen * theGen,
+                                          SMESH_Algo* theAlgo,
+                                          bool &      theSubComputed)
 {
   MESSAGE("SMESH_subMesh::GetCollection");
+
+  theSubComputed = SubMeshesComputed();
 
   TopoDS_Shape mainShape = _father->GetMeshDS()->ShapeToMesh();
 
@@ -1812,6 +1806,8 @@ TopoDS_Shape SMESH_subMesh::GetCollection(SMESH_Gen * theGen, SMESH_Algo* theAlg
       if (anAlgo == theAlgo &&
           anAlgo->GetUsedHypothesis( *_father, S, ignoreAuxiliaryHyps ) == aUsedHyp)
         aBuilder.Add( aCompound, S );
+      if ( !subMesh->SubMeshesComputed() )
+        theSubComputed = false;
     }
   }
 

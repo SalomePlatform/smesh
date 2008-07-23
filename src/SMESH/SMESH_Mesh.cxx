@@ -114,6 +114,7 @@ SMESH_Mesh::~SMESH_Mesh()
     SMESH_Group *aGroup = (*itg).second;
     delete aGroup;
   }
+  _mapGroup.clear();
 }
 
 //=============================================================================
@@ -199,6 +200,56 @@ const TopoDS_Solid& SMESH_Mesh::PseudoShape()
     aSolid = BRepPrimAPI_MakeBox(1,1,1);
   }
   return aSolid;
+}
+
+//=======================================================================
+/*!
+ * \brief Remove all nodes and elements
+ */
+//=======================================================================
+
+void SMESH_Mesh::Clear()
+{
+  // clear sub-meshes; get ready to re-compute as a side-effect 
+
+  if ( SMESH_subMesh *sm = GetSubMeshContaining( GetShapeToMesh() ) )
+  {
+    SMESH_subMeshIteratorPtr smIt = sm->getDependsOnIterator(/*includeSelf=*/true,
+                                                             /*complexShapeFirst=*/false);
+    while ( smIt->more() )
+    {
+      sm = smIt->next();
+      TopAbs_ShapeEnum shapeType = sm->GetSubShape().ShapeType();      
+      if ( shapeType == TopAbs_VERTEX || shapeType < TopAbs_SOLID )
+        // all other shapes depends on vertices so they are already cleaned
+        sm->ComputeStateEngine( SMESH_subMesh::CLEAN );
+      // to recompute even if failed
+      sm->ComputeStateEngine( SMESH_subMesh::CHECK_COMPUTE_STATE );
+    }
+  }
+
+  // clear entities not on sub-meshes
+
+  SMDS_VolumeIteratorPtr vIt = _myMeshDS->volumesIterator();
+  while ( vIt->more() )
+    _myMeshDS->RemoveFreeElement( vIt->next(), 0 );
+
+  SMDS_FaceIteratorPtr fIt = _myMeshDS->facesIterator();
+  while ( fIt->more() )
+    _myMeshDS->RemoveFreeElement( fIt->next(), 0 );
+
+  SMDS_EdgeIteratorPtr eIt = _myMeshDS->edgesIterator();
+  while ( eIt->more() )
+    _myMeshDS->RemoveFreeElement( eIt->next(), 0 );
+
+  SMDS_NodeIteratorPtr nIt = _myMeshDS->nodesIterator();
+  while ( nIt->more() ) {
+    const SMDS_MeshNode * node = nIt->next();
+    if ( node->NbInverseElements() == 0 )
+      _myMeshDS->RemoveFreeNode( node, 0 );
+    else
+      _myMeshDS->RemoveNode(node);
+  }
 }
 
 //=======================================================================

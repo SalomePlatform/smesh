@@ -217,9 +217,9 @@ const vector<UVPtStruct>& StdMeshers_FaceSide::GetUVPtStruct(bool   isXConst,
 #ifdef _DEBUG_
         if ( normPar > 1 || normPar < 0) {
           dump("DEBUG");
-          cout << "WRONG normPar: "<<normPar<< " prevNormPar="<<prevNormPar
-               << " u="<<u << " myFirst[i]="<<myFirst[i]<< " myLast[i]="<<myLast[i]
-               << " paramSize="<<paramSize<<endl;
+          MESSAGE ( "WRONG normPar: "<<normPar<< " prevNormPar="<<prevNormPar
+                    << " u="<<u << " myFirst[i]="<<myFirst[i]<< " myLast[i]="<<myLast[i]
+                    << " paramSize="<<paramSize );
         }
 #endif
         u2node.insert( make_pair( normPar, node ));
@@ -251,10 +251,10 @@ const vector<UVPtStruct>& StdMeshers_FaceSide::GetUVPtStruct(bool   isXConst,
 #ifdef _DEBUG_
         if ( EdgeIndex >= myEdge.size() ) {
           dump("DEBUG");
-          cout << "WRONg EdgeIndex " << 1+EdgeIndex
-               << " myNormPar.size()="<<myNormPar.size()
-               << " myNormPar["<< EdgeIndex<<"]="<< myNormPar[ EdgeIndex ]
-               << " uvPt.normParam="<<uvPt.normParam <<endl;
+          MESSAGE ( "WRONg EdgeIndex " << 1+EdgeIndex
+                    << " myNormPar.size()="<<myNormPar.size()
+                    << " myNormPar["<< EdgeIndex<<"]="<< myNormPar[ EdgeIndex ]
+                    << " uvPt.normParam="<<uvPt.normParam );
         }
 #endif
         paramSize = myNormPar[ EdgeIndex ] - prevNormPar;
@@ -382,26 +382,32 @@ void StdMeshers_FaceSide::Reverse()
 void StdMeshers_FaceSide::dump(const char* msg) const
 {
 #ifdef _DEBUG_
-  cout << endl;
-  if (msg) cout << msg <<endl;
-  cout<<"NB EDGES: "<< myEdge.size() <<endl;
-  cout << "nbPoints: "<<myNbPonits<<" vecSize: " << myPoints.size()<<" "<<myFalsePoints.size() <<endl;
+  if (msg) MESSAGE ( std::endl << msg );
+  MESSAGE_BEGIN ("NB EDGES: "<< myEdge.size() );
+  MESSAGE_ADD ( "nbPoints: "<<myNbPonits<<" vecSize: " << myPoints.size()<<" "<<myFalsePoints.size() );
   for ( int i=0; i<myEdge.size(); ++i)
   {
-    cout << "\t"<<i+1<<endl;
-    cout << "\tEDGE: ";
-    if (myEdge[i].IsNull())
-      cout<<"NULL"<<endl;
+    MESSAGE_ADD ( "\t"<<i+1 );
+    MESSAGE_ADD ( "\tEDGE: " );
+    if (myEdge[i].IsNull()) {
+      MESSAGE_ADD ( "NULL" );
+    }
     else {
       TopAbs::Print(myEdge[i].Orientation(),cout)<<" "<<myEdge[i].TShape().operator->()<<endl;
-      cout << "\tV1: " << TopExp::FirstVertex( myEdge[i], 1).TShape().operator->()
-           << "  V2: " << TopExp::LastVertex( myEdge[i], 1).TShape().operator->() << endl;
+      MESSAGE_ADD ( "\tV1: " << TopExp::FirstVertex( myEdge[i], 1).TShape().operator->()
+                 << "  V2: " << TopExp::LastVertex( myEdge[i], 1).TShape().operator->() );
     }
-    cout << "\tC2d: ";
-    if (myC2d[i].IsNull()) cout<<"NULL"<<endl;
-    else cout << myC2d[i].operator->()<<endl;
-    cout << "\tF: "<<myFirst[i]<< " L: "<< myLast[i]<<endl;
-    cout << "\tnormPar: "<<myNormPar[i]<<endl;
+    MESSAGE_ADD ( "\tC2d: ");
+    
+    if (myC2d[i].IsNull()) {
+      MESSAGE_ADD ( "NULL" );
+    }
+    else {
+      MESSAGE_ADD ( myC2d[i].operator->() );
+    }
+      
+    MESSAGE_ADD ( "\tF: "<<myFirst[i]<< " L: "<< myLast[i] );
+    MESSAGE_END ( "\tnormPar: "<<myNormPar[i]<<endl );
   }
 #endif
 }

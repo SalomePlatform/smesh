@@ -773,6 +773,79 @@ bool StdMeshers_ProjectionUtils::FindSubShapeAssociation(const TopoDS_Shape& the
     }
     break; // try by vertex closeness
   }
+  case TopAbs_COMPOUND: {
+    // ----------------------------------------------------------------------
+    if ( IsPropagationPossible( theMesh1, theMesh2 )) {
+      // find a boundary edge for theShape1
+      TopoDS_Edge E;
+      for(TopExp_Explorer exp(theShape1, TopAbs_EDGE); exp.More(); exp.Next() ) {
+        E = TopoDS::Edge( exp.Current() );
+        int NbFacesFromShape1 = 0;
+        const TopTools_ListOfShape& EAncestors = theMesh1->GetAncestors(E);
+        TopTools_ListIteratorOfListOfShape itea(EAncestors);
+        for(; itea.More(); itea.Next()) {
+          if( itea.Value().ShapeType() != TopAbs_FACE ) continue;
+          TopoDS_Face face = TopoDS::Face(itea.Value());
+          for(TopExp_Explorer expf(theShape1, TopAbs_FACE); expf.More(); expf.Next() ) {
+            if(face.IsSame(expf.Current())) {
+              NbFacesFromShape1++;
+              break;
+            }
+          }
+        }
+        if(NbFacesFromShape1==1) break;
+      }
+      // find association for vertices of edge E
+      TopoDS_Vertex VV1[2], VV2[2];
+      for(TopExp_Explorer eexp(E, TopAbs_VERTEX); eexp.More(); eexp.Next()) {
+        TopoDS_Vertex V1 = TopoDS::Vertex( eexp.Current() );
+        // look for an edge ending in E whose one vertex is in theShape1
+        // and the other, in theShape2
+        const TopTools_ListOfShape& Ancestors = theMesh1->GetAncestors(V1);
+        TopTools_ListIteratorOfListOfShape ita(Ancestors);
+        for(; ita.More(); ita.Next()) {
+          if( ita.Value().ShapeType() != TopAbs_EDGE ) continue;
+          TopoDS_Edge edge = TopoDS::Edge(ita.Value());
+          bool FromShape1 = false;
+          for(TopExp_Explorer expe(theShape1, TopAbs_EDGE); expe.More(); expe.Next() ) {
+            if(edge.IsSame(expe.Current())) {
+              FromShape1 = true;
+              break;
+            }
+          }
+          if(!FromShape1) {
+            // is it an edge between theShape1 and theShape2?
+            TopExp_Explorer expv(edge, TopAbs_VERTEX);
+            TopoDS_Vertex V2 = TopoDS::Vertex( expv.Current() );
+            if(V2.IsSame(V1)) {
+              expv.Next();
+              V2 = TopoDS::Vertex( expv.Current() );
+            }
+            bool FromShape2 = false;
+            for ( expv.Init( theShape2, TopAbs_VERTEX ); expv.More(); expv.Next()) {
+              if ( V2.IsSame( expv.Current() )) {
+                FromShape2 = true;
+                break;
+              }
+            }
+            if ( FromShape2 ) {
+              if ( VV1[0].IsNull() )
+                VV1[0] = V1, VV2[0] = V2;
+              else
+                VV1[1] = V1, VV2[1] = V2;
+              break; // from loop on ancestors of V1
+            }
+          }
+        }
+      }
+      if ( !VV1[1].IsNull() ) {
+        InsertAssociation( VV1[0], VV2[0], theMap, bidirect);
+        InsertAssociation( VV1[1], VV2[1], theMap, bidirect);
+        return FindSubShapeAssociation( theShape1, theMesh1, theShape2, theMesh2, theMap);
+      }
+    }
+    break; // try by vertex closeness
+  }
   default:;
   }
 

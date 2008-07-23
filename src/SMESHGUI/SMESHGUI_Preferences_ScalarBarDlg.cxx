@@ -275,7 +275,7 @@ SMESHGUI_Preferences_ScalarBarDlg::SMESHGUI_Preferences_ScalarBarDlg( SMESHGUI* 
   QHBoxLayout* myButtonGrpLayout = new QHBoxLayout( myButtonGrp );
   myButtonGrpLayout->setSpacing( SPACING_SIZE ); myButtonGrpLayout->setMargin( MARGIN_SIZE );
 
-  myOkBtn = new QPushButton( tr( "SMESH_BUT_OK" ), myButtonGrp );
+  myOkBtn = new QPushButton( tr( "SMESH_BUT_APPLY_AND_CLOSE" ), myButtonGrp );
   myOkBtn->setAutoDefault( true ); myOkBtn->setDefault( true );
   myApplyBtn = new QPushButton( tr( "SMESH_BUT_APPLY" ), myButtonGrp );
   myApplyBtn->setAutoDefault( true );

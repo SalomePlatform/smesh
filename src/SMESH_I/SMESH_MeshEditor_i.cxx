@@ -385,7 +385,7 @@ CORBA::Long SMESH_MeshEditor_i::AddFace(const SMESH::long_array & IDsOfNodes)
   int NbNodes = IDsOfNodes.length();
   if (NbNodes < 3)
   {
-    return false;
+    return 0;
   }
 
   std::vector<const SMDS_MeshNode*> nodes (NbNodes);
@@ -672,12 +672,11 @@ void SMESH_MeshEditor_i::SetNodeOnFace(CORBA::Long NodeID, CORBA::Long FaceID,
 
   if ( isOut ) {
 #ifdef _DEBUG_
-    cout << "FACE " << FaceID << " (" << u << "," << v << ") out of "
-         << " u( " <<  surf.FirstUParameter() 
-         << "," <<  surf.LastUParameter()  
-         << ") v( " <<  surf.FirstVParameter() 
-         << "," <<  surf.LastVParameter()
-         << ")" << endl;
+    MESSAGE ( "FACE " << FaceID << " (" << u << "," << v << ") out of "
+           << " u( " <<  surf.FirstUParameter() 
+           << "," <<  surf.LastUParameter()  
+           << ") v( " <<  surf.FirstVParameter() 
+           << "," <<  surf.LastVParameter() << ")" );
 #endif    
     THROW_SALOME_CORBA_EXCEPTION("Invalid UV", SALOME::BAD_PARAM);
   }
@@ -2975,7 +2974,8 @@ CORBA::Long SMESH_MeshEditor_i::MoveClosestNodeToPoint(CORBA::Double x,
 
   if ( !myPreviewMode ) {
     TPythonDump() << "nodeID = " << this
-                  << ".MoveClosestNodeToPoint( "<< x << ", " << y << ", " << z << " )";
+                  << ".MoveClosestNodeToPoint( "<< x << ", " << y << ", " << z
+                  << ", " << nodeID << " )";
   }
 
   return nodeID;

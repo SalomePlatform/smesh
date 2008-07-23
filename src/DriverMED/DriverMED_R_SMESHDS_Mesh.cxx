@@ -113,10 +113,19 @@ DriverMED_R_SMESHDS_Mesh
 	    
             TInt aNbGrp = aFamilyInfo->GetNbGroup();
             if(MYDEBUG) MESSAGE("belong to " << aNbGrp << " groups");
+	    bool isAttrOk = false;
+	    if(aFamilyInfo->GetNbAttr() == aNbGrp)
+	      isAttrOk = true;
             for (TInt iGr = 0; iGr < aNbGrp; iGr++) {
               std::string aGroupName = aFamilyInfo->GetGroupName(iGr);
+              if(isAttrOk){
+		TInt anAttrVal = aFamilyInfo->GetAttrVal(iGr);
+		aFamily->SetGroupAttributVal(anAttrVal);
+	      }
+	      
               if(MYDEBUG) MESSAGE(aGroupName);
               aFamily->AddGroupName(aGroupName);
+	      
             }
             aFamily->SetId( aFamId );
             myFamilies[aFamId] = aFamily;
@@ -124,7 +133,7 @@ DriverMED_R_SMESHDS_Mesh
         }
 
 	if (aMeshInfo->GetType() == MED::eSTRUCTURE){
-	  bool aRes = buildMeshGrille(aMed,aMeshInfo);
+	  /*bool aRes = */buildMeshGrille(aMed,aMeshInfo);
 	  continue;
 	}
 
@@ -793,6 +802,9 @@ void DriverMED_R_SMESHDS_Mesh::GetGroup(SMESHDS_Group* theGroup)
       {
         element = *anElemsIter;
 	theGroup->SMDSGroup().Add(element);
+	int aGroupAttrVal = aFamily->GetGroupAttributVal();
+	if( aGroupAttrVal != 0)
+	  theGroup->SetColorGroup(aGroupAttrVal);
       }
       if ( element )
         theGroup->SetType( theGroup->SMDSGroup().GetType() );

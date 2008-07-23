@@ -148,86 +148,110 @@
 
   // Definitions
   //=============================================================
-  void ImportMeshesFromFile(SMESH::SMESH_Gen_ptr theComponentMesh,
-			    int theCommandID)
+  void ImportMeshesFromFile( SMESH::SMESH_Gen_ptr theComponentMesh,
+			     int theCommandID )
   {
     QStringList filter;
     std::string myExtension;
 
-    if(theCommandID == 113){
-      filter.append(QObject::tr("MED files (*.med)"));
-      filter.append(QObject::tr("All files (*)"));
-    }else if (theCommandID == 112){
-      filter.append(QObject::tr("IDEAS files (*.unv)"));
-    }else if (theCommandID == 111){
-      filter.append(QObject::tr("DAT files (*.dat)"));
+    if ( theCommandID == 113 ) {
+      filter.append( QObject::tr( "MED files (*.med)" ) );
+      filter.append( QObject::tr( "All files (*)" ) );
     }
-    QString filename = SUIT_FileDlg::getFileName(SMESHGUI::desktop(),
-						"",
-						filter,
-						QObject::tr("Import mesh"),
-						true);
-    if(!filename.isEmpty()) {
+    else if ( theCommandID == 112 ) {
+      filter.append( QObject::tr( "IDEAS files (*.unv)" ) );
+    }
+    else if ( theCommandID == 111 ) {
+      filter.append( QObject::tr( "DAT files (*.dat)" ) );
+    }
+
+    QString anInitialPath = "";
+    if ( SUIT_FileDlg::getLastVisitedPath().isEmpty() )
+      anInitialPath = QDir::currentPath();
+
+    QStringList filenames = SUIT_FileDlg::getOpenFileNames( SMESHGUI::desktop(),
+							    anInitialPath,
+							    filter,
+							    QObject::tr( "SMESH_IMPORT_MESH" ) );
+    if ( filenames.count() > 0 ) {
       SUIT_OverrideCursor wc;
       _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
 
-      try {
+      QStringList errors;
+      bool isEmpty = false;
+      for ( QStringList::ConstIterator it = filenames.begin(); it != filenames.end(); ++it ) {
+	QString filename = *it;
 	SMESH::mesh_array_var aMeshes = new SMESH::mesh_array;
-	switch ( theCommandID ) {
-	case 112:
-	  {
-	    aMeshes->length( 1 );
-	    aMeshes[0] = theComponentMesh->CreateMeshesFromUNV(filename.toLatin1().data());
-	    break;
-	  }
-	case 113:
-	  {
-	    SMESH::DriverMED_ReadStatus res;
-	    aMeshes = theComponentMesh->CreateMeshesFromMED(filename.toLatin1().data(),res);
-	    if ( res != SMESH::DRS_OK ) {
-	      wc.suspend();
-	      SUIT_MessageBox::warning(SMESHGUI::desktop(),
-				       QObject::tr("SMESH_WRN_WARNING"),
-				       QObject::tr(QString("SMESH_DRS_%1").arg(res).
-						   toLatin1().data()));
-	      aMeshes->length( 0 );
-	      wc.resume();
+	try {
+	  switch ( theCommandID ) {
+	  case 111:
+	    {
+	      // DAT format (currently unsupported)
+	      errors.append( QString( "%1 :\n\t%2" ).arg( filename ).
+			     arg( QObject::tr( "SMESH_ERR_NOT_SUPPORTED_FORMAT" ) ) );
+	      break;
 	    }
-	    break;
+	  case 112:
+	    {
+	      // UNV format
+	      aMeshes->length( 1 );
+	      aMeshes[0] = theComponentMesh->CreateMeshesFromUNV( filename.toLatin1().constData() );
+	      if ( aMeshes[0]->_is_nil() )
+		errors.append( QString( "%1 :\n\t%2" ).arg( filename ).
+			       arg( QObject::tr( "SMESH_ERR_UNKNOWN_IMPORT_ERROR" ) ) );
+	      break;
+	    }
+	  case 113:
+	    {
+	      // MED format
+	      SMESH::DriverMED_ReadStatus res;
+	      aMeshes = theComponentMesh->CreateMeshesFromMED( filename.toLatin1().constData(), res );
+	      if ( res != SMESH::DRS_OK ) {
+		errors.append( QString( "%1 :\n\t%2" ).arg( filename ).
+			       arg( QObject::tr( QString( "SMESH_DRS_%1" ).arg( res ).toLatin1().data() ) ) );
+	      }
+	      break;
+	    }
 	  }
 	}
+	catch ( const SALOME::SALOME_Exception& S_ex ) {
+	  errors.append( QString( "%1 :\n\t%2" ).arg( filename ).
+			 arg( QObject::tr( "SMESH_ERR_UNKNOWN_IMPORT_ERROR" ) ) );
+	}
 
-	bool isEmpty = false;
 	for ( int i = 0, iEnd = aMeshes->length(); i < iEnd; i++ ) {
 	  _PTR(SObject) aMeshSO = SMESH::FindSObject( aMeshes[i] );
 	  if ( aMeshSO ) {
 	    _PTR(StudyBuilder) aBuilder = aStudy->NewBuilder();
 	    _PTR(AttributePixMap) aPixmap = aBuilder->FindOrCreateAttribute( aMeshSO, "AttributePixMap" );
-	    aPixmap->SetPixMap("ICON_SMESH_TREE_MESH_IMPORTED");
+	    aPixmap->SetPixMap( "ICON_SMESH_TREE_MESH_IMPORTED" );
 	    if ( theCommandID == 112 ) // mesh names aren't taken from the file for UNV import
 	      SMESH::SetName( aMeshSO, QFileInfo(filename).fileName() );
-	  } else
+	  }
+	  else {
 	    isEmpty = true;
+	  }
 	}
-
-	if ( isEmpty ) {
-	  wc.suspend();
-	  SUIT_MessageBox::warning(SMESHGUI::desktop(),
-				   QObject::tr("SMESH_WRN_WARNING"),
-				   QObject::tr("SMESH_DRS_EMPTY"));
-	  wc.resume();
-	}
-
-	SMESHGUI::GetSMESHGUI()->updateObjBrowser();
       }
-      catch (const SALOME::SALOME_Exception& S_ex){
-	wc.suspend();
-	SalomeApp_Tools::QtCatchCorbaException(S_ex);
-	wc.resume();
+
+      // update Object browser
+      SMESHGUI::GetSMESHGUI()->updateObjBrowser();
+      
+      // show Error message box if there were errors
+      if ( errors.count() > 0 ) {
+	SUIT_MessageBox::critical( SMESHGUI::desktop(),
+				   QObject::tr( "SMESH_ERROR" ),
+				   QObject::tr( "SMESH_IMPORT_ERRORS" ) + "\n" + errors.join( "\n" ) );
+      }
+      
+      // show warning message box, if some imported mesh is empty
+      if ( isEmpty ) {
+	  SUIT_MessageBox::warning( SMESHGUI::desktop(),
+				    QObject::tr( "SMESH_WRN_WARNING" ),
+				    QObject::tr( "SMESH_DRS_SOME_EMPTY" ) );
       }
     }
   }
-
 
   void ExportMeshToFile( int theCommandID )
   {
@@ -257,8 +281,8 @@
                 return;
             }
             // PAL18696
-            QString v21( aMesh->GetVersionString( SMESH::MED_V2_1, 2));
-            QString v22( aMesh->GetVersionString( SMESH::MED_V2_2, 2));
+            QString v21 (aMesh->GetVersionString(SMESH::MED_V2_1, 2));
+            QString v22 (aMesh->GetVersionString(SMESH::MED_V2_2, 2));
             aFilterMap.insert( QString("MED ") +  v21 + " (*.med)", SMESH::MED_V2_1 );
             aFilterMap.insert( QString("MED ") +  v22 + " (*.med)", SMESH::MED_V2_2 );
           }
@@ -323,10 +347,15 @@
 	if ( resMgr )
 	  toCreateGroups = resMgr->booleanValue( "SMESH", "auto_groups", false );
 
-	if ( theCommandID != 122 && theCommandID != 125 && theCommandID != 140 && theCommandID != 141)
+	QString anInitialPath = "";
+	if ( SUIT_FileDlg::getLastVisitedPath().isEmpty() )
+	  anInitialPath = QDir::currentPath();
 
-	  aFilename = SUIT_FileDlg::getFileName(SMESHGUI::desktop(), "", aFilter, aTitle, false);
-
+	if ( theCommandID != 122 && theCommandID != 125 && theCommandID != 140 && theCommandID != 141) {
+	  if ( anInitialPath.isEmpty() ) anInitialPath = SUIT_FileDlg::getLastVisitedPath();
+	  aFilename = SUIT_FileDlg::getFileName(SMESHGUI::desktop(), anInitialPath + QString("/") + anIObject->getName(),
+						aFilter, aTitle, false);
+	}
 	else if(theCommandID == 140 || theCommandID == 141) { // Export to STL
 	  QStringList filters;
           QMap<QString, int>::const_iterator it = aFilterMapSTL.begin();
@@ -337,6 +366,9 @@
           fd->setWindowTitle( aTitle );
           fd->setFilters( filters );
           fd->selectFilter( QObject::tr("STL ASCII  (*.stl)") );
+	  if ( !anInitialPath.isEmpty() )
+	    fd->setDirectory( anInitialPath );
+	  fd->selectFile(anIObject->getName());
           bool is_ok = false;
           while (!is_ok) {
 	    if ( fd->exec() )
@@ -346,20 +378,27 @@
 	  }
           delete fd;
 	}
-	else {
+	else { // Export to MED
           QStringList filters;
+          QString aDefaultFilter;
           QMap<QString, SMESH::MED_VERSION>::const_iterator it = aFilterMap.begin();
-          for ( ; it != aFilterMap.end(); ++it )
+          for ( ; it != aFilterMap.end(); ++it ) {
             filters.push_back( it.key() );
+            if (it.value() == SMESH::MED_V2_2)
+              aDefaultFilter = it.key();
+          }
 
           //SUIT_FileDlg* fd = new SUIT_FileDlg( SMESHGUI::desktop(), false, true, true );
           SalomeApp_CheckFileDlg* fd = new SalomeApp_CheckFileDlg
             ( SMESHGUI::desktop(), false, QObject::tr("SMESH_AUTO_GROUPS"), true, true );
           fd->setWindowTitle( aTitle );
           fd->setFilters( filters );
-          //fd->selectFilter( QObject::tr("MED 2.2 (*.med)") );
-          fd->selectFilter( filters.last() );
+          //fd->setSelectedFilter( QObject::tr("MED 2.2 (*.med)") );
+          fd->selectFilter(aDefaultFilter);
           fd->SetChecked(toCreateGroups);
+	  if ( !anInitialPath.isEmpty() )
+	    fd->setDirectory( anInitialPath );
+	  fd->selectFile(anIObject->getName());
           bool is_ok = false;
           while (!is_ok) {
 	    if ( fd->exec() )
@@ -839,15 +878,32 @@
     LightApp_SelectionMgr* aSel = SMESHGUI::selectionMgr();
     SALOME_ListIO selected; aSel->selectedObjects( selected, QString::null, false );
 
+    _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
+    _PTR(StudyBuilder) aStudyBuilder = aStudy->NewBuilder();
+    _PTR(GenericAttribute) anAttr;
+    _PTR(AttributeIOR) anIOR;
+
+    int objectCount = 0;
     QString aParentComponent = QString::null;
     for( SALOME_ListIteratorOfListIO anIt( selected ); anIt.More(); anIt.Next() )
     {
+      _PTR(SObject) aSO = aStudy->FindObjectID(anIt.Value()->getEntry());
+      if (aSO) {
+	// check if object is not reference
+	_PTR(SObject) refobj;
+	if ( !aSO->ReferencedObject( refobj ) )
+	  objectCount++;
+      }
+
       QString cur = anIt.Value()->getComponentDataType();
       if( aParentComponent.isNull() )
         aParentComponent = cur;
       else if( !aParentComponent.isEmpty() && aParentComponent!=cur )
         aParentComponent = "";
     }
+
+    if ( objectCount == 0 )
+      return; // No Valid Objects Selected
 
     if ( aParentComponent != SMESHGUI::GetSMESHGUI()->name() )  {
       SUIT_MessageBox::warning( SMESHGUI::desktop(),
@@ -868,11 +924,6 @@
     SUIT_ViewManager* vm = anApp->activeViewManager();
     int nbSf = vm->getViewsCount();
 
-    _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
-    _PTR(StudyBuilder) aStudyBuilder = aStudy->NewBuilder();
-    _PTR(GenericAttribute) anAttr;
-    _PTR(AttributeIOR) anIOR;
-
     SALOME_ListIteratorOfListIO It(selected);
 
     aStudyBuilder->NewCommand();  // There is a transaction
@@ -887,6 +938,10 @@
 	  if ( engineIOR() == anIOR->Value().c_str() )
 	    continue;
 	}
+
+	_PTR(SObject) refobj;
+	if ( aSO && aSO->ReferencedObject( refobj ) )
+	  continue; // skip references 
 
         // put the whole hierarchy of sub-objects of the selected SO into a list and
         // then treat them all starting from the deepest objects (at list back)
@@ -1493,6 +1548,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       ( new SMESHGUI_BuildCompoundDlg( this ) )->show();
     }
     break;
+
   case 407: // DIAGONAL INVERSION
   case 408: // Delete diagonal
     {
@@ -1922,6 +1978,8 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       if( aSel )
         aSel->selectedObjects( selected );
 
+      bool isAny = false; // iss there any appropriate object selected
+
       SALOME_ListIteratorOfListIO It( selected );
       for ( ; It.More(); It.Next() )
       {
@@ -1935,22 +1993,39 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
           {
             aName = anAttr;
             QString newName = QString(aName->Value().c_str());
-            newName = LightApp_NameDlg::getName(desktop(), newName);
-            if ( !newName.isEmpty() )
+
+            // check type to prevent renaming of inappropriate objects
+            int aType = SMESHGUI_Selection::type(IObject->getEntry(), aStudy);
+            if (aType == MESH || aType == GROUP ||
+                aType == SUBMESH || aType == SUBMESH_COMPOUND ||
+                aType == SUBMESH_SOLID || aType == SUBMESH_FACE ||
+                aType == SUBMESH_EDGE || aType == SUBMESH_VERTEX ||
+                aType == HYPOTHESIS || aType == ALGORITHM)
             {
-              //old source: aStudy->renameIObject( IObject, newName );
-	      aName->SetValue( newName.toLatin1().data() );
+              isAny = true;
+              newName = LightApp_NameDlg::getName(desktop(), newName);
+              if ( !newName.isEmpty() )
+              {
+                //old source: aStudy->renameIObject( IObject, newName );
+                aName->SetValue( newName.toLatin1().constData() );
 
-              // if current object is group update group's name
-	      SMESH::SMESH_GroupBase_var aGroup =
-                SMESH::IObjectToInterface<SMESH::SMESH_GroupBase>(IObject);
-              if (!aGroup->_is_nil() )
-                aGroup->SetName( newName.toLatin1().data() );
+                // if current object is group update group's name
+                SMESH::SMESH_GroupBase_var aGroup =
+                  SMESH::IObjectToInterface<SMESH::SMESH_GroupBase>(IObject);
+                if (!aGroup->_is_nil() )
+                  aGroup->SetName( newName.toLatin1().constData() );
 
-	      updateObjBrowser();
+                updateObjBrowser();
+              }
             }
           }
         }
+      } // for
+
+      if (!isAny) {
+        SUIT_MessageBox::warning(desktop(),
+				 QObject::tr("SMESH_WRN_WARNING"),
+				 QObject::tr("SMESH_WRN_NO_APPROPRIATE_SELECTION"));
       }
       break;
     }
@@ -2090,6 +2165,46 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
 	}
       break;
     }
+  case 4043: {                                // CLEAR_MESH
+
+    if(checkLock(aStudy)) break;
+    
+    SALOME_ListIO selected;
+    if( LightApp_SelectionMgr *aSel = SMESHGUI::selectionMgr() )
+      aSel->selectedObjects( selected );
+
+    SUIT_OverrideCursor wc;
+    SALOME_ListIteratorOfListIO It (selected);
+    for ( ; It.More(); It.Next() )
+    {
+      Handle(SALOME_InteractiveObject) IOS = It.Value();
+      SMESH::SMESH_Mesh_var aMesh =
+        SMESH::IObjectToInterface<SMESH::SMESH_Mesh>(IOS);
+      if ( aMesh->_is_nil()) continue;
+      try {
+        SMESH::UpdateView(SMESH::eErase, IOS->getEntry());
+        aMesh->Clear();
+        _PTR(SObject) aMeshSObj = SMESH::FindSObject(aMesh);
+        SMESH::ModifiedMesh( aMeshSObj, false, true);
+        // hide groups and submeshes
+        _PTR(ChildIterator) anIter =
+          SMESH::GetActiveStudyDocument()->NewChildIterator( aMeshSObj );
+        for ( anIter->InitEx(true); anIter->More(); anIter->Next() )
+        {
+          _PTR(SObject) so = anIter->Value();
+          SMESH::UpdateView(SMESH::eErase, so->GetID().c_str());
+        }
+      }
+      catch (const SALOME::SALOME_Exception& S_ex){
+	wc.suspend();
+	SalomeApp_Tools::QtCatchCorbaException(S_ex);
+	wc.resume();
+      }
+    }
+    SMESH::UpdateView();
+    updateObjBrowser();
+    break;
+  }
   case 4051:					// RENUMBERING NODES
     {
       if(checkLock(aStudy)) break;
@@ -2472,6 +2587,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction( 4032, "HEXA",            "ICON_DLG_HEXAS" );
   createSMESHAction( 4041, "REMOVE_NODES",    "ICON_DLG_REM_NODE" );
   createSMESHAction( 4042, "REMOVE_ELEMENTS", "ICON_DLG_REM_ELEMENT" );
+  createSMESHAction( 4043, "CLEAR_MESH"    ,  "ICON_CLEAR_MESH" );
   createSMESHAction( 4051, "RENUM_NODES",     "ICON_DLG_RENUMBERING_NODES" );
   createSMESHAction( 4052, "RENUM_ELEMENTS",  "ICON_DLG_RENUMBERING_ELEMENTS" );
   createSMESHAction( 4061, "TRANS",           "ICON_SMESH_TRANSLATION_VECTOR" );
@@ -2563,7 +2679,7 @@ void SMESHGUI::initialize( CAM_Application* app )
 
   createMenu( 5105, toolsId, -1 );
 
-  createMenu( 702, meshId, -1 );
+  createMenu( 702, meshId, -1 ); // "Mesh" menu
   createMenu( 703, meshId, -1 );
   createMenu( 704, meshId, -1 );
   createMenu( 710, meshId, -1 );
@@ -2622,6 +2738,7 @@ void SMESHGUI::initialize( CAM_Application* app )
 
   createMenu( 4041, removeId, -1 );
   createMenu( 4042, removeId, -1 );
+  createMenu( 4043, removeId, -1 );
 
   createMenu( 4051, renumId, -1 );
   createMenu( 4052, renumId, -1 );
@@ -2709,6 +2826,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createTool( separator(), addRemTb );
   createTool( 4041, addRemTb );
   createTool( 4042, addRemTb );
+  createTool( 4043, addRemTb );
   createTool( separator(), addRemTb );
   createTool( 4051, addRemTb );
   createTool( 4052, addRemTb );
@@ -2738,7 +2856,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createTool( 214, dispModeTb );
 
   QString lc = "$";        // VSR : instead of QtxPopupSelection::defEquality();
-  QString dc = "selcount"; // VSR : insetad of QtxPopupSelection::defSelCountParam()
+  QString dc = "selcount"; // VSR : instead of QtxPopupSelection::defSelCountParam()
 
   myRules.clear();
   QString OB = "'ObjectBrowser'",
@@ -2775,12 +2893,15 @@ void SMESHGUI::initialize( CAM_Application* app )
   createPopupItem( 801, OB, mesh );                        // CREATE_GROUP
   createPopupItem( 802, OB, subMesh );                     // CONSTRUCT_GROUP
   popupMgr()->insert( separator(), -1, 0 );
-  createPopupItem( 1100, OB, hypo, "" /*"&& $hasReference={false}"*/ );   // EDIT HYPOTHESIS
+  createPopupItem( 1100, OB, hypo);                        // EDIT HYPOTHESIS
   createPopupItem( 1102, OB, hyp_alg ); // REMOVE HYPOTHESIS / ALGORITHMS
-  createPopupItem( 1101, OB, mesh_group + " " + hyp_alg, "" /*"&& $hasReference={false}"*/ ); // RENAME
+  createPopupItem( 1101, OB, mesh_group + " " + hyp_alg ); // RENAME
+  popupMgr()->insert( separator(), -1, 0 );
+  createPopupItem( 4043, OB, mesh );                       // CLEAR_MESH
   popupMgr()->insert( separator(), -1, 0 );
 
   QString only_one_non_empty = QString( " && %1=1 && numberOfNodes>0" ).arg( dc );
+
   createPopupItem( 125, OB, mesh, only_one_non_empty );   // EXPORT_MED
   createPopupItem( 126, OB, mesh, only_one_non_empty );   // EXPORT_UNV
   createPopupItem( 141, OB, mesh, only_one_non_empty );   // EXPORT_STL
@@ -3010,6 +3131,30 @@ void SMESHGUI::initialize( CAM_Application* app )
 	   this, SLOT( onViewManagerActivated( SUIT_ViewManager* ) ) );
 }
 
+//================================================================================
+/*!
+ * \brief Return true if SMESH or GEOM objects are selected.
+ * Is called form LightApp_Module::activateModule() which clear selection if
+ * not isSelectionCompatible()
+ */
+//================================================================================
+
+bool SMESHGUI::isSelectionCompatible()
+{
+  bool isCompatible = true;
+  SALOME_ListIO selected;
+  if ( LightApp_SelectionMgr *Sel = selectionMgr() )
+    Sel->selectedObjects( selected );
+
+  SALOME_ListIteratorOfListIO It( selected );
+  for ( ; isCompatible && It.More(); It.Next())
+    isCompatible =
+      ( strcmp("GEOM", It.Value()->getComponentDataType()) == 0 ) ||
+      ( strcmp("SMESH", It.Value()->getComponentDataType()) == 0 );
+
+  return isCompatible;
+}
+
 bool SMESHGUI::activateModule( SUIT_Study* study )
 {
   bool res = SalomeApp_Module::activateModule( study );
@@ -3021,6 +3166,9 @@ bool SMESHGUI::activateModule( SUIT_Study* study )
   action(111)->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_B)); // Import DAT
   action(112)->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_U)); // Import UNV
   action(113)->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_M)); // Import MED
+
+  action(  33)->setEnabled(true); // Delete: Key_Delete
+  action(1101)->setEnabled(true); // Rename: Key_F2
 
   return res;
 }
@@ -3036,6 +3184,9 @@ bool SMESHGUI::deactivateModule( SUIT_Study* study )
   action(111)->setShortcut(QKeySequence()); // Import DAT
   action(112)->setShortcut(QKeySequence()); // Import UNV
   action(113)->setShortcut(QKeySequence()); // Import MED
+
+  action(  33)->setEnabled(false); // Delete: Key_Delete
+  action(1101)->setEnabled(false); // Rename: Key_F2
 
   return SalomeApp_Module::deactivateModule( study );
 }
@@ -3076,6 +3227,25 @@ QString SMESHGUI::engineIOR() const
   CORBA::ORB_var anORB = getApp()->orb();
   CORBA::String_var anIOR = anORB->object_to_string(GetSMESHGen());
   return QString( anIOR.in() );
+}
+
+void SMESHGUI::contextMenuPopup( const QString& client, QMenu* menu, QString& title )
+{
+  SalomeApp_Module::contextMenuPopup( client, menu, title );
+  SALOME_ListIO lst;
+  selectionMgr()->selectedObjects( lst );
+  if ( ( client == "OCCViewer" || client == "VTKViewer" ) && lst.Extent() == 1 ) {
+    Handle(SALOME_InteractiveObject) io = lst.First();
+    SalomeApp_Study* appStudy = dynamic_cast<SalomeApp_Study*>( application()->activeStudy() );
+    _PTR(Study) study = appStudy->studyDS();
+    _PTR(SObject) obj = study->FindObjectID( io->getEntry() );
+    if ( obj ) {
+      QString aName = QString( obj->GetName().c_str() );
+      while ( aName.at( aName.length() - 1 ) == ' ' ) // Remove extraspaces in Name of Popup
+	  aName.remove( (aName.length() - 1), 1 );
+      title = aName;
+    }
+  }
 }
 
 LightApp_Selection* SMESHGUI::createSelection() const
