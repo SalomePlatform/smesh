@@ -177,7 +177,6 @@ void SMESH_MesherHelper::SetSubShape(const TopoDS_Shape& aSh)
         bool isClosed = BRep_Tool::IsClosed( edge, face );
         // BEGIN: jfa for bug 0019943
         if (isClosed) {
-          MESSAGE("$$$ CLOSED 1 $$$")
           isClosed = false;
           for (TopExp_Explorer expw (face, TopAbs_WIRE); expw.More() && !isClosed; expw.Next()) {
             const TopoDS_Wire& wire = TopoDS::Wire(expw.Current());
@@ -192,7 +191,6 @@ void SMESH_MesherHelper::SetSubShape(const TopoDS_Shape& aSh)
         }
         // END: jfa for bug 0019943
         if (isClosed) {
-          MESSAGE("$$$ CLOSED 2 $$$")
           // initialize myPar1, myPar2 and myParIndex
           if ( mySeamShapeIds.empty() ) {
             gp_Pnt2d uv1, uv2;
