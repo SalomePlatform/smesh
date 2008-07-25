@@ -32,6 +32,7 @@
 #include <BRepAdaptor_Surface.hxx>
 #include <BRepTools.hxx>
 #include <BRep_Tool.hxx>
+#include <BRepTools_WireExplorer.hxx>
 #include <Geom2d_Curve.hxx>
 #include <Geom_Curve.hxx>
 #include <Geom_Surface.hxx>
@@ -169,11 +170,29 @@ void SMESH_MesherHelper::SetSubShape(const TopoDS_Shape& aSh)
     BRepAdaptor_Surface surface( face );
     if ( surface.IsUPeriodic() || surface.IsVPeriodic() )
     {
-      for ( TopExp_Explorer exp( face, TopAbs_EDGE ); exp.More(); exp.Next())
+      for (TopExp_Explorer exp( face, TopAbs_EDGE ); exp.More(); exp.Next())
       {
         // look for a seam edge
         const TopoDS_Edge& edge = TopoDS::Edge( exp.Current() );
-        if ( BRep_Tool::IsClosed( edge, face )) {
+        bool isClosed = BRep_Tool::IsClosed( edge, face );
+        // BEGIN: jfa for bug 0019943
+        if (isClosed) {
+          MESSAGE("$$$ CLOSED 1 $$$")
+          isClosed = false;
+          for (TopExp_Explorer expw (face, TopAbs_WIRE); expw.More() && !isClosed; expw.Next()) {
+            const TopoDS_Wire& wire = TopoDS::Wire(expw.Current());
+            int nbe = 0;
+            for (BRepTools_WireExplorer we (wire, face); we.More() && !isClosed; we.Next()) {
+              if (we.Current().IsSame(edge)) {
+                nbe++;
+                if (nbe == 2) isClosed = true;
+              }
+            }
+          }
+        }
+        // END: jfa for bug 0019943
+        if (isClosed) {
+          MESSAGE("$$$ CLOSED 2 $$$")
           // initialize myPar1, myPar2 and myParIndex
           if ( mySeamShapeIds.empty() ) {
             gp_Pnt2d uv1, uv2;
