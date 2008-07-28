@@ -174,23 +174,7 @@ void SMESH_MesherHelper::SetSubShape(const TopoDS_Shape& aSh)
       {
         // look for a seam edge
         const TopoDS_Edge& edge = TopoDS::Edge( exp.Current() );
-        bool isClosed = BRep_Tool::IsClosed( edge, face );
-        // BEGIN: jfa for bug 0019943
-        if (isClosed) {
-          isClosed = false;
-          for (TopExp_Explorer expw (face, TopAbs_WIRE); expw.More() && !isClosed; expw.Next()) {
-            const TopoDS_Wire& wire = TopoDS::Wire(expw.Current());
-            int nbe = 0;
-            for (BRepTools_WireExplorer we (wire, face); we.More() && !isClosed; we.Next()) {
-              if (we.Current().IsSame(edge)) {
-                nbe++;
-                if (nbe == 2) isClosed = true;
-              }
-            }
-          }
-        }
-        // END: jfa for bug 0019943
-        if (isClosed) {
+        if ( BRep_Tool::IsClosed( edge, face )) {
           // initialize myPar1, myPar2 and myParIndex
           if ( mySeamShapeIds.empty() ) {
             gp_Pnt2d uv1, uv2;
@@ -207,10 +191,13 @@ void SMESH_MesherHelper::SetSubShape(const TopoDS_Shape& aSh)
               myPar2 = surface.LastVParameter();
             }
           }
-          // store shapes indices
-          mySeamShapeIds.insert( meshDS->ShapeToIndex( edge ));
-          for ( TopExp_Explorer v( edge, TopAbs_VERTEX ); v.More(); v.Next() )
-            mySeamShapeIds.insert( meshDS->ShapeToIndex( v.Current() ));
+          // store seam shape indices, negative if shape encounters twice
+          int edgeID = meshDS->ShapeToIndex( edge );
+          mySeamShapeIds.insert( IsSeamShape( edgeID ) ? -edgeID : edgeID );
+          for ( TopExp_Explorer v( edge, TopAbs_VERTEX ); v.More(); v.Next() ) {
+            int vertexID = meshDS->ShapeToIndex( v.Current() );
+            mySeamShapeIds.insert( IsSeamShape( vertexID ) ? -vertexID : vertexID );
+          }
         }
 
         // look for a degenerated edge
@@ -335,7 +322,7 @@ gp_XY SMESH_MesherHelper::GetNodeUV(const TopoDS_Face&   F,
     Handle(Geom2d_Curve) C2d = BRep_Tool::CurveOnSurface(E, F, f, l);
     uv = C2d->Value( epos->GetUParameter() );
     // for a node on a seam edge select one of UVs on 2 pcurves
-    if ( n2 && mySeamShapeIds.find( edgeID ) != mySeamShapeIds.end() )
+    if ( n2 && IsSeamShape( edgeID ) )
       uv = GetUVOnSeam( uv, GetNodeUV( F, n2, 0 ));
   }
   else if(Pos->GetTypeOfPosition()==SMDS_TOP_VERTEX)
@@ -387,7 +374,7 @@ gp_XY SMESH_MesherHelper::GetNodeUV(const TopoDS_Face&   F,
           }
         }
       }
-      if ( n2 && mySeamShapeIds.find( vertexID ) != mySeamShapeIds.end() )
+      if ( n2 && IsSeamShape( vertexID ) )
         uv = GetUVOnSeam( uv, GetNodeUV( F, n2, 0 ));
     }
   }
