@@ -1358,7 +1358,7 @@ FindMatchingNodesOnFaces( const TopoDS_Face&     face1,
     }
     if ( nodesOfFaces )
     {
-      if ( BRep_Tool::IsClosed( e2, face2 )) {
+      if ( helper2.IsRealSeam( e2 )) {
         seam1 = e1; seam2 = e2;
       }
       else {
@@ -1430,7 +1430,7 @@ FindMatchingNodesOnFaces( const TopoDS_Face&     face1,
     const TopoDS_Face &             face = is2 ? face2 : face1;
     SMDS_ElemIteratorPtr eIt = sm->GetElements();
 
-    if ( !helper->IsSeamShape( is2 ? edge2 : edge1 ))
+    if ( !helper->IsRealSeam( is2 ? edge2 : edge1 ))
     {
       while ( eIt->more() ) elems.insert( eIt->next() );
     }
@@ -1515,7 +1515,7 @@ FindMatchingNodesOnFaces( const TopoDS_Face&     face1,
 
   // On a sphere, add matching nodes on the edge
 
-  if ( helper1.IsSeamShape( edge1 ))
+  if ( helper1.IsRealSeam( edge1 ))
   {
     // sort nodes on edges by param on edge
     map< double, const SMDS_MeshNode* > u2nodesMaps[2];

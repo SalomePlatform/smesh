@@ -295,16 +295,14 @@ namespace {
       // Find a new node connected to nV1 and belonging to edge submesh;
       const SMDS_MeshNode* nE = 0;
       SMESHDS_SubMesh* smDS = sm->GetSubMeshDS();
-      SMDS_ElemIteratorPtr vElems = nV1->GetInverseElementIterator();
+      SMDS_ElemIteratorPtr vElems = nV1->GetInverseElementIterator(SMDSAbs_Face);
       while ( vElems->more() && !nE ) {
         const SMDS_MeshElement* elem = vElems->next();
-        if ( elem->GetType() != SMDSAbs_Face )
-          continue; // new nodes are shared by faces
         int nbNodes = elem->NbNodes();
         if ( elem->IsQuadratic() )
           nbNodes /= 2;
         int iV1 = elem->GetNodeIndex( nV1 );
-        // try next aftre nV1
+        // try next after nV1
         int iE = SMESH_MesherHelper::WrapIndex( iV1 + 1, nbNodes );
         if ( smDS->Contains( elem->GetNode( iE ) ))
           nE = elem->GetNode( iE );
@@ -515,7 +513,7 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
 
     // Sort new and old nodes of a submesh separately
 
-    bool isSeam = helper.IsSeamShape( sm->GetId() );
+    bool isSeam = helper.IsRealSeam( sm->GetId() );
 
     enum { NEW_NODES = 0, OLD_NODES };
     map< double, const SMDS_MeshNode* > u2nodesMaps[2], u2nodesOnSeam;
@@ -537,7 +535,7 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
           continue; // node is already in the map
       }
 
-      // sort nodes on edges by its position
+      // sort nodes on edges by their position
       map< double, const SMDS_MeshNode* > & pos2nodes = u2nodesMaps[isOld ? OLD_NODES : NEW_NODES];
       switch ( node->GetPosition()->GetTypeOfPosition() )
       {
@@ -558,12 +556,13 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
     }
     if ( u2nodesMaps[ NEW_NODES ].size() != u2nodesMaps[ OLD_NODES ].size() )
     {
-      if ( u2nodesMaps[ NEW_NODES ].size() == 0                 &&
-           sm->GetSubShape().ShapeType() == TopAbs_EDGE         &&
-           BRep_Tool::Degenerated( TopoDS::Edge( sm->GetSubShape() )))
+      if ( u2nodesMaps[ NEW_NODES ].size() == 0         &&
+           sm->GetSubShape().ShapeType() == TopAbs_EDGE &&
+           helper.IsDegenShape( sm->GetId() )             )
         // NPAL15894 (tt88bis.py) - project mesh built by NETGEN_1d_2D that
-	// does not make segments/nodes on degenerated edges
+        // does not make segments/nodes on degenerated edges
         continue;
+
       RETURN_BAD_RESULT("Different nb of old and new nodes on shape #"<< sm->GetId() <<" "<<
                         u2nodesMaps[ OLD_NODES ].size() << " != " <<
                         u2nodesMaps[ NEW_NODES ].size());

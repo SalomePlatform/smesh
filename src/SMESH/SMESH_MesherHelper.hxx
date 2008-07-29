@@ -258,7 +258,8 @@ public:
     * \param subShape - edge or vertex index in SMESHDS
     * \retval bool - true if subShape is a seam shape
     *
-    * It works only if IsQuadraticSubMesh() or SetSubShape() has been called
+    * It works only if IsQuadraticSubMesh() or SetSubShape() has been called.
+    * Seam shape has two 2D alternative represenations on the face
    */
   bool IsSeamShape(const int subShape) const
   { return mySeamShapeIds.find( subShape ) != mySeamShapeIds.end(); }
@@ -267,10 +268,23 @@ public:
     * \param subShape - edge or vertex
     * \retval bool - true if subShape is a seam shape
     *
-    * It works only if IsQuadraticSubMesh() or SetSubShape() has been called
+    * It works only if IsQuadraticSubMesh() or SetSubShape() has been called.
+    * Seam shape has two 2D alternative represenations on the face
    */
   bool IsSeamShape(const TopoDS_Shape& subShape) const
   { return IsSeamShape( GetMeshDS()->ShapeToIndex( subShape )); }
+  /*!
+   * \brief Return true if an edge or a vertex encounters twice in face wire
+   *  \param subShape - Id of edge or vertex
+   */
+  bool IsRealSeam(const int subShape) const
+  { return mySeamShapeIds.find( -subShape ) != mySeamShapeIds.end(); }
+  /*!
+   * \brief Return true if an edge or a vertex encounters twice in face wire
+   *  \param subShape - edge or vertex
+   */
+  bool IsRealSeam(const TopoDS_Shape& subShape) const
+  { return IsRealSeam( GetMeshDS()->ShapeToIndex( subShape)); }
   /*!
    * \brief Check if the shape set through IsQuadraticSubMesh() or SetSubShape()
    *        has a seam edge

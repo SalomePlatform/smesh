@@ -32,6 +32,7 @@
 #include <BRepAdaptor_Surface.hxx>
 #include <BRepTools.hxx>
 #include <BRep_Tool.hxx>
+#include <BRepTools_WireExplorer.hxx>
 #include <Geom2d_Curve.hxx>
 #include <Geom_Curve.hxx>
 #include <Geom_Surface.hxx>
@@ -169,7 +170,7 @@ void SMESH_MesherHelper::SetSubShape(const TopoDS_Shape& aSh)
     BRepAdaptor_Surface surface( face );
     if ( surface.IsUPeriodic() || surface.IsVPeriodic() )
     {
-      for ( TopExp_Explorer exp( face, TopAbs_EDGE ); exp.More(); exp.Next())
+      for (TopExp_Explorer exp( face, TopAbs_EDGE ); exp.More(); exp.Next())
       {
         // look for a seam edge
         const TopoDS_Edge& edge = TopoDS::Edge( exp.Current() );
@@ -190,10 +191,13 @@ void SMESH_MesherHelper::SetSubShape(const TopoDS_Shape& aSh)
               myPar2 = surface.LastVParameter();
             }
           }
-          // store shapes indices
-          mySeamShapeIds.insert( meshDS->ShapeToIndex( edge ));
-          for ( TopExp_Explorer v( edge, TopAbs_VERTEX ); v.More(); v.Next() )
-            mySeamShapeIds.insert( meshDS->ShapeToIndex( v.Current() ));
+          // store seam shape indices, negative if shape encounters twice
+          int edgeID = meshDS->ShapeToIndex( edge );
+          mySeamShapeIds.insert( IsSeamShape( edgeID ) ? -edgeID : edgeID );
+          for ( TopExp_Explorer v( edge, TopAbs_VERTEX ); v.More(); v.Next() ) {
+            int vertexID = meshDS->ShapeToIndex( v.Current() );
+            mySeamShapeIds.insert( IsSeamShape( vertexID ) ? -vertexID : vertexID );
+          }
         }
 
         // look for a degenerated edge
@@ -318,7 +322,7 @@ gp_XY SMESH_MesherHelper::GetNodeUV(const TopoDS_Face&   F,
     Handle(Geom2d_Curve) C2d = BRep_Tool::CurveOnSurface(E, F, f, l);
     uv = C2d->Value( epos->GetUParameter() );
     // for a node on a seam edge select one of UVs on 2 pcurves
-    if ( n2 && mySeamShapeIds.find( edgeID ) != mySeamShapeIds.end() )
+    if ( n2 && IsSeamShape( edgeID ) )
       uv = GetUVOnSeam( uv, GetNodeUV( F, n2, 0 ));
   }
   else if(Pos->GetTypeOfPosition()==SMDS_TOP_VERTEX)
@@ -370,7 +374,7 @@ gp_XY SMESH_MesherHelper::GetNodeUV(const TopoDS_Face&   F,
           }
         }
       }
-      if ( n2 && mySeamShapeIds.find( vertexID ) != mySeamShapeIds.end() )
+      if ( n2 && IsSeamShape( vertexID ) )
         uv = GetUVOnSeam( uv, GetNodeUV( F, n2, 0 ));
     }
   }
