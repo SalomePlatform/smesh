@@ -39,6 +39,7 @@
     <parameter name="auto_update"                  value="true" />
     <parameter name="display_mode"                 value="1"    />
     <parameter name="auto_groups"                  value="false"/>
+    <parameter name="show_result_notification"     value="2"/>
   </section>
   <section name="resources">
     <!-- Module resources -->

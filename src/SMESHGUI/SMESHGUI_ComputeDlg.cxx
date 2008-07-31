@@ -1157,7 +1157,23 @@ void SMESHGUI_ComputeOp::startOperation()
       currentCellChanged(); // to update buttons
     }
   }
-  myDlg->show();
+  SUIT_ResourceMgr* resMgr = SMESH::GetResourceMgr( SMESHGUI::GetSMESHGUI() );
+  int aNotifyMode = resMgr->integerValue( "SMESH", "show_result_notification" );
+
+  switch( aNotifyMode ) {
+  case 0: // show the mesh computation result dialog NEVER
+    commit();
+    break;
+  case 1: // show the mesh computation result dialog if there are some errors
+    if ( memoryLack || !noCompError || !noHypoError )
+      myDlg->show();
+    else
+      commit();
+    break;
+  default: // show the result dialog after each mesh computation
+    myDlg->show();
+  }
+
 }
 
 //================================================================================

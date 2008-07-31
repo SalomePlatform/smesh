@@ -2817,12 +2817,20 @@ Please, create VTK viewer and try again</translation>
             <translation>Fill</translation>
         </message>
         <message>
+            <source>PREF_NOTIFY_MODE</source>
+            <translation>Show a computation result notification</translation>
+        </message>
+        <message>
             <source>PREF_GROUP_ELEMENTS</source>
             <translation>Elements</translation>
         </message>
         <message>
             <source>PREF_GROUP_EXPORT</source>
             <translation>Mesh export</translation>
+        </message>
+        <message>
+            <source>PREF_GROUP_COMPUTE</source>
+            <translation>Mesh computation</translation>
         </message>
         <message>
             <source>PREF_GROUP_NODES</source>

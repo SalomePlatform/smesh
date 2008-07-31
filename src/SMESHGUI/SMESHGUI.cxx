@@ -3311,6 +3311,20 @@ void SMESHGUI::createPreferences()
   addPreference( tr( "PREF_AUTO_GROUPS" ), exportgroup, LightApp_Preferences::Bool, "SMESH", "auto_groups" );
   addPreference( tr( "PREF_RENUMBER" ), exportgroup, LightApp_Preferences::Bool, "SMESH", "renumbering" );
 
+  int computeGroup = addPreference( tr( "PREF_GROUP_COMPUTE" ), genTab );
+  setPreferenceProperty( computeGroup, "columns", 2 );
+  int notifyMode = addPreference( tr( "PREF_NOTIFY_MODE" ), computeGroup, LightApp_Preferences::Selector, "SMESH", "show_result_notification" );
+  modes.clear();
+  modes.append( "Never" );
+  modes.append( "Errors only" );
+  modes.append( "Always" );
+  indices.clear();
+  indices.append( 0 );
+  indices.append( 1 );
+  indices.append( 2 );
+  setPreferenceProperty( notifyMode, "strings", modes );
+  setPreferenceProperty( notifyMode, "indexes", indices );
+
   int meshTab = addPreference( tr( "PREF_TAB_MESH" ) );
   int nodeGroup = addPreference( tr( "PREF_GROUP_NODES" ), meshTab );
   setPreferenceProperty( nodeGroup, "columns", 2 );
