@@ -222,8 +222,8 @@ namespace SMESH
         aType = VTK_CONVEX_POINT_SET;
         break;
       case QUAD_PENTAHEDRON:
-        //aType = VTK_QUADRATIC_WEDGE; // NOT SUPPORTED IN VTK4.2
-        aType = VTK_CONVEX_POINT_SET;
+        aType = VTK_QUADRATIC_WEDGE;
+        //aType = VTK_CONVEX_POINT_SET;
         break; 
       case QUAD_HEXAHEDRON:
         aType = VTK_QUADRATIC_HEXAHEDRON;
@@ -238,9 +238,13 @@ namespace SMESH
       }
       else {
         // VTK cell connectivity opposites the MED one for volumic elements
-        if ( theIds.size() > 8 ? !theReverse : theReverse ) {
-          ReverseConnectivity( theIds, theType );
+        if( aType != VTK_QUADRATIC_WEDGE) {
+          if ( theIds.size() > 8 ? !theReverse : theReverse ) {
+            ReverseConnectivity( theIds, theType );
+          }
         }
+        else if(theReverse)
+          ReverseConnectivity( theIds, theType );          
       }
             
       myGrid->Reset();
