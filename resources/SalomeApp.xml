@@ -12,6 +12,9 @@
     <parameter name="node_size"                    value="3" />
     <parameter name="element_width"                value="1" />
     <parameter name="shrink_coeff"                 value="75"/>
+    <parameter name="orientation_color"            value="255, 255, 255"/>
+    <parameter name="orientation_scale"            value="0.1"/>
+    <parameter name="orientation_3d_vectors"       value="false"/>
     <parameter name="selection_element_color"      value="255, 255,   0"/>
     <parameter name="selection_object_color"       value="255, 255, 255"/>
     <parameter name="selection_precision_element"  value="0.005"/>

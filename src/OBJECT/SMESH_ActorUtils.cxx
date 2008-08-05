@@ -62,7 +62,7 @@ namespace SMESH
     vtkFloatingPointType val = theDefault;
     SUIT_ResourceMgr* mgr = SUIT_Session::session()->resourceMgr();
     if( mgr )
-      val = (vtkFloatingPointType) mgr->doubleValue( theValue, theSection, theDefault );
+      val = (vtkFloatingPointType) mgr->doubleValue( theSection, theValue, theDefault );
 
     return val;
   }

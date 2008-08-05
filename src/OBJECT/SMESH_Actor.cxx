@@ -116,6 +116,8 @@ SMESH_ActorDef::SMESH_ActorDef()
   myIsShrinkable = false;
   myIsShrunk = false;
 
+  myIsFacesOriented = false;
+
   myControlsPrecision = -1;
   SUIT_ResourceMgr* mgr = SUIT_Session::session()->resourceMgr();
   if ( mgr && mgr->booleanValue( "SMESH", "use_precision", false ) )
@@ -512,6 +514,22 @@ void SMESH_ActorDef::SetCellsLabeled(bool theIsCellsLabeled)
 }
 
 
+void SMESH_ActorDef::SetFacesOriented(bool theIsFacesOriented)
+{
+  myIsFacesOriented = theIsFacesOriented;
+
+  my2DActor->SetFacesOriented(theIsFacesOriented);
+  my3DActor->SetFacesOriented(theIsFacesOriented);
+
+  myTimeStamp->Modified();
+}
+
+bool SMESH_ActorDef::GetFacesOriented()
+{
+  return myIsFacesOriented;
+}
+
+
 void 
 SMESH_ActorDef::
 SetControlMode(eControl theMode)
@@ -693,8 +711,8 @@ void SMESH_ActorDef::AddToRender(vtkRenderer* theRenderer){
   theRenderer->AddActor(myNodeActor);
   theRenderer->AddActor(myBaseActor);
 
-  theRenderer->AddActor(my3DActor);
-  theRenderer->AddActor(my2DActor);
+  my3DActor->AddToRender(theRenderer);
+  my2DActor->AddToRender(theRenderer);
 
   theRenderer->AddActor(my1DActor);
   theRenderer->AddActor(my1DExtActor);
@@ -721,8 +739,8 @@ void SMESH_ActorDef::RemoveFromRender(vtkRenderer* theRenderer){
   theRenderer->RemoveActor(my1DActor);
   theRenderer->RemoveActor(my1DExtActor);
 
-  theRenderer->RemoveActor(my2DActor);
-  theRenderer->RemoveActor(my3DActor);
+  my2DActor->RemoveFromRender(theRenderer);
+  my3DActor->RemoveFromRender(theRenderer);
 
   theRenderer->RemoveActor(myScalarBarActor);
   theRenderer->RemoveActor(myPointLabels);
@@ -770,7 +788,7 @@ bool SMESH_ActorDef::Init(TVisualObjPtr theVisualObj,
   //SetIsShrunkable(theGrid->GetNumberOfCells() > 10);
   SetIsShrunkable(true);
 
-  SetShrinkFactor( SMESH::GetFloat( "SMESH:shrink_coeff", 0.75 ) );
+  SetShrinkFactor( SMESH::GetFloat( "SMESH:shrink_coeff", 75 ) / 100. );
 
   int aMode = mgr->integerValue( "SMESH", "display_mode" );
   SetRepresentation(-1);
@@ -1265,6 +1283,9 @@ void SMESH_ActorDef::Update(){
   }
   if(myIsCellsLabeled){
     SetCellsLabeled(myIsCellsLabeled);
+  }
+  if(myIsFacesOriented){
+    SetFacesOriented(myIsFacesOriented);
   }
   SetEntityMode(GetEntityMode());
   SetVisibility(GetVisibility());

@@ -203,6 +203,10 @@
             <translation>Delete Groups</translation>
         </message>
         <message>
+            <source>MEN_FACE_ORIENTATION</source>
+            <translation>Orientation of faces</translation>
+        </message>
+        <message>
             <source>MEN_DISABLE_AUTO_COLOR</source>
             <translation>Disable auto color</translation>
         </message>
@@ -1941,6 +1945,10 @@ Consider saving your work before application crash</translation>
             <translation>Delete Groups</translation>
         </message>
         <message>
+            <source>STB_FACE_ORIENTATION</source>
+            <translation>Orientation of faces</translation>
+        </message>
+        <message>
             <source>STB_DISABLE_AUTO_COLOR</source>
             <translation>Disable auto color</translation>
         </message>
@@ -2393,6 +2401,10 @@ Consider saving your work before application crash</translation>
             <translation>Delete Groups</translation>
         </message>
         <message>
+            <source>TOP_FACE_ORIENTATION</source>
+            <translation>Orientation of faces</translation>
+        </message>
+        <message>
             <source>TOP_DISABLE_AUTO_COLOR</source>
             <translation>Disable auto color</translation>
         </message>
@@ -2797,6 +2809,18 @@ Please, create VTK viewer and try again</translation>
             <translation>Color</translation>
         </message>
         <message>
+            <source>PREF_ORIENTATION_COLOR</source>
+            <translation>Color</translation>
+        </message>
+        <message>
+            <source>PREF_ORIENTATION_3D_VECTORS</source>
+            <translation>3D vectors</translation>
+        </message>
+        <message>
+            <source>PREF_ORIENTATION_SCALE</source>
+            <translation>Scale</translation>
+        </message>
+        <message>
             <source>PREF_DISPLAY_ENTITY</source>
             <translation>Display entity</translation>
         </message>
@@ -2827,6 +2851,10 @@ Please, create VTK viewer and try again</translation>
         <message>
             <source>PREF_GROUP_EXPORT</source>
             <translation>Mesh export</translation>
+        </message>
+        <message>
+            <source>PREF_GROUP_FACES_ORIENTATION</source>
+            <translation>Orientation of faces</translation>
         </message>
         <message>
             <source>PREF_GROUP_COMPUTE</source>

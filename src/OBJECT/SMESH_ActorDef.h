@@ -168,6 +168,9 @@ class SMESH_ActorDef : public SMESH_Actor
   virtual void SetCellsLabeled(bool theIsCellsLabeled);
   virtual bool GetCellsLabeled(){ return myIsCellsLabeled;}
 
+  virtual void SetFacesOriented(bool theIsFacesOriented);
+  virtual bool GetFacesOriented();
+
   virtual void SetControlMode(eControl theMode);
   virtual eControl GetControlMode(){ return myControlMode;}
 
@@ -249,6 +252,8 @@ class SMESH_ActorDef : public SMESH_Actor
   typedef std::vector<TPlanePtr> TCippingPlaneCont;
   TCippingPlaneCont myCippingPlaneCont;
   long myControlsPrecision;
+
+  bool myIsFacesOriented;
 
   SMESH_ActorDef();
   ~SMESH_ActorDef();

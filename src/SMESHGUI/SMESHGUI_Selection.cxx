@@ -115,7 +115,7 @@ QVariant SMESHGUI_Selection::parameter( const int ind, const QString& p ) const
   else if ( p=="isComputable" )  val = QVariant( isComputable( ind ) );
   else if ( p=="hasReference" )  val = QVariant( hasReference( ind ) );
   else if ( p=="isImported" )    val = QVariant( isImported( ind ) );
-
+  else if ( p=="facesOrientationMode" ) val = QVariant( facesOrientationMode( ind ) );
 
   if( val.isValid() )
     return val;
@@ -253,6 +253,22 @@ QString SMESHGUI_Selection::controlMode( int ind ) const
     }
   }
   return "eNone";
+}
+
+//=======================================================================
+//function : facesOrientationMode
+//purpose  : 
+//=======================================================================
+
+QString SMESHGUI_Selection::facesOrientationMode( int ind ) const
+{
+  SMESH_Actor* actor = getActor( ind );
+  if ( actor ) {
+    if ( actor->GetFacesOriented() )
+      return "IsOriented";
+    return "IsNotOriented";
+  }
+  return "Unknown";
 }
 
 //=======================================================================
@@ -494,6 +510,7 @@ bool SMESHGUI_Selection::isImported( const int ind ) const
   QString e = entry( ind );
   _PTR(SObject) SO = SMESH::GetActiveStudyDocument()->FindObjectID( e.toLatin1().constData() );
   bool res = false;
+  /*
   if( SO )
   {
     SMESH::SMESH_Mesh_var aMesh = SMESH::SMESH_Mesh::_narrow( SMESH::SObjectToObject( SO ) );
@@ -503,5 +520,6 @@ bool SMESHGUI_Selection::isImported( const int ind ) const
       res = strlen( (char*)inf->fileName ) > 0;
     }
   }
+  */
   return res;
 }

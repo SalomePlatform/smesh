@@ -93,6 +93,9 @@ class SMESHOBJECT_EXPORT SMESH_Actor: public SALOME_Actor
   virtual void SetCellsLabeled(bool theIsCellsLabeled) = 0;
   virtual bool GetCellsLabeled() = 0;
 
+  virtual void SetFacesOriented(bool theIsFacesOriented) = 0;
+  virtual bool GetFacesOriented() = 0;
+
   enum eControl{eNone, eLength, eLength2D, eFreeBorders, eFreeEdges, eMultiConnection, 
 		eArea, eTaper, eAspectRatio, eMinimumAngle, eWarping, eSkew,
 		eAspectRatio3D, eMultiConnection2D, eVolume3D};

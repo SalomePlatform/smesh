@@ -32,7 +32,8 @@ salomeinclude_HEADERS = \
 	SMESH_Actor.h \
         SMESH_Object.h \
 	SMESH_ObjectDef.h \
-	SMESH_ActorUtils.h
+	SMESH_ActorUtils.h \
+	SMESH_FaceOrientationFilter.h
 
 
 # Libraries targets
@@ -43,7 +44,8 @@ dist_libSMESHObject_la_SOURCES = \
 	SMESH_DeviceActor.cxx \
 	SMESH_Actor.cxx \
 	SMESH_ExtractGeometry.cxx \
-	SMESH_ActorUtils.cxx
+	SMESH_ActorUtils.cxx \
+	SMESH_FaceOrientationFilter.cxx
 
 libSMESHObject_la_CPPFLAGS = \
         $(KERNEL_CXXFLAGS) \

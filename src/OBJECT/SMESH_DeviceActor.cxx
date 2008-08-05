@@ -31,6 +31,7 @@
 #include "SMESH_ExtractGeometry.h"
 #include "SMESH_ControlsDef.hxx"
 #include "SMESH_ActorUtils.h"
+#include "SMESH_FaceOrientationFilter.h"
 #include "VTKViewer_CellLocationsArray.h"
 
 #include <VTKViewer_Transform.h>
@@ -60,6 +61,8 @@
 
 #include <vtkImplicitBoolean.h>
 #include <vtkPassThroughFilter.h>
+
+#include <vtkRenderer.h>
 
 #include "utilities.h"
 
@@ -111,6 +114,21 @@ SMESH_DeviceActor
 
   for(int i = 0; i < 6; i++)
     myPassFilter.push_back(vtkPassThroughFilter::New());
+
+  // Orientation of faces
+  myIsFacesOriented = false;
+
+  vtkFloatingPointType anRGB[3] = { 1, 1, 1 };
+  SMESH::GetColor( "SMESH", "orientation_color", anRGB[0], anRGB[1], anRGB[2], QColor( 255, 255, 255 ) );
+
+  myFaceOrientationFilter = SMESH_FaceOrientationFilter::New();
+
+  myFaceOrientationDataMapper = vtkPolyDataMapper::New();
+  myFaceOrientationDataMapper->SetInput(myFaceOrientationFilter->GetOutput());
+
+  myFaceOrientation = vtkActor::New();
+  myFaceOrientation->SetMapper(myFaceOrientationDataMapper);
+  myFaceOrientation->GetProperty()->SetColor(anRGB[0], anRGB[1], anRGB[2]);
 }
 
 
@@ -138,6 +156,14 @@ SMESH_DeviceActor
   for(int i = 0, iEnd = myPassFilter.size(); i < iEnd; i++){
     myPassFilter[i]->Delete();
   }
+
+  // Orientation of faces
+  myFaceOrientationFilter->Delete();
+
+  myFaceOrientationDataMapper->RemoveAllInputs();
+  myFaceOrientationDataMapper->Delete();
+
+  myFaceOrientation->Delete();
 }
 
 
@@ -221,16 +247,12 @@ SMESH_DeviceActor
 
     anId++; // 3
     myTransformFilter->SetInput( myPassFilter[ anId ]->GetPolyDataOutput() );
-    myTransformFilter->SetInput( myPassFilter[ anId ]->GetPolyDataOutput() );
 
     anId++; // 4
     myPassFilter[ anId ]->SetInput( myTransformFilter->GetOutput() );
     myPassFilter[ anId + 1 ]->SetInput( myPassFilter[ anId ]->GetOutput() );
-    myPassFilter[ anId ]->SetInput( myTransformFilter->GetOutput() );
-    myPassFilter[ anId + 1 ]->SetInput( myPassFilter[ anId ]->GetOutput() );
 
     anId++; // 5
-    myMapper->SetInput( myPassFilter[ anId ]->GetPolyDataOutput() );
     myMapper->SetInput( myPassFilter[ anId ]->GetPolyDataOutput() );
 
     vtkLODActor::SetMapper( myMapper );
@@ -536,6 +558,7 @@ SMESH_DeviceActor
   mTime = max(mTime,myMergeFilter->GetMTime());
   mTime = max(mTime,myGeomFilter->GetMTime());
   mTime = max(mTime,myTransformFilter->GetMTime());
+  mTime = max(mTime,myFaceOrientationFilter->GetMTime());
   return mTime;
 }
 
@@ -578,6 +601,30 @@ SMESH_DeviceActor
 
 void
 SMESH_DeviceActor
+::SetFacesOriented(bool theIsFacesOriented) 
+{
+  if ( vtkDataSet* aDataSet = myPassFilter[ 1 ]->GetOutput() )
+  {
+    myIsFacesOriented = theIsFacesOriented;
+    if( theIsFacesOriented )
+      myFaceOrientationFilter->SetInput( aDataSet );
+    UpdateFaceOrientation();
+  }
+}
+
+void
+SMESH_DeviceActor
+::UpdateFaceOrientation()
+{
+  bool aShowFaceOrientation = myIsFacesOriented;
+  aShowFaceOrientation &= GetVisibility();
+  aShowFaceOrientation &= myRepresentation == eSurface;
+  myFaceOrientation->SetVisibility(aShowFaceOrientation);
+}
+
+
+void
+SMESH_DeviceActor
 ::SetRepresentation(EReperesent theMode)
 {
   switch(theMode){
@@ -602,6 +649,7 @@ SMESH_DeviceActor
     GetProperty()->SetRepresentation(theMode);
   }
   myRepresentation = theMode;
+  UpdateFaceOrientation();
   GetProperty()->Modified();
   myMapper->Modified();
   Modified();
@@ -619,6 +667,7 @@ SMESH_DeviceActor
   }else{
     vtkLODActor::SetVisibility(false);
   }
+  UpdateFaceOrientation();
 }
 
 
@@ -630,6 +679,23 @@ SMESH_DeviceActor
     vtkLODActor::SetVisibility(false);
   }
   return vtkLODActor::GetVisibility();
+}
+
+
+void
+SMESH_DeviceActor
+::AddToRender(vtkRenderer* theRenderer)
+{
+  theRenderer->AddActor(this);
+  theRenderer->AddActor(myFaceOrientation);
+}
+
+void
+SMESH_DeviceActor
+::RemoveFromRender(vtkRenderer* theRenderer)
+{
+  theRenderer->RemoveActor(this);
+  theRenderer->RemoveActor(myFaceOrientation);
 }
 
 

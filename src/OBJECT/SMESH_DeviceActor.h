@@ -52,6 +52,7 @@ class VTKViewer_TransformFilter;
 class VTKViewer_ExtractUnstructuredGrid;
 
 class SMESH_ExtractGeometry;
+class SMESH_FaceOrientationFilter;
 
 
 class SMESHOBJECT_EXPORT SMESH_DeviceActor: public vtkLODActor{
@@ -74,6 +75,11 @@ class SMESHOBJECT_EXPORT SMESH_DeviceActor: public vtkLODActor{
   virtual void SetTransform(VTKViewer_Transform* theTransform); 
   virtual unsigned long int GetMTime();
 
+  virtual void SetFacesOriented(bool theIsFacesOriented);
+  virtual bool GetFacesOriented() { return myIsFacesOriented; }
+
+  void UpdateFaceOrientation();
+
   vtkFloatingPointType GetShrinkFactor();
   void  SetShrinkFactor(vtkFloatingPointType value);
 
@@ -88,6 +94,9 @@ class SMESHOBJECT_EXPORT SMESH_DeviceActor: public vtkLODActor{
 
   virtual void SetVisibility(int theMode);
   virtual int GetVisibility();
+
+  virtual void AddToRender(vtkRenderer* theRenderer); 
+  virtual void RemoveFromRender(vtkRenderer* theRenderer);
 
   VTKViewer_ExtractUnstructuredGrid* GetExtractUnstructuredGrid();
   vtkUnstructuredGrid* GetUnstructuredGrid();
@@ -123,6 +132,11 @@ class SMESHOBJECT_EXPORT SMESH_DeviceActor: public vtkLODActor{
 
   vtkMergeFilter* myMergeFilter;
   VTKViewer_ExtractUnstructuredGrid* myExtractUnstructuredGrid;
+
+  bool myIsFacesOriented;
+  SMESH_FaceOrientationFilter* myFaceOrientationFilter;
+  vtkPolyDataMapper* myFaceOrientationDataMapper;
+  vtkActor* myFaceOrientation;
 
   bool myStoreClippingMapping;
   VTKViewer_GeometryFilter *myGeomFilter;

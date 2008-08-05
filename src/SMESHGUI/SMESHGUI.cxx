@@ -1403,6 +1403,23 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     ::SetDisplayEntity(theCommandID);
   break;
 
+  case 221: // Orientation of faces
+    {
+      LightApp_SelectionMgr* mgr = selectionMgr();
+      SALOME_ListIO selected; mgr->selectedObjects( selected );
+
+      SALOME_ListIteratorOfListIO it(selected);
+      for( ; it.More(); it.Next()) {
+        Handle(SALOME_InteractiveObject) anIObject = it.Value();
+	if(anIObject->hasEntry()) {
+	  if(SMESH_Actor *anActor = SMESH::FindActorByEntry(anIObject->getEntry())){
+	    anActor->SetFacesOriented( !anActor->GetFacesOriented() );
+	  }
+	}
+      }
+      break;
+    }
+
   case 214:					// UPDATE
     {
       if(checkLock(aStudy)) break;
@@ -2620,6 +2637,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction(  218, "FACES",          "ICON_DLG_TRIANGLE", 0, true );
   createSMESHAction(  219, "VOLUMES",        "ICON_DLG_TETRAS", 0, true );
   createSMESHAction(  220, "ALL" );
+  createSMESHAction(  221, "FACE_ORIENTATION", "", 0, true );
   createSMESHAction( 1100, "EDIT_HYPO" );
   createSMESHAction( 1101, "RENAME", "", Qt::Key_F2 );
   createSMESHAction( 1102, "UNASSIGN" );
@@ -3010,6 +3028,13 @@ void SMESHGUI::initialize( CAM_Application* app )
   popupMgr()->setRule( action( 220 ), aDiffElemsInVTK + "&& isVisible && not( elemTypes in entityMode )", QtxPopupMgr::VisibleRule );
 
   //-------------------------------------------------
+  // Orientation of faces
+  //-------------------------------------------------
+  popupMgr()->insert( action( 221 ), -1, -1 );
+  popupMgr()->setRule( action( 221 ), aMeshInVTK + "&& isVisible", QtxPopupMgr::VisibleRule);
+  popupMgr()->setRule( action( 221 ), "facesOrientationMode = 'IsOriented'", QtxPopupMgr::ToggleRule );
+
+  //-------------------------------------------------
   // Color / Size
   //-------------------------------------------------
   popupMgr()->insert( action( 1132 ), -1, -1 );
@@ -3354,6 +3379,18 @@ void SMESHGUI::createPreferences()
 
   setPreferenceProperty( shrink, "min", 0 );
   setPreferenceProperty( shrink, "max", 100 );
+
+  int orientGroup = addPreference( tr( "PREF_GROUP_FACES_ORIENTATION" ), meshTab );
+  setPreferenceProperty( orientGroup, "columns", 1 );
+
+  addPreference( tr( "PREF_ORIENTATION_COLOR" ), orientGroup, LightApp_Preferences::Color, "SMESH", "orientation_color" );
+  int orientScale = addPreference( tr( "PREF_ORIENTATION_SCALE" ), orientGroup, LightApp_Preferences::DblSpin, "SMESH", "orientation_scale" );
+
+  setPreferenceProperty( orientScale, "min", 0 );
+  setPreferenceProperty( orientScale, "max", 1 );
+  setPreferenceProperty( orientScale, "step", 0.1 );
+
+  addPreference( tr( "PREF_ORIENTATION_3D_VECTORS" ), orientGroup, LightApp_Preferences::Bool, "SMESH", "orientation_3d_vectors" );
 
   int selTab = addPreference( tr( "PREF_TAB_SELECTION" ) );
 
