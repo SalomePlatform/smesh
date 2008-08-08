@@ -49,7 +49,7 @@ public:
   
 };
 
-class StdMeshers_UseExisting_1D: public SMESH_1D_Algo
+class STDMESHERS_EXPORT StdMeshers_UseExisting_1D: public SMESH_1D_Algo
 {
 public:
   StdMeshers_UseExisting_1D(int hypId, int studyId, SMESH_Gen* gen);

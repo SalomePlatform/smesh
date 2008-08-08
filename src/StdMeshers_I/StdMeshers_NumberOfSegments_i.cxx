@@ -27,7 +27,6 @@
 //  Module : SMESH
 //  $Header$
 
-using namespace std;
 #include "StdMeshers_NumberOfSegments_i.hxx"
 #include "SMESH_Gen_i.hxx"
 #include "SMESH_Gen.hxx"
@@ -38,6 +37,7 @@ using namespace std;
 
 #include <TCollection_AsciiString.hxx>
 
+using namespace std;
 //=============================================================================
 /*!
  *  StdMeshers_NumberOfSegments_i::StdMeshers_NumberOfSegments_i

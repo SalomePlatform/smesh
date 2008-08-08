@@ -27,20 +27,20 @@
 #define LIBSMESH_SWIG_H
 
 #ifdef WNT
-#if defined SMESHSWIG_EXPORTS
-  #define SMESHSWIG_EXPORT __declspec( dllexport )
+#if defined SMESH_SWIG_EXPORTS
+  #define SMESH_SWIG_EXPORT __declspec( dllexport )
  #else
-  #define SMESHSWIG_EXPORT __declspec( dllimport )
+  #define SMESH_SWIG_EXPORT __declspec( dllimport )
  #endif
 #else
- #define SMESHSWIG_EXPORT
+ #define SMESH_SWIG_EXPORT
 #endif
 
 // IDL includes
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SALOMEDS)
 
-class SMESHSWIG_EXPORT SMESH_Swig
+class SMESH_SWIG_EXPORT SMESH_Swig
 {
 public:
   SMESH_Swig();
