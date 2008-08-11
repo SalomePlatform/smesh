@@ -61,7 +61,9 @@
 #include <QLineEdit>
 
 // OCCT includes
+#include <TopoDS.hxx>
 #include <TopoDS_Shape.hxx>
+#include <TopoDS_Shell.hxx>
 #include <TopExp_Explorer.hxx>
 
 // IDL includes
@@ -453,24 +455,42 @@ void SMESHGUI_MeshOp::selectionDone()
         for (int iss = 0; iss < aSeq->length() && shapeDim < 3; iss++) {
           GEOM::GEOM_Object_var aGeomVar = aSeq[iss];
           switch ( aGeomVar->GetShapeType() ) {
-          case GEOM::SOLID:
-          case GEOM::SHELL:  shapeDim = 3; break;
+          case GEOM::SOLID:  shapeDim = 3; break;
+          case GEOM::SHELL:
+            {
+              //shapeDim = 3; // Bug 0016155: EDF PAL 447: If the shape is a Shell, disable 3D tab
+              shapeDim = (shapeDim < 2) ? 2 : shapeDim;
+              TopoDS_Shape aShape;
+              if (GEOMBase::GetShape(aGeomVar, aShape)) {
+                if (aShape.Closed())
+                  shapeDim = 3;
+              }
+            }
+            break;
           case GEOM::FACE:   shapeDim = (shapeDim < 2) ? 2 : shapeDim; break;
           case GEOM::WIRE:
           case GEOM::EDGE:   shapeDim = (shapeDim < 1) ? 1 : shapeDim; break;
           case GEOM::VERTEX: break;
           default:
-            TopoDS_Shape aShape;
-            if ( GEOMBase::GetShape(aGeomVar, aShape)) {
-              TopExp_Explorer exp( aShape, TopAbs_SHELL );
-              if ( exp.More() )
-                shapeDim = 3;
-              else if ( exp.Init( aShape, TopAbs_FACE ), exp.More() )
-                shapeDim = (shapeDim < 2) ? 2 : shapeDim;
-              else if ( exp.Init( aShape, TopAbs_EDGE ), exp.More() )
-                shapeDim = (shapeDim < 1) ? 1 : shapeDim;
-              else
-                ;//shapeDim = 0;
+            {
+              TopoDS_Shape aShape;
+              if (GEOMBase::GetShape(aGeomVar, aShape)) {
+                TopExp_Explorer exp (aShape, TopAbs_SHELL);
+                if (exp.More()) {
+                  //shapeDim = 3; // Bug 0016155: EDF PAL 447: If the shape is a Shell, disable 3D tab
+                  shapeDim = (shapeDim < 2) ? 2 : shapeDim;
+                  for (; exp.More() && shapeDim == 2; exp.Next()) {
+                    if (exp.Current().Closed())
+                      shapeDim = 3;
+                  }
+                }
+                else if ( exp.Init( aShape, TopAbs_FACE ), exp.More() )
+                  shapeDim = (shapeDim < 2) ? 2 : shapeDim;
+                else if ( exp.Init( aShape, TopAbs_EDGE ), exp.More() )
+                  shapeDim = (shapeDim < 1) ? 1 : shapeDim;
+                else
+                  ;//shapeDim = 0;
+              }
             }
           }
         }
