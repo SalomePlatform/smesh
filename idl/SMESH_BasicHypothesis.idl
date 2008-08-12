@@ -307,6 +307,16 @@ module StdMeshers
   };
 
   /*!
+   * StdMeshers_TrianglePreference: interface of "TrianglePreference" hypothesis.
+   * This hypothesis is used by StdMeshers_Quadrangle_2D algorithm.
+   * Presence of this hypothesis forces construction of triangles in the refinement 
+   * area if the number of nodes on opposite edges is not the same.
+   */
+  interface StdMeshers_TrianglePreference : SMESH::SMESH_Hypothesis
+  {
+  };
+
+  /*!
    * StdMeshers_QuadraticMesh: interface of "QuadraticMesh" hypothesis.
    * This is an auxiliary 1D hypothesis whose presence forces construction 
    * of quadratic edges.

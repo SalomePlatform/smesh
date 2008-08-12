@@ -18,6 +18,7 @@ allows to apply 1D, 2D, 3D meshing algorithms and a set of hypotheses:
 <li>\ref max_element_area_anchor "Max Element Area"</li>
 <li>\ref length_from_edges_anchor "Length from Edges"</li>
 <li>\ref quadrangle_preference_anchor "Quadrangle Preference"</li>
+<li>\ref triangle_preference_anchor "Triangle Preference"</li>
 <li>\ref max_element_volume_hypo_page "Max Element Volume"</li>
 </ul>
 </li>

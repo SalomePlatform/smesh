@@ -58,6 +58,7 @@ salomeinclude_HEADERS = \
 	StdMeshers_CompositeSegment_1D_i.hxx \
 	StdMeshers_SegmentAroundVertex_0D_i.hxx \
 	StdMeshers_SegmentLengthAroundVertex_i.hxx \
+	StdMeshers_TrianglePreference_i.hxx \
 	SMESH_StdMeshers_I.hxx
 
 # Libraries targets
@@ -93,7 +94,8 @@ dist_libStdMeshersEngine_la_SOURCES = \
 	StdMeshers_CompositeSegment_1D_i.cxx \
 	StdMeshers_SegmentAroundVertex_0D_i.cxx \
 	StdMeshers_SegmentLengthAroundVertex_i.cxx \
-	StdMeshers_UseExisting_1D2D_i.cxx
+	StdMeshers_UseExisting_1D2D_i.cxx \
+	StdMeshers_TrianglePreference_i.cxx
 
 # additionnal information to compil and link file
 libStdMeshersEngine_la_CPPFLAGS = \

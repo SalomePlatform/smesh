@@ -171,6 +171,10 @@
             <translation>mesh_tree_algo_quad.png</translation>
         </message>
         <message>
+            <source>ICON_SMESH_TREE_HYPO_TrianglePreference</source>
+            <translation>mesh_tree_algo_mefisto.png</translation>
+        </message>
+        <message>
             <source>ICON_SMESH_TREE_HYPO_QuadraticMesh</source>
             <translation>mesh_tree_hypo_length.png</translation>
         </message>
