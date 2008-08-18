@@ -926,6 +926,42 @@ static gp_UV CalcUV(double x0, double x1, double y0, double y1,
 }
 
 //=======================================================================
+//function : CalcUV2
+//purpose  : auxilary function for ComputeQuadPref
+//=======================================================================
+
+static gp_UV CalcUV2(double x, double y,
+                     FaceQuadStruct* quad,
+                     const gp_UV& a0, const gp_UV& a1,
+                     const gp_UV& a2, const gp_UV& a3)
+{
+  const vector<UVPtStruct>& uv_eb = quad->side[0]->GetUVPtStruct(true,0 );
+  const vector<UVPtStruct>& uv_er = quad->side[1]->GetUVPtStruct(false,1);
+  const vector<UVPtStruct>& uv_et = quad->side[2]->GetUVPtStruct(true,1 );
+  const vector<UVPtStruct>& uv_el = quad->side[3]->GetUVPtStruct(false,0);
+
+  //double x = (x0 + y0 * (x1 - x0)) / (1 - (y1 - y0) * (x1 - x0));
+  //double y = y0 + x * (y1 - y0);
+
+  double param_b = uv_eb[0].normParam + x * (uv_eb.back().normParam - uv_eb[0].normParam);
+  double param_t = uv_et[0].normParam + x * (uv_et.back().normParam - uv_et[0].normParam);
+  double param_r = uv_er[0].normParam + y * (uv_er.back().normParam - uv_er[0].normParam);
+  double param_l = uv_el[0].normParam + y * (uv_el.back().normParam - uv_el[0].normParam);
+
+  gp_UV p0 = quad->side[BOTTOM_SIDE]->Value2d(param_b).XY();
+  gp_UV p1 = quad->side[RIGHT_SIDE ]->Value2d(param_r).XY();
+  gp_UV p2 = quad->side[TOP_SIDE   ]->Value2d(param_t).XY();
+  gp_UV p3 = quad->side[LEFT_SIDE  ]->Value2d(param_l).XY();
+
+  gp_UV uv = p0 * (1 - y) + p1 * x + p2 * y + p3 * (1 - x);
+
+  uv -= (1 - x) * (1 - y) * a0 + x * (1 - y) * a1 + x * y * a2 + (1 - x) * y * a3;
+
+  return uv;
+}
+
+
+//=======================================================================
 /*!
  * Create only quandrangle faces
  */
@@ -935,6 +971,11 @@ bool StdMeshers_Quadrangle_2D::ComputeQuadPref (SMESH_Mesh &        aMesh,
                                                 const TopoDS_Shape& aShape,
                                                 FaceQuadStruct*     quad)
 {
+  // Auxilary key in order to keep old variant
+  // of meshing after implementation new variant
+  // for bug 0016220 from Mantis.
+  bool OldVersion = false;
+
   SMESHDS_Mesh * meshDS = aMesh.GetMeshDS();
   const TopoDS_Face& F = TopoDS::Face(aShape);
   Handle(Geom_Surface) S = BRep_Tool::Surface(F);
@@ -988,6 +1029,7 @@ bool StdMeshers_Quadrangle_2D::ComputeQuadPref (SMESH_Mesh &        aMesh,
   int addh = 0;
   int addv = 0;
 
+  // ----------- Old version ---------------
   // orientation of face and 3 main domain for future faces
   //       0   top    1
   //      1------------1
@@ -998,6 +1040,20 @@ bool StdMeshers_Quadrangle_2D::ComputeQuadPref (SMESH_Mesh &        aMesh,
   //       |  /    \  |
   //       | /  C   \ |
   //       |/        \|
+  //      0------------0
+  //       0  bottom  1
+
+  // ----------- New version ---------------
+  // orientation of face and 3 main domain for future faces
+  //       0   top    1
+  //      1------------1
+  //       |  |____|  |
+  //       |  /    \  |
+  //       | /  C   \ |
+  //  left |/________\| rigth
+  //       |          |
+  //       |          |
+  //       |          |
   //      0------------0
   //       0  bottom  1
 
@@ -1034,18 +1090,21 @@ bool StdMeshers_Quadrangle_2D::ComputeQuadPref (SMESH_Mesh &        aMesh,
     npl.Append(uv_el[i].normParam);
   }
 
-  // add some params to right and left after the first param
-  // insert to right
-  int dr = nbv - nr;
-  double dpr = (npr.Value(2) - npr.Value(1))/(dr+1);
-  for(i=1; i<=dr; i++) {
-    npr.InsertAfter(1,npr.Value(2)-dpr);
-  }
-  // insert to left
-  int dl = nbv - nl;
-  dpr = (npl.Value(2) - npl.Value(1))/(dl+1);
-  for(i=1; i<=dl; i++) {
-    npl.InsertAfter(1,npl.Value(2)-dpr);
+  int dl,dr;
+  if(OldVersion) {
+    // add some params to right and left after the first param
+    // insert to right
+    dr = nbv - nr;
+    double dpr = (npr.Value(2) - npr.Value(1))/(dr+1);
+    for(i=1; i<=dr; i++) {
+      npr.InsertAfter(1,npr.Value(2)-dpr);
+    }
+    // insert to left
+    dl = nbv - nl;
+    dpr = (npl.Value(2) - npl.Value(1))/(dl+1);
+    for(i=1; i<=dl; i++) {
+      npl.InsertAfter(1,npl.Value(2)-dpr);
+    }
   }
   //cout<<"npb:";
   //for(i=1; i<=npb.Length(); i++) {
@@ -1067,210 +1126,399 @@ bool StdMeshers_Quadrangle_2D::ComputeQuadPref (SMESH_Mesh &        aMesh,
   TColgp_SequenceOfXY UVL;
   TColgp_SequenceOfXY UVR;
 
-  // step1: create faces for left domain
-  StdMeshers_Array2OfNode NodesL(1,dl+1,1,nl);
-  // add left nodes
-  for(j=1; j<=nl; j++)
-    NodesL.SetValue(1,j,uv_el[j-1].node);
-  if(dl>0) {
-    // add top nodes
-    for(i=1; i<=dl; i++) 
-      NodesL.SetValue(i+1,nl,uv_et[i].node);
+  if(OldVersion) {
+    // step1: create faces for left domain
+    StdMeshers_Array2OfNode NodesL(1,dl+1,1,nl);
+    // add left nodes
+    for(j=1; j<=nl; j++)
+      NodesL.SetValue(1,j,uv_el[j-1].node);
+    if(dl>0) {
+      // add top nodes
+      for(i=1; i<=dl; i++) 
+        NodesL.SetValue(i+1,nl,uv_et[i].node);
+      // create and add needed nodes
+      TColgp_SequenceOfXY UVtmp;
+      for(i=1; i<=dl; i++) {
+        double x0 = npt.Value(i+1);
+        double x1 = x0;
+        // diagonal node
+        double y0 = npl.Value(i+1);
+        double y1 = npr.Value(i+1);
+        gp_UV UV = CalcUV(x0, x1, y0, y1, quad, a0, a1, a2, a3);
+        gp_Pnt P = S->Value(UV.X(),UV.Y());
+        SMDS_MeshNode * N = meshDS->AddNode(P.X(), P.Y(), P.Z());
+        meshDS->SetNodeOnFace(N, geomFaceID, UV.X(), UV.Y());
+        NodesL.SetValue(i+1,1,N);
+        if(UVL.Length()<nbv-nnn-1) UVL.Append(UV);
+        // internal nodes
+        for(j=2; j<nl; j++) {
+          double y0 = npl.Value(dl+j);
+          double y1 = npr.Value(dl+j);
+          gp_UV UV = CalcUV(x0, x1, y0, y1, quad, a0, a1, a2, a3);
+          gp_Pnt P = S->Value(UV.X(),UV.Y());
+          SMDS_MeshNode* N = meshDS->AddNode(P.X(), P.Y(), P.Z());
+          meshDS->SetNodeOnFace(N, geomFaceID, UV.X(), UV.Y());
+          NodesL.SetValue(i+1,j,N);
+          if( i==dl ) UVtmp.Append(UV);
+        }
+      }
+      for(i=1; i<=UVtmp.Length() && UVL.Length()<nbv-nnn-1; i++) {
+        UVL.Append(UVtmp.Value(i));
+      }
+      //cout<<"Dump NodesL:"<<endl;
+      //for(i=1; i<=dl+1; i++) {
+      //  cout<<"i="<<i;
+      //  for(j=1; j<=nl; j++) {
+      //    cout<<" ("<<NodesL.Value(i,j)->X()<<","<<NodesL.Value(i,j)->Y()<<","<<NodesL.Value(i,j)->Z()<<")";
+      //  }
+      //  cout<<endl;
+      //}
+      // create faces
+      for(i=1; i<=dl; i++) {
+        for(j=1; j<nl; j++) {
+          if(WisF) {
+            SMDS_MeshFace* F =
+              myTool->AddFace(NodesL.Value(i,j), NodesL.Value(i+1,j),
+                              NodesL.Value(i+1,j+1), NodesL.Value(i,j+1));
+            meshDS->SetMeshElementOnShape(F, geomFaceID);
+          }
+          else {
+            SMDS_MeshFace* F =
+              myTool->AddFace(NodesL.Value(i,j), NodesL.Value(i,j+1),
+                              NodesL.Value(i+1,j+1), NodesL.Value(i+1,j));
+            meshDS->SetMeshElementOnShape(F, geomFaceID);
+          }
+        }
+      }
+    }
+    else {
+      // fill UVL using c2d
+      for(i=1; i<npl.Length() && UVL.Length()<nbv-nnn-1; i++) {
+        UVL.Append( gp_UV ( uv_el[i].u, uv_el[i].v ));
+      }
+    }
+    
+    // step2: create faces for right domain
+    StdMeshers_Array2OfNode NodesR(1,dr+1,1,nr);
+    // add right nodes
+    for(j=1; j<=nr; j++) 
+      NodesR.SetValue(1,j,uv_er[nr-j].node);
+    if(dr>0) {
+      // add top nodes
+      for(i=1; i<=dr; i++) 
+        NodesR.SetValue(i+1,1,uv_et[nt-1-i].node);
+      // create and add needed nodes
+      TColgp_SequenceOfXY UVtmp;
+      for(i=1; i<=dr; i++) {
+        double x0 = npt.Value(nt-i);
+        double x1 = x0;
+        // diagonal node
+        double y0 = npl.Value(i+1);
+        double y1 = npr.Value(i+1);
+        gp_UV UV = CalcUV(x0, x1, y0, y1, quad, a0, a1, a2, a3);
+        gp_Pnt P = S->Value(UV.X(),UV.Y());
+        SMDS_MeshNode * N = meshDS->AddNode(P.X(), P.Y(), P.Z());
+        meshDS->SetNodeOnFace(N, geomFaceID, UV.X(), UV.Y());
+        NodesR.SetValue(i+1,nr,N);
+        if(UVR.Length()<nbv-nnn-1) UVR.Append(UV);
+        // internal nodes
+        for(j=2; j<nr; j++) {
+          double y0 = npl.Value(nbv-j+1);
+          double y1 = npr.Value(nbv-j+1);
+          gp_UV UV = CalcUV(x0, x1, y0, y1, quad, a0, a1, a2, a3);
+          gp_Pnt P = S->Value(UV.X(),UV.Y());
+          SMDS_MeshNode* N = meshDS->AddNode(P.X(), P.Y(), P.Z());
+          meshDS->SetNodeOnFace(N, geomFaceID, UV.X(), UV.Y());
+          NodesR.SetValue(i+1,j,N);
+          if( i==dr ) UVtmp.Prepend(UV);
+        }
+      }
+      for(i=1; i<=UVtmp.Length() && UVR.Length()<nbv-nnn-1; i++) {
+        UVR.Append(UVtmp.Value(i));
+      }
+      // create faces
+      for(i=1; i<=dr; i++) {
+        for(j=1; j<nr; j++) {
+          if(WisF) {
+            SMDS_MeshFace* F =
+              myTool->AddFace(NodesR.Value(i,j), NodesR.Value(i+1,j),
+                              NodesR.Value(i+1,j+1), NodesR.Value(i,j+1));
+            meshDS->SetMeshElementOnShape(F, geomFaceID);
+          }
+          else {
+            SMDS_MeshFace* F =
+              myTool->AddFace(NodesR.Value(i,j), NodesR.Value(i,j+1),
+                              NodesR.Value(i+1,j+1), NodesR.Value(i+1,j));
+            meshDS->SetMeshElementOnShape(F, geomFaceID);
+          }
+        }
+      }
+    }
+    else {
+      // fill UVR using c2d
+      for(i=1; i<npr.Length() && UVR.Length()<nbv-nnn-1; i++) {
+        UVR.Append( gp_UV( uv_er[i].u, uv_er[i].v ));
+      }
+    }
+    
+    // step3: create faces for central domain
+    StdMeshers_Array2OfNode NodesC(1,nb,1,nbv);
+    // add first string using NodesL
+    for(i=1; i<=dl+1; i++)
+      NodesC.SetValue(1,i,NodesL(i,1));
+    for(i=2; i<=nl; i++)
+      NodesC.SetValue(1,dl+i,NodesL(dl+1,i));
+    // add last string using NodesR
+    for(i=1; i<=dr+1; i++)
+      NodesC.SetValue(nb,i,NodesR(i,nr));
+    for(i=1; i<nr; i++)
+      NodesC.SetValue(nb,dr+i+1,NodesR(dr+1,nr-i));
+    // add top nodes (last columns)
+    for(i=dl+2; i<nbh-dr; i++) 
+      NodesC.SetValue(i-dl,nbv,uv_et[i-1].node);
+    // add bottom nodes (first columns)
+    for(i=2; i<nb; i++)
+      NodesC.SetValue(i,1,uv_eb[i-1].node);
+    
     // create and add needed nodes
-    TColgp_SequenceOfXY UVtmp;
-    for(i=1; i<=dl; i++) {
-      double x0 = npt.Value(i+1);
+    // add linear layers
+    for(i=2; i<nb; i++) {
+      double x0 = npt.Value(dl+i);
       double x1 = x0;
-      // diagonal node
-      double y0 = npl.Value(i+1);
-      double y1 = npr.Value(i+1);
-      gp_UV UV = CalcUV(x0, x1, y0, y1, quad, a0, a1, a2, a3);
-      gp_Pnt P = S->Value(UV.X(),UV.Y());
-      SMDS_MeshNode * N = meshDS->AddNode(P.X(), P.Y(), P.Z());
-      meshDS->SetNodeOnFace(N, geomFaceID, UV.X(), UV.Y());
-      NodesL.SetValue(i+1,1,N);
-      if(UVL.Length()<nbv-nnn-1) UVL.Append(UV);
-      // internal nodes
-      for(j=2; j<nl; j++) {
-        double y0 = npl.Value(dl+j);
-        double y1 = npr.Value(dl+j);
+      for(j=1; j<nnn; j++) {
+        double y0 = npl.Value(nbv-nnn+j);
+        double y1 = npr.Value(nbv-nnn+j);
         gp_UV UV = CalcUV(x0, x1, y0, y1, quad, a0, a1, a2, a3);
         gp_Pnt P = S->Value(UV.X(),UV.Y());
         SMDS_MeshNode* N = meshDS->AddNode(P.X(), P.Y(), P.Z());
         meshDS->SetNodeOnFace(N, geomFaceID, UV.X(), UV.Y());
-        NodesL.SetValue(i+1,j,N);
-        if( i==dl ) UVtmp.Append(UV);
+        NodesC.SetValue(i,nbv-nnn+j,N);
       }
     }
-    for(i=1; i<=UVtmp.Length() && UVL.Length()<nbv-nnn-1; i++) {
-      UVL.Append(UVtmp.Value(i));
-    }
-    //cout<<"Dump NodesL:"<<endl;
-    //for(i=1; i<=dl+1; i++) {
-    //  cout<<"i="<<i;
-    //  for(j=1; j<=nl; j++) {
-    //    cout<<" ("<<NodesL.Value(i,j)->X()<<","<<NodesL.Value(i,j)->Y()<<","<<NodesL.Value(i,j)->Z()<<")";
-    //  }
-    //  cout<<endl;
+    // add diagonal layers
+    //cout<<"UVL.Length()="<<UVL.Length()<<" UVR.Length()="<<UVR.Length()<<endl;
+    //cout<<"Dump UVL:"<<endl;
+    //for(i=1; i<=UVL.Length(); i++) {
+    //  cout<<" ("<<UVL.Value(i).X()<<","<<UVL.Value(i).Y()<<")";
     //}
-    // create faces
-    for(i=1; i<=dl; i++) {
-      for(j=1; j<nl; j++) {
-        if(WisF) {
-          SMDS_MeshFace* F =
-            myTool->AddFace(NodesL.Value(i,j), NodesL.Value(i+1,j),
-                            NodesL.Value(i+1,j+1), NodesL.Value(i,j+1));
-          meshDS->SetMeshElementOnShape(F, geomFaceID);
-        }
-        else {
-          SMDS_MeshFace* F =
-            myTool->AddFace(NodesL.Value(i,j), NodesL.Value(i,j+1),
-                            NodesL.Value(i+1,j+1), NodesL.Value(i+1,j));
-          meshDS->SetMeshElementOnShape(F, geomFaceID);
-        }
-      }
-    }
-  }
-  else {
-    // fill UVL using c2d
-    for(i=1; i<npl.Length() && UVL.Length()<nbv-nnn-1; i++) {
-      UVL.Append( gp_UV ( uv_el[i].u, uv_el[i].v ));
-    }
-  }
-
-  // step2: create faces for right domain
-  StdMeshers_Array2OfNode NodesR(1,dr+1,1,nr);
-  // add right nodes
-  for(j=1; j<=nr; j++) 
-    NodesR.SetValue(1,j,uv_er[nr-j].node);
-  if(dr>0) {
-    // add top nodes
-    for(i=1; i<=dr; i++) 
-      NodesR.SetValue(i+1,1,uv_et[nt-1-i].node);
-    // create and add needed nodes
-    TColgp_SequenceOfXY UVtmp;
-    for(i=1; i<=dr; i++) {
-      double x0 = npt.Value(nt-i);
-      double x1 = x0;
-      // diagonal node
-      double y0 = npl.Value(i+1);
-      double y1 = npr.Value(i+1);
-      gp_UV UV = CalcUV(x0, x1, y0, y1, quad, a0, a1, a2, a3);
-      gp_Pnt P = S->Value(UV.X(),UV.Y());
-      SMDS_MeshNode * N = meshDS->AddNode(P.X(), P.Y(), P.Z());
-      meshDS->SetNodeOnFace(N, geomFaceID, UV.X(), UV.Y());
-      NodesR.SetValue(i+1,nr,N);
-      if(UVR.Length()<nbv-nnn-1) UVR.Append(UV);
-      // internal nodes
-      for(j=2; j<nr; j++) {
-        double y0 = npl.Value(nbv-j+1);
-        double y1 = npr.Value(nbv-j+1);
-        gp_UV UV = CalcUV(x0, x1, y0, y1, quad, a0, a1, a2, a3);
-        gp_Pnt P = S->Value(UV.X(),UV.Y());
+    //cout<<endl;
+    for(i=1; i<nbv-nnn; i++) {
+      double du = UVR.Value(i).X() - UVL.Value(i).X();
+      double dv = UVR.Value(i).Y() - UVL.Value(i).Y();
+      for(j=2; j<nb; j++) {
+        double u = UVL.Value(i).X() + du*npb.Value(j);
+        double v = UVL.Value(i).Y() + dv*npb.Value(j);
+        gp_Pnt P = S->Value(u,v);
         SMDS_MeshNode* N = meshDS->AddNode(P.X(), P.Y(), P.Z());
-        meshDS->SetNodeOnFace(N, geomFaceID, UV.X(), UV.Y());
-        NodesR.SetValue(i+1,j,N);
-        if( i==dr ) UVtmp.Prepend(UV);
+        meshDS->SetNodeOnFace(N, geomFaceID, u, v);
+        NodesC.SetValue(j,i+1,N);
       }
     }
-    for(i=1; i<=UVtmp.Length() && UVR.Length()<nbv-nnn-1; i++) {
-      UVR.Append(UVtmp.Value(i));
-    }
     // create faces
-    for(i=1; i<=dr; i++) {
-      for(j=1; j<nr; j++) {
+    for(i=1; i<nb; i++) {
+      for(j=1; j<nbv; j++) {
         if(WisF) {
           SMDS_MeshFace* F =
-            myTool->AddFace(NodesR.Value(i,j), NodesR.Value(i+1,j),
-                            NodesR.Value(i+1,j+1), NodesR.Value(i,j+1));
+            myTool->AddFace(NodesC.Value(i,j), NodesC.Value(i+1,j),
+                            NodesC.Value(i+1,j+1), NodesC.Value(i,j+1));
           meshDS->SetMeshElementOnShape(F, geomFaceID);
         }
         else {
           SMDS_MeshFace* F =
-            myTool->AddFace(NodesR.Value(i,j), NodesR.Value(i,j+1),
-                            NodesR.Value(i+1,j+1), NodesR.Value(i+1,j));
+            myTool->AddFace(NodesC.Value(i,j), NodesC.Value(i,j+1),
+                            NodesC.Value(i+1,j+1), NodesC.Value(i+1,j));
           meshDS->SetMeshElementOnShape(F, geomFaceID);
         }
       }
     }
   }
-  else {
-    // fill UVR using c2d
-    for(i=1; i<npr.Length() && UVR.Length()<nbv-nnn-1; i++) {
-      UVR.Append( gp_UV( uv_er[i].u, uv_er[i].v ));
-    }
-  }
 
-  // step3: create faces for central domain
-  StdMeshers_Array2OfNode NodesC(1,nb,1,nbv);
-  // add first string using NodesL
-  for(i=1; i<=dl+1; i++)
-    NodesC.SetValue(1,i,NodesL(i,1));
-  for(i=2; i<=nl; i++)
-    NodesC.SetValue(1,dl+i,NodesL(dl+1,i));
-  // add last string using NodesR
-  for(i=1; i<=dr+1; i++)
-    NodesC.SetValue(nb,i,NodesR(i,nr));
-  for(i=1; i<nr; i++)
-    NodesC.SetValue(nb,dr+i+1,NodesR(dr+1,nr-i));
-  // add top nodes (last columns)
-  for(i=dl+2; i<nbh-dr; i++) 
-    NodesC.SetValue(i-dl,nbv,uv_et[i-1].node);
-  // add bottom nodes (first columns)
-  for(i=2; i<nb; i++)
-    NodesC.SetValue(i,1,uv_eb[i-1].node);
+  else { // New version (!OldVersion)
+    // step1: create faces for bottom rectangle domain
+    StdMeshers_Array2OfNode NodesBRD(1,nb,1,nnn-1);
+    // fill UVL and UVR using c2d
+    for(j=0; j<nb; j++) {
+      NodesBRD.SetValue(j+1,1,uv_eb[j].node);
+    }
+    for(i=1; i<nnn-1; i++) {
+      NodesBRD.SetValue(1,i+1,uv_el[i].node);
+      NodesBRD.SetValue(nb,i+1,uv_er[i].node);
+      double du = uv_er[i].u - uv_el[i].u;
+      double dv = uv_er[i].v - uv_el[i].v;
+      for(j=2; j<nb; j++) {
+        double u = uv_el[i].u + du*npb.Value(j);
+        double v = uv_el[i].v + dv*npb.Value(j);
+        gp_Pnt P = S->Value(u,v);
+        SMDS_MeshNode* N = meshDS->AddNode(P.X(), P.Y(), P.Z());
+        meshDS->SetNodeOnFace(N, geomFaceID, u, v);
+        NodesBRD.SetValue(j,i+1,N);
 
-  // create and add needed nodes
-  // add linear layers
-  for(i=2; i<nb; i++) {
-    double x0 = npt.Value(dl+i);
-    double x1 = x0;
-    for(j=1; j<nnn; j++) {
-      double y0 = npl.Value(nbv-nnn+j);
-      double y1 = npr.Value(nbv-nnn+j);
-      gp_UV UV = CalcUV(x0, x1, y0, y1, quad, a0, a1, a2, a3);
-      gp_Pnt P = S->Value(UV.X(),UV.Y());
-      SMDS_MeshNode* N = meshDS->AddNode(P.X(), P.Y(), P.Z());
-      meshDS->SetNodeOnFace(N, geomFaceID, UV.X(), UV.Y());
-      NodesC.SetValue(i,nbv-nnn+j,N);
-    }
-  }
-  // add diagonal layers
-  //cout<<"UVL.Length()="<<UVL.Length()<<" UVR.Length()="<<UVR.Length()<<endl;
-  //cout<<"Dump UVL:"<<endl;
-  //for(i=1; i<=UVL.Length(); i++) {
-  //  cout<<" ("<<UVL.Value(i).X()<<","<<UVL.Value(i).Y()<<")";
-  //}
-  //cout<<endl;
-  for(i=1; i<nbv-nnn; i++) {
-    double du = UVR.Value(i).X() - UVL.Value(i).X();
-    double dv = UVR.Value(i).Y() - UVL.Value(i).Y();
-    for(j=2; j<nb; j++) {
-      double u = UVL.Value(i).X() + du*npb.Value(j);
-      double v = UVL.Value(i).Y() + dv*npb.Value(j);
-      gp_Pnt P = S->Value(u,v);
-      SMDS_MeshNode* N = meshDS->AddNode(P.X(), P.Y(), P.Z());
-      meshDS->SetNodeOnFace(N, geomFaceID, u, v);
-      NodesC.SetValue(j,i+1,N);
-    }
-  }
-  // create faces
-  for(i=1; i<nb; i++) {
-    for(j=1; j<nbv; j++) {
-      if(WisF) {
-        SMDS_MeshFace* F =
-          myTool->AddFace(NodesC.Value(i,j), NodesC.Value(i+1,j),
-                          NodesC.Value(i+1,j+1), NodesC.Value(i,j+1));
-        meshDS->SetMeshElementOnShape(F, geomFaceID);
-      }
-      else {
-        SMDS_MeshFace* F =
-          myTool->AddFace(NodesC.Value(i,j), NodesC.Value(i,j+1),
-                          NodesC.Value(i+1,j+1), NodesC.Value(i+1,j));
-        meshDS->SetMeshElementOnShape(F, geomFaceID);
       }
     }
-  }
+    for(j=1; j<nnn-1; j++) {
+      for(i=1; i<nb; i++) {
+        if(WisF) {
+          SMDS_MeshFace* F =
+            myTool->AddFace(NodesBRD.Value(i,j), NodesBRD.Value(i+1,j),
+                            NodesBRD.Value(i+1,j+1), NodesBRD.Value(i,j+1));
+          meshDS->SetMeshElementOnShape(F, geomFaceID);
+        }
+        else {
+          SMDS_MeshFace* F =
+            myTool->AddFace(NodesBRD.Value(i,j), NodesBRD.Value(i,j+1),
+                            NodesBRD.Value(i+1,j+1), NodesBRD.Value(i+1,j));
+          meshDS->SetMeshElementOnShape(F, geomFaceID);
+        }
+      }
+    }
+
+    int drl = abs(nr-nl);
+    // create faces for region C
+    StdMeshers_Array2OfNode NodesC(1,nb,1,drl+1+addv);
+    // add nodes from previous region
+    for(j=1; j<=nb; j++) {
+      NodesC.SetValue(j,1,NodesBRD.Value(j,nnn-1));
+    }
+    if( (drl+addv) > 0 ) {
+      int n1,n2;
+      if(nr>nl) {
+        n1 = 1;
+        n2 = drl + 1;
+        TColgp_SequenceOfXY UVtmp;
+        double drparam = npr.Value(nr) - npr.Value(nnn-1);
+        double dlparam = npl.Value(nnn) - npl.Value(nnn-1);
+        double y0,y1;
+        for(i=1; i<=drl; i++) {
+          // add existed nodes from right edge
+          NodesC.SetValue(nb,i+1,uv_er[nnn+i-2].node);
+          //double dtparam = npt.Value(i+1);
+          y1 = npr.Value(nnn+i-1); // param on right edge
+          double dpar = (y1 - npr.Value(nnn-1))/drparam;
+          y0 = npl.Value(nnn-1) + dpar*dlparam; // param on left edge
+          double dy = y1 - y0;
+          for(j=1; j<nb; j++) {
+            double x = npt.Value(i+1) + npb.Value(j)*(1-npt.Value(i+1));
+            double y = y0 + dy*x;
+            gp_UV UV = CalcUV2(x, y, quad, a0, a1, a2, a3);
+            gp_Pnt P = S->Value(UV.X(),UV.Y());
+            SMDS_MeshNode* N = meshDS->AddNode(P.X(), P.Y(), P.Z());
+            meshDS->SetNodeOnFace(N, geomFaceID, UV.X(), UV.Y());
+            NodesC.SetValue(j,i+1,N);
+          }
+        }
+        double dy0 = (1-y0)/(addv+1);
+        double dy1 = (1-y1)/(addv+1);
+        for(i=1; i<=addv; i++) {
+          double yy0 = y0 + dy0*i;
+          double yy1 = y1 + dy1*i;
+          double dyy = yy1 - yy0;
+          for(j=1; j<=nb; j++) {
+            double x = npt.Value(i+1+drl) + 
+              npb.Value(j) * ( npt.Value(nt-i) - npt.Value(i+1+drl) );
+            double y = yy0 + dyy*x;
+            gp_UV UV = CalcUV2(x, y, quad, a0, a1, a2, a3);
+            gp_Pnt P = S->Value(UV.X(),UV.Y());
+            SMDS_MeshNode* N = meshDS->AddNode(P.X(), P.Y(), P.Z());
+            meshDS->SetNodeOnFace(N, geomFaceID, UV.X(), UV.Y());
+            NodesC.SetValue(j,i+drl+1,N);
+          }
+        }
+      }
+      else { // nr<nl
+        n2 = 1;
+        n1 = drl + 1;
+        TColgp_SequenceOfXY UVtmp;
+        double dlparam = npl.Value(nl) - npl.Value(nnn-1);
+        double drparam = npr.Value(nnn) - npr.Value(nnn-1);
+        double y0 = npl.Value(nnn-1);
+        double y1 = npr.Value(nnn-1);
+        for(i=1; i<=drl; i++) {
+          // add existed nodes from right edge
+          NodesC.SetValue(1,i+1,uv_el[nnn+i-2].node);
+          y0 = npl.Value(nnn+i-1); // param on left edge
+          double dpar = (y0 - npl.Value(nnn-1))/dlparam;
+          y1 = npr.Value(nnn-1) + dpar*drparam; // param on right edge
+          double dy = y1 - y0;
+          for(j=2; j<=nb; j++) {
+            double x = npb.Value(j)*npt.Value(nt-i);
+            double y = y0 + dy*x;
+            gp_UV UV = CalcUV2(x, y, quad, a0, a1, a2, a3);
+            gp_Pnt P = S->Value(UV.X(),UV.Y());
+            SMDS_MeshNode* N = meshDS->AddNode(P.X(), P.Y(), P.Z());
+            meshDS->SetNodeOnFace(N, geomFaceID, UV.X(), UV.Y());
+            NodesC.SetValue(j,i+1,N);
+          }
+        }
+        double dy0 = (1-y0)/(addv+1);
+        double dy1 = (1-y1)/(addv+1);
+        for(i=1; i<=addv; i++) {
+          double yy0 = y0 + dy0*i;
+          double yy1 = y1 + dy1*i;
+          double dyy = yy1 - yy0;
+          for(j=1; j<=nb; j++) {
+            double x = npt.Value(i+1) + 
+              npb.Value(j) * ( npt.Value(nt-i-drl) - npt.Value(i+1) );
+            double y = yy0 + dyy*x;
+            gp_UV UV = CalcUV2(x, y, quad, a0, a1, a2, a3);
+            gp_Pnt P = S->Value(UV.X(),UV.Y());
+            SMDS_MeshNode* N = meshDS->AddNode(P.X(), P.Y(), P.Z());
+            meshDS->SetNodeOnFace(N, geomFaceID, UV.X(), UV.Y());
+            NodesC.SetValue(j,i+drl+1,N);
+          }
+        }
+      }
+      // create faces
+      for(j=1; j<=drl+addv; j++) {
+        for(i=1; i<nb; i++) {
+          if(WisF) {
+            SMDS_MeshFace* F =
+              myTool->AddFace(NodesC.Value(i,j), NodesC.Value(i+1,j),
+                              NodesC.Value(i+1,j+1), NodesC.Value(i,j+1));
+            meshDS->SetMeshElementOnShape(F, geomFaceID);
+          }
+          else {
+            SMDS_MeshFace* F =
+              myTool->AddFace(NodesC.Value(i,j), NodesC.Value(i,j+1),
+                              NodesC.Value(i+1,j+1), NodesC.Value(i+1,j));
+            meshDS->SetMeshElementOnShape(F, geomFaceID);
+          }
+        }
+      } // end nr<nl
+
+      StdMeshers_Array2OfNode NodesLast(1,nt,1,2);
+      for(i=1; i<=nt; i++) {
+        NodesLast.SetValue(i,2,uv_et[i-1].node);
+      }
+      int nnn=0;
+      for(i=n1; i<drl+addv+1; i++) {
+        nnn++;
+        NodesLast.SetValue(nnn,1,NodesC.Value(1,i));
+      }
+      for(i=1; i<=nb; i++) {
+        nnn++;
+        NodesLast.SetValue(nnn,1,NodesC.Value(i,drl+addv+1));
+      }
+      for(i=drl+addv; i>=n2; i--) {
+        nnn++;
+        NodesLast.SetValue(nnn,1,NodesC.Value(nb,i));
+      }
+      for(i=1; i<nt; i++) {
+        if(WisF) {
+          SMDS_MeshFace* F =
+            myTool->AddFace(NodesLast.Value(i,1), NodesLast.Value(i+1,1),
+                            NodesLast.Value(i+1,2), NodesLast.Value(i,2));
+          meshDS->SetMeshElementOnShape(F, geomFaceID);
+        }
+        else {
+          SMDS_MeshFace* F =
+            myTool->AddFace(NodesLast.Value(i,1), NodesLast.Value(i,2),
+                            NodesLast.Value(i+1,2), NodesLast.Value(i+1,2));
+          meshDS->SetMeshElementOnShape(F, geomFaceID);
+        }
+      }
+    } // if( (drl+addv) > 0 )
+
+  } // end new version implementation
 
   bool isOk = true;
   return isOk;
