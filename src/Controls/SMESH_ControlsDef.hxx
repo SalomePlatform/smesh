@@ -23,14 +23,19 @@
 #include <set>
 #include <map>
 #include <vector>
+
 #include <boost/shared_ptr.hpp>
+
 #include <gp_XYZ.hxx>
-//#include <Geom_Surface.hxx>
 #include <GeomAPI_ProjectPointOnSurf.hxx>
+#include <GeomAPI_ProjectPointOnCurve.hxx>
 #include <TColStd_SequenceOfInteger.hxx>
 #include <TColStd_MapOfInteger.hxx>
 #include <TCollection_AsciiString.hxx>
+#include <TopAbs.hxx>
 #include <TopoDS_Face.hxx>
+#include <TopTools_MapOfShape.hxx>
+#include <BRepClass3d_SolidClassifier.hxx>
 
 #include "SMDSAbs_ElementType.hxx"
 #include "SMDS_MeshNode.hxx"
@@ -56,7 +61,6 @@ class SMESHDS_Mesh;
 class SMESHDS_SubMesh;
 
 class gp_Pnt;
-//class TopoDS_Shape;
 
 namespace SMESH{
   namespace Controls{
@@ -131,17 +135,17 @@ namespace SMESH{
       long  GetPrecision() const;
       void  SetPrecision( const long thePrecision );
       
-      bool GetPoints(const int theId, 
+      bool GetPoints(const int theId,
 		     TSequenceOfXYZ& theRes) const;
-      static bool GetPoints(const SMDS_MeshElement* theElem, 
+      static bool GetPoints(const SMDS_MeshElement* theElem,
 			    TSequenceOfXYZ& theRes);
     protected:
       const SMDS_Mesh* myMesh;
       const SMDS_MeshElement* myCurrElement;
       long       myPrecision;
     };
-  
-  
+
+
     /*
       Class       : Volume
       Description : Functor calculating volume of 3D mesh element
@@ -216,8 +220,8 @@ namespace SMESH{
       virtual double GetBadRate( double Value, int nbNodes ) const;
       virtual SMDSAbs_ElementType GetType() const;
     };
-    
-  
+
+
     /*
       Class       : Skew
       Description : Functor for calculating skew in degrees
@@ -228,8 +232,8 @@ namespace SMESH{
       virtual double GetBadRate( double Value, int nbNodes ) const;
       virtual SMDSAbs_ElementType GetType() const;
     };
-  
-    
+
+
     /*
       Class       : Area
       Description : Functor for calculating area
@@ -252,7 +256,7 @@ namespace SMESH{
       virtual double GetBadRate( double Value, int nbNodes ) const;
       virtual SMDSAbs_ElementType GetType() const;
     };
-  
+
     /*
       Class       : Length2D
       Description : Functor for calculating length of edge
@@ -270,7 +274,6 @@ namespace SMESH{
       };
       typedef std::set<Value> TValues;
       void GetValues(TValues& theValues);
-      
     };
     typedef boost::shared_ptr<Length2D> Length2DPtr;
 
@@ -318,7 +321,6 @@ namespace SMESH{
       virtual bool IsSatisfy( long theElementId ) = 0;
       virtual SMDSAbs_ElementType GetType() const = 0;
     };
-    
   
   
     /*
@@ -331,7 +333,7 @@ namespace SMESH{
       virtual void SetMesh( const SMDS_Mesh* theMesh );
       virtual bool IsSatisfy( long theElementId );
       virtual SMDSAbs_ElementType GetType() const;
-            
+
     protected:
       const SMDS_Mesh* myMesh;
     };
@@ -604,7 +606,7 @@ namespace SMESH{
 
     };
     typedef boost::shared_ptr<ManifoldPart> ManifoldPartPtr;
-                         
+
 
     /*
       Class       : ElementsOnSurface
@@ -641,9 +643,56 @@ namespace SMESH{
       bool                  myUseBoundaries;
       GeomAPI_ProjectPointOnSurf myProjector;
     };
-    
+
     typedef boost::shared_ptr<ElementsOnSurface> ElementsOnSurfacePtr;
-      
+
+
+    /*
+      Class       : ElementsOnShape
+      Description : Predicate elements that lying on indicated shape
+                    (1D, 2D or 3D)
+    */
+    class SMESHCONTROLS_EXPORT ElementsOnShape : public virtual Predicate
+    {
+    public:
+      ElementsOnShape();
+      ~ElementsOnShape();
+
+      virtual void SetMesh (const SMDS_Mesh* theMesh);
+      virtual bool IsSatisfy (long theElementId);
+      virtual SMDSAbs_ElementType GetType() const;
+
+      void    SetTolerance (const double theToler);
+      double  GetTolerance() const;
+      void    SetAllNodes (bool theAllNodes);
+      bool    GetAllNodes() const { return myAllNodesFlag; }
+      void    SetShape (const TopoDS_Shape& theShape,
+                        const SMDSAbs_ElementType theType);
+
+    private:
+      void    addShape (const TopoDS_Shape& theShape);
+      void    process();
+      void    process (const SMDS_MeshElement* theElem);
+
+    private:
+      const SMDS_Mesh*      myMesh;
+      TColStd_MapOfInteger  myIds;
+      SMDSAbs_ElementType   myType;
+      TopoDS_Shape          myShape;
+      double                myToler;
+      bool                  myAllNodesFlag;
+
+      TopTools_MapOfShape         myShapesMap;
+      TopAbs_ShapeEnum            myCurShapeType; // type of current sub-shape
+      BRepClass3d_SolidClassifier myCurSC;        // current SOLID
+      GeomAPI_ProjectPointOnSurf  myCurProjFace;  // current FACE
+      TopoDS_Face                 myCurFace;      // current FACE
+      GeomAPI_ProjectPointOnCurve myCurProjEdge;  // current EDGE
+      gp_Pnt                      myCurPnt;       // current VERTEX
+    };
+
+    typedef boost::shared_ptr<ElementsOnShape> ElementsOnShapePtr;
+
 
     /*
       FILTER
@@ -656,21 +705,21 @@ namespace SMESH{
 
       typedef std::vector<long> TIdSequence;
 
-      virtual 
+      virtual
       void
       GetElementsId( const SMDS_Mesh* theMesh,
 		     TIdSequence& theSequence );
 
       static
       void
-      GetElementsId( const SMDS_Mesh* theMesh, 
+      GetElementsId( const SMDS_Mesh* theMesh,
 		     PredicatePtr thePredicate,
 		     TIdSequence& theSequence );
       
     protected:
       PredicatePtr myPredicate;
     };
-  };  
+  };
 };
 
 

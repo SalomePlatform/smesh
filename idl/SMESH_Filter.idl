@@ -136,20 +136,25 @@ module SMESH
   };
 
   /*!
-  * Logical functor (predicate) "Bad Oriented Volume".
-  * Verify whether a mesh volume is incorrectly oriented from
-  * the point of view of MED convention
-  */
+   * Logical functor (predicate) "Bad Oriented Volume".
+   * Verify whether a mesh volume is incorrectly oriented from
+   * the point of view of MED convention
+   */
   interface BadOrientedVolume: Predicate {};
 
   /*!
-  * Logical functor (predicate) "Belong To Geometry".
-  * Verify whether mesh element or node belong to pointed Geom Object
-  */
+   * Logical functor (predicate) "Belong To Geometry".
+   * Verify whether mesh element or node belong to pointed Geom Object
+   */
   interface BelongToGeom: Predicate
   {
     void SetGeom( in GEOM::GEOM_Object theGeom );
     void SetElementType( in ElementType theType );
+
+    /*! The tolerance is used only if there is no submesh on the shape
+     */
+    void    SetTolerance( in double theToler );
+    double  GetTolerance();
 
     void   SetShapeName( in string theName );
     void   SetShape( in string theID, in string theName );
@@ -213,6 +218,11 @@ module SMESH
   {
     void SetGeom( in GEOM::GEOM_Object theGeom );
     void SetElementType( in ElementType theType );
+
+    /*! The tolerance is used only if there is no submesh on the shape
+     */
+    void    SetTolerance( in double theToler );
+    double  GetTolerance();
 
     void   SetShapeName( in string theName );
     void   SetShape( in string theID, in string theName );

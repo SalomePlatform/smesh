@@ -46,7 +46,7 @@ namespace SMESH
 
   namespace Controls
   {
-    
+
     /*
       Class       : BelongToGeom
       Description : Predicate for verifying whether entiy belong to
@@ -56,25 +56,33 @@ namespace SMESH
     {
     public:
       BelongToGeom();
-      
+
       virtual void                    SetMesh( const SMDS_Mesh* theMesh );
       virtual void                    SetGeom( const TopoDS_Shape& theShape );
-      
+
       virtual bool                    IsSatisfy( long theElementId );
-      
+
       virtual void                    SetType( SMDSAbs_ElementType theType );
       virtual                         SMDSAbs_ElementType GetType() const;
-      
+
       TopoDS_Shape                    GetShape();
       const SMESHDS_Mesh*             GetMeshDS() const;
-      
+
+      void                            SetTolerance( double );
+      double                          GetTolerance();
+
     private:
+      virtual void                    init();
+
       TopoDS_Shape                    myShape;
       const SMESHDS_Mesh*             myMeshDS;
       SMDSAbs_ElementType             myType;
+      bool                            myIsSubshape;
+      double                          myTolerance;          // only if myIsSubshape == false
+      Controls::ElementsOnShapePtr    myElementsOnShapePtr; // only if myIsSubshape == false
     };
     typedef boost::shared_ptr<BelongToGeom> BelongToGeomPtr;
-    
+
     /*
       Class       : LyingOnGeom
       Description : Predicate for verifying whether entiy lying or partially lying on
@@ -95,6 +103,9 @@ namespace SMESH
       
       TopoDS_Shape                    GetShape();
       const SMESHDS_Mesh*             GetMeshDS() const;
+
+      void                            SetTolerance( double );
+      double                          GetTolerance();
       
       virtual bool                    Contains( const SMESHDS_Mesh*     theMeshDS,
 						const TopoDS_Shape&     theShape,
@@ -102,9 +113,14 @@ namespace SMESH
 						TopAbs_ShapeEnum        theFindShapeEnum,
 						TopAbs_ShapeEnum        theAvoidShapeEnum = TopAbs_SHAPE );
     private:
+      virtual void                    init();
+
       TopoDS_Shape                    myShape;
       const SMESHDS_Mesh*             myMeshDS;
       SMDSAbs_ElementType             myType;
+      bool                            myIsSubshape;
+      double                          myTolerance;          // only if myIsSubshape == false
+      Controls::ElementsOnShapePtr    myElementsOnShapePtr; // only if myIsSubshape == false
     };
     typedef boost::shared_ptr<LyingOnGeom> LyingOnGeomPtr;
   }
@@ -365,6 +381,9 @@ namespace SMESH
     void                            SetShape( const char* theID, const char* theName );
     char*                           GetShapeName();
     char*                           GetShapeID();
+
+    void                            SetTolerance( CORBA::Double );
+    CORBA::Double                   GetTolerance();
     
   protected:
     Controls::BelongToGeomPtr       myBelongToGeomPtr;
@@ -463,6 +482,9 @@ namespace SMESH
     void                            SetShape( const char* theID, const char* theName );
     char*                           GetShapeName();
     char*                           GetShapeID();
+
+    void                            SetTolerance( CORBA::Double );
+    CORBA::Double                   GetTolerance();
     
   protected:
     Controls::LyingOnGeomPtr        myLyingOnGeomPtr;

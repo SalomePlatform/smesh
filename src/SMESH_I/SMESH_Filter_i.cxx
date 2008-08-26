@@ -17,7 +17,7 @@
 //  License along with this library; if not, write to the Free Software
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 //
 //
@@ -58,6 +58,7 @@
 #include <TopoDS.hxx>
 #include <TopoDS_Face.hxx>
 #include <TopoDS_Shape.hxx>
+#include <TopTools_IndexedMapOfShape.hxx>
 
 using namespace SMESH;
 using namespace SMESH::Controls;
@@ -75,23 +76,73 @@ namespace SMESH
 
 /*
   Class       : BelongToGeom
-  Description : Predicate for verifying whether entiy belong to
+  Description : Predicate for verifying whether entity belongs to
                 specified geometrical support
 */
 
 Controls::BelongToGeom::BelongToGeom()
-: myMeshDS(NULL),
-  myType(SMDSAbs_All)
+  : myMeshDS(NULL),
+    myType(SMDSAbs_All),
+    myIsSubshape(false),
+    myTolerance(Precision::Confusion())
 {}
 
 void Controls::BelongToGeom::SetMesh( const SMDS_Mesh* theMesh )
 {
   myMeshDS = dynamic_cast<const SMESHDS_Mesh*>(theMesh);
+  init();
 }
 
 void Controls::BelongToGeom::SetGeom( const TopoDS_Shape& theShape )
 {
   myShape = theShape;
+  init();
+}
+
+static bool IsSubShape (const TopTools_IndexedMapOfShape& theMap,
+                        const TopoDS_Shape& theShape)
+{
+  if (theMap.Contains(theShape)) return true;
+
+  if (theShape.ShapeType() == TopAbs_COMPOUND ||
+      theShape.ShapeType() == TopAbs_COMPSOLID)
+  {
+    TopoDS_Iterator anIt (theShape, Standard_True, Standard_True);
+    for (; anIt.More(); anIt.Next())
+    {
+      if (!IsSubShape(theMap, anIt.Value())) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  return false;
+}
+
+void Controls::BelongToGeom::init()
+{
+  if (!myMeshDS || myShape.IsNull()) return;
+
+  // is subshape of main shape?
+  TopoDS_Shape aMainShape = myMeshDS->ShapeToMesh();
+  if (aMainShape.IsNull()) {
+    myIsSubshape = false;
+  }
+  else {
+    TopTools_IndexedMapOfShape aMap;
+    TopExp::MapShapes(aMainShape, aMap);
+    myIsSubshape = IsSubShape(aMap, myShape);
+  }
+
+  if (!myIsSubshape)
+  {
+    myElementsOnShapePtr.reset(new Controls::ElementsOnShape());
+    myElementsOnShapePtr->SetTolerance(myTolerance);
+    myElementsOnShapePtr->SetAllNodes(true); // belong, while false means "lays on"
+    myElementsOnShapePtr->SetMesh(myMeshDS);
+    myElementsOnShapePtr->SetShape(myShape, myType);
+  }
 }
 
 static bool IsContains( const SMESHDS_Mesh*     theMeshDS,
@@ -114,12 +165,18 @@ static bool IsContains( const SMESHDS_Mesh*     theMeshDS,
   return false;
 }
 
-bool Controls::BelongToGeom::IsSatisfy( long theId )
+bool Controls::BelongToGeom::IsSatisfy (long theId)
 {
-  if ( myMeshDS == 0 || myShape.IsNull() )
+  if (myMeshDS == 0 || myShape.IsNull())
     return false;
 
-  if( myType == SMDSAbs_Node )
+  if (!myIsSubshape)
+  {
+    return myElementsOnShapePtr->IsSatisfy(theId);
+  }
+
+  // Case of submesh
+  if (myType == SMDSAbs_Node)
   {
     if( const SMDS_MeshNode* aNode = myMeshDS->FindNode( theId ) )
     {
@@ -161,9 +218,10 @@ bool Controls::BelongToGeom::IsSatisfy( long theId )
   return false;
 }
 
-void Controls::BelongToGeom::SetType( SMDSAbs_ElementType theType )
+void Controls::BelongToGeom::SetType (SMDSAbs_ElementType theType)
 {
   myType = theType;
+  init();
 }
 
 SMDSAbs_ElementType Controls::BelongToGeom::GetType() const
@@ -176,11 +234,21 @@ TopoDS_Shape Controls::BelongToGeom::GetShape()
   return myShape;
 }
 
-const SMESHDS_Mesh*
-Controls::BelongToGeom::
-GetMeshDS() const
+const SMESHDS_Mesh* Controls::BelongToGeom::GetMeshDS() const
 {
   return myMeshDS;
+}
+
+void Controls::BelongToGeom::SetTolerance (double theTolerance)
+{
+  myTolerance = theTolerance;
+  if (!myIsSubshape)
+    init();
+}
+
+double Controls::BelongToGeom::GetTolerance()
+{
+  return myTolerance;
 }
 
 /*
@@ -190,18 +258,47 @@ GetMeshDS() const
 */
 
 Controls::LyingOnGeom::LyingOnGeom()
-: myMeshDS(NULL),
-  myType(SMDSAbs_All)
+  : myMeshDS(NULL),
+    myType(SMDSAbs_All),
+    myIsSubshape(false),
+    myTolerance(Precision::Confusion())
 {}
 
 void Controls::LyingOnGeom::SetMesh( const SMDS_Mesh* theMesh )
 {
   myMeshDS = dynamic_cast<const SMESHDS_Mesh*>(theMesh);
+  init();
 }
 
 void Controls::LyingOnGeom::SetGeom( const TopoDS_Shape& theShape )
 {
   myShape = theShape;
+  init();
+}
+
+void Controls::LyingOnGeom::init()
+{
+  if (!myMeshDS || myShape.IsNull()) return;
+
+  // is subshape of main shape?
+  TopoDS_Shape aMainShape = myMeshDS->ShapeToMesh();
+  if (aMainShape.IsNull()) {
+    myIsSubshape = false;
+  }
+  else {
+    TopTools_IndexedMapOfShape aMap;
+    TopExp::MapShapes(aMainShape, aMap);
+    myIsSubshape = IsSubShape(aMap, myShape);
+  }
+
+  if (!myIsSubshape)
+  {
+    myElementsOnShapePtr.reset(new Controls::ElementsOnShape());
+    myElementsOnShapePtr->SetTolerance(myTolerance);
+    myElementsOnShapePtr->SetAllNodes(false); // lays on, while true means "belong"
+    myElementsOnShapePtr->SetMesh(myMeshDS);
+    myElementsOnShapePtr->SetShape(myShape, myType);
+  }
 }
 
 bool Controls::LyingOnGeom::IsSatisfy( long theId )
@@ -209,6 +306,12 @@ bool Controls::LyingOnGeom::IsSatisfy( long theId )
   if ( myMeshDS == 0 || myShape.IsNull() )
     return false;
 
+  if (!myIsSubshape)
+  {
+    return myElementsOnShapePtr->IsSatisfy(theId);
+  }
+
+  // Case of submesh
   if( myType == SMDSAbs_Node )
   {
     if( const SMDS_MeshNode* aNode = myMeshDS->FindNode( theId ) )
@@ -254,6 +357,7 @@ bool Controls::LyingOnGeom::IsSatisfy( long theId )
 void Controls::LyingOnGeom::SetType( SMDSAbs_ElementType theType )
 {
   myType = theType;
+  init();
 }
 
 SMDSAbs_ElementType Controls::LyingOnGeom::GetType() const
@@ -266,11 +370,21 @@ TopoDS_Shape Controls::LyingOnGeom::GetShape()
   return myShape;
 }
 
-const SMESHDS_Mesh*
-Controls::LyingOnGeom::
-GetMeshDS() const
+const SMESHDS_Mesh* Controls::LyingOnGeom::GetMeshDS() const
 {
   return myMeshDS;
+}
+
+void Controls::LyingOnGeom::SetTolerance (double theTolerance)
+{
+  myTolerance = theTolerance;
+  if (!myIsSubshape)
+    init();
+}
+
+double Controls::LyingOnGeom::GetTolerance()
+{
+  return myTolerance;
 }
 
 bool Controls::LyingOnGeom::Contains( const SMESHDS_Mesh*     theMeshDS,
@@ -847,6 +961,17 @@ char* BelongToGeom_i::GetShapeID()
   return CORBA::string_dup( myShapeID );
 }
 
+void BelongToGeom_i::SetTolerance( CORBA::Double theToler )
+{
+  myBelongToGeomPtr->SetTolerance( theToler );
+  TPythonDump()<<this<<".SetTolerance("<<theToler<<")";
+}
+
+CORBA::Double BelongToGeom_i::GetTolerance()
+{
+  return myBelongToGeomPtr->GetTolerance();
+}
+
 /*
   Class       : BelongToSurface_i
   Description : Predicate for selection on geometrical support
@@ -1089,6 +1214,17 @@ char* LyingOnGeom_i::GetShapeName()
 char* LyingOnGeom_i::GetShapeID()
 {
   return CORBA::string_dup( myShapeID );
+}
+
+void LyingOnGeom_i::SetTolerance( CORBA::Double theToler )
+{
+  myLyingOnGeomPtr->SetTolerance( theToler );
+  TPythonDump()<<this<<".SetTolerance("<<theToler<<")";
+}
+
+CORBA::Double LyingOnGeom_i::GetTolerance()
+{
+  return myLyingOnGeomPtr->GetTolerance();
 }
 
 /*
