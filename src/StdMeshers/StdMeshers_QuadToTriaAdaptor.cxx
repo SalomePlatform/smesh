@@ -1005,7 +1005,7 @@ bool StdMeshers_QuadToTriaAdaptor::Compute2ndPart(SMESH_Mesh& aMesh)
             std::list<const SMDS_FaceOfNodes*> triasI = (*itrmI).second;
             std::list<const SMDS_FaceOfNodes*>::iterator ittI = triasI.begin();
             int nbfI = triasI.size();
-            const SMDS_FaceOfNodes* FsI[nbfI];
+            std::vector<const SMDS_FaceOfNodes*> FsI(nbfI);
             k = 0;
             for(; ittI!=triasI.end(); ittI++) {
               FsI[k]  = (*ittI);
@@ -1023,7 +1023,7 @@ bool StdMeshers_QuadToTriaAdaptor::Compute2ndPart(SMESH_Mesh& aMesh)
                 std::list<const SMDS_FaceOfNodes*> triasJ = (*itrmJ).second;
                 std::list<const SMDS_FaceOfNodes*>::iterator ittJ = triasJ.begin();
                 int nbfJ = triasJ.size();
-                const SMDS_FaceOfNodes* FsJ[nbfJ];
+                std::vector<const SMDS_FaceOfNodes*> FsJ(nbfJ);
                 k = 0;
                 for(; ittJ!=triasJ.end(); ittJ++) {
                   FsJ[k]  = (*ittJ);

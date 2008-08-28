@@ -21,7 +21,6 @@
 // Created   : Mon Aug  2 10:30:00 2004
 // Author    : Edward AGAPOV (eap)
 
-using namespace std;
 
 #ifndef SMESH_Pattern_HeaderFile
 #define SMESH_Pattern_HeaderFile

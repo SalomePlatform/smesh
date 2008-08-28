@@ -25,8 +25,6 @@
 // Created   : Fri Oct 27 10:24:28 2006
 // Author    : Edward AGAPOV (eap)
 
-using namespace std;
-
 #include "StdMeshers_ProjectionUtils.hxx"
 
 #include "StdMeshers_ProjectionSource1D.hxx"
@@ -66,6 +64,7 @@ using namespace std;
 #include <TopTools_DataMapIteratorOfDataMapOfShapeShape.hxx>
 #include <TopTools_DataMapIteratorOfDataMapOfShapeListOfShape.hxx>
 
+using namespace std;
 
 #define RETURN_BAD_RESULT(msg) { MESSAGE(")-: Error: " << msg); return false; }
 #define SHOW_VERTEX(v,msg) // { \

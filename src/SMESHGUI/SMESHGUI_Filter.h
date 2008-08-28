@@ -60,10 +60,10 @@ namespace SMESH
 
 DEFINE_STANDARD_HANDLE(SMESHGUI_Filter, VTKViewer_Filter)
 
-class SMESHGUI_EXPORT SMESHGUI_Filter : public VTKViewer_Filter
+class SMESHGUI_Filter : public VTKViewer_Filter
 {
 public:
-  virtual bool                IsObjValid( const int ) const = 0;
+  Standard_EXPORT virtual bool IsObjValid( const int ) const = 0;
 
 public:
   DEFINE_STANDARD_RTTI(SMESHGUI_Filter)
@@ -77,19 +77,19 @@ public:
 
 DEFINE_STANDARD_HANDLE(SMESHGUI_PredicateFilter, SMESHGUI_Filter)
 
-class SMESHGUI_EXPORT SMESHGUI_PredicateFilter : public SMESHGUI_Filter
+class SMESHGUI_PredicateFilter : public SMESHGUI_Filter
 {
 public:
-  SMESHGUI_PredicateFilter();
-  virtual ~SMESHGUI_PredicateFilter();
+  Standard_EXPORT SMESHGUI_PredicateFilter();
+  Standard_EXPORT virtual ~SMESHGUI_PredicateFilter();
 
-  virtual bool                IsValid( const int ) const;
-  virtual bool                IsObjValid( const int ) const;
-  virtual int                 GetId() const;
-  virtual bool                IsNodeFilter() const;
-  void                        SetPredicate( SMESH::Predicate_ptr );
+  Standard_EXPORT virtual bool IsValid( const int ) const;
+  Standard_EXPORT virtual bool IsObjValid( const int ) const;
+  Standard_EXPORT virtual int  GetId() const;
+  Standard_EXPORT virtual bool IsNodeFilter() const;
+  Standard_EXPORT void         SetPredicate( SMESH::Predicate_ptr );
 
-  void                        SetActor( SALOME_Actor* );
+  Standard_EXPORT void         SetActor( SALOME_Actor* );
 
 private:
   SMESH::Predicate_var        myPred;
@@ -105,16 +105,16 @@ public:
 
 DEFINE_STANDARD_HANDLE(SMESHGUI_QuadrangleFilter, SMESHGUI_Filter)
 
-class SMESHGUI_EXPORT SMESHGUI_QuadrangleFilter : public SMESHGUI_Filter
+class SMESHGUI_QuadrangleFilter : public SMESHGUI_Filter
 {
 public:
-  SMESHGUI_QuadrangleFilter();
-  virtual ~SMESHGUI_QuadrangleFilter();
+  Standard_EXPORT SMESHGUI_QuadrangleFilter();
+  Standard_EXPORT virtual ~SMESHGUI_QuadrangleFilter();
 
-  virtual bool                IsValid( const int ) const;
-  virtual bool                IsObjValid( const int ) const;
-  virtual int                 GetId() const;
-  virtual bool                IsNodeFilter() const;
+  Standard_EXPORT virtual bool IsValid( const int ) const;
+  Standard_EXPORT virtual bool IsObjValid( const int ) const;
+  Standard_EXPORT virtual int  GetId() const;
+  Standard_EXPORT virtual bool IsNodeFilter() const;
 
 public:
   DEFINE_STANDARD_RTTI(SMESHGUI_QuadrangleFilter)
@@ -127,16 +127,16 @@ public:
 
 DEFINE_STANDARD_HANDLE(SMESHGUI_TriangleFilter, SMESHGUI_Filter)
 
-class SMESHGUI_EXPORT SMESHGUI_TriangleFilter : public SMESHGUI_Filter
+class SMESHGUI_TriangleFilter : public SMESHGUI_Filter
 {
 public:
-  SMESHGUI_TriangleFilter();
-  virtual ~SMESHGUI_TriangleFilter();
+  Standard_EXPORT SMESHGUI_TriangleFilter();
+  Standard_EXPORT virtual ~SMESHGUI_TriangleFilter();
 
-  virtual bool                IsValid( const int ) const;
-  virtual bool                IsObjValid( const int ) const;
-  virtual int                 GetId() const;
-  virtual bool                IsNodeFilter() const;  
+  Standard_EXPORT virtual bool IsValid( const int ) const;
+  Standard_EXPORT virtual bool IsObjValid( const int ) const;
+  Standard_EXPORT virtual int  GetId() const;
+  Standard_EXPORT virtual bool IsNodeFilter() const;  
 
 public:
   DEFINE_STANDARD_RTTI(SMESHGUI_TriangleFilter)
@@ -149,16 +149,16 @@ public:
 
 DEFINE_STANDARD_HANDLE(SMESHGUI_FacesFilter, SMESHGUI_Filter)
 
-class SMESHGUI_EXPORT SMESHGUI_FacesFilter : public SMESHGUI_Filter
+class SMESHGUI_FacesFilter : public SMESHGUI_Filter
 {
 public:
-  SMESHGUI_FacesFilter();
-  virtual ~SMESHGUI_FacesFilter();
+  Standard_EXPORT SMESHGUI_FacesFilter();
+  Standard_EXPORT virtual ~SMESHGUI_FacesFilter();
 
-  virtual bool                IsValid( const int ) const;
-  virtual bool                IsObjValid( const int ) const;
-  virtual int                 GetId() const;
-  virtual bool                IsNodeFilter() const;  
+  Standard_EXPORT virtual bool IsValid( const int ) const;
+  Standard_EXPORT virtual bool IsObjValid( const int ) const;
+  Standard_EXPORT virtual int  GetId() const;
+  Standard_EXPORT virtual bool IsNodeFilter() const;  
 
 public:
   DEFINE_STANDARD_RTTI(SMESHGUI_FacesFilter)
@@ -171,16 +171,16 @@ public:
 
 DEFINE_STANDARD_HANDLE(SMESHGUI_VolumesFilter, SMESHGUI_Filter)
 
-class SMESHGUI_EXPORT SMESHGUI_VolumesFilter : public SMESHGUI_Filter
+class SMESHGUI_VolumesFilter : public SMESHGUI_Filter
 {
 public:
-  SMESHGUI_VolumesFilter();
-  virtual ~SMESHGUI_VolumesFilter();
+  Standard_EXPORT SMESHGUI_VolumesFilter();
+  Standard_EXPORT virtual ~SMESHGUI_VolumesFilter();
 
-  virtual bool                IsValid( const int ) const;
-  virtual bool                IsObjValid( const int ) const;
-  virtual int                 GetId() const;
-  virtual bool                IsNodeFilter() const;  
+  Standard_EXPORT virtual bool IsValid( const int ) const;
+  Standard_EXPORT virtual bool IsObjValid( const int ) const;
+  Standard_EXPORT virtual int  GetId() const;
+  Standard_EXPORT virtual bool IsNodeFilter() const;  
 
 public:
   DEFINE_STANDARD_RTTI(SMESHGUI_VolumesFilter)
