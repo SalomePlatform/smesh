@@ -35,6 +35,7 @@
  */
 //===========================================================================
 SMESH_Octree::SMESH_Octree (const int maxLevel, const double minBoxSize):
+    myChildren(NULL),
     myFather(NULL),
     myLevel(0),
     myMaxLevel(maxLevel),
