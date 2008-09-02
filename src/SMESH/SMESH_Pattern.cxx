@@ -633,12 +633,13 @@ bool SMESH_Pattern::Load (SMESH_Mesh*        theMesh,
 
     // vertices
     for ( elIt = eList.begin(); elIt != eList.end(); elIt++ ) {
+      int nbV = myShapeIDMap.Extent();
       myShapeIDMap.Add( TopExp::FirstVertex( *elIt, true ));
-      if ( helper.IsSeamShape( *elIt ) ) {
-        // vertices present twice in the wire have two corresponding key points
-        const TopoDS_Vertex& lastV = TopExp::LastVertex( *elIt, true );
-        if ( helper.IsRealSeam( lastV ))
-          myShapeIDMap.Add( lastV );// vertex orienation is REVERSED
+      bool added = ( nbV < myShapeIDMap.Extent() );
+      if ( !added ) { // vertex encountered twice
+        // a seam vertex have two corresponding key points
+        myShapeIDMap.Add( TopExp::FirstVertex( *elIt, true ).Reversed());
+        ++nbNodes;
       }
       if ( SMESHDS_SubMesh * eSubMesh = aMeshDS->MeshElements( *elIt ))
         nbNodes += eSubMesh->NbNodes() + 1;
@@ -679,7 +680,7 @@ bool SMESH_Pattern::Load (SMESH_Mesh*        theMesh,
         else { // on CLOSED edge (i.e. having one vertex with different orienations)
           for ( int is2 = 0; is2 < 2; ++is2 ) {
             TopoDS_Shape & v = is2 ? v2 : v1;
-            if ( helper.IsSeamShape( v ) ) {
+            if ( helper.IsRealSeam( v ) ) {
               // reverse or not depending on orientation of adjacent seam
               TopoDS_Edge seam;
               list<TopoDS_Edge>::iterator eIt2 = elIt;
