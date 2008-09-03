@@ -83,8 +83,10 @@ SMESH_DeviceActor
 {
   if(MYDEBUG) MESSAGE("SMESH_DeviceActor - "<<this);
 
-  myIsShrunk = false;
   myIsShrinkable = false;
+  myIsShrunk = false;
+  myIsHighlited = false;
+
   myRepresentation = eSurface;
 
   myProperty = vtkProperty::New();
