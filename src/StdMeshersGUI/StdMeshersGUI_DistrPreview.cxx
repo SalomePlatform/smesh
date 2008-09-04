@@ -45,6 +45,10 @@
 #include <Standard_ErrorHandler.hxx>
 #endif
 
+#ifdef WIN32
+# include <algorithm>
+#endif
+
 StdMeshersGUI_DistrPreview::StdMeshersGUI_DistrPreview( QWidget* p, StdMeshers::StdMeshers_NumberOfSegments_ptr h )
 : QwtPlot( p ),
   myPoints( 50 ),
@@ -263,7 +267,15 @@ void StdMeshersGUI_DistrPreview::update()
   }
 
   setAxisScale( myDensity->xAxis(), min_x, max_x );
-  setAxisScale( myDensity->yAxis(), std::min( 0.0, min_y ), std::max( 0.0, max_y ) );
+  setAxisScale( myDensity->yAxis(),
+#ifdef WIN32
+    min( 0.0, min_y ),
+    max( 0.0, max_y )
+#else
+    std::min( 0.0, min_y ),
+    std::max( 0.0, max_y )
+#endif
+    );
   myDensity->setData( x, y, size );
   if( x )
     delete[] x;
