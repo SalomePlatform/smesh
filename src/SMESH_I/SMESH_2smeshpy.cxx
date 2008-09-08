@@ -1034,6 +1034,9 @@ Handle(_pyHypothesis) _pyHypothesis::NewHypothesis( const Handle(_pyCommand)& th
     hyp->SetConvMethodAndType( "QuadranglePreference", "Quadrangle_2D");
     hyp->SetConvMethodAndType( "QuadranglePreference", "NETGEN_2D_ONLY");
   }
+  else if ( hypType == "TrianglePreference" ) {
+    hyp->SetConvMethodAndType( "TrianglePreference", "Quadrangle_2D");
+  }	
   // NETGEN ----------
 //   else if ( hypType == "NETGEN_2D") { // 1D-2D
 //     algo->SetConvMethodAndType( "Triangle" , hypType.ToCString());

@@ -40,6 +40,7 @@
 #include "StdMeshers_Propagation_i.hxx"
 #include "StdMeshers_LengthFromEdges_i.hxx"
 #include "StdMeshers_QuadranglePreference_i.hxx"
+#include "StdMeshers_TrianglePreference_i.hxx"
 #include "StdMeshers_QuadraticMesh_i.hxx"
 #include "StdMeshers_MaxElementArea_i.hxx"
 #include "StdMeshers_MaxElementVolume_i.hxx"
@@ -108,6 +109,8 @@ STDMESHERS_I_EXPORT
       aCreator = new StdHypothesisCreator_i<StdMeshers_AutomaticLength_i>;
     else if (strcmp(aHypName, "QuadranglePreference") == 0)
       aCreator = new StdHypothesisCreator_i<StdMeshers_QuadranglePreference_i>;
+    else if (strcmp(aHypName, "TrianglePreference") == 0)
+      aCreator = new StdHypothesisCreator_i<StdMeshers_TrianglePreference_i>;
     else if (strcmp(aHypName, "QuadraticMesh") == 0)
       aCreator = new StdHypothesisCreator_i<StdMeshers_QuadraticMesh_i>;
     else if (strcmp(aHypName, "ProjectionSource3D") == 0)

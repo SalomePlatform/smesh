@@ -1,4 +1,4 @@
-//  SMESH SMESH : implementaion of SMESH idl descriptions
+ //  SMESH SMESH : implementaion of SMESH idl descriptions
 //
 //  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
@@ -83,6 +83,7 @@ StdMeshers_Quadrangle_2D::StdMeshers_Quadrangle_2D (int hypId, int studyId, SMES
   _name = "Quadrangle_2D";
   _shapeType = (1 << TopAbs_FACE);
   _compatibleHypothesis.push_back("QuadranglePreference");
+  _compatibleHypothesis.push_back("TrianglePreference");
   myTool = 0;
 }
 
@@ -111,10 +112,25 @@ bool StdMeshers_Quadrangle_2D::CheckHypothesis
   bool isOk = true;
   aStatus = SMESH_Hypothesis::HYP_OK;
 
-  // there is only one compatible Hypothesis so far
-  const list <const SMESHDS_Hypothesis * >&hyps = GetUsedHypothesis(aMesh, aShape, false);
-  myQuadranglePreference = hyps.size() > 0;
 
+  const list <const SMESHDS_Hypothesis * >&hyps = GetUsedHypothesis(aMesh, aShape, false);
+  const SMESHDS_Hypothesis *theHyp = 0;
+  
+  if(hyps.size() > 0){
+    theHyp = *hyps.begin();
+    if(strcmp("QuadranglePreference", theHyp->GetName()) == 0) {
+      myQuadranglePreference= true;
+      myTrianglePreference= false; 
+    }
+    else if(strcmp("TrianglePreference", theHyp->GetName()) == 0){
+      myQuadranglePreference= false;
+      myTrianglePreference= true; 
+    }
+  }
+  else {
+    myQuadranglePreference = false;
+    myTrianglePreference = false;
+  }
   return isOk;
 }
 
@@ -307,8 +323,17 @@ bool StdMeshers_Quadrangle_2D::Compute (SMESH_Mesh& aMesh,
         else
           d = quad->uv_grid[nbhoriz + near - 1].node;
         //SMDS_MeshFace* face = meshDS->AddFace(a, b, c, d);
-        SMDS_MeshFace* face = myTool->AddFace(a, b, c, d);
-        meshDS->SetMeshElementOnShape(face, geomFaceID);
+        
+        if(!myTrianglePreference){
+          SMDS_MeshFace* face = myTool->AddFace(a, b, c, d);
+          meshDS->SetMeshElementOnShape(face, geomFaceID);
+        }
+        else {
+          SMDS_MeshFace* face = myTool->AddFace(a, b, c);
+          meshDS->SetMeshElementOnShape(face, geomFaceID);
+          face = myTool->AddFace(a, c, d);
+          meshDS->SetMeshElementOnShape(face, geomFaceID);
+        }
 
         // if node d is not at position g - make additional triangles
         if (near - 1 > g) {
@@ -391,8 +416,16 @@ bool StdMeshers_Quadrangle_2D::Compute (SMESH_Mesh& aMesh,
           else
             d = quad->uv_grid[nbhoriz*(nbvertic - 2) + near + 1].node;
           //SMDS_MeshFace* face = meshDS->AddFace(a, b, c, d);
-          SMDS_MeshFace* face = myTool->AddFace(a, b, c, d);
-          meshDS->SetMeshElementOnShape(face, geomFaceID);
+          if(!myTrianglePreference){
+            SMDS_MeshFace* face = myTool->AddFace(a, b, c, d);
+            meshDS->SetMeshElementOnShape(face, geomFaceID);
+          }
+          else {
+            SMDS_MeshFace* face = myTool->AddFace(a, b, c);
+            meshDS->SetMeshElementOnShape(face, geomFaceID);
+            face = myTool->AddFace(a, c, d);
+            meshDS->SetMeshElementOnShape(face, geomFaceID);
+          }
 
           if (near + 1 < g) { // if d not is at g - make additional triangles
             for (int k = near + 1; k < g; k++) {
@@ -460,8 +493,17 @@ bool StdMeshers_Quadrangle_2D::Compute (SMESH_Mesh& aMesh,
         else
           d = quad->uv_grid[nbhoriz*near - 2].node;
         //SMDS_MeshFace* face = meshDS->AddFace(a, b, c, d);
-        SMDS_MeshFace* face = myTool->AddFace(a, b, c, d);
-        meshDS->SetMeshElementOnShape(face, geomFaceID);
+
+        if(!myTrianglePreference){
+          SMDS_MeshFace* face = myTool->AddFace(a, b, c, d);
+          meshDS->SetMeshElementOnShape(face, geomFaceID);
+        }
+        else {
+          SMDS_MeshFace* face = myTool->AddFace(a, b, c);
+          meshDS->SetMeshElementOnShape(face, geomFaceID);
+          face = myTool->AddFace(a, c, d);
+          meshDS->SetMeshElementOnShape(face, geomFaceID);
+        }
 
         if (near - 1 > g) { // if d not is at g - make additional triangles
           for (int k = near - 1; k > g; k--) {
@@ -526,8 +568,16 @@ bool StdMeshers_Quadrangle_2D::Compute (SMESH_Mesh& aMesh,
           else
             d = quad->uv_grid[nbhoriz*(near + 1) + 1].node;
           //SMDS_MeshFace* face = meshDS->AddFace(a, b, c, d);
-          SMDS_MeshFace* face = myTool->AddFace(a, b, c, d);
-          meshDS->SetMeshElementOnShape(face, geomFaceID);
+          if(!myTrianglePreference){
+            SMDS_MeshFace* face = myTool->AddFace(a, b, c, d);
+            meshDS->SetMeshElementOnShape(face, geomFaceID);
+          }
+          else {
+            SMDS_MeshFace* face = myTool->AddFace(a, b, c);
+            meshDS->SetMeshElementOnShape(face, geomFaceID);
+            face = myTool->AddFace(a, c, d);
+            meshDS->SetMeshElementOnShape(face, geomFaceID);
+          }
 
           if (near + 1 < g) { // if d not is at g - make additional triangles
             for (int k = near + 1; k < g; k++) {

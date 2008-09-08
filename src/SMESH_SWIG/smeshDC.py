@@ -3428,6 +3428,16 @@ class Mesh_Quadrangle(Mesh_Algorithm):
                               CompareMethod=self.CompareEqualHyp)
         return hyp
 
+    ## Defines "TrianglePreference" hypothesis, forcing construction
+    #  of triangles in the refinement area if the number of nodes
+    #  on the opposite edges is not the same
+    #
+    #  @ingroup l3_hypos_additi
+    def TrianglePreference(self):
+        hyp = self.Hypothesis("TrianglePreference", UseExisting=1,
+                              CompareMethod=self.CompareEqualHyp)
+        return hyp
+
 # Public class: Mesh_Tetrahedron
 # ------------------------------
 
