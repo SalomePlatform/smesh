@@ -195,6 +195,133 @@ struct TSetVisiblity {
 };
 
 //=================================================================================
+// used in SMESHGUI::restoreVisualParameters() to avoid
+// declaration of OrientedPlane outside of SMESHGUI_ClippingDlg.cxx
+//=================================================================================
+void SMESHGUI_ClippingDlg::AddPlane (SMESH_Actor*         theActor,
+                                     SVTK_ViewWindow*     theViewWindow,
+                                     SMESH::Orientation   theOrientation,
+                                     double               theDistance,
+                                     vtkFloatingPointType theAngle[2])
+{
+  OrientedPlane* aPlane = OrientedPlane::New(theViewWindow);
+
+  aPlane->myAngle[0] = theAngle[0];
+  aPlane->myAngle[1] = theAngle[1];
+
+  aPlane->SetOrientation(theOrientation);
+  aPlane->SetDistance(theDistance);
+
+  vtkFloatingPointType aNormal[3];
+  vtkFloatingPointType aDir[2][3] = {{0, 0, 0}, {0, 0, 0}};
+  {
+    static double aCoeff = vtkMath::Pi()/180.0;
+
+    vtkFloatingPointType anU[2] = {cos(aCoeff * theAngle[0]), cos(aCoeff * theAngle[1])};
+    vtkFloatingPointType aV[2] = {sqrt(1.0 - anU[0]*anU[0]), sqrt(1.0 - anU[1]*anU[1])};
+    aV[0] = theAngle[0] > 0? aV[0]: -aV[0];
+    aV[1] = theAngle[1] > 0? aV[1]: -aV[1];
+
+    switch (theOrientation) {
+    case SMESH::XY:
+      aDir[0][1] = anU[0];
+      aDir[0][2] = aV[0];
+
+      aDir[1][0] = anU[1];
+      aDir[1][2] = aV[1];
+
+      break;
+    case SMESH::YZ:
+      aDir[0][2] = anU[0];
+      aDir[0][0] = aV[0];
+
+      aDir[1][1] = anU[1];
+      aDir[1][0] = aV[1];
+
+      break;
+    case SMESH::ZX:
+      aDir[0][0] = anU[0];
+      aDir[0][1] = aV[0];
+
+      aDir[1][2] = anU[1];
+      aDir[1][1] = aV[1];
+
+      break;
+    }
+
+    vtkMath::Cross(aDir[1],aDir[0],aNormal);
+    vtkMath::Normalize(aNormal);
+    vtkMath::Cross(aNormal,aDir[1],aDir[0]);
+  }
+
+  // ???
+  theActor->SetPlaneParam(aNormal, theDistance, aPlane);
+
+  vtkDataSet* aDataSet = theActor->GetInput();
+  vtkFloatingPointType *aPnt = aDataSet->GetCenter();
+
+  vtkFloatingPointType* anOrigin = aPlane->GetOrigin();
+  vtkFloatingPointType aDel = aDataSet->GetLength()/2.0;
+
+  vtkFloatingPointType aDelta[2][3] = {{aDir[0][0]*aDel, aDir[0][1]*aDel, aDir[0][2]*aDel},
+				       {aDir[1][0]*aDel, aDir[1][1]*aDel, aDir[1][2]*aDel}};
+  vtkFloatingPointType aParam, aPnt0[3], aPnt1[3], aPnt2[3];
+
+  vtkFloatingPointType aPnt01[3] = {aPnt[0] - aDelta[0][0] - aDelta[1][0],
+				    aPnt[1] - aDelta[0][1] - aDelta[1][1],
+				    aPnt[2] - aDelta[0][2] - aDelta[1][2]};
+  vtkFloatingPointType aPnt02[3] = {aPnt01[0] + aNormal[0],
+				    aPnt01[1] + aNormal[1],
+				    aPnt01[2] + aNormal[2]};
+  vtkPlane::IntersectWithLine(aPnt01,aPnt02,aNormal,anOrigin,aParam,aPnt0);
+
+  vtkFloatingPointType aPnt11[3] = {aPnt[0] - aDelta[0][0] + aDelta[1][0],
+				    aPnt[1] - aDelta[0][1] + aDelta[1][1],
+				    aPnt[2] - aDelta[0][2] + aDelta[1][2]};
+  vtkFloatingPointType aPnt12[3] = {aPnt11[0] + aNormal[0],
+				    aPnt11[1] + aNormal[1],
+				    aPnt11[2] + aNormal[2]};
+  vtkPlane::IntersectWithLine(aPnt11,aPnt12,aNormal,anOrigin,aParam,aPnt1);
+
+  vtkFloatingPointType aPnt21[3] = {aPnt[0] + aDelta[0][0] - aDelta[1][0],
+				    aPnt[1] + aDelta[0][1] - aDelta[1][1],
+				    aPnt[2] + aDelta[0][2] - aDelta[1][2]};
+  vtkFloatingPointType aPnt22[3] = {aPnt21[0] + aNormal[0],
+				    aPnt21[1] + aNormal[1],
+				    aPnt21[2] + aNormal[2]};
+  vtkPlane::IntersectWithLine(aPnt21,aPnt22,aNormal,anOrigin,aParam,aPnt2);
+
+  vtkPlaneSource* aPlaneSource = aPlane->myPlaneSource;
+  aPlaneSource->SetNormal(aNormal[0],aNormal[1],aNormal[2]);
+  aPlaneSource->SetOrigin(aPnt0[0],aPnt0[1],aPnt0[2]);
+  aPlaneSource->SetPoint1(aPnt1[0],aPnt1[1],aPnt1[2]);
+  aPlaneSource->SetPoint2(aPnt2[0],aPnt2[1],aPnt2[2]);
+
+  theActor->AddClippingPlane(aPlane);
+  aPlane->Delete();
+}
+
+//=================================================================================
+// used in SMESHGUI::restoreVisualParameters() to avoid
+// declaration of OrientedPlane outside of SMESHGUI_ClippingDlg.cxx
+//=================================================================================
+void SMESHGUI_ClippingDlg::GetPlaneParam (SMESH_Actor*          theActor,
+                                          int                   thePlaneIndex,
+                                          SMESH::Orientation&   theOrientation,
+                                          double&               theDistance,
+                                          vtkFloatingPointType* theAngle)
+{
+  if (vtkPlane* aPln = theActor->GetClippingPlane(thePlaneIndex)) {
+    if (OrientedPlane* aPlane = OrientedPlane::SafeDownCast(aPln)) {
+      theOrientation = aPlane->GetOrientation();
+      theDistance = aPlane->GetDistance();
+      theAngle[0] = aPlane->myAngle[0];
+      theAngle[1] = aPlane->myAngle[1];
+    }
+  }
+}
+
+//=================================================================================
 // class    : SMESHGUI_ClippingDlg()
 // purpose  :
 //

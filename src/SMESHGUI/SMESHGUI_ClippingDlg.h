@@ -29,6 +29,9 @@
 // SMESH includes
 #include "SMESH_SMESHGUI.hxx"
 
+// SALOME includes
+#include <SVTK_ViewWindow.h>
+
 // Qt includes
 #include <QDialog>
 
@@ -75,6 +78,20 @@ public:
   double                  getRotation2() const;
   void                    setRotation( const double, const double );
   void                    Sinchronize();
+
+  // used in SMESHGUI::restoreVisualParameters() to avoid
+  // declaration of OrientedPlane outside of SMESHGUI_ClippingDlg.cxx
+  static void             AddPlane (SMESH_Actor*         theActor,
+				    SVTK_ViewWindow*     theViewWindow,
+				    SMESH::Orientation   theOrientation,
+				    double               theDistance,
+				    vtkFloatingPointType theAngle[2]);
+
+  static void             GetPlaneParam (SMESH_Actor*          theActor,
+					 int                   thePlaneIndex,
+					 SMESH::Orientation&   theOrientation,
+					 double&               theDistance,
+					 vtkFloatingPointType* theAngle);
 
 protected:  
   void                    keyPressEvent( QKeyEvent* );

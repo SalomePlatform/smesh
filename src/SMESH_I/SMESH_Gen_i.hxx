@@ -370,7 +370,7 @@ public:
 
   void SavePython (SALOMEDS::Study_ptr theStudy);
 
-  TCollection_AsciiString DumpPython_impl (int theStudyID, 
+  TCollection_AsciiString DumpPython_impl (SALOMEDS::Study_ptr theStudy, 
                                            Resource_DataMapOfAsciiStringAsciiString& theObjectNames,
                                            Resource_DataMapOfAsciiStringAsciiString& theNames,
                                            bool isPublished, 

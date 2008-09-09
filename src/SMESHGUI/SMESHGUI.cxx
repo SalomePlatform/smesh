@@ -122,14 +122,20 @@
 
 // VTK includes
 #include <vtkScalarBarActor.h>
+#include <vtkCamera.h>
+#include <vtkRenderer.h>
+#include <vtkPlane.h>
 
 // SALOME KERNEL includes
 #include <SALOMEDS_Study.hxx>
 #include <SALOMEDSClient_StudyBuilder.hxx>
 #include <SALOMEDSClient_SComponent.hxx>
+#include <SALOMEDSClient_ClientFactory.hxx>
+#include <SALOMEDSClient_IParameters.hxx>
 
 // OCCT includes
 #include <Standard_ErrorHandler.hxx>
+#include <NCollection_DataMap.hxx>
 
 //namespace{
   // Declarations
@@ -236,14 +242,14 @@
 
       // update Object browser
       SMESHGUI::GetSMESHGUI()->updateObjBrowser();
-      
+
       // show Error message box if there were errors
       if ( errors.count() > 0 ) {
 	SUIT_MessageBox::critical( SMESHGUI::desktop(),
 				   QObject::tr( "SMESH_ERROR" ),
 				   QObject::tr( "SMESH_IMPORT_ERRORS" ) + "\n" + errors.join( "\n" ) );
       }
-      
+
       // show warning message box, if some imported mesh is empty
       if ( isEmpty ) {
 	  SUIT_MessageBox::warning( SMESHGUI::desktop(),
@@ -916,7 +922,7 @@
 	(SMESHGUI::desktop(),
 	 QObject::tr("SMESH_WRN_WARNING"),
 	 QObject::tr("SMESH_REALLY_DELETE"),
-	 SUIT_MessageBox::Yes | SUIT_MessageBox::No, 
+	 SUIT_MessageBox::Yes | SUIT_MessageBox::No,
 	 SUIT_MessageBox::Yes) != SUIT_MessageBox::Yes)
       return;
 
@@ -941,7 +947,7 @@
 
 	_PTR(SObject) refobj;
 	if ( aSO && aSO->ReferencedObject( refobj ) )
-	  continue; // skip references 
+	  continue; // skip references
 
         // put the whole hierarchy of sub-objects of the selected SO into a list and
         // then treat them all starting from the deepest objects (at list back)
@@ -2185,7 +2191,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
   case 4043: {                                // CLEAR_MESH
 
     if(checkLock(aStudy)) break;
-    
+
     SALOME_ListIO selected;
     if( LightApp_SelectionMgr *aSel = SMESHGUI::selectionMgr() )
       aSel->selectedObjects( selected );
@@ -3736,4 +3742,411 @@ SALOMEDS::Color SMESHGUI::getUniqueColor( const QList<SALOMEDS::Color>& theReser
   aSColor.B = (double)aColor.blue() / 255.0;
 
   return aSColor;
+}
+
+const char gSeparator = '_'; // character used to separate parameter names
+const char gDigitsSep = ':'; // character used to separate numeric parameter values (color = r:g:b)
+
+/*!
+ * \brief Store visual parameters
+ *
+ * This method is called just before the study document is saved.
+ * Store visual parameters in AttributeParameter attribue(s)
+ */
+void SMESHGUI::storeVisualParameters (int savePoint)
+{
+  SalomeApp_Study* appStudy = dynamic_cast<SalomeApp_Study*>(application()->activeStudy());
+  if (!appStudy || !appStudy->studyDS())
+    return;
+  _PTR(Study) studyDS = appStudy->studyDS();
+
+  // componentName is used for encoding of entries when storing them in IParameters
+  std::string componentName = myComponentSMESH->ComponentDataType();
+  //_PTR(SComponent) aSComponent = studyDS->FindComponent("SMESH");
+  //if (!aSComponent) return;
+
+  // IParameters
+  _PTR(AttributeParameter) ap = studyDS->GetModuleParameters("Interface Applicative",
+                                                             componentName.c_str(),
+                                                             savePoint);
+  _PTR(IParameters) ip = ClientFactory::getIParameters(ap);
+
+  // viewers counters are used for storing view_numbers in IParameters
+  int vtkViewers = 0;
+
+  // main cycle to store parameters of displayed objects
+  QList<SUIT_ViewManager*> lst;
+  QList<SUIT_ViewManager*>::Iterator it;
+  getApp()->viewManagers(lst);
+  for (it = lst.begin(); it != lst.end(); it++)
+  {
+    SUIT_ViewManager* vman = *it;
+    QString vType = vman->getType();
+
+    // saving VTK actors properties
+    if (vType == SVTK_Viewer::Type())
+    {
+      QVector<SUIT_ViewWindow*> views = vman->getViews();
+      for (int i = 0, iEnd = vman->getViewsCount(); i < iEnd; i++)
+      {
+	if (SVTK_ViewWindow* vtkView = dynamic_cast<SVTK_ViewWindow*>(views[i]))
+        {
+	  vtkActorCollection* allActors = vtkView->getRenderer()->GetActors();
+	  allActors->InitTraversal();
+	  while (vtkActor* actor = allActors->GetNextActor())
+          {
+	    if (actor->GetVisibility()) // store only visible actors
+            {
+              SMESH_Actor* aSmeshActor = 0;
+              if (actor->IsA("SMESH_Actor"))
+                aSmeshActor = SMESH_Actor::SafeDownCast(actor);
+	      if (aSmeshActor && aSmeshActor->hasIO())
+              {
+                Handle(SALOME_InteractiveObject) io = aSmeshActor->getIO();
+                if (io->hasEntry())
+                {
+                  // entry is "encoded" = it does NOT contain component adress,
+                  // since it is a subject to change on next component loading
+                  std::string entry = ip->encodeEntry(io->getEntry(), componentName);
+
+                  std::string param, vtkParam = vType.toLatin1().data();
+                  vtkParam += gSeparator;
+                  vtkParam += QString::number(vtkViewers).toLatin1().data();
+                  vtkParam += gSeparator;
+
+                  // Visibility
+                  param = vtkParam + "Visibility";
+                  ip->setParameter(entry, param, "On");
+
+                  // Representation
+                  param = vtkParam + "Representation";
+                  ip->setParameter(entry, param, QString::number
+                                   ((int)aSmeshActor->GetRepresentation()).toLatin1().data());
+
+                  // IsShrunk
+                  param = vtkParam + "IsShrunk";
+                  ip->setParameter(entry, param, QString::number
+                                   ((int)aSmeshActor->IsShrunk()).toLatin1().data());
+
+                  // Displayed entities
+                  unsigned int aMode = aSmeshActor->GetEntityMode();
+                  bool isE = aMode & SMESH_Actor::eEdges;
+                  bool isF = aMode & SMESH_Actor::eFaces;
+                  bool isV = aMode & SMESH_Actor::eVolumes;
+
+                  QString modeStr ("e");
+                  modeStr += gDigitsSep; modeStr += QString::number(isE);
+                  modeStr += gDigitsSep; modeStr += "f";
+                  modeStr += gDigitsSep; modeStr += QString::number(isF);
+                  modeStr += gDigitsSep; modeStr += "v";
+                  modeStr += gDigitsSep; modeStr += QString::number(isV);
+
+                  param = vtkParam + "Entities";
+                  ip->setParameter(entry, param, modeStr.toLatin1().data());
+
+                  // Colors (surface:edge:)
+                  vtkFloatingPointType r, g, b;
+
+                  aSmeshActor->GetSufaceColor(r, g, b);
+                  QString colorStr ("surface");
+                  colorStr += gDigitsSep; colorStr += QString::number(r);
+                  colorStr += gDigitsSep; colorStr += QString::number(g);
+                  colorStr += gDigitsSep; colorStr += QString::number(b);
+
+                  aSmeshActor->GetBackSufaceColor(r, g, b);
+                  colorStr += gDigitsSep; colorStr += "backsurface";
+                  colorStr += gDigitsSep; colorStr += QString::number(r);
+                  colorStr += gDigitsSep; colorStr += QString::number(g);
+                  colorStr += gDigitsSep; colorStr += QString::number(b);
+
+                  aSmeshActor->GetEdgeColor(r, g, b);
+                  colorStr += gDigitsSep; colorStr += "edge";
+                  colorStr += gDigitsSep; colorStr += QString::number(r);
+                  colorStr += gDigitsSep; colorStr += QString::number(g);
+                  colorStr += gDigitsSep; colorStr += QString::number(b);
+
+                  aSmeshActor->GetNodeColor(r, g, b);
+                  colorStr += gDigitsSep; colorStr += "node";
+                  colorStr += gDigitsSep; colorStr += QString::number(r);
+                  colorStr += gDigitsSep; colorStr += QString::number(g);
+                  colorStr += gDigitsSep; colorStr += QString::number(b);
+
+                  param = vtkParam + "Colors";
+                  ip->setParameter(entry, param, colorStr.toLatin1().data());
+
+                  // Sizes of lines and points
+                  QString sizeStr ("line");
+                  sizeStr += gDigitsSep; sizeStr += QString::number((int)aSmeshActor->GetLineWidth());
+                  sizeStr += gDigitsSep; sizeStr += "node";
+                  sizeStr += gDigitsSep; sizeStr += QString::number((int)aSmeshActor->GetNodeSize());
+                  sizeStr += gDigitsSep; sizeStr += "shrink";
+                  sizeStr += gDigitsSep; sizeStr += QString::number(aSmeshActor->GetShrinkFactor());
+
+                  param = vtkParam + "Sizes";
+                  ip->setParameter(entry, param, sizeStr.toLatin1().data());
+
+                  // Opacity
+                  param = vtkParam + "Opacity";
+                  ip->setParameter(entry, param,
+                                   QString::number(aSmeshActor->GetOpacity()).toLatin1().data());
+
+                  // Clipping
+                  param = vtkParam + "ClippingPlane";
+                  int nPlanes = aSmeshActor->GetNumberOfClippingPlanes();
+                  if (!nPlanes)
+                    ip->setParameter(entry, param, "Off");
+                  for (int ipl = 0; ipl < nPlanes; ipl++) {
+                    //vtkPlane* plane = aSmeshActor->GetClippingPlane(ipl);
+                    SMESH::Orientation anOrientation;
+                    double aDistance;
+                    vtkFloatingPointType anAngle[2];
+                    SMESHGUI_ClippingDlg::GetPlaneParam(aSmeshActor, ipl, anOrientation, aDistance, anAngle);
+                    std::string planeValue = QString::number((int)anOrientation).toLatin1().data();
+                    planeValue += gDigitsSep; planeValue += QString::number(aDistance).toLatin1().data();
+                    planeValue += gDigitsSep; planeValue += QString::number(anAngle[0]).toLatin1().data();
+                    planeValue += gDigitsSep; planeValue += QString::number(anAngle[1]).toLatin1().data();
+
+                    ip->setParameter(entry, param + QString::number(ipl+1).toLatin1().data(), planeValue);
+                  }
+                } // if (io->hasEntry())
+	      } // SMESH_Actor && hasIO
+	    } // isVisible
+	  } // while.. actors traversal
+	} // if (vtkView)
+      } // for (views)
+      vtkViewers++;
+    } // if (SVTK view model)
+  } // for (viewManagers)
+}
+
+/*!
+ * \brief Restore visual parameters
+ *
+ * This method is called after the study document is opened.
+ * Restore visual parameters from AttributeParameter attribue(s)
+ */
+void SMESHGUI::restoreVisualParameters (int savePoint)
+{
+  SalomeApp_Study* appStudy = dynamic_cast<SalomeApp_Study*>(application()->activeStudy());
+  if (!appStudy || !appStudy->studyDS())
+    return;
+  _PTR(Study) studyDS = appStudy->studyDS();
+
+  // componentName is used for encoding of entries when storing them in IParameters
+  std::string componentName = myComponentSMESH->ComponentDataType();
+  //_PTR(SComponent) aSComponent = studyDS->FindComponent("GEOM");
+  //if (!aSComponent) return;
+
+  // IParameters
+  _PTR(AttributeParameter) ap = studyDS->GetModuleParameters("Interface Applicative",
+                                                             componentName.c_str(),
+                                                             savePoint);
+  _PTR(IParameters) ip = ClientFactory::getIParameters(ap);
+
+  std::vector<std::string> entries = ip->getEntries();
+
+  for (std::vector<std::string>::iterator entIt = entries.begin(); entIt != entries.end(); ++entIt)
+  {
+    // entry is a normal entry - it should be "decoded" (setting base adress of component)
+    QString entry (ip->decodeEntry(*entIt).c_str());
+
+    // Check that the entry corresponds to a real object in the Study
+    // as the object may be deleted or modified after the visual state is saved.
+    _PTR(SObject) so = studyDS->FindObjectID(entry.toLatin1().data());
+    if (!so) continue; //Skip the not existent entry
+
+    std::vector<std::string> paramNames = ip->getAllParameterNames( *entIt );
+    std::vector<std::string> paramValues = ip->getAllParameterValues( *entIt );
+
+    std::vector<std::string>::iterator namesIt = paramNames.begin();
+    std::vector<std::string>::iterator valuesIt = paramValues.begin();
+
+    // actors are stored in a map after displaying of them for
+    // quicker access in the future: map < viewID to actor >
+    NCollection_DataMap<int, SMESH_Actor*> vtkActors;
+
+    for (; namesIt != paramNames.end(); ++namesIt, ++valuesIt)
+    {
+      // visual parameters are stored in strings as follows: ViewerType_ViewIndex_ParamName.
+      // '_' is used as separator and should not be used in viewer type or parameter names.
+      QStringList lst = QString((*namesIt).c_str()).split(gSeparator, QString::SkipEmptyParts);
+      if (lst.size() != 3)
+        continue;
+
+      QString viewerTypStr = lst[0];
+      QString viewIndexStr = lst[1];
+      QString paramNameStr = lst[2];
+
+      bool ok;
+      int viewIndex = viewIndexStr.toUInt(&ok);
+      if (!ok) // bad conversion of view index to integer
+	continue;
+
+      // viewers
+      if (viewerTypStr == SVTK_Viewer::Type())
+      {
+        SMESH_Actor* aSmeshActor = 0;
+        if (vtkActors.IsBound(viewIndex))
+          aSmeshActor = vtkActors.Find(viewIndex);
+
+        if (paramNameStr == "Visibility")
+        {
+          if (!aSmeshActor && displayer())
+          {
+            QList<SUIT_ViewManager*> lst;
+            getApp()->viewManagers(viewerTypStr, lst);
+
+            // SVTK ViewManager always has 1 ViewWindow, so view index is index of view manager
+            if (viewIndex >= 0 && viewIndex < lst.count()) {
+              SUIT_ViewManager* vman = lst.at(viewIndex);
+              SUIT_ViewModel* vmodel = vman->getViewModel();
+              // SVTK view model can be casted to SALOME_View
+              displayer()->Display(entry, true, dynamic_cast<SALOME_View*>(vmodel));
+
+              // store displayed actor in a temporary map for quicker
+              // access later when restoring other parameters
+              SVTK_ViewWindow* vtkView = (SVTK_ViewWindow*) vman->getActiveView();
+              vtkRenderer* Renderer = vtkView->getRenderer();
+              vtkActorCollection* theActors = Renderer->GetActors();
+              theActors->InitTraversal();
+              bool isFound = false;
+              vtkActor *ac = theActors->GetNextActor();
+              for (; ac != NULL && !isFound; ac = theActors->GetNextActor()) {
+                if (ac->IsA("SMESH_Actor")) {
+                  SMESH_Actor* aGeomAc = SMESH_Actor::SafeDownCast(ac);
+                  if (aGeomAc->hasIO()) {
+                    Handle(SALOME_InteractiveObject) io =
+                      Handle(SALOME_InteractiveObject)::DownCast(aGeomAc->getIO());
+                    if (io->hasEntry() && strcmp(io->getEntry(), entry.toLatin1().data()) == 0) {
+                      isFound = true;
+                      vtkActors.Bind(viewIndex, aGeomAc);
+                    }
+                  }
+                }
+              }
+            }
+          }
+        } // if (paramNameStr == "Visibility")
+	else
+        {
+          // the rest properties "work" with SMESH_Actor
+	  if (aSmeshActor)
+          {
+            QString val ((*valuesIt).c_str());
+
+            // Representation
+            if (paramNameStr == "Representation") {
+              aSmeshActor->SetRepresentation((SMESH_Actor::EReperesent)val.toInt());
+            }
+            // IsShrunk
+            else if (paramNameStr == "IsShrunk") {
+              if (val.toInt()) {
+                if (!aSmeshActor->IsShrunk())
+                  aSmeshActor->SetShrink();
+              }
+              else {
+                if (aSmeshActor->IsShrunk())
+                  aSmeshActor->UnShrink();
+              }
+            }
+            // Displayed entities
+            else if (paramNameStr == "Entities") {
+              QStringList mode = val.split(gDigitsSep, QString::SkipEmptyParts);
+              if (mode.count() == 6) {
+                if (mode[0] != "e" || mode[2]  != "f" || mode[4] != "v") {
+                  MESSAGE("Invalid order of data in Entities, must be: "
+                          "e:0/1:f:0/1:v:0/1");
+                }
+                else {
+                  unsigned int aMode = aSmeshActor->GetEntityMode();
+                  unsigned int aNewMode =
+                    (int(SMESH_Actor::eEdges  ) * mode[1].toInt()) |
+                    (int(SMESH_Actor::eFaces  ) * mode[3].toInt()) |
+                    (int(SMESH_Actor::eVolumes) * mode[5].toInt());
+                  if (aNewMode != aMode)
+                    aSmeshActor->SetEntityMode(aNewMode);
+                }
+              }
+            }
+            // Colors
+            else if (paramNameStr == "Colors") {
+              QStringList colors = val.split(gDigitsSep, QString::SkipEmptyParts);
+              if (colors.count() == 16) {
+                if (colors[0] != "surface" || colors[4]  != "backsurface" ||
+                    colors[8] != "edge"    || colors[12] != "node") {
+                  MESSAGE("Invalid order of data in Colors, must be: "
+                          "surface:r:g:b:backsurface:r:g:b:edge:r:g:b:node:r:g:b");
+                }
+                else {
+                  aSmeshActor->SetSufaceColor(colors[1].toFloat(), colors[2].toFloat(), colors[3].toFloat());
+                  aSmeshActor->SetBackSufaceColor(colors[5].toFloat(), colors[6].toFloat(), colors[7].toFloat());
+                  aSmeshActor->SetEdgeColor(colors[9].toFloat(), colors[10].toFloat(), colors[11].toFloat());
+                  aSmeshActor->SetNodeColor(colors[13].toFloat(), colors[14].toFloat(), colors[15].toFloat());
+                }
+              }
+            }
+            // Sizes of lines and points
+            else if (paramNameStr == "Sizes") {
+              QStringList sizes = val.split(gDigitsSep, QString::SkipEmptyParts);
+              if (sizes.count() == 6) {
+                if (sizes[0] != "line" || sizes[2]  != "node" || sizes[4] != "shrink") {
+                  MESSAGE("Invalid order of data in Sizes, must be: "
+                          "line:int:node:int:shrink:float");
+                }
+                else {
+                  aSmeshActor->SetLineWidth(sizes[1].toInt());
+                  aSmeshActor->SetNodeSize(sizes[3].toInt());
+                  aSmeshActor->SetShrinkFactor(sizes[5].toFloat());
+                }
+              }
+            }
+            // Opacity
+            else if (paramNameStr == "Opacity") {
+              aSmeshActor->SetOpacity(val.toFloat());
+            }
+            // Clipping
+            else if (paramNameStr.startsWith("ClippingPlane")) {
+              cout << "$$$ ClippingPlane 1" << endl;
+              if (paramNameStr == "ClippingPlane1" || val == "Off")
+                aSmeshActor->RemoveAllClippingPlanes();
+              if (val != "Off") {
+                cout << "$$$ ClippingPlane 2" << endl;
+                QStringList vals = val.split(gDigitsSep, QString::SkipEmptyParts);
+                if (vals.count() == 4) { // format check: 4 values
+                  cout << "$$$ ClippingPlane 3" << endl;
+                  SMESH::Orientation anOrientation = (SMESH::Orientation)vals[0].toInt();
+                  double aDistance = vals[1].toFloat();
+                  vtkFloatingPointType anAngle[2];
+                  anAngle[0] = vals[2].toFloat();
+                  anAngle[1] = vals[3].toFloat();
+
+                  QList<SUIT_ViewManager*> lst;
+                  getApp()->viewManagers(viewerTypStr, lst);
+                  // SVTK ViewManager always has 1 ViewWindow, so view index is index of view manager
+                  if (viewIndex >= 0 && viewIndex < lst.count()) {
+                    SUIT_ViewManager* vman = lst.at(viewIndex);
+                    SVTK_ViewWindow* vtkView = (SVTK_ViewWindow*) vman->getActiveView();
+                    SMESHGUI_ClippingDlg::AddPlane(aSmeshActor, vtkView,
+                                                   anOrientation, aDistance, anAngle);
+                  }
+                }
+              }
+            }
+          } // if (aSmeshActor)
+	} // other parameters than Visibility
+      }
+    } // for names/parameters iterator
+  } // for entries iterator
+
+  // update all VTK views
+  QList<SUIT_ViewManager*> lst;
+  getApp()->viewManagers(lst);
+  for (QList<SUIT_ViewManager*>::Iterator it = lst.begin(); it != lst.end(); it++) {
+    SUIT_ViewModel* vmodel = (*it)->getViewModel();
+    if (vmodel && vmodel->getType() == SVTK_Viewer::Type()) {
+      SVTK_ViewWindow* vtkView = (SVTK_ViewWindow*) (*it)->getActiveView();
+      vtkView->getRenderer()->ResetCameraClippingRange();
+      vtkView->Repaint();
+    }
+  }
 }

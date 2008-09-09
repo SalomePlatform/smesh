@@ -96,7 +96,7 @@ public :
   virtual LightApp_Selection*     createSelection() const;
 
   virtual void                    BuildPresentation ( const Handle(SALOME_InteractiveObject)&,
-						      SUIT_ViewWindow* = 0 );
+                                                      SUIT_ViewWindow* = 0 );
 
   /* Non modal dialog boxes management */
   void                            EmitSignalDeactivateDialog();
@@ -106,10 +106,13 @@ public :
   virtual void                    contextMenuPopup( const QString&, QMenu*, QString& );
   virtual void                    createPreferences();
   virtual void                    preferencesChanged( const QString&, const QString& );
-  
+
   virtual void                    update( const int );
 
   static SALOMEDS::Color          getUniqueColor( const QList<SALOMEDS::Color>& );
+
+  virtual void                    storeVisualParameters  (int savePoint);
+  virtual void                    restoreVisualParameters(int savePoint);
 
 public slots:
   virtual bool                    deactivateModule( SUIT_Study* );
@@ -129,17 +132,17 @@ signals:
   void                            SignalCloseAllDialogs();
 
 protected:
-  void                            createSMESHAction( const int, 
-						     const QString&, 
-						     const QString& = QString(),
-						     const int = 0, 
-						     const bool = false );
-  void                            createPopupItem( const int, 
-						   const QString&, 
-						   const QString&,
-						   const QString& = QString(), 
-						   const int = -1 );
-  
+  void                            createSMESHAction( const int,
+                                                     const QString&,
+                                                     const QString& = QString(),
+                                                     const int = 0,
+                                                     const bool = false );
+  void                            createPopupItem( const int,
+                                                   const QString&,
+                                                   const QString&,
+                                                   const QString& = QString(),
+                                                   const int = -1 );
+
   virtual LightApp_Operation*     createOperation( const int ) const;
 
   virtual bool                    isSelectionCompatible();
