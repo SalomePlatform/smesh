@@ -3392,9 +3392,9 @@ void SMESHGUI::createPreferences()
   addPreference( tr( "PREF_ORIENTATION_COLOR" ), orientGroup, LightApp_Preferences::Color, "SMESH", "orientation_color" );
   int orientScale = addPreference( tr( "PREF_ORIENTATION_SCALE" ), orientGroup, LightApp_Preferences::DblSpin, "SMESH", "orientation_scale" );
 
-  setPreferenceProperty( orientScale, "min", 0 );
-  setPreferenceProperty( orientScale, "max", 1 );
-  setPreferenceProperty( orientScale, "step", 0.1 );
+  setPreferenceProperty( orientScale, "min", 0.05 );
+  setPreferenceProperty( orientScale, "max", 0.5 );
+  setPreferenceProperty( orientScale, "step", 0.05 );
 
   addPreference( tr( "PREF_ORIENTATION_3D_VECTORS" ), orientGroup, LightApp_Preferences::Bool, "SMESH", "orientation_3d_vectors" );
 
