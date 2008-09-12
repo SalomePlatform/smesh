@@ -1907,7 +1907,7 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
 
   // Write data
   // ---> create HDF file
-  aFile = new HDFfile( filename.ToCString() );
+  aFile = new HDFfile( (char*) filename.ToCString() );
   aFile->CreateOnDisk();
 
   // --> iterator for top-level objects
@@ -2857,7 +2857,7 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
 
   // Read data
   // ---> open HDF file
-  aFile = new HDFfile( filename.ToCString() );
+  aFile = new HDFfile( (char*) filename.ToCString() );
   try {
     aFile->OpenOnDisk( HDF_RDONLY );
   }

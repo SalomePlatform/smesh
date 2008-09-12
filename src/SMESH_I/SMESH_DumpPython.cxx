@@ -363,7 +363,7 @@ namespace SMESH
 
     // find where literal begins
     int literalBeg = theFrom + myLongStringStart.Length(); // = 26
-    char* typeLenStr = theText.ToCString() + literalBeg - 1; // = "7 Pattern!!! SALO...."
+    char* typeLenStr = (char*) theText.ToCString() + literalBeg - 1; // = "7 Pattern!!! SALO...."
     int typeLen = atoi ( typeLenStr ); // = 7
     while ( *typeLenStr != ' ' ) { // look for ' ' after typeLen
       literalBeg++; // 26 -> 27
@@ -527,7 +527,7 @@ Handle(TColStd_HSequenceOfInteger) FindEntries (TCollection_AsciiString& theStri
   Standard_Integer aLen = theString.Length();
   Standard_Boolean isFound = Standard_False;
 
-  char* arr = theString.ToCString();
+  char* arr = (char*) theString.ToCString();
   Standard_Integer i = 0, j;
 
   while(i < aLen) {
@@ -880,7 +880,7 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
     {
       // find the function name
       int functBeg = posAlready;
-      char* script = anUpdatedScript.ToCString() + posAlready - 1; // look at ":" after "def fuction()"
+      char* script = (char*) anUpdatedScript.ToCString() + posAlready - 1; // look at ":" after "def fuction()"
       while ( *script != ' ' ) {
         script--;
         functBeg--;
