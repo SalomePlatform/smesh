@@ -119,6 +119,17 @@ bool SMESH_HypoFilter::IsAssignedToPredicate::IsOk(const SMESH_Hypothesis* aHyp,
 }
 
 //=======================================================================
+//function : IsMoreLocalThanPredicate::IsOk
+//purpose  : 
+//=======================================================================
+
+bool SMESH_HypoFilter::IsMoreLocalThanPredicate::IsOk(const SMESH_Hypothesis* aHyp,
+                                                      const TopoDS_Shape&     aShape) const
+{
+  return ( aShape.ShapeType() > _shapeType );
+}
+
+//=======================================================================
 //function : SMESH_HypoFilter
 //purpose  : 
 //=======================================================================
@@ -260,6 +271,16 @@ SMESH_HypoPredicate* SMESH_HypoFilter::HasDim(const int theDim)
 SMESH_HypoPredicate* SMESH_HypoFilter::IsApplicableTo(const TopoDS_Shape& theShape)
 {
   return new ApplicablePredicate( theShape );
+}
+
+//=======================================================================
+//function : IsMoreLocalThan
+//purpose  : 
+//=======================================================================
+
+SMESH_HypoPredicate* SMESH_HypoFilter::IsMoreLocalThan(const TopoDS_Shape& theShape)
+{
+  return new IsMoreLocalThanPredicate( theShape );
 }
 
 //=======================================================================

@@ -74,6 +74,7 @@ class SMESH_EXPORT SMESH_HypoFilter: public SMESH_HypoPredicate
   static SMESH_HypoPredicate* IsAssignedTo(const TopoDS_Shape& theShape);
   static SMESH_HypoPredicate* Is(const SMESH_Hypothesis* theHypo);
   static SMESH_HypoPredicate* IsGlobal(const TopoDS_Shape& theMainShape);
+  static SMESH_HypoPredicate* IsMoreLocalThan(const TopoDS_Shape& theShape);
   static SMESH_HypoPredicate* HasName(const std::string & theName);
   static SMESH_HypoPredicate* HasDim(const int theDim);
   static SMESH_HypoPredicate* HasType(const int theHypType);
@@ -163,6 +164,13 @@ class SMESH_EXPORT SMESH_HypoFilter: public SMESH_HypoPredicate
   struct IsAssignedToPredicate : public SMESH_HypoPredicate {
     TopoDS_Shape _mainShape;
     IsAssignedToPredicate( const TopoDS_Shape& mainShape ):_mainShape(mainShape){}
+    bool IsOk(const SMESH_Hypothesis* aHyp,
+              const TopoDS_Shape&     aShape) const;
+  };
+        
+  struct IsMoreLocalThanPredicate : public SMESH_HypoPredicate {
+    TopAbs_ShapeEnum _shapeType;
+    IsMoreLocalThanPredicate( const TopoDS_Shape& shape ):_shapeType(shape.ShapeType()){}
     bool IsOk(const SMESH_Hypothesis* aHyp,
               const TopoDS_Shape&     aShape) const;
   };
