@@ -29,7 +29,13 @@ include $(top_srcdir)/adm_local/unix/make_common_starter.am
 
 # header files 
 salomeinclude_HEADERS = \
-	StdMeshersGUI_StdHypothesisCreator.h
+	StdMeshersGUI_StdHypothesisCreator.h \
+	SMESH_StdMeshersGUI.hxx \
+	StdMeshersGUI_DistrPreview.h \
+	StdMeshersGUI_DistrTable.h \
+	StdMeshersGUI_NbSegmentsCreator.h \
+	StdMeshersGUI_ObjectReferenceParamWdg.h \
+	StdMeshersGUI_LayerDistributionParamWdg.h
 
 # Libraries targets
 lib_LTLIBRARIES = libStdMeshersGUI.la

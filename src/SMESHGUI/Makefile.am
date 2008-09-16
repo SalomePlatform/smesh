@@ -34,6 +34,62 @@ salomeinclude_HEADERS = \
 	SMESHGUI_SpinBox.h \
 	SMESHGUI_Selection.h \
 	SMESHGUI_VTKUtils.h \
+	SMESHGUI_Displayer.h \
+	SMESHGUI_GEOMGenUtils.h \
+	SMESHGUI_MeshUtils.h \
+	SMESHGUI_FilterUtils.h \
+	SMESHGUI_PatternUtils.h \
+	SMESHGUI_GroupUtils.h \
+	SMESHGUI_PatternWidget.h \
+	SMESHGUI_CreatePatternDlg.h \
+	SMESHGUI_MeshPatternDlg.h \
+	SMESHGUI_NodesDlg.h \
+	SMESHGUI_TransparencyDlg.h \
+	SMESHGUI_ClippingDlg.h \
+	SMESHGUI_GroupDlg.h \
+	SMESHGUI_RemoveNodesDlg.h \
+	SMESHGUI_RemoveElementsDlg.h \
+	SMESHGUI_MeshInfosDlg.h \
+	SMESHGUI_StandardMeshInfosDlg.h \
+	SMESHGUI_WhatIsDlg.h \
+	SMESHGUI_Preferences_ColorDlg.h \
+	SMESHGUI_Preferences_ScalarBarDlg.h \
+	SMESHGUI_MoveNodesDlg.h \
+	SMESHGUI_AddMeshElementDlg.h \
+	SMESHGUI_XmlHandler.h \
+	SMESHGUI_Filter.h \
+	SMESHGUI_FilterDlg.h \
+	SMESHGUI_FilterLibraryDlg.h \
+	SMESHGUI_SingleEditDlg.h \
+	SMESHGUI_MultiEditDlg.h \
+	SMESHGUI_DeleteGroupDlg.h \
+	SMESHGUI_GroupOpDlg.h \
+	SMESHGUI_SmoothingDlg.h \
+	SMESHGUI_RenumberingDlg.h \
+	SMESHGUI_ExtrusionDlg.h \
+	SMESHGUI_ExtrusionAlongPathDlg.h \
+	SMESHGUI_RevolutionDlg.h \
+	SMESHGUI_RotationDlg.h \
+	SMESHGUI_TranslationDlg.h \
+	SMESHGUI_SymmetryDlg.h \
+	SMESHGUI_SewingDlg.h \
+	SMESHGUI_EditMeshDlg.h \
+	SMESHGUI_MeshUtils.h \
+	SMESHGUI_CreatePolyhedralVolumeDlg.h \
+	SMESHGUI_Operation.h \
+	SMESHGUI_SelectionOp.h \
+	SMESHGUI_Dialog.h \
+	SMESHGUI_MeshDlg.h \
+	SMESHGUI_MeshOp.h \
+	SMESHGUI_ShapeByMeshDlg.h \
+	SMESHGUI_AddQuadraticElementDlg.h \
+	SMESHGUI_ConvToQuadDlg.h \
+	SMESHGUI_ConvToQuadOp.h \
+	SMESHGUI_BuildCompoundDlg.h \
+	SMESHGUI_ComputeDlg.h \
+	SMESHGUI_MakeNodeAtPointDlg.h \
+	SMESHGUI_MeshEditPreview.h \
+	SMESHGUI_IdValidator.h \
 	SMESH_SMESHGUI.hxx
 
 # Libraries targets

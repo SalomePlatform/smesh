@@ -39,6 +39,13 @@ salomeinclude_HEADERS = \
 	DriverUNV_W_SMESHDS_Document.h \
 	SMESH_DriverUNV.hxx
 
+# not-exported (internal) files
+EXTRA_DIST += \
+	UNV2411_Structure.hxx \
+	UNV2412_Structure.hxx \
+	UNV2417_Structure.hxx \
+	UNV_Utilities.hxx
+
 # Libraries targets
 lib_LTLIBRARIES = libMeshDriverUNV.la
 dist_libMeshDriverUNV_la_SOURCES = \

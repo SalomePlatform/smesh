@@ -30,11 +30,14 @@ include $(top_srcdir)/adm_local/unix/make_common_starter.am
 # header files 
 salomeinclude_HEADERS = \
 	SMESH_Actor.h \
-        SMESH_Object.h \
+	SMESH_Object.h \
 	SMESH_ObjectDef.h \
 	SMESH_ActorUtils.h \
+	SMESH_ActorDef.h \
+	SMESH_DeviceActor.h \
+	SMESH_ExtractGeometry.h \
+	SMESH_ActorUtils.h \
 	SMESH_FaceOrientationFilter.h
-
 
 # Libraries targets
 

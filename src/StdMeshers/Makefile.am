@@ -43,6 +43,7 @@ salomeinclude_HEADERS = \
 	StdMeshers_Quadrangle_2D.hxx \
 	StdMeshers_MEFISTO_2D.hxx \
 	StdMeshers_Hexa_3D.hxx \
+	StdMeshers_Penta_3D.hxx \
 	StdMeshers_AutomaticLength.hxx \
 	StdMeshers_Distribution.hxx \
 	StdMeshers_QuadranglePreference.hxx \

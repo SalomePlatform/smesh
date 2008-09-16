@@ -41,6 +41,14 @@ salomeinclude_HEADERS = \
 	SMESH_Mesh_i.hxx \
 	SMESH_Hypothesis_i.hxx \
 	SMESH_PythonDump.hxx \
+	SMESH_Group_i.hxx \
+	SMESH_MEDMesh_i.hxx \
+	SMESH_Filter_i.hxx \
+	SMESH_MeshEditor_i.hxx \
+	SMESH_MEDFamily_i.hxx \
+	SMESH_MEDSupport_i.hxx \
+	SMESH_Pattern_i.hxx \
+	SMESH_2smeshpy.hxx \
 	SMESH.hxx
 
 # Scripts to be installed.

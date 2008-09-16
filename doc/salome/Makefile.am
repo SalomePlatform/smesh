@@ -25,9 +25,9 @@
 # $Header:
 #
 
-SUBDIRS= tui gui
-SUBDIRSTUI= tui
-SUBDIRSGUI= gui
+SUBDIRS = tui gui
+SUBDIRSTUI = tui
+SUBDIRSGUI = gui
 
 usr_docs:
 	@@SETX@; for d in $(SUBDIRSGUI); do 	\

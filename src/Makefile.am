@@ -52,3 +52,7 @@ if SMESH_ENABLE_GUI
 	SMESH_SWIG_WITHIHM \
 	StdMeshersGUI
 endif
+
+DIST_SUBDIRS = 	SMDS SMESHDS Controls Driver DriverMED DriverDAT DriverUNV DriverSTL SMESH	\
+		SMESH_I SMESHClient SMESH_SWIG MEFISTO2 StdMeshers StdMeshers_I OBJECT		\
+		SMESHFiltersSelection SMESHGUI SMESH_SWIG_WITHIHM StdMeshersGUI

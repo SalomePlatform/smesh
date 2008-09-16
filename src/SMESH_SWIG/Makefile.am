@@ -95,5 +95,5 @@ dist_salomescript_DATA= \
 	PAL_MESH_043_3D.py \
 	SMESH_reg.py
 
-EXPORT_SHAREDPYSCRIPTS = \
+sharedpkgpython_PYTHON =		\
 	SMESH_shared_modules.py

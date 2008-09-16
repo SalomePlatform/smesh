@@ -135,7 +135,6 @@ dist_salomeres_DATA = \
 	SMESH_en.xml \
 	SMESH.config \
 	StdMeshers.xml \
-	SMESHCatalog.xml \
 	SalomeApp.xml \
 	mesh_pattern.png \
 	pattern_sample_2d.png \
@@ -166,4 +165,5 @@ dist_salomeres_DATA = \
 	mesh_node_to_point.png \
 	mesh_tree_mesh_partial.png
 
-nodist_salomeres_DATA = SMESHCatalog.xml
+# VSR: little trick to avoid putting if SMESHCatalog.xml to the distribution archive
+nodist_salomeres_SCRIPTS = SMESHCatalog.xml

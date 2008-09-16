@@ -58,6 +58,7 @@ salomeinclude_HEADERS = \
 	StdMeshers_CompositeSegment_1D_i.hxx \
 	StdMeshers_SegmentAroundVertex_0D_i.hxx \
 	StdMeshers_SegmentLengthAroundVertex_i.hxx \
+	StdMeshers_UseExisting_1D2D_i.hxx \
 	StdMeshers_TrianglePreference_i.hxx \
 	SMESH_StdMeshers_I.hxx
 
