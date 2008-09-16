@@ -594,8 +594,7 @@ void SMESHGUI_MeshOp::selectionDone()
         // a global algorithm that does not support submeshes
         if ( char* algoName = isSubmeshIgnored() ) {
           SUIT_MessageBox::warning( myDlg, tr( "SMESH_ERROR" ),
-                                    tr(QString("SUBMESH_NOT_ALLOWED")
-                                       .toLatin1().data() ).arg(algoName));
+                                    tr("SUBMESH_NOT_ALLOWED").arg(algoName));
           CORBA::string_free( algoName );
           myDlg->selectObject( "", SMESHGUI_MeshDlg::Mesh, "" );
           selectObject( _PTR(SObject)() );
