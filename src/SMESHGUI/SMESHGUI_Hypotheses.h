@@ -151,7 +151,8 @@ class HypothesisData
                   const QStringList& theOptionalHypos,
                   const QStringList& theInputTypes,
                   const QStringList& theOutputTypes,
-		  const bool theIsNeedGeometry = true)
+		  const bool theIsNeedGeometry = true,
+                  const bool theSupportSub)
     : TypeName( theTypeName ),
     PluginName( thePluginName ),
     ServerLibName( theServerLibName ),
@@ -162,7 +163,8 @@ class HypothesisData
     IsAux( theIsAux ),
     NeededHypos( theNeededHypos ), OptionalHypos( theOptionalHypos ),
     InputTypes( theInputTypes ), OutputTypes( theOutputTypes ),
-    IsNeedGeometry( theIsNeedGeometry )
+    IsNeedGeometry( theIsNeedGeometry ),
+    IsSupportSubmeshes( theSupportSub )
     {};
 
  QString TypeName;        //!< hypothesis type name
@@ -173,7 +175,8 @@ class HypothesisData
  QString IconId;          //!< icon identifier
  QValueList<int> Dim;     //!< list of supported dimensions (see SMESH::Dimension enumeration)
  bool IsAux;              //!< TRUE if given hypothesis is auxiliary one, FALSE otherwise
- bool IsNeedGeometry;     //!< TRUE if for given hypothesis need shape, FALSE otherwise
+ bool IsNeedGeometry;     //!< TRUE if the algorithm works with shapes only, FALSE otherwise
+ bool IsSupportSubmeshes; //!< TRUE if the algo building all-dim elems supports submeshes
 
  // for algorithm only: dependencies algo <-> algo and algo -> hypos
  QStringList NeededHypos;  //!< list of obligatory hypotheses
