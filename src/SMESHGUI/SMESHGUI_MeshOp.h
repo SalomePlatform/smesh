@@ -87,7 +87,7 @@ private:
                                                 QStringList&,
                                                 THypDataList&,
                                                 HypothesisData* = 0 ) const;
-  void                           existingHyps( const int, 
+  static void                    existingHyps( const int, 
                                                const int, 
                                                _PTR(SObject),
                                                QStringList&, 
@@ -116,6 +116,7 @@ private:
   SMESH::SMESH_Hypothesis_var    getInitParamsHypothesis( const QString&,
                                                           const QString& ) const;
   bool                           isSubshapeOk() const;
+  char*                          isSubmeshIgnored() const;
   _PTR(SObject)                  getSubmeshByGeom() const;
   void                           selectObject( _PTR(SObject) ) const;
 

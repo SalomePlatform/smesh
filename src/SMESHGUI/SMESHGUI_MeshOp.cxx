@@ -336,8 +336,55 @@ bool SMESHGUI_MeshOp::isSubshapeOk() const
 
 //================================================================================
 /*!
+ * \brief Return name of the algorithm that does not support submeshes and makes
+ * submesh creation useless 
+ *  \retval char* - string is to be deleted!!!
+ */
+//================================================================================
+
+char* SMESHGUI_MeshOp::isSubmeshIgnored() const
+{
+  if ( myToCreate && !myIsMesh ) {
+
+    QString aMeshEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Mesh );
+    QString aGeomEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Geom );
+    _PTR(SObject) pMesh = studyDS()->FindObjectID( aMeshEntry.toLatin1().data() );
+    if ( pMesh ) {
+
+      QStringList algoNames;
+      THypList    algoList;
+      existingHyps(3, Algo, pMesh, algoNames, algoList);
+      if (!algoList.empty()) {
+        HypothesisData* algo = SMESH::GetHypothesisData( algoList[0].first->GetName() );
+        if ( algo &&
+             algo->InputTypes.empty() && // builds all dimensions it-self
+             !algo->IsSupportSubmeshes )
+          return CORBA::string_dup( algoNames[0].toLatin1().data() );
+      }
+
+//       GEOM::GEOM_Object_var geom;
+//       if (_PTR(SObject) pGeom = studyDS()->FindObjectID( aGeomEntry.toLatin1().data() ))
+//         geom = SMESH::SObjectToInterface<GEOM::GEOM_Object>( pGeom );
+
+//       if ( !geom->_is_nil() && geom->GetShapeType() >= GEOM::FACE ) { // WIRE, EDGE as well
+        existingHyps(2, Algo, pMesh, algoNames, algoList);
+        if (!algoList.empty()) {
+          HypothesisData* algo = SMESH::GetHypothesisData( algoList[0].first->GetName() );
+          if ( algo &&
+               algo->InputTypes.empty() && // builds all dimensions it-self
+               !algo->IsSupportSubmeshes )
+            return CORBA::string_dup( algoNames[0].toLatin1().data() );
+        }
+//       }
+    }
+  }
+  return 0;
+}
+
+//================================================================================
+/*!
  * \brief find an existing submesh by the selected shape
-  * \retval _PTR(SObject) - the found submesh SObject
+ * \retval _PTR(SObject) - the found submesh SObject
  */
 //================================================================================
 
@@ -540,7 +587,20 @@ void SMESHGUI_MeshOp::selectionDone()
             myDlg->selectObject( "", SMESHGUI_MeshDlg::Geom, "" );
             selectObject( _PTR(SObject)() );
             selectionDone();
+            return;
           }
+        }
+        // discard selected mesh if submesh creation not allowed because of
+        // a global algorithm that does not support submeshes
+        if ( char* algoName = isSubmeshIgnored() ) {
+          SUIT_MessageBox::warning( myDlg, tr( "SMESH_ERROR" ),
+                                    tr(QString("SUBMESH_NOT_ALLOWED")
+                                       .toLatin1().data() ).arg(algoName));
+          CORBA::string_free( algoName );
+          myDlg->selectObject( "", SMESHGUI_MeshDlg::Mesh, "" );
+          selectObject( _PTR(SObject)() );
+          selectionDone();
+          return;
         }
 
         // enable/disable popup for choice of geom selection way
