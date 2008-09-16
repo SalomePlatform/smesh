@@ -3347,6 +3347,8 @@ class Mesh_Triangle(Mesh_Algorithm):
             self.params = self.Hypothesis("BLSURF_Parameters", [],
                                           "libBLSURFEngine.so", UseExisting=0)
             return self.params
+        else:
+            print "Mesh_Triangle with algo type %s does not have such a parameter, check algo type"%self.algoType
         return None
 
     ## Sets MaxSize
@@ -3527,7 +3529,7 @@ class Mesh_Tetrahedron(Mesh_Algorithm):
                                           "libGHS3DEngine.so", UseExisting=0)
             return self.params
         
-        print "Algo support no multi-parameter hypothesis"
+        print "Algo supports no multi-parameter hypothesis"
         return None
 
     ## Sets MaxSize
