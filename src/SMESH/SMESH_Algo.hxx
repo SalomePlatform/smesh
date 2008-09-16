@@ -201,6 +201,10 @@ public:
   bool NeedShape() const { return _requireShape; }
   // 4 - is shape existance required
 
+  bool SupportSubmeshes() const { return _supportSubmeshes; }
+  // 5 - whether supports submeshes if !NeedDescretBoundary()
+
+
 public:
   // ==================================================================
   // Methods to track non hierarchical dependencies between submeshes 
@@ -306,9 +310,13 @@ protected:
   std::list<const SMESHDS_Hypothesis *> _appliedHypList;
   std::list<const SMESHDS_Hypothesis *> _usedHypList;
 
-  bool _onlyUnaryInput;
-  bool _requireDescretBoundary;
-  bool _requireShape;
+  // Algo features influencing which Compute() and how is called:
+  // in what turn and with what input shape.
+  // This fields must be redefined if necessary by each descendant at constructor.
+  bool _onlyUnaryInput;         // mesh one shape of GetDim() at once. Default TRUE
+  bool _requireDescretBoundary; // GetDim()-1 mesh must be present. Default TRUE
+  bool _requireShape;           // work with GetDim()-1 mesh bound to geom only. Default TRUE
+  bool _supportSubmeshes;       // if !_requireDescretBoundary. Default FALSE
 
   // quadratic mesh creation required,
   // is usually set trough SMESH_MesherHelper::IsQuadraticSubMesh()
