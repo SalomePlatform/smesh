@@ -57,7 +57,6 @@ salomeinclude_HEADERS = $(SWIG_SOURCES) libSMESH_Swig.h
 lib_LTLIBRARIES                  = _libSMESH_Swig.la
 _libSMESH_Swig_la_SOURCES        = $(SWIG_SOURCES) libSMESH_Swig.h libSMESH_Swig.cxx
 nodist__libSMESH_Swig_la_SOURCES = swig_wrap.cpp
-nodist_salomepython_DATA         = libSMESH_Swig.py
 
 _libSMESH_Swig_la_CPPFLAGS =	\
 	$(QT_INCLUDES)		\
@@ -99,4 +98,4 @@ CLEANFILES = swig_wrap.cpp libSMESH_Swig.py
 dist_salomescript_DATA =
 
 # Scripts to be installed (non-distributed)
-nodist_salomescript_DATA =
+nodist_salomescript_DATA = libSMESH_Swig.py
