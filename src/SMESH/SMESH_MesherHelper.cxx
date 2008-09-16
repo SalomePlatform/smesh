@@ -318,7 +318,6 @@ gp_XY SMESH_MesherHelper::GetNodeUV(const TopoDS_Face&   F,
     int edgeID = Pos->GetShapeId();
     TopoDS_Edge E = TopoDS::Edge(meshDS->IndexToShape(edgeID));
     double f, l;
-    TopLoc_Location loc;
     Handle(Geom2d_Curve) C2d = BRep_Tool::CurveOnSurface(E, F, f, l);
     uv = C2d->Value( epos->GetUParameter() );
     // for a node on a seam edge select one of UVs on 2 pcurves
@@ -884,19 +883,19 @@ SMDS_MeshVolume* SMESH_MesherHelper::AddVolume(const SMDS_MeshNode* n1,
 }
 
 //=======================================================================
-  /*!
-   * \brief Load nodes bound to face into a map of node columns
-    * \param theParam2ColumnMap - map of node columns to fill
-    * \param theFace - the face on which nodes are searched for
-    * \param theBaseEdge - the edge nodes of which are columns' bases
-    * \param theMesh - the mesh containing nodes
-    * \retval bool - false if something is wrong
-   * 
-   * The key of the map is a normalized parameter of each
-   * base node on theBaseEdge.
-   * This method works in supposition that nodes on the face
-   * forms a rectangular grid and elements can be quardrangles or triangles
-   */
+/*!
+ * \brief Load nodes bound to face into a map of node columns
+ * \param theParam2ColumnMap - map of node columns to fill
+ * \param theFace - the face on which nodes are searched for
+ * \param theBaseEdge - the edge nodes of which are columns' bases
+ * \param theMesh - the mesh containing nodes
+ * \retval bool - false if something is wrong
+ * 
+ * The key of the map is a normalized parameter of each
+ * base node on theBaseEdge.
+ * This method works in supposition that nodes on the face
+ * forms a rectangular grid and elements can be quardrangles or triangles
+ */
 //=======================================================================
 
 bool SMESH_MesherHelper::LoadNodeColumns(TParam2ColumnMap & theParam2ColumnMap,
@@ -998,14 +997,14 @@ bool SMESH_MesherHelper::LoadNodeColumns(TParam2ColumnMap & theParam2ColumnMap,
 
   // load nodes from theBaseEdge
 
-  set<const SMDS_MeshNode*> loadedNodes;
+  std::set<const SMDS_MeshNode*> loadedNodes;
   const SMDS_MeshNode* nullNode = 0;
 
-  vector<const SMDS_MeshNode*> & nVecf = theParam2ColumnMap[ 0.];
+  std::vector<const SMDS_MeshNode*> & nVecf = theParam2ColumnMap[ 0.];
   nVecf.resize( vsize, nullNode );
   loadedNodes.insert( nVecf[ 0 ] = smVfb->GetNodes()->next() );
 
-  vector<const SMDS_MeshNode*> & nVecl = theParam2ColumnMap[ 1.];
+  std::vector<const SMDS_MeshNode*> & nVecl = theParam2ColumnMap[ 1.];
   nVecl.resize( vsize, nullNode );
   loadedNodes.insert( nVecl[ 0 ] = smVlb->GetNodes()->next() );
 
@@ -1024,7 +1023,7 @@ bool SMESH_MesherHelper::LoadNodeColumns(TParam2ColumnMap & theParam2ColumnMap,
       return false;
     }
     double u = ( pos->GetUParameter() - f ) / range;
-    vector<const SMDS_MeshNode*> & nVec = theParam2ColumnMap[ u ];
+    std::vector<const SMDS_MeshNode*> & nVec = theParam2ColumnMap[ u ];
     nVec.resize( vsize, nullNode );
     loadedNodes.insert( nVec[ 0 ] = node );
   }
@@ -1034,7 +1033,7 @@ bool SMESH_MesherHelper::LoadNodeColumns(TParam2ColumnMap & theParam2ColumnMap,
 
   // load nodes from e1
 
-  map< double, const SMDS_MeshNode*> sortedNodes; // sort by param on edge
+  std::map< double, const SMDS_MeshNode*> sortedNodes; // sort by param on edge
   nIt = sm1->GetNodes();
   while ( nIt->more() ) {
     node = nIt->next();
@@ -1045,10 +1044,10 @@ bool SMESH_MesherHelper::LoadNodeColumns(TParam2ColumnMap & theParam2ColumnMap,
     if ( !pos ) {
       return false;
     }
-    sortedNodes.insert( make_pair( pos->GetUParameter(), node ));
+    sortedNodes.insert( std::make_pair( pos->GetUParameter(), node ));
   }
   loadedNodes.insert( nVecf[ vsize - 1 ] = smVft->GetNodes()->next() );
-  map< double, const SMDS_MeshNode*>::iterator u_n = sortedNodes.begin();
+  std::map< double, const SMDS_MeshNode*>::iterator u_n = sortedNodes.begin();
   int row  = rev1 ? vsize - 1 : 0;
   int dRow = rev1 ? -1 : +1;
   for ( ; u_n != sortedNodes.end(); u_n++ ) {
@@ -1145,11 +1144,14 @@ bool SMESH_MesherHelper::LoadNodeColumns(TParam2ColumnMap & theParam2ColumnMap,
   return true;
 }
 
+//=======================================================================
 /**
  * Check mesh without geometry for: if all elements on this shape are quadratic,
  * quadratic elements will be created.
  * Used then generated 3D mesh without geometry.
-   */
+ */
+//=======================================================================
+
 SMESH_MesherHelper:: MType SMESH_MesherHelper::IsQuadraticMesh()
 {
   int NbAllEdgsAndFaces=0;
@@ -1177,3 +1179,13 @@ SMESH_MesherHelper:: MType SMESH_MesherHelper::IsQuadraticMesh()
     return SMESH_MesherHelper::COMP;
 }
 
+//=======================================================================
+/*!
+ * \brief Return an alternative parameter for a node on seam
+ */
+//=======================================================================
+
+double SMESH_MesherHelper::GetOtherParam(const double param) const
+{
+  return fabs(param-myPar1) < fabs(param-myPar2) ? myPar2 : myPar1;
+}
