@@ -132,8 +132,6 @@ dist_salomeres_DATA = \
 	mesh_merge_nodes.png \
 	mesh_merge_elements.png \
 	select1.png \
-	SMESH_en.xml \
-	SMESH.config \
 	StdMeshers.xml \
 	SalomeApp.xml \
 	mesh_pattern.png \
