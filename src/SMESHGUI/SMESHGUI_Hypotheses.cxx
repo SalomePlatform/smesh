@@ -537,7 +537,8 @@ HypothesisData::HypothesisData( const QString& theTypeName,
 				const QStringList& theOptionalHypos,
 				const QStringList& theInputTypes,
 				const QStringList& theOutputTypes,
-				const bool theIsNeedGeometry )
+				const bool theIsNeedGeometry,
+                                const bool supportSub)
   : TypeName( theTypeName ),
     PluginName( thePluginName ),
     ServerLibName( theServerLibName ),
@@ -550,7 +551,8 @@ HypothesisData::HypothesisData( const QString& theTypeName,
     OptionalHypos( theOptionalHypos ),
     InputTypes( theInputTypes ),
     OutputTypes( theOutputTypes ),
-    IsNeedGeometry( theIsNeedGeometry )
+    IsNeedGeometry( theIsNeedGeometry ),
+    IsSupportSubmeshes( supportSub )
 {
 }
 

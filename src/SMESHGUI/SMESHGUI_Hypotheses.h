@@ -150,7 +150,7 @@ public:
                   const QList<int>&, const bool,
                   const QStringList&, const QStringList&,
                   const QStringList&, const QStringList&,
-		  const bool = true );
+		  const bool=true, const bool supportSub=false );
 
   QString TypeName;        //!< hypothesis type name
   QString PluginName;      //!< plugin name
@@ -160,7 +160,8 @@ public:
   QString IconId;          //!< icon identifier
   QList<int> Dim;          //!< list of supported dimensions (see SMESH::Dimension enumeration)
   bool IsAux;              //!< TRUE if given hypothesis is auxiliary one, FALSE otherwise
-  bool IsNeedGeometry;     //!< TRUE if for given hypothesis need shape, FALSE otherwise
+  bool IsNeedGeometry;     //!< TRUE if the algorithm works with shapes only, FALSE otherwise
+  bool IsSupportSubmeshes; //!< TRUE if the algo building all-dim elems supports submeshes
 
   // for algorithm only: dependencies algo <-> algo and algo -> hypos
   QStringList NeededHypos;  //!< list of obligatory hypotheses
