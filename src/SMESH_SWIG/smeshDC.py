@@ -112,6 +112,8 @@ except ImportError:
 REGULAR    = 1
 PYTHON     = 2
 COMPOSITE  = 3
+SOLE       = 0
+SIMPLE     = 1
 
 MEFISTO       = 3
 NETGEN        = 4
@@ -3185,11 +3187,10 @@ class Mesh_Triangle(Mesh_Algorithm):
         if self.algoType == MEFISTO or self.algoType == NETGEN_2D:
             hyp = self.Hypothesis("MaxElementArea", [area], UseExisting=UseExisting,
                                   CompareMethod=self.CompareMaxElementArea)
-            hyp.SetMaxElementArea(area)
-            return hyp
         elif self.algoType == NETGEN:
-            print "Netgen 1D-2D algo doesn't support this hypothesis"
-            return None
+            hyp = self.Parameters(SIMPLE)
+        hyp.SetMaxElementArea(area)
+        return hyp
 
     ## Checks if the given "MaxElementArea" hypothesis has the same parameters as the given arguments
     def CompareMaxElementArea(self, hyp, args):
@@ -3205,8 +3206,9 @@ class Mesh_Triangle(Mesh_Algorithm):
             hyp = self.Hypothesis("LengthFromEdges", UseExisting=1, CompareMethod=self.CompareEqualHyp)
             return hyp
         elif self.algoType == NETGEN:
-            print "Netgen 1D-2D algo doesn't support this hypothesis"
-            return None
+            hyp = self.Parameters(SIMPLE)
+            hyp.LengthFromEdges()
+            return hyp
 
     ## Sets a way to define size of mesh elements to generate.
     #  @param thePhysicalMesh is: DefaultSize or Custom.
@@ -3320,28 +3322,33 @@ class Mesh_Triangle(Mesh_Algorithm):
             self.params.SetQuadAllowed(toAllow)
             return
 
-    ## Defines "Netgen 2D Parameters" hypothesis
+    ## Defines hypothesis having several parameters
     #
     #  @ingroup l3_hypos_netgen
-    def Parameters(self):
-        #  Only for algoType == NETGEN
+    def Parameters(self, which=SOLE):
         if self.params:
             return self.params
         if self.algoType == NETGEN:
-            self.params = self.Hypothesis("NETGEN_Parameters_2D", [],
-                                          "libNETGENEngine.so", UseExisting=0)
+            if which == SIMPLE:
+                self.params = self.Hypothesis("NETGEN_SimpleParameters_2D", [],
+                                              "libNETGENEngine.so", UseExisting=0)
+            else:
+                self.params = self.Hypothesis("NETGEN_Parameters_2D", [],
+                                              "libNETGENEngine.so", UseExisting=0)
             return self.params
         elif self.algoType == MEFISTO:
-            print "Mefisto algo doesn't support NETGEN_Parameters_2D hypothesis"
+            print "Mefisto algo support no multi-parameter hypothesis"
             return None
         elif self.algoType == NETGEN_2D:
-            print "NETGEN_2D_ONLY algo doesn't support 'NETGEN_Parameters_2D' hypothesis"
+            print "NETGEN_2D_ONLY algo support no multi-parameter hypothesis"
             print "NETGEN_2D_ONLY uses 'MaxElementArea' and 'LengthFromEdges' ones"
             return None
         elif self.algoType == BLSURF:
             self.params = self.Hypothesis("BLSURF_Parameters", [],
                                           "libBLSURFEngine.so", UseExisting=0)
             return self.params
+        else:
+            print "Mesh_Triangle with algo type %s does not have such a parameter, check algo type"%self.algoType
         return None
 
     ## Sets MaxSize
@@ -3401,6 +3408,20 @@ class Mesh_Triangle(Mesh_Algorithm):
     def SetNbSegPerRadius(self, theVal):
         if self.Parameters():
             self.params.SetNbSegPerRadius(theVal)
+
+    ## Sets number of segments overriding value set by SetLocalLength()
+    #
+    #  Only for algoType == NETGEN
+    #  @ingroup l3_hypos_netgen
+    def SetNumberOfSegments(self, theVal):
+        self.Parameters(SIMPLE).SetNumberOfSegments(theVal)
+
+    ## Sets number of segments overriding value set by SetNumberOfSegments()
+    #
+    #  Only for algoType == NETGEN
+    #  @ingroup l3_hypos_netgen
+    def SetLocalLength(self, theVal):
+        self.Parameters(SIMPLE).SetLocalLength(theVal)
 
     pass
 
@@ -3476,30 +3497,39 @@ class Mesh_Tetrahedron(Mesh_Algorithm):
     #                   the same parameters, else (default) - creates a new one
     #  @ingroup l3_hypos_maxvol
     def MaxElementVolume(self, vol, UseExisting=0):
-        hyp = self.Hypothesis("MaxElementVolume", [vol], UseExisting=UseExisting,
-                              CompareMethod=self.CompareMaxElementVolume)
-        hyp.SetMaxElementVolume(vol)
-        return hyp
+        if self.algoType == NETGEN:
+            hyp = self.Hypothesis("MaxElementVolume", [vol], UseExisting=UseExisting,
+                                  CompareMethod=self.CompareMaxElementVolume)
+            hyp.SetMaxElementVolume(vol)
+            return hyp
+        elif self.algoType == FULL_NETGEN:
+            self.Parameters(SIMPLE).SetMaxElementVolume(vol)
+        return None
 
     ## Checks if the given "MaxElementVolume" hypothesis has the same parameters as the given arguments
     def CompareMaxElementVolume(self, hyp, args):
         return IsEqual(hyp.GetMaxElementVolume(), args[0])
 
-    ## Defines "Netgen 3D Parameters" hypothesis
+    ## Defines hypothesis having several parameters
+    #
     #  @ingroup l3_hypos_netgen
-    def Parameters(self):
+    def Parameters(self, which=SOLE):
         if self.params:
             return self.params
-        if (self.algoType == FULL_NETGEN):
-            self.params = self.Hypothesis("NETGEN_Parameters", [],
-                                          "libNETGENEngine.so", UseExisting=0)
+        if self.algoType == FULL_NETGEN:
+            if which == SIMPLE:
+                self.params = self.Hypothesis("NETGEN_SimpleParameters_3D", [],
+                                              "libNETGENEngine.so", UseExisting=0)
+            else:
+                self.params = self.Hypothesis("NETGEN_Parameters", [],
+                                              "libNETGENEngine.so", UseExisting=0)
             return self.params
-        if (self.algoType == GHS3D):
+        if self.algoType == GHS3D:
             self.params = self.Hypothesis("GHS3D_Parameters", [],
                                           "libGHS3DEngine.so", UseExisting=0)
             return self.params
         
-        print "Algo doesn't support this hypothesis"
+        print "Algo supports no multi-parameter hypothesis"
         return None
 
     ## Sets MaxSize
@@ -3545,6 +3575,39 @@ class Mesh_Tetrahedron(Mesh_Algorithm):
     #  @ingroup l3_hypos_netgen
     def SetNbSegPerRadius(self, theVal):
         self.Parameters().SetNbSegPerRadius(theVal)
+
+    ## Sets number of segments overriding value set by SetLocalLength()
+    #  Only for algoType == NETGEN_FULL
+    #  @ingroup l3_hypos_netgen
+    def SetNumberOfSegments(self, theVal):
+        self.Parameters(SIMPLE).SetNumberOfSegments(theVal)
+
+    ## Sets number of segments overriding value set by SetNumberOfSegments()
+    #  Only for algoType == NETGEN_FULL
+    #  @ingroup l3_hypos_netgen
+    def SetLocalLength(self, theVal):
+        self.Parameters(SIMPLE).SetLocalLength(theVal)
+
+    ## Defines "MaxElementArea" parameter of NETGEN_SimpleParameters_3D hypothesis.
+    #  Overrides value set by LengthFromEdges()
+    #  Only for algoType == NETGEN_FULL
+    #  @ingroup l3_hypos_netgen
+    def MaxElementArea(self, area):
+        self.Parameters(SIMPLE).SetMaxElementArea(area)
+
+    ## Defines "LengthFromEdges" parameter of NETGEN_SimpleParameters_3D hypothesis
+    #  Overrides value set by MaxElementArea()
+    #  Only for algoType == NETGEN_FULL
+    #  @ingroup l3_hypos_netgen
+    def LengthFromEdges(self):
+        self.Parameters(SIMPLE).LengthFromEdges()
+
+    ## Defines "LengthFromFaces" parameter of NETGEN_SimpleParameters_3D hypothesis
+    #  Overrides value set by MaxElementVolume()
+    #  Only for algoType == NETGEN_FULL
+    #  @ingroup l3_hypos_netgen
+    def LengthFromFaces(self):
+        self.Parameters(SIMPLE).LengthFromFaces()
 
     ## To mesh "holes" in a solid or not. Default is to mesh.
     #  @ingroup l3_hypos_ghs3dh
