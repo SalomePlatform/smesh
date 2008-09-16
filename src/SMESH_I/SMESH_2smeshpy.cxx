@@ -893,6 +893,18 @@ void _pyMeshEditor::Process( const Handle(_pyCommand)& theCommand)
     sameMethods.Insert( names );
   }
 
+  // names of SMESH_MeshEditor methods which differ from methods of class Mesh
+  // only last two arguments
+  static TStringSet diffLastTwoArgsMethods;
+  if (diffLastTwoArgsMethods.empty() ){
+    const char * names[] = {
+      "MirrorMakeGroups","MirrorObjectMakeGroups",
+      "TranslateMakeGroups","TranslateObjectMakeGroups",
+      "RotateMakeGroups","RotateObjectMakeGroups",
+      ""};// <- mark of the end
+    diffLastTwoArgsMethods.Insert( names );
+  }
+
   if ( sameMethods.Contains( theCommand->GetMethod() )) {
     theCommand->SetObject( myMesh );
 
@@ -902,11 +914,32 @@ void _pyMeshEditor::Process( const Handle(_pyCommand)& theCommand)
       _pyMesh( new _pyCommand( theCommand->GetString(), 0 )); // for theGen->SetAccessorMethod()
   }
   else {
-    // editor creation command is needed only if any editor function is called
-    theGen->AddMeshAccessorMethod( theCommand ); // for *Object()
-    if ( !myCreationCmdStr.IsEmpty() ) {
-      GetCreationCmd()->GetString() = myCreationCmdStr;
-      myCreationCmdStr.Clear();
+    
+    //Replace SMESH_MeshEditor "MakeGroups" functions on the Mesh 
+    //functions with the flag "theMakeGroups = True" like:
+    //SMESH_MeshEditor.CmdMakeGroups => Mesh.Cmd(...,True)
+    int pos = theCommand->GetMethod().Search("MakeGroups");
+    if( pos != -1) {  
+      // 1. Remove "MakeGroups" from the Command
+      TCollection_AsciiString aMethod = theCommand->GetMethod();
+      int nbArgsToAdd = diffLastTwoArgsMethods.Contains(aMethod) ? 2 : 1;
+      aMethod.Trunc(pos-1);
+      theCommand->SetMethod(aMethod);
+
+      // 2. Set Mesh object instead SMESH_MeshEditor
+      theCommand->SetObject( myMesh );
+
+      // 3. And add last "True" argument
+      while(nbArgsToAdd--)
+        theCommand->SetArg(theCommand->GetNbArgs()+1,"True ");
+    }
+    else {
+      // editor creation command is needed only if any editor function is called
+      theGen->AddMeshAccessorMethod( theCommand ); // for *Object()
+      if ( !myCreationCmdStr.IsEmpty() ) {
+        GetCreationCmd()->GetString() = myCreationCmdStr;
+        myCreationCmdStr.Clear();
+      }
     }
   }
 }
