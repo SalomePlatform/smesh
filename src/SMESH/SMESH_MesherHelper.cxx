@@ -318,7 +318,6 @@ gp_XY SMESH_MesherHelper::GetNodeUV(const TopoDS_Face&   F,
     int edgeID = Pos->GetShapeId();
     TopoDS_Edge E = TopoDS::Edge(meshDS->IndexToShape(edgeID));
     double f, l;
-    TopLoc_Location loc;
     Handle(Geom2d_Curve) C2d = BRep_Tool::CurveOnSurface(E, F, f, l);
     uv = C2d->Value( epos->GetUParameter() );
     // for a node on a seam edge select one of UVs on 2 pcurves
@@ -884,19 +883,19 @@ SMDS_MeshVolume* SMESH_MesherHelper::AddVolume(const SMDS_MeshNode* n1,
 }
 
 //=======================================================================
-  /*!
-   * \brief Load nodes bound to face into a map of node columns
-    * \param theParam2ColumnMap - map of node columns to fill
-    * \param theFace - the face on which nodes are searched for
-    * \param theBaseEdge - the edge nodes of which are columns' bases
-    * \param theMesh - the mesh containing nodes
-    * \retval bool - false if something is wrong
-   * 
-   * The key of the map is a normalized parameter of each
-   * base node on theBaseEdge.
-   * This method works in supposition that nodes on the face
-   * forms a rectangular grid and elements can be quardrangles or triangles
-   */
+/*!
+ * \brief Load nodes bound to face into a map of node columns
+ * \param theParam2ColumnMap - map of node columns to fill
+ * \param theFace - the face on which nodes are searched for
+ * \param theBaseEdge - the edge nodes of which are columns' bases
+ * \param theMesh - the mesh containing nodes
+ * \retval bool - false if something is wrong
+ * 
+ * The key of the map is a normalized parameter of each
+ * base node on theBaseEdge.
+ * This method works in supposition that nodes on the face
+ * forms a rectangular grid and elements can be quardrangles or triangles
+ */
 //=======================================================================
 
 bool SMESH_MesherHelper::LoadNodeColumns(TParam2ColumnMap & theParam2ColumnMap,
@@ -1145,11 +1144,14 @@ bool SMESH_MesherHelper::LoadNodeColumns(TParam2ColumnMap & theParam2ColumnMap,
   return true;
 }
 
+//=======================================================================
 /**
  * Check mesh without geometry for: if all elements on this shape are quadratic,
  * quadratic elements will be created.
  * Used then generated 3D mesh without geometry.
-   */
+ */
+//=======================================================================
+
 SMESH_MesherHelper:: MType SMESH_MesherHelper::IsQuadraticMesh()
 {
   int NbAllEdgsAndFaces=0;
@@ -1177,3 +1179,13 @@ SMESH_MesherHelper:: MType SMESH_MesherHelper::IsQuadraticMesh()
     return SMESH_MesherHelper::COMP;
 }
 
+//=======================================================================
+/*!
+ * \brief Return an alternative parameter for a node on seam
+ */
+//=======================================================================
+
+double SMESH_MesherHelper::GetOtherParam(const double param) const
+{
+  return fabs(param-myPar1) < fabs(param-myPar2) ? myPar2 : myPar1;
+}

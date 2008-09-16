@@ -296,6 +296,10 @@ public:
     * \retval int - 1 for U, 2 for V direction
    */
   int GetPeriodicIndex() const { return myParIndex; }
+  /*!
+   * \brief Return an alternative parameter for a node on seam
+   */
+  double GetOtherParam(const double param) const;
 
   /**
    * Special function for search or creation medium node
