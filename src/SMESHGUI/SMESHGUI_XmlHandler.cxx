@@ -122,11 +122,14 @@ bool SMESHGUI_XmlHandler::startElement (const QString&, const QString&,
       QString aLabel = atts.value("label-id");
       QString anIcon = atts.value("icon-id");
       bool isAux = atts.value("auxiliary") == "true";
-      bool isNeedGeom = true;
+      bool isNeedGeom = true, isSupportSubmeshes = false;
       QString aNeedGeom = atts.value("need-geom");
       if ( !aNeedGeom.isEmpty() )
         isNeedGeom = (aNeedGeom == "true");
-      
+      QString suppSub = atts.value("support-submeshes");
+      if ( !suppSub.isEmpty() )
+        isSupportSubmeshes = (suppSub == "true");
+
       QString aDimStr = atts.value("dim");
       aDimStr = aDimStr.remove( ' ' );
       QStringList aDimList = aDimStr.split( ',', QString::SkipEmptyParts );
@@ -155,7 +158,8 @@ bool SMESHGUI_XmlHandler::startElement (const QString&, const QString&,
       HypothesisData* aHypData =
         new HypothesisData (aHypAlType, myPluginName, myServerLib, myClientLib,
                             aLabel, anIcon, aDim, isAux,
-                            attr[ HYPOS ], attr[ OPT_HYPOS ], attr[ INPUT ], attr[ OUTPUT ], isNeedGeom );
+                            attr[ HYPOS ], attr[ OPT_HYPOS ], attr[ INPUT ], attr[ OUTPUT ],
+                            isNeedGeom, isSupportSubmeshes );
 
       if (qName == "algorithm")
       {
