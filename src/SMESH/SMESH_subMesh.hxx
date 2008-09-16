@@ -75,7 +75,7 @@ class SMESH_EXPORT SMESH_subMesh
 
   SMESH_subMesh *GetFirstToCompute();
 
-  const map < int, SMESH_subMesh * >& DependsOn();
+  const std::map < int, SMESH_subMesh * >& DependsOn();
   //const map < int, SMESH_subMesh * >&Dependants();
   /*!
    * \brief Return iterator on the submeshes this one depends on
@@ -211,6 +211,11 @@ public:
   SMESH_Hypothesis::Hypothesis_Status CheckConcurentHypothesis (const int theHypType);
   // check if there are several applicable hypothesis on fathers
 
+  /*!
+   * \brief Return true if no mesh entities is bound to the submesh
+   */
+  bool IsEmpty() const;
+
   bool IsMeshComputed() const;
   // check if _subMeshDS contains mesh elements
 
@@ -276,7 +281,7 @@ protected:
   SMESH_Mesh *          _father;
   int                   _Id;
 
-  map < int, SMESH_subMesh * >_mapDepend;
+  std::map < int, SMESH_subMesh * >_mapDepend;
   bool                  _dependenceAnalysed;
 
   int                   _algoState;

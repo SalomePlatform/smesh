@@ -187,6 +187,19 @@ void SMESH_subMesh::SetIsAlwaysComputed(bool isAlCo)
 }
 
 //=======================================================================
+/*!
+ * \brief Return true if no mesh entities is bound to the submesh
+ */
+//=======================================================================
+
+bool SMESH_subMesh::IsEmpty() const
+{
+  if (SMESHDS_SubMesh * subMeshDS = ((SMESH_subMesh*)this)->GetSubMeshDS())
+    return (!subMeshDS->GetNodes()->more() && !subMeshDS->GetElements()->more());
+  return true;
+}
+
+//=======================================================================
 //function : IsMeshComputed
 //purpose  : check if _subMeshDS contains mesh elements
 //=======================================================================
@@ -498,6 +511,11 @@ bool SMESH_subMesh::CanAddHypothesis(const SMESH_Hypothesis* theHypothesis) cons
 {
   int aHypDim   = theHypothesis->GetDim();
   int aShapeDim = SMESH_Gen::GetShapeDim(_subShape);
+  if (aHypDim == 3 && aShapeDim == 3) {
+    // check case of open shell
+    if (_subShape.ShapeType() == TopAbs_SHELL && !_subShape.Closed())
+      return false;
+  }
   if ( aHypDim <= aShapeDim )
     return true;
 
@@ -963,11 +981,13 @@ SMESH_Hypothesis::Hypothesis_Status
     TopTools_ListIteratorOfListOfShape it( _father->GetAncestors( _subShape ));
     for ( ; ( ret == SMESH_Hypothesis::HYP_OK && it.More()); it.Next() ) {
       if ( SMESH_Algo* upperAlgo = gen->GetAlgo( *_father, it.Value() ))
-        if ( !upperAlgo->NeedDescretBoundary() )
+        if ( !upperAlgo->NeedDescretBoundary() && !upperAlgo->SupportSubmeshes())
           ret = SMESH_Hypothesis::HYP_HIDDEN_ALGO;
     }
     // is algo hiding?
-    if ( ret == SMESH_Hypothesis::HYP_OK && !algo->NeedDescretBoundary() ) {
+    if ( ret == SMESH_Hypothesis::HYP_OK &&
+         !algo->NeedDescretBoundary()    &&
+         !algo->SupportSubmeshes()) {
       map<int, SMESH_subMesh*>::reverse_iterator i_sm = _mapDepend.rbegin();
       for ( ; ( ret == SMESH_Hypothesis::HYP_OK && i_sm != _mapDepend.rend()) ; ++i_sm )
         if ( gen->GetAlgo( *_father, i_sm->second->_subShape ))
@@ -1304,6 +1324,7 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
           else
             subComputed = SubMeshesComputed();
           ret = ( algo->NeedDescretBoundary() ? subComputed :
+                  algo->SupportSubmeshes() ? true :
                   ( !subComputed || _father->IsNotConformAllowed() ));
           if (!ret) {
             _computeState = FAILED_TO_COMPUTE;
@@ -1338,7 +1359,7 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
           {
             ret = algo->Compute((*_father), shape);
           }
-          if ( !ret )
+          if ( !ret && _computeError->IsOK() ) // algo can set _computeError of submesh
             _computeError = algo->GetComputeError();
         }
         catch ( std::bad_alloc& exc ) {
@@ -1384,7 +1405,7 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
           else
             ret = false;
         }
-        if (ret && !_alwaysComputed) { // check if anything was built
+        if (ret && !_alwaysComputed && shape == _subShape) { // check if anything was built
           ret = ( GetSubMeshDS() && ( GetSubMeshDS()->NbElements() || GetSubMeshDS()->NbNodes() ));
         }
         bool isComputeErrorSet = !CheckComputeError( algo, shape );
@@ -1574,7 +1595,7 @@ bool SMESH_subMesh::CheckComputeError(SMESH_Algo* theAlgo, const TopoDS_Shape& t
       for (TopoDS_Iterator subIt( theShape ); subIt.More(); subIt.Next()) {
         SMESH_subMesh* sm = _father->GetSubMesh( subIt.Value() );
         if ( sm != this ) {
-          if ( !sm->CheckComputeError( theAlgo ))
+          if ( !sm->CheckComputeError( theAlgo, sm->GetSubShape() ))
             noErrors = false;
           UpdateDependantsState( SUBMESH_COMPUTED ); // send event SUBMESH_COMPUTED
         }
@@ -1803,8 +1824,8 @@ TopoDS_Shape SMESH_subMesh::GetCollection(SMESH_Gen * theGen,
     else if ( subMesh->GetComputeState() == READY_TO_COMPUTE )
     {
       SMESH_Algo* anAlgo = theGen->GetAlgo( *_father, S );
-      if (anAlgo == theAlgo &&
-          anAlgo->GetUsedHypothesis( *_father, S, ignoreAuxiliaryHyps ) == aUsedHyp)
+      if (strcmp( anAlgo->GetName(), theAlgo->GetName()) == 0 && // same algo
+          anAlgo->GetUsedHypothesis( *_father, S, ignoreAuxiliaryHyps ) == aUsedHyp) // same hyps
         aBuilder.Add( aCompound, S );
       if ( !subMesh->SubMeshesComputed() )
         theSubComputed = false;
