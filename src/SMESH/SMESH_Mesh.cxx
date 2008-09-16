@@ -596,24 +596,28 @@ SMESH_Mesh::GetHypothesisList(const TopoDS_Shape & aSubShape) const
 //=======================================================================
 /*!
  * \brief Return the hypothesis assigned to the shape
-  * \param aSubShape - the shape to check
-  * \param aFilter - the hypothesis filter
-  * \param andAncestors - flag to check hypos assigned to ancestors of the shape
-  * \retval SMESH_Hypothesis* - the first hypo passed through aFilter
+ *  \param aSubShape    - the shape to check
+ *  \param aFilter      - the hypothesis filter
+ *  \param andAncestors - flag to check hypos assigned to ancestors of the shape
+ *  \param assignedTo   - to return the shape the found hypo is assigned to
+ *  \retval SMESH_Hypothesis* - the first hypo passed through aFilter
  */
 //=======================================================================
 
 const SMESH_Hypothesis * SMESH_Mesh::GetHypothesis(const TopoDS_Shape &    aSubShape,
                                                    const SMESH_HypoFilter& aFilter,
-                                                   const bool              andAncestors) const
+                                                   const bool              andAncestors,
+                                                   TopoDS_Shape*           assignedTo) const
 {
   {
     const std::list<const SMESHDS_Hypothesis*>& hypList = _myMeshDS->GetHypothesis(aSubShape);
     std::list<const SMESHDS_Hypothesis*>::const_iterator hyp = hypList.begin();
     for ( ; hyp != hypList.end(); hyp++ ) {
       const SMESH_Hypothesis * h = cSMESH_Hyp( *hyp );
-      if ( aFilter.IsOk( h, aSubShape))
+      if ( aFilter.IsOk( h, aSubShape)) {
+        if ( assignedTo ) *assignedTo = aSubShape;
         return h;
+      }
     }
   }
   if ( andAncestors )
@@ -625,8 +629,10 @@ const SMESH_Hypothesis * SMESH_Mesh::GetHypothesis(const TopoDS_Shape &    aSubS
       std::list<const SMESHDS_Hypothesis*>::const_iterator hyp = hypList.begin();
       for ( ; hyp != hypList.end(); hyp++ ) {
         const SMESH_Hypothesis * h = cSMESH_Hyp( *hyp );
-        if (aFilter.IsOk( h, it.Value() ))
+        if (aFilter.IsOk( h, it.Value() )) {
+          if ( assignedTo ) *assignedTo = it.Value();
           return h;
+        }
       }
     }
   }

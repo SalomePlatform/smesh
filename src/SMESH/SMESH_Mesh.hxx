@@ -109,7 +109,8 @@ public:
 
   const SMESH_Hypothesis * GetHypothesis(const TopoDS_Shape &    aSubShape,
                                          const SMESH_HypoFilter& aFilter,
-                                         const bool              andAncestors) const;
+                                         const bool              andAncestors,
+                                         TopoDS_Shape*           assignedTo=0) const;
   
   int GetHypotheses(const TopoDS_Shape &                     aSubShape,
                     const SMESH_HypoFilter&                  aFilter,
