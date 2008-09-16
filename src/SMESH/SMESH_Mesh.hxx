@@ -109,7 +109,8 @@ public:
 
   const SMESH_Hypothesis * GetHypothesis(const TopoDS_Shape &    aSubShape,
                                          const SMESH_HypoFilter& aFilter,
-                                         const bool              andAncestors) const;
+                                         const bool              andAncestors,
+                                         TopoDS_Shape*           assignedTo=0) const;
   
   int GetHypotheses(const TopoDS_Shape &                     aSubShape,
                     const SMESH_HypoFilter&                  aFilter,
@@ -248,8 +249,8 @@ protected:
   std::list <SMESH_subMesh*> _subMeshesUsingHypothesisList;
   SMESHDS_Document *         _myDocument;
   SMESHDS_Mesh *             _myMeshDS;
-  map <int, SMESH_subMesh *> _mapSubMesh;
-  map <int, SMESH_Group *>   _mapGroup;
+  std::map <int, SMESH_subMesh*> _mapSubMesh;
+  std::map <int, SMESH_Group*>   _mapGroup;
   SMESH_Gen *                _gen;
 
   bool                       _isAutoColor;
