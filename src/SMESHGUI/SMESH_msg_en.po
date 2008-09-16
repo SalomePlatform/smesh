@@ -3453,6 +3453,9 @@ msgstr "There is no object for editing. Please\nselect mesh or sub-mesh and try 
 msgid "SMESHGUI_MeshOp::EDIT_SUBMESH_QUESTION"
 msgstr "A submesh on the selected geometry already exists.\n Do you want to edit this submesh?"
 
+msgid "SMESHGUI_MeshOp::SUBMESH_NOT_ALLOWED"
+msgstr "No sense in creating a submesh ignored by global algorithm \"%1\""
+
 msgid "SMESHGUI_MeshOp::MESH_IS_NULL"
 msgstr "Mesh is null"
 
