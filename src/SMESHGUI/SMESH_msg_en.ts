@@ -3894,6 +3894,10 @@ Please specify them and try again</translation>
  Do you want to edit this submesh?</translation>
         </message>
         <message>
+            <source>SUBMESH_NOT_ALLOWED</source>
+            <translation>No sense in creating a submesh ignored by global algorithm "%1"</translation>
+        </message>
+        <message>
             <source>GEOMETRY_OBJECT_IS_NOT_DEFINED</source>
             <translation>Geometry object is not defined
 Please specify it and try again</translation>
