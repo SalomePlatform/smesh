@@ -211,6 +211,11 @@ public:
   SMESH_Hypothesis::Hypothesis_Status CheckConcurentHypothesis (const int theHypType);
   // check if there are several applicable hypothesis on fathers
 
+  /*!
+   * \brief Return true if no mesh entities is bound to the submesh
+   */
+  bool IsEmpty() const;
+
   bool IsMeshComputed() const;
   // check if _subMeshDS contains mesh elements
 
