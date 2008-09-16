@@ -100,7 +100,7 @@ private:
                                                 QStringList&    theHyps,
                                                 THypDataList&   theDataList,
                                                 HypothesisData* theAlgoData = 0 ) const;
-  void                           existingHyps( const int     theDim, 
+  static void                    existingHyps( const int     theDim, 
                                                const int     theHypType, 
                                                _PTR(SObject) theFather,
                                                QStringList&  theHyps, 
@@ -129,6 +129,7 @@ private:
   SMESH::SMESH_Hypothesis_var    getInitParamsHypothesis( const QString& aHypType,
                                                           const QString& aServerLib ) const;
   bool                           isSubshapeOk() const;
+  char*                          isSubmeshIgnored() const;
   _PTR(SObject)                  getSubmeshByGeom() const;
   void                           selectObject( _PTR(SObject) ) const;
 
