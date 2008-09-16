@@ -129,7 +129,9 @@ SMESH_Mesh* SMESH_Gen::CreateMesh(int theStudyId, bool theIsEmbeddedMode)
  */
 //=============================================================================
 
-bool SMESH_Gen::Compute(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape)
+bool SMESH_Gen::Compute(SMESH_Mesh &         aMesh,
+                        const TopoDS_Shape & aShape,
+                        const bool           anUpward)
 {
   MESSAGE("SMESH_Gen::Compute");
 
@@ -137,55 +139,112 @@ bool SMESH_Gen::Compute(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape)
 
   SMESH_subMesh *sm = aMesh.GetSubMesh(aShape);
 
-  // -----------------------------------------------------------------
-  // apply algos that do not require descretized boundaries, starting
-  // from the most complex shapes
-  // -----------------------------------------------------------------
-
   const bool includeSelf = true;
   const bool complexShapeFirst = true;
 
-  SMESH_subMeshIteratorPtr smIt = sm->getDependsOnIterator(includeSelf,
-                                                           complexShapeFirst);
-  while ( smIt->more() )
+  SMESH_subMeshIteratorPtr smIt;
+
+  if ( anUpward ) // is called from below code here
   {
-    SMESH_subMesh* smToCompute = smIt->next();
-
-    const TopoDS_Shape& aSubShape = smToCompute->GetSubShape();
-    if ( GetShapeDim( aSubShape ) < 1 ) break;
-
-    SMESH_Algo* algo = GetAlgo( aMesh, aSubShape );
-    if (algo && !algo->NeedDescretBoundary())
+    // -----------------------------------------------
+    // mesh all the subshapes starting from vertices
+    // -----------------------------------------------
+    smIt = sm->getDependsOnIterator(includeSelf, !complexShapeFirst);
+    while ( smIt->more() )
     {
+      SMESH_subMesh* smToCompute = smIt->next();
+
+      // do not mesh vertices of a pseudo shape
+      if ( !aMesh.HasShapeToMesh() &&
+           smToCompute->GetSubShape().ShapeType() == TopAbs_VERTEX )
+        continue;
+
       if (smToCompute->GetComputeState() == SMESH_subMesh::READY_TO_COMPUTE)
         smToCompute->ComputeStateEngine( SMESH_subMesh::COMPUTE );
 
+      // we check all the submeshes here and detect if any of them failed to compute
       if (smToCompute->GetComputeState() == SMESH_subMesh::FAILED_TO_COMPUTE)
-        ret = false;;
+        ret = false;
     }
-    if ((algo && !aMesh.HasShapeToMesh()))
-    {
-      if (smToCompute->GetComputeState() == SMESH_subMesh::READY_TO_COMPUTE)
-        smToCompute->ComputeStateEngine( SMESH_subMesh::COMPUTE );
-      
-      if (smToCompute->GetComputeState() == SMESH_subMesh::FAILED_TO_COMPUTE)
-        ret = false;;
-    }
+    return ret;
   }
-
-  // -----------------------------------------------
-  // mesh the rest subshapes starting from vertices
-  // -----------------------------------------------
-  smIt = sm->getDependsOnIterator(includeSelf, !complexShapeFirst);
-  while ( smIt->more() )
+  else
   {
-    SMESH_subMesh* smToCompute = smIt->next();
+    // -----------------------------------------------------------------
+    // apply algos that DO NOT require descretized boundaries and DO NOT
+    // support submeshes, starting from the most complex shapes
+    // and collect submeshes with algos that DO support submeshes
+    // -----------------------------------------------------------------
+    list< SMESH_subMesh* > smWithAlgoSupportingSubmeshes;
+    smIt = sm->getDependsOnIterator(includeSelf, complexShapeFirst);
+    while ( smIt->more() )
+    {
+      SMESH_subMesh* smToCompute = smIt->next();
+      if ( smToCompute->GetComputeState() != SMESH_subMesh::READY_TO_COMPUTE )
+        continue;
 
-    if (smToCompute->GetComputeState() == SMESH_subMesh::READY_TO_COMPUTE)
-      smToCompute->ComputeStateEngine( SMESH_subMesh::COMPUTE );
+      const TopoDS_Shape& aSubShape = smToCompute->GetSubShape();
+      if ( GetShapeDim( aSubShape ) < 1 ) break;
 
-    if (smToCompute->GetComputeState() == SMESH_subMesh::FAILED_TO_COMPUTE)
-      ret = false;
+      SMESH_Algo* algo = GetAlgo( aMesh, aSubShape );
+      if ( algo && !algo->NeedDescretBoundary() )
+      {
+        if ( algo->SupportSubmeshes() )
+          smWithAlgoSupportingSubmeshes.push_back( smToCompute );
+        else
+          smToCompute->ComputeStateEngine( SMESH_subMesh::COMPUTE );
+      }
+    }
+    // ------------------------------------------------------------
+    // compute submeshes under shapes with algos that DO NOT require
+    // descretized boundaries and DO support submeshes
+    // ------------------------------------------------------------
+    list< SMESH_subMesh* >::reverse_iterator subIt, subEnd;
+    subIt  = smWithAlgoSupportingSubmeshes.rbegin();
+    subEnd = smWithAlgoSupportingSubmeshes.rend();
+    // start from lower shapes
+    for ( ; subIt != subEnd; ++subIt )
+    {
+      sm = *subIt;
+
+      // get a shape the algo is assigned to
+      TopoDS_Shape algoShape;
+      if ( !GetAlgo( aMesh, sm->GetSubShape(), & algoShape ))
+        continue; // strange...
+
+      // look for more local algos
+      smIt = sm->getDependsOnIterator(!includeSelf, !complexShapeFirst);
+      while ( smIt->more() )
+      {
+        SMESH_subMesh* smToCompute = smIt->next();
+
+        const TopoDS_Shape& aSubShape = smToCompute->GetSubShape();
+        if ( aSubShape.ShapeType() == TopAbs_VERTEX ) continue;
+
+        SMESH_HypoFilter filter( SMESH_HypoFilter::IsAlgo() );
+        filter
+          .And( SMESH_HypoFilter::IsApplicableTo( aSubShape ))
+          .And( SMESH_HypoFilter::IsMoreLocalThan( algoShape ));
+
+        if ( SMESH_Algo* subAlgo = (SMESH_Algo*) aMesh.GetHypothesis( aSubShape, filter, true )) {
+          SMESH_Hypothesis::Hypothesis_Status status;
+          if ( subAlgo->CheckHypothesis( aMesh, aSubShape, status ))
+            // mesh a lower smToCompute starting from vertices
+            Compute( aMesh, aSubShape, /*anUpward=*/true );
+        }
+      }
+    }
+    // ----------------------------------------------------------
+    // apply the algos that do not require descretized boundaries
+    // ----------------------------------------------------------
+    for ( subIt = smWithAlgoSupportingSubmeshes.rbegin(); subIt != subEnd; ++subIt )
+      if ( sm->GetComputeState() == SMESH_subMesh::READY_TO_COMPUTE)
+        sm->ComputeStateEngine( SMESH_subMesh::COMPUTE );
+
+    // -----------------------------------------------
+    // mesh the rest subshapes starting from vertices
+    // -----------------------------------------------
+    ret = Compute( aMesh, aShape, /*anUpward=*/true );
   }
 
   MESSAGE( "VSR - SMESH_Gen::Compute() finished, OK = " << ret);
@@ -576,19 +635,15 @@ bool SMESH_Gen::IsGlobalHypothesis(const SMESH_Hypothesis* theHyp, SMESH_Mesh& a
  */
 //=============================================================================
 
-SMESH_Algo *SMESH_Gen::GetAlgo(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape)
+SMESH_Algo *SMESH_Gen::GetAlgo(SMESH_Mesh &         aMesh,
+                               const TopoDS_Shape & aShape,
+                               TopoDS_Shape*        assignedTo)
 {
 
   SMESH_HypoFilter filter( SMESH_HypoFilter::IsAlgo() );
   filter.And( filter.IsApplicableTo( aShape ));
 
-  list <const SMESHDS_Hypothesis * > algoList;
-  aMesh.GetHypotheses( aShape, filter, algoList, true );
-
-  if ( algoList.empty() )
-    return NULL;
-
-  return const_cast<SMESH_Algo*> ( static_cast<const SMESH_Algo* >( algoList.front() ));
+  return (SMESH_Algo*) aMesh.GetHypothesis( aShape, filter, true, assignedTo );
 }
 
 //=============================================================================

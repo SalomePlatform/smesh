@@ -66,7 +66,14 @@ class SMESH_EXPORT  SMESH_Gen
   SMESH_Mesh* CreateMesh(int theStudyId, bool theIsEmbeddedMode)
     throw(SALOME_Exception);
 
-  bool Compute(::SMESH_Mesh & aMesh, const TopoDS_Shape & aShape);
+  /*!
+   * \brief Computes aMesh on aShape 
+   *  \param anUpward - compute from vertices up to more complex shape (internal usage)
+   *  \retval bool - true if none submesh failed to compute
+   */
+  bool Compute(::SMESH_Mesh &       aMesh,
+               const TopoDS_Shape & aShape,
+               const bool           anUpward=false);
 
   bool CheckAlgoState(SMESH_Mesh& aMesh, const TopoDS_Shape& aShape);
   // notify on bad state of attached algos, return false
@@ -98,7 +105,7 @@ class SMESH_EXPORT  SMESH_Gen
   static int GetShapeDim(const TopAbs_ShapeEnum & aShapeType);
   static int GetShapeDim(const TopoDS_Shape & aShape)
   { return GetShapeDim( aShape.ShapeType() ); }
-  SMESH_Algo* GetAlgo(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape);
+  SMESH_Algo* GetAlgo(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape, TopoDS_Shape* assignedTo=0);
   static bool IsGlobalHypothesis(const SMESH_Hypothesis* theHyp, SMESH_Mesh& aMesh);
 
   // inherited methods from SALOMEDS::Driver
