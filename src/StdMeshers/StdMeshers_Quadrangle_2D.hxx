@@ -38,9 +38,9 @@
 class SMESH_Mesh;
 class SMESH_MesherHelper;
 class StdMeshers_FaceSide;
+class SMDS_MeshNode;
 struct uvPtStruct;
 
-//class SMDS_MeshNode;
 
 enum TSideID { BOTTOM_SIDE=0, RIGHT_SIDE, TOP_SIDE, LEFT_SIDE, NB_SIDES };
 
@@ -78,11 +78,19 @@ protected:
   bool SetNormalizedGrid(SMESH_Mesh& aMesh,
 			 const TopoDS_Shape& aShape,
 			 FaceQuadStruct*& quad);
+  
+  void SplitQuad(SMESHDS_Mesh *theMeshDS,
+                 const int theFaceID,
+                 const SMDS_MeshNode* theNode1,
+                 const SMDS_MeshNode* theNode2,
+                 const SMDS_MeshNode* theNode3,
+                 const SMDS_MeshNode* theNode4);
 
   /**
    * Special function for creation only quandrangle faces
    */
   bool ComputeQuadPref(SMESH_Mesh& aMesh,
+                       
                        const TopoDS_Shape& aShape,
                        FaceQuadStruct* quad);
 

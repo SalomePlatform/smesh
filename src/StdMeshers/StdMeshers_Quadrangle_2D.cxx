@@ -329,10 +329,7 @@ bool StdMeshers_Quadrangle_2D::Compute (SMESH_Mesh& aMesh,
           meshDS->SetMeshElementOnShape(face, geomFaceID);
         }
         else {
-          SMDS_MeshFace* face = myTool->AddFace(a, b, c);
-          meshDS->SetMeshElementOnShape(face, geomFaceID);
-          face = myTool->AddFace(a, c, d);
-          meshDS->SetMeshElementOnShape(face, geomFaceID);
+          SplitQuad(meshDS, geomFaceID, a, b, c, d);
         }
 
         // if node d is not at position g - make additional triangles
@@ -421,10 +418,7 @@ bool StdMeshers_Quadrangle_2D::Compute (SMESH_Mesh& aMesh,
             meshDS->SetMeshElementOnShape(face, geomFaceID);
           }
           else {
-            SMDS_MeshFace* face = myTool->AddFace(a, b, c);
-            meshDS->SetMeshElementOnShape(face, geomFaceID);
-            face = myTool->AddFace(a, c, d);
-            meshDS->SetMeshElementOnShape(face, geomFaceID);
+            SplitQuad(meshDS, geomFaceID, a, b, c, d);
           }
 
           if (near + 1 < g) { // if d not is at g - make additional triangles
@@ -499,10 +493,7 @@ bool StdMeshers_Quadrangle_2D::Compute (SMESH_Mesh& aMesh,
           meshDS->SetMeshElementOnShape(face, geomFaceID);
         }
         else {
-          SMDS_MeshFace* face = myTool->AddFace(a, b, c);
-          meshDS->SetMeshElementOnShape(face, geomFaceID);
-          face = myTool->AddFace(a, c, d);
-          meshDS->SetMeshElementOnShape(face, geomFaceID);
+          SplitQuad(meshDS, geomFaceID, a, b, c, d);
         }
 
         if (near - 1 > g) { // if d not is at g - make additional triangles
@@ -573,10 +564,7 @@ bool StdMeshers_Quadrangle_2D::Compute (SMESH_Mesh& aMesh,
             meshDS->SetMeshElementOnShape(face, geomFaceID);
           }
           else {
-            SMDS_MeshFace* face = myTool->AddFace(a, b, c);
-            meshDS->SetMeshElementOnShape(face, geomFaceID);
-            face = myTool->AddFace(a, c, d);
-            meshDS->SetMeshElementOnShape(face, geomFaceID);
+            SplitQuad(meshDS, geomFaceID, a, b, c, d);
           }
 
           if (near + 1 < g) { // if d not is at g - make additional triangles
@@ -1524,3 +1512,34 @@ bool StdMeshers_Quadrangle_2D::ComputeQuadPref (SMESH_Mesh &        aMesh,
   return isOk;
 }
 
+//=============================================================================
+/*! Split quadrangle in to 2 triangles by smallest diagonal
+ *   
+ */
+//=============================================================================
+void StdMeshers_Quadrangle_2D::SplitQuad(SMESHDS_Mesh *theMeshDS,
+                                    int theFaceID,
+                                    const SMDS_MeshNode* theNode1,
+                                    const SMDS_MeshNode* theNode2,
+                                    const SMDS_MeshNode* theNode3,
+                                    const SMDS_MeshNode* theNode4)
+{
+  gp_Pnt a(theNode1->X(),theNode1->Y(),theNode1->Z());
+  gp_Pnt b(theNode2->X(),theNode2->Y(),theNode2->Z());
+  gp_Pnt c(theNode3->X(),theNode3->Y(),theNode3->Z());
+  gp_Pnt d(theNode4->X(),theNode4->Y(),theNode4->Z());
+  SMDS_MeshFace* face;
+  if(a.Distance(c) > b.Distance(d)){
+    face = myTool->AddFace(theNode2, theNode4 , theNode1);
+    theMeshDS->SetMeshElementOnShape(face, theFaceID );
+    face = myTool->AddFace(theNode2, theNode3, theNode4);
+    theMeshDS->SetMeshElementOnShape(face, theFaceID );
+
+  }
+  else{
+    face = myTool->AddFace(theNode1, theNode2 ,theNode3);
+    theMeshDS->SetMeshElementOnShape(face, theFaceID );
+    face = myTool->AddFace(theNode1, theNode3, theNode4);
+    theMeshDS->SetMeshElementOnShape(face, theFaceID );
+  }
+}
