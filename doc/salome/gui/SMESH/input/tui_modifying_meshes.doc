@@ -742,6 +742,7 @@ salome.sg.updateObjBrowser(1)
 
 \code
 import math
+import SMESH
 
 import SMESH_mechanic
 
@@ -750,7 +751,7 @@ smesh = SMESH_mechanic.smesh
 
 # create a group of faces to be revolved
 FacesRotate = [492, 493, 502, 503]
-GroupRotate = mesh.CreateGroup(SMESH.FACE,"Group of faces (rotate)")
+GroupRotate = mesh.CreateEmptyGroup(SMESH.FACE,"Group of faces (rotate)")
 GroupRotate.Add(FacesRotate)
 
 # define revolution angle and axis

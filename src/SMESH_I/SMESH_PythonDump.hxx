@@ -147,6 +147,9 @@ namespace SMESH
     TPythonDump&
     operator<<(const TCollection_AsciiString & theArg);
 
+    TPythonDump&
+    operator<<(const SMESH::ListOfGroups * theList);
+
     static char* SMESHGenName() { return "smeshgen"; }
     static char* MeshEditorName() { return "mesh_editor"; }
 

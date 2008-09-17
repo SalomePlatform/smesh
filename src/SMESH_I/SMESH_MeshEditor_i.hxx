@@ -35,7 +35,7 @@
 #include CORBA_SERVER_HEADER(SMESH_MeshEditor)
 
 #include "SMESH_Mesh.hxx"
-
+#include "SMESH_PythonDump.hxx"
 #include <list>
 
 class SMESH_MeshEditor;
@@ -486,6 +486,9 @@ private: //!< private methods
                               ::SMESH_Mesh*             TargetMesh=0);
 
   SMESH::SMESH_Mesh_ptr makeMesh(const char* theMeshName);
+  
+  void DumpGroupsList(SMESH::TPythonDump & theDumpPython, 
+                      const SMESH::ListOfGroups * theGroupList);
 
 private: //!< fields
 
