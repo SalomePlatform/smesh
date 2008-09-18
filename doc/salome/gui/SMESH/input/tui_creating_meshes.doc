@@ -181,4 +181,11 @@ demonstrating the resulting mesh.
 
 \image html mesh_cylinder_hexa.png
 
+<br>
+\anchor tui_building_compound
+<h2>Building a compound of meshes</h2>
+\dontinclude SMESH_BuildCompound.py
+\skipline import geompy
+\until #end
+
 */
