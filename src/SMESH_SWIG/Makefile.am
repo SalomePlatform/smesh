@@ -90,6 +90,7 @@ dist_salomescript_DATA= \
 	SMESH_Nut.py \
 	SMESH_GroupLyingOnGeom.py \
 	SMESH_AdvancedEditor.py \
+	SMESH_BuildCompound.py \
 	PAL_MESH_041_mesh.py \
 	PAL_MESH_043_2D.py \
 	PAL_MESH_043_3D.py \
