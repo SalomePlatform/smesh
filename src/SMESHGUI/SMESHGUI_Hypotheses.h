@@ -152,7 +152,7 @@ class HypothesisData
                   const QStringList& theInputTypes,
                   const QStringList& theOutputTypes,
 		  const bool theIsNeedGeometry = true,
-                  const bool theSupportSub)
+                  const bool theSupportSub = false)
     : TypeName( theTypeName ),
     PluginName( thePluginName ),
     ServerLibName( theServerLibName ),
