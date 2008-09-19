@@ -47,7 +47,7 @@ usr_docs: doxyfile_py doxyfile
 docs: usr_docs
 
 clean-local:
-	@for filen in `find .` ; do				\
+	@for filen in `find . -maxdepth 1` ; do				\
 	  case $${filen} in					\
 	    ./Makefile | ./doxyfile | ./doxyfile_py ) ;;	\
 	    . | .. ) ;;						\
@@ -57,7 +57,7 @@ clean-local:
 
 install-data-local: usr_docs
 	$(INSTALL) -d $(DESTDIR)$(docdir)/gui/SMESH
-	@for filen in `find .` ; do								\
+	@for filen in `find . -maxdepth 1` ; do								\
 	  case $${filen} in									\
 	    ./Makefile | ./doxyfile | ./doxyfile_py ) ;;					\
 	    ./doxyfile.bak | ./doxyfile_py.bak ) ;;						\
