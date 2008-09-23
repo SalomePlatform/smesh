@@ -122,7 +122,8 @@ AC_F77_LIBRARY_LDFLAGS
 AC_PROG_FC
 AC_FC_LIBRARY_LDFLAGS
 if test "X$FC" != "X" ; then
-   fortran_ok=yes
+    fortran_ok=yes
+    F77=$FC
 fi
 
 dnl AM_CONDITIONAL( USE_GFORTRAN, [test "$F77" = "gfortran"])
