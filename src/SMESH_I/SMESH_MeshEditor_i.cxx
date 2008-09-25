@@ -2287,11 +2287,12 @@ SMESH_MeshEditor_i::MirrorMakeGroups(const SMESH::long_array&            theIDsO
 {
   SMESH::ListOfGroups * aGroups = mirror(theIDsOfElements, theMirror, theMirrorType, true, true);
   if ( !myPreviewMode ) {
+    TPythonDump()<<"axis = "<<theMirror;
     TPythonDump aPythonDump;
     DumpGroupsList(aPythonDump,aGroups);
     aPythonDump << this << ".MirrorMakeGroups( "
                 << theIDsOfElements << ", "
-                << theMirror          << ", "
+                << "axis, "
                 << mirrorTypeName(theMirrorType) << " )";
   }
   return aGroups;
@@ -2310,11 +2311,12 @@ SMESH_MeshEditor_i::MirrorObjectMakeGroups(SMESH::SMESH_IDSource_ptr           t
   SMESH::long_array_var anElementsId = theObject->GetIDs();
   SMESH::ListOfGroups * aGroups = mirror(anElementsId, theMirror, theMirrorType, true, true);
   if ( !myPreviewMode ) {
+    TPythonDump()<<"axis = "<<theMirror;
     TPythonDump aPythonDump;
     DumpGroupsList(aPythonDump,aGroups);
     aPythonDump << this << ".MirrorObjectMakeGroups( "
                 << theObject << ", "
-                << theMirror   << ", "
+                << "axis, "
                 << mirrorTypeName(theMirrorType) << " )";
   }
   return aGroups;
