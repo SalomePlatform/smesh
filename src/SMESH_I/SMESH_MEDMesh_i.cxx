@@ -729,6 +729,22 @@ SMESH_MEDMesh_i::getBoundaryElements(SALOME_MED::medEntityMesh entity)
 }
 //=============================================================================
 /*!
+ * CORBA:  Method return a reference on a support define on all the element of
+ *         an entity.
+ */
+//=============================================================================
+SALOME_MED::SUPPORT_ptr
+SMESH_MEDMesh_i::getSupportOnAll(SALOME_MED::medEntityMesh entity)
+  throw (SALOME::SALOME_Exception)
+{
+  MESSAGE("!!!! NOT YET IMPLEMENTED !!!!!");
+
+  THROW_SALOME_CORBA_EXCEPTION("Unimplemented Method", SALOME::BAD_PARAM);
+
+  return NULL;
+}
+//=============================================================================
+/*!
  * CORBA: Returns references for the support of the skin of the support
  * mySupport3D
  */

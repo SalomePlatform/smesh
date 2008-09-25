@@ -195,6 +195,10 @@ public:
   getBoundaryElements(SALOME_MED::medEntityMesh entity)
     throw (SALOME::SALOME_Exception);
   
+  SALOME_MED::SUPPORT_ptr
+  getSupportOnAll(SALOME_MED::medEntityMesh entity)
+    throw (SALOME::SALOME_Exception);
+  
   SALOME_MED::SUPPORT_ptr getSkin(SALOME_MED::SUPPORT_ptr mySupport3D)
     throw (SALOME::SALOME_Exception);
   
