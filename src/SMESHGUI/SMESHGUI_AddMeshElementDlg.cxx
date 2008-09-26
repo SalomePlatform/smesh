@@ -34,6 +34,7 @@
 
 #include <SMESH_Actor.h>
 #include <SMESH_ActorUtils.h>
+#include <SMESH_FaceOrientationFilter.h>
 #include <SMDS_Mesh.hxx>
 
 // SALOME GUI inclues
@@ -59,6 +60,7 @@
 #include <vtkIdList.h>
 #include <vtkUnstructuredGrid.h>
 #include <vtkDataSetMapper.h>
+#include <vtkPolyDataMapper.h>
 #include <vtkProperty.h>
 
 // Qt includes
@@ -89,6 +91,10 @@ namespace SMESH
     SALOME_Actor* myPreviewActor;
     vtkDataSetMapper* myMapper;
     vtkUnstructuredGrid* myGrid;
+
+    SALOME_Actor* myFaceOrientation;
+    vtkPolyDataMapper* myFaceOrientationDataMapper;
+    SMESH_FaceOrientationFilter* myFaceOrientationFilter;
 
   public:
     TElementSimulation (SalomeApp_Application* theApplication)
@@ -124,6 +130,26 @@ namespace SMESH
       aBackProp->Delete();
 
       myVTKViewWindow->AddActor(myPreviewActor);
+
+      // Orientation of faces
+      myFaceOrientationFilter = SMESH_FaceOrientationFilter::New();
+      myFaceOrientationFilter->SetInput(myGrid);
+
+      myFaceOrientationDataMapper = vtkPolyDataMapper::New();
+      myFaceOrientationDataMapper->SetInput(myFaceOrientationFilter->GetOutput());
+
+      myFaceOrientation = SALOME_Actor::New();
+      myFaceOrientation->PickableOff();
+      myFaceOrientation->VisibilityOff();
+      myFaceOrientation->SetMapper(myFaceOrientationDataMapper);
+
+      vtkProperty* anOrientationProp = vtkProperty::New();
+      GetColor( "SMESH", "orientation_color", anRGB[0], anRGB[1], anRGB[2], QColor( 255, 255, 255 ) );
+      anOrientationProp->SetColor( anRGB[0], anRGB[1], anRGB[2] );
+      myFaceOrientation->SetProperty( anOrientationProp );
+      anOrientationProp->Delete();
+
+      myVTKViewWindow->AddActor(myFaceOrientation);
     }
 
     typedef std::vector<vtkIdType> TVTKIds;
@@ -171,13 +197,14 @@ namespace SMESH
 
       myGrid->Modified();
 
-      SetVisibility(true);
+      SetVisibility(true, theActor->GetFacesOriented());
     }
 
 
-    void SetVisibility (bool theVisibility)
+    void SetVisibility (bool theVisibility, bool theShowOrientation = false)
     {
       myPreviewActor->SetVisibility(theVisibility);
+      myFaceOrientation->SetVisibility(theShowOrientation);
       RepaintCurrentView();
     }
 
@@ -186,11 +213,18 @@ namespace SMESH
     {
       if (FindVtkViewWindow(myApplication->activeViewManager(), myViewWindow)) {
 	myVTKViewWindow->RemoveActor(myPreviewActor);
+	myVTKViewWindow->RemoveActor(myFaceOrientation);
       }
       myPreviewActor->Delete();
+      myFaceOrientation->Delete();
 
       myMapper->RemoveAllInputs();
       myMapper->Delete();
+
+      myFaceOrientationFilter->Delete();
+
+      myFaceOrientationDataMapper->RemoveAllInputs();
+      myFaceOrientationDataMapper->Delete();
 
       myGrid->Delete();
     }
