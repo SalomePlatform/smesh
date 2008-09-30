@@ -109,6 +109,7 @@ dist_libSMESH_la_SOURCES = \
 	SMESHGUI_ComputeDlg.cxx \
 	SMESHGUI_MakeNodeAtPointDlg.cxx \
 	SMESHGUI_MeshEditPreview.cxx \
+	SMESHGUI_GroupOnShapeDlg.cxx \
 	SMESHGUI_FileInfoDlg.cxx
 
 MOC_FILES = \
@@ -162,6 +163,7 @@ MOC_FILES = \
 	SMESHGUI_BuildCompoundDlg_moc.cxx \
 	SMESHGUI_ComputeDlg_moc.cxx \
 	SMESHGUI_MakeNodeAtPointDlg_moc.cxx \
+	SMESHGUI_GroupOnShapeDlg_moc.cxx \
 	SMESHGUI_FileInfoDlg_moc.cxx
 
 nodist_libSMESH_la_SOURCES= \

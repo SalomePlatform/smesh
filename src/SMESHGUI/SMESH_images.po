@@ -269,6 +269,9 @@ msgstr "mesh_edit_group.png"
 msgid "ICON_CONSTRUCT_GROUP"
 msgstr "mesh_make_group.png"
 
+msgid "ICON_GEO_GROUP"
+msgstr "mesh_groups_from_gemetry.png"
+
 #-----------------------------------------------------------
 # Mesh pattern
 #-----------------------------------------------------------

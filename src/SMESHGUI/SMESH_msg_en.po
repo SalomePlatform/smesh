@@ -368,6 +368,8 @@ msgstr "Mesh"
 msgid "SMESH_SUBMESH"
 msgstr "SubMesh"
 
+msgid "SMESH_GEOM"
+msgstr "Geometry"
 
 # -------------- Hypothesis / Algorithm --------------
 
@@ -971,6 +973,9 @@ msgstr "Used"
 #Create Group
 msgid "SMESH_CREATE_GROUP_TITLE"
 msgstr "Create Group"
+
+msgid "SMESH_CREATE_GROUP_FROM_GEOM"
+msgstr "Create Groups from Geometry"
 
 #Edit Group
 msgid "SMESH_EDIT_GROUP_TITLE"
@@ -2237,6 +2242,9 @@ msgstr "Edit Hypothesis"
 msgid "MEN_CREATE_GROUP"
 msgstr "Create Group"
 
+msgid "MEN_CREATE_GEO_GROUP"
+msgstr "Create Groups from Geometry"
+
 msgid "MEN_CONSTRUCT_GROUP"
 msgstr "Construct Group"
 
@@ -2611,6 +2619,9 @@ msgstr "Edit Hypothesis"
 msgid "TOP_CREATE_GROUP"
 msgstr "Create Group"
 
+msgid "TOP_CREATE_GEO_GROUP"
+msgstr "Create Groups from Geometry"
+
 msgid "TOP_CONSTRUCT_GROUP"
 msgstr "Construct Group"
 
@@ -2935,6 +2946,9 @@ msgstr "Edit Hypothesis"
 
 msgid "STB_CREATE_GROUP"
 msgstr "Create Group"
+
+msgid "STB_CREATE_GEO_GROUP"
+msgstr "Create Groups from Geometry"
 
 msgid "STB_CONSTRUCT_GROUP"
 msgstr "Construct Group"

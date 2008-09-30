@@ -109,6 +109,7 @@ dist_salomeres_DATA = \
 	mesh_tree_group.png \
 	mesh_edit_group.png \
 	mesh_make_group.png \
+	mesh_groups_from_gemetry.png \
 	mesh_union2tri.png \
 	mesh_uniontri.png \
 	mesh_cutquad.png \
