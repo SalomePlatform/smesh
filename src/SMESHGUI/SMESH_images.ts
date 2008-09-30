@@ -51,6 +51,10 @@
             <translation>mesh_make_group.png</translation>
         </message>
         <message>
+            <source>ICON_CREATE_GEO_GROUP</source>
+            <translation>mesh_groups_from_gemetry.png</translation>
+        </message>
+        <message>
             <source>ICON_CONV_TO_QUAD</source>
             <translation>mesh_conv_to_quad.png</translation>
         </message>

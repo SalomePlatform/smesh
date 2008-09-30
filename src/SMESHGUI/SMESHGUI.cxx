@@ -45,6 +45,7 @@
 #include "SMESHGUI_SingleEditDlg.h"
 #include "SMESHGUI_MultiEditDlg.h"
 #include "SMESHGUI_GroupOpDlg.h"
+#include "SMESHGUI_GroupOnShapeDlg.h"
 #include "SMESHGUI_DeleteGroupDlg.h"
 #include "SMESHGUI_SmoothingDlg.h"
 #include "SMESHGUI_RenumberingDlg.h"
@@ -1705,6 +1706,11 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
 			       }*/
       break;
     }
+  case 806:                                     // CREATE GEO GROUP
+    {
+      startOperation( 806 );
+      break;
+    }
   case 801:                                     // CREATE GROUP
     {
       if ( !vtkwnd )
@@ -2575,6 +2581,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction(  703, "CREATE_SUBMESH",  "ICON_DLG_ADD_SUBMESH" );
   createSMESHAction(  704, "EDIT_MESHSUBMESH","ICON_DLG_EDIT_MESH" );
   createSMESHAction(  710, "BUILD_COMPOUND",  "ICON_BUILD_COMPOUND" );
+  createSMESHAction(  806, "CREATE_GEO_GROUP","ICON_CREATE_GEO_GROUP" );
   createSMESHAction(  801, "CREATE_GROUP",    "ICON_CREATE_GROUP" );
   createSMESHAction(  802, "CONSTRUCT_GROUP", "ICON_CONSTRUCT_GROUP" );
   createSMESHAction(  803, "EDIT_GROUP",      "ICON_EDIT_GROUP" );
@@ -2711,6 +2718,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createMenu( 701, meshId, -1 );
   createMenu( separator(), meshId, -1 );
   createMenu( 801, meshId, -1 );
+  createMenu( 806, meshId, -1 );
   createMenu( 802, meshId, -1 );
   createMenu( 803, meshId, -1 );
   createMenu( separator(), meshId, -1 );
@@ -2805,6 +2813,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createTool( 701, meshTb );
   createTool( separator(), meshTb );
   createTool( 801, meshTb );
+  createTool( 806, meshTb );
   createTool( 802, meshTb );
   createTool( 803, meshTb );
   createTool( separator(), meshTb );
@@ -2915,6 +2924,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createPopupItem( 903, OB, mesh_group );                  // WHAT_IS
   popupMgr()->insert( separator(), -1, 0 );
   createPopupItem( 801, OB, mesh );                        // CREATE_GROUP
+  createPopupItem( 806, OB, mesh );                        // CREATE_GEO_GROUP
   createPopupItem( 802, OB, subMesh );                     // CONSTRUCT_GROUP
   popupMgr()->insert( separator(), -1, 0 );
   createPopupItem( 1100, OB, hypo);                        // EDIT HYPOTHESIS
@@ -3650,6 +3660,9 @@ LightApp_Operation* SMESHGUI::createOperation( const int id ) const
     case 704: // Edit mesh/sub-mesh
       op = new SMESHGUI_MeshOp( false );
     break;
+    case 806: // Create group on geom
+      op = new SMESHGUI_GroupOnShapeOp();
+      break;
     case 417: //convert to quadratic
       op = new SMESHGUI_ConvToQuadOp();
     break;

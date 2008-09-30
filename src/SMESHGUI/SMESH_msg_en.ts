@@ -63,6 +63,10 @@
             <translation>std::exception</translation>
         </message>
         <message>
+            <source>SMESH_GEOM</source>
+            <translation>Geometry</translation>
+        </message>
+        <message>
             <source>DIRECT_GEOM_SELECTION</source>
             <translation>Direct geometry selection</translation>
         </message>
@@ -169,6 +173,10 @@
         <message>
             <source>MEN_CREATE_GROUP</source>
             <translation>Create Group</translation>
+        </message>
+        <message>
+            <source>MEN_CREATE_GEO_GROUP</source>
+            <translation>Create Groups from Geometry</translation>
         </message>
         <message>
             <source>MEN_CREATE_MESH</source>
@@ -927,6 +935,10 @@ so that the application may crash. Do you wish to continue visualization?</trans
         <message>
             <source>SMESH_CREATE_GROUP_TITLE</source>
             <translation>Create Group</translation>
+        </message>
+        <message>
+            <source>SMESH_CREATE_GEO_GROUP</source>
+            <translation>Create Groups from Geometry</translation>
         </message>
         <message>
             <source>SMESH_CREATE_HYPOTHESES</source>
@@ -1917,6 +1929,10 @@ Consider saving your work before application crash</translation>
             <translation>Create Group</translation>
         </message>
         <message>
+            <source>STB_CREATE_GEO_GROUP</source>
+            <translation>Create Groups from Geometry</translation>
+        </message>
+        <message>
             <source>STB_CREATE_MESH</source>
             <translation>Create Mesh</translation>
         </message>
@@ -2371,6 +2387,10 @@ Consider saving your work before application crash</translation>
         <message>
             <source>TOP_CREATE_GROUP</source>
             <translation>Create Group</translation>
+        </message>
+        <message>
+            <source>TOP_CREATE_GEO_GROUP</source>
+            <translation>Create Groups from Geometry</translation>
         </message>
         <message>
             <source>TOP_CREATE_MESH</source>
