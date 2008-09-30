@@ -75,6 +75,8 @@ SMESH_FaceOrientationFilter::SMESH_FaceOrientationFilter()
   myBaseGlyph = vtkGlyph3D::New();
   myBaseGlyph->SetInput(myFaceMaskPoints->GetOutput());
   myBaseGlyph->SetVectorModeToUseVector();
+  myBaseGlyph->SetScaleModeToDataScalingOff();
+  myBaseGlyph->SetColorModeToColorByScalar();
   myBaseGlyph->SetSource(my3dVectors ? myArrowPolyData : myGlyphSource->GetOutput());
 }
 
@@ -282,6 +284,7 @@ int SMESH_FaceOrientationFilter::RequestData(
   myFacePolyData->SetPolys(aFaces);
   aFaces->Delete();
 
+  myFacePolyData->GetCellData()->SetScalars(0);
   myFacePolyData->GetCellData()->SetVectors(aVectors);
   aVectors->Delete();
 
