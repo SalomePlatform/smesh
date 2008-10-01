@@ -87,11 +87,7 @@ private slots:
     bool                        onApply();
     void                        onButtonClick();
 
-
-    void                        onSelectColor();
-    void                        onAdd();
-    void                        onRemove();
-
+  //void                        onSelectColor();
 
 private:
 
