@@ -105,7 +105,7 @@ public slots:
 
 private:
 
-  QLineEdit*                    myGrpNameLine;
+  //QLineEdit*                    myGrpNameLine;
 
   QPushButton*                  myMeshBtn;
   QLineEdit*                    myMeshLine;
