@@ -64,8 +64,8 @@ SMESHGUI_GroupOnShapeDlg::SMESHGUI_GroupOnShapeDlg()
   aGrp->setInsideMargin( 0 );
 
   // Name
-  new QLabel( tr( "SMESH_NAME" ), aGrp ); new QLabel( "", aGrp );
-  myGrpNameLine = new QLineEdit( aGrp, "myGrpNameLine" );
+  //new QLabel( tr( "SMESH_NAME" ), aGrp ); new QLabel( "", aGrp );
+  //myGrpNameLine = new QLineEdit( aGrp, "myGrpNameLine" );
 
   // Mesh
   new QLabel( tr( "SMESH_OBJECT_MESH" ), aGrp );
@@ -133,7 +133,7 @@ SMESHGUI_GroupOnShapeDlg::SMESHGUI_GroupOnShapeDlg()
 void SMESHGUI_GroupOnShapeDlg::updateButtons()
 {
   bool enable =
-    !myGrpNameLine->text().isEmpty() && myElemGeomList->count() + myNodeGeomList->count();
+    /*!myGrpNameLine->text().isEmpty() &&*/ myElemGeomList->count() + myNodeGeomList->count();
 
   button(Apply)->setEnabled( enable );
   button(OK)->setEnabled( enable );
@@ -147,7 +147,7 @@ void SMESHGUI_GroupOnShapeDlg::updateButtons()
 
 void SMESHGUI_GroupOnShapeDlg::init()
 {
-  myGrpNameLine->setText("");
+  //myGrpNameLine->setText("");
 
   myMeshBtn->setOn( true );
   myMeshLine->setText("");
@@ -270,7 +270,7 @@ void SMESHGUI_GroupOnShapeOp::startOperation()
     connect(myDlg->myMeshBtn,     SIGNAL(clicked()), this, SLOT(onButtonClick()));
     connect(myDlg->myElemGeomBtn, SIGNAL(clicked()), this, SLOT(onButtonClick()));
     connect(myDlg->myNodeGeomBtn, SIGNAL(clicked()), this, SLOT(onButtonClick()));
-    connect(myDlg->myGrpNameLine, SIGNAL(textChanged(const QString&)),myDlg,SLOT(updateButtons()));
+    //connect(myDlg->myGrpNameLine, SIGNAL(textChanged(const QString&)),myDlg,SLOT(updateButtons()));
   }
   SMESHGUI_SelectionOp::startOperation();
 
@@ -301,12 +301,15 @@ bool SMESHGUI_GroupOnShapeOp::onApply()
   if ( mesh->_is_nil() ) return false;
 
   // names of all existing groups
-  SMESH::ListOfGroups_var groups = mesh->GetGroups();
-  QStringList groupNames;
-  for ( int i = 0; i < groups->length(); ++i ) {
-    CORBA::String_var name = groups[i]->GetName();
-    groupNames.append( name.in() );
-  }
+//   QStringList groupNames;
+//   QString givenName = myDlg->myGrpNameLine->text();
+//   if ( !givenName.isEmpty() ) {
+//     SMESH::ListOfGroups_var groups = mesh->GetGroups();
+//     for ( int i = 0; i < groups->length(); ++i ) {
+//       CORBA::String_var name = groups[i]->GetName();
+//       groupNames.append( name.in() );
+//     }
+//   }
 
   // create groups
   SMESH::SMESH_GroupOnGeom_var group;
@@ -315,7 +318,7 @@ bool SMESHGUI_GroupOnShapeOp::onApply()
     QStringList::iterator geomID = isNode ? myNodeGeoIDs.begin() : myElemGeoIDs.begin();
     QStringList::iterator geomEnd = isNode ? myNodeGeoIDs.end() : myElemGeoIDs.end();
 
-    for ( ; geomID != geomEnd; ++geomID )
+    for (int i = 0 ; geomID != geomEnd; ++geomID, ++i )
     {
       // selected geom
       _PTR(SObject) geomSO = aStudy->FindObjectID( *geomID );
@@ -327,13 +330,20 @@ bool SMESHGUI_GroupOnShapeOp::onApply()
       if ( elemType == SMESH::ALL )
         continue;
 
-      // make a unique name
-      int nb = 1;
-      QString name = myDlg->myGrpNameLine->text() + "_" + QString::number(nb);
-      while ( groupNames.contains( name ))
-        name = myDlg->myGrpNameLine->text() + "_" + QString::number(++nb);
-      groupNames.append( name );
-
+      // group name
+      QString name;
+      //if ( givenName.isEmpty() ) { // use shape name
+        name = isNode ? myDlg->myNodeGeomList->text(i) : myDlg->myElemGeomList->text(i);
+//       }
+//       else { // make a unique name
+//         name = givenName;
+//         int nb = 0;
+//         if ( myNodeGeoIDs.size() + myElemGeoIDs.size() > 1 )
+//           name += "_" + QString::number(++nb);
+//         while ( groupNames.contains( name ))
+//           name = givenName + "_" + QString::number(++nb);
+//         groupNames.append( name );
+//       }
       //printf( "apply() %s %s\n", (*geomID).latin1(), name.latin1() );
       group = mesh->CreateGroupFromGEOM( elemType, name, geom );
     }
