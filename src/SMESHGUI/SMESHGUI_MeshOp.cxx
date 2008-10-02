@@ -65,6 +65,7 @@
 #include <TopoDS_Shape.hxx>
 #include <TopoDS_Shell.hxx>
 #include <TopExp_Explorer.hxx>
+#include <BRep_Tool.hxx>
 
 // IDL includes
 #include <SALOMEconfig.h>
@@ -509,7 +510,7 @@ void SMESHGUI_MeshOp::selectionDone()
               shapeDim = (shapeDim < 2) ? 2 : shapeDim;
               TopoDS_Shape aShape;
               if (GEOMBase::GetShape(aGeomVar, aShape)) {
-                if (aShape.Closed())
+                if (/*aShape.Closed()*/BRep_Tool::IsClosed(aShape))
                   shapeDim = 3;
               }
             }
@@ -527,7 +528,7 @@ void SMESHGUI_MeshOp::selectionDone()
                   //shapeDim = 3; // Bug 0016155: EDF PAL 447: If the shape is a Shell, disable 3D tab
                   shapeDim = (shapeDim < 2) ? 2 : shapeDim;
                   for (; exp.More() && shapeDim == 2; exp.Next()) {
-                    if (exp.Current().Closed())
+                    if (/*exp.Current().Closed()*/BRep_Tool::IsClosed(exp.Current()))
                       shapeDim = 3;
                   }
                 }

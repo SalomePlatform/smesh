@@ -513,7 +513,8 @@ bool SMESH_subMesh::CanAddHypothesis(const SMESH_Hypothesis* theHypothesis) cons
   int aShapeDim = SMESH_Gen::GetShapeDim(_subShape);
   if (aHypDim == 3 && aShapeDim == 3) {
     // check case of open shell
-    if (_subShape.ShapeType() == TopAbs_SHELL && !_subShape.Closed())
+    //if (_subShape.ShapeType() == TopAbs_SHELL && !_subShape.Closed())
+    if (_subShape.ShapeType() == TopAbs_SHELL && !BRep_Tool::IsClosed(_subShape))
       return false;
   }
   if ( aHypDim <= aShapeDim )
