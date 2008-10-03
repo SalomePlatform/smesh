@@ -31,6 +31,7 @@
 
 #include <TColStd_HSequenceOfInteger.hxx>
 #include <TCollection_AsciiString.hxx>
+#include <Resource_DataMapIteratorOfDataMapOfAsciiStringAsciiString.hxx>
 
 
 #ifdef _DEBUG_
@@ -38,6 +39,8 @@ static int MYDEBUG = 0;
 #else
 static int MYDEBUG = 0;
 #endif
+
+using namespace std;
 
 static TCollection_AsciiString NotPublishedObjectName()
 {
@@ -61,10 +64,10 @@ namespace SMESH
       SMESH_Gen_i* aSMESHGen = SMESH_Gen_i::GetSMESHGen();
       SALOMEDS::Study_ptr aStudy = aSMESHGen->GetCurrentStudy();
       if(!aStudy->_is_nil()){
-	std::string aString = myStream.str();
-	TCollection_AsciiString aCollection(Standard_CString(aString.c_str()));
-	aSMESHGen->AddToPythonScript(aStudy->StudyId(),aCollection);
-	if(MYDEBUG) MESSAGE(aString);
+        string aString = myStream.str();
+	      TCollection_AsciiString aCollection(Standard_CString(aString.c_str()));
+	      aSMESHGen->AddToPythonScript(aStudy->StudyId(),aCollection);
+	      if(MYDEBUG) MESSAGE(aString);
       }
     }
   }
@@ -171,11 +174,12 @@ namespace SMESH
     SMESH_Gen_i* aSMESHGen = SMESH_Gen_i::GetSMESHGen();
     SALOMEDS::Study_ptr aStudy = aSMESHGen->GetCurrentStudy();
     SALOMEDS::SObject_var aSObject = SMESH_Gen_i::ObjectToSObject(aStudy,theArg);
-    if(!aSObject->_is_nil()) {
+    if(!aSObject->_is_nil())
       myStream << aSObject->GetID();
-    } else if ( !CORBA::is_nil(theArg)) {
-      if ( aSMESHGen->CanPublishInStudy( theArg )) // not published SMESH object
+    else if ( !CORBA::is_nil(theArg)) {
+      if ( aSMESHGen->CanPublishInStudy( theArg )) { // not published SMESH object
         myStream << "smeshObj_" << size_t(theArg);
+      }
       else
         myStream << NotPublishedObjectName();
     }
@@ -458,6 +462,34 @@ Engines::TMPFile* SMESH_Gen_i::DumpPython (CORBA::Object_ptr theStudy,
   aScript += DumpPython_impl(aStudy->StudyId(), aMap, aMapNames,
                              isPublished, isValidScript, aSavedTrace);
 
+  //inserting export for Object Names
+  TCollection_AsciiString def = "def RebuildData(theStudy):\n";
+  int pos = aScript.Search( def );
+  if ( pos != -1 )
+  {    
+    //insert global definition
+    TCollection_AsciiString glob;
+    for( Resource_DataMapIteratorOfDataMapOfAsciiStringAsciiString It(aMap);
+      It.More(); It.Next() )
+    {      
+      TCollection_AsciiString name = It.Value();
+      //check valid name
+      if ( !name.IsEmpty() && name.Search(' ') == -1 && name.Search( ':' ) == -1
+        && !name.IsIntegerValue() && !name.IsEqual("Hypotheses") && !name.IsEqual("Algorithms") )
+      {
+        if ( glob.Length() > 0 )
+          glob += ',';
+        glob += name;
+      }
+    }
+    if ( glob.Length() > 0 )
+    {
+      glob.Prepend( "\tglobal " );
+      glob += '\n';
+    }
+
+    aScript.Insert( pos + def.Length(), glob );
+  }
   int aLen = aScript.Length(); 
   unsigned char* aBuffer = new unsigned char[aLen+1];
   strcpy((char*)aBuffer, aScript.ToCString());

@@ -74,6 +74,8 @@
 #include <TopoDS_Shape.hxx>
 #include <TopExp_Explorer.hxx>
 
+using namespace std;
+
 //================================================================================
 /*!
  * \brief Constructor

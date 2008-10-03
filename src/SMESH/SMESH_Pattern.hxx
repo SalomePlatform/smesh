@@ -21,8 +21,6 @@
 // Created   : Mon Aug  2 10:30:00 2004
 // Author    : Edward AGAPOV (eap)
 
-using namespace std;
-
 #ifndef SMESH_Pattern_HeaderFile
 #define SMESH_Pattern_HeaderFile
 
@@ -248,51 +246,51 @@ private:
   bool setShapeToMesh(const TopoDS_Shape& theShape);
   // Set a shape to be meshed. Return True if meshing is possible
 
-  list< TPoint* > & getShapePoints(const TopoDS_Shape& theShape);
+  std::list< TPoint* > & getShapePoints(const TopoDS_Shape& theShape);
   // Return list of points located on theShape.
   // A list of edge-points include vertex-points (for 2D pattern only).
   // A list of face-points doesnt include edge-points.
   // A list of volume-points doesnt include face-points.
 
-  list< TPoint* > & getShapePoints(const int theShapeID);
+  std::list< TPoint* > & getShapePoints(const int theShapeID);
   // Return list of points located on the shape
 
   bool findBoundaryPoints();
   // If loaded from file, find points to map on edges and faces and
   // compute their parameters
 
-  void arrangeBoundaries (list< list< TPoint* > >& boundaryPoints);
+  void arrangeBoundaries (std::list< std::list< TPoint* > >& boundaryPoints);
   // if there are several wires, arrange boundaryPoints so that
   // the outer wire goes first and fix inner wires orientation;
   // update myKeyPointIDs to correspond to the order of key-points
   // in boundaries; sort internal boundaries by the nb of key-points
 
-  void computeUVOnEdge( const TopoDS_Edge& theEdge, const list< TPoint* > & ePoints );
+  void computeUVOnEdge( const TopoDS_Edge& theEdge, const std::list< TPoint* > & ePoints );
   // compute coordinates of points on theEdge
 
-  bool compUVByIsoIntersection (const list< list< TPoint* > >& boundaryPoints,
+  bool compUVByIsoIntersection (const std::list< std::list< TPoint* > >& boundaryPoints,
                                 const gp_XY&                   theInitUV,
                                 gp_XY&                         theUV,
                                 bool &                         theIsDeformed);
   // compute UV by intersection of iso-lines found by points on edges
 
-  bool compUVByElasticIsolines(const list< list< TPoint* > >& boundaryPoints,
-                               const list< TPoint* >&         pointsToCompute);
+  bool compUVByElasticIsolines(const std::list< std::list< TPoint* > >& boundaryPoints,
+                               const std::list< TPoint* >&         pointsToCompute);
   // compute UV as nodes of iso-poly-lines consisting of
   // segments keeping relative size as in the pattern
 
-  double setFirstEdge (list< TopoDS_Edge > & theWire, int theFirstEdgeID);
+  double setFirstEdge (std::list< TopoDS_Edge > & theWire, int theFirstEdgeID);
   // choose the best first edge of theWire; return the summary distance
   // between point UV computed by isolines intersection and
   // eventual UV got from edge p-curves
 
-  typedef list< list< TopoDS_Edge > > TListOfEdgesList;
+  typedef std::list< std::list< TopoDS_Edge > > TListOfEdgesList;
 
   bool sortSameSizeWires (TListOfEdgesList &                theWireList,
                           const TListOfEdgesList::iterator& theFromWire,
                           const TListOfEdgesList::iterator& theToWire,
                           const int                         theFirstEdgeID,
-                          list< list< TPoint* > >&          theEdgesPointsList );
+                          std::list< std::list< TPoint* > >& theEdgesPointsList );
   // sort wires in theWireList from theFromWire until theToWire,
   // the wires are set in the order to correspond to the order
   // of boundaries; after sorting, edges in the wires are put
@@ -354,7 +352,7 @@ private:
   // all functions assure that shapes are indexed so that first go
   // ordered vertices, then ordered edge, then faces and maybe a shell
   TopTools_IndexedMapOfOrientedShape   myShapeIDMap;
-  std::map< int, list< TPoint* > >     myShapeIDToPointsMap;
+  std::map< int, std::list< TPoint* > >     myShapeIDToPointsMap;
 
   // for the 2d case:
   // nb of key-points in each of pattern boundaries

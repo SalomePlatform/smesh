@@ -46,7 +46,7 @@ enum TSideID { BOTTOM_SIDE=0, RIGHT_SIDE, TOP_SIDE, LEFT_SIDE, NB_SIDES };
 typedef uvPtStruct UVPtStruct;
 typedef struct faceQuadStruct
 {
-  vector< StdMeshers_FaceSide*> side;
+  std::vector< StdMeshers_FaceSide*> side;
   bool isEdgeOut[4]; // true, if an edge has more nodes, than the opposite
   UVPtStruct* uv_grid;
   ~faceQuadStruct();

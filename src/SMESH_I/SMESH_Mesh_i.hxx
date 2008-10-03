@@ -331,7 +331,7 @@ public:
   SMESH::SMESH_subMesh_ptr getSubMesh(int shapeID);
   // return an existing subMesh object for the shapeID. shapeID == submeshID.
 
-  const map<int, SMESH::SMESH_GroupBase_ptr>& getGroups() { return _mapGroups; }
+  const std::map<int, SMESH::SMESH_GroupBase_ptr>& getGroups() { return _mapGroups; }
   // return an existing group object.
 
   /*!
@@ -446,8 +446,8 @@ public:
    */
   virtual SALOME_MED::MedFileInfo* GetMEDFileInfo();
 
-  map<int, SMESH_subMesh_i*> _mapSubMesh_i; //NRI
-  map<int, ::SMESH_subMesh*> _mapSubMesh;   //NRI
+  std::map<int, SMESH_subMesh_i*> _mapSubMesh_i; //NRI
+  std::map<int, ::SMESH_subMesh*> _mapSubMesh;   //NRI
 
 private:
 
@@ -456,9 +456,9 @@ private:
   SMESH_Gen_i* _gen_i;
   int _id;          // id given by creator (unique within the creator instance)
   int _studyId;
-  map<int, SMESH::SMESH_subMesh_ptr>    _mapSubMeshIor;
-  map<int, SMESH::SMESH_GroupBase_ptr>  _mapGroups;
-  map<int, SMESH::SMESH_Hypothesis_ptr> _mapHypo;
+  std::map<int, SMESH::SMESH_subMesh_ptr>    _mapSubMeshIor;
+  std::map<int, SMESH::SMESH_GroupBase_ptr>  _mapGroups;
+  std::map<int, SMESH::SMESH_Hypothesis_ptr> _mapHypo;
   SALOME_MED::MedFileInfo_var myFileInfo;
 };
 

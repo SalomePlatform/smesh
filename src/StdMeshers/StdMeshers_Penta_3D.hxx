@@ -97,7 +97,7 @@ protected:
   TopTools_IndexedMapOfOrientedShape myShapeIDMap;
   SMESH_Block                        myTBlock;
   TopoDS_Shape                       myEmptyShape;
-  vector<int>                        myIsEdgeForward;
+  std::vector<int>                   myIsEdgeForward;
   //
   int myErrorStatus;
 };
@@ -214,10 +214,10 @@ class STDMESHERS_EXPORT StdMeshers_Penta_3D {
 
     void MakeNodes();
 
-    double SetHorizEdgeXYZ(const gp_XYZ&                  aBNXYZ,
-                           const int                      aFaceID,
-                           vector<const SMDS_MeshNode*>*& aCol1,
-                           vector<const SMDS_MeshNode*>*& aCol2);
+    double SetHorizEdgeXYZ(const gp_XYZ&                       aBNXYZ,
+                           const int                           aFaceID,
+                           std::vector<const SMDS_MeshNode*>*& aCol1,
+                           std::vector<const SMDS_MeshNode*>*& aCol2);
 
     void ShapeSupportID(const bool theIsUpperLayer,
 			const SMESH_Block::TShapeID theBNSSID,
@@ -256,14 +256,14 @@ class STDMESHERS_EXPORT StdMeshers_Penta_3D {
     void *                    myMesh;
     SMESH_ComputeErrorPtr     myErrorStatus;
     //
-    vector <StdMeshers_TNode> myTNodes;
+    std::vector <StdMeshers_TNode> myTNodes;
     int                       myISize;
     int                       myJSize;
     double                    myTol3D;        // Tolerance value     
     std::map < int, int >     myConnectingMap;
     //
-    vector<StdMeshers_IJNodeMap> myWallNodesMaps; // nodes on a face
-    vector<gp_XYZ>            myShapeXYZ; // point on each sub-shape
+    std::vector<StdMeshers_IJNodeMap> myWallNodesMaps; // nodes on a face
+    std::vector<gp_XYZ>            myShapeXYZ; // point on each sub-shape
 
     bool myCreateQuadratic;
     SMESH_MesherHelper* myTool; // tool building quadratic elements

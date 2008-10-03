@@ -35,7 +35,7 @@
 #include CORBA_SERVER_HEADER(SALOME_Component)
 #include CORBA_SERVER_HEADER(SALOME_Exception)
 
-#include "OpUtil.hxx"
+#include "Basics_Utils.hxx"
 #include "utilities.h"
 
 #ifdef WNT
@@ -59,6 +59,8 @@ static int MYDEBUG = 0;
 #else
 static int MYDEBUG = 0;
 #endif
+
+using namespace std;
 
 namespace
 {
@@ -591,7 +593,7 @@ SMESH_Client::GetSMESHGen(CORBA::ORB_ptr theORB,
     Engines::Component_var aComponent = aLifeCycleCORBA.FindOrLoad_Component("FactoryServer","SMESH");
     aMeshGen = SMESH::SMESH_Gen::_narrow(aComponent);
     
-    std::string aClientHostName = GetHostname();
+    std::string aClientHostName = Kernel_Utils::GetHostname();
     Engines::Container_var aServerContainer = aMeshGen->GetContainerRef();
     CORBA::String_var aServerHostName = aServerContainer->getHostName();
     CORBA::Long aServerPID = aServerContainer->getPID();

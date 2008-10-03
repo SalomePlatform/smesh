@@ -49,6 +49,7 @@ static int MYDEBUG = 0;
 #define _EDF_NODE_IDS_
 
 using namespace MED;
+using namespace std;
 
 void
 DriverMED_R_SMESHDS_Mesh

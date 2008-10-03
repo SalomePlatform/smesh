@@ -29,6 +29,8 @@
 
 #include "StdMeshers_SegmentAroundVertex_0D.hxx"
 
+using namespace std;
+
 //=======================================================================
 //function : StdMeshers_SegmentAroundVertex_0D
 //purpose  : 

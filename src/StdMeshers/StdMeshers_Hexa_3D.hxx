@@ -92,7 +92,7 @@ protected:
 
   int GetFaceIndex(SMESH_Mesh& aMesh,
 		   const TopoDS_Shape& aShape,
-		   const vector<SMESH_subMesh*>& meshFaces,
+		   const std::vector<SMESH_subMesh*>& meshFaces,
 		   const TopoDS_Vertex& V0,
 		   const TopoDS_Vertex& V1,
 		   const TopoDS_Vertex& V2,

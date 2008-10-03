@@ -46,6 +46,8 @@
 #include <NCollection_Array1.hxx>
 typedef NCollection_Array1<TColStd_SequenceOfInteger> StdMeshers_Array1OfSequenceOfInteger;
 
+using namespace std;
+
 
 //=======================================================================
 //function : StdMeshers_QuadToTriaAdaptor

@@ -53,6 +53,8 @@
 
 #include "utilities.h"
 
+using namespace std;
+
 //================================================================================
 /*!
  * \brief Constructor of a side of one edge

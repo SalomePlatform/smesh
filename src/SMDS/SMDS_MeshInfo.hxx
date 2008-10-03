@@ -2,8 +2,6 @@
 // Created   : Mon Sep 24 18:32:41 2007
 // Author    : Edward AGAPOV (eap)
 
-using namespace std;
-
 #ifndef SMDS_MeshInfo_HeaderFile
 #define SMDS_MeshInfo_HeaderFile
 
@@ -57,8 +55,8 @@ private:
   int myNbPrisms  , myNbQuadPrisms  ;
   int myNbPolyhedrons;
 
-  vector<int*> myNb; // pointers to myNb... fields
-  vector<int>  myShift; // shift to get an index in myNb by elem->NbNodes()
+  std::vector<int*> myNb; // pointers to myNb... fields
+  std::vector<int>  myShift; // shift to get an index in myNb by elem->NbNodes()
 };
 
 inline SMDS_MeshInfo::SMDS_MeshInfo():

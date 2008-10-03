@@ -115,10 +115,10 @@ class SMESH_EXPORT SMESH_Block: public math_FunctionSetWithDerivatives
   // ShapeIndex( ID_Ex00 ) == 0
   // ShapeIndex( ID_Ex10 ) == 1
 
-  static void GetFaceEdgesIDs (const int faceID, vector< int >& edgeVec );
+  static void GetFaceEdgesIDs (const int faceID, std::vector< int >& edgeVec );
   // return edges IDs of a face in the order u0, u1, 0v, 1v
 
-  static void GetEdgeVertexIDs (const int edgeID, vector< int >& vertexVec );
+  static void GetEdgeVertexIDs (const int edgeID, std::vector< int >& vertexVec );
   // return vertex IDs of an edge
 
   static int GetCoordIndOnEdge (const int theEdgeID)
@@ -161,7 +161,7 @@ class SMESH_EXPORT SMESH_Block: public math_FunctionSetWithDerivatives
   bool LoadMeshBlock(const SMDS_MeshVolume*        theVolume,
                      const int                     theNode000Index,
                      const int                     theNode001Index,
-                     vector<const SMDS_MeshNode*>& theOrderedNodes);
+                     std::vector<const SMDS_MeshNode*>& theOrderedNodes);
   // prepare to work with theVolume and
   // return nodes in theVolume corners in the order of TShapeID enum
 
@@ -225,7 +225,7 @@ public:
   // return coordinates of a point in shell
 
   static bool ShellPoint(const gp_XYZ&         theParams,
-                         const vector<gp_XYZ>& thePointOnShape,
+                         const std::vector<gp_XYZ>& thePointOnShape,
                          gp_XYZ&               thePoint );
   // computes coordinates of a point in shell by points on sub-shapes
   // and point parameters.
@@ -377,7 +377,7 @@ public:
   gp_XYZ   myParam; // the best parameters guess
   double   myValues[ 4 ]; // values computed at myParam: square distance and 3 derivatives
 
-  typedef pair<gp_XYZ,gp_XYZ> TxyzPair;
+  typedef std::pair<gp_XYZ,gp_XYZ> TxyzPair;
   TxyzPair my3x3x3GridNodes[ 27 ]; // to compute the first param guess
   bool     myGridComputed;
 };

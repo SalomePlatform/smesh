@@ -17,8 +17,6 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 
-using namespace std;
-
 #ifndef SMESHGUI_VTKUtils_HeaderFile
 #define SMESHGUI_VTKUtils_HeaderFile
 
@@ -61,7 +59,7 @@ class SALOME_Actor;
 namespace SMESH {
 
   //----------------------------------------------------------------------------
-  typedef pair<int,string> TKeyOfVisualObj;
+  typedef std::pair<int,std::string> TKeyOfVisualObj;
   
 SMESHGUI_EXPORT
   TVisualObjPtr GetVisualObj(int theStudyId, 

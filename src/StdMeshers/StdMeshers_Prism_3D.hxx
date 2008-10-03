@@ -242,10 +242,10 @@ private:
     BRepAdaptor_Surface             mySurface;
     TopoDS_Edge                     myBaseEdge;
     // first and last normalized params and orientaion for each component or it-self
-    vector< pair< double, double> > myParams;
-    bool                            myIsForward;
-    vector< TSideFace* >            myComponents;
-    SMESH_MesherHelper *            myHelper;
+    std::vector< std::pair< double, double> > myParams;
+    bool                                      myIsForward;
+    std::vector< TSideFace* >                 myComponents;
+    SMESH_MesherHelper *                      myHelper;
   public:
     TSideFace( SMESH_MesherHelper* helper,
                const int           faceID,
@@ -255,7 +255,7 @@ private:
                const double        first = 0.0,
                const double        last = 1.0);
     TSideFace( const std::vector< TSideFace* >&             components,
-               const std::vector< pair< double, double> > & params);
+               const std::vector< std::pair< double, double> > & params);
     TSideFace( const TSideFace& other );
     ~TSideFace();
     bool IsComplex() const
@@ -347,9 +347,9 @@ private:
   // container of 4 side faces
   TSideFace*                 mySide; 
   // node columns for each base edge
-  vector< TParam2ColumnMap > myParam2ColumnMaps;
+  std::vector< TParam2ColumnMap > myParam2ColumnMaps;
   // to find a column for a node by edge SMESHDS Index
-  map< int, pair< TParam2ColumnMap*, bool > > myShapeIndex2ColumnMap;
+  std::map< int, std::pair< TParam2ColumnMap*, bool > > myShapeIndex2ColumnMap;
 
   SMESH_ComputeErrorPtr myError;
   /*!
@@ -395,7 +395,7 @@ public:
     * \param nodeColumns - columns of nodes generated from nodes of a mesh face
     * \param helper - helper initialized by mesh and shape to add prisms to
    */
-  static void AddPrisms( vector<const TNodeColumn*> & nodeColumns,
+  static void AddPrisms( std::vector<const TNodeColumn*> & nodeColumns,
                          SMESH_MesherHelper*          helper);
 
 private:
@@ -430,7 +430,7 @@ private:
   StdMeshers_PrismAsBlock myBlock;
   SMESH_MesherHelper*     myHelper;
 
-  vector<gp_XYZ>            myShapeXYZ; // point on each sub-shape
+  std::vector<gp_XYZ>            myShapeXYZ; // point on each sub-shape
 
   // map of bottom nodes to the column of nodes above them
   // (the column includes the bottom node)

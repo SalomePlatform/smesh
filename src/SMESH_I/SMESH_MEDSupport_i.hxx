@@ -31,7 +31,6 @@
 
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(MED)
-#include <string>
 
 #include "SMESHDS_Mesh.hxx"
 #include "SMESHDS_SubMesh.hxx"
@@ -40,6 +39,7 @@
 
 #include "SMESH_MEDSupport_i.hxx"
 #include "SALOME_GenericObj_i.hh"
+#include <string>
 class SMESH_subMesh_i;
 
 class SMESH_I_EXPORT SMESH_MEDSupport_i:
@@ -49,7 +49,7 @@ class SMESH_I_EXPORT SMESH_MEDSupport_i:
 
 // Constructors and associated internal methods
 	SMESH_MEDSupport_i(SMESH_subMesh_i * sm,
-		string name, string description, SALOME_MED::medEntityMesh entity);
+    std::string name, std::string description, SALOME_MED::medEntityMesh entity);
 	SMESH_MEDSupport_i(const SMESH_MEDSupport_i & s);
 
 // IDL Methods
@@ -102,8 +102,8 @@ class SMESH_I_EXPORT SMESH_MEDSupport_i:
 	::SMESH_subMesh_i * _subMesh_i;
 
 	SMESHDS_Mesh * _meshDS;
-	string _name;
-	string _description;
+	std::string _name;
+	std::string _description;
 	bool _isOnAllElements;
 	bool _seqNumber;
 	int _seqLength;

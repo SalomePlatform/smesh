@@ -47,6 +47,8 @@ static int MYDEBUG = 0;
 static int MYDEBUG = 0;
 #endif
 
+using namespace std;
+
 //=============================================================================
 /*!
  *  Get...Tag [ static ]

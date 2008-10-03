@@ -94,6 +94,8 @@
 #include <vector>
 #include <set>
 
+using namespace std;
+
 
 #define SPACING 5
 #define MARGIN  10

@@ -47,6 +47,7 @@
 #include <set>
 
 using SMESH::TPythonDump;
+using namespace std;
 
 //=======================================================================
 //function : dumpErrorCode

@@ -69,6 +69,8 @@ static int MYDEBUG = 0;
 static int MYDEBUG = 0;
 #endif
 
+using namespace std;
+
 #define cSMESH_Hyp(h) static_cast<const SMESH_Hypothesis*>(h)
 
 typedef SMESH_HypoFilter THypType;

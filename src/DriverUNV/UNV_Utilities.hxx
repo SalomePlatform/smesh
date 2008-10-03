@@ -30,15 +30,13 @@
 #include <cassert>
 
 namespace UNV{
-  using namespace std;
-
   class MESHDRIVERUNV_EXPORT PrefixPrinter{
     static int myCounter;
   public:
     PrefixPrinter();
     ~PrefixPrinter();
 
-    static string GetPrefix();
+    static std::string GetPrefix();
   };
 
   /**

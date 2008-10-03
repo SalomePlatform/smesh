@@ -26,7 +26,6 @@
 //  Module : SMESH
 //  $Header$
 
-using namespace std;
 #include "SMESH_2D_Algo.hxx"
 #include "SMESH_Gen.hxx"
 

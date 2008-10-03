@@ -52,6 +52,8 @@
 #include <TopExp_Explorer.hxx>
 #include <TopoDS.hxx>
 
+using namespace std;
+
 #define RETURN_BAD_RESULT(msg) { MESSAGE(")-: Error: " << msg); return false; }
 #define gpXYZ(n) gp_XYZ(n->X(),n->Y(),n->Z())
 #define SHOWYXZ(msg, xyz) // {\

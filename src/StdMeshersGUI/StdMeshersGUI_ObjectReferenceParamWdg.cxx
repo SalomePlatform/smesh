@@ -40,6 +40,8 @@
 #include "SALOME_ListIO.hxx"
 #include "SALOMEDSClient_SObject.hxx"
 
+using namespace std;
+
 //================================================================================
 /*!
  * \brief Constructor initialized by filter

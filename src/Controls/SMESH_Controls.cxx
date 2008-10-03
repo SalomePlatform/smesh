@@ -51,6 +51,8 @@
 #include "SMDS_QuadraticFaceOfNodes.hxx"
 #include "SMDS_QuadraticEdge.hxx"
 
+using namespace std;
+
 
 /*
                             AUXILIARY METHODS

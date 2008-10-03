@@ -67,6 +67,8 @@
 #define SPACING 5
 #define MARGIN  10
 
+using namespace std;
+
 /*!
   \class BusyLocker
   \brief Simple 'busy state' flag locker.
