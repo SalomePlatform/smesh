@@ -721,7 +721,7 @@ SMESH_DeviceActor
 {
   vtkDataSet* aDataSet = myMergeFilter->GetOutput();
   vtkIdType anID = myVisualObj->GetNodeVTKId(theObjID);
-  vtkFloatingPointType* aCoord = aDataSet->GetPoint(anID);
+  vtkFloatingPointType* aCoord = (anID >=0) ? aDataSet->GetPoint(anID) : NULL;
   if(MYDEBUG) MESSAGE("GetNodeCoord - theObjID = "<<theObjID<<"; anID = "<<anID);
   return aCoord;
 }
@@ -757,7 +757,7 @@ SMESH_DeviceActor
 {
   vtkDataSet* aDataSet = myVisualObj->GetUnstructuredGrid();
   vtkIdType aGridID = myVisualObj->GetElemVTKId(theObjID);
-  vtkCell* aCell = aDataSet->GetCell(aGridID);
+  vtkCell* aCell = (aGridID >= 0 ) ? aDataSet->GetCell(aGridID) : NULL;
   if(MYDEBUG) 
     MESSAGE("GetElemCell - theObjID = "<<theObjID<<"; aGridID = "<<aGridID);
   return aCell;
