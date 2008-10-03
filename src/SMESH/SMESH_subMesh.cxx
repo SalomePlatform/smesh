@@ -2079,6 +2079,7 @@ namespace {
               SMESH_subMesh*                 append): myIt(subIt),myAppend(append)
     {
       myCur = prepend ? prepend : myIt->more() ? myIt->next() : append;
+      if ( myCur == append ) append = 0;
     }
     /// Return true if and only if there are other object in this iterator
     virtual bool more()
