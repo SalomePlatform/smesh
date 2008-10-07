@@ -54,7 +54,7 @@ class QListBox;
 class QListBoxItem;
 class SMESHGUI;
 
-typedef map<std::string, int> MapIOR;
+typedef std::map<std::string, int> MapIOR;
 
 //=================================================================================
 // class    : SMESHGUI_EditHypothesesDlg

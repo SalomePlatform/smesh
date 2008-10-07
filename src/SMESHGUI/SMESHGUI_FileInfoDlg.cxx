@@ -26,8 +26,6 @@
 
 #include <SMESHGUI_FileInfoDlg.h>
 
-#include <MED_Common.hxx>
-
 #include <qlayout.h>
 #include <qlabel.h>
 #include <qlineedit.h>

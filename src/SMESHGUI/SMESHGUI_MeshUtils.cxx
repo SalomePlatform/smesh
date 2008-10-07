@@ -56,7 +56,7 @@ namespace SMESH
       QString name = baseName;
       while ( !aStudy->FindObjectByName( name.latin1(), "SMESH" ).empty() ) {
         int nb = 0;
-        if ( name[ name.length()-1 ].isNumber() ) {
+        if ( name.at( name.length()-1 ).isNumber() ) {
           int nbBeg = name.findRev("_");
           nb = name.right( name.length() - nbBeg - 1 ).toInt();
           name = name.left( nbBeg );
