@@ -85,7 +85,7 @@ SMESHGUI_RemoveElementsDlg
 {
   setModal( false );
   setAttribute( Qt::WA_DeleteOnClose, true );
-  setWindowTitle(tr("SMESH_REMOVE_NODES_TITLE"));
+  setWindowTitle(tr("SMESH_REMOVE_ELEMENTS_TITLE"));
   setSizeGripEnabled(true);
   
   QPixmap image0 (SMESH::GetResourceMgr( mySMESHGUI )->loadPixmap("SMESH", tr("ICON_DLG_REM_ELEMENT")));
