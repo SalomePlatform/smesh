@@ -1111,6 +1111,9 @@ void SMESHGUI_EditMeshDlg::DeactivateActiveDialog()
     mySMESHGUI->ResetState();
     mySMESHGUI->SetActiveDialogBox(0);
   }
+
+  mySelectionMgr->clearSelected();
+  disconnect(mySelectionMgr, 0, this, 0);
 }
 
 //=================================================================================
@@ -1127,6 +1130,7 @@ void SMESHGUI_EditMeshDlg::ActivateThisDialog()
   GroupEdit->setEnabled(true);
   GroupButtons->setEnabled(true);
 
+  connect(mySelectionMgr, SIGNAL(currentSelectionChanged()), this, SLOT(SelectionIntoArgument()));
   mySMESHGUI->SetActiveDialogBox((QDialog*)this);
   SelectionIntoArgument();
 }
