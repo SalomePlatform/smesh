@@ -854,6 +854,7 @@ void SMESHGUI_FilterLibraryDlg::onFilterChanged()
     myTable->AddCriterion(aCriteria[ i ], myTable->GetType());
 
   myTable->Update();
+  updateControlsVisibility(); // IPAL19974
 }
 
 //=======================================================================

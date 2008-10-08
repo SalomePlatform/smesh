@@ -1691,6 +1691,21 @@ void SMESHGUI_FilterTable::SetEditable (const bool isEditable)
   {
     anIter.value()->setReadOnly(!isEditable);
 
+    // Set Flags for CheckItems directly IPAL 19974
+    Table* aTable = anIter.value();
+    for (int i = 0, n = aTable->rowCount(); i < n; i++)
+      for (int j = 0, m = aTable->columnCount(); j < m; j++)
+	{
+	  QTableWidgetItem* anItem = aTable->item(i, j);
+	  if ( dynamic_cast<SMESHGUI_FilterTable::CheckItem*>( anItem ) ) {
+	    Qt::ItemFlags f = anItem->flags();
+	    if (!isEditable) f = f & ~Qt::ItemIsUserCheckable;
+	    else f = f | Qt::ItemIsUserCheckable;
+	    anItem->setFlags( f );
+	  }
+	}
+    //end of IPAL19974
+
     if (isEditable)
     {
       myAddBtn->show();
