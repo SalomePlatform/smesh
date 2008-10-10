@@ -18,8 +18,6 @@
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 
-using namespace std;
-
 #include "StdMeshersGUI_DistrPreview.h"
 
 #include <Expr_NamedUnknown.hxx>
