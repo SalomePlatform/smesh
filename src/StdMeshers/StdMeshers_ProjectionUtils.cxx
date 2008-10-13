@@ -66,6 +66,7 @@
 
 using namespace std;
 
+
 #define RETURN_BAD_RESULT(msg) { MESSAGE(")-: Error: " << msg); return false; }
 #define SHOW_VERTEX(v,msg) // { \
 //  if ( v.IsNull() ) cout << msg << " NULL SHAPE" << endl; \
@@ -1634,7 +1635,17 @@ bool StdMeshers_ProjectionUtils::MakeComputed(SMESH_subMesh * sm, const int iter
   SMESH_Gen* gen   = mesh->GetGen();
   SMESH_Algo* algo = gen->GetAlgo( *mesh, sm->GetSubShape() );
   if ( !algo )
-    RETURN_BAD_RESULT("No algo assigned to submesh " << sm->GetId());
+  {
+    if ( sm->GetSubShape().ShapeType() != TopAbs_COMPOUND )
+      RETURN_BAD_RESULT("No algo assigned to submesh " << sm->GetId());
+    // group
+    bool computed = true;
+    for ( TopoDS_Iterator grMember( sm->GetSubShape() ); grMember.More(); grMember.Next())
+      if ( SMESH_subMesh* grSub = mesh->GetSubMesh( grMember.Value() ))
+        if ( !MakeComputed( grSub, iterationNb + 1 ))
+          computed = false;
+    return computed;
+  }
 
   string algoType = algo->GetName();
   if ( algoType.substr(0, 11) != "Projection_")
@@ -1678,7 +1689,10 @@ bool StdMeshers_ProjectionUtils::MakeComputed(SMESH_subMesh * sm, const int iter
   if ( !srcMesh )
     srcMesh = mesh;
 
-  return MakeComputed( srcMesh->GetSubMesh( srcShape ), iterationNb + 1 );
+  if ( MakeComputed( srcMesh->GetSubMesh( srcShape ), iterationNb + 1 ))
+    return gen->Compute( *mesh, sm->GetSubShape() );
+
+  return false;
 }
 
 //================================================================================
