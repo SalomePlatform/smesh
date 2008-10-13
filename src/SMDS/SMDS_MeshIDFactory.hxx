@@ -35,9 +35,10 @@
 
 class SMDS_EXPORT SMDS_MeshIDFactory:public SMDS_MeshObject
 {
-  public:
-	virtual int GetFreeID();
-	virtual void ReleaseID(int ID);
+public:
+  virtual int  GetFreeID();
+  virtual void ReleaseID(int ID);
+  virtual void Clear();
 
   protected:
 	SMDS_MeshIDFactory();

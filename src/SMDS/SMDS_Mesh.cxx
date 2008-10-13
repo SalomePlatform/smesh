@@ -1843,6 +1843,20 @@ SMDS_Mesh::~SMDS_Mesh()
     itc++;
   }
 
+  if(myParent==NULL)
+  {
+    delete myNodeIDFactory;
+    delete myElementIDFactory;
+  }
+  else
+  {
+    SMDS_ElemIteratorPtr eIt = elementsIterator();
+    while ( eIt->more() )
+      myElementIDFactory->ReleaseID(eIt->next()->GetID());
+    SMDS_NodeIteratorPtr itn = nodesIterator();
+    while (itn->more())
+      myNodeIDFactory->ReleaseID(itn->next()->GetID());
+  }
   SetOfNodes::Iterator itn(myNodes);
   for (; itn.More(); itn.Next())
     delete itn.Value();
@@ -1851,8 +1865,6 @@ SMDS_Mesh::~SMDS_Mesh()
   for (; ite.More(); ite.Next())
   {
     SMDS_MeshElement* elem = ite.Value();
-    if(myParent!=NULL)
-      myElementIDFactory->ReleaseID(elem->GetID());
     delete elem;
   }
 
@@ -1860,8 +1872,6 @@ SMDS_Mesh::~SMDS_Mesh()
   for (; itf.More(); itf.Next())
   {
     SMDS_MeshElement* elem = itf.Value();
-    if(myParent!=NULL)
-      myElementIDFactory->ReleaseID(elem->GetID());
     delete elem;
   }
 
@@ -1869,16 +1879,56 @@ SMDS_Mesh::~SMDS_Mesh()
   for (; itv.More(); itv.Next())
   {
     SMDS_MeshElement* elem = itv.Value();
-    if(myParent!=NULL)
-      myElementIDFactory->ReleaseID(elem->GetID());
     delete elem;
   }
 
-  if(myParent==NULL)
-  {
-    delete myNodeIDFactory;
-    delete myElementIDFactory;
+}
+
+//================================================================================
+/*!
+ * \brief Clear all data
+ */
+//================================================================================
+
+void SMDS_Mesh::Clear()
+{
+  if (myParent!=NULL) {
+    SMDS_ElemIteratorPtr eIt = elementsIterator();
+    while ( eIt->more() )
+      myElementIDFactory->ReleaseID(eIt->next()->GetID());
+    SMDS_NodeIteratorPtr itn = nodesIterator();
+    while (itn->more())
+      myNodeIDFactory->ReleaseID(itn->next()->GetID());
   }
+  else {
+    myNodeIDFactory->Clear();
+    myElementIDFactory->Clear();
+  }
+  SMDS_VolumeIteratorPtr itv = volumesIterator();
+  while (itv->more())
+    delete itv->next();
+  myVolumes.Clear();
+
+  SMDS_FaceIteratorPtr itf = facesIterator();
+  while (itf->more())
+    delete itf->next();
+  myFaces.Clear();
+      
+  SMDS_EdgeIteratorPtr ite = edgesIterator();
+  while (ite->more())
+    delete ite->next();
+  myEdges.Clear();
+
+  SMDS_NodeIteratorPtr itn = nodesIterator();
+  while (itn->more())
+    delete itn->next();
+  myNodes.Clear();
+
+  list<SMDS_Mesh*>::iterator itc=myChildren.begin();
+  while(itc!=myChildren.end())
+    (*itc)->Clear();
+
+  myInfo = SMDS_MeshInfo();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

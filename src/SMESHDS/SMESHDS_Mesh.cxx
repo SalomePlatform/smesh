@@ -769,13 +769,11 @@ void SMESHDS_Mesh::RemoveFreeElement(const SMDS_MeshElement * elt, SMESHDS_SubMe
 
   // Rm from group
   // Node can belong to several groups
-  if (!myGroups.empty()) {
-    set<SMESHDS_GroupBase*>::iterator GrIt = myGroups.begin();
-    for (; GrIt != myGroups.end(); GrIt++) {
-      SMESHDS_Group* group = dynamic_cast<SMESHDS_Group*>(*GrIt);
-      if (!group || group->IsEmpty()) continue;
+  set<SMESHDS_GroupBase*>::iterator GrIt = myGroups.begin();
+  for (; GrIt != myGroups.end(); GrIt++) {
+    SMESHDS_Group* group = dynamic_cast<SMESHDS_Group*>(*GrIt);
+    if (group && !group->IsEmpty())
       group->SMDSGroup().Remove(elt);
-    }
   }
 
   // Rm from sub-mesh
@@ -784,6 +782,33 @@ void SMESHDS_Mesh::RemoveFreeElement(const SMDS_MeshElement * elt, SMESHDS_SubMe
     subMesh->RemoveElement(elt);
 
   SMDS_Mesh::RemoveFreeElement(elt);
+}
+
+//================================================================================
+/*!
+ * \brief Remove all data from the mesh
+ */
+//================================================================================
+
+void SMESHDS_Mesh::ClearMesh()
+{
+  myScript->ClearMesh();
+  SMDS_Mesh::Clear();
+
+  // clear submeshes
+  map<int,SMESHDS_SubMesh*>::iterator sub, subEnd = myShapeIndexToSubMesh.end();
+  for ( sub = myShapeIndexToSubMesh.begin(); sub != subEnd; ++sub )
+    sub->second->Clear();
+
+  // clear groups
+  TGroups::iterator group, groupEnd = myGroups.end();
+  for ( group = myGroups.begin(); group != groupEnd; ++group ) {
+    if ( SMESHDS_Group* g = dynamic_cast<SMESHDS_Group*>(*group)) {
+      SMDSAbs_ElementType groupType = g->GetType();
+      g->Clear();
+      g->SetType( groupType );
+    }
+  }
 }
 
 //================================================================================

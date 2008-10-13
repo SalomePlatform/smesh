@@ -727,6 +727,10 @@ SMESH_Client::Update(bool theIsClear)
         case SMESH::ADD_QUADPENTAHEDRON: AddQuadPentasWithID  ( mySMDSMesh, aSeq, anId ); break;
         case SMESH::ADD_QUADHEXAHEDRON : AddQuadHexasWithID   ( mySMDSMesh, aSeq, anId ); break;
 
+        case SMESH::CLEAR_MESH:
+          mySMDSMesh->Clear();
+          break;
+
         case SMESH::REMOVE_NODE:
           for( ; anElemId < aNbElems; anElemId++ )
             mySMDSMesh->RemoveNode( FindNode( mySMDSMesh, anIndexes[anElemId] ) );

@@ -93,6 +93,7 @@ class SMESHDS_EXPORT SMESHDS_Script
                                    std::vector<int> nodes_ids,
                                    std::vector<int> quantities);
 	void Renumber (const bool isNodes, const int startID, const int deltaID);
+	void ClearMesh();
 	void Clear();
 	const std::list<SMESHDS_Command*> & GetCommands();
 

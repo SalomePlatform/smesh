@@ -195,7 +195,7 @@ void SMESH_subMesh::SetIsAlwaysComputed(bool isAlCo)
 bool SMESH_subMesh::IsEmpty() const
 {
   if (SMESHDS_SubMesh * subMeshDS = ((SMESH_subMesh*)this)->GetSubMeshDS())
-    return (!subMeshDS->GetNodes()->more() && !subMeshDS->GetElements()->more());
+    return (!subMeshDS->NbElements() && !subMeshDS->NbNodes());
   return true;
 }
 

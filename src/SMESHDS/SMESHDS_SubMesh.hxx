@@ -62,6 +62,9 @@ class SMESHDS_EXPORT SMESHDS_SubMesh
   SMDS_NodeIteratorPtr GetNodes() const;
   bool Contains(const SMDS_MeshElement * ME) const;      // check if elem or node is in
 
+  // clear the contents
+  void Clear();
+
  private:
   //const SMDS_Mesh * myMesh;
   std::set<const SMDS_MeshElement*> myElements;
