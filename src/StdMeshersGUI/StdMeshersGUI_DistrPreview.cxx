@@ -33,6 +33,12 @@
 #include <Standard_ErrorHandler.hxx>
 #endif
 
+#ifdef WIN32
+# include <algorithm>
+#else
+ using namespace std;
+#endif
+
 StdMeshersGUI_DistrPreview::StdMeshersGUI_DistrPreview( QWidget* p, StdMeshers::StdMeshers_NumberOfSegments_ptr h )
 : QwtPlot( p ),
   myPoints( 50 ),
