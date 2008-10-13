@@ -382,6 +382,8 @@ public:
   void RemoveFreeNode(const SMDS_MeshNode *, SMESHDS_SubMesh *);
   void RemoveFreeElement(const SMDS_MeshElement *, SMESHDS_SubMesh *);
 
+  void ClearMesh();
+
   bool ChangeElementNodes(const SMDS_MeshElement * elem,
                           const SMDS_MeshNode    * nodes[],
                           const int                nbnodes);

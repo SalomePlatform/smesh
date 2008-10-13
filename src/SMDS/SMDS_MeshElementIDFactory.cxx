@@ -167,3 +167,10 @@ SMDS_ElemIteratorPtr SMDS_MeshElementIDFactory::elementsIterator() const
   return SMDS_ElemIteratorPtr
     (new SMDS_Fact_MyElemIterator(myIDElements));
 }
+
+void SMDS_MeshElementIDFactory::Clear()
+{
+  myIDElements.Clear();
+  myMin = myMax = 0;
+  SMDS_MeshIDFactory::Clear();
+}

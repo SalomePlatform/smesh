@@ -81,3 +81,9 @@ void SMDS_MeshIDFactory::ReleaseID(const int ID)
     }
   }
 }
+
+void SMDS_MeshIDFactory::Clear()
+{
+  myMaxID = 0;
+  myPoolOfID.clear();
+}

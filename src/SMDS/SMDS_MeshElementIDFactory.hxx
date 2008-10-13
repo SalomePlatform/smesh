@@ -49,6 +49,7 @@ public:
   int GetMaxID() const;
   int GetMinID() const;
   SMDS_ElemIteratorPtr elementsIterator() const;
+  virtual void Clear();
 private:
   void updateMinMax() const;
   void updateMinMax(int id) const

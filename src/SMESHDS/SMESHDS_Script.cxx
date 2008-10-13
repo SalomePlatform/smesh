@@ -317,7 +317,21 @@ void SMESHDS_Script::Renumber (const bool isNodes, const int startID, const int 
     myIsModified = true;
     return;
   }
-  getCommand(SMESHDS_Renumber)->Renumber( isNodes, startID, deltaID );
+  getCommand(SMESHDS_Renumber);
+}
+
+//=======================================================================
+//function : ClearMesh
+//purpose  : 
+//=======================================================================
+void SMESHDS_Script::ClearMesh ()
+{
+  if(myIsEmbeddedMode){
+    myIsModified = true;
+    return;
+  }
+  Clear();// previous commands become useless to reproduce on client side
+  getCommand(SMESHDS_ClearAll);
 }
 
 //=======================================================================

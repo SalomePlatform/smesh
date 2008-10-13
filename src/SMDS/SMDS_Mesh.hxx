@@ -429,6 +429,8 @@ public:
    *  Implemented for fast cleaning of meshes.
    */
   virtual void RemoveFreeElement(const SMDS_MeshElement * elem);
+
+  virtual void Clear();
   
   virtual bool RemoveFromParent();
   virtual bool RemoveSubMesh(const SMDS_Mesh * aMesh);

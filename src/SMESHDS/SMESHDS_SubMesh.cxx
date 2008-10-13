@@ -311,3 +311,19 @@ SMESHDS_SubMeshIteratorPtr SMESHDS_SubMesh::GetSubMeshIterator() const
     ( new SMDS_SetIterator< const SMESHDS_SubMesh*, TIterator >( mySubMeshes.begin(),
                                                                  mySubMeshes.end()));
 }
+
+//=======================================================================
+//function : Clear
+//purpose  : remove the contents
+//=======================================================================
+
+void SMESHDS_SubMesh::Clear()
+{
+  myElements.clear();
+  myNodes.clear();
+  SMESHDS_SubMeshIteratorPtr sub = GetSubMeshIterator();
+  while ( sub->more() ) {
+    if ( SMESHDS_SubMesh* sm = (SMESHDS_SubMesh*) sub->next())
+      sm->Clear();
+  }
+}
