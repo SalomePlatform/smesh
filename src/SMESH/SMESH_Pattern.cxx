@@ -3804,11 +3804,9 @@ static bool clearSubMesh( SMESH_Mesh*         theMesh,
   bool removed = false;
   if ( SMESH_subMesh * aSubMesh = theMesh->GetSubMeshContaining( theShape ))
   {
-    if ( aSubMesh->GetSubMeshDS() ) {
-      removed =
-        aSubMesh->GetSubMeshDS()->NbElements() || aSubMesh->GetSubMeshDS()->NbNodes();
+    removed = !aSubMesh->IsEmpty();
+    if ( removed )
       aSubMesh->ComputeStateEngine( SMESH_subMesh::CLEAN );
-    }
   }
   else {
     SMESHDS_Mesh* aMeshDS = theMesh->GetMeshDS();
