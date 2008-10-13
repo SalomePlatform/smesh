@@ -109,10 +109,11 @@ QDoubleValidator* SMESHGUI_SpinBox::validator() const
 void SMESHGUI_SpinBox::RangeStepAndValidator( double min,
 					      double max,
 					      double step,
-					      unsigned short decimals )
+					      unsigned short precision )
 {
-  setDecimals(decimals); // PAL8769. Minus is for using 'g' double->string conversion specifier,
-  //                        see QtxDoubleSpinBox::mapValueToText( double v )
-  setRange( min, max );
+  setPrecision(precision*(-1)); // PAL8769. Minus is for using 'g' double->string conversion specifier,
+  //                               see QtxDoubleSpinBox::mapValueToText( double v )
+  setDecimals(32);
+  setRange(min, max);
   setSingleStep( step );
 }
