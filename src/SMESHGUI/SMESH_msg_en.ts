@@ -806,6 +806,10 @@ Please enter correct values and try again</translation>
             <translation>No valid selection</translation>
         </message>
         <message>
+            <source>SMESH_BAD_MESH_SELECTION</source>
+            <translation>No valid mesh selection</translation>
+        </message>
+        <message>
             <source>SMESH_BOUNDARYEDGES</source>
             <translation>Boundary Edges</translation>
         </message>
