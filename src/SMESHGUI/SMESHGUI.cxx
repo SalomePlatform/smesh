@@ -284,221 +284,227 @@ using namespace std;
     if( aSel )
       aSel->selectedObjects( selected );
 
-    if(selected.Extent()){
-      Handle(SALOME_InteractiveObject) anIObject = selected.First();
-      SMESH::SMESH_Mesh_var aMesh = SMESH::IObjectToInterface<SMESH::SMESH_Mesh>(anIObject);
-      if ( !aMesh->_is_nil() ) {
-	QString aFilter, aTitle = QObject::tr("Export mesh");
-	QMap<QString, SMESH::MED_VERSION> aFilterMap;
-	QMap<QString, int> aFilterMapSTL;
-	switch ( theCommandID ) {
-	case 125:
-	case 122:
-          {
-	    if (aMesh->HasDuplicatedGroupNamesMED()) {
-              int aRet = SUIT_MessageBox::warn2
-                (SMESHGUI::desktop(),
-                 QObject::tr("SMESH_WRN_WARNING"),
-                 QObject::tr("SMESH_EXPORT_MED_DUPLICATED_GRP").arg(anIObject->getName()),
-                 QObject::tr("SMESH_BUT_YES"),  QObject::tr("SMESH_BUT_NO"),
-                 0, 1, 0);
-              if (aRet)
-                return;
-            }
-            // PAL18696
-            QString v21 (aMesh->GetVersionString(SMESH::MED_V2_1, 2));
-            QString v22 (aMesh->GetVersionString(SMESH::MED_V2_2, 2));
-            aFilterMap.insert( QString("MED ") +  v21 + " (*.med)", SMESH::MED_V2_1 );
-            aFilterMap.insert( QString("MED ") +  v22 + " (*.med)", SMESH::MED_V2_2 );
-          }
-	  break;
-	case 124:
-	case 121:
-	  aFilter = QObject::tr("DAT files (*.dat)");
-	  break;
-	case 126:
-	case 123:
-          {
-            if (aMesh->NbPyramids()) {
-              int aRet = SUIT_MessageBox::warn2
-                (SMESHGUI::desktop(),
-                 QObject::tr("SMESH_WRN_WARNING"),
-                 QObject::tr("SMESH_EXPORT_UNV").arg(anIObject->getName()),
-                 QObject::tr("SMESH_BUT_YES"),  QObject::tr("SMESH_BUT_NO"),
-                 0, 1, 0);
-              if (aRet)
-                return;
-            }
-            aFilter = QObject::tr("IDEAS files (*.unv)");
-          }
-	  break;
-	case 140:
-	case 141:
-          {
-	    // export STL
-	    /*
-	      there must be check on others mesh elements not equal triangles
-	    */
-	    if (aMesh->NbTriangles() < 1) {
-              SUIT_MessageBox::warn1
-                (SMESHGUI::desktop(),
-                 QObject::tr("SMESH_WRN_WARNING"),
-                 QObject::tr("SMESH_EXPORT_STL1").arg(anIObject->getName()),
-                 QObject::tr("SMESH_BUT_OK"));
-	      return;
-            }
-	    if (!(aMesh->NbElements() - aMesh->NbTriangles())) {
-              int aRet = SUIT_MessageBox::warn2
-                (SMESHGUI::desktop(),
-                 QObject::tr("SMESH_WRN_WARNING"),
-                 QObject::tr("SMESH_EXPORT_STL2").arg(anIObject->getName()),
-                 QObject::tr("SMESH_BUT_YES"),  QObject::tr("SMESH_BUT_NO"),
-                 0, 1, 0);
-              if (aRet)
-                return;
-            }
+    SMESH::SMESH_Mesh_var aMesh;
+    if(selected.Extent() == 1)
+      aMesh = SMESH::IObjectToInterface<SMESH::SMESH_Mesh>(selected.First());
+    if ( aMesh->_is_nil() ) {
+      SUIT_MessageBox::warn1( SMESHGUI::desktop(),
+                              QObject::tr( "SMESH_WRN_WARNING" ),
+                              QObject::tr( "SMESH_BAD_MESH_SELECTION" ),
+                              QObject::tr( "SMESH_BUT_OK" ) );
+      return;
+    }
 
-            aFilterMapSTL.insert( QObject::tr("STL ASCII  (*.stl)"), 1 ); // 1 - ASCII mode
-            aFilterMapSTL.insert( QObject::tr("STL Binary (*.stl)"), 0 ); // 0 - Binary mode
-          }
-	  break;
-	default:
-	  return;
-	}
-
-	QString aFilename;
-	SMESH::MED_VERSION aFormat;
-	// Init the parameter with the default value
-	bool aIsASCII_STL = true;
-	bool toCreateGroups = false;
-	SUIT_ResourceMgr* resMgr = SUIT_Session::session()->resourceMgr();
-	if ( resMgr )
-	  toCreateGroups = resMgr->booleanValue( "SMESH", "auto_groups", false );
-
-	QString anInitialPath = "";
-	if ( SUIT_FileDlg::getLastVisitedPath().isEmpty() )
-	  anInitialPath = QDir::currentDirPath();
-
-	if ( theCommandID != 122 && theCommandID != 125 && theCommandID != 140 && theCommandID != 141) {
-	  if ( anInitialPath.isEmpty() ) anInitialPath = SUIT_FileDlg::getLastVisitedPath();
-	  aFilename = SUIT_FileDlg::getFileName(SMESHGUI::desktop(), anInitialPath + QString("/") + anIObject->getName(),
-						aFilter, aTitle, false);
-	}
-	else if(theCommandID == 140 || theCommandID == 141) { // Export to STL
-	  QStringList filters;
-          QMap<QString, int>::const_iterator it = aFilterMapSTL.begin();
-          for ( ; it != aFilterMapSTL.end(); ++it )
-            filters.push_back( it.key() );
-
-          SUIT_FileDlg* fd = new SUIT_FileDlg( SMESHGUI::desktop(), false, true, true );
-          fd->setCaption( aTitle );
-          fd->setFilters( filters );
-          fd->setSelectedFilter( QObject::tr("STL ASCII  (*.stl)") );
-	  if ( !anInitialPath.isEmpty() )
-	    fd->setDir( anInitialPath );
-	  fd->setSelection(anIObject->getName());
-          bool is_ok = false;
-          while (!is_ok) {
-            fd->exec();
-            aFilename = fd->selectedFile();
-            aIsASCII_STL = (aFilterMapSTL[fd->selectedFilter()]) == 1 ? true: false;
-            is_ok = true;
-	  }
-          delete fd;
-	}
-	else { // Export to MED
-          QStringList filters;
-          QString aDefaultFilter;
-          QMap<QString, SMESH::MED_VERSION>::const_iterator it = aFilterMap.begin();
-          for ( ; it != aFilterMap.end(); ++it ) {
-            filters.push_back( it.key() );
-            if (it.data() == SMESH::MED_V2_2)
-              aDefaultFilter = it.key();
-          }
-
-          //SUIT_FileDlg* fd = new SUIT_FileDlg( SMESHGUI::desktop(), false, true, true );
-          SalomeApp_CheckFileDlg* fd = new SalomeApp_CheckFileDlg
-            ( SMESHGUI::desktop(), false, QObject::tr("SMESH_AUTO_GROUPS") ,true, true );
-          fd->setCaption( aTitle );
-          fd->setFilters( filters );
-          //fd->setSelectedFilter( QObject::tr("MED 2.2 (*.med)") );
-          fd->setSelectedFilter(aDefaultFilter);
-          fd->SetChecked(toCreateGroups);
-	  if ( !anInitialPath.isEmpty() )
-	    fd->setDir( anInitialPath );
-	  fd->setSelection(anIObject->getName());
-          bool is_ok = false;
-          while (!is_ok) {
-            fd->exec();
-            aFilename = fd->selectedFile();
-            aFormat = aFilterMap[fd->selectedFilter()];
-            is_ok = true;
-            if ( !aFilename.isEmpty()
-                 && (aMesh->NbPolygons()>0 || aMesh->NbPolyhedrons()>0)
-                 && aFormat==SMESH::MED_V2_1) {
-              int aRet = SUIT_MessageBox::warn2(SMESHGUI::desktop(),
-                                                QObject::tr("SMESH_WRN_WARNING"),
-                                                QObject::tr("SMESH_EXPORT_MED_V2_1").arg(anIObject->getName()),
-                                                QObject::tr("SMESH_BUT_YES"),
-                                                QObject::tr("SMESH_BUT_NO"),
-                                                0,1,0);
-              if (aRet) {
-                is_ok = false;
-              }
-            }
-          }
-          toCreateGroups = fd->IsChecked();
-          delete fd;
+    Handle(SALOME_InteractiveObject) anIObject = selected.First();
+    QString aFilter, aTitle = QObject::tr("Export mesh");
+    QMap<QString, SMESH::MED_VERSION> aFilterMap;
+    QMap<QString, int> aFilterMapSTL;
+    switch ( theCommandID ) {
+    case 125:
+    case 122:
+      {
+        if (aMesh->HasDuplicatedGroupNamesMED()) {
+          int aRet = SUIT_MessageBox::warn2
+            (SMESHGUI::desktop(),
+             QObject::tr("SMESH_WRN_WARNING"),
+             QObject::tr("SMESH_EXPORT_MED_DUPLICATED_GRP").arg(anIObject->getName()),
+             QObject::tr("SMESH_BUT_YES"),  QObject::tr("SMESH_BUT_NO"),
+             0, 1, 0);
+          if (aRet)
+            return;
         }
-	if ( !aFilename.isEmpty() ) {
-	  // Check whether the file already exists and delete it if yes
-	  QFile aFile( aFilename );
-	  if ( aFile.exists() )
-	    aFile.remove();
-	  SUIT_OverrideCursor wc;
+        // PAL18696
+        QString v21 (aMesh->GetVersionString(SMESH::MED_V2_1, 2));
+        QString v22 (aMesh->GetVersionString(SMESH::MED_V2_2, 2));
+        aFilterMap.insert( QString("MED ") +  v21 + " (*.med)", SMESH::MED_V2_1 );
+        aFilterMap.insert( QString("MED ") +  v22 + " (*.med)", SMESH::MED_V2_2 );
+      }
+      break;
+    case 124:
+    case 121:
+      aFilter = QObject::tr("DAT files (*.dat)");
+      break;
+    case 126:
+    case 123:
+      {
+        if (aMesh->NbPyramids()) {
+          int aRet = SUIT_MessageBox::warn2
+            (SMESHGUI::desktop(),
+             QObject::tr("SMESH_WRN_WARNING"),
+             QObject::tr("SMESH_EXPORT_UNV").arg(anIObject->getName()),
+             QObject::tr("SMESH_BUT_YES"),  QObject::tr("SMESH_BUT_NO"),
+             0, 1, 0);
+          if (aRet)
+            return;
+        }
+        aFilter = QObject::tr("IDEAS files (*.unv)");
+      }
+      break;
+    case 140:
+    case 141:
+      {
+        // export STL
+        /*
+          there must be check on others mesh elements not equal triangles
+        */
+        if (aMesh->NbTriangles() < 1) {
+          SUIT_MessageBox::warn1
+            (SMESHGUI::desktop(),
+             QObject::tr("SMESH_WRN_WARNING"),
+             QObject::tr("SMESH_EXPORT_STL1").arg(anIObject->getName()),
+             QObject::tr("SMESH_BUT_OK"));
+          return;
+        }
+        if (!(aMesh->NbElements() - aMesh->NbTriangles())) {
+          int aRet = SUIT_MessageBox::warn2
+            (SMESHGUI::desktop(),
+             QObject::tr("SMESH_WRN_WARNING"),
+             QObject::tr("SMESH_EXPORT_STL2").arg(anIObject->getName()),
+             QObject::tr("SMESH_BUT_YES"),  QObject::tr("SMESH_BUT_NO"),
+             0, 1, 0);
+          if (aRet)
+            return;
+        }
 
-	  try {
-	    bool Renumber = false ;
-	    // PAL 14172  : Check of we have to renumber or not from the preferences before export
-	    if (resMgr)
-	      Renumber= resMgr->booleanValue("SMESH","renumbering");
-	    if (Renumber){
-	      SMESH::SMESH_MeshEditor_var aMeshEditor = aMesh->GetMeshEditor();
-	      aMeshEditor->RenumberNodes();
-	      aMeshEditor->RenumberElements();
-	      if ( SMESHGUI::automaticUpdate() )
-	        SMESH::UpdateView();
-	      }
-	    switch ( theCommandID ) {
-	    case 125:
-	    case 122:
-	      aMesh->ExportToMED( aFilename.latin1(), toCreateGroups, aFormat );
-	      break;
-	    case 124:
-	    case 121:
-	      aMesh->ExportDAT( aFilename.latin1() );
-	      break;
-	    case 126:
-	    case 123:
-	      aMesh->ExportUNV( aFilename.latin1() );
-	      break;
-	    case 140:
-	    case 141:
-	      aMesh->ExportSTL( aFilename.latin1(), aIsASCII_STL );
-	      break;
-	    default:
-	      break;
-	    }
-	  }
-	  catch (const SALOME::SALOME_Exception& S_ex){
-	    wc.suspend();
-	    SUIT_MessageBox::warn1(SMESHGUI::desktop(),
-				    QObject::tr("SMESH_WRN_WARNING"),
-				    QObject::tr("SMESH_EXPORT_FAILED"),
-				    QObject::tr("SMESH_BUT_OK"));
-	    wc.resume();
-	  }
-	}
+        aFilterMapSTL.insert( QObject::tr("STL ASCII  (*.stl)"), 1 ); // 1 - ASCII mode
+        aFilterMapSTL.insert( QObject::tr("STL Binary (*.stl)"), 0 ); // 0 - Binary mode
+      }
+      break;
+    default:
+      return;
+    }
+
+    QString aFilename;
+    SMESH::MED_VERSION aFormat;
+    // Init the parameter with the default value
+    bool aIsASCII_STL = true;
+    bool toCreateGroups = false;
+    SUIT_ResourceMgr* resMgr = SUIT_Session::session()->resourceMgr();
+    if ( resMgr )
+      toCreateGroups = resMgr->booleanValue( "SMESH", "auto_groups", false );
+
+    QString anInitialPath = "";
+    if ( SUIT_FileDlg::getLastVisitedPath().isEmpty() )
+      anInitialPath = QDir::currentDirPath();
+
+    if ( theCommandID != 122 && theCommandID != 125 && theCommandID != 140 && theCommandID != 141) {
+      if ( anInitialPath.isEmpty() ) anInitialPath = SUIT_FileDlg::getLastVisitedPath();
+      aFilename = SUIT_FileDlg::getFileName(SMESHGUI::desktop(), anInitialPath + QString("/") + anIObject->getName(),
+                                            aFilter, aTitle, false);
+    }
+    else if(theCommandID == 140 || theCommandID == 141) { // Export to STL
+      QStringList filters;
+      QMap<QString, int>::const_iterator it = aFilterMapSTL.begin();
+      for ( ; it != aFilterMapSTL.end(); ++it )
+        filters.push_back( it.key() );
+
+      SUIT_FileDlg* fd = new SUIT_FileDlg( SMESHGUI::desktop(), false, true, true );
+      fd->setCaption( aTitle );
+      fd->setFilters( filters );
+      fd->setSelectedFilter( QObject::tr("STL ASCII  (*.stl)") );
+      if ( !anInitialPath.isEmpty() )
+        fd->setDir( anInitialPath );
+      fd->setSelection(anIObject->getName());
+      bool is_ok = false;
+      while (!is_ok) {
+        fd->exec();
+        aFilename = fd->selectedFile();
+        aIsASCII_STL = (aFilterMapSTL[fd->selectedFilter()]) == 1 ? true: false;
+        is_ok = true;
+      }
+      delete fd;
+    }
+    else { // Export to MED
+      QStringList filters;
+      QString aDefaultFilter;
+      QMap<QString, SMESH::MED_VERSION>::const_iterator it = aFilterMap.begin();
+      for ( ; it != aFilterMap.end(); ++it ) {
+        filters.push_back( it.key() );
+        if (it.data() == SMESH::MED_V2_2)
+          aDefaultFilter = it.key();
+      }
+
+      //SUIT_FileDlg* fd = new SUIT_FileDlg( SMESHGUI::desktop(), false, true, true );
+      SalomeApp_CheckFileDlg* fd = new SalomeApp_CheckFileDlg
+        ( SMESHGUI::desktop(), false, QObject::tr("SMESH_AUTO_GROUPS") ,true, true );
+      fd->setCaption( aTitle );
+      fd->setFilters( filters );
+      //fd->setSelectedFilter( QObject::tr("MED 2.2 (*.med)") );
+      fd->setSelectedFilter(aDefaultFilter);
+      fd->SetChecked(toCreateGroups);
+      if ( !anInitialPath.isEmpty() )
+        fd->setDir( anInitialPath );
+      fd->setSelection(anIObject->getName());
+      bool is_ok = false;
+      while (!is_ok) {
+        fd->exec();
+        aFilename = fd->selectedFile();
+        aFormat = aFilterMap[fd->selectedFilter()];
+        is_ok = true;
+        if ( !aFilename.isEmpty()
+             && (aMesh->NbPolygons()>0 || aMesh->NbPolyhedrons()>0)
+             && aFormat==SMESH::MED_V2_1) {
+          int aRet = SUIT_MessageBox::warn2(SMESHGUI::desktop(),
+                                            QObject::tr("SMESH_WRN_WARNING"),
+                                            QObject::tr("SMESH_EXPORT_MED_V2_1").arg(anIObject->getName()),
+                                            QObject::tr("SMESH_BUT_YES"),
+                                            QObject::tr("SMESH_BUT_NO"),
+                                            0,1,0);
+          if (aRet) {
+            is_ok = false;
+          }
+        }
+      }
+      toCreateGroups = fd->IsChecked();
+      delete fd;
+    }
+    if ( !aFilename.isEmpty() ) {
+      // Check whether the file already exists and delete it if yes
+      QFile aFile( aFilename );
+      if ( aFile.exists() )
+        aFile.remove();
+      SUIT_OverrideCursor wc;
+
+      try {
+        bool Renumber = false ;
+        // PAL 14172  : Check of we have to renumber or not from the preferences before export
+        if (resMgr)
+          Renumber= resMgr->booleanValue("SMESH","renumbering");
+        if (Renumber){
+          SMESH::SMESH_MeshEditor_var aMeshEditor = aMesh->GetMeshEditor();
+          aMeshEditor->RenumberNodes();
+          aMeshEditor->RenumberElements();
+          if ( SMESHGUI::automaticUpdate() )
+            SMESH::UpdateView();
+        }
+        switch ( theCommandID ) {
+        case 125:
+        case 122:
+          aMesh->ExportToMED( aFilename.latin1(), toCreateGroups, aFormat );
+          break;
+        case 124:
+        case 121:
+          aMesh->ExportDAT( aFilename.latin1() );
+          break;
+        case 126:
+        case 123:
+          aMesh->ExportUNV( aFilename.latin1() );
+          break;
+        case 140:
+        case 141:
+          aMesh->ExportSTL( aFilename.latin1(), aIsASCII_STL );
+          break;
+        default:
+          break;
+        }
+      }
+      catch (const SALOME::SALOME_Exception& S_ex){
+        wc.suspend();
+        SUIT_MessageBox::warn1(SMESHGUI::desktop(),
+                               QObject::tr("SMESH_WRN_WARNING"),
+                               QObject::tr("SMESH_EXPORT_FAILED"),
+                               QObject::tr("SMESH_BUT_OK"));
+        wc.resume();
       }
     }
   }

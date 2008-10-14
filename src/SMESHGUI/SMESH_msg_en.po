@@ -932,6 +932,9 @@ msgstr "Polyhedrons"
 msgid "SMESH_BAD_SELECTION"
 msgstr "No valid selection"
 
+msgid "SMESH_BAD_MESH_SELECTION"
+msgstr "No valid mesh selection"
+
 #Information :
 msgid "SMESH_INFORMATION"
 msgstr "Information"
