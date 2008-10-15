@@ -484,7 +484,7 @@ void SMESHGUI_MeshDlg::setMaxHypoDim( const int maxDim )
   }
   // deselect desabled tab
   if ( !myTabWg->isTabEnabled( myTabWg->currentIndex() ) )
-    setCurrentTab( DIM - 1 );
+    setCurrentTab( DIM );
 }
 
 //================================================================================
