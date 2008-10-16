@@ -1928,7 +1928,7 @@ void SMDS_Mesh::Clear()
   while(itc!=myChildren.end())
     (*itc)->Clear();
 
-  myInfo = SMDS_MeshInfo();
+  myInfo.Clear();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

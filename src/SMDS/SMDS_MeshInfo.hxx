@@ -2,10 +2,10 @@
 // Created   : Mon Sep 24 18:32:41 2007
 // Author    : Edward AGAPOV (eap)
 
-using namespace std;
-
 #ifndef SMDS_MeshInfo_HeaderFile
 #define SMDS_MeshInfo_HeaderFile
+
+using namespace std;
 
 #include "SMESH_SMDS.hxx"
 
@@ -16,6 +16,7 @@ class SMDS_EXPORT SMDS_MeshInfo
 public:
 
   inline SMDS_MeshInfo();
+  inline void Clear();
 
   int NbNodes() const { return myNbNodes; }
 
@@ -125,6 +126,9 @@ inline SMDS_MeshInfo::SMDS_MeshInfo():
   myNb[ index( SMDSAbs_Volume, 15)] = & myNbQuadPrisms;  
   myNb[ index( SMDSAbs_Volume, 20)] = & myNbQuadHexas;   
 }
+inline void // Clear
+SMDS_MeshInfo::Clear()
+{ for ( int i=0; i<myNb.size(); ++i ) if ( myNb[i] ) (*myNb[i])=0; }
 
 inline int // index
 SMDS_MeshInfo::index(SMDSAbs_ElementType type, int nbNodes)
