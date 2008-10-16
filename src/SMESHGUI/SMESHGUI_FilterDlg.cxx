@@ -1308,6 +1308,7 @@ void SMESHGUI_FilterTable::onCriterionChanged (const int row, const int col, con
 
     if (aCompareItem->count() > 0)
       aCompareItem->clear();
+    aTable->setEditable(false, row, 1);
     aTable->setEditable(false, row, 2);
 
     aTable->blockSignals( isSignalsBlocked );
@@ -1323,6 +1324,8 @@ void SMESHGUI_FilterTable::onCriterionChanged (const int row, const int col, con
     aMap[ SMESH::FT_EqualTo ] = tr("EQUAL_TO");
     aCompareItem->setItems(aMap);
     if (!aTable->isEditable(row, 2))
+      aTable->setEditable(true, row, 1);
+    if (!aTable->isEditable(row, 2))
       aTable->setEditable(true, row, 2);
   }
   else
@@ -1336,6 +1339,8 @@ void SMESHGUI_FilterTable::onCriterionChanged (const int row, const int col, con
     bool isOk = false;
     aText.toDouble(&isOk);
     aTable->item( row, 2 )->setText(isOk ? aText : QString(""));
+    if (!aTable->isEditable(row, 1))
+      aTable->setEditable(true, row, 1);
     if (!aTable->isEditable(row, 2))
       aTable->setEditable(true, row, 2);
   }
