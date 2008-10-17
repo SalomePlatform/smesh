@@ -680,5 +680,7 @@ bool StdMeshers_NumberOfSegments::SetParametersByMesh(const SMESH_Mesh*   theMes
   if ( nbEdges )
     _numberOfSegments /= nbEdges;
 
+  if (_numberOfSegments == 0) _numberOfSegments = 1;
+
   return nbEdges;
 }
