@@ -155,7 +155,7 @@ namespace SMESH
     vtkUnstructuredGrid* myGrid;
     //vtkProperty* myBackProp, *myProp;
 
-    vtkFloatingPointType myRGB[3], myBackRGB[3];
+    //vtkFloatingPointType myRGB[3], myBackRGB[3];
 
     SALOME_Actor* myFaceOrientation;
     vtkPolyDataMapper* myFaceOrientationDataMapper;
@@ -182,14 +182,15 @@ namespace SMESH
       myPreviewActor->SetMapper(myMapper);
 
       vtkProperty* myProp = vtkProperty::New();
-      GetColor( "SMESH", "fill_color", myRGB[0], myRGB[1], myRGB[2], QColor( 0, 170, 255 ) );
-      myProp->SetColor( myRGB[0], myRGB[1], myRGB[2] );
+      vtkFloatingPointType aRGB[3], aBackRGB[3];
+      GetColor( "SMESH", "fill_color", aRGB[0], aRGB[1], aRGB[2], QColor( 0, 170, 255 ) );
+      myProp->SetColor( aRGB[0], aRGB[1], aRGB[2] );
       myPreviewActor->SetProperty( myProp );
       myProp->Delete();
 
       vtkProperty* myBackProp = vtkProperty::New();
-      GetColor( "SMESH", "backface_color", myBackRGB[0], myBackRGB[1], myBackRGB[2], QColor( 0, 0, 255 ) );
-      myBackProp->SetColor( myBackRGB[0], myBackRGB[1], myBackRGB[2] );
+      GetColor( "SMESH", "backface_color", aBackRGB[0], aBackRGB[1], aBackRGB[2], QColor( 0, 0, 255 ) );
+      myBackProp->SetColor( aBackRGB[0], aBackRGB[1], aBackRGB[2] );
       myPreviewActor->SetBackfaceProperty( myBackProp );
       myBackProp->Delete();
 
@@ -208,8 +209,8 @@ namespace SMESH
       myFaceOrientation->SetMapper(myFaceOrientationDataMapper);
 
       vtkProperty* anOrientationProp = vtkProperty::New();
-      GetColor( "SMESH", "orientation_color", myRGB[0], myRGB[1], myRGB[2], QColor( 255, 255, 255 ) );
-      anOrientationProp->SetColor( myRGB[0], myRGB[1], myRGB[2] );
+      GetColor( "SMESH", "orientation_color", aRGB[0], aRGB[1], aRGB[2], QColor( 255, 255, 255 ) );
+      anOrientationProp->SetColor( aRGB[0], aRGB[1], aRGB[2] );
       myFaceOrientation->SetProperty( anOrientationProp );
       anOrientationProp->Delete();
 
