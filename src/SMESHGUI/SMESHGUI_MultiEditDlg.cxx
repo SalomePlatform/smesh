@@ -543,7 +543,7 @@ void SMESHGUI_MultiEditDlg::onSelectionDone()
     } else {
       aNameEdit->clear();
     }
-  } else if (nbSel == 1) {
+  } else if (nbSel > 0) {
     QString aListStr = "";
     Handle(SALOME_InteractiveObject) anIO = aList.First();
     int aNbItems = SMESH::GetNameOfSelectedElements(mySelector,anIO,aListStr);
@@ -559,7 +559,7 @@ void SMESHGUI_MultiEditDlg::onSelectionDone()
     myMesh = SMESH::GetMeshByIO(anIO);
   }
 
-  if (nbSel == 1) {
+  if (nbSel > 0) {
     myActor = SMESH::FindActorByEntry(aList.First()->getEntry());
     if (!myActor)
       myActor = SMESH::FindActorByObject(myMesh);
@@ -687,7 +687,7 @@ void SMESHGUI_MultiEditDlg::onAddBtn()
   TColStd_IndexedMapOfInteger toBeAdded;
 
   if (!mySubmeshChk->isChecked() && !myGroupChk->isChecked()) {
-    if (nbSelected == 1)
+    if (nbSelected > 0)
       mySelector->GetIndex(aList.First(),toBeAdded);
   } else if (mySubmeshChk->isChecked()) {
     SALOME_ListIteratorOfListIO anIter(aList);
@@ -764,7 +764,7 @@ void SMESHGUI_MultiEditDlg::updateButtons()
 
   if (isToAll ||
       myMesh->_is_nil() ||
-      aList.Extent() != 1 ||
+      aList.Extent() < 1 ||
       (SMESH::IObjectToInterface<SMESH::SMESH_subMesh>(aList.First())->_is_nil() &&
        SMESH::IObjectToInterface<SMESH::SMESH_GroupBase>(aList.First())->_is_nil() &&
        SMESH::IObjectToInterface<SMESH::SMESH_Mesh>(aList.First())->_is_nil()))
