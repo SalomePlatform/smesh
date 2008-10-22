@@ -1611,7 +1611,7 @@ Are you sure want to export to MED 2.1 ?</translation>
         </message>
         <message>
             <source>SMESH_REALLY_DELETE</source>
-            <translation>Do you really want to delete object(s) ?</translation>
+            <translation>Do you really want to delete this %1 object(s)? : %2</translation>
         </message>
         <message>
             <source>SMESH_REMOVE</source>
