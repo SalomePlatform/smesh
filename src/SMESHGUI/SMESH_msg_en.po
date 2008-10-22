@@ -142,7 +142,7 @@ msgstr "Operation failed"
 
 #: SMESHGUI.cxx:465
 msgid "SMESH_REALLY_DELETE"
-msgstr "Do you really want to delete object(s) ?"
+msgstr "Do you really want to delete this %1 object(s)? : %2"
 
 #Hypothesis or Algorithm not exists
 msgid "SMESH_WRN_HYPOTHESIS_NOTEXIST"

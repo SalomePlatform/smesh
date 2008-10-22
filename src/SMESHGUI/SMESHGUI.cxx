@@ -921,18 +921,28 @@ using namespace std;
     _PTR(AttributeIOR) anIOR;
 
     int objectCount = 0;
+    QString aNameList;
     QString aParentComponent = QString::null;
+    Handle(SALOME_InteractiveObject) anIO;
     for( SALOME_ListIteratorOfListIO anIt( selected ); anIt.More(); anIt.Next() )
     {
-      _PTR(SObject) aSO = aStudy->FindObjectID(anIt.Value()->getEntry());
+      anIO = anIt.Value();
+      QString cur = anIt.Value()->getComponentDataType();
+      _PTR(SObject) aSO = aStudy->FindObjectID(anIO->getEntry());
       if (aSO) {
-	// check if object is not reference
-	_PTR(SObject) refobj;
-	if ( !aSO->ReferencedObject( refobj ) )
-	  objectCount++;
+	// check if object is reference
+	_PTR(SObject) aRefSObj;
+	aNameList.append("\n    - ");
+	if ( aSO->ReferencedObject( aRefSObj ) ) {
+	  QString aRefName = aRefSObj->GetName();
+	  aNameList.append( aRefName );
+	  cur = aRefSObj->GetFatherComponent()->ComponentDataType();
+	}
+	else
+	  aNameList.append(anIO->getName());
+	objectCount++;
       }
 
-      QString cur = anIt.Value()->getComponentDataType();
       if( aParentComponent.isNull() )
         aParentComponent = cur;
       else if( !aParentComponent.isEmpty() && aParentComponent!=cur )
@@ -953,7 +963,7 @@ using namespace std;
     if (SUIT_MessageBox::warn2
 	(SMESHGUI::desktop(),
 	 QObject::tr("SMESH_WRN_WARNING"),
-	 QObject::tr("SMESH_REALLY_DELETE"),
+	 QObject::tr("SMESH_REALLY_DELETE").arg( objectCount ).arg( aNameList ),
 	 QObject::tr("SMESH_BUT_YES"), QObject::tr("SMESH_BUT_NO"), 1, 0, 0) != 1)
       return;
 
@@ -975,10 +985,10 @@ using namespace std;
 	  if ( !strcmp( (char*)anIOR->Value().c_str(), engineIOR().latin1() ) )
 	    continue;
 	}
-
+	//Check the referenced object
 	_PTR(SObject) refobj;
 	if ( aSO && aSO->ReferencedObject( refobj ) )
-	  continue; // skip references 
+	  aSO = refobj; // Delete main Object instead of reference
 
         // put the whole hierarchy of sub-objects of the selected SO into a list and
         // then treat them all starting from the deepest objects (at list back)
