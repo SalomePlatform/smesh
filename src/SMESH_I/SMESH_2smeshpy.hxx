@@ -211,8 +211,8 @@ class _pyMesh: public _pyObject
   std::list< Handle(_pyCommand) > mySubmeshes;
   bool                            myHasEditor;
 public:
-  _pyMesh(const Handle(_pyCommand) theCreationCmd);
-  _pyMesh(const Handle(_pyCommand) theCreationCmd, const TCollection_AsciiString &);
+  _pyMesh(const Handle(_pyCommand) creationCmd);
+  _pyMesh(const Handle(_pyCommand) theCreationCmd, const TCollection_AsciiString & id);
   const _pyID& GetGeom() { return GetCreationCmd()->GetArg(1); }
   void Process( const Handle(_pyCommand)& theCommand);
   void Flush();
