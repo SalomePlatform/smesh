@@ -2693,8 +2693,8 @@ void SMESHGUI::initialize( CAM_Application* app )
 
   createMenu( separator(), fileId );
 
-  int importId = createMenu( tr( "MEN_IMPORT" ), fileId, 11, 10 ),
-      exportId = createMenu( tr( "MEN_EXPORT" ), fileId, 12, 10 ),
+  int importId = createMenu( tr( "MEN_IMPORT" ), fileId, -1, 10 ),
+      exportId = createMenu( tr( "MEN_EXPORT" ), fileId, -1, 10 ),
       addId    = createMenu( tr( "MEN_ADD" ),    modifyId, 402 ),
       removeId = createMenu( tr( "MEN_REMOVE" ), modifyId, 403 ),
       renumId  = createMenu( tr( "MEN_RENUM" ),  modifyId, 404 ),
