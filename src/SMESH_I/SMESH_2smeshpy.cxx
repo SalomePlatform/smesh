@@ -237,6 +237,13 @@ Handle(_pyCommand) _pyGen::AddCommand( const TCollection_AsciiString& theCommand
   map< _pyID, Handle(_pyMeshEditor) >::iterator id_editor = myMeshEditors.find( objID );
   if ( id_editor != myMeshEditors.end() ) {
     id_editor->second->Process( aCommand );
+    TCollection_AsciiString processedCommand = aCommand->GetString();
+    // some commands of SMESH_MeshEditor create meshes
+    if ( aCommand->GetMethod().Search("MakeMesh") != -1 ) {
+      Handle(_pyMesh) mesh = new _pyMesh( aCommand, aCommand->GetResultValue() );
+      aCommand->GetString() = processedCommand; // discard changes made by _pyMesh
+      myMeshes.insert( make_pair( mesh->GetID(), mesh ));
+    }
     return aCommand;
   }
   // SMESH_Hypothesis method?
@@ -289,17 +296,20 @@ void _pyGen::Process( const Handle(_pyCommand)& theCommand )
   // CreateHypothesis( theHypType, theLibName )
   // Compute( mesh, geom )
   // mesh creation
-  if ( theCommand->GetMethod() == "CreateMesh" ||
-       theCommand->GetMethod() == "CreateEmptyMesh" ||
-       theCommand->GetMethod() == "CreateMeshesFromUNV" ||
-       theCommand->GetMethod() == "CreateMeshesFromSTL")
+  TCollection_AsciiString method = theCommand->GetMethod();
+  if ( method == "CreateMesh" || method == "CreateEmptyMesh")
   {
     Handle(_pyMesh) mesh = new _pyMesh( theCommand );
     myMeshes.insert( make_pair( mesh->GetID(), mesh ));
     return;
   }
-
-  if(theCommand->GetMethod() == "CreateMeshesFromMED")
+  if ( method == "CreateMeshesFromUNV" || method == "CreateMeshesFromSTL")
+  {
+    Handle(_pyMesh) mesh = new _pyMesh( theCommand, theCommand->GetResultValue() );
+    myMeshes.insert( make_pair( mesh->GetID(), mesh ));
+    return;
+  }
+  if( method == "CreateMeshesFromMED")
   {
     for(int ind = 0;ind<theCommand->GetNbResultValues();ind++)
     {
@@ -309,14 +319,14 @@ void _pyGen::Process( const Handle(_pyCommand)& theCommand )
   }
 
   // CreateHypothesis()
-  if ( theCommand->GetMethod() == "CreateHypothesis" )
+  if ( method == "CreateHypothesis" )
   {
     myHypos.push_back( _pyHypothesis::NewHypothesis( theCommand ));
     return;
   }
 
   // smeshgen.Compute( mesh, geom ) --> mesh.Compute()
-  if ( theCommand->GetMethod() == "Compute" )
+  if ( method == "Compute" )
   {
     const _pyID& meshID = theCommand->GetArg( 1 );
     map< _pyID, Handle(_pyMesh) >::iterator id_mesh = myMeshes.find( meshID );
@@ -329,7 +339,7 @@ void _pyGen::Process( const Handle(_pyCommand)& theCommand )
   }
 
   // leave only one smeshgen.GetPattern() in the script
-  if ( theCommand->GetMethod() == "GetPattern" ) {
+  if ( method == "GetPattern" ) {
     if ( myHasPattern ) {
       theCommand->Clear();
       return;
@@ -338,9 +348,14 @@ void _pyGen::Process( const Handle(_pyCommand)& theCommand )
   }
 
   // Concatenate( [mesh1, ...], ... )
-  if ( theCommand->GetMethod() == "Concatenate" ||
-       theCommand->GetMethod() == "ConcatenateWithGroups")
+  if ( method == "Concatenate" || method == "ConcatenateWithGroups")
   {
+    if ( method == "ConcatenateWithGroups" ) {
+      theCommand->SetMethod( "Concatenate" );
+      theCommand->SetArg( theCommand->GetNbArgs() + 1, "True" );
+    }
+    Handle(_pyMesh) mesh = new _pyMesh( theCommand, theCommand->GetResultValue() );
+    myMeshes.insert( make_pair( mesh->GetID(), mesh ));
     AddMeshAccessorMethod( theCommand );
   }
 
@@ -596,18 +611,17 @@ static bool sameGroupType( const _pyID&                   grpID,
  */
 //================================================================================
 
-_pyMesh::_pyMesh(const Handle(_pyCommand) theCreationCmd):
-  _pyObject(theCreationCmd), myHasEditor(false)
+_pyMesh::_pyMesh(const Handle(_pyCommand) theCreationCmd)
+  : _pyObject(theCreationCmd), myHasEditor(false)
 {
   // convert my creation command
   Handle(_pyCommand) creationCmd = GetCreationCmd();
-  TCollection_AsciiString str = creationCmd->GetMethod();
-  
+  //TCollection_AsciiString str = creationCmd->GetMethod();
+//   if(str != "CreateMeshesFromUNV" &&
+//      str != "CreateMeshesFromMED" &&
+//      str != "CreateMeshesFromSTL")
   creationCmd->SetObject( SMESH_2smeshpy::SmeshpyName() ); 
-  if(str != "CreateMeshesFromUNV" &&
-     str != "CreateMeshesFromMED" &&
-     str != "CreateMeshesFromSTL")
-    creationCmd->SetMethod( "Mesh" );
+  creationCmd->SetMethod( "Mesh" );
 
   theGen->SetAccessorMethod( GetID(), "GetMesh()" );
 }
@@ -910,8 +924,8 @@ void _pyMeshEditor::Process( const Handle(_pyCommand)& theCommand)
 
     // meshes made by *MakeMesh() methods are not wrapped by _pyMesh,
     // so let _pyMesh care of it (TMP?)
-    if ( theCommand->GetMethod().Search("MakeMesh") != -1 )
-      _pyMesh( new _pyCommand( theCommand->GetString(), 0 )); // for theGen->SetAccessorMethod()
+//     if ( theCommand->GetMethod().Search("MakeMesh") != -1 )
+//       _pyMesh( new _pyCommand( theCommand->GetString(), 0 )); // for theGen->SetAccessorMethod()
   }
   else {
     
@@ -926,7 +940,7 @@ void _pyMeshEditor::Process( const Handle(_pyCommand)& theCommand)
       aMethod.Trunc(pos-1);
       theCommand->SetMethod(aMethod);
 
-      // 2. Set Mesh object instead SMESH_MeshEditor
+      // 2. Set Mesh object instead of SMESH_MeshEditor
       theCommand->SetObject( myMesh );
 
       // 3. And add last "True" argument
