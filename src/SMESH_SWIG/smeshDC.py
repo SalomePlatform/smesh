@@ -363,6 +363,24 @@ class smeshDC(SMESH._objref_SMESH_Gen):
         aMesh = Mesh(self, self.geompyD, aSmeshMesh)
         return aMesh
 
+    ## Concatenate the given meshes into one mesh.
+    #  @return an instance of Mesh class
+    #  @param meshes the meshes to combine into one mesh
+    #  @param uniteIdenticalGroups if true, groups with same names are united, else they are renamed
+    #  @param mergeNodesAndElements if true, equal nodes and elements aremerged
+    #  @param mergeTolerance tolerance for merging nodes
+    #  @param allGroups forces creation of groups of all elements
+    def Concatenate( self, meshes, uniteIdenticalGroups,
+                     mergeNodesAndElements = False, mergeTolerance = 1e-5, allGroups = False):
+        if allGroups:
+            aSmeshMesh = SMESH._objref_SMESH_Gen.ConcatenateWithGroups(
+                self,meshes,uniteIdenticalGroups,mergeNodesAndElements,mergeTolerance)
+        else:
+            aSmeshMesh = SMESH._objref_SMESH_Gen.Concatenate(
+                self,meshes,uniteIdenticalGroups,mergeNodesAndElements,mergeTolerance)
+        aMesh = Mesh(self, self.geompyD, aSmeshMesh)
+        return aMesh
+
     ## From SMESH_Gen interface
     #  @return the list of integer values
     #  @ingroup l1_auxiliary
