@@ -174,6 +174,10 @@ def GetName(obj):
 
 ## Sets a name to the object
 def SetName(obj, name):
+    if isinstance( obj, Mesh ):
+        obj = obj.GetMesh()
+    elif isinstance( obj, Mesh_Algorithm ):
+        obj = obj.GetAlgorithm()
     ior  = salome.orb.object_to_string(obj)
     sobj = salome.myStudy.FindObjectIOR(ior)
     if not sobj is None:
