@@ -75,9 +75,14 @@ void SMESHGUI_Dialog::show()
 // function : setContentActive
 // purpose  :
 //=================================================================================
-void SMESHGUI_Dialog::setContentActive( const bool active ) const
+void SMESHGUI_Dialog::setContentActive( const bool active )
 {
   mainFrame()->setEnabled( active );
+  setButtonEnabled( active, OK );
+  setButtonEnabled( active, Apply );
+  setButtonEnabled( active, Cancel );
+  setButtonEnabled( active, Close );
+  setButtonEnabled( active, Help );
 }
 
 //=================================================================================

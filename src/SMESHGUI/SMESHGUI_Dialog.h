@@ -51,7 +51,7 @@ public:
   virtual void      show();
 
   //! set all content to enable (parameter is true) or disable state
-  virtual void      setContentActive( const bool ) const;
+  virtual void      setContentActive( const bool );
 
   //! Return hard-coded prefix using to differ overlapping types
   static int        prefix( const QString& );
