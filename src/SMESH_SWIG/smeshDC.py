@@ -237,9 +237,7 @@ class smeshDC(SMESH._objref_SMESH_Gen):
     ## Sets the current study and Geometry component
     #  @ingroup l1_auxiliary
     def init_smesh(self,theStudy,geompyD):
-        self.geompyD=geompyD
-        self.SetGeomEngine(geompyD)
-        self.SetCurrentStudy(theStudy)
+        self.SetCurrentStudy(theStudy,geompyD)
 
     ## Creates an empty Mesh. This mesh can have an underlying geometry.
     #  @param obj the Geometrical object on which the mesh is built. If not defined,
@@ -330,8 +328,14 @@ class smeshDC(SMESH._objref_SMESH_Gen):
 
     ## Sets the current study
     #  @ingroup l1_auxiliary
-    def SetCurrentStudy( self, theStudy ):
+    def SetCurrentStudy( self, theStudy, geompyD = None ):
         #self.SetCurrentStudy(theStudy)
+	if not geompyD:
+	    import geompy
+	    geompyD = geompy.geom
+	    pass
+        self.geompyD=geompyD
+        self.SetGeomEngine(geompyD)
         SMESH._objref_SMESH_Gen.SetCurrentStudy(self,theStudy)
 
     ## Gets the current study
