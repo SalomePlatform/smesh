@@ -721,6 +721,7 @@ void SMESHGUI_RotationDlg::SelectionIntoArgument()
   myBusy = true;
   if (myEditCurrentArgument == (QWidget*)LineEditElements) {
     LineEditElements->setText(aString);
+    LineEditElements->repaint();
     setNewMeshName();
   }
   myBusy = false;

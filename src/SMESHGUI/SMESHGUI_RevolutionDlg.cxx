@@ -827,8 +827,10 @@ void SMESHGUI_RevolutionDlg::SelectionIntoArgument()
   }
 
   myBusy = true;
-  if (myEditCurrentArgument == (QWidget*)LineEditElements)
+  if (myEditCurrentArgument == (QWidget*)LineEditElements) {
     LineEditElements->setText(aString);
+    LineEditElements->repaint();
+  }
   myBusy = false;
 
   // OK
