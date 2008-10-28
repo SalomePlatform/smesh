@@ -80,6 +80,23 @@
 
 enum { MOVE_ELEMS_BUTTON = 0, COPY_ELEMS_BUTTON, MAKE_MESH_BUTTON }; //!< action type
 
+/*!
+  \class BusyLocker
+  \brief Simple 'busy state' flag locker.
+  \internal
+*/
+
+class BusyLocker
+{
+public:
+  //! Constructor. Sets passed boolean flag to \c true.
+  BusyLocker( bool& busy ) : myBusy( busy ) { myBusy = true; }
+  //! Destructor. Clear external boolean flag passed as parameter to the constructor to \c false.
+  ~BusyLocker() { myBusy = false; }
+private:
+  bool& myBusy; //! External 'busy state' boolean flag
+};
+
 #define SPACING 6
 #define MARGIN  11
 
@@ -527,7 +544,7 @@ void SMESHGUI_TranslationDlg::onTextChange (const QString& theNewText)
   QLineEdit* send = (QLineEdit*)sender();
 
   if (myBusy) return;
-  myBusy = true;
+  BusyLocker lock( myBusy );
 
   if (send == LineEditElements)
     myNbOkElements = 0;
@@ -567,8 +584,6 @@ void SMESHGUI_TranslationDlg::onTextChange (const QString& theNewText)
     buttonOk->setEnabled(true);
     buttonApply->setEnabled(true);
   }
-
-  myBusy = false;
 }
 
 //=================================================================================
@@ -578,19 +593,17 @@ void SMESHGUI_TranslationDlg::onTextChange (const QString& theNewText)
 void SMESHGUI_TranslationDlg::SelectionIntoArgument()
 {
   if (myBusy) return;
-
+  BusyLocker lock( myBusy );
   // clear
   myActor = 0;
   QString aString = "";
 
-  myBusy = true;
   if (myEditCurrentArgument == (QWidget*)LineEditElements) {
     LineEditElements->setText(aString);
     myNbOkElements = 0;
     buttonOk->setEnabled(false);
     buttonApply->setEnabled(false);
   }
-  myBusy = false;
 
   if (!GroupButtons->isEnabled()) // inactive
     return;
@@ -707,12 +720,13 @@ void SMESHGUI_TranslationDlg::SelectionIntoArgument()
     }
   }
 
-  myBusy = true;
   if (myEditCurrentArgument == (QWidget*)LineEditElements) {
+    LineEditElements->setEnabled(true);
     LineEditElements->setText(aString);
+    LineEditElements->repaint();
+    LineEditElements->setEnabled(false);
     setNewMeshName();
   }
-  myBusy = false;
 
   // OK
   if (myNbOkElements) {

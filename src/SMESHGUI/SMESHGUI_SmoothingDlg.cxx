@@ -583,7 +583,10 @@ void SMESHGUI_SmoothingDlg::SelectionIntoArgument()
     return;
 
   myBusy = true;
-  myEditCurrentArgument->setText(aString);
+  LineEditElements->setEnabled(true);
+  LineEditElements->setText(aString);
+  LineEditElements->repaint();
+  LineEditElements->setEnabled(false);
   myBusy = false;
 
   // OK

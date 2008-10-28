@@ -741,7 +741,10 @@ void SMESHGUI_SymmetryDlg::SelectionIntoArgument()
 
   myBusy = true;
   if (myEditCurrentArgument == (QWidget*)LineEditElements) {
+    LineEditElements->setEnabled(true);
     LineEditElements->setText(aString);
+    LineEditElements->repaint();
+    LineEditElements->setEnabled(false);
     setNewMeshName();
   }
   myBusy = false;
