@@ -9,7 +9,7 @@
 #
 
 
-AC_INIT([Salome2 Project SMESH module], [5.0.0], [webmaster.salome@opencascade.com], [SalomeSMESH])
+AC_INIT([Salome2 Project SMESH module], [5.1.0], [webmaster.salome@opencascade.com], [SalomeSMESH])
 AC_CONFIG_AUX_DIR(salome_adm/unix/config_files)
 AC_CANONICAL_HOST
 AC_CANONICAL_TARGET
