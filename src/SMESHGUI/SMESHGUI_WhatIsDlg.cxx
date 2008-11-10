@@ -177,7 +177,7 @@ SMESHGUI_WhatIsDlg::SMESHGUI_WhatIsDlg( SMESHGUI* theModule )
   myMeshOrSubMeshOrGroupFilter =
     new SMESH_LogicalFilter(aListOfFilters, SMESH_LogicalFilter::LO_OR);
 
-  myHelpFileName = "/files/viewing_mesh_info.htm#element_infos";
+  myHelpFileName = "mesh_infos_page.html#mesh_element_info_anchor";
 
   Init();
 
