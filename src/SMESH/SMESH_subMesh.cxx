@@ -1360,7 +1360,7 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
           {
             ret = algo->Compute((*_father), shape);
           }
-          if ( !ret && _computeError->IsOK() ) // algo can set _computeError of submesh
+          if ( !_computeError || ( !ret && _computeError->IsOK() ) ) // algo can set _computeError of submesh
             _computeError = algo->GetComputeError();
         }
         catch ( std::bad_alloc& exc ) {
