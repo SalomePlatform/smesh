@@ -2928,6 +2928,8 @@ void SMESHGUI::initialize( CAM_Application* app )
   // popup for object browser
 
   createPopupItem( 150, OB, mesh, "&& selcount=1 && isImported" );      // FILE INFORMATION
+  createPopupItem( 703, OB, mesh, "&& isComputable");      // CREATE_SUBMESH
+  createPopupItem( 703, OB, subMesh, "&& isComputable" );  // CREATE_SUBMESH
   createPopupItem( 704, OB, mesh, "&& isComputable");      // EDIT_MESHSUBMESH
   createPopupItem( 704, OB, subMesh, "&& isComputable" );  // EDIT_MESHSUBMESH
   createPopupItem( 803, OB, group );                       // EDIT_GROUP
