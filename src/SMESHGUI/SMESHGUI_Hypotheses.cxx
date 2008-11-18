@@ -426,6 +426,18 @@ QString SMESHGUI_GenericHypothesisCreator::helpPage() const
     aHelpFileName = "a1d_meshing_hypo_page.html#automatic_length_anchor";
   else if ( aHypType == "NumberOfSegments")
     aHelpFileName = "a1d_meshing_hypo_page.html#number_of_segments_anchor";
+  else if ( aHypType == "ProjectionSource1D")
+    aHelpFileName = "projection_algos_page.html";
+  else if ( aHypType == "ProjectionSource2D")
+    aHelpFileName = "projection_algos_page.html";
+  else if ( aHypType == "ProjectionSource3D")
+    aHelpFileName = "projection_algos_page.html";
+  else if ( aHypType == "NumberOfLayers")
+    aHelpFileName = "radial_prism_algo_page.html";
+  else if ( aHypType == "LayerDistribution")
+    aHelpFileName = "radial_prism_algo_page.html";
+  else if ( aHypType == "SegmentLengthAroundVertex")
+    aHelpFileName = "segments_around_vertex_algo.html";
   else
     aHelpFileName = "";
   return aHelpFileName;
