@@ -6,11 +6,13 @@
 import geompy
 import smesh
 
+import os
+
 # Values
 # ------
 
 # Path for ".med" files
-path = "/tmp/ex29_"
+path = "/tmp/ex29_%s_" % os.getenv('USER','unknown')
 
 # Name of the shape and the mesh
 name = "Carre"
@@ -202,4 +204,4 @@ MyMesh.ExportMED(path+str(NbCells4)+"_triangles.med", 0)
 # Update the object browser
 # -------------------------
 
-salome.sg.updateObjBrowser(1)
+geompy.salome.sg.updateObjBrowser(1)
