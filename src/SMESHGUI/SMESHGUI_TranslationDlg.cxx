@@ -721,10 +721,10 @@ void SMESHGUI_TranslationDlg::SelectionIntoArgument()
   }
 
   if (myEditCurrentArgument == (QWidget*)LineEditElements) {
-    LineEditElements->setEnabled(true);
     LineEditElements->setText(aString);
     LineEditElements->repaint();
-    LineEditElements->setEnabled(false);
+    LineEditElements->setEnabled(false); // to fully update lineedit IPAL 19809
+    LineEditElements->setEnabled(true); 
     setNewMeshName();
   }
 

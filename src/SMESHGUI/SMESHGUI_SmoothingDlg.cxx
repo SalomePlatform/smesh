@@ -583,10 +583,10 @@ void SMESHGUI_SmoothingDlg::SelectionIntoArgument()
     return;
 
   myBusy = true;
-  LineEditElements->setEnabled(true);
   LineEditElements->setText(aString);
   LineEditElements->repaint();
-  LineEditElements->setEnabled(false);
+  LineEditElements->setEnabled(false); // to update lineedit IPAL 19809
+  LineEditElements->setEnabled(true); 
   myBusy = false;
 
   // OK
