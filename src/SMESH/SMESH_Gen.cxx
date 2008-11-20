@@ -229,8 +229,8 @@ bool SMESH_Gen::Compute(SMESH_Mesh &         aMesh,
         if ( SMESH_Algo* subAlgo = (SMESH_Algo*) aMesh.GetHypothesis( aSubShape, filter, true )) {
           SMESH_Hypothesis::Hypothesis_Status status;
           if ( subAlgo->CheckHypothesis( aMesh, aSubShape, status ))
-            // mesh a lower smToCompute starting from vertices
-            Compute( aMesh, aSubShape, /*anUpward=*/true );
+            // mesh a lower smToCompute
+            Compute( aMesh, aSubShape );
         }
       }
     }
@@ -241,10 +241,10 @@ bool SMESH_Gen::Compute(SMESH_Mesh &         aMesh,
       if ( sm->GetComputeState() == SMESH_subMesh::READY_TO_COMPUTE)
         sm->ComputeStateEngine( SMESH_subMesh::COMPUTE );
 
-    // ------------------------
-    // mesh the rest subshapes
-    // ------------------------
-    ret = Compute( aMesh, aShape );
+    // -----------------------------------------------
+    // mesh the rest subshapes starting from vertices
+    // -----------------------------------------------
+    ret = Compute( aMesh, aShape, /*anUpward=*/true );
   }
 
   MESSAGE( "VSR - SMESH_Gen::Compute() finished, OK = " << ret);
