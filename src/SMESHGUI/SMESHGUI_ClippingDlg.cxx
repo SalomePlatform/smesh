@@ -366,7 +366,7 @@ SMESHGUI_ClippingDlg::SMESHGUI_ClippingDlg (SMESHGUI* theModule,
   connect(buttonCancel, SIGNAL(clicked()), this, SLOT(ClickOnCancel()));
   connect(buttonApply, SIGNAL(clicked()), this, SLOT(ClickOnApply()));
   connect(buttonHelp, SIGNAL(clicked()), this, SLOT(ClickOnHelp()));
-  connect(mySMESHGUI, SIGNAL (SignalCloseAllDialogs()), this, SLOT(ClickOnOk()));
+  connect(mySMESHGUI, SIGNAL (SignalCloseAllDialogs()), this, SLOT(ClickOnCancel()));
   connect(mySelectionMgr,  SIGNAL(currentSelectionChanged()), this, SLOT(onSelectionChanged()));
   /* to close dialog if study frame change */
   connect(mySMESHGUI, SIGNAL (SignalStudyFrameChanged()), this, SLOT(ClickOnCancel()));
@@ -382,9 +382,9 @@ SMESHGUI_ClippingDlg::~SMESHGUI_ClippingDlg()
 {
   // no need to delete child widgets, Qt does it all for us
   std::for_each(myPlanes.begin(),myPlanes.end(),TSetVisiblity(false));
-
-  if (SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow(mySMESHGUI))
-    SMESH::RenderViewWindow(aViewWindow);
+  if (mySMESHGUI)
+    if (SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow(mySMESHGUI))
+      SMESH::RenderViewWindow(aViewWindow);
 }
 
 //=======================================================================
