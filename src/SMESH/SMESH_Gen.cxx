@@ -241,10 +241,10 @@ bool SMESH_Gen::Compute(SMESH_Mesh &         aMesh,
       if ( sm->GetComputeState() == SMESH_subMesh::READY_TO_COMPUTE)
         sm->ComputeStateEngine( SMESH_subMesh::COMPUTE );
 
-    // -----------------------------------------------
-    // mesh the rest subshapes starting from vertices
-    // -----------------------------------------------
-    ret = Compute( aMesh, aShape, /*anUpward=*/true );
+    // ------------------------
+    // mesh the rest subshapes
+    // ------------------------
+    ret = Compute( aMesh, aShape );
   }
 
   MESSAGE( "VSR - SMESH_Gen::Compute() finished, OK = " << ret);
