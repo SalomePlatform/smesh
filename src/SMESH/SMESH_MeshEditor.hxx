@@ -445,11 +445,16 @@ public:
   static void AddToSameGroups (const SMDS_MeshElement* elemToAdd,
                                const SMDS_MeshElement* elemInGroups,
                                SMESHDS_Mesh *          aMesh);
-  // Add elemToAdd to the groups the elemInGroups belongs to
+  // Add elemToAdd to the all groups the elemInGroups belongs to
 
-  static void RemoveElemFromGroups (const SMDS_MeshElement* removeelem,
+  static void RemoveElemFromGroups (const SMDS_MeshElement* element,
                                     SMESHDS_Mesh *          aMesh);
-  // remove elemToAdd from the groups
+  // remove element from the all groups
+
+  static void ReplaceElemInGroups (const SMDS_MeshElement* elemToRm,
+                                   const SMDS_MeshElement* elemToAdd,
+                                   SMESHDS_Mesh *          aMesh);
+  // replace elemToRm by elemToAdd in the all groups
 
   /*!
    * \brief Return nodes linked to the given one in elements of the type
