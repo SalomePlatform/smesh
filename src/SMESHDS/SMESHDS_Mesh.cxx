@@ -705,13 +705,15 @@ void SMESHDS_Mesh::RemoveNode(const SMDS_MeshNode * n)
 //function : RemoveFreeNode
 //purpose  : 
 //=======================================================================
-void SMESHDS_Mesh::RemoveFreeNode(const SMDS_MeshNode * n, SMESHDS_SubMesh * subMesh)
+void SMESHDS_Mesh::RemoveFreeNode(const SMDS_MeshNode * n,
+                                  SMESHDS_SubMesh *     subMesh,
+                                  bool                  fromGroups)
 {
   myScript->RemoveNode(n->GetID());
 
   // Rm from group
   // Node can belong to several groups
-  if (!myGroups.empty()) {
+  if (fromGroups && !myGroups.empty()) {
     set<SMESHDS_GroupBase*>::iterator GrIt = myGroups.begin();
     for (; GrIt != myGroups.end(); GrIt++) {
       SMESHDS_Group* group = dynamic_cast<SMESHDS_Group*>(*GrIt);
@@ -754,7 +756,9 @@ void SMESHDS_Mesh::RemoveElement(const SMDS_MeshElement * elt)
 //function : RemoveFreeElement
 //purpose  : 
 //========================================================================
-void SMESHDS_Mesh::RemoveFreeElement(const SMDS_MeshElement * elt, SMESHDS_SubMesh * subMesh)
+void SMESHDS_Mesh::RemoveFreeElement(const SMDS_MeshElement * elt,
+                                     SMESHDS_SubMesh *        subMesh,
+                                     bool                     fromGroups)
 {
   if (elt->GetType() == SMDSAbs_Node) {
     RemoveFreeNode( static_cast<const SMDS_MeshNode*>(elt), subMesh);
@@ -769,11 +773,13 @@ void SMESHDS_Mesh::RemoveFreeElement(const SMDS_MeshElement * elt, SMESHDS_SubMe
 
   // Rm from group
   // Node can belong to several groups
-  set<SMESHDS_GroupBase*>::iterator GrIt = myGroups.begin();
-  for (; GrIt != myGroups.end(); GrIt++) {
-    SMESHDS_Group* group = dynamic_cast<SMESHDS_Group*>(*GrIt);
-    if (group && !group->IsEmpty())
-      group->SMDSGroup().Remove(elt);
+  if ( fromGroups && !myGroups.empty() ) {
+    set<SMESHDS_GroupBase*>::iterator GrIt = myGroups.begin();
+    for (; GrIt != myGroups.end(); GrIt++) {
+      SMESHDS_Group* group = dynamic_cast<SMESHDS_Group*>(*GrIt);
+      if (group && !group->IsEmpty())
+        group->SMDSGroup().Remove(elt);
+    }
   }
 
   // Rm from sub-mesh
