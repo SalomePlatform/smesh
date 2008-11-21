@@ -137,10 +137,15 @@ void SMDS_MeshGroup::Add(const SMDS_MeshElement * theElem)
 //purpose  : 
 //=======================================================================
 
-void SMDS_MeshGroup::Remove(const SMDS_MeshElement * theElem)
+bool SMDS_MeshGroup::Remove(const SMDS_MeshElement * theElem)
 {
-	myElements.erase(theElem);
-	if (myElements.empty()) myType = SMDSAbs_All;
+  TIterator found = myElements.find(theElem);
+  if ( found != myElements.end() ) {
+    myElements.erase(found);
+    if (myElements.empty()) myType = SMDSAbs_All;
+    return true;
+  }
+  return false;
 }
 
 //=======================================================================
