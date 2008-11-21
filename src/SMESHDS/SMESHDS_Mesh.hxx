@@ -379,8 +379,8 @@ public:
    *  Methods do not work for meshes with descendants.
    *  Implemented for fast cleaning of meshes.
    */
-  void RemoveFreeNode(const SMDS_MeshNode *, SMESHDS_SubMesh *);
-  void RemoveFreeElement(const SMDS_MeshElement *, SMESHDS_SubMesh *);
+  void RemoveFreeNode   (const SMDS_MeshNode *,    SMESHDS_SubMesh *, bool fromGroups=true);
+  void RemoveFreeElement(const SMDS_MeshElement *, SMESHDS_SubMesh *, bool fromGroups=true);
 
   void ClearMesh();
 
