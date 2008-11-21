@@ -317,7 +317,7 @@ void SMESHDS_Script::Renumber (const bool isNodes, const int startID, const int 
     myIsModified = true;
     return;
   }
-  getCommand(SMESHDS_Renumber);
+  getCommand(SMESHDS_Renumber)->Renumber( isNodes, startID, deltaID );
 }
 
 //=======================================================================
