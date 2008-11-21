@@ -2530,11 +2530,12 @@ void SMDS_Mesh::Renumber (const bool isNodes, const int  startID, const int  del
   }
   // release their ids
   map<int,SMDS_MeshElement*>::iterator elemIt = elemMap.begin();
-  for ( ; elemIt != elemMap.end(); elemIt++ )
-  {
-    int id = (*elemIt).first;
-    idFactory->ReleaseID( id );
-  }
+  idFactory->Clear();
+//   for ( ; elemIt != elemMap.end(); elemIt++ )
+//   {
+//     int id = (*elemIt).first;
+//     idFactory->ReleaseID( id );
+//   }
   // set new IDs
   int ID = startID;
   elemIt = elemMap.begin();
