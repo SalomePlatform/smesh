@@ -8,44 +8,44 @@ algorithm. This algorithm is a commercial software.
 \image html blsurf_parameters.png
 
 <ul>
-<li><b>Name</b> - allows to define the name of the hypothesis (BLSURF
-Parameters by default).</li>
+<li><b>Name</b> - allows defining the name of the hypothesis (BLSURF
+Parameters_n by default).</li>
 
-<li><b>Physical Mesh</b> - if is set to "Custom", allows to set size
-of mesh elements to generate in <b>User size</b> field.
+<li><b>Physical Mesh</b> - if set to "Custom", allows user input in te
+in <b>User size</b>, <b>Max Physical Size</b> and <b>Min Physical
+Size</b> fields.
 </li>
 
-<li><b>User size</b> - size of mesh elements to generate. </li>
+<li><b>User size</b> - defines the size of the generated mesh elements. </li>
 
-<li><b>Max Physical Size</b> - is an upper limit of mesh element size. </li>
+<li><b>Max Physical Size</b> - defines the upper limit of mesh element size. </li>
 
-<li><b>Min Physical Size</b> - is a lower limit of mesh element size. </li>
+<li><b>Min Physical Size</b> - defines the lower limit of mesh element size. </li>
 
-<li><b>Geometrical mesh</b> - if is set to "Custom", allows to set
-mesh element deflection from curves and surfaces and element
-size change rate in <b>Angle Mesh S</b>, <b>Angle Mesh C</b> and
-<b>Gradation</b> fields correspondingly. These fields control
-computation of element size, so called <i>geometrical size</i>, conform to
+<li><b>Geometrical mesh</b> - if set to "Custom", allows user input in
+ <b>Angle Mesh S</b>, <b>Angle Mesh C</b> and
+<b>Gradation</b> fields. These fields control
+computation of the element size, so called <i>geometrical size</i>, conform to
 the surface geometry considering local curvatures. \n
-The eventual element size at each point will be minimum of <b>User
-size</b>, if given, and the <i>geometrical size</i>. </li>
+If both the <b>User size</b> and the <i>geometrical size</i> are defined, the
+ eventual element size correspond to the least of the two. </li>
 
-<li><b>Angle Mesh S</b> - maximal allowed angle in degrees at a mesh
-node between the mesh face and the tangent to the geometrical surface. </li>
+<li><b>Angle Mesh S</b> - maximum angle between the mesh face and the
+tangent to the geometrical surface at each mesh node, in degrees. </li>
 
-<li><b>Angle Mesh C</b> - maximal allowed angle in degrees at a mesh
-node between the mesh edge and the tangent to the geometrical curve. </li>
+<li><b>Angle Mesh C</b> - maximum angle between the mesh edge and the
+tangent to the geometrical curve at each mesh node, in degrees. </li>
 
-<li><b>Max Geometrical Size</b> - is an upper limit of <i>geometrical size</i>.</li>
+<li><b>Max Geometrical Size</b> - defines the upper limit of the <i>geometrical size</i>.</li>
 
-<li><b>Min Geometrical Size</b> - is a lower limit of <i>geometrical size</i>.</li>
+<li><b>Min Geometrical Size</b> - defines the lower limit of the <i>geometrical size</i>.</li>
 
-<li><b>Gradation</b> - maximal allowed ratio between the lengths of
+<li><b>Gradation</b> - maximum ratio between the lengths of
 two adjacent edges. </li>
 
-<li><b>Allow Quadrangles</b> - to create quadrilateral elements.</li>
+<li><b>Allow Quadrangles</b> - if checked, allows the creation of quadrilateral elements.</li>
 
-<li><b>Patch independent</b> - if this box is checked on, geometrical
+<li><b>Patch independent</b> - if checked, geometrical
 edges are not respected and all geometrical faces are meshed as one
 hyper-face.</li>
 
@@ -56,7 +56,7 @@ not sewed faces.
 <ul>
   <li>"From CAD" means that mesh conformity is assured by conformity
   of a shape.</li>
-  <li>"Pre-process" and "Pre-process++" let BLSURF software
+  <li>"Pre-process" and "Pre-process++" allow the BLSURF software to
   pre-process the geometrical model to eventually produce a conform
   mesh. </li>
 </ul>
@@ -64,16 +64,17 @@ not sewed faces.
 <li><b>Verbosity level</b> - Defines the percentage of "verbosity" of
 BLSURF [0-100].</li>
 
-<li><b>Add option</b> - provides a choice of multiple advanced
-options, each of which, if selected, appear in a table where you can
-enter a value of the option and edit it later.</li>
+<li><b>Add option</b> - provides the choice of multiple advanced
+options, which appear, if selected, in a table where it is possible to
+input the value of the option and to edit it later.</li>
 
-<li><b>Clear option</b> - removes option selected in the table.
+<li><b>Clear option</b> - removes the option selected in the table.
 
 </ul>
 
 \n
-Commonly usable options are following. The name <i>diag</i> stands there for
+The following options are commonly usable. The notion of <i>diag</i>
+used in the descriptions means
 the diagonal of the bounding box of the geometrical object to mesh.
 
 <ul>
@@ -111,16 +112,16 @@ to</i> <i>P2</i> .
 </ul>
 Default is 0.</li>
 
-<li>\b hmean_flag (integer) - determines the computation of the mean of several
+<li>\b hmean_flag (integer) - determines the computation of the average of several
 values:<ul>
 <li>-1 - the minimum is computed.</li>
-<li>0 or 2 - the arithmetic mean computed.
-<li>1 - the geometric mean is computed.</li>
+<li>0 or 2 - the arithmetic average computed.
+<li>1 - the geometric average is computed.</li>
 </ul>
 Default is 0.</li>
 
 <li>\b CheckAdjacentEdges, \b CheckCloseEdges and \b CheckWellDefined
-(integers) - give number of calls of equally named subroutines the
+(integers) - gives the number of calls of equally named subroutines the
 purpose of which is to improve the mesh of domains having narrow
 parts. At each iteration,\b CheckCloseEdges decreases the sizes of the
 edges when two boundary curves are neighboring,\b CheckAdjacentEdges
@@ -131,12 +132,12 @@ the parametric domain is well defined. Default values are 0.</li>
 <li>\b CoefRectangle (real)- defines the relative thickness of the rectangles
 used by subroutine \b CheckCloseEdges (see above). Default is 0.25.</li>
 
-<li>\b eps_collapse (real) - if is more than 0.0, BLSURF removes
-curves whose lengths are less than \b eps_collapse. Here, to obtain an
-approximate value of the length of a curve, the latter is arbitrarily
+<li>\b eps_collapse (real) - if more than 0.0, BLSURF removes
+curves whose lengths are less than \b eps_collapse. To obtain an
+approximate value of the length of a curve, it is arbitrarily
 split into 20 edges. Default is 0.0.</li>
 
-<li>\b eps_ends (real) - is used to detect curves whose lengths are very
+<li>\b eps_ends (real) - is used to detect the curves whose lengths are very
 small, which sometimes constitutes an error. A message is printed
 if<i> fabs(P2-P1) < eps_ends</i>, where <i>P1</i> and <i>P2</i> are the
 extremities of a curve. Default is <i>diag</i>/500.0.</li>
@@ -196,18 +197,18 @@ String variables:
 \n
 Currently BLSURF plugin has the following limitations.
 <ul>
-  <li>Mesh contains inverted elements, if it is based on shape,
+  <li>The created mesh will contain inverted elements if it is based on a shape,
       consisting of more than one face (box, cone, torus...) and if
-      the option "Allow Quadrangles (Test)" was checked before
+      the option "Allow Quadrangles (Test)" has been checked before
       computation.</li>
 
-  <li>SIGFPE exception is raised at trying to compute mesh, based on
-      box, with checked option "Patch independent".</li>
+  <li>SIGFPE exception is raised at the attempt to compute the mesh
+      based on a box when the option "Patch independent" is checked.</li>
 
-  <li>It has been found out that BLSURF algorithm can't be used as a
-      local algorithm (on sub-meshes) and as a provider of low-level
-      mesh for some 3D algorithms because BLSURF mesher (and
-      consequently plugin) does not provide information on node
+  <li>BLSURF algorithm cannot be used as a local algorithm (on
+      sub-meshes) or as a provider of a low-level
+      mesh for some 3D algorithms, because the BLSURF mesher (and
+      consequently plugin) does not provide the information on node
       parameters on edges (U) and faces (U,V). For example the
       following combinations of algorithms are impossible:
       <ul>
