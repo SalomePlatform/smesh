@@ -41,12 +41,11 @@ usr_docs:
 	echo "Processing smeshDC.py file: "; \
 	$(doxygen) ./doxyfile_py; \
 	cd ./smeshpy_doc; \
-	filesl=`find .`; \
+	filesl=`find . -type f`; \
 	for filen in $${filesl}; do \
-	  sed 's/\([^s1e]\)smeshDC\|^smeshDC/\1smesh/g' $${filen} > ./tmp; \
-	  sed 's/smesh:://g' ./tmp > ./tmp1; \
+	  sed 's/\([^s1e]\)smeshDC\|^smeshDC/\1smesh/g' $${filen} > tmp; \
+	  sed 's/smesh:://g' tmp > $${filen}; \
 	  rm -f tmp; \
-	  mv -f tmp1 $${filen}; \
 	done; \
 	cd ..; \
 	echo "Running doxygen in directory: "`pwd`; \

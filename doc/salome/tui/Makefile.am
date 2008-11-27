@@ -31,25 +31,20 @@ dev_docs:
 	cp -fr $(srcdir)/SMESH ./INPUT; \
 	cp -f ./SMESH/doxyfile ./INPUT; \
 	cd INPUT; \
-	sed 's|../../../share/salome|$(top_srcdir)|' ./doxyfile > ./doxyfile1; \
-	sed 's|../../build/salome|$(top_builddir)|' ./doxyfile1 > ./doxyfile2; \
-	mv -f doxyfile2 doxyfile1; \
 	echo "DOXYGEN SUPPORT PYTHON - @DOXYGEN_WITH_PYTHON@"; \
 	if( test "x@DOXYGEN_WITH_PYTHON@" = "xyes"); then \
-	  sed 's|python_extension_must_be_here|*.py|' ./doxyfile1 > ./doxyfile2; \
-	  mv -f doxyfile2 doxyfile1; \
-	  $(DOXYGEN) -u ./doxyfile1; \
+	  sed 's|python_extension_must_be_here|*.py|' doxyfile > doxyfile1; \
 	else \
-	  sed 's|python_extension_must_be_here||' ./doxyfile1 > ./doxyfile2; \
-	  mv -f doxyfile2 doxyfile1; \
-	fi; \
-	if( test "x@DOXYGEN_WITH_STL@" = "xyes"); then \
-	  sed -e 's|BUILTIN_STL_SUPPORT    = NO|BUILTIN_STL_SUPPORT    = YES|' ./doxyfile1 > ./doxyfile2; \
-	  mv -f doxyfile2 doxyfile1; \
+	  sed 's|python_extension_must_be_here||' doxyfile > doxyfile1; \
 	fi; \
 	mv -f doxyfile1 doxyfile; \
+	if( test "x@DOXYGEN_WITH_STL@" = "xyes"); then \
+	  sed -e 's|BUILTIN_STL_SUPPORT    = NO|BUILTIN_STL_SUPPORT    = YES|' doxyfile > doxyfile1; \
+	  mv -f doxyfile1 doxyfile; \
+	fi; \
+	$(DOXYGEN) -u doxyfile; \
 	echo "Running doxygen in directory:"`pwd`; \
-	$(DOXYGEN) ./doxyfile; \
+	$(DOXYGEN) doxyfile; \
 	cd ../; \
 	cp -fr $(srcdir)/SMESH/sources/ SMESH ; \
 	rm -fr INPUT
@@ -58,3 +53,13 @@ doctuidir=$(docdir)/tui/SMESH
 
 nodist_doctui_DATA= SMESH/doxyfile
 EXTRA_DIST+= SMESH/doxyfile.in
+
+install-data-local:
+	if test -d SMESH; then \
+	  $(INSTALL) -d $(docdir)/tui ; \
+	  cp -rp SMESH $(docdir)/tui ; \
+	  find $(docdir)/tui -name CVS -prune -exec rm -rf {} ";" ; \
+	fi;
+
+uninstall-local:
+	rm -rf $(docdir)/tui/SMESH
