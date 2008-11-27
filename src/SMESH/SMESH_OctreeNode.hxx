@@ -1,7 +1,6 @@
-//  SMESH SMESH_OctreeNode : Octree with Nodes set
-//  inherites global class SMESH_Octree
+//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
 //  This library is free software; you can redistribute it and/or
@@ -18,15 +17,15 @@
 //  License along with this library; if not, write to the Free Software
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
-//
-//
+//  SMESH SMESH_OctreeNode : Octree with Nodes set
+//  inherites global class SMESH_Octree
 // File      : SMESH_OctreeNode.hxx
 // Created   : Tue Jan 16 16:00:00 2007
 // Author    : Nicolas Geimer & Aurélien Motteux  (OCC)
 // Module    : SMESH
-
+//
 #ifndef _SMESH_OCTREENODE_HXX_
 #define _SMESH_OCTREENODE_HXX_
 
