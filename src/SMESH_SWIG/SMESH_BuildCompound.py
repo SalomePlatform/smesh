@@ -1,4 +1,7 @@
-#  Copyright (C) 2003  CEA
+#  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+#
+#  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+#  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 #
 #  This library is free software; you can redistribute it and/or
 #  modify it under the terms of the GNU Lesser General Public
@@ -16,18 +19,15 @@
 #
 #  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
-#
-#
 #  File   : SMESH_BuildCompound.py
 #  Author : Alexander KOVALEV
 #  Module : SMESH
 #  $Header$
-
 # ! Please, if you edit this example file, update also
 # ! SMESH_SRC/doc/salome/gui/SMESH/input/tui_creating_meshes.doc
 # ! as some sequences of symbols from this example are used during
 # ! documentation generation to identify certain places of this file
-
+#
 import geompy
 import smesh
 
