@@ -3339,12 +3339,7 @@ void SMESHGUI::createPreferences()
   setPreferenceProperty( qaGroup, "columns", 2 );
   addPreference( tr( "PREF_DISPLAY_ENTITY" ), qaGroup, LightApp_Preferences::Bool, "SMESH", "display_entity" );
   addPreference( tr( "PREF_PRECISION_USE" ), qaGroup, LightApp_Preferences::Bool, "SMESH", "use_precision" );
-
-  int precGroup = addPreference( tr( "PREF_GROUP_PRECISION" ), genTab );
-  setPreferenceProperty( precGroup, "columns", 2 );
-
-  int prec = addPreference( tr( "PREF_PRECISION_VALUE" ), precGroup, LightApp_Preferences::IntSpin, "SMESH", "controls_precision" );
-
+  int prec = addPreference( tr( "PREF_PRECISION_VALUE" ), qaGroup, LightApp_Preferences::IntSpin, "SMESH", "controls_precision" );
   setPreferenceProperty( prec, "min", 0 );
   setPreferenceProperty( prec, "max", 16 );
 
