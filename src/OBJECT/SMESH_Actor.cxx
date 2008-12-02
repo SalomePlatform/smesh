@@ -120,8 +120,9 @@ SMESH_ActorDef::SMESH_ActorDef()
 
   myControlsPrecision = -1;
   SUIT_ResourceMgr* mgr = SUIT_Session::session()->resourceMgr();
+  
   if ( mgr && mgr->booleanValue( "SMESH", "use_precision", false ) )
-    myControlsPrecision = (long)SMESH::GetFloat( "SMESH", "controls_precision", -1 );
+    myControlsPrecision = mgr->integerValue( "SMESH", "controls_precision", -1);
 
   vtkFloatingPointType aPointSize = SMESH::GetFloat("SMESH:node_size",3);
   vtkFloatingPointType aLineWidth = SMESH::GetFloat("SMESH:element_width",1);
