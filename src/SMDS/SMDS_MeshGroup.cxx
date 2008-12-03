@@ -139,7 +139,8 @@ void SMDS_MeshGroup::Add(const SMDS_MeshElement * theElem)
 
 bool SMDS_MeshGroup::Remove(const SMDS_MeshElement * theElem)
 {
-  TIterator found = myElements.find(theElem);
+  std::set<const SMDS_MeshElement *>::iterator found
+    = myElements.find(theElem);
   if ( found != myElements.end() ) {
     myElements.erase(found);
     if (myElements.empty()) myType = SMDSAbs_All;
