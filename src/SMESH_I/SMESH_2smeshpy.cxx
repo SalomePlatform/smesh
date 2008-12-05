@@ -1712,8 +1712,22 @@ const TCollection_AsciiString & _pyCommand::GetObject()
   {
     // beginning
     int begPos = GetBegPos( RESULT_IND ) + myRes.Length();
-    if ( begPos < 1 )
+    if ( begPos < 1 ) {
       begPos = myString.Location( "=", 1, Length() ) + 1;
+      // is '=' in the string argument (for example, name) or not
+      int nb1 = 0; // number of ' character at the left of =
+      int nb2 = 0; // number of " character at the left of =
+      for ( int i = 1; i < begPos-1; i++ ) {
+	if ( IsEqual(myString.Value( i ), "'" ) )
+	  nb1 += 1;
+	else if ( IsEqual( myString.Value( i ), '"' ) )
+	  nb2 += 1;
+      }
+      // if number of ' or " is not divisible by 2,
+      // then get an object at the start of the command
+      if ( fmod( nb1, 2 ) != 0 || fmod( nb2, 2 ) != 0 )
+	begPos = 1;
+    }
     // store
     myObj = GetWord( myString, begPos, true );
     SetBegPos( OBJECT_IND, begPos );
