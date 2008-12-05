@@ -1,4 +1,6 @@
-#  Copyright (C) 2005  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+#  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+#
+#  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 #  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 #
 #  This library is free software; you can redistribute it and/or
@@ -15,16 +17,14 @@
 #  License along with this library; if not, write to the Free Software
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 #
-# See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+#  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 # -* Makefile *- 
-#
 # Author : Patrick GOLDBRONN (CEA)
 # Date : 28/06/2001
 #  Modified by : Alexander BORODIN (OCN) - autotools usage
 # $Header$
 #
-
 include $(top_srcdir)/adm_local/unix/make_common_starter.am
 
 dist_salomeres_DATA = \
