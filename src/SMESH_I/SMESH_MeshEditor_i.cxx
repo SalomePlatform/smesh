@@ -1,6 +1,6 @@
-//  SMESH SMESH_I : idl implementation based on 'SMESH' unit's calsses
+//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
 //  This library is free software; you can redistribute it and/or
@@ -19,13 +19,12 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
-//
-//
+//  SMESH SMESH_I : idl implementation based on 'SMESH' unit's calsses
 //  File   : SMESH_MeshEditor_i.cxx
 //  Author : Nicolas REJNERI
 //  Module : SMESH
 //  $Header$
-
+//
 #include "SMESH_MeshEditor_i.hxx"
 
 #include "SMDS_MeshEdge.hxx"
