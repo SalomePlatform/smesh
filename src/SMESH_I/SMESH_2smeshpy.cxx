@@ -1726,7 +1726,7 @@ const TCollection_AsciiString & _pyCommand::GetObject()
       }
       // if number of ' or " is not divisible by 2,
       // then get an object at the start of the command
-      if ( fmod( nb1, 2 ) != 0 || fmod( nb2, 2 ) != 0 )
+      if ( nb1 % 2 != 0 || nb2 % 2 != 0 )
 	begPos = 1;
     }
     // store
