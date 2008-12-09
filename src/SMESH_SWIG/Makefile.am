@@ -57,6 +57,7 @@ dist_salomescript_DATA= \
 	ex21_lamp.py \
 	ex24_cylinder.py \
 	ex29_refine.py \
+	ex30_tepal.py \
 	SMESH_test.py\
 	SMESH_test0.py\
 	SMESH_test1.py \

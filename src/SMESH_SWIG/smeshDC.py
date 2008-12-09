@@ -128,6 +128,7 @@ NETGEN_FULL   = FULL_NETGEN
 Hexa    = 8
 Hexotic = 9
 BLSURF  = 10
+GHS3DPRL = 11
 
 # MirrorType enumeration
 POINT = SMESH_MeshEditor.POINT
@@ -332,10 +333,10 @@ class smeshDC(SMESH._objref_SMESH_Gen):
     #  @ingroup l1_auxiliary
     def SetCurrentStudy( self, theStudy, geompyD = None ):
         #self.SetCurrentStudy(theStudy)
-	if not geompyD:
-	    import geompy
-	    geompyD = geompy.geom
-	    pass
+        if not geompyD:
+            import geompy
+            geompyD = geompy.geom
+            pass
         self.geompyD=geompyD
         self.SetGeomEngine(geompyD)
         SMESH._objref_SMESH_Gen.SetCurrentStudy(self,theStudy)
@@ -777,7 +778,7 @@ class Mesh:
     #  The parameter \a algo permits to choose the algorithm: NETGEN or GHS3D
     #  If the optional \a geom parameter is not set, this algorithm is global.
     #  \n Otherwise, this algorithm defines a submesh based on \a geom subshape.
-    #  @param algo values are: smesh.NETGEN, smesh.GHS3D, smesh.FULL_NETGEN
+    #  @param algo values are: smesh.NETGEN, smesh.GHS3D, smesh.GHS3DPRL, smesh.FULL_NETGEN
     #  @param geom If defined, the subshape to be meshed (GEOM_Object)
     #  @return an instance of Mesh_Tetrahedron algorithm
     #  @ingroup l3_algos_basic
@@ -3122,7 +3123,7 @@ class Mesh_Segment(Mesh_Algorithm):
 # --------------------------
 
 ## Defines a segment 1D algorithm for discretization
-#  
+#
 #  @ingroup l3_algos_basic
 class Mesh_CompositeSegment(Mesh_Segment):
 
@@ -3517,6 +3518,11 @@ class Mesh_Tetrahedron(Mesh_Algorithm):
             self.Create(mesh, geom, "GHS3D_3D" , "libGHS3DEngine.so")
             pass
 
+        elif algoType == GHS3DPRL:
+            import GHS3DPRLPlugin
+            self.Create(mesh, geom, "GHS3DPRL_3D" , "libGHS3DPRLEngine.so")
+            pass
+
         self.algoType = algoType
 
     ## Defines "MaxElementVolume" hypothesis to give the maximun volume of each tetrahedron
@@ -3544,6 +3550,7 @@ class Mesh_Tetrahedron(Mesh_Algorithm):
     def Parameters(self, which=SOLE):
         if self.params:
             return self.params
+
         if self.algoType == FULL_NETGEN:
             if which == SIMPLE:
                 self.params = self.Hypothesis("NETGEN_SimpleParameters_3D", [],
@@ -3552,11 +3559,17 @@ class Mesh_Tetrahedron(Mesh_Algorithm):
                 self.params = self.Hypothesis("NETGEN_Parameters", [],
                                               "libNETGENEngine.so", UseExisting=0)
             return self.params
+
         if self.algoType == GHS3D:
             self.params = self.Hypothesis("GHS3D_Parameters", [],
                                           "libGHS3DEngine.so", UseExisting=0)
             return self.params
-        
+
+        if self.algoType == GHS3DPRL:
+            self.params = self.Hypothesis("GHS3DPRL_Parameters", [],
+                                          "libGHS3DPRLEngine.so", UseExisting=0)
+            return self.params
+
         print "Algo supports no multi-parameter hypothesis"
         return None
 
@@ -3673,7 +3686,7 @@ class Mesh_Tetrahedron(Mesh_Algorithm):
     ## To keep working files or remove them. Log file remains in case of errors anyway.
     #  @ingroup l3_hypos_ghs3dh
     def SetKeepFiles(self, toKeep):
-        #  Advanced parameter of GHS3D
+        #  Advanced parameter of GHS3D and GHS3DPRL
         self.Parameters().SetKeepFiles(toKeep)
 
     ## To set verbose level [0-10]. <ul>
@@ -3702,11 +3715,23 @@ class Mesh_Tetrahedron(Mesh_Algorithm):
         #  Advanced parameter of GHS3D
         self.Parameters().SetToUseBoundaryRecoveryVersion(toUse)
 
-    ## Sets command line option as text. 
+    ## Sets command line option as text.
     #  @ingroup l3_hypos_ghs3dh
     def SetTextOption(self, option):
         #  Advanced parameter of GHS3D
         self.Parameters().SetTextOption(option)
+
+    ## Sets MED files name and path.
+    def SetMEDName(self, value):
+        self.Parameters().SetMEDName(value)
+
+    ## Sets the number of partition of the initial mesh
+    def SetNbPart(self, value):
+        self.Parameters().SetNbPart(value)
+
+    ## When big mesh, start tepal in background
+    def SetBackground(self, value):
+        self.Parameters().SetBackground(value)
 
 # Public class: Mesh_Hexahedron
 # ------------------------------
@@ -3883,7 +3908,7 @@ class Mesh_Projection3D(Mesh_Algorithm):
         Mesh_Algorithm.__init__(self)
         self.Create(mesh, geom, "Projection_3D")
 
-    ## Defines the "Source Shape 3D" hypothesis, specifying a meshed solid, from where 
+    ## Defines the "Source Shape 3D" hypothesis, specifying a meshed solid, from where
     #  the mesh pattern is taken, and, optionally, the  association of vertices
     #  between the source and the target solid  (to which a hipothesis is assigned)
     #  @param solid from where the mesh pattern is taken
