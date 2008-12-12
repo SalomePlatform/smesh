@@ -2,8 +2,10 @@
 
 \page rotation_page Rotation
 
-\n This geometrical operation allows to rotate in space your mesh or
+\n This operation allows to rotate in space your mesh or
 some of its elements.
+
+\image html rotation_ico.png "Rotation button"
 
 <em>To rotate your mesh:</em>
 \par
@@ -27,9 +29,9 @@ rotated and the rotation parameters:
 \par
 
 
-\image html rotation1.png
+\image html rotation1.png "The initial mesh"
 
-\image html rotation2.png
+\image html rotation2.png "The rotated mesh"
 
 <br><b>See Also</b> a sample TUI Script of a 
 \ref tui_rotation "Rotation" operation.  

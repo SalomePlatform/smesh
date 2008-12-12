@@ -22,7 +22,7 @@ which will compose the mesh of these 2D faces.
 
 \image html a-maxelarea.png
 
-\image html max_el_area.png
+\image html max_el_area.png "In this example, Max. element area is very small compared to the 1D hypothesis"
 
 <b>See Also</b> a sample TUI Script of a 
 \ref tui_max_element_area "Maximum Element Area" hypothesis

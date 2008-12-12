@@ -22,7 +22,7 @@ beginning from a given starting length and up to a given end length.
 
 \image html a-arithmetic1d.png
 
-\image html b-ithmetic1d.png
+\image html b-ithmetic1d.png "Arithmetic 1D hypothesis - the size of mesh elements gradually increases"
 
 <b>See Also</b> a sample TUI Script of a 
 \ref tui_1d_arithmetic "Defining Arithmetic 1D hypothesis" operation.  
@@ -42,7 +42,7 @@ locations and 1D mesh elements are constructed on segments.
 
 \image html a-deflection1d.png
 
-\image html b-flection1d.png
+\image html b-flection1d.png "Deflection 1D hypothesis - useful for meshing curvilinear edges"
 
 <b>See Also</b> a sample TUI Script of a 
 \ref tui_deflection_1d "Defining Deflection 1D hypothesis" operation.
@@ -71,7 +71,7 @@ integer. Default value is 1e-07.
 
 \image html a-averagelength.png
 
-\image html b-erage_length.png
+\image html b-erage_length.png "Average length hypothesis - all 1D mesh elements are roughly equal"
 
 <b>See Also</b> a sample TUI Script of a 
 \ref tui_average_length "Defining Average Length" hypothesis
@@ -99,8 +99,6 @@ You can set the type of distribution for this hypothesis in the
 
 <br><b>Equidistant Distribution</b> - all segments will have the same
 length, you define only the <b>Number of Segments</b>.
-
-\image html b-mberofsegments.png
 
 <br><b>Scale Distribution</b> - length of segments gradually changes depending on the <b>Scale Factor</b>, which is a ratio of the first segment length to the last segment length.
 
@@ -130,14 +128,14 @@ operation.
 
 <b>Start and End Length</b> hypothesis allows to divide a geometrical edge
 into segments so that the first and the last segments have a specified
-length. The length of each but the first segment differs from length
-of the previous one by a constant factor. Then mesh nodes are
+length. The length medium segments changes with automatically chosen
+geometric progression. Then mesh nodes are
 constructed at segment ends location and 1D mesh elements are
 constructed on them.
 
 \image html a-startendlength.png
 
-\image html b-art_end_length.png
+\image html b-art_end_length.png "The lengths of the first and the last segment are strictly defined"
 
 <b>See Also</b> a sample TUI Script of a 
 \ref tui_start_and_end_length "Defining Start and End Length"
@@ -158,8 +156,7 @@ low number of elements) to 1 (extremely fine mesh, great number of
 elements). Compare one and the same object (sphere) meshed with
 minimum and maximum value of this parameter.
 
-\image html image147.gif
+\image html image147.gif "Example of a very rough mesh. Automatic Length works for 0."
 
-\image html image148.gif
-
+\image html image148.gif "Example of a very fine mesh. Automatic Length works for 1."
 */

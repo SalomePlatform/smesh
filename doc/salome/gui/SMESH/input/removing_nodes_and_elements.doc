@@ -37,10 +37,6 @@ Shift button) by choosing them in the 3D viewer.
 \note Be careful while removing nodes because if you remove a definite
 node of your mesh all adjacent elements will be also deleted.
 
-\image html remove_nodes1.png
-
-\image html remove_nodes2.png
-
 <br>
 \anchor removing_elements_anchor
 <h2>Removing elements</h2>
@@ -66,10 +62,9 @@ mesh (with pressed Shift button) by choosing them in the 3D viewer.
 <li>Click \b Apply or <b>Apply and Close</b> to confirm deletion of the specified elements.</li>
 </ol>
 
-\image html remove_elements1.png
+\image html remove_nodes1.png "The initial mesh"
 
-\image html remove_elements2.png
-
+\image html remove_nodes2.png "The mesh with some elements removed" 
 
 <br>
 \anchor clear_mesh_anchor

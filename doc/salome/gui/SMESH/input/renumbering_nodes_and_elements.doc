@@ -19,7 +19,7 @@
 choose the \b Nodes item or click <em>"Renumbering nodes"</em> button
 in the toolbar.
 
-\image html image63.gif
+\image html image63.png
 <center><em>"Renumbering nodes" button</em></center>
 
 The following dialog box will appear:
@@ -42,7 +42,7 @@ Browser or in the 3D viewer.</li>
 choose the \b Elements item or click <em>"Renumbering elements"</em>
 button in the toolbar.
 
-\image html image64.gif
+\image html image64.png
 <center><em>"Renumbering elements" button</em></center>
 
 The following dialog box will appear:

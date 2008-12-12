@@ -10,7 +10,7 @@
 From the \b Mesh menu select <b>Build Compound</b> or click <em>"Build
 Compound Mesh"</em> button in the toolbar.
 
-\image html image161.gif
+\image html image161.png
 <center><em>"Build Compound Mesh" button</em></center>
 
 \par
@@ -45,8 +45,6 @@ and elements</b>, in which case it is possible to define the \b Tolerance
 for this operation.</li>
 </ul>
 
-\n <b>Example:</b>
-
-\image html image160.gif
+\image html image160.gif "Example of a compound of two meshed cubes"
 
 */

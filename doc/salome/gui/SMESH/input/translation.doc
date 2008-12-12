@@ -5,6 +5,8 @@
 \n This geometrical operation allows to translate in space your mesh
 or some of its elements.
 
+\image html translation.png "Translation button"
+
 <em>To translate your mesh:</em>
 \par
 From the \b Modification choose \b Transformation and from its

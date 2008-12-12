@@ -5,6 +5,10 @@
 \n This functionality allows to merge coincident elements of a mesh
 selectable in the dialog box.
 
+
+\image html mergeelems_ico.png "Merge elements button"
+
+
 \image html mergeelems.png
 
 <ul>
@@ -23,13 +27,13 @@ selectable in the dialog box.
     </ul></li>
   <li><b>Edit selected group</b> list allows editing the selected group:
     <br><br>
-    \image html add.gif
+    \image html add.png
     <center>adds to the group the element selected in the viewer.</center>
     <br>
-    \image html remove.gif
+    \image html remove.png
     <center>removes from the group the selected element.</center>
     <br>
-    \image html sort.gif
+    \image html sort.png
     <center>moves the selected element to the first position in the
     group. This means that all other elements will be merged into this
     one.</center>

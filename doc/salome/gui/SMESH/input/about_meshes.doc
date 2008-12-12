@@ -3,15 +3,25 @@
 \page about_meshes_page About meshes
 
 \n \b MESH represents a discretization of a geometrical CAD model into
-a set of entities with a simple topology. In MESH there are two
-options of creation of meshes, you can:
+a set of entities with a simple topology. 
 
-<ul>
-<li>generate meshes on the basis of geometrical shapes produced in the GEOM module,</li>
-<li>create your own meshes using the MESH functions destined for modification of generated meshes.</li>
-</ul>
+Meshes are stored in DAT, MED and UNV formats and can be
+\subpage importing_exporting_meshes_page "imported from and exported to"
+ the file in these formats.
 
-The topology of a mesh is described by the relationships between its
+However, it is possible to \subpage constructing_meshes_page "construct meshes" 
+on the basis of geometrical shapes produced in the GEOM module.
+It is also possible to \subpage constructing_submeshes_page "create mesh on a part of the geometrical object", 
+for example, a face. 
+
+Several created meshes can be \subpage building_compounds_page "combined into mesh compounds".
+
+All created meshes and submeshes can be \subpage editing_meshes_page "edited".
+
+Meshes can be also using the MESH functions destined for 
+\ref modifying_meshes_page "modification" of generated meshes.
+
+The \b topology of a mesh is described by the relationships between its
 entities including:
 
 <ul>

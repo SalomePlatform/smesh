@@ -6,7 +6,7 @@
 of two triangles separated by a diagonal. So it can be calculated only
 for elements consisting of 4 nodes.
 
-\image html image25.gif
+\image html image25.png
 
 <br><em>To apply the Taper quality criterion to your mesh:</em>
 
@@ -16,7 +16,7 @@ for elements consisting of 4 nodes.
 <li>Choose <b>Controls > Taper</b> or click <em>"Taper"</em> button in
 the toolbar.
 
-\image html image36.gif
+\image html image36.png
 <center><em>"Taper" button</em></center>
 
 Your mesh will be displayed in the viewer with its elements colored

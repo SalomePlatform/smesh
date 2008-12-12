@@ -1,116 +1,26 @@
 /*!
 
-\mainpage SMESH Module Reference Documentation
+\mainpage Introduction to MESH
 
+\image html a-viewgeneral.png
+
+\n \b MESH module of SALOME is destined for:
 <ul>
-<li>\subpage introduction_to_mesh_page</li>
-<li>\subpage running_mesh_module_page</li>
-<li>\subpage introduction_to_mesh_python_page</li>
-<li>\subpage creating_meshes_page</li>
-<ul>
-<li>\ref about_meshes_page</li>
-<li>\ref importing_exporting_meshes_page</li>
-<li>\ref constructing_meshes_page</li>
-<li>\ref defining_algos_page</li>
-<ul>
-<li>\ref basic_meshing_algos_page</li>
-<li>\ref projection_algos_page</li>
-<li>\ref radial_prism_algo_page</li>
-<li>\ref segments_around_vertex_algo_page</li>
-<li>\ref prism_3d_algo_page</li>
+<li>\ref importing_exporting_meshes_page "import and export of meshes in MED format";</li>
+<li>\subpage about_meshes_page "meshing geometrical models"
+previously created or imported by the Geometry component; </li>
+<li>\subpage viewing_meshes_overview_page "viewing created meshes" in
+the VTK viewer;</li>
+<li>\subpage grouping_elements_page "creating groups of mesh elements";</li>
+<li>applying to meshes \subpage quality_page "Quality Controls" , 
+allowing to highlight important elements:
+<li>\subpage modifying_meshes_page "modifying meshes" with a vast
+array of dedicated operations.</li> 
 </ul>
-<li>\ref defining_hypo_page</li>
-<ul>
-<li>\ref about_hypo_page</li>
-<li>\ref a1d_meshing_hypo_page</li>
-<li>\ref a2d_meshing_hypo_page</li>
-<li>\ref max_element_volume_hypo_page</li>
-<li>\ref netgen_2d_3d_hypo_page</li>
-<li>\ref ghs3d_hypo_page</li>
-<li>\ref blsurf_hypo_page</li>
-<li>\ref additional_hypo_page</li>
-</ul>
-<li>\ref constructing_submeshes_page</li>
-<li>\ref building_compounds_page</li>
-<li>\ref editing_meshes_page</li>
-</ul>
-<li>\subpage viewing_meshes_page</li>
-<ul>
-<li>\ref viewing_meshes_overview_page</li>
-<li>\ref mesh_infos_page</li>
-<li>\ref numbering_page</li>
-<li>\ref display_mode_page</li>
-<li>\ref display_entity_page</li>
-<li>\ref transparency_page</li>
-<li>\ref clipping_page</li>
-</ul>
-<li>\subpage quality_controls_page</li>
-<ul>
-<li>\ref about_quality_controls_page</li>
-<li>\ref free_borders_page</li>
-<li>\ref borders_at_multi_connection_page</li>
-<li>\ref length_page</li>
-<li>\ref free_edges_page</li>
-<li>\ref length_2d_page</li>
-<li>\ref borders_at_multi_connection_2d_page</li>
-<li>\ref area_page</li>
-<li>\ref taper_page</li>
-<li>\ref aspect_ratio_page</li>
-<li>\ref minimum_angle_page</li>
-<li>\ref warping_page</li>
-<li>\ref skew_page</li>
-<li>\ref aspect_ratio_3d_page</li>
-<li>\ref volume_page</li>
-</ul>
-<li>\subpage grouping_elements_page</li>
-<ul>
-<li>\ref creating_groups_page</li>
-<li>\ref editing_groups_page</li>
-<li>\ref using_operations_on_groups_page</li>
-<li>\ref constructing_groups_of_specific_elements_page</li>
-<li>\ref deleting_groups_page</li>
-<li>\ref selection_filter_library_page</li>
-</ul>
-<li>\subpage modifying_meshes_page</li>
-<ul>
-<li>\ref adding_nodes_and_elements_page</li>
-<li>\ref adding_quadratic_elements_page</li>
-<li>\ref removing_nodes_and_elements_page</li>
-<li>\ref renumbering_nodes_and_elements_page</li>
-<li>\ref transforming_meshes_page</li>
-<ul>
-<li>\ref translation_page</li>
-<li>\ref rotation_page</li>
-<li>\ref symmetry_page</li>
-<li>\ref sewing_meshes_page</li>
-<li>\ref merging_nodes_page</li>
-<li>\ref merging_elements_page</li>
-</ul>
-<li>\ref moving_nodes_page</li>
-<li>\ref mesh_through_point_page</li>
-<li>\ref diagonal_inversion_of_elements_page</li>
-<li>\ref uniting_two_triangles_page</li>
-<li>\ref uniting_set_of_triangles_page</li>
-<li>\ref changing_orientation_of_elements_page</li>
-<li>\ref cutting_quadrangles_page</li>
-<li>\ref smoothing_page</li>
-<li>\ref extrusion_page</li>
-<li>\ref extrusion_along_path_page</li>
-<li>\ref revolution_page</li>
-<li>\ref pattern_mapping_page</li>
-<li>\ref convert_to_from_quadratic_mesh_page</li>
-</ul>
-<li>\subpage smeshpy_interface_page</li>
-<li>\subpage tui_scripts_page</li>
-<ul>
-<li>\ref tui_creating_meshes_page</li>
-<li>\ref tui_viewing_meshes_page</li>
-<li>\ref tui_defining_hypotheses_page</li>
-<li>\ref tui_quality_controls_page</li>
-<li>\ref tui_grouping_elements_page</li>
-<li>\ref tui_modifying_meshes_page</li>
-<li>\ref tui_transforming_meshes_page</li>
-</ul>
-</ul>
+
+Almost all mesh module functionalities are accessible via
+\subpage smeshpy_interface_page "Mesh module Python interface".
+
+\image html image7.jpg "Example of MESH module usage for engineering tasks"
 
 */

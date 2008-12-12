@@ -5,6 +5,8 @@
 \n This geometrical operation allows to perform a symmetrical copy of
 your mesh or some of its elements.
 
+\image html symmetry.png "Symmetry button"
+
 <em>To apply symmetry to your mesh:</em>
 \par
 From the \b Modification choose \b Transformation and  from its

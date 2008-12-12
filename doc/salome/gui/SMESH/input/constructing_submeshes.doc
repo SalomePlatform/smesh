@@ -31,11 +31,11 @@ at computation of this submesh</li>
 
 <br><em>To construct a submesh:</em>
 \par
-From the \b Mesh menu select <b>Local Hyp.</b> or click <em>"Create
+From the \b Mesh menu select <b>Create Submesh</b> or click <em>"Create
 Sum-mesh"</em> button in the toolbar.
 
 \image html image33.gif
-<center><em>"Create Sum-mesh" button</em></center>
+<center><em>"Create Submesh" button</em></center>
 
 \par
 The following dialog box will appear:

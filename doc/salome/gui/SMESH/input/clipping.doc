@@ -16,12 +16,12 @@ object, if it is set to 0.5 the object is split in two halves; and
 Z). If the <b>Show preview</b> button is on, you can see the clipping plane
 in the <b>3D Viewer</b>.
 
-\image html image79.jpg
+\image html image79.jpg "The plane and the cut object"
 
 If the <b>Auto Apply</b> button is on, you can preview the
 cross-section in the <b>3D Viewer</b>.
 
-\image html image99.gif
+\image html image99.gif "The cross-section"
 
 To get a new object from \b Clipping, click \b Apply.
 

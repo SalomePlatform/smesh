@@ -11,7 +11,7 @@
 <li>In the \b Modification menu select the \b Smoothing item or click
 <em>"Smoothing"</em> button in the toolbar.
 
-\image html image84.gif
+\image html image84.png
 <center><em>"Smoothing" button</em></center>
 
 The dialog box contains the following fields which should be
@@ -67,9 +67,9 @@ faces in the 3D space is improved. </li>
 <li>Click the \b Apply or \b OK button to confirm the operation.</li>
 </ol>
 
-\image html smoothing1.png
+\image html smoothing1.png "The initial mesh"
 
-\image html smoothing2.png
+\image html smoothing2.png "The smoothed mesh"
 
 <br><b>See Also</b> a sample TUI Script of a 
 \ref tui_smoothing "Smoothing" operation.  

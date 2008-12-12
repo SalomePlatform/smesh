@@ -2,7 +2,7 @@
 
 \page numbering_page Numbering
 
-<br><h2>Displaying nodes numbers</h2>
+<br><h2>Displaying node numbers</h2>
 
 In MESH you can display the ID numbers of all nodes of your mesh in
 the viewer.
@@ -14,11 +14,9 @@ the viewer.
 pop-up menu choose <b>Numbering > Display Nodes #</b>.</li>
 </ol>
 
-It will look like as follows:
+\image html image96.jpg "Displayed node numbers"
 
-\image html image96.jpg
-
-<br><h2>Displaying elements numbers</h2>
+<br><h2>Displaying element numbers</h2>
 
 In MESH you can display the ID numbers of all meshing elements
 composing your mesh in the viewer.
@@ -30,9 +28,7 @@ composing your mesh in the viewer.
 pop-up menu choose <b>Numbering > Display Elements #</b>.</li>
 </ol>
 
-It will look like as follows:
-
-\image html image95.jpg
+\image html image95.jpg "Displayed element numbers"
 
 */
 

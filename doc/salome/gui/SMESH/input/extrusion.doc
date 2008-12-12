@@ -13,7 +13,7 @@ and Hexahedron solids respectively.
 <li>From the \b Modification menu choose the \b Extrusion item or click
 <em>"Extrusion"</em> button in the toolbar. 
 
-\image html image91.gif
+\image html image91.png
 <center><em>"Extrusion" button</em></center>
 
 The following dialog box will appear:
@@ -39,9 +39,9 @@ elements of the source mesh to the newly created one. </li>
 <li>Click the \b Apply or \b OK button.</li>
 </ol>
 
-\image html image77.jpg
+\image html image77.jpg "The mesh with an edge selected for extrusion"
 
-\image html image76.jpg
+\image html image76.jpg "The mesh with extruded edge" 
 
 <br><b>See Also</b> a sample TUI Script of an 
 \ref tui_extrusion "Extrusion" operation. 

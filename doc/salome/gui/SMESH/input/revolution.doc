@@ -13,7 +13,7 @@ on the revolution axis).
 <li>From the \b Modification menu choose the \b Revolution item or click
 <em>"Revolution"</em> button in the toolbar.
 
-\image html image92.gif
+\image html image92.png
 <center><em>"Revolution" button</em></center>
 
 The following dialog box shall appear:
@@ -36,12 +36,12 @@ be revolved,</li>
 <ul> <li> Angle by Step - the elements are extruded by the specified angle at each step (i.e. for Angle=30 and Number of Steps=2, the elements will be extruded 
  by 30 degrees twice for a total of 30*2=60)</li>
 
-\image html revolutionsn2.png
+\image html revolutionsn2.png "Example of Revolution with Angle by Step"
 
 <li> Total Angle - the elements are extruded by the specified angle only once and the number of steps defines the number of iterations 
 (i.e.for Angle=30 and Number of Steps=2, the elements will be extruded by 30/2=15 degrees twice for a total of 30). </li>
 
-\image html revolutionsn1.png
+\image html revolutionsn1.png "Example of Revolution with Total Angle"
 
 </ul>
 <li>tolerance of rotation</li>

@@ -10,7 +10,7 @@ formed by two neighboring triangles with one common edge.
 <li>From the \b Modification menu choose the <b>Diagonal inversion</b> item or
 click <em>"Diagonal Inversion"</em> button in the toolbar.
 
-\image html image70.gif
+\image html image70.png
 <center><em>"Diagonal Inversion" button</em></center>
 
 The following dialog box shall appear:
@@ -23,9 +23,9 @@ this edge in the 3D viewer.</li>
 <li>Click the \b Apply or <b>Apply and Close</b> button.</li>
 </ol>
 
-\image html image38.jpg
+\image html image38.jpg "The selected edge"
 
-\image html image36.jpg
+\image html image36.jpg "The inverted edge"
 
 <br><b>See Also</b> a sample TUI Script of a 
 \ref tui_diagonal_inversion "Diagonal Inversion of Elements" operation.  
