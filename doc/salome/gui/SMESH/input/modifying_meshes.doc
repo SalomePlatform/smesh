@@ -2,15 +2,14 @@
 
 \page modifying_meshes_page Modifying meshes
 
-Salome provides an extremely vast spectre of mesh modification and
+Salome provides an extremely vast specter of mesh modification and
 transformation operations, giving the possibility to:
 
 <ul>
 <li>\subpage adding_nodes_and_elements_page "Add" mesh elements from
 nodes to polyhedrons at an arbitrary place in the mesh.</li>
 <li>\subpage adding_quadratic_elements_page "Add quadratic" mesh
-elements (used in qyadratic meshes) from quadratic nodes
-nodes to quadratic polyhedrons at an arbitrary place in the mesh.</li>
+elements (used in quadratic meshes) from quadratic nodes to quadratic polyhedrons at an arbitrary place in the mesh.</li>
 <li>\subpage removing_nodes_and_elements_page "Remove" any existing
 mesh elements.</li>
 <li>\subpage renumbering_nodes_and_elements_page "Renumber" nodes and
@@ -37,7 +36,7 @@ or created anew.</li>
 <li>\subpage changing_orientation_of_elements_page "Change orientation"
  of the selected elements.</li>
 <li>\subpage cutting_quadrangles_page "Cut a quadrangle" into two triangles.</li>
-<li>\subpage smoothing_page "Smooth" elements,reducung distortions in
+<li>\subpage smoothing_page "Smooth" elements, reducung distortions in
 them by adjusting the locations of element corners.</li>
 <li>Create an \subpage extrusion_page "extrusion" along a vector.</li>
 <li>Create an \subpage extrusion_along_path_page "extrusion along a path".</li>

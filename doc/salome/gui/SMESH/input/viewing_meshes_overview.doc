@@ -8,7 +8,7 @@ mesh will be automatically displayed in the <b>VTK 3D Viewer</b>.
 Alternatively click <b>Display only</b> to hide all other objects at
 the same time.
 
-<b>VTK 3D Viewer</b> is detailly described in the documentation on <b>GUI module</b>.
+<b>VTK 3D Viewer</b> is described in detail in the documentation on <b>GUI module</b>.
 \n After the mesh has appeared in the Viewer, you can select it with
 left mouse click and  get information about it, change its
 presentation parameters and access to other useful options by
