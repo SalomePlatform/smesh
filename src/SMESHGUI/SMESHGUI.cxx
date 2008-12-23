@@ -3107,7 +3107,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   // Clipping
   //-------------------------------------------------
   popupMgr()->insert( action( 1134 ), -1, -1 );
-  popupMgr()->setRule( action( 1134 ), aMeshInVTK + "&& isVisible", true );
+  popupMgr()->setRule( action( 1134 ), aMeshInVTK + "&& selcount=1 && isVisible", true );
 
   popupMgr()->insert( separator(), -1, -1 );
 
