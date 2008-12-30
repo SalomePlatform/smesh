@@ -49,6 +49,7 @@
 #include "DriverUNV_R_SMDS_Mesh.h"
 #include "DriverSTL_R_SMDS_Mesh.h"
 
+#undef _Precision_HeaderFile
 #include <BRepPrimAPI_MakeBox.hxx>
 #include <TopExp.hxx>
 #include <TopExp_Explorer.hxx>

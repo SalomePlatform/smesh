@@ -30,6 +30,7 @@
 #include <string>
 #include <stdexcept>
 #include <cassert>
+#include <cstdlib>
 
 namespace UNV{
   class MESHDRIVERUNV_EXPORT PrefixPrinter{

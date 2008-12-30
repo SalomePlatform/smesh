@@ -81,11 +81,11 @@ dist_libSMESHimpl_la_SOURCES = \
 
 # additionnal information to compile and link file
 libSMESHimpl_la_CPPFLAGS = \
+	$(CAS_CPPFLAGS) \
 	$(KERNEL_CXXFLAGS) \
 	$(MED_CXXFLAGS) \
 	$(GEOM_CXX_FLAGS) \
 	$(BOOST_CPPFLAGS) \
-	$(CAS_CPPFLAGS) \
 	@HDF5_INCLUDES@ \
 	-I$(srcdir)/../Controls \
 	-I$(srcdir)/../Driver \
