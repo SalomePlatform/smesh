@@ -534,6 +534,10 @@ void SMESHGUI_MeshOp::selectionDone()
           }
         }
       }
+      for (int i = SMESH::DIM_3D; i > shapeDim; i--) {
+        // reset algos before disabling tabs (0020138)
+        onAlgoSelected(-1, i);
+      }
       myDlg->setMaxHypoDim( shapeDim );
 
 
