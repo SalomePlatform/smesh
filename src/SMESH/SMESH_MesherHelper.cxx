@@ -469,6 +469,11 @@ const SMDS_MeshNode* SMESH_MesherHelper::GetMediumNode(const SMDS_MeshNode* n1,
 	gp_XY p1 = GetNodeUV(F,n1,n2);
         gp_XY p2 = GetNodeUV(F,n2,n1);
 
+	if ( IsDegenShape( Pos1->GetShapeId() ))
+	  p1.SetCoord( myParIndex, p2.Coord( myParIndex ));
+	else if ( IsDegenShape( Pos2->GetShapeId() ))
+	  p2.SetCoord( myParIndex, p1.Coord( myParIndex ));
+
 	//checking if surface is periodic
 	Handle(Geom_Surface) S = BRep_Tool::Surface(F);
 	Standard_Real UF,UL,VF,VL;
