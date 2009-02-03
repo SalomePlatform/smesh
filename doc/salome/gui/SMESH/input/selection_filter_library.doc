@@ -50,17 +50,13 @@ created. You have to select the mesh and the button will be enabled.
 
 Some criteria are applicable to all <b>Entity types</b>:
 <ul><li>
-<b>Belong to Geom</b> selects entities whose all nodes
-lie on the shape defined by <b>Threshold Value</b>.
-If the threshold shape is a sub-shape of the main shape of the mesh
-the algorithm works faster, if this is any other
-shape the algorithm works slower.
+<b>Belong to Geom</b> selects entities whose all nodes belong to a
+submesh on the shape defined by <b>Threshold Value</b>. The threshold shape
+must be sub-shape of the main shape of mesh.
 </li><li>
-<b>Lying on Geom</b> selects entities whose at least one node
-lies on the shape defined by the <b>Threshold Value</b>.
-If the hreshold shape is a sub-shape of the main shape of the mesh the
-algorithm works faster, if this is any other
-shape, the algorithm works slower.
+<b>Lying on Geom</b> selects entities whose at least one node belongs to a
+submesh on the shape defined by <b>Threshold Value</b>. The threshold shape
+must be sub-shape of the main shape of mesh.
 </li><li>
 <b>Range of IDs</b> allows selection of entities with the specified
 IDs. 
