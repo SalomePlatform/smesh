@@ -1793,7 +1793,7 @@ CORBA::Long SMESH_Mesh_i::NbPrismsOfOrder(SMESH::ElementOrder order)
 CORBA::Long SMESH_Mesh_i::NbSubMesh()throw(SALOME::SALOME_Exception)
 {
   Unexpect aCatch(SALOME_SalomeException);
-  return _impl->NbSubMesh();
+  return _mapSubMesh_i.size();
 }
 
 //=============================================================================
