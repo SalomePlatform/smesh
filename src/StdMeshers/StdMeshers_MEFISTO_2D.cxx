@@ -24,7 +24,6 @@
 //           Moved here from SMESH_MEFISTO_2D.cxx
 //  Author : Paul RASCLE, EDF
 //  Module : SMESH
-//  $Header$
 //
 #include "StdMeshers_MEFISTO_2D.hxx"
 
@@ -492,7 +491,6 @@ bool StdMeshers_MEFISTO_2D::LoadPoints(TWireVector &                 wires,
   }
 
   int m = 0;
-  list< int > mOnVertex;
 
   for ( int iW = 0; iW < wires.size(); ++iW )
   {
@@ -507,6 +505,7 @@ bool StdMeshers_MEFISTO_2D::LoadPoints(TWireVector &                 wires,
       return error("Internal error");
     }
 
+    list< int > mOnVertex;
     vector<UVPtStruct>::const_iterator uvPt = uvPtVec.begin();
     for ( ++uvPt; uvPt != uvPtVec.end(); ++uvPt )
     {
