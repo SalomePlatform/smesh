@@ -1,52 +1,53 @@
-//  SMESH StdMeshersGUI : GUI for plugged-in meshers
+//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003  CEA
-// 
-//  This library is free software; you can redistribute it and/or 
-//  modify it under the terms of the GNU Lesser General Public 
-//  License as published by the Free Software Foundation; either 
-//  version 2.1 of the License. 
-// 
-//  This library is distributed in the hope that it will be useful, 
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of 
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
-//  Lesser General Public License for more details. 
-// 
-//  You should have received a copy of the GNU Lesser General Public 
-//  License along with this library; if not, write to the Free Software 
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
-// 
-// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
 //
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
 //
-//  File   : StdMeshersGUI_StdHypothesisCreator.cxx
-//  Author : Alexander SOLOVYOV
-//  Module : SMESH
-//  $Header: /home/server/cvs/SMESH/SMESH_SRC/src/StdMeshersGUI/StdMeshersGUI_StdHypothesisCreator.cxx
-
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
+// File   : StdMeshersGUI_StdHypothesisCreator.cxx
+// Author : Alexander SOLOVYOV, Open CASCADE S.A.S.
+// SMESH includes
+//
 #include "StdMeshersGUI_StdHypothesisCreator.h"
 
-#include "SMESHGUI.h"
-#include "SMESHGUI_SpinBox.h"
-#include "SMESHGUI_HypothesesUtils.h"
-#include "SMESHGUI_Utils.h"
-#include "SMESH_TypeFilter.hxx"
-#include "SMESH_NumberFilter.hxx"
-#include "StdMeshersGUI_ObjectReferenceParamWdg.h"
-#include "StdMeshersGUI_LayerDistributionParamWdg.h"
+#include <SMESHGUI.h>
+#include <SMESHGUI_SpinBox.h>
+#include <SMESHGUI_HypothesesUtils.h>
+#include <SMESHGUI_Utils.h>
+#include <SMESH_TypeFilter.hxx>
+#include <SMESH_NumberFilter.hxx>
+#include <StdMeshersGUI_ObjectReferenceParamWdg.h>
+#include <StdMeshersGUI_LayerDistributionParamWdg.h>
+#include <SALOMEDSClient_Study.hxx>
 
-#include "SUIT_ResourceMgr.h"
+// SALOME GUI includes
+#include <SUIT_ResourceMgr.h>
 
+// IDL includes
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_BasicHypothesis)
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
 
-#include <qpixmap.h>
-#include <qhbox.h>
-#include <qslider.h>
-#include <qlabel.h>
-
+// Qt includes
+#include <QHBoxLayout>
+#include <QSlider>
+#include <QLabel>
+#include <QCheckBox>
 
 const double VALUE_MAX = 1.0e+15, // COORD_MAX
              VALUE_MAX_2  = VALUE_MAX * VALUE_MAX,
@@ -91,16 +92,16 @@ QWidget* StdMeshersGUI_StdHypothesisCreator::getWidgetForParam( int i ) const
   if ( isCreation() ) ++i; // skip widget of 'name' parameter
 
   if ( i < myCustomWidgets.count() ) {
-    QPtrList<QWidget>::const_iterator anIt  = myCustomWidgets.begin();
-    QPtrList<QWidget>::const_iterator aLast = myCustomWidgets.end();
-    for ( int j = 0 ; !w && anIt != aLast; ++anIt )
+    QList<QWidget*>::const_iterator anIt  = myCustomWidgets.begin();
+    QList<QWidget*>::const_iterator aLast = myCustomWidgets.end();
+    for ( int j = 0 ; !w && anIt != aLast; ++anIt, ++j )
       if ( i == j )
         w = *anIt;
   }
   if ( !w ) {
     // list has no at() const, so we iterate
-    QPtrList<QWidget>::const_iterator anIt  = widgets().begin();
-    QPtrList<QWidget>::const_iterator aLast = widgets().end();
+    QList<QWidget*>::const_iterator anIt  = widgets().begin();
+    QList<QWidget*>::const_iterator aLast = widgets().end();
     for( int j = 0; !w && anIt!=aLast; anIt++, ++j ) {
       if ( i == j )
         w = *anIt;
@@ -170,6 +171,9 @@ void StdMeshersGUI_StdHypothesisCreator::retrieveParams() const
     if ( widgetToActivate )
       widgetToActivate->activateSelection();
   }
+
+  if ( dlg() )
+    dlg()->setMinimumSize( dlg()->minimumSizeHint().width(), dlg()->minimumSizeHint().height() );
 }
 
 namespace {
@@ -180,20 +184,37 @@ namespace {
    */
   //================================================================================
 
-  class TDoubleSliderWith2Lables: public QHBox
+  class TDoubleSliderWith2Lables: public QWidget
   {
   public:
     TDoubleSliderWith2Lables( const QString& leftLabel, const QString& rightLabel,
                               const double   initValue, const double   bottom,
                               const double   top      , const double   precision,
                               QWidget *      parent=0 , const char *   name=0 )
-      :QHBox(parent,name), _bottom(bottom), _precision(precision)
+      :QWidget(parent), _bottom(bottom), _precision(precision)
     {
-      if ( !leftLabel.isEmpty() ) (new QLabel( this ))->setText( leftLabel );
-      _slider = new QSlider( Horizontal, this );
+      setObjectName(name);
+
+      QHBoxLayout* aHBoxL = new QHBoxLayout(this);
+      
+      if ( !leftLabel.isEmpty() ) {
+	QLabel* aLeftLabel = new QLabel( this );
+	aLeftLabel->setText( leftLabel );
+	aHBoxL->addWidget( aLeftLabel );
+      }
+
+      _slider = new QSlider( Qt::Horizontal, this );
       _slider->setRange( 0, toInt( top ));
       _slider->setValue( toInt( initValue ));
-      if ( !rightLabel.isEmpty() ) (new QLabel( this ))->setText( rightLabel );
+      aHBoxL->addWidget( _slider );
+
+      if ( !rightLabel.isEmpty() ) {
+	QLabel* aRightLabel = new QLabel( this );
+	aRightLabel->setText( rightLabel );
+	aHBoxL->addWidget( aRightLabel );
+      }
+
+      setLayout( aHBoxL );
     }
     double value() const { return _bottom + _slider->value() * _precision; }
     QSlider * getSlider() const { return _slider; }
@@ -298,11 +319,11 @@ namespace {
    */
   //================================================================================
 
-  void deactivateObjRefParamWdg( QPtrList<QWidget>* widgetList )
+  void deactivateObjRefParamWdg( QList<QWidget*>* widgetList )
   {
     StdMeshersGUI_ObjectReferenceParamWdg* w = 0;
-    QPtrList<QWidget>::iterator anIt  = widgetList->begin();
-    QPtrList<QWidget>::iterator aLast = widgetList->end();
+    QList<QWidget*>::iterator anIt  = widgetList->begin();
+    QList<QWidget*>::iterator aLast = widgetList->end();
     for ( ; anIt != aLast; anIt++ ) {
       if ( (*anIt) && (*anIt)->inherits( "StdMeshersGUI_ObjectReferenceParamWdg" ))
       {
@@ -320,8 +341,11 @@ namespace {
  */
 //================================================================================
 
-bool StdMeshersGUI_StdHypothesisCreator::checkParams() const
+bool StdMeshersGUI_StdHypothesisCreator::checkParams( QString& msg ) const
 {
+  if( !SMESHGUI_GenericHypothesisCreator::checkParams( msg ) )
+    return false;
+
   // check if object reference parameter is set, as it has no default value
   bool ok = true;
   if ( hypType().startsWith("ProjectionSource" ))
@@ -374,11 +398,12 @@ QString StdMeshersGUI_StdHypothesisCreator::storeParams() const
   bool res = getStdParamFromDlg( params );
   if( isCreation() )
   {
-    SMESH::SetName( SMESH::FindSObject( hypothesis() ), params[0].myValue.toString().latin1() );
-    params.remove( params.begin() );
+    SMESH::SetName( SMESH::FindSObject( hypothesis() ), params[0].myValue.toString().toLatin1().data() );
+    params.erase( params.begin() );
   }
 
   QString valueStr = stdParamValues( params );
+  QStringList aVariablesList = getVariablesFromDlg();
 
   if( res && !params.isEmpty() )
   {
@@ -388,7 +413,22 @@ QString StdMeshersGUI_StdHypothesisCreator::storeParams() const
 	StdMeshers::StdMeshers_LocalLength::_narrow( hypothesis() );
 
       h->SetLength( params[0].myValue.toDouble() );
+      h->SetParameters(SMESHGUI::JoinObjectParameters(aVariablesList));
       h->SetPrecision( params[1].myValue.toDouble() );
+      h->SetParameters(SMESHGUI::JoinObjectParameters(aVariablesList));
+    }
+    else if( hypType()=="MaxLength" )
+    {
+      StdMeshers::StdMeshers_MaxLength_var h =
+	StdMeshers::StdMeshers_MaxLength::_narrow( hypothesis() );
+
+      h->SetLength( params[0].myValue.toDouble() );
+      h->SetUsePreestimatedLength( widget< QCheckBox >( 1 )->isChecked() );
+      if ( !h->HavePreestimatedLength() && !h->_is_equivalent( initParamsHypothesis() )) {
+        StdMeshers::StdMeshers_MaxLength_var hInit =
+          StdMeshers::StdMeshers_MaxLength::_narrow( initParamsHypothesis() );
+        h->SetPreestimatedLength( hInit->GetPreestimatedLength() );
+      }
     }
     else if( hypType()=="SegmentLengthAroundVertex" )
     {
@@ -396,6 +436,7 @@ QString StdMeshersGUI_StdHypothesisCreator::storeParams() const
 	StdMeshers::StdMeshers_SegmentLengthAroundVertex::_narrow( hypothesis() );
 
       h->SetLength( params[0].myValue.toDouble() );
+      h->SetParameters(SMESHGUI::JoinObjectParameters(aVariablesList));
     }
     else if( hypType()=="Arithmetic1D" )
     {
@@ -403,13 +444,15 @@ QString StdMeshersGUI_StdHypothesisCreator::storeParams() const
 	StdMeshers::StdMeshers_Arithmetic1D::_narrow( hypothesis() );
 
       h->SetLength( params[0].myValue.toDouble(), true );
+      h->SetParameters(SMESHGUI::JoinObjectParameters(aVariablesList));
       h->SetLength( params[1].myValue.toDouble(), false );
+      h->SetParameters(SMESHGUI::JoinObjectParameters(aVariablesList));
     }
     else if( hypType()=="MaxElementArea" )
     {
       StdMeshers::StdMeshers_MaxElementArea_var h =
 	StdMeshers::StdMeshers_MaxElementArea::_narrow( hypothesis() );
-
+      h->SetParameters(SMESHGUI::JoinObjectParameters(aVariablesList));
       h->SetMaxElementArea( params[0].myValue.toDouble() );
     }
     else if( hypType()=="MaxElementVolume" )
@@ -418,6 +461,7 @@ QString StdMeshersGUI_StdHypothesisCreator::storeParams() const
 	StdMeshers::StdMeshers_MaxElementVolume::_narrow( hypothesis() );
 
       h->SetMaxElementVolume( params[0].myValue.toDouble() );
+      h->SetParameters(SMESHGUI::JoinObjectParameters(aVariablesList));
     }
     else if( hypType()=="StartEndLength" )
     {
@@ -425,13 +469,15 @@ QString StdMeshersGUI_StdHypothesisCreator::storeParams() const
 	StdMeshers::StdMeshers_StartEndLength::_narrow( hypothesis() );
 
       h->SetLength( params[0].myValue.toDouble(), true );
+      h->SetParameters(SMESHGUI::JoinObjectParameters(aVariablesList));
       h->SetLength( params[1].myValue.toDouble(), false );
+      h->SetParameters(SMESHGUI::JoinObjectParameters(aVariablesList));
     }
     else if( hypType()=="Deflection1D" )
     {
       StdMeshers::StdMeshers_Deflection1D_var h =
 	StdMeshers::StdMeshers_Deflection1D::_narrow( hypothesis() );
-
+      h->SetParameters(SMESHGUI::JoinObjectParameters(aVariablesList));
       h->SetDeflection( params[0].myValue.toDouble() );
     }
     else if( hypType()=="AutomaticLength" )
@@ -447,6 +493,7 @@ QString StdMeshersGUI_StdHypothesisCreator::storeParams() const
 	StdMeshers::StdMeshers_NumberOfLayers::_narrow( hypothesis() );
 
       h->SetNumberOfLayers( params[0].myValue.toInt() );
+      h->SetParameters(SMESHGUI::JoinObjectParameters(aVariablesList));
     }
     else if( hypType()=="LayerDistribution" )
     {
@@ -454,8 +501,10 @@ QString StdMeshersGUI_StdHypothesisCreator::storeParams() const
 	StdMeshers::StdMeshers_LayerDistribution::_narrow( hypothesis() );
       StdMeshersGUI_LayerDistributionParamWdg* w = 
         widget< StdMeshersGUI_LayerDistributionParamWdg >( 0 );
-
+      
       h->SetLayerDistribution( w->GetHypothesis() );
+      h->SetParameters(w->GetHypothesis()->GetParameters());
+      w->GetHypothesis()->ClearParameters();
     }
     else if( hypType()=="ProjectionSource1D" )
     {
@@ -525,20 +574,58 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
     p.append( item );
     customWidgets()->append(0);
   }
-
+  
   SMESH::SMESH_Hypothesis_var hyp = initParamsHypothesis();
+  SMESH::ListOfParameters_var aParameters = hyp->GetLastParameters();
 
   if( hypType()=="LocalLength" )
   {
     StdMeshers::StdMeshers_LocalLength_var h =
       StdMeshers::StdMeshers_LocalLength::_narrow( hyp );
+    
+    item.myName = tr("SMESH_LOCAL_LENGTH_PARAM");
+    if(!initVariableName(aParameters,item,0))
+      item.myValue = h->GetLength();
+    p.append( item );     
+    
+    item.myName = tr("SMESH_LOCAL_LENGTH_PRECISION");
+    if(!initVariableName(aParameters,item,1))
+      item.myValue = h->GetPrecision(); 
+    p.append( item );
+    
+  }
+  else if( hypType()=="MaxLength" )
+  {
+    StdMeshers::StdMeshers_MaxLength_var h =
+      StdMeshers::StdMeshers_MaxLength::_narrow( hyp );
+    // try to set a right preestimated length to edited hypothesis
+    bool noPreestimatedAtEdition = false;
+    if ( !isCreation() ) {
+      StdMeshers::StdMeshers_MaxLength_var initHyp =
+        StdMeshers::StdMeshers_MaxLength::_narrow( initParamsHypothesis(true) );
+      noPreestimatedAtEdition =
+        ( initHyp->_is_nil() || !initHyp->HavePreestimatedLength() );
+      if ( !noPreestimatedAtEdition )
+        h->SetPreestimatedLength( initHyp->GetPreestimatedLength() );
+    }
 
     item.myName = tr("SMESH_LOCAL_LENGTH_PARAM");
     item.myValue = h->GetLength();
     p.append( item );
-    item.myName = tr("SMESH_LOCAL_LENGTH_PRECISION");
-    item.myValue = h->GetPrecision();
+    customWidgets()->append(0);
+
+    item.myName = tr("SMESH_USE_PREESTIMATED_LENGTH");
     p.append( item );
+    QCheckBox* aQCheckBox = new QCheckBox(dlg());
+    if ( !noPreestimatedAtEdition && h->HavePreestimatedLength() ) {
+      aQCheckBox->setChecked( h->GetUsePreestimatedLength() );
+      connect( aQCheckBox, SIGNAL(  stateChanged(int) ), this, SLOT( onValueChanged() ) );
+    }
+    else {
+      aQCheckBox->setChecked( false );
+      aQCheckBox->setEnabled( false );
+    }
+    customWidgets()->append( aQCheckBox );
   }
   else if( hypType()=="SegmentLengthAroundVertex" )
   {
@@ -546,7 +633,9 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
       StdMeshers::StdMeshers_SegmentLengthAroundVertex::_narrow( hyp );
 
     item.myName = tr("SMESH_LOCAL_LENGTH_PARAM");
-    item.myValue = h->GetLength();
+    if(!initVariableName(aParameters,item,0))
+      item.myValue = h->GetLength();
+    
     p.append( item );
   }
   else if( hypType()=="Arithmetic1D" )
@@ -555,10 +644,13 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
       StdMeshers::StdMeshers_Arithmetic1D::_narrow( hyp );
 
     item.myName = tr( "SMESH_START_LENGTH_PARAM" );
-    item.myValue = h->GetLength( true );
+    if(!initVariableName(aParameters,item,0))
+      item.myValue = h->GetLength( true );
     p.append( item );
+
     item.myName = tr( "SMESH_END_LENGTH_PARAM" );
-    item.myValue = h->GetLength( false );
+    if(!initVariableName(aParameters,item,1))
+      item.myValue = h->GetLength( false );
     p.append( item );
   }
   else if( hypType()=="MaxElementArea" )
@@ -567,8 +659,10 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
       StdMeshers::StdMeshers_MaxElementArea::_narrow( hyp );
 
     item.myName = tr( "SMESH_MAX_ELEMENT_AREA_PARAM" );
-    item.myValue = h->GetMaxElementArea();
+    if(!initVariableName(aParameters,item,0))
+      item.myValue = h->GetMaxElementArea();
     p.append( item );
+    
   }
   else if( hypType()=="MaxElementVolume" )
   {
@@ -576,7 +670,8 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
       StdMeshers::StdMeshers_MaxElementVolume::_narrow( hyp );
 
     item.myName = tr( "SMESH_MAX_ELEMENT_VOLUME_PARAM" );
-    item.myValue = h->GetMaxElementVolume();
+    if(!initVariableName(aParameters,item,0))
+      item.myValue = h->GetMaxElementVolume();
     p.append( item );
   }
   else if( hypType()=="StartEndLength" )
@@ -585,19 +680,25 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
       StdMeshers::StdMeshers_StartEndLength::_narrow( hyp );
 
     item.myName = tr( "SMESH_START_LENGTH_PARAM" );
-    item.myValue = h->GetLength( true );
+
+    if(!initVariableName(aParameters,item,0)) 
+      item.myValue = h->GetLength( true );
     p.append( item );
+
     item.myName = tr( "SMESH_END_LENGTH_PARAM" );
-    item.myValue = h->GetLength( false );
+    if(!initVariableName(aParameters,item,1)) 
+      item.myValue = h->GetLength( false );
     p.append( item );
+    
   }
   else if( hypType()=="Deflection1D" )
   {
     StdMeshers::StdMeshers_Deflection1D_var h =
       StdMeshers::StdMeshers_Deflection1D::_narrow( hyp );
-
+    
     item.myName = tr( "SMESH_DEFLECTION1D_PARAM" );
-    item.myValue = h->GetDeflection();
+    if(!initVariableName(aParameters,item,0)) 
+      item.myValue = h->GetDeflection();
     p.append( item );
   }
   else if( hypType()=="AutomaticLength" )
@@ -617,15 +718,25 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
       StdMeshers::StdMeshers_NumberOfLayers::_narrow( hyp );
 
     item.myName = tr( "SMESH_NUMBER_OF_LAYERS" );
-    item.myValue = (int) h->GetNumberOfLayers();
+    if(!initVariableName(aParameters,item,0))     
+      item.myValue = (int) h->GetNumberOfLayers();
     p.append( item );
   }
   else if( hypType()=="LayerDistribution" )
-  {
-    StdMeshers::StdMeshers_LayerDistribution_var h =
+    {
+      StdMeshers::StdMeshers_LayerDistribution_var h =
       StdMeshers::StdMeshers_LayerDistribution::_narrow( hyp );
 
     item.myName = tr( "SMESH_LAYERS_DISTRIBUTION" ); p.append( item );
+    
+    //Set into not published hypo last variables
+    QStringList aLastVarsList;
+    for(int i = 0;i<aParameters->length();i++) 
+      aLastVarsList.append(QString(aParameters[i].in()));
+
+    if(!aLastVarsList.isEmpty())
+      h->GetLayerDistribution()->SetLastParameters(SMESHGUI::JoinObjectParameters(aLastVarsList));
+    
     customWidgets()->append
       ( new StdMeshersGUI_LayerDistributionParamWdg( h->GetLayerDistribution(), hypName(), dlg()));
   }
@@ -713,14 +824,19 @@ void StdMeshersGUI_StdHypothesisCreator::attuneStdWidget (QWidget* w, const int)
   SMESHGUI_SpinBox* sb = w->inherits( "SMESHGUI_SpinBox" ) ? ( SMESHGUI_SpinBox* )w : 0;
   if( hypType()=="LocalLength" &&  sb )
   {
-    if (sb->name() == tr("SMESH_LOCAL_LENGTH_PARAM"))
+    if (sb->objectName() == tr("SMESH_LOCAL_LENGTH_PARAM"))
       sb->RangeStepAndValidator( VALUE_SMALL, VALUE_MAX, 1.0, 6 );
-    else if (sb->name() == tr("SMESH_LOCAL_LENGTH_PRECISION"))
-      sb->RangeStepAndValidator( 0.0, 1.0, 0.05, 6 );
+    else if (sb->objectName() == tr("SMESH_LOCAL_LENGTH_PRECISION"))
+      sb->RangeStepAndValidator( 0.0, 1.0, 0.05, 7 );
   }
   else if( hypType()=="Arithmetic1D" && sb )
   {
     sb->RangeStepAndValidator( VALUE_SMALL, VALUE_MAX, 1.0, 6 );
+  }
+  else if( hypType()=="MaxLength" && sb )
+  {
+    sb->RangeStepAndValidator( VALUE_SMALL, VALUE_MAX, 1.0, 6 );
+    sb->setEnabled( !widget< QCheckBox >( 1 )->isChecked() );
   }
   else if( hypType()=="MaxElementArea" && sb )
   {
@@ -753,7 +869,7 @@ void StdMeshersGUI_StdHypothesisCreator::attuneStdWidget (QWidget* w, const int)
 
 QString StdMeshersGUI_StdHypothesisCreator::caption() const
 {
-  return tr( QString( "SMESH_%1_TITLE" ).arg( hypTypeName( hypType() ) ) );
+  return tr( QString( "SMESH_%1_TITLE" ).arg( hypTypeName( hypType() ) ).toLatin1().data() );
 }
 
 //================================================================================
@@ -765,7 +881,7 @@ QString StdMeshersGUI_StdHypothesisCreator::caption() const
 
 QPixmap StdMeshersGUI_StdHypothesisCreator::icon() const
 {
-  QString hypIconName = tr( QString( "ICON_DLG_%1" ).arg( hypTypeName( hypType() ) ) );
+  QString hypIconName = tr( QString( "ICON_DLG_%1" ).arg( hypTypeName( hypType() ) ).toLatin1().data() );
   return SMESHGUI::resourceMgr()->loadPixmap( "SMESH", hypIconName );
 }
 
@@ -778,7 +894,7 @@ QPixmap StdMeshersGUI_StdHypothesisCreator::icon() const
 
 QString StdMeshersGUI_StdHypothesisCreator::type() const
 {
-  return tr( QString( "SMESH_%1_HYPOTHESIS" ).arg( hypTypeName( hypType() ) ) );
+  return tr( QString( "SMESH_%1_HYPOTHESIS" ).arg( hypTypeName( hypType() ) ).toLatin1().data() );
 }
 
 //================================================================================
@@ -809,6 +925,7 @@ QString StdMeshersGUI_StdHypothesisCreator::hypTypeName( const QString& t ) cons
     types.insert( "NumberOfLayers", "NUMBER_OF_LAYERS" );
     types.insert( "LayerDistribution", "LAYER_DISTRIBUTION" );
     types.insert( "SegmentLengthAroundVertex", "SEGMENT_LENGTH_AROUND_VERTEX" );
+    types.insert( "MaxLength", "MAX_LENGTH" );
   }
 
   QString res;
@@ -831,8 +948,10 @@ QWidget* StdMeshersGUI_StdHypothesisCreator::getCustomWidget( const StdParam & p
   QWidget* w = 0;
   if ( index < customWidgets()->count() ) {
     w = customWidgets()->at( index );
-    if ( w )
-      w->reparent( parent, QPoint( 0, 0 ));
+    if ( w ) {
+      w->setParent( parent );
+      w->move( QPoint( 0, 0 ) );
+    }
   }
   return w;
 }
@@ -857,6 +976,10 @@ bool StdMeshersGUI_StdHypothesisCreator::getParamFromCustomWidget( StdParam & pa
       param.myValue = w->value();
       return true;
     }
+  }
+  if ( hypType() == "MaxLength" ) {
+    param.myValue = "";
+    return true;
   }
   if ( widget->inherits( "StdMeshersGUI_ObjectReferenceParamWdg" ))
   {
@@ -891,4 +1014,40 @@ void StdMeshersGUI_StdHypothesisCreator::onReject()
     // Uninstall filters of StdMeshersGUI_ObjectReferenceParamWdg
     deactivateObjRefParamWdg( customWidgets() );
   }
+}
+
+//================================================================================
+/*!
+ * \brief 
+ */
+//================================================================================
+
+void StdMeshersGUI_StdHypothesisCreator::valueChanged( QWidget* paramWidget)
+{
+  if ( hypType() == "MaxLength" && paramWidget == getWidgetForParam(1) ) {
+    getWidgetForParam(0)->setEnabled( !widget< QCheckBox >( 1 )->isChecked() );
+    if ( !getWidgetForParam(0)->isEnabled() ) {
+      StdMeshers::StdMeshers_MaxLength_var h =
+        StdMeshers::StdMeshers_MaxLength::_narrow( initParamsHypothesis() );
+      widget< QtxDoubleSpinBox >( 0 )->setValue( h->GetPreestimatedLength() );
+    }
+  }
+}
+
+//================================================================================
+/*!
+ *
+ */
+//================================================================================
+
+bool StdMeshersGUI_StdHypothesisCreator::initVariableName(SMESH::ListOfParameters_var theParameters, 
+                                                          StdParam &theParams, 
+                                                          int order) const
+{
+  QString aVaribaleName = (theParameters->length() > order) ? QString(theParameters[order].in()) : QString("");
+  theParams.isVariable = !aVaribaleName.isEmpty();
+  if(theParams.isVariable) 
+    theParams.myValue = aVaribaleName;
+
+  return theParams.isVariable;
 }

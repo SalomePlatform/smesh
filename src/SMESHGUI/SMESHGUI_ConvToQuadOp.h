@@ -1,50 +1,48 @@
-// Copyright (C) 2005  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
-// 
-// This library is free software; you can redistribute it and/or
-// modify it under the terms of the GNU Lesser General Public
-// License as published by the Free Software Foundation; either 
-// version 2.1 of the License.
-// 
-// This library is distributed in the hope that it will be useful 
-// but WITHOUT ANY WARRANTY; without even the implied warranty of 
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
-// Lesser General Public License for more details.
+//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-// You should have received a copy of the GNU Lesser General Public  
-// License along with this library; if not, write to the Free Software 
-// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
-// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
 //
-/**
-*  SMESH SMESHGUI
-*
-*  Copyright (C) 2005  CEA/DEN, EDF R&D
-*
-*
-*
-*  File   : SMESHGUI_ConvToQuadOp.h
-*  Module : SMESHGUI
-*/
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
+//
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
+// SMESH SMESHGUI : GUI for SMESH component
+// File   : SMESHGUI_ConvToQuadOp.h
+// Author : Open CASCADE S.A.S.
+//
+#ifndef SMESHGUI_CONVTOQUADOP_H
+#define SMESHGUI_CONVTOQUADOP_H
 
-#ifndef SMESHGUI_ConvToQuadOp_H
-#define SMESHGUI_ConvToQuadOp_H
+// SMESH includes
+#include "SMESH_SMESHGUI.hxx"
 
-#include <SMESHGUI_SelectionOp.h>
-//#include <qstringlist.h>
+#include "SMESHGUI_SelectionOp.h"
 
+// IDL includes
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
 
 class SMESHGUI_ConvToQuadDlg;
 
-class SMESHGUI_ConvToQuadOp : public SMESHGUI_SelectionOp
+class SMESHGUI_EXPORT SMESHGUI_ConvToQuadOp : public SMESHGUI_SelectionOp
 { 
   Q_OBJECT
 
 public:      
-enum MeshType{ Comp = 0, Linear, Quadratic };
+  enum MeshType{ Comp = 0, Linear, Quadratic };
 
 public:
   SMESHGUI_ConvToQuadOp();
@@ -60,11 +58,10 @@ protected:
 
 protected slots:
   virtual bool                   onApply();
-  void                           ConnectRadioButtons( int);
+  void                           ConnectRadioButtons( int );
 
 private:
   SMESHGUI_ConvToQuadDlg*        myDlg;
 };
 
-#endif
-
+#endif // SMESHGUI_CONVTOQUADOP_H

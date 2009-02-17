@@ -1,4 +1,6 @@
-#  Copyright (C) 2005  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+#  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+#
+#  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 #  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 #
 #  This library is free software; you can redistribute it and/or
@@ -15,17 +17,27 @@
 #  License along with this library; if not, write to the Free Software
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 #
-# See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+#  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 # -* Makefile *- 
-#
 # Author : Patrick GOLDBRONN (CEA)
 # Date : 28/06/2001
 # Modified by : Alexander BORODIN (OCN) - autotools usage
-# $Header$
 #
-
 include $(top_srcdir)/adm_local/unix/make_common_starter.am
+
+if SMESH_ENABLE_GUI
+  ACLOCAL_AMFLAGS = -I adm_local/unix/config_files			\
+                    -I ${KERNEL_ROOT_DIR}/salome_adm/unix/config_files	\
+                    -I ${GUI_ROOT_DIR}/adm_local/unix/config_files	\
+                    -I ${MED_ROOT_DIR}/adm_local/unix/config_files	\
+                    -I ${GEOM_ROOT_DIR}/adm_local/unix/config_files
+else !SMESH_ENABLE_GUI
+  ACLOCAL_AMFLAGS = -I adm_local/unix/config_files			\
+                    -I ${KERNEL_ROOT_DIR}/salome_adm/unix/config_files	\
+                    -I ${MED_ROOT_DIR}/adm_local/unix/config_files	\
+                    -I ${GEOM_ROOT_DIR}/adm_local/unix/config_files
+endif
 
 SUBDIRS = idl adm_local resources src doc bin
 
@@ -33,11 +45,11 @@ DIST_SUBDIRS = idl adm_local resources src doc bin
 
 DISTCLEANFILES = a.out aclocal.m4 configure
 
-salomeinclude_DATA=SMESH_version.h
+salomeinclude_DATA = SMESH_version.h
 
-EXTRA_DIST+= \
-	build_configure \
-	clean_configure \
+EXTRA_DIST +=		\
+	build_configure	\
+	clean_configure	\
 	LICENCE
 
 dist-hook:
@@ -46,7 +58,7 @@ dist-hook:
 usr_docs:
 	(cd doc && $(MAKE) $(AM_MAKEFLAGS) usr_docs)
 
-docs:usr_docs
+docs: usr_docs
 
 dev_docs:
 	(cd doc && $(MAKE) $(AM_MAKEFLAGS) dev_docs)

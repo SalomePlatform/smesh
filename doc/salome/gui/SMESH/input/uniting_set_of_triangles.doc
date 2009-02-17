@@ -11,7 +11,7 @@ once many triangles if they have adjacent edges.
 <li>In the \b Modification menu select the <b>Union of triangles</b>
 item or click <em>"Union of triangles"</em> button in the toolbar.
 
-\image html image80.gif
+\image html image80.png
 <center><em>"Union of triangles" button</em></center>
 
 The following dialog box will appear:
@@ -37,15 +37,15 @@ the list.</li>
 </ul>
 
 </li>
-<li>Click the \b Apply or \b OK button to confirm the operation.</li>
+<li>Click the \b Apply or <b>Apply and Close</b> button to confirm the operation.</li>
 </ol>
 
 If some selected triangle elements have no adjacent edges with one of
 the others, the operation on these elements shall take no effect.
 
-\image html uniting_a_set_of_triangles1.png
+\image html uniting_a_set_of_triangles1.png "The chosen triangles"
 
-\image html uniting_a_set_of_triangles2.png
+\image html uniting_a_set_of_triangles2.png "The union of several triangles - several quadrangular cells are created"
 
 <br><b>See Also</b> a sample TUI Script of a 
 \ref tui_uniting_set_of_triangles "Uniting a Set of Triangles" operation.  

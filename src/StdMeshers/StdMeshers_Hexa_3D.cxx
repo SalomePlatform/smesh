@@ -1,37 +1,36 @@
+//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//
+//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+//
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
+//
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
+//
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
 //  SMESH SMESH : implementaion of SMESH idl descriptions
-//
-//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
-// 
-//  This library is free software; you can redistribute it and/or 
-//  modify it under the terms of the GNU Lesser General Public 
-//  License as published by the Free Software Foundation; either 
-//  version 2.1 of the License. 
-// 
-//  This library is distributed in the hope that it will be useful, 
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of 
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
-//  Lesser General Public License for more details. 
-// 
-//  You should have received a copy of the GNU Lesser General Public 
-//  License along with this library; if not, write to the Free Software 
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
-// 
-// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
-//
-//
-//
 //  File   : StdMeshers_Hexa_3D.cxx
 //           Moved here from SMESH_Hexa_3D.cxx
 //  Author : Paul RASCLE, EDF
 //  Module : SMESH
-//  $Header$
-
+//
 #include "StdMeshers_Hexa_3D.hxx"
-#include "StdMeshers_Quadrangle_2D.hxx"
+#include "StdMeshers_CompositeHexa_3D.hxx"
 #include "StdMeshers_FaceSide.hxx"
 #include "StdMeshers_Penta_3D.hxx"
 #include "StdMeshers_Prism_3D.hxx"
+#include "StdMeshers_Quadrangle_2D.hxx"
 
 #include "SMESH_Gen.hxx"
 #include "SMESH_Mesh.hxx"
@@ -130,32 +129,66 @@ bool StdMeshers_Hexa_3D::CheckHypothesis
 }
 
 //=======================================================================
+//function : isCloser
+//purpose  : 
+//=======================================================================
+
+inline bool isCloser(const int i, const int j, const int nbhoriz,
+                     const FaceQuadStruct* quad, const gp_Pnt2d uv,
+                     double & minDist)
+{
+  int ij = j * nbhoriz + i;
+  gp_Pnt2d uv2( quad->uv_grid[ij].u, quad->uv_grid[ij].v );
+  double dist = uv.SquareDistance( uv2 );
+  if ( dist < minDist ) {
+    minDist = dist;
+    return true;
+  }
+  return false;
+}
+
+//=======================================================================
 //function : findIJ
 //purpose  : return i,j of the node
 //=======================================================================
 
 static bool findIJ (const SMDS_MeshNode* node, const FaceQuadStruct * quad, int& I, int& J)
 {
-  I = J = 0;
   const SMDS_FacePosition* fpos =
     static_cast<const SMDS_FacePosition*>(node->GetPosition().get());
   if ( ! fpos ) return false;
   gp_Pnt2d uv( fpos->GetUParameter(), fpos->GetVParameter() );
 
   double minDist = DBL_MAX;
-  int nbhoriz  = Min(quad->side[0]->NbPoints(), quad->side[2]->NbPoints());
-  int nbvertic = Min(quad->side[1]->NbPoints(), quad->side[3]->NbPoints());
-  for (int i = 1; i < nbhoriz - 1; i++) {
-    for (int j = 1; j < nbvertic - 1; j++) {
-      int ij = j * nbhoriz + i;
-      gp_Pnt2d uv2( quad->uv_grid[ij].u, quad->uv_grid[ij].v );
-      double dist = uv.SquareDistance( uv2 );
-      if ( dist < minDist ) {
-        minDist = dist;
-        I = i;
-        J = j;
-      }
-    }
+  const int nbhoriz  = quad->side[0]->NbPoints();
+  const int nbvertic = quad->side[1]->NbPoints();
+  I = nbhoriz/2; J = nbvertic/2;
+  int oldI, oldJ;
+  do {
+    oldI = I; oldJ = J;
+    while ( I + 2 < nbhoriz &&  isCloser( I + 1, J, nbhoriz, quad, uv, minDist ))
+      I += 1;
+    if ( I == oldI )
+      while ( I - 1 > 0     &&  isCloser( I - 1, J, nbhoriz, quad, uv, minDist ))
+        I -= 1;
+    if ( minDist < DBL_MIN )
+      break;
+
+    while ( J + 2 < nbvertic && isCloser( I, J + 1, nbhoriz, quad, uv, minDist ))
+      J += 1;
+    if ( J == oldJ )
+      while ( J - 1 > 0      && isCloser( I, J - 1, nbhoriz, quad, uv, minDist ))
+        J -= 1;
+    if ( minDist < DBL_MIN )
+      break;
+
+  } while ( I != oldI || J != oldJ );
+
+  if ( minDist > DBL_MIN ) {
+    for (int i = 1; i < nbhoriz - 1; i++)
+      for (int j = 1; j < nbvertic - 1; j++)
+        if ( isCloser( i, j, nbhoriz, quad, uv, minDist ))
+          I = i, J = j;
   }
   return true;
 }
@@ -181,7 +214,7 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh &         aMesh,
   //Unexpect aCatch(SalomeException);
   MESSAGE("StdMeshers_Hexa_3D::Compute");
   SMESHDS_Mesh * meshDS = aMesh.GetMeshDS();
-  
+
   // 0.  - shape and face mesh verification
   // 0.1 - shape must be a solid (or a shell) with 6 faces
 
@@ -191,8 +224,13 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh &         aMesh,
     ASSERT(aSubMesh);
     meshFaces.push_back(aSubMesh);
   }
-  if (meshFaces.size() != 6)
-    return error(COMPERR_BAD_SHAPE, TComm(meshFaces.size())<<" instead of 6 faces in a block");
+  if (meshFaces.size() != 6) {
+    //return error(COMPERR_BAD_SHAPE, TComm(meshFaces.size())<<" instead of 6 faces in a block");
+    static StdMeshers_CompositeHexa_3D compositeHexa(-10, 0, aMesh.GetGen());
+    if ( !compositeHexa.Compute( aMesh, aShape ))
+      return error( compositeHexa.GetComputeError() );
+    return true;
+  }
 
   // 0.2 - is each face meshed with Quadrangle_2D? (so, with a wire of 4 edges)
 

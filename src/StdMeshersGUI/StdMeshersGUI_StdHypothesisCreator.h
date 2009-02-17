@@ -1,36 +1,34 @@
-//  SMESH StdMeshersGUI : GUI for plugged-in meshers
+//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003  CEA
-// 
-//  This library is free software; you can redistribute it and/or 
-//  modify it under the terms of the GNU Lesser General Public 
-//  License as published by the Free Software Foundation; either 
-//  version 2.1 of the License. 
-// 
-//  This library is distributed in the hope that it will be useful, 
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of 
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
-//  Lesser General Public License for more details. 
-// 
-//  You should have received a copy of the GNU Lesser General Public 
-//  License along with this library; if not, write to the Free Software 
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
-// 
-// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
 //
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
 //
-//  File   : StdMeshersGUI_StdHypothesisCreator.h
-//  Author : Alexander SOLOVYOV
-//  Module : SMESH
-//  $Header: /home/server/cvs/SMESH/SMESH_SRC/src/StdMeshersGUI/StdMeshersGUI_StdHypothesisCreator.h
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
+// File   : StdMeshersGUI_StdHypothesisCreator.h
+// Author : Alexander SOLOVYOV, Open CASCADE S.A.S.
+//
+#ifndef STDMESHERSGUI_STDHYPOTHESISCREATOR_H
+#define STDMESHERSGUI_STDHYPOTHESISCREATOR_H
 
-#ifndef STDMESHERSGUI_StdHypothesisCreator_HeaderFile
-#define STDMESHERSGUI_StdHypothesisCreator_HeaderFile
-
+// SMESH includes
 #include "SMESH_StdMeshersGUI.hxx"
-
 #include <SMESHGUI_Hypotheses.h>
+
 
 /*!
  * \brief Class for creation of standard hypotheses
@@ -43,7 +41,7 @@ public:
   StdMeshersGUI_StdHypothesisCreator( const QString& );
   virtual ~StdMeshersGUI_StdHypothesisCreator();
 
-  virtual bool checkParams() const;
+  virtual bool checkParams( QString& ) const;
 
 protected:
   virtual QFrame*  buildFrame    ();
@@ -61,6 +59,9 @@ protected:
   virtual QWidget* getWidgetForParam( int paramIndex ) const;
   virtual ListOfWidgets* customWidgets() const;
   virtual void     onReject();
+  virtual bool     initVariableName(SMESH::ListOfParameters_var theParameters, StdParam& theParams, int order) const;
+
+  virtual void     valueChanged( QWidget* );
 
   template<class T>
     T* widget(int i) const {
@@ -70,4 +71,4 @@ protected:
   ListOfWidgets    myCustomWidgets;
 };
 
-#endif
+#endif // STDMESHERSGUI_STDHYPOTHESISCREATOR_H

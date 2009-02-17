@@ -5,6 +5,8 @@
 \n This functionality allows user to detect groups of coincident nodes
 with desirable tolerance, edit these groups and merge.
 
+\image html mergenodes_ico.png "Merge nodes button"
+
 <em>To merge nodes of your mesh:</em>
 <ol>
 <li>From the \b Modification choose \b Transformation and  from its
@@ -35,25 +37,25 @@ viewer with pressed "Shift" key.</li>
 <li><b>Edit selected group</b> list allows editing the selected
 group:
 <br><br>
-\image html add.gif
+\image html add.png
 <center>adds to the group the node selected in the viewer.</center>
 <br>
-\image html remove.gif
+\image html remove.png
 <center>removes from the group the selected node.</center>
 <br>
-\image html sort.gif
+\image html sort.png
 <center>moves the selected node to the first position in the
 group. This means that all other nodes will be merged into this
 one.</center><br>
 </li>
 </ul>
 </li>
-<li>To confirm your choice click \b OK or \b Apply button.</li>
+<li>To confirm your choice click \b Apply or <b>Apply and Close</b> button.</li>
 </ol>
 
-\image html merging_nodes1.png
+\image html merging_nodes1.png "The initial obgect" 
 
-\image html merging_nodes2.png
+\image html merging_nodes2.png "The object has been merged with a very big tolerance"
 
 <br><b>See Also</b> a sample TUI Script of a 
 \ref tui_merging_nodes "Merge Nodes" operation.  

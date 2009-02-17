@@ -123,8 +123,8 @@ salome.sg.updateObjBrowser(1)
 \image html editing_groups2.png
 
 <br>
-\anchor tui_union_of_two_groups
-<h2>Union of two groups</h2>
+\anchor tui_union_of_groups
+<h2>Union of groups</h2>
 
 \code
 import SMESH_mechanic
@@ -141,7 +141,7 @@ anIds = mesh.GetIdsFromFilter(aFilter)
 print "Criterion: Area > 20, Nb = ", len( anIds ) 
 
 # create a group by adding elements with area > 20
-aGroup1 = mesh.CreateEmptyGroup(SMESH.FACE, "Area > 20")
+aGroup1 = mesh.CreateEmptyGroup(smesh.FACE, "Area > 20")
 aGroup1.Add(anIds)
 
 # Criterion : AREA = 20
@@ -157,8 +157,9 @@ aGroup2 = mesh.CreateEmptyGroup( smesh.FACE, "Area = 20" )
 aGroup2.Add(anIds)
 
 # create union group : area >= 20
-aGroup3 = mesh.UnionGroups(aGroup1, aGroup2, "Area >= 20")
+aGroup3 = mesh.UnionListOfGroups([aGroup1, aGroup2], "Area >= 20")
 print "Criterion: Area >= 20, Nb = ", len(aGroup3.GetListOfID())
+# Please note that also there is UnionGroups() method which works with two groups only
 
 # Criterion : AREA < 20
 aFilter = smesh.GetFilter(smesh.FACE, smesh.FT_Area, smesh.FT_LessThan, 20.)
@@ -172,7 +173,7 @@ aGroup4 = mesh.CreateEmptyGroup(smesh.FACE, "Area < 20")
 aGroup4.Add(anIds)
 
 # create union group : area >= 20 and area < 20
-aGroup5 = mesh.UnionGroups(aGroup3, aGroup4, "Any Area")
+aGroup5 = mesh.UnionListOfGroups([aGroup3, aGroup4], "Any Area")
 print "Criterion: Any Area, Nb = ", len(aGroup5.GetListOfID())
 
 salome.sg.updateObjBrowser(1)
@@ -185,8 +186,8 @@ salome.sg.updateObjBrowser(1)
 \image html union_groups3.png
 
 <br>
-\anchor tui_intersection_of_two_groups
-<h2>Intersection of two groups</h2>
+\anchor tui_intersection_of_groups
+<h2>Intersection of groups</h2>
 
 \code
 import SMESH_mechanic
@@ -203,7 +204,7 @@ anIds = mesh.GetIdsFromFilter(aFilter)
 print "Criterion: Area > 20, Nb = ", len(anIds) 
 
 # create a group by adding elements with area > 20
-aGroup1 = mesh.CreateEmptyGroup(SMESH.FACE, "Area > 20")
+aGroup1 = mesh.CreateEmptyGroup(smesh.FACE, "Area > 20")
 aGroup1.Add(anIds)
 
 # Criterion : AREA < 60
@@ -214,12 +215,13 @@ anIds = mesh.GetIdsFromFilter(aFilter)
 print "Criterion: Area < 60, Nb = ", len(anIds) 
 
 # create a group by adding elements with area < 60
-aGroup2 = mesh.CreateEmptyGroup(SMESH.FACE, "Area < 60")
+aGroup2 = mesh.CreateEmptyGroup(smesh.FACE, "Area < 60")
 aGroup2.Add(anIds)
 
 # create an intersection of groups : 20 < area < 60
-aGroup3 = mesh.IntersectGroups(aGroup1, aGroup2, "20 < Area < 60")
+aGroup3 = mesh.IntersectListOfGroups([aGroup1, aGroup2], "20 < Area < 60")
 print "Criterion: 20 < Area < 60, Nb = ", len(aGroup3.GetListOfID())
+# Please note that also there is IntersectGroups() method which works with two groups only
 
 salome.sg.updateObjBrowser(1)
 \endcode
@@ -231,8 +233,8 @@ salome.sg.updateObjBrowser(1)
 \image html intersect_groups3.png
 
 <br>
-\anchor tui_cut_of_two_groups
-<h2>Cut of two groups</h2>
+\anchor tui_cut_of_groups
+<h2>Cut of groups</h2>
 
 \code
 import SMESH_mechanic
@@ -264,6 +266,7 @@ aGroupTool = mesh.MakeGroupByIds("Area < 60", smesh.FACE, anIds)
 # create a cut of groups : area >= 60
 aGroupRes = mesh.CutGroups(aGroupMain, aGroupTool, "Area >= 60")
 print "Criterion: Area >= 60, Nb = ", len(aGroupRes.GetListOfID())
+# Please note that also there is CutListOfGroups() method which works with lists of groups of any lengths
 
 salome.sg.updateObjBrowser(1)
 \endcode
@@ -273,5 +276,55 @@ salome.sg.updateObjBrowser(1)
 \image html cut_groups2.png
 
 \image html cut_groups3.png
+
+<br>
+\anchor tui_create_dim_group
+<h2>Creating groups of entities from existing groups of superior dimensions</h2>
+
+\code
+import SMESH_mechanic
+
+smesh  = SMESH_mechanic.smesh
+mesh   = SMESH_mechanic.mesh
+salome = SMESH_mechanic.salome
+
+# Criterion : AREA > 100
+aFilter = smesh.GetFilter(smesh.FACE, smesh.FT_Area, smesh.FT_MoreThan, 100.)
+
+anIds = mesh.GetIdsFromFilter(aFilter)
+
+print "Criterion: Area > 100, Nb = ", len(anIds) 
+
+# create a group by adding elements with area > 100
+aSrcGroup1 = mesh.MakeGroupByIds("Area > 100", smesh.FACE, anIds)
+
+# Criterion : AREA < 30
+aFilter = smesh.GetFilter(smesh.FACE, smesh.FT_Area, smesh.FT_LessThan, 30.)
+
+anIds = mesh.GetIdsFromFilter(aFilter)
+
+print "Criterion: Area < 30, Nb = ", len(anIds) 
+
+# create a group by adding elements with area < 30
+aSrcGroup2 = mesh.MakeGroupByIds("Area < 30", smesh.FACE, anIds)
+
+# Create group of edges using source groups of faces
+aGrp = mesh.CreateDimGroup( [aSrcGroup1, aSrcGroup2], smesh.EDGE, "Edges" )
+
+# Create group of nodes using source groups of faces
+aGrp = mesh.CreateDimGroup( [aSrcGroup1, aSrcGroup2], smesh.NODE, "Nodes" )
+
+salome.sg.updateObjBrowser(1)
+\endcode
+
+\image html dimgroup_tui1.png
+<center>Source groups of faces<\center>
+
+\image html dimgroup_tui2.png
+<center>Result groups of edges and nodes<\center>
+
+
+
+
 
 */

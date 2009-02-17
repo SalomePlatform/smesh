@@ -1,30 +1,29 @@
+//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//
+//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+//
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
+//
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
+//
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
 //  SMESH SMESH : implementaion of SMESH idl descriptions
-//
-//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
-// 
-//  This library is free software; you can redistribute it and/or 
-//  modify it under the terms of the GNU Lesser General Public 
-//  License as published by the Free Software Foundation; either 
-//  version 2.1 of the License. 
-// 
-//  This library is distributed in the hope that it will be useful, 
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of 
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
-//  Lesser General Public License for more details. 
-// 
-//  You should have received a copy of the GNU Lesser General Public 
-//  License along with this library; if not, write to the Free Software 
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
-// 
-// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
-//
-//
-//
 //  File   : SMESH_Algo.cxx
 //  Author : Paul RASCLE, EDF
 //  Module : SMESH
-//  $Header$
+//
 
 #include "SMESH_Algo.hxx"
 #include "SMESH_Comment.hxx"
@@ -286,12 +285,7 @@ bool SMESH_Algo::IsReversedSubMesh (const TopoDS_Face&  theFace,
 
 //================================================================================
 /*!
- * \brief Initialize my parameter values by the mesh built on the geometry
- * \param theMesh - the built mesh
- * \param theShape - the geometry of interest
- * \retval bool - true if parameter values have been successfully defined
- *
- * Just return false as the algorithm does not hold parameters values
+ * \brief Just return false as the algorithm does not hold parameters values
  */
 //================================================================================
 
@@ -300,7 +294,10 @@ bool SMESH_Algo::SetParametersByMesh(const SMESH_Mesh* /*theMesh*/,
 {
   return false;
 }
-
+bool SMESH_Algo::SetParametersByDefaults(const TDefaults& , const SMESH_Mesh*)
+{
+  return false;
+}
 //================================================================================
 /*!
  * \brief Fill vector of node parameters on geometrical edge, including vertex nodes
@@ -358,6 +355,70 @@ bool SMESH_Algo::GetNodeParamOnEdge(const SMESHDS_Mesh* theMesh,
     *vecPar = *par;
 
   return theParams.size() > 1;
+}
+
+//================================================================================
+/*!
+ * \brief Fill vector of node parameters on geometrical edge, including vertex nodes
+ * \param theMesh - The mesh containing nodes
+ * \param theEdge - The geometrical edge of interest
+ * \param theParams - The resulting vector of sorted node parameters
+ * \retval bool - false if not all parameters are OK
+ */
+//================================================================================
+
+bool SMESH_Algo::GetSortedNodesOnEdge(const SMESHDS_Mesh*                   theMesh,
+                                      const TopoDS_Edge&                    theEdge,
+                                      const bool                            ignoreMediumNodes,
+                                      map< double, const SMDS_MeshNode* > & theNodes)
+{
+  theNodes.clear();
+
+  if ( !theMesh || theEdge.IsNull() )
+    return false;
+
+  SMESHDS_SubMesh * eSubMesh = theMesh->MeshElements( theEdge );
+  if ( !eSubMesh || !eSubMesh->GetElements()->more() )
+    return false; // edge is not meshed
+
+  int nbNodes = 0;
+  set < double > paramSet;
+  if ( eSubMesh )
+  {
+    // loop on nodes of an edge: sort them by param on edge
+    SMDS_NodeIteratorPtr nIt = eSubMesh->GetNodes();
+    while ( nIt->more() )
+    {
+      const SMDS_MeshNode* node = nIt->next();
+      if ( ignoreMediumNodes ) {
+        SMDS_ElemIteratorPtr elemIt = node->GetInverseElementIterator();
+        if ( elemIt->more() && elemIt->next()->IsMediumNode( node ))
+          continue;
+      }
+      const SMDS_PositionPtr& pos = node->GetPosition();
+      if ( pos->GetTypeOfPosition() != SMDS_TOP_EDGE )
+        return false;
+      const SMDS_EdgePosition* epos =
+        static_cast<const SMDS_EdgePosition*>(node->GetPosition().get());
+      theNodes.insert( make_pair( epos->GetUParameter(), node ));
+      ++nbNodes;
+    }
+  }
+  // add vertex nodes
+  TopoDS_Vertex v1, v2;
+  TopExp::Vertices(theEdge, v1, v2);
+  const SMDS_MeshNode* n1 = VertexNode( v1, (SMESHDS_Mesh*) theMesh );
+  const SMDS_MeshNode* n2 = VertexNode( v2, (SMESHDS_Mesh*) theMesh );
+  Standard_Real f, l;
+  BRep_Tool::Range(theEdge, f, l);
+  if ( v1.Orientation() != TopAbs_FORWARD )
+    std::swap( f, l );
+  if ( n1 && ++nbNodes )
+    theNodes.insert( make_pair( f, n1 ));
+  if ( n2 && ++nbNodes )
+    theNodes.insert( make_pair( l, n2 ));
+
+  return theNodes.size() == nbNodes;
 }
 
 //================================================================================
@@ -502,6 +563,7 @@ bool SMESH_Algo::error(SMESH_ComputeErrorPtr error)
   if ( error ) {
     _error   = error->myName;
     _comment = error->myComment;
+    _badInputElements = error->myBadElements;
     return error->IsOK();
   }
   return true;
@@ -515,7 +577,11 @@ bool SMESH_Algo::error(SMESH_ComputeErrorPtr error)
 
 SMESH_ComputeErrorPtr SMESH_Algo::GetComputeError() const
 {
-  return SMESH_ComputeError::New( _error, _comment, this );
+  SMESH_ComputeErrorPtr err = SMESH_ComputeError::New( _error, _comment, this );
+  // hope this method is called by only SMESH_subMesh after this->Compute()
+  err->myBadElements.splice( err->myBadElements.end(),
+                             (list<const SMDS_MeshElement*>&) _badInputElements );
+  return err;
 }
 
 //================================================================================
@@ -528,5 +594,23 @@ void SMESH_Algo::InitComputeError()
 {
   _error = COMPERR_OK;
   _comment.clear();
+  list<const SMDS_MeshElement*>::iterator elem = _badInputElements.begin();
+  for ( ; elem != _badInputElements.end(); ++elem )
+    if ( (*elem)->GetID() < 1 )
+      delete *elem;
+  _badInputElements.clear();
 }
 
+//================================================================================
+/*!
+ * \brief store a bad input element preventing computation,
+ *        which may be a temporary one i.e. not residing the mesh,
+ *        then it will be deleted by InitComputeError()
+ */
+//================================================================================
+
+void SMESH_Algo::addBadInputElement(const SMDS_MeshElement* elem)
+{
+  if ( elem )
+    _badInputElements.push_back( elem );
+}

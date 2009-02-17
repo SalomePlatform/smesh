@@ -1,31 +1,29 @@
+//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//
+//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+//
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
+//
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
+//
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
 //  SMESH SMESH_I : idl implementation based on 'SMESH' unit's calsses
-//
-//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
-// 
-//  This library is free software; you can redistribute it and/or 
-//  modify it under the terms of the GNU Lesser General Public 
-//  License as published by the Free Software Foundation; either 
-//  version 2.1 of the License. 
-// 
-//  This library is distributed in the hope that it will be useful, 
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of 
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
-//  Lesser General Public License for more details. 
-// 
-//  You should have received a copy of the GNU Lesser General Public 
-//  License along with this library; if not, write to the Free Software 
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
-// 
-// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
-//
-//
-//
 //  File   : SMESH_Gen_i.cxx
 //  Author : Paul RASCLE, EDF
 //  Module : SMESH
-//  $Header$
-
+//
 #include <TopExp.hxx>
 #include <TopExp_Explorer.hxx>
 #include <TopoDS.hxx>
@@ -97,6 +95,7 @@
 
 #include CORBA_SERVER_HEADER(SMESH_Group)
 #include CORBA_SERVER_HEADER(SMESH_Filter)
+#include CORBA_SERVER_HEADER(SMESH_MeshEditor)
 
 #include "DriverMED_W_SMESHDS_Mesh.h"
 #include "DriverMED_R_SMESHDS_Mesh.h"
@@ -132,6 +131,9 @@ PortableServer::POA_var SMESH_Gen_i::myPoa;
 SALOME_NamingService*   SMESH_Gen_i::myNS  = NULL;
 SALOME_LifeCycleCORBA*  SMESH_Gen_i::myLCC = NULL;
 SMESH_Gen_i*            SMESH_Gen_i::mySMESHGen = NULL;
+
+
+const int nbElemPerDiagonal = 10;
 
 //=============================================================================
 /*!
@@ -640,14 +642,15 @@ SMESH::SMESH_Hypothesis_ptr SMESH_Gen_i::CreateHypothesis( const char* theHypNam
 
 //================================================================================
 /*!
- * \brief Return hypothesis of given type holding parameter values of the existing mesh
-  * \param theHypType - hypothesis type name
-  * \param theLibName - plugin library name
-  * \param theMesh - The mesh of interest
-  * \param theGeom - The shape to get parameter values from
-  * \retval SMESH::SMESH_Hypothesis_ptr - The returned hypothesis may be the one existing
-  *    in a study and used to compute the mesh, or a temporary one created just to pass
-  *    parameter values
+ * \brief Return a hypothesis holding parameter values corresponding either to the mesh
+ * existing on the given geometry or to size of the geometry.
+ *  \param theHypType - hypothesis type name
+ *  \param theLibName - plugin library name
+ *  \param theMesh - The mesh of interest
+ *  \param theGeom - The shape to get parameter values from
+ *  \retval SMESH::SMESH_Hypothesis_ptr - The returned hypothesis may be the one existing
+ *     in a study and used to compute the mesh, or a temporary one created just to pass
+ *     parameter values
  */
 //================================================================================
 
@@ -655,14 +658,15 @@ SMESH::SMESH_Hypothesis_ptr
 SMESH_Gen_i::GetHypothesisParameterValues (const char*           theHypType,
                                            const char*           theLibName,
                                            SMESH::SMESH_Mesh_ptr theMesh,
-                                           GEOM::GEOM_Object_ptr theGeom)
-    throw ( SALOME::SALOME_Exception )
+                                           GEOM::GEOM_Object_ptr theGeom,
+                                           CORBA::Boolean        byMesh)
+  throw ( SALOME::SALOME_Exception )
 {
   Unexpect aCatch(SALOME_SalomeException);
-  if ( CORBA::is_nil( theMesh ) )
-    THROW_SALOME_CORBA_EXCEPTION( "bad Mesh reference", SALOME::BAD_PARAM );
-  if ( CORBA::is_nil( theGeom ) )
-    THROW_SALOME_CORBA_EXCEPTION( "bad shape object reference", SALOME::BAD_PARAM );
+  if ( byMesh && CORBA::is_nil( theMesh ) )
+    return SMESH::SMESH_Hypothesis::_nil();
+  if ( byMesh && CORBA::is_nil( theGeom ) )
+    return SMESH::SMESH_Hypothesis::_nil();
 
   // -----------------------------------------------
   // find hypothesis used to mesh theGeom
@@ -671,12 +675,9 @@ SMESH_Gen_i::GetHypothesisParameterValues (const char*           theHypType,
   // get mesh and shape
   SMESH_Mesh_i* meshServant = SMESH::DownCast<SMESH_Mesh_i*>( theMesh );
   TopoDS_Shape shape = GeomObjectToShape( theGeom );
-  if ( !meshServant || shape.IsNull() )
+  if ( byMesh && ( !meshServant || meshServant->NbNodes()==0 || shape.IsNull() ))
     return SMESH::SMESH_Hypothesis::_nil();
-  ::SMESH_Mesh& mesh = meshServant->GetImpl();
-
-  if ( mesh.NbNodes() == 0 ) // empty mesh
-    return SMESH::SMESH_Hypothesis::_nil();
+  ::SMESH_Mesh* mesh = meshServant ? &meshServant->GetImpl() : (::SMESH_Mesh*)0;
 
   // create a temporary hypothesis to know its dimention
   SMESH::SMESH_Hypothesis_var tmpHyp = this->createHypothesis( theHypType, theLibName );
@@ -685,35 +686,79 @@ SMESH_Gen_i::GetHypothesisParameterValues (const char*           theHypType,
     return SMESH::SMESH_Hypothesis::_nil();
   ::SMESH_Hypothesis* hyp = hypServant->GetImpl();
 
-  // look for a hypothesis of theHypType used to mesh the shape
-  if ( myGen.GetShapeDim( shape ) == hyp->GetDim() )
-  {
-    // check local shape
-    SMESH::ListOfHypothesis_var aHypList = theMesh->GetHypothesisList( theGeom );
-    int nbLocalHyps = aHypList->length();
-    for ( int i = 0; i < nbLocalHyps; i++ )
-      if ( strcmp( theHypType, aHypList[i]->GetName() ) == 0 ) // FOUND local!
-        return SMESH::SMESH_Hypothesis::_duplicate( aHypList[i] );
-    // check super shapes
-    TopTools_ListIteratorOfListOfShape itShape( mesh.GetAncestors( shape ));
-    while ( nbLocalHyps == 0 && itShape.More() ) {
-      GEOM::GEOM_Object_ptr geomObj = ShapeToGeomObject( itShape.Value() );
-      if ( ! CORBA::is_nil( geomObj )) {
-        SMESH::ListOfHypothesis_var aHypList = theMesh->GetHypothesisList( geomObj );
-        nbLocalHyps = aHypList->length();
-        for ( int i = 0; i < nbLocalHyps; i++ )
-          if ( strcmp( theHypType, aHypList[i]->GetName() ) == 0 ) // FOUND global!
-            return SMESH::SMESH_Hypothesis::_duplicate( aHypList[i] );
+  if ( byMesh ) {
+    // look for a hypothesis of theHypType used to mesh the shape
+    if ( myGen.GetShapeDim( shape ) == hyp->GetDim() )
+    {
+      // check local shape
+      SMESH::ListOfHypothesis_var aHypList = theMesh->GetHypothesisList( theGeom );
+      int nbLocalHyps = aHypList->length();
+      for ( int i = 0; i < nbLocalHyps; i++ )
+        if ( strcmp( theHypType, aHypList[i]->GetName() ) == 0 ) // FOUND local!
+          return SMESH::SMESH_Hypothesis::_duplicate( aHypList[i] );
+      // check super shapes
+      TopTools_ListIteratorOfListOfShape itShape( mesh->GetAncestors( shape ));
+      while ( nbLocalHyps == 0 && itShape.More() ) {
+        GEOM::GEOM_Object_ptr geomObj = ShapeToGeomObject( itShape.Value() );
+        if ( ! CORBA::is_nil( geomObj )) {
+          SMESH::ListOfHypothesis_var aHypList = theMesh->GetHypothesisList( geomObj );
+          nbLocalHyps = aHypList->length();
+          for ( int i = 0; i < nbLocalHyps; i++ )
+            if ( strcmp( theHypType, aHypList[i]->GetName() ) == 0 ) // FOUND global!
+              return SMESH::SMESH_Hypothesis::_duplicate( aHypList[i] );
+        }
+        itShape.Next();
       }
-      itShape.Next();
     }
+
+    // let the temporary hypothesis find out some how parameter values by mesh
+    if ( hyp->SetParametersByMesh( mesh, shape ))
+      return SMESH::SMESH_Hypothesis::_duplicate( tmpHyp );
+  }
+  else {
+    double diagonal = 0;
+    if ( mesh )
+      diagonal = mesh->GetShapeDiagonalSize();
+    else
+      diagonal = ::SMESH_Mesh::GetShapeDiagonalSize( shape );
+    ::SMESH_Hypothesis::TDefaults dflts;
+    dflts._elemLength = diagonal / myGen.GetBoundaryBoxSegmentation();
+    dflts._nbSegments = myGen.GetDefaultNbSegments();
+    // let the temporary hypothesis initialize it's values
+    if ( hyp->SetParametersByDefaults( dflts, mesh ))
+      return SMESH::SMESH_Hypothesis::_duplicate( tmpHyp );
   }
 
-  // let the temporary hypothesis find out some how parameter values
-  if ( hyp->SetParametersByMesh( &mesh, shape ))
-    return SMESH::SMESH_Hypothesis::_duplicate( tmpHyp );
-    
   return SMESH::SMESH_Hypothesis::_nil();
+}
+
+//=============================================================================
+/*!
+ * Sets number of segments per diagonal of boundary box of geometry by which
+ * default segment length of appropriate 1D hypotheses is defined
+ */
+//=============================================================================
+
+void SMESH_Gen_i::SetBoundaryBoxSegmentation( CORBA::Long theNbSegments )
+  throw ( SALOME::SALOME_Exception )
+{
+  if ( theNbSegments > 0 )
+    myGen.SetBoundaryBoxSegmentation( int( theNbSegments ));
+  else
+    THROW_SALOME_CORBA_EXCEPTION( "non-positive number of segments", SALOME::BAD_PARAM );
+}
+//=============================================================================
+  /*!
+   * \brief Sets default number of segments per edge
+   */
+//=============================================================================
+void SMESH_Gen_i::SetDefaultNbSegments(CORBA::Long theNbSegments)
+  throw ( SALOME::SALOME_Exception )
+{
+  if ( theNbSegments )
+    myGen.SetDefaultNbSegments( int(theNbSegments) );
+  else
+    THROW_SALOME_CORBA_EXCEPTION( "non-positive number of segments", SALOME::BAD_PARAM );
 }
 
 //=============================================================================
@@ -1069,9 +1114,10 @@ SMESH::compute_error_array* SMESH_Gen_i::GetComputeErrors( SMESH::SMESH_Mesh_ptr
           errStruct.subShapeID = sm->GetId();
           SALOMEDS::SObject_var algoSO = GetAlgoSO( error->myAlgo );
           if ( !algoSO->_is_nil() )
-            errStruct.algoName   = algoSO->GetName();
+            errStruct.algoName = algoSO->GetName();
           else
-            errStruct.algoName   = error->myAlgo->GetName();
+            errStruct.algoName = error->myAlgo->GetName();
+          errStruct.hasBadMesh = !error->myBadElements.empty();
         }
       }
       error_array->length( nbErr );
@@ -1084,12 +1130,98 @@ SMESH::compute_error_array* SMESH_Gen_i::GetComputeErrors( SMESH::SMESH_Mesh_ptr
   return error_array._retn();
 }
 
+// 
+//================================================================================
+/*!
+ * \brief Return mesh elements preventing computation of a subshape
+ */
+//================================================================================
+
+SMESH::MeshPreviewStruct*
+SMESH_Gen_i::GetBadInputElements( SMESH::SMESH_Mesh_ptr theMesh,
+                                  CORBA::Short          theSubShapeID )
+  throw ( SALOME::SALOME_Exception )
+{
+  Unexpect aCatch(SALOME_SalomeException);
+  if(MYDEBUG) MESSAGE( "SMESH_Gen_i::GetBadInputElements()" );
+
+  if ( CORBA::is_nil( theMesh ) )
+    THROW_SALOME_CORBA_EXCEPTION( "bad Mesh reference",SALOME::BAD_PARAM );
+
+  SMESH::MeshPreviewStruct_var result = new SMESH::MeshPreviewStruct;
+  try {
+    // mesh servant
+    if ( SMESH_Mesh_i* meshServant = SMESH::DownCast<SMESH_Mesh_i*>( theMesh ))
+    {
+      // mesh implementation
+      ::SMESH_Mesh& mesh = meshServant->GetImpl();
+      // submesh by subshape id
+      if ( SMESH_subMesh * sm = mesh.GetSubMeshContaining( theSubShapeID ))
+      {
+        // compute error
+        SMESH_ComputeErrorPtr error = sm->GetComputeError();
+        if ( error && !error->myBadElements.empty())
+        {
+          typedef map<const SMDS_MeshElement*, int > TNode2LocalIDMap;
+          typedef TNode2LocalIDMap::iterator         TNodeLocalID;
+
+          // get nodes of elements and count elements
+          TNode2LocalIDMap mapNode2LocalID;
+          list< TNodeLocalID > connectivity;
+          int i, nbElements = 0, nbConnNodes = 0;
+
+          list<const SMDS_MeshElement*>::iterator elemIt  = error->myBadElements.begin();
+          list<const SMDS_MeshElement*>::iterator elemEnd = error->myBadElements.end();
+          for ( ; elemIt != elemEnd; ++elemIt, ++nbElements )
+          {
+            SMDS_ElemIteratorPtr nIt = (*elemIt)->nodesIterator();
+            while ( nIt->more() )
+              connectivity.push_back
+                ( mapNode2LocalID.insert( make_pair( nIt->next(), ++nbConnNodes)).first );
+          }
+          // fill node coords and assign local ids to the nodes
+          int nbNodes = mapNode2LocalID.size();
+          result->nodesXYZ.length( nbNodes );
+          TNodeLocalID node2ID = mapNode2LocalID.begin();
+          for ( i = 0; i < nbNodes; ++i, ++node2ID ) {
+            node2ID->second = i;
+            const SMDS_MeshNode* node = (const SMDS_MeshNode*) node2ID->first;
+            result->nodesXYZ[i].x = node->X();
+            result->nodesXYZ[i].y = node->Y();
+            result->nodesXYZ[i].z = node->Z();
+          }
+          // fill connectivity
+          result->elementConnectivities.length( nbConnNodes );
+          list< TNodeLocalID >::iterator connIt = connectivity.begin();
+          for ( i = 0; i < nbConnNodes; ++i, ++connIt ) {
+            result->elementConnectivities[i] = (*connIt)->second;
+          }
+          // fill element types
+          result->elementTypes.length( nbElements );
+          for ( i = 0, elemIt = error->myBadElements.begin(); i <nbElements; ++i, ++elemIt )
+          {
+            const SMDS_MeshElement* elem = *elemIt;
+            result->elementTypes[i].SMDS_ElementType = (SMESH::ElementType) elem->GetType();
+            result->elementTypes[i].isPoly           = elem->IsPoly();
+            result->elementTypes[i].nbNodesInElement = elem->NbNodes();
+          }
+        }
+      }
+    }
+  }
+  catch ( SALOME_Exception& S_ex ) {
+    INFOS( "catch exception "<< S_ex.what() );
+  }
+
+  return result._retn();
+}
+
 //================================================================================
 /*!
  * \brief Returns errors of hypotheses definintion
-  * \param theMesh - the mesh
-  * \param theSubObject - the main or sub- shape
-  * \retval SMESH::algo_error_array* - sequence of errors
+ * \param theMesh - the mesh
+ * \param theSubObject - the main or sub- shape
+ * \retval SMESH::algo_error_array* - sequence of errors
  */
 //================================================================================
 
@@ -1274,6 +1406,193 @@ CORBA::Boolean SMESH_Gen_i::Compute( SMESH::SMESH_Mesh_ptr theMesh,
     INFOS( "Compute(): unknown exception " );
   }
   return false;
+}
+
+//=============================================================================
+/*!
+ *  SMESH_Gen_i::Precompute
+ *
+ *  Compute mesh as preview till indicated dimension on shape
+ */
+//=============================================================================
+
+SMESH::MeshPreviewStruct* SMESH_Gen_i::Precompute( SMESH::SMESH_Mesh_ptr theMesh,
+						   GEOM::GEOM_Object_ptr theShapeObject,
+						   SMESH::Dimension      theDimension,
+						   SMESH::long_array&    theShapesId)
+     throw ( SALOME::SALOME_Exception )
+{
+  Unexpect aCatch(SALOME_SalomeException);
+  if(MYDEBUG) MESSAGE( "SMESH_Gen_i::Precompute" );
+
+  if ( CORBA::is_nil( theShapeObject ) && theMesh->HasShapeToMesh())
+    THROW_SALOME_CORBA_EXCEPTION( "bad shape object reference", 
+                                  SALOME::BAD_PARAM );
+
+  if ( CORBA::is_nil( theMesh ) )
+    THROW_SALOME_CORBA_EXCEPTION( "bad Mesh reference",
+                                  SALOME::BAD_PARAM );
+
+  SMESH::MeshPreviewStruct_var result = new SMESH::MeshPreviewStruct;
+  try {
+    // get mesh servant
+    SMESH_Mesh_i* meshServant = dynamic_cast<SMESH_Mesh_i*>( GetServant( theMesh ).in() );
+    ASSERT( meshServant );
+    if ( meshServant ) {
+      // NPAL16168: "geometrical group edition from a submesh don't modifiy mesh computation"
+      meshServant->CheckGeomGroupModif();
+      // get local TopoDS_Shape
+      TopoDS_Shape myLocShape;
+      if(theMesh->HasShapeToMesh())
+        myLocShape = GeomObjectToShape( theShapeObject );
+      else
+	return result._retn();;
+
+      // call implementation compute
+      ::SMESH_Mesh& myLocMesh = meshServant->GetImpl();
+      TSetOfInt shapeIds;
+      ::MeshDimension aDim = (MeshDimension)theDimension;
+      if ( myGen.Compute( myLocMesh, myLocShape, false, aDim, &shapeIds ) )
+      {
+	int nbShapeId = shapeIds.size();
+	theShapesId.length( nbShapeId );
+	// iterates on shapes and collect mesh entities into mesh preview
+	TSetOfInt::const_iterator idIt = shapeIds.begin();
+	TSetOfInt::const_iterator idEnd = shapeIds.end();
+	std::map< int, int > mapOfShIdNb;
+	std::set< SMESH_TLink > setOfEdge;
+	std::list< SMDSAbs_ElementType > listOfElemType;
+	typedef map<const SMDS_MeshElement*, int > TNode2LocalIDMap;
+	typedef TNode2LocalIDMap::iterator         TNodeLocalID;
+	TNode2LocalIDMap mapNode2LocalID;
+	list< TNodeLocalID > connectivity;
+	int i, nbConnNodes = 0;
+	std::set< const SMESH_subMesh* > setOfVSubMesh;
+	// iterates on shapes
+	for ( ; idIt != idEnd; idIt++ )
+	{
+	  if ( mapOfShIdNb.find( *idIt ) != mapOfShIdNb.end() )
+	    continue;
+	  SMESH_subMesh* sm = myLocMesh.GetSubMeshContaining(*idIt);
+	  if ( !sm || !sm->IsMeshComputed() )
+	    continue;
+	  
+	  const TopoDS_Shape& aSh = sm->GetSubShape();
+	  const int shDim = myGen.GetShapeDim( aSh );
+	  if ( shDim < 1 || shDim > theDimension )
+	    continue;
+
+	  mapOfShIdNb[ *idIt ] = 0;
+	  theShapesId[ mapOfShIdNb.size() - 1 ] = *idIt;
+
+	  SMESHDS_SubMesh* smDS = sm->GetSubMeshDS();
+	  if ( !smDS ) continue;
+
+	  if ( theDimension == SMESH::DIM_2D )
+	  {
+	    SMDS_ElemIteratorPtr faceIt = smDS->GetElements();
+	    while ( faceIt->more() )
+	    {
+	      const SMDS_MeshElement* face = faceIt->next();
+	      int aNbNode = face->NbNodes();
+	      if ( aNbNode > 4 )
+		aNbNode /= 2; // do not take into account additional middle nodes
+
+	      SMDS_MeshNode* node1 = (SMDS_MeshNode*)face->GetNode( 1 );
+	      for ( int nIndx = 1; nIndx <= aNbNode; nIndx++ )
+	      {
+		SMDS_MeshNode* node2 = (SMDS_MeshNode*)face->GetNode( nIndx < aNbNode ? nIndx+1 : 1 );
+		if ( setOfEdge.insert( SMESH_TLink ( node1, node2 ) ).second )
+		{
+		  listOfElemType.push_back( SMDSAbs_Edge );
+		  connectivity.push_back
+		    ( mapNode2LocalID.insert( make_pair( node1, ++nbConnNodes)).first );
+		  connectivity.push_back
+		    ( mapNode2LocalID.insert( make_pair( node2, ++nbConnNodes)).first );
+		}
+		node1 = node2;
+	      }
+	    }
+	  }
+	  else if ( theDimension == SMESH::DIM_1D )
+	  {
+	    SMDS_NodeIteratorPtr nodeIt = smDS->GetNodes();
+	    while ( nodeIt->more() )
+	    {
+	      listOfElemType.push_back( SMDSAbs_Node );
+	      connectivity.push_back
+		( mapNode2LocalID.insert( make_pair( nodeIt->next(), ++nbConnNodes)).first );
+	    }
+	    // add corner nodes by first vertex from edge
+	    SMESH_subMeshIteratorPtr edgeSmIt =
+	      sm->getDependsOnIterator(/*includeSelf*/false,
+				       /*complexShapeFirst*/false);
+	    while ( edgeSmIt->more() )
+	    {
+	      SMESH_subMesh* vertexSM = edgeSmIt->next();
+	      // check that vertex is not already treated
+	      if ( !setOfVSubMesh.insert( vertexSM ).second )
+		continue;
+	      if ( vertexSM->GetSubShape().ShapeType() != TopAbs_VERTEX )
+		continue;
+
+	      const SMESHDS_SubMesh* vertexSmDS = vertexSM->GetSubMeshDS();
+	      SMDS_NodeIteratorPtr nodeIt = vertexSmDS->GetNodes();
+	      while ( nodeIt->more() )
+	      {
+		listOfElemType.push_back( SMDSAbs_Node );
+		connectivity.push_back
+		  ( mapNode2LocalID.insert( make_pair( nodeIt->next(), ++nbConnNodes)).first );
+	      }
+	    }
+	  }
+	}
+
+	// fill node coords and assign local ids to the nodes
+	int nbNodes = mapNode2LocalID.size();
+	result->nodesXYZ.length( nbNodes );
+	TNodeLocalID node2ID = mapNode2LocalID.begin();
+	for ( i = 0; i < nbNodes; ++i, ++node2ID ) {
+	  node2ID->second = i;
+	  const SMDS_MeshNode* node = (const SMDS_MeshNode*) node2ID->first;
+	  result->nodesXYZ[i].x = node->X();
+	  result->nodesXYZ[i].y = node->Y();
+	  result->nodesXYZ[i].z = node->Z();
+	}
+	// fill connectivity
+	result->elementConnectivities.length( nbConnNodes );
+	list< TNodeLocalID >::iterator connIt = connectivity.begin();
+	for ( i = 0; i < nbConnNodes; ++i, ++connIt ) {
+	  result->elementConnectivities[i] = (*connIt)->second;
+	}
+
+	// fill element types
+	result->elementTypes.length( listOfElemType.size() );
+	std::list< SMDSAbs_ElementType >::const_iterator typeIt = listOfElemType.begin();
+	std::list< SMDSAbs_ElementType >::const_iterator typeEnd = listOfElemType.end();
+	for ( i = 0; typeIt != typeEnd; ++i, ++typeIt )
+        {
+	  SMDSAbs_ElementType elemType = *typeIt;
+	  result->elementTypes[i].SMDS_ElementType = (SMESH::ElementType)elemType;
+	  result->elementTypes[i].isPoly           = false;
+	  result->elementTypes[i].nbNodesInElement = elemType == SMDSAbs_Edge ? 2 : 1;
+	}
+
+	// correct number of shapes
+	theShapesId.length( mapOfShIdNb.size() );
+      }
+    }
+  }
+  catch ( std::bad_alloc ) {
+    INFOS( "Precompute(): lack of memory" );
+  }
+  catch ( SALOME_Exception& S_ex ) {
+    INFOS( "Precompute(): catch exception "<< S_ex.what() );
+  }
+  catch ( ... ) {
+    INFOS( "Precompute(): unknown exception " );
+  }
+  return result._retn();
 }
 
 //================================================================================
@@ -1819,7 +2138,7 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
 
   // Write data
   // ---> create HDF file
-  aFile = new HDFfile( filename.ToCString() );
+  aFile = new HDFfile( (char*) filename.ToCString() );
   aFile->CreateOnDisk();
 
   // --> iterator for top-level objects
@@ -2769,7 +3088,7 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
 
   // Read data
   // ---> open HDF file
-  aFile = new HDFfile( filename.ToCString() );
+  aFile = new HDFfile( (char*) filename.ToCString() );
   try {
     aFile->OpenOnDisk( HDF_RDONLY );
   }
@@ -3450,9 +3769,9 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
           // "Nodes on Faces" - ID of node on face
           // "Face U positions" - U parameter of node on face
           // "Face V positions" - V parameter of node on face
-          char* aEid_DSName = "Nodes on Edges";
-          char* aEu_DSName  = "Edge positions";
-          char* aFu_DSName  = "Face U positions";
+          const char* aEid_DSName = "Nodes on Edges";
+          const char* aEu_DSName  = "Edge positions";
+          const char* aFu_DSName  = "Face U positions";
           //char* aFid_DSName = "Nodes on Faces";
           //char* aFv_DSName  = "Face V positions";
 
@@ -3751,10 +4070,16 @@ void SMESH_Gen_i::Close( SALOMEDS::SComponent_ptr theComponent )
   }
 
   // delete SMESH_Mesh's
-  StudyContextStruct* context = myGen.GetStudyContext( studyId );
-  map< int, SMESH_Mesh* >::iterator i_mesh = context->mapMesh.begin();
-  for ( ; i_mesh != context->mapMesh.end(); ++i_mesh )
-    delete i_mesh->second;
+//   See bug IPAL19437.
+//
+//   StudyContextStruct* context = myGen.GetStudyContext( studyId );
+//   map< int, SMESH_Mesh* >::iterator i_mesh = context->mapMesh.begin();
+//   for ( ; i_mesh != context->mapMesh.end(); ++i_mesh ) {
+//     printf( "--------------------------- SMESH_Gen_i::Close, delete aGroup = %p \n", i_mesh->second );
+//     delete i_mesh->second;
+//   }
+  
+
   // delete SMESHDS_Mesh's
   // it's too long on big meshes
 //   if ( context->myDocument ) {
@@ -3862,6 +4187,25 @@ CORBA::Long SMESH_Gen_i::GetObjectId(CORBA::Object_ptr theObject)
     return myStudyContext->findId( iorString );
   }
   return 0;
+}
+
+//=============================================================================
+/*!
+ *  SMESH_Gen_i::SetName
+ *
+ *  Set a new object name
+ */
+//=============================================================================
+void SMESH_Gen_i::SetName(const char* theIOR,
+                          const char* theName)
+{
+  if ( theIOR && strcmp( theIOR, "" ) ) {
+    CORBA::Object_var anObject = GetORB()->string_to_object( theIOR );
+    SALOMEDS::SObject_var aSO = ObjectToSObject( myCurrentStudy, anObject );
+    if ( !aSO->_is_nil() ) {
+      SetName( aSO, theName );
+    }
+  }
 }
 
 //=============================================================================

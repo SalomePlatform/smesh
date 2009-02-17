@@ -34,4 +34,34 @@ not possible.</li>
 create regular (possessing even sides) elements.</li>
 </ul>
 
+\image html netgen3d_simple.png
+
+<b>Netgen 2D simple parameters</b> and <b>Netgen 3D simple parameters</b> allow defining the size of elements for each dimension. Note that Netgen algorithm does not strictly follow the input parameters. The actual mesh can be more or less dense than required.<br>
+
+\b 1D group allows defining the size of 1D elements in either of two ways: 
+<ul>
+<li><b>Number of Segments</b> has the same sense as \ref
+number_of_segments_anchor "Number of segments" hypothesis with
+equidistant distribution.</li>
+<li><b>Average Length</b> has the same sense as \ref 
+average_length_anchor "Average Length" hypothesis.</li>
+</ul>
+
+\b 2D group allows defining the size of 2D elements 
+<ul>
+<li><b>Length from edges</b> if checked in, acts like \ref
+length_from_edges_anchor "Length from Edges" hypothesis, else </li>
+<li><b>Max. Element Area</b> defines the maximum element area like \ref
+max_element_area_anchor "Max Element Area" hypothesis. </li>
+</ul>
+
+\b 3D groups allows defining the size of 3D elements.
+<ul>
+<li><b>Length from faces</b> if checked in, the area of sides of
+volumic elements will be equal to an average area of 2D elements, else </li>
+<li><b>Max. Element Volume</b> defines the maximum element volume like
+\ref max_element_volume_hypo_page "Max Element Volume"
+hypothesis.</li>
+<ul>
+
 */

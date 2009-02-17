@@ -1,6 +1,6 @@
-//  SMESH SMESHGUI : GUI for SMESH component
+//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
 //  This library is free software; you can redistribute it and/or
@@ -17,15 +17,13 @@
 //  License along with this library; if not, write to the Free Software
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+// SMESH SMESHGUI : GUI for SMESH component
+// File   : SMESHGUI_MoveNodesDlg.cxx
+// Author : Nicolas REJNERI, Open CASCADE S.A.S.
+// SMESH includes
 //
-//
-//  File   : SMESHGUI_MoveNodesDlg.cxx
-//  Author : Nicolas REJNERI
-//  Module : SMESH
-//  $Header$
-
 #include "SMESHGUI_MoveNodesDlg.h"
 
 #include "SMESHGUI.h"
@@ -35,32 +33,27 @@
 #include "SMESHGUI_VTKUtils.h"
 #include "SMESHGUI_MeshUtils.h"
 
-#include "SMESH_Actor.h"
-#include "SMDS_Mesh.hxx"
-#include "SMDS_MeshNode.hxx"
+#include <SMESH_Actor.h>
+#include <SMDS_Mesh.hxx>
 
-#include "LightApp_SelectionMgr.h"
-#include "LightApp_Application.h"
-#include "SUIT_ResourceMgr.h"
-#include "SUIT_Desktop.h"
-#include "SUIT_Session.h"
-#include "SUIT_MessageBox.h"
+// SALOME GUI includes
+#include <LightApp_SelectionMgr.h>
+#include <LightApp_Application.h>
+#include <SUIT_ResourceMgr.h>
+#include <SUIT_Desktop.h>
+#include <SUIT_Session.h>
+#include <SUIT_MessageBox.h>
 
-#include "SVTK_Selector.h"
-#include "SVTK_ViewModel.h"
-#include "SVTK_ViewWindow.h"
-#include "SALOME_ListIO.hxx"
+#include <SVTK_ViewModel.h>
+#include <SVTK_ViewWindow.h>
+#include <SALOME_ListIO.hxx>
 
-#include "SVTK_ViewWindow.h"
-#include "VTKViewer_CellLocationsArray.h"
-
-#include "utilities.h"
+#include <VTKViewer_CellLocationsArray.h>
 
 // OCCT includes
 #include <TColStd_MapOfInteger.hxx>
 
 // VTK includes
-#include <vtkCell.h>
 #include <vtkIdList.h>
 #include <vtkCellArray.h>
 #include <vtkUnsignedCharArray.h>
@@ -68,53 +61,49 @@
 #include <vtkDataSetMapper.h>
 #include <vtkProperty.h>
 
-// QT includes
-#include <qgroupbox.h>
-#include <qlabel.h>
-#include <qlineedit.h>
-#include <qpushbutton.h>
-#include <qradiobutton.h>
-#include <qlayout.h>
-#include <qpixmap.h>
-#include <qmessagebox.h>
-#include <qbuttongroup.h>
+// Qt includes
+#include <QGroupBox>
+#include <QLabel>
+#include <QLineEdit>
+#include <QPushButton>
+#include <QRadioButton>
+#include <QHBoxLayout>
+#include <QVBoxLayout>
+#include <QKeyEvent>
+#include <QButtonGroup>
 
-// IDL Headers
+// IDL includes
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
 #include CORBA_SERVER_HEADER(SMESH_MeshEditor)
 
-#define MARGIN  10
-#define SPACING 5
-
+#define SPACING 6
+#define MARGIN  11
 
 //=================================================================================
 // name    : SMESHGUI_MoveNodesDlg::SMESHGUI_MoveNodesDlg
 // Purpose :
 //=================================================================================
-SMESHGUI_MoveNodesDlg::SMESHGUI_MoveNodesDlg (SMESHGUI* theModule, 
-					      const char* theName):
-  QDialog(SMESH::GetDesktop(theModule), 
-	  theName, 
-	  false,
-	  WStyle_Customize | WStyle_NormalBorder | WStyle_Title | WStyle_SysMenu),
+SMESHGUI_MoveNodesDlg::SMESHGUI_MoveNodesDlg(SMESHGUI* theModule):
+  QDialog(SMESH::GetDesktop(theModule)),
   mySelectionMgr(SMESH::GetSelectionMgr(theModule)),
   mySMESHGUI(theModule)
 {
   myPreviewActor = 0;
   myBusy = false;
 
-  setCaption(tr("CAPTION"));
+  setModal(false);
+  setWindowTitle(tr("CAPTION"));
 
-  QVBoxLayout* aDlgLay = new QVBoxLayout (this, MARGIN, SPACING);
+  QVBoxLayout* aDlgLay = new QVBoxLayout(this);
+  aDlgLay->setSpacing(SPACING);
+  aDlgLay->setMargin(MARGIN);
 
-  QFrame* aMainFrame = createMainFrame  (this);
-  QFrame* aBtnFrame  = createButtonFrame(this);
+  QWidget* aMainFrame = createMainFrame  (this);
+  QWidget* aBtnFrame  = createButtonFrame(this);
 
   aDlgLay->addWidget(aMainFrame);
   aDlgLay->addWidget(aBtnFrame);
-
-  aDlgLay->setStretchFactor(aMainFrame, 1);
 
   mySelector = (SMESH::GetViewWindow( mySMESHGUI ))->GetSelector();
 
@@ -127,23 +116,25 @@ SMESHGUI_MoveNodesDlg::SMESHGUI_MoveNodesDlg (SMESHGUI* theModule,
 // name    : SMESHGUI_MoveNodesDlg::createButtonFrame
 // Purpose : Create frame containing buttons
 //=======================================================================
-QFrame* SMESHGUI_MoveNodesDlg::createButtonFrame (QWidget* theParent)
+QWidget* SMESHGUI_MoveNodesDlg::createButtonFrame (QWidget* theParent)
 {
   QFrame* aFrame = new QFrame(theParent);
   aFrame->setFrameStyle(QFrame::Box | QFrame::Sunken);
 
-  myOkBtn     = new QPushButton(tr("SMESH_BUT_OK"   ), aFrame);
+  myOkBtn     = new QPushButton(tr("SMESH_BUT_APPLY_AND_CLOSE"), aFrame);
   myApplyBtn  = new QPushButton(tr("SMESH_BUT_APPLY"), aFrame);
   myCloseBtn  = new QPushButton(tr("SMESH_BUT_CLOSE"), aFrame);
-  myHelpBtn   = new QPushButton(tr("SMESH_BUT_HELP"), aFrame);
+  myHelpBtn   = new QPushButton(tr("SMESH_BUT_HELP"),  aFrame);
 
-  QSpacerItem* aSpacer = new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Minimum);
-
-  QHBoxLayout* aLay = new QHBoxLayout(aFrame, MARGIN, SPACING);
+  QHBoxLayout* aLay = new QHBoxLayout(aFrame);
+  aLay->setSpacing(SPACING);
+  aLay->setMargin(MARGIN);
 
   aLay->addWidget(myOkBtn);
+  aLay->addSpacing(10);
   aLay->addWidget(myApplyBtn);
-  aLay->addItem(aSpacer);
+  aLay->addSpacing(10);
+  aLay->addStretch();
   aLay->addWidget(myCloseBtn);
   aLay->addWidget(myHelpBtn);
 
@@ -159,49 +150,79 @@ QFrame* SMESHGUI_MoveNodesDlg::createButtonFrame (QWidget* theParent)
 // name    : SMESHGUI_MoveNodesDlg::createMainFrame
 // Purpose : Create frame containing dialog's input fields
 //=======================================================================
-QFrame* SMESHGUI_MoveNodesDlg::createMainFrame (QWidget* theParent)
+QWidget* SMESHGUI_MoveNodesDlg::createMainFrame (QWidget* theParent)
 {
-  QFrame* aFrame = new QFrame(theParent);
+  QWidget* aFrame = new QWidget(theParent);
 
   QPixmap iconMoveNode (SMESH::GetResourceMgr( mySMESHGUI )->loadPixmap("SMESH", tr("ICON_DLG_MOVE_NODE")));
   QPixmap iconSelect   (SMESH::GetResourceMgr( mySMESHGUI )->loadPixmap("SMESH", tr("ICON_SELECT")));
 
-  QButtonGroup* aPixGrp = new QButtonGroup(1, Qt::Vertical, tr("MESH_NODE"), aFrame);
-  aPixGrp->setExclusive(TRUE);
+  //------------------------------------------------------------
+  QGroupBox* aPixGrp = new QGroupBox(tr("MESH_NODE"), aFrame);
+  QButtonGroup* aBtnGrp = new QButtonGroup(this);
+  QHBoxLayout* aPixGrpLayout = new QHBoxLayout(aPixGrp);
+  aPixGrpLayout->setSpacing(SPACING);
+  aPixGrpLayout->setMargin(MARGIN);
+
   QRadioButton* aRBut = new QRadioButton(aPixGrp);
-  aRBut->setPixmap(iconMoveNode);
-  aRBut->setChecked(TRUE);
+  aRBut->setIcon(iconMoveNode);
+  aRBut->setChecked(true);
 
-  QGroupBox* anIdGrp = new QGroupBox(1, Qt::Vertical, tr("SMESH_MOVE"), aFrame);
-  new QLabel(tr("NODE_ID"), anIdGrp);
-  (new QPushButton(anIdGrp))->setPixmap(iconSelect);
+  aPixGrpLayout->addWidget(aRBut);
+  aBtnGrp->addButton(aRBut, 0);
+
+  //------------------------------------------------------------
+  QGroupBox* anIdGrp = new QGroupBox(tr("SMESH_MOVE"), aFrame);
+  QHBoxLayout* anIdGrpLayout = new QHBoxLayout(anIdGrp);
+  anIdGrpLayout->setSpacing(SPACING);
+  anIdGrpLayout->setMargin(MARGIN);
+
+  QLabel* idLabl = new QLabel(tr("NODE_ID"), anIdGrp);
+  QPushButton* idBtn = new QPushButton(anIdGrp);
+  idBtn->setIcon(iconSelect);
   myId = new QLineEdit(anIdGrp);
-  myId->setValidator(new SMESHGUI_IdValidator(this, "validator", 1));
+  myId->setValidator(new SMESHGUI_IdValidator(this, 1));
 
-  QGroupBox* aCoordGrp = new QGroupBox(1, Qt::Vertical, tr("SMESH_COORDINATES"), aFrame);
+  anIdGrpLayout->addWidget(idLabl);
+  anIdGrpLayout->addWidget(idBtn);
+  anIdGrpLayout->addWidget(myId);
+
+  //------------------------------------------------------------
+  QGroupBox* aCoordGrp = new QGroupBox(tr("SMESH_COORDINATES"), aFrame);
+  QHBoxLayout* aCoordGrpLayout = new QHBoxLayout(aCoordGrp);
+  aCoordGrpLayout->setSpacing(SPACING);
+  aCoordGrpLayout->setMargin(MARGIN);
+
   QLabel* aXLabel = new QLabel(tr("SMESH_X"), aCoordGrp);
-  aXLabel->setSizePolicy( QSizePolicy( QSizePolicy::Fixed, QSizePolicy::Fixed ) );
   myX = new SMESHGUI_SpinBox(aCoordGrp);
 
   QLabel* aYLabel = new QLabel(tr("SMESH_Y"), aCoordGrp);
-  //aYLabel->setAlignment( Qt::AlignRight | Qt::AlignVCenter | Qt::ExpandTabs );
-  aYLabel->setSizePolicy( QSizePolicy( QSizePolicy::Fixed, QSizePolicy::Fixed ) );
   myY = new SMESHGUI_SpinBox(aCoordGrp);
 
   QLabel* aZLabel = new QLabel(tr("SMESH_Z"), aCoordGrp);
-  //aZLabel->setAlignment( Qt::AlignRight | Qt::AlignVCenter | Qt::ExpandTabs );
-  aZLabel->setSizePolicy( QSizePolicy( QSizePolicy::Fixed, QSizePolicy::Fixed ) );
   myZ = new SMESHGUI_SpinBox(aCoordGrp);
 
+  aCoordGrpLayout->addWidget(aXLabel);
+  aCoordGrpLayout->addWidget(myX);
+  aCoordGrpLayout->addWidget(aYLabel);
+  aCoordGrpLayout->addWidget(myY);
+  aCoordGrpLayout->addWidget(aZLabel);
+  aCoordGrpLayout->addWidget(myZ);
+
+  //------------------------------------------------------------
   myX->RangeStepAndValidator(COORD_MIN, COORD_MAX, 25.0, DBL_DIGITS_DISPLAY);
   myY->RangeStepAndValidator(COORD_MIN, COORD_MAX, 25.0, DBL_DIGITS_DISPLAY);
   myZ->RangeStepAndValidator(COORD_MIN, COORD_MAX, 25.0, DBL_DIGITS_DISPLAY);
 
+  //------------------------------------------------------------
   QVBoxLayout* aLay = new QVBoxLayout(aFrame);
+  aLay->setMargin(0);
+  aLay->setMargin(SPACING);
   aLay->addWidget(aPixGrp);
   aLay->addWidget(anIdGrp);
   aLay->addWidget(aCoordGrp);
 
+  //------------------------------------------------------------
   // connect signale and slots
   connect(myX, SIGNAL (valueChanged(double)), this, SLOT(redisplayPreview()));
   connect(myY, SIGNAL (valueChanged(double)), this, SLOT(redisplayPreview()));
@@ -240,8 +261,6 @@ void SMESHGUI_MoveNodesDlg::Init()
   reset();
   setEnabled(true);
 
-  this->show();
-
   // set selection mode
   SMESH::SetPointRepresentation(true);
   if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
@@ -254,14 +273,30 @@ void SMESHGUI_MoveNodesDlg::Init()
 // name    : SMESHGUI_MoveNodesDlg::isValid
 // Purpose : Verify validity of entry information
 //=======================================================================
-bool SMESHGUI_MoveNodesDlg::isValid (const bool theMess) const
+bool SMESHGUI_MoveNodesDlg::isValid (const bool theMess)
 {
   if (myId->text().isEmpty()) {
     if (theMess)
-      QMessageBox::information(SMESHGUI::desktop(), tr("SMESH_WARNING"),
-                               tr("NODE_ID_IS_NOT_DEFINED"), QMessageBox::Ok);
+      SUIT_MessageBox::information(this, tr("SMESH_WARNING"),
+				   tr("NODE_ID_IS_NOT_DEFINED"));
     return false;
   }
+
+  QString msg;
+  bool ok = true;
+  ok = myX->isValid( msg, theMess ) && ok;
+  ok = myY->isValid( msg, theMess ) && ok;
+  ok = myZ->isValid( msg, theMess ) && ok;
+  if( !ok ) {
+    if( theMess ) {
+      QString str( tr( "SMESH_INCORRECT_INPUT" ) );
+      if ( !msg.isEmpty() )
+	str += "\n" + msg;
+      SUIT_MessageBox::critical( this, tr( "SMESH_ERROR" ), str );
+    }
+    return false;
+  }
+
   return true;
 }
 
@@ -293,8 +328,8 @@ bool SMESHGUI_MoveNodesDlg::onApply()
 
   SMESH::SMESH_Mesh_var aMesh = SMESH::GetMeshByIO(myMeshActor->getIO());
   if (aMesh->_is_nil()) {
-    QMessageBox::information(SMESHGUI::desktop(), tr("SMESH_ERROR"),
-                             tr("SMESHG_NO_MESH"), QMessageBox::Ok);
+    SUIT_MessageBox::information(this, tr("SMESH_ERROR"),
+				 tr("SMESHG_NO_MESH"));
     return false;
   }
 
@@ -306,6 +341,12 @@ bool SMESHGUI_MoveNodesDlg::onApply()
   bool aResult = false;
   try {
     aResult = aMeshEditor->MoveNode(anId, myX->GetValue(), myY->GetValue(), myZ->GetValue());
+
+    QStringList aParameters;
+    aParameters << myX->text();
+    aParameters << myY->text();
+    aParameters << myZ->text();
+    aMesh->SetParameters( SMESHGUI::JoinObjectParameters(aParameters) );
   } catch (...) {
   }
 
@@ -363,10 +404,11 @@ void SMESHGUI_MoveNodesDlg::onHelp()
 #else
 		platform = "application";
 #endif
-    SUIT_MessageBox::warn1(0, QObject::tr("WRN_WARNING"),
-			   QObject::tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
-			   arg(app->resourceMgr()->stringValue("ExternalBrowser", platform)).arg(myHelpFileName),
-			   QObject::tr("BUT_OK"));
+    SUIT_MessageBox::warning(this, tr("WRN_WARNING"),
+			     tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
+			     arg(app->resourceMgr()->stringValue("ExternalBrowser", 
+								 platform)).
+			     arg(myHelpFileName));
   }
 }
 
@@ -611,9 +653,8 @@ void SMESHGUI_MoveNodesDlg::keyPressEvent( QKeyEvent* e )
   if ( e->isAccepted() )
     return;
 
-  if ( e->key() == Key_F1 )
-    {
-      e->accept();
-      onHelp();
-    }
+  if ( e->key() == Qt::Key_F1 ) {
+    e->accept();
+    onHelp();
+  }
 }

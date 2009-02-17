@@ -1,31 +1,29 @@
+//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//
+//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+//
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
+//
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
+//
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
 //  SMESH SMESH_I : idl implementation based on 'SMESH' unit's classes
-//
-//  Copyright (C) 2004  CEA
-// 
-//  This library is free software; you can redistribute it and/or 
-//  modify it under the terms of the GNU Lesser General Public 
-//  License as published by the Free Software Foundation; either 
-//  version 2.1 of the License. 
-// 
-//  This library is distributed in the hope that it will be useful, 
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of 
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
-//  Lesser General Public License for more details. 
-// 
-//  You should have received a copy of the GNU Lesser General Public 
-//  License along with this library; if not, write to the Free Software 
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
-// 
-// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
-//
-//
-//
 //  File   : SMESH_Group_i.cxx
 //  Author : Sergey ANIKIN, OCC
 //  Module : SMESH
-//  $Header$
-
-
+//
 #include "SMESH_Group_i.hxx"
 #include "SMESH_Mesh_i.hxx"
 #include "SMESH_Gen_i.hxx"
@@ -61,14 +59,14 @@ SMESH_Group_i::SMESH_Group_i( PortableServer::POA_ptr thePOA, SMESH_Mesh_i* theM
      : SALOME::GenericObj_i( thePOA ),
        SMESH_GroupBase_i( thePOA, theMeshServant, theLocalID )
 {
-  MESSAGE("SMESH_Group_i; this = "<<this );
+  //MESSAGE("SMESH_Group_i; this = "<<this );
 }
 
 SMESH_GroupOnGeom_i::SMESH_GroupOnGeom_i( PortableServer::POA_ptr thePOA, SMESH_Mesh_i* theMeshServant, const int theLocalID )
      : SALOME::GenericObj_i( thePOA ),
        SMESH_GroupBase_i( thePOA, theMeshServant, theLocalID )
 {
-  MESSAGE("SMESH_GroupOnGeom_i; this = "<<this );
+  //MESSAGE("SMESH_GroupOnGeom_i; this = "<<this );
 }
 
 //=============================================================================
@@ -119,20 +117,24 @@ SMESHDS_GroupBase* SMESH_GroupBase_i::GetGroupDS() const
 
 void SMESH_GroupBase_i::SetName( const char* theName )
 {
-  // Update Python script
-  TPythonDump() <<  _this() << ".SetName( '" << theName << "' )";
-
   // Perform renaming
   ::SMESH_Group* aGroup = GetSmeshGroup();
-  if (aGroup) {
-    aGroup->SetName(theName);
-
-    // Update group name in a study
-    SMESH_Gen_i* aGen = myMeshServant->GetGen();
-    aGen->SetName( aGen->ObjectToSObject( aGen->GetCurrentStudy(), _this() ), theName );
+  if (!aGroup) {
+    MESSAGE("can't set name of a vague group");
     return;
   }
-  MESSAGE("can't set name of a vague group");
+
+  if ( aGroup->GetName() && !strcmp( aGroup->GetName(), theName ) )
+    return; // nothing to rename
+
+  aGroup->SetName(theName);
+
+  // Update group name in a study
+  SMESH_Gen_i* aGen = myMeshServant->GetGen();
+  aGen->SetName( aGen->ObjectToSObject( aGen->GetCurrentStudy(), _this() ), theName );
+  
+  // Update Python script
+  TPythonDump() <<  _this() << ".SetName( '" << theName << "' )";
 }
 
 //=============================================================================

@@ -1,31 +1,30 @@
+//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//
+//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+//
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
+//
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
+//
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
 //  SMESH OBJECT : interactive object for SMESH visualization
-//
-//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
-// 
-//  This library is free software; you can redistribute it and/or 
-//  modify it under the terms of the GNU Lesser General Public 
-//  License as published by the Free Software Foundation; either 
-//  version 2.1 of the License. 
-// 
-//  This library is distributed in the hope that it will be useful, 
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of 
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
-//  Lesser General Public License for more details. 
-// 
-//  You should have received a copy of the GNU Lesser General Public 
-//  License along with this library; if not, write to the Free Software 
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
-// 
-// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
-//
-//
-//
 //  File   : SMESH_DeviceActor.h
 //  Author : Nicolas REJNERI
 //  Module : SMESH
 //  $Header$
-
+//
 #ifndef SMESH_DEVICE_ACTOR_H
 #define SMESH_DEVICE_ACTOR_H
 
@@ -52,6 +51,7 @@ class VTKViewer_TransformFilter;
 class VTKViewer_ExtractUnstructuredGrid;
 
 class SMESH_ExtractGeometry;
+class SMESH_FaceOrientationFilter;
 
 
 class SMESHOBJECT_EXPORT SMESH_DeviceActor: public vtkLODActor{
@@ -74,6 +74,11 @@ class SMESHOBJECT_EXPORT SMESH_DeviceActor: public vtkLODActor{
   virtual void SetTransform(VTKViewer_Transform* theTransform); 
   virtual unsigned long int GetMTime();
 
+  virtual void SetFacesOriented(bool theIsFacesOriented);
+  virtual bool GetFacesOriented() { return myIsFacesOriented; }
+
+  void UpdateFaceOrientation();
+
   vtkFloatingPointType GetShrinkFactor();
   void  SetShrinkFactor(vtkFloatingPointType value);
 
@@ -88,6 +93,9 @@ class SMESHOBJECT_EXPORT SMESH_DeviceActor: public vtkLODActor{
 
   virtual void SetVisibility(int theMode);
   virtual int GetVisibility();
+
+  virtual void AddToRender(vtkRenderer* theRenderer); 
+  virtual void RemoveFromRender(vtkRenderer* theRenderer);
 
   VTKViewer_ExtractUnstructuredGrid* GetExtractUnstructuredGrid();
   vtkUnstructuredGrid* GetUnstructuredGrid();
@@ -123,6 +131,11 @@ class SMESHOBJECT_EXPORT SMESH_DeviceActor: public vtkLODActor{
 
   vtkMergeFilter* myMergeFilter;
   VTKViewer_ExtractUnstructuredGrid* myExtractUnstructuredGrid;
+
+  bool myIsFacesOriented;
+  SMESH_FaceOrientationFilter* myFaceOrientationFilter;
+  vtkPolyDataMapper* myFaceOrientationDataMapper;
+  vtkActor* myFaceOrientation;
 
   bool myStoreClippingMapping;
   VTKViewer_GeometryFilter *myGeomFilter;

@@ -1,6 +1,7 @@
-//  SMESH SMESH : implementaion of SMESH idl descriptions
+//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003  CEA
+//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
 //  This library is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU Lesser General Public
@@ -16,13 +17,11 @@
 //  License along with this library; if not, write to the Free Software
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
-//
-//
+//  SMESH SMESH : implementaion of SMESH idl descriptions
 //  File   : StdMeshers_Propagation.cxx
 //  Module : SMESH
-//  $Header$
 
 #include "StdMeshers_Propagation.hxx"
 
@@ -97,6 +96,7 @@ ostream & operator << (ostream & save, StdMeshers_Propagation & hyp)   { return 
 istream & operator >> (istream & load, StdMeshers_Propagation & hyp)   { return hyp.LoadFrom(load); }
 bool StdMeshers_Propagation::SetParametersByMesh(const SMESH_Mesh*,
                                                  const TopoDS_Shape& ) { return false; }
+bool StdMeshers_Propagation::SetParametersByDefaults(const TDefaults&,const SMESH_Mesh*) { return false; }
 void StdMeshers_Propagation::SetPropagationMgr(SMESH_subMesh* subMesh) { PropagationMgr::Set( subMesh ); }
 /*!
  * \brief Return an edge from which hypotheses are propagated from
@@ -543,8 +543,9 @@ namespace {
           // clear propagation chain
           clearPropagationChain( subMesh );
         }
-        return;
-      case SMESH_subMesh::MODIF_HYP: // hyp modif
+        // return; -- hyp is modified any way
+      default:
+        //case SMESH_subMesh::MODIF_HYP: // hyp modif
         // clear mesh in a chain
         DBGMSG( "MODIF_HYP on HAS_PROPAG_HYP " << subMesh->GetId() );
         SMESH_subMeshIteratorPtr smIt = data->GetChain();

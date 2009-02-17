@@ -1,31 +1,30 @@
+//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//
+//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+//
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
+//
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
+//
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
 //  SMESH SMESH : implementaion of SMESH idl descriptions
-//
-//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
-// 
-//  This library is free software; you can redistribute it and/or 
-//  modify it under the terms of the GNU Lesser General Public 
-//  License as published by the Free Software Foundation; either 
-//  version 2.1 of the License. 
-// 
-//  This library is distributed in the hope that it will be useful, 
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of 
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
-//  Lesser General Public License for more details. 
-// 
-//  You should have received a copy of the GNU Lesser General Public 
-//  License along with this library; if not, write to the Free Software 
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
-// 
-// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
-//
-//
-//
 // File      : StdMeshers_FaceSide.hxx
 // Created   : Wed Jan 31 18:41:25 2007
 // Author    : Edward AGAPOV (eap)
 // Module    : SMESH
-
+//
 #ifndef StdMeshers_FaceSide_HeaderFile
 #define StdMeshers_FaceSide_HeaderFile
 
@@ -90,7 +89,7 @@ public:
    * \brief Wrap several edges. Edges must be properly ordered and oriented.
    */
   StdMeshers_FaceSide(const TopoDS_Face& theFace,
-                      list<TopoDS_Edge>& theEdges,
+                      std::list<TopoDS_Edge>& theEdges,
                       SMESH_Mesh*        theMesh,
                       const bool         theIsForward,
                       const bool         theIgnoreMediumNodes);
@@ -130,13 +129,13 @@ public:
     *
     * Missing nodes are allowed only on internal vertices
    */
-  const vector<UVPtStruct>& GetUVPtStruct(bool isXConst =0, double constValue =0) const;
+  const std::vector<UVPtStruct>& GetUVPtStruct(bool isXConst =0, double constValue =0) const;
   /*!
    * \brief Simulates detailed data on nodes
     * \param isXConst - true if normalized parameter X is constant
     * \param constValue - constant parameter value
    */
-  const vector<UVPtStruct>& SimulateUVPtStruct(int    nbSeg,
+  const std::vector<UVPtStruct>& SimulateUVPtStruct(int    nbSeg,
                                                bool   isXConst   = 0,
                                                double constValue = 0) const;
   /*!
@@ -194,15 +193,15 @@ public:
   
 
 protected:
-  vector<uvPtStruct>           myPoints, myFalsePoints;
-  vector<TopoDS_Edge>          myEdge;
-  vector<Handle(Geom2d_Curve)> myC2d;
-  vector<double>               myFirst, myLast;
-  vector<double>               myNormPar;
-  double                       myLength;
-  int                          myNbPonits, myNbSegments;
-  SMESH_Mesh*                  myMesh;
-  bool                         myMissingVertexNodes, myIgnoreMediumNodes;
+  std::vector<uvPtStruct>           myPoints, myFalsePoints;
+  std::vector<TopoDS_Edge>          myEdge;
+  std::vector<Handle(Geom2d_Curve)> myC2d;
+  std::vector<double>               myFirst, myLast;
+  std::vector<double>               myNormPar;
+  double                            myLength;
+  int                               myNbPonits, myNbSegments;
+  SMESH_Mesh*                       myMesh;
+  bool                              myMissingVertexNodes, myIgnoreMediumNodes;
 };
 
 

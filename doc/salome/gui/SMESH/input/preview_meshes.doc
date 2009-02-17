@@ -1,0 +1,36 @@
+/*!
+
+\page preview_meshes_page Preview and Compute meshes
+
+Before whole mesh computation it is allowed to see the mesh preview.
+When mesh object is already created and all hypotheses assigned,
+select your mesh in the <b>Object Browser</b>. From the
+\b Mesh menu select \b Preview or click "Preview" button of the
+toolbar or activate "Preview" item from pop-up menu.
+
+\image html mesh_precompute.png
+<center><em>"Preview" button</em></center>
+
+The Mesh Preview dialog box appears. In this dialog box you can select
+preview mode <b>1D mesh</b> or <b>2D mesh</b> depending on assigned
+hypotheses to mesh. 
+
+The 1D mesh preview shows as nodes computed on geometry edges
+
+\image html preview_mesh_1D.png
+
+The 2D mesh preview shows edge mesh elements, computed on geometry faces
+
+\image html preview_mesh_2D.png
+
+Pressing <b>Compute</b> button leads to whole mesh computation
+process.
+During exit from Preview dialog box, the question about storage temporary
+created mesh elements appers:
+
+\image html preview_tmp_data.png
+
+Note, that computed temporary mesh elements can be reused during next
+mesh computation process.
+
+*/

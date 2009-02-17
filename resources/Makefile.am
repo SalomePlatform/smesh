@@ -1,4 +1,6 @@
-#  Copyright (C) 2005  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+#  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+#
+#  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 #  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 #
 #  This library is free software; you can redistribute it and/or
@@ -15,16 +17,13 @@
 #  License along with this library; if not, write to the Free Software
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 #
-# See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+#  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 # -* Makefile *- 
-#
 # Author : Patrick GOLDBRONN (CEA)
 # Date : 28/06/2001
 #  Modified by : Alexander BORODIN (OCN) - autotools usage
-# $Header$
 #
-
 include $(top_srcdir)/adm_local/unix/make_common_starter.am
 
 dist_salomeres_DATA = \
@@ -39,11 +38,10 @@ dist_salomeres_DATA = \
 	mesh_area.png \
 	mesh_aspect.png \
 	mesh_aspect_3d.png \
+	mesh_clear.png \
 	mesh_compute.png \
-	mesh_connectivity.png \
 	mesh_diagonal.png \
 	mesh_edit.png \
-	mesh_hexa_n.png \
 	mesh_hexa.png \
 	mesh_hypo_area.png \
 	mesh_hypo_length.png \
@@ -59,6 +57,7 @@ dist_salomeres_DATA = \
 	mesh_length_2d.png \
 	mesh_free_edges.png \
 	mesh_free_edges_2d.png \
+	mesh_free_nodes.png \
 	mesh_multi_edges.png \
 	mesh_multi_edges_2d.png \
 	mesh_line_n.png \
@@ -74,13 +73,10 @@ dist_salomeres_DATA = \
 	mesh_quad.png \
 	mesh_rem_element.png \
 	mesh_rem_node.png \
-	mesh_set_algo.png \
-	mesh_set_hypo.png \
 	mesh_shading.png \
 	mesh_shrink.png \
 	mesh_skew.png \
 	mesh_taper.png \
-	mesh_tetra_n.png \
 	mesh_tetra.png \
 	mesh_tree_algo_hexa.png \
 	mesh_tree_algo_mefisto.png \
@@ -88,15 +84,11 @@ dist_salomeres_DATA = \
 	mesh_tree_algo_quad.png \
 	mesh_tree_algo_regular.png \
 	mesh_tree_algo_tetra.png \
-	mesh_tree_algo_netgen_2d3d.png \
-	mesh_tree_algo_netgen_2d.png \
 	mesh_tree_hypo_area.png \
 	mesh_tree_hypo_length.png \
 	mesh_tree_hypo.png \
 	mesh_tree_hypo_segment.png \
 	mesh_tree_hypo_volume.png \
-	mesh_tree_hypo_netgen.png \
-	mesh_tree_hypo_netgen_2d.png \
 	mesh_tree_mesh.png \
 	mesh_tree_importedmesh.png \
 	mesh_tree_mesh_warn.png \
@@ -109,9 +101,11 @@ dist_salomeres_DATA = \
 	mesh_wireframe.png \
 	mesh_points.png \
 	mesh_wrap.png \
+	mesh_group.png \
 	mesh_tree_group.png \
 	mesh_edit_group.png \
 	mesh_make_group.png \
+	mesh_groups_from_gemetry.png \
 	mesh_union2tri.png \
 	mesh_uniontri.png \
 	mesh_cutquad.png \
@@ -139,10 +133,7 @@ dist_salomeres_DATA = \
 	mesh_merge_nodes.png \
 	mesh_merge_elements.png \
 	select1.png \
-	SMESH_en.xml \
-	SMESH.config \
 	StdMeshers.xml \
-	SMESHCatalog.xml \
 	SalomeApp.xml \
 	mesh_pattern.png \
 	pattern_sample_2d.png \
@@ -159,7 +150,6 @@ dist_salomeres_DATA = \
 	mesh_conv_to_quad.png \
 	mesh_tree_hypo_layers_distribution.png \
 	mesh_tree_algo_radial_prism.png \
-	mesh_tree_algo_projection_3d.png \
 	mesh_tree_algo_projection_2d.png \
 	mesh_hypo_source_edge.png \
 	mesh_hypo_source_3d.png \
@@ -172,6 +162,10 @@ dist_salomeres_DATA = \
 	mesh_tree_hypo_projection_2d.png \
 	mesh_build_compound.png \
 	mesh_node_to_point.png \
-	mesh_tree_mesh_partial.png
+	mesh_tree_mesh_partial.png \
+	mesh_extractGroup.png \
+	mesh_precompute.png \
+        mesh_free_faces.png
 
-nodist_salomeres_DATA = SMESHCatalog.xml
+# VSR: little trick to avoid putting if SMESHCatalog.xml to the distribution archive
+nodist_salomeres_SCRIPTS = SMESHCatalog.xml

@@ -1,6 +1,6 @@
-//  SMESH SMESH_I : idl implementation based on 'SMESH' unit's calsses
+//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
 //  This library is free software; you can redistribute it and/or
@@ -17,15 +17,13 @@
 //  License along with this library; if not, write to the Free Software
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
-//
-//
+//  SMESH SMESH_I : idl implementation based on 'SMESH' unit's calsses
 //  File   : SMESH_Filter_i.cxx
 //  Author : Alexey Petrov, OCC
 //  Module : SMESH
-
-
+//
 #include "SMESH_Filter_i.hxx"
 
 #include "SMESH_Gen_i.hxx"
@@ -58,6 +56,7 @@
 #include <TopoDS.hxx>
 #include <TopoDS_Face.hxx>
 #include <TopoDS_Shape.hxx>
+#include <TopTools_IndexedMapOfShape.hxx>
 
 using namespace SMESH;
 using namespace SMESH::Controls;
@@ -75,23 +74,73 @@ namespace SMESH
 
 /*
   Class       : BelongToGeom
-  Description : Predicate for verifying whether entiy belong to
+  Description : Predicate for verifying whether entity belongs to
                 specified geometrical support
 */
 
 Controls::BelongToGeom::BelongToGeom()
-: myMeshDS(NULL),
-  myType(SMDSAbs_All)
+  : myMeshDS(NULL),
+    myType(SMDSAbs_All),
+    myIsSubshape(false),
+    myTolerance(Precision::Confusion())
 {}
 
 void Controls::BelongToGeom::SetMesh( const SMDS_Mesh* theMesh )
 {
   myMeshDS = dynamic_cast<const SMESHDS_Mesh*>(theMesh);
+  init();
 }
 
 void Controls::BelongToGeom::SetGeom( const TopoDS_Shape& theShape )
 {
   myShape = theShape;
+  init();
+}
+
+static bool IsSubShape (const TopTools_IndexedMapOfShape& theMap,
+                        const TopoDS_Shape& theShape)
+{
+  if (theMap.Contains(theShape)) return true;
+
+  if (theShape.ShapeType() == TopAbs_COMPOUND ||
+      theShape.ShapeType() == TopAbs_COMPSOLID)
+  {
+    TopoDS_Iterator anIt (theShape, Standard_True, Standard_True);
+    for (; anIt.More(); anIt.Next())
+    {
+      if (!IsSubShape(theMap, anIt.Value())) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  return false;
+}
+
+void Controls::BelongToGeom::init()
+{
+  if (!myMeshDS || myShape.IsNull()) return;
+
+  // is subshape of main shape?
+  TopoDS_Shape aMainShape = myMeshDS->ShapeToMesh();
+  if (aMainShape.IsNull()) {
+    myIsSubshape = false;
+  }
+  else {
+    TopTools_IndexedMapOfShape aMap;
+    TopExp::MapShapes(aMainShape, aMap);
+    myIsSubshape = IsSubShape(aMap, myShape);
+  }
+
+  if (!myIsSubshape)
+  {
+    myElementsOnShapePtr.reset(new Controls::ElementsOnShape());
+    myElementsOnShapePtr->SetTolerance(myTolerance);
+    myElementsOnShapePtr->SetAllNodes(true); // belong, while false means "lays on"
+    myElementsOnShapePtr->SetMesh(myMeshDS);
+    myElementsOnShapePtr->SetShape(myShape, myType);
+  }
 }
 
 static bool IsContains( const SMESHDS_Mesh*     theMeshDS,
@@ -114,12 +163,18 @@ static bool IsContains( const SMESHDS_Mesh*     theMeshDS,
   return false;
 }
 
-bool Controls::BelongToGeom::IsSatisfy( long theId )
+bool Controls::BelongToGeom::IsSatisfy (long theId)
 {
-  if ( myMeshDS == 0 || myShape.IsNull() )
+  if (myMeshDS == 0 || myShape.IsNull())
     return false;
 
-  if( myType == SMDSAbs_Node )
+  if (!myIsSubshape)
+  {
+    return myElementsOnShapePtr->IsSatisfy(theId);
+  }
+
+  // Case of submesh
+  if (myType == SMDSAbs_Node)
   {
     if( const SMDS_MeshNode* aNode = myMeshDS->FindNode( theId ) )
     {
@@ -161,9 +216,10 @@ bool Controls::BelongToGeom::IsSatisfy( long theId )
   return false;
 }
 
-void Controls::BelongToGeom::SetType( SMDSAbs_ElementType theType )
+void Controls::BelongToGeom::SetType (SMDSAbs_ElementType theType)
 {
   myType = theType;
+  init();
 }
 
 SMDSAbs_ElementType Controls::BelongToGeom::GetType() const
@@ -176,11 +232,21 @@ TopoDS_Shape Controls::BelongToGeom::GetShape()
   return myShape;
 }
 
-const SMESHDS_Mesh*
-Controls::BelongToGeom::
-GetMeshDS() const
+const SMESHDS_Mesh* Controls::BelongToGeom::GetMeshDS() const
 {
   return myMeshDS;
+}
+
+void Controls::BelongToGeom::SetTolerance (double theTolerance)
+{
+  myTolerance = theTolerance;
+  if (!myIsSubshape)
+    init();
+}
+
+double Controls::BelongToGeom::GetTolerance()
+{
+  return myTolerance;
 }
 
 /*
@@ -190,18 +256,47 @@ GetMeshDS() const
 */
 
 Controls::LyingOnGeom::LyingOnGeom()
-: myMeshDS(NULL),
-  myType(SMDSAbs_All)
+  : myMeshDS(NULL),
+    myType(SMDSAbs_All),
+    myIsSubshape(false),
+    myTolerance(Precision::Confusion())
 {}
 
 void Controls::LyingOnGeom::SetMesh( const SMDS_Mesh* theMesh )
 {
   myMeshDS = dynamic_cast<const SMESHDS_Mesh*>(theMesh);
+  init();
 }
 
 void Controls::LyingOnGeom::SetGeom( const TopoDS_Shape& theShape )
 {
   myShape = theShape;
+  init();
+}
+
+void Controls::LyingOnGeom::init()
+{
+  if (!myMeshDS || myShape.IsNull()) return;
+
+  // is subshape of main shape?
+  TopoDS_Shape aMainShape = myMeshDS->ShapeToMesh();
+  if (aMainShape.IsNull()) {
+    myIsSubshape = false;
+  }
+  else {
+    TopTools_IndexedMapOfShape aMap;
+    TopExp::MapShapes(aMainShape, aMap);
+    myIsSubshape = IsSubShape(aMap, myShape);
+  }
+
+  if (!myIsSubshape)
+  {
+    myElementsOnShapePtr.reset(new Controls::ElementsOnShape());
+    myElementsOnShapePtr->SetTolerance(myTolerance);
+    myElementsOnShapePtr->SetAllNodes(false); // lays on, while true means "belong"
+    myElementsOnShapePtr->SetMesh(myMeshDS);
+    myElementsOnShapePtr->SetShape(myShape, myType);
+  }
 }
 
 bool Controls::LyingOnGeom::IsSatisfy( long theId )
@@ -209,6 +304,12 @@ bool Controls::LyingOnGeom::IsSatisfy( long theId )
   if ( myMeshDS == 0 || myShape.IsNull() )
     return false;
 
+  if (!myIsSubshape)
+  {
+    return myElementsOnShapePtr->IsSatisfy(theId);
+  }
+
+  // Case of submesh
   if( myType == SMDSAbs_Node )
   {
     if( const SMDS_MeshNode* aNode = myMeshDS->FindNode( theId ) )
@@ -254,6 +355,7 @@ bool Controls::LyingOnGeom::IsSatisfy( long theId )
 void Controls::LyingOnGeom::SetType( SMDSAbs_ElementType theType )
 {
   myType = theType;
+  init();
 }
 
 SMDSAbs_ElementType Controls::LyingOnGeom::GetType() const
@@ -266,11 +368,21 @@ TopoDS_Shape Controls::LyingOnGeom::GetShape()
   return myShape;
 }
 
-const SMESHDS_Mesh*
-Controls::LyingOnGeom::
-GetMeshDS() const
+const SMESHDS_Mesh* Controls::LyingOnGeom::GetMeshDS() const
 {
   return myMeshDS;
+}
+
+void Controls::LyingOnGeom::SetTolerance (double theTolerance)
+{
+  myTolerance = theTolerance;
+  if (!myIsSubshape)
+    init();
+}
+
+double Controls::LyingOnGeom::GetTolerance()
+{
+  return myTolerance;
 }
 
 bool Controls::LyingOnGeom::Contains( const SMESHDS_Mesh*     theMeshDS,
@@ -847,6 +959,17 @@ char* BelongToGeom_i::GetShapeID()
   return CORBA::string_dup( myShapeID );
 }
 
+void BelongToGeom_i::SetTolerance( CORBA::Double theToler )
+{
+  myBelongToGeomPtr->SetTolerance( theToler );
+  TPythonDump()<<this<<".SetTolerance("<<theToler<<")";
+}
+
+CORBA::Double BelongToGeom_i::GetTolerance()
+{
+  return myBelongToGeomPtr->GetTolerance();
+}
+
 /*
   Class       : BelongToSurface_i
   Description : Predicate for selection on geometrical support
@@ -1091,6 +1214,17 @@ char* LyingOnGeom_i::GetShapeID()
   return CORBA::string_dup( myShapeID );
 }
 
+void LyingOnGeom_i::SetTolerance( CORBA::Double theToler )
+{
+  myLyingOnGeomPtr->SetTolerance( theToler );
+  TPythonDump()<<this<<".SetTolerance("<<theToler<<")";
+}
+
+CORBA::Double LyingOnGeom_i::GetTolerance()
+{
+  return myLyingOnGeomPtr->GetTolerance();
+}
+
 /*
   Class       : FreeBorders_i
   Description : Predicate for free borders
@@ -1148,6 +1282,36 @@ FunctorType FreeEdges_i::GetFunctorType()
 }
 
 /*
+  Class       : FreeFaces_i
+  Description : Predicate for free faces
+*/
+FreeFaces_i::FreeFaces_i()
+{
+  myPredicatePtr.reset(new Controls::FreeFaces());
+  myFunctorPtr = myPredicatePtr;
+}
+
+FunctorType FreeFaces_i::GetFunctorType()
+{
+  return SMESH::FT_FreeFaces;
+}
+
+/*
+  Class       : FreeNodes_i
+  Description : Predicate for free nodes
+*/
+FreeNodes_i::FreeNodes_i()
+{
+  myPredicatePtr.reset(new Controls::FreeNodes());
+  myFunctorPtr = myPredicatePtr;
+}
+
+FunctorType FreeNodes_i::GetFunctorType()
+{
+  return SMESH::FT_FreeNodes;
+}
+
+/*
   Class       : RangeOfIds_i
   Description : Predicate for Range of Ids.
                 Range may be specified with two ways.
@@ -1193,6 +1357,94 @@ void RangeOfIds_i::SetElementType( ElementType theType )
 FunctorType RangeOfIds_i::GetFunctorType()
 {
   return SMESH::FT_RangeOfIds;
+}
+
+/*
+  Class       : LinearOrQuadratic_i
+  Description : Predicate to verify whether a mesh element is linear
+*/
+LinearOrQuadratic_i::LinearOrQuadratic_i()
+{
+  myLinearOrQuadraticPtr.reset(new Controls::LinearOrQuadratic());
+  myFunctorPtr = myPredicatePtr = myLinearOrQuadraticPtr;
+}
+
+void LinearOrQuadratic_i::SetElementType(ElementType theType)
+{
+  myLinearOrQuadraticPtr->SetType(SMDSAbs_ElementType(theType));
+  TPythonDump()<<this<<".SetElementType("<<theType<<")";
+}
+
+FunctorType LinearOrQuadratic_i::GetFunctorType()
+{
+  return SMESH::FT_LinearOrQuadratic;
+}
+
+/*
+  Class       : GroupColor_i
+  Description : Functor for check color of group to whic mesh element belongs to
+*/
+GroupColor_i::GroupColor_i()
+{
+  myGroupColorPtr.reset(new Controls::GroupColor());
+  myFunctorPtr = myPredicatePtr = myGroupColorPtr;
+}
+
+FunctorType GroupColor_i::GetFunctorType()
+{
+  return SMESH::FT_GroupColor;
+}
+
+void GroupColor_i::SetColorStr( const char* theColor )
+{
+  myGroupColorPtr->SetColorStr(
+    TCollection_AsciiString( (Standard_CString)theColor ) );
+  TPythonDump()<<this<<".SetColorStr('"<<theColor<<"')";
+}
+
+char* GroupColor_i::GetColorStr()
+{
+  TCollection_AsciiString aStr;
+  myGroupColorPtr->GetColorStr( aStr );
+  return CORBA::string_dup( aStr.ToCString() );
+}
+
+void GroupColor_i::SetElementType(ElementType theType)
+{
+  myGroupColorPtr->SetType(SMDSAbs_ElementType(theType));
+  TPythonDump()<<this<<".SetElementType("<<theType<<")";
+}
+
+/*
+  Class       : ElemGeomType_i
+  Description : Predicate check is element has indicated geometry type
+*/
+ElemGeomType_i::ElemGeomType_i()
+{
+  myElemGeomTypePtr.reset(new Controls::ElemGeomType());
+  myFunctorPtr = myPredicatePtr = myElemGeomTypePtr;
+}
+
+void ElemGeomType_i::SetElementType(ElementType theType)
+{
+  myElemGeomTypePtr->SetType(SMDSAbs_ElementType(theType));
+  TPythonDump()<<this<<".SetElementType("<<theType<<")";
+}
+
+void ElemGeomType_i::SetGeometryType(GeometryType theType)
+{
+  myElemGeomTypePtr->SetGeomType(SMDSAbs_GeometryType(theType));
+  TPythonDump()<<this<<".SetGeometryType("<<theType<<")";
+}
+
+GeometryType ElemGeomType_i::GetGeometryType() const
+{
+  return (GeometryType)myElemGeomTypePtr->GetGeomType();;
+}
+
+FunctorType ElemGeomType_i::GetFunctorType()
+{
+  return SMESH::FT_ElemGeomType;
 }
 
 /*
@@ -1627,6 +1879,22 @@ FreeEdges_ptr FilterManager_i::CreateFreeEdges()
   return anObj._retn();
 }
 
+FreeFaces_ptr FilterManager_i::CreateFreeFaces()
+{
+  SMESH::FreeFaces_i* aServant = new SMESH::FreeFaces_i();
+  SMESH::FreeFaces_var anObj = aServant->_this();
+  TPythonDump()<<aServant<<" = "<<this<<".CreateFreeFaces()";
+  return anObj._retn();
+}
+
+FreeNodes_ptr FilterManager_i::CreateFreeNodes()
+{
+  SMESH::FreeNodes_i* aServant = new SMESH::FreeNodes_i();
+  SMESH::FreeNodes_var anObj = aServant->_this();
+  TPythonDump()<<aServant<<" = "<<this<<".CreateFreeNodes()";
+  return anObj._retn();
+}
+
 RangeOfIds_ptr FilterManager_i::CreateRangeOfIds()
 {
   SMESH::RangeOfIds_i* aServant = new SMESH::RangeOfIds_i();
@@ -1651,7 +1919,6 @@ LessThan_ptr FilterManager_i::CreateLessThan()
   return anObj._retn();
 }
 
-
 MoreThan_ptr FilterManager_i::CreateMoreThan()
 {
   SMESH::MoreThan_i* aServant = new SMESH::MoreThan_i();
@@ -1668,7 +1935,6 @@ EqualTo_ptr FilterManager_i::CreateEqualTo()
   return anObj._retn();
 }
 
-
 LogicalNOT_ptr FilterManager_i::CreateLogicalNOT()
 {
   SMESH::LogicalNOT_i* aServant = new SMESH::LogicalNOT_i();
@@ -1676,7 +1942,6 @@ LogicalNOT_ptr FilterManager_i::CreateLogicalNOT()
   TPythonDump()<<aServant<<" = "<<this<<".CreateLogicalNOT()";
   return anObj._retn();
 }
-
 
 LogicalAND_ptr FilterManager_i::CreateLogicalAND()
 {
@@ -1686,12 +1951,35 @@ LogicalAND_ptr FilterManager_i::CreateLogicalAND()
   return anObj._retn();
 }
 
-
 LogicalOR_ptr FilterManager_i::CreateLogicalOR()
 {
   SMESH::LogicalOR_i* aServant = new SMESH::LogicalOR_i();
   SMESH::LogicalOR_var anObj = aServant->_this();
   TPythonDump()<<aServant<<" = "<<this<<".CreateLogicalOR()";
+  return anObj._retn();
+}
+
+LinearOrQuadratic_ptr FilterManager_i::CreateLinearOrQuadratic()
+{
+  SMESH::LinearOrQuadratic_i* aServant = new SMESH::LinearOrQuadratic_i();
+  SMESH::LinearOrQuadratic_var anObj = aServant->_this();
+  TPythonDump()<<aServant<<" = "<<this<<".CreateLinearOrQuadratic()";
+  return anObj._retn();
+}
+
+GroupColor_ptr FilterManager_i::CreateGroupColor()
+{
+  SMESH::GroupColor_i* aServant = new SMESH::GroupColor_i();
+  SMESH::GroupColor_var anObj = aServant->_this();
+  TPythonDump()<<aServant<<" = "<<this<<".CreateGroupColor()";
+  return anObj._retn();
+}
+
+ElemGeomType_ptr FilterManager_i::CreateElemGeomType()
+{
+  SMESH::ElemGeomType_i* aServant = new SMESH::ElemGeomType_i();
+  SMESH::ElemGeomType_var anObj = aServant->_this();
+  TPythonDump()<<aServant<<" = "<<this<<".CreateElemGeomType()";
   return anObj._retn();
 }
 
@@ -1875,6 +2163,9 @@ static inline bool getCriteria( Predicate_i*                thePred,
   {
   case FT_FreeBorders:
   case FT_FreeEdges:
+  case FT_FreeFaces:
+  case FT_LinearOrQuadratic:
+  case FT_FreeNodes:
     {
       CORBA::ULong i = theCriteria->length();
       theCriteria->length( i + 1 );
@@ -2007,6 +2298,33 @@ static inline bool getCriteria( Predicate_i*                thePred,
       theCriteria[ theCriteria->length() - 1 ].BinaryOp = aFType;
       return getCriteria( aPred2, theCriteria );
     }
+  case FT_GroupColor:
+    {
+      CORBA::ULong i = theCriteria->length();
+      theCriteria->length( i + 1 );
+
+      theCriteria[ i ] = createCriterion();
+
+      GroupColor_i* aPred = dynamic_cast<GroupColor_i*>( thePred );
+      theCriteria[ i ].Type          = aFType;
+      theCriteria[ i ].TypeOfElement = aPred->GetElementType();
+      theCriteria[ i ].ThresholdStr  = aPred->GetColorStr();
+
+      return true;
+    }
+  case FT_ElemGeomType:
+    {
+      CORBA::ULong i = theCriteria->length();
+      theCriteria->length( i + 1 );
+
+      theCriteria[ i ] = createCriterion();
+
+      ElemGeomType_i* aPred = dynamic_cast<ElemGeomType_i*>( thePred );
+      theCriteria[ i ].Type          = aFType;
+      theCriteria[ i ].TypeOfElement = aPred->GetElementType();
+      theCriteria[ i ].Threshold     = (double)aPred->GetGeometryType();
+      return true;
+    }
 
   case FT_Undefined:
     return false;
@@ -2060,13 +2378,13 @@ CORBA::Boolean Filter_i::SetCriteria( const SMESH::Filter::Criteria& theCriteria
       TPythonDump pd;
       pd << "aCriterion = SMESH.Filter.Criterion(" << aCriterion << "," << aCompare
          << "," << aThreshold << ",'" << aThresholdStr;
-      if (strlen(aThresholdID) > 0)
-        pd << "',salome.ObjectToID(" << aThresholdID
-           << ")," << aUnary << "," << aBinary << "," << aTolerance
-           << "," << aTypeOfElem << "," << aPrecision << ")";
+      if (aThresholdID)
+	pd << "',salome.ObjectToID(" << aThresholdID
+	   << ")," << aUnary << "," << aBinary << "," << aTolerance
+	   << "," << aTypeOfElem << "," << aPrecision << ")";
       else
-        pd << "',''," << aUnary << "," << aBinary << "," << aTolerance
-           << "," << aTypeOfElem << "," << aPrecision << ")";
+	pd << "',''," << aUnary << "," << aBinary << "," << aTolerance
+	   << "," << aTypeOfElem << "," << aPrecision << ")";
     }
 
     SMESH::Predicate_ptr aPredicate = SMESH::Predicate::_nil();
@@ -2121,6 +2439,12 @@ CORBA::Boolean Filter_i::SetCriteria( const SMESH::Filter::Criteria& theCriteria
       case SMESH::FT_FreeEdges:
         aPredicate = aFilterMgr->CreateFreeEdges();
         break;
+      case SMESH::FT_FreeFaces:
+        aPredicate = aFilterMgr->CreateFreeFaces();
+        break;
+      case SMESH::FT_FreeNodes:
+        aPredicate = aFilterMgr->CreateFreeNodes();
+        break;
       case SMESH::FT_BelongToGeom:
         {
           SMESH::BelongToGeom_ptr tmpPred = aFilterMgr->CreateBelongToGeom();
@@ -2168,6 +2492,29 @@ CORBA::Boolean Filter_i::SetCriteria( const SMESH::Filter::Criteria& theCriteria
           aPredicate = aFilterMgr->CreateBadOrientedVolume();
         }
         break;
+      case SMESH::FT_LinearOrQuadratic:
+        {
+          SMESH::LinearOrQuadratic_ptr tmpPred = aFilterMgr->CreateLinearOrQuadratic();
+          tmpPred->SetElementType( aTypeOfElem );
+          aPredicate = tmpPred;
+          break;
+        }
+      case SMESH::FT_GroupColor:
+        {
+          SMESH::GroupColor_ptr tmpPred = aFilterMgr->CreateGroupColor();
+          tmpPred->SetElementType( aTypeOfElem );
+          tmpPred->SetColorStr( aThresholdStr );
+          aPredicate = tmpPred;
+          break;
+        }
+      case SMESH::FT_ElemGeomType:
+        {
+          SMESH::ElemGeomType_ptr tmpPred = aFilterMgr->CreateElemGeomType();
+          tmpPred->SetElementType( aTypeOfElem );
+          tmpPred->SetGeometryType( (GeometryType)(aThreshold + 0.5) );
+          aPredicate = tmpPred;
+          break;
+        }
 
       default:
         continue;
@@ -2379,16 +2726,21 @@ static inline LDOMString toString( CORBA::Long theType )
     case FT_RangeOfIds      : return "Range of IDs";
     case FT_FreeBorders     : return "Free borders";
     case FT_FreeEdges       : return "Free edges";
+    case FT_FreeFaces       : return "Free faces";
+    case FT_FreeNodes       : return "Free nodes";
     case FT_MultiConnection : return "Borders at multi-connections";
     case FT_MultiConnection2D: return "Borders at multi-connections 2D";
     case FT_Length          : return "Length";
-    case FT_Length2D        : return "Length2D";
+    case FT_Length2D        : return "Length 2D";
     case FT_LessThan        : return "Less than";
     case FT_MoreThan        : return "More than";
     case FT_EqualTo         : return "Equal to";
     case FT_LogicalNOT      : return "Not";
     case FT_LogicalAND      : return "And";
     case FT_LogicalOR       : return "Or";
+    case FT_GroupColor      : return "Color of Group";
+    case FT_LinearOrQuadratic : return "Linear or Quadratic";
+    case FT_ElemGeomType    : return "Element geomtry type";
     case FT_Undefined       : return "";
     default                 : return "";
   }
@@ -2414,6 +2766,8 @@ static inline SMESH::FunctorType toFunctorType( const LDOMString& theStr )
   else if ( theStr.equals( "Lying on Geom"                ) ) return FT_LyingOnGeom;
   else if ( theStr.equals( "Free borders"                 ) ) return FT_FreeBorders;
   else if ( theStr.equals( "Free edges"                   ) ) return FT_FreeEdges;
+  else if ( theStr.equals( "Free faces"                   ) ) return FT_FreeFaces;
+  else if ( theStr.equals( "Free nodes"                   ) ) return FT_FreeNodes;
   else if ( theStr.equals( "Borders at multi-connections" ) ) return FT_MultiConnection;
   //  else if ( theStr.equals( "Borders at multi-connections 2D" ) ) return FT_MultiConnection2D;
   else if ( theStr.equals( "Length"                       ) ) return FT_Length;
@@ -2426,6 +2780,9 @@ static inline SMESH::FunctorType toFunctorType( const LDOMString& theStr )
   else if ( theStr.equals( "Not"                          ) ) return FT_LogicalNOT;
   else if ( theStr.equals( "And"                          ) ) return FT_LogicalAND;
   else if ( theStr.equals( "Or"                           ) ) return FT_LogicalOR;
+  else if ( theStr.equals( "Color of Group"               ) ) return FT_GroupColor;
+  else if ( theStr.equals( "Linear or Quadratic"          ) ) return FT_LinearOrQuadratic;
+  else if ( theStr.equals( "Element geomtry type"         ) ) return FT_ElemGeomType;
   else if ( theStr.equals( ""                             ) ) return FT_Undefined;
   else  return FT_Undefined;
 }
@@ -2698,7 +3055,7 @@ Filter_ptr FilterLibrary_i::Copy( const char* theFilterName )
     }
     else
       aCriterion.ThresholdStr = str.GetString();
-    
+
     aCriteria.push_back( aCriterion );
   }
 

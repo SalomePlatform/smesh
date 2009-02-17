@@ -1,28 +1,28 @@
-// Copyright (C) 2005  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-// This library is free software; you can redistribute it and/or
-// modify it under the terms of the GNU Lesser General Public
-// License as published by the Free Software Foundation; either
-// version 2.1 of the License.
+//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
-// This library is distributed in the hope that it will be useful
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-// Lesser General Public License for more details.
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
 //
-// You should have received a copy of the GNU Lesser General Public
-// License along with this library; if not, write to the Free Software
-// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
 //
-// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 // File:      SMESH_MesherHelper.cxx
 // Created:   15.02.06 15:22:41
 // Author:    Sergey KUUL
-// Copyright: Open CASCADE 2006
-
-
+//
 #include "SMESH_MesherHelper.hxx"
 
 #include "SMDS_FacePosition.hxx" 
@@ -32,6 +32,7 @@
 #include <BRepAdaptor_Surface.hxx>
 #include <BRepTools.hxx>
 #include <BRep_Tool.hxx>
+#include <BRepTools_WireExplorer.hxx>
 #include <Geom2d_Curve.hxx>
 #include <Geom_Curve.hxx>
 #include <Geom_Surface.hxx>
@@ -169,7 +170,7 @@ void SMESH_MesherHelper::SetSubShape(const TopoDS_Shape& aSh)
     BRepAdaptor_Surface surface( face );
     if ( surface.IsUPeriodic() || surface.IsVPeriodic() )
     {
-      for ( TopExp_Explorer exp( face, TopAbs_EDGE ); exp.More(); exp.Next())
+      for (TopExp_Explorer exp( face, TopAbs_EDGE ); exp.More(); exp.Next())
       {
         // look for a seam edge
         const TopoDS_Edge& edge = TopoDS::Edge( exp.Current() );
@@ -190,10 +191,13 @@ void SMESH_MesherHelper::SetSubShape(const TopoDS_Shape& aSh)
               myPar2 = surface.LastVParameter();
             }
           }
-          // store shapes indices
-          mySeamShapeIds.insert( meshDS->ShapeToIndex( edge ));
-          for ( TopExp_Explorer v( edge, TopAbs_VERTEX ); v.More(); v.Next() )
-            mySeamShapeIds.insert( meshDS->ShapeToIndex( v.Current() ));
+          // store seam shape indices, negative if shape encounters twice
+          int edgeID = meshDS->ShapeToIndex( edge );
+          mySeamShapeIds.insert( IsSeamShape( edgeID ) ? -edgeID : edgeID );
+          for ( TopExp_Explorer v( edge, TopAbs_VERTEX ); v.More(); v.Next() ) {
+            int vertexID = meshDS->ShapeToIndex( v.Current() );
+            mySeamShapeIds.insert( IsSeamShape( vertexID ) ? -vertexID : vertexID );
+          }
         }
 
         // look for a degenerated edge
@@ -314,11 +318,10 @@ gp_XY SMESH_MesherHelper::GetNodeUV(const TopoDS_Face&   F,
     int edgeID = Pos->GetShapeId();
     TopoDS_Edge E = TopoDS::Edge(meshDS->IndexToShape(edgeID));
     double f, l;
-    TopLoc_Location loc;
     Handle(Geom2d_Curve) C2d = BRep_Tool::CurveOnSurface(E, F, f, l);
     uv = C2d->Value( epos->GetUParameter() );
     // for a node on a seam edge select one of UVs on 2 pcurves
-    if ( n2 && mySeamShapeIds.find( edgeID ) != mySeamShapeIds.end() )
+    if ( n2 && IsSeamShape( edgeID ) )
       uv = GetUVOnSeam( uv, GetNodeUV( F, n2, 0 ));
   }
   else if(Pos->GetTypeOfPosition()==SMDS_TOP_VERTEX)
@@ -337,8 +340,8 @@ gp_XY SMESH_MesherHelper::GetNodeUV(const TopoDS_Face&   F,
           ok = ( V == vert.Current() );
         if ( !ok ) {
 #ifdef _DEBUG_
-          cout << "SMESH_MesherHelper::GetNodeUV(); Vertex " << vertexID
-               << " not in face " << GetMeshDS()->ShapeToIndex( F ) << endl;
+          MESSAGE ( "SMESH_MesherHelper::GetNodeUV(); Vertex " << vertexID
+               << " not in face " << GetMeshDS()->ShapeToIndex( F ) );
 #endif
           // get UV of a vertex closest to the node
           double dist = 1e100;
@@ -370,7 +373,7 @@ gp_XY SMESH_MesherHelper::GetNodeUV(const TopoDS_Face&   F,
           }
         }
       }
-      if ( n2 && mySeamShapeIds.find( vertexID ) != mySeamShapeIds.end() )
+      if ( n2 && IsSeamShape( vertexID ) )
         uv = GetUVOnSeam( uv, GetNodeUV( F, n2, 0 ));
     }
   }
@@ -465,6 +468,11 @@ const SMDS_MeshNode* SMESH_MesherHelper::GetMediumNode(const SMDS_MeshNode* n1,
 
 	gp_XY p1 = GetNodeUV(F,n1,n2);
         gp_XY p2 = GetNodeUV(F,n2,n1);
+
+	if ( IsDegenShape( Pos1->GetShapeId() ))
+	  p1.SetCoord( myParIndex, p2.Coord( myParIndex ));
+	else if ( IsDegenShape( Pos2->GetShapeId() ))
+	  p2.SetCoord( myParIndex, p1.Coord( myParIndex ));
 
 	//checking if surface is periodic
 	Handle(Geom_Surface) S = BRep_Tool::Surface(F);
@@ -880,19 +888,19 @@ SMDS_MeshVolume* SMESH_MesherHelper::AddVolume(const SMDS_MeshNode* n1,
 }
 
 //=======================================================================
-  /*!
-   * \brief Load nodes bound to face into a map of node columns
-    * \param theParam2ColumnMap - map of node columns to fill
-    * \param theFace - the face on which nodes are searched for
-    * \param theBaseEdge - the edge nodes of which are columns' bases
-    * \param theMesh - the mesh containing nodes
-    * \retval bool - false if something is wrong
-   * 
-   * The key of the map is a normalized parameter of each
-   * base node on theBaseEdge.
-   * This method works in supposition that nodes on the face
-   * forms a rectangular grid and elements can be quardrangles or triangles
-   */
+/*!
+ * \brief Load nodes bound to face into a map of node columns
+ * \param theParam2ColumnMap - map of node columns to fill
+ * \param theFace - the face on which nodes are searched for
+ * \param theBaseEdge - the edge nodes of which are columns' bases
+ * \param theMesh - the mesh containing nodes
+ * \retval bool - false if something is wrong
+ * 
+ * The key of the map is a normalized parameter of each
+ * base node on theBaseEdge.
+ * This method works in supposition that nodes on the face
+ * forms a rectangular grid and elements can be quardrangles or triangles
+ */
 //=======================================================================
 
 bool SMESH_MesherHelper::LoadNodeColumns(TParam2ColumnMap & theParam2ColumnMap,
@@ -994,14 +1002,14 @@ bool SMESH_MesherHelper::LoadNodeColumns(TParam2ColumnMap & theParam2ColumnMap,
 
   // load nodes from theBaseEdge
 
-  set<const SMDS_MeshNode*> loadedNodes;
+  std::set<const SMDS_MeshNode*> loadedNodes;
   const SMDS_MeshNode* nullNode = 0;
 
-  vector<const SMDS_MeshNode*> & nVecf = theParam2ColumnMap[ 0.];
+  std::vector<const SMDS_MeshNode*> & nVecf = theParam2ColumnMap[ 0.];
   nVecf.resize( vsize, nullNode );
   loadedNodes.insert( nVecf[ 0 ] = smVfb->GetNodes()->next() );
 
-  vector<const SMDS_MeshNode*> & nVecl = theParam2ColumnMap[ 1.];
+  std::vector<const SMDS_MeshNode*> & nVecl = theParam2ColumnMap[ 1.];
   nVecl.resize( vsize, nullNode );
   loadedNodes.insert( nVecl[ 0 ] = smVlb->GetNodes()->next() );
 
@@ -1020,7 +1028,7 @@ bool SMESH_MesherHelper::LoadNodeColumns(TParam2ColumnMap & theParam2ColumnMap,
       return false;
     }
     double u = ( pos->GetUParameter() - f ) / range;
-    vector<const SMDS_MeshNode*> & nVec = theParam2ColumnMap[ u ];
+    std::vector<const SMDS_MeshNode*> & nVec = theParam2ColumnMap[ u ];
     nVec.resize( vsize, nullNode );
     loadedNodes.insert( nVec[ 0 ] = node );
   }
@@ -1030,7 +1038,7 @@ bool SMESH_MesherHelper::LoadNodeColumns(TParam2ColumnMap & theParam2ColumnMap,
 
   // load nodes from e1
 
-  map< double, const SMDS_MeshNode*> sortedNodes; // sort by param on edge
+  std::map< double, const SMDS_MeshNode*> sortedNodes; // sort by param on edge
   nIt = sm1->GetNodes();
   while ( nIt->more() ) {
     node = nIt->next();
@@ -1041,10 +1049,10 @@ bool SMESH_MesherHelper::LoadNodeColumns(TParam2ColumnMap & theParam2ColumnMap,
     if ( !pos ) {
       return false;
     }
-    sortedNodes.insert( make_pair( pos->GetUParameter(), node ));
+    sortedNodes.insert( std::make_pair( pos->GetUParameter(), node ));
   }
   loadedNodes.insert( nVecf[ vsize - 1 ] = smVft->GetNodes()->next() );
-  map< double, const SMDS_MeshNode*>::iterator u_n = sortedNodes.begin();
+  std::map< double, const SMDS_MeshNode*>::iterator u_n = sortedNodes.begin();
   int row  = rev1 ? vsize - 1 : 0;
   int dRow = rev1 ? -1 : +1;
   for ( ; u_n != sortedNodes.end(); u_n++ ) {
@@ -1141,11 +1149,14 @@ bool SMESH_MesherHelper::LoadNodeColumns(TParam2ColumnMap & theParam2ColumnMap,
   return true;
 }
 
+//=======================================================================
 /**
  * Check mesh without geometry for: if all elements on this shape are quadratic,
  * quadratic elements will be created.
  * Used then generated 3D mesh without geometry.
-   */
+ */
+//=======================================================================
+
 SMESH_MesherHelper:: MType SMESH_MesherHelper::IsQuadraticMesh()
 {
   int NbAllEdgsAndFaces=0;
@@ -1173,3 +1184,13 @@ SMESH_MesherHelper:: MType SMESH_MesherHelper::IsQuadraticMesh()
     return SMESH_MesherHelper::COMP;
 }
 
+//=======================================================================
+/*!
+ * \brief Return an alternative parameter for a node on seam
+ */
+//=======================================================================
+
+double SMESH_MesherHelper::GetOtherParam(const double param) const
+{
+  return fabs(param-myPar1) < fabs(param-myPar2) ? myPar2 : myPar1;
+}

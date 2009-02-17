@@ -1,30 +1,29 @@
+//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//
+//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+//
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
+//
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
+//
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
 //  SMESH SMESH : implementaion of SMESH idl descriptions
-//
-//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
-// 
-//  This library is free software; you can redistribute it and/or 
-//  modify it under the terms of the GNU Lesser General Public 
-//  License as published by the Free Software Foundation; either 
-//  version 2.1 of the License. 
-// 
-//  This library is distributed in the hope that it will be useful, 
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of 
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
-//  Lesser General Public License for more details. 
-// 
-//  You should have received a copy of the GNU Lesser General Public 
-//  License along with this library; if not, write to the Free Software 
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
-// 
-// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
-//
-//
-//
 //  File   : SMESH_Hypothesis.hxx
 //  Author : Paul RASCLE, EDF
 //  Module : SMESH
-//  $Header$
+//
 
 #ifndef _SMESH_HYPOTHESIS_HXX_
 #define _SMESH_HYPOTHESIS_HXX_
@@ -36,6 +35,14 @@
 class SMESH_Gen;
 class TopoDS_Shape;
 class SMESH_Mesh;
+
+enum MeshDimension // dimension of mesh
+{
+  MeshDim_0D = 0,
+  MeshDim_1D,
+  MeshDim_2D,
+  MeshDim_3D
+};
 
 class SMESH_EXPORT SMESH_Hypothesis: public SMESHDS_Hypothesis
 {
@@ -55,7 +62,8 @@ public:
     HYP_ALREADY_EXIST,// such hypothesis already exist
     HYP_BAD_DIM,      // bad dimension
     HYP_BAD_SUBSHAPE, // shape is neither the main one, nor its subshape, nor a group
-    HYP_BAD_GEOMETRY  // shape geometry mismatches algorithm's expectation
+    HYP_BAD_GEOMETRY, // shape geometry mismatches algorithm's expectation
+    HYP_NEED_SHAPE    // algorithm can work on shape only
   };
   static bool IsStatusFatal(Hypothesis_Status theStatus)
   { return theStatus >= HYP_UNKNOWN_FATAL; }
@@ -69,13 +77,31 @@ public:
   virtual const char* GetLibName() const;
   void  SetLibName(const char* theLibName);
 
+  void  SetParameters(const char *theParameters);
+  char* GetParameters() const;
+
+  void SetLastParameters(const char* theParameters);
+  char* GetLastParameters() const;
+  void ClearParameters();
+  
   /*!
    * \brief Initialize my parameter values by the mesh built on the geometry
-    * \param theMesh - the built mesh
-    * \param theShape - the geometry of interest
-    * \retval bool - true if parameter values have been successfully defined
+   *  \param theMesh - the built mesh
+   *  \param theShape - the geometry of interest
+   *  \retval bool - true if parameter values have been successfully defined
    */
   virtual bool SetParametersByMesh(const SMESH_Mesh* theMesh, const TopoDS_Shape& theShape)=0;
+
+  struct TDefaults
+  {
+    double _elemLength;
+    int    _nbSegments;
+  };
+  /*!
+   * \brief Initialize my parameter values by default parameters.
+   *  \retval bool - true if parameter values have been successfully defined
+   */
+  virtual bool SetParametersByDefaults(const TDefaults& dflts, const SMESH_Mesh* theMesh=0)=0;
 
   /*!
    * \brief Return true if me is an auxiliary hypothesis
@@ -96,6 +122,8 @@ protected:
 
 private:
   std::string _libName;
+  std::string _parameters;
+  std::string _lastParameters;
 };
 
 #endif

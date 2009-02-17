@@ -5,6 +5,8 @@
 \n This geometrical operation allows to translate in space your mesh
 or some of its elements.
 
+\image html translation.png "Translation button"
+
 <em>To translate your mesh:</em>
 \par
 From the \b Modification choose \b Transformation and from its
@@ -22,12 +24,24 @@ or some of its elements specifying:
 <li>two points (starting and ending)</li>
 <li>one vector</li>
 </ul>
-Toggle the corresponding checkbox to <b>Select whole mesh, submesh or
-group</b>.
-\n When <b>Move elements</b> radio button is selected, the source mesh (or elements) is created at the new location and erased from its previous location
-\n When <b>Copy elements</b> radio button is selected,the source mesh (or elements) is created at the new location, but it also remains at its previous location and is considered one and single mesh with the result of the translation.
-\n When <b>Create as new mesh</b> radio button is selected, the source mesh (or elements) remains at its previous location and a new mesh is created at the new location and appears in the Object Browser with the default name MeshName_translated (you can change this name in the adjacent box).
-\n <b> Copy groups </b> checkbox allows copying the groups of elements of the source mesh to the newly created one.
+
+<ul>
+<li>Select elements for the translation operation
+<ul>
+<li>Check on <b>Select the whole mesh, submesh or group</b> option
+<li>Choosing them manually with the mouse in the 3D Viewer. You can
+click on an element in the 3D viewer and it will be highlighted</li>
+<li>Applying Filters. The <b>Set filter</b> button allows to apply a
+definite filter to selection of the elements. See more
+about filters on the
+\ref selection_filter_library_page "Selection filter library" page.</li>
+</ul>
+</li>
+<li>When <b>Move elements</b> radio button is selected, the source mesh (or elements) is created at the new location and erased from its previous location</li>
+<li>When <b>Copy elements</b> radio button is selected,the source mesh (or elements) is created at the new location, but it also remains at its previous location and is considered one and single mesh with the result of the translation.</li>
+<li>When <b>Create as new mesh</b> radio button is selected, the source mesh (or elements) remains at its previous location and a new mesh is created at the new location and appears in the Object Browser with the default name MeshName_translated (you can change this name in the adjacent box).</li>
+<li><b> Copy groups </b> checkbox allows copying the groups of elements of the source mesh to the newly created one.</li>
+</ul>
 
 <br><b>See Also</b> a sample TUI Script of a 
 \ref tui_translation "Translation" operation.  

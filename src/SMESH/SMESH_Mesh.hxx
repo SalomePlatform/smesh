@@ -1,31 +1,29 @@
+//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//
+//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+//
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
+//
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
+//
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
 //  SMESH SMESH : implementaion of SMESH idl descriptions
-//
-//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
-// 
-//  This library is free software; you can redistribute it and/or 
-//  modify it under the terms of the GNU Lesser General Public 
-//  License as published by the Free Software Foundation; either 
-//  version 2.1 of the License. 
-// 
-//  This library is distributed in the hope that it will be useful, 
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of 
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
-//  Lesser General Public License for more details. 
-// 
-//  You should have received a copy of the GNU Lesser General Public 
-//  License along with this library; if not, write to the Free Software 
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
-// 
-// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
-//
-//
-//
 //  File   : SMESH_Mesh.hxx
 //  Author : Paul RASCLE, EDF
 //  Module : SMESH
-//  $Header$
-
+//
 #ifndef _SMESH_MESH_HXX_
 #define _SMESH_MESH_HXX_
 
@@ -77,11 +75,28 @@ public:
    */
   bool HasShapeToMesh() const { return _isShapeToMesh; }
   /*!
+   * \brief Return diagonal size of bounding box of shape to mesh.
+   */
+  double GetShapeDiagonalSize() const;
+  /*!
+   * \brief Return diagonal size of bounding box of a shape.
+   */
+  static double GetShapeDiagonalSize(const TopoDS_Shape & aShape);
+  /*!
    * \brief Return a solid which is returned by GetShapeToMesh() if
    *        a real geometry to be meshed was not set
    */
   static const TopoDS_Solid& PseudoShape();
 
+  /*!
+   * \brief Remove all nodes and elements
+   */
+  void Clear();
+
+  /*!
+   * \brief Remove all nodes and elements of indicated shape
+   */
+  void ClearSubMesh(const int theShapeId);
 
   int UNVToMesh(const char* theFileName);
   /*!
@@ -105,7 +120,8 @@ public:
 
   const SMESH_Hypothesis * GetHypothesis(const TopoDS_Shape &    aSubShape,
                                          const SMESH_HypoFilter& aFilter,
-                                         const bool              andAncestors) const;
+                                         const bool              andAncestors,
+                                         TopoDS_Shape*           assignedTo=0) const;
   
   int GetHypotheses(const TopoDS_Shape &                     aSubShape,
                     const SMESH_HypoFilter&                  aFilter,
@@ -226,6 +242,7 @@ public:
 
   void RemoveGroup (const int theGroupID);
 
+  SMESH_Group* ConvertToStandalone ( int theGroupID );
 
   SMDSAbs_ElementType GetElementType( const int id, const bool iselem );
 
@@ -244,11 +261,13 @@ protected:
   std::list <SMESH_subMesh*> _subMeshesUsingHypothesisList;
   SMESHDS_Document *         _myDocument;
   SMESHDS_Mesh *             _myMeshDS;
-  map <int, SMESH_subMesh *> _mapSubMesh;
-  map <int, SMESH_Group *>   _mapGroup;
+  std::map <int, SMESH_subMesh*> _mapSubMesh;
+  std::map <int, SMESH_Group*>   _mapGroup;
   SMESH_Gen *                _gen;
 
   bool                       _isAutoColor;
+
+  double                     _shapeDiagonal; //!< diagonal size of bounding box of shape to mesh
   
   TopTools_IndexedDataMapOfShapeListOfShape _mapAncestors;
 

@@ -1,6 +1,6 @@
-//  SMESH SMESHGUI : GUI for SMESH component
+//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
 //  This library is free software; you can redistribute it and/or
@@ -17,83 +17,66 @@
 //  License along with this library; if not, write to the Free Software
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+// File   : SMESHGUI_SingleEditDlg.cxx
+// Author : Sergey LITONIN, Open CASCADE S.A.S.
+// SMESH includes
 //
-//
-//  File   : SMESHGUI_SingleEditDlg.cxx
-//  Author : Sergey LITONIN
-//  Module : SMESH
-
 #include "SMESHGUI_SingleEditDlg.h"
 
 #include "SMESHGUI.h"
 #include "SMESHGUI_Utils.h"
 #include "SMESHGUI_VTKUtils.h"
 #include "SMESHGUI_MeshUtils.h"
-#include "SMESHGUI_SpinBox.h"
 
-#include "SMESH_Actor.h"
-#include "SMDS_Mesh.hxx"
+#include <SMESH_Actor.h>
+#include <SMDS_Mesh.hxx>
 
-#include "LightApp_SelectionMgr.h"
-#include "LightApp_Application.h"
-#include "SUIT_ResourceMgr.h"
-#include "SUIT_MessageBox.h"
-#include "SUIT_Desktop.h"
-#include "SUIT_Session.h"
+// SALOME GUI includes
+#include <LightApp_SelectionMgr.h>
+#include <LightApp_Application.h>
+#include <SUIT_ResourceMgr.h>
+#include <SUIT_MessageBox.h>
+#include <SUIT_Desktop.h>
+#include <SUIT_Session.h>
 
-#include "SVTK_Selector.h"
-#include "SVTK_ViewWindow.h"
-#include "SALOME_ListIO.hxx"
+#include <SVTK_Selector.h>
+#include <SVTK_ViewWindow.h>
+#include <SALOME_ListIO.hxx>
 
-#include "utilities.h"
-
-// OCCT Includes
+// OCCT includes
 #include <TColStd_MapOfInteger.hxx>
 #include <TColStd_IndexedMapOfInteger.hxx>
 
-// QT Includes
-#include <qframe.h>
-#include <qlayout.h>
-#include <qlineedit.h>
-#include <qpushbutton.h>
-#include <qgroupbox.h>
-#include <qlabel.h>
-#include <qmessagebox.h>
-#include <qvalidator.h>
+// Qt includes
+#include <QVBoxLayout>
+#include <QHBoxLayout>
+#include <QLineEdit>
+#include <QPushButton>
+#include <QGroupBox>
+#include <QLabel>
+#include <QValidator>
+#include <QKeyEvent>
 
-
-#define SPACING 5
-#define MARGIN  10
-
+#define SPACING 6
+#define MARGIN  11
 
 /*!
- *  Class       : SMESHGUI_DiagValidator
- *  Description : validate munual input of edge like "id1-id2"
- */
-class SMESHGUI_DiagValidator: public QValidator
-{
- public:
-  SMESHGUI_DiagValidator (QWidget * parent, const char * name = 0):
-    QValidator(parent,name) {}
+  \class BusyLocker
+  \brief Simple 'busy state' flag locker.
+  \internal
+*/
 
-  State validate (QString & text, int & pos) const
-  {
-    text.stripWhiteSpace();
-    text.replace(QRegExp("[^0-9]+"), "-");
-    if (text == "-")
-      text = "";
-    int ind = text.find(QRegExp("-[0-9]+-"));
-    if (ind > 0) { // leave only two ids
-      ind = text.find('-', ind + 1);
-      if (ind > 0)
-        text.truncate(ind);
-    }
-    if (pos > text.length())
-      pos = text.length();
-    return Acceptable;
-  }
+class BusyLocker
+{
+public:
+  //! Constructor. Sets passed boolean flag to \c true.
+  BusyLocker( bool& busy ) : myBusy( busy ) { myBusy = true; }
+  //! Destructor. Clear external boolean flag passed as parameter to the constructor to \c false.
+  ~BusyLocker() { myBusy = false; }
+private:
+  bool& myBusy; //! External 'busy state' boolean flag
 };
 
 /*!
@@ -107,25 +90,23 @@ class SMESHGUI_DiagValidator: public QValidator
 // Purpose : Constructor
 //=======================================================================
 SMESHGUI_SingleEditDlg
-::SMESHGUI_SingleEditDlg(SMESHGUI* theModule, 
-			 const char* theName):
-  QDialog(SMESH::GetDesktop(theModule), 
-	  theName, 
-	  false, 
-	  WStyle_Customize | WStyle_NormalBorder | WStyle_Title | WStyle_SysMenu),
+::SMESHGUI_SingleEditDlg(SMESHGUI* theModule)
+  : QDialog(SMESH::GetDesktop(theModule)),
     mySelector(SMESH::GetViewWindow(theModule)->GetSelector()),
     mySelectionMgr(SMESH::GetSelectionMgr(theModule)),
     mySMESHGUI(theModule)
 {
-  QVBoxLayout* aDlgLay = new QVBoxLayout(this, MARGIN, SPACING);
+  setModal(false);
 
-  QFrame* aMainFrame = createMainFrame  (this);
-  QFrame* aBtnFrame  = createButtonFrame(this);
+  QVBoxLayout* aDlgLay = new QVBoxLayout(this);
+  aDlgLay->setMargin(MARGIN);
+  aDlgLay->setSpacing(SPACING);
+
+  QWidget* aMainFrame = createMainFrame  (this);
+  QWidget* aBtnFrame  = createButtonFrame(this);
 
   aDlgLay->addWidget(aMainFrame);
   aDlgLay->addWidget(aBtnFrame);
-
-  aDlgLay->setStretchFactor(aMainFrame, 1);
 
   Init();
 }
@@ -134,16 +115,24 @@ SMESHGUI_SingleEditDlg
 // name    : createMainFrame()
 // Purpose : Create frame containing dialog's input fields
 //=======================================================================
-QFrame* SMESHGUI_SingleEditDlg::createMainFrame (QWidget* theParent)
+QWidget* SMESHGUI_SingleEditDlg::createMainFrame (QWidget* theParent)
 {
-  QGroupBox* aMainGrp = new QGroupBox(1, Qt::Vertical, tr("EDGE_BETWEEN"), theParent);
+  QGroupBox* aMainGrp = new QGroupBox(tr("EDGE_BETWEEN"), theParent);
+  QHBoxLayout* aLay = new QHBoxLayout(aMainGrp);
+  aLay->setMargin(MARGIN);
+  aLay->setSpacing(SPACING);
 
   QPixmap aPix (SMESH::GetResourceMgr( mySMESHGUI )->loadPixmap("SMESH", tr("ICON_SELECT")));
 
-  new QLabel(tr("SMESH_EDGE"), aMainGrp);
-  (new QPushButton(aMainGrp))->setPixmap(aPix);
+  QLabel* aLab = new QLabel(tr("SMESH_EDGE"), aMainGrp);
+  QPushButton* aBtn = new QPushButton(aMainGrp);
+  aBtn->setIcon(aPix);
   myEdge = new QLineEdit(aMainGrp);
-  myEdge->setValidator(new SMESHGUI_DiagValidator(this, "validator"));
+  myEdge->setValidator(new QRegExpValidator(QRegExp("[\\d]*-[\\d]*"), this));
+
+  aLay->addWidget(aLab);
+  aLay->addWidget(aBtn);
+  aLay->addWidget(myEdge);
 
   return aMainGrp;
 }
@@ -152,23 +141,24 @@ QFrame* SMESHGUI_SingleEditDlg::createMainFrame (QWidget* theParent)
 // name    : createButtonFrame()
 // Purpose : Create frame containing buttons
 //=======================================================================
-QFrame* SMESHGUI_SingleEditDlg::createButtonFrame (QWidget* theParent)
+QWidget* SMESHGUI_SingleEditDlg::createButtonFrame (QWidget* theParent)
 {
-  QFrame* aFrame = new QFrame(theParent);
-  aFrame->setFrameStyle(QFrame::Box | QFrame::Sunken);
+  QGroupBox* aFrame = new QGroupBox(theParent);
 
-  myOkBtn     = new QPushButton(tr("SMESH_BUT_OK"   ), aFrame);
+  myOkBtn     = new QPushButton(tr("SMESH_BUT_APPLY_AND_CLOSE"), aFrame);
   myApplyBtn  = new QPushButton(tr("SMESH_BUT_APPLY"), aFrame);
   myCloseBtn  = new QPushButton(tr("SMESH_BUT_CLOSE"), aFrame);
-  myHelpBtn   = new QPushButton (tr("SMESH_BUT_HELP"), aFrame);
+  myHelpBtn   = new QPushButton(tr("SMESH_BUT_HELP"),  aFrame);
 
-  QSpacerItem* aSpacer = new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Minimum);
-
-  QHBoxLayout* aLay = new QHBoxLayout(aFrame, MARGIN, SPACING);
+  QHBoxLayout* aLay = new QHBoxLayout(aFrame);
+  aLay->setMargin(MARGIN);
+  aLay->setSpacing(SPACING);
 
   aLay->addWidget(myOkBtn);
+  aLay->addSpacing(10);
   aLay->addWidget(myApplyBtn);
-  aLay->addItem(aSpacer);
+  aLay->addSpacing(10);
+  aLay->addStretch();
   aLay->addWidget(myCloseBtn);
   aLay->addWidget(myHelpBtn);
 
@@ -238,8 +228,6 @@ void SMESHGUI_SingleEditDlg::Init()
   myApplyBtn->setEnabled(false);
   setEnabled(true);
 
-  this->show();
-
   // set selection mode
   if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
     aViewWindow->SetSelectionMode(EdgeOfCellSelection);
@@ -283,16 +271,17 @@ void SMESHGUI_SingleEditDlg::onHelp()
   if (app) 
     app->onHelpContextModule(mySMESHGUI ? app->moduleName(mySMESHGUI->moduleName()) : QString(""), myHelpFileName);
   else {
-		QString platform;
+    QString platform;
 #ifdef WIN32
-		platform = "winapplication";
+    platform = "winapplication";
 #else
-		platform = "application";
+    platform = "application";
 #endif
-    SUIT_MessageBox::warn1(0, QObject::tr("WRN_WARNING"),
-			   QObject::tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
-			   arg(app->resourceMgr()->stringValue("ExternalBrowser", platform)).arg(myHelpFileName),
-			   QObject::tr("BUT_OK"));
+    SUIT_MessageBox::warning(this, tr("WRN_WARNING"),
+			     tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
+			     arg(app->resourceMgr()->stringValue("ExternalBrowser", 
+								 platform)).
+			     arg(myHelpFileName));
   }
 }
 
@@ -311,7 +300,7 @@ static bool findTriangles (const SMDS_MeshNode *    theNode1,
 
   theTria1 = theTria2 = 0;
 
-  set< const SMDS_MeshElement* > emap;
+  std::set< const SMDS_MeshElement* > emap;
   SMDS_ElemIteratorPtr it = theNode1->GetInverseElementIterator();
   while (it->more()) {
     const SMDS_MeshElement* elem = it->next();
@@ -340,6 +329,7 @@ static bool findTriangles (const SMDS_MeshNode *    theNode1,
 void SMESHGUI_SingleEditDlg::onTextChange (const QString& theNewText)
 {
   if (myBusy) return;
+  BusyLocker lock(myBusy);
 
   myOkBtn->setEnabled(false);
   myApplyBtn->setEnabled(false);
@@ -347,7 +337,6 @@ void SMESHGUI_SingleEditDlg::onTextChange (const QString& theNewText)
   // hilight entered edge
   if(myActor){
     if(SMDS_Mesh* aMesh = myActor->GetObject()->GetMesh()){
-      myBusy = true; // block onSelectionDone()
       Handle(SALOME_InteractiveObject) anIO = myActor->getIO();
       SALOME_ListIO aList;
       aList.Append(anIO);
@@ -356,42 +345,34 @@ void SMESHGUI_SingleEditDlg::onTextChange (const QString& theNewText)
       TColStd_IndexedMapOfInteger selectedIndices;
       TColStd_MapOfInteger newIndices;
       mySelector->GetIndex(anIO,selectedIndices);
-      myBusy = false;
 
-      QStringList aListId = QStringList::split("-", theNewText, false);
-      if (aListId.count() != 2)
+      int id1, id2;
+      if ( !getNodeIds(myEdge->text(), id1, id2) )
 	return;
 
-      int i;
-      bool allOk = true;
-      const SMDS_MeshNode* a2Nodes[2];
-      for (i = 0; i < aListId.count(); i++) {
-	if(const SMDS_MeshNode *aNode = aMesh->FindNode(aListId[ i ].toInt()))
-	  a2Nodes[ i ] = aNode;
-	else
-	  allOk = false;
-      }
-      
-      // find a triangle and an edge nb
-      const SMDS_MeshElement* tria[2];
-      allOk &= a2Nodes[0] != a2Nodes[1] && findTriangles(a2Nodes[0],a2Nodes[1],tria[0],tria[1]);
-      myBusy = true; // block onSelectionDone()
-      if(allOk)
-      {
-	newIndices.Add(tria[0]->GetID());
+      const SMDS_MeshNode* aNode1 = aMesh->FindNode( id1 );
+      const SMDS_MeshNode* aNode2 = aMesh->FindNode( id2 );
 
-	const SMDS_MeshNode* a3Nodes [3];
+      if ( !aNode1 || !aNode2 || aNode1 == aNode2 )
+	return;
+
+      // find a triangle and an edge index
+      const SMDS_MeshElement* tria1;
+      const SMDS_MeshElement* tria2;
+
+      if ( findTriangles(aNode1,aNode2,tria1,tria2) )
+      {
+	newIndices.Add(tria1->GetID());
+
+	const SMDS_MeshNode* a3Nodes[3];
 	SMDS_ElemIteratorPtr it;
-	int edgeInd = 2;
-	for (i = 0, it = tria[0]->nodesIterator(); it->more(); i++) {
+	int edgeInd = 2, i;
+	for (i = 0, it = tria1->nodesIterator(); it->more(); i++) {
 	  a3Nodes[ i ] = static_cast<const SMDS_MeshNode*>(it->next());
-	  if (i > 0) {
-	    allOk = (a3Nodes[ i ] == a2Nodes[ 0 ] && a3Nodes[ i - 1] == a2Nodes[ 1 ]) ||
-	      (a3Nodes[ i ] == a2Nodes[ 1 ] && a3Nodes[ i - 1] == a2Nodes[ 0 ]);
-	    if (allOk) {
-	      edgeInd = i - 1;
-	      break;
-	    }
+	  if (i > 0 && ( a3Nodes[ i ] == aNode1 && a3Nodes[ i - 1] == aNode2 ||
+			 a3Nodes[ i ] == aNode2 && a3Nodes[ i - 1] == aNode1 ) ) {
+	    edgeInd = i - 1;
+	    break;
 	  }
 	}
 	newIndices.Add(-edgeInd-1);
@@ -401,8 +382,6 @@ void SMESHGUI_SingleEditDlg::onTextChange (const QString& theNewText)
       }
       mySelector->AddOrRemoveIndex(anIO,newIndices, false);
       SMESH::GetViewWindow(mySMESHGUI)->highlight( anIO, true, true );
-
-      myBusy = false;
     }
   }
 }
@@ -414,6 +393,7 @@ void SMESHGUI_SingleEditDlg::onTextChange (const QString& theNewText)
 void SMESHGUI_SingleEditDlg::onSelectionDone()
 {
   if (myBusy) return;
+  BusyLocker lock(myBusy);
 
   int anId1 = 0, anId2 = 0;
 
@@ -439,9 +419,7 @@ void SMESHGUI_SingleEditDlg::onSelectionDone()
 	  findTriangles( aMesh->FindNode( anId1 ), aMesh->FindNode( anId2 ), tria[0],tria[1] ) )
       {
 	QString aText = QString("%1-%2").arg(anId1).arg(anId2);
-	myBusy = true;
 	myEdge->setText(aText);
-	myBusy = false;
 	
 	myOkBtn->setEnabled(true);
 	myApplyBtn->setEnabled(true);
@@ -515,10 +493,9 @@ bool SMESHGUI_SingleEditDlg::onApply()
   SMESH::SMESH_Mesh_var aMesh = SMESH::GetMeshByIO(aList.First());
 
   if (aMesh->_is_nil()) {
-    SUIT_MessageBox::info1(SMESH::GetDesktop(mySMESHGUI), 
-			   tr("SMESH_ERROR"),
-			   tr("SMESHG_NO_MESH"), 
-			   tr("SMESH_BUT_OK"));
+    SUIT_MessageBox::information(SMESH::GetDesktop(mySMESHGUI), 
+				 tr("SMESH_ERROR"),
+				 tr("SMESHG_NO_MESH"));
     return false;
   }
 
@@ -551,11 +528,10 @@ void SMESHGUI_SingleEditDlg::keyPressEvent( QKeyEvent* e )
   if ( e->isAccepted() )
     return;
 
-  if ( e->key() == Key_F1 )
-    {
-      e->accept();
-      onHelp();
-    }
+  if ( e->key() == Qt::Key_F1 ) {
+    e->accept();
+    onHelp();
+  }
 }
 
 /*!
@@ -565,11 +541,10 @@ void SMESHGUI_SingleEditDlg::keyPressEvent( QKeyEvent* e )
  */
 
 SMESHGUI_TrianglesInversionDlg
-::SMESHGUI_TrianglesInversionDlg(SMESHGUI* theModule, 
-				 const char* theName)
-: SMESHGUI_SingleEditDlg(theModule,theName)
+::SMESHGUI_TrianglesInversionDlg(SMESHGUI* theModule)
+: SMESHGUI_SingleEditDlg(theModule)
 {
-  setCaption(tr("CAPTION"));
+  setWindowTitle(tr("CAPTION"));
   myHelpFileName = "diagonal_inversion_of_elements_page.html";
 }
 
@@ -590,11 +565,10 @@ bool SMESHGUI_TrianglesInversionDlg::process (SMESH::SMESH_MeshEditor_ptr theMes
  */
 
 SMESHGUI_UnionOfTwoTrianglesDlg
-::SMESHGUI_UnionOfTwoTrianglesDlg(SMESHGUI* theModule, 
-				  const char* theName)
-: SMESHGUI_SingleEditDlg(theModule,theName)
+::SMESHGUI_UnionOfTwoTrianglesDlg(SMESHGUI* theModule)
+: SMESHGUI_SingleEditDlg(theModule)
 {
-  setCaption(tr("CAPTION"));
+  setWindowTitle(tr("CAPTION"));
   myHelpFileName = "uniting_two_triangles_page.html";
 }
 

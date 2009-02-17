@@ -85,7 +85,7 @@ mesh.</center>
 <li>From the \b Modification menu choose the <b>Extrusion along a
 path</b> item or click <em>"Extrusion along a path"</em> button in the toolbar.
 
-\image html image101.gif
+\image html image101.png
 <center><em>"Extrusion along a path" button</em></center>
 
 The following dialog box will appear:
@@ -98,9 +98,16 @@ The following dialog box will appear:
 <li>In the dialog box you should:
 <ul>
 <li>select the type of elements which will be extruded (1D or 2D),</li>
-<li>specify the <b>IDs of the elements</b> which will be extruded by
-selecting them in the 3D viewer or <b>Select the whole mesh, submesh
-or group</b>,
+<li>specify the <b>IDs of the elements</b> which will be extruded
+<ul>
+<li>Check on <b>Select the whole mesh, submesh or group</b> option
+<li>Choosing them manually with the mouse in the 3D Viewer. You can
+click on an element in the 3D viewer and it will be highlighted</li>
+<li>Applying Filters. The <b>Set filter</b> button allows to apply a
+definite filter to selection of the elements. See more
+about filters on the
+\ref selection_filter_library_page "Selection filter library" page.</li>
+</ul>
 </li>
 <li>define the Path along which the elements will be extruded,
 \n Path definition consists of several elements:
@@ -129,11 +136,14 @@ mesh in a helical fashion. You can set the values of angles at the
 right, add them to the list of angles at the left by pressing the <em>"Add"</em>
 button and remove them from the list by pressing the <em>"Remove"</em> button. 
 
-\image html image105.gif
+\image html add.png
 <center><em>"Add" button</em></center>
 
-\image html image106.gif
+\image html remove.png
 <center><em>"Remove" button</em></center>
+
+<b>Linear variation of the angles</b> option allows defining the angle of gradual rotation for the whole path. 
+At each step the shape will be rotated by angle/nb. of steps. 
 
 </li>
 </ul>

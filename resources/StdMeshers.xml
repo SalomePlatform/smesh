@@ -1,5 +1,28 @@
 <?xml version='1.0' encoding='us-ascii'?>
 <!DOCTYPE meshers PUBLIC "" "desktop.dtd">
+<!--
+  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+
+  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+
+  This library is free software; you can redistribute it and/or
+  modify it under the terms of the GNU Lesser General Public
+  License as published by the Free Software Foundation; either
+  version 2.1 of the License.
+
+  This library is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  Lesser General Public License for more details.
+
+  You should have received a copy of the GNU Lesser General Public
+  License along with this library; if not, write to the Free Software
+  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+
+  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+
+-->
 
 <!--  GUI customization for MESH component  -->
 
@@ -18,6 +41,11 @@
 
     <hypothesis type="LocalLength"
                 label-id="Average length"
+                icon-id="mesh_hypo_length.png"
+                dim="1"/>
+
+    <hypothesis type="MaxLength"
+                label-id="Max Size"
                 icon-id="mesh_hypo_length.png"
                 dim="1"/>
 
@@ -63,6 +91,12 @@
                 auxiliary="true"
                 dim="2"/>
 
+    <hypothesis	type="TrianglePreference"
+		label-id="Triangle Preference"
+                icon-id="mesh_algo_mefisto.png"
+		auxiliary="true"
+		dim="2"/>
+		
     <hypothesis type="QuadraticMesh"
                 label-id="Quadratic Mesh"
                 icon-id="mesh_algo_quad.png"
@@ -124,7 +158,7 @@
     <algorithm type="Regular_1D"
 	       label-id="Wire discretisation"
 	       icon-id="mesh_algo_regular.png"
-               hypos="LocalLength,Arithmetic1D,StartEndLength,NumberOfSegments,Deflection1D,AutomaticLength"
+               hypos="LocalLength,MaxLength,Arithmetic1D,StartEndLength,NumberOfSegments,Deflection1D,AutomaticLength"
                opt-hypos="Propagation,QuadraticMesh"
                input="VERTEX"
                output="EDGE"
@@ -133,7 +167,7 @@
     <algorithm type="CompositeSegment_1D"
 	       label-id="Composite side discretisation"
 	       icon-id="mesh_algo_regular.png"
-               hypos="LocalLength,Arithmetic1D,StartEndLength,NumberOfSegments,Deflection1D,AutomaticLength"
+               hypos="LocalLength,MaxLength,Arithmetic1D,StartEndLength,NumberOfSegments,Deflection1D,AutomaticLength"
                opt-hypos="Propagation,QuadraticMesh"
                input="VERTEX"
                output="EDGE"
@@ -150,7 +184,7 @@
     <algorithm type="Quadrangle_2D"
                label-id="Quadrangle (Mapping)"
                icon-id="mesh_algo_quad.png"
-               opt-hypos="QuadranglePreference"
+               opt-hypos="QuadranglePreference,TrianglePreference"
                input="EDGE"
                output="QUAD"
                dim="2"/>
@@ -236,11 +270,11 @@
 <hypotheses-set-group>
 
     <hypotheses-set name="Automatic Tetrahedralization"
-                    hypos="AutomaticLength, LengthFromEdges"
+                    hypos="MaxLength"
                     algos="Regular_1D, MEFISTO_2D, NETGEN_3D"/>
 
     <hypotheses-set name="Automatic Hexahedralization"
-                    hypos="AutomaticLength"
+                    hypos="NumberOfSegments"
                     algos="Regular_1D, Quadrangle_2D, Hexa_3D"/>
 
 </hypotheses-set-group>

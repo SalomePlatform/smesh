@@ -1,4 +1,6 @@
-//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//
+//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
 //  This library is free software; you can redistribute it and/or
@@ -15,26 +17,34 @@
 //  License along with this library; if not, write to the Free Software
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
-
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
 #include "SMESH_ControlsDef.hxx"
 
 #include <set>
 
 #include <BRepAdaptor_Surface.hxx>
+#include <BRepClass_FaceClassifier.hxx>
 #include <BRep_Tool.hxx>
+
+#include <TopAbs.hxx>
+#include <TopoDS.hxx>
+#include <TopoDS_Edge.hxx>
+#include <TopoDS_Face.hxx>
+#include <TopoDS_Shape.hxx>
+#include <TopoDS_Vertex.hxx>
+#include <TopoDS_Iterator.hxx>
+
 #include <Geom_CylindricalSurface.hxx>
 #include <Geom_Plane.hxx>
 #include <Geom_Surface.hxx>
+
 #include <Precision.hxx>
 #include <TColStd_MapIteratorOfMapOfInteger.hxx>
 #include <TColStd_MapOfInteger.hxx>
 #include <TColStd_SequenceOfAsciiString.hxx>
 #include <TColgp_Array1OfXYZ.hxx>
-#include <TopAbs.hxx>
-#include <TopoDS.hxx>
-#include <TopoDS_Face.hxx>
-#include <TopoDS_Shape.hxx>
+
 #include <gp_Ax3.hxx>
 #include <gp_Cylinder.hxx>
 #include <gp_Dir.hxx>
@@ -51,6 +61,8 @@
 #include "SMDS_QuadraticFaceOfNodes.hxx"
 #include "SMDS_QuadraticEdge.hxx"
 
+#include "SMESHDS_Mesh.hxx"
+#include "SMESHDS_GroupBase.hxx"
 
 /*
                             AUXILIARY METHODS
@@ -130,7 +142,7 @@ namespace{
         }
       }
     }
-    int aResult = max ( aResult0, aResult1 );
+    int aResult = std::max ( aResult0, aResult1 );
 
 //     TColStd_MapOfInteger aMap;
 
@@ -356,7 +368,7 @@ double AspectRatio::GetValue( const TSequenceOfXYZ& P )
 
   if ( nbNodes == 3 ) {
     // Compute lengths of the sides
-    vector< double > aLen (nbNodes);
+    std::vector< double > aLen (nbNodes);
     for ( int i = 0; i < nbNodes - 1; i++ )
       aLen[ i ] = getDistance( P( i + 1 ), P( i + 2 ) );
     aLen[ nbNodes - 1 ] = getDistance( P( 1 ), P( nbNodes ) );
@@ -376,7 +388,7 @@ double AspectRatio::GetValue( const TSequenceOfXYZ& P )
   }
   else if ( nbNodes == 6 ) { // quadratic triangles
     // Compute lengths of the sides
-    vector< double > aLen (3);
+    std::vector< double > aLen (3);
     aLen[0] = getDistance( P(1), P(3) );
     aLen[1] = getDistance( P(3), P(5) );
     aLen[2] = getDistance( P(5), P(1) );
@@ -508,11 +520,11 @@ namespace{
 
   inline double getMaxHeight(double theLen[6])
   {
-    double aHeight = max(theLen[0],theLen[1]);
-    aHeight = max(aHeight,theLen[2]);
-    aHeight = max(aHeight,theLen[3]);
-    aHeight = max(aHeight,theLen[4]);
-    aHeight = max(aHeight,theLen[5]);
+    double aHeight = std::max(theLen[0],theLen[1]);
+    aHeight = std::max(aHeight,theLen[2]);
+    aHeight = std::max(aHeight,theLen[3]);
+    aHeight = std::max(aHeight,theLen[4]);
+    aHeight = std::max(aHeight,theLen[5]);
     return aHeight;
   }
 
@@ -573,181 +585,181 @@ double AspectRatio3D::GetValue( const TSequenceOfXYZ& P )
   case 5:{
     {
       gp_XYZ aXYZ[4] = {P( 1 ),P( 2 ),P( 3 ),P( 5 )};
-      aQuality = max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
+      aQuality = std::max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
     }
     {
       gp_XYZ aXYZ[4] = {P( 1 ),P( 3 ),P( 4 ),P( 5 )};
-      aQuality = max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
+      aQuality = std::max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
     }
     {
       gp_XYZ aXYZ[4] = {P( 1 ),P( 2 ),P( 4 ),P( 5 )};
-      aQuality = max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
+      aQuality = std::max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
     }
     {
       gp_XYZ aXYZ[4] = {P( 2 ),P( 3 ),P( 4 ),P( 5 )};
-      aQuality = max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
+      aQuality = std::max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
     }
     break;
   }
   case 6:{
     {
       gp_XYZ aXYZ[4] = {P( 1 ),P( 2 ),P( 4 ),P( 6 )};
-      aQuality = max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
+      aQuality = std::max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
     }
     {
       gp_XYZ aXYZ[4] = {P( 1 ),P( 2 ),P( 4 ),P( 3 )};
-      aQuality = max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
+      aQuality = std::max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
     }
     {
       gp_XYZ aXYZ[4] = {P( 1 ),P( 2 ),P( 5 ),P( 6 )};
-      aQuality = max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
+      aQuality = std::max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
     }
     {
       gp_XYZ aXYZ[4] = {P( 1 ),P( 2 ),P( 5 ),P( 3 )};
-      aQuality = max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
+      aQuality = std::max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
     }
     {
       gp_XYZ aXYZ[4] = {P( 2 ),P( 5 ),P( 4 ),P( 6 )};
-      aQuality = max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
+      aQuality = std::max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
     }
     {
       gp_XYZ aXYZ[4] = {P( 2 ),P( 5 ),P( 4 ),P( 3 )};
-      aQuality = max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
+      aQuality = std::max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
     }
     break;
   }
   case 8:{
     {
       gp_XYZ aXYZ[4] = {P( 1 ),P( 2 ),P( 5 ),P( 3 )};
-      aQuality = max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
+      aQuality = std::max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
     }
     {
       gp_XYZ aXYZ[4] = {P( 1 ),P( 2 ),P( 5 ),P( 4 )};
-      aQuality = max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
+      aQuality = std::max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
     }
     {
       gp_XYZ aXYZ[4] = {P( 1 ),P( 2 ),P( 5 ),P( 7 )};
-      aQuality = max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
+      aQuality = std::max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
     }
     {
       gp_XYZ aXYZ[4] = {P( 1 ),P( 2 ),P( 5 ),P( 8 )};
-      aQuality = max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
+      aQuality = std::max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
     }
     {
       gp_XYZ aXYZ[4] = {P( 1 ),P( 2 ),P( 6 ),P( 3 )};
-      aQuality = max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
+      aQuality = std::max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
     }
     {
       gp_XYZ aXYZ[4] = {P( 1 ),P( 2 ),P( 6 ),P( 4 )};
-      aQuality = max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
+      aQuality = std::max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
     }
     {
       gp_XYZ aXYZ[4] = {P( 1 ),P( 2 ),P( 6 ),P( 7 )};
-      aQuality = max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
+      aQuality = std::max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
     }
     {
       gp_XYZ aXYZ[4] = {P( 1 ),P( 2 ),P( 6 ),P( 8 )};
-      aQuality = max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
+      aQuality = std::max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
     }
     {
       gp_XYZ aXYZ[4] = {P( 2 ),P( 6 ),P( 5 ),P( 3 )};
-      aQuality = max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
+      aQuality = std::max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
     }
     {
       gp_XYZ aXYZ[4] = {P( 2 ),P( 6 ),P( 5 ),P( 4 )};
-      aQuality = max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
+      aQuality = std::max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
     }
     {
       gp_XYZ aXYZ[4] = {P( 2 ),P( 6 ),P( 5 ),P( 7 )};
-      aQuality = max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
+      aQuality = std::max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
     }
     {
       gp_XYZ aXYZ[4] = {P( 2 ),P( 6 ),P( 5 ),P( 8 )};
-      aQuality = max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
+      aQuality = std::max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
     }
     {
       gp_XYZ aXYZ[4] = {P( 3 ),P( 4 ),P( 8 ),P( 1 )};
-      aQuality = max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
+      aQuality = std::max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
     }
     {
       gp_XYZ aXYZ[4] = {P( 3 ),P( 4 ),P( 8 ),P( 2 )};
-      aQuality = max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
+      aQuality = std::max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
     }
     {
       gp_XYZ aXYZ[4] = {P( 3 ),P( 4 ),P( 8 ),P( 5 )};
-      aQuality = max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
+      aQuality = std::max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
     }
     {
       gp_XYZ aXYZ[4] = {P( 3 ),P( 4 ),P( 8 ),P( 6 )};
-      aQuality = max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
+      aQuality = std::max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
     }
     {
       gp_XYZ aXYZ[4] = {P( 3 ),P( 4 ),P( 7 ),P( 1 )};
-      aQuality = max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
+      aQuality = std::max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
     }
     {
       gp_XYZ aXYZ[4] = {P( 3 ),P( 4 ),P( 7 ),P( 2 )};
-      aQuality = max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
+      aQuality = std::max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
     }
     {
       gp_XYZ aXYZ[4] = {P( 3 ),P( 4 ),P( 7 ),P( 5 )};
-      aQuality = max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
+      aQuality = std::max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
     }
     {
       gp_XYZ aXYZ[4] = {P( 3 ),P( 4 ),P( 7 ),P( 6 )};
-      aQuality = max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
+      aQuality = std::max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
     }
     {
       gp_XYZ aXYZ[4] = {P( 4 ),P( 8 ),P( 7 ),P( 1 )};
-      aQuality = max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
+      aQuality = std::max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
     }
     {
       gp_XYZ aXYZ[4] = {P( 4 ),P( 8 ),P( 7 ),P( 2 )};
-      aQuality = max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
+      aQuality = std::max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
     }
     {
       gp_XYZ aXYZ[4] = {P( 4 ),P( 8 ),P( 7 ),P( 5 )};
-      aQuality = max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
+      aQuality = std::max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
     }
     {
       gp_XYZ aXYZ[4] = {P( 4 ),P( 8 ),P( 7 ),P( 6 )};
-      aQuality = max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
+      aQuality = std::max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
     }
     {
       gp_XYZ aXYZ[4] = {P( 4 ),P( 8 ),P( 7 ),P( 2 )};
-      aQuality = max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
+      aQuality = std::max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
     }
     {
       gp_XYZ aXYZ[4] = {P( 4 ),P( 5 ),P( 8 ),P( 2 )};
-      aQuality = max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
+      aQuality = std::max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
     }
     {
       gp_XYZ aXYZ[4] = {P( 1 ),P( 4 ),P( 5 ),P( 3 )};
-      aQuality = max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
+      aQuality = std::max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
     }
     {
       gp_XYZ aXYZ[4] = {P( 3 ),P( 6 ),P( 7 ),P( 1 )};
-      aQuality = max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
+      aQuality = std::max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
     }
     {
       gp_XYZ aXYZ[4] = {P( 2 ),P( 3 ),P( 6 ),P( 4 )};
-      aQuality = max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
+      aQuality = std::max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
     }
     {
       gp_XYZ aXYZ[4] = {P( 5 ),P( 6 ),P( 8 ),P( 3 )};
-      aQuality = max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
+      aQuality = std::max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
     }
     {
       gp_XYZ aXYZ[4] = {P( 7 ),P( 8 ),P( 6 ),P( 1 )};
-      aQuality = max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
+      aQuality = std::max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
     }
     {
       gp_XYZ aXYZ[4] = {P( 1 ),P( 2 ),P( 4 ),P( 7 )};
-      aQuality = max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
+      aQuality = std::max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
     }
     {
       gp_XYZ aXYZ[4] = {P( 3 ),P( 4 ),P( 2 ),P( 5 )};
-      aQuality = max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
+      aQuality = std::max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
     }
     break;
   }
@@ -764,7 +776,7 @@ double AspectRatio3D::GetValue( const TSequenceOfXYZ& P )
       const int* pInd = SMDS_VolumeTool::GetFaceNodesIndices( type, i, true );
       for ( int p = 0; p < 4; ++p ) // loop on nodes of a quadranle face
         points( p + 1 ) = P( pInd[ p ] + 1 );
-      aQuality = max( aQuality, aspect2D.GetValue( points ));
+      aQuality = std::max( aQuality, aspect2D.GetValue( points ));
     }
   }
   return aQuality;
@@ -1600,7 +1612,7 @@ bool FreeEdges::IsSatisfy( long theId )
     return false;
 
   int i = 0, nbNodes = aFace->NbNodes();
-  vector <const SMDS_MeshNode*> aNodes( nbNodes+1 );
+  std::vector <const SMDS_MeshNode*> aNodes( nbNodes+1 );
   while( anIter->more() )
   {
     const SMDS_MeshNode* aNode = (SMDS_MeshNode*)anIter->next();
@@ -1682,6 +1694,309 @@ void FreeEdges::GetBoreders(TBorders& theBorders)
     UpdateBorders(aBorder,aRegistry,theBorders);
   }
   //std::cout<<"theBorders.size() = "<<theBorders.size()<<endl;
+}
+
+
+/*
+  Class       : FreeNodes
+  Description : Predicate for free nodes
+*/
+
+FreeNodes::FreeNodes()
+{
+  myMesh = 0;
+}
+
+void FreeNodes::SetMesh( const SMDS_Mesh* theMesh )
+{
+  myMesh = theMesh;
+}
+
+bool FreeNodes::IsSatisfy( long theNodeId )
+{
+  const SMDS_MeshNode* aNode = myMesh->FindNode( theNodeId );
+  if (!aNode)
+    return false;
+
+  return (aNode->NbInverseElements() < 1);
+}
+
+SMDSAbs_ElementType FreeNodes::GetType() const
+{
+  return SMDSAbs_Node;
+}
+
+
+/*
+  Class       : FreeFaces
+  Description : Predicate for free faces
+*/
+
+FreeFaces::FreeFaces()
+{
+  myMesh = 0;
+}
+
+void FreeFaces::SetMesh( const SMDS_Mesh* theMesh )
+{
+  myMesh = theMesh;
+}
+
+bool FreeFaces::IsSatisfy( long theId )
+{
+  if (!myMesh) return false;
+  // check that faces nodes refers to less than two common volumes
+  const SMDS_MeshElement* aFace = myMesh->FindElement( theId );
+  if ( !aFace || aFace->GetType() != SMDSAbs_Face )
+    return false;
+
+  int nbNode = aFace->NbNodes();
+
+  // collect volumes check that number of volumss with count equal nbNode not less than 2
+  typedef map< SMDS_MeshElement*, int > TMapOfVolume; // map of volume counters
+  typedef map< SMDS_MeshElement*, int >::iterator TItrMapOfVolume; // iterator
+  TMapOfVolume mapOfVol;
+
+  SMDS_ElemIteratorPtr nodeItr = aFace->nodesIterator();
+  while ( nodeItr->more() ) {
+    const SMDS_MeshNode* aNode = static_cast<const SMDS_MeshNode*>(nodeItr->next());
+    if ( !aNode ) continue;
+    SMDS_ElemIteratorPtr volItr = aNode->GetInverseElementIterator(SMDSAbs_Volume);
+    while ( volItr->more() ) {
+      SMDS_MeshElement* aVol = (SMDS_MeshElement*)volItr->next();
+      TItrMapOfVolume itr = mapOfVol.insert(make_pair(aVol, 0)).first;
+      (*itr).second++;
+    } 
+  }
+  int nbVol = 0;
+  TItrMapOfVolume volItr = mapOfVol.begin();
+  TItrMapOfVolume volEnd = mapOfVol.end();
+  for ( ; volItr != volEnd; ++volItr )
+    if ( (*volItr).second >= nbNode )
+       nbVol++;
+  // face is not free if number of volumes constructed on thier nodes more than one
+  return (nbVol < 2);
+}
+
+SMDSAbs_ElementType FreeFaces::GetType() const
+{
+  return SMDSAbs_Face;
+}
+
+/*
+  Class       : LinearOrQuadratic
+  Description : Predicate to verify whether a mesh element is linear
+*/
+
+LinearOrQuadratic::LinearOrQuadratic()
+{
+  myMesh = 0;
+}
+
+void LinearOrQuadratic::SetMesh( const SMDS_Mesh* theMesh )
+{
+  myMesh = theMesh;
+}
+
+bool LinearOrQuadratic::IsSatisfy( long theId )
+{
+  if (!myMesh) return false;
+  const SMDS_MeshElement* anElem = myMesh->FindElement( theId );
+  if ( !anElem || (myType != SMDSAbs_All && anElem->GetType() != myType) )
+    return false;
+  return (!anElem->IsQuadratic());
+}
+
+void LinearOrQuadratic::SetType( SMDSAbs_ElementType theType )
+{
+  myType = theType;
+}
+
+SMDSAbs_ElementType LinearOrQuadratic::GetType() const
+{
+  return myType;
+}
+
+/*
+  Class       : GroupColor
+  Description : Functor for check color of group to whic mesh element belongs to
+*/
+
+GroupColor::GroupColor()
+{
+}
+
+bool GroupColor::IsSatisfy( long theId )
+{
+  return (myIDs.find( theId ) != myIDs.end());
+}
+
+void GroupColor::SetType( SMDSAbs_ElementType theType )
+{
+  myType = theType;
+}
+
+SMDSAbs_ElementType GroupColor::GetType() const
+{
+  return myType;
+}
+
+static bool isEqual( const Quantity_Color& theColor1,
+                     const Quantity_Color& theColor2 )
+{
+  // tolerance to compare colors
+  const double tol = 5*1e-3;
+  return ( fabs( theColor1.Red() - theColor2.Red() ) < tol &&
+           fabs( theColor1.Green() - theColor2.Green() ) < tol &&
+           fabs( theColor1.Blue() - theColor2.Blue() ) < tol );
+}
+
+
+void GroupColor::SetMesh( const SMDS_Mesh* theMesh )
+{
+  myIDs.clear();
+  
+  const SMESHDS_Mesh* aMesh = dynamic_cast<const SMESHDS_Mesh*>(theMesh);
+  if ( !aMesh )
+    return;
+
+  int nbGrp = aMesh->GetNbGroups();
+  if ( !nbGrp )
+    return;
+  
+  // iterates on groups and find necessary elements ids
+  const std::set<SMESHDS_GroupBase*>& aGroups = aMesh->GetGroups();
+  set<SMESHDS_GroupBase*>::const_iterator GrIt = aGroups.begin();
+  for (; GrIt != aGroups.end(); GrIt++) {
+    SMESHDS_GroupBase* aGrp = (*GrIt);
+    if ( !aGrp )
+      continue;
+    // check type and color of group
+    if ( !isEqual( myColor, aGrp->GetColor() ) )
+      continue;
+    if ( myType != SMDSAbs_All && myType != (SMDSAbs_ElementType)aGrp->GetType() )
+      continue;
+
+    SMDSAbs_ElementType aGrpElType = (SMDSAbs_ElementType)aGrp->GetType();
+    if ( myType == aGrpElType || (myType == SMDSAbs_All && aGrpElType != SMDSAbs_Node) ) {
+      // add elements IDS into control
+      int aSize = aGrp->Extent();
+      for (int i = 0; i < aSize; i++)
+        myIDs.insert( aGrp->GetID(i+1) );
+    }
+  }
+}
+
+void GroupColor::SetColorStr( const TCollection_AsciiString& theStr )
+{
+  TCollection_AsciiString aStr = theStr;
+  aStr.RemoveAll( ' ' );
+  aStr.RemoveAll( '\t' );
+  for ( int aPos = aStr.Search( ";;" ); aPos != -1; aPos = aStr.Search( ";;" ) )
+    aStr.Remove( aPos, 2 );
+  Standard_Real clr[3];
+  clr[0] = clr[1] = clr[2] = 0.;
+  for ( int i = 0; i < 3; i++ ) {
+    TCollection_AsciiString tmpStr = aStr.Token( ";", i+1 );
+    if ( !tmpStr.IsEmpty() && tmpStr.IsRealValue() )
+      clr[i] = tmpStr.RealValue();
+  }
+  myColor = Quantity_Color( clr[0], clr[1], clr[2], Quantity_TOC_RGB );
+}
+
+//=======================================================================
+// name    : GetRangeStr
+// Purpose : Get range as a string.
+//           Example: "1,2,3,50-60,63,67,70-"
+//=======================================================================
+void GroupColor::GetColorStr( TCollection_AsciiString& theResStr ) const
+{
+  theResStr.Clear();
+  theResStr += TCollection_AsciiString( myColor.Red() );
+  theResStr += TCollection_AsciiString( ";" ) + TCollection_AsciiString( myColor.Green() );
+  theResStr += TCollection_AsciiString( ";" ) + TCollection_AsciiString( myColor.Blue() );
+}
+
+/*
+  Class       : ElemGeomType
+  Description : Predicate to check element geometry type
+*/
+
+ElemGeomType::ElemGeomType()
+{
+  myMesh = 0;
+  myType = SMDSAbs_All;
+  myGeomType = SMDSGeom_TRIANGLE;
+}
+
+void ElemGeomType::SetMesh( const SMDS_Mesh* theMesh )
+{
+  myMesh = theMesh;
+}
+
+bool ElemGeomType::IsSatisfy( long theId )
+{
+  if (!myMesh) return false;
+  const SMDS_MeshElement* anElem = myMesh->FindElement( theId );
+  const SMDSAbs_ElementType anElemType = anElem->GetType();
+  if ( !anElem || (myType != SMDSAbs_All && anElemType != myType) )
+    return false;
+  const int aNbNode = anElem->NbNodes();
+  bool isOk = false;
+  switch( anElemType )
+  {
+  case SMDSAbs_Node:
+    isOk = (myGeomType == SMDSGeom_POINT);
+    break;
+
+  case SMDSAbs_Edge:
+    isOk = (myGeomType == SMDSGeom_EDGE);
+    break;
+
+  case SMDSAbs_Face:
+    if ( myGeomType == SMDSGeom_TRIANGLE )
+      isOk = (!anElem->IsPoly() && aNbNode == 3);
+    else if ( myGeomType == SMDSGeom_QUADRANGLE )
+      isOk = (!anElem->IsPoly() && aNbNode == 4);
+    else if ( myGeomType == SMDSGeom_POLYGON )
+      isOk = anElem->IsPoly();
+    break;
+
+  case SMDSAbs_Volume:
+    if ( myGeomType == SMDSGeom_TETRA )
+      isOk = (!anElem->IsPoly() && aNbNode == 4);
+    else if ( myGeomType == SMDSGeom_PYRAMID )
+      isOk = (!anElem->IsPoly() && aNbNode == 5);
+    else if ( myGeomType == SMDSGeom_PENTA )
+      isOk = (!anElem->IsPoly() && aNbNode == 6);
+    else if ( myGeomType == SMDSGeom_HEXA )
+      isOk = (!anElem->IsPoly() && aNbNode == 8);
+     else if ( myGeomType == SMDSGeom_POLYHEDRA )
+      isOk = anElem->IsPoly();
+    break;
+    default: break;
+  }
+  return isOk;
+}
+
+void ElemGeomType::SetType( SMDSAbs_ElementType theType )
+{
+  myType = theType;
+}
+
+SMDSAbs_ElementType ElemGeomType::GetType() const
+{
+  return myType;
+}
+
+void ElemGeomType::SetGeomType( SMDSAbs_GeometryType theType )
+{
+  myGeomType = theType;
+}
+
+SMDSAbs_GeometryType ElemGeomType::GetGeomType() const
+{
+  return myGeomType;
 }
 
 /*
@@ -2614,7 +2929,7 @@ void ElementsOnSurface::process()
 
   if ( myType == SMDSAbs_Edge || myType == SMDSAbs_All )
   {
-    myIds.ReSize( myMesh->NbEdges() );
+    myIds.ReSize( myIds.Extent() + myMesh->NbEdges() );
     SMDS_EdgeIteratorPtr anIter = myMesh->edgesIterator();
     for(; anIter->more(); )
       process( anIter->next() );
@@ -2676,4 +2991,251 @@ bool ElementsOnSurface::isOnSurface( const SMDS_MeshNode* theNode )
   bool isOn = ( myProjector.IsDone() && myProjector.LowerDistance() <= myToler );
 
   return isOn;
+}
+
+
+/*
+  ElementsOnShape
+*/
+
+ElementsOnShape::ElementsOnShape()
+  : myMesh(0),
+    myType(SMDSAbs_All),
+    myToler(Precision::Confusion()),
+    myAllNodesFlag(false)
+{
+  myCurShapeType = TopAbs_SHAPE;
+}
+
+ElementsOnShape::~ElementsOnShape()
+{
+}
+
+void ElementsOnShape::SetMesh (const SMDS_Mesh* theMesh)
+{
+  if (myMesh != theMesh) {
+    myMesh = theMesh;
+    SetShape(myShape, myType);
+  }
+}
+
+bool ElementsOnShape::IsSatisfy (long theElementId)
+{
+  return myIds.Contains(theElementId);
+}
+
+SMDSAbs_ElementType ElementsOnShape::GetType() const
+{
+  return myType;
+}
+
+void ElementsOnShape::SetTolerance (const double theToler)
+{
+  if (myToler != theToler) {
+    myToler = theToler;
+    SetShape(myShape, myType);
+  }
+}
+
+double ElementsOnShape::GetTolerance() const
+{
+  return myToler;
+}
+
+void ElementsOnShape::SetAllNodes (bool theAllNodes)
+{
+  if (myAllNodesFlag != theAllNodes) {
+    myAllNodesFlag = theAllNodes;
+    SetShape(myShape, myType);
+  }
+}
+
+void ElementsOnShape::SetShape (const TopoDS_Shape&       theShape,
+                                const SMDSAbs_ElementType theType)
+{
+  myType = theType;
+  myShape = theShape;
+  myIds.Clear();
+
+  if (myMesh == 0) return;
+
+  switch (myType)
+  {
+  case SMDSAbs_All:
+    myIds.ReSize(myMesh->NbEdges() + myMesh->NbFaces() + myMesh->NbVolumes());
+    break;
+  case SMDSAbs_Node:
+    myIds.ReSize(myMesh->NbNodes());
+    break;
+  case SMDSAbs_Edge:
+    myIds.ReSize(myMesh->NbEdges());
+    break;
+  case SMDSAbs_Face:
+    myIds.ReSize(myMesh->NbFaces());
+    break;
+  case SMDSAbs_Volume:
+    myIds.ReSize(myMesh->NbVolumes());
+    break;
+  default:
+    break;
+  }
+
+  myShapesMap.Clear();
+  addShape(myShape);
+}
+
+void ElementsOnShape::addShape (const TopoDS_Shape& theShape)
+{
+  if (theShape.IsNull() || myMesh == 0)
+    return;
+
+  if (!myShapesMap.Add(theShape)) return;
+
+  myCurShapeType = theShape.ShapeType();
+  switch (myCurShapeType)
+  {
+  case TopAbs_COMPOUND:
+  case TopAbs_COMPSOLID:
+  case TopAbs_SHELL:
+  case TopAbs_WIRE:
+    {
+      TopoDS_Iterator anIt (theShape, Standard_True, Standard_True);
+      for (; anIt.More(); anIt.Next()) addShape(anIt.Value());
+    }
+    break;
+  case TopAbs_SOLID:
+    {
+      myCurSC.Load(theShape);
+      process();
+    }
+    break;
+  case TopAbs_FACE:
+    {
+      TopoDS_Face aFace = TopoDS::Face(theShape);
+      BRepAdaptor_Surface SA (aFace, true);
+      Standard_Real
+        u1 = SA.FirstUParameter(),
+        u2 = SA.LastUParameter(),
+        v1 = SA.FirstVParameter(),
+        v2 = SA.LastVParameter();
+      Handle(Geom_Surface) surf = BRep_Tool::Surface(aFace);
+      myCurProjFace.Init(surf, u1,u2, v1,v2);
+      myCurFace = aFace;
+      process();
+    }
+    break;
+  case TopAbs_EDGE:
+    {
+      TopoDS_Edge anEdge = TopoDS::Edge(theShape);
+      Standard_Real u1, u2;
+      Handle(Geom_Curve) curve = BRep_Tool::Curve(anEdge, u1, u2);
+      myCurProjEdge.Init(curve, u1, u2);
+      process();
+    }
+    break;
+  case TopAbs_VERTEX:
+    {
+      TopoDS_Vertex aV = TopoDS::Vertex(theShape);
+      myCurPnt = BRep_Tool::Pnt(aV);
+      process();
+    }
+    break;
+  default:
+    break;
+  }
+}
+
+void ElementsOnShape::process()
+{
+  if (myShape.IsNull() || myMesh == 0)
+    return;
+
+  if (myType == SMDSAbs_Node)
+  {
+    SMDS_NodeIteratorPtr anIter = myMesh->nodesIterator();
+    while (anIter->more())
+      process(anIter->next());
+  }
+  else
+  {
+    if (myType == SMDSAbs_Edge || myType == SMDSAbs_All)
+    {
+      SMDS_EdgeIteratorPtr anIter = myMesh->edgesIterator();
+      while (anIter->more())
+        process(anIter->next());
+    }
+
+    if (myType == SMDSAbs_Face || myType == SMDSAbs_All)
+    {
+      SMDS_FaceIteratorPtr anIter = myMesh->facesIterator();
+      while (anIter->more()) {
+        process(anIter->next());
+      }
+    }
+
+    if (myType == SMDSAbs_Volume || myType == SMDSAbs_All)
+    {
+      SMDS_VolumeIteratorPtr anIter = myMesh->volumesIterator();
+      while (anIter->more())
+        process(anIter->next());
+    }
+  }
+}
+
+void ElementsOnShape::process (const SMDS_MeshElement* theElemPtr)
+{
+  if (myShape.IsNull())
+    return;
+
+  SMDS_ElemIteratorPtr aNodeItr = theElemPtr->nodesIterator();
+  bool isSatisfy = myAllNodesFlag;
+
+  while (aNodeItr->more() && (isSatisfy == myAllNodesFlag))
+  {
+    SMDS_MeshNode* aNode = (SMDS_MeshNode*)aNodeItr->next();
+    gp_Pnt aPnt (aNode->X(), aNode->Y(), aNode->Z());
+
+    switch (myCurShapeType)
+    {
+    case TopAbs_SOLID:
+      {
+        myCurSC.Perform(aPnt, myToler);
+        isSatisfy = (myCurSC.State() == TopAbs_IN || myCurSC.State() == TopAbs_ON);
+      }
+      break;
+    case TopAbs_FACE:
+      {
+        myCurProjFace.Perform(aPnt);
+        isSatisfy = (myCurProjFace.IsDone() && myCurProjFace.LowerDistance() <= myToler);
+        if (isSatisfy)
+        {
+          // check relatively the face
+          Quantity_Parameter u, v;
+          myCurProjFace.LowerDistanceParameters(u, v);
+          gp_Pnt2d aProjPnt (u, v);
+          BRepClass_FaceClassifier aClsf (myCurFace, aProjPnt, myToler);
+          isSatisfy = (aClsf.State() == TopAbs_IN || aClsf.State() == TopAbs_ON);
+        }
+      }
+      break;
+    case TopAbs_EDGE:
+      {
+        myCurProjEdge.Perform(aPnt);
+        isSatisfy = (myCurProjEdge.NbPoints() > 0 && myCurProjEdge.LowerDistance() <= myToler);
+      }
+      break;
+    case TopAbs_VERTEX:
+      {
+        isSatisfy = (aPnt.Distance(myCurPnt) <= myToler);
+      }
+      break;
+    default:
+      {
+        isSatisfy = false;
+      }
+    }
+  }
+
+  if (isSatisfy)
+    myIds.Add(theElemPtr->GetID());
 }

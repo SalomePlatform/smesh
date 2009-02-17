@@ -1,70 +1,70 @@
-//  SMESH SMESHGUI : GUI for SMESH component
+//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003  CEA
-// 
-//  This library is free software; you can redistribute it and/or 
-//  modify it under the terms of the GNU Lesser General Public 
-//  License as published by the Free Software Foundation; either 
-//  version 2.1 of the License. 
-// 
-//  This library is distributed in the hope that it will be useful, 
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of 
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
-//  Lesser General Public License for more details. 
-// 
-//  You should have received a copy of the GNU Lesser General Public 
-//  License along with this library; if not, write to the Free Software 
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
-// 
-// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
 //
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
 //
-//  File   : SMESHGUI_IdValidator.h
-//  Author : Edward AGAPOV
-//  Module : SMESH
-//  $Header: /dn05/salome/PAL/SMESH/SMESH_SRC/src/SMESHGUI/SMESHGUI_IdValidator.h
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
+// SMESH SMESHGUI : GUI for SMESH component
+// File   : SMESHGUI_IdValidator.h
+// Author : Edward AGAPOV, Open CASCADE S.A.S.
+//
+#ifndef SMESHGUI_IDVALIDATOR_H
+#define SMESHGUI_IDVALIDATOR_H
 
-#ifndef SMESHGUI_IdValidator_HeaderFile
-#define SMESHGUI_IdValidator_HeaderFile
-
+// SMESH includes
 #include "SMESH_SMESHGUI.hxx"
 
-#include <qvalidator.h>
+// Qt includes
+#include <QValidator>
 
 // validator for manual input of Ids
 
-class SMESHGUI_EXPORT SMESHGUI_IdValidator: public QValidator
+class SMESHGUI_EXPORT SMESHGUI_IdValidator : public QValidator
 {
- public:
+public:
+  SMESHGUI_IdValidator( QWidget* parent, const int maxNbId = 0 ) :
+    QValidator( parent ), myMaxNbId( maxNbId ) {}
 
-  SMESHGUI_IdValidator(QWidget * parent, const char * name = 0, const int maxNbId = 0):
-    QValidator(parent,name), myMaxNbId(maxNbId) {}
-
-  State validate ( QString & text, int & pos) const
+  State validate( QString& input, int& pos ) const
   { 
-    text.replace( QRegExp(" *[^0-9]+ *"), " " ); 
-    if ( myMaxNbId && text.length() > myMaxNbId) { // truncate extra ids
+    input.replace( QRegExp(" *[^0-9]+ *"), " " ); 
+    if ( myMaxNbId && input.length() > myMaxNbId ) {
+      // truncate extra ids
       int ind = 0, nbId = 0;
-      while ( ind < text.length() ) {
-	if ( text.at( ind ) != ' ' ) {
+      while ( ind < input.length() ) {
+	if ( input.at( ind ) != ' ' ) {
 	  if ( ++nbId > myMaxNbId ) {
-	    text.truncate( ind );
+	    input.truncate( ind );
 	    break;
 	  }
-	  ind = text.find( ' ', ind );
+	  ind = input.indexOf( ' ', ind );
 	  if ( ind < 0 ) break;
 	}
 	ind++;
       }
     }
-    if ( pos > text.length() )
-      pos = text.length();
+    if ( pos > input.length() )
+      pos = input.length();
     return Acceptable;
   }
 
- private:
+private:
   int myMaxNbId;
 };
 
-#endif
+#endif // SMESHGUI_IDVALIDATOR_H

@@ -21,35 +21,39 @@ shape of a mesh.</li>
 <li>For meshing of 2D entities (<b>faces</b>):</li>
 
 <ul>
-<li>Triangle meshing algorithms (Mefisto and Netgen 1D-2D ) - Faces
+<li>Triangle meshing algorithms (Mefisto, Netgen 1D-2D and BLSUFR ) - Faces
 are split into triangular elements.</li>
 <li>Quadrangle meshing algorithm (Mapping) - Faces are split into
 quadrangular elements.</li>
 </ul>
 
-\image html image123.gif
+\image html image123.gif "Example of a triangular 2D mesh"
 
-\image html image124.gif
+\image html image124.gif "Example of a quadrangular 2D mesh"
 
 <li>For meshing of 3D entities (<b>volume objects</b>):</li>
 
 <ul>
 <li>Hexahedron meshing algorithm (i,j,k) - Volumes are split into
 hexahedral (cubic) elements.</li>
-<li>Tetrahedron (Netgen) meshing algorithm - Volumes are split into
+<li>Tetrahedron (Netgen and GHS3D) meshing algorithms - Volumes are split into
 tetrahedral (pyramidal) elements.</li>
 </ul>
 
-\image html image125.gif
+\image html image125.gif "Example of a tetrahedral 3D mesh"
 
-\image html image126.gif
+\image html image126.gif "Example of a hexahedral 3D mesh"
 </ul>
 
-There also is a number of more specific algorithms:
+\Note that BLSURF and GHS3D are commercial meshers and require a
+license to be used within the Mesh module.
+
+There is also a number of more specific algorithms:
 <ul>
-<li>\ref projection_algos_page "for meshing by projection of another mesh"</li>
-<li>\ref radial_prism_algo_page "for meshing geometrical objects with cavities"</li>
-<li>\ref prism_3d_algo_page "for meshing prismatic shapes"</li>
+<li>\subpage projection_algos_page "for meshing by projection of another mesh"</li>
+<li>\subpage radial_prism_algo_page "for meshing geometrical objects with cavities"</li>
+<li>\subpage segments_around_vertex_algo_page "for defining the local size of elements around a certain node"</li>
+<li>\subpage prism_3d_algo_page "for meshing prismatic shapes"</li>
 </ul>
 
 \ref constructing_meshes_page "Constructing meshes" page describes in

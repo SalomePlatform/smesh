@@ -1,30 +1,29 @@
+//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//
+//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+//
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
+//
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
+//
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
 //  SMESH OBJECT : interactive object for SMESH visualization
-//
-//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
-// 
-//  This library is free software; you can redistribute it and/or 
-//  modify it under the terms of the GNU Lesser General Public 
-//  License as published by the Free Software Foundation; either 
-//  version 2.1 of the License. 
-// 
-//  This library is distributed in the hope that it will be useful, 
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of 
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
-//  Lesser General Public License for more details. 
-// 
-//  You should have received a copy of the GNU Lesser General Public 
-//  License along with this library; if not, write to the Free Software 
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
-// 
-// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
-//
-//
-//
 //  File   : SMESH_Grid.cxx
 //  Author : Nicolas REJNERI
 //  Module : SMESH
-
+//
 #include "SMESH_ObjectDef.h"
 #include "SMESH_ActorUtils.h"
 
@@ -112,7 +111,10 @@ static inline vtkIdType getCellType( const SMDSAbs_ElementType theType,
       else if ( theNbNodes == 20 )  {
         return VTK_QUADRATIC_HEXAHEDRON;
       }
-      else if ( theNbNodes==13 || theNbNodes==15 )  {
+      else if ( theNbNodes == 15 )  {
+        return VTK_QUADRATIC_WEDGE;
+      }
+      else if ( theNbNodes==13 )  {
         return VTK_CONVEX_POINT_SET;
       }
       else return VTK_EMPTY_CELL;
@@ -404,7 +406,8 @@ void SMESH_VisualObjDef::buildElemPrs()
 	    for (int k = 0; k < aNbNodes; k++) aConnectivities.push_back(anIds[k]);
 	  }
           else if (aNbNodes == 15) {
-	    static int anIds[] = {0,2,1,3,5,4,8,7,6,11,10,9,12,14,13};
+            //static int anIds[] = {0,2,1,3,5,4,8,7,6,11,10,9,12,14,13};
+            static int anIds[] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14};
 	    for (int k = 0; k < aNbNodes; k++) aConnectivities.push_back(anIds[k]);
 	    //for (int k = 0; k < aNbNodes; k++) {
             //  int nn = aConnectivities[k];

@@ -19,7 +19,7 @@
 choose the \b Nodes item or click <em>"Renumbering nodes"</em> button
 in the toolbar.
 
-\image html image63.gif
+\image html image63.png
 <center><em>"Renumbering nodes" button</em></center>
 
 The following dialog box will appear:
@@ -29,7 +29,7 @@ The following dialog box will appear:
 
 <li>Fill the \b Mesh field by selecting your mesh in the Object
 Browser or in the 3D viewer.</li>
-<li>Click the \b Apply or \b OK button to perform the operation.</li>
+<li>Click the \b Apply or <b>Apply and Close</b> button to perform the operation.</li>
 </ol>
 
 <br>
@@ -42,7 +42,7 @@ Browser or in the 3D viewer.</li>
 choose the \b Elements item or click <em>"Renumbering elements"</em>
 button in the toolbar.
 
-\image html image64.gif
+\image html image64.png
 <center><em>"Renumbering elements" button</em></center>
 
 The following dialog box will appear:
@@ -52,7 +52,7 @@ The following dialog box will appear:
 
 <li>Fill the \b Mesh field by selecting your mesh in the Object
 Browser or in the 3D viewer.</li>
-<li>Click the \b Apply or \b OK button to perform the operation.</li>
+<li>Click the \b Apply or <b>Apply and Close</b> button to perform the operation.</li>
 </ol>
 
 <br><b>See Also</b> a sample TUI Script of a 

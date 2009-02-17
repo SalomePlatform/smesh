@@ -1,27 +1,26 @@
-//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
-// 
-//  This library is free software; you can redistribute it and/or 
-//  modify it under the terms of the GNU Lesser General Public 
-//  License as published by the Free Software Foundation; either 
-//  version 2.1 of the License. 
-// 
-//  This library is distributed in the hope that it will be useful, 
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of 
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
-//  Lesser General Public License for more details. 
-// 
-//  You should have received a copy of the GNU Lesser General Public 
-//  License along with this library; if not, write to the Free Software 
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
-// 
+//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//
+//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+//
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
+//
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
+//
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
-//
-//
 //
 //  File   : SMESH_Gen.idl
 //  Author : Paul RASCLE, EDF
-//  $Header$
 
 #ifndef _SMESH_GEN_IDL_
 #define _SMESH_GEN_IDL_
@@ -101,10 +100,11 @@ module SMESH
   };
   struct ComputeError
   {
-    short  code;       // ComputeErrorName or, if negative, algo specific code
-    string comment;    // textual problem description
-    string algoName;
-    short  subShapeID; // id of subshape of a shape to mesh
+    short   code;       // ComputeErrorName or, if negative, algo specific code
+    string  comment;    // textual problem description
+    string  algoName;
+    short   subShapeID; // id of subshape of a shape to mesh
+    boolean hasBadMesh; // there are elements preventing computation available for visualization
   };
   typedef sequence<ComputeError> compute_error_array;
 
@@ -150,16 +150,34 @@ module SMESH
       raises ( SALOME::SALOME_Exception );
 
     /*!
-     * Return a hypothesis holding parameter values corresponding to the mesh
-     * existing on the given geometry.
+     * Return a hypothesis holding parameter values corresponding either to the mesh
+     * existing on the given geometry or to size of the geometry.
      * The returned hypothesis may be the one existing in a study and used
      * to compute the mesh, or a temporary one created just to pass parameter
-     * values
+     * values.
      */
     SMESH_Hypothesis GetHypothesisParameterValues( in string            theHypName,
                                                    in string            theLibName,
                                                    in SMESH_Mesh        theMesh,
-                                                   in GEOM::GEOM_Object theGeom)
+                                                   in GEOM::GEOM_Object theGeom,
+                                                   in boolean           byMesh)
+      raises ( SALOME::SALOME_Exception );
+
+    /*!
+     * Sets number of segments per diagonal of boundary box of geometry by which
+     * default segment length of appropriate 1D hypotheses is defined
+     */
+    void SetBoundaryBoxSegmentation( in long theNbSegments ) raises ( SALOME::SALOME_Exception );
+    /*!
+     * \brief Sets default number of segments per edge
+     */
+    void SetDefaultNbSegments( in long theNbSegments) raises ( SALOME::SALOME_Exception );
+
+    /*!
+     * Set the object name
+     */
+    void SetName( in string theObjectIOR,
+		  in string theObjectName )
       raises ( SALOME::SALOME_Exception );
 
     /*!
@@ -173,7 +191,7 @@ module SMESH
       raises ( SALOME::SALOME_Exception );
     
     /*!
-     * Create a empty mesh object
+     * Create an empty mesh object
      */
     SMESH_Mesh CreateEmptyMesh()
       raises ( SALOME::SALOME_Exception );
@@ -221,6 +239,17 @@ module SMESH
       raises ( SALOME::SALOME_Exception );
 
     /*!
+     * Calculate Mesh as preview till indicated dimension
+     * First, verify list of hypothesis associated with the subShape.
+     * Return mesh preview structure
+     */
+    MeshPreviewStruct Precompute( in SMESH_Mesh        theMesh, 
+				  in GEOM::GEOM_Object theSubObject,
+				  in Dimension         theDimension,
+				  inout long_array    theShapesId )
+      raises ( SALOME::SALOME_Exception );
+
+    /*!
      * Return errors of hypotheses definintion
      * algo_error_array is empty if everything is OK
      */
@@ -234,6 +263,13 @@ module SMESH
      */
     compute_error_array GetComputeErrors( in SMESH_Mesh        theMesh, 
                                           in GEOM::GEOM_Object theSubObject )
+      raises ( SALOME::SALOME_Exception );
+
+    /*!
+     * Return mesh elements preventing computation of a subshape
+     */
+    MeshPreviewStruct GetBadInputElements( in SMESH_Mesh theMesh,
+                                           in short      theSubShapeID )
       raises ( SALOME::SALOME_Exception );
 
     /*!

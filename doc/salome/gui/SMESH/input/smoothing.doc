@@ -11,7 +11,7 @@
 <li>In the \b Modification menu select the \b Smoothing item or click
 <em>"Smoothing"</em> button in the toolbar.
 
-\image html image84.gif
+\image html image84.png
 <center><em>"Smoothing" button</em></center>
 
 The dialog box contains the following fields which should be
@@ -21,15 +21,23 @@ specified:
 
 <ul>
 <li><b>Id Elements</b> field allows to specify the elements which
-should be smoothed by selecting them in the 3D viewer (lock \b Shift
-button to select several elements).</li>
-<li><b>Select whole mesh, submesh or group</b> - smoothing is applied
-to the whole mesh or its part.</li>
-<li><b>Fixed nodes ids:</b> some nodes keep their location during
+should be smoothed
+<ul>
+<li>Check on <b>Select the whole mesh, submesh or group</b> option
+<li>Choosing them manually with the mouse in the 3D Viewer. You can
+click on an element in the 3D viewer and it will be highlighted</li>
+<li>Applying Filters. The <b>Set filter</b> button allows to apply a
+definite filter to selection of the elements. See more
+about filters on the
+\ref selection_filter_library_page "Selection filter library" page.</li>
+</ul>
+</li>
+<b>Fixed nodes ids:</b> some nodes keep their location during
 smoothing. If a mesh is built on a geometry shape, the nodes built on
 geometrical edges are always fixed. If smoothing is applied to a part
 of a mesh then the boundary nodes of an elements set are also
-fixed. Any other nodes may be additionally fixed.</li>
+fixed. Any other nodes may be additionally fixed. Fixed nodes can be
+selected manually or by filters too.</li>
 <li><b>Smoothing Method:</b>
 <ul>
 <li>\b Laplacian smoothing pulls a node toward the center of
@@ -67,9 +75,9 @@ faces in the 3D space is improved. </li>
 <li>Click the \b Apply or \b OK button to confirm the operation.</li>
 </ol>
 
-\image html smoothing1.png
+\image html smoothing1.png "The initial mesh"
 
-\image html smoothing2.png
+\image html smoothing2.png "The smoothed mesh"
 
 <br><b>See Also</b> a sample TUI Script of a 
 \ref tui_smoothing "Smoothing" operation.  

@@ -1,4 +1,6 @@
-//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//
+//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
 //  This library is free software; you can redistribute it and/or
@@ -15,36 +17,28 @@
 //  License along with this library; if not, write to the Free Software
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+// File   : SMESHGUI_ShapeByMeshDlg.h
+// Author : Edward AGAPOV, Open CASCADE S.A.S.
 //
-//
-//  File   : SMESHGUI_ShapeByMeshDlg.h
-//  Author : Edward AGAPOV
-//  Module : SMESH
+#ifndef SMESHGUI_SHAPEBYMESHDLG_H
+#define SMESHGUI_SHAPEBYMESHDLG_H
 
-
-#ifndef SMESHGUI_ShapeByMeshDlg_H
-#define SMESHGUI_ShapeByMeshDlg_H
-
+// SMESH includes
 #include "SMESH_SMESHGUI.hxx"
 
 #include "SMESHGUI_Dialog.h"
 #include "SMESHGUI_SelectionOp.h"
 
-// IDL Headers
+// IDL includes
 #include <SALOMEconfig.h>
-#include CORBA_SERVER_HEADER(GEOM_Gen)
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
 
-class QCloseEvent;
 class QFrame;
 class QLineEdit;
-class QPushButton;
-class LightApp_SelectionMgr;
-class SVTK_ViewWindow;
 class QButtonGroup;
-class SMESHGUI;
+class QGroupBox;
 
 /*!
  * \brief Dialog to publish a sub-shape of the mesh main shape
@@ -56,19 +50,19 @@ class SMESHGUI_EXPORT SMESHGUI_ShapeByMeshDlg : public SMESHGUI_Dialog
   Q_OBJECT
 
 public:
-                           SMESHGUI_ShapeByMeshDlg();
-  virtual                  ~SMESHGUI_ShapeByMeshDlg();
+  SMESHGUI_ShapeByMeshDlg();
+  virtual ~SMESHGUI_ShapeByMeshDlg();
 
 private:
+  QFrame*                  createMainFrame( QWidget* );
 
-  QFrame*                  createMainFrame   (QWidget*);
-
+  QGroupBox*               myElemTypeBox;
   QButtonGroup*            myElemTypeGroup;
   QLineEdit*               myElementId;
   QLineEdit*               myGeomName;
 
   bool                     myIsMultipleAllowed;
-  void                     setMultipleAllowed(bool isAllowed) {myIsMultipleAllowed = isAllowed;};
+  void                     setMultipleAllowed( bool );
 
   friend class SMESHGUI_ShapeByMeshOp;
 };
@@ -82,36 +76,32 @@ class SMESHGUI_ShapeByMeshOp: public SMESHGUI_SelectionOp
   Q_OBJECT
 
 public:
-  SMESHGUI_ShapeByMeshOp(bool isMultipleAllowed = false);
+  SMESHGUI_ShapeByMeshOp( bool = false );
   virtual ~SMESHGUI_ShapeByMeshOp();
 
-  virtual LightApp_Dialog*       dlg() const;  
+  virtual LightApp_Dialog* dlg() const;  
 
   void                     Init();
-  void                     SetMesh (SMESH::SMESH_Mesh_ptr);
-  SMESH::SMESH_Mesh_ptr    GetMesh () { return myMesh; }
+  void                     SetMesh( SMESH::SMESH_Mesh_ptr );
+  SMESH::SMESH_Mesh_ptr    GetMesh();
   GEOM::GEOM_Object_ptr    GetShape();
 
 protected:
-
-  virtual void                   commitOperation();
-  virtual void                   startOperation();
+  virtual void             commitOperation();
+  virtual void             startOperation();
 
   void                     activateSelection();
-  void                     setElementID(const QString&);
+  void                     setElementID( const QString& );
 
 protected slots:
-
-  virtual bool                   onApply() { return true; }
+  virtual bool             onApply();
 
 private slots:
-
   void                     onSelectionDone();
-  void                     onTypeChanged (int);
-  void                     onElemIdChanged (const QString&);
+  void                     onTypeChanged( int );
+  void                     onElemIdChanged( const QString& );
 
 private:
-
   SMESHGUI_ShapeByMeshDlg* myDlg;
   SMESH::SMESH_Mesh_var    myMesh;
   GEOM::GEOM_Object_var    myGeomObj;

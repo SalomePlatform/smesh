@@ -1,32 +1,29 @@
+//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//
+//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+//
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
+//
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
+//
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
 //  SMESH SMESH : idl implementation based on 'SMESH' unit's calsses
-//
-//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
-// 
-//  This library is free software; you can redistribute it and/or 
-//  modify it under the terms of the GNU Lesser General Public 
-//  License as published by the Free Software Foundation; either 
-//  version 2.1 of the License. 
-// 
-//  This library is distributed in the hope that it will be useful, 
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of 
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
-//  Lesser General Public License for more details. 
-// 
-//  You should have received a copy of the GNU Lesser General Public 
-//  License along with this library; if not, write to the Free Software 
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
-// 
-// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
-//
-//
-//
 // File      : StdMeshers_ProjectionUtils.cxx
 // Created   : Fri Oct 27 10:24:28 2006
 // Author    : Edward AGAPOV (eap)
-
-using namespace std;
-
+//
 #include "StdMeshers_ProjectionUtils.hxx"
 
 #include "StdMeshers_ProjectionSource1D.hxx"
@@ -65,6 +62,8 @@ using namespace std;
 #include <gp_Vec.hxx>
 #include <TopTools_DataMapIteratorOfDataMapOfShapeShape.hxx>
 #include <TopTools_DataMapIteratorOfDataMapOfShapeListOfShape.hxx>
+
+using namespace std;
 
 
 #define RETURN_BAD_RESULT(msg) { MESSAGE(")-: Error: " << msg); return false; }
@@ -773,6 +772,79 @@ bool StdMeshers_ProjectionUtils::FindSubShapeAssociation(const TopoDS_Shape& the
     }
     break; // try by vertex closeness
   }
+  case TopAbs_COMPOUND: {
+    // ----------------------------------------------------------------------
+    if ( IsPropagationPossible( theMesh1, theMesh2 )) {
+      // find a boundary edge for theShape1
+      TopoDS_Edge E;
+      for(TopExp_Explorer exp(theShape1, TopAbs_EDGE); exp.More(); exp.Next() ) {
+        E = TopoDS::Edge( exp.Current() );
+        int NbFacesFromShape1 = 0;
+        const TopTools_ListOfShape& EAncestors = theMesh1->GetAncestors(E);
+        TopTools_ListIteratorOfListOfShape itea(EAncestors);
+        for(; itea.More(); itea.Next()) {
+          if( itea.Value().ShapeType() != TopAbs_FACE ) continue;
+          TopoDS_Face face = TopoDS::Face(itea.Value());
+          for(TopExp_Explorer expf(theShape1, TopAbs_FACE); expf.More(); expf.Next() ) {
+            if(face.IsSame(expf.Current())) {
+              NbFacesFromShape1++;
+              break;
+            }
+          }
+        }
+        if(NbFacesFromShape1==1) break;
+      }
+      // find association for vertices of edge E
+      TopoDS_Vertex VV1[2], VV2[2];
+      for(TopExp_Explorer eexp(E, TopAbs_VERTEX); eexp.More(); eexp.Next()) {
+        TopoDS_Vertex V1 = TopoDS::Vertex( eexp.Current() );
+        // look for an edge ending in E whose one vertex is in theShape1
+        // and the other, in theShape2
+        const TopTools_ListOfShape& Ancestors = theMesh1->GetAncestors(V1);
+        TopTools_ListIteratorOfListOfShape ita(Ancestors);
+        for(; ita.More(); ita.Next()) {
+          if( ita.Value().ShapeType() != TopAbs_EDGE ) continue;
+          TopoDS_Edge edge = TopoDS::Edge(ita.Value());
+          bool FromShape1 = false;
+          for(TopExp_Explorer expe(theShape1, TopAbs_EDGE); expe.More(); expe.Next() ) {
+            if(edge.IsSame(expe.Current())) {
+              FromShape1 = true;
+              break;
+            }
+          }
+          if(!FromShape1) {
+            // is it an edge between theShape1 and theShape2?
+            TopExp_Explorer expv(edge, TopAbs_VERTEX);
+            TopoDS_Vertex V2 = TopoDS::Vertex( expv.Current() );
+            if(V2.IsSame(V1)) {
+              expv.Next();
+              V2 = TopoDS::Vertex( expv.Current() );
+            }
+            bool FromShape2 = false;
+            for ( expv.Init( theShape2, TopAbs_VERTEX ); expv.More(); expv.Next()) {
+              if ( V2.IsSame( expv.Current() )) {
+                FromShape2 = true;
+                break;
+              }
+            }
+            if ( FromShape2 ) {
+              if ( VV1[0].IsNull() )
+                VV1[0] = V1, VV2[0] = V2;
+              else
+                VV1[1] = V1, VV2[1] = V2;
+              break; // from loop on ancestors of V1
+            }
+          }
+        }
+      }
+      if ( !VV1[1].IsNull() ) {
+        InsertAssociation( VV1[0], VV2[0], theMap, bidirect);
+        InsertAssociation( VV1[1], VV2[1], theMap, bidirect);
+        return FindSubShapeAssociation( theShape1, theMesh1, theShape2, theMesh2, theMap);
+      }
+    }
+    break; // try by vertex closeness
+  }
   default:;
   }
 
@@ -1285,7 +1357,7 @@ FindMatchingNodesOnFaces( const TopoDS_Face&     face1,
     }
     if ( nodesOfFaces )
     {
-      if ( BRep_Tool::IsClosed( e2, face2 )) {
+      if ( helper2.IsRealSeam( e2 )) {
         seam1 = e1; seam2 = e2;
       }
       else {
@@ -1357,7 +1429,7 @@ FindMatchingNodesOnFaces( const TopoDS_Face&     face1,
     const TopoDS_Face &             face = is2 ? face2 : face1;
     SMDS_ElemIteratorPtr eIt = sm->GetElements();
 
-    if ( !helper->IsSeamShape( is2 ? edge2 : edge1 ))
+    if ( !helper->IsRealSeam( is2 ? edge2 : edge1 ))
     {
       while ( eIt->more() ) elems.insert( eIt->next() );
     }
@@ -1442,7 +1514,7 @@ FindMatchingNodesOnFaces( const TopoDS_Face&     face1,
 
   // On a sphere, add matching nodes on the edge
 
-  if ( helper1.IsSeamShape( edge1 ))
+  if ( helper1.IsRealSeam( edge1 ))
   {
     // sort nodes on edges by param on edge
     map< double, const SMDS_MeshNode* > u2nodesMaps[2];
@@ -1562,7 +1634,17 @@ bool StdMeshers_ProjectionUtils::MakeComputed(SMESH_subMesh * sm, const int iter
   SMESH_Gen* gen   = mesh->GetGen();
   SMESH_Algo* algo = gen->GetAlgo( *mesh, sm->GetSubShape() );
   if ( !algo )
-    RETURN_BAD_RESULT("No algo assigned to submesh " << sm->GetId());
+  {
+    if ( sm->GetSubShape().ShapeType() != TopAbs_COMPOUND )
+      RETURN_BAD_RESULT("No algo assigned to submesh " << sm->GetId());
+    // group
+    bool computed = true;
+    for ( TopoDS_Iterator grMember( sm->GetSubShape() ); grMember.More(); grMember.Next())
+      if ( SMESH_subMesh* grSub = mesh->GetSubMesh( grMember.Value() ))
+        if ( !MakeComputed( grSub, iterationNb + 1 ))
+          computed = false;
+    return computed;
+  }
 
   string algoType = algo->GetName();
   if ( algoType.substr(0, 11) != "Projection_")
@@ -1606,7 +1688,10 @@ bool StdMeshers_ProjectionUtils::MakeComputed(SMESH_subMesh * sm, const int iter
   if ( !srcMesh )
     srcMesh = mesh;
 
-  return MakeComputed( srcMesh->GetSubMesh( srcShape ), iterationNb + 1 );
+  if ( MakeComputed( srcMesh->GetSubMesh( srcShape ), iterationNb + 1 ))
+    return gen->Compute( *mesh, sm->GetSubShape() );
+
+  return false;
 }
 
 //================================================================================

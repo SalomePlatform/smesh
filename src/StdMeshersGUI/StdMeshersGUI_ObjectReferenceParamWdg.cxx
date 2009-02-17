@@ -1,44 +1,49 @@
-//  SMESH StdMeshersGUI
+//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
-// 
-//  This library is free software; you can redistribute it and/or 
-//  modify it under the terms of the GNU Lesser General Public 
-//  License as published by the Free Software Foundation; either 
-//  version 2.1 of the License. 
-// 
-//  This library is distributed in the hope that it will be useful, 
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of 
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
-//  Lesser General Public License for more details. 
-// 
-//  You should have received a copy of the GNU Lesser General Public 
-//  License along with this library; if not, write to the Free Software 
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
-// 
-// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
 //
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
 //
-//  File   : StdMeshersGUI_ObjectReferenceParamWdg.cxx
-//  Module : SMESH
-
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
+// File   : StdMeshersGUI_ObjectReferenceParamWdg.cxx
+// Author : Open CASCADE S.A.S.
+// SMESH includes
+//
 #include "StdMeshersGUI_ObjectReferenceParamWdg.h"
 
-#include <qpushbutton.h>
-#include <qlineedit.h>
-#include <qvariant.h>
+#include <SMESHGUI.h>
+#include <SMESHGUI_VTKUtils.h>
+#include <SMESH_TypeFilter.hxx>
 
-#include "SMESHGUI.h"
-#include "SMESHGUI_Utils.h"
-#include "SMESHGUI_VTKUtils.h"
-#include "SMESH_TypeFilter.hxx"
-#include "SUIT_ResourceMgr.h"
-#include "LightApp_SelectionMgr.h"
-#include "SVTK_ViewWindow.h"
-#include "SALOME_ListIO.hxx"
-#include "SALOMEDSClient_SObject.hxx"
+// SALOME GUI includes
+#include <SUIT_ResourceMgr.h>
+#include <LightApp_SelectionMgr.h>
+#include <SVTK_ViewWindow.h>
+#include <SALOME_ListIO.hxx>
+
+// SALOME KERNEL incldues
+#include <SALOMEDSClient_SObject.hxx>
+
+// Qt includes
+#include <QPushButton>
+#include <QLineEdit>
+#include <QHBoxLayout>
+
+#define SPACING 6
 
 //================================================================================
 /*!
@@ -49,7 +54,7 @@
 
 StdMeshersGUI_ObjectReferenceParamWdg::StdMeshersGUI_ObjectReferenceParamWdg
 ( SUIT_SelectionFilter* f, QWidget* parent)
-  : QHGroupBox( parent )
+  : QWidget( parent )
 {
   myFilter = f;
   init();
@@ -64,7 +69,7 @@ StdMeshersGUI_ObjectReferenceParamWdg::StdMeshersGUI_ObjectReferenceParamWdg
 
 StdMeshersGUI_ObjectReferenceParamWdg::StdMeshersGUI_ObjectReferenceParamWdg
 ( MeshObjectType objType, QWidget* parent )
-  : QHGroupBox( parent )
+  : QWidget( parent )
 {
   myFilter = new SMESH_TypeFilter( objType );
   init();
@@ -90,8 +95,10 @@ StdMeshersGUI_ObjectReferenceParamWdg::~StdMeshersGUI_ObjectReferenceParamWdg()
 
 void StdMeshersGUI_ObjectReferenceParamWdg::init()
 {
-  setFrameStyle(QFrame::NoFrame);
-  setInsideMargin(0);
+  QHBoxLayout* aHBox = new QHBoxLayout(this);
+
+  aHBox->setMargin(0);
+  aHBox->setSpacing(SPACING);
 
   mySMESHGUI     = SMESHGUI::GetSMESHGUI();
   mySelectionMgr = SMESH::GetSelectionMgr( mySMESHGUI );
@@ -102,11 +109,15 @@ void StdMeshersGUI_ObjectReferenceParamWdg::init()
   QPixmap iconSlct ( mgr->loadPixmap("SMESH", tr("ICON_SELECT")));
 
   mySelButton = new QPushButton(this);
-  mySelButton->setPixmap(iconSlct);
-  mySelButton->setToggleButton( true );
+  mySelButton->setIcon(iconSlct);
+  mySelButton->setCheckable( true );
 
   myObjNameLineEdit = new QLineEdit(this);
   myObjNameLineEdit->setReadOnly(true);
+
+  aHBox->addWidget( mySelButton );
+  aHBox->addWidget( myObjNameLineEdit );
+  aHBox->addStretch();
 
   connect( mySelButton, SIGNAL(clicked()), SLOT(activateSelection()));
 }
@@ -131,7 +142,7 @@ void StdMeshersGUI_ObjectReferenceParamWdg::activateSelection()
   }
   emit selectionActivated();
 
-  mySelButton->setOn( mySelectionActivated );
+  mySelButton->setChecked( mySelectionActivated );
 }
 
 //================================================================================
@@ -146,7 +157,7 @@ void StdMeshersGUI_ObjectReferenceParamWdg::deactivateSelection()
   disconnect(mySelectionMgr, 0, this, 0 );
   mySelectionMgr->removeFilter( myFilter );
 
-  mySelButton->setOn( mySelectionActivated );
+  mySelButton->setChecked( mySelectionActivated );
 }
 
 //================================================================================
@@ -180,10 +191,10 @@ void StdMeshersGUI_ObjectReferenceParamWdg::SetObject(CORBA::Object_ptr obj)
   if ( !CORBA::is_nil( obj ))
     sobj = SMESH::FindSObject (obj);
   if ( sobj ) {
-    string name = sobj->GetName();
+    std::string name = sobj->GetName();
     myObjNameLineEdit->setText( name.c_str() );
     myObject = CORBA::Object::_duplicate( obj );
-    myParamValue = sobj->GetID();
+    myParamValue = sobj->GetID().c_str();
   }
 }
 

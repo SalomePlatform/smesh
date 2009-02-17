@@ -1,26 +1,28 @@
-// Copyright (C) 2005  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-// This library is free software; you can redistribute it and/or
-// modify it under the terms of the GNU Lesser General Public
-// License as published by the Free Software Foundation; either
-// version 2.1 of the License.
+//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
-// This library is distributed in the hope that it will be useful
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-// Lesser General Public License for more details.
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
 //
-// You should have received a copy of the GNU Lesser General Public
-// License along with this library; if not, write to the Free Software
-// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
 //
-// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 // File      : SMESH_smesh.hxx
 // Created   : Fri Nov 18 12:05:18 2005
 // Author    : Edward AGAPOV (eap)
-
+//
 #ifndef SMESH_smesh_HeaderFile
 #define SMESH_smesh_HeaderFile
 
@@ -63,15 +65,19 @@ class _pyCommand;
 class _pyObject;
 class _pyGen;
 class _pyMesh;
+class _pySubMesh;
 class _pyHypothesis;
 class _pyAlgorithm;
+class _pyFilterManager;
 
 DEFINE_STANDARD_HANDLE (_pyCommand   ,Standard_Transient);
 DEFINE_STANDARD_HANDLE (_pyObject    ,Standard_Transient);
 DEFINE_STANDARD_HANDLE (_pyGen       ,_pyObject);
 DEFINE_STANDARD_HANDLE (_pyMesh      ,_pyObject);
+DEFINE_STANDARD_HANDLE (_pySubMesh   ,_pyObject);
 DEFINE_STANDARD_HANDLE (_pyMeshEditor,_pyObject);
 DEFINE_STANDARD_HANDLE (_pyHypothesis,_pyObject);
+DEFINE_STANDARD_HANDLE (_pyFilterManager,_pyObject);
 DEFINE_STANDARD_HANDLE (_pyAlgorithm ,_pyHypothesis);
 
 typedef TCollection_AsciiString _pyID;
@@ -171,7 +177,8 @@ public:
 class _pyGen: public _pyObject
 {
 public:
-  _pyGen(Resource_DataMapOfAsciiStringAsciiString& theEntry2AccessorMethod);
+  _pyGen(Resource_DataMapOfAsciiStringAsciiString& theEntry2AccessorMethod,
+         Resource_DataMapOfAsciiStringAsciiString& theObjectNames);
   //~_pyGen();
   Handle(_pyCommand) AddCommand( const TCollection_AsciiString& theCommand );
   void Process( const Handle(_pyCommand)& theCommand );
@@ -179,21 +186,35 @@ public:
   Handle(_pyHypothesis) FindHyp( const _pyID& theHypID );
   Handle(_pyHypothesis) FindAlgo( const _pyID& theGeom, const _pyID& theMesh,
                                   const Handle(_pyHypothesis)& theHypothesis);
+  Handle(_pySubMesh) FindSubMesh( const _pyID& theSubMeshID );
   void ExchangeCommands( Handle(_pyCommand) theCmd1, Handle(_pyCommand) theCmd2 );
   void SetCommandAfter( Handle(_pyCommand) theCmd, Handle(_pyCommand) theAfterCmd );
+  void SetCommandBefore( Handle(_pyCommand) theCmd, Handle(_pyCommand) theBeforeCmd );
+  Handle(_pyCommand)& GetLastCommand();
   std::list< Handle(_pyCommand) >& GetCommands() { return myCommands; }
   void SetAccessorMethod(const _pyID& theID, const char* theMethod );
   bool AddMeshAccessorMethod( Handle(_pyCommand) theCmd ) const;
   bool AddAlgoAccessorMethod( Handle(_pyCommand) theCmd ) const;
   const char* AccessorMethod() const;
+  _pyID GenerateNewID( const _pyID& theID );
+
+private:
+  void setNeighbourCommand( Handle(_pyCommand)& theCmd,
+                            Handle(_pyCommand)& theOtherCmd,
+                            const bool theIsAfter );
+  
 private:
   std::map< _pyID, Handle(_pyMesh) >       myMeshes;
+  std::map< _pyID, Handle(_pySubMesh) >    mySubMeshes;
   std::map< _pyID, Handle(_pyMeshEditor) > myMeshEditors;
   std::list< Handle(_pyHypothesis) >       myHypos;
   std::list< Handle(_pyCommand) >          myCommands;
   int                                      myNbCommands;
   bool                                     myHasPattern;
   Resource_DataMapOfAsciiStringAsciiString& myID2AccessorMethod;
+  Resource_DataMapOfAsciiStringAsciiString& myObjectNames;
+  Handle(_pyCommand)                       myLastCommand;
+  Handle(_pyFilterManager)                 myFilterManager;
 
   DEFINE_STANDARD_RTTI (_pyGen)
 };
@@ -208,11 +229,11 @@ class _pyMesh: public _pyObject
 {
   std::list< Handle(_pyHypothesis) > myHypos;
   std::list< Handle(_pyCommand) > myAddHypCmds;
-  std::list< Handle(_pyCommand) > mySubmeshes;
+  std::list< Handle(_pySubMesh) > mySubmeshes;
   bool                            myHasEditor;
 public:
-  _pyMesh(const Handle(_pyCommand) theCreationCmd);
-  _pyMesh(const Handle(_pyCommand) theCreationCmd, const TCollection_AsciiString &);
+  _pyMesh(const Handle(_pyCommand) creationCmd);
+  _pyMesh(const Handle(_pyCommand) theCreationCmd, const TCollection_AsciiString & id);
   const _pyID& GetGeom() { return GetCreationCmd()->GetArg(1); }
   void Process( const Handle(_pyCommand)& theCommand);
   void Flush();
@@ -297,12 +318,14 @@ public:
   { return myType2CreationMethod.find( algoType ) != myType2CreationMethod.end(); }
   const TCollection_AsciiString& GetCreationMethod(const TCollection_AsciiString& algoType) const
   { return myType2CreationMethod.find( algoType )->second; }
-  bool IsWrappable(const _pyID& theMesh) { return !myIsWrapped && myMesh == theMesh; }
+  virtual bool IsWrappable(const _pyID& theMesh) { return !myIsWrapped && myMesh == theMesh; }
   virtual bool Addition2Creation( const Handle(_pyCommand)& theAdditionCmd,
                                   const _pyID&              theMesh);
   static Handle(_pyHypothesis) NewHypothesis( const Handle(_pyCommand)& theCreationCmd);
   void Process( const Handle(_pyCommand)& theCommand);
   void Flush();
+  virtual void Assign( const Handle(_pyHypothesis)& theOther,
+		       const _pyID&                 theMesh );
 
   DEFINE_STANDARD_RTTI (_pyHypothesis)
 };
@@ -319,6 +342,7 @@ public:
   virtual bool Addition2Creation( const Handle(_pyCommand)& theAdditionCmd,
                                   const _pyID&              theMesh);
   const char* AccessorMethod() const { return "GetAlgorithm()"; }
+  virtual bool IsWrappable(const _pyID& theMesh) { return !myIsWrapped; }
 
   DEFINE_STANDARD_RTTI (_pyAlgorithm)
 };
@@ -389,5 +413,41 @@ public:
   DEFINE_STANDARD_RTTI (_pySegmentLengthAroundVertexHyp)
 };
 DEFINE_STANDARD_HANDLE (_pySegmentLengthAroundVertexHyp, _pyHypothesis);
+
+// -------------------------------------------------------------------------------------
+/*!
+ * \brief FilterManager creates only if at least one command invoked
+ */
+// -------------------------------------------------------------------------------------
+class _pyFilterManager: public _pyObject
+{
+public:
+  _pyFilterManager(const Handle(_pyCommand)& theCreationCmd);
+  void Process( const Handle(_pyCommand)& theCommand);
+  virtual void Flush();
+
+  DEFINE_STANDARD_RTTI (_pyFilterManager)
+private:
+  int myCmdCount;
+};
+
+// -------------------------------------------------------------------------------------
+/*!
+ * \brief SubMesh creation can be moved to the end of engine commands
+ */
+// -------------------------------------------------------------------------------------
+class _pySubMesh:  public _pyObject
+{
+public:
+  _pySubMesh(const Handle(_pyCommand)& theCreationCmd);
+  void Process( const Handle(_pyCommand)& theCommand);
+  virtual void Flush();
+  void SetCreator( const Handle(_pyObject)& theCreator ) { myCreator = theCreator; }
+
+  DEFINE_STANDARD_RTTI (_pyFilterManager)
+private:
+  int               myCmdCount;
+  Handle(_pyObject) myCreator;
+};
 
 #endif

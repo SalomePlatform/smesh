@@ -1,27 +1,27 @@
-//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
-// 
-//  This library is free software; you can redistribute it and/or 
-//  modify it under the terms of the GNU Lesser General Public 
-//  License as published by the Free Software Foundation; either 
-//  version 2.1 of the License. 
-// 
-//  This library is distributed in the hope that it will be useful, 
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of 
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
-//  Lesser General Public License for more details. 
-// 
-//  You should have received a copy of the GNU Lesser General Public 
-//  License along with this library; if not, write to the Free Software 
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
-// 
-// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
 //
+//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
+//
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
+//
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 //  File   : SMESH_Filter.idl
 //  Author : Alexey Petrov, OCC
-
+//
 #ifndef _SMESH_FILTER_IDL_
 #define _SMESH_FILTER_IDL_
 
@@ -48,6 +48,8 @@ module SMESH
     FT_Volume3D,          
     FT_FreeBorders,
     FT_FreeEdges,
+    FT_FreeNodes,
+    FT_FreeFaces,
     FT_MultiConnection,
     FT_MultiConnection2D,
     FT_Length,
@@ -59,6 +61,9 @@ module SMESH
     FT_LyingOnGeom,
     FT_RangeOfIds,
     FT_BadOrientedVolume,
+    FT_LinearOrQuadratic,
+    FT_GroupColor,
+    FT_ElemGeomType,
     FT_LessThan,
     FT_MoreThan,
     FT_EqualTo,
@@ -125,7 +130,7 @@ module SMESH
     typedef sequence<Value> Values;
     Values GetValues();
   };
-
+  
   /*!
   * Predicates are intended for verification of criteria,
   *            must return bool value by mesh id
@@ -136,20 +141,25 @@ module SMESH
   };
 
   /*!
-  * Logical functor (predicate) "Bad Oriented Volume".
-  * Verify whether a mesh volume is incorrectly oriented from
-  * the point of view of MED convention
-  */
+   * Logical functor (predicate) "Bad Oriented Volume".
+   * Verify whether a mesh volume is incorrectly oriented from
+   * the point of view of MED convention
+   */
   interface BadOrientedVolume: Predicate {};
 
   /*!
-  * Logical functor (predicate) "Belong To Geometry".
-  * Verify whether mesh element or node belong to pointed Geom Object
-  */
+   * Logical functor (predicate) "Belong To Geometry".
+   * Verify whether mesh element or node belong to pointed Geom Object
+   */
   interface BelongToGeom: Predicate
   {
     void SetGeom( in GEOM::GEOM_Object theGeom );
     void SetElementType( in ElementType theType );
+
+    /*! The tolerance is used only if there is no submesh on the shape
+     */
+    void    SetTolerance( in double theToler );
+    double  GetTolerance();
 
     void   SetShapeName( in string theName );
     void   SetShape( in string theID, in string theName );
@@ -214,6 +224,11 @@ module SMESH
     void SetGeom( in GEOM::GEOM_Object theGeom );
     void SetElementType( in ElementType theType );
 
+    /*! The tolerance is used only if there is no submesh on the shape
+     */
+    void    SetTolerance( in double theToler );
+    double  GetTolerance();
+
     void   SetShapeName( in string theName );
     void   SetShape( in string theID, in string theName );
     string GetShapeName();    
@@ -231,7 +246,6 @@ module SMESH
   * Verify whether 2D mesh element has free edges( i.e. edges connected to one face only )
   */
   interface FreeEdges: Predicate
-
   {
     struct Border
     {
@@ -242,6 +256,17 @@ module SMESH
     Borders GetBorders();
   };
 
+  /*!
+  * Logical functor (predicate) "Free nodes".
+  * Verify whether mesh has free nodes( i.e. nodes are not connected to any element )
+  */
+  interface FreeNodes: Predicate{};
+ 
+  /*!
+  * Logical functor (predicate) "Free faces".
+  * Verify whether 2D mesh element is free ( i.e. connected to one volume only )
+  */
+  interface FreeFaces: Predicate{};
 
   /*!
   * Abstract logical functor (predicate) "RangeOfIds".
@@ -294,6 +319,33 @@ module SMESH
   interface LogicalOR : LogicalBinary{};
 
   /*!
+   * Logical functor (predicate) "Is element Linear or Quadratic".
+   * Verify whether a mesh element is linear
+   */
+  interface LinearOrQuadratic: Predicate {
+    void            SetElementType( in ElementType theType );
+  };
+
+  /*!
+  * Functor "Group Color"
+  * Returns color of group to which mesh element belongs to
+  */
+  interface GroupColor : Predicate{
+    void            SetElementType( in ElementType theType );
+    void            SetColorStr( in string theColor );
+    string          GetColorStr();
+  };
+
+  /*!
+  * Functor "Element geometry type"
+  * Returns is element has indicated geometry type
+  */
+  interface ElemGeomType : Predicate{
+    void            SetElementType ( in ElementType  theType );
+    void            SetGeometryType( in GeometryType theType );
+  };
+
+  /*!
   *  Filter
   */
   interface Filter: SALOME::GenericObj, SMESH_IDSource
@@ -309,6 +361,7 @@ module SMESH
     *   ThresholdStr  - Threshold value defined as string. Used for:
     *                   1. Diaposon of identifiers. Example: "1,2,3,5-10,12,27-29"
     *                   2. BelongToGeom predicate for storing name of shape
+    *                   3. GroupColor predicate for storing group color "0.2;0;0.5"
     *   ThresholdID   - One more threshold value defined as string. Used for:
     *                   1. BelongToGeom predicate for storing id of shape
     *   Tolerance     - Tolerance is used for comparators (EqualTo comparision) and for
@@ -413,10 +466,16 @@ module SMESH
 
     FreeBorders       CreateFreeBorders();
     FreeEdges         CreateFreeEdges();
+    FreeNodes         CreateFreeNodes();
+    FreeFaces         CreateFreeFaces();
 
     RangeOfIds        CreateRangeOfIds();
 
     BadOrientedVolume CreateBadOrientedVolume();
+    LinearOrQuadratic CreateLinearOrQuadratic();
+
+    GroupColor        CreateGroupColor();
+    ElemGeomType      CreateElemGeomType();
 
     /*!
     *  Create comparators ( predicates )

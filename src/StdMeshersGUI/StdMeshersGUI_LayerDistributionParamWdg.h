@@ -1,57 +1,58 @@
-//  SMESH StdMeshersGUI
+//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
-// 
-//  This library is free software; you can redistribute it and/or 
-//  modify it under the terms of the GNU Lesser General Public 
-//  License as published by the Free Software Foundation; either 
-//  version 2.1 of the License. 
-// 
-//  This library is distributed in the hope that it will be useful, 
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of 
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
-//  Lesser General Public License for more details. 
-// 
-//  You should have received a copy of the GNU Lesser General Public 
-//  License along with this library; if not, write to the Free Software 
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
-// 
-// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
 //
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
 //
-//  File   : StdMeshersGUI_LayerDistributionParamWdg.h
-//  Module : SMESH
-//  $Header$
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
+// File   : StdMeshersGUI_LayerDistributionParamWdg.h
+// Author : Open CASCADE S.A.S.
+//
+#ifndef STDMESHERSGUI_LAYERDISTRIBUTIONPARAMWGD_H
+#define STDMESHERSGUI_LAYERDISTRIBUTIONPARAMWGD_H
 
-#ifndef StdMeshersGUI_LayerDistributionParamWdg_Header
-#define StdMeshersGUI_LayerDistributionParamWdg_Header
-
+// SMESH includes
 #include "SMESH_StdMeshersGUI.hxx"
 
-#include <qhgroupbox.h>
-#include <qstringlist.h>
+// Qt includes
+#include <QWidget>
+#include <QStringList>
 
+// IDL includes
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_Hypothesis)
 
 class SMESHGUI;
 class QPushButton;
-class QPopupMenu;
+class QMenu;
+class QAction;
 class QDialog;
 
 /*!
  *  \brief Widget controlling hypothesis parameter that is another hypothesis
  */
-class STDMESHERSGUI_EXPORT StdMeshersGUI_LayerDistributionParamWdg : public QHGroupBox
+class STDMESHERSGUI_EXPORT StdMeshersGUI_LayerDistributionParamWdg : public QWidget
 {
   Q_OBJECT
 
 public:
-  StdMeshersGUI_LayerDistributionParamWdg(SMESH::SMESH_Hypothesis_ptr hyp,
-					  const QString& theName,
-                                          QDialog* dlg);
+  StdMeshersGUI_LayerDistributionParamWdg(SMESH::SMESH_Hypothesis_ptr,
+					  const QString&,
+                                          QDialog*);
   ~StdMeshersGUI_LayerDistributionParamWdg();
 
   SMESH::SMESH_Hypothesis_var GetHypothesis() { return myHyp; }
@@ -63,11 +64,11 @@ public:
 private slots:
   void onCreate(); 
   void onEdit(); 
-  void onHypTypePopup( int );
+  void onHypTypePopup( QAction* );
 
 private:
   void init();
-  void set(SMESH::SMESH_Hypothesis_ptr hyp);
+  void set(SMESH::SMESH_Hypothesis_ptr);
   
 private:
  SMESH::SMESH_Hypothesis_var myHyp;
@@ -75,7 +76,7 @@ private:
 
  QPushButton*           myCreateButton;
  QPushButton*           myEditButton;
- QPopupMenu*            myHypTypePopup;
+ QMenu*                 myHypTypePopup;
  QDialog*               myDlg;
  QString                myName;
  QString                myParamValue;
@@ -83,5 +84,4 @@ private:
  QStringList            myHypTypes;
 };
 
-#endif
-
+#endif // STDMESHERSGUI_LAYERDISTRIBUTIONPARAMWGD_H

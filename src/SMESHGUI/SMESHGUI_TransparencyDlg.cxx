@@ -1,6 +1,6 @@
-//  SMESH SMESHGUI : GUI for SMESH component
+//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
 //  This library is free software; you can redistribute it and/or
@@ -17,15 +17,13 @@
 //  License along with this library; if not, write to the Free Software
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+// SMESH SMESHGUI : GUI for SMESH component
+// File   : SMESHGUI_TransparencyDlg.cxx
+// Author : Nicolas REJNERI, Open CASCADE S.A.S.
+// SMESH includes
 //
-//
-//  File   : SMESHGUI_TransparencyDlg.cxx
-//  Author : Nicolas REJNERI
-//  Module : SMESH
-//  $Header$
-
 #include "SMESHGUI_TransparencyDlg.h"
 
 #include "SMESHGUI.h"
@@ -33,132 +31,119 @@
 #include "SMESHGUI_Utils.h"
 #include "SMESH_Actor.h"
 
-#include "SUIT_Desktop.h"
-#include "SUIT_OverrideCursor.h"
-#include "SUIT_Session.h"
-#include "SUIT_MessageBox.h"
+// SALOME GUI includes
+#include <SUIT_Desktop.h>
+#include <SUIT_OverrideCursor.h>
+#include <SUIT_Session.h>
+#include <SUIT_MessageBox.h>
+#include <SUIT_ResourceMgr.h>
 
-#include "SALOME_ListIO.hxx"
-#include "SALOME_ListIteratorOfListIO.hxx"
-#include "SALOME_InteractiveObject.hxx"
+#include <SALOME_ListIO.hxx>
+#include <SALOME_ListIteratorOfListIO.hxx>
 
-#include "SalomeApp_Study.h"
-#include "LightApp_Application.h"
-#include "LightApp_SelectionMgr.h"
+#include <LightApp_Application.h>
+#include <LightApp_SelectionMgr.h>
 
-#include "SVTK_ViewWindow.h"
+#include <SVTK_ViewWindow.h>
 
-// QT Includes
-#include <qlabel.h>
-#include <qpushbutton.h>
-#include <qslider.h>
-#include <qlayout.h>
-#include <qgroupbox.h>
+// Qt includes
+#include <QLabel>
+#include <QPushButton>
+#include <QSlider>
+#include <QVBoxLayout>
+#include <QHBoxLayout>
+#include <QGridLayout>
+#include <QGroupBox>
+#include <QKeyEvent>
 
-using namespace std;
+#define SPACING 6
+#define MARGIN  11
 
 //=================================================================================
 // class    : SMESHGUI_TransparencyDlg()
 // purpose  :
 //
 //=================================================================================
-SMESHGUI_TransparencyDlg::SMESHGUI_TransparencyDlg( SMESHGUI* theModule,
-						    const char* name,
-						    bool modal,
-						    WFlags fl)
-     : QDialog( SMESH::GetDesktop( theModule ), name, modal, WStyle_Customize | WStyle_NormalBorder |
-                WStyle_Title | WStyle_SysMenu | WDestructiveClose ),
-     mySMESHGUI( theModule ),
-     mySelectionMgr( SMESH::GetSelectionMgr( theModule ) ),
-     myViewWindow( SMESH::GetViewWindow( theModule ) )
+SMESHGUI_TransparencyDlg::SMESHGUI_TransparencyDlg( SMESHGUI* theModule )
+  : QDialog( SMESH::GetDesktop( theModule ) ),
+    mySMESHGUI( theModule ),
+    mySelectionMgr( SMESH::GetSelectionMgr( theModule ) ),
+    myViewWindow( SMESH::GetViewWindow( theModule ) )
 {
-  if (!name)
-    setName("SMESHGUI_TransparencyDlg");
-  setCaption(tr("SMESH_TRANSPARENCY_TITLE" ));
-  setSizeGripEnabled(TRUE);
-  QGridLayout* SMESHGUI_TransparencyDlgLayout = new QGridLayout(this);
-  SMESHGUI_TransparencyDlgLayout->setSpacing(6);
-  SMESHGUI_TransparencyDlgLayout->setMargin(11);
+  setModal( false );
+  setAttribute( Qt::WA_DeleteOnClose, true );
+  setWindowTitle( tr( "SMESH_TRANSPARENCY_TITLE" ) );
+  setSizeGripEnabled( true );
+
+  QVBoxLayout* SMESHGUI_TransparencyDlgLayout = new QVBoxLayout( this );
+  SMESHGUI_TransparencyDlgLayout->setSpacing( SPACING );
+  SMESHGUI_TransparencyDlgLayout->setMargin( MARGIN );
 
   /*************************************************************************/
-  QGroupBox* GroupC1 = new QGroupBox(this, "GroupC1");
-  GroupC1->setColumnLayout(0, Qt::Vertical);
-  GroupC1->layout()->setSpacing(0);
-  GroupC1->layout()->setMargin(0);
-  QGridLayout* GroupC1Layout = new QGridLayout(GroupC1->layout());
-  GroupC1Layout->setAlignment(Qt::AlignTop);
-  GroupC1Layout->setSpacing(6);
-  GroupC1Layout->setMargin(11);
+  QGroupBox* GroupC1 = new QGroupBox( this );
+  QGridLayout* GroupC1Layout = new QGridLayout( GroupC1 );
+  GroupC1Layout->setSpacing( SPACING );
+  GroupC1Layout->setMargin( MARGIN );
 
-  TextLabelTransparent = new QLabel(GroupC1, "TextLabelTransparent");
-  TextLabelTransparent->setText(tr("SMESH_TRANSPARENCY_TRANSPARENT" ));
-  TextLabelTransparent->setAlignment(AlignLeft);
-  GroupC1Layout->addWidget(TextLabelTransparent, 0, 0);
+  TextLabelTransparent = new QLabel( tr( "SMESH_TRANSPARENCY_TRANSPARENT" ), GroupC1 );
+  TextLabelTransparent->setAlignment( Qt::AlignLeft );
 
-  ValueLab = new QLabel(GroupC1, "ValueLab");
-  ValueLab->setAlignment(AlignCenter);
-  ValueLab->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed));
-  QFont fnt = ValueLab->font(); fnt.setBold(true); ValueLab->setFont(fnt);
-  GroupC1Layout->addWidget(ValueLab, 0, 1);
+  ValueLab = new QLabel( GroupC1 );
+  ValueLab->setAlignment( Qt::AlignCenter );
+  ValueLab->setSizePolicy( QSizePolicy( QSizePolicy::Expanding, QSizePolicy::Fixed ) );
+  QFont fnt = ValueLab->font(); fnt.setBold( true ); ValueLab->setFont( fnt );
 
-  TextLabelOpaque = new QLabel(GroupC1, "TextLabelOpaque");
-  TextLabelOpaque->setText(tr("SMESH_TRANSPARENCY_OPAQUE" ));
-  TextLabelOpaque->setAlignment(AlignRight);
-  GroupC1Layout->addWidget(TextLabelOpaque, 0, 2);
+  TextLabelOpaque = new QLabel( tr( "SMESH_TRANSPARENCY_OPAQUE" ), GroupC1 );
+  TextLabelOpaque->setAlignment( Qt::AlignRight );
 
-  Slider1 = new QSlider(0, 10, 1, 5, Horizontal, GroupC1, "Slider1");
-  Slider1->setFocusPolicy(QWidget::NoFocus);
-  Slider1->setMinimumSize(300, 0);
-  Slider1->setTickmarks(QSlider::Above);
-  Slider1->setTickInterval(10);
-  Slider1->setTracking(true);
-  Slider1->setMinValue(0);
-  Slider1->setMaxValue(100);
-  Slider1->setLineStep(1);
-  Slider1->setPageStep(10);
-  GroupC1Layout->addMultiCellWidget(Slider1, 1, 1, 0, 2);
+  Slider1 = new QSlider( Qt::Horizontal, GroupC1 );
+  Slider1->setRange( 0, 100 );
+  Slider1->setSingleStep( 1 );
+  Slider1->setPageStep( 10 );
+  Slider1->setTickPosition( QSlider::TicksAbove );
+  Slider1->setTickInterval( 10 );
+  Slider1->setTracking( true );
+  Slider1->setFocusPolicy( Qt::NoFocus );
+  Slider1->setMinimumWidth( 300 );
+
+  GroupC1Layout->addWidget( TextLabelTransparent, 0, 0 );
+  GroupC1Layout->addWidget( ValueLab, 0, 1 );
+  GroupC1Layout->addWidget( TextLabelOpaque, 0, 2 );
+  GroupC1Layout->addWidget( Slider1, 1, 0, 1, 3 );
 
   /*************************************************************************/
-  QGroupBox* GroupButtons = new QGroupBox(this, "GroupButtons");
-  GroupButtons->setColumnLayout(0, Qt::Vertical);
-  GroupButtons->layout()->setSpacing(0);
-  GroupButtons->layout()->setMargin(0);
-  QGridLayout* GroupButtonsLayout = new QGridLayout(GroupButtons->layout());
-  GroupButtonsLayout->setAlignment(Qt::AlignTop);
-  GroupButtonsLayout->setSpacing(6);
-  GroupButtonsLayout->setMargin(11);
+  QGroupBox* GroupButtons = new QGroupBox( this );
+  QHBoxLayout* GroupButtonsLayout = new QHBoxLayout( GroupButtons );
+  GroupButtonsLayout->setSpacing( SPACING );
+  GroupButtonsLayout->setMargin( MARGIN );
 
-  buttonOk = new QPushButton(GroupButtons, "buttonOk");
-  buttonOk->setText(tr("SMESH_BUT_CLOSE"));
-  buttonOk->setAutoDefault(TRUE);
-  buttonOk->setDefault(TRUE);
-  buttonHelp = new QPushButton(GroupButtons, "buttonHelp");
-  buttonHelp->setText(tr("SMESH_BUT_HELP"));
-  buttonHelp->setAutoDefault(TRUE);
+  buttonOk = new QPushButton( tr( "SMESH_BUT_CLOSE" ), GroupButtons );
+  buttonOk->setAutoDefault( true );
+  buttonOk->setDefault( true );
+  buttonHelp = new QPushButton( tr( "SMESH_BUT_HELP" ), GroupButtons );
+  buttonHelp->setAutoDefault( true );
 
-  //GroupButtonsLayout->addItem(new QSpacerItem(20, 20, QSizePolicy::Expanding, QSizePolicy::Minimum), 0, 0);
-  GroupButtonsLayout->addWidget(buttonOk, 0, 0);
-  GroupButtonsLayout->addItem(new QSpacerItem(20, 20, QSizePolicy::Expanding, QSizePolicy::Minimum), 0, 1);
-  GroupButtonsLayout->addWidget(buttonHelp, 0, 2);  
-  //GroupButtonsLayout->addItem(new QSpacerItem(20, 20, QSizePolicy::Expanding, QSizePolicy::Minimum), 0, 2);
+  GroupButtonsLayout->addWidget( buttonOk );
+  GroupButtonsLayout->addSpacing( 10 );
+  GroupButtonsLayout->addStretch();
+  GroupButtonsLayout->addWidget( buttonHelp );  
 
-  SMESHGUI_TransparencyDlgLayout->addWidget(GroupC1,      0, 0);
-  SMESHGUI_TransparencyDlgLayout->addWidget(GroupButtons, 1, 0);
+  /*************************************************************************/
+  SMESHGUI_TransparencyDlgLayout->addWidget( GroupC1 );
+  SMESHGUI_TransparencyDlgLayout->addWidget( GroupButtons );
 
   // Initial state
-  this->onSelectionChanged();
+  onSelectionChanged();
 
   // signals and slots connections : after ValueHasChanged()
-  connect(buttonOk, SIGNAL(clicked()),         this, SLOT(ClickOnOk()));
-  connect(buttonHelp, SIGNAL(clicked()),       this, SLOT(ClickOnHelp()));
-  connect(Slider1,  SIGNAL(valueChanged(int)), this, SLOT(SetTransparency()));
-  connect(Slider1,  SIGNAL(sliderMoved(int)),  this, SLOT(ValueHasChanged()));
-  connect(mySMESHGUI, SIGNAL (SignalCloseAllDialogs()), this, SLOT(ClickOnOk()));
-  connect(mySelectionMgr,  SIGNAL(currentSelectionChanged()), this, SLOT(onSelectionChanged()));
+  connect( buttonOk,       SIGNAL( clicked() ),                 this, SLOT( ClickOnOk() ) );
+  connect( buttonHelp,     SIGNAL( clicked() ),                 this, SLOT( ClickOnHelp() ) );
+  connect( Slider1,        SIGNAL( valueChanged( int ) ),       this, SLOT( SetTransparency() ) );
+  connect( Slider1,        SIGNAL( sliderMoved( int ) ),        this, SLOT( ValueHasChanged() ) );
+  connect( mySMESHGUI,     SIGNAL( SignalCloseAllDialogs() ),   this, SLOT( ClickOnOk() ) );
+  connect( mySelectionMgr, SIGNAL( currentSelectionChanged() ), this, SLOT( onSelectionChanged() ) );
 
   myHelpFileName = "transparency_page.html";
-
-  this->show();
 }
 
 //=================================================================================
@@ -167,7 +152,6 @@ SMESHGUI_TransparencyDlg::SMESHGUI_TransparencyDlg( SMESHGUI* theModule,
 //=================================================================================
 SMESHGUI_TransparencyDlg::~SMESHGUI_TransparencyDlg()
 {
-  // no need to delete child widgets, Qt does it all for us
 }
 
 //=======================================================================
@@ -185,20 +169,22 @@ void SMESHGUI_TransparencyDlg::ClickOnOk()
 //=================================================================================
 void SMESHGUI_TransparencyDlg::ClickOnHelp()
 {
-  LightApp_Application* app = (LightApp_Application*)(SUIT_Session::session()->activeApplication());
-  if (app) 
-    app->onHelpContextModule(mySMESHGUI ? app->moduleName(mySMESHGUI->moduleName()) : QString(""), myHelpFileName);
+  LightApp_Application* app = (LightApp_Application*)( SUIT_Session::session()->activeApplication() );
+  if ( app )
+    app->onHelpContextModule( mySMESHGUI ? app->moduleName( mySMESHGUI->moduleName() ) : 
+			      QString( "" ), myHelpFileName );
   else {
-		QString platform;
+    QString platform;
 #ifdef WIN32
-		platform = "winapplication";
+    platform = "winapplication";
 #else
-		platform = "application";
+    platform = "application";
 #endif
-    SUIT_MessageBox::warn1(0, QObject::tr("WRN_WARNING"),
-			   QObject::tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
-			   arg(app->resourceMgr()->stringValue("ExternalBrowser", platform)).arg(myHelpFileName),
-			   QObject::tr("BUT_OK"));
+    SUIT_MessageBox::warning( this, tr( "WRN_WARNING" ),
+			      tr( "EXTERNAL_BROWSER_CANNOT_SHOW_PAGE" ).
+			      arg( app->resourceMgr()->stringValue( "ExternalBrowser", 
+								    platform ) ).
+			      arg( myHelpFileName ) );
   }
 }
 
@@ -209,19 +195,19 @@ void SMESHGUI_TransparencyDlg::ClickOnHelp()
 //=================================================================================
 void SMESHGUI_TransparencyDlg::SetTransparency()
 {
-  if( myViewWindow ) {
+  if ( myViewWindow ) {
     SUIT_OverrideCursor wc;
-    float opacity = this->Slider1->value() / 100.;
+    float opacity = Slider1->value() / 100.;
 
     SALOME_ListIO aList;
-    mySelectionMgr->selectedObjects(aList);
+    mySelectionMgr->selectedObjects( aList );
 
-    SALOME_ListIteratorOfListIO It (aList);
-    for (;It.More(); It.Next()) {
+    SALOME_ListIteratorOfListIO It( aList );
+    for ( ; It.More(); It.Next() ) {
       Handle(SALOME_InteractiveObject) IOS = It.Value();
-      SMESH_Actor* anActor = SMESH::FindActorByEntry(IOS->getEntry());
-      if (anActor)
-	anActor->SetOpacity(opacity);
+      SMESH_Actor* anActor = SMESH::FindActorByEntry( IOS->getEntry() );
+      if ( anActor )
+	anActor->SetOpacity( opacity );
     }
     myViewWindow->Repaint();
   }
@@ -234,7 +220,7 @@ void SMESHGUI_TransparencyDlg::SetTransparency()
 //=================================================================================
 void SMESHGUI_TransparencyDlg::ValueHasChanged()
 {
-  ValueLab->setText(QString::number(this->Slider1->value()) + "%");
+  ValueLab->setText( QString::number( Slider1->value() ) + "%") ;
 }
 
 //=================================================================================
@@ -243,42 +229,44 @@ void SMESHGUI_TransparencyDlg::ValueHasChanged()
 //=================================================================================
 void SMESHGUI_TransparencyDlg::onSelectionChanged()
 {
-  if( myViewWindow ) {
+  if ( myViewWindow ) {
     int opacity = 100;
 
     SALOME_ListIO aList;
-    mySelectionMgr->selectedObjects(aList);
+    mySelectionMgr->selectedObjects( aList );
 
-    if (aList.Extent() == 1) {
+    if ( aList.Extent() == 1 ) {
       Handle(SALOME_InteractiveObject) FirstIOS = aList.First();
-      if (!FirstIOS.IsNull()) {
-	SMESH_Actor* anActor = SMESH::FindActorByEntry(FirstIOS->getEntry());
-	if (anActor)
-	  opacity = int(anActor->GetOpacity() * 100. + 0.5);
+      if ( !FirstIOS.IsNull() ) {
+	SMESH_Actor* anActor = SMESH::FindActorByEntry( FirstIOS->getEntry() );
+	if ( anActor )
+	  opacity = int( anActor->GetOpacity() * 100. + 0.5 );
       }
-    } else if (aList.Extent() > 1) {
-      SALOME_ListIteratorOfListIO It (aList);
+    } 
+    else if ( aList.Extent() > 1 ) {
+      SALOME_ListIteratorOfListIO It( aList );
       int setOp = -1;
-      for (; It.More(); It.Next()) {
+      for ( ; It.More(); It.Next() ) {
 	Handle(SALOME_InteractiveObject) IO = It.Value();
-	if (!IO.IsNull()) {
-	  SMESH_Actor* anActor = SMESH::FindActorByEntry(IO->getEntry());
-	  if (anActor) {
-	    int op = int(anActor->GetOpacity() * 100. + 0.5);
-	    if (setOp < 0)
+	if ( !IO.IsNull() ) {
+	  SMESH_Actor* anActor = SMESH::FindActorByEntry( IO->getEntry() );
+	  if ( anActor ) {
+	    int op = int( anActor->GetOpacity() * 100. + 0.5 );
+	    if ( setOp < 0 )
 	      setOp = op;
-	    else if (setOp != op) {
+	    else if ( setOp != op ) {
 	      setOp = 100;
 	      break;
 	    }
 	  }
 	}
       }
-      if (setOp >= 0)
+      if ( setOp >= 0 )
 	opacity = setOp;
-    } else {
+    } 
+    else {
     }
-    Slider1->setValue(opacity);
+    Slider1->setValue( opacity );
   }
   ValueHasChanged();
 }
@@ -293,9 +281,8 @@ void SMESHGUI_TransparencyDlg::keyPressEvent( QKeyEvent* e )
   if ( e->isAccepted() )
     return;
 
-  if ( e->key() == Key_F1 )
-    {
-      e->accept();
-      ClickOnHelp();
-    }
+  if ( e->key() == Qt::Key_F1 ) {
+    e->accept();
+    ClickOnHelp();
+  }
 }

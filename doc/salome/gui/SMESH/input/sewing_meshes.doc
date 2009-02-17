@@ -11,6 +11,8 @@ functionality allows you to sew:
 <li>\ref side_elements_anchor "Side elements"</li>
 </ul>
 
+\image html sewing.png "Sewing button"
+
 <em>To sew elements of different meshes:</em>
 <ol>
 <li>From the \b Modification menu choose the \b Transformation item
@@ -18,7 +20,7 @@ and from its sub-menu select the \b Sewing item.</li>
 <li>Check in the dialog box one of the radio buttons corresponding to
 the type of sewing operation you would like to perform.</li>
 <li>Fill the other fields available in the dialog box.</li>
-<li>Click the \b OK or \b Apply button to perform the operation of sewing.</li>
+<li>Click the \b Apply or <b>Apply and Close</b> button to perform the operation of sewing.</li>
 </ol>
 
 <br>
@@ -63,7 +65,7 @@ enough to merge, if difference of their parameters is less than one
 fifth of minimum length of adjacent face edges on the borders.</li>
 </ol>
 
-\image html image22.jpg
+\image html image22.jpg "Sewing free borders"
 
 <b>See Also</b> a sample TUI Script of a 
 \ref tui_sew_free_borders "Sew Free Borders" operation.
@@ -90,7 +92,7 @@ second border.
 the first border and two points on the second one. User can select
 these nodes in 3D viewer or define node by its id.
 
-\image html image22.jpg
+\image html image23.jpg "Sewing conform free borders"
 
 <b>See Also</b> a sample TUI Script of a 
 \ref tui_sew_conform_free_borders "Sew Conform Free Borders"
@@ -120,7 +122,7 @@ border and two points on the side. User can select these nodes in 3D
 viewer or define node by its id.</li>
 </ol>
 
-\image html image30.jpg
+\image html image30.jpg "Sewing border to side"
 
 <b>See Also</b> a sample TUI Script of a 
 \ref tui_sew_meshes_border_to_side "Sew Border to Side" operation.  
@@ -145,9 +147,9 @@ belong to one element and must be located on an element set boundary.
 Sewing algorithm finds and merges the corresponding nodes starting
 from the specified ones.
 
-\image html image31.jpg
+\image html image31.jpg "Step-by-step sewing process"
 
-\image html image32.jpg
+\image html image32.jpg "The result of side elements sewing"
 
 For sewing side elements you should define elements for sewing and two
 nodes for merging on the each side. User can select these elements and

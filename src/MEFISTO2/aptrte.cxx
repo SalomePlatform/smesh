@@ -582,7 +582,7 @@ void  aptrte( Z   nutysu, R      aretmx,
   mnarcf3 = new Z[mxarcf];
   if( mnarcf3 == NULL )
   {
-    cout << "aptrte: MC saturee mnarcf3=" << mnarcf3 << endl;
+    MESSAGE ( "aptrte: MC saturee mnarcf3=" << mnarcf3 );
     goto ERREUR;
   }
   teamqt( nutysu,  aretmx,  airemx,

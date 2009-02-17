@@ -1,32 +1,30 @@
+//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//
+//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+//
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
+//
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
+//
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
 //  SMESH SMESH_I : idl implementation based on 'SMESH' unit's calsses
-//
-//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
-// 
-//  This library is free software; you can redistribute it and/or 
-//  modify it under the terms of the GNU Lesser General Public 
-//  License as published by the Free Software Foundation; either 
-//  version 2.1 of the License. 
-// 
-//  This library is distributed in the hope that it will be useful, 
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of 
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
-//  Lesser General Public License for more details. 
-// 
-//  You should have received a copy of the GNU Lesser General Public 
-//  License along with this library; if not, write to the Free Software 
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
-// 
-// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
-//
-//
-//
 // File      : SMESH_MeshEditor.hxx
 // Created   : Mon Apr 12 14:56:19 2004
 // Author    : Edward AGAPOV (eap)
 // Module    : SMESH
-
-
+//
 #ifndef SMESH_MeshEditor_HeaderFile
 #define SMESH_MeshEditor_HeaderFile
 
@@ -48,6 +46,24 @@
 typedef std::map<const SMDS_MeshElement*,
                  std::list<const SMDS_MeshElement*> >        TElemOfElemListMap;
 typedef std::map<const SMDS_MeshNode*, const SMDS_MeshNode*> TNodeNodeMap;
+
+
+typedef pair< const SMDS_MeshNode*, const SMDS_MeshNode* > NLink;
+
+//=======================================================================
+/*!
+ * \brief A sorted pair of nodes
+ */
+//=======================================================================
+
+struct SMESH_TLink: public NLink
+{
+  SMESH_TLink(const SMDS_MeshNode* n1, const SMDS_MeshNode* n2 ):NLink( n1, n2 )
+  { if ( n1->GetID() < n2->GetID() ) std::swap( first, second ); }
+  SMESH_TLink(const NLink& link ):NLink( link )
+  { if ( first->GetID() < second->GetID() ) std::swap( first, second ); }
+};
+
 
 class SMDS_MeshFace;
 class SMDS_MeshNode;
@@ -313,9 +329,9 @@ public:
    */
   SMESH_NodeSearcher* GetNodeSearcher();
 
-  int SimplifyFace (const vector<const SMDS_MeshNode *> faceNodes,
-                    vector<const SMDS_MeshNode *>&      poly_nodes,
-                    vector<int>&                        quantities) const;
+  int SimplifyFace (const std::vector<const SMDS_MeshNode *> faceNodes,
+                    std::vector<const SMDS_MeshNode *>&      poly_nodes,
+                    std::vector<int>&                        quantities) const;
   // Split face, defined by <faceNodes>, into several faces by repeating nodes.
   // Is used by MergeNodes()
 
@@ -445,11 +461,16 @@ public:
   static void AddToSameGroups (const SMDS_MeshElement* elemToAdd,
                                const SMDS_MeshElement* elemInGroups,
                                SMESHDS_Mesh *          aMesh);
-  // Add elemToAdd to the groups the elemInGroups belongs to
+  // Add elemToAdd to the all groups the elemInGroups belongs to
 
-  static void RemoveElemFromGroups (const SMDS_MeshElement* removeelem,
+  static void RemoveElemFromGroups (const SMDS_MeshElement* element,
                                     SMESHDS_Mesh *          aMesh);
-  // remove elemToAdd from the groups
+  // remove element from the all groups
+
+  static void ReplaceElemInGroups (const SMDS_MeshElement* elemToRm,
+                                   const SMDS_MeshElement* elemToAdd,
+                                   SMESHDS_Mesh *          aMesh);
+  // replace elemToRm by elemToAdd in the all groups
 
   /*!
    * \brief Return nodes linked to the given one in elements of the type
@@ -478,8 +499,8 @@ public:
     * \param nReplaceMap - output map of corresponding nodes
     * \retval Sew_Error  - is a success or not
    */
-  static Sew_Error FindMatchingNodes(set<const SMDS_MeshElement*>& theSide1,
-                                     set<const SMDS_MeshElement*>& theSide2,
+  static Sew_Error FindMatchingNodes(std::set<const SMDS_MeshElement*>& theSide1,
+                                     std::set<const SMDS_MeshElement*>& theSide2,
                                      const SMDS_MeshNode*          theFirstNode1,
                                      const SMDS_MeshNode*          theFirstNode2,
                                      const SMDS_MeshNode*          theSecondNode1,
@@ -506,6 +527,9 @@ public:
   const SMESH_SequenceOfElemPtr& GetLastCreatedNodes() const { return myLastCreatedNodes; }
 
   const SMESH_SequenceOfElemPtr& GetLastCreatedElems() const { return myLastCreatedElems; }
+  
+  bool DoubleNodes( const std::list< int >& theListOfNodes, 
+                    const std::list< int >& theListOfModifiedElems );
 
 private:
 

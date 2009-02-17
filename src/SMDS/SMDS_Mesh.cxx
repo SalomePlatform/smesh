@@ -1,24 +1,26 @@
+//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//
+//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+//
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
+//
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
+//
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
 //  SMESH SMDS : implementaion of Salome mesh data structure
 //
-//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
-// 
-//  This library is free software; you can redistribute it and/or 
-//  modify it under the terms of the GNU Lesser General Public 
-//  License as published by the Free Software Foundation; either 
-//  version 2.1 of the License. 
-// 
-//  This library is distributed in the hope that it will be useful, 
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of 
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
-//  Lesser General Public License for more details. 
-// 
-//  You should have received a copy of the GNU Lesser General Public 
-//  License along with this library; if not, write to the Free Software 
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
-// 
-// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
-
 #ifdef _MSC_VER
 #pragma warning(disable:4786)
 #endif
@@ -42,6 +44,9 @@ using namespace std;
 #ifndef WIN32
 #include <sys/sysinfo.h>
 #endif
+
+// number of added entitis to check memory after
+#define CHECKMEMORY_INTERVAL 1000
 
 //================================================================================
 /*!
@@ -70,7 +75,7 @@ int SMDS_Mesh::CheckMemory(const bool doNotRaise) throw (std::bad_alloc)
     else
       limit = int( limit * 1.5 );
 #ifdef _DEBUG_
-    cout << "SMDS_Mesh::CheckMemory() memory limit = " << limit << " MB" << endl;
+    MESSAGE ( "SMDS_Mesh::CheckMemory() memory limit = " << limit << " MB" );
 #endif
   }
 
@@ -86,7 +91,7 @@ int SMDS_Mesh::CheckMemory(const bool doNotRaise) throw (std::bad_alloc)
   if ( doNotRaise )
     return 0;
 #ifdef _DEBUG_
-  cout<<"SMDS_Mesh::CheckMemory() throws as free memory too low: " << freeMb <<" MB" << endl;
+  MESSAGE ("SMDS_Mesh::CheckMemory() throws as free memory too low: " << freeMb <<" MB" );
 #endif
   throw std::bad_alloc();
 #else
@@ -151,7 +156,7 @@ SMDS_MeshNode * SMDS_Mesh::AddNodeWithID(double x, double y, double z, int ID)
   // find the MeshNode corresponding to ID
   const SMDS_MeshElement *node = myNodeIDFactory->MeshElement(ID);
   if(!node){
-    CheckMemory();
+    if ( myNodes.Extent() % CHECKMEMORY_INTERVAL == 0 ) CheckMemory();
     SMDS_MeshNode * node=new SMDS_MeshNode(x, y, z);
     myNodes.Add(node);
     myNodeIDFactory->BindID(ID,node);
@@ -200,7 +205,8 @@ SMDS_MeshEdge* SMDS_Mesh::AddEdgeWithID(const SMDS_MeshNode * n1,
 {
   if ( !n1 || !n2 ) return 0;
 
-  CheckMemory();
+  if ( myEdges.Extent() % CHECKMEMORY_INTERVAL == 0 ) CheckMemory();
+
   SMDS_MeshEdge * edge=new SMDS_MeshEdge(n1,n2);
   if(myElementIDFactory->BindID(ID, edge)) {
     SMDS_MeshNode *node1,*node2;
@@ -339,7 +345,8 @@ SMDS_MeshFace* SMDS_Mesh::AddFaceWithID(const SMDS_MeshEdge * e1,
     return NULL;
   if ( !e1 || !e2 || !e3 ) return 0;
 
-  CheckMemory();
+  if ( myFaces.Extent() % CHECKMEMORY_INTERVAL == 0 ) CheckMemory();
+
   SMDS_MeshFace * face = new SMDS_FaceOfEdges(e1,e2,e3);
   myFaces.Add(face);
   myInfo.myNbTriangles++;
@@ -379,7 +386,7 @@ SMDS_MeshFace* SMDS_Mesh::AddFaceWithID(const SMDS_MeshEdge * e1,
   if (!hasConstructionEdges())
     return NULL;
   if ( !e1 || !e2 || !e3 || !e4 ) return 0;
-  CheckMemory();
+  if ( myFaces.Extent() % CHECKMEMORY_INTERVAL == 0 ) CheckMemory();
   SMDS_MeshFace * face = new SMDS_FaceOfEdges(e1,e2,e3,e4);
   myFaces.Add(face);
   myInfo.myNbQuadrangles++;
@@ -444,7 +451,7 @@ SMDS_MeshVolume* SMDS_Mesh::AddVolumeWithID(const SMDS_MeshNode * n1,
 {
   SMDS_MeshVolume* volume = 0;
   if ( !n1 || !n2 || !n3 || !n4) return volume;
-  CheckMemory();
+  if ( myVolumes.Extent() % CHECKMEMORY_INTERVAL == 0 ) CheckMemory();
   if(hasConstructionFaces()) {
     SMDS_MeshFace * f1=FindFaceOrCreate(n1,n2,n3);
     SMDS_MeshFace * f2=FindFaceOrCreate(n1,n2,n4);
@@ -530,7 +537,7 @@ SMDS_MeshVolume* SMDS_Mesh::AddVolumeWithID(const SMDS_MeshNode * n1,
 {
   SMDS_MeshVolume* volume = 0;
   if ( !n1 || !n2 || !n3 || !n4 || !n5) return volume;
-  CheckMemory();
+  if ( myVolumes.Extent() % CHECKMEMORY_INTERVAL == 0 ) CheckMemory();
   if(hasConstructionFaces()) {
     SMDS_MeshFace * f1=FindFaceOrCreate(n1,n2,n3,n4);
     SMDS_MeshFace * f2=FindFaceOrCreate(n1,n2,n5);
@@ -620,7 +627,7 @@ SMDS_MeshVolume* SMDS_Mesh::AddVolumeWithID(const SMDS_MeshNode * n1,
 {
   SMDS_MeshVolume* volume = 0;
   if ( !n1 || !n2 || !n3 || !n4 || !n5 || !n6) return volume;
-  CheckMemory();
+  if ( myVolumes.Extent() % CHECKMEMORY_INTERVAL == 0 ) CheckMemory();
   if(hasConstructionFaces()) {
     SMDS_MeshFace * f1=FindFaceOrCreate(n1,n2,n3);
     SMDS_MeshFace * f2=FindFaceOrCreate(n4,n5,n6);
@@ -722,7 +729,7 @@ SMDS_MeshVolume* SMDS_Mesh::AddVolumeWithID(const SMDS_MeshNode * n1,
 {
   SMDS_MeshVolume* volume = 0;
   if ( !n1 || !n2 || !n3 || !n4 || !n5 || !n6 || !n7 || !n8) return volume;
-  CheckMemory();
+  if ( myVolumes.Extent() % CHECKMEMORY_INTERVAL == 0 ) CheckMemory();
   if(hasConstructionFaces()) {
     SMDS_MeshFace * f1=FindFaceOrCreate(n1,n2,n3,n4);
     SMDS_MeshFace * f2=FindFaceOrCreate(n5,n6,n7,n8);
@@ -782,7 +789,7 @@ SMDS_MeshVolume* SMDS_Mesh::AddVolumeWithID(const SMDS_MeshFace * f1,
   if (!hasConstructionFaces())
     return NULL;
   if ( !f1 || !f2 || !f3 || !f4) return 0;
-  CheckMemory();
+  if ( myVolumes.Extent() % CHECKMEMORY_INTERVAL == 0 ) CheckMemory();
   SMDS_MeshVolume * volume = new SMDS_VolumeOfFaces(f1,f2,f3,f4);
   myVolumes.Add(volume);
   myInfo.myNbTetras++;
@@ -826,7 +833,7 @@ SMDS_MeshVolume* SMDS_Mesh::AddVolumeWithID(const SMDS_MeshFace * f1,
   if (!hasConstructionFaces())
     return NULL;
   if ( !f1 || !f2 || !f3 || !f4 || !f5) return 0;
-  CheckMemory();
+  if ( myVolumes.Extent() % CHECKMEMORY_INTERVAL == 0 ) CheckMemory();
   SMDS_MeshVolume * volume = new SMDS_VolumeOfFaces(f1,f2,f3,f4,f5);
   myVolumes.Add(volume);
   myInfo.myNbPyramids++;
@@ -872,7 +879,7 @@ SMDS_MeshVolume* SMDS_Mesh::AddVolumeWithID(const SMDS_MeshFace * f1,
   if (!hasConstructionFaces())
     return NULL;
   if ( !f1 || !f2 || !f3 || !f4 || !f5 || !f6) return 0;
-  CheckMemory();
+  if ( myVolumes.Extent() % CHECKMEMORY_INTERVAL == 0 ) CheckMemory();
   SMDS_MeshVolume * volume = new SMDS_VolumeOfFaces(f1,f2,f3,f4,f5,f6);
   myVolumes.Add(volume);
   myInfo.myNbPrisms++;
@@ -910,7 +917,7 @@ SMDS_MeshFace* SMDS_Mesh::AddPolygonalFaceWithID
 {
   SMDS_MeshFace * face;
 
-  CheckMemory();
+  if ( myFaces.Extent() % CHECKMEMORY_INTERVAL == 0 ) CheckMemory();
   if (hasConstructionEdges())
   {
     MESSAGE("Error : Not implemented");
@@ -975,7 +982,7 @@ SMDS_MeshVolume* SMDS_Mesh::AddPolyhedralVolumeWithID
                              const int                         ID)
 {
   SMDS_MeshVolume* volume;
-  CheckMemory();
+  if ( myVolumes.Extent() % CHECKMEMORY_INTERVAL == 0 ) CheckMemory();
   if (hasConstructionFaces()) {
     MESSAGE("Error : Not implemented");
     return NULL;
@@ -1046,7 +1053,7 @@ SMDS_MeshFace * SMDS_Mesh::createTriangle(const SMDS_MeshNode * node1,
                                           const SMDS_MeshNode * node3)
 {
   if ( !node1 || !node2 || !node3) return 0;
-  CheckMemory();
+  if ( myFaces.Extent() % CHECKMEMORY_INTERVAL == 0 ) CheckMemory();
   if(hasConstructionEdges())
   {
     SMDS_MeshEdge *edge1, *edge2, *edge3;
@@ -1078,7 +1085,7 @@ SMDS_MeshFace * SMDS_Mesh::createQuadrangle(const SMDS_MeshNode * node1,
 					    const SMDS_MeshNode * node4)
 {
   if ( !node1 || !node2 || !node3 || !node4 ) return 0;
-  CheckMemory();
+  if ( myFaces.Extent() % CHECKMEMORY_INTERVAL == 0 ) CheckMemory();
   if(hasConstructionEdges())
   {
     SMDS_MeshEdge *edge1, *edge2, *edge3, *edge4;
@@ -1363,7 +1370,7 @@ SMDS_MeshEdge* SMDS_Mesh::FindEdgeOrCreate(const SMDS_MeshNode * node1,
   SMDS_MeshEdge * toReturn=NULL;
   toReturn=const_cast<SMDS_MeshEdge*>(FindEdge(node1,node2));
   if(toReturn==NULL) {
-    CheckMemory();
+    if ( myEdges.Extent() % CHECKMEMORY_INTERVAL == 0 ) CheckMemory();
     toReturn=new SMDS_MeshEdge(node1,node2);
     myEdges.Add(toReturn);
     myInfo.myNbEdges++;
@@ -1838,6 +1845,20 @@ SMDS_Mesh::~SMDS_Mesh()
     itc++;
   }
 
+  if(myParent==NULL)
+  {
+    delete myNodeIDFactory;
+    delete myElementIDFactory;
+  }
+  else
+  {
+    SMDS_ElemIteratorPtr eIt = elementsIterator();
+    while ( eIt->more() )
+      myElementIDFactory->ReleaseID(eIt->next()->GetID());
+    SMDS_NodeIteratorPtr itn = nodesIterator();
+    while (itn->more())
+      myNodeIDFactory->ReleaseID(itn->next()->GetID());
+  }
   SetOfNodes::Iterator itn(myNodes);
   for (; itn.More(); itn.Next())
     delete itn.Value();
@@ -1846,8 +1867,6 @@ SMDS_Mesh::~SMDS_Mesh()
   for (; ite.More(); ite.Next())
   {
     SMDS_MeshElement* elem = ite.Value();
-    if(myParent!=NULL)
-      myElementIDFactory->ReleaseID(elem->GetID());
     delete elem;
   }
 
@@ -1855,8 +1874,6 @@ SMDS_Mesh::~SMDS_Mesh()
   for (; itf.More(); itf.Next())
   {
     SMDS_MeshElement* elem = itf.Value();
-    if(myParent!=NULL)
-      myElementIDFactory->ReleaseID(elem->GetID());
     delete elem;
   }
 
@@ -1864,16 +1881,56 @@ SMDS_Mesh::~SMDS_Mesh()
   for (; itv.More(); itv.Next())
   {
     SMDS_MeshElement* elem = itv.Value();
-    if(myParent!=NULL)
-      myElementIDFactory->ReleaseID(elem->GetID());
     delete elem;
   }
 
-  if(myParent==NULL)
-  {
-    delete myNodeIDFactory;
-    delete myElementIDFactory;
+}
+
+//================================================================================
+/*!
+ * \brief Clear all data
+ */
+//================================================================================
+
+void SMDS_Mesh::Clear()
+{
+  if (myParent!=NULL) {
+    SMDS_ElemIteratorPtr eIt = elementsIterator();
+    while ( eIt->more() )
+      myElementIDFactory->ReleaseID(eIt->next()->GetID());
+    SMDS_NodeIteratorPtr itn = nodesIterator();
+    while (itn->more())
+      myNodeIDFactory->ReleaseID(itn->next()->GetID());
   }
+  else {
+    myNodeIDFactory->Clear();
+    myElementIDFactory->Clear();
+  }
+  SMDS_VolumeIteratorPtr itv = volumesIterator();
+  while (itv->more())
+    delete itv->next();
+  myVolumes.Clear();
+
+  SMDS_FaceIteratorPtr itf = facesIterator();
+  while (itf->more())
+    delete itf->next();
+  myFaces.Clear();
+      
+  SMDS_EdgeIteratorPtr ite = edgesIterator();
+  while (ite->more())
+    delete ite->next();
+  myEdges.Clear();
+
+  SMDS_NodeIteratorPtr itn = nodesIterator();
+  while (itn->more())
+    delete itn->next();
+  myNodes.Clear();
+
+  list<SMDS_Mesh*>::iterator itc=myChildren.begin();
+  while(itc!=myChildren.end())
+    (*itc)->Clear();
+
+  myInfo.Clear();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2475,11 +2532,12 @@ void SMDS_Mesh::Renumber (const bool isNodes, const int  startID, const int  del
   }
   // release their ids
   map<int,SMDS_MeshElement*>::iterator elemIt = elemMap.begin();
-  for ( ; elemIt != elemMap.end(); elemIt++ )
-  {
-    int id = (*elemIt).first;
-    idFactory->ReleaseID( id );
-  }
+  idFactory->Clear();
+//   for ( ; elemIt != elemMap.end(); elemIt++ )
+//   {
+//     int id = (*elemIt).first;
+//     idFactory->ReleaseID( id );
+//   }
   // set new IDs
   int ID = startID;
   elemIt = elemMap.begin();

@@ -1,6 +1,6 @@
-//  SMESH SMESHGUI : GUI for SMESH component
+//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
 //  This library is free software; you can redistribute it and/or
@@ -17,15 +17,13 @@
 //  License along with this library; if not, write to the Free Software
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+// SMESH SMESHGUI : GUI for SMESH component
+// File   : SMESHGUI_TranslationDlg.cxx
+// Author : Michael ZORIN, Open CASCADE S.A.S.
+// SMESH includes
 //
-//
-//  File   : SMESHGUI_TranslationDlg.cxx
-//  Author : Michael ZORIN
-//  Module : SMESH
-//  $Header:
-
 #include "SMESHGUI_TranslationDlg.h"
 
 #include "SMESHGUI.h"
@@ -34,253 +32,238 @@
 #include "SMESHGUI_VTKUtils.h"
 #include "SMESHGUI_MeshUtils.h"
 #include "SMESHGUI_IdValidator.h"
+#include "SMESHGUI_FilterDlg.h"
 
-#include "SMESH_Actor.h"
-#include "SMESH_TypeFilter.hxx"
-#include "SMESH_LogicalFilter.hxx"
-#include "SMDS_Mesh.hxx"
+#include <SMESH_Actor.h>
+#include <SMESH_TypeFilter.hxx>
+#include <SMESH_LogicalFilter.hxx>
+#include <SMDS_Mesh.hxx>
 
-#include "SUIT_Desktop.h"
-#include "SUIT_ResourceMgr.h"
-#include "SUIT_Session.h"
-#include "SUIT_MessageBox.h"
+// SALOME GUI includes
+#include <SUIT_Desktop.h>
+#include <SUIT_ResourceMgr.h>
+#include <SUIT_Session.h>
+#include <SUIT_MessageBox.h>
+#include <SUIT_OverrideCursor.h>
 
-#include "LightApp_Application.h"
+#include <LightApp_Application.h>
+#include <LightApp_SelectionMgr.h>
 
-#include "SVTK_ViewModel.h"
-#include "SVTK_Selection.h"
-#include "SVTK_ViewWindow.h"
-#include "SVTK_Selector.h"
-#include "SALOME_ListIO.hxx"
-#include "SALOMEDSClient_SObject.hxx"
+#include <SVTK_ViewModel.h>
+#include <SVTK_ViewWindow.h>
+#include <SALOME_ListIO.hxx>
 
-#include "utilities.h"
+// SALOME KERNEL includes
+#include <SALOMEDSClient_SObject.hxx>
 
-// OCCT Includes
+// OCCT includes
 #include <TColStd_MapOfInteger.hxx>
-#include <TColStd_IndexedMapOfInteger.hxx>
 
-// QT Includes
-#include <qapplication.h>
-#include <qbuttongroup.h>
-#include <qgroupbox.h>
-#include <qlabel.h>
-#include <qlineedit.h>
-#include <qpushbutton.h>
-#include <qradiobutton.h>
-#include <qcheckbox.h>
-#include <qlayout.h>
-#include <qspinbox.h>
-#include <qpixmap.h>
+// Qt includes
+#include <QApplication>
+#include <QButtonGroup>
+#include <QGroupBox>
+#include <QLabel>
+#include <QLineEdit>
+#include <QPushButton>
+#include <QRadioButton>
+#include <QCheckBox>
+#include <QHBoxLayout>
+#include <QVBoxLayout>
+#include <QGridLayout>
+#include <QSpinBox>
+#include <QKeyEvent>
 
-// IDL Headers
-#include "SALOMEconfig.h"
+// IDL includes
+#include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_Group)
 #include CORBA_SERVER_HEADER(SMESH_MeshEditor)
 
-using namespace std;
-
 enum { MOVE_ELEMS_BUTTON = 0, COPY_ELEMS_BUTTON, MAKE_MESH_BUTTON }; //!< action type
+
+/*!
+  \class BusyLocker
+  \brief Simple 'busy state' flag locker.
+  \internal
+*/
+
+class BusyLocker
+{
+public:
+  //! Constructor. Sets passed boolean flag to \c true.
+  BusyLocker( bool& busy ) : myBusy( busy ) { myBusy = true; }
+  //! Destructor. Clear external boolean flag passed as parameter to the constructor to \c false.
+  ~BusyLocker() { myBusy = false; }
+private:
+  bool& myBusy; //! External 'busy state' boolean flag
+};
+
+#define SPACING 6
+#define MARGIN  11
 
 //=================================================================================
 // class    : SMESHGUI_TranslationDlg()
 // purpose  :
 //=================================================================================
-SMESHGUI_TranslationDlg::SMESHGUI_TranslationDlg( SMESHGUI* theModule, const char* name,
-                                                  bool modal, WFlags fl)
-     : QDialog( SMESH::GetDesktop( theModule ), name, modal, WStyle_Customize | WStyle_NormalBorder |
-                WStyle_Title | WStyle_SysMenu | Qt::WDestructiveClose),
-     mySMESHGUI( theModule ),
-     mySelectionMgr( SMESH::GetSelectionMgr( theModule ) )
+SMESHGUI_TranslationDlg::SMESHGUI_TranslationDlg( SMESHGUI* theModule )
+  : QDialog( SMESH::GetDesktop( theModule ) ),
+    mySMESHGUI( theModule ),
+    mySelectionMgr( SMESH::GetSelectionMgr( theModule ) ),
+    myFilterDlg(0),
+    mySelectedObject(SMESH::SMESH_IDSource::_nil())
 {
   QPixmap image0 (SMESH::GetResourceMgr( mySMESHGUI )->loadPixmap("SMESH", tr("ICON_SMESH_TRANSLATION_POINTS")));
   QPixmap image1 (SMESH::GetResourceMgr( mySMESHGUI )->loadPixmap("SMESH", tr("ICON_SMESH_TRANSLATION_VECTOR")));
   QPixmap image2 (SMESH::GetResourceMgr( mySMESHGUI )->loadPixmap("SMESH", tr("ICON_SELECT")));
 
-  if (!name)
-    setName("SMESHGUI_TranslationDlg");
-  resize(303, 185);
-  setCaption(tr("SMESH_TRANSLATION"));
-  setSizeGripEnabled(TRUE);
-  SMESHGUI_TranslationDlgLayout = new QGridLayout(this);
-  SMESHGUI_TranslationDlgLayout->setSpacing(6);
-  SMESHGUI_TranslationDlgLayout->setMargin(11);
+  setModal(false);
+  setAttribute(Qt::WA_DeleteOnClose, true);
+  setWindowTitle(tr("SMESH_TRANSLATION"));
+  setSizeGripEnabled(true);
+
+  QVBoxLayout* SMESHGUI_TranslationDlgLayout = new QVBoxLayout(this);
+  SMESHGUI_TranslationDlgLayout->setSpacing(SPACING);
+  SMESHGUI_TranslationDlgLayout->setMargin(MARGIN);
 
   /***************************************************************/
-  GroupConstructors = new QButtonGroup(this, "GroupConstructors");
-  GroupConstructors->setSizePolicy(QSizePolicy((QSizePolicy::SizeType)5, (QSizePolicy::SizeType)0, 0, 0, GroupConstructors->sizePolicy().hasHeightForWidth()));
-  GroupConstructors->setTitle(tr("SMESH_TRANSLATION" ));
-  GroupConstructors->setExclusive(TRUE);
-  GroupConstructors->setColumnLayout(0, Qt::Vertical);
-  GroupConstructors->layout()->setSpacing(0);
-  GroupConstructors->layout()->setMargin(0);
-  GroupConstructorsLayout = new QGridLayout(GroupConstructors->layout());
-  GroupConstructorsLayout->setAlignment(Qt::AlignTop);
-  GroupConstructorsLayout->setSpacing(6);
-  GroupConstructorsLayout->setMargin(11);
-  RadioButton1= new QRadioButton(GroupConstructors, "RadioButton1");
-  RadioButton1->setText(tr("" ));
-  RadioButton1->setPixmap(image0);
-  GroupConstructorsLayout->addWidget(RadioButton1, 0, 0);
-  RadioButton2= new QRadioButton(GroupConstructors, "RadioButton2");
-  RadioButton2->setText(tr("" ));
-  RadioButton2->setPixmap(image1);
-  GroupConstructorsLayout->addWidget(RadioButton2, 0, 2 );
-  SMESHGUI_TranslationDlgLayout->addWidget(GroupConstructors, 0, 0);
+  ConstructorsBox = new QGroupBox(tr("SMESH_TRANSLATION"), this);
+  GroupConstructors = new QButtonGroup(this);
+  QHBoxLayout* ConstructorsBoxLayout = new QHBoxLayout(ConstructorsBox);
+  ConstructorsBoxLayout->setSpacing(SPACING);
+  ConstructorsBoxLayout->setMargin(MARGIN);
+
+  RadioButton1= new QRadioButton(ConstructorsBox);
+  RadioButton1->setIcon(image0);
+  RadioButton2= new QRadioButton(ConstructorsBox);
+  RadioButton2->setIcon(image1);
+
+  ConstructorsBoxLayout->addWidget(RadioButton1);
+  ConstructorsBoxLayout->addWidget(RadioButton2);
+  GroupConstructors->addButton(RadioButton1, 0);
+  GroupConstructors->addButton(RadioButton2, 1);
 
   /***************************************************************/
-  GroupButtons = new QGroupBox(this, "GroupButtons");
-  GroupButtons->setSizePolicy(QSizePolicy((QSizePolicy::SizeType)7, (QSizePolicy::SizeType)0, 0, 0, GroupButtons->sizePolicy().hasHeightForWidth()));
-  GroupButtons->setGeometry(QRect(10, 10, 281, 48));
-  GroupButtons->setTitle(tr("" ));
-  GroupButtons->setColumnLayout(0, Qt::Vertical);
-  GroupButtons->layout()->setSpacing(0);
-  GroupButtons->layout()->setMargin(0);
-  GroupButtonsLayout = new QGridLayout(GroupButtons->layout());
-  GroupButtonsLayout->setAlignment(Qt::AlignTop);
-  GroupButtonsLayout->setSpacing(6);
-  GroupButtonsLayout->setMargin(11);
-  buttonHelp = new QPushButton(GroupButtons, "buttonHelp");
-  buttonHelp->setText(tr("SMESH_BUT_HELP" ));
-  buttonHelp->setAutoDefault(TRUE);
-  GroupButtonsLayout->addWidget(buttonHelp, 0, 4);
-  buttonCancel = new QPushButton(GroupButtons, "buttonCancel");
-  buttonCancel->setText(tr("SMESH_BUT_CLOSE" ));
-  buttonCancel->setAutoDefault(TRUE);
-  GroupButtonsLayout->addWidget(buttonCancel, 0, 3);
-  buttonApply = new QPushButton(GroupButtons, "buttonApply");
-  buttonApply->setText(tr("SMESH_BUT_APPLY" ));
-  buttonApply->setAutoDefault(TRUE);
-  GroupButtonsLayout->addWidget(buttonApply, 0, 1);
-  QSpacerItem* spacer_9 = new QSpacerItem(20, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
-  GroupButtonsLayout->addItem(spacer_9, 0, 2);
-  buttonOk = new QPushButton(GroupButtons, "buttonOk");
-  buttonOk->setText(tr("SMESH_BUT_OK" ));
-  buttonOk->setAutoDefault(TRUE);
-  buttonOk->setDefault(TRUE);
-  GroupButtonsLayout->addWidget(buttonOk, 0, 0);
-  SMESHGUI_TranslationDlgLayout->addWidget(GroupButtons, 2, 0);
+  GroupArguments = new QGroupBox(tr("SMESH_ARGUMENTS"), this);
+  QGridLayout* GroupArgumentsLayout = new QGridLayout(GroupArguments);
+  GroupArgumentsLayout->setSpacing(SPACING);
+  GroupArgumentsLayout->setMargin(MARGIN);
 
-  /***************************************************************/
-  GroupArguments = new QGroupBox(this, "GroupArguments");
-  GroupArguments->setTitle(tr("SMESH_ARGUMENTS"));
-  GroupArguments->setColumnLayout(0, Qt::Vertical);
-  GroupArguments->layout()->setSpacing(0);
-  GroupArguments->layout()->setMargin(0);
-  GroupArgumentsLayout = new QGridLayout(GroupArguments->layout());
-  GroupArgumentsLayout->setAlignment(Qt::AlignTop);
-  GroupArgumentsLayout->setSpacing(6);
-  GroupArgumentsLayout->setMargin(11);
+  myIdValidator = new SMESHGUI_IdValidator(this);
 
   // Controls for elements selection
-  TextLabelElements  = new QLabel(GroupArguments, "TextLabelElements");
-  TextLabelElements->setText(tr("SMESH_ID_ELEMENTS" ));
-  TextLabelElements->setFixedWidth(74);
-  GroupArgumentsLayout->addWidget(TextLabelElements, 0, 0);
-
-  SelectElementsButton  = new QPushButton(GroupArguments, "SelectElementsButton");
-  SelectElementsButton->setText(tr("" ));
-  SelectElementsButton->setPixmap(image2);
-  SelectElementsButton->setToggleButton(FALSE);
-  GroupArgumentsLayout->addWidget(SelectElementsButton, 0, 1);
-
-  LineEditElements = new QLineEdit(GroupArguments, "LineEditElements");
-  LineEditElements->setValidator(new SMESHGUI_IdValidator(this, "validator"));
-  GroupArgumentsLayout->addMultiCellWidget(LineEditElements, 0, 0, 2, 7);
+  TextLabelElements = new QLabel(tr("SMESH_ID_ELEMENTS"), GroupArguments);
+  SelectElementsButton = new QPushButton(GroupArguments);
+  SelectElementsButton->setIcon(image2);
+  LineEditElements = new QLineEdit(GroupArguments);
+  LineEditElements->setValidator(myIdValidator);
+  QPushButton* filterBtn = new QPushButton( tr( "SMESH_BUT_FILTER" ), GroupArguments );
+  connect(filterBtn,   SIGNAL(clicked()), this, SLOT(setFilters()));
 
   // Control for the whole mesh selection
-  CheckBoxMesh = new QCheckBox(GroupArguments, "CheckBoxMesh");
-  CheckBoxMesh->setText(tr("SMESH_SELECT_WHOLE_MESH" ));
-  GroupArgumentsLayout->addMultiCellWidget(CheckBoxMesh, 1, 1, 0, 7);
+  CheckBoxMesh = new QCheckBox(tr("SMESH_SELECT_WHOLE_MESH"), GroupArguments);
 
   // Controls for vector and points selection
-  TextLabel1 = new QLabel(GroupArguments, "TextLabel1");
-  GroupArgumentsLayout->addWidget(TextLabel1, 2, 0);
+  TextLabel1 = new QLabel(GroupArguments);
+  SelectButton1 = new QPushButton(GroupArguments);
+  SelectButton1->setIcon(image2);
 
-  SelectButton1  = new QPushButton(GroupArguments, "SelectButton1");
-  SelectButton1->setText(tr("" ));
-  SelectButton1->setPixmap(image2);
-  SelectButton1->setToggleButton(FALSE);
-  GroupArgumentsLayout->addWidget(SelectButton1, 2, 1);
+  TextLabel1_1 = new QLabel(GroupArguments);
+  SpinBox1_1 = new SMESHGUI_SpinBox(GroupArguments);
+  TextLabel1_2 = new QLabel(GroupArguments);
+  SpinBox1_2 = new SMESHGUI_SpinBox(GroupArguments);
+  TextLabel1_3 = new QLabel(GroupArguments);
+  SpinBox1_3 = new SMESHGUI_SpinBox(GroupArguments);
 
-  TextLabel1_1 = new QLabel(GroupArguments, "TextLabel1_1");
-  TextLabel1_1->setAlignment( Qt::AlignRight | Qt::AlignVCenter | Qt::ExpandTabs );
-  GroupArgumentsLayout->addWidget(TextLabel1_1, 2, 2);
+  TextLabel2 = new QLabel(tr("SMESH_POINT_2"), GroupArguments);
+  SelectButton2  = new QPushButton(GroupArguments);
+  SelectButton2->setIcon(image2);
 
-  SpinBox1_1 = new SMESHGUI_SpinBox(GroupArguments, "SpinBox1_1");
-  GroupArgumentsLayout->addWidget(SpinBox1_1, 2, 3);
-
-  TextLabel1_2 = new QLabel(GroupArguments, "TextLabel1_2");
-  TextLabel1_2->setAlignment( Qt::AlignRight | Qt::AlignVCenter | Qt::ExpandTabs );
-  GroupArgumentsLayout->addWidget(TextLabel1_2, 2, 4);
-
-  SpinBox1_2 = new SMESHGUI_SpinBox(GroupArguments, "SpinBox1_2");
-  GroupArgumentsLayout->addWidget(SpinBox1_2, 2, 5);
-
-  TextLabel1_3 = new QLabel(GroupArguments, "TextLabel1_3");
-  TextLabel1_3->setAlignment( Qt::AlignRight | Qt::AlignVCenter | Qt::ExpandTabs );
-  GroupArgumentsLayout->addWidget(TextLabel1_3, 2, 6);
-
-  SpinBox1_3 = new SMESHGUI_SpinBox(GroupArguments, "SpinBox1_3");
-  GroupArgumentsLayout->addWidget(SpinBox1_3, 2, 7);
-
-  TextLabel2 = new QLabel(GroupArguments, "TextLabel2");
-  TextLabel2->setText(tr("SMESH_POINT_2" ));
-  GroupArgumentsLayout->addWidget(TextLabel2, 3, 0);
-
-  SelectButton2  = new QPushButton(GroupArguments, "SelectButton2");
-  SelectButton2->setText(tr("" ));
-  SelectButton2->setPixmap(image2);
-  SelectButton2->setToggleButton(FALSE);
-  GroupArgumentsLayout->addWidget(SelectButton2, 3, 1);
-
-  TextLabel2_1 = new QLabel(GroupArguments, "TextLabel2_1");
-  TextLabel2_1->setAlignment( Qt::AlignRight | Qt::AlignVCenter | Qt::ExpandTabs );
-  TextLabel2_1->setText(tr("SMESH_X" ));
-  GroupArgumentsLayout->addWidget(TextLabel2_1, 3, 2);
-
-  SpinBox2_1 = new SMESHGUI_SpinBox(GroupArguments, "SpinBox2_1");
-  GroupArgumentsLayout->addWidget(SpinBox2_1, 3, 3);
-
-  TextLabel2_2 = new QLabel(GroupArguments, "TextLabel2_2");
-  TextLabel2_2->setAlignment( Qt::AlignRight | Qt::AlignVCenter | Qt::ExpandTabs );
-  TextLabel2_2->setText(tr("SMESH_Y" ));
-  GroupArgumentsLayout->addWidget(TextLabel2_2, 3, 4);
-
-  SpinBox2_2 = new SMESHGUI_SpinBox(GroupArguments, "SpinBox2_2");
-  GroupArgumentsLayout->addWidget(SpinBox2_2, 3, 5);
-
-  TextLabel2_3 = new QLabel(GroupArguments, "TextLabel2_3");
-  TextLabel2_3->setAlignment( Qt::AlignRight | Qt::AlignVCenter | Qt::ExpandTabs );
-  TextLabel2_3->setText(tr("SMESH_Z"));
-  GroupArgumentsLayout->addWidget(TextLabel2_3, 3, 6);
-
-  SpinBox2_3 = new SMESHGUI_SpinBox(GroupArguments, "SpinBox2_3");
-  GroupArgumentsLayout->addWidget(SpinBox2_3, 3, 7);
-
-  // Controls for "Create a copy" option
-//   CheckBoxCopy = new QCheckBox(GroupArguments, "CheckBoxCopy");
-//   CheckBoxCopy->setText(tr("SMESH_CREATE_COPY"));
-//   GroupArgumentsLayout->addMultiCellWidget(CheckBoxCopy, 4, 4, 0, 2);
+  TextLabel2_1 = new QLabel(tr("SMESH_X"), GroupArguments);
+  SpinBox2_1 = new SMESHGUI_SpinBox(GroupArguments);
+  TextLabel2_2 = new QLabel(tr("SMESH_Y"), GroupArguments);
+  SpinBox2_2 = new SMESHGUI_SpinBox(GroupArguments);
+  TextLabel2_3 = new QLabel(tr("SMESH_Z"), GroupArguments);
+  SpinBox2_3 = new SMESHGUI_SpinBox(GroupArguments);
 
   // switch of action type
-  ActionGroup = new QButtonGroup(1, Qt::Horizontal, GroupArguments, "ActionGroup");
-  ActionGroup->setExclusive(true);
-  ActionGroup->insert(new QRadioButton(tr("SMESH_MOVE_ELEMENTS"),ActionGroup), MOVE_ELEMS_BUTTON);
-  ActionGroup->insert(new QRadioButton(tr("SMESH_COPY_ELEMENTS"),ActionGroup), COPY_ELEMS_BUTTON);
-  ActionGroup->insert(new QRadioButton(tr("SMESH_CREATE_MESH"  ),ActionGroup), MAKE_MESH_BUTTON);
-  GroupArgumentsLayout->addMultiCellWidget(ActionGroup, 4, 6, 0, 3);
+  ActionBox = new QGroupBox(GroupArguments);
+  ActionGroup = new QButtonGroup(GroupArguments);
+  QVBoxLayout* ActionBoxLayout = new QVBoxLayout(ActionBox);
+  ActionBoxLayout->addSpacing(SPACING);
+  ActionBoxLayout->setMargin(MARGIN);
+
+  QRadioButton* aMoveElements = new QRadioButton(tr("SMESH_MOVE_ELEMENTS"), ActionBox);
+  QRadioButton* aCopyElements = new QRadioButton(tr("SMESH_COPY_ELEMENTS"), ActionBox);
+  QRadioButton* aCreateMesh   = new QRadioButton(tr("SMESH_CREATE_MESH"),   ActionBox);
+
+  ActionBoxLayout->addWidget(aMoveElements);
+  ActionBoxLayout->addWidget(aCopyElements);
+  ActionBoxLayout->addWidget(aCreateMesh);
+  ActionGroup->addButton(aMoveElements, MOVE_ELEMS_BUTTON);
+  ActionGroup->addButton(aCopyElements, COPY_ELEMS_BUTTON);
+  ActionGroup->addButton(aCreateMesh,   MAKE_MESH_BUTTON);
 
   // CheckBox for groups generation
   MakeGroupsCheck = new QCheckBox(tr("SMESH_MAKE_GROUPS"), GroupArguments);
   MakeGroupsCheck->setChecked(false);
-  GroupArgumentsLayout->addMultiCellWidget(MakeGroupsCheck, 5, 5, 4, 7);
 
   // Name of a mesh to create
-  LineEditNewMesh = new QLineEdit(GroupArguments, "LineEditNewMesh");
-  GroupArgumentsLayout->addMultiCellWidget(LineEditNewMesh, 6, 6, 4, 7);
+  LineEditNewMesh = new QLineEdit(GroupArguments);
 
-  SMESHGUI_TranslationDlgLayout->addWidget(GroupArguments, 1, 0);
+  // layout
+  GroupArgumentsLayout->addWidget(TextLabelElements,    0, 0);
+  GroupArgumentsLayout->addWidget(SelectElementsButton, 0, 1);
+  GroupArgumentsLayout->addWidget(LineEditElements,     0, 2, 1, 5);
+  GroupArgumentsLayout->addWidget(filterBtn,            0, 7);
+  GroupArgumentsLayout->addWidget(CheckBoxMesh,         1, 0, 1, 8);
+  GroupArgumentsLayout->addWidget(TextLabel1,           2, 0);
+  GroupArgumentsLayout->addWidget(SelectButton1,        2, 1);
+  GroupArgumentsLayout->addWidget(TextLabel1_1,         2, 2);
+  GroupArgumentsLayout->addWidget(SpinBox1_1,           2, 3);
+  GroupArgumentsLayout->addWidget(TextLabel1_2,         2, 4);
+  GroupArgumentsLayout->addWidget(SpinBox1_2,           2, 5);
+  GroupArgumentsLayout->addWidget(TextLabel1_3,         2, 6);
+  GroupArgumentsLayout->addWidget(SpinBox1_3,           2, 7);
+  GroupArgumentsLayout->addWidget(TextLabel2,           3, 0);
+  GroupArgumentsLayout->addWidget(SelectButton2,        3, 1);
+  GroupArgumentsLayout->addWidget(TextLabel2_1,         3, 2);
+  GroupArgumentsLayout->addWidget(SpinBox2_1,           3, 3);
+  GroupArgumentsLayout->addWidget(TextLabel2_2,         3, 4);
+  GroupArgumentsLayout->addWidget(SpinBox2_2,           3, 5);
+  GroupArgumentsLayout->addWidget(TextLabel2_3,         3, 6);
+  GroupArgumentsLayout->addWidget(SpinBox2_3,           3, 7);
+  GroupArgumentsLayout->addWidget(ActionBox,            4, 0, 3, 4);
+  GroupArgumentsLayout->addWidget(MakeGroupsCheck,      5, 5, 1, 4);
+  GroupArgumentsLayout->addWidget(LineEditNewMesh,      6, 5, 1, 4);
+
+  /***************************************************************/
+  GroupButtons = new QGroupBox(this);
+  QHBoxLayout* GroupButtonsLayout = new QHBoxLayout(GroupButtons);
+  GroupButtonsLayout->setSpacing(SPACING);
+  GroupButtonsLayout->setMargin(MARGIN);
+
+  buttonOk = new QPushButton(tr("SMESH_BUT_APPLY_AND_CLOSE"), GroupButtons);
+  buttonOk->setAutoDefault(true);
+  buttonOk->setDefault(true);
+  buttonApply = new QPushButton(tr("SMESH_BUT_APPLY"), GroupButtons);
+  buttonApply->setAutoDefault(true);
+  buttonCancel = new QPushButton(tr("SMESH_BUT_CLOSE"), GroupButtons);
+  buttonCancel->setAutoDefault(true);
+  buttonHelp = new QPushButton(tr("SMESH_BUT_HELP"), GroupButtons);
+  buttonHelp->setAutoDefault(true);
+
+  GroupButtonsLayout->addWidget(buttonOk);
+  GroupButtonsLayout->addSpacing(10);
+  GroupButtonsLayout->addWidget(buttonApply);
+  GroupButtonsLayout->addSpacing(10);
+  GroupButtonsLayout->addStretch();
+  GroupButtonsLayout->addWidget(buttonCancel);
+  GroupButtonsLayout->addWidget(buttonHelp);
+
+  /***************************************************************/
+  SMESHGUI_TranslationDlgLayout->addWidget(ConstructorsBox);
+  SMESHGUI_TranslationDlgLayout->addWidget(GroupArguments);
+  SMESHGUI_TranslationDlgLayout->addWidget(GroupButtons);
 
   /* Initialisations */
   SpinBox1_1->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, DBL_DIGITS_DISPLAY);
@@ -290,8 +273,7 @@ SMESHGUI_TranslationDlg::SMESHGUI_TranslationDlg( SMESHGUI* theModule, const cha
   SpinBox2_2->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, DBL_DIGITS_DISPLAY);
   SpinBox2_3->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, DBL_DIGITS_DISPLAY);
 
-  GroupArguments->show();
-  RadioButton1->setChecked(TRUE);
+  RadioButton1->setChecked(true);
 
   mySelector = (SMESH::GetViewWindow( mySMESHGUI ))->GetSelector();
 
@@ -301,7 +283,7 @@ SMESHGUI_TranslationDlg::SMESHGUI_TranslationDlg( SMESHGUI* theModule, const cha
   SMESH_TypeFilter* aMeshOrSubMeshFilter = new SMESH_TypeFilter (MESHorSUBMESH);
   SMESH_TypeFilter* aSmeshGroupFilter    = new SMESH_TypeFilter (GROUP);
 
-  QPtrList<SUIT_SelectionFilter> aListOfFilters;
+  QList<SUIT_SelectionFilter*> aListOfFilters;
   if (aMeshOrSubMeshFilter) aListOfFilters.append(aMeshOrSubMeshFilter);
   if (aSmeshGroupFilter)    aListOfFilters.append(aSmeshGroupFilter);
 
@@ -313,11 +295,11 @@ SMESHGUI_TranslationDlg::SMESHGUI_TranslationDlg( SMESHGUI* theModule, const cha
   Init();
 
   /* signals and slots connections */
-  connect(buttonOk, SIGNAL(clicked()),     this, SLOT(ClickOnOk()));
+  connect(buttonOk,     SIGNAL(clicked()), this, SLOT(ClickOnOk()));
   connect(buttonCancel, SIGNAL(clicked()), this, SLOT(ClickOnCancel()));
-  connect(buttonApply, SIGNAL(clicked()),  this, SLOT(ClickOnApply()));
-  connect(buttonHelp, SIGNAL(clicked()),   this, SLOT(ClickOnHelp()));
-  connect(GroupConstructors, SIGNAL(clicked(int)), SLOT(ConstructorsClicked(int)));
+  connect(buttonApply,  SIGNAL(clicked()), this, SLOT(ClickOnApply()));
+  connect(buttonHelp,   SIGNAL(clicked()), this, SLOT(ClickOnHelp()));
+  connect(GroupConstructors, SIGNAL(buttonClicked(int)), SLOT(ConstructorsClicked(int)));
 
   connect(SelectElementsButton, SIGNAL (clicked()), this, SLOT(SetEditCurrentArgument()));
   connect(SelectButton1,        SIGNAL (clicked()), this, SLOT(SetEditCurrentArgument()));
@@ -329,14 +311,11 @@ SMESHGUI_TranslationDlg::SMESHGUI_TranslationDlg( SMESHGUI* theModule, const cha
   connect(mySMESHGUI,       SIGNAL (SignalCloseAllDialogs()), this, SLOT(ClickOnCancel()));
   connect(LineEditElements, SIGNAL(textChanged(const QString&)),    SLOT(onTextChange(const QString&)));
   connect(CheckBoxMesh,     SIGNAL(toggled(bool)),                  SLOT(onSelectMesh(bool)));
-  connect(ActionGroup,      SIGNAL(clicked(int)),                   SLOT(onActionClicked(int)));
-
-  this->show(); /* displays Dialog */
+  connect(ActionGroup,      SIGNAL(buttonClicked(int)),             SLOT(onActionClicked(int)));
 
   ConstructorsClicked(0);
   SelectionIntoArgument();
   onActionClicked(MOVE_ELEMS_BUTTON);
-  resize(0,0); // ??
 }
 
 //=================================================================================
@@ -345,7 +324,11 @@ SMESHGUI_TranslationDlg::SMESHGUI_TranslationDlg( SMESHGUI* theModule, const cha
 //=================================================================================
 SMESHGUI_TranslationDlg::~SMESHGUI_TranslationDlg()
 {
-  // no need to delete child widgets, Qt does it all for us
+  if ( myFilterDlg ) {
+    myFilterDlg->setParent( 0 );
+    delete myFilterDlg;
+    myFilterDlg = 0;
+  }
 }
 
 //=================================================================================
@@ -375,7 +358,7 @@ void SMESHGUI_TranslationDlg::Init (bool ResetControls)
     SpinBox2_2->SetValue(0.0);
     SpinBox2_3->SetValue(0.0);
 
-    ((QRadioButton*) ActionGroup->find( MOVE_ELEMS_BUTTON ))->setChecked(TRUE);
+    ActionGroup->button( MOVE_ELEMS_BUTTON )->setChecked(true);
     CheckBoxMesh->setChecked(false);
 //     MakeGroupsCheck->setChecked(false);
 //     MakeGroupsCheck->setEnabled(false);
@@ -444,19 +427,26 @@ void SMESHGUI_TranslationDlg::ConstructorsClicked (int constructorId)
     onSelectMesh(true);
 
   connect(mySelectionMgr, SIGNAL(currentSelectionChanged()), this, SLOT(SelectionIntoArgument()));
+
+  QApplication::instance()->processEvents();
+  updateGeometry();
+  resize( minimumSize() );
 }
 
 //=================================================================================
 // function : ClickOnApply()
 // purpose  :
 //=================================================================================
-void SMESHGUI_TranslationDlg::ClickOnApply()
+bool SMESHGUI_TranslationDlg::ClickOnApply()
 {
   if (mySMESHGUI->isActiveStudyLocked())
-    return;
+    return false;
+
+  if( !isValid() )
+    return false;
 
   if (myNbOkElements) {
-    QStringList aListElementsId = QStringList::split(" ", myElementsId, false);
+    QStringList aListElementsId = myElementsId.split(" ", QString::SkipEmptyParts);
 
     SMESH::long_array_var anElementsId = new SMESH::long_array;
 
@@ -475,39 +465,73 @@ void SMESHGUI_TranslationDlg::ClickOnApply()
       aVector.PS.z = SpinBox1_3->GetValue();
     }
 
-    int actionButton = ActionGroup->id( ActionGroup->selected() );
+    QStringList aParameters;
+    aParameters << SpinBox1_1->text();
+    if (GetConstructorId() == 0)
+      aParameters << SpinBox2_1->text();
+    aParameters << SpinBox1_2->text();
+    if (GetConstructorId() == 0)
+      aParameters << SpinBox2_2->text();
+    aParameters << SpinBox1_3->text();
+    if (GetConstructorId() == 0)
+      aParameters << SpinBox2_3->text();
+
+    int actionButton = ActionGroup->checkedId();
     bool makeGroups = ( MakeGroupsCheck->isEnabled() && MakeGroupsCheck->isChecked() );
     try {
+      SUIT_OverrideCursor aWaitCursor;
       SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditor();
-      QApplication::setOverrideCursor(Qt::waitCursor);
       switch ( actionButton ) {
       case MOVE_ELEMS_BUTTON:
-        aMeshEditor->Translate(anElementsId, aVector, false);
+        if(CheckBoxMesh->isChecked())
+          aMeshEditor->TranslateObject(mySelectedObject, aVector, false);
+        else
+          aMeshEditor->Translate(anElementsId, aVector, false);
+	if( !myMesh->_is_nil())
+	  myMesh->SetParameters(SMESHGUI::JoinObjectParameters(aParameters));
         break;
       case COPY_ELEMS_BUTTON:
-        if ( makeGroups )
-          SMESH::ListOfGroups_var groups = 
-            aMeshEditor->TranslateMakeGroups(anElementsId, aVector);
-        else
-          aMeshEditor->Translate(anElementsId, aVector, true);
+        if ( makeGroups ) {
+          SMESH::ListOfGroups_var groups; 
+          if(CheckBoxMesh->isChecked())
+            groups = aMeshEditor->TranslateObjectMakeGroups(mySelectedObject,aVector);
+          else
+            groups = aMeshEditor->TranslateMakeGroups(anElementsId, aVector);
+        }
+        else {
+          if(CheckBoxMesh->isChecked())
+            aMeshEditor->TranslateObject(mySelectedObject, aVector, true);
+          else
+            aMeshEditor->Translate(anElementsId, aVector, true);
+        }
+	if( !myMesh->_is_nil())
+	  myMesh->SetParameters(SMESHGUI::JoinObjectParameters(aParameters));
         break;
       case MAKE_MESH_BUTTON:
-        SMESH::SMESH_Mesh_var mesh = 
-          aMeshEditor->TranslateMakeMesh(anElementsId, aVector, makeGroups,
-                                         LineEditNewMesh->text().latin1());
+        SMESH::SMESH_Mesh_var mesh; 
+        if(CheckBoxMesh->isChecked())
+          mesh = aMeshEditor->TranslateObjectMakeMesh(mySelectedObject, aVector, makeGroups,
+                                                      LineEditNewMesh->text().toLatin1().data());
+        else
+          mesh = aMeshEditor->TranslateMakeMesh(anElementsId, aVector, makeGroups,
+                                                LineEditNewMesh->text().toLatin1().data());
+	if( !mesh->_is_nil())
+	  mesh->SetParameters(SMESHGUI::JoinObjectParameters(aParameters));
       }
-      QApplication::restoreOverrideCursor();
     } catch (...) {
     }
-
+    
     SMESH::UpdateView();
     if ( MakeGroupsCheck->isEnabled() && MakeGroupsCheck->isChecked() ||
          actionButton == MAKE_MESH_BUTTON )
       mySMESHGUI->updateObjBrowser(true); // new groups may appear
     Init(false);
     ConstructorsClicked(GetConstructorId());
+    mySelectedObject = SMESH::SMESH_IDSource::_nil();
     SelectionIntoArgument();
   }
+  
+  return true;
 }
 
 //=================================================================================
@@ -516,8 +540,8 @@ void SMESHGUI_TranslationDlg::ClickOnApply()
 //=================================================================================
 void SMESHGUI_TranslationDlg::ClickOnOk()
 {
-  ClickOnApply();
-  ClickOnCancel();
+  if( ClickOnApply() )
+    ClickOnCancel();
 }
 
 //=================================================================================
@@ -529,7 +553,10 @@ void SMESHGUI_TranslationDlg::ClickOnCancel()
   disconnect(mySelectionMgr, 0, this, 0);
   mySelectionMgr->clearFilters();
   //mySelectionMgr->clearSelected();
-  SMESH::SetPointRepresentation(false);
+  if (SMESH::GetCurrentVtkView()) {
+    SMESH::RemoveFilters(); // PAL6938 -- clean all mesh entity filters
+    SMESH::SetPointRepresentation(false);
+  }
   if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
     aViewWindow->SetSelectionMode( ActorSelection );
   mySMESHGUI->ResetState();
@@ -546,16 +573,17 @@ void SMESHGUI_TranslationDlg::ClickOnHelp()
   if (app) 
     app->onHelpContextModule(mySMESHGUI ? app->moduleName(mySMESHGUI->moduleName()) : QString(""), myHelpFileName);
   else {
-		QString platform;
+    QString platform;
 #ifdef WIN32
-		platform = "winapplication";
+    platform = "winapplication";
 #else
-		platform = "application";
+    platform = "application";
 #endif
-    SUIT_MessageBox::warn1(0, QObject::tr("WRN_WARNING"),
-			   QObject::tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
-			   arg(app->resourceMgr()->stringValue("ExternalBrowser", platform)).arg(myHelpFileName),
-			   QObject::tr("BUT_OK"));
+    SUIT_MessageBox::warning(this, tr("WRN_WARNING"),
+			     tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
+			     arg(app->resourceMgr()->stringValue("ExternalBrowser", 
+								 platform)).
+			     arg(myHelpFileName));
   }
 }
 
@@ -568,7 +596,7 @@ void SMESHGUI_TranslationDlg::onTextChange (const QString& theNewText)
   QLineEdit* send = (QLineEdit*)sender();
 
   if (myBusy) return;
-  myBusy = true;
+  BusyLocker lock( myBusy );
 
   if (send == LineEditElements)
     myNbOkElements = 0;
@@ -586,7 +614,7 @@ void SMESHGUI_TranslationDlg::onTextChange (const QString& theNewText)
     
     TColStd_MapOfInteger newIndices;
 
-    QStringList aListId = QStringList::split(" ", theNewText, false);
+    QStringList aListId = theNewText.split(" ", QString::SkipEmptyParts);
 
     if (send == LineEditElements) {
       for (int i = 0; i < aListId.count(); i++) {
@@ -608,8 +636,6 @@ void SMESHGUI_TranslationDlg::onTextChange (const QString& theNewText)
     buttonOk->setEnabled(true);
     buttonApply->setEnabled(true);
   }
-
-  myBusy = false;
 }
 
 //=================================================================================
@@ -619,19 +645,17 @@ void SMESHGUI_TranslationDlg::onTextChange (const QString& theNewText)
 void SMESHGUI_TranslationDlg::SelectionIntoArgument()
 {
   if (myBusy) return;
-
+  BusyLocker lock( myBusy );
   // clear
   myActor = 0;
   QString aString = "";
 
-  myBusy = true;
   if (myEditCurrentArgument == (QWidget*)LineEditElements) {
     LineEditElements->setText(aString);
     myNbOkElements = 0;
     buttonOk->setEnabled(false);
     buttonApply->setEnabled(false);
   }
-  myBusy = false;
 
   if (!GroupButtons->isEnabled()) // inactive
     return;
@@ -665,15 +689,20 @@ void SMESHGUI_TranslationDlg::SelectionIntoArgument()
       MakeGroupsCheck->setChecked(false);
       MakeGroupsCheck->setEnabled(false);
     }
-    else if ( ActionGroup->id( ActionGroup->selected() ) != MOVE_ELEMS_BUTTON ) {
+    else if ( ActionGroup->checkedId() != MOVE_ELEMS_BUTTON ) {
       MakeGroupsCheck->setEnabled(true);
     }
 
     if (CheckBoxMesh->isChecked()) {
       SMESH::GetNameOfSelectedIObjects( mySelectionMgr, aString );
 
-      if (!SMESH::IObjectToInterface<SMESH::SMESH_Mesh>(IO)->_is_nil()) { //MESH
+      if (!SMESH::IObjectToInterface<SMESH::SMESH_IDSource>(IO)->_is_nil()) { //MESH, SUBMESH, OR GROUP
+        mySelectedObject = SMESH::IObjectToInterface<SMESH::SMESH_IDSource>(IO);
+      }
+      else
+        return;
         // get IDs from mesh
+        /*
         SMDS_Mesh* aSMDSMesh = myActor->GetObject()->GetMesh();
         if (!aSMDSMesh)
           return;
@@ -711,13 +740,13 @@ void SMESHGUI_TranslationDlg::SelectionIntoArgument()
         }
         aNbUnits = anElementsIds->length();
       }
+        */
     } else {
       aNbUnits = SMESH::GetNameOfSelectedElements(mySelector, IO, aString);
       myElementsId = aString;
+      if (aNbUnits < 1)
+        return;  
     }
-
-    if (aNbUnits < 1)
-      return;
 
     myNbOkElements = true;
   } else {
@@ -748,12 +777,13 @@ void SMESHGUI_TranslationDlg::SelectionIntoArgument()
     }
   }
 
-  myBusy = true;
   if (myEditCurrentArgument == (QWidget*)LineEditElements) {
     LineEditElements->setText(aString);
+    LineEditElements->repaint();
+    LineEditElements->setEnabled(false); // to fully update lineedit IPAL 19809
+    LineEditElements->setEnabled(true); 
     setNewMeshName();
   }
-  myBusy = false;
 
   // OK
   if (myNbOkElements) {
@@ -811,8 +841,8 @@ void SMESHGUI_TranslationDlg::SetEditCurrentArgument()
 //=================================================================================
 void SMESHGUI_TranslationDlg::DeactivateActiveDialog()
 {
-  if (GroupConstructors->isEnabled()) {
-    GroupConstructors->setEnabled(false);
+  if (ConstructorsBox->isEnabled()) {
+    ConstructorsBox->setEnabled(false);
     GroupArguments->setEnabled(false);
     GroupButtons->setEnabled(false);
     mySMESHGUI->ResetState();
@@ -828,7 +858,7 @@ void SMESHGUI_TranslationDlg::ActivateThisDialog()
 {
   /* Emit a signal to deactivate the active dialog */
   mySMESHGUI->EmitSignalDeactivateDialog();
-  GroupConstructors->setEnabled(true);
+  ConstructorsBox->setEnabled(true);
   GroupArguments->setEnabled(true);
   GroupButtons->setEnabled(true);
 
@@ -846,7 +876,7 @@ void SMESHGUI_TranslationDlg::ActivateThisDialog()
 //=================================================================================
 void SMESHGUI_TranslationDlg::enterEvent (QEvent*)
 {
-  if (!GroupConstructors->isEnabled())
+  if (!ConstructorsBox->isEnabled())
     ActivateThisDialog();
 }
 
@@ -857,7 +887,7 @@ void SMESHGUI_TranslationDlg::enterEvent (QEvent*)
 void SMESHGUI_TranslationDlg::closeEvent (QCloseEvent*)
 {
   /* same than click on cancel button */
-  this->ClickOnCancel();
+  ClickOnCancel();
 }
 
 //=======================================================================
@@ -894,10 +924,12 @@ void SMESHGUI_TranslationDlg::onSelectMesh (bool toSelectMesh)
       aViewWindow->SetSelectionMode( ActorSelection );
     mySelectionMgr->installFilter(myMeshOrSubMeshOrGroupFilter);
     LineEditElements->setReadOnly(true);
+    LineEditElements->setValidator(0);
   } else {
     if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
       aViewWindow->SetSelectionMode( CellSelection );
     LineEditElements->setReadOnly(false);
+    LineEditElements->setValidator(myIdValidator);
     onTextChange(LineEditElements->text());
   }
 
@@ -951,10 +983,10 @@ void SMESHGUI_TranslationDlg::setNewMeshName()
     }
     else {
       _PTR(SObject) meshSO = SMESH::FindSObject( myMesh );
-      name = meshSO->GetName();
+      name = meshSO->GetName().c_str();
     }
     if ( !name.isEmpty() )
-      LineEditNewMesh->setText( SMESH::UniqueMeshName( name.latin1(), "translated"));
+      LineEditNewMesh->setText( SMESH::UniqueMeshName( name, "translated"));
   }
 }
 
@@ -964,9 +996,7 @@ void SMESHGUI_TranslationDlg::setNewMeshName()
 //=================================================================================
 int SMESHGUI_TranslationDlg::GetConstructorId()
 {
-  if (GroupConstructors != NULL && GroupConstructors->selected() != NULL)
-    return GroupConstructors->id(GroupConstructors->selected());
-  return -1;
+  return GroupConstructors->checkedId();
 }
 
 //=================================================================================
@@ -979,9 +1009,52 @@ void SMESHGUI_TranslationDlg::keyPressEvent( QKeyEvent* e )
   if ( e->isAccepted() )
     return;
 
-  if ( e->key() == Key_F1 )
-    {
-      e->accept();
-      ClickOnHelp();
-    }
+  if ( e->key() == Qt::Key_F1 ) {
+    e->accept();
+    ClickOnHelp();
+  }
+}
+
+//=================================================================================
+// function : setFilters()
+// purpose  : SLOT. Called when "Filter" button pressed.
+//=================================================================================
+void SMESHGUI_TranslationDlg::setFilters()
+{
+  if ( !myFilterDlg )
+    myFilterDlg = new SMESHGUI_FilterDlg( mySMESHGUI, SMESH::ALL );
+
+  myFilterDlg->SetSelection();
+  myFilterDlg->SetMesh( myMesh );
+  myFilterDlg->SetSourceWg( LineEditElements );
+
+  myFilterDlg->show();
+}
+
+//=================================================================================
+// function : isValid
+// purpose  :
+//=================================================================================
+bool SMESHGUI_TranslationDlg::isValid()
+{
+  bool ok = true;
+  QString msg;
+
+  ok = SpinBox1_1->isValid( msg, true ) && ok;
+  ok = SpinBox1_2->isValid( msg, true ) && ok;
+  ok = SpinBox1_3->isValid( msg, true ) && ok;
+  if (GetConstructorId() == 0) {
+    ok = SpinBox2_1->isValid( msg, true ) && ok;
+    ok = SpinBox2_2->isValid( msg, true ) && ok;
+    ok = SpinBox2_3->isValid( msg, true ) && ok;
+  }
+
+  if( !ok ) {
+    QString str( tr( "SMESH_INCORRECT_INPUT" ) );
+    if ( !msg.isEmpty() )
+      str += "\n" + msg;
+    SUIT_MessageBox::critical( this, tr( "SMESH_ERROR" ), str );
+    return false;
+  }
+  return true;
 }

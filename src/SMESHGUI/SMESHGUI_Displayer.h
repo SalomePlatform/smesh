@@ -1,6 +1,6 @@
-//  SMESH SMESHGUI : Displayer for SMESH module
+//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
 //  This library is free software; you can redistribute it and/or
@@ -17,20 +17,19 @@
 //  License along with this library; if not, write to the Free Software
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+// SMESH SMESHGUI : Displayer for SMESH module
+// File   : SMESHGUI_Displayer.h
+// Author : Alexander SOLOVYOV, Open CASCADE S.A.S.
 //
-//
-//  File   : SMESHGUI_Displayer.h
-//  Author : Alexander SOLOVYOV
-//  Module : SMESH
-//  $Header: /home/server/cvs/SMESH/SMESH_SRC/src/SMESHGUI/SMESHGUI_Displayer.h
+#ifndef SMESHGUI_DISPLAYER_H
+#define SMESHGUI_DISPLAYER_H
 
-#ifndef SMESHGUI_DISPLAYER_HEADER
-#define SMESHGUI_DISPLAYER_HEADER
-
+// SMESH includes
 #include "SMESH_SMESHGUI.hxx"
 
+// SALOME GUI includes
 #include <LightApp_Displayer.h>
 
 class SalomeApp_Application;
@@ -42,14 +41,14 @@ public:
   SMESHGUI_Displayer( SalomeApp_Application* );
   ~SMESHGUI_Displayer();
 
-  virtual SALOME_Prs* buildPresentation( const QString&, SALOME_View* = 0 );
-  virtual bool        canBeDisplayed( const QString& /*entry*/, const QString& /*viewer_type*/ ) const;
+  virtual SALOME_Prs*      buildPresentation( const QString&, SALOME_View* = 0 );
+  virtual bool             canBeDisplayed( const QString&, const QString& ) const;
 
 protected:
-  SalomeApp_Study* study() const;
+  SalomeApp_Study*         study() const;
 
 private:
   SalomeApp_Application*   myApp;
 };
 
-#endif
+#endif // SMESHGUI_DISPLAYER_H

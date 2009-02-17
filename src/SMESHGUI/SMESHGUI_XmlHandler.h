@@ -1,69 +1,69 @@
-//  SMESH SMESHGUI : reading of xml file with list of available hypotheses and algorithms
+//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003  CEA
+//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
-//  This library is free software; you can redistribute it and/or 
-//  modify it under the terms of the GNU Lesser General Public 
-//  License as published by the Free Software Foundation; either 
-//  version 2.1 of the License. 
-// 
-//  This library is distributed in the hope that it will be useful, 
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of 
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
-//  Lesser General Public License for more details. 
-// 
-//  You should have received a copy of the GNU Lesser General Public 
-//  License along with this library; if not, write to the Free Software 
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
-// 
-// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
 //
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
 //
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  File   : SMESHGUI_XmlHandler.cxx
-//  Author : Julia DOROVSKIKH
-//  Module : SMESH
-//  $Header$
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
+// SMESH SMESHGUI : reading of xml file with list of available hypotheses and algorithms
+// File   : SMESHGUI_XmlHandler.h
+// Author : Julia DOROVSKIKH, Open CASCADE S.A.S.
+//
+#ifndef SMESHGUI_XMLHANDLER_H
+#define SMESHGUI_XMLHANDLER_H
 
-#ifndef SMESHGUI_XmlHandler_HeaderFile
-#define SMESHGUI_XmlHandler_HeaderFile
-
+// SMESH includes
 #include "SMESH_SMESHGUI.hxx"
 
-#include "SMESHGUI_Hypotheses.h"
+// Qt includes
+#include <QXmlDefaultHandler>
+#include <QMap>
+#include <QList>
 
-#include <qxml.h>
-#include <map>
-#include <list>
+class HypothesisData;
+class HypothesesSet;
 
 class SMESHGUI_EXPORT SMESHGUI_XmlHandler : public QXmlDefaultHandler
 {
- public:
+public:
   SMESHGUI_XmlHandler();
   virtual ~SMESHGUI_XmlHandler();
 
-  bool startDocument();
-  bool startElement( const QString& namespaceURI, const QString& localName, 
-		     const QString& qName, const QXmlAttributes& atts );
-  bool endElement( const QString& namespaceURI, const QString& localName, const QString& qName );
-  bool characters( const QString& ch );
+  bool     startDocument();
+  bool     startElement( const QString&, const QString&, 
+			 const QString&, const QXmlAttributes& );
+  bool     endElement( const QString&, const QString&, const QString& );
+  bool     characters( const QString& ); 
 
-  QString errorString();
-  QString errorProtocol();
-  bool fatalError   (const QXmlParseException& exception);
+  QString  errorString();
+  QString  errorProtocol();
+  bool     fatalError( const QXmlParseException& );
 
- public:
-  std::map<std::string, HypothesisData*> myHypothesesMap;
-  std::map<std::string, HypothesisData*> myAlgorithmsMap;
+public:
+  QMap<QString, HypothesisData*>         myHypothesesMap;
+  QMap<QString, HypothesisData*>         myAlgorithmsMap;
 
-  std::list<HypothesesSet*> myListOfHypothesesSets;
+  QList<HypothesesSet*>                  myListOfHypothesesSets;
 
- private:
-  QString myErrorProt;
-  QString myPluginName;
-  QString myServerLib;
-  QString myClientLib;
+private:
+  QString                                myErrorProt;
+  QString                                myPluginName;
+  QString                                myServerLib;
+  QString                                myClientLib;
 };
 
-
-#endif
+#endif // SMESHGUI_XMLHANDLER_H

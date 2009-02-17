@@ -1,40 +1,39 @@
-//  SMESH SMESHGUI : GUI for SMESH component
+//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
-// 
-//  This library is free software; you can redistribute it and/or 
-//  modify it under the terms of the GNU Lesser General Public 
-//  License as published by the Free Software Foundation; either 
-//  version 2.1 of the License. 
-// 
-//  This library is distributed in the hope that it will be useful, 
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of 
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
+//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+//
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
+//
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 //  Lesser General Public License for more details.
-// 
-//  You should have received a copy of the GNU Lesser General Public 
-//  License along with this library; if not, write to the Free Software 
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
-// 
-// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
-//  File   : SMESHGUI.h
-//  Author : Nicolas REJNERI
-//  Module : SMESH
-//  $Header$
+// SMESH SMESHGUI : GUI for SMESH component
+// File   : SMESHGUI.h
+// Author : Nicolas REJNERI, Open CASCADE S.A.S.
+//
+#ifndef SMESHGUI_H
+#define SMESHGUI_H
 
-#ifndef SMESHGUI_HeaderFile
-#define SMESHGUI_HeaderFile
-
+// SMESH includes
 #include "SMESH_SMESHGUI.hxx"
 
-// SALOME Includes
+// SALOME GUI includes
 #include <SalomeApp_Module.h>
 #include <SALOME_InteractiveObject.hxx>
 
+// IDL includes
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_Gen)
 
@@ -48,10 +47,10 @@ class SUIT_ViewManager;
 
 class LightApp_Operation;
 class SalomeApp_Study;
+class LightApp_Selection;
 class LightApp_SelectionMgr;
 
 class SMESHGUI_FilterLibraryDlg;
-
 
 //=================================================================================
 // class    : SMESHGUI
@@ -69,84 +68,101 @@ public :
   static SMESHGUI*                GetSMESHGUI();
   static LightApp_SelectionMgr*   selectionMgr();
   static SUIT_ResourceMgr*        resourceMgr();
-  static SUIT_Desktop*            desktop() ;
+  static SUIT_Desktop*            desktop();
   static SalomeApp_Study*         activeStudy();
+  static char*                    JoinObjectParameters(const QStringList& theParametersList);
+  
   bool                            isActiveStudyLocked();
 
   static bool                     automaticUpdate();
 
   virtual LightApp_Displayer*     displayer();
-  virtual QString     engineIOR() const;
-  virtual void        initialize( CAM_Application* );
-  virtual void        windows( QMap<int, int>& ) const;
-  virtual void        viewManagers( QStringList& ) const;
+  virtual QString                 engineIOR() const;
+  virtual void                    initialize( CAM_Application* );
+  virtual void                    windows( QMap<int, int>& ) const;
+  virtual void                    viewManagers( QStringList& ) const;
 
-  QDialog*            GetActiveDialogBox() ;
-  void                SetActiveDialogBox(QDialog* aDlg) ;
+  QDialog*                        GetActiveDialogBox();
+  void                            SetActiveDialogBox( QDialog* );
 
-  void                ResetState() ;
-  void                SetState(int aState) ;
-  bool                DefineDlgPosition(QWidget* aDlg, int& x, int& y) ;
-  void                switchToOperation(int id) ;
+  void                            ResetState();
+  void                            SetState( int );
+  bool                            DefineDlgPosition( QWidget*, int&, int& );
+  void                            switchToOperation( int );
 
-  virtual bool OnGUIEvent        ( int id );
-  virtual bool OnMousePress      ( QMouseEvent*, SUIT_ViewWindow* );
-  virtual bool OnMouseMove       ( QMouseEvent*, SUIT_ViewWindow* );
-  virtual bool OnKeyPress        ( QKeyEvent*, SUIT_ViewWindow* );
+  virtual bool                    OnGUIEvent( int );
+  virtual bool                    OnMousePress( QMouseEvent*, SUIT_ViewWindow* );
+  virtual bool                    OnMouseMove( QMouseEvent*, SUIT_ViewWindow* );
+  virtual bool                    OnKeyPress( QKeyEvent*, SUIT_ViewWindow* );
 
-  virtual void contextMenuPopup( const QString&, QPopupMenu*, QString& );
+  virtual LightApp_Selection*     createSelection() const;
 
-  virtual void BuildPresentation ( const Handle(SALOME_InteractiveObject)&,
-                                   SUIT_ViewWindow* = 0 );
+  virtual void                    BuildPresentation ( const Handle(SALOME_InteractiveObject)&,
+                                                      SUIT_ViewWindow* = 0 );
 
   /* Non modal dialog boxes management */
-  void EmitSignalDeactivateDialog() ;
-  void EmitSignalStudyFrameChanged() ;
-  void EmitSignalCloseAllDialogs() ;
+  void                            EmitSignalDeactivateDialog();
+  void                            EmitSignalStudyFrameChanged();
+  void                            EmitSignalCloseAllDialogs();
 
-  virtual void                createPreferences();
-  virtual void                preferencesChanged( const QString&, const QString& );
-  
-  virtual void                update( const int );
+  virtual void                    contextMenuPopup( const QString&, QMenu*, QString& );
+  virtual void                    createPreferences();
+  virtual void                    preferencesChanged( const QString&, const QString& );
 
-  static SALOMEDS::Color      getUniqueColor( const QValueList<SALOMEDS::Color>& );
+  virtual void                    update( const int );
+
+  static SALOMEDS::Color          getUniqueColor( const QList<SALOMEDS::Color>& );
+
+  virtual void                    storeVisualParameters  (int savePoint);
+  virtual void                    restoreVisualParameters(int savePoint);
 
 public slots:
-  virtual bool                deactivateModule( SUIT_Study* );
-  virtual bool                activateModule( SUIT_Study* );
-  virtual void                studyClosed( SUIT_Study* );
+  virtual bool                    deactivateModule( SUIT_Study* );
+  virtual bool                    activateModule( SUIT_Study* );
+  virtual void                    studyClosed( SUIT_Study* );
 
 private slots:
-  void                        OnGUIEvent();
-  void                        onViewManagerActivated( SUIT_ViewManager* );
-  void                        onOperationCommited( SUIT_Operation* );
-  void                        onOperationAborted( SUIT_Operation* );
+  void                            OnGUIEvent();
+  void                            onViewManagerActivated( SUIT_ViewManager* );
+  void                            onOperationCommited( SUIT_Operation* );
+  void                            onOperationAborted( SUIT_Operation* );
 
 
 signals:
-  void SignalDeactivateActiveDialog() ;
-  void SignalStudyFrameChanged() ;
-  void SignalCloseAllDialogs() ;
+  void                            SignalDeactivateActiveDialog();
+  void                            SignalStudyFrameChanged();
+  void                            SignalCloseAllDialogs();
 
 protected:
-  void createSMESHAction( const int, const QString&, const QString& = QString(""),
-                          const int = 0, const bool = false );
-  void createPopupItem( const int, const QString&, const QString&,
-                        const QString& = QString::null, const int = -1 );
-  
-  virtual LightApp_Operation*      createOperation( const int ) const;
+  void                            createSMESHAction( const int,
+                                                     const QString&,
+                                                     const QString& = QString(),
+                                                     const int = 0,
+                                                     const bool = false );
+  void                            createPopupItem( const int,
+                                                   const QString&,
+                                                   const QString&,
+                                                   const QString& = QString(),
+                                                   const int = -1 );
+
+  virtual LightApp_Operation*     createOperation( const int ) const;
+
+  virtual bool                    isSelectionCompatible();
 
 private:
-  void OnEditDelete();
+  void                            OnEditDelete();
+  int                             addVtkFontPref( const QString& label, 
+                                                  const int pId, 
+                                                  const QString& param );
 
 private :
-  static SMESH::SMESH_Gen_var      myComponentSMESH;
-  QDialog*                         myActiveDialogBox;
-  int                              myState;
-  QMap<int,QString>                myRules;
-  LightApp_Displayer*              myDisplayer;
+  static SMESH::SMESH_Gen_var     myComponentSMESH;
+  QDialog*                        myActiveDialogBox;
+  int                             myState;
+  QMap<int, QString>              myRules;
+  LightApp_Displayer*             myDisplayer;
 
-  SMESHGUI_FilterLibraryDlg*       myFilterLibraryDlg;
+  SMESHGUI_FilterLibraryDlg*      myFilterLibraryDlg;
 };
 
-#endif
+#endif // SMESHGUI_H

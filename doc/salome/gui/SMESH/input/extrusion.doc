@@ -13,7 +13,7 @@ and Hexahedron solids respectively.
 <li>From the \b Modification menu choose the \b Extrusion item or click
 <em>"Extrusion"</em> button in the toolbar. 
 
-\image html image91.gif
+\image html image91.png
 <center><em>"Extrusion" button</em></center>
 
 The following dialog box will appear:
@@ -28,7 +28,18 @@ The following dialog box will appear:
 <li>the type of elements which will be extruded (1D or 2D),</li>
 <li>specify the IDs of the elements which will be extruded by
 selecting them in the 3D viewer or select the whole mesh or
-submesh,</li>
+submesh,
+<ul>
+<li>Check on <b>Select the whole mesh, submesh or group</b> option
+<li>Choosing them manually with the mouse in the 3D Viewer. You can
+click on an element in the 3D viewer and it will be highlighted</li>
+<li>Applying Filters. The <b>Set filter</b> button allows to apply a
+definite filter to selection of the elements. See more
+about filters on the
+\ref selection_filter_library_page "Selection filter library" page.</li>
+</ul>
+</li>
+<li>specify the distance at which the elements will be extruded,</li>
 <li>specify the vector along which the elements will be extruded,</li>
 <li>number of steps.</li>
 </ul>
@@ -39,9 +50,9 @@ elements of the source mesh to the newly created one. </li>
 <li>Click the \b Apply or \b OK button.</li>
 </ol>
 
-\image html image77.jpg
+\image html image77.jpg "The mesh with an edge selected for extrusion"
 
-\image html image76.jpg
+\image html image76.jpg "The mesh with extruded edge" 
 
 <br><b>See Also</b> a sample TUI Script of an 
 \ref tui_extrusion "Extrusion" operation. 

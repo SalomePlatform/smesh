@@ -6,8 +6,8 @@
 select one or several groups you wish to delete in the 3D viewer or in
 the Object Browser.
 \n The selected groups will be listed in <b>Delete groups with contents</b>
-menu. Then click Ok button to remove the selected groups and close the
-menu or Apply button to remove them and proceed with the selection.
+menu. Then click <b>Apply and Close</b> button to remove the selected groups and close the
+menu or \b Apply button to remove them and proceed with the selection.
 
 \image html deletegroups.png
  

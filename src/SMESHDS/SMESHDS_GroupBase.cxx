@@ -1,29 +1,29 @@
+//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//
+//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+//
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
+//
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
+//
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
 //  SMESH SMESHDS : idl implementation based on 'SMESH' unit's classes
-//
-//  Copyright (C) 2004  CEA
-// 
-//  This library is free software; you can redistribute it and/or 
-//  modify it under the terms of the GNU Lesser General Public 
-//  License as published by the Free Software Foundation; either 
-//  version 2.1 of the License. 
-// 
-//  This library is distributed in the hope that it will be useful, 
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of 
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
-//  Lesser General Public License for more details. 
-// 
-//  You should have received a copy of the GNU Lesser General Public 
-//  License along with this library; if not, write to the Free Software 
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
-// 
-// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
-//
-//
-//
 //  File   : SMESHDS_Group.cxx
 //  Module : SMESH
 //  $Header$
-
+//
 #include "SMESHDS_GroupBase.hxx"
 #include "SMESHDS_Mesh.hxx"
 
@@ -169,13 +169,20 @@ void SMESHDS_GroupBase::SetType(SMDSAbs_ElementType theType)
 
 void SMESHDS_GroupBase::SetColorGroup(int theColorGroup)
 {
-  if( theColorGroup < 0 || theColorGroup > 360 )
-  {
-    MESSAGE("SMESHDS_GroupBase::SetColorGroup : Value must be in range [0,360]");
+  int aRed = ( theColorGroup/1000000 );
+  int aGreen = ( theColorGroup -aRed*1000000)/1000;
+  int aBlue = ( theColorGroup - aRed*1000000 - aGreen*1000 );
+  double aR = aRed/255.0;
+  double aG = aGreen/255.0;
+  double aB = aBlue/255.0;
+  if ( aR < 0. || aR > 1. || // PAL19395
+       aG < 0. || aG > 1. ||
+       aB < 0. || aB > 1. )
+// #ifdef _DEBUG_
+//     cout << "SMESHDS_GroupBase::SetColorGroup("<<theColorGroup<<"), invalid color ignored"<<endl;
+// #endif
     return;
-  }
-
-  Quantity_Color aColor( (double)theColorGroup, 1.0, 1.0, Quantity_TOC_HLS );
+  Quantity_Color aColor( aR, aG, aB, Quantity_TOC_RGB );
   SetColor( aColor );
 }
   
@@ -187,9 +194,14 @@ void SMESHDS_GroupBase::SetColorGroup(int theColorGroup)
 int SMESHDS_GroupBase::GetColorGroup() const
 {
   Quantity_Color aColor = GetColor();
-  double aHue = aColor.Hue();
-  if( aHue < 0 )
-    return 0;
-  return (int)( aHue );
+  double aRed = aColor.Red();
+  double aGreen = aColor.Green();
+  double aBlue = aColor.Blue();
+  int aR = int( aRed  *255 );
+  int aG = int( aGreen*255 );
+  int aB = int( aBlue *255 );
+  int aRet = (int)(aR*1000000 + aG*1000 + aB);
+
+  return aRet;
 }
   

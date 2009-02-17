@@ -16,7 +16,7 @@ Edges.
 <li>From the \b Modification menu choose the \b Add item and select
 one of the following:
 
-\image html image152.gif
+\image html image152.png
 
 To create any <b>Quadratic Element</b> specify the nodes which will form your
 triangle by selecting them in the 3D viewer with pressed Shift
@@ -26,7 +26,7 @@ selection).The edges formed by the corner nodes will appear in the
 table. To define the middle nodes for each edge double-click on the
 respective field and input the number of the node. All edges and the
 object formed by them will be displayed in the Object browser. When
-all edges are defined you will be able to click \b OK or \b Apply button to
+all edges are defined you will be able to click \b Apply or <b>Apply and Close</b> button to
 add the element to the mesh.
 
 \image html aqt.png

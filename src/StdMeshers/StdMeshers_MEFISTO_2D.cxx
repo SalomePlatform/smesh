@@ -1,32 +1,30 @@
+//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//
+//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+//
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
+//
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
+//
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
 //  SMESH SMESH : implementaion of SMESH idl descriptions
-//
-//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
-// 
-//  This library is free software; you can redistribute it and/or 
-//  modify it under the terms of the GNU Lesser General Public 
-//  License as published by the Free Software Foundation; either 
-//  version 2.1 of the License. 
-// 
-//  This library is distributed in the hope that it will be useful, 
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of 
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
-//  Lesser General Public License for more details. 
-// 
-//  You should have received a copy of the GNU Lesser General Public 
-//  License along with this library; if not, write to the Free Software 
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
-// 
-// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
-//
-//
-//
 //  File   : StdMeshers_MEFISTO_2D.cxx
 //           Moved here from SMESH_MEFISTO_2D.cxx
 //  Author : Paul RASCLE, EDF
 //  Module : SMESH
-//  $Header$
-
+//
 #include "StdMeshers_MEFISTO_2D.hxx"
 
 #include "SMESH_Gen.hxx"
@@ -113,6 +111,8 @@ bool StdMeshers_MEFISTO_2D::CheckHypothesis
 {
   _hypMaxElementArea = NULL;
   _hypLengthFromEdges = NULL;
+  _edgeLength = 0;
+  _maxElementArea = 0;
 
   list <const SMESHDS_Hypothesis * >::const_iterator itl;
   const SMESHDS_Hypothesis *theHyp;
@@ -121,8 +121,8 @@ bool StdMeshers_MEFISTO_2D::CheckHypothesis
   int nbHyp = hyps.size();
   if (!nbHyp)
   {
-    aStatus = SMESH_Hypothesis::HYP_MISSING;
-    return false;  // can't work with no hypothesis
+    aStatus = SMESH_Hypothesis::HYP_OK; //SMESH_Hypothesis::HYP_MISSING;
+    return true;  // (PAL13464) can work with no hypothesis, LengthFromEdges is default one
   }
 
   itl = hyps.begin();
@@ -137,7 +137,6 @@ bool StdMeshers_MEFISTO_2D::CheckHypothesis
     _hypMaxElementArea = static_cast<const StdMeshers_MaxElementArea *>(theHyp);
     ASSERT(_hypMaxElementArea);
     _maxElementArea = _hypMaxElementArea->GetMaxArea();
-    _edgeLength = 0;
     isOk = true;
     aStatus = SMESH_Hypothesis::HYP_OK;
   }
@@ -146,8 +145,6 @@ bool StdMeshers_MEFISTO_2D::CheckHypothesis
   {
     _hypLengthFromEdges = static_cast<const StdMeshers_LengthFromEdges *>(theHyp);
     ASSERT(_hypLengthFromEdges);
-    _edgeLength = 0;
-    _maxElementArea = 0;
     isOk = true;
     aStatus = SMESH_Hypothesis::HYP_OK;
   }
@@ -201,7 +198,7 @@ bool StdMeshers_MEFISTO_2D::Compute(SMESH_Mesh & aMesh, const TopoDS_Shape & aSh
                  SMESH_Comment("Too few segments: ")<<wires[0]->NbSegments());
 
   // compute average edge length
-  if (_hypLengthFromEdges)
+  if (!_hypMaxElementArea)
   {
     _edgeLength = 0;
     int nbSegments = 0;
@@ -215,7 +212,7 @@ bool StdMeshers_MEFISTO_2D::Compute(SMESH_Mesh & aMesh, const TopoDS_Shape & aSh
       _edgeLength /= nbSegments;
   }
 
-  if (_hypLengthFromEdges && _edgeLength < DBL_MIN )
+  if (/*_hypLengthFromEdges &&*/ _edgeLength < DBL_MIN )
     _edgeLength = 100;
 
   Z nblf;                 //nombre de lignes fermees (enveloppe en tete)
@@ -494,20 +491,21 @@ bool StdMeshers_MEFISTO_2D::LoadPoints(TWireVector &                 wires,
   }
 
   int m = 0;
-  list< int > mOnVertex;
 
   for ( int iW = 0; iW < wires.size(); ++iW )
   {
     const vector<UVPtStruct>& uvPtVec = wires[ iW ]->GetUVPtStruct();
     if ( uvPtVec.size() != wires[ iW ]->NbPoints() ) {
       return error(COMPERR_BAD_INPUT_MESH,SMESH_Comment("Unexpected nb of points on wire ")
-                   << iW << uvPtVec.size()<<" != "<<wires[ iW ]->NbPoints());
+                   << iW << ": " << uvPtVec.size()<<" != "<<wires[ iW ]->NbPoints()
+                   << ", probably because of invalid node parameters on geom edges");
     }
     if ( m + uvPtVec.size()-1 > mefistoToDS.size() ) {
       MESSAGE("Wrong mefistoToDS.size: "<<mefistoToDS.size()<<" < "<<m + uvPtVec.size()-1);
       return error("Internal error");
     }
 
+    list< int > mOnVertex;
     vector<UVPtStruct>::const_iterator uvPt = uvPtVec.begin();
     for ( ++uvPt; uvPt != uvPtVec.end(); ++uvPt )
     {

@@ -1,4 +1,6 @@
-//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//
+//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
 //  This library is free software; you can redistribute it and/or
@@ -15,12 +17,10 @@
 //  License along with this library; if not, write to the Free Software
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
-//
-//
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 //  File   : SMESH_MeshEditor.idl
-//  $Header$
+//
 
 #ifndef _SMESH_MESHEDITOR_IDL_
 #define _SMESH_MESHEDITOR_IDL_
@@ -29,22 +29,6 @@
 
 module SMESH
 {
-  /*!
-   * Structure used in mesh edit preview data
-   */
-  struct ElementSubType { ElementType SMDS_ElementType;
-                          boolean     isPoly;
-                          long        nbNodesInElement; };
-
-  typedef sequence<ElementSubType> types_array;
-
-  /*!
-   * Structure containing mesh edit preview data
-   */
-  struct MeshPreviewStruct { nodes_array nodesXYZ;
-                             long_array  elementConnectivities;
-                             types_array elementTypes; };
-
   /*!
    * This interface makes modifications on the Mesh - removing elements and nodes etc.
    */
@@ -298,6 +282,48 @@ module SMESH
                                                in long            NbOfSteps,
                                                in double          Tolerance);
     /*!
+     * \brief Genarate dim+1 elements by rotation of the object around axis
+     * \param theObject - object containing elements to ratate
+     * \param Axix - rotation axis
+     * \param AngleInRadians - rotation angle
+     * \param NbOfSteps - number of elements to generate from one element
+     */
+    void RotationSweepObject1D(in SMESH_IDSource  theObject,
+			       in AxisStruct      Axix,
+			       in double          AngleInRadians,
+			       in long            NbOfSteps,
+			       in double          Tolerance);
+    /*!
+     * \brief Same as previous but additionally create groups of elements
+     *  generated from elements belonging to preexisting groups
+     */
+    ListOfGroups RotationSweepObject1DMakeGroups(in SMESH_IDSource  theObject,
+						 in AxisStruct      Axix,
+						 in double          AngleInRadians,
+						 in long            NbOfSteps,
+						 in double          Tolerance);
+    /*!
+     * \brief Genarate dim+1 elements by rotation of the object around axis
+     * \param theObject - object containing elements to ratate
+     * \param Axix - rotation axis
+     * \param AngleInRadians - rotation angle
+     * \param NbOfSteps - number of elements to generate from one element
+     */
+    void RotationSweepObject2D(in SMESH_IDSource  theObject,
+			       in AxisStruct      Axix,
+			       in double          AngleInRadians,
+			       in long            NbOfSteps,
+			       in double          Tolerance);
+    /*!
+     * \brief Same as previous but additionally create groups of elements
+     *  generated from elements belonging to preexisting groups
+     */
+    ListOfGroups RotationSweepObject2DMakeGroups(in SMESH_IDSource  theObject,
+						 in AxisStruct      Axix,
+						 in double          AngleInRadians,
+						 in long            NbOfSteps,
+						 in double          Tolerance);
+    /*!
      * \brief Genarate dim+1 elements by extrusion of elements along vector
      * \param IDsOfElements - elements to sweep
      * \param StepVector - vector giving direction and distance of an extrusion step
@@ -401,6 +427,42 @@ module SMESH
                                                     in boolean           HasRefPoint,
                                                     in PointStruct       RefPoint,
                                                     out Extrusion_Error  Error);
+
+    Extrusion_Error ExtrusionAlongPathObject1D(in SMESH_IDSource    theObject,
+					       in SMESH_Mesh        PathMesh,
+					       in GEOM::GEOM_Object PathShape,
+					       in long              NodeStart,
+					       in boolean           HasAngles,
+					       in double_array      Angles,
+					       in boolean           HasRefPoint,
+					       in PointStruct       RefPoint);
+    ListOfGroups ExtrusionAlongPathObject1DMakeGroups(in SMESH_IDSource    theObject,
+						      in SMESH_Mesh        PathMesh,
+						      in GEOM::GEOM_Object PathShape,
+						      in long              NodeStart,
+						      in boolean           HasAngles,
+						      in double_array      Angles,
+						      in boolean           HasRefPoint,
+						      in PointStruct       RefPoint,
+						      out Extrusion_Error  Error);
+
+    Extrusion_Error ExtrusionAlongPathObject2D(in SMESH_IDSource    theObject,
+					       in SMESH_Mesh        PathMesh,
+					       in GEOM::GEOM_Object PathShape,
+					       in long              NodeStart,
+					       in boolean           HasAngles,
+					       in double_array      Angles,
+					       in boolean           HasRefPoint,
+					       in PointStruct       RefPoint);
+    ListOfGroups ExtrusionAlongPathObject2DMakeGroups(in SMESH_IDSource    theObject,
+						      in SMESH_Mesh        PathMesh,
+						      in GEOM::GEOM_Object PathShape,
+						      in long              NodeStart,
+						      in boolean           HasAngles,
+						      in double_array      Angles,
+						      in boolean           HasRefPoint,
+						      in PointStruct       RefPoint,
+						      out Extrusion_Error  Error);
 
    /*!
     * Compute rotation angles for ExtrusionAlongPath as linear variation
@@ -592,6 +654,49 @@ module SMESH
     * not creared - returns empty list
     */
     long_array GetLastCreatedElems();
+    
+    /*!
+     * \brief Creates a hole in a mesh by doubling the nodes of some particular elements
+     * \param theNodes - identifiers of nodes to be doubled
+     * \param theModifiedElems - identifiers of elements to be updated by the new (doubled) 
+     *        nodes. If list of element identifiers is empty then nodes are doubled but 
+     *        they not assigned to elements
+     *        \return TRUE if operation has been completed successfully, FALSE otherwise
+     * \sa DoubleNode(), DoubleNodeGroup(), DoubleNodeGroups()
+    */
+    boolean DoubleNodes( in long_array theNodes, in long_array theModifiedElems ); 
+
+    /*!
+    * \brief Creates a hole in a mesh by doubling the nodes of some particular elements
+    * This method provided for convenience works as DoubleNodes() described above.
+    * \param theNodeId - identifier of node to be doubled.
+    * \param theModifiedElems - identifiers of elements to be updated.
+    * \return TRUE if operation has been completed successfully, FALSE otherwise
+    * \sa DoubleNodes(), DoubleNodeGroup(), DoubleNodeGroups()
+    */
+    boolean DoubleNode( in long theNodeId, in long_array theModifiedElems ); 
+
+    /*!
+    * \brief Creates a hole in a mesh by doubling the nodes of some particular elements
+    * This method provided for convenience works as DoubleNodes() described above.
+    * \param theNodes - group of nodes to be doubled.
+    * \param theModifiedElems - group of elements to be updated.
+    * \return TRUE if operation has been completed successfully, FALSE otherwise
+    * \sa DoubleNode(), DoubleNodes(), DoubleNodeGroups()
+    */
+    boolean DoubleNodeGroup( in SMESH_GroupBase theNodes, 
+                             in SMESH_GroupBase theModifiedElems );
+
+    /*!
+    \brief Creates a hole in a mesh by doubling the nodes of some particular elements
+    This method provided for convenience works as DoubleNodes() described above.
+    \param theNodes - list of groups of nodes to be doubled
+    \param theModifiedElems - list of groups of elements to be updated.
+    \return TRUE if operation has been completed successfully, FALSE otherwise
+    \sa DoubleNode(), DoubleNodeGroup(), DoubleNodes()
+    */
+    boolean DoubleNodeGroups( in ListOfGroups theNodes, 
+                              in ListOfGroups theModifiedElems );
 
   };
 };

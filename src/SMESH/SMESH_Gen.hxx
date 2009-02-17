@@ -1,30 +1,29 @@
+//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//
+//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+//
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
+//
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
+//
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
 //  SMESH SMESH : implementaion of SMESH idl descriptions
-//
-//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
-// 
-//  This library is free software; you can redistribute it and/or 
-//  modify it under the terms of the GNU Lesser General Public 
-//  License as published by the Free Software Foundation; either 
-//  version 2.1 of the License. 
-// 
-//  This library is distributed in the hope that it will be useful, 
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of 
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
-//  Lesser General Public License for more details. 
-// 
-//  You should have received a copy of the GNU Lesser General Public 
-//  License along with this library; if not, write to the Free Software 
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
-// 
-// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
-//
-//
-//
 //  File   : SMESH_Gen.hxx
 //  Author : Paul RASCLE, EDF
 //  Module : SMESH
-//  $Header$
+//
 
 #ifndef _SMESH_GEN_HXX_
 #define _SMESH_GEN_HXX_
@@ -45,6 +44,7 @@
 #include <TopoDS_Shape.hxx>
 
 #include <map>
+#include <list>
 
 class SMESHDS_Document;
 
@@ -57,6 +57,8 @@ typedef struct studyContextStruct
   SMESHDS_Document * myDocument;
 } StudyContextStruct;
 
+typedef std::set<int> TSetOfInt;
+
 class SMESH_EXPORT  SMESH_Gen
 {
  public:
@@ -66,12 +68,34 @@ class SMESH_EXPORT  SMESH_Gen
   SMESH_Mesh* CreateMesh(int theStudyId, bool theIsEmbeddedMode)
     throw(SALOME_Exception);
 
-  bool Compute(::SMESH_Mesh & aMesh, const TopoDS_Shape & aShape);
+  /*!
+   * \brief Computes aMesh on aShape 
+   *  \param anUpward - compute from vertices up to more complex shape (internal usage)
+   *  \param aDim - upper level dimension of the mesh computation
+   *  \param aShapesId - list of shapes with computed mesh entities (elements or nodes)
+   *  \retval bool - true if none submesh failed to compute
+   */
+  bool Compute(::SMESH_Mesh &        aMesh,
+               const TopoDS_Shape &  aShape,
+               const bool            anUpward=false,
+	       const ::MeshDimension aDim=::MeshDim_3D,
+	       TSetOfInt*            aShapesId=0);
 
   bool CheckAlgoState(SMESH_Mesh& aMesh, const TopoDS_Shape& aShape);
   // notify on bad state of attached algos, return false
   // if Compute() would fail because of some algo bad state
 
+  /*!
+   * \brief Sets number of segments per diagonal of boundary box of geometry by which
+   *        default segment length of appropriate 1D hypotheses is defined
+   */
+  void SetBoundaryBoxSegmentation( int theNbSegments ) { _segmentation = theNbSegments; }
+  int  GetBoundaryBoxSegmentation() const { return _segmentation; }
+  /*!
+   * \brief Sets default number of segments per edge
+   */
+  void SetDefaultNbSegments(int nb) { _nbSegments = nb; }
+  int GetDefaultNbSegments() const { return _nbSegments; }
   
   struct TAlgoStateError
   {
@@ -98,18 +122,18 @@ class SMESH_EXPORT  SMESH_Gen
   static int GetShapeDim(const TopAbs_ShapeEnum & aShapeType);
   static int GetShapeDim(const TopoDS_Shape & aShape)
   { return GetShapeDim( aShape.ShapeType() ); }
-  SMESH_Algo* GetAlgo(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape);
+  SMESH_Algo* GetAlgo(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape, TopoDS_Shape* assignedTo=0);
   static bool IsGlobalHypothesis(const SMESH_Hypothesis* theHyp, SMESH_Mesh& aMesh);
 
   // inherited methods from SALOMEDS::Driver
 
-  void Save(int studyId, const char *aUrlOfFile);
-  void Load(int studyId, const char *aUrlOfFile);
-  void Close(int studyId);
-  const char *ComponentDataType();
+//   void Save(int studyId, const char *aUrlOfFile);
+//   void Load(int studyId, const char *aUrlOfFile);
+//   void Close(int studyId);
+//   const char *ComponentDataType();
 
-  const char *IORToLocalPersistentID(const char *IORString, bool & IsAFile);
-  const char *LocalPersistentIDToIOR(const char *aLocalPersistentID);
+//   const char *IORToLocalPersistentID(const char *IORString, bool & IsAFile);
+//   const char *LocalPersistentIDToIOR(const char *aLocalPersistentID);
 
   int GetANewId();
 
@@ -126,6 +150,12 @@ class SMESH_EXPORT  SMESH_Gen
 
   // hypotheses managing
   int _hypId;
+
+  // number of segments per diagonal of boundary box of geometry by which
+  // default segment length of appropriate 1D hypotheses is defined
+  int _segmentation;
+  // default of segments
+  int _nbSegments;
 };
 
 #endif

@@ -1,6 +1,6 @@
-//  SMESH SMESHGUI_Selection
+//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
 //  This library is free software; you can redistribute it and/or
@@ -17,26 +17,27 @@
 //  License along with this library; if not, write to the Free Software
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+// SMESH SMESHGUI_Selection
+// File   : SMESHGUI_Selection.h
+// Author : Alexander SOLOVYOV, Open CASCADE S.A.S.
 //
-//
-//  File   : SMESHGUI_Selection.h
-//  Author : Alexander SOLOVYOV
-//  Module : SMESH
-//  $Header$
+#ifndef SMESHGUI_SELECTION_H
+#define SMESHGUI_SELECTION_H
 
-#ifndef SMESHGUI_SELECTION_HeaderFile
-#define SMESHGUI_SELECTION_HeaderFile
-
+// SMESH includes
 #include "SMESH_SMESHGUI.hxx"
 
-#include "LightApp_Selection.h"
-#include "SALOMEDSClient_definitions.hxx"
+// SALOME GUI includes
+#include <LightApp_Selection.h>
+
+// SALOME KERNEL includes
+#include <SALOMEDSClient_definitions.hxx>
 
 class LightApp_SelectionMgr;
-class SALOMEDSClient_Study;
 class LightApp_DataOwner;
+class SALOMEDSClient_Study;
 class SMESH_Actor;
 
 class SMESHGUI_EXPORT SMESHGUI_Selection : public LightApp_Selection
@@ -45,33 +46,37 @@ public:
   SMESHGUI_Selection();
   virtual ~SMESHGUI_Selection();
 
-  virtual void     init( const QString&, LightApp_SelectionMgr* );
-  virtual QtxValue param( const int , const QString& paramName ) const;
-  virtual void     processOwner( const LightApp_DataOwner* );
+  virtual void            init( const QString&, LightApp_SelectionMgr* );
+  virtual QVariant        parameter( const int, const QString& ) const;
+  virtual void            processOwner( const LightApp_DataOwner* );
 
   // got from object, not from actor
-  virtual bool isAutoColor( int ind ) const;
-  virtual int numberOfNodes( int ind ) const;
-  virtual QVariant isComputable( int ind ) const;
-  virtual QVariant hasReference( int ind ) const;
-  virtual QVariant isVisible( int ind ) const;
+  virtual bool            isAutoColor( int ) const;
+  virtual int             numberOfNodes( int ) const;
+  virtual QVariant        isComputable( int ) const;
+  virtual QVariant        hasReference( int ) const;
+  virtual QVariant        isVisible( int ) const;
 
   // parameters got from actor return nothing if an actor is not visible
-  virtual QValueList<QVariant> elemTypes( int ind ) const;
-  virtual QValueList<QVariant> labeledTypes( int ind ) const;
-  virtual QString displayMode( int ind ) const;
-  virtual QString shrinkMode( int ind ) const;
-  virtual QValueList<QVariant> entityMode( int ind ) const;
-  virtual QString controlMode( int ind ) const;
+  virtual QList<QVariant> elemTypes( int ) const;
+  virtual QList<QVariant> labeledTypes( int ) const;
+  virtual QString         displayMode( int ) const;
+  virtual QString         shrinkMode( int ) const;
+  virtual QList<QVariant> entityMode( int ) const;
+  virtual QString         controlMode( int ) const;
+  virtual QString         facesOrientationMode( int ) const;
+  virtual QString         groupType( int ) const;
   
-  SMESH_Actor* getActor( int ind ) const;
+  SMESH_Actor*            getActor( int ) const;
 
-  static int       type( const QString&, _PTR(Study) );
-  static QString   typeName( const int type);
+  static int              type( const QString&, _PTR(Study) );
+  static QString          typeName( const int );
+
+  bool                    isImported( const int ) const;
 
 private:
-  QStringList            myTypes;
-  QPtrList<SMESH_Actor>  myActors;
+  QStringList             myTypes;
+  QList<SMESH_Actor*>     myActors;
 };
 
-#endif
+#endif // SMESHGUI_SELECTION_H

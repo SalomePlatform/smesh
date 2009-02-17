@@ -1,32 +1,30 @@
+#  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+#
+#  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+#  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+#
+#  This library is free software; you can redistribute it and/or
+#  modify it under the terms of the GNU Lesser General Public
+#  License as published by the Free Software Foundation; either
+#  version 2.1 of the License.
+#
+#  This library is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+#  Lesser General Public License for more details.
+#
+#  You should have received a copy of the GNU Lesser General Public
+#  License along with this library; if not, write to the Free Software
+#  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+#
+#  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+#
 #  SMESH SMESH_I : idl implementation based on 'SMESH' unit's calsses
-#
-#  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-#  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
-# 
-#  This library is free software; you can redistribute it and/or 
-#  modify it under the terms of the GNU Lesser General Public 
-#  License as published by the Free Software Foundation; either 
-#  version 2.1 of the License. 
-# 
-#  This library is distributed in the hope that it will be useful, 
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of 
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
-#  Lesser General Public License for more details. 
-# 
-#  You should have received a copy of the GNU Lesser General Public 
-#  License along with this library; if not, write to the Free Software 
-#  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
-# 
-# See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
-#
-#
-#
 #  File   : Makefile.in
 #  Author : Paul RASCLE, EDF
 #  Modified by : Alexander BORODIN (OCN) - autotools usage
 #  Module : SMESH
-#  $Header$
-
+#
 include $(top_srcdir)/adm_local/unix/make_common_starter.am
 
 # header files 
@@ -41,6 +39,15 @@ salomeinclude_HEADERS = \
 	SMESH_Mesh_i.hxx \
 	SMESH_Hypothesis_i.hxx \
 	SMESH_PythonDump.hxx \
+	SMESH_Group_i.hxx \
+	SMESH_MEDMesh_i.hxx \
+	SMESH_Filter_i.hxx \
+	SMESH_MeshEditor_i.hxx \
+	SMESH_MEDFamily_i.hxx \
+	SMESH_MEDSupport_i.hxx \
+	SMESH_Pattern_i.hxx \
+	SMESH_2smeshpy.hxx \
+	SMESH_NoteBook.hxx \
 	SMESH.hxx
 
 # Scripts to be installed.
@@ -70,7 +77,8 @@ dist_libSMESHEngine_la_SOURCES = \
 	SMESH_Filter_i.cxx \
 	SMESH_Group_i.cxx \
 	SMESH_Pattern_i.cxx \
-	SMESH_2smeshpy.cxx
+	SMESH_2smeshpy.cxx \
+	SMESH_NoteBook.cxx 
 
 # Executables targets
 bin_PROGRAMS = SMESHEngine
@@ -111,16 +119,15 @@ libSMESHEngine_la_LDFLAGS  = \
 	-lSalomeLifeCycleCORBA \
 	-lTOOLSDS \
 	-lSalomeGenericObj \
-	$(GEOM_LDFLAGS) \
-	-lGEOMClient \
 	$(MED_LDFLAGS) \
 	-lMEDWrapper_V2_2 \
+        -lSalomeIDLMED \
 	$(CAS_LDPATH) \
 	-lTKCDF \
 	-lTKBO \
 	-lTKShHealing \
-	$(CORBA_LIBS)
-
+	$(GEOM_LDFLAGS) \
+	-lGEOMClient
 
 SMESHEngine_CPPFLAGS = \
 	$(libSMESHEngine_la_CPPFLAGS)

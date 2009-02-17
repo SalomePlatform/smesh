@@ -1,6 +1,6 @@
-//  SMESH SMESH_I : idl implementation based on 'SMESH' unit's calsses
+//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
 //  This library is free software; you can redistribute it and/or
@@ -17,15 +17,13 @@
 //  License along with this library; if not, write to the Free Software
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
-//
-//
+//  SMESH SMESH_I : idl implementation based on 'SMESH' unit's calsses
 //  File   : SMESH_MeshEditor_i.hxx
 //  Author : Nicolas REJNERI
 //  Module : SMESH
-//  $Header$
-
+//
 #ifndef _SMESH_MESHEDITOR_I_HXX_
 #define _SMESH_MESHEDIOTR_I_HXX_
 
@@ -35,7 +33,7 @@
 #include CORBA_SERVER_HEADER(SMESH_MeshEditor)
 
 #include "SMESH_Mesh.hxx"
-
+#include "SMESH_PythonDump.hxx"
 #include <list>
 
 class SMESH_MeshEditor;
@@ -183,6 +181,16 @@ class SMESH_MeshEditor_i: public POA_SMESH::SMESH_MeshEditor
 			   CORBA::Double             AngleInRadians,
 			   CORBA::Long               NbOfSteps,
 			   CORBA::Double             Tolerance);
+  void RotationSweepObject1D(SMESH::SMESH_IDSource_ptr theObject,
+			     const SMESH::AxisStruct & Axis,
+			     CORBA::Double             AngleInRadians,
+			     CORBA::Long               NbOfSteps,
+			     CORBA::Double             Tolerance);
+  void RotationSweepObject2D(SMESH::SMESH_IDSource_ptr theObject,
+			     const SMESH::AxisStruct & Axis,
+			     CORBA::Double             AngleInRadians,
+			     CORBA::Long               NbOfSteps,
+			     CORBA::Double             Tolerance);
 
   void ExtrusionSweep(const SMESH::long_array & IDsOfElements,
                       const SMESH::DirStruct &  StepVector,
@@ -221,6 +229,24 @@ class SMESH_MeshEditor_i: public POA_SMESH::SMESH_MeshEditor
                              const SMESH::double_array & Angles,
                              CORBA::Boolean              HasRefPoint,
                              const SMESH::PointStruct &  RefPoint);
+  SMESH::SMESH_MeshEditor::Extrusion_Error
+    ExtrusionAlongPathObject1D(SMESH::SMESH_IDSource_ptr   theObject,
+			       SMESH::SMESH_Mesh_ptr       PathMesh,
+			       GEOM::GEOM_Object_ptr       PathShape,
+			       CORBA::Long                 NodeStart,
+			       CORBA::Boolean              HasAngles,
+			       const SMESH::double_array & Angles,
+			       CORBA::Boolean              HasRefPoint,
+			       const SMESH::PointStruct &  RefPoint);
+  SMESH::SMESH_MeshEditor::Extrusion_Error
+    ExtrusionAlongPathObject2D(SMESH::SMESH_IDSource_ptr   theObject,
+			       SMESH::SMESH_Mesh_ptr       PathMesh,
+			       GEOM::GEOM_Object_ptr       PathShape,
+			       CORBA::Long                 NodeStart,
+			       CORBA::Boolean              HasAngles,
+			       const SMESH::double_array & Angles,
+			       CORBA::Boolean              HasRefPoint,
+			       const SMESH::PointStruct &  RefPoint);
 
   SMESH::double_array* LinearAnglesVariation(SMESH::SMESH_Mesh_ptr       PathMesh,
                                              GEOM::GEOM_Object_ptr       PathShape,
@@ -259,6 +285,16 @@ class SMESH_MeshEditor_i: public POA_SMESH::SMESH_MeshEditor
                                                      CORBA::Double             AngleInRadians,
                                                      CORBA::Long               NbOfSteps,
                                                      CORBA::Double             Tolerance);
+  SMESH::ListOfGroups* RotationSweepObject1DMakeGroups(SMESH::SMESH_IDSource_ptr Object,
+						       const SMESH::AxisStruct&  Axix,
+						       CORBA::Double             AngleInRadians,
+						       CORBA::Long               NbOfSteps,
+						       CORBA::Double             Tolerance);
+  SMESH::ListOfGroups* RotationSweepObject2DMakeGroups(SMESH::SMESH_IDSource_ptr Object,
+						       const SMESH::AxisStruct&  Axix,
+						       CORBA::Double             AngleInRadians,
+						       CORBA::Long               NbOfSteps,
+						       CORBA::Double             Tolerance);
   SMESH::ListOfGroups* ExtrusionSweepMakeGroups(const SMESH::long_array& IDsOfElements,
                                                 const SMESH::DirStruct&  StepVector,
                                                 CORBA::Long              NbOfSteps);
@@ -294,6 +330,24 @@ class SMESH_MeshEditor_i: public POA_SMESH::SMESH_MeshEditor
                                                           CORBA::Boolean             HasRefPoint,
                                                           const SMESH::PointStruct&  RefPoint,
                                                           SMESH::SMESH_MeshEditor::Extrusion_Error& Error);
+  SMESH::ListOfGroups* ExtrusionAlongPathObject1DMakeGroups(SMESH::SMESH_IDSource_ptr  Object,
+							    SMESH::SMESH_Mesh_ptr      PathMesh,
+							    GEOM::GEOM_Object_ptr      PathShape,
+							    CORBA::Long                NodeStart,
+							    CORBA::Boolean             HasAngles,
+							    const SMESH::double_array& Angles,
+							    CORBA::Boolean             HasRefPoint,
+							    const SMESH::PointStruct&  RefPoint,
+							    SMESH::SMESH_MeshEditor::Extrusion_Error& Error);
+  SMESH::ListOfGroups* ExtrusionAlongPathObject2DMakeGroups(SMESH::SMESH_IDSource_ptr  Object,
+							    SMESH::SMESH_Mesh_ptr      PathMesh,
+							    GEOM::GEOM_Object_ptr      PathShape,
+							    CORBA::Long                NodeStart,
+							    CORBA::Boolean             HasAngles,
+							    const SMESH::double_array& Angles,
+							    CORBA::Boolean             HasRefPoint,
+							    const SMESH::PointStruct&  RefPoint,
+							    SMESH::SMESH_MeshEditor::Extrusion_Error& Error);
   SMESH::ListOfGroups* MirrorMakeGroups(const SMESH::long_array&            IDsOfElements,
                                         const SMESH::AxisStruct&            Mirror,
                                         SMESH::SMESH_MeshEditor::MirrorType MirrorType);
@@ -419,7 +473,18 @@ class SMESH_MeshEditor_i: public POA_SMESH::SMESH_MeshEditor
     * \retval int - mesh ID
    */
   int GetMeshId() const { return myMesh->GetId(); }
+  
+  CORBA::Boolean DoubleNodes( const SMESH::long_array& theNodes,
+                              const SMESH::long_array& theModifiedElems );
 
+  CORBA::Boolean DoubleNode( CORBA::Long theNodeId,
+                             const SMESH::long_array& theModifiedElems );
+
+  CORBA::Boolean DoubleNodeGroup( SMESH::SMESH_GroupBase_ptr theNodes,
+                                  SMESH::SMESH_GroupBase_ptr theModifiedElems );
+
+  CORBA::Boolean DoubleNodeGroups( const SMESH::ListOfGroups& theNodes,
+                                   const SMESH::ListOfGroups& theModifiedElems);
 
 private: //!< private methods
 
@@ -445,7 +510,8 @@ private: //!< private methods
                                      CORBA::Double             AngleInRadians,
                                      CORBA::Long               NbOfSteps,
                                      CORBA::Double             Tolerance,
-                                     const bool                MakeGroups);
+                                     const bool                MakeGroups,
+				     const SMDSAbs_ElementType ElementType=SMDSAbs_All);
   SMESH::ListOfGroups* extrusionSweep(const SMESH::long_array & IDsOfElements,
                                       const SMESH::DirStruct &  StepVector,
                                       CORBA::Long               NbOfSteps,
@@ -466,7 +532,8 @@ private: //!< private methods
                                           CORBA::Boolean              HasRefPoint,
                                           const SMESH::PointStruct &  RefPoint,
                                           const bool                  MakeGroups,
-                                          SMESH::SMESH_MeshEditor::Extrusion_Error & Error);
+                                          SMESH::SMESH_MeshEditor::Extrusion_Error & Error,
+					  const SMDSAbs_ElementType   ElementType=SMDSAbs_All);
   SMESH::ListOfGroups* mirror(const SMESH::long_array &           IDsOfElements,
                               const SMESH::AxisStruct &           Axis,
                               SMESH::SMESH_MeshEditor::MirrorType MirrorType,
@@ -486,6 +553,9 @@ private: //!< private methods
                               ::SMESH_Mesh*             TargetMesh=0);
 
   SMESH::SMESH_Mesh_ptr makeMesh(const char* theMeshName);
+  
+  void DumpGroupsList(SMESH::TPythonDump & theDumpPython, 
+                      const SMESH::ListOfGroups * theGroupList);
 
 private: //!< fields
 

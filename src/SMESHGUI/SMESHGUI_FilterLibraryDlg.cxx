@@ -1,6 +1,6 @@
-//  SMESH SMESHGUI : GUI for SMESH component
+//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
 //  This library is free software; you can redistribute it and/or
@@ -17,43 +17,44 @@
 //  License along with this library; if not, write to the Free Software
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+// SMESH SMESHGUI : GUI for SMESH component
+// File   : SMESHGUI_FilterLibraryDlg.cxx
+// Author : Sergey LITONIN, Open CASCADE S.A.S.
+// SMESH includes
 //
-//
-//  File   : SMESHGUI_FilterLibraryDlg.cxx
-//  Author : Sergey LITONIN
-//  Module : SMESH
-
 #include "SMESHGUI_FilterLibraryDlg.h"
 
 #include "SMESHGUI.h"
-#include "SMESHGUI_Utils.h"
 #include "SMESHGUI_FilterUtils.h"
+#include "SMESHGUI_FilterDlg.h"
 
-#include "SUIT_Session.h"
-#include "SUIT_Desktop.h"
-#include "SUIT_FileDlg.h"
-#include "SUIT_MessageBox.h"
+// SALOME GUI includes
+#include <SUIT_Session.h>
+#include <SUIT_Desktop.h>
+#include <SUIT_FileDlg.h>
+#include <SUIT_MessageBox.h>
+#include <SUIT_ResourceMgr.h>
 
-#include "LightApp_Application.h"
+#include <LightApp_Application.h>
 
-// QT Includes
-#include <qapplication.h>
-#include <qmessagebox.h>
-#include <qframe.h>
-#include <qlayout.h>
-#include <qlineedit.h>
-#include <qpushbutton.h>
-#include <qgroupbox.h>
-#include <qlabel.h>
-#include <qlistbox.h>
-#include <qfile.h>
-#include <qfileinfo.h>
-#include <qdir.h>
+// Qt includes
+#include <QApplication>
+#include <QVBoxLayout>
+#include <QHBoxLayout>
+#include <QGridLayout>
+#include <QLineEdit>
+#include <QPushButton>
+#include <QGroupBox>
+#include <QLabel>
+#include <QListWidget>
+#include <QFileInfo>
+#include <QDir>
+#include <QKeyEvent>
 
-#define SPACING 5
-#define MARGIN  10
+#define SPACING 6
+#define MARGIN  11
 
 /*!
  *  Class       : SMESHGUI_FilterLibraryDlg::Dialog
@@ -62,17 +63,17 @@
 
 class SMESHGUI_FilterLibraryDlg::Dialog : public SUIT_FileDlg
 {
- public:
+public:
   Dialog(QWidget* theParent, const bool theToOpen);
   virtual ~Dialog();
 
- protected:
+protected:
   virtual bool acceptData();
 };
 
 SMESHGUI_FilterLibraryDlg::Dialog::Dialog (QWidget*   theParent,
                                            const bool theToOpen)
-     : SUIT_FileDlg(theParent, theToOpen)
+  : SUIT_FileDlg(theParent, theToOpen)
 {
 }
 
@@ -99,13 +100,12 @@ bool SMESHGUI_FilterLibraryDlg::Dialog::acceptData()
 //=======================================================================
 SMESHGUI_FilterLibraryDlg::SMESHGUI_FilterLibraryDlg (SMESHGUI* theModule,
                                                       QWidget* parent,
-                                                      const QValueList<int>& theTypes,
-                                                      const int              theMode,
-                                                      const char*            theName)
-     : QDialog( parent, theName, false, WStyle_Customize |
-                WStyle_NormalBorder | WStyle_Title | WStyle_SysMenu ),
-     mySMESHGUI( theModule )
+                                                      const QList<int>& theTypes,
+                                                      const int theMode)
+  : QDialog( parent ),
+    mySMESHGUI( theModule )
 {
+  setModal(false);
   construct(theTypes, theMode);
 }
 
@@ -116,13 +116,12 @@ SMESHGUI_FilterLibraryDlg::SMESHGUI_FilterLibraryDlg (SMESHGUI* theModule,
 SMESHGUI_FilterLibraryDlg::SMESHGUI_FilterLibraryDlg (SMESHGUI* theModule,
                                                       QWidget* parent,
                                                       const int   theType,
-                                                      const int   theMode,
-                                                      const char* theName)
-     : QDialog( parent, theName, true, WStyle_Customize |
-                WStyle_NormalBorder | WStyle_Title | WStyle_SysMenu ),
-     mySMESHGUI( theModule )
+                                                      const int   theMode)
+  : QDialog( parent ),
+    mySMESHGUI( theModule )
 {
-  QValueList<int> aTypes;
+  setModal(true);
+  QList<int> aTypes;
   aTypes.append(theType);
   construct(aTypes, theMode);
 }
@@ -131,16 +130,18 @@ SMESHGUI_FilterLibraryDlg::SMESHGUI_FilterLibraryDlg (SMESHGUI* theModule,
 // name    : SMESHGUI_FilterLibraryDlg::construct
 // Purpose : Construct dialog (called by constructor)
 //=======================================================================
-void SMESHGUI_FilterLibraryDlg::construct (const QValueList<int>& theTypes,
+void SMESHGUI_FilterLibraryDlg::construct (const QList<int>& theTypes,
                                            const int theMode)
 {
   myTypes = theTypes;
   myMode  = theMode;
 
-  QVBoxLayout* aDlgLay = new QVBoxLayout(this, MARGIN, SPACING);
+  QVBoxLayout* aDlgLay = new QVBoxLayout(this);
+  aDlgLay->setMargin(MARGIN);
+  aDlgLay->setSpacing(SPACING);
 
   myMainFrame        = createMainFrame  (this);
-  QFrame* aBtnFrame  = createButtonFrame(this);
+  QWidget* aBtnFrame = createButtonFrame(this);
 
   aDlgLay->addWidget(myMainFrame);
   aDlgLay->addWidget(aBtnFrame);
@@ -156,46 +157,47 @@ void SMESHGUI_FilterLibraryDlg::construct (const QValueList<int>& theTypes,
 // name    : SMESHGUI_FilterLibraryDlg::createMainFrame
 // Purpose : Create frame containing dialog's input fields
 //=======================================================================
-QFrame* SMESHGUI_FilterLibraryDlg::createMainFrame (QWidget* theParent)
+QWidget* SMESHGUI_FilterLibraryDlg::createMainFrame (QWidget* theParent)
 {
-  QGroupBox* aMainFrame = new QGroupBox(1, Qt::Horizontal, theParent);
-  aMainFrame->setFrameStyle(QFrame::NoFrame);
-  aMainFrame->setInsideMargin(0);
+  QWidget* aMainFrame = new QWidget(theParent);
+  QGridLayout* aMainLay = new QGridLayout(aMainFrame);
+  aMainLay->setMargin(0);
+  aMainLay->setSpacing(SPACING);
 
   // library name
 
-  QGroupBox* aGrp = new QGroupBox(1, Qt::Vertical, aMainFrame);
-  aGrp->setFrameStyle(QFrame::NoFrame);
-  aGrp->setInsideMargin(0);
-
-  new QLabel(tr("LIBRARY_FILE"), aGrp);
-  myFileName = new QLineEdit(aGrp);
-  myOpenBtn = new QPushButton(aGrp);
-  myOpenBtn->setPixmap(SUIT_Session::session()->resourceMgr()->loadPixmap(
+  QLabel* aFileLab = new QLabel(tr("LIBRARY_FILE"), aMainFrame);
+  myFileName = new QLineEdit(aMainFrame);
+  myOpenBtn = new QPushButton(aMainFrame);
+  myOpenBtn->setIcon(SUIT_Session::session()->resourceMgr()->loadPixmap(
     "SUIT", tr("ICON_FILE_OPEN")));
 
   // filters list box
 
-  aGrp = new QGroupBox(1, Qt::Vertical, tr("FILTER_NAMES"), aMainFrame);
-  QFrame* aFrame = new QFrame(aGrp);
-  myListBox = new QListBox(aFrame);
-  myAddBtn = new QPushButton(tr("ADD"), aFrame);
-  myDeleteBtn = new QPushButton(tr("DELETE"), aFrame);
+  QGroupBox* aFiltersGrp = new QGroupBox(tr("FILTER_NAMES"), aMainFrame);
+  QGridLayout* aLay = new QGridLayout(aFiltersGrp);
+  aLay->setMargin(MARGIN);
+  aLay->setSpacing(SPACING);
 
-  QGridLayout* aLay = new QGridLayout(aFrame, 3, 2, 0, 5);
-  aLay->addMultiCellWidget(myListBox, 0, 2, 0, 0);
-  aLay->addWidget(myAddBtn, 0, 1);
+  myListBox = new QListWidget(aFiltersGrp);
+
+  myAddBtn    = new QPushButton(tr("ADD"), aFiltersGrp);
+  myDeleteBtn = new QPushButton(tr("DELETE"), aFiltersGrp);
+
+  aLay->addWidget(myListBox,   0, 0, 3, 1);
+  aLay->addWidget(myAddBtn,    0, 1);
   aLay->addWidget(myDeleteBtn, 1, 1);
-  QSpacerItem* aVSpacer = new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
-  aLay->addItem(aVSpacer, 2, 1);
+  aLay->setRowStretch(2, 5);
 
   // filter name
 
-  myNameGrp = new QGroupBox(1, Qt::Vertical, aMainFrame);
-  myNameGrp->setFrameStyle(QFrame::NoFrame);
-  myNameGrp->setInsideMargin(0);
-  new QLabel(tr("FILTER_NAME"), myNameGrp);
-  myName = new QLineEdit(myNameGrp);
+  myNameGrp = new QWidget(aMainFrame);
+  QHBoxLayout* myNameGrpLayout = new QHBoxLayout(myNameGrp);
+  myNameGrpLayout->setMargin(0);
+  myNameGrpLayout->setSpacing(SPACING);
+
+  myNameGrpLayout->addWidget( new QLabel(tr("FILTER_NAME"), myNameGrp) );
+  myNameGrpLayout->addWidget( myName = new QLineEdit(myNameGrp) );
 
   // table
 
@@ -204,20 +206,27 @@ QFrame* SMESHGUI_FilterLibraryDlg::createMainFrame (QWidget* theParent)
   myTable->SetLibsEnabled(false);
 
   myListBox->setMinimumHeight((int)(myTable->sizeHint().height() * 0.5));
-  myListBox->setRowMode(QListBox::FitToWidth);
-  myListBox->setSelectionMode(QListBox::Single);
+  //myListBox->setRowMode(QListWidget::FitToWidth); //VSR : TODO ???
+  myListBox->setSelectionMode(QListWidget::SingleSelection);
 
   myOpenBtn->setAutoDefault(false);
   myAddBtn->setAutoDefault(false);
   myDeleteBtn->setAutoDefault(false);
 
+  aMainLay->addWidget(aFileLab,    0, 0);
+  aMainLay->addWidget(myFileName,  0, 1);
+  aMainLay->addWidget(myOpenBtn,   0, 2);
+  aMainLay->addWidget(aFiltersGrp, 1, 0, 1, 3);
+  aMainLay->addWidget(myNameGrp,   2, 0, 1, 3);
+  aMainLay->addWidget(myTable,     3, 0, 1, 3);
+
   // connect signals and slots
 
   connect(myFileName, SIGNAL(returnPressed()), this, SLOT(onReturnPressed()));
-  connect(myOpenBtn , SIGNAL(clicked()), this, SLOT(onBrowse()));
+  connect(myOpenBtn, SIGNAL(clicked()), this, SLOT(onBrowse()));
 
-  connect(myListBox, SIGNAL(highlighted(const QString&)),
-           this, SLOT(onFilterChanged(const QString&)));
+  connect(myListBox, SIGNAL(itemSelectionChanged()),
+	  this, SLOT(onFilterChanged()));
 
   connect(myAddBtn, SIGNAL(clicked()), this, SLOT(onAddBtnPressed()));
   connect(myDeleteBtn, SIGNAL(clicked()), this, SLOT(onDeleteBtnPressed()));
@@ -237,19 +246,28 @@ QFrame* SMESHGUI_FilterLibraryDlg::createMainFrame (QWidget* theParent)
 // name    : SMESHGUI_FilterLibraryDlg::createButtonFrame
 // Purpose : Create frame containing buttons
 //=======================================================================
-QFrame* SMESHGUI_FilterLibraryDlg::createButtonFrame (QWidget* theParent)
+QWidget* SMESHGUI_FilterLibraryDlg::createButtonFrame (QWidget* theParent)
 {
-  QGroupBox* aGrp = new QGroupBox(1, Qt::Vertical, theParent);
+  QGroupBox* aGrp = new QGroupBox(theParent);
+  QHBoxLayout* aLay = new QHBoxLayout(aGrp);
+  aLay->setMargin(MARGIN);
+  aLay->setSpacing(SPACING);
 
-  myButtons[ BTN_OK    ] = new QPushButton(tr("SMESH_BUT_OK"   ), aGrp);
+  myButtons[ BTN_OK    ] = new QPushButton(tr("SMESH_BUT_APPLY_AND_CLOSE"), aGrp);
   myButtons[ BTN_Apply ] = new QPushButton(tr("SMESH_BUT_APPLY"), aGrp);
 
-  QLabel* aLbl = new QLabel(aGrp);
-  aLbl->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed));
-
   myButtons[ BTN_Cancel ] = new QPushButton(tr("SMESH_BUT_CANCEL"), aGrp);
-  myButtons[ BTN_Close  ] = new QPushButton(tr("SMESH_BUT_CLOSE"), aGrp);
-  myButtons[ BTN_Help  ] = new QPushButton(tr("SMESH_BUT_HELP"), aGrp);
+  myButtons[ BTN_Close  ] = new QPushButton(tr("SMESH_BUT_CLOSE"),  aGrp);
+  myButtons[ BTN_Help   ] = new QPushButton(tr("SMESH_BUT_HELP"),   aGrp);
+
+  aLay->addWidget(myButtons[ BTN_OK     ]);
+  aLay->addSpacing(10);
+  aLay->addWidget(myButtons[ BTN_Apply  ]);
+  aLay->addSpacing(10);
+  aLay->addStretch();
+  aLay->addWidget(myButtons[ BTN_Cancel ]);
+  aLay->addWidget(myButtons[ BTN_Close  ]);
+  aLay->addWidget(myButtons[ BTN_Help   ]);
 
   connect(myButtons[ BTN_OK     ], SIGNAL(clicked()), SLOT(onOk()));
   connect(myButtons[ BTN_Cancel ], SIGNAL(clicked()), SLOT(onClose()));
@@ -259,7 +277,7 @@ QFrame* SMESHGUI_FilterLibraryDlg::createButtonFrame (QWidget* theParent)
 
   QMap<int, QPushButton*>::iterator anIter;
   for (anIter = myButtons.begin(); anIter != myButtons.end(); ++anIter)
-    anIter.data()->setAutoDefault(false);
+    anIter.value()->setAutoDefault(false);
 
   updateMainButtons();
 
@@ -297,7 +315,7 @@ SMESHGUI_FilterLibraryDlg::~SMESHGUI_FilterLibraryDlg()
 //=======================================================================
 void SMESHGUI_FilterLibraryDlg::Init (const int type, const int theMode)
 {
-  QValueList<int> aTypes;
+  QList<int> aTypes;
   aTypes.append(type);
   Init(aTypes, theMode);
 }
@@ -306,7 +324,7 @@ void SMESHGUI_FilterLibraryDlg::Init (const int type, const int theMode)
 // name    : SMESHGUI_FilterLibraryDlg::Init
 // Purpose : Init dialog fields, connect signals and slots, show dialog
 //=======================================================================
-void SMESHGUI_FilterLibraryDlg::Init (const QValueList<int>& theTypes,
+void SMESHGUI_FilterLibraryDlg::Init (const QList<int>& theTypes,
                                       const int theMode)
 {
   myMode = theMode;
@@ -314,7 +332,9 @@ void SMESHGUI_FilterLibraryDlg::Init (const QValueList<int>& theTypes,
   myTable->Init(theTypes);
   myCurrFilterName = "";
   myCurrFilter = -1;
+  myListBox->blockSignals(true);
   myListBox->clear();
+  myListBox->blockSignals(false);
   myName->clear();
   myTable->Clear();
 
@@ -326,14 +346,14 @@ void SMESHGUI_FilterLibraryDlg::Init (const QValueList<int>& theTypes,
 
   if (myMode == ADD_TO)
   {
-    setCaption(tr("ADD_TO_TLT"));
+    setWindowTitle(tr("ADD_TO_TLT"));
     if (myFileName->text().isEmpty())
       myFileName->setText(getDefaultLibraryName());
     processNewLibrary();
   }
   else if (myMode == COPY_FROM)
   {
-    setCaption(tr("COPY_FROM_TLT"));
+    setWindowTitle(tr("COPY_FROM_TLT"));
     if (myFileName->text().isEmpty())
       myFileName->setText(getDefaultLibraryName());
     processNewLibrary();
@@ -342,7 +362,7 @@ void SMESHGUI_FilterLibraryDlg::Init (const QValueList<int>& theTypes,
   }
   else
   {
-    setCaption(tr("EDIT_LIB_TLT"));
+    setWindowTitle(tr("EDIT_LIB_TLT"));
     if (myFileName->text().isEmpty())
       myFileName->setText(getDefaultLibraryName());
     processNewLibrary();
@@ -402,14 +422,13 @@ bool SMESHGUI_FilterLibraryDlg::onApply()
     return false;
 
   if (myLibrary->_is_nil()) {
-    QMessageBox::information(SMESHGUI::desktop(), tr("SMESH_WRN_WARNING"),
-                             tr("LIBRARY_IS_NOT_LOADED"), QMessageBox::Ok);
+    SUIT_MessageBox::information(SMESHGUI::desktop(), tr("SMESH_WRN_WARNING"),
+				 tr("LIBRARY_IS_NOT_LOADED"));
     return false;
   }
 
-  const char* aName = myFileName->text().latin1();
-  if (strcmp(myLibrary->GetFileName(), aName) != 0)
-    myLibrary->SetFileName(aName);
+  if (myFileName->text() != myLibrary->GetFileName())
+    myLibrary->SetFileName( myFileName->text().toLatin1().constData() );
 
   bool aResult = false;
 
@@ -417,9 +436,12 @@ bool SMESHGUI_FilterLibraryDlg::onApply()
     aResult = true;
   } else if (myMode == EDIT || myMode == ADD_TO) {
     SMESH::Filter_var aFilter = createFilter();
-    if (!myLibrary->Replace(myCurrFilterName, myName->text(), aFilter.in())) {
-      QMessageBox::information(SMESHGUI::desktop(), tr("SMESH_ERROR"),
-                               tr("ERROR_OF_EDITING"), QMessageBox::Ok);
+    if (!myListBox->selectedItems().empty() && 
+	!myLibrary->Replace(myCurrFilterName.toLatin1().constData(),
+			    myName->text().toLatin1().constData(),
+			    aFilter.in())) {
+      SUIT_MessageBox::information(SMESHGUI::desktop(), tr("SMESH_ERROR"),
+				   tr("ERROR_OF_EDITING"));
       aResult = false;
     }
     else
@@ -434,8 +456,8 @@ bool SMESHGUI_FilterLibraryDlg::onApply()
     getDefaultLibraryName() = QString(aFileName);
     delete aFileName;
   } else if (myMode != COPY_FROM) {
-    QMessageBox::information(SMESHGUI::desktop(), tr("SMESH_ERROR"),
-                             tr("ERROR_OF_SAVING"), QMessageBox::Ok);
+    SUIT_MessageBox::information(SMESHGUI::desktop(), tr("SMESH_ERROR"),
+				 tr("ERROR_OF_SAVING"));
   } else {
   }
 
@@ -478,16 +500,17 @@ void SMESHGUI_FilterLibraryDlg::onHelp()
   if (app) 
     app->onHelpContextModule(mySMESHGUI ? app->moduleName(mySMESHGUI->moduleName()) : QString(""), myHelpFileName);
   else {
-		QString platform;
+    QString platform;
 #ifdef WIN32
-		platform = "winapplication";
+    platform = "winapplication";
 #else
-		platform = "application";
+    platform = "application";
 #endif
-    SUIT_MessageBox::warn1(0, QObject::tr("WRN_WARNING"),
-			   QObject::tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
-			   arg(app->resourceMgr()->stringValue("ExternalBrowser", platform)).arg(myHelpFileName),
-			   QObject::tr("BUT_OK"));
+    SUIT_MessageBox::warning(this, tr("WRN_WARNING"),
+			     tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
+			     arg(app->resourceMgr()->stringValue("ExternalBrowser", 
+								 platform)).
+			     arg(myHelpFileName));
   }
 }
 
@@ -556,15 +579,15 @@ QStringList SMESHGUI_FilterLibraryDlg::filterWildCards(const QString& theFilter)
 {
   QStringList res;
 
-  int b = theFilter.findRev("(");
-  int e = theFilter.findRev(")");
+  int b = theFilter.lastIndexOf("(");
+  int e = theFilter.lastIndexOf(")");
   if (b != -1 && e != -1)
   {
-    QString content = theFilter.mid(b + 1, e - b - 1).stripWhiteSpace();
-    QStringList lst = QStringList::split(" ", content);
+    QString content = theFilter.mid(b + 1, e - b - 1).trimmed();
+    QStringList lst = content.split(" ", QString::SkipEmptyParts);
     for (QStringList::const_iterator it = lst.begin(); it != lst.end(); ++it)
-      if ((*it).find(".") != -1)
-        res.append((*it).stripWhiteSpace());
+      if ((*it).indexOf(".") != -1)
+        res.append((*it).trimmed());
   }
   return res;
 }
@@ -592,14 +615,14 @@ QStringList SMESHGUI_FilterLibraryDlg::prepareFilters() const
 void SMESHGUI_FilterLibraryDlg::onBrowse()
 {
   Dialog* aDlg = new Dialog(this, true);
-  aDlg->setCaption(tr("OPEN_LIBRARY"));
+  aDlg->setWindowTitle(tr("OPEN_LIBRARY"));
 
   //aDlg->setMode(myMode == COPY_FROM ? QFileDialogP::ExistingFile : QFileDialogP::AnyFile);
-  aDlg->setMode(myMode == COPY_FROM ? QFileDialog::ExistingFile : QFileDialog::AnyFile);
+  aDlg->setFileMode(myMode == COPY_FROM ? QFileDialog::ExistingFile : QFileDialog::AnyFile);
   aDlg->setFilters(prepareFilters());
-  aDlg->setSelection(getFileName());
+  aDlg->selectFile(getFileName());
 
-  QPushButton* anOkBtn = (QPushButton*)aDlg->child("OK", "QPushButton");
+  QPushButton* anOkBtn = (QPushButton*)aDlg->findChild<QPushButton*>("OK");
   if (anOkBtn != 0)
     anOkBtn->setText(tr("SMESH_BUT_OK"));
 
@@ -611,7 +634,7 @@ void SMESHGUI_FilterLibraryDlg::onBrowse()
   if (fName.isEmpty())
     return;
 
-  if (QFileInfo(fName).extension().isEmpty())
+  if (QFileInfo(fName).suffix().isEmpty())
     fName = autoExtension(fName);
 
   fName = QDir::convertSeparators(fName);
@@ -622,7 +645,8 @@ void SMESHGUI_FilterLibraryDlg::onBrowse()
 
   setFileName(fName);
 
-  QString aName = myListBox->text(myListBox->count() - 1);
+  QListWidgetItem* item = myListBox->item( myListBox->count()-1 );
+  QString aName = item ? item->text() : QString::null;
   processNewLibrary();
 
   if (myMode == ADD_TO)
@@ -646,15 +670,15 @@ void SMESHGUI_FilterLibraryDlg::processNewLibrary()
   if (aFilterMgr->_is_nil())
     return;
 
-  myLibrary = aFilterMgr->LoadLibrary(autoExtension(getFileName()));
+  myLibrary = aFilterMgr->LoadLibrary(autoExtension(getFileName()).toLatin1().constData());
   if (myLibrary->_is_nil()) {
     if (myMode == COPY_FROM) {
-      QMessageBox::information(SMESHGUI::desktop(), tr("SMESH_ERROR"),
-                               tr("ERROR_LOAD"), QMessageBox::Ok);
+      SUIT_MessageBox::information(SMESHGUI::desktop(), tr("SMESH_ERROR"),
+				   tr("ERROR_LOAD"));
       return;
     } else {
       myLibrary = aFilterMgr->CreateLibrary();
-      myLibrary->SetFileName(getFileName().latin1());
+      myLibrary->SetFileName(getFileName().toLatin1().constData());
     }
   }
 
@@ -671,8 +695,10 @@ void SMESHGUI_FilterLibraryDlg::updateList()
   SMESH::string_array_var aNames = myLibrary->GetNames((SMESH::ElementType)myTable->GetType());
   for (int i = 0, n = aNames->length(); i < n; i++)
     aList.append(QString(aNames[ i ]));
+  myListBox->blockSignals(true);
   myListBox->clear();
-  myListBox->insertStringList(aList);
+  myListBox->blockSignals(false);
+  myListBox->addItems(aList);
   if (myListBox->count() == 0)
   {
     myTable->Clear(myTable->GetType());
@@ -703,8 +729,8 @@ bool SMESHGUI_FilterLibraryDlg::isNameValid(const bool theMess) const
     QString aCurrName = myName->text();
     if (aCurrName.isEmpty()) {
       if (theMess)
-        QMessageBox::information(SMESHGUI::desktop(), tr("SMESH_INSUFFICIENT_DATA"),
-                                 tr("EMPTY_FILTER_NAME"), QMessageBox::Ok);
+        SUIT_MessageBox::information(SMESHGUI::desktop(), tr("SMESH_INSUFFICIENT_DATA"),
+				     tr("EMPTY_FILTER_NAME"));
       return false;
     }
 
@@ -712,8 +738,8 @@ bool SMESHGUI_FilterLibraryDlg::isNameValid(const bool theMess) const
     for (int f = 0, n = aNames->length(); f < n; f++) {
       if (aNames[ f ] == aCurrName && aNames[ f ] != myCurrFilterName) {
         if (theMess)
-          QMessageBox::information(SMESHGUI::desktop(), tr("SMESH_INSUFFICIENT_DATA"),
-                                   tr("ERROR_FILTER_NAME"), QMessageBox::Ok);
+          SUIT_MessageBox::information(SMESHGUI::desktop(), tr("SMESH_INSUFFICIENT_DATA"),
+				       tr("ERROR_FILTER_NAME"));
         return false;
       }
     }
@@ -735,7 +761,7 @@ bool SMESHGUI_FilterLibraryDlg::isPermissionValid(const bool theIsExistingOnly)
   bool isWritable = false;
 
   QString fName(myFileName->text());
-  if (QFileInfo(fName).extension().isEmpty())
+  if (QFileInfo(fName).suffix().isEmpty())
     fName = autoExtension(fName);
 
   fName = QDir::convertSeparators(fName);
@@ -743,7 +769,7 @@ bool SMESHGUI_FilterLibraryDlg::isPermissionValid(const bool theIsExistingOnly)
   if (QFileInfo(fName).exists()) {
     isWritable = QFileInfo(fName).isWritable();
   } else if (!theIsExistingOnly) {
-    QFileInfo aDirInfo(QFileInfo(fName).dirPath(true));
+    QFileInfo aDirInfo(QFileInfo(fName).absolutePath());
     isWritable = aDirInfo.isWritable();
     /*if (QDir(QFileInfo(fName).dirPath(true)).exists() ||
          QDir().mkdir(QFileInfo(fName).dirPath(true)))
@@ -760,8 +786,8 @@ bool SMESHGUI_FilterLibraryDlg::isPermissionValid(const bool theIsExistingOnly)
   }
 
   if (!isWritable) {
-    QMessageBox::information(SMESHGUI::desktop(), tr("SMESH_WRN_WARNING"),
-                             tr("NO_PERMISSION"), QMessageBox::Ok);
+    SUIT_MessageBox::information(SMESHGUI::desktop(), tr("SMESH_WRN_WARNING"),
+				 tr("NO_PERMISSION"));
     return false;
   }
 
@@ -783,10 +809,11 @@ bool SMESHGUI_FilterLibraryDlg::isValid(const bool theMess) const
 
 //=======================================================================
 // name    : SMESHGUI_FilterLibraryDlg::onFilterChanged
-// Purpose : SLOT. Called when selected filter of library  changed
+// Purpose : SLOT. Called when selected filter of library is changed
 //=======================================================================
-void SMESHGUI_FilterLibraryDlg::onFilterChanged(const QString& theName)
+void SMESHGUI_FilterLibraryDlg::onFilterChanged()
 {
+  QString theName = myListBox->currentItem() ? myListBox->currentItem()->text() : QString::null;
   if (myLibrary->_is_nil())
     return;
 
@@ -797,20 +824,22 @@ void SMESHGUI_FilterLibraryDlg::onFilterChanged(const QString& theName)
     if (!isValid(true))
     {
       myListBox->blockSignals(true);
-      myListBox->setCurrentItem(myCurrFilter);
+      myListBox->setCurrentRow(myCurrFilter);
       myListBox->blockSignals(false);
       return;
     }
 
     SMESH::Filter_var aFilter = createFilter();
-    myLibrary->Replace(myCurrFilterName.latin1(), myName->text().latin1(), aFilter);
+    myLibrary->Replace(myCurrFilterName.toLatin1().constData(), 
+		       myName->text().toLatin1().constData(), 
+		       aFilter);
   }
 
   // Fill table with filter parameters
 
-  SMESH::Filter_var aFilter = myLibrary->Copy(theName);
+  SMESH::Filter_var aFilter = myLibrary->Copy(theName.toLatin1().constData());
   myCurrFilterName = theName;
-  myCurrFilter = myListBox->currentItem();
+  myCurrFilter = myListBox->currentRow();
   myName->setText(theName);
 
 
@@ -818,13 +847,14 @@ void SMESHGUI_FilterLibraryDlg::onFilterChanged(const QString& theName)
 
   myTable->Clear(myTable->GetType());
 
-  if (!aFilter->GetCriteria(aCriteria))
+  if (CORBA::is_nil( aFilter ) || !aFilter->GetCriteria(aCriteria))
     return;
 
   for (int i = 0, n = aCriteria->length(); i < n; i++)
     myTable->AddCriterion(aCriteria[ i ], myTable->GetType());
 
   myTable->Update();
+  updateControlsVisibility(); // IPAL19974
 }
 
 //=======================================================================
@@ -834,7 +864,8 @@ void SMESHGUI_FilterLibraryDlg::onFilterChanged(const QString& theName)
 //=======================================================================
 void SMESHGUI_FilterLibraryDlg::onReturnPressed()
 {
-  QString aName = myListBox->text(myListBox->count() - 1);
+  QListWidgetItem* item = myListBox->item( myListBox->count()-1 );
+  QString aName = item ? item->text() : QString::null;
 
   processNewLibrary();
 
@@ -906,8 +937,11 @@ void SMESHGUI_FilterLibraryDlg::onAddBtnPressed()
       return;
 
     SMESH::Filter_var aFilter = createFilter();
-    myLibrary->Replace(myCurrFilterName.latin1(), myName->text().latin1(), aFilter);
+    myLibrary->Replace(myCurrFilterName.toLatin1().constData(), 
+		       myName->text().toLatin1().constData(), 
+		       aFilter);
   }
+  myTable->Clear(myTable->GetType());
 
   addFilterToLib(getDefaultFilterName());
 }
@@ -920,8 +954,8 @@ void SMESHGUI_FilterLibraryDlg::onAddBtnPressed()
 void SMESHGUI_FilterLibraryDlg::addFilterToLib (const QString& theName)
 {
   if (myLibrary->_is_nil()) {
-    QMessageBox::information(SMESHGUI::desktop(), tr("SMESH_WRN_WARNING"),
-                             tr("LIBRARY_IS_NOT_LOADED"), QMessageBox::Ok);
+    SUIT_MessageBox::information(SMESHGUI::desktop(), tr("SMESH_WRN_WARNING"),
+				 tr("LIBRARY_IS_NOT_LOADED"));
     return;
   }
 
@@ -940,12 +974,12 @@ void SMESHGUI_FilterLibraryDlg::addFilterToLib (const QString& theName)
 
   // add new filter in library
   bool aResult = !aFilter->GetPredicate()->_is_nil()
-    ? myLibrary->Add(aName.latin1(), aFilter)
-    : myLibrary->AddEmpty(aName.latin1(), (SMESH::ElementType)myTable->GetType());
+    ? myLibrary->Add(aName.toLatin1().constData(), aFilter)
+    : myLibrary->AddEmpty(aName.toLatin1().constData(), (SMESH::ElementType)myTable->GetType());
 
   if (!aResult) {
-    QMessageBox::information(SMESHGUI::desktop(), tr("SMESH_ERROR"),
-                             tr("ERROR_OF_ADDING"), QMessageBox::Ok);
+    SUIT_MessageBox::information(SMESHGUI::desktop(), tr("SMESH_ERROR"),
+				 tr("ERROR_OF_ADDING"));
   }
 
   updateList();
@@ -954,8 +988,8 @@ void SMESHGUI_FilterLibraryDlg::addFilterToLib (const QString& theName)
   setSelected(aName);
 
   if (theName != aName)
-    QMessageBox::information(SMESHGUI::desktop(), tr("SMESH_WARNING"),
-                             tr("ASSIGN_NEW_NAME").arg(theName).arg(aName), QMessageBox::Ok);
+    SUIT_MessageBox::information(SMESHGUI::desktop(), tr("SMESH_WARNING"),
+				 tr("ASSIGN_NEW_NAME").arg(theName).arg(aName));
 }
 
 //=======================================================================
@@ -967,7 +1001,7 @@ QString& SMESHGUI_FilterLibraryDlg::getDefaultLibraryName() const
   static QString aName;
   if (aName.isEmpty())
   {
-    QString aHomeDir = QDir(QDir::home()).absPath();
+    QString aHomeDir = QDir(QDir::home()).absolutePath();
     aName = aHomeDir + "/" + tr ("LIB_NAME");
   }
   return aName;
@@ -1028,7 +1062,7 @@ bool SMESHGUI_FilterLibraryDlg::setSelected(const QString& theName)
   int anIndex = getIndex(theName);
   if (anIndex != -1)
   {
-    myListBox->setCurrentItem(anIndex);
+    myListBox->setCurrentRow(anIndex);
     myCurrFilterName = theName;
     myCurrFilter = anIndex;
   }
@@ -1042,7 +1076,7 @@ bool SMESHGUI_FilterLibraryDlg::setSelected(const QString& theName)
 int SMESHGUI_FilterLibraryDlg::getIndex(const QString& theName) const
 {
   for (int i = 0, n = myListBox->count(); i < n; i++)
-    if (myListBox->text(i) == theName)
+    if (myListBox->item(i)->text() == theName)
       return i;
   return -1;
 }
@@ -1054,25 +1088,25 @@ int SMESHGUI_FilterLibraryDlg::getIndex(const QString& theName) const
 void SMESHGUI_FilterLibraryDlg::onDeleteBtnPressed()
 {
   if (myLibrary->_is_nil()) {
-    QMessageBox::information(SMESHGUI::desktop(), tr("SMESH_WRN_WARNING"),
-                             tr("LIBRARY_IS_NOT_LOADED"), QMessageBox::Ok);
+    SUIT_MessageBox::information(SMESHGUI::desktop(), tr("SMESH_WRN_WARNING"),
+				 tr("LIBRARY_IS_NOT_LOADED"));
     return;
   }
 
   int anIndex = getIndex(myCurrFilterName);
 
-  if (anIndex == -1 || !myLibrary->Delete(myCurrFilterName.latin1())) {
-    QMessageBox::information(SMESHGUI::desktop(), tr("SMESH_ERROR"),
-                             tr("ERROR_OF_DELETING"), QMessageBox::Ok);
+  if (anIndex == -1 || !myLibrary->Delete(myCurrFilterName.toLatin1().constData())) {
+    SUIT_MessageBox::information(SMESHGUI::desktop(), tr("SMESH_ERROR"),
+				 tr("ERROR_OF_DELETING"));
   } else {
     myCurrFilterName = "";
     myCurrFilter = -1;
-    myListBox->removeItem(anIndex);
+    delete myListBox->item(anIndex);
 
     if (anIndex >= 1)
-      myListBox->setSelected(anIndex - 1, true);
+      myListBox->item(anIndex - 1)->setSelected(true);
     else if (anIndex == 0 && myListBox->count() > 0)
-      myListBox->setSelected(0, true);
+      myListBox->item(0)->setSelected(true);
     else
       myTable->Clear();
   }
@@ -1091,12 +1125,12 @@ void SMESHGUI_FilterLibraryDlg::onDeleteBtnPressed()
 //=======================================================================
 void SMESHGUI_FilterLibraryDlg::onFilterNameChanged (const QString& theName)
 {
-  int aCurrItem = myListBox->currentItem();
+  int aCurrItem = myListBox->currentRow();
   if (aCurrItem == -1)
     return;
 
   myListBox->blockSignals(true);
-  myListBox->changeItem(theName, aCurrItem);
+  myListBox->item(aCurrItem)->setText(theName);
   myListBox->blockSignals(false);
 }
 
@@ -1153,7 +1187,9 @@ void SMESHGUI_FilterLibraryDlg::onNeedValidation()
     if (valid)
     {
       SMESH::Filter_var aFilter = createFilter(myTable->GetType());
-      myLibrary->Replace(myCurrFilterName.latin1(), myName->text().latin1(), aFilter);
+      myLibrary->Replace(myCurrFilterName.toLatin1().constData(),
+			 myName->text().toLatin1().constData(),
+			 aFilter);
     }
   }
 }
@@ -1168,9 +1204,8 @@ void SMESHGUI_FilterLibraryDlg::keyPressEvent( QKeyEvent* e )
   if ( e->isAccepted() )
     return;
 
-  if ( e->key() == Key_F1 )
-    {
-      e->accept();
-      onHelp();
-    }
+  if ( e->key() == Qt::Key_F1 ) {
+    e->accept();
+    onHelp();
+  }
 }

@@ -12,7 +12,7 @@ corners.
 <li>In the \b Modification menu select the <b>Cutting of quadrangles</b> item or
 click <em>"Cutting of quadrangles"</em> button in the toolbar.
 
-\image html image82.gif
+\image html image82.png
 <center><em>"Cutting of quadrangles" button</em></center>
 
 The following dialog box will appear:
@@ -50,12 +50,12 @@ list.</li>
 </ul>
 
 </li>
-<li>Click the \b Apply or \b OK button to confirm the operation.</li>
+<li>Click the \b Apply or <b>Apply and Close</b> button to confirm the operation.</li>
 </ol>
 
-\image html image52.jpg
+\image html image52.jpg "The chosen quadrangular element"
 
-\image html image51.jpg
+\image html image51.jpg "Two resulting triangular elements"
 
 <br><b>See Also</b> a sample TUI Script of a 
 \ref tui_cutting_quadrangles "Cutting Quadrangles" operation.  

@@ -1,6 +1,6 @@
-//  SMESH SMESHGUI : GUI for SMESH component
+//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
 //  This library is free software; you can redistribute it and/or
@@ -17,14 +17,12 @@
 //  License along with this library; if not, write to the Free Software
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+// File   : SMESHGUI_ShapeByMeshDlg.cxx
+// Author : Edward AGAPOV, Open CASCADE S.A.S.
+// SMESH includes
 //
-//
-//  File   : SMESHGUI_ShapeByMeshDlg.cxx
-//  Author : Edward AGAPOV
-//  Module : SMESH
-
 #include "SMESHGUI_ShapeByMeshDlg.h"
 
 #include "SMESHGUI.h"
@@ -34,42 +32,46 @@
 #include "SMESHGUI_Utils.h"
 #include "SMESHGUI_VTKUtils.h"
 
-#include "SMDS_Mesh.hxx"
-#include "SMDS_MeshNode.hxx"
-#include "SMESH_Actor.h"
+#include <SMDS_Mesh.hxx>
+#include <SMDS_MeshNode.hxx>
+#include <SMESH_Actor.h>
 
-#include "GEOMBase.h"
-#include "GeometryGUI.h"
+// SALOME GEOM includes
+#include <GEOMBase.h>
+#include <GeometryGUI.h>
 
-#include "LightApp_DataOwner.h"
-#include "LightApp_SelectionMgr.h"
-#include "SALOMEDSClient_SObject.hxx"
-#include "SALOME_ListIO.hxx"
-#include "SUIT_Desktop.h"
-#include "SVTK_Selector.h"
-#include "SVTK_ViewWindow.h"
-#include "SVTK_ViewModel.h"
-#include "SalomeApp_Tools.h"
+// SALOME GUI includes
+#include <LightApp_DataOwner.h>
+#include <LightApp_SelectionMgr.h>
+#include <SALOME_ListIO.hxx>
+#include <SUIT_Desktop.h>
+#include <SVTK_Selector.h>
+#include <SVTK_ViewWindow.h>
+#include <SVTK_ViewModel.h>
+#include <SalomeApp_Tools.h>
 
-// OCCT Includes
+// SALOME KERNEL includes
+#include <SALOMEDSClient_SObject.hxx>
+
+// OCCT includes
 #include <TColStd_MapOfInteger.hxx>
 #include <TopoDS_Shape.hxx>
 #include <TopExp_Explorer.hxx>
 
-// QT Includes
-#include <qframe.h>
-#include <qlayout.h>
-#include <qlineedit.h>
-#include <qpushbutton.h>
-#include <qlabel.h>
-#include <qradiobutton.h>
-#include <qbuttongroup.h>
-#include <qapplication.h>
-#include <qstringlist.h>
+// Qt includes
+#include <QFrame>
+#include <QVBoxLayout>
+#include <QHBoxLayout>
+#include <QGridLayout>
+#include <QLineEdit>
+#include <QLabel>
+#include <QRadioButton>
+#include <QButtonGroup>
+#include <QGroupBox>
+#include <QStringList>
 
-#define SPACING 5
-#define MARGIN  10
-
+#define SPACING 6
+#define MARGIN  11
 
 enum { EDGE = 0, FACE, VOLUME };
 
@@ -80,9 +82,11 @@ enum { EDGE = 0, FACE, VOLUME };
 SMESHGUI_ShapeByMeshDlg::SMESHGUI_ShapeByMeshDlg()
   : SMESHGUI_Dialog( 0, false, true, OK | Close )
 {
-  setCaption(tr("CAPTION"));
+  setWindowTitle(tr("CAPTION"));
 
-  QVBoxLayout* aDlgLay = new QVBoxLayout (mainFrame(), MARGIN, SPACING);
+  QVBoxLayout* aDlgLay = new QVBoxLayout (mainFrame());
+  aDlgLay->setMargin(MARGIN);
+  aDlgLay->setSpacing(SPACING);
 
   QFrame* aMainFrame = createMainFrame  (mainFrame());
 
@@ -97,35 +101,41 @@ SMESHGUI_ShapeByMeshDlg::SMESHGUI_ShapeByMeshDlg()
 //=======================================================================
 QFrame* SMESHGUI_ShapeByMeshDlg::createMainFrame (QWidget* theParent)
 {
-  QFrame* aMainGrp = new QFrame(theParent, "main frame");
-  QGridLayout* aLayout = new QGridLayout(aMainGrp, 3, 2);
-  aLayout->setSpacing(6);
-  aLayout->setAutoAdd(false);
+  QFrame* aMainGrp = new QFrame(theParent);
+  QGridLayout* aLayout = new QGridLayout(aMainGrp);
+  aLayout->setMargin(0);
+  aLayout->setSpacing(SPACING);
 
   // elem type
-  myElemTypeGroup = new QButtonGroup(1, Qt::Vertical, aMainGrp, "Group types");
-  myElemTypeGroup->setTitle(tr("SMESH_ELEMENT_TYPE"));
-  myElemTypeGroup->setExclusive(true);
+  myElemTypeBox = new QGroupBox(tr("SMESH_ELEMENT_TYPE"), aMainGrp);
+  myElemTypeGroup = new QButtonGroup(aMainGrp);
+  QHBoxLayout* myElemTypeBoxLayout = new QHBoxLayout(myElemTypeBox);
+  myElemTypeBoxLayout->setMargin(MARGIN);
+  myElemTypeBoxLayout->setSpacing(SPACING);
 
-  (new QRadioButton( tr("SMESH_EDGE")  , myElemTypeGroup))->setChecked(true);
-  new QRadioButton( tr("SMESH_FACE")  , myElemTypeGroup);
-  new QRadioButton( tr("SMESH_VOLUME"), myElemTypeGroup);
-
+  QRadioButton* aEdgeRb   = new QRadioButton( tr("SMESH_EDGE"),   myElemTypeBox);
+  QRadioButton* aFaceRb   = new QRadioButton( tr("SMESH_FACE"),   myElemTypeBox);
+  QRadioButton* aVolumeRb = new QRadioButton( tr("SMESH_VOLUME"), myElemTypeBox);
+  
+  myElemTypeBoxLayout->addWidget(aEdgeRb);
+  myElemTypeBoxLayout->addWidget(aFaceRb);
+  myElemTypeBoxLayout->addWidget(aVolumeRb);
+  myElemTypeGroup->addButton(aEdgeRb, 0);
+  myElemTypeGroup->addButton(aFaceRb, 1);
+  myElemTypeGroup->addButton(aVolumeRb, 2);
+  aEdgeRb->setChecked(true);
+  
   // element id
-  QLabel* anIdLabel = new QLabel( aMainGrp, "element id label");
-  anIdLabel->setText( tr("ELEMENT_ID") );
-  myElementId = new QLineEdit( aMainGrp, "element id");
-  if (!myIsMultipleAllowed)
-    myElementId->setValidator( new SMESHGUI_IdValidator( theParent, "id validator", 1 ));
-  else
-    myElementId->setValidator( new SMESHGUI_IdValidator( theParent, "id validator" ));
+  QLabel* anIdLabel = new QLabel( tr("ELEMENT_ID"), aMainGrp );
+  myElementId = new QLineEdit( aMainGrp );
+  myElementId->setValidator( new SMESHGUI_IdValidator( theParent, 
+						       !myIsMultipleAllowed ? 1 : 0 ) ); // 0 for any number of entities
 
   // shape name
-  QLabel* aNameLabel = new QLabel( aMainGrp, "geom name label");
-  aNameLabel->setText( tr("GEOMETRY_NAME") );
-  myGeomName = new QLineEdit( aMainGrp, "geom name");
+  QLabel* aNameLabel = new QLabel( tr("GEOMETRY_NAME"), aMainGrp );
+  myGeomName = new QLineEdit( aMainGrp );
 
-  aLayout->addMultiCellWidget(myElemTypeGroup, 0, 0, 0, 1);
+  aLayout->addWidget(myElemTypeBox, 0, 0, 1, 2);
   aLayout->addWidget(anIdLabel,   1, 0);
   aLayout->addWidget(myElementId, 1, 1);
   aLayout->addWidget(aNameLabel,  2, 0);
@@ -140,13 +150,17 @@ QFrame* SMESHGUI_ShapeByMeshDlg::createMainFrame (QWidget* theParent)
 //=======================================================================
 SMESHGUI_ShapeByMeshDlg::~SMESHGUI_ShapeByMeshDlg()
 {
-  // no need to delete child widgets, Qt does it all for us
+}
+
+void SMESHGUI_ShapeByMeshDlg:: setMultipleAllowed( bool isAllowed )
+{
+  myIsMultipleAllowed = isAllowed;
 }
 
 //================================================================================
 /*!
  * \brief Constructor
-*/
+ */
 //================================================================================
 SMESHGUI_ShapeByMeshOp::SMESHGUI_ShapeByMeshOp(bool isMultipleAllowed):
   myIsMultipleAllowed(isMultipleAllowed)
@@ -157,7 +171,7 @@ SMESHGUI_ShapeByMeshOp::SMESHGUI_ShapeByMeshOp(bool isMultipleAllowed):
   myDlg = new SMESHGUI_ShapeByMeshDlg;
   myDlg->setMultipleAllowed(myIsMultipleAllowed);
 
-  connect(myDlg->myElemTypeGroup, SIGNAL(clicked(int)), SLOT(onTypeChanged(int)));
+  connect(myDlg->myElemTypeGroup, SIGNAL(buttonClicked(int)), SLOT(onTypeChanged(int)));
   connect(myDlg->myElementId, SIGNAL(textChanged(const QString&)), SLOT(onElemIdChanged(const QString&)));
 }
 
@@ -182,7 +196,7 @@ void SMESHGUI_ShapeByMeshOp::startOperation()
 //================================================================================
 /*!
  * \brief Destructor
-*/
+ */
 //================================================================================
 SMESHGUI_ShapeByMeshOp::~SMESHGUI_ShapeByMeshOp()
 {
@@ -193,12 +207,17 @@ SMESHGUI_ShapeByMeshOp::~SMESHGUI_ShapeByMeshOp()
 //================================================================================
 /*!
  * \brief Gets dialog of this operation
-  * \retval LightApp_Dialog* - pointer to dialog of this operation
-*/
+ * \retval LightApp_Dialog* - pointer to dialog of this operation
+ */
 //================================================================================
 LightApp_Dialog* SMESHGUI_ShapeByMeshOp::dlg() const
 {
   return myDlg;
+}
+
+SMESH::SMESH_Mesh_ptr SMESHGUI_ShapeByMeshOp::GetMesh()
+{
+  return myMesh;
 }
 
 //=======================================================================
@@ -221,52 +240,52 @@ void SMESHGUI_ShapeByMeshOp::SetMesh (SMESH::SMESH_Mesh_ptr thePtr)
   myGeomObj = GEOM::GEOM_Object::_nil();
   myHasSolids = false;
 
-  vector< bool > hasElement (myDlg->myElemTypeGroup->count(), false);
+  std::vector< bool > hasElement (myDlg->myElemTypeGroup->buttons().count(), false);
   if (!myMesh->_is_nil() )
-  {
-//     _PTR(SObject) aSobj = SMESH::FindSObject(myMesh.in());
-//     SUIT_DataOwnerPtr anIObj (new LightApp_DataOwner(aSobj->GetID().c_str()));
+    {
+      //     _PTR(SObject) aSobj = SMESH::FindSObject(myMesh.in());
+      //     SUIT_DataOwnerPtr anIObj (new LightApp_DataOwner(aSobj->GetID().c_str()));
 
-    vector< int > nbShapes( TopAbs_SHAPE, 0 );
-    int shapeDim = 0; // max dim with several shapes
-    //if ( /*mySelectionMgr*/ selectionMgr()->isOk(anIObj) ) // check that the mesh has a valid shape
-    {
-      _PTR(SObject) aSO = SMESH::FindSObject(myMesh.in());
-      GEOM::GEOM_Object_var mainShape = SMESH::GetGeom(aSO);
-      if ( !mainShape->_is_nil() ) 
+      std::vector< int > nbShapes( TopAbs_SHAPE, 0 );
+      int shapeDim = 0; // max dim with several shapes
+      //if ( /*mySelectionMgr*/ selectionMgr()->isOk(anIObj) ) // check that the mesh has a valid shape
       {
-        TopoDS_Shape aShape;
-        if ( GEOMBase::GetShape(mainShape, aShape))
-        {
-          TopAbs_ShapeEnum types[4] = { TopAbs_EDGE, TopAbs_FACE, TopAbs_SHELL, TopAbs_SOLID };
-          for ( int dim = 4; dim > 0; --dim ) {
-            TopAbs_ShapeEnum type = types[ dim - 1 ];
-            TopAbs_ShapeEnum avoid = ( type == TopAbs_SHELL ) ? TopAbs_SOLID : TopAbs_SHAPE;
-            TopExp_Explorer exp( aShape, type, avoid );
-            for ( ; nbShapes[ type ] < 2 && exp.More(); exp.Next() )
-              ++nbShapes[ type ];
-            if ( nbShapes[ type ] > 1 ) {
-              shapeDim = dim;
-              break;
-            }
-          }
-        }
+	_PTR(SObject) aSO = SMESH::FindSObject(myMesh.in());
+	GEOM::GEOM_Object_var mainShape = SMESH::GetGeom(aSO);
+	if ( !mainShape->_is_nil() ) 
+	  {
+	    TopoDS_Shape aShape;
+	    if ( GEOMBase::GetShape(mainShape, aShape))
+	      {
+		TopAbs_ShapeEnum types[4] = { TopAbs_EDGE, TopAbs_FACE, TopAbs_SHELL, TopAbs_SOLID };
+		for ( int dim = 4; dim > 0; --dim ) {
+		  TopAbs_ShapeEnum type = types[ dim - 1 ];
+		  TopAbs_ShapeEnum avoid = ( type == TopAbs_SHELL ) ? TopAbs_SOLID : TopAbs_SHAPE;
+		  TopExp_Explorer exp( aShape, type, avoid );
+		  for ( ; nbShapes[ type ] < 2 && exp.More(); exp.Next() )
+		    ++nbShapes[ type ];
+		  if ( nbShapes[ type ] > 1 ) {
+		    shapeDim = dim;
+		    break;
+		  }
+		}
+	      }
+	  }
       }
+      if (shapeDim > 0)
+	{
+	  if ( nbShapes[ TopAbs_SHELL ] + nbShapes[ TopAbs_SOLID ] > 1 )
+	    shapeDim = 3;
+	  hasElement[ EDGE ]   = shapeDim > 0 && myMesh->NbEdges();
+	  hasElement[ FACE ]   = shapeDim > 1 && myMesh->NbFaces();
+	  hasElement[ VOLUME ] = shapeDim > 2 && myMesh->NbVolumes();
+	}
+      myHasSolids = nbShapes[ TopAbs_SOLID ];
     }
-    if (shapeDim > 0)
-    {
-      if ( nbShapes[ TopAbs_SHELL ] + nbShapes[ TopAbs_SOLID ] > 1 )
-        shapeDim = 3;
-      hasElement[ EDGE ]   = shapeDim > 0 && myMesh->NbEdges()  ;
-      hasElement[ FACE ]   = shapeDim > 1 && myMesh->NbFaces()  ;
-      hasElement[ VOLUME ] = shapeDim > 2 && myMesh->NbVolumes();
-    }
-    myHasSolids = nbShapes[ TopAbs_SOLID ];
-  }
 
   // disable inexistant elem types
-  for ( int i = 0; i < myDlg->myElemTypeGroup->count(); ++i ) {
-    if ( QButton* button = myDlg->myElemTypeGroup->find( i ) )
+  for ( int i = 0; i < myDlg->myElemTypeGroup->buttons().count(); ++i ) {
+    if ( QAbstractButton* button = myDlg->myElemTypeGroup->button( i ) )
       button->setEnabled( hasElement[ i ] );
   }
   myDlg->myElementId->setEnabled( hasElement[ EDGE ] );
@@ -284,12 +303,13 @@ void SMESHGUI_ShapeByMeshOp::commitOperation()
 {
   SMESHGUI_SelectionOp::commitOperation();
   try {
-    QStringList aListId = QStringList::split( " ", myDlg->myElementId->text(), false);
+    QStringList aListId = myDlg->myElementId->text().split( " ", QString::SkipEmptyParts);
     if (aListId.count() == 1)
       {
 	int elemID = (aListId.first()).toInt();
-	myGeomObj = SMESHGUI::GetSMESHGen()->GetGeometryByMeshElement
-	  ( myMesh.in(), elemID, myDlg->myGeomName->text().latin1());
+	myGeomObj = GEOM::GEOM_Object::_duplicate(
+	    SMESHGUI::GetSMESHGen()->GetGeometryByMeshElement
+	  ( myMesh.in(), elemID, myDlg->myGeomName->text().toLatin1().constData()) );
       }
     else
       {
@@ -358,10 +378,11 @@ void SMESHGUI_ShapeByMeshOp::commitOperation()
 	  }
 	
 	// publish the GEOM object in study
-	QString aNewGeomGroupName ( myDlg->myGeomName->text().latin1() );
+	QString aNewGeomGroupName ( myDlg->myGeomName->text() );
 	  
 	SALOMEDS::SObject_var aNewGroupSO =
-	  geomGen->AddInStudy(SMESHGUI::GetSMESHGen()->GetCurrentStudy(), myGeomObj, aNewGeomGroupName, aMeshShape);
+	  geomGen->AddInStudy(SMESHGUI::GetSMESHGen()->GetCurrentStudy(), myGeomObj, 
+			      aNewGeomGroupName.toLatin1().data(), aMeshShape);
       }
   }
   catch (const SALOME::SALOME_Exception& S_ex) {
@@ -370,6 +391,11 @@ void SMESHGUI_ShapeByMeshOp::commitOperation()
   catch (...) {
   }
 
+}
+
+bool SMESHGUI_ShapeByMeshOp::onApply()
+{
+  return true;
 }
 
 //=======================================================================
@@ -417,7 +443,7 @@ void SMESHGUI_ShapeByMeshOp::activateSelection()
 
   QString geomName;
   Selection_Mode mode = EdgeSelection;
-  switch ( myDlg->myElemTypeGroup->id( myDlg->myElemTypeGroup->selected() )) {
+  switch ( myDlg->myElemTypeGroup->checkedId() ) {
   case EDGE  :
     mode = EdgeSelection;   geomName = tr("GEOM_EDGE"); break;
   case FACE  :
@@ -454,35 +480,39 @@ void SMESHGUI_ShapeByMeshOp::onElemIdChanged(const QString& theNewText)
   myDlg->setButtonEnabled( false, QtxDialog::OK );
 
   if ( myIsManualIdEnter && !myMesh->_is_nil() )
+  {
     if ( SMESH_Actor* actor = SMESH::FindActorByObject(myMesh) )
+    {
       if ( SMDS_Mesh* aMesh = actor->GetObject()->GetMesh() )
       {
-        SMDSAbs_ElementType type = SMDSAbs_Edge;
-        switch ( myDlg->myElemTypeGroup->id( myDlg->myElemTypeGroup->selected() )) {
-        case EDGE  : type = SMDSAbs_Edge;   break;
-        case FACE  : type = SMDSAbs_Face;   break;
-        case VOLUME: type = SMDSAbs_Volume; break;
-        default: return;
-        }
-        TColStd_MapOfInteger newIndices;
-        QStringList aListId = QStringList::split( " ", theNewText, false);
-        for ( int i = 0; i < aListId.count(); i++ ) {
-          if ( const SMDS_MeshElement * e = aMesh->FindElement( aListId[ i ].toInt() ))
-            if ( e->GetType() == type )
-              newIndices.Add( e->GetID() );
-        }
-
+	SMDSAbs_ElementType type = SMDSAbs_Edge;
+	switch ( myDlg->myElemTypeGroup->checkedId() ) {
+	case EDGE  : type = SMDSAbs_Edge;   break;
+	case FACE  : type = SMDSAbs_Face;   break;
+	case VOLUME: type = SMDSAbs_Volume; break;
+	default: return;
+	}
+	TColStd_MapOfInteger newIndices;
+	QStringList aListId = theNewText.split( " ", QString::SkipEmptyParts);
+	for ( int i = 0; i < aListId.count(); i++ ) {
+	  if ( const SMDS_MeshElement * e = aMesh->FindElement( aListId[ i ].toInt() ))
+	    if ( e->GetType() == type )
+	      newIndices.Add( e->GetID() );
+	}
+	
 	if ( !newIndices.IsEmpty() )
-	  {
-	    if (!myIsMultipleAllowed && newIndices.Extent() != 1)
-	      return;
-	    if ( SVTK_Selector* s = selector() ) {
-	      s->AddOrRemoveIndex( actor->getIO(), newIndices, false );
-	      viewWindow()->highlight( actor->getIO(), true, true );
-	      myDlg->setButtonEnabled( true, QtxDialog::OK );
-	    }
+	{
+	  if (!myIsMultipleAllowed && newIndices.Extent() != 1)
+	    return;
+	  if ( SVTK_Selector* s = selector() ) {
+	    s->AddOrRemoveIndex( actor->getIO(), newIndices, false );
+	    viewWindow()->highlight( actor->getIO(), true, true );
+	    myDlg->setButtonEnabled( true, QtxDialog::OK );
 	  }
+	}
       }
+    }
+  }
 }
 
 //=======================================================================

@@ -1,31 +1,29 @@
+//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//
+//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+//
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
+//
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
+//
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
 //  SMESH SMESH_I : idl implementation based on 'SMESH' unit's calsses
-//
-//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
-// 
-//  This library is free software; you can redistribute it and/or 
-//  modify it under the terms of the GNU Lesser General Public 
-//  License as published by the Free Software Foundation; either 
-//  version 2.1 of the License. 
-// 
-//  This library is distributed in the hope that it will be useful, 
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of 
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
-//  Lesser General Public License for more details. 
-// 
-//  You should have received a copy of the GNU Lesser General Public 
-//  License along with this library; if not, write to the Free Software 
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
-// 
-// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
-//
-//
-//
 //  File   : SMESH_Mesh_i.hxx
 //  Author : Paul RASCLE, EDF
 //  Module : SMESH
-//  $Header$
-
+//
 #ifndef _SMESH_MESH_I_HXX_
 #define _SMESH_MESH_I_HXX_
 
@@ -74,6 +72,12 @@ public:
   GEOM::GEOM_Object_ptr GetShapeToMesh()
     throw (SALOME::SALOME_Exception);
 
+  void Clear()
+    throw (SALOME::SALOME_Exception);
+
+  void ClearSubMesh(CORBA::Long ShapeID)
+    throw (SALOME::SALOME_Exception);
+
   SMESH::Hypothesis_Status AddHypothesis(GEOM::GEOM_Object_ptr aSubShapeObject,
                                          SMESH::SMESH_Hypothesis_ptr anHyp)
     throw (SALOME::SALOME_Exception);
@@ -115,16 +119,37 @@ public:
                                       SMESH::SMESH_GroupBase_ptr theGroup2, 
                                       const char* theName )
     throw (SALOME::SALOME_Exception);
+
+  SMESH::SMESH_Group_ptr UnionListOfGroups( const SMESH::ListOfGroups& theGroups, 
+                                            const char* theName)
+    throw (SALOME::SALOME_Exception);
   
   SMESH::SMESH_Group_ptr IntersectGroups( SMESH::SMESH_GroupBase_ptr theGroup1, 
                                           SMESH::SMESH_GroupBase_ptr theGroup2, 
                                           const char* theName )
     throw (SALOME::SALOME_Exception);
+
+  SMESH::SMESH_Group_ptr IntersectListOfGroups( const SMESH::ListOfGroups&  theGroups, 
+                                                const char* theName )
+    throw (SALOME::SALOME_Exception);
   
   SMESH::SMESH_Group_ptr CutGroups( SMESH::SMESH_GroupBase_ptr theGroup1, 
                                     SMESH::SMESH_GroupBase_ptr theGroup2, 
-                                   const char* theName )
+                                    const char* theName )
     throw (SALOME::SALOME_Exception);
+
+  SMESH::SMESH_Group_ptr CutListOfGroups( const SMESH::ListOfGroups& theMainGroups, 
+                                          const SMESH::ListOfGroups& theToolGroups, 
+                                          const char* theName )
+  throw (SALOME::SALOME_Exception);
+
+  SMESH::SMESH_Group_ptr CreateDimGroup( const SMESH::ListOfGroups& theGroups, 
+                                         SMESH::ElementType theElemType, 
+                                         const char* theName )
+  throw (SALOME::SALOME_Exception);
+  
+
+  SMESH::SMESH_Group_ptr ConvertToStandalone( SMESH::SMESH_GroupOnGeom_ptr theGeomGroup );
 
 //    SMESH::string_array* GetLog(CORBA::Boolean clearAfterGet)
 //      throw (SALOME::SALOME_Exception);
@@ -310,6 +335,8 @@ public:
   static SMESH::Hypothesis_Status
   ConvertHypothesisStatus (SMESH_Hypothesis::Hypothesis_Status theStatus);
 
+  static void PrepareForWriting (const char* file);
+
   //int importMEDFile( const char* theFileName, const char* theMeshName );
 
   SMESH::SMESH_subMesh_ptr createSubMesh( GEOM::GEOM_Object_ptr theSubShapeObject );
@@ -326,7 +353,7 @@ public:
   SMESH::SMESH_subMesh_ptr getSubMesh(int shapeID);
   // return an existing subMesh object for the shapeID. shapeID == submeshID.
 
-  const map<int, SMESH::SMESH_GroupBase_ptr>& getGroups() { return _mapGroups; }
+  const std::map<int, SMESH::SMESH_GroupBase_ptr>& getGroups() { return _mapGroups; }
   // return an existing group object.
 
   /*!
@@ -436,9 +463,34 @@ public:
    */
   SMESH::double_array* BaryCenter(CORBA::Long id);
 
+  /*!
+   * Returns information about imported MED file
+   */
+  virtual SALOME_MED::MedFileInfo* GetMEDFileInfo();
 
-  map<int, SMESH_subMesh_i*> _mapSubMesh_i; //NRI
-  map<int, ::SMESH_subMesh*> _mapSubMesh;   //NRI
+  /*!
+   * Sets list of notebook variables used for Mesh operations separated by ":" symbol
+   */
+  void SetParameters (const char* theParameters);
+  
+  /*!
+   * Returns list of notebook variables used for Mesh operations separated by ":" symbol
+   */
+  char* GetParameters();
+
+  /*!
+   * Returns list of notebook variables used for last Mesh operation
+   */
+  SMESH::string_array* GetLastParameters();
+  
+  std::map<int, SMESH_subMesh_i*> _mapSubMesh_i; //NRI
+  std::map<int, ::SMESH_subMesh*> _mapSubMesh;   //NRI
+
+private:
+  /*!
+   * Check and correct names of mesh groups
+   */
+  void checkGroupNames();
 
 private:
 
@@ -447,9 +499,10 @@ private:
   SMESH_Gen_i* _gen_i;
   int _id;          // id given by creator (unique within the creator instance)
   int _studyId;
-  map<int, SMESH::SMESH_subMesh_ptr>    _mapSubMeshIor;
-  map<int, SMESH::SMESH_GroupBase_ptr>  _mapGroups;
-  map<int, SMESH::SMESH_Hypothesis_ptr> _mapHypo;
+  std::map<int, SMESH::SMESH_subMesh_ptr>    _mapSubMeshIor;
+  std::map<int, SMESH::SMESH_GroupBase_ptr>  _mapGroups;
+  std::map<int, SMESH::SMESH_Hypothesis_ptr> _mapHypo;
+  SALOME_MED::MedFileInfo_var myFileInfo;
 };
 
 #endif

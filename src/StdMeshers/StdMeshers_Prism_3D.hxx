@@ -1,29 +1,28 @@
+//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//
+//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+//
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
+//
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
+//
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
 //  SMESH SMESH : implementaion of SMESH idl descriptions
-//
-//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
-// 
-//  This library is free software; you can redistribute it and/or 
-//  modify it under the terms of the GNU Lesser General Public 
-//  License as published by the Free Software Foundation; either 
-//  version 2.1 of the License. 
-// 
-//  This library is distributed in the hope that it will be useful, 
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of 
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
-//  Lesser General Public License for more details. 
-// 
-//  You should have received a copy of the GNU Lesser General Public 
-//  License along with this library; if not, write to the Free Software 
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
-// 
-// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
-//
-//
-//
 //  File   : StdMeshers_Prism_3D.hxx
 //  Module : SMESH
-
+//
 #ifndef _SMESH_Prism_3D_HXX_
 #define _SMESH_Prism_3D_HXX_
 
@@ -242,9 +241,9 @@ private:
     BRepAdaptor_Surface             mySurface;
     TopoDS_Edge                     myBaseEdge;
     // first and last normalized params and orientaion for each component or it-self
-    vector< pair< double, double> > myParams;
+    std::vector< std::pair< double, double> > myParams;
     bool                            myIsForward;
-    vector< TSideFace* >            myComponents;
+    std::vector< TSideFace* >       myComponents;
     SMESH_MesherHelper *            myHelper;
   public:
     TSideFace( SMESH_MesherHelper* helper,
@@ -255,7 +254,7 @@ private:
                const double        first = 0.0,
                const double        last = 1.0);
     TSideFace( const std::vector< TSideFace* >&             components,
-               const std::vector< pair< double, double> > & params);
+               const std::vector< std::pair< double, double> > & params);
     TSideFace( const TSideFace& other );
     ~TSideFace();
     bool IsComplex() const
@@ -347,9 +346,9 @@ private:
   // container of 4 side faces
   TSideFace*                 mySide; 
   // node columns for each base edge
-  vector< TParam2ColumnMap > myParam2ColumnMaps;
+  std::vector< TParam2ColumnMap > myParam2ColumnMaps;
   // to find a column for a node by edge SMESHDS Index
-  map< int, pair< TParam2ColumnMap*, bool > > myShapeIndex2ColumnMap;
+  std::map< int, std::pair< TParam2ColumnMap*, bool > > myShapeIndex2ColumnMap;
 
   SMESH_ComputeErrorPtr myError;
   /*!
@@ -359,7 +358,7 @@ private:
     myError = SMESH_ComputeError::New(error,comment);
     return myError->IsOK();
   }
-  //vector< SMESH_subMesh* >           mySubMeshesVec; // submesh by in-block id
+  //std::vector< SMESH_subMesh* >           mySubMeshesVec; // submesh by in-block id
 };
 
 // =============================================
@@ -395,7 +394,7 @@ public:
     * \param nodeColumns - columns of nodes generated from nodes of a mesh face
     * \param helper - helper initialized by mesh and shape to add prisms to
    */
-  static void AddPrisms( vector<const TNodeColumn*> & nodeColumns,
+  static void AddPrisms( std::vector<const TNodeColumn*> & nodeColumns,
                          SMESH_MesherHelper*          helper);
 
 private:
@@ -430,7 +429,7 @@ private:
   StdMeshers_PrismAsBlock myBlock;
   SMESH_MesherHelper*     myHelper;
 
-  vector<gp_XYZ>            myShapeXYZ; // point on each sub-shape
+  std::vector<gp_XYZ>            myShapeXYZ; // point on each sub-shape
 
   // map of bottom nodes to the column of nodes above them
   // (the column includes the bottom node)

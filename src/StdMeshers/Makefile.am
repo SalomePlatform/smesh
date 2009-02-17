@@ -1,30 +1,30 @@
+#  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+#
+#  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+#  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+#
+#  This library is free software; you can redistribute it and/or
+#  modify it under the terms of the GNU Lesser General Public
+#  License as published by the Free Software Foundation; either
+#  version 2.1 of the License.
+#
+#  This library is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+#  Lesser General Public License for more details.
+#
+#  You should have received a copy of the GNU Lesser General Public
+#  License along with this library; if not, write to the Free Software
+#  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+#
+#  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+#
 #  SMESH StdMeshers : implementaion of SMESH idl descriptions
-#
-#  Copyright (C) 2003  CEA
-# 
-#  This library is free software; you can redistribute it and/or 
-#  modify it under the terms of the GNU Lesser General Public 
-#  License as published by the Free Software Foundation; either 
-#  version 2.1 of the License. 
-# 
-#  This library is distributed in the hope that it will be useful, 
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of 
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
-#  Lesser General Public License for more details. 
-# 
-#  You should have received a copy of the GNU Lesser General Public 
-#  License along with this library; if not, write to the Free Software 
-#  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
-# 
-# See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
-#
-#
-#
 #  File   : Makefile.in
 #  Author : Julia DOROVSKIKH
 #  Modified by : Alexander BORODIN (OCN) - autotools usage
 #  Module : SMESH
-
+#
 include $(top_srcdir)/adm_local/unix/make_common_starter.am
 
 # header files 
@@ -43,6 +43,7 @@ salomeinclude_HEADERS = \
 	StdMeshers_Quadrangle_2D.hxx \
 	StdMeshers_MEFISTO_2D.hxx \
 	StdMeshers_Hexa_3D.hxx \
+	StdMeshers_Penta_3D.hxx \
 	StdMeshers_AutomaticLength.hxx \
 	StdMeshers_Distribution.hxx \
 	StdMeshers_QuadranglePreference.hxx \
@@ -63,7 +64,11 @@ salomeinclude_HEADERS = \
 	StdMeshers_FaceSide.hxx \
 	StdMeshers_CompositeSegment_1D.hxx \
 	StdMeshers_UseExisting_1D2D.hxx \
-	SMESH_StdMeshers.hxx
+	StdMeshers_QuadToTriaAdaptor.hxx \
+	SMESH_StdMeshers.hxx \
+	StdMeshers_TrianglePreference.hxx \
+	StdMeshers_CompositeHexa_3D.hxx \
+	StdMeshers_MaxLength.hxx
 
 # Libraries targets
 
@@ -104,7 +109,11 @@ dist_libStdMeshers_la_SOURCES = \
 	StdMeshers_SegmentLengthAroundVertex.cxx \
 	StdMeshers_FaceSide.cxx \
 	StdMeshers_CompositeSegment_1D.cxx \
-	StdMeshers_UseExisting_1D2D.cxx
+	StdMeshers_UseExisting_1D2D.cxx \
+	StdMeshers_QuadToTriaAdaptor.cxx \
+	StdMeshers_TrianglePreference.cxx \
+	StdMeshers_CompositeHexa_3D.cxx \
+	StdMeshers_MaxLength.cxx
 
 
 # additionnal information to compil and link file

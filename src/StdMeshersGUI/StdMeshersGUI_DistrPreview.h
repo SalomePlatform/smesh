@@ -1,35 +1,48 @@
-// Copyright (C) 2005  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-// This library is free software; you can redistribute it and/or
-// modify it under the terms of the GNU Lesser General Public
-// License as published by the Free Software Foundation; either
-// version 2.1 of the License.
+//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
-// This library is distributed in the hope that it will be useful
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-// Lesser General Public License for more details.
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
 //
-// You should have received a copy of the GNU Lesser General Public
-// License along with this library; if not, write to the Free Software
-// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
 //
-// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
+// File   : StdMeshersGUI_DistrPreview.h
+// Author : Open CASCADE S.A.S.
+//
+#ifndef STDMESHERSGUI_DISTRPREVIEW_H
+#define STDMESHERSGUI_DISTRPREVIEW_H
 
-#ifndef STD_MESHERS_GUI_DISTR_PREVIEW_HEADER
-#define STD_MESHERS_GUI_DISTR_PREVIEW_HEADER
-
+// SMESH includes
 #include "SMESH_StdMeshersGUI.hxx"
 
+// Qwt includes
 #include <qwt_plot.h>
+
+// IDL includes
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
 #include CORBA_SERVER_HEADER(SMESH_BasicHypothesis)
+
+// OCCT includes
 #include <ExprIntrp_GenExp.hxx>
 #include <Expr_Array1OfNamedUnknown.hxx>
 #include <TColStd_Array1OfReal.hxx>
+
+class QwtPlotCurve;
+class QwtPlotMarker;
 
 class STDMESHERSGUI_EXPORT StdMeshersGUI_DistrPreview : public QwtPlot
 {
@@ -69,7 +82,9 @@ private:
   bool                      myIsTable;
   Conversion                myConv;
   SMESH::double_array       myTableFunc;
-  long                      myDensity, myDistr, myMsg;
+  QwtPlotCurve*             myDensity;
+  QwtPlotCurve*             myDistr;
+  QwtPlotMarker*            myMsg;
   Handle(ExprIntrp_GenExp)  myExpr;
   Expr_Array1OfNamedUnknown myVars;
   TColStd_Array1OfReal      myValues;
@@ -77,4 +92,4 @@ private:
   StdMeshers::StdMeshers_NumberOfSegments_var  myHypo;
 };
 
-#endif
+#endif // STDMESHERSGUI_DISTRPREVIEW_H

@@ -7,6 +7,7 @@
 <li>\ref max_element_area_anchor "Max Element Area"</li>
 <li>\ref length_from_edges_anchor "Length from Edges"</li>
 <li>\ref quadrangle_preference_anchor "Quadrangle Preference"</li>
+<li>\ref triangle_preference_anchor "Triangle Preference"</li>
 </ul>
 
 <br>
@@ -21,7 +22,7 @@ which will compose the mesh of these 2D faces.
 
 \image html a-maxelarea.png
 
-\image html max_el_area.png
+\image html max_el_area.png "In this example, Max. element area is very small compared to the 1D hypothesis"
 
 <b>See Also</b> a sample TUI Script of a 
 \ref tui_max_element_area "Maximum Element Area" hypothesis
@@ -48,4 +49,14 @@ otherwise this mesh will contain some triangular elements.
 <br>
 This hypothesis has one restriction on its work: the total quantity of
 segments on all four sides of the face must be even (divisible by 2).
+
+<br>
+\anchor triangle_preference_anchor
+<h2>Triangle Preference</h2>
+
+This algorithm can be used only together with Quadrangle (Mapping)
+algorithm. It allows to build triangular mesh faces in the refinement
+area if the number of nodes at the opposite edges of a meshed face is not equal,
+otherwise refinement area will contain some quadrangular elements.
+<br>
 */

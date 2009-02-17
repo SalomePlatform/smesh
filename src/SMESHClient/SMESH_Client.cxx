@@ -1,30 +1,29 @@
+//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//
+//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+//
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
+//
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
+//
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
 //  SMESH SMESHClient : tool to update client mesh structure by mesh from server
-//
-//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
-// 
-//  This library is free software; you can redistribute it and/or 
-//  modify it under the terms of the GNU Lesser General Public 
-//  License as published by the Free Software Foundation; either 
-//  version 2.1 of the License. 
-// 
-//  This library is distributed in the hope that it will be useful, 
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of 
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
-//  Lesser General Public License for more details. 
-// 
-//  You should have received a copy of the GNU Lesser General Public 
-//  License along with this library; if not, write to the Free Software 
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
-// 
-// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
-//
-//
-//
 //  File   : SMESH_Client.cxx
 //  Author : Pavel TELKOV
 //  Module : SMESH
-
+//
 #include "SMESH_Client.hxx"
 #include "SMESH_Mesh.hxx"
 
@@ -35,7 +34,7 @@
 #include CORBA_SERVER_HEADER(SALOME_Component)
 #include CORBA_SERVER_HEADER(SALOME_Exception)
 
-#include "OpUtil.hxx"
+#include "Basics_Utils.hxx"
 #include "utilities.h"
 
 #ifdef WNT
@@ -591,7 +590,7 @@ SMESH_Client::GetSMESHGen(CORBA::ORB_ptr theORB,
     Engines::Component_var aComponent = aLifeCycleCORBA.FindOrLoad_Component("FactoryServer","SMESH");
     aMeshGen = SMESH::SMESH_Gen::_narrow(aComponent);
     
-    std::string aClientHostName = GetHostname();
+    std::string aClientHostName = Kernel_Utils::GetHostname();
     Engines::Container_var aServerContainer = aMeshGen->GetContainerRef();
     CORBA::String_var aServerHostName = aServerContainer->getHostName();
     CORBA::Long aServerPID = aServerContainer->getPID();
@@ -623,9 +622,11 @@ SMESH_Client::SMESH_Client(CORBA::ORB_ptr theORB,
     // just set client mesh pointer to server mesh pointer
     //SMESH_Mesh* aMesh = reinterpret_cast<SMESH_Mesh*>(theMesh->GetMeshPtr());
     CORBA::LongLong pointeur = theMesh->GetMeshPtr();
-    cerr <<"SMESH_Client::SMESH_Client pointeur " << pointeur << endl;
+    if( MYDEBUG )
+      MESSAGE("SMESH_Client::SMESH_Client pointeur "<<pointeur);
     SMESH_Mesh* aMesh = reinterpret_cast<SMESH_Mesh*> (pointeur);
-    cerr <<"SMESH_Client::SMESH_Client aMesh " << aMesh << endl;
+    if ( MYDEBUG )
+      MESSAGE("SMESH_Client::SMESH_Client aMesh "<<aMesh);
     if(aMesh->GetMeshDS()->IsEmbeddedMode()){
       mySMESHDSMesh = aMesh->GetMeshDS();
       mySMDSMesh = mySMESHDSMesh;
@@ -724,6 +725,10 @@ SMESH_Client::Update(bool theIsClear)
         case SMESH::ADD_QUADPYRAMID    : AddQuadPiramidsWithID( mySMDSMesh, aSeq, anId ); break;
         case SMESH::ADD_QUADPENTAHEDRON: AddQuadPentasWithID  ( mySMDSMesh, aSeq, anId ); break;
         case SMESH::ADD_QUADHEXAHEDRON : AddQuadHexasWithID   ( mySMDSMesh, aSeq, anId ); break;
+
+        case SMESH::CLEAR_MESH:
+          mySMDSMesh->Clear();
+          break;
 
         case SMESH::REMOVE_NODE:
           for( ; anElemId < aNbElems; anElemId++ )

@@ -1,30 +1,29 @@
+//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//
+//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+//
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
+//
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
+//
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
 //  SMESH SMESH_I : idl implementation based on 'SMESH' unit's calsses
-//
-//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
-// 
-//  This library is free software; you can redistribute it and/or 
-//  modify it under the terms of the GNU Lesser General Public 
-//  License as published by the Free Software Foundation; either 
-//  version 2.1 of the License. 
-// 
-//  This library is distributed in the hope that it will be useful, 
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of 
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
-//  Lesser General Public License for more details. 
-// 
-//  You should have received a copy of the GNU Lesser General Public 
-//  License along with this library; if not, write to the Free Software 
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
-// 
-// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
-//
-//
-//
 //  File   : SMESH_Filter_i.hxx
 //  Author : Alexey Petrov, OCC
 //  Module : SMESH
-
+//
 #ifndef _SMESH_FILTER_I_HXX_
 #define _SMESH_FILTER_I_HXX_
 
@@ -46,7 +45,7 @@ namespace SMESH
 
   namespace Controls
   {
-    
+
     /*
       Class       : BelongToGeom
       Description : Predicate for verifying whether entiy belong to
@@ -56,25 +55,33 @@ namespace SMESH
     {
     public:
       BelongToGeom();
-      
+
       virtual void                    SetMesh( const SMDS_Mesh* theMesh );
       virtual void                    SetGeom( const TopoDS_Shape& theShape );
-      
+
       virtual bool                    IsSatisfy( long theElementId );
-      
+
       virtual void                    SetType( SMDSAbs_ElementType theType );
       virtual                         SMDSAbs_ElementType GetType() const;
-      
+
       TopoDS_Shape                    GetShape();
       const SMESHDS_Mesh*             GetMeshDS() const;
-      
+
+      void                            SetTolerance( double );
+      double                          GetTolerance();
+
     private:
+      virtual void                    init();
+
       TopoDS_Shape                    myShape;
       const SMESHDS_Mesh*             myMeshDS;
       SMDSAbs_ElementType             myType;
+      bool                            myIsSubshape;
+      double                          myTolerance;          // only if myIsSubshape == false
+      Controls::ElementsOnShapePtr    myElementsOnShapePtr; // only if myIsSubshape == false
     };
     typedef boost::shared_ptr<BelongToGeom> BelongToGeomPtr;
-    
+
     /*
       Class       : LyingOnGeom
       Description : Predicate for verifying whether entiy lying or partially lying on
@@ -95,6 +102,9 @@ namespace SMESH
       
       TopoDS_Shape                    GetShape();
       const SMESHDS_Mesh*             GetMeshDS() const;
+
+      void                            SetTolerance( double );
+      double                          GetTolerance();
       
       virtual bool                    Contains( const SMESHDS_Mesh*     theMeshDS,
 						const TopoDS_Shape&     theShape,
@@ -102,9 +112,14 @@ namespace SMESH
 						TopAbs_ShapeEnum        theFindShapeEnum,
 						TopAbs_ShapeEnum        theAvoidShapeEnum = TopAbs_SHAPE );
     private:
+      virtual void                    init();
+
       TopoDS_Shape                    myShape;
       const SMESHDS_Mesh*             myMeshDS;
       SMDSAbs_ElementType             myType;
+      bool                            myIsSubshape;
+      double                          myTolerance;          // only if myIsSubshape == false
+      Controls::ElementsOnShapePtr    myElementsOnShapePtr; // only if myIsSubshape == false
     };
     typedef boost::shared_ptr<LyingOnGeom> LyingOnGeomPtr;
   }
@@ -365,6 +380,9 @@ namespace SMESH
     void                            SetShape( const char* theID, const char* theName );
     char*                           GetShapeName();
     char*                           GetShapeID();
+
+    void                            SetTolerance( CORBA::Double );
+    CORBA::Double                   GetTolerance();
     
   protected:
     Controls::BelongToGeomPtr       myBelongToGeomPtr;
@@ -463,6 +481,9 @@ namespace SMESH
     void                            SetShape( const char* theID, const char* theName );
     char*                           GetShapeName();
     char*                           GetShapeID();
+
+    void                            SetTolerance( CORBA::Double );
+    CORBA::Double                   GetTolerance();
     
   protected:
     Controls::LyingOnGeomPtr        myLyingOnGeomPtr;
@@ -499,6 +520,32 @@ namespace SMESH
     Controls::FreeEdgesPtr          myFreeEdgesPtr;
   };
   
+
+  /*
+    Class       : FreeFaces_i
+    Description : Predicate for free faces
+  */
+  class SMESH_I_EXPORT FreeFaces_i: public virtual POA_SMESH::FreeFaces,
+		       public virtual Predicate_i
+  {
+  public:
+    FreeFaces_i();
+    FunctorType                     GetFunctorType();
+  };
+  
+
+  /*
+    Class       : FreeNodes_i
+    Description : Predicate for free nodes
+  */
+  class SMESH_I_EXPORT FreeNodes_i: public virtual POA_SMESH::FreeNodes,
+		       public virtual Predicate_i
+  {
+  public:
+    FreeNodes_i();
+    FunctorType                     GetFunctorType();
+  };
+  
   
   /*
     Class       : RangeOfIds_i
@@ -518,6 +565,60 @@ namespace SMESH
     
   protected:
     Controls::RangeOfIdsPtr         myRangeOfIdsPtr;
+  };
+
+  /*
+    Class       : LinearOrQuadratic_i
+    Description : Verify whether a mesh element is linear
+  */
+  class SMESH_I_EXPORT LinearOrQuadratic_i: public virtual POA_SMESH::LinearOrQuadratic,
+			     public virtual Predicate_i
+  {
+  public:
+    LinearOrQuadratic_i();
+    FunctorType                    GetFunctorType();
+    void                           SetElementType( ElementType theType );
+
+  private:
+   Controls::LinearOrQuadraticPtr  myLinearOrQuadraticPtr;
+  };
+  
+  /*
+    Class       : GroupColor_i
+    Description : Functor for check color of group to whic mesh element belongs to
+  */
+  class SMESH_I_EXPORT GroupColor_i: public virtual POA_SMESH::GroupColor,
+		  public virtual Predicate_i
+  {
+  public:
+    GroupColor_i();
+    FunctorType             GetFunctorType();
+
+    void                    SetElementType( ElementType theType );
+    void                    SetColorStr( const char* theColor );
+    char*                   GetColorStr();
+
+  private:
+    Controls::GroupColorPtr myGroupColorPtr;
+  };
+  
+  /*
+    Class       : ElemGeomType_i
+    Description : Functor for check element geometry type
+  */
+  class SMESH_I_EXPORT ElemGeomType_i: public virtual POA_SMESH::ElemGeomType,
+		  public virtual Predicate_i
+  {
+  public:
+    ElemGeomType_i();
+    FunctorType             GetFunctorType();
+
+    void                    SetElementType ( ElementType  theType );
+    void                    SetGeometryType( GeometryType theType );
+    GeometryType            GetGeometryType() const;
+
+  private:
+    Controls::ElemGeomTypePtr myElemGeomTypePtr;
   };
   
   /*
@@ -794,11 +895,18 @@ namespace SMESH
     
     FreeBorders_ptr           CreateFreeBorders();
     FreeEdges_ptr             CreateFreeEdges();
+    FreeNodes_ptr             CreateFreeNodes();
+    FreeFaces_ptr             CreateFreeFaces();
     
     RangeOfIds_ptr            CreateRangeOfIds();
     
     BadOrientedVolume_ptr     CreateBadOrientedVolume();
+    LinearOrQuadratic_ptr     CreateLinearOrQuadratic();
     
+    GroupColor_ptr            CreateGroupColor();
+
+    ElemGeomType_ptr          CreateElemGeomType();
+
     LessThan_ptr              CreateLessThan();
     MoreThan_ptr              CreateMoreThan();
     EqualTo_ptr               CreateEqualTo();

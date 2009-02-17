@@ -7,6 +7,7 @@
 <ul>
 <li>\ref removing_nodes_anchor "Nodes"</li>
 <li>\ref removing_elements_anchor "Elements"</li>
+<li>\ref clear_mesh_anchor "Clear Mesh Data"</li>
 </ul>
 
 <br>
@@ -28,17 +29,20 @@ The following dialog box will appear:
 
 \image html removenodes.png
 
-In this dialog box you can specify one or several nodes (with pressed
-Shift button) by choosing them in the 3D viewer.
+In this dialog box you can specify one or several nodes
+<ul>
+<li>Choosing them manually with the mouse in the 3D Viewer. You can
+click on a node in the 3D viewer and it will be highlighted</li>
+<li>Applying Filters. The <b>Set filter</b> button allows to apply a
+definite filter to selection of the nodes. See more
+about filters on the
+\ref selection_filter_library_page "Selection filter library" page.</li>
+</ul>
 </li>
 </ol>
 
 \note Be careful while removing nodes because if you remove a definite
 node of your mesh all adjacent elements will be also deleted.
-
-\image html remove_nodes1.png
-
-\image html remove_nodes2.png
 
 <br>
 \anchor removing_elements_anchor
@@ -59,15 +63,40 @@ The following dialog box will appear:
 
 \image html removeelements.png
 
-In this dialog box you can specify one or several elements of your
-mesh (with pressed Shift button) by choosing them in the 3D viewer.
+In this dialog box you can specify one or several elements
+<ul>
+<li>Choosing them manually with the mouse in the 3D Viewer. You can
+click on an element in the 3D viewer and it will be highlighted</li>
+<li>Applying Filters. The <b>Set filter</b> button allows to apply a
+definite filter to selection of the elements. See more
+about filters on the
+\ref selection_filter_library_page "Selection filter library" page.</li>
+</ul>
 </li>
-<li>Click OK or Apply  to confirm deletion of the specified elements.</li>
+<li>Click \b Apply or <b>Apply and Close</b> to confirm deletion of the specified elements.</li>
 </ol>
 
-\image html remove_elements1.png
+\image html remove_nodes1.png "The initial mesh"
 
-\image html remove_elements2.png
+\image html remove_nodes2.png "The mesh with some elements removed" 
+
+<br>
+\anchor clear_mesh_anchor
+<h2>Clearing Mesh Data</h2>
+
+<em>To remove all nodes and all types of cells in your mesh at once:</em>
+<ol>
+<li>Select your mesh in the Object Browser or in the 3D viewer.</li>
+
+<li>From the Modification menu choose Remove and from the associated
+submenu select the Clear Mesh Data, or just click <em>"Clear Mesh Data"</em>
+button in the toolbar. You can also right-click on the mesh in the
+Object Browser and select Clear Mesh Data in the pop-up menu.
+</ol>
+
+\image html mesh_clear.png
+<center><em>"Clear Mesh Data" button</em></center>
+
 
 <br><b>See Also</b> a sample TUI Script of a 
 \ref tui_removing_nodes_and_elements "Removing Nodes and Elements" operation.  

@@ -2,8 +2,10 @@
 
 \page rotation_page Rotation
 
-\n This geometrical operation allows to rotate in space your mesh or
+\n This operation allows to rotate in space your mesh or
 some of its elements.
+
+\image html rotation_ico.png "Rotation button"
 
 <em>To rotate your mesh:</em>
 \par
@@ -13,7 +15,17 @@ select the \b Rotation item. The following dialog box shall appear:
 \image html rotation.png
 \par 
 In this dialog box you can specify the elements which should be
-rotated and the rotation parameters:
+rotated
+<ul>
+<li>Check on <b>Select the whole mesh, submesh or group</b> option
+<li>Choosing them manually with the mouse in the 3D Viewer. You can
+click on an element in the 3D viewer and it will be highlighted</li>
+<li>Applying Filters. The <b>Set filter</b> button allows to apply a
+definite filter to selection of the elements. See more
+about filters on the
+\ref selection_filter_library_page "Selection filter library" page.</li>
+</ul>
+ and the rotation parameters:
 <ul>
 <li>\b Axis: point and vector</li>
 <li>\b Angle of rotation</li>
@@ -27,9 +39,9 @@ rotated and the rotation parameters:
 \par
 
 
-\image html rotation1.png
+\image html rotation1.png "The initial mesh"
 
-\image html rotation2.png
+\image html rotation2.png "The rotated mesh"
 
 <br><b>See Also</b> a sample TUI Script of a 
 \ref tui_rotation "Rotation" operation.  

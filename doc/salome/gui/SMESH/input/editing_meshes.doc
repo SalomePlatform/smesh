@@ -13,17 +13,15 @@ Creation</b>.
 You can also change values for the current hypothesis by clicking the
 <em>"Edit Hypothesis"</em> button.
 
-\image html image122.gif
+\image html image122.png
 <center><em>"Edit Hypothesis" button</em></center>
 
-See how a mesh constructed on one and the same geometrical object
+See how the mesh constructed on a geometrical object
 changes if we apply different algorithms to it.
 
-\image html edit_mesh1.png
+\image html edit_mesh1.png "Example of a mesh with Max. Element area 2D hypothesis roughly corresponding to 1D hypotheses on edges"
 
-\image html edit_mesh_remove_hyp.png
-
-\image html edit_mesh_change_value_hyp.png
+\image html edit_mesh_change_value_hyp.png "And now the Max Element area is greatly reduced"
 
 <br><b>See Also</b> a sample TUI Script of an 
 \ref tui_editing_mesh "Edit Mesh" operation.  

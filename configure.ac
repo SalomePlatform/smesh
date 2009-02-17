@@ -1,15 +1,32 @@
+#  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+#
+#  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+#  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+#
+#  This library is free software; you can redistribute it and/or
+#  modify it under the terms of the GNU Lesser General Public
+#  License as published by the Free Software Foundation; either
+#  version 2.1 of the License.
+#
+#  This library is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+#  Lesser General Public License for more details.
+#
+#  You should have received a copy of the GNU Lesser General Public
+#  License along with this library; if not, write to the Free Software
+#  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+#
+#  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 # Author : Marc Tajchman (CEA)
 # Date : 28/06/2001
 # Modified by : Patrick GOLDBRONN (CEA)
 # Modified by : Marc Tajchman (CEA)
 # Modified by : Alexander BORODIN (OCN) - autotools usage
-#
 # Created from configure.in.base
 #
-
-
-AC_INIT([Salome2 Project SMESH module], [4.1.1], [webmaster.salome@opencascade.com], [salome])
+AC_INIT([Salome2 Project SMESH module], [5.1.0], [webmaster.salome@opencascade.com], [SalomeSMESH])
 AC_CONFIG_AUX_DIR(salome_adm/unix/config_files)
 AC_CANONICAL_HOST
 AC_CANONICAL_TARGET
@@ -123,6 +140,7 @@ AC_PROG_FC
 AC_FC_LIBRARY_LDFLAGS
 if test "X$FC" != "X" ; then
    fortran_ok=yes
+   F77=$FC
 fi
 
 dnl AM_CONDITIONAL( USE_GFORTRAN, [test "$F77" = "gfortran"])
@@ -197,18 +215,6 @@ ENABLE_PTHREADS
 SMESH_WITH_GUI=yes
 
 AM_CONDITIONAL(SMESH_ENABLE_GUI, [test "${SMESH_WITH_GUI}" = "yes"])
-
-if test "${SMESH_WITH_GUI}" = "yes"; then
-
-echo
-echo ---------------------------------------------
-echo testing msg2qm
-echo ---------------------------------------------
-echo
-
-CHECK_MSG2QM
-
-fi
 
 if test "x${GUI_DISABLE_CORBA}" != "xyes" ; then
     echo
@@ -374,7 +380,7 @@ echo
 
 echo Configure
 if test "${SMESH_WITH_GUI}" = "yes"; then
-variables="cc_ok fortran_ok boost_ok lex_yacc_ok python_ok swig_ok threads_ok OpenGL_ok qt_ok vtk_ok hdf5_ok omniORB_ok occ_ok doxygen_ok graphviz_ok qwt_ok Kernel_ok Geom_ok Med_ok"
+variables="cc_ok fortran_ok boost_ok lex_yacc_ok python_ok swig_ok threads_ok OpenGL_ok qt_ok vtk_ok hdf5_ok omniORB_ok occ_ok doxygen_ok graphviz_ok qwt_ok Kernel_ok Geom_ok Med_ok SalomeGUI_ok"
 fi
 
 if test "${SMESH_WITH_GUI}" = "no"; then
@@ -410,40 +416,14 @@ dnl AM_CONDITIONAL(ENABLE_SALOMEOBJECT, [test "$DISABLE_SALOMEOBJECT" = no])
 
 echo
 echo ---------------------------------------------
-echo copying resource files, shell scripts, and
-echo xml files
-echo ---------------------------------------------
-echo
-
-
-dnl copy shells and utilities contained in the bin directory
-dnl excluding .in files (treated in AC-OUTPUT below) and CVS
-dnl directory
-
-mkdir -p bin/salome
-cd bin/salome
-
-for i in $ROOT_SRCDIR/bin/*
-do
-  local_bin=`echo $i | sed -e "s,$ROOT_SRCDIR,.,"`
-  case "$local_bin" in
-        *.in | *~)                    ;;
-        ./bin/CVS | ./bin/salome)                    ;;
-        *) $INSTALL $i . ; echo $local_bin ;;
-  esac
-done
-cd $ROOT_BUILDDIR
-
-echo
-echo ---------------------------------------------
 echo generating Makefiles and configure files
 echo ---------------------------------------------
 echo
 
-AC_OUTPUT_COMMANDS([ \
-  chmod +x ./bin/*; \
-  chmod +x ./bin/salome/*; \
-])
+#AC_OUTPUT_COMMANDS([ \
+#  chmod +x ./bin/*; \
+#  chmod +x ./bin/salome/*; \
+#])
 
 # This list is initiated using autoscan and must be updated manually
 # when adding a new file <filename>.in to manage. When you execute
@@ -460,11 +440,11 @@ AC_OUTPUT([ \
   ./doc/Makefile \
   ./doc/salome/Makefile \
   ./doc/salome/gui/Makefile \
+  ./doc/salome/gui/SMESH/Makefile \
   ./doc/salome/gui/SMESH/doxyfile \
   ./doc/salome/gui/SMESH/doxyfile_py \
   ./doc/salome/tui/Makefile \
-  ./doc/salome/tui/SMESH/doxyfile \
-  ./doc/salome/tui/SMESH/sources/static/tree.js \
+  ./doc/salome/tui/doxyfile \
   ./src/Makefile \
   ./src/Controls/Makefile \
   ./src/Driver/Makefile \

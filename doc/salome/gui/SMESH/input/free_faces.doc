@@ -1,0 +1,17 @@
+/*!
+
+\page free_faces_page Free faces
+
+\n This mesh quality control highlights faces which are connected
+less than to two mesh volume elements. Free faces are shown with a color differs from
+the color of shared faces.
+
+\image html free_faces.png
+<center>In this picture some volume mesh element are removed as
+a result some faces become connected only to one
+volume. i.e. become free.
+
+<br><b>See Also</b> a sample TUI Script of a 
+\ref tui_free_faces "Free Faces quality control" operation.  
+
+*/

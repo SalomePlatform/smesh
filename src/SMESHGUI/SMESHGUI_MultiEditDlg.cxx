@@ -1,6 +1,6 @@
-//  SMESH SMESHGUI : GUI for SMESH component
+//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
 //  This library is free software; you can redistribute it and/or
@@ -17,14 +17,12 @@
 //  License along with this library; if not, write to the Free Software
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+// File   : SMESHGUI_MultiEditDlg.cxx
+// Author : Sergey LITONIN, Open CASCADE S.A.S.
+// SMESH includes
 //
-//
-//  File   : SMESHGUI_MultiEditDlg.cxx
-//  Author : Sergey LITONIN
-//  Module : SMESH
-
 #include "SMESHGUI_MultiEditDlg.h"
 
 #include "SMESHGUI.h"
@@ -36,38 +34,31 @@
 #include "SMESHGUI_FilterUtils.h"
 #include "SMESHGUI_SpinBox.h"
 
-#include "SMESH_Actor.h"
-#include "SMESH_TypeFilter.hxx"
-#include "SMDS_Mesh.hxx"
-#include "SMDS_MeshElement.hxx"
+#include <SMESH_Actor.h>
+#include <SMESH_TypeFilter.hxx>
+#include <SMDS_Mesh.hxx>
 
-#include "SUIT_ResourceMgr.h"
-#include "SUIT_Desktop.h"
-#include "SUIT_Session.h"
-#include "SUIT_MessageBox.h"
+// SALOME GUI includes
+#include <SUIT_ResourceMgr.h>
+#include <SUIT_Desktop.h>
+#include <SUIT_Session.h>
+#include <SUIT_MessageBox.h>
 
-#include "LightApp_SelectionMgr.h"
-#include "LightApp_Application.h"
-#include "SALOME_ListIO.hxx"
-#include "SALOME_ListIteratorOfListIO.hxx"
+#include <LightApp_SelectionMgr.h>
+#include <LightApp_Application.h>
+#include <SALOME_ListIO.hxx>
+#include <SALOME_ListIteratorOfListIO.hxx>
 
-#include "SVTK_Selector.h"
-#include "SVTK_ViewModel.h"
-#include "SVTK_ViewWindow.h"
-#include "VTKViewer_CellLocationsArray.h"
+#include <SVTK_Selector.h>
+#include <SVTK_ViewWindow.h>
+#include <VTKViewer_CellLocationsArray.h>
 
-// OCCT Includes
-#include <Precision.hxx>
+// OCCT includes
 #include <TColStd_IndexedMapOfInteger.hxx>
 #include <TColStd_DataMapOfIntegerInteger.hxx>
 #include <TColStd_MapIteratorOfMapOfInteger.hxx>
 
-// VTK Includes
-#include <vtkCell3D.h>
-#include <vtkQuad.h>
-#include <vtkTriangle.h>
-#include <vtkPolygon.h>
-#include <vtkConvexPointSet.h>
+// VTK includes
 #include <vtkIdList.h>
 #include <vtkCellArray.h>
 #include <vtkUnsignedCharArray.h>
@@ -75,26 +66,27 @@
 #include <vtkDataSetMapper.h>
 #include <vtkProperty.h>
 
-// QT Includes
-#include <qframe.h>
-#include <qlabel.h>
-#include <qlayout.h>
-#include <qlistbox.h>
-#include <qcheckbox.h>
-#include <qcombobox.h>
-#include <qgroupbox.h>
-#include <qlineedit.h>
-#include <qpushbutton.h>
-#include <qapplication.h>
-#include <qradiobutton.h>
-#include <qhbuttongroup.h>
+// Qt includes
+#include <QLabel>
+#include <QVBoxLayout>
+#include <QHBoxLayout>
+#include <QGridLayout>
+#include <QListWidget>
+#include <QCheckBox>
+#include <QComboBox>
+#include <QGroupBox>
+#include <QLineEdit>
+#include <QPushButton>
+#include <QButtonGroup>
+#include <QRadioButton>
+#include <QKeyEvent>
 
-// IDL Headers
-#include "SALOMEconfig.h"
+// IDL includes
+#include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_Group)
 
-#define SPACING 5
-#define MARGIN  10
+#define SPACING 6
+#define MARGIN  11
 
 /*!
  *  Class       : SMESHGUI_MultiEditDlg
@@ -109,30 +101,29 @@
 SMESHGUI_MultiEditDlg
 ::SMESHGUI_MultiEditDlg(SMESHGUI* theModule,
 			const int theMode,
-			const bool the3d2d,
-			const char* theName):
-  QDialog(SMESH::GetDesktop(theModule),
-	  theName,
-	  false,
-	  WStyle_Customize | WStyle_NormalBorder | WStyle_Title | WStyle_SysMenu | WDestructiveClose),
-    mySelector(SMESH::GetViewWindow(theModule)->GetSelector()),
-    mySelectionMgr(SMESH::GetSelectionMgr(theModule)),
-    mySMESHGUI(theModule)
+			const bool the3d2d):
+  QDialog(SMESH::GetDesktop(theModule)),
+  mySelector(SMESH::GetViewWindow(theModule)->GetSelector()),
+  mySelectionMgr(SMESH::GetSelectionMgr(theModule)),
+  mySMESHGUI(theModule)
 {
+  setModal(false);
+  setAttribute(Qt::WA_DeleteOnClose, true);
+
   myFilterDlg = 0;
   myEntityType = 0;
 
   myFilterType = theMode;
-  QVBoxLayout* aDlgLay = new QVBoxLayout(this, MARGIN, SPACING);
+  QVBoxLayout* aDlgLay = new QVBoxLayout(this);
+  aDlgLay->setMargin(MARGIN);
+  aDlgLay->setSpacing(SPACING);
 
-  QFrame* aMainFrame = createMainFrame  (this, the3d2d);
-  QFrame* aBtnFrame  = createButtonFrame(this);
+  QWidget* aMainFrame = createMainFrame  (this, the3d2d);
+  QWidget* aBtnFrame  = createButtonFrame(this);
 
   aDlgLay->addWidget(aMainFrame);
   aDlgLay->addWidget(aBtnFrame);
 
-  aDlgLay->setStretchFactor(aMainFrame, 1);
-  aDlgLay->setStretchFactor(aBtnFrame, 0);
   Init();
 }
 
@@ -140,86 +131,137 @@ SMESHGUI_MultiEditDlg
 // name    : SMESHGUI_MultiEditDlg::createMainFrame
 // Purpose : Create frame containing dialog's input fields
 //=======================================================================
-QFrame* SMESHGUI_MultiEditDlg::createMainFrame (QWidget* theParent, const bool the3d2d)
+QWidget* SMESHGUI_MultiEditDlg::createMainFrame (QWidget* theParent, const bool the3d2d)
 {
-  QGroupBox* aMainGrp = new QGroupBox(1, Qt::Horizontal, theParent);
-  aMainGrp->setFrameStyle(QFrame::NoFrame);
-  aMainGrp->setInsideMargin(0);
+  QWidget* aMainGrp = new QWidget(theParent);
+  QVBoxLayout* aMainGrpLayout = new QVBoxLayout(aMainGrp);
+  aMainGrpLayout->setMargin(0);
+  aMainGrpLayout->setSpacing(SPACING);
 
   QPixmap aPix (SMESH::GetResourceMgr( mySMESHGUI )->loadPixmap("SMESH", tr("ICON_SELECT")));
 
   // "Selected cells" group
-  mySelGrp = new QGroupBox(1, Qt::Horizontal,  aMainGrp);
+  mySelGrp = new QGroupBox(aMainGrp);
+  
+  QGridLayout* mySelGrpLayout = new QGridLayout(mySelGrp);
+  mySelGrpLayout->setMargin(MARGIN);
+  mySelGrpLayout->setSpacing(SPACING);
 
   myEntityTypeGrp = 0;
   if (the3d2d) {
-    myEntityTypeGrp = new QHButtonGroup(tr("SMESH_ELEMENTS_TYPE"), mySelGrp);
-    (new QRadioButton(tr("SMESH_FACE"),   myEntityTypeGrp))->setChecked(true);
-    (new QRadioButton(tr("SMESH_VOLUME"), myEntityTypeGrp));
-    myEntityType = myEntityTypeGrp->id(myEntityTypeGrp->selected());
+    QGroupBox* aEntityTypeGrp = new QGroupBox(tr("SMESH_ELEMENTS_TYPE"), mySelGrp);
+    myEntityTypeGrp = new QButtonGroup(mySelGrp);
+    QHBoxLayout* aEntityLayout = new QHBoxLayout(aEntityTypeGrp);
+    aEntityLayout->setMargin(MARGIN);
+    aEntityLayout->setSpacing(SPACING);
+
+    QRadioButton* aFaceRb = new QRadioButton(tr("SMESH_FACE"), aEntityTypeGrp);
+    QRadioButton* aVolumeRb = new QRadioButton(tr("SMESH_VOLUME"), aEntityTypeGrp);
+
+    aEntityLayout->addWidget(aFaceRb);
+    aEntityLayout->addWidget(aVolumeRb);
+
+    myEntityTypeGrp->addButton(aFaceRb, 0);
+    myEntityTypeGrp->addButton(aVolumeRb, 1);
+    aFaceRb->setChecked(true);
+    myEntityType = myEntityTypeGrp->checkedId();
+
+    mySelGrpLayout->addWidget(aEntityTypeGrp, 0, 0, 1, 2);
   }
 
-  QFrame* aFrame = new QFrame(mySelGrp);
-
-  myListBox = new QListBox(aFrame);
-  myListBox->setSelectionMode(QListBox::Extended);
-  myListBox->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding));
+  myListBox = new QListWidget(mySelGrp);
+  myListBox->setSelectionMode(QListWidget::ExtendedSelection);
+  myListBox->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
   myListBox->installEventFilter(this);
 
-  myFilterBtn = new QPushButton(tr("FILTER")   , aFrame);
-  myAddBtn    = new QPushButton(tr("ADD")      , aFrame);
-  myRemoveBtn = new QPushButton(tr("REMOVE")   , aFrame);
-  mySortBtn   = new QPushButton(tr("SORT_LIST"), aFrame);
+  myFilterBtn = new QPushButton(tr("FILTER"),    mySelGrp);
+  myAddBtn    = new QPushButton(tr("ADD"),       mySelGrp);
+  myRemoveBtn = new QPushButton(tr("REMOVE"),    mySelGrp);
+  mySortBtn   = new QPushButton(tr("SORT_LIST"), mySelGrp);
 
-  QGridLayout* aLay = new QGridLayout(aFrame, 5, 2, 0, 5);
-  aLay->addMultiCellWidget(myListBox, 0, 4, 0, 0);
-  aLay->addWidget(myFilterBtn, 0, 1);
-  aLay->addWidget(myAddBtn, 1, 1);
-  aLay->addWidget(myRemoveBtn, 2, 1);
-  aLay->addWidget(mySortBtn, 3, 1);
-
-  QSpacerItem* aSpacer = new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
-  aLay->addItem(aSpacer, 4, 1);
+  int row = mySelGrpLayout->rowCount();
+  mySelGrpLayout->addWidget(myListBox,   row,   0, 6, 1);
+  mySelGrpLayout->addWidget(myFilterBtn, row,   1);
+  mySelGrpLayout->addWidget(myAddBtn,    row+2, 1);
+  mySelGrpLayout->addWidget(myRemoveBtn, row+3, 1);
+  mySelGrpLayout->addWidget(mySortBtn,   row+5, 1);
+  mySelGrpLayout->setRowMinimumHeight(row+1, 10);
+  mySelGrpLayout->setRowMinimumHeight(row+4, 10);
+  mySelGrpLayout->setRowStretch(row+1, 5);
+  mySelGrpLayout->setRowStretch(row+4, 5);
 
   myToAllChk = new QCheckBox(tr("TO_ALL"), mySelGrp);
+  mySelGrpLayout->addWidget(myToAllChk, mySelGrpLayout->rowCount(), 0, 
+			    1, mySelGrpLayout->columnCount());
 
   // Split/Join criterion group
-  myCriterionGrp = new QGroupBox(3, Qt::Vertical, tr("SPLIT_JOIN_CRITERION"), aMainGrp);
+  myCriterionGrp = new QGroupBox(tr("SPLIT_JOIN_CRITERION"), aMainGrp);
+  QVBoxLayout* aCriterionLayout = new QVBoxLayout(myCriterionGrp);
+  aCriterionLayout->setMargin(MARGIN);
+  aCriterionLayout->setSpacing(SPACING);
+  
+  myChoiceWidget = new QWidget(myCriterionGrp);
+  myGroupChoice = new QButtonGroup(myChoiceWidget);
+  QVBoxLayout* aGroupChoiceLayout = new QVBoxLayout(myChoiceWidget);
+  aGroupChoiceLayout->setMargin(0);
+  aGroupChoiceLayout->setSpacing(SPACING);
 
-  myGroupChoice = new QButtonGroup(3, Qt::Vertical, myCriterionGrp);
-  myGroupChoice->setInsideMargin(0);
-  myGroupChoice->setFrameStyle(QFrame::NoFrame);
-  (new QRadioButton(tr("USE_DIAGONAL_1_3"), myGroupChoice))->setChecked(true);
-  (new QRadioButton(tr("USE_DIAGONAL_2_4"), myGroupChoice));
-  (new QRadioButton(tr("USE_NUMERIC_FUNC"), myGroupChoice));
+  QRadioButton* aDiag13RB  = new QRadioButton(tr("USE_DIAGONAL_1_3"), myChoiceWidget);
+  QRadioButton* aDiag24RB  = new QRadioButton(tr("USE_DIAGONAL_2_4"), myChoiceWidget);
+  QRadioButton* aNumFuncRB = new QRadioButton(tr("USE_NUMERIC_FUNC"), myChoiceWidget);
+
+  aGroupChoiceLayout->addWidget(aDiag13RB);
+  aGroupChoiceLayout->addWidget(aDiag24RB);
+  aGroupChoiceLayout->addWidget(aNumFuncRB);
+  myGroupChoice->addButton(aDiag13RB,  0);
+  myGroupChoice->addButton(aDiag24RB,  1);
+  myGroupChoice->addButton(aNumFuncRB, 2);
+  aDiag13RB->setChecked(true);
 
   myComboBoxFunctor = new QComboBox(myCriterionGrp);
-  myComboBoxFunctor->insertItem(tr("ASPECTRATIO_ELEMENTS"));
-  myComboBoxFunctor->insertItem(tr("MINIMUMANGLE_ELEMENTS"));
-  myComboBoxFunctor->insertItem(tr("SKEW_ELEMENTS"));
-  myComboBoxFunctor->insertItem(tr("AREA_ELEMENTS"));
-  //myComboBoxFunctor->insertItem(tr("LENGTH2D_EDGES")); // for existing elements only
-  //myComboBoxFunctor->insertItem(tr("MULTI2D_BORDERS")); // for existing elements only
-  myComboBoxFunctor->setCurrentItem(0);
+  myComboBoxFunctor->addItem(tr("ASPECTRATIO_ELEMENTS"));
+  myComboBoxFunctor->addItem(tr("MINIMUMANGLE_ELEMENTS"));
+  myComboBoxFunctor->addItem(tr("SKEW_ELEMENTS"));
+  myComboBoxFunctor->addItem(tr("AREA_ELEMENTS"));
+  //myComboBoxFunctor->addItem(tr("LENGTH2D_EDGES")); // for existing elements only
+  //myComboBoxFunctor->addItem(tr("MULTI2D_BORDERS")); // for existing elements only
+  myComboBoxFunctor->setCurrentIndex(0);
+
+  aCriterionLayout->addWidget(myChoiceWidget);
+  aCriterionLayout->addWidget(myComboBoxFunctor);
 
   myCriterionGrp->hide();
-  myGroupChoice->hide();
+  myChoiceWidget->hide();
   myComboBoxFunctor->setEnabled(false);
 
   // "Select from" group
-  QGroupBox* aGrp = new QGroupBox(3, Qt::Horizontal, tr("SELECT_FROM"), aMainGrp);
+  QGroupBox* aGrp = new QGroupBox(tr("SELECT_FROM"), aMainGrp);
+  QGridLayout* aGrpLayout = new QGridLayout(aGrp);
+  aGrpLayout->setMargin(MARGIN);
+  aGrpLayout->setSpacing(SPACING);
 
   mySubmeshChk = new QCheckBox(tr("SMESH_SUBMESH"), aGrp);
   mySubmeshBtn = new QPushButton(aGrp);
   mySubmesh = new QLineEdit(aGrp);
   mySubmesh->setReadOnly(true);
-  mySubmeshBtn->setPixmap(aPix);
+  mySubmeshBtn->setIcon(aPix);
 
   myGroupChk = new QCheckBox(tr("SMESH_GROUP"), aGrp);
   myGroupBtn = new QPushButton(aGrp);
   myGroup = new QLineEdit(aGrp);
   myGroup->setReadOnly(true);
-  myGroupBtn->setPixmap(aPix);
+  myGroupBtn->setIcon(aPix);
+
+  aGrpLayout->addWidget(mySubmeshChk,0,0);
+  aGrpLayout->addWidget(mySubmeshBtn,0,1);
+  aGrpLayout->addWidget(mySubmesh,0,2);
+  aGrpLayout->addWidget(myGroupChk,1,0);
+  aGrpLayout->addWidget(myGroupBtn,1,1);
+  aGrpLayout->addWidget(myGroup,1,2);
+  
+  aMainGrpLayout->addWidget(mySelGrp);
+  aMainGrpLayout->addWidget(myCriterionGrp);
+  aMainGrpLayout->addWidget(aGrp);
 
   return aMainGrp;
 }
@@ -228,23 +270,24 @@ QFrame* SMESHGUI_MultiEditDlg::createMainFrame (QWidget* theParent, const bool t
 // name    : SMESHGUI_MultiEditDlg::createButtonFrame
 // Purpose : Create frame containing buttons
 //=======================================================================
-QFrame* SMESHGUI_MultiEditDlg::createButtonFrame (QWidget* theParent)
+QWidget* SMESHGUI_MultiEditDlg::createButtonFrame (QWidget* theParent)
 {
-  QFrame* aFrame = new QFrame (theParent);
-  aFrame->setFrameStyle(QFrame::Box | QFrame::Sunken);
+  QGroupBox* aFrame = new QGroupBox(theParent);
 
-  myOkBtn     = new QPushButton (tr("SMESH_BUT_OK"   ), aFrame);
+  myOkBtn     = new QPushButton (tr("SMESH_BUT_APPLY_AND_CLOSE"), aFrame);
   myApplyBtn  = new QPushButton (tr("SMESH_BUT_APPLY"), aFrame);
   myCloseBtn  = new QPushButton (tr("SMESH_BUT_CLOSE"), aFrame);
-  myHelpBtn   = new QPushButton (tr("SMESH_BUT_HELP"), aFrame);
+  myHelpBtn   = new QPushButton (tr("SMESH_BUT_HELP"),  aFrame);
 
-  QSpacerItem* aSpacer = new QSpacerItem (0, 0, QSizePolicy::Expanding, QSizePolicy::Minimum);
-
-  QHBoxLayout* aLay = new QHBoxLayout (aFrame, MARGIN, SPACING);
+  QHBoxLayout* aLay = new QHBoxLayout (aFrame);
+  aLay->setMargin(MARGIN);
+  aLay->setSpacing(SPACING);
 
   aLay->addWidget(myOkBtn);
+  aLay->addSpacing(10);
   aLay->addWidget(myApplyBtn);
-  aLay->addItem(aSpacer);
+  aLay->addSpacing(10);
+  aLay->addStretch();
   aLay->addWidget(myCloseBtn);
   aLay->addWidget(myHelpBtn);
 
@@ -255,7 +298,7 @@ QFrame* SMESHGUI_MultiEditDlg::createButtonFrame (QWidget* theParent)
 // name    : SMESHGUI_MultiEditDlg::isValid
 // Purpose : Verify validity of input data
 //=======================================================================
-bool SMESHGUI_MultiEditDlg::isValid (const bool /*theMess*/) const
+bool SMESHGUI_MultiEditDlg::isValid (const bool /*theMess*/)
 {
   return (!myMesh->_is_nil() &&
           (myListBox->count() > 0 || (myToAllChk->isChecked() && myActor)));
@@ -269,7 +312,7 @@ SMESHGUI_MultiEditDlg::~SMESHGUI_MultiEditDlg()
 {
   if (myFilterDlg != 0)
   {
-    myFilterDlg->reparent(0, QPoint());
+    myFilterDlg->setParent(0);
     delete myFilterDlg;
   }
 }
@@ -282,7 +325,7 @@ bool SMESHGUI_MultiEditDlg::eventFilter (QObject* object, QEvent* event)
 {
   if (object == myListBox && event->type() == QEvent::KeyPress) {
     QKeyEvent* ke = (QKeyEvent*)event;
-    if (ke->key() == Key_Delete)
+    if (ke->key() == Qt::Key_Delete)
       onRemoveBtn();
   }
   return QDialog::eventFilter(object, event);
@@ -316,7 +359,7 @@ SMESH::NumericalFunctor_ptr SMESHGUI_MultiEditDlg::getNumericalFunctor()
     aNF = aFilterMgr->CreateLength2D();
   else if (myComboBoxFunctor->currentText() == tr("MULTI2D_BORDERS"))
     aNF = aFilterMgr->CreateMultiConnection2D();
-  else ;
+  else;
 
   return aNF._retn();
 }
@@ -347,18 +390,18 @@ void SMESHGUI_MultiEditDlg::Init()
 
   // dialog controls
   connect(myFilterBtn, SIGNAL(clicked()), SLOT(onFilterBtn()  ));
-  connect(myAddBtn   , SIGNAL(clicked()), SLOT(onAddBtn()     ));
+  connect(myAddBtn,    SIGNAL(clicked()), SLOT(onAddBtn()     ));
   connect(myRemoveBtn, SIGNAL(clicked()), SLOT(onRemoveBtn()  ));
-  connect(mySortBtn  , SIGNAL(clicked()), SLOT(onSortListBtn()));
+  connect(mySortBtn,   SIGNAL(clicked()), SLOT(onSortListBtn()));
 
   connect(mySubmeshChk, SIGNAL(stateChanged(int)), SLOT(onSubmeshChk()));
-  connect(myGroupChk  , SIGNAL(stateChanged(int)), SLOT(onGroupChk()  ));
-  connect(myToAllChk  , SIGNAL(stateChanged(int)), SLOT(onToAllChk()  ));
+  connect(myGroupChk,   SIGNAL(stateChanged(int)), SLOT(onGroupChk()  ));
+  connect(myToAllChk,   SIGNAL(stateChanged(int)), SLOT(onToAllChk()  ));
 
   if (myEntityTypeGrp)
-    connect(myEntityTypeGrp, SIGNAL(clicked(int)), SLOT(on3d2dChanged(int)));
+    connect(myEntityTypeGrp, SIGNAL(buttonClicked(int)), SLOT(on3d2dChanged(int)));
 
-  connect(myListBox, SIGNAL(selectionChanged()), SLOT(onListSelectionChanged()));
+  connect(myListBox, SIGNAL(itemSelectionChanged()), SLOT(onListSelectionChanged()));
 
   onSelectionDone();
 
@@ -396,26 +439,26 @@ SMESH::long_array_var SMESHGUI_MultiEditDlg::getIds()
     {
       // skl 07.02.2006
       SMDS_Mesh* aMesh = myActor->GetObject()->GetMesh();
-      if( myFilterType == SMESHGUI_TriaFilter || 
-	  myFilterType == SMESHGUI_QuadFilter ||
-	  myFilterType == SMESHGUI_FaceFilter ) {
+      if( myFilterType == SMESH::TriaFilter || 
+	  myFilterType == SMESH::QuadFilter ||
+	  myFilterType == SMESH::FaceFilter ) {
 	SMDS_FaceIteratorPtr it = aMesh->facesIterator();
 	while(it->more()) {
 	  const SMDS_MeshFace* f = it->next();
-	  if(myFilterType == SMESHGUI_FaceFilter) {
+	  if(myFilterType == SMESH::FaceFilter) {
 	    myIds.Add(f->GetID());
 	  }
-	  else if( myFilterType==SMESHGUI_TriaFilter &&
+	  else if( myFilterType==SMESH::TriaFilter &&
 		   ( f->NbNodes()==3 || f->NbNodes()==6 ) ) {
 	    myIds.Add(f->GetID());
 	  }
-	  else if( myFilterType==SMESHGUI_QuadFilter &&
+	  else if( myFilterType==SMESH::QuadFilter &&
 		   ( f->NbNodes()==4 || f->NbNodes()==8 ) ) {
 	    myIds.Add(f->GetID());
 	  }
 	}
       }
-      else if(myFilterType == SMESHGUI_VolumeFilter) {
+      else if(myFilterType == SMESH::VolumeFilter) {
 	SMDS_VolumeIteratorPtr it = aMesh->volumesIterator();
 	while(it->more()) {
 	  const SMDS_MeshVolume* f = it->next();
@@ -490,16 +533,17 @@ void SMESHGUI_MultiEditDlg::onHelp()
   if (app) 
     app->onHelpContextModule(mySMESHGUI ? app->moduleName(mySMESHGUI->moduleName()) : QString(""), myHelpFileName);
   else {
-		QString platform;
+    QString platform;
 #ifdef WIN32
-		platform = "winapplication";
+    platform = "winapplication";
 #else
-		platform = "application";
+    platform = "application";
 #endif
-    SUIT_MessageBox::warn1(0, QObject::tr("WRN_WARNING"),
-			   QObject::tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
-			   arg(app->resourceMgr()->stringValue("ExternalBrowser", platform)).arg(myHelpFileName),
-			   QObject::tr("BUT_OK"));
+    SUIT_MessageBox::warning(this, tr("WRN_WARNING"),
+			     tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
+			     arg(app->resourceMgr()->stringValue("ExternalBrowser", 
+								 platform)).
+			     arg(myHelpFileName));
   }
 }
 
@@ -543,23 +587,23 @@ void SMESHGUI_MultiEditDlg::onSelectionDone()
     } else {
       aNameEdit->clear();
     }
-  } else if (nbSel == 1) {
+  } else if (nbSel > 0) {
     QString aListStr = "";
     Handle(SALOME_InteractiveObject) anIO = aList.First();
     int aNbItems = SMESH::GetNameOfSelectedElements(mySelector,anIO,aListStr);
     if (aNbItems > 0) {
-      QStringList anElements = QStringList::split(" ", aListStr);
-      QListBoxItem* anItem = 0;
+      QStringList anElements = aListStr.split(" ", QString::SkipEmptyParts);
       for (QStringList::iterator it = anElements.begin(); it != anElements.end(); ++it) {
-        anItem = myListBox->findItem(*it, Qt::ExactMatch);
-        if (anItem) myListBox->setSelected(anItem, true);
+	QList<QListWidgetItem*> items = myListBox->findItems(*it, Qt::MatchExactly);
+	QListWidgetItem* anItem;
+	foreach(anItem, items)
+	  anItem->setSelected(true);
       }
     }
-
     myMesh = SMESH::GetMeshByIO(anIO);
   }
 
-  if (nbSel == 1) {
+  if (nbSel > 0) {
     myActor = SMESH::FindActorByEntry(aList.First()->getEntry());
     if (!myActor)
       myActor = SMESH::FindActorByObject(myMesh);
@@ -643,7 +687,7 @@ void SMESHGUI_MultiEditDlg::onFilterAccepted()
 {
   myIds.Clear();
   for (int i = 0, n = myListBox->count(); i < n; i++)
-    myIds.Add(myListBox->text(i).toInt());
+    myIds.Add(myListBox->item(i)->text().toInt());
 
   emit ListContensChanged();
 
@@ -687,11 +731,11 @@ void SMESHGUI_MultiEditDlg::onAddBtn()
   TColStd_IndexedMapOfInteger toBeAdded;
 
   if (!mySubmeshChk->isChecked() && !myGroupChk->isChecked()) {
-    if (nbSelected == 1)
+    if (nbSelected > 0)
       mySelector->GetIndex(aList.First(),toBeAdded);
   } else if (mySubmeshChk->isChecked()) {
     SALOME_ListIteratorOfListIO anIter(aList);
-    for (; anIter.More(); anIter.Next()) {
+    for ( ; anIter.More(); anIter.Next()) {
       SMESH::SMESH_subMesh_var aSubMesh =
         SMESH::IObjectToInterface<SMESH::SMESH_subMesh>(anIter.Value());
       if (!aSubMesh->_is_nil()) {
@@ -706,7 +750,7 @@ void SMESHGUI_MultiEditDlg::onAddBtn()
     }
   } else if (myGroupChk->isChecked()) {
     SALOME_ListIteratorOfListIO anIter(aList);
-    for (; anIter.More(); anIter.Next()) {
+    for ( ; anIter.More(); anIter.Next()) {
       SMESH::SMESH_GroupBase_var aGroup =
         SMESH::IObjectToInterface<SMESH::SMESH_GroupBase>(anIter.Value());
       if (!aGroup->_is_nil() && (aGroup->GetType() == SMESH::FACE &&
@@ -730,9 +774,9 @@ void SMESHGUI_MultiEditDlg::onAddBtn()
   myGroupChk->setChecked(false);
   for(int i = 1; i <= toBeAdded.Extent(); i++)
     if (myIds.Add(toBeAdded(i))) {
-      QListBoxItem * item = new QListBoxText(QString("%1").arg(toBeAdded(i)));
-      myListBox->insertItem(item);
-      myListBox->setSelected(item, true);
+      QListWidgetItem* item = new QListWidgetItem(QString("%1").arg(toBeAdded(i)));
+      myListBox->addItem(item);
+      item->setSelected(true);
     }
   myBusy = false;
 
@@ -764,7 +808,7 @@ void SMESHGUI_MultiEditDlg::updateButtons()
 
   if (isToAll ||
       myMesh->_is_nil() ||
-      aList.Extent() != 1 ||
+      aList.Extent() < 1 ||
       (SMESH::IObjectToInterface<SMESH::SMESH_subMesh>(aList.First())->_is_nil() &&
        SMESH::IObjectToInterface<SMESH::SMESH_GroupBase>(aList.First())->_is_nil() &&
        SMESH::IObjectToInterface<SMESH::SMESH_Mesh>(aList.First())->_is_nil()))
@@ -796,18 +840,14 @@ void SMESHGUI_MultiEditDlg::onRemoveBtn()
 {
   myBusy = true;
 
-  for (int i = 0, n = myListBox->count(); i < n; i++)
+  QList<QListWidgetItem*> selItems = myListBox->selectedItems();
+  QListWidgetItem* item;
+  foreach(item, selItems)
   {
-    for (int i = myListBox->count(); i > 0; i--) {
-      if (myListBox->isSelected(i - 1))
-      {
-        int anId = myListBox->text(i - 1).toInt();
-        myIds.Remove(anId);
-        myIds.Remove(anId);
-	      myListBox->removeItem(i-1);
-      }
-    }
+    myIds.Remove(item->text().toInt());
+    delete item;
   }
+
   myBusy = false;
 
   emit ListContensChanged();
@@ -826,26 +866,23 @@ void SMESHGUI_MultiEditDlg::onSortListBtn()
   int i, k = myListBox->count();
   if (k > 0)
   {
-    QStringList aSelected;
+    QList<int> aSelected;
     std::vector<int> anArray(k);
-    QListBoxItem* anItem;
-    for (anItem = myListBox->firstItem(), i = 0; anItem != 0; anItem = anItem->next(), i++)
+    for (i = 0; i < k; i++)
     {
-      anArray[ i ] = anItem->text().toInt();
-      if (anItem->isSelected())
-        aSelected.append(anItem->text());
+      int id = myListBox->item(i)->text().toInt();
+      anArray[ i ] = id;
+      if (myListBox->item(i)->isSelected())
+        aSelected.append(id);
     }
 
     std::sort(anArray.begin(), anArray.end());
-    myListBox->clear();
-    for (i = 0; i < k; i++)
-      myListBox->insertItem(QString::number(anArray[ i ]));
 
-    for (QStringList::iterator it = aSelected.begin(); it != aSelected.end(); ++it)
-    {
-      anItem = myListBox->findItem(*it, Qt::ExactMatch);
-      if (anItem)
-        myListBox->setSelected(anItem, true);
+    myListBox->clear();
+    for (i = 0; i < k; i++) {
+      QListWidgetItem* item = new QListWidgetItem(QString::number(anArray[i]));
+      myListBox->addItem(item);
+      item->setSelected(aSelected.contains(anArray[i]));
     }
   }
   myBusy = false;
@@ -870,11 +907,12 @@ void SMESHGUI_MultiEditDlg::onListSelectionChanged()
   TVisualObjPtr anObj = anActor->GetObject();
 
   TColStd_MapOfInteger anIndexes;
-  for (QListBoxItem* anItem = myListBox->firstItem(); anItem != 0; anItem = anItem->next())
+  int total = myListBox->count();
+  for (int i = 0; i < total; i++)
   {
-    if (anItem->isSelected())
+    if (myListBox->item(i)->isSelected())
     {
-      int anId = anItem->text().toInt();
+      int anId = myListBox->item(i)->text().toInt();
       if (anObj->GetElemVTKId(anId) >= 0) // avoid exception in hilight
         anIndexes.Add(anId);
     }
@@ -970,9 +1008,9 @@ void SMESHGUI_MultiEditDlg::setSelectionMode()
   } else {
     if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
       aViewWindow->SetSelectionMode(FaceSelection);
-    if (myFilterType == SMESHGUI_TriaFilter)
+    if (myFilterType == SMESH::TriaFilter)
       SMESH::SetFilter(new SMESHGUI_TriangleFilter());
-    else if (myFilterType == SMESHGUI_QuadFilter)
+    else if (myFilterType == SMESH::QuadFilter)
       SMESH::SetFilter(new SMESHGUI_QuadrangleFilter());
     else
       SMESH::SetFilter(new SMESHGUI_FacesFilter());
@@ -1034,9 +1072,9 @@ void SMESHGUI_MultiEditDlg::on3d2dChanged (int type)
     emit ListContensChanged();
 
     if (type)
-      myFilterType = SMESHGUI_VolumeFilter;
+      myFilterType = SMESH::VolumeFilter;
     else
-      myFilterType = SMESHGUI_FaceFilter;
+      myFilterType = SMESH::FaceFilter;
 
     updateButtons();
     setSelectionMode();
@@ -1062,11 +1100,10 @@ void SMESHGUI_MultiEditDlg::keyPressEvent( QKeyEvent* e )
   if ( e->isAccepted() )
     return;
 
-  if ( e->key() == Key_F1 )
-    {
-      e->accept();
-      onHelp();
-    }
+  if ( e->key() == Qt::Key_F1 ) {
+    e->accept();
+    onHelp();
+  }
 }
 
 /*!
@@ -1075,11 +1112,10 @@ void SMESHGUI_MultiEditDlg::keyPressEvent( QKeyEvent* e )
  */
 
 SMESHGUI_ChangeOrientationDlg
-::SMESHGUI_ChangeOrientationDlg(SMESHGUI* theModule,
-				const char* theName):
-  SMESHGUI_MultiEditDlg(theModule, SMESHGUI_FaceFilter, true, theName)
+::SMESHGUI_ChangeOrientationDlg(SMESHGUI* theModule):
+  SMESHGUI_MultiEditDlg(theModule, SMESH::FaceFilter, true)
 {
-  setCaption(tr("CAPTION"));
+  setWindowTitle(tr("CAPTION"));
   myHelpFileName = "changing_orientation_of_elements_page.html";
 }
 
@@ -1099,25 +1135,30 @@ bool SMESHGUI_ChangeOrientationDlg::process (SMESH::SMESH_MeshEditor_ptr theEdit
  */
 
 SMESHGUI_UnionOfTrianglesDlg
-::SMESHGUI_UnionOfTrianglesDlg(SMESHGUI* theModule,
-			       const char* theName):
-  SMESHGUI_MultiEditDlg(theModule, SMESHGUI_TriaFilter, false, theName)
+::SMESHGUI_UnionOfTrianglesDlg(SMESHGUI* theModule):
+  SMESHGUI_MultiEditDlg(theModule, SMESH::TriaFilter, false)
 {
-  setCaption(tr("CAPTION"));
+  setWindowTitle(tr("CAPTION"));
 
   myComboBoxFunctor->setEnabled(true);
-  myComboBoxFunctor->insertItem(tr("WARP_ELEMENTS")); // for quadrangles only
-  myComboBoxFunctor->insertItem(tr("TAPER_ELEMENTS")); // for quadrangles only
+  myComboBoxFunctor->addItem(tr("WARP_ELEMENTS")); // for quadrangles only
+  myComboBoxFunctor->addItem(tr("TAPER_ELEMENTS")); // for quadrangles only
 
   // Maximum angle
-  QGroupBox* aMaxAngleGrp = new QGroupBox (2, Qt::Horizontal, myCriterionGrp);
-  aMaxAngleGrp->setInsideMargin(0);
-  aMaxAngleGrp->setFrameStyle(QFrame::NoFrame);
-  new QLabel (tr("MAXIMUM_ANGLE"), aMaxAngleGrp);
+  QWidget* aMaxAngleGrp = new QWidget(myCriterionGrp);
+  QHBoxLayout* aMaxAngleGrpLayout = new QHBoxLayout(aMaxAngleGrp);
+  aMaxAngleGrpLayout->setMargin(0);
+  aMaxAngleGrpLayout->setSpacing(SPACING);
+
+  QLabel* aLab = new QLabel (tr("MAXIMUM_ANGLE"), aMaxAngleGrp);
   myMaxAngleSpin = new SMESHGUI_SpinBox (aMaxAngleGrp);
   myMaxAngleSpin->RangeStepAndValidator(0, 180.0, 1.0, 3);
   myMaxAngleSpin->SetValue(30.0);
 
+  aMaxAngleGrpLayout->addWidget(aLab);
+  aMaxAngleGrpLayout->addWidget(myMaxAngleSpin);
+
+  ((QVBoxLayout*)(myCriterionGrp->layout()))->addWidget(aMaxAngleGrp);
   myCriterionGrp->show();
 
   myHelpFileName = "uniting_set_of_triangles_page.html";
@@ -1127,12 +1168,39 @@ SMESHGUI_UnionOfTrianglesDlg::~SMESHGUI_UnionOfTrianglesDlg()
 {
 }
 
+bool SMESHGUI_UnionOfTrianglesDlg::isValid (const bool theMess)
+{
+  bool ok = SMESHGUI_MultiEditDlg::isValid( theMess );
+  if( !ok )
+    return false;
+
+  QString msg;
+  ok = myMaxAngleSpin->isValid( msg, theMess );
+  if( !ok ) {
+    if( theMess ) {
+      QString str( tr( "SMESH_INCORRECT_INPUT" ) );
+      if ( !msg.isEmpty() )
+	str += "\n" + msg;
+      SUIT_MessageBox::critical( this, tr( "SMESH_ERROR" ), str );
+    }
+    return false;
+  }
+
+  return ok;
+}
+
 bool SMESHGUI_UnionOfTrianglesDlg::process (SMESH::SMESH_MeshEditor_ptr theEditor,
                                             const SMESH::long_array&    theIds)
 {
   SMESH::NumericalFunctor_var aCriterion = getNumericalFunctor();
   double aMaxAngle = myMaxAngleSpin->GetValue() * PI / 180.0;
-  return theEditor->TriToQuad(theIds, aCriterion, aMaxAngle);
+  bool ok = theEditor->TriToQuad(theIds, aCriterion, aMaxAngle);
+  if( ok ) {
+    QStringList aParameters;
+    aParameters << myMaxAngleSpin->text();
+    myMesh->SetParameters( SMESHGUI::JoinObjectParameters(aParameters) );
+  }
+  return ok;
 }
 
 
@@ -1142,23 +1210,24 @@ bool SMESHGUI_UnionOfTrianglesDlg::process (SMESH::SMESH_MeshEditor_ptr theEdito
  */
 
 SMESHGUI_CuttingOfQuadsDlg
-::SMESHGUI_CuttingOfQuadsDlg(SMESHGUI* theModule,
-			     const char* theName):
-  SMESHGUI_MultiEditDlg(theModule, SMESHGUI_QuadFilter, false, theName)
+::SMESHGUI_CuttingOfQuadsDlg(SMESHGUI* theModule):
+  SMESHGUI_MultiEditDlg(theModule, SMESH::QuadFilter, false)
 {
-  setCaption(tr("CAPTION"));
+  setWindowTitle(tr("CAPTION"));
   myPreviewActor = 0;
 
   myPreviewChk = new QCheckBox (tr("PREVIEW"), mySelGrp);
+  QGridLayout* aLay = (QGridLayout*)(mySelGrp->layout());
+  aLay->addWidget(myPreviewChk, aLay->rowCount(), 0, 1, aLay->columnCount());
 
   myCriterionGrp->show();
-  myGroupChoice->show();
+  myChoiceWidget->show();
   myComboBoxFunctor->setEnabled(false);
 
-  connect(myPreviewChk     , SIGNAL(stateChanged(int))   , this, SLOT(onPreviewChk()));
-  connect(myGroupChoice    , SIGNAL(clicked(int))        , this, SLOT(onCriterionRB()));
-  connect(myComboBoxFunctor, SIGNAL(activated(int))      , this, SLOT(onPreviewChk()));
-  connect(this             , SIGNAL(ListContensChanged()), this, SLOT(onPreviewChk()));
+  connect(myPreviewChk,      SIGNAL(stateChanged(int)),    this, SLOT(onPreviewChk()));
+  connect(myGroupChoice,     SIGNAL(buttonClicked(int)),   this, SLOT(onCriterionRB()));
+  connect(myComboBoxFunctor, SIGNAL(activated(int)),       this, SLOT(onPreviewChk()));
+  connect(this,              SIGNAL(ListContensChanged()), this, SLOT(onPreviewChk()));
 
   myHelpFileName = "cutting_quadrangles_page.html";
 }
@@ -1176,7 +1245,7 @@ void SMESHGUI_CuttingOfQuadsDlg::onClose()
 bool SMESHGUI_CuttingOfQuadsDlg::process (SMESH::SMESH_MeshEditor_ptr theEditor,
                                           const SMESH::long_array&    theIds)
 {
-  switch (myGroupChoice->id(myGroupChoice->selected())) {
+  switch (myGroupChoice->checkedId()) {
   case 0: // use diagonal 1-3
     return theEditor->SplitQuad(theIds, true);
   case 1: // use diagonal 2-4
@@ -1191,7 +1260,7 @@ bool SMESHGUI_CuttingOfQuadsDlg::process (SMESH::SMESH_MeshEditor_ptr theEditor,
 
 void SMESHGUI_CuttingOfQuadsDlg::onCriterionRB()
 {
-  if (myGroupChoice->id(myGroupChoice->selected()) == 2) // Use numeric functor
+  if (myGroupChoice->checkedId() == 2) // Use numeric functor
     myComboBoxFunctor->setEnabled(true);
   else
     myComboBoxFunctor->setEnabled(false);
@@ -1235,7 +1304,7 @@ void SMESHGUI_CuttingOfQuadsDlg::displayPreview()
     return;
 
   // 0 - use diagonal 1-3, 1 - use diagonal 2-4, 2 - use numerical functor
-  int aChoice = myGroupChoice->id(myGroupChoice->selected());
+  int aChoice = myGroupChoice->checkedId();
   SMESH::NumericalFunctor_var aCriterion  = SMESH::NumericalFunctor::_nil();
   SMESH::SMESH_MeshEditor_var aMeshEditor = SMESH::SMESH_MeshEditor::_nil();
   if (aChoice == 2) {

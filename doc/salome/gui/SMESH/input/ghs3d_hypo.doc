@@ -1,0 +1,69 @@
+/*!
+
+\page ghs3d_hypo_page GHS3D Parameters hypothesis
+
+\n GHS3D Parameters hypothesis works only with <b>Tetrahedron (GHS3D)</b> 
+algorithm. This algorithm is a commercial software.
+
+\image html ghs3d_parameters_basic.png
+
+<ul>
+<li><b>Name</b> - allows to define the name of the hypothesis (GHS3D 
+Parameters by default).</li>
+
+<li><b>To mesh holes</b> - if checked, the algorithm will 
+create mesh in the holes inside a solid shape, else only the outermost
+shape will be meshed. Volumic elements created within holes are bound
+to the solid.</li>
+
+<li><b>Optimization level</b> - allows choosing the required
+optimization level: none, light, medium or strong. Higher level of
+optimisation provides better mesh, but can be time-consuming.
+</li>
+
+\image html ghs3d_parameters_advanced.png
+
+<li><b>Maximum memory size</b> - launches ghs3d software with
+work space limited to the specified amount of RAM, in Mbytes. If this option is
+checked off, the software will be launched with 7O% of the total RAM space. </li>
+
+<li><b>Initial memory size</b> - starts ghs3d software with
+the specified amount of work space, in Mbytes. If this option is checked off, the
+software will be started with 100 Megabytes of working space. </li>
+
+<li><b>Working directory</b> - allows defining the folder for input and output
+files of ghs3d software, which are the files starting with "GHS3D_" prefix. </li>
+
+<li><b>Keep working files</b> - allows checking input and output files
+of ghs3d software, while usually these files are removed after the
+launch of the mesher.</li>
+
+<li><b>Verbose level</b> - to choose verbosity level in the range from
+0 to 10.
+<ul> <li>0, no standard output,
+</li><li>2, prints the data, quality statistics of the skin and final
+meshes and indicates when the final mesh is being saved. In addition
+the software gives indication regarding the CPU time.
+</li><li>10, same as 2 plus the main steps in the computation, quality
+statistics histogram of the skin mesh, quality statistics histogram
+together with the characteristics of the final mesh.
+</li></ul></li>
+
+<li><b>To create new nodes</b> - if this option is checked off, ghs3d
+tries to create tetrahedrons using only the nodes of the 2D mesh.</li>
+
+<li><b>To use boundary recovery version</b> - enables using a
+boundary recovery module which tries to
+create volume meshes starting from very poor quality surface meshes
+(almost flat triangles on the surface, high density propagation,
+extreme aspect ratios, etc.) which fails with the standard version. The
+resulting volume mesh will however most likely have a very poor
+quality (poor aspect ratio of elements, tetrahedra with a very small
+positive volume).</li>
+
+<li><b>Option as text</b> - allows input of any text as command line
+for ghs3d. This allows the input of advanced options in a free from. </li>
+
+</ul>
+
+*/

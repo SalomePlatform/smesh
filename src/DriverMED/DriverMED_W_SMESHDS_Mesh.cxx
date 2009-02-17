@@ -1,29 +1,28 @@
+//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//
+//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+//
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
+//
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
+//
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
 //  SMESH DriverMED : driver to read and write 'med' files
-//
-//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
-// 
-//  This library is free software; you can redistribute it and/or 
-//  modify it under the terms of the GNU Lesser General Public 
-//  License as published by the Free Software Foundation; either 
-//  version 2.1 of the License. 
-// 
-//  This library is distributed in the hope that it will be useful, 
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of 
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
-//  Lesser General Public License for more details. 
-// 
-//  You should have received a copy of the GNU Lesser General Public 
-//  License along with this library; if not, write to the Free Software 
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
-// 
-// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
-//
-//
-//
 //  File   : DriverMED_W_SMESHDS_Mesh.cxx
 //  Module : SMESH
-
+//
 #include <sstream>
 
 #include "DriverMED_W_SMESHDS_Mesh.h"
@@ -220,10 +219,108 @@ namespace{
     }
   };
   typedef boost::shared_ptr<TCoordHelper> TCoordHelperPtr;
-  
+
+
+  //-------------------------------------------------------
+  /*!
+   * \brief Class helping to use either SMDS_EdgeIterator, SMDS_FaceIterator
+   * or SMDS_VolumeIterator in the same code
+   */
+  //-------------------------------------------------------
+  struct TElemIterator
+  {
+    virtual const SMDS_MeshElement* next() = 0;
+    virtual ~TElemIterator() {}
+  };
+  typedef boost::shared_ptr<TElemIterator> PElemIterator;
+
+  template< class SMDSIteratorPtr > class TypedElemIterator: public TElemIterator
+  {
+    SMDSIteratorPtr myItPtr;
+  public:
+    TypedElemIterator(SMDSIteratorPtr it): myItPtr(it) {}
+    virtual const SMDS_MeshElement* next() {
+      if ( myItPtr->more() ) return myItPtr->next();
+      else                   return 0;
+    }
+  };
+  typedef TypedElemIterator< SMDS_EdgeIteratorPtr > TEdgeIterator;
+  typedef TypedElemIterator< SMDS_FaceIteratorPtr > TFaceIterator;
+  typedef TypedElemIterator< SMDS_VolumeIteratorPtr > TVolumeIterator;
+
+  //-------------------------------------------------------
+  /*!
+   * \brief Structure describing element type
+   */
+  //-------------------------------------------------------
+  struct TElemTypeData
+  {
+    EEntiteMaillage     _entity;
+    EGeometrieElement   _geomType;
+    TInt                _nbElems;
+    SMDSAbs_ElementType _smdsType;
+
+    TElemTypeData (EEntiteMaillage entity, EGeometrieElement geom, TInt nb, SMDSAbs_ElementType type)
+      : _entity(entity), _geomType(geom), _nbElems( nb ), _smdsType( type ) {}
+  };
+
+
+  typedef NCollection_DataMap< Standard_Address, int > TElemFamilyMap;
+  //typedef map<const SMDS_MeshElement *, int> TElemFamilyMap;
+
+  //================================================================================
+  /*!
+   * \brief Fills element to famaly ID map for element type.
+   * Removes all families of anElemType
+   */
+  //================================================================================
+
+  void fillElemFamilyMap( TElemFamilyMap &            anElemFamMap,
+                          list<DriverMED_FamilyPtr> & aFamilies,
+                          const SMDSAbs_ElementType   anElemType)
+  {
+    anElemFamMap.Clear();
+    //anElemFamMap.clear();
+    list<DriverMED_FamilyPtr>::iterator aFamsIter = aFamilies.begin();
+    while ( aFamsIter != aFamilies.end() )
+    {
+      if ((*aFamsIter)->GetType() != anElemType) {
+        aFamsIter++;
+      }
+      else {
+        int aFamId = (*aFamsIter)->GetId();
+        const set<const SMDS_MeshElement *>& anElems = (*aFamsIter)->GetElements();
+        set<const SMDS_MeshElement *>::const_iterator anElemsIter = anElems.begin();
+        for (; anElemsIter != anElems.end(); anElemsIter++)
+        {
+          anElemFamMap.Bind( (Standard_Address)*anElemsIter, aFamId );
+          //anElemFamMap[*anElemsIter] = aFamId;
+        }
+        // remove a family from the list
+        aFamilies.erase( aFamsIter++ );
+      }
+    }
+  }
+
+  //================================================================================
+  /*!
+   * \brief For an element, return family ID found in the map or a default one
+   */
+  //================================================================================
+
+  int getFamilyId( const TElemFamilyMap &  anElemFamMap,
+                   const SMDS_MeshElement* anElement,
+                   const int               aDefaultFamilyId)
+  {
+    if ( anElemFamMap.IsBound( (Standard_Address) anElement ))
+      return anElemFamMap( (Standard_Address) anElement );
+//     TElemFamilyMap::iterator elem_famNum = anElemFamMap.find( anElement );
+//     if ( elem_famNum != anElemFamMap.end() )
+//       return elem_famNum->second;
+    return aDefaultFamilyId;
+  }
 }
 
-  
 Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
 {
   Status aResult = DRS_OK;
@@ -231,7 +328,7 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
     INFOS("SMDS_MESH with hasConstructionEdges() or hasConstructionFaces() do not supports!!!");
     return DRS_FAIL;
   }
-  try{
+  try {
     MESSAGE("Perform - myFile : "<<myFile);
 
     // Creating the MED mesh for corresponding SMDS structure
@@ -322,8 +419,8 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
     MESSAGE("Add - aMeshName : "<<aMeshName<<"; "<<aMeshInfo->GetName());
     myMed->SetMeshInfo(aMeshInfo);
 
-    // Storing SMDS groups and sub-meshes
-    //-----------------------------------
+    // Storing SMDS groups and sub-meshes as med families
+    //----------------------------------------------------
     int myNodesDefaultFamilyId   = 0;
     int myEdgesDefaultFamilyId   = 0;
     int myFacesDefaultFamilyId   = 0;
@@ -342,7 +439,7 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
       myVolumesDefaultFamilyId = REST_VOLUMES_FAMILY;
 
     MESSAGE("Perform - aFamilyInfo");
-    map<const SMDS_MeshElement *, int> anElemFamMap;
+    //cout << " DriverMED_Family::MakeFamilies() " << endl;
     list<DriverMED_FamilyPtr> aFamilies;
     if (myAllSubMeshes) {
       aFamilies = DriverMED_Family::MakeFamilies
@@ -359,20 +456,12 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
          myDoGroupOfFaces   && nbFaces,
          myDoGroupOfVolumes && nbVolumes);
     }
-    list<DriverMED_FamilyPtr>::iterator aFamsIter = aFamilies.begin();
-
-    for (; aFamsIter != aFamilies.end(); aFamsIter++)
+    //cout << " myMed->SetFamilyInfo() " << endl;
+    list<DriverMED_FamilyPtr>::iterator aFamsIter;
+    for (aFamsIter = aFamilies.begin(); aFamsIter != aFamilies.end(); aFamsIter++)
     {
       PFamilyInfo aFamilyInfo = (*aFamsIter)->GetFamilyInfo(myMed,aMeshInfo);
       myMed->SetFamilyInfo(aFamilyInfo);
-      int aFamId = (*aFamsIter)->GetId();
-
-      const set<const SMDS_MeshElement *>& anElems = (*aFamsIter)->GetElements();
-      set<const SMDS_MeshElement *>::const_iterator anElemsIter = anElems.begin();
-      for (; anElemsIter != anElems.end(); anElemsIter++)
-      {
-        anElemFamMap[*anElemsIter] = aFamId;
-      }
     }
 
     // Storing SMDS nodes to the MED file for the MED mesh
@@ -381,648 +470,386 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
     typedef map<TInt,TInt> TNodeIdMap;
     TNodeIdMap aNodeIdMap;
 #endif
-    TInt aNbElems = myMesh->NbNodes();
-    MED::TIntVector anElemNums(aNbElems);
-    MED::TIntVector aFamilyNums(aNbElems);
-    MED::TFloatVector aCoordinates(aNbElems*aMeshDimension);
-    for(TInt iNode = 0, aStartId = 0; aCoordHelperPtr->Next(); iNode++, aStartId += aMeshDimension){
+    const EModeSwitch   theMode        = eFULL_INTERLACE;
+    const ERepere       theSystem      = eCART;
+    const EBooleen      theIsElemNum   = eVRAI;
+    const EBooleen      theIsElemNames = eFAUX;
+    const EConnectivite theConnMode    = eNOD;
+
+    TInt aNbNodes = myMesh->NbNodes();
+    //cout << " myMed->CrNodeInfo() aNbNodes = " << aNbNodes << endl;
+    PNodeInfo aNodeInfo = myMed->CrNodeInfo(aMeshInfo, aNbNodes,
+                                            theMode, theSystem, theIsElemNum, theIsElemNames);
+
+    //cout << " fillElemFamilyMap( SMDSAbs_Node )" << endl;
+    // find family numbers for nodes
+    TElemFamilyMap anElemFamMap;
+    fillElemFamilyMap( anElemFamMap, aFamilies, SMDSAbs_Node );
+
+    for (TInt iNode = 0; aCoordHelperPtr->Next(); iNode++)
+    {
+      // coordinates
+      TCoordSlice aTCoordSlice = aNodeInfo->GetCoordSlice( iNode );
       for(TInt iCoord = 0; iCoord < aMeshDimension; iCoord++){
-	aCoordinates[aStartId+iCoord] = aCoordHelperPtr->GetCoord(iCoord);
+	aTCoordSlice[iCoord] = aCoordHelperPtr->GetCoord(iCoord);
       }
+      // node number
       int aNodeID = aCoordHelperPtr->GetID();
-      anElemNums[iNode] = aNodeID;
+      aNodeInfo->SetElemNum( iNode, aNodeID );
 #ifdef _EDF_NODE_IDS_
       aNodeIdMap[aNodeID] = iNode+1;
 #endif
+      // family number
       const SMDS_MeshNode* aNode = aCoordHelperPtr->GetNode();
-      if (anElemFamMap.find(aNode) != anElemFamMap.end())
-	aFamilyNums[iNode] = anElemFamMap[aNode];
-      else
-	aFamilyNums[iNode] = myNodesDefaultFamilyId;
+      int famNum = getFamilyId( anElemFamMap, aNode, myNodesDefaultFamilyId );
+      aNodeInfo->SetFamNum( iNode, famNum );
+    }
+    anElemFamMap.Clear();
+
+    // coordinate names and units
+    for (TInt iCoord = 0; iCoord < aMeshDimension; iCoord++) {
+      aNodeInfo->SetCoordName( iCoord, aCoordHelperPtr->GetName(iCoord));
+      aNodeInfo->SetCoordUnit( iCoord, aCoordHelperPtr->GetUnit(iCoord));
     }
 
-    MED::TStringVector aCoordNames(aMeshDimension);
-    MED::TStringVector aCoordUnits(aMeshDimension);
-    for(TInt iCoord = 0; iCoord < aMeshDimension; iCoord++){
-      aCoordNames[iCoord] = aCoordHelperPtr->GetName(iCoord);
-      aCoordUnits[iCoord] = aCoordHelperPtr->GetUnit(iCoord);
-    }
-
-    const ERepere SMDS_COORDINATE_SYSTEM = eCART;
-
-    PNodeInfo aNodeInfo = myMed->CrNodeInfo(aMeshInfo,
-					    aCoordinates,
-					    eFULL_INTERLACE,
-					    SMDS_COORDINATE_SYSTEM,
-					    aCoordNames,
-					    aCoordUnits,
-					    aFamilyNums,
-					    anElemNums);
-    MESSAGE("Perform - aNodeInfo->GetNbElem() = "<<aNbElems);
+    //cout << " SetNodeInfo(aNodeInfo)" << endl;
+    MESSAGE("Perform - aNodeInfo->GetNbElem() = "<<aNbNodes);
     myMed->SetNodeInfo(aNodeInfo);
+    aNodeInfo.reset(); // free memory used for arrays
 
 
-    // Storing others SMDS elements to the MED file for the MED mesh
-    //--------------------------------------------------------------
-    EEntiteMaillage SMDS_MED_ENTITY = eMAILLE;
-    const EConnectivite SMDS_MED_CONNECTIVITY = eNOD;
+    // Storing SMDS elements to the MED file for the MED mesh
+    //-------------------------------------------------------
+    // Write one element type at once in order to minimize memory usage (PAL19276)
 
-    // Storing SMDS Edges
-    if(TInt aNbElems = myMesh->NbEdges()){
+    const SMDS_MeshInfo& nbElemInfo = myMesh->GetMeshInfo();
+
+    // poly elements are not supported by med-2.1
+    bool polyTypesSupported = myMed->CrPolygoneInfo(aMeshInfo,eMAILLE,ePOLYGONE,0,0);
+    TInt nbPolygonNodes = 0, nbPolyhedronNodes = 0, nbPolyhedronFaces = 0;
+
+    // collect info on all geom types
+
+    list< TElemTypeData > aTElemTypeDatas;
+
+    EEntiteMaillage anEntity = eMAILLE;
 #ifdef _ELEMENTS_BY_DIM_
-      SMDS_MED_ENTITY = eARETE;
+    anEntity = eARETE;
 #endif
-      // count edges of diff types
-      int aNbSeg3 = 0, aNbSeg2 = 0;
-      SMDS_EdgeIteratorPtr anIter = myMesh->edgesIterator();
-      while ( anIter->more() )
-        if ( anIter->next()->NbNodes() == 3 )
-          ++aNbSeg3;
-      aNbSeg2 = aNbElems - aNbSeg3;
-
-      TInt aNbSeg2Conn = MED::GetNbNodes(eSEG2);
-      MED::TIntVector aSeg2ElemNums, aSeg2FamilyNums, aSeg2Conn;
-      aSeg2ElemNums  .reserve( aNbSeg2 );
-      aSeg2FamilyNums.reserve( aNbSeg2 );
-      aSeg2Conn      .reserve( aNbSeg2*aNbSeg2Conn );
-
-      TInt aNbSeg3Conn = MED::GetNbNodes(eSEG3);
-      MED::TIntVector aSeg3ElemNums, aSeg3FamilyNums, aSeg3Conn;
-      aSeg3ElemNums  .reserve( aNbSeg3 );
-      aSeg3FamilyNums.reserve( aNbSeg3 );
-      aSeg3Conn      .reserve( aNbSeg3*aNbSeg3Conn );
-
-      anIter = myMesh->edgesIterator();
-      while ( anIter->more() ) {
-	const SMDS_MeshEdge* anElem = anIter->next();
-	TInt aNbNodes = anElem->NbNodes();
-
-	TInt aNbConnectivity;
-	MED::TIntVector* anElemNums;
-        MED::TIntVector* aFamilyNums;
-	MED::TIntVector* aConnectivity;
-        switch(aNbNodes){
-        case 2:
-          aNbConnectivity = aNbSeg2Conn;
-          anElemNums      = &aSeg2ElemNums;
-          aFamilyNums     = &aSeg2FamilyNums;
-          aConnectivity   = &aSeg2Conn;
-          break;
-        case 3:
-          aNbConnectivity = aNbSeg3Conn;
-          anElemNums      = &aSeg3ElemNums;
-          aFamilyNums     = &aSeg3FamilyNums;
-          aConnectivity   = &aSeg3Conn;
-          break;
-        default:
-          break;
-        }
-
-        for(TInt iNode = 0; iNode < aNbNodes; iNode++) {
-	  const SMDS_MeshElement* aNode = anElem->GetNode( iNode );
-#ifdef _EDF_NODE_IDS_
-	  aConnectivity->push_back( aNodeIdMap[aNode->GetID()] );
-#else
-	  aConnectivity->push_back( aNode->GetID() );
+    aTElemTypeDatas.push_back( TElemTypeData(anEntity,
+                                            eSEG2,
+                                            nbElemInfo.NbEdges( ORDER_LINEAR ),
+                                            SMDSAbs_Edge));
+    aTElemTypeDatas.push_back( TElemTypeData(anEntity,
+                                            eSEG3,
+                                            nbElemInfo.NbEdges( ORDER_QUADRATIC ),
+                                            SMDSAbs_Edge));
+#ifdef _ELEMENTS_BY_DIM_
+    anEntity = eFACE;
 #endif
-        }
-
-	anElemNums->push_back(anElem->GetID());
-
-        map<const SMDS_MeshElement*,int>::iterator edge_fam = anElemFamMap.find( anElem );
-        if ( edge_fam != anElemFamMap.end() )
-          aFamilyNums->push_back( edge_fam->second );
-        else
-          aFamilyNums->push_back( myEdgesDefaultFamilyId );
-      }
-      
-      if ( aNbSeg2 ) {
-        PCellInfo aCellInfo = myMed->CrCellInfo(aMeshInfo,
-                                                SMDS_MED_ENTITY,
-                                                eSEG2,
-                                                aSeg2Conn,
-                                                SMDS_MED_CONNECTIVITY,
-                                                aSeg2FamilyNums,
-                                                aSeg2ElemNums);
-        myMed->SetCellInfo(aCellInfo);
-      }
-      if ( aNbSeg3 ) {
-        PCellInfo aCellInfo = myMed->CrCellInfo(aMeshInfo,
-                                                SMDS_MED_ENTITY,
-                                                eSEG3,
-                                                aSeg3Conn,
-                                                SMDS_MED_CONNECTIVITY,
-                                                aSeg3FamilyNums,
-                                                aSeg3ElemNums);
-        myMed->SetCellInfo(aCellInfo);
-      }
+    aTElemTypeDatas.push_back( TElemTypeData(anEntity,
+                                            eTRIA3,
+                                            nbElemInfo.NbTriangles( ORDER_LINEAR ),
+                                            SMDSAbs_Face));
+    aTElemTypeDatas.push_back( TElemTypeData(anEntity,
+                                            eTRIA6,
+                                            nbElemInfo.NbTriangles( ORDER_QUADRATIC ),
+                                            SMDSAbs_Face));
+    aTElemTypeDatas.push_back( TElemTypeData(anEntity,
+                                            eQUAD4,
+                                            nbElemInfo.NbQuadrangles( ORDER_LINEAR ),
+                                            SMDSAbs_Face));
+    aTElemTypeDatas.push_back( TElemTypeData(anEntity,
+                                            eQUAD8,
+                                            nbElemInfo.NbQuadrangles( ORDER_QUADRATIC ),
+                                            SMDSAbs_Face));
+    if ( polyTypesSupported ) {
+      aTElemTypeDatas.push_back( TElemTypeData(anEntity,
+                                               ePOLYGONE,
+                                               nbElemInfo.NbPolygons(),
+                                               SMDSAbs_Face));
+      // we need one more loop on poly elements to count nb of their nodes
+      aTElemTypeDatas.push_back( TElemTypeData(anEntity,
+                                               ePOLYGONE,
+                                               nbElemInfo.NbPolygons(),
+                                               SMDSAbs_Face));
+    }
+#ifdef _ELEMENTS_BY_DIM_
+    anEntity = eMAILLE;
+#endif
+    aTElemTypeDatas.push_back( TElemTypeData(anEntity,
+                                            eTETRA4,
+                                            nbElemInfo.NbTetras( ORDER_LINEAR ),
+                                            SMDSAbs_Volume));
+    aTElemTypeDatas.push_back( TElemTypeData(anEntity,
+                                            eTETRA10,
+                                            nbElemInfo.NbTetras( ORDER_QUADRATIC ),
+                                            SMDSAbs_Volume));
+    aTElemTypeDatas.push_back( TElemTypeData(anEntity,
+                                            ePYRA5,
+                                            nbElemInfo.NbPyramids( ORDER_LINEAR ),
+                                            SMDSAbs_Volume));
+    aTElemTypeDatas.push_back( TElemTypeData(anEntity,
+                                            ePYRA13,
+                                            nbElemInfo.NbPyramids( ORDER_QUADRATIC ),
+                                            SMDSAbs_Volume));
+    aTElemTypeDatas.push_back( TElemTypeData(anEntity,
+                                            ePENTA6,
+                                            nbElemInfo.NbPrisms( ORDER_LINEAR ),
+                                            SMDSAbs_Volume));
+    aTElemTypeDatas.push_back( TElemTypeData(anEntity,
+                                             ePENTA15,
+                                             nbElemInfo.NbPrisms( ORDER_QUADRATIC ),
+                                             SMDSAbs_Volume));
+    aTElemTypeDatas.push_back( TElemTypeData(anEntity,
+                                             eHEXA8,
+                                             nbElemInfo.NbHexas( ORDER_LINEAR ),
+                                             SMDSAbs_Volume));
+    aTElemTypeDatas.push_back( TElemTypeData(anEntity,
+                                             eHEXA20,
+                                             nbElemInfo.NbHexas( ORDER_QUADRATIC ),
+                                             SMDSAbs_Volume));
+    if ( polyTypesSupported ) {
+      aTElemTypeDatas.push_back( TElemTypeData(anEntity,
+                                               ePOLYEDRE,
+                                               nbElemInfo.NbPolyhedrons(),
+                                               SMDSAbs_Volume));
+      // we need one more loop on poly elements to count nb of their nodes
+      aTElemTypeDatas.push_back( TElemTypeData(anEntity,
+                                               ePOLYEDRE,
+                                               nbElemInfo.NbPolyhedrons(),
+                                               SMDSAbs_Volume));
     }
 
-    // Storing SMDS Faces
-    if(TInt aNbElems = myMesh->NbFaces()){
-      SMDS_FaceIteratorPtr anIter = myMesh->facesIterator();
-#ifdef _ELEMENTS_BY_DIM_
-      SMDS_MED_ENTITY = eFACE;
-#endif
-      TInt aNbTriaConn = MED::GetNbNodes(eTRIA3);
-      MED::TIntVector anTriaElemNums; 
-      anTriaElemNums.reserve(aNbElems);
-      MED::TIntVector aTriaFamilyNums;
-      aTriaFamilyNums.reserve(aNbElems);
-      MED::TIntVector aTriaConn;
-      aTriaConn.reserve(aNbElems*aNbTriaConn);
+    vector< bool > isElemFamMapBuilt( SMDSAbs_NbElementTypes, false );
 
-      TInt aNbTria6Conn = MED::GetNbNodes(eTRIA6);
-      MED::TIntVector anTria6ElemNums; 
-      anTria6ElemNums.reserve(aNbElems);
-      MED::TIntVector aTria6FamilyNums;
-      aTria6FamilyNums.reserve(aNbElems);
-      MED::TIntVector aTria6Conn;
-      aTria6Conn.reserve(aNbElems*aNbTria6Conn);
+    // loop on all geom types of elements
 
-      TInt aNbQuadConn = MED::GetNbNodes(eQUAD4);
-      MED::TIntVector aQuadElemNums;
-      aQuadElemNums.reserve(aNbElems);
-      MED::TIntVector aQuadFamilyNums;
-      aQuadFamilyNums.reserve(aNbElems);
-      MED::TIntVector aQuadConn;
-      aQuadConn.reserve(aNbElems*aNbQuadConn);
+    list< TElemTypeData >::iterator aElemTypeData = aTElemTypeDatas.begin();
+    for ( ; aElemTypeData != aTElemTypeDatas.end(); ++aElemTypeData )
+    {
+      if ( aElemTypeData->_nbElems == 0 )
+        continue;
 
-      TInt aNbQuad8Conn = MED::GetNbNodes(eQUAD8);
-      MED::TIntVector aQuad8ElemNums;
-      aQuad8ElemNums.reserve(aNbElems);
-      MED::TIntVector aQuad8FamilyNums;
-      aQuad8FamilyNums.reserve(aNbElems);
-      MED::TIntVector aQuad8Conn;
-      aQuad8Conn.reserve(aNbElems*aNbQuad8Conn);
+      // iterator on elements of a current type
+      PElemIterator elemIterator;
+      int defaultFamilyId = 0;
+      switch ( aElemTypeData->_smdsType ) {
+      case SMDSAbs_Edge:
+        elemIterator = PElemIterator( new TEdgeIterator( myMesh->edgesIterator() ));
+        defaultFamilyId = myEdgesDefaultFamilyId;
+        break;
+      case SMDSAbs_Face:
+        elemIterator = PElemIterator( new TFaceIterator( myMesh->facesIterator() ));
+        defaultFamilyId = myFacesDefaultFamilyId;
+        break;
+      case SMDSAbs_Volume:
+        elemIterator = PElemIterator( new TVolumeIterator( myMesh->volumesIterator() ));
+        defaultFamilyId = myVolumesDefaultFamilyId;
+        break;
+      default:
+        continue;
+      }
+      int iElem = 0;
 
-      MED::TIntVector aPolygoneElemNums;
-      aPolygoneElemNums.reserve(aNbElems);
-      MED::TIntVector aPolygoneInds;
-      aPolygoneInds.reserve(aNbElems + 1);
-      aPolygoneInds.push_back(1); // reference on the first element in the connectivities
-      MED::TIntVector aPolygoneFamilyNums;
-      aPolygoneFamilyNums.reserve(aNbElems);
-      MED::TIntVector aPolygoneConn;
-      aPolygoneConn.reserve(aNbElems*aNbQuadConn);
-
-      for(TInt iElem = 0; iElem < aNbElems && anIter->more(); iElem++){
-	const SMDS_MeshFace* anElem = anIter->next();
-	TInt aNbNodes = anElem->NbNodes();
-	SMDS_ElemIteratorPtr aNodesIter = anElem->nodesIterator();
-	TInt aNbConnectivity;
-	MED::TIntVector* anElemNums;
-        MED::TIntVector* aFamilyNums;
-	MED::TIntVector* aConnectivity;
-        if (anElem->IsPoly()) {
-	  aNbConnectivity = aNbNodes;
-          anElemNums = &aPolygoneElemNums;
-          aFamilyNums = &aPolygoneFamilyNums;
-          aConnectivity = &aPolygoneConn;
+      //cout << " Treat type " << aElemTypeData->_geomType << " nb = " <<aElemTypeData->_nbElems<< endl;
+      // Treat POLYGONs
+      // ---------------
+      if ( aElemTypeData->_geomType == ePOLYGONE )
+      {
+        if ( nbPolygonNodes == 0 ) {
+          // Count nb of nodes
+          while ( const SMDS_MeshElement* anElem = elemIterator->next() ) {
+            if ( anElem->IsPoly() ) {
+              nbPolygonNodes += anElem->NbNodes();
+              if ( ++iElem == aElemTypeData->_nbElems )
+                break;
+            }
+          }
         }
         else {
-          switch(aNbNodes){
-          case 3:
-            aNbConnectivity = aNbTriaConn;
-            anElemNums = &anTriaElemNums;
-            aFamilyNums = &aTriaFamilyNums;
-            aConnectivity = &aTriaConn;
-            break;
-          case 4:
-            aNbConnectivity = aNbQuadConn;
-            anElemNums = &aQuadElemNums;
-            aFamilyNums = &aQuadFamilyNums;
-            aConnectivity = &aQuadConn;
-            break;
-          case 6:
-            aNbConnectivity = aNbTria6Conn;
-            anElemNums = &anTria6ElemNums;
-            aFamilyNums = &aTria6FamilyNums;
-            aConnectivity = &aTria6Conn;
-            break;
-          case 8:
-            aNbConnectivity = aNbQuad8Conn;
-            anElemNums = &aQuad8ElemNums;
-            aFamilyNums = &aQuad8FamilyNums;
-            aConnectivity = &aQuad8Conn;
-            break;
-          default:
-            break;
-          }
-        }
-	MED::TIntVector aVector(aNbNodes);
-	for(TInt iNode = 0; aNodesIter->more(); iNode++){
-	  const SMDS_MeshElement* aNode = aNodesIter->next();
+          // Store in med file
+          PPolygoneInfo aPolygoneInfo = myMed->CrPolygoneInfo(aMeshInfo,
+                                                              aElemTypeData->_entity,
+                                                              aElemTypeData->_geomType,
+                                                              aElemTypeData->_nbElems,
+                                                              nbPolygonNodes,
+                                                              theConnMode, theIsElemNum,
+                                                              theIsElemNames);
+          TElemNum & index = *(aPolygoneInfo->myIndex.get());
+          index[0] = 1;
+
+          while ( const SMDS_MeshElement* anElem = elemIterator->next() )
+          {
+            if ( !anElem->IsPoly() )
+              continue;
+
+            // index
+            TInt aNbNodes = anElem->NbNodes();
+            index[ iElem+1 ] = index[ iElem ] + aNbNodes;
+
+            // connectivity
+            TConnSlice aTConnSlice = aPolygoneInfo->GetConnSlice( iElem );
+            for(TInt iNode = 0; iNode < aNbNodes; iNode++) {
+              const SMDS_MeshElement* aNode = anElem->GetNode( iNode );
 #ifdef _EDF_NODE_IDS_
-	  aVector[iNode] = aNodeIdMap[aNode->GetID()];
+              aTConnSlice[ iNode ] = aNodeIdMap[aNode->GetID()];
 #else
-	  aVector[iNode] = aNode->GetID();
-#endif
-	}
-
-	TInt aSize = aConnectivity->size();
-	aConnectivity->resize(aSize+aNbConnectivity);
-	// There is some differences between SMDS and MED in cells mapping
-	switch(aNbNodes){
-	case 4:
-	  (*aConnectivity)[aSize+0] = aVector[0];
-	  (*aConnectivity)[aSize+1] = aVector[1];
-	  (*aConnectivity)[aSize+2] = aVector[3];  
-	  (*aConnectivity)[aSize+3] = aVector[2];  
-	default:
-	  for(TInt iNode = 0; iNode < aNbNodes; iNode++) 
-	    (*aConnectivity)[aSize+iNode] = aVector[iNode];
-	}
-
-        if (anElem->IsPoly()) {
-          // fill indices for polygonal element
-          TInt aPrevPos = aPolygoneInds.back();
-          aPolygoneInds.push_back(aPrevPos + aNbNodes);
-        }
-
-	anElemNums->push_back(anElem->GetID());
-
-        if (anElemFamMap.find(anElem) != anElemFamMap.end())
-          aFamilyNums->push_back(anElemFamMap[anElem]);
-        else
-          aFamilyNums->push_back(myFacesDefaultFamilyId);
-      }
-      if(TInt aNbElems = anTriaElemNums.size()){
-	PCellInfo aCellInfo = myMed->CrCellInfo(aMeshInfo,
-						SMDS_MED_ENTITY,
-						eTRIA3,
-						aTriaConn,
-						SMDS_MED_CONNECTIVITY,
-						aTriaFamilyNums,
-						anTriaElemNums);
-	MESSAGE("Perform - anEntity = "<<SMDS_MED_ENTITY<<"; aGeom = "<<eTRIA3<<"; aNbElems = "<<aNbElems);
-	myMed->SetCellInfo(aCellInfo);
-      }
-      if(TInt aNbElems = aQuadElemNums.size()){
-	PCellInfo aCellInfo = myMed->CrCellInfo(aMeshInfo,
-						SMDS_MED_ENTITY,
-						eQUAD4,
-						aQuadConn,
-						SMDS_MED_CONNECTIVITY,
-						aQuadFamilyNums,
-						aQuadElemNums);
-	MESSAGE("Perform - anEntity = "<<SMDS_MED_ENTITY<<"; aGeom = "<<eQUAD4<<"; aNbElems = "<<aNbElems);
-	myMed->SetCellInfo(aCellInfo);
-      }
-      if(TInt aNbElems = anTria6ElemNums.size()){
-	PCellInfo aCellInfo = myMed->CrCellInfo(aMeshInfo,
-						SMDS_MED_ENTITY,
-						eTRIA6,
-						aTria6Conn,
-						SMDS_MED_CONNECTIVITY,
-						aTria6FamilyNums,
-						anTria6ElemNums);
-	MESSAGE("Perform - anEntity = "<<SMDS_MED_ENTITY<<"; aGeom = "<<eTRIA6<<"; aNbElems = "<<aNbElems);
-	myMed->SetCellInfo(aCellInfo);
-      }
-      if(TInt aNbElems = aQuad8ElemNums.size()){
-	PCellInfo aCellInfo = myMed->CrCellInfo(aMeshInfo,
-						SMDS_MED_ENTITY,
-						eQUAD8,
-						aQuad8Conn,
-						SMDS_MED_CONNECTIVITY,
-						aQuad8FamilyNums,
-						aQuad8ElemNums);
-	MESSAGE("Perform - anEntity = "<<SMDS_MED_ENTITY<<"; aGeom = "<<eQUAD8<<"; aNbElems = "<<aNbElems);
-	myMed->SetCellInfo(aCellInfo);
-      }
-      if(TInt aNbElems = aPolygoneElemNums.size()){
-        // add one element in connectivities,
-        // referenced by the last element in indices
-        aPolygoneConn.push_back(0);
-
-	PPolygoneInfo aCellInfo = myMed->CrPolygoneInfo(aMeshInfo,
-                                                        SMDS_MED_ENTITY,
-                                                        ePOLYGONE,
-                                                        aPolygoneInds,
-                                                        aPolygoneConn,
-                                                        SMDS_MED_CONNECTIVITY,
-                                                        aPolygoneFamilyNums,
-                                                        aPolygoneElemNums);
-	MESSAGE("Perform - anEntity = "<<SMDS_MED_ENTITY<<"; aGeom = "<<ePOLYGONE<<"; aNbElems = "<<aNbElems);
-	myMed->SetPolygoneInfo(aCellInfo);
-      }
-    }
-
-    // Storing SMDS Volumes
-    if(TInt aNbElems = myMesh->NbVolumes()){
-      SMDS_VolumeIteratorPtr anIter = myMesh->volumesIterator();
-#ifdef _ELEMENTS_BY_DIM_
-      SMDS_MED_ENTITY = eMAILLE;
-#endif
-      TInt aNbTetraConn = MED::GetNbNodes(eTETRA4);
-      MED::TIntVector anTetraElemNums; 
-      anTetraElemNums.reserve(aNbElems);
-      MED::TIntVector aTetraFamilyNums;
-      aTetraFamilyNums.reserve(aNbElems);
-      MED::TIntVector aTetraConn;
-      aTetraConn.reserve(aNbElems*aNbTetraConn);
-
-      TInt aNbPyraConn = MED::GetNbNodes(ePYRA5);
-      MED::TIntVector anPyraElemNums; 
-      anPyraElemNums.reserve(aNbElems);
-      MED::TIntVector aPyraFamilyNums;
-      aPyraFamilyNums.reserve(aNbElems);
-      MED::TIntVector aPyraConn;
-      aPyraConn.reserve(aNbElems*aNbPyraConn);
-
-      TInt aNbPentaConn = MED::GetNbNodes(ePENTA6);
-      MED::TIntVector anPentaElemNums; 
-      anPentaElemNums.reserve(aNbElems);
-      MED::TIntVector aPentaFamilyNums;
-      aPentaFamilyNums.reserve(aNbElems);
-      MED::TIntVector aPentaConn;
-      aPentaConn.reserve(aNbElems*aNbPentaConn);
-
-      TInt aNbHexaConn = MED::GetNbNodes(eHEXA8);
-      MED::TIntVector aHexaElemNums;
-      aHexaElemNums.reserve(aNbElems);
-      MED::TIntVector aHexaFamilyNums;
-      aHexaFamilyNums.reserve(aNbElems);
-      MED::TIntVector aHexaConn;
-      aHexaConn.reserve(aNbElems*aNbHexaConn);
-
-      TInt aNbTetra10Conn = MED::GetNbNodes(eTETRA10);
-      MED::TIntVector anTetra10ElemNums; 
-      anTetra10ElemNums.reserve(aNbElems);
-      MED::TIntVector aTetra10FamilyNums;
-      aTetra10FamilyNums.reserve(aNbElems);
-      MED::TIntVector aTetra10Conn;
-      aTetra10Conn.reserve(aNbElems*aNbTetra10Conn);
-
-      TInt aNbPyra13Conn = MED::GetNbNodes(ePYRA13);
-      MED::TIntVector anPyra13ElemNums; 
-      anPyra13ElemNums.reserve(aNbElems);
-      MED::TIntVector aPyra13FamilyNums;
-      aPyra13FamilyNums.reserve(aNbElems);
-      MED::TIntVector aPyra13Conn;
-      aPyra13Conn.reserve(aNbElems*aNbPyra13Conn);
-
-      TInt aNbPenta15Conn = MED::GetNbNodes(ePENTA15);
-      MED::TIntVector anPenta15ElemNums; 
-      anPenta15ElemNums.reserve(aNbElems);
-      MED::TIntVector aPenta15FamilyNums;
-      aPenta15FamilyNums.reserve(aNbElems);
-      MED::TIntVector aPenta15Conn;
-      aPenta15Conn.reserve(aNbElems*aNbPenta15Conn);
-
-      TInt aNbHexa20Conn = MED::GetNbNodes(eHEXA20);
-      MED::TIntVector aHexa20ElemNums;
-      aHexa20ElemNums.reserve(aNbElems);
-      MED::TIntVector aHexa20FamilyNums;
-      aHexa20FamilyNums.reserve(aNbElems);
-      MED::TIntVector aHexa20Conn;
-      aHexa20Conn.reserve(aNbElems*aNbHexa20Conn);
-
-      MED::TIntVector aPolyedreElemNums;
-      aPolyedreElemNums.reserve(aNbElems);
-      MED::TIntVector aPolyedreInds;
-      aPolyedreInds.reserve(aNbElems + 1);
-      aPolyedreInds.push_back(1); // reference on the first element in the faces
-      MED::TIntVector aPolyedreFaces;
-      aPolyedreFaces.reserve(aNbElems + 1);
-      aPolyedreFaces.push_back(1); // reference on the first element in the connectivities
-      MED::TIntVector aPolyedreFamilyNums;
-      aPolyedreFamilyNums.reserve(aNbElems);
-      MED::TIntVector aPolyedreConn;
-      aPolyedreConn.reserve(aNbElems*aNbHexaConn);
-
-      for(TInt iElem = 0; iElem < aNbElems && anIter->more(); iElem++){
-	const SMDS_MeshVolume* anElem = anIter->next();
-
-        MED::TIntVector* anElemNums;
-        MED::TIntVector* aFamilyNums;
-
-        if (anElem->IsPoly()) {
-          const SMDS_PolyhedralVolumeOfNodes* aPolyedre =
-            (const SMDS_PolyhedralVolumeOfNodes*) anElem;
-          if (!aPolyedre) {
-            MESSAGE("Warning: bad volumic element");
-            continue;
-          }
-
-          anElemNums = &aPolyedreElemNums;
-          aFamilyNums = &aPolyedreFamilyNums;
-
-          TInt aNodeId, aNbFaces = aPolyedre->NbFaces();
-          for (int iface = 1; iface <= aNbFaces; iface++) {
-            int aNbFaceNodes = aPolyedre->NbFaceNodes(iface);
-            for (int inode = 1; inode <= aNbFaceNodes; inode++) {
-              aNodeId = aPolyedre->GetFaceNode(iface, inode)->GetID();
-#ifdef _EDF_NODE_IDS_
-              aPolyedreConn.push_back(aNodeIdMap[aNodeId]);
-#else
-              aPolyedreConn.push_back(aNodeId);
+              aTConnSlice[ iNode ] = aNode->GetID();
 #endif
             }
-            TInt aPrevPos = aPolyedreFaces.back();
-            aPolyedreFaces.push_back(aPrevPos + aNbFaceNodes);
-          }
-          TInt aPrevPos = aPolyedreInds.back();
-          aPolyedreInds.push_back(aPrevPos + aNbFaces);
+            // element number
+            aPolygoneInfo->SetElemNum( iElem, anElem->GetID() );
 
+            // family number
+            int famNum = getFamilyId( anElemFamMap, anElem, defaultFamilyId );
+            aPolygoneInfo->SetFamNum( iElem, famNum );
+
+            if ( ++iElem == aPolygoneInfo->GetNbElem() )
+              break;
+          }
+          //       if(TInt aNbElems = aPolygoneElemNums.size())
+          //         // add one element in connectivities,
+          //         // referenced by the last element in indices
+          //         aPolygoneConn.push_back(0);
+          //cout << " SetPolygoneInfo(aPolygoneInfo)" << endl;
+          myMed->SetPolygoneInfo(aPolygoneInfo);
+        }
+
+      } 
+
+      // Treat POLYEDREs
+      // ----------------
+      else if (aElemTypeData->_geomType == ePOLYEDRE )
+      {
+        if ( nbPolyhedronNodes == 0 ) {
+          // Count nb of nodes
+          while ( const SMDS_MeshElement* anElem = elemIterator->next() ) {
+            const SMDS_PolyhedralVolumeOfNodes* aPolyedre =
+              dynamic_cast<const SMDS_PolyhedralVolumeOfNodes*>( anElem );
+            if ( aPolyedre ) {
+              nbPolyhedronNodes += aPolyedre->NbNodes();
+              nbPolyhedronFaces += aPolyedre->NbFaces();
+              if ( ++iElem == aElemTypeData->_nbElems )
+                break;
+            }
+          }
         }
         else {
-          TInt aNbNodes = anElem->NbNodes();
-          SMDS_ElemIteratorPtr aNodesIter = anElem->nodesIterator();
-          TInt aNbConnectivity;
-          MED::TIntVector* aConnectivity;
-          switch(aNbNodes){
-          case 4:
-            aNbConnectivity = aNbTetraConn;
-            anElemNums = &anTetraElemNums;
-            aFamilyNums = &aTetraFamilyNums;
-            aConnectivity = &aTetraConn;
-            break;
-          case 5:
-            aNbConnectivity = aNbPyraConn;
-            anElemNums = &anPyraElemNums;
-            aFamilyNums = &aPyraFamilyNums;
-            aConnectivity = &aPyraConn;
-            break;
-          case 6:
-            aNbConnectivity = aNbPentaConn;
-            anElemNums = &anPentaElemNums;
-            aFamilyNums = &aPentaFamilyNums;
-            aConnectivity = &aPentaConn;
-            break;
-          case 8:
-            aNbConnectivity = aNbHexaConn;
-            anElemNums = &aHexaElemNums;
-            aFamilyNums = &aHexaFamilyNums;
-            aConnectivity = &aHexaConn;
-	    break;
-          case 10:
-            aNbConnectivity = aNbTetra10Conn;
-            anElemNums = &anTetra10ElemNums;
-            aFamilyNums = &aTetra10FamilyNums;
-            aConnectivity = &aTetra10Conn;
-            break;
-          case 13:
-            aNbConnectivity = aNbPyra13Conn;
-            anElemNums = &anPyra13ElemNums;
-            aFamilyNums = &aPyra13FamilyNums;
-            aConnectivity = &aPyra13Conn;
-            break;
-          case 15:
-            aNbConnectivity = aNbPenta15Conn;
-            anElemNums = &anPenta15ElemNums;
-            aFamilyNums = &aPenta15FamilyNums;
-            aConnectivity = &aPenta15Conn;
-            break;
-          case 20:
-            aNbConnectivity = aNbHexa20Conn;
-            anElemNums = &aHexa20ElemNums;
-            aFamilyNums = &aHexa20FamilyNums;
-            aConnectivity = &aHexa20Conn;
-          }
+          // Store in med file
+          PPolyedreInfo aPolyhInfo = myMed->CrPolyedreInfo(aMeshInfo,
+                                                           aElemTypeData->_entity,
+                                                           aElemTypeData->_geomType,
+                                                           aElemTypeData->_nbElems,
+                                                           nbPolyhedronFaces+1,
+                                                           nbPolyhedronNodes,
+                                                           theConnMode,
+                                                           theIsElemNum,
+                                                           theIsElemNames);
+          TElemNum & index = *(aPolyhInfo->myIndex.get());
+          TElemNum & faces = *(aPolyhInfo->myFaces.get());
+          TElemNum & conn  = *(aPolyhInfo->myConn.get());
+          index[0] = 1;
+          faces[0] = 1;
 
-          TInt aSize = aConnectivity->size();
-          aConnectivity->resize(aSize + aNbConnectivity);
+          TInt iFace = 0, iNode = 0;
+          while ( const SMDS_MeshElement* anElem = elemIterator->next() )
+          {
+            const SMDS_PolyhedralVolumeOfNodes* aPolyedre =
+              dynamic_cast<const SMDS_PolyhedralVolumeOfNodes*>( anElem );
+            if ( !aPolyedre )
+              continue;
 
-          MED::TIntVector aVector(aNbNodes);
-          for(TInt iNode = 0; aNodesIter->more(); iNode++){
-            const SMDS_MeshElement* aNode = aNodesIter->next();
+            // index
+            TInt aNbFaces = aPolyedre->NbFaces();
+            index[ iElem+1 ] = index[ iElem ] + aNbFaces;
+
+            // face index
+            for (TInt f = 1; f <= aNbFaces; ++f, ++iFace ) {
+              int aNbFaceNodes = aPolyedre->NbFaceNodes( f );
+              faces[ iFace+1 ] = faces[ iFace ] + aNbFaceNodes;
+            }
+            // connectivity
+            SMDS_ElemIteratorPtr nodeIt = anElem->nodesIterator();
+            while ( nodeIt->more() ) {
+              const SMDS_MeshElement* aNode = nodeIt->next();
 #ifdef _EDF_NODE_IDS_
-            aVector[iNode] = aNodeIdMap[aNode->GetID()];
+              conn[ iNode ] = aNodeIdMap[aNode->GetID()];
 #else
-            aVector[iNode] = aNode->GetID();
+              conn[ iNode ] = aNode->GetID();
 #endif
+              ++iNode;
+            }
+            // element number
+            aPolyhInfo->SetElemNum( iElem, anElem->GetID() );
+
+            // family number
+            int famNum = getFamilyId( anElemFamMap, anElem, defaultFamilyId );
+            aPolyhInfo->SetFamNum( iElem, famNum );
+
+            if ( ++iElem == aPolyhInfo->GetNbElem() )
+              break;
           }
-          // There is some difference between SMDS and MED in cells mapping
-          switch(aNbNodes){
-          case 5:
-            (*aConnectivity)[aSize+0] = aVector[0];
-            (*aConnectivity)[aSize+1] = aVector[3];
-            (*aConnectivity)[aSize+2] = aVector[2];  
-            (*aConnectivity)[aSize+3] = aVector[1];  
-            (*aConnectivity)[aSize+4] = aVector[4];  
-          default:
-            for(TInt iNode = 0; iNode < aNbNodes; iNode++) 
-              (*aConnectivity)[aSize+iNode] = aVector[iNode];
-          }
+          //cout << " SetPolyedreInfo(aPolyhInfo )" << endl;
+          myMed->SetPolyedreInfo(aPolyhInfo);
+        }
+      } // if (aElemTypeData->_geomType == ePOLYEDRE )
+
+      else
+      {
+        // Treat standard types
+        // ---------------------
+
+        // allocate data arrays
+        PCellInfo aCellInfo = myMed->CrCellInfo( aMeshInfo,
+                                                 aElemTypeData->_entity,
+                                                 aElemTypeData->_geomType,
+                                                 aElemTypeData->_nbElems,
+                                                 theConnMode,
+                                                 theIsElemNum,
+                                                 theIsElemNames);
+        // build map of family numbers for this type
+        if ( !isElemFamMapBuilt[ aElemTypeData->_smdsType ])
+        {
+          //cout << " fillElemFamilyMap()" << endl;
+          fillElemFamilyMap( anElemFamMap, aFamilies, aElemTypeData->_smdsType );
+          isElemFamMapBuilt[ aElemTypeData->_smdsType ] = true;
         }
 
-        anElemNums->push_back(anElem->GetID());
+        TInt aNbNodes = MED::GetNbNodes(aElemTypeData->_geomType);
+        while ( const SMDS_MeshElement* anElem = elemIterator->next() )
+        {
+          if ( anElem->NbNodes() != aNbNodes || anElem->IsPoly() )
+            continue; // other geometry
 
-        if (anElemFamMap.find(anElem) != anElemFamMap.end())
-          aFamilyNums->push_back(anElemFamMap[anElem]);
-        else
-          aFamilyNums->push_back(myVolumesDefaultFamilyId);
-      }
+          // connectivity
+          TConnSlice aTConnSlice = aCellInfo->GetConnSlice( iElem );
+          for (TInt iNode = 0; iNode < aNbNodes; iNode++) {
+            const SMDS_MeshElement* aNode = anElem->GetNode( iNode );
+#ifdef _EDF_NODE_IDS_
+            aTConnSlice[ iNode ] = aNodeIdMap[aNode->GetID()];
+#else
+            aTConnSlice[ iNode ] = aNode->GetID();
+#endif
+          }
+          // element number
+          aCellInfo->SetElemNum( iElem, anElem->GetID() );
 
-      if(TInt aNbElems = anTetraElemNums.size()){
-	PCellInfo aCellInfo = myMed->CrCellInfo(aMeshInfo,
-						SMDS_MED_ENTITY,
-						eTETRA4,
-						aTetraConn,
-						SMDS_MED_CONNECTIVITY,
-						aTetraFamilyNums,
-						anTetraElemNums);
-	MESSAGE("Perform - anEntity = "<<SMDS_MED_ENTITY<<"; aGeom = "<<eTETRA4<<"; aNbElems = "<<aNbElems);
-	myMed->SetCellInfo(aCellInfo);
-      }
-      if(TInt aNbElems = anPyraElemNums.size()){
-	PCellInfo aCellInfo = myMed->CrCellInfo(aMeshInfo,
-						SMDS_MED_ENTITY,
-						ePYRA5,
-						aPyraConn,
-						SMDS_MED_CONNECTIVITY,
-						aPyraFamilyNums,
-						anPyraElemNums);
-	MESSAGE("Perform - anEntity = "<<SMDS_MED_ENTITY<<"; aGeom = "<<ePYRA5<<"; aNbElems = "<<aNbElems);
-	myMed->SetCellInfo(aCellInfo);
-      }
-      if(TInt aNbElems = anPentaElemNums.size()){
-	PCellInfo aCellInfo = myMed->CrCellInfo(aMeshInfo,
-						SMDS_MED_ENTITY,
-						ePENTA6,
-						aPentaConn,
-						SMDS_MED_CONNECTIVITY,
-						aPentaFamilyNums,
-						anPentaElemNums);
-	MESSAGE("Perform - anEntity = "<<SMDS_MED_ENTITY<<"; aGeom = "<<ePENTA6<<"; aNbElems = "<<aNbElems);
-	myMed->SetCellInfo(aCellInfo);
-      }
-      if(TInt aNbElems = aHexaElemNums.size()){
-	PCellInfo aCellInfo = myMed->CrCellInfo(aMeshInfo,
-						SMDS_MED_ENTITY,
-						eHEXA8,
-						aHexaConn,
-						SMDS_MED_CONNECTIVITY,
-						aHexaFamilyNums,
-						aHexaElemNums);
-	MESSAGE("Perform - anEntity = "<<SMDS_MED_ENTITY<<"; aGeom = "<<eHEXA8<<"; aNbElems = "<<aNbElems);
-	myMed->SetCellInfo(aCellInfo);
-      }
-      if(TInt aNbElems = anTetra10ElemNums.size()){
-	PCellInfo aCellInfo = myMed->CrCellInfo(aMeshInfo,
-						SMDS_MED_ENTITY,
-						eTETRA10,
-						aTetra10Conn,
-						SMDS_MED_CONNECTIVITY,
-						aTetra10FamilyNums,
-						anTetra10ElemNums);
-	MESSAGE("Perform - anEntity = "<<SMDS_MED_ENTITY<<"; aGeom = "<<eTETRA10<<"; aNbElems = "<<aNbElems);
-	myMed->SetCellInfo(aCellInfo);
-      }
-      if(TInt aNbElems = anPyra13ElemNums.size()){
-	PCellInfo aCellInfo = myMed->CrCellInfo(aMeshInfo,
-						SMDS_MED_ENTITY,
-						ePYRA13,
-						aPyra13Conn,
-						SMDS_MED_CONNECTIVITY,
-						aPyra13FamilyNums,
-						anPyra13ElemNums);
-	MESSAGE("Perform - anEntity = "<<SMDS_MED_ENTITY<<"; aGeom = "<<ePYRA13<<"; aNbElems = "<<aNbElems);
-	myMed->SetCellInfo(aCellInfo);
-      }
-      if(TInt aNbElems = anPenta15ElemNums.size()){
-	PCellInfo aCellInfo = myMed->CrCellInfo(aMeshInfo,
-						SMDS_MED_ENTITY,
-						ePENTA15,
-						aPenta15Conn,
-						SMDS_MED_CONNECTIVITY,
-						aPenta15FamilyNums,
-						anPenta15ElemNums);
-	MESSAGE("Perform - anEntity = "<<SMDS_MED_ENTITY<<"; aGeom = "<<ePENTA15<<"; aNbElems = "<<aNbElems);
-	myMed->SetCellInfo(aCellInfo);
-      }
-      if(TInt aNbElems = aHexa20ElemNums.size()){
-	PCellInfo aCellInfo = myMed->CrCellInfo(aMeshInfo,
-						SMDS_MED_ENTITY,
-						eHEXA20,
-						aHexa20Conn,
-						SMDS_MED_CONNECTIVITY,
-						aHexa20FamilyNums,
-						aHexa20ElemNums);
-	MESSAGE("Perform - anEntity = "<<SMDS_MED_ENTITY<<"; aGeom = "<<eHEXA20<<"; aNbElems = "<<aNbElems);
-	myMed->SetCellInfo(aCellInfo);
+          // family number
+          int famNum = getFamilyId( anElemFamMap, anElem, defaultFamilyId );
+          aCellInfo->SetFamNum( iElem, famNum );
+
+          if ( ++iElem == aCellInfo->GetNbElem() )
+            break;
+        }
+        // store data in a file
+        //cout << " SetCellInfo(aCellInfo)" << endl;
+        myMed->SetCellInfo(aCellInfo);
       }
 
-      if(TInt aNbElems = aPolyedreElemNums.size()){
-        // add one element in connectivities,
-        // referenced by the last element in faces
-        aPolyedreConn.push_back(0);
+    } // loop on geom types
 
-	PPolyedreInfo aCellInfo = myMed->CrPolyedreInfo(aMeshInfo,
-                                                        SMDS_MED_ENTITY,
-                                                        ePOLYEDRE,
-                                                        aPolyedreInds,
-                                                        aPolyedreFaces,
-                                                        aPolyedreConn,
-                                                        SMDS_MED_CONNECTIVITY,
-                                                        aPolyedreFamilyNums,
-                                                        aPolyedreElemNums);
-	MESSAGE("Perform - anEntity = "<<SMDS_MED_ENTITY<<"; aGeom = "<<ePOLYEDRE<<"; aNbElems = "<<aNbElems);
-	myMed->SetPolyedreInfo(aCellInfo);
-      }
-    }
+
   }
   catch(const std::exception& exc) {
     INFOS("Follow exception was cought:\n\t"<<exc.what());

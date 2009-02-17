@@ -11,7 +11,7 @@ after the displaced node.
 <li>From the \b Modification menu choose the <b>Move node</b> item or
 click <em>"Move Node"</em> button in the toolbar.
 
-\image html image67.gif
+\image html image67.png
 <center><em>"Move Node" button</em></center>
 
 The following dialog box shall appear:
@@ -23,12 +23,12 @@ The following dialog box shall appear:
 select this node in the 3D viewer. The coordinates of your node will
 be automatically displayed in the \b Coordinates set of fields.</li>
 <li>Set new coordinates for your node in the \b Coordinates set of fields.</li>
-<li>Click the \b Apply or \b OK button.</li>
+<li>Click the \b Apply or <b>Apply and Close</b> button.</li>
 </ol>
 
-\image html moving_nodes1.png
+\image html moving_nodes1.png "The initial mesh"
 
-\image html moving_nodes2.png
+\image html moving_nodes2.png "The node has been moved, transforming all adjacent edges"
 
 <br><b>See Also</b> a sample TUI Script of a 
 \ref tui_moving_nodes "Moving Nodes" operation.  

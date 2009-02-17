@@ -1,38 +1,32 @@
-#  SMESH SMESHGUI : GUI for SMESH component
+#  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
 #
-#  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-#  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
-# 
-#  This library is free software; you can redistribute it and/or 
-#  modify it under the terms of the GNU Lesser General Public 
-#  License as published by the Free Software Foundation; either 
-#  version 2.1 of the License. 
-# 
-#  This library is distributed in the hope that it will be useful, 
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of 
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
-#  Lesser General Public License for more details. 
-# 
-#  You should have received a copy of the GNU Lesser General Public 
-#  License along with this library; if not, write to the Free Software 
-#  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
-# 
-# See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+#  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+#  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 #
+#  This library is free software; you can redistribute it and/or
+#  modify it under the terms of the GNU Lesser General Public
+#  License as published by the Free Software Foundation; either
+#  version 2.1 of the License.
 #
+#  This library is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+#  Lesser General Public License for more details.
 #
-#  File   : Makefile.in
-#  Author : Nicolas REJNERI
-#  Modified by : Alexander BORODIN (OCN) - autotools usage
-#  Module : SMESH
-#  $Header$
-
+#  You should have received a copy of the GNU Lesser General Public
+#  License along with this library; if not, write to the Free Software
+#  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+#
+#  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+#
+# SMESH SMESHGUI : GUI for SMESH component
+# File   : Makefile.am
+# Author : Alexander BORODIN, Open CASCADE S.A.S.
+#
 include $(top_srcdir)/adm_local/unix/make_common_starter.am
 
 # header files 
 salomeinclude_HEADERS = \
-	SMESHGUI_Swig.hxx \
-	SMESHGUI_Swig.i \
 	SMESHGUI.h \
 	SMESHGUI_Utils.h \
 	SMESHGUI_Hypotheses.h \
@@ -40,6 +34,62 @@ salomeinclude_HEADERS = \
 	SMESHGUI_SpinBox.h \
 	SMESHGUI_Selection.h \
 	SMESHGUI_VTKUtils.h \
+	SMESHGUI_Displayer.h \
+	SMESHGUI_GEOMGenUtils.h \
+	SMESHGUI_MeshUtils.h \
+	SMESHGUI_FilterUtils.h \
+	SMESHGUI_PatternUtils.h \
+	SMESHGUI_GroupUtils.h \
+	SMESHGUI_PatternWidget.h \
+	SMESHGUI_CreatePatternDlg.h \
+	SMESHGUI_MeshPatternDlg.h \
+	SMESHGUI_NodesDlg.h \
+	SMESHGUI_TransparencyDlg.h \
+	SMESHGUI_ClippingDlg.h \
+	SMESHGUI_GroupDlg.h \
+	SMESHGUI_RemoveNodesDlg.h \
+	SMESHGUI_RemoveElementsDlg.h \
+	SMESHGUI_MeshInfosDlg.h \
+	SMESHGUI_StandardMeshInfosDlg.h \
+	SMESHGUI_WhatIsDlg.h \
+	SMESHGUI_Preferences_ColorDlg.h \
+	SMESHGUI_Preferences_ScalarBarDlg.h \
+	SMESHGUI_MoveNodesDlg.h \
+	SMESHGUI_AddMeshElementDlg.h \
+	SMESHGUI_XmlHandler.h \
+	SMESHGUI_Filter.h \
+	SMESHGUI_FilterDlg.h \
+	SMESHGUI_FilterLibraryDlg.h \
+	SMESHGUI_SingleEditDlg.h \
+	SMESHGUI_MultiEditDlg.h \
+	SMESHGUI_DeleteGroupDlg.h \
+	SMESHGUI_GroupOpDlg.h \
+	SMESHGUI_SmoothingDlg.h \
+	SMESHGUI_RenumberingDlg.h \
+	SMESHGUI_ExtrusionDlg.h \
+	SMESHGUI_ExtrusionAlongPathDlg.h \
+	SMESHGUI_RevolutionDlg.h \
+	SMESHGUI_RotationDlg.h \
+	SMESHGUI_TranslationDlg.h \
+	SMESHGUI_SymmetryDlg.h \
+	SMESHGUI_SewingDlg.h \
+	SMESHGUI_EditMeshDlg.h \
+	SMESHGUI_MeshUtils.h \
+	SMESHGUI_CreatePolyhedralVolumeDlg.h \
+	SMESHGUI_Operation.h \
+	SMESHGUI_SelectionOp.h \
+	SMESHGUI_Dialog.h \
+	SMESHGUI_MeshDlg.h \
+	SMESHGUI_MeshOp.h \
+	SMESHGUI_ShapeByMeshDlg.h \
+	SMESHGUI_AddQuadraticElementDlg.h \
+	SMESHGUI_ConvToQuadDlg.h \
+	SMESHGUI_ConvToQuadOp.h \
+	SMESHGUI_BuildCompoundDlg.h \
+	SMESHGUI_ComputeDlg.h \
+	SMESHGUI_MakeNodeAtPointDlg.h \
+	SMESHGUI_MeshEditPreview.h \
+	SMESHGUI_IdValidator.h \
 	SMESH_SMESHGUI.hxx
 
 # Libraries targets
@@ -61,8 +111,6 @@ dist_libSMESH_la_SOURCES = \
 	SMESHGUI_WhatIsDlg.cxx \
 	SMESHGUI_Preferences_ColorDlg.cxx \
 	SMESHGUI_Preferences_ScalarBarDlg.cxx \
-	SMESHGUI_Preferences_SelectionDlg.cxx \
-	SMESHGUI_Swig.cxx \
 	SMESHGUI_MoveNodesDlg.cxx \
 	SMESHGUI_AddMeshElementDlg.cxx \
 	SMESHGUI_XmlHandler.cxx \
@@ -82,7 +130,6 @@ dist_libSMESH_la_SOURCES = \
 	SMESHGUI_TranslationDlg.cxx \
 	SMESHGUI_SymmetryDlg.cxx \
 	SMESHGUI_SewingDlg.cxx \
-	SMESHGUI_MergeNodesDlg.cxx \
 	SMESHGUI_EditMeshDlg.cxx \
 	SMESHGUI_Utils.cxx \
 	SMESHGUI_GEOMGenUtils.cxx \
@@ -108,7 +155,9 @@ dist_libSMESH_la_SOURCES = \
 	SMESHGUI_BuildCompoundDlg.cxx \
 	SMESHGUI_ComputeDlg.cxx \
 	SMESHGUI_MakeNodeAtPointDlg.cxx \
-	SMESHGUI_MeshEditPreview.cxx
+	SMESHGUI_MeshEditPreview.cxx \
+	SMESHGUI_GroupOnShapeDlg.cxx \
+	SMESHGUI_FileInfoDlg.cxx
 
 MOC_FILES = \
 	SMESHGUI_moc.cxx \
@@ -127,7 +176,6 @@ MOC_FILES = \
 	SMESHGUI_WhatIsDlg_moc.cxx \
 	SMESHGUI_Preferences_ColorDlg_moc.cxx \
 	SMESHGUI_Preferences_ScalarBarDlg_moc.cxx \
-	SMESHGUI_Preferences_SelectionDlg_moc.cxx \
 	SMESHGUI_MoveNodesDlg_moc.cxx \
 	SMESHGUI_AddMeshElementDlg_moc.cxx \
 	SMESHGUI_FilterDlg_moc.cxx \
@@ -145,7 +193,6 @@ MOC_FILES = \
 	SMESHGUI_TranslationDlg_moc.cxx \
 	SMESHGUI_SymmetryDlg_moc.cxx \
 	SMESHGUI_SewingDlg_moc.cxx \
-	SMESHGUI_MergeNodesDlg_moc.cxx \
 	SMESHGUI_EditMeshDlg_moc.cxx \
 	SMESHGUI_CreatePolyhedralVolumeDlg_moc.cxx \
 	SMESHGUI_Operation_moc.cxx \
@@ -160,7 +207,9 @@ MOC_FILES = \
 	SMESHGUI_ConvToQuadOp_moc.cxx \
 	SMESHGUI_BuildCompoundDlg_moc.cxx \
 	SMESHGUI_ComputeDlg_moc.cxx \
-	SMESHGUI_MakeNodeAtPointDlg_moc.cxx
+	SMESHGUI_MakeNodeAtPointDlg_moc.cxx \
+	SMESHGUI_GroupOnShapeDlg_moc.cxx \
+	SMESHGUI_FileInfoDlg_moc.cxx
 
 nodist_libSMESH_la_SOURCES= \
 	$(MOC_FILES)
@@ -179,6 +228,8 @@ libSMESH_la_CPPFLAGS = \
 	$(BOOST_CPPFLAGS) \
 	$(CORBA_CXXFLAGS) \
 	$(CORBA_INCLUDES) \
+	$(MED2_INCLUDES) \
+	$(HDF5_INCLUDES) \
 	-I$(srcdir)/../OBJECT \
 	-I$(srcdir)/../SMESHFiltersSelection \
 	-I$(srcdir)/../SMDS \

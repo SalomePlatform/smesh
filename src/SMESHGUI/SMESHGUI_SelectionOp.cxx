@@ -1,49 +1,51 @@
-//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
-// 
-//  This library is free software; you can redistribute it and/or 
-//  modify it under the terms of the GNU Lesser General Public 
-//  License as published by the Free Software Foundation; either 
-//  version 2.1 of the License. 
-// 
-//  This library is distributed in the hope that it will be useful, 
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of 
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
-//  Lesser General Public License for more details. 
-// 
-//  You should have received a copy of the GNU Lesser General Public 
-//  License along with this library; if not, write to the Free Software 
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
-// 
-// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
 //
+//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
 //
-//  File   : SMESHGUI_SelectionOp.cxx
-//  Author : Alexander SOLOVYOV
-//  Module : SMESH
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
+//
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
+// File   : SMESHGUI_SelectionOp.cxx
+// Author : Alexander SOLOVYOV, Open CASCADE S.A.S.
+// SMESH includes
+//
+#include "SMESHGUI_SelectionOp.h"
 
-#include <SMESHGUI_SelectionOp.h>
-#include <SMESHGUI_VTKUtils.h>
-#include <SMESHGUI_MeshUtils.h>
-#include <SMESHGUI_Selection.h>
-#include <SMESHGUI.h>
-#include <SUIT_SelectionFilter.h>
-#include <LightApp_SelectionMgr.h>
-#include <SalomeApp_Study.h>
-#include <LightApp_VTKSelector.h>
-#include <SVTK_ViewWindow.h>
-#include <SVTK_ViewModel.h>
-#include <SVTK_Selector.h>
+#include "SMESHGUI.h"
+#include "SMESHGUI_VTKUtils.h"
+#include "SMESHGUI_MeshUtils.h"
+#include "SMESHGUI_Selection.h"
+
 #include <SMESH_Actor.h>
-
 #include <SMDS_Mesh.hxx>
 #include <SMDS_MeshNode.hxx>
 
-#include CORBA_SERVER_HEADER(GEOM_Gen)
-#include <SALOMEDS_SObject.hxx>
+// SALOME GUI includes
+#include <SUIT_SelectionFilter.h>
+#include <LightApp_SelectionMgr.h>
+#include <SalomeApp_Study.h>
+#include <SVTK_ViewWindow.h>
+#include <SVTK_ViewModel.h>
 
+#include <SALOME_ListIO.hxx>
 #include <SALOME_ListIteratorOfListIO.hxx>
+
+// SALOME KERNEL includes 
+#include <SALOMEDS_SObject.hxx>
 
 /*
   Class       : SMESHGUI_SelectionOp
@@ -101,10 +103,10 @@ void SMESHGUI_SelectionOp::removeCustomFilters()
     LightApp_SelectionMgr* mgr = selectionMgr();
     Filters::const_iterator anIt = myFilters.begin(),
                             aLast = myFilters.end();
-    for (; anIt != aLast; anIt++) {
-      if (anIt.data()) {
-        if (mgr) mgr->removeFilter(anIt.data());
-        delete anIt.data();
+    for ( ; anIt != aLast; anIt++) {
+      if (anIt.value()) {
+        if (mgr) mgr->removeFilter(anIt.value());
+        delete anIt.value();
       }
     }
 
@@ -309,7 +311,7 @@ int SMESHGUI_SelectionOp::typeById( const QString& str, const EntityType objtype
       if( t<0 )
       {
         //try to get GEOM type
-        _PTR( SObject ) sobj = st->FindObjectID( str.latin1() );
+        _PTR( SObject ) sobj = st->FindObjectID( str.toLatin1().data() );
         if( sobj )
         {
           GEOM::GEOM_Object_var obj = GEOM::GEOM_Object::_narrow(
@@ -324,14 +326,14 @@ int SMESHGUI_SelectionOp::typeById( const QString& str, const EntityType objtype
   }
   else
   {
-    int pos = str.find( idChar() );
+    int pos = str.indexOf( idChar() );
     QString entry = str.left( pos ),
             _id = str.mid( pos+1 );
     bool ok;
     int id = _id.toInt( &ok );
     if( ok )
     {
-      _PTR( SObject ) sobj = st->FindObjectID( entry.latin1() );
+      _PTR( SObject ) sobj = st->FindObjectID( entry.toLatin1().data() );
       SMESH::SMESH_Mesh_var mesh = SMESH::SMESH_Mesh::_narrow( 
         dynamic_cast<SALOMEDS_SObject*>( sobj.get() )->GetObject() );
       SMESH::SMESH_subMesh_var submesh = SMESH::SMESH_subMesh::_narrow( 
@@ -525,7 +527,7 @@ void SMESHGUI_SelectionOp::extractIds( const QStringList& ids, IdList& list, con
   for( ; anIt!=aLast; anIt++ )
   {
     id_str = *anIt;
-    int pos = idchar=='\0' ? -1 : id_str.find( idchar );
+    int pos = idchar=='\0' ? -1 : id_str.indexOf( idchar );
     int id = -1;
     if( idchar=='\0' || pos>=0 )
     {

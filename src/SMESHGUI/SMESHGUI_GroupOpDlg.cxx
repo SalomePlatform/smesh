@@ -1,6 +1,6 @@
-//  SMESH SMESHGUI : GUI for SMESH component
+//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
 //  This library is free software; you can redistribute it and/or
@@ -17,150 +17,183 @@
 //  License along with this library; if not, write to the Free Software
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+// SMESH SMESHGUI : GUI for SMESH component
+// File   : SMESHGUI_GroupOpDlg.cxx
+// Author : Sergey LITONIN, Open CASCADE S.A.S.
+// SMESH includes
 //
-//
-//  File   : SMESHGUI_GroupOpDlg.cxx
-//  Author : Sergey LITONIN
-//  Module : SMESH
-
 #include "SMESHGUI_GroupOpDlg.h"
 
 #include "SMESHGUI.h"
 #include "SMESHGUI_Utils.h"
 #include "SMESHGUI_VTKUtils.h"
 
-#include "SMESH_TypeFilter.hxx"
+#include <SMESH_TypeFilter.hxx>
 
-#include "SUIT_ResourceMgr.h"
-#include "SUIT_Desktop.h"
-#include "SUIT_Session.h"
-#include "SUIT_MessageBox.h"
+// SALOME GUI includes
+#include <SUIT_ResourceMgr.h>
+#include <SUIT_Desktop.h>
+#include <SUIT_Session.h>
+#include <SUIT_MessageBox.h>
 
-#include "LightApp_Application.h"
+#include <LightApp_Application.h>
+#include <LightApp_SelectionMgr.h>
+#include <SVTK_Selection.h>
+#include <SVTK_ViewWindow.h>
+#include <SALOME_ListIO.hxx>
 
-#include "LightApp_SelectionMgr.h"
-#include "SVTK_Selection.h"
-#include "SVTK_ViewWindow.h"
-#include "SVTK_Selector.h"
-#include "SALOME_ListIO.hxx"
+// Qt includes
+#include <QHBoxLayout>
+#include <QVBoxLayout>
+#include <QGridLayout>
+#include <QPushButton>
+#include <QGroupBox>
+#include <QLabel>
+#include <QLineEdit>
+#include <QKeyEvent>
+#include <QListWidget>
+#include <QButtonGroup>
+#include <SALOME_ListIteratorOfListIO.hxx>
+#include <QComboBox>
+#include <QtxColorButton.h>
 
-// QT Includes
-#include <qframe.h>
-#include <qlayout.h>
-#include <qpushbutton.h>
-#include <qgroupbox.h>
-#include <qlabel.h>
-#include <qlistbox.h>
-#include <qlineedit.h>
-#include <qmessagebox.h>
-
-#define SPACING 5
-#define MARGIN  10
+#define SPACING 6
+#define MARGIN  11
 
 /*!
  *  Class       : SMESHGUI_GroupOpDlg
  *  Description : Perform boolean operations on groups
  */
 
-//=======================================================================
-// name    : SMESHGUI_GroupOpDlg::SMESHGUI_GroupOpDlg
-// Purpose : Constructor
-//=======================================================================
-SMESHGUI_GroupOpDlg::SMESHGUI_GroupOpDlg( SMESHGUI* theModule, const int theMode )
-     : QDialog( SMESH::GetDesktop( theModule ), "SMESHGUI_GroupOpDlg", false,
-                WStyle_Customize | WStyle_NormalBorder | WStyle_Title | WStyle_SysMenu ),
-     mySMESHGUI( theModule ),
-     mySelectionMgr( SMESH::GetSelectionMgr( theModule ) )
+/*!
+  \brief Constructor
+  \param theModule pointer on module instance
+*/
+SMESHGUI_GroupOpDlg::SMESHGUI_GroupOpDlg( SMESHGUI* theModule )
+  : QDialog( SMESH::GetDesktop( theModule ) ),
+    mySMESHGUI( theModule ),
+    mySelectionMgr( SMESH::GetSelectionMgr( theModule ) )
 {
-  myMode = theMode;
-
-  if (myMode == UNION) {
-    setCaption(tr("UNION_OF_TWO_GROUPS"));
-    myHelpFileName = "using_operations_on_groups_page.html#union_anchor";
-  }
-  else if (myMode == INTERSECT) {
-    setCaption(tr("INTERSECTION_OF_TWO_GROUPS"));
-    myHelpFileName = "using_operations_on_groups_page.html#intersection_anchor";
-  }
-  else {
-    setCaption(tr("CUT_OF_TWO_GROUPS"));
-    myHelpFileName = "using_operations_on_groups_page.html#cut_anchor";
-  }
+  setModal(false);
 
   mySelector = (SMESH::GetViewWindow( mySMESHGUI ))->GetSelector();
 
-  QVBoxLayout* aDlgLay = new QVBoxLayout (this, MARGIN, SPACING);
+  QVBoxLayout* aDlgLay = new QVBoxLayout (this);
+  aDlgLay->setMargin(MARGIN);
+  aDlgLay->setSpacing(SPACING);
 
-  QFrame* aMainFrame = createMainFrame  (this);
-  QFrame* aBtnFrame  = createButtonFrame(this);
+  QWidget* aMainFrame = createMainFrame  (this);
+  QWidget* aBtnFrame  = createButtonFrame(this);
 
   aDlgLay->addWidget(aMainFrame);
   aDlgLay->addWidget(aBtnFrame);
 
-  aDlgLay->setStretchFactor(aMainFrame, 1);
-
   Init();
 }
 
-//=======================================================================
-// name    : SMESHGUI_GroupOpDlg::createMainFrame
-// Purpose : Create frame containing dialog's input fields
-//=======================================================================
-QFrame* SMESHGUI_GroupOpDlg::createMainFrame (QWidget* theParent)
+/*!
+  \brief Creates frame containing dialog's input fields
+  \param theParent parent widget
+  \return pointer on created widget
+*/
+QWidget* SMESHGUI_GroupOpDlg::createMainFrame( QWidget* theParent )
 {
-  QGroupBox* aMainGrp = new QGroupBox(1, Qt::Horizontal, theParent);
-  aMainGrp->setFrameStyle(QFrame::NoFrame);
-  aMainGrp->setInsideMargin(0);
+  QWidget* aMainGrp = new QWidget(theParent);
+  QVBoxLayout* aLay = new QVBoxLayout(aMainGrp);
+  aLay->setMargin(0);
+  aLay->setSpacing(SPACING);
+  
+  // ------------------------------------------------------
+  QGroupBox* aNameGrp = new QGroupBox(tr("NAME"), aMainGrp);
+  QHBoxLayout* aNameGrpLayout = new QHBoxLayout(aNameGrp);
+  aNameGrpLayout->setMargin(MARGIN);
+  aNameGrpLayout->setSpacing(SPACING);
 
-  QGroupBox* aNameGrp = new QGroupBox(1, Qt::Vertical, tr("NAME"), aMainGrp);
-  new QLabel(tr("RESULT_NAME"), aNameGrp);
+  QLabel* aNameLab = new QLabel(tr("RESULT_NAME"), aNameGrp);
   myNameEdit = new QLineEdit(aNameGrp);
 
-  QGroupBox* anArgGrp = new QGroupBox(3, Qt::Horizontal, tr("ARGUMENTS"), aMainGrp);
+  aNameGrpLayout->addWidget(aNameLab);
+  aNameGrpLayout->addWidget(myNameEdit);
 
-  new QLabel(myMode == CUT ? tr("MAIN_OBJECT") :tr("OBJECT_1"), anArgGrp);
-  myBtn1 = new QPushButton(anArgGrp);
-  myEdit1 = new QLineEdit(anArgGrp);
-  myEdit1->setAlignment( Qt::AlignLeft );
+  // ------------------------------------------------------
+  myArgGrp = new QGroupBox(tr("ARGUMENTS"), aMainGrp);
 
-  new QLabel(myMode == CUT ? tr("TOOL_OBJECT") :tr("OBJECT_2"), anArgGrp);
-  myBtn2 = new QPushButton(anArgGrp);
-  myEdit2 = new QLineEdit(anArgGrp);
-  myEdit2->setAlignment( Qt::AlignLeft );
 
-  myEdit1->setReadOnly(true);
-  myEdit2->setReadOnly(true);
+  // ------------------------------------------------------
+  
+  QGroupBox* aColorBox = new QGroupBox(tr( "SMESH_SET_COLOR" ), this);
+  QHBoxLayout* aColorBoxLayout = new QHBoxLayout(aColorBox);
+  aColorBoxLayout->setMargin(MARGIN);
+  aColorBoxLayout->setSpacing(SPACING);
 
-  QPixmap aPix (SMESH::GetResourceMgr( mySMESHGUI )->loadPixmap("SMESH", tr("ICON_SELECT")));
-  myBtn1->setPixmap(aPix);
-  myBtn2->setPixmap(aPix);
+  QLabel* aColorLab = new QLabel(tr( "SMESH_CHECK_COLOR" ), aColorBox );
+  myColorBtn = new QtxColorButton(aColorBox);
+  myColorBtn->setSizePolicy( QSizePolicy::MinimumExpanding, 
+			     myColorBtn->sizePolicy().verticalPolicy() );
+
+  aColorBoxLayout->addWidget(aColorLab);
+  aColorBoxLayout->addWidget(myColorBtn);
+
+  // ------------------------------------------------------
+  aLay->addWidget( aNameGrp );
+  aLay->addWidget( myArgGrp );
+  aLay->addWidget( aColorBox );
 
   return aMainGrp;
 }
 
-//=======================================================================
-// name    : SMESHGUI_GroupOpDlg::createButtonFrame
-// Purpose : Create frame containing buttons
-//=======================================================================
-QFrame* SMESHGUI_GroupOpDlg::createButtonFrame (QWidget* theParent)
+/*!
+  \brief Gets pointer on arguments group box
+  \return pointer on arguments group box
+*/
+QGroupBox* SMESHGUI_GroupOpDlg::getArgGrp() const
 {
-  QFrame* aFrame = new QFrame(theParent);
-  aFrame->setFrameStyle(QFrame::Box | QFrame::Sunken);
+  return myArgGrp;
+}
 
-  myOkBtn     = new QPushButton(tr("SMESH_BUT_OK"   ), aFrame);
-  myApplyBtn  = new QPushButton(tr("SMESH_BUT_APPLY"), aFrame);
-  myCloseBtn  = new QPushButton(tr("SMESH_BUT_CLOSE"), aFrame);
-  myHelpBtn  = new QPushButton(tr("SMESH_BUT_HELP"), aFrame);
+/*!
+  \brief Sets help file name
+  \param theFName help file name
+*/
+void SMESHGUI_GroupOpDlg::setHelpFileName( const QString& theFName )
+{
+  myHelpFileName = theFName;
+}
 
-  QSpacerItem* aSpacer = new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Minimum);
+/*!
+  \brief Gets pointer to the module instance
+  \return pointer to the module instance
+*/
+SMESHGUI* SMESHGUI_GroupOpDlg::getSMESHGUI() const
+{
+  return mySMESHGUI;
+}
 
-  QHBoxLayout* aLay = new QHBoxLayout(aFrame, MARGIN, SPACING);
+/*!
+  \brief Create frame containing buttons
+  \param theParent parent widget
+  \return pointer to the created frame
+*/
+QWidget* SMESHGUI_GroupOpDlg::createButtonFrame (QWidget* theParent)
+{
+  QGroupBox* aFrame = new QGroupBox(theParent);
+
+  myOkBtn    = new QPushButton(tr("SMESH_BUT_APPLY_AND_CLOSE"), aFrame);
+  myApplyBtn = new QPushButton(tr("SMESH_BUT_APPLY"), aFrame);
+  myCloseBtn = new QPushButton(tr("SMESH_BUT_CLOSE"), aFrame);
+  myHelpBtn  = new QPushButton(tr("SMESH_BUT_HELP"),  aFrame);
+
+  QHBoxLayout* aLay = new QHBoxLayout(aFrame);
+  aLay->setMargin(MARGIN);
+  aLay->setSpacing(SPACING);
 
   aLay->addWidget(myOkBtn);
+  aLay->addSpacing(10);
   aLay->addWidget(myApplyBtn);
-  aLay->addItem(aSpacer);
+  aLay->addSpacing(10);
+  aLay->addStretch();
   aLay->addWidget(myCloseBtn);
   aLay->addWidget(myHelpBtn);
 
@@ -168,216 +201,257 @@ QFrame* SMESHGUI_GroupOpDlg::createButtonFrame (QWidget* theParent)
   connect(myOkBtn,    SIGNAL(clicked()), SLOT(onOk()));
   connect(myCloseBtn, SIGNAL(clicked()), SLOT(onClose()));
   connect(myApplyBtn, SIGNAL(clicked()), SLOT(onApply()));
-  connect(myHelpBtn, SIGNAL(clicked()), SLOT(onHelp()));
+  connect(myHelpBtn,  SIGNAL(clicked()), SLOT(onHelp()));
 
   return aFrame;
 }
 
-//=======================================================================
-// name    : SMESHGUI_GroupOpDlg::~SMESHGUI_GroupOpDlg
-// Purpose : Destructor
-//=======================================================================
+/*!
+  \brief Destructor
+*/
 SMESHGUI_GroupOpDlg::~SMESHGUI_GroupOpDlg()
 {
 }
 
-//=======================================================================
-// name    : SMESHGUI_GroupOpDlg::Init
-// Purpose : Init dialog fields, connect signals and slots, show dialog
-//=======================================================================
+/*!
+  \brief Init dialog fields, connect signals and slots, show dialog
+*/
 void SMESHGUI_GroupOpDlg::Init()
 {
   mySMESHGUI->SetActiveDialogBox((QDialog*)this);
-  myFocusWg = myEdit1;
-
-  myGroup1 = SMESH::SMESH_GroupBase::_nil();
-  myGroup2 = SMESH::SMESH_GroupBase::_nil();
-
+  
   // selection and SMESHGUI
   connect(mySelectionMgr, SIGNAL(currentSelectionChanged()), SLOT(onSelectionDone()));
   connect(mySMESHGUI, SIGNAL(SignalDeactivateActiveDialog()), SLOT(onDeactivate()));
   connect(mySMESHGUI, SIGNAL(SignalCloseAllDialogs()), SLOT(ClickOnClose()));
 
-  connect(myBtn1, SIGNAL(clicked()), this, SLOT(onFocusChanged()));
-  connect(myBtn2, SIGNAL(clicked()), this, SLOT(onFocusChanged()));
-
-  this->show();
-
   // set selection mode
   if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
     aViewWindow->SetSelectionMode(ActorSelection);
   mySelectionMgr->installFilter(new SMESH_TypeFilter (GROUP));
-
-  return;
 }
 
-//=======================================================================
-// name    : SMESHGUI_GroupOpDlg::isValid
-// Purpose : Verify validity of input data
-//=======================================================================
-bool SMESHGUI_GroupOpDlg::isValid()
+/*!
+  \brief Validate list of groups used for operation. Checks whether they corresponds 
+  to the same face and have one type
+  \param theListGrp input list of groups 
+  \return TRUE if groups are valid, FALSE otherwise
+*/
+bool SMESHGUI_GroupOpDlg::isValid( const QList<SMESH::SMESH_GroupBase_var>& theListGrp )
 {
-  // Verify validity of group name
-  if (myNameEdit->text() == "") {
-    QMessageBox::information(SMESHGUI::desktop(), tr("SMESH_INSUFFICIENT_DATA"),
-                             tr("EMPTY_NAME"), QMessageBox::Ok);
+  if ( theListGrp.isEmpty() )
+  {
+    SUIT_MessageBox::information( this, tr("SMESH_INSUFFICIENT_DATA"),
+				  tr("INCORRECT_ARGUMENTS") );
     return false;
   }
 
-  // Verufy wheter arguments speciffiyed
-  if (myGroup1->_is_nil() || myGroup2->_is_nil()) {
-    QMessageBox::information(SMESHGUI::desktop(), tr("SMESH_INSUFFICIENT_DATA"),
-                             tr("INCORRECT_ARGUMENTS"), QMessageBox::Ok);
+  int aMeshId = -1, aGrpType = -1;
+  QList<SMESH::SMESH_GroupBase_var>::const_iterator anIter;
+  for ( anIter = theListGrp.begin(); anIter != theListGrp.end(); ++anIter )
+  {
+    SMESH::SMESH_GroupBase_var aGrp = *anIter;
+    if ( CORBA::is_nil( aGrp ) )
+      continue; // nonsence
+
+    SMESH::SMESH_Mesh_var aMesh = aGrp->GetMesh();
+    if ( CORBA::is_nil( aMesh ) )
+      continue;
+
+    // mesh id
+    int aCurrId = aMesh->GetId();
+    if ( aMeshId == -1 )
+      aMeshId = aCurrId;
+    else 
+    {
+      if ( aMeshId != aCurrId )
+      {
+        aMeshId = -1; // different meshes
+        break;
+      }
+    }
+
+    // group type
+    int aCurrType = aGrp->GetType();
+    if ( aGrpType == -1 )
+      aGrpType = aCurrType;
+    else 
+    {
+      if ( aGrpType != aCurrType )
+      {
+        aGrpType = -1; // different types
+        break;
+      }
+    }
+
+  }
+
+  if ( aMeshId == -1 )
+  {
+    SUIT_MessageBox::information(this, tr("SMESH_INSUFFICIENT_DATA"),
+				 tr("DIFF_MESHES"));
     return false;
   }
 
-  // Verify whether arguments belongs to same mesh
-  SMESH::SMESH_Mesh_ptr aMesh1 = myGroup1->GetMesh();
-  SMESH::SMESH_Mesh_ptr aMesh2 = myGroup2->GetMesh();
-
-  int aMeshId1 = !aMesh1->_is_nil() ? aMesh1->GetId() : -1;
-  int aMeshId2 = !aMesh2->_is_nil() ? aMesh2->GetId() : -1;
-
-  if (aMeshId1 != aMeshId2 || aMeshId1 == -1) {
-    QMessageBox::information(SMESHGUI::desktop(), tr("SMESH_INSUFFICIENT_DATA"),
-                             tr("DIFF_MESHES"), QMessageBox::Ok);
-    return false;
-  }
-
-  // Verify whether groups have same types of entities
-  if (myGroup1->GetType() != myGroup2->GetType()) {
-    QMessageBox::information(SMESHGUI::desktop(), tr("SMESH_INSUFFICIENT_DATA"),
-                             tr("DIFF_TYPES"), QMessageBox::Ok);
+  if ( aGrpType == -1 ) 
+  {
+    SUIT_MessageBox::information(this, tr("SMESH_INSUFFICIENT_DATA"),
+				 tr("DIFF_TYPES"));
     return false;
   }
 
   return true;
 }
 
-//=======================================================================
-// name    : SMESHGUI_GroupOpDlg::onApply
-// Purpose : SLOT called when "Apply" button pressed.
-//=======================================================================
-bool SMESHGUI_GroupOpDlg::onApply()
-{
-  if (!isValid() || mySMESHGUI->isActiveStudyLocked())
-    return false;
-
-  SMESH::SMESH_Mesh_ptr aMesh = myGroup1->GetMesh();
-  QString aName = myNameEdit->text();
-  SMESH::SMESH_Group_ptr aNewGrp = SMESH::SMESH_Group::_nil();
-
-  if (myMode == UNION) aNewGrp = aMesh->UnionGroups(myGroup1, myGroup2, aName.latin1());
-  else if (myMode == INTERSECT) aNewGrp = aMesh->IntersectGroups(myGroup1, myGroup2, aName.latin1());
-  else aNewGrp = aMesh->CutGroups(myGroup1, myGroup2, aName.latin1());
-
-  if (!aNewGrp->_is_nil()) {
-    mySMESHGUI->updateObjBrowser(true);
-    reset();
-    return true;
-  } else {
-    QMessageBox::critical(SMESHGUI::desktop(), tr("SMESH_ERROR"),
-                          tr("SMESH_OPERATION_FAILED"), "OK");
-    return false;
-  }
-}
-
-//=======================================================================
-// name    : SMESHGUI_GroupOpDlg::onOk
-// Purpose : SLOT called when "Ok" button pressed.
-//=======================================================================
+/*!
+  \brief SLOT called when "Ok" button pressed performs operation and closes dialog box
+*/
 void SMESHGUI_GroupOpDlg::onOk()
 {
-  if (onApply())
+  if ( onApply() )
     onClose();
 }
 
-//=======================================================================
-// name    : SMESHGUI_GroupOpDlg::onClose
-// Purpose : SLOT called when "Close" button pressed. Close dialog
-//=======================================================================
+/*!
+  \brief SLOT called when "Close" button pressed closes dialog
+*/
 void SMESHGUI_GroupOpDlg::onClose()
 {
   if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
     aViewWindow->SetSelectionMode(ActorSelection);
-  disconnect(mySelectionMgr, 0, this, 0);
-  disconnect(mySMESHGUI, 0, this, 0);
+  disconnect( mySelectionMgr, 0, this, 0 );
+  disconnect( mySMESHGUI, 0, this, 0 );
   mySMESHGUI->ResetState();
   mySelectionMgr->clearFilters();
+  reset();
   reject();
 }
 
-//=================================================================================
-// function : onHelp()
-// purpose  :
-//=================================================================================
+/*!
+  \brief SLOT called when "Help" button pressed shows "Help" page
+*/
 void SMESHGUI_GroupOpDlg::onHelp()
 {
   LightApp_Application* app = (LightApp_Application*)(SUIT_Session::session()->activeApplication());
   if (app) 
     app->onHelpContextModule(mySMESHGUI ? app->moduleName(mySMESHGUI->moduleName()) : QString(""), myHelpFileName);
   else {
-		QString platform;
+    QString platform;
 #ifdef WIN32
-		platform = "winapplication";
+    platform = "winapplication";
 #else
-		platform = "application";
+    platform = "application";
 #endif
-    SUIT_MessageBox::warn1(0, QObject::tr("WRN_WARNING"),
-			   QObject::tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
-			   arg(app->resourceMgr()->stringValue("ExternalBrowser", platform)).arg(myHelpFileName),
-			   QObject::tr("BUT_OK"));
+    SUIT_MessageBox::warning(this, tr("WRN_WARNING"),
+			     tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
+			     arg(app->resourceMgr()->stringValue("ExternalBrowser",
+								 platform)).
+			     arg(myHelpFileName));
   }
 }
 
-//=======================================================================
-// name    : SMESHGUI_GroupOpDlg::onSelectionDone
-// Purpose : SLOT called when selection changed
-//=======================================================================
-void SMESHGUI_GroupOpDlg::onSelectionDone()
+/*!
+  \brief Gets list of currently selected groups from selection manager
+  \param theOutList out list of groups
+  \param theOutNames out list of group of group names
+  \return TRUE if operation theOutList is not empty, FALSE otherwise
+*/
+bool SMESHGUI_GroupOpDlg::getSelectedGroups( QList<SMESH::SMESH_GroupBase_var>& theOutList, 
+                                             QStringList& theOutNames )
 {
-  if (myFocusWg == myEdit1)
-    myGroup1 = SMESH::SMESH_GroupBase::_nil();
-  else
-    myGroup2 = SMESH::SMESH_GroupBase::_nil();
+  theOutList.clear();
 
-  myFocusWg->setText("");
+  theOutList.clear();
+  theOutNames.clear();
 
-  SALOME_ListIO aList;
-  mySelectionMgr->selectedObjects(aList);
-
-  if (aList.Extent() == 1) {
+  SALOME_ListIO aListIO;
+  mySelectionMgr->selectedObjects( aListIO );
+  SALOME_ListIteratorOfListIO anIter ( aListIO );
+  for ( ; anIter.More(); anIter.Next()) 
+  {
     SMESH::SMESH_GroupBase_var aGroup =
-      SMESH::IObjectToInterface<SMESH::SMESH_GroupBase>(aList.First());
-
-    if (!aGroup->_is_nil())
+      SMESH::IObjectToInterface<SMESH::SMESH_GroupBase>(anIter.Value());
+    if ( !aGroup->_is_nil()) 
     {
-      myFocusWg->setText(aGroup->GetName());
-      myFocusWg->setCursorPosition( 0 );
-
-      if (myFocusWg == myEdit1)
-        myGroup1 = aGroup;
-      else
-        myGroup2 = aGroup;
+      theOutList.append( aGroup );
+      theOutNames.append( aGroup->GetName() );
     }
   }
+
+  return theOutList.count() > 0;
 }
 
-//=======================================================================
-// name    : SMESHGUI_GroupOpDlg::onDeactivate
-// Purpose : SLOT called when dialog must be deativated
-//=======================================================================
+/*!
+  \brief Converts QT-list of group to the list acceptable by IDL interface
+  \param theIn input list
+  \return list acceptable by IDL interface
+*/
+SMESH::ListOfGroups* SMESHGUI_GroupOpDlg::convert( 
+  const QList<SMESH::SMESH_GroupBase_var>& theIn )
+{
+  SMESH::ListOfGroups_var aList = new SMESH::ListOfGroups();
+  aList->length( theIn.count() );
+
+  QList<SMESH::SMESH_GroupBase_var>::const_iterator anIter = theIn.begin();
+  for ( int i = 0; anIter != theIn.end(); ++anIter, ++i )
+    aList[ i ] = *anIter;
+
+  return aList._retn();
+}
+
+/*!
+  \brief Get color to be assigned to group
+  \return color to be assigned to group
+*/
+SALOMEDS::Color SMESHGUI_GroupOpDlg::getColor() const
+{
+  QColor aQColor = myColorBtn->color();
+
+  SALOMEDS::Color aColor;
+  aColor.R = (float)aQColor.red() / 255.0;
+  aColor.G = (float)aQColor.green() / 255.0;
+  aColor.B = (float)aQColor.blue() / 255.0;
+
+  return aColor;
+}
+
+/*!
+  \brief SLOT, called when selection is changed. Current implementation does 
+   nothing. The method should be redefined in derived classes to update 
+   corresponding GUI controls
+*/
+void SMESHGUI_GroupOpDlg::onSelectionDone()
+{
+}
+
+/*!
+  \brief Calls onSelectionDone() and setVisible() method of base class
+  \param visible the visible state of the dialog 
+*/
+void SMESHGUI_GroupOpDlg::setVisible( bool visible )
+{
+  if ( visible )
+  {
+    onSelectionDone();
+    resize( minimumSizeHint().width(), sizeHint().height() );
+  }
+  QDialog::setVisible( visible );
+}
+
+/*!
+  \brief SLOT called when dialog must be deativated
+*/
 void SMESHGUI_GroupOpDlg::onDeactivate()
 {
   setEnabled(false);
   mySelectionMgr->clearFilters();
 }
 
-//=======================================================================
-// name    : SMESHGUI_GroupOpDlg::enterEvent
-// Purpose : Event filter
-//=======================================================================
-void SMESHGUI_GroupOpDlg::enterEvent (QEvent*)
+/*!
+  \brief Event filter updates selection mode and selection filter. This virtual method 
+  is redefined from the base class it is called when dialog obtains input focus
+*/
+void SMESHGUI_GroupOpDlg::enterEvent(QEvent*)
 {
   mySMESHGUI->EmitSignalDeactivateDialog();
   setEnabled(true);
@@ -386,52 +460,589 @@ void SMESHGUI_GroupOpDlg::enterEvent (QEvent*)
   mySelectionMgr->installFilter(new SMESH_TypeFilter (GROUP));
 }
 
-//=======================================================================
-// name    : SMESHGUI_GroupOpDlg::closeEvent
-// purpose :
-//=======================================================================
-void SMESHGUI_GroupOpDlg::closeEvent (QCloseEvent*)
+/*!
+  \brief Provides reaction on close event, closes the dialog box
+*/
+void SMESHGUI_GroupOpDlg::closeEvent(QCloseEvent*)
 {
   onClose();
 }
 
-//=======================================================================
-// name    : SMESHGUI_GroupOpDlg::onFocusChanged
-// Purpose : SLOT. Called when "Select" button pressed.
-//=======================================================================
-void SMESHGUI_GroupOpDlg::onFocusChanged()
-{
-  const QObject* aSender = sender();
-  myFocusWg = aSender == myBtn1 ? myEdit1 : myEdit2;
-  onSelectionDone();
-}
-
-//=======================================================================
-// name    : SMESHGUI_GroupOpDlg::reset
-// Purpose : Rest state of dialog
-//=======================================================================
+/*!
+  \brief Resets state of the dialog, initializes its fields with default value, etc. 
+  Usually called by onApply() slot to reinitialize dialog  fields. This virtual method 
+  should be redefined in derived class to update its own fileds
+*/
 void SMESHGUI_GroupOpDlg::reset()
 {
   myNameEdit->setText("");
-  myEdit1->setText("");
-  myEdit2->setText("");
-  myFocusWg = myEdit1;
   myNameEdit->setFocus();
 }
 
-//=================================================================================
-// function : keyPressEvent()
-// purpose  :
-//=================================================================================
+/*!
+  \brief Gets name of group to be created
+  \return name of group to be created
+  \sa setName()
+*/
+QString SMESHGUI_GroupOpDlg::getName() const
+{
+  return myNameEdit->text();
+}
+
+/*!
+  \brief Sets name of group to be created
+  \param theName name of group to be created
+  \sa getName()
+*/
+void SMESHGUI_GroupOpDlg::setName( const QString& theName )
+{
+  myNameEdit->setText( theName );
+}
+
+/*!
+  \brief Provides reaction on “F1” button pressing
+  \param e  key press event
+*/
 void SMESHGUI_GroupOpDlg::keyPressEvent( QKeyEvent* e )
 {
   QDialog::keyPressEvent( e );
   if ( e->isAccepted() )
     return;
 
-  if ( e->key() == Key_F1 )
-    {
-      e->accept();
-      onHelp();
-    }
+  if ( e->key() == Qt::Key_F1 ) {
+    e->accept();
+    onHelp();
+  }
 }
+
+/*!
+  \brief This virtual slot does nothing and should be redefined in derived classes
+  \return return false;
+*/
+bool SMESHGUI_GroupOpDlg::onApply()
+{
+  return false;
+}
+
+// === === === === === === === === === === === === === === === === === === === === === 
+
+/*!
+  \brief Constructor
+  \param theModule module
+*/
+SMESHGUI_UnionGroupsDlg::SMESHGUI_UnionGroupsDlg( SMESHGUI* theModule )
+: SMESHGUI_GroupOpDlg( theModule )
+{
+  setWindowTitle(tr("UNION_OF_GROUPS"));
+  setHelpFileName( "using_operations_on_groups_page.html#union_anchor" );
+
+  QGroupBox* anArgGrp = getArgGrp();
+  myListWg = new QListWidget( anArgGrp );
+
+  QHBoxLayout* aLay = new QHBoxLayout( anArgGrp );
+  aLay->addWidget( myListWg );
+}
+
+/*!
+  \brief Destructor
+*/
+SMESHGUI_UnionGroupsDlg::~SMESHGUI_UnionGroupsDlg()
+{
+}
+
+/*!
+  \brief This virtual method redefined from the base class resets state 
+  of the dialog, initializes its fields with default value, etc. 
+*/
+void SMESHGUI_UnionGroupsDlg::reset()
+{
+  SMESHGUI_GroupOpDlg::reset();
+  myListWg->clear();
+  myGroups.clear();
+}
+
+/*!
+  \brief SLOT called when apply button is pressed performs operation
+  \return TRUE if operation has been completed successfully, FALSE otherwise
+*/
+bool SMESHGUI_UnionGroupsDlg::onApply()
+{
+  if ( getSMESHGUI()->isActiveStudyLocked())
+    return false;
+
+  // Verify validity of group name
+  if ( getName() == "" ) 
+  {
+    SUIT_MessageBox::information(this, tr("SMESH_INSUFFICIENT_DATA"),
+                                 SMESHGUI_GroupOpDlg::tr("EMPTY_NAME"));
+    return false;
+  }
+
+  if ( !isValid( myGroups ) )
+    return false;
+
+  SMESH::SMESH_Mesh_var aMesh = myGroups.first()->GetMesh();
+  QString aName = getName();
+  
+  bool aRes = false;
+  try
+  {
+    SMESH::ListOfGroups_var aList = convert( myGroups );
+    SMESH::SMESH_Group_var aNewGrp = 
+      aMesh->UnionListOfGroups( aList, aName.toLatin1().constData() );
+    if ( !CORBA::is_nil( aNewGrp ) )
+    {
+      aNewGrp->SetColor(  getColor() );
+      aRes = true;
+    }
+  }
+  catch( ... )
+  {
+    aRes = false;
+  }
+
+  if ( aRes ) 
+  {
+    getSMESHGUI()->updateObjBrowser(true);
+    reset();
+    return true;
+  } 
+  else 
+  {
+    SUIT_MessageBox::critical(this, tr("SMESH_ERROR"),
+			      tr("SMESH_OPERATION_FAILED"));
+    return false;
+  }
+}
+
+/*!
+  \brief SLOT, called when selection is changed, updates corresponding GUI controls
+*/
+void SMESHGUI_UnionGroupsDlg::onSelectionDone()
+{
+  QStringList aNames;
+  getSelectedGroups( myGroups, aNames );
+  myListWg->clear();
+  myListWg->addItems( aNames );
+}
+
+// === === === === === === === === === === === === === === === === === === === === === 
+
+/*!
+  \brief Constructor
+  \param theModule module
+*/
+SMESHGUI_IntersectGroupsDlg::SMESHGUI_IntersectGroupsDlg( SMESHGUI* theModule )
+: SMESHGUI_GroupOpDlg( theModule )
+{
+  setWindowTitle(tr("INTERSECTION_OF_GROUPS"));
+  setHelpFileName( "using_operations_on_groups_page.html#intersection_anchor" );
+
+  QGroupBox* anArgGrp = getArgGrp();
+  myListWg = new QListWidget( anArgGrp );
+
+  QHBoxLayout* aLay = new QHBoxLayout( anArgGrp );
+  aLay->addWidget( myListWg );
+}
+
+/*!
+  \brief Destructor
+*/
+SMESHGUI_IntersectGroupsDlg::~SMESHGUI_IntersectGroupsDlg()
+{
+}
+
+/*!
+  \brief This virtual method redefined from the base class resets state 
+  of the dialog, initializes its fields with default value, etc. 
+*/
+void SMESHGUI_IntersectGroupsDlg::reset()
+{
+  SMESHGUI_GroupOpDlg::reset();
+  myListWg->clear();
+  myGroups.clear();
+}
+
+/*!
+  \brief SLOT called when apply button is pressed performs operation
+  \return TRUE if operation has been completed successfully, FALSE otherwise
+*/
+bool SMESHGUI_IntersectGroupsDlg::onApply()
+{
+  if ( getSMESHGUI()->isActiveStudyLocked())
+    return false;
+
+  // Verify validity of group name
+  if ( getName() == "" ) 
+  {
+    SUIT_MessageBox::information(this, tr("SMESH_INSUFFICIENT_DATA"),
+                                 SMESHGUI_GroupOpDlg::tr("EMPTY_NAME"));
+    return false;
+  }
+
+  if ( !isValid( myGroups ) )
+    return false;
+
+  SMESH::SMESH_Mesh_var aMesh = myGroups.first()->GetMesh();
+  QString aName = getName();
+  
+  bool aRes = false;
+  try
+  {
+    SMESH::ListOfGroups_var aList = convert( myGroups );
+    SMESH::SMESH_Group_var aNewGrp = 
+      aMesh->IntersectListOfGroups( aList, aName.toLatin1().constData() );
+    if ( !CORBA::is_nil( aNewGrp ) )
+    {
+      aNewGrp->SetColor(  getColor() );
+      aRes = true;
+    }
+  }
+  catch( ... )
+  {
+    aRes = false;
+  }
+
+  if ( aRes ) 
+  {
+    getSMESHGUI()->updateObjBrowser(true);
+    reset();
+    return true;
+  } 
+  else 
+  {
+    SUIT_MessageBox::critical(this, tr("SMESH_ERROR"),
+			      tr("SMESH_OPERATION_FAILED"));
+    return false;
+  }
+}
+
+/*!
+  \brief SLOT, called when selection is changed, updates corresponding GUI controls
+*/
+void SMESHGUI_IntersectGroupsDlg::onSelectionDone()
+{
+  QStringList aNames;
+  getSelectedGroups( myGroups, aNames );
+  myListWg->clear();
+  myListWg->addItems( aNames );
+}
+
+// === === === === === === === === === === === === === === === === === === === === === 
+
+/*!
+  \brief Constructor
+  \param theModule module
+*/
+SMESHGUI_CutGroupsDlg::SMESHGUI_CutGroupsDlg( SMESHGUI* theModule )
+: SMESHGUI_GroupOpDlg( theModule )
+{
+  setWindowTitle(tr("CUT_OF_GROUPS"));
+  setHelpFileName( "using_operations_on_groups_page.html#cut_anchor" );
+
+  QGroupBox* anArgGrp = getArgGrp();
+
+  QPixmap aPix (SMESH::GetResourceMgr( getSMESHGUI() )->loadPixmap("SMESH", tr("ICON_SELECT")));
+  
+  // frame 1
+  QFrame* aFrame1 = new QFrame( anArgGrp );
+  QLabel* aLbl1 = new QLabel( tr("MAIN_OBJECT"), aFrame1 );
+  aLbl1->setSizePolicy( QSizePolicy( QSizePolicy::Expanding, QSizePolicy::Fixed ) );
+  myBtn1 = new QPushButton( aFrame1 );
+  myBtn1->setIcon(aPix);
+  myListWg1 = new QListWidget( aFrame1 );
+
+  QGridLayout* aLay1 = new QGridLayout( aFrame1 );
+  aLay1->setSpacing( SPACING );
+  aLay1->addWidget( aLbl1, 0, 0 );
+  aLay1->addWidget( myBtn1, 0, 1 );
+  aLay1->addWidget( myListWg1, 1, 0, 1, 2 );
+  //QSpacerItem* aHSpacer1 = new QSpacerItem( 0, 0, QSizePolicy::Expanding, QSizePolicy::Minimum );
+  //aLay1->addItem( aHSpacer1, 0, 2 );
+
+
+  // frame 2
+  QFrame* aFrame2 = new QFrame( anArgGrp );
+  QLabel* aLbl2 = new QLabel( tr("TOOL_OBJECT"), aFrame2 );
+  aLbl2->setSizePolicy( QSizePolicy( QSizePolicy::Expanding, QSizePolicy::Fixed ) );
+  myBtn2 = new QPushButton( aFrame2 );
+  myBtn2->setIcon(aPix);
+  myListWg2 = new QListWidget( aFrame2 );
+
+  QGridLayout* aLay2 = new QGridLayout( aFrame2 );
+  aLay2->setSpacing( SPACING );
+  aLay2->addWidget( aLbl2, 0, 0 );
+  aLay2->addWidget( myBtn2, 0, 1 );
+  aLay2->addWidget( myListWg2, 1, 0, 1, 2 );
+  //QSpacerItem* aHSpacer2 = new QSpacerItem( 0, 0, QSizePolicy::Expanding, QSizePolicy::Minimum );
+  //aLay2->addItem( aHSpacer2, 0, 2 );
+
+  // create button group 
+
+  QButtonGroup* aGrp = new QButtonGroup( anArgGrp );
+  aGrp->addButton( myBtn1, 0 );
+  aGrp->addButton( myBtn2, 1 );
+  myBtn1->setCheckable( true );
+  myBtn2->setCheckable( true );
+  aGrp->setExclusive( true );
+  myBtn1->setChecked( true );
+  
+  // fill layout
+  QHBoxLayout* aLay = new QHBoxLayout( anArgGrp );
+  aLay->setSpacing( SPACING );
+  aLay->addWidget( aFrame1 );
+  aLay->addWidget( aFrame2 );
+}
+
+/*!
+  \brief Destructor
+*/
+SMESHGUI_CutGroupsDlg::~SMESHGUI_CutGroupsDlg()
+{
+}
+
+/*!
+  \brief This virtual method redefined from the base class resets state 
+  of the dialog, initializes its fields with default value, etc. 
+*/
+void SMESHGUI_CutGroupsDlg::reset()
+{
+  SMESHGUI_GroupOpDlg::reset();
+
+  myListWg1->clear();
+  myGroups1.clear();
+
+  myListWg2->clear();
+  myGroups2.clear();
+}
+
+/*!
+  \brief SLOT called when apply button is pressed performs operation
+  \return TRUE if operation has been completed successfully, FALSE otherwise
+*/
+bool SMESHGUI_CutGroupsDlg::onApply()
+{
+  if ( getSMESHGUI()->isActiveStudyLocked())
+    return false;
+
+  // Verify validity of group name
+  if ( getName() == "" ) 
+  {
+    SUIT_MessageBox::information(this, tr("SMESH_INSUFFICIENT_DATA"),
+                                 SMESHGUI_GroupOpDlg::tr("EMPTY_NAME"));
+    return false;
+  }
+
+  if ( myGroups1.isEmpty() || myGroups2.isEmpty() )
+  {
+    SUIT_MessageBox::information( this, tr("SMESH_INSUFFICIENT_DATA"),
+                                  SMESHGUI_GroupOpDlg::tr("INCORRECT_ARGUMENTS") );
+    return false;
+  }
+
+  QList<SMESH::SMESH_GroupBase_var> aGroups = myGroups1;
+  QList<SMESH::SMESH_GroupBase_var>::iterator anIter;
+  for ( anIter = myGroups2.begin(); anIter != myGroups2.end(); ++anIter )
+    aGroups.append( *anIter );
+
+  if ( !isValid( aGroups ) )
+    return false;
+
+  SMESH::SMESH_Mesh_var aMesh = myGroups1.first()->GetMesh();
+  QString aName = getName();
+  
+  bool aRes = false;
+  try
+  {
+    SMESH::ListOfGroups_var aList1 = convert( myGroups1 );
+    SMESH::ListOfGroups_var aList2 = convert( myGroups2 );
+    SMESH::SMESH_Group_var aNewGrp = 
+      aMesh->CutListOfGroups( aList1, aList2, aName.toLatin1().constData() );
+    if ( !CORBA::is_nil( aNewGrp ) )
+    {
+      aNewGrp->SetColor(  getColor() );
+      aRes = true;
+    }
+  }
+  catch( ... )
+  {
+    aRes = false;
+  }
+
+  if ( aRes ) 
+  {
+    getSMESHGUI()->updateObjBrowser(true);
+    reset();
+    return true;
+  } 
+  else 
+  {
+    SUIT_MessageBox::critical(this, tr("SMESH_ERROR"),
+			      tr("SMESH_OPERATION_FAILED"));
+    return false;
+  }
+}
+
+/*!
+  \brief SLOT, called when selection is changed, updates corresponding GUI controls
+*/
+void SMESHGUI_CutGroupsDlg::onSelectionDone()
+{
+  QStringList aNames;
+  if ( myBtn2->isChecked() )
+  {
+    getSelectedGroups( myGroups2, aNames );
+    myListWg2->clear();
+    myListWg2->addItems( aNames );
+  }
+  else 
+  {
+    getSelectedGroups( myGroups1, aNames );
+    myListWg1->clear();
+    myListWg1->addItems( aNames );
+  }
+}
+
+// === === === === === === === === === === === === === === === === === === === === === 
+
+/*!
+  \brief Constructor
+  \param theModule module
+*/
+SMESHGUI_DimGroupDlg::SMESHGUI_DimGroupDlg( SMESHGUI* theModule )
+: SMESHGUI_GroupOpDlg( theModule )
+{
+  setWindowTitle( tr( "CREATE_GROUP_OF_UNDERLYING_ELEMS" ) );
+  setHelpFileName( "creating_groups_page.html#gui_create_dim_group" );
+
+  QGroupBox* anArgGrp = getArgGrp();
+
+  QLabel* aLbl = new QLabel( tr( "ELEMENTS_TYPE" ), anArgGrp );
+  
+  myCombo = new QComboBox( anArgGrp );
+  static QStringList anItems;
+  if ( anItems.isEmpty() )
+  {
+    anItems.append( tr( "NODE" ) );
+    anItems.append( tr( "EDGE" ) );
+    anItems.append( tr( "FACE" ) );
+    anItems.append( tr( "VOLUME" ) );
+  }
+  myCombo->addItems( anItems );
+  myCombo->setSizePolicy( QSizePolicy( QSizePolicy::Expanding, QSizePolicy::Fixed ) );
+  
+  myListWg = new QListWidget( anArgGrp );
+
+  // layout
+  QGridLayout* aLay = new QGridLayout( anArgGrp );
+  aLay->setSpacing( SPACING );
+  aLay->addWidget( aLbl, 0, 0 );
+  aLay->addWidget( myCombo, 0, 1 );
+  aLay->addWidget( myListWg, 1, 0, 1, 2 );
+}
+
+/*!
+  \brief Destructor
+*/
+SMESHGUI_DimGroupDlg::~SMESHGUI_DimGroupDlg()
+{
+}
+
+/*!
+  \brief This virtual method redefined from the base class resets state 
+  of the dialog, initializes its fields with default value, etc. 
+*/
+void SMESHGUI_DimGroupDlg::reset()
+{
+  SMESHGUI_GroupOpDlg::reset();
+  myListWg->clear();
+  myGroups.clear();
+}
+
+/*!
+  \brief Gets elements type
+  \return elements type
+  \sa setElementType()
+*/
+SMESH::ElementType SMESHGUI_DimGroupDlg::getElementType() const
+{
+  return (SMESH::ElementType)( myCombo->currentIndex() + 1 );
+}
+
+/*!
+  \brief Sets elements type
+  \param theElemType elements type
+  \sa getElementType()
+*/
+void SMESHGUI_DimGroupDlg::setElementType( const SMESH::ElementType& theElemType )
+{
+  myCombo->setCurrentIndex( theElemType - 1 );
+}
+
+/*!
+  \brief SLOT called when apply button is pressed performs operation
+  \return TRUE if operation has been completed successfully, FALSE otherwise
+*/
+bool SMESHGUI_DimGroupDlg::onApply()
+{
+  if ( getSMESHGUI()->isActiveStudyLocked())
+    return false;
+
+  // Verify validity of group name
+  if ( getName() == "" ) 
+  {
+    SUIT_MessageBox::information(this, tr("SMESH_INSUFFICIENT_DATA"),
+                                 SMESHGUI_GroupOpDlg::tr("EMPTY_NAME"));
+    return false;
+  }
+
+  if ( !isValid( myGroups ) )
+    return false;
+
+  SMESH::SMESH_Mesh_var aMesh = myGroups.first()->GetMesh();
+  QString aName = getName();
+  
+  bool aRes = false;
+  try
+  {
+    SMESH::ListOfGroups_var aList = convert( myGroups );
+    SMESH::ElementType anElemType = getElementType();
+    SMESH::SMESH_Group_var aNewGrp = 
+      aMesh->CreateDimGroup( aList, anElemType, aName.toLatin1().constData() );
+    if ( !CORBA::is_nil( aNewGrp ) )
+    {
+      aNewGrp->SetColor(  getColor() );
+      aRes = true;
+    }
+  }
+  catch( ... )
+  {
+    aRes = false;
+  }
+
+  if ( aRes ) 
+  {
+    getSMESHGUI()->updateObjBrowser(true);
+    reset();
+    return true;
+  } 
+  else 
+  {
+    SUIT_MessageBox::critical(this, tr("SMESH_ERROR"),
+			      tr("SMESH_OPERATION_FAILED"));
+    return false;
+  }
+}
+
+/*!
+  \brief SLOT, called when selection is changed, updates corresponding GUI controls
+*/
+void SMESHGUI_DimGroupDlg::onSelectionDone()
+{
+  QStringList aNames;
+  getSelectedGroups( myGroups, aNames );
+  myListWg->clear();
+  myListWg->addItems( aNames );
+}
+
+

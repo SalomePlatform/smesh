@@ -13,13 +13,13 @@ belong to one and the same mesh.
 
 <br>
 \anchor union_anchor
-<h2>Union of two groups</h2>
+<h2>Union of groups</h2>
 
 This operation allows to create a new group in such a way that all
 mesh elements that are present in the initial groups will be added to
 the new one.
 
-<em>To union two groups:</em>
+<em>To union groups:</em>
 <ol>
 <li>In the \b Mesh menu select the <b>Union Groups</b> item. The following
 dialog box will appear:
@@ -27,7 +27,7 @@ dialog box will appear:
 \image html uniongroups.png
 
 In this dialog box you should specify the name of the resulting group
-and two groups which will be united.
+and set of groups which will be united.
 
 For example, we have two groups Group1 and Group2. 
 \n The result of their \b Union will be Group12:
@@ -41,21 +41,21 @@ For example, we have two groups Group1 and Group2.
 \image html image135.gif
 <center>Group12</center>
 </li>
-<li>Click the \b Ok or \b Apply button to confirm creation of the group.</li>
+<li>Click the \b Apply or <b>Apply and Close</b> button to confirm creation of the group.</li>
 </ol>
 
 <b>See Also</b> a sample TUI Script of a 
-\ref tui_union_of_two_groups "Union of two Groups" operation.
+\ref tui_union_of_groups "Union of Groups" operation.
 
 <br>
 \anchor intersection_anchor
-<h2>Intersection of two groups</h2>
+<h2>Intersection of groups</h2>
 
 This operation allows to create a new group in such a way that all
-mesh elements that are present in both initial groups are added to the
+mesh elements that are present in all initial groups together are added to the
 new one.
 
-<em>To intersect two groups:</em>
+<em>To intersect groups:</em>
 <ol>
 <li>In the \b Mesh menu select the <b>Intersect Groups</b> item. The
 following dialog box will appear:
@@ -63,7 +63,7 @@ following dialog box will appear:
 \image html intersectgroups.png
 
 In this dialog box you should specify the name of the resulting group
-and two groups which will be intersected.
+and set of groups which will be intersected.
 
 For example, we have two groups Group1 and Group2. 
 \n The result of their \b Intersection will be Group12a:
@@ -77,21 +77,21 @@ For example, we have two groups Group1 and Group2.
 \image html image136.gif
 <center>Group12a</center>
 </li>
-<li>Click the \b Ok or \b Apply button to confirm creation of the group.</li>
+<li>Click the \b Apply or <b>Apply and Close</b> button to confirm creation of the group.</li>
 </ol>
 
 <b>See Also</b> a sample TUI Script of an  
-\ref tui_intersection_of_two_groups "Intersection of two Groups" operation.  
+\ref tui_intersection_of_groups "Intersection of Groups" operation.  
 
 <br>
 \anchor cut_anchor
-<h2>Cut of two groups</h2>
+<h2>Cut of groups</h2>
 
 This operation allows to create a new group in such a way that all
-mesh elements that are present in the main group but are absent in the
-tool group are added to the new one.
+mesh elements that are present in the main groups but are absent in the
+tool groups are added to the new one.
 
-<em>To cut two groups:</em>
+<em>To cut groups:</em>
 <ol>
 <li>In the \b Mesh menu select the <b>Cut Groups</b> item. The
 following dialog box will appear:
@@ -99,7 +99,7 @@ following dialog box will appear:
 \image html cutgroups.png
 
 In this dialog box you should specify the name of the resulting group
-and two groups which will be cut.
+and groups which will be cut.
 
 For example, we have two groups Group1 and Group2. 
 \n The result of their \b Cut will be Group12b:
@@ -113,11 +113,11 @@ For example, we have two groups Group1 and Group2.
 \image html image137.gif
 <center>Group12b</center>
 </li>
-<li>Click the \b Ok or \b Apply button to confirm creation of the
+<li>Click the \b Apply or <b>Apply and Close</b> button to confirm creation of the
 group.</li>
 </ol>
 
 <b>See Also</b> a sample TUI Script of a 
-\ref tui_cut_of_two_groups "Cut of two Groups" operation.  
+\ref tui_cut_of_groups "Cut of Groups" operation.  
 
 */

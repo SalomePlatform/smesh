@@ -2,6 +2,23 @@
 
 \page constructing_submeshes_page Constructing submeshes
 
+Submesh is a mesh on a geometrical subobject created with algorithms
+and/or hypotheses other than the algorithms and hypotheses assigned to
+the parent mesh on the parent object.
+<br><br>
+If a geometrical subobject belongs to several geometrical objects
+having different meshes or submeshes, it will be meshed with the
+hypotheses of a submesh of a lower dimension.<br>
+For example, a face of a box is meshed with a submesh using algorithms
+and hypotheses other than the parent mesh on the whole box. The face
+and the box share four edges, which will be meshed with algorithms and
+hypotheses of the submesh on the face, because the face is a 2D object
+while the box is a 3D object.  <br>
+ If the dimensions are the same, an arbitrary algorithm/hypothesis
+ will be used. This means that an edge shared by two faces each having
+ its own different submesh, will be meshed using algorithms and
+ hypotheses of any of the two, chosen randomly. <br>
+
 \n Construction of a submesh consists of:
 <ul>
 <li>Selecting a mesh which will encapsulate your submesh</li>
@@ -14,11 +31,11 @@ at computation of this submesh</li>
 
 <br><em>To construct a submesh:</em>
 \par
-From the \b Mesh menu select <b>Local Hyp.</b> or click <em>"Create
+From the \b Mesh menu select <b>Create Submesh</b> or click <em>"Create
 Sum-mesh"</em> button in the toolbar.
 
 \image html image33.gif
-<center><em>"Create Sum-mesh" button</em></center>
+<center><em>"Create Submesh" button</em></center>
 
 \par
 The following dialog box will appear:

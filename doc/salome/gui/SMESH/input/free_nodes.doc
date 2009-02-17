@@ -1,0 +1,16 @@
+/*!
+
+\page free_nodes_page Free nodes
+
+\n This mesh quality control highlights nodes which are not connected
+to any  mesh element. Free nodes are shown with a color differs from
+the color of nodes.
+
+\image html free_nodes.png
+<center>In this picture some nodes don't connected to a mesh element as
+a result of deleting elements and adding several isolated nodes.
+
+<br><b>See Also</b> a sample TUI Script of a 
+\ref tui_free_nodes "Free Nodes quality control" operation.  
+
+*/

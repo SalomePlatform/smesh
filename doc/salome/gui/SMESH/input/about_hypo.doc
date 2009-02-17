@@ -13,30 +13,42 @@ generate a rough or a more refined mesh or submesh.
 In \b MESH there are the following Basic Hypotheses (to introduce
 them, you operate numerical values):
 <ul>
-<li>\ref a1d_meshing_hypo_page "1D Hypotheses" (for meshing of 
+<li>\subpage a1d_meshing_hypo_page "1D Hypotheses" (for meshing of 
 <b>edges</b>):</li>
 <ul>
 <li>\ref arithmetic_1d_anchor "Arithmetic 1D"</li>
 <li>\ref average_length_anchor "Average Length"</li>
+<li>\ref max_length_anchor "Max Size"</li>
 <li>\ref deflection_1d_anchor "Deflection 1D"</li>
 <li>\ref number_of_segments_anchor "Number of segments"</li>
 <li>\ref start_and_end_length_anchor "Start and end length"</li>
 <li>\ref automatic_length_anchor "Automatic Length"</li>
 </ul>
-<li>\ref a2d_meshing_hypo_page "2D Hypotheses" (for meshing of <b>faces</b>):</li>
+<li>\subpage a2d_meshing_hypo_page "2D Hypotheses" (for meshing of <b>faces</b>):</li>
 <ul>
 <li>\ref max_element_area_anchor "Max Element Area"</li>
 <li>\ref length_from_edges_anchor "Length from Edges"</li>
 <li>\ref quadrangle_preference_anchor "Quadrangle Preference"</li>
+<li>\ref triangle_preference_anchor "Triangle Preference"</li>
 </ul>
 <li>3D Hypothesis (for meshing of <b>volumes</b>):</li>
 <ul>
-<li>\ref max_element_volume_hypo_page "Max Element Volume"</li>
+<li>\subpage max_element_volume_hypo_page "Max Element Volume"</li>
 </ul>
 </ul>
 
-There also exist some 
-\ref additional_hypo_page "Additional Hypotheses":
+Some hypotheses are strictly combined with plug-in
+meshers and thus, work only with definite algorithms.
+<ul>
+<li>\subpage netgen_2d_3d_hypo_page</li> - work with NetGen algorithm.
+<li>\subpage ghs3d_hypo_page</li> - works with GHS3D algorithm.
+<li>\subpage ghs3dprl_hypo_page</li> - works with GHS3DPRL (tepal) algorithm.
+<li>\subpage blsurf_hypo_page</li> - works with BLSURF algorithm.
+</ul>
+
+There also exist  
+\subpage additional_hypo_page "Additional Hypotheses" used together
+with other hypotheses:
 <ul>
 <li>Propagation of 1D Hypothesis on opposite edges</li>
 <li>Non conform mesh allowed</li>
@@ -48,5 +60,6 @@ The choice of a hypothesis depends on:
 <li>the geometrical object (shape) which will be meshed</li>
 <li>the algorithm, which will be selected for meshing of this geometrical object (shape)</li>
 </ul>
+
  
 */

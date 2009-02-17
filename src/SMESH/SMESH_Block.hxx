@@ -1,27 +1,28 @@
-//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
-// 
-//  This library is free software; you can redistribute it and/or 
-//  modify it under the terms of the GNU Lesser General Public 
-//  License as published by the Free Software Foundation; either 
-//  version 2.1 of the License. 
-// 
-//  This library is distributed in the hope that it will be useful, 
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of 
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
-//  Lesser General Public License for more details. 
-// 
-//  You should have received a copy of the GNU Lesser General Public 
-//  License along with this library; if not, write to the Free Software 
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
-// 
-// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
-
+//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//
+//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+//
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
+//
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
+//
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
 // File      : SMESH_Block.hxx
 // Created   : Tue Nov 30 12:42:18 2004
 // Author    : Edward AGAPOV (eap)
-
-
+//
 #ifndef SMESH_Block_HeaderFile
 #define SMESH_Block_HeaderFile
 
@@ -115,10 +116,10 @@ class SMESH_EXPORT SMESH_Block: public math_FunctionSetWithDerivatives
   // ShapeIndex( ID_Ex00 ) == 0
   // ShapeIndex( ID_Ex10 ) == 1
 
-  static void GetFaceEdgesIDs (const int faceID, vector< int >& edgeVec );
+  static void GetFaceEdgesIDs (const int faceID, std::vector< int >& edgeVec );
   // return edges IDs of a face in the order u0, u1, 0v, 1v
 
-  static void GetEdgeVertexIDs (const int edgeID, vector< int >& vertexVec );
+  static void GetEdgeVertexIDs (const int edgeID, std::vector< int >& vertexVec );
   // return vertex IDs of an edge
 
   static int GetCoordIndOnEdge (const int theEdgeID)
@@ -136,7 +137,7 @@ class SMESH_EXPORT SMESH_Block: public math_FunctionSetWithDerivatives
   static int GetShapeIDByParams ( const gp_XYZ& theParams );
   // define an id of the block sub-shape by point parameters
 
-  static ostream& DumpShapeID (const int theBlockShapeID, ostream& stream);
+  static std::ostream& DumpShapeID (const int theBlockShapeID, std::ostream& stream);
   // DEBUG: dump an id of a block sub-shape
 
 
@@ -161,7 +162,7 @@ class SMESH_EXPORT SMESH_Block: public math_FunctionSetWithDerivatives
   bool LoadMeshBlock(const SMDS_MeshVolume*        theVolume,
                      const int                     theNode000Index,
                      const int                     theNode001Index,
-                     vector<const SMDS_MeshNode*>& theOrderedNodes);
+                     std::vector<const SMDS_MeshNode*>& theOrderedNodes);
   // prepare to work with theVolume and
   // return nodes in theVolume corners in the order of TShapeID enum
 
@@ -225,7 +226,7 @@ public:
   // return coordinates of a point in shell
 
   static bool ShellPoint(const gp_XYZ&         theParams,
-                         const vector<gp_XYZ>& thePointOnShape,
+                         const std::vector<gp_XYZ>& thePointOnShape,
                          gp_XYZ&               thePoint );
   // computes coordinates of a point in shell by points on sub-shapes
   // and point parameters.
@@ -377,7 +378,7 @@ public:
   gp_XYZ   myParam; // the best parameters guess
   double   myValues[ 4 ]; // values computed at myParam: square distance and 3 derivatives
 
-  typedef pair<gp_XYZ,gp_XYZ> TxyzPair;
+  typedef std::pair<gp_XYZ,gp_XYZ> TxyzPair;
   TxyzPair my3x3x3GridNodes[ 27 ]; // to compute the first param guess
   bool     myGridComputed;
 };

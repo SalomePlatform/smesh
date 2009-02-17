@@ -1,15 +1,32 @@
 #!/bin/bash
-
+#  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+#
+#  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+#  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+#
+#  This library is free software; you can redistribute it and/or
+#  modify it under the terms of the GNU Lesser General Public
+#  License as published by the Free Software Foundation; either
+#  version 2.1 of the License.
+#
+#  This library is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+#  Lesser General Public License for more details.
+#
+#  You should have received a copy of the GNU Lesser General Public
+#  License along with this library; if not, write to the Free Software
+#  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+#
+#  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 # Tool for updating list of .in file for the SALOME project 
 # and regenerating configure script
-#
 # Author : Marc Tajchman - CEA
 # Date : 10/10/2002
 # Modified by : Alexander BORODIN (OCN) - autotools usage
 # $Header$
 #
-
 ORIG_DIR=`pwd`
 CONF_DIR=`echo $0 | sed -e "s,[^/]*$,,;s,/$,,;s,^$,.,"`
 SMESH_WITH_GUI="yes"
@@ -32,10 +49,10 @@ fi
 for option
 do
   case $option in
-      -with-ihm | --with-ihm)
+      -with-gui | --with-gui)
           SMESH_WITH_GUI="yes"
           break;;
-      -without-ihm | --without-ihm | -with-ihm=no | --with-ihm=no)
+      -without-gui | --without-gui | -with-gui=no | --with-gui=no)
           SMESH_WITH_GUI="no"
           break;;
   esac

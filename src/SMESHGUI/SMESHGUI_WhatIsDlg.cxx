@@ -1,6 +1,6 @@
-//  SMESH SMESHGUI : GUI for SMESH component
+//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
 //  This library is free software; you can redistribute it and/or
@@ -17,19 +17,16 @@
 //  License along with this library; if not, write to the Free Software
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+// SMESH SMESHGUI : GUI for SMESH component
+// File   : SMESHGUI_WhatIsDlg.cxx
+// Author : Vladimir TURIN, Open CASCADE S.A.S.
+// SMESH includes
 //
-//
-//  File   : SMESHGUI_WhatIsDlg.cxx
-//  Author : Vladimir TURIN
-//  Module : SMESH
-//  $Header: 
-
 #include "SMESHGUI_WhatIsDlg.h"
 
 #include "SMESHGUI.h"
-#include "SMESHGUI_SpinBox.h"
 #include "SMESHGUI_Utils.h"
 #include "SMESHGUI_VTKUtils.h"
 #include "SMESHGUI_MeshUtils.h"
@@ -41,161 +38,129 @@
 #include "SMDS_Mesh.hxx"
 #include "SMDS_VolumeTool.hxx"
 
-#include "SUIT_Desktop.h"
-#include "SUIT_ResourceMgr.h"
-#include "SUIT_Session.h"
-#include "SUIT_MessageBox.h"
+// SALOME GUI includes
+#include <SUIT_Desktop.h>
+#include <SUIT_ResourceMgr.h>
+#include <SUIT_Session.h>
+#include <SUIT_MessageBox.h>
 
-#include "LightApp_Application.h"
+#include <LightApp_Application.h>
+#include <LightApp_SelectionMgr.h>
 
-#include "SVTK_ViewModel.h"
-#include "SVTK_Selection.h"
-#include "SVTK_ViewWindow.h"
-#include "SVTK_Selector.h"
-#include "SALOME_ListIO.hxx"
+#include <SVTK_ViewModel.h>
+#include <SVTK_Selection.h>
+#include <SVTK_ViewWindow.h>
+#include <SALOME_ListIO.hxx>
 
-#include "utilities.h"
-
-// OCCT Includes
+// OCCT includes
 #include <TColStd_MapOfInteger.hxx>
-#include <TColStd_IndexedMapOfInteger.hxx>
 #include <gp_XYZ.hxx>
 
-// QT Includes
-#include <qapplication.h>
-#include <qbuttongroup.h>
-#include <qgroupbox.h>
-#include <qlabel.h>
-#include <qlineedit.h>
-#include <qpushbutton.h>
-#include <qradiobutton.h>
-#include <qcheckbox.h>
-#include <qlayout.h>
-#include <qspinbox.h>
-#include <qpixmap.h>
-#include <qtextbrowser.h>
+// Qt includes
+#include <QButtonGroup>
+#include <QGroupBox>
+#include <QLabel>
+#include <QLineEdit>
+#include <QPushButton>
+#include <QRadioButton>
+#include <QTextBrowser>
+#include <QHBoxLayout>
+#include <QVBoxLayout>
+#include <QGridLayout>
+#include <QKeyEvent>
 
-// IDL Headers
-#include "SALOMEconfig.h"
+// IDL includes
+#include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_Group)
-#include CORBA_SERVER_HEADER(SMESH_MeshEditor)
 
-using namespace std;
+#define SPACING 6
+#define MARGIN  11
 
 //=================================================================================
 // class    : SMESHGUI_WhatIsDlg()
 // purpose  :
 //=================================================================================
-SMESHGUI_WhatIsDlg::SMESHGUI_WhatIsDlg( SMESHGUI* theModule, const char* name,
-					bool modal, WFlags fl)
-  : QDialog( SMESH::GetDesktop( theModule ), name, modal, WStyle_Customize | WStyle_NormalBorder |
-	     WStyle_Title | WStyle_SysMenu | Qt::WDestructiveClose),
+SMESHGUI_WhatIsDlg::SMESHGUI_WhatIsDlg( SMESHGUI* theModule )
+  : QDialog( SMESH::GetDesktop( theModule ) ),
     mySMESHGUI( theModule ),
     mySelectionMgr( SMESH::GetSelectionMgr( theModule ) )
 {
-  if (!name)
-    setName("SMESHGUI_WhatIsDlg");
-  resize(300, 500);
-  setCaption(tr("SMESH_WHAT_IS_TITLE"));
-  setSizeGripEnabled(TRUE);
-  SMESHGUI_WhatIsDlgLayout = new QGridLayout(this);
-  SMESHGUI_WhatIsDlgLayout->setSpacing(6);
-  SMESHGUI_WhatIsDlgLayout->setMargin(11);
+  setModal( false );
+  setAttribute( Qt::WA_DeleteOnClose, true );
+  setWindowTitle(tr("SMESH_WHAT_IS_TITLE"));
+  setSizeGripEnabled(true);
+  QVBoxLayout* SMESHGUI_WhatIsDlgLayout = new QVBoxLayout(this);
+  SMESHGUI_WhatIsDlgLayout->setSpacing(SPACING);
+  SMESHGUI_WhatIsDlgLayout->setMargin(MARGIN);
   
   /***************************************************************/
-  GroupMesh = new QButtonGroup(this, "GroupSelections");
-  GroupMesh->setSizePolicy(QSizePolicy((QSizePolicy::SizeType)5, (QSizePolicy::SizeType)0, 0, 0, GroupMesh->sizePolicy().hasHeightForWidth()));
-  GroupMesh->setTitle(tr(""));
-  GroupMesh->setColumnLayout(0, Qt::Vertical);
-  GroupMesh->layout()->setSpacing(0);
-  GroupMesh->layout()->setMargin(0);
-  GroupMeshLayout = new QGridLayout(GroupMesh->layout());
-  GroupMeshLayout->setAlignment(Qt::AlignTop);
-  GroupMeshLayout->setSpacing(6);
-  GroupMeshLayout->setMargin(11);
-  MeshLabel = new QLabel(GroupMesh, "MeshLabel");
-  MeshLabel->setText(tr("SMESH_NAME"));
-  GroupMeshLayout->addWidget(MeshLabel, 0, 0);
-  MeshName = new QLabel(GroupMesh, "MeshName");
-  MeshName->setText(tr(""));
-  GroupMeshLayout->addWidget(MeshName, 0, 1);
-  SMESHGUI_WhatIsDlgLayout->addWidget(GroupMesh, 0, 0);
+  GroupMesh = new QGroupBox(this);
+  QHBoxLayout* GroupMeshLayout = new QHBoxLayout(GroupMesh);
+  GroupMeshLayout->setSpacing(SPACING);
+  GroupMeshLayout->setMargin(MARGIN);
+
+  MeshLabel = new QLabel(tr("SMESH_NAME"), GroupMesh);
+  GroupMeshLayout->addWidget(MeshLabel);
+  MeshName = new QLineEdit(GroupMesh);
+  MeshName->setReadOnly(true);
+  GroupMeshLayout->addWidget(MeshName);
 
   /***************************************************************/
-  GroupSelections = new QButtonGroup(this, "GroupSelections");
-  GroupSelections->setSizePolicy(QSizePolicy((QSizePolicy::SizeType)5, (QSizePolicy::SizeType)0, 0, 0, GroupSelections->sizePolicy().hasHeightForWidth()));
-  GroupSelections->setTitle(tr("ENTITY_TYPE" ));
-  GroupSelections->setExclusive(TRUE);
-  GroupSelections->setColumnLayout(0, Qt::Vertical);
-  GroupSelections->layout()->setSpacing(0);
-  GroupSelections->layout()->setMargin(0);
-  GroupSelectionsLayout = new QGridLayout(GroupSelections->layout());
-  GroupSelectionsLayout->setAlignment(Qt::AlignTop);
-  GroupSelectionsLayout->setSpacing(6);
-  GroupSelectionsLayout->setMargin(11);
-  RadioButtonNodes = new QRadioButton(GroupSelections, "RadioButtonNodes");
-  RadioButtonNodes->setText(tr("SMESH_NODES"));
-  GroupSelectionsLayout->addWidget(RadioButtonNodes, 0, 0);
-  RadioButtonElements = new QRadioButton(GroupSelections, "RadioButtonElements");
-  RadioButtonElements->setText(tr("SMESH_ELEMENTS"));
-  GroupSelectionsLayout->addWidget(RadioButtonElements, 0, 1 );
-  SMESHGUI_WhatIsDlgLayout->addWidget(GroupSelections, 1, 0);
+  GroupSelections = new QGroupBox(tr("ENTITY_TYPE"), this);
+  QButtonGroup* GroupSel = new QButtonGroup(this);
+  QHBoxLayout* GroupSelectionsLayout = new QHBoxLayout(GroupSelections);
+  GroupSelectionsLayout->setSpacing(SPACING);
+  GroupSelectionsLayout->setMargin(MARGIN);
+
+  RadioButtonNodes = new QRadioButton(tr("SMESH_NODES"), GroupSelections);
+  GroupSelectionsLayout->addWidget(RadioButtonNodes);
+  GroupSel->addButton(RadioButtonNodes, 0);
+  RadioButtonElements = new QRadioButton(tr("SMESH_ELEMENTS"), GroupSelections);
+  GroupSelectionsLayout->addWidget(RadioButtonElements);
+  GroupSel->addButton(RadioButtonElements, 1);
 
   /***************************************************************/
-  GroupArguments = new QGroupBox(this, "GroupArguments");
-  GroupArguments->setTitle(tr("SMESH_INFORMATION"));
-  GroupArguments->setColumnLayout(0, Qt::Vertical);
-  GroupArguments->layout()->setSpacing(0);
-  GroupArguments->layout()->setMargin(0);
-  GroupArgumentsLayout = new QGridLayout(GroupArguments->layout());
-  GroupArgumentsLayout->setAlignment(Qt::AlignTop);
-  GroupArgumentsLayout->setSpacing(6);
-  GroupArgumentsLayout->setMargin(11);
+  GroupArguments = new QGroupBox(tr("SMESH_INFORMATION"), this);
+  QGridLayout* GroupArgumentsLayout = new QGridLayout(GroupArguments);
+  GroupArgumentsLayout->setSpacing(SPACING);
+  GroupArgumentsLayout->setMargin(MARGIN);
 
   // Controls for elements selection
-  TextLabelElements  = new QLabel(GroupArguments, "TextLabelElements");
-  TextLabelElements->setText(tr("SMESH_ID_ELEMENTS" ));
-  TextLabelElements->setFixedWidth(74);
+  TextLabelElements  = new QLabel(tr("SMESH_ID_ELEMENTS"), GroupArguments);
   GroupArgumentsLayout->addWidget(TextLabelElements, 0, 0);
 
-  LineEditElements  = new QLineEdit(GroupArguments, "LineEditElements");
-  LineEditElements->setValidator(new SMESHGUI_IdValidator(this, "validator"));
-  GroupArgumentsLayout->addMultiCellWidget(LineEditElements, 0, 0, 2, 7);
+  LineEditElements  = new QLineEdit(GroupArguments);
+  LineEditElements->setValidator(new SMESHGUI_IdValidator(this));
+  GroupArgumentsLayout->addWidget(LineEditElements, 0, 1);
 
   // information text browser
-  Info = new QTextBrowser(GroupArguments, "Info");
-  Info->setHScrollBarMode(QScrollView::AlwaysOff);
-  Info->setVScrollBarMode(QScrollView::AlwaysOff);
-  GroupArgumentsLayout->addMultiCellWidget(Info, 1, 1, 0, 7);
-
-  SMESHGUI_WhatIsDlgLayout->addWidget(GroupArguments, 2, 0);
+  Info = new QTextBrowser(GroupArguments);
+  Info->setMinimumSize(200, 150);
+  GroupArgumentsLayout->addWidget(Info, 1, 0, 1, 2);
 
   /***************************************************************/
-  GroupButtons = new QGroupBox(this, "GroupButtons");
-  GroupButtons->setSizePolicy(QSizePolicy((QSizePolicy::SizeType)7, (QSizePolicy::SizeType)0, 0, 0, GroupButtons->sizePolicy().hasHeightForWidth()));
-  GroupButtons->setTitle(tr("" ));
-  GroupButtons->setColumnLayout(0, Qt::Vertical);
-  GroupButtons->layout()->setSpacing(0);
-  GroupButtons->layout()->setMargin(0);
-  GroupButtonsLayout = new QGridLayout(GroupButtons->layout());
-  GroupButtonsLayout->setAlignment(Qt::AlignTop);
-  GroupButtonsLayout->setSpacing(6);
-  GroupButtonsLayout->setMargin(11);
-  buttonHelp = new QPushButton(GroupButtons, "buttonHelp");
-  buttonHelp->setText(tr("SMESH_BUT_HELP" ));
-  buttonHelp->setAutoDefault(TRUE);
-  GroupButtonsLayout->addWidget(buttonHelp, 0, 3);
-  QSpacerItem* spacer_9 = new QSpacerItem(20, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
-  GroupButtonsLayout->addItem(spacer_9, 0, 1);
-  buttonOk = new QPushButton(GroupButtons, "buttonOk");
-  buttonOk->setText(tr("SMESH_BUT_OK" ));
-  buttonOk->setAutoDefault(TRUE);
-  buttonOk->setDefault(TRUE);
-  GroupButtonsLayout->addWidget(buttonOk, 0, 0);
-  SMESHGUI_WhatIsDlgLayout->addWidget(GroupButtons, 3, 0);
+  GroupButtons = new QGroupBox(this);
+  QHBoxLayout* GroupButtonsLayout = new QHBoxLayout(GroupButtons);
+  GroupButtonsLayout->setSpacing(SPACING);
+  GroupButtonsLayout->setMargin(MARGIN);
 
-  GroupArguments->show();
-  RadioButtonNodes->setChecked(TRUE);
+  buttonOk = new QPushButton(tr("SMESH_BUT_OK"), GroupButtons);
+  buttonOk->setAutoDefault(true);
+  buttonOk->setDefault(true);
+  buttonHelp = new QPushButton(tr("SMESH_BUT_HELP"), GroupButtons);
+  buttonHelp->setAutoDefault(true);
+
+  GroupButtonsLayout->addWidget(buttonOk);
+  GroupButtonsLayout->addSpacing(10);
+  GroupButtonsLayout->addStretch();
+  GroupButtonsLayout->addWidget(buttonHelp);
+
+  SMESHGUI_WhatIsDlgLayout->addWidget(GroupMesh);
+  SMESHGUI_WhatIsDlgLayout->addWidget(GroupSelections);
+  SMESHGUI_WhatIsDlgLayout->addWidget(GroupArguments);
+  SMESHGUI_WhatIsDlgLayout->addWidget(GroupButtons);
+
+  RadioButtonNodes->setChecked(true);
 
   mySelector = (SMESH::GetViewWindow( mySMESHGUI ))->GetSelector();
 
@@ -205,28 +170,27 @@ SMESHGUI_WhatIsDlg::SMESHGUI_WhatIsDlg( SMESHGUI* theModule, const char* name,
   SMESH_TypeFilter* aMeshOrSubMeshFilter = new SMESH_TypeFilter (MESHorSUBMESH);
   SMESH_TypeFilter* aSmeshGroupFilter    = new SMESH_TypeFilter (GROUP);
 
-  QPtrList<SUIT_SelectionFilter> aListOfFilters;
+  QList<SUIT_SelectionFilter*> aListOfFilters;
   if (aMeshOrSubMeshFilter) aListOfFilters.append(aMeshOrSubMeshFilter);
   if (aSmeshGroupFilter)    aListOfFilters.append(aSmeshGroupFilter);
 
   myMeshOrSubMeshOrGroupFilter =
     new SMESH_LogicalFilter(aListOfFilters, SMESH_LogicalFilter::LO_OR);
 
-  myHelpFileName = "/files/viewing_mesh_info.htm#element_infos";
+  myHelpFileName = "mesh_infos_page.html#mesh_element_info_anchor";
 
   Init();
 
   /* signals and slots connections */
-  connect(buttonOk, SIGNAL(clicked()),     this, SLOT(ClickOnOk()));
-  connect(buttonHelp, SIGNAL(clicked()),   this, SLOT(ClickOnHelp()));
-  connect(GroupSelections, SIGNAL(clicked(int)), SLOT(SelectionsClicked(int)));
+  connect(buttonOk,         SIGNAL(clicked()),     this, SLOT(ClickOnOk()));
+  connect(buttonHelp,       SIGNAL(clicked()),     this, SLOT(ClickOnHelp()));
+  connect(GroupSel,         SIGNAL(buttonClicked(int)), SLOT(SelectionsClicked(int)));
 
-  connect(mySMESHGUI, SIGNAL (SignalDeactivateActiveDialog()), this, SLOT(DeactivateActiveDialog()));
-  connect(mySelectionMgr, SIGNAL(currentSelectionChanged()),   this, SLOT(SelectionIntoArgument()));
+  connect(mySMESHGUI,       SIGNAL(SignalDeactivateActiveDialog()), this, SLOT(DeactivateActiveDialog()));
+  connect(mySelectionMgr,   SIGNAL(currentSelectionChanged()),      this, SLOT(SelectionIntoArgument()));
   /* to close dialog if study change */
-  connect(mySMESHGUI,       SIGNAL (SignalCloseAllDialogs()), this, SLOT(ClickOnCancel()));
+  connect(mySMESHGUI,       SIGNAL(SignalCloseAllDialogs()),  this, SLOT(ClickOnCancel()));
   connect(LineEditElements, SIGNAL(textChanged(const QString&)),    SLOT(onTextChange(const QString&)));
-  this->show(); /* displays Dialog */
 
   SelectionsClicked(0);
   SelectionIntoArgument();
@@ -238,7 +202,6 @@ SMESHGUI_WhatIsDlg::SMESHGUI_WhatIsDlg( SMESHGUI* theModule, const char* name,
 //=================================================================================
 SMESHGUI_WhatIsDlg::~SMESHGUI_WhatIsDlg()
 {
-  // no need to delete child widgets, Qt does it all for us
 }
 
 //=================================================================================
@@ -334,10 +297,11 @@ void SMESHGUI_WhatIsDlg::ClickOnHelp()
   if (app) 
     app->onHelpContextModule(mySMESHGUI ? app->moduleName(mySMESHGUI->moduleName()) : QString(""), myHelpFileName);
   else {
-    SUIT_MessageBox::warn1(0, QObject::tr("WRN_WARNING"),
-			   QObject::tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
-			   arg(app->resourceMgr()->stringValue("ExternalBrowser", "application")).arg(myHelpFileName),
-			   QObject::tr("BUT_OK"));
+    SUIT_MessageBox::warning(this, tr("WRN_WARNING"),
+			     tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
+			     arg(app->resourceMgr()->stringValue("ExternalBrowser",
+								 "application")).
+			     arg(myHelpFileName));
   }
 }
 
@@ -360,7 +324,7 @@ void SMESHGUI_WhatIsDlg::onTextChange (const QString& theNewText)
     
     TColStd_MapOfInteger newIndices;
 
-    QStringList aListId = QStringList::split(" ", theNewText, false);
+    QStringList aListId = theNewText.split(" ", QString::SkipEmptyParts);
 
     for (int i = 0; i < aListId.count(); i++) {
       const SMDS_MeshElement * e = RadioButtonNodes->isChecked()?
@@ -449,7 +413,7 @@ void SMESHGUI_WhatIsDlg::SelectionIntoArgument()
     anInfo=tr("ENTITY_TYPE") + ": ";
     if(e->GetType() == SMDSAbs_Node) {
       anInfo+=tr("MESH_NODE")+"\n";
-      const SMDS_MeshNode *en = (SMDS_MeshNode*) e;
+      //const SMDS_MeshNode *en = (SMDS_MeshNode*) e; // VSR: not used!
     } else if(e->GetType() == SMDSAbs_Edge) {
       anInfo+=tr("SMESH_EDGE")+"\n";
       anInfo+=tr("SMESH_MESHINFO_TYPE")+": ";
@@ -525,11 +489,11 @@ void SMESHGUI_WhatIsDlg::SelectionIntoArgument()
     gp_XYZ anXYZ(0.,0.,0.);
     SMDS_ElemIteratorPtr nodeIt = e->nodesIterator();
     int nbNodes = 0;
-    for(; nodeIt->more(); nbNodes++) {
+    for( ; nodeIt->more(); nbNodes++) {
       const SMDS_MeshNode* node = static_cast<const SMDS_MeshNode*>( nodeIt->next() );
       anXYZ.Add( gp_XYZ( node->X(), node->Y(), node->Z() ) );
     }
-    anXYZ.Divide(e->NbNodes()) ;
+    anXYZ.Divide(e->NbNodes());
     anInfo+=QString("X=%1\nY=%2\nZ=%3\n").arg(anXYZ.X()).arg(anXYZ.Y()).arg(anXYZ.Z());
     Info->setText(anInfo);
   }
@@ -572,7 +536,7 @@ void SMESHGUI_WhatIsDlg::ActivateThisDialog()
 
   mySMESHGUI->SetActiveDialogBox((QDialog*)this);
 
-  if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+  if ( SMESH::GetViewWindow( mySMESHGUI ))
     SelectionsClicked(RadioButtonNodes->isChecked()?0:1);
 
   SelectionIntoArgument();
@@ -595,7 +559,7 @@ void SMESHGUI_WhatIsDlg::enterEvent (QEvent*)
 void SMESHGUI_WhatIsDlg::closeEvent (QCloseEvent*)
 {
   /* same than click on cancel button */
-  this->ClickOnCancel();
+  ClickOnCancel();
 }
 
 //=======================================================================
@@ -618,9 +582,8 @@ void SMESHGUI_WhatIsDlg::keyPressEvent( QKeyEvent* e )
   if ( e->isAccepted() )
     return;
 
-  if ( e->key() == Key_F1 )
-    {
-      e->accept();
-      ClickOnHelp();
-    }
+  if ( e->key() == Qt::Key_F1 ) {
+    e->accept();
+    ClickOnHelp();
+  }
 }

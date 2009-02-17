@@ -1,32 +1,30 @@
+//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//
+//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+//
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
+//
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
+//
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
 //  SMESH SMESH : implementaion of SMESH idl descriptions
-//
-//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
-// 
-//  This library is free software; you can redistribute it and/or 
-//  modify it under the terms of the GNU Lesser General Public 
-//  License as published by the Free Software Foundation; either 
-//  version 2.1 of the License. 
-// 
-//  This library is distributed in the hope that it will be useful, 
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of 
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
-//  Lesser General Public License for more details. 
-// 
-//  You should have received a copy of the GNU Lesser General Public 
-//  License along with this library; if not, write to the Free Software 
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
-// 
-// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
-//
-//
-//
 // File      : StdMeshers_Projection_2D.cxx
 // Module    : SMESH
 // Created   : Fri Oct 20 11:37:07 2006
 // Author    : Edward AGAPOV (eap)
-
-
+//
 #include "StdMeshers_Projection_2D.hxx"
 
 #include "StdMeshers_ProjectionSource2D.hxx"
@@ -47,6 +45,7 @@
 #include "utilities.h"
 
 #include <BRep_Tool.hxx>
+#include <Bnd_B2d.hxx>
 #include <TopExp.hxx>
 #include <TopExp_Explorer.hxx>
 #include <TopTools_ListIteratorOfListOfShape.hxx>
@@ -294,16 +293,14 @@ namespace {
       // Find a new node connected to nV1 and belonging to edge submesh;
       const SMDS_MeshNode* nE = 0;
       SMESHDS_SubMesh* smDS = sm->GetSubMeshDS();
-      SMDS_ElemIteratorPtr vElems = nV1->GetInverseElementIterator();
+      SMDS_ElemIteratorPtr vElems = nV1->GetInverseElementIterator(SMDSAbs_Face);
       while ( vElems->more() && !nE ) {
         const SMDS_MeshElement* elem = vElems->next();
-        if ( elem->GetType() != SMDSAbs_Face )
-          continue; // new nodes are shared by faces
         int nbNodes = elem->NbNodes();
         if ( elem->IsQuadratic() )
           nbNodes /= 2;
         int iV1 = elem->GetNodeIndex( nV1 );
-        // try next aftre nV1
+        // try next after nV1
         int iE = SMESH_MesherHelper::WrapIndex( iV1 + 1, nbNodes );
         if ( smDS->Contains( elem->GetNode( iE ) ))
           nE = elem->GetNode( iE );
@@ -369,7 +366,7 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
   if ( !_sourceHypo )
     return false;
 
-  SMESH_Mesh * srcMesh = _sourceHypo->GetSourceMesh(); 
+  SMESH_Mesh * srcMesh = _sourceHypo->GetSourceMesh();
   SMESH_Mesh * tgtMesh = & theMesh;
   if ( !srcMesh )
     srcMesh = tgtMesh;
@@ -412,9 +409,28 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
   // Prepare to mapping 
   // --------------------
 
+  SMESH_MesherHelper helper( theMesh );
+  helper.SetSubShape( tgtFace );
+
+  // Check if node projection to a face is needed
+  Bnd_B2d uvBox;
+  SMDS_ElemIteratorPtr faceIt = srcSubMesh->GetSubMeshDS()->GetElements();
+  for ( int nbN = 0; nbN < 3 && faceIt->more();  ) {
+    const SMDS_MeshElement* face = faceIt->next();
+    SMDS_ElemIteratorPtr nodeIt = face->nodesIterator();
+    while ( nodeIt->more() ) {
+      const SMDS_MeshNode* node = static_cast<const SMDS_MeshNode*>( nodeIt->next() );
+      if ( node->GetPosition()->GetTypeOfPosition() == SMDS_TOP_FACE ) {
+        nbN++;
+        uvBox.Add( helper.GetNodeUV( srcFace, node ));
+      }
+    }
+  }
+  const bool toProjectNodes = ( uvBox.IsVoid() || uvBox.SquareExtent() < DBL_MIN );
+
   // Load pattern from the source face
   SMESH_Pattern mapper;
-  mapper.Load( srcMesh, srcFace );
+  mapper.Load( srcMesh, srcFace, toProjectNodes );
   if ( mapper.GetErrorCode() != SMESH_Pattern::ERR_OK )
     return error(COMPERR_BAD_INPUT_MESH,"Can't load mesh pattern from the source face");
 
@@ -484,9 +500,6 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
   SMESH_MeshEditor editor( tgtMesh );
   SMESH_MeshEditor::TListOfListOfNodes groupsOfNodes;
 
-  SMESH_MesherHelper helper( theMesh );
-  helper.SetSubShape( tgtFace );
-
   // Make groups of nodes to merge
 
   // loop on edge and vertex submeshes of a target face
@@ -498,7 +511,7 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
 
     // Sort new and old nodes of a submesh separately
 
-    bool isSeam = helper.IsSeamShape( sm->GetId() );
+    bool isSeam = helper.IsRealSeam( sm->GetId() );
 
     enum { NEW_NODES = 0, OLD_NODES };
     map< double, const SMDS_MeshNode* > u2nodesMaps[2], u2nodesOnSeam;
@@ -520,7 +533,7 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
           continue; // node is already in the map
       }
 
-      // sort nodes on edges by its position
+      // sort nodes on edges by their position
       map< double, const SMDS_MeshNode* > & pos2nodes = u2nodesMaps[isOld ? OLD_NODES : NEW_NODES];
       switch ( node->GetPosition()->GetTypeOfPosition() )
       {
@@ -541,12 +554,13 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
     }
     if ( u2nodesMaps[ NEW_NODES ].size() != u2nodesMaps[ OLD_NODES ].size() )
     {
-      if ( u2nodesMaps[ NEW_NODES ].size() == 0                 &&
-           sm->GetSubShape().ShapeType() == TopAbs_EDGE         &&
-           BRep_Tool::Degenerated( TopoDS::Edge( sm->GetSubShape() )))
+      if ( u2nodesMaps[ NEW_NODES ].size() == 0         &&
+           sm->GetSubShape().ShapeType() == TopAbs_EDGE &&
+           helper.IsDegenShape( sm->GetId() )             )
         // NPAL15894 (tt88bis.py) - project mesh built by NETGEN_1d_2D that
-	// does not make segments/nodes on degenerated edges
+        // does not make segments/nodes on degenerated edges
         continue;
+
       RETURN_BAD_RESULT("Different nb of old and new nodes on shape #"<< sm->GetId() <<" "<<
                         u2nodesMaps[ OLD_NODES ].size() << " != " <<
                         u2nodesMaps[ NEW_NODES ].size());
@@ -571,7 +585,11 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
 
   // Merge
 
+  int nbFaceBeforeMerge = tgtSubMesh->GetSubMeshDS()->NbElements();
   editor.MergeNodes( groupsOfNodes );
+  int nbFaceAtferMerge = tgtSubMesh->GetSubMeshDS()->NbElements();
+  if ( nbFaceBeforeMerge != nbFaceAtferMerge )
+    return error(COMPERR_BAD_INPUT_MESH, "Probably invalid node parameters on geom faces");
 
   // ---------------------------
   // Check elements orientation

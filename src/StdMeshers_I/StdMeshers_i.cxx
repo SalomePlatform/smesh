@@ -1,29 +1,28 @@
+//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//
+//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+//
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
+//
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
+//
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
 //  SMESH StdMeshers : implementaion of SMESH idl descriptions
-//
-//  Copyright (C) 2003  CEA
-// 
-//  This library is free software; you can redistribute it and/or 
-//  modify it under the terms of the GNU Lesser General Public 
-//  License as published by the Free Software Foundation; either 
-//  version 2.1 of the License. 
-// 
-//  This library is distributed in the hope that it will be useful, 
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of 
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
-//  Lesser General Public License for more details. 
-// 
-//  You should have received a copy of the GNU Lesser General Public 
-//  License along with this library; if not, write to the Free Software 
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
-// 
-// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
-//
-//
-//
 //  File   : StdMeshers_i.cxx
 //  Author : Julia DOROVSKIKH
 //  Module : SMESH
-//  $Header$
 
 #include "SMESH_StdMeshers_I.hxx"
 
@@ -40,6 +39,7 @@
 #include "StdMeshers_Propagation_i.hxx"
 #include "StdMeshers_LengthFromEdges_i.hxx"
 #include "StdMeshers_QuadranglePreference_i.hxx"
+#include "StdMeshers_TrianglePreference_i.hxx"
 #include "StdMeshers_QuadraticMesh_i.hxx"
 #include "StdMeshers_MaxElementArea_i.hxx"
 #include "StdMeshers_MaxElementVolume_i.hxx"
@@ -50,6 +50,7 @@
 #include "StdMeshers_NumberOfLayers_i.hxx"
 #include "StdMeshers_LayerDistribution_i.hxx"
 #include "StdMeshers_SegmentLengthAroundVertex_i.hxx"
+#include "StdMeshers_MaxLength_i.hxx"
 
 #include "StdMeshers_Regular_1D_i.hxx"
 #include "StdMeshers_MEFISTO_2D_i.hxx"
@@ -86,6 +87,8 @@ STDMESHERS_I_EXPORT
     // Hypotheses
     if      (strcmp(aHypName, "LocalLength") == 0)
       aCreator = new StdHypothesisCreator_i<StdMeshers_LocalLength_i>;
+    else if (strcmp(aHypName, "MaxLength") == 0)
+      aCreator = new StdHypothesisCreator_i<StdMeshers_MaxLength_i>;
     else if (strcmp(aHypName, "NumberOfSegments") == 0)
       aCreator = new StdHypothesisCreator_i<StdMeshers_NumberOfSegments_i>;
     else if (strcmp(aHypName, "LengthFromEdges") == 0)
@@ -108,6 +111,8 @@ STDMESHERS_I_EXPORT
       aCreator = new StdHypothesisCreator_i<StdMeshers_AutomaticLength_i>;
     else if (strcmp(aHypName, "QuadranglePreference") == 0)
       aCreator = new StdHypothesisCreator_i<StdMeshers_QuadranglePreference_i>;
+    else if (strcmp(aHypName, "TrianglePreference") == 0)
+      aCreator = new StdHypothesisCreator_i<StdMeshers_TrianglePreference_i>;
     else if (strcmp(aHypName, "QuadraticMesh") == 0)
       aCreator = new StdHypothesisCreator_i<StdMeshers_QuadraticMesh_i>;
     else if (strcmp(aHypName, "ProjectionSource3D") == 0)

@@ -1,51 +1,46 @@
-//  SMESH SMESHGUI : GUI for SMESH component
+//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
-// 
-//  This library is free software; you can redistribute it and/or 
-//  modify it under the terms of the GNU Lesser General Public 
-//  License as published by the Free Software Foundation; either 
-//  version 2.1 of the License. 
-// 
-//  This library is distributed in the hope that it will be useful, 
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of 
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
-//  Lesser General Public License for more details. 
-// 
-//  You should have received a copy of the GNU Lesser General Public 
-//  License along with this library; if not, write to the Free Software 
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
-// 
-// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
 //
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
 //
-//  File   : SMESHGUI_MoveNodesDlg.h
-//  Author : Nicolas REJNERI
-//  Module : SMESH
-//  $Header$
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
+// SMESH SMESHGUI : GUI for SMESH component
+// File   : SMESHGUI_MoveNodesDlg.h
+// Author : Nicolas REJNERI, Open CASCADE S.A.S.
+//
+#ifndef SMESHGUI_MOVENODESDLG_H
+#define SMESHGUI_MOVENODESDLG_H
 
-#ifndef DIALOGBOX_MOVE_NODES_H
-#define DIALOGBOX_MOVE_NODES_H
-
+// SMESH includes
 #include "SMESH_SMESHGUI.hxx"
 
-#include "LightApp_SelectionMgr.h"
-
-#include <qdialog.h>
+// Qt includes
+#include <QDialog>
 
 class QLineEdit;
 class QPushButton;
-class SMESHGUI_SpinBox;
-class SALOME_Actor;
-class QFrame;
 
 class SMESHGUI;
 class SMESH_Actor;
-class SUIT_Desktop;
+class SMESHGUI_SpinBox;
+class SALOME_Actor;
 class SVTK_Selector;
-class SVTK_ViewWindow;
+class LightApp_SelectionMgr;
 
 //=================================================================================
 // class    : SMESHGUI_MoveNodesDlg
@@ -56,15 +51,12 @@ class SMESHGUI_EXPORT SMESHGUI_MoveNodesDlg : public QDialog
   Q_OBJECT
 
 public:
-
-                                SMESHGUI_MoveNodesDlg(SMESHGUI* theModule,
-						      const char* name = 0);
- virtual                        ~SMESHGUI_MoveNodesDlg();
+  SMESHGUI_MoveNodesDlg( SMESHGUI* );
+  virtual ~SMESHGUI_MoveNodesDlg();
     
- void                           Init();
+  void                          Init();
 
 private slots:
-
   void                          onOk();
   bool                          onApply();
   void                          onClose();
@@ -74,23 +66,21 @@ private slots:
 
   void                          onSelectionDone();
   void                          redisplayPreview();
-  void                          onTextChange(const QString&);
+  void                          onTextChange( const QString& );
 
 private:
-
-  void                          closeEvent( QCloseEvent* e ) ;
-  void                          enterEvent ( QEvent * ) ;
-  void                          hideEvent ( QHideEvent * );
+  void                          closeEvent( QCloseEvent* );
+  void                          enterEvent( QEvent* );
+  void                          hideEvent( QHideEvent* );
   void                          keyPressEvent( QKeyEvent* );
   void                          erasePreview();
-  QFrame*                       createButtonFrame( QWidget* );
-  QFrame*                       createMainFrame  ( QWidget* );
-  bool                          isValid( const bool ) const;
+  QWidget*                      createButtonFrame( QWidget* );
+  QWidget*                      createMainFrame  ( QWidget* );
+  bool                          isValid( const bool );
   void                          reset();
   void                          updateButtons();
 
 private:
-
   QPushButton*                  myOkBtn;
   QPushButton*                  myApplyBtn;
   QPushButton*                  myCloseBtn;
@@ -112,4 +102,4 @@ private:
   QString                       myHelpFileName;
 };
 
-#endif // DIALOGBOX_MOVE_NODES_H
+#endif // SMESHGUI_MOVENODESDLG_H

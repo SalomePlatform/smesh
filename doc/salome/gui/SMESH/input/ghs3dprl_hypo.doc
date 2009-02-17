@@ -1,0 +1,392 @@
+/*!
+
+\page ghs3dprl_hypo_page GHS3DPRL Parameters hypothesis
+
+\n GHS3DPRL Parameters hypothesis works only with <b>Tetrahedron (Tepal with TetMesh-GHS3D)</b> algorithm.
+\n
+\n This algorithm is a commercial software, its use requires a licence (http://www.distene.com/fr/build/offer.html).
+\n The advantage of Tepal is the possibility to generate (for example) a <em>partitioned</em> 
+200 million tetrahedra mesh on a not-so-big memory computer (2Go RAM) 
+...in something like 50 hours of <em>one</em> CPU (Xeon, 2008). 
+This is an alternative to Pluging GHS3D where you should need something like a not-so-common CPU with 64Go RAM 
+<em>to try</em> to do a one-partitionned 200 million tetrahedra mesh ...in a much less time indeed.
+\n
+\n Notes:
+\n This Plugin <em>doesn't</em> load in Memory the supposed plentiful big resulting meshes. 
+It's user choice: (in GUI Mesh mode) menu File-Import-MED Files.
+\n Beware, to load one 5 millions tetrahedra MED file, GUI Salome needs 2Go RAM.
+\n A new true parallel faster version of Tepal, using MPI, is expected in 2009.
+
+\image html ghs3dprl_parameters_basic.png
+
+<ul>
+<li>
+<b>Name</b> - allows to define the name of the hypothesis (GHS3DPRL Parameters by default).
+</li>
+<li>
+<b>MED_Name</b> - allows to define the path and the basename of the 
+generated resulted MED files ("DOMAIN" by default). 
+Undefined path means environment variable $SALOME_TMP_DIR (or $TMP by default).
+</li>
+<li>
+<b>Nb_Part</b> - allows to define the number of MED files generated, 
+the initial skin (triangles) will be meshed (tetrahedra) and partitioned 
+in Nb_Part by the <i>elementary</i> algorithm implemented in Tepal.<br>
+Beware, the (expected) number of total tetrahedra versus this parameter 
+involves the maximum tepal RAM use.
+</li>
+<li>
+<b>Keep_Files</b> - if this box is checked, input files of Tepal 
+(GHS3DPRL.points and GHS3DPRL.faces) are deleted after use (...if no backgrounding).
+</li>
+<li>
+<b>Tepal_in_Background</b> - if this box is checked, for big meshes, 
+launch Tepal execution and MED file generation in background, 
+allows user exiting of Salome. In this case, beware of the 
+job Tepal is "killSalome.py" <i>independent</i>, sometimes on other host.
+</li>
+<li>
+<b>To_Mesh_Holes</b> - if this box is checked, force parameter component 
+of tetmesh-ghs3d to mesh holes.
+</li>
+
+<h1>Modifying GHS3DPRL Advanced Parameters</h1><br>
+GHS3DPRL Plugin launches standalone binary executable tepal2med which launches binary executable tepal.<br>
+tepal2med launches tepal, wait for the end of computation, and converts resulting output tepal files in expected MED files.<br>
+Some advanced optional parameters are accessibles as arguments.<br>
+If keep_files checked you a posteriori can always re-launch tepal2med in a Terminal as a command with yours parameters.<br>Idem for tepal.<br><br>
+<li>
+<b>Advanced tepal2med Parameters</b> - type "tepal2med --help" in a Terminal. <p>
+
+\verbatim
+myname@myhost > /export/home/myname/salome_5/GHS3DPRLPLUGIN_5/bin/salome/tepal2med --help
+Available options:
+   --help         : produces this help message
+   --casename     : path and name of input tepal2med files which are
+                       - output files of tepal .msg .noboite .faces .points .glo
+                       - output file of GHS3DPRL_Plugin casename_skin.med (optional)
+                         with initial skin and its initial groups
+   --number       : number of partitions
+   --medname      : path and name of output MED files
+   --limitswap    : max size of working cpu memory (Mo) (before swapping on .temp files)
+   --verbose      : trace of execution (0->6)
+   --test         : more tests about joints, before generation of output files
+   --menu         : a GUI menu for option number
+   --launchtepal  : also launch tepal on files casename.faces and casename.points and option number
+   --meshholes    : force parameter component of tetmesh-ghs3d to mesh holes
+   --background   : force background mode from launch tepal and generation of final MED files (big meshes)
+   --deletegroups : regular expression (see QRegExp) which matches unwanted groups in final MED files
+                    (try --deletegroups="(\bAll_Nodes|\bAll_Faces)"
+                    (try --deletegroups="((\bAll_|\bNew_)(N|F|T))"
+example:
+   tepal2med --casename=/tmp/GHS3DPRL --number=2 --medname=DOMAIN --limitswap=1000 
+             --verbose=0 --test=yes --menu=no --launchtepal=no
+
+\endverbatim
+
+</li>
+<li>
+<p>
+<b>Advanced tepal Parameters</b> - type "tepal" in a Terminal. <p>
+
+\verbatim
+myname@myhost > tepal
+    =====================================
+    GHS3D-TEPAL 1.4.2 (Dec, 2006)               10-Dec-2008 AT 12:59:48
+    =====================================
+
+ Distene SAS
+         Pole Teratec - BARD-1
+         Domaine du Grand Rue
+         91680 Bruyeres le Chatel
+         FRANCE
+ Phone: +33(0)1-69-26-62-10   Fax: +33(0)1-69-26-90-33
+ EMail: support@distene.com
+
+  COPYRIGHT (C)2006 DISTENE ALL RIGHTS RESERVED
+
+
+USAGE : tepal options
+
+With options in :
+     --filename name (-f name) :
+          Basename of the input case (MANDATORY)
+
+     --ndom n (-n n) :
+          Number of subdomains to make (MANDATORY)
+
+     --ghs3d ghs3d options (-g ghs3d options) :
+          Run temesh ghs3d on a previously generated subdomain. (ghs3d options must be "quoted")
+
+     --memory m (-m m) :
+          Max amount of memory (megabytes) allowed for ghs in the cutting process. (default is 0 : unlimited)
+
+     --mesh_only  (-Z ) :
+          Only (re)mesh all subdomains and update communications messages
+
+     --mesh_call command (-c command) :
+          Call the user specified command for meshing all the subomains after their skin was generated
+
+     --stats_only  (-S ) :
+          Only compute and show some statistics on subdomains
+
+     --rebuild  (-r ) :
+          Merge final subdomains skins
+
+     --rebuild_tetra  (-R ) :
+          Merge final subdomains skins and tetraedra
+
+     --rebuild_iface  (-i ) :
+          Include interfaces in final subdomains merge
+
+     --rebuild_retag  (-t ) :
+          Tag vertices, faces (and tetra if selected) with their subdomain number in final subdomains merge (keeps the lowest tag for shared elements)
+
+     --rebuild_ensight_parts  (-e ) :
+          Build ensight geom file with parts
+
+     --tetmesh_args str (-G str) :
+          Arguments to pass to Tetmesh during cutting process
+
+ ==============================================================================
+                   GHS3D-TEPAL SOFTWARE 1.4.2 (Dec, 2006)
+                                 END OF SESSION
+                COPYRIGHT (C)2006 DISTENE ALL RIGHTS RESERVED
+ ==============================================================================
+      ( Distene SAS
+        Phone: +33(0)1-69-26-62-10   Fax: +33(0)1-69-26-90-33
+        EMail: support@distene.com )
+
+\endverbatim
+
+</li>
+<li>
+<p>
+<b>Advanced ghs3d Parameters (through tepal's --tetmesh_args)</b> - type "ghs3d -h" in a Terminal. <p>
+
+\verbatim
+myname@myhost > ghs3d -h
+
+USE
+    /export/home/myname/ghs3d-4.0/DISTENE/Tools/TetMesh-GHS3D4.0/bin/Linux/ghs3dV4.0
+    [-u] [-m memory>] [-M MEMORY] [-f prefix] [-v verbose]
+    [-c component] [-p0] [-C] [-E count] [-t] [-o level]
+    [-I filetype] [-a/-b] [-O n m]
+
+DESCRIPTION
+
+ -u (-h)        : prints this message.
+
+ -m memory      : launches the software with memory Megabytes of work space.
+                  The default value of this parameter is 64 Megabytes and its
+                  minimum value is 10 Megabytes.
+                  It is also possible to set this parameter with the
+                  environment variable GHS3D_MEMORY by means of an operation
+                  equivalent to:
+                           setenv GHS3D_MEMORY memory,
+                  the value specified in the command line has the priority on
+                  the environment variable.
+
+ -M MEMORY      : uses the automatic memory adjustment feature.
+                  If MEMORY is zero, the size of the work space is initially
+                  guessed from the input. If MEMORY is not zero, the
+                  software starts with MEMORY Megabytes of work space.
+                  The software then reallocates more and more memory as
+                  needed.
+                  The starting value when MEMORY equals 0 is 64 Megabytes,
+                  the maximum is given with memory of the -m option if used
+                  and the actual memory available.
+
+ -f prefix      : defines the generic prefix of the files.
+
+ -v verbose     : sets the output level parameter (the verbose parameter
+                  must be in the range 0 to 10).
+
+ -c component   : chooses the meshed component. If component is
+                      0, all components to be meshed
+                      1, only the main (outermost) component to be meshed
+
+ -p0            : disables creation of internal points.
+
+ -C             : uses alternate boundary recovery version. To be used only
+                  when the boundary recovery of the standard version fails.
+
+ -E count       : sets the extended output for error messages. If -E is used,
+                  the error messages found will be printed, up to a maximum
+                  count of errors between 1 and 100.
+
+ -t             : generates an error file prefix.Log
+
+ -o level       : sets the desired optimisation level.
+                  Valid optimisation levels are:
+                  none, light, medium or standard, strong,
+                  in increasing order of "quality vs speed" ratio.
+
+ -I filetype    : defines the input mesh format as follows:
+                    -IP input files are ascii files, named prefix.points
+                     and prefix.faces - this is the default
+                    -IPb input files are binary files, named prefix.pointsb
+                     and prefix.facesb
+                    -IM input file is ascii file, named prefix.mesh
+                  where prefix is given with the -f option
+
+ -a/-b          : selects the output file type:
+                    -a for ascii (the default) and
+                    -b for binary.
+
+ -On            : saves a NOPO file in addition. NOPO is the mesh data
+                  structure of the Simail and Modulef software packages.
+ -Om            : saves a mesh file in addition.
+ -Omn           : saves both NOPO and mesh files.
+
+ ==============================================================================
+                   TETMESH-GHS3D SOFTWARE 4.0-3 (December, 2006)
+                                 END OF SESSION
+                COPYRIGHT (C)1989-2006 INRIA ALL RIGHTS RESERVED
+ ==============================================================================
+      ( Distene SAS
+        Phone: +33(0)1-69-26-62-10   Fax: +33(0)1-69-26-90-33
+        EMail: support@distene.com )
+
+\endverbatim
+
+</li>
+<h1>Saving user's preferred GHS3DPRL Advanced Parameters</h1><br>
+GHS3DPRL Plugin launches standalone binary executable tepal2med.<br>
+you may rename tepal2med as tepal2med.exe for example, and replace tepal2med by a shell script at your convenience to overriding parameters.<br>... or else $PATH modification... .<br>Idem for tepal.<br><br>
+<li>
+<b>Advanced tepal2med Parameters</b> - overriding parameter deletegroups<p>
+
+\code
+#!/bin/bash
+#script tepal2med overriding parameter deletegroups
+#we have renamed binary executable tepal2med as tepal2med.exe
+#echo tepal2med initial parameters are $1 $2 $3 $4 ... or $*
+#$0 is ignored
+
+tepal2med.exe $* --deletegroups="(\bAll_Nodes|\bAll_Faces)"
+
+\endcode
+
+</li>
+<li>
+<p>
+<b>Advanced tepal Parameters</b> - overriding parameter component of ghs3d (to mesh holes). <p>
+
+\code
+#!/bin/bash
+#script tepal overriding parameter component of tetmesh-ghs3d
+#we have renamed binary executable tepal as tepal.exe
+
+#optionnaly we could set licence only for us
+DISTENE_LICENSE_FILE="Use global envvar: DLIM8VAR"
+DLIM8VAR="dlim8 1:1:29030@is142356/0016175ef08c::a1ba1...etc...e19"
+SIMULOGD_LICENSE_FILE=29029@is142356
+
+tepal.exe $* --tetmesh_args "-c 0"
+
+\endcode
+
+</li>
+<li>
+<p>
+<b>Advanced tepal Parameters</b> - overriding launching tepal on other host. <p>
+
+\code
+#!/bin/bash
+#script tepal overriding launching tepal on other host (tepal run 64 bits only)
+#we have renamed binary executable tepal as tepal.exe
+#common file system (same path) otherwise scp... on input or result files
+#ssh -keygen -t rsa done and files id_rsa et id-rsa.pub move in ~/.ssh
+
+#example of typical command
+#tepal -f /home/myname/tmp/GHS3DPRL -n 4 > /home/myname/tmp/tepal.log
+#echo parameters $1 $2 $3 $4 ... or $*
+
+#tepal licence ought to be known on otherhost
+ssh otherhost "tepal.exe $* > /home/myname/tmp/tepal.log"
+
+#or more and more
+#ssh otherhost "tepal.exe $* --tetmesh_args \"-c 0\"" > /home/myname/tmp/tepal.log
+
+\endcode
+
+</li>
+
+<h1>TUI use.</h1><br>
+
+<li>
+<p>
+<b>example ex30_tepal.py.</b><p>
+
+\code
+
+#!/bin/python
+import os
+
+import geompy
+import smesh
+
+# Parameters
+# ----------
+
+results = "/tmp/ZZ"
+
+radius =  50
+height = 200
+
+# Build a cylinder
+# ----------------
+
+base = geompy.MakeVertex(0, 0, 0)
+direction = geompy.MakeVectorDXDYDZ(0, 0, 1)
+
+cylinder = geompy.MakeCylinder(base, direction, radius, height)
+
+geompy.addToStudy(cylinder, "Cylinder")
+
+# Define a mesh on a geometry
+# ---------------------------
+
+m = smesh.Mesh(cylinder)
+
+# 2D mesh with BLSURF
+# -------------------
+
+algo2d = m.Triangle(smesh.BLSURF)
+
+algo2d.SetPhysicalMesh(1)
+algo2d.SetPhySize(5)
+
+algo2d.SetGeometricMesh(0)
+
+# 3D mesh with tepal
+# ------------------
+
+algo3d = m.Tetrahedron(smesh.GHS3DPRL)
+
+algo3d.SetMEDName(results)
+algo3d.SetNbPart(4)
+algo3d.SetBackground(False)
+algo3d.SetKeepFiles(False)
+algo3d.SetToMeshHoles(True)
+
+# Launch meshers
+# --------------
+
+status = m.Compute()
+
+# Test if ok
+# ----------
+
+if os.access(results+".xml", os.F_OK):
+    print "Ok: tepal"
+else:
+    print "KO: tepal"
+\endcode
+
+</li>
+</ul>
+
+
+*/

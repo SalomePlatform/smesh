@@ -22,7 +22,7 @@
 <li>From the \b Modification menu choose the \b Add item, the
 following associated submenu will appear:</li>
 
-\image html image146.gif
+\image html image146.png
 
 From this submenu select the type of element which you would like to add to your mesh.
 </ol>
@@ -38,10 +38,15 @@ operations.
 \image html addnode.png
 
 In this dialog box set coordinates for your node in the \b Coordinates
-set of fields and click the \b Apply or \b OK button. Your node will be
+set of fields and click the \b Apply or <b>Apply and Close</b> button. Your node will be
 created:
 
 \image html add_node.png
+
+\note You can also use variables defined in the SALOME \b NoteBook
+to specify coordinates of the node:
+
+\image html addnode_notebook.png
 
 <br>
 \anchor adding_edges_anchor
@@ -51,7 +56,7 @@ created:
 
 In this dialog box specify the nodes which will form your edge by
 selecting them in the 3D viewer with pressed Shift button and click
-the \b Apply or \b OK button. Your edge will be created:
+the \b Apply or <b>Apply and Close</b> button. Your edge will be created:
 
 \image html add_edge.png
 
@@ -63,7 +68,7 @@ the \b Apply or \b OK button. Your edge will be created:
 
 In this dialog box specify the nodes which will form your triangle by
 selecting them in the 3D viewer with pressed Shift button and click
-the \b Apply or \b OK button. Your triangle will be created:
+the \b Apply or <b>Apply and Close</b> button. Your triangle will be created:
 
 \image html add_triangle.png
 
@@ -75,7 +80,7 @@ the \b Apply or \b OK button. Your triangle will be created:
 
 In this dialog box specify the nodes which will form your quadrangle
 by selecting them in the 3D viewer with pressed Shift button and click
-the \b Apply or \b OK button. Your quadrangle will be created:
+the \b Apply or <b>Apply and Close</b> button. Your quadrangle will be created:
 
 \image html add_quadrangle.png
 
@@ -87,7 +92,7 @@ the \b Apply or \b OK button. Your quadrangle will be created:
 
 In this dialog box specify the nodes which will form your polygon by
 selecting them in the 3D viewer with pressed Shift button and click
-the \b Apply or \b OK button.
+the \b Apply or <b>Apply and Close</b> button.
 
 \image html add_polygone.png
 
@@ -99,7 +104,7 @@ the \b Apply or \b OK button.
 
 In this dialog box specify the nodes which will form your tetrahedron
 by selecting them in the 3D viewer with pressed Shift button and click
-the \b Apply or \b OK button. Your tetrahedron will be created:
+the \b Apply or <b>Apply and Close</b> button. Your tetrahedron will be created:
 
 \image html image70.jpg
 
@@ -111,7 +116,7 @@ the \b Apply or \b OK button. Your tetrahedron will be created:
 
 In this dialog box specify the nodes which will form your hexahedron
 by selecting them in the 3D viewer with pressed Shift button and click
-the \b Apply or \b OK button. Your hexahedron will be created:
+the \b Apply or <b>Apply and Close</b> button. Your hexahedron will be created:
 
 \image html image71.jpg
 
@@ -133,7 +138,7 @@ it does not provide you with the necessary level of precision. If you
 select \b Face as <b>Elements Type</b>, you will be able to select the faces
 which will form your polyhedron in the 3D viewer with pressed Shift
 button. If you've managed to obtain the necessary result, click the
-\b Apply or \b OK button. Your polyhedron will be created:
+\b Apply or <b>Apply and Close</b> button. Your polyhedron will be created:
 
 \image html add_polyhedron.png
 

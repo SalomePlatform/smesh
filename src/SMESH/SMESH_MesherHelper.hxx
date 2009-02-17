@@ -1,27 +1,28 @@
-// Copyright (C) 2005  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-// This library is free software; you can redistribute it and/or
-// modify it under the terms of the GNU Lesser General Public
-// License as published by the Free Software Foundation; either
-// version 2.1 of the License.
+//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
-// This library is distributed in the hope that it will be useful
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-// Lesser General Public License for more details.
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
 //
-// You should have received a copy of the GNU Lesser General Public
-// License along with this library; if not, write to the Free Software
-// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
 //
-// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 // File:      SMESH_MesherHelper.hxx
 // Created:   15.02.06 14:48:09
 // Author:    Sergey KUUL
-
-
+//
 #ifndef SMESH_MesherHelper_HeaderFile
 #define SMESH_MesherHelper_HeaderFile
 
@@ -36,9 +37,9 @@
 
 #include <map>
 
-typedef pair<const SMDS_MeshNode*, const SMDS_MeshNode*> NLink;
-typedef map<NLink, const SMDS_MeshNode*> NLinkNodeMap;
-typedef map<NLink, const SMDS_MeshNode*>::iterator ItNLinkNode;
+typedef std::pair<const SMDS_MeshNode*, const SMDS_MeshNode*> NLink;
+typedef std::map<NLink, const SMDS_MeshNode*> NLinkNodeMap;
+typedef std::map<NLink, const SMDS_MeshNode*>::iterator ItNLinkNode;
 
 /*!
  * \brief It helps meshers to add elements
@@ -258,7 +259,8 @@ public:
     * \param subShape - edge or vertex index in SMESHDS
     * \retval bool - true if subShape is a seam shape
     *
-    * It works only if IsQuadraticSubMesh() or SetSubShape() has been called
+    * It works only if IsQuadraticSubMesh() or SetSubShape() has been called.
+    * Seam shape has two 2D alternative represenations on the face
    */
   bool IsSeamShape(const int subShape) const
   { return mySeamShapeIds.find( subShape ) != mySeamShapeIds.end(); }
@@ -267,10 +269,23 @@ public:
     * \param subShape - edge or vertex
     * \retval bool - true if subShape is a seam shape
     *
-    * It works only if IsQuadraticSubMesh() or SetSubShape() has been called
+    * It works only if IsQuadraticSubMesh() or SetSubShape() has been called.
+    * Seam shape has two 2D alternative represenations on the face
    */
   bool IsSeamShape(const TopoDS_Shape& subShape) const
   { return IsSeamShape( GetMeshDS()->ShapeToIndex( subShape )); }
+  /*!
+   * \brief Return true if an edge or a vertex encounters twice in face wire
+   *  \param subShape - Id of edge or vertex
+   */
+  bool IsRealSeam(const int subShape) const
+  { return mySeamShapeIds.find( -subShape ) != mySeamShapeIds.end(); }
+  /*!
+   * \brief Return true if an edge or a vertex encounters twice in face wire
+   *  \param subShape - edge or vertex
+   */
+  bool IsRealSeam(const TopoDS_Shape& subShape) const
+  { return IsRealSeam( GetMeshDS()->ShapeToIndex( subShape)); }
   /*!
    * \brief Check if the shape set through IsQuadraticSubMesh() or SetSubShape()
    *        has a seam edge
@@ -282,6 +297,10 @@ public:
     * \retval int - 1 for U, 2 for V direction
    */
   int GetPeriodicIndex() const { return myParIndex; }
+  /*!
+   * \brief Return an alternative parameter for a node on seam
+   */
+  double GetOtherParam(const double param) const;
 
   /**
    * Special function for search or creation medium node

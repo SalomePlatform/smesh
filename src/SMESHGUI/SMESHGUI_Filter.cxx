@@ -1,6 +1,6 @@
-//  SMESHGUI_PredicateFilter : Filters for VTK viewer
+//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
 //  This library is free software; you can redistribute it and/or
@@ -17,30 +17,20 @@
 //  License along with this library; if not, write to the Free Software
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+// SMESHGUI_Filter : Filters for VTK viewer
+// File   : SMESHGUI_Filter.cxx
+// Author : Sergey LITONIN, Open CASCADE S.A.S.
+// SMESH includes
 //
-//
-//  File   : SMESHGUI_Filter.cxx
-//  Author : Sergey LITONIN
-//  Module : SMESH
-
 #include "SMESHGUI_Filter.h"
 
-#include "SMESHGUI.h"
 #include "SMESHGUI_Utils.h"
 
-#include "SMESH_Actor.h"
-#include "SMDS_Mesh.hxx"
-#include "SMDS_MeshElement.hxx"
-#include "SMDSAbs_ElementType.hxx"
-
-// OCCT Includes
-#include <gp_Vec.hxx>
-#include <Precision.hxx>
-
-// VTK Includes
-#include <vtkCell.h>
+#include <SMESH_Actor.h>
+#include <SMDS_Mesh.hxx>
+#include <SMDSAbs_ElementType.hxx>
 
 IMPLEMENT_STANDARD_HANDLE(SMESHGUI_Filter, VTKViewer_Filter)
 IMPLEMENT_STANDARD_RTTIEXT(SMESHGUI_Filter, VTKViewer_Filter)
@@ -92,17 +82,18 @@ bool SMESHGUI_PredicateFilter::IsValid( const int theCellId ) const
     return false;
 
   SMDS_Mesh* aMesh = anActor->GetObject()->GetMesh();
-  SMESH::ElementType anElemType = myPred->GetElementType();
-  int aMeshId = anElemType == SMESH::NODE ? anActor->GetNodeObjId( theCellId )
-                                          : anActor->GetElemObjId( theCellId );
+  SMDSAbs_ElementType anElemType = (SMDSAbs_ElementType)myPred->GetElementType();
+  int aMeshId = anElemType == SMDSAbs_Node ? anActor->GetNodeObjId( theCellId )
+                                           : anActor->GetElemObjId( theCellId );
 
   // if type of element != type of predicate return true because
   // this predicate is not intended for filtering sush elements
-  const SMDS_MeshElement* anElem = anElemType == SMESH::NODE ? aMesh->FindNode( aMeshId )
-                                                             : aMesh->FindElement( aMeshId );
-  if ( anElem != 0 && anElem->GetType() != (SMDSAbs_ElementType)myPred->GetElementType() )
-    return true;
-
+  const SMDS_MeshElement* anElem = anElemType == SMDSAbs_Node ? aMesh->FindNode( aMeshId )
+                                                              : aMesh->FindElement( aMeshId );
+  // here we guess that predicate element type can not be All in case of node selection
+  if ( !anElem || (anElemType != SMDSAbs_All && anElem->GetType() != anElemType) )
+    return false;
+  
   return myPred->IsSatisfy( aMeshId );
 }
 
@@ -120,14 +111,15 @@ bool SMESHGUI_PredicateFilter::IsObjValid( const int theObjId ) const
     return false;
 
   SMDS_Mesh* aMesh = anActor->GetObject()->GetMesh();
-  SMESH::ElementType anElemType = myPred->GetElementType();
+  SMDSAbs_ElementType anElemType = (SMDSAbs_ElementType)myPred->GetElementType();
 
   // if type of element != type of predicate return true because
   // this predicate is not intended for filtering sush elements
-  const SMDS_MeshElement* anElem = anElemType == SMESH::NODE ? aMesh->FindNode( theObjId )
-                                                             : aMesh->FindElement( theObjId );
-  if ( anElem != 0 && anElem->GetType() != (SMDSAbs_ElementType)myPred->GetElementType() )
-    return true;
+  const SMDS_MeshElement* anElem = anElemType == SMDSAbs_Node ? aMesh->FindNode( theObjId )
+                                                              : aMesh->FindElement( theObjId );
+  // here we guess that predicate element type can not be All in case of node selection
+  if ( !anElem || (anElemType != SMDSAbs_All && anElem->GetType() != anElemType) )
+    return false;
 
   return myPred->IsSatisfy( theObjId );
 }
@@ -138,7 +130,7 @@ bool SMESHGUI_PredicateFilter::IsObjValid( const int theObjId ) const
 //=======================================================================
 bool SMESHGUI_PredicateFilter::IsNodeFilter() const
 {
-  return GetId() == SMESHGUI_NodeFilter;
+  return GetId() == SMESH::NodeFilter;
 }
 
 //=======================================================================
@@ -182,12 +174,12 @@ void SMESHGUI_PredicateFilter::SetActor( SALOME_Actor* theActor )
 //=======================================================================
 int SMESHGUI_PredicateFilter::GetId() const
 {
-  if      ( myPred->GetElementType() == SMESH::NODE   ) return SMESHGUI_NodeFilter;
-  else if ( myPred->GetElementType() == SMESH::EDGE   ) return SMESHGUI_EdgeFilter;
-  else if ( myPred->GetElementType() == SMESH::FACE   ) return SMESHGUI_FaceFilter;
-  else if ( myPred->GetElementType() == SMESH::VOLUME ) return SMESHGUI_VolumeFilter;
-  else if ( myPred->GetElementType() == SMESH::ALL    ) return SMESHGUI_AllElementsFilter;
-  else                                                  return SMESHGUI_UnknownFilter;
+  if      ( myPred->GetElementType() == SMESH::NODE   ) return SMESH::NodeFilter;
+  else if ( myPred->GetElementType() == SMESH::EDGE   ) return SMESH::EdgeFilter;
+  else if ( myPred->GetElementType() == SMESH::FACE   ) return SMESH::FaceFilter;
+  else if ( myPred->GetElementType() == SMESH::VOLUME ) return SMESH::VolumeFilter;
+  else if ( myPred->GetElementType() == SMESH::ALL    ) return SMESH::AllElementsFilter;
+  else                                                  return SMESH::UnknownFilter;
 }
 
 
@@ -256,7 +248,7 @@ bool SMESHGUI_QuadrangleFilter::IsObjValid( const int theObjId ) const
 //=======================================================================
 int SMESHGUI_QuadrangleFilter::GetId() const
 {
-  return SMESHGUI_QuadFilter;
+  return SMESH::QuadFilter;
 }
 
 //=======================================================================
@@ -335,7 +327,7 @@ bool SMESHGUI_TriangleFilter::IsObjValid( const int theObjId ) const
 //=======================================================================
 int SMESHGUI_TriangleFilter::GetId() const
 {
-  return SMESHGUI_TriaFilter;
+  return SMESH::TriaFilter;
 }
 
 //=======================================================================
@@ -411,7 +403,7 @@ bool SMESHGUI_FacesFilter::IsObjValid( const int theObjId ) const
 //=======================================================================
 int SMESHGUI_FacesFilter::GetId() const
 {
-  return SMESHGUI_FaceFilter;
+  return SMESH::FaceFilter;
 }
 
 //=======================================================================
@@ -488,7 +480,7 @@ bool SMESHGUI_VolumesFilter::IsObjValid( const int theObjId ) const
 //=======================================================================
 int SMESHGUI_VolumesFilter::GetId() const
 {
-  return SMESHGUI_VolumeFilter;
+  return SMESH::VolumeFilter;
 }
 
 //=======================================================================

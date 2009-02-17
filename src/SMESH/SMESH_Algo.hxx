@@ -1,30 +1,29 @@
+//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//
+//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+//
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
+//
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
+//
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
 //  SMESH SMESH : implementaion of SMESH idl descriptions
-//
-//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
-// 
-//  This library is free software; you can redistribute it and/or 
-//  modify it under the terms of the GNU Lesser General Public 
-//  License as published by the Free Software Foundation; either 
-//  version 2.1 of the License. 
-// 
-//  This library is distributed in the hope that it will be useful, 
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of 
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
-//  Lesser General Public License for more details. 
-// 
-//  You should have received a copy of the GNU Lesser General Public 
-//  License along with this library; if not, write to the Free Software 
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
-// 
-// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
-//
-//
-//
 //  File   : SMESH_Algo.hxx
 //  Author : Paul RASCLE, EDF
 //  Module : SMESH
-//  $Header$
+//
 
 #ifndef _SMESH_ALGO_HXX_
 #define _SMESH_ALGO_HXX_
@@ -42,6 +41,7 @@
 #include <string>
 #include <vector>
 #include <list>
+#include <map>
 
 class SMESH_Gen;
 class SMESH_Mesh;
@@ -163,12 +163,10 @@ public:
   bool InitCompatibleHypoFilter( SMESH_HypoFilter & theFilter,
                                  const bool         ignoreAuxiliary) const;
   /*!
-   * \brief Initialize my parameter values by the mesh built on the geometry
-   *
-   * Just return false as the algorithm does not hold parameters values
+   * \brief Just return false as the algorithm does not hold parameters values
    */
-  virtual bool SetParametersByMesh(const SMESH_Mesh* theMesh,
-                                   const TopoDS_Shape& theShape);
+  virtual bool SetParametersByMesh(const SMESH_Mesh* theMesh, const TopoDS_Shape& theShape);
+  virtual bool SetParametersByDefaults(const TDefaults& dflts, const SMESH_Mesh* theMesh=0);
   /*!
    * \brief return compute error
    */
@@ -200,6 +198,10 @@ public:
 
   bool NeedShape() const { return _requireShape; }
   // 4 - is shape existance required
+
+  bool SupportSubmeshes() const { return _supportSubmeshes; }
+  // 5 - whether supports submeshes if !NeedDescretBoundary()
+
 
 public:
   // ==================================================================
@@ -238,6 +240,18 @@ public:
   static bool GetNodeParamOnEdge(const SMESHDS_Mesh*     theMesh,
                                  const TopoDS_Edge&      theEdge,
                                  std::vector< double > & theParams);
+  /*!
+   * \brief Fill map of node parameter on geometrical edge to node it-self
+   * \param theMesh - The mesh containing nodes
+   * \param theEdge - The geometrical edge of interest
+   * \param theNodes - The resulting map
+   * \param ignoreMediumNodes - to store medium nodes of quadratic elements or not
+   * \retval bool - false if not all parameters are OK
+   */
+  static bool GetSortedNodesOnEdge(const SMESHDS_Mesh*                        theMesh,
+                                   const TopoDS_Edge&                         theEdge,
+                                   const bool                                 ignoreMediumNodes,
+                                   std::map< double, const SMDS_MeshNode* > & theNodes);
   /*!
    * \brief Find out elements orientation on a geometrical face
    * \param theFace - The face correctly oriented in the shape being meshed
@@ -293,6 +307,12 @@ protected:
    * \brief store error and return error->IsOK()
    */
   bool error(SMESH_ComputeErrorPtr error);
+  /*!
+   * \brief store a bad input element preventing computation,
+   *        which may be a temporary one i.e. not residing the mesh,
+   *        then it will be deleted by InitComputeError()
+   */
+  void addBadInputElement(const SMDS_MeshElement* elem);
 
 protected:
 
@@ -300,9 +320,13 @@ protected:
   std::list<const SMESHDS_Hypothesis *> _appliedHypList;
   std::list<const SMESHDS_Hypothesis *> _usedHypList;
 
-  bool _onlyUnaryInput;
-  bool _requireDescretBoundary;
-  bool _requireShape;
+  // Algo features influencing which Compute() and how is called:
+  // in what turn and with what input shape.
+  // This fields must be redefined if necessary by each descendant at constructor.
+  bool _onlyUnaryInput;         // mesh one shape of GetDim() at once. Default TRUE
+  bool _requireDescretBoundary; // GetDim()-1 mesh must be present. Default TRUE
+  bool _requireShape;           // work with GetDim()-1 mesh bound to geom only. Default TRUE
+  bool _supportSubmeshes;       // if !_requireDescretBoundary. Default FALSE
 
   // quadratic mesh creation required,
   // is usually set trough SMESH_MesherHelper::IsQuadraticSubMesh()
@@ -310,6 +334,7 @@ protected:
 
   int         _error;    //!< SMESH_ComputeErrorName or anything algo specific
   std::string _comment;  //!< any text explaining what is wrong in Compute()
+  std::list<const SMDS_MeshElement*> _badInputElements; //!< to explain COMPERR_BAD_INPUT_MESH
 };
 
 #endif

@@ -1,31 +1,29 @@
-//  SMESH SMESHGUI : GUI for SMESH component
+//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
-// 
-//  This library is free software; you can redistribute it and/or 
-//  modify it under the terms of the GNU Lesser General Public 
-//  License as published by the Free Software Foundation; either 
-//  version 2.1 of the License. 
-// 
-//  This library is distributed in the hope that it will be useful, 
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of 
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
-//  Lesser General Public License for more details. 
-// 
-//  You should have received a copy of the GNU Lesser General Public 
-//  License along with this library; if not, write to the Free Software 
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
-// 
-// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
 //
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
 //
-//  File   : SMESHGUI_CreatePolyhedralVolumeDlg.cxx
-//  Author : Michael ZORIN
-//  Module : SMESH
-//  $Header: 
-
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
+// SMESH SMESHGUI : GUI for SMESH component
+// File   : SMESHGUI_CreatePolyhedralVolumeDlg.cxx
+// Author : Michael ZORIN, Open CASCADE S.A.S.
+// SMESH includes
+//
 #include "SMESHGUI_CreatePolyhedralVolumeDlg.h"
 
 #include "SMESHGUI.h"
@@ -33,64 +31,61 @@
 #include "SMESHGUI_VTKUtils.h"
 #include "SMESHGUI_MeshUtils.h"
 #include "SMESHGUI_IdValidator.h"
-#include "SMESH_ActorUtils.h"
-#include "SMESHGUI_SpinBox.h"
-#include "SMESH_Actor.h"
-#include "SMESH_TypeFilter.hxx"
-#include "SMDS_Mesh.hxx"
 
-#include "SUIT_ResourceMgr.h"
-#include "SUIT_Session.h"
-#include "SUIT_MessageBox.h"
+#include <SMESH_Actor.h>
+#include <SMESH_ActorUtils.h>
+#include <SMDS_Mesh.hxx>
 
-#include "SalomeApp_Application.h"
-#include "SalomeApp_Study.h"
-#include "SUIT_Desktop.h"
-#include "SUIT_MessageBox.h"
-#include "LightApp_Application.h"
-#include "LightApp_SelectionMgr.h"
-#include "utilities.h"
+// SALOME GUI includes
+#include <SUIT_Desktop.h>
+#include <SUIT_ResourceMgr.h>
+#include <SUIT_Session.h>
+#include <SUIT_MessageBox.h>
+#include <SUIT_ViewManager.h>
+#include <SUIT_OverrideCursor.h>
 
-#include "SVTK_ViewWindow.h"
-#include "SVTK_Selector.h"
+#include <SalomeApp_Application.h>
+#include <LightApp_SelectionMgr.h>
 
-#include <TColStd_MapIteratorOfMapOfInteger.hxx>
+#include <SVTK_ViewWindow.h>
+
+// OCCT includes
 #include <TColStd_ListOfInteger.hxx>
 #include <TColStd_ListIteratorOfListOfInteger.hxx>
 
+// VTK includes
 #include <vtkCell.h>
 #include <vtkIdList.h>
-#include <vtkIntArray.h>
-#include <vtkCellArray.h>
-#include <vtkUnsignedCharArray.h>
 #include <vtkUnstructuredGrid.h>
 #include <vtkDataSetMapper.h>
 #include <vtkProperty.h>
 
-// QT Includes
-#include <qapplication.h>
-#include <qbuttongroup.h>
-#include <qgroupbox.h>
-#include <qlabel.h>
-#include <qlineedit.h>
-#include <qpushbutton.h>
-#include <qradiobutton.h>
-#include <qcheckbox.h>
-#include <qlayout.h>
-#include <qspinbox.h> 
-#include <qpixmap.h>
-#include <qlistbox.h>
+// Qt includes
+#include <QApplication>
+#include <QButtonGroup>
+#include <QGroupBox>
+#include <QLabel>
+#include <QLineEdit>
+#include <QPushButton>
+#include <QRadioButton>
+#include <QCheckBox>
+#include <QHBoxLayout>
+#include <QVBoxLayout>
+#include <QGridLayout>
+#include <QListWidget>
+#include <QKeyEvent>
 
-// IDL Headers
-#include "SALOMEconfig.h"
-#include CORBA_SERVER_HEADER(SMESH_Group)
+// IDL includes
+#include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_MeshEditor)
 
-using namespace std;
+#define SPACING 6
+#define MARGIN  11
 
-namespace SMESH{
-
-class TPolySimulation{
+namespace SMESH
+{
+  class TPolySimulation
+  {
     SVTK_ViewWindow* myViewWindow;
 
     SALOME_Actor *myPreviewActor;
@@ -171,8 +166,8 @@ class TPolySimulation{
 
 
     ~TPolySimulation(){
-        if( myViewWindow )
-	  myViewWindow->RemoveActor(myPreviewActor);
+      if( myViewWindow )
+	myViewWindow->RemoveActor(myPreviewActor);
 
       myPreviewActor->Delete();
 
@@ -189,141 +184,102 @@ class TPolySimulation{
 // class    : SMESHGUI_CreatePolyhedralVolumeDlgDlg()
 // purpose  : 
 //=================================================================================
-SMESHGUI_CreatePolyhedralVolumeDlg::SMESHGUI_CreatePolyhedralVolumeDlg( SMESHGUI* theModule, const char* name,
-					                                bool modal, WFlags fl )
-  : QDialog( SMESH::GetDesktop( theModule ), name, modal, WStyle_Customize | WStyle_NormalBorder | WStyle_Title | WStyle_SysMenu | Qt::WDestructiveClose),
+SMESHGUI_CreatePolyhedralVolumeDlg::SMESHGUI_CreatePolyhedralVolumeDlg( SMESHGUI* theModule )
+  : QDialog( SMESH::GetDesktop( theModule ) ),
     mySMESHGUI( theModule ),
     mySelectionMgr( SMESH::GetSelectionMgr( theModule ) )
 {
   QPixmap image0( SMESH::GetResourceMgr( mySMESHGUI )->loadPixmap( "SMESH",tr("ICON_SELECT")));
 
-  if ( !name )
-    setName( "SMESHGUI_CreatePolyhedralVolumeDlg" );
-  resize( 300, 185 ); 
-  setCaption( tr( "SMESH_CREATE_POLYHEDRAL_VOLUME_TITLE" ) );
-  setSizeGripEnabled( TRUE );
-  SMESHGUI_CreatePolyhedralVolumeDlgLayout = new QGridLayout( this ); 
-  SMESHGUI_CreatePolyhedralVolumeDlgLayout->setSpacing( 6 );
-  SMESHGUI_CreatePolyhedralVolumeDlgLayout->setMargin( 11 );
+  setModal(false);
+  setAttribute(Qt::WA_DeleteOnClose, true);
+  setWindowTitle( tr( "SMESH_CREATE_POLYHEDRAL_VOLUME_TITLE" ) );
+  setSizeGripEnabled( true );
+
+  QVBoxLayout* topLayout = new QVBoxLayout( this ); 
+  topLayout->setSpacing( SPACING );
+  topLayout->setMargin( MARGIN );
 
   /***************************************************************/
-  GroupConstructors = new QButtonGroup( this, "GroupConstructors" );
-  GroupConstructors->setSizePolicy( QSizePolicy( (QSizePolicy::SizeType)5, (QSizePolicy::SizeType)0, 0, 0, GroupConstructors->sizePolicy().hasHeightForWidth() ) );
-  GroupConstructors->setTitle( tr( "SMESH_ELEMENTS_TYPE" ) );
-  GroupConstructors->setExclusive( TRUE );
-  GroupConstructors->setColumnLayout(0, Qt::Vertical );
-  GroupConstructors->layout()->setSpacing( 0 );
-  GroupConstructors->layout()->setMargin( 0 );
-  GroupConstructorsLayout = new QGridLayout( GroupConstructors->layout() );
-  GroupConstructorsLayout->setAlignment( Qt::AlignTop );
-  GroupConstructorsLayout->setSpacing( 6 );
-  GroupConstructorsLayout->setMargin( 11 );
-  RadioButton1= new QRadioButton( GroupConstructors, "RadioButton1" );
-  RadioButton1->setText( tr( "MESH_NODE"  ) );
-  GroupConstructorsLayout->addWidget( RadioButton1, 0, 0 );
-  RadioButton2= new QRadioButton( GroupConstructors, "RadioButton2" );
-  RadioButton2->setText( tr( "SMESH_FACE"  ) );
-  GroupConstructorsLayout->addWidget( RadioButton2, 0, 2  );
-  SMESHGUI_CreatePolyhedralVolumeDlgLayout->addWidget( GroupConstructors, 0, 0 );
+  ConstructorsBox = new QGroupBox(tr( "SMESH_ELEMENTS_TYPE" ), this);
+  GroupConstructors = new QButtonGroup(this);
+  QHBoxLayout* ConstructorsBoxLayout = new QHBoxLayout( ConstructorsBox );
+  ConstructorsBoxLayout->setSpacing( SPACING );
+  ConstructorsBoxLayout->setMargin( MARGIN );
+
+  RadioButton1 = new QRadioButton( tr( "MESH_NODE" ),  ConstructorsBox );
+  RadioButton2 = new QRadioButton( tr( "SMESH_FACE" ), ConstructorsBox );
+
+  ConstructorsBoxLayout->addWidget( RadioButton1 );
+  ConstructorsBoxLayout->addWidget( RadioButton2 );
+  GroupConstructors->addButton(RadioButton1, 0);
+  GroupConstructors->addButton(RadioButton2, 1);
   
   /***************************************************************/
-  GroupButtons = new QGroupBox( this, "GroupButtons" );
-  GroupButtons->setSizePolicy( QSizePolicy( (QSizePolicy::SizeType)7, (QSizePolicy::SizeType)0, 0, 0, GroupButtons->sizePolicy().hasHeightForWidth() ) );
-  GroupButtons->setGeometry( QRect( 10, 10, 281, 48 ) ); 
-  GroupButtons->setTitle( tr( ""  ) );
-  GroupButtons->setColumnLayout(0, Qt::Vertical );
-  GroupButtons->layout()->setSpacing( 0 );
-  GroupButtons->layout()->setMargin( 0 );
-  GroupButtonsLayout = new QGridLayout( GroupButtons->layout() );
-  GroupButtonsLayout->setAlignment( Qt::AlignTop );
-  GroupButtonsLayout->setSpacing( 6 );
-  GroupButtonsLayout->setMargin( 11 );
-  buttonCancel = new QPushButton( GroupButtons, "cancel" );
-  buttonCancel->setText( tr( "SMESH_BUT_CLOSE"  ) );
-  buttonCancel->setAutoDefault( TRUE );
-  GroupButtonsLayout->addWidget( buttonCancel, 0, 3 );
-  buttonApply = new QPushButton( GroupButtons, "apply" );
-  buttonApply->setText( tr( "SMESH_BUT_APPLY"  ) );
-  buttonApply->setAutoDefault( TRUE );
-  GroupButtonsLayout->addWidget( buttonApply, 0, 1 );
-  QSpacerItem* spacer_9 = new QSpacerItem( 20, 20, QSizePolicy::Expanding, QSizePolicy::Minimum );
-  GroupButtonsLayout->addItem( spacer_9, 0, 2 );
-  buttonOk = new QPushButton( GroupButtons, "ok" );
-  buttonOk->setText( tr( "SMESH_BUT_OK"  ) );
-  buttonOk->setAutoDefault( TRUE );
-  buttonOk->setDefault( TRUE );
-  GroupButtonsLayout->addWidget( buttonOk, 0, 0 );
-  buttonHelp = new QPushButton(GroupButtons, "buttonHelp");
-  buttonHelp->setText(tr("SMESH_BUT_HELP" ));
-  buttonHelp->setAutoDefault(TRUE);
-  GroupButtonsLayout->addWidget(buttonHelp, 0, 4);
+  GroupContent = new QGroupBox( tr( "SMESH_CONTENT" ), this );
+  QGridLayout* GroupContentLayout = new QGridLayout( GroupContent );
+  GroupContentLayout->setSpacing( SPACING );
+  GroupContentLayout->setMargin( MARGIN );
+  
+  TextLabelIds = new QLabel( tr( "SMESH_ID_NODES" ), GroupContent );
+  SelectElementsButton  = new QPushButton( GroupContent );
+  SelectElementsButton->setIcon( image0 );
+  LineEditElements  = new QLineEdit( GroupContent );
+  LineEditElements->setValidator( new SMESHGUI_IdValidator( this ) );
 
-  SMESHGUI_CreatePolyhedralVolumeDlgLayout->addWidget( GroupButtons, 2, 0 );
+  myFacesByNodesLabel = new QLabel( tr( "FACES_BY_NODES" ), GroupContent );
+  myFacesByNodes = new QListWidget( GroupContent);
+  myFacesByNodes->setSelectionMode( QListWidget::ExtendedSelection );
+  myFacesByNodes->setMinimumHeight( 150);
+
+  AddButton = new QPushButton( tr( "SMESH_BUT_ADD" ), GroupContent );
+  RemoveButton = new QPushButton( tr( "SMESH_BUT_REMOVE" ), GroupContent );
+
+  Preview = new QCheckBox( tr( "SMESH_POLYEDRE_PREVIEW" ), GroupContent );
+
+  GroupContentLayout->addWidget( TextLabelIds,         0, 0 );
+  GroupContentLayout->addWidget( SelectElementsButton, 0, 1 );
+  GroupContentLayout->addWidget( LineEditElements,     0, 2, 1, 2 );
+  GroupContentLayout->addWidget( myFacesByNodesLabel,  1, 0 );
+  GroupContentLayout->addWidget( myFacesByNodes,       2, 0, 3, 3 );
+  GroupContentLayout->addWidget( AddButton,            2, 3 );
+  GroupContentLayout->addWidget( RemoveButton,         3, 3 );
+  GroupContentLayout->addWidget( Preview,              5, 0, 1, 4 );
 
   /***************************************************************/
-  GroupContent = new QGroupBox( this, "GroupContent" );
-  GroupContent->setTitle( tr( "SMESH_CONTENT" ) );
-  GroupContent->setColumnLayout(0, Qt::Vertical );
-  GroupContent->layout()->setSpacing( 0 );
-  GroupContent->layout()->setMargin( 0 );
-  GroupContentLayout = new QGridLayout( GroupContent->layout() );
-  GroupContentLayout->setAlignment( Qt::AlignTop );
-  GroupContentLayout->setSpacing( 6 );
-  GroupContentLayout->setMargin( 11 );
+  GroupButtons = new QGroupBox( this );
+  QHBoxLayout* GroupButtonsLayout = new QHBoxLayout( GroupButtons );
+  GroupButtonsLayout->setSpacing( SPACING );
+  GroupButtonsLayout->setMargin( MARGIN );
 
-  QFrame* anIds = new QFrame(GroupContent, "anIds");
-  QGridLayout* aLayout = new QGridLayout(anIds, 1, 3);
-  aLayout->setSpacing(6);
-  aLayout->setAutoAdd(false);
+  buttonOk = new QPushButton( tr( "SMESH_BUT_APPLY_AND_CLOSE" ), GroupButtons );
+  buttonOk->setAutoDefault( true );
+  buttonOk->setDefault( true );
+  buttonApply = new QPushButton( tr( "SMESH_BUT_APPLY" ), GroupButtons );
+  buttonApply->setAutoDefault( true );
+  buttonCancel = new QPushButton( tr( "SMESH_BUT_CLOSE" ), GroupButtons );
+  buttonCancel->setAutoDefault( true );
+  buttonHelp = new QPushButton( tr("SMESH_BUT_HELP" ), GroupButtons );
+  buttonHelp->setAutoDefault(true);
+
+  GroupButtonsLayout->addWidget( buttonOk );
+  GroupButtonsLayout->addSpacing( 10 );
+  GroupButtonsLayout->addWidget( buttonApply );
+  GroupButtonsLayout->addSpacing( 10 );
+  GroupButtonsLayout->addStretch();
+  GroupButtonsLayout->addWidget( buttonCancel );
+  GroupButtonsLayout->addWidget( buttonHelp);
+
+  /***************************************************************/
+  topLayout->addWidget( ConstructorsBox );
+  topLayout->addWidget( GroupContent );
+  topLayout->addWidget( GroupButtons );
   
-  TextLabelIds = new QLabel( anIds, "TextLabelIds" );
-  TextLabelIds->setText( tr( "SMESH_ID_NODES" ) );
-  TextLabelIds->setFixedWidth(74);
-  aLayout->addWidget( TextLabelIds, 0, 0 );
-
-  SelectElementsButton  = new QPushButton( anIds, "SelectElementsButton" );
-  SelectElementsButton->setText( tr( "" ) );
-  SelectElementsButton->setPixmap( image0 );
-  SelectElementsButton->setToggleButton( FALSE );
-  aLayout->addWidget( SelectElementsButton, 0, 1 );
-
-  LineEditElements  = new QLineEdit( anIds, "LineEditElements" );
-  LineEditElements->setValidator( new SMESHGUI_IdValidator( this, "validator" ));
-  aLayout->addWidget( LineEditElements, 0, 2 );
-  
-  GroupContentLayout->addMultiCellWidget(anIds, 0, 0, 0, 1);
-
-  myFacesByNodesLabel = new QLabel(GroupContent, "faces by nodes label");
-  myFacesByNodesLabel->setText(tr("FACES_BY_NODES"));
-  GroupContentLayout->addWidget( myFacesByNodesLabel, 1, 0 );
-
-  myFacesByNodes = new QListBox(GroupContent, "faces by nodes list");
-  myFacesByNodes->setSelectionMode(QListBox::Extended);
-  myFacesByNodes->setMinimumHeight(150);
-  GroupContentLayout->addMultiCellWidget( myFacesByNodes, 2, 4, 0, 0 );
-
-  AddButton = new QPushButton(GroupContent, "add");
-  AddButton->setText(tr("SMESH_BUT_ADD"));
-  AddButton->setMaximumWidth(85);
-  GroupContentLayout->addWidget( AddButton, 2, 1 );
-
-  RemoveButton = new QPushButton(GroupContent, "remove");
-  RemoveButton->setText(tr("SMESH_BUT_REMOVE"));
-  RemoveButton->setMaximumWidth(85);
-  GroupContentLayout->addWidget( RemoveButton, 3, 1 );
-
-  Preview = new QCheckBox( GroupContent, "Preview" );
-  Preview->setText( tr( "SMESH_POLYEDRE_PREVIEW"  ) );
-  GroupContentLayout->addWidget( Preview , 5, 0 );
-
   mySelector = (SMESH::GetViewWindow( mySMESHGUI ))->GetSelector();
   
-  SMESHGUI_CreatePolyhedralVolumeDlgLayout->addWidget( GroupContent, 1, 0 );
-  
-  GroupContent->show();
-  RadioButton1->setChecked( TRUE );
+  RadioButton1->setChecked( true );
  
-  mySMESHGUI->SetActiveDialogBox( (QDialog*)this ) ;
+  mySMESHGUI->SetActiveDialogBox( (QDialog*)this );
 
   myHelpFileName = "adding_nodes_and_elements_page.html#adding_polyhedrons_anchor";
   
@@ -336,11 +292,11 @@ SMESHGUI_CreatePolyhedralVolumeDlg::SMESHGUI_CreatePolyhedralVolumeDlg( SMESHGUI
 //=================================================================================
 SMESHGUI_CreatePolyhedralVolumeDlg::~SMESHGUI_CreatePolyhedralVolumeDlg()
 {
-  // no need to delete child widgets, Qt does it all for us
   delete mySimulation;
 }
 
 static bool busy = false;
+
 //=================================================================================
 // function : Init()
 // purpose  :
@@ -348,7 +304,7 @@ static bool busy = false;
 void SMESHGUI_CreatePolyhedralVolumeDlg::Init()
 {
   myEditCurrentArgument = LineEditElements;
-  mySMESHGUI->SetActiveDialogBox( (QDialog*)this ) ;
+  mySMESHGUI->SetActiveDialogBox( (QDialog*)this );
 
   myNbOkElements = 0;
   myActor = 0;
@@ -356,27 +312,25 @@ void SMESHGUI_CreatePolyhedralVolumeDlg::Init()
   mySimulation = new SMESH::TPolySimulation( dynamic_cast<SalomeApp_Application*>( mySMESHGUI->application() ) );
 
   /* signals and slots connections */
-  connect(buttonOk, SIGNAL( clicked() ),     SLOT( ClickOnOk() ) );
-  connect(buttonCancel, SIGNAL( clicked() ), SLOT( ClickOnCancel() ) ) ;
-  connect(buttonApply, SIGNAL( clicked() ),  SLOT(ClickOnApply() ) );
-  connect(buttonHelp, SIGNAL(clicked()),     SLOT(ClickOnHelp() ) );
+  connect(buttonOk,     SIGNAL( clicked() ), SLOT( ClickOnOk() ) );
+  connect(buttonCancel, SIGNAL( clicked() ), SLOT( ClickOnCancel() ) );
+  connect(buttonApply,  SIGNAL( clicked() ), SLOT( ClickOnApply() ) );
+  connect(buttonHelp,   SIGNAL( clicked() ), SLOT( ClickOnHelp() ) );
 
-  connect( GroupConstructors, SIGNAL(clicked(int) ), SLOT( ConstructorsClicked(int) ) );
-  connect(SelectElementsButton, SIGNAL( clicked() ), SLOT( SetEditCurrentArgument() ) ) ;
+  connect(GroupConstructors, SIGNAL(buttonClicked(int) ), SLOT( ConstructorsClicked(int) ) );
+  connect(SelectElementsButton, SIGNAL( clicked() ), SLOT( SetEditCurrentArgument() ) );
   connect(LineEditElements, SIGNAL( textChanged(const QString&) ), SLOT(onTextChange(const QString&)));
 
   connect(myFacesByNodes, SIGNAL(selectionChanged()), this, SLOT(onListSelectionChanged()));
   connect(AddButton, SIGNAL(clicked()), this, SLOT(onAdd()));
   connect(RemoveButton, SIGNAL(clicked()), this, SLOT(onRemove()));
   
-  connect( mySMESHGUI, SIGNAL ( SignalDeactivateActiveDialog() ), this, SLOT( DeactivateActiveDialog() ) ) ;
+  connect( mySMESHGUI, SIGNAL ( SignalDeactivateActiveDialog() ), this, SLOT( DeactivateActiveDialog() ) );
   connect( mySelectionMgr, SIGNAL( currentSelectionChanged() ), this, SLOT( SelectionIntoArgument() ) );
   connect( Preview, SIGNAL(toggled(bool)), this, SLOT(ClickOnPreview(bool)));
   /* to close dialog if study change */
-  connect( mySMESHGUI, SIGNAL ( SignalCloseAllDialogs() ), this, SLOT( ClickOnCancel() ) ) ;
+  connect( mySMESHGUI, SIGNAL ( SignalCloseAllDialogs() ), this, SLOT( ClickOnCancel() ) );
   
-  this->show() ; /* displays Dialog */
-
   ConstructorsClicked(0);
   SelectionIntoArgument();
 }
@@ -445,6 +399,10 @@ void SMESHGUI_CreatePolyhedralVolumeDlg::ConstructorsClicked(int constructorId)
   
   //connect(mySelectionMgr, SIGNAL(currentSelectionChanged()), this, SLOT(SelectionIntoArgument()));
   mySelectionMgr->setSelectedObjects( io );
+
+  QApplication::instance()->processEvents();
+  updateGeometry();
+  resize( minimumSize() );
 }
 
 //=================================================================================
@@ -475,15 +433,13 @@ void SMESHGUI_CreatePolyhedralVolumeDlg::ClickOnApply()
 
 	  TColStd_ListOfInteger aNodesIds;
 
-	  QListBoxItem* anItem;
 	  int aNbQuantities = 0;
-	  for (anItem = myFacesByNodes->firstItem(); anItem != 0; anItem = anItem->next()) {
-	    QStringList anIds = QStringList::split(" ", anItem->text());
-	    int aNbNodesInFace = 0;
-	    for (QStringList::iterator it = anIds.begin(); it != anIds.end(); ++it, ++aNbNodesInFace)
+	  for (int i = 0; i < myFacesByNodes->count(); i++ ) {
+	    QStringList anIds = myFacesByNodes->item(i)->text().split( " ", QString::SkipEmptyParts );
+	    for (QStringList::iterator it = anIds.begin(); it != anIds.end(); ++it)
 	      aNodesIds.Append( (*it).toInt() );
 
-	    aQuantities[aNbQuantities++] = aNbNodesInFace;
+	    aQuantities[aNbQuantities++] = anIds.count();
 	  }
 
 	  anIdsOfNodes->length(aNodesIds.Extent());
@@ -491,14 +447,13 @@ void SMESHGUI_CreatePolyhedralVolumeDlg::ClickOnApply()
 	  int aNbIdsOfNodes = 0;
 	  TColStd_ListIteratorOfListOfInteger It;
 	  It.Initialize(aNodesIds);
-	  for(;It.More();It.Next())
+	  for( ;It.More();It.Next())
 	    anIdsOfNodes[aNbIdsOfNodes++] = It.Value();
 	    
 	  try{
+	    SUIT_OverrideCursor aWaitCursor;
 	    SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditor();
-	    QApplication::setOverrideCursor(Qt::waitCursor);
 	    aMeshEditor->AddPolyhedralVolume(anIdsOfNodes, aQuantities);
-	    QApplication::restoreOverrideCursor();
 	  }catch(SALOME::SALOME_Exception& exc){
 	    INFOS("Follow exception was cought:\n\t"<<exc.details.text);
 	  }catch(std::exception& exc){
@@ -511,16 +466,15 @@ void SMESHGUI_CreatePolyhedralVolumeDlg::ClickOnApply()
 	{
 	  SMESH::long_array_var anIdsOfFaces = new SMESH::long_array;
 	  
-	  QStringList aListId = QStringList::split( " ", myEditCurrentArgument->text() );
+	  QStringList aListId = myEditCurrentArgument->text().split( " ", QString::SkipEmptyParts );
 	  anIdsOfFaces->length(aListId.count());
 	  for ( int i = 0; i < aListId.count(); i++ )
 	    anIdsOfFaces[i] = aListId[i].toInt();
 	  
 	  try{
+	    SUIT_OverrideCursor aWaitCursor;
 	    SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditor();
-	    QApplication::setOverrideCursor(Qt::waitCursor);
 	    aMeshEditor->AddPolyhedralVolumeByFaces(anIdsOfFaces);
-	    QApplication::restoreOverrideCursor();
 	  }catch(SALOME::SALOME_Exception& exc){
 	    INFOS("Follow exception was cought:\n\t"<<exc.details.text);
 	  }catch(std::exception& exc){
@@ -549,8 +503,8 @@ void SMESHGUI_CreatePolyhedralVolumeDlg::ClickOnApply()
 void SMESHGUI_CreatePolyhedralVolumeDlg::ClickOnOk()
 {
   if(checkEditLine(false) == -1) {return;}
-  ClickOnApply() ;
-  ClickOnCancel() ;
+  ClickOnApply();
+  ClickOnCancel();
 }
 
 	
@@ -568,8 +522,8 @@ void SMESHGUI_CreatePolyhedralVolumeDlg::ClickOnCancel()
   if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
     aViewWindow->SetSelectionMode( ActorSelection );
   disconnect( mySelectionMgr, 0, this, 0 );
-  mySMESHGUI->ResetState() ;
-  reject() ;
+  mySMESHGUI->ResetState();
+  reject();
 }
 
 //=================================================================================
@@ -582,16 +536,17 @@ void SMESHGUI_CreatePolyhedralVolumeDlg::ClickOnHelp()
   if (app) 
     app->onHelpContextModule(mySMESHGUI ? app->moduleName(mySMESHGUI->moduleName()) : QString(""), myHelpFileName);
   else {
-		QString platform;
+    QString platform;
 #ifdef WIN32
-		platform = "winapplication";
+    platform = "winapplication";
 #else
-		platform = "application";
+    platform = "application";
 #endif
-    SUIT_MessageBox::warn1(0, QObject::tr("WRN_WARNING"),
-			   QObject::tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
-			   arg(app->resourceMgr()->stringValue("ExternalBrowser", platform)).arg(myHelpFileName),
-			   QObject::tr("BUT_OK"));
+    SUIT_MessageBox::warning(this, tr("WRN_WARNING"),
+			     tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
+			     arg(app->resourceMgr()->stringValue("ExternalBrowser",
+								 platform)).
+			     arg(myHelpFileName));
   }
 }
 
@@ -613,70 +568,70 @@ void SMESHGUI_CreatePolyhedralVolumeDlg::onTextChange(const QString& theNewText)
     aMesh = myActor->GetObject()->GetMesh();
 
   if (GetConstructorId() == 0)
-  {
-    if ( aMesh ) {
-      TColStd_MapOfInteger newIndices;
+    {
+      if ( aMesh ) {
+	TColStd_MapOfInteger newIndices;
       
-      QStringList aListId = QStringList::split( " ", theNewText, false);
-      for ( int i = 0; i < aListId.count(); i++ ) {
-	const SMDS_MeshNode * n = aMesh->FindNode( aListId[ i ].toInt() );
-	if ( n ) {
-	  newIndices.Add(n->GetID());
-	  myNbOkElements++;
-        }
+	QStringList aListId = theNewText.split( " ", QString::SkipEmptyParts );
+	for ( int i = 0; i < aListId.count(); i++ ) {
+	  const SMDS_MeshNode * n = aMesh->FindNode( aListId[ i ].toInt() );
+	  if ( n ) {
+	    newIndices.Add(n->GetID());
+	    myNbOkElements++;
+	  }
+	}
+      
+	mySelector->AddOrRemoveIndex( myActor->getIO(), newIndices, false );
+      
+	if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+	  aViewWindow->highlight( myActor->getIO(), true, true );
+      
+	if ( myNbOkElements>0 && aListId.count()>=3)
+	  AddButton->setEnabled(true);
+	else
+	  AddButton->setEnabled(false);
+      
+	displaySimulation();
       }
+    } else if (GetConstructorId() == 1)
+      {
+	myNbOkElements = 0;
+	buttonOk->setEnabled( false );
+	buttonApply->setEnabled( false );
       
-      mySelector->AddOrRemoveIndex( myActor->getIO(), newIndices, false );
+	// check entered ids of faces and hilight them
+	QStringList aListId;
+	if ( aMesh ) {
+	  TColStd_MapOfInteger newIndices;
       
-      if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
-	aViewWindow->highlight( myActor->getIO(), true, true );
-      
-      if ( myNbOkElements>0 && aListId.count()>=3)
-	AddButton->setEnabled(true);
-      else
-	AddButton->setEnabled(false);
-      
-      displaySimulation();
-    }
-  } else if (GetConstructorId() == 1)
-  {
-    myNbOkElements = 0;
-    buttonOk->setEnabled( false );
-    buttonApply->setEnabled( false );
-      
-      // check entered ids of faces and hilight them
-    QStringList aListId;
-    if ( aMesh ) {
-      TColStd_MapOfInteger newIndices;
-      
-      aListId = QStringList::split( " ", theNewText, false);
+	  aListId = theNewText.split( " ", QString::SkipEmptyParts );
 
-      for ( int i = 0; i < aListId.count(); i++ ) {
-	const SMDS_MeshElement * e = aMesh->FindElement( aListId[ i ].toInt() );
-	if ( e ) {
-	  newIndices.Add(e->GetID());
-	  myNbOkElements++;  
-	}
-      }
+	  for ( int i = 0; i < aListId.count(); i++ ) {
+	    const SMDS_MeshElement * e = aMesh->FindElement( aListId[ i ].toInt() );
+	    if ( e ) {
+	      newIndices.Add(e->GetID());
+	      myNbOkElements++;  
+	    }
+	  }
 
-      mySelector->AddOrRemoveIndex( myActor->getIO(), newIndices, false );
-      if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
-	aViewWindow->highlight( myActor->getIO(), true, true );
+	  mySelector->AddOrRemoveIndex( myActor->getIO(), newIndices, false );
+	  if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+	    aViewWindow->highlight( myActor->getIO(), true, true );
       
-      if ( myNbOkElements ) {
-	if (aListId.count()>1){ 
-	  buttonOk->setEnabled( true );
-	  buttonApply->setEnabled( true );
+	  if ( myNbOkElements ) {
+	    if (aListId.count()>1){ 
+	      buttonOk->setEnabled( true );
+	      buttonApply->setEnabled( true );
+	    }
+	    else{
+	      buttonOk->setEnabled( false );
+	      buttonApply->setEnabled( false );
+	    }
+	    if(aListId.count()>1)
+	      displaySimulation();
+	  }
 	}
-	else{
-	  buttonOk->setEnabled( false );
-	  buttonApply->setEnabled( false );
-	}
-	if(aListId.count()>1)
-	  displaySimulation();
       }
-    }
-  }
   busy = false;
 }
 
@@ -788,18 +743,15 @@ int SMESHGUI_CreatePolyhedralVolumeDlg::checkEditLine(bool checkLast)
 
   // checking for nodes
   if (checkLast && myEditCurrentArgument->text().right(1) != QString(" ") ) return 1;
-  QStringList aListId = QStringList::split( " ", myEditCurrentArgument->text() );
+  QStringList aListId = myEditCurrentArgument->text().split( " ", QString::SkipEmptyParts );
   for ( int i = 0; i < aListId.count(); i++ ){
     switch (GetConstructorId()){
     case 0:{ // nodes
       const SMDS_MeshNode    * aNode = aMesh->FindNode( aListId[ i ].toInt() );
       if( !aNode ){
-	std::string aWarning;
-	aWarning = "The incorrect indices of nodes!";
-	SUIT_MessageBox::warn1(SMESHGUI::desktop(),
-			       QObject::tr("SMESH_POLYEDRE_CREATE_ERROR"),
-			       QObject::tr(aWarning.c_str()),
-			       QObject::tr("SMESH_BUT_OK"));
+	SUIT_MessageBox::warning(this,
+				 tr("SMESH_POLYEDRE_CREATE_ERROR"),
+				 tr("The incorrect indices of nodes!"));
 	
 	myEditCurrentArgument->clear();
 	myEditCurrentArgument->setText( aString );
@@ -823,12 +775,9 @@ int SMESHGUI_CreatePolyhedralVolumeDlg::checkEditLine(bool checkLast)
 	  }
 	}
       if (!aElemIsOK){
-	std::string aWarning;
-	aWarning = "The incorrect indices of faces!";
-	SUIT_MessageBox::warn1(SMESHGUI::desktop(),
-			       QObject::tr("SMESH_POLYEDRE_CREATE_ERROR"),
-			       QObject::tr(aWarning.c_str()),
-			       QObject::tr("SMESH_BUT_OK"));
+	SUIT_MessageBox::warning(this,
+				 tr("SMESH_POLYEDRE_CREATE_ERROR"),
+				 tr("The incorrect indices of faces!"));
 	
 	myEditCurrentArgument->clear();
 	myEditCurrentArgument->setText( aString );
@@ -852,22 +801,21 @@ void SMESHGUI_CreatePolyhedralVolumeDlg::displaySimulation()
   if ( (myNbOkElements || AddButton->isEnabled()) && GroupButtons->isEnabled() && myActor)
     {
       SMESH::TPolySimulation::TVTKIds aVTKIds;
-      vtkIdType aType = VTK_CONVEX_POINT_SET ;
+      vtkIdType aType = VTK_CONVEX_POINT_SET;
       SMDS_Mesh* aMesh = 0;
       if ( myActor ){
 	aMesh = myActor->GetObject()->GetMesh();
       }
       if (GetConstructorId() == 0 && aMesh){
 	if (!AddButton->isEnabled()){
-	  QListBoxItem* anItem;
 	  mySimulation->ResetGrid(true);
-	  for (anItem = myFacesByNodes->firstItem(); anItem != 0; anItem = anItem->next()) {
-	    QStringList anIds = QStringList::split(" ", anItem->text());
+	  for (int i = 0; i < myFacesByNodes->count(); i++) {
+	    QStringList anIds = myFacesByNodes->item(i)->text().split( " ", QString::SkipEmptyParts );
 	    SMESH::TPolySimulation::TVTKIds aVTKIds_faces;
 	    for (QStringList::iterator it = anIds.begin(); it != anIds.end(); ++it){
-	      const SMDS_MeshNode    * aNode = aMesh->FindNode( (*it).toInt() );
+	      const SMDS_MeshNode* aNode = aMesh->FindNode( (*it).toInt() );
 	      if (!aNode) continue;
-	      vtkIdType aId = myActor->GetObject()->GetNodeVTKId( (*it).toInt() ) ;
+	      vtkIdType aId = myActor->GetObject()->GetNodeVTKId( (*it).toInt() );
 	      aVTKIds.push_back(aId);
 	      aVTKIds_faces.push_back(aId);
 	    }
@@ -886,14 +834,14 @@ void SMESHGUI_CreatePolyhedralVolumeDlg::displaySimulation()
 	  }
 	} else {
 	  // add ids from edit line
-	  QStringList anEditIds = QStringList::split( " ", myEditCurrentArgument->text(), false);
+	  QStringList anEditIds = myEditCurrentArgument->text().split( " ", QString::SkipEmptyParts );
 	  for ( int i = 0; i < anEditIds.count(); i++ )
 	    aVTKIds.push_back( myActor->GetObject()->GetNodeVTKId( anEditIds[ i ].toInt() ));
 	  aType = VTK_POLYGON;
 	  mySimulation->SetPosition(myActor, aType, aVTKIds);
 	}
       }else if(GetConstructorId() == 1 && aMesh){
-	QStringList aListId = QStringList::split( " ", myEditCurrentArgument->text(), false);
+	QStringList aListId = myEditCurrentArgument->text().split( " ", QString::SkipEmptyParts );
 	for ( int i = 0; i < aListId.count(); i++ )
 	  {
 	    const SMDS_MeshElement * anElem = aMesh->FindElement( aListId[ i ].toInt() );
@@ -904,11 +852,11 @@ void SMESHGUI_CreatePolyhedralVolumeDlg::displaySimulation()
 	    SMDS_ElemIteratorPtr anIter = anElem->nodesIterator();
 	    SMESH::TPolySimulation::TVTKIds aVTKIds_faces;
 	    while( anIter->more() )
-		if ( const SMDS_MeshNode* aNode = (SMDS_MeshNode*)anIter->next() ){
-		  vtkIdType aId = myActor->GetObject()->GetNodeVTKId( aNode->GetID() ) ;
-		  aVTKIds.push_back(aId);
-		  aVTKIds_faces.push_back(aId);
-		}
+	      if ( const SMDS_MeshNode* aNode = (SMDS_MeshNode*)anIter->next() ){
+		vtkIdType aId = myActor->GetObject()->GetNodeVTKId( aNode->GetID() );
+		aVTKIds.push_back(aId);
+		aVTKIds_faces.push_back(aId);
+	      }
 	    if(!Preview->isChecked()){
 	      aType = VTK_POLYGON;
 	      mySimulation->SetPosition(myActor, aType, aVTKIds_faces);
@@ -929,7 +877,7 @@ void SMESHGUI_CreatePolyhedralVolumeDlg::SetEditCurrentArgument()
 {
   QPushButton* send = (QPushButton*)sender();
   if(send == SelectElementsButton) {
-    LineEditElements->setFocus() ;
+    LineEditElements->setFocus();
     myEditCurrentArgument = LineEditElements;
   }
   SelectionIntoArgument();
@@ -941,13 +889,13 @@ void SMESHGUI_CreatePolyhedralVolumeDlg::SetEditCurrentArgument()
 //=================================================================================
 void SMESHGUI_CreatePolyhedralVolumeDlg::DeactivateActiveDialog()
 {
-  if ( GroupConstructors->isEnabled() ) {
-    GroupConstructors->setEnabled(false) ;
-    GroupContent->setEnabled(false) ;
-    GroupButtons->setEnabled(false) ;
+  if ( ConstructorsBox->isEnabled() ) {
+    ConstructorsBox->setEnabled(false);
+    GroupContent->setEnabled(false);
+    GroupButtons->setEnabled(false);
     mySimulation->SetVisibility(false);
-    mySMESHGUI->ResetState() ;    
-    mySMESHGUI->SetActiveDialogBox(0) ;
+    mySMESHGUI->ResetState();    
+    mySMESHGUI->SetActiveDialogBox(0);
   }
 }
 
@@ -959,12 +907,12 @@ void SMESHGUI_CreatePolyhedralVolumeDlg::DeactivateActiveDialog()
 void SMESHGUI_CreatePolyhedralVolumeDlg::ActivateThisDialog()
 {
   /* Emit a signal to deactivate the active dialog */
-  mySMESHGUI->EmitSignalDeactivateDialog() ;   
-  GroupConstructors->setEnabled(true) ;
-  GroupContent->setEnabled(true) ;
-  GroupButtons->setEnabled(true) ;
+  mySMESHGUI->EmitSignalDeactivateDialog();   
+  ConstructorsBox->setEnabled(true);
+  GroupContent->setEnabled(true);
+  GroupButtons->setEnabled(true);
   
-  mySMESHGUI->SetActiveDialogBox( (QDialog*)this ) ;
+  mySMESHGUI->SetActiveDialogBox( (QDialog*)this );
 
   if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
     aViewWindow->SetSelectionMode( FaceSelection );
@@ -978,9 +926,9 @@ void SMESHGUI_CreatePolyhedralVolumeDlg::ActivateThisDialog()
 //=================================================================================
 void SMESHGUI_CreatePolyhedralVolumeDlg::enterEvent(QEvent* e)
 {
-  if ( GroupConstructors->isEnabled() )
-    return ;  
-  ActivateThisDialog() ;
+  if ( ConstructorsBox->isEnabled() )
+    return;  
+  ActivateThisDialog();
 }
 
 
@@ -991,7 +939,7 @@ void SMESHGUI_CreatePolyhedralVolumeDlg::enterEvent(QEvent* e)
 void SMESHGUI_CreatePolyhedralVolumeDlg::closeEvent( QCloseEvent* e )
 {
   /* same than click on cancel button */
-  this->ClickOnCancel() ;
+  ClickOnCancel();
 }
 
 
@@ -1013,9 +961,7 @@ void SMESHGUI_CreatePolyhedralVolumeDlg::hideEvent ( QHideEvent * e )
 //=================================================================================
 int SMESHGUI_CreatePolyhedralVolumeDlg::GetConstructorId()
 { 
-  if ( GroupConstructors != NULL && GroupConstructors->selected() != NULL )
-    return GroupConstructors->id( GroupConstructors->selected() );
-  return -1;
+  return GroupConstructors->checkedId();
 }
 
 //=================================================================================
@@ -1029,12 +975,12 @@ void SMESHGUI_CreatePolyhedralVolumeDlg::onAdd()
   int aNbSel = selected.Extent();
   if (aNbSel == 0 || !myActor || myMesh->_is_nil()) return;
   
-  if (this->checkEditLine(false) == -1) return;
+  if (checkEditLine(false) == -1) return;
 
   busy = true;
   if ( !(myEditCurrentArgument->text().isEmpty()) )
     {
-      myFacesByNodes->insertItem(myEditCurrentArgument->text());
+      myFacesByNodes->addItem(myEditCurrentArgument->text());
       //myFacesByNodes->setSelected(myFacesByNodes->count() - 1, true);
       myNbOkElements = 1;
       myEditCurrentArgument->clear();
@@ -1054,21 +1000,18 @@ void SMESHGUI_CreatePolyhedralVolumeDlg::onAdd()
 void SMESHGUI_CreatePolyhedralVolumeDlg::onRemove()
 {
   busy = true;
-  for (int i = myFacesByNodes->count(); i > 0; i--) {
-    if (myFacesByNodes->isSelected(i-1)) {
-      myFacesByNodes->removeItem(i-1);
-      myNbOkElements = 1;
-    }
-  }
-  if (myFacesByNodes->count() < 1){
-    RemoveButton->setEnabled(false);
-    buttonOk->setEnabled( false );
-    buttonApply->setEnabled( false );
-  } 
-  else if (myFacesByNodes->count() == 1){
-    buttonOk->setEnabled( false );
-    buttonApply->setEnabled( false );
-  }
+  QList<QListWidgetItem*> selItems = myFacesByNodes->selectedItems();
+  QListWidgetItem* anItem;
+
+  if ( selItems.count() > 0 ) myNbOkElements = 1;
+
+  foreach( anItem, selItems )
+    delete anItem;
+
+  RemoveButton->setEnabled( myFacesByNodes->count() > 0 );
+  buttonOk->setEnabled( myFacesByNodes->count() > 1 );
+  buttonApply->setEnabled( myFacesByNodes->count() > 1 );
+
   busy = false;
   displaySimulation();
 }
@@ -1081,21 +1024,19 @@ void SMESHGUI_CreatePolyhedralVolumeDlg::onListSelectionChanged()
 {
   if (busy || !myActor) return;
   busy = true;
-  bool isSelected=false;
+
   SALOME_ListIO aList;
   mySelectionMgr->setSelectedObjects( aList );
   TColStd_MapOfInteger aIndexes;
-  QListBoxItem* anItem;
-  for (anItem = myFacesByNodes->firstItem(); anItem != 0; anItem = anItem->next()) {
-    if (anItem->isSelected()) {
-      isSelected = true;
-      QStringList anIds = QStringList::split(" ", anItem->text());
-      for (QStringList::iterator it = anIds.begin(); it != anIds.end(); ++it)
-	aIndexes.Add((*it).toInt());
-    }
+
+  QList<QListWidgetItem*> selItems = myFacesByNodes->selectedItems();
+  QListWidgetItem* anItem;
+  foreach( anItem, selItems ) {
+    QStringList anIds = anItem->text().split( " ", QString::SkipEmptyParts );
+    for (QStringList::iterator it = anIds.begin(); it != anIds.end(); ++it)
+      aIndexes.Add((*it).toInt());
   }
-  if(isSelected) RemoveButton->setEnabled(true);
-  else RemoveButton->setEnabled(false);
+  RemoveButton->setEnabled(selItems.count() > 0);
   mySelector->AddOrRemoveIndex(myActor->getIO(), aIndexes, true );
   if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
     aViewWindow->highlight( myActor->getIO(), true, true );
@@ -1116,9 +1057,8 @@ void SMESHGUI_CreatePolyhedralVolumeDlg::keyPressEvent( QKeyEvent* e )
   if ( e->isAccepted() )
     return;
 
-  if ( e->key() == Key_F1 )
-    {
-      e->accept();
-      ClickOnHelp();
-    }
+  if ( e->key() == Qt::Key_F1 ) {
+    e->accept();
+    ClickOnHelp();
+  }
 }

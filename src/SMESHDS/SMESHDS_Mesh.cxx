@@ -1,31 +1,30 @@
+//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//
+//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+//
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
+//
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
+//
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
 //  SMESH SMESHDS : management of mesh data and SMESH document
-//
-//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
-// 
-//  This library is free software; you can redistribute it and/or 
-//  modify it under the terms of the GNU Lesser General Public 
-//  License as published by the Free Software Foundation; either 
-//  version 2.1 of the License. 
-// 
-//  This library is distributed in the hope that it will be useful, 
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of 
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
-//  Lesser General Public License for more details. 
-// 
-//  You should have received a copy of the GNU Lesser General Public 
-//  License along with this library; if not, write to the Free Software 
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
-// 
-// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
-//
-//
-//
 //  File   : SMESH_Mesh.cxx
 //  Author : Yves FRICAUD, OCC
 //  Module : SMESH
 //  $Header: 
-
+//
 #include "SMESHDS_Mesh.hxx"
 
 #include "SMESHDS_Group.hxx"
@@ -705,13 +704,15 @@ void SMESHDS_Mesh::RemoveNode(const SMDS_MeshNode * n)
 //function : RemoveFreeNode
 //purpose  : 
 //=======================================================================
-void SMESHDS_Mesh::RemoveFreeNode(const SMDS_MeshNode * n, SMESHDS_SubMesh * subMesh)
+void SMESHDS_Mesh::RemoveFreeNode(const SMDS_MeshNode * n,
+                                  SMESHDS_SubMesh *     subMesh,
+                                  bool                  fromGroups)
 {
   myScript->RemoveNode(n->GetID());
 
   // Rm from group
   // Node can belong to several groups
-  if (!myGroups.empty()) {
+  if (fromGroups && !myGroups.empty()) {
     set<SMESHDS_GroupBase*>::iterator GrIt = myGroups.begin();
     for (; GrIt != myGroups.end(); GrIt++) {
       SMESHDS_Group* group = dynamic_cast<SMESHDS_Group*>(*GrIt);
@@ -754,7 +755,9 @@ void SMESHDS_Mesh::RemoveElement(const SMDS_MeshElement * elt)
 //function : RemoveFreeElement
 //purpose  : 
 //========================================================================
-void SMESHDS_Mesh::RemoveFreeElement(const SMDS_MeshElement * elt, SMESHDS_SubMesh * subMesh)
+void SMESHDS_Mesh::RemoveFreeElement(const SMDS_MeshElement * elt,
+                                     SMESHDS_SubMesh *        subMesh,
+                                     bool                     fromGroups)
 {
   if (elt->GetType() == SMDSAbs_Node) {
     RemoveFreeNode( static_cast<const SMDS_MeshNode*>(elt), subMesh);
@@ -769,12 +772,12 @@ void SMESHDS_Mesh::RemoveFreeElement(const SMDS_MeshElement * elt, SMESHDS_SubMe
 
   // Rm from group
   // Node can belong to several groups
-  if (!myGroups.empty()) {
+  if ( fromGroups && !myGroups.empty() ) {
     set<SMESHDS_GroupBase*>::iterator GrIt = myGroups.begin();
     for (; GrIt != myGroups.end(); GrIt++) {
       SMESHDS_Group* group = dynamic_cast<SMESHDS_Group*>(*GrIt);
-      if (!group || group->IsEmpty()) continue;
-      group->SMDSGroup().Remove(elt);
+      if (group && !group->IsEmpty())
+        group->SMDSGroup().Remove(elt);
     }
   }
 
@@ -784,6 +787,33 @@ void SMESHDS_Mesh::RemoveFreeElement(const SMDS_MeshElement * elt, SMESHDS_SubMe
     subMesh->RemoveElement(elt);
 
   SMDS_Mesh::RemoveFreeElement(elt);
+}
+
+//================================================================================
+/*!
+ * \brief Remove all data from the mesh
+ */
+//================================================================================
+
+void SMESHDS_Mesh::ClearMesh()
+{
+  myScript->ClearMesh();
+  SMDS_Mesh::Clear();
+
+  // clear submeshes
+  map<int,SMESHDS_SubMesh*>::iterator sub, subEnd = myShapeIndexToSubMesh.end();
+  for ( sub = myShapeIndexToSubMesh.begin(); sub != subEnd; ++sub )
+    sub->second->Clear();
+
+  // clear groups
+  TGroups::iterator group, groupEnd = myGroups.end();
+  for ( group = myGroups.begin(); group != groupEnd; ++group ) {
+    if ( SMESHDS_Group* g = dynamic_cast<SMESHDS_Group*>(*group)) {
+      SMDSAbs_ElementType groupType = g->GetType();
+      g->Clear();
+      g->SetType( groupType );
+    }
+  }
 }
 
 //================================================================================

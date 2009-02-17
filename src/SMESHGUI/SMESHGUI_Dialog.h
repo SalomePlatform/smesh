@@ -1,6 +1,6 @@
-//  SMESH SMESHGUI : GUI for SMESH component
+//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
 //  This library is free software; you can redistribute it and/or
@@ -17,21 +17,19 @@
 //  License along with this library; if not, write to the Free Software
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+// SMESH SMESHGUI : GUI for SMESH component
+// File   : SMESHGUI_Dialog.h
+// Author : Alexander SOLOVYOV, Open CASCADE S.A.S.
 //
-//
-//  File   : SMESHGUI_Dialog.h
-//  Author : Alexander SOLOVYOV
-//  Module : SMESH
-//  $Header$
-
-
 #ifndef SMESHGUI_DIALOG_H
 #define SMESHGUI_DIALOG_H
 
+// SMESH includes
 #include "SMESH_SMESHGUI.hxx"
 
+// SALOME GUI includes
 #include <LightApp_Dialog.h>
 
 class SUIT_Desktop;
@@ -46,23 +44,24 @@ class SMESHGUI_EXPORT SMESHGUI_Dialog : public LightApp_Dialog
   Q_OBJECT
   
 public:
-  SMESHGUI_Dialog( QWidget* = 0, const bool = false, const bool = false, const int = OK | Close | Apply | Help );
+  SMESHGUI_Dialog( QWidget* = 0, const bool = false, const bool = false, 
+		   const int = OK | Close | Apply | Help );
   virtual ~SMESHGUI_Dialog();
 
-  virtual void show();
+  virtual void      show();
 
   //! set all content to enable (parameter is true) or disable state
-  virtual void setContentActive( const bool ) const;
+  virtual void      setContentActive( const bool );
 
   //! Return hard-coded prefix using to differ overlapping types
-  static int   prefix( const QString& );
+  static int        prefix( const QString& );
 
 protected:
   //! find desktop of active application
-  SUIT_Desktop* desktop() const;
+  SUIT_Desktop*     desktop() const;
   
   //! gets resource manager
-  SUIT_ResourceMgr* resourceMgr();
+  SUIT_ResourceMgr* resourceMgr() const;
 };
 
-#endif
+#endif // SMESHGUI_DIALOG_H

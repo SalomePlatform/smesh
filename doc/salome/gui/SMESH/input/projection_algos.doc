@@ -5,7 +5,7 @@
 \n Projection algorithms allow to define the mesh of a geometrical
 object by the projection of another already meshed geometrical object.
 
-<b>Projection 1D</b> algorithm permits to define the mesh of an edge
+<b>Projection 1D</b> algorithm allows to define the mesh of an edge
 (or group of edges)
 by the projection of another already meshed edge (or group of edges).
 \n To apply this algorithm select the edge to be meshed (indicated in
@@ -16,7 +16,7 @@ The following dialog box will appear:
 
 \image html projection_1d.png
 
-In this menu you can define the \b Name of the algorithm, the algeady
+In this menu you can define the \b Name of the algorithm, the already
 meshed source \b Edge and the \b Mesh (optional, use it if there are several
 different meshes on the same edge). It could also be necessary to
 define the orientation of edges, which is done by indicating the
@@ -24,9 +24,9 @@ define the orientation of edges, which is done by indicating the
 <b>Target Vertex</b> being the first point of the created \b Edge. For
 a group of edges, <b>Source</b> and <b>Target</b> vertices should be
 shared by only one edge of the group. If <b>Source</b> and
-<b>Target</b> vectors are specified, the elements of the group must be ajacent.
+<b>Target</b> vertices are specified, the elements of the group must be ajacent.
 
-\n <b>Projection 2D</b> algorithm permits to define the mesh of a face
+\n <b>Projection 2D</b> algorithm allows to define the mesh of a face
 (or group of faces) by the
 projection of another already meshed face (or group of faces). This
 algorithm works only
@@ -41,7 +41,7 @@ following dialog box will appear:
 
 \image html projection_2d.png
 
-In this menu you can define the \b Name of the algorithm, the algeady
+In this menu you can define the \b Name of the algorithm, the already
 meshed source \b Face and the \b Mesh (optional, use it if there are several
 different meshes on the same face). It could also be necessary to
 define the orientation of mesh on the face, which is done by
@@ -49,7 +49,7 @@ indicating two <b>Source Vertices</b>, which belong to the same edge of the
 source face, and two <b>Target Vertices</b>, which belong to the same edge of
 the created \b Face.
 
-\n <b>Projection 3D</b> algorithm permits to define the mesh of a shape by
+\n <b>Projection 3D</b> algorithm allows to define the mesh of a shape by
 the projection of another already meshed shape.  This algorithm works
 only if all faces and edges of the target face have been meshed as 1D
 Projections of the faces and edges of the source face. Another
@@ -62,7 +62,7 @@ following dialog box will appear:
 
 \image html projection_3d.png
 
-In this menu you can define the \b Name of the algorithm, the algeady
+In this menu you can define the \b Name of the algorithm, the already
 meshed source <b>3D shape</b> and the \b Mesh (optional, use it if there are
 several different meshes on the same shape). It could also be
 necessary to define the orientation of mesh on the shape, which is

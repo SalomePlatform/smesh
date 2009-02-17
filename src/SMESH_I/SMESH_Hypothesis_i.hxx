@@ -1,31 +1,30 @@
+//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//
+//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+//
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
+//
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
+//
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
 //  SMESH SMESH_I : idl implementation based on 'SMESH' unit's calsses
-//
-//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
-// 
-//  This library is free software; you can redistribute it and/or 
-//  modify it under the terms of the GNU Lesser General Public 
-//  License as published by the Free Software Foundation; either 
-//  version 2.1 of the License. 
-// 
-//  This library is distributed in the hope that it will be useful, 
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of 
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
-//  Lesser General Public License for more details. 
-// 
-//  You should have received a copy of the GNU Lesser General Public 
-//  License along with this library; if not, write to the Free Software 
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
-// 
-// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
-//
-//
-//
 //  File   : SMESH_Hypothesis_i.hxx
 //  Author : Paul RASCLE, EDF
 //  Module : SMESH
 //  $Header$
-
+//
 #ifndef _SMESH_HYPOTHESIS_I_HXX_
 #define _SMESH_HYPOTHESIS_I_HXX_
 
@@ -65,6 +64,25 @@ public:
 
   // Get unique id of hypothesis
   CORBA::Long GetId();
+  
+  // Set list of parameters  separated by ":" symbol, used for Hypothesis creation
+  void SetParameters (const char* theParameters);
+  
+  // Return list of notebook variables used for Hypothesis creation separated by ":" symbol
+  char* GetParameters();
+
+  //Return list of last notebook variables used for Hypothesis creation.
+  SMESH::ListOfParameters* GetLastParameters();
+
+  //Set last parameters for not published hypothesis
+  
+  void SetLastParameters(const char* theParameters);
+  
+  // Clear parameters list
+  void ClearParameters();
+
+  //Return true if hypothesis was published in study
+  bool IsPublished();
 
   // Get implementation
   ::SMESH_Hypothesis* GetImpl();

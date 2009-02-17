@@ -1,31 +1,29 @@
+//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//
+//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+//
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
+//
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
+//
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
 //  SMESH SMESH : implementaion of SMESH idl descriptions
-//
-//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
-// 
-//  This library is free software; you can redistribute it and/or 
-//  modify it under the terms of the GNU Lesser General Public 
-//  License as published by the Free Software Foundation; either 
-//  version 2.1 of the License. 
-// 
-//  This library is distributed in the hope that it will be useful, 
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of 
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
-//  Lesser General Public License for more details. 
-// 
-//  You should have received a copy of the GNU Lesser General Public 
-//  License along with this library; if not, write to the Free Software 
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
-// 
-// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
-//
-//
-//
 //  File   : SMESH_HypoFilter.hxx
 //  Module : SMESH
 //  $Header$
-
-
+//
 #ifndef SMESH_HypoFilter_HeaderFile
 #define SMESH_HypoFilter_HeaderFile
 
@@ -74,6 +72,7 @@ class SMESH_EXPORT SMESH_HypoFilter: public SMESH_HypoPredicate
   static SMESH_HypoPredicate* IsAssignedTo(const TopoDS_Shape& theShape);
   static SMESH_HypoPredicate* Is(const SMESH_Hypothesis* theHypo);
   static SMESH_HypoPredicate* IsGlobal(const TopoDS_Shape& theMainShape);
+  static SMESH_HypoPredicate* IsMoreLocalThan(const TopoDS_Shape& theShape);
   static SMESH_HypoPredicate* HasName(const std::string & theName);
   static SMESH_HypoPredicate* HasDim(const int theDim);
   static SMESH_HypoPredicate* HasType(const int theHypType);
@@ -163,6 +162,13 @@ class SMESH_EXPORT SMESH_HypoFilter: public SMESH_HypoPredicate
   struct IsAssignedToPredicate : public SMESH_HypoPredicate {
     TopoDS_Shape _mainShape;
     IsAssignedToPredicate( const TopoDS_Shape& mainShape ):_mainShape(mainShape){}
+    bool IsOk(const SMESH_Hypothesis* aHyp,
+              const TopoDS_Shape&     aShape) const;
+  };
+        
+  struct IsMoreLocalThanPredicate : public SMESH_HypoPredicate {
+    TopAbs_ShapeEnum _shapeType;
+    IsMoreLocalThanPredicate( const TopoDS_Shape& shape ):_shapeType(shape.ShapeType()){}
     bool IsOk(const SMESH_Hypothesis* aHyp,
               const TopoDS_Shape&     aShape) const;
   };

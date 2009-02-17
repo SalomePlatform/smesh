@@ -1,6 +1,6 @@
-//  SMESH SMESHGUI : GUI for SMESH component
+//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
 //  This library is free software; you can redistribute it and/or
@@ -17,18 +17,16 @@
 //  License along with this library; if not, write to the Free Software
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+// SMESH SMESHGUI : GUI for SMESH component
+// File   : SMESHGUI_MeshPatternDlg.cxx
+// Author : Sergey LITONIN, Open CASCADE S.A.S.
+// SMESH includes
 //
-//
-//  File   : SMESHGUI_MeshPatternDlg.cxx
-//  Author : Sergey LITONIN
-//  Module : SMESH
-
 #include "SMESHGUI_MeshPatternDlg.h"
 
 #include "SMESHGUI.h"
-#include "SMESHGUI_SpinBox.h"
 #include "SMESHGUI_CreatePatternDlg.h"
 #include "SMESHGUI_PatternWidget.h"
 #include "SMESHGUI_Utils.h"
@@ -36,59 +34,57 @@
 #include "SMESHGUI_PatternUtils.h"
 #include "SMESHGUI_GEOMGenUtils.h"
 
-#include "SMESH_Actor.h"
-#include "SMESH_ActorUtils.h"
-#include "SMESH_NumberFilter.hxx"
+#include <SMESH_Actor.h>
+#include <SMESH_ActorUtils.h>
+#include <SMESH_NumberFilter.hxx>
 
-#include "SMDS_Mesh.hxx"
-#include "SMDS_MeshElement.hxx"
+#include <SMDS_Mesh.hxx>
+#include <SMDS_MeshElement.hxx>
 
-#include "SUIT_ResourceMgr.h"
-#include "SUIT_Desktop.h"
-#include "SUIT_FileDlg.h"
-#include "SUIT_Session.h"
-#include "SUIT_MessageBox.h"
+// SALOME GUI includes
+#include <SUIT_ResourceMgr.h>
+#include <SUIT_Desktop.h>
+#include <SUIT_FileDlg.h>
+#include <SUIT_Session.h>
+#include <SUIT_MessageBox.h>
 
-#include "LightApp_SelectionMgr.h"
-#include "SalomeApp_Tools.h"
-#include "SalomeApp_Study.h"
-#include "LightApp_Application.h"
+#include <LightApp_SelectionMgr.h>
+#include <SalomeApp_Tools.h>
+#include <LightApp_Application.h>
+#include <SalomeApp_IntSpinBox.h>
 
-#include "SALOMEDS_SObject.hxx"
+#include <SALOME_ListIO.hxx>
 
-#include "SALOME_ListIO.hxx"
-#include "SVTK_Selection.h"
+#include <SVTK_ViewModel.h>
+#include <SVTK_ViewWindow.h>
+#include <VTKViewer_CellLocationsArray.h>
 
-#include "SVTK_ViewModel.h"
-#include "SVTK_Selector.h"
-#include "SVTK_ViewWindow.h"
-#include "VTKViewer_CellLocationsArray.h"
+// SALOME KERNEL includes 
+#include <SALOMEDS_SObject.hxx>
 
-// OCCT Includes
+// OCCT includes
 #include <TColStd_MapOfInteger.hxx>
-#include <TColStd_IndexedMapOfInteger.hxx>
 
-// QT Includes
-#include <qframe.h>
-#include <qlayout.h>
-#include <qlineedit.h>
-#include <qpushbutton.h>
-#include <qgroupbox.h>
-#include <qlabel.h>
-#include <qradiobutton.h>
-#include <qcheckbox.h>
-#include <qbuttongroup.h>
-#include <qmessagebox.h>
-#include <qcstring.h>
-#include <qspinbox.h>
-#include <qvaluelist.h>
-#include <qdir.h>
-#include <qfile.h>
-#include <qfileinfo.h>
-#include <qfiledialog.h>
+// Qt includes
+#include <QFrame>
+#include <QVBoxLayout>
+#include <QHBoxLayout>
+#include <QGridLayout>
+#include <QLineEdit>
+#include <QPushButton>
+#include <QGroupBox>
+#include <QLabel>
+#include <QRadioButton>
+#include <QCheckBox>
+#include <QButtonGroup>
+#include <QList>
+#include <QDir>
+#include <QFileDialog>
+#include <QFileInfo>
+#include <QFile>
+#include <QKeyEvent>
 
-// VTK Includes
-#include <vtkCell.h>
+// VTK includes
 #include <vtkIdList.h>
 #include <vtkCellArray.h>
 #include <vtkUnsignedCharArray.h>
@@ -96,8 +92,8 @@
 #include <vtkDataSetMapper.h>
 #include <vtkProperty.h>
 
-#define SPACING 5
-#define MARGIN  10
+#define SPACING 6
+#define MARGIN  11
 
 /*!
  *  Class       : SMESHGUI_MeshPatternDlg
@@ -108,27 +104,27 @@
 // name    : SMESHGUI_MeshPatternDlg::SMESHGUI_MeshPatternDlg
 // Purpose : Constructor
 //=======================================================================
-SMESHGUI_MeshPatternDlg::SMESHGUI_MeshPatternDlg( SMESHGUI*   theModule,
-                                                  const char* theName )
-     : QDialog( SMESH::GetDesktop( theModule ), theName, false, WStyle_Customize |
-                WStyle_NormalBorder | WStyle_Title | WStyle_SysMenu),
-       myBusy(false),
-       mySMESHGUI( theModule ),
-       mySelectionMgr( SMESH::GetSelectionMgr( theModule ) )
+SMESHGUI_MeshPatternDlg::SMESHGUI_MeshPatternDlg( SMESHGUI* theModule )
+  : QDialog( SMESH::GetDesktop( theModule ) ),
+    mySMESHGUI( theModule ),
+    mySelectionMgr( SMESH::GetSelectionMgr( theModule ) ),
+    myBusy( false ),
+    myCreationDlg( 0 )
 {
-  setCaption(tr("CAPTION"));
+  setModal( false );
+  setWindowTitle( tr( "CAPTION" ) );
 
-  QVBoxLayout* aDlgLay = new QVBoxLayout(this, MARGIN, SPACING);
+  QVBoxLayout* aDlgLay = new QVBoxLayout( this );
+  aDlgLay->setMargin( MARGIN );
+  aDlgLay->setSpacing( SPACING );
 
-  QFrame* aMainFrame = createMainFrame  (this);
-  QFrame* aBtnFrame  = createButtonFrame(this);
+  QWidget* aMainFrame = createMainFrame  ( this );
+  QWidget* aBtnFrame  = createButtonFrame( this );
 
-  aDlgLay->addWidget(aMainFrame);
-  aDlgLay->addWidget(aBtnFrame);
+  aDlgLay->addWidget( aMainFrame );
+  aDlgLay->addWidget( aBtnFrame );
 
-  aDlgLay->setStretchFactor(aMainFrame, 1);
-
-  myCreationDlg = 0;
+  aDlgLay->setStretchFactor( aMainFrame, 1 );
 
   mySelector = (SMESH::GetViewWindow( mySMESHGUI ))->GetSelector();
 
@@ -141,129 +137,175 @@ SMESHGUI_MeshPatternDlg::SMESHGUI_MeshPatternDlg( SMESHGUI*   theModule,
 // name    : SMESHGUI_MeshPatternDlg::createMainFrame
 // Purpose : Create frame containing dialog's input fields
 //=======================================================================
-QFrame* SMESHGUI_MeshPatternDlg::createMainFrame (QWidget* theParent)
+QWidget* SMESHGUI_MeshPatternDlg::createMainFrame (QWidget* theParent)
 {
   SUIT_ResourceMgr* mgr = SMESH::GetResourceMgr( mySMESHGUI );
-  QPixmap iconSlct ( mgr->loadPixmap("SMESH", tr("ICON_SELECT")));
-  QPixmap icon2d   ( mgr->loadPixmap("SMESH", tr("ICON_PATTERN_2d")));
-  QPixmap icon3d   ( mgr->loadPixmap("SMESH", tr("ICON_PATTERN_3d")));
-  QPixmap iconOpen ( mgr->loadPixmap("STD", tr("ICON_FILE_OPEN")));
+  QPixmap iconSlct ( mgr->loadPixmap( "SMESH", tr( "ICON_SELECT" ) ) );
+  QPixmap icon2d   ( mgr->loadPixmap( "SMESH", tr( "ICON_PATTERN_2d" ) ) );
+  QPixmap icon3d   ( mgr->loadPixmap( "SMESH", tr( "ICON_PATTERN_3d" ) ) );
+  QPixmap iconOpen ( mgr->loadPixmap( "STD",   tr( "ICON_FILE_OPEN" ) ) );
 
-  QPixmap iconSample2d ( mgr->loadPixmap("SMESH", tr("ICON_PATTERN_SAMPLE_2D")));
-  QPixmap iconSample3d ( mgr->loadPixmap("SMESH", tr("ICON_PATTERN_SAMPLE_3D")));
+  QPixmap iconSample2d ( mgr->loadPixmap( "SMESH", tr( "ICON_PATTERN_SAMPLE_2D" ) ) );
+  QPixmap iconSample3d ( mgr->loadPixmap( "SMESH", tr( "ICON_PATTERN_SAMPLE_3D" ) ) );
 
-  QGroupBox* aMainGrp = new QGroupBox (1, Qt::Horizontal, theParent);
-  aMainGrp->setFrameStyle(QFrame::NoFrame);
-  aMainGrp->setInsideMargin(0);
+  QWidget* aMainGrp = new QWidget( theParent );
+
+  QVBoxLayout* aMainGrpLayout = new QVBoxLayout( aMainGrp );
+  aMainGrpLayout->setMargin( 0 );
+  aMainGrpLayout->setSpacing( SPACING );
 
   // Pattern type group
 
-  myTypeGrp = new QButtonGroup (1, Qt::Vertical, tr("PATTERN_TYPE"), aMainGrp);
-  mySwitch2d = new QRadioButton (myTypeGrp);
-  mySwitch3d = new QRadioButton (myTypeGrp);
-  mySwitch2d->setPixmap(icon2d);
-  mySwitch3d->setPixmap(icon3d);
-  myTypeGrp->insert(mySwitch2d, Type_2d);
-  myTypeGrp->insert(mySwitch3d, Type_3d);
+  QGroupBox* aTypeGrp = new QGroupBox( tr( "PATTERN_TYPE" ), aMainGrp );
+  QHBoxLayout* aTypeGrpLayout = new QHBoxLayout( aTypeGrp );
+  aTypeGrpLayout->setMargin( MARGIN );
+  aTypeGrpLayout->setSpacing( SPACING );
+
+  mySwitch2d = new QRadioButton( aTypeGrp );
+  mySwitch3d = new QRadioButton( aTypeGrp );
+  mySwitch2d->setIcon( icon2d );
+  mySwitch3d->setIcon( icon3d );
+
+  myTypeGrp = new QButtonGroup( aMainGrp );
+  myTypeGrp->addButton( mySwitch2d, Type_2d );
+  myTypeGrp->addButton( mySwitch3d, Type_3d );
+
+  // ... layout widgets
+
+  aTypeGrpLayout->addWidget( mySwitch2d );
+  aTypeGrpLayout->addWidget( mySwitch3d );
 
   // Mesh group
 
-  QGroupBox* aMeshGrp = new QGroupBox(1, Qt::Vertical, tr("SMESH_MESH"), aMainGrp);
-  new QLabel(tr("SMESH_MESH"), aMeshGrp);
-  mySelBtn[ Mesh ] = new QPushButton(aMeshGrp);
-  mySelBtn[ Mesh ]->setPixmap(iconSlct);
-  mySelEdit[ Mesh ] = new QLineEdit(aMeshGrp);
-  mySelEdit[ Mesh ]->setReadOnly(true);
+  QGroupBox* aMeshGrp = new QGroupBox( tr( "SMESH_MESH" ), aMainGrp );
+  QHBoxLayout* aMeshGrpLayout = new QHBoxLayout( aMeshGrp );
+  aMeshGrpLayout->setMargin( MARGIN );
+  aMeshGrpLayout->setSpacing( SPACING );
+
+  QLabel* aMeshLab = new QLabel( tr( "SMESH_MESH" ), aMeshGrp );
+  mySelBtn[ Mesh ] = new QPushButton( aMeshGrp );
+  mySelBtn[ Mesh ]->setIcon( iconSlct );
+  mySelEdit[ Mesh ] = new QLineEdit( aMeshGrp );
+  mySelEdit[ Mesh ]->setReadOnly( true );
+
+  // ... layout widgets
+
+  aMeshGrpLayout->addWidget( aMeshLab );
+  aMeshGrpLayout->addWidget( mySelBtn[ Mesh ] );
+  aMeshGrpLayout->addWidget( mySelEdit[ Mesh ] );
 
   // Pattern group
 
-  QGroupBox* aPatGrp = new QGroupBox(1, Qt::Horizontal, tr("PATTERN"), aMainGrp);
+  QGroupBox* aPatGrp = new QGroupBox( tr( "PATTERN" ), aMainGrp );
+  QGridLayout* aPatGrpLayout = new QGridLayout( aPatGrp );
+  aPatGrpLayout->setMargin( MARGIN );
+  aPatGrpLayout->setSpacing( SPACING );
 
-  // pattern name
-  QGroupBox* aNameGrp = new QGroupBox(1, Qt::Vertical, aPatGrp);
-  aNameGrp->setFrameStyle(QFrame::NoFrame);
-  aNameGrp->setInsideMargin(0);
-  new QLabel(tr("PATTERN"), aNameGrp);
-  myName = new QLineEdit(aNameGrp);
-  myName->setReadOnly(true);
-  myOpenBtn = new QPushButton(aNameGrp);
-  myOpenBtn->setPixmap(iconOpen);
-  myNewBtn = new QPushButton(tr("NEW"), aNameGrp);
+  // ... Pattern name
 
-  // Mode selection check box
-  myRefine = new QCheckBox(tr("REFINE"), aPatGrp);
+  QLabel* aNameLab = new QLabel( tr( "PATTERN" ), aPatGrp );
+  myName = new QLineEdit( aPatGrp );
+  myName->setReadOnly( true );
+  myOpenBtn = new QPushButton( aPatGrp );
+  myOpenBtn->setIcon( iconOpen );
+  myNewBtn = new QPushButton( tr( "NEW" ), aPatGrp );
 
-  // selection widgets for Apply to geom mode
-  myGeomGrp = new QGroupBox(3, Qt::Horizontal, aPatGrp);
-  myGeomGrp->setFrameStyle(QFrame::NoFrame);
-  myGeomGrp->setInsideMargin(0);
+  // ... Mode selection check box
+  myRefine = new QCheckBox( tr( "REFINE" ), aPatGrp );
 
-  for (int i = Object; i <= Vertex2; i++)
-  {
-    mySelLbl[ i ] = new QLabel(myGeomGrp);
-    mySelBtn[ i ] = new QPushButton(myGeomGrp);
-    mySelBtn[ i ]->setPixmap(iconSlct);
-    mySelEdit[ i ] = new QLineEdit(myGeomGrp);
-    mySelEdit[ i ]->setReadOnly(true);
+  // ... selection widgets for Apply to geom mode
+  myGeomGrp = new QFrame( aPatGrp );
+  myGeomGrp->setFrameStyle( QFrame::NoFrame );
+  QGridLayout* myGeomGrpLayout = new QGridLayout( myGeomGrp );
+  myGeomGrpLayout->setMargin( 0 );
+  myGeomGrpLayout->setSpacing( SPACING );
+
+  for ( int i = Object; i <= Vertex2; i++ ) {
+    mySelLbl[ i ] = new QLabel( myGeomGrp );
+    mySelBtn[ i ] = new QPushButton( myGeomGrp );
+    mySelBtn[ i ]->setIcon( iconSlct );
+    mySelEdit[ i ] = new QLineEdit( myGeomGrp );
+    mySelEdit[ i ]->setReadOnly( true );
+    myGeomGrpLayout->addWidget( mySelLbl[ i ],  i - Object, 0 );
+    myGeomGrpLayout->addWidget( mySelBtn[ i ],  i - Object, 1 );
+    myGeomGrpLayout->addWidget( mySelEdit[ i ], i - Object, 2 );
   }
 
-  // Widgets for refinement of existing mesh elements
-  myRefineGrp = new QFrame(aPatGrp);
-  myRefineGrp->setFrameStyle(QFrame::NoFrame);
-  QGridLayout* aRefGrid = new QGridLayout(myRefineGrp, 3, 3, 0, 5);
+  // ... Widgets for refinement of existing mesh elements
 
-  mySelLbl[ Ids ] = new QLabel(myRefineGrp);
-  mySelBtn[ Ids ] = new QPushButton(myRefineGrp);
-  mySelBtn[ Ids ]->setPixmap(iconSlct);
-  mySelEdit[ Ids ] = new QLineEdit(myRefineGrp);
+  myRefineGrp = new QFrame( aPatGrp );
+  myRefineGrp->setFrameStyle( QFrame::NoFrame );
 
-  QLabel* aNodeLbl = new QLabel(tr("NODE_1"), myRefineGrp);
-  myNode1          = new QSpinBox(myRefineGrp);
-  myNode2Lbl       = new QLabel(tr("NODE_2"), myRefineGrp);
-  myNode2          = new QSpinBox(myRefineGrp);
+  QGridLayout* myRefineGrpLayout = new QGridLayout( myRefineGrp );
+  myRefineGrpLayout->setMargin( 0 );
+  myRefineGrpLayout->setSpacing( SPACING );
 
-  aRefGrid->addWidget(mySelLbl [ Ids ], 0, 0);
-  aRefGrid->addWidget(mySelBtn [ Ids ], 0, 1);
-  aRefGrid->addWidget(mySelEdit[ Ids ], 0, 2);
-  aRefGrid->addWidget(aNodeLbl, 1, 0);
-  aRefGrid->addMultiCellWidget(myNode1, 1, 1, 1, 2);
-  aRefGrid->addWidget(myNode2Lbl, 2, 0);
-  aRefGrid->addMultiCellWidget(myNode2, 2, 2, 1, 2);
+  mySelLbl[ Ids ] = new QLabel( myRefineGrp );
+  mySelBtn[ Ids ] = new QPushButton( myRefineGrp );
+  mySelBtn[ Ids ]->setIcon( iconSlct );
+  mySelEdit[ Ids ] = new QLineEdit( myRefineGrp );
 
-  // reverse check box
-  myReverseChk = new QCheckBox(tr("REVERSE"), aPatGrp);
+  QLabel* aNodeLbl = new QLabel( tr( "NODE_1" ), myRefineGrp );
+  myNode1          = new SalomeApp_IntSpinBox( myRefineGrp );
+  myNode2Lbl       = new QLabel( tr( "NODE_2" ), myRefineGrp );
+  myNode2          = new SalomeApp_IntSpinBox( myRefineGrp );
 
-  // CreatePoly check box
+  myRefineGrpLayout->addWidget( mySelLbl[ Ids ],  0, 0 );
+  myRefineGrpLayout->addWidget( mySelBtn[ Ids ],  0, 1 );
+  myRefineGrpLayout->addWidget( mySelEdit[ Ids ], 0, 2 );
+  myRefineGrpLayout->addWidget( aNodeLbl,         1, 0 );
+  myRefineGrpLayout->addWidget( myNode1,          1, 1, 1, 2 );
+  myRefineGrpLayout->addWidget( myNode2Lbl,       2, 0 );
+  myRefineGrpLayout->addWidget( myNode2,          2, 1, 1, 2 );
+
+  // ... reverse check box
+  myReverseChk = new QCheckBox( tr( "REVERSE" ), aPatGrp );
+
+  // ... CreatePoly check box
   myCreatePolygonsChk = new QCheckBox( tr( "CREATE_POLYGONS_NEAR_BOUNDARY" ), aPatGrp );
   myCreatePolyedrsChk = new QCheckBox( tr( "CREATE_POLYEDRS_NEAR_BOUNDARY" ), aPatGrp );
 
-  // Pictures 2d and 3d
-  for (int i = 0; i < 2; i++) {
-    if (i == 0) {
-      myPicture2d = new SMESHGUI_PatternWidget(aPatGrp),
-      myPicture2d->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
-    } else {
-      myPicture3d = new QFrame(aPatGrp),
-      myPreview3d = new QLabel(myPicture3d);
-      myPreview3d->setPixmap(iconSample3d);
-      QGridLayout* aLay = new QGridLayout(myPicture3d, 3, 3, 0, 0);
-      QSpacerItem* aSpacerH1 = new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Minimum);
-      QSpacerItem* aSpacerH2 = new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Minimum);
-      QSpacerItem* aSpacerV1 = new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
-      QSpacerItem* aSpacerV2 = new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
-      aLay->addItem(aSpacerH1, 1, 0);
-      aLay->addItem(aSpacerH2, 1, 2);
-      aLay->addItem(aSpacerV1, 0, 1);
-      aLay->addItem(aSpacerV2, 2, 1);
-      aLay->addWidget(myPreview3d, 1, 1);
-    }
-  }
+  // ... Pictures 2d and 3d
 
-  myPreviewChk = new QCheckBox(tr("PREVIEW"), aPatGrp);
+  myPicture2d = new SMESHGUI_PatternWidget( aPatGrp );
+  myPicture2d->setSizePolicy( QSizePolicy( QSizePolicy::Expanding, QSizePolicy::Expanding ) );
+
+  myPicture3d = new QLabel( aPatGrp );
+  myPicture3d->setPixmap( iconSample3d );
+  myPicture3d->setScaledContents( false );
+  myPicture3d->setAlignment( Qt::AlignCenter );
+  myPicture3d->setSizePolicy( QSizePolicy( QSizePolicy::Expanding, QSizePolicy::Expanding ) );
+
+  // ... preview check box
+
+  myPreviewChk = new QCheckBox( tr( "PREVIEW" ), aPatGrp );
+
+  // ... layout widgets 
+
+  aPatGrpLayout->addWidget( aNameLab,            0, 0 );
+  aPatGrpLayout->addWidget( myName,              0, 1 );
+  aPatGrpLayout->addWidget( myOpenBtn,           0, 2 );
+  aPatGrpLayout->addWidget( myNewBtn,            0, 3 );
+  aPatGrpLayout->addWidget( myRefine,            1, 0, 1, 4 );
+  aPatGrpLayout->addWidget( myRefine,            1, 0, 1, 4 );
+  aPatGrpLayout->addWidget( myGeomGrp,           2, 0, 1, 4 );
+  aPatGrpLayout->addWidget( myRefineGrp,         3, 0, 1, 4 );
+  aPatGrpLayout->addWidget( myReverseChk,        4, 0, 1, 4 );
+  aPatGrpLayout->addWidget( myCreatePolygonsChk, 5, 0, 1, 4 );
+  aPatGrpLayout->addWidget( myCreatePolyedrsChk, 6, 0, 1, 4 );
+  aPatGrpLayout->addWidget( myPicture2d,         7, 0, 1, 4 );
+  aPatGrpLayout->addWidget( myPicture3d,         8, 0, 1, 4 );
+  aPatGrpLayout->addWidget( myPreviewChk,        9, 0, 1, 4 );
+
+  // main layout
+  
+  aMainGrpLayout->addWidget( aTypeGrp );
+  aMainGrpLayout->addWidget( aMeshGrp );
+  aMainGrpLayout->addWidget( aPatGrp );
 
   // Connect signals and slots
 
-  connect(myTypeGrp, SIGNAL(clicked(int)), SLOT(onTypeChanged(int)));
+  connect(myTypeGrp, SIGNAL(buttonClicked(int)), SLOT(onTypeChanged(int)));
   connect(myOpenBtn, SIGNAL(clicked()),    SLOT(onOpen()));
   connect(myNewBtn,  SIGNAL(clicked()),    SLOT(onNew()));
 
@@ -287,23 +329,24 @@ QFrame* SMESHGUI_MeshPatternDlg::createMainFrame (QWidget* theParent)
 // name    : SMESHGUI_MeshPatternDlg::createButtonFrame
 // Purpose : Create frame containing buttons
 //=======================================================================
-QFrame* SMESHGUI_MeshPatternDlg::createButtonFrame (QWidget* theParent)
+QWidget* SMESHGUI_MeshPatternDlg::createButtonFrame (QWidget* theParent)
 {
   QFrame* aFrame = new QFrame(theParent);
   aFrame->setFrameStyle(QFrame::Box | QFrame::Sunken);
 
-  myOkBtn     = new QPushButton(tr("SMESH_BUT_OK"   ), aFrame);
+  myOkBtn     = new QPushButton(tr("SMESH_BUT_APPLY_AND_CLOSE"), aFrame);
   myApplyBtn  = new QPushButton(tr("SMESH_BUT_APPLY"), aFrame);
   myCloseBtn  = new QPushButton(tr("SMESH_BUT_CLOSE"), aFrame);
-  myHelpBtn   = new QPushButton(tr("SMESH_BUT_HELP"), aFrame);
+  myHelpBtn   = new QPushButton(tr("SMESH_BUT_HELP"),  aFrame);
 
-  QSpacerItem* aSpacer = new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Minimum);
-
-  QHBoxLayout* aLay = new QHBoxLayout(aFrame, MARGIN, SPACING);
+  QHBoxLayout* aLay = new QHBoxLayout( aFrame );
+  aLay->setMargin( MARGIN );
+  aLay->setSpacing( SPACING );
 
   aLay->addWidget(myOkBtn);
   aLay->addWidget(myApplyBtn);
-  aLay->addItem(aSpacer);
+  aLay->addSpacing( 10 );
+  aLay->addStretch();
   aLay->addWidget(myCloseBtn);
   aLay->addWidget(myHelpBtn);
 
@@ -348,7 +391,7 @@ void SMESHGUI_MeshPatternDlg::Init()
   connect(mySMESHGUI, SIGNAL(SignalDeactivateActiveDialog()), SLOT(onDeactivate()));
   connect(mySMESHGUI, SIGNAL(SignalCloseAllDialogs()), SLOT(onClose()));
 
-  myTypeGrp->setButton(Type_2d);
+  myTypeGrp->button(Type_2d)->setChecked(true);
   onTypeChanged(Type_2d);
   onModeToggled(isRefine());
 
@@ -368,7 +411,25 @@ void SMESHGUI_MeshPatternDlg::Init()
 //=======================================================================
 bool SMESHGUI_MeshPatternDlg::isValid (const bool theMess)
 {
-  QValueList<int> ids;
+  if (isRefine())
+  {
+    QString msg;
+    bool ok = true;
+    ok = myNode1->isValid( msg, theMess ) && ok;
+    if (myType == Type_3d)
+      ok = myNode2->isValid( msg, theMess ) && ok;
+    if( !ok ) {
+      if( theMess ) {
+	QString str( tr( "SMESH_INCORRECT_INPUT" ) );
+	if ( !msg.isEmpty() )
+	  str += "\n" + msg;
+	SUIT_MessageBox::critical( this, tr( "SMESH_ERROR" ), str );
+      }
+      return false;
+    }
+  }
+
+  QList<int> ids;
   if ((isRefine() &&
        (myMesh->_is_nil() || !getIds(ids) || getNode(false) < 0 ||
         myType == Type_3d && (getNode(true) < 0 || getNode(false) == getNode(true))))
@@ -378,15 +439,15 @@ bool SMESHGUI_MeshPatternDlg::isValid (const bool theMess)
         myGeomObj[ Vertex1 ]->_is_nil() || myType == Type_3d && myGeomObj[ Vertex2 ]->_is_nil())))
   {
     if (theMess)
-      QMessageBox::information(SMESHGUI::desktop(), tr("SMESH_INSUFFICIENT_DATA"),
-                               tr("SMESHGUI_INVALID_PARAMETERS"), QMessageBox::Ok);
+      SUIT_MessageBox::information(this, tr("SMESH_INSUFFICIENT_DATA"),
+				   tr("SMESHGUI_INVALID_PARAMETERS"));
     return false;
   }
 
-  if ( myName->text()=="" ) {
+  if ( myName->text().isEmpty() ) {
     if (theMess)
-      QMessageBox::information(SMESHGUI::desktop(), tr("SMESH_INSUFFICIENT_DATA"),
-                               tr("SMESHGUI_INVALID_PARAMETERS"), QMessageBox::Ok);
+      SUIT_MessageBox::information(this, tr("SMESH_INSUFFICIENT_DATA"),
+				   tr("SMESHGUI_INVALID_PARAMETERS"));
     return false;
   }
 
@@ -406,16 +467,22 @@ bool SMESHGUI_MeshPatternDlg::onApply()
     erasePreview();
 
     if (isRefine()) { // Refining existing mesh elements
-      QValueList<int> ids;
+      QList<int> ids;
       getIds(ids);
       SMESH::long_array_var varIds = new SMESH::long_array();
       varIds->length(ids.count());
       int i = 0;
-      for (QValueList<int>::iterator it = ids.begin(); it != ids.end(); ++it)
+      for (QList<int>::iterator it = ids.begin(); it != ids.end(); ++it)
 	varIds[i++] = *it;
       myType == Type_2d
 	? myPattern->ApplyToMeshFaces  (myMesh, varIds, getNode(false), myReverseChk->isChecked())
 	: myPattern->ApplyToHexahedrons(myMesh, varIds, getNode(false), getNode(true));
+
+      QStringList aParameters;
+      aParameters << myNode1->text();
+      if(myType == Type_3d )
+	aParameters << myNode2->text();
+      myMesh->SetParameters( SMESHGUI::JoinObjectParameters(aParameters) );
 
     } else { // Applying a pattern to geometrical object
       if (myType == Type_2d)
@@ -449,8 +516,8 @@ bool SMESHGUI_MeshPatternDlg::onApply()
 
       return true;
     } else {
-      QMessageBox::information(SMESHGUI::desktop(), tr("SMESH_ERROR"),
-                               tr("SMESH_OPERATION_FAILED"), QMessageBox::Ok);
+      SUIT_MessageBox::information(this, tr("SMESH_ERROR"),
+				   tr("SMESH_OPERATION_FAILED"));
       return false;
     }
   } catch (const SALOME::SALOME_Exception& S_ex) {
@@ -504,10 +571,11 @@ void SMESHGUI_MeshPatternDlg::onHelp()
 #else
 		platform = "application";
 #endif
-    SUIT_MessageBox::warn1(0, QObject::tr("WRN_WARNING"),
-			   QObject::tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
-			   arg(app->resourceMgr()->stringValue("ExternalBrowser", platform)).arg(myHelpFileName),
-			   QObject::tr("BUT_OK"));
+    SUIT_MessageBox::warning(this, tr("WRN_WARNING"),
+			     tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
+			     arg(app->resourceMgr()->stringValue("ExternalBrowser", 
+								 platform)).
+			     arg(myHelpFileName));
   }
 }
 
@@ -712,12 +780,12 @@ QString SMESHGUI_MeshPatternDlg::autoExtension (const QString& theFileName) cons
 void SMESHGUI_MeshPatternDlg::onOpen()
 {
   SUIT_FileDlg* aDlg = new SUIT_FileDlg (this, true);
-  aDlg->setCaption(tr("LOAD_PATTERN"));
-  aDlg->setMode(QFileDialog::ExistingFile);
+  aDlg->setWindowTitle(tr("LOAD_PATTERN"));
+  aDlg->setFileMode(QFileDialog::ExistingFile);
   aDlg->setFilters(prepareFilters());
-  if (myName->text() != "")
-    aDlg->setSelection(myName->text() + ".smp");
-  QPushButton* anOkBtn = (QPushButton*)aDlg->child("OK", "QPushButton");
+  if (!myName->text().isEmpty())
+    aDlg->selectFile(myName->text() + ".smp");
+  QPushButton* anOkBtn = qFindChild<QPushButton*>( aDlg, "OK" );
   if (anOkBtn != 0)
     anOkBtn->setText(tr("SMESH_BUT_OK"));
 
@@ -728,7 +796,7 @@ void SMESHGUI_MeshPatternDlg::onOpen()
   if (fName.isEmpty())
     return;
 
-  if (QFileInfo(fName).extension().isEmpty())
+  if (QFileInfo(fName).suffix().isEmpty())
     fName = autoExtension(fName);
 
   fName = QDir::convertSeparators(fName);
@@ -739,22 +807,21 @@ void SMESHGUI_MeshPatternDlg::onOpen()
 
   // Read string from file
   QFile aFile(fName);
-  if (!aFile.open(IO_ReadOnly)) {
-    QMessageBox::information(SMESHGUI::desktop(), tr("SMESH_ERROR"),
-                             tr("ERROR_OF_OPENING"), QMessageBox::Ok);
+  if (!aFile.open(QIODevice::ReadOnly)) {
+    SUIT_MessageBox::information(this, tr("SMESH_ERROR"),
+				 tr("ERROR_OF_OPENING"));
     return;
   }
 
   QByteArray aDataArray = aFile.readAll();
-  const char* aData = aDataArray.data();
-  if (aData == 0) {
-    QMessageBox::information(SMESHGUI::desktop(), tr("SMESH_ERROR"),
-                             tr("ERROR_OF_READING"), QMessageBox::Ok);
+  if (aDataArray.isEmpty()) {
+    SUIT_MessageBox::information(this, tr("SMESH_ERROR"),
+				 tr("ERROR_OF_READING"));
     return;
   }
 
-  if (loadFromFile(aData))
-    myName->setText(QFileInfo(fName).baseName());
+  if (loadFromFile(aDataArray))
+    myName->setText(QFileInfo(fName).completeBaseName());
 
   updateWgState();
   displayPreview();
@@ -848,7 +915,7 @@ void SMESHGUI_MeshPatternDlg::displayPreview()
       return;
     } else {
       PointVector aPoints(pnts->length());
-      QValueVector<int> aKeyPoints(keyPoints->length());
+      QVector<int> aKeyPoints(keyPoints->length());
       ConnectivityVector anElemPoints(elemPoints->length());
 
       for (int i = 0, n = pnts->length(); i < n; i++)
@@ -858,7 +925,7 @@ void SMESHGUI_MeshPatternDlg::displayPreview()
         aKeyPoints[ i2 ] = keyPoints[ i2 ];
 
       for (int i3 = 0, n3 = elemPoints->length(); i3 < n3; i3++) {
-        QValueVector<int> aVec(elemPoints[ i3 ].length());
+        QVector<int> aVec(elemPoints[ i3 ].length());
         for (int i4 = 0, n4 = elemPoints[ i3 ].length(); i4 < n4; i4++)
           aVec[ i4 ] = elemPoints[ i3 ][ i4 ];
 
@@ -924,7 +991,7 @@ void SMESHGUI_MeshPatternDlg::displayPreview()
 void SMESHGUI_MeshPatternDlg::erasePreview()
 {
   // Erase preview in 2D viewer
-  myPicture2d->SetPoints(PointVector(), QValueVector<int>(), ConnectivityVector());
+  myPicture2d->SetPoints(PointVector(), QVector<int>(), ConnectivityVector());
 
   // Erase preview in 3D viewer
   if (myPreviewActor == 0)
@@ -975,7 +1042,7 @@ void SMESHGUI_MeshPatternDlg::updateWgState()
       }
     }
 
-    QValueList<int> ids;
+    QList<int> ids;
     if (!CORBA::is_nil(myPattern)/* && getIds(ids)*/) {
       SMESH::long_array_var keyPoints = myPattern->GetKeyPoints();
       if (keyPoints->length()) {
@@ -1055,7 +1122,7 @@ bool SMESHGUI_MeshPatternDlg::loadFromFile (const QString& theName)
   try {
     SMESH::SMESH_Pattern_var aPattern = SMESH::GetPattern();
 
-    if (!aPattern->LoadFromFile(theName.latin1()) ||
+    if (!aPattern->LoadFromFile(theName.toLatin1().data()) ||
         myType == Type_2d && !aPattern->Is2D()) {
       SMESH::SMESH_Pattern::ErrorCode aCode = aPattern->GetErrorCode();
       QString aMess;
@@ -1070,7 +1137,7 @@ bool SMESHGUI_MeshPatternDlg::loadFromFile (const QString& theName)
       else if (aCode == SMESH::SMESH_Pattern::ERR_READ_BAD_KEY_POINT ) aMess = tr("ERR_READ_BAD_KEY_POINT");
       else                                                             aMess = tr("ERROR_OF_LOADING");
 
-      QMessageBox::information(SMESHGUI::desktop(), tr("SMESH_ERROR"), aMess, QMessageBox::Ok);
+      SUIT_MessageBox::information(this, tr("SMESH_ERROR"), aMess);
       return false;
     } else {
       myPattern = aPattern;
@@ -1078,9 +1145,9 @@ bool SMESHGUI_MeshPatternDlg::loadFromFile (const QString& theName)
     }
   } catch (const SALOME::SALOME_Exception& S_ex) {
     SalomeApp_Tools::QtCatchCorbaException(S_ex);
-    QMessageBox::information(SMESHGUI::desktop(), tr("SMESH_ERROR"),
-                             tr("ERROR_OF_LOADING"), QMessageBox::Ok);
-      return false;
+    SUIT_MessageBox::information(this, tr("SMESH_ERROR"),
+				 tr("ERROR_OF_LOADING") );
+    return false;
   }
 }
 
@@ -1156,12 +1223,12 @@ vtkUnstructuredGrid* SMESHGUI_MeshPatternDlg::getGrid()
   try {
     // Get points from pattern
     SMESH::point_array_var pnts;
-    QValueList<int> ids;
+    QList<int> ids;
     if (isRefine() && getIds(ids)) {
       SMESH::long_array_var varIds = new SMESH::long_array();
       varIds->length(ids.count());
       int i = 0;
-      for (QValueList<int>::iterator it = ids.begin(); it != ids.end(); ++it)
+      for (QList<int>::iterator it = ids.begin(); it != ids.end(); ++it)
 	varIds[i++] = *it;
       pnts = myType == Type_2d
 	? myPattern->ApplyToMeshFaces  (myMesh, varIds, getNode(false), myReverseChk->isChecked())
@@ -1306,7 +1373,7 @@ void SMESHGUI_MeshPatternDlg::onTextChanged (const QString& theNewText)
     aMesh = anActor->GetObject()->GetMesh();
 
   if (aMesh) {
-    QStringList aListId = QStringList::split(" ", theNewText, false);
+    QStringList aListId = theNewText.split(" ", QString::SkipEmptyParts);
 
     TColStd_MapOfInteger newIndices;
 
@@ -1332,11 +1399,11 @@ void SMESHGUI_MeshPatternDlg::onTextChanged (const QString& theNewText)
 void SMESHGUI_MeshPatternDlg::onNodeChanged (int value)
 {
   if (myType == Type_3d) {
-    QSpinBox* first = (QSpinBox*)sender();
-    QSpinBox* second = first == myNode1 ? myNode2 : myNode1;
+    SalomeApp_IntSpinBox* first = (SalomeApp_IntSpinBox*)sender();
+    SalomeApp_IntSpinBox* second = first == myNode1 ? myNode2 : myNode1;
     int secondVal = second->value();
     if (secondVal == value) {
-      secondVal = value == second->maxValue() ? second->minValue() : value + 1;
+      secondVal = value == second->maximum() ? second->minimum() : value + 1;
       bool blocked = second->signalsBlocked();
       second->blockSignals(true);
       second->setValue(secondVal);
@@ -1351,10 +1418,10 @@ void SMESHGUI_MeshPatternDlg::onNodeChanged (int value)
 // name    : getIds
 // Purpose :
 //=======================================================================
-bool SMESHGUI_MeshPatternDlg::getIds (QValueList<int>& ids) const
+bool SMESHGUI_MeshPatternDlg::getIds (QList<int>& ids) const
 {
   ids.clear();
-  QStringList strIds = QStringList::split(" ", mySelEdit[Ids]->text());
+  QStringList strIds = mySelEdit[Ids]->text().split(" ", QString::SkipEmptyParts );
   bool isOk;
   int val;
   for (QStringList::iterator it = strIds.begin(); it != strIds.end(); ++it) {
@@ -1385,7 +1452,7 @@ void SMESHGUI_MeshPatternDlg::keyPressEvent( QKeyEvent* e )
   if ( e->isAccepted() )
     return;
 
-  if ( e->key() == Key_F1 )
+  if ( e->key() == Qt::Key_F1 )
     {
       e->accept();
       onHelp();

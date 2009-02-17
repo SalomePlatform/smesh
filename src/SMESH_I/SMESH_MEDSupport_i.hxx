@@ -1,29 +1,28 @@
+//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//
+//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+//
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
+//
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
+//
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
 // SMESH SMESH_I : idl implementation based on 'SMESH' unit's calsses
-//
-// Copyright (C) 2003 OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
-//
-// This library is free software; you can redistribute it and/or
-// modify it under the terms of the GNU Lesser General Public
-// License as published by the Free Software Foundation; either
-// version 2.1 of the License.
-//
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-// Lesser General Public License for more details.
-//
-// You should have received a copy of the GNU Lesser General Public
-// License along with this library; if not, write to the Free Software
-// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
-//
-// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
-//
-//
-//
 // File : SMESH_MEDSupport_i.hxx
 // Module : SMESH
-
+//
 #ifndef _MED_SMESH_MEDSUPPORT_I_HXX_
 #define _MED_SMESH_MEDSUPPORT_I_HXX_
 
@@ -49,7 +48,7 @@ class SMESH_I_EXPORT SMESH_MEDSupport_i:
 
 // Constructors and associated internal methods
 	SMESH_MEDSupport_i(SMESH_subMesh_i * sm,
-		string name, string description, SALOME_MED::medEntityMesh entity);
+		std::string name, std::string description, SALOME_MED::medEntityMesh entity);
 	SMESH_MEDSupport_i(const SMESH_MEDSupport_i & s);
 
 // IDL Methods
@@ -102,8 +101,8 @@ class SMESH_I_EXPORT SMESH_MEDSupport_i:
 	::SMESH_subMesh_i * _subMesh_i;
 
 	SMESHDS_Mesh * _meshDS;
-	string _name;
-	string _description;
+	std::string _name;
+        std::string _description;
 	bool _isOnAllElements;
 	bool _seqNumber;
 	int _seqLength;

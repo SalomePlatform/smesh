@@ -1,47 +1,43 @@
-// Copyright (C) 2005  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
-// 
-// This library is free software; you can redistribute it and/or
-// modify it under the terms of the GNU Lesser General Public
-// License as published by the Free Software Foundation; either 
-// version 2.1 of the License.
-// 
-// This library is distributed in the hope that it will be useful 
-// but WITHOUT ANY WARRANTY; without even the implied warranty of 
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
-// Lesser General Public License for more details.
+//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-// You should have received a copy of the GNU Lesser General Public  
-// License along with this library; if not, write to the Free Software 
-// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
-// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
 //
-/**
-*  SMESH SMESHGUI
-*
-*  Copyright (C) 2005  CEA/DEN, EDF R&D
-*
-*
-*
-*  File   : SMESHGUI_ConvToQuadOp.h
-*  Module : SMESHGUI
-*/
-
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
+//
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
+// SMESH SMESHGUI : GUI for SMESH component
+// File   : SMESHGUI_ConvToQuadOp.cxx
+// Author : Open CASCADE S.A.S.
+// SMESH includes
+//
 #include "SMESHGUI_ConvToQuadOp.h"
-#include "SMESHGUI_ConvToQuadDlg.h"
 
-#include "SMESHGUI.h"
+#include "SMESHGUI_ConvToQuadDlg.h"
 #include "SMESHGUI_Utils.h"
 
-#include "SMESH_TypeFilter.hxx"
+#include <SMESH_TypeFilter.hxx>
 
-#include "SalomeApp_Tools.h"
+// SALOME GUI includes
+#include <SalomeApp_Tools.h>
+#include <SUIT_MessageBox.h>
+#include <LightApp_UpdateFlags.h>
 
-#include "SUIT_MessageBox.h"
-
-#include "LightApp_UpdateFlags.h"
-       
+// IDL includes
+#include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_MeshEditor)
 
 //================================================================================
@@ -115,14 +111,14 @@ void SMESHGUI_ConvToQuadOp::startOperation()
 //================================================================================
 void SMESHGUI_ConvToQuadOp::selectionDone()
 {
-  if ( !dlg()->isShown() )
+  if ( !dlg()->isVisible() )
     return;
 
   SMESHGUI_SelectionOp::selectionDone();
   try
   {
     QString anMeshEntry = myDlg->selectedObject( 0 );
-    _PTR(SObject) pMesh = studyDS()->FindObjectID( anMeshEntry.latin1() );
+    _PTR(SObject) pMesh = studyDS()->FindObjectID( anMeshEntry.toLatin1().data() );
     if ( !pMesh ) return;
 
     SMESH::SMESH_Mesh_var mesh =
@@ -184,12 +180,12 @@ bool SMESHGUI_ConvToQuadOp::onApply()
   QString aMess;
 
   QString anMeshEntry = myDlg->selectedObject( 0 );
-  _PTR(SObject) pMesh = studyDS()->FindObjectID( anMeshEntry.latin1() );
+  _PTR(SObject) pMesh = studyDS()->FindObjectID( anMeshEntry.toLatin1().data() );
   if ( !pMesh )
   {
     dlg()->show();
-    SUIT_MessageBox::warn1( myDlg,
-        tr( "SMESH_WRN_WARNING" ), tr("MESH_IS_NOT_SELECTED"), tr( "SMESH_BUT_OK" ) );
+    SUIT_MessageBox::warning( myDlg,
+			      tr( "SMESH_WRN_WARNING" ), tr("MESH_IS_NOT_SELECTED") );
    
     return false;
   }
@@ -199,8 +195,8 @@ bool SMESHGUI_ConvToQuadOp::onApply()
 
   if( CORBA::is_nil(mesh) )
   {
-    SUIT_MessageBox::warn1( myDlg,
-        tr( "SMESH_WRN_WARNING" ), tr("REF_IS_NULL"), tr( "SMESH_BUT_OK" ) );
+    SUIT_MessageBox::warning( myDlg,
+			      tr( "SMESH_WRN_WARNING" ), tr("REF_IS_NULL") );
 
     return false;
   } 
@@ -272,7 +268,7 @@ SMESHGUI_ConvToQuadOp::MeshType SMESHGUI_ConvToQuadOp::ConsistMesh( const SMESH:
 void SMESHGUI_ConvToQuadOp::ConnectRadioButtons( int id )
 {
   QString anMeshEntry = myDlg->selectedObject( 0 );
-  _PTR(SObject) pMesh = studyDS()->FindObjectID( anMeshEntry.latin1() );
+  _PTR(SObject) pMesh = studyDS()->FindObjectID( anMeshEntry.toLatin1().data() );
   if ( !pMesh ) return;
 
   SMESH::SMESH_Mesh_var mesh =
@@ -286,5 +282,3 @@ void SMESHGUI_ConvToQuadOp::ConnectRadioButtons( int id )
   else
     myDlg->SetEnabledCheck( true );
 }
-
-

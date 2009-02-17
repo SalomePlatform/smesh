@@ -1,43 +1,42 @@
-//  SMESH SMESH : implementaion of SMESH idl descriptions
+//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
-// 
-//  This library is free software; you can redistribute it and/or 
-//  modify it under the terms of the GNU Lesser General Public 
-//  License as published by the Free Software Foundation; either 
-//  version 2.1 of the License. 
-// 
-//  This library is distributed in the hope that it will be useful, 
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of 
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
-//  Lesser General Public License for more details. 
-// 
-//  You should have received a copy of the GNU Lesser General Public 
-//  License along with this library; if not, write to the Free Software 
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
-// 
+//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+//
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
+//
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
+//
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
-//
-//
+//  SMESH SMESH : implementaion of SMESH idl descriptions
 //  File   : StdMeshers_Regular_1D.cxx
 //           Moved here from SMESH_Regular_1D.cxx
 //  Author : Paul RASCLE, EDF
 //  Module : SMESH
-//  $Header$
 
 #include "StdMeshers_Regular_1D.hxx"
 #include "StdMeshers_Distribution.hxx"
 
-#include "StdMeshers_LocalLength.hxx"
-#include "StdMeshers_NumberOfSegments.hxx"
 #include "StdMeshers_Arithmetic1D.hxx"
-#include "StdMeshers_StartEndLength.hxx"
-#include "StdMeshers_Deflection1D.hxx"
 #include "StdMeshers_AutomaticLength.hxx"
-#include "StdMeshers_SegmentLengthAroundVertex.hxx"
+#include "StdMeshers_Deflection1D.hxx"
+#include "StdMeshers_LocalLength.hxx"
+#include "StdMeshers_MaxLength.hxx"
+#include "StdMeshers_NumberOfSegments.hxx"
 #include "StdMeshers_Propagation.hxx"
+#include "StdMeshers_SegmentLengthAroundVertex.hxx"
+#include "StdMeshers_StartEndLength.hxx"
 
 #include "SMESH_Gen.hxx"
 #include "SMESH_Mesh.hxx"
@@ -81,6 +80,7 @@ StdMeshers_Regular_1D::StdMeshers_Regular_1D(int hypId, int studyId,
 	_shapeType = (1 << TopAbs_EDGE);
 
 	_compatibleHypothesis.push_back("LocalLength");
+	_compatibleHypothesis.push_back("MaxLength");
 	_compatibleHypothesis.push_back("NumberOfSegments");
 	_compatibleHypothesis.push_back("StartEndLength");
 	_compatibleHypothesis.push_back("Deflection1D");
@@ -146,11 +146,25 @@ bool StdMeshers_Regular_1D::CheckHypothesis
     const StdMeshers_LocalLength * hyp =
       dynamic_cast <const StdMeshers_LocalLength * >(theHyp);
     ASSERT(hyp);
-    //_value[ BEG_LENGTH_IND ] = _value[ END_LENGTH_IND ] = hyp->GetLength();
     _value[ BEG_LENGTH_IND ] = hyp->GetLength();
-    _value[ END_LENGTH_IND ] = hyp->GetPrecision();
+    _value[ PRECISION_IND ] = hyp->GetPrecision();
     ASSERT( _value[ BEG_LENGTH_IND ] > 0 );
     _hypType = LOCAL_LENGTH;
+    aStatus = SMESH_Hypothesis::HYP_OK;
+  }
+
+  else if (hypName == "MaxLength")
+  {
+    const StdMeshers_MaxLength * hyp =
+      dynamic_cast <const StdMeshers_MaxLength * >(theHyp);
+    ASSERT(hyp);
+    _value[ BEG_LENGTH_IND ] = hyp->GetLength();
+    if ( hyp->GetUsePreestimatedLength() ) {
+      if ( int nbSeg = aMesh.GetGen()->GetBoundaryBoxSegmentation() )
+        _value[ BEG_LENGTH_IND ] = aMesh.GetShapeDiagonalSize() / nbSeg;
+    }
+    ASSERT( _value[ BEG_LENGTH_IND ] > 0 );
+    _hypType = MAX_LENGTH;
     aStatus = SMESH_Hypothesis::HYP_OK;
   }
 
@@ -226,11 +240,11 @@ bool StdMeshers_Regular_1D::CheckHypothesis
     StdMeshers_AutomaticLength * hyp = const_cast<StdMeshers_AutomaticLength *>
       (dynamic_cast <const StdMeshers_AutomaticLength * >(theHyp));
     ASSERT(hyp);
-    //_value[ BEG_LENGTH_IND ] = _value[ END_LENGTH_IND ] = hyp->GetLength( &aMesh, aShape );
-    _value[ BEG_LENGTH_IND ] = hyp->GetLength( &aMesh, aShape );
-    _value[ END_LENGTH_IND ] = Precision::Confusion(); // ?? or set to zero?
+    _value[ BEG_LENGTH_IND ] = _value[ END_LENGTH_IND ] = hyp->GetLength( &aMesh, aShape );
+//     _value[ BEG_LENGTH_IND ] = hyp->GetLength( &aMesh, aShape );
+//     _value[ END_LENGTH_IND ] = Precision::Confusion(); // ?? or set to zero?
     ASSERT( _value[ BEG_LENGTH_IND ] > 0 );
-    _hypType = LOCAL_LENGTH;
+    _hypType = MAX_LENGTH;
     aStatus = SMESH_Hypothesis::HYP_OK;
   }
   else
@@ -413,11 +427,6 @@ static void compensateError(double a1, double an,
 
 void StdMeshers_Regular_1D::SetEventListener(SMESH_subMesh* subMesh)
 {
-//   static VertexEventListener listener;
-//   SMESH_subMeshIteratorPtr smIt = subMesh->getDependsOnIterator(false,false);
-//   while (smIt->more()) {
-//     subMesh->SetEventListener( &listener, 0, smIt->next() );
-//   }
   StdMeshers_Propagation::SetPropagationMgr( subMesh );
 }
 
@@ -567,10 +576,18 @@ bool StdMeshers_Regular_1D::computeInternalParameters(SMESH_Mesh &     theMesh,
   switch( _hypType )
   {
   case LOCAL_LENGTH:
+  case MAX_LENGTH:
   case NB_SEGMENTS: {
 
     double eltSize = 1;
-    if ( _hypType == LOCAL_LENGTH )
+    if ( _hypType == MAX_LENGTH )
+    {
+      double nbseg = ceil(theLength / _value[ BEG_LENGTH_IND ]); // integer sup
+      if (nbseg <= 0)
+        nbseg = 1;                        // degenerated edge
+      eltSize = theLength / nbseg;
+    }
+    else if ( _hypType == LOCAL_LENGTH )
     {
       // Local Length hypothesis
       double nbseg = ceil(theLength / _value[ BEG_LENGTH_IND ]); // integer sup
@@ -601,7 +618,7 @@ bool StdMeshers_Regular_1D::computeInternalParameters(SMESH_Mesh &     theMesh,
       }
       if (!isFound) // not found by meshed edge in the propagation chain, use precision
       {
-        double aPrecision = _value[ END_LENGTH_IND ];
+        double aPrecision = _value[ PRECISION_IND ];
         double nbseg_prec = ceil((theLength / _value[ BEG_LENGTH_IND ]) - aPrecision);
         if (nbseg_prec == (nbseg - 1)) nbseg--;
       }
@@ -624,7 +641,7 @@ bool StdMeshers_Regular_1D::computeInternalParameters(SMESH_Mesh &     theMesh,
           double scale = _value[ SCALE_FACTOR_IND ];
 
           if (fabs(scale - 1.0) < Precision::Confusion()) {
-            // special case to avoid division on zero
+            // special case to avoid division by zero
             for (int i = 1; i < NbSegm; i++) {
               double param = f + (l - f) * i / NbSegm;
               theParams.push_back( param );

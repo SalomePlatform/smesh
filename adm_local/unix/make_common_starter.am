@@ -1,49 +1,83 @@
+#  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+#
+#  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+#  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+#
+#  This library is free software; you can redistribute it and/or
+#  modify it under the terms of the GNU Lesser General Public
+#  License as published by the Free Software Foundation; either
+#  version 2.1 of the License.
+#
+#  This library is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+#  Lesser General Public License for more details.
+#
+#  You should have received a copy of the GNU Lesser General Public
+#  License along with this library; if not, write to the Free Software
+#  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+#
+#  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 # ============================================================
 # This file defines the common definitions used in several
 # Makefile. This file must be included, if needed, by the file
 # Makefile.am.
 # ============================================================
-#
-
 # Standard directory for installation
-salomeincludedir   = $(includedir)/@PACKAGE@
-libdir             = $(prefix)/lib@LIB_LOCATION_SUFFIX@/@PACKAGE@
-bindir             = $(prefix)/bin/@PACKAGE@
+#
+salomeincludedir   = $(includedir)/salome
+libdir             = $(prefix)/lib@LIB_LOCATION_SUFFIX@/salome
+bindir             = $(prefix)/bin/salome
 salomescriptdir    = $(bindir)
+salomepythondir    = $(pythondir)/salome
+salomepyexecdir    = $(pyexecdir)/salome
 
 # Directory for installing idl files
-salomeidldir       = $(prefix)/idl/@PACKAGE@
+salomeidldir       = $(prefix)/idl/salome
 
 # Directory for installing resource files
-salomeresdir       = $(prefix)/share/@PACKAGE@/resources/@MODULE_NAME@
+salomeresdir       = $(prefix)/share/salome/resources/@MODULE_NAME@
 
 # Directories for installing admin files
-admlocaldir       = $(prefix)/adm_local
-admlocalunixdir     = $(admlocaldir)/unix
-admlocalm4dir        = $(admlocaldir)/unix/config_files
+admlocaldir        = $(prefix)/adm_local
+admlocalunixdir    = $(admlocaldir)/unix
+admlocalm4dir      = $(admlocaldir)/unix/config_files
 
 # Shared modules installation directory
-sharedpkgpythondir =$(pkgpythondir)/shared_modules
+sharedpkgpythondir = $(salomepythondir)/shared_modules
 
 # Documentation directory
-docdir             = $(datadir)/doc/@PACKAGE@
+docdir             = $(datadir)/doc/salome
 
 # common rules
 
-# moc-files generation
+# meta object implementation files generation (moc)
 %_moc.cxx: %.h
 	$(MOC) $< -o $@
 
-# qm-files generation
-%.qm: %.po
-	$(MSG2QM) $< $@
+# translation (*.qm) files generation (lrelease)
+%.qm: %.ts
+	$(LRELEASE) $< -qm $@
 
-EXTRA_DIST=$(MOC_FILES:%_moc.cxx=%.h) $(nodist_salomeres_DATA:%.qm=%.po)
+# resource files generation (qrcc)
+qrc_%.cxx: %.qrc
+	$(QRCC) $< -o $@ -name $(*F)
 
+# qt forms files generation (uic)
+ui_%.h: %.ui
+	$(UIC) -o $@ $<
+
+# extra distributed files
+EXTRA_DIST = $(MOC_FILES:%_moc.cxx=%.h) $(QRC_FILES:qrc_%.cxx=%.qrc) \
+             $(UIC_FILES:ui_%.h=%.ui) $(nodist_salomeres_DATA:%.qm=%.ts)
+
+# customize clean operation
 mostlyclean-local:
 	rm -f @builddir@/*_moc.cxx
 	rm -f @builddir@/*.qm
+	rm -f @builddir@/ui_*.h
+	rm -f @builddir@/qrc_*.cxx
 
 # tests
 tests: unittest

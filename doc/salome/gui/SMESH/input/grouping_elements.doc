@@ -2,13 +2,30 @@
 
 \page grouping_elements_page Grouping elements
 
+In Mesh module it is possible to \subpage creating_groups_page "create groups of mesh elements":
+nodes, edges, faces or volumes:
 <ul>
-<li>\subpage creating_groups_page</li>
-<li>\subpage editing_groups_page</li>
-<li>\subpage using_operations_on_groups_page</li>
-<li>\subpage constructing_groups_of_specific_elements_page</li>
-<li>\subpage deleting_groups_page</li>
-<li>\subpage selection_filter_library_page</li>
+<li> by selecting the elements of the specified kind by their IDs or
+directly on the presentation in the VTK viewer - <b>Standalone group</b> tab of <b>Create group</b>
+dialog.</li>
+<li> by creating a group of elements of the selected type from all
+such elements of the chosen geometrical object - <b>Group on
+geometry</b> tab of <b>Create group</b> dialog.</li>
+<li> by creating several groups of elements (nodes,
+edges, faces and volumes) from the chosen submesh - using <b>Mesh -> Construct
+Group</b> Menu item. In this case groups of elements are created automatically.</li>
 </ul>
+
+The created groups can be later:
+
+<ul>
+<li>\subpage editing_groups_page "Edited"</li>
+<li>\subpage using_operations_on_groups_page "Subjected to Boolean operations", or</li>
+<li>\subpage deleting_groups_page "Deleted"</li>
+</ul>
+
+An important tool, providing filters for creation of \b Standalone
+groups is  \subpage selection_filter_library_page</li>.
+
 
 */

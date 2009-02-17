@@ -1,31 +1,29 @@
+//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//
+//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+//
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
+//
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
+//
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
 //  SMESH SMESH : implementaion of SMESH idl descriptions
-//
-//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
-// 
-//  This library is free software; you can redistribute it and/or 
-//  modify it under the terms of the GNU Lesser General Public 
-//  License as published by the Free Software Foundation; either 
-//  version 2.1 of the License. 
-// 
-//  This library is distributed in the hope that it will be useful, 
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of 
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
-//  Lesser General Public License for more details. 
-// 
-//  You should have received a copy of the GNU Lesser General Public 
-//  License along with this library; if not, write to the Free Software 
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
-// 
-// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
-//
-//
-//
 //  File   : StdMeshers_AutomaticLength.cxx
 //  Author : Edward AGAPOV, OCC
 //  Module : SMESH
-//  $Header$
-
+//
 #include "StdMeshers_AutomaticLength.hxx"
 
 #include "SMESH_Mesh.hxx"
@@ -368,3 +366,37 @@ bool StdMeshers_AutomaticLength::SetParametersByMesh(const SMESH_Mesh*   theMesh
 
   return nbEdges;
 }
+
+//================================================================================
+/*!
+ * \brief Initialize my parameter values by default parameters.
+ *  \retval bool - true if parameter values have been successfully defined
+ */
+//================================================================================
+
+bool StdMeshers_AutomaticLength::SetParametersByDefaults(const TDefaults&  /*theDflts*/,
+                                                         const SMESH_Mesh* /*theMesh*/)
+{
+  return false;
+
+  // assure the base automatic length is stored in _TShapeToLength
+//   GetLength( theMesh, elemLenght );
+
+//   // find maximal edge length
+//   double maxLen = 0;
+//   map<const TopoDS_TShape*, double>::iterator
+//     tshape_length = _TShapeToLength.begin(), slEnd = _TShapeToLength.end();
+//   for ( ; tshape_length != slEnd; ++tshape_length )
+//     if ( tshape_length->second > maxLen )
+//       maxLen = tshape_length->second;
+
+//   // automatic length for longest element
+//   double autoLen = GetLength( theMesh, maxLen );
+
+//   // elemLenght = autoLen / (theCoarseConst + theFineConst * _fineness) -->
+//   _fineness = ( autoLen / elemLenght - theCoarseConst ) / theFineConst;
+
+//   return true;
+}
+
+

@@ -2,33 +2,49 @@
 
 \page modifying_meshes_page Modifying meshes
 
+Salome provides an extremely vast specter of mesh modification and
+transformation operations, giving the possibility to:
+
 <ul>
-<li>\subpage adding_nodes_and_elements_page</li>
-<li>\subpage adding_quadratic_elements_page</li>
-<li>\subpage removing_nodes_and_elements_page</li>
-<li>\subpage renumbering_nodes_and_elements_page</li>
-<li>\subpage transforming_meshes_page</li>
-<ul>
-<li>\ref translation_page</li>
-<li>\ref rotation_page</li>
-<li>\ref symmetry_page</li>
-<li>\ref sewing_meshes_page</li>
-<li>\ref merging_nodes_page</li>
-<li>\ref merging_elements_page</li>
-</ul>
-<li>\subpage moving_nodes_page</li>
-<li>\subpage mesh_through_point_page</li>
-<li>\subpage diagonal_inversion_of_elements_page</li>
-<li>\subpage uniting_two_triangles_page</li>
-<li>\subpage uniting_set_of_triangles_page</li>
-<li>\subpage changing_orientation_of_elements_page</li>
-<li>\subpage cutting_quadrangles_page</li>
-<li>\subpage smoothing_page</li>
-<li>\subpage extrusion_page</li>
-<li>\subpage extrusion_along_path_page</li>
-<li>\subpage revolution_page</li>
-<li>\subpage pattern_mapping_page</li>
-<li>\subpage convert_to_from_quadratic_mesh_page</li>
+<li>\subpage adding_nodes_and_elements_page "Add" mesh elements from
+nodes to polyhedrons at an arbitrary place in the mesh.</li>
+<li>\subpage adding_quadratic_elements_page "Add quadratic" mesh
+elements (used in quadratic meshes) from quadratic nodes to quadratic polyhedrons at an arbitrary place in the mesh.</li>
+<li>\subpage removing_nodes_and_elements_page "Remove" any existing
+mesh elements.</li>
+<li>\subpage renumbering_nodes_and_elements_page "Renumber" nodes and
+elements of the mesh.</li>
+<li>\subpage translation_page "Translate" in the indicated direction the mesh or some of
+its elements.</li>
+<li>\subpage rotation_page "Rotate" by the indicated axis and angle
+the mesh or some of its elements.</li>
+<li>Create a \subpage symmetry_page "symmetrical copy" of the mesh
+through a point or a vector of symmetry.</li>
+<li>Unite meshes by \subpage sewing_meshes_page "sewing" free borders,
+conform free borders, border to side or side elements.</li>
+<li>\subpage merging_nodes_page "Merge Notes", considered coincident
+within the indicated tolerance.</li>
+<li>\subpage merging_elements_page "Merge Elements", considered coincident
+within the indicated tolerance.</li>
+<li>\subpage moving_nodes_page "Move Nodes" to an arbitrary location
+with consequent transformation of all adjacent elements and edges.</li>
+<li>\subpage mesh_through_point_page "Make node at a point", existing
+or created anew.</li>
+<li>\subpage diagonal_inversion_of_elements_page "Invert an edge" between neighboring triangles.</li>
+<li>\subpage uniting_two_triangles_page "Unite two triangles".</li>
+<li>\subpage uniting_set_of_triangles_page "Unite several adjacent triangles".</li>
+<li>\subpage changing_orientation_of_elements_page "Change orientation"
+ of the selected elements.</li>
+<li>\subpage cutting_quadrangles_page "Cut a quadrangle" into two triangles.</li>
+<li>\subpage smoothing_page "Smooth" elements, reducung distortions in
+them by adjusting the locations of element corners.</li>
+<li>Create an \subpage extrusion_page "extrusion" along a vector.</li>
+<li>Create an \subpage extrusion_along_path_page "extrusion along a path".</li>
+<li>Create an edge or a surface by \subpage revolution_page "revolution"
+of the selected node or edge.</li>
+<li>Apply \subpage pattern_mapping_page "pattern mapping".</li>
+<li>\subpage convert_to_from_quadratic_mesh_page "Convert regular mesh to quadratic", 
+or vice versa.</li>
 </ul>
 
 */

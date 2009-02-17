@@ -5,8 +5,8 @@
 \n Construction of a mesh consists of:
 <ul>
 <li>Selecting a geometrical object for meshing</li>
-<li>Applying \ref basic_meshing_algos_page "meshing algorithms" and
-\ref about_hypo_page "hypotheses" which will be used at computation of
+<li>Applying \subpage basic_meshing_algos_page "meshing algorithms" and
+\subpage about_hypo_page "hypotheses" which will be used at computation of
 this mesh.</li>
 </ul>
 
@@ -15,7 +15,7 @@ this mesh.</li>
 <li>In the \b Mesh menu select <b>Create Mesh</b> or click <em>"Create
 Mesh"</em> button in the toolbar. 
 
-\image html image32.gif
+\image html image32.png
 <center><em>"Create Mesh" button</em></center>
 
 The following dialog box will appear: 
@@ -27,7 +27,7 @@ The following dialog box will appear:
 it is "Mesh_1". Then select the object you wish to mesh in the Object
 Browser and click the "Add" button.
 
-\image html image120.gif
+\image html image120.png
 <center><em>"Add" button</em></center>
 
 Now you can define 1d Algorithm and 1d Hypotheses, which will be
@@ -35,13 +35,13 @@ applied to the edges of your object. (Note that any object has edges,
 even if their existence is not apparent, for example, a sphere has 4
 edges). Click the <em>"Add Hypothesis"</em>  button to add a hypothesis.
 
-\image html image121.gif
+\image html image121.png
 <center><em>"Add Hypothesis" button</em></center>
 
 Click the <em>"Edit Hypothesis"</em> button to define values for the
 current hypothesis.
 
-\image html image122.gif
+\image html image122.png
 <center><em>"Edit Hypothesis" button</em></center>
 
 The use of additional hypotheses is optional (i.e. you may leave
@@ -77,7 +77,7 @@ settings. In the same way you can apply this functionality for meshing
 Browser</b>. From the \b Mesh menu select \b Compute or click "Compute" button of the
 toolbar. 
 
-\image html image28.gif
+\image html image28.png
 <center><em>"Compute" button</em></center>
 
 The Mesh Computation information box appears.
@@ -90,12 +90,21 @@ failure is provided.
 \image html meshcomputationfail.png
 
 After you select the error, <b>Show Subshape</b> button allows
-visualizing the mesh elements that cause it.
+visualizing the geometrical entity that causes it.
 
-\image html failed_computation.png
+\image html failed_computation.png "Example of the invalid input mesh"
 
-<b>Publish Subshape</b> button allows importing it in a separate MED
-or UNV file.
+\Note Mesh Computation Information box does not appear if you set
+"Mesh computation/Show a computation result notification" preference 
+to the "Never" value. This option gives the possibility to control mesh
+computation reporting. There are the following possibilities: always
+show information box, only if an error occurs or never. 
+By default, the information box is always shown after mesh computation operation.
+
+<b>Publish Subshape</b> button publishes the subshape, whose meshing
+failed, in GEOM component as a child of the mesh geometry, which
+allows analyzing the problem geometry and creating a submesh on it in
+order to locally tune hypotheses.
 
 <b>NOTE</b> It is possible to define a 1D or a 2D mesh in a
 python script and then use such submeshes in the construction of a 3D

@@ -1,31 +1,29 @@
-//  SMESH SMESH_I : idl implementation based on 'SMESH' unit's calsses
+//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
-// 
-//  This library is free software; you can redistribute it and/or 
-//  modify it under the terms of the GNU Lesser General Public 
-//  License as published by the Free Software Foundation; either 
-//  version 2.1 of the License. 
-// 
-//  This library is distributed in the hope that it will be useful, 
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of 
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
-//  Lesser General Public License for more details. 
-// 
-//  You should have received a copy of the GNU Lesser General Public 
-//  License along with this library; if not, write to the Free Software 
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
-// 
+//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+//
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
+//
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
+//
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
-//
-//
+//  SMESH SMESH_I : idl implementation based on 'SMESH' unit's calsses
 //  File   : SMESH_Gen_i.hxx
 //  Author : Paul RASCLE, EDF
 //  Module : SMESH
-//  $Header$
-
+//
 #ifndef _SMESH_GEN_I_HXX_
 #define _SMESH_GEN_I_HXX_
 
@@ -176,6 +174,10 @@ public:
   // *****************************************
   // Interface methods
   // *****************************************
+  // Set a new Mesh object name
+  void SetName(const char* theIOR,
+	       const char* theName);
+
   //GEOM::GEOM_Gen_ptr SetGeomEngine( const char* containerLoc );
   void SetGeomEngine( GEOM::GEOM_Gen_ptr geomcompo );
 
@@ -198,9 +200,20 @@ public:
   SMESH::SMESH_Hypothesis_ptr GetHypothesisParameterValues (const char*           theHypType,
                                                             const char*           theLibName,
                                                             SMESH::SMESH_Mesh_ptr theMesh,
-                                                            GEOM::GEOM_Object_ptr theGeom)
+                                                            GEOM::GEOM_Object_ptr theGeom,
+                                                            CORBA::Boolean        byMesh)
     throw ( SALOME::SALOME_Exception );
   
+  /*!
+   * Sets number of segments per diagonal of boundary box of geometry by which
+   * default segment length of appropriate 1D hypotheses is defined
+   */
+  void SetBoundaryBoxSegmentation( CORBA::Long theNbSegments ) throw ( SALOME::SALOME_Exception );
+  /*!
+   * \brief Sets default number of segments per edge
+   */
+  void SetDefaultNbSegments(CORBA::Long theNbSegments) throw ( SALOME::SALOME_Exception );
+
   // Create empty mesh on a shape
   SMESH::SMESH_Mesh_ptr CreateMesh( GEOM::GEOM_Object_ptr theShapeObject )
     throw ( SALOME::SALOME_Exception );
@@ -237,11 +250,27 @@ public:
   CORBA::Boolean IsReadyToCompute( SMESH::SMESH_Mesh_ptr theMesh,
                                    GEOM::GEOM_Object_ptr theShapeObject )
     throw ( SALOME::SALOME_Exception );
+  
+  /*!
+   * Calculate Mesh as preview till indicated dimension on shape
+   * First, verify list of hypothesis associated with the subShape.
+   * Return mesh preview structure
+   */
+  SMESH::MeshPreviewStruct* Precompute( SMESH::SMESH_Mesh_ptr theMesh,
+					GEOM::GEOM_Object_ptr theSubObject,
+					SMESH::Dimension      theDimension,
+					SMESH::long_array&    theShapesId )
+    throw ( SALOME::SALOME_Exception );
 
   // Returns errors of hypotheses definintion
   SMESH::algo_error_array* GetAlgoState( SMESH::SMESH_Mesh_ptr theMesh, 
                                          GEOM::GEOM_Object_ptr theSubObject )
       throw ( SALOME::SALOME_Exception );
+
+  // Return mesh elements preventing computation of a subshape
+  SMESH::MeshPreviewStruct* GetBadInputElements( SMESH::SMESH_Mesh_ptr theMesh,
+                                                 CORBA::Short          theSubShapeID )
+    throw ( SALOME::SALOME_Exception );
 
   // Get sub-shapes unique ID's list
   SMESH::long_array* GetSubShapesId( GEOM::GEOM_Object_ptr      theMainShapeObject,
@@ -365,7 +394,7 @@ public:
 
   void SavePython (SALOMEDS::Study_ptr theStudy);
 
-  TCollection_AsciiString DumpPython_impl (int theStudyID, 
+  TCollection_AsciiString DumpPython_impl (SALOMEDS::Study_ptr theStudy, 
                                            Resource_DataMapOfAsciiStringAsciiString& theObjectNames,
                                            Resource_DataMapOfAsciiStringAsciiString& theNames,
                                            bool isPublished, 
@@ -464,6 +493,11 @@ public:
    * \brief Find SObject for an algo
    */
   SALOMEDS::SObject_ptr GetAlgoSO(const ::SMESH_Algo* algo);
+
+  void UpdateParameters(CORBA::Object_ptr theObject, const char* theParameters);
+  char* GetParameters(CORBA::Object_ptr theObject);
+  char* ParseParameters(const char* theParameters);
+  
  
 private:
   // Create hypothesis of given type

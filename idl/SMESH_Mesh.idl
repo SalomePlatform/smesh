@@ -1,4 +1,6 @@
-//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//
+//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
 //  This library is free software; you can redistribute it and/or
@@ -15,13 +17,11 @@
 //  License along with this library; if not, write to the Free Software
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
-//
-//
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 //  File   : SMESH_Mesh.idl
 //  Author : Paul RASCLE, EDF
-//  $Header$
+//
 
 #ifndef _SMESH_MESH_IDL_
 #define _SMESH_MESH_IDL_
@@ -61,6 +61,7 @@ module SMESH
       CHANGE_ELEMENT_NODES,
       CHANGE_POLYHEDRON_NODES,
       RENUMBER,
+      CLEAR_MESH,
       ADD_QUADEDGE,
       ADD_QUADTRIANGLE,
       ADD_QUADQUADRANGLE,
@@ -113,6 +114,23 @@ module SMESH
     FACE,
     VOLUME
   };
+
+  /*!
+   * Enumeration for element geometry type, like in SMDS
+   */
+  enum GeometryType
+  {
+    Geom_POINT,
+    Geom_EDGE,
+    Geom_TRIANGLE,
+    Geom_QUADRANGLE,
+    Geom_POLYGON,
+    Geom_TETRA,
+    Geom_PYRAMID,
+    Geom_HEXA,
+    Geom_PENTA,
+    Geom_POLYHEDRA
+  };
   
   /*!
    * ElementOrder points out entities of what order are requested
@@ -141,7 +159,8 @@ module SMESH
     HYP_ALREADY_EXIST,// such hypothesis already exist
     HYP_BAD_DIM,      // bad dimension
     HYP_BAD_SUBSHAPE, // shape is neither the main one, nor its subshape, nor a group
-    HYP_BAD_GEOMETRY  // geometry mismatches algorithm's expectation
+    HYP_BAD_GEOMETRY, // geometry mismatches algorithm's expectation
+    HYP_NEED_SHAPE    // algorithm can work on shape only
   };
 
   /*!
@@ -177,6 +196,22 @@ module SMESH
   const long EXTRUSION_FLAG_BOUNDARY = 1;
   const long EXTRUSION_FLAG_SEW = 2;
   
+  /*!
+   * Structure used in mesh edit preview data (MeshPreviewStruct)
+   */
+  struct ElementSubType { ElementType SMDS_ElementType;
+                          boolean     isPoly;
+                          long        nbNodesInElement; };
+
+  typedef sequence<ElementSubType> types_array;
+
+  /*!
+   * Structure containing mesh edit preview data
+   */
+  struct MeshPreviewStruct { nodes_array nodesXYZ;
+                             long_array  elementConnectivities;
+                             types_array elementTypes; };
+
   interface SMESH_IDSource
   {
     /*!
@@ -204,6 +239,17 @@ module SMESH
     GEOM::GEOM_Object GetShapeToMesh()
       raises (SALOME::SALOME_Exception);
 
+    /*!
+     * Remove all nodes and elements
+     */
+    void Clear()
+      raises (SALOME::SALOME_Exception);
+
+    /*!
+     * Remove all nodes and elements of submesh
+     */
+    void ClearSubMesh(in long ShapeID)
+      raises (SALOME::SALOME_Exception);
 
     /*!
      * Get the subMesh object associated to a subShape. The subMesh object
@@ -269,6 +315,15 @@ module SMESH
                              in SMESH_GroupBase aGroup2,
                              in string          name )
       raises (SALOME::SALOME_Exception);
+      
+    /*!
+     * Union of list of groups
+     * New group is created. All mesh elements that are
+     * present in initial groups are added to the new one
+     */
+    SMESH_Group UnionListOfGroups (in ListOfGroups aListOfGroups,
+                                   in string       name )
+      raises (SALOME::SALOME_Exception);
 
     /*!
      *  Intersection of two groups
@@ -279,6 +334,15 @@ module SMESH
                                  in SMESH_GroupBase aGroup2,
                                  in string          name )
       raises (SALOME::SALOME_Exception);
+      
+    /*!
+     *  Intersection of list of groups
+     *  New group is created. All mesh elements that are
+     *  present in all initial groups simultaneously are added to the new one.
+     */
+    SMESH_Group IntersectListOfGroups (in ListOfGroups aListOfGroups,
+                                       in string       name)
+      raises (SALOME::SALOME_Exception);
 
     /*!
      *  Cut of two groups
@@ -286,8 +350,35 @@ module SMESH
      *  main group but do not present in tool group are added to the new one
      */
     SMESH_Group CutGroups (in SMESH_GroupBase aMainGroup,
-			   in SMESH_GroupBase aToolGroup,
-			   in string          name )
+                           in SMESH_GroupBase aToolGroup,
+                           in string          name )
+      raises (SALOME::SALOME_Exception);
+      
+    /*!
+     *  Cut of lists of groups
+     *  New group is created. All mesh elements that are present in
+     *  main groups but do not present in tool groups are added to the new one
+     */
+    SMESH_Group CutListOfGroups (in ListOfGroups aMainGroups,
+                                 in ListOfGroups aToolGroups,
+                                 in string       name)
+      raises (SALOME::SALOME_Exception);
+      
+    /*!
+     *  Create groups of entities from existing groups of superior dimensions 
+     *  New group is created. System 
+     *  1) extracts all nodes from each group,
+     *  2) combines all elements of specified dimension laying on these nodes.
+     */
+    SMESH_Group CreateDimGroup( in ListOfGroups aListOfGroups,
+                                in ElementType  anElemType,
+                                in string       name )
+      raises (SALOME::SALOME_Exception);
+
+    /*!
+     * Convert group on geometry into standalone group
+     */
+    SMESH_Group ConvertToStandalone( in SMESH_GroupOnGeom theGeomGroup )
       raises (SALOME::SALOME_Exception);
 
     /*!
@@ -625,6 +716,24 @@ module SMESH
      */
     double_array BaryCenter(in long id);
 
+    /*! Gets information about imported MED file */
+    SALOME_MED::MedFileInfo GetMEDFileInfo();
+
+    /*!
+     *  Sets list of notebook variables used for Mesh operations separated by ":" symbol
+     *  \param theParameters is a string containing the notebook variables
+     */
+    void SetParameters (in string theParameters);
+
+    /*!
+     *  Returns list of notebook variables used for Mesh operations separated by ":" symbol
+     */
+    string GetParameters();
+
+    /*!
+     *  Returns list of notebook variables used for last Mesh operation
+     */
+    string_array GetLastParameters();
   };
 
   interface SMESH_subMesh : SALOME::GenericObj, SMESH_IDSource

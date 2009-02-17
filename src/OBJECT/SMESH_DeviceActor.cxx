@@ -1,36 +1,35 @@
+//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//
+//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+//
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
+//
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
+//
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
 //  SMESH OBJECT : interactive object for SMESH visualization
-//
-//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
-// 
-//  This library is free software; you can redistribute it and/or 
-//  modify it under the terms of the GNU Lesser General Public 
-//  License as published by the Free Software Foundation; either 
-//  version 2.1 of the License. 
-// 
-//  This library is distributed in the hope that it will be useful, 
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of 
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
-//  Lesser General Public License for more details. 
-// 
-//  You should have received a copy of the GNU Lesser General Public 
-//  License along with this library; if not, write to the Free Software 
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
-// 
-// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
-//
-//
-//
 //  File   : SMESH_DeviceActor.cxx
 //  Author : 
 //  Module : SMESH
-//  $Header$
-
+//
 
 #include "SMESH_DeviceActor.h"
 #include "SMESH_ExtractGeometry.h"
 #include "SMESH_ControlsDef.hxx"
 #include "SMESH_ActorUtils.h"
+#include "SMESH_FaceOrientationFilter.h"
 #include "VTKViewer_CellLocationsArray.h"
 
 #include <VTKViewer_Transform.h>
@@ -61,6 +60,8 @@
 #include <vtkImplicitBoolean.h>
 #include <vtkPassThroughFilter.h>
 
+#include <vtkRenderer.h>
+
 #include "utilities.h"
 
 #ifdef _DEBUG_
@@ -80,8 +81,10 @@ SMESH_DeviceActor
 {
   if(MYDEBUG) MESSAGE("SMESH_DeviceActor - "<<this);
 
-  myIsShrunk = false;
   myIsShrinkable = false;
+  myIsShrunk = false;
+  myIsHighlited = false;
+
   myRepresentation = eSurface;
 
   myProperty = vtkProperty::New();
@@ -111,6 +114,21 @@ SMESH_DeviceActor
 
   for(int i = 0; i < 6; i++)
     myPassFilter.push_back(vtkPassThroughFilter::New());
+
+  // Orientation of faces
+  myIsFacesOriented = false;
+
+  vtkFloatingPointType anRGB[3] = { 1, 1, 1 };
+  SMESH::GetColor( "SMESH", "orientation_color", anRGB[0], anRGB[1], anRGB[2], QColor( 255, 255, 255 ) );
+
+  myFaceOrientationFilter = SMESH_FaceOrientationFilter::New();
+
+  myFaceOrientationDataMapper = vtkPolyDataMapper::New();
+  myFaceOrientationDataMapper->SetInput(myFaceOrientationFilter->GetOutput());
+
+  myFaceOrientation = vtkActor::New();
+  myFaceOrientation->SetMapper(myFaceOrientationDataMapper);
+  myFaceOrientation->GetProperty()->SetColor(anRGB[0], anRGB[1], anRGB[2]);
 }
 
 
@@ -138,6 +156,14 @@ SMESH_DeviceActor
   for(int i = 0, iEnd = myPassFilter.size(); i < iEnd; i++){
     myPassFilter[i]->Delete();
   }
+
+  // Orientation of faces
+  myFaceOrientationFilter->Delete();
+
+  myFaceOrientationDataMapper->RemoveAllInputs();
+  myFaceOrientationDataMapper->Delete();
+
+  myFaceOrientation->Delete();
 }
 
 
@@ -221,16 +247,12 @@ SMESH_DeviceActor
 
     anId++; // 3
     myTransformFilter->SetInput( myPassFilter[ anId ]->GetPolyDataOutput() );
-    myTransformFilter->SetInput( myPassFilter[ anId ]->GetPolyDataOutput() );
 
     anId++; // 4
     myPassFilter[ anId ]->SetInput( myTransformFilter->GetOutput() );
     myPassFilter[ anId + 1 ]->SetInput( myPassFilter[ anId ]->GetOutput() );
-    myPassFilter[ anId ]->SetInput( myTransformFilter->GetOutput() );
-    myPassFilter[ anId + 1 ]->SetInput( myPassFilter[ anId ]->GetOutput() );
 
     anId++; // 5
-    myMapper->SetInput( myPassFilter[ anId ]->GetPolyDataOutput() );
     myMapper->SetInput( myPassFilter[ anId ]->GetPolyDataOutput() );
 
     vtkLODActor::SetMapper( myMapper );
@@ -461,13 +483,15 @@ SMESH_DeviceActor
   myVisualObj->UpdateFunctor(theFunctor);
 
   using namespace SMESH::Controls;
-  if(FreeBorders* aFreeBorders = dynamic_cast<FreeBorders*>(theFunctor.get())){
+  if ( dynamic_cast<FreeBorders*>(theFunctor.get()) ||
+       dynamic_cast<FreeFaces*>(theFunctor.get()) ) {
+    Predicate* aFreePredicate = dynamic_cast<Predicate*>(theFunctor.get());
     myExtractUnstructuredGrid->SetModeOfChanging(VTKViewer_ExtractUnstructuredGrid::eAdding);
     vtkUnstructuredGrid* aGrid = myVisualObj->GetUnstructuredGrid();
     vtkIdType aNbCells = aGrid->GetNumberOfCells();
     for( vtkIdType i = 0; i < aNbCells; i++ ){
       vtkIdType anObjId = myVisualObj->GetElemObjId(i);
-      if(aFreeBorders->IsSatisfy(anObjId))
+      if(aFreePredicate->IsSatisfy(anObjId))
 	myExtractUnstructuredGrid->RegisterCell(i);
     }
     if(!myExtractUnstructuredGrid->IsCellsRegistered())
@@ -520,6 +544,18 @@ SMESH_DeviceActor
 
     SetUnstructuredGrid(aDataSet);
     aDataSet->Delete();
+  }else if(FreeNodes* aFreeNodes = dynamic_cast<FreeNodes*>(theFunctor.get())){
+    myExtractUnstructuredGrid->SetModeOfChanging(VTKViewer_ExtractUnstructuredGrid::eAdding);
+    vtkUnstructuredGrid* aGrid = myVisualObj->GetUnstructuredGrid();
+    vtkIdType aNbCells = aGrid->GetNumberOfCells();
+    for( vtkIdType i = 0; i < aNbCells; i++ ){
+      vtkIdType anObjId = myVisualObj->GetNodeObjId(i);
+      if(aFreeNodes->IsSatisfy(anObjId))
+	myExtractUnstructuredGrid->RegisterCell(i);
+    }
+    if(!myExtractUnstructuredGrid->IsCellsRegistered())
+      myExtractUnstructuredGrid->RegisterCell(-1);
+    SetUnstructuredGrid(myVisualObj->GetUnstructuredGrid());
   }
 }
 
@@ -536,6 +572,7 @@ SMESH_DeviceActor
   mTime = max(mTime,myMergeFilter->GetMTime());
   mTime = max(mTime,myGeomFilter->GetMTime());
   mTime = max(mTime,myTransformFilter->GetMTime());
+  mTime = max(mTime,myFaceOrientationFilter->GetMTime());
   return mTime;
 }
 
@@ -578,6 +615,30 @@ SMESH_DeviceActor
 
 void
 SMESH_DeviceActor
+::SetFacesOriented(bool theIsFacesOriented) 
+{
+  if ( vtkDataSet* aDataSet = myPassFilter[ 1 ]->GetOutput() )
+  {
+    myIsFacesOriented = theIsFacesOriented;
+    if( theIsFacesOriented )
+      myFaceOrientationFilter->SetInput( aDataSet );
+    UpdateFaceOrientation();
+  }
+}
+
+void
+SMESH_DeviceActor
+::UpdateFaceOrientation()
+{
+  bool aShowFaceOrientation = myIsFacesOriented;
+  aShowFaceOrientation &= GetVisibility();
+  aShowFaceOrientation &= myRepresentation == eSurface;
+  myFaceOrientation->SetVisibility(aShowFaceOrientation);
+}
+
+
+void
+SMESH_DeviceActor
 ::SetRepresentation(EReperesent theMode)
 {
   switch(theMode){
@@ -602,6 +663,7 @@ SMESH_DeviceActor
     GetProperty()->SetRepresentation(theMode);
   }
   myRepresentation = theMode;
+  UpdateFaceOrientation();
   GetProperty()->Modified();
   myMapper->Modified();
   Modified();
@@ -619,6 +681,7 @@ SMESH_DeviceActor
   }else{
     vtkLODActor::SetVisibility(false);
   }
+  UpdateFaceOrientation();
 }
 
 
@@ -630,6 +693,23 @@ SMESH_DeviceActor
     vtkLODActor::SetVisibility(false);
   }
   return vtkLODActor::GetVisibility();
+}
+
+
+void
+SMESH_DeviceActor
+::AddToRender(vtkRenderer* theRenderer)
+{
+  theRenderer->AddActor(this);
+  theRenderer->AddActor(myFaceOrientation);
+}
+
+void
+SMESH_DeviceActor
+::RemoveFromRender(vtkRenderer* theRenderer)
+{
+  theRenderer->RemoveActor(this);
+  theRenderer->RemoveActor(myFaceOrientation);
 }
 
 
@@ -653,7 +733,7 @@ SMESH_DeviceActor
 {
   vtkDataSet* aDataSet = myMergeFilter->GetOutput();
   vtkIdType anID = myVisualObj->GetNodeVTKId(theObjID);
-  vtkFloatingPointType* aCoord = aDataSet->GetPoint(anID);
+  vtkFloatingPointType* aCoord = (anID >=0) ? aDataSet->GetPoint(anID) : NULL;
   if(MYDEBUG) MESSAGE("GetNodeCoord - theObjID = "<<theObjID<<"; anID = "<<anID);
   return aCoord;
 }
@@ -689,7 +769,7 @@ SMESH_DeviceActor
 {
   vtkDataSet* aDataSet = myVisualObj->GetUnstructuredGrid();
   vtkIdType aGridID = myVisualObj->GetElemVTKId(theObjID);
-  vtkCell* aCell = aDataSet->GetCell(aGridID);
+  vtkCell* aCell = (aGridID >= 0 ) ? aDataSet->GetCell(aGridID) : NULL;
   if(MYDEBUG) 
     MESSAGE("GetElemCell - theObjID = "<<theObjID<<"; aGridID = "<<aGridID);
   return aCell;

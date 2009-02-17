@@ -1,6 +1,6 @@
-//  SMESH SMESHGUI : GUI for SMESH component
+//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
 //  This library is free software; you can redistribute it and/or
@@ -17,15 +17,13 @@
 //  License along with this library; if not, write to the Free Software
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+// SMESH SMESHGUI : GUI for SMESH component
+// File   : SMESHGUI_SewingDlg.cxx
+// Author : Michael ZORIN, Open CASCADE S.A.S.
+// SMESH includes
 //
-//
-//  File   : SMESHGUI_SewingDlg.cxx
-//  Author : Michael ZORIN
-//  Module : SMESH
-//  $Header:
-
 #include "SMESHGUI_SewingDlg.h"
 
 #include "SMESHGUI.h"
@@ -34,55 +32,55 @@
 #include "SMESHGUI_MeshUtils.h"
 #include "SMESHGUI_IdValidator.h"
 
-#include "SMESH_Actor.h"
-#include "SMDS_Mesh.hxx"
+#include <SMESH_Actor.h>
+#include <SMDS_Mesh.hxx>
 
-#include "SUIT_Session.h"
-#include "SUIT_ResourceMgr.h"
-#include "SUIT_Desktop.h"
-#include "SUIT_MessageBox.h"
+// SALOME GUI includes
+#include <SUIT_Session.h>
+#include <SUIT_ResourceMgr.h>
+#include <SUIT_Desktop.h>
+#include <SUIT_MessageBox.h>
+#include <SUIT_OverrideCursor.h>
 
-#include "LightApp_Application.h"
+#include <LightApp_Application.h>
+#include <LightApp_SelectionMgr.h>
 
-#include "SVTK_ViewModel.h"
-#include "SVTK_ViewWindow.h"
-#include "SVTK_Selector.h"
-#include "SVTK_Selection.h"
-#include "SALOME_ListIO.hxx"
+#include <SVTK_ViewModel.h>
+#include <SVTK_ViewWindow.h>
+#include <SALOME_ListIO.hxx>
 
-#include "utilities.h"
-
-// OCCT Includes
+// OCCT includes
 #include <TColStd_MapOfInteger.hxx>
-#include <TColStd_IndexedMapOfInteger.hxx>
 
-// QT Includes
-#include <qapplication.h>
-#include <qbuttongroup.h>
-#include <qgroupbox.h>
-#include <qlabel.h>
-#include <qlineedit.h>
-#include <qpushbutton.h>
-#include <qradiobutton.h>
-#include <qcheckbox.h>
-#include <qlayout.h>
-#include <qpixmap.h>
+// Qt includes
+#include <QApplication>
+#include <QButtonGroup>
+#include <QGroupBox>
+#include <QLabel>
+#include <QLineEdit>
+#include <QPushButton>
+#include <QRadioButton>
+#include <QCheckBox>
+#include <QHBoxLayout>
+#include <QVBoxLayout>
+#include <QGridLayout>
+#include <QKeyEvent>
 
+// IDL includes
+#include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_MeshEditor)
 
-using namespace std;
-
+#define SPACING 6
+#define MARGIN  11
 
 //=================================================================================
 // class    : SMESHGUI_SewingDlg()
 // purpose  :
 //=================================================================================
-SMESHGUI_SewingDlg::SMESHGUI_SewingDlg( SMESHGUI* theModule, const char* name,
-                                        bool modal, WFlags fl)
-     : QDialog( SMESH::GetDesktop( theModule ), name, modal, WStyle_Customize | WStyle_NormalBorder |
-                WStyle_Title | WStyle_SysMenu | Qt::WDestructiveClose),
-      mySMESHGUI( theModule ),
-      mySelectionMgr( SMESH::GetSelectionMgr( theModule ) )
+SMESHGUI_SewingDlg::SMESHGUI_SewingDlg( SMESHGUI* theModule )
+  : QDialog( SMESH::GetDesktop( theModule ) ),
+    mySMESHGUI( theModule ),
+    mySelectionMgr( SMESH::GetSelectionMgr( theModule ) )
 {
   SUIT_ResourceMgr* mgr = SMESH::GetResourceMgr( mySMESHGUI );
   QPixmap image0 (mgr->loadPixmap("SMESH", tr("ICON_SMESH_SEWING_FREEBORDERS")));
@@ -91,207 +89,162 @@ SMESHGUI_SewingDlg::SMESHGUI_SewingDlg( SMESHGUI* theModule, const char* name,
   QPixmap image3 (mgr->loadPixmap("SMESH", tr("ICON_SMESH_SEWING_SIDEELEMENTS")));
   QPixmap image4 (mgr->loadPixmap("SMESH", tr("ICON_SELECT")));
 
-  if (!name)
-    setName("SMESHGUI_SewingDlg");
-  resize(303, 185);
-  setCaption(tr("SMESH_SEWING"));
-  setSizeGripEnabled(TRUE);
-  SMESHGUI_SewingDlgLayout = new QGridLayout(this);
-  SMESHGUI_SewingDlgLayout->setSpacing(6);
-  SMESHGUI_SewingDlgLayout->setMargin(11);
+  setModal(false);
+  setAttribute(Qt::WA_DeleteOnClose, true);
+  setWindowTitle(tr("SMESH_SEWING"));
+  setSizeGripEnabled(true);
+
+  QVBoxLayout* SMESHGUI_SewingDlgLayout = new QVBoxLayout(this);
+  SMESHGUI_SewingDlgLayout->setSpacing(SPACING);
+  SMESHGUI_SewingDlgLayout->setMargin(MARGIN);
 
   /***************************************************************/
-  GroupConstructors = new QButtonGroup(this, "GroupConstructors");
-  GroupConstructors->setSizePolicy(QSizePolicy((QSizePolicy::SizeType)5,
-                                               (QSizePolicy::SizeType)0, 0, 0,
-                                               GroupConstructors->sizePolicy().hasHeightForWidth()));
-  GroupConstructors->setTitle(tr("SMESH_SEWING"));
-  GroupConstructors->setExclusive(TRUE);
-  GroupConstructors->setColumnLayout(0, Qt::Vertical);
-  GroupConstructors->layout()->setSpacing(0);
-  GroupConstructors->layout()->setMargin(0);
-  GroupConstructorsLayout = new QGridLayout(GroupConstructors->layout());
-  GroupConstructorsLayout->setAlignment(Qt::AlignTop);
-  GroupConstructorsLayout->setSpacing(6);
-  GroupConstructorsLayout->setMargin(11);
-  QHBoxLayout* RBLayout = new QHBoxLayout(0, 0, 6, "Layout2");
-  RadioButton1= new QRadioButton(GroupConstructors, "RadioButton1");
-  RadioButton1->setText(tr("" ));
-  RadioButton1->setPixmap(image0);
-  RBLayout->addWidget(RadioButton1);
-  RadioButton2= new QRadioButton(GroupConstructors, "RadioButton2");
-  RadioButton2->setText(tr("" ));
-  RadioButton2->setPixmap(image1);
-  RBLayout->addWidget(RadioButton2);
-  RadioButton3= new QRadioButton(GroupConstructors, "RadioButton3");
-  RadioButton3->setText(tr("" ));
-  RadioButton3->setPixmap(image2);
-  RBLayout->addWidget(RadioButton3);
-  RadioButton4= new QRadioButton(GroupConstructors, "RadioButton4");
-  RadioButton4->setText(tr("" ));
-  RadioButton4->setPixmap(image3);
-  RBLayout->addWidget(RadioButton4);
-  GroupConstructorsLayout->addLayout(RBLayout, 0, 0);
-  SMESHGUI_SewingDlgLayout->addWidget(GroupConstructors, 0, 0);
+  ConstructorsBox = new QGroupBox(tr("SMESH_SEWING"), this);
+  GroupConstructors = new QButtonGroup(this);
+  QHBoxLayout* ConstructorsBoxLayout = new QHBoxLayout(ConstructorsBox);
+  ConstructorsBoxLayout->setSpacing(SPACING);
+  ConstructorsBoxLayout->setMargin(MARGIN);
+
+  RadioButton1 = new QRadioButton(ConstructorsBox);
+  RadioButton1->setIcon(image0);
+  RadioButton2 = new QRadioButton(ConstructorsBox);
+  RadioButton2->setIcon(image1);
+  RadioButton3 = new QRadioButton(ConstructorsBox);
+  RadioButton3->setIcon(image2);
+  RadioButton4 = new QRadioButton(ConstructorsBox);
+  RadioButton4->setIcon(image3);
+
+  ConstructorsBoxLayout->addWidget(RadioButton1);
+  ConstructorsBoxLayout->addWidget(RadioButton2);
+  ConstructorsBoxLayout->addWidget(RadioButton3);
+  ConstructorsBoxLayout->addWidget(RadioButton4);
+  GroupConstructors->addButton(RadioButton1, 0);
+  GroupConstructors->addButton(RadioButton2, 1);
+  GroupConstructors->addButton(RadioButton3, 2);
+  GroupConstructors->addButton(RadioButton4, 3);
 
   /***************************************************************/
-  GroupButtons = new QGroupBox(this, "GroupButtons");
-  GroupButtons->setSizePolicy(QSizePolicy((QSizePolicy::SizeType)7,
-                                          (QSizePolicy::SizeType)0, 0, 0,
-                                          GroupButtons->sizePolicy().hasHeightForWidth()));
-  GroupButtons->setGeometry(QRect(10, 10, 281, 48));
-  GroupButtons->setTitle(tr("" ));
-  GroupButtons->setColumnLayout(0, Qt::Vertical);
-  GroupButtons->layout()->setSpacing(0);
-  GroupButtons->layout()->setMargin(0);
-  GroupButtonsLayout = new QGridLayout(GroupButtons->layout());
-  GroupButtonsLayout->setAlignment(Qt::AlignTop);
-  GroupButtonsLayout->setSpacing(6);
-  GroupButtonsLayout->setMargin(11);
-  buttonHelp = new QPushButton(GroupButtons, "buttonHelp");
-  buttonHelp->setText(tr("SMESH_BUT_HELP" ));
-  buttonHelp->setAutoDefault(TRUE);
-  GroupButtonsLayout->addWidget(buttonHelp, 0, 4);
-  buttonCancel = new QPushButton(GroupButtons, "buttonCancel");
-  buttonCancel->setText(tr("SMESH_BUT_CLOSE"));
-  buttonCancel->setAutoDefault(TRUE);
-  GroupButtonsLayout->addWidget(buttonCancel, 0, 3);
-  buttonApply = new QPushButton(GroupButtons, "buttonApply");
-  buttonApply->setText(tr("SMESH_BUT_APPLY"));
-  buttonApply->setAutoDefault(TRUE);
-  GroupButtonsLayout->addWidget(buttonApply, 0, 1);
-  QSpacerItem* spacer_9 = new QSpacerItem(20, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
-  GroupButtonsLayout->addItem(spacer_9, 0, 2);
-  buttonOk = new QPushButton(GroupButtons, "buttonOk");
-  buttonOk->setText(tr("SMESH_BUT_OK"));
-  buttonOk->setAutoDefault(TRUE);
-  buttonOk->setDefault(TRUE);
-  GroupButtonsLayout->addWidget(buttonOk, 0, 0);
-  SMESHGUI_SewingDlgLayout->addWidget(GroupButtons, 2, 0);
-
-  /***************************************************************/
-  GroupArguments = new QGroupBox(this, "GroupArguments");
-  GroupArguments->setColumnLayout(0, Qt::Vertical);
-  GroupArguments->layout()->setSpacing(0);
-  GroupArguments->layout()->setMargin(0);
-  GroupArgumentsLayout = new QGridLayout(GroupArguments->layout());
-  GroupArgumentsLayout->setAlignment(Qt::AlignTop);
-  GroupArgumentsLayout->setSpacing(6);
-  GroupArgumentsLayout->setMargin(11);
+  GroupArguments = new QGroupBox(this);
+  QVBoxLayout* GroupArgumentsLayout = new QVBoxLayout(GroupArguments);
+  GroupArgumentsLayout->setSpacing(SPACING);
+  GroupArgumentsLayout->setMargin(MARGIN);
 
   // First subgroup
-  SubGroup1 = new QGroupBox(GroupArguments, "SubGroup1");
-  SubGroup1->setColumnLayout(0, Qt::Vertical);
-  SubGroup1->layout()->setSpacing(0);
-  SubGroup1->layout()->setMargin(0);
-  QGridLayout* SubGroup1Layout = new QGridLayout(SubGroup1->layout());
-  SubGroup1Layout->setAlignment(Qt::AlignTop);
-  SubGroup1Layout->setSpacing(6);
-  SubGroup1Layout->setMargin(11);
+  SubGroup1 = new QGroupBox(GroupArguments);
+  QGridLayout* SubGroup1Layout = new QGridLayout(SubGroup1);
+  SubGroup1Layout->setSpacing(SPACING);
+  SubGroup1Layout->setMargin(MARGIN);
 
   // Controls of the first subgroup
-  TextLabel1 = new QLabel(SubGroup1, "TextLabel1");
-  TextLabel1->setFixedWidth(104);
-  SubGroup1Layout->addWidget(TextLabel1, 0, 0);
+  TextLabel1 = new QLabel(SubGroup1);
+  SelectButton1  = new QPushButton(SubGroup1);
+  SelectButton1->setIcon(image4);
+  LineEdit1 = new QLineEdit(SubGroup1);
 
-  SelectButton1  = new QPushButton(SubGroup1, "SelectButton1");
-  SelectButton1->setPixmap(image4);
+  TextLabel2 = new QLabel(SubGroup1);
+  SelectButton2  = new QPushButton(SubGroup1);
+  SelectButton2->setIcon(image4);
+  LineEdit2 = new QLineEdit(SubGroup1);
+
+  TextLabel3 = new QLabel(SubGroup1);
+  SelectButton3  = new QPushButton(SubGroup1);
+  SelectButton3->setIcon(image4);
+  LineEdit3 = new QLineEdit(SubGroup1);
+
+  SubGroup1Layout->addWidget(TextLabel1,    0, 0);
   SubGroup1Layout->addWidget(SelectButton1, 0, 1);
-
-  LineEdit1 = new QLineEdit(SubGroup1, "LineEdit1");
-  SubGroup1Layout->addWidget(LineEdit1, 0, 2);
-
-  TextLabel2 = new QLabel(SubGroup1, "TextLabel2");
-  SubGroup1Layout->addWidget(TextLabel2, 1, 0);
-
-  SelectButton2  = new QPushButton(SubGroup1, "SelectButton2");
-  SelectButton2->setPixmap(image4);
+  SubGroup1Layout->addWidget(LineEdit1,     0, 2);
+  SubGroup1Layout->addWidget(TextLabel2,    1, 0);
   SubGroup1Layout->addWidget(SelectButton2, 1, 1);
-
-  LineEdit2 = new QLineEdit(SubGroup1, "LineEdit2");
-  SubGroup1Layout->addWidget(LineEdit2, 1, 2);
-
-  TextLabel3 = new QLabel(SubGroup1, "TextLabel3");
-  SubGroup1Layout->addWidget(TextLabel3, 2, 0);
-
-  SelectButton3  = new QPushButton(SubGroup1, "SelectButton3");
-  SelectButton3->setPixmap(image4);
+  SubGroup1Layout->addWidget(LineEdit2,     1, 2);
+  SubGroup1Layout->addWidget(TextLabel3,    2, 0);
   SubGroup1Layout->addWidget(SelectButton3, 2, 1);
-
-  LineEdit3 = new QLineEdit(SubGroup1, "LineEdit3");
-  SubGroup1Layout->addWidget(LineEdit3, 2, 2);
+  SubGroup1Layout->addWidget(LineEdit3,     2, 2);
 
   // Second subgroup
-  SubGroup2 = new QGroupBox(GroupArguments, "SubGroup2");
-  SubGroup2->setColumnLayout(0, Qt::Vertical);
-  SubGroup2->layout()->setSpacing(0);
-  SubGroup2->layout()->setMargin(0);
-  QGridLayout* SubGroup2Layout = new QGridLayout(SubGroup2->layout());
-  SubGroup2Layout->setAlignment(Qt::AlignTop);
-  SubGroup2Layout->setSpacing(6);
-  SubGroup2Layout->setMargin(11);
+  SubGroup2 = new QGroupBox(GroupArguments);
+  QGridLayout* SubGroup2Layout = new QGridLayout(SubGroup2);
+  SubGroup2Layout->setSpacing(SPACING);
+  SubGroup2Layout->setMargin(MARGIN);
 
   // Controls of the first subgroup
-  TextLabel4 = new QLabel(SubGroup2, "TextLabel4");
-  SubGroup2Layout->addWidget(TextLabel4, 0, 0);
+  TextLabel4 = new QLabel(SubGroup2);
+  SelectButton4  = new QPushButton(SubGroup2);
+  SelectButton4->setIcon(image4);
+  LineEdit4 = new QLineEdit(SubGroup2);
 
-  SelectButton4  = new QPushButton(SubGroup2, "SelectButton4");
-  SelectButton4->setPixmap(image4);
+  TextLabel5 = new QLabel(SubGroup2);
+  SelectButton5  = new QPushButton(SubGroup2);
+  SelectButton5->setIcon(image4);
+  LineEdit5 = new QLineEdit(SubGroup2);
+
+  TextLabel6 = new QLabel(SubGroup2);
+  SelectButton6  = new QPushButton(SubGroup2);
+  SelectButton6->setIcon(image4);
+  LineEdit6 = new QLineEdit(SubGroup2);
+
+  SubGroup2Layout->addWidget(TextLabel4,    0, 0);
   SubGroup2Layout->addWidget(SelectButton4, 0, 1);
-
-  LineEdit4 = new QLineEdit(SubGroup2, "LineEdit4");
-  SubGroup2Layout->addWidget(LineEdit4, 0, 2);
-
-  TextLabel5 = new QLabel(SubGroup2, "TextLabel5");
-  SubGroup2Layout->addWidget(TextLabel5, 1, 0);
-
-  SelectButton5  = new QPushButton(SubGroup2, "SelectButton5");
-  SelectButton5->setPixmap(image4);
+  SubGroup2Layout->addWidget(LineEdit4,     0, 2);
+  SubGroup2Layout->addWidget(TextLabel5,    1, 0);
   SubGroup2Layout->addWidget(SelectButton5, 1, 1);
-
-  LineEdit5 = new QLineEdit(SubGroup2, "LineEdit5");
-  SubGroup2Layout->addWidget(LineEdit5, 1, 2);
-
-  TextLabel6 = new QLabel(SubGroup2, "TextLabel6");
-  SubGroup2Layout->addWidget(TextLabel6, 2, 0);
-
-  SelectButton6  = new QPushButton(SubGroup2, "SelectButton6");
-  SelectButton6->setPixmap(image4);
+  SubGroup2Layout->addWidget(LineEdit5,     1, 2);
+  SubGroup2Layout->addWidget(TextLabel6,    2, 0);
   SubGroup2Layout->addWidget(SelectButton6, 2, 1);
-
-  LineEdit6 = new QLineEdit(SubGroup2, "LineEdit6");
-  SubGroup2Layout->addWidget(LineEdit6, 2, 2);
-
-  // Add subgroups to the group of arguments
-  GroupArgumentsLayout->addWidget(SubGroup1, 0, 0);
-  GroupArgumentsLayout->addWidget(SubGroup2, 1, 0);
+  SubGroup2Layout->addWidget(LineEdit6,     2, 2);
 
   // Control for the merging equal elements
-  CheckBoxMerge = new QCheckBox(GroupArguments, "CheckBoxMerge");
-  CheckBoxMerge->setText(tr("MERGE_EQUAL_ELEMENTS" ));
-  GroupArgumentsLayout->addWidget(CheckBoxMerge, 2, 0);
+  CheckBoxMerge = new QCheckBox(tr("MERGE_EQUAL_ELEMENTS"), GroupArguments);
 
-// Control for the polygons creation instead of splitting
-  CheckBoxPolygons = new QCheckBox( GroupArguments, "CheckBoxPolygons" );
-  CheckBoxPolygons->setText( tr( "CREATE_POLYGONS_INSTEAD_SPLITTING"  ) );
-  GroupArgumentsLayout->addWidget( CheckBoxPolygons, 3, 0 );
+  // Control for the polygons creation instead of splitting
+  CheckBoxPolygons = new QCheckBox(tr("CREATE_POLYGONS_INSTEAD_SPLITTING"), GroupArguments);
   
   // Control for the polyedres creation to obtain conform mesh
-  CheckBoxPolyedrs = new QCheckBox( GroupArguments, "CheckBoxPolyedrs" );
-  CheckBoxPolyedrs->setText( tr( "CREATE_POLYEDRS_NEAR_BOUNDARY"  ) );
-  GroupArgumentsLayout->addWidget( CheckBoxPolyedrs, 4, 0 );
+  CheckBoxPolyedrs = new QCheckBox(tr("CREATE_POLYEDRS_NEAR_BOUNDARY"), GroupArguments);
 
+  // layout
+  GroupArgumentsLayout->addWidget(SubGroup1);
+  GroupArgumentsLayout->addWidget(SubGroup2);
+  GroupArgumentsLayout->addWidget(CheckBoxMerge);
+  GroupArgumentsLayout->addWidget(CheckBoxPolygons);
+  GroupArgumentsLayout->addWidget(CheckBoxPolyedrs);
 
-  SMESHGUI_SewingDlgLayout->addWidget(GroupArguments, 1, 0);
+  /***************************************************************/
+  GroupButtons = new QGroupBox(this);
+  QHBoxLayout* GroupButtonsLayout = new QHBoxLayout(GroupButtons);
+  GroupButtonsLayout->setSpacing(SPACING);
+  GroupButtonsLayout->setMargin(MARGIN);
+
+  buttonOk = new QPushButton(tr("SMESH_BUT_APPLY_AND_CLOSE"), GroupButtons);
+  buttonOk->setAutoDefault(true);
+  buttonOk->setDefault(true);
+  buttonApply = new QPushButton(tr("SMESH_BUT_APPLY"), GroupButtons);
+  buttonApply->setAutoDefault(true);
+  buttonCancel = new QPushButton(tr("SMESH_BUT_CLOSE"), GroupButtons);
+  buttonCancel->setAutoDefault(true);
+  buttonHelp = new QPushButton(tr("SMESH_BUT_HELP"), GroupButtons);
+  buttonHelp->setAutoDefault(true);
+
+  GroupButtonsLayout->addWidget(buttonOk);
+  GroupButtonsLayout->addSpacing(10);
+  GroupButtonsLayout->addWidget(buttonApply);
+  GroupButtonsLayout->addSpacing(10);
+  GroupButtonsLayout->addStretch();
+  GroupButtonsLayout->addWidget(buttonCancel);
+  GroupButtonsLayout->addWidget(buttonHelp);
+
+  /***************************************************************/
+  SMESHGUI_SewingDlgLayout->addWidget(ConstructorsBox);
+  SMESHGUI_SewingDlgLayout->addWidget(GroupArguments);
+  SMESHGUI_SewingDlgLayout->addWidget(GroupButtons);
 
   /* Initialisations */
-  GroupArguments->show();
-  RadioButton1->setChecked(TRUE);
+  RadioButton1->setChecked(true);
 
-  LineEdit2->setValidator(new SMESHGUI_IdValidator(this, "validator", 1));
-  LineEdit3->setValidator(new SMESHGUI_IdValidator(this, "validator", 1));
-  LineEdit5->setValidator(new SMESHGUI_IdValidator(this, "validator", 1));
-  LineEdit6->setValidator(new SMESHGUI_IdValidator(this, "validator", 1));
+  LineEdit2->setValidator(new SMESHGUI_IdValidator(this, 1));
+  LineEdit3->setValidator(new SMESHGUI_IdValidator(this, 1));
+  LineEdit5->setValidator(new SMESHGUI_IdValidator(this, 1));
+  LineEdit6->setValidator(new SMESHGUI_IdValidator(this, 1));
 
   mySelector = (SMESH::GetViewWindow( mySMESHGUI ))->GetSelector();
 
@@ -302,11 +255,11 @@ SMESHGUI_SewingDlg::SMESHGUI_SewingDlg( SMESHGUI* theModule, const char* name,
   Init();
 
   /* signals and slots connections */
-  connect(buttonOk, SIGNAL(clicked()),     this, SLOT(ClickOnOk()));
+  connect(buttonOk,     SIGNAL(clicked()), this, SLOT(ClickOnOk()));
   connect(buttonCancel, SIGNAL(clicked()), this, SLOT(ClickOnCancel()));
-  connect(buttonApply, SIGNAL(clicked()), this, SLOT(ClickOnApply()));
-  connect(buttonHelp, SIGNAL(clicked()), this, SLOT(ClickOnHelp()));
-  connect(GroupConstructors, SIGNAL(clicked(int)), SLOT(ConstructorsClicked(int)));
+  connect(buttonApply,  SIGNAL(clicked()), this, SLOT(ClickOnApply()));
+  connect(buttonHelp,   SIGNAL(clicked()), this, SLOT(ClickOnHelp()));
+  connect(GroupConstructors, SIGNAL(buttonClicked(int)), SLOT(ConstructorsClicked(int)));
 
   connect(SelectButton1, SIGNAL (clicked()),   this, SLOT(SetEditCurrentArgument()));
   connect(SelectButton2, SIGNAL (clicked()),   this, SLOT(SetEditCurrentArgument()));
@@ -327,10 +280,7 @@ SMESHGUI_SewingDlg::SMESHGUI_SewingDlg( SMESHGUI* theModule, const char* name,
   connect(LineEdit5, SIGNAL(textChanged(const QString&)), SLOT(onTextChange(const QString&)));
   connect(LineEdit6, SIGNAL(textChanged(const QString&)), SLOT(onTextChange(const QString&)));
 
-  this->show(); /* displays Dialog */
-
   ConstructorsClicked(0);
-  resize(0,0);
 }
 
 //=================================================================================
@@ -339,7 +289,6 @@ SMESHGUI_SewingDlg::SMESHGUI_SewingDlg( SMESHGUI* theModule, const char* name,
 //=================================================================================
 SMESHGUI_SewingDlg::~SMESHGUI_SewingDlg()
 {
-  // no need to delete child widgets, Qt does it all for us
 }
 
 //=================================================================================
@@ -409,7 +358,6 @@ void SMESHGUI_SewingDlg::ConstructorsClicked (int constructorId)
         if (!CheckBoxPolyedrs->isVisible())
           CheckBoxPolyedrs->show();
 
-
       break;
     }
   case 1:
@@ -441,7 +389,6 @@ void SMESHGUI_SewingDlg::ConstructorsClicked (int constructorId)
       if (!CheckBoxPolyedrs->isVisible())
 	CheckBoxPolyedrs->show();
       
-
       myOk5 = true;
 
       break;
@@ -459,8 +406,8 @@ void SMESHGUI_SewingDlg::ConstructorsClicked (int constructorId)
       TextLabel5->setText(tr("NODE1_TO_MERGE"));
       TextLabel6->setText(tr("NODE2_TO_MERGE"));
 
-      LineEdit1->setValidator(new SMESHGUI_IdValidator(this, "validator"));
-      LineEdit4->setValidator(new SMESHGUI_IdValidator(this, "validator"));
+      LineEdit1->setValidator(new SMESHGUI_IdValidator(this));
+      LineEdit4->setValidator(new SMESHGUI_IdValidator(this));
 
       SMESH::SetPointRepresentation(false);
 
@@ -478,8 +425,8 @@ void SMESHGUI_SewingDlg::ConstructorsClicked (int constructorId)
     TextLabel5->setText(tr("SECOND_NODE_ID"));
     TextLabel6->setText(tr("LAST_NODE_ID"));
 
-    LineEdit1->setValidator(new SMESHGUI_IdValidator(this, "validator", 1));
-    LineEdit4->setValidator(new SMESHGUI_IdValidator(this, "validator", 1));
+    LineEdit1->setValidator(new SMESHGUI_IdValidator(this, 1));
+    LineEdit4->setValidator(new SMESHGUI_IdValidator(this, 1));
 
     SMESH::SetPointRepresentation(true);
 
@@ -489,6 +436,10 @@ void SMESHGUI_SewingDlg::ConstructorsClicked (int constructorId)
 
   connect(mySelectionMgr, SIGNAL(currentSelectionChanged()), this, SLOT(SelectionIntoArgument()));
   mySelectionMgr->setSelectedObjects( io );
+
+  QApplication::instance()->processEvents();
+  updateGeometry();
+  resize( minimumSize() );
 }
 
 //=================================================================================
@@ -508,8 +459,8 @@ bool SMESHGUI_SewingDlg::ClickOnApply()
     bool toCreatePolyedrs = CheckBoxPolyedrs->isChecked();
 
     try {
+      SUIT_OverrideCursor aWaitCursor;
       SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditor();
-      QApplication::setOverrideCursor(Qt::waitCursor);
 
       int aConstructorId = GetConstructorId();
       SMESH::SMESH_MeshEditor::Sew_Error anError;
@@ -538,8 +489,8 @@ bool SMESHGUI_SewingDlg::ClickOnApply()
 					       toCreatePolygons,
 					       toCreatePolyedrs);
       else if (aConstructorId == 3) {
-        QStringList aListElementsId1 = QStringList::split(" ", LineEdit1->text(), false);
-        QStringList aListElementsId2 = QStringList::split(" ", LineEdit4->text(), false);
+        QStringList aListElementsId1 = LineEdit1->text().split(" ", QString::SkipEmptyParts);
+        QStringList aListElementsId2 = LineEdit4->text().split(" ", QString::SkipEmptyParts);
 
         SMESH::long_array_var anElementsId1 = new SMESH::long_array;
         SMESH::long_array_var anElementsId2 = new SMESH::long_array;
@@ -564,12 +515,9 @@ bool SMESHGUI_SewingDlg::ClickOnApply()
       if (toMerge && aResult)
         aMeshEditor->MergeEqualElements();
 
-      QApplication::restoreOverrideCursor();
-
       if (!aResult) {
-        QString msg = tr(QString("ERROR_%1").arg(anError));
-        SUIT_MessageBox::warn1(SMESHGUI::desktop(), tr("SMESH_WRN_WARNING"),
-                               msg, tr("SMESH_BUT_OK"));
+        QString msg = tr(QString("ERROR_%1").arg(anError).toLatin1().data());
+        SUIT_MessageBox::warning(this, tr("SMESH_WRN_WARNING"), msg);
       }
     } catch (...) {
     }
@@ -625,16 +573,17 @@ void SMESHGUI_SewingDlg::ClickOnHelp()
   if (app) 
     app->onHelpContextModule(mySMESHGUI ? app->moduleName(mySMESHGUI->moduleName()) : QString(""), myHelpFileName);
   else {
-		QString platform;
+    QString platform;
 #ifdef WIN32
-		platform = "winapplication";
+    platform = "winapplication";
 #else
-		platform = "application";
+    platform = "application";
 #endif
-    SUIT_MessageBox::warn1(0, QObject::tr("WRN_WARNING"),
-			   QObject::tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
-			   arg(app->resourceMgr()->stringValue("ExternalBrowser", platform)).arg(myHelpFileName),
-			   QObject::tr("BUT_OK"));
+    SUIT_MessageBox::warning(this, tr("WRN_WARNING"),
+			     tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
+			     arg(app->resourceMgr()->stringValue("ExternalBrowser", 
+								 platform)).
+			     arg(myHelpFileName));
   }
 }
 
@@ -711,7 +660,7 @@ void SMESHGUI_SewingDlg::onTextChange (const QString& theNewText)
       if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
 	aViewWindow->SetSelectionMode(CellSelection);
 
-      QStringList aListId = QStringList::split(" ", theNewText, false);
+      QStringList aListId = theNewText.split(" ", QString::SkipEmptyParts);
 
       bool isEvenOneExists = false;
 
@@ -884,8 +833,8 @@ void SMESHGUI_SewingDlg::SetEditCurrentArgument()
 //=================================================================================
 void SMESHGUI_SewingDlg::DeactivateActiveDialog()
 {
-  if (GroupConstructors->isEnabled()) {
-    GroupConstructors->setEnabled(false);
+  if (ConstructorsBox->isEnabled()) {
+    ConstructorsBox->setEnabled(false);
     GroupArguments->setEnabled(false);
     GroupButtons->setEnabled(false);
     mySMESHGUI->ResetState();
@@ -901,7 +850,7 @@ void SMESHGUI_SewingDlg::ActivateThisDialog()
 {
   /* Emit a signal to deactivate the active dialog */
   mySMESHGUI->EmitSignalDeactivateDialog();
-  GroupConstructors->setEnabled(true);
+  ConstructorsBox->setEnabled(true);
   GroupArguments->setEnabled(true);
   GroupButtons->setEnabled(true);
 
@@ -917,7 +866,7 @@ void SMESHGUI_SewingDlg::ActivateThisDialog()
 //=================================================================================
 void SMESHGUI_SewingDlg::enterEvent (QEvent* e)
 {
-  if (!GroupConstructors->isEnabled())
+  if (!ConstructorsBox->isEnabled())
     ActivateThisDialog();
 }
 
@@ -928,7 +877,7 @@ void SMESHGUI_SewingDlg::enterEvent (QEvent* e)
 void SMESHGUI_SewingDlg::closeEvent (QCloseEvent*)
 {
   /* same than click on cancel button */
-  this->ClickOnCancel();
+  ClickOnCancel();
 }
 
 //=======================================================================
@@ -947,9 +896,7 @@ void SMESHGUI_SewingDlg::hideEvent (QHideEvent*)
 //=================================================================================
 int SMESHGUI_SewingDlg::GetConstructorId()
 {
-  if (GroupConstructors != NULL && GroupConstructors->selected() != NULL)
-    return GroupConstructors->id(GroupConstructors->selected());
-  return -1;
+  return GroupConstructors->checkedId();
 }
 
 //=================================================================================
@@ -971,9 +918,8 @@ void SMESHGUI_SewingDlg::keyPressEvent( QKeyEvent* e )
   if ( e->isAccepted() )
     return;
 
-  if ( e->key() == Key_F1 )
-    {
-      e->accept();
-      ClickOnHelp();
-    }
+  if ( e->key() == Qt::Key_F1 ) {
+    e->accept();
+    ClickOnHelp();
+  }
 }

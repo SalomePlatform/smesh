@@ -1,31 +1,30 @@
+//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//
+//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+//
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
+//
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
+//
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
 //  SMESH SMESH : implementaion of SMESH idl descriptions
-//
-//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
-// 
-//  This library is free software; you can redistribute it and/or 
-//  modify it under the terms of the GNU Lesser General Public 
-//  License as published by the Free Software Foundation; either 
-//  version 2.1 of the License. 
-// 
-//  This library is distributed in the hope that it will be useful, 
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of 
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
-//  Lesser General Public License for more details. 
-// 
-//  You should have received a copy of the GNU Lesser General Public 
-//  License along with this library; if not, write to the Free Software 
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
-// 
-// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
-//
-//
-//
 //  File   : SMESH_subMesh.hxx
 //  Author : Paul RASCLE, EDF
 //  Module : SMESH
 //  $Header$
-
+//
 #ifndef _SMESH_SUBMESH_HXX_
 #define _SMESH_SUBMESH_HXX_
 
@@ -75,7 +74,7 @@ class SMESH_EXPORT SMESH_subMesh
 
   SMESH_subMesh *GetFirstToCompute();
 
-  const map < int, SMESH_subMesh * >& DependsOn();
+  const std::map < int, SMESH_subMesh * >& DependsOn();
   //const map < int, SMESH_subMesh * >&Dependants();
   /*!
    * \brief Return iterator on the submeshes this one depends on
@@ -211,6 +210,11 @@ public:
   SMESH_Hypothesis::Hypothesis_Status CheckConcurentHypothesis (const int theHypType);
   // check if there are several applicable hypothesis on fathers
 
+  /*!
+   * \brief Return true if no mesh entities is bound to the submesh
+   */
+  bool IsEmpty() const;
+
   bool IsMeshComputed() const;
   // check if _subMeshDS contains mesh elements
 
@@ -241,7 +245,9 @@ protected:
    * \brief Return a shape containing all sub-shapes of the MainShape that can be
    * meshed at once along with _subShape
    */
-  TopoDS_Shape GetCollection(SMESH_Gen * theGen, SMESH_Algo* theAlgo);
+  TopoDS_Shape GetCollection(SMESH_Gen * theGen,
+                             SMESH_Algo* theAlgo,
+                             bool &      theSubComputed);
 
   /*!
    * \brief Apply theAlgo to all subshapes in theCollection
@@ -274,7 +280,7 @@ protected:
   SMESH_Mesh *          _father;
   int                   _Id;
 
-  map < int, SMESH_subMesh * >_mapDepend;
+  std::map < int, SMESH_subMesh * >_mapDepend;
   bool                  _dependenceAnalysed;
 
   int                   _algoState;

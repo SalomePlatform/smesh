@@ -1,12 +1,13 @@
-//  SMESH SMESHGUI : reading of xml file with list of available hypotheses and algorithms
-//  Copyright (C) 2003  CEA
+//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//
+//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
 //  This library is free software; you can redistribute it and/or
-// //  modify it under the terms of the GNU Lesser General Public
+//  modify it under the terms of the GNU Lesser General Public
 //  License as published by the Free Software Foundation; either
 //  version 2.1 of the License.
 //
-
 //  This library is distributed in the hope that it will be useful,
 //  but WITHOUT ANY WARRANTY; without even the implied warranty of
 //  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -16,32 +17,23 @@
 //  License along with this library; if not, write to the Free Software
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+// SMESH SMESHGUI : reading of xml file with list of available hypotheses and algorithms
+// File   : SMESHGUI_XmlHandler.cxx
+// Author : Julia DOROVSKIKH, Open CASCADE S.A.S.
+// SMESH includes
 //
-//
-//  File   : SMESHGUI_XmlHandler.cxx
-//  Author : Julia DOROVSKIKH
-//  Module : SMESH
-//  $Header$
-
-#define  INCLUDE_MENUITEM_DEF 
-
-// QT Include
-#include <qfileinfo.h>
-#include <qstringlist.h>
+#include "SMESHGUI_XmlHandler.h"
 
 #include "SMESHGUI.h"
-#include "SUIT_ResourceMgr.h"
-#include "SUIT_Desktop.h"
-
-#include "SMESHGUI_XmlHandler.h"
 #include "SMESHGUI_Hypotheses.h"
-#include "SMESHGUI_Utils.h"
 
-#include "utilities.h"
+// SALOME GUI includes
+#include "SUIT_ResourceMgr.h"
 
-using namespace std;
+// SALOME KERNEL includes
+#include <utilities.h>
 
 /*!
   Constructor
@@ -65,7 +57,7 @@ SMESHGUI_XmlHandler::~SMESHGUI_XmlHandler()
 bool SMESHGUI_XmlHandler::startDocument()
 {
   myErrorProt = "";
-  return TRUE;
+  return true;
 }
 
 /*!
@@ -109,10 +101,11 @@ bool SMESHGUI_XmlHandler::startElement (const QString&, const QString&,
       QString aResName = atts.value("resources");
       if (aResName != "")
       {
-        MESSAGE("Loading Resources " << aResName);
+        MESSAGE("Loading Resources " << aResName.toLatin1().data());
         SUIT_ResourceMgr* resMgr = SMESHGUI::resourceMgr();
-        resMgr->loadTranslator("resources",aResName+"_msg_en.qm");
-	resMgr->loadTranslator("resources",aResName+"_images.qm");
+	QString lang = resMgr->stringValue( resMgr->langSection(), "language", "en" );
+        resMgr->loadTranslator( "resources", QString( "%1_msg_%2.qm" ).arg( aResName, lang ) );
+        resMgr->loadTranslator( "resources", QString( "%1_images.qm" ).arg( aResName, lang ) );
       }
     }
   }
@@ -130,17 +123,20 @@ bool SMESHGUI_XmlHandler::startElement (const QString&, const QString&,
       QString aLabel = atts.value("label-id");
       QString anIcon = atts.value("icon-id");
       bool isAux = atts.value("auxiliary") == "true";
-      bool isNeedGeom = true;
+      bool isNeedGeom = true, isSupportSubmeshes = false;
       QString aNeedGeom = atts.value("need-geom");
       if ( !aNeedGeom.isEmpty() )
         isNeedGeom = (aNeedGeom == "true");
-      
+      QString suppSub = atts.value("support-submeshes");
+      if ( !suppSub.isEmpty() )
+        isSupportSubmeshes = (suppSub == "true");
+
       QString aDimStr = atts.value("dim");
       aDimStr = aDimStr.remove( ' ' );
-      QStringList aDimList = QStringList::split( ',', aDimStr );
+      QStringList aDimList = aDimStr.split( ',', QString::SkipEmptyParts );
       QStringList::iterator anIter;
       bool isOk;
-      QValueList<int> aDim;
+      QList<int> aDim;
       for ( anIter = aDimList.begin(); anIter != aDimList.end(); ++anIter )
       {
         int aVal = (*anIter).toInt( &isOk );
@@ -156,22 +152,23 @@ bool SMESHGUI_XmlHandler::startElement (const QString&, const QString&,
         QString aStr = atts.value( name[i] );
         if ( !aStr.isEmpty() ) {
           aStr.remove( ' ' );
-          attr[ i ] = QStringList::split( ',', aStr );
+          attr[ i ] = aStr.split( ',', QString::SkipEmptyParts );
         }
       }
       
       HypothesisData* aHypData =
         new HypothesisData (aHypAlType, myPluginName, myServerLib, myClientLib,
                             aLabel, anIcon, aDim, isAux,
-                            attr[ HYPOS ], attr[ OPT_HYPOS ], attr[ INPUT ], attr[ OUTPUT ], isNeedGeom );
+                            attr[ HYPOS ], attr[ OPT_HYPOS ], attr[ INPUT ], attr[ OUTPUT ],
+                            isNeedGeom, isSupportSubmeshes );
 
       if (qName == "algorithm")
       {
-        myAlgorithmsMap[(char*)aHypAlType.latin1()] = aHypData;
+        myAlgorithmsMap[aHypAlType] = aHypData;
       }
       else
       {
-        myHypothesesMap[(char*)aHypAlType.latin1()] = aHypData;
+        myHypothesesMap[aHypAlType] = aHypData;
       }
     }
   }
@@ -183,23 +180,23 @@ bool SMESHGUI_XmlHandler::startElement (const QString&, const QString&,
     if (atts.value("name") != "")
     {
       HypothesesSet* aHypoSet = new HypothesesSet ( atts.value("name") );
-      myListOfHypothesesSets.push_back( aHypoSet );
+      myListOfHypothesesSets.append( aHypoSet );
 
       for ( int isHypo = 0; isHypo < 2; ++isHypo )
       {
         QString aHypos = isHypo ? atts.value("hypos") : atts.value("algos");
         aHypos = aHypos.remove( ' ' );
         QStringList* aHypoList = isHypo ? & aHypoSet->HypoList : & aHypoSet->AlgoList;
-        *aHypoList = QStringList::split( ',', aHypos );
+        *aHypoList = aHypos.split( ',', QString::SkipEmptyParts );
       }
     }
   }
   else
   {
     // error
-    return FALSE;
+    return false;
   }
-  return TRUE;
+  return true;
 }
 
 
@@ -208,7 +205,7 @@ bool SMESHGUI_XmlHandler::startElement (const QString&, const QString&,
 */
 bool SMESHGUI_XmlHandler::endElement (const QString&, const QString&, const QString&)
 {
-  return TRUE;
+  return true;
 }
 
 
@@ -218,10 +215,10 @@ bool SMESHGUI_XmlHandler::endElement (const QString&, const QString&, const QStr
 bool SMESHGUI_XmlHandler::characters (const QString& ch)
 {
   // we are not interested in whitespaces
-  QString ch_simplified = ch.simplifyWhiteSpace();
+  QString ch_simplified = ch.simplified();
   if ( ch_simplified.isEmpty() )
-    return TRUE;
-  return TRUE;
+    return true;
+  return true;
 }
 
 

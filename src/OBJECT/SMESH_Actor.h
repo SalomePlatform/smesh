@@ -1,30 +1,28 @@
+//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//
+//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+//
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
+//
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
+//
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
 //  SMESH OBJECT : interactive object for SMESH visualization
-//
-//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
-// 
-//  This library is free software; you can redistribute it and/or 
-//  modify it under the terms of the GNU Lesser General Public 
-//  License as published by the Free Software Foundation; either 
-//  version 2.1 of the License. 
-// 
-//  This library is distributed in the hope that it will be useful, 
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of 
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
-//  Lesser General Public License for more details. 
-// 
-//  You should have received a copy of the GNU Lesser General Public 
-//  License along with this library; if not, write to the Free Software 
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
-// 
-// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
-//
-//
-//
 //  File   : SMESH_Actor.h
 //  Author : Nicolas REJNERI
 //  Module : SMESH
-//  $Header$
 
 #ifndef SMESH_ACTOR_H
 #define SMESH_ACTOR_H
@@ -93,9 +91,12 @@ class SMESHOBJECT_EXPORT SMESH_Actor: public SALOME_Actor
   virtual void SetCellsLabeled(bool theIsCellsLabeled) = 0;
   virtual bool GetCellsLabeled() = 0;
 
-  enum eControl{eNone, eLength, eLength2D, eFreeBorders, eFreeEdges, eMultiConnection, 
-		eArea, eTaper, eAspectRatio, eMinimumAngle, eWarping, eSkew,
-		eAspectRatio3D, eMultiConnection2D, eVolume3D};
+  virtual void SetFacesOriented(bool theIsFacesOriented) = 0;
+  virtual bool GetFacesOriented() = 0;
+
+  enum eControl{eNone, eLength, eLength2D, eFreeBorders, eFreeEdges, eFreeNodes,
+                eFreeFaces, eMultiConnection, eArea, eTaper, eAspectRatio,
+                eMinimumAngle, eWarping, eSkew,	eAspectRatio3D, eMultiConnection2D, eVolume3D};
   virtual void SetControlMode(eControl theMode) = 0;
   virtual eControl GetControlMode() = 0;
 

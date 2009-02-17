@@ -1,34 +1,34 @@
+//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//
+//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+//
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
+//
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
+//
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
 //  SMESH SMESH_I : idl implementation based on 'SMESH' unit's calsses
-//
-//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
-// 
-//  This library is free software; you can redistribute it and/or 
-//  modify it under the terms of the GNU Lesser General Public 
-//  License as published by the Free Software Foundation; either 
-//  version 2.1 of the License. 
-// 
-//  This library is distributed in the hope that it will be useful, 
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of 
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
-//  Lesser General Public License for more details. 
-// 
-//  You should have received a copy of the GNU Lesser General Public 
-//  License along with this library; if not, write to the Free Software 
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
-// 
-// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
-//
-//
-//
 //  File   : SMESH_Hypothesis_i.cxx
 //  Author : Paul RASCLE, EDF
 //  Module : SMESH
 //  $Header$
-
+//
 #include <iostream>
 #include <sstream>
 #include "SMESH_Hypothesis_i.hxx"
+#include "SMESH_Gen_i.hxx"
 #include "utilities.h"
 
 using namespace std;
@@ -119,6 +119,120 @@ CORBA::Long SMESH_Hypothesis_i::GetId()
 {
   MESSAGE( "SMESH_Hypothesis_i::GetId" );
   return myBaseImpl->GetID();
+}
+
+//=============================================================================
+/*!
+ *  SMESH_Hypothesis_i::IsPublished()
+ *
+ */
+//=============================================================================
+bool SMESH_Hypothesis_i::IsPublished(){
+  bool res = false;
+  SMESH_Gen_i *gen = SMESH_Gen_i::GetSMESHGen();
+  if(gen){
+    SALOMEDS::SObject_var SO = 
+      SMESH_Gen_i::ObjectToSObject(gen->GetCurrentStudy() , SMESH::SMESH_Hypothesis::_narrow(_this()));
+    res = !SO->_is_nil();
+  }
+  return res;
+}
+
+//=============================================================================
+/*!
+ *  SMESH_Hypothesis_i::SetParameters()
+ *
+ */
+//=============================================================================
+void SMESH_Hypothesis_i::SetParameters(const char* theParameters)
+{
+  SMESH_Gen_i *gen = SMESH_Gen_i::GetSMESHGen();
+  char * aParameters = CORBA::string_dup(theParameters);
+  if(gen){
+    if(IsPublished()) {
+      SMESH_Gen_i::GetSMESHGen()->UpdateParameters(SMESH::SMESH_Hypothesis::_narrow(_this()),aParameters);
+    }
+    else {
+      myBaseImpl->SetParameters(gen->ParseParameters(aParameters));
+    }
+  }
+}
+
+//=============================================================================
+/*!
+ *  SMESH_Hypothesis_i::GetParameters()
+ *
+ */
+//=============================================================================
+char* SMESH_Hypothesis_i::GetParameters()
+{
+  SMESH_Gen_i *gen = SMESH_Gen_i::GetSMESHGen();
+  char* aResult;
+  if(IsPublished()) {
+    MESSAGE("SMESH_Hypothesis_i::GetParameters() : Get Parameters from SObject");
+    aResult = gen->GetParameters(SMESH::SMESH_Hypothesis::_narrow(_this()));
+  }
+  else {
+    MESSAGE("SMESH_Hypothesis_i::GetParameters() : Get local parameters");
+    aResult = myBaseImpl->GetParameters(); 
+  }
+  return CORBA::string_dup(aResult);
+}
+
+//=============================================================================
+/*!
+ *  SMESH_Hypothesis_i::GetLastParameters()
+ *
+ */
+//=============================================================================
+SMESH::ListOfParameters* SMESH_Hypothesis_i::GetLastParameters()
+{
+  SMESH::ListOfParameters_var aResult = new SMESH::ListOfParameters();
+  SMESH_Gen_i *gen = SMESH_Gen_i::GetSMESHGen();
+  if(gen) {
+    char *aParameters;
+    if(IsPublished())
+     aParameters = GetParameters();
+    else
+      aParameters = myBaseImpl->GetLastParameters();
+
+    SALOMEDS::Study_ptr aStudy = gen->GetCurrentStudy();
+    if(!aStudy->_is_nil()) {
+      SALOMEDS::ListOfListOfStrings_var aSections = aStudy->ParseVariables(aParameters); 
+      if(aSections->length() > 0) {
+        SALOMEDS::ListOfStrings aVars = aSections[aSections->length()-1];
+        aResult->length(aVars.length());
+        for(int i = 0;i < aVars.length();i++)
+          aResult[i] = CORBA::string_dup( aVars[i]);
+      }
+    }
+  }
+  return aResult._retn();
+}
+
+//=============================================================================
+/*!
+ *  SMESH_Hypothesis_i::SetLastParameters()
+ *
+ */
+//=============================================================================
+void SMESH_Hypothesis_i::SetLastParameters(const char* theParameters)
+{
+  if(!IsPublished()) {
+    myBaseImpl->SetLastParameters(theParameters);
+  }
+}
+//=============================================================================
+/*!
+ *  SMESH_Hypothesis_i::ClearParameters()
+ *
+ */
+//=============================================================================
+void SMESH_Hypothesis_i::ClearParameters()
+{
+  if(!IsPublished()) {
+    myBaseImpl->ClearParameters();
+  }
 }
 
 //=============================================================================

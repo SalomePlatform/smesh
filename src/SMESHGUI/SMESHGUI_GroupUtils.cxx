@@ -1,4 +1,6 @@
-//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//
+//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
 //  This library is free software; you can redistribute it and/or
@@ -15,39 +17,36 @@
 //  License along with this library; if not, write to the Free Software
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
-
-
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
+// SMESH SMESHGUI : GUI for SMESH component
+// File   : SMESHGUI_GroupUtils.cxx
+// Author : Open CASCADE S.A.S.
+// SMESH includes
+//
 #include "SMESHGUI_GroupUtils.h"
 
 #include "SMESHGUI.h"
 #include "SMESHGUI_Utils.h"
 
-#include "SUIT_Session.h"
-#include "SalomeApp_Application.h"
-#include "SalomeApp_Tools.h"
-
-#include "OB_Browser.h"
+// SALOME GUI includes
+#include <SalomeApp_Tools.h>
 
 namespace SMESH
 {
-
   SMESH::SMESH_Group_var AddGroup( SMESH::SMESH_Mesh_ptr theMesh,
 				   SMESH::ElementType theType,
-				   const char* theGroupName )
+				   const QString& theGroupName )
   {
     SMESH::SMESH_Group_var aGroup;
     try {
       if ( !theMesh->_is_nil() )
-	aGroup = theMesh->CreateGroup( theType, theGroupName );
+	aGroup = theMesh->CreateGroup( theType, theGroupName.toLatin1().data() );
     }
     catch( const SALOME::SALOME_Exception& S_ex ) {
       SalomeApp_Tools::QtCatchCorbaException( S_ex );
     }
-    //SalomeApp_Application* app =
-    //  dynamic_cast<SalomeApp_Application*>(SUIT_Session::session()->activeApplication());
-    //if (app) app->objectBrowser()->updateTree();
     SMESHGUI::GetSMESHGUI()->updateObjBrowser();
     return aGroup._retn();
   }
-}
+} // end of namespace SMESH

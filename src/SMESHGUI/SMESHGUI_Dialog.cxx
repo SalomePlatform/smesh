@@ -1,6 +1,6 @@
-//  SMESH SMESHGUI : GUI for SMESH component
+//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
 //  This library is free software; you can redistribute it and/or
@@ -17,19 +17,24 @@
 //  License along with this library; if not, write to the Free Software
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+// SMESH SMESHGUI : GUI for SMESH component
+// File   : SMESHGUI_Dialog.cxx
+// Author : Alexander SOLOVYOV, Open CASCADE S.A.S.
+// SMESH includes
 //
-//
-//  File   : SMESHGUI_Dialog.cxx
-//  Author : Alexander SOLOVYOV
-//  Module : SMESH
-//  $Header$
+#include "SMESHGUI_Dialog.h"
 
-#include <SMESHGUI_Dialog.h>
 #include <SMESH_Type.h>
+
+// SALOME GUI includes
+#include <SUIT_Desktop.h>
 #include <SUIT_Session.h>
 #include <SalomeApp_Application.h>
+
+// Qt includes
+#include <QFrame>
 
 //=================================================================================
 // function : SMESHGUI_Dialog
@@ -43,6 +48,7 @@ SMESHGUI_Dialog::SMESHGUI_Dialog( QWidget* parent, const bool modal,
   typeName( pr + MESH ) = tr( "DLG_MESH" );
   typeName( pr + HYPOTHESIS ) = tr( "DLG_HYPO" );
   typeName( pr + ALGORITHM ) = tr( "DLG_ALGO" );
+  setButtonText(1, tr("SMESH_BUT_APPLY_AND_CLOSE")); //rename OK to Apply and Close
   if ( flags & Close )
     setButtonPosition( Right, Close );
 }
@@ -69,9 +75,14 @@ void SMESHGUI_Dialog::show()
 // function : setContentActive
 // purpose  :
 //=================================================================================
-void SMESHGUI_Dialog::setContentActive( const bool active ) const
+void SMESHGUI_Dialog::setContentActive( const bool active )
 {
   mainFrame()->setEnabled( active );
+  setButtonEnabled( active, OK );
+  setButtonEnabled( active, Apply );
+  setButtonEnabled( active, Cancel );
+  setButtonEnabled( active, Close );
+  setButtonEnabled( active, Help );
 }
 
 //=================================================================================
@@ -111,25 +122,7 @@ int SMESHGUI_Dialog::prefix( const QString& name )
 // name    : resourceMgr
 // Purpose : Gets resource manager
 //=======================================================================
-SUIT_ResourceMgr* SMESHGUI_Dialog::resourceMgr()
+SUIT_ResourceMgr* SMESHGUI_Dialog::resourceMgr() const
 {
   return SUIT_Session::session()->resourceMgr();
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

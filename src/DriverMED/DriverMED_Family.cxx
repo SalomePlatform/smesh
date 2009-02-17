@@ -1,30 +1,30 @@
+//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//
+//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+//
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
+//
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
+//
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
 //  SMESH DriverMED : tool to split groups on families
-//
-//  Copyright (C) 2003  CEA
-// 
-//  This library is free software; you can redistribute it and/or 
-//  modify it under the terms of the GNU Lesser General Public 
-//  License as published by the Free Software Foundation; either 
-//  version 2.1 of the License. 
-// 
-//  This library is distributed in the hope that it will be useful, 
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of 
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
-//  Lesser General Public License for more details. 
-// 
-//  You should have received a copy of the GNU Lesser General Public 
-//  License along with this library; if not, write to the Free Software 
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
-// 
-// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
-//
-//
-//
 //  File   : DriverMED_Family.cxx
 //  Author : Julia DOROVSKIKH
 //  Module : SMESH
 //  $Header$
-
+//
 #include "DriverMED_Family.h"
 #include "MED_Factory.hxx"
 
@@ -318,9 +318,18 @@ DriverMED_Family::GetFamilyInfo(const MED::PWrapper& theWrapper,
   for(; aGrIter != myGroupNames.end(); aGrIter++){
     aStr << "_" << *aGrIter;
   }
+  string aValue = aStr.str();
+  // PAL19785,0019867 - med forbids whitespace to be the last char in the name
+  int maxSize;
+  if ( theWrapper->GetVersion() == MED::eV2_1 )
+    maxSize = MED::GetNOMLength<MED::eV2_1>();
+  else
+    maxSize = MED::GetNOMLength<MED::eV2_2>();
+  int lastCharPos = min( maxSize, (int) aValue.size() ) - 1;
+  while ( isspace( aValue[ lastCharPos ] ))
+    aValue.resize( lastCharPos-- );
 
   MED::PFamilyInfo anInfo;
-  string aValue = aStr.str();
   if(myId == 0 || myGroupAttributVal == 0){
     anInfo = theWrapper->CrFamilyInfo(theMeshInfo,
 				      aValue,
@@ -382,7 +391,17 @@ void DriverMED_Family::Init (SMESHDS_GroupBase* theGroup)
   myGroupNames.insert(string(theGroup->GetStoreName()));
 
   Quantity_Color aColor = theGroup->GetColor();
-  myGroupAttributVal = aColor.Hue();
+  double aRed = aColor.Red();
+  double aGreen = aColor.Green();
+  double aBlue = aColor.Blue();
+  int aR = int( aRed*255   );
+  int aG = int( aGreen*255 );
+  int aB = int( aBlue*255  );
+//   cout << "aRed = " << aR << endl;
+//   cout << "aGreen = " << aG << endl;
+//   cout << "aBlue = " << aB << endl;
+  myGroupAttributVal = (int)(aR*1000000 + aG*1000 + aB);
+  //cout << "myGroupAttributVal = " << myGroupAttributVal << endl;
 }
 
 //=============================================================================

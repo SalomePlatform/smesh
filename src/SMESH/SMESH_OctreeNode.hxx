@@ -1,7 +1,6 @@
-//  SMESH SMESH_OctreeNode : Octree with Nodes set
-//  inherites global class SMESH_Octree
+//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
 //  This library is free software; you can redistribute it and/or
@@ -18,17 +17,15 @@
 //  License along with this library; if not, write to the Free Software
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
-//
-//
+//  SMESH SMESH_OctreeNode : Octree with Nodes set
+//  inherites global class SMESH_Octree
 // File      : SMESH_OctreeNode.hxx
 // Created   : Tue Jan 16 16:00:00 2007
 // Author    : Nicolas Geimer & Aurélien Motteux  (OCC)
 // Module    : SMESH
-
-using namespace std;
-
+//
 #ifndef _SMESH_OCTREENODE_HXX_
 #define _SMESH_OCTREENODE_HXX_
 
@@ -51,7 +48,7 @@ class SMESH_OctreeNode : public SMESH_Octree{
 public:
 
   // Constructor
-  SMESH_OctreeNode (const set<const SMDS_MeshNode*>& theNodes, const int maxLevel = -1,
+  SMESH_OctreeNode (const std::set<const SMDS_MeshNode*>& theNodes, const int maxLevel = -1,
                     const int maxNbNodes = 5 , const double minBoxSize = 0.);
 
 //=============================
@@ -68,19 +65,19 @@ public:
   virtual const bool isInside(const SMDS_MeshNode * Node, const double precision = 0. );
 
   // Return in Result a list of Nodes potentials to be near Node
-  void               NodesAround( const SMDS_MeshNode * Node , list<const SMDS_MeshNode*>* Result,
+  void               NodesAround( const SMDS_MeshNode * Node , std::list<const SMDS_MeshNode*>* Result,
                                   const double precision = 0. );
 
   // Return in theGroupsOfNodes a list of group of nodes close to each other within theTolerance
   // Search for all the nodes in nodes
-  void               FindCoincidentNodes ( set<const SMDS_MeshNode*>* nodes,
+  void               FindCoincidentNodes ( std::set<const SMDS_MeshNode*>* nodes,
                                            const double                theTolerance,
-                                           list< list< const SMDS_MeshNode*> >* theGroupsOfNodes);
+                                           std::list< std::list< const SMDS_MeshNode*> >* theGroupsOfNodes);
 
   // Static method that return in theGroupsOfNodes a list of group of nodes close to each other within
   // theTolerance search for all the nodes in nodes
-  static void        FindCoincidentNodes ( set<const SMDS_MeshNode*> nodes,
-                                           list< list< const SMDS_MeshNode*> >* theGroupsOfNodes,
+  static void        FindCoincidentNodes ( std::set<const SMDS_MeshNode*> nodes,
+                                           std::list< std::list< const SMDS_MeshNode*> >* theGroupsOfNodes,
                                            const double theTolerance = 0.00001, const int maxLevel = -1,
                                            const int maxNbNodes = 5);
   /*!
@@ -116,15 +113,15 @@ protected:
 
   // Return in result a list of nodes closed to Node and remove it from SetOfNodes
   void                  FindCoincidentNodes( const SMDS_MeshNode * Node,
-                                             set<const SMDS_MeshNode*>* SetOfNodes,
-                                             list<const SMDS_MeshNode*>* Result,
+                                             std::set<const SMDS_MeshNode*>* SetOfNodes,
+                                             std::list<const SMDS_MeshNode*>* Result,
                                              const double precision);
 
   // The max number of nodes a leaf box can contain
   int                         myMaxNbNodes;
 
   // The set of nodes inside the box of the Octree (Empty if Octree is not a leaf)
-  set<const SMDS_MeshNode*>   myNodes;
+  std::set<const SMDS_MeshNode*>   myNodes;
 
   // The number of nodes I have inside the box
   int                         myNbNodes;

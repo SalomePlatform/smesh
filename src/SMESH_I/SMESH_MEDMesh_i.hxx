@@ -1,29 +1,28 @@
+//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//
+//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+//
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
+//
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
+//
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
 //  SMESH SMESH_I : idl implementation based on 'SMESH' unit's calsses
-//
-//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
-// 
-//  This library is free software; you can redistribute it and/or 
-//  modify it under the terms of the GNU Lesser General Public 
-//  License as published by the Free Software Foundation; either 
-//  version 2.1 of the License. 
-// 
-//  This library is distributed in the hope that it will be useful, 
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of 
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
-//  Lesser General Public License for more details. 
-// 
-//  You should have received a copy of the GNU Lesser General Public 
-//  License along with this library; if not, write to the Free Software 
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
-// 
-// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
-//
-//
-//
 //  File   : SMESH_MEDMesh_i.hxx
 //  Module : SMESH
-
+//
 #ifndef _MED_SMESH_MESH_I_HXX_
 #define _MED_SMESH_MESH_I_HXX_
 
@@ -55,22 +54,22 @@ protected:
   ::SMESH_Mesh_i * _mesh_i;
   SMESHDS_Mesh *_meshDS;
   
-  string _meshId;
+  std::string _meshId;
   bool _compte;
   bool _creeFamily;
   int _indexElts;
   int _indexEnts;
   int _famIdent;
   
-  map < SALOME_MED::medGeometryElement, int >_mapIndToSeqElts;
+  std::map < SALOME_MED::medGeometryElement, int >_mapIndToSeqElts;
   SALOME_MED::long_array_var _seq_elemId[MED_NBR_GEOMETRIE_MAILLE];
   
-  map < SALOME_MED::medEntityMesh, int >_mapNbTypes;
-  map < SALOME_MED::medEntityMesh, int >_mapIndToVectTypes;
-  vector < SALOME_MED::medGeometryElement >
+  std::map < SALOME_MED::medEntityMesh, int >_mapNbTypes;
+  std::map < SALOME_MED::medEntityMesh, int >_mapIndToVectTypes;
+  std::vector < SALOME_MED::medGeometryElement >
   _TypesId[MED_NBR_GEOMETRIE_MAILLE];
   
-  vector < SALOME_MED::FAMILY_ptr > _families;
+  std::vector < SALOME_MED::FAMILY_ptr > _families;
 public:
   
   // Constructors and associated internal methods
@@ -193,6 +192,10 @@ public:
   
   SALOME_MED::SUPPORT_ptr
   getBoundaryElements(SALOME_MED::medEntityMesh entity)
+    throw (SALOME::SALOME_Exception);
+  
+  SALOME_MED::SUPPORT_ptr
+  getSupportOnAll(SALOME_MED::medEntityMesh entity)
     throw (SALOME::SALOME_Exception);
   
   SALOME_MED::SUPPORT_ptr getSkin(SALOME_MED::SUPPORT_ptr mySupport3D)
