@@ -106,6 +106,13 @@ public:
     return ind;
   }
 
+  /*!
+   * \brief Return number of unique ancestors of the shape
+   */
+  static int NbAncestors(const TopoDS_Shape& shape,
+                         const SMESH_Mesh&   mesh,
+                         TopAbs_ShapeEnum    ancestorType=TopAbs_SHAPE);
+
 public:
   // ---------- PUBLIC INSTANCE METHODS ----------
 
