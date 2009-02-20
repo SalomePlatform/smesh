@@ -1150,6 +1150,25 @@ bool SMESH_MesherHelper::LoadNodeColumns(TParam2ColumnMap & theParam2ColumnMap,
 }
 
 //=======================================================================
+/*!
+ * \brief Return number of unique ancestors of the shape
+ */
+//=======================================================================
+
+int SMESH_MesherHelper::NbAncestors(const TopoDS_Shape& shape,
+                                    const SMESH_Mesh&   mesh,
+                                    TopAbs_ShapeEnum    ancestorType/*=TopAbs_SHAPE*/)
+{
+  TopTools_MapOfShape ancestors;
+  TopTools_ListIteratorOfListOfShape ansIt( mesh.GetAncestors(shape) );
+  for ( ; ansIt.More(); ansIt.Next() ) {
+    if ( ancestorType == TopAbs_SHAPE || ansIt.Value().ShapeType() == ancestorType )
+      ancestors.Add( ansIt.Value() );
+  }
+  return ancestors.Extent();
+}
+
+//=======================================================================
 /**
  * Check mesh without geometry for: if all elements on this shape are quadratic,
  * quadratic elements will be created.
