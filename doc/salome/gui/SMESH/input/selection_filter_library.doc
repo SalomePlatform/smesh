@@ -97,6 +97,14 @@ specified arbitrary surface within a given <b>Tolerance</b>.
 </li>
 </ul>
 
+Additional criteria to select mesh <b>Nodes</b> are the following:
+<ul><li>
+<b>Free Nodes</b> selects free mesh nodes, i.e. nodes not belonging to 
+mesh elements. See also a
+\ref free_nodes_page "Free Nodes quality control".
+</li>
+</ul>
+
 Additional criteria to select mesh <b>Edges</b> are the following:
 <ul><li>
 <b>Free Borders</b> selects free 1D mesh elements, i.e. edges belonging to 
