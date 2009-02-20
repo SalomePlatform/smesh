@@ -2189,6 +2189,7 @@ static inline bool getCriteria( Predicate_i*                thePred,
       theCriteria[ i ].ThresholdStr  = aPred->GetShapeName();
       theCriteria[ i ].ThresholdID   = aPred->GetShapeID();
       theCriteria[ i ].TypeOfElement = aPred->GetElementType();
+      theCriteria[ i ].Tolerance     = aPred->GetTolerance();
 
       return true;
     }
@@ -2224,6 +2225,7 @@ static inline bool getCriteria( Predicate_i*                thePred,
       theCriteria[ i ].ThresholdStr  = aPred->GetShapeName();
       theCriteria[ i ].ThresholdID   = aPred->GetShapeID();
       theCriteria[ i ].TypeOfElement = aPred->GetElementType();
+      theCriteria[ i ].Tolerance     = aPred->GetTolerance();
 
       return true;
     }
@@ -2450,6 +2452,7 @@ CORBA::Boolean Filter_i::SetCriteria( const SMESH::Filter::Criteria& theCriteria
           SMESH::BelongToGeom_ptr tmpPred = aFilterMgr->CreateBelongToGeom();
           tmpPred->SetElementType( aTypeOfElem );
           tmpPred->SetShape( aThresholdID, aThresholdStr );
+          tmpPred->SetTolerance( aTolerance );
           aPredicate = tmpPred;
         }
         break;
@@ -2476,6 +2479,7 @@ CORBA::Boolean Filter_i::SetCriteria( const SMESH::Filter::Criteria& theCriteria
           SMESH::LyingOnGeom_ptr tmpPred = aFilterMgr->CreateLyingOnGeom();
           tmpPred->SetElementType( aTypeOfElem );
 	  tmpPred->SetShape( aThresholdID, aThresholdStr );
+          tmpPred->SetTolerance( aTolerance );
           aPredicate = tmpPred;
         }
         break;

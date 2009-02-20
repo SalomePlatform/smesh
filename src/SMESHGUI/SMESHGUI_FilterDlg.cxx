@@ -1120,10 +1120,12 @@ void SMESHGUI_FilterTable::SetCriterion (const int                       theRow,
       aTable->item( theRow, 5 )->setText( QString( theCriterion.ThresholdID ) );
   }
 
-  if (theCriterion.Compare == SMESH::FT_EqualTo ||
+  if (theCriterion.Compare  == SMESH::FT_EqualTo ||
        theCriterion.Type    == SMESH::FT_BelongToPlane ||
        theCriterion.Type    == SMESH::FT_BelongToCylinder ||
-       theCriterion.Type    == SMESH::FT_BelongToGenSurface)
+       theCriterion.Type    == SMESH::FT_BelongToGenSurface ||
+       theCriterion.Type    == SMESH::FT_BelongToGeom ||
+       theCriterion.Type    == SMESH::FT_LyingOnGeom)
   {
     QTableWidgetItem* anItem = aTable->item(theRow, 0);
     if (!myAddWidgets.contains(anItem))
@@ -1264,8 +1266,6 @@ void SMESHGUI_FilterTable::updateAdditionalWidget()
   ComboItem* anItem = ((ComboItem*)aTable->item(aRow, 0));
   int aCriterion = GetCriterionType(aRow);
   bool toEnable = ((ComboItem*)aTable->item(aRow, 1))->value() == SMESH::FT_EqualTo &&
-                  aCriterion != SMESH::FT_BelongToGeom &&
-                  aCriterion != SMESH::FT_LyingOnGeom &&
                   aCriterion != SMESH::FT_RangeOfIds &&
                   aCriterion != SMESH::FT_FreeEdges &&
                   aCriterion != SMESH::FT_FreeFaces &&
