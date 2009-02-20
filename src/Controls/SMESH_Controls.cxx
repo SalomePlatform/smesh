@@ -3190,10 +3190,13 @@ void ElementsOnShape::process (const SMDS_MeshElement* theElemPtr)
   SMDS_ElemIteratorPtr aNodeItr = theElemPtr->nodesIterator();
   bool isSatisfy = myAllNodesFlag;
 
+  gp_XYZ centerXYZ (0, 0, 0);
+
   while (aNodeItr->more() && (isSatisfy == myAllNodesFlag))
   {
     SMDS_MeshNode* aNode = (SMDS_MeshNode*)aNodeItr->next();
     gp_Pnt aPnt (aNode->X(), aNode->Y(), aNode->Z());
+    centerXYZ += aPnt.XYZ();
 
     switch (myCurShapeType)
     {
@@ -3234,6 +3237,14 @@ void ElementsOnShape::process (const SMDS_MeshElement* theElemPtr)
         isSatisfy = false;
       }
     }
+  }
+
+  if (isSatisfy && myCurShapeType == TopAbs_SOLID) { // Check the center point for volumes MantisBug 0020168
+    centerXYZ /= theElemPtr->NbNodes();
+    gp_Pnt aCenterPnt (centerXYZ);
+    myCurSC.Perform(aCenterPnt, myToler);
+    if ( !(myCurSC.State() == TopAbs_IN || myCurSC.State() == TopAbs_ON))
+      isSatisfy = false;
   }
 
   if (isSatisfy)
