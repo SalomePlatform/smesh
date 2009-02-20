@@ -1660,7 +1660,7 @@ void SMESHGUI_PrecomputeOp::initDialog()
         {
           algo = SMESH::SMESH_2D_Algo::_narrow( aVar );
           if ( !algo->_is_nil() )
-            modeMap[ SMESH::DIM_2D ] = 0;
+            modeMap[ SMESH::DIM_1D ] = 0;
         }
       }
     }
