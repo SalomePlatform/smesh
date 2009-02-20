@@ -66,11 +66,20 @@ namespace SMESH
       
       TopoDS_Shape                    GetShape();
       const SMESHDS_Mesh*             GetMeshDS() const;
+
+      void                            SetTolerance( double );
+      double                          GetTolerance();
+      
+    private:
+      virtual void                    init();
       
     private:
       TopoDS_Shape                    myShape;
       const SMESHDS_Mesh*             myMeshDS;
       SMDSAbs_ElementType             myType;
+      bool                            myIsSubshape;
+      double                          myTolerance;          // only if myIsSubshape == false
+      Controls::ElementsOnShapePtr    myElementsOnShapePtr; // only if myIsSubshape == false
     };
     typedef boost::shared_ptr<BelongToGeom> BelongToGeomPtr;
     
@@ -94,16 +103,26 @@ namespace SMESH
       
       TopoDS_Shape                    GetShape();
       const SMESHDS_Mesh*             GetMeshDS() const;
-      
+
+      void                            SetTolerance( double );
+      double                          GetTolerance();
+
       virtual bool                    Contains( const SMESHDS_Mesh*     theMeshDS,
 						const TopoDS_Shape&     theShape,
 						const SMDS_MeshElement* theElem,
 						TopAbs_ShapeEnum        theFindShapeEnum,
 						TopAbs_ShapeEnum        theAvoidShapeEnum = TopAbs_SHAPE );
+
+    private:
+      virtual void                    init();
+
     private:
       TopoDS_Shape                    myShape;
       const SMESHDS_Mesh*             myMeshDS;
       SMDSAbs_ElementType             myType;
+      bool                            myIsSubshape;
+      double                          myTolerance;          // only if myIsSubshape == false
+      Controls::ElementsOnShapePtr    myElementsOnShapePtr; // only if myIsSubshape == false
     };
     typedef boost::shared_ptr<LyingOnGeom> LyingOnGeomPtr;
   }
@@ -364,6 +383,9 @@ namespace SMESH
     void                            SetShape( const char* theID, const char* theName );
     char*                           GetShapeName();
     char*                           GetShapeID();
+
+    void                            SetTolerance( CORBA::Double );
+    CORBA::Double                   GetTolerance();
     
   protected:
     Controls::BelongToGeomPtr       myBelongToGeomPtr;
@@ -462,6 +484,9 @@ namespace SMESH
     void                            SetShape( const char* theID, const char* theName );
     char*                           GetShapeName();
     char*                           GetShapeID();
+
+    void                            SetTolerance( CORBA::Double );
+    CORBA::Double                   GetTolerance();
     
   protected:
     Controls::LyingOnGeomPtr        myLyingOnGeomPtr;

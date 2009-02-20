@@ -853,7 +853,9 @@ void SMESHGUI_FilterTable::SetCriterion (const int                       theRow,
   if (theCriterion.Compare == FT_EqualTo ||
        theCriterion.Type    == FT_BelongToPlane ||
        theCriterion.Type    == FT_BelongToCylinder ||
-       theCriterion.Type    == FT_BelongToGenSurface)
+       theCriterion.Type    == FT_BelongToGenSurface ||
+       theCriterion.Type    == FT_BelongToGeom ||
+       theCriterion.Type    == FT_LyingOnGeom)
   {
     QTableItem* anItem = aTable->item(theRow, 0);
     if (!myAddWidgets.contains(anItem))
@@ -996,8 +998,6 @@ void SMESHGUI_FilterTable::updateAdditionalWidget()
 
   ComboItem* anItem = ((ComboItem*)aTable->item(aRow, 0));
   bool toEnable = ((ComboItem*)aTable->item(aRow, 1))->GetValue() == FT_EqualTo &&
-                  GetCriterionType(aRow) != FT_BelongToGeom &&
-                  GetCriterionType(aRow) != FT_LyingOnGeom &&
                   GetCriterionType(aRow) != FT_RangeOfIds &&
                   GetCriterionType(aRow) != FT_FreeEdges &&
                   GetCriterionType(aRow) != FT_BadOrientedVolume;

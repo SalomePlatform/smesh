@@ -151,6 +151,11 @@ module SMESH
     void SetGeom( in GEOM::GEOM_Object theGeom );
     void SetElementType( in ElementType theType );
 
+    /*! The tolerance is used only if there is no submesh on the shape
+     */
+    void    SetTolerance( in double theToler );
+    double  GetTolerance();
+
     void   SetShapeName( in string theName );
     void   SetShape( in string theID, in string theName );
     string GetShapeName();
@@ -213,6 +218,11 @@ module SMESH
   {
     void SetGeom( in GEOM::GEOM_Object theGeom );
     void SetElementType( in ElementType theType );
+
+    /*! The tolerance is used only if there is no submesh on the shape
+     */
+    void    SetTolerance( in double theToler );
+    double  GetTolerance();
 
     void   SetShapeName( in string theName );
     void   SetShape( in string theID, in string theName );

@@ -181,6 +181,64 @@ GetMeshDS() const
   return myMeshDS;
 }
 
+static bool IsSubShape (const TopTools_IndexedMapOfShape& theMap,
+                        const TopoDS_Shape& theShape)
+{
+  if (theMap.Contains(theShape)) return true;
+
+  if (theShape.ShapeType() == TopAbs_COMPOUND ||
+      theShape.ShapeType() == TopAbs_COMPSOLID)
+  {
+    TopoDS_Iterator anIt (theShape, Standard_True, Standard_True);
+    for (; anIt.More(); anIt.Next())
+    {
+      if (!IsSubShape(theMap, anIt.Value())) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  return false;
+}
+
+void Controls::BelongToGeom::init()
+{
+  if (!myMeshDS || myShape.IsNull()) return;
+
+  // is subshape of main shape?
+  TopoDS_Shape aMainShape = myMeshDS->ShapeToMesh();
+  if (aMainShape.IsNull()) {
+    myIsSubshape = false;
+  }
+  else {
+    TopTools_IndexedMapOfShape aMap;
+    TopExp::MapShapes(aMainShape, aMap);
+    myIsSubshape = IsSubShape(aMap, myShape);
+  }
+
+  if (!myIsSubshape)
+  {
+    myElementsOnShapePtr.reset(new Controls::ElementsOnShape());
+    myElementsOnShapePtr->SetTolerance(myTolerance);
+    myElementsOnShapePtr->SetAllNodes(true); // belong, while false means "lays on"
+    myElementsOnShapePtr->SetMesh(myMeshDS);
+    myElementsOnShapePtr->SetShape(myShape, myType);
+  }
+}
+
+void Controls::BelongToGeom::SetTolerance (double theTolerance)
+{
+  myTolerance = theTolerance;
+  if (!myIsSubshape)
+    init();
+}
+
+double Controls::BelongToGeom::GetTolerance()
+{
+  return myTolerance;
+}
+
 /*
   Class       : LyingOnGeom
   Description : Predicate for verifying whether entiy lying or partially lying on
@@ -269,6 +327,43 @@ Controls::LyingOnGeom::
 GetMeshDS() const
 {
   return myMeshDS;
+}
+
+void Controls::LyingOnGeom::init()
+{
+  if (!myMeshDS || myShape.IsNull()) return;
+
+  // is subshape of main shape?
+  TopoDS_Shape aMainShape = myMeshDS->ShapeToMesh();
+  if (aMainShape.IsNull()) {
+    myIsSubshape = false;
+  }
+  else {
+    TopTools_IndexedMapOfShape aMap;
+    TopExp::MapShapes(aMainShape, aMap);
+    myIsSubshape = IsSubShape(aMap, myShape);
+  }
+
+  if (!myIsSubshape)
+  {
+    myElementsOnShapePtr.reset(new Controls::ElementsOnShape());
+    myElementsOnShapePtr->SetTolerance(myTolerance);
+    myElementsOnShapePtr->SetAllNodes(false); // lays on, while true means "belong"
+    myElementsOnShapePtr->SetMesh(myMeshDS);
+    myElementsOnShapePtr->SetShape(myShape, myType);
+  }
+}
+
+void Controls::LyingOnGeom::SetTolerance (double theTolerance)
+{
+  myTolerance = theTolerance;
+  if (!myIsSubshape)
+    init();
+}
+
+double Controls::LyingOnGeom::GetTolerance()
+{
+  return myTolerance;
 }
 
 bool Controls::LyingOnGeom::Contains( const SMESHDS_Mesh*     theMeshDS,
@@ -845,6 +940,17 @@ char* BelongToGeom_i::GetShapeID()
   return CORBA::string_dup( myShapeID );
 }
 
+void BelongToGeom_i::SetTolerance( CORBA::Double theToler )
+{
+  myBelongToGeomPtr->SetTolerance( theToler );
+  TPythonDump()<<this<<".SetTolerance("<<theToler<<")";
+}
+
+CORBA::Double BelongToGeom_i::GetTolerance()
+{
+  return myBelongToGeomPtr->GetTolerance();
+}
+
 /*
   Class       : BelongToSurface_i
   Description : Predicate for selection on geometrical support
@@ -1087,6 +1193,17 @@ char* LyingOnGeom_i::GetShapeName()
 char* LyingOnGeom_i::GetShapeID()
 {
   return CORBA::string_dup( myShapeID );
+}
+
+void LyingOnGeom_i::SetTolerance( CORBA::Double theToler )
+{
+  myLyingOnGeomPtr->SetTolerance( theToler );
+  TPythonDump()<<this<<".SetTolerance("<<theToler<<")";
+}
+
+CORBA::Double LyingOnGeom_i::GetTolerance()
+{
+  return myLyingOnGeomPtr->GetTolerance();
 }
 
 /*
@@ -1896,6 +2013,7 @@ static inline bool getCriteria( Predicate_i*                thePred,
       theCriteria[ i ].ThresholdStr  = aPred->GetShapeName();
       theCriteria[ i ].ThresholdID   = aPred->GetShapeID();
       theCriteria[ i ].TypeOfElement = aPred->GetElementType();
+      theCriteria[ i ].Tolerance     = aPred->GetTolerance();
 
       return true;
     }
@@ -1931,6 +2049,7 @@ static inline bool getCriteria( Predicate_i*                thePred,
       theCriteria[ i ].ThresholdStr  = aPred->GetShapeName();
       theCriteria[ i ].ThresholdID   = aPred->GetShapeID();
       theCriteria[ i ].TypeOfElement = aPred->GetElementType();
+      theCriteria[ i ].Tolerance     = aPred->GetTolerance();
 
       return true;
     }
@@ -2124,6 +2243,7 @@ CORBA::Boolean Filter_i::SetCriteria( const SMESH::Filter::Criteria& theCriteria
           SMESH::BelongToGeom_ptr tmpPred = aFilterMgr->CreateBelongToGeom();
           tmpPred->SetElementType( aTypeOfElem );
           tmpPred->SetShape( aThresholdID, aThresholdStr );
+	  tmpPred->SetTolerance( aTolerance );
           aPredicate = tmpPred;
         }
         break;
@@ -2150,6 +2270,7 @@ CORBA::Boolean Filter_i::SetCriteria( const SMESH::Filter::Criteria& theCriteria
           SMESH::LyingOnGeom_ptr tmpPred = aFilterMgr->CreateLyingOnGeom();
           tmpPred->SetElementType( aTypeOfElem );
 	  tmpPred->SetShape( aThresholdID, aThresholdStr );
+	  tmpPred->SetTolerance( aTolerance );
           aPredicate = tmpPred;
         }
         break;

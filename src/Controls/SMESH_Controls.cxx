@@ -24,6 +24,7 @@
 #include <set>
 
 #include <BRepAdaptor_Surface.hxx>
+#include <BRepClass_FaceClassifier.hxx>
 #include <BRep_Tool.hxx>
 #include <Geom_CylindricalSurface.hxx>
 #include <Geom_Plane.hxx>
@@ -35,6 +36,8 @@
 #include <TColgp_Array1OfXYZ.hxx>
 #include <TopAbs.hxx>
 #include <TopoDS.hxx>
+#include <TopoDS_Vertex.hxx>
+#include <TopoDS_Edge.hxx>
 #include <TopoDS_Face.hxx>
 #include <TopoDS_Shape.hxx>
 #include <gp_Ax3.hxx>
@@ -2680,4 +2683,251 @@ bool ElementsOnSurface::isOnSurface( const SMDS_MeshNode* theNode )
   bool isOn = ( myProjector.IsDone() && myProjector.LowerDistance() <= myToler );
 
   return isOn;
+}
+
+
+/*
+  ElementsOnShape
+*/
+
+ElementsOnShape::ElementsOnShape()
+  : myMesh(0),
+    myType(SMDSAbs_All),
+    myToler(Precision::Confusion()),
+    myAllNodesFlag(false)
+{
+  myCurShapeType = TopAbs_SHAPE;
+}
+
+ElementsOnShape::~ElementsOnShape()
+{
+}
+
+void ElementsOnShape::SetMesh (const SMDS_Mesh* theMesh)
+{
+  if (myMesh != theMesh) {
+    myMesh = theMesh;
+    SetShape(myShape, myType);
+  }
+}
+
+bool ElementsOnShape::IsSatisfy (long theElementId)
+{
+  return myIds.Contains(theElementId);
+}
+
+SMDSAbs_ElementType ElementsOnShape::GetType() const
+{
+  return myType;
+}
+
+void ElementsOnShape::SetTolerance (const double theToler)
+{
+  if (myToler != theToler) {
+    myToler = theToler;
+    SetShape(myShape, myType);
+  }
+}
+
+double ElementsOnShape::GetTolerance() const
+{
+  return myToler;
+}
+
+void ElementsOnShape::SetAllNodes (bool theAllNodes)
+{
+  if (myAllNodesFlag != theAllNodes) {
+    myAllNodesFlag = theAllNodes;
+    SetShape(myShape, myType);
+  }
+}
+
+void ElementsOnShape::SetShape (const TopoDS_Shape&       theShape,
+                                const SMDSAbs_ElementType theType)
+{
+  myType = theType;
+  myShape = theShape;
+  myIds.Clear();
+
+  if (myMesh == 0) return;
+
+  switch (myType)
+  {
+  case SMDSAbs_All:
+    myIds.ReSize(myMesh->NbEdges() + myMesh->NbFaces() + myMesh->NbVolumes());
+    break;
+  case SMDSAbs_Node:
+    myIds.ReSize(myMesh->NbNodes());
+    break;
+  case SMDSAbs_Edge:
+    myIds.ReSize(myMesh->NbEdges());
+    break;
+  case SMDSAbs_Face:
+    myIds.ReSize(myMesh->NbFaces());
+    break;
+  case SMDSAbs_Volume:
+    myIds.ReSize(myMesh->NbVolumes());
+    break;
+  default:
+    break;
+  }
+
+  myShapesMap.Clear();
+  addShape(myShape);
+}
+
+void ElementsOnShape::addShape (const TopoDS_Shape& theShape)
+{
+  if (theShape.IsNull() || myMesh == 0)
+    return;
+
+  if (!myShapesMap.Add(theShape)) return;
+
+  myCurShapeType = theShape.ShapeType();
+  switch (myCurShapeType)
+  {
+  case TopAbs_COMPOUND:
+  case TopAbs_COMPSOLID:
+  case TopAbs_SHELL:
+  case TopAbs_WIRE:
+    {
+      TopoDS_Iterator anIt (theShape, Standard_True, Standard_True);
+      for (; anIt.More(); anIt.Next()) addShape(anIt.Value());
+    }
+    break;
+  case TopAbs_SOLID:
+    {
+      myCurSC.Load(theShape);
+      process();
+    }
+    break;
+  case TopAbs_FACE:
+    {
+      TopoDS_Face aFace = TopoDS::Face(theShape);
+      BRepAdaptor_Surface SA (aFace, true);
+      Standard_Real
+        u1 = SA.FirstUParameter(),
+        u2 = SA.LastUParameter(),
+        v1 = SA.FirstVParameter(),
+        v2 = SA.LastVParameter();
+      Handle(Geom_Surface) surf = BRep_Tool::Surface(aFace);
+      myCurProjFace.Init(surf, u1,u2, v1,v2);
+      myCurFace = aFace;
+      process();
+    }
+    break;
+  case TopAbs_EDGE:
+    {
+      TopoDS_Edge anEdge = TopoDS::Edge(theShape);
+      Standard_Real u1, u2;
+      Handle(Geom_Curve) curve = BRep_Tool::Curve(anEdge, u1, u2);
+      myCurProjEdge.Init(curve, u1, u2);
+      process();
+    }
+    break;
+  case TopAbs_VERTEX:
+    {
+      TopoDS_Vertex aV = TopoDS::Vertex(theShape);
+      myCurPnt = BRep_Tool::Pnt(aV);
+      process();
+    }
+    break;
+  default:
+    break;
+  }
+}
+
+void ElementsOnShape::process()
+{
+  if (myShape.IsNull() || myMesh == 0)
+    return;
+
+  if (myType == SMDSAbs_Node)
+  {
+    SMDS_NodeIteratorPtr anIter = myMesh->nodesIterator();
+    while (anIter->more())
+      process(anIter->next());
+  }
+  else
+  {
+    if (myType == SMDSAbs_Edge || myType == SMDSAbs_All)
+    {
+      SMDS_EdgeIteratorPtr anIter = myMesh->edgesIterator();
+      while (anIter->more())
+        process(anIter->next());
+    }
+
+    if (myType == SMDSAbs_Face || myType == SMDSAbs_All)
+    {
+      SMDS_FaceIteratorPtr anIter = myMesh->facesIterator();
+      while (anIter->more()) {
+        process(anIter->next());
+      }
+    }
+
+    if (myType == SMDSAbs_Volume || myType == SMDSAbs_All)
+    {
+      SMDS_VolumeIteratorPtr anIter = myMesh->volumesIterator();
+      while (anIter->more())
+        process(anIter->next());
+    }
+  }
+}
+
+void ElementsOnShape::process (const SMDS_MeshElement* theElemPtr)
+{
+  if (myShape.IsNull())
+    return;
+
+  SMDS_ElemIteratorPtr aNodeItr = theElemPtr->nodesIterator();
+  bool isSatisfy = myAllNodesFlag;
+
+  while (aNodeItr->more() && (isSatisfy == myAllNodesFlag))
+  {
+    SMDS_MeshNode* aNode = (SMDS_MeshNode*)aNodeItr->next();
+    gp_Pnt aPnt (aNode->X(), aNode->Y(), aNode->Z());
+
+    switch (myCurShapeType)
+    {
+    case TopAbs_SOLID:
+      {
+        myCurSC.Perform(aPnt, myToler);
+        isSatisfy = (myCurSC.State() == TopAbs_IN || myCurSC.State() == TopAbs_ON);
+      }
+      break;
+    case TopAbs_FACE:
+      {
+        myCurProjFace.Perform(aPnt);
+        isSatisfy = (myCurProjFace.IsDone() && myCurProjFace.LowerDistance() <= myToler);
+        if (isSatisfy)
+        {
+          // check relatively the face
+          Quantity_Parameter u, v;
+          myCurProjFace.LowerDistanceParameters(u, v);
+          gp_Pnt2d aProjPnt (u, v);
+          BRepClass_FaceClassifier aClsf (myCurFace, aProjPnt, myToler);
+          isSatisfy = (aClsf.State() == TopAbs_IN || aClsf.State() == TopAbs_ON);
+        }
+      }
+      break;
+    case TopAbs_EDGE:
+      {
+        myCurProjEdge.Perform(aPnt);
+        isSatisfy = (myCurProjEdge.NbPoints() > 0 && myCurProjEdge.LowerDistance() <= myToler);
+      }
+      break;
+    case TopAbs_VERTEX:
+      {
+        isSatisfy = (aPnt.Distance(myCurPnt) <= myToler);
+      }
+      break;
+    default:
+      {
+        isSatisfy = false;
+      }
+    }
+  }
+
+  if (isSatisfy)
+    myIds.Add(theElemPtr->GetID());
 }

@@ -29,10 +29,13 @@
 #include <gp_XYZ.hxx>
 //#include <Geom_Surface.hxx>
 #include <GeomAPI_ProjectPointOnSurf.hxx>
+#include <GeomAPI_ProjectPointOnCurve.hxx>
 #include <TColStd_SequenceOfInteger.hxx>
 #include <TColStd_MapOfInteger.hxx>
 #include <TCollection_AsciiString.hxx>
 #include <TopoDS_Face.hxx>
+#include <TopTools_MapOfShape.hxx>
+#include <BRepClass3d_SolidClassifier.hxx>
 
 #include "SMDSAbs_ElementType.hxx"
 #include "SMDS_MeshNode.hxx"
@@ -645,6 +648,52 @@ namespace SMESH{
     };
     
     typedef boost::shared_ptr<ElementsOnSurface> ElementsOnSurfacePtr;
+
+    /*
+      Class       : ElementsOnShape
+      Description : Predicate elements that lying on indicated shape
+                    (1D, 2D or 3D)
+    */
+    class SMESHCONTROLS_EXPORT ElementsOnShape : public virtual Predicate
+    {
+    public:
+      ElementsOnShape();
+      ~ElementsOnShape();
+
+      virtual void SetMesh (const SMDS_Mesh* theMesh);
+      virtual bool IsSatisfy (long theElementId);
+      virtual SMDSAbs_ElementType GetType() const;
+
+      void    SetTolerance (const double theToler);
+      double  GetTolerance() const;
+      void    SetAllNodes (bool theAllNodes);
+      bool    GetAllNodes() const { return myAllNodesFlag; }
+      void    SetShape (const TopoDS_Shape& theShape,
+                        const SMDSAbs_ElementType theType);
+
+    private:
+      void    addShape (const TopoDS_Shape& theShape);
+      void    process();
+      void    process (const SMDS_MeshElement* theElem);
+
+    private:
+      const SMDS_Mesh*      myMesh;
+      TColStd_MapOfInteger  myIds;
+      SMDSAbs_ElementType   myType;
+      TopoDS_Shape          myShape;
+      double                myToler;
+      bool                  myAllNodesFlag;
+
+      TopTools_MapOfShape         myShapesMap;
+      TopAbs_ShapeEnum            myCurShapeType; // type of current sub-shape
+      BRepClass3d_SolidClassifier myCurSC;        // current SOLID
+      GeomAPI_ProjectPointOnSurf  myCurProjFace;  // current FACE
+      TopoDS_Face                 myCurFace;      // current FACE
+      GeomAPI_ProjectPointOnCurve myCurProjEdge;  // current EDGE
+      gp_Pnt                      myCurPnt;       // current VERTEX
+    };
+
+    typedef boost::shared_ptr<ElementsOnShape> ElementsOnShapePtr;
       
 
     /*
