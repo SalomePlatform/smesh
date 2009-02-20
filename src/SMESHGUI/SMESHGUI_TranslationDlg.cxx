@@ -156,8 +156,8 @@ SMESHGUI_TranslationDlg::SMESHGUI_TranslationDlg( SMESHGUI* theModule )
   SelectElementsButton->setIcon(image2);
   LineEditElements = new QLineEdit(GroupArguments);
   LineEditElements->setValidator(myIdValidator);
-  QPushButton* filterBtn = new QPushButton( tr( "SMESH_BUT_FILTER" ), GroupArguments );
-  connect(filterBtn,   SIGNAL(clicked()), this, SLOT(setFilters()));
+  myFilterBtn = new QPushButton( tr( "SMESH_BUT_FILTER" ), GroupArguments );
+  connect(myFilterBtn,   SIGNAL(clicked()), this, SLOT(setFilters()));
 
   // Control for the whole mesh selection
   CheckBoxMesh = new QCheckBox(tr("SMESH_SELECT_WHOLE_MESH"), GroupArguments);
@@ -214,7 +214,7 @@ SMESHGUI_TranslationDlg::SMESHGUI_TranslationDlg( SMESHGUI* theModule )
   GroupArgumentsLayout->addWidget(TextLabelElements,    0, 0);
   GroupArgumentsLayout->addWidget(SelectElementsButton, 0, 1);
   GroupArgumentsLayout->addWidget(LineEditElements,     0, 2, 1, 5);
-  GroupArgumentsLayout->addWidget(filterBtn,            0, 7);
+  GroupArgumentsLayout->addWidget(myFilterBtn,          0, 7);
   GroupArgumentsLayout->addWidget(CheckBoxMesh,         1, 0, 1, 8);
   GroupArgumentsLayout->addWidget(TextLabel1,           2, 0);
   GroupArgumentsLayout->addWidget(SelectButton1,        2, 1);
@@ -910,6 +910,7 @@ void SMESHGUI_TranslationDlg::onSelectMesh (bool toSelectMesh)
     TextLabelElements->setText(tr("SMESH_NAME"));
   else
     TextLabelElements->setText(tr("SMESH_ID_ELEMENTS"));
+  myFilterBtn->setEnabled(!toSelectMesh);
 
   if (myEditCurrentArgument != LineEditElements) {
     LineEditElements->clear();
@@ -1021,6 +1022,12 @@ void SMESHGUI_TranslationDlg::keyPressEvent( QKeyEvent* e )
 //=================================================================================
 void SMESHGUI_TranslationDlg::setFilters()
 {
+  if(myMesh->_is_nil()) {
+    SUIT_MessageBox::critical(this,
+			      tr("SMESH_ERROR"),
+			      tr("NO_MESH_SELECTED"));
+   return;
+  }
   if ( !myFilterDlg )
     myFilterDlg = new SMESHGUI_FilterDlg( mySMESHGUI, SMESH::ALL );
 

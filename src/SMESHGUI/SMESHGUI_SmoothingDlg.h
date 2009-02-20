@@ -116,7 +116,8 @@ private:
   QCheckBox*             CheckBoxParametric;
 
   QString                myHelpFileName;
-    
+
+  QPushButton*           myElemFilterBtn;
   SMESHGUI_FilterDlg*    myFilterDlg;
    
 private slots:

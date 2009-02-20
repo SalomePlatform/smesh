@@ -153,6 +153,7 @@ private:
   
   QString                   myHelpFileName;
   
+  QPushButton*              myFilterBtn;
   SMESHGUI_FilterDlg*       myFilterDlg;
    
 private slots:

@@ -2057,7 +2057,8 @@ SMESHGUI_FilterDlg::SMESHGUI_FilterDlg( SMESHGUI*         theModule,
                                         const QList<int>& theTypes )
 : QDialog( SMESH::GetDesktop( theModule ) ),
   mySMESHGUI( theModule ),
-  mySelectionMgr( SMESH::GetSelectionMgr( theModule ) )
+  mySelectionMgr( SMESH::GetSelectionMgr( theModule ) ),
+  myInitSourceWgOnApply( true )
 {
   if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
     mySelector = aViewWindow->GetSelector();
@@ -2073,7 +2074,8 @@ SMESHGUI_FilterDlg::SMESHGUI_FilterDlg( SMESHGUI*   theModule,
                                         const int   theType )
 : QDialog( SMESH::GetDesktop( theModule ) ),
   mySMESHGUI( theModule ),
-  mySelectionMgr( SMESH::GetSelectionMgr( theModule ) )
+  mySelectionMgr( SMESH::GetSelectionMgr( theModule ) ),
+  myInitSourceWgOnApply( true )
 {
   if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
     mySelector = aViewWindow->GetSelector();
@@ -2609,9 +2611,11 @@ bool SMESHGUI_FilterDlg::isValid() const
 // Purpose : Set widget of parent dialog containing idsto be filtered if
 //           user select corresponding source radio button
 //=======================================================================
-void SMESHGUI_FilterDlg::SetSourceWg (QWidget* theWg)
+void SMESHGUI_FilterDlg::SetSourceWg (QWidget* theWg,
+                                      const bool initOnApply)
 {
   mySourceWg = theWg;
+  myInitSourceWgOnApply = initOnApply;
 }
 
 //=======================================================================
@@ -2637,7 +2641,7 @@ void SMESHGUI_FilterDlg::SetSelection()
 
   if (mySelectionMgr) {
     myIObjects.Clear();
-    const SALOME_ListIO& anObjs = mySelector->StoredIObjects();
+    const SALOME_ListIO& anObjs = mySelector->StoredIObjects(); 
     SALOME_ListIteratorOfListIO anIter (anObjs);
     for ( ; anIter.More(); anIter.Next()) {
       TColStd_IndexedMapOfInteger aMap;
@@ -2674,8 +2678,10 @@ bool SMESHGUI_FilterDlg::onApply()
     if (!myFilter[ aCurrType ]->GetPredicate()->_is_nil()) {
       QList<int> aResultIds;
       filterSource(aCurrType, aResultIds);
+      // select in viewer
       selectInViewer(aCurrType, aResultIds);
     }
+
 
     myInsertState[ aCurrType ] = mySetInViewer->isChecked();
     myApplyToState[ aCurrType ] = mySourceGrp->checkedId();
@@ -2792,10 +2798,10 @@ void SMESHGUI_FilterDlg::filterSource (const int theType,
     for (anIter = aDialogIds.begin(); anIter != aDialogIds.end(); ++ anIter)
       if (aPred->IsSatisfy(*anIter))
         theResIds.append(*anIter);
-
-    // set ids to the dialog
-    setIdsToWg(mySourceWg, theResIds);
   }
+  // set ids to the dialog
+  if (myInitSourceWgOnApply || aSourceId == Dialog)
+    setIdsToWg(mySourceWg, theResIds);
 }
 
 //=======================================================================

@@ -140,6 +140,7 @@ private:
 
   QString                   myHelpFileName;
 
+  QPushButton*              myFilterBtn;
   SMESHGUI_FilterDlg*       myFilterDlg;
    
 protected slots:

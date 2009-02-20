@@ -507,6 +507,12 @@ void SMESHGUI_RemoveElementsDlg::keyPressEvent( QKeyEvent* e )
 //=================================================================================
 void SMESHGUI_RemoveElementsDlg::setFilters()
 {
+  if(myMesh->_is_nil()) {
+    SUIT_MessageBox::critical(this,
+			      tr("SMESH_ERROR"),
+			      tr("NO_MESH_SELECTED"));
+   return;
+  }
   if ( !myFilterDlg )
     myFilterDlg = new SMESHGUI_FilterDlg( mySMESHGUI, SMESH::ALL );
 

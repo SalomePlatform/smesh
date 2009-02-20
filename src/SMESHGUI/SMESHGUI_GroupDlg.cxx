@@ -1395,6 +1395,13 @@ void SMESHGUI_GroupDlg::setCurrentSelection()
 //=================================================================================
 void SMESHGUI_GroupDlg::setFilters()
 {
+  if(myMesh->_is_nil()) {
+    SUIT_MessageBox::critical(this,
+			      tr("SMESH_ERROR"),
+			      tr("NO_MESH_SELECTED"));
+   return;
+  }
+
   SMESH::ElementType aType = SMESH::ALL;
   switch ( myTypeId )
   {
@@ -1415,7 +1422,7 @@ void SMESHGUI_GroupDlg::setFilters()
 
   myFilterDlg->SetSelection();
   myFilterDlg->SetMesh( myMesh );
-  myFilterDlg->SetSourceWg( myElements );
+  myFilterDlg->SetSourceWg( myElements, false );
 
   myFilterDlg->show();
 }

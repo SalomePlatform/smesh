@@ -2903,6 +2903,10 @@ Consider saving your work before application crash</translation>
             <source>SMESH_DRS_SOME_EMPTY</source>
             <translation>One or more mesh files were empty, data has not been published</translation>
         </message>
+        <message>
+            <source>NO_MESH_SELECTED</source>
+            <translation>No mesh selected</translation>
+        </message>
     </context>
     <context>
         <name>SMESHGUI</name>

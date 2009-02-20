@@ -166,8 +166,8 @@ SMESHGUI_ExtrusionAlongPathDlg::SMESHGUI_ExtrusionAlongPathDlg( SMESHGUI* theMod
 
   ElementsLineEdit = new QLineEdit(GroupArguments);
   ElementsLineEdit->setValidator(myIdValidator);
-  QPushButton* filterBtn = new QPushButton( tr( "SMESH_BUT_FILTER" ), GroupArguments );
-  connect(filterBtn,   SIGNAL(clicked()), this, SLOT(setFilters()));
+  myFilterBtn = new QPushButton( tr( "SMESH_BUT_FILTER" ), GroupArguments );
+  connect(myFilterBtn,   SIGNAL(clicked()), this, SLOT(setFilters()));
 
   // Controls for the whole mesh selection
   MeshCheck = new QCheckBox(tr("SMESH_SELECT_WHOLE_MESH"), GroupArguments);
@@ -276,7 +276,7 @@ SMESHGUI_ExtrusionAlongPathDlg::SMESHGUI_ExtrusionAlongPathDlg( SMESHGUI* theMod
   GroupArgumentsLayout->addWidget(ElementsLab,          0, 0);
   GroupArgumentsLayout->addWidget(SelectElementsButton, 0, 1);
   GroupArgumentsLayout->addWidget(ElementsLineEdit,     0, 2);
-  GroupArgumentsLayout->addWidget(filterBtn,            0, 3);
+  GroupArgumentsLayout->addWidget(myFilterBtn,          0, 3);
   GroupArgumentsLayout->addWidget(MeshCheck,            1, 0, 1, 4);
   GroupArgumentsLayout->addWidget(PathGrp,              2, 0, 1, 4);
   GroupArgumentsLayout->addWidget(BasePointGrp,         3, 0, 1, 4);
@@ -1136,6 +1136,7 @@ void SMESHGUI_ExtrusionAlongPathDlg::onSelectMesh()
   ElementsLineEdit->setValidator(toSelectMesh ? 0 : myIdValidator);
   ElementsLab->setText(toSelectMesh ? tr("SMESH_NAME") : tr("SMESH_ID_ELEMENTS"));
   ElementsLineEdit->clear();
+  myFilterBtn->setEnabled(!toSelectMesh);
 
   SetEditCurrentArgument(SelectElementsButton);
 }
@@ -1237,6 +1238,12 @@ void SMESHGUI_ExtrusionAlongPathDlg::keyPressEvent( QKeyEvent* e )
 //=================================================================================
 void SMESHGUI_ExtrusionAlongPathDlg::setFilters()
 {
+  if(myMesh->_is_nil()) {
+    SUIT_MessageBox::critical(this,
+			      tr("SMESH_ERROR"),
+			      tr("NO_MESH_SELECTED"));
+   return;
+  }
   if ( !myFilterDlg )
   {
     QList<int> types;  

@@ -137,8 +137,8 @@ SMESHGUI_SmoothingDlg::SMESHGUI_SmoothingDlg( SMESHGUI* theModule )
 
   LineEditElements = new QLineEdit(GroupArguments);
   LineEditElements->setValidator(myIdValidator);
-  QPushButton* filterElemBtn = new QPushButton( tr( "SMESH_BUT_FILTER" ), GroupArguments );
-  connect(filterElemBtn,   SIGNAL(clicked()), this, SLOT(setElemFilters()));
+  myElemFilterBtn = new QPushButton( tr( "SMESH_BUT_FILTER" ), GroupArguments );
+  connect(myElemFilterBtn,   SIGNAL(clicked()), this, SLOT(setElemFilters()));
 
   // Control for the whole mesh selection
   CheckBoxMesh = new QCheckBox(tr("SMESH_SELECT_WHOLE_MESH"), GroupArguments);
@@ -175,7 +175,7 @@ SMESHGUI_SmoothingDlg::SMESHGUI_SmoothingDlg( SMESHGUI* theModule )
   GroupArgumentsLayout->addWidget(TextLabelElements,      0, 0);
   GroupArgumentsLayout->addWidget(SelectElementsButton,   0, 1);
   GroupArgumentsLayout->addWidget(LineEditElements,       0, 2);
-  GroupArgumentsLayout->addWidget(filterElemBtn,          0, 3);
+  GroupArgumentsLayout->addWidget(myElemFilterBtn,        0, 3);
   GroupArgumentsLayout->addWidget(CheckBoxMesh,           1, 0, 1, 4);
   GroupArgumentsLayout->addWidget(TextLabelNodes,         2, 0);
   GroupArgumentsLayout->addWidget(SelectNodesButton,      2, 1);
@@ -727,6 +727,7 @@ void SMESHGUI_SmoothingDlg::onSelectMesh (bool toSelectMesh)
     TextLabelElements->setText(tr("SMESH_NAME"));
   else
     TextLabelElements->setText(tr("SMESH_ID_ELEMENTS"));
+  myElemFilterBtn->setEnabled(!toSelectMesh);
 
   if (myEditCurrentArgument != LineEditElements &&
       myEditCurrentArgument != LineEditNodes) {
@@ -779,6 +780,12 @@ void SMESHGUI_SmoothingDlg::keyPressEvent( QKeyEvent* e )
 //=================================================================================
 void SMESHGUI_SmoothingDlg::setFilters( const bool theIsElem )
 {
+  if(myMesh->_is_nil()) {
+    SUIT_MessageBox::critical(this,
+			      tr("SMESH_ERROR"),
+			      tr("NO_MESH_SELECTED"));
+   return;
+  }
   if ( !myFilterDlg )
   {
     QList<int> types;  
