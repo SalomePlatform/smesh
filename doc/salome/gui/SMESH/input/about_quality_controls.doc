@@ -17,7 +17,7 @@ There are 0D, 1D, 2D and 3D quality controls.
 
 0D mesh quality controls:
 <ul>
-<li>\subpage free_nodes_page "Free nodes"</li>
+<li>\ref free_nodes_page "Free nodes"</li>
 </ul>
 
 1D mesh quality controls:
@@ -29,6 +29,7 @@ There are 0D, 1D, 2D and 3D quality controls.
 
 2D mesh quality controls:
 <ul>
+<li>\subpage free_nodes_page "Free nodes"</li>
 <li>\subpage free_edges_page "Free edges"</li>
 <li>\subpage length_2d_page "Length 2D"</li>
 <li>\subpage borders_at_multi_connection_2d_page "Borders at multi-connection 2D"</li>

@@ -43,11 +43,6 @@ created:
 
 \image html add_node.png
 
-\note You can also use variables defined in the SALOME \b NoteBook
-to specify coordinates of the node:
-
-\image html addnode_notebook.png
-
 <br>
 \anchor adding_edges_anchor
 <h2>Adding edges</h2>

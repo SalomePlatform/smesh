@@ -88,26 +88,27 @@ path</b> item or click <em>"Extrusion along a path"</em> button in the toolbar.
 \image html image101.png
 <center><em>"Extrusion along a path" button</em></center>
 
-The following dialog box will appear:
+The following dialog common for line and planar elements will appear:
 
 \image html extrusion1.png
-
-\image html extrusion2.png
 </li>
 
-<li>In the dialog box you should:
+<li>In this dialog:
 <ul>
 <li>select the type of elements which will be extruded (1D or 2D),</li>
 <li>specify the <b>IDs of the elements</b> which will be extruded
+
 <ul>
-<li>Check on <b>Select the whole mesh, submesh or group</b> option
-<li>Choosing them manually with the mouse in the 3D Viewer. You can
-click on an element in the 3D viewer and it will be highlighted</li>
-<li>Applying Filters. The <b>Set filter</b> button allows to apply a
-definite filter to selection of the elements. See more
-about filters on the
-\ref selection_filter_library_page "Selection filter library" page.</li>
+<li><b>Select the whole mesh, submesh or group</b> activating this
+checkbox; or</li>
+<li>choose mesh elements with the mouse in the 3D Viewer. It is
+possible to select a whole area with a mouse frame; or</li> 
+<li>input the element IDs directly in <b>ID Elements</b> field. The selected elements will be highlighted in the
+viewer; or</li>
+<li>apply Filters. <b>Set filter</b> button allows to apply a filter to the selection of elements. See more
+about filters in the \ref selection_filter_library_page "Selection filter library" page.</li>
 </ul>
+
 </li>
 <li>define the Path along which the elements will be extruded,
 \n Path definition consists of several elements:
@@ -117,7 +118,7 @@ about filters on the
 <li><b>Start node</b> - the first or the last node on the edge. It is used to define the direction of extrusion </li>
 </ul>
 </li>
-<li> <b>Generate Groups</b> checkbox allows copying the groups of
+<li>activate  <b>Generate Groups</b> checkbox if it is necessary to  copy the groups of
 elements of the source mesh to the newly created one. </li>
 </ul>
 </li>
@@ -149,7 +150,9 @@ At each step the shape will be rotated by angle/nb. of steps.
 </ul>
 </li>
 
-<li>Click the \b Apply or \b OK button. Mesh edges will be extruded into
+
+<li>Click \b Apply or <b> Apply and Close</b>  button to confirm the operation.
+Mesh edges will be extruded into
 faces, faces into volumes. The external surface of the resulting 3d
 mesh (if faces have been extruded) is covered with faces, and corners
 with edges. If the path is closed, the resulting mesh can contain

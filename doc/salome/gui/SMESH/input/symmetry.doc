@@ -5,48 +5,80 @@
 \n This geometrical operation allows to perform a symmetrical copy of
 your mesh or some of its elements.
 
+<em>To create a symmtrical copy of the mesh:</em>
+
+<ol>
+<li>From the \b Modification menu choose \b Transformation -> \b Symmetry item  or click
+<em>"Symmetry"</em> button in the toolbar.
+
 \image html symmetry.png "Symmetry button"
 
-<em>To apply symmetry to your mesh:</em>
-\par
-From the \b Modification choose \b Transformation and  from its
-sub-menu select the \b Symmetry item. The following dialog box shall
-appear:
+One of the following dialogs will appear:
 
-\image html symmetry1.png
+It is possible to mirror a mesh or some of its elements through:
+\image html symmetry1.png "a point (defined by a point and a vector)"
+\image html symmetry2.png "an axis"
+\image html symmetry3.png "a plane (defined by a point and a normal to the plane)"
 
-\image html symmetry2.png
+</li>
 
-\image html symmetry3.png
-
-\par
-This operation has three options, you can symmetrically copy your mesh
-or some of its elements specifying:
+<li>
+In the dialog:
 <ul>
-<li>one point</li>
-<li>one axis (point and vector)</li>
-<li>one plane (point and normal)</li>
-</ul>
+<li>specify the IDs of the elements for the symmetry operation:
 
 <ul>
-<li>Select elements for the symmetry operation
-<ul>
-<li>Check on <b>Select the whole mesh, submesh or group</b> option
-<li>Choosing them manually with the mouse in the 3D Viewer. You can
-click on an element in the 3D viewer and it will be highlighted</li>
-<li>Applying Filters. The <b>Set filter</b> button allows to apply a
-definite filter to selection of the elements. See more
-about filters on the
-\ref selection_filter_library_page "Selection filter library" page.</li>
+<li><b>Select the whole mesh, submesh or group</b> activating this
+checkbox; or</li>
+<li>choose mesh elements with the mouse in the 3D Viewer. It is
+possible to select a whole area with a mouse frame; or</li> 
+<li>input the element IDs directly in <b>ID Elements</b> field. The selected elements will be highlighted in the
+viewer; or</li>
+<li>apply Filters. <b>Set filter</b> button allows to apply a filter to the selection of elements. See more
+about filters in the \ref selection_filter_library_page "Selection filter library" page.</li>
 </ul>
 </li>
-<li>When <b>Move elements</b> radio button is selected, the source mesh (or elements) is created at the new location and erased from its previous location</li>
-<li>When <b>Copy elements</b> radio button is selected,the source mesh (or elements) is created at the new location, but it also remains at its previous location and is considered one and single mesh with the result of the translation.</li>
-<li>When <b>Create as new mesh</b> radio button is selected, the source mesh (or elements) remains at its previous location and a new mesh is created at the new location and appears in the Object Browser with the default name MeshName_mirrored (you can change this name in the adjacent box).</li>
-<li><b> Copy groups </b> checkbox allows copying the groups of elements of the source mesh to the newly created one.</li>
-</ul>
 
-\par
+<li>depending on the nature of the mirror object: 
+<ul>
+<li>if the mesh is mirrored through a point, specify the coordinates
+of the point</li>
+<li>if the mesh is mirrored through an axis: 
+<ul>
+<li>specify the cooordinates of the start \b Point of the axis vector;</li>
+<li>specify the axis \b Vector through the coordinates of its
+end point with respect to the coordinates of the start point;</li>
+</ul>
+</li>
+
+<li>if the mesh is mirrored through a plane:
+<ul>
+<li>specify the cooordinates of the \b Point lying on the plane;</li>
+<li>specify the axis \b Vector through the coordinates of its
+end point with respect to the coordinates of the start point.</li>
+</ul>
+</li>
+
+<li>specify the conditions of symmetry operation:
+<ul>
+<li>activate <b>Move elements</b> radio button to create  the source
+mesh (or elements) at the new location and erase it from the previous location;</li>
+<li>activate <b>Copy elements</b> radio button to create the source
+mesh (or elements) at the new location, but leave it at the previous
+location, the source mesh will be considered one and single mesh with the result of the rotation;</li>
+<li>activate <b>Create as new mesh</b> radio button to leave the
+source mesh (or elements) at its previous location and create a new
+mesh at the new location, the new mesh appears in the Object Browser
+with the default name MeshName_rotated (it is possible to change this
+name in the adjacent box);</li>
+<li>activate <b> Copy groups </b> checkbox to copy the groups of elements of the source mesh to the newly created mesh.</li>
+</ul>
+</li>
+
+<li>Click \b Apply or <b> Apply and Close</b> button to confirm the
+operation.</li>
+
+</ol>
 
 <br><b>See Also</b> a sample TUI Script of a 
 \ref tui_symmetry "Symmetry" operation.  

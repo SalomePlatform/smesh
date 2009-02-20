@@ -16,38 +16,36 @@ and Hexahedron solids respectively.
 \image html image91.png
 <center><em>"Extrusion" button</em></center>
 
-The following dialog box will appear:
+The following dialog common for line and planar elements will appear:
 
 \image html extrusionalongaline1.png
 
-\image html extrusionalongaline2.png
 </li>
 
-<li>In this dialog box you should select:
+<li>In this dialog:
 <ul>
-<li>the type of elements which will be extruded (1D or 2D),</li>
-<li>specify the IDs of the elements which will be extruded by
-selecting them in the 3D viewer or select the whole mesh or
-submesh,
+<li>select the type of elements which will be extruded (1D or 2D),</li>
+<li>specify the IDs of the elements which will be extruded:
 <ul>
-<li>Check on <b>Select the whole mesh, submesh or group</b> option
-<li>Choosing them manually with the mouse in the 3D Viewer. You can
-click on an element in the 3D viewer and it will be highlighted</li>
-<li>Applying Filters. The <b>Set filter</b> button allows to apply a
-definite filter to selection of the elements. See more
-about filters on the
-\ref selection_filter_library_page "Selection filter library" page.</li>
+<li><b>Select the whole mesh, submesh or group</b> activating this
+checkbox; or</li>
+<li>choose mesh elements with the mouse in the 3D Viewer. It is
+possible to select a whole area with a mouse frame; or</li> 
+<li>input the element IDs directly in <b>ID Elements</b> field. The selected elements will be highlighted in the
+viewer; or</li>
+<li>apply Filters. <b>Set filter</b> button allows to apply a filter to the selection of elements. See more
+about filters in the \ref selection_filter_library_page "Selection filter library" page.</li>
 </ul>
 </li>
 <li>specify the distance at which the elements will be extruded,</li>
 <li>specify the vector along which the elements will be extruded,</li>
-<li>number of steps.</li>
-</ul>
-<li> <b>Generate Groups</b> checkbox allows copying the groups of
+<li>specify the number of steps;</li>
+<li>activate  <b>Generate Groups</b> checkbox if it is necessary to copy the groups of
 elements of the source mesh to the newly created one. </li>
 </li>
+</ul>
 
-<li>Click the \b Apply or \b OK button.</li>
+<li>Click \b Apply or <b> Apply and Close</b>  button to confirm the operation.</li>
 </ol>
 
 \image html image77.jpg "The mesh with an edge selected for extrusion"

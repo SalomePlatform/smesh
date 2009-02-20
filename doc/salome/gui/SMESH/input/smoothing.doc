@@ -7,38 +7,40 @@
 
 <em>To apply smoothing to the elements of your mesh:</em>
 <ol>
-<li>Display a mesh or a submesh in the 3D viewer.</li>
+
 <li>In the \b Modification menu select the \b Smoothing item or click
 <em>"Smoothing"</em> button in the toolbar.
 
 \image html image84.png
 <center><em>"Smoothing" button</em></center>
 
-The dialog box contains the following fields which should be
-specified:
+The following dialog will appear:
 
 \image html smoothing.png
+</li>
+<li>In this dialog:
 
 <ul>
-<li><b>Id Elements</b> field allows to specify the elements which
-should be smoothed
+<li>specify the IDs of the elements which will be smoothed:
 <ul>
-<li>Check on <b>Select the whole mesh, submesh or group</b> option
-<li>Choosing them manually with the mouse in the 3D Viewer. You can
-click on an element in the 3D viewer and it will be highlighted</li>
-<li>Applying Filters. The <b>Set filter</b> button allows to apply a
-definite filter to selection of the elements. See more
-about filters on the
-\ref selection_filter_library_page "Selection filter library" page.</li>
+<li><b>Select the whole mesh, submesh or group</b> activating this
+checkbox; or</li>
+<li>choose mesh elements with the mouse in the 3D Viewer. It is
+possible to select a whole area with a mouse frame; or</li> 
+<li>input the element IDs directly in <b>ID Elements</b> field. The selected elements will be highlighted in the
+viewer; or</li>
+<li>apply Filters. <b>Set filter</b> button allows to apply a filter to the selection of elements. See more
+about filters in the \ref selection_filter_library_page "Selection filter library" page.</li>
 </ul>
 </li>
-<b>Fixed nodes ids:</b> some nodes keep their location during
-smoothing. If a mesh is built on a geometry shape, the nodes built on
-geometrical edges are always fixed. If smoothing is applied to a part
-of a mesh then the boundary nodes of an elements set are also
-fixed. Any other nodes may be additionally fixed. Fixed nodes can be
-selected manually or by filters too.</li>
-<li><b>Smoothing Method:</b>
+
+<li>define the <b>Fixed nodes ids</b> that should remain at their location during
+smoothing. If a mesh is built on a shape, the nodes built on its
+geometric edges are always fixed. If the smoothing is applied to a part
+of the mesh, the nodes of boundary elements are also
+fixed. It is possible to additionally fix any other nodes. The fixed nodes can be
+selected manually or by filters, just as the smoothed elements.</li>
+<li>choose the <b>Smoothing Method:</b>
 <ul>
 <li>\b Laplacian smoothing pulls a node toward the center of
 surrounding nodes directly connected to that node along an element
@@ -47,32 +49,29 @@ edge.
 element-area-weighted centroid of the surrounding elements. </li>
 
 Typically, the  Laplacian method will produce the mesh with the least element
-distortion. It is also the faster method.Centroidal smoothing usually
-produces  a mesh that has more uniform element sizes. Both methods
+distortion. It is also the fastest method. Centroidal smoothing usually
+produces  a mesh with more uniform element sizes. Both methods
 produce good results with "free" meshes.</li>
 </ul>
 
 \image html image83.gif
 
 </li>
-<li><b>Iteration limit:</b> both of the smoothing methods use an
-iterative procedure to converge toward a smoothed mesh. All nodes are
-smoothed according to one of the techniques shown above. Then the
-smoothing is reevaluated with the updated nodal locations. This
-process continues until the maximum number of iterations has been
-exceeded, or all elements has aspect ratio less or equal than the
+<li>specify the <b>Iteration limit</b>. Both smoothing methods
+iterate through a number of steps to produce the resulting smoothed
+mesh. At each new step the smoothing is reevaluated with the updated nodal locations. This
+process continues till the limit of iterations has been
+exceeded, or till the aspect ratio of all element is less than or equal to the
 specified one.</li>
-<li><b>Max. aspect ratio</b> allows to define the quality at which the
-smoothing algorithm should stop the iterations as the target of the
-operation has been reached.</li>
-<li>When <b>in parametric space</b> radio button is checked, the
-algorithm tries to improve the shape of faces in the parametric space
+<li>specify the  <b>Max. aspect ratio</b> - the target mesh quality at which the
+smoothing algorithm should stop the iterations.</li>
+<li>activate <b>in parametric space</b> checkbox if it is necessary to
+to improve the shape of faces in the parametric space
 of geometrical surfaces on which they are generated, else the shape of
 faces in the 3D space is improved. </li>   
 </ul>
-
 </li>
-<li>Click the \b Apply or \b OK button to confirm the operation.</li>
+<li>Click \b Apply or <b> Apply and Close</b> button to confirm the operation.</li>
 </ol>
 
 \image html smoothing1.png "The initial mesh"

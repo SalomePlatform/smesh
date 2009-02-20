@@ -47,4 +47,7 @@ of the selected node or edge.</li>
 or vice versa.</li>
 </ul>
 
+\note It is possible to use the variables defined in the SALOME \b NoteBook
+ to specify the numerical parameters used for modification of any object.
+
 */

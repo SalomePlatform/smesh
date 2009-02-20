@@ -29,15 +29,17 @@ The following dialog box will appear:
 
 \image html removenodes.png
 
-In this dialog box you can specify one or several nodes
+In this dialog box you can specify one or several nodes:
 <ul>
-<li>Choosing them manually with the mouse in the 3D Viewer. You can
-click on a node in the 3D viewer and it will be highlighted</li>
-<li>Applying Filters. The <b>Set filter</b> button allows to apply a
-definite filter to selection of the nodes. See more
-about filters on the
-\ref selection_filter_library_page "Selection filter library" page.</li>
+<li>choose mesh nodes with the mouse in the 3D Viewer. It is
+possible to select a whole area with a mouse frame; or</li> 
+<li>input the node IDs directly in <b>ID Elements</b> field. The selected nodes will be highlighted in the
+viewer; or</li>
+<li>apply Filters. <b>Set filter</b> button allows to apply a filter to the selection of nodes. See more
+about filters in the \ref selection_filter_library_page "Selection filter library" page.</li>
 </ul>
+
+
 </li>
 </ol>
 
@@ -65,13 +67,14 @@ The following dialog box will appear:
 
 In this dialog box you can specify one or several elements
 <ul>
-<li>Choosing them manually with the mouse in the 3D Viewer. You can
-click on an element in the 3D viewer and it will be highlighted</li>
-<li>Applying Filters. The <b>Set filter</b> button allows to apply a
-definite filter to selection of the elements. See more
-about filters on the
-\ref selection_filter_library_page "Selection filter library" page.</li>
+<li>choose mesh elements with the mouse in the 3D Viewer. It is
+possible to select a whole area with a mouse frame; or</li> 
+<li>input the element IDs directly in <b>ID Elements</b> field. The selected elements will be highlighted in the
+viewer; or</li>
+<li>apply Filters. <b>Set filter</b> button allows to apply a filter to the selection of elements. See more
+about filters in the \ref selection_filter_library_page "Selection filter library" page.</li>
 </ul>
+
 </li>
 <li>Click \b Apply or <b>Apply and Close</b> to confirm deletion of the specified elements.</li>
 </ol>

@@ -16,31 +16,40 @@ on the revolution axis).
 \image html image92.png
 <center><em>"Revolution" button</em></center>
 
-The following dialog box shall appear:
+The following dialog common for line and planar elements will appear:
 
 \image html revolution1.png
 
-\image html revolution2.png
 </li>
 
 <li>
-In this dialog box you should specify:
+In this dialog you should specify:
 <ul>
 <li>the type of elements which will be extruded (1D or 2D),</li>
-<li>specify the IDs of the elements which will be revolved
+<li>specify the IDs of the elements which will be revolved:
+
+
 <ul>
-<li>Check on <b>Select the whole mesh, submesh or group</b> option
-<li>Choosing them manually with the mouse in the 3D Viewer. You can
-click on an element in the 3D viewer and it will be highlighted</li>
-<li>Applying Filters. The <b>Set filter</b> button allows to apply a
-definite filter to selection of the elements. See more
-about filters on the
-\ref selection_filter_library_page "Selection filter library" page.</li>
+<li><b>Select the whole mesh, submesh or group</b> activating this
+checkbox; or</li>
+<li>choose mesh elements with the mouse in the 3D Viewer. It is
+possible to select a whole area with a mouse frame; or</li> 
+<li>input the element IDs directly in <b>ID Elements</b> field. The selected elements will be highlighted in the
+viewer; or</li>
+<li>apply Filters. <b>Set filter</b> button allows to apply a filter to the selection of elements. See more
+about filters in the \ref selection_filter_library_page "Selection filter library" page.</li>
 </ul>
 </li>
-<li>specify the axis (point and vector) around which the elements will
-be revolved,</li>
-<li>angle of rotation and number of steps,</li>
+
+<li>specify the axis of revolution:
+<ul>
+<li>specify the cooordinates of the start \b Point of the vector of revolution;</li>
+<li>specify the \b Vector of revolution through the coordinates of its
+end point with respect to the coordinates of the start point;</li>
+</ul>
+</li>
+
+<li>specify the angle of revolution and the number of revolution steps,</li>
 <ul> <li> Angle by Step - the elements are extruded by the specified angle at each step (i.e. for Angle=30 and Number of Steps=2, the elements will be extruded 
  by 30 degrees twice for a total of 30*2=60)</li>
 
@@ -52,15 +61,17 @@ be revolved,</li>
 \image html revolutionsn1.png "Example of Revolution with Total Angle"
 
 </ul>
-<li>tolerance of rotation</li>
-</ul>
+</li>
 
-<li> <b>Preview</b> checkbox allows showing the results of parameter-setting in the viewer </li>
-<li> <b>Generate Groups</b> checkbox allows copying the groups of
+<li>specify the tolerance for the operation</li>
+
+<li>activate  <b>Preview</b> checkbox to show the  parameter-setting in the viewer </li>
+<li>activate  <b>Generate Groups</b> checkbox to copy the groups of
 elements of the source mesh to the newly created one. </li>
 </li>
 
-<li>Click the \b Apply or \b OK button.</li>
+<li>Click \b Apply or <b> Apply and Close</b> button to confirm the
+operation.</li>
 </ol>
 
 

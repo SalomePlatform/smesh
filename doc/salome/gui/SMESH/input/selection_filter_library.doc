@@ -66,20 +66,19 @@ shape, the algorithm works slower.
 IDs. 
 <b>Threshold Value</b> can be, for example: "1,2,3,50-60,63,67,70-78"
 </li><li>
-<b>Color of Group</b> allows selection of entities belonging to Group with
-specified color defined by the <b>Threshold Value</b>.
+<b>Color of Group</b> allows selection of entities belonging to the Group with
+the color defined by the <b>Threshold Value</b>.
 </li>
 </ul>
 
-Some criteria are applicable to all <b>Entity types</b>: except for
+Some criteria are applicable to all <b>Entity types</b>, except for
 <b>Nodes</b>
 <ul><li>
-<b>Linear</b> allows selection of Linear or Quadratic (in case of
-Unary set to "Not" state)
+<b>Linear</b> allows selection of Linear or Quadratic elements (if Unary is set to "Not")
 </li><li>
 <b>Geometry type</b> allows selection of elements by their geometric type
 defined by the <b>Threshold Value</b>. The list of available geometric
-types depends on element entity type defined by the <b>Threshold Value</b>.
+types depends on the element entity type defined by the <b>Threshold Value</b>.
 </li>
 </ul>
 
@@ -94,14 +93,6 @@ specified cylinder within a given <b>Tolerance</b>.
 </li><li>
 <b>Belong to Surface</b> selects entities whose all nodes belong to a
 specified arbitrary surface within a given <b>Tolerance</b>.
-</li>
-</ul>
-
-Additional criteria to select mesh <b>Nodes</b> are the following:
-<ul><li>
-<b>Free Nodes</b> selects free mesh nodes, i.e. nodes not belonging to 
-mesh elements. See also a
-\ref free_nodes_page "Free Nodes quality control".
 </li>
 </ul>
 
@@ -153,8 +144,7 @@ Additional criteria to select mesh <b>Faces</b> are the following:
 one element of mesh only. See also a
 \ref free_edges_page "Free Edges quality control".
 </li><li>
-<b>Free faces</b> selects 3D mesh elements wich belong less than to
-two volumes.
+<b>Free faces</b> selects 3D mesh elements wich belong to less than two volumes.
 </li><li>
 <b>Borders at Multi-Connections 2D</b> selects cells consisting of edges belonging to
 several elements of mesh. The number of mesh elements should be more, less or equal
