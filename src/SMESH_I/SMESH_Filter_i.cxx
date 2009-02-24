@@ -1995,7 +1995,7 @@ FilterLibrary_ptr FilterManager_i::LoadLibrary( const char* aFileName )
 {
   SMESH::FilterLibrary_i* aServant = new SMESH::FilterLibrary_i( aFileName );
   SMESH::FilterLibrary_var anObj = aServant->_this();
-  TPythonDump()<<aServant<<" = "<<this<<".LoadLibrary("<<aFileName<<")";
+  TPythonDump()<<aServant<<" = "<<this<<".LoadLibrary('"<<aFileName<<"')";
   return anObj._retn();
 }
 
@@ -2380,9 +2380,10 @@ CORBA::Boolean Filter_i::SetCriteria( const SMESH::Filter::Criteria& theCriteria
       TPythonDump pd;
       pd << "aCriterion = SMESH.Filter.Criterion(" << aCriterion << "," << aCompare
          << "," << aThreshold << ",'" << aThresholdStr;
-      if (aThresholdID)
-	pd << "',salome.ObjectToID(" << aThresholdID
-	   << ")," << aUnary << "," << aBinary << "," << aTolerance
+      if (aThresholdID && strlen(aThresholdID))
+	//pd << "',salome.ObjectToID(" << aThresholdID
+        pd << "','" << aThresholdID
+	   << "'," << aUnary << "," << aBinary << "," << aTolerance
 	   << "," << aTypeOfElem << "," << aPrecision << ")";
       else
 	pd << "',''," << aUnary << "," << aBinary << "," << aTolerance
