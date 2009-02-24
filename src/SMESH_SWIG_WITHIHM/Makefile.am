@@ -71,6 +71,7 @@ _libSMESH_Swig_la_CPPFLAGS =	\
 	$(CORBA_CXXFLAGS)	\
 	$(CORBA_INCLUDES)	\
 	$(BOOST_CPPFLAGS)	\
+	-I$(srcdir)             \
 	-I$(srcdir)/../SMESHGUI	\
 	-I$(top_builddir)/idl	\
 	-I$(top_builddir)/salome_adm/unix

@@ -57,6 +57,7 @@ libSMESHObject_la_CPPFLAGS = \
 	$(CAS_CPPFLAGS) \
         $(VTK_INCLUDES) \
 	$(CORBA_INCLUDES) \
+	$(CORBA_CXXFLAGS) \
         $(BOOST_CPPFLAGS) \
         $(QT_INCLUDES) \
 	-I$(srcdir)/../Controls \
@@ -73,6 +74,6 @@ libSMESHObject_la_LDFLAGS  = \
         ../SMESHClient/libSMESHClient.la \
         ../SMDS/libSMDS.la \
         ../Controls/libSMESHControls.la \
-        $(GUI_LDFLAGS) -lSalomeApp lSalomeObject \
+        $(GUI_LDFLAGS) -lSalomeApp -lSalomeObject -lSVTK -lVTKViewer -lqtx -lsuit \
 	$(CAS_KERNEL) \
-        $(VTK_LIBS)
+        $(VTK_LIBS) $(QT_MT_LIBS)

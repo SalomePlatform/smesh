@@ -53,4 +53,4 @@ libMeshDriver_la_CPPFLAGS = \
 libMeshDriver_la_LDFLAGS  = \
 	../SMESHDS/libSMESHDS.la \
 	$(KERNEL_LDFLAGS) -lOpUtil \
-	$(CAS_LDPATH) -TKernel -lTKTopAlgo
+	$(CAS_LDPATH) -lTKernel -lTKTopAlgo

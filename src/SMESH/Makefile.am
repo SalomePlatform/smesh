@@ -106,4 +106,4 @@ libSMESHimpl_la_LDFLAGS = \
 	../DriverMED/libMeshDriverMED.la \
 	../DriverUNV/libMeshDriverUNV.la \
 	$(GEOM_LDFLAGS) -lNMTTools \
-	$(CAS_LDPATH) -lTKShHealing
+	$(CAS_LDPATH) -lTKShHealing -lTKPrim -lTKG2d

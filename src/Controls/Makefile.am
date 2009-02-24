@@ -53,7 +53,7 @@ libSMESHControls_la_CPPFLAGS = \
 libSMESHControls_la_LDFLAGS = \
 	../SMDS/libSMDS.la \
 	../SMESHDS/libSMESHDS.la \
-	$(CAS_LDPATH) -lTKernel -lTKBRep -lTKG3d
+	$(CAS_LDPATH) -lTKernel -lTKBRep -lTKG3d -lTKTopAlgo -lTKGeomBase -lTKGeomAlgo
 
 SMESHControls_CPPFLAGS = \
 	$(libSMESHControls_la_CPPFLAGS)

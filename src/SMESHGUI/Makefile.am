@@ -246,8 +246,9 @@ libSMESH_la_LDFLAGS  = \
 	../SMDS/libSMDS.la \
 	../Controls/libSMESHControls.la \
 	../OBJECT/libSMESHObject.la \
-	$(GEOM_LDFLAGS) \
-	-lGEOMBase
+	$(CAS_LDFLAGS) -lTKV3d \
+	$(GUI_LDFLAGS) -lSalomePrs -lsuit -lSUITApp -lCAM -lstd \
+	$(GEOM_LDFLAGS) -lGEOMBase -lGEOMFiltersSelection -lGEOMObject
 
 # resources files
 nodist_salomeres_DATA= \

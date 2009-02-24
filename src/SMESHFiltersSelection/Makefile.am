@@ -63,6 +63,7 @@ libSMESHFiltersSelection_la_CPPFLAGS = \
 libSMESHFiltersSelection_la_LDFLAGS  = \
 	../../idl/libSalomeIDLSMESH.la \
 	$(KERNEL_LDFLAGS) -lSalomeDSClient -lSalomeDS \
-	$(GUI_LDFLAGS) -lSalomeApp -lsuit \
-	$(GEOM_LDFLAGS) -lGEOM \
-	$(CAS_LDPATH) -lTKernel
+	$(GUI_LDFLAGS) -lSalomeApp -lsuit -lLightApp \
+	$(GEOM_LDFLAGS) -lGEOM -lGEOMClient \
+	$(CAS_LDPATH) -lTKernel -lTKMath -lTKBRep \
+	$(QT_MT_LIBS)
