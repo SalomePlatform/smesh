@@ -21,4 +21,5 @@
 #
 include $(top_srcdir)/adm_local/unix/make_common_starter.am
 
-SUBDIRS = unix cmake_files
+dist_admlocal_cmake_DATA = \
+FindSMESH.cmake

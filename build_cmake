@@ -1,3 +1,4 @@
+#!/bin/sh
 #  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
 #
 #  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
@@ -19,6 +20,11 @@
 #
 #  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
-include $(top_srcdir)/adm_local/unix/make_common_starter.am
 
-SUBDIRS = unix cmake_files
+CURRENT_DIR=`pwd`
+CONF_DIR=`echo $0 | sed -e "s,[^/]*$,,;s,/$,,;s,^$,.,"`
+cd ${CONF_DIR}
+python $KERNEL_ROOT_DIR/salome_adm/cmake_files/am2cmake.py --smesh
+status=$?
+cd ${CURRENT_DIR}
+exit $status
