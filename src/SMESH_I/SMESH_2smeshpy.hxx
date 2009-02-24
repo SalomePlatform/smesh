@@ -147,21 +147,24 @@ public:
 
 // -------------------------------------------------------------------------------------
 /*!
- * \brief Root of all objects
+ * \brief Root of all objects. It counts calls of Process()
  */
 // -------------------------------------------------------------------------------------
 
 class _pyObject: public Standard_Transient
 {
-  Handle(_pyCommand)              myCreationCmd;
+  Handle(_pyCommand) myCreationCmd;
+  int                myNbCalls;
 public:
-  _pyObject(const Handle(_pyCommand)& theCreationCmd): myCreationCmd(theCreationCmd) {}
+  _pyObject(const Handle(_pyCommand)& theCreationCmd)
+    : myCreationCmd(theCreationCmd), myNbCalls(0) {}
   const _pyID& GetID() { return myCreationCmd->GetResultValue(); }
   static _pyID FatherID(const _pyID & childID);
   const Handle(_pyCommand)& GetCreationCmd() { return myCreationCmd; }
+  int GetNbCalls() const { return myNbCalls; }
   void  SetCreationCmd( Handle(_pyCommand) cmd ) { myCreationCmd = cmd; }
   int GetCommandNb() { return myCreationCmd->GetOrderNb(); }
-  virtual void Process(const Handle(_pyCommand) & theCommand) = 0;
+  virtual void Process(const Handle(_pyCommand) & theCommand) { myNbCalls++; }
   virtual void Flush() = 0;
   virtual const char* AccessorMethod() const;
 
@@ -205,16 +208,15 @@ private:
   
 private:
   std::map< _pyID, Handle(_pyMesh) >       myMeshes;
-  std::map< _pyID, Handle(_pySubMesh) >    mySubMeshes;
+  //std::map< _pyID, Handle(_pySubMesh) >    mySubMeshes;
   std::map< _pyID, Handle(_pyMeshEditor) > myMeshEditors;
+  std::map< _pyID, Handle(_pyObject) >     myObjects;
   std::list< Handle(_pyHypothesis) >       myHypos;
   std::list< Handle(_pyCommand) >          myCommands;
   int                                      myNbCommands;
-  bool                                     myHasPattern;
   Resource_DataMapOfAsciiStringAsciiString& myID2AccessorMethod;
   Resource_DataMapOfAsciiStringAsciiString& myObjectNames;
   Handle(_pyCommand)                       myLastCommand;
-  Handle(_pyFilterManager)                 myFilterManager;
 
   DEFINE_STANDARD_RTTI (_pyGen)
 };
@@ -416,20 +418,18 @@ DEFINE_STANDARD_HANDLE (_pySegmentLengthAroundVertexHyp, _pyHypothesis);
 
 // -------------------------------------------------------------------------------------
 /*!
- * \brief FilterManager creates only if at least one command invoked
+ * \brief SelfEraser erases creation command if no more it's commands invoked
  */
 // -------------------------------------------------------------------------------------
-class _pyFilterManager: public _pyObject
+class _pySelfEraser: public _pyObject
 {
 public:
-  _pyFilterManager(const Handle(_pyCommand)& theCreationCmd);
-  void Process( const Handle(_pyCommand)& theCommand);
+  _pySelfEraser(const Handle(_pyCommand)& theCreationCmd):_pyObject(theCreationCmd) {}
   virtual void Flush();
 
-  DEFINE_STANDARD_RTTI (_pyFilterManager)
-private:
-  int myCmdCount;
+  DEFINE_STANDARD_RTTI (_pySelfEraser)
 };
+DEFINE_STANDARD_HANDLE (_pySelfEraser, _pyObject);
 
 // -------------------------------------------------------------------------------------
 /*!
@@ -439,14 +439,13 @@ private:
 class _pySubMesh:  public _pyObject
 {
 public:
-  _pySubMesh(const Handle(_pyCommand)& theCreationCmd);
+  _pySubMesh(const Handle(_pyCommand)& theCreationCmd):_pyObject(theCreationCmd) {}
   void Process( const Handle(_pyCommand)& theCommand);
   virtual void Flush();
   void SetCreator( const Handle(_pyObject)& theCreator ) { myCreator = theCreator; }
 
-  DEFINE_STANDARD_RTTI (_pyFilterManager)
+  DEFINE_STANDARD_RTTI (_pySubMesh)
 private:
-  int               myCmdCount;
   Handle(_pyObject) myCreator;
 };
 
