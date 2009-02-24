@@ -33,6 +33,7 @@
 
 #include <TColStd_HSequenceOfInteger.hxx>
 #include <TCollection_AsciiString.hxx>
+#include <SMESH_Comment.hxx>
 
 
 #ifdef _DEBUG_
@@ -772,48 +773,33 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
   if (aSeq->Value(aLen) < aScriptLength)
     anUpdatedScript += aScript.SubString(aSeq->Value(aLen) + 1, aScriptLength);
 
-
-  //SMESH_Gen_i* aSMESHGenI = SMESH_Gen_i::GetSMESHGen();
-  if( !CORBA::is_nil(theStudy) )
+  // Set colors
+  SALOMEDS::SObject_var aComp = theStudy->FindComponent(ComponentDataType());
+  if( !CORBA::is_nil(aComp) )
   {
-    SALOMEDS::SObject_var aComp = theStudy->FindComponent(ComponentDataType());
-    if( !CORBA::is_nil(aComp) )
+    SALOMEDS::ChildIterator_var Itr = theStudy->NewChildIterator(aComp);
+    for( Itr->InitEx(true); Itr->More(); Itr->Next() )
     {
-      SALOMEDS::ChildIterator_var Itr = theStudy->NewChildIterator(aComp);
-      for( Itr->InitEx(true); Itr->More(); Itr->Next() )
+      SALOMEDS::SObject_var aSObj = Itr->Value();
+      SMESH::SMESH_Mesh_var aMesh = SMESH::SMESH_Mesh::_narrow( SObjectToObject( aSObj ) );
+      // mesh auto color
+      if( !CORBA::is_nil(aMesh) && aMesh->GetAutoColor() )
       {
-	SALOMEDS::SObject_var aSObj = Itr->Value();
-	CORBA::String_var aName = aSObj->GetName();
-
-	SMESH::SMESH_Mesh_var aMesh = SMESH::SMESH_Mesh::_narrow( SMESH_Gen_i::SObjectToObject( aSObj ) );
-	if( !CORBA::is_nil(aMesh) )
-	{
-	  bool isAutoColor = aMesh->GetAutoColor();
-	  if( isAutoColor )
-	  {
-	    anUpdatedScript += "\n\t";
-	    anUpdatedScript += (char*)aName.in();
-	    anUpdatedScript += ".SetAutoColor(1)";
-	  }
-	}
- 
-	SMESH::SMESH_GroupBase_var aGroup = SMESH::SMESH_GroupBase::_narrow( SMESH_Gen_i::SObjectToObject( aSObj ) );
-	if( !CORBA::is_nil(aGroup) )
-	{
-	  SALOMEDS::Color aColor = aGroup->GetColor();
-	  if ( aColor.R > 0 || aColor.G > 0 || aColor.B > 0 )
-	  {
-	    anUpdatedScript += "\n\t";
-	    anUpdatedScript += (char*)aName.in();
-	    anUpdatedScript += ".SetColor(SALOMEDS.Color(";
-	    anUpdatedScript += aColor.R;
-	    anUpdatedScript += ",";
-	    anUpdatedScript += aColor.G;
-	    anUpdatedScript += ",";
-	    anUpdatedScript += aColor.B;
-	    anUpdatedScript += "))";
-	  }
-	}
+        anEntry = aSObj->GetID();
+        anUpdatedScript +=
+          SMESH_Comment("\n\t") << theObjectNames(anEntry) << ".SetAutoColor(1)";
+      }
+      SMESH::SMESH_GroupBase_var aGroup = SMESH::SMESH_GroupBase::_narrow( SObjectToObject(aSObj));
+      if( !CORBA::is_nil(aGroup) )
+      {
+        SALOMEDS::Color aColor = aGroup->GetColor();
+        if ( aColor.R > 0 || aColor.G > 0 || aColor.B > 0 )
+        {
+          anEntry = aSObj->GetID();
+          anUpdatedScript +=
+            SMESH_Comment("\n\t") << theObjectNames(anEntry) << ".SetColor(SALOMEDS.Color("
+                                  << aColor.R <<", "<< aColor.G <<", "<< aColor.B <<" ))";
+        }
       }
     }
   }
