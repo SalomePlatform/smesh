@@ -602,3 +602,12 @@ void SMESHGUI_MeshDlg::onGeomPopup( int index )
 {
   emit geomSelectionByMesh( index == GEOM_BY_MESH_INDEX );
 }
+
+int SMESHGUI_MeshDlg::getActiveObject()
+{
+  for (int i = 0; i < 3; ++i )
+    if ( isObjectShown( i ) &&
+         (( QToolButton* )objectWg( i, Btn ))->isOn())
+      return i;
+  return -1;
+}
