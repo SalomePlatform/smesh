@@ -28,7 +28,7 @@
 
 #include "SMESH_SMESH.hxx"
 
-#include <SMESH_Mesh.hxx>
+#include "SMESH_Mesh.hxx"
 #include <TopoDS_Shape.hxx>
 #include <SMDS_MeshNode.hxx>
 #include <TopoDS_Face.hxx>
