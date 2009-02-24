@@ -62,6 +62,10 @@ public :
     this->string::operator=( _s.str() );
     return *this ;
   }
+
+  operator char*() const {
+    return (char*)c_str();
+  }
 };
 
 
