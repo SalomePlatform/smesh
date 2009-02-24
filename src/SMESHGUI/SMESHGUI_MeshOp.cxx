@@ -967,14 +967,6 @@ void SMESHGUI_MeshOp::onCreateHyp( const int theHypType, const int theIndex )
   createHypothesis(aDim, theHypType, aHypTypeName);
 }
 
-//================================================================================
-/*!
- *  Create hypothesis and update dialog.
- *  \param theDim - dimension of hypothesis to be created
- *  \param theType - hypothesis category (algorithm, hypothesis, additional hypothesis)
- *  \param theTypeName - specifies hypothesis to be created
- */
-//================================================================================
 namespace
 {
   QString GetUniqueName (const QStringList& theHypNames,
@@ -988,14 +980,19 @@ namespace
   }
 }
 
+//================================================================================
+/*!
+ *  Create hypothesis and update dialog.
+ *  \param theDim - dimension of hypothesis to be created
+ *  \param theType - hypothesis category (algorithm, hypothesis, additional hypothesis)
+ *  \param theTypeName - specifies hypothesis to be created
+ */
+//================================================================================
+
 void SMESHGUI_MeshOp::createHypothesis (const int theDim,
                                         const int theType,
                                         const QString& theTypeName)
 {
-  // During a hypothesis creation we might need to select some objects.
-  // Main dialog must not update it's own selected objects in this case.
-  dlg()->deactivateAll();
-
   HypothesisData* aData = SMESH::GetHypothesisData(theTypeName.latin1());
   if (!aData)
     return;
@@ -1030,12 +1027,15 @@ void SMESHGUI_MeshOp::createHypothesis (const int theDim,
 
     // Create hypothesis
     if (aCreator) {
-      // When create or edit a submesh, try to initialize a new hypothesis
-      // with values used to mesh a subshape
+      // Get parameters appropriate to initialize a new hypothesis
       SMESH::SMESH_Hypothesis_var initParamHyp =
         getInitParamsHypothesis(theTypeName, aData->ServerLibName);
+
+      int obj = myDlg->getActiveObject();
+      removeCustomFilters(); // Issue 0020170
       myDlg->setEnabled( false );
       aCreator->create(initParamHyp, aHypName, myDlg);
+      onActivateObject( obj ); // Issue 0020170. Restore filters
       myDlg->setEnabled( true );
     } else {
       SMESH::CreateHypothesis(theTypeName, aHypName, false);
@@ -1081,8 +1081,11 @@ void SMESHGUI_MeshOp::onEditHyp( const int theHypType, const int theIndex )
   CORBA::String_var aTypeName = aHyp->GetName();
   SMESHGUI_GenericHypothesisCreator* aCreator = SMESH::GetHypothesisCreator( aTypeName );
   if ( aCreator ) {
+    int obj = myDlg->getActiveObject();
+    removeCustomFilters(); // Issue 0020170
     myDlg->setEnabled( false );
     aCreator->edit( aHyp.in(), aHypItem.second, dlg() );
+    onActivateObject( obj ); // Issue 0020170. Restore filters
     myDlg->setEnabled( true );
   }
 }
