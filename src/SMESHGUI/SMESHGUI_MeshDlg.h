@@ -71,7 +71,7 @@ public:
   void                         setGeomPopupEnabled( const bool );
   void                         disableTab(const int);
   void                         enableTab(const int);
-
+  int                          getActiveObject();
 
 signals:
   void                         hypoSet( const QString& );

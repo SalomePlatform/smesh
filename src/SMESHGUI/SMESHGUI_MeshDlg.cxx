@@ -586,3 +586,12 @@ void SMESHGUI_MeshDlg::onGeomPopup( QAction* a )
 {
   emit geomSelectionByMesh( a->data().toInt() == GEOM_BY_MESH_INDEX );
 }
+
+int SMESHGUI_MeshDlg::getActiveObject()
+{
+  for (int i = 0; i < 3; ++i )
+    if ( isObjectShown( i ) &&
+         (( QToolButton* )objectWg( i, Btn ))->isChecked())
+      return i;
+  return -1;
+}
