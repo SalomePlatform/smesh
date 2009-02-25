@@ -3731,7 +3731,7 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
               // -- Most probably a bad study was saved when there were
               // not fixed bugs in SMDS_MeshInfo
               if ( elemSet.size() < nbElems ) {
-                cout << "Warning: Node position data is invalid" << endl;
+                cout << "SMESH_Gen_i::Load(), warning: Node position data is invalid" << endl;
                 nbElems = elemSet.size();
               }
               // add elements to submeshes
