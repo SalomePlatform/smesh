@@ -3727,8 +3727,13 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
                 while ( nIt->more() ) elemSet.insert( nIt->next() );
               else
                 while ( eIt->more() ) elemSet.insert( eIt->next() );
-              ASSERT( elemSet.size() == nbElems );
-
+              //ASSERT( elemSet.size() == nbElems ); -- issue 20182
+              // -- Most probably a bad study was saved when there were
+              // not fixed bugs in SMDS_MeshInfo
+              if ( elemSet.size() < nbElems ) {
+                cout << "Warning: Node position data is invalid" << endl;
+                nbElems = elemSet.size();
+              }
               // add elements to submeshes
               TIDSortedElemSet::iterator iE = elemSet.begin();
               for ( int i = 0; i < nbElems; ++i, ++iE )
@@ -3845,17 +3850,23 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
               SMDS_PositionPtr aPos = node->GetPosition();
               ASSERT( aPos )
                 if ( onFace ) {
-                  ASSERT( aPos->GetTypeOfPosition() == SMDS_TOP_FACE );
-                  SMDS_FacePosition* fPos = const_cast<SMDS_FacePosition*>
-                    ( static_cast<const SMDS_FacePosition*>( aPos.get() ));
-                  fPos->SetUParameter( aUPos[ iNode ]);
-                  fPos->SetVParameter( aVPos[ iNode ]);
+                  // ASSERT( aPos->GetTypeOfPosition() == SMDS_TOP_FACE );-- issue 20182
+                  // -- Most probably a bad study was saved when there were
+                  // not fixed bugs in SMDS_MeshInfo
+                  if ( aPos->GetTypeOfPosition() == SMDS_TOP_FACE ) {
+                    SMDS_FacePosition* fPos = const_cast<SMDS_FacePosition*>
+                      ( static_cast<const SMDS_FacePosition*>( aPos.get() ));
+                    fPos->SetUParameter( aUPos[ iNode ]);
+                    fPos->SetVParameter( aVPos[ iNode ]);
+                  }
                 }
                 else {
-                  ASSERT( aPos->GetTypeOfPosition() == SMDS_TOP_EDGE );
-                  SMDS_EdgePosition* fPos = const_cast<SMDS_EdgePosition*>
-                    ( static_cast<const SMDS_EdgePosition*>( aPos.get() ));
-                  fPos->SetUParameter( aUPos[ iNode ]);
+                  // ASSERT( aPos->GetTypeOfPosition() == SMDS_TOP_EDGE );-- issue 20182
+                  if ( aPos->GetTypeOfPosition() == SMDS_TOP_EDGE ) {
+                    SMDS_EdgePosition* fPos = const_cast<SMDS_EdgePosition*>
+                      ( static_cast<const SMDS_EdgePosition*>( aPos.get() ));
+                    fPos->SetUParameter( aUPos[ iNode ]);
+                  }
                 }
             }
           }
