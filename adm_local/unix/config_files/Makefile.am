@@ -24,4 +24,5 @@ include $(top_srcdir)/adm_local/unix/make_common_starter.am
 dist_admlocalm4_DATA =	\
     check_SMESH.m4	\
     check_f77.m4	\
-    check_Platform.m4
+    check_Platform.m4   \
+    check_qwt.m4        
