@@ -149,8 +149,9 @@ inline SMDS_MeshInfo::SMDS_MeshInfo():
 }
 inline void // Clear
 SMDS_MeshInfo::Clear()
-{ for ( int i=0; i<myNb.size(); ++i ) if ( myNb[i] ) (*myNb[i])=0; }
-
+{ for ( int i=0; i<myNb.size(); ++i ) if ( myNb[i] ) (*myNb[i])=0;
+  myNbPolygons=myNbPolyhedrons=0;
+}
 inline int // index
 SMDS_MeshInfo::index(SMDSAbs_ElementType type, int nbNodes)
 { return nbNodes + myShift[ type ]; }
