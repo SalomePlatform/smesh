@@ -31,8 +31,8 @@
 #include <SMESHGUI_Utils.h>
 #include <SMESH_TypeFilter.hxx>
 #include <SMESH_NumberFilter.hxx>
-#include <StdMeshersGUI_ObjectReferenceParamWdg.h>
-#include <StdMeshersGUI_LayerDistributionParamWdg.h>
+#include "StdMeshersGUI_ObjectReferenceParamWdg.h"
+#include "StdMeshersGUI_LayerDistributionParamWdg.h"
 #include <SALOMEDSClient_Study.hxx>
 
 // SALOME GUI includes
