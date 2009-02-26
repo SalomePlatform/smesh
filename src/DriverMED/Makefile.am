@@ -70,8 +70,9 @@ libMeshDriverMED_la_CPPFLAGS = \
 	-I$(top_builddir)/salome_adm/unix
 
 libMeshDriverMED_la_LDFLAGS  = \
+	$(BOOST_LIBS) \
 	../Driver/libMeshDriver.la \
-	$(MED_LDFLAGS) -lMEDWrapper
+	$(MED_LDFLAGS) -lMEDWrapper -lMEDWrapperBase -lMEDWrapper_V2_1 -lMEDWrapper_V2_2
 
 
 MED_Test_CPPFLAGS = \
