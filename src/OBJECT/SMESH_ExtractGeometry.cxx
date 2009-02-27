@@ -58,22 +58,14 @@ SMESH_ExtractGeometry::~SMESH_ExtractGeometry(){}
 
 
 vtkIdType SMESH_ExtractGeometry::GetElemObjId(int theVtkID){
-  if(myElemVTK2ObjIds.empty() || theVtkID > myElemVTK2ObjIds.size()) return -1;
-#if defined __GNUC_2__
+  if( theVtkID < 0 || theVtkID >= myElemVTK2ObjIds.size()) return -1;
   return myElemVTK2ObjIds[theVtkID];
-#else
-  return myElemVTK2ObjIds.at(theVtkID);
-#endif
 }
 
 
 vtkIdType SMESH_ExtractGeometry::GetNodeObjId(int theVtkID){
-  if(myNodeVTK2ObjIds.empty() || theVtkID > myNodeVTK2ObjIds.size()) return -1;
-#if defined __GNUC_2__
+  if ( theVtkID < 0 || theVtkID >= myNodeVTK2ObjIds.size()) return -1;
   return myNodeVTK2ObjIds[theVtkID];
-#else
-  return myNodeVTK2ObjIds.at(theVtkID);
-#endif
 }
 
 
