@@ -52,6 +52,7 @@
 #include "SVTK_ViewWindow.h"
 #include "SVTK_Selector.h"
 #include "SALOME_ListIO.hxx"
+#include "SALOME_ListIteratorOfListIO.hxx"
 
 #include "utilities.h"
 
@@ -408,7 +409,7 @@ void SMESHGUI_WhatIsDlg::SelectionIntoArgument()
 
   int nbSel = aList.Extent();
 
-  if (nbSel != 1)
+  if (nbSel < 1)
     return;
 
   Handle(SALOME_InteractiveObject) IO = aList.First();
@@ -416,15 +417,43 @@ void SMESHGUI_WhatIsDlg::SelectionIntoArgument()
   if (myMesh->_is_nil())
     return;
 
+  if (nbSel != 1) {
+    //check if all selected objects belongs to one mesh
+    SALOME_ListIteratorOfListIO io( aList );
+    for (io.Next(); io.More(); io.Next() ) {
+      SMESH::SMESH_Mesh_var mesh = SMESH::GetMeshByIO(io.Value());
+      if (!mesh->_is_nil() && !mesh->_is_equivalent( myMesh ))
+        return;
+    }
+    // select IO with any element selected (for case of selection by rectangle)
+    IO.Nullify();
+    for (io.Initialize(aList); io.More() && IO.IsNull(); io.Next() )
+      if ( mySelector->HasIndex( io.Value() ))
+        IO = io.Value();
+    if ( IO.IsNull() ) return;
+    // unhilight others
+    if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI )) {
+      for (io.Initialize(aList); io.More(); io.Next() )
+        if ( !IO->isSame( io.Value() ))
+          aViewWindow->highlight( io.Value(), false, true );
+    }
+  }
+
   myActor = SMESH::FindActorByObject(myMesh);
   if (!myActor)
     myActor = SMESH::FindActorByEntry(IO->getEntry());
   if (!myActor)
     return;
 
-  QString aName;
-  SMESH::GetNameOfSelectedIObjects(mySelectionMgr, aName);
-  MeshName->setText(aName);
+  QString aName = IO->getName();
+  // cut off wite spaces from tail, else meaningful head is not visible
+  int size = aName.length();
+  while (size && aName.at(size-1).isSpace() )
+    --size;
+  if ( size != aName.length() )
+    aName.truncate( size );
+  MeshName->setText(aName); // can be something like "2 objects"
+
   if(!SMESH::IObjectToInterface<SMESH::SMESH_Mesh>(IO)->_is_nil()) {
     GroupMesh->setTitle(tr("SMESH_MESH"));
   } else if(!SMESH::IObjectToInterface<SMESH::SMESH_subMesh>(IO)->_is_nil()) {
@@ -448,7 +477,7 @@ void SMESHGUI_WhatIsDlg::SelectionIntoArgument()
     anInfo=tr("ENTITY_TYPE") + ": ";
     if(e->GetType() == SMDSAbs_Node) {
       anInfo+=tr("MESH_NODE")+"\n";
-      const SMDS_MeshNode *en = (SMDS_MeshNode*) e;
+      //const SMDS_MeshNode *en = (SMDS_MeshNode*) e; // VSR: not used!
     } else if(e->GetType() == SMDSAbs_Edge) {
       anInfo+=tr("SMESH_EDGE")+"\n";
       anInfo+=tr("SMESH_MESHINFO_TYPE")+": ";
@@ -524,11 +553,11 @@ void SMESHGUI_WhatIsDlg::SelectionIntoArgument()
     gp_XYZ anXYZ(0.,0.,0.);
     SMDS_ElemIteratorPtr nodeIt = e->nodesIterator();
     int nbNodes = 0;
-    for(; nodeIt->more(); nbNodes++) {
+    for( ; nodeIt->more(); nbNodes++) {
       const SMDS_MeshNode* node = static_cast<const SMDS_MeshNode*>( nodeIt->next() );
       anXYZ.Add( gp_XYZ( node->X(), node->Y(), node->Z() ) );
     }
-    anXYZ.Divide(e->NbNodes()) ;
+    anXYZ.Divide(e->NbNodes());
     anInfo+=QString("X=%1\nY=%2\nZ=%3\n").arg(anXYZ.X()).arg(anXYZ.Y()).arg(anXYZ.Z());
     Info->setText(anInfo);
   }
