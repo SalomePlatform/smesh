@@ -1128,6 +1128,14 @@ Are you sure want to export to MED 2.1 ?</translation>
             <source>SMESH_EXTRUSION</source>
             <translation>Extrusion</translation>
         </message>
+	<message>
+            <source>SMESH_EXTRUSION_TO_DISTANCE</source>
+            <translation>Extrusion To Distance</translation>
+        </message>
+	<message>
+            <source>SMESH_EXTRUSION_ALONG_VECTOR</source>
+            <translation>Extrusion Along Vector</translation>
+        </message>
         <message>
             <source>SMESH_FACE</source>
             <translation>Face</translation>

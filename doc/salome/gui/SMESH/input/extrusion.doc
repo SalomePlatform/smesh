@@ -20,6 +20,8 @@ The following dialog common for line and planar elements will appear:
 
 \image html extrusionalongaline1.png
 
+\image html extrusionalongaline2.png
+
 </li>
 
 <li>In this dialog:
@@ -37,8 +39,15 @@ viewer; or</li>
 about filters in the \ref selection_filter_library_page "Selection filter library" page.</li>
 </ul>
 </li>
+<li>If the <b>Extrude to Distance</b> Radio Button Selected</li>
+<ul>
 <li>specify the distance at which the elements will be extruded,</li>
-<li>specify the vector along which the elements will be extruded,</li>
+</ul>
+<li>If the <b>Extrude Along Vector</b> Radio Button Selected</li>
+<ul>
+<li>specify the vector along which the elements will be extruded, or select the face (the normale to the face will be define a vector)</li>
+<li>specify the distance to be extruded along this vector,</li>
+</ul>
 <li>specify the number of steps;</li>
 <li>activate  <b>Generate Groups</b> checkbox if it is necessary to copy the groups of
 elements of the source mesh to the newly created one. </li>

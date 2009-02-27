@@ -98,8 +98,11 @@ private:
   QButtonGroup*                    GroupConstructors;
   QRadioButton*                    RadioButton1;
   QRadioButton*                    RadioButton2;
+  QRadioButton*                    RadioButton3;
+  QRadioButton*                    RadioButton4;
 
   QGroupBox*                       GroupArguments;
+  QGroupBox*                       GroupDimensions;
   QLabel*                          TextLabelElements;
   QPushButton*                     SelectElementsButton;
   QLineEdit*                       LineEditElements;
@@ -119,6 +122,8 @@ private:
   SMESHGUI_SpinBox*                SpinBox_Vy;
   QLabel*                          TextLabelVz;
   SMESHGUI_SpinBox*                SpinBox_Vz;
+  QLabel*                          TextLabelDist;
+  SMESHGUI_SpinBox*                SpinBox_VDist;
   QLabel*                          TextLabelNbSteps;
   SalomeApp_IntSpinBox*            SpinBox_NbSteps;
   QCheckBox*                       MakeGroupsCheck;
@@ -141,6 +146,7 @@ private slots:
   bool                            ClickOnApply();
   void                            ClickOnCancel();
   void                            ClickOnHelp();
+  void                            ClickOnRadio();
   void                            SetEditCurrentArgument();
   void                            SelectionIntoArgument();
   void                            DeactivateActiveDialog();

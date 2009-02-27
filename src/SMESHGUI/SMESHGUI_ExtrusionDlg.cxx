@@ -170,10 +170,14 @@ SMESHGUI_ExtrusionDlg::SMESHGUI_ExtrusionDlg (SMESHGUI* theModule)
   // Control for the whole mesh selection
   CheckBoxMesh = new QCheckBox(tr("SMESH_SELECT_WHOLE_MESH"), GroupArguments);
 
+  RadioButton3 = new QRadioButton(GroupArguments);
+  RadioButton3->setText( tr("SMESH_EXTRUSION_TO_DISTANCE") );
+  RadioButton4 = new QRadioButton(GroupArguments);
+  RadioButton4->setText( tr("SMESH_EXTRUSION_ALONG_VECTOR") );
+
   //Control for the Distance selection
   TextLabelDistance = new QLabel(tr("SMESH_DISTANCE"), GroupArguments);
   
-  TextLabelVector = new QLabel(tr("SMESH_VECTOR"), GroupArguments);
   TextLabelDx = new QLabel(tr("SMESH_X"), GroupArguments);
   SpinBox_Dx = new SMESHGUI_SpinBox(GroupArguments);
   
@@ -184,6 +188,8 @@ SMESHGUI_ExtrusionDlg::SMESHGUI_ExtrusionDlg (SMESHGUI* theModule)
   SpinBox_Dz = new SMESHGUI_SpinBox(GroupArguments);
 
   // Controls for vector selection
+
+  TextLabelVector = new QLabel(tr("SMESH_VECTOR"), GroupArguments);
 
   SelectVectorButton = new QPushButton(GroupArguments);
   SelectVectorButton->setIcon(image2);
@@ -197,6 +203,9 @@ SMESHGUI_ExtrusionDlg::SMESHGUI_ExtrusionDlg (SMESHGUI* theModule)
   TextLabelVz = new QLabel(tr("SMESH_DZ"), GroupArguments);
   SpinBox_Vz = new SMESHGUI_SpinBox(GroupArguments);
 
+  TextLabelDist = new QLabel(tr("SMESH_DISTANCE"), GroupArguments);
+  SpinBox_VDist = new SMESHGUI_SpinBox(GroupArguments);
+
   // Controls for nb. steps defining
   TextLabelNbSteps = new QLabel(tr("SMESH_NUMBEROFSTEPS"), GroupArguments);
   SpinBox_NbSteps = new SalomeApp_IntSpinBox(GroupArguments);
@@ -209,24 +218,30 @@ SMESHGUI_ExtrusionDlg::SMESHGUI_ExtrusionDlg (SMESHGUI* theModule)
   GroupArgumentsLayout->addWidget(LineEditElements,     0, 2, 1, 5);
   GroupArgumentsLayout->addWidget(myFilterBtn,          0, 7);
   GroupArgumentsLayout->addWidget(CheckBoxMesh,         1, 0, 1, 8);
-  GroupArgumentsLayout->addWidget(TextLabelDistance,    2, 0);
-  GroupArgumentsLayout->addWidget(TextLabelDx,          2, 2);
-  GroupArgumentsLayout->addWidget(SpinBox_Dx,           2, 3);
-  GroupArgumentsLayout->addWidget(TextLabelDy,          2, 4);
-  GroupArgumentsLayout->addWidget(SpinBox_Dy,           2, 5);
-  GroupArgumentsLayout->addWidget(TextLabelDz,          2, 6);
-  GroupArgumentsLayout->addWidget(SpinBox_Dz,           2, 7);
-  GroupArgumentsLayout->addWidget(TextLabelVector,      3, 0);
-  GroupArgumentsLayout->addWidget(SelectVectorButton,   3, 1);
-  GroupArgumentsLayout->addWidget(TextLabelVx,          3, 2);
-  GroupArgumentsLayout->addWidget(SpinBox_Vx,           3, 3);
-  GroupArgumentsLayout->addWidget(TextLabelVy,          3, 4);
-  GroupArgumentsLayout->addWidget(SpinBox_Vy,           3, 5);
-  GroupArgumentsLayout->addWidget(TextLabelVz,          3, 6);
-  GroupArgumentsLayout->addWidget(SpinBox_Vz,           3, 7);
-  GroupArgumentsLayout->addWidget(TextLabelNbSteps,     4, 0);
-  GroupArgumentsLayout->addWidget(SpinBox_NbSteps,      4, 2, 1, 6);
-  GroupArgumentsLayout->addWidget(MakeGroupsCheck,      5, 0, 1, 8);
+  GroupArgumentsLayout->addWidget(RadioButton3,         2, 1, 1, 3);
+  GroupArgumentsLayout->addWidget(RadioButton4,         2, 5, 1, 3);
+  GroupArgumentsLayout->addWidget(TextLabelDistance,    3, 0);
+  GroupArgumentsLayout->addWidget(TextLabelDx,          3, 2);
+  GroupArgumentsLayout->addWidget(SpinBox_Dx,           3, 3);
+  GroupArgumentsLayout->addWidget(TextLabelDy,          3, 4);
+  GroupArgumentsLayout->addWidget(SpinBox_Dy,           3, 5);
+  GroupArgumentsLayout->addWidget(TextLabelDz,          3, 6);
+  GroupArgumentsLayout->addWidget(SpinBox_Dz,           3, 7);
+  GroupArgumentsLayout->addWidget(TextLabelVector,      4, 0);
+  GroupArgumentsLayout->addWidget(SelectVectorButton,   4, 1);
+  GroupArgumentsLayout->addWidget(TextLabelVx,          4, 2);
+  GroupArgumentsLayout->addWidget(SpinBox_Vx,           4, 3);
+  GroupArgumentsLayout->addWidget(TextLabelVy,          4, 4);
+  GroupArgumentsLayout->addWidget(SpinBox_Vy,           4, 5);
+  GroupArgumentsLayout->addWidget(TextLabelVz,          4, 6);
+  GroupArgumentsLayout->addWidget(SpinBox_Vz,           4, 7);
+  GroupArgumentsLayout->addWidget(TextLabelDist,        5, 0);
+  GroupArgumentsLayout->addWidget(SpinBox_VDist,         5, 3);
+  GroupArgumentsLayout->addWidget(TextLabelNbSteps,     6, 0, 1, 3);
+  GroupArgumentsLayout->addWidget(SpinBox_NbSteps,      6, 3);
+  GroupArgumentsLayout->addWidget(MakeGroupsCheck,      7, 0, 1, 8);
+  GroupArgumentsLayout->addItem(new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Expanding), 8, 0);
+
 
   /***************************************************************/
   SMESHGUI_ExtrusionDlgLayout->addWidget(ConstructorsBox);
@@ -234,17 +249,19 @@ SMESHGUI_ExtrusionDlg::SMESHGUI_ExtrusionDlg (SMESHGUI* theModule)
   SMESHGUI_ExtrusionDlgLayout->addWidget(GroupButtons);
 
   /* Initialisations */
-  SpinBox_Vx->RangeStepAndValidator(-1, 1, 0.01, 3);
-  SpinBox_Vy->RangeStepAndValidator(-1, 1, 0.01, 3);
-  SpinBox_Vz->RangeStepAndValidator(-1, 1, 0.01, 3);
+  SpinBox_Vx->RangeStepAndValidator(COORD_MIN, COORD_MAX, 0.01, 3);
+  SpinBox_Vy->RangeStepAndValidator(COORD_MIN, COORD_MAX, 0.01, 3);
+  SpinBox_Vz->RangeStepAndValidator(COORD_MIN, COORD_MAX, 0.01, 3);
 
   SpinBox_Dx->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, 3);
   SpinBox_Dy->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, 3);
   SpinBox_Dz->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, 3);
   
   SpinBox_NbSteps->setRange(1, 999999);
+  SpinBox_VDist->RangeStepAndValidator(0, COORD_MAX, 10.0, 3);
 
   RadioButton1->setChecked(true);
+  RadioButton3->setChecked(true);
   MakeGroupsCheck->setChecked(true);
 
   mySelector = (SMESH::GetViewWindow( mySMESHGUI ))->GetSelector();
@@ -273,6 +290,9 @@ SMESHGUI_ExtrusionDlg::SMESHGUI_ExtrusionDlg (SMESHGUI* theModule)
   connect(buttonApply,  SIGNAL(clicked()), this, SLOT(ClickOnApply()));
   connect(buttonHelp,   SIGNAL(clicked()), this, SLOT(ClickOnHelp()));
 
+  connect(RadioButton3, SIGNAL(clicked()), this, SLOT(ClickOnRadio()));
+  connect(RadioButton4, SIGNAL(clicked()), this, SLOT(ClickOnRadio()));
+
   // to update state of the Ok & Apply buttons
   connect(SpinBox_Vx, SIGNAL(valueChanged(double)), SLOT(CheckIsEnable()));
   connect(SpinBox_Vy, SIGNAL(valueChanged(double)), SLOT(CheckIsEnable()));
@@ -294,6 +314,7 @@ SMESHGUI_ExtrusionDlg::SMESHGUI_ExtrusionDlg (SMESHGUI* theModule)
   /***************************************************************/
   
   ConstructorsClicked(0);
+  ClickOnRadio();
   SelectionIntoArgument();
 }
 
@@ -325,6 +346,7 @@ void SMESHGUI_ExtrusionDlg::Init (bool ResetControls)
 
   if (ResetControls) {
     SpinBox_NbSteps->setValue(1);
+    SpinBox_VDist->setValue(10);
     SpinBox_Dx->SetValue(0);
     SpinBox_Dy->SetValue(0);
     SpinBox_Dz->SetValue(0);
@@ -345,11 +367,18 @@ void SMESHGUI_ExtrusionDlg::Init (bool ResetControls)
 //=================================================================================
 void SMESHGUI_ExtrusionDlg::CheckIsEnable()
 {
-  
-  double aX = SpinBox_Vx->GetValue()*SpinBox_Dx->GetValue();
-  double aY = SpinBox_Vy->GetValue()*SpinBox_Dy->GetValue();
-  double aZ = SpinBox_Vz->GetValue()*SpinBox_Dz->GetValue();
-  double aModule = sqrt(aX*aX + aY*aY + aZ*aZ);
+  double aX, aY, aZ, aModule;
+  if ( RadioButton3->isChecked() ) {
+    aX = SpinBox_Dx->GetValue();
+    aY = SpinBox_Dy->GetValue();
+    aZ = SpinBox_Dz->GetValue();
+    aModule = sqrt(aX*aX + aY*aY + aZ*aZ);
+  } else   if ( RadioButton4->isChecked() ) {
+    aX = SpinBox_Vx->GetValue();
+    aY = SpinBox_Vy->GetValue();
+    aZ = SpinBox_Vz->GetValue();
+    aModule = sqrt(aX*aX + aY*aY + aZ*aZ);
+  }
   
   bool anIsEnable = myNbOkElements > 0 && aModule > 1.0E-38;
 
@@ -398,6 +427,57 @@ void SMESHGUI_ExtrusionDlg::ConstructorsClicked (int constructorId)
 }
 
 //=================================================================================
+// function : ConstructorsClicked()
+// purpose  : Radio button management
+//=================================================================================
+void SMESHGUI_ExtrusionDlg::ClickOnRadio()
+{
+  if ( RadioButton3->isChecked() ) {
+    TextLabelDistance->show();
+    TextLabelDx->show();
+    SpinBox_Dx->show();
+    TextLabelDy->show();
+    SpinBox_Dy->show();
+    TextLabelDz->show();
+    SpinBox_Dz->show();
+
+    TextLabelVector->hide();
+    TextLabelVx->hide();
+    SpinBox_Vx->hide();
+    TextLabelVy->hide();
+    SpinBox_Vy->hide();
+    TextLabelVz->hide();
+    SpinBox_Vz->hide();
+    TextLabelDist->hide();
+    SpinBox_VDist->hide();
+    SelectVectorButton->hide();
+  } else if ( RadioButton4->isChecked() ) {
+    TextLabelDistance->hide();
+    TextLabelDx->hide();
+    SpinBox_Dx->hide();
+    TextLabelDy->hide();
+    SpinBox_Dy->hide();
+    TextLabelDz->hide();
+    SpinBox_Dz->hide();
+
+    TextLabelVector->show();
+    TextLabelVx->show();
+    SpinBox_Vx->show();
+    TextLabelVy->show();
+    SpinBox_Vy->show();
+    TextLabelVz->show();
+    SpinBox_Vz->show();
+    TextLabelDist->show();
+    SpinBox_VDist->show();
+    SelectVectorButton->show();
+  }
+  // AdjustSize
+  qApp->processEvents();
+  updateGeometry();
+  resize( minimumSizeHint() );
+}
+
+//=================================================================================
 // function : ClickOnApply()
 // purpose  : Called when user presses <Apply> button
 //=================================================================================
@@ -410,24 +490,39 @@ bool SMESHGUI_ExtrusionDlg::ClickOnApply()
     return false;
 
   if (myNbOkElements) {
-    
-    gp_XYZ aNormale(SpinBox_Vx->GetValue(),
-                    SpinBox_Vy->GetValue(),
-                    SpinBox_Vz->GetValue());
-    
-    aNormale /= aNormale.Modulus();
-    
+
     SMESH::DirStruct aVector;
-    aVector.PS.x = SpinBox_Dx->GetValue()*aNormale.X();
-    aVector.PS.y = SpinBox_Dy->GetValue()*aNormale.Y();
-    aVector.PS.z = SpinBox_Dz->GetValue()*aNormale.Z();
+    QStringList aParameters;
+
+    if ( RadioButton3->isChecked() ) {
+      aVector.PS.x = SpinBox_Dx->GetValue();
+      aVector.PS.y = SpinBox_Dy->GetValue();
+      aVector.PS.z = SpinBox_Dz->GetValue();
+
+      aParameters << SpinBox_Dx->text();
+      aParameters << SpinBox_Dy->text();
+      aParameters << SpinBox_Dz->text();
+    } else if ( RadioButton4->isChecked() ) {
+      gp_XYZ aNormale(SpinBox_Vx->GetValue(),
+		      SpinBox_Vy->GetValue(),
+		      SpinBox_Vz->GetValue());
+    
+     
+      aNormale /= aNormale.Modulus();
+      long aVDist = (long)SpinBox_VDist->value();
+
+      aVector.PS.x = aNormale.X()*aVDist;
+      aVector.PS.y = aNormale.Y()*aVDist;
+      aVector.PS.z = aNormale.Z()*aVDist;
+
+      aParameters << SpinBox_Vx->text();
+      aParameters << SpinBox_Vy->text();
+      aParameters << SpinBox_Vz->text();
+      aParameters << SpinBox_VDist->text();
+    }
 
     long aNbSteps = (long)SpinBox_NbSteps->value();
 
-    QStringList aParameters;
-    aParameters << SpinBox_Dx->text();
-    aParameters << SpinBox_Dy->text();
-    aParameters << SpinBox_Dz->text();
     aParameters << SpinBox_NbSteps->text();
 
     try {
@@ -463,11 +558,12 @@ bool SMESHGUI_ExtrusionDlg::ClickOnApply()
     } catch (...) {
     }
 
-    SMESH::UpdateView();
+    SMESH::Update(myIO, SMESH::eDisplay);
     if ( MakeGroupsCheck->isEnabled() && MakeGroupsCheck->isChecked() )
       mySMESHGUI->updateObjBrowser(true); // new groups may appear
     Init(false);
     ConstructorsClicked(GetConstructorId());
+    mySelectionMgr->clearSelected();
     mySelectedObject = SMESH::SMESH_IDSource::_nil();
     SelectionIntoArgument();
   }
@@ -598,8 +694,11 @@ void SMESHGUI_ExtrusionDlg::SelectionIntoArgument()
     return;
 
   // clear
-  myActor = 0;
-  myIO.Nullify();
+  if(myEditCurrentArgument != (QWidget*)SpinBox_Vx) {
+    myActor = 0;
+    Handle(SALOME_InteractiveObject) resIO = myIO;
+    myIO.Nullify();
+  }
 
   QString aString = "";
   // set busy flag
@@ -617,11 +716,14 @@ void SMESHGUI_ExtrusionDlg::SelectionIntoArgument()
     return;
 
   Handle(SALOME_InteractiveObject) IO = aList.First();
-  myMesh = SMESH::GetMeshByIO(IO);
-  if (myMesh->_is_nil())
-    return;
-  myIO = IO;
-  myActor = SMESH::FindActorByObject(myMesh);
+
+  if(myEditCurrentArgument != (QWidget*)SpinBox_Vx) {
+    myMesh = SMESH::GetMeshByIO(IO);
+    if (myMesh->_is_nil())
+      return;
+    myIO = IO;
+    myActor = SMESH::FindActorByObject(myMesh);
+  }
 
   if (myEditCurrentArgument == (QWidget*)LineEditElements) {    
     int aNbElements = 0;
@@ -667,7 +769,9 @@ void SMESHGUI_ExtrusionDlg::SelectionIntoArgument()
     TColStd_IndexedMapOfInteger aMapIndex;
     mySelector->GetIndex(IO,aMapIndex);
     int aNbElements = aMapIndex.Extent();
-    SMDS_Mesh* aMesh =  myActor ? myActor->GetObject()->GetMesh() : 0;
+    SMESH::SMESH_Mesh_var aMesh_var = SMESH::GetMeshByIO(IO);
+    SMESH_Actor* anActor = SMESH::FindActorByObject(aMesh_var);
+    SMDS_Mesh* aMesh =  anActor ? anActor->GetObject()->GetMesh() : 0;
 
     if(aNbElements != 1 || !aMesh)
       return;
@@ -881,9 +985,16 @@ bool SMESHGUI_ExtrusionDlg::isValid()
 {
   QString msg;
   bool ok = true;
-  ok = SpinBox_Dx->isValid( msg, true ) && ok;
-  ok = SpinBox_Dy->isValid( msg, true ) && ok;
-  ok = SpinBox_Dz->isValid( msg, true ) && ok;
+  if ( RadioButton3->isChecked() ) {
+    ok = SpinBox_Dx->isValid( msg, true ) && ok;
+    ok = SpinBox_Dy->isValid( msg, true ) && ok;
+    ok = SpinBox_Dz->isValid( msg, true ) && ok;
+  } else if ( RadioButton4->isChecked() ) {
+    ok = SpinBox_Vx->isValid( msg, true ) && ok;
+    ok = SpinBox_Vy->isValid( msg, true ) && ok;
+    ok = SpinBox_Vz->isValid( msg, true ) && ok;
+    ok = SpinBox_VDist->isValid( msg, true ) && ok;
+  }
   ok = SpinBox_NbSteps->isValid( msg, true ) && ok;
 
   if( !ok ) {
