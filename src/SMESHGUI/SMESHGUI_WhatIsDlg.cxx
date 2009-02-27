@@ -51,6 +51,7 @@
 #include <SVTK_Selection.h>
 #include <SVTK_ViewWindow.h>
 #include <SALOME_ListIO.hxx>
+#include <SALOME_ListIteratorOfListIO.hxx>
 
 // OCCT includes
 #include <TColStd_MapOfInteger.hxx>
@@ -373,7 +374,7 @@ void SMESHGUI_WhatIsDlg::SelectionIntoArgument()
 
   int nbSel = aList.Extent();
 
-  if (nbSel != 1)
+  if (nbSel < 1)
     return;
 
   Handle(SALOME_InteractiveObject) IO = aList.First();
@@ -381,15 +382,43 @@ void SMESHGUI_WhatIsDlg::SelectionIntoArgument()
   if (myMesh->_is_nil())
     return;
 
+  if (nbSel != 1) {
+    //check if all selected objects belongs to one mesh
+    SALOME_ListIteratorOfListIO io( aList );
+    for (io.Next(); io.More(); io.Next() ) {
+      SMESH::SMESH_Mesh_var mesh = SMESH::GetMeshByIO(io.Value());
+      if (!mesh->_is_nil() && !mesh->_is_equivalent( myMesh ))
+        return;
+    }
+    // select IO with any element selected (for case of selection by rectangle)
+    IO.Nullify();
+    for (io.Initialize(aList); io.More() && IO.IsNull(); io.Next() )
+      if ( mySelector->HasIndex( io.Value() ))
+        IO = io.Value();
+    if ( IO.IsNull() ) return;
+    // unhilight others
+    if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI )) {
+      for (io.Initialize(aList); io.More(); io.Next() )
+        if ( !IO->isSame( io.Value() ))
+          aViewWindow->highlight( io.Value(), false, true );
+    }
+  }
+
   myActor = SMESH::FindActorByObject(myMesh);
   if (!myActor)
     myActor = SMESH::FindActorByEntry(IO->getEntry());
   if (!myActor)
     return;
 
-  QString aName;
-  SMESH::GetNameOfSelectedIObjects(mySelectionMgr, aName);
-  MeshName->setText(aName);
+  QString aName = IO->getName();
+  // cut off wite spaces from tail, else meaningful head is not visible
+  int size = aName.length();
+  while (size && aName.at(size-1).isSpace() )
+    --size;
+  if ( size != aName.length() )
+    aName.truncate( size );
+  MeshName->setText(aName); // can be something like "2 objects"
+
   if(!SMESH::IObjectToInterface<SMESH::SMESH_Mesh>(IO)->_is_nil()) {
     GroupMesh->setTitle(tr("SMESH_MESH"));
   } else if(!SMESH::IObjectToInterface<SMESH::SMESH_subMesh>(IO)->_is_nil()) {
