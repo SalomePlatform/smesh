@@ -144,22 +144,26 @@ SMESH_VisualObjDef::~SMESH_VisualObjDef()
 //=================================================================================
 vtkIdType SMESH_VisualObjDef::GetNodeObjId( int theVTKID )
 {
-  return myVTK2SMDSNodes.find(theVTKID) == myVTK2SMDSNodes.end() ? -1 : myVTK2SMDSNodes[theVTKID];
+  TMapOfIds::const_iterator i = myVTK2SMDSNodes.find(theVTKID);
+  return i == myVTK2SMDSNodes.end() ? -1 : i->second;
 }
 
 vtkIdType SMESH_VisualObjDef::GetNodeVTKId( int theObjID )
 {
-  return mySMDS2VTKNodes.find(theObjID) == mySMDS2VTKNodes.end() ? -1 : mySMDS2VTKNodes[theObjID];
+  TMapOfIds::const_iterator i = mySMDS2VTKNodes.find(theObjID);
+  return i == mySMDS2VTKNodes.end() ? -1 : i->second;
 }
 
 vtkIdType SMESH_VisualObjDef::GetElemObjId( int theVTKID )
 {
-  return myVTK2SMDSElems.find(theVTKID) == myVTK2SMDSElems.end() ? -1 : myVTK2SMDSElems[theVTKID];
+  TMapOfIds::const_iterator i = myVTK2SMDSElems.find(theVTKID);
+  return i == myVTK2SMDSElems.end() ? -1 : i->second;
 }
 
 vtkIdType SMESH_VisualObjDef::GetElemVTKId( int theObjID )
 {
-  return mySMDS2VTKElems.find(theObjID) == mySMDS2VTKElems.end() ? -1 : mySMDS2VTKElems[theObjID];
+  TMapOfIds::const_iterator i = mySMDS2VTKElems.find(theObjID);
+  return i == mySMDS2VTKElems.end() ? -1 : i->second;
 }
 
 //=================================================================================
