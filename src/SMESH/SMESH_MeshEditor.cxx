@@ -4846,6 +4846,25 @@ void SMESH_MeshEditor::MergeNodes (TListOfListOfNodes & theGroupsOfNodes)
       TNodeNodeMap::iterator nnIt = nodeNodeMap.find( n );
       if ( nnIt != nodeNodeMap.end() ) { // n sticks
         n = (*nnIt).second;
+        // BUG 0020185: begin
+        {
+          bool stopRecur = false;
+          set<const SMDS_MeshNode*> nodesRecur;
+          nodesRecur.insert(n);
+          while (!stopRecur) {
+            TNodeNodeMap::iterator nnIt_i = nodeNodeMap.find( n );
+            if ( nnIt_i != nodeNodeMap.end() ) { // n sticks
+              n = (*nnIt_i).second;
+              if (!nodesRecur.insert(n).second) {
+                // error: recursive dependancy
+                stopRecur = true;
+              }
+            }
+            else
+              stopRecur = true;
+          }
+        }
+        // BUG 0020185: end
         iRepl[ nbRepl++ ] = iCur;
       }
       curNodes[ iCur ] = n;
