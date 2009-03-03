@@ -206,6 +206,12 @@ class StdMeshers_ProjectionUtils
                                TopoDS_Shape   srcShape,
                                SMESH_Mesh*    srcMesh);
 
+  /*!
+   * \brief Return true if edge is a boundary of edgeContainer
+   */
+  static bool IsBoundaryEdge(const TopoDS_Edge&  edge,
+                             const TopoDS_Shape& edgeContainer,
+                             SMESH_Mesh&         mesh);
 };
 
 #endif
