@@ -36,6 +36,7 @@
 #include <Extrema_ExtPC.hxx>
 #include <Extrema_POnCurv.hxx>
 #include <Geom2d_Curve.hxx>
+#include <ShapeAnalysis.hxx>
 #include <TopExp_Explorer.hxx>
 #include <TopTools_IndexedDataMapOfShapeListOfShape.hxx>
 #include <TopTools_ListIteratorOfListOfShape.hxx>
@@ -963,11 +964,14 @@ int SMESH_Block::GetOrderedEdges (const TopoDS_Face&   theFace,
 {
   // put wires in a list, so that an outer wire comes first
   list<TopoDS_Wire> aWireList;
-  TopoDS_Wire anOuterWire = BRepTools::OuterWire( theFace );
-  aWireList.push_back( anOuterWire );
+  //TopoDS_Wire anOuterWire = BRepTools::OuterWire( theFace ); ### issue 0020184
+  TopoDS_Wire anOuterWire = ShapeAnalysis::OuterWire( theFace );
+  //aWireList.push_back( anOuterWire ); ### issue 0020184
   for ( TopoDS_Iterator wIt (theFace); wIt.More(); wIt.Next() )
     if ( !anOuterWire.IsSame( wIt.Value() ))
       aWireList.push_back( TopoDS::Wire( wIt.Value() ));
+    else
+      aWireList.push_front( TopoDS::Wire( wIt.Value() ));// ### issue 0020184
 
   // loop on edges of wires
   theNbVertexInWires.clear();
