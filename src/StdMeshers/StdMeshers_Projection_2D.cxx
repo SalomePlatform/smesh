@@ -415,18 +415,20 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
   // Check if node projection to a face is needed
   Bnd_B2d uvBox;
   SMDS_ElemIteratorPtr faceIt = srcSubMesh->GetSubMeshDS()->GetElements();
-  for ( int nbN = 0; nbN < 3 && faceIt->more();  ) {
+  int nbFaceNodes = 0;
+  for ( ; nbFaceNodes < 3 && faceIt->more();  ) {
     const SMDS_MeshElement* face = faceIt->next();
     SMDS_ElemIteratorPtr nodeIt = face->nodesIterator();
     while ( nodeIt->more() ) {
       const SMDS_MeshNode* node = static_cast<const SMDS_MeshNode*>( nodeIt->next() );
       if ( node->GetPosition()->GetTypeOfPosition() == SMDS_TOP_FACE ) {
-        nbN++;
+        nbFaceNodes++;
         uvBox.Add( helper.GetNodeUV( srcFace, node ));
       }
     }
   }
-  const bool toProjectNodes = ( uvBox.IsVoid() || uvBox.SquareExtent() < DBL_MIN );
+  const bool toProjectNodes =
+    ( nbFaceNodes > 0 && ( uvBox.IsVoid() || uvBox.SquareExtent() < DBL_MIN ));
 
   // Load pattern from the source face
   SMESH_Pattern mapper;
