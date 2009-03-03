@@ -32,33 +32,39 @@
 # include <string>
 # include <sstream>
 
+using namespace std;
+
 /*!
  * \brief Class to generate string from any type
  */
-class SMESH_Comment : public std::string
+class SMESH_Comment : public string
 {
-  std::ostringstream _s ;
+  ostringstream _s ;
 
 public :
 
-  SMESH_Comment(): std::string("") {}
+  SMESH_Comment():string("") {}
 
-  SMESH_Comment(const SMESH_Comment& c): std::string() {
+  SMESH_Comment(const SMESH_Comment& c):string() {
     _s << c.c_str() ;
-    this->std::string::operator=( _s.str() );
+    this->string::operator=( _s.str() );
   }
 
   template <class T>
   SMESH_Comment( const T &anything ) {
     _s << anything ;
-    this->std::string::operator=( _s.str() );
+    this->string::operator=( _s.str() );
   }
 
   template <class T>
   SMESH_Comment & operator<<( const T &anything ) {
     _s << anything ;
-    this->std::string::operator=( _s.str() );
+    this->string::operator=( _s.str() );
     return *this ;
+  }
+
+  operator char*() const {
+    return (char*)c_str();
   }
 };
 
