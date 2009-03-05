@@ -114,6 +114,7 @@ libSMESHEngine_la_LDFLAGS  = \
 	-lGEOMClient \
 	$(MED_LDFLAGS) \
 	-lMEDWrapper_V2_2 \
+        -lSalomeIDLMED \
 	$(CAS_LDPATH) \
 	-lTKCDF \
 	-lTKBO \
