@@ -30,7 +30,7 @@
 #define SMESH_TYPE_HEADER
 
 #ifdef WNT
- #if defined SMESHFILTERSSELECTION_EXPORTS
+ #if defined SMESHFILTERSSELECTION_EXPORTS || defined SMESHFiltersSelection_EXPORTS
   #define SMESHFILTERSSELECTION_EXPORT __declspec( dllexport )
  #else
   #define SMESHFILTERSSELECTION_EXPORT __declspec( dllimport )

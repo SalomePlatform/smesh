@@ -29,7 +29,7 @@
 #define SMESH_OBJECT_H
 
 #ifdef WNT
- #if defined SMESHOBJECT_EXPORTS
+ #if defined SMESHOBJECT_EXPORTS || defined SMESHObject_EXPORTS
   #define SMESHOBJECT_EXPORT __declspec( dllexport )
  #else
   #define SMESHOBJECT_EXPORT __declspec( dllimport )

@@ -28,7 +28,7 @@
 #define _SMESH_StdMeshers_I_HXX_
 
 #ifdef WNT
- #if defined STDMESHERS_I_EXPORTS
+ #if defined STDMESHERS_I_EXPORTS || defined StdMeshersEngine_EXPORTS
   #define STDMESHERS_I_EXPORT __declspec( dllexport )
  #else
   #define STDMESHERS_I_EXPORT __declspec( dllimport )

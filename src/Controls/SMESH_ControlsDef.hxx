@@ -46,7 +46,7 @@
 #include "SMESH_Controls.hxx"
 
 #ifdef WNT
- #if defined SMESHCONTROLS_EXPORTS
+ #if defined SMESHCONTROLS_EXPORTS || defined SMESHControls_EXPORTS
   #define SMESHCONTROLS_EXPORT __declspec( dllexport )
  #else
   #define SMESHCONTROLS_EXPORT __declspec( dllimport )
