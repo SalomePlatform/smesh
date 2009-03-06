@@ -816,8 +816,15 @@ bool SMESHGUI_GroupDlg::onApply()
       myGroup->SetColor(aColor);
 
       _PTR(SObject) aMeshGroupSO = SMESH::FindSObject(myGroup);
-      if (SMESH_Actor *anActor = SMESH::FindActorByEntry(aMeshGroupSO->GetID().c_str()))
-        anActor->SetSufaceColor( aColor.R, aColor.G, aColor.B );
+
+      if (SMESH_Actor *anActor = SMESH::FindActorByEntry(aMeshGroupSO->GetID().c_str())) {
+	switch ( myTypeId ) {
+	case 0: anActor->SetNodeColor( aColor.R, aColor.G, aColor.B ); break;
+	case 1: anActor->SetEdgeColor( aColor.R, aColor.G, aColor.B ); break;
+	case 2:
+	case 3: anActor->SetSufaceColor( aColor.R, aColor.G, aColor.B ); break;
+	}
+      }
 
       QValueList<int> aAddList;
       QValueList<int>::iterator anIt;
@@ -941,8 +948,14 @@ bool SMESHGUI_GroupDlg::onApply()
       myGroupOnGeom->SetColor(aColor);
 
       _PTR(SObject) aMeshGroupSO = SMESH::FindSObject(myGroupOnGeom);
-      if (SMESH_Actor *anActor = SMESH::FindActorByEntry(aMeshGroupSO->GetID().c_str()))
-        anActor->SetSufaceColor( aColor.R, aColor.G, aColor.B );
+      if (SMESH_Actor *anActor = SMESH::FindActorByEntry(aMeshGroupSO->GetID().c_str())) {
+	switch ( myTypeId ) {
+	case 0: anActor->SetNodeColor( aColor.R, aColor.G, aColor.B ); break;
+	case 1: anActor->SetEdgeColor( aColor.R, aColor.G, aColor.B ); break;
+	case 2:
+	case 3: anActor->SetSufaceColor( aColor.R, aColor.G, aColor.B ); break;
+	}
+      }
     }
 
     mySMESHGUI->updateObjBrowser(true);
