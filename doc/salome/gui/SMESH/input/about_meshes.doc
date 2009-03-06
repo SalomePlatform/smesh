@@ -18,9 +18,6 @@ Several created meshes can be \subpage building_compounds_page "combined into me
 
 All created meshes and submeshes can be \subpage editing_meshes_page "edited".
 
-There is also a possibility to preview the mesh before its whole computation. Please,
-refer to the \subpage preview_meshes_page chapter for more details.
-
 Meshes can be also using the MESH functions destined for 
 \ref modifying_meshes_page "modification" of generated meshes.
 
