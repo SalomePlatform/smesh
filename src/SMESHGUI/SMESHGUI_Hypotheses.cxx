@@ -164,11 +164,12 @@ bool SMESHGUI_GenericHypothesisCreator::editHypothesis( SMESH::SMESH_Hypothesis_
     myEventLoop->exec(); // make myDlg not modal
     res = myDlg->result();
     if( res ) {
-      QString paramValues = storeParams();
-      if ( !paramValues.isEmpty() ) {
-        if ( _PTR(SObject) SHyp = SMESH::FindSObject( myHypo ))
-          SMESH::SetValue( SHyp, paramValues );
-      }
+      /*QString paramValues = */storeParams();
+      // No longer needed since NoteBook appears and "Value" OB field shows names of variable
+//       if ( !paramValues.isEmpty() ) {
+//         if ( _PTR(SObject) SHyp = SMESH::FindSObject( myHypo ))
+//           SMESH::SetValue( SHyp, paramValues );
+//       }
     }
   }
   delete Dlg; myDlg = 0;
@@ -243,7 +244,7 @@ QFrame* SMESHGUI_GenericHypothesisCreator::buildStdFrame()
               w = sb;
             }
             else if(aStudy->IsReal(aVar.toLatin1().constData())){
-              SalomeApp_DoubleSpinBox* sb = new SalomeApp_DoubleSpinBox( GroupC1 );
+              SalomeApp_DoubleSpinBox* sb = new SMESHGUI_SpinBox( GroupC1 );
               sb->setObjectName( (*anIt).myName );
               attuneStdWidget( sb, i );
               sb->setText( aVar );
@@ -339,12 +340,8 @@ QStringList SMESHGUI_GenericHypothesisCreator::getVariablesFromDlg() const
   QStringList aResult;
   ListOfWidgets::const_iterator anIt = widgets().begin(), aLast = widgets().end();
   for( ; anIt!=aLast; anIt++ ) {
-    if( (*anIt)->inherits( "SalomeApp_IntSpinBox" ) ) {
-      SalomeApp_IntSpinBox* sb = ( SalomeApp_IntSpinBox* )( *anIt );
-      aResult.append(sb->text());
-    } 
-    else if( (*anIt)->inherits( "QtxDoubleSpinBox" ) ) {
-      QtxDoubleSpinBox* sb = ( QtxDoubleSpinBox* )( *anIt );
+    if( (*anIt)->inherits( "QAbstractSpinBox" ) ) {
+      QAbstractSpinBox* sb = ( QAbstractSpinBox* )( *anIt );
       aResult.append(sb->text());
     } 
   }
