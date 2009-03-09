@@ -3935,10 +3935,6 @@ Please enter correct value and try again</translation>
         </message>
         <message>
             <source>GEOM_TYPE_0</source>
-            <translation></translation>
-        </message>
-        <message>
-            <source>GEOM_TYPE_0</source>
             <translation>Point</translation>
         </message>
         <message>
