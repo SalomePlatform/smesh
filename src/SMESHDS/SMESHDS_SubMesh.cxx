@@ -87,11 +87,7 @@ int SMESHDS_SubMesh::NbElements() const
     return myElements.size();
 
   int nbElems = 0;
-#ifndef WNT
-  set<const SMESHDS_SubMesh*>::iterator it = mySubMeshes.begin();
-#else
   set<const SMESHDS_SubMesh*>::const_iterator it = mySubMeshes.begin();
-#endif
   for ( ; it != mySubMeshes.end(); it++ )
     nbElems += (*it)->NbElements();
 
@@ -109,11 +105,7 @@ int SMESHDS_SubMesh::NbNodes() const
    return myNodes.size(); 
 
   int nbElems = 0;
-#ifndef WNT
-  set<const SMESHDS_SubMesh*>::iterator it = mySubMeshes.begin();
-#else
   set<const SMESHDS_SubMesh*>::const_iterator it = mySubMeshes.begin();
-#endif
   for ( ; it != mySubMeshes.end(); it++ )
     nbElems += (*it)->NbNodes();
 
@@ -124,26 +116,13 @@ int SMESHDS_SubMesh::NbNodes() const
 // class MySetIterator
 // =====================
 
-template<typename T> class MySetIterator:public SMDS_Iterator<const T*>
+template<typename TSet> class MySetIterator: public SMDS_SetIterator<typename TSet::key_type,
+                                                                     typename TSet::const_iterator >
 {
-  typedef const set<const T*> TSet;
-  typename TSet::const_iterator myIt;
-  TSet& mySet;
-
+  typedef SMDS_SetIterator<typename TSet::key_type, typename TSet::const_iterator > TFather;
   public:
-	MySetIterator(const set<const T*>& s):mySet(s), myIt(s.begin())
+	MySetIterator(const TSet& s):TFather(s.begin(),s.end())
 	{
-	}
-
-	bool more()
-	{
-		return myIt!=mySet.end();
-	}
-	const T* next()
-	{
-		const T* t=*myIt;
-		myIt++;
-		return t;			
 	}
 };
 
@@ -222,7 +201,7 @@ SMDS_ElemIteratorPtr SMESHDS_SubMesh::GetElements() const
   if ( IsComplexSubmesh() )
     return SMDS_ElemIteratorPtr( new MyElemIterator( mySubMeshes ));
 
-  return SMDS_ElemIteratorPtr(new MySetIterator<SMDS_MeshElement>(myElements));
+  return SMDS_ElemIteratorPtr(new MySetIterator<TElemSet>(myElements));
 }
 
 //=======================================================================
@@ -235,7 +214,7 @@ SMDS_NodeIteratorPtr SMESHDS_SubMesh::GetNodes() const
   if ( IsComplexSubmesh() )
     return SMDS_NodeIteratorPtr( new MyNodeIterator( mySubMeshes ));
 
-  return SMDS_NodeIteratorPtr(new MySetIterator<SMDS_MeshNode>(myNodes));
+  return SMDS_NodeIteratorPtr(new MySetIterator<TNodeSet>(myNodes));
 }
 
 //=======================================================================
