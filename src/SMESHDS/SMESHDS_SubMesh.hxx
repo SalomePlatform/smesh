@@ -65,9 +65,14 @@ class SMESHDS_EXPORT SMESHDS_SubMesh
   void Clear();
 
  private:
-  //const SMDS_Mesh * myMesh;
-  std::set<const SMDS_MeshElement*> myElements;
-  std::set<const SMDS_MeshNode*>    myNodes;
-  std::set<const SMESHDS_SubMesh*>  mySubMeshes;
+  struct TIDCompare { // to have nodes and elements sorted by ID
+    bool operator () (const SMDS_MeshElement* e1, const SMDS_MeshElement* e2) const
+    { return e1->GetID() < e2->GetID(); }
+  };
+  typedef std::set<const SMDS_MeshElement*, TIDCompare > TElemSet;
+  typedef std::set<const SMDS_MeshNode*   , TIDCompare>  TNodeSet;
+  TElemSet myElements;
+  TNodeSet myNodes;
+  std::set<const SMESHDS_SubMesh*> mySubMeshes;
 };
 #endif
