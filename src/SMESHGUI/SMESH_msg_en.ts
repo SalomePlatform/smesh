@@ -4718,4 +4718,11 @@ It is impossible to read point coordinates from file</translation>
             <translation>MED version</translation>
         </message>
     </context>
+    <context>
+        <name>SMESHGUI_GroupOnShapeDlg</name>
+        <message>
+            <source>SMESH_CREATE_GROUP_FROM_GEOM</source>
+            <translation>Create Groups from Geometry</translation>
+        </message>
+    </context>
 </TS>
