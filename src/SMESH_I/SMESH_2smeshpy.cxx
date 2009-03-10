@@ -1287,7 +1287,7 @@ Handle(_pyHypothesis) _pyHypothesis::NewHypothesis( const Handle(_pyCommand)& th
   }
   else if ( hypType == "NETGEN_SimpleParameters_2D") {
     hyp->SetConvMethodAndType( "Parameters", "NETGEN_2D");
-    hyp->myArgs.Append( "which=SIMPLE" );
+    hyp->myArgs.Append( "which=smesh.SIMPLE" );
   }
   else if ( hypType == "NETGEN_2D3D") { // 1D-2D-3D
     algo->SetConvMethodAndType( "Tetrahedron" , hypType.ToCString());
@@ -1298,7 +1298,7 @@ Handle(_pyHypothesis) _pyHypothesis::NewHypothesis( const Handle(_pyCommand)& th
   }
   else if ( hypType == "NETGEN_SimpleParameters_3D") {
     hyp->SetConvMethodAndType( "Parameters", "NETGEN_2D3D");
-    hyp->myArgs.Append( "which=SIMPLE" );
+    hyp->myArgs.Append( "which=smesh.SIMPLE" );
   }
   else if ( hypType == "NETGEN_2D_ONLY") { // 2D
     algo->SetConvMethodAndType( "Triangle" , hypType.ToCString());
