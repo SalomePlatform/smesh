@@ -23,7 +23,6 @@
 //  File   : SMESH_subMesh.cxx
 //  Author : Paul RASCLE, EDF
 //  Module : SMESH
-//  $Header$
 //
 #include "SMESH_subMesh.hxx"
 
@@ -609,6 +608,7 @@ SMESH_Hypothesis::Hypothesis_Status
 
   int oldAlgoState = _algoState;
   bool modifiedHyp = (event == MODIF_HYP);  // if set to true, force event MODIF_ALGO_STATE
+  bool needFullClean = false;
 
   bool isApplicableHyp = IsApplicableHypotesis( anHyp );
 
@@ -625,6 +625,15 @@ SMESH_Hypothesis::Hypothesis_Status
     // ----------------------
     if (isApplicableHyp && !_father->IsNotConformAllowed() && !IsConform( algo ))
       return SMESH_Hypothesis::HYP_NOTCONFORM;
+
+    // check if all-dimensional algo is hidden by other local one
+    if ( event == ADD_ALGO ) {
+      SMESH_HypoFilter filter( SMESH_HypoFilter::HasType( algo->GetType() ));
+      filter.Or( SMESH_HypoFilter::HasType( algo->GetType()+1 ));
+      filter.Or( SMESH_HypoFilter::HasType( algo->GetType()+2 ));
+      if ( SMESH_Algo * curAlgo = (SMESH_Algo*) _father->GetHypothesis( _subShape, filter, true ))
+        needFullClean = ( !curAlgo->NeedDescretBoundary() );
+    }
   }
 
   // ----------------------------------
@@ -658,10 +667,7 @@ SMESH_Hypothesis::Hypothesis_Status
         // clean all mesh in the tree of the current submesh;
         // we must perform it now because later
         // we will have no information about the type of the removed algo
-        CleanDependants();
-	ComputeStateEngine( CLEAN );
-        CleanDependsOn();
-        ComputeSubMeshStateEngine( CHECK_COMPUTE_STATE );
+        needFullClean = true;
       }
     }
   }
@@ -1010,6 +1016,13 @@ SMESH_Hypothesis::Hypothesis_Status
       _algoState = HYP_OK;
       _computeState = READY_TO_COMPUTE;
     }
+  }
+
+  if ( needFullClean ) {
+    // added or removed algo is all-dimensional
+    ComputeStateEngine( CLEAN );
+    CleanDependsOn();
+    ComputeSubMeshStateEngine( CHECK_COMPUTE_STATE );
   }
 
   if (stateChange || modifiedHyp)
