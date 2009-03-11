@@ -257,6 +257,7 @@ protected:
   int                        _studyId;
   int                        _idDoc;        // id given by SMESHDS_Document
   int                        _groupId;      // id generator for group objects
+  int                        _nbSubShapes;  // initial nb of subshapes in the shape to mesh
   bool                       _isShapeToMesh;// set to true when a shape is given (only once)
   std::list <SMESH_subMesh*> _subMeshesUsingHypothesisList;
   SMESHDS_Document *         _myDocument;
