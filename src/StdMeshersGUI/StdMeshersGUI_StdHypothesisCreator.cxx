@@ -423,6 +423,7 @@ QString StdMeshersGUI_StdHypothesisCreator::storeParams() const
 	StdMeshers::StdMeshers_MaxLength::_narrow( hypothesis() );
 
       h->SetLength( params[0].myValue.toDouble() );
+      h->SetParameters(SMESHGUI::JoinObjectParameters(aVariablesList));
       h->SetUsePreestimatedLength( widget< QCheckBox >( 1 )->isChecked() );
       if ( !h->HavePreestimatedLength() && !h->_is_equivalent( initParamsHypothesis() )) {
         StdMeshers::StdMeshers_MaxLength_var hInit =
@@ -610,7 +611,8 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
     }
 
     item.myName = tr("SMESH_LOCAL_LENGTH_PARAM");
-    item.myValue = h->GetLength();
+    if(!initVariableName(aParameters,item,0))
+      item.myValue = h->GetLength();
     p.append( item );
     customWidgets()->append(0);
 
