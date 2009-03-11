@@ -23,7 +23,6 @@
 //  File   : SMESH_subMesh.cxx
 //  Author : Paul RASCLE, EDF
 //  Module : SMESH
-//  $Header$
 //
 #include "SMESH_subMesh.hxx"
 
