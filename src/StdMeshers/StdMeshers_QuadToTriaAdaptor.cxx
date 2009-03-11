@@ -1136,7 +1136,7 @@ std::list<const SMDS_FaceOfNodes*> StdMeshers_QuadToTriaAdaptor::GetTriangles
   std::map< const SMDS_MeshElement*,
     std::list<const SMDS_FaceOfNodes*> >::iterator it = myResMap.find(aFace);
   if( it != myResMap.end() ) {
-    aRes = (*it).second;
+    return it->second;
   }
   return aRes;
 }
