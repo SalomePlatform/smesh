@@ -44,8 +44,6 @@
 #include <NCollection_Array1.hxx>
 typedef NCollection_Array1<TColStd_SequenceOfInteger> StdMeshers_Array1OfSequenceOfInteger;
 
-using namespace std;
-
 
 //=======================================================================
 //function : StdMeshers_QuadToTriaAdaptor
@@ -1005,7 +1003,7 @@ bool StdMeshers_QuadToTriaAdaptor::Compute2ndPart(SMESH_Mesh& aMesh)
             std::list<const SMDS_FaceOfNodes*> triasI = (*itrmI).second;
             std::list<const SMDS_FaceOfNodes*>::iterator ittI = triasI.begin();
             int nbfI = triasI.size();
-            vector<const SMDS_FaceOfNodes*> FsI(nbfI);
+            std::vector<const SMDS_FaceOfNodes*> FsI(nbfI);
             k = 0;
             for(; ittI!=triasI.end(); ittI++) {
               FsI[k]  = (*ittI);
@@ -1023,7 +1021,7 @@ bool StdMeshers_QuadToTriaAdaptor::Compute2ndPart(SMESH_Mesh& aMesh)
                 std::list<const SMDS_FaceOfNodes*> triasJ = (*itrmJ).second;
                 std::list<const SMDS_FaceOfNodes*>::iterator ittJ = triasJ.begin();
                 int nbfJ = triasJ.size();
-                vector<const SMDS_FaceOfNodes*> FsJ(nbfJ);
+                std::vector<const SMDS_FaceOfNodes*> FsJ(nbfJ);
                 k = 0;
                 for(; ittJ!=triasJ.end(); ittJ++) {
                   FsJ[k]  = (*ittJ);
@@ -1138,7 +1136,7 @@ std::list<const SMDS_FaceOfNodes*> StdMeshers_QuadToTriaAdaptor::GetTriangles
   std::map< const SMDS_MeshElement*,
     std::list<const SMDS_FaceOfNodes*> >::iterator it = myResMap.find(aFace);
   if( it != myResMap.end() ) {
-    aRes = (*it).second;
+    return it->second;
   }
   return aRes;
 }
