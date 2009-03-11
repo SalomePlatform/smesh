@@ -1155,7 +1155,7 @@ int SMESHDS_Mesh::AddCompoundSubmesh(const TopoDS_Shape& S,
     SMESHDS_SubMesh * aNewSub = NewSubMesh( aMainIndex );
     if ( !aNewSub->IsComplexSubmesh() ) // is empty
     {
-      int shapeType = all ? myShape.ShapeType() : type;
+      int shapeType = Max( TopAbs_SOLID, all ? myShape.ShapeType() : type );
       int typeLimit = all ? TopAbs_VERTEX : type;
       for ( ; shapeType <= typeLimit; shapeType++ )
       {
