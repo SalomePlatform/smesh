@@ -86,7 +86,7 @@ SMESH_Mesh::SMESH_Mesh(int               theLocalId,
 		       SMESH_Gen*        theGen,
 		       bool              theIsEmbeddedMode,
 		       SMESHDS_Document* theDocument):
-  _groupId( 0 )
+  _groupId( 0 ), _nbSubShapes( 0 )
 {
   MESSAGE("SMESH_Mesh::SMESH_Mesh(int localId)");
   _id            = theLocalId;
@@ -164,6 +164,7 @@ void SMESH_Mesh::ShapeToMesh(const TopoDS_Shape & aShape)
   {
     _myMeshDS->ShapeToMesh(aShape);
     _isShapeToMesh = true;
+    _nbSubShapes = _myMeshDS->MaxShapeIndex();
 
     // fill _mapAncestors
     int desType, ancType;
@@ -764,7 +765,7 @@ SMESH_subMesh *SMESH_Mesh::GetSubMesh(const TopoDS_Shape & aSubShape)
   int index = _myMeshDS->ShapeToIndex(aSubShape);
 
   // for submeshes on GEOM Group
-  if ( !index && aSubShape.ShapeType() == TopAbs_COMPOUND ) {
+  if (( !index || index > _nbSubShapes ) && aSubShape.ShapeType() == TopAbs_COMPOUND ) {
     TopoDS_Iterator it( aSubShape );
     if ( it.More() )
       index = _myMeshDS->AddCompoundSubmesh( aSubShape, it.Value().ShapeType() );
