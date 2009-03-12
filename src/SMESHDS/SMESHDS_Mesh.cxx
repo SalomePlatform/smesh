@@ -652,6 +652,8 @@ static void removeFromContainers (map<int,SMESHDS_SubMesh*>&     theSubMeshes,
     }
   }
 
+  const bool deleted=true;
+
   // Rm from sub-meshes
   // Element should belong to only one sub-mesh
   map<int,SMESHDS_SubMesh*>::iterator SubIt = theSubMeshes.begin();
@@ -665,9 +667,9 @@ static void removeFromContainers (map<int,SMESHDS_SubMesh*>&     theSubMeshes,
     {
       bool removed = false;
       if ( isNode )
-        removed = (*SubIt).second->RemoveNode( static_cast<const SMDS_MeshNode*> (*elIt) );
+        removed = (*SubIt).second->RemoveNode( static_cast<const SMDS_MeshNode*> (*elIt), deleted );
       else
-        removed = (*SubIt).second->RemoveElement( *elIt );
+        removed = (*SubIt).second->RemoveElement( *elIt, deleted );
 
       if (removed)
       {
@@ -689,6 +691,23 @@ static void removeFromContainers (map<int,SMESHDS_SubMesh*>&     theSubMeshes,
 //=======================================================================
 void SMESHDS_Mesh::RemoveNode(const SMDS_MeshNode * n)
 {
+  if ( n->NbInverseElements() == 0 && !(hasConstructionEdges() || hasConstructionFaces()))
+  {
+    SMESHDS_SubMesh* subMesh=0;
+    map<int,SMESHDS_SubMesh*>::iterator SubIt =
+      myShapeIndexToSubMesh.find( n->GetPosition()->GetShapeId() );
+    if ( SubIt != myShapeIndexToSubMesh.end() )
+      subMesh = SubIt->second;
+    else
+      SubIt = myShapeIndexToSubMesh.begin();
+    for ( ; !subMesh && SubIt != myShapeIndexToSubMesh.end(); SubIt++ )
+      if ( SubIt->second->Contains( n ))
+        subMesh = SubIt->second;
+
+    RemoveFreeNode( n, subMesh, true);
+    return;
+  }
+    
   myScript->RemoveNode(n->GetID());
   
   list<const SMDS_MeshElement *> removedElems;
@@ -724,7 +743,7 @@ void SMESHDS_Mesh::RemoveFreeNode(const SMDS_MeshNode * n,
   // Rm from sub-mesh
   // Node should belong to only one sub-mesh
   if( subMesh )
-    subMesh->RemoveNode(n);
+    subMesh->RemoveNode(n,/*deleted=*/false);
 
   SMDS_Mesh::RemoveFreeElement(n);
 }
@@ -740,7 +759,18 @@ void SMESHDS_Mesh::RemoveElement(const SMDS_MeshElement * elt)
     RemoveNode( static_cast<const SMDS_MeshNode*>( elt ));
     return;
   }
+  if (!hasConstructionEdges() && !hasConstructionFaces())
+  {
+    SMESHDS_SubMesh* subMesh=0;
+    map<int,SMESHDS_SubMesh*>::iterator SubIt = myShapeIndexToSubMesh.begin();
+    for ( ; !subMesh && SubIt != myShapeIndexToSubMesh.end(); SubIt++ )
+      if ( SubIt->second->Contains( elt ))
+        subMesh = SubIt->second;
 
+    RemoveFreeElement( elt, subMesh, true);
+    return;
+  }
+ 
   myScript->RemoveElement(elt->GetID());
 
   list<const SMDS_MeshElement *> removedElems;
@@ -784,7 +814,7 @@ void SMESHDS_Mesh::RemoveFreeElement(const SMDS_MeshElement * elt,
   // Rm from sub-mesh
   // Element should belong to only one sub-mesh
   if( subMesh )
-    subMesh->RemoveElement(elt);
+    subMesh->RemoveElement(elt, /*deleted=*/false);
 
   SMDS_Mesh::RemoveFreeElement(elt);
 }
@@ -965,7 +995,7 @@ void SMESHDS_Mesh::UnSetNodeOnShape(const SMDS_MeshNode* aNode)
     map<int,SMESHDS_SubMesh*>::iterator it =
       myShapeIndexToSubMesh.find( aNode->GetPosition()->GetShapeId() );
     if ( it != myShapeIndexToSubMesh.end() )
-      it->second->RemoveNode( aNode );
+      it->second->RemoveNode( aNode, /*deleted=*/false );
   }
 }
 
@@ -991,9 +1021,9 @@ void SMESHDS_Mesh::UnSetMeshElementOnShape(const SMDS_MeshElement * elem,
   map<int,SMESHDS_SubMesh*>::iterator it = myShapeIndexToSubMesh.find( Index );
   if ( it != myShapeIndexToSubMesh.end() )
     if ( elem->GetType() == SMDSAbs_Node )
-      it->second->RemoveNode( static_cast<const SMDS_MeshNode* >( elem ));
+      it->second->RemoveNode( static_cast<const SMDS_MeshNode* >( elem ), /*deleted=*/false );
     else
-      it->second->RemoveElement( elem );
+      it->second->RemoveElement( elem, /*deleted=*/false );
 }
 
 //=======================================================================

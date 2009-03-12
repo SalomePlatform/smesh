@@ -46,10 +46,20 @@ void SMESHDS_SubMesh::AddElement(const SMDS_MeshElement * ME)
 //function : RemoveElement
 //purpose  : 
 //=======================================================================
-bool SMESHDS_SubMesh::RemoveElement(const SMDS_MeshElement * ME)
+bool SMESHDS_SubMesh::RemoveElement(const SMDS_MeshElement * ME, bool isElemDeleted)
 {
-  if ( !IsComplexSubmesh() && NbElements() )
-    return myElements.erase(ME);
+  if ( !IsComplexSubmesh() && NbElements() ) {
+
+    if (!isElemDeleted) // alive element has valid ID and can be found
+      return myElements.erase(ME);
+
+    TElemSet::iterator e = myElements.begin(), eEnd = myElements.end();
+    for ( ; e != eEnd; ++e )
+      if ( ME == *e ) {
+        myElements.erase( e );
+        return true;
+      }
+  }
   
   return false;
 }
@@ -69,10 +79,20 @@ void SMESHDS_SubMesh::AddNode(const SMDS_MeshNode * N)
 //purpose  : 
 //=======================================================================
 
-bool SMESHDS_SubMesh::RemoveNode(const SMDS_MeshNode * N)
+bool SMESHDS_SubMesh::RemoveNode(const SMDS_MeshNode * N, bool isNodeDeleted)
 {
-  if ( !IsComplexSubmesh() && NbNodes() )
-    return myNodes.erase(N);
+  if ( !IsComplexSubmesh() && NbNodes() ) {
+
+    if (!isNodeDeleted) // alive node has valid ID and can be found
+      return myNodes.erase(N);
+
+    TElemSet::iterator e = myNodes.begin(), eEnd = myNodes.end();
+    for ( ; e != eEnd; ++e )
+      if ( N == *e ) {
+        myNodes.erase( e );
+        return true;
+      }
+  }
 
   return false;
 }
@@ -116,12 +136,12 @@ int SMESHDS_SubMesh::NbNodes() const
 // class MySetIterator
 // =====================
 
-template<typename TSet> class MySetIterator: public SMDS_SetIterator<typename TSet::key_type,
-                                                                     typename TSet::const_iterator >
+template<class ELEM, typename TSET> class MySetIterator:
+  public SMDS_SetIterator<ELEM, typename TSET::const_iterator >
 {
-  typedef SMDS_SetIterator<typename TSet::key_type, typename TSet::const_iterator > TFather;
+  typedef SMDS_SetIterator<ELEM, typename TSET::const_iterator > TFather;
   public:
-	MySetIterator(const TSet& s):TFather(s.begin(),s.end())
+	MySetIterator(const TSET& s):TFather(s.begin(),s.end())
 	{
 	}
 };
@@ -134,12 +154,11 @@ template<typename VALUE> class MyIterator : public SMDS_Iterator<VALUE>
 {
  public:
   MyIterator (const set<const SMESHDS_SubMesh*>& theSubMeshes)
-    : mySubMeshes( theSubMeshes ), mySubIt( theSubMeshes.begin() ), myMore(false)
+    : mySubIt( theSubMeshes.begin() ), mySubEnd( theSubMeshes.end() ), myMore(false)
     {}
   bool more()
   {
-    while (( !myElemIt.get() || !myElemIt->more() ) &&
-           mySubIt != mySubMeshes.end())
+    while (( !myElemIt.get() || !myElemIt->more() ) && mySubIt != mySubEnd)
     {
       myElemIt = getElements(*mySubIt);
       mySubIt++;
@@ -160,8 +179,7 @@ template<typename VALUE> class MyIterator : public SMDS_Iterator<VALUE>
 
  private:
   bool                                        myMore;
-  const set<const SMESHDS_SubMesh*>&          mySubMeshes;
-  set<const SMESHDS_SubMesh*>::const_iterator mySubIt;
+  set<const SMESHDS_SubMesh*>::const_iterator mySubIt, mySubEnd;
   boost::shared_ptr< SMDS_Iterator<VALUE> >   myElemIt;
 };
 
@@ -201,7 +219,7 @@ SMDS_ElemIteratorPtr SMESHDS_SubMesh::GetElements() const
   if ( IsComplexSubmesh() )
     return SMDS_ElemIteratorPtr( new MyElemIterator( mySubMeshes ));
 
-  return SMDS_ElemIteratorPtr(new MySetIterator<TElemSet>(myElements));
+  return SMDS_ElemIteratorPtr(new MySetIterator<const SMDS_MeshElement*,TElemSet>(myElements));
 }
 
 //=======================================================================
@@ -214,7 +232,7 @@ SMDS_NodeIteratorPtr SMESHDS_SubMesh::GetNodes() const
   if ( IsComplexSubmesh() )
     return SMDS_NodeIteratorPtr( new MyNodeIterator( mySubMeshes ));
 
-  return SMDS_NodeIteratorPtr(new MySetIterator<TNodeSet>(myNodes));
+  return SMDS_NodeIteratorPtr(new MySetIterator<const SMDS_MeshNode*,TElemSet>(myNodes));
 }
 
 //=======================================================================
@@ -225,23 +243,20 @@ SMDS_NodeIteratorPtr SMESHDS_SubMesh::GetNodes() const
 bool SMESHDS_SubMesh::Contains(const SMDS_MeshElement * ME) const
 {
   // DO NOT TRY TO FIND A REMOVED ELEMENT !!
-  if ( !ME )
+  if ( IsComplexSubmesh() || !ME )
     return false;
 
-  if ( IsComplexSubmesh() )
-  {
-    set<const SMESHDS_SubMesh*>::const_iterator aSubIt = mySubMeshes.begin();
-    for ( ; aSubIt != mySubMeshes.end(); aSubIt++ )
-      if ( (*aSubIt)->Contains( ME ))
-        return true;
-    return false;
-  }
+//   if ( IsComplexSubmesh() )
+//   {
+//     set<const SMESHDS_SubMesh*>::const_iterator aSubIt = mySubMeshes.begin();
+//     for ( ; aSubIt != mySubMeshes.end(); aSubIt++ )
+//       if ( (*aSubIt)->Contains( ME ))
+//         return true;
+//     return false;
+//   }
 
   if ( ME->GetType() == SMDSAbs_Node )
-  {
-    const SMDS_MeshNode* n = static_cast<const SMDS_MeshNode*>( ME );
-    return ( myNodes.find( n ) != myNodes.end() );
-  }
+    return ( myNodes.find( ME ) != myNodes.end() );
 
   return ( myElements.find( ME ) != myElements.end() );
 }

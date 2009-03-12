@@ -43,9 +43,9 @@ class SMESHDS_EXPORT SMESHDS_SubMesh
 
   // if !IsComplexSubmesh()
   void AddElement(const SMDS_MeshElement * ME);
-  bool RemoveElement(const SMDS_MeshElement * ME); // ret true if ME was in
+  bool RemoveElement(const SMDS_MeshElement * ME, bool isElemDeleted); // ret true if ME was in
   void AddNode(const SMDS_MeshNode * ME);
-  bool RemoveNode(const SMDS_MeshNode * ME);       // ret true if ME was in
+  bool RemoveNode(const SMDS_MeshNode * ME, bool isNodeDeleted);       // ret true if ME was in
 
   // if IsComplexSubmesh()
   void AddSubMesh( const SMESHDS_SubMesh* theSubMesh );
@@ -65,14 +65,14 @@ class SMESHDS_EXPORT SMESHDS_SubMesh
   void Clear();
 
  private:
+
   struct TIDCompare { // to have nodes and elements sorted by ID
     bool operator () (const SMDS_MeshElement* e1, const SMDS_MeshElement* e2) const
     { return e1->GetID() < e2->GetID(); }
   };
   typedef std::set<const SMDS_MeshElement*, TIDCompare > TElemSet;
-  typedef std::set<const SMDS_MeshNode*   , TIDCompare>  TNodeSet;
-  TElemSet myElements;
-  TNodeSet myNodes;
+  TElemSet myElements, myNodes;
+
   std::set<const SMESHDS_SubMesh*> mySubMeshes;
 };
 #endif
