@@ -815,7 +815,7 @@ bool _QuadFaceGrid::LoadGrid( SMESH_Mesh& mesh )
     TIDSortedElemSet emptySet, avoidSet;
     avoidSet.insert( firstQuad );
     firstQuad = SMESH_MeshEditor::FindFaceInSet( n1down, n2down, emptySet, avoidSet);
-    if ( firstQuad && !faceSubMesh->Contains( firstQuad )) {
+    while ( firstQuad && !faceSubMesh->Contains( firstQuad )) {
       avoidSet.insert( firstQuad );
       firstQuad = SMESH_MeshEditor::FindFaceInSet( n1down, n2down, emptySet, avoidSet);
     }
