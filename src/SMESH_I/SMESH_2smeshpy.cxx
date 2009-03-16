@@ -2107,9 +2107,18 @@ TCollection_AsciiString _pyCommand::GetWord( const TCollection_AsciiString & the
       return theEmptyString; // no word found
     // end
     end = beg + 1;
-    while ( end <= theString.Length() && isWord( theString.Value( end ), dotIsWord))
-      ++end;
-    --end;
+    char begChar = theString.Value( beg );
+    if ( begChar == '"' || begChar == '\'' ) {
+      // end is at the corresponding quoting mark
+      while ( end < theString.Length() &&
+              ( theString.Value( end ) != begChar || theString.Value( end-1 ) == '\\'))
+        ++end;
+    }
+    else {
+      while ( end <= theString.Length() && isWord( theString.Value( end ), dotIsWord))
+        ++end;
+      --end;
+    }
   }
   else {  // search backward
     // end
@@ -2118,9 +2127,18 @@ TCollection_AsciiString _pyCommand::GetWord( const TCollection_AsciiString & the
     if ( end == 0 )
       return theEmptyString; // no word found
     beg = end - 1;
-    while ( beg > 0 && isWord( theString.Value( beg ), dotIsWord))
-      --beg;
-    ++beg;
+    char endChar = theString.Value( end );
+    if ( endChar == '"' || endChar == '\'' ) {
+      // beg is at the corresponding quoting mark
+      while ( beg > 1 &&
+              ( theString.Value( beg ) != endChar || theString.Value( beg-1 ) == '\\'))
+        --beg;
+    }
+    else {
+      while ( beg > 0 && isWord( theString.Value( beg ), dotIsWord))
+        --beg;
+      ++beg;
+    }
   }
   theStartPos = beg;
   //cout << theString << " ---- " << beg << " - " << end << endl;
