@@ -1,6 +1,6 @@
 /*!
 
-\page group_of_underlying_elements_page "Create Group of Underlying Elements"
+\page group_of_underlying_elements_page Create Group of Underlying Elements
 
 
 To create groups of entities from existing groups of superior dimensions, in the \b Mesh menu select <b>Group of underlying entities</b>.<br>

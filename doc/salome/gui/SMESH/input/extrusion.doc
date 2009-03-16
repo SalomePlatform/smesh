@@ -45,7 +45,7 @@ about filters in the \ref selection_filter_library_page "Selection filter librar
 </ul>
 <li>If the <b>Extrude Along Vector</b> radio button is selected</li>
 <ul>
-<li>specify the vector along which the elements will be extruded, or select the face (the normale to the face will define the vector)</li>
+<li>specify the coordinates of the vector along which the elements will be extruded, or select the face (the normal to the face will define the vector)</li>
 <li>specify the distance of extrusion along the vector,</li>
 </ul>
 <li>specify the number of steps;</li>

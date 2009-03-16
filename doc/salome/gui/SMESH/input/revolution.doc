@@ -45,7 +45,9 @@ about filters in the \ref selection_filter_library_page "Selection filter librar
 <ul>
 <li>specify the cooordinates of the start \b Point of the vector of revolution;</li>
 <li>specify the \b Vector of revolution through the coordinates of its
-end point with respect to the coordinates of the start point;</li>
+end point with respect to the coordinates of the start
+point. Alternatively, it is possible to specify the vector through the
+normal to the selected face.</li>
 </ul>
 </li>
 
