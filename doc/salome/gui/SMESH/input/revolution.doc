@@ -69,6 +69,7 @@ end point with respect to the coordinates of the start point;</li>
 <li>activate  <b>Generate Groups</b> checkbox to copy the groups of
 elements of the source mesh to the newly created one. </li>
 </li>
+</ul>
 
 <li>Click \b Apply or <b> Apply and Close</b> button to confirm the
 operation.</li>

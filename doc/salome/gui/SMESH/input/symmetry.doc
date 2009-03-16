@@ -22,8 +22,7 @@ It is possible to mirror a mesh or some of its elements through:
 
 </li>
 
-<li>
-In the dialog:
+<li>In the dialog:
 <ul>
 <li>specify the IDs of the elements for the symmetry operation:
 
@@ -74,7 +73,7 @@ name in the adjacent box);</li>
 <li>activate <b> Copy groups </b> checkbox to copy the groups of elements of the source mesh to the newly created mesh.</li>
 </ul>
 </li>
-
+</ul>
 <li>Click \b Apply or <b> Apply and Close</b> button to confirm the
 operation.</li>
 

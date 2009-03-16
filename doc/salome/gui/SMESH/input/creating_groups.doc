@@ -42,15 +42,31 @@ To remove a selected element or elements from the list click the
 mesh elements.
 \n <b>Select from</b> set of fields allows to choose a submesh or an existing
 group whose elements of the previously defined type will be added to
-the list of elements which will form your group.
+the list of elements which will form the new group.
 \n <b>Color</b> - allows to assign to the group a certain color, for
 example, defining boundary conditions. This feature introduces a
 useful element of preprocessing in Mesh module. Note that <b>Color</b> attribute defines
 the colors used for the display of the elements of the group. 
 \n <b>Warning</b> The Med Color group interface may change in future versions of Salome.
 
-
 \image html creategroup.png
+
+For example, to create a new group containing all entities of the
+existing group and some other faces selected in the viewer:
+<ul>
+<li> select the "Face" type of entities and input the name of the new group.</li>
+<li> checks "Group" checkbox in "Select From" group.</li>
+<li> select the existing group in the object browser or in the viewer.</li>
+<li> click "Add" in "Content" group. "Id Elements" list will be filled
+with IDs of faces belonging to the exising group.</li>
+<li> select other faces in the viewer.</li>
+<li> click "Apply" button to create the new group.</li>
+</ul>
+
+Please note that the new group does not have references to the source
+group. It contains only the list of face IDs. So if the old group will
+be changed, the new one will not be modified.
+
 
 \image html image130.gif
 <center>In this picture the brown cells belong to a group defined manually.</center>
@@ -74,16 +90,6 @@ a new group of mesh elements will be created.
 
 \image html a-creategroup.png
 
-<br><br>
-To create multiple groups on geometry of both nodes and elements of
-any type at once, in the \b Mesh menu select <b>Create Groups from
-Geometry</b>.<br>
-Group names are same as those of geometrical objects.
-Type of group of mesh elements is defined automatically by 
-<b>Geometrical object</b> nature.
-
-\image html create_groups_from_geometry.png
-
 \image html image132.gif
 <center>In this picture the cells which belong to a certain face are
 selected in green.</center>
@@ -92,58 +98,4 @@ selected in green.</center>
 \ref tui_create_group_on_geometry "Create a Group on Geometry"
 operation.
 
-<br><h2>Creation of groups using existing groups and sub-meshes.</h2>
-
-Application provides possibility to create new <b>standalone</b> groups using existing standalone groups, groups on geometry and sub-meshes. This functionality is implemented using "Select from" group box of "Create group" dialog box described above.
-
-This functionality is described on the example of creating new group   from existing standalone groups and groups on geometry.
-
-Imagine there are group G1. It can be standalone group or group on geometry.
-
-To create group G2 containing all entities of group G1 and a faces graphically selected in 3D view following steps can be performed:
-<ul>
-<li>User opens "Create group" dialog box.</li>
-<li>The user specifies "Face" type of entities and "G2" name of group.</li>
-<li>The user checks "Group" check-box of "Select From" group box.</li>
-<li>The user selects G1 group in object browser or 3D view.</li>
-<li>The user presses "Add" push button of "Content" group box. "Id Elements" list-box is filled with identifiers of faces belonging to group G1.</li>
-<li>The user selects other faces in 3D view.</li>
-<li>The user presses "Apply" button. System creates group G2.</li>
-</ul>
-
-Please note that group G2 does not have a references to source group G1. It contains list of faces identifiers only. So if G1 group will be changed group G2 will remain unmodified.
-
-<br>
-\anchor gui_create_dim_group
-<h2>Creating groups of entities from existing groups of superior dimensions</h2>
-
-Application provides possibility for creating groups of entities from existing groups of superior dimensions. For example, it is possible to create group of nodes using list of existing groups of faces.
-
-To create groups of entities from existing groups of superior dimensions, in the \b Mesh menu select <b>Group of underlying entities</b>.<br>
-
-The following dialog box will appear:
-
-\image html dimgroup_dlg.png
-
-In this dialog box you should specify the name of the resulting group, types of entities and set of source groups.
-
-For example, we have two source Volume groups illustrated on the figure below 
-
-\image html dimgroup_src.png
-<center>Source groups</center>
-
-In this case we obtain following results for Faces, Edges and Nodes.
-
-\image html dimgroup_2d.png
-<center>Faces</center>
-
-\image html dimgroup_1d.png
-<center>Edges</center>
-
-\image html dimgroup_0d.png
-<center>Nodes</center>
-
-<b>See Also</b> a sample TUI Script of a 
-\ref tui_create_dim_group "Creating groups of entities from existing groups of superior dimensions"
-operation.
 */

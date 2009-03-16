@@ -5,17 +5,17 @@
 \n GHS3DPRL Parameters hypothesis works only with <b>Tetrahedron (Tepal with TetMesh-GHS3D)</b> algorithm.
 \n
 \n This algorithm is a commercial software, its use requires a licence (http://www.distene.com/fr/build/offer.html).
-\n The advantage of Tepal is the possibility to generate (for example) a <em>partitioned</em> 
-200 million tetrahedra mesh on a not-so-big memory computer (2Go RAM) 
-...in something like 50 hours of <em>one</em> CPU (Xeon, 2008). 
-This is an alternative to Pluging GHS3D where you should need something like a not-so-common CPU with 64Go RAM 
-<em>to try</em> to do a one-partitionned 200 million tetrahedra mesh ...in a much less time indeed.
+\n For example, Tepal gives the possibility to generate a partitioned
+mesh with 200 million tetrahedrons on a computer with average memory size
+(2Go RAM) in about 50 hours on one CPU (Xeon, 2008). 
+This is a serious alternative to GHS3D, which requires a much less common
+configuration with 64Go RAM to only try to make a partition of a mesh with
+200 million tetrahedrons, no result guaranteed.
 \n
-\n Notes:
-\n This Plugin <em>doesn't</em> load in Memory the supposed plentiful big resulting meshes. 
-It's user choice: (in GUI Mesh mode) menu File-Import-MED Files.
-\n Beware, to load one 5 millions tetrahedra MED file, GUI Salome needs 2Go RAM.
-\n A new true parallel faster version of Tepal, using MPI, is expected in 2009.
+\note The Plugin doesn't load in the Memory the supposedly large resulting meshes. 
+The meshes are imported in the user-defined location as MED files via menu File-Import-MED Files.
+\n Pay attention, that Salome GUI Salome needs 2Go RAM. to load a MED
+file with 5 million tetrahedrons.
 
 \image html ghs3dprl_parameters_basic.png
 
@@ -24,39 +24,41 @@ It's user choice: (in GUI Mesh mode) menu File-Import-MED Files.
 <b>Name</b> - allows to define the name of the hypothesis (GHS3DPRL Parameters by default).
 </li>
 <li>
-<b>MED_Name</b> - allows to define the path and the basename of the 
-generated resulted MED files ("DOMAIN" by default). 
-Undefined path means environment variable $SALOME_TMP_DIR (or $TMP by default).
+<b>MED_Name</b> - allows to define the path and the default name of the 
+resulting MED files ("DOMAIN"). 
+If the path is not defined, the environment variable $SALOME_TMP_DIR
+is used.
 </li>
 <li>
-<b>Nb_Part</b> - allows to define the number of MED files generated, 
-the initial skin (triangles) will be meshed (tetrahedra) and partitioned 
-in Nb_Part by the <i>elementary</i> algorithm implemented in Tepal.<br>
-Beware, the (expected) number of total tetrahedra versus this parameter 
-involves the maximum tepal RAM use.
+<b>Nb_Part</b> - allows to define the number of generated MED files, 
+The initial skin (triangles) will be meshed (tetrahedrons) and partitioned 
+in Nb_Part by the elementary algorithm implemented in Tepal.<br>
 </li>
 <li>
 <b>Keep_Files</b> - if this box is checked, input files of Tepal 
-(GHS3DPRL.points and GHS3DPRL.faces) are deleted after use (...if no backgrounding).
+(GHS3DPRL.points and GHS3DPRL.faces) are deleted after use (...if the
+background mode was not used).
 </li>
 <li>
-<b>Tepal_in_Background</b> - if this box is checked, for big meshes, 
-launch Tepal execution and MED file generation in background, 
-allows user exiting of Salome. In this case, beware of the 
-job Tepal is "killSalome.py" <i>independent</i>, sometimes on other host.
+<b>Tepal_in_Background</b> - if this box is checked, Tepal execution
+and MED file generation are launched in background mode and the user
+can even exit Salome. Pay attention that in this case Tepal algorithm works
+independently of "killSalome.py", and sometimes on another host.
 </li>
 <li>
-<b>To_Mesh_Holes</b> - if this box is checked, force parameter component 
-of tetmesh-ghs3d to mesh holes.
+<b>To_Mesh_Holes</b> - if this box is checked, the parameter component 
+of tetmesh-ghs3d will mesh holes.
 </li>
 
 <h1>Modifying GHS3DPRL Advanced Parameters</h1><br>
-GHS3DPRL Plugin launches standalone binary executable tepal2med which launches binary executable tepal.<br>
-tepal2med launches tepal, wait for the end of computation, and converts resulting output tepal files in expected MED files.<br>
-Some advanced optional parameters are accessibles as arguments.<br>
-If keep_files checked you a posteriori can always re-launch tepal2med in a Terminal as a command with yours parameters.<br>Idem for tepal.<br><br>
+GHS3DPRL Plugin launches a standalone binary executable tepal2med.<br>
+tepal2med launches tepal, waits for the end of computation, and
+converts the resulting output tepal files into MED files.<br>
+Some advanced optional parameters are accessible as arguments.<br>
+If keep_files option is checked, it is possible to re-launch tepal2med
+or tepal in the Terminal as a command with custom parameters.<br>
 <li>
-<b>Advanced tepal2med Parameters</b> - type "tepal2med --help" in a Terminal. <p>
+<b>Advanced tepal2med Parameters</b> - type "tepal2med --help" in the Terminal. <p>
 
 \verbatim
 myname@myhost > /export/home/myname/salome_5/GHS3DPRLPLUGIN_5/bin/salome/tepal2med --help
@@ -108,42 +110,44 @@ myname@myhost > tepal
 
 USAGE : tepal options
 
-With options in :
+With options :
      --filename name (-f name) :
-          Basename of the input case (MANDATORY)
+          Default name of the input case (MANDATORY)
 
      --ndom n (-n n) :
           Number of subdomains to make (MANDATORY)
 
      --ghs3d ghs3d options (-g ghs3d options) :
-          Run temesh ghs3d on a previously generated subdomain. (ghs3d options must be "quoted")
+          Runs temesh ghs3d on a previously generated subdomain. (ghs3d options must be "quoted")
 
      --memory m (-m m) :
           Max amount of memory (megabytes) allowed for ghs in the cutting process. (default is 0 : unlimited)
 
      --mesh_only  (-Z ) :
-          Only (re)mesh all subdomains and update communications messages
+          Only (re)meshes all subdomains and updates communications messages
 
      --mesh_call command (-c command) :
-          Call the user specified command for meshing all the subomains after their skin was generated
+          Calls the user specified command for meshing all the
+          subomains after their skin has been generated
 
      --stats_only  (-S ) :
-          Only compute and show some statistics on subdomains
+          Only computes and shows some statistics on subdomains
 
      --rebuild  (-r ) :
-          Merge final subdomains skins
+          Merges final subdomains skins
 
      --rebuild_tetra  (-R ) :
-          Merge final subdomains skins and tetraedra
+          Merges final subdomains skins and tetraedra
 
      --rebuild_iface  (-i ) :
-          Include interfaces in final subdomains merge
+          Includes interfaces in final subdomains merge
 
      --rebuild_retag  (-t ) :
-          Tag vertices, faces (and tetra if selected) with their subdomain number in final subdomains merge (keeps the lowest tag for shared elements)
+          Tags vertices, faces (and tetra if selected) with their
+          subdomain number in the final merger of subdomains (keeps the lowest tag for shared elements)
 
      --rebuild_ensight_parts  (-e ) :
-          Build ensight geom file with parts
+          Builds ensight geom file with parts
 
      --tetmesh_args str (-G str) :
           Arguments to pass to Tetmesh during cutting process
@@ -177,7 +181,7 @@ DESCRIPTION
 
  -u (-h)        : prints this message.
 
- -m memory      : launches the software with memory Megabytes of work space.
+ -m memory      : launches the software with memory in Megabytes.
                   The default value of this parameter is 64 Megabytes and its
                   minimum value is 10 Megabytes.
                   It is also possible to set this parameter with the
@@ -188,47 +192,45 @@ DESCRIPTION
                   the environment variable.
 
  -M MEMORY      : uses the automatic memory adjustment feature.
-                  If MEMORY is zero, the size of the work space is initially
-                  guessed from the input. If MEMORY is not zero, the
-                  software starts with MEMORY Megabytes of work space.
-                  The software then reallocates more and more memory as
-                  needed.
-                  The starting value when MEMORY equals 0 is 64 Megabytes,
-                  the maximum is given with memory of the -m option if used
-                  and the actual memory available.
+                  If MEMORY is equal to zero, the size of the work space is
+                  calculated from the input. If MEMORY is not equal to
+                  zero, the software starts with MEMORY amount of work space.
+                  The software reallocates memory as necessary.
+                  The start value with MEMORY equal to 0 is 64 Megabytes,
+                  the maximum is depends on -m option and the actual memory available.
 
  -f prefix      : defines the generic prefix of the files.
 
  -v verbose     : sets the output level parameter (the verbose parameter
                   must be in the range 0 to 10).
 
- -c component   : chooses the meshed component. If component is
-                      0, all components to be meshed
-                      1, only the main (outermost) component to be meshed
+ -c component   : chooses the meshed component. If the parameter is
+                      0, all components will be meshed, if
+                      1, only the main (outermost) component will be meshed
 
  -p0            : disables creation of internal points.
 
- -C             : uses alternate boundary recovery version. To be used only
-                  when the boundary recovery of the standard version fails.
+ -C             : uses an alternative boundary recovery mechanism. It should be used only
+                  when the standard boundary recovery fails.
 
  -E count       : sets the extended output for error messages. If -E is used,
-                  the error messages found will be printed, up to a maximum
-                  count of errors between 1 and 100.
+                  the error messages will be printed, it is possinle
+                  to indicate the maximum number of printed messages between 1 and 100.
 
  -t             : generates an error file prefix.Log
 
- -o level       : sets the desired optimisation level.
+ -o level       : sets the required optimisation level.
                   Valid optimisation levels are:
-                  none, light, medium or standard, strong,
-                  in increasing order of "quality vs speed" ratio.
+                  none, light, standard or strong,
+                  with increase of "quality vs speed" ratio.
 
  -I filetype    : defines the input mesh format as follows:
                     -IP input files are ascii files, named prefix.points
-                     and prefix.faces - this is the default
+                     and prefix.faces - this is the default type of files
                     -IPb input files are binary files, named prefix.pointsb
                      and prefix.facesb
                     -IM input file is ascii file, named prefix.mesh
-                  where prefix is given with the -f option
+                  where prefix is defined with -f option
 
  -a/-b          : selects the output file type:
                     -a for ascii (the default) and

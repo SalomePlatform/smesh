@@ -1,0 +1,17 @@
+/*!
+
+\page create_groups_from_geometry_page Create Groups from Geometry
+
+To use this operation, select in the \b Mesh menu <b>Create Groups from Geometry</b>.
+
+\image html create_groups_from_geometry.png
+
+This operation allows  creating  on a selected geometry several groups consisting of
+elements of all types.
+ 
+The group names will be the same as the names of geometrical objects.
+The Type of group of mesh elements is defined automatically by the nature of
+the <b>Geometric object</b>.
+
+
+*/

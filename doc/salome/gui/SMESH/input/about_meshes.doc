@@ -18,7 +18,7 @@ Several created meshes can be \subpage building_compounds_page "combined into me
 
 All created meshes and submeshes can be \subpage editing_meshes_page "edited".
 
-Meshes can be also using the MESH functions destined for 
+Meshes can be also edited using the MESH functions destined for 
 \ref modifying_meshes_page "modification" of generated meshes.
 
 The \b topology of a mesh is described by the relationships between its
