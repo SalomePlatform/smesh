@@ -701,7 +701,7 @@ void SMESHDS_Mesh::RemoveNode(const SMDS_MeshNode * n)
     else
       SubIt = myShapeIndexToSubMesh.begin();
     for ( ; !subMesh && SubIt != myShapeIndexToSubMesh.end(); SubIt++ )
-      if ( SubIt->second->Contains( n ))
+      if (!SubIt->second->IsComplexSubmesh() && SubIt->second->Contains( n ))
         subMesh = SubIt->second;
 
     RemoveFreeNode( n, subMesh, true);
@@ -764,7 +764,7 @@ void SMESHDS_Mesh::RemoveElement(const SMDS_MeshElement * elt)
     SMESHDS_SubMesh* subMesh=0;
     map<int,SMESHDS_SubMesh*>::iterator SubIt = myShapeIndexToSubMesh.begin();
     for ( ; !subMesh && SubIt != myShapeIndexToSubMesh.end(); SubIt++ )
-      if ( SubIt->second->Contains( elt ))
+      if (!SubIt->second->IsComplexSubmesh() && SubIt->second->Contains( elt ))
         subMesh = SubIt->second;
 
     RemoveFreeElement( elt, subMesh, true);
