@@ -243,17 +243,18 @@ SMDS_NodeIteratorPtr SMESHDS_SubMesh::GetNodes() const
 bool SMESHDS_SubMesh::Contains(const SMDS_MeshElement * ME) const
 {
   // DO NOT TRY TO FIND A REMOVED ELEMENT !!
-  if ( IsComplexSubmesh() || !ME )
+  //if ( IsComplexSubmesh() || !ME )
+  if (!ME )
     return false;
 
-//   if ( IsComplexSubmesh() )
-//   {
-//     set<const SMESHDS_SubMesh*>::const_iterator aSubIt = mySubMeshes.begin();
-//     for ( ; aSubIt != mySubMeshes.end(); aSubIt++ )
-//       if ( (*aSubIt)->Contains( ME ))
-//         return true;
-//     return false;
-//   }
+  if ( IsComplexSubmesh() )
+  {
+    set<const SMESHDS_SubMesh*>::const_iterator aSubIt = mySubMeshes.begin();
+    for ( ; aSubIt != mySubMeshes.end(); aSubIt++ )
+      if ( (*aSubIt)->Contains( ME ))
+        return true;
+    return false;
+  }
 
   if ( ME->GetType() == SMDSAbs_Node )
     return ( myNodes.find( ME ) != myNodes.end() );
