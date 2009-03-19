@@ -19,12 +19,11 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
- //  SMESH SMESH : implementaion of SMESH idl descriptions
+//  SMESH SMESH : implementaion of SMESH idl descriptions
 //  File   : StdMeshers_Quadrangle_2D.cxx
 //           Moved here from SMESH_Quadrangle_2D.cxx
 //  Author : Paul RASCLE, EDF
 //  Module : SMESH
-//  $Header$
 //
 #include "StdMeshers_Quadrangle_2D.hxx"
 
@@ -42,7 +41,6 @@
 #include "SMDS_EdgePosition.hxx"
 #include "SMDS_FacePosition.hxx"
 
-#include <BRepTools.hxx>
 #include <BRepTools_WireExplorer.hxx>
 #include <BRep_Tool.hxx>
 #include <Geom_Surface.hxx>
@@ -51,6 +49,7 @@
 #include <TColStd_SequenceOfReal.hxx>
 #include <TColgp_SequenceOfXY.hxx>
 #include <TopExp.hxx>
+#include <TopTools_ListIteratorOfListOfShape.hxx>
 #include <TopoDS.hxx>
 
 #include "utilities.h"
@@ -588,6 +587,27 @@ bool StdMeshers_Quadrangle_2D::Compute (SMESH_Mesh& aMesh,
   return isOk;
 }
 
+//================================================================================
+/*!
+ * \brief Return true if only two given edges meat at their common vertex
+ */
+//================================================================================
+
+static bool twoEdgesMeatAtVertex(const TopoDS_Edge& e1,
+                                 const TopoDS_Edge& e2,
+                                 SMESH_Mesh &       mesh)
+{
+  TopoDS_Vertex v;
+  if ( !TopExp::CommonVertex( e1, e2, v ))
+    return false;
+  TopTools_ListIteratorOfListOfShape ancestIt( mesh.GetAncestors( v ));
+  for ( ; ancestIt.More() ; ancestIt.Next() )
+    if ( ancestIt.Value().ShapeType() == TopAbs_EDGE )
+      if ( !e1.IsSame( ancestIt.Value() ) && !e2.IsSame( ancestIt.Value() ))
+        return false;
+  return true;
+}
+
 //=============================================================================
 /*!
  *  
@@ -643,6 +663,41 @@ FaceQuadStruct* StdMeshers_Quadrangle_2D::CheckNbEdges(SMESH_Mesh &         aMes
       quad->side.push_back( new StdMeshers_FaceSide(F, sideEdges, &aMesh,
                                                     nbSides<TOP_SIDE, ignoreMediumNodes));
       ++nbSides;
+    }
+    // issue 20222. Try to unite only edges shared by two same faces
+    if (nbSides < 4) {
+      // delete found sides
+      { FaceQuadStruct cleaner( *quad ); }
+      quad->side.clear();
+      quad->side.reserve(nbEdgesInWire.front());
+      nbSides = 0;
+
+      SMESH_Block::GetOrderedEdges (F, V, edges, nbEdgesInWire);
+      while ( !edges.empty()) {
+        sideEdges.clear();
+        sideEdges.splice( sideEdges.end(), edges, edges.begin());
+        bool sameSide = true;
+        while ( !edges.empty() && sameSide ) {
+          sameSide =
+            SMESH_Algo::IsContinuous( sideEdges.back(), edges.front() ) &&
+            twoEdgesMeatAtVertex( sideEdges.back(), edges.front(), aMesh );
+          if ( sameSide )
+            sideEdges.splice( sideEdges.end(), edges, edges.begin());
+        }
+        if ( nbSides == 0 ) { // go backward from the first edge
+          sameSide = true;
+          while ( !edges.empty() && sameSide ) {
+            sameSide =
+              SMESH_Algo::IsContinuous( sideEdges.front(), edges.back() ) &&
+              twoEdgesMeatAtVertex( sideEdges.front(), edges.back(), aMesh );
+            if ( sameSide )
+              sideEdges.splice( sideEdges.begin(), edges, --edges.end());
+          }
+        }
+        quad->side.push_back( new StdMeshers_FaceSide(F, sideEdges, &aMesh,
+                                                      nbSides<TOP_SIDE, ignoreMediumNodes));
+        ++nbSides;
+      }
     }
   }
   if (nbSides != 4) {
@@ -912,7 +967,6 @@ static gp_UV CalcUV(double x0, double x1, double y0, double y1,
   return uv;
 }
 
-
 //=======================================================================
 //function : CalcUV2
 //purpose  : auxilary function for ComputeQuadPref
@@ -947,6 +1001,7 @@ static gp_UV CalcUV2(double x, double y,
 
   return uv;
 }
+
 
 //=======================================================================
 /*!
