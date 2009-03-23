@@ -2774,8 +2774,6 @@ void SMESH_MeshEditor::sweepElement(const SMDS_MeshElement*               elem,
 
   int iNode, nbSame = 0, iNotSameNode = 0, iSameNode = 0;
   vector<int> sames(nbNodes);
-
-  //bool issimple[nbNodes];
   vector<bool> issimple(nbNodes);
 
   for ( iNode = 0; iNode < nbNodes; iNode++ ) {
@@ -2785,12 +2783,7 @@ void SMESH_MeshEditor::sweepElement(const SMDS_MeshElement*               elem,
     if ( listNewNodes.empty() )
       return;
 
-    if(listNewNodes.size()==nbSteps) {
-      issimple[iNode] = true;
-    }
-    else {
-      issimple[iNode] = false;
-    }
+    issimple[iNode] = (listNewNodes.size()==nbSteps);
 
     itNN[ iNode ] = listNewNodes.begin();
     prevNod[ iNode ] = node;
@@ -2835,11 +2828,8 @@ void SMESH_MeshEditor::sweepElement(const SMDS_MeshElement*               elem,
     //MESSAGE("Reversed elem " << elem );
     i0 = 2;
     i2 = 0;
-    if ( nbSame > 0 ) {
-      int iAB = iAfterSame + iBeforeSame;
-      iBeforeSame = iAB - iBeforeSame;
-      iAfterSame  = iAB - iAfterSame;
-    }
+    if ( nbSame > 0 )
+      std::swap( iAfterSame, iAfterSame );
   }
 
   // make new elements
@@ -2858,8 +2848,7 @@ void SMESH_MeshEditor::sweepElement(const SMDS_MeshElement*               elem,
           nextNod[ iNode ] = *itNN[ iNode ];
           itNN[ iNode ]++;
         }
-        else if(!elem->IsQuadratic() ||
-           elem->IsQuadratic() && elem->IsMediumNode(prevNod[iNode]) ) {
+        else if(!elem->IsQuadratic() || elem->IsMediumNode(prevNod[iNode]) ) {
           // we have to use each second node
           itNN[ iNode ]++;
           nextNod[ iNode ] = *itNN[ iNode ];
