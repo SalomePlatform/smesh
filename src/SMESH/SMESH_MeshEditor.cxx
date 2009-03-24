@@ -2829,7 +2829,7 @@ void SMESH_MeshEditor::sweepElement(const SMDS_MeshElement*               elem,
     i0 = 2;
     i2 = 0;
     if ( nbSame > 0 )
-      std::swap( iAfterSame, iAfterSame );
+      std::swap( iBeforeSame, iAfterSame );
   }
 
   // make new elements
