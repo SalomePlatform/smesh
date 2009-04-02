@@ -600,9 +600,9 @@ void SMESHGUI_SmoothingDlg::SelectionIntoArgument()
 
   // OK
   if (myEditCurrentArgument == LineEditElements)
-    myNbOkElements = aNbUnits;
+    myNbOkElements = true;
   else if (myEditCurrentArgument == LineEditNodes)
-    myNbOkNodes = aNbUnits;
+    myNbOkNodes = true;
 
   if (myNbOkElements && (myNbOkNodes || LineEditNodes->text().trimmed().isEmpty())) {
     buttonOk->setEnabled(true);
