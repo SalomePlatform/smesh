@@ -512,7 +512,6 @@ bool SMESHGUI_Selection::isImported( const int ind ) const
   QString e = entry( ind );
   _PTR(SObject) SO = SMESH::GetActiveStudyDocument()->FindObjectID( e.toLatin1().constData() );
   bool res = false;
-  /*
   if( SO )
   {
     SMESH::SMESH_Mesh_var aMesh = SMESH::SMESH_Mesh::_narrow( SMESH::SObjectToObject( SO ) );
@@ -522,7 +521,6 @@ bool SMESHGUI_Selection::isImported( const int ind ) const
       res = strlen( (char*)inf->fileName ) > 0;
     }
   }
-  */
   return res;
 }
 
