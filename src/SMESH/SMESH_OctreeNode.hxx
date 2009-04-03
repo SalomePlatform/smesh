@@ -21,11 +21,12 @@
 //
 //  SMESH SMESH_OctreeNode : Octree with Nodes set
 //  inherites global class SMESH_Octree
-// File      : SMESH_OctreeNode.hxx
-// Created   : Tue Jan 16 16:00:00 2007
-// Author    : Nicolas Geimer & AurÃ©lien Motteux  (OCC)
-// Module    : SMESH
 //
+//  File      : SMESH_OctreeNode.hxx
+//  Created   : Tue Jan 16 16:00:00 2007
+//  Author    : Nicolas Geimer & Aurélien Motteux  (OCC)
+//  Module    : SMESH
+
 #ifndef _SMESH_OCTREENODE_HXX_
 #define _SMESH_OCTREENODE_HXX_
 
@@ -49,7 +50,7 @@ public:
 
   // Constructor
   SMESH_OctreeNode (const std::set<const SMDS_MeshNode*>& theNodes, const int maxLevel = -1,
-                    const int maxNbNodes = 5 , const double minBoxSize = 0.);
+                    const int maxNbNodes = 5, const double minBoxSize = 0.);
 
 //=============================
 /*!
@@ -62,12 +63,12 @@ public:
   virtual const bool isLeaf();
 
   // Tells us if Node is inside the current box with the precision "precision"
-  virtual const bool isInside(const SMDS_MeshNode * Node, const double precision = 0. );
+  virtual const bool isInside(const SMDS_MeshNode * Node, const double precision = 0.);
 
   // Return in Result a list of Nodes potentials to be near Node
-  void               NodesAround( const SMDS_MeshNode * Node ,
-                                  std::list<const SMDS_MeshNode*>* Result,
-                                  const double precision = 0. );
+  void               NodesAround(const SMDS_MeshNode * Node,
+                                 std::list<const SMDS_MeshNode*>* Result,
+                                 const double precision = 0.);
 
   // Return in theGroupsOfNodes a list of group of nodes close to each other within theTolerance
   // Search for all the nodes in nodes
@@ -127,4 +128,5 @@ protected:
   // The number of nodes I have inside the box
   int                         myNbNodes;
 };
+
 #endif
