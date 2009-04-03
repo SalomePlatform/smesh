@@ -52,6 +52,7 @@
 #include "Utils_ExceptHandlers.hxx"
 #include "Utils_SINGLETON.hxx"
 #include "utilities.h"
+#include "GEOMImpl_Types.hxx"
 
 // OCCT Includes
 #include <BRep_Builder.hxx>
@@ -146,6 +147,8 @@ void SMESH_Mesh_i::SetShape( GEOM::GEOM_Object_ptr theShapeObject )
   catch(SALOME_Exception & S_ex) {
     THROW_SALOME_CORBA_EXCEPTION(S_ex.what(), SALOME::BAD_PARAM);
   }
+  // to track changes of GEOM groups
+  addGeomGroupData( theShapeObject, _this() );
 }
 
 //================================================================================
@@ -620,7 +623,6 @@ SMESH::SMESH_subMesh_ptr SMESH_Mesh_i::GetSubMesh(GEOM::GEOM_Object_ptr aSubShap
     // create a new subMesh object servant if there is none for the shape
     if ( subMesh->_is_nil() )
       subMesh = createSubMesh( aSubShapeObject );
-
     if ( _gen_i->CanPublishInStudy( subMesh )) {
       SALOMEDS::SObject_var aSO =
         _gen_i->PublishSubMesh(_gen_i->GetCurrentStudy(), aMesh,
@@ -733,9 +735,11 @@ SMESH::SMESH_GroupOnGeom_ptr SMESH_Mesh_i::CreateGroupFromGEOM (SMESH::ElementTy
   SMESH::SMESH_GroupOnGeom_var aNewGroup;
 
   TopoDS_Shape aShape = _gen_i->GeomObjectToShape( theGeomObj );
-  if ( !aShape.IsNull() ) {
+  if ( !aShape.IsNull() )
+  {
     aNewGroup = SMESH::SMESH_GroupOnGeom::_narrow
       ( createGroup( theElemType, theName, aShape ));
+
     if ( _gen_i->CanPublishInStudy( aNewGroup ) ) {
       SALOMEDS::SObject_var aSO =
         _gen_i->PublishGroup(_gen_i->GetCurrentStudy(), _this(),
@@ -1496,61 +1500,115 @@ SMESH::SMESH_Group_ptr SMESH_Mesh_i::CreateDimGroup(
 
 //================================================================================
 /*!
- * \brief Return group items of a group present in a study
+ * \brief Remember GEOM group data
  */
 //================================================================================
 
-static GEOM::GEOM_Object_ptr getGroupItemsFromStudy(CORBA::Object_ptr    theMesh,
-                                                    SMESH_Gen_i*         theGen,
-                                                    list<TopoDS_Shape> & theItems)
+void SMESH_Mesh_i::addGeomGroupData(GEOM::GEOM_Object_ptr theGeomObj,
+                                    CORBA::Object_ptr     theSmeshObj)
 {
-  GEOM::GEOM_Object_var groupObj;
-  SALOMEDS::Study_var  study = theGen->GetCurrentStudy();
-  GEOM::GEOM_Gen_var geomGen = theGen->GetGeomEngine();
-  if ( study->_is_nil() || geomGen->_is_nil() )
-    return groupObj._retn();
-  
+  if ( CORBA::is_nil( theGeomObj ) || theGeomObj->GetType() != GEOM_GROUP )
+    return;
+  // group SO
+  SALOMEDS::Study_var   study  = _gen_i->GetCurrentStudy();
+  SALOMEDS::SObject_var groupSO = _gen_i->ObjectToSObject( study, theGeomObj );
+  if ( groupSO->_is_nil() )
+    return;
+  // group indices
+  GEOM::GEOM_Gen_var geomGen = _gen_i->GetGeomEngine();
   GEOM::GEOM_IGroupOperations_var groupOp =
-    geomGen->GetIGroupOperations( theGen->GetCurrentStudyID() );
-  GEOM::GEOM_IShapesOperations_var shapeOp =
-    geomGen->GetIShapesOperations( theGen->GetCurrentStudyID() );
+    geomGen->GetIGroupOperations( _gen_i->GetCurrentStudyID() );
+  GEOM::ListOfLong_var ids = groupOp->GetObjects( theGeomObj );
 
-  SALOMEDS::SObject_var meshOS = theGen->ObjectToSObject(study, theMesh);
-  if ( meshOS->_is_nil() || groupOp->_is_nil() || shapeOp->_is_nil() )
-    return groupObj._retn();
-  SALOMEDS::SObject_var fatherSO = meshOS->GetFather();
-  if ( fatherSO->_is_nil() || fatherSO->Tag() != theGen->GetSubMeshOnCompoundTag() )
-    return groupObj._retn(); // keep only submeshes on groups
+  // store data
+  _geomGroupData.push_back( TGeomGroupData() );
+  TGeomGroupData & groupData = _geomGroupData.back();
+  // entry
+  CORBA::String_var entry = groupSO->GetID();
+  groupData._groupEntry = entry.in();
+  // indices
+  for ( int i = 0; i < ids->length(); ++i )
+    groupData._indices.insert( ids[i] );
+  // SMESH object
+  groupData._smeshObject = theSmeshObj;
+}
 
-  SALOMEDS::ChildIterator_var anIter = study->NewChildIterator(meshOS);
-  if ( anIter->_is_nil() ) return groupObj._retn();
-  for ( ; anIter->More(); anIter->Next())
-  {
-    SALOMEDS::SObject_var aSObject = anIter->Value();
-    SALOMEDS::SObject_var aRefSO;
-    if ( !aSObject->_is_nil() && aSObject->ReferencedObject(aRefSO) )
-    {
-      groupObj = GEOM::GEOM_Object::_narrow(aRefSO->GetObject());
-      if ( groupObj->_is_nil() ) break;
-      GEOM::ListOfLong_var  ids = groupOp->GetObjects( groupObj );
-      GEOM::GEOM_Object_var mainShape = groupObj->GetMainShape();
-      for ( int i = 0; i < ids->length(); ++i ) {
-        GEOM::GEOM_Object_var subShape = shapeOp->GetSubShape( mainShape, ids[i] );
-        TopoDS_Shape S = theGen->GeomObjectToShape( subShape );
-        if ( !S.IsNull() )
-          theItems.push_back( S );
-      }
-      break;
+//================================================================================
+/*!
+ * Remove GEOM group data relating to removed smesh object
+ */
+//================================================================================
+
+void SMESH_Mesh_i::removeGeomGroupData(CORBA::Object_ptr theSmeshObj)
+{
+  list<TGeomGroupData>::iterator
+    data = _geomGroupData.begin(), dataEnd = _geomGroupData.end();
+  for ( ; data != dataEnd; ++data ) {
+    if ( theSmeshObj->_is_equivalent( data->_smeshObject )) {
+      _geomGroupData.erase( data );
+      return;
     }
   }
-  return groupObj._retn();
+}
+
+//================================================================================
+/*!
+ * \brief Return new group contents if it has been changed and update group data
+ */
+//================================================================================
+
+TopoDS_Shape SMESH_Mesh_i::newGroupShape( TGeomGroupData & groupData)
+{
+  TopoDS_Shape newShape;
+
+  // get geom group
+  SALOMEDS::Study_var study = _gen_i->GetCurrentStudy();
+  if ( study->_is_nil() ) return newShape; // means "not changed"
+  SALOMEDS::SObject_var groupSO = study->FindObjectID( groupData._groupEntry.c_str() );
+  if ( !groupSO->_is_nil() )
+  {
+    CORBA::Object_var groupObj = _gen_i->SObjectToObject( groupSO );
+    if ( CORBA::is_nil( groupObj )) return newShape;
+    GEOM::GEOM_Object_var geomGroup = GEOM::GEOM_Object::_narrow( groupObj );
+    
+    // get indices of group items
+    set<int> curIndices;
+    GEOM::GEOM_Gen_var geomGen = _gen_i->GetGeomEngine();
+    GEOM::GEOM_IGroupOperations_var groupOp =
+      geomGen->GetIGroupOperations( _gen_i->GetCurrentStudyID() );
+    GEOM::ListOfLong_var ids = groupOp->GetObjects( geomGroup );
+    for ( int i = 0; i < ids->length(); ++i )
+      curIndices.insert( ids[i] );
+
+    if ( groupData._indices == curIndices )
+      return newShape; // group not changed
+
+    // update data
+    groupData._indices = curIndices;
+
+    GEOM_Client* geomClient = _gen_i->GetShapeReader();
+    if ( !geomClient ) return newShape;
+    TCollection_AsciiString groupIOR = geomGen->GetStringFromIOR( geomGroup );
+    geomClient->RemoveShapeFromBuffer( groupIOR );
+    newShape = _gen_i->GeomObjectToShape( geomGroup );
+  }    
+
+  if ( newShape.IsNull() ) {
+    // geom group becomes empty - return empty compound
+    TopoDS_Compound compound;
+    BRep_Builder    builder;
+    builder.MakeCompound(compound);
+    newShape = compound;
+  }
+  return newShape;
 }
 
 //=============================================================================
 /*!
- * \brief Update hypotheses assigned to geom groups if the latter change
+ * \brief Update objects depending on changed geom groups
  * 
- * NPAL16168: "geometrical group edition from a submesh don't modifiy mesh computation"
+ * NPAL16168: geometrical group edition from a submesh don't modifiy mesh computation
+ * issue 0020210: Update of a smesh group after modification of the associated geom group
  */
 //=============================================================================
 
@@ -1561,70 +1619,107 @@ void SMESH_Mesh_i::CheckGeomGroupModif()
   SALOMEDS::Study_var study = _gen_i->GetCurrentStudy();
   if ( study->_is_nil() ) return;
 
-  // check if items of groups changed
-  map<int, ::SMESH_subMesh*>::iterator i_sm = _mapSubMesh.begin();
-  for ( ; i_sm != _mapSubMesh.end(); ++i_sm )
-  {
-    const TopoDS_Shape & oldGroupShape = i_sm->second->GetSubShape();
-    SMESHDS_SubMesh * oldDS = i_sm->second->GetSubMeshDS();
-    if ( !oldDS /*|| !oldDS->IsComplexSubmesh()*/ )
-      continue;
-    int oldID = i_sm->first;
-    map<int, SMESH::SMESH_subMesh_ptr>::iterator i_smIor = _mapSubMeshIor.find( oldID );
-    if ( i_smIor == _mapSubMeshIor.end() )
-      continue;
-    list< TopoDS_Shape> newItems;
-    GEOM::GEOM_Object_var groupObj = getGroupItemsFromStudy ( i_smIor->second, _gen_i, newItems );
-    if ( groupObj->_is_nil() )
-      continue;
+  CORBA::Long nbEntities = NbNodes() + NbElements();
 
-    int nbOldItems = oldDS->IsComplexSubmesh() ? oldDS->NbSubMeshes() : 1;
-    int nbNewItems = newItems.size();
-    bool groupChanged = ( nbOldItems != nbNewItems);
-    if ( !groupChanged ) {
-      if ( !oldDS->IsComplexSubmesh() ) { // old group has one item
-        groupChanged = ( oldGroupShape != newItems.front() );
-      }
-      else {
-        list<TopoDS_Shape>::iterator item = newItems.begin();
-        for ( ; item != newItems.end() && !groupChanged; ++item )
-        {
-          SMESHDS_SubMesh * itemDS = _impl->GetMeshDS()->MeshElements( *item );
-          groupChanged = ( !itemDS || !oldDS->ContainsSubMesh( itemDS ));
-        }
-      }
+  // Check if group contents changed
+
+  typedef map< string, TopoDS_Shape > TEntry2Geom;
+  TEntry2Geom newGroupContents;
+
+  list<TGeomGroupData>::iterator
+    data = _geomGroupData.begin(), dataEnd = _geomGroupData.end();
+  for ( ; data != dataEnd; ++data )
+  {
+    pair< TEntry2Geom::iterator, bool > it_new =
+      newGroupContents.insert( make_pair( data->_groupEntry, TopoDS_Shape() ));
+    bool processedGroup    = !it_new.second;
+    TopoDS_Shape& newShape = it_new.first->second;
+    if ( !processedGroup )
+      newShape = newGroupShape( *data );
+    if ( newShape.IsNull() )
+      continue; // no changes
+
+    if ( processedGroup ) { // update group indices
+      list<TGeomGroupData>::iterator data2 = data;
+      for ( --data2; data2->_groupEntry != data->_groupEntry; --data2)
+        data->_indices = data2->_indices;
     }
-    // update hypotheses and submeshes if necessary
-    if ( groupChanged )
+
+    // Update SMESH objects according to new GEOM group contents
+
+    SMESH::SMESH_Mesh_var mesh = SMESH::SMESH_Mesh::_narrow( data->_smeshObject );
+    if ( !mesh->_is_nil() ) // -------------- MESH ----------------------------
     {
-      // get a new group shape
-      GEOM_Client* geomClient = _gen_i->GetShapeReader();
-      if ( !geomClient ) continue;
-      TCollection_AsciiString groupIOR = _gen_i->GetGeomEngine()->GetStringFromIOR( groupObj );
-      geomClient->RemoveShapeFromBuffer( groupIOR );
-      TopoDS_Shape newGroupShape = _gen_i->GeomObjectToShape( groupObj );
+      // TODO
+      continue;
+    }
+
+    SMESH::SMESH_subMesh_var submesh = SMESH::SMESH_subMesh::_narrow( data->_smeshObject );
+    if ( !submesh->_is_nil() ) // -------------- Sub mesh ---------------------
+    {
+      int oldID = submesh->GetId();
+      if ( _mapSubMeshIor.find( oldID ) == _mapSubMeshIor.end() )
+        continue;
+      TopoDS_Shape oldShape = _mapSubMesh[oldID]->GetSubShape();
+
       // update hypotheses
-      list <const SMESHDS_Hypothesis * > hyps = _impl->GetHypothesisList(oldGroupShape);
+      list <const SMESHDS_Hypothesis * > hyps = _impl->GetHypothesisList(oldShape);
       list <const SMESHDS_Hypothesis * >::iterator hypIt;
       for ( hypIt = hyps.begin(); hypIt != hyps.end(); ++hypIt )
       {
-        _impl->RemoveHypothesis( oldGroupShape, (*hypIt)->GetID());
-        _impl->AddHypothesis   ( newGroupShape, (*hypIt)->GetID());
+        _impl->RemoveHypothesis( oldShape, (*hypIt)->GetID());
+        _impl->AddHypothesis   ( newShape, (*hypIt)->GetID());
       }
       // care of submeshes
-      SMESH_subMesh* newSubmesh = _impl->GetSubMesh( newGroupShape );
+      SMESH_subMesh* newSubmesh = _impl->GetSubMesh( newShape );
       int newID = newSubmesh->GetId();
       if ( newID != oldID ) {
         _mapSubMesh   [ newID ] = newSubmesh;
         _mapSubMesh_i [ newID ] = _mapSubMesh_i [ oldID ];
         _mapSubMeshIor[ newID ] = _mapSubMeshIor[ oldID ];
-        _mapSubMesh.erase   (oldID);
-        _mapSubMesh_i.erase (oldID);
+        _mapSubMesh.   erase(oldID);
+        _mapSubMesh_i. erase(oldID);
         _mapSubMeshIor.erase(oldID);
         _mapSubMesh_i [ newID ]->changeLocalId( newID );
       }
+      continue;
+    }
+
+    SMESH::SMESH_GroupOnGeom_var smeshGroup =
+      SMESH::SMESH_GroupOnGeom::_narrow( data->_smeshObject );
+    if ( !smeshGroup->_is_nil() ) // ------------ GROUP -----------------------
+    {
+      SMESH_GroupOnGeom_i* group_i = SMESH::DownCast<SMESH_GroupOnGeom_i*>( smeshGroup );
+      if ( group_i ) {
+        ::SMESH_Group* group = _impl->GetGroup( group_i->GetLocalID() );
+        SMESHDS_GroupOnGeom* ds = static_cast<SMESHDS_GroupOnGeom*>( group->GetGroupDS() );
+        ds->SetShape( newShape );
+      }
+      continue;
     }
   }
+
+  // Update icons
+
+  CORBA::Long newNbEntities = NbNodes() + NbElements();
+  list< SALOMEDS::SObject_var > soToUpdateIcons;
+  if ( newNbEntities != nbEntities )
+  {
+    // Add all SObjects with icons
+    soToUpdateIcons.push_back( _gen_i->ObjectToSObject( study, _this() )); // mesh
+
+    for (map<int, SMESH::SMESH_subMesh_ptr>::iterator i_sm = _mapSubMeshIor.begin();
+         i_sm != _mapSubMeshIor.end(); ++i_sm ) // submeshes
+      soToUpdateIcons.push_back( _gen_i->ObjectToSObject( study, i_sm->second ));
+
+    for ( map<int, SMESH::SMESH_GroupBase_ptr>::iterator i_gr = _mapGroups.begin();
+          i_gr != _mapGroups.end(); ++i_gr ) // groups
+      soToUpdateIcons.push_back( _gen_i->ObjectToSObject( study, i_gr->second ));
+  }
+
+  list< SALOMEDS::SObject_var >::iterator so = soToUpdateIcons.begin();
+  for ( ; so != soToUpdateIcons.end(); ++so )
+    _gen_i->SetPixMap( *so, "ICON_SMESH_TREE_MESH_WARN" );
 }
 
 //=============================================================================
@@ -1650,10 +1745,9 @@ SMESH::SMESH_Group_ptr SMESH_Mesh_i::ConvertToStandalone( SMESH::SMESH_GroupOnGe
   int anId = aGroupToRem->GetLocalID();
   if ( !_impl->ConvertToStandalone( anId ) )
     return aGroup._retn();
+  removeGeomGroupData( theGroup );
 
-    SMESH_GroupBase_i* aGroupImpl;
-      aGroupImpl = new SMESH_Group_i( SMESH_Gen_i::GetPOA(), this, anId );
-
+  SMESH_GroupBase_i* aGroupImpl = new SMESH_Group_i( SMESH_Gen_i::GetPOA(), this, anId );
 
   // remove old instance of group from own map
   _mapGroups.erase( anId );
@@ -1720,6 +1814,9 @@ SMESH::SMESH_subMesh_ptr SMESH_Mesh_i::createSubMesh( GEOM::GEOM_Object_ptr theS
   int nextId = _gen_i->RegisterObject( subMesh );
   if(MYDEBUG) MESSAGE( "Add submesh to map with id = "<< nextId);
 
+  // to track changes of GEOM groups
+  addGeomGroupData( theSubShapeObject, subMesh );
+
   return subMesh._retn();
 }
 
@@ -1760,6 +1857,7 @@ void SMESH_Mesh_i::removeSubMesh (SMESH::SMESH_subMesh_ptr theSubMesh,
   catch( const SALOME::SALOME_Exception& ) {
     INFOS("SMESH_Mesh_i::removeSubMesh(): exception caught!");
   }
+  removeGeomGroupData( theSubShapeObject );
 
   int subMeshId = theSubMesh->GetId();
 
@@ -1799,6 +1897,12 @@ SMESH::SMESH_GroupBase_ptr SMESH_Mesh_i::createGroup (SMESH::ElementType theElem
     // register CORBA object for persistence
     int nextId = _gen_i->RegisterObject( aGroup );
     if(MYDEBUG) MESSAGE( "Add group to map with id = "<< nextId);
+
+    // to track changes of GEOM groups
+    if ( !theShape.IsNull() ) {
+      GEOM::GEOM_Object_var geom = _gen_i->ShapeToGeomObject( theShape );
+      addGeomGroupData( geom, aGroup );
+    }
   }
   return aGroup._retn();
 }
@@ -1815,6 +1919,7 @@ void SMESH_Mesh_i::removeGroup( const int theId )
 {
   if(MYDEBUG) MESSAGE("SMESH_Mesh_i::removeGroup()" );
   if ( _mapGroups.find( theId ) != _mapGroups.end() ) {
+    removeGeomGroupData( _mapGroups[theId] );
     _mapGroups.erase( theId );
     _impl->RemoveGroup( theId );
   }
