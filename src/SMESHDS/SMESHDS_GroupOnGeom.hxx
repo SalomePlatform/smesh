@@ -22,7 +22,6 @@
 //  SMESH SMESHDS : management of mesh data and SMESH document
 //  File   : SMESHDS_GroupOnGeom.hxx
 //  Module : SMESH
-//  $Header$
 //
 #ifndef _SMESHDS_GroupOnGeom_HeaderFile
 #define _SMESHDS_GroupOnGeom_HeaderFile
@@ -42,6 +41,8 @@ class SMESHDS_EXPORT SMESHDS_GroupOnGeom: public SMESHDS_GroupBase
                        const SMESHDS_Mesh*       theMesh,
                        const SMDSAbs_ElementType theType,
                        const TopoDS_Shape&       theShape);
+
+  void SetShape( const TopoDS_Shape& theShape);
 
   TopoDS_Shape GetShape() const { return myShape; }
 

@@ -22,7 +22,6 @@
 //  SMESH SMESHDS : idl implementation based on 'SMESH' unit's classes
 //  File   : SMESHDS_GroupOnGeom.cxx
 //  Module : SMESH
-//  $Header$
 //
 #include "SMESHDS_GroupOnGeom.hxx"
 #include "SMESHDS_Mesh.hxx"
@@ -40,10 +39,16 @@ SMESHDS_GroupOnGeom::SMESHDS_GroupOnGeom (const int                 theID,
                                           const SMESHDS_Mesh*       theMesh,
                                           const SMDSAbs_ElementType theType,
                                           const TopoDS_Shape&       theShape)
-     : SMESHDS_GroupBase(theID,theMesh,theType), myShape(theShape)
+     : SMESHDS_GroupBase(theID,theMesh,theType)
 {
-  SMESHDS_Mesh* aMesh = const_cast<SMESHDS_Mesh*>(theMesh);
+  SetShape( theShape );
+}
+
+void SMESHDS_GroupOnGeom::SetShape( const TopoDS_Shape& theShape)
+{
+  SMESHDS_Mesh* aMesh = const_cast<SMESHDS_Mesh*>( GetMesh() );
   mySubMesh = aMesh->MeshElements( aMesh->AddCompoundSubmesh( theShape ));
+  myShape   = theShape;
 }
 
 // =====================
