@@ -20,11 +20,12 @@
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 //  SMESH SMESH_Octree : global Octree implementation
-// File      : SMESH_Octree.hxx
-// Created   : Tue Jan 16 16:00:00 2007
-// Author    : Nicolas Geimer & Aurélien Motteux (OCC)
-// Module    : SMESH
 //
+//  File      : SMESH_Octree.hxx
+//  Created   : Tue Jan 16 16:00:00 2007
+//  Author    : Nicolas Geimer & Aurélien Motteux (OCC)
+//  Module    : SMESH
+
 #ifndef _SMESH_OCTREE_HXX_
 #define _SMESH_OCTREE_HXX_
 
@@ -96,4 +97,5 @@ protected:
   // Tell us if the Octree is a leaf or not (-1 if not initialized)
   int            myIsLeaf;
 };
+
 #endif

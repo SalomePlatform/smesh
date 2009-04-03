@@ -20,11 +20,12 @@
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 //  SMESH  SMESH_Octree : global Octree implementation
-// File      : SMESH_Octree.cxx
-// Created   : Tue Jan 16 16:00:00 2007
-// Author    : Nicolas Geimer & Aurélien Motteux(OCC)
-// Module    : SMESH
 //
+//  File      : SMESH_Octree.cxx
+//  Created   : Tue Jan 16 16:00:00 2007
+//  Author    : Nicolas Geimer & Aurélien Motteux(OCC)
+//  Module    : SMESH
+
 #include "SMESH_Octree.hxx"
 
 //===========================================================================
@@ -57,7 +58,7 @@ SMESH_Octree::~SMESH_Octree ()
     {
       for(int i = 0; i<8; i++)
         delete myChildren[i];
-      delete[] myChildren ;
+      delete[] myChildren;
     }
   }
   delete myBox;
@@ -148,10 +149,10 @@ void SMESH_Octree::buildChildren()
   Standard_Real XminChild, YminChild, ZminChild;
   Bnd_B3d* box;
   gp_XYZ minChild;
-  for (int i =0; i<8; i++)
+  for (int i = 0; i < 8; i++)
   {
-    // We build the eight boxes, we need 2 points to do that.
-    // Min, and Mid
+    // We build the eight boxes, we need 2 points to do that:
+    // Min and Mid
     // In binary, we can write i from 0 to 7
     // For instance :
     // 5 is 101, it corresponds here in coordinates to ZYX
@@ -160,14 +161,14 @@ void SMESH_Octree::buildChildren()
     // Same scheme for X and Z
     // I need the minChild to build the Bnd_B3d box.
 
-    XminChild= (i%2==0)?min.X():mid.X();
-    YminChild= ((i%4)/2==0)?min.Y():mid.Y();
-    ZminChild= (i<4)?min.Z():mid.Z();
+    XminChild = (i%2==0)?min.X():mid.X();
+    YminChild = ((i%4)/2==0)?min.Y():mid.Y();
+    ZminChild = (i<4)?min.Z():mid.Z();
     minChild.SetCoord(XminChild, YminChild, ZminChild);
 
     box = new Bnd_B3d(minChild+childHsize,childHsize);
     // The child is of the same type than its father (For instance, a SMESH_OctreeNode)
-    // We allocate the memory we need fot the child
+    // We allocate the memory we need for the child
     myChildren[i] = allocateOctreeChild();
     // and we assign to him its box.
     myChildren[i]->setBox(box);
@@ -178,6 +179,6 @@ void SMESH_Octree::buildChildren()
   buildChildrenData();
 
   //After we pass to the next level of the Octree
-  for (int i =0; i<8; i++)
+  for (int i = 0; i < 8; i++)
     myChildren[i]->Compute();
 }
