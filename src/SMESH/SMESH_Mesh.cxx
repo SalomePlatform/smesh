@@ -177,6 +177,12 @@ void SMESH_Mesh::ShapeToMesh(const TopoDS_Shape & aShape)
                                         (TopAbs_ShapeEnum) ancType,
                                         _mapAncestors );
   }
+  else
+  {
+    _isShapeToMesh = false;
+    _shapeDiagonal = 0.0;
+    _myMeshDS->ShapeToMesh( PseudoShape() );
+  }
 }
 
 //=======================================================================
