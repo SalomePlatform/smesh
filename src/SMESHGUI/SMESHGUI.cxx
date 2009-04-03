@@ -3319,6 +3319,12 @@ bool SMESHGUI::activateModule( SUIT_Study* study )
   action(  33)->setEnabled(true); // Delete: Key_Delete
   action(1101)->setEnabled(true); // Rename: Key_F2
 
+  //  0020210. Make SMESH_Gen update meshes at switching GEOM->SMESH
+  GetSMESHGen()->SetCurrentStudy(SALOMEDS::Study::_nil());
+  if ( SalomeApp_Study* s = dynamic_cast<SalomeApp_Study*>( study ))
+    if ( _PTR(Study) aStudy = s->studyDS())
+      GetSMESHGen()->SetCurrentStudy( _CAST(Study,aStudy)->GetStudy() );
+
   return res;
 }
 
