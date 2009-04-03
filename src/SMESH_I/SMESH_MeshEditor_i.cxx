@@ -3874,11 +3874,7 @@ SMESH::SMESH_Mesh_ptr SMESH_MeshEditor_i::makeMesh(const char* theMeshName)
   SALOMEDS::Study_var study = gen->GetCurrentStudy();
   SALOMEDS::SObject_var meshSO = gen->ObjectToSObject( study, mesh );
   gen->SetName( meshSO, theMeshName, "Mesh" );
-
-  SALOMEDS::StudyBuilder_var builder = study->NewBuilder();
-  SALOMEDS::GenericAttribute_var anAttr
-    = builder->FindOrCreateAttribute( meshSO, "AttributePixMap" );
-  SALOMEDS::AttributePixMap::_narrow( anAttr )->SetPixMap( "ICON_SMESH_TREE_MESH_IMPORTED" );
+  gen->SetPixMap( meshSO, "ICON_SMESH_TREE_MESH_IMPORTED");
 
   return mesh._retn();
 }
