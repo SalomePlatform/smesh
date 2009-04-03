@@ -459,6 +459,33 @@ private:
   std::map<int, SMESH::SMESH_GroupBase_ptr>  _mapGroups;
   std::map<int, SMESH::SMESH_Hypothesis_ptr> _mapHypo;
   SALOME_MED::MedFileInfo_var myFileInfo;
+
+private:
+
+  // Data used to track changes of GEOM groups
+  struct TGeomGroupData {
+    // keep study entry and not ior because GEOM_Object actually changes if
+    // number of items in a group varies (1) <-> (>1)
+    std::string       _groupEntry;
+    std::set<int>     _indices; // indices of group items within group's main shape
+    CORBA::Object_ptr _smeshObject; // SMESH object depending on GEOM group
+  };
+  std::list<TGeomGroupData> _geomGroupData;
+
+  /*!
+   * Remember GEOM group data
+   */
+  void addGeomGroupData(GEOM::GEOM_Object_ptr theGeomObj,
+                        CORBA::Object_ptr     theSmeshObj);
+  /*!
+   * Remove GEOM group data relating to removed smesh object
+   */
+  void removeGeomGroupData(CORBA::Object_ptr theSmeshObj);
+  /*!
+   * \brief Return new group contents if it has been changed and update group data
+   */
+  TopoDS_Shape newGroupShape( TGeomGroupData & groupData);
+  
 };
 
 #endif
