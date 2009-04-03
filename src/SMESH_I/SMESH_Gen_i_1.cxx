@@ -299,6 +299,25 @@ void SMESH_Gen_i::SetName(SALOMEDS::SObject_ptr theSObject,
 }
 
 //=======================================================================
+//function : SetPixMap
+//purpose  : 
+//=======================================================================
+
+void SMESH_Gen_i::SetPixMap(SALOMEDS::SObject_ptr theSObject,
+                            const char*           thePixMap)
+{
+  if ( !theSObject->_is_nil() && thePixMap && strlen( thePixMap ))
+  {
+    SALOMEDS::Study_var aStudy = theSObject->GetStudy();
+    SALOMEDS::StudyBuilder_var aStudyBuilder = aStudy->NewBuilder();
+    SALOMEDS::GenericAttribute_var anAttr =
+      aStudyBuilder->FindOrCreateAttribute( theSObject, "AttributePixMap" );
+    SALOMEDS::AttributePixMap_var aPMAttr = SALOMEDS::AttributePixMap::_narrow( anAttr );
+    aPMAttr->SetPixMap( thePixMap );
+  }
+}
+
+//=======================================================================
 //function : addReference
 //purpose  : 
 //=======================================================================

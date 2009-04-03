@@ -439,6 +439,9 @@ public:
                       const char*           theName,
                       const char*           theDefaultName = 0);
 
+  static void SetPixMap(SALOMEDS::SObject_ptr theSObject,
+                        const char*           thePixMap);
+
   //  Get study context
   StudyContext* GetCurrentStudyContext();
 
