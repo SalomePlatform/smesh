@@ -557,12 +557,10 @@ CORBA::Boolean SMESH_Gen_i::IsEmbeddedMode()
 
 void SMESH_Gen_i::SetCurrentStudy( SALOMEDS::Study_ptr theStudy )
 {
-  //if(MYDEBUG)
-  //MESSAGE( "SMESH_Gen_i::SetCurrentStudy" );
+  int curStudyId = GetCurrentStudyID();
   myCurrentStudy = SALOMEDS::Study::_duplicate( theStudy );
   // create study context, if it doesn't exist and set current study
   int studyId = GetCurrentStudyID();
-  if(MYDEBUG) MESSAGE( "SMESH_Gen_i::SetCurrentStudy: study Id = " << studyId );
   if ( myStudyContextMap.find( studyId ) == myStudyContextMap.end() ) {
     myStudyContextMap[ studyId ] = new StudyContext;      
   }
@@ -573,9 +571,19 @@ void SMESH_Gen_i::SetCurrentStudy( SALOMEDS::Study_ptr theStudy )
     if( !myCurrentStudy->FindComponent( "GEOM" )->_is_nil() )
       aStudyBuilder->LoadWith( myCurrentStudy->FindComponent( "GEOM" ), GetGeomEngine() );
 
-  // set current study for geom engine
-  //if ( !CORBA::is_nil( GetGeomEngine() ) )
-  //  GetGeomEngine()->GetCurrentStudy( myCurrentStudy->StudyId() );
+    // NPAL16168, issue 0020210
+    // Let meshes update their data depending on GEOM groups that could change
+    if ( curStudyId != studyId )
+    {
+      SALOMEDS::SComponent_var me = PublishComponent( myCurrentStudy );
+      SALOMEDS::ChildIterator_var anIter = myCurrentStudy->NewChildIterator( me );
+      for ( ; anIter->More(); anIter->Next() ) {
+	SALOMEDS::SObject_var so = anIter->Value();
+        CORBA::Object_var    ior = SObjectToObject( so );
+        if ( SMESH_Mesh_i*  mesh = SMESH::DownCast<SMESH_Mesh_i*>( ior ))
+          mesh->CheckGeomGroupModif();
+      }
+    }
   }
 }
 
@@ -1338,8 +1346,6 @@ CORBA::Boolean SMESH_Gen_i::Compute( SMESH::SMESH_Mesh_ptr theMesh,
     SMESH_Mesh_i* meshServant = dynamic_cast<SMESH_Mesh_i*>( GetServant( theMesh ).in() );
     ASSERT( meshServant );
     if ( meshServant ) {
-      // NPAL16168: "geometrical group edition from a submesh don't modifiy mesh computation"
-      meshServant->CheckGeomGroupModif();
       // get local TopoDS_Shape
       TopoDS_Shape myLocShape;
       if(theMesh->HasShapeToMesh())
