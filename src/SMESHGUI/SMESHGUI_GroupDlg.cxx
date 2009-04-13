@@ -2205,12 +2205,10 @@ bool SMESHGUI_GroupDlg::SetAppropriateActor()
       // iterate on all actors in current view window, search for
       // any visible actor, that belongs to group or submesh of current mesh
       vtkActorCollection *aCollection = aViewWindow->getRenderer()->GetActors();
-      aCollection->InitTraversal();
-      for (vtkActor *anAct = aCollection->GetNextActor();
-           anAct && !isActor;
-           anAct = aCollection->GetNextActor())
+      int nbItems = aCollection->GetNumberOfItems();
+      for (int i=0; i<nbItems; i++)
       {
-        SMESH_Actor *anActor = dynamic_cast<SMESH_Actor*>(anAct);
+        SMESH_Actor *anActor = dynamic_cast<SMESH_Actor*>(aCollection->GetItemAsObject(i));
         if (anActor && anActor->hasIO()) {
           Handle(SALOME_InteractiveObject) anIO = anActor->getIO();
           if (aViewWindow->isVisible(anIO)) {
