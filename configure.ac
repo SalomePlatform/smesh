@@ -26,7 +26,7 @@
 # Modified by : Alexander BORODIN (OCN) - autotools usage
 # Created from configure.in.base
 #
-AC_INIT([Salome2 Project SMESH module], [4.1.4], [webmaster.salome@opencascade.com], [salome])
+AC_INIT([Salome2 Project SMESH module], [4.1.5], [webmaster.salome@opencascade.com], [salome])
 AC_CONFIG_AUX_DIR(salome_adm/unix/config_files)
 AC_CANONICAL_HOST
 AC_CANONICAL_TARGET
