@@ -19,11 +19,11 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
-// SMESH SMESHGUI : GUI for SMESH component
-// File   : SMESHGUI_GroupDlg.cxx
-// Author : Natalia KOPNOVA, Open CASCADE S.A.S.
-// SMESH includes
-//
+//  SMESH SMESHGUI : GUI for SMESH component
+//  File   : SMESHGUI_GroupDlg.cxx
+//  Author : Natalia KOPNOVA, Open CASCADE S.A.S.
+//  SMESH includes
+
 #include "SMESHGUI_GroupDlg.h"
 
 #include "SMESHGUI.h"
@@ -2206,7 +2206,7 @@ bool SMESHGUI_GroupDlg::SetAppropriateActor()
       // any visible actor, that belongs to group or submesh of current mesh
       vtkActorCollection *aCollection = aViewWindow->getRenderer()->GetActors();
       int nbItems = aCollection->GetNumberOfItems();
-      for (int i=0; i<nbItems; i++)
+      for (int i=0; i<nbItems && !isActor; i++)
       {
         SMESH_Actor *anActor = dynamic_cast<SMESH_Actor*>(aCollection->GetItemAsObject(i));
         if (anActor && anActor->hasIO()) {
