@@ -577,13 +577,17 @@ void SMESH_Gen_i::SetCurrentStudy( SALOMEDS::Study_ptr theStudy )
     // Let meshes update their data depending on GEOM groups that could change
     if ( curStudyId != studyId )
     {
-      SALOMEDS::SComponent_var me = PublishComponent( myCurrentStudy );
-      SALOMEDS::ChildIterator_var anIter = myCurrentStudy->NewChildIterator( me );
-      for ( ; anIter->More(); anIter->Next() ) {
-	SALOMEDS::SObject_var so = anIter->Value();
-        CORBA::Object_var    ior = SObjectToObject( so );
-        if ( SMESH_Mesh_i*  mesh = SMESH::DownCast<SMESH_Mesh_i*>( ior ))
-          mesh->CheckGeomGroupModif();
+      //SALOMEDS::SComponent_var me =  PublishComponent( myCurrentStudy );
+      SALOMEDS::SComponent_var me = SALOMEDS::SComponent::_narrow
+        ( myCurrentStudy->FindComponent( ComponentDataType() ) );
+      if ( !me->_is_nil() ) {
+	SALOMEDS::ChildIterator_var anIter = myCurrentStudy->NewChildIterator( me );
+	for ( ; anIter->More(); anIter->Next() ) {
+	  SALOMEDS::SObject_var so = anIter->Value();
+	  CORBA::Object_var    ior = SObjectToObject( so );
+	  if ( SMESH_Mesh_i*  mesh = SMESH::DownCast<SMESH_Mesh_i*>( ior ))
+	    mesh->CheckGeomGroupModif();
+	}
       }
     }
   }
