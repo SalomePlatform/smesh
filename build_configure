@@ -123,8 +123,8 @@ echo "====================================================== aclocal"
 
 if test ${SMESH_WITH_GUI} = yes; then
   aclocal -I adm_local/unix/config_files \
-          -I ${KERNEL_ROOT_DIR}/salome_adm/unix/config_files \
 	  -I ${GUI_ROOT_DIR}/adm_local/unix/config_files \
+          -I ${KERNEL_ROOT_DIR}/salome_adm/unix/config_files \
 	  -I ${MED_ROOT_DIR}/adm_local/unix/config_files \
 	  -I ${GEOM_ROOT_DIR}/adm_local/unix/config_files || exit 1
 else
