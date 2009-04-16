@@ -1514,7 +1514,7 @@ SMESHGUI_PrecomputeOp::SMESHGUI_PrecomputeOp()
  myActiveDlg( 0 ),
  myPreviewDisplayer( 0 )
 {
-  myHelpFileName = "preview_meshes_page.html"; // V4
+  myHelpFileName = "constructing_meshes_page.html#preview_mesh_anchor";
 }
 
 //================================================================================

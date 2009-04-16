@@ -74,6 +74,8 @@ automatically generate a 3D mesh with the most appropriate
 settings. In the same way you can apply this functionality for meshing
 2D objects, in which case 3D algorithms are not applied.</li>
 
+\anchor preview_mesh_anchor
+
 <li> After the mesh object is created and all hypotheses are assigned and
 before the mesh computation, it is possible to see the mesh preview.
 
