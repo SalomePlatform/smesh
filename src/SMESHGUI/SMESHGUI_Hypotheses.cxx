@@ -495,6 +495,8 @@ QString SMESHGUI_GenericHypothesisCreator::helpPage() const
   QString aHelpFileName;
   if ( aHypType == "LocalLength" )
     aHelpFileName = "a1d_meshing_hypo_page.html#average_length_anchor";
+  if ( aHypType == "MaxLength" )
+    aHelpFileName = "a1d_meshing_hypo_page.html#max_length_anchor";
   else if ( aHypType == "Arithmetic1D")
     aHelpFileName = "a1d_meshing_hypo_page.html#arithmetic_1d_anchor";
   else if ( aHypType == "MaxElementArea")
