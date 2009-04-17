@@ -1370,7 +1370,13 @@ void SMESHGUI_FilterTable::onCriterionChanged (const int row, const int col, con
 
   int aCriterionType = GetCriterionType(row);
   QtxColorButton* clrBtn = qobject_cast<QtxColorButton*>(aTable->cellWidget(row, 2));
-  bool isComboItem = aTable->item(row, 2)->type() == ComboItem::Type();
+  int aComboType = ComboItem::Type();
+  QTableWidgetItem* aTableItem = aTable->item(row, 2);
+  bool isComboItem = false;
+  if (aTableItem) {
+    int aTableType = aTable->item(row, 2)->type();
+    isComboItem = aTableType == aComboType ? true : false;
+  }
   
   if ( (aCriterionType != SMESH::FT_GroupColor && clrBtn) ||
        (aCriterionType != SMESH::FT_ElemGeomType && isComboItem) )
@@ -1445,19 +1451,21 @@ void SMESHGUI_FilterTable::onCriterionChanged (const int row, const int col, con
   }
   else
   {
-    if (aCompareItem->count() != 3)
+    if (aCompareItem && aCompareItem->count() != 3)
     {
       aCompareItem->setItems(getCompare());
     }
 
-    QString aText = aTable->text(row, 2);
-    bool isOk = false;
-    aText.toDouble(&isOk);
-    aTable->item( row, 2 )->setText(isOk ? aText : QString(""));
-    if (!aTable->isEditable(row, 1))
-      aTable->setEditable(true, row, 1);
-    if (!aTable->isEditable(row, 2))
-      aTable->setEditable(true, row, 2);
+    if (aTable->item( row, 2 )) {
+      QString aText = aTable->text(row, 2);
+      bool isOk = false;
+      aText.toDouble(&isOk);
+      aTable->item( row, 2 )->setText(isOk ? aText : QString(""));
+      if (!aTable->isEditable(row, 1))
+	aTable->setEditable(true, row, 1);
+      if (!aTable->isEditable(row, 2))
+	aTable->setEditable(true, row, 2);
+    }
   }
 
   updateAdditionalWidget();
