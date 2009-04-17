@@ -431,6 +431,7 @@ void SMESHGUI_GroupOnShapeOp::selectionDone()
     myDlg->myElemGeomBtn->setEnabled( nbSelected == 1 );
     myDlg->myNodeGeomList->clear();
     myDlg->myNodeGeomBtn->setEnabled( nbSelected == 1 );
+    myDlg->myElemGeomBtn->click();
     return;
   }
 
