@@ -1063,7 +1063,8 @@ SMESH::SMESH_Gen_var SMESHGUI::myComponentSMESH = SMESH::SMESH_Gen::_nil();
  */
 //=============================================================================
 SMESHGUI::SMESHGUI() :
-SalomeApp_Module( "SMESH" )
+SalomeApp_Module( "SMESH" ),
+LightApp_Module( "SMESH" )
 {
   if ( CORBA::is_nil( myComponentSMESH ) )
   {
