@@ -609,7 +609,7 @@ void SMESHGUI_GroupDlg::init (SMESH::SMESH_GroupBase_ptr theGroup)
       myGeomGroupLine->setText( aShapeName );
       myNameChanged = true;
       myName->blockSignals(true);
-      myName->setText("Group On " + aShapeName);
+      myName->setText(theGroup->GetName());
       myName->blockSignals(false);
     }
   }
