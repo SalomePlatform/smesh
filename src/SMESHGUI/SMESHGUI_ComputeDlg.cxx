@@ -1435,6 +1435,17 @@ SMESHGUI_ComputeDlg* SMESHGUI_BaseComputeOp::computeDlg() const
 
 //================================================================================
 /*!
+ * \brief returns from compute mesh result dialog
+ */
+//================================================================================
+
+bool SMESHGUI_BaseComputeOp::onApply()
+{
+  return true;
+}
+
+//================================================================================
+/*!
  * \brief Return a table
  */
 //================================================================================
@@ -1477,17 +1488,6 @@ void SMESHGUI_ComputeOp::startOperation()
 {
   SMESHGUI_BaseComputeOp::startOperation();
   computeMesh();
-}
-
-//================================================================================
-/*!
- * \brief perform it's intention action: compute mesh
- */
-//================================================================================
-
-bool SMESHGUI_ComputeOp::onApply()
-{
-  return true;
 }
 
 //================================================================================
@@ -1559,6 +1559,8 @@ void SMESHGUI_PrecomputeOp::startOperation()
     
     // connect signals
     connect( myDlg, SIGNAL( preview() ), this, SLOT( onPreview() ) );
+    connect( myDlg, SIGNAL( dlgOk() ), this, SLOT( onCompute() ) );
+    connect( myDlg, SIGNAL( dlgApply() ), this, SLOT( onCompute() ) );
   }
   myActiveDlg = myDlg;
 
@@ -1587,6 +1589,10 @@ void SMESHGUI_PrecomputeOp::startOperation()
   }
 
   SMESHGUI_BaseComputeOp::startOperation();
+
+  // disconnect slot from preview dialog to have Apply from results of compute operation only 
+  disconnect( myDlg, SIGNAL( dlgOk() ), this, SLOT( onOk() ) );
+  disconnect( myDlg, SIGNAL( dlgApply() ), this, SLOT( onApply() ) );
 
   myDlg->show();
 }
@@ -1675,24 +1681,16 @@ void SMESHGUI_PrecomputeOp::initDialog()
 
 //================================================================================
 /*!
- * \brief perform it's intention action: 
+ * \brief perform it's intention action: compute mesh
  */
 //================================================================================
 
-bool SMESHGUI_PrecomputeOp::onApply()
+void SMESHGUI_PrecomputeOp::onCompute()
 {
-  QObject* obj = sender();
-  if ( obj != myDlg && myActiveDlg == myDlg )
-    return true; // just return from error messages
-  if ( myActiveDlg == myDlg )
-  {
-    myDlg->hide();
-    myMapShapeId.clear();
-    myActiveDlg = computeDlg();
-    computeMesh();
-  }
-
-  return true;
+  myDlg->hide();
+  myMapShapeId.clear();
+  myActiveDlg = computeDlg();
+  computeMesh();
 }
 
 //================================================================================
@@ -1704,11 +1702,10 @@ bool SMESHGUI_PrecomputeOp::onApply()
 void SMESHGUI_PrecomputeOp::onCancel()
 {
   QObject* curDlg = sender();
-  if ( curDlg == computeDlg() )
+  if ( curDlg == computeDlg() && myActiveDlg == myDlg )
   {
-    if ( myActiveDlg == myDlg ) // return from error messages
-      myDlg->show();
-
+    // return from error messages
+    myDlg->show();
     return;
   }
 

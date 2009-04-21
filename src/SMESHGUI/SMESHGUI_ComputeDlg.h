@@ -84,6 +84,7 @@ protected:
 						    const QString& );
     
 protected slots:
+  virtual bool                   onApply();
   void                           onPreviewShape();
   void                           onPublishShape();
   void                           onShowBadMesh();
@@ -120,7 +121,6 @@ protected:
   virtual void                   startOperation();
 
 protected slots:
-  virtual bool                   onApply();
 };
 
 /*!
@@ -144,11 +144,11 @@ protected:
   virtual void                   initDialog();
 
 protected slots:
-  virtual bool                   onApply();
   virtual void                   onCancel();
 
 private slots:
   void                           onPreview();
+  void                           onCompute();
 
 private:
   QMap< int, int >               myMapShapeId;
