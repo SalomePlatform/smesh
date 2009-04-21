@@ -785,9 +785,9 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
       // mesh auto color
       if( !CORBA::is_nil(aMesh) && aMesh->GetAutoColor() )
       {
-        anEntry = aSObj->GetID();
+        CORBA::String_var anEntry = aSObj->GetID();
         anUpdatedScript +=
-          SMESH_Comment("\n\t") << theObjectNames(anEntry) << ".SetAutoColor(1)";
+          SMESH_Comment("\n\t") << theObjectNames(anEntry.inout()) << ".SetAutoColor(1)";
       }
       SMESH::SMESH_GroupBase_var aGroup = SMESH::SMESH_GroupBase::_narrow( SObjectToObject(aSObj));
       if( !CORBA::is_nil(aGroup) )
@@ -795,10 +795,10 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
         SALOMEDS::Color aColor = aGroup->GetColor();
         if ( aColor.R > 0 || aColor.G > 0 || aColor.B > 0 )
         {
-          anEntry = aSObj->GetID();
-          anUpdatedScript +=
-            SMESH_Comment("\n\t") << theObjectNames(anEntry) << ".SetColor(SALOMEDS.Color("
-                                  << aColor.R <<", "<< aColor.G <<", "<< aColor.B <<" ))";
+          CORBA::String_var anEntry = aSObj->GetID();
+          anUpdatedScript += SMESH_Comment("\n\t")
+            << theObjectNames(anEntry.inout()) << ".SetColor(SALOMEDS.Color("
+            << aColor.R <<", "<< aColor.G <<", "<< aColor.B <<" ))";
         }
       }
     }
