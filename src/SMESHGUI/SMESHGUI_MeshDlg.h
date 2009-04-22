@@ -71,6 +71,7 @@ public:
   void                         setGeomPopupEnabled( const bool );
   void                         disableTab(const int);
   void                         enableTab(const int);
+  bool                         isTabEnabled(const int) const;
   int                          getActiveObject();
 
 signals:

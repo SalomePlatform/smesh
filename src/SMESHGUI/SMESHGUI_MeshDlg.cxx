@@ -576,6 +576,16 @@ void SMESHGUI_MeshDlg::enableTab(const int theTabId) {
   myTabWg->setTabEnabled( myTabWg->indexOf( myTabs[ theTabId ] ), true );
 }
 
+//================================================================================
+/*!
+ * \brief Check if tab enabled
+ * \param int - tab ID
+ */
+//================================================================================
+bool SMESHGUI_MeshDlg::isTabEnabled(const int theTabId) const {
+  myTabWg->isTabEnabled( myTabWg->indexOf( myTabs[ theTabId ] ) );
+}
+
 void SMESHGUI_MeshDlg::onGeomSelectionButton(bool isBtnOn)
 {
   if ( myGeomPopup && isBtnOn )

@@ -1585,7 +1585,7 @@ int SMESHGUI_MeshOp::currentHyp( const int theDim, const int theHypType ) const
 //================================================================================
 bool SMESHGUI_MeshOp::isAccessibleDim( const int theDim ) const
 {
-  return myDlg->tab( theDim )->isEnabled();
+  return myDlg->isTabEnabled( theDim );
 }
 
 //================================================================================
