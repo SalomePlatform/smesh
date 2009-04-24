@@ -1132,7 +1132,7 @@ class Mesh:
             pass
         if salome.sg.hasDesktop():
             smeshgui = salome.ImportComponentGUI("SMESH")
-            smeshgui.Init(salome.myStudyId)
+            smeshgui.Init(self.mesh.GetStudyId())
             smeshgui.SetMeshIcon( salome.ObjectToID( self.mesh ), ok, (self.NbNodes()==0) )
             salome.sg.updateObjBrowser(1)
             pass
@@ -1144,7 +1144,7 @@ class Mesh:
         self.mesh.Clear()
         if salome.sg.hasDesktop():
             smeshgui = salome.ImportComponentGUI("SMESH")
-            smeshgui.Init(salome.myStudyId)
+            smeshgui.Init(self.mesh.GetStudyId())
             smeshgui.SetMeshIcon( salome.ObjectToID( self.mesh ), False, True )
             salome.sg.updateObjBrowser(1)
 
@@ -1154,7 +1154,7 @@ class Mesh:
         self.mesh.ClearSubMesh(geomId)
         if salome.sg.hasDesktop():
             smeshgui = salome.ImportComponentGUI("SMESH")
-            smeshgui.Init(salome.myStudyId)
+            smeshgui.Init(self.mesh.GetStudyId())
             smeshgui.SetMeshIcon( salome.ObjectToID( self.mesh ), False, True )
             salome.sg.updateObjBrowser(1)
 
