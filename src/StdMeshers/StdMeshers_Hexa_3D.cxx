@@ -313,13 +313,13 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh &         aMesh,
   // 1.  - identify faces and vertices of the "cube"
   // 1.1 - ancestor maps vertex->edges in the cube
 
-  TopTools_IndexedDataMapOfShapeListOfShape MS;
-  TopExp::MapShapesAndAncestors(aShape, TopAbs_VERTEX, TopAbs_EDGE, MS);
+//   TopTools_IndexedDataMapOfShapeListOfShape MS;
+//   TopExp::MapShapesAndAncestors(aShape, TopAbs_VERTEX, TopAbs_EDGE, MS);
 
   // 1.2 - first face is choosen as face Y=0 of the unit cube
 
   const TopoDS_Shape & aFace = meshFaces[0]->GetSubShape();
-  const TopoDS_Face & F = TopoDS::Face(aFace);
+  //const TopoDS_Face & F = TopoDS::Face(aFace);
 
   // 1.3 - identify the 4 vertices of the face Y=0: V000, V100, V101, V001
 
@@ -329,7 +329,7 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh &         aMesh,
   aCube.V101 = aQuads[0]->side[2]->LastVertex();  // will be (1,0,1) on the unit cube
 
   TopTools_IndexedMapOfShape MV0;
-  TopExp::MapShapes(F, TopAbs_VERTEX, MV0);
+  TopExp::MapShapes(aFace, TopAbs_VERTEX, MV0);
 
   aCube.V010 = OppositeVertex( aCube.V000, MV0, aQuads);
   aCube.V110 = OppositeVertex( aCube.V100, MV0, aQuads);
@@ -339,26 +339,26 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh &         aMesh,
   // 1.6 - find remaining faces given 4 vertices
 
   int _indY0 = 0;
-  aCube.quad_Y0 = aQuads[_indY0];
-
   int _indY1 = GetFaceIndex(aMesh, aShape, meshFaces,
                             aCube.V010, aCube.V011, aCube.V110, aCube.V111);
-  aCube.quad_Y1 = aQuads[_indY1];
-
   int _indZ0 = GetFaceIndex(aMesh, aShape, meshFaces,
                             aCube.V000, aCube.V010, aCube.V100, aCube.V110);
-  aCube.quad_Z0 = aQuads[_indZ0];
-
   int _indZ1 = GetFaceIndex(aMesh, aShape, meshFaces,
                             aCube.V001, aCube.V011, aCube.V101, aCube.V111);
-  aCube.quad_Z1 = aQuads[_indZ1];
-
   int _indX0 = GetFaceIndex(aMesh, aShape, meshFaces,
                             aCube.V000, aCube.V001, aCube.V010, aCube.V011);
-  aCube.quad_X0 = aQuads[_indX0];
-
   int _indX1 = GetFaceIndex(aMesh, aShape, meshFaces,
                             aCube.V100, aCube.V101, aCube.V110, aCube.V111);
+
+  // IPAL21120:	SIGSEGV on Meshing attached Compound with Automatic Hexadralization
+  if ( _indY1 < 1 || _indZ0 < 1 || _indZ1 < 1 || _indX0 < 1 || _indX1 < 1 )
+    return error(COMPERR_BAD_SHAPE);
+
+  aCube.quad_Y0 = aQuads[_indY0];
+  aCube.quad_Y1 = aQuads[_indY1];
+  aCube.quad_Z0 = aQuads[_indZ0];
+  aCube.quad_Z1 = aQuads[_indZ1];
+  aCube.quad_X0 = aQuads[_indX0];
   aCube.quad_X1 = aQuads[_indX1];
 
   // 1.7 - get convertion coefs from face 2D normalized to 3D normalized
@@ -781,7 +781,7 @@ int StdMeshers_Hexa_3D::GetFaceIndex(SMESH_Mesh & aMesh,
 			break;
 		}
 	}
-	ASSERT(faceIndex > 0);
+	//IPAL21120 ASSERT(faceIndex > 0);
 	//SCRUTE(faceIndex);
 	return faceIndex;
 }
