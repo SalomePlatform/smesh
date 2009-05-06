@@ -28,5 +28,9 @@ include $(top_srcdir)/adm_local/unix/make_common_starter.am
 # non-distributed files 
 nodist_salomescript_DATA = VERSION
 
+# python files
+dist_salomescript_PYTHON = \
+	smesh_setenv.py
+
 # distributed files
 dist_salomescript_SCRIPTS =
