@@ -1475,7 +1475,7 @@ FindMatchingNodesOnFaces( const TopoDS_Face&     face1,
   // 1. Nodes of corresponding links:
 
   // get 2 matching edges, try to find not seam ones
-  TopoDS_Edge edge1, edge2, seam1, seam2;
+  TopoDS_Edge edge1, edge2, seam1, seam2, anyEdge1, anyEdge2;
   TopExp_Explorer eE( OuterShape( face2, TopAbs_WIRE ), TopAbs_EDGE );
   do {
     // edge 2
@@ -1493,6 +1493,7 @@ FindMatchingNodesOnFaces( const TopoDS_Face&     face1,
     SMESHDS_SubMesh * eSM2 = meshDS2->MeshElements( e2 );
     bool nodesOnEdges = ( eSM1 && eSM2 && eSM1->NbNodes() && eSM2->NbNodes() );
     // check that the nodes on edges belong to faces
+    // (as NETGEN ignores nodes on the degenerated geom edge)
     bool nodesOfFaces = false;
     if ( nodesOnEdges ) {
       const SMDS_MeshNode* n1 = eSM1->GetNodes()->next();
@@ -1509,12 +1510,19 @@ FindMatchingNodesOnFaces( const TopoDS_Face&     face1,
         edge1 = e1; edge2 = e2;
       }
     }
+    else {
+      anyEdge1 = e1; anyEdge2 = e2;
+    }
   } while ( edge2.IsNull() && eE.More() );
   //
   if ( edge2.IsNull() ) {
     edge1 = seam1; edge2 = seam2;
   }
-  if ( edge2.IsNull() ) RETURN_BAD_RESULT("No matching edges with nodes found");
+  bool hasNodesOnEdge = (! edge2.IsNull() );
+  if ( !hasNodesOnEdge ) {
+    // 0020338 - nb segments == 1
+    edge1 = anyEdge1; edge2 = anyEdge2;
+  }
 
   // get 2 matching vertices
   TopoDS_Vertex V2 = TopExp::FirstVertex( TopoDS::Edge( edge2 ));
@@ -1532,35 +1540,52 @@ FindMatchingNodesOnFaces( const TopoDS_Face&     face1,
   const SMDS_MeshNode* nullNode = 0;
   vector< const SMDS_MeshNode*> eNode1( 2, nullNode );
   vector< const SMDS_MeshNode*> eNode2( 2, nullNode );
-  int nbNodeToGet = 1;
-  if ( IsClosedEdge( edge1 ) || IsClosedEdge( edge2 ) )
-    nbNodeToGet = 2;
-  for ( int is2 = 0; is2 < 2; ++is2 )
+  if ( hasNodesOnEdge )
   {
-    TopoDS_Edge &     edge  = is2 ? edge2 : edge1;
-    SMESHDS_Mesh *    smDS  = is2 ? meshDS2 : meshDS1;
-    SMESHDS_SubMesh* edgeSM = smDS->MeshElements( edge );
-    // nodes linked with ones on vertices
-    const SMDS_MeshNode*           vNode = is2 ? vNode2 : vNode1;
-    vector< const SMDS_MeshNode*>& eNode = is2 ? eNode2 : eNode1;
-    int nbGotNode = 0;
-    SMDS_ElemIteratorPtr vElem = vNode->GetInverseElementIterator();
-    while ( vElem->more() && nbGotNode != nbNodeToGet ) {
-      const SMDS_MeshElement* elem = vElem->next();
-      if ( elem->GetType() == SMDSAbs_Edge && edgeSM->Contains( elem ))
-        eNode[ nbGotNode++ ] = 
-          ( elem->GetNode(0) == vNode ) ? elem->GetNode(1) : elem->GetNode(0);
-    }
-    if ( nbGotNode > 1 ) // sort found nodes by param on edge
+    int nbNodeToGet = 1;
+    if ( IsClosedEdge( edge1 ) || IsClosedEdge( edge2 ) )
+      nbNodeToGet = 2;
+    for ( int is2 = 0; is2 < 2; ++is2 )
     {
-      SMESH_MesherHelper* helper = is2 ? &helper2 : &helper1;
-      double u0 = helper->GetNodeU( edge, eNode[ 0 ]);
-      double u1 = helper->GetNodeU( edge, eNode[ 1 ]);
-      if ( u0 > u1 ) std::swap( eNode[ 0 ], eNode[ 1 ]);
+      TopoDS_Edge &     edge  = is2 ? edge2 : edge1;
+      SMESHDS_Mesh *    smDS  = is2 ? meshDS2 : meshDS1;
+      SMESHDS_SubMesh* edgeSM = smDS->MeshElements( edge );
+      // nodes linked with ones on vertices
+      const SMDS_MeshNode*           vNode = is2 ? vNode2 : vNode1;
+      vector< const SMDS_MeshNode*>& eNode = is2 ? eNode2 : eNode1;
+      int nbGotNode = 0;
+      SMDS_ElemIteratorPtr vElem = vNode->GetInverseElementIterator(SMDSAbs_Edge);
+      while ( vElem->more() && nbGotNode != nbNodeToGet ) {
+        const SMDS_MeshElement* elem = vElem->next();
+        if ( edgeSM->Contains( elem ))
+          eNode[ nbGotNode++ ] = 
+            ( elem->GetNode(0) == vNode ) ? elem->GetNode(1) : elem->GetNode(0);
+      }
+      if ( nbGotNode > 1 ) // sort found nodes by param on edge
+      {
+        SMESH_MesherHelper* helper = is2 ? &helper2 : &helper1;
+        double u0 = helper->GetNodeU( edge, eNode[ 0 ]);
+        double u1 = helper->GetNodeU( edge, eNode[ 1 ]);
+        if ( u0 > u1 ) std::swap( eNode[ 0 ], eNode[ 1 ]);
+      }
+      if ( nbGotNode == 0 )
+        RETURN_BAD_RESULT("Found no nodes on edge " << smDS->ShapeToIndex( edge ) <<
+                          " linked to " << vNode );
     }
-    if ( nbGotNode == 0 )
-      RETURN_BAD_RESULT("Found no nodes on edge " << smDS->ShapeToIndex( edge ) <<
-                        " linked to " << vNode );
+  }
+  else // 0020338 - nb segments == 1
+  {
+    // get 2 other matching vertices
+    V2 = TopExp::LastVertex( TopoDS::Edge( edge2 ));
+    if ( !assocMap.IsBound( V2 ))
+      RETURN_BAD_RESULT("Association not found for vertex " << meshDS2->ShapeToIndex( V2 ));
+    V1 = TopoDS::Vertex( assocMap( V2 ));
+
+    // nodes on vertices
+    eNode1[0] = SMESH_Algo::VertexNode( V1, meshDS1 );
+    eNode2[0] = SMESH_Algo::VertexNode( V2, meshDS2 );
+    if ( !eNode1[0] ) RETURN_BAD_RESULT("No node on vertex #" << meshDS1->ShapeToIndex( V1 ));
+    if ( !eNode2[0] ) RETURN_BAD_RESULT("No node on vertex #" << meshDS2->ShapeToIndex( V2 ));
   }
 
   // 2. face sets
