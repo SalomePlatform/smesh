@@ -291,7 +291,7 @@ void SMESHGUI_CreatePatternDlg::Init( const int theType )
 
   QApplication::instance()->processEvents();
   updateGeometry();
-  resize( minimumSize() );
+  resize(100,100);
 
   activateSelection();
   onSelectionDone();

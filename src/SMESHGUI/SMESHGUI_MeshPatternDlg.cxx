@@ -397,7 +397,7 @@ void SMESHGUI_MeshPatternDlg::Init()
 
   updateGeometry();
 
-  resize(minimumSize());
+  resize(100,100);
 
   activateSelection();
   onSelectionDone();

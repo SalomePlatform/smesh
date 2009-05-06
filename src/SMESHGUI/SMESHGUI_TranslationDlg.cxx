@@ -430,7 +430,7 @@ void SMESHGUI_TranslationDlg::ConstructorsClicked (int constructorId)
 
   QApplication::instance()->processEvents();
   updateGeometry();
-  resize( minimumSize() );
+  resize(100,100);
 }
 
 //=================================================================================
