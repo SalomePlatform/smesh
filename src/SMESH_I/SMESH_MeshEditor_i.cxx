@@ -80,7 +80,7 @@ namespace {
     SMDSAbs_ElementType myPreviewType; // type to show
     //!< Constructor
     TPreviewMesh(SMDSAbs_ElementType previewElements = SMDSAbs_All) {
-      _isShapeToMesh = _id =_studyId =_idDoc = 0;
+      _isShapeToMesh = (_id =_studyId =_idDoc = 0);
       _myMeshDS  = new SMESHDS_Mesh( _id, true );
       myPreviewType = previewElements;
     }
@@ -199,6 +199,7 @@ namespace {
         for (sm = subMeshes.begin(); sm != subMeshes.end(); sm++)
           sm->second->DeleteEventListener( this );
       }
+      myMesh = 0;
     }
   };
 
