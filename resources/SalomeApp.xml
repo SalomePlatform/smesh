@@ -54,7 +54,7 @@
     <parameter name="scalar_bar_label_font"        value="Arial,12"     />
     <parameter name="scalar_bar_num_colors"        value="64"/>
     <parameter name="scalar_bar_num_labels"        value="5" />
-    <parameter name="scalar_bar_orientation"       value="0" />
+    <parameter name="scalar_bar_orientation"       value="1" />
     <parameter name="scalar_bar_title_color"       value="255, 255, 255"/>
     <parameter name="scalar_bar_title_font"        value="Arial,12"     />
     <parameter name="scalar_bar_vertical_height"   value="0.8"  />
