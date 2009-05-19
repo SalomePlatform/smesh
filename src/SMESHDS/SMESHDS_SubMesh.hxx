@@ -66,10 +66,6 @@ class SMESHDS_EXPORT SMESHDS_SubMesh
 
  private:
 
-  struct TIDCompare { // to have nodes and elements sorted by ID
-    bool operator () (const SMDS_MeshElement* e1, const SMDS_MeshElement* e2) const
-    { return e1->GetID() < e2->GetID(); }
-  };
   typedef std::set<const SMDS_MeshElement*, TIDCompare > TElemSet;
   TElemSet myElements, myNodes;
 
