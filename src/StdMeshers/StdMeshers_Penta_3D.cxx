@@ -34,7 +34,7 @@
 #include "SMDS_VolumeTool.hxx"
 #include "SMESHDS_SubMesh.hxx"
 #include "SMESH_Mesh.hxx"
-#include "SMESH_MeshEditor.hxx"
+#include "SMESH_MesherHelper.hxx"
 #include "SMESH_subMesh.hxx"
 #include "SMESH_subMeshEventListener.hxx"
 #include "SMESH_Comment.hxx"

@@ -28,7 +28,7 @@
 #include "StdMeshers_Prism_3D.hxx"
 
 #include "StdMeshers_ProjectionUtils.hxx"
-#include "SMESH_MeshEditor.hxx"
+#include "SMESH_MesherHelper.hxx"
 #include "SMDS_VolumeTool.hxx"
 #include "SMDS_VolumeOfNodes.hxx"
 #include "SMDS_EdgePosition.hxx"
