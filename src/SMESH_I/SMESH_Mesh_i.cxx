@@ -568,7 +568,7 @@ throw(SALOME::SALOME_Exception)
 {
   Unexpect aCatch(SALOME_SalomeException);
   if (MYDEBUG) MESSAGE("GetHypothesisList");
-  if (CORBA::is_nil(aSubShapeObject))
+  if (_impl->HasShapeToMesh() && CORBA::is_nil(aSubShapeObject))
     THROW_SALOME_CORBA_EXCEPTION("bad subShape reference",
 				 SALOME::BAD_PARAM);
 
@@ -576,6 +576,8 @@ throw(SALOME::SALOME_Exception)
 
   try {
     TopoDS_Shape myLocSubShape = _gen_i->GeomObjectToShape(aSubShapeObject);
+    if ( myLocSubShape.IsNull() && !_impl->HasShapeToMesh() )
+      myLocSubShape = _impl->GetShapeToMesh();
     const list<const SMESHDS_Hypothesis*>& aLocalList = _impl->GetHypothesisList( myLocSubShape );
     int i = 0, n = aLocalList.size();
     aList->length( n );
