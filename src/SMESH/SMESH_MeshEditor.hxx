@@ -30,25 +30,35 @@
 
 #include "SMESH_SMESH.hxx"
 
-#include "SMESH_Mesh.hxx"
-#include "SMESH_Controls.hxx"
-#include "SMESH_SequenceOfNode.hxx"
-#include "SMESH_SequenceOfElemPtr.hxx"
-#include "TColStd_HSequenceOfReal.hxx"
-#include "SMESH_MesherHelper.hxx"
 #include "SMDS_MeshElement.hxx"
+#include "SMESH_Controls.hxx"
+#include "SMESH_Mesh.hxx"
+#include "SMESH_SequenceOfElemPtr.hxx"
+#include "SMESH_SequenceOfNode.hxx"
 
+#include <TColStd_HSequenceOfReal.hxx>
 #include <gp_Dir.hxx>
 
 #include <list>
 #include <map>
 
+class SMDS_MeshFace;
+class SMDS_MeshNode;
+class gp_Ax1;
+class gp_Vec;
+class gp_Pnt;
+class SMESH_MesherHelper;
+
+
 typedef std::map<const SMDS_MeshElement*,
                  std::list<const SMDS_MeshElement*> >        TElemOfElemListMap;
 typedef std::map<const SMDS_MeshNode*, const SMDS_MeshNode*> TNodeNodeMap;
 
+ //!< Set of elements sorted by ID, to be used to assure predictability of edition
+typedef std::set< const SMDS_MeshElement*, TIDCompare >      TIDSortedElemSet;
 
-typedef pair< const SMDS_MeshNode*, const SMDS_MeshNode* > NLink;
+typedef pair< const SMDS_MeshNode*, const SMDS_MeshNode* >   NLink;
+
 
 //=======================================================================
 /*!
@@ -63,27 +73,6 @@ struct SMESH_TLink: public NLink
   SMESH_TLink(const NLink& link ):NLink( link )
   { if ( first->GetID() < second->GetID() ) std::swap( first, second ); }
 };
-
-
-class SMDS_MeshFace;
-class SMDS_MeshNode;
-class gp_Ax1;
-class gp_Vec;
-class gp_Pnt;
-
-// ============================================================
-/*!
- * \brief Set of elements sorted by ID, to be used to assure
- *  predictability of edition
- */
-// ============================================================
-
-template < class TMeshElem = SMDS_MeshElement>
-struct TIDCompare {
-  bool operator () (const TMeshElem* e1, const TMeshElem* e2) const
-  { return e1->GetID() < e2->GetID(); }
-};
-typedef std::set< const SMDS_MeshElement*, TIDCompare< SMDS_MeshElement> > TIDSortedElemSet;
 
 // ============================================================
 /*!
