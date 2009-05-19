@@ -136,9 +136,10 @@ void StdMeshers_ProjectionSource2D::SetVertexAssociation(const TopoDS_Shape& sou
 
 void StdMeshers_ProjectionSource2D::SetSourceMesh(SMESH_Mesh* mesh)
 {
-  if ( _sourceMesh != mesh )
+  if ( _sourceMesh != mesh ) {
+    _sourceMesh = mesh;
     NotifySubMeshesHypothesisModification();
-  _sourceMesh = mesh;
+  }
 }
 
 //=============================================================================
