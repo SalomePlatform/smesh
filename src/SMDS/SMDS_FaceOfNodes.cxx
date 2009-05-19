@@ -95,7 +95,7 @@ public:
     myElems.reserve( face->NbNodes() );
     for ( int i = 0; i < face->NbNodes(); ++i ) {
       const SMDS_MeshElement* edge =
-        SMDS_Mesh::FindEdge( face->GetNode( i ), face->GetNode( i + 1 ));
+        SMDS_Mesh::FindEdge( face->GetNode( i ), face->GetNodeWrap( i + 1 ));
       if ( edge )
         myElems.push_back( edge );
     }
@@ -169,39 +169,8 @@ bool SMDS_FaceOfNodes::ChangeNodes(const SMDS_MeshNode* nodes[],
  * \brief Return node by its index
  * \param ind - node index
  * \retval const SMDS_MeshNode* - the node
- * 
- * Index is wrapped if it is out of a valid range
  */
 const SMDS_MeshNode* SMDS_FaceOfNodes::GetNode(const int ind) const
 {
-  return myNodes[ WrappedIndex( ind )];
+  return myNodes[ ind ];
 }
-
-/*bool operator<(const SMDS_FaceOfNodes& f1, const SMDS_FaceOfNodes& f2)
-{
-	set<SMDS_MeshNode> set1,set2;
-	SMDS_ElemIteratorPtr it;
-	const SMDS_MeshNode * n;
-
-	it=f1.nodesIterator();
-
-	while(it->more())
-	{
-		n=static_cast<const SMDS_MeshNode *>(it->next());
-		set1.insert(*n);
-	}
-
-	delete it;
-	it=f2.nodesIterator();
-	
-	while(it->more())
-	{	
-		n=static_cast<const SMDS_MeshNode *>(it->next());
-		set2.insert(*n);
-	}
-
-	delete it;
-	return set1<set2;	
-
-}*/
-

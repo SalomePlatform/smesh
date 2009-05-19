@@ -75,8 +75,6 @@ class SMDS_EXPORT SMDS_VolumeOfNodes:public SMDS_MeshVolume
    * \brief Return node by its index
     * \param ind - node index
     * \retval const SMDS_MeshNode* - the node
-   * 
-   * Index is wrapped if it is out of a valid range
    */
   virtual const SMDS_MeshNode* GetNode(const int ind) const;
 

@@ -255,7 +255,7 @@ public:
   _MyEdgeIterator(const SMDS_QuadraticFaceOfNodes* face):myIndex(0) {
     myElems.reserve( face->NbNodes() );
     SMDS_ElemIteratorPtr nIt = face->interlacedNodesElemIterator();
-    const SMDS_MeshNode* n0 = face->GetNode( -1 );
+    const SMDS_MeshNode* n0 = face->GetNodeWrap( -1 );
     while ( nIt->more() ) {
       const SMDS_MeshNode* n1 = static_cast<const SMDS_MeshNode*>( nIt->next() );
       const SMDS_MeshElement* edge = SMDS_Mesh::FindEdge( n0, n1 );
@@ -300,11 +300,9 @@ SMDS_ElemIteratorPtr SMDS_QuadraticFaceOfNodes::elementsIterator
  * \brief Return node by its index
  * \param ind - node index
  * \retval const SMDS_MeshNode* - the node
- * 
- * Index is wrapped if it is out of a valid range
  */
 const SMDS_MeshNode* SMDS_QuadraticFaceOfNodes::GetNode(const int ind) const
 {
-  return myNodes[ WrappedIndex( ind )];
+  return myNodes[ ind ];
 }
 

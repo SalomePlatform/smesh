@@ -259,5 +259,5 @@ SMDS_ElemIteratorPtr SMDS_PolyhedralVolumeOfNodes::uniqueNodesIterator() const
 
 const SMDS_MeshNode* SMDS_PolyhedralVolumeOfNodes::GetNode(const int ind) const
 {
-  return myNodesByFaces[ WrappedIndex( ind )];
+  return myNodesByFaces[ ind ];
 }

@@ -154,7 +154,7 @@ public:
     myElems.reserve( face->NbNodes() );
     for ( int i = 0; i < face->NbNodes(); ++i ) {
       const SMDS_MeshElement* edge =
-        SMDS_Mesh::FindEdge( face->GetNode( i ), face->GetNode( i + 1 ));
+        SMDS_Mesh::FindEdge( face->GetNode( i ), face->GetNodeWrap( i + 1 ));
       if ( edge )
         myElems.push_back( edge );
     }
@@ -191,8 +191,6 @@ SMDS_ElemIteratorPtr SMDS_PolygonalFaceOfNodes::elementsIterator
  * \brief Return node by its index
  * \param ind - node index
  * \retval const SMDS_MeshNode* - the node
- * 
- * Index is wrapped if it is out of a valid range
  */
 const SMDS_MeshNode* SMDS_PolygonalFaceOfNodes::GetNode(const int ind) const
 {

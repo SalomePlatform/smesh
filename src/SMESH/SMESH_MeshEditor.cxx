@@ -2050,8 +2050,8 @@ void SMESH_MeshEditor::GetLinkedNodes( const SMDS_MeshNode* theNode,
             iAfter  = SMESH_MesherHelper::WrapIndex( iAfter, nb );
             iBefore = SMESH_MesherHelper::WrapIndex( iBefore, nb );
           }
-          linkedNodes.insert( elem->GetNode( iAfter ));
-          linkedNodes.insert( elem->GetNode( iBefore ));
+          linkedNodes.insert( elem->GetNodeWrap( iAfter ));
+          linkedNodes.insert( elem->GetNodeWrap( iBefore ));
         }
       }
     }
@@ -2456,7 +2456,7 @@ void SMESH_MeshEditor::Smooth (TIDSortedElemSet &          theElems,
         if(elem->IsQuadratic())
           nbn = nbn/2;
         // loop on elem links: insert them in linkNbMap
-        const SMDS_MeshNode* curNode, *prevNode = elem->GetNode( nbn );
+        const SMDS_MeshNode* curNode, *prevNode = elem->GetNodeWrap( nbn );
         for ( int iN = 0; iN < nbn; ++iN ) {
           curNode = elem->GetNode( iN );
           NLink link;
@@ -3276,7 +3276,7 @@ void SMESH_MeshEditor::makeWalls (TNodeOfNodeListMap &     mapNewNodes,
               const SMDS_MeshFace * f = aMesh->FindFace( nodes[ 0 ], nodes[ 1 ], nodes[ 2 ]);
               if ( !f )
                 myLastCreatedElems.Append(aMesh->AddFace( nodes[ 0 ], nodes[ 1 ], nodes[ 2 ] ));
-              else if ( nodes[ 1 ] != f->GetNode( f->GetNodeIndex( nodes[ 0 ] ) + 1 ))
+              else if ( nodes[ 1 ] != f->GetNodeWrap( f->GetNodeIndex( nodes[ 0 ] ) + 1 ))
                 aMesh->ChangeElementNodes( f, nodes, nbn );
               break;
             }
@@ -3284,7 +3284,7 @@ void SMESH_MeshEditor::makeWalls (TNodeOfNodeListMap &     mapNewNodes,
               const SMDS_MeshFace * f = aMesh->FindFace( nodes[ 0 ], nodes[ 1 ], nodes[ 2 ], nodes[ 3 ]);
               if ( !f )
                 myLastCreatedElems.Append(aMesh->AddFace( nodes[ 0 ], nodes[ 1 ], nodes[ 2 ], nodes[ 3 ] ));
-              else if ( nodes[ 1 ] != f->GetNode( f->GetNodeIndex( nodes[ 0 ] ) + 1 ))
+              else if ( nodes[ 1 ] != f->GetNodeWrap( f->GetNodeIndex( nodes[ 0 ] ) + 1 ))
                 aMesh->ChangeElementNodes( f, nodes, nbn );
               break;
             }
@@ -3296,7 +3296,7 @@ void SMESH_MeshEditor::makeWalls (TNodeOfNodeListMap &     mapNewNodes,
                   if ( !f )
                     myLastCreatedElems.Append(aMesh->AddFace(nodes[0], nodes[2], nodes[4],
                                                              nodes[1], nodes[3], nodes[5]));
-                  else if ( nodes[ 2 ] != f->GetNode( f->GetNodeIndex( nodes[ 0 ] ) + 1 ))
+                  else if ( nodes[ 2 ] != f->GetNodeWrap( f->GetNodeIndex( nodes[ 0 ] ) + 1 ))
                     aMesh->ChangeElementNodes( f, nodes, nbn );
                 }
                 else {       /////// quadratic quadrangle
@@ -3305,7 +3305,7 @@ void SMESH_MeshEditor::makeWalls (TNodeOfNodeListMap &     mapNewNodes,
                   if ( !f )
                     myLastCreatedElems.Append(aMesh->AddFace(nodes[0], nodes[2], nodes[4], nodes[6],
                                                              nodes[1], nodes[3], nodes[5], nodes[7]));
-                  else if ( nodes[ 2 ] != f->GetNode( f->GetNodeIndex( nodes[ 0 ] ) + 1 ))
+                  else if ( nodes[ 2 ] != f->GetNodeWrap( f->GetNodeIndex( nodes[ 0 ] ) + 1 ))
                     aMesh->ChangeElementNodes( f, nodes, nbn );
                 }
               }
@@ -3314,7 +3314,7 @@ void SMESH_MeshEditor::makeWalls (TNodeOfNodeListMap &     mapNewNodes,
                 const SMDS_MeshFace * f = aMesh->FindFace( polygon_nodes );
                 if ( !f )
                   myLastCreatedElems.Append(aMesh->AddPolygonalFace(polygon_nodes));
-                else if ( nodes[ 1 ] != f->GetNode( f->GetNodeIndex( nodes[ 0 ] ) + 1 ))
+                else if ( nodes[ 1 ] != f->GetNodeWrap( f->GetNodeIndex( nodes[ 0 ] ) + 1 ))
                   aMesh->ChangeElementNodes( f, nodes, nbn );
               }
             }

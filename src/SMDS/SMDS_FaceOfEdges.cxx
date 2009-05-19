@@ -168,12 +168,10 @@ int SMDS_FaceOfEdges::NbNodes() const
  * \brief Return node by its index
  * \param ind - node index
  * \retval const SMDS_MeshNode* - the node
- * 
- * Index is wrapped if it is out of a valid range
  */
 const SMDS_MeshNode* SMDS_FaceOfEdges::GetNode(const int ind) const
 {
-  int index = WrappedIndex( ind );
+  int index = ind;
   for ( int i = 0; i < myNbEdges; ++i ) {
     if ( index >= myEdges[ i ]->NbNodes() )
       index -= myEdges[ i ]->NbNodes();

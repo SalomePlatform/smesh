@@ -362,11 +362,9 @@ SMDS_ElemIteratorPtr SMDS_QuadraticVolumeOfNodes::elementsIterator
  * \brief Return node by its index
  * \param ind - node index
  * \retval const SMDS_MeshNode* - the node
- * 
- * Index is wrapped if it is out of a valid range
  */
 const SMDS_MeshNode* SMDS_QuadraticVolumeOfNodes::GetNode(const int ind) const
 {
-  return myNodes[ WrappedIndex( ind )];
+  return myNodes[ ind ];
 }
 
