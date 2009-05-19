@@ -251,6 +251,35 @@ StdMeshers_CompositeSegment_1D::~StdMeshers_CompositeSegment_1D()
 
 void StdMeshers_CompositeSegment_1D::SetEventListener(SMESH_subMesh* subMesh)
 {
+  // issue 0020279. Set "_alwaysComputed" flag to the submeshes of internal
+  // vertices of composite edge in order to avoid creation of vertices on
+  // them for the sake of stability.
+
+  // check if "_alwaysComputed" is not yet set
+  bool isAlwaysComputed = false;
+  SMESH_subMeshIteratorPtr smIt = subMesh->getDependsOnIterator(false,false);
+  while ( !isAlwaysComputed && smIt->more() )
+    isAlwaysComputed = smIt->next()->IsAlwaysComputed();
+
+  if ( !isAlwaysComputed )
+  {
+    // check if an edge is a part of a complex side
+    TopoDS_Face face;
+    TopoDS_Edge edge = TopoDS::Edge( subMesh->GetSubShape() );
+    auto_ptr< StdMeshers_FaceSide > side
+      ( StdMeshers_CompositeSegment_1D::GetFaceSide(*subMesh->GetFather(),edge, face, false ));
+    if ( side->NbEdges() > 1 ) { // complex
+
+      // set _alwaysComputed to vertices
+      for ( int iE = 1; iE < side->NbEdges(); ++iE )
+      {
+        TopoDS_Vertex V = side->FirstVertex( iE );
+        SMESH_subMesh* sm = side->GetMesh()->GetSubMesh( V );
+        sm->SetIsAlwaysComputed( true );
+      }
+    }
+  }
+  // set listener that will remove _alwaysComputed from submeshes at algorithm change
   subMesh->SetEventListener( _EventListener, 0, subMesh);
   StdMeshers_Regular_1D::SetEventListener( subMesh );
 }
