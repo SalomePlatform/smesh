@@ -27,19 +27,18 @@
 //
 #include "StdMeshers_QuadToTriaAdaptor.hxx"
 
-//#include <TColgp_HArray1OfPnt.hxx>
-//#include <TColgp_HArray1OfVec.hxx>
+#include <SMDS_FaceOfNodes.hxx>
+#include <SMESH_Algo.hxx>
+#include <SMESH_MesherHelper.hxx>
+
+#include <IntAna_IntConicQuad.hxx>
+#include <IntAna_Quadric.hxx>
+#include <TColStd_SequenceOfInteger.hxx>
+#include <TColgp_HSequenceOfPnt.hxx>
 #include <TopExp_Explorer.hxx>
 #include <TopoDS.hxx>
-#include <SMESH_Algo.hxx>
-#include <TColgp_HSequenceOfPnt.hxx>
-#include <TColStd_MapOfInteger.hxx>
-#include <TColStd_HSequenceOfInteger.hxx>
-#include <IntAna_Quadric.hxx>
-#include <IntAna_IntConicQuad.hxx>
 #include <gp_Lin.hxx>
 #include <gp_Pln.hxx>
-#include <SMDS_FaceOfNodes.hxx>
 
 #include <NCollection_Array1.hxx>
 typedef NCollection_Array1<TColStd_SequenceOfInteger> StdMeshers_Array1OfSequenceOfInteger;
@@ -62,7 +61,23 @@ StdMeshers_QuadToTriaAdaptor::StdMeshers_QuadToTriaAdaptor()
 //================================================================================
 
 StdMeshers_QuadToTriaAdaptor::~StdMeshers_QuadToTriaAdaptor()
-{}
+{
+  // delete temporary faces
+  map< const SMDS_MeshElement*, list<const SMDS_FaceOfNodes*> >::iterator
+    f_f = myResMap.begin(), ffEnd = myResMap.end();
+  for ( ; f_f != ffEnd; ++f_f )
+  {
+    list<const SMDS_FaceOfNodes*>& fList = f_f->second;
+    list<const SMDS_FaceOfNodes*>::iterator f = fList.begin(), fEnd = fList.end();
+    for ( ; f != fEnd; ++f )
+      delete *f;
+  }
+  myResMap.clear();
+
+//   TF2PyramMap::iterator itp = myMapFPyram.begin();
+//   for(; itp!=myMapFPyram.end(); itp++)
+//     cout << itp->second << endl;
+}
 
 
 //=======================================================================
@@ -285,18 +300,18 @@ static bool CompareTrias(const SMDS_MeshElement* F1,const SMDS_MeshElement* F2)
 //function : IsDegenarate
 //purpose  : Auxilare for Preparation()
 //=======================================================================
-static int IsDegenarate(const Handle(TColgp_HArray1OfPnt)& PN)
-{
-  int i = 1;
-  for(; i<4; i++) {
-    int j = i+1;
-    for(; j<=4; j++) {
-      if( PN->Value(i).Distance(PN->Value(j)) < 1.e-6 )
-        return j;
-    }
-  }
-  return 0;
-}
+// static int IsDegenarate(const Handle(TColgp_HArray1OfPnt)& PN)
+// {
+//   int i = 1;
+//   for(; i<4; i++) {
+//     int j = i+1;
+//     for(; j<=4; j++) {
+//       if( PN->Value(i).Distance(PN->Value(j)) < 1.e-6 )
+//         return j;
+//     }
+//   }
+//   return 0;
+// }
 
 
 //=======================================================================
@@ -307,8 +322,8 @@ static int IsDegenarate(const Handle(TColgp_HArray1OfPnt)& PN)
 //                  2 if given face is degenerate quad (two nodes are coincided)
 //=======================================================================
 int StdMeshers_QuadToTriaAdaptor::Preparation(const SMDS_MeshElement* face,
-                                              Handle(TColgp_HArray1OfPnt) PN,
-                                              Handle(TColgp_HArray1OfVec) VN,
+                                              Handle(TColgp_HArray1OfPnt)& PN,
+                                              Handle(TColgp_HArray1OfVec)& VN,
                                               std::vector<const SMDS_MeshNode*>& FNodes,
                                               gp_Pnt& PC, gp_Vec& VNorm)
 {
@@ -427,6 +442,9 @@ bool StdMeshers_QuadToTriaAdaptor::Compute(SMESH_Mesh& aMesh, const TopoDS_Shape
   myMapFPyram.clear();
 
   SMESHDS_Mesh * meshDS = aMesh.GetMeshDS();
+  SMESH_MesherHelper helper(aMesh);
+  helper.IsQuadraticSubMesh(aShape);
+  helper.SetElementsOnShape( true );
 
   for (TopExp_Explorer exp(aShape,TopAbs_FACE);exp.More();exp.Next()) {
     const TopoDS_Shape& aShapeFace = exp.Current();
@@ -481,9 +499,7 @@ bool StdMeshers_QuadToTriaAdaptor::Compute(SMESH_Mesh& aMesh, const TopoDS_Shape
         double height = PCbest.Distance(PC);
         if(height<1.e-6) {
           // create new PCbest using a bit shift along VNorm
-          PCbest = gp_Pnt( PC.X() + VNorm.X()*0.001,
-                           PC.Y() + VNorm.Y()*0.001,
-                           PC.Z() + VNorm.Z()*0.001);
+          PCbest = PC.XYZ() + VNorm.XYZ() * 0.001;
         }
         else {
           // check possible intersection with other faces
@@ -494,27 +510,23 @@ bool StdMeshers_QuadToTriaAdaptor::Compute(SMESH_Mesh& aMesh, const TopoDS_Shape
             //cout<<"  PCbest("<<PCbest.X()<<","<<PCbest.Y()<<","<<PCbest.Z()<<")"<<endl;
             double dist = PC.Distance(Pint)/3.;
             gp_Dir aDir(gp_Vec(PC,PCbest));
-            PCbest = gp_Pnt( PC.X() + aDir.X()*dist,
-                             PC.Y() + aDir.Y()*dist,
-                             PC.Z() + aDir.Z()*dist );
+            PCbest = PC.XYZ() + aDir.XYZ() * dist;
           }
           else {
             gp_Vec VB(PC,PCbest);
-            gp_Pnt PCbestTmp(PC.X()+VB.X()*3, PC.X()+VB.X()*3, PC.X()+VB.X()*3);
+            gp_Pnt PCbestTmp = PC.XYZ() + VB.XYZ() * 3.0;
             bool check = CheckIntersection(PCbestTmp, PC, Pint, aMesh, aShape, aShapeFace);
             if(check) {
               double dist = PC.Distance(Pint)/3.;
               if(dist<height) {
                 gp_Dir aDir(gp_Vec(PC,PCbest));
-                PCbest = gp_Pnt( PC.X() + aDir.X()*dist,
-                                 PC.Y() + aDir.Y()*dist,
-                                 PC.Z() + aDir.Z()*dist );
+                PCbest = PC.XYZ() + aDir.XYZ() * dist;
               }
             }
           }
         }
         // create node for PCbest
-        SMDS_MeshNode* NewNode = meshDS->AddNode( PCbest.X(), PCbest.Y(), PCbest.Z() );
+        SMDS_MeshNode* NewNode = helper.AddNode( PCbest.X(), PCbest.Y(), PCbest.Z() );
         // add triangles to result map
         std::list<const SMDS_FaceOfNodes*> aList;
         for(i=0; i<4; i++) {
@@ -524,7 +536,7 @@ bool StdMeshers_QuadToTriaAdaptor::Compute(SMESH_Mesh& aMesh, const TopoDS_Shape
         myResMap.insert(make_pair(face,aList));
         // create pyramid
         SMDS_MeshVolume* aPyram =
-          meshDS->AddVolume( FNodes[0], FNodes[1], FNodes[2], FNodes[3], NewNode );
+          helper.AddVolume( FNodes[0], FNodes[1], FNodes[2], FNodes[3], NewNode );
         myMapFPyram.insert(make_pair(face,aPyram));
       } // end loop on elements on a face
     }
@@ -543,13 +555,20 @@ bool StdMeshers_QuadToTriaAdaptor::Compute(SMESH_Mesh& aMesh)
 {
   myResMap.clear();
   myMapFPyram.clear();
+  SMESH_MesherHelper helper(aMesh);
+  helper.IsQuadraticSubMesh(aMesh.GetShapeToMesh());
+  helper.SetElementsOnShape( true );
 
   SMESHDS_Mesh * meshDS = aMesh.GetMeshDS();
 
-  SMDS_FaceIteratorPtr itFace = meshDS->facesIterator();
+  SMDS_FaceIteratorPtr fIt = meshDS->facesIterator();
+  TIDSortedElemSet sortedFaces; //  0020279: control the "random" use when using mesh algorithms
+  while( fIt->more()) sortedFaces.insert( fIt->next() );
 
-  while(itFace->more()) {
-    const SMDS_MeshElement* face = itFace->next();
+  TIDSortedElemSet::iterator itFace = sortedFaces.begin(), fEnd = sortedFaces.end();
+  for ( ; itFace != fEnd; ++itFace )
+  {
+    const SMDS_MeshElement* face = *itFace;
     if ( !face ) continue;
     //cout<<endl<<"================= face->GetID() = "<<face->GetID()<<endl;
     // preparation step using face info
@@ -572,13 +591,8 @@ bool StdMeshers_QuadToTriaAdaptor::Compute(SMESH_Mesh& aMesh)
 
       double tmp = PN->Value(1).Distance(PN->Value(2)) +
         PN->Value(2).Distance(PN->Value(3));
-      gp_Dir tmpDir(VNorm);
-      gp_Pnt Ptmp1( PC.X() + tmpDir.X()*tmp*1.e6,
-                    PC.Y() + tmpDir.Y()*tmp*1.e6,
-                    PC.Z() + tmpDir.Z()*tmp*1.e6 );
-      gp_Pnt Ptmp2( PC.X() + tmpDir.Reversed().X()*tmp*1.e6,
-                    PC.Y() + tmpDir.Reversed().Y()*tmp*1.e6,
-                    PC.Z() + tmpDir.Reversed().Z()*tmp*1.e6 );
+      gp_Pnt Ptmp1 = PC.XYZ() + VNorm.XYZ() * tmp * 1.e6;
+      gp_Pnt Ptmp2 = PC.XYZ() - VNorm.XYZ() * tmp * 1.e6;
       // check intersection for Ptmp1 and Ptmp2
       bool IsRev = false;
       bool IsOK1 = false;
@@ -586,9 +600,8 @@ bool StdMeshers_QuadToTriaAdaptor::Compute(SMESH_Mesh& aMesh)
       double dist1 = RealLast();
       double dist2 = RealLast();
       gp_Pnt Pres1,Pres2;
-      SMDS_FaceIteratorPtr itf = meshDS->facesIterator();
-      while(itf->more()) {
-        const SMDS_MeshElement* F = itf->next();
+      for (TIDSortedElemSet::iterator itF = sortedFaces.begin(); itF != fEnd; ++itF ) {
+        const SMDS_MeshElement* F = *itF;
         if(F==face) continue;
         Handle(TColgp_HSequenceOfPnt) aContour = new TColgp_HSequenceOfPnt;
         SMDS_ElemIteratorPtr nodeIt = F->nodesIterator();
@@ -665,9 +678,7 @@ bool StdMeshers_QuadToTriaAdaptor::Compute(SMESH_Mesh& aMesh)
     double height = PCbest.Distance(PC);
     if(height<1.e-6) {
       // create new PCbest using a bit shift along VNorm
-      PCbest = gp_Pnt( PC.X() + VNorm.X()*0.001,
-                       PC.Y() + VNorm.Y()*0.001,
-                       PC.Z() + VNorm.Z()*0.001);
+      PCbest = PC.XYZ() + VNorm.XYZ() * 0.001;
       height = PCbest.Distance(PC);
     }
     //cout<<"  PCbest("<<PCbest.X()<<","<<PCbest.Y()<<","<<PCbest.Z()<<")"<<endl;
@@ -676,12 +687,8 @@ bool StdMeshers_QuadToTriaAdaptor::Compute(SMESH_Mesh& aMesh)
     double tmp = PN->Value(1).Distance(PN->Value(3)) +
       PN->Value(2).Distance(PN->Value(4));
     gp_Dir tmpDir(V1);
-    gp_Pnt Ptmp1( PC.X() + tmpDir.X()*tmp*1.e6,
-                  PC.Y() + tmpDir.Y()*tmp*1.e6,
-                  PC.Z() + tmpDir.Z()*tmp*1.e6 );
-    gp_Pnt Ptmp2( PC.X() + tmpDir.Reversed().X()*tmp*1.e6,
-                  PC.Y() + tmpDir.Reversed().Y()*tmp*1.e6,
-                  PC.Z() + tmpDir.Reversed().Z()*tmp*1.e6 );
+    gp_Pnt Ptmp1 = PC.XYZ() + tmpDir.XYZ() * tmp * 1.e6;
+    gp_Pnt Ptmp2 = PC.XYZ() - tmpDir.XYZ() * tmp * 1.e6;
     // check intersection for Ptmp1 and Ptmp2
     bool IsRev = false;
     bool IsOK1 = false;
@@ -689,9 +696,8 @@ bool StdMeshers_QuadToTriaAdaptor::Compute(SMESH_Mesh& aMesh)
     double dist1 = RealLast();
     double dist2 = RealLast();
     gp_Pnt Pres1,Pres2;
-    SMDS_FaceIteratorPtr itf = meshDS->facesIterator();
-    while(itf->more()) {
-      const SMDS_MeshElement* F = itf->next();
+    for (TIDSortedElemSet::iterator itF = sortedFaces.begin(); itF != fEnd; ++itF ) {
+      const SMDS_MeshElement* F = *itF;
       if(F==face) continue;
       Handle(TColgp_HSequenceOfPnt) aContour = new TColgp_HSequenceOfPnt;
       SMDS_ElemIteratorPtr nodeIt = F->nodesIterator();
@@ -734,9 +740,7 @@ bool StdMeshers_QuadToTriaAdaptor::Compute(SMESH_Mesh& aMesh)
       double tmp = PC.Distance(Pres1)/3.;
       if( height > tmp ) {
         height = tmp;
-        PCbest = gp_Pnt( PC.X() + tmpDir.X()*height,
-                         PC.Y() + tmpDir.Y()*height,
-                         PC.Z() + tmpDir.Z()*height );
+        PCbest = PC.XYZ() + tmpDir.XYZ() * height;
       }
     }
     else if( !IsOK1 && IsOK2 ) {
@@ -744,9 +748,7 @@ bool StdMeshers_QuadToTriaAdaptor::Compute(SMESH_Mesh& aMesh)
       IsRev = true;
       double tmp = PC.Distance(Pres2)/3.;
       if( height > tmp ) height = tmp;
-      PCbest = gp_Pnt( PC.X() + tmpDir.Reversed().X()*height,
-                       PC.Y() + tmpDir.Reversed().Y()*height,
-                       PC.Z() + tmpDir.Reversed().Z()*height );
+      PCbest = PC.XYZ() - tmpDir.XYZ() * height;
     }
     else { // IsOK1 && IsOK2
       double tmp1 = PC.Distance(Pres1)/3.;
@@ -755,23 +757,19 @@ bool StdMeshers_QuadToTriaAdaptor::Compute(SMESH_Mesh& aMesh)
         // using existed direction
         if( height > tmp1 ) {
           height = tmp1;
-          PCbest = gp_Pnt( PC.X() + tmpDir.X()*height,
-                           PC.Y() + tmpDir.Y()*height,
-                           PC.Z() + tmpDir.Z()*height );
+          PCbest = PC.XYZ() + tmpDir.XYZ() * height;
         }
       }
       else {
         // using opposite direction
         IsRev = true;
         if( height > tmp2 ) height = tmp2;
-        PCbest = gp_Pnt( PC.X() + tmpDir.Reversed().X()*height,
-                         PC.Y() + tmpDir.Reversed().Y()*height,
-                         PC.Z() + tmpDir.Reversed().Z()*height );
+        PCbest = PC.XYZ() - tmpDir.XYZ() * height;
       }
     }
 
     // create node for PCbest
-    SMDS_MeshNode* NewNode = meshDS->AddNode( PCbest.X(), PCbest.Y(), PCbest.Z() );
+    SMDS_MeshNode* NewNode = helper.AddNode( PCbest.X(), PCbest.Y(), PCbest.Z() );
     // add triangles to result map
     std::list<const SMDS_FaceOfNodes*> aList;
     for(i=0; i<4; i++) {
@@ -786,9 +784,9 @@ bool StdMeshers_QuadToTriaAdaptor::Compute(SMESH_Mesh& aMesh)
     // create pyramid
     SMDS_MeshVolume* aPyram;
     if(IsRev)
-     aPyram = meshDS->AddVolume( FNodes[0], FNodes[1], FNodes[2], FNodes[3], NewNode );
+     aPyram = helper.AddVolume( FNodes[0], FNodes[1], FNodes[2], FNodes[3], NewNode );
     else
-     aPyram = meshDS->AddVolume( FNodes[0], FNodes[3], FNodes[2], FNodes[1], NewNode );
+     aPyram = helper.AddVolume( FNodes[0], FNodes[3], FNodes[2], FNodes[1], NewNode );
     myMapFPyram.insert(make_pair(face,aPyram));
   } // end loop on elements on a face
 
@@ -811,10 +809,9 @@ bool StdMeshers_QuadToTriaAdaptor::Compute2ndPart(SMESH_Mesh& aMesh)
   if(NbPyram==0)
     return true;
 
-  std::vector< const SMDS_MeshElement* > Pyrams(NbPyram);
-  std::vector< const SMDS_MeshElement* > Faces(NbPyram);
-  std::map< const SMDS_MeshElement*,
-    const SMDS_MeshElement* >::iterator itp = myMapFPyram.begin();
+  vector< const SMDS_MeshElement* > Pyrams(NbPyram);
+  vector< const SMDS_MeshElement* > Faces(NbPyram);
+  TF2PyramMap::iterator itp = myMapFPyram.begin();
   int i = 0;
   for(; itp!=myMapFPyram.end(); itp++, i++) {
     Faces[i] = (*itp).first;
@@ -845,7 +842,7 @@ bool StdMeshers_QuadToTriaAdaptor::Compute2ndPart(SMESH_Mesh& aMesh)
       int nbI = aMergesI.Length();
       const TColStd_SequenceOfInteger& aMergesJ = MergesInfo.Value(j);
       int nbJ = aMergesJ.Length();
-
+      // check if two pyramids already merged
       int k = 2;
       bool NeedCont = false;
       for(; k<=nbI; k++) {
@@ -854,7 +851,7 @@ bool StdMeshers_QuadToTriaAdaptor::Compute2ndPart(SMESH_Mesh& aMesh)
           break;
         }
       }
-      if(NeedCont) continue;
+      if(NeedCont) continue; // already merged
 
       const SMDS_MeshElement* Prm2 = Pyrams[j];
       nIt = Prm2->nodesIterator();
@@ -872,9 +869,7 @@ bool StdMeshers_QuadToTriaAdaptor::Compute2ndPart(SMESH_Mesh& aMesh)
       gp_Pnt Pint;
       for(k=0; k<4; k++) {
         gp_Vec Vtmp(Ps1[k],Ps1[4]);
-        gp_Pnt Pshift( Ps1[k].X() + Vtmp.X()*0.01,
-                       Ps1[k].Y() + Vtmp.Y()*0.01,
-                       Ps1[k].Z() + Vtmp.Z()*0.01 );
+        gp_Pnt Pshift = Ps1[k].XYZ() + Vtmp.XYZ() * 0.01;
         int m=0;
         for(; m<3; m++) {
           if( HasIntersection3( Pshift, Ps1[4], Pint, Ps2[m], Ps2[m+1], Ps2[4]) ) {
@@ -890,9 +885,7 @@ bool StdMeshers_QuadToTriaAdaptor::Compute2ndPart(SMESH_Mesh& aMesh)
       if(!hasInt) {
         for(k=0; k<4; k++) {
           gp_Vec Vtmp(Ps2[k],Ps2[4]);
-          gp_Pnt Pshift( Ps2[k].X() + Vtmp.X()*0.01,
-                         Ps2[k].Y() + Vtmp.Y()*0.01,
-                         Ps2[k].Z() + Vtmp.Z()*0.01 );
+          gp_Pnt Pshift = Ps2[k].XYZ() + Vtmp.XYZ() * 0.01;
           int m=0;
           for(; m<3; m++) {
             if( HasIntersection3( Pshift, Ps2[4], Pint, Ps1[m], Ps1[m+1], Ps1[4]) ) {
@@ -1129,16 +1122,15 @@ bool StdMeshers_QuadToTriaAdaptor::Compute2ndPart(SMESH_Mesh& aMesh)
  * \brief Return list of created triangles for given face
  */
 //================================================================================
-std::list<const SMDS_FaceOfNodes*> StdMeshers_QuadToTriaAdaptor::GetTriangles
+const std::list<const SMDS_FaceOfNodes*>* StdMeshers_QuadToTriaAdaptor::GetTriangles
                                                    (const SMDS_MeshElement* aFace)
 {
-  std::list<const SMDS_FaceOfNodes*> aRes;
   std::map< const SMDS_MeshElement*,
     std::list<const SMDS_FaceOfNodes*> >::iterator it = myResMap.find(aFace);
   if( it != myResMap.end() ) {
-    return it->second;
+    return & it->second;
   }
-  return aRes;
+  return 0;
 }
 
 
