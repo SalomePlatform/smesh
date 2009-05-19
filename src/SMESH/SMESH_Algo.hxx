@@ -290,7 +290,7 @@ public:
     * \retval const SMDS_MeshNode* - found node or NULL
    */
   static const SMDS_MeshNode* VertexNode(const TopoDS_Vertex& V,
-                                         SMESHDS_Mesh*        meshDS);
+                                         const SMESHDS_Mesh* meshDS);
 
 protected:
 
