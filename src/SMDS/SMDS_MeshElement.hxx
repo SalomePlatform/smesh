@@ -40,9 +40,12 @@ class SMDS_MeshNode;
 class SMDS_MeshEdge;
 class SMDS_MeshFace;	
 
-///////////////////////////////////////////////////////////////////////////////
-/// Base class for elements
-///////////////////////////////////////////////////////////////////////////////
+// ============================================================
+/*!
+ * \brief Base class for elements
+ */
+// ============================================================
+
 class SMDS_EXPORT SMDS_MeshElement:public SMDS_MeshObject
 {
 public:
@@ -74,10 +77,17 @@ public:
    * \brief Return node by its index
     * \param ind - node index
     * \retval const SMDS_MeshNode* - the node
+   */
+  virtual const SMDS_MeshNode* GetNode(const int ind) const;
+
+  /*!
+   * \brief Return node by its index
+    * \param ind - node index
+    * \retval const SMDS_MeshNode* - the node
    * 
    * Index is wrapped if it is out of a valid range
    */
-  virtual const SMDS_MeshNode* GetNode(const int ind) const;
+  const SMDS_MeshNode* GetNodeWrap(const int ind) const { return GetNode( WrappedIndex( ind )); }
 
   /*!
    * \brief Return true if index of node is valid (0 <= ind < NbNodes())
@@ -110,6 +120,17 @@ protected:
 
 private:
   int myID;
+};
+
+// ============================================================
+/*!
+ * \brief Comparator of elements by ID for usage in std containers
+ */
+// ============================================================
+
+struct TIDCompare {
+  bool operator () (const SMDS_MeshElement* e1, const SMDS_MeshElement* e2) const
+  { return e1->GetID() < e2->GetID(); }
 };
 
 #endif
