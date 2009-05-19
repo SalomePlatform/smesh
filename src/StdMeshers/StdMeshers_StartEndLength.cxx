@@ -207,6 +207,6 @@ bool StdMeshers_StartEndLength::SetParametersByMesh(const SMESH_Mesh*   theMesh,
 bool StdMeshers_StartEndLength::SetParametersByDefaults(const TDefaults&  dflts,
                                                         const SMESH_Mesh* /*theMesh*/)
 {
-  return bool(_begLength = _endLength = dflts._elemLength );
+  return (_begLength = _endLength = dflts._elemLength );
 }
 

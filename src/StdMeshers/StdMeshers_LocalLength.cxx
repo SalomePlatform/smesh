@@ -244,6 +244,6 @@ bool StdMeshers_LocalLength::SetParametersByMesh(const SMESH_Mesh*   theMesh,
 bool StdMeshers_LocalLength::SetParametersByDefaults(const TDefaults&  dflts,
                                                      const SMESH_Mesh* /*theMesh*/)
 {
-  return bool( _length = dflts._elemLength );
+  return ( _length = dflts._elemLength );
 }
 

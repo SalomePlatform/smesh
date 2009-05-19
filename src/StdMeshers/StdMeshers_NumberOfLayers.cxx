@@ -171,7 +171,7 @@ bool StdMeshers_NumberOfLayers::SetParametersByDefaults(const TDefaults&  dflts,
                                                         const SMESH_Mesh* theMesh)
 {
   if ( dflts._elemLength )
-    return bool( theMesh ? _nbLayers = int( theMesh->GetShapeDiagonalSize() / dflts._elemLength/ 2.) : 0);
+    return theMesh ? (_nbLayers = int( theMesh->GetShapeDiagonalSize() / dflts._elemLength/ 2.)) : 0;
   return false;
 }
 

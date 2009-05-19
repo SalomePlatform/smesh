@@ -206,6 +206,6 @@ bool StdMeshers_MaxElementVolume::SetParametersByMesh(const SMESH_Mesh*   theMes
 bool StdMeshers_MaxElementVolume::SetParametersByDefaults(const TDefaults&  dflts,
                                                           const SMESH_Mesh* /*theMesh*/)
 {
-  return bool( _maxVolume = dflts._elemLength*dflts._elemLength*dflts._elemLength );
+  return ( _maxVolume = dflts._elemLength*dflts._elemLength*dflts._elemLength );
 }
 

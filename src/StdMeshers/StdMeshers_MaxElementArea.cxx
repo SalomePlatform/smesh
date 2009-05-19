@@ -195,6 +195,6 @@ bool StdMeshers_MaxElementArea::SetParametersByMesh(const SMESH_Mesh*   theMesh,
 bool StdMeshers_MaxElementArea::SetParametersByDefaults(const TDefaults&  dflts,
                                                         const SMESH_Mesh* /*theMesh*/)
 {
-  return bool( _maxArea = dflts._elemLength*dflts._elemLength );
+  return ( _maxArea = dflts._elemLength*dflts._elemLength );
 }
 

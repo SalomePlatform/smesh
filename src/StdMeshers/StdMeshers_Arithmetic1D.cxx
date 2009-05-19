@@ -206,6 +206,6 @@ bool StdMeshers_Arithmetic1D::SetParametersByMesh(const SMESH_Mesh*   theMesh,
 bool StdMeshers_Arithmetic1D::SetParametersByDefaults(const TDefaults&  dflts,
                                                       const SMESH_Mesh* /*mesh*/)
 {
-  return bool( _begLength = _endLength = dflts._elemLength );
+  return ( _begLength = _endLength = dflts._elemLength );
 }
 

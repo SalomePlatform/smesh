@@ -237,6 +237,6 @@ bool StdMeshers_MaxLength::SetParametersByDefaults(const TDefaults&  dflts,
   //_preestimation = ( dflts._elemLength > 0.);
   if ( dflts._elemLength > 0. )
     _preestimated = dflts._elemLength;
-  return bool( _length = dflts._elemLength );
+  return ( _length = dflts._elemLength );
 }
 

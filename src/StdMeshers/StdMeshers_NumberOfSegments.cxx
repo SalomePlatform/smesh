@@ -692,6 +692,6 @@ bool StdMeshers_NumberOfSegments::SetParametersByMesh(const SMESH_Mesh*   theMes
 bool StdMeshers_NumberOfSegments::SetParametersByDefaults(const TDefaults&  dflts,
                                                           const SMESH_Mesh* /*theMesh*/)
 {
-  return bool(_numberOfSegments = dflts._nbSegments );
+  return (_numberOfSegments = dflts._nbSegments );
 }
 
