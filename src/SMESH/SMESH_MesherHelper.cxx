@@ -27,7 +27,6 @@
 
 #include "SMDS_FacePosition.hxx" 
 #include "SMDS_EdgePosition.hxx"
-#include "SMESH_MeshEditor.hxx"
 
 #include <BRepAdaptor_Surface.hxx>
 #include <BRepTools.hxx>
@@ -80,6 +79,8 @@ bool SMESH_MesherHelper::IsQuadraticSubMesh(const TopoDS_Shape& aSh)
   TopAbs_ShapeEnum subType( aSh.ShapeType()==TopAbs_FACE ? TopAbs_EDGE : TopAbs_FACE );
   SMDSAbs_ElementType elemType( subType==TopAbs_FACE ? SMDSAbs_Face : SMDSAbs_Edge );
 
+  int nbOldLinks = myNLinkNodeMap.size();
+
   TopExp_Explorer exp( aSh, subType );
   for (; exp.More() && myCreateQuadratic; exp.Next()) {
     if ( SMESHDS_SubMesh * subMesh = meshDS->MeshElements( exp.Current() )) {
@@ -114,6 +115,9 @@ bool SMESH_MesherHelper::IsQuadraticSubMesh(const TopoDS_Shape& aSh)
       }
     }
   }
+
+  if ( nbOldLinks == myNLinkNodeMap.size() )
+    myCreateQuadratic = false;
 
   if(!myCreateQuadratic) {
     myNLinkNodeMap.clear();
