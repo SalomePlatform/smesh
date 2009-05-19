@@ -84,7 +84,7 @@ struct TNode
   bool IsNeighbor( const TNode& other ) const;
 
   TNode(const SMDS_MeshNode* node = 0): myNode(node), myParams(-1,-1,-1) {}
-  bool operator < (const TNode& other) const { return myNode < other.myNode; }
+  bool operator < (const TNode& other) const { return myNode->GetID() < other.myNode->GetID(); }
 };
 
 // ===============================================================
@@ -429,12 +429,11 @@ private:
   StdMeshers_PrismAsBlock myBlock;
   SMESH_MesherHelper*     myHelper;
 
-  std::vector<gp_XYZ>            myShapeXYZ; // point on each sub-shape
+  std::vector<gp_XYZ>     myShapeXYZ; // point on each sub-shape
 
   // map of bottom nodes to the column of nodes above them
   // (the column includes the bottom node)
-  typedef std::map< TNode, TNodeColumn > TNode2ColumnMap;
-  TNode2ColumnMap  myBotToColumnMap;
+  TNode2ColumnMap         myBotToColumnMap;
 };
 
 #endif
