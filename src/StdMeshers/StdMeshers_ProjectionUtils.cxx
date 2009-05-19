@@ -36,7 +36,7 @@
 #include "SMESH_Hypothesis.hxx"
 #include "SMESH_IndexedDataMapOfShapeIndexedMapOfShape.hxx"
 #include "SMESH_Mesh.hxx"
-#include "SMESH_MeshEditor.hxx"
+#include "SMESH_MesherHelper.hxx"
 #include "SMESH_subMesh.hxx"
 #include "SMESH_subMeshEventListener.hxx"
 #include "SMDS_EdgePosition.hxx"
@@ -1664,7 +1664,7 @@ FindMatchingNodesOnFaces( const TopoDS_Face&     face1,
       notInSet.insert( f2 );
       for ( int i = 0; i < nbNodes; ++i ) {
         const SMDS_MeshNode* n1 = faceToKeep->GetNode( i );
-        const SMDS_MeshNode* n2 = faceToKeep->GetNode( i+1 );
+        const SMDS_MeshNode* n2 = faceToKeep->GetNode( i+1 % nbNodes );
         f1 = SMESH_MeshEditor::FindFaceInSet( n1, n2, inSet, notInSet );
         if ( f1 )
           elems.insert( f1 );
