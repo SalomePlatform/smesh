@@ -4543,7 +4543,9 @@ class Mesh_Projection3D(Mesh_Algorithm):
         if not mesh is None and isinstance(mesh, Mesh):
             mesh = mesh.GetMesh()
         hyp.SetSourceMesh( mesh )
-        hyp.SetVertexAssociation( srcV1, srcV2, tgtV1, tgtV2 )
+        if srcV1 and srcV2 and tgtV1 and tgtV2:
+            hyp.SetVertexAssociation( srcV1, srcV2, tgtV1, tgtV2 )
+        #elif srcV1 or srcV2 or tgtV1 or tgtV2:
         return hyp
 
     ## Checks if the given "SourceShape3D" hypothesis has the same parameters as given arguments
