@@ -28,18 +28,19 @@
 
 #include "SMESH_SMESH.hxx"
 
-#include "SMESH_Mesh.hxx"
-#include <TopoDS_Shape.hxx>
+#include "SMESH_MeshEditor.hxx" // needed for many meshers
 #include <SMDS_MeshNode.hxx>
-#include <TopoDS_Face.hxx>
-#include <gp_Pnt2d.hxx>
 #include <SMDS_QuadraticEdge.hxx>
+
+#include <TopoDS_Face.hxx>
+#include <TopoDS_Shape.hxx>
+#include <gp_Pnt2d.hxx>
 
 #include <map>
 
 typedef std::pair<const SMDS_MeshNode*, const SMDS_MeshNode*> NLink;
-typedef std::map<NLink, const SMDS_MeshNode*> NLinkNodeMap;
-typedef std::map<NLink, const SMDS_MeshNode*>::iterator ItNLinkNode;
+typedef std::map<NLink, const SMDS_MeshNode*>                 NLinkNodeMap;
+typedef std::map<NLink, const SMDS_MeshNode*>::iterator       ItNLinkNode;
 
 /*!
  * \brief It helps meshers to add elements
