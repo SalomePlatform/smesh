@@ -103,10 +103,6 @@ bool StdMeshers_Penta_3D::Compute(SMESH_Mesh& aMesh,
     return bOK;
   }
 
-  SMESH_MesherHelper helper(aMesh);
-  myTool = &helper;
-  myCreateQuadratic = myTool->IsQuadraticSubMesh(aShape);
-
   //
   MakeBlock();
   if (!myErrorStatus->IsOK()) {
@@ -117,6 +113,12 @@ bool StdMeshers_Penta_3D::Compute(SMESH_Mesh& aMesh,
   if (!myErrorStatus->IsOK()) {
     return bOK;
   }
+
+  // now unnecessary faces removed, we can load medium nodes
+  SMESH_MesherHelper helper(aMesh);
+  myTool = &helper;
+  myCreateQuadratic = myTool->IsQuadraticSubMesh(aShape);
+
   //
   MakeNodes();
   if (!myErrorStatus->IsOK()) {
@@ -805,8 +807,6 @@ void StdMeshers_Penta_3D::MakeMeshOnFxy1()
     TopoDS::Face(myBlock.Shape(SMESH_Block::ID_Fxy0));
   const TopoDS_Face& aFxy1=
     TopoDS::Face(myBlock.Shape(SMESH_Block::ID_Fxy1));
-  SMESH_MesherHelper faceHelper( *GetMesh() );
-  faceHelper.IsQuadraticSubMesh(aFxy1);
   //
   SMESH_Mesh* pMesh = GetMesh();
   SMESHDS_Mesh * meshDS = pMesh->GetMeshDS();
@@ -861,10 +861,10 @@ void StdMeshers_Penta_3D::MakeMeshOnFxy1()
     SMDS_MeshFace * face = 0;
     switch ( aNbNodes ) {
     case 3:
-      face = faceHelper.AddFace(aNodes1[0], aNodes1[1], aNodes1[2]);
+      face = myTool->AddFace(aNodes1[0], aNodes1[1], aNodes1[2]);
       break;
     case 4:
-      face = faceHelper.AddFace(aNodes1[0], aNodes1[1], aNodes1[2], aNodes1[3]);
+      face = myTool->AddFace(aNodes1[0], aNodes1[1], aNodes1[2], aNodes1[3]);
       break;
     default:
       continue;
@@ -1067,7 +1067,7 @@ void StdMeshers_Penta_3D::MakeBlock()
       aElementType = pElement->GetType();
       if (aElementType==SMDSAbs_Face) {
 	iNbNodes = pElement->NbNodes();
-	if ( iNbNodes==3 || (myCreateQuadratic && iNbNodes==6) ) {
+	if ( iNbNodes==3 || (pElement->IsQuadratic() && iNbNodes==6) ) {
 	  aFTr = aF;
 	  ++iCnt;
 	  if (iCnt>1) {

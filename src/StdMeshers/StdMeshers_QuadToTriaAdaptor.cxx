@@ -239,20 +239,12 @@ bool StdMeshers_QuadToTriaAdaptor::CheckIntersection
         const SMDS_MeshElement* face = iteratorElem->next();
         Handle(TColgp_HSequenceOfPnt) aContour = new TColgp_HSequenceOfPnt;
         SMDS_ElemIteratorPtr nodeIt = face->nodesIterator();
-        if( !face->IsQuadratic() ) {
-          while ( nodeIt->more() ) {
-            const SMDS_MeshNode* node = static_cast<const SMDS_MeshNode*>( nodeIt->next() );
-            aContour->Append(gp_Pnt(node->X(), node->Y(), node->Z()));
-          }
-        }
-        else {
-          int nn = 0;
-          while ( nodeIt->more() ) {
-            nn++;
-            const SMDS_MeshNode* node = static_cast<const SMDS_MeshNode*>( nodeIt->next() );
-            aContour->Append(gp_Pnt(node->X(), node->Y(), node->Z()));
-            if(nn==face->NbNodes()/2) break;
-          }
+        int nbN = face->NbNodes();
+        if( face->IsQuadratic() )
+          nbN /= 2;
+        for ( int i = 0; i < nbN; ++i ) {
+          const SMDS_MeshNode* node = static_cast<const SMDS_MeshNode*>( nodeIt->next() );
+          aContour->Append(gp_Pnt(node->X(), node->Y(), node->Z()));
         }
         if( HasIntersection(P, PC, Pres, aContour) ) {
           res = true;
@@ -275,24 +267,9 @@ bool StdMeshers_QuadToTriaAdaptor::CheckIntersection
 //=======================================================================
 static bool CompareTrias(const SMDS_MeshElement* F1,const SMDS_MeshElement* F2)
 {
-  SMDS_ElemIteratorPtr nIt = F1->nodesIterator();
-  const SMDS_MeshNode* Ns1[3];
-  int k = 0;
-  while( nIt->more() ) {
-    Ns1[k] = static_cast<const SMDS_MeshNode*>( nIt->next() );
-    k++;
-  }
-  nIt = F2->nodesIterator();
-  const SMDS_MeshNode* Ns2[3];
-  k = 0;
-  while( nIt->more() ) {
-    Ns2[k] = static_cast<const SMDS_MeshNode*>( nIt->next() );
-    k++;
-  }
-  if( ( Ns1[1]==Ns2[1] && Ns1[2]==Ns2[2] ) ||
-      ( Ns1[1]==Ns2[2] && Ns1[2]==Ns2[1] ) )
-    return true;
-  return false;
+  return
+    ( F1->GetNode(1)==F2->GetNode(2) && F1->GetNode(2)==F2->GetNode(1) ) ||
+    ( F1->GetNode(1)==F2->GetNode(1) && F1->GetNode(2)==F2->GetNode(2) );
 }
 
 
@@ -826,14 +803,13 @@ bool StdMeshers_QuadToTriaAdaptor::Compute2ndPart(SMESH_Mesh& aMesh)
   for(i=0; i<NbPyram-1; i++) {
     const SMDS_MeshElement* Prm1 = Pyrams[i];
     SMDS_ElemIteratorPtr nIt = Prm1->nodesIterator();
-    std::vector<gp_Pnt> Ps1(5);
-    const SMDS_MeshNode* Ns1[5];
+    std::vector<gp_Pnt>            Ps1( Prm1->NbNodes() );
+    vector< const SMDS_MeshNode* > Ns1( Prm1->NbNodes() );
     int k = 0;
-    while( nIt->more() ) {
+    for ( ; k < Ns1.size(); ++k ) {
       const SMDS_MeshNode* node = static_cast<const SMDS_MeshNode*>( nIt->next() );
       Ns1[k] = node;
       Ps1[k] = gp_Pnt(node->X(), node->Y(), node->Z());
-      k++;
     }
     bool NeedMove = false;
     for(int j=i+1; j<NbPyram; j++) {
@@ -843,9 +819,8 @@ bool StdMeshers_QuadToTriaAdaptor::Compute2ndPart(SMESH_Mesh& aMesh)
       const TColStd_SequenceOfInteger& aMergesJ = MergesInfo.Value(j);
       int nbJ = aMergesJ.Length();
       // check if two pyramids already merged
-      int k = 2;
       bool NeedCont = false;
-      for(; k<=nbI; k++) {
+      for( k = 2; k<=nbI; k++) {
         if(aMergesI.Value(k)==j) {
           NeedCont = true;
           break;
@@ -855,14 +830,12 @@ bool StdMeshers_QuadToTriaAdaptor::Compute2ndPart(SMESH_Mesh& aMesh)
 
       const SMDS_MeshElement* Prm2 = Pyrams[j];
       nIt = Prm2->nodesIterator();
-      std::vector<gp_Pnt> Ps2(5);
-      const SMDS_MeshNode* Ns2[5];
-      k = 0;
-      while( nIt->more() ) {
+      vector<gp_Pnt>               Ps2( Prm2->NbNodes() );
+      vector<const SMDS_MeshNode*> Ns2( Prm2->NbNodes() );
+      for ( k = 0; k < Ns2.size(); ++k ) {
         const SMDS_MeshNode* node = static_cast<const SMDS_MeshNode*>( nIt->next() );
         Ns2[k] = node;
         Ps2[k] = gp_Pnt(node->X(), node->Y(), node->Z());
-        k++;
       }
 
       bool hasInt = false;
@@ -920,66 +893,47 @@ bool StdMeshers_QuadToTriaAdaptor::Compute2ndPart(SMESH_Mesh& aMesh)
           //cout<<"       CommonNode: "<<CommonNode;
           const SMDS_MeshNode* Nrem = Ns2[4];
           Ns2[4] = CommonNode;
-          meshDS->ChangeElementNodes(Prm2, Ns2, 5);
+          meshDS->ChangeElementNodes(Prm2, &Ns2[0], Ns2.size());
           // update pyramids for J
           for(k=2; k<=nbJ; k++) {
             const SMDS_MeshElement* tmpPrm = Pyrams[aMergesJ.Value(k)];
             SMDS_ElemIteratorPtr tmpIt = tmpPrm->nodesIterator();
-            const SMDS_MeshNode* Ns[5];
-            int m = 0;
-            while( tmpIt->more() ) {
+            vector< const SMDS_MeshNode* > Ns( tmpPrm->NbNodes() );
+            for ( int m = 0; m < Ns.size(); ++m )
               Ns[m] = static_cast<const SMDS_MeshNode*>( tmpIt->next() );
-              m++;
-            }
             Ns[4] = CommonNode;
-            meshDS->ChangeElementNodes(tmpPrm, Ns, 5);
+            meshDS->ChangeElementNodes(tmpPrm, &Ns[0], Ns.size());
           }
 
           // update MergesInfo
           for(k=1; k<=nbI; k++) {
             int num = aMergesI.Value(k);
-            const TColStd_SequenceOfInteger& aSeq = MergesInfo.Value(num);
-            TColStd_SequenceOfInteger tmpSeq;
-            int m = 1;
-            for(; m<=aSeq.Length(); m++) {
-              tmpSeq.Append(aSeq.Value(m));
-            }
-            for(m=1; m<=nbJ; m++) {
-              tmpSeq.Append(aMergesJ.Value(m));
-            }
-            MergesInfo.SetValue(num,tmpSeq);
+            TColStd_SequenceOfInteger& aSeq = MergesInfo.ChangeValue(num);
+            for(int m=1; m<=nbJ; m++)
+              aSeq.Append(aMergesJ.Value(m));
           }
           for(k=1; k<=nbJ; k++) {
             int num = aMergesJ.Value(k);
-            const TColStd_SequenceOfInteger& aSeq = MergesInfo.Value(num);
-            TColStd_SequenceOfInteger tmpSeq;
-            int m = 1;
-            for(; m<=aSeq.Length(); m++) {
-              tmpSeq.Append(aSeq.Value(m));
-            }
-            for(m=1; m<=nbI; m++) {
-              tmpSeq.Append(aMergesI.Value(m));
-            }
-            MergesInfo.SetValue(num,tmpSeq);
+            TColStd_SequenceOfInteger& aSeq = MergesInfo.ChangeValue(num);
+            for(int m=1; m<=nbI; m++)
+              aSeq.Append(aMergesI.Value(m));
           }
 
           // update triangles for aMergesJ
           for(k=1; k<=nbJ; k++) {
-            std::list< std::list< const SMDS_MeshNode* > > aFNodes;
-            std::list< const SMDS_MeshElement* > aFFaces;
+            list< list< const SMDS_MeshNode* > > aFNodes;
+            list< const SMDS_MeshElement* > aFFaces;
             int num = aMergesJ.Value(k);
-            std::map< const SMDS_MeshElement*,
-              std::list<const SMDS_FaceOfNodes*> >::iterator itrm = myResMap.find(Faces[num]);
-            std::list<const SMDS_FaceOfNodes*> trias = (*itrm).second;
-            std::list<const SMDS_FaceOfNodes*>::iterator itt = trias.begin();
+            map< const SMDS_MeshElement*,
+              list<const SMDS_FaceOfNodes*> >::iterator itrm = myResMap.find(Faces[num]);
+            list<const SMDS_FaceOfNodes*>& trias = itrm->second;
+            list<const SMDS_FaceOfNodes*>::iterator itt = trias.begin();
             for(; itt!=trias.end(); itt++) {
-              int nn = -1;
               SMDS_ElemIteratorPtr nodeIt = (*itt)->nodesIterator();
               const SMDS_MeshNode* NF[3];
-              while ( nodeIt->more() ) {
-                nn++;
-                NF[nn] = static_cast<const SMDS_MeshNode*>( nodeIt->next() );
-              }
+              int nn = 0;
+              while ( nodeIt->more() )
+                NF[nn++] = static_cast<const SMDS_MeshNode*>( nodeIt->next() );
               NF[0] = CommonNode;
               SMDS_FaceOfNodes* Ftria = const_cast< SMDS_FaceOfNodes*>( (*itt) );
               Ftria->ChangeNodes(NF, 3);
@@ -987,16 +941,16 @@ bool StdMeshers_QuadToTriaAdaptor::Compute2ndPart(SMESH_Mesh& aMesh)
           }
 
           // check and remove coincided faces
-          TColStd_SequenceOfInteger IdRemovedTrias;
+          //TColStd_SequenceOfInteger IdRemovedTrias;
           int i1 = 1;
           for(; i1<=nbI; i1++) {
             int numI = aMergesI.Value(i1);
-            std::map< const SMDS_MeshElement*,
-              std::list<const SMDS_FaceOfNodes*> >::iterator itrmI = myResMap.find(Faces[numI]);
-            std::list<const SMDS_FaceOfNodes*> triasI = (*itrmI).second;
-            std::list<const SMDS_FaceOfNodes*>::iterator ittI = triasI.begin();
+            map< const SMDS_MeshElement*,
+              list<const SMDS_FaceOfNodes*> >::iterator itrmI = myResMap.find(Faces[numI]);
+            list<const SMDS_FaceOfNodes*>& triasI = (*itrmI).second;
+            list<const SMDS_FaceOfNodes*>::iterator ittI = triasI.begin();
             int nbfI = triasI.size();
-            std::vector<const SMDS_FaceOfNodes*> FsI(nbfI);
+            vector<const SMDS_FaceOfNodes*> FsI(nbfI);
             k = 0;
             for(; ittI!=triasI.end(); ittI++) {
               FsI[k]  = (*ittI);
@@ -1009,12 +963,12 @@ bool StdMeshers_QuadToTriaAdaptor::Compute2ndPart(SMESH_Mesh& aMesh)
               int j1 = 1;
               for(; j1<=nbJ; j1++) {
                 int numJ = aMergesJ.Value(j1);
-                std::map< const SMDS_MeshElement*,
-                  std::list<const SMDS_FaceOfNodes*> >::iterator itrmJ = myResMap.find(Faces[numJ]);
-                std::list<const SMDS_FaceOfNodes*> triasJ = (*itrmJ).second;
-                std::list<const SMDS_FaceOfNodes*>::iterator ittJ = triasJ.begin();
+                map< const SMDS_MeshElement*,
+                  list<const SMDS_FaceOfNodes*> >::iterator itrmJ = myResMap.find(Faces[numJ]);
+                list<const SMDS_FaceOfNodes*>& triasJ = (*itrmJ).second;
+                list<const SMDS_FaceOfNodes*>::iterator ittJ = triasJ.begin();
                 int nbfJ = triasJ.size();
-                std::vector<const SMDS_FaceOfNodes*> FsJ(nbfJ);
+                vector<const SMDS_FaceOfNodes*> FsJ(nbfJ);
                 k = 0;
                 for(; ittJ!=triasJ.end(); ittJ++) {
                   FsJ[k]  = (*ittJ);
@@ -1025,18 +979,18 @@ bool StdMeshers_QuadToTriaAdaptor::Compute2ndPart(SMESH_Mesh& aMesh)
                   const SMDS_FaceOfNodes* FJ = FsJ[j2];
                   // compare triangles
                   if( CompareTrias(FI,FJ) ) {
-                    IdRemovedTrias.Append( FI->GetID() );
-                    IdRemovedTrias.Append( FJ->GetID() );
+                    //IdRemovedTrias.Append( FI->GetID() );
+                    //IdRemovedTrias.Append( FJ->GetID() );
                     FsI[i2] = 0;
                     FsJ[j2] = 0;
-                    std::list<const SMDS_FaceOfNodes*> new_triasI;
+                    list<const SMDS_FaceOfNodes*> new_triasI;
                     for(k=0; k<nbfI; k++) {
                       if( FsI[k]==0 ) continue;
                       new_triasI.push_back( FsI[k] );
                     }
                     (*itrmI).second = new_triasI;
                     triasI = new_triasI;
-                    std::list<const SMDS_FaceOfNodes*> new_triasJ;
+                    list<const SMDS_FaceOfNodes*> new_triasJ;
                     for(k=0; k<nbfJ; k++) {
                       if( FsJ[k]==0 ) continue;
                       new_triasJ.push_back( FsJ[k] );
@@ -1122,11 +1076,11 @@ bool StdMeshers_QuadToTriaAdaptor::Compute2ndPart(SMESH_Mesh& aMesh)
  * \brief Return list of created triangles for given face
  */
 //================================================================================
-const std::list<const SMDS_FaceOfNodes*>* StdMeshers_QuadToTriaAdaptor::GetTriangles
+const list<const SMDS_FaceOfNodes*>* StdMeshers_QuadToTriaAdaptor::GetTriangles
                                                    (const SMDS_MeshElement* aFace)
 {
-  std::map< const SMDS_MeshElement*,
-    std::list<const SMDS_FaceOfNodes*> >::iterator it = myResMap.find(aFace);
+  map< const SMDS_MeshElement*,
+    list<const SMDS_FaceOfNodes*> >::iterator it = myResMap.find(aFace);
   if( it != myResMap.end() ) {
     return & it->second;
   }
@@ -1142,11 +1096,11 @@ const std::list<const SMDS_FaceOfNodes*>* StdMeshers_QuadToTriaAdaptor::GetTrian
 //void StdMeshers_QuadToTriaAdaptor::RemoveFaces(SMESH_Mesh& aMesh)
 //{
 //  SMESHDS_Mesh * meshDS = aMesh.GetMeshDS();
-//  std::map< const SMDS_MeshElement*,
-//    std::list<const SMDS_MeshElement*> >::iterator it = myResMap.begin();
+//  map< const SMDS_MeshElement*,
+//    list<const SMDS_MeshElement*> >::iterator it = myResMap.begin();
 //  for(; it != myResMap.end(); it++ ) {
-//    std::list<const SMDS_MeshElement*> aFaces = (*it).second;
-//    std::list<const SMDS_MeshElement*>::iterator itf = aFaces.begin();
+//    list<const SMDS_MeshElement*> aFaces = (*it).second;
+//    list<const SMDS_MeshElement*>::iterator itf = aFaces.begin();
 //    for(; itf!=aFaces.end(); itf++ ) {
 //      meshDS->RemoveElement( (*itf) );
 //    }
