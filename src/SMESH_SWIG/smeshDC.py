@@ -493,7 +493,6 @@ class smeshDC(SMESH._objref_SMESH_Gen):
     #  @param name a new object name
     #  @ingroup l1_auxiliary
     def SetName(self, obj, name):
-        print "obj_name = ", name
         if isinstance( obj, Mesh ):
             obj = obj.GetMesh()
         elif isinstance( obj, Mesh_Algorithm ):
