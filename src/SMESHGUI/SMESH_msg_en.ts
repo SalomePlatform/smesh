@@ -4698,6 +4698,10 @@ It is impossible to read point coordinates from file</translation>
             <source>GRAVITY_CENTER</source>
             <translation>Gravity center</translation>
         </message>
+	<message>
+            <source>CONNECTED_ELEMENTS</source>
+            <translation>Connected With Elements</translation>
+        </message>
     </context>
     <context>
         <name>SMESHGUI_FileInfoDlg</name>

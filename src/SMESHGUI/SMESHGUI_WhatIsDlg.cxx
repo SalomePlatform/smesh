@@ -136,7 +136,7 @@ SMESHGUI_WhatIsDlg::SMESHGUI_WhatIsDlg( SMESHGUI* theModule )
 
   // information text browser
   Info = new QTextBrowser(GroupArguments);
-  Info->setMinimumSize(200, 150);
+  Info->setMinimumSize(300, 200);
   GroupArgumentsLayout->addWidget(Info, 1, 0, 1, 2);
 
   /***************************************************************/
@@ -439,19 +439,19 @@ void SMESHGUI_WhatIsDlg::SelectionIntoArgument()
     myActor->GetObject()->GetMesh()->FindElement(aString.toInt());
   if (e) {
     QString anInfo;
-    anInfo=tr("ENTITY_TYPE") + ": ";
+    anInfo="<b>" + tr("ENTITY_TYPE") + ":</b> ";
     if(e->GetType() == SMDSAbs_Node) {
-      anInfo+=tr("MESH_NODE")+"\n";
+      anInfo+=tr("MESH_NODE")+"<br>";
       //const SMDS_MeshNode *en = (SMDS_MeshNode*) e; // VSR: not used!
     } else if(e->GetType() == SMDSAbs_Edge) {
-      anInfo+=tr("SMESH_EDGE")+"\n";
-      anInfo+=tr("SMESH_MESHINFO_TYPE")+": ";
+      anInfo+=tr("SMESH_EDGE")+"<br>";
+      anInfo+="<b>" + tr("SMESH_MESHINFO_TYPE")+":</b> ";
       const SMDS_MeshEdge *ee = (SMDS_MeshEdge*) e;
-      anInfo+=(ee->IsQuadratic()?tr("SMESH_MESHINFO_ORDER2"):tr("SMESH_MESHINFO_ORDER1"))+"\n";
+      anInfo+=(ee->IsQuadratic()?tr("SMESH_MESHINFO_ORDER2"):tr("SMESH_MESHINFO_ORDER1"))+"<br>";
     } else if(e->GetType() == SMDSAbs_Face) {
       const SMDS_MeshFace *ef = (SMDS_MeshFace*) e;
-      anInfo+=tr("SMESH_FACE")+"\n";
-      anInfo+=tr("SMESH_MESHINFO_TYPE")+": ";
+      anInfo+=tr("SMESH_FACE")+"<br>";
+      anInfo+="<b>" + tr("SMESH_MESHINFO_TYPE")+":</b> ";
       if(!ef->IsPoly())
 	anInfo+=(ef->IsQuadratic()?tr("SMESH_MESHINFO_ORDER2"):tr("SMESH_MESHINFO_ORDER1"))+" ";
       switch(ef->NbNodes()) {
@@ -470,10 +470,10 @@ void SMESHGUI_WhatIsDlg::SelectionIntoArgument()
       default:
 	break;
       }
-      anInfo+="\n";
+      anInfo+="<br>";
     } else if(e->GetType() == SMDSAbs_Volume) {
-      anInfo+=tr("SMESH_VOLUME")+"\n";
-      anInfo+=tr("SMESH_MESHINFO_TYPE")+": ";
+      anInfo+=tr("SMESH_VOLUME")+"<br>";
+      anInfo+="<b>" + tr("SMESH_MESHINFO_TYPE")+":</b> ";
       const SMDS_MeshVolume *ev = (SMDS_MeshVolume*) e;
       SMDS_VolumeTool vt(ev);
       if(vt.GetVolumeType() != SMDS_VolumeTool::POLYHEDA)
@@ -511,19 +511,37 @@ void SMESHGUI_WhatIsDlg::SelectionIntoArgument()
       default:
 	break;
       }
-      anInfo+="\n";
+      anInfo+="<br>";
     }
-    if(e->GetType() != SMDSAbs_Node)
-      anInfo+=tr("GRAVITY_CENTER") + ":\n";
     gp_XYZ anXYZ(0.,0.,0.);
     SMDS_ElemIteratorPtr nodeIt = e->nodesIterator();
     int nbNodes = 0;
+    QString aNodesInfo="";
     for( ; nodeIt->more(); nbNodes++) {
       const SMDS_MeshNode* node = static_cast<const SMDS_MeshNode*>( nodeIt->next() );
       anXYZ.Add( gp_XYZ( node->X(), node->Y(), node->Z() ) );
+      if(e->GetType() != SMDSAbs_Node)
+	aNodesInfo+=QString("<b>Node %1:</b><br>Id=%2, X=%3, Y=%4, Z=%5<br>").arg(nbNodes+1).arg(node->GetID()).arg(node->X()).arg(node->Y()).arg(node->Z());
+      // Calculate Connectivity
+      SMDS_ElemIteratorPtr it = node->GetInverseElementIterator();
+      if (it) {
+	aNodesInfo+="<b>" + tr("CONNECTED_ELEMENTS") + ":</b>";
+	while (it->more()) {
+	  const SMDS_MeshElement* elem = it->next();
+	  aNodesInfo+=QString(" %1").arg(elem->GetID());
+	}
+	if ( (nbNodes+1) != e->NbNodes())
+	  aNodesInfo+=QString("<br><br>");
+      }
     }
+    if(e->GetType() != SMDSAbs_Node)
+      anInfo+="<b>" + tr("GRAVITY_CENTER") + ":</b><br>";
     anXYZ.Divide(e->NbNodes());
-    anInfo+=QString("X=%1\nY=%2\nZ=%3\n").arg(anXYZ.X()).arg(anXYZ.Y()).arg(anXYZ.Z());
+    anInfo+=QString("X=%1, Y=%2, Z=%3").arg(anXYZ.X()).arg(anXYZ.Y()).arg(anXYZ.Z());
+    if(e->GetType() != SMDSAbs_Node)
+      anInfo+="<br>";
+    if (aNodesInfo!="")
+      anInfo+= "<br>" + aNodesInfo;
     Info->setText(anInfo);
   }
 
