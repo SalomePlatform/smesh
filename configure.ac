@@ -30,7 +30,7 @@ AC_INIT([Salome2 Project SMESH module], [5.1.1], [webmaster.salome@opencascade.c
 AC_CONFIG_AUX_DIR(salome_adm/unix/config_files)
 AC_CANONICAL_HOST
 AC_CANONICAL_TARGET
-AM_INIT_AUTOMAKE
+AM_INIT_AUTOMAKE([-Wno-portability])
 
 XVERSION=`echo $VERSION | awk -F. '{printf("0x%02x%02x%02x",$1,$2,$3)}'`
 AC_SUBST(XVERSION)
@@ -433,45 +433,45 @@ echo
 # autoscan, the Makefile list is generated in the output file configure.scan.
 # This could be helpfull to update de configuration.
 AC_OUTPUT([ \
-  ./salome_adm/unix/SALOMEconfig.h \
-  ./adm_local/Makefile \
-  ./adm_local/cmake_files/Makefile \
-  ./adm_local/unix/Makefile \
-  ./adm_local/unix/config_files/Makefile \
-  ./bin/VERSION \
-  ./bin/Makefile \
-  ./SMESH_version.h \
-  ./doc/Makefile \
-  ./doc/salome/Makefile \
-  ./doc/salome/gui/Makefile \
-  ./doc/salome/gui/SMESH/Makefile \
-  ./doc/salome/gui/SMESH/doxyfile \
-  ./doc/salome/gui/SMESH/doxyfile_py \
-  ./doc/salome/tui/Makefile \
-  ./doc/salome/tui/doxyfile \
-  ./src/Makefile \
-  ./src/Controls/Makefile \
-  ./src/Driver/Makefile \
-  ./src/DriverDAT/Makefile \
-  ./src/DriverMED/Makefile \
-  ./src/DriverSTL/Makefile \
-  ./src/DriverUNV/Makefile \
-  ./src/MEFISTO2/Makefile \
-  ./src/OBJECT/Makefile \
-  ./src/SMDS/Makefile \
-  ./src/SMESH/Makefile \
-  ./src/SMESHClient/Makefile \
-  ./src/SMESHDS/Makefile \
-  ./src/SMESHFiltersSelection/Makefile \
-  ./src/SMESHGUI/Makefile \
-  ./src/SMESH_I/Makefile \
-  ./src/SMESH_SWIG/Makefile \
-  ./src/SMESH_SWIG_WITHIHM/Makefile \
-  ./src/StdMeshers/Makefile \
-  ./src/StdMeshersGUI/Makefile \
-  ./src/StdMeshers_I/Makefile \
-  ./resources/Makefile \
-  ./resources/SMESHCatalog.xml \
-  ./idl/Makefile \
+  salome_adm/unix/SALOMEconfig.h \
+  adm_local/Makefile \
+  adm_local/cmake_files/Makefile \
+  adm_local/unix/Makefile \
+  adm_local/unix/config_files/Makefile \
+  bin/VERSION \
+  bin/Makefile \
+  SMESH_version.h \
+  doc/Makefile \
+  doc/salome/Makefile \
+  doc/salome/gui/Makefile \
+  doc/salome/gui/SMESH/Makefile \
+  doc/salome/gui/SMESH/doxyfile \
+  doc/salome/gui/SMESH/doxyfile_py \
+  doc/salome/tui/Makefile \
+  doc/salome/tui/doxyfile \
+  src/Makefile \
+  src/Controls/Makefile \
+  src/Driver/Makefile \
+  src/DriverDAT/Makefile \
+  src/DriverMED/Makefile \
+  src/DriverSTL/Makefile \
+  src/DriverUNV/Makefile \
+  src/MEFISTO2/Makefile \
+  src/OBJECT/Makefile \
+  src/SMDS/Makefile \
+  src/SMESH/Makefile \
+  src/SMESHClient/Makefile \
+  src/SMESHDS/Makefile \
+  src/SMESHFiltersSelection/Makefile \
+  src/SMESHGUI/Makefile \
+  src/SMESH_I/Makefile \
+  src/SMESH_SWIG/Makefile \
+  src/SMESH_SWIG_WITHIHM/Makefile \
+  src/StdMeshers/Makefile \
+  src/StdMeshersGUI/Makefile \
+  src/StdMeshers_I/Makefile \
+  resources/Makefile \
+  resources/SMESHCatalog.xml \
+  idl/Makefile \
   Makefile
 ])
