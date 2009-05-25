@@ -23,7 +23,6 @@
 //  File   : SMESH_subMesh_i.hxx
 //  Author : Paul RASCLE, EDF
 //  Module : SMESH
-//  $Header$
 //
 #ifndef _SMESH_SUBMESH_I_HXX_
 #define _SMESH_SUBMESH_I_HXX_
@@ -40,7 +39,6 @@
 #include "SMESH_Mesh_i.hxx"
 
 class SMESH_Gen_i;
-class SMESH_Mesh_i;
 
 class SMESH_I_EXPORT SMESH_subMesh_i:
   public virtual POA_SMESH::SMESH_subMesh,
