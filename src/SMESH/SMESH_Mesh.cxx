@@ -134,9 +134,11 @@ void SMESH_Mesh::ShapeToMesh(const TopoDS_Shape & aShape)
 {
   if(MYDEBUG) MESSAGE("SMESH_Mesh::ShapeToMesh");
 
-  if ( !aShape.IsNull() && _isShapeToMesh )
-    throw SALOME_Exception(LOCALIZED ("a shape to mesh has already been defined"));
-
+  if ( !aShape.IsNull() && _isShapeToMesh ) {
+    if ( aShape.ShapeType() != TopAbs_COMPOUND && // group contents is allowed to change
+         _myMeshDS->ShapeToMesh().ShapeType() != TopAbs_COMPOUND )
+      throw SALOME_Exception(LOCALIZED ("a shape to mesh has already been defined"));
+  }
   // clear current data
   if ( !_myMeshDS->ShapeToMesh().IsNull() )
   {
