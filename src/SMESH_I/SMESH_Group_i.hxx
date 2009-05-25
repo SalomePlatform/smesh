@@ -23,12 +23,12 @@
 //  File   : SMESH_Group_i.hxx
 //  Author : Sergey ANIKIN, OCC
 //  Module : SMESH
-//  $Header$
 //
 #ifndef SMESH_Group_i_HeaderFile
 #define SMESH_Group_i_HeaderFile
 
 #include "SMESH.hxx"
+#include "SMESH_Mesh_i.hxx"
 
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_Group)
@@ -37,7 +37,6 @@
 
 #include "SALOME_GenericObj_i.hh"
 
-class SMESH_Mesh_i;
 class SMESH_Group;
 class SMESHDS_GroupBase;
 
@@ -83,6 +82,9 @@ class SMESH_I_EXPORT SMESH_GroupBase_i:
 private:
   SMESH_Mesh_i* myMeshServant;
   int myLocalID;
+
+  void changeLocalId(int localId) { myLocalID = localId; }
+  friend void SMESH_Mesh_i::CheckGeomGroupModif();
 };
 
 // ======
