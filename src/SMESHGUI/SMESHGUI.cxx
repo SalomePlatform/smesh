@@ -3323,8 +3323,10 @@ bool SMESHGUI::activateModule( SUIT_Study* study )
   //  0020210. Make SMESH_Gen update meshes at switching GEOM->SMESH
   GetSMESHGen()->SetCurrentStudy(SALOMEDS::Study::_nil());
   if ( SalomeApp_Study* s = dynamic_cast<SalomeApp_Study*>( study ))
-    if ( _PTR(Study) aStudy = s->studyDS())
+    if ( _PTR(Study) aStudy = s->studyDS()) {
       GetSMESHGen()->SetCurrentStudy( _CAST(Study,aStudy)->GetStudy() );
+      updateObjBrowser(); // objects can be removed
+    }
 
   return res;
 }
