@@ -64,6 +64,7 @@
 #include <TColStd_MapOfInteger.hxx>
 #include <TColStd_SequenceOfInteger.hxx>
 #include <TCollection_AsciiString.hxx>
+#include <TopExp.hxx>
 #include <TopExp_Explorer.hxx>
 #include <TopoDS_Compound.hxx>
 
@@ -203,6 +204,7 @@ void SMESH_Mesh_i::Clear() throw (SALOME::SALOME_Exception)
   Unexpect aCatch(SALOME_SalomeException);
   try {
     _impl->Clear();
+    CheckGeomGroupModif(); // issue 20145
   }
   catch(SALOME_Exception & S_ex) {
     THROW_SALOME_CORBA_EXCEPTION(S_ex.what(), SALOME::BAD_PARAM);
@@ -1572,7 +1574,7 @@ TopoDS_Shape SMESH_Mesh_i::newGroupShape( TGeomGroupData & groupData)
     CORBA::Object_var groupObj = _gen_i->SObjectToObject( groupSO );
     if ( CORBA::is_nil( groupObj )) return newShape;
     GEOM::GEOM_Object_var geomGroup = GEOM::GEOM_Object::_narrow( groupObj );
-    
+
     // get indices of group items
     set<int> curIndices;
     GEOM::GEOM_Gen_var geomGen = _gen_i->GetGeomEngine();
@@ -1598,13 +1600,24 @@ TopoDS_Shape SMESH_Mesh_i::newGroupShape( TGeomGroupData & groupData)
   if ( newShape.IsNull() ) {
     // geom group becomes empty - return empty compound
     TopoDS_Compound compound;
-    BRep_Builder    builder;
-    builder.MakeCompound(compound);
+    BRep_Builder().MakeCompound(compound);
     newShape = compound;
   }
   return newShape;
 }
 
+namespace {
+  //=============================================================================
+  /*!
+   * \brief Storage of shape and index used in CheckGeomGroupModif()
+   */
+  //=============================================================================
+  struct TIndexedShape {
+    int          _index;
+    TopoDS_Shape _shape;
+    TIndexedShape( int i, const TopoDS_Shape& s ):_index(i), _shape(s) {}
+  };
+}
 //=============================================================================
 /*!
  * \brief Update objects depending on changed geom groups
@@ -1643,18 +1656,11 @@ void SMESH_Mesh_i::CheckGeomGroupModif()
 
     if ( processedGroup ) { // update group indices
       list<TGeomGroupData>::iterator data2 = data;
-      for ( --data2; data2->_groupEntry != data->_groupEntry; --data2)
-        data->_indices = data2->_indices;
+      for ( --data2; data2->_groupEntry != data->_groupEntry; --data2) {}
+      data->_indices = data2->_indices;
     }
 
     // Update SMESH objects according to new GEOM group contents
-
-    SMESH::SMESH_Mesh_var mesh = SMESH::SMESH_Mesh::_narrow( data->_smeshObject );
-    if ( !mesh->_is_nil() ) // -------------- MESH ----------------------------
-    {
-      // TODO
-      continue;
-    }
 
     SMESH::SMESH_subMesh_var submesh = SMESH::SMESH_subMesh::_narrow( data->_smeshObject );
     if ( !submesh->_is_nil() ) // -------------- Sub mesh ---------------------
@@ -1699,7 +1705,129 @@ void SMESH_Mesh_i::CheckGeomGroupModif()
       }
       continue;
     }
-  }
+
+    SMESH::SMESH_Mesh_var mesh = SMESH::SMESH_Mesh::_narrow( data->_smeshObject );
+    if ( !mesh->_is_nil() ) // -------------- MESH ----------------------------
+    {
+      // Remove groups and submeshes basing on removed sub-shapes
+
+      TopTools_MapOfShape newShapeMap;
+      TopoDS_Iterator shapeIt( newShape );
+      for ( ; shapeIt.More(); shapeIt.Next() )
+        newShapeMap.Add( shapeIt.Value() );
+
+      SMESHDS_Mesh* meshDS = _impl->GetMeshDS();
+      for ( shapeIt.Initialize( meshDS->ShapeToMesh() ); shapeIt.More(); shapeIt.Next() )
+      {
+        if ( newShapeMap.Contains( shapeIt.Value() ))
+          continue;
+        TopTools_IndexedMapOfShape oldShapeMap;
+        TopExp::MapShapes( shapeIt.Value(), oldShapeMap );
+        for ( int i = 1; i <= oldShapeMap.Extent(); ++i )
+        {
+          const TopoDS_Shape& oldShape = oldShapeMap(i);
+          int oldInd = meshDS->ShapeToIndex( oldShape );
+          // -- submeshes --
+          map<int, SMESH::SMESH_subMesh_ptr>::iterator i_smIor = _mapSubMeshIor.find( oldInd );
+          if ( i_smIor != _mapSubMeshIor.end() ) {
+            RemoveSubMesh( i_smIor->second ); // one submesh per shape index
+          }
+          // --- groups ---
+          map<int, SMESH::SMESH_GroupBase_ptr>::iterator i_grp = _mapGroups.begin();
+          for ( ; i_grp != _mapGroups.end(); ++i_grp )
+          {
+            // check if a group bases on oldInd shape
+            SMESHDS_GroupOnGeom* grpOnGeom = 0;
+            if ( ::SMESH_Group* g = _impl->GetGroup( i_grp->first ))
+              grpOnGeom = dynamic_cast<SMESHDS_GroupOnGeom*>( g->GetGroupDS() );
+            if ( grpOnGeom && oldShape.IsSame( grpOnGeom->GetShape() ))
+            { // remove
+              RemoveGroup( i_grp->second ); // several groups can base on same shape
+              i_grp = _mapGroups.begin(); // _mapGroups changed - restart iteration
+            }
+          }
+        }
+      }
+      // Reassign hypotheses and update groups after setting the new shape to mesh
+
+      // collect anassigned hypotheses
+      typedef list< pair< TIndexedShape, list<const SMESHDS_Hypothesis*> > > TShapeHypList;
+      list <const SMESHDS_Hypothesis * >::const_iterator hypIt;
+      TShapeHypList assignedHyps;
+      for ( int i = 1; i <= meshDS->MaxShapeIndex(); ++i )
+      {
+        const TopoDS_Shape& oldShape = meshDS->IndexToShape(i);
+        list<const SMESHDS_Hypothesis*> hyps = meshDS->GetHypothesis( oldShape );// copy
+        if ( !hyps.empty() ) {
+          assignedHyps.push_back( make_pair( TIndexedShape(i,oldShape), hyps ));
+          for ( hypIt = hyps.begin(); hypIt != hyps.end(); ++hypIt )
+            _impl->RemoveHypothesis( oldShape, (*hypIt)->GetID());
+        }
+      }
+      // collect shapes supporting groups
+      typedef list < pair< TIndexedShape, SMDSAbs_ElementType > > TShapeTypeList;
+      TShapeTypeList groupData;
+      const set<SMESHDS_GroupBase*>& groups = meshDS->GetGroups();
+      set<SMESHDS_GroupBase*>::const_iterator grIt = groups.begin();
+      for ( ; grIt != groups.end(); ++grIt )
+      {
+        if ( SMESHDS_GroupOnGeom* gog = dynamic_cast<SMESHDS_GroupOnGeom*>( *grIt ))
+          groupData.push_back
+            ( make_pair( TIndexedShape( gog->GetID(),gog->GetShape()), gog->GetType()));
+      }
+      // set new shape to mesh -> DS of submeshes and geom groups is deleted
+      _impl->ShapeToMesh( newShape );
+      
+      // reassign hypotheses
+      TShapeHypList::iterator indS_hyps = assignedHyps.begin();
+      for ( ; indS_hyps != assignedHyps.end(); ++indS_hyps )
+      {
+        TIndexedShape&                   geom = indS_hyps->first;
+        list<const SMESHDS_Hypothesis*>& hyps = indS_hyps->second;
+        int oldID = geom._index;
+        int newID = meshDS->ShapeToIndex( geom._shape );
+        if ( !newID )
+          continue;
+        if ( oldID == 1 ) { // main shape
+          newID = 1;
+          geom._shape = newShape;
+        }
+        for ( hypIt = hyps.begin(); hypIt != hyps.end(); ++hypIt )
+          _impl->AddHypothesis( geom._shape, (*hypIt)->GetID());
+        // care of submeshes
+        SMESH_subMesh* newSubmesh = _impl->GetSubMesh( geom._shape );
+        if ( newID != oldID ) {
+          _mapSubMesh   [ newID ] = newSubmesh;
+          _mapSubMesh_i [ newID ] = _mapSubMesh_i [ oldID ];
+          _mapSubMeshIor[ newID ] = _mapSubMeshIor[ oldID ];
+          _mapSubMesh.   erase(oldID);
+          _mapSubMesh_i. erase(oldID);
+          _mapSubMeshIor.erase(oldID);
+          _mapSubMesh_i [ newID ]->changeLocalId( newID );
+        }
+      }
+      // recreate groups
+      TShapeTypeList::iterator geomType = groupData.begin();
+      for ( ; geomType != groupData.end(); ++geomType )
+      {
+        const TIndexedShape& geom = geomType->first;
+        int oldID = geom._index;
+        if ( _mapGroups.find( oldID ) == _mapGroups.end() )
+          continue;
+        // get group name
+        SALOMEDS::SObject_var groupSO = _gen_i->ObjectToSObject( study,_mapGroups[oldID] );
+        CORBA::String_var     name    = groupSO->GetName();
+        // update
+        SMESH_GroupBase_i* group_i    = SMESH::DownCast<SMESH_GroupBase_i*>(_mapGroups[oldID] );
+        int newID;
+        if ( group_i && _impl->AddGroup( geomType->second, name.in(), newID, geom._shape ))
+          group_i->changeLocalId( newID );
+      }
+
+      break; // everything has been updated
+
+    } // update mesh
+  } // loop on group data
 
   // Update icons
 
