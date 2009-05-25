@@ -1395,6 +1395,8 @@ CORBA::Boolean SMESH_Gen_i::Compute( SMESH::SMESH_Mesh_ptr theMesh,
     SMESH_Mesh_i* meshServant = dynamic_cast<SMESH_Mesh_i*>( GetServant( theMesh ).in() );
     ASSERT( meshServant );
     if ( meshServant ) {
+      // NPAL16168: "geometrical group edition from a submesh don't modifiy mesh computation"
+      meshServant->CheckGeomGroupModif();
       // get local TopoDS_Shape
       TopoDS_Shape myLocShape;
       if(theMesh->HasShapeToMesh())
@@ -3750,8 +3752,13 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
               {
                 int smID = smIDs[ i ];
                 if ( smID == 0 ) continue;
-                ASSERT( smID <= maxID );
                 const SMDS_MeshElement* elem = *iE;
+                if( smID >= maxID ) {
+                  // corresponding subshape no longer exists: maybe geom group has been edited
+                  if ( myNewMeshImpl->HasShapeToMesh() )
+                    mySMESHDSMesh->RemoveElement( elem );
+                  continue;
+                }
                 // get or create submesh
                 SMESHDS_SubMesh* & sm = subMeshes[ smID ];
                 if ( ! sm ) {
@@ -3856,28 +3863,28 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
             for ( int iNode = 0; iNode < nbNodes; iNode++ )
             {
               const SMDS_MeshNode* node = mySMESHDSMesh->FindNode( aNodeIDs[ iNode ]);
-              ASSERT( node );
+              if ( !node ) continue; // maybe removed while Loading() if geometry changed
               SMDS_PositionPtr aPos = node->GetPosition();
-              ASSERT( aPos )
-                if ( onFace ) {
-                  // ASSERT( aPos->GetTypeOfPosition() == SMDS_TOP_FACE );-- issue 20182
-                  // -- Most probably a bad study was saved when there were
-                  // not fixed bugs in SMDS_MeshInfo
-                  if ( aPos->GetTypeOfPosition() == SMDS_TOP_FACE ) {
-                    SMDS_FacePosition* fPos = const_cast<SMDS_FacePosition*>
-                      ( static_cast<const SMDS_FacePosition*>( aPos.get() ));
-                    fPos->SetUParameter( aUPos[ iNode ]);
-                    fPos->SetVParameter( aVPos[ iNode ]);
-                  }
+              ASSERT( aPos );
+              if ( onFace ) {
+                // ASSERT( aPos->GetTypeOfPosition() == SMDS_TOP_FACE );-- issue 20182
+                // -- Most probably a bad study was saved when there were
+                // not fixed bugs in SMDS_MeshInfo
+                if ( aPos->GetTypeOfPosition() == SMDS_TOP_FACE ) {
+                  SMDS_FacePosition* fPos = const_cast<SMDS_FacePosition*>
+                    ( static_cast<const SMDS_FacePosition*>( aPos.get() ));
+                  fPos->SetUParameter( aUPos[ iNode ]);
+                  fPos->SetVParameter( aVPos[ iNode ]);
                 }
-                else {
-                  // ASSERT( aPos->GetTypeOfPosition() == SMDS_TOP_EDGE );-- issue 20182
-                  if ( aPos->GetTypeOfPosition() == SMDS_TOP_EDGE ) {
-                    SMDS_EdgePosition* fPos = const_cast<SMDS_EdgePosition*>
-                      ( static_cast<const SMDS_EdgePosition*>( aPos.get() ));
-                    fPos->SetUParameter( aUPos[ iNode ]);
-                  }
+              }
+              else {
+                // ASSERT( aPos->GetTypeOfPosition() == SMDS_TOP_EDGE );-- issue 20182
+                if ( aPos->GetTypeOfPosition() == SMDS_TOP_EDGE ) {
+                  SMDS_EdgePosition* fPos = const_cast<SMDS_EdgePosition*>
+                    ( static_cast<const SMDS_EdgePosition*>( aPos.get() ));
+                  fPos->SetUParameter( aUPos[ iNode ]);
                 }
+              }
             }
           }
           if ( aEids ) delete [] aEids;
