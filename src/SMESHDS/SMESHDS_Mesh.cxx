@@ -87,8 +87,11 @@ void SMESHDS_Mesh::ShapeToMesh(const TopoDS_Shape & S)
       }
     }
     // - sub-meshes
-    myIndexToShape.Clear();
+    TShapeIndexToSubMesh::iterator i_sm = myShapeIndexToSubMesh.begin();
+    for ( ; i_sm != myShapeIndexToSubMesh.end(); ++i_sm )
+      delete i_sm->second;
     myShapeIndexToSubMesh.clear();
+    myIndexToShape.Clear();
     // - groups on geometry
     set<SMESHDS_GroupBase*>::iterator gr = myGroups.begin();
     while ( gr != myGroups.end() ) {
