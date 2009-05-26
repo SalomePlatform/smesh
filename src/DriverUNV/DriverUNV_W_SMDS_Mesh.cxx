@@ -263,7 +263,9 @@ Driver_Mesh::Status DriverUNV_W_SMDS_Mesh::Perform()
 	      i++;
 	    }
 	  }
-	  aDataSet2417.insert(TDataSet::value_type(aGroupDS->GetID(), aRec));
+          // 0019936: EDF 794 SMESH : Export UNV : Node color and group id
+	  //aDataSet2417.insert(TDataSet::value_type(aGroupDS->GetID(), aRec));
+          aDataSet2417.insert(TDataSet::value_type(aGroupDS->GetID()+1, aRec));
 	}
 	UNV2417::Write(out_stream,aDataSet2417);
 	myGroups.clear();
