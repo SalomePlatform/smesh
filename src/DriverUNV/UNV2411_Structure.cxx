@@ -29,18 +29,12 @@ using namespace std;
 using namespace UNV;
 using namespace UNV2411;
 
-#ifdef _DEBUG_
-static int MYDEBUG = 1;
-#else
-static int MYDEBUG = 0;
-#endif
-
 static string _label_dataset = "2411";
 
 UNV2411::TRecord::TRecord():
   exp_coord_sys_num(0),
   disp_coord_sys_num(0),
-  color(0)
+  color(11)//(0) -  0019936: EDF 794 SMESH : Export UNV : Node color and group id
 {}
 
 void UNV2411::Read(std::ifstream& in_stream, TDataSet& theDataSet)
