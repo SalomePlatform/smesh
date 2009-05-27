@@ -3169,6 +3169,19 @@ void SMESHGUI::initialize( CAM_Application* app )
   popupMgr()->insert( action( 220 ), anId, -1 ); // ALL
   popupMgr()->setRule( action( 220 ), aDiffElemsInVTK + "&& isVisible && not( elemTypes in entityMode )", QtxPopupMgr::VisibleRule );
 
+
+  //-------------------------------------------------
+  // Representation of the 2D Quadratic elements
+  //-------------------------------------------------  
+  anId = popupMgr()->insert( tr( "MEN_QUADRATIC_REPRESENT" ), -1, -1 );
+  popupMgr()->insert( action( 231 ), anId, -1 ); // LINE REPRESENTATION
+  popupMgr()->setRule( action( 231 ), aMeshInVTK + "and isVisible",QtxPopupMgr::VisibleRule );
+  popupMgr()->setRule( action( 231 ), "quadratic2DMode = 'eLines'", QtxPopupMgr::ToggleRule );
+  
+  popupMgr()->insert( action( 232 ), anId, -1 ); // ARC REPRESENTATION
+  popupMgr()->setRule( action( 232 ), aMeshInVTK + "and isVisible", QtxPopupMgr::VisibleRule );
+  popupMgr()->setRule( action( 232 ), "quadratic2DMode = 'eArcs'", QtxPopupMgr::ToggleRule );
+
   //-------------------------------------------------
   // Orientation of faces
   //-------------------------------------------------
@@ -3286,21 +3299,6 @@ void SMESHGUI::initialize( CAM_Application* app )
   popupMgr()->insert( action( 201 ), anId, -1 ); // SCALAR_BAR_PROP
   popupMgr()->setRule( action( 201 ), aMeshInVTK + "&& controlMode <> 'eNone'", QtxPopupMgr::VisibleRule );
 
-  popupMgr()->insert( separator(), -1, -1 );
-
-
-  //-------------------------------------------------
-  // Representation of the 2D Quadratic elements
-  //-------------------------------------------------  
-  anId = popupMgr()->insert( tr( "MEN_QUADRATIC_REPRESENT" ), -1, -1 );
-  popupMgr()->insert( action( 231 ), anId, -1 ); // LINE REPRESENTATION
-  popupMgr()->setRule( action( 231 ), aMeshInVTK + "and isVisible",QtxPopupMgr::VisibleRule );
-  popupMgr()->setRule( action( 231 ), "quadratic2DMode = 'eLines'", QtxPopupMgr::ToggleRule );
-  
-  popupMgr()->insert( action( 232 ), anId, -1 ); // ARC REPRESENTATION
-  popupMgr()->setRule( action( 232 ), aMeshInVTK + "and isVisible", QtxPopupMgr::VisibleRule );
-  popupMgr()->setRule( action( 232 ), "quadratic2DMode = 'eArcs'", QtxPopupMgr::ToggleRule );
-  
   popupMgr()->insert( separator(), -1, -1 );
   
   //-------------------------------------------------
