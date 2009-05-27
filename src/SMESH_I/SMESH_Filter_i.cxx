@@ -2516,7 +2516,7 @@ CORBA::Boolean Filter_i::SetCriteria( const SMESH::Filter::Criteria& theCriteria
         {
           SMESH::ElemGeomType_ptr tmpPred = aFilterMgr->CreateElemGeomType();
           tmpPred->SetElementType( aTypeOfElem );
-          tmpPred->SetGeometryType( (GeometryType)(aThreshold + 0.5) );
+          tmpPred->SetGeometryType( (GeometryType)(int)(aThreshold + 0.5) );
           aPredicate = tmpPred;
           break;
         }
