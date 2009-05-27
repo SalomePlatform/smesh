@@ -28,8 +28,10 @@
 #include "SMESH_ActorDef.h"
 #include "SMESH_ActorUtils.h"
 #include "SMESH_DeviceActor.h"
+#include "SMESH_ObjectDef.h"
 #include "SMESH_ControlsDef.hxx"
 #include "VTKViewer_ExtractUnstructuredGrid.h"
+#include "VTKViewer_FramedTextActor.h"
 #include "SALOME_InteractiveObject.hxx"
 
 #include "SUIT_Session.h"
@@ -415,6 +417,10 @@ SMESH_ActorDef::SMESH_ActorDef()
   // Clipping planes
   myImplicitBoolean = vtkImplicitBoolean::New();
   myImplicitBoolean->SetOperationTypeToIntersection();
+
+  // Set color of the name actor
+  SMESH::GetColor( "SMESH", "fill_color", anRGB[0], anRGB[1], anRGB[2], QColor( 0, 170, 255 ) );
+  myNameActor->SetBackgroundColor(anRGB[0], anRGB[1], anRGB[2]);
 }
 
 
@@ -874,6 +880,9 @@ bool SMESH_ActorDef::Init(TVisualObjPtr theVisualObj,
   if(aMode == 3){
     SetShrink();
   }
+
+  if( dynamic_cast<SMESH_GroupObj*>( myVisualObj.get() ) )
+    SetIsDisplayNameActor( true );
 
   myTimeStamp->Modified();
   Modified();
@@ -1416,6 +1425,7 @@ vtkFloatingPointType SMESH_ActorDef::GetOpacity(){
 
 void SMESH_ActorDef::SetSufaceColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b){
   mySurfaceProp->SetColor(r,g,b);
+  myNameActor->SetBackgroundColor(r,g,b);
   Modified();
 }
 

@@ -798,6 +798,7 @@ bool SMESHGUI_GroupDlg::onApply()
 
       _PTR(SObject) aMeshGroupSO = SMESH::FindSObject(myGroup);
       if(SMESH_Actor *anActor = SMESH::FindActorByEntry(aMeshGroupSO->GetID().c_str())) {
+	anActor->setName(myName->text().toLatin1().data());
 	switch ( myTypeId ) {
 	case 0: anActor->SetNodeColor( aColor.R, aColor.G, aColor.B ); break;
 	case 1: anActor->SetEdgeColor( aColor.R, aColor.G, aColor.B ); break;
@@ -935,6 +936,7 @@ bool SMESHGUI_GroupDlg::onApply()
 
       _PTR(SObject) aMeshGroupSO = SMESH::FindSObject(myGroupOnGeom);
       if(SMESH_Actor *anActor = SMESH::FindActorByEntry(aMeshGroupSO->GetID().c_str())) {
+	anActor->setName(myName->text().toLatin1().data());
 	switch ( myTypeId ) {
 	case 0: anActor->SetNodeColor( aColor.R, aColor.G, aColor.B ); break;
 	case 1: anActor->SetEdgeColor( aColor.R, aColor.G, aColor.B ); break;

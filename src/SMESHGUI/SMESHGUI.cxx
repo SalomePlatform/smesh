@@ -2120,6 +2120,15 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
               {
                 SMESHGUI::GetSMESHGen()->SetName(obj->GetIOR().c_str(), newName.toLatin1().data());
 
+		// update name of group object and its actor
+		SMESH::SMESH_GroupBase_var aGroupObject = SMESH::IObjectToInterface<SMESH::SMESH_GroupBase>(IObject);
+		if( !aGroupObject->_is_nil() )
+		{
+		  aGroupObject->SetName( newName.toLatin1().data() );
+		  if ( SMESH_Actor *anActor = SMESH::FindActorByEntry( IObject->getEntry() ) )
+		    anActor->setName( newName.toLatin1().data() );
+		}
+
                 updateObjBrowser();
               }
             }
