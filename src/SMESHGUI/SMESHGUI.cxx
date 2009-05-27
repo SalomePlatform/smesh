@@ -727,11 +727,20 @@
 		SMESH::SMESH_GroupBase_var aGroupObject = SMESH::IObjectToInterface<SMESH::SMESH_GroupBase>(IObject);
 		if( !aGroupObject->_is_nil() )
 		{
-		  SALOMEDS::Color aColor;
-		  aColor.R = (float)color.red() / 255.0;
-		  aColor.G = (float)color.green() / 255.0;
-		  aColor.B = (float)color.blue() / 255.0;
-		  aGroupObject->SetColor( aColor );
+		  SMESH::ElementType anElementType = aGroupObject->GetType();
+		  QColor aColor;
+		  switch( anElementType )
+		  {
+		    case SMESH::NODE: aColor = nodecolor; break;
+		    case SMESH::EDGE: aColor = edgecolor; break;
+		    default: aColor = color; break;
+		  }
+
+		  SALOMEDS::Color aGroupColor;
+		  aGroupColor.R = (float)aColor.red() / 255.0;
+		  aGroupColor.G = (float)aColor.green() / 255.0;
+		  aGroupColor.B = (float)aColor.blue() / 255.0;
+		  aGroupObject->SetColor( aGroupColor );
 		}
 
 		delete aDlg;

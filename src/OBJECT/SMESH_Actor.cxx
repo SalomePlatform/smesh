@@ -1458,7 +1458,10 @@ vtkFloatingPointType SMESH_ActorDef::GetOpacity(){
 
 void SMESH_ActorDef::SetSufaceColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b){
   mySurfaceProp->SetColor(r,g,b);
-  myNameActor->SetBackgroundColor(r,g,b);
+  if( SMESH_GroupObj* aGroupObj = dynamic_cast<SMESH_GroupObj*>( myVisualObj.get() ) )
+    if( aGroupObj->GetElementType() == SMDSAbs_Face ||
+	aGroupObj->GetElementType() == SMDSAbs_Volume )
+      myNameActor->SetBackgroundColor(r,g,b);
   Modified();
 }
 
@@ -1480,6 +1483,9 @@ void SMESH_ActorDef::SetEdgeColor(vtkFloatingPointType r,vtkFloatingPointType g,
   myEdgeProp->SetColor(r,g,b);
   my1DProp->SetColor(r,g,b);
   my1DExtProp->SetColor(1.0-r,1.0-g,1.0-b);
+  if( SMESH_GroupObj* aGroupObj = dynamic_cast<SMESH_GroupObj*>( myVisualObj.get() ) )
+    if( aGroupObj->GetElementType() == SMDSAbs_Edge )
+      myNameActor->SetBackgroundColor(r,g,b);
   Modified();
 }
 
@@ -1490,6 +1496,9 @@ void SMESH_ActorDef::GetEdgeColor(vtkFloatingPointType& r,vtkFloatingPointType& 
 void SMESH_ActorDef::SetNodeColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b){ 
   myNodeProp->SetColor(r,g,b);
   myNodeExtProp->SetColor(1.0-r,1.0-g,1.0-b);
+  if( SMESH_GroupObj* aGroupObj = dynamic_cast<SMESH_GroupObj*>( myVisualObj.get() ) )
+    if( aGroupObj->GetElementType() == SMDSAbs_Node )
+      myNameActor->SetBackgroundColor(r,g,b);
   Modified();
 }
 

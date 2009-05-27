@@ -168,6 +168,8 @@ public:
   virtual int               GetEntities( const SMDSAbs_ElementType, TEntityList& ) const;
   virtual bool              IsNodePrs() const;
 
+  virtual SMDSAbs_ElementType GetElementType() const;
+
 private:
 
   SMESH::SMESH_GroupBase_var    myGroupServer;

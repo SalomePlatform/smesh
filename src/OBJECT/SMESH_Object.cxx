@@ -749,6 +749,15 @@ bool SMESH_GroupObj::IsNodePrs() const
 }
 
 //=================================================================================
+// function : GetElementType
+// purpose  : Return type of elements of group
+//=================================================================================
+SMDSAbs_ElementType SMESH_GroupObj::GetElementType() const
+{
+  return SMDSAbs_ElementType(myGroupServer->GetType());
+}
+
+//=================================================================================
 // function : getNodesFromElems
 // purpose  : Retrieve nodes from elements
 //=================================================================================
