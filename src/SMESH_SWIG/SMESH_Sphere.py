@@ -77,8 +77,8 @@ Cube  = MakeHexa2Faces(Face1, Face3)
 Common1 = MakeBoolean(Sphere, Block, 1)
 Common2 = MakeRotation(Common1, VZ, Angle90)
 
-MultiBlock1 = MakeMultiTransformation1D(Common1, 21, -1, 3)
-MultiBlock2 = MakeMultiTransformation1D(Common2, 31, -1, 3)
+MultiBlock1 = MakeMultiTransformation1D(Common1, 20, -1, 3)
+MultiBlock2 = MakeMultiTransformation1D(Common2, 30, -1, 3)
 
 #Reconstruct sphere from several blocks
 ShapesList.append(Cube)
