@@ -583,7 +583,7 @@ void SMESHGUI_MeshDlg::enableTab(const int theTabId) {
  */
 //================================================================================
 bool SMESHGUI_MeshDlg::isTabEnabled(const int theTabId) const {
-  myTabWg->isTabEnabled( myTabWg->indexOf( myTabs[ theTabId ] ) );
+  return myTabWg->isTabEnabled( myTabWg->indexOf( myTabs[ theTabId ] ) );
 }
 
 void SMESHGUI_MeshDlg::onGeomSelectionButton(bool isBtnOn)
