@@ -189,6 +189,10 @@ class SMESH_ActorDef : public SMESH_Actor
   virtual long GetControlsPrecision() const { return myControlsPrecision; }
 
   virtual void UpdateScalarBar();
+
+
+  virtual void SetQuadratic2DRepresentation(EQuadratic2DRepresentation);
+  virtual EQuadratic2DRepresentation GetQuadratic2DRepresentation();
   
  protected:
   void SetControlMode(eControl theMode, bool theCheckEntityMode);

@@ -77,6 +77,14 @@ class SMESHOBJECT_EXPORT SMESH_DeviceActor: public vtkLODActor{
   virtual void SetFacesOriented(bool theIsFacesOriented);
   virtual bool GetFacesOriented() { return myIsFacesOriented; }
 
+  //----------------------------------------------------------------------------
+  //! Setting for displaying quadratic elements
+  virtual void SetQuadraticArcMode(bool theFlag);
+  virtual bool GetQuadraticArcMode();
+  
+  virtual void SetQuadraticArcAngle(vtkFloatingPointType theMaxAngle);
+  virtual vtkFloatingPointType GetQuadraticArcAngle();
+  
   void UpdateFaceOrientation();
 
   vtkFloatingPointType GetShrinkFactor();

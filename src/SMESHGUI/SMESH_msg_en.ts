@@ -550,6 +550,18 @@
             <translation>Shading</translation>
         </message>
         <message>
+            <source>MEN_QUADRATIC_REPRESENT</source>
+            <translation>2D Quadratic</translation>
+        </message>
+        <message>
+            <source>MEN_LINE_REPRESENTATION</source>
+            <translation>Lines</translation>
+        </message>
+        <message>
+            <source>MEN_ARC_REPRESENTATION</source>
+            <translation>Arcs</translation>
+        </message>
+        <message>
             <source>MEN_SHOW</source>
             <translation>Show</translation>
         </message>
@@ -2968,6 +2980,14 @@ Please, create VTK viewer and try again</translation>
             <translation>Display entity</translation>
         </message>
         <message>
+            <source>QUADRATIC_REPRESENT_MODE</source>
+            <translation>Representation of the 2D quadratic elements</translation>
+        </message>
+        <message>
+            <source>MAX_ARC_ANGLE</source>
+            <translation>Maximum angle</translation>
+        </message>
+	<message>
             <source>PREF_DISPLAY_MODE</source>
             <translation>Display mode</translation>
         </message>

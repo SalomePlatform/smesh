@@ -57,6 +57,8 @@ public:
   virtual QVariant        hasReference( int ) const;
   virtual QVariant        isVisible( int ) const;
 
+  virtual QString         quadratic2DMode(int ) const;
+
   // parameters got from actor return nothing if an actor is not visible
   virtual QList<QVariant> elemTypes( int ) const;
   virtual QList<QVariant> labeledTypes( int ) const;

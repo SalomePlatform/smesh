@@ -834,3 +834,29 @@ SMESH_DeviceActor
   myPolygonOffsetUnits = units;
 }
 
+/*!
+ * On/Off representation 2D quadratic element as arked polygon
+ */
+void SMESH_DeviceActor::SetQuadraticArcMode(bool theFlag){
+  myGeomFilter->SetQuadraticArcMode(theFlag);
+}
+
+/*!
+ * Return true if 2D quadratic element displayed as arked polygon
+ */
+bool SMESH_DeviceActor::GetQuadraticArcMode(){
+  return myGeomFilter->GetQuadraticArcMode();
+}
+/*!
+ * Set Max angle for representation 2D quadratic element as arked polygon
+ */
+void SMESH_DeviceActor::SetQuadraticArcAngle(vtkFloatingPointType theMaxAngle){
+  myGeomFilter->SetQuadraticArcAngle(theMaxAngle);
+}
+
+/*!
+ * Return Max angle of the representation 2D quadratic element as arked polygon
+ */
+vtkFloatingPointType SMESH_DeviceActor::GetQuadraticArcAngle(){
+  return myGeomFilter->GetQuadraticArcAngle();
+}

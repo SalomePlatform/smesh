@@ -126,7 +126,7 @@ SMESH_ActorDef::SMESH_ActorDef()
 
   vtkFloatingPointType aPointSize = SMESH::GetFloat("SMESH:node_size",3);
   vtkFloatingPointType aLineWidth = SMESH::GetFloat("SMESH:element_width",1);
-
+  
   vtkMatrix4x4 *aMatrix = vtkMatrix4x4::New();
   VTKViewer_ExtractUnstructuredGrid* aFilter = NULL;
 
@@ -417,7 +417,27 @@ SMESH_ActorDef::SMESH_ActorDef()
   // Clipping planes
   myImplicitBoolean = vtkImplicitBoolean::New();
   myImplicitBoolean->SetOperationTypeToIntersection();
+  
 
+
+  //Quadratic 2D elements representation
+  //-----------------------------------------------------------------------------
+  int aQuadratic2DMode = mgr->integerValue( "SMESH", "quadratic_mode", 0);
+  if(aQuadratic2DMode == 0){
+    myHighlitableActor->SetQuadraticArcMode(false);
+    my2DActor->SetQuadraticArcMode(false);
+    my1DActor->SetQuadraticArcMode(false);
+  }
+  else if(aQuadratic2DMode == 1){
+    myHighlitableActor->SetQuadraticArcMode(true);
+    my2DActor->SetQuadraticArcMode(true);
+    my1DActor->SetQuadraticArcMode(true);
+  }
+  
+  int aQuadraticAngle = mgr->integerValue( "SMESH", "max_angle", 2);
+  myHighlitableActor->SetQuadraticArcAngle(aQuadraticAngle);
+  my2DActor->SetQuadraticArcAngle(aQuadraticAngle);
+  
   // Set color of the name actor
   SMESH::GetColor( "SMESH", "fill_color", anRGB[0], anRGB[1], anRGB[2], QColor( 0, 170, 255 ) );
   myNameActor->SetBackgroundColor(anRGB[0], anRGB[1], anRGB[2]);
@@ -506,8 +526,9 @@ SMESH_ActorDef::~SMESH_ActorDef()
 
 
 void SMESH_ActorDef::SetPointsLabeled( bool theIsPointsLabeled )
-{
+{    
   vtkUnstructuredGrid* aGrid = GetUnstructuredGrid();
+    
   myIsPointsLabeled = theIsPointsLabeled && aGrid->GetNumberOfPoints();
 
   if ( myIsPointsLabeled )
@@ -1215,11 +1236,12 @@ void SMESH_ActorDef::SetRepresentation(int theMode){
   myNodeExtActor->SetVisibility(false);
   vtkProperty *aProp = NULL, *aBackProp = NULL;
   SMESH_DeviceActor::EReperesent aReperesent = SMESH_DeviceActor::EReperesent(-1);
+  SMESH_Actor::EQuadratic2DRepresentation aQuadraticMode = GetQuadratic2DRepresentation();
   switch(myRepresentation){
   case ePoint:
     myPickableActor = myNodeActor;
     myNodeActor->SetVisibility(true);
-    
+    aQuadraticMode = SMESH_Actor::eLines;
     aProp = aBackProp = myNodeProp;
     aReperesent = SMESH_DeviceActor::ePoint;
     break;
@@ -1238,6 +1260,11 @@ void SMESH_ActorDef::SetRepresentation(int theMode){
   my2DActor->SetBackfaceProperty(aBackProp);
   my2DActor->SetRepresentation(aReperesent);
 
+  if(aQuadraticMode == SMESH_Actor::eLines)
+    my2DActor->SetQuadraticArcMode(false);
+  else if(aQuadraticMode == SMESH_Actor::eArcs)
+    my2DActor->SetQuadraticArcMode(true);
+
   my2DExtActor->SetRepresentation(aReperesent);
   
   my3DActor->SetProperty(aProp);
@@ -1255,6 +1282,12 @@ void SMESH_ActorDef::SetRepresentation(int theMode){
       aReperesent = SMESH_DeviceActor::eInsideframe;
     break;
   }
+  
+  if(aQuadraticMode == SMESH_Actor::eLines)
+    my1DActor->SetQuadraticArcMode(false);
+  else if(aQuadraticMode == SMESH_Actor::eArcs)
+    my1DActor->SetQuadraticArcMode(true);
+  
   
   my1DActor->SetProperty(aProp);
   my1DActor->SetBackfaceProperty(aBackProp);
@@ -1784,4 +1817,33 @@ void SMESH_ActorDef::UpdateScalarBar()
     anIntVal = mgr->integerValue( "SMESH", "scalar_bar_num_colors", anIntVal );
   myScalarBarActor->SetMaximumNumberOfColors( anIntVal == 0 ? 64 : anIntVal );
   
+}
+
+void SMESH_ActorDef::SetQuadratic2DRepresentation(EQuadratic2DRepresentation theMode)
+{
+  switch(theMode) {
+  case SMESH_Actor::eLines :
+    myHighlitableActor->SetQuadraticArcMode(false);
+    my2DActor->SetQuadraticArcMode(false);
+    my1DActor->SetQuadraticArcMode(false);
+    break;
+  case SMESH_Actor::eArcs :
+    myHighlitableActor->SetQuadraticArcMode(true);
+    if(GetRepresentation() != SMESH_Actor::ePoint) {
+      my2DActor->SetQuadraticArcMode(true);
+      my1DActor->SetQuadraticArcMode(true);
+    }
+    break;
+  default:
+    break;
+  }
+}
+
+
+SMESH_Actor::EQuadratic2DRepresentation SMESH_ActorDef::GetQuadratic2DRepresentation()
+{
+  if(myHighlitableActor->GetQuadraticArcMode())
+    return SMESH_Actor::eArcs;
+  else
+    return SMESH_Actor::eLines;
 }

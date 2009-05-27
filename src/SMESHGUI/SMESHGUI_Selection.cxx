@@ -117,6 +117,7 @@ QVariant SMESHGUI_Selection::parameter( const int ind, const QString& p ) const
   else if ( p=="isImported" )    val = QVariant( isImported( ind ) );
   else if ( p=="facesOrientationMode" ) val = QVariant( facesOrientationMode( ind ) );
   else if ( p=="groupType" )     val = QVariant( groupType( ind ) );
+  else if ( p=="quadratic2DMode") val =  QVariant(quadratic2DMode(ind));
 
   if( val.isValid() )
     return val;
@@ -186,6 +187,24 @@ QString SMESHGUI_Selection::displayMode( int ind ) const
     case SMESH_Actor::eEdge:    return "eEdge";
     case SMESH_Actor::eSurface: return "eSurface";
     case SMESH_Actor::ePoint:   return "ePoint";
+    default: break;
+    }
+  }
+  return "Unknown";
+}
+
+
+//=======================================================================
+//function : quadratic2DMode
+//purpose  : return SMESH_Actor::EQuadratic2DRepresentation
+//=======================================================================
+QString SMESHGUI_Selection::quadratic2DMode( int ind ) const
+{
+  SMESH_Actor* actor = getActor( ind );
+  if ( actor ) {
+    switch( actor->GetQuadratic2DRepresentation() ) {
+    case SMESH_Actor::eLines:    return "eLines";
+    case SMESH_Actor::eArcs: return "eArcs";
     default: break;
     }
   }
@@ -548,3 +567,4 @@ QString SMESHGUI_Selection::groupType( int ind ) const
   }
   return type;
 }
+

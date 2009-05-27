@@ -644,6 +644,14 @@
 	    case 215:
 	      anActor->SetRepresentation(SMESH_Actor::ePoint);
 	      break;
+            case 231:
+              if(anActor->GetQuadratic2DRepresentation() != SMESH_Actor::eLines)
+                anActor->SetQuadratic2DRepresentation(SMESH_Actor::eLines);
+              break;
+            case 232:
+              if(anActor->GetQuadratic2DRepresentation() != SMESH_Actor::eArcs)
+                anActor->SetQuadratic2DRepresentation(SMESH_Actor::eArcs);
+              break;
 	    case 1132:{
 	      vtkFloatingPointType color[3];
 	      anActor->GetSufaceColor(color[0], color[1], color[2]);
@@ -1443,7 +1451,13 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     ::SetDisplayMode(theCommandID);
   break;
 
-    // Display Entity
+  //2D quadratic representation
+  case 231:
+  case 232:
+    ::SetDisplayMode(theCommandID);
+  break;
+  
+  // Display Entity
   case 217: // Edges
   case 218: // Faces
   case 219: // Volumes
@@ -2743,6 +2757,10 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction(  219, "VOLUMES",        "ICON_DLG_TETRAS", 0, true );
   createSMESHAction(  220, "ALL" );
   createSMESHAction(  221, "FACE_ORIENTATION", "", 0, true );
+
+  createSMESHAction(  231, "LINE_REPRESENTATION", "", 0, true );
+  createSMESHAction(  232, "ARC_REPRESENTATION", "", 0, true );
+
   createSMESHAction( 1100, "EDIT_HYPO" );
   createSMESHAction( 1101, "RENAME", "", Qt::Key_F2 );
   createSMESHAction( 1102, "UNASSIGN" );
@@ -3188,7 +3206,7 @@ void SMESHGUI::initialize( CAM_Application* app )
     aMeshInVtkHasVolumes = aMeshInVTK + "&&" + hasVolumes;
 
   anId = popupMgr()->insert( tr( "MEN_CTRL" ), -1, -1 );
-
+  
   popupMgr()->insert( action( 200 ), anId, -1 ); // RESET
   popupMgr()->setRule( action( 200 ), aMeshInVTK + "&& controlMode <> 'eNone'", QtxPopupMgr::VisibleRule );
 
@@ -3270,6 +3288,21 @@ void SMESHGUI::initialize( CAM_Application* app )
 
   popupMgr()->insert( separator(), -1, -1 );
 
+
+  //-------------------------------------------------
+  // Representation of the 2D Quadratic elements
+  //-------------------------------------------------  
+  anId = popupMgr()->insert( tr( "MEN_QUADRATIC_REPRESENT" ), -1, -1 );
+  popupMgr()->insert( action( 231 ), anId, -1 ); // LINE REPRESENTATION
+  popupMgr()->setRule( action( 231 ), aMeshInVTK + "and isVisible",QtxPopupMgr::VisibleRule );
+  popupMgr()->setRule( action( 231 ), "quadratic2DMode = 'eLines'", QtxPopupMgr::ToggleRule );
+  
+  popupMgr()->insert( action( 232 ), anId, -1 ); // ARC REPRESENTATION
+  popupMgr()->setRule( action( 232 ), aMeshInVTK + "and isVisible", QtxPopupMgr::VisibleRule );
+  popupMgr()->setRule( action( 232 ), "quadratic2DMode = 'eArcs'", QtxPopupMgr::ToggleRule );
+  
+  popupMgr()->insert( separator(), -1, -1 );
+  
   //-------------------------------------------------
   // Display / Erase
   //-------------------------------------------------
@@ -3468,6 +3501,25 @@ void SMESHGUI::createPreferences()
   indices.append( 3 );
   setPreferenceProperty( dispmode, "strings", modes );
   setPreferenceProperty( dispmode, "indexes", indices );
+
+  int arcgroup = addPreference( tr( "QUADRATIC_REPRESENT_MODE" ), genTab );
+  setPreferenceProperty( arcgroup, "columns", 2 );
+  int quadraticmode = addPreference( tr( "QUADRATIC_REPRESENT_MODE" ), arcgroup, LightApp_Preferences::Selector, "SMESH", "quadratic_mode" );
+  QStringList quadraticModes;
+  quadraticModes.append("Lines");
+  quadraticModes.append("Arcs");
+  indices.clear();
+  indices.append( 0 );
+  indices.append( 1 );
+  setPreferenceProperty( quadraticmode, "strings", quadraticModes );
+  setPreferenceProperty( quadraticmode, "indexes", indices );
+
+  int maxAngle = addPreference( tr( "MAX_ARC_ANGLE" ), arcgroup, LightApp_Preferences::IntSpin,
+                              "SMESH", "max_angle" );
+  setPreferenceProperty( maxAngle, "min", 1 );
+  setPreferenceProperty( maxAngle, "max", 90 );
+  
+  
 
   int exportgroup = addPreference( tr( "PREF_GROUP_EXPORT" ), genTab );
   setPreferenceProperty( exportgroup, "columns", 2 );
