@@ -3250,3 +3250,35 @@ void ElementsOnShape::process (const SMDS_MeshElement* theElemPtr)
   if (isSatisfy)
     myIds.Add(theElemPtr->GetID());
 }
+
+TSequenceOfXYZ::TSequenceOfXYZ()
+{}
+
+TSequenceOfXYZ::TSequenceOfXYZ(size_type n) : std::vector<gp_XYZ>(n)
+{}
+
+TSequenceOfXYZ::TSequenceOfXYZ(size_type n, const value_type& t) : std::vector<gp_XYZ>(n,t)
+{}
+
+TSequenceOfXYZ::TSequenceOfXYZ(const TSequenceOfXYZ& theSequenceOfXYZ) : std::vector<gp_XYZ>(theSequenceOfXYZ)
+{}
+
+template <class InputIterator>
+TSequenceOfXYZ::TSequenceOfXYZ(InputIterator theBegin, InputIterator theEnd): std::vector<gp_XYZ>(theBegin,theEnd)
+{}
+
+TSequenceOfXYZ& TSequenceOfXYZ::operator=(const TSequenceOfXYZ& theSequenceOfXYZ)
+{
+  std::vector<gp_XYZ>::operator=(theSequenceOfXYZ);
+  return *this;
+}
+
+std::vector<gp_XYZ>::reference TSequenceOfXYZ::operator()(size_type n)
+{
+  return std::vector<gp_XYZ>::operator[](n-1);
+}
+
+std::vector<gp_XYZ>::const_reference TSequenceOfXYZ::operator()(size_type n) const
+{
+  return std::vector<gp_XYZ>::operator[](n-1);
+}

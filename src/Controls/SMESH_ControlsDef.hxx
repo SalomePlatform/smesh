@@ -71,39 +71,22 @@ namespace SMESH{
     class SMESHCONTROLS_EXPORT TSequenceOfXYZ: public std::vector<gp_XYZ>
     {
     public:
-      typedef std::vector<gp_XYZ> TSuperClass;
-      TSequenceOfXYZ()
-      {}
+      TSequenceOfXYZ();
 
-      TSequenceOfXYZ(size_type n):
-	TSuperClass(n)
-      {}
+      TSequenceOfXYZ(size_type n);
 
-      TSequenceOfXYZ(size_type n, const value_type& t):
-	TSuperClass(n,t)
-      {}
+      TSequenceOfXYZ(size_type n, const value_type& t);
 
-      TSequenceOfXYZ(const TSequenceOfXYZ& theSequenceOfXYZ):
-	TSuperClass(theSequenceOfXYZ)
-      {}
+      TSequenceOfXYZ(const TSequenceOfXYZ& theSequenceOfXYZ);
 
       template <class InputIterator>
-      TSequenceOfXYZ(InputIterator theBegin, InputIterator theEnd):
-	TSuperClass(theBegin,theEnd)
-      {}
+      TSequenceOfXYZ(InputIterator theBegin, InputIterator theEnd);
 
-      TSequenceOfXYZ& operator=(const TSequenceOfXYZ& theSequenceOfXYZ){
-	TSuperClass::operator=(theSequenceOfXYZ);
-	return *this;
-      }
+      TSequenceOfXYZ& operator=(const TSequenceOfXYZ& theSequenceOfXYZ);
 
-      reference operator()(size_type n){
-	return TSuperClass::operator[](n-1);
-      }
+      reference operator()(size_type n);
 
-      const_reference operator()(size_type n) const{
-	return TSuperClass::operator[](n-1);
-      }
+      const_reference operator()(size_type n) const;
 
     private:
       reference operator[](size_type n);
