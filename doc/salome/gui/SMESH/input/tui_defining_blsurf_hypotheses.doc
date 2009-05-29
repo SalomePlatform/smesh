@@ -1,0 +1,48 @@
+/*!
+
+\page tui_defining_blsurf_hypotheses_page Defining Hypotheses for BLSurf Algorithm
+
+\anchor tui_blsurf
+<h2>Construction of Mesh using BLSurf algorithm</h2>
+
+\code
+import geompy
+import smesh
+import BLSURFPlugin
+
+# create a box
+box = geompy.MakeBoxDXDYDZ(200., 200., 200.)
+geompy.addToStudy(box, "box")
+
+# get subshapes
+Face_1   = geompy.SubShapeAllSorted(box, geompy.ShapeType["FACE"])[0]
+Edge_1   = geompy.SubShapeAllSorted(box, geompy.ShapeType["EDGE"])[0]
+Vertex_1 = geompy.SubShapeAllSorted(box, geompy.ShapeType["VERTEX"])[0]
+
+# create a mesh on the box
+blsurfMesh = smesh.Mesh(box,"box: BLSurf mesh")
+
+# create a BLSurf algorithm for faces
+BLSURF = blsurfMesh.Triangle(algo=smesh.BLSURF)
+
+# get BLSurf algorithm hypothesis
+BLSURF_Parameters = BLSURF.Parameters()
+
+# set physical mesh to 2 = Size Map
+BLSURF_Parameters.SetPhysicalMesh( 2 )
+
+# set global mesh size
+BLSURF_Parameters.SetPhySize( 34.641 )
+
+# set size on Face_1
+BLSURF_Parameters.SetSizeMap(Face_1, 'def f(u,v): return 10' )
+# set size on Edge_1
+BLSURF_Parameters.SetSizeMap(Edge_1, 'def f(t): return 5' )
+# set size on Vertex_1
+BLSURF_Parameters.SetSizeMap(Vertex_1, 'def f(): return 2' )
+
+# compute the mesh
+blsurfMesh.Compute()
+\endcode
+
+*/

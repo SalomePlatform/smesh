@@ -11,9 +11,13 @@ algorithm. This algorithm is a commercial software.
 <li><b>Name</b> - allows defining the name of the hypothesis (BLSURF
 Parameters_n by default).</li>
 
-<li><b>Physical Mesh</b> - if set to "Custom", allows user input in te
+<li><b>Physical Mesh</b> - can be set to None, Custom or Size Map
+ <ul>
+  <li>if set to "Custom", allows user input in the
 in <b>User size</b>, <b>Max Physical Size</b> and <b>Min Physical
-Size</b> fields.
+Size</b> fields.</li>
+  <li>if set to "Size Map", behaves like "Custom" mode and takes into account the custom elements sizes given in the Size Map tab.</li>
+</ul>
 </li>
 
 <li><b>User size</b> - defines the size of the generated mesh elements. </li>
@@ -99,6 +103,7 @@ slightly faster but generates less regular meshes. </li>
 </ul>
 Default is 0.</li>
 
+\anchor blsurf_hinterpol_flag
 <li>\b hinterpol_flag (integer) - determines the computation of an
 interpolated value <i>v</i> between two points <i>P1</i> and <i>P2</i> on a
 curve. Let <i>h1</i> be the value at point <i>P1,</i> <i>h2</i> be the value at point
@@ -112,6 +117,7 @@ to</i> <i>P2</i> .
 </ul>
 Default is 0.</li>
 
+\anchor blsurf_hmean_flag
 <li>\b hmean_flag (integer) - determines the computation of the average of several
 values:<ul>
 <li>-1 - the minimum is computed.</li>
@@ -152,7 +158,7 @@ files. Default is 1.</li>
 \n
 The following advanced options are not documented and you can use them
 at your own risk.
-\n\n Interger variables:
+\n\n Integer variables:
 <ul>
 <li>    addsurf_ivertex</li>
 <li>    background     </li>
@@ -192,6 +198,31 @@ String variables:
 <li>    export_option  </li>
 <li>    import_option  </li>  
 </ul>
+
+\image html blsurf_parameters_sizemap.png
+
+It is possible to define user sizes on faces, edges or verteces.
+<ul>
+<li>Those faces, edges and verteces must be sub-shapes (from explode command) of the meshed geometry object.</li>
+<li>Groups are currently not handled.</li>
+<li>Multi-selection is possible.</li>
+<li>The sizes are constant values.</li>
+</ul>
+
+<br><b>See Also</b> a sample TUI Script of the \ref tui_blsurf "creation of a BLSurf hypothesis", including size map.
+
+\anchor blsurf_sizemap_computation
+<h2>Computation of the physical size</h2>
+Here is the detail on the calculation of the size (from BLSurf documentation).
+\n
+The size is obtained by querying sizemap functions associated to the input CAD object for surfaces, curves and points.
+Each function can either return a value h (which is then trimmed between the two bounds hphymin and hphymax), or "no answer" (by not assigning a value to h), thus providing great flexibility in the specification of the sizes. The computation depends whether point P is internal to a surface, internal to a curve, or at the end of several curves:
+<ul>
+<li> If point P is internal to a surface, the CAD surface size function is queried. If no answer is returned, one interpolates with the values at the vertices of the discretized interface curves.</li>
+<li> If point P is internal to a curve, the CAD curve size function is queried first. If no answer is returned, the surface size function is queried for every adjacent surface and the mean value of the returned values is computed. If no answer is returned, sizes h1 and h2 at both ends of the curve are considered (see next item) and the interpolated value is computed.</li>
+<li> If point P is at the extremity of several curves, the CAD point size function is queried first. If no answer is returned, the curve size function is queried for every adjacent curve and the mean value of the returned values is computed. If no answer is returned, the surface size function is queried for every adjacent surface and the mean value of the returned values is computed. If there is still no answer returned, the default value hphydef is kept.</li>
+</ul>
+In order to compute the mean of several values, the arithmetic mean is used by default, but this can be modified by the parameter \ref blsurf_hmean_flag "hmean flag". In the same way, in order to interpolate two values, a linear interpolation is used by default, but this can be modified by \ref blsurf_hinterpol_flag "hinterpol flag".
 
 
 \n
