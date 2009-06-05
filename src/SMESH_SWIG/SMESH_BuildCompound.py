@@ -93,6 +93,6 @@ Compound1 = smesh.smesh.Concatenate([Mesh_inf.GetMesh(), Mesh_sup.GetMesh()], 0,
 smesh.SetName(Compound1, 'Compound_with_RenamedGrps_and_MergeElems')
 # create a compound of two meshes with uniting groups with the same names and
 # creating groups of all elements
-Compound2 = smesh.smesh.ConcatenateWithGroups([Mesh_inf.GetMesh(), Mesh_sup.GetMesh()], 1, 0, 1e-05)
+Compound2 = smesh.smesh.Concatenate([Mesh_inf.GetMesh(), Mesh_sup.GetMesh()], 1, 0, 1e-05, True)
 smesh.SetName(Compound2, 'Compound_with_UniteGrps_and_GrpsOfAllElems')
 #end
