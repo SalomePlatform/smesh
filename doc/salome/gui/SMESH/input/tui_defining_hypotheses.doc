@@ -382,4 +382,9 @@ n23_params = algo3D.Parameters()
 tetraN.Compute()
 \endcode
 
+\n Other meshing algorithms:
+
+<ul>
+<li>\subpage tui_defining_blsurf_hypotheses_page</li>
+</ul>
 */
