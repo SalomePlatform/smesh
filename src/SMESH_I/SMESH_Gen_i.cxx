@@ -1510,10 +1510,10 @@ SMESH::MeshPreviewStruct* SMESH_Gen_i::Precompute( SMESH::SMESH_Mesh_ptr theMesh
 	      if ( aNbNode > 4 )
 		aNbNode /= 2; // do not take into account additional middle nodes
 
-	      SMDS_MeshNode* node1 = (SMDS_MeshNode*)face->GetNode( 1 );
-	      for ( int nIndx = 1; nIndx <= aNbNode; nIndx++ )
+	      SMDS_MeshNode* node1 = (SMDS_MeshNode*)face->GetNode( 0 );
+	      for ( int nIndx = 0; nIndx < aNbNode; nIndx++ )
 	      {
-		SMDS_MeshNode* node2 = (SMDS_MeshNode*)face->GetNode( nIndx < aNbNode ? nIndx+1 : 1 );
+		SMDS_MeshNode* node2 = (SMDS_MeshNode*)face->GetNode( nIndx+1 < aNbNode ? nIndx+1 : 0 );
 		if ( setOfEdge.insert( SMESH_TLink ( node1, node2 ) ).second )
 		{
 		  listOfElemType.push_back( SMDSAbs_Edge );
