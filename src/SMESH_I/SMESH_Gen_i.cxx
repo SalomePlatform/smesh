@@ -3753,7 +3753,7 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
                 int smID = smIDs[ i ];
                 if ( smID == 0 ) continue;
                 const SMDS_MeshElement* elem = *iE;
-                if( smID >= maxID ) {
+                if( smID > maxID ) {
                   // corresponding subshape no longer exists: maybe geom group has been edited
                   if ( myNewMeshImpl->HasShapeToMesh() )
                     mySMESHDSMesh->RemoveElement( elem );
