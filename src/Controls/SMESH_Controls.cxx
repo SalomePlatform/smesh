@@ -1955,22 +1955,22 @@ bool ElemGeomType::IsSatisfy( long theId )
 
   case SMDSAbs_Face:
     if ( myGeomType == SMDSGeom_TRIANGLE )
-      isOk = (!anElem->IsPoly() && aNbNode == 3);
+      isOk = (!anElem->IsPoly() && (anElem->IsQuadratic() ? aNbNode == 6 : aNbNode == 3));
     else if ( myGeomType == SMDSGeom_QUADRANGLE )
-      isOk = (!anElem->IsPoly() && aNbNode == 4);
+      isOk = (!anElem->IsPoly() && (anElem->IsQuadratic() ? aNbNode == 8 : aNbNode == 4));
     else if ( myGeomType == SMDSGeom_POLYGON )
       isOk = anElem->IsPoly();
     break;
 
   case SMDSAbs_Volume:
     if ( myGeomType == SMDSGeom_TETRA )
-      isOk = (!anElem->IsPoly() && aNbNode == 4);
+      isOk = (!anElem->IsPoly() && (anElem->IsQuadratic() ? aNbNode == 10 : aNbNode == 4));
     else if ( myGeomType == SMDSGeom_PYRAMID )
-      isOk = (!anElem->IsPoly() && aNbNode == 5);
+      isOk = (!anElem->IsPoly() && (anElem->IsQuadratic() ? aNbNode == 13 : aNbNode == 5));
     else if ( myGeomType == SMDSGeom_PENTA )
-      isOk = (!anElem->IsPoly() && aNbNode == 6);
+      isOk = (!anElem->IsPoly() && (anElem->IsQuadratic() ? aNbNode == 15 : aNbNode == 6));
     else if ( myGeomType == SMDSGeom_HEXA )
-      isOk = (!anElem->IsPoly() && aNbNode == 8);
+      isOk = (!anElem->IsPoly() && (anElem->IsQuadratic() ? aNbNode == 20 : aNbNode == 8));
      else if ( myGeomType == SMDSGeom_POLYHEDRA )
       isOk = anElem->IsPoly();
     break;

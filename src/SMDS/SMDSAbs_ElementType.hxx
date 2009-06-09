@@ -53,8 +53,8 @@ enum SMDSAbs_GeometryType
   // 3D element
   SMDSGeom_TETRA,
   SMDSGeom_PYRAMID,
-  SMDSGeom_PENTA,
   SMDSGeom_HEXA,
+  SMDSGeom_PENTA,
   SMDSGeom_POLYHEDRA,
 };
 
