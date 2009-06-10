@@ -2733,6 +2733,53 @@ class Mesh:
         self.editor.ExtrusionSweepObject2D(theObject, StepVector, NbOfSteps)
         return []
 
+
+
+    ## Generates new elements by extrusion of the given elements
+    #  The path of extrusion must be a meshed edge.
+    #  @param Base mesh or list of ids of elements for extrusion
+    #  @param Path - 1D mesh or 1D sub-mesh, along which proceeds the extrusion
+    #  @param NodeStart the start node from Path. Defines the direction of extrusion
+    #  @param HasAngles allows the shape to be rotated around the path
+    #                   to get the resulting mesh in a helical fashion
+    #  @param Angles list of angles in radians
+    #  @param LinearVariation forces the computation of rotation angles as linear
+    #                         variation of the given Angles along path steps
+    #  @param HasRefPoint allows using the reference point
+    #  @param RefPoint the point around which the shape is rotated (the mass center of the shape by default).
+    #         The User can specify any point as the Reference Point.
+    #  @param MakeGroups forces the generation of new groups from existing ones
+    #  @param ElemType type of elements for extrusion (if param Base is a mesh)
+    #  @return list of created groups (SMESH_GroupBase) and SMESH::Extrusion_Error if MakeGroups=True,
+    #          only SMESH::Extrusion_Error otherwise
+    #  @ingroup l2_modif_extrurev
+    def ExtrusionAlongPathX(self, Base, Path, NodeStart,
+                            HasAngles, Angles, LinearVariation,
+                            HasRefPoint, RefPoint, MakeGroups, ElemType):
+        Angles,AnglesParameters = ParseAngles(Angles)
+        RefPoint,RefPointParameters = ParsePointStruct(RefPoint)
+        if ( isinstance( RefPoint, geompyDC.GEOM._objref_GEOM_Object)):
+            RefPoint = self.smeshpyD.GetPointStruct(RefPoint)
+            pass
+        Parameters = AnglesParameters + var_separator + RefPointParameters
+        self.mesh.SetParameters(Parameters)
+
+        if isinstance(Base,list):
+            IDsOfElements = []
+            if Base == []: IDsOfElements = self.GetElementsId()
+            else: IDsOfElements = Base
+            return self.editor.ExtrusionAlongPathX(IDsOfElements, Path, NodeStart,
+                                                   HasAngles, Angles, LinearVariation,
+                                                   HasRefPoint, RefPoint, MakeGroups, ElemType)
+        else:
+            if isinstance(Base,Mesh):
+                return self.editor.ExtrusionAlongPathObjX(Base.GetMesh(), Path, NodeStart,
+                                                          HasAngles, Angles, LinearVariation,
+                                                          HasRefPoint, RefPoint, MakeGroups, ElemType)
+            else:
+                raise RuntimeError, "Invalid Base for ExtrusionAlongPathX"
+
+
     ## Generates new elements by extrusion of the given elements
     #  The path of extrusion must be a meshed edge.
     #  @param IDsOfElements ids of elements
@@ -2741,7 +2788,7 @@ class Mesh:
     #  @param NodeStart the first or the last node on the edge. Defines the direction of extrusion
     #  @param HasAngles allows the shape to be rotated around the path
     #                   to get the resulting mesh in a helical fashion
-    #  @param Angles list of angles
+    #  @param Angles list of angles in radians
     #  @param HasRefPoint allows using the reference point
     #  @param RefPoint the point around which the shape is rotated (the mass center of the shape by default).
     #         The User can specify any point as the Reference Point.

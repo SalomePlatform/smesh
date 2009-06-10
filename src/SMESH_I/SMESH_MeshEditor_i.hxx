@@ -348,6 +348,31 @@ class SMESH_MeshEditor_i: public POA_SMESH::SMESH_MeshEditor
 							    CORBA::Boolean             HasRefPoint,
 							    const SMESH::PointStruct&  RefPoint,
 							    SMESH::SMESH_MeshEditor::Extrusion_Error& Error);
+
+  // skl 04.06.2009 
+  SMESH::ListOfGroups* ExtrusionAlongPathObjX(SMESH::SMESH_IDSource_ptr  Object,
+					      SMESH::SMESH_IDSource_ptr  Path,
+					      CORBA::Long                NodeStart,
+					      CORBA::Boolean             HasAngles,
+					      const SMESH::double_array& Angles,
+					      CORBA::Boolean             LinearVariation,
+					      CORBA::Boolean             HasRefPoint,
+					      const SMESH::PointStruct&  RefPoint,
+					      CORBA::Boolean             MakeGroups,
+					      SMESH::ElementType         ElemType,
+					      SMESH::SMESH_MeshEditor::Extrusion_Error& Error);
+  SMESH::ListOfGroups* ExtrusionAlongPathX(const SMESH::long_array&   IDsOfElements,
+					   SMESH::SMESH_IDSource_ptr  Path,
+					   CORBA::Long                NodeStart,
+					   CORBA::Boolean             HasAngles,
+					   const SMESH::double_array& Angles,
+					   CORBA::Boolean             LinearVariation,
+					   CORBA::Boolean             HasRefPoint,
+					   const SMESH::PointStruct&  RefPoint,
+					   CORBA::Boolean             MakeGroups,
+					   SMESH::ElementType         ElemType,
+					   SMESH::SMESH_MeshEditor::Extrusion_Error& Error);
+
   SMESH::ListOfGroups* MirrorMakeGroups(const SMESH::long_array&            IDsOfElements,
                                         const SMESH::AxisStruct&            Mirror,
                                         SMESH::SMESH_MeshEditor::MirrorType MirrorType);
@@ -534,6 +559,17 @@ private: //!< private methods
                                           const bool                  MakeGroups,
                                           SMESH::SMESH_MeshEditor::Extrusion_Error & Error,
 					  const SMDSAbs_ElementType   ElementType=SMDSAbs_All);
+  SMESH::ListOfGroups* extrusionAlongPathX(const SMESH::long_array &  IDsOfElements,
+					   SMESH::SMESH_IDSource_ptr  Path,
+					   CORBA::Long                NodeStart,
+					   CORBA::Boolean             HasAngles,
+					   const SMESH::double_array& Angles,
+					   CORBA::Boolean             LinearVariation,
+					   CORBA::Boolean             HasRefPoint,
+					   const SMESH::PointStruct&  RefPoint,
+					   const bool                 MakeGroups,
+					   const SMDSAbs_ElementType  ElementType,
+					   SMESH::SMESH_MeshEditor::Extrusion_Error & theError);
   SMESH::ListOfGroups* mirror(const SMESH::long_array &           IDsOfElements,
                               const SMESH::AxisStruct &           Axis,
                               SMESH::SMESH_MeshEditor::MirrorType MirrorType,

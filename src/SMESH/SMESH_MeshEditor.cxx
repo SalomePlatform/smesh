@@ -59,6 +59,7 @@
 #include <TopExp_Explorer.hxx>
 #include <TopTools_ListIteratorOfListOfShape.hxx>
 #include <TopTools_ListOfShape.hxx>
+#include <TopTools_SequenceOfShape.hxx>
 #include <TopoDS.hxx>
 #include <TopoDS_Face.hxx>
 #include <gp.hxx>
@@ -3732,7 +3733,7 @@ SMESH_MeshEditor::ExtrusionSweep (TIDSortedElemSet &  theElems,
   return newGroupIDs;
 }
 
-
+/*
 //=======================================================================
 //class    : SMESH_MeshEditor_PathPoint
 //purpose  : auxiliary class
@@ -3776,6 +3777,7 @@ protected:
   double myAngle;
   double myPrm;
 };
+*/
 
 //=======================================================================
 //function : ExtrusionAlongTrack
@@ -3787,6 +3789,7 @@ SMESH_MeshEditor::Extrusion_Error
 					 const SMDS_MeshNode* theN1,
 					 const bool           theHasAngles,
 					 list<double>&        theAngles,
+					 const bool           theLinearVariation,
 					 const bool           theHasRefPoint,
 					 const gp_Pnt&        theRefPoint,
                                          const bool           theMakeGroups)
@@ -3794,20 +3797,11 @@ SMESH_MeshEditor::Extrusion_Error
   myLastCreatedElems.Clear();
   myLastCreatedNodes.Clear();
 
-  // source elements for each generated one
-  SMESH_SequenceOfElemPtr srcElems, srcNodes;
-
-  int j, aNbTP, aNbE, aNb;
-  double aT1, aT2, aT, aAngle, aX, aY, aZ;
+  int aNbE;
   std::list<double> aPrms;
-  std::list<double>::iterator aItD;
   TIDSortedElemSet::iterator itElem;
 
-  Standard_Real aTx1, aTx2, aL2, aTolVec, aTolVec2;
-  gp_Pnt aP3D, aV0;
-  gp_Vec aVec;
   gp_XYZ aGC;
-  Handle(Geom_Curve) aC3D;
   TopoDS_Edge aTrackEdge;
   TopoDS_Vertex aV1, aV2;
 
@@ -3816,11 +3810,6 @@ SMESH_MeshEditor::Extrusion_Error
   SMDSAbs_ElementType aTypeE;
 
   TNodeOfNodeListMap mapNewNodes;
-  TElemOfVecOfNnlmiMap mapElemNewNodes;
-  TElemOfElemListMap newElemsMap;
-
-  aTolVec=1.e-7;
-  aTolVec2=aTolVec*aTolVec;
 
   // 1. Check data
   aNbE = theElements.size();
@@ -3831,7 +3820,7 @@ SMESH_MeshEditor::Extrusion_Error
   // 1.1 Track Pattern
   ASSERT( theTrack );
 
-  SMESHDS_SubMesh* pSubMeshDS=theTrack->GetSubMeshDS();
+  SMESHDS_SubMesh* pSubMeshDS = theTrack->GetSubMeshDS();
 
   aItE = pSubMeshDS->GetElements();
   while ( aItE->more() ) {
@@ -3842,63 +3831,325 @@ SMESH_MeshEditor::Extrusion_Error
       return EXTR_PATH_NOT_EDGE;
   }
 
+  list<SMESH_MeshEditor_PathPoint> fullList;
+
   const TopoDS_Shape& aS = theTrack->GetSubShape();
-  // Sub shape for the Pattern must be an Edge
-  if ( aS.ShapeType() != TopAbs_EDGE )
+  // Sub shape for the Pattern must be an Edge or Wire
+  if( aS.ShapeType() == TopAbs_EDGE ) {
+    aTrackEdge = TopoDS::Edge( aS );
+    // the Edge must not be degenerated
+    if ( BRep_Tool::Degenerated( aTrackEdge ) )
+      return EXTR_BAD_PATH_SHAPE;
+    TopExp::Vertices( aTrackEdge, aV1, aV2 );
+    aItN = theTrack->GetFather()->GetSubMesh( aV1 )->GetSubMeshDS()->GetNodes();
+    const SMDS_MeshNode* aN1 = aItN->next();
+    aItN = theTrack->GetFather()->GetSubMesh( aV2 )->GetSubMeshDS()->GetNodes();
+    const SMDS_MeshNode* aN2 = aItN->next();
+    // starting node must be aN1 or aN2
+    if ( !( aN1 == theN1 || aN2 == theN1 ) )
+      return EXTR_BAD_STARTING_NODE;
+    aItN = pSubMeshDS->GetNodes();
+    while ( aItN->more() ) {
+      const SMDS_MeshNode* pNode = aItN->next();
+      const SMDS_EdgePosition* pEPos =
+	static_cast<const SMDS_EdgePosition*>( pNode->GetPosition().get() );
+      double aT = pEPos->GetUParameter();
+      aPrms.push_back( aT );
+    }
+    Extrusion_Error err = MakeEdgePathPoints(aPrms, aTrackEdge, (aN1==theN1), fullList);
+  }
+  else if( aS.ShapeType() == TopAbs_WIRE ) {
+    list< SMESH_subMesh* > LSM;
+    TopTools_SequenceOfShape Edges;
+    SMESH_subMeshIteratorPtr itSM = theTrack->getDependsOnIterator(false,true);
+    while(itSM->more()) {
+      SMESH_subMesh* SM = itSM->next();
+      LSM.push_back(SM);
+      const TopoDS_Shape& aS = SM->GetSubShape();
+      Edges.Append(aS);
+    }
+    list< list<SMESH_MeshEditor_PathPoint> > LLPPs;
+    int startNid = theN1->GetID();
+    TColStd_MapOfInteger UsedNums;
+    int NbEdges = Edges.Length();
+    int i = 1;
+    for(; i<=NbEdges; i++) {
+      int k = 0;
+      list< SMESH_subMesh* >::iterator itLSM = LSM.begin();
+      for(; itLSM!=LSM.end(); itLSM++) {
+	k++;
+	if(UsedNums.Contains(k)) continue;
+	aTrackEdge = TopoDS::Edge( Edges.Value(k) );
+	SMESH_subMesh* locTrack = *itLSM;
+	SMESHDS_SubMesh* locMeshDS = locTrack->GetSubMeshDS();
+	TopExp::Vertices( aTrackEdge, aV1, aV2 );
+	aItN = locTrack->GetFather()->GetSubMesh(aV1)->GetSubMeshDS()->GetNodes();
+	const SMDS_MeshNode* aN1 = aItN->next();
+	aItN = locTrack->GetFather()->GetSubMesh(aV2)->GetSubMeshDS()->GetNodes();
+	const SMDS_MeshNode* aN2 = aItN->next();
+	// starting node must be aN1 or aN2
+	if ( !( aN1->GetID() == startNid || aN2->GetID() == startNid ) ) continue;
+	// 2. Collect parameters on the track edge
+	aPrms.clear();
+	aItN = locMeshDS->GetNodes();
+	while ( aItN->more() ) {
+	  const SMDS_MeshNode* pNode = aItN->next();
+	  const SMDS_EdgePosition* pEPos =
+	    static_cast<const SMDS_EdgePosition*>( pNode->GetPosition().get() );
+	  double aT = pEPos->GetUParameter();
+	  aPrms.push_back( aT );
+	}
+	list<SMESH_MeshEditor_PathPoint> LPP;
+	Extrusion_Error err = MakeEdgePathPoints(aPrms, aTrackEdge,
+						 (aN1->GetID()==startNid), LPP);
+	LLPPs.push_back(LPP);
+	UsedNums.Add(k);
+	// update startN for search following egde
+	if( aN1->GetID() == startNid ) startNid = aN2->GetID();
+	else startNid = aN1->GetID();
+	break;
+      }
+    }
+    list< list<SMESH_MeshEditor_PathPoint> >::iterator itLLPP = LLPPs.begin();
+    list<SMESH_MeshEditor_PathPoint> firstList = *itLLPP;
+    list<SMESH_MeshEditor_PathPoint>::iterator itPP = firstList.begin();
+    for(; itPP!=firstList.end(); itPP++) {
+      fullList.push_back( *itPP );
+    }
+    SMESH_MeshEditor_PathPoint PP1 = fullList.back();
+    fullList.pop_back();
+    itLLPP++;
+    for(; itLLPP!=LLPPs.end(); itLLPP++) {
+      list<SMESH_MeshEditor_PathPoint> currList = *itLLPP;
+      itPP = currList.begin();
+      SMESH_MeshEditor_PathPoint PP2 = currList.front();
+      gp_Dir D1 = PP1.Tangent();
+      gp_Dir D2 = PP2.Tangent();
+      gp_Dir Dnew( gp_Vec( (D1.X()+D2.X())/2, (D1.Y()+D2.Y())/2,
+			   (D1.Z()+D2.Z())/2 ) );
+      PP1.SetTangent(Dnew);
+      fullList.push_back(PP1);
+      itPP++;
+      for(; itPP!=firstList.end(); itPP++) {
+	fullList.push_back( *itPP );
+      }
+      PP1 = fullList.back();
+      fullList.pop_back();
+    }
+    // if wire not closed
+    fullList.push_back(PP1);
+    // else ???
+  }
+  else {
     return EXTR_BAD_PATH_SHAPE;
+  }
 
-  aTrackEdge = TopoDS::Edge( aS );
-  // the Edge must not be degenerated
-  if ( BRep_Tool::Degenerated( aTrackEdge ) )
+  return MakeExtrElements(theElements, fullList, theHasAngles, theAngles, theLinearVariation,
+			  theHasRefPoint, theRefPoint, theMakeGroups);
+}
+
+
+//=======================================================================
+//function : ExtrusionAlongTrack
+//purpose  :
+//=======================================================================
+SMESH_MeshEditor::Extrusion_Error
+  SMESH_MeshEditor::ExtrusionAlongTrack (TIDSortedElemSet &   theElements,
+					 SMESH_Mesh*          theTrack,
+					 const SMDS_MeshNode* theN1,
+					 const bool           theHasAngles,
+					 list<double>&        theAngles,
+					 const bool           theLinearVariation,
+					 const bool           theHasRefPoint,
+					 const gp_Pnt&        theRefPoint,
+                                         const bool           theMakeGroups)
+{
+  myLastCreatedElems.Clear();
+  myLastCreatedNodes.Clear();
+
+  int aNbE;
+  std::list<double> aPrms;
+  TIDSortedElemSet::iterator itElem;
+
+  gp_XYZ aGC;
+  TopoDS_Edge aTrackEdge;
+  TopoDS_Vertex aV1, aV2;
+
+  SMDS_ElemIteratorPtr aItE;
+  SMDS_NodeIteratorPtr aItN;
+  SMDSAbs_ElementType aTypeE;
+
+  TNodeOfNodeListMap mapNewNodes;
+
+  // 1. Check data
+  aNbE = theElements.size();
+  // nothing to do
+  if ( !aNbE )
+    return EXTR_NO_ELEMENTS;
+
+  // 1.1 Track Pattern
+  ASSERT( theTrack );
+
+  SMESHDS_Mesh* pMeshDS = theTrack->GetMeshDS();
+
+  aItE = pMeshDS->elementsIterator();
+  while ( aItE->more() ) {
+    const SMDS_MeshElement* pE = aItE->next();
+    aTypeE = pE->GetType();
+    // Pattern must contain links only
+    if ( aTypeE != SMDSAbs_Edge )
+      return EXTR_PATH_NOT_EDGE;
+  }
+
+  list<SMESH_MeshEditor_PathPoint> fullList;
+
+  const TopoDS_Shape& aS = theTrack->GetShapeToMesh();
+  // Sub shape for the Pattern must be an Edge or Wire
+  if( aS.ShapeType() == TopAbs_EDGE ) {
+    aTrackEdge = TopoDS::Edge( aS );
+    // the Edge must not be degenerated
+    if ( BRep_Tool::Degenerated( aTrackEdge ) )
+      return EXTR_BAD_PATH_SHAPE;
+    TopExp::Vertices( aTrackEdge, aV1, aV2 );
+    aItN = theTrack->GetSubMesh( aV1 )->GetSubMeshDS()->GetNodes();
+    const SMDS_MeshNode* aN1 = aItN->next();
+    aItN = theTrack->GetSubMesh( aV2 )->GetSubMeshDS()->GetNodes();
+    const SMDS_MeshNode* aN2 = aItN->next();
+    // starting node must be aN1 or aN2
+    if ( !( aN1 == theN1 || aN2 == theN1 ) )
+      return EXTR_BAD_STARTING_NODE;
+    aItN = pMeshDS->nodesIterator();
+    while ( aItN->more() ) {
+      const SMDS_MeshNode* pNode = aItN->next();
+      if( pNode==aN1 || pNode==aN2 ) continue;
+      const SMDS_EdgePosition* pEPos =
+	static_cast<const SMDS_EdgePosition*>( pNode->GetPosition().get() );
+      double aT = pEPos->GetUParameter();
+      aPrms.push_back( aT );
+    }
+    Extrusion_Error err = MakeEdgePathPoints(aPrms, aTrackEdge, (aN1==theN1), fullList);
+  }
+  else if( aS.ShapeType() == TopAbs_WIRE ) {
+    list< SMESH_subMesh* > LSM;
+    TopTools_SequenceOfShape Edges;
+    TopExp_Explorer eExp(aS, TopAbs_EDGE);
+    for(; eExp.More(); eExp.Next()) {
+      TopoDS_Edge E = TopoDS::Edge( eExp.Current() );
+      if( BRep_Tool::Degenerated(E) ) continue;
+      SMESH_subMesh* SM = theTrack->GetSubMesh(E);
+      if(SM) {
+	LSM.push_back(SM);
+	Edges.Append(E);
+      }
+    }
+    list< list<SMESH_MeshEditor_PathPoint> > LLPPs;
+    int startNid = theN1->GetID();
+    TColStd_MapOfInteger UsedNums;
+    int NbEdges = Edges.Length();
+    int i = 1;
+    for(; i<=NbEdges; i++) {
+      int k = 0;
+      list< SMESH_subMesh* >::iterator itLSM = LSM.begin();
+      for(; itLSM!=LSM.end(); itLSM++) {
+	k++;
+	if(UsedNums.Contains(k)) continue;
+	aTrackEdge = TopoDS::Edge( Edges.Value(k) );
+	SMESH_subMesh* locTrack = *itLSM;
+	SMESHDS_SubMesh* locMeshDS = locTrack->GetSubMeshDS();
+	TopExp::Vertices( aTrackEdge, aV1, aV2 );
+	aItN = locTrack->GetFather()->GetSubMesh(aV1)->GetSubMeshDS()->GetNodes();
+	const SMDS_MeshNode* aN1 = aItN->next();
+	aItN = locTrack->GetFather()->GetSubMesh(aV2)->GetSubMeshDS()->GetNodes();
+	const SMDS_MeshNode* aN2 = aItN->next();
+	// starting node must be aN1 or aN2
+	if ( !( aN1->GetID() == startNid || aN2->GetID() == startNid ) ) continue;
+	// 2. Collect parameters on the track edge
+	aPrms.clear();
+	aItN = locMeshDS->GetNodes();
+	while ( aItN->more() ) {
+	  const SMDS_MeshNode* pNode = aItN->next();
+	  const SMDS_EdgePosition* pEPos =
+	    static_cast<const SMDS_EdgePosition*>( pNode->GetPosition().get() );
+	  double aT = pEPos->GetUParameter();
+	  aPrms.push_back( aT );
+	}
+	list<SMESH_MeshEditor_PathPoint> LPP;
+	Extrusion_Error err = MakeEdgePathPoints(aPrms, aTrackEdge,
+						 (aN1->GetID()==startNid), LPP);
+	LLPPs.push_back(LPP);
+	UsedNums.Add(k);
+	// update startN for search following egde
+	if( aN1->GetID() == startNid ) startNid = aN2->GetID();
+	else startNid = aN1->GetID();
+	break;
+      }
+    }
+    list< list<SMESH_MeshEditor_PathPoint> >::iterator itLLPP = LLPPs.begin();
+    list<SMESH_MeshEditor_PathPoint> firstList = *itLLPP;
+    list<SMESH_MeshEditor_PathPoint>::iterator itPP = firstList.begin();
+    for(; itPP!=firstList.end(); itPP++) {
+      fullList.push_back( *itPP );
+    }
+    SMESH_MeshEditor_PathPoint PP1 = fullList.back();
+    fullList.pop_back();
+    itLLPP++;
+    for(; itLLPP!=LLPPs.end(); itLLPP++) {
+      list<SMESH_MeshEditor_PathPoint> currList = *itLLPP;
+      itPP = currList.begin();
+      SMESH_MeshEditor_PathPoint PP2 = currList.front();
+      gp_Pnt P1 = PP1.Pnt();
+      //cout<<"    PP1: Pnt("<<P1.X()<<","<<P1.Y()<<","<<P1.Z()<<")"<<endl;
+      gp_Pnt P2 = PP2.Pnt();
+      gp_Dir D1 = PP1.Tangent();
+      gp_Dir D2 = PP2.Tangent();
+      gp_Dir Dnew( gp_Vec( (D1.X()+D2.X())/2, (D1.Y()+D2.Y())/2,
+			   (D1.Z()+D2.Z())/2 ) );
+      PP1.SetTangent(Dnew);
+      fullList.push_back(PP1);
+      itPP++;
+      for(; itPP!=currList.end(); itPP++) {
+	fullList.push_back( *itPP );
+      }
+      PP1 = fullList.back();
+      fullList.pop_back();
+    }
+    // if wire not closed
+    fullList.push_back(PP1);
+    // else ???
+  }
+  else {
     return EXTR_BAD_PATH_SHAPE;
+  }
 
+  return MakeExtrElements(theElements, fullList, theHasAngles, theAngles, theLinearVariation,
+			  theHasRefPoint, theRefPoint, theMakeGroups);
+}
+
+
+//=======================================================================
+//function : MakeEdgePathPoints
+//purpose  : auxilary for ExtrusionAlongTrack
+//=======================================================================
+SMESH_MeshEditor::Extrusion_Error
+SMESH_MeshEditor::MakeEdgePathPoints(std::list<double>& aPrms,
+				     const TopoDS_Edge& aTrackEdge,
+				     bool FirstIsStart,
+				     list<SMESH_MeshEditor_PathPoint>& LPP)
+{
+  Standard_Real aTx1, aTx2, aL2, aTolVec, aTolVec2;
+  aTolVec=1.e-7;
+  aTolVec2=aTolVec*aTolVec;
+  double aT1, aT2;
+  TopoDS_Vertex aV1, aV2;
   TopExp::Vertices( aTrackEdge, aV1, aV2 );
   aT1=BRep_Tool::Parameter( aV1, aTrackEdge );
   aT2=BRep_Tool::Parameter( aV2, aTrackEdge );
-
-  aItN = theTrack->GetFather()->GetSubMesh( aV1 )->GetSubMeshDS()->GetNodes();
-  const SMDS_MeshNode* aN1 = aItN->next();
-
-  aItN = theTrack->GetFather()->GetSubMesh( aV2 )->GetSubMeshDS()->GetNodes();
-  const SMDS_MeshNode* aN2 = aItN->next();
-
-  // starting node must be aN1 or aN2
-  if ( !( aN1 == theN1 || aN2 == theN1 ) )
-    return EXTR_BAD_STARTING_NODE;
-
-  aNbTP = pSubMeshDS->NbNodes() + 2;
-
-  // 1.2. Angles
-  vector<double> aAngles( aNbTP );
-
-  for ( j=0; j < aNbTP; ++j ) {
-    aAngles[j] = 0.;
-  }
-
-  if ( theHasAngles ) {
-    aItD = theAngles.begin();
-    for ( j=1; (aItD != theAngles.end()) && (j<aNbTP); ++aItD, ++j ) {
-      aAngle = *aItD;
-      aAngles[j] = aAngle;
-    }
-  }
-
   // 2. Collect parameters on the track edge
-  aPrms.push_back( aT1 );
+  aPrms.push_front( aT1 );
   aPrms.push_back( aT2 );
-
-  aItN = pSubMeshDS->GetNodes();
-  while ( aItN->more() ) {
-    const SMDS_MeshNode* pNode = aItN->next();
-    const SMDS_EdgePosition* pEPos =
-      static_cast<const SMDS_EdgePosition*>( pNode->GetPosition().get() );
-    aT = pEPos->GetUParameter();
-    aPrms.push_back( aT );
-  }
-
   // sort parameters
   aPrms.sort();
-  if ( aN1 == theN1 ) {
+  if( FirstIsStart ) {
     if ( aT1 > aT2 ) {
       aPrms.reverse();
     }
@@ -3908,48 +4159,100 @@ SMESH_MeshEditor::Extrusion_Error
       aPrms.reverse();
     }
   }
-
   // 3. Path Points
   SMESH_MeshEditor_PathPoint aPP;
-  vector<SMESH_MeshEditor_PathPoint> aPPs( aNbTP );
-  //
-  aC3D = BRep_Tool::Curve( aTrackEdge, aTx1, aTx2 );
-  //
-  aItD = aPrms.begin();
-  for ( j=0; aItD != aPrms.end(); ++aItD, ++j ) {
-    aT = *aItD;
+  Handle(Geom_Curve) aC3D = BRep_Tool::Curve( aTrackEdge, aTx1, aTx2 );
+  std::list<double>::iterator aItD = aPrms.begin();
+  for(; aItD != aPrms.end(); ++aItD) {
+    double aT = *aItD;
+    gp_Pnt aP3D;
+    gp_Vec aVec;
     aC3D->D1( aT, aP3D, aVec );
     aL2 = aVec.SquareMagnitude();
     if ( aL2 < aTolVec2 )
       return EXTR_CANT_GET_TANGENT;
-
     gp_Dir aTgt( aVec );
-    aAngle = aAngles[j];
-
     aPP.SetPnt( aP3D );
     aPP.SetTangent( aTgt );
-    aPP.SetAngle( aAngle );
     aPP.SetParameter( aT );
-    aPPs[j]=aPP;
+    LPP.push_back(aPP);
+  }
+}
+
+
+//=======================================================================
+//function : MakeExtrElements
+//purpose  : auxilary for ExtrusionAlongTrack
+//=======================================================================
+SMESH_MeshEditor::Extrusion_Error
+SMESH_MeshEditor::MakeExtrElements(TIDSortedElemSet&  theElements,
+				   list<SMESH_MeshEditor_PathPoint>& fullList,
+				   const bool theHasAngles,
+				   list<double>& theAngles,
+				   const bool theLinearVariation,
+				   const bool theHasRefPoint,
+				   const gp_Pnt& theRefPoint,
+				   const bool theMakeGroups)
+{
+  //cout<<"MakeExtrElements  fullList.size() = "<<fullList.size()<<endl;
+  int aNbTP = fullList.size();
+  vector<SMESH_MeshEditor_PathPoint> aPPs(aNbTP);
+  // Angles
+  if( theHasAngles && theAngles.size()>0 && theLinearVariation ) {
+    LinearAngleVariation(aNbTP-1, theAngles);
+  }
+  vector<double> aAngles( aNbTP );
+  int j = 0;
+  for(; j<aNbTP; ++j) {
+    aAngles[j] = 0.;
+  }
+  if ( theHasAngles ) {
+    double anAngle;;
+    std::list<double>::iterator aItD = theAngles.begin();
+    for ( j=1; (aItD != theAngles.end()) && (j<aNbTP); ++aItD, ++j ) {
+      anAngle = *aItD;
+      aAngles[j] = anAngle;
+    }
+  }
+  // fill vector of path points with angles
+  //aPPs.resize(fullList.size());
+  j = -1;
+  list<SMESH_MeshEditor_PathPoint>::iterator itPP = fullList.begin();
+  for(; itPP!=fullList.end(); itPP++) {
+    j++;
+    SMESH_MeshEditor_PathPoint PP = *itPP;
+    PP.SetAngle(aAngles[j]);
+    aPPs[j] = PP;
   }
 
+  TNodeOfNodeListMap mapNewNodes;
+  TElemOfVecOfNnlmiMap mapElemNewNodes;
+  TElemOfElemListMap newElemsMap;
+  TIDSortedElemSet::iterator itElem;
+  double aX, aY, aZ;
+  int aNb;
+  SMDSAbs_ElementType aTypeE;
+  // source elements for each generated one
+  SMESH_SequenceOfElemPtr srcElems, srcNodes;
+
   // 3. Center of rotation aV0
-  aV0 = theRefPoint;
+  gp_Pnt aV0 = theRefPoint;
+  gp_XYZ aGC;
   if ( !theHasRefPoint ) {
     aNb = 0;
     aGC.SetCoord( 0.,0.,0. );
-
+    
     itElem = theElements.begin();
     for ( ; itElem != theElements.end(); itElem++ ) {
       const SMDS_MeshElement* elem = *itElem;
-
+      
       SMDS_ElemIteratorPtr itN = elem->nodesIterator();
       while ( itN->more() ) {
 	const SMDS_MeshNode* node = static_cast<const SMDS_MeshNode*>( itN->next() );
 	aX = node->X();
 	aY = node->Y();
 	aZ = node->Z();
-
+	
 	if ( mapNewNodes.find( node ) == mapNewNodes.end() ) {
 	  list<const SMDS_MeshNode*> aLNx;
 	  mapNewNodes[node] = aLNx;
@@ -4008,6 +4311,7 @@ SMESH_MeshEditor::Extrusion_Error
 	const SMESH_MeshEditor_PathPoint& aPP0 = aPPs[0];
 	aP0x = aPP0.Pnt();
 	aDT0x= aPP0.Tangent();
+	//cout<<"j = 0   PP: Pnt("<<aP0x.X()<<","<<aP0x.Y()<<","<<aP0x.Z()<<")"<<endl;
 
 	for ( j = 1; j < aNbTP; ++j ) {
 	  const SMESH_MeshEditor_PathPoint& aPP1 = aPPs[j];
@@ -4115,6 +4419,56 @@ SMESH_MeshEditor::Extrusion_Error
 
   return EXTR_OK;
 }
+
+
+//=======================================================================
+//function : LinearAngleVariation
+//purpose  : auxilary for ExtrusionAlongTrack
+//=======================================================================
+void SMESH_MeshEditor::LinearAngleVariation(const int nbSteps,
+					    list<double>& Angles)
+{
+  int nbAngles = Angles.size();
+  if( nbSteps > nbAngles ) {
+    vector<double> theAngles(nbAngles);
+    list<double>::iterator it = Angles.begin();
+    int i = -1;
+    for(; it!=Angles.end(); it++) {
+      i++;
+      theAngles[i] = (*it);
+    }
+    list<double> res;
+    double rAn2St = double( nbAngles ) / double( nbSteps );
+    double angPrev = 0, angle;
+    for ( int iSt = 0; iSt < nbSteps; ++iSt ) {
+      double angCur = rAn2St * ( iSt+1 );
+      double angCurFloor  = floor( angCur );
+      double angPrevFloor = floor( angPrev );
+      if ( angPrevFloor == angCurFloor )
+	angle = rAn2St * theAngles[ int( angCurFloor ) ];
+      else {
+	int iP = int( angPrevFloor );
+	double angPrevCeil = ceil(angPrev);
+	angle = ( angPrevCeil - angPrev ) * theAngles[ iP ];
+          
+	int iC = int( angCurFloor );
+	if ( iC < nbAngles )
+	  angle += ( angCur - angCurFloor ) * theAngles[ iC ];
+	
+	iP = int( angPrevCeil );
+	while ( iC-- > iP )
+	  angle += theAngles[ iC ];
+      }
+      res.push_back(angle);
+      angPrev = angCur;
+    }
+    Angles.clear();
+    it = res.begin();
+    for(; it!=res.end(); it++)
+      Angles.push_back( *it );
+  }
+}
+
 
 //=======================================================================
 //function : Transform

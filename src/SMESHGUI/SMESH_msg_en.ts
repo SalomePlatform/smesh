@@ -3497,7 +3497,7 @@ Please select a groups and try again</translation>
         </message>
         <message>
             <source>SMESH_PATH_MESH</source>
-            <translation>Mesh</translation>
+            <translation>Mesh or submesh</translation>
         </message>
         <message>
             <source>SMESH_PATH_SHAPE</source>

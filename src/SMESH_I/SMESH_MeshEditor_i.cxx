@@ -34,6 +34,8 @@
 #include "SMESH_subMeshEventListener.hxx"
 #include "SMESH_Gen_i.hxx"
 #include "SMESH_Filter_i.hxx"
+#include "SMESH_subMesh_i.hxx"
+#include "SMESH_Group_i.hxx"
 #include "SMESH_PythonDump.hxx"
 
 #include "utilities.h"
@@ -1996,7 +1998,7 @@ SMESH_MeshEditor_i::extrusionAlongPath(const SMESH::long_array &   theIDsOfEleme
   ::SMESH_MeshEditor anEditor( myMesh );
   ::SMESH_MeshEditor::Extrusion_Error error =
       anEditor.ExtrusionAlongTrack( elements, aSubMesh, nodeStart,
-                                    theHasAngles, angles,
+                                    theHasAngles, angles, false,
                                     theHasRefPoint, refPnt, theMakeGroups );
   storeResult(anEditor);
   theError = convExtrError( error );
@@ -2010,6 +2012,105 @@ SMESH_MeshEditor_i::extrusionAlongPath(const SMESH::long_array &   theIDsOfEleme
   }
   return 0;
 }
+
+
+//=======================================================================
+//function : extrusionAlongPathX
+//purpose  : 
+//=======================================================================
+
+SMESH::ListOfGroups*
+SMESH_MeshEditor_i::extrusionAlongPathX(const SMESH::long_array &  IDsOfElements,
+					SMESH::SMESH_IDSource_ptr  Path,
+					CORBA::Long                NodeStart,
+					CORBA::Boolean             HasAngles,
+					const SMESH::double_array& Angles,
+					CORBA::Boolean             LinearVariation,
+					CORBA::Boolean             HasRefPoint,
+					const SMESH::PointStruct&  RefPoint,
+					const bool                 MakeGroups,
+					const SMDSAbs_ElementType  ElementType,
+					SMESH::SMESH_MeshEditor::Extrusion_Error & Error)
+{
+  SMESH::ListOfGroups* EmptyGr = new SMESH::ListOfGroups;
+
+  initData();
+
+  list<double> angles;
+  for (int i = 0; i < Angles.length(); i++) {
+    angles.push_back( Angles[i] );
+  }
+  gp_Pnt refPnt( RefPoint.x, RefPoint.y, RefPoint.z );
+  int nbOldGroups = myMesh->NbGroup();
+
+  if ( Path->_is_nil() ) {
+    Error = SMESH::SMESH_MeshEditor::EXTR_BAD_PATH_SHAPE;
+    return EmptyGr;
+  }
+
+  TIDSortedElemSet elements;
+  arrayToSet(IDsOfElements, GetMeshDS(), elements, ElementType);
+
+  ::SMESH_MeshEditor anEditor( myMesh );
+  ::SMESH_MeshEditor::Extrusion_Error error;
+
+  SMESH_Mesh_i* aMeshImp = SMESH::DownCast<SMESH_Mesh_i*>( Path );
+  if(aMeshImp) {
+    // path as mesh
+    SMDS_MeshNode* aNodeStart = 
+      (SMDS_MeshNode*)aMeshImp->GetImpl().GetMeshDS()->FindNode(NodeStart);
+    if ( !aNodeStart ) {
+      Error = SMESH::SMESH_MeshEditor::EXTR_BAD_STARTING_NODE;
+      return EmptyGr;
+    }
+    error = anEditor.ExtrusionAlongTrack( elements, &(aMeshImp->GetImpl()), aNodeStart,
+					  HasAngles, angles, LinearVariation,
+					  HasRefPoint, refPnt, MakeGroups );
+  }
+  else {
+    SMESH_subMesh_i* aSubMeshImp = SMESH::DownCast<SMESH_subMesh_i*>( Path );
+    if(aSubMeshImp) {
+      // path as submesh
+      SMESH::SMESH_Mesh_ptr aPathMesh = aSubMeshImp->GetFather();
+      aMeshImp = SMESH::DownCast<SMESH_Mesh_i*>( aPathMesh );
+      SMDS_MeshNode* aNodeStart = 
+	(SMDS_MeshNode*)aMeshImp->GetImpl().GetMeshDS()->FindNode(NodeStart);
+      if ( !aNodeStart ) {
+	Error = SMESH::SMESH_MeshEditor::EXTR_BAD_STARTING_NODE;
+	return EmptyGr;
+      }
+      SMESH_subMesh* aSubMesh = 
+	aMeshImp->GetImpl().GetSubMeshContaining(aSubMeshImp->GetId());
+      error = anEditor.ExtrusionAlongTrack( elements, aSubMesh, aNodeStart,
+					    HasAngles, angles, LinearVariation,
+					    HasRefPoint, refPnt, MakeGroups );
+    }
+    else {
+      SMESH_Group_i* aGroupImp = SMESH::DownCast<SMESH_Group_i*>( Path );
+      if(aGroupImp) {
+	// path as group of 1D elements
+      }
+      else {
+	// invalid path
+	Error = SMESH::SMESH_MeshEditor::EXTR_BAD_PATH_SHAPE;
+	return EmptyGr;
+      }
+    }
+  }
+
+  storeResult(anEditor);
+  Error = convExtrError( error );
+
+  if ( MakeGroups ) {
+    list<int> groupIDs = myMesh->GetGroupIds();
+    list<int>::iterator newBegin = groupIDs.begin();
+    std::advance( newBegin, nbOldGroups ); // skip old groups
+    groupIDs.erase( groupIDs.begin(), newBegin );
+    return getGroups( & groupIDs );
+  }
+  return EmptyGr;
+}
+
 
 //=======================================================================
 //function : ExtrusionAlongPath
@@ -2408,6 +2509,124 @@ ExtrusionAlongPathObject2DMakeGroups(SMESH::SMESH_IDSource_ptr  theObject,
   }
   return aGroups;
 }
+
+
+//=======================================================================
+//function : ExtrusionAlongPathObjX
+//purpose  : 
+//=======================================================================
+SMESH::ListOfGroups* SMESH_MeshEditor_i::
+ExtrusionAlongPathObjX(SMESH::SMESH_IDSource_ptr  Object,
+		       SMESH::SMESH_IDSource_ptr  Path,
+		       CORBA::Long                NodeStart,
+		       CORBA::Boolean             HasAngles,
+		       const SMESH::double_array& Angles,
+		       CORBA::Boolean             LinearVariation,
+		       CORBA::Boolean             HasRefPoint,
+		       const SMESH::PointStruct&  RefPoint,
+		       CORBA::Boolean             MakeGroups,
+		       SMESH::ElementType         ElemType,
+		       SMESH::SMESH_MeshEditor::Extrusion_Error& Error)
+{
+  SMESH::long_array_var anElementsId = Object->GetIDs();
+  SMESH::ListOfGroups * aGroups = extrusionAlongPathX(anElementsId,
+						      Path,
+						      NodeStart,
+						      HasAngles,
+						      Angles,
+						      LinearVariation,
+						      HasRefPoint,
+						      RefPoint,
+						      MakeGroups,
+						      (SMDSAbs_ElementType)ElemType,
+						      Error);
+  
+  if ( !myPreviewMode ) {
+    bool isDumpGroups = aGroups && aGroups->length() > 0;
+    TPythonDump aPythonDump;
+    if(isDumpGroups) {
+      aPythonDump << "("<<aGroups;
+    }
+    if(isDumpGroups)
+      aPythonDump << ", error)";
+    else
+      aPythonDump <<"error";
+
+    aPythonDump << " = " << this << ".ExtrusionAlongPathObjX( "
+                << Object      << ", "
+                << Path        << ", "
+                << NodeStart   << ", "
+                << HasAngles   << ", "
+                << Angles      << ", "
+		<< LinearVariation << ", "
+		<< HasRefPoint << ", "
+		<< "SMESH.PointStruct( "
+		<< ( HasRefPoint ? RefPoint.x : 0 ) << ", "
+		<< ( HasRefPoint ? RefPoint.y : 0 ) << ", "
+		<< ( HasRefPoint ? RefPoint.z : 0 ) << " ), "
+		<< ElemType << " )";
+  }
+  return aGroups;
+}
+
+
+//=======================================================================
+//function : ExtrusionAlongPathX
+//purpose  : 
+//=======================================================================
+SMESH::ListOfGroups* SMESH_MeshEditor_i::
+ExtrusionAlongPathX(const SMESH::long_array&   IDsOfElements,
+		    SMESH::SMESH_IDSource_ptr  Path,
+		    CORBA::Long                NodeStart,
+		    CORBA::Boolean             HasAngles,
+		    const SMESH::double_array& Angles,
+		    CORBA::Boolean             LinearVariation,
+		    CORBA::Boolean             HasRefPoint,
+		    const SMESH::PointStruct&  RefPoint,
+		    CORBA::Boolean             MakeGroups,
+		    SMESH::ElementType         ElemType,
+		    SMESH::SMESH_MeshEditor::Extrusion_Error& Error)
+{
+  SMESH::ListOfGroups * aGroups = extrusionAlongPathX(IDsOfElements,
+						      Path,
+						      NodeStart,
+						      HasAngles,
+						      Angles,
+						      LinearVariation,
+						      HasRefPoint,
+						      RefPoint,
+						      MakeGroups,
+						      (SMDSAbs_ElementType)ElemType,
+						      Error);
+  
+  if ( !myPreviewMode ) {
+    bool isDumpGroups = aGroups && aGroups->length() > 0;
+    TPythonDump aPythonDump;
+    if(isDumpGroups) {
+      aPythonDump << "("<<aGroups;
+    }
+    if(isDumpGroups)
+      aPythonDump << ", error)";
+    else
+      aPythonDump <<"error";
+
+    aPythonDump << " = " << this << ".ExtrusionAlongPathX( "
+                << IDsOfElements << ", "
+                << Path        << ", "
+                << NodeStart   << ", "
+                << HasAngles   << ", "
+                << Angles      << ", "
+		<< LinearVariation << ", "
+		<< HasRefPoint << ", "
+		<< "SMESH.PointStruct( "
+		<< ( HasRefPoint ? RefPoint.x : 0 ) << ", "
+		<< ( HasRefPoint ? RefPoint.y : 0 ) << ", "
+		<< ( HasRefPoint ? RefPoint.z : 0 ) << " ), "
+		<< ElemType << " )";
+  }
+  return aGroups;
+}
+
 
 //================================================================================
 /*!

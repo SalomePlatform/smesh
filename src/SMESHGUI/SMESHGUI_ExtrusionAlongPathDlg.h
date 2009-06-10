@@ -94,8 +94,9 @@ private:
   SMESH::SMESH_Mesh_var     myMesh;
   SMESH_Actor*              myMeshActor;
   SMESH::SMESH_IDSource_var myIDSource;
-  SMESH::SMESH_Mesh_var     myPathMesh;
-  GEOM::GEOM_Object_var     myPathShape;
+  //SMESH::SMESH_Mesh_var     myPathMesh;
+  SMESH::SMESH_IDSource_var myPath;
+  //GEOM::GEOM_Object_var     myPathShape;
   SUIT_SelectionFilter*     myElementsFilter;
   SUIT_SelectionFilter*     myPathMeshFilter;
   int                       myType;
@@ -115,8 +116,8 @@ private:
   QGroupBox*                PathGrp;
   QToolButton*              SelectPathMeshButton;
   QLineEdit*                PathMeshLineEdit;
-  QToolButton*              SelectPathShapeButton;
-  QLineEdit*                PathShapeLineEdit;
+  //QToolButton*              SelectPathShapeButton;
+  //QLineEdit*                PathShapeLineEdit;
   QToolButton*              SelectStartPointButton;
   QLineEdit*                StartPointLineEdit;
   QCheckBox*                LinearAnglesCheck;

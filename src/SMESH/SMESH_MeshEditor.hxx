@@ -85,6 +85,53 @@ struct SMESH_NodeSearcher
   virtual const SMDS_MeshNode* FindClosestTo( const gp_Pnt& pnt ) = 0;
 };
 
+
+//=======================================================================
+/*!
+ * auxiliary class
+ */
+//=======================================================================
+class SMESH_MeshEditor_PathPoint {
+public:
+  SMESH_MeshEditor_PathPoint() {
+    myPnt.SetCoord(99., 99., 99.);
+    myTgt.SetCoord(1.,0.,0.);
+    myAngle=0.;
+    myPrm=0.;
+  }
+  void SetPnt(const gp_Pnt& aP3D){
+    myPnt=aP3D;
+  }
+  void SetTangent(const gp_Dir& aTgt){
+    myTgt=aTgt;
+  }
+  void SetAngle(const double& aBeta){
+    myAngle=aBeta;
+  }
+  void SetParameter(const double& aPrm){
+    myPrm=aPrm;
+  }
+  const gp_Pnt& Pnt()const{
+    return myPnt;
+  }
+  const gp_Dir& Tangent()const{
+    return myTgt;
+  }
+  double Angle()const{
+    return myAngle;
+  }
+  double Parameter()const{
+    return myPrm;
+  }
+
+protected:
+  gp_Pnt myPnt;
+  gp_Dir myTgt;
+  double myAngle;
+  double myPrm;
+};
+
+
 // ============================================================
 /*!
  * \brief Editor of a mesh
@@ -292,6 +339,16 @@ public:
                                        const SMDS_MeshNode* theNodeStart,
                                        const bool           theHasAngles,
                                        std::list<double>&   theAngles,
+                                       const bool           theLinearVariation,
+                                       const bool           theHasRefPoint,
+                                       const gp_Pnt&        theRefPoint,
+                                       const bool           theMakeGroups);
+  Extrusion_Error ExtrusionAlongTrack (TIDSortedElemSet &   theElements,
+                                       SMESH_Mesh*          theTrackPattern,
+                                       const SMDS_MeshNode* theNodeStart,
+                                       const bool           theHasAngles,
+                                       std::list<double>&   theAngles,
+                                       const bool           theLinearVariation,
                                        const bool           theHasRefPoint,
                                        const gp_Pnt&        theRefPoint,
                                        const bool           theMakeGroups);
@@ -583,6 +640,25 @@ private:
                   TIDSortedElemSet&        elemSet,
                   const int                nbSteps,
                   SMESH_SequenceOfElemPtr& srcElements);
+
+  /*!
+   * auxilary for ExtrusionAlongTrack
+   */
+  Extrusion_Error MakeEdgePathPoints(std::list<double>& aPrms,
+				     const TopoDS_Edge& aTrackEdge,
+				     bool FirstIsStart,
+				     list<SMESH_MeshEditor_PathPoint>& LPP);
+  Extrusion_Error MakeExtrElements(TIDSortedElemSet& theElements,
+				   list<SMESH_MeshEditor_PathPoint>& fullList,
+				   const bool theHasAngles,
+				   list<double>& theAngles,
+				   const bool theLinearVariation,
+				   const bool theHasRefPoint,
+				   const gp_Pnt& theRefPoint,
+				   const bool theMakeGroups);
+  void LinearAngleVariation(const int NbSteps,
+			    list<double>& theAngles);
+
 private:
 
   SMESH_Mesh * myMesh;

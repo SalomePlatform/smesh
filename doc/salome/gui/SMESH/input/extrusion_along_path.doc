@@ -4,13 +4,14 @@
 
 \n In principle, <b>Extrusion along a path</b> works in the same way
 as \b Extrusion, the main difference is that we define not a vector,
-but a path of extrusion which must be a meshed edge. To get an idea of
-how this algorithm works, examine several examples, starting from the
-most simple case of extrusion along a straight edge. In all examples
-the same mesh will be extruded along different paths and with
-different parameters. This sample 2D mesh has two quadrangle faces and
-seven edges. Look at the picture, where white digits are the node
-numbers and green are the element numbers:
+but a path of extrusion which must be a 1D mesh or 1D sub-mesh. To
+get an idea of how this algorithm works, examine several examples,
+starting from the most simple case of extrusion along a straight edge.
+In following examples the meshes will be extruded along different
+paths and with different parameters.
+This sample 2D mesh has two quadrangle faces and seven edges. Look
+at the picture, where white digits are the node numbers and green
+are the element numbers:
 
 \image html mesh_for_extr_along_path.png
 
@@ -40,29 +41,15 @@ been selected as <b>Start node</b>.</center>
 \image html curvi_angles_after.png
 <center>The same, but using angles {45, 45, 45, 0, -45, -45, -45}</center>
 
-<br><center><h2>Extrusion along a sub-mesh</h2></center>
+<br><center><h2>Extrusion of 2d face along a mesh builds on wire</h2></center>
 
-In this example the path mesh has been built on a wire (polyline with
-six edges). The first edge of the wire was used as <b>Shape (edge)</b>, node
-#1 as <b>Start node</b>. The angles have been defined as {10, 10, 10}. The
-middle edge (#4) of the initial mesh has been extruded.
+In this example the path mesh has been built on a wire contains 3
+edges. Node #1 is used as start node. Linear angle variation by 180
+degree is applied.
 
-\image html edge_wire_before.png
+\image html extr_along_wire_before.png
 
-\image html edge_wire_after.png
-
-<br><center><h2>Extrusion of 2d elements along a sub-mesh</h2></center>
-
-This extrusion bases on the same path mesh as in the previous example
-but the third edge of the wire was set as <b>Shape (edge)</b> and node
-#4 as <b>Start node</b>. Please note, that the extrusion has been done
-in direction from node #4 to node #3, i.e. against the wire
-direction. In this example both faces of the initial mesh have been
-extruded.
-
-\image html edge_wire_3d_before.png
-
-\image html edge_wire_3d_after.png
+\image html extr_along_wire_after.png
 
 <br><center><h2>Extrusion of 2d elements along a closed path</h2></center>
 
@@ -113,9 +100,8 @@ about filters in the \ref selection_filter_library_page "Selection filter librar
 <li>define the Path along which the elements will be extruded,
 \n Path definition consists of several elements:
 <ul>
-<li>\b Mesh - containing a 1D sub-mesh on the edge, along which proceeds the extrusion</li>
-<li><b>Shape (edge)</b> - as the mesh can be complex, the edge is used to define the sub-mesh for the path</li>
-<li><b>Start node</b> - the first or the last node on the edge. It is used to define the direction of extrusion </li>
+<li><b>Mesh or submesh</b> - 1D mesh or 1D sub-mesh, along which proceeds the extrusion</li>
+<li><b>Start node</b> - the start node. It is used to define the direction of extrusion </li>
 </ul>
 </li>
 <li>activate  <b>Generate Groups</b> checkbox if it is necessary to  copy the groups of

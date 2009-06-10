@@ -392,6 +392,30 @@ module SMESH
       EXTR_CANT_GET_TANGENT
       };
 
+    ListOfGroups ExtrusionAlongPathX(in long_array        IDsOfElements,
+				     in SMESH_IDSource    Path,
+				     in long              NodeStart,
+				     in boolean           HasAngles,
+				     in double_array      Angles,
+				     in boolean           LinearVariation,
+				     in boolean           HasRefPoint,
+				     in PointStruct       RefPoint,
+				     in boolean           MakeGroups,
+				     in ElementType       ElemType,
+				     out Extrusion_Error  Error);
+
+    ListOfGroups ExtrusionAlongPathObjX(in SMESH_IDSource    theObject,
+					in SMESH_IDSource    Path,
+					in long              NodeStart,
+					in boolean           HasAngles,
+					in double_array      Angles,
+					in boolean           LinearVariation,
+					in boolean           HasRefPoint,
+					in PointStruct       RefPoint,
+					in boolean           MakeGroups,
+					in ElementType       ElemType,
+					out Extrusion_Error  Error);
+
     Extrusion_Error ExtrusionAlongPath(in long_array        IDsOfElements,
 				       in SMESH_Mesh        PathMesh,
 				       in GEOM::GEOM_Object PathShape,
