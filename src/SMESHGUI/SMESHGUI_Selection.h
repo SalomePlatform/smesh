@@ -54,6 +54,7 @@ public:
   virtual bool            isAutoColor( int ) const;
   virtual int             numberOfNodes( int ) const;
   virtual QVariant        isComputable( int ) const;
+  virtual QVariant        isPreComputable( int ) const;
   virtual QVariant        hasReference( int ) const;
   virtual QVariant        isVisible( int ) const;
 

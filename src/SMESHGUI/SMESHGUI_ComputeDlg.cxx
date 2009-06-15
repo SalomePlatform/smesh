@@ -1617,7 +1617,7 @@ void SMESHGUI_PrecomputeOp::stopOperation()
 
 //================================================================================
 /*!
- * \brief perform it's intention action: reinitialise dialog
+ * \brief reinitialize dialog after operaiton become active again
  */
 //================================================================================
 
@@ -1628,16 +1628,48 @@ void SMESHGUI_PrecomputeOp::resumeOperation()
   SMESHGUI_BaseComputeOp::resumeOperation();
 }
 
+//================================================================================
+/*!
+ * \brief perform it's intention action: reinitialise dialog
+ */
+//================================================================================
+
 void SMESHGUI_PrecomputeOp::initDialog()
 {
   QList<int> modes;
+
   QMap<int, int> modeMap;
+  _PTR(SObject)  pMesh = studyDS()->FindObjectID( myIObject->getEntry() );
+  getAssignedAlgos( pMesh, modeMap );
+  if ( modeMap.contains( SMESH::DIM_3D ) )
+  {
+    if ( modeMap.contains( SMESH::DIM_2D ) )
+      modes.append( SMESH::DIM_2D );
+    if ( modeMap.contains( SMESH::DIM_1D ) )
+      modes.append( SMESH::DIM_1D );
+  }
+  else if ( modeMap.contains( SMESH::DIM_2D ) )
+  {
+    if ( modeMap.contains( SMESH::DIM_1D ) )
+      modes.append( SMESH::DIM_1D );
+  }
+
+  myDlg->setPreviewModes( modes );
+}
+
+//================================================================================
+/*!
+ * \brief detect asigned mesh algorithms
+ */
+//================================================================================
+
+void SMESHGUI_PrecomputeOp::getAssignedAlgos(_PTR(SObject) theMesh,
+                                             QMap<int,int>& theModeMap)
+{
   _PTR(SObject)          aHypRoot;
   _PTR(GenericAttribute) anAttr;
   int aPart = SMESH::Tag_RefOnAppliedAlgorithms;
-
-  _PTR(SObject) pMesh = studyDS()->FindObjectID( myIObject->getEntry() );
-  if ( pMesh && pMesh->FindSubObject( aPart, aHypRoot ) )
+  if ( theMesh && theMesh->FindSubObject( aPart, aHypRoot ) )
   {
     _PTR(ChildIterator) anIter =
       SMESH::GetActiveStudyDocument()->NewChildIterator( aHypRoot );
@@ -1655,28 +1687,22 @@ void SMESHGUI_PrecomputeOp::initDialog()
         CORBA::Object_var aVar = _CAST(SObject,anObj)->GetObject();
         if ( CORBA::is_nil( aVar ) )
           continue;
-
-        SMESH::SMESH_Algo_var algo = SMESH::SMESH_3D_Algo::_narrow( aVar );
-        if ( !algo->_is_nil() )
+        
+        for( int dim = SMESH::DIM_1D; dim <= SMESH::DIM_3D; dim++ )
         {
-	  modeMap[ SMESH::DIM_1D ] = 0;
-	  modeMap[ SMESH::DIM_2D ] = 0;
-        }
-        else
-        {
-          algo = SMESH::SMESH_2D_Algo::_narrow( aVar );
+          SMESH::SMESH_Algo_var algo;
+          switch(dim) {
+          case SMESH::DIM_1D: algo = SMESH::SMESH_1D_Algo::_narrow( aVar ); break;
+          case SMESH::DIM_2D: algo = SMESH::SMESH_2D_Algo::_narrow( aVar ); break;
+          case SMESH::DIM_3D: algo = SMESH::SMESH_3D_Algo::_narrow( aVar ); break;
+          default: break;
+          }
           if ( !algo->_is_nil() )
-            modeMap[ SMESH::DIM_1D ] = 0;
+	    theModeMap[ dim ] = 0;
         }
       }
     }
   }
-  if ( modeMap.contains( SMESH::DIM_1D ) )
-    modes.append( SMESH::DIM_1D );
-  if ( modeMap.contains( SMESH::DIM_2D ) )
-    modes.append( SMESH::DIM_2D );
-
-  myDlg->setPreviewModes( modes );
 }
 
 //================================================================================
