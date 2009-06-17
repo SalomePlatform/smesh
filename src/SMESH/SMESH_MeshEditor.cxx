@@ -4614,7 +4614,7 @@ struct SMESH_NodeSearcherImpl: public SMESH_NodeSearcher
     SMDS_MeshNode tgtNode( thePnt.X(), thePnt.Y(), thePnt.Z() );
     list<const SMDS_MeshNode*> nodes;
     const double precision = 1e-6;
-    myOctreeNode->NodesAround( &tgtNode, &nodes, precision );
+    //myOctreeNode->NodesAround( &tgtNode, &nodes, precision );
 
     double minSqDist = DBL_MAX;
     Bnd_B3d box;
