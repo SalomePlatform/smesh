@@ -23,7 +23,7 @@
 // File   : SMESHGUI.cxx
 // Author : Nicolas REJNERI, Open CASCADE S.A.S.
 // SMESH includes
-//
+
 #include "SMESHGUI.h"
 #include "SMESHGUI_NodesDlg.h"
 #include "SMESHGUI_TransparencyDlg.h"
@@ -2090,9 +2090,12 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
         /* Warning : however by internal mechanism all subMeshes icons are changed !                     */
         if ( !aHypothesis->_is_nil() )
         {
-          SMESHGUI_GenericHypothesisCreator* aCreator = SMESH::GetHypothesisCreator(aHypothesis->GetName());
-          if (aCreator)
+          // BUG 0020378
+          //SMESHGUI_GenericHypothesisCreator* aCreator = SMESH::GetHypothesisCreator(aHypothesis->GetName());
+          SMESH::HypothesisCreatorPtr aCreator = SMESH::GetHypothesisCreator(aHypothesis->GetName());
+          if (aCreator) {
             aCreator->edit( aHypothesis.in(), anIObject->getName(), desktop() );
+          }
           else
           {
             // report error

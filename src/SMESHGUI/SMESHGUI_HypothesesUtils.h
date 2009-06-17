@@ -22,7 +22,7 @@
 // SMESH SMESHGUI : GUI for SMESH component
 // File   : SMESHGUI_HypothesesUtils.h
 // Author : Julia DOROVSKIKH, Open CASCADE S.A.S.
-//
+
 #ifndef SMESHGUI_HYPOTHESESUTILS_H
 #define SMESHGUI_HYPOTHESESUTILS_H
 
@@ -47,6 +47,9 @@
 // STL includes
 #include <vector>
 
+// boost includes
+#include <boost/shared_ptr.hpp>
+
 class HypothesisData;
 class HypothesesSet;
 class SMESHGUI_GenericHypothesisCreator;
@@ -55,6 +58,8 @@ class algo_error_array;
 
 namespace SMESH
 {
+  typedef boost::shared_ptr<SMESHGUI_GenericHypothesisCreator> HypothesisCreatorPtr;
+
   SMESHGUI_EXPORT
   void InitAvailableHypotheses();
 
@@ -82,12 +87,12 @@ namespace SMESH
 			      const HypothesisData* );
 
   SMESHGUI_EXPORT
-  SMESHGUI_GenericHypothesisCreator* GetHypothesisCreator( const QString& );
+  HypothesisCreatorPtr GetHypothesisCreator( const QString& );
 
   SMESHGUI_EXPORT
   SMESH::SMESH_Hypothesis_ptr CreateHypothesis( const QString&,
-						const QString&,
-						const bool = false);
+                                                const QString&,
+                                                const bool = false );
 
   SMESHGUI_EXPORT
   bool AddHypothesisOnMesh( SMESH::SMESH_Mesh_ptr, SMESH::SMESH_Hypothesis_ptr );
