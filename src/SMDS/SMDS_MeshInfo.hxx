@@ -40,6 +40,7 @@ public:
   inline void Clear();
 
   int NbNodes() const { return myNbNodes; }
+  inline int NbElements(SMDSAbs_ElementType type=SMDSAbs_All) const;
 
   inline int NbEdges      (SMDSAbs_ElementOrder order = ORDER_ANY) const;
   inline int NbFaces      (SMDSAbs_ElementOrder order = ORDER_ANY) const;
@@ -60,7 +61,7 @@ private:
   // methods to count NOT POLY elements
   inline void remove(const SMDS_MeshElement* el);
   inline void add   (const SMDS_MeshElement* el);
-  inline int  index(SMDSAbs_ElementType type, int nbNodes);
+  inline int  index(SMDSAbs_ElementType type, int nbNodes) const;
   // methods to remove elements of ANY kind
   inline void RemoveEdge(const SMDS_MeshElement* el);
   inline void RemoveFace(const SMDS_MeshElement* el);
@@ -153,7 +154,7 @@ SMDS_MeshInfo::Clear()
   myNbPolygons=myNbPolyhedrons=0;
 }
 inline int // index
-SMDS_MeshInfo::index(SMDSAbs_ElementType type, int nbNodes)
+SMDS_MeshInfo::index(SMDSAbs_ElementType type, int nbNodes) const
 { return nbNodes + myShift[ type ]; }
 
 inline void // remove
@@ -212,4 +213,29 @@ inline int // NbPrisms
 SMDS_MeshInfo::NbPrisms  (SMDSAbs_ElementOrder order) const
 { return order == ORDER_ANY ? myNbPrisms+myNbQuadPrisms : order == ORDER_LINEAR ? myNbPrisms : myNbQuadPrisms; }
 
+inline int // NbElements
+SMDS_MeshInfo::NbElements(SMDSAbs_ElementType type) const
+{ 
+  int nb = 0;
+  switch (type) {
+  case SMDSAbs_All:
+    for ( int i=1+index( SMDSAbs_Node,1 ); i<myNb.size(); ++i ) if ( myNb[i] ) nb += *myNb[i];
+    nb += myNbPolygons + myNbPolyhedrons;
+    break;
+  case SMDSAbs_Volume:
+    nb = myNbTetras+ myNbPyramids+ myNbPrisms+ myNbHexas+
+      myNbQuadTetras+ myNbQuadPyramids+ myNbQuadPrisms+ myNbQuadHexas+myNbPolyhedrons;
+    break;
+  case SMDSAbs_Face:
+    nb = myNbTriangles+ myNbQuadrangles+ myNbQuadTriangles+ myNbQuadQuadrangles + myNbPolygons;
+    break;
+  case SMDSAbs_Edge:
+    nb = myNbEdges + myNbQuadEdges;
+    break;
+  case SMDSAbs_Node:
+    nb = myNbNodes;
+  default:;
+  }
+  return nb;
+}
 #endif
