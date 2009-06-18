@@ -50,7 +50,7 @@ public:
   SMDS_EdgeIteratorPtr edgesIterator() const;
   SMDS_FaceIteratorPtr facesIterator() const;
   SMDS_VolumeIteratorPtr volumesIterator() const;
-  SMDS_ElemIteratorPtr elementsIterator() const;  
+  SMDS_ElemIteratorPtr elementsIterator(SMDSAbs_ElementType type=SMDSAbs_All) const;  
   
   SMDSAbs_ElementType GetElementType( const int id, const bool iselem ) const;
 

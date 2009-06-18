@@ -2020,23 +2020,14 @@ SMDS_NodeIteratorPtr SMDS_Mesh::nodesIterator() const
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-/// Return an iterator on elements of the current mesh factory
+///Iterator on NCollection_Map
 ///////////////////////////////////////////////////////////////////////////////
-SMDS_ElemIteratorPtr SMDS_Mesh::elementsIterator() const
+template <class MAP, typename ELEM=const SMDS_MeshElement*, class FATHER=SMDS_ElemIterator>
+struct MYNCollection_Map_Iterator: public FATHER
 {
-  return myElementIDFactory->elementsIterator();
-}
+  typename MAP::Iterator myIterator;
 
-///////////////////////////////////////////////////////////////////////////////
-///Return an iterator on edges of the current mesh.
-///////////////////////////////////////////////////////////////////////////////
-class SMDS_Mesh_MyEdgeIterator:public SMDS_EdgeIterator
-{
-  typedef SMDS_Mesh::SetOfEdges SetOfEdges;
-  SetOfEdges::Iterator myIterator;
- public:
-  SMDS_Mesh_MyEdgeIterator(const SetOfEdges& s):myIterator(s)
-  {}
+  MYNCollection_Map_Iterator(const MAP& map):myIterator(map){}
 
   bool more()
   {
@@ -2049,81 +2040,66 @@ class SMDS_Mesh_MyEdgeIterator:public SMDS_EdgeIterator
     return false;
   }
 
-  const SMDS_MeshEdge* next()
+  ELEM next()
   {
-    const SMDS_MeshEdge* current = myIterator.Value();
+    ELEM current = (ELEM) myIterator.Value();
     myIterator.Next();
     return current;
   }
 };
 
+///////////////////////////////////////////////////////////////////////////////
+///Return an iterator on edges of the current mesh.
+///////////////////////////////////////////////////////////////////////////////
+
 SMDS_EdgeIteratorPtr SMDS_Mesh::edgesIterator() const
 {
-  return SMDS_EdgeIteratorPtr(new SMDS_Mesh_MyEdgeIterator(myEdges));
+  typedef MYNCollection_Map_Iterator
+    < SetOfEdges, const SMDS_MeshEdge*, SMDS_EdgeIterator > TIterator;
+  return SMDS_EdgeIteratorPtr(new TIterator(myEdges));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 ///Return an iterator on faces of the current mesh.
 ///////////////////////////////////////////////////////////////////////////////
-class SMDS_Mesh_MyFaceIterator:public SMDS_FaceIterator
-{
-  typedef SMDS_Mesh::SetOfFaces SetOfFaces;
-  SetOfFaces::Iterator myIterator;
- public:
-  SMDS_Mesh_MyFaceIterator(const SetOfFaces& s):myIterator(s)
-  {}
-
-  bool more()
-  {
-    while(myIterator.More())
-    {
-      if(myIterator.Value()->GetID()!=-1)
-        return true;
-      myIterator.Next();
-    }
-    return false;
-  }
-
-  const SMDS_MeshFace* next()
-  {
-    const SMDS_MeshFace* current = myIterator.Value();
-    myIterator.Next();
-    return current;
-  }
-};
 
 SMDS_FaceIteratorPtr SMDS_Mesh::facesIterator() const
 {
-  return SMDS_FaceIteratorPtr(new SMDS_Mesh_MyFaceIterator(myFaces));
+  typedef MYNCollection_Map_Iterator
+    < SetOfFaces, const SMDS_MeshFace*, SMDS_FaceIterator > TIterator;
+  return SMDS_FaceIteratorPtr(new TIterator(myFaces));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 ///Return an iterator on volumes of the current mesh.
 ///////////////////////////////////////////////////////////////////////////////
-class SMDS_Mesh_MyVolumeIterator:public SMDS_VolumeIterator
-{
-  typedef SMDS_Mesh::SetOfVolumes SetOfVolumes;
-  SetOfVolumes::Iterator myIterator;
- public:
-  SMDS_Mesh_MyVolumeIterator(const SetOfVolumes& s):myIterator(s)
-  {}
-
-  bool more()
-  {
-    return myIterator.More() != Standard_False;
-  }
-
-  const SMDS_MeshVolume* next()
-  {
-    const SMDS_MeshVolume* current = myIterator.Value();
-    myIterator.Next();
-    return current;
-  }
-};
 
 SMDS_VolumeIteratorPtr SMDS_Mesh::volumesIterator() const
 {
-  return SMDS_VolumeIteratorPtr(new SMDS_Mesh_MyVolumeIterator(myVolumes));
+  typedef MYNCollection_Map_Iterator
+    < SetOfVolumes, const SMDS_MeshVolume*, SMDS_VolumeIterator > TIterator;
+  return SMDS_VolumeIteratorPtr(new TIterator(myVolumes));
+}
+
+///////////////////////////////////////////////////////////////////////////////
+/// Return an iterator on elements of the current mesh factory
+///////////////////////////////////////////////////////////////////////////////
+SMDS_ElemIteratorPtr SMDS_Mesh::elementsIterator(SMDSAbs_ElementType type) const
+{
+  switch (type) {
+  case SMDSAbs_All:
+    break;
+  case SMDSAbs_Volume:
+    return SMDS_ElemIteratorPtr (new MYNCollection_Map_Iterator< SetOfVolumes >(myVolumes));
+  case SMDSAbs_Face:
+    return SMDS_ElemIteratorPtr (new MYNCollection_Map_Iterator< SetOfFaces >(myFaces));
+  case SMDSAbs_Edge:
+    return SMDS_ElemIteratorPtr (new MYNCollection_Map_Iterator< SetOfEdges >(myEdges));
+  case SMDSAbs_Node:
+    return myNodeIDFactory->elementsIterator();
+  default:;
+  }
+  return myElementIDFactory->elementsIterator();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
