@@ -3856,7 +3856,8 @@ SMESH_MeshEditor::Extrusion_Error
       double aT = pEPos->GetUParameter();
       aPrms.push_back( aT );
     }
-    Extrusion_Error err = MakeEdgePathPoints(aPrms, aTrackEdge, (aN1==theN1), fullList);
+    //Extrusion_Error err =
+      MakeEdgePathPoints(aPrms, aTrackEdge, (aN1==theN1), fullList);
   }
   else if( aS.ShapeType() == TopAbs_WIRE ) {
     list< SMESH_subMesh* > LSM;
@@ -3900,8 +3901,8 @@ SMESH_MeshEditor::Extrusion_Error
 	  aPrms.push_back( aT );
 	}
 	list<SMESH_MeshEditor_PathPoint> LPP;
-	Extrusion_Error err = MakeEdgePathPoints(aPrms, aTrackEdge,
-						 (aN1->GetID()==startNid), LPP);
+	//Extrusion_Error err =
+          MakeEdgePathPoints(aPrms, aTrackEdge,(aN1->GetID()==startNid), LPP);
 	LLPPs.push_back(LPP);
 	UsedNums.Add(k);
 	// update startN for search following egde
@@ -4027,7 +4028,8 @@ SMESH_MeshEditor::Extrusion_Error
       double aT = pEPos->GetUParameter();
       aPrms.push_back( aT );
     }
-    Extrusion_Error err = MakeEdgePathPoints(aPrms, aTrackEdge, (aN1==theN1), fullList);
+    //Extrusion_Error err =
+      MakeEdgePathPoints(aPrms, aTrackEdge, (aN1==theN1), fullList);
   }
   else if( aS.ShapeType() == TopAbs_WIRE ) {
     list< SMESH_subMesh* > LSM;
@@ -4074,8 +4076,8 @@ SMESH_MeshEditor::Extrusion_Error
 	  aPrms.push_back( aT );
 	}
 	list<SMESH_MeshEditor_PathPoint> LPP;
-	Extrusion_Error err = MakeEdgePathPoints(aPrms, aTrackEdge,
-						 (aN1->GetID()==startNid), LPP);
+	//Extrusion_Error err =
+          MakeEdgePathPoints(aPrms, aTrackEdge,(aN1->GetID()==startNid), LPP);
 	LLPPs.push_back(LPP);
 	UsedNums.Add(k);
 	// update startN for search following egde
@@ -4177,6 +4179,7 @@ SMESH_MeshEditor::MakeEdgePathPoints(std::list<double>& aPrms,
     aPP.SetParameter( aT );
     LPP.push_back(aPP);
   }
+  return EXTR_OK;
 }
 
 
@@ -7075,6 +7078,7 @@ void SMESH_MeshEditor::ConvertToQuadratic(const bool theForce3d)
         SMESH_subMesh* sm = smIt->next();
         if ( SMESHDS_SubMesh *smDS = sm->GetSubMeshDS() ) {
           aHelper.SetSubShape( sm->GetSubShape() );
+          if ( !theForce3d) aHelper.SetCheckNodePosition(true);
           nbCheckedElems += convertElemToQuadratic(smDS, aHelper, theForce3d);
         }
       }
@@ -7168,6 +7172,10 @@ void SMESH_MeshEditor::ConvertToQuadratic(const bool theForce3d)
       }
       ReplaceElemInGroups(volume, NewVolume, meshDS);
     }
+  }
+  if ( !theForce3d ) {
+    aHelper.SetSubShape(0); // apply to the whole mesh
+    aHelper.FixQuadraticElements();
   }
 }
 
