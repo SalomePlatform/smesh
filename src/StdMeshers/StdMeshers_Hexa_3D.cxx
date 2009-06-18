@@ -1047,6 +1047,7 @@ SMESH_ComputeErrorPtr ComputePentahedralMesh(SMESH_Mesh &         aMesh,
     }
     SMESH_Hypothesis::Hypothesis_Status aStatus;
     if ( aPrism3D->CheckHypothesis( aMesh, aShape, aStatus ) ) {
+      aPrism3D->InitComputeError();
       bOK = aPrism3D->Compute( aMesh, aShape );
       err = aPrism3D->GetComputeError();
     }
