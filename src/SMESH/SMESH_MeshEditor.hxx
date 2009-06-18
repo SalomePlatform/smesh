@@ -72,6 +72,8 @@ struct SMESH_TLink: public NLink
   { if ( n1->GetID() < n2->GetID() ) std::swap( first, second ); }
   SMESH_TLink(const NLink& link ):NLink( link )
   { if ( first->GetID() < second->GetID() ) std::swap( first, second ); }
+  const SMDS_MeshNode* node1() const { return first; }
+  const SMDS_MeshNode* node2() const { return second; }
 };
 
 // ============================================================
