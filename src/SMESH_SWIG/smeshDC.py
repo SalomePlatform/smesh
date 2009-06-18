@@ -1804,10 +1804,10 @@ class Mesh:
             ShapeID = Shape
         return self.mesh.GetSubMeshNodesId(ShapeID, all)
 
-    ## Returns the list of IDs of submesh elements with the given type
+    ## Returns type of elements on given shape
     #  @param Shape a geom object(subshape) IOR
     #         Shape must be a subshape of a ShapeToMesh()
-    #  @return the list of integer values
+    #  @return element type
     #  @ingroup l1_meshinfo
     def GetSubMeshElementType(self, Shape):
         if ( isinstance( Shape, geompyDC.GEOM._objref_GEOM_Object)):
