@@ -5,7 +5,8 @@
 \n GHS3DPRL Parameters hypothesis works only with <b>Tetrahedron (Tepal with TetMesh-GHS3D)</b> algorithm.
 \n
 \n This algorithm is a commercial software, its use requires a licence (http://www.distene.com/fr/build/offer.html).
-\n For example, Tepal gives the possibility to generate a partitioned
+
+\n Tepal gives the possibility to generate a partitioned
 mesh with 200 million tetrahedrons on a computer with average memory size
 (2Go RAM) in about 50 hours on one CPU (Xeon, 2008). 
 This is a serious alternative to GHS3D, which requires a much less common
@@ -13,8 +14,8 @@ configuration with 64Go RAM to only try to make a partition of a mesh with
 200 million tetrahedrons, no result guaranteed.
 \n
 \note The Plugin doesn't load in the Memory the supposedly large resulting meshes. 
-The meshes are imported in the user-defined location as MED files via menu File-Import-MED Files.
-\n Pay attention, that Salome GUI Salome needs 2Go RAM. to load a MED
+The meshes are saved in MED files and can be imported in the user-defined location via menu File-Import-MED Files.
+\n Pay attention, that Salome GUI needs 2Go RAM. to load a MED
 file with 5 million tetrahedrons.
 
 \image html ghs3dprl_parameters_basic.png
@@ -24,19 +25,20 @@ file with 5 million tetrahedrons.
 <b>Name</b> - allows to define the name of the hypothesis (GHS3DPRL Parameters by default).
 </li>
 <li>
-<b>MED_Name</b> - allows to define the path and the default name of the 
-resulting MED files ("DOMAIN"). 
+<b>MED_Name</b> - allows to define the path and the prefix of the 
+resulting MED files ("DOMAIN" by default). 
 If the path is not defined, the environment variable $SALOME_TMP_DIR
-is used.
+is used. If $SALOME_TMP_DIR is not defined as well, the environment
+variable $TMP is used.
 </li>
 <li>
-<b>Nb_Part</b> - allows to define the number of generated MED files, 
+<b>Nb_Part</b> - allows to define the number of generated MED files.
 The initial skin (triangles) will be meshed (tetrahedrons) and partitioned 
 in Nb_Part by the elementary algorithm implemented in Tepal.<br>
 </li>
 <li>
 <b>Keep_Files</b> - if this box is checked, input files of Tepal 
-(GHS3DPRL.points and GHS3DPRL.faces) are deleted after use (...if the
+(GHS3DPRL.points and GHS3DPRL.faces) are not deleted after use (...if the
 background mode was not used).
 </li>
 <li>
@@ -55,8 +57,10 @@ GHS3DPRL Plugin launches a standalone binary executable tepal2med.<br>
 tepal2med launches tepal, waits for the end of computation, and
 converts the resulting output tepal files into MED files.<br>
 Some advanced optional parameters are accessible as arguments.<br>
+
 If keep_files option is checked, it is possible to re-launch tepal2med
 or tepal in the Terminal as a command with custom parameters.<br>
+
 <li>
 <b>Advanced tepal2med Parameters</b> - type "tepal2med --help" in the Terminal. <p>
 
@@ -89,30 +93,15 @@ example:
 </li>
 <li>
 <p>
-<b>Advanced tepal Parameters</b> - type "tepal" in a Terminal. <p>
+ <b>Advanced tepal Parameters</b> <p>
 
 \verbatim
-myname@myhost > tepal
-    =====================================
-    GHS3D-TEPAL 1.4.2 (Dec, 2006)               10-Dec-2008 AT 12:59:48
-    =====================================
-
- Distene SAS
-         Pole Teratec - BARD-1
-         Domaine du Grand Rue
-         91680 Bruyeres le Chatel
-         FRANCE
- Phone: +33(0)1-69-26-62-10   Fax: +33(0)1-69-26-90-33
- EMail: support@distene.com
-
-  COPYRIGHT (C)2006 DISTENE ALL RIGHTS RESERVED
-
 
 USAGE : tepal options
 
 With options :
      --filename name (-f name) :
-          Default name of the input case (MANDATORY)
+          Prefix of the input case (MANDATORY)
 
      --ndom n (-n n) :
           Number of subdomains to make (MANDATORY)
@@ -144,22 +133,13 @@ With options :
 
      --rebuild_retag  (-t ) :
           Tags vertices, faces (and tetra if selected) with their
-          subdomain number in the final merger of subdomains (keeps the lowest tag for shared elements)
+          subdomain number in the final merge of subdomains (keeps the lowest tag for shared elements)
 
      --rebuild_ensight_parts  (-e ) :
           Builds ensight geom file with parts
 
      --tetmesh_args str (-G str) :
           Arguments to pass to Tetmesh during cutting process
-
- ==============================================================================
-                   GHS3D-TEPAL SOFTWARE 1.4.2 (Dec, 2006)
-                                 END OF SESSION
-                COPYRIGHT (C)2006 DISTENE ALL RIGHTS RESERVED
- ==============================================================================
-      ( Distene SAS
-        Phone: +33(0)1-69-26-62-10   Fax: +33(0)1-69-26-90-33
-        EMail: support@distene.com )
 
 \endverbatim
 
@@ -191,13 +171,13 @@ DESCRIPTION
                   the value specified in the command line has the priority on
                   the environment variable.
 
- -M MEMORY      : uses the automatic memory adjustment feature.
-                  If MEMORY is equal to zero, the size of the work space is
+ -M MEMORY      : provides the automatic memory adjustment feature.
+                  If MEMORY (in Megabytes) is equal to zero, the size of the work space is
                   calculated from the input. If MEMORY is not equal to
                   zero, the software starts with MEMORY amount of work space.
                   The software reallocates memory as necessary.
-                  The start value with MEMORY equal to 0 is 64 Megabytes,
-                  the maximum is depends on -m option and the actual memory available.
+                  The start value of  MEMORY can range from 0 to 64 Megabytes,
+                  the maximum depends on -m option and the actual memory available.
 
  -f prefix      : defines the generic prefix of the files.
 
@@ -214,7 +194,7 @@ DESCRIPTION
                   when the standard boundary recovery fails.
 
  -E count       : sets the extended output for error messages. If -E is used,
-                  the error messages will be printed, it is possinle
+                  the error messages will be printed, it is possible
                   to indicate the maximum number of printed messages between 1 and 100.
 
  -t             : generates an error file prefix.Log
@@ -255,7 +235,8 @@ DESCRIPTION
 </li>
 <h1>Saving user's preferred GHS3DPRL Advanced Parameters</h1><br>
 GHS3DPRL Plugin launches standalone binary executable tepal2med.<br>
-you may rename tepal2med as tepal2med.exe for example, and replace tepal2med by a shell script at your convenience to overriding parameters.<br>... or else $PATH modification... .<br>Idem for tepal.<br><br>
+You may rename tepal2med as tepal2med.exe for example, and replace
+tepal2med by a shell script at your convenience to overriding parameters.<br>... or else $PATH modification... .<br>Idem for tepal.<br><br>
 <li>
 <b>Advanced tepal2med Parameters</b> - overriding parameter deletegroups<p>
 

@@ -4,12 +4,12 @@
 
 \n In principle, <b>Extrusion along a path</b> works in the same way
 as \b Extrusion, the main difference is that we define not a vector,
-but a path of extrusion which must be a 1D mesh or 1D sub-mesh. To
-get an idea of how this algorithm works, examine several examples,
+but a path of extrusion which must be a 1D mesh or 1D sub-mesh. 
+To get an idea of how this algorithm works, examine several examples,
 starting from the most simple case of extrusion along a straight edge.
-In following examples the meshes will be extruded along different
+In the examples the sample mesh will be extruded along different
 paths and with different parameters.
-This sample 2D mesh has two quadrangle faces and seven edges. Look
+This 2D mesh has two quadrangle faces and seven edges. Look
 at the picture, where white digits are the node numbers and green
 are the element numbers:
 
@@ -41,15 +41,17 @@ been selected as <b>Start node</b>.</center>
 \image html curvi_angles_after.png
 <center>The same, but using angles {45, 45, 45, 0, -45, -45, -45}</center>
 
-<br><center><h2>Extrusion of 2d face along a mesh builds on wire</h2></center>
+<br><center><h2>Extrusion of a 2D face along a mesh built on a wire</h2></center>
 
-In this example the path mesh has been built on a wire contains 3
-edges. Node #1 is used as start node. Linear angle variation by 180
-degree is applied.
+In this example the path mesh has been built on a wire containing 3
+edges. Node 1 is a start node. Linear angle variation by 180 degrees
+has also been applied.
 
 \image html extr_along_wire_before.png
+<center><em>Meshed wire</em></center>
 
 \image html extr_along_wire_after.png
+<center><em>The resulting extrusion</em></center>
 
 <br><center><h2>Extrusion of 2d elements along a closed path</h2></center>
 
@@ -100,7 +102,7 @@ about filters in the \ref selection_filter_library_page "Selection filter librar
 <li>define the Path along which the elements will be extruded,
 \n Path definition consists of several elements:
 <ul>
-<li><b>Mesh or submesh</b> - 1D mesh or 1D sub-mesh, along which proceeds the extrusion</li>
+<li><b>Mesh or submesh</b> - 1D mesh or sub-mesh, along which proceeds the extrusion</li>
 <li><b>Start node</b> - the start node. It is used to define the direction of extrusion </li>
 </ul>
 </li>
