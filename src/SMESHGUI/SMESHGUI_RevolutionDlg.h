@@ -152,6 +152,7 @@ private:
 
   
   QString                   myHelpFileName;
+  QString                   myIDs;
   
   QPushButton*              myFilterBtn;
   SMESHGUI_FilterDlg*       myFilterDlg;

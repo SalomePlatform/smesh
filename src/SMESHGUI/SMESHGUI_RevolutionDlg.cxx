@@ -383,6 +383,7 @@ void SMESHGUI_RevolutionDlg::Init (bool ResetControls)
   LineEditElements->clear();
   myElementsId = "";
   myNbOkElements = 0;
+  myIDs.clear();
 
   myActor = 0;
   myMesh = SMESH::SMESH_Mesh::_nil();
@@ -412,14 +413,13 @@ void SMESHGUI_RevolutionDlg::Init (bool ResetControls)
 //=================================================================================
 void SMESHGUI_RevolutionDlg::ConstructorsClicked (int constructorId)
 {
-  //disconnect(mySelectionMgr, 0, this, 0);
+  disconnect(mySelectionMgr, 0, this, 0);
 
-  SALOME_ListIO io;
+  /*  SALOME_ListIO io;
   mySelectionMgr->selectedObjects( io );
   SALOME_ListIO aList;
-  mySelectionMgr->setSelectedObjects( aList );
-//   LineEditElements->clear();
-  myNbOkElements = 0;
+  mySelectionMgr->setSelectedObjects( aList );*/
+
   buttonApply->setEnabled(false);
   buttonOk->setEnabled(false);
   mySimulation->SetVisibility(false);
@@ -447,6 +447,9 @@ void SMESHGUI_RevolutionDlg::ConstructorsClicked (int constructorId)
 
   if (!CheckBoxMesh->isChecked())
     {
+      LineEditElements->clear();
+      myIDs.clear();
+      myNbOkElements = 0;
       if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
 	aViewWindow->SetSelectionMode(aSelMode);
     }
@@ -457,8 +460,8 @@ void SMESHGUI_RevolutionDlg::ConstructorsClicked (int constructorId)
   if (CheckBoxMesh->isChecked())
     onSelectMesh(true);
 
-  //connect(mySelectionMgr, SIGNAL(currentSelectionChanged()), this, SLOT(SelectionIntoArgument()));
-  mySelectionMgr->setSelectedObjects( io );
+  connect(mySelectionMgr, SIGNAL(currentSelectionChanged()), this, SLOT(SelectionIntoArgument()));
+  //  mySelectionMgr->setSelectedObjects( io );
 }
 
 //=================================================================================
@@ -836,6 +839,7 @@ void SMESHGUI_RevolutionDlg::SetEditCurrentArgument()
       mySelectionMgr->installFilter(myMeshOrSubMeshOrGroupFilter);
     } else {
       int aConstructorId = GetConstructorId();
+      myEditCurrentArgument = (QWidget*)SpinBox_X;
       if (aConstructorId == 0)
 	{
 	  if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
@@ -928,8 +932,10 @@ void SMESHGUI_RevolutionDlg::hideEvent (QHideEvent*)
 //=======================================================================
 void SMESHGUI_RevolutionDlg::onSelectMesh (bool toSelectMesh)
 {
-  if (toSelectMesh)
+  if (toSelectMesh) {
+    myIDs = LineEditElements->text();
     TextLabelElements->setText(tr("SMESH_NAME"));
+  }
   else
     TextLabelElements->setText(tr("SMESH_ID_ELEMENTS"));
   myFilterBtn->setEnabled(!toSelectMesh);
@@ -956,7 +962,7 @@ void SMESHGUI_RevolutionDlg::onSelectMesh (bool toSelectMesh)
 	if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
 	  aViewWindow->SetSelectionMode(EdgeSelection);
       }
-    else if (aConstructorId == 0)
+    else if (aConstructorId == 1)
       {
 	if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
 	  aViewWindow->SetSelectionMode(FaceSelection);
@@ -969,6 +975,9 @@ void SMESHGUI_RevolutionDlg::onSelectMesh (bool toSelectMesh)
   }
 
   SelectionIntoArgument();
+
+  if (!toSelectMesh)
+    LineEditElements->setText( myIDs );
 }
 
 //=================================================================================

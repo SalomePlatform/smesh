@@ -337,6 +337,7 @@ SMESHGUI_ExtrusionDlg::~SMESHGUI_ExtrusionDlg()
 void SMESHGUI_ExtrusionDlg::Init (bool ResetControls)
 {
   myBusy = false;
+  myIDs.clear();
 
   LineEditElements->clear();
   myNbOkElements = 0;
@@ -400,6 +401,8 @@ void SMESHGUI_ExtrusionDlg::ConstructorsClicked (int constructorId)
       GroupArguments->setTitle(tr("EXTRUSION_1D"));
       if (!CheckBoxMesh->isChecked())
 	{
+	  LineEditElements->clear();
+	  myIDs.clear();
 	  if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
 	    aViewWindow->SetSelectionMode(EdgeSelection);
 	}
@@ -410,6 +413,8 @@ void SMESHGUI_ExtrusionDlg::ConstructorsClicked (int constructorId)
       GroupArguments->setTitle(tr("EXTRUSION_2D"));
       if (!CheckBoxMesh->isChecked())
 	{
+	  LineEditElements->clear();
+	  myIDs.clear();
 	  if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
 	    aViewWindow->SetSelectionMode(FaceSelection);
 	}
@@ -884,10 +889,13 @@ void SMESHGUI_ExtrusionDlg::enterEvent (QEvent*)
 //=================================================================================
 void SMESHGUI_ExtrusionDlg::onSelectMesh (bool toSelectMesh)
 {
-  if (toSelectMesh)
+  if (toSelectMesh) {
+    myIDs = LineEditElements->text();
     TextLabelElements->setText(tr("SMESH_NAME"));
+  }
   else
     TextLabelElements->setText(tr("SMESH_ID_ELEMENTS"));
+
   myFilterBtn->setEnabled(!toSelectMesh);
 
   if (myEditCurrentArgument != LineEditElements) {
@@ -910,7 +918,7 @@ void SMESHGUI_ExtrusionDlg::onSelectMesh (bool toSelectMesh)
 	if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
 	  aViewWindow->SetSelectionMode(EdgeSelection);
       }
-    else if (aConstructorId == 0)
+    else if (aConstructorId == 1)
       {
 	if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
 	  aViewWindow->SetSelectionMode(FaceSelection);
@@ -922,6 +930,9 @@ void SMESHGUI_ExtrusionDlg::onSelectMesh (bool toSelectMesh)
   }
 
   SelectionIntoArgument();
+
+  if (!toSelectMesh)
+    LineEditElements->setText( myIDs );
 }
 
 //=================================================================================

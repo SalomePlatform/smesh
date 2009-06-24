@@ -135,6 +135,7 @@ private:
   QPushButton*                     buttonHelp;
 
   QString                          myHelpFileName;
+  QString                          myIDs;
 
   QPushButton*                     myFilterBtn;
   SMESHGUI_FilterDlg*              myFilterDlg;
