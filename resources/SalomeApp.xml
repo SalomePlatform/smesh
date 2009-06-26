@@ -68,6 +68,8 @@
     <parameter name="show_result_notification"     value="2"/>
     <parameter name="segmentation"                 value="10"/>
     <parameter name="nb_segments_per_edge"         value="15"/>
+    <parameter name="quadratic_mode"               value="0"/>
+    <parameter name="max_angle"                    value="2"/>
   </section>
   <section name="resources">
     <!-- Module resources -->
