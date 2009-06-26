@@ -591,17 +591,6 @@ void SMESHGUI_ExtrusionDlg::ClickOnOk()
 //=================================================================================
 void SMESHGUI_ExtrusionDlg::ClickOnCancel()
 {
-  disconnect(mySelectionMgr, 0, this, 0);
-  mySelectionMgr->clearFilters();
-  //mySelectionMgr->clearSelected();
-  if (SMESH::GetCurrentVtkView()) {
-    SMESH::RemoveFilters(); // PAL6938 -- clean all mesh entity filters
-    SMESH::SetPointRepresentation(false);
-    SMESH::SetPickable();
-  }
-  if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
-    aViewWindow->SetSelectionMode(ActorSelection);
-  mySMESHGUI->ResetState();
   reject();
 }
 
@@ -881,6 +870,32 @@ void SMESHGUI_ExtrusionDlg::enterEvent (QEvent*)
 {
   if (!ConstructorsBox->isEnabled())
     ActivateThisDialog();
+}
+
+//=================================================================================
+// function : closeEvent()
+// purpose  :
+//=================================================================================
+void SMESHGUI_ExtrusionDlg::closeEvent( QCloseEvent* )
+{
+  /* same than click on cancel button */
+  disconnect(mySelectionMgr, 0, this, 0);
+  mySelectionMgr->clearFilters();
+  //mySelectionMgr->clearSelected();
+  if (SMESH::GetCurrentVtkView()) {
+    SMESH::RemoveFilters(); // PAL6938 -- clean all mesh entity filters
+    SMESH::SetPointRepresentation(false);
+    SMESH::SetPickable();
+  }
+  if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+    aViewWindow->SetSelectionMode(ActorSelection);
+  mySMESHGUI->ResetState();
+}
+
+void SMESHGUI_ExtrusionDlg::reject()
+{
+  QDialog::reject();
+  close();
 }
 
 //=================================================================================

@@ -69,9 +69,12 @@ public:
   SMESHGUI_ExtrusionDlg( SMESHGUI* );
   ~SMESHGUI_ExtrusionDlg();
 
+  void                             reject();
+
 private:
   void                             Init( bool = true );
   void                             enterEvent( QEvent* );       /* mouse enter the QWidget */
+  void                             closeEvent( QCloseEvent* );
   void                             keyPressEvent( QKeyEvent* );
   int                              GetConstructorId();
 
