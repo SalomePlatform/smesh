@@ -287,6 +287,139 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
   return ret;
 }
 
+
+//=============================================================================
+/*!
+ * Evaluate a mesh
+ */
+//=============================================================================
+
+bool SMESH_Gen::Evaluate(SMESH_Mesh &          aMesh,
+                         const TopoDS_Shape &  aShape,
+                         MapShapeNbElems&      aResMap,
+			 const bool            anUpward,
+			 TSetOfInt*            aShapesId)
+{
+  MESSAGE("SMESH_Gen::Evaluate");
+
+  bool ret = true;
+
+  SMESH_subMesh *sm = aMesh.GetSubMesh(aShape);
+
+  const bool includeSelf = true;
+  const bool complexShapeFirst = true;
+  SMESH_subMeshIteratorPtr smIt;
+
+  if ( anUpward ) { // is called from below code here
+    // -----------------------------------------------
+    // mesh all the subshapes starting from vertices
+    // -----------------------------------------------
+    smIt = sm->getDependsOnIterator(includeSelf, !complexShapeFirst);
+    while ( smIt->more() ) {
+      SMESH_subMesh* smToCompute = smIt->next();
+
+      // do not mesh vertices of a pseudo shape
+      const TopAbs_ShapeEnum aShType = smToCompute->GetSubShape().ShapeType();
+      //if ( !aMesh.HasShapeToMesh() && aShType == TopAbs_VERTEX )
+      //  continue;
+      if ( !aMesh.HasShapeToMesh() ) {
+	if( aShType == TopAbs_VERTEX || aShType == TopAbs_WIRE ||
+	    aShType == TopAbs_SHELL )
+	  continue;
+      }
+
+      smToCompute->Evaluate(aResMap);
+      if( aShapesId )
+	aShapesId->insert( smToCompute->GetId() );
+    }
+    return ret;
+  }
+  else {
+    // -----------------------------------------------------------------
+    // apply algos that DO NOT require descretized boundaries and DO NOT
+    // support submeshes, starting from the most complex shapes
+    // and collect submeshes with algos that DO support submeshes
+    // -----------------------------------------------------------------
+    list< SMESH_subMesh* > smWithAlgoSupportingSubmeshes;
+    smIt = sm->getDependsOnIterator(includeSelf, complexShapeFirst);
+    while ( smIt->more() ) {
+      SMESH_subMesh* smToCompute = smIt->next();
+      const TopoDS_Shape& aSubShape = smToCompute->GetSubShape();
+      const int aShapeDim = GetShapeDim( aSubShape );
+      if ( aShapeDim < 1 ) break;
+      
+      SMESH_Algo* algo = GetAlgo( aMesh, aSubShape );
+      if ( algo && !algo->NeedDescretBoundary() ) {
+        if ( algo->SupportSubmeshes() ) {
+          smWithAlgoSupportingSubmeshes.push_back( smToCompute );
+	}
+        else {
+          smToCompute->Evaluate(aResMap);
+	  if ( aShapesId )
+	    aShapesId->insert( smToCompute->GetId() );
+	}
+      }
+    }
+    // ------------------------------------------------------------
+    // compute submeshes under shapes with algos that DO NOT require
+    // descretized boundaries and DO support submeshes
+    // ------------------------------------------------------------
+    list< SMESH_subMesh* >::reverse_iterator subIt, subEnd;
+    subIt  = smWithAlgoSupportingSubmeshes.rbegin();
+    subEnd = smWithAlgoSupportingSubmeshes.rend();
+    // start from lower shapes
+    for ( ; subIt != subEnd; ++subIt ) {
+      sm = *subIt;
+
+      // get a shape the algo is assigned to
+      TopoDS_Shape algoShape;
+      if ( !GetAlgo( aMesh, sm->GetSubShape(), & algoShape ))
+        continue; // strange...
+
+      // look for more local algos
+      smIt = sm->getDependsOnIterator(!includeSelf, !complexShapeFirst);
+      while ( smIt->more() ) {
+        SMESH_subMesh* smToCompute = smIt->next();
+
+        const TopoDS_Shape& aSubShape = smToCompute->GetSubShape();
+	const int aShapeDim = GetShapeDim( aSubShape );
+	if ( aShapeDim < 1 ) continue;
+
+	const TopAbs_ShapeEnum aShType = smToCompute->GetSubShape().ShapeType();
+
+        SMESH_HypoFilter filter( SMESH_HypoFilter::IsAlgo() );
+        filter
+          .And( SMESH_HypoFilter::IsApplicableTo( aSubShape ))
+          .And( SMESH_HypoFilter::IsMoreLocalThan( algoShape ));
+
+        if ( SMESH_Algo* subAlgo = (SMESH_Algo*) aMesh.GetHypothesis( aSubShape, filter, true )) {
+          SMESH_Hypothesis::Hypothesis_Status status;
+          if ( subAlgo->CheckHypothesis( aMesh, aSubShape, status ))
+            // mesh a lower smToCompute starting from vertices
+            Evaluate( aMesh, aSubShape, aResMap, /*anUpward=*/true, aShapesId );
+        }
+      }
+    }
+    // ----------------------------------------------------------
+    // apply the algos that do not require descretized boundaries
+    // ----------------------------------------------------------
+    for ( subIt = smWithAlgoSupportingSubmeshes.rbegin(); subIt != subEnd; ++subIt ) {
+      sm->Evaluate(aResMap);
+      if ( aShapesId )
+	aShapesId->insert( sm->GetId() );
+    }
+
+    // -----------------------------------------------
+    // mesh the rest subshapes starting from vertices
+    // -----------------------------------------------
+    ret = Evaluate( aMesh, aShape, aResMap, /*anUpward=*/true, aShapesId );
+  }
+
+  MESSAGE( "VSR - SMESH_Gen::Evaluate() finished, OK = " << ret);
+  return ret;
+}
+
+
 //=======================================================================
 //function : checkConformIgnoredAlgos
 //purpose  :

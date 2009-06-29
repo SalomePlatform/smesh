@@ -1577,6 +1577,47 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
   return ret;
 }
 
+
+//=============================================================================
+/*!
+ *
+ */
+//=============================================================================
+
+bool SMESH_subMesh::Evaluate(MapShapeNbElems& aResMap)
+{
+  _computeError.reset();
+
+  bool ret = true;
+
+  if (_subShape.ShapeType() == TopAbs_VERTEX) {
+    std::vector<int> aVec(17);
+    aVec[0] = 1;
+    for(int i=1; i<17; i++) aVec[i] = 0;
+    aResMap.insert(std::make_pair(this,aVec));
+    return ret;
+  }
+
+  SMESH_Gen *gen = _father->GetGen();
+  SMESH_Algo *algo = 0;
+  SMESH_Hypothesis::Hypothesis_Status hyp_status;
+
+  algo = gen->GetAlgo((*_father), _subShape);
+  if(algo) {
+    ret = algo->CheckHypothesis((*_father), _subShape, hyp_status);
+    if (!ret) return false;
+
+    TopoDS_Shape shape = _subShape;
+
+    _computeError = SMESH_ComputeError::New(COMPERR_OK,"",algo);
+
+    ret = algo->Evaluate((*_father), shape, aResMap);
+  }
+
+  return ret;
+}
+
+
 //=======================================================================
 /*!
  * \brief Update compute_state by _computeError and send proper events to

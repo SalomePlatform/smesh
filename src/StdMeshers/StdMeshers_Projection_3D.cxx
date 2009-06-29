@@ -420,6 +420,104 @@ bool StdMeshers_Projection_3D::Compute(SMESH_Mesh& aMesh, const TopoDS_Shape& aS
   return true;
 }
 
+
+//=======================================================================
+//function : Evaluate
+//purpose  : 
+//=======================================================================
+
+bool StdMeshers_Projection_3D::Evaluate(SMESH_Mesh& aMesh,
+					const TopoDS_Shape& aShape,
+					MapShapeNbElems& aResMap)
+{
+  if ( !_sourceHypo )
+    return false;
+
+  SMESH_Mesh * srcMesh = _sourceHypo->GetSourceMesh();
+  SMESH_Mesh * tgtMesh = & aMesh;
+  if ( !srcMesh )
+    srcMesh = tgtMesh;
+
+  // get shell from shape3D
+  TopoDS_Shell srcShell, tgtShell;
+  TopExp_Explorer exp( _sourceHypo->GetSource3DShape(), TopAbs_SHELL );
+  int nbShell;
+  for ( nbShell = 0; exp.More(); exp.Next(), ++nbShell )
+    srcShell = TopoDS::Shell( exp.Current() );
+  if ( nbShell != 1 )
+    return error(COMPERR_BAD_SHAPE,
+                 SMESH_Comment("Source shape must have 1 shell but not ") << nbShell);
+
+  exp.Init( aShape, TopAbs_SHELL );
+  for ( nbShell = 0; exp.More(); exp.Next(), ++nbShell )
+    tgtShell = TopoDS::Shell( exp.Current() );
+  if ( nbShell != 1 )
+    return error(COMPERR_BAD_SHAPE,
+                 SMESH_Comment("Target shape must have 1 shell but not ") << nbShell);
+
+  // Check that shapes are blocks
+  if ( TAssocTool::Count( tgtShell, TopAbs_FACE , 1 ) != 6 ||
+       TAssocTool::Count( tgtShell, TopAbs_EDGE , 1 ) != 12 ||
+       TAssocTool::Count( tgtShell, TopAbs_WIRE , 1 ) != 6 )
+    return error(COMPERR_BAD_SHAPE, "Target shape is not a block");
+  if ( TAssocTool::Count( srcShell, TopAbs_FACE , 1 ) != 6 ||
+       TAssocTool::Count( srcShell, TopAbs_EDGE , 1 ) != 12 ||
+       TAssocTool::Count( srcShell, TopAbs_WIRE , 1 ) != 6 )
+    return error(COMPERR_BAD_SHAPE, "Source shape is not a block");
+
+  // Assure that mesh on a source shape is computed
+
+  SMESH_subMesh* srcSubMesh = srcMesh->GetSubMesh( _sourceHypo->GetSource3DShape() );
+
+  if ( !srcSubMesh->IsMeshComputed() )
+    return error(COMPERR_BAD_INPUT_MESH,"Source mesh not computed");
+
+
+  std::vector<int> aVec(17);
+  for(int i=0; i<17; i++) aVec[i] = 0;
+
+  aVec[0] = srcSubMesh->GetSubMeshDS()->NbNodes();
+
+  //bool quadratic = false;
+  SMDS_ElemIteratorPtr elemIt = srcSubMesh->GetSubMeshDS()->GetElements();
+  while ( elemIt->more() ) {
+    const SMDS_MeshElement* E  = elemIt->next();
+    if( E->NbNodes()==4 ) {
+      aVec[8]++;
+    }
+    else if( E->NbNodes()==5 ) {
+      aVec[10]++;
+    }
+    else if( E->NbNodes()==6 ) {
+      aVec[12]++;
+    }
+    else if( E->NbNodes()==8 ) {
+      aVec[14]++;
+    }
+    else if( E->NbNodes()==10 && E->IsQuadratic() ) {
+      aVec[9]++;
+    }
+    else if( E->NbNodes()==13 && E->IsQuadratic() ) {
+      aVec[11]++;
+    }
+    else if( E->NbNodes()==15 && E->IsQuadratic() ) {
+      aVec[13]++;
+    }
+    else if( E->NbNodes()==20 && E->IsQuadratic() ) {
+      aVec[15]++;
+    }
+    else {
+      aVec[16]++;
+    }
+  }
+
+  SMESH_subMesh * sm = aMesh.GetSubMesh(aShape);
+  aResMap.insert(std::make_pair(sm,aVec));
+
+  return true;
+}
+
+
 //=============================================================================
 /*!
  * \brief Sets a default event listener to submesh of the source shape

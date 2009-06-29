@@ -1607,6 +1607,93 @@ SMESH::MeshPreviewStruct* SMESH_Gen_i::Precompute( SMESH::SMESH_Mesh_ptr theMesh
   return result._retn();
 }
 
+
+//=============================================================================
+/*!
+ *  SMESH_Gen_i::Evaluate
+ *
+ *  Evaluate mesh on a shape
+ */
+//=============================================================================
+
+//CORBA::Boolean 
+SMESH::long_array* SMESH_Gen_i::Evaluate(SMESH::SMESH_Mesh_ptr theMesh,
+					 GEOM::GEOM_Object_ptr theShapeObject)
+//                                     SMESH::long_array& theNbElems)
+     throw ( SALOME::SALOME_Exception )
+{
+  Unexpect aCatch(SALOME_SalomeException);
+  if(MYDEBUG) MESSAGE( "SMESH_Gen_i::Evaluate" );
+
+  if ( CORBA::is_nil( theShapeObject ) && theMesh->HasShapeToMesh())
+    THROW_SALOME_CORBA_EXCEPTION( "bad shape object reference", 
+                                  SALOME::BAD_PARAM );
+
+  if ( CORBA::is_nil( theMesh ) )
+    THROW_SALOME_CORBA_EXCEPTION( "bad Mesh reference",
+                                  SALOME::BAD_PARAM );
+
+  SMESH::long_array_var nbels = new SMESH::long_array;
+
+  // Update Python script
+  TPythonDump() << "theNbElems = " << this << ".Evaluate( "
+                << theMesh << ", " << theShapeObject << ")";
+
+  try {
+    // get mesh servant
+    SMESH_Mesh_i* meshServant = dynamic_cast<SMESH_Mesh_i*>( GetServant( theMesh ).in() );
+    ASSERT( meshServant );
+    if ( meshServant ) {
+      // NPAL16168: "geometrical group edition from a submesh don't modifiy mesh computation"
+      meshServant->CheckGeomGroupModif();
+      // get local TopoDS_Shape
+      TopoDS_Shape myLocShape;
+      if(theMesh->HasShapeToMesh())
+        myLocShape = GeomObjectToShape( theShapeObject );
+      else
+        myLocShape = SMESH_Mesh::PseudoShape();
+      // call implementation compute
+      ::SMESH_Mesh& myLocMesh = meshServant->GetImpl();
+      MapShapeNbElems aResMap;
+      CORBA::Boolean ret = myGen.Evaluate( myLocMesh, myLocShape, aResMap);
+      MapShapeNbElemsItr anIt = aResMap.begin();
+      vector<int> aResVec(17);
+      int i = 0;
+      for(; i<17; i++) aResVec[i] = 0;
+      for(; anIt!=aResMap.end(); anIt++) {
+	// 0 - node, 1 - edge lin, 2 - edge quad,
+	// 3 - triangle lin, 4 - triangle quad
+	// 5 - quadrangle lin, 6 - quadrangle quad
+	// 7 - polygon, 8 - tetra lin, 9 - tetra quad
+	// 10 - pyramid lin, 11 - pyramid quad,
+	// 12 - penta lin, 13 - penta quad, 14 - hexa lin,
+	// 15 - hexa quad, 16 -polyhedra
+	vector<int> aVec = (*anIt).second;
+	for(i=0; i<17; i++) {
+	  aResVec[i] += aVec[i];
+	}
+      }
+      nbels->length(17);
+      for(i=0; i<17; i++) {
+	nbels[i] = aResVec[i];
+      }
+      cout<<endl;
+      return nbels._retn();
+    }
+  }
+  catch ( std::bad_alloc ) {
+    INFOS( "Evaluate(): lack of memory" );
+  }
+  catch ( SALOME_Exception& S_ex ) {
+    INFOS( "Evaluate(): catch exception "<< S_ex.what() );
+  }
+  catch ( ... ) {
+    INFOS( "Evaluate(): unknown exception " );
+  }
+
+  return nbels._retn();
+}
+
 //================================================================================
 /*!
  * \brief Return geometrical object the given element is built on

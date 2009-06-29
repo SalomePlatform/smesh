@@ -50,6 +50,7 @@
 
 #include <BRepTools.hxx>
 #include <BRep_Tool.hxx>
+#include <Geom_Curve.hxx>
 #include <Geom2d_Curve.hxx>
 #include <Geom_Surface.hxx>
 #include <TopExp.hxx>
@@ -62,6 +63,10 @@
 #include <TopoDS_Face.hxx>
 #include <TopoDS_Iterator.hxx>
 #include <gp_Pnt2d.hxx>
+
+#include <BRep_Tool.hxx>
+#include <GProp_GProps.hxx>
+#include <BRepGProp.hxx>
 
 using namespace std;
 
@@ -281,6 +286,79 @@ bool StdMeshers_MEFISTO_2D::Compute(SMESH_Mesh & aMesh, const TopoDS_Shape & aSh
 
   return isOk;
 }
+
+
+//=============================================================================
+/*!
+ *  
+ */
+//=============================================================================
+
+bool StdMeshers_MEFISTO_2D::Evaluate(SMESH_Mesh & aMesh,
+				     const TopoDS_Shape & aShape,
+				     MapShapeNbElems& aResMap)
+{
+  MESSAGE("StdMeshers_MEFISTO_2D::Evaluate");
+
+  TopoDS_Face F = TopoDS::Face(aShape.Oriented(TopAbs_FORWARD));
+
+  double aLen = 0.0;
+  double NbSeg = 0;
+  bool IsQuadratic = false;
+  bool IsFirst = true;
+  TopExp_Explorer exp(F,TopAbs_EDGE);
+  for(; exp.More(); exp.Next()) {
+    TopoDS_Edge E = TopoDS::Edge(exp.Current());
+    MapShapeNbElemsItr anIt = aResMap.find( aMesh.GetSubMesh(E) );
+    if( anIt == aResMap.end() ) continue;
+    std::vector<int> aVec = (*anIt).second;
+    int nbe = Max(aVec[1],aVec[2]);
+    NbSeg += nbe;
+    if(IsFirst) {
+      IsQuadratic = ( aVec[2] > aVec[1] );
+      IsFirst = false;
+    }
+    double a,b;
+    TopLoc_Location L;
+    Handle(Geom_Curve) C = BRep_Tool::Curve(E,L,a,b);
+    gp_Pnt P1;
+    C->D0(a,P1);
+    double dp = (b-a)/nbe;
+    for(int i=1; i<=nbe; i++) {
+      gp_Pnt P2;
+      C->D0(a+i*dp,P2);
+      aLen += P1.Distance(P2);
+      P1 = P2;
+    }
+  }
+  aLen = aLen/NbSeg; // middle length
+
+  _edgeLength = DBL_MAX;
+  double tmpLength = Min( _edgeLength, aLen );
+
+  GProp_GProps G;
+  BRepGProp::SurfaceProperties(aShape,G);
+  double anArea = G.Mass();
+
+  int nbFaces = (int) anArea/(tmpLength*tmpLength*sqrt(3)/4);
+  int nbNodes = (int) ( nbFaces*3 - (NbSeg-1)*2 ) / 6;
+
+  std::vector<int> aVec(17);
+  for(int i=0; i<17; i++) aVec[i] = 0;
+  if(IsQuadratic) {
+    aVec[4] = nbFaces;
+    aVec[0] = nbNodes + nbFaces*3 - (NbSeg-1);
+  }
+  else {
+    aVec[0] = nbNodes;
+    aVec[3] = nbFaces;
+  }
+  SMESH_subMesh * sm = aMesh.GetSubMesh(aShape);
+  aResMap.insert(std::make_pair(sm,aVec));
+
+  return true;
+}
+
 
 //=======================================================================
 //function : fixOverlappedLinkUV

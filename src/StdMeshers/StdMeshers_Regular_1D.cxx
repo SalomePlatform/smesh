@@ -930,6 +930,85 @@ bool StdMeshers_Regular_1D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & t
   return true;
 }
 
+
+//=============================================================================
+/*!
+ *  
+ */
+//=============================================================================
+
+bool StdMeshers_Regular_1D::Evaluate(SMESH_Mesh & theMesh,
+				     const TopoDS_Shape & theShape,
+				     MapShapeNbElems& aResMap)
+{
+  if ( _hypType == NONE )
+    return false;
+
+  SMESHDS_Mesh * meshDS = theMesh.GetMeshDS();
+
+  const TopoDS_Edge & EE = TopoDS::Edge(theShape);
+  TopoDS_Edge E = TopoDS::Edge(EE.Oriented(TopAbs_FORWARD));
+  int shapeID = meshDS->ShapeToIndex( E );
+
+  double f, l;
+  Handle(Geom_Curve) Curve = BRep_Tool::Curve(E, f, l);
+
+  TopoDS_Vertex VFirst, VLast;
+  TopExp::Vertices(E, VFirst, VLast);   // Vfirst corresponds to f and Vlast to l
+
+  ASSERT(!VFirst.IsNull());
+  ASSERT(!VLast.IsNull());
+
+  std::vector<int> aVec(17);
+  for(int i=0; i<17; i++) aVec[i] = 0;
+
+  if (!Curve.IsNull()) {
+    list< double > params;
+    bool reversed = false;
+    if ( !_mainEdge.IsNull() )
+      reversed = ( _mainEdge.Orientation() == TopAbs_REVERSED );
+
+    BRepAdaptor_Curve C3d( E );
+    double length = EdgeLength( E );
+    if ( ! computeInternalParameters( theMesh, C3d, length, f, l, params, reversed, true )) {
+      SMESH_subMesh * sm = theMesh.GetSubMesh(theShape);
+      aResMap.insert(std::make_pair(sm,aVec));
+      SMESH_ComputeErrorPtr& smError = sm->GetComputeError();
+      smError.reset( new SMESH_ComputeError(COMPERR_ALGO_FAILED,"Submesh can not be evaluated",this));
+      return false;
+    }
+    redistributeNearVertices( theMesh, C3d, length, params, VFirst, VLast );
+
+    if(_quadraticMesh) {
+      aVec[0] = 2*params.size() + 1;
+      aVec[2] = params.size() + 1;
+    }
+    else {
+      aVec[0] = params.size();
+      aVec[1] = params.size() + 1;
+    }
+    
+  }
+  else {
+    //MESSAGE("************* Degenerated edge! *****************");
+    // Edge is a degenerated Edge : We put n = 5 points on the edge.
+    if(_quadraticMesh) {
+      aVec[0] = 11;
+      aVec[2] = 6;
+    }
+    else {
+      aVec[0] = 5;
+      aVec[1] = 6;
+    }
+  }
+
+  SMESH_subMesh * sm = theMesh.GetSubMesh(theShape);
+  aResMap.insert(std::make_pair(sm,aVec));
+
+  return true;
+}
+
+
 //=============================================================================
 /*!
  *  See comments in SMESH_Algo.cxx

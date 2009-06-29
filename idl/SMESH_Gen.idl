@@ -239,6 +239,14 @@ module SMESH
       raises ( SALOME::SALOME_Exception );
 
     /*!
+     * Evaluates size of prospective mesh on a shape
+     */
+    long_array  Evaluate(in SMESH_Mesh        theMesh, 
+			 in GEOM::GEOM_Object theSubObject)
+      //inout long_array     theNbElems)
+      raises ( SALOME::SALOME_Exception );
+
+    /*!
      * Calculate Mesh as preview till indicated dimension
      * First, verify list of hypothesis associated with the subShape.
      * Return mesh preview structure

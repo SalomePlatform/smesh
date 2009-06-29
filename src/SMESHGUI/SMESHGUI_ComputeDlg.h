@@ -51,6 +51,7 @@ class QLabel;
 class QtxComboBox;
 class SMESHGUI_ComputeDlg;
 class SMESHGUI_PrecomputeDlg;
+//class SMESHGUI_EvaluateDlg;
 class SMESHGUI_MeshEditPreview;
 
 class SMESH::compute_error_array;
@@ -82,6 +83,15 @@ protected:
 						    SMESH::compute_error_array_var&,
 						    const bool,
 						    const QString& );
+  //SMESHGUI_EvaluateDlg*          evaluateDlg() const;
+  SMESHGUI_ComputeDlg*           evaluateDlg() const;
+  void                           evaluateMesh();
+  void                           showEvaluateResult(std::vector<int> theVec,
+						    const bool,
+						    const bool,
+						    SMESH::compute_error_array_var&,
+						    const bool,
+						    const QString&);
     
 protected slots:
   virtual bool                   onApply();
@@ -95,6 +105,7 @@ private:
 
 private:
   QPointer<SMESHGUI_ComputeDlg>  myCompDlg;
+  //QPointer<SMESHGUI_EvaluateDlg> myEvalDlg;
 
 protected:
   SMESH::SMESH_Mesh_var            myMesh;
@@ -158,6 +169,25 @@ private:
 };
 
 /*!
+ * \brief Operation to evaluate a mesh and show result
+ */
+class SMESHGUI_EXPORT SMESHGUI_EvaluateOp: public SMESHGUI_BaseComputeOp
+{
+  Q_OBJECT
+
+public:
+  SMESHGUI_EvaluateOp();
+  virtual ~SMESHGUI_EvaluateOp();
+
+  virtual LightApp_Dialog*       dlg() const;
+
+protected:
+  virtual void                   startOperation();
+
+protected slots:
+};
+
+/*!
  * \brief Box showing mesh info
  */
 
@@ -169,6 +199,8 @@ public:
   SMESHGUI_MeshInfosBox( const bool, QWidget* );
 
   void    SetInfoByMesh( SMESH::SMESH_Mesh_var );
+
+  void    SetInfoByEval( std::vector<int> theVec );
 
 private:
   bool    myFull;
@@ -213,11 +245,11 @@ class SMESHGUI_EXPORT SMESHGUI_ComputeDlg : public SMESHGUI_Dialog
   Q_OBJECT
 
 public:
-  SMESHGUI_ComputeDlg( QWidget* );
+  SMESHGUI_ComputeDlg( QWidget*, bool );
   virtual ~SMESHGUI_ComputeDlg();
 
 protected:
-  QFrame*                      createMainFrame( QWidget* );
+  QFrame*                      createMainFrame( QWidget*, bool );
 
   QLabel*                      myMeshName;
   QGroupBox*                   myMemoryLackGroup;
@@ -259,5 +291,37 @@ private:
   QtxComboBox*                 myPreviewMode;
 };
 
+
+/*!
+ * \brief Dialog to evaluate a mesh and show result
+ */
+/*
+class SMESHGUI_EXPORT SMESHGUI_EvaluateDlg : public SMESHGUI_Dialog
+{
+  Q_OBJECT
+
+public:
+  SMESHGUI_EvaluateDlg( QWidget* );
+  virtual ~SMESHGUI_EvaluateDlg();
+
+protected:
+  QFrame*                      createMainFrame( QWidget* );
+
+  QLabel*                      myMeshName;
+  QGroupBox*                   myMemoryLackGroup;
+  QGroupBox*                   myCompErrorGroup;
+  QGroupBox*                   myHypErrorGroup;
+  QLabel*                      myHypErrorLabel;
+  QTableWidget*                myTable;
+  QPushButton*                 myShowBtn;
+  QPushButton*                 myPublishBtn;
+  QPushButton*                 myBadMeshBtn;
+
+  SMESHGUI_MeshInfosBox*       myBriefInfo;
+  SMESHGUI_MeshInfosBox*       myFullInfo;
+
+  friend class SMESHGUI_BaseComputeOp;
+};
+*/
 
 #endif // SMESHGUI_COMPUTEDLG_H

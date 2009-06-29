@@ -42,6 +42,8 @@
 #include <TopExp.hxx>
 #include <TopExp_Explorer.hxx>
 #include <TopTools_ListIteratorOfListOfShape.hxx>
+#include <TopTools_SequenceOfShape.hxx>
+#include <TopTools_MapOfShape.hxx>
 #include <TopoDS.hxx>
 
 using namespace std;
@@ -365,6 +367,115 @@ bool StdMeshers_Prism_3D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& theSh
         
   return true;
 }
+
+
+//=======================================================================
+//function : Evaluate
+//purpose  : 
+//=======================================================================
+
+bool StdMeshers_Prism_3D::Evaluate(SMESH_Mesh& theMesh,
+				   const TopoDS_Shape& theShape,
+				   MapShapeNbElems& aResMap)
+{
+  // find face contains only triangles
+  vector < SMESH_subMesh * >meshFaces;
+  TopTools_SequenceOfShape aFaces;
+  int NumBase = 0, i = 0, NbQFs = 0;
+  for (TopExp_Explorer exp(theShape, TopAbs_FACE); exp.More(); exp.Next()) {
+    i++;
+    aFaces.Append(exp.Current());
+    SMESH_subMesh *aSubMesh = theMesh.GetSubMesh(exp.Current());
+    meshFaces.push_back(aSubMesh);
+    MapShapeNbElemsItr anIt = aResMap.find(meshFaces[i-1]);
+    std::vector<int> aVec = (*anIt).second;
+    int nbtri = Max(aVec[3],aVec[4]);
+    int nbqua = Max(aVec[5],aVec[6]);
+    if( nbtri==0 && nbqua>0 ) {
+      NbQFs++;
+    }
+    if( nbtri>0 ) {
+      NumBase = i;
+    }
+  }
+
+  if(NbQFs<4) {
+    std::vector<int> aResVec(17);
+    for(int i=0; i<17; i++) aResVec[i] = 0;
+    SMESH_subMesh * sm = theMesh.GetSubMesh(theShape);
+    aResMap.insert(std::make_pair(sm,aResVec));
+    SMESH_ComputeErrorPtr& smError = sm->GetComputeError();
+    smError.reset( new SMESH_ComputeError(COMPERR_ALGO_FAILED,"Submesh can not be evaluated",this));
+    return false;
+  }
+
+  if(NumBase==0) NumBase = 1; // only quads => set 1 faces as base
+
+  // find number of 1d elems for base face
+  int nb1d = 0;
+  TopTools_MapOfShape Edges1;
+  for (TopExp_Explorer exp(aFaces.Value(NumBase), TopAbs_EDGE); exp.More(); exp.Next()) {
+    Edges1.Add(exp.Current());
+    SMESH_subMesh *sm = theMesh.GetSubMesh(exp.Current());
+    if( sm ) {
+      MapShapeNbElemsItr anIt = aResMap.find(sm);
+      if( anIt == aResMap.end() ) continue;
+      std::vector<int> aVec = (*anIt).second;
+      nb1d += Max(aVec[1],aVec[2]);
+    }
+  }
+  // find face opposite to base face
+  int OppNum = 0;
+  for(i=1; i<=6; i++) {
+    if(i==NumBase) continue;
+    bool IsOpposite = true;
+    for(TopExp_Explorer exp(aFaces.Value(i), TopAbs_EDGE); exp.More(); exp.Next()) {
+      if( Edges1.Contains(exp.Current()) ) {
+	IsOpposite = false;
+	break;
+      }
+    }
+    if(IsOpposite) {
+      OppNum = i;
+      break;
+    }
+  }
+  // find number of 2d elems on side faces
+  int nb2d = 0;
+  for(i=1; i<=6; i++) {
+    if( i==OppNum || i==NumBase ) continue;
+    MapShapeNbElemsItr anIt = aResMap.find( meshFaces[i-1] );
+    if( anIt == aResMap.end() ) continue;
+    std::vector<int> aVec = (*anIt).second;
+    nb2d += Max(aVec[5],aVec[6]);
+  }
+  
+  MapShapeNbElemsItr anIt = aResMap.find( meshFaces[NumBase-1] );
+  std::vector<int> aVec = (*anIt).second;
+  bool IsQuadratic = (aVec[4]>aVec[3]) || (aVec[6]>aVec[5]);
+  int nb2d_face0_3 = Max(aVec[3],aVec[4]);
+  int nb2d_face0_4 = Max(aVec[5],aVec[6]);
+  int nb0d_face0 = aVec[0];
+  int nb1d_face0_int = ( nb2d_face0_3*3 + nb2d_face0_4*4 - nb1d ) / 2;
+
+  std::vector<int> aResVec(17);
+  for(int i=0; i<17; i++) aResVec[i] = 0;
+  if(IsQuadratic) {
+    aResVec[13] = nb2d_face0_3 * ( nb2d/nb1d );
+    aResVec[15] = nb2d_face0_4 * ( nb2d/nb1d );
+    aResVec[0] = nb0d_face0 * ( 2*nb2d/nb1d - 1 ) - nb1d_face0_int * nb2d/nb1d;
+  }
+  else {
+    aResVec[0] = nb0d_face0 * ( nb2d/nb1d - 1 );
+    aResVec[12] = nb2d_face0_3 * ( nb2d/nb1d );
+    aResVec[14] = nb2d_face0_4 * ( nb2d/nb1d );
+  }
+  SMESH_subMesh * sm = theMesh.GetSubMesh(theShape);
+  aResMap.insert(std::make_pair(sm,aResVec));
+
+  return true;
+}
+
 
 //================================================================================
 /*!

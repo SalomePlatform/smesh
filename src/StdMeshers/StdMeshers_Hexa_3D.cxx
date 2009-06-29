@@ -48,6 +48,8 @@
 #include <TopTools_IndexedDataMapOfShapeListOfShape.hxx>
 #include <TopTools_ListIteratorOfListOfShape.hxx>
 #include <TopTools_ListOfShape.hxx>
+#include <TopTools_SequenceOfShape.hxx>
+#include <TopTools_MapOfShape.hxx>
 #include <TopoDS.hxx>
 #include <gp_Pnt2d.hxx>
 
@@ -58,7 +60,11 @@ typedef SMESH_Comment TComm;
 
 using namespace std;
 
-static SMESH_ComputeErrorPtr ComputePentahedralMesh(SMESH_Mesh &, const TopoDS_Shape &);
+static SMESH_ComputeErrorPtr ComputePentahedralMesh(SMESH_Mesh &,
+						    const TopoDS_Shape &);
+
+static bool EvaluatePentahedralMesh(SMESH_Mesh &, const TopoDS_Shape &,
+				    MapShapeNbElems &);
 
 //=============================================================================
 /*!
@@ -736,6 +742,118 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh &         aMesh,
   return ClearAndReturn( aQuads, true );
 }
 
+
+//=============================================================================
+/*!
+ *  Evaluate
+ */
+//=============================================================================
+
+bool StdMeshers_Hexa_3D::Evaluate(SMESH_Mesh & aMesh,
+				  const TopoDS_Shape & aShape,
+				  MapShapeNbElems& aResMap)
+{
+  vector < SMESH_subMesh * >meshFaces;
+  TopTools_SequenceOfShape aFaces;
+  for (TopExp_Explorer exp(aShape, TopAbs_FACE); exp.More(); exp.Next()) {
+    aFaces.Append(exp.Current());
+    SMESH_subMesh *aSubMesh = aMesh.GetSubMeshContaining(exp.Current());
+    ASSERT(aSubMesh);
+    meshFaces.push_back(aSubMesh);
+  }
+  if (meshFaces.size() != 6) {
+    //return error(COMPERR_BAD_SHAPE, TComm(meshFaces.size())<<" instead of 6 faces in a block");
+    static StdMeshers_CompositeHexa_3D compositeHexa(-10, 0, aMesh.GetGen());
+    return compositeHexa.Evaluate(aMesh, aShape, aResMap);
+  }
+  
+  int i = 0;
+  for(; i<6; i++) {
+    //TopoDS_Shape aFace = meshFaces[i]->GetSubShape();
+    TopoDS_Shape aFace = aFaces.Value(i+1);
+    SMESH_Algo *algo = _gen->GetAlgo(aMesh, aFace);
+    string algoName = algo->GetName();
+    bool isAllQuad = false;
+    if (algoName == "Quadrangle_2D") {
+      MapShapeNbElemsItr anIt = aResMap.find(meshFaces[i]);
+      if( anIt == aResMap.end() ) continue;
+      std::vector<int> aVec = (*anIt).second;
+      int nbtri = Max(aVec[3],aVec[4]);
+      if( nbtri == 0 )
+	isAllQuad = true;
+    }
+    if ( ! isAllQuad ) {
+      return EvaluatePentahedralMesh(aMesh, aShape, aResMap);
+    }
+  }
+  
+  // find number of 1d elems for 1 face
+  int nb1d = 0;
+  TopTools_MapOfShape Edges1;
+  bool IsQuadratic = false;
+  bool IsFirst = true;
+  for (TopExp_Explorer exp(aFaces.Value(1), TopAbs_EDGE); exp.More(); exp.Next()) {
+    Edges1.Add(exp.Current());
+    SMESH_subMesh *sm = aMesh.GetSubMesh(exp.Current());
+    if( sm ) {
+      MapShapeNbElemsItr anIt = aResMap.find(sm);
+      if( anIt == aResMap.end() ) continue;
+      std::vector<int> aVec = (*anIt).second;
+      nb1d += Max(aVec[1],aVec[2]);
+      if(IsFirst) {
+	IsQuadratic = (aVec[2] > aVec[1]);
+	IsFirst = false;
+      }
+    }
+  }
+  // find face opposite to 1 face
+  int OppNum = 0;
+  for(i=2; i<=6; i++) {
+    bool IsOpposite = true;
+    for(TopExp_Explorer exp(aFaces.Value(i), TopAbs_EDGE); exp.More(); exp.Next()) {
+      if( Edges1.Contains(exp.Current()) ) {
+	IsOpposite = false;
+	break;
+      }
+    }
+    if(IsOpposite) {
+      OppNum = i;
+      break;
+    }
+  }
+  // find number of 2d elems on side faces
+  int nb2d = 0;
+  for(i=2; i<=6; i++) {
+    if( i == OppNum ) continue;
+    MapShapeNbElemsItr anIt = aResMap.find( meshFaces[i-1] );
+    if( anIt == aResMap.end() ) continue;
+    std::vector<int> aVec = (*anIt).second;
+    nb2d += Max(aVec[5],aVec[6]);
+  }
+  
+  MapShapeNbElemsItr anIt = aResMap.find( meshFaces[0] );
+  std::vector<int> aVec = (*anIt).second;
+  int nb2d_face0 = Max(aVec[5],aVec[6]);
+  int nb0d_face0 = aVec[0];
+
+  std::vector<int> aResVec(17);
+  for(int i=0; i<17; i++) aResVec[i] = 0;
+  if(IsQuadratic) {
+    aResVec[15] = nb2d_face0 * ( nb2d/nb1d );
+    int nb1d_face0_int = ( nb2d_face0*4 - nb1d ) / 2;
+    aResVec[0] = nb0d_face0 * ( 2*nb2d/nb1d - 1 ) - nb1d_face0_int * nb2d/nb1d;
+  }
+  else {
+    aResVec[0] = nb0d_face0 * ( nb2d/nb1d - 1 );
+    aResVec[14] = nb2d_face0 * ( nb2d/nb1d );
+  }
+  SMESH_subMesh * sm = aMesh.GetSubMesh(aShape);
+  aResMap.insert(std::make_pair(sm,aResVec));
+
+  return true;
+}
+
+
 //=============================================================================
 /*!
  *  
@@ -1053,6 +1171,36 @@ SMESH_ComputeErrorPtr ComputePentahedralMesh(SMESH_Mesh &         aMesh,
     }
   }
   return err;
+}
+
+
+//=======================================================================
+//function : EvaluatePentahedralMesh
+//purpose  : 
+//=======================================================================
+
+bool EvaluatePentahedralMesh(SMESH_Mesh & aMesh,
+			     const TopoDS_Shape & aShape,
+			     MapShapeNbElems& aResMap)
+{
+  StdMeshers_Penta_3D anAlgo;
+  bool bOK = anAlgo.Evaluate(aMesh, aShape, aResMap);
+
+  //err = anAlgo.GetComputeError();
+  //if ( !bOK && anAlgo.ErrorStatus() == 5 )
+  if( !bOK ) {
+    static StdMeshers_Prism_3D * aPrism3D = 0;
+    if ( !aPrism3D ) {
+      SMESH_Gen* gen = aMesh.GetGen();
+      aPrism3D = new StdMeshers_Prism_3D( gen->GetANewId(), 0, gen );
+    }
+    SMESH_Hypothesis::Hypothesis_Status aStatus;
+    if ( aPrism3D->CheckHypothesis( aMesh, aShape, aStatus ) ) {
+      return aPrism3D->Evaluate(aMesh, aShape, aResMap);
+    }
+  }
+
+  return bOK;
 }
 
 

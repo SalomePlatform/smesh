@@ -49,6 +49,9 @@ public:
   virtual bool Compute(SMESH_Mesh& aMesh,
 		       const TopoDS_Shape& aShape);
 
+  virtual bool Evaluate(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape,
+                        MapShapeNbElems& aResMap);
+
   virtual const std::list <const SMESHDS_Hypothesis *> &
     GetUsedHypothesis(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape, const bool=true);
 

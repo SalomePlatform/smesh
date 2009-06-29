@@ -246,6 +246,13 @@ public:
                                                GEOM::GEOM_Object_ptr  theShapeObject )
     throw ( SALOME::SALOME_Exception );
 
+  // Evaluate mesh on a shape
+  //CORBA::Boolean 
+  SMESH::long_array* Evaluate(SMESH::SMESH_Mesh_ptr theMesh,
+                              GEOM::GEOM_Object_ptr theShapeObject)
+    //                              SMESH::long_array& theNbElems)
+    throw ( SALOME::SALOME_Exception );
+
   // Returns true if mesh contains enough data to be computed
   CORBA::Boolean IsReadyToCompute( SMESH::SMESH_Mesh_ptr theMesh,
                                    GEOM::GEOM_Object_ptr theShapeObject )

@@ -77,6 +77,9 @@ public:
 		       const TopoDS_Shape& aShape)
     /*throw (SALOME_Exception)*/;
 
+  virtual bool Evaluate(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape,
+                        MapShapeNbElems& aResMap);
+
   static TopoDS_Vertex OppositeVertex(const TopoDS_Vertex& aVertex,
                                       const TopTools_IndexedMapOfShape& aQuads0Vertices,
                                       FaceQuadStruct* aQuads[6]);

@@ -182,6 +182,10 @@
             <translation>Preview</translation>
         </message>
         <message>
+            <source>MEN_EVALUATE</source>
+            <translation>Evaluate</translation>
+        </message>
+        <message>
             <source>MEN_CONNECTION</source>
             <translation>Borders at Multi-Connection</translation>
         </message>
@@ -1988,6 +1992,10 @@ Consider saving your work before application crash</translation>
             <translation>Preview</translation>
         </message>
         <message>
+            <source>STB_EVALUATE</source>
+            <translation>Evaluate</translation>
+        </message>
+        <message>
             <source>STB_CONNECTION</source>
             <translation>Borders at Multi-Connection</translation>
         </message>
@@ -2468,6 +2476,10 @@ Consider saving your work before application crash</translation>
         <message>
             <source>TOP_PRECOMPUTE</source>
             <translation>Preview</translation>
+        </message>
+        <message>
+            <source>TOP_EVALUATE</source>
+            <translation>Evaluate</translation>
         </message>
         <message>
             <source>TOP_CONNECTION</source>
@@ -3214,6 +3226,10 @@ Please, create VTK viewer and try again</translation>
         <message>
             <source>CONSTRUCTOR</source>
             <translation>Compute mesh</translation>
+        </message>
+        <message>
+            <source>EVAL_DLG</source>
+            <translation>Evaluate mesh</translation>
         </message>
         <message>
             <source>ERRORS</source>

@@ -81,6 +81,19 @@ class SMESH_EXPORT  SMESH_Gen
 	       const ::MeshDimension aDim=::MeshDim_3D,
 	       TSetOfInt*            aShapesId=0);
 
+  /*!
+   * \brief evaluates size of prospective mesh on a shape 
+   * \param aMesh - the mesh
+   * \param aShape - the shape
+   * \param aResMap - map for prospective numbers of elements
+   * \retval bool - is a success
+   */
+  bool Evaluate(::SMESH_Mesh &        aMesh,
+		const TopoDS_Shape &  aShape,
+		MapShapeNbElems&      aResMap,
+                const bool            anUpward=false,
+                TSetOfInt*            aShapesId=0);
+
   bool CheckAlgoState(SMESH_Mesh& aMesh, const TopoDS_Shape& aShape);
   // notify on bad state of attached algos, return false
   // if Compute() would fail because of some algo bad state

@@ -587,6 +587,90 @@ bool StdMeshers_Quadrangle_2D::Compute (SMESH_Mesh& aMesh,
   return isOk;
 }
 
+
+//=============================================================================
+/*!
+ *  Evaluate
+ */
+//=============================================================================
+
+bool StdMeshers_Quadrangle_2D::Evaluate(SMESH_Mesh& aMesh,
+                                        const TopoDS_Shape& aShape,
+					MapShapeNbElems& aResMap)
+
+{
+  aMesh.GetSubMesh(aShape);
+
+  std::vector<int> aNbNodes(4);
+  bool IsQuadratic = false;
+  if( !CheckNbEdgesForEvaluate( aMesh, aShape, aResMap, aNbNodes, IsQuadratic ) ) {
+    std::vector<int> aResVec(17);
+    for(int i=0; i<17; i++) aResVec[i] = 0;
+    SMESH_subMesh * sm = aMesh.GetSubMesh(aShape);
+    aResMap.insert(std::make_pair(sm,aResVec));
+    SMESH_ComputeErrorPtr& smError = sm->GetComputeError();
+    smError.reset( new SMESH_ComputeError(COMPERR_ALGO_FAILED,"Submesh can not be evaluated",this));
+    return false;
+  }
+
+  if(myQuadranglePreference) {
+    int n1 = aNbNodes[0];
+    int n2 = aNbNodes[1];
+    int n3 = aNbNodes[2];
+    int n4 = aNbNodes[3];
+    int nfull = n1+n2+n3+n4;
+    int ntmp = nfull/2;
+    ntmp = ntmp*2;
+    if( nfull==ntmp && ( (n1!=n3) || (n2!=n4) ) ) {
+      // special path for using only quandrangle faces
+      return EvaluateQuadPref(aMesh, aShape, aNbNodes, aResMap, IsQuadratic);
+      //return true;
+    }
+  }
+
+  int nbdown  = aNbNodes[0];
+  int nbup    = aNbNodes[2];
+
+  int nbright = aNbNodes[1];
+  int nbleft  = aNbNodes[3];
+
+  int nbhoriz  = Min(nbdown, nbup);
+  int nbvertic = Min(nbright, nbleft);
+
+  int dh = Max(nbdown, nbup) - nbhoriz;
+  int dv = Max(nbright, nbleft) - nbvertic;
+
+  int kdh = 0;
+  if(dh>0) kdh = 1;
+  int kdv = 0;
+  if(dv>0) kdv = 1;
+
+  int nbNodes = (nbhoriz-2)*(nbvertic-2);
+  int nbFaces3 = dh + dv + kdh*(nbvertic-1)*2 + kdv*(nbhoriz-1)*2;
+  if( kdh==1 && kdv==1 ) nbFaces3 -= 2;
+  int nbFaces4 = (nbhoriz-1-kdh)*(nbvertic-1-kdv);
+
+  std::vector<int> aVec(17);
+  for(int i=0; i<17; i++) aVec[i] = 0;
+  if(IsQuadratic) {
+    aVec[4] = nbFaces3;
+    aVec[6] = nbFaces4;
+    int nbbndedges = nbdown + nbup + nbright + nbleft -4;
+    int nbintedges = ( nbFaces4*4 + nbFaces3*3 - nbbndedges ) / 2;
+    aVec[0] = nbNodes + nbintedges;
+  }
+  else {
+    aVec[0] = nbNodes;
+    aVec[3] = nbFaces3;
+    aVec[5] = nbFaces4;
+  }
+  SMESH_subMesh * sm = aMesh.GetSubMesh(aShape);
+  aResMap.insert(std::make_pair(sm,aVec));
+
+  return true;
+}
+
+
 //================================================================================
 /*!
  * \brief Return true if only two given edges meat at their common vertex
@@ -720,6 +804,146 @@ FaceQuadStruct* StdMeshers_Quadrangle_2D::CheckNbEdges(SMESH_Mesh &         aMes
 
   return quad;
 }
+
+
+//=============================================================================
+/*!
+ *  
+ */
+//=============================================================================
+
+bool StdMeshers_Quadrangle_2D::CheckNbEdgesForEvaluate(SMESH_Mesh& aMesh,
+						       const TopoDS_Shape & aShape,
+						       MapShapeNbElems& aResMap,
+						       std::vector<int>& aNbNodes,
+						       bool& IsQuadratic)
+
+{
+  const TopoDS_Face & F = TopoDS::Face(aShape);
+
+  // verify 1 wire only, with 4 edges
+  TopoDS_Vertex V;
+  list< TopoDS_Edge > edges;
+  list< int > nbEdgesInWire;
+  int nbWire = SMESH_Block::GetOrderedEdges (F, V, edges, nbEdgesInWire);
+  if (nbWire != 1) {
+    return false;
+  }
+
+  aNbNodes.resize(4);
+
+  int nbSides = 0;
+  list< TopoDS_Edge >::iterator edgeIt = edges.begin();
+  SMESH_subMesh * sm = aMesh.GetSubMesh( *edgeIt );
+  MapShapeNbElemsItr anIt = aResMap.find(sm);
+  if(anIt==aResMap.end()) {
+    return false;
+  }
+  std::vector<int> aVec = (*anIt).second;
+  IsQuadratic = (aVec[2] > aVec[1]);
+  if ( nbEdgesInWire.front() == 4 ) { // exactly 4 edges
+    for(; edgeIt != edges.end(); edgeIt++) {
+      SMESH_subMesh * sm = aMesh.GetSubMesh( *edgeIt );
+      MapShapeNbElemsItr anIt = aResMap.find(sm);
+      if(anIt==aResMap.end()) {
+	return false;
+      }
+      std::vector<int> aVec = (*anIt).second;
+      if(IsQuadratic)
+	aNbNodes[nbSides] = (aVec[0]-1)/2 + 2;
+      else
+	aNbNodes[nbSides] = aVec[0] + 2;
+      nbSides++;
+    }
+  }
+  else if ( nbEdgesInWire.front() > 4 ) { // more than 4 edges - try to unite some
+    list< TopoDS_Edge > sideEdges;
+    while ( !edges.empty()) {
+      sideEdges.clear();
+      sideEdges.splice( sideEdges.end(), edges, edges.begin()); // edges.front() -> sideEdges.end()
+      bool sameSide = true;
+      while ( !edges.empty() && sameSide ) {
+        sameSide = SMESH_Algo::IsContinuous( sideEdges.back(), edges.front() );
+        if ( sameSide )
+          sideEdges.splice( sideEdges.end(), edges, edges.begin());
+      }
+      if ( nbSides == 0 ) { // go backward from the first edge
+        sameSide = true;
+        while ( !edges.empty() && sameSide ) {
+          sameSide = SMESH_Algo::IsContinuous( sideEdges.front(), edges.back() );
+          if ( sameSide )
+            sideEdges.splice( sideEdges.begin(), edges, --edges.end());
+        }
+      }
+      list<TopoDS_Edge>::iterator ite = sideEdges.begin();
+      aNbNodes[nbSides] = 1;
+      for(; ite!=sideEdges.end(); ite++) {
+	SMESH_subMesh * sm = aMesh.GetSubMesh( *ite );
+	MapShapeNbElemsItr anIt = aResMap.find(sm);
+	if(anIt==aResMap.end()) {
+	  return false;
+	}
+	std::vector<int> aVec = (*anIt).second;
+	if(IsQuadratic)
+	  aNbNodes[nbSides] += (aVec[0]-1)/2 + 1;
+	else
+	  aNbNodes[nbSides] += aVec[0] + 1;
+      }
+      ++nbSides;
+    }
+    // issue 20222. Try to unite only edges shared by two same faces
+    if (nbSides < 4) {
+      nbSides = 0;
+      SMESH_Block::GetOrderedEdges (F, V, edges, nbEdgesInWire);
+      while ( !edges.empty()) {
+        sideEdges.clear();
+        sideEdges.splice( sideEdges.end(), edges, edges.begin());
+        bool sameSide = true;
+        while ( !edges.empty() && sameSide ) {
+          sameSide =
+            SMESH_Algo::IsContinuous( sideEdges.back(), edges.front() ) &&
+            twoEdgesMeatAtVertex( sideEdges.back(), edges.front(), aMesh );
+          if ( sameSide )
+            sideEdges.splice( sideEdges.end(), edges, edges.begin());
+        }
+        if ( nbSides == 0 ) { // go backward from the first edge
+          sameSide = true;
+          while ( !edges.empty() && sameSide ) {
+            sameSide =
+              SMESH_Algo::IsContinuous( sideEdges.front(), edges.back() ) &&
+              twoEdgesMeatAtVertex( sideEdges.front(), edges.back(), aMesh );
+            if ( sameSide )
+              sideEdges.splice( sideEdges.begin(), edges, --edges.end());
+          }
+        }
+	list<TopoDS_Edge>::iterator ite = sideEdges.begin();
+	aNbNodes[nbSides] = 1;
+	for(; ite!=sideEdges.end(); ite++) {
+	  SMESH_subMesh * sm = aMesh.GetSubMesh( *ite );
+	  MapShapeNbElemsItr anIt = aResMap.find(sm);
+	  if(anIt==aResMap.end()) {
+	    return false;
+	  }
+	  std::vector<int> aVec = (*anIt).second;
+	  if(IsQuadratic)
+	    aNbNodes[nbSides] += (aVec[0]-1)/2 + 1;
+	  else
+	    aNbNodes[nbSides] += aVec[0] + 1;
+	}
+        ++nbSides;
+      }
+    }
+  }
+  if (nbSides != 4) {
+    if ( !nbSides )
+      nbSides = nbEdgesInWire.front();
+    error(COMPERR_BAD_SHAPE, TComm("Face must have 4 sides but not ") << nbSides);
+    return false;
+  }
+
+  return true;
+}
+
 
 //=============================================================================
 /*!
@@ -1397,8 +1621,10 @@ bool StdMeshers_Quadrangle_2D::ComputeQuadPref (SMESH_Mesh &        aMesh,
 
       }
     }
+    int nbf=0;
     for(j=1; j<nnn-1; j++) {
       for(i=1; i<nb; i++) {
+	nbf++;
         if(WisF) {
           SMDS_MeshFace* F =
             myTool->AddFace(NodesBRD.Value(i,j), NodesBRD.Value(i+1,j),
@@ -1413,7 +1639,6 @@ bool StdMeshers_Quadrangle_2D::ComputeQuadPref (SMESH_Mesh &        aMesh,
         }
       }
     }
-
     int drl = abs(nr-nl);
     // create faces for region C
     StdMeshers_Array2OfNode NodesC(1,nb,1,drl+1+addv);
@@ -1512,6 +1737,7 @@ bool StdMeshers_Quadrangle_2D::ComputeQuadPref (SMESH_Mesh &        aMesh,
       // create faces
       for(j=1; j<=drl+addv; j++) {
         for(i=1; i<nb; i++) {
+	  nbf++;
           if(WisF) {
             SMDS_MeshFace* F =
               myTool->AddFace(NodesC.Value(i,j), NodesC.Value(i+1,j),
@@ -1545,6 +1771,7 @@ bool StdMeshers_Quadrangle_2D::ComputeQuadPref (SMESH_Mesh &        aMesh,
         NodesLast.SetValue(nnn,1,NodesC.Value(nb,i));
       }
       for(i=1; i<nt; i++) {
+	nbf++;
         if(WisF) {
           SMDS_MeshFace* F =
             myTool->AddFace(NodesLast.Value(i,1), NodesLast.Value(i+1,1),
@@ -1565,6 +1792,132 @@ bool StdMeshers_Quadrangle_2D::ComputeQuadPref (SMESH_Mesh &        aMesh,
   bool isOk = true;
   return isOk;
 }
+
+
+//=======================================================================
+/*!
+ * Evaluate only quandrangle faces
+ */
+//=======================================================================
+
+bool StdMeshers_Quadrangle_2D::EvaluateQuadPref(SMESH_Mesh &        aMesh,
+                                                const TopoDS_Shape& aShape,
+                                                std::vector<int>& aNbNodes,
+						MapShapeNbElems& aResMap,
+						bool IsQuadratic)
+{
+  // Auxilary key in order to keep old variant
+  // of meshing after implementation new variant
+  // for bug 0016220 from Mantis.
+  bool OldVersion = false;
+
+  const TopoDS_Face& F = TopoDS::Face(aShape);
+  Handle(Geom_Surface) S = BRep_Tool::Surface(F);
+
+  int nb = aNbNodes[0];
+  int nr = aNbNodes[1];
+  int nt = aNbNodes[2];
+  int nl = aNbNodes[3];
+  int dh = abs(nb-nt);
+  int dv = abs(nr-nl);
+
+  if( dh>=dv ) {
+    if( nt>nb ) {
+      // it is a base case => not shift 
+    }
+    else {
+      // we have to shift on 2
+      nb = aNbNodes[2];
+      nr = aNbNodes[3];
+      nt = aNbNodes[0];
+      nl = aNbNodes[1];
+    }
+  }
+  else {
+    if( nr>nl ) {
+      // we have to shift quad on 1
+      nb = aNbNodes[3];
+      nr = aNbNodes[0];
+      nt = aNbNodes[1];
+      nl = aNbNodes[2];
+    }
+    else {
+      // we have to shift quad on 3
+      nb = aNbNodes[1];
+      nr = aNbNodes[2];
+      nt = aNbNodes[3];
+      nl = aNbNodes[0];
+    }
+  }
+
+  dh = abs(nb-nt);
+  dv = abs(nr-nl);
+  int nbh  = Max(nb,nt);
+  int nbv = Max(nr,nl);
+  int addh = 0;
+  int addv = 0;
+
+  if(dh>dv) {
+    addv = (dh-dv)/2;
+    nbv = nbv + addv;
+  }
+  else { // dv>=dh
+    addh = (dv-dh)/2;
+    nbh = nbh + addh;
+  }
+
+  int dl,dr;
+  if(OldVersion) {
+    // add some params to right and left after the first param
+    // insert to right
+    dr = nbv - nr;
+    // insert to left
+    dl = nbv - nl;
+  }
+  
+  int nnn = Min(nr,nl);
+
+  int nbNodes = 0;
+  int nbFaces = 0;
+  if(OldVersion) {
+    // step1: create faces for left domain
+    if(dl>0) {
+      nbNodes += dl*(nl-1);
+      nbFaces += dl*(nl-1);
+    }
+    // step2: create faces for right domain
+    if(dr>0) {
+      nbNodes += dr*(nr-1);
+      nbFaces += dr*(nr-1);
+    }
+    // step3: create faces for central domain
+    nbNodes += (nb-2)*(nnn-1) + (nbv-nnn-1)*(nb-2);
+    nbFaces += (nb-1)*(nbv-1);
+  }
+  else { // New version (!OldVersion)
+    nbNodes += (nnn-2)*(nb-2);
+    nbFaces += (nnn-2)*(nb-1);
+    int drl = abs(nr-nl);
+    nbNodes += drl*(nb-1) + addv*nb;
+    nbFaces += (drl+addv)*(nb-1) + (nt-1);
+  } // end new version implementation
+
+  std::vector<int> aVec(17);
+  for(int i=0; i<17; i++) aVec[i] = 0;
+  if(IsQuadratic) {
+    aVec[6] = nbFaces;
+    aVec[0] = nbNodes + nbFaces*4;
+  }
+  else {
+    aVec[0] = nbNodes;
+    aVec[5] = nbFaces;
+  }
+  SMESH_subMesh * sm = aMesh.GetSubMesh(aShape);
+  aResMap.insert(std::make_pair(sm,aVec));
+
+  return true;
+}
+
 
 //=============================================================================
 /*! Split quadrangle in to 2 triangles by smallest diagonal

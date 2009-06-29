@@ -54,6 +54,13 @@ class SMDS_MeshNode;
 class SMESH_subMesh;
 class SMESH_MesherHelper;
 
+typedef std::map< SMESH_subMesh*, std::vector<int> > MapShapeNbElems;
+// vector must have size 17:
+// 0 - node, 1 - edge lin, 2 - edge quad, 3 - triangle lin, 4 - triangle quad
+// 5 - quadrangle lin, 6 - quadrangle quad, 7 - polygon, 8 - tetra lin,
+// 9 - tetra quad, 10 - pyramid lin, 11 - pyramid quad, 12 - penta lin,
+// 13 - penta quad, 14 - hexa lin, 15 - hexa quad, 16 -polyhedra
+typedef std::map< SMESH_subMesh*, std::vector<int> >::iterator MapShapeNbElemsItr;
 
 class SMESH_EXPORT SMESH_Algo:public SMESH_Hypothesis
 {
@@ -121,6 +128,16 @@ public:
     * The method is called if ( !aMesh->HasShapeToMesh() )
    */
   virtual bool Compute(SMESH_Mesh & aMesh, SMESH_MesherHelper* aHelper);
+
+  /*!
+   * \brief evaluates size of prospective mesh on a shape
+    * \param aMesh - the mesh
+    * \param aShape - the shape
+    * \param aNbElems - prospective number of elements by types
+    * \retval bool - is a success
+   */
+  virtual bool Evaluate(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape,
+                        MapShapeNbElems& aResMap) = 0;
 
   /*!
    * \brief Returns a list of compatible hypotheses used to mesh a shape

@@ -45,6 +45,7 @@
 #include "SMESH_Block.hxx"
 #include "SMESH_ComputeError.hxx"
 #include "SMESH_MesherHelper.hxx"
+#include "SMESH_3D_Algo.hxx"
 
 typedef std::map< double, std::vector<const SMDS_MeshNode*> > StdMeshers_IJNodeMap;
 
@@ -203,6 +204,9 @@ class STDMESHERS_EXPORT StdMeshers_Penta_3D {
     // that the 0-the one lies on theBaseEdge.
     // The key of theIJNodes map is a normalized parameter of each
     // 0-the node on theBaseEdge.
+
+    bool Evaluate(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape,
+		  MapShapeNbElems& aResMap);
 
 
   protected: // methods

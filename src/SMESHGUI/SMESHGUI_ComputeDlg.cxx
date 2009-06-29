@@ -789,14 +789,14 @@ void SMESHGUI_MeshInfosBox::SetInfoByMesh(SMESH::SMESH_Mesh_var mesh)
  */
 //=======================================================================
 
-SMESHGUI_ComputeDlg::SMESHGUI_ComputeDlg( QWidget* parent )
+SMESHGUI_ComputeDlg::SMESHGUI_ComputeDlg( QWidget* parent, bool ForEval )
  : SMESHGUI_Dialog( parent, false, true, Close/* | Help*/ )
 {
   QVBoxLayout* aDlgLay = new QVBoxLayout (mainFrame());
   aDlgLay->setMargin( 0 );
   aDlgLay->setSpacing( SPACING );
 
-  QFrame* aMainFrame = createMainFrame  (mainFrame());
+  QFrame* aMainFrame = createMainFrame(mainFrame(),ForEval);
 
   aDlgLay->addWidget(aMainFrame);
 
@@ -818,7 +818,7 @@ SMESHGUI_ComputeDlg::~SMESHGUI_ComputeDlg()
 // purpose  : Create frame containing dialog's fields
 //=======================================================================
 
-QFrame* SMESHGUI_ComputeDlg::createMainFrame (QWidget* theParent)
+QFrame* SMESHGUI_ComputeDlg::createMainFrame (QWidget* theParent, bool ForEval)
 {
   QFrame* aFrame = new QFrame(theParent);
 
@@ -827,7 +827,13 @@ QFrame* SMESHGUI_ComputeDlg::createMainFrame (QWidget* theParent)
 
   // constructor
 
-  QGroupBox* aPixGrp = new QGroupBox(tr("CONSTRUCTOR"), aFrame);
+  QGroupBox* aPixGrp;
+  if(ForEval) {
+    aPixGrp = new QGroupBox(tr("EVAL_DLG"), aFrame);
+  }
+  else {
+    aPixGrp = new QGroupBox(tr("CONSTRUCTOR"), aFrame);
+  }
   QButtonGroup* aBtnGrp = new QButtonGroup(this);
   QHBoxLayout* aPixGrpLayout = new QHBoxLayout(aPixGrp);
   aPixGrpLayout->setMargin(MARGIN); aPixGrpLayout->setSpacing(SPACING);
@@ -931,8 +937,7 @@ QFrame* SMESHGUI_ComputeDlg::createMainFrame (QWidget* theParent)
 //================================================================================
 
 SMESHGUI_BaseComputeOp::SMESHGUI_BaseComputeOp()
-  : SMESHGUI_Operation(),
-    myCompDlg( 0 )
+  : SMESHGUI_Operation(), myCompDlg( 0 )
 {
   myTShapeDisplayer = new SMESH::TShapeDisplayer();
   myBadMeshDisplayer = 0;
@@ -1420,7 +1425,7 @@ SMESHGUI_ComputeDlg* SMESHGUI_BaseComputeOp::computeDlg() const
   if ( !myCompDlg )
   {
     SMESHGUI_BaseComputeOp* me = (SMESHGUI_BaseComputeOp*)this;
-    me->myCompDlg = new SMESHGUI_ComputeDlg( desktop() );
+    me->myCompDlg = new SMESHGUI_ComputeDlg( desktop(), false );
     // connect signals and slots
     connect(myCompDlg->myShowBtn,    SIGNAL (clicked()), SLOT(onPreviewShape()));
     connect(myCompDlg->myPublishBtn, SIGNAL (clicked()), SLOT(onPublishShape()));
@@ -1908,3 +1913,352 @@ int SMESHGUI_PrecomputeDlg::getPreviewMode() const
 {
   return myPreviewMode->currentId();
 }
+
+
+//================================================================================
+/*!
+ * \brief Constructor
+*/
+//================================================================================
+
+SMESHGUI_EvaluateOp::SMESHGUI_EvaluateOp()
+ : SMESHGUI_BaseComputeOp()
+{
+}
+
+
+//================================================================================
+/*!
+ * \brief Desctructor
+*/
+//================================================================================
+
+SMESHGUI_EvaluateOp::~SMESHGUI_EvaluateOp()
+{
+}
+
+//================================================================================
+/*!
+ * \brief perform it's intention action: compute mesh
+ */
+//================================================================================
+
+void SMESHGUI_EvaluateOp::startOperation()
+{
+  SMESHGUI_BaseComputeOp::evaluateDlg();
+  SMESHGUI_BaseComputeOp::startOperation();
+  evaluateMesh();
+}
+
+//================================================================================
+/*!
+ * \brief Gets dialog of this operation
+ * \retval LightApp_Dialog* - pointer to dialog of this operation
+ */
+//================================================================================
+
+LightApp_Dialog* SMESHGUI_EvaluateOp::dlg() const
+{
+  return evaluateDlg();
+}
+
+//================================================================================
+/*!
+ * \brief evaluaateMesh()
+*/
+//================================================================================
+
+void SMESHGUI_BaseComputeOp::evaluateMesh()
+{
+  // EVALUATE MESH
+
+  SMESH::MemoryReserve aMemoryReserve;
+
+  SMESH::compute_error_array_var aCompErrors;
+  QString                        aHypErrors;
+
+  bool evaluateFailed = true, memoryLack = false;
+  std::vector<int> aResVec(18);
+
+  _PTR(SObject) aMeshSObj = SMESH::FindSObject(myMesh);
+  bool hasShape = myMesh->HasShapeToMesh();
+  bool shapeOK = myMainShape->_is_nil() ? !hasShape : hasShape;
+  if ( shapeOK && aMeshSObj )
+  {
+    myCompDlg->myMeshName->setText( aMeshSObj->GetName().c_str() );
+    SMESH::SMESH_Gen_var gen = getSMESHGUI()->GetSMESHGen();
+    SMESH::algo_error_array_var errors = gen->GetAlgoState(myMesh,myMainShape);
+    if ( errors->length() > 0 ) {
+      aHypErrors = SMESH::GetMessageOnAlgoStateErrors( errors.in() );
+    }
+    SUIT_OverrideCursor aWaitCursor;
+    try {
+#if (OCC_VERSION_MAJOR << 16 | OCC_VERSION_MINOR << 8 | OCC_VERSION_MAINTENANCE) > 0x060100
+      OCC_CATCH_SIGNALS;
+#endif
+      SMESH::long_array_var aVec = gen->Evaluate(myMesh, myMainShape);
+      for(int i=0; i<17; i++) {
+	aResVec[i] = aVec[i];
+      }
+    }
+    catch(const SALOME::SALOME_Exception & S_ex){
+      memoryLack = true;
+    }
+
+    try {
+#if (OCC_VERSION_MAJOR << 16 | OCC_VERSION_MINOR << 8 | OCC_VERSION_MAINTENANCE) > 0x060100
+      OCC_CATCH_SIGNALS;
+#endif
+      aCompErrors = gen->GetComputeErrors( myMesh, myMainShape );
+    }
+    catch(const SALOME::SALOME_Exception & S_ex){
+      memoryLack = true;
+    }
+  }
+
+  if ( memoryLack )
+    aMemoryReserve.release();
+
+  myCompDlg->setWindowTitle(tr( evaluateFailed ? "SMESH_WRN_COMPUTE_FAILED" : "SMESH_COMPUTE_SUCCEED"));
+
+  // SHOW ERRORS
+  
+  bool noCompError = ( !aCompErrors.operator->() || aCompErrors->length() == 0 );
+  bool noHypoError = ( aHypErrors.isEmpty() );
+
+  //SUIT_ResourceMgr* resMgr = SMESH::GetResourceMgr( SMESHGUI::GetSMESHGUI() );
+  //int aNotifyMode = resMgr->integerValue( "SMESH", "show_result_notification" );
+
+  bool isShowResultDlg = true;
+  //if( noHypoError )
+  //switch( aNotifyMode ) {
+  //case 0: // show the mesh computation result dialog NEVER
+  //isShowResultDlg = false;
+  //commit();
+  //break;
+  //case 1: // show the mesh computation result dialog if there are some errors
+  //if ( memoryLack || !noHypoError )
+  //  isShowResultDlg = true;
+  //else
+  //{
+  //  isShowResultDlg = false;
+  //  commit();
+  //}
+  //break;
+  //default: // show the result dialog after each mesh computation
+  //isShowResultDlg = true;
+  //}
+
+  // SHOW RESULTS
+  if ( isShowResultDlg )
+    //showComputeResult( memoryLack, noCompError,aCompErrors, noHypoError, aHypErrors );
+    showEvaluateResult( aResVec, memoryLack, noCompError, aCompErrors,
+			noHypoError, aHypErrors);
+}
+
+
+void SMESHGUI_BaseComputeOp::showEvaluateResult(std::vector<int> theVec,
+						const bool theMemoryLack,
+						const bool theNoCompError,
+						SMESH::compute_error_array_var& theCompErrors,
+						const bool theNoHypoError,
+						const QString& theHypErrors)
+{
+  bool hasShape = myMesh->HasShapeToMesh();
+  SMESHGUI_ComputeDlg* aCompDlg = evaluateDlg();
+  aCompDlg->myMemoryLackGroup->hide();
+
+  if ( theMemoryLack )
+  {
+    aCompDlg->myMemoryLackGroup->show();
+    aCompDlg->myFullInfo->hide();
+    aCompDlg->myBriefInfo->hide();
+    aCompDlg->myHypErrorGroup->hide();
+    aCompDlg->myCompErrorGroup->hide();
+  }
+  else if ( theNoCompError && theNoHypoError )
+  {
+    //aCompDlg->myFullInfo->SetInfoByMesh( myMesh );
+    aCompDlg->myFullInfo->SetInfoByEval( theVec );
+    aCompDlg->myFullInfo->show();
+    aCompDlg->myBriefInfo->hide();
+    aCompDlg->myHypErrorGroup->hide();
+    aCompDlg->myCompErrorGroup->hide();
+  }
+  else
+  {
+    QTableWidget* tbl = aCompDlg->myTable;
+    //aCompDlg->myBriefInfo->SetInfoByMesh( myMesh );
+    aCompDlg->myBriefInfo->SetInfoByEval( theVec );
+    aCompDlg->myBriefInfo->show();
+    aCompDlg->myFullInfo->hide();
+
+    if ( theNoHypoError ) {
+      aCompDlg->myHypErrorGroup->hide();
+    }
+    else {
+      aCompDlg->myHypErrorGroup->show();
+      aCompDlg->myHypErrorLabel->setText( theHypErrors );
+    }
+
+    if ( theNoCompError ) {
+      aCompDlg->myCompErrorGroup->hide();
+    }
+    else {
+      aCompDlg->myCompErrorGroup->show();
+
+      aCompDlg->myPublishBtn->hide();
+      aCompDlg->myShowBtn->hide();
+
+      // fill table of errors
+      tbl->setRowCount( theCompErrors->length() );
+      if ( !hasShape ) tbl->hideColumn( COL_SHAPE );
+      else             tbl->showColumn( COL_SHAPE );
+      tbl->setColumnWidth( COL_ERROR, 200 );
+
+      bool hasBadMesh = false;
+      for ( int row = 0; row < theCompErrors->length(); ++row )
+      {
+        SMESH::ComputeError & err = theCompErrors[ row ];
+
+	QString text = err.algoName.in();
+	if ( !tbl->item( row, COL_ALGO ) ) tbl->setItem( row, COL_ALGO, new QTableWidgetItem( text ) );
+	else tbl->item( row, COL_ALGO )->setText( text );
+
+	text = SMESH::errorText( err.code, err.comment.in() );
+	if ( !tbl->item( row, COL_ERROR ) ) tbl->setItem( row, COL_ERROR, new QTableWidgetItem( text ) );
+	else tbl->item( row, COL_ERROR )->setText( text );
+
+	text = QString("%1").arg( err.subShapeID );
+	if ( !tbl->item( row, COL_SHAPEID ) ) tbl->setItem( row, COL_SHAPEID, new QTableWidgetItem( text ) );
+	else tbl->item( row, COL_SHAPEID )->setText( text );
+
+        text = hasShape ? SMESH::shapeText( err.subShapeID, myMainShape ) : QString("");
+	if ( !tbl->item( row, COL_SHAPE ) ) tbl->setItem( row, COL_SHAPE, new QTableWidgetItem( text ) );
+	else tbl->item( row, COL_SHAPE )->setText( text );
+
+        text = ( !hasShape || SMESH::getSubShapeSO( err.subShapeID, myMainShape )) ? "PUBLISHED" : "";
+	if ( !tbl->item( row, COL_PUBLISHED ) ) tbl->setItem( row, COL_PUBLISHED, new QTableWidgetItem( text ) );
+	else tbl->item( row, COL_PUBLISHED )->setText( text ); // if text=="", "PUBLISH" button enabled
+
+        text = err.hasBadMesh ? "hasBadMesh" : "";
+	if ( !tbl->item( row, COL_BAD_MESH ) ) tbl->setItem( row, COL_BAD_MESH, new QTableWidgetItem( text ) );
+	else tbl->item( row, COL_BAD_MESH )->setText( text );
+        if ( err.hasBadMesh ) hasBadMesh = true;
+
+        //tbl->item( row, COL_ERROR )->setWordWrap( true ); // VSR: TODO ???
+        tbl->resizeRowToContents( row );
+      }
+      tbl->resizeColumnToContents( COL_ALGO );
+      tbl->resizeColumnToContents( COL_SHAPE );
+
+      if ( hasBadMesh )
+        aCompDlg->myBadMeshBtn->show();
+      else
+        aCompDlg->myBadMeshBtn->hide();
+
+      tbl->setCurrentCell(0,0);
+      currentCellChanged(); // to update buttons
+    }
+  }
+  // show dialog and wait, becase Compute can be invoked from Preview operation
+  //aCompDlg->exec(); // this way it becomes modal - impossible to rotate model in the Viewer
+  aCompDlg->show();
+}
+
+
+// =========================================================================================
+/*!
+ * \brief Set mesh info
+ */
+// =========================================================================================
+
+void SMESHGUI_MeshInfosBox::SetInfoByEval(std::vector<int> theVec)
+{
+  // nodes
+  myNbNode     ->setText( QString("%1").arg( theVec[0] ));
+
+  // edges
+  int nbTot = theVec[1] + theVec[2];
+  myNbEdge     ->setText( QString("%1").arg( nbTot ));
+  myNbLinEdge  ->setText( QString("%1").arg( theVec[1] ));
+  myNbQuadEdge ->setText( QString("%1").arg( theVec[2] ));
+
+  // faces
+  nbTot = 0;
+  int i = 3;
+  for(; i<=7; i++) nbTot += theVec[i];
+  myNbFace     ->setText( QString("%1").arg( nbTot ));
+  myNbLinFace  ->setText( QString("%1").arg( theVec[3] + theVec[5] ));
+  myNbQuadFace ->setText( QString("%1").arg( theVec[4] + theVec[6] ));
+
+  // volumes
+  nbTot = 0;
+  for(i=8; i<=16; i++) nbTot += theVec[i];
+  int nbLin = 0, nbQua = 0;; 
+  for(i=0; i<=3; i++) {
+    nbLin += theVec[8+2*i];
+    nbQua += theVec[9+2*i];
+  }
+  myNbVolum    ->setText( QString("%1").arg( nbTot ));
+  myNbLinVolum ->setText( QString("%1").arg( nbLin ));
+  myNbQuadVolum->setText( QString("%1").arg( nbQua ));
+
+  if ( myFull )
+  {
+    // triangles
+    myNbTrai     ->setText( QString("%1").arg( theVec[3] + theVec[4] ));
+    myNbLinTrai  ->setText( QString("%1").arg( theVec[3] ));
+    myNbQuadTrai ->setText( QString("%1").arg( theVec[4] ));
+    // quadrangles
+    myNbQuad     ->setText( QString("%1").arg( theVec[5] + theVec[6] ));
+    myNbLinQuad  ->setText( QString("%1").arg( theVec[5] ));
+    myNbQuadQuad ->setText( QString("%1").arg( theVec[6] ));
+    // poligones
+    myNbPolyg    ->setText( QString("%1").arg( theVec[7] ));
+
+    // tetras
+    myNbTetra    ->setText( QString("%1").arg( theVec[8] + theVec[9] ));
+    myNbLinTetra ->setText( QString("%1").arg( theVec[8] ));
+    myNbQuadTetra->setText( QString("%1").arg( theVec[9] ));
+    // hexas
+    myNbHexa     ->setText( QString("%1").arg( theVec[14] + theVec[15] ));
+    myNbLinHexa  ->setText( QString("%1").arg( theVec[14] ));
+    myNbQuadHexa ->setText( QString("%1").arg( theVec[15] ));
+    // pyras
+    myNbPyra     ->setText( QString("%1").arg( theVec[10] + theVec[11] ));
+    myNbLinPyra  ->setText( QString("%1").arg( theVec[10] ));
+    myNbQuadPyra ->setText( QString("%1").arg( theVec[11] ));
+    // prisms
+    myNbPrism    ->setText( QString("%1").arg( theVec[12] + theVec[13] ));
+    myNbLinPrism ->setText( QString("%1").arg( theVec[12] ));
+    myNbQuadPrism->setText( QString("%1").arg( theVec[13] ));
+    // polyedres
+    myNbPolyh    ->setText( QString("%1").arg( theVec[16] ));
+  }
+}
+
+//================================================================================
+/*!
+ * \brief Gets dialog of evaluate operation
+ * \retval SMESHGUI_ComputeDlg* - pointer to dialog of this operation
+ */
+//================================================================================
+
+SMESHGUI_ComputeDlg* SMESHGUI_BaseComputeOp::evaluateDlg() const
+{
+  if ( !myCompDlg )
+  {
+    SMESHGUI_BaseComputeOp* me = (SMESHGUI_BaseComputeOp*)this;
+    me->myCompDlg = new SMESHGUI_ComputeDlg( desktop(), true );
+    // connect signals and slots
+    connect(myCompDlg->myShowBtn,    SIGNAL (clicked()), SLOT(onPreviewShape()));
+    connect(myCompDlg->myPublishBtn, SIGNAL (clicked()), SLOT(onPublishShape()));
+    connect(myCompDlg->myBadMeshBtn, SIGNAL (clicked()), SLOT(onShowBadMesh()));
+    QTableWidget* aTable = me->table();
+    connect(aTable, SIGNAL(itemSelectionChanged()), SLOT(currentCellChanged()));
+    connect(aTable, SIGNAL(currentCellChanged(int,int,int,int)), SLOT(currentCellChanged()));
+  }
+  return myCompDlg;
+}
+

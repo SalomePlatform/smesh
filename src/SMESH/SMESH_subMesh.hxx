@@ -34,6 +34,7 @@
 #include "SMESHDS_SubMesh.hxx"
 #include "SMESH_Hypothesis.hxx"
 #include "SMESH_ComputeError.hxx"
+#include "SMESH_Algo.hxx"
 
 #include "Utils_SALOME_Exception.hxx"
 
@@ -191,6 +192,8 @@ public:
   void DumpAlgoState(bool isMain);
 
   bool ComputeStateEngine(int event);
+
+  bool Evaluate(MapShapeNbElems& aResMap);
 
   bool IsConform(const SMESH_Algo* theAlgo);
   // check if a conform mesh will be produced by the Algo

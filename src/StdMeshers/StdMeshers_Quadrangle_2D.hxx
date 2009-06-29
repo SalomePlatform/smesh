@@ -65,6 +65,9 @@ public:
   virtual bool Compute(SMESH_Mesh& aMesh,
 		       const TopoDS_Shape& aShape);
 
+  virtual bool Evaluate(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape,
+                        MapShapeNbElems& aResMap);
+
   FaceQuadStruct* CheckAnd2Dcompute(SMESH_Mesh& aMesh,
 				    const TopoDS_Shape& aShape,
                                     const bool CreateQuadratic);
@@ -73,6 +76,12 @@ protected:
 
   FaceQuadStruct* CheckNbEdges(SMESH_Mesh& aMesh,
                                const TopoDS_Shape& aShape);
+
+  bool CheckNbEdgesForEvaluate(SMESH_Mesh& aMesh,
+			       const TopoDS_Shape & aShape,
+			       MapShapeNbElems& aResMap,
+			       std::vector<int>& aNbNodes,
+                               bool& IsQuadratic);
 
   bool SetNormalizedGrid(SMESH_Mesh& aMesh,
 			 const TopoDS_Shape& aShape,
@@ -89,9 +98,14 @@ protected:
    * Special function for creation only quandrangle faces
    */
   bool ComputeQuadPref(SMESH_Mesh& aMesh,
-                       
                        const TopoDS_Shape& aShape,
                        FaceQuadStruct* quad);
+
+  bool EvaluateQuadPref(SMESH_Mesh& aMesh,
+			const TopoDS_Shape& aShape,
+			std::vector<int>& aNbNodes,
+			MapShapeNbElems& aResMap,
+                        bool IsQuadratic);
 
   UVPtStruct* LoadEdgePoints2(SMESH_Mesh& aMesh,
 			      const TopoDS_Face& F, const TopoDS_Edge& E,

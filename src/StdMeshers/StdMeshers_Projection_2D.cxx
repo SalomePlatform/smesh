@@ -642,6 +642,83 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
   return true;
 }
 
+
+//=======================================================================
+//function : Evaluate
+//purpose  : 
+//=======================================================================
+
+bool StdMeshers_Projection_2D::Evaluate(SMESH_Mesh& theMesh,
+					const TopoDS_Shape& theShape,
+					MapShapeNbElems& aResMap)
+{
+  if ( !_sourceHypo )
+    return false;
+
+  SMESH_Mesh * srcMesh = _sourceHypo->GetSourceMesh();
+  SMESH_Mesh * tgtMesh = & theMesh;
+  if ( !srcMesh )
+    srcMesh = tgtMesh;
+
+  // ---------------------------
+  // Make subshapes association
+  // ---------------------------
+
+  TopoDS_Face tgtFace = TopoDS::Face( theShape.Oriented(TopAbs_FORWARD));
+  TopoDS_Shape srcShape = _sourceHypo->GetSourceFace().Oriented(TopAbs_FORWARD);
+
+  TAssocTool::TShapeShapeMap shape2ShapeMap;
+  TAssocTool::InitVertexAssociation( _sourceHypo, shape2ShapeMap, tgtFace );
+  if ( !TAssocTool::FindSubShapeAssociation( tgtFace, tgtMesh, srcShape, srcMesh,
+                                             shape2ShapeMap)  ||
+       !shape2ShapeMap.IsBound( tgtFace ))
+    return error(COMPERR_BAD_SHAPE,"Topology of source and target faces seems different" );
+
+  TopoDS_Face srcFace = TopoDS::Face( shape2ShapeMap( tgtFace ).Oriented(TopAbs_FORWARD));
+
+  // ----------------------------------------------
+  // Assure that mesh on a source Face is computed
+  // ----------------------------------------------
+
+  SMESH_subMesh* srcSubMesh = srcMesh->GetSubMesh( srcFace );
+
+  if ( !srcSubMesh->IsMeshComputed() )
+    return error(COMPERR_BAD_INPUT_MESH,"Source mesh not computed");
+
+
+  std::vector<int> aVec(17);
+  for(int i=0; i<17; i++) aVec[i] = 0;
+
+  aVec[0] = srcSubMesh->GetSubMeshDS()->NbNodes();
+
+  //bool quadratic = false;
+  SMDS_ElemIteratorPtr elemIt = srcSubMesh->GetSubMeshDS()->GetElements();
+  while ( elemIt->more() ) {
+    const SMDS_MeshElement* E  = elemIt->next();
+    if( E->NbNodes()==3 ) {
+      aVec[3]++;
+    }
+    else if( E->NbNodes()==4 ) {
+      aVec[5]++;
+    }
+    else if( E->NbNodes()==6 && E->IsQuadratic() ) {
+      aVec[4]++;
+    }
+    else if( E->NbNodes()==8 && E->IsQuadratic() ) {
+      aVec[6]++;
+    }
+    else {
+      aVec[7]++;
+    }
+  }
+
+  SMESH_subMesh * sm = theMesh.GetSubMesh(theShape);
+  aResMap.insert(std::make_pair(sm,aVec));
+
+  return true;
+}
+
+
 //=============================================================================
 /*!
  * \brief Sets a default event listener to submesh of the source face

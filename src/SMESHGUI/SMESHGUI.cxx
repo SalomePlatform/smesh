@@ -1614,6 +1614,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
 
   case 701:					// COMPUTE MESH
   case 711:					// PRECOMPUTE MESH
+  case 712:					// EVALUATE MESH
     {
       if (checkLock(aStudy)) break;
       startOperation( theCommandID );
@@ -2692,6 +2693,8 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction(  704, "EDIT_MESHSUBMESH","ICON_DLG_EDIT_MESH" );
   createSMESHAction(  710, "BUILD_COMPOUND",  "ICON_BUILD_COMPOUND" );
   createSMESHAction(  711, "PRECOMPUTE",      "ICON_PRECOMPUTE" );
+  //createSMESHAction(  712, "EVALUATE",        "ICON_EVALUATE" );
+  createSMESHAction(  712, "EVALUATE",        "ICON_COMPUTE" );
   createSMESHAction(  806, "CREATE_GEO_GROUP","ICON_CREATE_GEO_GROUP" );
   createSMESHAction(  801, "CREATE_GROUP",    "ICON_CREATE_GROUP" );
   createSMESHAction(  802, "CONSTRUCT_GROUP", "ICON_CONSTRUCT_GROUP" );
@@ -2836,6 +2839,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createMenu( separator(), meshId, -1 );
   createMenu( 701, meshId, -1 );
   createMenu( 711, meshId, -1 );
+  createMenu( 712, meshId, -1 );
   createMenu( separator(), meshId, -1 );
   createMenu( 801, meshId, -1 );
   createMenu( 806, meshId, -1 );
@@ -2937,6 +2941,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createTool( separator(), meshTb );
   createTool( 701, meshTb );
   createTool( 711, meshTb );
+  createTool( 712, meshTb );
   createTool( separator(), meshTb );
   createTool( 801, meshTb );
   createTool( 806, meshTb );
@@ -3052,6 +3057,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   popupMgr()->insert( separator(), -1, 0 );
   createPopupItem( 701, OB, mesh, "&& isComputable" );     // COMPUTE
   createPopupItem( 711, OB, mesh, "&& isComputable" );     // PRECOMPUTE
+  createPopupItem( 712, OB, mesh );                        // EVALUATE
   createPopupItem( 214, OB, mesh_group );                  // UPDATE
   createPopupItem( 900, OB, mesh_group );                  // ADV_INFO
   createPopupItem( 902, OB, mesh );                        // STD_INFO
@@ -3853,6 +3859,9 @@ LightApp_Operation* SMESHGUI::createOperation( const int id ) const
     break;
     case 711: // Precompute mesh
       op = new SMESHGUI_PrecomputeOp();
+    break;
+    case 712: // Evaluate mesh
+      op = new SMESHGUI_EvaluateOp();
     break;
     case 806: // Create group on geom
       op = new SMESHGUI_GroupOnShapeOp();

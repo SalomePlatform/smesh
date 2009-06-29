@@ -1069,6 +1069,17 @@ class Mesh:
             return Mesh_Prism3D(self,  geom)
         return Mesh_RadialPrism3D(self,  geom)
 
+    ## Evaluates size of prospective mesh on a shape
+    #  @return True or False
+    def Evaluate(self, geom=0):
+        if geom == 0 or not isinstance(geom, geompyDC.GEOM._objref_GEOM_Object):
+            if self.geom == 0:
+                geom = self.mesh.GetShapeToMesh()
+            else:
+                geom = self.geom
+        return self.smeshpyD.Evaluate(self.mesh, geom)
+
+
     ## Computes the mesh and returns the status of the computation
     #  @return True or False
     #  @ingroup l2_construct

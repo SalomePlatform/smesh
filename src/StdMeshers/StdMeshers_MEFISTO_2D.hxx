@@ -57,6 +57,9 @@ public:
   virtual bool Compute(SMESH_Mesh& aMesh,
 		       const TopoDS_Shape& aShape);
 
+  virtual bool Evaluate(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape,
+                        MapShapeNbElems& aResMap);
+
   typedef boost::shared_ptr< StdMeshers_FaceSide> StdMeshers_FaceSidePtr;
   typedef std::vector< StdMeshers_FaceSidePtr > TWireVector;
 
