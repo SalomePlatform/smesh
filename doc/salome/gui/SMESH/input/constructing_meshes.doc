@@ -145,6 +145,14 @@ existing faces</b>. They are not entirely usable from the GUI, so a
 mesh created using these algorithms should be exported into a python
 script, edited and then imported into the GUi. 
 
+<li>It is possible to make evaluation of size of prospective mesh
+before \b Compute operation. For this, select your mesh in the <b>Object
+Browser</b> and from the \b Mesh menu select \b Evaluate. Result of
+evaluation will be represented by the following information box:
+
+\image html mesh_evaluation_succeed.png
+
+
 Consider trying a sample script for construction of a mesh from our 
 \ref tui_creating_meshes_page "TUI Scripts" section.
 </li>

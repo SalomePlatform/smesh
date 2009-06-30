@@ -967,6 +967,10 @@ Please enter correct values and try again</translation>
             <translation>Mesh computation succeed</translation>
         </message>
         <message>
+            <source>SMESH_EVALUATE_SUCCEED</source>
+            <translation>Mesh evaluation succeed</translation>
+        </message>
+        <message>
             <source>SMESH_CONTENT</source>
             <translation>Content</translation>
         </message>
@@ -1862,6 +1866,10 @@ Consider saving your work before application crash</translation>
         <message>
             <source>SMESH_WRN_COMPUTE_FAILED</source>
             <translation>Mesh computation failed</translation>
+        </message>
+        <message>
+            <source>SMESH_WRN_EVALUATE_FAILED</source>
+            <translation>Mesh evaluation failed</translation>
         </message>
         <message>
             <source>SMESH_WRN_EMPTY_NAME</source>

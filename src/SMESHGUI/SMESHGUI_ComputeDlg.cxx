@@ -2019,7 +2019,8 @@ void SMESHGUI_BaseComputeOp::evaluateMesh()
   if ( memoryLack )
     aMemoryReserve.release();
 
-  myCompDlg->setWindowTitle(tr( evaluateFailed ? "SMESH_WRN_COMPUTE_FAILED" : "SMESH_COMPUTE_SUCCEED"));
+  evaluateFailed =  ( aCompErrors->length() > 0 );
+  myCompDlg->setWindowTitle(tr( evaluateFailed ? "SMESH_WRN_EVALUATE_FAILED" : "SMESH_EVALUATE_SUCCEED"));
 
   // SHOW ERRORS
   
