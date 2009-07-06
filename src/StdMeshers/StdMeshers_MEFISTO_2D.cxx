@@ -340,14 +340,14 @@ bool StdMeshers_MEFISTO_2D::Evaluate(SMESH_Mesh & aMesh,
   BRepGProp::SurfaceProperties(aShape,G);
   double anArea = G.Mass();
 
-  int nbFaces = (int) anArea/(tmpLength*tmpLength*sqrt(3)/4);
+  int nbFaces = (int) ( anArea/(tmpLength*tmpLength*sqrt(3.)/4) );
   int nbNodes = (int) ( nbFaces*3 - (NbSeg-1)*2 ) / 6;
 
   std::vector<int> aVec(17);
   for(int i=0; i<17; i++) aVec[i] = 0;
   if(IsQuadratic) {
     aVec[4] = nbFaces;
-    aVec[0] = nbNodes + nbFaces*3 - (NbSeg-1);
+    aVec[0] = (int)( nbNodes + nbFaces*3 - (NbSeg-1) );
   }
   else {
     aVec[0] = nbNodes;
