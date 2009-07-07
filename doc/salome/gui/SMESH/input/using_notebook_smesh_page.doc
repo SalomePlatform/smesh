@@ -30,4 +30,13 @@ limitations:
 <li> \ref clipping_page "Clipping" dialog box.
 <li> <b>Colors / Size</b> dialog box.
 </ul>
+
+Here is an example of using of variables, which were previously set by
+SALOME NoteBook, in MESH GUI:
+
+\image html addnode_notebook.png "Node added in MESH module"
+
+Our <b>TUI Scripts</b> provide you with useful examples of 
+\ref tui_notebook_smesh "Using SALOME NoteBook".
+
 */
