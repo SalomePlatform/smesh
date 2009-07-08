@@ -1,0 +1,107 @@
+//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//
+//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+//
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
+//
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
+//
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
+// File   : StdMeshersGUI_EdgeDirectionParamWdg.h
+// Author : Open CASCADE S.A.S. (dmv)
+//
+#ifndef STDMESHERSGUI_EDGEDIRECTIONPARAMWGD_H
+#define STDMESHERSGUI_EDGEDIRECTIONPARAMWGD_H
+
+// SMESH includes
+#include <SMESHGUI.h>
+#include "SMESH_StdMeshersGUI.hxx"
+#include "SMESH_SMESHGUI.hxx"
+
+// Qt includes
+#include <QWidget>
+#include <QStringList>
+#include <TopoDS_Shape.hxx>
+
+#include <SMESHGUI_VTKUtils.h>
+
+class SMESHGUI;
+class LightApp_SelectionMgr;
+class SVTK_Selector;
+class QPushButton;
+class QLineEdit;
+class QCheckBox;
+class QListWidget;
+class SMESH_Actor;
+class SMESH_PreviewActorsCollection;
+class vtkRenderer;
+
+class STDMESHERSGUI_EXPORT StdMeshersGUI_EdgeDirectionParamWdg : public QWidget
+{
+  Q_OBJECT
+
+public:
+  StdMeshersGUI_EdgeDirectionParamWdg( QWidget* parent = 0 );
+  ~StdMeshersGUI_EdgeDirectionParamWdg();
+
+  SMESH::long_array_var          GetListOfIDs();
+  void                           SetListOfIDs( SMESH::long_array_var );
+
+  void                           SetMainShapeEntry( const QString& theEntry );
+  const char*                    GetMainShapeEntry() { return myEntry.toLatin1().data();}
+
+  TopoDS_Shape                   GetMainShape() { return myMainShape; }
+
+  static GEOM::GEOM_Object_var   GetGeomObjectByEntry( const QString& );
+  static TopoDS_Shape            GetTopoDSByEntry( const QString& );
+
+  QString                        GetValue() const { return myParamValue; }
+
+  void                           showPreview ( bool );
+
+private:
+  void                           updateState();
+
+private slots:
+  void                           onAdd(); 
+  void                           onRemove(); 
+  void                           SelectionIntoArgument();
+  void                           onListSelectionChanged();
+
+private:
+  void                           init();
+
+private:
+  SMESHGUI*                      mySMESHGUI;
+  LightApp_SelectionMgr*         mySelectionMgr;          /* User shape selection */
+  SVTK_Selector*                 mySelector;
+  SMESH::SMESH_Mesh_var          myMesh;
+  TopoDS_Shape                   myMainShape;
+  QString                        myEntry;
+  vtkRenderer*                   myRenderer;
+  
+  QListWidget*                   myListWidget;
+  QPushButton*                   myAddButton;
+  QPushButton*                   myRemoveButton;
+  QList<int>                     mySelectedIDs;
+  QList<int>                     myListOfIDs;
+  
+  QString                        myParamValue;
+  bool                           myIsShown;
+  
+  SMESH_PreviewActorsCollection* myPreviewActor;
+};
+
+#endif // STDMESHERSGUI_EDGEDIRECTIONPARAMWGD_H

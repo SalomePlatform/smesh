@@ -29,7 +29,6 @@
 #include "SMESH_Hypothesis.idl"
 #include "SMESH_Mesh.idl"
 
-
 /*!
  * StdMeshers: interfaces to standard hypotheses and algorithms
  */
@@ -209,6 +208,26 @@ module StdMeshers
      */
     long ConversionMode()
       raises (SALOME::SALOME_Exception);
+
+    /*!
+     * Set list of edges to reverse
+     */
+    void SetReversedEdges( in SMESH::long_array list );
+    
+    /*!
+     * Returns list of edges to reverse
+     */
+    SMESH::long_array GetReversedEdges();
+    
+    /*!
+     * Set entry of the main object
+     */
+    void SetObjectEntry( in string entry );
+    
+    /*!
+     * Get the entry of the main object
+     */
+    string GetObjectEntry();
   };
 
   /*!
@@ -226,6 +245,26 @@ module StdMeshers
      * Returns <start segment length> or <end segment length> parameter value
      */
     double GetLength(in boolean isStartLength);
+    
+    /*!
+     * Set list of edges to reverse
+     */
+    void SetReversedEdges( in SMESH::long_array list );
+    
+    /*!
+     * Returns list of edges to reverse
+     */
+    SMESH::long_array GetReversedEdges();
+    
+    /*!
+     * Set entry of the main object
+     */
+    void SetObjectEntry( in string entry );
+    
+    /*!
+     * Get the entry of the main object
+     */
+    string GetObjectEntry();
   };
 
   /*!
@@ -277,6 +316,26 @@ module StdMeshers
      * Returns <start segment length> or <end segment length> parameter value
      */
     double GetLength(in boolean isStartLength);
+
+    /*!
+     * Set list of edges to reverse
+     */
+    void SetReversedEdges( in SMESH::long_array list );
+    
+    /*!
+     * Returns list of edges to reverse
+     */
+    SMESH::long_array GetReversedEdges();
+    
+    /*!
+     * Set entry of the main object
+     */
+    void SetObjectEntry( in string entry );
+    
+    /*!
+     * Get the entry of the main object
+     */
+    string GetObjectEntry();
   };
 
 

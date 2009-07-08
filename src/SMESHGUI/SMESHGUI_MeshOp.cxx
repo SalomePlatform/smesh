@@ -1063,6 +1063,15 @@ void SMESHGUI_MeshOp::createHypothesis (const int theDim,
 
       int obj = myDlg->getActiveObject();
       removeCustomFilters(); // Issue 0020170
+
+      // Set Geometry
+      QStringList aList;
+      myDlg->selectedObject( SMESHGUI_MeshDlg::Geom, aList );
+      if (aList.count() != 0)
+	aCreator->setShapeEntry( aList.first() );
+      else
+	aCreator->setShapeEntry( QString() );
+      
       myDlg->setEnabled( false );
       aCreator->create(initParamHyp, aHypName, myDlg);
       onActivateObject( obj ); // Issue 0020170. Restore filters
@@ -1115,6 +1124,14 @@ void SMESHGUI_MeshOp::onEditHyp( const int theHypType, const int theIndex )
     SMESH::SMESH_Hypothesis_var initParamHyp =
       getInitParamsHypothesis( aHyp->GetName(), aHyp->GetLibName());
     aCreator->setInitParamsHypothesis( initParamHyp );
+
+    // Set Geometry
+    QStringList aList;
+    myDlg->selectedObject( SMESHGUI_MeshDlg::Geom, aList );
+    if (aList.count() > 0)
+      aCreator->setShapeEntry( aList.first() );
+    else
+      aCreator->setShapeEntry( "" );
 
     int obj = myDlg->getActiveObject();
     removeCustomFilters(); // Issue 0020170

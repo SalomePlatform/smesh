@@ -107,9 +107,107 @@ void StdMeshers_Arithmetic1D_i::SetLength(CORBA::Double theLength,
 
 CORBA::Double StdMeshers_Arithmetic1D_i::GetLength( CORBA::Boolean theIsStart)
 {
-  MESSAGE( "StdMeshers_StartEndLength_i::GetLength" );
+  MESSAGE( "StdMeshers_Arithmetic1D_i::GetLength" );
   ASSERT( myBaseImpl );
   return this->GetImpl()->GetLength( theIsStart );
+}
+
+//=============================================================================
+/*!
+ *  StdMeshers_Arithmetic1D_i::SetReversedEdges
+ *
+ *  Set edges to reverse
+ */
+//=============================================================================
+
+void StdMeshers_Arithmetic1D_i::SetReversedEdges( const SMESH::long_array& theIds )
+{
+  MESSAGE( "StdMeshers_Arithmetic1D_i::SetReversedEdges" );
+  ASSERT( myBaseImpl );
+  try {
+    std::vector<int> ids( theIds.length() );
+    CORBA::Long iEnd = theIds.length();
+    for ( CORBA::Long i = 0; i < iEnd; i++ )
+      ids[ i ] = theIds[ i ];
+
+    this->GetImpl()->SetReversedEdges( ids );
+  }
+  catch ( SALOME_Exception& S_ex ) {
+    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(),
+				  SALOME::BAD_PARAM );
+  }
+
+  // Update Python script
+  /*  SMESH::TPythonDump() << _this() << ".SetEdgesToReverse( "
+      << theList << " )";*/
+}
+
+//=============================================================================
+/*!
+ *  StdMeshers_Arithmetic1D_i::SetObjectEntry
+ *
+ *  Set the Entry for the Main Object
+ */
+//=============================================================================
+
+void StdMeshers_Arithmetic1D_i::SetObjectEntry( const char* entry )
+{
+  MESSAGE( "StdMeshers_Arithmetic1D_i::SetObjectEntry" );
+  ASSERT( myBaseImpl );
+
+  try {
+    this->GetImpl()->SetObjectEntry( entry );
+    // Update Python script
+    //    SMESH::TPythonDump() << _this() << ".SetObjectEntry( '" << entry << "' )";
+  }
+  catch ( SALOME_Exception& S_ex ) {
+    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(),
+                                  SALOME::BAD_PARAM );
+  }
+}
+
+//=============================================================================
+/*!
+ *  StdMeshers_Arithmetic1D_i::GetObjectEntry
+ *
+ *  Set the Entry for the Main Object
+ */
+//=============================================================================
+
+char* StdMeshers_Arithmetic1D_i::GetObjectEntry()
+{
+  MESSAGE( "StdMeshers_Arithmetic1D_i::SetObjectEntry" );
+  ASSERT( myBaseImpl );
+  const char* entry;
+  try {
+    entry = this->GetImpl()->GetObjectEntry();
+  }
+  catch ( SALOME_Exception& S_ex ) {
+    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(),
+                                  SALOME::BAD_PARAM );
+  }
+  return CORBA::string_dup( entry );
+}
+
+//=============================================================================
+/*!
+ *  StdMeshers_Arithmetic1D_i::GetReversedEdges
+ *
+ *  Get reversed edges
+ */
+//=============================================================================
+
+SMESH::long_array* StdMeshers_Arithmetic1D_i::GetReversedEdges()
+{
+  MESSAGE( "StdMeshers_StartEndLength_i::GetReversedEdges" );
+  ASSERT( myBaseImpl );
+  SMESH::long_array_var anArray = new SMESH::long_array;
+  std::vector<int> ids = this->GetImpl()->GetReversedEdges();
+  anArray->length( ids.size() );
+  for ( CORBA::Long i = 0; i < ids.size(); i++)
+    anArray [ i ] = ids [ i ];
+
+  return anArray._retn();
 }
 
 //=============================================================================

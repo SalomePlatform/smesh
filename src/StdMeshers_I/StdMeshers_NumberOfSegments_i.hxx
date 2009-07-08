@@ -104,6 +104,18 @@ public:
   
   // Verify whether hypothesis supports given entity type 
   CORBA::Boolean IsDimSupported( SMESH::Dimension type );
+
+  //Set Reversed Edges
+  void SetReversedEdges( const SMESH::long_array& theIDs);
+
+  //Get Reversed Edges
+  SMESH::long_array*  GetReversedEdges();
+
+  //Set Object Entry
+  void SetObjectEntry( const char* entry);
+
+  //Get Object Entry
+  char* GetObjectEntry();
 };
 
 #endif

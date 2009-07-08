@@ -481,6 +481,7 @@ int StdMeshers_NumberOfSegments::ConversionMode() const
 
 ostream & StdMeshers_NumberOfSegments::SaveTo(ostream & save)
 {
+  int listSize = _edgeIDs.size();
   save << _numberOfSegments << " " << (int)_distrType;
   switch (_distrType)
   {
@@ -503,6 +504,13 @@ ostream & StdMeshers_NumberOfSegments::SaveTo(ostream & save)
 
   if (_distrType == DT_TabFunc || _distrType == DT_ExprFunc)
     save << " " << _convMode;
+
+  if ( _distrType != DT_Regular && listSize > 0 ) {
+    save << " " << listSize;
+    for ( int i = 0; i < listSize; i++ )
+      save << " " << _edgeIDs[i];
+    save << " " << _objEntry;
+  }
   
   return save;
 }
@@ -619,6 +627,18 @@ istream & StdMeshers_NumberOfSegments::LoadFrom(istream & load)
       load.clear(ios::badbit | load.rdstate());
   }
 
+  // load reversed edges IDs
+  int intVal;
+  isOK = (load >> intVal);
+  if ( isOK && _distrType != DT_Regular && intVal > 0 ) {
+    _edgeIDs.reserve( intVal );
+    for (int i = 0; i < _edgeIDs.capacity() && isOK; i++) {
+      isOK = (load >> intVal);
+      if ( isOK ) _edgeIDs.push_back( intVal );
+    }
+    isOK = (load >> _objEntry);
+  }
+
   return load;
 }
 
@@ -693,5 +713,20 @@ bool StdMeshers_NumberOfSegments::SetParametersByDefaults(const TDefaults&  dflt
                                                           const SMESH_Mesh* /*theMesh*/)
 {
   return (_numberOfSegments = dflts._nbSegments );
+}
+
+//=============================================================================
+/*!
+ *  
+ */
+//=============================================================================
+
+void StdMeshers_NumberOfSegments::SetReversedEdges( std::vector<int>& ids )
+{
+  if ( ids != _edgeIDs ) {
+    _edgeIDs = ids;
+
+    NotifySubMeshesHypothesisModification();
+  }
 }
 

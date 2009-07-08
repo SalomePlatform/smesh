@@ -105,9 +105,33 @@ double StdMeshers_StartEndLength::GetLength(bool isStartLength) const
  */
 //=============================================================================
 
+void StdMeshers_StartEndLength::SetReversedEdges( std::vector<int>& ids )
+{
+  if ( ids != _edgeIDs ) {
+    _edgeIDs = ids;
+
+    NotifySubMeshesHypothesisModification();
+  }
+}
+
+//=============================================================================
+/*!
+ *  
+ */
+//=============================================================================
+
 ostream & StdMeshers_StartEndLength::SaveTo(ostream & save)
 {
-  save << _begLength << " " <<_endLength;
+  int listSize = _edgeIDs.size();
+  save << _begLength << " " << _endLength << " " << listSize;
+
+  if ( listSize > 0 ) {
+    for ( int i = 0; i < listSize; i++) {
+      save << " " << _edgeIDs[i];
+    }
+    save << " " << _objEntry;
+  }
+
   return save;
 }
 
@@ -120,12 +144,25 @@ ostream & StdMeshers_StartEndLength::SaveTo(ostream & save)
 istream & StdMeshers_StartEndLength::LoadFrom(istream & load)
 {
   bool isOK = true;
+  int intVal;
   isOK = (load >> _begLength);
   if (!isOK)
     load.clear(ios::badbit | load.rdstate());
   isOK = (load >> _endLength);
+
   if (!isOK)
     load.clear(ios::badbit | load.rdstate());
+  
+  isOK = (load >> intVal);
+  if (isOK && intVal > 0) {
+    _edgeIDs.reserve( intVal );
+    for (int i = 0; i < _edgeIDs.capacity() && isOK; i++) {
+      isOK = (load >> intVal);
+      if ( isOK ) _edgeIDs.push_back( intVal );
+    }
+    isOK = (load >> _objEntry);
+  }
+
   return load;
 }
 

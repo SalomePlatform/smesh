@@ -64,6 +64,9 @@ public:
   QString                      hypType() const;
   QString                      hypName() const;
   bool                         isCreation() const;
+  
+  QString                      getShapeEntry() const { return myShapeEntry; }
+  void                         setShapeEntry( const QString& theEntry );
 
 protected:
   struct StdParam
@@ -121,6 +124,7 @@ private:
   bool                         myIsCreate;
   QtxDialog*                   myDlg;
   QEventLoop*                  myEventLoop;
+  QString                      myShapeEntry;
 };
 
 class SMESHGUI_HypothesisDlg : public QtxDialog

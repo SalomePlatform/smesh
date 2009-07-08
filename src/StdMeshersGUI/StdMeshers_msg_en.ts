@@ -245,6 +245,10 @@
             <source>SMESH_REMOVE_ROW</source>
             <translation>Remove row</translation>
         </message>
+	<message>
+            <source>SMESH_REVERCE_EDGES</source>
+            <translation>Reverce Edges</translation>
+        </message>
         <message>
             <source>SMESH_SEGMENT_LENGTH_AROUND_VERTEX_HYPOTHESIS</source>
             <translation>Segment Length Around Vertex</translation>

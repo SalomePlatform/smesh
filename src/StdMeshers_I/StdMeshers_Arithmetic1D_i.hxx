@@ -54,8 +54,21 @@ public:
   // Set length
   void SetLength( CORBA::Double theLength, CORBA::Boolean theIsStart )
     throw ( SALOME::SALOME_Exception );
+
   // Get length
   CORBA::Double GetLength(CORBA::Boolean theIsStart);
+
+  //Set Reversed Edges
+  void SetReversedEdges( const SMESH::long_array& theIDs);
+
+  //Get Reversed Edges
+  SMESH::long_array*  GetReversedEdges();
+  
+  //Set the Entry of the Object
+  void SetObjectEntry( const char* theEntry);
+
+  //Get Object Entry
+  char* GetObjectEntry();
 
   // Get implementation
   ::StdMeshers_Arithmetic1D* GetImpl();

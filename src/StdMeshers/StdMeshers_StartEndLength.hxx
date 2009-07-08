@@ -31,6 +31,8 @@
 #include "SMESH_Hypothesis.hxx"
 #include "Utils_SALOME_Exception.hxx"
 
+#include <vector>
+
 class STDMESHERS_EXPORT StdMeshers_StartEndLength:public SMESH_Hypothesis
 {
  public:
@@ -40,6 +42,14 @@ class STDMESHERS_EXPORT StdMeshers_StartEndLength:public SMESH_Hypothesis
   void SetLength(double length, bool isStartLength) throw(SALOME_Exception);
 
   double GetLength(bool isStartLength) const;
+
+  void SetReversedEdges( std::vector<int>& ids);
+
+  const std::vector<int>& GetReversedEdges() const { return _edgeIDs; }
+
+  void SetObjectEntry( const char* entry ) { _objEntry = entry; }
+
+  const char* GetObjectEntry() { return _objEntry.c_str(); }
   
   virtual std::ostream & SaveTo(std::ostream & save);
   virtual std::istream & LoadFrom(std::istream & load);
@@ -63,6 +73,8 @@ class STDMESHERS_EXPORT StdMeshers_StartEndLength:public SMESH_Hypothesis
 
 protected:
   double _begLength, _endLength;
+  std::vector<int>   _edgeIDs;
+  std::string        _objEntry;
 };
 
 #endif

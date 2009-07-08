@@ -159,6 +159,7 @@ bool SMESHGUI_GenericHypothesisCreator::editHypothesis( SMESH::SMESH_Hypothesis_
     Dlg->setType( type() );
     retrieveParams();
     Dlg->show();
+    Dlg->resize( Dlg->minimumSizeHint() );
     if ( !myEventLoop )
       myEventLoop = new QEventLoop( this );
     myEventLoop->exec(); // make myDlg not modal
@@ -381,6 +382,11 @@ QString SMESHGUI_GenericHypothesisCreator::stdParamValues( const ListOfStdParams
 SMESH::SMESH_Hypothesis_var SMESHGUI_GenericHypothesisCreator::hypothesis() const
 {
   return myHypo;
+}
+
+void SMESHGUI_GenericHypothesisCreator::setShapeEntry( const QString& theEntry )
+{
+  myShapeEntry = theEntry;
 }
 
 //================================================================================

@@ -34,6 +34,7 @@ salomeinclude_HEADERS = \
 	SMESH_ActorUtils.h \
 	SMESH_ActorDef.h \
 	SMESH_DeviceActor.h \
+	SMESH_PreviewActorsCollection.h \
 	SMESH_ExtractGeometry.h \
 	SMESH_ActorUtils.h \
 	SMESH_FaceOrientationFilter.h
@@ -45,11 +46,13 @@ dist_libSMESHObject_la_SOURCES = \
 	SMESH_Object.cxx \
 	SMESH_DeviceActor.cxx \
 	SMESH_Actor.cxx \
+	SMESH_PreviewActorsCollection.cxx \
 	SMESH_ExtractGeometry.cxx \
 	SMESH_ActorUtils.cxx \
 	SMESH_FaceOrientationFilter.cxx
 
 libSMESHObject_la_CPPFLAGS = \
+        $(QT_INCLUDES) \
         $(KERNEL_CXXFLAGS) \
         $(GUI_CXXFLAGS) \
 	$(MED_CXXFLAGS) \

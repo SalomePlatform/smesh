@@ -33,6 +33,7 @@
 #include <SMESH_NumberFilter.hxx>
 #include "StdMeshersGUI_ObjectReferenceParamWdg.h"
 #include "StdMeshersGUI_LayerDistributionParamWdg.h"
+#include "StdMeshersGUI_EdgeDirectionParamWdg.h"
 #include <SALOMEDSClient_Study.hxx>
 
 // SALOME GUI includes
@@ -444,10 +445,18 @@ QString StdMeshersGUI_StdHypothesisCreator::storeParams() const
       StdMeshers::StdMeshers_Arithmetic1D_var h =
 	StdMeshers::StdMeshers_Arithmetic1D::_narrow( hypothesis() );
 
+      StdMeshersGUI_EdgeDirectionParamWdg* w = 
+        widget< StdMeshersGUI_EdgeDirectionParamWdg >( 2 );
+
       h->SetLength( params[0].myValue.toDouble(), true );
       h->SetParameters(SMESHGUI::JoinObjectParameters(aVariablesList));
       h->SetLength( params[1].myValue.toDouble(), false );
       h->SetParameters(SMESHGUI::JoinObjectParameters(aVariablesList));
+      if (w) {
+	h->SetReversedEdges( w->GetListOfIDs() );
+	const char * entry = w->GetMainShapeEntry();
+	h->SetObjectEntry( entry );
+      }
     }
     else if( hypType()=="MaxElementArea" )
     {
@@ -469,10 +478,17 @@ QString StdMeshersGUI_StdHypothesisCreator::storeParams() const
       StdMeshers::StdMeshers_StartEndLength_var h =
 	StdMeshers::StdMeshers_StartEndLength::_narrow( hypothesis() );
 
+      StdMeshersGUI_EdgeDirectionParamWdg* w = 
+        widget< StdMeshersGUI_EdgeDirectionParamWdg >( 2 );
+
       h->SetLength( params[0].myValue.toDouble(), true );
       h->SetParameters(SMESHGUI::JoinObjectParameters(aVariablesList));
       h->SetLength( params[1].myValue.toDouble(), false );
       h->SetParameters(SMESHGUI::JoinObjectParameters(aVariablesList));
+      if (w) {
+	h->SetReversedEdges( w->GetListOfIDs() );
+	h->SetObjectEntry( w->GetMainShapeEntry() );
+      }
     }
     else if( hypType()=="Deflection1D" )
     {
@@ -650,10 +666,26 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
       item.myValue = h->GetLength( true );
     p.append( item );
 
+    customWidgets()->append (0);
+
     item.myName = tr( "SMESH_END_LENGTH_PARAM" );
     if(!initVariableName(aParameters,item,1))
       item.myValue = h->GetLength( false );
     p.append( item );
+
+    customWidgets()->append (0);
+
+    item.myName = tr( "SMESH_REVERCE_EDGES" );
+    p.append( item );
+
+    StdMeshersGUI_EdgeDirectionParamWdg* aDirectionWidget = new StdMeshersGUI_EdgeDirectionParamWdg();
+    QString anEntry = SMESHGUI_GenericHypothesisCreator::getShapeEntry();
+    if ( anEntry == "" )
+      anEntry = h->GetObjectEntry();
+    aDirectionWidget->SetMainShapeEntry( anEntry );
+    aDirectionWidget->SetListOfIDs( h->GetReversedEdges() );
+    aDirectionWidget->showPreview( true );
+    customWidgets()->append ( aDirectionWidget );
   }
   else if( hypType()=="MaxElementArea" )
   {
@@ -686,12 +718,26 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
     if(!initVariableName(aParameters,item,0)) 
       item.myValue = h->GetLength( true );
     p.append( item );
+    customWidgets()->append(0);
 
     item.myName = tr( "SMESH_END_LENGTH_PARAM" );
     if(!initVariableName(aParameters,item,1)) 
       item.myValue = h->GetLength( false );
     p.append( item );
-    
+    customWidgets()->append(0);
+
+    item.myName = tr( "SMESH_REVERCE_EDGES" );
+    p.append( item );
+
+    StdMeshersGUI_EdgeDirectionParamWdg* aDirectionWidget = new StdMeshersGUI_EdgeDirectionParamWdg();
+    QString anEntry = SMESHGUI_GenericHypothesisCreator::getShapeEntry();
+    if ( anEntry == "" )
+      anEntry = h->GetObjectEntry();
+    aDirectionWidget->SetMainShapeEntry( anEntry );
+    aDirectionWidget->SetListOfIDs( h->GetReversedEdges() );
+    aDirectionWidget->SetMainShapeEntry( h->GetObjectEntry() );
+    aDirectionWidget->showPreview( true );
+    customWidgets()->append ( aDirectionWidget );
   }
   else if( hypType()=="Deflection1D" )
   {
@@ -997,6 +1043,13 @@ bool StdMeshersGUI_StdHypothesisCreator::getParamFromCustomWidget( StdParam & pa
   {
     const StdMeshersGUI_LayerDistributionParamWdg * w =
       static_cast<const StdMeshersGUI_LayerDistributionParamWdg*>( widget );
+    param.myValue = w->GetValue();
+    return true;
+  }
+  if ( widget->inherits( "StdMeshersGUI_EdgeDirectionParamWdg" ))
+  {
+    const StdMeshersGUI_EdgeDirectionParamWdg * w =
+      static_cast<const StdMeshersGUI_EdgeDirectionParamWdg*>( widget );
     param.myValue = w->GetValue();
     return true;
   }

@@ -161,6 +161,13 @@ public:
   int ConversionMode() const
     throw (SALOME_Exception);
 
+  void SetReversedEdges( std::vector<int>& ids);
+
+  void SetObjectEntry( const char* entry ) { _objEntry = entry; }
+
+  const char* GetObjectEntry() { return _objEntry.c_str(); }
+
+  const std::vector<int>& GetReversedEdges() const { return _edgeIDs; }
 
   /*!
    * \brief Initialize number of segments by the mesh built on the geometry
@@ -188,6 +195,8 @@ protected:
   std::vector<double> _table, _distr;    //!< the table for DT_TabFunc, a sequence of pairs of numbers
   std::string         _func;             //!< the expression of the function for DT_ExprFunc
   int                 _convMode;         //!< flag of conversion mode: 0=exponent, 1=cut negative
+  std::vector<int>    _edgeIDs;          //!< list of reversed edges ids
+  std::string         _objEntry;          //!< Entry of the main object to reverse edges
 };
 
 #endif

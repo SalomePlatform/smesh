@@ -127,6 +127,7 @@ protected:
   int    _ivalue[3];
   std::vector<double> _vvalue[1];
   std::string         _svalue[1];
+  std::vector<int>    _revEdgesIDs;
 
   // a source of propagated hypothesis, is set by CheckHypothesis()
   // always called before Compute()

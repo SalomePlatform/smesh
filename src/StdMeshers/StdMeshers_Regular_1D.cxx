@@ -180,12 +180,15 @@ bool StdMeshers_Regular_1D::CheckHypothesis
     {
     case StdMeshers_NumberOfSegments::DT_Scale:
       _value[ SCALE_FACTOR_IND ] = hyp->GetScaleFactor();
+      _revEdgesIDs = hyp->GetReversedEdges();
       break;
     case StdMeshers_NumberOfSegments::DT_TabFunc:
       _vvalue[ TAB_FUNC_IND ] = hyp->GetTableFunction();
+      _revEdgesIDs = hyp->GetReversedEdges();
       break;
     case StdMeshers_NumberOfSegments::DT_ExprFunc:
       _svalue[ EXPR_FUNC_IND ] = hyp->GetExpressionFunction();
+      _revEdgesIDs = hyp->GetReversedEdges();
       break;
     case StdMeshers_NumberOfSegments::DT_Regular:
       break;
@@ -209,6 +212,9 @@ bool StdMeshers_Regular_1D::CheckHypothesis
     _value[ END_LENGTH_IND ] = hyp->GetLength( false );
     ASSERT( _value[ BEG_LENGTH_IND ] > 0 && _value[ END_LENGTH_IND ] > 0 );
     _hypType = ARITHMETIC_1D;
+
+    _revEdgesIDs = hyp->GetReversedEdges();
+
     aStatus = SMESH_Hypothesis::HYP_OK;
   }
 
@@ -221,6 +227,9 @@ bool StdMeshers_Regular_1D::CheckHypothesis
     _value[ END_LENGTH_IND ] = hyp->GetLength( false );
     ASSERT( _value[ BEG_LENGTH_IND ] > 0 && _value[ END_LENGTH_IND ] > 0 );
     _hypType = BEG_END_LENGTH;
+
+    _revEdgesIDs = hyp->GetReversedEdges();
+
     aStatus = SMESH_Hypothesis::HYP_OK;
   }
 
@@ -821,6 +830,11 @@ bool StdMeshers_Regular_1D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & t
     bool reversed = false;
     if ( !_mainEdge.IsNull() )
       reversed = ( _mainEdge.Orientation() == TopAbs_REVERSED );
+    else if ( _revEdgesIDs.size() > 0 ) {
+      for ( int i = 0; i < _revEdgesIDs.size(); i++)
+	if ( _revEdgesIDs[i] == shapeID )
+	  reversed = true;
+    }
 
     BRepAdaptor_Curve C3d( E );
     double length = EdgeLength( E );
@@ -948,7 +962,7 @@ bool StdMeshers_Regular_1D::Evaluate(SMESH_Mesh & theMesh,
 
   const TopoDS_Edge & EE = TopoDS::Edge(theShape);
   TopoDS_Edge E = TopoDS::Edge(EE.Oriented(TopAbs_FORWARD));
-  int shapeID = meshDS->ShapeToIndex( E );
+  //  int shapeID = meshDS->ShapeToIndex( E );
 
   double f, l;
   Handle(Geom_Curve) Curve = BRep_Tool::Curve(E, f, l);

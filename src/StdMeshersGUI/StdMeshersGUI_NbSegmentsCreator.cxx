@@ -26,6 +26,7 @@
 #include "StdMeshersGUI_NbSegmentsCreator.h"
 #include "StdMeshersGUI_DistrTable.h"
 #include "StdMeshersGUI_DistrPreview.h"
+#include "StdMeshersGUI_EdgeDirectionParamWdg.h"
 
 #include <SMESHGUI.h>
 #include <SMESHGUI_Utils.h>
@@ -99,7 +100,7 @@ QFrame* StdMeshersGUI_NbSegmentsCreator::buildFrame()
 
   QVBoxLayout* lay = new QVBoxLayout( fr );
   lay->setMargin( 0 );
-  lay->setSpacing( 0 );
+  lay->setSpacing( SPACING );
 
   QGroupBox* GroupC1 = new QGroupBox( tr( "SMESH_ARGUMENTS" ), fr );
   lay->addWidget( GroupC1 );
@@ -195,11 +196,25 @@ QFrame* StdMeshersGUI_NbSegmentsCreator::buildFrame()
   myPreviewRow = row;
   row++;
 
+  // 8) reverce edge parameters
+  myReversedEdgesBox = new QGroupBox(tr( "SMESH_REVERCE_EDGES" ), fr);
+  QHBoxLayout* edgeLay = new QHBoxLayout( myReversedEdgesBox );
+
+  myDirectionWidget = new StdMeshersGUI_EdgeDirectionParamWdg();
+  QString anEntry = getShapeEntry();
+  if ( anEntry == "" )
+    anEntry = h->GetObjectEntry();
+  myDirectionWidget->SetMainShapeEntry( anEntry );
+  myDirectionWidget->SetListOfIDs( h->GetReversedEdges() );
+  edgeLay->addWidget( myDirectionWidget );
+
+  lay->addWidget( myReversedEdgesBox );
+
   connect( myNbSeg, SIGNAL( valueChanged( const QString& ) ), this, SLOT( onValueChanged() ) );
   connect( myDistr, SIGNAL( activated( int ) ), this, SLOT( onValueChanged() ) );
   connect( myTable, SIGNAL( valueChanged( int, int ) ), this, SLOT( onValueChanged() ) );
   connect( myExpr,  SIGNAL( textChanged( const QString& ) ), this, SLOT( onValueChanged() ) );
-  connect( myConv,  SIGNAL( cuttonClicked( int ) ), this, SLOT( onValueChanged() ) );
+  connect( myConv,  SIGNAL( buttonClicked( int ) ), this, SLOT( onValueChanged() ) );
 
   return fr;
 }
@@ -348,6 +363,11 @@ bool StdMeshersGUI_NbSegmentsCreator::storeParamsToHypo( const NbSegmentsHypothe
     if( distr==2 || distr==3 )
       h->SetConversionMode( h_data.myConv );
 
+    if( distr==1 || distr==2 || distr==3 ) {
+      h->SetReversedEdges( myDirectionWidget->GetListOfIDs() );
+      h->SetObjectEntry( myDirectionWidget->GetMainShapeEntry() );
+    }
+
     if( distr==2 )
       h->SetTableFunction( h_data.myTable );
 
@@ -400,6 +420,8 @@ void StdMeshersGUI_NbSegmentsCreator::onValueChanged()
 
   myScale->setShown( distr==1 );
   myLScale->setShown( distr==1 );
+  myReversedEdgesBox->setShown( !distr==0 );
+  myDirectionWidget->showPreview( !distr==0 );
 
   bool isFunc = distr==2 || distr==3;
   myPreview->setShown( isFunc );
@@ -434,8 +456,11 @@ void StdMeshersGUI_NbSegmentsCreator::onValueChanged()
 
   if ( (QtxComboBox*)sender() == myDistr && dlg() ) {
     QApplication::instance()->processEvents();
+    myGroupLayout->invalidate();
+    dlg()->layout()->invalidate();
     dlg()->updateGeometry();
-    dlg()->setMinimumSize( dlg()->minimumSizeHint().width(), dlg()->minimumSizeHint().height() );
+    dlg()->setMinimumSize( dlg()->minimumSizeHint() );
     dlg()->resize( dlg()->minimumSize() );
+    QApplication::instance()->processEvents();
   }
 }
