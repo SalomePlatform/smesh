@@ -237,8 +237,22 @@ module StdMeshers
   {
     /*!
      * Sets <start segment length> or <end segment length> parameter value
+     * * OBSOLETE *. Avoid such a way of interface design
+     * * It is recommended to dedicate a method to each parameter.
      */
     void SetLength(in double length, in boolean isStartLength) 
+      raises (SALOME::SALOME_Exception);
+
+    /*!
+     * Sets <start segment length> parameter value
+     */
+    void SetStartLength(in double length) 
+      raises (SALOME::SALOME_Exception);
+
+    /*!
+     * Sets <end segment length> parameter value
+     */
+    void SetEndLength(in double length)
       raises (SALOME::SALOME_Exception);
 
     /*!
@@ -308,8 +322,22 @@ module StdMeshers
   {
     /*!
      * Sets <start segment length> or <end segment length> parameter value
+     * * OBSOLETE *. Avoid such a way of interface design.
+     * * It is recommended to dedicate a method to each parameter.
      */
     void SetLength(in double length, in boolean isStartLength) 
+      raises (SALOME::SALOME_Exception);
+
+    /*!
+     * Sets <start segment length> parameter value
+     */
+    void SetStartLength(in double length) 
+      raises (SALOME::SALOME_Exception);
+
+    /*!
+     * Sets <end segment length> parameter value
+     */
+    void SetEndLength(in double length)
       raises (SALOME::SALOME_Exception);
 
     /*!
