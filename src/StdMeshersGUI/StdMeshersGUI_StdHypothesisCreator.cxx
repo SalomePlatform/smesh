@@ -448,9 +448,9 @@ QString StdMeshersGUI_StdHypothesisCreator::storeParams() const
       StdMeshersGUI_EdgeDirectionParamWdg* w = 
         widget< StdMeshersGUI_EdgeDirectionParamWdg >( 2 );
 
-      h->SetLength( params[0].myValue.toDouble(), true );
+      h->SetStartLength( params[0].myValue.toDouble() );
       h->SetParameters(SMESHGUI::JoinObjectParameters(aVariablesList));
-      h->SetLength( params[1].myValue.toDouble(), false );
+      h->SetEndLength( params[1].myValue.toDouble() );
       h->SetParameters(SMESHGUI::JoinObjectParameters(aVariablesList));
       if (w) {
 	h->SetReversedEdges( w->GetListOfIDs() );
@@ -481,9 +481,9 @@ QString StdMeshersGUI_StdHypothesisCreator::storeParams() const
       StdMeshersGUI_EdgeDirectionParamWdg* w = 
         widget< StdMeshersGUI_EdgeDirectionParamWdg >( 2 );
 
-      h->SetLength( params[0].myValue.toDouble(), true );
+      h->SetStartLength( params[0].myValue.toDouble() );
       h->SetParameters(SMESHGUI::JoinObjectParameters(aVariablesList));
-      h->SetLength( params[1].myValue.toDouble(), false );
+      h->SetEndLength( params[1].myValue.toDouble() );
       h->SetParameters(SMESHGUI::JoinObjectParameters(aVariablesList));
       if (w) {
 	h->SetReversedEdges( w->GetListOfIDs() );
