@@ -560,11 +560,11 @@ void SMESHGUI_GroupDlg::init (SMESH::SMESH_GroupBase_ptr theGroup,
   myGrpTypeGroup->button(grpType)->setChecked(true);
   onGrpTypeChanged(grpType);
 
+  myTypeId = aType;
   if ( grpType == 0 ) {
     myCurrentLineEdit = 0;
     myElements->clear();
     setSelectionMode(aType);
-    myTypeId = aType;
 
     setShowEntityMode(); // depends on myTypeId
 

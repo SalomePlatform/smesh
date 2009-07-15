@@ -29,6 +29,9 @@
 // SMESH includes
 #include "SMESH_SMESHGUI.hxx"
 
+// SALOME GUI includes
+#include <SALOME_InteractiveObject.hxx>
+
 // Qt includes
 #include <QDialog>
 #include <QMap>
@@ -70,13 +73,14 @@ public:
   SMESHGUI_RevolutionDlg( SMESHGUI* );
   ~SMESHGUI_RevolutionDlg();
 
+  void                      reject();
+
 private:
   enum {NONE_SELECT, POINT_SELECT, FACE_SELECT};
   
   void                      Init( bool = true);
   void                      closeEvent( QCloseEvent* );
   void                      enterEvent( QEvent* );           /* mouse enter the QWidget */
-  void                      hideEvent( QHideEvent* );        /* ESC key */
   void                      keyPressEvent( QKeyEvent* );
   int                       GetConstructorId();
   bool                      IsAxisOk();
@@ -90,6 +94,7 @@ private:
   QString                   myElementsId;
   QWidget*                  myEditCurrentArgument;   /* Current  argument */
   SVTK_Selector*            mySelector;
+  Handle(SALOME_InteractiveObject) myIO;
   
   SMESH::SMESH_IDSource_var mySelectedObject;
 
@@ -152,6 +157,7 @@ private:
 
   
   QString                   myHelpFileName;
+  QString                   myIDs;
   
   QPushButton*              myFilterBtn;
   SMESHGUI_FilterDlg*       myFilterDlg;

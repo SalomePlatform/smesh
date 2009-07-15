@@ -29,6 +29,7 @@
 #include "SMESHGUI_Utils.h"
 #include "SMESHGUI_VTKUtils.h"
 #include "SMESHGUI_GEOMGenUtils.h"
+#include "SMESHGUI_ComputeDlg.h"
 
 #include <SMESH_Type.h>
 #include <SMESH_Actor.h>
@@ -113,6 +114,7 @@ QVariant SMESHGUI_Selection::parameter( const int ind, const QString& p ) const
   else if ( p=="controlMode" )   val = QVariant( controlMode( ind ) );
   else if ( p=="displayMode" )   val = QVariant( displayMode( ind ) );
   else if ( p=="isComputable" )  val = QVariant( isComputable( ind ) );
+  else if ( p=="isPreComputable" )  val = QVariant( isPreComputable( ind ) );
   else if ( p=="hasReference" )  val = QVariant( hasReference( ind ) );
   else if ( p=="isImported" )    val = QVariant( isImported( ind ) );
   else if ( p=="facesOrientationMode" ) val = QVariant( facesOrientationMode( ind ) );
@@ -380,6 +382,23 @@ QVariant SMESHGUI_Selection::isComputable( int ind ) const
         }
 //      }
 //    }
+  }
+  return QVariant( false );
+}
+
+//=======================================================================
+//function : isPreComputable
+//purpose  : 
+//=======================================================================
+
+QVariant SMESHGUI_Selection::isPreComputable( int ind ) const
+{
+  if ( ind >= 0 && ind < myTypes.count() && myTypes[ind] != "Unknown" )
+  {
+    QMap<int,int> modeMap;
+    _PTR(SObject) pMesh = SMESH::GetActiveStudyDocument()->FindObjectID( entry( ind ).toLatin1().data() );
+    SMESHGUI_PrecomputeOp::getAssignedAlgos( pMesh, modeMap );
+    return QVariant( modeMap.size() > 1 );
   }
   return QVariant( false );
 }

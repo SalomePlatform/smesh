@@ -1163,11 +1163,19 @@ void SMESH_ActorDef::SetEntityMode(unsigned int theMode){
   aFilter = myBaseActor->GetExtractUnstructuredGrid();
   aFilter->ClearRegisteredCellsWithType();
   aFilter->SetModeOfChanging(VTKViewer_ExtractUnstructuredGrid::eAdding);
+
+  VTKViewer_ExtractUnstructuredGrid* aHightFilter = myHighlitableActor->GetExtractUnstructuredGrid();
+  aHightFilter->ClearRegisteredCellsWithType();
+  aHightFilter->SetModeOfChanging(VTKViewer_ExtractUnstructuredGrid::eAdding);
+
   
   if(myEntityMode & eEdges){
     if (MYDEBUG) MESSAGE("EDGES");
     aFilter->RegisterCellsWithType(VTK_LINE);
     aFilter->RegisterCellsWithType(VTK_QUADRATIC_EDGE);
+
+    aHightFilter->RegisterCellsWithType(VTK_LINE);
+    aHightFilter->RegisterCellsWithType(VTK_QUADRATIC_EDGE);
   }
 
   if(myEntityMode & eFaces){
@@ -1177,6 +1185,12 @@ void SMESH_ActorDef::SetEntityMode(unsigned int theMode){
     aFilter->RegisterCellsWithType(VTK_QUAD);
     aFilter->RegisterCellsWithType(VTK_QUADRATIC_TRIANGLE);
     aFilter->RegisterCellsWithType(VTK_QUADRATIC_QUAD);
+
+    aHightFilter->RegisterCellsWithType(VTK_TRIANGLE);
+    aHightFilter->RegisterCellsWithType(VTK_POLYGON);
+    aHightFilter->RegisterCellsWithType(VTK_QUAD);
+    aHightFilter->RegisterCellsWithType(VTK_QUADRATIC_TRIANGLE);
+    aHightFilter->RegisterCellsWithType(VTK_QUADRATIC_QUAD);
   }
 
   if(myEntityMode & eVolumes){
@@ -1190,6 +1204,16 @@ void SMESH_ActorDef::SetEntityMode(unsigned int theMode){
     aFilter->RegisterCellsWithType(VTK_QUADRATIC_HEXAHEDRON);
     aFilter->RegisterCellsWithType(VTK_QUADRATIC_WEDGE);
     aFilter->RegisterCellsWithType(VTK_CONVEX_POINT_SET);
+    
+    aHightFilter->RegisterCellsWithType(VTK_TETRA);
+    aHightFilter->RegisterCellsWithType(VTK_VOXEL);
+    aHightFilter->RegisterCellsWithType(VTK_HEXAHEDRON);
+    aHightFilter->RegisterCellsWithType(VTK_WEDGE);
+    aHightFilter->RegisterCellsWithType(VTK_PYRAMID);
+    aHightFilter->RegisterCellsWithType(VTK_QUADRATIC_TETRA);
+    aHightFilter->RegisterCellsWithType(VTK_QUADRATIC_HEXAHEDRON);
+    aHightFilter->RegisterCellsWithType(VTK_QUADRATIC_WEDGE);
+    aHightFilter->RegisterCellsWithType(VTK_CONVEX_POINT_SET);
   }
   aFilter->Update();
   if (MYDEBUG) MESSAGE(aFilter->GetOutput()->GetNumberOfCells());

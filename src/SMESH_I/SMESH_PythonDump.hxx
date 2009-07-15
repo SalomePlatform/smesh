@@ -63,7 +63,7 @@ public:
     * \retval TCollection_AsciiString - The file name
    */
   static const char* SmeshpyName() { return "smesh"; }
-  static const char* GenName() { return "smesh.smesh"; }
+  static const char* GenName() { return "smesh"; }
 };
 
 namespace SMESH
@@ -107,6 +107,9 @@ namespace SMESH
 
     TPythonDump& 
     operator<<(const SMESH::ElementType& theArg);
+
+    TPythonDump&
+    operator<<(const SMESH::GeometryType& theArg);
 
     TPythonDump& 
     operator<<(const SMESH::long_array& theArg);

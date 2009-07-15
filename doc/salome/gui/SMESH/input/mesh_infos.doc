@@ -53,8 +53,7 @@ the information is displayed in Python Console.
 \anchor mesh_element_info_anchor
 <h2>Mesh Element Info</h2> 
 
-The <b>Mesh Element Info</b> box gives basic information about the
-type and the coordinates of the selected mesh element.
+The <b>Mesh Element Info</b> dialog box gives basic information about the type, coordinates and connectivity of the selected mesh node or element.
 \n It is possible to input the Element ID or to select the Element in
 the Viewer.
 

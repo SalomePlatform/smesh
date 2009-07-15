@@ -22,8 +22,8 @@
 // SMESH SMESHGUI : GUI for SMESH component
 // File   : SMESHGUI_MeshOp.cxx
 // Author : Sergey LITONIN, Open CASCADE S.A.S.
+
 // SMESH includes
-//
 #include "SMESHGUI_MeshOp.h"
 
 #include "SMESHGUI.h"
@@ -1053,7 +1053,9 @@ void SMESHGUI_MeshOp::createHypothesis (const int theDim,
     SMESH::CreateHypothesis(theTypeName, aHypName, false);
   } else {
     // Get hypotheses creator client (GUI)
-    SMESHGUI_GenericHypothesisCreator* aCreator = SMESH::GetHypothesisCreator(theTypeName);
+    // BUG 0020378
+    //SMESHGUI_GenericHypothesisCreator* aCreator = SMESH::GetHypothesisCreator(theTypeName);
+    SMESH::HypothesisCreatorPtr aCreator = SMESH::GetHypothesisCreator(theTypeName);
 
     // Create hypothesis
     if (aCreator) {
@@ -1117,7 +1119,9 @@ void SMESHGUI_MeshOp::onEditHyp( const int theHypType, const int theIndex )
   if ( aHyp->_is_nil() )
     return;
 
-  SMESHGUI_GenericHypothesisCreator* aCreator = SMESH::GetHypothesisCreator( aHyp->GetName() );
+  // BUG 0020378
+  //SMESHGUI_GenericHypothesisCreator* aCreator = SMESH::GetHypothesisCreator(aHyp->GetName());
+  SMESH::HypothesisCreatorPtr aCreator = SMESH::GetHypothesisCreator(aHyp->GetName());
   if ( aCreator )
   {
     // Get initial parameters
@@ -1699,11 +1703,14 @@ SMESH::SMESH_Hypothesis_var SMESHGUI_MeshOp::getAlgo( const int theDim )
         SMESH::CreateHypothesis(aHypName, aHypData->Label, true);
       } else {
         // Get hypotheses creator client (GUI)
-        SMESHGUI_GenericHypothesisCreator* aCreator = SMESH::GetHypothesisCreator(aHypName);
+        // BUG 0020378
+        //SMESHGUI_GenericHypothesisCreator* aCreator = SMESH::GetHypothesisCreator(aHypName);
+        SMESH::HypothesisCreatorPtr aCreator = SMESH::GetHypothesisCreator(aHypName);
 
         // Create algorithm
-        if (aCreator)
+        if (aCreator) {
           aCreator->create(true, aHypName, myDlg);
+        }
         else
           SMESH::CreateHypothesis(aHypName, aHypData->Label, true);
       }

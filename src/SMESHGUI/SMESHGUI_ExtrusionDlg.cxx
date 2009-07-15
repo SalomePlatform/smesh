@@ -337,6 +337,7 @@ SMESHGUI_ExtrusionDlg::~SMESHGUI_ExtrusionDlg()
 void SMESHGUI_ExtrusionDlg::Init (bool ResetControls)
 {
   myBusy = false;
+  myIDs.clear();
 
   LineEditElements->clear();
   myNbOkElements = 0;
@@ -400,6 +401,8 @@ void SMESHGUI_ExtrusionDlg::ConstructorsClicked (int constructorId)
       GroupArguments->setTitle(tr("EXTRUSION_1D"));
       if (!CheckBoxMesh->isChecked())
 	{
+	  LineEditElements->clear();
+	  myIDs.clear();
 	  if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
 	    aViewWindow->SetSelectionMode(EdgeSelection);
 	}
@@ -410,6 +413,8 @@ void SMESHGUI_ExtrusionDlg::ConstructorsClicked (int constructorId)
       GroupArguments->setTitle(tr("EXTRUSION_2D"));
       if (!CheckBoxMesh->isChecked())
 	{
+	  LineEditElements->clear();
+	  myIDs.clear();
 	  if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
 	    aViewWindow->SetSelectionMode(FaceSelection);
 	}
@@ -586,17 +591,6 @@ void SMESHGUI_ExtrusionDlg::ClickOnOk()
 //=================================================================================
 void SMESHGUI_ExtrusionDlg::ClickOnCancel()
 {
-  disconnect(mySelectionMgr, 0, this, 0);
-  mySelectionMgr->clearFilters();
-  //mySelectionMgr->clearSelected();
-  if (SMESH::GetCurrentVtkView()) {
-    SMESH::RemoveFilters(); // PAL6938 -- clean all mesh entity filters
-    SMESH::SetPointRepresentation(false);
-    SMESH::SetPickable();
-  }
-  if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
-    aViewWindow->SetSelectionMode(ActorSelection);
-  mySMESHGUI->ResetState();
   reject();
 }
 
@@ -879,15 +873,44 @@ void SMESHGUI_ExtrusionDlg::enterEvent (QEvent*)
 }
 
 //=================================================================================
+// function : closeEvent()
+// purpose  :
+//=================================================================================
+void SMESHGUI_ExtrusionDlg::closeEvent( QCloseEvent* )
+{
+  /* same than click on cancel button */
+  disconnect(mySelectionMgr, 0, this, 0);
+  mySelectionMgr->clearFilters();
+  //mySelectionMgr->clearSelected();
+  if (SMESH::GetCurrentVtkView()) {
+    SMESH::RemoveFilters(); // PAL6938 -- clean all mesh entity filters
+    SMESH::SetPointRepresentation(false);
+    SMESH::SetPickable();
+  }
+  if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+    aViewWindow->SetSelectionMode(ActorSelection);
+  mySMESHGUI->ResetState();
+}
+
+void SMESHGUI_ExtrusionDlg::reject()
+{
+  QDialog::reject();
+  close();
+}
+
+//=================================================================================
 // function : onSelectMesh()
 // purpose  :
 //=================================================================================
 void SMESHGUI_ExtrusionDlg::onSelectMesh (bool toSelectMesh)
 {
-  if (toSelectMesh)
+  if (toSelectMesh) {
+    myIDs = LineEditElements->text();
     TextLabelElements->setText(tr("SMESH_NAME"));
+  }
   else
     TextLabelElements->setText(tr("SMESH_ID_ELEMENTS"));
+
   myFilterBtn->setEnabled(!toSelectMesh);
 
   if (myEditCurrentArgument != LineEditElements) {
@@ -910,7 +933,7 @@ void SMESHGUI_ExtrusionDlg::onSelectMesh (bool toSelectMesh)
 	if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
 	  aViewWindow->SetSelectionMode(EdgeSelection);
       }
-    else if (aConstructorId == 0)
+    else if (aConstructorId == 1)
       {
 	if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
 	  aViewWindow->SetSelectionMode(FaceSelection);
@@ -922,6 +945,9 @@ void SMESHGUI_ExtrusionDlg::onSelectMesh (bool toSelectMesh)
   }
 
   SelectionIntoArgument();
+
+  if (!toSelectMesh)
+    LineEditElements->setText( myIDs );
 }
 
 //=================================================================================

@@ -23,7 +23,7 @@
 // File   : SMESHGUI.cxx
 // Author : Nicolas REJNERI, Open CASCADE S.A.S.
 // SMESH includes
-//
+
 #include "SMESHGUI.h"
 #include "SMESHGUI_NodesDlg.h"
 #include "SMESHGUI_TransparencyDlg.h"
@@ -2091,9 +2091,12 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
         /* Warning : however by internal mechanism all subMeshes icons are changed !                     */
         if ( !aHypothesis->_is_nil() )
         {
-          SMESHGUI_GenericHypothesisCreator* aCreator = SMESH::GetHypothesisCreator(aHypothesis->GetName());
-          if (aCreator)
+          // BUG 0020378
+          //SMESHGUI_GenericHypothesisCreator* aCreator = SMESH::GetHypothesisCreator(aHypothesis->GetName());
+          SMESH::HypothesisCreatorPtr aCreator = SMESH::GetHypothesisCreator(aHypothesis->GetName());
+          if (aCreator) {
             aCreator->edit( aHypothesis.in(), anIObject->getName(), desktop() );
+          }
           else
           {
             // report error
@@ -3056,8 +3059,7 @@ void SMESHGUI::initialize( CAM_Application* app )
 
   popupMgr()->insert( separator(), -1, 0 );
   createPopupItem( 701, OB, mesh, "&& isComputable" );     // COMPUTE
-  createPopupItem( 711, OB, mesh, "&& isComputable" );     // PRECOMPUTE
-  createPopupItem( 712, OB, mesh );                        // EVALUATE
+  createPopupItem( 711, OB, mesh, "&& isComputable && isPreComputable" ); // PRECOMPUTE
   createPopupItem( 214, OB, mesh_group );                  // UPDATE
   createPopupItem( 900, OB, mesh_group );                  // ADV_INFO
   createPopupItem( 902, OB, mesh );                        // STD_INFO

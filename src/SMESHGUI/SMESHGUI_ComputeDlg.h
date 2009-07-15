@@ -147,6 +147,12 @@ public:
 
   virtual LightApp_Dialog*       dlg() const;
 
+  /**
+   * \brief returns map of assigned algorithms modes
+   */
+  static void                    getAssignedAlgos(_PTR(SObject) theMesh,
+                                                  QMap<int,int>& theModeMap);
+
 protected:
   virtual void                   startOperation();
   virtual void                   stopOperation();

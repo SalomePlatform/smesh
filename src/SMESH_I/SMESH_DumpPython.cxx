@@ -130,6 +130,26 @@ namespace SMESH
     return *this;
   }
 
+  TPythonDump&
+  TPythonDump::
+  operator<<(const SMESH::GeometryType& theArg)
+  {
+    myStream<<"SMESH.";
+    switch(theArg){
+    case Geom_POINT:      myStream<<"Geom_POINT";      break;
+    case Geom_EDGE:       myStream<<"Geom_EDGE";       break;
+    case Geom_TRIANGLE:   myStream<<"Geom_TRIANGLE";   break;
+    case Geom_QUADRANGLE: myStream<<"Geom_QUADRANGLE"; break;
+    case Geom_POLYGON:    myStream<<"Geom_POLYGON";    break;
+    case Geom_TETRA:      myStream<<"Geom_TETRA";      break;
+    case Geom_PYRAMID:    myStream<<"Geom_PYRAMID";    break;
+    case Geom_HEXA:       myStream<<"Geom_HEXA";       break;
+    case Geom_PENTA:      myStream<<"Geom_PENTA";      break;
+    case Geom_POLYHEDRA:  myStream<<"Geom_POLYHEDRA";  break;
+   }
+    return *this;
+  }
+
   template<class TArray>
   void DumpArray(const TArray& theArray, std::ostringstream & theStream)
   {
@@ -225,9 +245,11 @@ namespace SMESH
       case FT_Taper:            myStream<< "aTaper";            break;
       case FT_Skew:             myStream<< "aSkew";             break;
       case FT_Area:             myStream<< "aArea";             break;
+      case FT_Volume3D:         myStream<< "aVolume3D";         break;
       case FT_FreeBorders:      myStream<< "aFreeBorders";      break;
       case FT_FreeEdges:        myStream<< "aFreeEdges";        break;
       case FT_FreeNodes:        myStream<< "aFreeNodes";        break;
+      case FT_FreeFaces:        myStream<< "aFreeFaces";        break;
       case FT_MultiConnection:  myStream<< "aMultiConnection";  break;
       case FT_MultiConnection2D:myStream<< "aMultiConnection2D";break;
       case FT_Length:           myStream<< "aLength";           break;
@@ -239,13 +261,17 @@ namespace SMESH
       case FT_LyingOnGeom:      myStream<< "aLyingOnGeom";      break;
       case FT_RangeOfIds:       myStream<< "aRangeOfIds";       break;
       case FT_BadOrientedVolume:myStream<< "aBadOrientedVolume";break;
+      case FT_LinearOrQuadratic:myStream<< "aLinearOrQuadratic";break;
+      case FT_GroupColor:       myStream<< "aGroupColor";       break;
+      case FT_ElemGeomType:     myStream<< "anElemGeomType";    break;
       case FT_LessThan:         myStream<< "aLessThan";         break;
       case FT_MoreThan:         myStream<< "aMoreThan";         break;
       case FT_EqualTo:          myStream<< "anEqualTo";         break;
       case FT_LogicalNOT:       myStream<< "aLogicalNOT";       break;
       case FT_LogicalAND:       myStream<< "aLogicalAND";       break;
       case FT_LogicalOR:        myStream<< "aLogicalOR";        break;
-      case FT_Undefined:        myStream<< "anUndefined";       break;
+      case FT_Undefined:
+      default:                  myStream<< "anUndefined";       break;
       }
       myStream<<theArg;
     }

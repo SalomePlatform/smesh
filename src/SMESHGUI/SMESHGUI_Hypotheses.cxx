@@ -498,10 +498,10 @@ void SMESHGUI_GenericHypothesisCreator::onReject()
 QString SMESHGUI_GenericHypothesisCreator::helpPage() const
 {
   QString aHypType = hypType();
-  QString aHelpFileName;
+  QString aHelpFileName = "";
   if ( aHypType == "LocalLength" )
     aHelpFileName = "a1d_meshing_hypo_page.html#average_length_anchor";
-  if ( aHypType == "MaxLength" )
+  else if ( aHypType == "MaxLength" )
     aHelpFileName = "a1d_meshing_hypo_page.html#max_length_anchor";
   else if ( aHypType == "Arithmetic1D")
     aHelpFileName = "a1d_meshing_hypo_page.html#arithmetic_1d_anchor";
@@ -528,9 +528,8 @@ QString SMESHGUI_GenericHypothesisCreator::helpPage() const
   else if ( aHypType == "LayerDistribution")
     aHelpFileName = "radial_prism_algo_page.html";
   else if ( aHypType == "SegmentLengthAroundVertex")
-    aHelpFileName = "segments_around_vertex_algo.html";
-  else
-    aHelpFileName = "";
+    aHelpFileName = "segments_around_vertex_algo_page.html";
+    
   return aHelpFileName;
 }
 

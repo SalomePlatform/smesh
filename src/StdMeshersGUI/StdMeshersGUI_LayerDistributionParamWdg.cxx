@@ -198,8 +198,9 @@ void StdMeshersGUI_LayerDistributionParamWdg::onEdit()
     return;
 
   CORBA::String_var hypType = myHyp->GetName();
-  SMESHGUI_GenericHypothesisCreator*
-    editor = SMESH::GetHypothesisCreator( hypType.in() );
+  // BUG 0020378
+  //SMESHGUI_GenericHypothesisCreator* editor = SMESH::GetHypothesisCreator(hypType.in());
+  SMESH::HypothesisCreatorPtr editor = SMESH::GetHypothesisCreator(hypType.in());
   if ( !editor ) return;
 
   if ( myDlg ) myDlg->hide();
