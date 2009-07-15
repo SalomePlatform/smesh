@@ -3530,6 +3530,17 @@ class Mesh_Algorithm:
         TreatHypoStatus( status, GetName(hypo), GetName(self.geom), 0 )
         return hypo
 
+    ## Returns entry of the shape to mesh in the study
+    def MainShapeEntry(self):
+        entry = ""
+        if not self.mesh or not self.mesh.GetMesh(): return entry
+        if not self.mesh.GetMesh().HasShapeToMesh(): return entry
+        study = self.mesh.smeshpyD.GetCurrentStudy()
+        ior  = salome.orb.object_to_string( self.mesh.GetShape() )
+        sobj = study.FindObjectIOR(ior)
+        if sobj: entry = sobj.GetID()
+        if not entry: return ""
+        return entry
 
 # Public class: Mesh_Segment
 # --------------------------
@@ -3603,46 +3614,65 @@ class Mesh_Segment(Mesh_Algorithm):
     ## Defines "NumberOfSegments" hypothesis to cut an edge in a fixed number of segments
     #  @param n for the number of segments that cut an edge
     #  @param s for the scale factor (optional)
+    #  @param reversedEdges is a list of edges to mesh using reversed orientation
     #  @param UseExisting if ==true - searches for an existing hypothesis created with
     #                     the same parameters, else (default) - create a new one
     #  @return an instance of StdMeshers_NumberOfSegments hypothesis
     #  @ingroup l3_hypos_1dhyps
-    def NumberOfSegments(self, n, s=[], UseExisting=0):
+    def NumberOfSegments(self, n, s=[], reversedEdges=[], UseExisting=0):
+        if not isinstance(reversedEdges,list): #old version script, before adding reversedEdges
+            reversedEdges, UseExisting = [], reversedEdges
+        entry = self.MainShapeEntry()
         if s == []:
-            hyp = self.Hypothesis("NumberOfSegments", [n], UseExisting=UseExisting,
+            hyp = self.Hypothesis("NumberOfSegments", [n, reversedEdges, entry],
+                                  UseExisting=UseExisting,
                                   CompareMethod=self.CompareNumberOfSegments)
         else:
-            hyp = self.Hypothesis("NumberOfSegments", [n,s], UseExisting=UseExisting,
+            hyp = self.Hypothesis("NumberOfSegments", [n,s, reversedEdges, entry],
+                                  UseExisting=UseExisting,
                                   CompareMethod=self.CompareNumberOfSegments)
             hyp.SetDistrType( 1 )
             hyp.SetScaleFactor(s)
         hyp.SetNumberOfSegments(n)
+        hyp.SetReversedEdges( reversedEdges )
+        hyp.SetObjectEntry( entry )
         return hyp
 
     ## Private method
     ## Checks if the given "NumberOfSegments" hypothesis has the same parameters as the given arguments
     def CompareNumberOfSegments(self, hyp, args):
         if hyp.GetNumberOfSegments() == args[0]:
-            if len(args) == 1:
-                return True
-            else:
-                if hyp.GetDistrType() == 1:
-                    if IsEqual(hyp.GetScaleFactor(), args[1]):
+            if len(args) == 3:
+                if hyp.GetReversedEdges() == args[1]:
+                    if not args[1] or hyp.GetObjectEntry() == args[2]:
                         return True
+            else:
+                if hyp.GetReversedEdges() == args[2]:
+                    if not args[2] or hyp.GetObjectEntry() == args[3]:
+                        if hyp.GetDistrType() == 1:
+                            if IsEqual(hyp.GetScaleFactor(), args[1]):
+                                return True
         return False
 
     ## Defines "Arithmetic1D" hypothesis to cut an edge in several segments with increasing arithmetic length
     #  @param start defines the length of the first segment
     #  @param end   defines the length of the last  segment
+    #  @param reversedEdges is a list of edges to mesh using reversed orientation
     #  @param UseExisting if ==true - searches for an existing hypothesis created with
     #                     the same parameters, else (default) - creates a new one
     #  @return an instance of StdMeshers_Arithmetic1D hypothesis
     #  @ingroup l3_hypos_1dhyps
-    def Arithmetic1D(self, start, end, UseExisting=0):
-        hyp = self.Hypothesis("Arithmetic1D", [start, end], UseExisting=UseExisting,
+    def Arithmetic1D(self, start, end, reversedEdges=[], UseExisting=0):
+        if not isinstance(reversedEdges,list): #old version script, before adding reversedEdges
+            reversedEdges, UseExisting = [], reversedEdges
+        entry = self.MainShapeEntry()
+        hyp = self.Hypothesis("Arithmetic1D", [start, end, reversedEdges, entry],
+                              UseExisting=UseExisting,
                               CompareMethod=self.CompareArithmetic1D)
-        hyp.SetLength(start, 1)
-        hyp.SetLength(end  , 0)
+        hyp.SetStartLength(start)
+        hyp.SetEndLength(end)
+        hyp.SetReversedEdges( reversedEdges )
+        hyp.SetObjectEntry( entry )
         return hyp
 
     ## Private method
@@ -3650,28 +3680,39 @@ class Mesh_Segment(Mesh_Algorithm):
     def CompareArithmetic1D(self, hyp, args):
         if IsEqual(hyp.GetLength(1), args[0]):
             if IsEqual(hyp.GetLength(0), args[1]):
-                return True
+                if hyp.GetReversedEdges() == args[2]:
+                    if not args[2] or hyp.GetObjectEntry() == args[3]:
+                        return True
         return False
 
     ## Defines "StartEndLength" hypothesis to cut an edge in several segments with increasing geometric length
     #  @param start defines the length of the first segment
     #  @param end   defines the length of the last  segment
+    #  @param reversedEdges is a list of edges to mesh using reversed orientation
     #  @param UseExisting if ==true - searches for an existing hypothesis created with
     #                     the same parameters, else (default) - creates a new one
     #  @return an instance of StdMeshers_StartEndLength hypothesis
     #  @ingroup l3_hypos_1dhyps
-    def StartEndLength(self, start, end, UseExisting=0):
-        hyp = self.Hypothesis("StartEndLength", [start, end], UseExisting=UseExisting,
+    def StartEndLength(self, start, end, reversedEdges=[], UseExisting=0):
+        if not isinstance(reversedEdges,list): #old version script, before adding reversedEdges
+            reversedEdges, UseExisting = [], reversedEdges
+        entry = self.MainShapeEntry()
+        hyp = self.Hypothesis("StartEndLength", [start, end, reversedEdges, entry],
+                              UseExisting=UseExisting,
                               CompareMethod=self.CompareStartEndLength)
-        hyp.SetLength(start, 1)
-        hyp.SetLength(end  , 0)
+        hyp.SetStartLength(start)
+        hyp.SetEndLength(end)
+        hyp.SetReversedEdges( reversedEdges )
+        hyp.SetObjectEntry( entry )
         return hyp
 
     ## Check if the given "StartEndLength" hypothesis has the same parameters as the given arguments
     def CompareStartEndLength(self, hyp, args):
         if IsEqual(hyp.GetLength(1), args[0]):
             if IsEqual(hyp.GetLength(0), args[1]):
-                return True
+                if hyp.GetReversedEdges() == args[2]:
+                    if not args[2] or hyp.GetObjectEntry() == args[3]:
+                        return True
         return False
 
     ## Defines "Deflection1D" hypothesis
