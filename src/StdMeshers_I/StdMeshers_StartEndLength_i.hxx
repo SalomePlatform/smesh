@@ -24,7 +24,6 @@
 //           Moved here from SMESH_LocalLength_i.hxx
 //  Author : Paul RASCLE, EDF
 //  Module : SMESH
-//  $Header$
 //
 #ifndef _SMESH_StartEndLength_I_HXX_
 #define _SMESH_StartEndLength_I_HXX_
@@ -55,8 +54,16 @@ public:
   virtual ~StdMeshers_StartEndLength_i();
 
   // Set length
+  // * OBSOLETE *. Avoid such a way of interface design
   void SetLength( CORBA::Double theLength, CORBA::Boolean theIsStart )
     throw ( SALOME::SALOME_Exception );
+
+  // Sets <start segment length> parameter value
+  void SetStartLength( CORBA::Double length) throw (SALOME::SALOME_Exception);
+
+  // Sets <end segment length> parameter value
+  void SetEndLength( CORBA::Double length) throw (SALOME::SALOME_Exception);
+
   // Get length
   CORBA::Double GetLength(CORBA::Boolean theIsStart);
 

@@ -23,7 +23,6 @@
 //  File   : StdMeshers_Arithmetic1D_i.hxx
 //  Author : Damien COQUERET, OCC
 //  Module : SMESH
-//  $Header$
 //
 #ifndef _SMESH_ARITHMETIC1D_I_HXX_
 #define _SMESH_ARITHMETIC1D_I_HXX_
@@ -47,13 +46,20 @@ public:
   // Constructor
   StdMeshers_Arithmetic1D_i( PortableServer::POA_ptr thePOA,
                             int                     theStudyId,
-			    ::SMESH_Gen*            theGenImpl );
+                             ::SMESH_Gen*            theGenImpl );
   // Destructor
   virtual ~StdMeshers_Arithmetic1D_i();
 
   // Set length
+  // * OBSOLETE *. Avoid such a way of interface design
   void SetLength( CORBA::Double theLength, CORBA::Boolean theIsStart )
     throw ( SALOME::SALOME_Exception );
+
+  // Sets <start segment length> parameter value
+  void SetStartLength( CORBA::Double length) throw (SALOME::SALOME_Exception);
+
+  // Sets <end segment length> parameter value
+  void SetEndLength( CORBA::Double length) throw (SALOME::SALOME_Exception);
 
   // Get length
   CORBA::Double GetLength(CORBA::Boolean theIsStart);
@@ -72,7 +78,7 @@ public:
 
   // Get implementation
   ::StdMeshers_Arithmetic1D* GetImpl();
-  
+
   // Verify whether hypothesis supports given entity type 
   CORBA::Boolean IsDimSupported( SMESH::Dimension type );
 };

@@ -94,8 +94,32 @@ void StdMeshers_StartEndLength_i::SetLength(CORBA::Double theLength,
   }
 
   // Update Python script
-  SMESH::TPythonDump() << _this() << ".SetLength( "
-                       << theLength << ", " << theIsStart << " )";
+  SMESH::TPythonDump() <<
+    _this() << ( theIsStart ? ".SetStartLength( " : ".SetEndLength( " ) << theLength << " )";
+}
+
+//=============================================================================
+/*!
+ * Sets <start segment length> parameter value
+ */
+//=============================================================================
+
+void StdMeshers_StartEndLength_i::SetStartLength( CORBA::Double length)
+  throw (SALOME::SALOME_Exception)
+{
+  SetLength( length, true );
+}
+
+//=============================================================================
+/*!
+ * Sets <end segment length> parameter value
+ */
+//=============================================================================
+
+void StdMeshers_StartEndLength_i::SetEndLength( CORBA::Double length)
+  throw (SALOME::SALOME_Exception)
+{
+  SetLength( length, false );
 }
 
 //=============================================================================
@@ -123,7 +147,6 @@ CORBA::Double StdMeshers_StartEndLength_i::GetLength( CORBA::Boolean theIsStart)
 
 void StdMeshers_StartEndLength_i::SetReversedEdges( const SMESH::long_array& theIds )
 {
-  MESSAGE( "StdMeshers_StartEndLength_i::SetReversedEdges" );
   ASSERT( myBaseImpl );
   try {
     std::vector<int> ids( theIds.length() );
@@ -139,8 +162,7 @@ void StdMeshers_StartEndLength_i::SetReversedEdges( const SMESH::long_array& the
   }
 
   // Update Python script
-  /*  SMESH::TPythonDump() << _this() << ".SetEdgesToReverse( "
-      << theList << " )";*/
+  SMESH::TPythonDump() << _this() << ".SetReversedEdges( " << theIds << " )";
 }
 
 //=============================================================================
@@ -151,18 +173,17 @@ void StdMeshers_StartEndLength_i::SetReversedEdges( const SMESH::long_array& the
  */
 //=============================================================================
 
-void StdMeshers_StartEndLength_i::SetObjectEntry( const char* entry )
+void StdMeshers_StartEndLength_i::SetObjectEntry( const char* theEntry )
 {
-  MESSAGE( "StdMeshers_StartEndLength_i::SetObjectEntry" );
   ASSERT( myBaseImpl );
+  string entry(theEntry); // actually needed as theEntry is spoiled by moment of dumping
   try {
-    this->GetImpl()->SetObjectEntry( entry );
+    this->GetImpl()->SetObjectEntry( entry.c_str() );
     // Update Python script
-    //    SMESH::TPythonDump() << _this() << ".SetObjectEntry( '" << entry << "' )";
+    SMESH::TPythonDump() << _this() << ".SetObjectEntry( '" << entry.c_str() << "' )";
   }
   catch ( SALOME_Exception& S_ex ) {
-    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(),
-                                  SALOME::BAD_PARAM );
+    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(),SALOME::BAD_PARAM );
   }
 }
 
@@ -176,15 +197,13 @@ void StdMeshers_StartEndLength_i::SetObjectEntry( const char* entry )
 
 char* StdMeshers_StartEndLength_i::GetObjectEntry()
 {
-  MESSAGE( "StdMeshers_StartEndLength_i::SetObjectEntry" );
   ASSERT( myBaseImpl );
   const char* entry;
   try {
     entry = this->GetImpl()->GetObjectEntry();
   }
   catch ( SALOME_Exception& S_ex ) {
-    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(),
-                                  SALOME::BAD_PARAM );
+    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(), SALOME::BAD_PARAM );
   }
   return CORBA::string_dup( entry );
 }
@@ -199,7 +218,6 @@ char* StdMeshers_StartEndLength_i::GetObjectEntry()
 
 SMESH::long_array* StdMeshers_StartEndLength_i::GetReversedEdges()
 {
-  MESSAGE( "StdMeshers_StartEndLength_i::GetReversedEdges" );
   ASSERT( myBaseImpl );
   SMESH::long_array_var anArray = new SMESH::long_array;
   std::vector<int> ids = this->GetImpl()->GetReversedEdges();

@@ -172,7 +172,6 @@ CORBA::Long StdMeshers_NumberOfSegments_i::GetNumberOfSegments()
 
 void StdMeshers_NumberOfSegments_i::SetReversedEdges( const SMESH::long_array& theIds )
 {
-  MESSAGE( "StdMeshers_NumberOfSegments_i::SetReversedEdges" );
   ASSERT( myBaseImpl );
   try {
     std::vector<int> ids( theIds.length() );
@@ -188,8 +187,7 @@ void StdMeshers_NumberOfSegments_i::SetReversedEdges( const SMESH::long_array& t
   }
 
   // Update Python script
-  /*  SMESH::TPythonDump() << _this() << ".SetEdgesToReverse( "
-      << theList << " )";*/
+  SMESH::TPythonDump() << _this() << ".SetReversedEdges( " << theIds << " )";
 }
 
 //=============================================================================
@@ -200,20 +198,19 @@ void StdMeshers_NumberOfSegments_i::SetReversedEdges( const SMESH::long_array& t
  */
 //=============================================================================
 
-void StdMeshers_NumberOfSegments_i::SetObjectEntry( const char* entry )
+void StdMeshers_NumberOfSegments_i::SetObjectEntry( const char* theEntry )
 {
-  MESSAGE( "StdMeshers_NumberOfSegments_i::SetObjectEntry" );
   ASSERT( myBaseImpl );
-
+  string entry(theEntry); // actually needed as theEntry is spoiled by moment of dumping
   try {
-    this->GetImpl()->SetObjectEntry( entry );
-    // Update Python script
-    //    SMESH::TPythonDump() << _this() << ".SetObjectEntry( '" << entry << "' )";
+    this->GetImpl()->SetObjectEntry( entry.c_str() );
   }
   catch ( SALOME_Exception& S_ex ) {
     THROW_SALOME_CORBA_EXCEPTION( S_ex.what(),
                                   SALOME::BAD_PARAM );
   }
+  // Update Python script
+  SMESH::TPythonDump() << _this() << ".SetObjectEntry( \"" << entry.c_str() << "\" )";
 }
 
 //=============================================================================
@@ -226,7 +223,6 @@ void StdMeshers_NumberOfSegments_i::SetObjectEntry( const char* entry )
 
 char* StdMeshers_NumberOfSegments_i::GetObjectEntry()
 {
-  MESSAGE( "StdMeshers_NumberOfSegments_i::SetObjectEntry" );
   ASSERT( myBaseImpl );
 
   const char* entry;
