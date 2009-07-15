@@ -359,6 +359,7 @@ class _pyComplexParamHypo: public _pyHypothesis
 public:
   _pyComplexParamHypo(const Handle(_pyCommand)& theCreationCmd): _pyHypothesis(theCreationCmd) {}
   void Process( const Handle(_pyCommand)& theCommand);
+  void Flush();
 
   DEFINE_STANDARD_RTTI (_pyComplexParamHypo)
 };
