@@ -1207,14 +1207,21 @@ Handle(_pyHypothesis) _pyHypothesis::NewHypothesis( const Handle(_pyCommand)& th
     hyp->AddArgMethod( "SetNumberOfSegments" );
     // arg of SetScaleFactor() will become the 2-nd arg of hyp creation command
     hyp->AddArgMethod( "SetScaleFactor" );
+    hyp->AddArgMethod( "SetReversedEdges" );
   }
   else if ( hypType == "Arithmetic1D" ) {
     hyp = new _pyComplexParamHypo( theCreationCmd );
     hyp->SetConvMethodAndType( "Arithmetic1D", "Regular_1D");
+    hyp->AddArgMethod( "SetStartLength" );
+    hyp->AddArgMethod( "SetEndLength" );
+    hyp->AddArgMethod( "SetReversedEdges" );
   }
   else if ( hypType == "StartEndLength" ) {
     hyp = new _pyComplexParamHypo( theCreationCmd );
     hyp->SetConvMethodAndType( "StartEndLength", "Regular_1D");
+    hyp->AddArgMethod( "SetStartLength" );
+    hyp->AddArgMethod( "SetEndLength" );
+    hyp->AddArgMethod( "SetReversedEdges" );
   }
   else if ( hypType == "Deflection1D" ) {
     hyp->SetConvMethodAndType( "Deflection1D", "Regular_1D");
@@ -1550,15 +1557,38 @@ void _pyHypothesis::Assign( const Handle(_pyHypothesis)& theOther,
 
 void _pyComplexParamHypo::Process( const Handle(_pyCommand)& theCommand)
 {
-  // ex: hyp.SetLength(start, 1)
-  //     hyp.SetLength(end,   0)
-  ASSERT(( theCommand->GetMethod() == "SetLength" ));
-  ASSERT(( theCommand->GetArg( 2 ).IsIntegerValue() ));
-  int i = 2 - theCommand->GetArg( 2 ).IntegerValue();
-  while ( myArgs.Length() < i )
-    myArgs.Append( "[]" );
-  myArgs( i ) = theCommand->GetArg( 1 ); // arg value
-  myArgCommands.push_back( theCommand );
+  if( theCommand->GetMethod() == "SetLength" )
+  {
+    // NOW it becomes OBSOLETE
+    // ex: hyp.SetLength(start, 1)
+    //     hyp.SetLength(end,   0)
+    ASSERT(( theCommand->GetArg( 2 ).IsIntegerValue() ));
+    int i = 2 - theCommand->GetArg( 2 ).IntegerValue();
+    while ( myArgs.Length() < i )
+      myArgs.Append( "[]" );
+    myArgs( i ) = theCommand->GetArg( 1 ); // arg value
+    myArgCommands.push_back( theCommand );
+  }
+  else
+  {
+    _pyHypothesis::Process( theCommand );
+  }
+}
+//================================================================================
+/*!
+ * \brief Clear SetObjectEntry() as it is called by methods of Mesh_Segment
+ */
+//================================================================================
+
+void _pyComplexParamHypo::Flush()
+{
+  if ( IsWrapped() )
+  {
+    list < Handle(_pyCommand) >::iterator cmd = myUnknownCommands.begin();
+    for ( ; cmd != myUnknownCommands.end(); ++cmd )
+      if ((*cmd)->GetMethod() == "SetObjectEntry" )
+        (*cmd)->Clear();
+  }
 }
 
 //================================================================================
@@ -1729,6 +1759,8 @@ void _pyNumberOfSegmentsHyp::Flush()
   for ( ; !distrTypeNb && cmd != myUnknownCommands.rend(); ++cmd )
     if ( (*cmd)->GetMethod() == "SetDistrType" )
       distrTypeNb = (*cmd)->GetOrderNb();
+    else if (IsWrapped() && (*cmd)->GetMethod() == "SetObjectEntry" )
+      (*cmd)->Clear();
 
   // clear commands before the last SetDistrType()
   list<Handle(_pyCommand)> * cmds[2] = { &myArgCommands, &myUnknownCommands };
@@ -2108,10 +2140,11 @@ TCollection_AsciiString _pyCommand::GetWord( const TCollection_AsciiString & the
     // end
     end = beg + 1;
     char begChar = theString.Value( beg );
-    if ( begChar == '"' || begChar == '\'' ) {
-      // end is at the corresponding quoting mark
+    if ( begChar == '"' || begChar == '\'' || begChar == '[') {
+      char endChar = ( begChar == '[' ) ? ']' : begChar;
+      // end is at the corresponding quoting mark or bracket
       while ( end < theString.Length() &&
-              ( theString.Value( end ) != begChar || theString.Value( end-1 ) == '\\'))
+              ( theString.Value( end ) != endChar || theString.Value( end-1 ) == '\\'))
         ++end;
     }
     else {
