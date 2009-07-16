@@ -2421,6 +2421,17 @@ CORBA::Long SMESH_Mesh_i::NbElements()throw (SALOME::SALOME_Exception)
  *
  */
 //=============================================================================
+CORBA::Long SMESH_Mesh_i::Nb0DElements()throw (SALOME::SALOME_Exception)
+{
+  Unexpect aCatch(SALOME_SalomeException);
+  return _impl->Nb0DElements();
+}
+
+//=============================================================================
+/*!
+ *
+ */
+//=============================================================================
 CORBA::Long SMESH_Mesh_i::NbEdges()throw(SALOME::SALOME_Exception)
 {
   Unexpect aCatch(SALOME_SalomeException);

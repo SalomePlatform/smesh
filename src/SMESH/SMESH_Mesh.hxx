@@ -202,6 +202,8 @@ public:
   
   int NbNodes() throw(SALOME_Exception);
   
+  int Nb0DElements() throw(SALOME_Exception);
+  
   int NbEdges(SMDSAbs_ElementOrder order = ORDER_ANY) throw(SALOME_Exception);
   
   int NbFaces(SMDSAbs_ElementOrder order = ORDER_ANY) throw(SALOME_Exception);

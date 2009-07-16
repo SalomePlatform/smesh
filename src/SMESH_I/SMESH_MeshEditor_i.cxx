@@ -26,6 +26,7 @@
 
 #include "SMESH_MeshEditor_i.hxx"
 
+#include "SMDS_Mesh0DElement.hxx"
 #include "SMDS_MeshEdge.hxx"
 #include "SMDS_MeshFace.hxx"
 #include "SMDS_MeshVolume.hxx"
@@ -319,6 +320,47 @@ CORBA::Boolean SMESH_MeshEditor_i::RemoveNodes(const SMESH::long_array & IDsOfNo
  */
 //=============================================================================
 
+CORBA::Long SMESH_MeshEditor_i::AddNode(CORBA::Double x,
+                                        CORBA::Double y, CORBA::Double z)
+{
+  initData();
+
+  const SMDS_MeshNode* N = GetMeshDS()->AddNode(x, y, z);
+
+  // Update Python script
+  TPythonDump() << "nodeID = " << this << ".AddNode( "
+                << x << ", " << y << ", " << z << " )";
+
+  return N->GetID();
+}
+
+//=============================================================================
+/*!
+ *
+ */
+//=============================================================================
+CORBA::Long SMESH_MeshEditor_i::Add0DElement(CORBA::Long IDOfNode)
+{
+  initData();
+
+  const SMDS_MeshNode* aNode = GetMeshDS()->FindNode(IDOfNode);
+  SMDS_MeshElement* elem = GetMeshDS()->Add0DElement(aNode);
+
+  // Update Python script
+  TPythonDump() << "elem0d = " << this << ".Add0DElement( " << IDOfNode <<" )";
+
+  if (elem)
+    return elem->GetID();
+
+  return 0;
+}
+
+//=============================================================================
+/*!
+ *
+ */
+//=============================================================================
+
 CORBA::Long SMESH_MeshEditor_i::AddEdge(const SMESH::long_array & IDsOfNodes)
 {
   initData();
@@ -351,26 +393,6 @@ CORBA::Long SMESH_MeshEditor_i::AddEdge(const SMESH::long_array & IDsOfNodes)
     return elem->GetID();
 
   return 0;
-}
-
-//=============================================================================
-/*!
- *
- */
-//=============================================================================
-
-CORBA::Long SMESH_MeshEditor_i::AddNode(CORBA::Double x,
-                                        CORBA::Double y, CORBA::Double z)
-{
-  initData();
-
-  const SMDS_MeshNode* N = GetMeshDS()->AddNode(x, y, z);
-
-  // Update Python script
-  TPythonDump() << "nodeID = " << this << ".AddNode( "
-                << x << ", " << y << ", " << z << " )";
-
-  return N->GetID();
 }
 
 //=============================================================================

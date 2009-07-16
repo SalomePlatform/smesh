@@ -86,6 +86,9 @@ static inline vtkIdType getCellType( const SMDSAbs_ElementType theType,
 {
   switch( theType )
   {
+    case SMDSAbs_0DElement: 
+      return VTK_VERTEX;
+
     case SMDSAbs_Edge: 
       if( theNbNodes == 2 )         return VTK_LINE;
       else if ( theNbNodes == 3 )   return VTK_QUADRATIC_EDGE;
@@ -295,22 +298,23 @@ void SMESH_VisualObjDef::buildElemPrs()
 
   // Calculate cells size
 
-  static SMDSAbs_ElementType aTypes[ 3 ] = { SMDSAbs_Edge, SMDSAbs_Face, SMDSAbs_Volume };
+  static SMDSAbs_ElementType aTypes[ 4 ] =
+    { SMDSAbs_0DElement, SMDSAbs_Edge, SMDSAbs_Face, SMDSAbs_Volume };
 
   // get entity data
   map<SMDSAbs_ElementType,int> nbEnts;
   map<SMDSAbs_ElementType,TEntityList> anEnts;
 
-  for ( int i = 0; i <= 2; i++ )
+  for ( int i = 0; i <= 3; i++ )
     nbEnts[ aTypes[ i ] ] = GetEntities( aTypes[ i ], anEnts[ aTypes[ i ] ] );
 
   // PAL16631: without swap, bad_alloc is not thrown but hung up and crash instead,
   // so check remaining memory size for safety
   SMDS_Mesh::CheckMemory(); // PAL16631
 
-  vtkIdType aCellsSize =  3 * nbEnts[ SMDSAbs_Edge ];
+  vtkIdType aCellsSize =  2 * nbEnts[ SMDSAbs_0DElement ] + 3 * nbEnts[ SMDSAbs_Edge ];
 
-  for ( int i = 1; i <= 2; i++ ) // iterate through faces and volumes
+  for ( int i = 2; i <= 3; i++ ) // iterate through faces and volumes
   {
     if ( nbEnts[ aTypes[ i ] ] )
     {
@@ -321,22 +325,23 @@ void SMESH_VisualObjDef::buildElemPrs()
     }
   }
 
-  vtkIdType aNbCells = nbEnts[ SMDSAbs_Edge ] + nbEnts[ SMDSAbs_Face ] + nbEnts[ SMDSAbs_Volume ];
+  vtkIdType aNbCells = nbEnts[ SMDSAbs_0DElement ] + nbEnts[ SMDSAbs_Edge ] +
+                       nbEnts[ SMDSAbs_Face ] + nbEnts[ SMDSAbs_Volume ];
   
   if ( MYDEBUG )
     MESSAGE( "Update - aNbCells = "<<aNbCells<<"; aCellsSize = "<<aCellsSize );
 
   // Create cells
-  
+
   vtkCellArray* aConnectivity = vtkCellArray::New();
   aConnectivity->Allocate( aCellsSize, 0 );
-  
+
   SMDS_Mesh::CheckMemory(); // PAL16631
 
   vtkUnsignedCharArray* aCellTypesArray = vtkUnsignedCharArray::New();
   aCellTypesArray->SetNumberOfComponents( 1 );
   aCellTypesArray->Allocate( aNbCells * aCellTypesArray->GetNumberOfComponents() );
-  
+
   SMDS_Mesh::CheckMemory(); // PAL16631
 
   vtkIdList *anIdList = vtkIdList::New();
@@ -347,9 +352,9 @@ void SMESH_VisualObjDef::buildElemPrs()
 
   SMDS_Mesh::CheckMemory(); // PAL16631
 
-  for ( int i = 0; i <= 2; i++ ) // iterate through edges, faces and volumes
+  for ( int i = 0; i <= 3; i++ ) // iterate through 0d elements, edges, faces and volumes
   {
-    if( nbEnts[ aTypes[ i ] ] > 0 )
+    if ( nbEnts[ aTypes[ i ] ] > 0 )
     {
       const SMDSAbs_ElementType& aType = aTypes[ i ];
       const TEntityList& aList = anEnts[ aType ];
@@ -357,7 +362,7 @@ void SMESH_VisualObjDef::buildElemPrs()
       for ( anIter = aList.begin(); anIter != aList.end(); ++anIter )
       {
         const SMDS_MeshElement* anElem = *anIter;
-        
+
         vtkIdType aNbNodes = anElem->NbNodes();
         anIdList->SetNumberOfIds( aNbNodes );
 
@@ -367,7 +372,7 @@ void SMESH_VisualObjDef::buildElemPrs()
         myVTK2SMDSElems.insert( TMapOfIds::value_type( iElem, anId ) );
 
         SMDS_ElemIteratorPtr aNodesIter = anElem->nodesIterator();
-	switch(aType){
+	switch (aType) {
 	case SMDSAbs_Volume:{
           aConnect.clear();
 	  std::vector<int> aConnectivities;
@@ -568,6 +573,7 @@ int SMESH_MeshObj::GetElemDimension( const int theObjId )
   int aType = anElem->GetType();
   switch ( aType )
   {
+    case SMDSAbs_0DElement : return 0;
     case SMDSAbs_Edge  : return 1;
     case SMDSAbs_Face  : return 2;
     case SMDSAbs_Volume: return 3;
@@ -586,6 +592,11 @@ int SMESH_MeshObj::GetNbEntities( const SMDSAbs_ElementType theType) const
     case SMDSAbs_Node:
     {
       return myClient->NbNodes();
+    }
+    break;
+    case SMDSAbs_0DElement:
+    {
+      return myClient->Nb0DElements();
     }
     break;
     case SMDSAbs_Edge:
@@ -618,6 +629,12 @@ int SMESH_MeshObj::GetEntities( const SMDSAbs_ElementType theType, TEntityList& 
     case SMDSAbs_Node:
     {
       SMDS_NodeIteratorPtr anIter = myClient->nodesIterator();
+      while ( anIter->more() ) theObjs.push_back( anIter->next() );
+    }
+    break;
+    case SMDSAbs_0DElement:
+    {
+      SMDS_0DElementIteratorPtr anIter = myClient->elements0dIterator();
       while ( anIter->more() ) theObjs.push_back( anIter->next() );
     }
     break;
@@ -882,6 +899,7 @@ int SMESH_subMeshObj::GetNbEntities( const SMDSAbs_ElementType theType) const
       return mySubMeshServer->GetNumberOfNodes( false );
     }
     break;
+    case SMDSAbs_0DElement:
     case SMDSAbs_Edge:
     case SMDSAbs_Face:
     case SMDSAbs_Volume:

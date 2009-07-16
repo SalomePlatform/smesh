@@ -1192,6 +1192,18 @@ int SMESH_Mesh::NbNodes() throw(SALOME_Exception)
  */
 //================================================================================
 
+int SMESH_Mesh::Nb0DElements() throw(SALOME_Exception)
+{
+  Unexpect aCatch(SalomeException);
+  return _myMeshDS->GetMeshInfo().Nb0DElements();
+}
+
+//================================================================================
+/*!
+ * \brief  Return number of edges of given order in the mesh
+ */
+//================================================================================
+
 int SMESH_Mesh::NbEdges(SMDSAbs_ElementOrder order) throw(SALOME_Exception)
 {
   Unexpect aCatch(SalomeException);

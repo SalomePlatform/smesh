@@ -227,6 +227,9 @@ public:
   CORBA::Long NbElements()
     throw (SALOME::SALOME_Exception);
 
+  CORBA::Long Nb0DElements()
+    throw (SALOME::SALOME_Exception);
+
   CORBA::Long NbEdges()
     throw (SALOME::SALOME_Exception);
 

@@ -46,6 +46,7 @@ module SMESH
   enum log_command
     {
       ADD_NODE,
+      ADD_ELEM0D,
       ADD_EDGE,
       ADD_TRIANGLE,
       ADD_QUADRANGLE,
@@ -110,6 +111,7 @@ module SMESH
   {
     ALL,
     NODE,
+    ELEM0D,
     EDGE,
     FACE,
     VOLUME
@@ -530,6 +532,9 @@ module SMESH
       raises (SALOME::SALOME_Exception);
 
     long NbElements()
+      raises (SALOME::SALOME_Exception);
+
+    long Nb0DElements()
       raises (SALOME::SALOME_Exception);
 
     long NbEdges()

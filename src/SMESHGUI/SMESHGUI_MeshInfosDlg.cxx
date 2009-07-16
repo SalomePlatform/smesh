@@ -126,8 +126,15 @@ SMESHGUI_MeshInfosDlg::SMESHGUI_MeshInfosDlg(SMESHGUI* theModule):
 
   // --> nodes
   QLabel* myMeshNbNodesLab = new QLabel(COLONIZE(tr("SMESH_MESHINFO_NODES")), myMeshWidget);
-  myMeshNbNodes    = new QLabel(myMeshWidget);
+  myMeshNbNodes  = new QLabel(myMeshWidget);
   myMeshNbNodes->setMinimumWidth(100);
+  QFrame* line12 = new QFrame(myMeshWidget);
+  line12->setFrameStyle(QFrame::HLine | QFrame::Sunken);
+
+  // --> 0D elements
+  QLabel* myMeshNb0DElemsLab = new QLabel(COLONIZE(tr("SMESH_MESHINFO_0DELEMS")), myMeshWidget);
+  myMeshNb0DElems = new QLabel(myMeshWidget);
+  myMeshNb0DElems->setMinimumWidth(100);
 
   // --> header with orders
   QLabel* myMeshOrder0Lab = new QLabel(tr("SMESH_MESHINFO_ORDER0"), myMeshWidget);
@@ -290,16 +297,19 @@ SMESHGUI_MeshInfosDlg::SMESHGUI_MeshInfosDlg(SMESHGUI* theModule):
   aMeshLayout->addWidget(line1,              1, 0, 1, 2);
   aMeshLayout->addWidget(myMeshNbNodesLab,   2, 0);
   aMeshLayout->addWidget(myMeshNbNodes,      2, 1);
-  aMeshLayout->addWidget(myMeshOrder0Lab,    3, 1);
-  aMeshLayout->addWidget(myMeshOrder1Lab,    3, 2);
-  aMeshLayout->addWidget(myMeshOrder2Lab,    3, 3);
-  aMeshLayout->addWidget(myMeshNbEdgesLab,   4, 0);
-  aMeshLayout->addWidget(myMeshNbEdges,      4, 1);
-  aMeshLayout->addWidget(myMeshNbEdges1,     4, 2);
-  aMeshLayout->addWidget(myMeshNbEdges2,     4, 3);
-  aMeshLayout->addWidget(myMeshFacesGroup,   5, 0, 1, 4);
-  aMeshLayout->addWidget(myMeshVolumesGroup, 6, 0, 1, 4);
-  aMeshLayout->addItem(new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Expanding), 7, 0);
+  aMeshLayout->addWidget(line12,             3, 0, 1, 2);
+  aMeshLayout->addWidget(myMeshNb0DElemsLab, 4, 0);
+  aMeshLayout->addWidget(myMeshNb0DElems,    4, 1);
+  aMeshLayout->addWidget(myMeshOrder0Lab,    5, 1);
+  aMeshLayout->addWidget(myMeshOrder1Lab,    5, 2);
+  aMeshLayout->addWidget(myMeshOrder2Lab,    5, 3);
+  aMeshLayout->addWidget(myMeshNbEdgesLab,   6, 0);
+  aMeshLayout->addWidget(myMeshNbEdges,      6, 1);
+  aMeshLayout->addWidget(myMeshNbEdges1,     6, 2);
+  aMeshLayout->addWidget(myMeshNbEdges2,     6, 3);
+  aMeshLayout->addWidget(myMeshFacesGroup,   7, 0, 1, 4);
+  aMeshLayout->addWidget(myMeshVolumesGroup, 8, 0, 1, 4);
+  aMeshLayout->addItem(new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Expanding), 9, 0);
 
   // submesh
   mySubMeshWidget = new QWidget(myWGStack);
@@ -331,6 +341,11 @@ SMESHGUI_MeshInfosDlg::SMESHGUI_MeshInfosDlg(SMESHGUI* theModule):
   mySubMeshNbElements->setMinimumWidth(100);
   mySubMeshNbElements->setFont(fnt);
 
+  // --> 0D elements
+  QLabel* mySubMeshNb0DElemsLab = new QLabel(COLONIZE(tr("SMESH_MESHINFO_0DELEMS")), mySubMeshElementsGroup);
+  mySubMeshNb0DElems = new QLabel(mySubMeshElementsGroup);
+  mySubMeshNb0DElems->setMinimumWidth(100);
+
   // --> elements --> edges
   QLabel* mySubMeshNbEdgesLab = new QLabel(COLONIZE(tr("SMESH_MESHINFO_EDGES")), mySubMeshElementsGroup);
   mySubMeshNbEdges    = new QLabel(mySubMeshElementsGroup);
@@ -348,12 +363,14 @@ SMESHGUI_MeshInfosDlg::SMESHGUI_MeshInfosDlg(SMESHGUI* theModule):
 
   mySubMeshElementsGroupLayout->addWidget(mySubMeshNbElementsLab, 0, 0);
   mySubMeshElementsGroupLayout->addWidget(mySubMeshNbElements,    0, 1);
-  mySubMeshElementsGroupLayout->addWidget(mySubMeshNbEdgesLab,    1, 0);
-  mySubMeshElementsGroupLayout->addWidget(mySubMeshNbEdges,       1, 1);
-  mySubMeshElementsGroupLayout->addWidget(mySubMeshNbFacesLab,    2, 0);
-  mySubMeshElementsGroupLayout->addWidget(mySubMeshNbFaces,       2, 1);
-  mySubMeshElementsGroupLayout->addWidget(mySubMeshNbVolumesLab,  3, 0);
-  mySubMeshElementsGroupLayout->addWidget(mySubMeshNbVolumes,     3, 1);
+  mySubMeshElementsGroupLayout->addWidget(mySubMeshNb0DElemsLab,  1, 0);
+  mySubMeshElementsGroupLayout->addWidget(mySubMeshNb0DElems,     1, 1);
+  mySubMeshElementsGroupLayout->addWidget(mySubMeshNbEdgesLab,    2, 0);
+  mySubMeshElementsGroupLayout->addWidget(mySubMeshNbEdges,       2, 1);
+  mySubMeshElementsGroupLayout->addWidget(mySubMeshNbFacesLab,    3, 0);
+  mySubMeshElementsGroupLayout->addWidget(mySubMeshNbFaces,       3, 1);
+  mySubMeshElementsGroupLayout->addWidget(mySubMeshNbVolumesLab,  4, 0);
+  mySubMeshElementsGroupLayout->addWidget(mySubMeshNbVolumes,     4, 1);
 
   aSubMeshLayout->addWidget(mySubMeshNameLab,       0, 0);
   aSubMeshLayout->addWidget(mySubMeshName,          0, 1);
@@ -466,6 +483,7 @@ void SMESHGUI_MeshInfosDlg::DumpMeshInfos()
 	  setWindowTitle(tr("SMESH_MESHINFO_TITLE") + " [" + tr("SMESH_OBJECT_MESH") + "]");
 	  myMeshName->setText(aSO->GetName().c_str());
 	  myMeshNbNodes->setNum((int)aMesh->NbNodes());
+          myMeshNb0DElems->setNum((int)aMesh->Nb0DElements());
 	  myMeshNbEdges->setNum((int)aMesh->NbEdges());
 	  myMeshNbEdges1->setNum((int)aMesh->NbEdgesOfOrder(SMESH::ORDER_LINEAR));
 	  myMeshNbEdges2->setNum((int)aMesh->NbEdgesOfOrder(SMESH::ORDER_QUADRATIC));
@@ -504,6 +522,7 @@ void SMESHGUI_MeshInfosDlg::DumpMeshInfos()
 	  mySubMeshName->setText(aSO->GetName().c_str());
 	  mySubMeshNbNodes->setNum((int)aSubMesh->GetNumberOfNodes(true));
 	  mySubMeshNbElements->setNum((int)aSubMesh->GetNumberOfElements());
+	  mySubMeshNb0DElems->setNum((int)(aSubMesh->GetElementsByType(SMESH::ELEM0D)->length()));
 	  mySubMeshNbEdges->setNum((int)(aSubMesh->GetElementsByType(SMESH::EDGE)->length()));
 	  mySubMeshNbFaces->setNum((int)(aSubMesh->GetElementsByType(SMESH::FACE)->length()));
 	  mySubMeshNbVolumes->setNum((int)(aSubMesh->GetElementsByType(SMESH::VOLUME)->length()));
@@ -519,6 +538,8 @@ void SMESHGUI_MeshInfosDlg::DumpMeshInfos()
 	  switch (aType) {
 	  case SMESH::NODE:
 	    strType = "SMESH_MESHINFO_NODES"; break;
+	  case SMESH::ELEM0D:
+	    strType = "SMESH_MESHINFO_0DELEMS"; break;
 	  case SMESH::EDGE:
 	    strType = "SMESH_MESHINFO_EDGES"; break;
 	  case SMESH::FACE:

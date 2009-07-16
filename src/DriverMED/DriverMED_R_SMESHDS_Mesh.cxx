@@ -395,6 +395,16 @@ DriverMED_R_SMESHDS_Mesh
                   //MESSAGE("Try to create element # " << iElem << " with id = "
                   //        << aCellInfo->GetElemNum(iElem));
                   switch(aGeom) {
+                  case ePOINT1:
+                    //anElement = FindNode(myMesh,aNodeIds[0]);
+                    if(anIsElemNum)
+                      anElement = myMesh->Add0DElementWithID
+                        (aNodeIds[0], aCellInfo->GetElemNum(iElem));
+                    if (!anElement) {
+                      anElement = myMesh->Add0DElement(FindNode(myMesh,aNodeIds[0]));
+                      isRenum = anIsElemNum;
+                    }
+                    break;
                   case eSEG2:
                     if(anIsElemNum)
                       anElement = myMesh->AddEdgeWithID(aNodeIds[0],
@@ -680,11 +690,8 @@ DriverMED_R_SMESHDS_Mesh
                       isRenum = anIsElemNum;
                     }
                     break;
-
-                  case ePOINT1:
-                    anElement = FindNode(myMesh,aNodeIds[0]);
-                    break;
                   }
+
 #ifndef _DEXCEPT_
                 }catch(const std::exception& exc){
                   //INFOS("Follow exception was cought:\n\t"<<exc.what());

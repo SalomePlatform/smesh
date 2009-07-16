@@ -55,6 +55,7 @@ class SMESH_MeshEditor_i: public POA_SMESH::SMESH_MeshEditor
    * Returns ID of created element or 0 if element not created
    */
   CORBA::Long AddNode(CORBA::Double x, CORBA::Double y, CORBA::Double z);
+  CORBA::Long Add0DElement(CORBA::Long IDOfNode);
   CORBA::Long AddEdge(const SMESH::long_array & IDsOfNodes);
   CORBA::Long AddFace(const SMESH::long_array & IDsOfNodes);
   CORBA::Long AddPolygonalFace(const SMESH::long_array & IDsOfNodes);

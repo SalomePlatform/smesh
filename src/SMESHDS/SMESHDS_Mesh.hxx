@@ -30,6 +30,7 @@
 
 #include "SMDS_Mesh.hxx"
 #include "SMDS_MeshNode.hxx"
+#include "SMDS_Mesh0DElement.hxx"
 #include "SMDS_MeshEdge.hxx"
 #include "SMDS_MeshFace.hxx"
 #include "SMDS_MeshVolume.hxx"
@@ -66,7 +67,11 @@ public:
   bool RemoveHypothesis(const TopoDS_Shape & S, const SMESHDS_Hypothesis * H);
   
   virtual SMDS_MeshNode* AddNodeWithID(double x, double y, double z, int ID);
-  virtual SMDS_MeshNode * AddNode(double x, double y, double z);
+  virtual SMDS_MeshNode* AddNode(double x, double y, double z);
+  
+  virtual SMDS_Mesh0DElement* Add0DElementWithID(int nodeID, int ID);
+  virtual SMDS_Mesh0DElement* Add0DElementWithID(const SMDS_MeshNode * node, int ID);
+  virtual SMDS_Mesh0DElement* Add0DElement      (const SMDS_MeshNode * node);
   
   virtual SMDS_MeshEdge* AddEdgeWithID(int n1, int n2, int ID);
   virtual SMDS_MeshEdge* AddEdgeWithID(const SMDS_MeshNode * n1,

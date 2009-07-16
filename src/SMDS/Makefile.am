@@ -35,6 +35,7 @@ salomeinclude_HEADERS = \
 	SMDS_ElemIterator.hxx \
 	SMDS_FacePosition.hxx \
 	SMDS_Mesh.hxx \
+	SMDS_Mesh0DElement.hxx \
 	SMDS_MeshEdge.hxx \
 	SMDS_MeshElement.hxx \
 	SMDS_MeshElementIDFactory.hxx \
@@ -76,6 +77,7 @@ dist_libSMDS_la_SOURCES = \
 	SMDS_SpacePosition.cxx \
 	SMDS_VertexPosition.cxx \
 	SMDS_MeshNode.cxx \
+	SMDS_Mesh0DElement.cxx \
 	SMDS_MeshEdge.cxx \
 	SMDS_MeshFace.cxx \
 	SMDS_MeshVolume.cxx \

@@ -19,43 +19,43 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
-//  SMESH SMESHDS : management of mesh data and SMESH document
-//  File   : SMESHDS_CommandType.hxx
+//  SMESH SMDS : implementaion of Salome mesh data structure
+//  File   : SMDS_Mesh0DElement.hxx
 //  Module : SMESH
-//
-#ifndef _SMESHDS_CommandType_HeaderFile
-#define _SMESHDS_CommandType_HeaderFile
 
-//#include <Standard_PrimitiveTypes.hxx>
+#ifndef _SMDS_Mesh0DElement_HeaderFile
+#define _SMDS_Mesh0DElement_HeaderFile
 
-enum SMESHDS_CommandType { 
-  SMESHDS_AddNode,
-  SMESHDS_Add0DElement,
-  SMESHDS_AddEdge,
-  SMESHDS_AddTriangle,
-  SMESHDS_AddQuadrangle,
-  SMESHDS_AddPolygon,
-  SMESHDS_AddTetrahedron,
-  SMESHDS_AddPyramid,
-  SMESHDS_AddPrism,
-  SMESHDS_AddHexahedron,
-  SMESHDS_AddPolyhedron,
-  SMESHDS_RemoveNode,
-  SMESHDS_RemoveElement,
-  SMESHDS_MoveNode,
-  SMESHDS_ChangeElementNodes,
-  SMESHDS_ChangePolyhedronNodes,
-  SMESHDS_Renumber,
-  SMESHDS_ClearAll,
-  // special types for quadratic elements
-  SMESHDS_AddQuadEdge,
-  SMESHDS_AddQuadTriangle,
-  SMESHDS_AddQuadQuadrangle,
-  SMESHDS_AddQuadTetrahedron,
-  SMESHDS_AddQuadPyramid,
-  SMESHDS_AddQuadPentahedron,
-  SMESHDS_AddQuadHexahedron
+#include "SMESH_SMDS.hxx"
+
+#include "SMDS_MeshElement.hxx"
+
+#include <iostream>
+
+class SMDS_EXPORT SMDS_Mesh0DElement: public SMDS_MeshElement
+{
+ public:
+  SMDS_Mesh0DElement (const SMDS_MeshNode * node);
+  bool ChangeNode (const SMDS_MeshNode * node);
+  void Print (std::ostream & OS) const;
+
+  SMDSAbs_ElementType GetType() const;
+  int NbNodes() const;
+  int NbEdges() const;
+  friend bool operator< (const SMDS_Mesh0DElement& e1, const SMDS_Mesh0DElement& e2);
+
+  /*!
+   * \brief Return node by its index
+   * \param ind - node index
+   * \retval const SMDS_MeshNode* - the node
+   */
+  virtual const SMDS_MeshNode* GetNode (const int ind) const;
+
+ protected:
+  SMDS_ElemIteratorPtr elementsIterator (SMDSAbs_ElementType type) const;
+
+ protected:
+  const SMDS_MeshNode* myNode;
 };
-
 
 #endif

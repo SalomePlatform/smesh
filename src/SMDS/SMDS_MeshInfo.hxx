@@ -42,6 +42,7 @@ public:
   int NbNodes() const { return myNbNodes; }
   inline int NbElements(SMDSAbs_ElementType type=SMDSAbs_All) const;
 
+  int Nb0DElements() const { return myNb0DElements; }
   inline int NbEdges      (SMDSAbs_ElementOrder order = ORDER_ANY) const;
   inline int NbFaces      (SMDSAbs_ElementOrder order = ORDER_ANY) const;
   inline int NbTriangles  (SMDSAbs_ElementOrder order = ORDER_ANY) const;
@@ -69,6 +70,7 @@ private:
 
   int myNbNodes;
 
+  int myNb0DElements;
   int myNbEdges      , myNbQuadEdges      ;
   int myNbTriangles  , myNbQuadTriangles  ;
   int myNbQuadrangles, myNbQuadQuadrangles;
@@ -86,6 +88,7 @@ private:
 
 inline SMDS_MeshInfo::SMDS_MeshInfo():
   myNbNodes(0),
+  myNb0DElements(0),
   myNbEdges      (0), myNbQuadEdges      (0),
   myNbTriangles  (0), myNbQuadTriangles  (0),
   myNbQuadrangles(0), myNbQuadQuadrangles(0),
@@ -97,30 +100,30 @@ inline SMDS_MeshInfo::SMDS_MeshInfo():
   myNbPolyhedrons(0)
 {
   // Number of nodes in standard element types
-  // n   v  f  e
-  // o   o  a  d
+  // n   v  f  e  0
+  // o   o  a  d  d
   // d   l  c  g
   // e      e  e
-  // -----------
-  // 1      
+  // --------------
+  // 1            *
   // 2         *
   // 3      *
   // 4   *  *  *
-  // 5   *  
+  // 5   *
   // 6   *  *
-  // 7      
+  // 7
   // 8   *  *
-  // 9      
-  // 10  *  
-  // 11     
-  // 12     
-  // 13  *  
-  // 14     
-  // 15  *  
-  // 16     
-  // 17     
-  // 18     
-  // 19     
+  // 9
+  // 10  *
+  // 11
+  // 12
+  // 13  *
+  // 14
+  // 15  *
+  // 16
+  // 17
+  // 18
+  // 19
   // 20  *
   //
   // So to have a unique index for each type basing on nb of nodes, we use a shift:
@@ -130,6 +133,8 @@ inline SMDS_MeshInfo::SMDS_MeshInfo():
 
   myNb.resize( index( SMDSAbs_Volume,20 ) + 1, NULL);
   myNb[ index( SMDSAbs_Node,1 )] = & myNbNodes;
+
+  myNb[ index( SMDSAbs_0DElement,1 )] = & myNb0DElements;
 
   myNb[ index( SMDSAbs_Edge,2 )] = & myNbEdges;
   myNb[ index( SMDSAbs_Edge,4 )] = & myNbQuadEdges;

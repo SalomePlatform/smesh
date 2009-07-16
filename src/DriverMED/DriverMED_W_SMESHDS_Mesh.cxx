@@ -223,8 +223,9 @@ namespace{
 
   //-------------------------------------------------------
   /*!
-   * \brief Class helping to use either SMDS_EdgeIterator, SMDS_FaceIterator
-   * or SMDS_VolumeIterator in the same code
+   * \brief Class helping to use either SMDS_0DElementIterator,
+   * SMDS_EdgeIterator, SMDS_FaceIterator or SMDS_VolumeIterator
+   * in the same code
    */
   //-------------------------------------------------------
   struct TElemIterator
@@ -244,6 +245,7 @@ namespace{
       else                   return 0;
     }
   };
+  typedef TypedElemIterator< SMDS_0DElementIteratorPtr > T0DElementIterator;
   typedef TypedElemIterator< SMDS_EdgeIteratorPtr > TEdgeIterator;
   typedef TypedElemIterator< SMDS_FaceIteratorPtr > TFaceIterator;
   typedef TypedElemIterator< SMDS_VolumeIteratorPtr > TVolumeIterator;
@@ -422,10 +424,12 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
     // Storing SMDS groups and sub-meshes as med families
     //----------------------------------------------------
     int myNodesDefaultFamilyId   = 0;
+    int my0DElementsDefaultFamilyId = 0;
     int myEdgesDefaultFamilyId   = 0;
     int myFacesDefaultFamilyId   = 0;
     int myVolumesDefaultFamilyId = 0;
     int nbNodes   = myMesh->NbNodes();
+    int nb0DElements = myMesh->Nb0DElements();
     int nbEdges   = myMesh->NbEdges();
     int nbFaces   = myMesh->NbFaces();
     int nbVolumes = myMesh->NbVolumes();
@@ -534,6 +538,13 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
 
     EEntiteMaillage anEntity = eMAILLE;
 #ifdef _ELEMENTS_BY_DIM_
+    anEntity = eNOEUD_ELEMENT;
+#endif
+    aTElemTypeDatas.push_back(TElemTypeData(anEntity,
+                                            ePOINT1,
+                                            nbElemInfo.Nb0DElements(),
+                                            SMDSAbs_0DElement));
+#ifdef _ELEMENTS_BY_DIM_
     anEntity = eARETE;
 #endif
     aTElemTypeDatas.push_back( TElemTypeData(anEntity,
@@ -635,6 +646,10 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
       PElemIterator elemIterator;
       int defaultFamilyId = 0;
       switch ( aElemTypeData->_smdsType ) {
+      case SMDSAbs_0DElement:
+        elemIterator = PElemIterator( new T0DElementIterator( myMesh->elements0dIterator() ));
+        defaultFamilyId = my0DElementsDefaultFamilyId;
+        break;
       case SMDSAbs_Edge:
         elemIterator = PElemIterator( new TEdgeIterator( myMesh->edgesIterator() ));
         defaultFamilyId = myEdgesDefaultFamilyId;

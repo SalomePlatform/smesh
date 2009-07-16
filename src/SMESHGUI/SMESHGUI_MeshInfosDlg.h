@@ -75,6 +75,7 @@ private:
   QWidget*                myMeshWidget;
   QLabel*                 myMeshName;
   QLabel*                 myMeshNbNodes;
+  QLabel*                 myMeshNb0DElems;
   QLabel*                 myMeshNbEdges;
   QLabel*                 myMeshNbEdges1;
   QLabel*                 myMeshNbEdges2;
@@ -112,6 +113,7 @@ private:
   QLabel*                 mySubMeshNbNodes;
   QGroupBox*              mySubMeshElementsGroup;
   QLabel*                 mySubMeshNbElements;
+  QLabel*                 mySubMeshNb0DElems;
   QLabel*                 mySubMeshNbEdges;
   QLabel*                 mySubMeshNbFaces;
   QLabel*                 mySubMeshNbVolumes;

@@ -20,7 +20,7 @@
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 //  SMESH SMDS : implementaion of Salome mesh data structure
-//
+
 #ifdef _MSC_VER
 #pragma warning(disable:4786)
 #endif
@@ -167,11 +167,57 @@ SMDS_MeshNode * SMDS_Mesh::AddNodeWithID(double x, double y, double z, int ID)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+/// create a Mesh0DElement and add it to the current Mesh
+/// @return : The created Mesh0DElement
+///////////////////////////////////////////////////////////////////////////////
+SMDS_Mesh0DElement* SMDS_Mesh::Add0DElementWithID(int idnode, int ID)
+{
+  SMDS_MeshNode * node = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode);
+  if (!node) return NULL;
+  return SMDS_Mesh::Add0DElementWithID(node, ID);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+/// create a Mesh0DElement and add it to the current Mesh
+/// @return : The created Mesh0DElement
+///////////////////////////////////////////////////////////////////////////////
+SMDS_Mesh0DElement* SMDS_Mesh::Add0DElement(const SMDS_MeshNode * node)
+{
+  return SMDS_Mesh::Add0DElementWithID(node, myElementIDFactory->GetFreeID());
+}
+
+///////////////////////////////////////////////////////////////////////////////
+/// Create a new Mesh0DElement and at it to the mesh
+/// @param idnode ID of the node
+/// @param ID ID of the 0D element to create
+/// @return The created 0D element or NULL if an element with this
+///         ID already exists or if input node is not found.
+///////////////////////////////////////////////////////////////////////////////
+SMDS_Mesh0DElement* SMDS_Mesh::Add0DElementWithID(const SMDS_MeshNode * n, int ID)
+{
+  if (!n) return 0;
+
+  if (my0DElements.Extent() % CHECKMEMORY_INTERVAL == 0) CheckMemory();
+
+  SMDS_Mesh0DElement * el0d = new SMDS_Mesh0DElement(n);
+  if (myElementIDFactory->BindID(ID, el0d)) {
+    SMDS_MeshNode *node = const_cast<SMDS_MeshNode*>(n);
+    node->AddInverseElement(el0d);
+    my0DElements.Add(el0d);
+    myInfo.myNb0DElements++;
+    return el0d;
+  }
+
+  delete el0d;
+  return NULL;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 /// create a MeshEdge and add it to the current Mesh
 /// @return : The created MeshEdge
 ///////////////////////////////////////////////////////////////////////////////
 
-SMDS_MeshEdge* SMDS_Mesh::AddEdgeWithID(int idnode1, int idnode2, int ID) 
+SMDS_MeshEdge* SMDS_Mesh::AddEdgeWithID(int idnode1, int idnode2, int ID)
 {
   SMDS_MeshNode * node1 = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode1);
   SMDS_MeshNode * node2 = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode2);
@@ -200,7 +246,7 @@ SMDS_MeshEdge* SMDS_Mesh::AddEdge(const SMDS_MeshNode * node1,
 ///////////////////////////////////////////////////////////////////////////////
 
 SMDS_MeshEdge* SMDS_Mesh::AddEdgeWithID(const SMDS_MeshNode * n1,
-					const SMDS_MeshNode * n2, 
+					const SMDS_MeshNode * n2,
 					int ID)
 {
   if ( !n1 || !n2 ) return 0;
@@ -217,7 +263,7 @@ SMDS_MeshEdge* SMDS_Mesh::AddEdgeWithID(const SMDS_MeshNode * n1,
     myEdges.Add(edge);
     myInfo.myNbEdges++;
     return edge;
-  } 
+  }
   else {
     delete edge;
     return NULL;
@@ -284,10 +330,10 @@ SMDS_MeshFace* SMDS_Mesh::AddFace(const SMDS_MeshNode * n1,
 /// Add a quadrangle defined by its nodes IDs
 ///////////////////////////////////////////////////////////////////////////////
 
-SMDS_MeshFace* SMDS_Mesh::AddFaceWithID(int idnode1, 
-					int idnode2, 
+SMDS_MeshFace* SMDS_Mesh::AddFaceWithID(int idnode1,
+					int idnode2,
 					int idnode3,
-					int idnode4, 
+					int idnode4,
 					int ID)
 {
   SMDS_MeshNode *node1, *node2, *node3, *node4;
@@ -400,12 +446,12 @@ SMDS_MeshFace* SMDS_Mesh::AddFaceWithID(const SMDS_MeshEdge * e1,
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-///Create a new tetrahedron and add it to the mesh. 
-///@return The created tetrahedron 
+///Create a new tetrahedron and add it to the mesh.
+///@return The created tetrahedron
 ///////////////////////////////////////////////////////////////////////////////
 
 SMDS_MeshVolume* SMDS_Mesh::AddVolume(const SMDS_MeshNode * n1,
-				      const SMDS_MeshNode * n2, 
+				      const SMDS_MeshNode * n2,
 				      const SMDS_MeshNode * n3,
 				      const SMDS_MeshNode * n4)
 {
@@ -416,16 +462,16 @@ SMDS_MeshVolume* SMDS_Mesh::AddVolume(const SMDS_MeshNode * n1,
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-///Create a new tetrahedron and add it to the mesh. 
+///Create a new tetrahedron and add it to the mesh.
 ///@param ID The ID of the new volume
 ///@return The created tetrahedron or NULL if an element with this ID already exists
 ///or if input nodes are not found.
 ///////////////////////////////////////////////////////////////////////////////
 
-SMDS_MeshVolume * SMDS_Mesh::AddVolumeWithID(int idnode1, 
+SMDS_MeshVolume * SMDS_Mesh::AddVolumeWithID(int idnode1,
 					     int idnode2,
-					     int idnode3, 
-					     int idnode4, 
+					     int idnode3,
+					     int idnode4,
 					     int ID)
 {
   SMDS_MeshNode *node1, *node2, *node3, *node4;
@@ -1121,6 +1167,15 @@ void SMDS_Mesh::RemoveNode(const SMDS_MeshNode * node)
 /// Remove an edge and all the elements which own this edge
 ///////////////////////////////////////////////////////////////////////////////
 
+void SMDS_Mesh::Remove0DElement(const SMDS_Mesh0DElement * elem0d)
+{
+  RemoveElement(elem0d,true);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+/// Remove an edge and all the elements which own this edge
+///////////////////////////////////////////////////////////////////////////////
+
 void SMDS_Mesh::RemoveEdge(const SMDS_MeshEdge * edge)
 {
 	RemoveElement(edge,true);
@@ -1201,6 +1256,11 @@ bool SMDS_Mesh::ChangeElementNodes(const SMDS_MeshElement * element,
   SMDS_MeshElement* elem = const_cast<SMDS_MeshElement*>(element);
   switch ( elem->GetType() )
   {
+  case SMDSAbs_0DElement: {
+    if ( SMDS_Mesh0DElement* elem0d = dynamic_cast<SMDS_Mesh0DElement*>( elem ))
+      Ok = elem0d->ChangeNode( nodes[0] );
+    break;
+  }
   case SMDSAbs_Edge: {
     if ( nbnodes == 2 ) {
       if ( SMDS_MeshEdge* edge = dynamic_cast<SMDS_MeshEdge*>( elem ))
@@ -1319,6 +1379,50 @@ bool SMDS_Mesh::ChangePolyhedronNodes (const SMDS_MeshElement *            elem,
   }
 
   return Ok;
+}
+
+
+//=======================================================================
+//function : Find0DElement
+//purpose  :
+//=======================================================================
+const SMDS_Mesh0DElement* SMDS_Mesh::Find0DElement(int idnode) const
+{
+  const SMDS_MeshNode * node = FindNode(idnode);
+  if(node == NULL) return NULL;
+  return Find0DElement(node);
+}
+
+const SMDS_Mesh0DElement* SMDS_Mesh::Find0DElement(const SMDS_MeshNode * node)
+{
+  if (!node) return 0;
+  const SMDS_Mesh0DElement* toReturn = NULL;
+  SMDS_ElemIteratorPtr it1 = node->GetInverseElementIterator(SMDSAbs_0DElement);
+  while (it1->more() && (toReturn == NULL)) {
+    const SMDS_MeshElement* e = it1->next();
+    if (e->NbNodes() == 1) {
+      toReturn = static_cast<const SMDS_Mesh0DElement*>(e);
+    }
+  }
+  return toReturn;
+}
+
+//=======================================================================
+//function : Find0DElementOrCreate
+//purpose  :
+//=======================================================================
+SMDS_Mesh0DElement* SMDS_Mesh::Find0DElementOrCreate(const SMDS_MeshNode * node) 
+{
+  if (!node) return 0;
+  SMDS_Mesh0DElement * toReturn = NULL;
+  toReturn = const_cast<SMDS_Mesh0DElement*>(Find0DElement(node));
+  if (toReturn == NULL) {
+    if (my0DElements.Extent() % CHECKMEMORY_INTERVAL == 0) CheckMemory();
+    toReturn = new SMDS_Mesh0DElement(node);
+    my0DElements.Add(toReturn);
+    myInfo.myNb0DElements++;
+  }
+  return toReturn;
 }
 
 
@@ -1666,6 +1770,7 @@ const SMDS_MeshFace* SMDS_Mesh::FindFace (std::vector<int> nodes_ids) const
   for (int inode = 0; inode < nbnodes; inode++) {
     const SMDS_MeshNode * node = FindNode(nodes_ids[inode]);
     if (node == NULL) return NULL;
+    poly_nodes[inode] = node;
   }
   return FindFace(poly_nodes);
 }
@@ -1702,6 +1807,17 @@ void SMDS_Mesh::DumpNodes() const
 	MESSAGE("dump nodes of mesh : ");
 	SMDS_NodeIteratorPtr itnode=nodesIterator();
 	while(itnode->more()) MESSAGE(itnode->next());
+}
+
+//=======================================================================
+//function : Dump0DElements
+//purpose  :
+//=======================================================================
+void SMDS_Mesh::Dump0DElements() const
+{
+  MESSAGE("dump 0D elements of mesh : ");
+  SMDS_0DElementIteratorPtr it0d = elements0dIterator();
+  while(it0d->more()) MESSAGE(it0d->next());
 }
 
 //=======================================================================
@@ -1750,6 +1866,7 @@ void SMDS_Mesh::DebugStats() const
 	MESSAGE("Debug stats of mesh : ");
 
 	MESSAGE("===== NODES ====="<<NbNodes());
+	MESSAGE("===== 0DELEMS ====="<<Nb0DElements());
 	MESSAGE("===== EDGES ====="<<NbEdges());
 	MESSAGE("===== FACES ====="<<NbFaces());
 	MESSAGE("===== VOLUMES ====="<<NbVolumes());
@@ -1796,6 +1913,14 @@ void SMDS_Mesh::DebugStats() const
 int SMDS_Mesh::NbNodes() const
 {
 	return myNodes.Size();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+/// Return the number of 0D elements
+///////////////////////////////////////////////////////////////////////////////
+int SMDS_Mesh::Nb0DElements() const
+{
+  return my0DElements.Size();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1859,9 +1984,17 @@ SMDS_Mesh::~SMDS_Mesh()
     while (itn->more())
       myNodeIDFactory->ReleaseID(itn->next()->GetID());
   }
+
   SetOfNodes::Iterator itn(myNodes);
   for (; itn.More(); itn.Next())
     delete itn.Value();
+
+  SetOf0DElements::Iterator it0d (my0DElements);
+  for (; it0d.More(); it0d.Next())
+  {
+    SMDS_MeshElement* elem = it0d.Value();
+    delete elem;
+  }
 
   SetOfEdges::Iterator ite(myEdges);
   for (; ite.More(); ite.Next())
@@ -1883,7 +2016,6 @@ SMDS_Mesh::~SMDS_Mesh()
     SMDS_MeshElement* elem = itv.Value();
     delete elem;
   }
-
 }
 
 //================================================================================
@@ -1920,6 +2052,11 @@ void SMDS_Mesh::Clear()
   while (ite->more())
     delete ite->next();
   myEdges.Clear();
+
+  SMDS_0DElementIteratorPtr it0d = elements0dIterator();
+  while (it0d->more())
+    delete it0d->next();
+  my0DElements.Clear();
 
   SMDS_NodeIteratorPtr itn = nodesIterator();
   while (itn->more())
@@ -2049,6 +2186,17 @@ struct MYNCollection_Map_Iterator: public FATHER
 };
 
 ///////////////////////////////////////////////////////////////////////////////
+///Return an iterator on 0D elements of the current mesh.
+///////////////////////////////////////////////////////////////////////////////
+
+SMDS_0DElementIteratorPtr SMDS_Mesh::elements0dIterator() const
+{
+  typedef MYNCollection_Map_Iterator
+    < SetOf0DElements, const SMDS_Mesh0DElement*, SMDS_0DElementIterator > TIterator;
+  return SMDS_0DElementIteratorPtr(new TIterator(my0DElements));
+}
+
+///////////////////////////////////////////////////////////////////////////////
 ///Return an iterator on edges of the current mesh.
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -2095,6 +2243,8 @@ SMDS_ElemIteratorPtr SMDS_Mesh::elementsIterator(SMDSAbs_ElementType type) const
     return SMDS_ElemIteratorPtr (new MYNCollection_Map_Iterator< SetOfFaces >(myFaces));
   case SMDSAbs_Edge:
     return SMDS_ElemIteratorPtr (new MYNCollection_Map_Iterator< SetOfEdges >(myEdges));
+  case SMDSAbs_0DElement:
+    return SMDS_ElemIteratorPtr (new MYNCollection_Map_Iterator< SetOf0DElements >(my0DElements));
   case SMDSAbs_Node:
     return myNodeIDFactory->elementsIterator();
   default:;
@@ -2184,16 +2334,20 @@ static set<const SMDS_MeshElement*> * getExclusiveNodes(
 ///@param element The element were to search matching children
 ///@param nodes The nodes that the children must have to be selected
 ///////////////////////////////////////////////////////////////////////////////
-void SMDS_Mesh::addChildrenWithNodes(set<const SMDS_MeshElement*>&	setOfChildren, 
-	const SMDS_MeshElement * element, set<const SMDS_MeshElement*>& nodes)
+void SMDS_Mesh::addChildrenWithNodes(set<const SMDS_MeshElement*>& setOfChildren, 
+                                     const SMDS_MeshElement *      element,
+                                     set<const SMDS_MeshElement*>& nodes)
 {
-	
-	switch(element->GetType())
-	{
-	case SMDSAbs_Node:
-		MESSAGE("Internal Error: This should not append");
-		break;
-	case SMDSAbs_Edge:
+  switch(element->GetType())
+    {
+    case SMDSAbs_Node:
+      MESSAGE("Internal Error: This should not happend");
+      break;
+    case SMDSAbs_0DElement:
+      {
+      }
+      break;
+    case SMDSAbs_Edge:
 	{
 		SMDS_ElemIteratorPtr itn=element->nodesIterator();
 		while(itn->more())
@@ -2206,7 +2360,7 @@ void SMDS_Mesh::addChildrenWithNodes(set<const SMDS_MeshElement*>&	setOfChildren
                         }
 		}
 	} break;
-	case SMDSAbs_Face:
+    case SMDSAbs_Face:
 	{
 		SMDS_ElemIteratorPtr itn=element->nodesIterator();
 		while(itn->more())
@@ -2225,7 +2379,7 @@ void SMDS_Mesh::addChildrenWithNodes(set<const SMDS_MeshElement*>&	setOfChildren
 				addChildrenWithNodes(setOfChildren, ite->next(), nodes);
 		}
 	} break;	
-	case SMDSAbs_Volume:
+    case SMDSAbs_Volume:
 	{
 		if(hasConstructionFaces())
 		{
@@ -2240,7 +2394,7 @@ void SMDS_Mesh::addChildrenWithNodes(set<const SMDS_MeshElement*>&	setOfChildren
 				addChildrenWithNodes(setOfChildren, ite->next(), nodes);
 		}
 	}
-	}
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2248,7 +2402,7 @@ void SMDS_Mesh::addChildrenWithNodes(set<const SMDS_MeshElement*>&	setOfChildren
 ///@param removenodes if true remaining nodes will be removed
 ///////////////////////////////////////////////////////////////////////////////
 void SMDS_Mesh::RemoveElement(const SMDS_MeshElement * elem,
-	const bool removenodes)
+                              const bool removenodes)
 {
   list<const SMDS_MeshElement *> removedElems;
   list<const SMDS_MeshElement *> removedNodes;
@@ -2268,8 +2422,9 @@ void SMDS_Mesh::RemoveElement(const SMDS_MeshElement *        elem,
 {
   // get finite elements built on elem
   set<const SMDS_MeshElement*> * s1;
-  if (!hasConstructionEdges() && elem->GetType() == SMDSAbs_Edge ||
-      !hasConstructionFaces() && elem->GetType() == SMDSAbs_Face ||
+  if (elem->GetType() == SMDSAbs_0DElement ||
+      elem->GetType() == SMDSAbs_Edge && !hasConstructionEdges() ||
+      elem->GetType() == SMDSAbs_Face && !hasConstructionFaces() ||
       elem->GetType() == SMDSAbs_Volume)
   {
     s1 = new set<const SMDS_MeshElement*>();
@@ -2318,6 +2473,12 @@ void SMDS_Mesh::RemoveElement(const SMDS_MeshElement *        elem,
     {
     case SMDSAbs_Node:
       MESSAGE("Internal Error: This should not happen");
+      break;
+    case SMDSAbs_0DElement:
+      my0DElements.Remove(static_cast<SMDS_Mesh0DElement*>
+                          (const_cast<SMDS_MeshElement*>(*it)));
+      //myInfo.Remove0DElement(*it);
+      myInfo.remove(*it);
       break;
     case SMDSAbs_Edge:
       myEdges.Remove(static_cast<SMDS_MeshEdge*>
@@ -2395,6 +2556,12 @@ void SMDS_Mesh::RemoveFreeElement(const SMDS_MeshElement * elem)
 
     // in meshes without descendants elements are always free
     switch (aType) {
+    case SMDSAbs_0DElement:
+      my0DElements.Remove(static_cast<SMDS_Mesh0DElement*>
+                          (const_cast<SMDS_MeshElement*>(elem)));
+      //myInfo.Remove0DElement(elem);
+      myInfo.remove(elem);
+      break;
     case SMDSAbs_Edge:
       myEdges.Remove(static_cast<SMDS_MeshEdge*>
                      (const_cast<SMDS_MeshElement*>(elem)));
@@ -2429,6 +2596,10 @@ bool SMDS_Mesh::Contains (const SMDS_MeshElement* elem) const
   SMDS_NodeIteratorPtr itn = nodesIterator();
   while (itn->more())
     if (elem == itn->next())
+      return true;
+  SMDS_0DElementIteratorPtr it0d = elements0dIterator();
+  while (it0d->more())
+    if (elem == it0d->next())
       return true;
   SMDS_EdgeIteratorPtr ite = edgesIterator();
   while (ite->more())

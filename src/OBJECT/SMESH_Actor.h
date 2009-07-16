@@ -74,7 +74,7 @@ class SMESHOBJECT_EXPORT SMESH_Actor: public SALOME_Actor
 
   enum EReperesent { ePoint, eEdge, eSurface};
   
-  enum EEntityMode { eEdges = 0x01, eFaces = 0x02, eVolumes = 0x04, eAllEntity = 0x07};
+  enum EEntityMode { e0DElements = 0x01, eEdges = 0x02, eFaces = 0x04, eVolumes = 0x08, eAllEntity = 0x0f};
 
   enum EQuadratic2DRepresentation { eLines = 0x01, eArcs = 0x02 };
 

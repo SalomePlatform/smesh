@@ -810,6 +810,15 @@ namespace SMESH
     int SW = mgr->integerValue( "SMESH", "selection_width", 5 ),
         PW = mgr->integerValue( "SMESH", "highlight_width", 5 );
 
+    // adjust highlight_width to the width of mesh entities
+    int aPointSize  = mgr->integerValue("SMESH", "node_size", 3);
+    int aElem0DSize = mgr->integerValue("SMESH", "elem0d_size", 5);
+    int aLineWidth  = mgr->integerValue("SMESH", "element_width", 1);
+    int maxSize = aPointSize;
+    if (aElem0DSize > maxSize) maxSize = aElem0DSize;
+    if (aLineWidth > maxSize) maxSize = aLineWidth;
+    if (PW < maxSize + 2) PW = maxSize + 2;
+
     double SP1 = mgr->doubleValue( "SMESH", "selection_precision_node", 0.025 ),
            SP2 = mgr->doubleValue( "SMESH", "selection_precision_element", 0.001 ),
 	   SP3 = mgr->doubleValue( "SMESH", "selection_precision_object", 0.025 );

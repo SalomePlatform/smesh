@@ -22,8 +22,8 @@
 // SMESH SMESHGUI : GUI for SMESH component
 // File   : SMESHGUI_AddMeshElementDlg.cxx
 // Author : Nicolas REJNERI, Open CASCADE S.A.S.
+
 //  SMESH includes
-//
 #include "SMESHGUI_AddMeshElementDlg.h"
 
 #include "SMESHGUI.h"
@@ -236,7 +236,7 @@ namespace SMESH
 // purpose  : constructor
 //=================================================================================
 SMESHGUI_AddMeshElementDlg::SMESHGUI_AddMeshElementDlg( SMESHGUI* theModule,
-                                                        SMDSAbs_ElementType ElementType, 
+                                                        SMDSAbs_ElementType ElementType,
 							int nbNodes )
   : QDialog( SMESH::GetDesktop( theModule ) ),
     mySMESHGUI( theModule ),
@@ -255,6 +255,10 @@ SMESHGUI_AddMeshElementDlg::SMESHGUI_AddMeshElementDlg( SMESHGUI* theModule,
   myNbNodes = nbNodes;
   myElementType = ElementType;
   switch (ElementType) {
+  case SMDSAbs_0DElement:
+    if (myNbNodes != 1)
+      myNbNodes = 1;
+    break;
   case SMDSAbs_Face:
     //     if (myNbNodes != 3 && myNbNodes != 4)
     //       myNbNodes = 3;
@@ -269,7 +273,11 @@ SMESHGUI_AddMeshElementDlg::SMESHGUI_AddMeshElementDlg( SMESHGUI* theModule,
   }
 
   QString elemName;
-  if (myNbNodes == 2) {
+  if (myNbNodes == 1) {
+    elemName = "ELEM0D";
+    myHelpFileName = "adding_nodes_and_elements_page.html#adding_0delems_anchor";
+  }
+  else if (myNbNodes == 2) {
     elemName = "EDGE";
     myHelpFileName = "adding_nodes_and_elements_page.html#adding_edges_anchor";
   }
@@ -277,7 +285,7 @@ SMESHGUI_AddMeshElementDlg::SMESHGUI_AddMeshElementDlg( SMESHGUI* theModule,
     elemName = "TRIANGLE";
     myHelpFileName = "adding_nodes_and_elements_page.html#adding_triangles_anchor";
   }
-  else if (myNbNodes == 4)
+  else if (myNbNodes == 4) {
     if (myElementType == SMDSAbs_Face) {
       elemName = "QUADRANGLE";
       myHelpFileName = "adding_nodes_and_elements_page.html#adding_quadrangles_anchor";
@@ -286,6 +294,7 @@ SMESHGUI_AddMeshElementDlg::SMESHGUI_AddMeshElementDlg( SMESHGUI* theModule,
       elemName = "TETRAS";
       myHelpFileName = "adding_nodes_and_elements_page.html#adding_tetrahedrons_anchor";
     }
+  }
   else if (myNbNodes == 8) {
     elemName = "HEXAS";
     myHelpFileName = "adding_nodes_and_elements_page.html#adding_hexahedrons_anchor";
@@ -298,7 +307,7 @@ SMESHGUI_AddMeshElementDlg::SMESHGUI_AddMeshElementDlg( SMESHGUI* theModule,
   else if (myElementType == SMDSAbs_Volume) {
     myHelpFileName = "adding_nodes_and_elements_page.html#adding_polyhedrons_anchor";
   }
-  
+
   QString iconName      = tr(QString("ICON_DLG_%1").arg(elemName).toLatin1().data());
   QString buttonGrTitle = tr(QString("SMESH_%1").arg(elemName).toLatin1().data());
   QString caption       = tr(QString("SMESH_ADD_%1_TITLE").arg(elemName).toLatin1().data());
@@ -439,30 +448,31 @@ void SMESHGUI_AddMeshElementDlg::ClickOnApply()
 {
   if (myNbOkNodes && !mySMESHGUI->isActiveStudyLocked()) {
     myBusy = true;
-    SMESH::long_array_var anArrayOfIdeces = new SMESH::long_array;
-    anArrayOfIdeces->length(myNbNodes);
+    SMESH::long_array_var anArrayOfIndices = new SMESH::long_array;
+    anArrayOfIndices->length(myNbNodes);
     bool reverse = (Reverse && Reverse->isChecked());
     QStringList aListId = myEditCurrentArgument->text().split(" ", QString::SkipEmptyParts);
     for (int i = 0; i < aListId.count(); i++)
       if (reverse)
-        anArrayOfIdeces[i] = aListId[ myNbNodes - i - 1 ].toInt();
+        anArrayOfIndices[i] = aListId[ myNbNodes - i - 1 ].toInt();
       else
-        anArrayOfIdeces[i] = aListId[ i ].toInt();
+        anArrayOfIndices[i] = aListId[ i ].toInt();
 
     SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditor();
     switch (myElementType) {
+    case SMDSAbs_0DElement:
+      aMeshEditor->Add0DElement(anArrayOfIndices[0]); break;
     case SMDSAbs_Edge:
-      aMeshEditor->AddEdge(anArrayOfIdeces.inout()); break;
-    case SMDSAbs_Face:{
+      aMeshEditor->AddEdge(anArrayOfIndices.inout()); break;
+    case SMDSAbs_Face: {
       if(myIsPoly)
-	aMeshEditor->AddPolygonalFace(anArrayOfIdeces.inout());
+	aMeshEditor->AddPolygonalFace(anArrayOfIndices.inout());
       else
-	aMeshEditor->AddFace(anArrayOfIdeces.inout());
+	aMeshEditor->AddFace(anArrayOfIndices.inout());
       break;
-
     }
     case SMDSAbs_Volume:
-      aMeshEditor->AddVolume(anArrayOfIdeces.inout()); break;
+      aMeshEditor->AddVolume(anArrayOfIndices.inout()); break;
     default:;
     }
 
@@ -515,8 +525,9 @@ void SMESHGUI_AddMeshElementDlg::ClickOnCancel()
 void SMESHGUI_AddMeshElementDlg::ClickOnHelp()
 {
   LightApp_Application* app = (LightApp_Application*)(SUIT_Session::session()->activeApplication());
-  if (app) 
-    app->onHelpContextModule(mySMESHGUI ? app->moduleName(mySMESHGUI->moduleName()) : QString(""), myHelpFileName);
+  if (app)
+    app->onHelpContextModule(mySMESHGUI ? app->moduleName(mySMESHGUI->moduleName()) : QString(""),
+                             myHelpFileName);
   else {
     QString platform;
 #ifdef WIN32
@@ -526,7 +537,7 @@ void SMESHGUI_AddMeshElementDlg::ClickOnHelp()
 #endif
     SUIT_MessageBox::warning(this, tr("WRN_WARNING"),
 			     tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
-			     arg(app->resourceMgr()->stringValue("ExternalBrowser", 
+			     arg(app->resourceMgr()->stringValue("ExternalBrowser",
 								 platform)).
 			     arg(myHelpFileName));
   }
@@ -555,7 +566,7 @@ void SMESHGUI_AddMeshElementDlg::onTextChange (const QString& theNewText)
 
   if (aMesh) {
     TColStd_MapOfInteger newIndices;
-    
+
     QStringList aListId = theNewText.split(" ", QString::SkipEmptyParts);
     bool allOk = true;
     for (int i = 0; i < aListId.count(); i++) {
@@ -567,13 +578,13 @@ void SMESHGUI_AddMeshElementDlg::onTextChange (const QString& theNewText)
       else
 	allOk = false;	
     }
-    
+
     mySelector->AddOrRemoveIndex( myActor->getIO(), newIndices, false );
     if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
       aViewWindow->highlight( myActor->getIO(), true, true );
-    
+
     myNbOkNodes = ( allOk && myNbNodes == aListId.count() );
-    
+
     if (myIsPoly)
       {
 	if ( !allOk || myElementType != SMDSAbs_Face || aListId.count() < 3 )
@@ -582,13 +593,13 @@ void SMESHGUI_AddMeshElementDlg::onTextChange (const QString& theNewText)
 	  myNbOkNodes = aListId.count();
       }
   }
-  
+
   if(myNbOkNodes) {
     buttonOk->setEnabled(true);
     buttonApply->setEnabled(true);
     displaySimulation();
   }
-  
+
   myBusy = false;
 }
 
@@ -795,7 +806,7 @@ void SMESHGUI_AddMeshElementDlg::keyPressEvent( QKeyEvent* e )
   QDialog::keyPressEvent( e );
   if ( e->isAccepted() )
     return;
-  
+
   if ( e->key() == Qt::Key_F1 ) {
     e->accept();
     ClickOnHelp();

@@ -33,6 +33,7 @@ enum SMDSAbs_ElementType
 {
 	SMDSAbs_All,
 	SMDSAbs_Node,
+        SMDSAbs_0DElement,
 	SMDSAbs_Edge,
 	SMDSAbs_Face,
 	SMDSAbs_Volume,

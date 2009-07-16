@@ -508,6 +508,9 @@
 	  if(SMESH_Actor *anActor = SMESH::FindActorByEntry(IObject->getEntry())){
 	    unsigned int aMode = anActor->GetEntityMode();
 	    switch(theCommandID){
+            case 216:
+              InverseEntityMode(aMode,SMESH_Actor::e0DElements);
+              break;
 	    case 217:
 	      InverseEntityMode(aMode,SMESH_Actor::eEdges);
 	      break;
@@ -1467,6 +1470,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
   break;
   
   // Display Entity
+  case 216: // 0D elements
   case 217: // Edges
   case 218: // Faces
   case 219: // Volumes
@@ -1571,7 +1575,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       break;
     }
 
-  case 400:					// NODES
+  case 4000:					// NODES
     {
       if(checkLock(aStudy)) break;
 
@@ -2192,7 +2196,8 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       break;
     }
 
-  case 401:					// GEOM::EDGE
+  case 4009:					// ELEM0D
+  case 4010:					// GEOM::EDGE
   case 4021:					// TRIANGLE
   case 4022:					// QUAD
   case 4023:					// POLYGON
@@ -2205,6 +2210,8 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
         SMDSAbs_ElementType type    = SMDSAbs_Edge;
         int                 nbNodes = 2;
         switch (theCommandID) {
+        case 4009:                                      // ELEM0D
+          type = SMDSAbs_0DElement; nbNodes = 1; break;
         case 4021:                                      // TRIANGLE
           type = SMDSAbs_Face; nbNodes = 3; break;
         case 4022:                                      // QUAD
@@ -2729,8 +2736,9 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction( 6018, "LENGTH_2D",       "ICON_LENGTH_2D",     0, true );
   createSMESHAction( 6019, "CONNECTION_2D",   "ICON_CONNECTION_2D", 0, true );
   createSMESHAction( 6009, "VOLUME_3D",       "ICON_VOLUME_3D",     0, true );
-  createSMESHAction(  400, "NODE",            "ICON_DLG_NODE" );
-  createSMESHAction(  401, "EDGE",            "ICON_DLG_EDGE" );
+  createSMESHAction( 4000, "NODE",            "ICON_DLG_NODE" );
+  createSMESHAction( 4009, "ELEM0D",          "ICON_DLG_ELEM0D" );
+  createSMESHAction( 4010, "EDGE",            "ICON_DLG_EDGE" );
   createSMESHAction( 4021, "TRIANGLE",        "ICON_DLG_TRIANGLE" );
   createSMESHAction( 4022, "QUAD",            "ICON_DLG_QUADRANGLE" );
   createSMESHAction( 4023, "POLYGON",         "ICON_DLG_POLYGON" );
@@ -2767,6 +2775,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction(  213, "SHRINK",         "ICON_SHRINK", 0, true );
   createSMESHAction(  214, "UPDATE",         "ICON_UPDATE" );
   createSMESHAction(  215, "NODES",          "ICON_POINTS", 0, true );
+  createSMESHAction(  216, "ELEMS0D",        "ICON_DLG_ELEM0D", 0, true );
   createSMESHAction(  217, "EDGES",          "ICON_DLG_EDGE", 0, true );
   createSMESHAction(  218, "FACES",          "ICON_DLG_TRIANGLE", 0, true );
   createSMESHAction(  219, "VOLUMES",        "ICON_DLG_TETRAS", 0, true );
@@ -2883,8 +2892,9 @@ void SMESHGUI::initialize( CAM_Application* app )
   createMenu( 6021, ctrlId, -1 );
   createMenu( separator(), ctrlId, -1 );
 
-  createMenu( 400, addId, -1 );
-  createMenu( 401, addId, -1 );
+  createMenu( 4000, addId, -1 );
+  createMenu( 4009, addId, -1 );
+  createMenu( 4010, addId, -1 );
   createMenu( 4021, addId, -1 );
   createMenu( 4022, addId, -1 );
   createMenu( 4023, addId, -1 );
@@ -2977,8 +2987,9 @@ void SMESHGUI::initialize( CAM_Application* app )
   createTool( 6021, ctrlTb );
   createTool( separator(), ctrlTb );
 
-  createTool( 400, addRemTb );
-  createTool( 401, addRemTb );
+  createTool( 4000, addRemTb );
+  createTool( 4009, addRemTb );
+  createTool( 4010, addRemTb );
   createTool( 4021, addRemTb );
   createTool( 4022, addRemTb );
   createTool( 4023, addRemTb );
@@ -3111,6 +3122,7 @@ void SMESHGUI::initialize( CAM_Application* app )
     hasNodes("(numberOfNodes > 0 )"),//&& isVisible)"),
     hasElems("(count( elemTypes ) > 0)"),
     hasDifferentElems("(count( elemTypes ) > 1)"),
+    hasElems0d("({'Elem0d'} in elemTypes)"),
     hasEdges("({'Edge'} in elemTypes)"),
     hasFaces("({'Face'} in elemTypes)"),
     hasVolumes("({'Volume'} in elemTypes)");
@@ -3168,6 +3180,10 @@ void SMESHGUI::initialize( CAM_Application* app )
   QString aDiffElemsInVTK = aMeshInVTK + "&&" + hasDifferentElems;
 
   anId = popupMgr()->insert( tr( "MEN_DISP_ENT" ), -1, -1 );
+
+  popupMgr()->insert( action(216), anId, -1 ); // ELEMS 0D
+  popupMgr()->setRule(action(216), aDiffElemsInVTK + "&& isVisible &&" + hasElems0d, QtxPopupMgr::VisibleRule);
+  popupMgr()->setRule(action(216), "{'Elem0d'} in entityMode", QtxPopupMgr::ToggleRule);
 
   popupMgr()->insert( action( 217 ), anId, -1 ); // EDGES
   popupMgr()->setRule( action( 217 ), aDiffElemsInVTK + "&& isVisible &&" + hasEdges, QtxPopupMgr::VisibleRule );
@@ -3580,16 +3596,28 @@ void SMESHGUI::createPreferences()
   int elemGroup = addPreference( tr( "PREF_GROUP_ELEMENTS" ), meshTab );
   setPreferenceProperty( elemGroup, "columns", 2 );
 
-  addPreference( tr( "PREF_FILL" ), elemGroup, LightApp_Preferences::Color, "SMESH", "fill_color" );
-  addPreference( tr( "PREF_OUTLINE" ), elemGroup, LightApp_Preferences::Color, "SMESH", "outline_color" );
+  addPreference( tr( "PREF_FILL"     ), elemGroup, LightApp_Preferences::Color, "SMESH", "fill_color" );
+  addPreference( tr( "PREF_OUTLINE"  ), elemGroup, LightApp_Preferences::Color, "SMESH", "outline_color" );
   addPreference( tr( "PREF_BACKFACE" ), elemGroup, LightApp_Preferences::Color, "SMESH", "backface_color" );
+  addPreference( tr( "PREF_COLOR_0D" ), elemGroup, LightApp_Preferences::Color, "SMESH", "elem0d_color" );
+
+  //int sp = addPreference( "", elemGroup, LightApp_Preferences::Space );
+  //setPreferenceProperty( sp, "hstretch", 0 );
+  //setPreferenceProperty( sp, "vstretch", 0 );
+
+  int size0d = addPreference(tr("PREF_SIZE_0D"), elemGroup,
+                             LightApp_Preferences::IntSpin, "SMESH", "elem0d_size");
   int sp = addPreference( "", elemGroup, LightApp_Preferences::Space );
+  int elemW  = addPreference(tr("PREF_WIDTH"), elemGroup,
+                             LightApp_Preferences::IntSpin, "SMESH", "element_width");
+  int shrink = addPreference(tr("PREF_SHRINK_COEFF"), elemGroup,
+                             LightApp_Preferences::IntSpin, "SMESH", "shrink_coeff");
+
+  setPreferenceProperty( size0d, "min", 1 );
+  setPreferenceProperty( size0d, "max", 10 );
 
   setPreferenceProperty( sp, "hstretch", 0 );
   setPreferenceProperty( sp, "vstretch", 0 );
-
-  int elemW = addPreference( tr( "PREF_WIDTH" ), elemGroup, LightApp_Preferences::IntSpin, "SMESH", "element_width" );
-  int shrink = addPreference( tr( "PREF_SHRINK_COEFF" ), elemGroup, LightApp_Preferences::IntSpin, "SMESH", "shrink_coeff" );
 
   setPreferenceProperty( elemW, "min", 1 );
   setPreferenceProperty( elemW, "max", 5 );

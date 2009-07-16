@@ -262,6 +262,14 @@
             <translation>Display Entity</translation>
         </message>
         <message>
+            <source>MEN_ELEM0D</source>
+            <translation>0D Element</translation>
+        </message>
+        <message>
+            <source>MEN_ELEMS0D</source>
+            <translation>0D Elements</translation>
+        </message>
+        <message>
             <source>MEN_EDGE</source>
             <translation>Edge</translation>
         </message>
@@ -740,6 +748,14 @@ Please enter correct values and try again</translation>
             <translation>Algorithms Assignation</translation>
         </message>
         <message>
+            <source>SMESH_ADD_ELEM0D</source>
+            <translation>Add 0D Element</translation>
+        </message>
+        <message>
+            <source>SMESH_ADD_ELEM0D_TITLE</source>
+            <translation>Add 0D Element</translation>
+        </message>
+        <message>
             <source>SMESH_ADD_EDGE</source>
             <translation>Add Edge</translation>
         </message>
@@ -1062,6 +1078,10 @@ so that the application may crash. Do you wish to continue visualization?</trans
         <message>
             <source>SMESH_DZ</source>
             <translation>dZ</translation>
+        </message>
+        <message>
+            <source>SMESH_ELEM0D</source>
+            <translation>0D Element</translation>
         </message>
         <message>
             <source>SMESH_EDGE</source>
@@ -1403,6 +1423,10 @@ Are you sure want to export to MED 2.1 ?</translation>
         <message>
             <source>SMESH_MESH</source>
             <translation>Mesh</translation>
+        </message>
+        <message>
+            <source>SMESH_MESHINFO_0DELEMS</source>
+            <translation>0D Elements</translation>
         </message>
         <message>
             <source>SMESH_MESHINFO_ALL_TYPES</source>
@@ -2072,6 +2096,14 @@ Consider saving your work before application crash</translation>
             <translation>Display entity</translation>
         </message>
         <message>
+            <source>STB_ELEM0D</source>
+            <translation>0D Element</translation>
+        </message>
+        <message>
+            <source>STB_ELEMS0D</source>
+            <translation>0D Elements</translation>
+        </message>
+        <message>
             <source>STB_EDGE</source>
             <translation>Edge</translation>
         </message>
@@ -2556,6 +2588,14 @@ Consider saving your work before application crash</translation>
         <message>
             <source>TOP_DISP_ENT</source>
             <translation>Display entity</translation>
+        </message>
+        <message>
+            <source>TOP_ELEM0D</source>
+            <translation>0D Element</translation>
+        </message>
+        <message>
+            <source>TOP_ELEMS0D</source>
+            <translation>0D Elements</translation>
         </message>
         <message>
             <source>TOP_EDGE</source>
@@ -3126,6 +3166,14 @@ Please, create VTK viewer and try again</translation>
         <message>
             <source>PREF_TITLE_COLOR</source>
             <translation>Title color</translation>
+        </message>
+        <message>
+            <source>PREF_COLOR_0D</source>
+            <translation>0D elements</translation>
+        </message>
+        <message>
+            <source>PREF_SIZE_0D</source>
+            <translation>Size of 0D elements</translation>
         </message>
         <message>
             <source>PREF_WIDTH</source>

@@ -104,6 +104,28 @@ namespace
 
 
   //=======================================================================
+  //function : Add0DElementsWithID
+  //=======================================================================
+  inline void Add0DElementsWithID(SMDS_Mesh* theMesh, 
+                                  SMESH::log_array_var& theSeq,
+                                  CORBA::Long theId)
+  {
+    const SMESH::long_array& anIndexes = theSeq[theId].indexes;
+    CORBA::Long anElemId = 0, aNbElems = theSeq[theId].number;
+    if (2*aNbElems != anIndexes.length())
+      EXCEPTION(runtime_error,"AddEdgeWithID - 2*aNbElems != aCoords.length()");
+    CORBA::Long anIndexId = 0;
+    for (; anElemId < aNbElems; anElemId++, anIndexId+=2)
+    {
+      SMDS_MeshElement* anElem = theMesh->Add0DElementWithID(anIndexes[anIndexId+1],
+                                                             anIndexes[anIndexId]);
+      if (!anElem)
+	EXCEPTION(runtime_error,"SMDS_Mesh::FindElement - cannot Add0DElementWithID for ID = "<<anElemId);
+    }
+  }
+
+
+  //=======================================================================
   //function : AddEdgesWithID
   //=======================================================================
   inline void AddEdgesWithID(SMDS_Mesh* theMesh, 
@@ -708,6 +730,7 @@ SMESH_Client::Update(bool theIsClear)
 	switch(aCommand)
         {
 	case SMESH::ADD_NODE       : AddNodesWithID      ( mySMDSMesh, aSeq, anId ); break;
+        case SMESH::ADD_ELEM0D     : Add0DElementsWithID ( mySMDSMesh, aSeq, anId ); break;
         case SMESH::ADD_EDGE       : AddEdgesWithID      ( mySMDSMesh, aSeq, anId ); break;
         case SMESH::ADD_TRIANGLE   : AddTriasWithID      ( mySMDSMesh, aSeq, anId ); break;
         case SMESH::ADD_QUADRANGLE : AddQuadsWithID      ( mySMDSMesh, aSeq, anId ); break;
@@ -796,6 +819,7 @@ SMESH_Client::Update(bool theIsClear)
     if ( MYDEBUG && mySMDSMesh )
     {
       MESSAGE("Update - mySMDSMesh->NbNodes() = "<<mySMDSMesh->NbNodes());
+      MESSAGE("Update - mySMDSMesh->Nb0DElements() = "<<mySMDSMesh->Nb0DElements());
       MESSAGE("Update - mySMDSMesh->NbEdges() = "<<mySMDSMesh->NbEdges());
       MESSAGE("Update - mySMDSMesh->NbFaces() = "<<mySMDSMesh->NbFaces());
       MESSAGE("Update - mySMDSMesh->NbVolumes() = "<<mySMDSMesh->NbVolumes());

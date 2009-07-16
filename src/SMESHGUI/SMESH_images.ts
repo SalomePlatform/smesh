@@ -110,6 +110,10 @@
             <translation>mesh_build_compound.png</translation>
         </message>
         <message>
+            <source>ICON_DLG_ELEM0D</source>
+            <translation>mesh_vertex.png</translation>
+        </message>
+        <message>
             <source>ICON_DLG_EDGE</source>
             <translation>mesh_line.png</translation>
         </message>

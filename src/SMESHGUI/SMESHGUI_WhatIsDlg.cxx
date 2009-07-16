@@ -443,6 +443,8 @@ void SMESHGUI_WhatIsDlg::SelectionIntoArgument()
     if(e->GetType() == SMDSAbs_Node) {
       anInfo+=tr("MESH_NODE")+"<br>";
       //const SMDS_MeshNode *en = (SMDS_MeshNode*) e; // VSR: not used!
+    } else if (e->GetType() == SMDSAbs_0DElement) {
+      anInfo+=tr("SMESH_ELEM0D")+"<br>";
     } else if(e->GetType() == SMDSAbs_Edge) {
       anInfo+=tr("SMESH_EDGE")+"<br>";
       anInfo+="<b>" + tr("SMESH_MESHINFO_TYPE")+":</b> ";

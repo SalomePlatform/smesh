@@ -42,6 +42,12 @@ module SMESH
     long AddNode(in double x, in double y, in double z);
 
     /*!
+     *  Create 0D element on the given node.
+     *  \param IdOfNode Node IDs for creation of element.
+     */
+    long Add0DElement(in long IDOfNode);
+
+    /*!
      *  Create edge, either linear and quadratic (this is determed
      *  by number of given nodes).
      *  \param IdsOfNodes List of node IDs for creation of element.

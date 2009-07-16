@@ -249,6 +249,30 @@ void SMESHDS_Mesh::Renumber (const bool isNodes, const int startID, const int de
 }
 
 //=======================================================================
+//function : Add0DElement
+//purpose  :
+//=======================================================================
+SMDS_Mesh0DElement* SMESHDS_Mesh::Add0DElementWithID(int nodeID, int ID)
+{
+  SMDS_Mesh0DElement* anElem = SMDS_Mesh::Add0DElementWithID(nodeID, ID);
+  if (anElem) myScript->Add0DElement(ID, nodeID);
+  return anElem;
+}
+
+SMDS_Mesh0DElement* SMESHDS_Mesh::Add0DElementWithID
+                                  (const SMDS_MeshNode * node, int ID)
+{
+  return Add0DElementWithID(node->GetID(), ID);
+}
+
+SMDS_Mesh0DElement* SMESHDS_Mesh::Add0DElement(const SMDS_MeshNode * node)
+{
+  SMDS_Mesh0DElement* anElem = SMDS_Mesh::Add0DElement(node);
+  if (anElem) myScript->Add0DElement(anElem->GetID(), node->GetID());
+  return anElem;
+}
+
+//=======================================================================
 //function :AddEdgeWithID
 //purpose  : 
 //=======================================================================

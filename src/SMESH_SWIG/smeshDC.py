@@ -1600,6 +1600,12 @@ class Mesh:
     def NbElements(self):
         return self.mesh.NbElements()
 
+    ## Returns the number of 0d elements in the mesh
+    #  @return an integer value
+    #  @ingroup l1_meshinfo
+    def Nb0DElements(self):
+        return self.mesh.Nb0DElements()
+
     ## Returns the number of edges in the mesh
     #  @return an integer value
     #  @ingroup l1_meshinfo
@@ -1937,6 +1943,13 @@ class Mesh:
         x,y,z,Parameters = geompyDC.ParseParameters(x,y,z)
         self.mesh.SetParameters(Parameters)
         return self.editor.AddNode( x, y, z)
+
+    ## Creates a 0D element on a node with given number.
+    #  @param IDOfNode the ID of node for creation of the element.
+    #  @return the Id of the new 0D element
+    #  @ingroup l2_modif_add
+    def Add0DElement(self, IDOfNode):
+        return self.editor.Add0DElement(IDOfNode)
 
     ## Creates a linear or quadratic edge (this is determined
     #  by the number of given nodes).

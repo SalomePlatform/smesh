@@ -233,6 +233,11 @@ class SMESH_ActorDef : public SMESH_Actor
   vtkProperty* my1DExtProp;
   SMESH_DeviceActor* my1DExtActor;
 
+  vtkProperty* my0DProp;
+  SMESH_DeviceActor* my0DActor;
+  vtkProperty* my0DExtProp;
+  SMESH_DeviceActor* my0DExtActor;
+
   unsigned int myEntityMode;
   unsigned int myEntityState;
   bool myIsPointsVisible;
