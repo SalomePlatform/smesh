@@ -674,7 +674,7 @@ SALOMEDS::SObject_ptr SMESH_Gen_i::PublishGroup (SALOMEDS::Study_ptr    theStudy
     }
     int aType = (int)theGroup->GetType();
     const char* aRootNames[] = {
-      "Compound Groups", "Groups of Nodes",
+      "Compound Groups", "Groups of Nodes", "Group of 0D Elements",
       "Groups of Edges", "Groups of Faces", "Groups of Volumes" };
 
     // Currently, groups with heterogenous content are not supported
@@ -684,7 +684,7 @@ SALOMEDS::SObject_ptr SMESH_Gen_i::PublishGroup (SALOMEDS::Study_ptr    theStudy
       // Find or create groups root
       SALOMEDS::SObject_var aRootSO = publish (theStudy, CORBA::Object::_nil(),
                                                aMeshSO, aRootTag, 0, false );
-      if ( aType < 5 )
+      if ( aType < 6 )
         SetName( aRootSO, aRootNames[aType] );
 
       // Add new group to corresponding sub-tree
