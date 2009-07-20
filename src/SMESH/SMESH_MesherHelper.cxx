@@ -54,6 +54,8 @@
 
 #include <utilities.h>
 
+#include <limits>
+
 #define RETURN_BAD_RESULT(msg) { MESSAGE(msg); return false; }
 
 namespace {
