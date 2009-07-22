@@ -50,6 +50,7 @@
 #include <LightApp_SelectionMgr.h>
 
 #include <SVTK_ViewWindow.h>
+#include <VTKViewer_Algorithm.h>
 #include <VTKViewer_CellLocationsArray.h>
 
 // SALOME KERNEL includes
@@ -423,7 +424,8 @@ bool SMESHGUI_NodesDlg::ClickOnApply()
   mySelectionMgr->selectedObjects( aList );
   if ( aList.Extent() != 1 ) {
     if ( SVTK_ViewWindow* aViewWindow = SMESH::GetCurrentVtkView() ) {
-      vtkActorCollection *aCollection = aViewWindow->getRenderer()->GetActors();
+      VTK::ActorCollectionCopy aCopy(aViewWindow->getRenderer()->GetActors());
+      vtkActorCollection *aCollection = aCopy.GetActors();
       aCollection->InitTraversal();
       while ( vtkActor *anAct = aCollection->GetNextActor() ) {
         if ( SMESH_Actor *anActor = dynamic_cast<SMESH_Actor*>( anAct ) ) {

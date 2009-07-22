@@ -96,6 +96,8 @@
 #include <SVTK_ViewModel.h>
 #include <SVTK_ViewManager.h>
 
+#include <VTKViewer_Algorithm.h>
+
 #include <SUIT_MessageBox.h>
 #include <SUIT_ResourceMgr.h>
 #include <SUIT_FileDlg.h>
@@ -4038,7 +4040,8 @@ void SMESHGUI::storeVisualParameters (int savePoint)
       {
 	if (SVTK_ViewWindow* vtkView = dynamic_cast<SVTK_ViewWindow*>(views[i]))
         {
-	  vtkActorCollection* allActors = vtkView->getRenderer()->GetActors();
+	  VTK::ActorCollectionCopy aCopy(vtkView->getRenderer()->GetActors());
+	  vtkActorCollection* allActors = aCopy.GetActors();
 	  allActors->InitTraversal();
 	  while (vtkActor* actor = allActors->GetNextActor())
           {
@@ -4254,7 +4257,8 @@ void SMESHGUI::restoreVisualParameters (int savePoint)
               // access later when restoring other parameters
               SVTK_ViewWindow* vtkView = (SVTK_ViewWindow*) vman->getActiveView();
               vtkRenderer* Renderer = vtkView->getRenderer();
-              vtkActorCollection* theActors = Renderer->GetActors();
+	      VTK::ActorCollectionCopy aCopy(Renderer->GetActors());
+              vtkActorCollection* theActors = aCopy.GetActors();
               theActors->InitTraversal();
               bool isFound = false;
               vtkActor *ac = theActors->GetNextActor();

@@ -61,6 +61,8 @@
 
 #include <SVTK_ViewWindow.h>
 
+#include <VTKViewer_Algorithm.h>
+
 // SALOME KERNEL includes
 #include <SALOMEDSClient_Study.hxx>
 
@@ -2206,7 +2208,8 @@ bool SMESHGUI_GroupDlg::SetAppropriateActor()
 
       // iterate on all actors in current view window, search for
       // any visible actor, that belongs to group or submesh of current mesh
-      vtkActorCollection *aCollection = aViewWindow->getRenderer()->GetActors();
+      VTK::ActorCollectionCopy aCopy(aViewWindow->getRenderer()->GetActors());
+      vtkActorCollection *aCollection = aCopy.GetActors();
       int nbItems = aCollection->GetNumberOfItems();
       for (int i=0; i<nbItems && !isActor; i++)
       {

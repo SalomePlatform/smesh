@@ -49,6 +49,8 @@
 #include <SVTK_ViewModel.h>
 #include <SVTK_ViewWindow.h>
 
+#include <VTKViewer_Algorithm.h>
+
 #include <LightApp_SelectionMgr.h>
 #include <SalomeApp_Application.h>
 #include <SalomeApp_Study.h>
@@ -143,7 +145,8 @@ namespace SMESH
         for ( int iV = 0; iV < views.count(); ++iV ) {
           if(SVTK_ViewWindow* vtkWnd = GetVtkViewWindow(views[iV])) {
             vtkRenderer *aRenderer = vtkWnd->getRenderer();
-            vtkActorCollection *actors = aRenderer->GetActors();
+	    VTK::ActorCollectionCopy aCopy(aRenderer->GetActors());
+            vtkActorCollection *actors = aCopy.GetActors();
             for (int i = 0; i < actors->GetNumberOfItems(); ++i ) {
               // size of actors changes inside the loop
               while (SMESH_Actor *actor = dynamic_cast<SMESH_Actor*>(actors->GetItemAsObject(i)))
@@ -185,7 +188,8 @@ namespace SMESH
         for ( int iV = 0; iV < views.count(); ++iV ) {
           if(SVTK_ViewWindow* vtkWnd = GetVtkViewWindow(views[iV])) {
             vtkRenderer *aRenderer = vtkWnd->getRenderer();
-            vtkActorCollection *actors = aRenderer->GetActors();
+	    VTK::ActorCollectionCopy aCopy(aRenderer->GetActors());
+            vtkActorCollection *actors = aCopy.GetActors();
             for (int i = 0; i < actors->GetNumberOfItems(); ++i ) {
               // size of actors changes inside the loop
               while(SMESH_Actor *actor = dynamic_cast<SMESH_Actor*>(actors->GetItemAsObject(i)))
@@ -516,7 +520,8 @@ namespace SMESH
   {
     if(SVTK_ViewWindow* aViewWindow = GetVtkViewWindow(theWindow)){
       vtkRenderer *aRenderer = aViewWindow->getRenderer();
-      vtkActorCollection *aCollection = aRenderer->GetActors();
+      VTK::ActorCollectionCopy aCopy(aRenderer->GetActors());
+      vtkActorCollection *aCollection = aCopy.GetActors();
       aCollection->InitTraversal();
       while(vtkActor *anAct = aCollection->GetNextActor()){
 	if(SMESH_Actor *anActor = dynamic_cast<SMESH_Actor*>(anAct)){
@@ -645,7 +650,8 @@ namespace SMESH
   {
     if(SVTK_ViewWindow* aViewWindow = GetVtkViewWindow(theWnd)) {
       vtkRenderer *aRenderer = aViewWindow->getRenderer();
-      vtkActorCollection *aCollection = aRenderer->GetActors();
+      VTK::ActorCollectionCopy aCopy(aRenderer->GetActors());
+      vtkActorCollection *aCollection = aCopy.GetActors();
       aCollection->InitTraversal();
       while(vtkActor *anAct = aCollection->GetNextActor())
 	if(dynamic_cast<SMESH_Actor*>(anAct))
@@ -664,7 +670,8 @@ namespace SMESH
     {
       OK = true;
       vtkRenderer *aRenderer = aViewWnd->getRenderer();
-      vtkActorCollection *aCollection = aRenderer->GetActors();
+      VTK::ActorCollectionCopy aCopy(aRenderer->GetActors());
+      vtkActorCollection *aCollection = aCopy.GetActors();
       aCollection->InitTraversal();
 
       switch (theAction) {
@@ -741,7 +748,8 @@ namespace SMESH
 
       if( selected.Extent() == 0){
 	vtkRenderer* aRenderer = aWnd->getRenderer();
-	vtkActorCollection *aCollection = aRenderer->GetActors();
+	VTK::ActorCollectionCopy aCopy(aRenderer->GetActors());
+	vtkActorCollection *aCollection = aCopy.GetActors();
 	aCollection->InitTraversal();
 	while(vtkActor *anAct = aCollection->GetNextActor()){
 	  if(SMESH_Actor *anActor = dynamic_cast<SMESH_Actor*>(anAct)){
@@ -841,7 +849,8 @@ namespace SMESH
 				      PW);
 	// update actors
 	vtkRenderer* aRenderer = aVtkView->getRenderer();
-	vtkActorCollection *aCollection = aRenderer->GetActors();
+	VTK::ActorCollectionCopy aCopy(aRenderer->GetActors());
+	vtkActorCollection *aCollection = aCopy.GetActors();
 	aCollection->InitTraversal();
 	while(vtkActor *anAct = aCollection->GetNextActor()){
 	  if(SMESH_Actor *anActor = dynamic_cast<SMESH_Actor*>(anAct)){
@@ -907,7 +916,8 @@ namespace SMESH
   void SetPointRepresentation(bool theIsVisible){
     if(SVTK_ViewWindow* aViewWindow = GetCurrentVtkView()){
       vtkRenderer *aRenderer = aViewWindow->getRenderer();
-      vtkActorCollection *aCollection = aRenderer->GetActors();
+      VTK::ActorCollectionCopy aCopy(aRenderer->GetActors());
+      vtkActorCollection *aCollection = aCopy.GetActors();
       aCollection->InitTraversal();
       while(vtkActor *anAct = aCollection->GetNextActor()){
 	if(SMESH_Actor *anActor = dynamic_cast<SMESH_Actor*>(anAct)){
@@ -925,7 +935,8 @@ namespace SMESH
     if(SVTK_ViewWindow* aWnd = GetCurrentVtkView()){
       int anIsAllPickable = (theActor == NULL);
       vtkRenderer *aRenderer = aWnd->getRenderer();
-      vtkActorCollection *aCollection = aRenderer->GetActors();
+      VTK::ActorCollectionCopy aCopy(aRenderer->GetActors());
+      vtkActorCollection *aCollection = aCopy.GetActors();
       aCollection->InitTraversal();
       while(vtkActor *anAct = aCollection->GetNextActor()){
 	if(SALOME_Actor *anActor = dynamic_cast<SALOME_Actor*>(anAct)){
@@ -1135,7 +1146,8 @@ namespace SMESH
     if( SVTK_ViewWindow* aWnd = SMESH::GetCurrentVtkView() )
     {
       vtkRenderer *aRenderer = aWnd->getRenderer();
-      vtkActorCollection *aCollection = aRenderer->GetActors();
+      VTK::ActorCollectionCopy aCopy(aRenderer->GetActors());
+      vtkActorCollection *aCollection = aCopy.GetActors();
       aCollection->InitTraversal();
 
       while ( vtkActor *anAct = aCollection->GetNextActor())
