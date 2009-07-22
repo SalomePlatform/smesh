@@ -201,7 +201,7 @@ void StdMeshersGUI_EdgeDirectionParamWdg::SelectionIntoArgument()
       if ( !CORBA::is_nil( aGeomFatherObj ) ) {
 	// Get Main Shape
 	GEOM::GEOM_Object_var aGeomMain = GetGeomObjectByEntry( myEntry );
-	if ( !CORBA::is_nil( aGeomMain ) || aGeomMain->GetType() == 37 ) {  // Main Shape is a Group
+	if ( !CORBA::is_nil( aGeomMain ) && aGeomMain->GetType() == 37 ) {  // Main Shape is a Group
 	  GEOM::GEOM_Object_ptr aMainFatherObj = aGeomMain->GetMainShape();
 	  if ( !CORBA::is_nil( aMainFatherObj ) )
 	    aMainFatherEntry = aMainFatherObj->GetStudyEntry();
