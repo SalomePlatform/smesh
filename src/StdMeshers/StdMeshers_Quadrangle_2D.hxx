@@ -121,10 +121,13 @@ protected:
 
   // true if QuadranglePreference hypothesis is assigned that forces
   // construction of quadrangles if the number of nodes on opposite edges
-  // is not the same in the case where the global number of nodes on edges is even
+  // is not the same in the case where the global number of nodes on edges
+  // is even
   bool myQuadranglePreference;
 
   bool myTrianglePreference;
+
+  int myTriaVertexID;
 
   SMESH_MesherHelper* myTool; // tool for working with quadratic elements
 };

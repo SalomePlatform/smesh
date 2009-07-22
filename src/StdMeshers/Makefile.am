@@ -68,7 +68,8 @@ salomeinclude_HEADERS = \
 	SMESH_StdMeshers.hxx \
 	StdMeshers_TrianglePreference.hxx \
 	StdMeshers_CompositeHexa_3D.hxx \
-	StdMeshers_MaxLength.hxx
+	StdMeshers_MaxLength.hxx \
+	StdMeshers_QuadrangleParams.hxx
 
 # Libraries targets
 
@@ -113,7 +114,8 @@ dist_libStdMeshers_la_SOURCES = \
 	StdMeshers_QuadToTriaAdaptor.cxx \
 	StdMeshers_TrianglePreference.cxx \
 	StdMeshers_CompositeHexa_3D.cxx \
-	StdMeshers_MaxLength.cxx
+	StdMeshers_MaxLength.cxx \
+	StdMeshers_QuadrangleParams.cxx
 
 
 # additionnal information to compil and link file

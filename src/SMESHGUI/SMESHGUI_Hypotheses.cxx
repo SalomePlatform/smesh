@@ -86,10 +86,10 @@ void SMESHGUI_GenericHypothesisCreator::create( bool isAlgo,
   myIsCreate = true;
 
   // Create hypothesis/algorithm
-  if (isAlgo)
+  if (isAlgo) {
     SMESH::CreateHypothesis( hypType(), theHypName, isAlgo );
-  else
-  {
+  }
+  else {
     SMESH::SMESH_Hypothesis_var aHypothesis = 
       SMESH::CreateHypothesis( hypType(), theHypName, false );
     if( !editHypothesis( aHypothesis.in(), theHypName, theParent ) )

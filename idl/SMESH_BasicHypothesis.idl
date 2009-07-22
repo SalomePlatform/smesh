@@ -682,6 +682,32 @@ module StdMeshers
   };
 
   /*!
+   * StdMeshers_QuadrangleParams: interface of "Quadrangle Params" hypothesis
+   */
+  interface StdMeshers_QuadrangleParams : SMESH::SMESH_Hypothesis
+  {
+    /*!
+     * Set base vertex for triangles
+     */
+    void SetTriaVertex( in long vertID );
+    
+    /*!
+     * Returns base vertex for triangles
+     */
+    long GetTriaVertex();
+    
+    /*!
+     * Set entry of the main object
+     */
+    void SetObjectEntry( in string entry );
+    
+    /*!
+     * Get the entry of the main object
+     */
+    string GetObjectEntry();
+  };
+
+  /*!
    * StdMeshers_SegmentAroundVertex_0D: interface of "SegmentAroundVertex" algorithm
    */
   interface StdMeshers_SegmentAroundVertex_0D : SMESH::SMESH_0D_Algo

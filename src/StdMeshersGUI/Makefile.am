@@ -36,7 +36,8 @@ salomeinclude_HEADERS = \
 	StdMeshersGUI_NbSegmentsCreator.h \
 	StdMeshersGUI_ObjectReferenceParamWdg.h \
 	StdMeshersGUI_LayerDistributionParamWdg.h \
-	StdMeshersGUI_EdgeDirectionParamWdg.h
+	StdMeshersGUI_EdgeDirectionParamWdg.h \
+	StdMeshersGUI_SubShapeSelectorWdg.h
 
 # Libraries targets
 lib_LTLIBRARIES = libStdMeshersGUI.la
@@ -48,7 +49,8 @@ dist_libStdMeshersGUI_la_SOURCES = \
 	StdMeshersGUI_NbSegmentsCreator.cxx \
 	StdMeshersGUI_ObjectReferenceParamWdg.cxx \
 	StdMeshersGUI_LayerDistributionParamWdg.cxx \
-	StdMeshersGUI_EdgeDirectionParamWdg.cxx
+	StdMeshersGUI_EdgeDirectionParamWdg.cxx \
+	StdMeshersGUI_SubShapeSelectorWdg.cxx
 
 MOC_FILES = \
 	StdMeshersGUI_StdHypothesisCreator_moc.cxx \
@@ -57,7 +59,8 @@ MOC_FILES = \
 	StdMeshersGUI_NbSegmentsCreator_moc.cxx \
 	StdMeshersGUI_ObjectReferenceParamWdg_moc.cxx \
 	StdMeshersGUI_LayerDistributionParamWdg_moc.cxx \
-	StdMeshersGUI_EdgeDirectionParamWdg_moc.cxx
+	StdMeshersGUI_EdgeDirectionParamWdg_moc.cxx \
+	StdMeshersGUI_SubShapeSelectorWdg_moc.cxx
 
 nodist_libStdMeshersGUI_la_SOURCES= \
 	$(MOC_FILES)

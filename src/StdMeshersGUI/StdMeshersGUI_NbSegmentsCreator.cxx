@@ -26,7 +26,7 @@
 #include "StdMeshersGUI_NbSegmentsCreator.h"
 #include "StdMeshersGUI_DistrTable.h"
 #include "StdMeshersGUI_DistrPreview.h"
-#include "StdMeshersGUI_EdgeDirectionParamWdg.h"
+#include "StdMeshersGUI_SubShapeSelectorWdg.h"
 
 #include <SMESHGUI.h>
 #include <SMESHGUI_Utils.h>
@@ -200,7 +200,7 @@ QFrame* StdMeshersGUI_NbSegmentsCreator::buildFrame()
   myReversedEdgesBox = new QGroupBox(tr( "SMESH_REVERCE_EDGES" ), fr);
   QHBoxLayout* edgeLay = new QHBoxLayout( myReversedEdgesBox );
 
-  myDirectionWidget = new StdMeshersGUI_EdgeDirectionParamWdg();
+  myDirectionWidget = new StdMeshersGUI_SubShapeSelectorWdg();
   QString anEntry = getShapeEntry();
   if ( anEntry == "" )
     anEntry = h->GetObjectEntry();

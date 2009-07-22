@@ -727,6 +727,10 @@ SMDS_MeshFace* SMESH_MesherHelper::AddFace(const SMDS_MeshNode* n1,
 {
   SMESHDS_Mesh * meshDS = GetMeshDS();
   SMDS_MeshFace* elem = 0;
+
+  if( n1==n2 || n2==n3 || n3==n1 )
+    return elem;
+
   if(!myCreateQuadratic) {
     if(id)
       elem = meshDS->AddFaceWithID(n1, n2, n3, id);
@@ -764,6 +768,26 @@ SMDS_MeshFace* SMESH_MesherHelper::AddFace(const SMDS_MeshNode* n1,
 {
   SMESHDS_Mesh * meshDS = GetMeshDS();
   SMDS_MeshFace* elem = 0;
+
+  if( n1==n2 ) {
+    return AddFace(n1,n3,n4,id,force3d);
+  }
+  if( n1==n3 ) {
+    return AddFace(n1,n2,n4,id,force3d);
+  }
+  if( n1==n4 ) {
+    return AddFace(n1,n2,n3,id,force3d);
+  }
+  if( n2==n3 ) {
+    return AddFace(n1,n2,n4,id,force3d);
+  }
+  if( n2==n4 ) {
+    return AddFace(n1,n2,n3,id,force3d);
+  }
+  if( n3==n4 ) {
+    return AddFace(n1,n2,n3,id,force3d);
+  }
+
   if(!myCreateQuadratic) {
     if(id)
       elem = meshDS->AddFaceWithID(n1, n2, n3, n4, id);

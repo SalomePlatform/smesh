@@ -60,6 +60,7 @@ salomeinclude_HEADERS = \
 	StdMeshers_UseExisting_1D2D_i.hxx \
 	StdMeshers_TrianglePreference_i.hxx \
 	StdMeshers_MaxLength_i.hxx \
+	StdMeshers_QuadrangleParams_i.hxx \
 	SMESH_StdMeshers_I.hxx
 
 # Libraries targets
@@ -97,7 +98,8 @@ dist_libStdMeshersEngine_la_SOURCES = \
 	StdMeshers_SegmentLengthAroundVertex_i.cxx \
 	StdMeshers_UseExisting_1D2D_i.cxx \
 	StdMeshers_TrianglePreference_i.cxx \
-	StdMeshers_MaxLength_i.cxx
+	StdMeshers_MaxLength_i.cxx \
+	StdMeshers_QuadrangleParams_i.cxx
 
 # additionnal information to compil and link file
 libStdMeshersEngine_la_CPPFLAGS = \

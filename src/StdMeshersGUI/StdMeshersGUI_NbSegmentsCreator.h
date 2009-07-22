@@ -44,7 +44,7 @@ class QButtonGroup;
 class QGroupBox;
 class QGridLayout;
 class QRadioButton;
-class StdMeshersGUI_EdgeDirectionParamWdg;
+class StdMeshersGUI_SubShapeSelectorWdg;
 
 typedef struct
 {
@@ -94,7 +94,7 @@ private:
   QRadioButton*    myCutNeg;
   QGroupBox*       myReversedEdgesBox;
 
-  StdMeshersGUI_EdgeDirectionParamWdg*    myDirectionWidget;
+  StdMeshersGUI_SubShapeSelectorWdg*    myDirectionWidget;
 };
 
 #endif // STDMESHERSGUI_NBSEGMENTSCREATOR_H

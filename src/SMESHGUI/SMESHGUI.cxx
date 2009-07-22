@@ -2077,6 +2077,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
 
   case 1100:					// EDIT HYPOTHESIS
     {
+      cout<<"EDIT HYPOTHESIS"<<endl;
       if(checkLock(aStudy)) break;
 
       LightApp_SelectionMgr *aSel = SMESHGUI::selectionMgr();

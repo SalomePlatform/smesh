@@ -33,7 +33,8 @@
 #include <SMESH_NumberFilter.hxx>
 #include "StdMeshersGUI_ObjectReferenceParamWdg.h"
 #include "StdMeshersGUI_LayerDistributionParamWdg.h"
-#include "StdMeshersGUI_EdgeDirectionParamWdg.h"
+//#include "StdMeshersGUI_EdgeDirectionParamWdg.h"
+#include "StdMeshersGUI_SubShapeSelectorWdg.h"
 #include <SALOMEDSClient_Study.hxx>
 
 // SALOME GUI includes
@@ -445,8 +446,10 @@ QString StdMeshersGUI_StdHypothesisCreator::storeParams() const
       StdMeshers::StdMeshers_Arithmetic1D_var h =
 	StdMeshers::StdMeshers_Arithmetic1D::_narrow( hypothesis() );
 
-      StdMeshersGUI_EdgeDirectionParamWdg* w = 
-        widget< StdMeshersGUI_EdgeDirectionParamWdg >( 2 );
+      //StdMeshersGUI_EdgeDirectionParamWdg* w = 
+      //  widget< StdMeshersGUI_EdgeDirectionParamWdg >( 2 );
+      StdMeshersGUI_SubShapeSelectorWdg* w = 
+        widget< StdMeshersGUI_SubShapeSelectorWdg >( 2 );
 
       h->SetStartLength( params[0].myValue.toDouble() );
       h->SetParameters(SMESHGUI::JoinObjectParameters(aVariablesList));
@@ -478,8 +481,8 @@ QString StdMeshersGUI_StdHypothesisCreator::storeParams() const
       StdMeshers::StdMeshers_StartEndLength_var h =
 	StdMeshers::StdMeshers_StartEndLength::_narrow( hypothesis() );
 
-      StdMeshersGUI_EdgeDirectionParamWdg* w = 
-        widget< StdMeshersGUI_EdgeDirectionParamWdg >( 2 );
+      StdMeshersGUI_SubShapeSelectorWdg* w = 
+        widget< StdMeshersGUI_SubShapeSelectorWdg >( 2 );
 
       h->SetStartLength( params[0].myValue.toDouble() );
       h->SetParameters(SMESHGUI::JoinObjectParameters(aVariablesList));
@@ -556,6 +559,20 @@ QString StdMeshersGUI_StdHypothesisCreator::storeParams() const
                                geomFromWdg ( getWidgetForParam( 4 )), // src2
                                geomFromWdg ( getWidgetForParam( 3 )), // tgt1
                                geomFromWdg ( getWidgetForParam( 5 ))); // tgt2
+    }
+    else if( hypType()=="QuadrangleParams" )
+    {
+      StdMeshers::StdMeshers_QuadrangleParams_var h =
+	StdMeshers::StdMeshers_QuadrangleParams::_narrow( hypothesis() );
+      StdMeshersGUI_SubShapeSelectorWdg* w = 
+        widget< StdMeshersGUI_SubShapeSelectorWdg >( 0 );
+      if (w) {
+	if( w->GetListOfIDs()->length()>0 ) {
+	  h->SetTriaVertex( w->GetListOfIDs()[0] );
+	}
+	const char * entry = w->GetMainShapeEntry();
+	h->SetObjectEntry( entry );
+      }
     }
   }
   return valueStr;
@@ -678,7 +695,10 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
     item.myName = tr( "SMESH_REVERCE_EDGES" );
     p.append( item );
 
-    StdMeshersGUI_EdgeDirectionParamWdg* aDirectionWidget = new StdMeshersGUI_EdgeDirectionParamWdg();
+    //StdMeshersGUI_EdgeDirectionParamWdg* aDirectionWidget =
+    //  new StdMeshersGUI_EdgeDirectionParamWdg();
+    StdMeshersGUI_SubShapeSelectorWdg* aDirectionWidget =
+      new StdMeshersGUI_SubShapeSelectorWdg();
     QString anEntry = SMESHGUI_GenericHypothesisCreator::getShapeEntry();
     if ( anEntry == "" )
       anEntry = h->GetObjectEntry();
@@ -729,7 +749,10 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
     item.myName = tr( "SMESH_REVERCE_EDGES" );
     p.append( item );
 
-    StdMeshersGUI_EdgeDirectionParamWdg* aDirectionWidget = new StdMeshersGUI_EdgeDirectionParamWdg();
+    //StdMeshersGUI_EdgeDirectionParamWdg* aDirectionWidget =
+    //  new StdMeshersGUI_EdgeDirectionParamWdg();
+    StdMeshersGUI_SubShapeSelectorWdg* aDirectionWidget =
+      new StdMeshersGUI_SubShapeSelectorWdg();
     QString anEntry = SMESHGUI_GenericHypothesisCreator::getShapeEntry();
     if ( anEntry == "" )
       anEntry = h->GetObjectEntry();
@@ -854,6 +877,32 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
     customWidgets()->append( newObjRefParamWdg( filterForShapeOfDim( 0 ),
                                                h->GetTargetVertex( 2 )));
   }
+  else if( hypType()=="QuadrangleParams" )
+  {
+    StdMeshers::StdMeshers_QuadrangleParams_var h =
+      StdMeshers::StdMeshers_QuadrangleParams::_narrow( hyp );
+
+    item.myName = tr( "SMESH_BASE_VERTEX" );
+    p.append( item );
+
+    StdMeshersGUI_SubShapeSelectorWdg* aDirectionWidget =
+      new StdMeshersGUI_SubShapeSelectorWdg();
+    aDirectionWidget->SetMaxSize(1);
+    aDirectionWidget->SetSubShType(TopAbs_VERTEX);
+    QString anEntry = SMESHGUI_GenericHypothesisCreator::getShapeEntry();
+    if ( anEntry == "" )
+      anEntry = h->GetObjectEntry();
+    aDirectionWidget->SetMainShapeEntry( anEntry );
+    SMESH::long_array_var aVec = new SMESH::long_array;
+    int vertID = h->GetTriaVertex();
+    if(vertID>0) {
+      aVec->length(1);
+      aVec[0] = vertID;
+    }
+    aDirectionWidget->SetListOfIDs( aVec );
+    aDirectionWidget->showPreview( true );
+    customWidgets()->append ( aDirectionWidget );
+  }
   else
     res = false;
   return res;
@@ -974,6 +1023,7 @@ QString StdMeshersGUI_StdHypothesisCreator::hypTypeName( const QString& t ) cons
     types.insert( "LayerDistribution", "LAYER_DISTRIBUTION" );
     types.insert( "SegmentLengthAroundVertex", "SEGMENT_LENGTH_AROUND_VERTEX" );
     types.insert( "MaxLength", "MAX_LENGTH" );
+    types.insert( "QuadrangleParams", "QUADRANGLE_PARAMS" );
   }
 
   QString res;
@@ -1046,10 +1096,17 @@ bool StdMeshersGUI_StdHypothesisCreator::getParamFromCustomWidget( StdParam & pa
     param.myValue = w->GetValue();
     return true;
   }
-  if ( widget->inherits( "StdMeshersGUI_EdgeDirectionParamWdg" ))
+  //if ( widget->inherits( "StdMeshersGUI_EdgeDirectionParamWdg" ))
+  //{
+  //  const StdMeshersGUI_EdgeDirectionParamWdg * w =
+  //    static_cast<const StdMeshersGUI_EdgeDirectionParamWdg*>( widget );
+  //  param.myValue = w->GetValue();
+  //  return true;
+  //}
+  if ( widget->inherits( "StdMeshersGUI_SubShapeSelectorWdg" ))
   {
-    const StdMeshersGUI_EdgeDirectionParamWdg * w =
-      static_cast<const StdMeshersGUI_EdgeDirectionParamWdg*>( widget );
+    const StdMeshersGUI_SubShapeSelectorWdg * w =
+      static_cast<const StdMeshersGUI_SubShapeSelectorWdg*>( widget );
     param.myValue = w->GetValue();
     return true;
   }

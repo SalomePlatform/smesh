@@ -29,6 +29,8 @@
 
 #include "StdMeshers_FaceSide.hxx"
 
+#include "StdMeshers_QuadrangleParams.hxx"
+
 #include "SMESH_Gen.hxx"
 #include "SMESH_Mesh.hxx"
 #include "SMESH_subMesh.hxx"
@@ -74,12 +76,14 @@ typedef SMESH_Comment TComm;
  */
 //=============================================================================
 
-StdMeshers_Quadrangle_2D::StdMeshers_Quadrangle_2D (int hypId, int studyId, SMESH_Gen* gen)
+StdMeshers_Quadrangle_2D::StdMeshers_Quadrangle_2D (int hypId, int studyId,
+						    SMESH_Gen* gen)
      : SMESH_2D_Algo(hypId, studyId, gen)
 {
   MESSAGE("StdMeshers_Quadrangle_2D::StdMeshers_Quadrangle_2D");
   _name = "Quadrangle_2D";
   _shapeType = (1 << TopAbs_FACE);
+  _compatibleHypothesis.push_back("QuadrangleParams");
   _compatibleHypothesis.push_back("QuadranglePreference");
   _compatibleHypothesis.push_back("TrianglePreference");
   myTool = 0;
@@ -110,25 +114,69 @@ bool StdMeshers_Quadrangle_2D::CheckHypothesis
   bool isOk = true;
   aStatus = SMESH_Hypothesis::HYP_OK;
 
-
-  const list <const SMESHDS_Hypothesis * >&hyps = GetUsedHypothesis(aMesh, aShape, false);
+  const list <const SMESHDS_Hypothesis * >&hyps =
+    GetUsedHypothesis(aMesh, aShape, false);
   const SMESHDS_Hypothesis *theHyp = 0;
   
-  if(hyps.size() > 0){
-    theHyp = *hyps.begin();
+  if( hyps.size() == 1 ) {
+    myTriaVertexID = -1;
+    theHyp = hyps.front();
+    if(strcmp("QuadrangleParams", theHyp->GetName()) == 0) {
+      const StdMeshers_QuadrangleParams* theHyp1 = 
+	(const StdMeshers_QuadrangleParams*)theHyp;
+      myTriaVertexID = theHyp1->GetTriaVertex();
+      myQuadranglePreference= false;
+      myTrianglePreference= false; 
+    }
     if(strcmp("QuadranglePreference", theHyp->GetName()) == 0) {
       myQuadranglePreference= true;
       myTrianglePreference= false; 
+      myTriaVertexID = -1;
     }
     else if(strcmp("TrianglePreference", theHyp->GetName()) == 0){
       myQuadranglePreference= false;
       myTrianglePreference= true; 
+      myTriaVertexID = -1;
     }
   }
+
+  else if( hyps.size() > 1 ) {
+    theHyp = hyps.front();
+    if(strcmp("QuadrangleParams", theHyp->GetName()) == 0) {
+      const StdMeshers_QuadrangleParams* theHyp1 = 
+	(const StdMeshers_QuadrangleParams*)theHyp;
+      myTriaVertexID = theHyp1->GetTriaVertex();
+      theHyp = hyps.back();
+      if(strcmp("QuadranglePreference", theHyp->GetName()) == 0) {
+	myQuadranglePreference= true;
+	myTrianglePreference= false; 
+      }
+      else if(strcmp("TrianglePreference", theHyp->GetName()) == 0){
+	myQuadranglePreference= false;
+	myTrianglePreference= true; 
+      }
+    }
+    else {
+      if(strcmp("QuadranglePreference", theHyp->GetName()) == 0) {
+	myQuadranglePreference= true;
+	myTrianglePreference= false; 
+      }
+      else if(strcmp("TrianglePreference", theHyp->GetName()) == 0){
+	myQuadranglePreference= false;
+	myTrianglePreference= true; 
+      }
+      const StdMeshers_QuadrangleParams* theHyp2 = 
+	(const StdMeshers_QuadrangleParams*)hyps.back();
+      myTriaVertexID = theHyp2->GetTriaVertex();
+    }
+  }
+
   else {
     myQuadranglePreference = false;
     myTrianglePreference = false;
+    myTriaVertexID = -1;
   }
+
   return isOk;
 }
 
@@ -237,7 +285,9 @@ bool StdMeshers_Quadrangle_2D::Compute (SMESH_Mesh& aMesh,
       c = quad->uv_grid[(j + 1) * nbhoriz + i + 1].node;
       d = quad->uv_grid[(j + 1) * nbhoriz + i].node;
       SMDS_MeshFace* face = myTool->AddFace(a, b, c, d);
-      meshDS->SetMeshElementOnShape(face, geomFaceID);
+      if(face) {
+	meshDS->SetMeshElementOnShape(face, geomFaceID);
+      }
     }
   }
 
@@ -311,9 +361,8 @@ bool StdMeshers_Quadrangle_2D::Compute (SMESH_Mesh& aMesh,
       }
 
       if (near == g) { // make triangle
-        //SMDS_MeshFace* face = meshDS->AddFace(a, b, c);
         SMDS_MeshFace* face = myTool->AddFace(a, b, c);
-        meshDS->SetMeshElementOnShape(face, geomFaceID);
+        if(face) meshDS->SetMeshElementOnShape(face, geomFaceID);
       }
       else { // make quadrangle
         if (near - 1 < ilow)
@@ -324,7 +373,7 @@ bool StdMeshers_Quadrangle_2D::Compute (SMESH_Mesh& aMesh,
         
         if(!myTrianglePreference){
           SMDS_MeshFace* face = myTool->AddFace(a, b, c, d);
-          meshDS->SetMeshElementOnShape(face, geomFaceID);
+          if(face) meshDS->SetMeshElementOnShape(face, geomFaceID);
         }
         else {
           SplitQuad(meshDS, geomFaceID, a, b, c, d);
@@ -338,9 +387,8 @@ bool StdMeshers_Quadrangle_2D::Compute (SMESH_Mesh& aMesh,
               d = uv_e3[1].node;
             else
               d = quad->uv_grid[nbhoriz + k - 1].node;
-            //SMDS_MeshFace* face = meshDS->AddFace(a, c, d);
             SMDS_MeshFace* face = myTool->AddFace(a, c, d);
-            meshDS->SetMeshElementOnShape(face, geomFaceID);
+            if(face) meshDS->SetMeshElementOnShape(face, geomFaceID);
           }
         }
         g = near;
@@ -401,9 +449,8 @@ bool StdMeshers_Quadrangle_2D::Compute (SMESH_Mesh& aMesh,
         }
 
         if (near == g) { // make triangle
-          //SMDS_MeshFace* face = meshDS->AddFace(a, b, c);
           SMDS_MeshFace* face = myTool->AddFace(a, b, c);
-          meshDS->SetMeshElementOnShape(face, geomFaceID);
+          if(face) meshDS->SetMeshElementOnShape(face, geomFaceID);
         }
         else { // make quadrangle
           if (near + 1 > iup)
@@ -413,7 +460,7 @@ bool StdMeshers_Quadrangle_2D::Compute (SMESH_Mesh& aMesh,
           //SMDS_MeshFace* face = meshDS->AddFace(a, b, c, d);
           if(!myTrianglePreference){
             SMDS_MeshFace* face = myTool->AddFace(a, b, c, d);
-            meshDS->SetMeshElementOnShape(face, geomFaceID);
+            if(face) meshDS->SetMeshElementOnShape(face, geomFaceID);
           }
           else {
             SplitQuad(meshDS, geomFaceID, a, b, c, d);
@@ -426,9 +473,8 @@ bool StdMeshers_Quadrangle_2D::Compute (SMESH_Mesh& aMesh,
                 d = uv_e1[nbright - 2].node;
               else
                 d = quad->uv_grid[nbhoriz*(nbvertic - 2) + k + 1].node;
-              //SMDS_MeshFace* face = meshDS->AddFace(a, c, d);
               SMDS_MeshFace* face = myTool->AddFace(a, c, d);
-              meshDS->SetMeshElementOnShape(face, geomFaceID);
+              if(face) meshDS->SetMeshElementOnShape(face, geomFaceID);
             }
           }
           g = near;
@@ -475,9 +521,8 @@ bool StdMeshers_Quadrangle_2D::Compute (SMESH_Mesh& aMesh,
       }
 
       if (near == g) { // make triangle
-        //SMDS_MeshFace* face = meshDS->AddFace(a, b, c);
         SMDS_MeshFace* face = myTool->AddFace(a, b, c);
-        meshDS->SetMeshElementOnShape(face, geomFaceID);
+        if(face) meshDS->SetMeshElementOnShape(face, geomFaceID);
       }
       else { // make quadrangle
         if (near - 1 < jlow)
@@ -488,7 +533,7 @@ bool StdMeshers_Quadrangle_2D::Compute (SMESH_Mesh& aMesh,
 
         if(!myTrianglePreference){
           SMDS_MeshFace* face = myTool->AddFace(a, b, c, d);
-          meshDS->SetMeshElementOnShape(face, geomFaceID);
+          if(face) meshDS->SetMeshElementOnShape(face, geomFaceID);
         }
         else {
           SplitQuad(meshDS, geomFaceID, a, b, c, d);
@@ -501,9 +546,8 @@ bool StdMeshers_Quadrangle_2D::Compute (SMESH_Mesh& aMesh,
               d = uv_e0[nbdown - 2].node;
             else
               d = quad->uv_grid[nbhoriz*k - 2].node;
-            //SMDS_MeshFace* face = meshDS->AddFace(a, c, d);
             SMDS_MeshFace* face = myTool->AddFace(a, c, d);
-            meshDS->SetMeshElementOnShape(face, geomFaceID);
+            if(face) meshDS->SetMeshElementOnShape(face, geomFaceID);
           }
         }
         g = near;
@@ -547,9 +591,8 @@ bool StdMeshers_Quadrangle_2D::Compute (SMESH_Mesh& aMesh,
         }
 
         if (near == g) { // make triangle
-          //SMDS_MeshFace* face = meshDS->AddFace(a, b, c);
           SMDS_MeshFace* face = myTool->AddFace(a, b, c);
-          meshDS->SetMeshElementOnShape(face, geomFaceID);
+          if(face) meshDS->SetMeshElementOnShape(face, geomFaceID);
         }
         else { // make quadrangle
           if (near + 1 > jup)
@@ -559,7 +602,7 @@ bool StdMeshers_Quadrangle_2D::Compute (SMESH_Mesh& aMesh,
           //SMDS_MeshFace* face = meshDS->AddFace(a, b, c, d);
           if(!myTrianglePreference){
             SMDS_MeshFace* face = myTool->AddFace(a, b, c, d);
-            meshDS->SetMeshElementOnShape(face, geomFaceID);
+            if(face) meshDS->SetMeshElementOnShape(face, geomFaceID);
           }
           else {
             SplitQuad(meshDS, geomFaceID, a, b, c, d);
@@ -572,9 +615,8 @@ bool StdMeshers_Quadrangle_2D::Compute (SMESH_Mesh& aMesh,
                 d = uv_e2[1].node;
               else
                 d = quad->uv_grid[nbhoriz*(k + 1) + 1].node;
-              //SMDS_MeshFace* face = meshDS->AddFace(a, c, d);
               SMDS_MeshFace* face = myTool->AddFace(a, c, d);
-              meshDS->SetMeshElementOnShape(face, geomFaceID);
+              if(face) meshDS->SetMeshElementOnShape(face, geomFaceID);
             }
           }
           g = near;
@@ -640,15 +682,18 @@ bool StdMeshers_Quadrangle_2D::Evaluate(SMESH_Mesh& aMesh,
   int dh = Max(nbdown, nbup) - nbhoriz;
   int dv = Max(nbright, nbleft) - nbvertic;
 
-  int kdh = 0;
-  if(dh>0) kdh = 1;
-  int kdv = 0;
-  if(dv>0) kdv = 1;
+  //int kdh = 0;
+  //if(dh>0) kdh = 1;
+  //int kdv = 0;
+  //if(dv>0) kdv = 1;
 
   int nbNodes = (nbhoriz-2)*(nbvertic-2);
-  int nbFaces3 = dh + dv + kdh*(nbvertic-1)*2 + kdv*(nbhoriz-1)*2;
-  if( kdh==1 && kdv==1 ) nbFaces3 -= 2;
-  int nbFaces4 = (nbhoriz-1-kdh)*(nbvertic-1-kdv);
+  //int nbFaces3 = dh + dv + kdh*(nbvertic-1)*2 + kdv*(nbhoriz-1)*2;
+  int nbFaces3 = dh + dv;
+  //if( kdh==1 && kdv==1 ) nbFaces3 -= 2;
+  //if( dh>0 && dv>0 ) nbFaces3 -= 2;
+  //int nbFaces4 = (nbhoriz-1-kdh)*(nbvertic-1-kdv);
+  int nbFaces4 = (nbhoriz-1)*(nbvertic-1);
 
   std::vector<int> aVec(17);
   for(int i=0; i<17; i++) aVec[i] = 0;
@@ -658,11 +703,19 @@ bool StdMeshers_Quadrangle_2D::Evaluate(SMESH_Mesh& aMesh,
     int nbbndedges = nbdown + nbup + nbright + nbleft -4;
     int nbintedges = ( nbFaces4*4 + nbFaces3*3 - nbbndedges ) / 2;
     aVec[0] = nbNodes + nbintedges;
+    if( aNbNodes.size()==5 ) {
+      aVec[4] = nbFaces3 + aNbNodes[3] -1;
+      aVec[6] = nbFaces4 - aNbNodes[3] +1;
+    }
   }
   else {
     aVec[0] = nbNodes;
     aVec[3] = nbFaces3;
     aVec[5] = nbFaces4;
+    if( aNbNodes.size()==5 ) {
+      aVec[3] = nbFaces3 + aNbNodes[3] - 1;
+      aVec[5] = nbFaces4 - aNbNodes[3] + 1;
+    }
   }
   SMESH_subMesh * sm = aMesh.GetSubMesh(aShape);
   aResMap.insert(std::make_pair(sm,aVec));
@@ -720,7 +773,41 @@ FaceQuadStruct* StdMeshers_Quadrangle_2D::CheckNbEdges(SMESH_Mesh &         aMes
 
   int nbSides = 0;
   list< TopoDS_Edge >::iterator edgeIt = edges.begin();
-  if ( nbEdgesInWire.front() == 4 ) { // exactly 4 edges
+  if ( nbEdgesInWire.front() == 3 ) { // exactly 3 edges
+    if(myTriaVertexID>0) {
+      SMESHDS_Mesh* meshDS = aMesh.GetMeshDS();
+      TopoDS_Vertex V = TopoDS::Vertex(meshDS->IndexToShape(myTriaVertexID));
+      if(!V.IsNull()) {
+	TopoDS_Edge E1,E2,E3;
+	for(; edgeIt != edges.end(); ++edgeIt) {
+	  TopoDS_Edge E =  TopoDS::Edge(*edgeIt);
+	  TopoDS_Vertex VF, VL;
+	  TopExp::Vertices(E, VF, VL, true);
+	  if( VF.IsSame(V) )
+	    E1 = E;
+	  else if( VL.IsSame(V) )
+	    E3 = E;
+	  else
+	    E2 = E;
+	}
+	quad->side.reserve(4);
+	quad->side.push_back( new StdMeshers_FaceSide(F, E1, &aMesh, true, ignoreMediumNodes));
+	quad->side.push_back( new StdMeshers_FaceSide(F, E2, &aMesh, true, ignoreMediumNodes));
+	quad->side.push_back( new StdMeshers_FaceSide(F, E3, &aMesh, false, ignoreMediumNodes));
+	std::vector<UVPtStruct> UVPSleft = quad->side[0]->GetUVPtStruct(true,0);
+	std::vector<UVPtStruct> UVPStop = quad->side[1]->GetUVPtStruct(false,1);
+	std::vector<UVPtStruct> UVPSright = quad->side[2]->GetUVPtStruct(true,1);
+	const SMDS_MeshNode* aNode = UVPSleft[0].node;
+	gp_Pnt2d aPnt2d( UVPSleft[0].u, UVPSleft[0].v );
+	StdMeshers_FaceSide* VertFS =
+	  new StdMeshers_FaceSide(aNode, aPnt2d, quad->side[1]);
+	quad->side.push_back(VertFS);
+	return quad;
+      }
+    }
+    return 0;
+  }
+  else if ( nbEdgesInWire.front() == 4 ) { // exactly 4 edges
     for ( ; edgeIt != edges.end(); ++edgeIt, nbSides++ )
       quad->side.push_back( new StdMeshers_FaceSide(F, *edgeIt, &aMesh,
                                                     nbSides<TOP_SIDE, ignoreMediumNodes));
@@ -841,6 +928,53 @@ bool StdMeshers_Quadrangle_2D::CheckNbEdgesForEvaluate(SMESH_Mesh& aMesh,
   }
   std::vector<int> aVec = (*anIt).second;
   IsQuadratic = (aVec[2] > aVec[1]);
+  if ( nbEdgesInWire.front() == 3 ) { // exactly 3 edges
+    if(myTriaVertexID>0) {
+      SMESHDS_Mesh* meshDS = aMesh.GetMeshDS();
+      TopoDS_Vertex V = TopoDS::Vertex(meshDS->IndexToShape(myTriaVertexID));
+      if(!V.IsNull()) {
+	TopoDS_Edge E1,E2,E3;
+	for(; edgeIt != edges.end(); ++edgeIt) {
+	  TopoDS_Edge E =  TopoDS::Edge(*edgeIt);
+	  TopoDS_Vertex VF, VL;
+	  TopExp::Vertices(E, VF, VL, true);
+	  if( VF.IsSame(V) )
+	    E1 = E;
+	  else if( VL.IsSame(V) )
+	    E3 = E;
+	  else
+	    E2 = E;
+	}
+	SMESH_subMesh * sm = aMesh.GetSubMesh(E1);
+	MapShapeNbElemsItr anIt = aResMap.find(sm);
+	if(anIt==aResMap.end()) return false;
+	std::vector<int> aVec = (*anIt).second;
+	if(IsQuadratic)
+	  aNbNodes[0] = (aVec[0]-1)/2 + 2;
+	else
+	  aNbNodes[0] = aVec[0] + 2;
+	sm = aMesh.GetSubMesh(E2);
+	anIt = aResMap.find(sm);
+	if(anIt==aResMap.end()) return false;
+	aVec = (*anIt).second;
+	if(IsQuadratic)
+	  aNbNodes[1] = (aVec[0]-1)/2 + 2;
+	else
+	  aNbNodes[1] = aVec[0] + 2;
+	sm = aMesh.GetSubMesh(E3);
+	anIt = aResMap.find(sm);
+	if(anIt==aResMap.end()) return false;
+	aVec = (*anIt).second;
+	if(IsQuadratic)
+	  aNbNodes[2] = (aVec[0]-1)/2 + 2;
+	else
+	  aNbNodes[2] = aVec[0] + 2;
+	aNbNodes[3] = aNbNodes[1];
+	aNbNodes.resize(5);
+	nbSides = 4;
+      }
+    }
+  }
   if ( nbEdgesInWire.front() == 4 ) { // exactly 4 edges
     for(; edgeIt != edges.end(); edgeIt++) {
       SMESH_subMesh * sm = aMesh.GetSubMesh( *edgeIt );
@@ -1083,10 +1217,8 @@ bool StdMeshers_Quadrangle_2D::SetNormalizedGrid (SMESH_Mesh & aMesh,
   }
 
   // normalized 2d values on grid
-  for (int i = 0; i < nbhoriz; i++)
-  {
-    for (int j = 0; j < nbvertic; j++)
-    {
+  for (int i = 0; i < nbhoriz; i++) {
+    for (int j = 0; j < nbvertic; j++) {
       int ij = j * nbhoriz + i;
       // --- droite i cste : x = x0 + y(x1-x0)
       double x0 = uv_e0[i].normParam;	// bas - sud
@@ -1110,10 +1242,8 @@ bool StdMeshers_Quadrangle_2D::SetNormalizedGrid (SMESH_Mesh & aMesh,
   gp_UV a2( uv_e2.back().u,  uv_e2.back().v );
   gp_UV a3( uv_e2.front().u, uv_e2.front().v );
 
-  for (int i = 0; i < nbhoriz; i++)
-  {
-    for (int j = 0; j < nbvertic; j++)
-    {
+  for (int i = 0; i < nbhoriz; i++) {
+    for (int j = 0; j < nbvertic; j++) {
       int ij = j * nbhoriz + i;
       double x = uv_grid[ij].x;
       double y = uv_grid[ij].y;
@@ -1446,13 +1576,13 @@ bool StdMeshers_Quadrangle_2D::ComputeQuadPref (SMESH_Mesh &        aMesh,
             SMDS_MeshFace* F =
               myTool->AddFace(NodesL.Value(i,j), NodesL.Value(i+1,j),
                               NodesL.Value(i+1,j+1), NodesL.Value(i,j+1));
-            meshDS->SetMeshElementOnShape(F, geomFaceID);
+            if(F) meshDS->SetMeshElementOnShape(F, geomFaceID);
           }
           else {
             SMDS_MeshFace* F =
               myTool->AddFace(NodesL.Value(i,j), NodesL.Value(i,j+1),
                               NodesL.Value(i+1,j+1), NodesL.Value(i+1,j));
-            meshDS->SetMeshElementOnShape(F, geomFaceID);
+            if(F) meshDS->SetMeshElementOnShape(F, geomFaceID);
           }
         }
       }
@@ -1509,13 +1639,13 @@ bool StdMeshers_Quadrangle_2D::ComputeQuadPref (SMESH_Mesh &        aMesh,
             SMDS_MeshFace* F =
               myTool->AddFace(NodesR.Value(i,j), NodesR.Value(i+1,j),
                               NodesR.Value(i+1,j+1), NodesR.Value(i,j+1));
-            meshDS->SetMeshElementOnShape(F, geomFaceID);
+            if(F) meshDS->SetMeshElementOnShape(F, geomFaceID);
           }
           else {
             SMDS_MeshFace* F =
               myTool->AddFace(NodesR.Value(i,j), NodesR.Value(i,j+1),
                               NodesR.Value(i+1,j+1), NodesR.Value(i+1,j));
-            meshDS->SetMeshElementOnShape(F, geomFaceID);
+            if(F) meshDS->SetMeshElementOnShape(F, geomFaceID);
           }
         }
       }
@@ -1587,13 +1717,13 @@ bool StdMeshers_Quadrangle_2D::ComputeQuadPref (SMESH_Mesh &        aMesh,
           SMDS_MeshFace* F =
             myTool->AddFace(NodesC.Value(i,j), NodesC.Value(i+1,j),
                             NodesC.Value(i+1,j+1), NodesC.Value(i,j+1));
-          meshDS->SetMeshElementOnShape(F, geomFaceID);
+          if(F) meshDS->SetMeshElementOnShape(F, geomFaceID);
         }
         else {
           SMDS_MeshFace* F =
             myTool->AddFace(NodesC.Value(i,j), NodesC.Value(i,j+1),
                             NodesC.Value(i+1,j+1), NodesC.Value(i+1,j));
-          meshDS->SetMeshElementOnShape(F, geomFaceID);
+          if(F) meshDS->SetMeshElementOnShape(F, geomFaceID);
         }
       }
     }
@@ -1629,13 +1759,13 @@ bool StdMeshers_Quadrangle_2D::ComputeQuadPref (SMESH_Mesh &        aMesh,
           SMDS_MeshFace* F =
             myTool->AddFace(NodesBRD.Value(i,j), NodesBRD.Value(i+1,j),
                             NodesBRD.Value(i+1,j+1), NodesBRD.Value(i,j+1));
-          meshDS->SetMeshElementOnShape(F, geomFaceID);
+          if(F) meshDS->SetMeshElementOnShape(F, geomFaceID);
         }
         else {
           SMDS_MeshFace* F =
             myTool->AddFace(NodesBRD.Value(i,j), NodesBRD.Value(i,j+1),
                             NodesBRD.Value(i+1,j+1), NodesBRD.Value(i+1,j));
-          meshDS->SetMeshElementOnShape(F, geomFaceID);
+          if(F) meshDS->SetMeshElementOnShape(F, geomFaceID);
         }
       }
     }
@@ -1742,13 +1872,13 @@ bool StdMeshers_Quadrangle_2D::ComputeQuadPref (SMESH_Mesh &        aMesh,
             SMDS_MeshFace* F =
               myTool->AddFace(NodesC.Value(i,j), NodesC.Value(i+1,j),
                               NodesC.Value(i+1,j+1), NodesC.Value(i,j+1));
-            meshDS->SetMeshElementOnShape(F, geomFaceID);
+            if(F) meshDS->SetMeshElementOnShape(F, geomFaceID);
           }
           else {
             SMDS_MeshFace* F =
               myTool->AddFace(NodesC.Value(i,j), NodesC.Value(i,j+1),
                               NodesC.Value(i+1,j+1), NodesC.Value(i+1,j));
-            meshDS->SetMeshElementOnShape(F, geomFaceID);
+            if(F) meshDS->SetMeshElementOnShape(F, geomFaceID);
           }
         }
       } // end nr<nl
@@ -1776,13 +1906,13 @@ bool StdMeshers_Quadrangle_2D::ComputeQuadPref (SMESH_Mesh &        aMesh,
           SMDS_MeshFace* F =
             myTool->AddFace(NodesLast.Value(i,1), NodesLast.Value(i+1,1),
                             NodesLast.Value(i+1,2), NodesLast.Value(i,2));
-          meshDS->SetMeshElementOnShape(F, geomFaceID);
+          if(F) meshDS->SetMeshElementOnShape(F, geomFaceID);
         }
         else {
           SMDS_MeshFace* F =
             myTool->AddFace(NodesLast.Value(i,1), NodesLast.Value(i,2),
                             NodesLast.Value(i+1,2), NodesLast.Value(i+1,2));
-          meshDS->SetMeshElementOnShape(F, geomFaceID);
+          if(F) meshDS->SetMeshElementOnShape(F, geomFaceID);
         }
       }
     } // if( (drl+addv) > 0 )
@@ -1907,10 +2037,18 @@ bool StdMeshers_Quadrangle_2D::EvaluateQuadPref(SMESH_Mesh &        aMesh,
   if(IsQuadratic) {
     aVec[6] = nbFaces;
     aVec[0] = nbNodes + nbFaces*4;
+    if( aNbNodes.size()==5 ) {
+      aVec[4] = aNbNodes[3] - 1;
+      aVec[6] = nbFaces - aNbNodes[3] + 1;
+    }
   }
   else {
     aVec[0] = nbNodes;
     aVec[5] = nbFaces;
+    if( aNbNodes.size()==5 ) {
+      aVec[3] = aNbNodes[3] - 1;
+      aVec[5] = nbFaces - aNbNodes[3] + 1;
+    }
   }
   SMESH_subMesh * sm = aMesh.GetSubMesh(aShape);
   aResMap.insert(std::make_pair(sm,aVec));
@@ -1938,15 +2076,17 @@ void StdMeshers_Quadrangle_2D::SplitQuad(SMESHDS_Mesh *theMeshDS,
   SMDS_MeshFace* face;
   if(a.Distance(c) > b.Distance(d)){
     face = myTool->AddFace(theNode2, theNode4 , theNode1);
-    theMeshDS->SetMeshElementOnShape(face, theFaceID );
+    if(face) theMeshDS->SetMeshElementOnShape(face, theFaceID );
     face = myTool->AddFace(theNode2, theNode3, theNode4);
-    theMeshDS->SetMeshElementOnShape(face, theFaceID );
+    if(face) theMeshDS->SetMeshElementOnShape(face, theFaceID );
 
   }
   else{
     face = myTool->AddFace(theNode1, theNode2 ,theNode3);
-    theMeshDS->SetMeshElementOnShape(face, theFaceID );
+    if(face) theMeshDS->SetMeshElementOnShape(face, theFaceID );
     face = myTool->AddFace(theNode1, theNode3, theNode4);
-    theMeshDS->SetMeshElementOnShape(face, theFaceID );
+    if(face) theMeshDS->SetMeshElementOnShape(face, theFaceID );
   }
 }
+
+

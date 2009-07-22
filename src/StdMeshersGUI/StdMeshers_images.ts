@@ -217,5 +217,9 @@
             <source>ICON_SMESH_TREE_HYPO_StartEndLength</source>
             <translation>mesh_tree_hypo_length.png</translation>
         </message>
+        <message>
+            <source>ICON_DLG_QUADRANGLE_PARAMS</source>
+            <translation>mesh_hypo_length.png</translation>
+        </message>
     </context>
 </TS>

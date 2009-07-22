@@ -249,6 +249,10 @@
             <source>SMESH_REVERCE_EDGES</source>
             <translation>Reverce Edges</translation>
         </message>
+	<message>
+            <source>SMESH_BASE_VERTEX</source>
+            <translation>Base vertex</translation>
+        </message>
         <message>
             <source>SMESH_SEGMENT_LENGTH_AROUND_VERTEX_HYPOTHESIS</source>
             <translation>Segment Length Around Vertex</translation>
@@ -316,6 +320,14 @@
         <message>
             <source>SMESH_TARGET_VERTEX2</source>
             <translation>Target Vertex 2</translation>
+        </message>
+        <message>
+            <source>SMESH_QUADRANGLE_PARAMS_HYPOTHESIS</source>
+            <translation>Quadrangle parameters</translation>
+        </message>
+        <message>
+            <source>SMESH_QUADRANGLE_PARAMS_TITLE</source>
+            <translation>Hypothesis Construction</translation>
         </message>
     </context>
     <context>

@@ -51,6 +51,7 @@
 #include "StdMeshers_LayerDistribution_i.hxx"
 #include "StdMeshers_SegmentLengthAroundVertex_i.hxx"
 #include "StdMeshers_MaxLength_i.hxx"
+#include "StdMeshers_QuadrangleParams_i.hxx"
 
 #include "StdMeshers_Regular_1D_i.hxx"
 #include "StdMeshers_MEFISTO_2D_i.hxx"
@@ -127,6 +128,8 @@ STDMESHERS_I_EXPORT
       aCreator = new StdHypothesisCreator_i<StdMeshers_LayerDistribution_i>;
     else if (strcmp(aHypName, "SegmentLengthAroundVertex") == 0)
       aCreator = new StdHypothesisCreator_i<StdMeshers_SegmentLengthAroundVertex_i>;
+    else if (strcmp(aHypName, "QuadrangleParams") == 0)
+      aCreator = new StdHypothesisCreator_i<StdMeshers_QuadrangleParams_i>;
 
     // Algorithms
     else if (strcmp(aHypName, "Regular_1D") == 0)
