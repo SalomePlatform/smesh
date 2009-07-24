@@ -144,6 +144,12 @@
                 label-id="Distribution of Layers"
                 icon-id="mesh_hypo_length.png"
                 dim="3"/>
+
+    <hypothesis type="QuadrangleParams"
+                label-id="Quadrangle Parameters"
+                icon-id="mesh_hypo_length.png"
+                dim="2"/>
+
   </hypotheses>
 
   <algorithms>
@@ -184,6 +190,7 @@
     <algorithm type="Quadrangle_2D"
                label-id="Quadrangle (Mapping)"
                icon-id="mesh_algo_quad.png"
+               hypos="QuadrangleParams"
                opt-hypos="QuadranglePreference,TrianglePreference"
                input="EDGE"
                output="QUAD"
