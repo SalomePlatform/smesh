@@ -828,12 +828,14 @@ bool StdMeshers_Regular_1D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & t
   {
     list< double > params;
     bool reversed = false;
+    if ( theMesh.GetShapeToMesh().ShapeType() >= TopAbs_WIRE )
+      reversed = ( EE.Orientation() == TopAbs_REVERSED );
     if ( !_mainEdge.IsNull() )
       reversed = ( _mainEdge.Orientation() == TopAbs_REVERSED );
     else if ( _revEdgesIDs.size() > 0 ) {
       for ( int i = 0; i < _revEdgesIDs.size(); i++)
 	if ( _revEdgesIDs[i] == shapeID )
-	  reversed = true;
+	  reversed = !reversed;
     }
 
     BRepAdaptor_Curve C3d( E );
@@ -978,13 +980,10 @@ bool StdMeshers_Regular_1D::Evaluate(SMESH_Mesh & theMesh,
 
   if (!Curve.IsNull()) {
     list< double > params;
-    bool reversed = false;
-    if ( !_mainEdge.IsNull() )
-      reversed = ( _mainEdge.Orientation() == TopAbs_REVERSED );
 
     BRepAdaptor_Curve C3d( E );
     double length = EdgeLength( E );
-    if ( ! computeInternalParameters( theMesh, C3d, length, f, l, params, reversed, true )) {
+    if ( ! computeInternalParameters( theMesh, C3d, length, f, l, params, false, true )) {
       SMESH_subMesh * sm = theMesh.GetSubMesh(theShape);
       aResMap.insert(std::make_pair(sm,aVec));
       SMESH_ComputeErrorPtr& smError = sm->GetComputeError();
