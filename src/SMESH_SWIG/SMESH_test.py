@@ -129,5 +129,5 @@ for a in log:
             i2 = a.indexes[ii]
             ii = ii+1
             i3 = a.indexes[ii]
-            ii = ii+1
+            #ii = ii+1
             print "AddTriangle %i - %i %i %i" % (ind, i1, i2, i3)
