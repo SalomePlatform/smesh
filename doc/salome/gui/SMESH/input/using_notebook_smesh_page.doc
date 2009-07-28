@@ -31,8 +31,11 @@ limitations:
 <li> <b>Colors / Size</b> dialog box.
 </ul>
 
-Here is an example of using of variables, which were previously set by
-SALOME NoteBook, in MESH GUI:
+Here is an example of setting of variables in SALOME NoteBook:
+
+\image html using_notebook_smesh.png "Setting of variables in SALOME NoteBook"
+
+Example of using of these variables in MESH GUI:
 
 \image html addnode_notebook.png "Node added in MESH module"
 
