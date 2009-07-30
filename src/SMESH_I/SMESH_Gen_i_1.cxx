@@ -588,7 +588,7 @@ SALOMEDS::SObject_ptr SMESH_Gen_i::PublishSubMesh (SALOMEDS::Study_ptr      theS
     }
     // Find submesh sub-tree tag
     long aRootTag;
-    char* aRootName = "";
+    const char* aRootName = "";
     switch ( theShapeObject->GetShapeType() ) {
     case GEOM::VERTEX:
       aRootTag  = GetSubMeshOnVertexTag();

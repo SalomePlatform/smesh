@@ -533,7 +533,7 @@ static TopoDS_Shape getShapeByID (const char* theID)
 
 static char* getShapeNameByID (const char* theID)
 {
-  char* aName = "";
+  char* aName = (char*)"";
 
   if (theID != 0 && theID != "") {
     SMESH_Gen_i* aSMESHGen = SMESH_Gen_i::GetSMESHGen();

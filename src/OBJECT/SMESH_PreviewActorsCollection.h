@@ -28,7 +28,7 @@
 #ifndef SMESH_PREVIEW_ACTOR_COLLECTION_H
 #define SMESH_PREVIEW_ACTOR_COLLECTION_H
 
-#include <SMESH_Actor.h>
+#include "SMESH_Actor.h"
 #include <GEOM_Actor.h>
 #include "SMESH_Object.h"
 #include <TopoDS_Shape.hxx>
