@@ -192,7 +192,7 @@ namespace SMESH
             vtkActorCollection *actors = aCopy.GetActors();
             for (int i = 0; i < actors->GetNumberOfItems(); ++i ) {
               // size of actors changes inside the loop
-              while(SMESH_Actor *actor = dynamic_cast<SMESH_Actor*>(actors->GetItemAsObject(i)))
+              if(SMESH_Actor *actor = dynamic_cast<SMESH_Actor*>(actors->GetItemAsObject(i)))
               {
                 vtkWnd->RemoveActor(actor);
                 actor->Delete();
