@@ -1406,7 +1406,7 @@ namespace { // Structures used by FixQuadraticElements()
     bool IsBoundary() const { return !_qfaces[1]; }
 
     void RemoveFace( const QFace* face ) const
-    { _qfaces[(face == _qfaces[1])] = 0; if (!_qfaces[0]) swap(_qfaces[0],_qfaces[1]); }
+    { _qfaces[(face == _qfaces[1])] = 0; if (!_qfaces[0]) std::swap(_qfaces[0],_qfaces[1]); }
 
     const QFace* NextFace( const QFace* f ) const
     { return _qfaces[0]==f ? _qfaces[1] : _qfaces[0]; }
@@ -1425,7 +1425,7 @@ namespace { // Structures used by FixQuadraticElements()
   // --------------------------------------------------------------------
   typedef list< TChainLink > TChain;
   typedef set < TChainLink > TLinkSet;
-  typedef TLinkSet::iterator TLinkInSet;
+  typedef TLinkSet::const_iterator TLinkInSet;
 
   const int theFirstStep = 5;
 
@@ -1513,7 +1513,7 @@ namespace { // Structures used by FixQuadraticElements()
   ostream& operator << (ostream& out, const QFace& f)
   {
     out <<"QFace nodes: "/*<< &f << "  "*/;
-    for ( TIDSortedElemSet::iterator n = f.begin(); n != f.end(); ++n )
+    for ( TIDSortedElemSet::const_iterator n = f.begin(); n != f.end(); ++n )
       out << (*n)->GetID() << " ";
     out << " \tvolumes: "
         << (f._volumes[0] ? f._volumes[0]->GetID() : 0) << " "
@@ -1860,7 +1860,7 @@ namespace { // Structures used by FixQuadraticElements()
     if ( iFaceCont > 0 ) // continues faces found, set one by the other
     {
       if ( iFaceCont != 1 )
-        swap( _faces[1], _faces[iFaceCont] );
+        std::swap( _faces[1], _faces[iFaceCont] );
     }
     else if ( _faces.size() > 1 ) // not found, set NULL by the first face
     {
@@ -1955,7 +1955,7 @@ namespace { // Structures used by FixQuadraticElements()
         }
       }
       curBndLinks->clear();
-      swap( curBndLinks, newBndLinks );
+      std::swap( curBndLinks, newBndLinks );
     }
   }
 

@@ -50,7 +50,11 @@ extern "C"
 
 static double cpunew, cpuold=0;
 
-void tempscpu_( double & tempsec )
+void
+#ifdef WIN32
+              __stdcall
+#endif
+tempscpu_( double & tempsec )
 //Retourne le temps CPU utilise en secondes
 {  
   tempsec = ( (double) clock() ) / CLOCKS_PER_SEC;
@@ -58,7 +62,11 @@ void tempscpu_( double & tempsec )
 }
 
 
-void deltacpu_( R & dtcpu )
+void
+#ifdef WIN32
+              __stdcall
+#endif
+deltacpu_( R & dtcpu )
 //Retourne le temps CPU utilise en secondes depuis le precedent appel
 {
   tempscpu_( cpunew );
