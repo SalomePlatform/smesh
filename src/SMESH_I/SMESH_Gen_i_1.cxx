@@ -674,8 +674,8 @@ SALOMEDS::SObject_ptr SMESH_Gen_i::PublishGroup (SALOMEDS::Study_ptr    theStudy
     }
     int aType = (int)theGroup->GetType();
     const char* aRootNames[] = {
-      "Compound Groups", "Groups of Nodes", "Group of 0D Elements",
-      "Groups of Edges", "Groups of Faces", "Groups of Volumes" };
+      "Compound Groups", "Groups of Nodes", "Groups of Edges",
+      "Groups of Faces", "Groups of Volumes", "Groups of 0D Elements" };
 
     // Currently, groups with heterogenous content are not supported
     if ( aType != SMESH::ALL ) {

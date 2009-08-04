@@ -22,7 +22,7 @@
 //  SMESH SMDS : implementaion of Salome mesh data structure
 //  File   : SMDSAbs_ElementType.hxx
 //  Module : SMESH
-//
+
 #ifndef _SMDSAbs_ElementType_HeaderFile
 #define _SMDSAbs_ElementType_HeaderFile
 
@@ -33,10 +33,10 @@ enum SMDSAbs_ElementType
 {
 	SMDSAbs_All,
 	SMDSAbs_Node,
-        SMDSAbs_0DElement,
 	SMDSAbs_Edge,
 	SMDSAbs_Face,
 	SMDSAbs_Volume,
+        SMDSAbs_0DElement,
         SMDSAbs_NbElementTypes
 };
 

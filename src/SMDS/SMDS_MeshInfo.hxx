@@ -100,38 +100,43 @@ inline SMDS_MeshInfo::SMDS_MeshInfo():
   myNbPolyhedrons(0)
 {
   // Number of nodes in standard element types
-  // n   v  f  e  0
-  // o   o  a  d  d
-  // d   l  c  g
-  // e      e  e
-  // --------------
-  // 1            *
+  // n   v  f  e  0  n
+  // o   o  a  d  d  o
+  // d   l  c  g     d
+  // e      e  e     e
+  // s
+  // -----------------
+  // 0         *
+  // 1            .  *
   // 2         *
-  // 3      *
-  // 4   *  *  *
+  // 3      .     *
+  // 4   *  .  .
   // 5   *
-  // 6   *  *
+  // 6   *  .
   // 7
-  // 8   *  *
+  // 8   *  .
   // 9
   // 10  *
-  // 11
-  // 12
+  // 11     *
+  // 12     *
   // 13  *
-  // 14
+  // 14     *
   // 15  *
-  // 16
+  // 16     *
   // 17
   // 18
   // 19
   // 20  *
   //
   // So to have a unique index for each type basing on nb of nodes, we use a shift:
-  myShift.resize(SMDSAbs_Volume + 1, 0);
-  myShift[ SMDSAbs_Face ] = +8; // 3->11, 4->12, 6->14, 8->16
-  myShift[ SMDSAbs_Edge ] = -2; // 2->0, 4->2
+  myShift.resize(SMDSAbs_NbElementTypes, 0);
+
+  myShift[ SMDSAbs_Face      ] = +8; // 3->11, 4->12, 6->14, 8->16
+  myShift[ SMDSAbs_Edge      ] = -2; // 2->0, 4->2
+  myShift[ SMDSAbs_0DElement ] = +2; // 1->3
 
   myNb.resize( index( SMDSAbs_Volume,20 ) + 1, NULL);
+
   myNb[ index( SMDSAbs_Node,1 )] = & myNbNodes;
 
   myNb[ index( SMDSAbs_0DElement,1 )] = & myNb0DElements;
@@ -153,11 +158,13 @@ inline SMDS_MeshInfo::SMDS_MeshInfo():
   myNb[ index( SMDSAbs_Volume, 15)] = & myNbQuadPrisms;  
   myNb[ index( SMDSAbs_Volume, 20)] = & myNbQuadHexas;   
 }
+
 inline void // Clear
 SMDS_MeshInfo::Clear()
 { for ( int i=0; i<myNb.size(); ++i ) if ( myNb[i] ) (*myNb[i])=0;
   myNbPolygons=myNbPolyhedrons=0;
 }
+
 inline int // index
 SMDS_MeshInfo::index(SMDSAbs_ElementType type, int nbNodes) const
 { return nbNodes + myShift[ type ]; }
@@ -237,8 +244,12 @@ SMDS_MeshInfo::NbElements(SMDSAbs_ElementType type) const
   case SMDSAbs_Edge:
     nb = myNbEdges + myNbQuadEdges;
     break;
+  case SMDSAbs_0DElement:
+    nb = myNb0DElements;
+    break;
   case SMDSAbs_Node:
     nb = myNbNodes;
+    break;
   default:;
   }
   return nb;
