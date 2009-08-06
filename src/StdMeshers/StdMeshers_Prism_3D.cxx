@@ -388,6 +388,11 @@ bool StdMeshers_Prism_3D::Evaluate(SMESH_Mesh& theMesh,
     SMESH_subMesh *aSubMesh = theMesh.GetSubMesh(exp.Current());
     meshFaces.push_back(aSubMesh);
     MapShapeNbElemsItr anIt = aResMap.find(meshFaces[i-1]);
+    if( anIt==aResMap.end() ) {
+      SMESH_ComputeErrorPtr& smError = aSubMesh->GetComputeError();
+      smError.reset( new SMESH_ComputeError(COMPERR_ALGO_FAILED,"Submesh can not be evaluated",this));
+      return false;
+    }
     std::vector<int> aVec = (*anIt).second;
     int nbtri = Max(aVec[3],aVec[4]);
     int nbqua = Max(aVec[5],aVec[6]);

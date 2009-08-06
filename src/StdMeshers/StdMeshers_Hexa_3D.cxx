@@ -772,6 +772,15 @@ bool StdMeshers_Hexa_3D::Evaluate(SMESH_Mesh & aMesh,
     //TopoDS_Shape aFace = meshFaces[i]->GetSubShape();
     TopoDS_Shape aFace = aFaces.Value(i+1);
     SMESH_Algo *algo = _gen->GetAlgo(aMesh, aFace);
+    if( !algo ) {
+      std::vector<int> aResVec(17);
+      for(int i=0; i<17; i++) aResVec[i] = 0;
+      SMESH_subMesh * sm = aMesh.GetSubMesh(aShape);
+      aResMap.insert(std::make_pair(sm,aResVec));
+      SMESH_ComputeErrorPtr& smError = sm->GetComputeError();
+      smError.reset( new SMESH_ComputeError(COMPERR_ALGO_FAILED,"Submesh can not be evaluated",this));
+      return false;
+    }
     string algoName = algo->GetName();
     bool isAllQuad = false;
     if (algoName == "Quadrangle_2D") {
