@@ -1070,10 +1070,10 @@ void SMESHGUI_MeshOp::createHypothesis (const int theDim,
       QString anObjEntry = "";
       anObjEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Geom );
       if ( anObjEntry == "" ) {
-	anObjEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Obj );
+        anObjEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Obj );
         _PTR(SObject) pObj = studyDS()->FindObjectID( anObjEntry.toLatin1().data() );
         GEOM::GEOM_Object_var aGeomVar = SMESH::GetShapeOnMeshOrSubMesh( pObj );
-	anObjEntry = aGeomVar->GetStudyEntry();
+        anObjEntry = ( aGeomVar->_is_nil() ) ? "" : anObjEntry = aGeomVar->GetStudyEntry();
       }
 
       aCreator->setShapeEntry( anObjEntry );
