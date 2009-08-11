@@ -47,6 +47,7 @@
 #include "utilities.h"
 
 #include <BRep_Tool.hxx>
+#include <BRepClass3d_SolidClassifier.hxx>
 #include <ElCLib.hxx>
 #include <Extrema_GenExtPS.hxx>
 #include <Extrema_POnSurf.hxx>
@@ -54,7 +55,9 @@
 #include <GeomAdaptor_Surface.hxx>
 #include <Geom_Curve.hxx>
 #include <Geom_Surface.hxx>
+#include <Precision.hxx>
 #include <TColStd_ListOfInteger.hxx>
+#include <TopAbs_State.hxx>
 #include <TopExp.hxx>
 #include <TopExp_Explorer.hxx>
 #include <TopTools_ListIteratorOfListOfShape.hxx>
@@ -8188,89 +8191,166 @@ SMESH_MeshEditor::FindMatchingNodes(set<const SMDS_MeshElement*>& theSide1,
 
 /*!
   \brief Creates a hole in a mesh by doubling the nodes of some particular elements
-  \param theNodes - identifiers of nodes to be doubled
-  \param theModifiedElems - identifiers of elements to be updated by the new (doubled) 
-         nodes. If list of element identifiers is empty then nodes are doubled but 
-         they not assigned to elements
+  \param theElems - the list of elements (edges or faces) to be replicated
+        The nodes for duplication could be found from these elements
+  \param theNodesNot - list of nodes to NOT replicate
+  \param theAffectedElems - the list of elements (cells and edges) to which the 
+        replicated nodes should be associated to.
   \return TRUE if operation has been completed successfully, FALSE otherwise
 */
-bool SMESH_MeshEditor::DoubleNodes( const std::list< int >& theListOfNodes, 
-                                    const std::list< int >& theListOfModifiedElems )
+bool SMESH_MeshEditor::DoubleNodes( const TIDSortedElemSet& theElems,
+                                    const TIDSortedElemSet& theNodesNot,
+                                    const TIDSortedElemSet& theAffectedElems )
 {
   myLastCreatedElems.Clear();
   myLastCreatedNodes.Clear();
 
-  if ( theListOfNodes.size() == 0 )
+  if ( theElems.size() == 0 )
     return false;
 
   SMESHDS_Mesh* aMeshDS = GetMeshDS();
   if ( !aMeshDS )
     return false;
 
-  // iterate through nodes and duplicate them
-
+  bool res = false;
   std::map< const SMDS_MeshNode*, const SMDS_MeshNode* > anOldNodeToNewNode;
+  // duplicate elements and nodes
+  res = doubleNodes( aMeshDS, theElems, theNodesNot, anOldNodeToNewNode, true );
+  // replce nodes by duplications
+  res = doubleNodes( aMeshDS, theAffectedElems, theNodesNot, anOldNodeToNewNode, false );
+  return res;
+}
 
-  std::list< int >::const_iterator aNodeIter;
-  for ( aNodeIter = theListOfNodes.begin(); aNodeIter != theListOfNodes.end(); ++aNodeIter )
+/*!
+  \brief Creates a hole in a mesh by doubling the nodes of some particular elements
+  \param theMeshDS - mesh instance
+  \param theElems - the elements replicated or modified (nodes should be changed)
+  \param theNodesNot - nodes to NOT replicate
+  \param theNodeNodeMap - relation of old node to new created node
+  \param theIsDoubleElem - flag os to replicate element or modify
+  \return TRUE if operation has been completed successfully, FALSE otherwise
+*/
+bool SMESH_MeshEditor::doubleNodes( SMESHDS_Mesh*     theMeshDS,
+                                    const TIDSortedElemSet& theElems,
+                                    const TIDSortedElemSet& theNodesNot,
+                                    std::map< const SMDS_MeshNode*,
+                                    const SMDS_MeshNode* >& theNodeNodeMap,
+                                    const bool theIsDoubleElem )
+{
+  // iterate on through element and duplicate them (by nodes duplication)
+  bool res = false;
+  TIDSortedElemSet::iterator elemItr = theElems.begin();
+  for ( ;  elemItr != theElems.end(); ++elemItr )
   {
-    int aCurr = *aNodeIter;
-    SMDS_MeshNode* aNode = (SMDS_MeshNode*)aMeshDS->FindNode( aCurr );
-    if ( !aNode )
+    const SMDS_MeshElement* anElem = *elemItr;
+    if (!anElem)
       continue;
 
-    // duplicate node
-
-    const SMDS_MeshNode* aNewNode = aMeshDS->AddNode( aNode->X(), aNode->Y(), aNode->Z() );
-    if ( aNewNode )
-    {
-      anOldNodeToNewNode[ aNode ] = aNewNode;
-      myLastCreatedNodes.Append( aNewNode );
-    }
-  }
-
-  // Create map of new nodes for modified elements
-
-  std::map< SMDS_MeshElement*, vector<const SMDS_MeshNode*> > anElemToNodes;
-
-  std::list< int >::const_iterator anElemIter;
-  for ( anElemIter = theListOfModifiedElems.begin(); 
-        anElemIter != theListOfModifiedElems.end(); ++anElemIter )
-  {
-    int aCurr = *anElemIter;
-    SMDS_MeshElement* anElem = (SMDS_MeshElement*)aMeshDS->FindElement( aCurr );
-    if ( !anElem )
-      continue;
-
-    vector<const SMDS_MeshNode*> aNodeArr( anElem->NbNodes() );
-
+    bool isDuplicate = false;
+    // duplicate nodes to duplicate element
+    std::vector<const SMDS_MeshNode*> newNodes( anElem->NbNodes() );
     SMDS_ElemIteratorPtr anIter = anElem->nodesIterator();
     int ind = 0;
     while ( anIter->more() ) 
     { 
+      
       SMDS_MeshNode* aCurrNode = (SMDS_MeshNode*)anIter->next();
-      if ( aCurr && anOldNodeToNewNode.find( aCurrNode ) != anOldNodeToNewNode.end() )
+      SMDS_MeshNode* aNewNode = aCurrNode;
+      if ( theNodeNodeMap.find( aCurrNode ) != theNodeNodeMap.end() )
+        aNewNode = (SMDS_MeshNode*)theNodeNodeMap[ aCurrNode ];
+      else if ( theIsDoubleElem && theNodesNot.find( aCurrNode ) == theNodesNot.end() )
       {
-        const SMDS_MeshNode* aNewNode = anOldNodeToNewNode[ aCurrNode ];
-        aNodeArr[ ind++ ] = aNewNode;
+        // duplicate node
+        aNewNode = theMeshDS->AddNode( aCurrNode->X(), aCurrNode->Y(), aCurrNode->Z() );
+        theNodeNodeMap[ aCurrNode ] = aNewNode;
+        myLastCreatedNodes.Append( aNewNode );
       }
-      else
-        aNodeArr[ ind++ ] = aCurrNode;
+      isDuplicate |= (aCurrNode == aNewNode);
+      newNodes[ ind++ ] = aNewNode;
     }
-    anElemToNodes[ anElem ] = aNodeArr;
+    if ( !isDuplicate )
+      continue;
+  
+    if ( theIsDoubleElem )
+      myLastCreatedElems.Append( AddElement(newNodes, anElem->GetType(), anElem->IsPoly()) );
+    else
+      theMeshDS->ChangeElementNodes( anElem, &newNodes[ 0 ], anElem->NbNodes() );
+          
+    res = true;
   }
+  return res;
+}
 
-  // Change nodes of elements  
+/*!
+  \brief Check if element located inside shape
+  \return TRUE if IN or ON shape, FALSE otherwise
+*/
 
-  std::map< SMDS_MeshElement*, vector<const SMDS_MeshNode*> >::iterator
-    anElemToNodesIter = anElemToNodes.begin();
-  for ( ; anElemToNodesIter != anElemToNodes.end(); ++anElemToNodesIter )
+static bool isInside(const SMDS_MeshElement* theElem,
+                     BRepClass3d_SolidClassifier& theBsc3d,
+                     const double theTol)
+{
+  gp_XYZ centerXYZ (0, 0, 0);
+  SMDS_ElemIteratorPtr aNodeItr = theElem->nodesIterator();
+  while (aNodeItr->more())
   {
-    const SMDS_MeshElement* anElem = anElemToNodesIter->first;
-    vector<const SMDS_MeshNode*> aNodeArr = anElemToNodesIter->second;
-    if ( anElem )
-      aMeshDS->ChangeElementNodes( anElem, &aNodeArr[ 0 ], anElem->NbNodes() );
+    SMDS_MeshNode* aNode = (SMDS_MeshNode*)aNodeItr->next();
+    centerXYZ += gp_XYZ(aNode->X(), aNode->Y(), aNode->Z());
   }
+  gp_Pnt aPnt(centerXYZ);
+  theBsc3d.Perform(aPnt, theTol);
+  TopAbs_State aState = theBsc3d.State();
+  return (aState == TopAbs_IN || aState == TopAbs_ON );
+}
 
-  return true;
+/*!
+  \brief Creates a hole in a mesh by doubling the nodes of some particular elements
+  \param theElems - group of of elements (edges or faces) to be replicated
+  \param theNodesNot - group of nodes not to replicated
+  \param theShape - shape to detect affected elements (element which geometric center
+         located on or inside shape).
+         The replicated nodes should be associated to affected elements.
+  \return TRUE if operation has been completed successfully, FALSE otherwise
+*/
+
+bool SMESH_MeshEditor::DoubleNodesInRegion( const TIDSortedElemSet& theElems,
+                                            const TIDSortedElemSet& theNodesNot,
+                                            const TopoDS_Shape&     theShape )
+{
+  SMESHDS_Mesh* aMesh = GetMeshDS();
+  if (!aMesh)
+    return false;
+  if ( theShape.IsNull() )
+    return false;
+
+  const double aTol = Precision::Confusion();
+  BRepClass3d_SolidClassifier bsc3d(theShape);
+  bsc3d.PerformInfinitePoint(aTol);
+
+  // iterates on indicated elements and get elements by back references from their nodes
+  TIDSortedElemSet anAffected;
+  TIDSortedElemSet::iterator elemItr = theElems.begin();
+  for ( ;  elemItr != theElems.end(); ++elemItr )
+  {
+    SMDS_MeshElement* anElem = (SMDS_MeshElement*)*elemItr;
+    if (!anElem)
+      continue;
+
+    SMDS_ElemIteratorPtr nodeItr = anElem->nodesIterator();
+    while ( nodeItr->more() )
+    {
+      const SMDS_MeshNode* aNode = static_cast<const SMDS_MeshNode*>(nodeItr->next());
+      if ( !aNode || theNodesNot.find(aNode) != theNodesNot.end() )
+        continue;
+      SMDS_ElemIteratorPtr backElemItr = aNode->GetInverseElementIterator();
+      while ( backElemItr->more() )
+      {
+        SMDS_MeshElement* curElem = (SMDS_MeshElement*)backElemItr->next();
+        if ( curElem && theElems.find(curElem) == theElems.end() &&
+             isInside( curElem, bsc3d, aTol ) )
+          anAffected.insert( curElem );
+      }
+    }
+  }
+  return DoubleNodes( theElems, theNodesNot, anAffected );
 }

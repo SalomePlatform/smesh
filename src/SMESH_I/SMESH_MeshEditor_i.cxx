@@ -917,7 +917,9 @@ namespace
   { 
     for (int i=0; i<IDs.length(); i++) {
       CORBA::Long ind = IDs[i];
-      const SMDS_MeshElement * elem = aMesh->FindElement(ind);
+      const SMDS_MeshElement * elem =
+        (aType == SMDSAbs_Node ? aMesh->FindNode(ind)
+	                      : aMesh->FindElement(ind));
       if ( elem && ( aType == SMDSAbs_All || elem->GetType() == aType ))
         aMap.insert( elem );
     }
@@ -4137,31 +4139,156 @@ void SMESH_MeshEditor_i::DumpGroupsList(TPythonDump &               theDumpPytho
 //================================================================================
 /*!
   \brief Creates a hole in a mesh by doubling the nodes of some particular elements
-  \param theNodes - identifiers of nodes to be doubled
-  \param theModifiedElems - identifiers of elements to be updated by the new (doubled) 
-         nodes. If list of element identifiers is empty then nodes are doubled but 
-         they not assigned to elements
+  \param theElems - the list of elements (edges or faces) to be replicated
+        The nodes for duplication could be found from these elements
+  \param theNodesNot - list of nodes to NOT replicate
+  \param theAffectedElems - the list of elements (cells and edges) to which the 
+        replicated nodes should be associated to.
   \return TRUE if operation has been completed successfully, FALSE otherwise
-  \sa DoubleNode(), DoubleNodeGroup(), DoubleNodeGroups()
+  \sa DoubleNodeGroup(), DoubleNodeGroups()
 */
 //================================================================================
 
-CORBA::Boolean SMESH_MeshEditor_i::DoubleNodes( const SMESH::long_array& theNodes, 
-                                                const SMESH::long_array& theModifiedElems )
+CORBA::Boolean SMESH_MeshEditor_i::DoubleNodes( const SMESH::long_array& theElems, 
+                                                const SMESH::long_array& theNodesNot,
+                                                const SMESH::long_array& theAffectedElems )
+ 
 {
   initData();
 
   ::SMESH_MeshEditor aMeshEditor( myMesh );
-  list< int > aListOfNodes;
-  int i, n;
-  for ( i = 0, n = theNodes.length(); i < n; i++ )
-    aListOfNodes.push_back( theNodes[ i ] );
 
-  list< int > aListOfElems;
-  for ( i = 0, n = theModifiedElems.length(); i < n; i++ )
-    aListOfElems.push_back( theModifiedElems[ i ] );
+  SMESHDS_Mesh* aMeshDS = GetMeshDS();
+  TIDSortedElemSet anElems, aNodes, anAffected;
+  arrayToSet(theElems, aMeshDS, anElems, SMDSAbs_All);
+  arrayToSet(theNodesNot, aMeshDS, aNodes, SMDSAbs_Node);
+  arrayToSet(theAffectedElems, aMeshDS, anAffected, SMDSAbs_All);
 
-  bool aResult = aMeshEditor.DoubleNodes( aListOfNodes, aListOfElems );
+  bool aResult = aMeshEditor.DoubleNodes( anElems, aNodes, anAffected );
+
+  storeResult( aMeshEditor) ;
+
+  return aResult;
+}
+
+//================================================================================
+/*!
+  \brief Creates a hole in a mesh by doubling the nodes of some particular elements
+  \param theElems - the list of elements (edges or faces) to be replicated
+        The nodes for duplication could be found from these elements
+  \param theNodesNot - list of nodes to NOT replicate
+  \param theShape - shape to detect affected elements (element which geometric center
+         located on or inside shape).
+         The replicated nodes should be associated to affected elements.
+  \return TRUE if operation has been completed successfully, FALSE otherwise
+  \sa DoubleNodeGroupInRegion(), DoubleNodeGroupsInRegion()
+*/
+//================================================================================
+
+CORBA::Boolean SMESH_MeshEditor_i::DoubleNodesInRegion
+  ( const SMESH::long_array& theElems, 
+    const SMESH::long_array& theNodesNot,
+    GEOM::GEOM_Object_ptr    theShape )
+ 
+{
+  initData();
+
+  ::SMESH_MeshEditor aMeshEditor( myMesh );
+
+  SMESHDS_Mesh* aMeshDS = GetMeshDS();
+  TIDSortedElemSet anElems, aNodes;
+  arrayToSet(theElems, aMeshDS, anElems, SMDSAbs_All);
+  arrayToSet(theNodesNot, aMeshDS, aNodes, SMDSAbs_Node);
+
+  TopoDS_Shape aShape = SMESH_Gen_i::GetSMESHGen()->GeomObjectToShape( theShape );
+  bool aResult = aMeshEditor.DoubleNodesInRegion( anElems, aNodes, aShape );
+
+  storeResult( aMeshEditor) ;
+
+  return aResult;
+}
+
+//================================================================================
+/*!
+  \brief Creates a hole in a mesh by doubling the nodes of some particular elements
+  \param theElems - group of of elements (edges or faces) to be replicated
+  \param theNodesNot - group of nodes not to replicated
+  \param theAffectedElems - group of elements to which the replicated nodes
+         should be associated to.
+  \return TRUE if operation has been completed successfully, FALSE otherwise
+  \sa DoubleNodes(), DoubleNodeGroups()
+*/
+//================================================================================
+
+static void groupToSet(SMESH::SMESH_GroupBase_ptr theGrp,
+                       SMESHDS_Mesh*              theMeshDS,
+                       TIDSortedElemSet&          theElemSet,
+                       const SMDSAbs_ElementType  theType)
+ 
+{
+  if ( !CORBA::is_nil( theGrp ) )
+    arrayToSet( *theGrp->GetListOfID(), theMeshDS, theElemSet, theType);
+}
+
+CORBA::Boolean SMESH_MeshEditor_i::DoubleNodeGroup( 
+  SMESH::SMESH_GroupBase_ptr theElems,
+  SMESH::SMESH_GroupBase_ptr theNodesNot,
+  SMESH::SMESH_GroupBase_ptr theAffectedElems )
+
+{
+  if ( CORBA::is_nil( theElems ) && theElems->GetType() == SMESH::NODE )
+    return false;
+  
+  initData();
+
+  ::SMESH_MeshEditor aMeshEditor( myMesh );
+
+  SMESHDS_Mesh* aMeshDS = GetMeshDS();
+  TIDSortedElemSet anElems, aNodes, anAffected;
+  groupToSet( theElems, aMeshDS, anElems, SMDSAbs_All ); 
+  groupToSet( theNodesNot, aMeshDS, aNodes, SMDSAbs_Node ); 
+  groupToSet( theAffectedElems, aMeshDS, anAffected, SMDSAbs_All );
+
+  bool aResult = aMeshEditor.DoubleNodes( anElems, aNodes, anAffected );
+
+  storeResult( aMeshEditor) ;
+
+  return aResult;
+}
+
+//================================================================================
+/*!
+  \brief Creates a hole in a mesh by doubling the nodes of some particular elements
+  \param theElems - group of of elements (edges or faces) to be replicated
+  \param theNodesNot - group of nodes not to replicated
+  \param theShape - shape to detect affected elements (element which geometric center
+         located on or inside shape).
+         The replicated nodes should be associated to affected elements.
+  \return TRUE if operation has been completed successfully, FALSE otherwise
+  \sa DoubleNodesInRegion(), DoubleNodeGroupsInRegion()
+*/
+//================================================================================
+
+CORBA::Boolean SMESH_MeshEditor_i::DoubleNodeGroupInRegion( 
+  SMESH::SMESH_GroupBase_ptr theElems,
+  SMESH::SMESH_GroupBase_ptr theNodesNot,
+  GEOM::GEOM_Object_ptr      theShape )
+
+{
+  if ( CORBA::is_nil( theElems ) && theElems->GetType() == SMESH::NODE )
+    return false;
+  
+  initData();
+
+  ::SMESH_MeshEditor aMeshEditor( myMesh );
+
+  SMESHDS_Mesh* aMeshDS = GetMeshDS();
+  TIDSortedElemSet anElems, aNodes, anAffected;
+  groupToSet( theElems, aMeshDS, anElems, SMDSAbs_All ); 
+  groupToSet( theNodesNot, aMeshDS, aNodes, SMDSAbs_Node ); 
+
+  TopoDS_Shape aShape = SMESH_Gen_i::GetSMESHGen()->GeomObjectToShape( theShape );
+  bool aResult = aMeshEditor.DoubleNodesInRegion( anElems, aNodes, aShape );
 
   storeResult( aMeshEditor) ;
 
@@ -4172,98 +4299,82 @@ CORBA::Boolean SMESH_MeshEditor_i::DoubleNodes( const SMESH::long_array& theNode
 /*!
   \brief Creates a hole in a mesh by doubling the nodes of some particular elements
   This method provided for convenience works as DoubleNodes() described above.
-  \param theNodeId - identifier of node to be doubled.
-  \param theModifiedElems - identifiers of elements to be updated.
+  \param theElems - list of groups of elements (edges or faces) to be replicated
+  \param theNodesNot - list of groups of nodes not to replicated
+  \param theAffectedElems - group of elements to which the replicated nodes
+         should be associated to.
   \return TRUE if operation has been completed successfully, FALSE otherwise
-  \sa DoubleNodes(), DoubleNodeGroup(), DoubleNodeGroups()
+  \sa DoubleNodeGroup(), DoubleNodes()
 */
 //================================================================================
 
-CORBA::Boolean SMESH_MeshEditor_i::DoubleNode( CORBA::Long              theNodeId, 
-                                               const SMESH::long_array& theModifiedElems )
+static void listOfGroupToSet(const SMESH::ListOfGroups& theGrpList,
+                             SMESHDS_Mesh*              theMeshDS,
+                             TIDSortedElemSet&          theElemSet,
+                             const bool                 theIsNodeGrp)
 {
-  SMESH::long_array_var aNodes = new SMESH::long_array;
-  aNodes->length( 1 );
-  aNodes[ 0 ] = theNodeId;
-  return DoubleNodes( aNodes, theModifiedElems );
-}
-
-//================================================================================
-/*!
-  \brief Creates a hole in a mesh by doubling the nodes of some particular elements
-  This method provided for convenience works as DoubleNodes() described above.
-  \param theNodes - group of nodes to be doubled.
-  \param theModifiedElems - group of elements to be updated.
-  \return TRUE if operation has been completed successfully, FALSE otherwise
-  \sa DoubleNode(), DoubleNodes(), DoubleNodeGroups()
-*/
-//================================================================================
-
-CORBA::Boolean SMESH_MeshEditor_i::DoubleNodeGroup( 
-  SMESH::SMESH_GroupBase_ptr theNodes,
-  SMESH::SMESH_GroupBase_ptr theModifiedElems )
-{
-  if ( CORBA::is_nil( theNodes ) && theNodes->GetType() != SMESH::NODE )
-    return false;
-
-  SMESH::long_array_var aNodes = theNodes->GetListOfID();
-  SMESH::long_array_var aModifiedElems;
-  if ( !CORBA::is_nil( theModifiedElems ) )
-    aModifiedElems = theModifiedElems->GetListOfID();
-  else 
+  for ( int i = 0, n = theGrpList.length(); i < n; i++ )
   {
-    aModifiedElems = new SMESH::long_array;
-    aModifiedElems->length( 0 );
+    SMESH::SMESH_GroupBase_var aGrp = theGrpList[ i ];
+    if ( !CORBA::is_nil( aGrp ) && (theIsNodeGrp ? aGrp->GetType() == SMESH::NODE 
+                                                 : aGrp->GetType() != SMESH::NODE ) )
+      arrayToSet( *aGrp->GetListOfID(), theMeshDS, theElemSet,
+                  theIsNodeGrp ? SMDSAbs_Node : SMDSAbs_All );
   }
-
-  return DoubleNodes( aNodes, aModifiedElems );
 }
-
-//================================================================================
-/*!
-  \brief Creates a hole in a mesh by doubling the nodes of some particular elements
-  This method provided for convenience works as DoubleNodes() described above.
-  \param theNodes - list of groups of nodes to be doubled
-  \param theModifiedElems - list of groups of elements to be updated.
-  \return TRUE if operation has been completed successfully, FALSE otherwise
-  \sa DoubleNode(), DoubleNodeGroup(), DoubleNodes()
-*/
-//================================================================================
 
 CORBA::Boolean SMESH_MeshEditor_i::DoubleNodeGroups( 
-  const SMESH::ListOfGroups& theNodes,
-  const SMESH::ListOfGroups& theModifiedElems )
+  const SMESH::ListOfGroups& theElems,
+  const SMESH::ListOfGroups& theNodesNot,
+  const SMESH::ListOfGroups& theAffectedElems )
 {
   initData();
 
   ::SMESH_MeshEditor aMeshEditor( myMesh );
 
-  std::list< int > aNodes;
-  int i, n, j, m;
-  for ( i = 0, n = theNodes.length(); i < n; i++ )
-  {
-    SMESH::SMESH_GroupBase_var aGrp = theNodes[ i ];
-    if ( !CORBA::is_nil( aGrp ) && aGrp->GetType() == SMESH::NODE )
-    {
-      SMESH::long_array_var aCurr = aGrp->GetListOfID();
-      for ( j = 0, m = aCurr->length(); j < m; j++ )
-        aNodes.push_back( aCurr[ j ] );
-    }
-  }
+  SMESHDS_Mesh* aMeshDS = GetMeshDS();
+  TIDSortedElemSet anElems, aNodes, anAffected;
+  listOfGroupToSet(theElems, aMeshDS, anElems, false );
+  listOfGroupToSet(theNodesNot, aMeshDS, aNodes, true );
+  listOfGroupToSet(theAffectedElems, aMeshDS, anAffected, false );
 
-  std::list< int > anElems;
-  for ( i = 0, n = theModifiedElems.length(); i < n; i++ )
-  {
-    SMESH::SMESH_GroupBase_var aGrp = theModifiedElems[ i ];
-    if ( !CORBA::is_nil( aGrp ) && aGrp->GetType() != SMESH::NODE )
-    {
-      SMESH::long_array_var aCurr = aGrp->GetListOfID();
-      for ( j = 0, m = aCurr->length(); j < m; j++ )
-        anElems.push_back( aCurr[ j ] );
-    }
-  }
+  bool aResult = aMeshEditor.DoubleNodes( anElems, aNodes, anAffected );
 
-  bool aResult = aMeshEditor.DoubleNodes( aNodes, anElems );
+  storeResult( aMeshEditor) ;
+
+  return aResult;
+}
+
+//================================================================================
+/*!
+  \brief Creates a hole in a mesh by doubling the nodes of some particular elements
+  This method provided for convenience works as DoubleNodes() described above.
+  \param theElems - list of groups of elements (edges or faces) to be replicated
+  \param theNodesNot - list of groups of nodes not to replicated
+  \param theShape - shape to detect affected elements (element which geometric center
+         located on or inside shape).
+         The replicated nodes should be associated to affected elements.
+  \return TRUE if operation has been completed successfully, FALSE otherwise
+  \sa DoubleNodeGroupInRegion(), DoubleNodesInRegion()
+*/
+//================================================================================
+
+CORBA::Boolean SMESH_MeshEditor_i::DoubleNodeGroupsInRegion( 
+  const SMESH::ListOfGroups& theElems,
+  const SMESH::ListOfGroups& theNodesNot,
+  GEOM::GEOM_Object_ptr      theShape )
+{
+  initData();
+
+  ::SMESH_MeshEditor aMeshEditor( myMesh );
+
+  SMESHDS_Mesh* aMeshDS = GetMeshDS();
+  TIDSortedElemSet anElems, aNodes;
+  listOfGroupToSet(theElems, aMeshDS, anElems,false );
+  listOfGroupToSet(theNodesNot, aMeshDS, aNodes, true );
+
+  TopoDS_Shape aShape = SMESH_Gen_i::GetSMESHGen()->GeomObjectToShape( theShape );
+  bool aResult = aMeshEditor.DoubleNodesInRegion( anElems, aNodes, aShape );
 
   storeResult( aMeshEditor) ;
 

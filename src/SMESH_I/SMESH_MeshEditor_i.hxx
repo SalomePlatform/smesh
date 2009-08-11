@@ -500,19 +500,94 @@ class SMESH_MeshEditor_i: public POA_SMESH::SMESH_MeshEditor
    */
   int GetMeshId() const { return myMesh->GetId(); }
   
-  CORBA::Boolean DoubleNodes( const SMESH::long_array& theNodes,
-                              const SMESH::long_array& theModifiedElems );
 
-  CORBA::Boolean DoubleNode( CORBA::Long theNodeId,
-                             const SMESH::long_array& theModifiedElems );
+  /*!
+   * \brief Creates a hole in a mesh by doubling the nodes of some particular elements
+   * \param theElems - the list of elements (edges or faces) to be replicated
+   *       The nodes for duplication could be found from these elements
+   * \param theNodesNot - list of nodes to NOT replicate
+   * \param theAffectedElems - the list of elements (cells and edges) to which the 
+   *       replicated nodes should be associated to.
+   * \return TRUE if operation has been completed successfully, FALSE otherwise
+   * \sa DoubleNodeGroup(), DoubleNodeGroups()
+  */
+  CORBA::Boolean DoubleNodes( const SMESH::long_array& theElems, 
+                              const SMESH::long_array& theNodesNot,
+                              const SMESH::long_array& theAffectedElems );
 
-  CORBA::Boolean DoubleNodeGroup( SMESH::SMESH_GroupBase_ptr theNodes,
-                                  SMESH::SMESH_GroupBase_ptr theModifiedElems );
+  /*!
+   * \brief Creates a hole in a mesh by doubling the nodes of some particular elements
+   * \param theElems - the list of elements (edges or faces) to be replicated
+   *        The nodes for duplication could be found from these elements
+   * \param theNodesNot - list of nodes to NOT replicate
+   * \param theShape - shape to detect affected elements (element which geometric center
+   *        located on or inside shape).
+   *        The replicated nodes should be associated to affected elements.
+   * \return TRUE if operation has been completed successfully, FALSE otherwise
+   * \sa DoubleNodeGroupInRegion(), DoubleNodeGroupsInRegion()
+   */
+  CORBA::Boolean DoubleNodesInRegion( const SMESH::long_array& theElems, 
+                                      const SMESH::long_array& theNodesNot,
+                                      GEOM::GEOM_Object_ptr    theShape );
 
-  CORBA::Boolean DoubleNodeGroups( const SMESH::ListOfGroups& theNodes,
-                                   const SMESH::ListOfGroups& theModifiedElems);
+  /*!
+   * \brief Creates a hole in a mesh by doubling the nodes of some particular elements
+   * \param theElems - group of of elements (edges or faces) to be replicated
+   * \param theNodesNot - group of nodes not to replicated
+   * \param theAffectedElems - group of elements to which the replicated nodes
+   *        should be associated to.
+   * \return TRUE if operation has been completed successfully, FALSE otherwise
+   * \sa DoubleNodes(), DoubleNodeGroups()
+   */
+   CORBA::Boolean DoubleNodeGroup( SMESH::SMESH_GroupBase_ptr theElems,
+                                   SMESH::SMESH_GroupBase_ptr theNodesNot,
+                                   SMESH::SMESH_GroupBase_ptr theAffectedElems );
 
-private: //!< private methods
+  /*!
+   * \brief Creates a hole in a mesh by doubling the nodes of some particular elements
+   * \param theElems - group of of elements (edges or faces) to be replicated
+   * \param theNodesNot - group of nodes not to replicated
+   * \param theShape - shape to detect affected elements (element which geometric center
+   *        located on or inside shape).
+   *        The replicated nodes should be associated to affected elements.
+   * \return TRUE if operation has been completed successfully, FALSE otherwise
+   * \sa DoubleNodesInRegion(), DoubleNodeGroupsInRegion()
+   */
+   CORBA::Boolean DoubleNodeGroupInRegion( SMESH::SMESH_GroupBase_ptr theElems,
+                                           SMESH::SMESH_GroupBase_ptr theNodesNot,
+                                           GEOM::GEOM_Object_ptr      theShape );
+
+  /*!
+   * \brief Creates a hole in a mesh by doubling the nodes of some particular elements
+   * This method provided for convenience works as DoubleNodes() described above.
+   * \param theElems - list of groups of elements (edges or faces) to be replicated
+   * \param theNodesNot - list of groups of nodes not to replicated
+   * \param theAffectedElems - group of elements to which the replicated nodes
+   *        should be associated to.
+   * \return TRUE if operation has been completed successfully, FALSE otherwise
+   * \sa DoubleNodeGroup(), DoubleNodes()
+   */
+   CORBA::Boolean DoubleNodeGroups( const SMESH::ListOfGroups& theElems,
+                                    const SMESH::ListOfGroups& theNodesNot,
+                                    const SMESH::ListOfGroups& theAffectedElems );
+
+
+  /*!
+   * \brief Creates a hole in a mesh by doubling the nodes of some particular elements
+   * This method provided for convenience works as DoubleNodes() described above.
+   * \param theElems - list of groups of elements (edges or faces) to be replicated
+   * \param theNodesNot - list of groups of nodes not to replicated
+   * \param theShape - shape to detect affected elements (element which geometric center
+   *        located on or inside shape).
+   *        The replicated nodes should be associated to affected elements.
+   * \return TRUE if operation has been completed successfully, FALSE otherwise
+   * \sa DoubleNodeGroupInRegion(), DoubleNodesInRegion()
+   */
+   CORBA::Boolean DoubleNodeGroupsInRegion( const SMESH::ListOfGroups& theElems,
+                                            const SMESH::ListOfGroups& theNodesNot,
+                                            GEOM::GEOM_Object_ptr      theShape );
+
+ private: //!< private methods
 
   SMESHDS_Mesh * GetMeshDS() { return myMesh->GetMeshDS(); }
 

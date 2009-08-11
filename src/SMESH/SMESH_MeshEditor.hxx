@@ -41,6 +41,7 @@
 
 #include <list>
 #include <map>
+#include <set>
 
 class SMDS_MeshFace;
 class SMDS_MeshNode;
@@ -576,8 +577,13 @@ public:
 
   const SMESH_SequenceOfElemPtr& GetLastCreatedElems() const { return myLastCreatedElems; }
   
-  bool DoubleNodes( const std::list< int >& theListOfNodes, 
-                    const std::list< int >& theListOfModifiedElems );
+  bool DoubleNodes( const TIDSortedElemSet& theElems, 
+                    const TIDSortedElemSet& theNodesNot,
+                    const TIDSortedElemSet& theAffectedElems );
+
+  bool DoubleNodesInRegion( const TIDSortedElemSet& theElems, 
+                            const TIDSortedElemSet& theNodesNot,
+                            const TopoDS_Shape&     theShape );
 
 private:
 
@@ -660,6 +666,13 @@ private:
 				   const bool theMakeGroups);
   void LinearAngleVariation(const int NbSteps,
 			    list<double>& theAngles);
+
+  bool doubleNodes( SMESHDS_Mesh*     theMeshDS,
+                    const TIDSortedElemSet& theElems,
+                    const TIDSortedElemSet& theNodesNot,
+                    std::map< const SMDS_MeshNode*,
+                              const SMDS_MeshNode* >& theNodeNodeMap,
+                    const bool theIsDoubleElem );
 
 private:
 
