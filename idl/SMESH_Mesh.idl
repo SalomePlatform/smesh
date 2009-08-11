@@ -111,10 +111,10 @@ module SMESH
   {
     ALL,
     NODE,
-    ELEM0D,
     EDGE,
     FACE,
-    VOLUME
+    VOLUME,
+    ELEM0D
   };
 
   /*!
