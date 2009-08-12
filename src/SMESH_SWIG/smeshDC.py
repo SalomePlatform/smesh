@@ -3327,7 +3327,7 @@ class Mesh:
     #  @return TRUE if operation has been completed successfully, FALSE otherwise
     #  @ingroup l2_modif_edit
     def DoubleNodes(self, theElems, theNodesNot, theAffectedElems):
-        return self.editor.DoubleNodes(theElems, theNodesNot)
+        return self.editor.DoubleNodes(theElems, theNodesNot, theAffectedElems)
         
     ## Creates a hole in a mesh by doubling the nodes of some particular elements
     #  @param theElems - the list of elements (edges or faces) to be replicated
@@ -3338,8 +3338,8 @@ class Mesh:
     #         The replicated nodes should be associated to affected elements.
     #  @return TRUE if operation has been completed successfully, FALSE otherwise
     #  @ingroup l2_modif_edit
-    def DoubleNodesInRegion( self theElems, theNodesNot, theShape ):
-        return self.editor.DoubleNodesInRegion(theElems, theNodesNot)
+    def DoubleNodesInRegion(self, theElems, theNodesNot, theShape):
+        return self.editor.DoubleNodesInRegion(theElems, theNodesNot, theShape)
     
     ## Creates a hole in a mesh by doubling the nodes of some particular elements
     #  This method provided for convenience works as DoubleNodes() described above.
