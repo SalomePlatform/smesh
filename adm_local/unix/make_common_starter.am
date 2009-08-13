@@ -19,6 +19,14 @@
 #
 #  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+
+# ============================================================
+# The following is to avoid PACKAGE_... env variable
+# redefinition compilation warnings
+# ============================================================
+AM_CXXFLAGS = @KERNEL_CXXFLAGS@ -include SALOMEconfig.h
+AM_CPPFLAGS = @KERNEL_CXXFLAGS@ -include SALOMEconfig.h
+
 # ============================================================
 # This file defines the common definitions used in several
 # Makefile. This file must be included, if needed, by the file

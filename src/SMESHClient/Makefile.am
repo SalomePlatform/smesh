@@ -59,8 +59,7 @@ libSMESHClient_la_CPPFLAGS = \
 	-I$(srcdir)/../SMDS \
 	-I$(srcdir)/../SMESHDS \
 	-I$(srcdir)/../SMESH \
-	-I$(top_builddir)/idl \
-	-I$(top_builddir)/salome_adm/unix
+	-I$(top_builddir)/idl
 
 libSMESHClient_la_LDFLAGS  = \
 	../../idl/libSalomeIDLSMESH.la \

@@ -70,8 +70,7 @@ libSMESHObject_la_CPPFLAGS = \
 	-I$(srcdir)/../DriverMED \
 	-I$(srcdir)/../SMESH \
 	-I$(srcdir)/../SMESHClient \
-	-I$(top_builddir)/idl \
-	-I$(top_builddir)/salome_adm/unix
+	-I$(top_builddir)/idl
 
 libSMESHObject_la_LDFLAGS  = \
         ../SMESHClient/libSMESHClient.la \

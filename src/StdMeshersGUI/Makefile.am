@@ -88,9 +88,7 @@ libStdMeshersGUI_la_CPPFLAGS = \
 	-I$(srcdir)/../StdMeshers \
 	-I$(srcdir)/../OBJECT \
 	-I$(srcdir)/../SMESHFiltersSelection \
-	-I$(top_builddir)/idl \
-	-I$(top_builddir)/salome_adm/unix
-
+	-I$(top_builddir)/idl
 
 libStdMeshersGUI_la_LDFLAGS  = \
 	../../idl/libSalomeIDLSMESH.la \

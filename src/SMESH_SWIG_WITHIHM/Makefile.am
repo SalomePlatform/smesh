@@ -73,8 +73,7 @@ _libSMESH_Swig_la_CPPFLAGS =	\
 	$(BOOST_CPPFLAGS)	\
 	-I$(srcdir)             \
 	-I$(srcdir)/../SMESHGUI	\
-	-I$(top_builddir)/idl	\
-	-I$(top_builddir)/salome_adm/unix
+	-I$(top_builddir)/idl
 
 _libSMESH_Swig_la_LDFLAGS  = -module
 _libSMESH_Swig_la_LIBADD   = ../SMESHGUI/libSMESH.la			\

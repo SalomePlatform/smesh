@@ -94,9 +94,7 @@ libSMESHimpl_la_CPPFLAGS = \
 	-I$(srcdir)/../DriverUNV \
 	-I$(srcdir)/../DriverSTL \
 	-I$(srcdir)/../SMDS \
-	-I$(srcdir)/../SMESHDS \
-	-I$(top_builddir)/salome_adm/unix
-
+	-I$(srcdir)/../SMESHDS
 
 libSMESHimpl_la_LDFLAGS = \
 	../SMESHDS/libSMESHDS.la \

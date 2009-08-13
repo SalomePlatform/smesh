@@ -237,9 +237,7 @@ libSMESH_la_CPPFLAGS = \
 	-I$(srcdir)/../SMESH_I \
 	-I$(srcdir)/../Controls \
 	-I$(srcdir)/../SMESHClient \
-	-I$(top_builddir)/idl \
-	-I$(top_builddir)/salome_adm/unix
-
+	-I$(top_builddir)/idl
 
 libSMESH_la_LDFLAGS  = \
 	../SMESHFiltersSelection/libSMESHFiltersSelection.la \

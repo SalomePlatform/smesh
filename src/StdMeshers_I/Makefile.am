@@ -119,9 +119,7 @@ libStdMeshersEngine_la_CPPFLAGS = \
 	-I$(srcdir)/../SMDS \
 	-I$(srcdir)/../Controls \
 	-I$(srcdir)/../StdMeshers \
-	-I$(top_builddir)/idl \
-	-I$(top_builddir)/salome_adm/unix
-
+	-I$(top_builddir)/idl
 
 libStdMeshersEngine_la_LDFLAGS  = \
 	../../idl/libSalomeIDLSMESH.la \

@@ -57,8 +57,7 @@ libSMESHFiltersSelection_la_CPPFLAGS = \
 	$(BOOST_CPPFLAGS) \
 	$(CORBA_CXXFLAGS) \
 	$(CORBA_INCLUDES) \
-	-I$(top_builddir)/idl \
-	-I$(top_builddir)/salome_adm/unix
+	-I$(top_builddir)/idl
 
 libSMESHFiltersSelection_la_LDFLAGS  = \
 	../../idl/libSalomeIDLSMESH.la \
