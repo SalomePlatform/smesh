@@ -485,6 +485,21 @@ public:
    * Returns list of notebook variables used for last Mesh operation
    */
   SMESH::string_array* GetLastParameters();
+
+
+  /*!
+   * Returns statistic of mesh elements
+   * Result array of number enityties
+   * Inherited from SMESH_IDSource
+   */
+  virtual SMESH::long_array* GetMeshInfo();
+
+  /*!
+   * Collect statistic of mesh elements given by iterator
+   */
+  static void CollectMeshInfo(const SMDS_ElemIteratorPtr theItr,
+                              SMESH::long_array&         theInfo);
+                          
   
   std::map<int, SMESH_subMesh_i*> _mapSubMesh_i; //NRI
   std::map<int, ::SMESH_subMesh*> _mapSubMesh;   //NRI

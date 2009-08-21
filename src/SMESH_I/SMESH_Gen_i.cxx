@@ -1655,7 +1655,7 @@ SMESH::long_array* SMESH_Gen_i::Evaluate(SMESH::SMESH_Mesh_ptr theMesh,
       // call implementation compute
       ::SMESH_Mesh& myLocMesh = meshServant->GetImpl();
       MapShapeNbElems aResMap;
-      CORBA::Boolean ret = myGen.Evaluate( myLocMesh, myLocShape, aResMap);
+      /*CORBA::Boolean ret =*/ myGen.Evaluate( myLocMesh, myLocShape, aResMap);
       MapShapeNbElemsItr anIt = aResMap.begin();
       vector<int> aResVec(17);
       int i = 0;

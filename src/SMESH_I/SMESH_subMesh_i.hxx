@@ -86,6 +86,13 @@ public:
 
   virtual SMESH::long_array* GetIDs();
 
+  /*!
+   * Returns statistic of mesh elements
+   * Result array of number enityties
+   * Inherited from SMESH_IDSource
+   */
+  virtual SMESH::long_array* GetMeshInfo();
+
   SMESH_Mesh_i* _mesh_i; //NRI
 
 protected:

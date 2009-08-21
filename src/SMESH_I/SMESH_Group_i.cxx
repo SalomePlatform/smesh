@@ -487,3 +487,27 @@ void SMESH_GroupBase_i::SetColorNumber(CORBA::Long color)
   MESSAGE("set color number of a group");
   return ;
 }
+
+//=============================================================================
+/*!
+ * Returns statistic of mesh elements
+ * Result array of number enityties
+ * Inherited from SMESH_IDSource
+ */
+//=============================================================================
+SMESH::long_array* SMESH_GroupBase_i::GetMeshInfo()
+{
+  SMESH::long_array_var aRes = new SMESH::long_array();
+  aRes->length(SMESH::Entity_Last);
+  for (int i = SMESH::Entity_Node; i < SMESH::Entity_Last; i++)
+    aRes[i] = 0;
+
+  SMESHDS_GroupBase* aGrpDS = GetGroupDS();
+  if ( !aGrpDS )
+    return aRes._retn();
+  if ( GetType() == NODE )
+    aRes[ SMESH::Entity_Node ] = aGrpDS->Extent();
+  else
+    SMESH_Mesh_i::CollectMeshInfo( aGrpDS->GetElements(), aRes);
+  return aRes._retn();
+}

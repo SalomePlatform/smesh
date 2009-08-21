@@ -40,6 +40,7 @@ class SMDS_EXPORT SMDS_Mesh0DElement: public SMDS_MeshElement
   void Print (std::ostream & OS) const;
 
   SMDSAbs_ElementType GetType() const;
+  SMDSAbs_EntityType  GetEntityType() const {return SMDSEntity_0D;}
   int NbNodes() const;
   int NbEdges() const;
   friend bool operator< (const SMDS_Mesh0DElement& e1, const SMDS_Mesh0DElement& e2);

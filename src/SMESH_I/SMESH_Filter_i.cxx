@@ -32,6 +32,7 @@
 #include "SMDS_Mesh.hxx"
 #include "SMDS_MeshNode.hxx"
 #include "SMDS_MeshElement.hxx"
+#include "SMDS_ElemIterator.hxx"
 
 #include "SMESHDS_Mesh.hxx"
 
@@ -2148,6 +2149,60 @@ GetElementsId( SMESH_Mesh_ptr theMesh )
       anArray[ i ] = aSequence[i];
   }
   return anArray._retn();
+}
+
+template<class TElement, class TIterator, class TPredicate>
+static void collectMeshInfo(const TIterator& theItr,
+                            TPredicate& thePred,
+                            SMESH::long_array& theRes)
+{         
+  if (!theItr)
+    return;
+  while (theItr->more()) {
+    const SMDS_MeshElement* anElem = theItr->next();
+    if ( thePred->IsSatisfy( anElem->GetID() ) )
+      theRes[ anElem->GetEntityType() ]++;
+  }
+}
+
+//=============================================================================
+/*!
+ * \brief Returns statistic of mesh elements
+ */
+//=============================================================================
+SMESH::long_array* ::Filter_i::GetMeshInfo()
+{
+  SMESH::long_array_var aRes = new SMESH::long_array();
+  aRes->length(SMESH::Entity_Last);
+  for (int i = SMESH::Entity_Node; i < SMESH::Entity_Last; i++)
+    aRes[i] = 0;
+
+  if(!CORBA::is_nil(myMesh) && myPredicate) {
+    const SMDS_Mesh* aMesh = MeshPtr2SMDSMesh(myMesh);
+    SMDS_ElemIteratorPtr it;
+    switch( GetElementType() )
+    {
+  case SMDSAbs_Node:
+    collectMeshInfo<const SMDS_MeshNode*>(aMesh->nodesIterator(),myPredicate,aRes);
+    break;
+  case SMDSAbs_Edge:
+    collectMeshInfo<const SMDS_MeshElement*>(aMesh->edgesIterator(),myPredicate,aRes);
+    break;
+  case SMDSAbs_Face:
+    collectMeshInfo<const SMDS_MeshElement*>(aMesh->facesIterator(),myPredicate,aRes);
+    break;
+  case SMDSAbs_Volume:
+    collectMeshInfo<const SMDS_MeshElement*>(aMesh->volumesIterator(),myPredicate,aRes);
+    break;
+  case SMDSAbs_All:
+  default:
+    collectMeshInfo<const SMDS_MeshElement*>(aMesh->elementsIterator(),myPredicate,aRes);
+    break;
+    }
+  }
+
+
+  return aRes._retn();  
 }
 
 //=======================================================================

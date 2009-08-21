@@ -41,6 +41,7 @@ public:
 
   int NbNodes() const { return myNbNodes; }
   inline int NbElements(SMDSAbs_ElementType type=SMDSAbs_All) const;
+  inline int NbEntities(SMDSAbs_EntityType  type) const;
 
   int Nb0DElements() const { return myNb0DElements; }
   inline int NbEdges      (SMDSAbs_ElementOrder order = ORDER_ANY) const;
@@ -254,4 +255,71 @@ SMDS_MeshInfo::NbElements(SMDSAbs_ElementType type) const
   }
   return nb;
 }
+
+int // NbEntities
+SMDS_MeshInfo::NbEntities(SMDSAbs_EntityType  type) const
+{
+  switch (type) {
+  case SMDSEntity_Node:
+    return myNbNodes;
+    break;
+  case SMDSEntity_0D:
+    return myNb0DElements;
+    break;
+  case SMDSEntity_Edge:
+    return myNbEdges;
+    break;
+  case SMDSEntity_Quad_Edge:
+    return myNbQuadEdges;
+    break;
+  case SMDSEntity_Triangle:
+    return myNbTriangles;
+    break;
+  case SMDSEntity_Quad_Triangle:
+    return myNbQuadTriangles;
+    break;
+  case SMDSEntity_Quadrangle:
+    return myNbQuadrangles;
+    break;
+  case SMDSEntity_Quad_Quadrangle:
+    return myNbQuadQuadrangles;
+    break;
+  case SMDSEntity_Polygon:
+    return myNbPolygons;
+    break;
+  case SMDSEntity_Tetra:
+    return myNbTetras;
+    break;
+  case SMDSEntity_Quad_Tetra:
+    return myNbQuadTetras;
+    break;
+  case SMDSEntity_Pyramid:
+    return myNbPyramids;
+    break;
+  case SMDSEntity_Quad_Pyramid:
+    return myNbQuadPyramids;
+    break;
+  case SMDSEntity_Hexa:
+    return myNbHexas;
+    break;
+  case SMDSEntity_Quad_Hexa:
+    return myNbQuadHexas;
+    break;
+  case SMDSEntity_Penta:
+    return myNbPrisms;
+    break;
+  case SMDSEntity_Quad_Penta:
+    return myNbQuadPrisms;
+    break;
+  case SMDSEntity_Polyhedra:
+    return myNbPolyhedrons;
+    break;
+  case SMDSEntity_Quad_Polygon:
+  case SMDSEntity_Quad_Polyhedra:
+  default:
+  break;
+  }
+  return 0;
+}
+
 #endif

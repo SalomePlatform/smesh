@@ -246,3 +246,17 @@ const SMDS_MeshNode* SMDS_VolumeOfNodes::GetNode(const int ind) const
 {
   return myNodes[ ind ];
 }
+
+SMDSAbs_EntityType SMDS_VolumeOfNodes::GetEntityType() const
+{
+  SMDSAbs_EntityType aType = SMDSEntity_Tetra;
+  switch(myNbNodes)
+  {
+  case 4: aType = SMDSEntity_Tetra;   break;
+  case 5: aType = SMDSEntity_Pyramid; break;
+  case 6: aType = SMDSEntity_Penta;   break;
+  case 8:
+  default: aType = SMDSEntity_Hexa;    break;
+  }
+  return aType;
+}

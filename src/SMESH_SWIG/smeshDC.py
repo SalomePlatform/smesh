@@ -1588,6 +1588,19 @@ class Mesh:
     # Get informations about mesh contents:
     # ------------------------------------
 
+    ## Gets the mesh stattistic
+    #  @return dictionary type element - count of elements
+    #  @ingroup l1_meshinfo
+    def GetMeshInfo(self, obj = None):
+        if not obj: obj = self.mesh
+        d = {}
+        if hasattr(obj, "_narrow") and obj._narrow(SMESH.SMESH_IDSource):
+            values = obj.GetMeshInfo() 
+            for i in range(SMESH.Entity_Last._v):
+                if i < len(values): d[SMESH.EntityType._item(i)]=values[i]
+            pass
+        return d
+
     ## Returns the number of nodes in the mesh
     #  @return an integer value
     #  @ingroup l1_meshinfo

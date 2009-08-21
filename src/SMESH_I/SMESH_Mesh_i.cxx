@@ -37,6 +37,7 @@
 #include "DriverMED_R_SMESHDS_Mesh.h"
 #include "DriverMED_W_SMESHDS_Mesh.h"
 #include "SMDS_VolumeTool.hxx"
+#include "SMDS_ElemIterator.hxx"
 #include "SMESHDS_Command.hxx"
 #include "SMESHDS_CommandType.hxx"
 #include "SMESHDS_GroupOnGeom.hxx"
@@ -3404,4 +3405,37 @@ SMESH::string_array* SMESH_Mesh_i::GetLastParameters()
     }
   }
   return aResult._retn();
+}
+
+//=============================================================================
+/*!
+ * \brief Returns statistic of mesh elements
+ */
+//=============================================================================
+SMESH::long_array* SMESH_Mesh_i::GetMeshInfo()
+{
+  SMESH::long_array_var aRes = new SMESH::long_array();
+  aRes->length(SMESH::Entity_Last);
+  for (int i = SMESH::Entity_Node; i < SMESH::Entity_Last; i++)
+    aRes[i] = 0;
+  SMESHDS_Mesh* aMeshDS = _impl->GetMeshDS();
+  if (!aMeshDS)
+    return aRes._retn();
+  const SMDS_MeshInfo& aMeshInfo = aMeshDS->GetMeshInfo();
+  for (int i = SMESH::Entity_Node; i < SMESH::Entity_Last; i++)
+    aRes[i] = aMeshInfo.NbEntities((SMDSAbs_EntityType)i);
+  return aRes._retn();
+}
+
+//=============================================================================
+/*!
+ * \brief Collect statistic of mesh elements given by iterator
+ */
+//=============================================================================
+void SMESH_Mesh_i::CollectMeshInfo(const SMDS_ElemIteratorPtr theItr,
+                                   SMESH::long_array&         theInfo)
+{
+  if (!theItr) return;
+  while (theItr->more())
+    theInfo[ theItr->next()->GetEntityType() ]++;
 }

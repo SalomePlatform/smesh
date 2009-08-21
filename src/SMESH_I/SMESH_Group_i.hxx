@@ -64,6 +64,13 @@ class SMESH_I_EXPORT SMESH_GroupBase_i:
   SMESH::long_array* GetListOfID();
   SMESH::SMESH_Mesh_ptr GetMesh();
 
+  /*!
+   * Returns statistic of mesh elements
+   * Result array of number enityties
+   * Inherited from SMESH_IDSource
+   */
+  virtual SMESH::long_array* GetMeshInfo();
+
   // Inherited from SMESH_IDSource interface
   virtual SMESH::long_array* GetIDs();
 

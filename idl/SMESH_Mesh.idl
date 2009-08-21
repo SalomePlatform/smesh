@@ -143,6 +143,37 @@ module SMESH
     ORDER_QUADRATIC     /*! entities of 2nd order */
   };
 
+
+  /*!
+   * Enumeration of entity type uses in mesh info array,
+   *  and should be synchronised with enum in SMDS  
+   */
+  enum EntityType
+  {
+    Entity_Node,
+    Entity_0D,
+    Entity_Edge,
+    Entity_Quad_Edge,
+    Entity_Triangle,
+    Entity_Quad_Triangle,
+    Entity_Quadrangle,
+    Entity_Quad_Quadrangle,
+    Entity_Polygon,
+    Entity_Quad_Polygon,
+    Entity_Tetra,
+    Entity_Quad_Tetra,
+    Entity_Pyramid,
+    Entity_Quad_Pyramid,
+    Entity_Hexa,
+    Entity_Quad_Hexa,
+    Entity_Penta,
+    Entity_Quad_Penta,
+    Entity_Polyhedra,
+    Entity_Quad_Polyhedra,
+    Entity_Last
+  };
+
+
   /*!
    * Enumeration for hypothesis status (used by AddHypothesis() and RemoveHypothesis() methods)
    */
@@ -220,6 +251,12 @@ module SMESH
      * Returns a sequence of all element IDs
      */
     long_array GetIDs();
+
+    /*!
+     * Returns statistic of mesh elements
+     * Result array of number enityties
+     */
+    long_array GetMeshInfo();
   };
 
   interface SMESH_Group;

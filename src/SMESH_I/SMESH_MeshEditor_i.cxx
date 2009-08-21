@@ -4226,8 +4226,10 @@ static void groupToSet(SMESH::SMESH_GroupBase_ptr theGrp,
                        const SMDSAbs_ElementType  theType)
  
 {
-  if ( !CORBA::is_nil( theGrp ) )
-    arrayToSet( *theGrp->GetListOfID(), theMeshDS, theElemSet, theType);
+  if ( CORBA::is_nil( theGrp ) )
+    return;
+  SMESH::long_array_var anIDs = theGrp->GetIDs();
+  arrayToSet( anIDs, theMeshDS, theElemSet, theType);
 }
 
 CORBA::Boolean SMESH_MeshEditor_i::DoubleNodeGroup( 
@@ -4318,8 +4320,10 @@ static void listOfGroupToSet(const SMESH::ListOfGroups& theGrpList,
     SMESH::SMESH_GroupBase_var aGrp = theGrpList[ i ];
     if ( !CORBA::is_nil( aGrp ) && (theIsNodeGrp ? aGrp->GetType() == SMESH::NODE 
                                                  : aGrp->GetType() != SMESH::NODE ) )
-      arrayToSet( *aGrp->GetListOfID(), theMeshDS, theElemSet,
-                  theIsNodeGrp ? SMDSAbs_Node : SMDSAbs_All );
+    {
+      SMESH::long_array_var anIDs = aGrp->GetIDs();
+      arrayToSet( anIDs, theMeshDS, theElemSet, theIsNodeGrp ? SMDSAbs_Node : SMDSAbs_All );
+    }
   }
 }
 

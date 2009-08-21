@@ -477,81 +477,78 @@ void SMESHGUI_MeshInfosDlg::DumpMeshInfos()
       //CORBA::Object_var anObject = aSO->GetObject();
       CORBA::Object_var anObject = SMESH::SObjectToObject(aSO);
       if (!CORBA::is_nil(anObject)) {
-	SMESH::SMESH_Mesh_var aMesh = SMESH::SMESH_Mesh::_narrow(anObject);
-	if (!aMesh->_is_nil()) {
+	SMESH::SMESH_IDSource_var anIDSource = SMESH::SMESH_IDSource::_narrow(anObject);
+	if (!anIDSource->_is_nil()) {
 	  myWGStack->setCurrentWidget(myMeshWidget);
 	  setWindowTitle(tr("SMESH_MESHINFO_TITLE") + " [" + tr("SMESH_OBJECT_MESH") + "]");
 	  myMeshName->setText(aSO->GetName().c_str());
-	  myMeshNbNodes->setNum((int)aMesh->NbNodes());
-          myMeshNb0DElems->setNum((int)aMesh->Nb0DElements());
-	  myMeshNbEdges->setNum((int)aMesh->NbEdges());
-	  myMeshNbEdges1->setNum((int)aMesh->NbEdgesOfOrder(SMESH::ORDER_LINEAR));
-	  myMeshNbEdges2->setNum((int)aMesh->NbEdgesOfOrder(SMESH::ORDER_QUADRATIC));
-	  myMeshNbFaces->setNum((int)aMesh->NbFaces());
-	  myMeshNbFaces1->setNum((int)aMesh->NbFacesOfOrder(SMESH::ORDER_LINEAR));
-	  myMeshNbFaces2->setNum((int)aMesh->NbFacesOfOrder(SMESH::ORDER_QUADRATIC));
-	  myMeshNbTriangles->setNum((int)aMesh->NbTriangles());
-	  myMeshNbTriangles1->setNum((int)aMesh->NbTrianglesOfOrder(SMESH::ORDER_LINEAR));
-	  myMeshNbTriangles2->setNum((int)aMesh->NbTrianglesOfOrder(SMESH::ORDER_QUADRATIC));
-	  myMeshNbQuadrangles->setNum((int)aMesh->NbQuadrangles());
-	  myMeshNbQuadrangles1->setNum((int)aMesh->NbQuadranglesOfOrder(SMESH::ORDER_LINEAR));
-	  myMeshNbQuadrangles2->setNum((int)aMesh->NbQuadranglesOfOrder(SMESH::ORDER_QUADRATIC));
-	  myMeshNbPolygones->setNum( (int)aMesh->NbPolygons() );
-	  myMeshNbVolumes->setNum((int)aMesh->NbVolumes());
-	  myMeshNbVolumes1->setNum((int)aMesh->NbVolumesOfOrder(SMESH::ORDER_LINEAR));
-	  myMeshNbVolumes2->setNum((int)aMesh->NbVolumesOfOrder(SMESH::ORDER_QUADRATIC));
-	  myMeshNbTetra->setNum((int)aMesh->NbTetras());
-	  myMeshNbTetra1->setNum((int)aMesh->NbTetrasOfOrder(SMESH::ORDER_LINEAR));
-	  myMeshNbTetra2->setNum((int)aMesh->NbTetrasOfOrder(SMESH::ORDER_QUADRATIC));
-	  myMeshNbHexa->setNum((int)aMesh->NbHexas());
-	  myMeshNbHexa1->setNum((int)aMesh->NbHexasOfOrder(SMESH::ORDER_LINEAR));
-	  myMeshNbHexa2->setNum((int)aMesh->NbHexasOfOrder(SMESH::ORDER_QUADRATIC));
-	  myMeshNbPrism->setNum((int)aMesh->NbPrisms());
-	  myMeshNbPrism1->setNum((int)aMesh->NbPrismsOfOrder(SMESH::ORDER_LINEAR));
-	  myMeshNbPrism2->setNum((int)aMesh->NbPrismsOfOrder(SMESH::ORDER_QUADRATIC));
-	  myMeshNbPyra->setNum((int)aMesh->NbPyramids());
-	  myMeshNbPyra1->setNum((int)aMesh->NbPyramidsOfOrder(SMESH::ORDER_LINEAR));
-	  myMeshNbPyra2->setNum((int)aMesh->NbPyramidsOfOrder(SMESH::ORDER_QUADRATIC));
-	  myMeshNbPolyhedrones->setNum( (int)aMesh->NbPolyhedrons() );
-	  return;
-	}
-	SMESH::SMESH_subMesh_var aSubMesh = SMESH::SMESH_subMesh::_narrow(anObject);
-	if (!aSubMesh->_is_nil()) {
-	  myWGStack->setCurrentWidget(mySubMeshWidget);
-	  setWindowTitle(tr("SMESH_MESHINFO_TITLE") + " [" + tr("SMESH_SUBMESH") + "]");
-	  mySubMeshName->setText(aSO->GetName().c_str());
-	  mySubMeshNbNodes->setNum((int)aSubMesh->GetNumberOfNodes(true));
-	  mySubMeshNbElements->setNum((int)aSubMesh->GetNumberOfElements());
-	  mySubMeshNb0DElems->setNum((int)(aSubMesh->GetElementsByType(SMESH::ELEM0D)->length()));
-	  mySubMeshNbEdges->setNum((int)(aSubMesh->GetElementsByType(SMESH::EDGE)->length()));
-	  mySubMeshNbFaces->setNum((int)(aSubMesh->GetElementsByType(SMESH::FACE)->length()));
-	  mySubMeshNbVolumes->setNum((int)(aSubMesh->GetElementsByType(SMESH::VOLUME)->length()));
-	  return;
-	}
-	SMESH::SMESH_GroupBase_var aGroup = SMESH::SMESH_GroupBase::_narrow(anObject);
-	if (!aGroup->_is_nil()) {
-	  myWGStack->setCurrentWidget(myGroupWidget);
-	  setWindowTitle(tr("SMESH_MESHINFO_TITLE") + " [" + tr("SMESH_GROUP") + "]");
-	  myGroupName->setText(aSO->GetName().c_str());
-	  int aType = aGroup->GetType();
-	  QString strType;
-	  switch (aType) {
-	  case SMESH::NODE:
-	    strType = "SMESH_MESHINFO_NODES"; break;
-	  case SMESH::ELEM0D:
-	    strType = "SMESH_MESHINFO_0DELEMS"; break;
-	  case SMESH::EDGE:
-	    strType = "SMESH_MESHINFO_EDGES"; break;
-	  case SMESH::FACE:
-	    strType = "SMESH_MESHINFO_FACES"; break;
-	  case SMESH::VOLUME:
-	    strType = "SMESH_MESHINFO_VOLUMES"; break;
-	  default:
-	    strType = "SMESH_MESHINFO_ALL_TYPES"; break;
-	  }
 
-	  myGroupType->setText(tr(strType.toLatin1().data()));
-	  myGroupNb->setNum((int)aGroup->Size());
+	  SMESH::long_array_var aMeshInfo = anIDSource->GetMeshInfo();
+
+	  myMeshNbNodes->setNum((int)aMeshInfo[SMESH::Entity_Node]);
+          myMeshNb0DElems->setNum((int)aMeshInfo[SMESH::Entity_0D]);
+	  myMeshNbEdges->setNum((int)aMeshInfo[SMESH::Entity_Edge] + (int)aMeshInfo[SMESH::Entity_Quad_Edge]);
+	  myMeshNbEdges1->setNum((int)aMeshInfo[SMESH::Entity_Edge]);
+	  myMeshNbEdges2->setNum((int)aMeshInfo[SMESH::Entity_Quad_Edge]);
+	  myMeshNbFaces->setNum((int)aMeshInfo[SMESH::Entity_Triangle] +
+                                (int)aMeshInfo[SMESH::Entity_Quad_Triangle] +
+                                (int)aMeshInfo[SMESH::Entity_Quadrangle] +
+                                (int)aMeshInfo[SMESH::Entity_Quad_Quadrangle] +
+                                (int)aMeshInfo[SMESH::Entity_Polygon] +
+                                (int)aMeshInfo[SMESH::Entity_Quad_Polygon]);
+	  myMeshNbFaces1->setNum((int)aMeshInfo[SMESH::Entity_Triangle] +
+                                (int)aMeshInfo[SMESH::Entity_Quadrangle] +
+                                (int)aMeshInfo[SMESH::Entity_Polygon]);
+	  myMeshNbFaces2->setNum((int)aMeshInfo[SMESH::Entity_Quad_Triangle] +
+                                (int)aMeshInfo[SMESH::Entity_Quad_Quadrangle] +
+                                (int)aMeshInfo[SMESH::Entity_Quad_Polygon]);
+
+	  myMeshNbTriangles->setNum((int)aMeshInfo[SMESH::Entity_Triangle] + 
+				    (int)aMeshInfo[SMESH::Entity_Quad_Triangle]);
+	  myMeshNbTriangles1->setNum((int)aMeshInfo[SMESH::Entity_Triangle]);
+	  myMeshNbTriangles2->setNum((int)aMeshInfo[SMESH::Entity_Quad_Triangle]);
+	  myMeshNbQuadrangles->setNum((int)aMeshInfo[SMESH::Entity_Quadrangle] +
+				      (int)aMeshInfo[SMESH::Entity_Quad_Quadrangle]);
+	  myMeshNbQuadrangles1->setNum((int)(int)aMeshInfo[SMESH::Entity_Quadrangle]);
+	  myMeshNbQuadrangles2->setNum((int)aMeshInfo[SMESH::Entity_Quad_Quadrangle]);
+	  myMeshNbPolygones->setNum((int)aMeshInfo[SMESH::Entity_Polygon]);
+	  myMeshNbVolumes->setNum((int)aMeshInfo[SMESH::Entity_Tetra] +
+				  (int)aMeshInfo[SMESH::Entity_Quad_Tetra] +
+				  (int)aMeshInfo[SMESH::Entity_Pyramid] +
+				  (int)aMeshInfo[SMESH::Entity_Quad_Pyramid] +
+				  (int)aMeshInfo[SMESH::Entity_Hexa] +
+				  (int)aMeshInfo[SMESH::Entity_Quad_Hexa] +
+				  (int)aMeshInfo[SMESH::Entity_Penta] +
+				  (int)aMeshInfo[SMESH::Entity_Quad_Penta] +
+				  (int)aMeshInfo[SMESH::Entity_Polyhedra] +
+				  (int)aMeshInfo[SMESH::Entity_Quad_Polyhedra]);
+	  myMeshNbVolumes1->setNum((int)aMeshInfo[SMESH::Entity_Tetra] +
+				   (int)aMeshInfo[SMESH::Entity_Pyramid] +
+				   (int)aMeshInfo[SMESH::Entity_Hexa] +
+				   (int)aMeshInfo[SMESH::Entity_Penta] +
+				   (int)aMeshInfo[SMESH::Entity_Polyhedra]);
+	  myMeshNbVolumes2->setNum((int)aMeshInfo[SMESH::Entity_Quad_Tetra] +
+				   (int)aMeshInfo[SMESH::Entity_Quad_Pyramid] +
+				   (int)aMeshInfo[SMESH::Entity_Quad_Hexa] +
+				   (int)aMeshInfo[SMESH::Entity_Quad_Penta] +
+				   (int)aMeshInfo[SMESH::Entity_Quad_Polyhedra]);
+	  myMeshNbTetra->setNum((int)aMeshInfo[SMESH::Entity_Tetra] +
+				(int)aMeshInfo[SMESH::Entity_Quad_Tetra]);
+	  myMeshNbTetra1->setNum((int)aMeshInfo[SMESH::Entity_Tetra]);
+	  myMeshNbTetra2->setNum((int)aMeshInfo[SMESH::Entity_Quad_Tetra]);
+	  myMeshNbHexa->setNum((int)aMeshInfo[SMESH::Entity_Hexa] +
+			       (int)aMeshInfo[SMESH::Entity_Quad_Hexa]);
+	  myMeshNbHexa1->setNum((int)aMeshInfo[SMESH::Entity_Hexa]);
+	  myMeshNbHexa2->setNum((int)aMeshInfo[SMESH::Entity_Quad_Hexa]);
+	  myMeshNbPrism->setNum((int)aMeshInfo[SMESH::Entity_Penta] +
+				(int)aMeshInfo[SMESH::Entity_Quad_Penta]);
+	  myMeshNbPrism1->setNum((int)aMeshInfo[SMESH::Entity_Penta]);
+	  myMeshNbPrism2->setNum((int)aMeshInfo[SMESH::Entity_Quad_Penta]);
+	  myMeshNbPyra->setNum((int)aMeshInfo[SMESH::Entity_Pyramid] +
+				(int)aMeshInfo[SMESH::Entity_Quad_Pyramid]);
+	  myMeshNbPyra1->setNum((int)aMeshInfo[SMESH::Entity_Pyramid]);
+	  myMeshNbPyra2->setNum((int)aMeshInfo[SMESH::Entity_Quad_Pyramid]);
+	  myMeshNbPolyhedrones->setNum((int)aMeshInfo[SMESH::Entity_Polyhedra]);
 	  return;
 	}
       }
