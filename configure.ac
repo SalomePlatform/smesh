@@ -81,6 +81,7 @@ echo
 
 AC_PROG_MAKE_SET
 AC_PROG_INSTALL
+AC_LOCAL_INSTALL
 dnl
 dnl libtool macro check for CC, LD, NM, LN_S, RANLIB, STRIP + pour les librairies dynamiques !
 
