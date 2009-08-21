@@ -2099,7 +2099,7 @@ SetMesh( SMESH_Mesh_ptr theMesh )
   if(!CORBA::is_nil(myMesh))
     myMesh->Destroy();
 
-  myMesh = theMesh;
+  myMesh = SMESH_Mesh::_duplicate( theMesh );
   TPythonDump()<<this<<".SetMesh("<<theMesh<<")";
 }
 
