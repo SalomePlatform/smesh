@@ -30,34 +30,34 @@
 /// Type (node, edge, face or volume) of elements
 ///////////////////////////////////////////////////////////////////////////////
 enum SMDSAbs_ElementType
-{
-	SMDSAbs_All,
-	SMDSAbs_Node,
-	SMDSAbs_Edge,
-	SMDSAbs_Face,
-	SMDSAbs_Volume,
-        SMDSAbs_0DElement,
-        SMDSAbs_NbElementTypes
-};
+  {
+    SMDSAbs_All,
+    SMDSAbs_Node,
+    SMDSAbs_Edge,
+    SMDSAbs_Face,
+    SMDSAbs_Volume,
+    SMDSAbs_0DElement,
+    SMDSAbs_NbElementTypes
+  };
 
 /*! enumeration for element geometry type */
 enum SMDSAbs_GeometryType
-{
-  // 0D element
-  SMDSGeom_POINT,
-  // 1D element
-  SMDSGeom_EDGE,
-  // 2D element
-  SMDSGeom_TRIANGLE,
-  SMDSGeom_QUADRANGLE,
-  SMDSGeom_POLYGON,
-  // 3D element
-  SMDSGeom_TETRA,
-  SMDSGeom_PYRAMID,
-  SMDSGeom_HEXA,
-  SMDSGeom_PENTA,
-  SMDSGeom_POLYHEDRA,
-};
+  {
+    // 0D element
+    SMDSGeom_POINT,
+    // 1D element
+    SMDSGeom_EDGE,
+    // 2D element
+    SMDSGeom_TRIANGLE,
+    SMDSGeom_QUADRANGLE,
+    SMDSGeom_POLYGON,
+    // 3D element
+    SMDSGeom_TETRA,
+    SMDSGeom_PYRAMID,
+    SMDSGeom_HEXA,
+    SMDSGeom_PENTA,
+    SMDSGeom_POLYHEDRA,
+  };
 
 
 enum SMDSAbs_ElementOrder {
@@ -67,9 +67,9 @@ enum SMDSAbs_ElementOrder {
 };
 
 /*!
-* Enumeration of entity type uses in mesh info array,
-*  and should be synchronised with enum in SMDS  
-*/
+ * Enumeration of entity type uses in mesh info array,
+ *  and should be synchronised with enum in SMDS  
+ */
 enum SMDSAbs_EntityType {
   SMDSEntity_Node,
   SMDSEntity_0D,
