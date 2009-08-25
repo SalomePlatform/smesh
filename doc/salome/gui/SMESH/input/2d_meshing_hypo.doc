@@ -43,16 +43,14 @@ length calculated as an average edge length for a given wire.
 \anchor hypo_quad_params_anchor
 <h2>Quadrangle parameters</h2>
 
-<b>Quadrangle parameters</b> is a general hypothesis for
-Quadrangle (Mapping). This hypothesis gives a possibility
-of using Quadrangle (Mapping) mechanism for faces built on 3 edges. 
-The hypothesis requires some vertex to be selected from the face; this vertex will be
-used as degenerated edge. The resulting mesh will include several triangles near this
-vertex. Hypothesis construction and resulting mesh is displayed at the following figures:
+<b>Quadrangle parameters</b> is a hypothesis for
+Quadrangle (Mapping), which allows using this algorithm for meshing of
+triangular faces.In this case it is necessary to select the <b>Base vertex</b> 
+used as a degenerated edge.
 
-\image html hypo_quad_params_1.png
+\image html hypo_quad_params_1.png "A face built from 3 edges"
 
-\image html hypo_quad_params_res.png
+\image html hypo_quad_params_res.png "The resulting mesh"
 
 <br>
 \anchor quadrangle_preference_anchor
