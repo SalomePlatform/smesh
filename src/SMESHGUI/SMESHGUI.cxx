@@ -2706,7 +2706,6 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction(  704, "EDIT_MESHSUBMESH","ICON_DLG_EDIT_MESH" );
   createSMESHAction(  710, "BUILD_COMPOUND",  "ICON_BUILD_COMPOUND" );
   createSMESHAction(  711, "PRECOMPUTE",      "ICON_PRECOMPUTE" );
-  //createSMESHAction(  712, "EVALUATE",        "ICON_EVALUATE" );
   createSMESHAction(  712, "EVALUATE",        "ICON_COMPUTE" );
   createSMESHAction(  806, "CREATE_GEO_GROUP","ICON_CREATE_GEO_GROUP" );
   createSMESHAction(  801, "CREATE_GROUP",    "ICON_CREATE_GROUP" );
@@ -3074,6 +3073,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   popupMgr()->insert( separator(), -1, 0 );
   createPopupItem( 701, OB, mesh, "&& isComputable" );     // COMPUTE
   createPopupItem( 711, OB, mesh, "&& isComputable && isPreComputable" ); // PRECOMPUTE
+  createPopupItem( 712, OB, mesh, "&& isComputable" );     // COMPUTE
   createPopupItem( 214, OB, mesh_group );                  // UPDATE
   createPopupItem( 900, OB, mesh_group );                  // ADV_INFO
   createPopupItem( 902, OB, mesh );                        // STD_INFO
