@@ -35,6 +35,7 @@
 #include "SMESH_subMeshEventListener.hxx"
 #include "SMESH_Comment.hxx"
 #include "SMDS_SetIterator.hxx"
+#include "SMDSAbs_ElementType.hxx"
 
 #include "utilities.h"
 #include "OpUtil.hxx"
@@ -1591,9 +1592,10 @@ bool SMESH_subMesh::Evaluate(MapShapeNbElems& aResMap)
   bool ret = true;
 
   if (_subShape.ShapeType() == TopAbs_VERTEX) {
-    std::vector<int> aVec(17);
-    aVec[0] = 1;
-    for(int i=1; i<17; i++) aVec[i] = 0;
+    std::vector<int> aVec(SMDSEntity_Last);
+    for(int i= SMDSEntity_Node; i < SMDSEntity_Last; i++)
+      aVec[i] = 0;
+    aVec[SMDSEntity_Node] = 1;
     aResMap.insert(std::make_pair(this,aVec));
     return ret;
   }

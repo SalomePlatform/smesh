@@ -473,41 +473,41 @@ bool StdMeshers_Projection_3D::Evaluate(SMESH_Mesh& aMesh,
     return error(COMPERR_BAD_INPUT_MESH,"Source mesh not computed");
 
 
-  std::vector<int> aVec(17);
-  for(int i=0; i<17; i++) aVec[i] = 0;
+  std::vector<int> aVec(SMDSEntity_Last);
+  for(int i=SMDSEntity_Node; i<SMDSEntity_Last; i++) aVec[i] = 0;
 
-  aVec[0] = srcSubMesh->GetSubMeshDS()->NbNodes();
+  aVec[SMDSEntity_Node] = srcSubMesh->GetSubMeshDS()->NbNodes();
 
   //bool quadratic = false;
   SMDS_ElemIteratorPtr elemIt = srcSubMesh->GetSubMeshDS()->GetElements();
   while ( elemIt->more() ) {
     const SMDS_MeshElement* E  = elemIt->next();
     if( E->NbNodes()==4 ) {
-      aVec[8]++;
+      aVec[SMDSEntity_Tetra]++;
     }
     else if( E->NbNodes()==5 ) {
-      aVec[10]++;
+      aVec[SMDSEntity_Pyramid]++;
     }
     else if( E->NbNodes()==6 ) {
-      aVec[12]++;
+      aVec[SMDSEntity_Penta]++;
     }
     else if( E->NbNodes()==8 ) {
-      aVec[14]++;
+      aVec[SMDSEntity_Hexa]++;
     }
     else if( E->NbNodes()==10 && E->IsQuadratic() ) {
-      aVec[9]++;
+      aVec[SMDSEntity_Quad_Tetra]++;
     }
     else if( E->NbNodes()==13 && E->IsQuadratic() ) {
-      aVec[11]++;
+      aVec[SMDSEntity_Quad_Pyramid]++;
     }
     else if( E->NbNodes()==15 && E->IsQuadratic() ) {
-      aVec[13]++;
+      aVec[SMDSEntity_Quad_Penta]++;
     }
     else if( E->NbNodes()==20 && E->IsQuadratic() ) {
-      aVec[15]++;
+      aVec[SMDSEntity_Quad_Hexa]++;
     }
     else {
-      aVec[16]++;
+      aVec[SMDSEntity_Polyhedra]++;
     }
   }
 

@@ -1616,7 +1616,6 @@ SMESH::MeshPreviewStruct* SMESH_Gen_i::Precompute( SMESH::SMESH_Mesh_ptr theMesh
  */
 //=============================================================================
 
-//CORBA::Boolean 
 SMESH::long_array* SMESH_Gen_i::Evaluate(SMESH::SMESH_Mesh_ptr theMesh,
 					 GEOM::GEOM_Object_ptr theShapeObject)
 //                                     SMESH::long_array& theNbElems)
@@ -1634,6 +1633,10 @@ SMESH::long_array* SMESH_Gen_i::Evaluate(SMESH::SMESH_Mesh_ptr theMesh,
                                   SALOME::BAD_PARAM );
 
   SMESH::long_array_var nbels = new SMESH::long_array;
+  nbels->length(SMESH::Entity_Last);
+  int i = SMESH::Entity_Node;
+  for (; i < SMESH::Entity_Last; i++)
+    nbels[i] = 0;
 
   // Update Python script
   TPythonDump() << "theNbElems = " << this << ".Evaluate( "
@@ -1657,27 +1660,15 @@ SMESH::long_array* SMESH_Gen_i::Evaluate(SMESH::SMESH_Mesh_ptr theMesh,
       MapShapeNbElems aResMap;
       /*CORBA::Boolean ret =*/ myGen.Evaluate( myLocMesh, myLocShape, aResMap);
       MapShapeNbElemsItr anIt = aResMap.begin();
-      vector<int> aResVec(17);
-      int i = 0;
-      for(; i<17; i++) aResVec[i] = 0;
       for(; anIt!=aResMap.end(); anIt++) {
-	// 0 - node, 1 - edge lin, 2 - edge quad,
-	// 3 - triangle lin, 4 - triangle quad
-	// 5 - quadrangle lin, 6 - quadrangle quad
-	// 7 - polygon, 8 - tetra lin, 9 - tetra quad
-	// 10 - pyramid lin, 11 - pyramid quad,
-	// 12 - penta lin, 13 - penta quad, 14 - hexa lin,
-	// 15 - hexa quad, 16 -polyhedra
-	vector<int> aVec = (*anIt).second;
-	for(i=0; i<17; i++) {
-	  aResVec[i] += aVec[i];
+	const vector<int>& aVec = (*anIt).second;
+	for(i = SMESH::Entity_Node; i < SMESH::Entity_Last; i++) {
+	  nbels[i] += aVec[i];
 	}
       }
-      nbels->length(17);
-      for(i=0; i<17; i++) {
-	nbels[i] = aResVec[i];
-      }
+#ifdef _DEBUG_
       cout<<endl;
+#endif
       return nbels._retn();
     }
   }
@@ -3830,7 +3821,9 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
               // -- Most probably a bad study was saved when there were
               // not fixed bugs in SMDS_MeshInfo
               if ( elemSet.size() < nbElems ) {
+#ifdef _DEBUG_
                 cout << "SMESH_Gen_i::Load(), warning: Node position data is invalid" << endl;
+#endif
                 nbElems = elemSet.size();
               }
               // add elements to submeshes

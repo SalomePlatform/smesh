@@ -90,6 +90,7 @@ salomeinclude_HEADERS = \
 	SMESHGUI_MakeNodeAtPointDlg.h \
 	SMESHGUI_MeshEditPreview.h \
 	SMESHGUI_IdValidator.h \
+	SMESHGUI_MeshInfosBox.h \
 	SMESH_SMESHGUI.hxx
 
 # Libraries targets
@@ -157,7 +158,8 @@ dist_libSMESH_la_SOURCES = \
 	SMESHGUI_MakeNodeAtPointDlg.cxx \
 	SMESHGUI_MeshEditPreview.cxx \
 	SMESHGUI_GroupOnShapeDlg.cxx \
-	SMESHGUI_FileInfoDlg.cxx
+	SMESHGUI_FileInfoDlg.cxx \
+	SMESHGUI_MeshInfosBox.cxx
 
 MOC_FILES = \
 	SMESHGUI_moc.cxx \
@@ -209,7 +211,8 @@ MOC_FILES = \
 	SMESHGUI_ComputeDlg_moc.cxx \
 	SMESHGUI_MakeNodeAtPointDlg_moc.cxx \
 	SMESHGUI_GroupOnShapeDlg_moc.cxx \
-	SMESHGUI_FileInfoDlg_moc.cxx
+	SMESHGUI_FileInfoDlg_moc.cxx \
+	SMESHGUI_MeshInfosBox_moc.cxx
 
 nodist_libSMESH_la_SOURCES= \
 	$(MOC_FILES)

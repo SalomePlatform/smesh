@@ -785,29 +785,29 @@ bool StdMeshers_Projection_2D::Evaluate(SMESH_Mesh& theMesh,
     return error(COMPERR_BAD_INPUT_MESH,"Source mesh not computed");
 
 
-  std::vector<int> aVec(17);
-  for(int i=0; i<17; i++) aVec[i] = 0;
+  std::vector<int> aVec(SMDSEntity_Last);
+  for(int i=SMDSEntity_Node; i<SMDSEntity_Last; i++) aVec[i] = 0;
 
-  aVec[0] = srcSubMesh->GetSubMeshDS()->NbNodes();
+  aVec[SMDSEntity_Node] = srcSubMesh->GetSubMeshDS()->NbNodes();
 
   //bool quadratic = false;
   SMDS_ElemIteratorPtr elemIt = srcSubMesh->GetSubMeshDS()->GetElements();
   while ( elemIt->more() ) {
     const SMDS_MeshElement* E  = elemIt->next();
     if( E->NbNodes()==3 ) {
-      aVec[3]++;
+      aVec[SMDSEntity_Triangle]++;
     }
     else if( E->NbNodes()==4 ) {
-      aVec[5]++;
+      aVec[SMDSEntity_Quadrangle]++;
     }
     else if( E->NbNodes()==6 && E->IsQuadratic() ) {
-      aVec[4]++;
+      aVec[SMDSEntity_Quad_Triangle]++;
     }
     else if( E->NbNodes()==8 && E->IsQuadratic() ) {
-      aVec[6]++;
+      aVec[SMDSEntity_Quad_Quadrangle]++;
     }
     else {
-      aVec[7]++;
+      aVec[SMDSEntity_Polygon]++;
     }
   }
 

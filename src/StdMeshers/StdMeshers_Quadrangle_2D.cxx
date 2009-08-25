@@ -646,8 +646,8 @@ bool StdMeshers_Quadrangle_2D::Evaluate(SMESH_Mesh& aMesh,
   std::vector<int> aNbNodes(4);
   bool IsQuadratic = false;
   if( !CheckNbEdgesForEvaluate( aMesh, aShape, aResMap, aNbNodes, IsQuadratic ) ) {
-    std::vector<int> aResVec(17);
-    for(int i=0; i<17; i++) aResVec[i] = 0;
+    std::vector<int> aResVec(SMDSEntity_Last);
+    for(int i=SMDSEntity_Node; i<SMDSEntity_Last; i++) aResVec[i] = 0;
     SMESH_subMesh * sm = aMesh.GetSubMesh(aShape);
     aResMap.insert(std::make_pair(sm,aResVec));
     SMESH_ComputeErrorPtr& smError = sm->GetComputeError();
@@ -695,26 +695,26 @@ bool StdMeshers_Quadrangle_2D::Evaluate(SMESH_Mesh& aMesh,
   //int nbFaces4 = (nbhoriz-1-kdh)*(nbvertic-1-kdv);
   int nbFaces4 = (nbhoriz-1)*(nbvertic-1);
 
-  std::vector<int> aVec(17);
-  for(int i=0; i<17; i++) aVec[i] = 0;
+  std::vector<int> aVec(SMDSEntity_Last);
+  for(int i=SMDSEntity_Node; i<SMDSEntity_Last; i++) aVec[i] = 0;
   if(IsQuadratic) {
-    aVec[4] = nbFaces3;
-    aVec[6] = nbFaces4;
+    aVec[SMDSEntity_Quad_Triangle] = nbFaces3;
+    aVec[SMDSEntity_Quad_Quadrangle] = nbFaces4;
     int nbbndedges = nbdown + nbup + nbright + nbleft -4;
     int nbintedges = ( nbFaces4*4 + nbFaces3*3 - nbbndedges ) / 2;
-    aVec[0] = nbNodes + nbintedges;
+    aVec[SMDSEntity_Node] = nbNodes + nbintedges;
     if( aNbNodes.size()==5 ) {
-      aVec[4] = nbFaces3 + aNbNodes[3] -1;
-      aVec[6] = nbFaces4 - aNbNodes[3] +1;
+      aVec[SMDSEntity_Quad_Triangle] = nbFaces3 + aNbNodes[3] -1;
+      aVec[SMDSEntity_Quad_Quadrangle] = nbFaces4 - aNbNodes[3] +1;
     }
   }
   else {
-    aVec[0] = nbNodes;
-    aVec[3] = nbFaces3;
-    aVec[5] = nbFaces4;
+    aVec[SMDSEntity_Node] = nbNodes;
+    aVec[SMDSEntity_Triangle] = nbFaces3;
+    aVec[SMDSEntity_Quadrangle] = nbFaces4;
     if( aNbNodes.size()==5 ) {
-      aVec[3] = nbFaces3 + aNbNodes[3] - 1;
-      aVec[5] = nbFaces4 - aNbNodes[3] + 1;
+      aVec[SMDSEntity_Triangle] = nbFaces3 + aNbNodes[3] - 1;
+      aVec[SMDSEntity_Quadrangle] = nbFaces4 - aNbNodes[3] + 1;
     }
   }
   SMESH_subMesh * sm = aMesh.GetSubMesh(aShape);
@@ -927,7 +927,7 @@ bool StdMeshers_Quadrangle_2D::CheckNbEdgesForEvaluate(SMESH_Mesh& aMesh,
     return false;
   }
   std::vector<int> aVec = (*anIt).second;
-  IsQuadratic = (aVec[2] > aVec[1]);
+  IsQuadratic = (aVec[SMDSEntity_Quad_Edge] > aVec[SMDSEntity_Edge]);
   if ( nbEdgesInWire.front() == 3 ) { // exactly 3 edges
     if(myTriaVertexID>0) {
       SMESHDS_Mesh* meshDS = aMesh.GetMeshDS();
@@ -950,25 +950,25 @@ bool StdMeshers_Quadrangle_2D::CheckNbEdgesForEvaluate(SMESH_Mesh& aMesh,
 	if(anIt==aResMap.end()) return false;
 	std::vector<int> aVec = (*anIt).second;
 	if(IsQuadratic)
-	  aNbNodes[0] = (aVec[0]-1)/2 + 2;
+	  aNbNodes[0] = (aVec[SMDSEntity_Node]-1)/2 + 2;
 	else
-	  aNbNodes[0] = aVec[0] + 2;
+	  aNbNodes[0] = aVec[SMDSEntity_Node] + 2;
 	sm = aMesh.GetSubMesh(E2);
 	anIt = aResMap.find(sm);
 	if(anIt==aResMap.end()) return false;
 	aVec = (*anIt).second;
 	if(IsQuadratic)
-	  aNbNodes[1] = (aVec[0]-1)/2 + 2;
+	  aNbNodes[1] = (aVec[SMDSEntity_Node]-1)/2 + 2;
 	else
-	  aNbNodes[1] = aVec[0] + 2;
+	  aNbNodes[1] = aVec[SMDSEntity_Node] + 2;
 	sm = aMesh.GetSubMesh(E3);
 	anIt = aResMap.find(sm);
 	if(anIt==aResMap.end()) return false;
 	aVec = (*anIt).second;
 	if(IsQuadratic)
-	  aNbNodes[2] = (aVec[0]-1)/2 + 2;
+	  aNbNodes[2] = (aVec[SMDSEntity_Node]-1)/2 + 2;
 	else
-	  aNbNodes[2] = aVec[0] + 2;
+	  aNbNodes[2] = aVec[SMDSEntity_Node] + 2;
 	aNbNodes[3] = aNbNodes[1];
 	aNbNodes.resize(5);
 	nbSides = 4;
@@ -984,9 +984,9 @@ bool StdMeshers_Quadrangle_2D::CheckNbEdgesForEvaluate(SMESH_Mesh& aMesh,
       }
       std::vector<int> aVec = (*anIt).second;
       if(IsQuadratic)
-	aNbNodes[nbSides] = (aVec[0]-1)/2 + 2;
+	aNbNodes[nbSides] = (aVec[SMDSEntity_Node]-1)/2 + 2;
       else
-	aNbNodes[nbSides] = aVec[0] + 2;
+	aNbNodes[nbSides] = aVec[SMDSEntity_Node] + 2;
       nbSides++;
     }
   }
@@ -1019,9 +1019,9 @@ bool StdMeshers_Quadrangle_2D::CheckNbEdgesForEvaluate(SMESH_Mesh& aMesh,
 	}
 	std::vector<int> aVec = (*anIt).second;
 	if(IsQuadratic)
-	  aNbNodes[nbSides] += (aVec[0]-1)/2 + 1;
+	  aNbNodes[nbSides] += (aVec[SMDSEntity_Node]-1)/2 + 1;
 	else
-	  aNbNodes[nbSides] += aVec[0] + 1;
+	  aNbNodes[nbSides] += aVec[SMDSEntity_Node] + 1;
       }
       ++nbSides;
     }
@@ -1060,9 +1060,9 @@ bool StdMeshers_Quadrangle_2D::CheckNbEdgesForEvaluate(SMESH_Mesh& aMesh,
 	  }
 	  std::vector<int> aVec = (*anIt).second;
 	  if(IsQuadratic)
-	    aNbNodes[nbSides] += (aVec[0]-1)/2 + 1;
+	    aNbNodes[nbSides] += (aVec[SMDSEntity_Node]-1)/2 + 1;
 	  else
-	    aNbNodes[nbSides] += aVec[0] + 1;
+	    aNbNodes[nbSides] += aVec[SMDSEntity_Node] + 1;
 	}
         ++nbSides;
       }
@@ -2032,22 +2032,22 @@ bool StdMeshers_Quadrangle_2D::EvaluateQuadPref(SMESH_Mesh &        aMesh,
     nbFaces += (drl+addv)*(nb-1) + (nt-1);
   } // end new version implementation
 
-  std::vector<int> aVec(17);
-  for(int i=0; i<17; i++) aVec[i] = 0;
+  std::vector<int> aVec(SMDSEntity_Last);
+  for(int i=SMDSEntity_Node; i<SMDSEntity_Last; i++) aVec[i] = 0;
   if(IsQuadratic) {
-    aVec[6] = nbFaces;
-    aVec[0] = nbNodes + nbFaces*4;
+    aVec[SMDSEntity_Quad_Quadrangle] = nbFaces;
+    aVec[SMDSEntity_Node] = nbNodes + nbFaces*4;
     if( aNbNodes.size()==5 ) {
-      aVec[4] = aNbNodes[3] - 1;
-      aVec[6] = nbFaces - aNbNodes[3] + 1;
+      aVec[SMDSEntity_Quad_Triangle] = aNbNodes[3] - 1;
+      aVec[SMDSEntity_Quad_Quadrangle] = nbFaces - aNbNodes[3] + 1;
     }
   }
   else {
-    aVec[0] = nbNodes;
-    aVec[5] = nbFaces;
+    aVec[SMDSEntity_Node] = nbNodes;
+    aVec[SMDSEntity_Quadrangle] = nbFaces;
     if( aNbNodes.size()==5 ) {
-      aVec[3] = aNbNodes[3] - 1;
-      aVec[5] = nbFaces - aNbNodes[3] + 1;
+      aVec[SMDSEntity_Triangle] = aNbNodes[3] - 1;
+      aVec[SMDSEntity_Quadrangle] = nbFaces - aNbNodes[3] + 1;
     }
   }
   SMESH_subMesh * sm = aMesh.GetSubMesh(aShape);

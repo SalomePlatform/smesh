@@ -408,8 +408,8 @@ bool StdMeshers_RadialPrism_3D::Evaluate(SMESH_Mesh& aMesh,
     if ( !outerShell.IsSame( It.Value() ))
       innerShell = It.Value();
   if ( nbShells != 2 ) {
-    std::vector<int> aResVec(17);
-    for(int i=0; i<17; i++) aResVec[i] = 0;
+    std::vector<int> aResVec(SMDSEntity_Last);
+    for(int i=SMDSEntity_Node; i<SMDSEntity_Last; i++) aResVec[i] = 0;
     SMESH_subMesh * sm = aMesh.GetSubMesh(aShape);
     aResMap.insert(std::make_pair(sm,aResVec));
     SMESH_ComputeErrorPtr& smError = sm->GetComputeError();
@@ -422,8 +422,8 @@ bool StdMeshers_RadialPrism_3D::Evaluate(SMESH_Mesh& aMesh,
   if ( !TAssocTool::FindSubShapeAssociation( outerShell, &aMesh,
                                              innerShell, &aMesh,
                                              shape2ShapeMap) ) {
-    std::vector<int> aResVec(17);
-    for(int i=0; i<17; i++) aResVec[i] = 0;
+    std::vector<int> aResVec(SMDSEntity_Last);
+    for(int i=SMDSEntity_Node; i<SMDSEntity_Last; i++) aResVec[i] = 0;
     SMESH_subMesh * sm = aMesh.GetSubMesh(aShape);
     aResMap.insert(std::make_pair(sm,aResVec));
     SMESH_ComputeErrorPtr& smError = sm->GetComputeError();
@@ -439,9 +439,9 @@ bool StdMeshers_RadialPrism_3D::Evaluate(SMESH_Mesh& aMesh,
     SMESH_subMesh *aSubMesh = aMesh.GetSubMesh(exp.Current());
     MapShapeNbElemsItr anIt = aResMap.find(aSubMesh);
     std::vector<int> aVec = (*anIt).second;
-    nb0d_Out += aVec[0];
-    nb2d_3_Out += Max(aVec[3],aVec[4]);
-    nb2d_4_Out += Max(aVec[5],aVec[6]);
+    nb0d_Out += aVec[SMDSEntity_Node];
+    nb2d_3_Out += Max(aVec[SMDSEntity_Triangle],aVec[SMDSEntity_Quad_Triangle]);
+    nb2d_4_Out += Max(aVec[SMDSEntity_Quadrangle],aVec[SMDSEntity_Quad_Quadrangle]);
   }
   int nb1d_Out = 0;
   TopTools_MapOfShape tmpMap;
@@ -452,8 +452,8 @@ bool StdMeshers_RadialPrism_3D::Evaluate(SMESH_Mesh& aMesh,
     SMESH_subMesh *aSubMesh = aMesh.GetSubMesh(exp.Current());
     MapShapeNbElemsItr anIt = aResMap.find(aSubMesh);
     std::vector<int> aVec = (*anIt).second;
-    nb0d_Out += aVec[0];
-    nb1d_Out += Max(aVec[1],aVec[2]);
+    nb0d_Out += aVec[SMDSEntity_Node];
+    nb1d_Out += Max(aVec[SMDSEntity_Edge],aVec[SMDSEntity_Quad_Edge]);
   }
   tmpMap.Clear();
   for (TopExp_Explorer exp(outerShell, TopAbs_VERTEX); exp.More(); exp.Next()) {
@@ -471,9 +471,9 @@ bool StdMeshers_RadialPrism_3D::Evaluate(SMESH_Mesh& aMesh,
     SMESH_subMesh *aSubMesh = aMesh.GetSubMesh(exp.Current());
     MapShapeNbElemsItr anIt = aResMap.find(aSubMesh);
     std::vector<int> aVec = (*anIt).second;
-    nb0d_In += aVec[0];
-    nb2d_3_In += Max(aVec[3],aVec[4]);
-    nb2d_4_In += Max(aVec[5],aVec[6]);
+    nb0d_In += aVec[SMDSEntity_Node];
+    nb2d_3_In += Max(aVec[SMDSEntity_Triangle],aVec[SMDSEntity_Quad_Triangle]);
+    nb2d_4_In += Max(aVec[SMDSEntity_Quadrangle],aVec[SMDSEntity_Quad_Quadrangle]);
   }
   int nb1d_In = 0;
   tmpMap.Clear();
@@ -486,10 +486,10 @@ bool StdMeshers_RadialPrism_3D::Evaluate(SMESH_Mesh& aMesh,
     SMESH_subMesh *aSubMesh = aMesh.GetSubMesh(exp.Current());
     MapShapeNbElemsItr anIt = aResMap.find(aSubMesh);
     std::vector<int> aVec = (*anIt).second;
-    nb0d_In += aVec[0];
-    nb1d_In += Max(aVec[1],aVec[2]);
+    nb0d_In += aVec[SMDSEntity_Node];
+    nb1d_In += Max(aVec[SMDSEntity_Edge],aVec[SMDSEntity_Quad_Edge]);
     if(IsFirst) {
-      IsQuadratic = (aVec[2] > aVec[1]);
+      IsQuadratic = (aVec[SMDSEntity_Quad_Edge] > aVec[SMDSEntity_Edge]);
       IsFirst = false;
     }
   }
@@ -504,8 +504,8 @@ bool StdMeshers_RadialPrism_3D::Evaluate(SMESH_Mesh& aMesh,
   bool IsOK = (nb0d_Out==nb0d_In) && (nb1d_Out==nb1d_In) && 
               (nb2d_3_Out==nb2d_3_In) && (nb2d_4_Out==nb2d_4_In);
   if(!IsOK) {
-    std::vector<int> aResVec(17);
-    for(int i=0; i<17; i++) aResVec[i] = 0;
+    std::vector<int> aResVec(SMDSEntity_Last);
+    for(int i=SMDSEntity_Node; i<SMDSEntity_Last; i++) aResVec[i] = 0;
     SMESH_subMesh * sm = aMesh.GetSubMesh(aShape);
     aResMap.insert(std::make_pair(sm,aResVec));
     SMESH_ComputeErrorPtr& smError = sm->GetComputeError();
@@ -519,8 +519,8 @@ bool StdMeshers_RadialPrism_3D::Evaluate(SMESH_Mesh& aMesh,
   }
   if ( myDistributionHypo ) {
     if ( !myDistributionHypo->GetLayerDistribution() ) {
-      std::vector<int> aResVec(17);
-      for(int i=0; i<17; i++) aResVec[i] = 0;
+      std::vector<int> aResVec(SMDSEntity_Last);
+      for(int i=SMDSEntity_Node; i<SMDSEntity_Last; i++) aResVec[i] = 0;
       SMESH_subMesh * sm = aMesh.GetSubMesh(aShape);
       aResMap.insert(std::make_pair(sm,aResVec));
       SMESH_ComputeErrorPtr& smError = sm->GetComputeError();
@@ -538,18 +538,18 @@ bool StdMeshers_RadialPrism_3D::Evaluate(SMESH_Mesh& aMesh,
     nbLayers = myLayerPositions.size() + 1;
   }
 
-  std::vector<int> aResVec(17);
-  for(int i=0; i<17; i++) aResVec[i] = 0;
+  std::vector<int> aResVec(SMDSEntity_Last);
+  for(int i=SMDSEntity_Node; i<SMDSEntity_Last; i++) aResVec[i] = 0;
   if(IsQuadratic) {
-    aResVec[13] = nb2d_3_Out * nbLayers;
-    aResVec[15] = nb2d_4_Out * nbLayers;
+    aResVec[SMDSEntity_Quad_Penta] = nb2d_3_Out * nbLayers;
+    aResVec[SMDSEntity_Quad_Hexa] = nb2d_4_Out * nbLayers;
     int nb1d = ( nb2d_3_Out*3 + nb2d_4_Out*4 ) / 2;
-    aResVec[0] = nb0d_Out * ( 2*nbLayers - 1 ) - nb1d * nbLayers;
+    aResVec[SMDSEntity_Node] = nb0d_Out * ( 2*nbLayers - 1 ) - nb1d * nbLayers;
   }
   else {
-    aResVec[0] = nb0d_Out * ( nbLayers - 1 );
-    aResVec[12] = nb2d_3_Out * nbLayers;
-    aResVec[14] = nb2d_4_Out * nbLayers;
+    aResVec[SMDSEntity_Node] = nb0d_Out * ( nbLayers - 1 );
+    aResVec[SMDSEntity_Penta] = nb2d_3_Out * nbLayers;
+    aResVec[SMDSEntity_Hexa] = nb2d_4_Out * nbLayers;
   }
   SMESH_subMesh * sm = aMesh.GetSubMesh(aShape);
   aResMap.insert(std::make_pair(sm,aResVec));

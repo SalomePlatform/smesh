@@ -1,0 +1,88 @@
+//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//
+//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+//
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
+//
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
+//
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
+// File   : SMESHGUI_MeshInfosBox.h
+// Author : Edward AGAPOV, Open CASCADE S.A.S.
+//
+#ifndef SMESHGUI_MeshInfosBox_H
+#define SMESHGUI_MeshInfosBox_H
+
+// SMESH includes
+#include "SMESH_SMESHGUI.hxx"
+
+// Qt includes
+#include <QGroupBox>
+
+// IDL includes
+#include <SALOMEconfig.h>
+#include CORBA_SERVER_HEADER(SMESH_Mesh)
+
+class QLabel;
+
+/*!
+ * \brief Box showing mesh info
+ */
+
+class SMESHGUI_EXPORT SMESHGUI_MeshInfosBox : public QGroupBox
+{
+  Q_OBJECT
+
+public:
+  SMESHGUI_MeshInfosBox( const bool, QWidget* );
+
+  void    SetMeshInfo( const SMESH::long_array& theInfo );
+
+private:
+  bool    myFull;
+  QLabel* myNbNode;
+  QLabel* my0DElem;
+  QLabel* myNbEdge;
+  QLabel* myNbLinEdge;
+  QLabel* myNbQuadEdge;
+  QLabel* myNbTrai;
+  QLabel* myNbLinTrai;
+  QLabel* myNbQuadTrai;
+  QLabel* myNbQuad;
+  QLabel* myNbLinQuad;
+  QLabel* myNbQuadQuad;
+  QLabel* myNbFace;
+  QLabel* myNbLinFace;
+  QLabel* myNbQuadFace;
+  QLabel* myNbPolyg;
+  QLabel* myNbHexa;
+  QLabel* myNbLinHexa;
+  QLabel* myNbQuadHexa;
+  QLabel* myNbTetra;
+  QLabel* myNbLinTetra;
+  QLabel* myNbQuadTetra;
+  QLabel* myNbPyra;
+  QLabel* myNbLinPyra;
+  QLabel* myNbQuadPyra;
+  QLabel* myNbPrism;
+  QLabel* myNbLinPrism;
+  QLabel* myNbQuadPrism;
+  QLabel* myNbVolum;
+  QLabel* myNbLinVolum;
+  QLabel* myNbQuadVolum;
+  QLabel* myNbPolyh;
+};
+
+#endif // SMESHGUI_MeshInfosBox_H

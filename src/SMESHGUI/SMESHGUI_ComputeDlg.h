@@ -50,8 +50,8 @@ class QTableWidget;
 class QLabel;
 class QtxComboBox;
 class SMESHGUI_ComputeDlg;
+class SMESHGUI_MeshInfosBox;
 class SMESHGUI_PrecomputeDlg;
-//class SMESHGUI_EvaluateDlg;
 class SMESHGUI_MeshEditPreview;
 
 class SMESH::compute_error_array;
@@ -83,10 +83,9 @@ protected:
 						    SMESH::compute_error_array_var&,
 						    const bool,
 						    const QString& );
-  //SMESHGUI_EvaluateDlg*          evaluateDlg() const;
   SMESHGUI_ComputeDlg*           evaluateDlg() const;
   void                           evaluateMesh();
-  void                           showEvaluateResult(std::vector<int> theVec,
+  void                           showEvaluateResult(const SMESH::long_array& theRes,
 						    const bool,
 						    const bool,
 						    SMESH::compute_error_array_var&,
@@ -105,7 +104,6 @@ private:
 
 private:
   QPointer<SMESHGUI_ComputeDlg>  myCompDlg;
-  //QPointer<SMESHGUI_EvaluateDlg> myEvalDlg;
 
 protected:
   SMESH::SMESH_Mesh_var            myMesh;
@@ -194,55 +192,6 @@ protected slots:
 };
 
 /*!
- * \brief Box showing mesh info
- */
-
-class SMESHGUI_EXPORT SMESHGUI_MeshInfosBox : public QGroupBox
-{
-  Q_OBJECT
-
-public:
-  SMESHGUI_MeshInfosBox( const bool, QWidget* );
-
-  void    SetInfoByMesh( SMESH::SMESH_Mesh_var );
-
-  void    SetInfoByEval( std::vector<int> theVec );
-
-private:
-  bool    myFull;
-  QLabel* myNbNode;
-  QLabel* myNbEdge;
-  QLabel* myNbLinEdge;
-  QLabel* myNbQuadEdge;
-  QLabel* myNbTrai;
-  QLabel* myNbLinTrai;
-  QLabel* myNbQuadTrai;
-  QLabel* myNbQuad;
-  QLabel* myNbLinQuad;
-  QLabel* myNbQuadQuad;
-  QLabel* myNbFace;
-  QLabel* myNbLinFace;
-  QLabel* myNbQuadFace;
-  QLabel* myNbPolyg;
-  QLabel* myNbHexa;
-  QLabel* myNbLinHexa;
-  QLabel* myNbQuadHexa;
-  QLabel* myNbTetra;
-  QLabel* myNbLinTetra;
-  QLabel* myNbQuadTetra;
-  QLabel* myNbPyra;
-  QLabel* myNbLinPyra;
-  QLabel* myNbQuadPyra;
-  QLabel* myNbPrism;
-  QLabel* myNbLinPrism;
-  QLabel* myNbQuadPrism;
-  QLabel* myNbVolum;
-  QLabel* myNbLinVolum;
-  QLabel* myNbQuadVolum;
-  QLabel* myNbPolyh;
-};
-
-/*!
  * \brief Dialog to compute a mesh and show computation errors
  */
 
@@ -296,38 +245,5 @@ private:
   QPushButton*                 myPreviewBtn;
   QtxComboBox*                 myPreviewMode;
 };
-
-
-/*!
- * \brief Dialog to evaluate a mesh and show result
- */
-/*
-class SMESHGUI_EXPORT SMESHGUI_EvaluateDlg : public SMESHGUI_Dialog
-{
-  Q_OBJECT
-
-public:
-  SMESHGUI_EvaluateDlg( QWidget* );
-  virtual ~SMESHGUI_EvaluateDlg();
-
-protected:
-  QFrame*                      createMainFrame( QWidget* );
-
-  QLabel*                      myMeshName;
-  QGroupBox*                   myMemoryLackGroup;
-  QGroupBox*                   myCompErrorGroup;
-  QGroupBox*                   myHypErrorGroup;
-  QLabel*                      myHypErrorLabel;
-  QTableWidget*                myTable;
-  QPushButton*                 myShowBtn;
-  QPushButton*                 myPublishBtn;
-  QPushButton*                 myBadMeshBtn;
-
-  SMESHGUI_MeshInfosBox*       myBriefInfo;
-  SMESHGUI_MeshInfosBox*       myFullInfo;
-
-  friend class SMESHGUI_BaseComputeOp;
-};
-*/
 
 #endif // SMESHGUI_COMPUTEDLG_H

@@ -29,6 +29,7 @@
 #include "SMESHGUI_GEOMGenUtils.h"
 #include "SMESHGUI_MeshUtils.h"
 #include "SMESHGUI_VTKUtils.h"
+#include "SMESHGUI_MeshInfosBox.h"
 #include "SMESHGUI_HypothesesUtils.h"
 #include "SMESHGUI_MeshEditPreview.h"
 #include "SMESH_ActorUtils.h"
@@ -454,337 +455,6 @@ namespace SMESH
 
 // =========================================================================================
 /*!
- * \brief Box showing mesh info
- */
-// =========================================================================================
-
-SMESHGUI_MeshInfosBox::SMESHGUI_MeshInfosBox(const bool full, QWidget* theParent)
-  : QGroupBox( tr("SMESH_MESHINFO_TITLE"), theParent ), myFull( full )
-{
-  QGridLayout* l = new QGridLayout(this);
-  l->setMargin( MARGIN );
-  l->setSpacing( SPACING );
-
-  QFont italic = font(); italic.setItalic(true);
-  QFont bold   = font(); bold.setBold(true);
-
-  QLabel* lab;
-  int row = 0;
-
-  // title
-  lab = new QLabel( this );
-  lab->setMinimumWidth(100); lab->setFont( italic );
-  l->addWidget( lab, row, 0 );
-  // --
-  lab = new QLabel(tr("SMESH_MESHINFO_ORDER0"), this );
-  lab->setMinimumWidth(100); lab->setFont( italic );
-  l->addWidget( lab, row, 1 );
-  // --
-  lab = new QLabel(tr("SMESH_MESHINFO_ORDER1"), this );
-  lab->setMinimumWidth(100); lab->setFont( italic );
-  l->addWidget( lab, row, 2 );
-  // --
-  lab = new QLabel(tr("SMESH_MESHINFO_ORDER2"), this );
-  lab->setMinimumWidth(100); lab->setFont( italic );
-  l->addWidget( lab, row, 3 );
-
-  if ( myFull )
-  {
-    // nodes
-    row = l->rowCount();         // retrieve current row count
-    // --
-    lab = new QLabel(COLONIZE(tr("SMESH_MESHINFO_NODES")), this );
-    lab->setFont( bold );
-    l->addWidget( lab,           row, 0 );
-    // --
-    myNbNode = new QLabel( this );
-    l->addWidget( myNbNode,      row, 1 );
-
-    addSeparator(this);          // add separator
-
-    // edges
-    row = l->rowCount();         // retrieve current row count
-    // --
-    lab = new QLabel(COLONIZE(tr("SMESH_MESHINFO_EDGES")), this );
-    lab->setFont( bold );
-    l->addWidget( lab,           row, 0 );
-    // --
-    myNbEdge = new QLabel( this );
-    l->addWidget( myNbEdge,      row, 1 );
-    // --
-    myNbLinEdge = new QLabel( this );
-    l->addWidget( myNbLinEdge,   row, 2 );
-    // --
-    myNbQuadEdge = new QLabel( this );
-    l->addWidget( myNbQuadEdge,  row, 3 );
-
-    addSeparator(this);          // add separator
-
-    // faces
-    row = l->rowCount();         // retrieve current row count
-    // --
-    lab = new QLabel(COLONIZE(tr("SMESH_MESHINFO_FACES")), this);
-    lab->setFont( bold );
-    l->addWidget( lab,           row, 0 );
-    // --
-    myNbFace     = new QLabel( this );
-    l->addWidget( myNbFace,      row, 1 );
-    // --
-    myNbLinFace  = new QLabel( this );
-    l->addWidget( myNbLinFace,   row, 2 );
-    // --
-    myNbQuadFace = new QLabel( this );
-    l->addWidget( myNbQuadFace,  row, 3 );
-    // --
-    row++;                       // increment row count
-    // ... triangles
-    lab = new QLabel(COLONIZE(tr("SMESH_MESHINFO_TRIANGLES")), this );
-    l->addWidget( lab,           row, 0 );
-    // --
-    myNbTrai     = new QLabel( this );
-    l->addWidget( myNbTrai,      row, 1 );
-    // --
-    myNbLinTrai  = new QLabel( this );
-    l->addWidget( myNbLinTrai,   row, 2 );
-    // --
-    myNbQuadTrai = new QLabel( this );
-    l->addWidget( myNbQuadTrai,  row, 3 );
-    // --
-    row++;                       // increment row count
-    // ... quadrangles
-    lab = new QLabel(COLONIZE(tr("SMESH_MESHINFO_QUADRANGLES")), this );
-    l->addWidget( lab,           row, 0 );
-    // --
-    myNbQuad     = new QLabel( this );
-    l->addWidget( myNbQuad,      row, 1 );
-    // --
-    myNbLinQuad  = new QLabel( this );
-    l->addWidget( myNbLinQuad,   row, 2 );
-    // --
-    myNbQuadQuad = new QLabel( this );
-    l->addWidget( myNbQuadQuad,  row, 3 );
-    // --
-    row++;                       // increment row count
-    // ... poligones
-    lab = new QLabel(COLONIZE(tr("SMESH_MESHINFO_POLYGONES")), this );
-    l->addWidget( lab,           row, 0 );
-    myNbPolyg    = new QLabel( this );
-    l->addWidget( myNbPolyg,     row, 1 );
-
-    addSeparator(this);          // add separator
-
-    // volumes
-    row = l->rowCount();         // retrieve current row count
-    // --
-    lab = new QLabel(COLONIZE(tr("SMESH_MESHINFO_VOLUMES")), this);
-    lab->setFont( bold );
-    l->addWidget( lab,           row, 0 );
-    // --
-    myNbVolum     = new QLabel( this );
-    l->addWidget( myNbVolum,     row, 1 );
-    // --
-    myNbLinVolum  = new QLabel( this );
-    l->addWidget( myNbLinVolum,  row, 2 );
-    // --
-    myNbQuadVolum = new QLabel( this );
-    l->addWidget( myNbQuadVolum, row, 3 );
-    // --
-    row++;                       // increment row count
-    // ... tetras
-    lab = new QLabel(COLONIZE(tr("SMESH_MESHINFO_TETRAS")), this );
-    l->addWidget( lab,           row, 0 );
-    // --
-    myNbTetra     = new QLabel( this );
-    l->addWidget( myNbTetra,     row, 1 );
-    // --
-    myNbLinTetra  = new QLabel( this );
-    l->addWidget( myNbLinTetra,  row, 2 );
-    // --
-    myNbQuadTetra = new QLabel( this );
-    l->addWidget( myNbQuadTetra, row, 3 );
-    // --
-    row++;                       // increment row count
-    // ... hexas
-    lab = new QLabel(COLONIZE(tr("SMESH_MESHINFO_HEXAS")), this );
-    l->addWidget( lab,           row, 0 );
-    // --
-    myNbHexa      = new QLabel( this );
-    l->addWidget( myNbHexa,      row, 1 );
-    // --
-    myNbLinHexa   = new QLabel( this );
-    l->addWidget( myNbLinHexa,   row, 2 );
-    // --
-    myNbQuadHexa  = new QLabel( this );
-    l->addWidget( myNbQuadHexa,  row, 3 );
-    // --
-    row++;                       // increment row count
-    // ... pyras
-    lab = new QLabel(COLONIZE(tr("SMESH_MESHINFO_PYRAS")), this );
-    l->addWidget( lab,           row, 0 );
-    // --
-    myNbPyra      = new QLabel( this );
-    l->addWidget( myNbPyra,      row, 1 );
-    // --
-    myNbLinPyra   = new QLabel( this );
-    l->addWidget( myNbLinPyra,   row, 2 );
-    // --
-    myNbQuadPyra  = new QLabel( this );
-    l->addWidget( myNbQuadPyra,  row, 3 );
-    // --
-    row++;                       // increment row count
-    // ... prisms
-    lab = new QLabel(COLONIZE(tr("SMESH_MESHINFO_PRISMS")), this );
-    l->addWidget( lab,           row, 0 );
-    // --
-    myNbPrism     = new QLabel( this );
-    l->addWidget( myNbPrism,     row, 1 );
-    // --
-    myNbLinPrism  = new QLabel( this );
-    l->addWidget( myNbLinPrism,  row, 2 );
-    // --
-    myNbQuadPrism = new QLabel( this );
-    l->addWidget( myNbQuadPrism, row, 3 );
-    // --
-    row++;                       // increment row count
-    // ... polyedres
-    lab = new QLabel(COLONIZE(tr("SMESH_MESHINFO_POLYEDRES")), this );
-    l->addWidget( lab,           row, 0 );
-    // --
-    myNbPolyh     = new QLabel( this );
-    l->addWidget( myNbPolyh,     row, 1 );
-  }
-  else
-  {
-    // nodes
-    row = l->rowCount();         // retrieve current row count
-    // --
-    lab = new QLabel(COLONIZE(tr("SMESH_MESHINFO_NODES")), this );
-    l->addWidget( lab,           row, 0 );
-    // --
-    myNbNode      = new QLabel( this );
-    l->addWidget( myNbNode,      row, 1 );
-
-    // edges
-    row = l->rowCount();         // retrieve current row count
-    // --
-    lab = new QLabel(COLONIZE(tr("SMESH_MESHINFO_EDGES")), this );
-    l->addWidget( lab,           row, 0 );
-    // --
-    myNbEdge      = new QLabel( this );
-    l->addWidget( myNbEdge,      row, 1 );
-    // --
-    myNbLinEdge   = new QLabel( this );
-    l->addWidget( myNbLinEdge,   row, 2 );
-    // --
-    myNbQuadEdge  = new QLabel( this );
-    l->addWidget( myNbQuadEdge,  row, 3 );
-
-    // faces
-    row = l->rowCount();         // retrieve current row count
-    // --
-    lab = new QLabel(COLONIZE(tr("SMESH_MESHINFO_FACES")), this);
-    l->addWidget( lab,           row, 0 );
-    // --
-    myNbFace      = new QLabel( this );
-    l->addWidget( myNbFace,      row, 1 );
-    // --
-    myNbLinFace   = new QLabel( this );
-    l->addWidget( myNbLinFace,   row, 2 );
-    // --
-    myNbQuadFace  = new QLabel( this );
-    l->addWidget( myNbQuadFace,  row, 3 );
-
-    // volumes
-    row = l->rowCount();         // retrieve current row count
-    // --
-    lab = new QLabel(COLONIZE(tr("SMESH_MESHINFO_VOLUMES")), this);
-    l->addWidget( lab,           row, 0 );
-    // --
-    myNbVolum     = new QLabel( this );
-    l->addWidget( myNbVolum,     row, 1 );
-    // --
-    myNbLinVolum  = new QLabel( this );
-    l->addWidget( myNbLinVolum,  row, 2 );
-    // --
-    myNbQuadVolum = new QLabel( this );
-    l->addWidget( myNbQuadVolum, row, 3 );
-  }
-}
-
-// =========================================================================================
-/*!
- * \brief Set mesh info
- */
-// =========================================================================================
-
-void SMESHGUI_MeshInfosBox::SetInfoByMesh(SMESH::SMESH_Mesh_var mesh)
-{
-  const SMESH::ElementOrder lin = SMESH::ORDER_LINEAR;
-  int nbTot, nbLin;
-
-  // nodes
-  myNbNode     ->setText( QString("%1").arg( mesh->NbNodes() ));
-
-  // edges
-  nbTot = mesh->NbEdges(), nbLin = mesh->NbEdgesOfOrder(lin);
-  myNbEdge     ->setText( QString("%1").arg( nbTot ));
-  myNbLinEdge  ->setText( QString("%1").arg( nbLin ));
-  myNbQuadEdge ->setText( QString("%1").arg( nbTot - nbLin ));
-
-  // faces
-  nbTot = mesh->NbFaces(), nbLin = mesh->NbFacesOfOrder(lin);
-  myNbFace     ->setText( QString("%1").arg( nbTot ));
-  myNbLinFace  ->setText( QString("%1").arg( nbLin ));
-  myNbQuadFace ->setText( QString("%1").arg( nbTot - nbLin ));
-
-  // volumes
-  nbTot = mesh->NbVolumes(), nbLin = mesh->NbVolumesOfOrder(lin);
-  myNbVolum    ->setText( QString("%1").arg( nbTot ));
-  myNbLinVolum ->setText( QString("%1").arg( nbLin ));
-  myNbQuadVolum->setText( QString("%1").arg( nbTot - nbLin ));
-
-  if ( myFull )
-  {
-    // triangles
-    nbTot = mesh->NbTriangles(), nbLin = mesh->NbTrianglesOfOrder(lin);
-    myNbTrai     ->setText( QString("%1").arg( nbTot ));
-    myNbLinTrai  ->setText( QString("%1").arg( nbLin ));
-    myNbQuadTrai ->setText( QString("%1").arg( nbTot - nbLin ));
-    // quadrangles
-    nbTot = mesh->NbQuadrangles(), nbLin = mesh->NbQuadranglesOfOrder(lin);
-    myNbQuad     ->setText( QString("%1").arg( nbTot ));
-    myNbLinQuad  ->setText( QString("%1").arg( nbLin ));
-    myNbQuadQuad ->setText( QString("%1").arg( nbTot - nbLin ));
-    // poligones
-    myNbPolyg    ->setText( QString("%1").arg( mesh->NbPolygons() ));
-
-    // tetras
-    nbTot = mesh->NbTetras(), nbLin = mesh->NbTetrasOfOrder(lin);
-    myNbTetra    ->setText( QString("%1").arg( nbTot ));
-    myNbLinTetra ->setText( QString("%1").arg( nbLin ));
-    myNbQuadTetra->setText( QString("%1").arg( nbTot - nbLin ));
-    // hexas
-    nbTot = mesh->NbHexas(), nbLin = mesh->NbHexasOfOrder(lin);
-    myNbHexa     ->setText( QString("%1").arg( nbTot ));
-    myNbLinHexa  ->setText( QString("%1").arg( nbLin ));
-    myNbQuadHexa ->setText( QString("%1").arg( nbTot - nbLin ));
-    // pyras
-    nbTot = mesh->NbPyramids(), nbLin = mesh->NbPyramidsOfOrder(lin);
-    myNbPyra     ->setText( QString("%1").arg( nbTot ));
-    myNbLinPyra  ->setText( QString("%1").arg( nbLin ));
-    myNbQuadPyra ->setText( QString("%1").arg( nbTot - nbLin ));
-    // prisms
-    nbTot = mesh->NbPrisms(), nbLin = mesh->NbPrismsOfOrder(lin);
-    myNbPrism    ->setText( QString("%1").arg( nbTot ));
-    myNbLinPrism ->setText( QString("%1").arg( nbLin ));
-    myNbQuadPrism->setText( QString("%1").arg( nbTot - nbLin ));
-    // polyedres
-    myNbPolyh    ->setText( QString("%1").arg( mesh->NbPolyhedrons() ));
-  }
-}
-
-// =========================================================================================
-/*!
  * \brief Dialog to compute a mesh and show computation errors
  */
 //=======================================================================
@@ -1134,7 +804,8 @@ void SMESHGUI_BaseComputeOp::showComputeResult( const bool theMemoryLack,
   }
   else if ( theNoCompError && theNoHypoError )
   {
-    aCompDlg->myFullInfo->SetInfoByMesh( myMesh );
+    SMESH::long_array_var aRes = myMesh->GetMeshInfo();
+    aCompDlg->myFullInfo->SetMeshInfo( aRes );
     aCompDlg->myFullInfo->show();
     aCompDlg->myBriefInfo->hide();
     aCompDlg->myHypErrorGroup->hide();
@@ -1143,7 +814,8 @@ void SMESHGUI_BaseComputeOp::showComputeResult( const bool theMemoryLack,
   else
   {
     QTableWidget* tbl = aCompDlg->myTable;
-    aCompDlg->myBriefInfo->SetInfoByMesh( myMesh );
+    SMESH::long_array_var aRes = myMesh->GetMeshInfo();
+    aCompDlg->myFullInfo->SetMeshInfo( aRes );
     aCompDlg->myBriefInfo->show();
     aCompDlg->myFullInfo->hide();
 
@@ -2004,7 +1676,7 @@ void SMESHGUI_BaseComputeOp::evaluateMesh()
   QString                        aHypErrors;
 
   bool evaluateFailed = true, memoryLack = false;
-  std::vector<int> aResVec(18);
+  SMESH::long_array_var aRes;
 
   _PTR(SObject) aMeshSObj = SMESH::FindSObject(myMesh);
   bool hasShape = myMesh->HasShapeToMesh();
@@ -2022,10 +1694,7 @@ void SMESHGUI_BaseComputeOp::evaluateMesh()
 #if (OCC_VERSION_MAJOR << 16 | OCC_VERSION_MINOR << 8 | OCC_VERSION_MAINTENANCE) > 0x060100
       OCC_CATCH_SIGNALS;
 #endif
-      SMESH::long_array_var aVec = gen->Evaluate(myMesh, myMainShape);
-      for(int i=0; i<17; i++) {
-	aResVec[i] = aVec[i];
-      }
+      aRes = gen->Evaluate(myMesh, myMainShape);
     }
     catch(const SALOME::SALOME_Exception & S_ex){
       memoryLack = true;
@@ -2078,13 +1747,12 @@ void SMESHGUI_BaseComputeOp::evaluateMesh()
 
   // SHOW RESULTS
   if ( isShowResultDlg )
-    //showComputeResult( memoryLack, noCompError,aCompErrors, noHypoError, aHypErrors );
-    showEvaluateResult( aResVec, memoryLack, noCompError, aCompErrors,
+    showEvaluateResult( aRes, memoryLack, noCompError, aCompErrors,
 			noHypoError, aHypErrors);
 }
 
 
-void SMESHGUI_BaseComputeOp::showEvaluateResult(std::vector<int> theVec,
+void SMESHGUI_BaseComputeOp::showEvaluateResult(const SMESH::long_array& theRes,
 						const bool theMemoryLack,
 						const bool theNoCompError,
 						SMESH::compute_error_array_var& theCompErrors,
@@ -2105,8 +1773,7 @@ void SMESHGUI_BaseComputeOp::showEvaluateResult(std::vector<int> theVec,
   }
   else if ( theNoCompError && theNoHypoError )
   {
-    //aCompDlg->myFullInfo->SetInfoByMesh( myMesh );
-    aCompDlg->myFullInfo->SetInfoByEval( theVec );
+    aCompDlg->myFullInfo->SetMeshInfo( theRes );
     aCompDlg->myFullInfo->show();
     aCompDlg->myBriefInfo->hide();
     aCompDlg->myHypErrorGroup->hide();
@@ -2115,8 +1782,7 @@ void SMESHGUI_BaseComputeOp::showEvaluateResult(std::vector<int> theVec,
   else
   {
     QTableWidget* tbl = aCompDlg->myTable;
-    //aCompDlg->myBriefInfo->SetInfoByMesh( myMesh );
-    aCompDlg->myBriefInfo->SetInfoByEval( theVec );
+    aCompDlg->myBriefInfo->SetMeshInfo( theRes );
     aCompDlg->myBriefInfo->show();
     aCompDlg->myFullInfo->hide();
 
@@ -2193,77 +1859,6 @@ void SMESHGUI_BaseComputeOp::showEvaluateResult(std::vector<int> theVec,
   aCompDlg->show();
 }
 
-
-// =========================================================================================
-/*!
- * \brief Set mesh info
- */
-// =========================================================================================
-
-void SMESHGUI_MeshInfosBox::SetInfoByEval(std::vector<int> theVec)
-{
-  // nodes
-  myNbNode     ->setText( QString("%1").arg( theVec[0] ));
-
-  // edges
-  int nbTot = theVec[1] + theVec[2];
-  myNbEdge     ->setText( QString("%1").arg( nbTot ));
-  myNbLinEdge  ->setText( QString("%1").arg( theVec[1] ));
-  myNbQuadEdge ->setText( QString("%1").arg( theVec[2] ));
-
-  // faces
-  nbTot = 0;
-  int i = 3;
-  for(; i<=7; i++) nbTot += theVec[i];
-  myNbFace     ->setText( QString("%1").arg( nbTot ));
-  myNbLinFace  ->setText( QString("%1").arg( theVec[3] + theVec[5] ));
-  myNbQuadFace ->setText( QString("%1").arg( theVec[4] + theVec[6] ));
-
-  // volumes
-  nbTot = 0;
-  for(i=8; i<=16; i++) nbTot += theVec[i];
-  int nbLin = 0, nbQua = 0;; 
-  for(i=0; i<=3; i++) {
-    nbLin += theVec[8+2*i];
-    nbQua += theVec[9+2*i];
-  }
-  myNbVolum    ->setText( QString("%1").arg( nbTot ));
-  myNbLinVolum ->setText( QString("%1").arg( nbLin ));
-  myNbQuadVolum->setText( QString("%1").arg( nbQua ));
-
-  if ( myFull )
-  {
-    // triangles
-    myNbTrai     ->setText( QString("%1").arg( theVec[3] + theVec[4] ));
-    myNbLinTrai  ->setText( QString("%1").arg( theVec[3] ));
-    myNbQuadTrai ->setText( QString("%1").arg( theVec[4] ));
-    // quadrangles
-    myNbQuad     ->setText( QString("%1").arg( theVec[5] + theVec[6] ));
-    myNbLinQuad  ->setText( QString("%1").arg( theVec[5] ));
-    myNbQuadQuad ->setText( QString("%1").arg( theVec[6] ));
-    // poligones
-    myNbPolyg    ->setText( QString("%1").arg( theVec[7] ));
-
-    // tetras
-    myNbTetra    ->setText( QString("%1").arg( theVec[8] + theVec[9] ));
-    myNbLinTetra ->setText( QString("%1").arg( theVec[8] ));
-    myNbQuadTetra->setText( QString("%1").arg( theVec[9] ));
-    // hexas
-    myNbHexa     ->setText( QString("%1").arg( theVec[14] + theVec[15] ));
-    myNbLinHexa  ->setText( QString("%1").arg( theVec[14] ));
-    myNbQuadHexa ->setText( QString("%1").arg( theVec[15] ));
-    // pyras
-    myNbPyra     ->setText( QString("%1").arg( theVec[10] + theVec[11] ));
-    myNbLinPyra  ->setText( QString("%1").arg( theVec[10] ));
-    myNbQuadPyra ->setText( QString("%1").arg( theVec[11] ));
-    // prisms
-    myNbPrism    ->setText( QString("%1").arg( theVec[12] + theVec[13] ));
-    myNbLinPrism ->setText( QString("%1").arg( theVec[12] ));
-    myNbQuadPrism->setText( QString("%1").arg( theVec[13] ));
-    // polyedres
-    myNbPolyh    ->setText( QString("%1").arg( theVec[16] ));
-  }
-}
 
 //================================================================================
 /*!

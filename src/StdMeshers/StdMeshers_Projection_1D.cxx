@@ -442,19 +442,19 @@ bool StdMeshers_Projection_1D::Evaluate(SMESH_Mesh& theMesh,
 
   int nbNodes = params.size();
 
-  std::vector<int> aVec(17);
-  for(int i=0; i<17; i++) aVec[i] = 0;
+  std::vector<int> aVec(SMDSEntity_Last);
+  for(int i=SMDSEntity_Node; i<SMDSEntity_Last; i++) aVec[i] = 0;
 
-  aVec[0] = nbNodes;
+  aVec[SMDSEntity_Node] = nbNodes;
 
   bool quadratic = false;
   SMDS_ElemIteratorPtr elemIt = srcSubMesh->GetSubMeshDS()->GetElements();
   if ( elemIt->more() )
     quadratic = elemIt->next()->IsQuadratic();
   if(quadratic)
-    aVec[2] = (nbNodes-1)/2;
+    aVec[SMDSEntity_Quad_Edge] = (nbNodes-1)/2;
   else
-    aVec[1] = nbNodes - 1;
+    aVec[SMDSEntity_Edge] = nbNodes - 1;
 
   SMESH_subMesh * sm = theMesh.GetSubMesh(theShape);
   aResMap.insert(std::make_pair(sm,aVec));

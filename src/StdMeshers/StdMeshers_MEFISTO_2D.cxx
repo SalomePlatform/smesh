@@ -312,10 +312,10 @@ bool StdMeshers_MEFISTO_2D::Evaluate(SMESH_Mesh & aMesh,
     MapShapeNbElemsItr anIt = aResMap.find( aMesh.GetSubMesh(E) );
     if( anIt == aResMap.end() ) continue;
     std::vector<int> aVec = (*anIt).second;
-    int nbe = Max(aVec[1],aVec[2]);
+    int nbe = Max(aVec[SMDSEntity_Edge],aVec[SMDSEntity_Quad_Edge]);
     NbSeg += nbe;
     if(IsFirst) {
-      IsQuadratic = ( aVec[2] > aVec[1] );
+      IsQuadratic = ( aVec[SMDSEntity_Quad_Edge] > aVec[SMDSEntity_Edge] );
       IsFirst = false;
     }
     double a,b;
@@ -343,15 +343,15 @@ bool StdMeshers_MEFISTO_2D::Evaluate(SMESH_Mesh & aMesh,
   int nbFaces = (int) ( anArea/(tmpLength*tmpLength*sqrt(3.)/4) );
   int nbNodes = (int) ( nbFaces*3 - (NbSeg-1)*2 ) / 6;
 
-  std::vector<int> aVec(17);
-  for(int i=0; i<17; i++) aVec[i] = 0;
+  std::vector<int> aVec(SMDSEntity_Last);
+  for(int i=SMDSEntity_Node; i<SMDSEntity_Last; i++) aVec[i] = 0;
   if(IsQuadratic) {
-    aVec[4] = nbFaces;
-    aVec[0] = (int)( nbNodes + nbFaces*3 - (NbSeg-1) );
+    aVec[SMDSEntity_Quad_Triangle] = nbFaces;
+    aVec[SMDSEntity_Node] = (int)( nbNodes + nbFaces*3 - (NbSeg-1) );
   }
   else {
-    aVec[0] = nbNodes;
-    aVec[3] = nbFaces;
+    aVec[SMDSEntity_Node] = nbNodes;
+    aVec[SMDSEntity_Triangle] = nbFaces;
   }
   SMESH_subMesh * sm = aMesh.GetSubMesh(aShape);
   aResMap.insert(std::make_pair(sm,aVec));

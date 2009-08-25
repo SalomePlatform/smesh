@@ -55,11 +55,7 @@ class SMESH_subMesh;
 class SMESH_MesherHelper;
 
 typedef std::map< SMESH_subMesh*, std::vector<int> > MapShapeNbElems;
-// vector must have size 17:
-// 0 - node, 1 - edge lin, 2 - edge quad, 3 - triangle lin, 4 - triangle quad
-// 5 - quadrangle lin, 6 - quadrangle quad, 7 - polygon, 8 - tetra lin,
-// 9 - tetra quad, 10 - pyramid lin, 11 - pyramid quad, 12 - penta lin,
-// 13 - penta quad, 14 - hexa lin, 15 - hexa quad, 16 -polyhedra
+// vector must have size corresponding to EntityType_Last from SMDSAbs:
 typedef std::map< SMESH_subMesh*, std::vector<int> >::iterator MapShapeNbElemsItr;
 
 class SMESH_EXPORT SMESH_Algo:public SMESH_Hypothesis

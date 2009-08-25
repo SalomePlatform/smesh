@@ -975,8 +975,8 @@ bool StdMeshers_Regular_1D::Evaluate(SMESH_Mesh & theMesh,
   ASSERT(!VFirst.IsNull());
   ASSERT(!VLast.IsNull());
 
-  std::vector<int> aVec(17);
-  for(int i=0; i<17; i++) aVec[i] = 0;
+  std::vector<int> aVec(SMDSEntity_Last);
+  for(int i=SMDSEntity_Node; i<SMDSEntity_Last; i++) aVec[i] = 0;
 
   if (!Curve.IsNull()) {
     list< double > params;
@@ -993,12 +993,12 @@ bool StdMeshers_Regular_1D::Evaluate(SMESH_Mesh & theMesh,
     redistributeNearVertices( theMesh, C3d, length, params, VFirst, VLast );
 
     if(_quadraticMesh) {
-      aVec[0] = 2*params.size() + 1;
-      aVec[2] = params.size() + 1;
+      aVec[SMDSEntity_Node] = 2*params.size() + 1;
+      aVec[SMDSEntity_Quad_Edge] = params.size() + 1;
     }
     else {
-      aVec[0] = params.size();
-      aVec[1] = params.size() + 1;
+      aVec[SMDSEntity_Node] = params.size();
+      aVec[SMDSEntity_Edge] = params.size() + 1;
     }
     
   }
@@ -1006,12 +1006,12 @@ bool StdMeshers_Regular_1D::Evaluate(SMESH_Mesh & theMesh,
     //MESSAGE("************* Degenerated edge! *****************");
     // Edge is a degenerated Edge : We put n = 5 points on the edge.
     if(_quadraticMesh) {
-      aVec[0] = 11;
-      aVec[2] = 6;
+      aVec[SMDSEntity_Node] = 11;
+      aVec[SMDSEntity_Quad_Edge] = 6;
     }
     else {
-      aVec[0] = 5;
-      aVec[1] = 6;
+      aVec[SMDSEntity_Node] = 5;
+      aVec[SMDSEntity_Edge] = 6;
     }
   }
 

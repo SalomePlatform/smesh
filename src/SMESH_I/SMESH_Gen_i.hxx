@@ -246,11 +246,13 @@ public:
                                                GEOM::GEOM_Object_ptr  theShapeObject )
     throw ( SALOME::SALOME_Exception );
 
-  // Evaluate mesh on a shape
-  //CORBA::Boolean 
+  /*!
+   * Evaluate mesh on a shape and
+   *  returns statistic of mesh elements
+   * Result array of number enityties
+   */
   SMESH::long_array* Evaluate(SMESH::SMESH_Mesh_ptr theMesh,
                               GEOM::GEOM_Object_ptr theShapeObject)
-    //                              SMESH::long_array& theNbElems)
     throw ( SALOME::SALOME_Exception );
 
   // Returns true if mesh contains enough data to be computed

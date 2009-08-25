@@ -39,6 +39,7 @@ class QStackedWidget;
 
 class LightApp_SelectionMgr;
 class SMESHGUI;
+class SMESHGUI_MeshInfosBox;
 
 class SMESHGUI_EXPORT SMESHGUI_MeshInfosDlg : public QDialog
 { 
@@ -74,54 +75,7 @@ private:
   
   QWidget*                myMeshWidget;
   QLabel*                 myMeshName;
-  QLabel*                 myMeshNbNodes;
-  QLabel*                 myMeshNb0DElems;
-  QLabel*                 myMeshNbEdges;
-  QLabel*                 myMeshNbEdges1;
-  QLabel*                 myMeshNbEdges2;
-  QGroupBox*              myMeshFacesGroup;
-  QLabel*                 myMeshNbFaces;
-  QLabel*                 myMeshNbFaces1;
-  QLabel*                 myMeshNbFaces2;
-  QLabel*                 myMeshNbTriangles;
-  QLabel*                 myMeshNbTriangles1;
-  QLabel*                 myMeshNbTriangles2;
-  QLabel*                 myMeshNbQuadrangles;
-  QLabel*                 myMeshNbQuadrangles1;
-  QLabel*                 myMeshNbQuadrangles2;
-  QLabel*                 myMeshNbPolygones;
-  QGroupBox*              myMeshVolumesGroup;
-  QLabel*                 myMeshNbVolumes;
-  QLabel*                 myMeshNbVolumes1;
-  QLabel*                 myMeshNbVolumes2;
-  QLabel*                 myMeshNbTetra;
-  QLabel*                 myMeshNbTetra1;
-  QLabel*                 myMeshNbTetra2;
-  QLabel*                 myMeshNbHexa;
-  QLabel*                 myMeshNbHexa1;
-  QLabel*                 myMeshNbHexa2;
-  QLabel*                 myMeshNbPyra;
-  QLabel*                 myMeshNbPyra1;
-  QLabel*                 myMeshNbPyra2;
-  QLabel*                 myMeshNbPrism;
-  QLabel*                 myMeshNbPrism1;
-  QLabel*                 myMeshNbPrism2;
-  QLabel*                 myMeshNbPolyhedrones;
-  
-  QWidget*                mySubMeshWidget;
-  QLabel*                 mySubMeshName;
-  QLabel*                 mySubMeshNbNodes;
-  QGroupBox*              mySubMeshElementsGroup;
-  QLabel*                 mySubMeshNbElements;
-  QLabel*                 mySubMeshNb0DElems;
-  QLabel*                 mySubMeshNbEdges;
-  QLabel*                 mySubMeshNbFaces;
-  QLabel*                 mySubMeshNbVolumes;
-
-  QWidget*                myGroupWidget;
-  QLabel*                 myGroupName;
-  QLabel*                 myGroupType;
-  QLabel*                 myGroupNb;
+  SMESHGUI_MeshInfosBox*  myMeshInfoBox;
 
   QGroupBox*              myButtonsGroup;
   QPushButton*            myOkBtn;
