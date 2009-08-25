@@ -651,7 +651,7 @@ void SMESHGUI_BaseComputeOp::startOperation()
 			     tr("SMESH_WRN_WARNING"),
 			     tr("SMESH_WRN_NO_AVAILABLE_DATA"));
     onCancel();
-
+    return;
   }
   myMainShape = myMesh->GetShapeToMesh();
 
@@ -676,9 +676,11 @@ void SMESHGUI_BaseComputeOp::computeMesh()
   bool computeFailed = true, memoryLack = false;
 
   _PTR(SObject) aMeshSObj = SMESH::FindSObject(myMesh);
+  if ( !aMeshSObj ) // IPAL 21340
+    return;
   bool hasShape = myMesh->HasShapeToMesh();
   bool shapeOK = myMainShape->_is_nil() ? !hasShape : hasShape;
-  if ( shapeOK && aMeshSObj )
+  if ( shapeOK )
   {
     myCompDlg->myMeshName->setText( aMeshSObj->GetName().c_str() );
     SMESH::SMESH_Gen_var gen = getSMESHGUI()->GetSMESHGen();
