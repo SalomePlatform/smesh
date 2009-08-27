@@ -385,7 +385,7 @@ bool SMESH_Gen::Evaluate(SMESH_Mesh &          aMesh,
 	const int aShapeDim = GetShapeDim( aSubShape );
 	if ( aShapeDim < 1 ) continue;
 
-	const TopAbs_ShapeEnum aShType = smToCompute->GetSubShape().ShapeType();
+	//const TopAbs_ShapeEnum aShType = smToCompute->GetSubShape().ShapeType();
 
         SMESH_HypoFilter filter( SMESH_HypoFilter::IsAlgo() );
         filter
