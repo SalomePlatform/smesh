@@ -2036,7 +2036,7 @@ void StdMeshers_ProjectionUtils::SetEventListener(SMESH_subMesh* subMesh,
                                                   SMESH_Mesh*    srcMesh)
 {
   // Set listener that resets an event listener on source submesh when
-  // "ProjectionSource*D" hypothesis is modified
+  // "ProjectionSource*D" hypothesis is modified since source shape can be changed
   subMesh->SetEventListener( GetHypModifWaiter(),0,subMesh);
 
   // Set an event listener to submesh of the source shape
@@ -2056,13 +2056,16 @@ void StdMeshers_ProjectionUtils::SetEventListener(SMESH_subMesh* subMesh,
         for (; it.More(); it.Next())
         {
           SMESH_subMesh* srcSM = srcMesh->GetSubMesh( it.Current() );
-          SMESH_subMeshEventListenerData* data =
-            srcSM->GetEventListenerData(GetSrcSubMeshListener());
-          if ( data )
-            data->mySubMeshes.push_back( subMesh );
-          else
-            data = SMESH_subMeshEventListenerData::MakeData( subMesh );
-          subMesh->SetEventListener ( GetSrcSubMeshListener(), data, srcSM );
+          if ( srcSM != subMesh )
+          {
+            SMESH_subMeshEventListenerData* data =
+              srcSM->GetEventListenerData(GetSrcSubMeshListener());
+            if ( data )
+              data->mySubMeshes.push_back( subMesh );
+            else
+              data = SMESH_subMeshEventListenerData::MakeData( subMesh );
+            subMesh->SetEventListener ( GetSrcSubMeshListener(), data, srcSM );
+          }
         }
       }
       else
