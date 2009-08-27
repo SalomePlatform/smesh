@@ -70,5 +70,8 @@ done by indicating two <b>Source Vertices</b>, which belong to the same edge
 of the source <b>3D Shape</b>, and two <b>Target Vertices</b>, which belong to the
 same edge of the source <b>3D Shape</b>.
 
+<br><b>See Also</b> a sample TUI Script of a 
+\ref tui_projection "Projection Algorithms".
+
 */
 
