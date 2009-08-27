@@ -69,7 +69,7 @@ enum { NB_WALL_FACES = 4 };
 //purpose  : 
 //=======================================================================
 StdMeshers_Penta_3D::StdMeshers_Penta_3D()
-: myErrorStatus(SMESH_ComputeError::New())
+  : myErrorStatus(SMESH_ComputeError::New())
 {
   myTol3D=0.1;
   myWallNodesMaps.resize( SMESH_Block::NbFaces() );
@@ -262,11 +262,11 @@ void StdMeshers_Penta_3D::MakeNodes()
   SMESH_Block::TShapeID wallFaceID[ NB_WALL_FACES ] = {
     SMESH_Block::ID_Fx0z, SMESH_Block::ID_Fx1z,
     SMESH_Block::ID_F0yz, SMESH_Block::ID_F1yz
-    };
+  };
   SMESH_Block::TShapeID baseEdgeID[ NB_WALL_FACES ] = {
     SMESH_Block::ID_Ex00, SMESH_Block::ID_Ex10,
     SMESH_Block::ID_E0y0, SMESH_Block::ID_E1y0
-    };
+  };
   for ( i = 0; i < NB_WALL_FACES ; ++i ) {
     int fIndex = SMESH_Block::ShapeIndex( wallFaceID[ i ]);
     bool ok = LoadIJNodes (myWallNodesMaps[ fIndex ],
@@ -437,7 +437,7 @@ void StdMeshers_Penta_3D::MakeNodes()
         FindNodeOnShape(aS, aCoords, i, aTN);
       }
       else{
-        // create node and get it id
+        // create node and get its id
         CreateNode (bIsUpperLayer, aCoords, aTN);
         //
         if ( bIsUpperLayer ) {
@@ -477,33 +477,6 @@ void StdMeshers_Penta_3D::MakeNodes()
       myTNodes[ij]=aTN;
     }
   }
-  //DEB
-  /*
-  {
-    int iSSID, iBNID, aID;
-    //
-    for (i=0; i<myISize; ++i) {
-      printf(" Layer# %d\n", i);
-      for (j=0; j<myJSize; ++j) {
-        ij=i*myJSize+j; 
-        const StdMeshers_TNode& aTN=myTNodes[ij];
-        //const StdMeshers_TNode& aTN=aTNodes[ij];
-        const gp_XYZ& aXYZ=aTN.NormCoord();
-        iSSID=aTN.ShapeSupportID();
-        iBNID=aTN.BaseNodeID();
-        //
-        const SMDS_MeshNode* aNode=aTN.Node();
-        aID=aNode->GetID(); 
-        aX=aNode->X();
-        aY=aNode->Y();
-        aZ=aNode->Z();
-        printf("*** j:%d BNID#%d iSSID:%d ID:%d { %lf %lf %lf },  { %lf %lf %lf }\n",
-               j,  iBNID, iSSID, aID, aXYZ.X(),  aXYZ.Y(), aXYZ.Z(), aX, aY, aZ);
-      }
-    }
-  }
-  */
-  //DEB t
 }
 
 
@@ -634,16 +607,16 @@ double StdMeshers_Penta_3D::SetHorizEdgeXYZ(const gp_XYZ&                  aBase
   }
   else {
     // this variant is better for other cases
-//   SMESH_MesherHelper helper( *GetMesh() );
-//   const TopoDS_Edge & edge = TopoDS::Edge( myBlock.Shape( edgeVec[ TOP ]));
-//   double u1 = helper.GetNodeU( edge, n1 );
-//   double u2 = helper.GetNodeU( edge, n2 );
-//   double u = ( 1. - r ) * u1 + r * u2;
-//   gp_XYZ topNodeParams;
-//   myBlock.Block().EdgeParameters( edgeVec[ TOP ], u, topNodeParams );
-//   myBlock.Block().EdgePoint( edgeVec[ TOP ],
-//                              topNodeParams,
-//                              myShapeXYZ[ edgeVec[ TOP ]]);
+    //   SMESH_MesherHelper helper( *GetMesh() );
+    //   const TopoDS_Edge & edge = TopoDS::Edge( myBlock.Shape( edgeVec[ TOP ]));
+    //   double u1 = helper.GetNodeU( edge, n1 );
+    //   double u2 = helper.GetNodeU( edge, n2 );
+    //   double u = ( 1. - r ) * u1 + r * u2;
+    //   gp_XYZ topNodeParams;
+    //   myBlock.Block().EdgeParameters( edgeVec[ TOP ], u, topNodeParams );
+    //   myBlock.Block().EdgePoint( edgeVec[ TOP ],
+    //                              topNodeParams,
+    //                              myShapeXYZ[ edgeVec[ TOP ]]);
   }
 
   // base edge
@@ -822,7 +795,7 @@ void StdMeshers_Penta_3D::MakeMeshOnFxy1()
   itn = aSM0->GetNodes();
   aNbNodes = aSM0->NbNodes();
   //printf("** aNbNodes=%d\n", aNbNodes);
-
+  myTool->SetSubShape( aFxy1 ); // to set medium nodes to aFxy1
   //
   // set elements on aFxy1
   vector<const SMDS_MeshNode*> aNodes1;
@@ -873,6 +846,7 @@ void StdMeshers_Penta_3D::MakeMeshOnFxy1()
     }
     meshDS->SetMeshElementOnShape(face, aFxy1);
   }
+  myTool->SetSubShape( myShape );
 
   // update compute state of top face submesh
   aSubMesh1->ComputeStateEngine( SMESH_subMesh::CHECK_COMPUTE_STATE );
@@ -949,15 +923,15 @@ void StdMeshers_Penta_3D::CreateNode(const bool bIsUpperLayer,
   SMDS_MeshNode* pNode=NULL; 
   aTN.SetNode(pNode);  
   //
-//   if (bIsUpperLayer) {
-//     // point on face Fxy1
-//     const TopoDS_Shape& aS=myBlock.Shape(SMESH_Block::ID_Fxy1);
-//     myBlock.Point(aParams, aS, aP);
-//   }
-//   else {
-//     // point inside solid
-//     myBlock.Point(aParams, aP);
-//   }
+  //   if (bIsUpperLayer) {
+  //     // point on face Fxy1
+  //     const TopoDS_Shape& aS=myBlock.Shape(SMESH_Block::ID_Fxy1);
+  //     myBlock.Point(aParams, aS, aP);
+  //   }
+  //   else {
+  //     // point inside solid
+  //     myBlock.Point(aParams, aP);
+  //   }
   if (bIsUpperLayer) {
     double u = aParams.X(), v = aParams.Y();
     double u1 = ( 1. - u ), v1 = ( 1. - v );
@@ -975,11 +949,11 @@ void StdMeshers_Penta_3D::CreateNode(const bool bIsUpperLayer,
     SMESH_Block::ShellPoint( aParams, myShapeXYZ, aP.ChangeCoord() );
   }
   //
-//   iErr=myBlock.ErrorStatus();
-//   if (iErr) {
-//     myErrorStatus=12; // can not find the node point;
-//     return;
-//   }
+  //   iErr=myBlock.ErrorStatus();
+  //   if (iErr) {
+  //     myErrorStatus=12; // can not find the node point;
+  //     return;
+  //   }
   //
   aX=aP.X(); aY=aP.Y(); aZ=aP.Z(); 
   //
@@ -987,7 +961,7 @@ void StdMeshers_Penta_3D::CreateNode(const bool bIsUpperLayer,
   SMESHDS_Mesh* pMeshDS = pMesh->GetMeshDS();
   //
   pNode = pMeshDS->AddNode(aX, aY, aZ);
-  
+
   aTN.SetNode(pNode);
 }
 
@@ -1000,38 +974,38 @@ void StdMeshers_Penta_3D::ShapeSupportID(const bool bIsUpperLayer,
                                          SMESH_Block::TShapeID& aSSID)
 {
   switch (aBNSSID) {
-    case SMESH_Block::ID_V000:
-      aSSID=(bIsUpperLayer) ?  SMESH_Block::ID_V001 : SMESH_Block::ID_E00z;
-      break;
-    case SMESH_Block::ID_V100:
-      aSSID=(bIsUpperLayer) ?  SMESH_Block::ID_V101 : SMESH_Block::ID_E10z;
-      break; 
-    case SMESH_Block::ID_V110:
-      aSSID=(bIsUpperLayer) ?  SMESH_Block::ID_V111 : SMESH_Block::ID_E11z;
-      break;
-    case SMESH_Block::ID_V010:
-      aSSID=(bIsUpperLayer) ?  SMESH_Block::ID_V011 : SMESH_Block::ID_E01z;
-      break;
-    case SMESH_Block::ID_Ex00:
-      aSSID=(bIsUpperLayer) ?  SMESH_Block::ID_Ex01 : SMESH_Block::ID_Fx0z;
-      break;
-    case SMESH_Block::ID_Ex10:
-      aSSID=(bIsUpperLayer) ?  SMESH_Block::ID_Ex11 : SMESH_Block::ID_Fx1z;
-      break; 
-    case SMESH_Block::ID_E0y0:
-      aSSID=(bIsUpperLayer) ?  SMESH_Block::ID_E0y1 : SMESH_Block::ID_F0yz;
-      break; 
-    case SMESH_Block::ID_E1y0:
-      aSSID=(bIsUpperLayer) ?  SMESH_Block::ID_E1y1 : SMESH_Block::ID_F1yz;
-      break; 
-    case SMESH_Block::ID_Fxy0:
-      aSSID=SMESH_Block::ID_NONE;//(bIsUpperLayer) ?  Shape_ID_Fxy1 : Shape_ID_NONE;
-      break;   
-    default:
-      aSSID=SMESH_Block::ID_NONE;
-      myErrorStatus->myName=10; // Can not find supporting shape ID
-      myErrorStatus->myComment = "Internal error of StdMeshers_Penta_3D";
-      break;
+  case SMESH_Block::ID_V000:
+    aSSID=(bIsUpperLayer) ?  SMESH_Block::ID_V001 : SMESH_Block::ID_E00z;
+    break;
+  case SMESH_Block::ID_V100:
+    aSSID=(bIsUpperLayer) ?  SMESH_Block::ID_V101 : SMESH_Block::ID_E10z;
+    break; 
+  case SMESH_Block::ID_V110:
+    aSSID=(bIsUpperLayer) ?  SMESH_Block::ID_V111 : SMESH_Block::ID_E11z;
+    break;
+  case SMESH_Block::ID_V010:
+    aSSID=(bIsUpperLayer) ?  SMESH_Block::ID_V011 : SMESH_Block::ID_E01z;
+    break;
+  case SMESH_Block::ID_Ex00:
+    aSSID=(bIsUpperLayer) ?  SMESH_Block::ID_Ex01 : SMESH_Block::ID_Fx0z;
+    break;
+  case SMESH_Block::ID_Ex10:
+    aSSID=(bIsUpperLayer) ?  SMESH_Block::ID_Ex11 : SMESH_Block::ID_Fx1z;
+    break; 
+  case SMESH_Block::ID_E0y0:
+    aSSID=(bIsUpperLayer) ?  SMESH_Block::ID_E0y1 : SMESH_Block::ID_F0yz;
+    break; 
+  case SMESH_Block::ID_E1y0:
+    aSSID=(bIsUpperLayer) ?  SMESH_Block::ID_E1y1 : SMESH_Block::ID_F1yz;
+    break; 
+  case SMESH_Block::ID_Fxy0:
+    aSSID=SMESH_Block::ID_NONE;//(bIsUpperLayer) ?  Shape_ID_Fxy1 : Shape_ID_NONE;
+    break;   
+  default:
+    aSSID=SMESH_Block::ID_NONE;
+    myErrorStatus->myName=10; // Can not find supporting shape ID
+    myErrorStatus->myComment = "Internal error of StdMeshers_Penta_3D";
+    break;
   }
   return;
 }
@@ -1434,7 +1408,7 @@ bool StdMeshers_Penta_3D::LoadIJNodes(StdMeshers_IJNodeMap & theIJNodes,
   SMESHDS_SubMesh* smVft = theMesh->MeshElements( vft );
   if (!smFace || !smb || !smt || !sm1 || !sm2 || !smVfb || !smVlb || !smVft ) {
     MESSAGE( "NULL submesh " <<smFace<<" "<<smb<<" "<<smt<<" "<<
-            sm1<<" "<<sm2<<" "<<smVfb<<" "<<smVlb<<" "<<smVft);
+             sm1<<" "<<sm2<<" "<<smVfb<<" "<<smVlb<<" "<<smVft);
     return false;
   }
   if ( smb->NbNodes() != smt->NbNodes() || sm1->NbNodes() != sm2->NbNodes() ) {
@@ -1455,13 +1429,13 @@ bool StdMeshers_Penta_3D::LoadIJNodes(StdMeshers_IJNodeMap & theIJNodes,
       int nf = sm1->NbNodes()*smb->NbNodes() - n3*n4;
       if( nf != smFace->NbNodes() ) {
         MESSAGE( "Wrong nb face nodes: " <<
-                sm1->NbNodes()<<" "<<smb->NbNodes()<<" "<<smFace->NbNodes());
+                 sm1->NbNodes()<<" "<<smb->NbNodes()<<" "<<smFace->NbNodes());
         return false;
       }
     }
     else {
       MESSAGE( "Wrong nb face nodes: " <<
-              sm1->NbNodes()<<" "<<smb->NbNodes()<<" "<<smFace->NbNodes());
+               sm1->NbNodes()<<" "<<smb->NbNodes()<<" "<<smFace->NbNodes());
       return false;
     }
   }
@@ -1596,7 +1570,7 @@ bool StdMeshers_Penta_3D::LoadIJNodes(StdMeshers_IJNodeMap & theIJNodes,
           }
         }
         else if ( (nbFaceNodes==3 || (myCreateQuadratic && nbFaceNodes==6) )  &&
-                 n3 == par_nVec_1->second[ row ] ) {
+                  n3 == par_nVec_1->second[ row ] ) {
           n1 = n3;
         }
         else {
@@ -1773,7 +1747,7 @@ void StdMeshers_SMESHBlock::ComputeParameters(const double& theU,
     return;
   }
   if ( SMESH_Block::IsEdgeID( aID ))
-      bOk = myTBlock.EdgeParameters( aID, theU, theXYZ );
+    bOk = myTBlock.EdgeParameters( aID, theU, theXYZ );
   if (!bOk) {
     myErrorStatus=4; // problems with computation Parameters 
     return;
@@ -1784,8 +1758,7 @@ void StdMeshers_SMESHBlock::ComputeParameters(const double& theU,
 //function : Point
 //purpose  : 
 //=======================================================================
- void StdMeshers_SMESHBlock::Point(const gp_XYZ& theParams,
-                                   gp_Pnt& aP3D)
+void StdMeshers_SMESHBlock::Point(const gp_XYZ& theParams, gp_Pnt& aP3D)
 {
   TopoDS_Shape aS;
   //
@@ -1796,9 +1769,9 @@ void StdMeshers_SMESHBlock::ComputeParameters(const double& theU,
 //function : Point
 //purpose  : 
 //=======================================================================
- void StdMeshers_SMESHBlock::Point(const gp_XYZ& theParams,
-                                   const TopoDS_Shape& theShape,
-                                   gp_Pnt& aP3D)
+void StdMeshers_SMESHBlock::Point(const gp_XYZ& theParams,
+                                  const TopoDS_Shape& theShape,
+                                  gp_Pnt& aP3D)
 {
   myErrorStatus = 0;
   //
@@ -1964,7 +1937,7 @@ bool StdMeshers_Penta_3D::Evaluate(SMESH_Mesh& aMesh,
     std::vector<int> aVec = (*anIt).second;
     nb2d += Max(aVec[SMDSEntity_Quadrangle],aVec[SMDSEntity_Quad_Quadrangle]);
   }
-  
+
   MapShapeNbElemsItr anIt = aResMap.find( meshFaces[NumBase-1] );
   std::vector<int> aVec = (*anIt).second;
   int nb2d_face0 = Max(aVec[SMDSEntity_Quadrangle],aVec[SMDSEntity_Quad_Quadrangle]);
