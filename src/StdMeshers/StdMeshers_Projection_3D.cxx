@@ -68,7 +68,7 @@ StdMeshers_Projection_3D::StdMeshers_Projection_3D(int hypId, int studyId, SMESH
   :SMESH_3D_Algo(hypId, studyId, gen)
 {
   _name = "Projection_3D";
-  _shapeType = (1 << TopAbs_SHELL) | (1 << TopAbs_SOLID);	// 1 bit per shape type
+  _shapeType = (1 << TopAbs_SHELL) | (1 << TopAbs_SOLID);  // 1 bit per shape type
 
   _compatibleHypothesis.push_back("ProjectionSource3D");
   _sourceHypo = 0;
@@ -308,9 +308,9 @@ bool StdMeshers_Projection_3D::Compute(SMESH_Mesh& aMesh, const TopoDS_Shape& aS
     TNodeNodeMap faceMatchingNodes;
     if ( ! TAssocTool::FindMatchingNodesOnFaces( srcFace, srcMesh, tgtFace, tgtMesh, 
                                                  shape2ShapeMap, faceMatchingNodes ))
-    return error(COMPERR_BAD_INPUT_MESH,SMESH_Comment("Mesh on faces #")
-                 << srcMeshDS->ShapeToIndex( srcFace ) << " and "
-                 << tgtMeshDS->ShapeToIndex( tgtFace ) << " seems different" );
+      return error(COMPERR_BAD_INPUT_MESH,SMESH_Comment("Mesh on faces #")
+                   << srcMeshDS->ShapeToIndex( srcFace ) << " and "
+                   << tgtMeshDS->ShapeToIndex( tgtFace ) << " seems different" );
 
     // put found matching nodes of 2 faces to the global map
     src2tgtNodeMap.insert( faceMatchingNodes.begin(), faceMatchingNodes.end() );
@@ -427,8 +427,8 @@ bool StdMeshers_Projection_3D::Compute(SMESH_Mesh& aMesh, const TopoDS_Shape& aS
 //=======================================================================
 
 bool StdMeshers_Projection_3D::Evaluate(SMESH_Mesh& aMesh,
-					const TopoDS_Shape& aShape,
-					MapShapeNbElems& aResMap)
+                                        const TopoDS_Shape& aShape,
+                                        MapShapeNbElems& aResMap)
 {
   if ( !_sourceHypo )
     return false;
