@@ -32,6 +32,7 @@ salomeinclude_HEADERS = \
 	StdMeshers_LocalLength.hxx \
 	StdMeshers_StartEndLength.hxx \
 	StdMeshers_Arithmetic1D.hxx \
+	StdMeshers_FixedPoints1D.hxx \
 	StdMeshers_NumberOfSegments.hxx \
 	StdMeshers_Deflection1D.hxx \
 	StdMeshers_Propagation.hxx \
@@ -49,6 +50,7 @@ salomeinclude_HEADERS = \
 	StdMeshers_QuadranglePreference.hxx \
 	StdMeshers_QuadraticMesh.hxx \
 	StdMeshers_NumberOfLayers.hxx \
+	StdMeshers_NumberOfLayers2D.hxx \
 	StdMeshers_Prism_3D.hxx \
 	StdMeshers_ProjectionSource1D.hxx \
 	StdMeshers_ProjectionSource2D.hxx \
@@ -59,6 +61,7 @@ salomeinclude_HEADERS = \
 	StdMeshers_RadialPrism_3D.hxx  \
 	StdMeshers_ProjectionUtils.hxx \
 	StdMeshers_LayerDistribution.hxx \
+	StdMeshers_LayerDistribution2D.hxx \
 	StdMeshers_SegmentAroundVertex_0D.hxx \
 	StdMeshers_SegmentLengthAroundVertex.hxx \
 	StdMeshers_FaceSide.hxx \
@@ -69,7 +72,8 @@ salomeinclude_HEADERS = \
 	StdMeshers_TrianglePreference.hxx \
 	StdMeshers_CompositeHexa_3D.hxx \
 	StdMeshers_MaxLength.hxx \
-	StdMeshers_QuadrangleParams.hxx
+	StdMeshers_QuadrangleParams.hxx \
+	StdMeshers_RadialQuadrangle_1D2D.hxx
 
 # Libraries targets
 
@@ -79,6 +83,7 @@ dist_libStdMeshers_la_SOURCES = \
 	StdMeshers_LocalLength.cxx \
 	StdMeshers_StartEndLength.cxx \
 	StdMeshers_Arithmetic1D.cxx \
+	StdMeshers_FixedPoints1D.cxx \
 	StdMeshers_NumberOfSegments.cxx \
 	StdMeshers_Deflection1D.cxx \
 	StdMeshers_Propagation.cxx \
@@ -96,6 +101,7 @@ dist_libStdMeshers_la_SOURCES = \
 	StdMeshers_QuadranglePreference.cxx \
 	StdMeshers_QuadraticMesh.cxx \
 	StdMeshers_NumberOfLayers.cxx \
+	StdMeshers_NumberOfLayers2D.cxx \
 	StdMeshers_Prism_3D.cxx \
 	StdMeshers_ProjectionSource1D.cxx \
 	StdMeshers_ProjectionSource2D.cxx \
@@ -106,6 +112,7 @@ dist_libStdMeshers_la_SOURCES = \
 	StdMeshers_RadialPrism_3D.cxx \
 	StdMeshers_ProjectionUtils.cxx \
 	StdMeshers_LayerDistribution.cxx \
+	StdMeshers_LayerDistribution2D.cxx \
 	StdMeshers_SegmentAroundVertex_0D.cxx \
 	StdMeshers_SegmentLengthAroundVertex.cxx \
 	StdMeshers_FaceSide.cxx \
@@ -115,7 +122,8 @@ dist_libStdMeshers_la_SOURCES = \
 	StdMeshers_TrianglePreference.cxx \
 	StdMeshers_CompositeHexa_3D.cxx \
 	StdMeshers_MaxLength.cxx \
-	StdMeshers_QuadrangleParams.cxx
+	StdMeshers_QuadrangleParams.cxx \
+	StdMeshers_RadialQuadrangle_1D2D.cxx
 
 
 # additionnal information to compil and link file

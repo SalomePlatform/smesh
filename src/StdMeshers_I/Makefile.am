@@ -32,6 +32,7 @@ salomeinclude_HEADERS = \
 	StdMeshers_LocalLength_i.hxx \
 	StdMeshers_StartEndLength_i.hxx \
 	StdMeshers_Arithmetic1D_i.hxx \
+	StdMeshers_FixedPoints1D_i.hxx \
 	StdMeshers_NumberOfSegments_i.hxx \
 	StdMeshers_Deflection1D_i.hxx \
 	StdMeshers_Propagation_i.hxx \
@@ -47,6 +48,7 @@ salomeinclude_HEADERS = \
 	StdMeshers_QuadranglePreference_i.hxx \
 	StdMeshers_QuadraticMesh_i.hxx \
 	StdMeshers_NumberOfLayers_i.hxx \
+	StdMeshers_NumberOfLayers2D_i.hxx \
 	StdMeshers_Prism_3D_i.hxx \
 	StdMeshers_ProjectionSource1D_i.hxx \
 	StdMeshers_ProjectionSource2D_i.hxx \
@@ -54,6 +56,7 @@ salomeinclude_HEADERS = \
 	StdMeshers_Projection_1D_2D_3D_i.hxx \
 	StdMeshers_ObjRefUlils.hxx \
 	StdMeshers_LayerDistribution_i.hxx \
+	StdMeshers_LayerDistribution2D_i.hxx \
 	StdMeshers_CompositeSegment_1D_i.hxx \
 	StdMeshers_SegmentAroundVertex_0D_i.hxx \
 	StdMeshers_SegmentLengthAroundVertex_i.hxx \
@@ -61,6 +64,7 @@ salomeinclude_HEADERS = \
 	StdMeshers_TrianglePreference_i.hxx \
 	StdMeshers_MaxLength_i.hxx \
 	StdMeshers_QuadrangleParams_i.hxx \
+	StdMeshers_RadialQuadrangle_1D2D_i.hxx \
 	SMESH_StdMeshers_I.hxx
 
 # Libraries targets
@@ -71,6 +75,7 @@ dist_libStdMeshersEngine_la_SOURCES = \
         StdMeshers_LocalLength_i.cxx \
 	StdMeshers_StartEndLength_i.cxx \
 	StdMeshers_Arithmetic1D_i.cxx \
+	StdMeshers_FixedPoints1D_i.cxx \
 	StdMeshers_NumberOfSegments_i.cxx \
 	StdMeshers_Deflection1D_i.cxx \
         StdMeshers_Propagation_i.cxx \
@@ -86,6 +91,7 @@ dist_libStdMeshersEngine_la_SOURCES = \
 	StdMeshers_QuadranglePreference_i.cxx \
 	StdMeshers_QuadraticMesh_i.cxx \
 	StdMeshers_NumberOfLayers_i.cxx \
+	StdMeshers_NumberOfLayers2D_i.cxx \
 	StdMeshers_Prism_3D_i.cxx \
 	StdMeshers_ProjectionSource1D_i.cxx \
 	StdMeshers_ProjectionSource2D_i.cxx \
@@ -93,13 +99,15 @@ dist_libStdMeshersEngine_la_SOURCES = \
 	StdMeshers_Projection_1D_2D_3D_i.cxx \
 	StdMeshers_ObjRefUlils.cxx \
 	StdMeshers_LayerDistribution_i.cxx \
+	StdMeshers_LayerDistribution2D_i.cxx \
 	StdMeshers_CompositeSegment_1D_i.cxx \
 	StdMeshers_SegmentAroundVertex_0D_i.cxx \
 	StdMeshers_SegmentLengthAroundVertex_i.cxx \
 	StdMeshers_UseExisting_1D2D_i.cxx \
 	StdMeshers_TrianglePreference_i.cxx \
 	StdMeshers_MaxLength_i.cxx \
-	StdMeshers_QuadrangleParams_i.cxx
+	StdMeshers_QuadrangleParams_i.cxx \
+	StdMeshers_RadialQuadrangle_1D2D_i.cxx
 
 # additionnal information to compil and link file
 libStdMeshersEngine_la_CPPFLAGS = \

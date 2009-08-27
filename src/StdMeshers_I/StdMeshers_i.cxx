@@ -34,6 +34,7 @@
 #include "StdMeshers_AutomaticLength_i.hxx"
 #include "StdMeshers_StartEndLength_i.hxx"
 #include "StdMeshers_Arithmetic1D_i.hxx"
+#include "StdMeshers_FixedPoints1D_i.hxx"
 #include "StdMeshers_NumberOfSegments_i.hxx"
 #include "StdMeshers_Deflection1D_i.hxx"
 #include "StdMeshers_Propagation_i.hxx"
@@ -49,6 +50,8 @@
 #include "StdMeshers_ProjectionSource1D_i.hxx"
 #include "StdMeshers_NumberOfLayers_i.hxx"
 #include "StdMeshers_LayerDistribution_i.hxx"
+#include "StdMeshers_NumberOfLayers2D_i.hxx"
+#include "StdMeshers_LayerDistribution2D_i.hxx"
 #include "StdMeshers_SegmentLengthAroundVertex_i.hxx"
 #include "StdMeshers_MaxLength_i.hxx"
 #include "StdMeshers_QuadrangleParams_i.hxx"
@@ -62,6 +65,7 @@
 #include "StdMeshers_SegmentAroundVertex_0D_i.hxx"
 #include "StdMeshers_CompositeSegment_1D_i.hxx"
 #include "StdMeshers_UseExisting_1D2D_i.hxx"
+#include "StdMeshers_RadialQuadrangle_1D2D_i.hxx"
 
 
 template <class T> class StdHypothesisCreator_i:public HypothesisCreator_i<T>
@@ -106,6 +110,8 @@ STDMESHERS_I_EXPORT
       aCreator = new StdHypothesisCreator_i<StdMeshers_StartEndLength_i>;
     else if (strcmp(aHypName, "Deflection1D") == 0)
       aCreator = new StdHypothesisCreator_i<StdMeshers_Deflection1D_i>;
+    else if (strcmp(aHypName, "FixedPoints1D") == 0)
+      aCreator = new StdHypothesisCreator_i<StdMeshers_FixedPoints1D_i>;
     else if (strcmp(aHypName, "Arithmetic1D") == 0)
       aCreator = new StdHypothesisCreator_i<StdMeshers_Arithmetic1D_i>;
     else if (strcmp(aHypName, "AutomaticLength") == 0)
@@ -126,6 +132,10 @@ STDMESHERS_I_EXPORT
       aCreator = new StdHypothesisCreator_i<StdMeshers_NumberOfLayers_i>;
     else if (strcmp(aHypName, "LayerDistribution") == 0)
       aCreator = new StdHypothesisCreator_i<StdMeshers_LayerDistribution_i>;
+    else if (strcmp(aHypName, "NumberOfLayers2D") == 0)
+      aCreator = new StdHypothesisCreator_i<StdMeshers_NumberOfLayers2D_i>;
+    else if (strcmp(aHypName, "LayerDistribution2D") == 0)
+      aCreator = new StdHypothesisCreator_i<StdMeshers_LayerDistribution2D_i>;
     else if (strcmp(aHypName, "SegmentLengthAroundVertex") == 0)
       aCreator = new StdHypothesisCreator_i<StdMeshers_SegmentLengthAroundVertex_i>;
     else if (strcmp(aHypName, "QuadrangleParams") == 0)
@@ -158,6 +168,8 @@ STDMESHERS_I_EXPORT
       aCreator = new StdHypothesisCreator_i<StdMeshers_UseExisting_1D_i>;
     else if (strcmp(aHypName, "UseExisting_2D") == 0)
       aCreator = new StdHypothesisCreator_i<StdMeshers_UseExisting_2D_i>;
+    else if (strcmp(aHypName, "RadialQuadrangle_1D2D") == 0)
+      aCreator = new StdHypothesisCreator_i<StdMeshers_RadialQuadrangle_1D2D_i>;
     else ;
 
     return aCreator;

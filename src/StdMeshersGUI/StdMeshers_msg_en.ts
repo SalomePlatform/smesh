@@ -150,6 +150,14 @@
             <translation>Hypothesis Construction</translation>
         </message>
         <message>
+            <source>SMESH_FIXED_POINTS_1D_HYPOTHESIS</source>
+            <translation>Fixed points 1D</translation>
+        </message>
+        <message>
+            <source>SMESH_FIXED_POINTS_1D_TITLE</source>
+            <translation>Hypothesis Construction</translation>
+        </message>
+        <message>
             <source>SMESH_MAX_LENGTH_HYPOTHESIS</source>
             <translation>Max Length</translation>
         </message>
@@ -246,8 +254,24 @@
             <translation>Remove row</translation>
         </message>
 	<message>
-            <source>SMESH_REVERCE_EDGES</source>
-            <translation>Reverce Edges</translation>
+            <source>SMESH_REVERSED_EDGES</source>
+            <translation>Reversed Edges</translation>
+        </message>
+	<message>
+            <source>SMESH_FIXED_POINTS</source>
+            <translation>Fixed Points</translation>
+        </message>
+	<message>
+            <source>SMESH_RANGE</source>
+            <translation>Range</translation>
+        </message>
+	<message>
+            <source>SMESH_NB_SEGMENTS</source>
+            <translation>Nb. Segments</translation>
+        </message>
+	<message>
+            <source>SMESH_SAME_NB_SEGMENTS</source>
+            <translation>Same Nb. Segments for All Intervals</translation>
         </message>
 	<message>
             <source>SMESH_BASE_VERTEX</source>

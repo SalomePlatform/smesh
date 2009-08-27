@@ -386,6 +386,54 @@ module StdMeshers
 
 
   /*!
+   * StdMeshers_FixedPoints1D: interface of "Fixed points 1D" hypothesis
+   */
+  interface StdMeshers_FixedPoints1D : SMESH::SMESH_Hypothesis
+  {
+    /*!
+     * Sets some points on edge using parameter on curve from 0 to 1
+     * (additionally it is neecessary to check orientation of edges and
+     * create list of reversed edges if it is needed) and sets numbers
+     * of segments between given points (default values are equals 1)
+     */
+    void SetPoints(in SMESH::double_array listParams) 
+      raises (SALOME::SALOME_Exception);
+    void SetNbSegments(in SMESH::long_array listNbSeg) 
+      raises (SALOME::SALOME_Exception);
+
+    /*!
+     * Returns list of point's parameters
+     */
+    SMESH::double_array GetPoints();
+    
+    /*!
+     * Returns list of numbers of segments
+     */
+    SMESH::long_array GetNbSegments();
+    
+    /*!
+     * Set list of edges to reverse
+     */
+    void SetReversedEdges( in SMESH::long_array list );
+    
+    /*!
+     * Returns list of edges to reverse
+     */
+    SMESH::long_array GetReversedEdges();
+    
+    /*!
+     * Set entry of the main object
+     */
+    void SetObjectEntry( in string entry );
+    
+    /*!
+     * Get the entry of the main object
+     */
+    string GetObjectEntry();
+  };
+
+
+  /*!
    * StdMeshers_MaxElementVolume: interface of "Max. Hexahedron or Tetrahedron Volume" hypothesis
    */
   interface StdMeshers_MaxElementVolume : SMESH::SMESH_Hypothesis
@@ -496,6 +544,26 @@ module StdMeshers
      */
     SMESH::SMESH_Hypothesis GetLayerDistribution();
 
+  };
+
+  /*!
+   * StdMeshers_NumberOfLayers2D: interface of "Nb. Layers" hypothesis.
+   * This hypothesis is used by "Radial quadrangle" algorithm.
+   * It specifies number of segments between the internal 
+   * and the external surfaces.
+   */
+  interface StdMeshers_NumberOfLayers2D : StdMeshers_NumberOfLayers
+  {
+  };
+
+  /*!
+   * StdMeshers_LayerDistribution2D: interface of "Distribution of Layers" hypothesis.
+   * This hypothesis is used by "Radial quadrangle" algorithm.
+   * It specifies 1D hypothesis defining distribution of segments between the internal 
+   * and the external surfaces.
+   */
+  interface StdMeshers_LayerDistribution2D : StdMeshers_LayerDistribution
+  {
   };
 
   /*!
@@ -797,6 +865,13 @@ module StdMeshers
    * doing nothing to allow mesh generation by mesh edition functions in TUI mode
    */
   interface StdMeshers_UseExisting_1D : SMESH::SMESH_1D_Algo
+  {
+  };
+
+  /*!
+   * StdMeshers_RadialQuadrangle_1D2D: interface of "Radial quadrangle" algorithm
+   */
+  interface StdMeshers_RadialQuadrangle_1D2D : SMESH::SMESH_2D_Algo
   {
   };
 

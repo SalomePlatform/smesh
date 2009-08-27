@@ -30,6 +30,10 @@
             <translation>mesh_hypo_length.png</translation>
         </message>
         <message>
+            <source>ICON_DLG_FIXED_POINTS_1D</source>
+            <translation>mesh_hypo_length.png</translation>
+        </message>
+        <message>
             <source>ICON_DLG_AUTOMATIC_LENGTH</source>
             <translation>mesh_hypo_length.png</translation>
         </message>

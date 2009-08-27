@@ -91,7 +91,7 @@ StdMeshers_Penta_3D::~StdMeshers_Penta_3D()
 //purpose  : 
 //=======================================================================
 bool StdMeshers_Penta_3D::Compute(SMESH_Mesh& aMesh, 
-				  const TopoDS_Shape& aShape)
+                                  const TopoDS_Shape& aShape)
 {
   MESSAGE("StdMeshers_Penta_3D::Compute()");
   //
@@ -424,7 +424,7 @@ void StdMeshers_Penta_3D::MakeNodes()
       ShapeSupportID(bIsUpperLayer, aBNSSID, aSSID);
       if (!myErrorStatus->IsOK()) {
         MESSAGE("StdMeshers_Penta_3D::MakeNodes() ");
-	return;
+        return;
       }
       //
       aTN.SetShapeSupportID(aSSID);
@@ -432,13 +432,13 @@ void StdMeshers_Penta_3D::MakeNodes()
       aTN.SetBaseNodeID(iBNID);
       //
       if (aSSID!=SMESH_Block::ID_NONE){
-	// try to find the node
-	const TopoDS_Shape& aS=myBlock.Shape((int)aSSID);
-	FindNodeOnShape(aS, aCoords, i, aTN);
+        // try to find the node
+        const TopoDS_Shape& aS=myBlock.Shape((int)aSSID);
+        FindNodeOnShape(aS, aCoords, i, aTN);
       }
       else{
-	// create node and get it id
-	CreateNode (bIsUpperLayer, aCoords, aTN);
+        // create node and get it id
+        CreateNode (bIsUpperLayer, aCoords, aTN);
         //
         if ( bIsUpperLayer ) {
           const SMDS_MeshNode* n = aTN.Node();
@@ -471,7 +471,7 @@ void StdMeshers_Penta_3D::MakeNodes()
       }
       if (!myErrorStatus->IsOK()) {
         MESSAGE("StdMeshers_Penta_3D::MakeNodes() ");
-	return;
+        return;
       }
       //
       myTNodes[ij]=aTN;
@@ -485,20 +485,20 @@ void StdMeshers_Penta_3D::MakeNodes()
     for (i=0; i<myISize; ++i) {
       printf(" Layer# %d\n", i);
       for (j=0; j<myJSize; ++j) {
-	ij=i*myJSize+j; 
-	const StdMeshers_TNode& aTN=myTNodes[ij];
-	//const StdMeshers_TNode& aTN=aTNodes[ij];
-	const gp_XYZ& aXYZ=aTN.NormCoord();
-	iSSID=aTN.ShapeSupportID();
-	iBNID=aTN.BaseNodeID();
-	//
-	const SMDS_MeshNode* aNode=aTN.Node();
-	aID=aNode->GetID(); 
-	aX=aNode->X();
-	aY=aNode->Y();
-	aZ=aNode->Z();
-	printf("*** j:%d BNID#%d iSSID:%d ID:%d { %lf %lf %lf },  { %lf %lf %lf }\n",
-	       j,  iBNID, iSSID, aID, aXYZ.X(),  aXYZ.Y(), aXYZ.Z(), aX, aY, aZ);
+        ij=i*myJSize+j; 
+        const StdMeshers_TNode& aTN=myTNodes[ij];
+        //const StdMeshers_TNode& aTN=aTNodes[ij];
+        const gp_XYZ& aXYZ=aTN.NormCoord();
+        iSSID=aTN.ShapeSupportID();
+        iBNID=aTN.BaseNodeID();
+        //
+        const SMDS_MeshNode* aNode=aTN.Node();
+        aID=aNode->GetID(); 
+        aX=aNode->X();
+        aY=aNode->Y();
+        aZ=aNode->Z();
+        printf("*** j:%d BNID#%d iSSID:%d ID:%d { %lf %lf %lf },  { %lf %lf %lf }\n",
+               j,  iBNID, iSSID, aID, aXYZ.X(),  aXYZ.Y(), aXYZ.Z(), aX, aY, aZ);
       }
     }
   }
@@ -513,9 +513,9 @@ void StdMeshers_Penta_3D::MakeNodes()
 //=======================================================================
 
 void StdMeshers_Penta_3D::FindNodeOnShape(const TopoDS_Shape& aS,
-					  const gp_XYZ&       aParams,
+                                          const gp_XYZ&       aParams,
                                           const int           z,
-					  StdMeshers_TNode&   aTN)
+                                          StdMeshers_TNode&   aTN)
 {
   double aX, aY, aZ, aD, aTol2, minD;
   gp_Pnt aP1, aP2;
@@ -675,8 +675,8 @@ void StdMeshers_Penta_3D::MakeVolumeMesh()
       const StdMeshers_TNode& aTN = myTNodes[ij];
       aSSID=aTN.ShapeSupportID();
       if (aSSID==SMESH_Block::ID_NONE) {
-	SMDS_MeshNode* aNode = (SMDS_MeshNode*)aTN.Node();
-	meshDS->SetNodeInVolume(aNode, shapeID);
+        SMDS_MeshNode* aNode = (SMDS_MeshNode*)aTN.Node();
+        meshDS->SetNodeInVolume(aNode, shapeID);
       }
     }
   }
@@ -714,7 +714,7 @@ void StdMeshers_Penta_3D::MakeVolumeMesh()
       aJ[k] = GetIndexOnLayer(aID0);
       if (!myErrorStatus->IsOK()) {
         MESSAGE("StdMeshers_Penta_3D::MakeVolumeMesh");
-	return;
+        return;
       }
       //
       ++k;
@@ -725,15 +725,15 @@ void StdMeshers_Penta_3D::MakeVolumeMesh()
       i1=i;
       i2=i+1;
       for(j=0; j<nbFaceNodes; ++j) {
-	ij = i1*myJSize+aJ[j];
-	const StdMeshers_TNode& aTN1 = myTNodes[ij];
-	const SMDS_MeshNode* aN1 = aTN1.Node();
-	aN[j]=aN1;
-	//
-	ij=i2*myJSize+aJ[j];
-	const StdMeshers_TNode& aTN2 = myTNodes[ij];
-	const SMDS_MeshNode* aN2 = aTN2.Node();
-	aN[j+nbFaceNodes] = aN2;
+        ij = i1*myJSize+aJ[j];
+        const StdMeshers_TNode& aTN1 = myTNodes[ij];
+        const SMDS_MeshNode* aN1 = aTN1.Node();
+        aN[j]=aN1;
+        //
+        ij=i2*myJSize+aJ[j];
+        const StdMeshers_TNode& aTN2 = myTNodes[ij];
+        const SMDS_MeshNode* aN2 = aTN2.Node();
+        aN[j+nbFaceNodes] = aN2;
       }
       // check if volume orientation will be ok
       if ( i == 0 ) {
@@ -851,7 +851,7 @@ void StdMeshers_Penta_3D::MakeMeshOnFxy1()
       aJ = GetIndexOnLayer(aID0);
       if (!myErrorStatus->IsOK()) {
         MESSAGE("StdMeshers_Penta_3D::MakeMeshOnFxy1() ");
-	return;
+        return;
       }
       //
       ij = aLevel*myJSize + aJ;
@@ -939,8 +939,8 @@ void StdMeshers_Penta_3D::MakeConnectingMap()
 //purpose  : 
 //=======================================================================
 void StdMeshers_Penta_3D::CreateNode(const bool bIsUpperLayer,
-				     const gp_XYZ& aParams,
-				     StdMeshers_TNode& aTN)
+                                     const gp_XYZ& aParams,
+                                     StdMeshers_TNode& aTN)
 {
   double aX, aY, aZ;
   //
@@ -996,8 +996,8 @@ void StdMeshers_Penta_3D::CreateNode(const bool bIsUpperLayer,
 //purpose  : 
 //=======================================================================
 void StdMeshers_Penta_3D::ShapeSupportID(const bool bIsUpperLayer,
-					 const SMESH_Block::TShapeID aBNSSID,
-					 SMESH_Block::TShapeID& aSSID)
+                                         const SMESH_Block::TShapeID aBNSSID,
+                                         SMESH_Block::TShapeID& aSSID)
 {
   switch (aBNSSID) {
     case SMESH_Block::ID_V000:
@@ -1068,25 +1068,25 @@ void StdMeshers_Penta_3D::MakeBlock()
       const SMDS_MeshElement * pElement = itf->next();
       aElementType = pElement->GetType();
       if (aElementType==SMDSAbs_Face) {
-	iNbNodes = pElement->NbNodes();
-	if ( iNbNodes==3 || (pElement->IsQuadratic() && iNbNodes==6) ) {
-	  aFTr = aF;
-	  ++iCnt;
-	  if (iCnt>1) {
-	    // \begin{E.A.}
-	    // The current algorithm fails if there is more that one
-	    // face wich contains triangles ...
-	    // In that case, replace return by break to try another
-	    // method (coded in "if (iCnt != 1) { ... }")
-	    //
+        iNbNodes = pElement->NbNodes();
+        if ( iNbNodes==3 || (pElement->IsQuadratic() && iNbNodes==6) ) {
+          aFTr = aF;
+          ++iCnt;
+          if (iCnt>1) {
+            // \begin{E.A.}
+            // The current algorithm fails if there is more that one
+            // face wich contains triangles ...
+            // In that case, replace return by break to try another
+            // method (coded in "if (iCnt != 1) { ... }")
+            //
             // MESSAGE("StdMeshers_Penta_3D::MakeBlock() ");
-	    // myErrorStatus=5; // more than one face has triangulation
-	    // return;
-	    break;
-	    // \end{E.A.}
-	  }
-	  break; // next face
-	}
+            // myErrorStatus=5; // more than one face has triangulation
+            // return;
+            break;
+            // \end{E.A.}
+          }
+          break; // next face
+        }
       }
     }
   }
@@ -1155,85 +1155,85 @@ void StdMeshers_Penta_3D::MakeBlock()
       int has_only_quad_f6 = 1;
       //
       for (i=1; i<=iNbF; ++i) {
-	int ok = 1;
-	const TopoDS_Shape& aF = aM(i);
-	SMESH_subMesh *aSubMesh = pMesh->GetSubMeshContaining(aF);
-	SMESHDS_SubMesh *aSM = aSubMesh->GetSubMeshDS();
-	SMDS_ElemIteratorPtr itf = aSM->GetElements();
-	while(itf->more()) {
-	  const SMDS_MeshElement * pElement = itf->next();
-	  aElementType = pElement->GetType();
-	  if (aElementType==SMDSAbs_Face) {
-	    iNbNodes = pElement->NbNodes();
-	    if ( iNbNodes!=4 ) {
-	      ok = 0;
-	      break ;
-	    }
-	  }
-	}
-	if (i==1) has_only_quad_f1 = ok ;
-	if (i==2) has_only_quad_f2 = ok ;
-	if (i==3) has_only_quad_f3 = ok ;
-	if (i==4) has_only_quad_f4 = ok ;
-	if (i==5) has_only_quad_f5 = ok ;
-	if (i==6) has_only_quad_f6 = ok ;
+        int ok = 1;
+        const TopoDS_Shape& aF = aM(i);
+        SMESH_subMesh *aSubMesh = pMesh->GetSubMeshContaining(aF);
+        SMESHDS_SubMesh *aSM = aSubMesh->GetSubMeshDS();
+        SMDS_ElemIteratorPtr itf = aSM->GetElements();
+        while(itf->more()) {
+          const SMDS_MeshElement * pElement = itf->next();
+          aElementType = pElement->GetType();
+          if (aElementType==SMDSAbs_Face) {
+            iNbNodes = pElement->NbNodes();
+            if ( iNbNodes!=4 ) {
+              ok = 0;
+              break ;
+            }
+          }
+        }
+        if (i==1) has_only_quad_f1 = ok ;
+        if (i==2) has_only_quad_f2 = ok ;
+        if (i==3) has_only_quad_f3 = ok ;
+        if (i==4) has_only_quad_f4 = ok ;
+        if (i==5) has_only_quad_f5 = ok ;
+        if (i==6) has_only_quad_f6 = ok ;
       }
       //
       TopTools_IndexedMapOfShape aE;
       TopExp::MapShapes(myShape, TopAbs_EDGE, aE);
       int iNbE = aE.Extent();
       if (iNbE == 12) {
-	//
-	int nb_e01 = pMesh->GetSubMeshContaining(aE(1))->GetSubMeshDS()->NbElements();
-	int nb_e02 = pMesh->GetSubMeshContaining(aE(2))->GetSubMeshDS()->NbElements();
-	int nb_e03 = pMesh->GetSubMeshContaining(aE(3))->GetSubMeshDS()->NbElements();
-	int nb_e04 = pMesh->GetSubMeshContaining(aE(4))->GetSubMeshDS()->NbElements();
-	int nb_e05 = pMesh->GetSubMeshContaining(aE(5))->GetSubMeshDS()->NbElements();
-	int nb_e06 = pMesh->GetSubMeshContaining(aE(6))->GetSubMeshDS()->NbElements();
-	int nb_e07 = pMesh->GetSubMeshContaining(aE(7))->GetSubMeshDS()->NbElements();
-	int nb_e08 = pMesh->GetSubMeshContaining(aE(8))->GetSubMeshDS()->NbElements();
-	int nb_e09 = pMesh->GetSubMeshContaining(aE(9))->GetSubMeshDS()->NbElements();
-	int nb_e10 = pMesh->GetSubMeshContaining(aE(10))->GetSubMeshDS()->NbElements();
-	int nb_e11 = pMesh->GetSubMeshContaining(aE(11))->GetSubMeshDS()->NbElements();
-	int nb_e12 = pMesh->GetSubMeshContaining(aE(12))->GetSubMeshDS()->NbElements();
-	//
-	int nb_ok = 0 ;
-	//
-	if ( (nb_e01==nb_e03) && (nb_e03==nb_e05) && (nb_e05==nb_e07) ) {
-	  if ( has_only_quad_f1 && has_only_quad_f2 && has_only_quad_f3 && has_only_quad_f4 ) {
-	    if ( (nb_e09==nb_e10) && (nb_e08==nb_e06) && (nb_e11==nb_e12) && (nb_e04==nb_e02) ) {
-	      if (nb_f5==nb_f6) {
-		nb_ok += 1;
-		aFTr = aM(5);
-	      }
-	    }
-	  }
-	}
-	if ( (nb_e02==nb_e04) && (nb_e04==nb_e06) && (nb_e06==nb_e08) ) {
-	  if ( has_only_quad_f1 && has_only_quad_f2 && has_only_quad_f5 && has_only_quad_f6 ) {
-	    if ( (nb_e01==nb_e03) && (nb_e10==nb_e12) && (nb_e05==nb_e07) && (nb_e09==nb_e11) ) {
-	      if (nb_f3==nb_f4) {
-		nb_ok += 1;
-		aFTr = aM(3);
-	      }
-	    }
-	  }
-	}
-	if ( (nb_e09==nb_e10) && (nb_e10==nb_e11) && (nb_e11==nb_e12) ) {
-	  if ( has_only_quad_f3 && has_only_quad_f4 && has_only_quad_f5 && has_only_quad_f6 ) {
-	    if ( (nb_e01==nb_e05) && (nb_e02==nb_e06) && (nb_e03==nb_e07) && (nb_e04==nb_e08) ) {
-	      if (nb_f1==nb_f2) {
-		nb_ok += 1;
-		aFTr = aM(1);
-	      }
-	    }
-	  }
-	}
-	//
-	if ( nb_ok == 1 ) {
-	  isOK = 1;
-	}
-	//
+        //
+        int nb_e01 = pMesh->GetSubMeshContaining(aE(1))->GetSubMeshDS()->NbElements();
+        int nb_e02 = pMesh->GetSubMeshContaining(aE(2))->GetSubMeshDS()->NbElements();
+        int nb_e03 = pMesh->GetSubMeshContaining(aE(3))->GetSubMeshDS()->NbElements();
+        int nb_e04 = pMesh->GetSubMeshContaining(aE(4))->GetSubMeshDS()->NbElements();
+        int nb_e05 = pMesh->GetSubMeshContaining(aE(5))->GetSubMeshDS()->NbElements();
+        int nb_e06 = pMesh->GetSubMeshContaining(aE(6))->GetSubMeshDS()->NbElements();
+        int nb_e07 = pMesh->GetSubMeshContaining(aE(7))->GetSubMeshDS()->NbElements();
+        int nb_e08 = pMesh->GetSubMeshContaining(aE(8))->GetSubMeshDS()->NbElements();
+        int nb_e09 = pMesh->GetSubMeshContaining(aE(9))->GetSubMeshDS()->NbElements();
+        int nb_e10 = pMesh->GetSubMeshContaining(aE(10))->GetSubMeshDS()->NbElements();
+        int nb_e11 = pMesh->GetSubMeshContaining(aE(11))->GetSubMeshDS()->NbElements();
+        int nb_e12 = pMesh->GetSubMeshContaining(aE(12))->GetSubMeshDS()->NbElements();
+        //
+        int nb_ok = 0 ;
+        //
+        if ( (nb_e01==nb_e03) && (nb_e03==nb_e05) && (nb_e05==nb_e07) ) {
+          if ( has_only_quad_f1 && has_only_quad_f2 && has_only_quad_f3 && has_only_quad_f4 ) {
+            if ( (nb_e09==nb_e10) && (nb_e08==nb_e06) && (nb_e11==nb_e12) && (nb_e04==nb_e02) ) {
+              if (nb_f5==nb_f6) {
+                nb_ok += 1;
+                aFTr = aM(5);
+              }
+            }
+          }
+        }
+        if ( (nb_e02==nb_e04) && (nb_e04==nb_e06) && (nb_e06==nb_e08) ) {
+          if ( has_only_quad_f1 && has_only_quad_f2 && has_only_quad_f5 && has_only_quad_f6 ) {
+            if ( (nb_e01==nb_e03) && (nb_e10==nb_e12) && (nb_e05==nb_e07) && (nb_e09==nb_e11) ) {
+              if (nb_f3==nb_f4) {
+                nb_ok += 1;
+                aFTr = aM(3);
+              }
+            }
+          }
+        }
+        if ( (nb_e09==nb_e10) && (nb_e10==nb_e11) && (nb_e11==nb_e12) ) {
+          if ( has_only_quad_f3 && has_only_quad_f4 && has_only_quad_f5 && has_only_quad_f6 ) {
+            if ( (nb_e01==nb_e05) && (nb_e02==nb_e06) && (nb_e03==nb_e07) && (nb_e04==nb_e08) ) {
+              if (nb_f1==nb_f2) {
+                nb_ok += 1;
+                aFTr = aM(1);
+              }
+            }
+          }
+        }
+        //
+        if ( nb_ok == 1 ) {
+          isOK = 1;
+        }
+        //
       }
     }
     if (!isOK) {
@@ -1286,11 +1286,11 @@ void StdMeshers_Penta_3D::MakeBlock()
       const TopoDS_Edge& aE=TopoDS::Edge(aEx);
       TopExp::Vertices(aE, aV[0], aV[1]);
       for (i=0; i<2; ++i) {
-	if (!aV[i].IsSame(aV000)) {
-	  aV001=aV[i];
-	  bFound=!bFound;
-	  break;
-	}
+        if (!aV[i].IsSame(aV000)) {
+          aV001=aV[i];
+          bFound=!bFound;
+          break;
+        }
       }
     }
   }
@@ -1703,8 +1703,8 @@ void StdMeshers_SMESHBlock::Load(const TopoDS_Shell& theShell)
 //purpose  : 
 //=======================================================================
 void StdMeshers_SMESHBlock::Load(const TopoDS_Shell& theShell,
-				 const TopoDS_Vertex& theV000,
-				 const TopoDS_Vertex& theV001)
+                                 const TopoDS_Vertex& theV000,
+                                 const TopoDS_Vertex& theV001)
 {
   myErrorStatus=0;
   //
@@ -1725,7 +1725,7 @@ void StdMeshers_SMESHBlock::Load(const TopoDS_Shell& theShell,
 //purpose  : 
 //=======================================================================
 void StdMeshers_SMESHBlock::ComputeParameters(const gp_Pnt& thePnt, 
-					      gp_XYZ& theXYZ)
+                                              gp_XYZ& theXYZ)
 {
   ComputeParameters(thePnt, myShell, theXYZ);
 }
@@ -1735,7 +1735,7 @@ void StdMeshers_SMESHBlock::ComputeParameters(const gp_Pnt& thePnt,
 //purpose  : 
 //=======================================================================
 void StdMeshers_SMESHBlock::ComputeParameters(const gp_Pnt& thePnt,
-					      const TopoDS_Shape& theShape,
+                                              const TopoDS_Shape& theShape,
                                               gp_XYZ& theXYZ)
 {
   myErrorStatus=0;
@@ -1785,7 +1785,7 @@ void StdMeshers_SMESHBlock::ComputeParameters(const double& theU,
 //purpose  : 
 //=======================================================================
  void StdMeshers_SMESHBlock::Point(const gp_XYZ& theParams,
-				   gp_Pnt& aP3D)
+                                   gp_Pnt& aP3D)
 {
   TopoDS_Shape aS;
   //
@@ -1797,8 +1797,8 @@ void StdMeshers_SMESHBlock::ComputeParameters(const double& theU,
 //purpose  : 
 //=======================================================================
  void StdMeshers_SMESHBlock::Point(const gp_XYZ& theParams,
-				   const TopoDS_Shape& theShape,
-				   gp_Pnt& aP3D)
+                                   const TopoDS_Shape& theShape,
+                                   gp_Pnt& aP3D)
 {
   myErrorStatus = 0;
   //
@@ -1889,8 +1889,8 @@ const TopoDS_Shape& StdMeshers_SMESHBlock::Shape(const int theID)
 //purpose  : 
 //=======================================================================
 bool StdMeshers_Penta_3D::Evaluate(SMESH_Mesh& aMesh, 
-				   const TopoDS_Shape& aShape,
-				   MapShapeNbElems& aResMap)
+                                   const TopoDS_Shape& aShape,
+                                   MapShapeNbElems& aResMap)
 {
   MESSAGE("StdMeshers_Penta_3D::Evaluate()");
 
@@ -1904,6 +1904,10 @@ bool StdMeshers_Penta_3D::Evaluate(SMESH_Mesh& aMesh,
     SMESH_subMesh *aSubMesh = aMesh.GetSubMesh(exp.Current());
     meshFaces.push_back(aSubMesh);
     MapShapeNbElemsItr anIt = aResMap.find(meshFaces[i]);
+    if( anIt == aResMap.end() ) {
+      NumBase = 0;
+      break;
+    }
     std::vector<int> aVec = (*anIt).second;
     int nbtri = Max(aVec[SMDSEntity_Triangle],aVec[SMDSEntity_Quad_Triangle]);
     int nbqua = Max(aVec[SMDSEntity_Quadrangle],aVec[SMDSEntity_Quad_Quadrangle]);
@@ -1912,7 +1916,15 @@ bool StdMeshers_Penta_3D::Evaluate(SMESH_Mesh& aMesh,
     }
   }
 
-  if(NumBase==0) return false;
+  if(NumBase==0) {
+    std::vector<int> aResVec(SMDSEntity_Last);
+    for(int i=SMDSEntity_Node; i<SMDSEntity_Last; i++) aResVec[i] = 0;
+    SMESH_subMesh * sm = aMesh.GetSubMesh(aShape);
+    aResMap.insert(std::make_pair(sm,aResVec));
+    myErrorStatus->myName    = COMPERR_ALGO_FAILED;
+    myErrorStatus->myComment = "Submesh can not be evaluated";
+    return false;
+  }
 
   // find number of 1d elems for base face
   int nb1d = 0;
@@ -1934,8 +1946,8 @@ bool StdMeshers_Penta_3D::Evaluate(SMESH_Mesh& aMesh,
     bool IsOpposite = true;
     for(TopExp_Explorer exp(aFaces.Value(i), TopAbs_EDGE); exp.More(); exp.Next()) {
       if( Edges1.Contains(exp.Current()) ) {
-	IsOpposite = false;
-	break;
+        IsOpposite = false;
+        break;
       }
     }
     if(IsOpposite) {

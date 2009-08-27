@@ -11,6 +11,7 @@
 <li>\ref number_of_segments_anchor "Number of segments"</li>
 <li>\ref start_and_end_length_anchor "Start and end length"</li>
 <li>\ref automatic_length_anchor "Automatic Length"</li>
+<li>\ref fixed_points_1d_anchor "Fixed points 1D"</li>
 </ul>
 
 <br>
@@ -193,4 +194,36 @@ minimum and maximum value of this parameter.
 \image html image147.gif "Example of a very rough mesh. Automatic Length works for 0."
 
 \image html image148.gif "Example of a very fine mesh. Automatic Length works for 1."
+
+<br>
+\anchor fixed_points_1d_anchor
+<h2>Fixed points 1D hypothesis</h2>
+
+<b>Fixed points 1D</b> hypothesis allows to split edges into segments
+using set of fixed points given by normalized parameters on edge and
+set of numbers of segments for splitting each sub-segment between
+fixed points. Optionally it is possible to set flag
+<b>Same Nb. Segments for all intervals</b> and
+only one value for mentioned number of segments.
+
+The direction of the splitting is defined by the orientation of the
+underlying geometrical edge. <b>"Reverse Edges"</b> list box allows to
+specify the edges for which the splitting should be made in the
+direction opposing to their orientation. This list box is enabled only
+if the geometry object is selected for the meshing. In this case the
+user can select edges to be reversed either directly picking them in
+the 3D viewer or by selecting the edges or groups of edges in the
+Object browser.
+
+Using of this hypothesis for quadrangle face where main mesh is
+created using <b>Quadrangle(Mapping)</b> and <b>NumberOfSegments</b>
+hypothesises. Creation hypothesis <b>FixedPoint_1D</b> for submesh on
+one edge:
+
+\image html hypo_fixedpnt_dlg.png
+
+Resulting 2D mesh:
+
+\image html mesh_fixedpnt.png
+
 */

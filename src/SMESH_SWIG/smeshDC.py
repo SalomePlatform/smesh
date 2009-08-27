@@ -3741,6 +3741,45 @@ class Mesh_Segment(Mesh_Algorithm):
                         return True
         return False
 
+
+    ## Defines "FixedPoints1D" hypothesis to cut an edge using parameter
+    # on curve from 0 to 1 (additionally it is neecessary to check
+    # orientation of edges and create list of reversed edges if it is
+    # needed) and sets numbers of segments between given points (default
+    # values are equals 1
+    #  @param points defines the list of parameters on curve
+    #  @param nbSegs defines the list of numbers of segments
+    #  @param reversedEdges is a list of edges to mesh using reversed orientation
+    #  @param UseExisting if ==true - searches for an existing hypothesis created with
+    #                     the same parameters, else (default) - creates a new one
+    #  @return an instance of StdMeshers_Arithmetic1D hypothesis
+    #  @ingroup l3_hypos_1dhyps
+    def FixedPoints1D(self, points, nbSegs=[1], reversedEdges=[], UseExisting=0):
+        if not isinstance(reversedEdges,list): #old version script, before adding reversedEdges
+            reversedEdges, UseExisting = [], reversedEdges
+        entry = self.MainShapeEntry()
+        hyp = self.Hypothesis("FixedPoints1D", [points, nbSegs, reversedEdges, entry],
+                              UseExisting=UseExisting,
+                              CompareMethod=self.CompareArithmetic1D)
+        hyp.SetPoints(points)
+        hyp.SetNbSegments(nbSegs)
+        hyp.SetReversedEdges(reversedEdges)
+        hyp.SetObjectEntry(entry)
+        return hyp
+
+    ## Private method
+    ## Check if the given "FixedPoints1D" hypothesis has the same parameters
+    ## as the given arguments
+    def CompareFixedPoints1D(self, hyp, args):
+        if hyp.GetPoints() == args[0]:
+            if hyp.GetNbSegments() == args[1]:
+                if hyp.GetReversedEdges() == args[2]:
+                    if not args[2] or hyp.GetObjectEntry() == args[3]:
+                        return True
+        return False
+
+
+
     ## Defines "StartEndLength" hypothesis to cut an edge in several segments with increasing geometric length
     #  @param start defines the length of the first segment
     #  @param end   defines the length of the last  segment
@@ -4803,6 +4842,104 @@ class Mesh_RadialPrism3D(Mesh_Algorithm):
         hyp = self.OwnHypothesis("AutomaticLength")
         hyp.SetFineness( fineness )
         return hyp
+
+# Public class: Mesh_RadialQuadrangle1D2D
+# -------------------------------
+
+## Defines a Radial Quadrangle 1D2D algorithm
+#  @ingroup l2_algos_radialq
+#
+class Mesh_RadialQuadrangle1D2D(Mesh_Algorithm):
+
+    ## Private constructor.
+    def __init__(self, mesh, geom=0):
+        Mesh_Algorithm.__init__(self)
+        self.Create(mesh, geom, "RadialQuadrangle_1D2D")
+
+        self.distribHyp = self.Hypothesis("LayerDistribution2D", UseExisting=0)
+        self.nbLayers = None
+
+    ## Return 2D hypothesis holding the 1D one
+    def Get2DHypothesis(self):
+        return self.distribHyp
+
+    ## Private method creating a 1D hypothesis and storing it in the LayerDistribution
+    #  hypothesis. Returns the created hypothesis
+    def OwnHypothesis(self, hypType, args=[], so="libStdMeshersEngine.so"):
+        #print "OwnHypothesis",hypType
+        if not self.nbLayers is None:
+            self.mesh.GetMesh().RemoveHypothesis( self.geom, self.nbLayers )
+            self.mesh.GetMesh().AddHypothesis( self.geom, self.distribHyp )
+        study = self.mesh.smeshpyD.GetCurrentStudy() # prevents publishing own 1D hypothesis
+        hyp = self.mesh.smeshpyD.CreateHypothesis(hypType, so)
+        self.mesh.smeshpyD.SetCurrentStudy( study ) # enables publishing
+        self.distribHyp.SetLayerDistribution( hyp )
+        return hyp
+
+    ## Defines "NumberOfLayers2D" hypothesis, specifying the number of layers
+    #  @param n number of layers
+    #  @param UseExisting if ==true - searches for the existing hypothesis created with
+    #                     the same parameters, else (default) - creates a new one
+    def NumberOfLayers2D(self, n, UseExisting=0):
+        self.mesh.GetMesh().RemoveHypothesis( self.geom, self.distribHyp )
+        self.nbLayers = self.Hypothesis("NumberOfLayers2D", [n], UseExisting=UseExisting,
+                                        CompareMethod=self.CompareNumberOfLayers)
+        self.nbLayers.SetNumberOfLayers( n )
+        return self.nbLayers
+
+    ## Checks if the given "NumberOfLayers" hypothesis has the same parameters as the given arguments
+    def CompareNumberOfLayers(self, hyp, args):
+        return IsEqual(hyp.GetNumberOfLayers(), args[0])
+
+    ## Defines "LocalLength" hypothesis, specifying the segment length
+    #  @param l the length of segments
+    #  @param p the precision of rounding
+    def LocalLength(self, l, p=1e-07):
+        hyp = self.OwnHypothesis("LocalLength", [l,p])
+        hyp.SetLength(l)
+        hyp.SetPrecision(p)
+        return hyp
+
+    ## Defines "NumberOfSegments" hypothesis, specifying the number of layers
+    #  @param n the number of layers
+    #  @param s the scale factor (optional)
+    def NumberOfSegments(self, n, s=[]):
+        if s == []:
+            hyp = self.OwnHypothesis("NumberOfSegments", [n])
+        else:
+            hyp = self.OwnHypothesis("NumberOfSegments", [n,s])
+            hyp.SetDistrType( 1 )
+            hyp.SetScaleFactor(s)
+        hyp.SetNumberOfSegments(n)
+        return hyp
+
+    ## Defines "Arithmetic1D" hypothesis, specifying the distribution of segments
+    #  with a length that changes in arithmetic progression
+    #  @param start  the length of the first segment
+    #  @param end    the length of the last  segment
+    def Arithmetic1D(self, start, end ):
+        hyp = self.OwnHypothesis("Arithmetic1D", [start, end])
+        hyp.SetLength(start, 1)
+        hyp.SetLength(end  , 0)
+        return hyp
+
+    ## Defines "StartEndLength" hypothesis, specifying distribution of segments
+    #  as geometric length increasing
+    #  @param start for the length of the first segment
+    #  @param end   for the length of the last  segment
+    def StartEndLength(self, start, end):
+        hyp = self.OwnHypothesis("StartEndLength", [start, end])
+        hyp.SetLength(start, 1)
+        hyp.SetLength(end  , 0)
+        return hyp
+
+    ## Defines "AutomaticLength" hypothesis, specifying the number of segments
+    #  @param fineness defines the quality of the mesh within the range [0-1]
+    def AutomaticLength(self, fineness=0):
+        hyp = self.OwnHypothesis("AutomaticLength")
+        hyp.SetFineness( fineness )
+        return hyp
+
 
 # Private class: Mesh_UseExisting
 # -------------------------------
