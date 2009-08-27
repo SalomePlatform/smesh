@@ -388,10 +388,10 @@ tetraN.Compute()
 
 <br>
 \anchor tui_projection
-<h3>Projection algorithms</h3>
+<h3>Projection Algorithms</h3>
 
 \code
-# Project pentahedrons from one meshed box to another mesh on the same box
+# Project prisms from one meshed box to another mesh on the same box
 
 from smesh import *
 
@@ -451,6 +451,7 @@ tgt_mesh.Compute()
 
 # Move the source mesh to visualy compare the two meshes
 src_mesh.TranslateObject( src_mesh, MakeDirStruct( 210, 0, 0 ), Copy=False)
+
 \endcode
 
 \n Other meshing algorithms:
