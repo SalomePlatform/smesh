@@ -531,26 +531,16 @@ SMESH::long_array* SMESH_subMesh_i::GetMeshInfo()
   for (int i = SMESH::Entity_Node; i < SMESH::Entity_Last; i++)
     aRes[i] = 0;
   
-  ::SMESH_subMesh* aSubMesh = _mesh_i->_mapSubMesh[_localId];
-  SMESHDS_SubMesh* aSubMeshDS = 0;
-  if (aSubMesh) aSubMeshDS = aSubMesh->GetSubMeshDS();
-  if (!aSubMeshDS) 
-    return aRes._retn();
-
-  // get own number of nodes
-  aRes[ SMESH::Entity_Node ] = aSubMeshDS->NbNodes();
+  // get number of nodes
+  aRes[ SMESH::Entity_Node ] = GetNumberOfNodes(true);
  
-  // get own elements statistic
-  SMESH_Mesh_i::CollectMeshInfo( aSubMeshDS->GetElements(), aRes );
+  ::SMESH_subMesh* aSubMesh = _mesh_i->_mapSubMesh[_localId];
 
   // get statistic from child sub-meshes
   TListOfSubMeshes smList;
   if ( getSubMeshes( aSubMesh, smList ) )
     for ( TListOfSubMeshes::iterator sm = smList.begin(); sm != smList.end(); ++sm )
-    {
-      aRes[ SMESH::Entity_Node ]+= (*sm)->NbNodes();
       SMESH_Mesh_i::CollectMeshInfo( (*sm)->GetElements(), aRes );
-    }
 
   return aRes._retn();
 }
