@@ -839,7 +839,10 @@ SMESH_subMesh *SMESH_Mesh::GetSubMesh(const TopoDS_Shape & aSubShape)
   if (( !index || index > _nbSubShapes ) && aSubShape.ShapeType() == TopAbs_COMPOUND ) {
     TopoDS_Iterator it( aSubShape );
     if ( it.More() )
+    {
       index = _myMeshDS->AddCompoundSubmesh( aSubShape, it.Value().ShapeType() );
+      if ( index > _nbSubShapes ) _nbSubShapes = index; // not to create sm for this group again
+    }
   }
 //   if ( !index )
 //     return NULL; // neither sub-shape nor a group
