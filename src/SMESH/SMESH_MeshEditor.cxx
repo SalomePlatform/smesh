@@ -8239,7 +8239,7 @@ bool SMESH_MeshEditor::doubleNodes( SMESHDS_Mesh*     theMeshDS,
 {
   // iterate on through element and duplicate them (by nodes duplication)
   bool res = false;
-  TIDSortedElemSet::iterator elemItr = theElems.begin();
+  const TIDSortedElemSet::iterator elemItr = theElems.begin();
   for ( ;  elemItr != theElems.end(); ++elemItr )
   {
     const SMDS_MeshElement* anElem = *elemItr;
@@ -8329,7 +8329,7 @@ bool SMESH_MeshEditor::DoubleNodesInRegion( const TIDSortedElemSet& theElems,
 
   // iterates on indicated elements and get elements by back references from their nodes
   TIDSortedElemSet anAffected;
-  TIDSortedElemSet::iterator elemItr = theElems.begin();
+  const TIDSortedElemSet::iterator elemItr = theElems.begin();
   for ( ;  elemItr != theElems.end(); ++elemItr )
   {
     SMDS_MeshElement* anElem = (SMDS_MeshElement*)*elemItr;
