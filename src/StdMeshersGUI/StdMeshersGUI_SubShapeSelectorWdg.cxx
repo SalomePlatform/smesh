@@ -80,7 +80,8 @@
 
 StdMeshersGUI_SubShapeSelectorWdg
 ::StdMeshersGUI_SubShapeSelectorWdg( QWidget * parent ): 
-  QWidget( parent )
+  QWidget( parent ),
+  myPreviewActor( 0 )
 {
   QPixmap image0( SMESH::GetResourceMgr( mySMESHGUI )->loadPixmap( "SMESH", tr( "ICON_SELECT" ) ) );
 
@@ -118,14 +119,17 @@ StdMeshersGUI_SubShapeSelectorWdg
 StdMeshersGUI_SubShapeSelectorWdg::~StdMeshersGUI_SubShapeSelectorWdg()
 {
   if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI )) {
-    myPreviewActor->RemoveFromRender( myRenderer );
-    aViewWindow->Repaint();
+    if ( myPreviewActor ) {
+      myPreviewActor->RemoveFromRender( myRenderer );
+      aViewWindow->Repaint();
+
+      delete myPreviewActor;
+      myPreviewActor = 0;
+    }
   }
   myEntry = "";
   myParamValue = "";
   myMainShape.Nullify();
-  
-  delete myPreviewActor;
 }
 
 //================================================================================
@@ -164,6 +168,9 @@ void StdMeshersGUI_SubShapeSelectorWdg::init()
 
 void StdMeshersGUI_SubShapeSelectorWdg::showPreview( bool visible)
 {
+  if ( !myPreviewActor )
+    return;
+
   if ( myIsShown != visible ) {
     myPreviewActor->SetShown( visible );
     
@@ -180,6 +187,9 @@ void StdMeshersGUI_SubShapeSelectorWdg::showPreview( bool visible)
 //=================================================================================
 void StdMeshersGUI_SubShapeSelectorWdg::SelectionIntoArgument()
 {
+  if ( !myPreviewActor )
+    return;
+
   mySelectedIDs.clear();
 
   // get selected mesh
@@ -309,6 +319,9 @@ void StdMeshersGUI_SubShapeSelectorWdg::onRemove()
 //=================================================================================
 void StdMeshersGUI_SubShapeSelectorWdg::onListSelectionChanged()
 {
+  if ( !myPreviewActor )
+    return;
+
   mySelectionMgr->clearSelected();
   TColStd_MapOfInteger aIndexes;
   QList<QListWidgetItem*> selItems = myListWidget->selectedItems();
@@ -345,7 +358,7 @@ void StdMeshersGUI_SubShapeSelectorWdg::updateState()
   myAddButton->setEnabled( state );
   myRemoveButton->setEnabled( state );
   
-  if (state = true) {
+  if (state) {
     myPreviewActor = new SMESH_PreviewActorsCollection();
     myPreviewActor->SetSelector( mySelector );
     //myPreviewActor->Init( myMainShape, TopAbs_EDGE, myEntry );

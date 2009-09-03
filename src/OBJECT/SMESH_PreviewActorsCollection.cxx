@@ -78,6 +78,10 @@ SMESH_PreviewActorsCollection
   if (myRenderer)
     RemoveFromRender(myRenderer);
 
+  QMap<int, GEOM_Actor*>::iterator iter = myMapOfActors.begin();
+  for ( ; iter != myMapOfActors.end(); ++iter )
+    if ( GEOM_Actor* anActor = iter.value() )
+      anActor->Delete();
   myMapOfActors.clear();
 }
 
@@ -99,26 +103,26 @@ bool SMESH_PreviewActorsCollection::Init( const TopoDS_Shape& theShape, TopAbs_S
   TopExp_Explorer exp( theShape, theType );
   for ( ; exp.More(); exp.Next() ) {
     int index = myMapOfShapes.FindIndex( exp.Current() );
-    if ( index ) { 
+    if ( index && !myMapOfActors.contains( index ) ) { 
       // create actor if the index is present
       if ( GEOM_Actor* anActor = createActor( exp.Current() )) {
-	// Create new entry for actor
-	QString aString = theEntry;
-	aString += QString("_%1").arg( index ); // add index to actor entry
+        // Create new entry for actor
+        QString aString = theEntry;
+        aString += QString("_%1").arg( index ); // add index to actor entry
 
-	// Create interactive object
-	Handle( SALOME_InteractiveObject ) anIO = new SALOME_InteractiveObject();
-	anIO->setEntry( aString.toLatin1().constData() );
+        // Create interactive object
+        Handle( SALOME_InteractiveObject ) anIO = new SALOME_InteractiveObject();
+        anIO->setEntry( aString.toLatin1().constData() );
 
-	// Init Actor
-	anActor->SetVectorMode( true );
-	anActor->setIO( anIO );
-	anActor->SetSelector( mySelector );
-	anActor->SetPickable( true );
-	anActor->SetResolveCoincidentTopology( true );
+        // Init Actor
+        anActor->SetVectorMode( true );
+        anActor->setIO( anIO );
+        anActor->SetSelector( mySelector );
+        anActor->SetPickable( true );
+        anActor->SetResolveCoincidentTopology( true );
 
-	// Add Actor to the Actors Map
-	myMapOfActors.insert(index, anActor);
+        // Add Actor to the Actors Map
+        myMapOfActors.insert(index, anActor);
       }
     }
   }
