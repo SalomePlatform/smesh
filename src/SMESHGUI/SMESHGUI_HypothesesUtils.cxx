@@ -186,6 +186,7 @@ namespace SMESH
 				      QObject::tr("INF_PARSE_ERROR"),
 				      QObject::tr(aXmlHandler->errorProtocol().toLatin1().data()));
 	  }
+    delete aXmlHandler;
 	}
 	else {
 	  if (aNoAccessFiles.isEmpty())

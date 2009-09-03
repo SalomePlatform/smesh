@@ -356,6 +356,8 @@ SMESH_ActorDef::SMESH_ActorDef()
   myHighlitableActor->PickableOff();
   myHighlitableActor->SetRepresentation(SMESH_DeviceActor::eWireframe);
 
+  aMatrix->Delete();
+
   myName = "";
   myIO = NULL;
 
