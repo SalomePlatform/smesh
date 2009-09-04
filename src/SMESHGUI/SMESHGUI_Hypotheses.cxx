@@ -48,13 +48,12 @@
 #include <QLabel>
 #include <QGroupBox>
 #include <QVBoxLayout>
-#include <QEventLoop>
 
 #define SPACING 6
 #define MARGIN  11
 
 SMESHGUI_GenericHypothesisCreator::SMESHGUI_GenericHypothesisCreator( const QString& theHypType )
-  : myHypType( theHypType ), myIsCreate( false ), myDlg( 0 ), myEventLoop( 0 )
+  : myHypType( theHypType ), myIsCreate( false ), myDlg( 0 )
 {
 }
 
@@ -70,45 +69,36 @@ void SMESHGUI_GenericHypothesisCreator::setInitParamsHypothesis(SMESH::SMESH_Hyp
 
 void SMESHGUI_GenericHypothesisCreator::create( SMESH::SMESH_Hypothesis_ptr initParamsHyp,
 						const QString& theHypName,
-                                                QWidget* parent)
+                                                QWidget* parent, QObject* obj, const QString& slot )
 {
   MESSAGE( "Creation of hypothesis with initial params" );
   setInitParamsHypothesis( initParamsHyp );
-  create( false, theHypName, parent );
+  create( false, theHypName, parent, obj, slot );
 }
 
 void SMESHGUI_GenericHypothesisCreator::create( bool isAlgo,
 						const QString& theHypName,
-						QWidget* theParent )
+						QWidget* theParent, QObject* obj, const QString& slot )
 {
   MESSAGE( "Creation of hypothesis" );
 
   myIsCreate = true;
 
   // Create hypothesis/algorithm
-  if (isAlgo) {
+  if (isAlgo)
     SMESH::CreateHypothesis( hypType(), theHypName, isAlgo );
-  }
-  else {
+
+  else
+  {
     SMESH::SMESH_Hypothesis_var aHypothesis = 
       SMESH::CreateHypothesis( hypType(), theHypName, false );
-    if( !editHypothesis( aHypothesis.in(), theHypName, theParent ) )
-    { //remove just created hypothesis
-      _PTR(SObject) aHypSObject = SMESH::FindSObject( aHypothesis.in() );
-      _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
-      if( aStudy && !aStudy->GetProperties()->IsLocked() )
-      {
-	_PTR(StudyBuilder) aBuilder = aStudy->NewBuilder();
-	aBuilder->RemoveObjectWithChildren( aHypSObject );
-      }
-    }
+    editHypothesis( aHypothesis.in(), theHypName, theParent, obj, slot );
   }
-  SMESHGUI::GetSMESHGUI()->updateObjBrowser( true, 0 );
 }
 
 void SMESHGUI_GenericHypothesisCreator::edit( SMESH::SMESH_Hypothesis_ptr theHypothesis,
 					      const QString& theHypName,
-					      QWidget* theParent )
+					      QWidget* theParent, QObject* obj, const QString& slot )
 {
   if( CORBA::is_nil( theHypothesis ) )
     return;
@@ -117,37 +107,21 @@ void SMESHGUI_GenericHypothesisCreator::edit( SMESH::SMESH_Hypothesis_ptr theHyp
 
   myIsCreate = false;
 
-  if( !editHypothesis( theHypothesis, theHypName, theParent ) )
-    return;
-
-  SMESH::SObjectList listSOmesh = SMESH::GetMeshesUsingAlgoOrHypothesis( theHypothesis );
-  if( listSOmesh.size() > 0 )
-    for( int i = 0; i < listSOmesh.size(); i++ )
-    {
-      _PTR(SObject) submSO = listSOmesh[i];
-      SMESH::SMESH_Mesh_var aMesh = SMESH::SObjectToInterface<SMESH::SMESH_Mesh>( submSO );
-      SMESH::SMESH_subMesh_var aSubMesh = SMESH::SObjectToInterface<SMESH::SMESH_subMesh>( submSO );
-      if( !aSubMesh->_is_nil() )
-	aMesh = aSubMesh->GetFather();
-      _PTR(SObject) meshSO = SMESH::FindSObject( aMesh );
-      SMESH::ModifiedMesh( meshSO, false, aMesh->NbNodes()==0);
-    }
-  SMESHGUI::GetSMESHGUI()->updateObjBrowser( true, 0 );
+  editHypothesis( theHypothesis, theHypName, theParent, obj, slot );
 }
 
-bool SMESHGUI_GenericHypothesisCreator::editHypothesis( SMESH::SMESH_Hypothesis_ptr h, 
+void SMESHGUI_GenericHypothesisCreator::editHypothesis( SMESH::SMESH_Hypothesis_ptr h, 
 							const QString& theHypName,
-							QWidget* theParent )
+							QWidget* theParent,
+                                                        QObject* obj, const QString& slot )
 {
-  if( CORBA::is_nil( h ) )
-    return false;
-
-  bool res = true;
   myHypName = theHypName;
   myHypo = SMESH::SMESH_Hypothesis::_duplicate( h );
 
   SMESHGUI_HypothesisDlg* Dlg = new SMESHGUI_HypothesisDlg( this, theParent );
   connect( Dlg, SIGNAL( finished( int ) ), this, SLOT( onDialogFinished( int ) ) );
+  connect( this, SIGNAL( finished( int ) ), obj, slot.toLatin1().constData() );
+
   myDlg = Dlg;
   QFrame* fr = buildFrame();
   if( fr )
@@ -160,24 +134,9 @@ bool SMESHGUI_GenericHypothesisCreator::editHypothesis( SMESH::SMESH_Hypothesis_
     retrieveParams();
     Dlg->show();
     Dlg->resize( Dlg->minimumSizeHint() );
-    if ( !myEventLoop )
-      myEventLoop = new QEventLoop( this );
-    myEventLoop->exec(); // make myDlg not modal
-    res = myDlg->result();
-    if( res ) {
-      /*QString paramValues = */storeParams();
-      // No longer needed since NoteBook appears and "Value" OB field shows names of variable
-//       if ( !paramValues.isEmpty() ) {
-//         if ( _PTR(SObject) SHyp = SMESH::FindSObject( myHypo ))
-//           SMESH::SetValue( SHyp, paramValues );
-//       }
-    }
   }
-  delete Dlg; myDlg = 0;
-  changeWidgets().clear();
-  myHypo = SMESH::SMESH_Hypothesis::_nil();
-  myInitParamsHypo = SMESH::SMESH_Hypothesis::_nil();
-  return res;
+  else
+    emit finished( QDialog::Accepted );
 }
   
 QFrame* SMESHGUI_GenericHypothesisCreator::buildStdFrame()
@@ -284,10 +243,53 @@ void SMESHGUI_GenericHypothesisCreator::valueChanged( QWidget* )
 {
 }
 
-void SMESHGUI_GenericHypothesisCreator::onDialogFinished( int /*result*/ )
+void SMESHGUI_GenericHypothesisCreator::onDialogFinished( int result )
 {
-  if ( myEventLoop )
-    myEventLoop->exit();
+  bool res = result==QDialog::Accepted;
+  if( res )
+  {
+      /*QString paramValues = */storeParams();
+      // No longer needed since NoteBook appears and "Value" OB field shows names of variable
+//       if ( !paramValues.isEmpty() ) {
+//         if ( _PTR(SObject) SHyp = SMESH::FindSObject( myHypo ))
+//           SMESH::SetValue( SHyp, paramValues );
+//       }
+  }
+
+  changeWidgets().clear();
+
+  if( myIsCreate && !res )
+  {
+    //remove just created hypothesis
+    _PTR(SObject) aHypSObject = SMESH::FindSObject( myHypo );
+    _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
+    if( aStudy && !aStudy->GetProperties()->IsLocked() )
+    {
+      _PTR(StudyBuilder) aBuilder = aStudy->NewBuilder();
+      aBuilder->RemoveObjectWithChildren( aHypSObject );
+    }
+  }
+  else if( !myIsCreate && res )
+  {
+    SMESH::SObjectList listSOmesh = SMESH::GetMeshesUsingAlgoOrHypothesis( myHypo );
+    if( listSOmesh.size() > 0 )
+      for( int i = 0; i < listSOmesh.size(); i++ )
+      {
+	_PTR(SObject) submSO = listSOmesh[i];
+	SMESH::SMESH_Mesh_var aMesh = SMESH::SObjectToInterface<SMESH::SMESH_Mesh>( submSO );
+	SMESH::SMESH_subMesh_var aSubMesh = SMESH::SObjectToInterface<SMESH::SMESH_subMesh>( submSO );
+	if( !aSubMesh->_is_nil() )
+	  aMesh = aSubMesh->GetFather();
+	_PTR(SObject) meshSO = SMESH::FindSObject( aMesh );
+	SMESH::ModifiedMesh( meshSO, false, aMesh->NbNodes()==0);
+      }
+  }
+  SMESHGUI::GetSMESHGUI()->updateObjBrowser( true, 0 );
+  myHypo = SMESH::SMESH_Hypothesis::_nil();
+  myInitParamsHypo = SMESH::SMESH_Hypothesis::_nil();
+  myDlg->close(); myDlg = 0;
+  //delete myDlg; myDlg = 0;
+  emit finished( result );
 }
 
 bool SMESHGUI_GenericHypothesisCreator::stdParams( ListOfStdParams& ) const
@@ -542,6 +544,7 @@ SMESHGUI_HypothesisDlg::SMESHGUI_HypothesisDlg( SMESHGUI_GenericHypothesisCreato
 : QtxDialog( parent, false, true ),
   myCreator( creator )
 {
+  setAttribute(Qt::WA_DeleteOnClose, true);
   setMinimumSize( 300, height() );
 //  setFixedSize( 300, height() );
   QVBoxLayout* topLayout = new QVBoxLayout( mainFrame() );
@@ -573,6 +576,7 @@ SMESHGUI_HypothesisDlg::SMESHGUI_HypothesisDlg( SMESHGUI_GenericHypothesisCreato
 
 SMESHGUI_HypothesisDlg::~SMESHGUI_HypothesisDlg()
 {
+  delete myCreator;
 }
 
 void SMESHGUI_HypothesisDlg::setCustomFrame( QFrame* f )
@@ -668,15 +672,69 @@ HypothesisData::HypothesisData( const QString& theTypeName,
 }
 
 HypothesesSet::HypothesesSet( const QString& theSetName ) 
-  : HypoSetName( theSetName )
+  : myHypoSetName( theSetName ),
+    myIsAlgo( false )
 {
 }
 
 HypothesesSet::HypothesesSet( const QString&     theSetName,
 			      const QStringList& theHypoList,
 			      const QStringList& theAlgoList )
-  : HypoSetName( theSetName ), 
-    HypoList( theHypoList ), 
-    AlgoList( theAlgoList )
+  : myHypoSetName( theSetName ), 
+    myHypoList( theHypoList ), 
+    myAlgoList( theAlgoList ),
+    myIsAlgo( false )
 {
 }
+
+QStringList* HypothesesSet::list(bool is_algo) const
+{
+  return const_cast<QStringList*>( &( is_algo ? myAlgoList : myHypoList ) );
+}
+
+QStringList* HypothesesSet::list() const
+{
+  return list( myIsAlgo );
+}
+
+QString HypothesesSet::name() const
+{
+  return myHypoSetName;
+}
+
+void HypothesesSet::set( bool isAlgo, const QStringList& lst )
+{
+  *list(isAlgo) = lst;
+}
+
+int HypothesesSet::count( bool isAlgo ) const
+{
+  return list(isAlgo)->count();
+}
+
+bool HypothesesSet::isAlgo() const
+{
+  return myIsAlgo;
+}
+
+void HypothesesSet::init( bool isAlgo )
+{
+  myIsAlgo = isAlgo;
+  myIndex = -1;
+}
+
+bool HypothesesSet::more() const
+{
+  return myIndex < list()->count();
+}
+
+void HypothesesSet::next()
+{
+  myIndex++;
+}
+
+QString HypothesesSet::current() const
+{
+  return list()->at(myIndex);
+}
+

@@ -251,8 +251,8 @@ namespace SMESH
 	  hypoSet != myListOfHypothesesSets.end();
 	  ++hypoSet ) {
       HypothesesSet* aSet = *hypoSet;
-      if ( aSet && aSet->AlgoList.count() ) {
-	aSetNameList.append( aSet->HypoSetName );
+      if ( aSet && aSet->count( true ) ) {
+	aSetNameList.append( aSet->name() );
       }
     }
     
@@ -266,7 +266,7 @@ namespace SMESH
 	  hypoSet != myListOfHypothesesSets.end();
 	  ++hypoSet ) {
       HypothesesSet* aSet = *hypoSet;
-      if ( aSet && aSet->HypoSetName == theSetName )
+      if ( aSet && aSet->name() == theSetName )
 	return aSet;
     }
     return 0;
@@ -321,7 +321,7 @@ namespace SMESH
     return false;
   }
 
-  HypothesisCreatorPtr GetHypothesisCreator(const QString& aHypType)
+  SMESHGUI_GenericHypothesisCreator* GetHypothesisCreator(const QString& aHypType)
   {
     if(MYDEBUG) MESSAGE("Get HypothesisCreator for " << aHypType.toLatin1().data());
 
@@ -340,7 +340,8 @@ namespace SMESH
       // 2. Get names of plugin libraries
       HypothesisData* aHypData = GetHypothesisData(aHypType);
       if (!aHypData) 
-        return HypothesisCreatorPtr(aCreator);
+        return aCreator;
+
       QString aClientLibName = aHypData->ClientLibName;
       QString aServerLibName = aHypData->ServerLibName;
 
@@ -391,7 +392,7 @@ namespace SMESH
       }
     }
 
-    return HypothesisCreatorPtr(aCreator);
+    return aCreator;
   }
 
 

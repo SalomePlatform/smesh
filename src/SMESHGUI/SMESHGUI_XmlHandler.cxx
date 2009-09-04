@@ -186,8 +186,7 @@ bool SMESHGUI_XmlHandler::startElement (const QString&, const QString&,
       {
         QString aHypos = isHypo ? atts.value("hypos") : atts.value("algos");
         aHypos = aHypos.remove( ' ' );
-        QStringList* aHypoList = isHypo ? & aHypoSet->HypoList : & aHypoSet->AlgoList;
-        *aHypoList = aHypos.split( ',', QString::SkipEmptyParts );
+	aHypoSet->set( !isHypo, aHypos.split( ',', QString::SkipEmptyParts ) );
       }
     }
   }

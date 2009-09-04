@@ -126,7 +126,7 @@ private slots:
   void                            onViewManagerActivated( SUIT_ViewManager* );
   void                            onOperationCommited( SUIT_Operation* );
   void                            onOperationAborted( SUIT_Operation* );
-
+  void                            onHypothesisEdit( int result );
 
 signals:
   void                            SignalDeactivateActiveDialog();

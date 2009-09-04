@@ -1019,7 +1019,7 @@ namespace
  */
 //================================================================================
 
-void SMESHGUI_MeshOp::createHypothesis (const int theDim,
+void SMESHGUI_MeshOp::createHypothesis(const int theDim,
                                         const int theType,
                                         const QString& theTypeName)
 {
@@ -1027,6 +1027,8 @@ void SMESHGUI_MeshOp::createHypothesis (const int theDim,
   if (!aData)
     return;
 
+  myDim = theDim;
+  myType = theType;
   QStringList aHypNames;
   TDim2Type2HypList::const_iterator aDimIter = myExistingHyps.begin();
   for ( ; aDimIter != myExistingHyps.end(); aDimIter++) {
@@ -1045,7 +1047,7 @@ void SMESHGUI_MeshOp::createHypothesis (const int theDim,
   QString aHypName = GetUniqueName( aHypNames, aData->Label);
 
   // existing hypos
-  int nbHyp = myExistingHyps[theDim][theType].count();
+  bool dialog = false;
 
   QString aClientLibName = aData->ClientLibName;
   if (aClientLibName == "") {
@@ -1055,7 +1057,7 @@ void SMESHGUI_MeshOp::createHypothesis (const int theDim,
     // Get hypotheses creator client (GUI)
     // BUG 0020378
     //SMESHGUI_GenericHypothesisCreator* aCreator = SMESH::GetHypothesisCreator(theTypeName);
-    SMESH::HypothesisCreatorPtr aCreator = SMESH::GetHypothesisCreator(theTypeName);
+    SMESHGUI_GenericHypothesisCreator* aCreator = SMESH::GetHypothesisCreator(theTypeName);
 
     // Create hypothesis
     if (aCreator) {
@@ -1063,7 +1065,6 @@ void SMESHGUI_MeshOp::createHypothesis (const int theDim,
       SMESH::SMESH_Hypothesis_var initParamHyp =
         getInitParamsHypothesis(theTypeName, aData->ServerLibName);
 
-      int obj = myDlg->getActiveObject();
       removeCustomFilters(); // Issue 0020170
 
       // Get Entry of the Geom object
@@ -1080,23 +1081,49 @@ void SMESHGUI_MeshOp::createHypothesis (const int theDim,
 
       aCreator->setShapeEntry( anObjEntry );
       myDlg->setEnabled( false );
-      aCreator->create(initParamHyp, aHypName, myDlg);
-      onActivateObject( obj ); // Issue 0020170. Restore filters
-      myDlg->setEnabled( true );
-    } else {
-      SMESH::CreateHypothesis(theTypeName, aHypName, false);
+      aCreator->create(initParamHyp, aHypName, myDlg, this, SLOT( onHypoCreated( int ) ) );
+      dialog = true;
     }
+    else
+      SMESH::CreateHypothesis(theTypeName, aHypName, false);
+  }
+
+  if( !dialog )
+    onHypoCreated(2);
+}
+
+//================================================================================
+/*!
+ *  Necessary steps after hypothesis creation
+ *  \param result - creation result:
+ *   0 = rejected
+ *   1 = accepted
+ *   2 = additional value meaning that slot is called not from dialog box
+ */
+//================================================================================
+void SMESHGUI_MeshOp::onHypoCreated( int result )
+{
+  if( result != 2 )
+  {
+    int obj = myDlg->getActiveObject();
+    onActivateObject( obj ); // Issue 0020170. Restore filters
+    myDlg->setEnabled( true );
   }
 
   _PTR(SComponent) aFather = SMESH::GetActiveStudyDocument()->FindComponent("SMESH");
 
-  HypothesisData* algoData = hypData( theDim, Algo, currentHyp( theDim, Algo ));
+  int nbHyp = myExistingHyps[myDim][myType].count();
+  HypothesisData* algoData = hypData( myDim, Algo, currentHyp( myDim, Algo ));
   QStringList aNewHyps;
-  existingHyps(theDim, theType, aFather, aNewHyps, myExistingHyps[theDim][theType], algoData);
-  if (aNewHyps.count() > nbHyp) {
+  existingHyps(myDim, myType, aFather, aNewHyps, myExistingHyps[myDim][myType], algoData);
+  if (aNewHyps.count() > nbHyp)
+  {
     for (int i = nbHyp; i < aNewHyps.count(); i++)
-      myDlg->tab(theDim)->addHyp(theType, aNewHyps[i]);
+      myDlg->tab(myDim)->addHyp(myType, aNewHyps[i]);
   }
+
+  if( result!=2 && myHypoSet )
+    processSet();
 }
 
 //================================================================================
@@ -1126,7 +1153,7 @@ void SMESHGUI_MeshOp::onEditHyp( const int theHypType, const int theIndex )
 
   // BUG 0020378
   //SMESHGUI_GenericHypothesisCreator* aCreator = SMESH::GetHypothesisCreator(aHyp->GetName());
-  SMESH::HypothesisCreatorPtr aCreator = SMESH::GetHypothesisCreator(aHyp->GetName());
+  SMESHGUI_GenericHypothesisCreator* aCreator = SMESH::GetHypothesisCreator(aHyp->GetName());
   if ( aCreator )
   {
     // Get initial parameters
@@ -1147,13 +1174,25 @@ void SMESHGUI_MeshOp::onEditHyp( const int theHypType, const int theIndex )
     }
 
     aCreator->setShapeEntry( anObjEntry );
-    int obj = myDlg->getActiveObject();
     removeCustomFilters(); // Issue 0020170
     myDlg->setEnabled( false );
-    aCreator->edit( aHyp.in(), aHypItem.second, dlg() );
-    onActivateObject( obj ); // Issue 0020170. Restore filters
-    myDlg->setEnabled( true );
+    aCreator->edit( aHyp.in(), aHypItem.second, dlg(), this, SLOT( onHypoEdited( int ) ) );
   }
+}
+
+//================================================================================
+/*!
+ *  Necessary steps after hypothesis edition
+ *  \param result - creation result:
+ *   0 = rejected
+ *   1 = accepted
+ */
+//================================================================================
+void SMESHGUI_MeshOp::onHypoEdited( int result )
+{
+  int obj = myDlg->getActiveObject();
+  onActivateObject( obj ); // Issue 0020170. Restore filters
+  myDlg->setEnabled( true );
 }
 
 //================================================================================
@@ -1347,8 +1386,9 @@ void SMESHGUI_MeshOp::onAlgoSelected( const int theIndex,
 //================================================================================
 void SMESHGUI_MeshOp::onHypoSet( const QString& theSetName )
 {
-  HypothesesSet* aHypoSet = SMESH::GetHypothesesSet(theSetName);
-  if (!aHypoSet) return;
+  myHypoSet = SMESH::GetHypothesesSet(theSetName);
+  if (!myHypoSet)
+    return;
 
   // clear all hyps
   for (int dim = SMESH::DIM_0D; dim <= SMESH::DIM_3D; dim++) {
@@ -1357,45 +1397,68 @@ void SMESHGUI_MeshOp::onHypoSet( const QString& theSetName )
     setCurrentHyp(dim, MainHyp, -1);
   }
 
-  for (int aHypType = Algo; aHypType < AddHyp; aHypType++) {
-    bool isAlgo = (aHypType == Algo);
+  myHypoSet->init(true); //algorithms
+  processSet();
+  myHypoSet->init(false); //hypotheses
+  processSet();
+  myHypoSet = 0;
+}
 
-    // set hyps from the set
-    QStringList* aHypoList = isAlgo ? &aHypoSet->AlgoList : &aHypoSet->HypoList;
-    for (int i = 0, n = aHypoList->count(); i < n; i++) {
-      const QString& aHypoTypeName = (*aHypoList)[ i ];
-      HypothesisData* aHypData = SMESH::GetHypothesisData(aHypoTypeName);
-      if (!aHypData)
-        continue;
+//================================================================================
+/*!
+ * \brief One step of hypothesis/algorithm list creation
+ *
+ * Creates a hypothesis or an algorithm for current item of internal list of names myHypoSet
+ */
+//================================================================================
+void SMESHGUI_MeshOp::processSet()
+{
+  myHypoSet->next();
+  if( !myHypoSet->more() )
+    return;
 
-      int aDim = aHypData->Dim[0];
-      // create or/and set
-      if (isAlgo) {
-        int index = myAvailableHypData[aDim][Algo].indexOf( aHypData );
-        if ( index < 0 ) {
-          QStringList anAvailable;
-          availableHyps( aDim, Algo, anAvailable, myAvailableHypData[aDim][Algo] );
-          myDlg->tab( aDim )->setAvailableHyps( Algo, anAvailable );
-          index = myAvailableHypData[aDim][Algo].indexOf( aHypData );
-        }
-        setCurrentHyp( aDim, Algo, index );
-        onAlgoSelected( index, aDim );
-      }
-      else {
-        bool mainHyp = true;
-        QStringList anAvailable;
-        availableHyps( aDim, MainHyp, anAvailable, myAvailableHypData[aDim][MainHyp] );
-        myDlg->tab( aDim )->setAvailableHyps( MainHyp, anAvailable );
-        int index = myAvailableHypData[aDim][MainHyp].indexOf( aHypData );
-        if ( index < 0 ) {
-          mainHyp = false;
-          index = myAvailableHypData[aDim][AddHyp].indexOf( aHypData );
-        }
-        if (index >= 0)
-          createHypothesis(aDim, mainHyp ? MainHyp : AddHyp, aHypoTypeName);
-      }
-    } // loop on hypos in the set
-  } // loop on algo/hypo
+  bool isAlgo = myHypoSet->isAlgo();
+  QString aHypoTypeName = myHypoSet->current();
+  HypothesisData* aHypData = SMESH::GetHypothesisData(aHypoTypeName);
+  if (!aHypData)
+  {
+    processSet();
+    return;
+  }
+
+  int aDim = aHypData->Dim[0];
+  // create or/and set
+  if (isAlgo)
+  {
+    int index = myAvailableHypData[aDim][Algo].indexOf( aHypData );
+    if ( index < 0 )
+    {
+      QStringList anAvailable;
+      availableHyps( aDim, Algo, anAvailable, myAvailableHypData[aDim][Algo] );
+      myDlg->tab( aDim )->setAvailableHyps( Algo, anAvailable );
+      index = myAvailableHypData[aDim][Algo].indexOf( aHypData );
+    }
+    setCurrentHyp( aDim, Algo, index );
+    onAlgoSelected( index, aDim );
+    processSet();
+  }
+  else
+  {
+    bool mainHyp = true;
+    QStringList anAvailable;
+    availableHyps( aDim, MainHyp, anAvailable, myAvailableHypData[aDim][MainHyp] );
+    myDlg->tab( aDim )->setAvailableHyps( MainHyp, anAvailable );
+    int index = myAvailableHypData[aDim][MainHyp].indexOf( aHypData );
+    if ( index < 0 )
+    {
+      mainHyp = false;
+      index = myAvailableHypData[aDim][AddHyp].indexOf( aHypData );
+    }
+    if (index >= 0)
+      createHypothesis(aDim, mainHyp ? MainHyp : AddHyp, aHypoTypeName);
+    else
+      processSet();
+  }
 }
 
 //================================================================================
@@ -1690,7 +1753,7 @@ SMESH::SMESH_Hypothesis_var SMESHGUI_MeshOp::getAlgo( const int theDim )
   QStringList tmp;
   existingHyps( theDim, Algo, pObj, tmp, myExistingHyps[ theDim ][ Algo ]);
 
-  // look for anexisting algo of such a type
+  // look for an existing algo of such a type
   THypList& aHypVarList = myExistingHyps[ theDim ][ Algo ];
   THypList::iterator anIter = aHypVarList.begin();
   for ( ; anIter != aHypVarList.end(); anIter++)
@@ -1704,23 +1767,27 @@ SMESH::SMESH_Hypothesis_var SMESHGUI_MeshOp::getAlgo( const int theDim )
     }
   }
 
-  if (anAlgoVar->_is_nil()) {
+  if (anAlgoVar->_is_nil())
+  {
     HypothesisData* aHypData = SMESH::GetHypothesisData( aHypName );
-    if (aHypData) {
+    if (aHypData)
+    {
       QString aClientLibName = aHypData->ClientLibName;
-      if (aClientLibName == "") {
+      if (aClientLibName == "")
+      {
         // Call hypothesis creation server method (without GUI)
         SMESH::CreateHypothesis(aHypName, aHypData->Label, true);
-      } else {
+      }
+      else
+      {
         // Get hypotheses creator client (GUI)
         // BUG 0020378
         //SMESHGUI_GenericHypothesisCreator* aCreator = SMESH::GetHypothesisCreator(aHypName);
-        SMESH::HypothesisCreatorPtr aCreator = SMESH::GetHypothesisCreator(aHypName);
+        SMESHGUI_GenericHypothesisCreator* aCreator = SMESH::GetHypothesisCreator(aHypName);
 
         // Create algorithm
-        if (aCreator) {
-          aCreator->create(true, aHypName, myDlg);
-        }
+        if (aCreator)
+          aCreator->create(true, aHypName, myDlg, 0, QString::null );
         else
           SMESH::CreateHypothesis(aHypName, aHypData->Label, true);
       }

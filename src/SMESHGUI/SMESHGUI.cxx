@@ -2099,9 +2099,9 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
         {
           // BUG 0020378
           //SMESHGUI_GenericHypothesisCreator* aCreator = SMESH::GetHypothesisCreator(aHypothesis->GetName());
-          SMESH::HypothesisCreatorPtr aCreator = SMESH::GetHypothesisCreator(aHypothesis->GetName());
+          SMESHGUI_GenericHypothesisCreator* aCreator = SMESH::GetHypothesisCreator(aHypothesis->GetName());
           if (aCreator) {
-            aCreator->edit( aHypothesis.in(), anIObject->getName(), desktop() );
+            aCreator->edit( aHypothesis.in(), anIObject->getName(), desktop(), this, SLOT( onHypothesisEdit( int ) ) );
           }
           else
           {
@@ -2109,7 +2109,6 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
           }
         }
       }
-      updateObjBrowser( true );
       break;
     }
 
@@ -4427,8 +4426,11 @@ int SMESHGUI::addVtkFontPref( const QString& label, const int pId, const QString
   return tfont;
 }
 
-
-
-
-
-
+/*!
+  \brief Actions after hypothesis edition
+  Updates object browser after hypothesis edition
+*/
+void SMESHGUI::onHypothesisEdit( int result )
+{
+  updateObjBrowser( true );
+}

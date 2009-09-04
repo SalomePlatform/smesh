@@ -58,8 +58,6 @@ class algo_error_array;
 
 namespace SMESH
 {
-  typedef boost::shared_ptr<SMESHGUI_GenericHypothesisCreator> HypothesisCreatorPtr;
-
   SMESHGUI_EXPORT
   void InitAvailableHypotheses();
 
@@ -87,7 +85,7 @@ namespace SMESH
 			      const HypothesisData* );
 
   SMESHGUI_EXPORT
-  HypothesisCreatorPtr GetHypothesisCreator( const QString& );
+  SMESHGUI_GenericHypothesisCreator* GetHypothesisCreator( const QString& );
 
   SMESHGUI_EXPORT
   SMESH::SMESH_Hypothesis_ptr CreateHypothesis( const QString&,

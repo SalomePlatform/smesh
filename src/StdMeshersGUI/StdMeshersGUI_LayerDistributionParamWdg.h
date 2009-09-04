@@ -65,6 +65,7 @@ private slots:
   void onCreate(); 
   void onEdit(); 
   void onHypTypePopup( QAction* );
+  void onEdited(int);
 
 private:
   void init();

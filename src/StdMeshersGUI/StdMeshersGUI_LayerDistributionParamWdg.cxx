@@ -200,18 +200,25 @@ void StdMeshersGUI_LayerDistributionParamWdg::onEdit()
   CORBA::String_var hypType = myHyp->GetName();
   // BUG 0020378
   //SMESHGUI_GenericHypothesisCreator* editor = SMESH::GetHypothesisCreator(hypType.in());
-  SMESH::HypothesisCreatorPtr editor = SMESH::GetHypothesisCreator(hypType.in());
+  SMESHGUI_GenericHypothesisCreator* editor = SMESH::GetHypothesisCreator(hypType.in());
   if ( !editor ) return;
 
-  if ( myDlg ) myDlg->hide();
+  if ( myDlg )
+    myDlg->hide();
 
   try {
     QWidget* parent = this;
-    if ( myDlg ) parent = myDlg->parentWidget();
-    editor->edit( myHyp, myName, parent );
+    if ( myDlg )
+      parent = myDlg->parentWidget();
+    editor->edit( myHyp, myName, parent, this, SLOT( onEdited( int ) ) );
   }
-  catch(...) {
+  catch(...)
+  {
   }
+}
 
-  if ( myDlg ) myDlg->show();
+void StdMeshersGUI_LayerDistributionParamWdg::onEdited( int result )
+{
+  if ( myDlg )
+    myDlg->show();
 }

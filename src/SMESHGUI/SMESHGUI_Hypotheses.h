@@ -28,6 +28,7 @@
 
 // SMESH includes
 #include "SMESH_SMESHGUI.hxx"
+#include "SMESHGUI_HypothesesUtils.h"
 
 // Qt includes
 #include <QtxDialog.h>
@@ -51,10 +52,9 @@ public:
   virtual ~SMESHGUI_GenericHypothesisCreator();
 
   void                         create( SMESH::SMESH_Hypothesis_ptr,
-				       const QString&, QWidget* );
-  void                         create( bool, const QString&, QWidget* );
-  void                         edit( SMESH::SMESH_Hypothesis_ptr,
-				     const QString&, QWidget* );
+				       const QString&, QWidget*, QObject*, const QString& );
+  void                         create( bool, const QString&, QWidget*, QObject*, const QString& );
+  void                         edit( SMESH::SMESH_Hypothesis_ptr, const QString&, QWidget*, QObject*, const QString& );
   void                         setInitParamsHypothesis(SMESH::SMESH_Hypothesis_ptr);
 
   virtual bool                 checkParams( QString& ) const;
@@ -67,6 +67,9 @@ public:
   
   QString                      getShapeEntry() const { return myShapeEntry; }
   void                         setShapeEntry( const QString& theEntry );
+
+signals:
+  void                         finished( int );
 
 protected:
   struct StdParam
@@ -113,8 +116,7 @@ private slots:
   virtual void                 onDialogFinished( int );
 
 private:
-  bool                         editHypothesis( SMESH::SMESH_Hypothesis_ptr,
-					       const QString&, QWidget* );
+  void                         editHypothesis( SMESH::SMESH_Hypothesis_ptr, const QString&, QWidget*, QObject* obj, const QString& );
 
 private:
   SMESH::SMESH_Hypothesis_var  myHypo, myInitParamsHypo;
@@ -123,7 +125,6 @@ private:
   ListOfWidgets                myParamWidgets;
   bool                         myIsCreate;
   QtxDialog*                   myDlg;
-  QEventLoop*                  myEventLoop;
   QString                      myShapeEntry;
 };
 
@@ -135,20 +136,19 @@ public:
   SMESHGUI_HypothesisDlg( SMESHGUI_GenericHypothesisCreator*, QWidget* );
   virtual ~SMESHGUI_HypothesisDlg();
 
-  void                                 setHIcon( const QPixmap& );
-  void                                 setCustomFrame( QFrame* );
-  void                                 setType( const QString& );
+  void setHIcon( const QPixmap& );
+  void setCustomFrame( QFrame* );
+  void setType( const QString& );
 
 protected slots:
-  virtual void                         accept();
-  virtual void                         reject();
-  void                                 onHelp(); 
+  virtual void accept();
+  virtual void reject();
+  void onHelp(); 
 
 private:
-  SMESHGUI_GenericHypothesisCreator*   myCreator;
-  QLabel*                              myIconLabel;
-  QLabel*                              myTypeLabel;
-  QString                              myHelpFileName;
+  SMESHGUI_GenericHypothesisCreator* myCreator;
+  QLabel *myIconLabel, *myTypeLabel;
+  QString myHelpFileName;
 };
 
 /*!
@@ -193,8 +193,28 @@ public:
   HypothesesSet( const QString& );
   HypothesesSet( const QString&, const QStringList&, const QStringList& );
 
-  QString     HypoSetName;
-  QStringList HypoList, AlgoList;
+  QString name() const;
+  void set( bool, const QStringList& );
+  int count( bool ) const;
+
+  bool isAlgo() const;
+
+  //this method sets internal index to -1, thus before any data access it is necessary to call next()
+  void init( bool );
+
+  bool more() const;
+  void next();
+  QString current() const;
+
+private:
+  QStringList* list(bool) const;
+  QStringList* list() const;
+
+private:
+  bool myIsAlgo;
+  QString     myHypoSetName;
+  QStringList myHypoList, myAlgoList;
+  int myIndex;
 };
 
 #endif // SMESHGUI_HYPOTHESES_H

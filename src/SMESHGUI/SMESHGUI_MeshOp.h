@@ -31,6 +31,7 @@
 
 #include "SMESHGUI_SelectionOp.h"
 
+class HypothesesSet;
 class SMESHGUI_MeshDlg;
 class SMESHGUI_ShapeByMeshOp;
 class HypothesisData;
@@ -77,6 +78,9 @@ protected slots:
   void                           onPublishShapeByMeshDlg( SUIT_Operation* );
   void                           onCloseShapeByMeshDlg( SUIT_Operation* );
   void                           onAlgoSelected( const int, const int = -1 );
+  void                           processSet();
+  void                           onHypoCreated( int );
+  void                           onHypoEdited( int );
 
 private:
   typedef QList<HypothesisData*> THypDataList; // typedef: list of hypothesis data
@@ -135,6 +139,8 @@ private:
   THypDataList                   myAvailableHypData[4][NbHypTypes];
 
   bool                           myIgnoreAlgoSelection;
+  HypothesesSet* myHypoSet;
+  int myDim, myType;
 };
 
 #endif // SMESHGUI_MESHOP_H
