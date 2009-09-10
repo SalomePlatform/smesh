@@ -4245,6 +4245,9 @@ CORBA::Boolean SMESH_MeshEditor_i::DoubleNodes( const SMESH::long_array& theElem
 
   storeResult( aMeshEditor) ;
 
+  // Update Python script
+  TPythonDump() << "isDone = " << this << ".DoubleNodes( " << theElems << ", "
+    << theNodesNot << ", " << theAffectedElems << " )";
   return aResult;
 }
 
@@ -4282,6 +4285,9 @@ CORBA::Boolean SMESH_MeshEditor_i::DoubleNodesInRegion
 
   storeResult( aMeshEditor) ;
 
+  // Update Python script
+  TPythonDump() << "isDone = " << this << ".DoubleNodesInRegion( " << theElems << ", "
+    << theNodesNot << ", " << theShape << " )";
   return aResult;
 }
 
@@ -4332,6 +4338,9 @@ CORBA::Boolean SMESH_MeshEditor_i::DoubleNodeGroup(
 
   storeResult( aMeshEditor) ;
 
+  // Update Python script
+  TPythonDump() << "isDone = " << this << ".DoubleNodeGroup( " << theElems << ", "
+    << theNodesNot << ", " << theAffectedElems << " )";
   return aResult;
 }
 
@@ -4371,6 +4380,9 @@ CORBA::Boolean SMESH_MeshEditor_i::DoubleNodeGroupInRegion(
 
   storeResult( aMeshEditor) ;
 
+  // Update Python script
+  TPythonDump() << "isDone = " << this << ".DoubleNodeGroupInRegion( " << theElems << ", "
+    << theNodesNot << ", " << theShape << " )";
   return aResult;
 }
 
@@ -4423,6 +4435,9 @@ CORBA::Boolean SMESH_MeshEditor_i::DoubleNodeGroups(
 
   storeResult( aMeshEditor) ;
 
+  // Update Python script
+  TPythonDump() << "isDone = " << this << ".DoubleNodeGroups( " << &theElems << ", "
+    << &theNodesNot << ", " << &theAffectedElems << " )";
   return aResult;
 }
 
@@ -4459,5 +4474,28 @@ CORBA::Boolean SMESH_MeshEditor_i::DoubleNodeGroupsInRegion(
 
   storeResult( aMeshEditor) ;
 
+  // Update Python script
+  TPythonDump() << "isDone = " << this << ".DoubleNodeGroupsInRegion( " << &theElems << ", "
+    << &theNodesNot << ", " << theShape << " )";
+  return aResult;
+}
+
+//================================================================================
+/*!
+  \brief Generated skin mesh (containing 2D cells) from 3D mesh
+   The created 2D mesh elements based on nodes of free faces of boundary volumes
+  \return TRUE if operation has been completed successfully, FALSE otherwise
+*/
+//================================================================================
+
+CORBA::Boolean SMESH_MeshEditor_i::Make2DMeshFrom3D()
+{
+  initData();
+
+  ::SMESH_MeshEditor aMeshEditor( myMesh );
+  bool aResult = aMeshEditor.Make2DMeshFrom3D();
+  storeResult( aMeshEditor) ;
+  
+  TPythonDump() << "isDone = " << this << ".Make2DMeshFrom3D()";
   return aResult;
 }

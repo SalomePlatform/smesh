@@ -601,7 +601,14 @@ class SMESH_MeshEditor_i: public POA_SMESH::SMESH_MeshEditor
                                            const SMESH::ListOfGroups& theNodesNot,
                                            GEOM::GEOM_Object_ptr      theShape );
 
-private: //!< private methods
+    /*!
+     * \brief Generated skin mesh (containing 2D cells) from 3D mesh
+     * The created 2D mesh elements based on nodes of free faces of boundary volumes
+     * \return TRUE if operation has been completed successfully, FALSE otherwise
+    */
+    CORBA::Boolean Make2DMeshFrom3D();
+
+ private: //!< private methods
 
   SMESHDS_Mesh * GetMeshDS() { return myMesh->GetMeshDS(); }
 

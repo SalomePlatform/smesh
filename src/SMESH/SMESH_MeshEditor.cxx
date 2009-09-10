@@ -8776,9 +8776,6 @@ bool SMESH_MeshEditor::DoubleNodesInRegion( const TIDSortedElemSet& theElems,
                                             const TIDSortedElemSet& theNodesNot,
                                             const TopoDS_Shape&     theShape )
 {
-  SMESHDS_Mesh* aMesh = GetMeshDS();
-  if (!aMesh)
-    return false;
   if ( theShape.IsNull() )
     return false;
 
@@ -8812,4 +8809,47 @@ bool SMESH_MeshEditor::DoubleNodesInRegion( const TIDSortedElemSet& theElems,
     }
   }
   return DoubleNodes( theElems, theNodesNot, anAffected );
+}
+
+/*!
+ * \brief Generated skin mesh (containing 2D cells) from 3D mesh
+ * The created 2D mesh elements based on nodes of free faces of boundary volumes
+ * \return TRUE if operation has been completed successfully, FALSE otherwise
+ */
+
+bool SMESH_MeshEditor::Make2DMeshFrom3D()
+{
+  // iterates on volume elements and detect all free faces on them
+  SMESHDS_Mesh* aMesh = GetMeshDS();
+  if (!aMesh)
+    return false;
+  bool res = false;
+  SMDS_VolumeIteratorPtr vIt = aMesh->volumesIterator();
+  while(vIt->more())
+  {
+    const SMDS_MeshVolume* volume = vIt->next();
+    SMDS_VolumeTool vTool( volume );
+    bool isPoly = volume->IsPoly();
+    for ( int iface = 0, n = vTool.NbFaces(); iface < n; iface++ )
+    {
+      if (!vTool.IsFreeFace(iface))
+        continue;
+      vector<const SMDS_MeshNode *> nodes;
+      int nbFaceNodes = vTool.NbFaceNodes(iface);
+      const SMDS_MeshNode** faceNodes = vTool.GetFaceNodes(iface);
+      if (vTool.IsFaceExternal(iface))
+        for (int inode = 0; inode < nbFaceNodes; inode++)
+          nodes.push_back(faceNodes[inode]);
+      else
+        for (int inode = nbFaceNodes - 1; inode >= 0; inode--)
+          nodes.push_back(faceNodes[inode]);
+
+      // add new face based on volume nodes
+      if (aMesh->FindFace( nodes ) )
+        continue; // face already exsist
+      myLastCreatedElems.Append( AddElement(nodes, SMDSAbs_Face, isPoly && iface == 1) );
+      res = true;
+    }
+  }
+  return res;
 }

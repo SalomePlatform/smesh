@@ -445,5 +445,9 @@
             <source>ICON_UNDERLYING_ELEMS</source>
             <translation>mesh_extractGroup.png</translation>
         </message>
+        <message>
+            <source>ICON_2D_FROM_3D</source>
+            <translation>mesh_2d_from_3d.png</translation>
+        </message>
     </context>
 </TS>

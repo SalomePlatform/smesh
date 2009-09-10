@@ -67,6 +67,7 @@
 #include "SMESHGUI_BuildCompoundDlg.h"
 #include "SMESHGUI_ComputeDlg.h"
 #include "SMESHGUI_FileInfoDlg.h"
+#include "SMESHGUI_Make2DFrom3DOp.h"
 
 #include "SMESHGUI_Utils.h"
 #include "SMESHGUI_MeshUtils.h"
@@ -1773,6 +1774,11 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
 			       }*/
       break;
     }
+  case 418: // create 2D mesh from 3D
+    {
+      startOperation( 418 );
+      break;
+    }
   case 806:                                     // CREATE GEO GROUP
     {
       startOperation( 806 );
@@ -2768,6 +2774,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction(  415, "MAP",             "ICON_MAP" );
   createSMESHAction(  416, "EXTRUSION_ALONG", "ICON_EXTRUSION_ALONG" );
   createSMESHAction(  417, "CONV_TO_QUAD",    "ICON_CONV_TO_QUAD" );
+  createSMESHAction(  418, "2D_FROM_3D",      "ICON_2D_FROM_3D" );
   createSMESHAction(  200, "RESET" );
   createSMESHAction(  201, "SCALAR_BAR_PROP" );
   createSMESHAction(  211, "WIRE",           "ICON_WIRE", 0, true );
@@ -2937,6 +2944,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createMenu( 414, modifyId, -1 );
   createMenu( 415, modifyId, -1 );
   createMenu( 417, modifyId, -1 );
+  createMenu( 418, modifyId, -1 );
 
   createMenu( 214, viewId, -1 );
 
@@ -3033,6 +3041,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createTool( 414, modifyTb );
   createTool( 415, modifyTb );
   createTool( 417, modifyTb );
+  createTool( 418, modifyTb );
 
   createTool( 214, dispModeTb );
 
@@ -3899,6 +3908,9 @@ LightApp_Operation* SMESHGUI::createOperation( const int id ) const
       break;
     case 417: //convert to quadratic
       op = new SMESHGUI_ConvToQuadOp();
+    break;
+    case 418: // create 2D mesh as boundary on 3D
+      op = new SMESHGUI_Make2DFrom3DOp();
     break;
     case 4067: // make mesh pass through point
       op = new SMESHGUI_MakeNodeAtPointOp();

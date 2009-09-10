@@ -202,6 +202,10 @@
             <translation>Convert to/from quadratic</translation>
         </message>
         <message>
+            <source>MEN_2D_FROM_3D</source>
+            <translation>Create 2D mesh from 3D</translation>
+        </message>
+        <message>
             <source>MEN_CREATE_GROUP</source>
             <translation>Create Group</translation>
         </message>
@@ -2044,6 +2048,10 @@ Consider saving your work before application crash</translation>
             <translation>Convert to/from quadratic</translation>
         </message>
         <message>
+            <source>STB_2D_FROM_3D</source>
+            <translation>Create 2D mesh from 3D</translation>
+        </message>
+        <message>
             <source>STB_CREATE_GROUP</source>
             <translation>Create Group</translation>
         </message>
@@ -2536,6 +2544,10 @@ Consider saving your work before application crash</translation>
         <message>
             <source>TOP_CONV_TO_QUAD</source>
             <translation>Convert to/from quadratic</translation>
+        </message>
+        <message>
+            <source>TOP_2D_FROM_3D</source>
+            <translation>Create 2D mesh from 3D</translation>
         </message>
         <message>
             <source>TOP_CREATE_GROUP</source>
@@ -3373,6 +3385,13 @@ Please specify it and try again</translation>
         <message>
             <source>REF_IS_NULL</source>
             <translation>No valid mesh object selected</translation>
+        </message>
+    </context>
+    <context>
+        <name>SMESHGUI_Make2DFrom3DDlg</name>
+        <message>
+            <source>CAPTION</source>
+            <translation>Create 2D mesh from 3D</translation>
         </message>
     </context>
     <context>

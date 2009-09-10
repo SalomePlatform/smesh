@@ -2512,6 +2512,12 @@ class Mesh:
     def ConvertFromQuadratic(self):
         return self.editor.ConvertFromQuadratic()
 
+    ## Creates 2D mesh as skin on boundary faces of a 3D mesh
+    #  @return TRUE if operation has been completed successfully, FALSE otherwise
+    #  @ingroup l2_modif_edit
+    def  Make2DMeshFrom3D(self):
+        return self.editor. Make2DMeshFrom3D()
+        
     ## Renumber mesh nodes
     #  @ingroup l2_modif_renumber
     def RenumberNodes(self):

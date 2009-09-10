@@ -165,6 +165,7 @@ dist_salomeres_DATA = \
 	mesh_tree_mesh_partial.png \
 	mesh_extractGroup.png \
 	mesh_precompute.png \
+	mesh_2d_from_3d.png \
         mesh_free_faces.png
 
 # VSR: little trick to avoid putting if SMESHCatalog.xml to the distribution archive

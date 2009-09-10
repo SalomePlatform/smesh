@@ -784,6 +784,13 @@ module SMESH
                                       in ListOfGroups theNodesNot,
                                       in GEOM::GEOM_Object theShape );
 
+    /*!
+     * \brief Generated skin mesh (containing 2D cells) from 3D mesh
+     * The created 2D mesh elements based on nodes of free faces of boundary volumes
+     * \return TRUE if operation has been completed successfully, FALSE otherwise
+     */
+    boolean Make2DMeshFrom3D();
+
   };
 };
 
