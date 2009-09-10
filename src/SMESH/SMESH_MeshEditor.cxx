@@ -78,6 +78,7 @@
 
 #include <map>
 #include <set>
+#include <numeric>
 
 #define cast2Node(elem) static_cast<const SMDS_MeshNode*>( elem )
 
@@ -90,8 +91,23 @@ typedef map<const SMDS_MeshElement*, list<const SMDS_MeshElement*> > TElemOfElem
 //typedef TNodeOfNodeVecMap::iterator                                  TNodeOfNodeVecMapItr;
 //typedef map<const SMDS_MeshElement*, vector<TNodeOfNodeVecMapItr> >  TElemOfVecOfMapNodesMap;
 
-struct TNodeXYZ : public gp_XYZ {
+//=======================================================================
+/*!
+ * \brief SMDS_MeshNode -> gp_XYZ convertor
+ */
+//=======================================================================
+
+struct TNodeXYZ : public gp_XYZ
+{
   TNodeXYZ( const SMDS_MeshNode* n ):gp_XYZ( n->X(), n->Y(), n->Z() ) {}
+  double Distance( const SMDS_MeshNode* n )
+  {
+    return gp_Vec( *this, TNodeXYZ( n )).Magnitude();
+  }
+  double SquareDistance( const SMDS_MeshNode* n )
+  {
+    return gp_Vec( *this, TNodeXYZ( n )).SquareMagnitude();
+  }
 };
 
 //=======================================================================
@@ -5066,12 +5082,13 @@ SMESH_MeshEditor::generateGroups(const SMESH_SequenceOfElemPtr& nodeGens,
   return newGroupIDs;
 }
 
-//=======================================================================
-//function : FindCoincidentNodes
-//purpose  : Return list of group of nodes close to each other within theTolerance
-//           Search among theNodes or in the whole mesh if theNodes is empty using
-//           an Octree algorithm
-//=======================================================================
+//================================================================================
+/*!
+ * \brief Return list of group of nodes close to each other within theTolerance
+ *        Search among theNodes or in the whole mesh if theNodes is empty using
+ *        an Octree algorithm
+ */
+//================================================================================
 
 void SMESH_MeshEditor::FindCoincidentNodes (set<const SMDS_MeshNode*> & theNodes,
                                             const double                theTolerance,
@@ -5089,9 +5106,10 @@ void SMESH_MeshEditor::FindCoincidentNodes (set<const SMDS_MeshNode*> & theNodes
   }
   else
     nodes=theNodes;
-  SMESH_OctreeNode::FindCoincidentNodes ( nodes, &theGroupsOfNodes, theTolerance);
 
+  SMESH_OctreeNode::FindCoincidentNodes ( nodes, &theGroupsOfNodes, theTolerance);
 }
+
 
 //=======================================================================
 /*!
@@ -5101,11 +5119,14 @@ void SMESH_MeshEditor::FindCoincidentNodes (set<const SMDS_MeshNode*> & theNodes
 
 struct SMESH_NodeSearcherImpl: public SMESH_NodeSearcher
 {
+  //---------------------------------------------------------------------
   /*!
    * \brief Constructor
    */
   SMESH_NodeSearcherImpl( const SMESHDS_Mesh* theMesh )
   {
+    myMesh = ( SMESHDS_Mesh* ) theMesh;
+
     set<const SMDS_MeshNode*> nodes;
     if ( theMesh ) {
       SMDS_NodeIteratorPtr nIt = theMesh->nodesIterator();
@@ -5113,19 +5134,43 @@ struct SMESH_NodeSearcherImpl: public SMESH_NodeSearcher
         nodes.insert( nodes.end(), nIt->next() );
     }
     myOctreeNode = new SMESH_OctreeNode(nodes) ;
+
+    // get max size of a leaf box
+    SMESH_OctreeNode* tree = myOctreeNode;
+    while ( !tree->isLeaf() )
+    {
+      SMESH_OctreeNodeIteratorPtr cIt = tree->GetChildrenIterator();
+      if ( cIt->more() )
+        tree = cIt->next();
+    }
+    myHalfLeafSize = tree->maxSize() / 2.;
   }
+
+  //---------------------------------------------------------------------
+  /*!
+   * \brief Move node and update myOctreeNode accordingly
+   */
+  void MoveNode( const SMDS_MeshNode* node, const gp_Pnt& toPnt )
+  {
+    myOctreeNode->UpdateByMoveNode( node, toPnt );
+    myMesh->MoveNode( node, toPnt.X(), toPnt.Y(), toPnt.Z() );
+  }
+
+  //---------------------------------------------------------------------
   /*!
    * \brief Do it's job
    */
   const SMDS_MeshNode* FindClosestTo( const gp_Pnt& thePnt )
   {
     SMDS_MeshNode tgtNode( thePnt.X(), thePnt.Y(), thePnt.Z() );
+    map<double, const SMDS_MeshNode*> dist2Nodes;
+    myOctreeNode->NodesAround( &tgtNode, dist2Nodes, myHalfLeafSize );
+    if ( !dist2Nodes.empty() )
+      return dist2Nodes.begin()->second;
     list<const SMDS_MeshNode*> nodes;
-    //const double precision = 1e-6;
-    //myOctreeNode->NodesAround( &tgtNode, &nodes, precision );
+    //myOctreeNode->NodesAround( &tgtNode, &nodes, myHalfLeafSize );
 
     double minSqDist = DBL_MAX;
-    Bnd_B3d box;
     if ( nodes.empty() )  // get all nodes of OctreeNode's closest to thePnt
     {
       // sort leafs by their distance from thePnt
@@ -5134,20 +5179,25 @@ struct SMESH_NodeSearcherImpl: public SMESH_NodeSearcher
       list< SMESH_OctreeNode* > treeList;
       list< SMESH_OctreeNode* >::iterator trIt;
       treeList.push_back( myOctreeNode );
+
+      SMDS_MeshNode pointNode( thePnt.X(), thePnt.Y(), thePnt.Z() );
       for ( trIt = treeList.begin(); trIt != treeList.end(); ++trIt)
       {
         SMESH_OctreeNode* tree = *trIt;
-        if ( !tree->isLeaf() ) { // put children to the queue
+        if ( !tree->isLeaf() ) // put children to the queue
+        {
+          if ( !tree->isInside( &pointNode, myHalfLeafSize )) continue;
           SMESH_OctreeNodeIteratorPtr cIt = tree->GetChildrenIterator();
           while ( cIt->more() )
             treeList.push_back( cIt->next() );
         }
-        else if ( tree->NbNodes() ) { // put tree to treeMap
-          tree->getBox( box );
+        else if ( tree->NbNodes() ) // put a tree to the treeMap
+        {
+          const Bnd_B3d& box = tree->getBox();
           double sqDist = thePnt.SquareDistance( 0.5 * ( box.CornerMin() + box.CornerMax() ));
           pair<TDistTreeMap::iterator,bool> it_in = treeMap.insert( make_pair( sqDist, tree ));
           if ( !it_in.second ) // not unique distance to box center
-            treeMap.insert( it_in.first, make_pair( sqDist - 1e-13*treeMap.size(), tree ));
+            treeMap.insert( it_in.first, make_pair( sqDist + 1e-13*treeMap.size(), tree ));
         }
       }
       // find distance after which there is no sense to check tree's
@@ -5155,7 +5205,7 @@ struct SMESH_NodeSearcherImpl: public SMESH_NodeSearcher
       TDistTreeMap::iterator sqDist_tree = treeMap.begin();
       if ( treeMap.size() > 5 ) {
         SMESH_OctreeNode* closestTree = sqDist_tree->second;
-        closestTree->getBox( box );
+        const Bnd_B3d& box = closestTree->getBox();
         double limit = sqrt( sqDist_tree->first ) + sqrt ( box.SquareExtent() );
         sqLimit = limit * limit;
       }
@@ -5180,12 +5230,23 @@ struct SMESH_NodeSearcherImpl: public SMESH_NodeSearcher
     }
     return closestNode;
   }
+
+  //---------------------------------------------------------------------
   /*!
    * \brief Destructor
    */
   ~SMESH_NodeSearcherImpl() { delete myOctreeNode; }
+
+  //---------------------------------------------------------------------
+  /*!
+   * \brief Return the node tree
+   */
+  const SMESH_OctreeNode* getTree() const { return myOctreeNode; }
+
 private:
   SMESH_OctreeNode* myOctreeNode;
+  SMESHDS_Mesh*     myMesh;
+  double            myHalfLeafSize; // max size of a leaf box
 };
 
 //=======================================================================
@@ -5197,6 +5258,404 @@ private:
 SMESH_NodeSearcher* SMESH_MeshEditor::GetNodeSearcher() 
 {
   return new SMESH_NodeSearcherImpl( GetMeshDS() );
+}
+
+// ========================================================================
+namespace // Utils used in SMESH_ElementSearcherImpl::FindElementsByPoint()
+{
+  const int MaxNbElemsInLeaf = 10; // maximal number of elements in a leaf of tree
+  const int MaxLevel         = 7;  // maximal tree height -> nb terminal boxes: 8^7 = 2097152
+  const double NodeRadius = 1e-9;  // to enlarge bnd box of element
+
+  //=======================================================================
+  /*!
+   * \brief Octal tree of bounding boxes of elements
+   */
+  //=======================================================================
+
+  class ElementBndBoxTree : public SMESH_Octree
+  {
+  public:
+
+    ElementBndBoxTree(const SMDS_Mesh& mesh, SMDSAbs_ElementType elemType);
+    void getElementsNearPoint( const gp_Pnt& point, TIDSortedElemSet& foundElems);
+    ~ElementBndBoxTree();
+
+  protected:
+    ElementBndBoxTree() {}
+    SMESH_Octree* allocateOctreeChild() const { return new ElementBndBoxTree; }
+    void buildChildrenData();
+    Bnd_B3d* buildRootBox();
+  private:
+    //!< Bounding box of element
+    struct ElementBox : public Bnd_B3d
+    {
+      const SMDS_MeshElement* _element;
+      int                     _refCount; // an ElementBox can be included in several tree branches
+      ElementBox(const SMDS_MeshElement* elem);
+    };
+    vector< ElementBox* > _elements;
+  };
+
+  //================================================================================
+  /*!
+   * \brief ElementBndBoxTree creation
+   */
+  //================================================================================
+
+  ElementBndBoxTree::ElementBndBoxTree(const SMDS_Mesh& mesh, SMDSAbs_ElementType elemType)
+    :SMESH_Octree( new SMESH_Octree::Limit( MaxLevel, /*minSize=*/0. ))
+  {
+    int nbElems = mesh.GetMeshInfo().NbElements( elemType );
+    _elements.reserve( nbElems );
+
+    SMDS_ElemIteratorPtr elemIt = mesh.elementsIterator( elemType );
+    while ( elemIt->more() )
+      _elements.push_back( new ElementBox( elemIt->next() ));
+
+    if ( _elements.size() > MaxNbElemsInLeaf )
+      compute();
+    else
+      myIsLeaf = true;
+  }
+
+  //================================================================================
+  /*!
+   * \brief Destructor
+   */
+  //================================================================================
+
+  ElementBndBoxTree::~ElementBndBoxTree()
+  {
+    for ( int i = 0; i < _elements.size(); ++i )
+      if ( --_elements[i]->_refCount <= 0 )
+        delete _elements[i];
+  }
+
+  //================================================================================
+  /*!
+   * \brief Return the maximal box
+   */
+  //================================================================================
+
+  Bnd_B3d* ElementBndBoxTree::buildRootBox()
+  {
+    Bnd_B3d* box = new Bnd_B3d;
+    for ( int i = 0; i < _elements.size(); ++i )
+      box->Add( *_elements[i] );
+    return box;
+  }
+
+  //================================================================================
+  /*!
+   * \brief Redistrubute element boxes among children
+   */
+  //================================================================================
+
+  void ElementBndBoxTree::buildChildrenData()
+  {
+    for ( int i = 0; i < _elements.size(); ++i )
+    {
+      for (int j = 0; j < 8; j++)
+      {
+        if ( !_elements[i]->IsOut( myChildren[j]->getBox() ))
+        {
+          _elements[i]->_refCount++;
+          ((ElementBndBoxTree*)myChildren[j])->_elements.push_back( _elements[i]);
+        }
+      }
+      _elements[i]->_refCount--;
+    }
+    _elements.clear();
+
+    for (int j = 0; j < 8; j++)
+    {
+      ElementBndBoxTree* child = static_cast<ElementBndBoxTree*>( myChildren[j]);
+      if ( child->_elements.size() <= MaxNbElemsInLeaf )
+        child->myIsLeaf = true;
+
+      if ( child->_elements.capacity() - child->_elements.size() > 1000 )
+        child->_elements.resize( child->_elements.size() ); // compact
+    }
+  }
+
+  //================================================================================
+  /*!
+   * \brief Return elements which can include the point
+   */
+  //================================================================================
+
+  void ElementBndBoxTree::getElementsNearPoint( const gp_Pnt&     point,
+                                                TIDSortedElemSet& foundElems)
+  {
+    if ( level() && getBox().IsOut( point.XYZ() ))
+      return;
+
+    if ( isLeaf() )
+    {
+      for ( int i = 0; i < _elements.size(); ++i )
+        if ( !_elements[i]->IsOut( point.XYZ() ))
+          foundElems.insert( _elements[i]->_element );
+    }
+    else
+    {
+      for (int i = 0; i < 8; i++)
+        ((ElementBndBoxTree*) myChildren[i])->getElementsNearPoint( point, foundElems );
+    }
+  }
+
+  //================================================================================
+  /*!
+   * \brief Construct the element box
+   */
+  //================================================================================
+
+  ElementBndBoxTree::ElementBox::ElementBox(const SMDS_MeshElement* elem)
+  {
+    _element  = elem;
+    _refCount = 1;
+    SMDS_ElemIteratorPtr nIt = elem->nodesIterator();
+    while ( nIt->more() )
+      Add( TNodeXYZ( cast2Node( nIt->next() )));
+    Enlarge( NodeRadius );
+  }
+
+} // namespace
+
+//=======================================================================
+/*!
+ * \brief Implementation of search for the elements by point
+ */
+//=======================================================================
+
+struct SMESH_ElementSearcherImpl: public SMESH_ElementSearcher
+{
+  SMESHDS_Mesh*           _mesh;
+  ElementBndBoxTree*      _ebbTree;
+  SMESH_NodeSearcherImpl* _nodeSearcher;
+  SMDSAbs_ElementType     _elementType;
+
+  SMESH_ElementSearcherImpl( SMESHDS_Mesh& mesh ): _mesh(&mesh),_ebbTree(0),_nodeSearcher(0) {}
+  ~SMESH_ElementSearcherImpl()
+  {
+    if ( _ebbTree )      delete _ebbTree;      _ebbTree      = 0;
+    if ( _nodeSearcher ) delete _nodeSearcher; _nodeSearcher = 0;
+  }
+
+  /*!
+   * \brief Return elements of given type where the given point is IN or ON.
+   *
+   * 'ALL' type means elements of any type excluding nodes and 0D elements
+   */
+  void FindElementsByPoint(const gp_Pnt&                      point,
+                           SMDSAbs_ElementType                type,
+                           vector< const SMDS_MeshElement* >& foundElements)
+  {
+    foundElements.clear();
+
+    const SMDS_MeshInfo& meshInfo = _mesh->GetMeshInfo();
+
+    // -----------------
+    // define tolerance
+    // -----------------
+    double tolerance = 0;
+    if ( _nodeSearcher && meshInfo.NbNodes() > 1 )
+    {
+      double boxSize = _nodeSearcher->getTree()->maxSize();
+      tolerance = 1e-8 * boxSize/* / meshInfo.NbNodes()*/;
+    }
+    else if ( _ebbTree && meshInfo.NbElements() > 0 )
+    {
+      double boxSize = _ebbTree->maxSize();
+      tolerance = 1e-8 * boxSize/* / meshInfo.NbElements()*/;
+    }
+    if ( tolerance == 0 )
+    {
+      // define tolerance by size of a most complex element
+      int complexType = SMDSAbs_Volume;
+      while ( complexType > SMDSAbs_All &&
+              meshInfo.NbElements( SMDSAbs_ElementType( complexType )) < 1 )
+        --complexType;
+      if ( complexType == SMDSAbs_All ) return; // empty mesh
+
+      double elemSize;
+      if ( complexType == int( SMDSAbs_Node ))
+      {
+        SMDS_NodeIteratorPtr nodeIt = _mesh->nodesIterator();
+        elemSize = 1;
+        if ( meshInfo.NbNodes() > 2 )
+          elemSize = TNodeXYZ( nodeIt->next() ).Distance( nodeIt->next() );
+      }
+      else
+      {
+        const SMDS_MeshElement* elem =
+          _mesh->elementsIterator( SMDSAbs_ElementType( complexType ))->next();
+        SMDS_ElemIteratorPtr nodeIt = elem->nodesIterator();
+        TNodeXYZ n1( cast2Node( nodeIt->next() ));
+        while ( nodeIt->more() )
+        {
+          double dist = n1.Distance( cast2Node( nodeIt->next() ));
+          elemSize = max( dist, elemSize );
+        }
+      }
+      tolerance = 1e-6 * elemSize;
+    }
+
+    // =================================================================================
+    if ( type == SMDSAbs_Node || type == SMDSAbs_0DElement )
+    {
+      if ( !_nodeSearcher )
+        _nodeSearcher = new SMESH_NodeSearcherImpl( _mesh );
+
+      const SMDS_MeshNode* closeNode = _nodeSearcher->FindClosestTo( point );
+      if ( !closeNode ) return;
+
+      if ( point.Distance( TNodeXYZ( closeNode )) > tolerance )
+        return; // to far from any node
+
+      if ( type == SMDSAbs_Node )
+      {
+        foundElements.push_back( closeNode );
+      }
+      else
+      {
+        SMDS_ElemIteratorPtr elemIt = closeNode->GetInverseElementIterator( SMDSAbs_0DElement );
+        while ( elemIt->more() )
+          foundElements.push_back( elemIt->next() );
+      }
+    }
+    // =================================================================================
+    else // elements more complex than 0D
+    {
+      if ( !_ebbTree || _elementType != type )
+      {
+        if ( _ebbTree ) delete _ebbTree;
+        _ebbTree = new ElementBndBoxTree( *_mesh, _elementType = type );
+      }
+      TIDSortedElemSet suspectElems;
+      _ebbTree->getElementsNearPoint( point, suspectElems );
+      TIDSortedElemSet::iterator elem = suspectElems.begin();
+      for ( ; elem != suspectElems.end(); ++elem )
+        if ( !SMESH_MeshEditor::isOut( *elem, point, tolerance ))
+          foundElements.push_back( *elem );
+    }
+  }
+}; // struct SMESH_ElementSearcherImpl
+
+//=======================================================================
+/*!
+ * \brief Return SMESH_ElementSearcher
+ */
+//=======================================================================
+
+SMESH_ElementSearcher* SMESH_MeshEditor::GetElementSearcher()
+{
+  return new SMESH_ElementSearcherImpl( *GetMeshDS() );
+}
+
+//=======================================================================
+/*!
+ * \brief Return true if the point is IN or ON of the element
+ */
+//=======================================================================
+
+bool SMESH_MeshEditor::isOut( const SMDS_MeshElement* element, const gp_Pnt& point, double tol )
+{
+  if ( element->GetType() == SMDSAbs_Volume)
+  {
+    return SMDS_VolumeTool( element ).IsOut( point.X(), point.Y(), point.Z(), tol );
+  }
+
+  // get ordered nodes
+
+  vector< gp_XYZ > xyz;
+
+  SMDS_ElemIteratorPtr nodeIt = element->nodesIterator();
+  if ( element->IsQuadratic() )
+    if (const SMDS_QuadraticFaceOfNodes* f=dynamic_cast<const SMDS_QuadraticFaceOfNodes*>(element))
+      nodeIt = f->interlacedNodesElemIterator();
+    else if (const SMDS_QuadraticEdge*  e =dynamic_cast<const SMDS_QuadraticEdge*>(element))
+      nodeIt = e->interlacedNodesElemIterator();
+
+  while ( nodeIt->more() )
+    xyz.push_back( TNodeXYZ( cast2Node( nodeIt->next() )));
+
+  if ( element->GetType() == SMDSAbs_Face ) // --------------------------------------------------
+  {
+    // gravity center
+    gp_XYZ gc(0,0,0);
+    gc = accumulate( xyz.begin(), xyz.end(), gc );
+    gc /= element->NbNodes();
+
+    // compute face normal using gc
+    gp_Vec normal(0,0,0);
+    xyz.push_back( xyz.front() );
+    for ( int i = 0; i < element->NbNodes(); ++i )
+    {
+      gp_Vec edge( xyz[i], xyz[i+1]);
+      gp_Vec n2gc( xyz[i], gc );
+      normal += edge ^ n2gc;
+    }
+    double faceDoubleArea = normal.Magnitude();
+    if ( faceDoubleArea <= numeric_limits<double>::min() )
+      return true; // invalid face
+    normal /= faceDoubleArea;
+
+    // check if the point lays on face plane
+    gp_Vec n2p( xyz[0], point );
+    if ( fabs( n2p * normal ) > tol )
+      return true; // not on face plane
+
+    // check if point is out of face boundary
+    int i, out = false;
+    for ( i = 0; !out && i < element->NbNodes(); ++i )
+    {
+      gp_Vec edge( xyz[i], xyz[i+1]);
+      gp_Vec n2p ( xyz[i], point );
+      gp_Vec cross = edge ^ n2p;
+      out = ( cross * normal < -tol );
+    }
+    if ( out && element->IsPoly() )
+    {
+      // define point position by the closest edge
+      double minDist = numeric_limits<double>::max();
+      int iMinDist;
+      for ( i = 0; i < element->NbNodes(); ++i )
+      {
+        gp_Vec edge( xyz[i], xyz[i+1]);
+        gp_Vec n1p ( xyz[i], point);
+        double dist = ( edge ^ n1p ).Magnitude() / edge.Magnitude();
+        if ( dist < minDist )
+          iMinDist = i;
+      }
+      gp_Vec edge( xyz[iMinDist], xyz[iMinDist+1]);
+      gp_Vec n2p ( xyz[iMinDist], point );
+      gp_Vec cross = edge ^ n2p;
+      out = ( cross * normal < -tol );
+    }
+    return out;
+  }
+  if ( element->GetType() == SMDSAbs_Edge ) // --------------------------------------------------
+  {
+    for ( int i = 1; i < element->NbNodes(); ++i )
+    {
+      gp_Vec edge( xyz[i-1], xyz[i]);
+      gp_Vec n1p ( xyz[i-1], point);
+      double dist = ( edge ^ n1p ).Magnitude() / edge.Magnitude();
+      if ( dist > tol )
+        return true;
+      gp_Vec n2p( xyz[i], point );
+      if ( fabs( edge.Magnitude() - n1p.Magnitude() - n2p.Magnitude()) > tol )
+        return true;
+    }
+    return false;
+  }
+  // Node or 0D element -------------------------------------------------------------------------
+  {
+    gp_Vec n2p ( xyz[0], point );
+    return n2p.Magnitude() <= tol;
+  }
+  return true;
 }
 
 //=======================================================================
@@ -6107,7 +6566,7 @@ bool SMESH_MeshEditor::FindFreeBorder (const SMDS_MeshNode*             theFirst
 
   //vector<const SMDS_MeshNode*> nodes;
   const SMDS_MeshNode *nIgnore = theFirstNode, *nStart = theSecondNode;
-  set < const SMDS_MeshElement* > foundElems;
+  TIDSortedElemSet foundElems;
   bool needTheLast = ( theLastNode != 0 );
 
   while ( nStart != theLastNode ) {
