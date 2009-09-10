@@ -87,7 +87,7 @@ dnl libtool macro check for CC, LD, NM, LN_S, RANLIB, STRIP + pour les librairie
 
 echo
 echo ---------------------------------------------
-echo Coniguring production
+echo Configuring production
 echo ---------------------------------------------
 echo
 AC_ENABLE_DEBUG(yes)
