@@ -437,9 +437,9 @@ class SMESH_MeshEditor_i: public POA_SMESH::SMESH_MeshEditor
   /*!
    * \brief Return ID of node closest to a given point
    */
-  CORBA::Long SMESH_MeshEditor_i::FindNodeClosestTo(CORBA::Double x,
-                                                    CORBA::Double y,
-                                                    CORBA::Double z);
+  CORBA::Long FindNodeClosestTo(CORBA::Double x,
+                                CORBA::Double y,
+                                CORBA::Double z);
   /*!
    * Return elements of given type where the given point is IN or ON.
    *
