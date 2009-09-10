@@ -614,6 +614,18 @@ module SMESH
      */
     long MoveClosestNodeToPoint(in double x, in double y, in double z, in long nodeID);
 
+    /*!
+     * Return ID of node closest to a given point
+     */
+    long FindNodeClosestTo(in double x, in double y, in double z);
+
+    /*!
+     * Return elements of given type where the given point is IN or ON.
+     *
+     * 'ALL' type means elements of any type excluding nodes and 0D elements
+     */
+    long_array FindElementsByPoint(in double x, in double y, in double z, in ElementType type);
+
     enum Sew_Error {
       SEW_OK,
       SEW_BORDER1_NOT_FOUND,
