@@ -79,6 +79,7 @@
 #include <map>
 #include <set>
 #include <numeric>
+#include <limits>
 
 #define cast2Node(elem) static_cast<const SMDS_MeshNode*>( elem )
 
