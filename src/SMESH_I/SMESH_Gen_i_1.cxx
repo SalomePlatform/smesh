@@ -371,9 +371,9 @@ static void addReference (SALOMEDS::Study_ptr   theStudy,
 //=============================================================================
 
 SALOMEDS::SObject_ptr SMESH_Gen_i::PublishInStudy(SALOMEDS::Study_ptr   theStudy,
-						  SALOMEDS::SObject_ptr theSObject,
-						  CORBA::Object_ptr     theIOR,
-						  const char*           theName)
+                                                  SALOMEDS::SObject_ptr theSObject,
+                                                  CORBA::Object_ptr     theIOR,
+                                                  const char*           theName)
      throw (SALOME::SALOME_Exception)
 {
   Unexpect aCatch(SALOME_SalomeException);
@@ -468,9 +468,9 @@ static long findMaxChildTag( SALOMEDS::SObject_ptr theSObject )
     if ( !aStudy->_is_nil() ) {
       SALOMEDS::ChildIterator_var anIter = aStudy->NewChildIterator( theSObject );
       for ( ; anIter->More(); anIter->Next() ) {
-	long nTag = anIter->Value()->Tag();
-	if ( nTag > aTag )
-	  aTag = nTag;
+        long nTag = anIter->Value()->Tag();
+        if ( nTag > aTag )
+          aTag = nTag;
       }
     }
   }

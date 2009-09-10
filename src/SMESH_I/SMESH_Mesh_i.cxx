@@ -95,8 +95,8 @@ int SMESH_Mesh_i::myIdGenerator = 0;
 //=============================================================================
 
 SMESH_Mesh_i::SMESH_Mesh_i( PortableServer::POA_ptr thePOA,
-			    SMESH_Gen_i*            gen_i,
-			    CORBA::Long studyId )
+                            SMESH_Gen_i*            gen_i,
+                            CORBA::Long studyId )
 : SALOME::GenericObj_i( thePOA )
 {
   MESSAGE("SMESH_Mesh_i");
@@ -525,21 +525,21 @@ SMESH::Hypothesis_Status SMESH_Mesh_i::RemoveHypothesis(GEOM::GEOM_Object_ptr aS
 SMESH_Hypothesis::Hypothesis_Status SMESH_Mesh_i::removeHypothesis(GEOM::GEOM_Object_ptr aSubShapeObject,
                                  SMESH::SMESH_Hypothesis_ptr anHyp)
 {
-	if(MYDEBUG) MESSAGE("removeHypothesis()");
-	// **** proposer liste de subShape (selection multiple)
+        if(MYDEBUG) MESSAGE("removeHypothesis()");
+        // **** proposer liste de subShape (selection multiple)
 
-	if (CORBA::is_nil(aSubShapeObject) && HasShapeToMesh())
-		THROW_SALOME_CORBA_EXCEPTION("bad subShape reference",
-			SALOME::BAD_PARAM);
+        if (CORBA::is_nil(aSubShapeObject) && HasShapeToMesh())
+                THROW_SALOME_CORBA_EXCEPTION("bad subShape reference",
+                        SALOME::BAD_PARAM);
 
-	SMESH::SMESH_Hypothesis_var myHyp = SMESH::SMESH_Hypothesis::_narrow(anHyp);
-	if (CORBA::is_nil(myHyp))
-	  THROW_SALOME_CORBA_EXCEPTION("bad hypothesis reference",
-			SALOME::BAD_PARAM);
+        SMESH::SMESH_Hypothesis_var myHyp = SMESH::SMESH_Hypothesis::_narrow(anHyp);
+        if (CORBA::is_nil(myHyp))
+          THROW_SALOME_CORBA_EXCEPTION("bad hypothesis reference",
+                        SALOME::BAD_PARAM);
 
-	SMESH_Hypothesis::Hypothesis_Status status = SMESH_Hypothesis::HYP_OK;
-	try
-	{
+        SMESH_Hypothesis::Hypothesis_Status status = SMESH_Hypothesis::HYP_OK;
+        try
+        {
                 TopoDS_Shape myLocSubShape;
                 //use PseudoShape in case if mesh has no shape
                 if(HasShapeToMesh())
@@ -548,15 +548,15 @@ SMESH_Hypothesis::Hypothesis_Status SMESH_Mesh_i::removeHypothesis(GEOM::GEOM_Ob
                   myLocSubShape = _impl->GetShapeToMesh();
                 
                 int hypId = myHyp->GetId();
-		status = _impl->RemoveHypothesis(myLocSubShape, hypId);
+                status = _impl->RemoveHypothesis(myLocSubShape, hypId);
                 if ( !SMESH_Hypothesis::IsStatusFatal(status) )
                   _mapHypo.erase( hypId );
-	}
-	catch(SALOME_Exception & S_ex)
-	{
-		THROW_SALOME_CORBA_EXCEPTION(S_ex.what(), SALOME::BAD_PARAM);
-	}
-	return status;
+        }
+        catch(SALOME_Exception & S_ex)
+        {
+                THROW_SALOME_CORBA_EXCEPTION(S_ex.what(), SALOME::BAD_PARAM);
+        }
+        return status;
 }
 
 //=============================================================================
@@ -566,14 +566,14 @@ SMESH_Hypothesis::Hypothesis_Status SMESH_Mesh_i::removeHypothesis(GEOM::GEOM_Ob
 //=============================================================================
 
 SMESH::ListOfHypothesis *
-	SMESH_Mesh_i::GetHypothesisList(GEOM::GEOM_Object_ptr aSubShapeObject)
+        SMESH_Mesh_i::GetHypothesisList(GEOM::GEOM_Object_ptr aSubShapeObject)
 throw(SALOME::SALOME_Exception)
 {
   Unexpect aCatch(SALOME_SalomeException);
   if (MYDEBUG) MESSAGE("GetHypothesisList");
   if (_impl->HasShapeToMesh() && CORBA::is_nil(aSubShapeObject))
     THROW_SALOME_CORBA_EXCEPTION("bad subShape reference",
-				 SALOME::BAD_PARAM);
+                                 SALOME::BAD_PARAM);
 
   SMESH::ListOfHypothesis_var aList = new SMESH::ListOfHypothesis();
 
@@ -588,7 +588,7 @@ throw(SALOME::SALOME_Exception)
     for ( list<const SMESHDS_Hypothesis*>::const_iterator anIt = aLocalList.begin(); i < n && anIt != aLocalList.end(); anIt++ ) {
       SMESHDS_Hypothesis* aHyp = (SMESHDS_Hypothesis*)(*anIt);
       if ( _mapHypo.find( aHyp->GetID() ) != _mapHypo.end() )
-	aList[i++] = SMESH::SMESH_Hypothesis::_narrow( _mapHypo[aHyp->GetID()] );
+        aList[i++] = SMESH::SMESH_Hypothesis::_narrow( _mapHypo[aHyp->GetID()] );
     }
 
     aList->length( i );
@@ -606,14 +606,14 @@ throw(SALOME::SALOME_Exception)
  */
 //=============================================================================
 SMESH::SMESH_subMesh_ptr SMESH_Mesh_i::GetSubMesh(GEOM::GEOM_Object_ptr aSubShapeObject,
-						  const char*           theName )
+                                                  const char*           theName )
      throw(SALOME::SALOME_Exception)
 {
   Unexpect aCatch(SALOME_SalomeException);
   MESSAGE("SMESH_Mesh_i::GetSubMesh");
   if (CORBA::is_nil(aSubShapeObject))
     THROW_SALOME_CORBA_EXCEPTION("bad subShape reference",
-				 SALOME::BAD_PARAM);
+                                 SALOME::BAD_PARAM);
 
   SMESH::SMESH_subMesh_var subMesh;
   SMESH::SMESH_Mesh_var    aMesh = SMESH::SMESH_Mesh::_narrow(_this());
@@ -667,7 +667,7 @@ void SMESH_Mesh_i::RemoveSubMesh( SMESH::SMESH_subMesh_ptr theSubMesh )
       long aTag = SMESH_Gen_i::GetRefOnShapeTag();
       SALOMEDS::SObject_var anObj, aRef;
       if ( anSO->FindSubObject( aTag, anObj ) && anObj->ReferencedObject( aRef ) )
-	aSubShapeObject = GEOM::GEOM_Object::_narrow( aRef->GetObject() );
+        aSubShapeObject = GEOM::GEOM_Object::_narrow( aRef->GetObject() );
 
       aStudy->NewBuilder()->RemoveObjectWithChildren( anSO );
 
@@ -2096,14 +2096,14 @@ throw(SALOME::SALOME_Exception)
       aLog[indexLog].coords.length(rnum);
       aLog[indexLog].indexes.length(inum);
       for(int i = 0; i < rnum; i++){
-	aLog[indexLog].coords[i] = *ir;
-	//MESSAGE(" "<<i<<" "<<ir.Value());
-	ir++;
+        aLog[indexLog].coords[i] = *ir;
+        //MESSAGE(" "<<i<<" "<<ir.Value());
+        ir++;
       }
       for(int i = 0; i < inum; i++){
-	aLog[indexLog].indexes[i] = *ii;
-	//MESSAGE(" "<<i<<" "<<ii.Value());
-	ii++;
+        aLog[indexLog].indexes[i] = *ii;
+        //MESSAGE(" "<<i<<" "<<ii.Value());
+        ii++;
       }
       indexLog++;
       its++;
@@ -2284,8 +2284,8 @@ void SMESH_Mesh_i::PrepareForWriting (const char* file)
 }
 
 void SMESH_Mesh_i::ExportToMED (const char* file,
-				CORBA::Boolean auto_groups,
-				SMESH::MED_VERSION theVersion)
+                                CORBA::Boolean auto_groups,
+                                SMESH::MED_VERSION theVersion)
   throw(SALOME::SALOME_Exception)
 {
   Unexpect aCatch(SALOME_SalomeException);
@@ -2300,20 +2300,20 @@ void SMESH_Mesh_i::ExportToMED (const char* file,
       aMeshName = aMeshSO->GetName();
       // asv : 27.10.04 : fix of 6903: check for StudyLocked before adding attributes
       if ( !aStudy->GetProperties()->IsLocked() )
-	{
-	SALOMEDS::GenericAttribute_var anAttr;
-	SALOMEDS::StudyBuilder_var aStudyBuilder = aStudy->NewBuilder();
-	SALOMEDS::AttributeExternalFileDef_var aFileName;
-	anAttr=aStudyBuilder->FindOrCreateAttribute(aMeshSO, "AttributeExternalFileDef");
-	aFileName = SALOMEDS::AttributeExternalFileDef::_narrow(anAttr);
-	ASSERT(!aFileName->_is_nil());
+        {
+        SALOMEDS::GenericAttribute_var anAttr;
+        SALOMEDS::StudyBuilder_var aStudyBuilder = aStudy->NewBuilder();
+        SALOMEDS::AttributeExternalFileDef_var aFileName;
+        anAttr=aStudyBuilder->FindOrCreateAttribute(aMeshSO, "AttributeExternalFileDef");
+        aFileName = SALOMEDS::AttributeExternalFileDef::_narrow(anAttr);
+        ASSERT(!aFileName->_is_nil());
         aFileName->SetValue(file);
         SALOMEDS::AttributeFileType_var aFileType;
         anAttr=aStudyBuilder->FindOrCreateAttribute(aMeshSO, "AttributeFileType");
         aFileType = SALOMEDS::AttributeFileType::_narrow(anAttr);
         ASSERT(!aFileType->_is_nil());
         aFileType->SetValue("FICHIERMED");
-	}
+        }
     }
   }
   // Update Python script
@@ -2330,7 +2330,7 @@ void SMESH_Mesh_i::ExportToMED (const char* file,
 }
 
 void SMESH_Mesh_i::ExportMED (const char* file,
-			      CORBA::Boolean auto_groups)
+                              CORBA::Boolean auto_groups)
   throw(SALOME::SALOME_Exception)
 {
   ExportToMED(file,auto_groups,SMESH::MED_V2_1);

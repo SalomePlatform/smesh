@@ -99,7 +99,7 @@ namespace SMESH
       _PTR(Study) aStudy = GetActiveStudyDocument();
       CORBA::Long anId = aStudy->StudyId();
       if (TVisualObjPtr aVisualObj = SMESH::GetVisualObj( anId, aSobj->GetID().c_str() ) ) {
-	aVisualObj->Update( true );
+        aVisualObj->Update( true );
       }
     } 
     catch ( SALOME::SALOME_Exception& exc ) {
@@ -235,7 +235,7 @@ SMESHGUI_NodesDlg::SMESHGUI_NodesDlg( SMESHGUI* theModule ):
   mySimulation = new SMESH::TNodeSimulation( SMESH::GetViewWindow( mySMESHGUI ) );
   
   QPixmap image0( SMESH::GetResourceMgr( mySMESHGUI )->loadPixmap( "SMESH", 
-								   tr( "ICON_DLG_NODE" ) ) );
+                                                                   tr( "ICON_DLG_NODE" ) ) );
   
   QVBoxLayout* SMESHGUI_NodesDlgLayout = new QVBoxLayout( this );
   SMESHGUI_NodesDlgLayout->setSpacing( SPACING );
@@ -398,7 +398,7 @@ bool SMESHGUI_NodesDlg::ClickOnApply()
 
   if ( myMesh->_is_nil() ) {
     SUIT_MessageBox::warning( this, tr( "SMESH_WRN_WARNING" ),
-			      tr( "MESH_IS_NOT_SELECTED" ) );
+                              tr( "MESH_IS_NOT_SELECTED" ) );
     return false;
   }
 
@@ -472,7 +472,7 @@ void SMESHGUI_NodesDlg::ClickOnHelp()
   LightApp_Application* app = (LightApp_Application*)( SUIT_Session::session()->activeApplication() );
   if ( app ) 
     app->onHelpContextModule( mySMESHGUI ? app->moduleName( mySMESHGUI->moduleName() ) : 
-			      QString( "" ), myHelpFileName );
+                              QString( "" ), myHelpFileName );
   else {
     QString platform;
 #ifdef WIN32
@@ -481,10 +481,10 @@ void SMESHGUI_NodesDlg::ClickOnHelp()
     platform = "application";
 #endif
     SUIT_MessageBox::warning( this, tr("WRN_WARNING"),
-			      tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
-			      arg( app->resourceMgr()->stringValue( "ExternalBrowser", 
-								    platform ) ).
-			      arg( myHelpFileName ) );
+                              tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
+                              arg( app->resourceMgr()->stringValue( "ExternalBrowser", 
+                                                                    platform ) ).
+                              arg( myHelpFileName ) );
   }
 }
 
@@ -508,19 +508,19 @@ void SMESHGUI_NodesDlg::SelectionIntoArgument()
       if ( myMesh->_is_nil() ) return;
       QString aText;
       if ( SMESH::GetNameOfSelectedNodes( mySelector, anIO, aText ) == 1 ) {
-	if ( SMESH_Actor* anActor = SMESH::FindActorByObject( myMesh.in() ) ) {
-	  if ( SMDS_Mesh* aMesh = anActor->GetObject()->GetMesh() ) {
-	    if ( const SMDS_MeshNode* aNode = aMesh->FindNode( aText.toInt() ) ) {
-	      SpinBox_X->SetValue( aNode->X() );
-	      SpinBox_Y->SetValue( aNode->Y() );
-	      SpinBox_Z->SetValue( aNode->Z() );
+        if ( SMESH_Actor* anActor = SMESH::FindActorByObject( myMesh.in() ) ) {
+          if ( SMDS_Mesh* aMesh = anActor->GetObject()->GetMesh() ) {
+            if ( const SMDS_MeshNode* aNode = aMesh->FindNode( aText.toInt() ) ) {
+              SpinBox_X->SetValue( aNode->X() );
+              SpinBox_Y->SetValue( aNode->Y() );
+              SpinBox_Z->SetValue( aNode->Z() );
             }
-	  }
-	}
+          }
+        }
       }
       mySimulation->SetPosition( SpinBox_X->GetValue(),
-				 SpinBox_Y->GetValue(),
-				 SpinBox_Z->GetValue() );
+                                 SpinBox_Y->GetValue(),
+                                 SpinBox_Z->GetValue() );
     }
   }
 }
