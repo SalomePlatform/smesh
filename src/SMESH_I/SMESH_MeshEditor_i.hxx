@@ -138,10 +138,10 @@ class SMESH_MeshEditor_i: public POA_SMESH::SMESH_MeshEditor
                         CORBA::Double                          MaxAspectRatio,
                         SMESH::SMESH_MeshEditor::Smooth_Method Method);
   CORBA::Boolean SmoothObject(SMESH::SMESH_IDSource_ptr              theObject,
-			      const SMESH::long_array &              IDsOfFixedNodes,
-			      CORBA::Long                            MaxNbOfIterations,
-			      CORBA::Double                          MaxAspectRatio,
-			      SMESH::SMESH_MeshEditor::Smooth_Method Method);
+                              const SMESH::long_array &              IDsOfFixedNodes,
+                              CORBA::Long                            MaxNbOfIterations,
+                              CORBA::Double                          MaxAspectRatio,
+                              SMESH::SMESH_MeshEditor::Smooth_Method Method);
   CORBA::Boolean SmoothParametric(const SMESH::long_array &              IDsOfElements,
                                   const SMESH::long_array &              IDsOfFixedNodes,
                                   CORBA::Long                            MaxNbOfIterations,
@@ -159,10 +159,10 @@ class SMESH_MeshEditor_i: public POA_SMESH::SMESH_MeshEditor
                         SMESH::SMESH_MeshEditor::Smooth_Method Method,
                         bool                                   IsParametric);
   CORBA::Boolean smoothObject(SMESH::SMESH_IDSource_ptr              theObject,
-			      const SMESH::long_array &              IDsOfFixedNodes,
-			      CORBA::Long                            MaxNbOfIterations,
-			      CORBA::Double                          MaxAspectRatio,
-			      SMESH::SMESH_MeshEditor::Smooth_Method Method,
+                              const SMESH::long_array &              IDsOfFixedNodes,
+                              CORBA::Long                            MaxNbOfIterations,
+                              CORBA::Double                          MaxAspectRatio,
+                              SMESH::SMESH_MeshEditor::Smooth_Method Method,
                               bool                                   IsParametric);
 
 
@@ -178,27 +178,27 @@ class SMESH_MeshEditor_i: public POA_SMESH::SMESH_MeshEditor
                      CORBA::Long               NbOfSteps,
                      CORBA::Double             Tolerance);
   void RotationSweepObject(SMESH::SMESH_IDSource_ptr theObject,
-			   const SMESH::AxisStruct & Axis,
-			   CORBA::Double             AngleInRadians,
-			   CORBA::Long               NbOfSteps,
-			   CORBA::Double             Tolerance);
+                           const SMESH::AxisStruct & Axis,
+                           CORBA::Double             AngleInRadians,
+                           CORBA::Long               NbOfSteps,
+                           CORBA::Double             Tolerance);
   void RotationSweepObject1D(SMESH::SMESH_IDSource_ptr theObject,
-			     const SMESH::AxisStruct & Axis,
-			     CORBA::Double             AngleInRadians,
-			     CORBA::Long               NbOfSteps,
-			     CORBA::Double             Tolerance);
+                             const SMESH::AxisStruct & Axis,
+                             CORBA::Double             AngleInRadians,
+                             CORBA::Long               NbOfSteps,
+                             CORBA::Double             Tolerance);
   void RotationSweepObject2D(SMESH::SMESH_IDSource_ptr theObject,
-			     const SMESH::AxisStruct & Axis,
-			     CORBA::Double             AngleInRadians,
-			     CORBA::Long               NbOfSteps,
-			     CORBA::Double             Tolerance);
+                             const SMESH::AxisStruct & Axis,
+                             CORBA::Double             AngleInRadians,
+                             CORBA::Long               NbOfSteps,
+                             CORBA::Double             Tolerance);
 
   void ExtrusionSweep(const SMESH::long_array & IDsOfElements,
                       const SMESH::DirStruct &  StepVector,
                       CORBA::Long               NbOfSteps);
   void ExtrusionSweepObject(SMESH::SMESH_IDSource_ptr theObject,
-			    const SMESH::DirStruct &  StepVector,
-			    CORBA::Long               NbOfSteps);
+                            const SMESH::DirStruct &  StepVector,
+                            CORBA::Long               NbOfSteps);
   void ExtrusionSweepObject1D(SMESH::SMESH_IDSource_ptr theObject,
                               const SMESH::DirStruct &  StepVector,
                               CORBA::Long               NbOfSteps);
@@ -206,23 +206,32 @@ class SMESH_MeshEditor_i: public POA_SMESH::SMESH_MeshEditor
                               const SMESH::DirStruct &  StepVector,
                               CORBA::Long               NbOfSteps);
   void AdvancedExtrusion(const SMESH::long_array & theIDsOfElements,
-			 const SMESH::DirStruct &  theStepVector,
-			 CORBA::Long               theNbOfSteps,
-			 CORBA::Long               theExtrFlags,
-			 CORBA::Double             theSewTolerance);
+                         const SMESH::DirStruct &  theStepVector,
+                         CORBA::Long               theNbOfSteps,
+                         CORBA::Long               theExtrFlags,
+                         CORBA::Double             theSewTolerance);
 
   SMESH::SMESH_MeshEditor::Extrusion_Error
-    ExtrusionAlongPath(const SMESH::long_array &   IDsOfElements,
-                       SMESH::SMESH_Mesh_ptr       PathMesh,
-                       GEOM::GEOM_Object_ptr       PathShape,
-                       CORBA::Long                 NodeStart,
-                       CORBA::Boolean              HasAngles,
-                       const SMESH::double_array & Angles,
-                       CORBA::Boolean              HasRefPoint,
-                       const SMESH::PointStruct &  RefPoint);
+  ExtrusionAlongPath(const SMESH::long_array &   IDsOfElements,
+                     SMESH::SMESH_Mesh_ptr       PathMesh,
+                     GEOM::GEOM_Object_ptr       PathShape,
+                     CORBA::Long                 NodeStart,
+                     CORBA::Boolean              HasAngles,
+                     const SMESH::double_array & Angles,
+                     CORBA::Boolean              HasRefPoint,
+                     const SMESH::PointStruct &  RefPoint);
 
   SMESH::SMESH_MeshEditor::Extrusion_Error
-    ExtrusionAlongPathObject(SMESH::SMESH_IDSource_ptr   theObject,
+  ExtrusionAlongPathObject(SMESH::SMESH_IDSource_ptr   theObject,
+                           SMESH::SMESH_Mesh_ptr       PathMesh,
+                           GEOM::GEOM_Object_ptr       PathShape,
+                           CORBA::Long                 NodeStart,
+                           CORBA::Boolean              HasAngles,
+                           const SMESH::double_array & Angles,
+                           CORBA::Boolean              HasRefPoint,
+                           const SMESH::PointStruct &  RefPoint);
+  SMESH::SMESH_MeshEditor::Extrusion_Error
+  ExtrusionAlongPathObject1D(SMESH::SMESH_IDSource_ptr   theObject,
                              SMESH::SMESH_Mesh_ptr       PathMesh,
                              GEOM::GEOM_Object_ptr       PathShape,
                              CORBA::Long                 NodeStart,
@@ -231,23 +240,14 @@ class SMESH_MeshEditor_i: public POA_SMESH::SMESH_MeshEditor
                              CORBA::Boolean              HasRefPoint,
                              const SMESH::PointStruct &  RefPoint);
   SMESH::SMESH_MeshEditor::Extrusion_Error
-    ExtrusionAlongPathObject1D(SMESH::SMESH_IDSource_ptr   theObject,
-			       SMESH::SMESH_Mesh_ptr       PathMesh,
-			       GEOM::GEOM_Object_ptr       PathShape,
-			       CORBA::Long                 NodeStart,
-			       CORBA::Boolean              HasAngles,
-			       const SMESH::double_array & Angles,
-			       CORBA::Boolean              HasRefPoint,
-			       const SMESH::PointStruct &  RefPoint);
-  SMESH::SMESH_MeshEditor::Extrusion_Error
-    ExtrusionAlongPathObject2D(SMESH::SMESH_IDSource_ptr   theObject,
-			       SMESH::SMESH_Mesh_ptr       PathMesh,
-			       GEOM::GEOM_Object_ptr       PathShape,
-			       CORBA::Long                 NodeStart,
-			       CORBA::Boolean              HasAngles,
-			       const SMESH::double_array & Angles,
-			       CORBA::Boolean              HasRefPoint,
-			       const SMESH::PointStruct &  RefPoint);
+  ExtrusionAlongPathObject2D(SMESH::SMESH_IDSource_ptr   theObject,
+                             SMESH::SMESH_Mesh_ptr       PathMesh,
+                             GEOM::GEOM_Object_ptr       PathShape,
+                             CORBA::Long                 NodeStart,
+                             CORBA::Boolean              HasAngles,
+                             const SMESH::double_array & Angles,
+                             CORBA::Boolean              HasRefPoint,
+                             const SMESH::PointStruct &  RefPoint);
 
   SMESH::double_array* LinearAnglesVariation(SMESH::SMESH_Mesh_ptr       PathMesh,
                                              GEOM::GEOM_Object_ptr       PathShape,
@@ -258,23 +258,23 @@ class SMESH_MeshEditor_i: public POA_SMESH::SMESH_MeshEditor
               SMESH::SMESH_MeshEditor::MirrorType MirrorType,
               CORBA::Boolean                      Copy);
   void MirrorObject(SMESH::SMESH_IDSource_ptr           theObject,
-		    const SMESH::AxisStruct &           Axis,
-		    SMESH::SMESH_MeshEditor::MirrorType MirrorType,
-		    CORBA::Boolean                      Copy);
+                    const SMESH::AxisStruct &           Axis,
+                    SMESH::SMESH_MeshEditor::MirrorType MirrorType,
+                    CORBA::Boolean                      Copy);
   void Translate(const SMESH::long_array & IDsOfElements,
                  const SMESH::DirStruct &   Vector,
                  CORBA::Boolean            Copy);
   void TranslateObject(SMESH::SMESH_IDSource_ptr  theObject,
-		       const SMESH::DirStruct &   Vector,
-		       CORBA::Boolean             Copy);
+                       const SMESH::DirStruct &   Vector,
+                       CORBA::Boolean             Copy);
   void Rotate(const SMESH::long_array & IDsOfElements,
               const SMESH::AxisStruct &  Axis,
               CORBA::Double             Angle,
               CORBA::Boolean            Copy);
   void RotateObject(SMESH::SMESH_IDSource_ptr  theObject,
-		    const SMESH::AxisStruct &  Axis,
-		    CORBA::Double              Angle,
-		    CORBA::Boolean             Copy);
+                    const SMESH::AxisStruct &  Axis,
+                    CORBA::Double              Angle,
+                    CORBA::Boolean             Copy);
 
   SMESH::ListOfGroups* RotationSweepMakeGroups(const SMESH::long_array& IDsOfElements,
                                                const SMESH::AxisStruct& Axix,
@@ -287,15 +287,15 @@ class SMESH_MeshEditor_i: public POA_SMESH::SMESH_MeshEditor
                                                      CORBA::Long               NbOfSteps,
                                                      CORBA::Double             Tolerance);
   SMESH::ListOfGroups* RotationSweepObject1DMakeGroups(SMESH::SMESH_IDSource_ptr Object,
-						       const SMESH::AxisStruct&  Axix,
-						       CORBA::Double             AngleInRadians,
-						       CORBA::Long               NbOfSteps,
-						       CORBA::Double             Tolerance);
+                                                       const SMESH::AxisStruct&  Axix,
+                                                       CORBA::Double             AngleInRadians,
+                                                       CORBA::Long               NbOfSteps,
+                                                       CORBA::Double             Tolerance);
   SMESH::ListOfGroups* RotationSweepObject2DMakeGroups(SMESH::SMESH_IDSource_ptr Object,
-						       const SMESH::AxisStruct&  Axix,
-						       CORBA::Double             AngleInRadians,
-						       CORBA::Long               NbOfSteps,
-						       CORBA::Double             Tolerance);
+                                                       const SMESH::AxisStruct&  Axix,
+                                                       CORBA::Double             AngleInRadians,
+                                                       CORBA::Long               NbOfSteps,
+                                                       CORBA::Double             Tolerance);
   SMESH::ListOfGroups* ExtrusionSweepMakeGroups(const SMESH::long_array& IDsOfElements,
                                                 const SMESH::DirStruct&  StepVector,
                                                 CORBA::Long              NbOfSteps);
@@ -332,47 +332,47 @@ class SMESH_MeshEditor_i: public POA_SMESH::SMESH_MeshEditor
                                                           const SMESH::PointStruct&  RefPoint,
                                                           SMESH::SMESH_MeshEditor::Extrusion_Error& Error);
   SMESH::ListOfGroups* ExtrusionAlongPathObject1DMakeGroups(SMESH::SMESH_IDSource_ptr  Object,
-							    SMESH::SMESH_Mesh_ptr      PathMesh,
-							    GEOM::GEOM_Object_ptr      PathShape,
-							    CORBA::Long                NodeStart,
-							    CORBA::Boolean             HasAngles,
-							    const SMESH::double_array& Angles,
-							    CORBA::Boolean             HasRefPoint,
-							    const SMESH::PointStruct&  RefPoint,
-							    SMESH::SMESH_MeshEditor::Extrusion_Error& Error);
+                                                            SMESH::SMESH_Mesh_ptr      PathMesh,
+                                                            GEOM::GEOM_Object_ptr      PathShape,
+                                                            CORBA::Long                NodeStart,
+                                                            CORBA::Boolean             HasAngles,
+                                                            const SMESH::double_array& Angles,
+                                                            CORBA::Boolean             HasRefPoint,
+                                                            const SMESH::PointStruct&  RefPoint,
+                                                            SMESH::SMESH_MeshEditor::Extrusion_Error& Error);
   SMESH::ListOfGroups* ExtrusionAlongPathObject2DMakeGroups(SMESH::SMESH_IDSource_ptr  Object,
-							    SMESH::SMESH_Mesh_ptr      PathMesh,
-							    GEOM::GEOM_Object_ptr      PathShape,
-							    CORBA::Long                NodeStart,
-							    CORBA::Boolean             HasAngles,
-							    const SMESH::double_array& Angles,
-							    CORBA::Boolean             HasRefPoint,
-							    const SMESH::PointStruct&  RefPoint,
-							    SMESH::SMESH_MeshEditor::Extrusion_Error& Error);
+                                                            SMESH::SMESH_Mesh_ptr      PathMesh,
+                                                            GEOM::GEOM_Object_ptr      PathShape,
+                                                            CORBA::Long                NodeStart,
+                                                            CORBA::Boolean             HasAngles,
+                                                            const SMESH::double_array& Angles,
+                                                            CORBA::Boolean             HasRefPoint,
+                                                            const SMESH::PointStruct&  RefPoint,
+                                                            SMESH::SMESH_MeshEditor::Extrusion_Error& Error);
 
   // skl 04.06.2009 
   SMESH::ListOfGroups* ExtrusionAlongPathObjX(SMESH::SMESH_IDSource_ptr  Object,
-					      SMESH::SMESH_IDSource_ptr  Path,
-					      CORBA::Long                NodeStart,
-					      CORBA::Boolean             HasAngles,
-					      const SMESH::double_array& Angles,
-					      CORBA::Boolean             LinearVariation,
-					      CORBA::Boolean             HasRefPoint,
-					      const SMESH::PointStruct&  RefPoint,
-					      CORBA::Boolean             MakeGroups,
-					      SMESH::ElementType         ElemType,
-					      SMESH::SMESH_MeshEditor::Extrusion_Error& Error);
+                                              SMESH::SMESH_IDSource_ptr  Path,
+                                              CORBA::Long                NodeStart,
+                                              CORBA::Boolean             HasAngles,
+                                              const SMESH::double_array& Angles,
+                                              CORBA::Boolean             LinearVariation,
+                                              CORBA::Boolean             HasRefPoint,
+                                              const SMESH::PointStruct&  RefPoint,
+                                              CORBA::Boolean             MakeGroups,
+                                              SMESH::ElementType         ElemType,
+                                              SMESH::SMESH_MeshEditor::Extrusion_Error& Error);
   SMESH::ListOfGroups* ExtrusionAlongPathX(const SMESH::long_array&   IDsOfElements,
-					   SMESH::SMESH_IDSource_ptr  Path,
-					   CORBA::Long                NodeStart,
-					   CORBA::Boolean             HasAngles,
-					   const SMESH::double_array& Angles,
-					   CORBA::Boolean             LinearVariation,
-					   CORBA::Boolean             HasRefPoint,
-					   const SMESH::PointStruct&  RefPoint,
-					   CORBA::Boolean             MakeGroups,
-					   SMESH::ElementType         ElemType,
-					   SMESH::SMESH_MeshEditor::Extrusion_Error& Error);
+                                           SMESH::SMESH_IDSource_ptr  Path,
+                                           CORBA::Long                NodeStart,
+                                           CORBA::Boolean             HasAngles,
+                                           const SMESH::double_array& Angles,
+                                           CORBA::Boolean             LinearVariation,
+                                           CORBA::Boolean             HasRefPoint,
+                                           const SMESH::PointStruct&  RefPoint,
+                                           CORBA::Boolean             MakeGroups,
+                                           SMESH::ElementType         ElemType,
+                                           SMESH::SMESH_MeshEditor::Extrusion_Error& Error);
 
   SMESH::ListOfGroups* MirrorMakeGroups(const SMESH::long_array&            IDsOfElements,
                                         const SMESH::AxisStruct&            Mirror,
@@ -434,7 +434,21 @@ class SMESH_MeshEditor_i: public POA_SMESH::SMESH_MeshEditor
                                      CORBA::Double y,
                                      CORBA::Double z,
                                      CORBA::Long   nodeID);
-
+  /*!
+   * \brief Return ID of node closest to a given point
+   */
+  CORBA::Long SMESH_MeshEditor_i::FindNodeClosestTo(CORBA::Double x,
+                                                    CORBA::Double y,
+                                                    CORBA::Double z);
+  /*!
+   * Return elements of given type where the given point is IN or ON.
+   *
+   * 'ALL' type means elements of any type excluding nodes
+   */
+  SMESH::long_array* FindElementsByPoint(CORBA::Double      x,
+                                         CORBA::Double      y,
+                                         CORBA::Double      z,
+                                         SMESH::ElementType type);
 
 
   SMESH::SMESH_MeshEditor::Sew_Error
@@ -474,7 +488,7 @@ class SMESH_MeshEditor_i: public POA_SMESH::SMESH_MeshEditor
    * element - returns false
    */
   CORBA::Boolean ChangeElemNodes(CORBA::Long ide, const SMESH::long_array& newIDs);
-  
+
   /*!
    * Return data of mesh edition preview
    */
@@ -496,10 +510,10 @@ class SMESH_MeshEditor_i: public POA_SMESH::SMESH_MeshEditor
 
   /*!
    * \brief Return edited mesh ID
-    * \retval int - mesh ID
+   * \retval int - mesh ID
    */
   int GetMeshId() const { return myMesh->GetId(); }
-  
+
 
   /*!
    * \brief Creates a hole in a mesh by doubling the nodes of some particular elements
@@ -510,7 +524,7 @@ class SMESH_MeshEditor_i: public POA_SMESH::SMESH_MeshEditor
    *       replicated nodes should be associated to.
    * \return TRUE if operation has been completed successfully, FALSE otherwise
    * \sa DoubleNodeGroup(), DoubleNodeGroups()
-  */
+   */
   CORBA::Boolean DoubleNodes( const SMESH::long_array& theElems, 
                               const SMESH::long_array& theNodesNot,
                               const SMESH::long_array& theAffectedElems );
@@ -539,9 +553,9 @@ class SMESH_MeshEditor_i: public POA_SMESH::SMESH_MeshEditor
    * \return TRUE if operation has been completed successfully, FALSE otherwise
    * \sa DoubleNodes(), DoubleNodeGroups()
    */
-   CORBA::Boolean DoubleNodeGroup( SMESH::SMESH_GroupBase_ptr theElems,
-                                   SMESH::SMESH_GroupBase_ptr theNodesNot,
-                                   SMESH::SMESH_GroupBase_ptr theAffectedElems );
+  CORBA::Boolean DoubleNodeGroup( SMESH::SMESH_GroupBase_ptr theElems,
+                                  SMESH::SMESH_GroupBase_ptr theNodesNot,
+                                  SMESH::SMESH_GroupBase_ptr theAffectedElems );
 
   /*!
    * \brief Creates a hole in a mesh by doubling the nodes of some particular elements
@@ -553,9 +567,9 @@ class SMESH_MeshEditor_i: public POA_SMESH::SMESH_MeshEditor
    * \return TRUE if operation has been completed successfully, FALSE otherwise
    * \sa DoubleNodesInRegion(), DoubleNodeGroupsInRegion()
    */
-   CORBA::Boolean DoubleNodeGroupInRegion( SMESH::SMESH_GroupBase_ptr theElems,
-                                           SMESH::SMESH_GroupBase_ptr theNodesNot,
-                                           GEOM::GEOM_Object_ptr      theShape );
+  CORBA::Boolean DoubleNodeGroupInRegion( SMESH::SMESH_GroupBase_ptr theElems,
+                                          SMESH::SMESH_GroupBase_ptr theNodesNot,
+                                          GEOM::GEOM_Object_ptr      theShape );
 
   /*!
    * \brief Creates a hole in a mesh by doubling the nodes of some particular elements
@@ -567,9 +581,9 @@ class SMESH_MeshEditor_i: public POA_SMESH::SMESH_MeshEditor
    * \return TRUE if operation has been completed successfully, FALSE otherwise
    * \sa DoubleNodeGroup(), DoubleNodes()
    */
-   CORBA::Boolean DoubleNodeGroups( const SMESH::ListOfGroups& theElems,
-                                    const SMESH::ListOfGroups& theNodesNot,
-                                    const SMESH::ListOfGroups& theAffectedElems );
+  CORBA::Boolean DoubleNodeGroups( const SMESH::ListOfGroups& theElems,
+                                   const SMESH::ListOfGroups& theNodesNot,
+                                   const SMESH::ListOfGroups& theAffectedElems );
 
 
   /*!
@@ -583,23 +597,23 @@ class SMESH_MeshEditor_i: public POA_SMESH::SMESH_MeshEditor
    * \return TRUE if operation has been completed successfully, FALSE otherwise
    * \sa DoubleNodeGroupInRegion(), DoubleNodesInRegion()
    */
-   CORBA::Boolean DoubleNodeGroupsInRegion( const SMESH::ListOfGroups& theElems,
-                                            const SMESH::ListOfGroups& theNodesNot,
-                                            GEOM::GEOM_Object_ptr      theShape );
+  CORBA::Boolean DoubleNodeGroupsInRegion( const SMESH::ListOfGroups& theElems,
+                                           const SMESH::ListOfGroups& theNodesNot,
+                                           GEOM::GEOM_Object_ptr      theShape );
 
- private: //!< private methods
+private: //!< private methods
 
   SMESHDS_Mesh * GetMeshDS() { return myMesh->GetMeshDS(); }
 
   /*!
    * \brief Update myLastCreated* or myPreviewData
-    * \param anEditor - it contains edition results
+   * \param anEditor - it contains edition results
    */
   void storeResult(::SMESH_MeshEditor& anEditor);
   /*!
    * \brief Clear myLastCreated* or myPreviewData
    */
-  void initData();
+  void initData(bool deleteSearchers=true);
 
   /*!
    * \brief Return groups by their IDs
@@ -612,7 +626,7 @@ class SMESH_MeshEditor_i: public POA_SMESH::SMESH_MeshEditor
                                      CORBA::Long               NbOfSteps,
                                      CORBA::Double             Tolerance,
                                      const bool                MakeGroups,
-				     const SMDSAbs_ElementType ElementType=SMDSAbs_All);
+                                     const SMDSAbs_ElementType ElementType=SMDSAbs_All);
   SMESH::ListOfGroups* extrusionSweep(const SMESH::long_array & IDsOfElements,
                                       const SMESH::DirStruct &  StepVector,
                                       CORBA::Long               NbOfSteps,
@@ -634,18 +648,18 @@ class SMESH_MeshEditor_i: public POA_SMESH::SMESH_MeshEditor
                                           const SMESH::PointStruct &  RefPoint,
                                           const bool                  MakeGroups,
                                           SMESH::SMESH_MeshEditor::Extrusion_Error & Error,
-					  const SMDSAbs_ElementType   ElementType=SMDSAbs_All);
+                                          const SMDSAbs_ElementType   ElementType=SMDSAbs_All);
   SMESH::ListOfGroups* extrusionAlongPathX(const SMESH::long_array &  IDsOfElements,
-					   SMESH::SMESH_IDSource_ptr  Path,
-					   CORBA::Long                NodeStart,
-					   CORBA::Boolean             HasAngles,
-					   const SMESH::double_array& Angles,
-					   CORBA::Boolean             LinearVariation,
-					   CORBA::Boolean             HasRefPoint,
-					   const SMESH::PointStruct&  RefPoint,
-					   const bool                 MakeGroups,
-					   const SMDSAbs_ElementType  ElementType,
-					   SMESH::SMESH_MeshEditor::Extrusion_Error & theError);
+                                           SMESH::SMESH_IDSource_ptr  Path,
+                                           CORBA::Long                NodeStart,
+                                           CORBA::Boolean             HasAngles,
+                                           const SMESH::double_array& Angles,
+                                           CORBA::Boolean             LinearVariation,
+                                           CORBA::Boolean             HasRefPoint,
+                                           const SMESH::PointStruct&  RefPoint,
+                                           const bool                 MakeGroups,
+                                           const SMDSAbs_ElementType  ElementType,
+                                           SMESH::SMESH_MeshEditor::Extrusion_Error & theError);
   SMESH::ListOfGroups* mirror(const SMESH::long_array &           IDsOfElements,
                               const SMESH::AxisStruct &           Axis,
                               SMESH::SMESH_MeshEditor::MirrorType MirrorType,
@@ -665,7 +679,7 @@ class SMESH_MeshEditor_i: public POA_SMESH::SMESH_MeshEditor
                               ::SMESH_Mesh*             TargetMesh=0);
 
   SMESH::SMESH_Mesh_ptr makeMesh(const char* theMeshName);
-  
+
   void DumpGroupsList(SMESH::TPythonDump & theDumpPython, 
                       const SMESH::ListOfGroups * theGroupList);
 

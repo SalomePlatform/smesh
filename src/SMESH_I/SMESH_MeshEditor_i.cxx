@@ -149,24 +149,26 @@ namespace {
     }
   };// struct TPreviewMesh
 
-  static SMESH_NodeSearcher * myNodeSearcher = 0;
+  static SMESH_NodeSearcher *    theNodeSearcher    = 0;
+  static SMESH_ElementSearcher * theElementSearcher = 0;
 
   //=============================================================================
   /*!
-   * \brief Deleter of myNodeSearcher at any compute event occured
+   * \brief Deleter of theNodeSearcher at any compute event occured
    */
   //=============================================================================
 
-  struct TNodeSearcherDeleter : public SMESH_subMeshEventListener
+  struct TSearchersDeleter : public SMESH_subMeshEventListener
   {
     SMESH_Mesh* myMesh;
     //!< Constructor
-    TNodeSearcherDeleter(): SMESH_subMeshEventListener( false ), // won't be deleted by submesh
+    TSearchersDeleter(): SMESH_subMeshEventListener( false ), // won't be deleted by submesh
     myMesh(0) {}
-    //!< Delete myNodeSearcher
+    //!< Delete theNodeSearcher
     static void Delete()
     {
-      if ( myNodeSearcher ) { delete myNodeSearcher; myNodeSearcher = 0; }
+      if ( theNodeSearcher )    delete theNodeSearcher;    theNodeSearcher    = 0;
+      if ( theElementSearcher ) delete theElementSearcher; theElementSearcher = 0;
     }
     typedef map < int, SMESH_subMesh * > TDependsOnMap;
     //!< The meshod called by submesh: do my main job
@@ -178,19 +180,22 @@ namespace {
         Unset( sm->GetFather() );
       }
     }
-    //!< set self on all submeshes and delete myNodeSearcher if other mesh is set
+    //!< set self on all submeshes and delete theNodeSearcher if other mesh is set
     void Set(SMESH_Mesh* mesh)
     {
-      if ( myMesh && myMesh != mesh ) {
-        Delete();
-        Unset( myMesh );
-      }
-      myMesh = mesh;
-      if ( SMESH_subMesh* myMainSubMesh = mesh->GetSubMeshContaining(1) ) {
-        const TDependsOnMap & subMeshes = myMainSubMesh->DependsOn();
-        TDependsOnMap::const_iterator sm;
-        for (sm = subMeshes.begin(); sm != subMeshes.end(); sm++)
-          sm->second->SetEventListener( this, 0, sm->second );
+      if ( myMesh != mesh )
+      {
+        if ( myMesh ) {
+          Delete();
+          Unset( myMesh );
+        }
+        myMesh = mesh;
+        if ( SMESH_subMesh* myMainSubMesh = mesh->GetSubMeshContaining(1) ) {
+          const TDependsOnMap & subMeshes = myMainSubMesh->DependsOn();
+          TDependsOnMap::const_iterator sm;
+          for (sm = subMeshes.begin(); sm != subMeshes.end(); sm++)
+            sm->second->SetEventListener( this, 0, sm->second );
+        }
       }
     }
     //!<  delete self from all submeshes
@@ -204,7 +209,8 @@ namespace {
       }
       myMesh = 0;
     }
-  };
+
+  } theSearchersDeleter;
 
   TCollection_AsciiString mirrorTypeName( SMESH::SMESH_MeshEditor::MirrorType theMirrorType )
   {
@@ -252,7 +258,7 @@ SMESH_MeshEditor_i::~SMESH_MeshEditor_i()
  */
 //================================================================================
 
-void SMESH_MeshEditor_i::initData()
+void SMESH_MeshEditor_i::initData(bool deleteSearchers)
 {
   if ( myPreviewMode ) {
     myPreviewData = new SMESH::MeshPreviewStruct();
@@ -260,7 +266,8 @@ void SMESH_MeshEditor_i::initData()
   else {
     myLastCreatedElems = new SMESH::long_array();
     myLastCreatedNodes = new SMESH::long_array();
-    TNodeSearcherDeleter::Delete();
+    if ( deleteSearchers )
+      TSearchersDeleter::Delete();
   }
 }
 
@@ -429,6 +436,9 @@ CORBA::Long SMESH_MeshEditor_i::AddFace(const SMESH::long_array & IDsOfNodes)
   else if (NbNodes == 8) {
     elem = GetMeshDS()->AddFace(nodes[0], nodes[1], nodes[2], nodes[3],
                                 nodes[4], nodes[5], nodes[6], nodes[7]);
+  }
+  else if (NbNodes > 2) {
+    elem = GetMeshDS()->AddPolygonalFace(nodes);
   }
 
   // Update Python script
@@ -768,33 +778,6 @@ void SMESH_MeshEditor_i::SetMeshElementOnShape(CORBA::Long ElementID,
     THROW_SALOME_CORBA_EXCEPTION("Invalid shape type", SALOME::BAD_PARAM);
 
   mesh->SetMeshElementOnShape( elem, ShapeID );
-}
-
-
-//=============================================================================
-/*!
- *
- */
-//=============================================================================
-
-CORBA::Boolean SMESH_MeshEditor_i::MoveNode(CORBA::Long   NodeID,
-                                            CORBA::Double x,
-                                            CORBA::Double y,
-                                            CORBA::Double z)
-{
-  initData();
-
-  const SMDS_MeshNode * node = GetMeshDS()->FindNode( NodeID );
-  if ( !node )
-    return false;
-
-  GetMeshDS()->MoveNode(node, x, y, z);
-
-  // Update Python script
-  TPythonDump() << "isDone = " << this << ".MoveNode( "
-                << NodeID << ", " << x << ", " << y << ", " << z << " )";
-
-  return true;
 }
 
 //=============================================================================
@@ -3585,6 +3568,61 @@ void SMESH_MeshEditor_i::MergeEqualElements()
   TPythonDump() << this << ".MergeEqualElements()";
 }
 
+//=============================================================================
+/*!
+ * Move the node to a given point
+ */
+//=============================================================================
+
+CORBA::Boolean SMESH_MeshEditor_i::MoveNode(CORBA::Long   NodeID,
+                                            CORBA::Double x,
+                                            CORBA::Double y,
+                                            CORBA::Double z)
+{
+  initData(/*deleteSearchers=*/false);
+
+  const SMDS_MeshNode * node = GetMeshDS()->FindNode( NodeID );
+  if ( !node )
+    return false;
+
+  if ( theNodeSearcher )
+    theSearchersDeleter.Set( myMesh ); // remove theNodeSearcher if mesh is other
+
+  if ( theNodeSearcher ) // move node and update theNodeSearcher data accordingly
+    theNodeSearcher->MoveNode(node, gp_Pnt( x,y,z ));
+  else
+    GetMeshDS()->MoveNode(node, x, y, z);
+
+  // Update Python script
+  TPythonDump() << "isDone = " << this << ".MoveNode( "
+                << NodeID << ", " << x << ", " << y << ", " << z << " )";
+
+  return true;
+}
+
+//================================================================================
+/*!
+ * \brief Return ID of node closest to a given point
+ */
+//================================================================================
+
+CORBA::Long SMESH_MeshEditor_i::FindNodeClosestTo(CORBA::Double x,
+                                                  CORBA::Double y,
+                                                  CORBA::Double z)
+{
+  theSearchersDeleter.Set( myMesh ); // remove theNodeSearcher if mesh is other
+
+  if ( !theNodeSearcher ) {
+    ::SMESH_MeshEditor anEditor( myMesh );
+    theNodeSearcher = anEditor.GetNodeSearcher();
+  }
+  gp_Pnt p( x,y,z );
+  if ( const SMDS_MeshNode* node = theNodeSearcher->FindClosestTo( p ))
+    return node->GetID();
+
+  return 0;
+}
+
 //================================================================================
 /*!
  * \brief If the given ID is a valid node ID (nodeID > 0), just move this node, else
@@ -3597,24 +3635,24 @@ CORBA::Long SMESH_MeshEditor_i::MoveClosestNodeToPoint(CORBA::Double x,
                                                        CORBA::Double z,
                                                        CORBA::Long   theNodeID)
 {
-  // We keep myNodeSearcher until any mesh modification:
-  // 1) initData() deletes myNodeSearcher at any edition,
-  // 2) TNodeSearcherDeleter - at any mesh compute event and mesh change
+  // We keep theNodeSearcher until any mesh modification:
+  // 1) initData() deletes theNodeSearcher at any edition,
+  // 2) TSearchersDeleter - at any mesh compute event and mesh change
 
-  initData();
+  initData(/*deleteSearchers=*/false);
+
+  theSearchersDeleter.Set( myMesh ); // remove theNodeSearcher if mesh is other
 
   int nodeID = theNodeID;
   const SMDS_MeshNode* node = GetMeshDS()->FindNode( nodeID );
-  if ( !node )
+  if ( !node ) // preview moving node
   {
-    static TNodeSearcherDeleter deleter;
-    deleter.Set( myMesh );
-    if ( !myNodeSearcher ) {
+    if ( !theNodeSearcher ) {
       ::SMESH_MeshEditor anEditor( myMesh );
-      myNodeSearcher = anEditor.GetNodeSearcher();
+      theNodeSearcher = anEditor.GetNodeSearcher();
     }
     gp_Pnt p( x,y,z );
-    node = myNodeSearcher->FindClosestTo( p );
+    node = theNodeSearcher->FindClosestTo( p );
   }
   if ( node ) {
     nodeID = node->GetID();
@@ -3638,6 +3676,10 @@ CORBA::Long SMESH_MeshEditor_i::MoveClosestNodeToPoint(CORBA::Double x,
       ::SMESH_MeshEditor anEditor( & tmpMesh );
       storeResult( anEditor );
     }
+    else if ( theNodeSearcher ) // move node and update theNodeSearcher data accordingly
+    {
+      theNodeSearcher->MoveNode(node, gp_Pnt( x,y,z ));
+    }
     else
     {
       GetMeshDS()->MoveNode(node, x, y, z);
@@ -3651,6 +3693,44 @@ CORBA::Long SMESH_MeshEditor_i::MoveClosestNodeToPoint(CORBA::Double x,
   }
 
   return nodeID;
+}
+
+//=======================================================================
+/*!
+ * Return elements of given type where the given point is IN or ON.
+ *
+ * 'ALL' type means elements of any type excluding nodes
+ */
+//=======================================================================
+
+SMESH::long_array* SMESH_MeshEditor_i::FindElementsByPoint(CORBA::Double      x,
+                                                           CORBA::Double      y,
+                                                           CORBA::Double      z,
+                                                           SMESH::ElementType type)
+{
+  SMESH::long_array_var res = new SMESH::long_array;
+  vector< const SMDS_MeshElement* > foundElems;
+
+  theSearchersDeleter.Set( myMesh );
+  if ( !theElementSearcher ) {
+    ::SMESH_MeshEditor anEditor( myMesh );
+    theElementSearcher = anEditor.GetElementSearcher();
+  }
+  theElementSearcher->FindElementsByPoint( gp_Pnt( x,y,z ),
+                                           SMDSAbs_ElementType( type ),
+                                           foundElems);
+  res->length( foundElems.size() );
+  for ( int i = 0; i < foundElems.size(); ++i )
+    res[i] = foundElems[i]->GetID();
+
+  if ( !myPreviewMode ) // call from tui
+    TPythonDump() << res << " = " << this << ".FindElementsByPoint( "
+                  << x << ", "
+                  << y << ", "
+                  << z << ", "
+                  << type << " )";
+
+  return res._retn();
 }
 
 //=======================================================================
