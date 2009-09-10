@@ -55,10 +55,10 @@ class SMESH_EXPORT SMESH_Mesh
 {
 public:
   SMESH_Mesh(int               theLocalId, 
-	     int               theStudyId, 
-	     SMESH_Gen*        theGen,
-	     bool              theIsEmbeddedMode,
-	     SMESHDS_Document* theDocument);
+             int               theStudyId, 
+             SMESH_Gen*        theGen,
+             bool              theIsEmbeddedMode,
+             SMESHDS_Document* theDocument);
   
   virtual ~SMESH_Mesh();
   
@@ -162,7 +162,7 @@ public:
    * \brief Return True if anHyp is used to mesh aSubShape
    */
   bool IsUsedHypothesis(SMESHDS_Hypothesis *  anHyp,
-			const SMESH_subMesh * aSubMesh);
+                        const SMESH_subMesh * aSubMesh);
   /*!
    * \brief check if a hypothesis alowing notconform mesh is present
    */
@@ -191,9 +191,9 @@ public:
   bool HasDuplicatedGroupNamesMED();
 
   void ExportMED(const char *file, 
-		 const char* theMeshName = NULL, 
-		 bool theAutoGroups = true, 
-		 int theVersion = 0) 
+                 const char* theMeshName = NULL, 
+                 bool theAutoGroups = true, 
+                 int theVersion = 0) 
     throw(SALOME_Exception);
 
   void ExportDAT(const char *file) throw(SALOME_Exception);
@@ -231,8 +231,8 @@ public:
   int NbGroup() const { return _mapGroup.size(); }
   
   SMESH_Group* AddGroup (const SMDSAbs_ElementType theType,
-			 const char*               theName,
-			 int&                      theId,
+                         const char*               theName,
+                         int&                      theId,
                          const TopoDS_Shape&       theShape=TopoDS_Shape());
   
   typedef boost::shared_ptr< SMDS_Iterator<SMESH_Group*> > GroupIteratorPtr;
