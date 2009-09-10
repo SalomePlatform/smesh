@@ -45,6 +45,8 @@ of the selected node or edge.</li>
 <li>Apply \subpage pattern_mapping_page "pattern mapping".</li>
 <li>\subpage convert_to_from_quadratic_mesh_page "Convert regular mesh to quadratic", 
 or vice versa.</li>
+<li>\subpage make_2dmesh_from_3d_page "Create 2D mesh from 3D".</li>
+
 </ul>
 
 \note It is possible to use the variables defined in the SALOME \b NoteBook

@@ -8830,7 +8830,8 @@ bool SMESH_MeshEditor::Make2DMeshFrom3D()
   {
     const SMDS_MeshVolume* volume = vIt->next();
     SMDS_VolumeTool vTool( volume );
-    bool isPoly = volume->IsPoly();
+    const bool isPoly = volume->IsPoly();
+    const bool isQuad = volume->IsQuadratic();
     for ( int iface = 0, n = vTool.NbFaces(); iface < n; iface++ )
     {
       if (!vTool.IsFreeFace(iface))
@@ -8838,12 +8839,24 @@ bool SMESH_MeshEditor::Make2DMeshFrom3D()
       vector<const SMDS_MeshNode *> nodes;
       int nbFaceNodes = vTool.NbFaceNodes(iface);
       const SMDS_MeshNode** faceNodes = vTool.GetFaceNodes(iface);
-      if (vTool.IsFaceExternal(iface))
-        for (int inode = 0; inode < nbFaceNodes; inode++)
+      if (vTool.IsFaceExternal(iface)) 
+      {
+        int inode = 0;
+        for ( ; inode < nbFaceNodes; inode += isQuad ? 2 : 1)
           nodes.push_back(faceNodes[inode]);
+        if (isQuad)
+          for ( inode = 1; inode < nbFaceNodes; inode += 2)
+            nodes.push_back(faceNodes[inode]);
+      }
       else
-        for (int inode = nbFaceNodes - 1; inode >= 0; inode--)
+      {
+        int inode = nbFaceNodes-1;
+        for ( ; inode >=0; inode -= isQuad ? 2 : 1)
           nodes.push_back(faceNodes[inode]);
+        if (isQuad)
+          for ( inode = nbFaceNodes-2; inode >=0; inode -= 2)
+            nodes.push_back(faceNodes[inode]);
+      }
 
       // add new face based on volume nodes
       if (aMesh->FindFace( nodes ) )

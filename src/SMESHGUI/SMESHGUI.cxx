@@ -3068,6 +3068,19 @@ void SMESHGUI::initialize( CAM_Application* app )
 	  hyp_alg = hypo + " " + algo;
 
   // popup for object browser
+  QString
+    isInvisible("not( isVisible )"),
+    isEmpty("numberOfNodes = 0"),
+    isNotEmpty("numberOfNodes <> 0"),
+
+    // has nodes, edges, etc in VISIBLE! actor
+    hasNodes("(numberOfNodes > 0 )"),//&& isVisible)"),
+    hasElems("(count( elemTypes ) > 0)"),
+    hasDifferentElems("(count( elemTypes ) > 1)"),
+    hasElems0d("({'Elem0d'} in elemTypes)"),
+    hasEdges("({'Edge'} in elemTypes)"),
+    hasFaces("({'Face'} in elemTypes)"),
+    hasVolumes("({'Volume'} in elemTypes)");
 
   createPopupItem( 150, OB, mesh, "&& selcount=1 && isImported" );      // FILE INFORMATION
   createPopupItem( 703, OB, mesh, "&& isComputable");      // CREATE_SUBMESH
@@ -3096,6 +3109,9 @@ void SMESHGUI::initialize( CAM_Application* app )
   popupMgr()->insert( separator(), -1, 0 );
   createPopupItem( 4043, OB, mesh );                       // CLEAR_MESH
   popupMgr()->insert( separator(), -1, 0 );
+  createPopupItem( 417, OB, mesh/*, "&& " + hasElems*/);       // convert to quadratic
+  createPopupItem( 418, OB, mesh/*, "&& " + hasVolumes*/);     // create 2D mesh on 3D
+  popupMgr()->insert( separator(), -1, 0 );
 
   QString only_one_non_empty = QString( " && %1=1 && numberOfNodes>0" ).arg( dc );
 
@@ -3123,20 +3139,6 @@ void SMESHGUI::initialize( CAM_Application* app )
   popupMgr()->insert( separator(), -1, 0 );
 
   int anId;
-  QString
-    isInvisible("not( isVisible )"),
-    isEmpty("numberOfNodes = 0"),
-    isNotEmpty("numberOfNodes <> 0"),
-
-    // has nodes, edges, etc in VISIBLE! actor
-    hasNodes("(numberOfNodes > 0 )"),//&& isVisible)"),
-    hasElems("(count( elemTypes ) > 0)"),
-    hasDifferentElems("(count( elemTypes ) > 1)"),
-    hasElems0d("({'Elem0d'} in elemTypes)"),
-    hasEdges("({'Edge'} in elemTypes)"),
-    hasFaces("({'Face'} in elemTypes)"),
-    hasVolumes("({'Volume'} in elemTypes)");
-
   QString aClient = QString( "%1client in {%2}" ).arg( lc ).arg( "'VTKViewer'" );
   QString aType = QString( "%1type in {%2}" ).arg( lc );
   aType = aType.arg( mesh_group );
