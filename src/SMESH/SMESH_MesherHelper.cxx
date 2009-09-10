@@ -723,7 +723,7 @@ SMDS_MeshFace* SMESH_MesherHelper::AddFace(const SMDS_MeshNode* n1,
                                            const SMDS_MeshNode* n2,
                                            const SMDS_MeshNode* n3,
                                            const int id,
-					   const bool force3d)
+                                           const bool force3d)
 {
   SMESHDS_Mesh * meshDS = GetMeshDS();
   SMDS_MeshFace* elem = 0;
@@ -764,7 +764,7 @@ SMDS_MeshFace* SMESH_MesherHelper::AddFace(const SMDS_MeshNode* n1,
                                            const SMDS_MeshNode* n3,
                                            const SMDS_MeshNode* n4,
                                            const int id,
-					   const bool force3d)
+                                           const bool force3d)
 {
   SMESHDS_Mesh * meshDS = GetMeshDS();
   SMDS_MeshFace* elem = 0;
@@ -824,7 +824,7 @@ SMDS_MeshVolume* SMESH_MesherHelper::AddVolume(const SMDS_MeshNode* n1,
                                                const SMDS_MeshNode* n5,
                                                const SMDS_MeshNode* n6,
                                                const int id,
-					       const bool force3d)
+                                               const bool force3d)
 {
   SMESHDS_Mesh * meshDS = GetMeshDS();
   SMDS_MeshVolume* elem = 0;
@@ -871,7 +871,7 @@ SMDS_MeshVolume* SMESH_MesherHelper::AddVolume(const SMDS_MeshNode* n1,
                                                const SMDS_MeshNode* n3,
                                                const SMDS_MeshNode* n4,
                                                const int id, 
-					       const bool force3d)
+                                               const bool force3d)
 {
   SMESHDS_Mesh * meshDS = GetMeshDS();
   SMDS_MeshVolume* elem = 0;
@@ -913,7 +913,7 @@ SMDS_MeshVolume* SMESH_MesherHelper::AddVolume(const SMDS_MeshNode* n1,
                                                const SMDS_MeshNode* n4,
                                                const SMDS_MeshNode* n5,
                                                const int id, 
-					       const bool force3d)
+                                               const bool force3d)
 {
   SMDS_MeshVolume* elem = 0;
   if(!myCreateQuadratic) {
@@ -964,7 +964,7 @@ SMDS_MeshVolume* SMESH_MesherHelper::AddVolume(const SMDS_MeshNode* n1,
                                                const SMDS_MeshNode* n7,
                                                const SMDS_MeshNode* n8,
                                                const int id,
-					       const bool force3d)
+                                               const bool force3d)
 {
   SMESHDS_Mesh * meshDS = GetMeshDS();
   SMDS_MeshVolume* elem = 0;
