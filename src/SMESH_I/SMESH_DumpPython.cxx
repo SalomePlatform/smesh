@@ -192,10 +192,11 @@ namespace SMESH
   operator<<(CORBA::Object_ptr theArg)
   {
     SMESH_Gen_i* aSMESHGen = SMESH_Gen_i::GetSMESHGen();
-    SALOMEDS::Study_ptr aStudy = aSMESHGen->GetCurrentStudy();
+    SALOMEDS::Study_var aStudy = aSMESHGen->GetCurrentStudy();
     SALOMEDS::SObject_var aSObject = SMESH_Gen_i::ObjectToSObject(aStudy,theArg);
     if(!aSObject->_is_nil()) {
-      myStream << aSObject->GetID();
+      CORBA::String_var id = aSObject->GetID();
+      myStream << id;
     } else if ( !CORBA::is_nil(theArg)) {
       if ( aSMESHGen->CanPublishInStudy( theArg )) // not published SMESH object
         myStream << "smeshObj_" << size_t(theArg);

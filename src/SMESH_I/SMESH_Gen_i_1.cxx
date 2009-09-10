@@ -210,8 +210,10 @@ GEOM::GEOM_Object_ptr SMESH_Gen_i::ShapeToGeomObject (const TopoDS_Shape& theSha
     GEOM_Client* aClient = GetShapeReader();
     TCollection_AsciiString IOR;
     if ( aClient && aClient->Find( theShape, IOR ))
-      aShapeObj = GEOM::GEOM_Object::_narrow
-        ( GetORB()->string_to_object( IOR.ToCString() ) );
+    {
+      CORBA::Object_var obj = GetORB()->string_to_object( IOR.ToCString() );
+      aShapeObj = GEOM::GEOM_Object::_narrow ( obj );
+    }
   }
   return aShapeObj._retn();
 }
@@ -262,7 +264,8 @@ static SALOMEDS::SObject_ptr publish(SALOMEDS::Study_ptr   theStudy,
   }
   if ( thePixMap ) {
     anAttr  = aStudyBuilder->FindOrCreateAttribute( SO, "AttributePixMap" );
-    SALOMEDS::AttributePixMap::_narrow( anAttr )->SetPixMap( thePixMap );
+    SALOMEDS::AttributePixMap_var pm = SALOMEDS::AttributePixMap::_narrow( anAttr );
+    pm->SetPixMap( thePixMap );
   }
   if ( !theSelectable ) {
     anAttr   = aStudyBuilder->FindOrCreateAttribute( SO, "AttributeSelectable" );
@@ -518,13 +521,12 @@ SALOMEDS::SObject_ptr SMESH_Gen_i::PublishMesh (SALOMEDS::Study_ptr   theStudy,
 
     // Publish global hypotheses
 
-    SMESH::ListOfHypothesis * hypList = theMesh->GetHypothesisList( aShapeObject );
-    if ( hypList )
-      for ( int i = 0; i < hypList->length(); i++ ) {
-        SMESH::SMESH_Hypothesis_var aHyp = SMESH::SMESH_Hypothesis::_narrow( (*hypList)[ i ]);
-        PublishHypothesis( theStudy, aHyp );
-        AddHypothesisToShape( theStudy, theMesh, aShapeObject, aHyp );
-      }
+    SMESH::ListOfHypothesis_var hypList = theMesh->GetHypothesisList( aShapeObject );
+    for ( int i = 0; i < hypList->length(); i++ ) {
+      SMESH::SMESH_Hypothesis_var aHyp = SMESH::SMESH_Hypothesis::_narrow( hypList[ i ]);
+      PublishHypothesis( theStudy, aHyp );
+      AddHypothesisToShape( theStudy, theMesh, aShapeObject, aHyp );
+    }
   }
 
   // Publish submeshes
