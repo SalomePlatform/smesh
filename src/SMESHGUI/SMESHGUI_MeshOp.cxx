@@ -85,7 +85,8 @@ SMESHGUI_MeshOp::SMESHGUI_MeshOp( const bool theToCreate, const bool theIsMesh )
   myToCreate( theToCreate ),
   myIsMesh( theIsMesh ),
   myDlg( 0 ),
-  myShapeByMeshOp( 0 )
+  myShapeByMeshOp( 0 ),
+  myHypoSet( 0 )
 {
   if ( GeometryGUI::GetGeomGen()->_is_nil() )// check that GEOM_Gen exists
     GeometryGUI::InitGeomGen();
