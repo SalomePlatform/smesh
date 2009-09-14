@@ -902,9 +902,9 @@ void SMESH_Gen_i::UpdateParameters(CORBA::Object_ptr theObject, const char* theP
   SALOMEDS::SObject_var aSObj =  ObjectToSObject(aStudy,theObject);
   if(aSObj->_is_nil())  
     return;
-  
+
   SALOMEDS::StudyBuilder_var aStudyBuilder = aStudy->NewBuilder();
-  
+
   SALOMEDS::GenericAttribute_var aFindAttr;
   bool hasAttr = aSObj->FindAttribute(aFindAttr, "AttributeString");
   if(VARIABLE_DEBUG)
@@ -914,23 +914,23 @@ void SMESH_Gen_i::UpdateParameters(CORBA::Object_ptr theObject, const char* theP
   anAttr = aStudyBuilder->FindOrCreateAttribute( aSObj, "AttributeString");
   SALOMEDS::AttributeString_var aStringAttr = SALOMEDS::AttributeString::_narrow(anAttr);
 
+  CORBA::String_var oldparVar = aStringAttr->Value();
+  CORBA::String_var inpparVar = ParseParameters(theParameters);
   TCollection_AsciiString aNewParams;
-  TCollection_AsciiString aOldParameters(aStringAttr->Value());
-  TCollection_AsciiString anInputParams(ParseParameters(theParameters));
-  
+  TCollection_AsciiString aOldParameters(oldparVar.inout());
+  TCollection_AsciiString anInputParams(inpparVar.inout());
   if(!hasAttr)
     aNewParams = anInputParams;
   else 
     aNewParams = aOldParameters+"|"+anInputParams;
 
   if(VARIABLE_DEBUG)
-    {
-      cout<<"Input Parameters : "<<anInputParams<<endl;
-      cout<<"Old Parameters : "<<aOldParameters<<endl;
-      cout<<"New Parameters : "<<aNewParams<<endl;
-    }
-  
-  
+  {
+    cout<<"Input Parameters : "<<anInputParams<<endl;
+    cout<<"Old Parameters : "<<aOldParameters<<endl;
+    cout<<"New Parameters : "<<aNewParams<<endl;
+  }
+
   aStringAttr->SetValue( aNewParams.ToCString() );
 }
 
@@ -940,21 +940,45 @@ void SMESH_Gen_i::UpdateParameters(CORBA::Object_ptr theObject, const char* theP
 //=======================================================================
 char* SMESH_Gen_i::ParseParameters(const char* theParameters)
 {
-  const char* aParameters = CORBA::string_dup(theParameters);
+  //const char* aParameters = theParameters;
+//   const char* aParameters = CORBA::string_dup(theParameters);
   TCollection_AsciiString anInputParams;
-  SALOMEDS::Study_ptr aStudy = GetCurrentStudy();
+  SALOMEDS::Study_var aStudy = GetCurrentStudy();
   if( !aStudy->_is_nil() ) {
-    SALOMEDS::ListOfListOfStrings_var aSections = aStudy->ParseVariables(aParameters);
-    for(int j=0;j<aSections->length();j++) {
-      SALOMEDS::ListOfStrings aVars= aSections[j];
-      for(int i=0;i<aVars.length();i++ ) {
-        anInputParams += aStudy->IsVariable(aVars[i].in()) ? 
-          TCollection_AsciiString(aVars[i].in()) : TCollection_AsciiString("");
-        if(i != aVars.length()-1)
-          anInputParams+=":";
+//     SALOMEDS::ListOfListOfStrings_var aSections = aStudy->ParseVariables(theParameters);
+//     for(int j=0;j<aSections->length();j++) {
+//       SALOMEDS::ListOfStrings aVars= aSections[j];
+//       for(int i=0;i<aVars.length();i++ ) {
+//         anInputParams += aStudy->IsVariable(aVars[i].in()) ? 
+//           TCollection_AsciiString(aVars[i].in()) : TCollection_AsciiString("");
+//         if(i != aVars.length()-1)
+//           anInputParams+=":";
+//       }
+//       if(j!=aSections->length()-1)
+//         anInputParams+="|";
+//     }
+    TCollection_AsciiString paramStr( theParameters );
+    static TCollection_AsciiString separators(":|");
+    int beg = 0, end;
+    char sep, *pParams = (char*)paramStr.ToCString();
+    while ( beg < paramStr.Length() )
+    {
+      end = beg-1;
+      while ( ++end < paramStr.Length() )
+        if ( pParams[end] == ':' || pParams[end] == '|')
+          break;
+      if ( end < paramStr.Length())
+      {
+        sep = pParams[end];
+        pParams[end] = '\0';
       }
-      if(j!=aSections->length()-1)
-        anInputParams+="|";
+      if ( aStudy->IsVariable( pParams+beg ))
+        anInputParams += pParams+beg;
+      if ( end < paramStr.Length() )
+        anInputParams += sep;
+      else
+        break;
+      beg = end + 1;
     }
   }
   return CORBA::string_dup(anInputParams.ToCString());
