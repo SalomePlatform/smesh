@@ -36,7 +36,10 @@ extern "C"
   MEFISTO2D_EXPORT   
     R
   #ifdef WIN32
+  #ifdef F2C_BUILD
+  #else
       __stdcall
+  #endif
   #endif
       areteideale()//( R3 xyz, R3 direction )
   {
@@ -52,7 +55,10 @@ static double cpunew, cpuold=0;
 
 void
 #ifdef WIN32
+#ifdef F2C_BUILD
+#else
               __stdcall
+#endif
 #endif
 tempscpu_( double & tempsec )
 //Retourne le temps CPU utilise en secondes
@@ -64,7 +70,10 @@ tempscpu_( double & tempsec )
 
 void
 #ifdef WIN32
+#ifdef F2C_BUILD
+#else
               __stdcall
+#endif
 #endif
 deltacpu_( R & dtcpu )
 //Retourne le temps CPU utilise en secondes depuis le precedent appel
@@ -744,7 +753,10 @@ void  aptrte( Z   nutysu, R      aretmx,
 }
 void
 #ifdef WIN32
+#ifdef F2C_BUILD
+#else
               __stdcall
+#endif
 #endif
  qualitetrte( R3 *mnpxyd,
 		   Z & mosoar, Z & mxsoar, Z *mnsoar,
