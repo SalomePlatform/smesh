@@ -3254,31 +3254,54 @@ void ElementsOnShape::process (const SMDS_MeshElement* theElemPtr)
 TSequenceOfXYZ::TSequenceOfXYZ()
 {}
 
-TSequenceOfXYZ::TSequenceOfXYZ(size_type n) : std::vector<gp_XYZ>(n)
+TSequenceOfXYZ::TSequenceOfXYZ(size_type n) : myArray(n)
 {}
 
-TSequenceOfXYZ::TSequenceOfXYZ(size_type n, const value_type& t) : std::vector<gp_XYZ>(n,t)
+TSequenceOfXYZ::TSequenceOfXYZ(size_type n, const gp_XYZ& t) : myArray(n,t)
 {}
 
-TSequenceOfXYZ::TSequenceOfXYZ(const TSequenceOfXYZ& theSequenceOfXYZ) : std::vector<gp_XYZ>(theSequenceOfXYZ)
+TSequenceOfXYZ::TSequenceOfXYZ(const TSequenceOfXYZ& theSequenceOfXYZ) : myArray(theSequenceOfXYZ.myArray)
 {}
 
 template <class InputIterator>
-TSequenceOfXYZ::TSequenceOfXYZ(InputIterator theBegin, InputIterator theEnd): std::vector<gp_XYZ>(theBegin,theEnd)
+TSequenceOfXYZ::TSequenceOfXYZ(InputIterator theBegin, InputIterator theEnd): myArray(theBegin,theEnd)
+{}
+
+TSequenceOfXYZ::~TSequenceOfXYZ()
 {}
 
 TSequenceOfXYZ& TSequenceOfXYZ::operator=(const TSequenceOfXYZ& theSequenceOfXYZ)
 {
-  std::vector<gp_XYZ>::operator=(theSequenceOfXYZ);
+  myArray = theSequenceOfXYZ.myArray;
   return *this;
 }
 
-std::vector<gp_XYZ>::reference TSequenceOfXYZ::operator()(size_type n)
+gp_XYZ& TSequenceOfXYZ::operator()(size_type n)
 {
-  return std::vector<gp_XYZ>::operator[](n-1);
+  return myArray[n-1];
 }
 
-std::vector<gp_XYZ>::const_reference TSequenceOfXYZ::operator()(size_type n) const
+const gp_XYZ& TSequenceOfXYZ::operator()(size_type n) const
 {
-  return std::vector<gp_XYZ>::operator[](n-1);
+  return myArray[n-1];
+}
+
+void TSequenceOfXYZ::clear()
+{
+  myArray.clear();
+}
+
+void TSequenceOfXYZ::reserve(size_type n)
+{
+  myArray.reserve(n);
+}
+
+void TSequenceOfXYZ::push_back(const gp_XYZ& v)
+{
+  myArray.push_back(v);
+}
+
+TSequenceOfXYZ::size_type TSequenceOfXYZ::size() const
+{
+  return myArray.size();
 }

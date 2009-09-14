@@ -68,30 +68,40 @@ class gp_Pnt;
 namespace SMESH{
   namespace Controls{
 
-    class SMESHCONTROLS_EXPORT TSequenceOfXYZ: public std::vector<gp_XYZ>
+    class SMESHCONTROLS_EXPORT TSequenceOfXYZ
     {
+      typedef std::vector<gp_XYZ>::size_type size_type;
+
     public:
       TSequenceOfXYZ();
 
       TSequenceOfXYZ(size_type n);
 
-      TSequenceOfXYZ(size_type n, const value_type& t);
+      TSequenceOfXYZ(size_type n, const gp_XYZ& t);
 
       TSequenceOfXYZ(const TSequenceOfXYZ& theSequenceOfXYZ);
 
       template <class InputIterator>
       TSequenceOfXYZ(InputIterator theBegin, InputIterator theEnd);
 
+      ~TSequenceOfXYZ();
+
       TSequenceOfXYZ& operator=(const TSequenceOfXYZ& theSequenceOfXYZ);
 
-      reference operator()(size_type n);
+      gp_XYZ& operator()(size_type n);
 
-      const_reference operator()(size_type n) const;
+      const gp_XYZ& operator()(size_type n) const;
+
+      void clear();
+
+      void reserve(size_type n);
+
+      void push_back(const gp_XYZ& v);
+
+      size_type size() const;
 
     private:
-      reference operator[](size_type n);
-
-      const_reference operator[](size_type n) const;
+      std::vector<gp_XYZ> myArray;
     };
 
     /*
