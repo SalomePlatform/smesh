@@ -53,6 +53,7 @@
 #include <Geom_Curve.hxx>
 #include <Geom2d_Curve.hxx>
 #include <Geom_Surface.hxx>
+#include <Precision.hxx>
 #include <TopExp.hxx>
 #include <TopExp_Explorer.hxx>
 #include <TopTools_ListIteratorOfListOfShape.hxx>
@@ -303,7 +304,7 @@ bool StdMeshers_MEFISTO_2D::Evaluate(SMESH_Mesh & aMesh,
   TopoDS_Face F = TopoDS::Face(aShape.Oriented(TopAbs_FORWARD));
 
   double aLen = 0.0;
-  double NbSeg = 0;
+  int NbSeg = 0;
   bool IsQuadratic = false;
   bool IsFirst = true;
   TopExp_Explorer exp(F,TopAbs_EDGE);
@@ -331,16 +332,20 @@ bool StdMeshers_MEFISTO_2D::Evaluate(SMESH_Mesh & aMesh,
       P1 = P2;
     }
   }
-  aLen = aLen/NbSeg; // middle length
+  if ( NbSeg > 0 )
+    aLen = aLen/NbSeg; // middle length
+  else
+    aLen = Precision::Infinite();
 
-  _edgeLength = DBL_MAX;
+  _edgeLength = Precision::Infinite();
   double tmpLength = Min( _edgeLength, aLen );
 
   GProp_GProps G;
   BRepGProp::SurfaceProperties(aShape,G);
   double anArea = G.Mass();
 
-  int nbFaces = (int) ( anArea/(tmpLength*tmpLength*sqrt(3.)/4) );
+  int nbFaces = Precision::IsInfinite( tmpLength ) ? 0 :
+    (int)( anArea/(tmpLength*tmpLength*sqrt(3.)/4) );
   int nbNodes = (int) ( nbFaces*3 - (NbSeg-1)*2 ) / 6;
 
   std::vector<int> aVec(SMDSEntity_Last);
