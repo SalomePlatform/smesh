@@ -1681,9 +1681,12 @@ void SMESHGUI_BaseComputeOp::evaluateMesh()
   SMESH::long_array_var aRes;
 
   _PTR(SObject) aMeshSObj = SMESH::FindSObject(myMesh);
+  if ( !aMeshSObj ) //  IPAL21340
+    return;
+
   bool hasShape = myMesh->HasShapeToMesh();
   bool shapeOK = myMainShape->_is_nil() ? !hasShape : hasShape;
-  if ( shapeOK && aMeshSObj )
+  if ( shapeOK )
   {
     myCompDlg->myMeshName->setText( aMeshSObj->GetName().c_str() );
     SMESH::SMESH_Gen_var gen = getSMESHGUI()->GetSMESHGen();
