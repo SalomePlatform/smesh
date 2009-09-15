@@ -206,6 +206,9 @@ bool StdMeshers_RadialQuadrangle_1D2D::Compute(SMESH_Mesh& aMesh,
   TopoDS_Face F = TopoDS::Face(aShape);
   Handle(Geom_Surface) S = BRep_Tool::Surface(F);
 
+  // orientation
+  bool IsForward = F.Orientation()==TopAbs_FORWARD;
+
   //cout<<"RadialQuadrangle_1D2D::Compute   nbe = "<<nbe<<endl;
   TopoDS_Edge CircEdge, LinEdge1, LinEdge2;
   if(nbe==1) {
@@ -600,7 +603,7 @@ bool StdMeshers_RadialQuadrangle_1D2D::Compute(SMESH_Mesh& aMesh,
       if(ME) meshDS->SetMeshElementOnShape(ME, edgeID);
     }
     // LinEdge2
-    edgeID = meshDS->ShapeToIndex(LinEdge1);
+    edgeID = meshDS->ShapeToIndex(LinEdge2);
     aVec = gp_Vec(P0,P2);
     // check orientation
     Crv = BRep_Tool::Curve(LinEdge2,fp,lp);
@@ -683,12 +686,21 @@ bool StdMeshers_RadialQuadrangle_1D2D::Compute(SMESH_Mesh& aMesh,
     tmpNodes[Points.Length()] = CNodes[i];
     // quad
     for(j=0; j<Nodes1.size()-1; j++) {
-      SMDS_MeshFace* MF = myHelper->AddFace( tmpNodes[j], Nodes1[j],
-                                             Nodes1[j+1], tmpNodes[j+1] );
+      SMDS_MeshFace* MF;
+      if(IsForward)
+        MF = myHelper->AddFace( tmpNodes[j], Nodes1[j],
+                                Nodes1[j+1], tmpNodes[j+1] );
+      else
+        MF = myHelper->AddFace( tmpNodes[j], tmpNodes[j+1],
+                                Nodes1[j+1], Nodes1[j] );
       if(MF) meshDS->SetMeshElementOnShape(MF, faceID);
     }
     // tria
-    SMDS_MeshFace* MF = myHelper->AddFace( NC, Nodes1[0], tmpNodes[0] );
+    SMDS_MeshFace* MF;
+    if(IsForward)
+      MF = myHelper->AddFace( NC, Nodes1[0], tmpNodes[0] );
+    else
+      MF = myHelper->AddFace( NC, tmpNodes[0], Nodes1[0] );
     if(MF) meshDS->SetMeshElementOnShape(MF, faceID);
     for(j=0; j<Nodes1.size(); j++) {
       Nodes1[j] = tmpNodes[j];
@@ -697,12 +709,21 @@ bool StdMeshers_RadialQuadrangle_1D2D::Compute(SMESH_Mesh& aMesh,
   // create last faces
   // quad
   for(i=0; i<Nodes1.size()-1; i++) {
-    SMDS_MeshFace* MF = myHelper->AddFace( Nodes2[i], Nodes1[i],
-                                           Nodes1[i+1], Nodes2[i+1] );
+    SMDS_MeshFace* MF;
+    if(IsForward)
+      MF = myHelper->AddFace( Nodes2[i], Nodes1[i],
+                              Nodes1[i+1], Nodes2[i+1] );
+    else
+      MF = myHelper->AddFace( Nodes2[i],  Nodes2[i+1],
+                              Nodes1[i+1], Nodes1[i] );
     if(MF) meshDS->SetMeshElementOnShape(MF, faceID);
   }
   // tria
-  SMDS_MeshFace* MF = myHelper->AddFace( NC, Nodes1[0], Nodes2[0] );
+  SMDS_MeshFace* MF;
+  if(IsForward)
+    MF = myHelper->AddFace( NC, Nodes1[0], Nodes2[0] );
+  else
+    MF = myHelper->AddFace( NC, Nodes2[0], Nodes1[0] );
   if(MF) meshDS->SetMeshElementOnShape(MF, faceID);
 
 
