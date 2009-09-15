@@ -287,8 +287,11 @@ void SMESHGUI_GenericHypothesisCreator::onDialogFinished( int result )
   SMESHGUI::GetSMESHGUI()->updateObjBrowser( true, 0 );
   myHypo = SMESH::SMESH_Hypothesis::_nil();
   myInitParamsHypo = SMESH::SMESH_Hypothesis::_nil();
-  myDlg->close(); myDlg = 0;
-  //delete myDlg; myDlg = 0;
+
+  disconnect( myDlg, SIGNAL( finished( int ) ), this, SLOT( onDialogFinished( int ) ) );
+  myDlg->close();
+  //delete myDlg;
+  myDlg = 0;
   emit finished( result );
 }
 
