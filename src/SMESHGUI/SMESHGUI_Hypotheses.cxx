@@ -510,7 +510,7 @@ QString SMESHGUI_GenericHypothesisCreator::helpPage() const
     aHelpFileName = "a1d_meshing_hypo_page.html#max_length_anchor";
   else if ( aHypType == "Arithmetic1D")
     aHelpFileName = "a1d_meshing_hypo_page.html#arithmetic_1d_anchor";
-  else if ( aHypType == "FixedPointsc1D")
+  else if ( aHypType == "FixedPoints1D")
     aHelpFileName = "a1d_meshing_hypo_page.html#fixed_points_1d_anchor";
   else if ( aHypType == "MaxElementArea")
     aHelpFileName = "a2d_meshing_hypo_page.html#max_element_area_anchor";
