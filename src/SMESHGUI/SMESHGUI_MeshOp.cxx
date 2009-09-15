@@ -1332,7 +1332,7 @@ void SMESHGUI_MeshOp::onAlgoSelected( const int theIndex,
         CORBA::String_var curHypType = curHyp->GetName();
         if ( !algoDeselectedByUser &&
              myObjHyps[ dim ][ type ].count() > 0 &&
-             curHypType == myObjHyps[ dim ][ type ].first().first->GetName())
+             !strcmp( curHypType, myObjHyps[ dim ][ type ].first().first->GetName()) )
         {
           HypothesisData* hypData = SMESH::GetHypothesisData( curHyp->GetName() );
           for (int i = 0; i < myAvailableHypData[ dim ][ Algo ].count(); ++i) {
@@ -1761,7 +1761,7 @@ SMESH::SMESH_Hypothesis_var SMESHGUI_MeshOp::getAlgo( const int theDim )
   {
     SMESH::SMESH_Hypothesis_var aHypVar = (*anIter).first;
     CORBA::String_var aName = aHypVar->GetName();
-    if ( !aHypVar->_is_nil() && aHypName == aName )
+    if ( !aHypVar->_is_nil() && !strcmp(aHypName.toLatin1().data(), aName) )
     {
       anAlgoVar = aHypVar;
       break;
@@ -1802,7 +1802,7 @@ SMESH::SMESH_Hypothesis_var SMESHGUI_MeshOp::getAlgo( const int theDim )
     {
       SMESH::SMESH_Hypothesis_var aHypVar = (*anIter).first;
       CORBA::String_var aName = aHypVar->GetName();
-      if ( !aHypVar->_is_nil() && aHypName == aName )
+      if ( !aHypVar->_is_nil() && !strcmp(aHypName.toLatin1().data(), aName) )
       {
         anAlgoVar = aHypVar;
         break;
