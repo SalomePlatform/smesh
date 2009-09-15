@@ -455,8 +455,7 @@ QString StdMeshersGUI_StdHypothesisCreator::storeParams() const
       h->SetParameters(SMESHGUI::JoinObjectParameters(aVariablesList));
       if (w) {
         h->SetReversedEdges( w->GetListOfIDs() );
-        const char * entry = w->GetMainShapeEntry();
-        h->SetObjectEntry( entry );
+        h->SetObjectEntry( w->GetMainShapeEntry() );
       }
     }
     else if( hypType()=="FixedPoints1D" )
@@ -477,8 +476,7 @@ QString StdMeshersGUI_StdHypothesisCreator::storeParams() const
       }
       if (w2) {
         h->SetReversedEdges( w2->GetListOfIDs() );
-        const char * entry = w2->GetMainShapeEntry();
-        h->SetObjectEntry( entry );
+        h->SetObjectEntry( w2->GetMainShapeEntry() );
       }
     }
     else if( hypType()=="MaxElementArea" )
@@ -606,8 +604,8 @@ QString StdMeshersGUI_StdHypothesisCreator::storeParams() const
       StdMeshersGUI_SubShapeSelectorWdg* w = 
         widget< StdMeshersGUI_SubShapeSelectorWdg >( 0 );
       if (w) {
-        if( w->GetListOfIDs()->length()>0 ) {
-          h->SetTriaVertex( w->GetListOfIDs()[0] );
+        if( int id = w->GetListOfIDs()[0] ) {
+          h->SetTriaVertex( id );
         }
         const char * entry = w->GetMainShapeEntry();
         h->SetObjectEntry( entry );
@@ -736,10 +734,13 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
 
     StdMeshersGUI_SubShapeSelectorWdg* aDirectionWidget =
       new StdMeshersGUI_SubShapeSelectorWdg();
-    QString anEntry = SMESHGUI_GenericHypothesisCreator::getShapeEntry();
-    if ( anEntry == "" )
-      anEntry = h->GetObjectEntry();
-    aDirectionWidget->SetMainShapeEntry( anEntry );
+    QString aGeomEntry = SMESHGUI_GenericHypothesisCreator::getShapeEntry();
+    QString aMainEntry = SMESHGUI_GenericHypothesisCreator::getMainShapeEntry();
+    if ( aGeomEntry == "" )
+      aGeomEntry = h->GetObjectEntry();
+
+    aDirectionWidget->SetGeomShapeEntry( aGeomEntry );
+    aDirectionWidget->SetMainShapeEntry( aMainEntry );
     aDirectionWidget->SetListOfIDs( h->GetReversedEdges() );
     aDirectionWidget->showPreview( true );
     customWidgets()->append ( aDirectionWidget );
@@ -769,9 +770,11 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
     StdMeshersGUI_SubShapeSelectorWdg* aDirectionWidget =
       new StdMeshersGUI_SubShapeSelectorWdg();
     QString anEntry = SMESHGUI_GenericHypothesisCreator::getShapeEntry();
+    QString aMainEntry = SMESHGUI_GenericHypothesisCreator::getMainShapeEntry();
     if ( anEntry == "" )
       anEntry = h->GetObjectEntry();
-    aDirectionWidget->SetMainShapeEntry( anEntry );
+    aDirectionWidget->SetGeomShapeEntry( anEntry );
+    aDirectionWidget->SetMainShapeEntry( aMainEntry );
     aDirectionWidget->SetListOfIDs( h->GetReversedEdges() );
     aDirectionWidget->showPreview( true );
     customWidgets()->append ( aDirectionWidget );
@@ -823,11 +826,12 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
     StdMeshersGUI_SubShapeSelectorWdg* aDirectionWidget =
       new StdMeshersGUI_SubShapeSelectorWdg();
     QString anEntry = SMESHGUI_GenericHypothesisCreator::getShapeEntry();
+    QString aMainEntry = SMESHGUI_GenericHypothesisCreator::getMainShapeEntry();
     if ( anEntry == "" )
       anEntry = h->GetObjectEntry();
-    aDirectionWidget->SetMainShapeEntry( anEntry );
+    aDirectionWidget->SetGeomShapeEntry( anEntry );
+    aDirectionWidget->SetMainShapeEntry( aMainEntry );
     aDirectionWidget->SetListOfIDs( h->GetReversedEdges() );
-    aDirectionWidget->SetMainShapeEntry( h->GetObjectEntry() );
     aDirectionWidget->showPreview( true );
     customWidgets()->append ( aDirectionWidget );
   }
@@ -984,9 +988,11 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
     aDirectionWidget->SetMaxSize(1);
     aDirectionWidget->SetSubShType(TopAbs_VERTEX);
     QString anEntry = SMESHGUI_GenericHypothesisCreator::getShapeEntry();
+    QString aMainEntry = SMESHGUI_GenericHypothesisCreator::getMainShapeEntry();
     if ( anEntry == "" )
       anEntry = h->GetObjectEntry();
-    aDirectionWidget->SetMainShapeEntry( anEntry );
+    aDirectionWidget->SetGeomShapeEntry( anEntry );
+    aDirectionWidget->SetMainShapeEntry( aMainEntry );
     SMESH::long_array_var aVec = new SMESH::long_array;
     int vertID = h->GetTriaVertex();
     if(vertID>0) {

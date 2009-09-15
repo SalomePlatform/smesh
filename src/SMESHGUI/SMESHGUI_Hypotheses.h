@@ -68,6 +68,9 @@ public:
   QString                      getShapeEntry() const { return myShapeEntry; }
   void                         setShapeEntry( const QString& theEntry );
 
+  QString                      getMainShapeEntry() const { return myMainShapeEntry; }
+  void                         setMainShapeEntry( const QString& theEntry ) { myMainShapeEntry = theEntry; }
+
 signals:
   void                         finished( int );
 
@@ -126,6 +129,7 @@ private:
   bool                         myIsCreate;
   QtxDialog*                   myDlg;
   QString                      myShapeEntry;
+  QString                      myMainShapeEntry;
 };
 
 class SMESHGUI_HypothesisDlg : public QtxDialog

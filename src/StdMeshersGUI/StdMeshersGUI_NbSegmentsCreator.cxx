@@ -197,14 +197,16 @@ QFrame* StdMeshersGUI_NbSegmentsCreator::buildFrame()
   row++;
 
   // 8) reverce edge parameters
-  myReversedEdgesBox = new QGroupBox(tr( "SMESH_REVERCE_EDGES" ), fr);
+  myReversedEdgesBox = new QGroupBox(tr( "SMESH_REVERSED_EDGES" ), fr);
   QHBoxLayout* edgeLay = new QHBoxLayout( myReversedEdgesBox );
 
   myDirectionWidget = new StdMeshersGUI_SubShapeSelectorWdg();
-  QString anEntry = getShapeEntry();
-  if ( anEntry == "" )
-    anEntry = h->GetObjectEntry();
-  myDirectionWidget->SetMainShapeEntry( anEntry );
+  QString aGeomEntry = getShapeEntry();
+  QString aMainEntry = getMainShapeEntry();
+  if ( aGeomEntry == "" )
+    aGeomEntry = h->GetObjectEntry();
+  myDirectionWidget->SetGeomShapeEntry( aGeomEntry );
+  myDirectionWidget->SetMainShapeEntry( aMainEntry );
   myDirectionWidget->SetListOfIDs( h->GetReversedEdges() );
   edgeLay->addWidget( myDirectionWidget );
 
