@@ -265,6 +265,8 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
     // apply the algos that do not require descretized boundaries
     // ----------------------------------------------------------
     for ( subIt = smWithAlgoSupportingSubmeshes.rbegin(); subIt != subEnd; ++subIt )
+    {
+      sm = *subIt;
       if ( sm->GetComputeState() == SMESH_subMesh::READY_TO_COMPUTE)
       {
         const TopAbs_ShapeEnum aShType = sm->GetSubShape().ShapeType();
@@ -276,7 +278,7 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
         if ( aShapesId )
           aShapesId->insert( sm->GetId() );
       }
-
+    }
     // -----------------------------------------------
     // mesh the rest subshapes starting from vertices
     // -----------------------------------------------
@@ -403,7 +405,9 @@ bool SMESH_Gen::Evaluate(SMESH_Mesh &          aMesh,
     // ----------------------------------------------------------
     // apply the algos that do not require descretized boundaries
     // ----------------------------------------------------------
-    for ( subIt = smWithAlgoSupportingSubmeshes.rbegin(); subIt != subEnd; ++subIt ) {
+    for ( subIt = smWithAlgoSupportingSubmeshes.rbegin(); subIt != subEnd; ++subIt )
+    {
+      sm = *subIt;
       sm->Evaluate(aResMap);
       if ( aShapesId )
         aShapesId->insert( sm->GetId() );
