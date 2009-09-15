@@ -475,8 +475,10 @@ const char* StdMeshersGUI_SubShapeSelectorWdg::GetMainShapeEntry()
 //=================================================================================
 QList<int> StdMeshersGUI_SubShapeSelectorWdg::GetCorrectedListOfIDs( bool fromSubshapeToMainshape )
 {
-  if ( myMainShape.IsNull() || myGeomShape.IsNull() )
+  if ( ( myMainShape.IsNull() || myGeomShape.IsNull() ) &&  fromSubshapeToMainshape )
     return myListOfIDs;
+  else   if ( ( myMainShape.IsNull() || myGeomShape.IsNull() ) &&  !fromSubshapeToMainshape )
+    return mySelectedIDs;
 
   QList<int> aList;
   TopTools_IndexedMapOfShape   aGeomMap;

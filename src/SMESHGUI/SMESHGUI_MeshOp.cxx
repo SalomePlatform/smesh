@@ -1085,7 +1085,8 @@ void SMESHGUI_MeshOp::createHypothesis(const int theDim,
       if ( aMeshEntry == "" && aGeomEntry == "" ) {
         _PTR(SObject) pObj = studyDS()->FindObjectID( anObjEntry.toLatin1().data() );
         GEOM::GEOM_Object_var aGeomVar = SMESH::GetShapeOnMeshOrSubMesh( pObj );
-        aGeomEntry = aGeomVar->GetStudyEntry();
+        if ( !aGeomVar->_is_nil() )
+          aGeomEntry = aGeomVar->GetStudyEntry();
       }
 
       if ( anObjEntry != "" && aGeomEntry != "" && aMeshEntry == "" ) { // take geometry from submesh
@@ -1099,7 +1100,8 @@ void SMESHGUI_MeshOp::createHypothesis(const int theDim,
             if ( !aMeshVar->_is_nil() ) {
               _PTR(SObject) aMeshSO = SMESH::FindSObject( aMeshVar );
               GEOM::GEOM_Object_var aGeomVar = SMESH::GetShapeOnMeshOrSubMesh( aMeshSO );
-              aMeshEntry = aGeomVar->GetStudyEntry();
+              if ( !aGeomVar->_is_nil() )
+                aMeshEntry = aGeomVar->GetStudyEntry();
             }
           }
         }
@@ -1206,7 +1208,8 @@ void SMESHGUI_MeshOp::onEditHyp( const int theHypType, const int theIndex )
     if ( aMeshEntry == "" && aGeomEntry == "" ) {
       _PTR(SObject) pObj = studyDS()->FindObjectID( anObjEntry.toLatin1().data() );
       GEOM::GEOM_Object_var aGeomVar = SMESH::GetShapeOnMeshOrSubMesh( pObj );
-      aGeomEntry = aGeomVar->GetStudyEntry();
+      if ( !aGeomVar->_is_nil() )
+        aGeomEntry = aGeomVar->GetStudyEntry();
     }
 
     if ( anObjEntry != "" && aGeomEntry != "" && aMeshEntry == "" ) { // take geometry from submesh
@@ -1220,7 +1223,8 @@ void SMESHGUI_MeshOp::onEditHyp( const int theHypType, const int theIndex )
           if ( !aMeshVar->_is_nil() ) {
             _PTR(SObject) aMeshSO = SMESH::FindSObject( aMeshVar );
             GEOM::GEOM_Object_var aGeomVar = SMESH::GetShapeOnMeshOrSubMesh( aMeshSO );
-            aMeshEntry = aGeomVar->GetStudyEntry();
+            if ( !aGeomVar->_is_nil() )
+              aMeshEntry = aGeomVar->GetStudyEntry();
           }
         }
       }
