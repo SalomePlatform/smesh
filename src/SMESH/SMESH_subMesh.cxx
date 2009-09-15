@@ -82,22 +82,22 @@ SMESH_subMesh::SMESH_subMesh(int                  Id,
                              SMESHDS_Mesh *       meshDS,
                              const TopoDS_Shape & aSubShape)
 {
-	_subShape = aSubShape;
-	_subMeshDS = meshDS->MeshElements(_subShape);	// may be null ...
-	_father = father;
-	_Id = Id;
-	_dependenceAnalysed = _alwaysComputed = false;
+        _subShape = aSubShape;
+        _subMeshDS = meshDS->MeshElements(_subShape);   // may be null ...
+        _father = father;
+        _Id = Id;
+        _dependenceAnalysed = _alwaysComputed = false;
 
-	if (_subShape.ShapeType() == TopAbs_VERTEX)
-	{
-		_algoState = HYP_OK;
-		_computeState = READY_TO_COMPUTE;
-	}
-	else
-	{
+        if (_subShape.ShapeType() == TopAbs_VERTEX)
+        {
+                _algoState = HYP_OK;
+                _computeState = READY_TO_COMPUTE;
+        }
+        else
+        {
           _algoState = NO_ALGO;
           _computeState = NOT_READY;
-	}
+        }
 }
 
 //=============================================================================
@@ -392,7 +392,7 @@ const map < int, SMESH_subMesh * >& SMESH_subMesh::DependsOn()
     }
   case TopAbs_COMPSOLID:
     {
-		//MESSAGE("compsolid");
+                //MESSAGE("compsolid");
       for (TopExp_Explorer exp(_subShape, TopAbs_SOLID); exp.More();
            exp.Next())
       {
@@ -448,7 +448,7 @@ const map < int, SMESH_subMesh * >& SMESH_subMesh::DependsOn()
       for (TopExp_Explorer exp(_subShape, TopAbs_VERTEX); exp.More();
            exp.Next())
       {
-			InsertDependence(exp.Current());
+                        InsertDependence(exp.Current());
                       }
       break;
     }
@@ -495,8 +495,8 @@ void SMESH_subMesh::InsertDependence(const TopoDS_Shape aSubShape)
 
 const TopoDS_Shape & SMESH_subMesh::GetSubShape() const
 {
-	//MESSAGE("SMESH_subMesh::GetSubShape");
-	return _subShape;
+        //MESSAGE("SMESH_subMesh::GetSubShape");
+        return _subShape;
 }
 
 
@@ -1148,48 +1148,48 @@ void SMESH_subMesh::CleanDependsOn()
 
 void SMESH_subMesh::DumpAlgoState(bool isMain)
 {
-	int dim = SMESH_Gen::GetShapeDim(_subShape);
+        int dim = SMESH_Gen::GetShapeDim(_subShape);
 //   if (dim < 1) return;
-	if (isMain)
-	{
-		const map < int, SMESH_subMesh * >&subMeshes = DependsOn();
+        if (isMain)
+        {
+                const map < int, SMESH_subMesh * >&subMeshes = DependsOn();
 
-		map < int, SMESH_subMesh * >::const_iterator itsub;
-		for (itsub = subMeshes.begin(); itsub != subMeshes.end(); itsub++)
-		{
-			SMESH_subMesh *sm = (*itsub).second;
-			sm->DumpAlgoState(false);
-		}
-	}
-	int type = _subShape.ShapeType();
-	MESSAGE("dim = " << dim << " type of shape " << type);
-	switch (_algoState)
-	{
-	case NO_ALGO:
-		MESSAGE(" AlgoState = NO_ALGO");
-		break;
-	case MISSING_HYP:
-		MESSAGE(" AlgoState = MISSING_HYP");
-		break;
-	case HYP_OK:
-		MESSAGE(" AlgoState = HYP_OK");
-		break;
-	}
-	switch (_computeState)
-	{
-	case NOT_READY:
-		MESSAGE(" ComputeState = NOT_READY");
-		break;
-	case READY_TO_COMPUTE:
-		MESSAGE(" ComputeState = READY_TO_COMPUTE");
-		break;
-	case COMPUTE_OK:
-		MESSAGE(" ComputeState = COMPUTE_OK");
-		break;
-	case FAILED_TO_COMPUTE:
-		MESSAGE(" ComputeState = FAILED_TO_COMPUTE");
-		break;
-	}
+                map < int, SMESH_subMesh * >::const_iterator itsub;
+                for (itsub = subMeshes.begin(); itsub != subMeshes.end(); itsub++)
+                {
+                        SMESH_subMesh *sm = (*itsub).second;
+                        sm->DumpAlgoState(false);
+                }
+        }
+        int type = _subShape.ShapeType();
+        MESSAGE("dim = " << dim << " type of shape " << type);
+        switch (_algoState)
+        {
+        case NO_ALGO:
+                MESSAGE(" AlgoState = NO_ALGO");
+                break;
+        case MISSING_HYP:
+                MESSAGE(" AlgoState = MISSING_HYP");
+                break;
+        case HYP_OK:
+                MESSAGE(" AlgoState = HYP_OK");
+                break;
+        }
+        switch (_computeState)
+        {
+        case NOT_READY:
+                MESSAGE(" ComputeState = NOT_READY");
+                break;
+        case READY_TO_COMPUTE:
+                MESSAGE(" ComputeState = READY_TO_COMPUTE");
+                break;
+        case COMPUTE_OK:
+                MESSAGE(" ComputeState = COMPUTE_OK");
+                break;
+        case FAILED_TO_COMPUTE:
+                MESSAGE(" ComputeState = FAILED_TO_COMPUTE");
+                break;
+        }
 }
 
 //================================================================================
@@ -1284,13 +1284,13 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
       if ( _algoState == HYP_OK )
         _computeState = READY_TO_COMPUTE;
       break;
-    case COMPUTE:		// nothing to do
+    case COMPUTE:               // nothing to do
       break;
     case CLEAN:
       CleanDependants();
       RemoveSubMeshElementsAndNodes();
       break;
-    case SUBMESH_COMPUTED:	// nothing to do
+    case SUBMESH_COMPUTED:      // nothing to do
       break;
     case SUBMESH_RESTORED:
       ComputeSubMeshStateEngine( SUBMESH_RESTORED );
