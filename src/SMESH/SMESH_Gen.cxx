@@ -50,9 +50,9 @@ using namespace std;
 
 SMESH_Gen::SMESH_Gen()
 {
-	MESSAGE("SMESH_Gen::SMESH_Gen");
-	_localId = 0;
-	_hypId = 0;
+        MESSAGE("SMESH_Gen::SMESH_Gen");
+        _localId = 0;
+        _hypId = 0;
         _segmentation = 10;
 }
 
@@ -64,7 +64,7 @@ SMESH_Gen::SMESH_Gen()
 
 SMESH_Gen::~SMESH_Gen()
 {
-	MESSAGE("SMESH_Gen::~SMESH_Gen");
+        MESSAGE("SMESH_Gen::~SMESH_Gen");
 }
 
 //=============================================================================
@@ -74,26 +74,26 @@ SMESH_Gen::~SMESH_Gen()
 //=============================================================================
 
 /*SMESH_Hypothesis *SMESH_Gen::CreateHypothesis(const char *anHyp, int studyId)
-	throw(SALOME_Exception)
+        throw(SALOME_Exception)
 {
 
-	MESSAGE("CreateHypothesis("<<anHyp<<","<<studyId<<")");
-	// Get studyContext, create it if it does'nt exist, with a SMESHDS_Document
+        MESSAGE("CreateHypothesis("<<anHyp<<","<<studyId<<")");
+        // Get studyContext, create it if it does'nt exist, with a SMESHDS_Document
 
-	StudyContextStruct *myStudyContext = GetStudyContext(studyId);
+        StudyContextStruct *myStudyContext = GetStudyContext(studyId);
 
-	// create a new hypothesis object, store its ref. in studyContext
+        // create a new hypothesis object, store its ref. in studyContext
 
-	SMESH_Hypothesis *myHypothesis = _hypothesisFactory.Create(anHyp, studyId);
-	int hypId = myHypothesis->GetID();
-	myStudyContext->mapHypothesis[hypId] = myHypothesis;
-	SCRUTE(studyId);
-	SCRUTE(hypId);
+        SMESH_Hypothesis *myHypothesis = _hypothesisFactory.Create(anHyp, studyId);
+        int hypId = myHypothesis->GetID();
+        myStudyContext->mapHypothesis[hypId] = myHypothesis;
+        SCRUTE(studyId);
+        SCRUTE(hypId);
 
-	// store hypothesis in SMESHDS document
+        // store hypothesis in SMESHDS document
 
-	myStudyContext->myDocument->AddHypothesis(myHypothesis);
-	return myHypothesis;
+        myStudyContext->myDocument->AddHypothesis(myHypothesis);
+        return myHypothesis;
 }*/
 
 //=============================================================================
@@ -113,10 +113,10 @@ SMESH_Mesh* SMESH_Gen::CreateMesh(int theStudyId, bool theIsEmbeddedMode)
 
   // create a new SMESH_mesh object
   SMESH_Mesh *aMesh = new SMESH_Mesh(_localId++,
-				     theStudyId,
-				     this,
-				     theIsEmbeddedMode,
-				     aStudyContext->myDocument);
+                                     theStudyId,
+                                     this,
+                                     theIsEmbeddedMode,
+                                     aStudyContext->myDocument);
   aStudyContext->mapMesh[_localId] = aMesh;
 
   return aMesh;
@@ -131,8 +131,8 @@ SMESH_Mesh* SMESH_Gen::CreateMesh(int theStudyId, bool theIsEmbeddedMode)
 bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
                         const TopoDS_Shape &  aShape,
                         const bool            anUpward,
-			const ::MeshDimension aDim,
-			TSetOfInt*            aShapesId)
+                        const ::MeshDimension aDim,
+                        TSetOfInt*            aShapesId)
 {
   MESSAGE("SMESH_Gen::Compute");
 
@@ -166,7 +166,7 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
         // clear compute state to not show previous compute errors
         //  if preview invoked less dimension less than previous
         smToCompute->ComputeStateEngine( SMESH_subMesh::CHECK_COMPUTE_STATE );
-	continue;
+        continue;
       }
 
       if (smToCompute->GetComputeState() == SMESH_subMesh::READY_TO_COMPUTE)
@@ -176,7 +176,7 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
       if (smToCompute->GetComputeState() == SMESH_subMesh::FAILED_TO_COMPUTE)
         ret = false;
       else if ( aShapesId )
-	aShapesId->insert( smToCompute->GetId() );
+        aShapesId->insert( smToCompute->GetId() );
     }
     return ret;
   }
@@ -201,7 +201,7 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
       
       // check for preview dimension limitations
       if ( aShapesId && aShapeDim > (int)aDim )
-	continue;
+        continue;
 
       SMESH_Algo* algo = GetAlgo( aMesh, aSubShape );
       if ( algo && !algo->NeedDescretBoundary() )
@@ -209,11 +209,11 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
         if ( algo->SupportSubmeshes() )
           smWithAlgoSupportingSubmeshes.push_back( smToCompute );
         else
-	{
+        {
           smToCompute->ComputeStateEngine( SMESH_subMesh::COMPUTE );
-	  if ( aShapesId )
-	    aShapesId->insert( smToCompute->GetId() );
-	}
+          if ( aShapesId )
+            aShapesId->insert( smToCompute->GetId() );
+        }
       }
     }
     // ------------------------------------------------------------
@@ -240,14 +240,14 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
         SMESH_subMesh* smToCompute = smIt->next();
 
         const TopoDS_Shape& aSubShape = smToCompute->GetSubShape();
-	const int aShapeDim = GetShapeDim( aSubShape );
+        const int aShapeDim = GetShapeDim( aSubShape );
         //if ( aSubShape.ShapeType() == TopAbs_VERTEX ) continue;
-	if ( aShapeDim < 1 ) continue;
+        if ( aShapeDim < 1 ) continue;
 
-	// check for preview dimension limitations
-	if ( aShapesId && GetShapeDim( aSubShape.ShapeType() ) > (int)aDim )
-	  continue;
-	
+        // check for preview dimension limitations
+        if ( aShapesId && GetShapeDim( aSubShape.ShapeType() ) > (int)aDim )
+          continue;
+        
         SMESH_HypoFilter filter( SMESH_HypoFilter::IsAlgo() );
         filter
           .And( SMESH_HypoFilter::IsApplicableTo( aSubShape ))
@@ -267,14 +267,14 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
     for ( subIt = smWithAlgoSupportingSubmeshes.rbegin(); subIt != subEnd; ++subIt )
       if ( sm->GetComputeState() == SMESH_subMesh::READY_TO_COMPUTE)
       {
-	const TopAbs_ShapeEnum aShType = sm->GetSubShape().ShapeType();
-	// check for preview dimension limitations
-	if ( aShapesId && GetShapeDim( aShType ) > (int)aDim )
-	  continue;
+        const TopAbs_ShapeEnum aShType = sm->GetSubShape().ShapeType();
+        // check for preview dimension limitations
+        if ( aShapesId && GetShapeDim( aShType ) > (int)aDim )
+          continue;
 
         sm->ComputeStateEngine( SMESH_subMesh::COMPUTE );
-	if ( aShapesId )
-	  aShapesId->insert( sm->GetId() );
+        if ( aShapesId )
+          aShapesId->insert( sm->GetId() );
       }
 
     // -----------------------------------------------
@@ -297,8 +297,8 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
 bool SMESH_Gen::Evaluate(SMESH_Mesh &          aMesh,
                          const TopoDS_Shape &  aShape,
                          MapShapeNbElems&      aResMap,
-			 const bool            anUpward,
-			 TSetOfInt*            aShapesId)
+                         const bool            anUpward,
+                         TSetOfInt*            aShapesId)
 {
   MESSAGE("SMESH_Gen::Evaluate");
 
@@ -323,14 +323,14 @@ bool SMESH_Gen::Evaluate(SMESH_Mesh &          aMesh,
       //if ( !aMesh.HasShapeToMesh() && aShType == TopAbs_VERTEX )
       //  continue;
       if ( !aMesh.HasShapeToMesh() ) {
-	if( aShType == TopAbs_VERTEX || aShType == TopAbs_WIRE ||
-	    aShType == TopAbs_SHELL )
-	  continue;
+        if( aShType == TopAbs_VERTEX || aShType == TopAbs_WIRE ||
+            aShType == TopAbs_SHELL )
+          continue;
       }
 
       smToCompute->Evaluate(aResMap);
       if( aShapesId )
-	aShapesId->insert( smToCompute->GetId() );
+        aShapesId->insert( smToCompute->GetId() );
     }
     return ret;
   }
@@ -352,12 +352,12 @@ bool SMESH_Gen::Evaluate(SMESH_Mesh &          aMesh,
       if ( algo && !algo->NeedDescretBoundary() ) {
         if ( algo->SupportSubmeshes() ) {
           smWithAlgoSupportingSubmeshes.push_back( smToCompute );
-	}
+        }
         else {
           smToCompute->Evaluate(aResMap);
-	  if ( aShapesId )
-	    aShapesId->insert( smToCompute->GetId() );
-	}
+          if ( aShapesId )
+            aShapesId->insert( smToCompute->GetId() );
+        }
       }
     }
     // ------------------------------------------------------------
@@ -382,10 +382,10 @@ bool SMESH_Gen::Evaluate(SMESH_Mesh &          aMesh,
         SMESH_subMesh* smToCompute = smIt->next();
 
         const TopoDS_Shape& aSubShape = smToCompute->GetSubShape();
-	const int aShapeDim = GetShapeDim( aSubShape );
-	if ( aShapeDim < 1 ) continue;
+        const int aShapeDim = GetShapeDim( aSubShape );
+        if ( aShapeDim < 1 ) continue;
 
-	//const TopAbs_ShapeEnum aShType = smToCompute->GetSubShape().ShapeType();
+        //const TopAbs_ShapeEnum aShType = smToCompute->GetSubShape().ShapeType();
 
         SMESH_HypoFilter filter( SMESH_HypoFilter::IsAlgo() );
         filter
@@ -406,7 +406,7 @@ bool SMESH_Gen::Evaluate(SMESH_Mesh &          aMesh,
     for ( subIt = smWithAlgoSupportingSubmeshes.rbegin(); subIt != subEnd; ++subIt ) {
       sm->Evaluate(aResMap);
       if ( aShapesId )
-	aShapesId->insert( sm->GetId() );
+        aShapesId->insert( sm->GetId() );
     }
 
     // -----------------------------------------------
@@ -493,7 +493,7 @@ static bool checkConformIgnoredAlgos(SMESH_Mesh&               aMesh,
           checkConformIgnoredAlgos (aMesh, (*revItSub).second, aGlobIgnoAlgo,
                                     algo, checkConform2, aCheckedMap, theErrors);
           int key = (*revItSub).first;
-	  SMESH_subMesh* sm = (*revItSub).second;
+          SMESH_subMesh* sm = (*revItSub).second;
           if ( aCheckedMap.find( key ) == aCheckedMap.end() )
           {
             aCheckedMap[ key ] = sm;
@@ -823,16 +823,16 @@ SMESH_Algo *SMESH_Gen::GetAlgo(SMESH_Mesh &         aMesh,
 
 StudyContextStruct *SMESH_Gen::GetStudyContext(int studyId)
 {
-	// Get studyContext, create it if it does'nt exist, with a SMESHDS_Document
+        // Get studyContext, create it if it does'nt exist, with a SMESHDS_Document
 
-	if (_mapStudyContext.find(studyId) == _mapStudyContext.end())
-	{
-		_mapStudyContext[studyId] = new StudyContextStruct;
-		_mapStudyContext[studyId]->myDocument = new SMESHDS_Document(studyId);
-	}
-	StudyContextStruct *myStudyContext = _mapStudyContext[studyId];
+        if (_mapStudyContext.find(studyId) == _mapStudyContext.end())
+        {
+                _mapStudyContext[studyId] = new StudyContextStruct;
+                _mapStudyContext[studyId]->myDocument = new SMESHDS_Document(studyId);
+        }
+        StudyContextStruct *myStudyContext = _mapStudyContext[studyId];
 //   ASSERT(_mapStudyContext.find(studyId) != _mapStudyContext.end());
-	return myStudyContext;
+        return myStudyContext;
 }
 
 // //=============================================================================
@@ -897,6 +897,6 @@ int SMESH_Gen::GetShapeDim(const TopAbs_ShapeEnum & aShapeType)
 
 int SMESH_Gen::GetANewId()
 {
-	//MESSAGE("SMESH_Gen::GetANewId");
-	return _hypId++;
+        //MESSAGE("SMESH_Gen::GetANewId");
+        return _hypId++;
 }
