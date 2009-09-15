@@ -947,6 +947,12 @@ SMESH_Hypothesis::Hypothesis_Status
       break;
     }
     case REMOVE_FATHER_ALGO: {
+      // IPAL21346. Edges not removed when Netgen 1d-2d is removed from a SOLID.
+      // CLEAN was not called at event REMOVE_ALGO because the algo is not applicable to SOLID.
+      algo = dynamic_cast<SMESH_Algo*> (anHyp);
+      if (!algo->NeedDescretBoundary())
+        needFullClean = true;
+
       algo = gen->GetAlgo((*_father), _subShape);
       if (algo == NULL)  // no more applying algo on father
       {
