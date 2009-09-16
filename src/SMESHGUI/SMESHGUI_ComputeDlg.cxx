@@ -1166,6 +1166,8 @@ SMESHGUI_ComputeOp::~SMESHGUI_ComputeOp()
 void SMESHGUI_ComputeOp::startOperation()
 {
   SMESHGUI_BaseComputeOp::startOperation();
+  if (myMesh->_is_nil())
+    return;
   computeMesh();
 }
 
@@ -1268,6 +1270,8 @@ void SMESHGUI_PrecomputeOp::startOperation()
   }
 
   SMESHGUI_BaseComputeOp::startOperation();
+  if (myMesh->_is_nil())
+    return;
 
   // disconnect slot from preview dialog to have Apply from results of compute operation only 
   disconnect( myDlg, SIGNAL( dlgOk() ), this, SLOT( onOk() ) );
@@ -1647,6 +1651,8 @@ void SMESHGUI_EvaluateOp::startOperation()
 {
   SMESHGUI_BaseComputeOp::evaluateDlg();
   SMESHGUI_BaseComputeOp::startOperation();
+  if (myMesh->_is_nil())
+    return;
   evaluateMesh();
 }
 
