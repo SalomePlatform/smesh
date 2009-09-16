@@ -532,7 +532,11 @@ QString SMESHGUI_GenericHypothesisCreator::helpPage() const
     aHelpFileName = "projection_algos_page.html";
   else if ( aHypType == "NumberOfLayers")
     aHelpFileName = "radial_prism_algo_page.html";
+  else if ( aHypType == "NumberOfLayers2D")
+    aHelpFileName = "radial_prism_algo_page.html";
   else if ( aHypType == "LayerDistribution")
+    aHelpFileName = "radial_prism_algo_page.html";
+  else if ( aHypType == "LayerDistribution2D")
     aHelpFileName = "radial_prism_algo_page.html";
   else if ( aHypType == "SegmentLengthAroundVertex")
     aHelpFileName = "segments_around_vertex_algo_page.html";
