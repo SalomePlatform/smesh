@@ -56,8 +56,7 @@ There is also a number of more specific algorithms:
 <li>\subpage radial_prism_algo_page "for meshing geometrical objects with cavities"</li>
 <li>\subpage segments_around_vertex_algo_page "for defining the local size of elements around a certain node"</li>
 <li>\subpage prism_3d_algo_page "for meshing prismatic shapes"</li>
-<li>\subpage radial_quadrangle_1D2D_algo_page "for meshing special 2d
-faces (circles and part of circles)"</li>
+<li>\subpage radial_quadrangle_1D2D_algo_page "for meshing special 2d faces (circles and part of circles)"</li>
 </ul>
 
 \ref constructing_meshes_page "Constructing meshes" page describes in
