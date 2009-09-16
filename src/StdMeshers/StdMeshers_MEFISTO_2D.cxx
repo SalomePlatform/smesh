@@ -332,10 +332,17 @@ bool StdMeshers_MEFISTO_2D::Evaluate(SMESH_Mesh & aMesh,
       P1 = P2;
     }
   }
-  if ( NbSeg > 0 )
-    aLen = aLen/NbSeg; // middle length
-  else
-    aLen = Precision::Infinite();
+  if(NbSeg<1) {
+    std::vector<int> aResVec(SMDSEntity_Last);
+    for(int i=SMDSEntity_Node; i<SMDSEntity_Last; i++) aResVec[i] = 0;
+    SMESH_subMesh * sm = aMesh.GetSubMesh(aShape);
+    aResMap.insert(std::make_pair(sm,aResVec));
+    SMESH_ComputeErrorPtr& smError = sm->GetComputeError();
+    smError.reset( new SMESH_ComputeError(COMPERR_ALGO_FAILED,
+                                          "Submesh can not be evaluated",this));
+    return false;
+  }
+  aLen = aLen/NbSeg; // middle length
 
   _edgeLength = Precision::Infinite();
   double tmpLength = Min( _edgeLength, aLen );
