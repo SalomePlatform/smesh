@@ -58,7 +58,7 @@ class SMESH_I_EXPORT SMESH_Mesh_i:
 public:
   SMESH_Mesh_i( PortableServer::POA_ptr thePOA,
                 SMESH_Gen_i*            myGen_i,
-	        CORBA::Long             studyId );
+              CORBA::Long             studyId );
 
   virtual ~SMESH_Mesh_i();
 
