@@ -15,7 +15,7 @@ Mesh item, or invoke from popup menu.
 The algorithm detects boundary volume faces without connections to
 other volumes and create 2D mesh elements on face nodes. If mesh
 already contains 2D elements on detected nodes - no new element
-created. The result dilog shows mesh information statistoc about new
+created. The result dialog shows mesh information statistic about new
 created 2D mesh elements.
 </ol>
 
