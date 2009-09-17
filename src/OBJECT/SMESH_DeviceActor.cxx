@@ -546,7 +546,6 @@ SMESH_DeviceActor
     aDataSet->Delete();
   }else if(FreeNodes* aFreeNodes = dynamic_cast<FreeNodes*>(theFunctor.get())){
     myExtractUnstructuredGrid->SetModeOfChanging(VTKViewer_ExtractUnstructuredGrid::eAdding);
-    vtkUnstructuredGrid* aGrid = myVisualObj->GetUnstructuredGrid();
     vtkIdType aNbNodes = myVisualObj->GetNbEntities(SMDSAbs_Node);
     for( vtkIdType i = 0; i < aNbNodes; i++ ){
       vtkIdType anObjId = myVisualObj->GetNodeObjId(i);

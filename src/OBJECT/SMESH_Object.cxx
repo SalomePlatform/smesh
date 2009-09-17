@@ -678,7 +678,7 @@ void SMESH_MeshObj::UpdateFunctor( const SMESH::Controls::FunctorPtr& theFunctor
 //=================================================================================
 bool SMESH_MeshObj::IsNodePrs() const
 {
-  return myClient->NbEdges() == 0 &&myClient->NbFaces() == 0 && myClient->NbVolumes() == 0 ;
+  return myClient->Nb0DElements() == 0 && myClient->NbEdges() == 0 && myClient->NbFaces() == 0 && myClient->NbVolumes() == 0 ;
 }
 
 
