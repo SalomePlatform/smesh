@@ -78,8 +78,8 @@ class SMESH_EXPORT  SMESH_Gen
   bool Compute(::SMESH_Mesh &        aMesh,
                const TopoDS_Shape &  aShape,
                const bool            anUpward=false,
-	       const ::MeshDimension aDim=::MeshDim_3D,
-	       TSetOfInt*            aShapesId=0);
+             const ::MeshDimension aDim=::MeshDim_3D,
+             TSetOfInt*            aShapesId=0);
 
   /*!
    * \brief evaluates size of prospective mesh on a shape 
@@ -89,8 +89,8 @@ class SMESH_EXPORT  SMESH_Gen
    * \retval bool - is a success
    */
   bool Evaluate(::SMESH_Mesh &        aMesh,
-		const TopoDS_Shape &  aShape,
-		MapShapeNbElems&      aResMap,
+            const TopoDS_Shape &  aShape,
+            MapShapeNbElems&      aResMap,
                 const bool            anUpward=false,
                 TSetOfInt*            aShapesId=0);
 
@@ -158,7 +158,7 @@ class SMESH_EXPORT  SMESH_Gen
 
  private:
 
-  int _localId;				// unique Id of created objects, within SMESH_Gen entity
+  int _localId;                     // unique Id of created objects, within SMESH_Gen entity
   std::map < int, StudyContextStruct * >_mapStudyContext;
 
   // hypotheses managing
