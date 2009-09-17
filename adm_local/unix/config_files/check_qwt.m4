@@ -44,15 +44,23 @@ AC_ARG_WITH(qwt_inc,
       AC_MSG_RESULT("select $withval as path to QWT includes")
     ])
 
+libqwt_name=qwt
 if test -z $QWTHOME; then
   AC_MSG_RESULT(QWTHOME not defined)
   exist_ok=no	
   if test "x$exist_ok" = "xno"; then
-     for d in /usr/local /usr ; do
-        AC_CHECK_FILE(${d}/lib${LIB_LOCATION_SUFFIX}/libqwt.so,exist_ok=yes,exist_ok=no)
+     for d in /usr /usr/local ; do
+        for extension in qwt qwt-qt4; do
+           AC_CHECK_FILE(${d}/lib${LIB_LOCATION_SUFFIX}/lib${extension}.so,exist_ok=yes,exist_ok=no)
+           if test "x$exist_ok" = "xyes"; then
+              QWTHOME=$d
+              AC_MSG_RESULT(lib${extension}.so detected in $d/lib)
+              libqwt_name=${extension}
+              dnl  No break here, libqwt-qt4.so is choosen even if libqwt.so is present: if 2 are present, in most of cases, libqwt.so is Qt3 version.
+           fi
+        done
         if test "x$exist_ok" = "xyes"; then
-           QWTHOME=$d
-           AC_MSG_RESULT(libqwt.so detected in $d/lib)
+           break
         fi
      done
   fi
@@ -75,6 +83,9 @@ if test -z $QWTHOME; then
         fi
         if test ! -f $QWT_INCDIR/qwt.h ; then
           QWT_INCDIR=/usr/lib/qt4/include/qwt
+        fi
+        if test ! -f $QWT_INCDIR/qwt.h ; then
+          QWT_INCDIR=/usr/include/qwt-qt4
         fi
      fi
   else
@@ -116,9 +127,9 @@ else
     LIBS_old=$LIBS
     LIBS="$LIBS $QT_LIBS"
     if test "x$QWTHOME" = "x/usr" ; then
-      LIBS="$LIBS -lqwt"
+      LIBS="$LIBS -l${libqwt_name}"
     else
-      LIBS="$LIBS -L$QWTHOME/lib -lqwt"
+      LIBS="$LIBS -L$QWTHOME/lib -l${libqwt_name}"
     fi
 
     CXXFLAGS_old=$CXXFLAGS
@@ -145,9 +156,9 @@ else
     else
       AC_MSG_RESULT(yes)
       if test "x$QWTHOME" = "x/usr" ; then
-        QWT_LIBS=" -lqwt"
+        QWT_LIBS=" -l${libqwt_name}"
       else
-        QWT_LIBS="-L$QWTHOME/lib -lqwt"
+        QWT_LIBS="-L$QWTHOME/lib -l${libqwt_name}"
       fi
     fi
 
