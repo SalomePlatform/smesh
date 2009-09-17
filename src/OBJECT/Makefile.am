@@ -36,7 +36,6 @@ salomeinclude_HEADERS = \
 	SMESH_DeviceActor.h \
 	SMESH_PreviewActorsCollection.h \
 	SMESH_ExtractGeometry.h \
-	SMESH_ActorUtils.h \
 	SMESH_FaceOrientationFilter.h
 
 # Libraries targets
