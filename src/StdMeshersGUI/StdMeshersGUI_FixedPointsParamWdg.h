@@ -34,10 +34,10 @@
 #include <QStringList>
 
 class SMESHGUI;
+class QtxDoubleSpinBox;
 class QPushButton;
 class QLineEdit;
 class QCheckBox;
-class QDoubleSpinBox;
 class QListWidget;
 class QListWidgetItem;
 class QTreeWidget;
@@ -67,6 +67,7 @@ private slots:
   void                           onAdd(); 
   void                           onRemove(); 
   void                           onCheckBoxChanged();
+  void                           updateState();
 
 private:
   void                           clear();
@@ -83,7 +84,7 @@ private:
 private:
   QListWidget*                   myListWidget;
   QTreeWidget*                   myTreeWidget;
-  QDoubleSpinBox*                mySpinBox;
+  QtxDoubleSpinBox*              mySpinBox;
   QPushButton*                   myAddButton;
   QPushButton*                   myRemoveButton;
   QCheckBox*                     mySameValues;

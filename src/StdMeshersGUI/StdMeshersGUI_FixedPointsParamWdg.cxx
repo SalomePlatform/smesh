@@ -25,6 +25,9 @@
 //
 #include "StdMeshersGUI_FixedPointsParamWdg.h"
 
+#include <QtxIntSpinBox.h>
+#include <QtxDoubleSpinBox.h>
+
 // Qt includes
 #include <QPushButton>
 #include <QIntValidator>
@@ -36,7 +39,6 @@
 #include <QTreeWidgetItem>
 #include <QCheckBox>
 #include <QLineEdit>
-#include <QDoubleSpinBox>
 #include <QItemDelegate>
 #include <QKeyEvent>
 
@@ -44,8 +46,11 @@
 #define MARGIN 0
 #define SAME_TEXT "-/-"
 
+#define TOLERANCE 1e-7
+#define EQUAL_DBL(a,b) (fabs(a-b)<TOLERANCE)
+
 /*
- * function : Tree Widget Item Delegate
+ * class : Tree Widget Item Delegate
  * purpose  : Custom item delegate
  */
 
@@ -74,7 +79,7 @@ QWidget* StdMeshersGUI_FixedPointsParamWdg::LineDelegate::createEditor( QWidget*
 {
   QWidget* w = 0;
   if ( (index.column() == 1 ) ) {
-    QSpinBox* sb = new QSpinBox( parent );
+    QtxIntSpinBox* sb = new QtxIntSpinBox( parent );
     sb->setFrame( false );
     sb->setRange( 1, 999);
     w = sb;
@@ -87,8 +92,8 @@ void StdMeshersGUI_FixedPointsParamWdg::LineDelegate::setModelData( QWidget* edi
 								    QAbstractItemModel* model, 
 								    const QModelIndex& index ) const
 {
-  model->setData( index, qobject_cast<QSpinBox*>( editor )->value(), Qt::EditRole );
-  model->setData( index, qobject_cast<QSpinBox*>( editor )->value(), Qt::UserRole );
+  model->setData( index, qobject_cast<QtxIntSpinBox*>( editor )->value(), Qt::EditRole );
+  model->setData( index, qobject_cast<QtxIntSpinBox*>( editor )->value(), Qt::UserRole );
 }
 
 //================================================================================
@@ -107,7 +112,7 @@ StdMeshersGUI_FixedPointsParamWdg
   
   myListWidget   = new QListWidget( this );
   myTreeWidget   = new QTreeWidget( this );
-  mySpinBox      = new QDoubleSpinBox( this );
+  mySpinBox      = new QtxDoubleSpinBox( this );
   myAddButton    = new QPushButton( tr( "SMESH_BUT_ADD" ),    this );
   myRemoveButton = new QPushButton( tr( "SMESH_BUT_REMOVE" ), this );      
   mySameValues   = new QCheckBox( tr("SMESH_SAME_NB_SEGMENTS"), this);
@@ -136,10 +141,15 @@ StdMeshersGUI_FixedPointsParamWdg
 
   mySpinBox->setRange( 0, 1 );
   mySpinBox->setSingleStep( 0.1 );
+  mySpinBox->setDecimals( 4 );
+  mySpinBox->setPrecision( 4 );
+  myListWidget->setMinimumWidth( 70 );
 
-  connect( myAddButton,    SIGNAL(clicked()), SLOT(onAdd()));
-  connect( myRemoveButton, SIGNAL(clicked()), SLOT(onRemove()));
-  connect( mySameValues,   SIGNAL(stateChanged(int)), SLOT(onCheckBoxChanged()));
+  connect( myAddButton,    SIGNAL( clicked() ),              SLOT( onAdd() ) );
+  connect( myRemoveButton, SIGNAL( clicked() ),              SLOT( onRemove() ) );
+  connect( mySameValues,   SIGNAL( stateChanged( int ) ),    SLOT( onCheckBoxChanged() ) );
+  connect( mySpinBox,      SIGNAL( valueChanged( double ) ), SLOT( updateState() ) );
+  connect( myListWidget,   SIGNAL( itemSelectionChanged() ), SLOT( updateState() ) );
   myListWidget->installEventFilter( this );
 
   clear();
@@ -182,6 +192,7 @@ void StdMeshersGUI_FixedPointsParamWdg::clear()
   myTreeWidget->addTopLevelItem( newTreeItem( 0, 1 ) );
   mySpinBox->setValue( 0. );
   onCheckBoxChanged();
+  updateState();
 }
 
 //=================================================================================
@@ -249,7 +260,7 @@ void StdMeshersGUI_FixedPointsParamWdg::addPoint( double v)
     int idx = myTreeWidget->topLevelItemCount()-1;
     for ( int i = 0 ; i < myListWidget->count(); i++ ) {
       double lv = point( i );
-      if ( lv == v ) { toInsert = false; break; }
+      if ( EQUAL_DBL(lv,v) ) { toInsert = false; break; }
       else if ( lv > v ) {
 	idx = i; break;
       }
@@ -263,6 +274,7 @@ void StdMeshersGUI_FixedPointsParamWdg::addPoint( double v)
       onCheckBoxChanged();
     }
   }
+  updateState();
 }
 
 //=================================================================================
@@ -281,6 +293,7 @@ void StdMeshersGUI_FixedPointsParamWdg::removePoints()
 								 idx > myListWidget->count()-1 ? 1 : point( idx ) ) );
   }
   onCheckBoxChanged();
+  updateState();
 }
 
 double StdMeshersGUI_FixedPointsParamWdg::point( int idx ) const
@@ -315,6 +328,16 @@ void StdMeshersGUI_FixedPointsParamWdg::onCheckBoxChanged()
 }
 
 //=================================================================================
+// function : updateState()
+// purpose  : Update widgets state
+//=================================================================================
+void StdMeshersGUI_FixedPointsParamWdg::updateState()
+{
+  myAddButton->setEnabled( mySpinBox->value() > 0 && mySpinBox->value() < 1 );
+  myRemoveButton->setEnabled( myListWidget->selectedItems().count() > 0 );
+}
+
+//=================================================================================
 // function : GetListOfPoints
 // purpose  : Called to get the list of Edges IDs
 //=================================================================================
@@ -325,7 +348,6 @@ SMESH::double_array_var StdMeshersGUI_FixedPointsParamWdg::GetListOfPoints()
   anArray->length( size );
   for (int i = 0; i < size; i++) {
     anArray[i] = point(i);
-    //    printf ("Point %f \n", anArray[i]);
   }
   return anArray;
 }
@@ -339,7 +361,6 @@ void StdMeshersGUI_FixedPointsParamWdg::SetListOfPoints( SMESH::double_array_var
   clear();
   for ( int i = 0; i < thePoints->length(); i++ ) {
     addPoint( thePoints[ i ] );
-    //    printf ("Add Point %f \n", thePoints[ i ]);
   }
 }
 
@@ -354,7 +375,6 @@ SMESH::long_array_var StdMeshersGUI_FixedPointsParamWdg::GetListOfSegments()
   anArray->length( size );
   for (int i = 0; i < size; i++) {
     anArray[i] = nbSegments( i );
-    //    printf ("Segments %d \n", anArray[i] );
   }
   return anArray;
 }
@@ -369,6 +389,5 @@ void StdMeshersGUI_FixedPointsParamWdg::SetListOfSegments( SMESH::long_array_var
     mySameValues->setChecked(true);
   for ( int i = 0; i < theSegments->length(); i++ ) {
     setNbSegments( i, theSegments[i] );
-    //    printf ("\nadd Segment = %d\n", theSegments[i]);
   }
 }
