@@ -193,7 +193,7 @@ public:
                          const SMDS_MeshNode* n2,
                          const SMDS_MeshNode* n3,
                          const int id=0, 
-			 const bool force3d = false);
+                         const bool force3d = false);
   /*!
    * Creates quadratic or linear quadrangle
    */
@@ -202,7 +202,7 @@ public:
                          const SMDS_MeshNode* n3,
                          const SMDS_MeshNode* n4,
                          const int id = 0,
-			 const bool force3d = false);
+                         const bool force3d = false);
   /*!
    * Creates quadratic or linear tetraahedron
    */
@@ -211,7 +211,7 @@ public:
                              const SMDS_MeshNode* n3,
                              const SMDS_MeshNode* n4,
                              const int id = 0,
-			     const bool force3d = true);
+                             const bool force3d = true);
   /*!
    * Creates quadratic or linear pyramid
    */
@@ -221,7 +221,7 @@ public:
                              const SMDS_MeshNode* n4,
                              const SMDS_MeshNode* n5,
                              const int id = 0,
-			     const bool force3d = true);
+                             const bool force3d = true);
   /*!
    * Creates quadratic or linear pentahedron
    */
@@ -232,7 +232,7 @@ public:
                              const SMDS_MeshNode* n5,
                              const SMDS_MeshNode* n6,
                              const int id = 0, 
-			     const bool force3d = true);
+                             const bool force3d = true);
   /*!
    * Creates quadratic or linear hexahedron
    */
@@ -245,7 +245,7 @@ public:
                              const SMDS_MeshNode* n7,
                              const SMDS_MeshNode* n8,
                              const int id = 0, 
-			     bool force3d = true);
+                             bool force3d = true);
   /*!
    * \brief Return U of the given node on the edge
    */
