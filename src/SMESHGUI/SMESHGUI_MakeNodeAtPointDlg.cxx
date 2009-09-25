@@ -208,7 +208,7 @@ QWidget* SMESHGUI_MakeNodeAtPointDlg::createMainFrame (QWidget* theParent)
   connect(myAutoSearchChkBox, SIGNAL (toggled(bool)), this, SLOT(ButtonToggled(bool)));
 
   myMoveRBtn->setChecked(true);
-  myIdBtn->setDown(true);
+  myIdBtn->setChecked(true);
   myAutoSearchChkBox->setChecked(true);
 
   return aFrame;
@@ -228,11 +228,11 @@ void SMESHGUI_MakeNodeAtPointDlg::ButtonToggled (bool on)
     if ( aSender == myCoordBtn ) // button to set coord by node selection
     {
       if ( myIdBtn->isEnabled() )
-        myIdBtn->setDown( !on );
+        myIdBtn->setChecked( !on );
     }
     else if ( aSender == myIdBtn ) // button to select a node to move
     {
-      myCoordBtn->setDown( !on );
+      myCoordBtn->setChecked( !on );
     }
     else if ( aSender == myMoveRBtn ) // move node method
     {
@@ -241,7 +241,7 @@ void SMESHGUI_MakeNodeAtPointDlg::ButtonToggled (bool on)
     else if ( aSender == myCreateRBtn ) // create node method
     {
       myNodeToMoveGrp->setEnabled( false );
-      myCoordBtn->setDown( true ); 
+      myCoordBtn->setChecked( true ); 
     }
   }      
   if ( aSender == myAutoSearchChkBox ) // automatic node search
@@ -249,9 +249,9 @@ void SMESHGUI_MakeNodeAtPointDlg::ButtonToggled (bool on)
     if ( on ) {
       myId->setText("");
       myId->setReadOnly ( true );
-      myIdBtn->setDown( false );
+      myIdBtn->setChecked( false );
       myIdBtn->setEnabled( false );
-      myCoordBtn->setDown( true );
+      myCoordBtn->setChecked( true );
     }
     else {
       myId->setReadOnly ( false );
@@ -394,7 +394,7 @@ bool SMESHGUI_MakeNodeAtPointOp::onApply()
       return true;
 
     int aResult = 0;
-    if ( myDlg->myCreateRBtn->isDown() )
+    if ( myDlg->myCreateRBtn->isChecked() )
     {
       aResult = aMeshEditor->AddNode(myDlg->myX->GetValue(),
                                      myDlg->myY->GetValue(),
@@ -444,7 +444,7 @@ bool SMESHGUI_MakeNodeAtPointOp::isValid( QString& msg )
 {
   bool ok = true;
   if ( myMeshActor &&
-       myDlg->myMoveRBtn->isDown() &&
+       myDlg->myMoveRBtn->isChecked() &&
        !myDlg->myAutoSearchChkBox->isChecked() )
   {
     ok = false;
@@ -482,7 +482,7 @@ void SMESHGUI_MakeNodeAtPointOp::onSelectionDone()
     SMESH_Actor* aMeshActor = SMESH::FindActorByEntry(anIO->getEntry());
 
     if (!aMeshActor) { // coord by geom
-      if ( myDlg->myCoordBtn->isDown() ) {
+      if ( myDlg->myCoordBtn->isChecked() ) {
         GEOM::GEOM_Object_var geom = SMESH::IObjectToInterface<GEOM::GEOM_Object>(anIO);
         if ( !geom->_is_nil() ) {
           TopoDS_Vertex aShape;
@@ -510,14 +510,14 @@ void SMESHGUI_MakeNodeAtPointOp::onSelectionDone()
       if (SMDS_Mesh* aMesh = aMeshActor->GetObject()->GetMesh()) {
         if (const SMDS_MeshNode* aNode = aMesh->FindNode(aString.toInt())) {
           myNoPreview = true;
-          if ( myDlg->myCoordBtn->isDown() ) { // set coord
+          if ( myDlg->myCoordBtn->isChecked() ) { // set coord
             myDlg->myX->SetValue(aNode->X());
             myDlg->myY->SetValue(aNode->Y());
             myDlg->myZ->SetValue(aNode->Z());
             myNoPreview = false;
             redisplayPreview();
           }
-          else if ( myDlg->myIdBtn->isDown() &&
+          else if ( myDlg->myIdBtn->isChecked() &&
                     myDlg->myIdBtn->isEnabled() ) { // set node to move
             myDlg->myId->setText(aString);
             myNoPreview = false;
@@ -545,7 +545,7 @@ void SMESHGUI_MakeNodeAtPointOp::redisplayPreview()
   SMESH::MeshPreviewStruct_var aMeshPreviewStruct;
 
   bool moveShown = false;
-  if ( myDlg->myMoveRBtn->isDown() && // Move method
+  if ( myDlg->myMoveRBtn->isChecked() && // Move method
        myMeshActor)
   {
     const bool autoSearch = myDlg->myAutoSearchChkBox->isChecked();
