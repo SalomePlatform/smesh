@@ -48,6 +48,8 @@
 
 #define TOLERANCE 1e-7
 #define EQUAL_DBL(a,b) (fabs(a-b)<TOLERANCE)
+#define LT_DBL(a,b) ((a<b)&&!EQUAL_DBL(a,b))
+#define GT_DBL(a,b) ((a>b)&&!EQUAL_DBL(a,b))
 
 /*
  * class : Tree Widget Item Delegate
@@ -255,13 +257,13 @@ QString StdMeshersGUI_FixedPointsParamWdg::treeItemText( double v1, double v2 )
 //=================================================================================
 void StdMeshersGUI_FixedPointsParamWdg::addPoint( double v)
 {
-  if ( v > 0 && v < 1) {
+  if ( GT_DBL(v, 0.0) && LT_DBL(v, 1.0)) {
     bool toInsert = true;
     int idx = myTreeWidget->topLevelItemCount()-1;
     for ( int i = 0 ; i < myListWidget->count(); i++ ) {
       double lv = point( i );
-      if ( EQUAL_DBL(lv,v) ) { toInsert = false; break; }
-      else if ( lv > v ) {
+      if ( EQUAL_DBL(lv, v) ) { toInsert = false; break; }
+      else if ( GT_DBL(lv, v) ) {
 	idx = i; break;
       }
     }
@@ -333,7 +335,8 @@ void StdMeshersGUI_FixedPointsParamWdg::onCheckBoxChanged()
 //=================================================================================
 void StdMeshersGUI_FixedPointsParamWdg::updateState()
 {
-  myAddButton->setEnabled( mySpinBox->value() > 0 && mySpinBox->value() < 1 );
+  double v = mySpinBox->value();
+  myAddButton->setEnabled( GT_DBL(v, 0.0) && LT_DBL(v, 1.0) );
   myRemoveButton->setEnabled( myListWidget->selectedItems().count() > 0 );
 }
 
