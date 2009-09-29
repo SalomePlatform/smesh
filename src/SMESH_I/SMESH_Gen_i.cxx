@@ -4195,6 +4195,7 @@ void SMESH_Gen_i::Close( SALOMEDS::SComponent_ptr theComponent )
 //     context->myDocument = 0;
 //   }
   
+  myCurrentStudy = SALOMEDS::Study::_nil();
   return;
 }
 
@@ -4316,6 +4317,11 @@ void SMESH_Gen_i::SetName(const char* theIOR,
   }
 }
 
+int SMESH_Gen_i::GetCurrentStudyID()
+{
+  return myCurrentStudy->_is_nil() || myCurrentStudy->_non_existent() ? -1 : myCurrentStudy->StudyId();
+}
+    
 //=============================================================================
 /*! 
  *  SMESHEngine_factory

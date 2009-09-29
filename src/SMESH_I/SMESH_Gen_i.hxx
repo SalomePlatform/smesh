@@ -498,8 +498,7 @@ public:
   }
 
   // Get current study ID
-  int GetCurrentStudyID()
-  { return myCurrentStudy->_is_nil() ? -1 : myCurrentStudy->StudyId(); }
+  int GetCurrentStudyID();
 
   /*!
    * \brief Find SObject for an algo
