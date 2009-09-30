@@ -83,7 +83,7 @@ private:
   void                      onEditGroup();
 
   void                      FindGravityCenter( TColStd_MapOfInteger&, 
-					       std::list<gp_XYZ>& );
+                                               std::list<gp_XYZ>& );
   // add the centers of gravity of ElemsIdMap elements to the GrCentersXYZ list
 
 private:

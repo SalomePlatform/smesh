@@ -68,9 +68,9 @@ class SMESHGUI_EXPORT SMESHGUI_GroupDlg : public QDialog
 
 public:
   SMESHGUI_GroupDlg( SMESHGUI*,
-		     SMESH::SMESH_Mesh_ptr = SMESH::SMESH_Mesh::_nil() );
+                     SMESH::SMESH_Mesh_ptr = SMESH::SMESH_Mesh::_nil() );
   SMESHGUI_GroupDlg( SMESHGUI*,
-		     SMESH::SMESH_GroupBase_ptr,
+                     SMESH::SMESH_GroupBase_ptr,
                      const bool theIsConvert = false );
   ~SMESHGUI_GroupDlg();
   
