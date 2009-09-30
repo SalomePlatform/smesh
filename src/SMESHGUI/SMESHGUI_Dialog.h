@@ -44,7 +44,7 @@ class SMESHGUI_EXPORT SMESHGUI_Dialog : public LightApp_Dialog
   Q_OBJECT
   
 public:
-  SMESHGUI_Dialog( QWidget* = 0, const bool = false, const bool = false, 
+  SMESHGUI_Dialog( QWidget* = 0, const bool modal = false, const bool allowResize = false, 
                    const int = OK | Close | Apply | Help );
   virtual ~SMESHGUI_Dialog();
 
