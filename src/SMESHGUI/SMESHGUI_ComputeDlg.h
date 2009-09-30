@@ -79,18 +79,18 @@ protected:
   SMESHGUI_ComputeDlg*           computeDlg() const;
   void                           computeMesh();
   void                           showComputeResult( const bool,
-						    const bool,
-						    SMESH::compute_error_array_var&,
-						    const bool,
-						    const QString& );
+                                                    const bool,
+                                                    SMESH::compute_error_array_var&,
+                                                    const bool,
+                                                    const QString& );
   SMESHGUI_ComputeDlg*           evaluateDlg() const;
   void                           evaluateMesh();
   void                           showEvaluateResult(const SMESH::long_array& theRes,
-						    const bool,
-						    const bool,
-						    SMESH::compute_error_array_var&,
-						    const bool,
-						    const QString&);
+                                                    const bool,
+                                                    const bool,
+                                                    SMESH::compute_error_array_var&,
+                                                    const bool,
+                                                    const QString&);
     
 protected slots:
   virtual bool                   onApply();
