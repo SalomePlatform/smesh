@@ -367,7 +367,7 @@ bool SMESHGUI_MakeNodeAtPointOp::onApply()
 
   if ( !myMeshActor ) {
     SUIT_MessageBox::warning( dlg(), tr( "SMESH_WRN_WARNING" ),
-			      tr("INVALID_MESH") );
+                              tr("INVALID_MESH") );
     dlg()->show();
     return false;
   }
@@ -376,7 +376,7 @@ bool SMESHGUI_MakeNodeAtPointOp::onApply()
   if ( !isValid( msg ) ) { // node id is invalid
     if( !msg.isEmpty() )
       SUIT_MessageBox::warning( dlg(), tr( "SMESH_WRN_WARNING" ),
-				tr("INVALID_ID") );
+                                tr("INVALID_ID") );
     dlg()->show();
     return false;
   }
@@ -386,7 +386,7 @@ bool SMESHGUI_MakeNodeAtPointOp::onApply()
     SMESH::SMESH_Mesh_var aMesh = SMESH::GetMeshByIO(myMeshActor->getIO());
     if (aMesh->_is_nil()) {
       SUIT_MessageBox::information(SMESHGUI::desktop(), tr("SMESH_ERROR"),
-				   tr("SMESHG_NO_MESH") );
+                                   tr("SMESHG_NO_MESH") );
       return true;
     }
     SMESH::SMESH_MeshEditor_var aMeshEditor = aMesh->GetMeshEditor();

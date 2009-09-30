@@ -52,9 +52,9 @@ public:
   ~SMESHGUI_SpinBox();
 
   void       RangeStepAndValidator( double         = -1000000.0,
-				    double         = +1000000.0,
-				    double         = 100.0,
-				    unsigned short = 3 );
+                                    double         = +1000000.0,
+                                    double         = 100.0,
+                                    unsigned short = 3 );
   void              SetValue( double );
   double            GetValue() const;
   QString           GetString() const;
