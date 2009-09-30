@@ -103,18 +103,18 @@ protected:
 
   //! Hilight object in VTK viewer
   void                          highlight( const Handle( SALOME_InteractiveObject )&,
-					   const bool, const bool = true );
+                                           const bool, const bool = true );
                                
   //! Select some nodes or elements in VTK
   void                          addOrRemoveIndex( const Handle( SALOME_InteractiveObject )&,
-						  const TColStd_MapOfInteger&, const bool );
+                                                  const TColStd_MapOfInteger&, const bool );
 
   SVTK_ViewWindow*              viewWindow() const;
   SVTK_Selector*                selector() const;
 
   //! Get names, types and ids of selected objects
   virtual void                  selected( QStringList&, 
-					  SMESHGUI_Dialog::TypesList&, QStringList& ) const;
+                                          SMESHGUI_Dialog::TypesList&, QStringList& ) const;
 
   //! Find type by id
   virtual int                   typeById( const QString&, const EntityType ) const;
