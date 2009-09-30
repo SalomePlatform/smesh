@@ -488,7 +488,7 @@ bool SMESHGUI_TranslationDlg::ClickOnApply()
         else
           aMeshEditor->Translate(anElementsId, aVector, false);
 	if( !myMesh->_is_nil())
-	  myMesh->SetParameters(SMESHGUI::JoinObjectParameters(aParameters));
+	  myMesh->SetParameters( aParameters.join(":").toLatin1().constData() );
         break;
       case COPY_ELEMS_BUTTON:
         if ( makeGroups ) {
@@ -505,7 +505,7 @@ bool SMESHGUI_TranslationDlg::ClickOnApply()
             aMeshEditor->Translate(anElementsId, aVector, true);
         }
 	if( !myMesh->_is_nil())
-	  myMesh->SetParameters(SMESHGUI::JoinObjectParameters(aParameters));
+	  myMesh->SetParameters( aParameters.join(":").toLatin1().constData() );
         break;
       case MAKE_MESH_BUTTON:
         SMESH::SMESH_Mesh_var mesh; 
@@ -516,7 +516,7 @@ bool SMESHGUI_TranslationDlg::ClickOnApply()
           mesh = aMeshEditor->TranslateMakeMesh(anElementsId, aVector, makeGroups,
                                                 LineEditNewMesh->text().toLatin1().data());
 	if( !mesh->_is_nil())
-	  mesh->SetParameters(SMESHGUI::JoinObjectParameters(aParameters));
+	  mesh->SetParameters( aParameters.join(":").toLatin1().constData() );
       }
     } catch (...) {
     }

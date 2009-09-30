@@ -544,7 +544,7 @@ bool SMESHGUI_RevolutionDlg::ClickOnApply()
 	  aMeshEditor->RotationSweep(anElementsId.inout(), anAxis, anAngle, aNbSteps, aTolerance);
       }
 
-      myMesh->SetParameters( SMESHGUI::JoinObjectParameters(aParameters) );
+      myMesh->SetParameters( aParameters.join(":").toLatin1().constData() );
     } catch (...) {
     }
 

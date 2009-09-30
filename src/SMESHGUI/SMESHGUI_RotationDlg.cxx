@@ -415,7 +415,7 @@ bool SMESHGUI_RotationDlg::ClickOnApply()
         else
             aMeshEditor->Rotate(anElementsId, anAxis, anAngle, false);
 	if( !myMesh->_is_nil())
-	  myMesh->SetParameters(SMESHGUI::JoinObjectParameters(aParameters));
+	  myMesh->SetParameters( aParameters.join(":").toLatin1().constData() );
         break;
       case COPY_ELEMS_BUTTON:
         if ( makeGroups ) {
@@ -432,7 +432,7 @@ bool SMESHGUI_RotationDlg::ClickOnApply()
             aMeshEditor->Rotate(anElementsId, anAxis, anAngle, true);
         }
 	if( !myMesh->_is_nil())
-	  myMesh->SetParameters(SMESHGUI::JoinObjectParameters(aParameters));
+	  myMesh->SetParameters( aParameters.join(":").toLatin1().constData() );
         break;
       case MAKE_MESH_BUTTON:
         SMESH::SMESH_Mesh_var mesh;
@@ -443,7 +443,7 @@ bool SMESHGUI_RotationDlg::ClickOnApply()
           mesh = aMeshEditor->RotateMakeMesh(anElementsId, anAxis, anAngle, makeGroups,
                                              LineEditNewMesh->text().toLatin1().data());
 	if( !mesh->_is_nil())
-	  mesh->SetParameters(SMESHGUI::JoinObjectParameters(aParameters));
+	  mesh->SetParameters( aParameters.join(":").toLatin1().constData() );
       }
     } catch (...) {
     }

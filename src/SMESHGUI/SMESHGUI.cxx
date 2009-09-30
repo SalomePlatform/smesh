@@ -1299,16 +1299,6 @@ SalomeApp_Study* SMESHGUI::activeStudy()
  *
  */
 //=============================================================================
-char* SMESHGUI::JoinObjectParameters(const QStringList& theParametersList)
-{
-  return theParametersList.join(":").toLatin1().data();
-}
-
-//=============================================================================
-/*!
- *
- */
-//=============================================================================
 bool SMESHGUI::DefineDlgPosition(QWidget * aDlg, int &x, int &y)
 {
   /* Here the position is on the bottom right corner - 10 */

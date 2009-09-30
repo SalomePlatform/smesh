@@ -379,7 +379,7 @@ bool StdMeshersGUI_NbSegmentsCreator::storeParamsToHypo( const NbSegmentsHypothe
     //the function will be checked with old conversion mode, so that it may occurs
     //unexpected errors for user
 
-    h->SetParameters(SMESHGUI::JoinObjectParameters(aVariablesList));
+    h->SetParameters(aVariablesList.join(":").toLatin1().constData());
   }
   catch(const SALOME::SALOME_Exception& ex)
   {

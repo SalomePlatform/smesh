@@ -346,7 +346,7 @@ bool SMESHGUI_MoveNodesDlg::onApply()
     aParameters << myX->text();
     aParameters << myY->text();
     aParameters << myZ->text();
-    aMesh->SetParameters( SMESHGUI::JoinObjectParameters(aParameters) );
+    aMesh->SetParameters( aParameters.join(":").toLatin1().constData() );
   } catch (...) {
   }
 

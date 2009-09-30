@@ -558,7 +558,7 @@ bool SMESHGUI_ExtrusionDlg::ClickOnApply()
 	  aMeshEditor->ExtrusionSweep(myElementsId.inout(), aVector, aNbSteps);
       }
 
-      myMesh->SetParameters( SMESHGUI::JoinObjectParameters(aParameters) );
+      myMesh->SetParameters( aParameters.join(":").toLatin1().constData() );
 
     } catch (...) {
     }

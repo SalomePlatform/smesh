@@ -380,7 +380,7 @@ bool SMESHGUI_SmoothingDlg::ClickOnApply()
 					anIterationLimit, aMaxAspectRatio, aMethod);
       }
 
-      myMesh->SetParameters( SMESHGUI::JoinObjectParameters(aParameters) );
+      myMesh->SetParameters( aParameters.join(":").toLatin1().constData() );
 
     } catch (...) {
     }

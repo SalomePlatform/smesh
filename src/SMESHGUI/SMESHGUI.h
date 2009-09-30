@@ -70,7 +70,6 @@ public :
   static SUIT_ResourceMgr*        resourceMgr();
   static SUIT_Desktop*            desktop();
   static SalomeApp_Study*         activeStudy();
-  static char*                    JoinObjectParameters(const QStringList& theParametersList);
   
   bool                            isActiveStudyLocked();
 
