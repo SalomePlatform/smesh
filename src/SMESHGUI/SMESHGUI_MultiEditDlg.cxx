@@ -100,8 +100,8 @@
 //=======================================================================
 SMESHGUI_MultiEditDlg
 ::SMESHGUI_MultiEditDlg(SMESHGUI* theModule,
-			const int theMode,
-			const bool the3d2d):
+                        const int theMode,
+                        const bool the3d2d):
   QDialog(SMESH::GetDesktop(theModule)),
   mySelector(SMESH::GetViewWindow(theModule)->GetSelector()),
   mySelectionMgr(SMESH::GetSelectionMgr(theModule)),
@@ -192,7 +192,7 @@ QWidget* SMESHGUI_MultiEditDlg::createMainFrame (QWidget* theParent, const bool 
 
   myToAllChk = new QCheckBox(tr("TO_ALL"), mySelGrp);
   mySelGrpLayout->addWidget(myToAllChk, mySelGrpLayout->rowCount(), 0, 
-			    1, mySelGrpLayout->columnCount());
+                            1, mySelGrpLayout->columnCount());
 
   // Split/Join criterion group
   myCriterionGrp = new QGroupBox(tr("SPLIT_JOIN_CRITERION"), aMainGrp);
@@ -440,30 +440,30 @@ SMESH::long_array_var SMESHGUI_MultiEditDlg::getIds()
       // skl 07.02.2006
       SMDS_Mesh* aMesh = myActor->GetObject()->GetMesh();
       if( myFilterType == SMESH::TriaFilter || 
-	  myFilterType == SMESH::QuadFilter ||
-	  myFilterType == SMESH::FaceFilter ) {
-	SMDS_FaceIteratorPtr it = aMesh->facesIterator();
-	while(it->more()) {
-	  const SMDS_MeshFace* f = it->next();
-	  if(myFilterType == SMESH::FaceFilter) {
-	    myIds.Add(f->GetID());
-	  }
-	  else if( myFilterType==SMESH::TriaFilter &&
-		   ( f->NbNodes()==3 || f->NbNodes()==6 ) ) {
-	    myIds.Add(f->GetID());
-	  }
-	  else if( myFilterType==SMESH::QuadFilter &&
-		   ( f->NbNodes()==4 || f->NbNodes()==8 ) ) {
-	    myIds.Add(f->GetID());
-	  }
-	}
+          myFilterType == SMESH::QuadFilter ||
+          myFilterType == SMESH::FaceFilter ) {
+        SMDS_FaceIteratorPtr it = aMesh->facesIterator();
+        while(it->more()) {
+          const SMDS_MeshFace* f = it->next();
+          if(myFilterType == SMESH::FaceFilter) {
+            myIds.Add(f->GetID());
+          }
+          else if( myFilterType==SMESH::TriaFilter &&
+                   ( f->NbNodes()==3 || f->NbNodes()==6 ) ) {
+            myIds.Add(f->GetID());
+          }
+          else if( myFilterType==SMESH::QuadFilter &&
+                   ( f->NbNodes()==4 || f->NbNodes()==8 ) ) {
+            myIds.Add(f->GetID());
+          }
+        }
       }
       else if(myFilterType == SMESH::VolumeFilter) {
-	SMDS_VolumeIteratorPtr it = aMesh->volumesIterator();
-	while(it->more()) {
-	  const SMDS_MeshVolume* f = it->next();
-	  myIds.Add(f->GetID());
-	}
+        SMDS_VolumeIteratorPtr it = aMesh->volumesIterator();
+        while(it->more()) {
+          const SMDS_MeshVolume* f = it->next();
+          myIds.Add(f->GetID());
+        }
       }
       /* commented by skl 07.02.2006
       TVisualObjPtr aVisualObj = anActor->GetObject();
@@ -472,14 +472,14 @@ SMESH::long_array_var SMESHGUI_MultiEditDlg::getIds()
         for (int i = 0, n = aGrid->GetNumberOfCells(); i < n; i++) {
           vtkCell* aCell = aGrid->GetCell(i);
           if (aCell != 0) {
-	    vtkTriangle* aTri = vtkTriangle::SafeDownCast(aCell);
-	    vtkQuad*     aQua = vtkQuad::SafeDownCast(aCell);
-	    vtkPolygon*  aPG  = vtkPolygon::SafeDownCast(aCell);
+            vtkTriangle* aTri = vtkTriangle::SafeDownCast(aCell);
+            vtkQuad*     aQua = vtkQuad::SafeDownCast(aCell);
+            vtkPolygon*  aPG  = vtkPolygon::SafeDownCast(aCell);
 
-	    vtkCell3D*   a3d  = vtkCell3D::SafeDownCast(aCell);
-	    vtkConvexPointSet* aPH = vtkConvexPointSet::SafeDownCast(aCell);
+            vtkCell3D*   a3d  = vtkCell3D::SafeDownCast(aCell);
+            vtkConvexPointSet* aPH = vtkConvexPointSet::SafeDownCast(aCell);
 
-	    if (aTri && myFilterType == SMESHGUI_TriaFilter ||
+            if (aTri && myFilterType == SMESHGUI_TriaFilter ||
                 aQua && myFilterType == SMESHGUI_QuadFilter ||
                 (aTri || aQua || aPG) && myFilterType == SMESHGUI_FaceFilter ||
                 (a3d || aPH) && myFilterType == SMESHGUI_VolumeFilter) {
@@ -540,10 +540,10 @@ void SMESHGUI_MultiEditDlg::onHelp()
     platform = "application";
 #endif
     SUIT_MessageBox::warning(this, tr("WRN_WARNING"),
-			     tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
-			     arg(app->resourceMgr()->stringValue("ExternalBrowser", 
-								 platform)).
-			     arg(myHelpFileName));
+                             tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
+                             arg(app->resourceMgr()->stringValue("ExternalBrowser", 
+                                                                 platform)).
+                             arg(myHelpFileName));
   }
 }
 
@@ -594,10 +594,10 @@ void SMESHGUI_MultiEditDlg::onSelectionDone()
     if (aNbItems > 0) {
       QStringList anElements = aListStr.split(" ", QString::SkipEmptyParts);
       for (QStringList::iterator it = anElements.begin(); it != anElements.end(); ++it) {
-	QList<QListWidgetItem*> items = myListBox->findItems(*it, Qt::MatchExactly);
-	QListWidgetItem* anItem;
-	foreach(anItem, items)
-	  anItem->setSelected(true);
+        QList<QListWidgetItem*> items = myListBox->findItems(*it, Qt::MatchExactly);
+        QListWidgetItem* anItem;
+        foreach(anItem, items)
+          anItem->setSelected(true);
       }
     }
     myMesh = SMESH::GetMeshByIO(anIO);
@@ -1180,7 +1180,7 @@ bool SMESHGUI_UnionOfTrianglesDlg::isValid (const bool theMess)
     if( theMess ) {
       QString str( tr( "SMESH_INCORRECT_INPUT" ) );
       if ( !msg.isEmpty() )
-	str += "\n" + msg;
+        str += "\n" + msg;
       SUIT_MessageBox::critical( this, tr( "SMESH_ERROR" ), str );
     }
     return false;

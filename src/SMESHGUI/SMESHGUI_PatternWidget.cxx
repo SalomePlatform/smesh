@@ -95,9 +95,9 @@ void SMESHGUI_PatternWidget::paintEvent( QPaintEvent* )
     QPoint aQPnt = mapCoords( aPoint.x, aPoint.y );
 
     painter.drawPie( aQPnt.x() - Radius, aQPnt.y() - Radius, 
-		     Radius * 2, Radius * 2, 0, 360 * 16 );
+                     Radius * 2, Radius * 2, 0, 360 * 16 );
     painter.drawText( aQPnt.x() + Shift, aQPnt.y() - Shift, 
-		      QString::number( i+1 ) );
+                      QString::number( i+1 ) );
   }
 
   // Draw lines

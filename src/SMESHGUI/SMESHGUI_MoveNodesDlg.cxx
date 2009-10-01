@@ -278,7 +278,7 @@ bool SMESHGUI_MoveNodesDlg::isValid (const bool theMess)
   if (myId->text().isEmpty()) {
     if (theMess)
       SUIT_MessageBox::information(this, tr("SMESH_WARNING"),
-				   tr("NODE_ID_IS_NOT_DEFINED"));
+                                   tr("NODE_ID_IS_NOT_DEFINED"));
     return false;
   }
 
@@ -291,7 +291,7 @@ bool SMESHGUI_MoveNodesDlg::isValid (const bool theMess)
     if( theMess ) {
       QString str( tr( "SMESH_INCORRECT_INPUT" ) );
       if ( !msg.isEmpty() )
-	str += "\n" + msg;
+        str += "\n" + msg;
       SUIT_MessageBox::critical( this, tr( "SMESH_ERROR" ), str );
     }
     return false;
@@ -329,7 +329,7 @@ bool SMESHGUI_MoveNodesDlg::onApply()
   SMESH::SMESH_Mesh_var aMesh = SMESH::GetMeshByIO(myMeshActor->getIO());
   if (aMesh->_is_nil()) {
     SUIT_MessageBox::information(this, tr("SMESH_ERROR"),
-				 tr("SMESHG_NO_MESH"));
+                                 tr("SMESHG_NO_MESH"));
     return false;
   }
 
@@ -398,17 +398,17 @@ void SMESHGUI_MoveNodesDlg::onHelp()
   if (app) 
     app->onHelpContextModule(mySMESHGUI ? app->moduleName(mySMESHGUI->moduleName()) : QString(""), myHelpFileName);
   else {
-		QString platform;
+                QString platform;
 #ifdef WIN32
-		platform = "winapplication";
+                platform = "winapplication";
 #else
-		platform = "application";
+                platform = "application";
 #endif
     SUIT_MessageBox::warning(this, tr("WRN_WARNING"),
-			     tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
-			     arg(app->resourceMgr()->stringValue("ExternalBrowser", 
-								 platform)).
-			     arg(myHelpFileName));
+                             tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
+                             arg(app->resourceMgr()->stringValue("ExternalBrowser", 
+                                                                 platform)).
+                             arg(myHelpFileName));
   }
 }
 
@@ -435,13 +435,13 @@ void SMESHGUI_MoveNodesDlg::onTextChange (const QString& theNewText)
       myBusy = false;
 
       if(const SMDS_MeshElement *anElem = aMesh->FindElement(theNewText.toInt())) {
-	TColStd_MapOfInteger aListInd;
-	aListInd.Add(anElem->GetID());
-	mySelector->AddOrRemoveIndex(anIO,aListInd, false);
-	if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
-	  aViewWindow->highlight(anIO,true,true);
-	
-	onSelectionDone();
+        TColStd_MapOfInteger aListInd;
+        aListInd.Add(anElem->GetID());
+        mySelector->AddOrRemoveIndex(anIO,aListInd, false);
+        if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+          aViewWindow->highlight(anIO,true,true);
+        
+        onSelectionDone();
       }
     }
   }

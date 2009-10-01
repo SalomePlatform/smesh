@@ -46,13 +46,13 @@ namespace SMESH
     if(!CORBA::is_nil(anObj)){
       SMESH_Mesh_var aMesh = SMESH_Mesh::_narrow(anObj);
       if(!CORBA::is_nil(aMesh))
-	return aMesh;
+        return aMesh;
       SMESH_GroupBase_var aGroup = SMESH_GroupBase::_narrow(anObj);
       if(!CORBA::is_nil(aGroup))
-	return aGroup->GetMesh();
+        return aGroup->GetMesh();
       SMESH_subMesh_var aSubMesh = SMESH_subMesh::_narrow(anObj);
       if(!CORBA::is_nil(aSubMesh))
-	return aSubMesh->GetFather();
+        return aSubMesh->GetFather();
     }
     return SMESH_Mesh::_nil();
   }
@@ -65,17 +65,17 @@ namespace SMESH
       QString name = baseName;
       while ( !aStudy->FindObjectByName( name.toLatin1().data(), "SMESH" ).empty() ) {
         int nb = 0;
-	QStringList names = name.split("_", QString::KeepEmptyParts);
-	if ( names.count() > 0 ) {
-	  bool ok;
-	  int index = names.last().toInt( &ok );
-	  if ( ok ) {
-	    nb = index;
-	    names.removeLast();
-	  }
-	}
-	names.append( QString::number( nb+1 ) );
-	name = names.join( "_" );
+        QStringList names = name.split("_", QString::KeepEmptyParts);
+        if ( names.count() > 0 ) {
+          bool ok;
+          int index = names.last().toInt( &ok );
+          if ( ok ) {
+            nb = index;
+            names.removeLast();
+          }
+        }
+        names.append( QString::number( nb+1 ) );
+        name = names.join( "_" );
       }
       return name;
     }

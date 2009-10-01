@@ -52,7 +52,7 @@ public:
   virtual ~SMESHGUI_GenericHypothesisCreator();
 
   void                         create( SMESH::SMESH_Hypothesis_ptr,
-				       const QString&, QWidget*, QObject*, const QString& );
+                                       const QString&, QWidget*, QObject*, const QString& );
   void                         create( bool, const QString&, QWidget*, QObject*, const QString& );
   void                         edit( SMESH::SMESH_Hypothesis_ptr, const QString&, QWidget*, QObject*, const QString& );
   void                         setInitParamsHypothesis(SMESH::SMESH_Hypothesis_ptr);
@@ -105,7 +105,7 @@ protected:
   static  QString              stdParamValues( const ListOfStdParams& );
   virtual void                 attuneStdWidget( QWidget*, const int ) const;
   virtual QWidget*             getCustomWidget( const StdParam&, 
-						QWidget*, const int ) const;
+                                                QWidget*, const int ) const;
   virtual bool                 getParamFromCustomWidget( StdParam&, QWidget* ) const;
   virtual void                 valueChanged( QWidget* );
   virtual QString              caption() const;
@@ -166,7 +166,7 @@ public:
                   const QList<int>&, const bool,
                   const QStringList&, const QStringList&,
                   const QStringList&, const QStringList&,
-		  const bool=true, const bool supportSub=false );
+                  const bool=true, const bool supportSub=false );
 
   QString TypeName;        //!< hypothesis type name
   QString PluginName;      //!< plugin name

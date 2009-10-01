@@ -88,7 +88,7 @@ SMESHGUI_EXPORT
     {
       CORBA::Object_var anObj = DataOwnerToObject(theDataOwner);
       if(!CORBA::is_nil(anObj))
-	return TInterface::_narrow(anObj);
+        return TInterface::_narrow(anObj);
       return TInterface::_nil();
     }
 
@@ -114,7 +114,7 @@ SMESHGUI_EXPORT
 
 SMESHGUI_EXPORT
   CORBA::Object_var SObjectToObject( _PTR(SObject),
-				     _PTR(Study) );
+                                     _PTR(Study) );
 
 SMESHGUI_EXPORT
   CORBA::Object_var SObjectToObject( _PTR(SObject) );
@@ -124,7 +124,7 @@ SMESHGUI_EXPORT
     {
       CORBA::Object_var anObj = SObjectToObject(theSObject);
       if(!CORBA::is_nil(anObj))
-	return TInterface::_narrow(anObj);
+        return TInterface::_narrow(anObj);
       return TInterface::_nil();
     }
 
@@ -136,7 +136,7 @@ SMESHGUI_EXPORT
     {
       CORBA::Object_var anObj = IObjectToObject(theIO);
       if(!CORBA::is_nil(anObj))
-	return TInterface::_narrow(anObj);
+        return TInterface::_narrow(anObj);
       return TInterface::_nil();
     }
 
@@ -148,7 +148,7 @@ SMESHGUI_EXPORT
     {
       CORBA::Object_var anObj = IORToObject( theIOR );
       if ( !CORBA::is_nil( anObj ) )
-	return TInterface::_narrow( anObj );
+        return TInterface::_narrow( anObj );
       return TInterface::_nil();
     }
 

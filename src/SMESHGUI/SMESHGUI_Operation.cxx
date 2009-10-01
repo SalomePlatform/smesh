@@ -120,7 +120,7 @@ bool SMESHGUI_Operation::isReadyToStart() const
   else if ( getSMESHGUI() == 0 )
   {
     SUIT_MessageBox::warning( desktop(), tr( "SMESH_WRN_WARNING" ),
-			      tr( "NO_MODULE" ) );
+                              tr( "NO_MODULE" ) );
     return false;
   }
   else if ( isStudyLocked() )
@@ -200,10 +200,10 @@ void SMESHGUI_Operation::onHelp()
     platform = "application";
 #endif
     SUIT_MessageBox::warning( desktop(), tr("WRN_WARNING"),
-			      tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
-			      arg(app->resourceMgr()->stringValue("ExternalBrowser", 
-								  platform)).
-			      arg(myHelpFileName) );
+                              tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
+                              arg(app->resourceMgr()->stringValue("ExternalBrowser", 
+                                                                  platform)).
+                              arg(myHelpFileName) );
   }
 }
 
@@ -231,7 +231,7 @@ bool SMESHGUI_Operation::isStudyLocked( const bool theMess ) const
     {
       if ( theMess )
         SUIT_MessageBox::warning( SMESHGUI::desktop(), tr( "WRN_WARNING" ),
-				  tr( "WRN_STUDY_LOCKED" ) );
+                                  tr( "WRN_STUDY_LOCKED" ) );
       return true;
     }
   }
@@ -260,7 +260,7 @@ bool SMESHGUI_Operation::isValid( SUIT_Operation* theOtherOp ) const
 
   return theOtherOp && theOtherOp->inherits( "SMESHGUI_Operation" ) &&
          ( !anOps.contains( theOtherOp->metaObject()->className() ) || 
-	   anOps.contains( metaObject()->className() ) );
+           anOps.contains( metaObject()->className() ) );
 
   return true;
 }

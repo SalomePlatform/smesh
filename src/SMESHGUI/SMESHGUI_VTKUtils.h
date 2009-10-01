@@ -69,7 +69,7 @@ SMESHGUI_EXPORT
   //----------------------------------------------------------------------------
 SMESHGUI_EXPORT
   SVTK_ViewWindow* GetViewWindow( const SalomeApp_Module* = 0,
-				  bool = false );
+                                  bool = false );
 SMESHGUI_EXPORT
   SVTK_ViewWindow* FindVtkViewWindow( SUIT_ViewManager*, SUIT_ViewWindow* );
 SMESHGUI_EXPORT
@@ -112,7 +112,7 @@ SMESHGUI_EXPORT
 
 SMESHGUI_EXPORT
   bool UpdateView( SUIT_ViewWindow*, EDisplaing, const char* = "" );
-SMESHGUI_EXPORT		   
+SMESHGUI_EXPORT            
   bool UpdateView( EDisplaing, const char* = "" );
 
 SMESHGUI_EXPORT
@@ -153,31 +153,31 @@ SMESHGUI_EXPORT
   //----------------------------------------------------------------------------
 SMESHGUI_EXPORT  
   int GetNameOfSelectedNodes( SVTK_Selector*,
-			      const Handle(SALOME_InteractiveObject)&,
-			      QString& );
+                              const Handle(SALOME_InteractiveObject)&,
+                              QString& );
 SMESHGUI_EXPORT
   int GetNameOfSelectedElements( SVTK_Selector*,
-				 const Handle(SALOME_InteractiveObject)&,
-				 QString& );
+                                 const Handle(SALOME_InteractiveObject)&,
+                                 QString& );
 SMESHGUI_EXPORT
   int GetEdgeNodes( SVTK_Selector*, const TVisualObjPtr&, int&, int& );
 
   //----------------------------------------------------------------------------
 SMESHGUI_EXPORT  
   int GetNameOfSelectedNodes( LightApp_SelectionMgr*,
-			      const Handle(SALOME_InteractiveObject)&,
-			      QString& );
+                              const Handle(SALOME_InteractiveObject)&,
+                              QString& );
 SMESHGUI_EXPORT
   int GetNameOfSelectedNodes( LightApp_SelectionMgr*, QString& );
 SMESHGUI_EXPORT
   int GetNameOfSelectedElements( LightApp_SelectionMgr*,
-				 const Handle(SALOME_InteractiveObject)&,
-				 QString& );
+                                 const Handle(SALOME_InteractiveObject)&,
+                                 QString& );
 SMESHGUI_EXPORT
   int GetNameOfSelectedElements( LightApp_SelectionMgr*, QString& );
 SMESHGUI_EXPORT
   int GetSelected( LightApp_SelectionMgr*, TColStd_IndexedMapOfInteger&, 
-		   const bool = true );
+                   const bool = true );
 
 SMESHGUI_EXPORT
   int GetEdgeNodes( LightApp_SelectionMgr*, int&, int& );

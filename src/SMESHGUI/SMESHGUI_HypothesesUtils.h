@@ -65,7 +65,7 @@ namespace SMESH
   QStringList GetAvailableHypotheses( const bool, 
                                       const int = -1, 
                                       const bool = false,
-				      const bool = true);
+                                      const bool = true);
   SMESHGUI_EXPORT
   QStringList GetHypothesesSets();
 
@@ -77,12 +77,12 @@ namespace SMESH
 
   SMESHGUI_EXPORT
   bool IsAvailableHypothesis( const HypothesisData*,
-			      const QString&,
-			      bool& );
+                              const QString&,
+                              bool& );
 
   SMESHGUI_EXPORT
   bool IsCompatibleAlgorithm( const HypothesisData*,
-			      const HypothesisData* );
+                              const HypothesisData* );
 
   SMESHGUI_EXPORT
   SMESHGUI_GenericHypothesisCreator* GetHypothesisCreator( const QString& );
@@ -103,7 +103,7 @@ namespace SMESH
 
   SMESHGUI_EXPORT
   bool RemoveHypothesisOrAlgorithmOnMesh( _PTR(SObject),
-					  SMESH::SMESH_Hypothesis_ptr );
+                                          SMESH::SMESH_Hypothesis_ptr );
 
   typedef std::vector<_PTR(SObject)> SObjectList;
   SObjectList GetMeshesUsingAlgoOrHypothesis( SMESH::SMESH_Hypothesis_ptr );

@@ -53,8 +53,8 @@ public:
   ~SMESHGUI_PatternWidget();
   
   void               SetPoints( const PointVector&,
-				const QVector<int>&,
-				const ConnectivityVector& );
+                                const QVector<int>&,
+                                const ConnectivityVector& );
 
 private:
   PointVector        myPoints;

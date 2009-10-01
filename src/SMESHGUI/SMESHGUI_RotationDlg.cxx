@@ -414,8 +414,8 @@ bool SMESHGUI_RotationDlg::ClickOnApply()
           aMeshEditor->RotateObject(mySelectedObject, anAxis, anAngle, false);
         else
             aMeshEditor->Rotate(anElementsId, anAxis, anAngle, false);
-	if( !myMesh->_is_nil())
-	  myMesh->SetParameters( aParameters.join(":").toLatin1().constData() );
+        if( !myMesh->_is_nil())
+          myMesh->SetParameters( aParameters.join(":").toLatin1().constData() );
         break;
       case COPY_ELEMS_BUTTON:
         if ( makeGroups ) {
@@ -431,8 +431,8 @@ bool SMESHGUI_RotationDlg::ClickOnApply()
           else 
             aMeshEditor->Rotate(anElementsId, anAxis, anAngle, true);
         }
-	if( !myMesh->_is_nil())
-	  myMesh->SetParameters( aParameters.join(":").toLatin1().constData() );
+        if( !myMesh->_is_nil())
+          myMesh->SetParameters( aParameters.join(":").toLatin1().constData() );
         break;
       case MAKE_MESH_BUTTON:
         SMESH::SMESH_Mesh_var mesh;
@@ -442,8 +442,8 @@ bool SMESHGUI_RotationDlg::ClickOnApply()
         else 
           mesh = aMeshEditor->RotateMakeMesh(anElementsId, anAxis, anAngle, makeGroups,
                                              LineEditNewMesh->text().toLatin1().data());
-	if( !mesh->_is_nil())
-	  mesh->SetParameters( aParameters.join(":").toLatin1().constData() );
+        if( !mesh->_is_nil())
+          mesh->SetParameters( aParameters.join(":").toLatin1().constData() );
       }
     } catch (...) {
     }
@@ -506,10 +506,10 @@ void SMESHGUI_RotationDlg::ClickOnHelp()
     platform = "application";
 #endif
     SUIT_MessageBox::warning(this, tr("WRN_WARNING"),
-			     tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
-			     arg(app->resourceMgr()->stringValue("ExternalBrowser",
-								 platform)).
-			     arg(myHelpFileName));
+                             tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
+                             arg(app->resourceMgr()->stringValue("ExternalBrowser",
+                                                                 platform)).
+                             arg(myHelpFileName));
   }
 }
 
@@ -543,15 +543,15 @@ void SMESHGUI_RotationDlg::onTextChange (const QString& theNewText)
       
       QStringList aListId = theNewText.split(" ", QString::SkipEmptyParts);
       for (int i = 0; i < aListId.count(); i++) {
-	const SMDS_MeshElement * e = aMesh->FindElement(aListId[ i ].toInt());
-	if (e)
-	  newIndices.Add(e->GetID());
-	myNbOkElements++;
+        const SMDS_MeshElement * e = aMesh->FindElement(aListId[ i ].toInt());
+        if (e)
+          newIndices.Add(e->GetID());
+        myNbOkElements++;
       }
 
       mySelector->AddOrRemoveIndex( anIO, newIndices, false );
       if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
-	aViewWindow->highlight( anIO, true, true );
+        aViewWindow->highlight( anIO, true, true );
       
       myElementsId = theNewText;
     }
@@ -743,23 +743,23 @@ void SMESHGUI_RotationDlg::SetEditCurrentArgument()
         myEditCurrentArgument = (QWidget*)LineEditElements;
         SMESH::SetPointRepresentation(false);
         if (CheckBoxMesh->isChecked()) {
-	  if ( aViewWindow )
-	    aViewWindow->SetSelectionMode(ActorSelection);
+          if ( aViewWindow )
+            aViewWindow->SetSelectionMode(ActorSelection);
           mySelectionMgr->installFilter(myMeshOrSubMeshOrGroupFilter);
         } else {
-	  if ( aViewWindow )
-	    aViewWindow->SetSelectionMode( CellSelection );
-	}
+          if ( aViewWindow )
+            aViewWindow->SetSelectionMode( CellSelection );
+        }
       } else if (send == SelectPointButton) {
         myEditCurrentArgument = (QWidget*)SpinBox_X;
         SMESH::SetPointRepresentation(true);
-	if ( aViewWindow )
-	  aViewWindow->SetSelectionMode( NodeSelection );
+        if ( aViewWindow )
+          aViewWindow->SetSelectionMode( NodeSelection );
       } else if (send == SelectVectorButton) {
         myEditCurrentArgument = (QWidget*)SpinBox_DX;
         SMESH::SetPointRepresentation(true);
-	if ( aViewWindow )
-	  aViewWindow->SetSelectionMode( NodeSelection );
+        if ( aViewWindow )
+          aViewWindow->SetSelectionMode( NodeSelection );
       }
       break;
     }
@@ -879,8 +879,8 @@ void SMESHGUI_RotationDlg::onSelectMesh (bool toSelectMesh)
 bool SMESHGUI_RotationDlg::IsAxisOk()
 {
   return (SpinBox_DX->GetValue() != 0 ||
-	  SpinBox_DY->GetValue() != 0 ||
-	  SpinBox_DZ->GetValue() != 0);
+          SpinBox_DY->GetValue() != 0 ||
+          SpinBox_DZ->GetValue() != 0);
 }
 
 //=================================================================================
@@ -977,8 +977,8 @@ void SMESHGUI_RotationDlg::setFilters()
 {
   if(myMesh->_is_nil()) {
     SUIT_MessageBox::critical(this,
-			      tr("SMESH_ERROR"),
-			      tr("NO_MESH_SELECTED"));
+                              tr("SMESH_ERROR"),
+                              tr("NO_MESH_SELECTED"));
    return;
   }
   if ( !myFilterDlg )

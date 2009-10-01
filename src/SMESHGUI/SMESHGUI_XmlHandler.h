@@ -45,7 +45,7 @@ public:
 
   bool     startDocument();
   bool     startElement( const QString&, const QString&, 
-			 const QString&, const QXmlAttributes& );
+                         const QString&, const QXmlAttributes& );
   bool     endElement( const QString&, const QString&, const QString& );
   bool     characters( const QString& ); 
 

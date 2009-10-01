@@ -204,7 +204,7 @@ void SMESHGUI_RemoveElementsDlg::Init()
   /* to close dialog if study change */
   connect(mySMESHGUI, SIGNAL (SignalCloseAllDialogs()), this, SLOT(ClickOnCancel()));
   connect(myEditCurrentArgument, SIGNAL(textChanged(const QString&)),
-	  SLOT(onTextChange(const QString&)));
+          SLOT(onTextChange(const QString&)));
 
   if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
     aViewWindow->SetSelectionMode(CellSelection);
@@ -291,10 +291,10 @@ void SMESHGUI_RemoveElementsDlg::ClickOnHelp()
     platform = "application";
 #endif
     SUIT_MessageBox::warning(this, tr("WRN_WARNING"),
-			     tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
-			     arg(app->resourceMgr()->stringValue("ExternalBrowser", 
-								 platform)).
-			     arg(myHelpFileName));
+                             tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
+                             arg(app->resourceMgr()->stringValue("ExternalBrowser", 
+                                                                 platform)).
+                             arg(myHelpFileName));
   }
 }
 
@@ -321,15 +321,15 @@ void SMESHGUI_RemoveElementsDlg::onTextChange(const QString& theNewText)
       
       QStringList aListId = theNewText.split(" ", QString::SkipEmptyParts);
       for (int i = 0; i < aListId.count(); i++) {
-	if(const SMDS_MeshElement *anElem = aMesh->FindElement(aListId[i].toInt())) {
-	  newIndices.Add(anElem->GetID());
-	  myNbOkElements++;
-	}
+        if(const SMDS_MeshElement *anElem = aMesh->FindElement(aListId[i].toInt())) {
+          newIndices.Add(anElem->GetID());
+          myNbOkElements++;
+        }
       }
       
       mySelector->AddOrRemoveIndex(anIO,newIndices,false);
       if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
-	aViewWindow->highlight(anIO,true,true);
+        aViewWindow->highlight(anIO,true,true);
     }
   }
   
@@ -410,8 +410,8 @@ void SMESHGUI_RemoveElementsDlg::SetEditCurrentArgument()
   case 0: /* default constructor */
     {
       if(send == SelectButtonC1A1) {
-	LineEditC1A1->setFocus();
-	myEditCurrentArgument = LineEditC1A1;
+        LineEditC1A1->setFocus();
+        myEditCurrentArgument = LineEditC1A1;
       }
       SelectionIntoArgument();
       break;
@@ -509,8 +509,8 @@ void SMESHGUI_RemoveElementsDlg::setFilters()
 {
   if(myMesh->_is_nil()) {
     SUIT_MessageBox::critical(this,
-			      tr("SMESH_ERROR"),
-			      tr("NO_MESH_SELECTED"));
+                              tr("SMESH_ERROR"),
+                              tr("NO_MESH_SELECTED"));
    return;
   }
   if ( !myFilterDlg )

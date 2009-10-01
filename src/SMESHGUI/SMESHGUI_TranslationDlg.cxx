@@ -417,7 +417,7 @@ void SMESHGUI_TranslationDlg::ConstructorsClicked (int constructorId)
     SMESH::SetPointRepresentation(false);
     if (!CheckBoxMesh->isChecked())
       if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
-	aViewWindow->SetSelectionMode( CellSelection );
+        aViewWindow->SetSelectionMode( CellSelection );
   }
 
   myEditCurrentArgument = (QWidget*)LineEditElements;
@@ -487,8 +487,8 @@ bool SMESHGUI_TranslationDlg::ClickOnApply()
           aMeshEditor->TranslateObject(mySelectedObject, aVector, false);
         else
           aMeshEditor->Translate(anElementsId, aVector, false);
-	if( !myMesh->_is_nil())
-	  myMesh->SetParameters( aParameters.join(":").toLatin1().constData() );
+        if( !myMesh->_is_nil())
+          myMesh->SetParameters( aParameters.join(":").toLatin1().constData() );
         break;
       case COPY_ELEMS_BUTTON:
         if ( makeGroups ) {
@@ -504,8 +504,8 @@ bool SMESHGUI_TranslationDlg::ClickOnApply()
           else
             aMeshEditor->Translate(anElementsId, aVector, true);
         }
-	if( !myMesh->_is_nil())
-	  myMesh->SetParameters( aParameters.join(":").toLatin1().constData() );
+        if( !myMesh->_is_nil())
+          myMesh->SetParameters( aParameters.join(":").toLatin1().constData() );
         break;
       case MAKE_MESH_BUTTON:
         SMESH::SMESH_Mesh_var mesh; 
@@ -515,8 +515,8 @@ bool SMESHGUI_TranslationDlg::ClickOnApply()
         else
           mesh = aMeshEditor->TranslateMakeMesh(anElementsId, aVector, makeGroups,
                                                 LineEditNewMesh->text().toLatin1().data());
-	if( !mesh->_is_nil())
-	  mesh->SetParameters( aParameters.join(":").toLatin1().constData() );
+        if( !mesh->_is_nil())
+          mesh->SetParameters( aParameters.join(":").toLatin1().constData() );
       }
     } catch (...) {
     }
@@ -580,10 +580,10 @@ void SMESHGUI_TranslationDlg::ClickOnHelp()
     platform = "application";
 #endif
     SUIT_MessageBox::warning(this, tr("WRN_WARNING"),
-			     tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
-			     arg(app->resourceMgr()->stringValue("ExternalBrowser", 
-								 platform)).
-			     arg(myHelpFileName));
+                             tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
+                             arg(app->resourceMgr()->stringValue("ExternalBrowser", 
+                                                                 platform)).
+                             arg(myHelpFileName));
   }
 }
 
@@ -618,10 +618,10 @@ void SMESHGUI_TranslationDlg::onTextChange (const QString& theNewText)
 
     if (send == LineEditElements) {
       for (int i = 0; i < aListId.count(); i++) {
-	const SMDS_MeshElement * e = aMesh->FindElement(aListId[ i ].toInt());
-	if (e)
-	  newIndices.Add(e->GetID());
-	myNbOkElements++;
+        const SMDS_MeshElement * e = aMesh->FindElement(aListId[ i ].toInt());
+        if (e)
+          newIndices.Add(e->GetID());
+        myNbOkElements++;
       }
     }
 
@@ -809,12 +809,12 @@ void SMESHGUI_TranslationDlg::SetEditCurrentArgument()
     SMESH::SetPointRepresentation(false);
     if (CheckBoxMesh->isChecked()) {
       if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
-	aViewWindow->SetSelectionMode( ActorSelection );
+        aViewWindow->SetSelectionMode( ActorSelection );
       mySelectionMgr->installFilter(myMeshOrSubMeshOrGroupFilter);
     } else {
 
       if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
-	aViewWindow->SetSelectionMode( CellSelection );
+        aViewWindow->SetSelectionMode( CellSelection );
     }
   } else if (send == SelectButton1) {
     myEditCurrentArgument = (QWidget*)SpinBox1_1;
@@ -1024,8 +1024,8 @@ void SMESHGUI_TranslationDlg::setFilters()
 {
   if(myMesh->_is_nil()) {
     SUIT_MessageBox::critical(this,
-			      tr("SMESH_ERROR"),
-			      tr("NO_MESH_SELECTED"));
+                              tr("SMESH_ERROR"),
+                              tr("NO_MESH_SELECTED"));
    return;
   }
   if ( !myFilterDlg )

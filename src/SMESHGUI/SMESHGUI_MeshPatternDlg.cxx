@@ -420,10 +420,10 @@ bool SMESHGUI_MeshPatternDlg::isValid (const bool theMess)
       ok = myNode2->isValid( msg, theMess ) && ok;
     if( !ok ) {
       if( theMess ) {
-	QString str( tr( "SMESH_INCORRECT_INPUT" ) );
-	if ( !msg.isEmpty() )
-	  str += "\n" + msg;
-	SUIT_MessageBox::critical( this, tr( "SMESH_ERROR" ), str );
+        QString str( tr( "SMESH_INCORRECT_INPUT" ) );
+        if ( !msg.isEmpty() )
+          str += "\n" + msg;
+        SUIT_MessageBox::critical( this, tr( "SMESH_ERROR" ), str );
       }
       return false;
     }
@@ -440,14 +440,14 @@ bool SMESHGUI_MeshPatternDlg::isValid (const bool theMess)
   {
     if (theMess)
       SUIT_MessageBox::information(this, tr("SMESH_INSUFFICIENT_DATA"),
-				   tr("SMESHGUI_INVALID_PARAMETERS"));
+                                   tr("SMESHGUI_INVALID_PARAMETERS"));
     return false;
   }
 
   if ( myName->text().isEmpty() ) {
     if (theMess)
       SUIT_MessageBox::information(this, tr("SMESH_INSUFFICIENT_DATA"),
-				   tr("SMESHGUI_INVALID_PARAMETERS"));
+                                   tr("SMESHGUI_INVALID_PARAMETERS"));
     return false;
   }
 
@@ -473,15 +473,15 @@ bool SMESHGUI_MeshPatternDlg::onApply()
       varIds->length(ids.count());
       int i = 0;
       for (QList<int>::iterator it = ids.begin(); it != ids.end(); ++it)
-	varIds[i++] = *it;
+        varIds[i++] = *it;
       myType == Type_2d
-	? myPattern->ApplyToMeshFaces  (myMesh, varIds, getNode(false), myReverseChk->isChecked())
-	: myPattern->ApplyToHexahedrons(myMesh, varIds, getNode(false), getNode(true));
+        ? myPattern->ApplyToMeshFaces  (myMesh, varIds, getNode(false), myReverseChk->isChecked())
+        : myPattern->ApplyToHexahedrons(myMesh, varIds, getNode(false), getNode(true));
 
       QStringList aParameters;
       aParameters << myNode1->text();
       if(myType == Type_3d )
-	aParameters << myNode2->text();
+        aParameters << myNode2->text();
       myMesh->SetParameters( aParameters.join(":").toLatin1().constData() );
 
     } else { // Applying a pattern to geometrical object
@@ -497,15 +497,15 @@ bool SMESHGUI_MeshPatternDlg::onApply()
       //mySelectionMgr->clearSelected();
       bool autoUpdate = SMESHGUI::automaticUpdate();
       if (!isRefine() && autoUpdate) {
-	_PTR(SObject) aSO = SMESH::FindSObject(myMesh.in());
-	SMESH_Actor* anActor = SMESH::FindActorByEntry(aSO->GetID().c_str());
-	if (!anActor) {
-	  anActor = SMESH::CreateActor(aSO->GetStudy(), aSO->GetID().c_str());
-	  if (anActor) {
-	    SMESH::DisplayActor(SMESH::GetActiveWindow(), anActor);
-	    SMESH::FitAll();
-	  }
-	}
+        _PTR(SObject) aSO = SMESH::FindSObject(myMesh.in());
+        SMESH_Actor* anActor = SMESH::FindActorByEntry(aSO->GetID().c_str());
+        if (!anActor) {
+          anActor = SMESH::CreateActor(aSO->GetStudy(), aSO->GetID().c_str());
+          if (anActor) {
+            SMESH::DisplayActor(SMESH::GetActiveWindow(), anActor);
+            SMESH::FitAll();
+          }
+        }
       }
       mySelectionMgr->clearSelected();
       SMESH::UpdateView();
@@ -517,7 +517,7 @@ bool SMESHGUI_MeshPatternDlg::onApply()
       return true;
     } else {
       SUIT_MessageBox::information(this, tr("SMESH_ERROR"),
-				   tr("SMESH_OPERATION_FAILED"));
+                                   tr("SMESH_OPERATION_FAILED"));
       return false;
     }
   } catch (const SALOME::SALOME_Exception& S_ex) {
@@ -565,17 +565,17 @@ void SMESHGUI_MeshPatternDlg::onHelp()
   if (app) 
     app->onHelpContextModule(mySMESHGUI ? app->moduleName(mySMESHGUI->moduleName()) : QString(""), myHelpFileName);
   else {
-		QString platform;
+                QString platform;
 #ifdef WIN32
-		platform = "winapplication";
+                platform = "winapplication";
 #else
-		platform = "application";
+                platform = "application";
 #endif
     SUIT_MessageBox::warning(this, tr("WRN_WARNING"),
-			     tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
-			     arg(app->resourceMgr()->stringValue("ExternalBrowser", 
-								 platform)).
-			     arg(myHelpFileName));
+                             tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
+                             arg(app->resourceMgr()->stringValue("ExternalBrowser", 
+                                                                 platform)).
+                             arg(myHelpFileName));
   }
 }
 
@@ -593,7 +593,7 @@ void SMESHGUI_MeshPatternDlg::onSelectionDone()
       SALOME_ListIO aList;
       mySelectionMgr->selectedObjects(aList,SVTK_Viewer::Type());
       if (aList.Extent() != 1)
-	return;
+        return;
 
       // Retrieve mesh from selection
       Handle(SALOME_InteractiveObject) anIO = aList.First();
@@ -624,11 +624,11 @@ void SMESHGUI_MeshPatternDlg::onSelectionDone()
       SALOME_ListIO aList;
       mySelectionMgr->selectedObjects(aList,SVTK_Viewer::Type());
       if (aList.Extent() != 1)
-	return;
+        return;
 
       QString anIds;
       if (!SMESH::GetNameOfSelectedElements(mySelector, aList.First(), anIds))
-	anIds = "";
+        anIds = "";
 
       myBusy = true;
       mySelEdit[ Ids ]->setText(anIds);
@@ -638,7 +638,7 @@ void SMESHGUI_MeshPatternDlg::onSelectionDone()
       SALOME_ListIO aList;
       mySelectionMgr->selectedObjects(aList, SVTK_Viewer::Type());
       if (aList.Extent() != 1)
-	return;
+        return;
 
       // Get geom object from selection
       Handle(SALOME_InteractiveObject) anIO = aList.First();
@@ -809,14 +809,14 @@ void SMESHGUI_MeshPatternDlg::onOpen()
   QFile aFile(fName);
   if (!aFile.open(QIODevice::ReadOnly)) {
     SUIT_MessageBox::information(this, tr("SMESH_ERROR"),
-				 tr("ERROR_OF_OPENING"));
+                                 tr("ERROR_OF_OPENING"));
     return;
   }
 
   QByteArray aDataArray = aFile.readAll();
   if (aDataArray.isEmpty()) {
     SUIT_MessageBox::information(this, tr("SMESH_ERROR"),
-				 tr("ERROR_OF_READING"));
+                                 tr("ERROR_OF_READING"));
     return;
   }
 
@@ -1046,11 +1046,11 @@ void SMESHGUI_MeshPatternDlg::updateWgState()
     if (!CORBA::is_nil(myPattern)/* && getIds(ids)*/) {
       SMESH::long_array_var keyPoints = myPattern->GetKeyPoints();
       if (keyPoints->length()) {
-	myNode1->setEnabled(true);
-	myNode2->setEnabled(true);
-	myNode1->setRange(1, keyPoints->length());
-	myNode2->setRange(1, keyPoints->length());
-	return;
+        myNode1->setEnabled(true);
+        myNode2->setEnabled(true);
+        myNode1->setRange(1, keyPoints->length());
+        myNode2->setRange(1, keyPoints->length());
+        return;
       }
     }
 
@@ -1075,13 +1075,13 @@ void SMESHGUI_MeshPatternDlg::activateSelection()
 
     if (myType == Type_2d)
       {
-	if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
-	  aViewWindow->SetSelectionMode(FaceSelection);
+        if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+          aViewWindow->SetSelectionMode(FaceSelection);
       }
     else
       {
-	if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
-	  aViewWindow->SetSelectionMode(CellSelection);
+        if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+          aViewWindow->SetSelectionMode(CellSelection);
       }
   }
   else {
@@ -1146,7 +1146,7 @@ bool SMESHGUI_MeshPatternDlg::loadFromFile (const QString& theName)
   } catch (const SALOME::SALOME_Exception& S_ex) {
     SalomeApp_Tools::QtCatchCorbaException(S_ex);
     SUIT_MessageBox::information(this, tr("SMESH_ERROR"),
-				 tr("ERROR_OF_LOADING") );
+                                 tr("ERROR_OF_LOADING") );
     return false;
   }
 }
@@ -1229,13 +1229,13 @@ vtkUnstructuredGrid* SMESHGUI_MeshPatternDlg::getGrid()
       varIds->length(ids.count());
       int i = 0;
       for (QList<int>::iterator it = ids.begin(); it != ids.end(); ++it)
-	varIds[i++] = *it;
+        varIds[i++] = *it;
       pnts = myType == Type_2d
-	? myPattern->ApplyToMeshFaces  (myMesh, varIds, getNode(false), myReverseChk->isChecked())
-	: myPattern->ApplyToHexahedrons(myMesh, varIds, getNode(false), getNode(true));
+        ? myPattern->ApplyToMeshFaces  (myMesh, varIds, getNode(false), myReverseChk->isChecked())
+        : myPattern->ApplyToHexahedrons(myMesh, varIds, getNode(false), getNode(true));
     } else {
       pnts = myType == Type_2d
-	? myPattern->ApplyToFace   (myGeomObj[ Object ], myGeomObj[ Vertex1 ], myReverseChk->isChecked())
+        ? myPattern->ApplyToFace   (myGeomObj[ Object ], myGeomObj[ Vertex1 ], myReverseChk->isChecked())
       : myPattern->ApplyTo3DBlock(myGeomObj[ Object ], myGeomObj[ Vertex1 ], myGeomObj[ Vertex2 ]);
     }
 
@@ -1380,7 +1380,7 @@ void SMESHGUI_MeshPatternDlg::onTextChanged (const QString& theNewText)
     for (int i = 0; i < aListId.count(); i++) {
       const SMDS_MeshElement * e = aMesh->FindElement(aListId[ i ].toInt());
       if (e && e->GetType() == (myType == Type_2d ? SMDSAbs_Face : SMDSAbs_Volume))
-	newIndices.Add(e->GetID());
+        newIndices.Add(e->GetID());
     }
     mySelector->AddOrRemoveIndex( anActor->getIO(), newIndices, false);
     if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))

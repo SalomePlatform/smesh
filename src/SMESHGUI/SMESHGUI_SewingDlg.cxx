@@ -385,9 +385,9 @@ void SMESHGUI_SewingDlg::ConstructorsClicked (int constructorId)
       LineEdit5->setEnabled(false);
 
       if (!CheckBoxPolygons->isVisible())
-	CheckBoxPolygons->show();
+        CheckBoxPolygons->show();
       if (!CheckBoxPolyedrs->isVisible())
-	CheckBoxPolyedrs->show();
+        CheckBoxPolyedrs->show();
       
       myOk5 = true;
 
@@ -412,7 +412,7 @@ void SMESHGUI_SewingDlg::ConstructorsClicked (int constructorId)
       SMESH::SetPointRepresentation(false);
 
       if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
-	aViewWindow->SetSelectionMode(CellSelection);
+        aViewWindow->SetSelectionMode(CellSelection);
       break;
     }
   }
@@ -472,8 +472,8 @@ bool SMESHGUI_SewingDlg::ClickOnApply()
                                               LineEdit4->text().toLong(),
                                               LineEdit5->text().toLong(),
                                               LineEdit6->text().toLong(),
-					      toCreatePolygons,
-					      toCreatePolyedrs);
+                                              toCreatePolygons,
+                                              toCreatePolyedrs);
       else if (aConstructorId == 1)
         anError = aMeshEditor->SewConformFreeBorders(LineEdit1->text().toLong(),
                                                      LineEdit2->text().toLong(),
@@ -486,8 +486,8 @@ bool SMESHGUI_SewingDlg::ClickOnApply()
                                                LineEdit3->text().toLong(),
                                                LineEdit4->text().toLong(),
                                                LineEdit6->text().toLong(),
-					       toCreatePolygons,
-					       toCreatePolyedrs);
+                                               toCreatePolygons,
+                                               toCreatePolyedrs);
       else if (aConstructorId == 3) {
         QStringList aListElementsId1 = LineEdit1->text().split(" ", QString::SkipEmptyParts);
         QStringList aListElementsId2 = LineEdit4->text().split(" ", QString::SkipEmptyParts);
@@ -580,10 +580,10 @@ void SMESHGUI_SewingDlg::ClickOnHelp()
     platform = "application";
 #endif
     SUIT_MessageBox::warning(this, tr("WRN_WARNING"),
-			     tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
-			     arg(app->resourceMgr()->stringValue("ExternalBrowser", 
-								 platform)).
-			     arg(myHelpFileName));
+                             tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
+                             arg(app->resourceMgr()->stringValue("ExternalBrowser", 
+                                                                 platform)).
+                             arg(myHelpFileName));
   }
 }
 
@@ -632,15 +632,15 @@ void SMESHGUI_SewingDlg::onTextChange (const QString& theNewText)
       SMESH::SetPointRepresentation(true);
 
       if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
-	aViewWindow->SetSelectionMode(NodeSelection);
+        aViewWindow->SetSelectionMode(NodeSelection);
 
       const SMDS_MeshNode * n = aMesh->FindNode(theNewText.toInt());
       if (n) {
-	newIndices.Add(n->GetID());
-	mySelector->AddOrRemoveIndex(myActor->getIO(), newIndices, false);
-	if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
-	  aViewWindow->highlight( myActor->getIO(), true, true );
-	
+        newIndices.Add(n->GetID());
+        mySelector->AddOrRemoveIndex(myActor->getIO(), newIndices, false);
+        if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+          aViewWindow->highlight( myActor->getIO(), true, true );
+        
         if      (send == LineEdit1)
           myOk1 = true;
         else if (send == LineEdit2)
@@ -658,7 +658,7 @@ void SMESHGUI_SewingDlg::onTextChange (const QString& theNewText)
       SMESH::SetPointRepresentation(false);
 
       if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
-	aViewWindow->SetSelectionMode(CellSelection);
+        aViewWindow->SetSelectionMode(CellSelection);
 
       QStringList aListId = theNewText.split(" ", QString::SkipEmptyParts);
 
@@ -667,8 +667,8 @@ void SMESHGUI_SewingDlg::onTextChange (const QString& theNewText)
       for (int i = 0; i < aListId.count(); i++) {
         const SMDS_MeshElement * e = aMesh->FindElement(aListId[ i ].toInt());
         if (e) 
-	  newIndices.Add(e->GetID());
-	
+          newIndices.Add(e->GetID());
+        
           if (!isEvenOneExists)
             isEvenOneExists = true;
       }
@@ -676,7 +676,7 @@ void SMESHGUI_SewingDlg::onTextChange (const QString& theNewText)
 
       mySelector->AddOrRemoveIndex(myActor->getIO(), newIndices, false);
       if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
-	aViewWindow->highlight( myActor->getIO(), true, true );
+        aViewWindow->highlight( myActor->getIO(), true, true );
       
       if (isEvenOneExists) {
         if (send == LineEdit1)

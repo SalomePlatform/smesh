@@ -186,11 +186,11 @@ namespace SMESH
       vtkIdList *anIds = vtkIdList::New();
 
       if(aConn)
-	for (int i = 0, iEnd = theIds.size(); i < iEnd; i++)
-	  anIds->InsertId(i,theIds[aConn[i]]);
+        for (int i = 0, iEnd = theIds.size(); i < iEnd; i++)
+          anIds->InsertId(i,theIds[aConn[i]]);
       else
-	for (int i = 0, iEnd = theIds.size(); i < iEnd; i++)
-	  anIds->InsertId(i,theIds[i]);
+        for (int i = 0, iEnd = theIds.size(); i < iEnd; i++)
+          anIds->InsertId(i,theIds[i]);
 
       myGrid->InsertNextCell(theType,anIds);
       anIds->Delete();
@@ -212,8 +212,8 @@ namespace SMESH
     ~TElementSimulation()
     {
       if (FindVtkViewWindow(myApplication->activeViewManager(), myViewWindow)) {
-	myVTKViewWindow->RemoveActor(myPreviewActor);
-	myVTKViewWindow->RemoveActor(myFaceOrientation);
+        myVTKViewWindow->RemoveActor(myPreviewActor);
+        myVTKViewWindow->RemoveActor(myFaceOrientation);
       }
       myPreviewActor->Delete();
       myFaceOrientation->Delete();
@@ -237,7 +237,7 @@ namespace SMESH
 //=================================================================================
 SMESHGUI_AddMeshElementDlg::SMESHGUI_AddMeshElementDlg( SMESHGUI* theModule,
                                                         SMDSAbs_ElementType ElementType,
-							int nbNodes )
+                                                        int nbNodes )
   : QDialog( SMESH::GetDesktop( theModule ) ),
     mySMESHGUI( theModule ),
     mySelectionMgr( SMESH::GetSelectionMgr( theModule ) )
@@ -466,9 +466,9 @@ void SMESHGUI_AddMeshElementDlg::ClickOnApply()
       aMeshEditor->AddEdge(anArrayOfIndices.inout()); break;
     case SMDSAbs_Face: {
       if(myIsPoly)
-	aMeshEditor->AddPolygonalFace(anArrayOfIndices.inout());
+        aMeshEditor->AddPolygonalFace(anArrayOfIndices.inout());
       else
-	aMeshEditor->AddFace(anArrayOfIndices.inout());
+        aMeshEditor->AddFace(anArrayOfIndices.inout());
       break;
     }
     case SMDSAbs_Volume:
@@ -536,10 +536,10 @@ void SMESHGUI_AddMeshElementDlg::ClickOnHelp()
     platform = "application";
 #endif
     SUIT_MessageBox::warning(this, tr("WRN_WARNING"),
-			     tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
-			     arg(app->resourceMgr()->stringValue("ExternalBrowser",
-								 platform)).
-			     arg(myHelpFileName));
+                             tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
+                             arg(app->resourceMgr()->stringValue("ExternalBrowser",
+                                                                 platform)).
+                             arg(myHelpFileName));
   }
 }
 
@@ -571,12 +571,12 @@ void SMESHGUI_AddMeshElementDlg::onTextChange (const QString& theNewText)
     bool allOk = true;
     for (int i = 0; i < aListId.count(); i++) {
       if( const SMDS_MeshNode * n = aMesh->FindNode( aListId[ i ].toInt() ) )
-	{
-	  newIndices.Add( n->GetID() );
-	  myNbOkNodes++;
-	}
+        {
+          newIndices.Add( n->GetID() );
+          myNbOkNodes++;
+        }
       else
-	allOk = false;	
+        allOk = false;  
     }
 
     mySelector->AddOrRemoveIndex( myActor->getIO(), newIndices, false );
@@ -587,10 +587,10 @@ void SMESHGUI_AddMeshElementDlg::onTextChange (const QString& theNewText)
 
     if (myIsPoly)
       {
-	if ( !allOk || myElementType != SMDSAbs_Face || aListId.count() < 3 )
-	  myNbOkNodes = 0;
-	else
-	  myNbOkNodes = aListId.count();
+        if ( !allOk || myElementType != SMDSAbs_Face || aListId.count() < 3 )
+          myNbOkNodes = 0;
+        else
+          myNbOkNodes = aListId.count();
       }
   }
 

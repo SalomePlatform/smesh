@@ -113,7 +113,7 @@ protected:
   void                      setSelectionMode();
   virtual bool              isIdValid( const int ) const;
   virtual bool              process( SMESH::SMESH_MeshEditor_ptr, 
-				     const SMESH::long_array& ) = 0;
+                                     const SMESH::long_array& ) = 0;
   int                       entityType();
 
 protected:

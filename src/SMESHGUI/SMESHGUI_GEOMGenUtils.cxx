@@ -64,7 +64,7 @@ namespace SMESH
         SMESH::SMESH_subMesh_var aSubmesh =
           SObjectToInterface<SMESH::SMESH_subMesh>( theMeshOrSubmesh );
         if ( !aSubmesh->_is_nil() )
-	  return aSubmesh->GetSubShape();
+          return aSubmesh->GetSubShape();
       }
     }
     return GEOM::GEOM_Object::_nil();
@@ -89,7 +89,7 @@ namespace SMESH
         SALOMEDS_SObject* aRefSO = _CAST(SObject,aRefSOClient);
         aMeshShape = GEOM::GEOM_Object::_narrow(aRefSO->GetObject());
       } else {
-	SALOMEDS_SObject* aSO = _CAST(SObject,aSObject);
+        SALOMEDS_SObject* aSO = _CAST(SObject,aSObject);
         aMeshShape = GEOM::GEOM_Object::_narrow(aSO->GetObject());
       }
 

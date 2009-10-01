@@ -35,13 +35,13 @@
 namespace SMESH
 {
   SMESH::SMESH_Group_var AddGroup( SMESH::SMESH_Mesh_ptr theMesh,
-				   SMESH::ElementType theType,
-				   const QString& theGroupName )
+                                   SMESH::ElementType theType,
+                                   const QString& theGroupName )
   {
     SMESH::SMESH_Group_var aGroup;
     try {
       if ( !theMesh->_is_nil() )
-	aGroup = theMesh->CreateGroup( theType, theGroupName.toLatin1().data() );
+        aGroup = theMesh->CreateGroup( theType, theGroupName.toLatin1().data() );
     }
     catch( const SALOME::SALOME_Exception& S_ex ) {
       SalomeApp_Tools::QtCatchCorbaException( S_ex );

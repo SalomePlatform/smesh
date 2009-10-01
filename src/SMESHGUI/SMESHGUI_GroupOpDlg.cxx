@@ -131,7 +131,7 @@ QWidget* SMESHGUI_GroupOpDlg::createMainFrame( QWidget* theParent )
   QLabel* aColorLab = new QLabel(tr( "SMESH_CHECK_COLOR" ), aColorBox );
   myColorBtn = new QtxColorButton(aColorBox);
   myColorBtn->setSizePolicy( QSizePolicy::MinimumExpanding, 
-			     myColorBtn->sizePolicy().verticalPolicy() );
+                             myColorBtn->sizePolicy().verticalPolicy() );
 
   aColorBoxLayout->addWidget(aColorLab);
   aColorBoxLayout->addWidget(myColorBtn);
@@ -242,7 +242,7 @@ bool SMESHGUI_GroupOpDlg::isValid( const QList<SMESH::SMESH_GroupBase_var>& theL
   if ( theListGrp.isEmpty() )
   {
     SUIT_MessageBox::information( this, tr("SMESH_INSUFFICIENT_DATA"),
-				  tr("INCORRECT_ARGUMENTS") );
+                                  tr("INCORRECT_ARGUMENTS") );
     return false;
   }
 
@@ -289,14 +289,14 @@ bool SMESHGUI_GroupOpDlg::isValid( const QList<SMESH::SMESH_GroupBase_var>& theL
   if ( aMeshId == -1 )
   {
     SUIT_MessageBox::information(this, tr("SMESH_INSUFFICIENT_DATA"),
-				 tr("DIFF_MESHES"));
+                                 tr("DIFF_MESHES"));
     return false;
   }
 
   if ( aGrpType == -1 ) 
   {
     SUIT_MessageBox::information(this, tr("SMESH_INSUFFICIENT_DATA"),
-				 tr("DIFF_TYPES"));
+                                 tr("DIFF_TYPES"));
     return false;
   }
 
@@ -343,10 +343,10 @@ void SMESHGUI_GroupOpDlg::onHelp()
     platform = "application";
 #endif
     SUIT_MessageBox::warning(this, tr("WRN_WARNING"),
-			     tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
-			     arg(app->resourceMgr()->stringValue("ExternalBrowser",
-								 platform)).
-			     arg(myHelpFileName));
+                             tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
+                             arg(app->resourceMgr()->stringValue("ExternalBrowser",
+                                                                 platform)).
+                             arg(myHelpFileName));
   }
 }
 
@@ -610,7 +610,7 @@ bool SMESHGUI_UnionGroupsDlg::onApply()
   else 
   {
     SUIT_MessageBox::critical(this, tr("SMESH_ERROR"),
-			      tr("SMESH_OPERATION_FAILED"));
+                              tr("SMESH_OPERATION_FAILED"));
     return false;
   }
 }
@@ -712,7 +712,7 @@ bool SMESHGUI_IntersectGroupsDlg::onApply()
   else 
   {
     SUIT_MessageBox::critical(this, tr("SMESH_ERROR"),
-			      tr("SMESH_OPERATION_FAILED"));
+                              tr("SMESH_OPERATION_FAILED"));
     return false;
   }
 }
@@ -878,7 +878,7 @@ bool SMESHGUI_CutGroupsDlg::onApply()
   else 
   {
     SUIT_MessageBox::critical(this, tr("SMESH_ERROR"),
-			      tr("SMESH_OPERATION_FAILED"));
+                              tr("SMESH_OPERATION_FAILED"));
     return false;
   }
 }
@@ -1029,7 +1029,7 @@ bool SMESHGUI_DimGroupDlg::onApply()
   else 
   {
     SUIT_MessageBox::critical(this, tr("SMESH_ERROR"),
-			      tr("SMESH_OPERATION_FAILED"));
+                              tr("SMESH_OPERATION_FAILED"));
     return false;
   }
 }

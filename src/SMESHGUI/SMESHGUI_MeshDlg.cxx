@@ -381,7 +381,7 @@ SMESHGUI_MeshDlg::SMESHGUI_MeshDlg( const bool theToCreate, const bool theIsMesh
   myHypoSetButton->setText( tr( "HYPOTHESES_SETS" ) );
   myHypoSetButton->setEnabled( false );
   myHypoSetButton->setSizePolicy( QSizePolicy::MinimumExpanding, 
-				  myHypoSetButton->sizePolicy().verticalPolicy() );
+                                  myHypoSetButton->sizePolicy().verticalPolicy() );
   
   // Fill layout
   QGridLayout* aLay = new QGridLayout( mainFrame() );
@@ -542,14 +542,14 @@ void SMESHGUI_MeshDlg::setGeomPopupEnabled( const bool enable )
         myGeomPopup->addAction( tr("DIRECT_GEOM_SELECTION") )->setData( DIRECT_GEOM_INDEX );
         myGeomPopup->addAction( tr("GEOM_BY_MESH_ELEM_SELECTION") )->setData( GEOM_BY_MESH_INDEX );
         connect( myGeomPopup, SIGNAL( triggered( QAction* ) ), SLOT( onGeomPopup( QAction* ) ) );
-	connect( selBtn, SIGNAL( toggled(bool) ), this, SLOT( onGeomSelectionButton(bool) ));
+        connect( selBtn, SIGNAL( toggled(bool) ), this, SLOT( onGeomSelectionButton(bool) ));
       }
     }
     else {
       disconnect( selBtn, SIGNAL( toggled(bool) ), this, SLOT( onGeomSelectionButton(bool) ));
       if ( myGeomPopup ) {
-	delete myGeomPopup;
-	myGeomPopup = 0;
+        delete myGeomPopup;
+        myGeomPopup = 0;
       }
     }
   }

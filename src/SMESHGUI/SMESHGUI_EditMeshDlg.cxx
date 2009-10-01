@@ -169,7 +169,7 @@ namespace SMESH
     }
 
     void SetPointsData ( SMDS_Mesh* theMesh, 
-			 TColStd_MapOfInteger & theNodesIdMap )
+                         TColStd_MapOfInteger & theNodesIdMap )
     {
       vtkPoints* aPoints = vtkPoints::New();
       aPoints->SetNumberOfPoints(theNodesIdMap.Extent());
@@ -177,9 +177,9 @@ namespace SMESH
       
       TColStd_MapIteratorOfMapOfInteger idIter( theNodesIdMap );
       for( int i = 0; idIter.More(); idIter.Next(), i++ ) {
-	const SMDS_MeshNode* aNode = theMesh->FindNode(idIter.Key());
-	aPoints->SetPoint( i, aNode->X(), aNode->Y(), aNode->Z() );
-	myIDs.push_back(idIter.Key());
+        const SMDS_MeshNode* aNode = theMesh->FindNode(idIter.Key());
+        aPoints->SetPoint( i, aNode->X(), aNode->Y(), aNode->Z() );
+        myIDs.push_back(idIter.Key());
       }
 
       myIdGrid->SetPoints(aPoints);
@@ -190,7 +190,7 @@ namespace SMESH
     }
 
     void SetElemsData( TColStd_MapOfInteger & theElemsIdMap, 
-		       std::list<gp_XYZ> & aGrCentersXYZ )
+                       std::list<gp_XYZ> & aGrCentersXYZ )
     {
       vtkPoints* aPoints = vtkPoints::New();
       aPoints->SetNumberOfPoints(theElemsIdMap.Extent());
@@ -198,14 +198,14 @@ namespace SMESH
       
       TColStd_MapIteratorOfMapOfInteger idIter( theElemsIdMap );
       for( ; idIter.More(); idIter.Next() ) {
-	myIDs.push_back(idIter.Key());
+        myIDs.push_back(idIter.Key());
       }
 
       gp_XYZ aXYZ;
       std::list<gp_XYZ>::iterator coordIt = aGrCentersXYZ.begin();
       for( int i = 0; coordIt != aGrCentersXYZ.end(); coordIt++, i++ ) {
-	aXYZ = *coordIt;
-	aPoints->SetPoint( i, aXYZ.X(), aXYZ.Y(), aXYZ.Z() );
+        aXYZ = *coordIt;
+        aPoints->SetPoint( i, aXYZ.X(), aXYZ.Y(), aXYZ.Z() );
       }
       myIdGrid->SetPoints(aPoints);
       aPoints->Delete();
@@ -234,20 +234,20 @@ namespace SMESH
       myIsPointsLabeled = theIsPointsLabeled && myIdGrid->GetNumberOfPoints();
       
       if ( myIsPointsLabeled ) {
-	myPointsNumDataSet->ShallowCopy(myIdGrid);
-	vtkDataSet *aDataSet = myPointsNumDataSet;
-	int aNbElem = myIDs.size();
-	vtkIntArray *anArray = vtkIntArray::New();
-	anArray->SetNumberOfValues( aNbElem );
-	for ( int i = 0; i < aNbElem; i++ )
-	  anArray->SetValue( i, myIDs[i] );
-    	aDataSet->GetPointData()->SetScalars( anArray );
-	anArray->Delete();
-	myPtsMaskPoints->SetInput( aDataSet );
-	myPointLabels->SetVisibility( theIsActorVisible );
+        myPointsNumDataSet->ShallowCopy(myIdGrid);
+        vtkDataSet *aDataSet = myPointsNumDataSet;
+        int aNbElem = myIDs.size();
+        vtkIntArray *anArray = vtkIntArray::New();
+        anArray->SetNumberOfValues( aNbElem );
+        for ( int i = 0; i < aNbElem; i++ )
+          anArray->SetValue( i, myIDs[i] );
+        aDataSet->GetPointData()->SetScalars( anArray );
+        anArray->Delete();
+        myPtsMaskPoints->SetInput( aDataSet );
+        myPointLabels->SetVisibility( theIsActorVisible );
       }
       else {
-	myPointLabels->SetVisibility( false );
+        myPointLabels->SetVisibility( false );
       }
     }
     
@@ -270,7 +270,7 @@ namespace SMESH
       //myPtsSelectVisiblePoints->UnRegisterAllOutputs(); //vtk 5.0 porting
       myPtsSelectVisiblePoints->Delete();
 
-      //myPtsMaskPoints->UnRegisterAllOutputs();	  //vtk 5.0 porting
+      //myPtsMaskPoints->UnRegisterAllOutputs();          //vtk 5.0 porting
       myPtsMaskPoints->Delete();
 
       myPointLabels->Delete();
@@ -282,8 +282,8 @@ namespace SMESH
 
 static const char * IconFirst[] = {
 "18 10 2 1",
-" 	g None",
-".	g #000000",
+"       g None",
+".      g #000000",
 "         .     .  ",
 "  ..    ..    ..  ",
 "  ..   ...   ...  ",
@@ -300,7 +300,7 @@ static const char * IconFirst[] = {
 // purpose  :
 //=================================================================================
 SMESHGUI_EditMeshDlg::SMESHGUI_EditMeshDlg (SMESHGUI* theModule, 
-					    int theAction)
+                                            int theAction)
   : QDialog(SMESH::GetDesktop(theModule)),
     mySMESHGUI(theModule),
     mySelectionMgr(SMESH::GetSelectionMgr(theModule)),
@@ -327,9 +327,9 @@ SMESHGUI_EditMeshDlg::SMESHGUI_EditMeshDlg (SMESHGUI* theModule,
 
   /***************************************************************/
   GroupConstructors = new QGroupBox(myAction == 1 ? 
-				    tr("SMESH_MERGE_ELEMENTS") : 
-				    tr("SMESH_MERGE_NODES"), 
-				    this);
+                                    tr("SMESH_MERGE_ELEMENTS") : 
+                                    tr("SMESH_MERGE_NODES"), 
+                                    this);
 
   QButtonGroup* ButtonGroup = new QButtonGroup(this);
   QHBoxLayout* GroupConstructorsLayout = new QHBoxLayout(GroupConstructors);
@@ -362,9 +362,9 @@ SMESHGUI_EditMeshDlg::SMESHGUI_EditMeshDlg (SMESHGUI* theModule,
   /***************************************************************/
   // Controls for coincident elements detecting
   GroupCoincident = new QGroupBox(myAction == 1 ? 
-				  tr("COINCIDENT_ELEMENTS") : 
-				  tr("COINCIDENT_NODES"), 
-				  this);
+                                  tr("COINCIDENT_ELEMENTS") : 
+                                  tr("COINCIDENT_NODES"), 
+                                  this);
 
   QGridLayout* GroupCoincidentLayout = new QGridLayout(GroupCoincident);
   GroupCoincidentLayout->setSpacing(SPACING);
@@ -542,7 +542,7 @@ void SMESHGUI_EditMeshDlg::Init()
 // purpose  :
 //=================================================================================
 void SMESHGUI_EditMeshDlg::FindGravityCenter(TColStd_MapOfInteger & theElemsIdMap, 
-					     std::list< gp_XYZ > & theGrCentersXYZ)
+                                             std::list< gp_XYZ > & theGrCentersXYZ)
 {
   if (!myActor)
     return;
@@ -659,10 +659,10 @@ void SMESHGUI_EditMeshDlg::ClickOnHelp()
     platform = "application";
 #endif
     SUIT_MessageBox::warning(this, tr("WRN_WARNING"),
-			     tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
-			     arg(app->resourceMgr()->stringValue("ExternalBrowser", 
-								 platform)).
-			     arg(myHelpFileName));
+                             tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
+                             arg(app->resourceMgr()->stringValue("ExternalBrowser", 
+                                                                 platform)).
+                             arg(myHelpFileName));
   }
 }
 
@@ -722,15 +722,15 @@ void SMESHGUI_EditMeshDlg::onDetect()
     switch (myAction) {
     case 0 :
       if(!mySubMeshOrGroup->_is_nil())
-	aMeshEditor->FindCoincidentNodesOnPart(mySubMeshOrGroup, SpinBoxTolerance->GetValue(), aGroupsArray);
+        aMeshEditor->FindCoincidentNodesOnPart(mySubMeshOrGroup, SpinBoxTolerance->GetValue(), aGroupsArray);
       else
-	aMeshEditor->FindCoincidentNodes(SpinBoxTolerance->GetValue(), aGroupsArray);
+        aMeshEditor->FindCoincidentNodes(SpinBoxTolerance->GetValue(), aGroupsArray);
       break;
     case 1 :
       if(!mySubMeshOrGroup->_is_nil())
-	aMeshEditor->FindEqualElements(mySubMeshOrGroup, aGroupsArray);
+        aMeshEditor->FindEqualElements(mySubMeshOrGroup, aGroupsArray);
       else
-	aMeshEditor->FindEqualElements(myMesh, aGroupsArray);
+        aMeshEditor->FindEqualElements(myMesh, aGroupsArray);
       break;
     }
     
@@ -739,7 +739,7 @@ void SMESHGUI_EditMeshDlg::onDetect()
 
       QStringList anIDs;
       for (int j = 0; j < aGroup.length(); j++)
-	anIDs.append(QString::number(aGroup[j]));
+        anIDs.append(QString::number(aGroup[j]));
 
       ListCoincident->addItem(anIDs.join(" "));
     }
@@ -1044,11 +1044,11 @@ void SMESHGUI_EditMeshDlg::SelectionIntoArgument()
     if (myAction == 0) {
       SMESH::SetPointRepresentation(true);
       if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
-	aViewWindow->SetSelectionMode(NodeSelection);
+        aViewWindow->SetSelectionMode(NodeSelection);
     }
     else
       if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
-	aViewWindow->SetSelectionMode(CellSelection);
+        aViewWindow->SetSelectionMode(CellSelection);
   }
 }
 

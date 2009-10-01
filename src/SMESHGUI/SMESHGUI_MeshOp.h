@@ -102,7 +102,7 @@ private:
                                           const int ); // access to myAvailableHypData
 
   void                           createHypothesis( const int, const int,
-						   const QString& );
+                                                   const QString& );
 
   bool                           createMesh( QString& );
   bool                           createSubMesh( QString& );

@@ -198,17 +198,17 @@ void SMESHGUI_MeshInfosDlg::DumpMeshInfos()
       //CORBA::Object_var anObject = aSO->GetObject();
       CORBA::Object_var anObject = SMESH::SObjectToObject(aSO);
       if (!CORBA::is_nil(anObject)) {
-	SMESH::SMESH_IDSource_var anIDSource = SMESH::SMESH_IDSource::_narrow(anObject);
-	if (!anIDSource->_is_nil()) {
-	  myWGStack->setCurrentWidget(myMeshWidget);
-	  setWindowTitle(tr("SMESH_MESHINFO_TITLE") + " [" + tr("SMESH_OBJECT_MESH") + "]");
-	  myMeshName->setText(aSO->GetName().c_str());
+        SMESH::SMESH_IDSource_var anIDSource = SMESH::SMESH_IDSource::_narrow(anObject);
+        if (!anIDSource->_is_nil()) {
+          myWGStack->setCurrentWidget(myMeshWidget);
+          setWindowTitle(tr("SMESH_MESHINFO_TITLE") + " [" + tr("SMESH_OBJECT_MESH") + "]");
+          myMeshName->setText(aSO->GetName().c_str());
 
-	  SMESH::long_array_var aMeshInfo = anIDSource->GetMeshInfo();
-	  myMeshInfoBox->SetMeshInfo( aMeshInfo );
+          SMESH::long_array_var aMeshInfo = anIDSource->GetMeshInfo();
+          myMeshInfoBox->SetMeshInfo( aMeshInfo );
 
-	  return;
-	}
+          return;
+        }
       }
     }
   }
@@ -297,10 +297,10 @@ void SMESHGUI_MeshInfosDlg::onHelp()
     platform = "application";
 #endif
     SUIT_MessageBox::warning(this, tr("WRN_WARNING"),
-			     tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
-			     arg(app->resourceMgr()->stringValue("ExternalBrowser", 
-								 platform)).
-			     arg(myHelpFileName));
+                             tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
+                             arg(app->resourceMgr()->stringValue("ExternalBrowser", 
+                                                                 platform)).
+                             arg(myHelpFileName));
   }
 }
 

@@ -47,15 +47,15 @@ public:
       // truncate extra ids
       int ind = 0, nbId = 0;
       while ( ind < input.length() ) {
-	if ( input.at( ind ) != ' ' ) {
-	  if ( ++nbId > myMaxNbId ) {
-	    input.truncate( ind );
-	    break;
-	  }
-	  ind = input.indexOf( ' ', ind );
-	  if ( ind < 0 ) break;
-	}
-	ind++;
+        if ( input.at( ind ) != ' ' ) {
+          if ( ++nbId > myMaxNbId ) {
+            input.truncate( ind );
+            break;
+          }
+          ind = input.indexOf( ' ', ind );
+          if ( ind < 0 ) break;
+        }
+        ind++;
       }
     }
     if ( pos > input.length() )

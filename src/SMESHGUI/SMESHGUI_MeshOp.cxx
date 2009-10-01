@@ -576,11 +576,11 @@ void SMESHGUI_MeshOp::selectionDone()
             SMESH::SObjectToInterface<SMESH::SMESH_subMesh>( pSubmesh );
           bool editSubmesh = ( !sm->_is_nil() &&
                                SUIT_MessageBox::question( myDlg, tr( "SMESH_WARNING" ),
-							  tr( "EDIT_SUBMESH_QUESTION"),
-							  SUIT_MessageBox::Yes | 
-							  SUIT_MessageBox::No,
-							  SUIT_MessageBox::No )
-			       == SUIT_MessageBox::Yes );
+                                                          tr( "EDIT_SUBMESH_QUESTION"),
+                                                          SUIT_MessageBox::Yes | 
+                                                          SUIT_MessageBox::No,
+                                                          SUIT_MessageBox::No )
+                               == SUIT_MessageBox::Yes );
           if ( editSubmesh )
           {
             selectionMgr()->clearFilters();
@@ -1666,7 +1666,7 @@ bool SMESHGUI_MeshOp::createSubMesh( QString& theMess )
           aNewGeomGroupName += aName;
           SALOMEDS::SObject_var aNewGroupSO =
             geomGen->AddInStudy(aSMESHGen->GetCurrentStudy(), aGeomVar, 
-				aNewGeomGroupName.toLatin1().data(), mainGeom);
+                                aNewGeomGroupName.toLatin1().data(), mainGeom);
         }
       }
     }

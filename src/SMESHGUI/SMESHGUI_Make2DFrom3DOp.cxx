@@ -189,8 +189,8 @@ void SMESHGUI_Make2DFrom3DOp::startOperation()
   int nbSel = selected.Extent();
   if (nbSel != 1) {
     SUIT_MessageBox::warning(desktop(),
-			     tr("SMESH_WRN_WARNING"),
-			     tr("SMESH_WRN_NO_AVAILABLE_DATA"));
+                             tr("SMESH_WRN_WARNING"),
+                             tr("SMESH_WRN_NO_AVAILABLE_DATA"));
     onCancel();
     return;
   }
@@ -199,8 +199,8 @@ void SMESHGUI_Make2DFrom3DOp::startOperation()
   myMesh = SMESH::GetMeshByIO(anIO);
   if (myMesh->_is_nil()) {
     SUIT_MessageBox::warning(desktop(),
-			     tr("SMESH_WRN_WARNING"),
-			     tr("SMESH_WRN_NO_AVAILABLE_DATA"));
+                             tr("SMESH_WRN_WARNING"),
+                             tr("SMESH_WRN_NO_AVAILABLE_DATA"));
     onCancel();
     return;
   }
@@ -214,8 +214,8 @@ void SMESHGUI_Make2DFrom3DOp::startOperation()
 
   if (!compute2DMesh()) {
     SUIT_MessageBox::warning(desktop(),
-			     tr("SMESH_WRN_WARNING"),
-			     tr("SMESH_WRN_COMPUTE_FAILED"));
+                             tr("SMESH_WRN_WARNING"),
+                             tr("SMESH_WRN_COMPUTE_FAILED"));
     onCancel();
     return;
   }

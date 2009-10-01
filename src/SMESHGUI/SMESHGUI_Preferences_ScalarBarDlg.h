@@ -63,9 +63,9 @@ public:
 
   void                     closeEvent( QCloseEvent* );
   void                     setOriginAndSize( const double,
-					     const double,
-					     const double,
-					     const double );
+                                             const double,
+                                             const double,
+                                             const double );
   void                     initScalarBarFromResources();
 
 protected slots:

@@ -123,12 +123,12 @@ public:
                                           const int = -1 );
 
   void                      SetID( const int,
-				   const QString&,
-				   const int = -1 ); 
+                                   const QString&,
+                                   const int = -1 ); 
   
   bool                      GetID( const int,
-				   QString&,
-				   const int = -1 );
+                                   QString&,
+                                   const int = -1 );
 
   void                      Update();
 

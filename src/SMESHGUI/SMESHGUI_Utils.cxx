@@ -80,11 +80,11 @@ namespace SMESH
     if(theOwner){
       const Handle(SALOME_InteractiveObject)& anIO = theOwner->IO();
       if(!anIO.IsNull()){
-	if(anIO->hasEntry()){
-	  _PTR(Study) aStudy = GetActiveStudyDocument();
-	  _PTR(SObject) aSObj = aStudy->FindObjectID(anIO->getEntry());
-	  anObj = SObjectToObject(aSObj,aStudy);
-	}
+        if(anIO->hasEntry()){
+          _PTR(Study) aStudy = GetActiveStudyDocument();
+          _PTR(SObject) aSObj = aStudy->FindObjectID(anIO->getEntry());
+          anObj = SObjectToObject(aSObj,aStudy);
+        }
       }
     }
     return anObj;
@@ -124,9 +124,9 @@ namespace SMESH
       (SUIT_Session::session()->activeApplication());
     if (app && !CORBA::is_nil(theObject)) {
       if(_PTR(Study) aStudy = GetActiveStudyDocument()){
-	CORBA::String_var anIOR = app->orb()->object_to_string(theObject);
-	if (strcmp(anIOR.in(), "") != 0)
-	  return aStudy->FindObjectIOR(anIOR.in());
+        CORBA::String_var anIOR = app->orb()->object_to_string(theObject);
+        if (strcmp(anIOR.in(), "") != 0)
+          return aStudy->FindObjectIOR(anIOR.in());
       }
     }
     return _PTR(SObject)();
@@ -187,9 +187,9 @@ namespace SMESH
     if (theSObject) {
       _PTR(GenericAttribute) anAttr;
       if (theSObject->FindAttribute(anAttr, "AttributeIOR")) {
-	_PTR(AttributeIOR) anIOR = anAttr;
-	CORBA::String_var aVal = anIOR->Value().c_str();
-	return app->orb()->string_to_object(aVal);
+        _PTR(AttributeIOR) anIOR = anAttr;
+        CORBA::String_var aVal = anIOR->Value().c_str();
+        return app->orb()->string_to_object(aVal);
       }
     }
     return CORBA::Object::_nil();
@@ -205,9 +205,9 @@ namespace SMESH
   {
     if (!theIO.IsNull()) {
       if (theIO->hasEntry()) {
-	_PTR(Study) aStudy = GetActiveStudyDocument();
-	_PTR(SObject) anObj = aStudy->FindObjectID(theIO->getEntry());
-	return SObjectToObject(anObj,aStudy);
+        _PTR(Study) aStudy = GetActiveStudyDocument();
+        _PTR(SObject) anObj = aStudy->FindObjectID(theIO->getEntry());
+        return SObjectToObject(anObj,aStudy);
       }
     }
     return CORBA::Object::_nil();
@@ -273,11 +273,11 @@ namespace SMESH
     for (int i = 1; anIter->More(); anIter->Next(), i++) {
       _PTR(SObject) aSObj = anIter->Value();
       if (i >= 4) {
-	_PTR(ChildIterator) anIter1 = aStudy->NewChildIterator(aSObj);
-	for ( ; anIter1->More(); anIter1->Next()) {
-	  _PTR(SObject) aSObj1 = anIter1->Value();
-	  anAttr = aBuilder->FindOrCreateAttribute(aSObj1, "AttributePixMap");
-	  aPixmap = anAttr;
+        _PTR(ChildIterator) anIter1 = aStudy->NewChildIterator(aSObj);
+        for ( ; anIter1->More(); anIter1->Next()) {
+          _PTR(SObject) aSObj1 = anIter1->Value();
+          anAttr = aBuilder->FindOrCreateAttribute(aSObj1, "AttributePixMap");
+          aPixmap = anAttr;
           if (theIsNotModif) {
             aPixmap->SetPixMap("ICON_SMESH_TREE_MESH");
           } else if ( isEmptyMesh ) {
@@ -285,7 +285,7 @@ namespace SMESH
           } else {
             aPixmap->SetPixMap("ICON_SMESH_TREE_MESH_PARTIAL");
           }
-	}
+        }
       }
     }
   }
@@ -300,10 +300,10 @@ namespace SMESH
     }
     else {
       SUIT_MessageBox::warning(0, QObject::tr("WRN_WARNING"),
-			       QObject::tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
-			       arg(app->resourceMgr()->stringValue("ExternalBrowser", 
-								   "application")).
-			       arg(theHelpFileName));
+                               QObject::tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
+                               arg(app->resourceMgr()->stringValue("ExternalBrowser", 
+                                                                   "application")).
+                               arg(theHelpFileName));
     }
   }
 

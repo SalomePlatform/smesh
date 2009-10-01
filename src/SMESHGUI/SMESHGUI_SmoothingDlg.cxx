@@ -365,19 +365,19 @@ bool SMESHGUI_SmoothingDlg::ClickOnApply()
 
       if ( CheckBoxParametric->isChecked() ) {
         if(CheckBoxMesh->isChecked())
-	  aResult = aMeshEditor->SmoothParametricObject(mySelectedObject, aNodesId.inout(),
-							anIterationLimit, aMaxAspectRatio, aMethod);
-	else
-	  aResult = aMeshEditor->SmoothParametric(anElementsId.inout(), aNodesId.inout(),
-						  anIterationLimit, aMaxAspectRatio, aMethod);
+          aResult = aMeshEditor->SmoothParametricObject(mySelectedObject, aNodesId.inout(),
+                                                        anIterationLimit, aMaxAspectRatio, aMethod);
+        else
+          aResult = aMeshEditor->SmoothParametric(anElementsId.inout(), aNodesId.inout(),
+                                                  anIterationLimit, aMaxAspectRatio, aMethod);
       }
       else {
         if(CheckBoxMesh->isChecked())
-	  aResult = aMeshEditor->SmoothObject(mySelectedObject, aNodesId.inout(),
-					      anIterationLimit, aMaxAspectRatio, aMethod);
-	else
-	  aResult = aMeshEditor->Smooth(anElementsId.inout(), aNodesId.inout(),
-					anIterationLimit, aMaxAspectRatio, aMethod);
+          aResult = aMeshEditor->SmoothObject(mySelectedObject, aNodesId.inout(),
+                                              anIterationLimit, aMaxAspectRatio, aMethod);
+        else
+          aResult = aMeshEditor->Smooth(anElementsId.inout(), aNodesId.inout(),
+                                        anIterationLimit, aMaxAspectRatio, aMethod);
       }
 
       myMesh->SetParameters( aParameters.join(":").toLatin1().constData() );
@@ -448,10 +448,10 @@ void SMESHGUI_SmoothingDlg::ClickOnHelp()
     platform = "application";
 #endif
     SUIT_MessageBox::warning(this, tr("WRN_WARNING"),
-			     tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
-			     arg(app->resourceMgr()->stringValue("ExternalBrowser",
-								 platform)).
-			     arg(myHelpFileName));
+                             tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
+                             arg(app->resourceMgr()->stringValue("ExternalBrowser",
+                                                                 platform)).
+                             arg(myHelpFileName));
   }
 }
 
@@ -490,28 +490,28 @@ void SMESHGUI_SmoothingDlg::onTextChange (const QString& theNewText)
       const Handle(SALOME_InteractiveObject)& anIO = myActor->getIO();
       TColStd_MapOfInteger newIndices;
       for (int i = 0; i < aListId.count(); i++) {
-	const SMDS_MeshElement * e = aMesh->FindElement(aListId[ i ].toInt());
-	if (e)
-	  newIndices.Add(e->GetID());
-	myNbOkElements++;
+        const SMDS_MeshElement * e = aMesh->FindElement(aListId[ i ].toInt());
+        if (e)
+          newIndices.Add(e->GetID());
+        myNbOkElements++;
       }
       mySelector->AddOrRemoveIndex(anIO, newIndices, false);
       if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
-	aViewWindow->highlight( anIO, true, true );
+        aViewWindow->highlight( anIO, true, true );
       myElementsId = theNewText;
 
     } else if (send == LineEditNodes) {
       TColStd_MapOfInteger newIndices;
       
       for (int i = 0; i < aListId.count(); i++) {
-	const SMDS_MeshNode * n = aMesh->FindNode(aListId[ i ].toInt());
-	if (n)
-	  newIndices.Add(n->GetID());
-	myNbOkNodes++;
+        const SMDS_MeshNode * n = aMesh->FindNode(aListId[ i ].toInt());
+        if (n)
+          newIndices.Add(n->GetID());
+        myNbOkNodes++;
       }
       mySelector->AddOrRemoveIndex(myActor->getIO(), newIndices, false);
       if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
-	aViewWindow->highlight( myActor->getIO(), true, true );
+        aViewWindow->highlight( myActor->getIO(), true, true );
     }
   }
 
@@ -629,21 +629,21 @@ void SMESHGUI_SmoothingDlg::SetEditCurrentArgument()
         myEditCurrentArgument = LineEditElements;
         SMESH::SetPointRepresentation(false);
         if (CheckBoxMesh->isChecked()) {
-	  //          mySelectionMgr->setSelectionModes(ActorSelection);
-	  if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
-	    aViewWindow->SetSelectionMode(ActorSelection);
-	  mySelectionMgr->installFilter(myMeshOrSubMeshOrGroupFilter);
+          //          mySelectionMgr->setSelectionModes(ActorSelection);
+          if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+            aViewWindow->SetSelectionMode(ActorSelection);
+          mySelectionMgr->installFilter(myMeshOrSubMeshOrGroupFilter);
         } else {
-	  if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
-	    aViewWindow->SetSelectionMode(FaceSelection);
-	}
+          if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+            aViewWindow->SetSelectionMode(FaceSelection);
+        }
       } else if (send == SelectNodesButton) {
-	LineEditNodes->clear();
+        LineEditNodes->clear();
         myEditCurrentArgument = LineEditNodes;
         SMESH::SetPointRepresentation(true);
-	if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI )) {
-	  aViewWindow->SetSelectionMode(NodeSelection);
-	}
+        if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI )) {
+          aViewWindow->SetSelectionMode(NodeSelection);
+        }
       }
 
       myEditCurrentArgument->setFocus();
@@ -782,8 +782,8 @@ void SMESHGUI_SmoothingDlg::setFilters( const bool theIsElem )
 {
   if(myMesh->_is_nil()) {
     SUIT_MessageBox::critical(this,
-			      tr("SMESH_ERROR"),
-			      tr("NO_MESH_SELECTED"));
+                              tr("SMESH_ERROR"),
+                              tr("NO_MESH_SELECTED"));
    return;
   }
   if ( !myFilterDlg )

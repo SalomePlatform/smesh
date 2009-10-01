@@ -221,7 +221,7 @@ namespace SMESH
     void SetPosition (SMESH_Actor* theActor,
                       const int    theType,
                       TVTKIds&     theIds,
-		      const int    theMode,
+                      const int    theMode,
                       const bool   theReverse)
     {
       vtkUnstructuredGrid *aGrid = theActor->GetUnstructuredGrid();
@@ -311,8 +311,8 @@ namespace SMESH
     ~TElementSimulation()
     {
       if (FindVtkViewWindow(myApplication->activeViewManager(), myViewWindow)) {
-	myVTKViewWindow->RemoveActor(myPreviewActor);
-	myVTKViewWindow->RemoveActor(myFaceOrientation);
+        myVTKViewWindow->RemoveActor(myPreviewActor);
+        myVTKViewWindow->RemoveActor(myFaceOrientation);
       }
       myPreviewActor->Delete();
       myFaceOrientation->Delete();
@@ -411,7 +411,7 @@ QWidget* IdEditItem::createEditor() const
 // purpose  : constructor
 //=================================================================================
 SMESHGUI_AddQuadraticElementDlg::SMESHGUI_AddQuadraticElementDlg( SMESHGUI* theModule,
-								  const int theType )
+                                                                  const int theType )
   : QDialog( SMESH::GetDesktop( theModule ) ),
     mySMESHGUI( theModule ),
     mySelectionMgr( SMESH::GetSelectionMgr( theModule ) ),
@@ -766,10 +766,10 @@ void SMESHGUI_AddQuadraticElementDlg::ClickOnHelp()
     platform = "application";
 #endif
     SUIT_MessageBox::warning(this, tr("WRN_WARNING"),
-			     tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
-			     arg(app->resourceMgr()->stringValue("ExternalBrowser", 
-								 platform)).
-			     arg(myHelpFileName));
+                             tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
+                             arg(app->resourceMgr()->stringValue("ExternalBrowser", 
+                                                                 platform)).
+                             arg(myHelpFileName));
   }
 }
 
@@ -797,12 +797,12 @@ void SMESHGUI_AddQuadraticElementDlg::onTextChange (const QString& theNewText)
     for (int i = 0; i < aListId.count(); i++) {
       if ( const SMDS_MeshNode * n = aMesh->FindNode( aListId[ i ].toInt() ) )
       {
-	newIndices.Add( n->GetID() );
+        newIndices.Add( n->GetID() );
       }
       else
       {
-	allOk = false;
-	break;
+        allOk = false;
+        break;
       }
     }
     
@@ -914,16 +914,16 @@ void SMESHGUI_AddQuadraticElementDlg::displaySimulation()
     else
     {
       for ( int row = 0; row < myNbCorners; row++ )
-	anIds.push_back( myActor->GetObject()->GetNodeVTKId( myTable->item(row, 0)->text().toInt() ) );
+        anIds.push_back( myActor->GetObject()->GetNodeVTKId( myTable->item(row, 0)->text().toInt() ) );
       
       for ( int row = 0; row < myTable->rowCount(); row++ )
       {
-	anID = myTable->item(row, 1)->text().toInt(&ok);
-	if (!ok) {
-	  anID = myTable->item(row, 0)->text().toInt();
-	  aDisplayMode = VTK_WIREFRAME;
-	}
-	anIds.push_back( myActor->GetObject()->GetNodeVTKId(anID) );
+        anID = myTable->item(row, 1)->text().toInt(&ok);
+        if (!ok) {
+          anID = myTable->item(row, 0)->text().toInt();
+          aDisplayMode = VTK_WIREFRAME;
+        }
+        anIds.push_back( myActor->GetObject()->GetNodeVTKId(anID) );
       }
     }
     
@@ -1117,7 +1117,7 @@ void SMESHGUI_AddQuadraticElementDlg::UpdateTable( bool theConersValidity )
     // clear table
     for ( int row = 0; row < myTable->rowCount(); row++ )
       for ( int col = 0; col < myTable->columnCount(); col++ )
-	if ( QTableWidgetItem* aTWI = myTable->item(row, col) ) aTWI->setText("");
+        if ( QTableWidgetItem* aTWI = myTable->item(row, col) ) aTWI->setText("");
     
     myTable->setEnabled( false );
   }

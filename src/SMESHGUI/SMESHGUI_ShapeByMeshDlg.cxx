@@ -129,7 +129,7 @@ QFrame* SMESHGUI_ShapeByMeshDlg::createMainFrame (QWidget* theParent)
   QLabel* anIdLabel = new QLabel( tr("ELEMENT_ID"), aMainGrp );
   myElementId = new QLineEdit( aMainGrp );
   myElementId->setValidator( new SMESHGUI_IdValidator( theParent, 
-						       !myIsMultipleAllowed ? 1 : 0 ) ); // 0 for any number of entities
+                                                       !myIsMultipleAllowed ? 1 : 0 ) ); // 0 for any number of entities
 
   // shape name
   QLabel* aNameLabel = new QLabel( tr("GEOMETRY_NAME"), aMainGrp );
@@ -250,36 +250,36 @@ void SMESHGUI_ShapeByMeshOp::SetMesh (SMESH::SMESH_Mesh_ptr thePtr)
       int shapeDim = 0; // max dim with several shapes
       //if ( /*mySelectionMgr*/ selectionMgr()->isOk(anIObj) ) // check that the mesh has a valid shape
       {
-	_PTR(SObject) aSO = SMESH::FindSObject(myMesh.in());
-	GEOM::GEOM_Object_var mainShape = SMESH::GetGeom(aSO);
-	if ( !mainShape->_is_nil() ) 
-	  {
-	    TopoDS_Shape aShape;
-	    if ( GEOMBase::GetShape(mainShape, aShape))
-	      {
-		TopAbs_ShapeEnum types[4] = { TopAbs_EDGE, TopAbs_FACE, TopAbs_SHELL, TopAbs_SOLID };
-		for ( int dim = 4; dim > 0; --dim ) {
-		  TopAbs_ShapeEnum type = types[ dim - 1 ];
-		  TopAbs_ShapeEnum avoid = ( type == TopAbs_SHELL ) ? TopAbs_SOLID : TopAbs_SHAPE;
-		  TopExp_Explorer exp( aShape, type, avoid );
-		  for ( ; nbShapes[ type ] < 2 && exp.More(); exp.Next() )
-		    ++nbShapes[ type ];
-		  if ( nbShapes[ type ] > 1 ) {
-		    shapeDim = dim;
-		    break;
-		  }
-		}
-	      }
-	  }
+        _PTR(SObject) aSO = SMESH::FindSObject(myMesh.in());
+        GEOM::GEOM_Object_var mainShape = SMESH::GetGeom(aSO);
+        if ( !mainShape->_is_nil() ) 
+          {
+            TopoDS_Shape aShape;
+            if ( GEOMBase::GetShape(mainShape, aShape))
+              {
+                TopAbs_ShapeEnum types[4] = { TopAbs_EDGE, TopAbs_FACE, TopAbs_SHELL, TopAbs_SOLID };
+                for ( int dim = 4; dim > 0; --dim ) {
+                  TopAbs_ShapeEnum type = types[ dim - 1 ];
+                  TopAbs_ShapeEnum avoid = ( type == TopAbs_SHELL ) ? TopAbs_SOLID : TopAbs_SHAPE;
+                  TopExp_Explorer exp( aShape, type, avoid );
+                  for ( ; nbShapes[ type ] < 2 && exp.More(); exp.Next() )
+                    ++nbShapes[ type ];
+                  if ( nbShapes[ type ] > 1 ) {
+                    shapeDim = dim;
+                    break;
+                  }
+                }
+              }
+          }
       }
       if (shapeDim > 0)
-	{
-	  if ( nbShapes[ TopAbs_SHELL ] + nbShapes[ TopAbs_SOLID ] > 1 )
-	    shapeDim = 3;
-	  hasElement[ EDGE ]   = shapeDim > 0 && myMesh->NbEdges();
-	  hasElement[ FACE ]   = shapeDim > 1 && myMesh->NbFaces();
-	  hasElement[ VOLUME ] = shapeDim > 2 && myMesh->NbVolumes();
-	}
+        {
+          if ( nbShapes[ TopAbs_SHELL ] + nbShapes[ TopAbs_SOLID ] > 1 )
+            shapeDim = 3;
+          hasElement[ EDGE ]   = shapeDim > 0 && myMesh->NbEdges();
+          hasElement[ FACE ]   = shapeDim > 1 && myMesh->NbFaces();
+          hasElement[ VOLUME ] = shapeDim > 2 && myMesh->NbVolumes();
+        }
       myHasSolids = nbShapes[ TopAbs_SOLID ];
     }
 
@@ -306,83 +306,83 @@ void SMESHGUI_ShapeByMeshOp::commitOperation()
     QStringList aListId = myDlg->myElementId->text().split( " ", QString::SkipEmptyParts);
     if (aListId.count() == 1)
       {
-	int elemID = (aListId.first()).toInt();
-	myGeomObj = GEOM::GEOM_Object::_duplicate(
-	    SMESHGUI::GetSMESHGen()->GetGeometryByMeshElement
-	  ( myMesh.in(), elemID, myDlg->myGeomName->text().toLatin1().constData()) );
+        int elemID = (aListId.first()).toInt();
+        myGeomObj = GEOM::GEOM_Object::_duplicate(
+            SMESHGUI::GetSMESHGen()->GetGeometryByMeshElement
+          ( myMesh.in(), elemID, myDlg->myGeomName->text().toLatin1().constData()) );
       }
     else
       {
-	GEOM::GEOM_Gen_var geomGen = SMESH::GetGEOMGen();
-	_PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
-	
-	if (geomGen->_is_nil() || !aStudy)
-	  return;
-	
-	GEOM::GEOM_IShapesOperations_var aShapesOp =
-	  geomGen->GetIShapesOperations(aStudy->StudyId());
-	if (aShapesOp->_is_nil() )
-	  return;
-	
-	TopAbs_ShapeEnum aGroupType = TopAbs_SHAPE;
-	
-	std::map<double, GEOM::GEOM_Object_var> aGeomObjectsMap;
-	GEOM::GEOM_Object_var aGeomObject;
+        GEOM::GEOM_Gen_var geomGen = SMESH::GetGEOMGen();
+        _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
+        
+        if (geomGen->_is_nil() || !aStudy)
+          return;
+        
+        GEOM::GEOM_IShapesOperations_var aShapesOp =
+          geomGen->GetIShapesOperations(aStudy->StudyId());
+        if (aShapesOp->_is_nil() )
+          return;
+        
+        TopAbs_ShapeEnum aGroupType = TopAbs_SHAPE;
+        
+        std::map<double, GEOM::GEOM_Object_var> aGeomObjectsMap;
+        GEOM::GEOM_Object_var aGeomObject;
 
-	GEOM::GEOM_Object_var aMeshShape = myMesh->GetShapeToMesh();
-	
-	for ( int i = 0; i < aListId.count(); i++ )
-	  {
-	    aGeomObject =
-	      SMESHGUI::GetSMESHGen()->FindGeometryByMeshElement(myMesh.in(), aListId[i].toInt());
+        GEOM::GEOM_Object_var aMeshShape = myMesh->GetShapeToMesh();
+        
+        for ( int i = 0; i < aListId.count(); i++ )
+          {
+            aGeomObject =
+              SMESHGUI::GetSMESHGen()->FindGeometryByMeshElement(myMesh.in(), aListId[i].toInt());
 
-	    if (aGeomObject->_is_nil()) continue;
-	    
-	    double anId = aShapesOp->GetSubShapeIndex(aMeshShape, aGeomObject);
-	    if (aShapesOp->IsDone() && aGeomObjectsMap.find(anId) == aGeomObjectsMap.end())
-	      {
-		aGeomObjectsMap[anId] = aGeomObject;
+            if (aGeomObject->_is_nil()) continue;
+            
+            double anId = aShapesOp->GetSubShapeIndex(aMeshShape, aGeomObject);
+            if (aShapesOp->IsDone() && aGeomObjectsMap.find(anId) == aGeomObjectsMap.end())
+              {
+                aGeomObjectsMap[anId] = aGeomObject;
 
-		TopAbs_ShapeEnum aSubShapeType = (TopAbs_ShapeEnum)aGeomObject->GetShapeType();
-		if (i == 0)
-		  aGroupType = aSubShapeType;
-		else if (aSubShapeType != aGroupType)
-		  aGroupType = TopAbs_SHAPE;
-	      }
-	  }
-	
-	int aNumberOfGO = aGeomObjectsMap.size();
-	if (aNumberOfGO == 1)
-	  myGeomObj = (*aGeomObjectsMap.begin()).second;
-	else if (aNumberOfGO > 1)
-	  {
-	    GEOM::GEOM_IGroupOperations_var aGroupOp =
-	      geomGen->GetIGroupOperations(aStudy->StudyId());
-	    if(aGroupOp->_is_nil())
-	      return;
-	    
-	    GEOM::ListOfGO_var aGeomObjects = new GEOM::ListOfGO();
-	    aGeomObjects->length( aNumberOfGO );
+                TopAbs_ShapeEnum aSubShapeType = (TopAbs_ShapeEnum)aGeomObject->GetShapeType();
+                if (i == 0)
+                  aGroupType = aSubShapeType;
+                else if (aSubShapeType != aGroupType)
+                  aGroupType = TopAbs_SHAPE;
+              }
+          }
+        
+        int aNumberOfGO = aGeomObjectsMap.size();
+        if (aNumberOfGO == 1)
+          myGeomObj = (*aGeomObjectsMap.begin()).second;
+        else if (aNumberOfGO > 1)
+          {
+            GEOM::GEOM_IGroupOperations_var aGroupOp =
+              geomGen->GetIGroupOperations(aStudy->StudyId());
+            if(aGroupOp->_is_nil())
+              return;
+            
+            GEOM::ListOfGO_var aGeomObjects = new GEOM::ListOfGO();
+            aGeomObjects->length( aNumberOfGO );
 
-	    int i = 0;
-	    std::map<double, GEOM::GEOM_Object_var>::iterator anIter;
-	    for (anIter = aGeomObjectsMap.begin(); anIter!=aGeomObjectsMap.end(); anIter++)
-	      aGeomObjects[i++] = (*anIter).second;
-	  
-	    //create geometry group
-	    myGeomObj = aGroupOp->CreateGroup(aMeshShape, aGroupType);
-	    aGroupOp->UnionList(myGeomObj, aGeomObjects);
+            int i = 0;
+            std::map<double, GEOM::GEOM_Object_var>::iterator anIter;
+            for (anIter = aGeomObjectsMap.begin(); anIter!=aGeomObjectsMap.end(); anIter++)
+              aGeomObjects[i++] = (*anIter).second;
+          
+            //create geometry group
+            myGeomObj = aGroupOp->CreateGroup(aMeshShape, aGroupType);
+            aGroupOp->UnionList(myGeomObj, aGeomObjects);
 
-	    if (!aGroupOp->IsDone())
-	      return;
-	  }
-	
-	// publish the GEOM object in study
-	QString aNewGeomGroupName ( myDlg->myGeomName->text() );
-	  
-	SALOMEDS::SObject_var aNewGroupSO =
-	  geomGen->AddInStudy(SMESHGUI::GetSMESHGen()->GetCurrentStudy(), myGeomObj, 
-			      aNewGeomGroupName.toLatin1().data(), aMeshShape);
+            if (!aGroupOp->IsDone())
+              return;
+          }
+        
+        // publish the GEOM object in study
+        QString aNewGeomGroupName ( myDlg->myGeomName->text() );
+          
+        SALOMEDS::SObject_var aNewGroupSO =
+          geomGen->AddInStudy(SMESHGUI::GetSMESHGen()->GetCurrentStudy(), myGeomObj, 
+                              aNewGeomGroupName.toLatin1().data(), aMeshShape);
       }
   }
   catch (const SALOME::SALOME_Exception& S_ex) {
@@ -422,7 +422,7 @@ void SMESHGUI_ShapeByMeshOp::onSelectionDone()
                                                    aList.First(), aString);
     if (nbElems > 0) {
       if (!myIsMultipleAllowed && nbElems != 1 )
-	return;
+        return;
       setElementID( aString );
       myDlg->setButtonEnabled( true, QtxDialog::OK );
     }
@@ -485,31 +485,31 @@ void SMESHGUI_ShapeByMeshOp::onElemIdChanged(const QString& theNewText)
     {
       if ( SMDS_Mesh* aMesh = actor->GetObject()->GetMesh() )
       {
-	SMDSAbs_ElementType type = SMDSAbs_Edge;
-	switch ( myDlg->myElemTypeGroup->checkedId() ) {
-	case EDGE  : type = SMDSAbs_Edge;   break;
-	case FACE  : type = SMDSAbs_Face;   break;
-	case VOLUME: type = SMDSAbs_Volume; break;
-	default: return;
-	}
-	TColStd_MapOfInteger newIndices;
-	QStringList aListId = theNewText.split( " ", QString::SkipEmptyParts);
-	for ( int i = 0; i < aListId.count(); i++ ) {
-	  if ( const SMDS_MeshElement * e = aMesh->FindElement( aListId[ i ].toInt() ))
-	    if ( e->GetType() == type )
-	      newIndices.Add( e->GetID() );
-	}
-	
-	if ( !newIndices.IsEmpty() )
-	{
-	  if (!myIsMultipleAllowed && newIndices.Extent() != 1)
-	    return;
-	  if ( SVTK_Selector* s = selector() ) {
-	    s->AddOrRemoveIndex( actor->getIO(), newIndices, false );
-	    viewWindow()->highlight( actor->getIO(), true, true );
-	    myDlg->setButtonEnabled( true, QtxDialog::OK );
-	  }
-	}
+        SMDSAbs_ElementType type = SMDSAbs_Edge;
+        switch ( myDlg->myElemTypeGroup->checkedId() ) {
+        case EDGE  : type = SMDSAbs_Edge;   break;
+        case FACE  : type = SMDSAbs_Face;   break;
+        case VOLUME: type = SMDSAbs_Volume; break;
+        default: return;
+        }
+        TColStd_MapOfInteger newIndices;
+        QStringList aListId = theNewText.split( " ", QString::SkipEmptyParts);
+        for ( int i = 0; i < aListId.count(); i++ ) {
+          if ( const SMDS_MeshElement * e = aMesh->FindElement( aListId[ i ].toInt() ))
+            if ( e->GetType() == type )
+              newIndices.Add( e->GetID() );
+        }
+        
+        if ( !newIndices.IsEmpty() )
+        {
+          if (!myIsMultipleAllowed && newIndices.Extent() != 1)
+            return;
+          if ( SVTK_Selector* s = selector() ) {
+            s->AddOrRemoveIndex( actor->getIO(), newIndices, false );
+            viewWindow()->highlight( actor->getIO(), true, true );
+            myDlg->setButtonEnabled( true, QtxDialog::OK );
+          }
+        }
       }
     }
   }

@@ -242,14 +242,14 @@ void SMESHGUI_WhatIsDlg::SelectionsClicked (int selectionId)
     {
       SMESH::SetPointRepresentation(true);
       if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
-	aViewWindow->SetSelectionMode( NodeSelection );
+        aViewWindow->SetSelectionMode( NodeSelection );
       break;
     }    
   case 1:
     {
       SMESH::SetPointRepresentation(false);
       if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
-	aViewWindow->SetSelectionMode( CellSelection );
+        aViewWindow->SetSelectionMode( CellSelection );
       break;
     }
   }
@@ -299,10 +299,10 @@ void SMESHGUI_WhatIsDlg::ClickOnHelp()
     app->onHelpContextModule(mySMESHGUI ? app->moduleName(mySMESHGUI->moduleName()) : QString(""), myHelpFileName);
   else {
     SUIT_MessageBox::warning(this, tr("WRN_WARNING"),
-			     tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
-			     arg(app->resourceMgr()->stringValue("ExternalBrowser",
-								 "application")).
-			     arg(myHelpFileName));
+                             tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
+                             arg(app->resourceMgr()->stringValue("ExternalBrowser",
+                                                                 "application")).
+                             arg(myHelpFileName));
   }
 }
 
@@ -329,10 +329,10 @@ void SMESHGUI_WhatIsDlg::onTextChange (const QString& theNewText)
 
     for (int i = 0; i < aListId.count(); i++) {
       const SMDS_MeshElement * e = RadioButtonNodes->isChecked()?
-	aMesh->FindNode(aListId[ i ].toInt()):
-	aMesh->FindElement(aListId[ i ].toInt());
+        aMesh->FindNode(aListId[ i ].toInt()):
+        aMesh->FindElement(aListId[ i ].toInt());
       if (e)
-	newIndices.Add(e->GetID());
+        newIndices.Add(e->GetID());
     }
 
     mySelector->AddOrRemoveIndex( anIO, newIndices, false );
@@ -455,22 +455,22 @@ void SMESHGUI_WhatIsDlg::SelectionIntoArgument()
       anInfo+=tr("SMESH_FACE")+"<br>";
       anInfo+="<b>" + tr("SMESH_MESHINFO_TYPE")+":</b> ";
       if(!ef->IsPoly())
-	anInfo+=(ef->IsQuadratic()?tr("SMESH_MESHINFO_ORDER2"):tr("SMESH_MESHINFO_ORDER1"))+" ";
+        anInfo+=(ef->IsQuadratic()?tr("SMESH_MESHINFO_ORDER2"):tr("SMESH_MESHINFO_ORDER1"))+" ";
       switch(ef->NbNodes()) {
       case 3:
       case 6:
-	{
-	  anInfo+=tr("SMESH_TRIANGLE");
-	  break;
-	}
+        {
+          anInfo+=tr("SMESH_TRIANGLE");
+          break;
+        }
       case 4:
       case 8:
-	{
-	  anInfo+=tr("SMESH_QUADRANGLE");
-	  break;
-	}
+        {
+          anInfo+=tr("SMESH_QUADRANGLE");
+          break;
+        }
       default:
-	break;
+        break;
       }
       anInfo+="<br>";
     } else if(e->GetType() == SMDSAbs_Volume) {
@@ -479,39 +479,39 @@ void SMESHGUI_WhatIsDlg::SelectionIntoArgument()
       const SMDS_MeshVolume *ev = (SMDS_MeshVolume*) e;
       SMDS_VolumeTool vt(ev);
       if(vt.GetVolumeType() != SMDS_VolumeTool::POLYHEDA)
-	anInfo+=(ev->IsQuadratic()?tr("SMESH_MESHINFO_ORDER2"):tr("SMESH_MESHINFO_ORDER1"))+" ";
+        anInfo+=(ev->IsQuadratic()?tr("SMESH_MESHINFO_ORDER2"):tr("SMESH_MESHINFO_ORDER1"))+" ";
       switch(vt.GetVolumeType()) {
       case SMDS_VolumeTool::TETRA:
       case SMDS_VolumeTool::QUAD_TETRA:
-	{
-	  anInfo+=tr("SMESH_TETRAS");
-	  break;
-	}
+        {
+          anInfo+=tr("SMESH_TETRAS");
+          break;
+        }
       case SMDS_VolumeTool::PYRAM:
       case SMDS_VolumeTool::QUAD_PYRAM:
-	{
-	  anInfo+=tr("SMESH_PYRAMID");
-	  break;
-	}
+        {
+          anInfo+=tr("SMESH_PYRAMID");
+          break;
+        }
       case SMDS_VolumeTool::PENTA:
       case SMDS_VolumeTool::QUAD_PENTA:
-	{
-	  anInfo+=tr("SMESH_PRISM");
-	  break;
-	}
+        {
+          anInfo+=tr("SMESH_PRISM");
+          break;
+        }
       case SMDS_VolumeTool::HEXA:
       case SMDS_VolumeTool::QUAD_HEXA:
-	{
-	  anInfo+=tr("SMESH_HEXAS");
-	  break;
-	}
+        {
+          anInfo+=tr("SMESH_HEXAS");
+          break;
+        }
       case SMDS_VolumeTool::POLYHEDA:
-	{
-	  anInfo+=tr("SMESH_POLYEDRON");
-	  break;
-	}
+        {
+          anInfo+=tr("SMESH_POLYEDRON");
+          break;
+        }
       default:
-	break;
+        break;
       }
       anInfo+="<br>";
     }
@@ -523,17 +523,17 @@ void SMESHGUI_WhatIsDlg::SelectionIntoArgument()
       const SMDS_MeshNode* node = static_cast<const SMDS_MeshNode*>( nodeIt->next() );
       anXYZ.Add( gp_XYZ( node->X(), node->Y(), node->Z() ) );
       if(e->GetType() != SMDSAbs_Node)
-	aNodesInfo+=QString("<b>Node %1:</b><br>Id=%2, X=%3, Y=%4, Z=%5<br>").arg(nbNodes+1).arg(node->GetID()).arg(node->X()).arg(node->Y()).arg(node->Z());
+        aNodesInfo+=QString("<b>Node %1:</b><br>Id=%2, X=%3, Y=%4, Z=%5<br>").arg(nbNodes+1).arg(node->GetID()).arg(node->X()).arg(node->Y()).arg(node->Z());
       // Calculate Connectivity
       SMDS_ElemIteratorPtr it = node->GetInverseElementIterator();
       if (it) {
-	aNodesInfo+="<b>" + tr("CONNECTED_ELEMENTS") + ":</b>";
-	while (it->more()) {
-	  const SMDS_MeshElement* elem = it->next();
-	  aNodesInfo+=QString(" %1").arg(elem->GetID());
-	}
-	if ( (nbNodes+1) != e->NbNodes())
-	  aNodesInfo+=QString("<br><br>");
+        aNodesInfo+="<b>" + tr("CONNECTED_ELEMENTS") + ":</b>";
+        while (it->more()) {
+          const SMDS_MeshElement* elem = it->next();
+          aNodesInfo+=QString(" %1").arg(elem->GetID());
+        }
+        if ( (nbNodes+1) != e->NbNodes())
+          aNodesInfo+=QString("<br><br>");
       }
     }
     if(e->GetType() != SMDSAbs_Node)

@@ -203,20 +203,20 @@ void SMESHGUI_StandardMeshInfosDlg::DumpMeshInfos()
       int aDimension = 0;
       double aNbDimElements = 0;
       if (aNbVolumes > 0) {
-	aNbDimElements = aNbVolumes;
-	aDimension = 3;
+        aNbDimElements = aNbVolumes;
+        aDimension = 3;
       }
       else if(aNbFaces > 0) {
-	aNbDimElements = aNbFaces;
-	aDimension = 2;
+        aNbDimElements = aNbFaces;
+        aDimension = 2;
       }
       else if(aNbEdges > 0) {
-	aNbDimElements = aNbEdges;
-	aDimension = 1;
+        aNbDimElements = aNbEdges;
+        aDimension = 1;
       }
       else if(aNbNodes > 0) {
-	aNbDimElements = aNbNodes;
-	aDimension = 0;
+        aNbDimElements = aNbNodes;
+        aDimension = 0;
       }
 
       // information about the mesh
@@ -234,15 +234,15 @@ void SMESHGUI_StandardMeshInfosDlg::DumpMeshInfos()
       aMeshSO->FindSubObject(SMESH::Tag_NodeGroups, anObj);
       if (anObj) {
         _PTR(ChildIterator) it = aStudy->NewChildIterator(anObj);
-	if (it->More()) {
+        if (it->More()) {
           anInfo.append(QString("Groups:<br><br>"));
           hasGroup = true;
         }
-	for ( ; it->More(); it->Next()) {
+        for ( ; it->More(); it->Next()) {
           _PTR(SObject) subObj = it->Value();
           CORBA::Object_var anObject = SMESH::SObjectToObject(subObj);
-	  SMESH::SMESH_GroupBase_var aGroup = SMESH::SMESH_GroupBase::_narrow(anObject);
-	  if (!aGroup->_is_nil()) {
+          SMESH::SMESH_GroupBase_var aGroup = SMESH::SMESH_GroupBase::_narrow(anObject);
+          if (!aGroup->_is_nil()) {
             anInfo.append(QString("-   <b>%1</b><br>").arg(aGroup->GetName()));
             anInfo.append(QString("%1<br>").arg("on nodes"));
             anInfo.append(QString("%1<br>").arg(aGroup->Size()));
@@ -259,7 +259,7 @@ void SMESHGUI_StandardMeshInfosDlg::DumpMeshInfos()
               anInfo.append(QString("<br>"));
             }
           }
-	}
+        }
       }
 
       // info about groups on edges
@@ -271,11 +271,11 @@ void SMESHGUI_StandardMeshInfosDlg::DumpMeshInfos()
           anInfo.append(QString("Groups:<br><br>"));
           hasGroup = true;
         }
-	for ( ; it->More(); it->Next()) {
+        for ( ; it->More(); it->Next()) {
           _PTR(SObject) subObj = it->Value();
           CORBA::Object_var anObject = SMESH::SObjectToObject(subObj);
-	  SMESH::SMESH_GroupBase_var aGroup = SMESH::SMESH_GroupBase::_narrow(anObject);
-	  if (!aGroup->_is_nil()) {
+          SMESH::SMESH_GroupBase_var aGroup = SMESH::SMESH_GroupBase::_narrow(anObject);
+          if (!aGroup->_is_nil()) {
             anInfo.append(QString("-   <b>%1</b><br>").arg(aGroup->GetName()));
             anInfo.append(QString("%1<br>").arg("on edges"));
             anInfo.append(QString("%1<br>").arg(aGroup->Size()));
@@ -292,7 +292,7 @@ void SMESHGUI_StandardMeshInfosDlg::DumpMeshInfos()
               anInfo.append(QString("<br>"));
             }
           }
-	}
+        }
       }
 
       // info about groups on faces
@@ -300,15 +300,15 @@ void SMESHGUI_StandardMeshInfosDlg::DumpMeshInfos()
       aMeshSO->FindSubObject(SMESH::Tag_FaceGroups, anObj);
       if (anObj) {
         _PTR(ChildIterator) it = aStudy->NewChildIterator(anObj);
-	if (!hasGroup && it->More()) {
+        if (!hasGroup && it->More()) {
           anInfo.append(QString("Groups:<br><br>"));
           hasGroup = true;
         }
-	for ( ; it->More(); it->Next()) {
+        for ( ; it->More(); it->Next()) {
           _PTR(SObject) subObj = it->Value();
           CORBA::Object_var anObject = SMESH::SObjectToObject(subObj);
-	  SMESH::SMESH_GroupBase_var aGroup = SMESH::SMESH_GroupBase::_narrow(anObject);
-	  if (!aGroup->_is_nil()) {
+          SMESH::SMESH_GroupBase_var aGroup = SMESH::SMESH_GroupBase::_narrow(anObject);
+          if (!aGroup->_is_nil()) {
             anInfo.append(QString("-   <b>%1</b><br>").arg(aGroup->GetName()));
             anInfo.append(QString("%1<br>").arg("on faces"));
             anInfo.append(QString("%1<br>").arg(aGroup->Size()));
@@ -325,7 +325,7 @@ void SMESHGUI_StandardMeshInfosDlg::DumpMeshInfos()
               anInfo.append(QString("<br>"));
             }
           }
-	}
+        }
       }
 
       // info about groups on volumes
@@ -333,13 +333,13 @@ void SMESHGUI_StandardMeshInfosDlg::DumpMeshInfos()
       aMeshSO->FindSubObject(SMESH::Tag_VolumeGroups, anObj);
       if (anObj) {
         _PTR(ChildIterator) it = aStudy->NewChildIterator(anObj);
-	if (!hasGroup && it->More())
+        if (!hasGroup && it->More())
           anInfo.append(QString("Groups:<br>"));
-	for ( ; it->More(); it->Next()) {
+        for ( ; it->More(); it->Next()) {
           _PTR(SObject) subObj = it->Value();
           CORBA::Object_var anObject = SMESH::SObjectToObject(subObj);
-	  SMESH::SMESH_GroupBase_var aGroup = SMESH::SMESH_GroupBase::_narrow(anObject);
-	  if (!aGroup->_is_nil()) {
+          SMESH::SMESH_GroupBase_var aGroup = SMESH::SMESH_GroupBase::_narrow(anObject);
+          if (!aGroup->_is_nil()) {
             anInfo.append(QString("-   <b>%1</b><br>").arg(aGroup->GetName()));
             anInfo.append(QString("%1<br>").arg("on volumes"));
             anInfo.append(QString("%1<br>").arg(aGroup->Size()));
@@ -356,7 +356,7 @@ void SMESHGUI_StandardMeshInfosDlg::DumpMeshInfos()
               anInfo.append(QString("<br>"));
             }
           }
-	}
+        }
       }
 
       myInfo->setText(anInfo);
@@ -448,10 +448,10 @@ void SMESHGUI_StandardMeshInfosDlg::onHelp()
     platform = "application";
 #endif
     SUIT_MessageBox::warning(this, tr("WRN_WARNING"),
-			     tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
-			     arg(app->resourceMgr()->stringValue("ExternalBrowser",
-								 platform)).
-			     arg(myHelpFileName));
+                             tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
+                             arg(app->resourceMgr()->stringValue("ExternalBrowser",
+                                                                 platform)).
+                             arg(myHelpFileName));
   }
 }
 

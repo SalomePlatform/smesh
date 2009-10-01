@@ -172,7 +172,7 @@ void SMESHGUI_TransparencyDlg::ClickOnHelp()
   LightApp_Application* app = (LightApp_Application*)( SUIT_Session::session()->activeApplication() );
   if ( app )
     app->onHelpContextModule( mySMESHGUI ? app->moduleName( mySMESHGUI->moduleName() ) : 
-			      QString( "" ), myHelpFileName );
+                              QString( "" ), myHelpFileName );
   else {
     QString platform;
 #ifdef WIN32
@@ -181,10 +181,10 @@ void SMESHGUI_TransparencyDlg::ClickOnHelp()
     platform = "application";
 #endif
     SUIT_MessageBox::warning( this, tr( "WRN_WARNING" ),
-			      tr( "EXTERNAL_BROWSER_CANNOT_SHOW_PAGE" ).
-			      arg( app->resourceMgr()->stringValue( "ExternalBrowser", 
-								    platform ) ).
-			      arg( myHelpFileName ) );
+                              tr( "EXTERNAL_BROWSER_CANNOT_SHOW_PAGE" ).
+                              arg( app->resourceMgr()->stringValue( "ExternalBrowser", 
+                                                                    platform ) ).
+                              arg( myHelpFileName ) );
   }
 }
 
@@ -207,7 +207,7 @@ void SMESHGUI_TransparencyDlg::SetTransparency()
       Handle(SALOME_InteractiveObject) IOS = It.Value();
       SMESH_Actor* anActor = SMESH::FindActorByEntry( IOS->getEntry() );
       if ( anActor )
-	anActor->SetOpacity( opacity );
+        anActor->SetOpacity( opacity );
     }
     myViewWindow->Repaint();
   }
@@ -238,31 +238,31 @@ void SMESHGUI_TransparencyDlg::onSelectionChanged()
     if ( aList.Extent() == 1 ) {
       Handle(SALOME_InteractiveObject) FirstIOS = aList.First();
       if ( !FirstIOS.IsNull() ) {
-	SMESH_Actor* anActor = SMESH::FindActorByEntry( FirstIOS->getEntry() );
-	if ( anActor )
-	  opacity = int( anActor->GetOpacity() * 100. + 0.5 );
+        SMESH_Actor* anActor = SMESH::FindActorByEntry( FirstIOS->getEntry() );
+        if ( anActor )
+          opacity = int( anActor->GetOpacity() * 100. + 0.5 );
       }
     } 
     else if ( aList.Extent() > 1 ) {
       SALOME_ListIteratorOfListIO It( aList );
       int setOp = -1;
       for ( ; It.More(); It.Next() ) {
-	Handle(SALOME_InteractiveObject) IO = It.Value();
-	if ( !IO.IsNull() ) {
-	  SMESH_Actor* anActor = SMESH::FindActorByEntry( IO->getEntry() );
-	  if ( anActor ) {
-	    int op = int( anActor->GetOpacity() * 100. + 0.5 );
-	    if ( setOp < 0 )
-	      setOp = op;
-	    else if ( setOp != op ) {
-	      setOp = 100;
-	      break;
-	    }
-	  }
-	}
+        Handle(SALOME_InteractiveObject) IO = It.Value();
+        if ( !IO.IsNull() ) {
+          SMESH_Actor* anActor = SMESH::FindActorByEntry( IO->getEntry() );
+          if ( anActor ) {
+            int op = int( anActor->GetOpacity() * 100. + 0.5 );
+            if ( setOp < 0 )
+              setOp = op;
+            else if ( setOp != op ) {
+              setOp = 100;
+              break;
+            }
+          }
+        }
       }
       if ( setOp >= 0 )
-	opacity = setOp;
+        opacity = setOp;
     } 
     else {
     }

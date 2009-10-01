@@ -452,7 +452,7 @@ void SMESHGUI_RevolutionDlg::ConstructorsClicked (int constructorId)
       myIDs.clear();
       myNbOkElements = 0;
       if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
-	aViewWindow->SetSelectionMode(aSelMode);
+        aViewWindow->SetSelectionMode(aSelMode);
     }
 
   myEditCurrentArgument = (QWidget*)LineEditElements;
@@ -519,29 +519,29 @@ bool SMESHGUI_RevolutionDlg::ClickOnApply()
       
       if ( MakeGroupsCheck->isEnabled() && MakeGroupsCheck->isChecked() ) {
         if( CheckBoxMesh->isChecked() ) {
-	  if( GetConstructorId() == 0 )
-	    SMESH::ListOfGroups_var groups = 
-	      aMeshEditor->RotationSweepObject1DMakeGroups(mySelectedObject, anAxis,
-							   anAngle, aNbSteps, aTolerance);
-	  else
-	    SMESH::ListOfGroups_var groups = 
-	      aMeshEditor->RotationSweepObject2DMakeGroups(mySelectedObject, anAxis,
-							   anAngle, aNbSteps, aTolerance);
-	}
-	else
-	  SMESH::ListOfGroups_var groups = 
-	    aMeshEditor->RotationSweepMakeGroups(anElementsId.inout(), anAxis,
-						 anAngle, aNbSteps, aTolerance);
+          if( GetConstructorId() == 0 )
+            SMESH::ListOfGroups_var groups = 
+              aMeshEditor->RotationSweepObject1DMakeGroups(mySelectedObject, anAxis,
+                                                           anAngle, aNbSteps, aTolerance);
+          else
+            SMESH::ListOfGroups_var groups = 
+              aMeshEditor->RotationSweepObject2DMakeGroups(mySelectedObject, anAxis,
+                                                           anAngle, aNbSteps, aTolerance);
+        }
+        else
+          SMESH::ListOfGroups_var groups = 
+            aMeshEditor->RotationSweepMakeGroups(anElementsId.inout(), anAxis,
+                                                 anAngle, aNbSteps, aTolerance);
       }
       else {
         if( CheckBoxMesh->isChecked() ) {
-	  if( GetConstructorId() == 0 )
-	    aMeshEditor->RotationSweepObject1D(mySelectedObject, anAxis, anAngle, aNbSteps, aTolerance);
-	  else
-	    aMeshEditor->RotationSweepObject2D(mySelectedObject, anAxis, anAngle, aNbSteps, aTolerance);
-	}
-	else
-	  aMeshEditor->RotationSweep(anElementsId.inout(), anAxis, anAngle, aNbSteps, aTolerance);
+          if( GetConstructorId() == 0 )
+            aMeshEditor->RotationSweepObject1D(mySelectedObject, anAxis, anAngle, aNbSteps, aTolerance);
+          else
+            aMeshEditor->RotationSweepObject2D(mySelectedObject, anAxis, anAngle, aNbSteps, aTolerance);
+        }
+        else
+          aMeshEditor->RotationSweep(anElementsId.inout(), anAxis, anAngle, aNbSteps, aTolerance);
       }
 
       myMesh->SetParameters( aParameters.join(":").toLatin1().constData() );
@@ -602,10 +602,10 @@ void SMESHGUI_RevolutionDlg::ClickOnHelp()
     platform = "application";
 #endif
     SUIT_MessageBox::warning(this, tr("WRN_WARNING"),
-			     tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
-			     arg(app->resourceMgr()->stringValue("ExternalBrowser", 
-								 platform)).
-			     arg(myHelpFileName));
+                             tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
+                             arg(app->resourceMgr()->stringValue("ExternalBrowser", 
+                                                                 platform)).
+                             arg(myHelpFileName));
   }
 }
 
@@ -653,15 +653,15 @@ void SMESHGUI_RevolutionDlg::onTextChange (const QString& theNewText)
       QStringList aListId = theNewText.split(" ", QString::SkipEmptyParts);
       
       for (int i = 0; i < aListId.count(); i++) {
-	const SMDS_MeshElement * e = aMesh->FindElement(aListId[ i ].toInt());
-	if (e)
-	  newIndices.Add(e->GetID());
-	myNbOkElements++;
+        const SMDS_MeshElement * e = aMesh->FindElement(aListId[ i ].toInt());
+        if (e)
+          newIndices.Add(e->GetID());
+        myNbOkElements++;
       }
 
       mySelector->AddOrRemoveIndex(myActor->getIO(), newIndices, false);
       if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
-	aViewWindow->highlight( myActor->getIO(), true, true );
+        aViewWindow->highlight( myActor->getIO(), true, true );
       
       myElementsId = theNewText;
     }
@@ -744,7 +744,7 @@ void SMESHGUI_RevolutionDlg::SelectionIntoArgument()
       aNbUnits = SMESH::GetNameOfSelectedElements(mySelector, IO, aString);
       myElementsId = aString;
       if (aNbUnits < 1)
-	return;
+        return;
     }
     myNbOkElements = true;
   } else {
@@ -834,20 +834,20 @@ void SMESHGUI_RevolutionDlg::SetEditCurrentArgument()
     SMESH::SetPointRepresentation(false);
     if (CheckBoxMesh->isChecked()) {
       if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
-	aViewWindow->SetSelectionMode(ActorSelection);
+        aViewWindow->SetSelectionMode(ActorSelection);
       mySelectionMgr->installFilter(myMeshOrSubMeshOrGroupFilter);
     } else {
       int aConstructorId = GetConstructorId();
       if (aConstructorId == 0)
-	{
-	  if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
-	    aViewWindow->SetSelectionMode(EdgeSelection);
-	}
+        {
+          if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+            aViewWindow->SetSelectionMode(EdgeSelection);
+        }
       else if (aConstructorId == 1)
-	{
-	  if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
-	    aViewWindow->SetSelectionMode(FaceSelection);
-	}
+        {
+          if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+            aViewWindow->SetSelectionMode(FaceSelection);
+        }
     }
   } else if (send == SelectPointButton) {
     myEditCurrentArgument = (QWidget*)SpinBox_X;
@@ -956,13 +956,13 @@ void SMESHGUI_RevolutionDlg::onSelectMesh (bool toSelectMesh)
     int aConstructorId = GetConstructorId();
     if (aConstructorId == 0)
       {
-	if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
-	  aViewWindow->SetSelectionMode(EdgeSelection);
+        if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+          aViewWindow->SetSelectionMode(EdgeSelection);
       }
     else if (aConstructorId == 1)
       {
-	if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
-	  aViewWindow->SetSelectionMode(FaceSelection);
+        if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+          aViewWindow->SetSelectionMode(FaceSelection);
       }
 
     LineEditElements->setReadOnly(false);
@@ -993,8 +993,8 @@ int SMESHGUI_RevolutionDlg::GetConstructorId()
 bool SMESHGUI_RevolutionDlg::IsAxisOk()
 {
   return (SpinBox_DX->GetValue() != 0 ||
-	  SpinBox_DY->GetValue() != 0 ||
-	  SpinBox_DZ->GetValue() != 0);
+          SpinBox_DY->GetValue() != 0 ||
+          SpinBox_DZ->GetValue() != 0);
 }
 
 //=================================================================================
@@ -1055,7 +1055,7 @@ void SMESHGUI_RevolutionDlg::onDisplaySimulation(bool toDisplayPreview)
       
       anElementsId->length(aListElementsId.count());
       for (int i = 0; i < aListElementsId.count(); i++)
-	anElementsId[i] = aListElementsId[i].toInt();
+        anElementsId[i] = aListElementsId[i].toInt();
       
       SMESH::AxisStruct anAxis;
       
@@ -1071,27 +1071,27 @@ void SMESHGUI_RevolutionDlg::onDisplaySimulation(bool toDisplayPreview)
       double aTolerance = SpinBox_Tolerance->GetValue();
       
       if (GroupAngle->checkedId() == 1)
-	anAngle = anAngle/aNbSteps;
+        anAngle = anAngle/aNbSteps;
       
       try {
-	SUIT_OverrideCursor aWaitCursor;
-	SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditPreviewer();
+        SUIT_OverrideCursor aWaitCursor;
+        SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditPreviewer();
         if( CheckBoxMesh->isChecked() ) {
-	  if( GetConstructorId() == 0 )
-	    aMeshEditor->RotationSweepObject1D(mySelectedObject, anAxis,
-					       anAngle, aNbSteps, aTolerance);
-	  else
-	    aMeshEditor->RotationSweepObject2D(mySelectedObject, anAxis,
-					       anAngle, aNbSteps, aTolerance);
-	}
-	else
-	  aMeshEditor->RotationSweep(anElementsId.inout(), 
-				     anAxis, 
-				     anAngle, 
-				     aNbSteps, 
-				     aTolerance);
-	SMESH::MeshPreviewStruct_var aMeshPreviewStruct = aMeshEditor->GetPreviewData();
-	mySimulation->SetData(aMeshPreviewStruct._retn());
+          if( GetConstructorId() == 0 )
+            aMeshEditor->RotationSweepObject1D(mySelectedObject, anAxis,
+                                               anAngle, aNbSteps, aTolerance);
+          else
+            aMeshEditor->RotationSweepObject2D(mySelectedObject, anAxis,
+                                               anAngle, aNbSteps, aTolerance);
+        }
+        else
+          aMeshEditor->RotationSweep(anElementsId.inout(), 
+                                     anAxis, 
+                                     anAngle, 
+                                     aNbSteps, 
+                                     aTolerance);
+        SMESH::MeshPreviewStruct_var aMeshPreviewStruct = aMeshEditor->GetPreviewData();
+        mySimulation->SetData(aMeshPreviewStruct._retn());
       } catch (...) {}
     }
     else
@@ -1155,8 +1155,8 @@ void SMESHGUI_RevolutionDlg::setFilters()
 {
   if(myMesh->_is_nil()) {
     SUIT_MessageBox::critical(this,
-			      tr("SMESH_ERROR"),
-			      tr("NO_MESH_SELECTED"));
+                              tr("SMESH_ERROR"),
+                              tr("NO_MESH_SELECTED"));
    return;
   }
   if ( !myFilterDlg )

@@ -354,9 +354,9 @@ SMESHGUI_ExtrusionAlongPathDlg::SMESHGUI_ExtrusionAlongPathDlg( SMESHGUI* theMod
   connect(mySMESHGUI,  SIGNAL(SignalCloseAllDialogs()),        this, SLOT(reject()));
 
   connect(ElementsLineEdit, SIGNAL(textChanged(const QString&)),
-	  SLOT(onTextChange(const QString&)));
+          SLOT(onTextChange(const QString&)));
   connect(StartPointLineEdit, SIGNAL(textChanged(const QString&)),
-	  SLOT(onTextChange(const QString&)));
+          SLOT(onTextChange(const QString&)));
 
   connect(MeshCheck,      SIGNAL(toggled(bool)), SLOT(onSelectMesh()));
 
@@ -440,19 +440,19 @@ void SMESHGUI_ExtrusionAlongPathDlg::ConstructorsClicked (int type)
     SMESH::SetPointRepresentation(false);
     if (MeshCheck->isChecked()) {
       if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
-	aViewWindow->SetSelectionMode(ActorSelection);
+        aViewWindow->SetSelectionMode(ActorSelection);
       mySelectionMgr->installFilter(myElementsFilter);
     } else {
       if (type == 0)
-	{
-	  if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
-	    aViewWindow->SetSelectionMode(EdgeSelection);
-	}
+        {
+          if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+            aViewWindow->SetSelectionMode(EdgeSelection);
+        }
       if (type == 1)
-	{
-	  if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
-	    aViewWindow->SetSelectionMode(FaceSelection);
-	}
+        {
+          if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+            aViewWindow->SetSelectionMode(FaceSelection);
+        }
     }
   }
   connect(mySelectionMgr, SIGNAL(currentSelectionChanged()), this, SLOT(SelectionIntoArgument()));
@@ -492,16 +492,16 @@ bool SMESHGUI_ExtrusionAlongPathDlg::ClickOnApply()
       bool bOk;
       int j = 0;
       for (int i = 0; i < aListElementsId.count(); i++) {
-	long ind = aListElementsId[ i ].toLong(&bOk);
-	if  (bOk) {
-	  const SMDS_MeshElement* e = aMesh->FindElement(ind);
-	  if (e) {
-	    bool typeMatch = Elements1dRB->isChecked() && e->GetType() == SMDSAbs_Edge ||
-	                     Elements2dRB->isChecked() && e->GetType() == SMDSAbs_Face;
-	    if (typeMatch)
-	      anElementsId[ j++ ] = ind;
-	  }
-	}
+        long ind = aListElementsId[ i ].toLong(&bOk);
+        if  (bOk) {
+          const SMDS_MeshElement* e = aMesh->FindElement(ind);
+          if (e) {
+            bool typeMatch = Elements1dRB->isChecked() && e->GetType() == SMDSAbs_Edge ||
+                             Elements2dRB->isChecked() && e->GetType() == SMDSAbs_Face;
+            if (typeMatch)
+              anElementsId[ j++ ] = ind;
+          }
+        }
       }
       anElementsId->length(j);
     }
@@ -559,44 +559,44 @@ bool SMESHGUI_ExtrusionAlongPathDlg::ClickOnApply()
     /*
     if ( MakeGroupsCheck->isEnabled() && MakeGroupsCheck->isChecked() ) {
       if( MeshCheck->isChecked() ) {
-	if( GetConstructorId() == 0 )
-	  SMESH::ListOfGroups_var groups = 
-	    aMeshEditor->ExtrusionAlongPathObject1DMakeGroups(myIDSource, myPathMesh,
-							      myPathShape, aNodeStart,
-							      AnglesGrp->isChecked(), anAngles,
-							      BasePointGrp->isChecked(), aBasePoint, retVal);
-	else
-	  SMESH::ListOfGroups_var groups = 
-	    aMeshEditor->ExtrusionAlongPathObject2DMakeGroups(myIDSource, myPathMesh,
-							      myPathShape, aNodeStart,
-							      AnglesGrp->isChecked(), anAngles,
-							      BasePointGrp->isChecked(), aBasePoint, retVal);
+        if( GetConstructorId() == 0 )
+          SMESH::ListOfGroups_var groups = 
+            aMeshEditor->ExtrusionAlongPathObject1DMakeGroups(myIDSource, myPathMesh,
+                                                              myPathShape, aNodeStart,
+                                                              AnglesGrp->isChecked(), anAngles,
+                                                              BasePointGrp->isChecked(), aBasePoint, retVal);
+        else
+          SMESH::ListOfGroups_var groups = 
+            aMeshEditor->ExtrusionAlongPathObject2DMakeGroups(myIDSource, myPathMesh,
+                                                              myPathShape, aNodeStart,
+                                                              AnglesGrp->isChecked(), anAngles,
+                                                              BasePointGrp->isChecked(), aBasePoint, retVal);
       }
       else
-	SMESH::ListOfGroups_var groups = 
-	  aMeshEditor->ExtrusionAlongPathMakeGroups(anElementsId, myPathMesh,
-						    myPathShape, aNodeStart,
-						    AnglesGrp->isChecked(), anAngles,
-						    BasePointGrp->isChecked(), aBasePoint, retVal);
+        SMESH::ListOfGroups_var groups = 
+          aMeshEditor->ExtrusionAlongPathMakeGroups(anElementsId, myPathMesh,
+                                                    myPathShape, aNodeStart,
+                                                    AnglesGrp->isChecked(), anAngles,
+                                                    BasePointGrp->isChecked(), aBasePoint, retVal);
     }
     else {
       if( MeshCheck->isChecked() ) {
-	if( GetConstructorId() == 0 )
-	  retVal = aMeshEditor->ExtrusionAlongPathObject1D(myIDSource, myPathMesh,
-							   myPathShape, aNodeStart,
-							   AnglesGrp->isChecked(), anAngles,
-							   BasePointGrp->isChecked(), aBasePoint);
-	else
-	  retVal = aMeshEditor->ExtrusionAlongPathObject2D(myIDSource, myPathMesh,
-							   myPathShape, aNodeStart,
-							   AnglesGrp->isChecked(), anAngles,
-							   BasePointGrp->isChecked(), aBasePoint);
+        if( GetConstructorId() == 0 )
+          retVal = aMeshEditor->ExtrusionAlongPathObject1D(myIDSource, myPathMesh,
+                                                           myPathShape, aNodeStart,
+                                                           AnglesGrp->isChecked(), anAngles,
+                                                           BasePointGrp->isChecked(), aBasePoint);
+        else
+          retVal = aMeshEditor->ExtrusionAlongPathObject2D(myIDSource, myPathMesh,
+                                                           myPathShape, aNodeStart,
+                                                           AnglesGrp->isChecked(), anAngles,
+                                                           BasePointGrp->isChecked(), aBasePoint);
       }
       else
-	retVal = aMeshEditor->ExtrusionAlongPath(anElementsId, myPathMesh,
-						 myPathShape, aNodeStart,
-						 AnglesGrp->isChecked(), anAngles,
-						 BasePointGrp->isChecked(), aBasePoint);
+        retVal = aMeshEditor->ExtrusionAlongPath(anElementsId, myPathMesh,
+                                                 myPathShape, aNodeStart,
+                                                 AnglesGrp->isChecked(), anAngles,
+                                                 BasePointGrp->isChecked(), aBasePoint);
     }
     */
 
@@ -606,17 +606,17 @@ bool SMESHGUI_ExtrusionAlongPathDlg::ClickOnApply()
       ElemType = SMESH::EDGE;
     if( !MeshCheck->isChecked() ) {
       SMESH::ListOfGroups_var groups = 
-	aMeshEditor->ExtrusionAlongPathX(anElementsId, myPath, aNodeStart, AnglesGrp->isChecked(),
-					 anAngles, LinearAnglesCheck->isChecked(),
-					 BasePointGrp->isChecked(), aBasePoint,
-					 NeedGroups, ElemType, retVal);
+        aMeshEditor->ExtrusionAlongPathX(anElementsId, myPath, aNodeStart, AnglesGrp->isChecked(),
+                                         anAngles, LinearAnglesCheck->isChecked(),
+                                         BasePointGrp->isChecked(), aBasePoint,
+                                         NeedGroups, ElemType, retVal);
     }
     else {
       SMESH::ListOfGroups_var groups = 
-	aMeshEditor->ExtrusionAlongPathObjX(myIDSource, myPath, aNodeStart, AnglesGrp->isChecked(),
-					  anAngles, LinearAnglesCheck->isChecked(),
-					  BasePointGrp->isChecked(), aBasePoint,
-					  NeedGroups, ElemType, retVal);
+        aMeshEditor->ExtrusionAlongPathObjX(myIDSource, myPath, aNodeStart, AnglesGrp->isChecked(),
+                                          anAngles, LinearAnglesCheck->isChecked(),
+                                          BasePointGrp->isChecked(), aBasePoint,
+                                          NeedGroups, ElemType, retVal);
     }
 
 
@@ -628,33 +628,33 @@ bool SMESHGUI_ExtrusionAlongPathDlg::ClickOnApply()
     switch (retVal) {
     case SMESH::SMESH_MeshEditor::EXTR_NO_ELEMENTS:
       SUIT_MessageBox::warning(this,
-			       tr("SMESH_ERROR"),
-			       tr("NO_ELEMENTS_SELECTED"));
+                               tr("SMESH_ERROR"),
+                               tr("NO_ELEMENTS_SELECTED"));
       return false; break;
     case SMESH::SMESH_MeshEditor::EXTR_PATH_NOT_EDGE:
       SUIT_MessageBox::warning(this,
-			       tr("SMESH_ERROR"),
-			       tr("SELECTED_PATH_IS_NOT_EDGE"));
+                               tr("SMESH_ERROR"),
+                               tr("SELECTED_PATH_IS_NOT_EDGE"));
       return false; break;
     case SMESH::SMESH_MeshEditor::EXTR_BAD_PATH_SHAPE:
       SUIT_MessageBox::warning(this,
-			       tr("SMESH_ERROR"),
-			       tr("BAD_SHAPE_TYPE"));
+                               tr("SMESH_ERROR"),
+                               tr("BAD_SHAPE_TYPE"));
       return false; break;
     case SMESH::SMESH_MeshEditor::EXTR_BAD_STARTING_NODE:
       SUIT_MessageBox::warning(this,
-			       tr("SMESH_ERROR"),
-			       tr("EXTR_BAD_STARTING_NODE"));
+                               tr("SMESH_ERROR"),
+                               tr("EXTR_BAD_STARTING_NODE"));
       return false; break;
     case SMESH::SMESH_MeshEditor::EXTR_BAD_ANGLES_NUMBER:
       SUIT_MessageBox::warning(this,
-			       tr("SMESH_ERROR"),
-			       tr("WRONG_ANGLES_NUMBER"));
+                               tr("SMESH_ERROR"),
+                               tr("WRONG_ANGLES_NUMBER"));
       return false; break;
     case SMESH::SMESH_MeshEditor::EXTR_CANT_GET_TANGENT:
       SUIT_MessageBox::warning(this,
-			       tr("SMESH_ERROR"),
-			       tr("CANT_GET_TANGENT"));
+                               tr("SMESH_ERROR"),
+                               tr("CANT_GET_TANGENT"));
       return false; break;
     case SMESH::SMESH_MeshEditor::EXTR_OK:
       break;
@@ -700,10 +700,10 @@ void SMESHGUI_ExtrusionAlongPathDlg::ClickOnHelp()
     platform = "application";
 #endif
     SUIT_MessageBox::warning(this, tr("WRN_WARNING"),
-			     tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
-			     arg(app->resourceMgr()->stringValue("ExternalBrowser", 
-								 platform)).
-			     arg(myHelpFileName));
+                             tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
+                             arg(app->resourceMgr()->stringValue("ExternalBrowser", 
+                                                                 platform)).
+                             arg(myHelpFileName));
   }
 }
 
@@ -762,21 +762,21 @@ void SMESHGUI_ExtrusionAlongPathDlg::onTextChange (const QString& theNewText)
       const Handle(SALOME_InteractiveObject)& anIO = myMeshActor->getIO();
       TColStd_MapOfInteger newIndices;
       for (int i = 0; i < aListId.count(); i++) {
-	long ind = aListId[ i ].toLong(&bOk);
-	if (bOk) {
-	  const SMDS_MeshElement* e = aMesh->FindElement(ind);
-	  if (e) {
-	    // check also type of element
-	    bool typeMatch = Elements1dRB->isChecked() && e->GetType() == SMDSAbs_Edge ||
-	                     Elements2dRB->isChecked() && e->GetType() == SMDSAbs_Face;
-	    if (typeMatch)
-	      newIndices.Add(e->GetID());
-	  }
-	}
+        long ind = aListId[ i ].toLong(&bOk);
+        if (bOk) {
+          const SMDS_MeshElement* e = aMesh->FindElement(ind);
+          if (e) {
+            // check also type of element
+            bool typeMatch = Elements1dRB->isChecked() && e->GetType() == SMDSAbs_Edge ||
+                             Elements2dRB->isChecked() && e->GetType() == SMDSAbs_Face;
+            if (typeMatch)
+              newIndices.Add(e->GetID());
+          }
+        }
       }
       mySelector->AddOrRemoveIndex(anIO, newIndices, false);
       if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
-	aViewWindow->highlight( anIO, true, true );
+        aViewWindow->highlight( anIO, true, true );
     }
   }
   else if (send == StartPointLineEdit &&
@@ -785,27 +785,27 @@ void SMESHGUI_ExtrusionAlongPathDlg::onTextChange (const QString& theNewText)
       SMESH_Actor* aPathActor = SMESH::FindActorByObject(myPath);
       SMDS_Mesh* aMesh = 0;
       if (aPathActor)
-	aMesh = aPathActor->GetObject()->GetMesh();
+        aMesh = aPathActor->GetObject()->GetMesh();
       if (aMesh) {
-	//mySelectionMgr->clearSelected();
-	//mySelectionMgr->AddIObject(aPathActor->getIO());
+        //mySelectionMgr->clearSelected();
+        //mySelectionMgr->AddIObject(aPathActor->getIO());
         SALOME_ListIO aList;
         aList.Append(aPathActor->getIO());
         mySelectionMgr->setSelectedObjects(aList, false);
 
-	bool bOk;
-	long ind = theNewText.toLong(&bOk);
-	if (bOk) {
-	  const SMDS_MeshNode* n = aMesh->FindNode(ind);
-	  if (n) {
-	    //if (!mySelectionMgr->IsIndexSelected(aPathActor->getIO(), n->GetID())) {
+        bool bOk;
+        long ind = theNewText.toLong(&bOk);
+        if (bOk) {
+          const SMDS_MeshNode* n = aMesh->FindNode(ind);
+          if (n) {
+            //if (!mySelectionMgr->IsIndexSelected(aPathActor->getIO(), n->GetID())) {
             TColStd_MapOfInteger newIndices;
-	    newIndices.Add(n->GetID());
-	    mySelector->AddOrRemoveIndex( aPathActor->getIO(), newIndices, false );
-	    if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
-	      aViewWindow->highlight( aPathActor->getIO(), true, true );
-	  }
-	}
+            newIndices.Add(n->GetID());
+            mySelector->AddOrRemoveIndex( aPathActor->getIO(), newIndices, false );
+            if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+              aViewWindow->highlight( aPathActor->getIO(), true, true );
+          }
+        }
       }
     }
   }
@@ -929,10 +929,10 @@ void SMESHGUI_ExtrusionAlongPathDlg::SelectionIntoArgument()
     TopoDS_Vertex aVertex;
     if (!aGeomObj->_is_nil()) {
       if (aGeomObj->IsShape() && GEOMBase::GetShape(aGeomObj, aVertex) && !aVertex.IsNull()) {
-	gp_Pnt aPnt = BRep_Tool::Pnt(aVertex);
-	XSpin->SetValue(aPnt.X());
-	YSpin->SetValue(aPnt.Y());
-	ZSpin->SetValue(aPnt.Z());
+        gp_Pnt aPnt = BRep_Tool::Pnt(aVertex);
+        XSpin->SetValue(aPnt.X());
+        YSpin->SetValue(aPnt.Y());
+        ZSpin->SetValue(aPnt.Z());
       }
       return;
     }
@@ -997,19 +997,19 @@ void SMESHGUI_ExtrusionAlongPathDlg::SetEditCurrentArgument (QToolButton* button
     SMESH::SetPointRepresentation(false);
     if (MeshCheck->isChecked()) {
       if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
-	aViewWindow->SetSelectionMode(ActorSelection);
+        aViewWindow->SetSelectionMode(ActorSelection);
       mySelectionMgr->installFilter(myElementsFilter);
     } else {
       if (Elements1dRB->isChecked())
-	{
-	  if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
-	    aViewWindow->SetSelectionMode(EdgeSelection);
-	}
+        {
+          if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+            aViewWindow->SetSelectionMode(EdgeSelection);
+        }
       else if (Elements2dRB->isChecked())
-	{
-	  if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
-	    aViewWindow->SetSelectionMode(FaceSelection);
-	}
+        {
+          if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+            aViewWindow->SetSelectionMode(FaceSelection);
+        }
     }
   } else if (button == SelectPathMeshButton) {
     myEditCurrentArgument = PathMeshLineEdit;
@@ -1024,10 +1024,10 @@ void SMESHGUI_ExtrusionAlongPathDlg::SetEditCurrentArgument (QToolButton* button
     if (!myPath->_is_nil()) {
       SMESH_Actor* aPathActor = SMESH::FindActorByObject(myPath);
       if (aPathActor) {
-	SMESH::SetPointRepresentation(true);
-	if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
-	  aViewWindow->SetSelectionMode(NodeSelection);
-	SMESH::SetPickable(aPathActor);
+        SMESH::SetPointRepresentation(true);
+        if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+          aViewWindow->SetSelectionMode(NodeSelection);
+        SMESH::SetPickable(aPathActor);
       }
     }
   }
@@ -1172,21 +1172,21 @@ bool SMESHGUI_ExtrusionAlongPathDlg::eventFilter (QObject* object, QEvent* event
     QKeyEvent* ke = (QKeyEvent*)event;
     if (object == AnglesList) {
       if (ke->key() == Qt::Key_Delete)
-	OnAngleRemoved();
+        OnAngleRemoved();
     }
   }
   else if (event->type() == QEvent::FocusIn) {
     if (object == ElementsLineEdit) {
       if (myEditCurrentArgument != ElementsLineEdit)
-	SetEditCurrentArgument(SelectElementsButton);
+        SetEditCurrentArgument(SelectElementsButton);
     }
     else if (object == StartPointLineEdit) {
       if (myEditCurrentArgument != StartPointLineEdit)
-	SetEditCurrentArgument(SelectStartPointButton);
+        SetEditCurrentArgument(SelectStartPointButton);
     }
     else if (object == XSpin->editor() || object == YSpin->editor() || object == ZSpin->editor()) {
       if (myEditCurrentArgument != XSpin)
-	SetEditCurrentArgument(SelectBasePointButton);
+        SetEditCurrentArgument(SelectBasePointButton);
     }
   }
   return QDialog::eventFilter(object, event);
@@ -1216,8 +1216,8 @@ void SMESHGUI_ExtrusionAlongPathDlg::setFilters()
 {
   if(myMesh->_is_nil()) {
     SUIT_MessageBox::critical(this,
-			      tr("SMESH_ERROR"),
-			      tr("NO_MESH_SELECTED"));
+                              tr("SMESH_ERROR"),
+                              tr("NO_MESH_SELECTED"));
    return;
   }
   if ( !myFilterDlg )
@@ -1270,7 +1270,7 @@ void SMESHGUI_ExtrusionAlongPathDlg::updateLinearAngles()
       enableLinear = false;
       anItem->text().toDouble(&enableLinear);
       if( !enableLinear )
-	break;
+        break;
     }
   }
   if( !enableLinear )

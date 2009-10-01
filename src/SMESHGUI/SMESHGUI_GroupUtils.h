@@ -40,8 +40,8 @@ namespace SMESH
 {
   SMESHGUI_EXPORT
     SMESH::SMESH_Group_var AddGroup( SMESH::SMESH_Mesh_ptr,
-				     SMESH::ElementType,
-				     const QString& );
+                                     SMESH::ElementType,
+                                     const QString& );
 }
 
 #endif // SMESHGUI_GROUPUTILS_H

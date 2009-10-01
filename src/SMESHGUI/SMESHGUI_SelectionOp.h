@@ -107,7 +107,7 @@ protected:
                                
   //! Select some nodes or elements in VTK
   void                          addOrRemoveIndex( const Handle( SALOME_InteractiveObject )&,
-                                                  const TColStd_MapOfInteger&, const bool );
+                                                  const TColStd_MapOfInteger&, const bool isModeShift);
 
   SVTK_ViewWindow*              viewWindow() const;
   SVTK_Selector*                selector() const;

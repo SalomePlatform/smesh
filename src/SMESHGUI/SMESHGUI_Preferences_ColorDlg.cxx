@@ -158,10 +158,10 @@ SMESHGUI_Preferences_ColorDlg::SMESHGUI_Preferences_ColorDlg( SMESHGUI* theModul
   connect( buttonCancel, SIGNAL( clicked() ), this, SLOT( ClickOnCancel() ) );
 
   connect( mySMESHGUI, SIGNAL ( SignalDeactivateActiveDialog() ),
-	   this,       SLOT( DeactivateActiveDialog() ) );
+           this,       SLOT( DeactivateActiveDialog() ) );
   /* to close dialog if study change */
   connect( mySMESHGUI, SIGNAL ( SignalCloseAllDialogs() ),
-	   this,       SLOT( ClickOnCancel() ) );
+           this,       SLOT( ClickOnCancel() ) );
 }
 
 //=================================================================================

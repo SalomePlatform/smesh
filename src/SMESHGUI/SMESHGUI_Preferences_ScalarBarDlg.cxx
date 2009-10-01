@@ -300,7 +300,7 @@ SMESHGUI_Preferences_ScalarBarDlg::SMESHGUI_Preferences_ScalarBarDlg( SMESHGUI* 
   SUIT_ResourceMgr* mgr = SMESH::GetResourceMgr( mySMESHGUI );
 
   QColor titleColor = mgr->colorValue("SMESH", "scalar_bar_title_color",
-				      QColor(255, 255, 255));
+                                      QColor(255, 255, 255));
   myTitleColorBtn->setColor(titleColor);
   myTitleFontCombo->setCurrentIndex(0);
   if (mgr->hasValue("SMESH", "scalar_bar_title_font")) {
@@ -316,9 +316,9 @@ SMESHGUI_Preferences_ScalarBarDlg::SMESHGUI_Preferences_ScalarBarDlg( SMESHGUI* 
     myTitleItalicCheck->setChecked( f.italic() );
     myTitleShadowCheck->setChecked( f.overline() );
   }
-				      
+                                      
   QColor labelColor = mgr->colorValue("SMESH", "scalar_bar_label_color", 
-				      QColor(255, 255, 255));
+                                      QColor(255, 255, 255));
   myLabelsColorBtn->setColor(labelColor);
   myLabelsFontCombo->setCurrentIndex(0);
   if (mgr->hasValue("SMESH", "scalar_bar_label_font")) {
@@ -352,16 +352,16 @@ SMESHGUI_Preferences_ScalarBarDlg::SMESHGUI_Preferences_ScalarBarDlg( SMESHGUI* 
   QString name = isHoriz ? "scalar_bar_horizontal_%1" : "scalar_bar_vertical_%1";
 
   myIniX = mgr->doubleValue("SMESH", name.arg( "x" ), 
-			    myHorizRadioBtn->isChecked() ? DEF_HOR_X : DEF_VER_X);
+                            myHorizRadioBtn->isChecked() ? DEF_HOR_X : DEF_VER_X);
 
   myIniY = mgr->doubleValue("SMESH", name.arg( "y" ),
-			    myHorizRadioBtn->isChecked() ? DEF_HOR_Y : DEF_VER_Y);
+                            myHorizRadioBtn->isChecked() ? DEF_HOR_Y : DEF_VER_Y);
 
   myIniW = mgr->doubleValue("SMESH", name.arg( "width" ),
-			    myHorizRadioBtn->isChecked() ? DEF_HOR_W : DEF_VER_W);
+                            myHorizRadioBtn->isChecked() ? DEF_HOR_W : DEF_VER_W);
 
   myIniH = mgr->doubleValue("SMESH", name.arg( "height" ),
-			    myHorizRadioBtn->isChecked() ? DEF_HOR_H : DEF_VER_H);
+                            myHorizRadioBtn->isChecked() ? DEF_HOR_H : DEF_VER_H);
 
   setOriginAndSize(myIniX, myIniY, myIniW, myIniH);
 
@@ -504,10 +504,10 @@ void SMESHGUI_Preferences_ScalarBarDlg::onHelp()
     platform = "application";
 #endif
     SUIT_MessageBox::warning(this, tr("WRN_WARNING"),
-			     tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
-			     arg(app->resourceMgr()->stringValue("ExternalBrowser", 
-								 platform)).
-			     arg(myHelpFileName));
+                             tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
+                             arg(app->resourceMgr()->stringValue("ExternalBrowser", 
+                                                                 platform)).
+                             arg(myHelpFileName));
   }
 }
 
@@ -528,56 +528,56 @@ void SMESHGUI_Preferences_ScalarBarDlg::onSelectionChanged()
     if( anIO->hasEntry() ) {
       SMESH_Actor* anActor = SMESH::FindActorByEntry(anIO->getEntry());
       if ( anActor && anActor->GetScalarBarActor() && anActor->GetControlMode() != SMESH_Actor::eNone ) {
-	myActor = anActor;
-	vtkScalarBarActor* myScalarBarActor = myActor->GetScalarBarActor();
+        myActor = anActor;
+        vtkScalarBarActor* myScalarBarActor = myActor->GetScalarBarActor();
 
-	if ( myScalarBarActor->GetLookupTable() ) {
-	  vtkFloatingPointType *range = myScalarBarActor->GetLookupTable()->GetRange();
-	  myMinEdit->setText( QString::number( range[0],'g',12 ) );
-	  myMaxEdit->setText( QString::number( range[1],'g',12 ) );
-	}
+        if ( myScalarBarActor->GetLookupTable() ) {
+          vtkFloatingPointType *range = myScalarBarActor->GetLookupTable()->GetRange();
+          myMinEdit->setText( QString::number( range[0],'g',12 ) );
+          myMaxEdit->setText( QString::number( range[1],'g',12 ) );
+        }
 
-	vtkTextProperty* aTitleTextPrp = myScalarBarActor->GetTitleTextProperty();
-	vtkFloatingPointType aTColor[3];
-	aTitleTextPrp->GetColor( aTColor );
-	myTitleColorBtn->setColor( QColor( (int)( aTColor[0]*255 ), (int)( aTColor[1]*255 ), (int)( aTColor[2]*255 ) ) );
-	myTitleFontCombo->setCurrentIndex( aTitleTextPrp->GetFontFamily() );
-	myTitleBoldCheck->setChecked( aTitleTextPrp->GetBold() );
-	myTitleItalicCheck->setChecked( aTitleTextPrp->GetItalic() );
-	myTitleShadowCheck->setChecked( aTitleTextPrp->GetShadow() );
+        vtkTextProperty* aTitleTextPrp = myScalarBarActor->GetTitleTextProperty();
+        vtkFloatingPointType aTColor[3];
+        aTitleTextPrp->GetColor( aTColor );
+        myTitleColorBtn->setColor( QColor( (int)( aTColor[0]*255 ), (int)( aTColor[1]*255 ), (int)( aTColor[2]*255 ) ) );
+        myTitleFontCombo->setCurrentIndex( aTitleTextPrp->GetFontFamily() );
+        myTitleBoldCheck->setChecked( aTitleTextPrp->GetBold() );
+        myTitleItalicCheck->setChecked( aTitleTextPrp->GetItalic() );
+        myTitleShadowCheck->setChecked( aTitleTextPrp->GetShadow() );
 
-	vtkTextProperty* aLabelsTextPrp = myScalarBarActor->GetLabelTextProperty();
-	vtkFloatingPointType aLColor[3];
-	aLabelsTextPrp->GetColor( aLColor );
-	myLabelsColorBtn->setColor( QColor( (int)( aLColor[0]*255 ), (int)( aLColor[1]*255 ), (int)( aLColor[2]*255 ) ) );
-	myLabelsFontCombo->setCurrentIndex( aLabelsTextPrp->GetFontFamily() );
-	myLabelsBoldCheck->setChecked( aLabelsTextPrp->GetBold() );
-	myLabelsItalicCheck->setChecked( aLabelsTextPrp->GetItalic() );
-	myLabelsShadowCheck->setChecked( aLabelsTextPrp->GetShadow() );
+        vtkTextProperty* aLabelsTextPrp = myScalarBarActor->GetLabelTextProperty();
+        vtkFloatingPointType aLColor[3];
+        aLabelsTextPrp->GetColor( aLColor );
+        myLabelsColorBtn->setColor( QColor( (int)( aLColor[0]*255 ), (int)( aLColor[1]*255 ), (int)( aLColor[2]*255 ) ) );
+        myLabelsFontCombo->setCurrentIndex( aLabelsTextPrp->GetFontFamily() );
+        myLabelsBoldCheck->setChecked( aLabelsTextPrp->GetBold() );
+        myLabelsItalicCheck->setChecked( aLabelsTextPrp->GetItalic() );
+        myLabelsShadowCheck->setChecked( aLabelsTextPrp->GetShadow() );
 
-	myLabelsSpin->setValue( myScalarBarActor->GetNumberOfLabels() );
-	myColorsSpin->setValue( myScalarBarActor->GetMaximumNumberOfColors() );
+        myLabelsSpin->setValue( myScalarBarActor->GetNumberOfLabels() );
+        myColorsSpin->setValue( myScalarBarActor->GetMaximumNumberOfColors() );
 
-	if ( myScalarBarActor->GetOrientation() == VTK_ORIENT_VERTICAL )
-	  myVertRadioBtn->setChecked( true );
-	else
-	  myHorizRadioBtn->setChecked( true );
-	myIniOrientation = myVertRadioBtn->isChecked();
+        if ( myScalarBarActor->GetOrientation() == VTK_ORIENT_VERTICAL )
+          myVertRadioBtn->setChecked( true );
+        else
+          myHorizRadioBtn->setChecked( true );
+        myIniOrientation = myVertRadioBtn->isChecked();
 
-	myIniX = myScalarBarActor->GetPosition()[0];
-	myIniY = myScalarBarActor->GetPosition()[1];
-	myIniW = myScalarBarActor->GetWidth();
-	myIniH = myScalarBarActor->GetHeight();
-	setOriginAndSize( myIniX, myIniY, myIniW, myIniH );
+        myIniX = myScalarBarActor->GetPosition()[0];
+        myIniY = myScalarBarActor->GetPosition()[1];
+        myIniW = myScalarBarActor->GetWidth();
+        myIniH = myScalarBarActor->GetHeight();
+        setOriginAndSize( myIniX, myIniY, myIniW, myIniH );
 
-	myRangeGrp->setEnabled( true );
-	myFontGrp->setEnabled( true );
-	myLabColorGrp->setEnabled( true );
-	myOrientationGrp->setEnabled( true );
-	myOriginDimGrp->setEnabled( true );
-	myOkBtn->setEnabled( true );
-	myApplyBtn->setEnabled( true );
-	return;
+        myRangeGrp->setEnabled( true );
+        myFontGrp->setEnabled( true );
+        myLabColorGrp->setEnabled( true );
+        myOrientationGrp->setEnabled( true );
+        myOriginDimGrp->setEnabled( true );
+        myOkBtn->setEnabled( true );
+        myApplyBtn->setEnabled( true );
+        return;
       }
     }
   }
@@ -625,9 +625,9 @@ void SMESHGUI_Preferences_ScalarBarDlg::onXYChanged()
  */
 //=================================================================================================
 void SMESHGUI_Preferences_ScalarBarDlg::setOriginAndSize( const double x,
-							  const double y,
-							  const double w,
-							  const double h )
+                                                          const double y,
+                                                          const double w,
+                                                          const double h )
 {
   blockSignals( true );
   myXSpin->setValue( x );
@@ -656,9 +656,9 @@ void SMESHGUI_Preferences_ScalarBarDlg::onOrientationChanged()
     setOriginAndSize( myIniX, myIniY, myIniW, myIniH );
   else
     setOriginAndSize( aOrientation ? DEF_VER_X : DEF_HOR_X,
-		      aOrientation ? DEF_VER_Y : DEF_HOR_Y,
-		      aOrientation ? DEF_VER_W : DEF_HOR_W,
-		      aOrientation ? DEF_VER_H : DEF_HOR_H );
+                      aOrientation ? DEF_VER_Y : DEF_HOR_Y,
+                      aOrientation ? DEF_VER_W : DEF_HOR_W,
+                      aOrientation ? DEF_VER_H : DEF_HOR_H );
 }
 
 //=================================================================================================

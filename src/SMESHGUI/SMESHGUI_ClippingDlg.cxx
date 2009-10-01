@@ -264,31 +264,31 @@ void SMESHGUI_ClippingDlg::AddPlane (SMESH_Actor*         theActor,
   vtkFloatingPointType aDel = aDataSet->GetLength()/2.0;
 
   vtkFloatingPointType aDelta[2][3] = {{aDir[0][0]*aDel, aDir[0][1]*aDel, aDir[0][2]*aDel},
-				       {aDir[1][0]*aDel, aDir[1][1]*aDel, aDir[1][2]*aDel}};
+                                       {aDir[1][0]*aDel, aDir[1][1]*aDel, aDir[1][2]*aDel}};
   vtkFloatingPointType aParam, aPnt0[3], aPnt1[3], aPnt2[3];
 
   vtkFloatingPointType aPnt01[3] = {aPnt[0] - aDelta[0][0] - aDelta[1][0],
-				    aPnt[1] - aDelta[0][1] - aDelta[1][1],
-				    aPnt[2] - aDelta[0][2] - aDelta[1][2]};
+                                    aPnt[1] - aDelta[0][1] - aDelta[1][1],
+                                    aPnt[2] - aDelta[0][2] - aDelta[1][2]};
   vtkFloatingPointType aPnt02[3] = {aPnt01[0] + aNormal[0],
-				    aPnt01[1] + aNormal[1],
-				    aPnt01[2] + aNormal[2]};
+                                    aPnt01[1] + aNormal[1],
+                                    aPnt01[2] + aNormal[2]};
   vtkPlane::IntersectWithLine(aPnt01,aPnt02,aNormal,anOrigin,aParam,aPnt0);
 
   vtkFloatingPointType aPnt11[3] = {aPnt[0] - aDelta[0][0] + aDelta[1][0],
-				    aPnt[1] - aDelta[0][1] + aDelta[1][1],
-				    aPnt[2] - aDelta[0][2] + aDelta[1][2]};
+                                    aPnt[1] - aDelta[0][1] + aDelta[1][1],
+                                    aPnt[2] - aDelta[0][2] + aDelta[1][2]};
   vtkFloatingPointType aPnt12[3] = {aPnt11[0] + aNormal[0],
-				    aPnt11[1] + aNormal[1],
-				    aPnt11[2] + aNormal[2]};
+                                    aPnt11[1] + aNormal[1],
+                                    aPnt11[2] + aNormal[2]};
   vtkPlane::IntersectWithLine(aPnt11,aPnt12,aNormal,anOrigin,aParam,aPnt1);
 
   vtkFloatingPointType aPnt21[3] = {aPnt[0] + aDelta[0][0] - aDelta[1][0],
-				    aPnt[1] + aDelta[0][1] - aDelta[1][1],
-				    aPnt[2] + aDelta[0][2] - aDelta[1][2]};
+                                    aPnt[1] + aDelta[0][1] - aDelta[1][1],
+                                    aPnt[2] + aDelta[0][2] - aDelta[1][2]};
   vtkFloatingPointType aPnt22[3] = {aPnt21[0] + aNormal[0],
-				    aPnt21[1] + aNormal[1],
-				    aPnt21[2] + aNormal[2]};
+                                    aPnt21[1] + aNormal[1],
+                                    aPnt21[2] + aNormal[2]};
   vtkPlane::IntersectWithLine(aPnt21,aPnt22,aNormal,anOrigin,aParam,aPnt2);
 
   vtkPlaneSource* aPlaneSource = aPlane->myPlaneSource;
@@ -555,17 +555,17 @@ void SMESHGUI_ClippingDlg::ClickOnHelp()
   if (app) 
     app->onHelpContextModule(mySMESHGUI ? app->moduleName(mySMESHGUI->moduleName()) : QString(""), myHelpFileName);
   else {
-		QString platform;
+                QString platform;
 #ifdef WIN32
-		platform = "winapplication";
+                platform = "winapplication";
 #else
-		platform = "application";
+                platform = "application";
 #endif
     SUIT_MessageBox::warning(this, tr("WRN_WARNING"),
-			     tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
-			     arg(app->resourceMgr()->stringValue("ExternalBrowser", 
-								 platform)).
-			     arg(myHelpFileName));
+                             tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
+                             arg(app->resourceMgr()->stringValue("ExternalBrowser", 
+                                                                 platform)).
+                             arg(myHelpFileName));
   }
 }
 
@@ -581,24 +581,24 @@ void SMESHGUI_ClippingDlg::onSelectionChanged()
       Handle(SALOME_InteractiveObject) IOS = aList.First();
       myActor = SMESH::FindActorByEntry(IOS->getEntry());
       if (myActor) {
-	std::for_each(myPlanes.begin(),myPlanes.end(),TSetVisiblity(false));
-	myPlanes.clear();
+        std::for_each(myPlanes.begin(),myPlanes.end(),TSetVisiblity(false));
+        myPlanes.clear();
 
-	vtkIdType anId = 0, anEnd = myActor->GetNumberOfClippingPlanes();
-	for ( ; anId < anEnd; anId++) {
-	  if (vtkImplicitFunction* aFunction = myActor->GetClippingPlane(anId)) {
-	    if(OrientedPlane* aPlane = OrientedPlane::SafeDownCast(aFunction)){
-	      OrientedPlane* anOrientedPlane = OrientedPlane::New(aViewWindow);
-	      SMESH::TVTKPlane aTVTKPlane(anOrientedPlane);
-	      anOrientedPlane->Delete();
-	      aTVTKPlane->ShallowCopy(aPlane);
-	      myPlanes.push_back(aTVTKPlane);
-	    }
-	  }
-	}
+        vtkIdType anId = 0, anEnd = myActor->GetNumberOfClippingPlanes();
+        for ( ; anId < anEnd; anId++) {
+          if (vtkImplicitFunction* aFunction = myActor->GetClippingPlane(anId)) {
+            if(OrientedPlane* aPlane = OrientedPlane::SafeDownCast(aFunction)){
+              OrientedPlane* anOrientedPlane = OrientedPlane::New(aViewWindow);
+              SMESH::TVTKPlane aTVTKPlane(anOrientedPlane);
+              anOrientedPlane->Delete();
+              aTVTKPlane->ShallowCopy(aPlane);
+              myPlanes.push_back(aTVTKPlane);
+            }
+          }
+        }
 
-	std::for_each(myPlanes.begin(),myPlanes.end(),
-		      TSetVisiblity(PreviewCheckBox->isChecked()));
+        std::for_each(myPlanes.begin(),myPlanes.end(),
+                      TSetVisiblity(PreviewCheckBox->isChecked()));
       }
     }
     SMESH::RenderViewWindow(aViewWindow);
@@ -840,31 +840,31 @@ void SMESHGUI_ClippingDlg::SetCurrentPlaneParam()
   vtkFloatingPointType aDel = aDataSet->GetLength()/2.0;
 
   vtkFloatingPointType aDelta[2][3] = {{aDir[0][0]*aDel, aDir[0][1]*aDel, aDir[0][2]*aDel},
-				       {aDir[1][0]*aDel, aDir[1][1]*aDel, aDir[1][2]*aDel}};
+                                       {aDir[1][0]*aDel, aDir[1][1]*aDel, aDir[1][2]*aDel}};
   vtkFloatingPointType aParam, aPnt0[3], aPnt1[3], aPnt2[3];
 
   vtkFloatingPointType aPnt01[3] = {aPnt[0] - aDelta[0][0] - aDelta[1][0],
-				    aPnt[1] - aDelta[0][1] - aDelta[1][1],
-				    aPnt[2] - aDelta[0][2] - aDelta[1][2]};
+                                    aPnt[1] - aDelta[0][1] - aDelta[1][1],
+                                    aPnt[2] - aDelta[0][2] - aDelta[1][2]};
   vtkFloatingPointType aPnt02[3] = {aPnt01[0] + aNormal[0],
-				    aPnt01[1] + aNormal[1],
-				    aPnt01[2] + aNormal[2]};
+                                    aPnt01[1] + aNormal[1],
+                                    aPnt01[2] + aNormal[2]};
   vtkPlane::IntersectWithLine(aPnt01,aPnt02,aNormal,anOrigin,aParam,aPnt0);
 
   vtkFloatingPointType aPnt11[3] = {aPnt[0] - aDelta[0][0] + aDelta[1][0],
-				    aPnt[1] - aDelta[0][1] + aDelta[1][1],
-				    aPnt[2] - aDelta[0][2] + aDelta[1][2]};
+                                    aPnt[1] - aDelta[0][1] + aDelta[1][1],
+                                    aPnt[2] - aDelta[0][2] + aDelta[1][2]};
   vtkFloatingPointType aPnt12[3] = {aPnt11[0] + aNormal[0],
-				    aPnt11[1] + aNormal[1],
-				    aPnt11[2] + aNormal[2]};
+                                    aPnt11[1] + aNormal[1],
+                                    aPnt11[2] + aNormal[2]};
   vtkPlane::IntersectWithLine(aPnt11,aPnt12,aNormal,anOrigin,aParam,aPnt1);
 
   vtkFloatingPointType aPnt21[3] = {aPnt[0] + aDelta[0][0] - aDelta[1][0],
-				    aPnt[1] + aDelta[0][1] - aDelta[1][1],
-				    aPnt[2] + aDelta[0][2] - aDelta[1][2]};
+                                    aPnt[1] + aDelta[0][1] - aDelta[1][1],
+                                    aPnt[2] + aDelta[0][2] - aDelta[1][2]};
   vtkFloatingPointType aPnt22[3] = {aPnt21[0] + aNormal[0],
-				    aPnt21[1] + aNormal[1],
-				    aPnt21[2] + aNormal[2]};
+                                    aPnt21[1] + aNormal[1],
+                                    aPnt21[2] + aNormal[2]};
   vtkPlane::IntersectWithLine(aPnt21,aPnt22,aNormal,anOrigin,aParam,aPnt2);
 
   vtkPlaneSource* aPlaneSource = aPlane->myPlaneSource;

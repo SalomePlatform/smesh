@@ -360,7 +360,7 @@ QVariant SMESHGUI_Selection::isComputable( int ind ) const
       SMESH::SMESH_Mesh_var mesh = SMESH::GetMeshByIO(io); // m,sm,gr->m
       if ( !mesh->_is_nil() ) {*/
         _PTR(SObject) so = SMESH::GetActiveStudyDocument()->FindObjectID( entry( ind ).toLatin1().data() );
-	//FindSObject( mesh );
+        //FindSObject( mesh );
         if ( so ) {
           CORBA::Object_var obj = SMESH::SObjectToObject(so, SMESH::GetActiveStudyDocument());
           if(!CORBA::is_nil(obj)){
@@ -428,7 +428,7 @@ QVariant SMESHGUI_Selection::isVisible( int ind ) const
     SMESH_Actor* actor = SMESH::FindActorByEntry( ent.toLatin1().data() );
     if ( actor && actor->hasIO() ) {
       if(SVTK_ViewWindow* aViewWindow = SMESH::GetCurrentVtkView())
-	return QVariant( aViewWindow->isVisible( actor->getIO() ) );
+        return QVariant( aViewWindow->isVisible( actor->getIO() ) );
     }
   }
   return QVariant( false );

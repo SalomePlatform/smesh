@@ -292,22 +292,22 @@ bool SMESHGUI_BuildCompoundDlg::ClickOnApply()
   if (!myMesh->_is_nil()) {
     QStringList aParameters;
     aParameters << (CheckBoxMerge->isChecked() ? SpinBoxTol->text() : QString(" "));
-    try	{
+    try {
       SUIT_OverrideCursor aWaitCursor;
 
       SMESH::SMESH_Gen_var aSMESHGen = SMESHGUI::GetSMESHGen();
       // concatenate meshes
       SMESH::SMESH_Mesh_var aCompoundMesh;
       if(CheckBoxCommon->isChecked())
-	aCompoundMesh = aSMESHGen->ConcatenateWithGroups(myMeshArray, 
-							 !(ComboBoxUnion->currentIndex()), 
-							 CheckBoxMerge->isChecked(), 
-							 SpinBoxTol->GetValue());
+        aCompoundMesh = aSMESHGen->ConcatenateWithGroups(myMeshArray, 
+                                                         !(ComboBoxUnion->currentIndex()), 
+                                                         CheckBoxMerge->isChecked(), 
+                                                         SpinBoxTol->GetValue());
       else
-	aCompoundMesh = aSMESHGen->Concatenate(myMeshArray, 
-					       !(ComboBoxUnion->currentIndex()), 
-					       CheckBoxMerge->isChecked(), 
-					       SpinBoxTol->GetValue());
+        aCompoundMesh = aSMESHGen->Concatenate(myMeshArray, 
+                                               !(ComboBoxUnion->currentIndex()), 
+                                               CheckBoxMerge->isChecked(), 
+                                               SpinBoxTol->GetValue());
      
       aCompoundMesh->SetParameters( aParameters.join(":").toLatin1().constData() );
 
@@ -360,10 +360,10 @@ void SMESHGUI_BuildCompoundDlg::ClickOnHelp()
     app->onHelpContextModule(mySMESHGUI ? app->moduleName(mySMESHGUI->moduleName()) : QString(""), myHelpFileName);
   else {
     SUIT_MessageBox::warning(this, tr("WRN_WARNING"),
-			     tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
-			     arg(app->resourceMgr()->stringValue("ExternalBrowser",
-								 "application")).
-			     arg(myHelpFileName));
+                             tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
+                             arg(app->resourceMgr()->stringValue("ExternalBrowser",
+                                                                 "application")).
+                             arg(myHelpFileName));
   }
 }
 

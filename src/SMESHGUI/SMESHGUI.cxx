@@ -118,7 +118,7 @@
 #include CORBA_CLIENT_HEADER(SMESH_MeshEditor)
 
 // Qt includes
-// #define	 INCLUDE_MENUITEM_DEF // VSR commented ????????
+// #define       INCLUDE_MENUITEM_DEF // VSR commented ????????
 #include <QMenu>
 
 // BOOST includes
@@ -145,7 +145,7 @@
   // Declarations
   //=============================================================
   void ImportMeshesFromFile(SMESH::SMESH_Gen_ptr theComponentMesh,
-			    int theCommandID);
+                            int theCommandID);
 
   void ExportMeshToFile(int theCommandID);
 
@@ -159,7 +159,7 @@
   // Definitions
   //=============================================================
   void ImportMeshesFromFile( SMESH::SMESH_Gen_ptr theComponentMesh,
-			     int theCommandID )
+                             int theCommandID )
   {
     QStringList filter;
     std::string myExtension;
@@ -180,9 +180,9 @@
       anInitialPath = QDir::currentPath();
 
     QStringList filenames = SUIT_FileDlg::getOpenFileNames( SMESHGUI::desktop(),
-							    anInitialPath,
-							    filter,
-							    QObject::tr( "SMESH_IMPORT_MESH" ) );
+                                                            anInitialPath,
+                                                            filter,
+                                                            QObject::tr( "SMESH_IMPORT_MESH" ) );
     if ( filenames.count() > 0 ) {
       SUIT_OverrideCursor wc;
       _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
@@ -190,58 +190,58 @@
       QStringList errors;
       bool isEmpty = false;
       for ( QStringList::ConstIterator it = filenames.begin(); it != filenames.end(); ++it ) {
-	QString filename = *it;
-	SMESH::mesh_array_var aMeshes = new SMESH::mesh_array;
-	try {
-	  switch ( theCommandID ) {
-	  case 111:
-	    {
-	      // DAT format (currently unsupported)
-	      errors.append( QString( "%1 :\n\t%2" ).arg( filename ).
-			     arg( QObject::tr( "SMESH_ERR_NOT_SUPPORTED_FORMAT" ) ) );
-	      break;
-	    }
-	  case 112:
-	    {
-	      // UNV format
-	      aMeshes->length( 1 );
-	      aMeshes[0] = theComponentMesh->CreateMeshesFromUNV( filename.toLatin1().constData() );
-	      if ( aMeshes[0]->_is_nil() )
-		errors.append( QString( "%1 :\n\t%2" ).arg( filename ).
-			       arg( QObject::tr( "SMESH_ERR_UNKNOWN_IMPORT_ERROR" ) ) );
-	      break;
-	    }
-	  case 113:
-	    {
-	      // MED format
-	      SMESH::DriverMED_ReadStatus res;
-	      aMeshes = theComponentMesh->CreateMeshesFromMED( filename.toLatin1().constData(), res );
-	      if ( res != SMESH::DRS_OK ) {
-		errors.append( QString( "%1 :\n\t%2" ).arg( filename ).
-			       arg( QObject::tr( QString( "SMESH_DRS_%1" ).arg( res ).toLatin1().data() ) ) );
-	      }
-	      break;
-	    }
-	  }
-	}
-	catch ( const SALOME::SALOME_Exception& S_ex ) {
-	  errors.append( QString( "%1 :\n\t%2" ).arg( filename ).
-			 arg( QObject::tr( "SMESH_ERR_UNKNOWN_IMPORT_ERROR" ) ) );
-	}
+        QString filename = *it;
+        SMESH::mesh_array_var aMeshes = new SMESH::mesh_array;
+        try {
+          switch ( theCommandID ) {
+          case 111:
+            {
+              // DAT format (currently unsupported)
+              errors.append( QString( "%1 :\n\t%2" ).arg( filename ).
+                             arg( QObject::tr( "SMESH_ERR_NOT_SUPPORTED_FORMAT" ) ) );
+              break;
+            }
+          case 112:
+            {
+              // UNV format
+              aMeshes->length( 1 );
+              aMeshes[0] = theComponentMesh->CreateMeshesFromUNV( filename.toLatin1().constData() );
+              if ( aMeshes[0]->_is_nil() )
+                errors.append( QString( "%1 :\n\t%2" ).arg( filename ).
+                               arg( QObject::tr( "SMESH_ERR_UNKNOWN_IMPORT_ERROR" ) ) );
+              break;
+            }
+          case 113:
+            {
+              // MED format
+              SMESH::DriverMED_ReadStatus res;
+              aMeshes = theComponentMesh->CreateMeshesFromMED( filename.toLatin1().constData(), res );
+              if ( res != SMESH::DRS_OK ) {
+                errors.append( QString( "%1 :\n\t%2" ).arg( filename ).
+                               arg( QObject::tr( QString( "SMESH_DRS_%1" ).arg( res ).toLatin1().data() ) ) );
+              }
+              break;
+            }
+          }
+        }
+        catch ( const SALOME::SALOME_Exception& S_ex ) {
+          errors.append( QString( "%1 :\n\t%2" ).arg( filename ).
+                         arg( QObject::tr( "SMESH_ERR_UNKNOWN_IMPORT_ERROR" ) ) );
+        }
 
-	for ( int i = 0, iEnd = aMeshes->length(); i < iEnd; i++ ) {
-	  _PTR(SObject) aMeshSO = SMESH::FindSObject( aMeshes[i] );
-	  if ( aMeshSO ) {
-	    _PTR(StudyBuilder) aBuilder = aStudy->NewBuilder();
-	    _PTR(AttributePixMap) aPixmap = aBuilder->FindOrCreateAttribute( aMeshSO, "AttributePixMap" );
-	    aPixmap->SetPixMap( "ICON_SMESH_TREE_MESH_IMPORTED" );
-	    if ( theCommandID == 112 ) // mesh names aren't taken from the file for UNV import
-	      SMESH::SetName( aMeshSO, QFileInfo(filename).fileName() );
-	  }
-	  else {
-	    isEmpty = true;
-	  }
-	}
+        for ( int i = 0, iEnd = aMeshes->length(); i < iEnd; i++ ) {
+          _PTR(SObject) aMeshSO = SMESH::FindSObject( aMeshes[i] );
+          if ( aMeshSO ) {
+            _PTR(StudyBuilder) aBuilder = aStudy->NewBuilder();
+            _PTR(AttributePixMap) aPixmap = aBuilder->FindOrCreateAttribute( aMeshSO, "AttributePixMap" );
+            aPixmap->SetPixMap( "ICON_SMESH_TREE_MESH_IMPORTED" );
+            if ( theCommandID == 112 ) // mesh names aren't taken from the file for UNV import
+              SMESH::SetName( aMeshSO, QFileInfo(filename).fileName() );
+          }
+          else {
+            isEmpty = true;
+          }
+        }
       }
 
       // update Object browser
@@ -249,16 +249,16 @@
 
       // show Error message box if there were errors
       if ( errors.count() > 0 ) {
-	SUIT_MessageBox::critical( SMESHGUI::desktop(),
-				   QObject::tr( "SMESH_ERROR" ),
-				   QObject::tr( "SMESH_IMPORT_ERRORS" ) + "\n" + errors.join( "\n" ) );
+        SUIT_MessageBox::critical( SMESHGUI::desktop(),
+                                   QObject::tr( "SMESH_ERROR" ),
+                                   QObject::tr( "SMESH_IMPORT_ERRORS" ) + "\n" + errors.join( "\n" ) );
       }
 
       // show warning message box, if some imported mesh is empty
       if ( isEmpty ) {
-	  SUIT_MessageBox::warning( SMESHGUI::desktop(),
-				    QObject::tr( "SMESH_WRN_WARNING" ),
-				    QObject::tr( "SMESH_DRS_SOME_EMPTY" ) );
+          SUIT_MessageBox::warning( SMESHGUI::desktop(),
+                                    QObject::tr( "SMESH_WRN_WARNING" ),
+                                    QObject::tr( "SMESH_DRS_SOME_EMPTY" ) );
       }
     }
   }
@@ -488,7 +488,7 @@
   }
 
   inline void InverseEntityMode(unsigned int& theOutputMode,
-				unsigned int theMode)
+                                unsigned int theMode)
   {
     bool anIsNotPresent = ~theOutputMode & theMode;
     if(anIsNotPresent)
@@ -506,31 +506,31 @@
     if(selected.Extent() >= 1){
       SALOME_ListIteratorOfListIO It( selected );
       for( ; It.More(); It.Next()){
-	Handle(SALOME_InteractiveObject) IObject = It.Value();
-	if(IObject->hasEntry()){
-	  if(SMESH_Actor *anActor = SMESH::FindActorByEntry(IObject->getEntry())){
-	    unsigned int aMode = anActor->GetEntityMode();
-	    switch(theCommandID){
+        Handle(SALOME_InteractiveObject) IObject = It.Value();
+        if(IObject->hasEntry()){
+          if(SMESH_Actor *anActor = SMESH::FindActorByEntry(IObject->getEntry())){
+            unsigned int aMode = anActor->GetEntityMode();
+            switch(theCommandID){
             case 216:
               InverseEntityMode(aMode,SMESH_Actor::e0DElements);
               break;
-	    case 217:
-	      InverseEntityMode(aMode,SMESH_Actor::eEdges);
-	      break;
-	    case 218:
-	      InverseEntityMode(aMode,SMESH_Actor::eFaces);
-	      break;
-	    case 219:
-	      InverseEntityMode(aMode,SMESH_Actor::eVolumes);
-	      break;
-	    case 220:
-	      aMode = SMESH_Actor::eAllEntity;
-	      break;
-	    }
-	    if(aMode)
-	      anActor->SetEntityMode(aMode);
-	  }
-	}
+            case 217:
+              InverseEntityMode(aMode,SMESH_Actor::eEdges);
+              break;
+            case 218:
+              InverseEntityMode(aMode,SMESH_Actor::eFaces);
+              break;
+            case 219:
+              InverseEntityMode(aMode,SMESH_Actor::eVolumes);
+              break;
+            case 220:
+              aMode = SMESH_Actor::eAllEntity;
+              break;
+            }
+            if(aMode)
+              anActor->SetEntityMode(aMode);
+          }
+        }
       }
     }
   }
@@ -575,12 +575,12 @@
       _PTR(SObject) aGroupSObject = SMESH::FindSObject(aGroupObject);
       if(SMESH_Actor *anActor = SMESH::FindActorByEntry(aGroupSObject->GetID().c_str()))
       {
-	if( aGroupObject->GetType() == SMESH::NODE )
-	  anActor->SetNodeColor( aColor.R, aColor.G, aColor.B );
-	else if( aGroupObject->GetType() == SMESH::EDGE )
-	  anActor->SetEdgeColor( aColor.R, aColor.G, aColor.B );
-	else
-	  anActor->SetSufaceColor( aColor.R, aColor.G, aColor.B );
+        if( aGroupObject->GetType() == SMESH::NODE )
+          anActor->SetNodeColor( aColor.R, aColor.G, aColor.B );
+        else if( aGroupObject->GetType() == SMESH::EDGE )
+          anActor->SetEdgeColor( aColor.R, aColor.G, aColor.B );
+        else
+          anActor->SetSufaceColor( aColor.R, aColor.G, aColor.B );
       }
     }
 
@@ -597,7 +597,7 @@
       Handle(SALOME_InteractiveObject) anIObject = selected.First();
       SMESH::SMESH_Mesh_var aMesh = SMESH::IObjectToInterface<SMESH::SMESH_Mesh>(anIObject);
       if ( !aMesh->_is_nil() ) {
-	aMesh->SetAutoColor( false );
+        aMesh->SetAutoColor( false );
       }
     }
   }
@@ -620,36 +620,36 @@
     if(selected.Extent() >= 1){
       switch(theCommandID){
       case 1134:{
-	SMESHGUI::GetSMESHGUI()->EmitSignalDeactivateDialog();
-	(new SMESHGUI_ClippingDlg( SMESHGUI::GetSMESHGUI() ))->show();
-	return;
+        SMESHGUI::GetSMESHGUI()->EmitSignalDeactivateDialog();
+        (new SMESHGUI_ClippingDlg( SMESHGUI::GetSMESHGUI() ))->show();
+        return;
       }
       case 1133:{
-	SMESHGUI::GetSMESHGUI()->EmitSignalDeactivateDialog();
-	(new SMESHGUI_TransparencyDlg( SMESHGUI::GetSMESHGUI() ))->show();
-	return;
+        SMESHGUI::GetSMESHGUI()->EmitSignalDeactivateDialog();
+        (new SMESHGUI_TransparencyDlg( SMESHGUI::GetSMESHGUI() ))->show();
+        return;
       }}
       SALOME_ListIteratorOfListIO It( selected );
       for( ; It.More(); It.Next()){
-	Handle(SALOME_InteractiveObject) IObject = It.Value();
-	if(IObject->hasEntry()){
-	  if(SMESH_Actor *anActor = SMESH::FindActorByEntry(IObject->getEntry())){
-	    switch(theCommandID){
-	    case 211:
-	      anActor->SetRepresentation(SMESH_Actor::eEdge);
-	      break;
-	    case 212:
-	      anActor->SetRepresentation(SMESH_Actor::eSurface);
-	      break;
-	    case 213:
-	      if(anActor->IsShrunk())
-		anActor->UnShrink();
-	      else
-		anActor->SetShrink();
-	      break;
-	    case 215:
-	      anActor->SetRepresentation(SMESH_Actor::ePoint);
-	      break;
+        Handle(SALOME_InteractiveObject) IObject = It.Value();
+        if(IObject->hasEntry()){
+          if(SMESH_Actor *anActor = SMESH::FindActorByEntry(IObject->getEntry())){
+            switch(theCommandID){
+            case 211:
+              anActor->SetRepresentation(SMESH_Actor::eEdge);
+              break;
+            case 212:
+              anActor->SetRepresentation(SMESH_Actor::eSurface);
+              break;
+            case 213:
+              if(anActor->IsShrunk())
+                anActor->UnShrink();
+              else
+                anActor->SetShrink();
+              break;
+            case 215:
+              anActor->SetRepresentation(SMESH_Actor::ePoint);
+              break;
             case 231:
               if(anActor->GetQuadratic2DRepresentation() != SMESH_Actor::eLines)
                 anActor->SetQuadratic2DRepresentation(SMESH_Actor::eLines);
@@ -658,103 +658,103 @@
               if(anActor->GetQuadratic2DRepresentation() != SMESH_Actor::eArcs)
                 anActor->SetQuadratic2DRepresentation(SMESH_Actor::eArcs);
               break;
-	    case 1132:{
-	      vtkFloatingPointType color[3];
-	      anActor->GetSufaceColor(color[0], color[1], color[2]);
-	      int c0 = int (color[0] * 255);
-	      int c1 = int (color[1] * 255);
-	      int c2 = int (color[2] * 255);
-	      QColor c(c0, c1, c2);
+            case 1132:{
+              vtkFloatingPointType color[3];
+              anActor->GetSufaceColor(color[0], color[1], color[2]);
+              int c0 = int (color[0] * 255);
+              int c1 = int (color[1] * 255);
+              int c2 = int (color[2] * 255);
+              QColor c(c0, c1, c2);
 
-	      vtkFloatingPointType edgecolor[3];
-	      anActor->GetEdgeColor(edgecolor[0], edgecolor[1], edgecolor[2]);
-	      c0 = int (edgecolor[0] * 255);
-	      c1 = int (edgecolor[1] * 255);
-	      c2 = int (edgecolor[2] * 255);
-	      QColor e(c0, c1, c2);
+              vtkFloatingPointType edgecolor[3];
+              anActor->GetEdgeColor(edgecolor[0], edgecolor[1], edgecolor[2]);
+              c0 = int (edgecolor[0] * 255);
+              c1 = int (edgecolor[1] * 255);
+              c2 = int (edgecolor[2] * 255);
+              QColor e(c0, c1, c2);
 
-	      vtkFloatingPointType backfacecolor[3];
-	      anActor->GetBackSufaceColor(backfacecolor[0], backfacecolor[1], backfacecolor[2]);
-	      c0 = int (backfacecolor[0] * 255);
-	      c1 = int (backfacecolor[1] * 255);
-	      c2 = int (backfacecolor[2] * 255);
-	      QColor b(c0, c1, c2);
+              vtkFloatingPointType backfacecolor[3];
+              anActor->GetBackSufaceColor(backfacecolor[0], backfacecolor[1], backfacecolor[2]);
+              c0 = int (backfacecolor[0] * 255);
+              c1 = int (backfacecolor[1] * 255);
+              c2 = int (backfacecolor[2] * 255);
+              QColor b(c0, c1, c2);
 
-	      vtkFloatingPointType nodecolor[3];
-	      anActor->GetNodeColor(nodecolor[0], nodecolor[1], nodecolor[2]);
-	      c0 = int (nodecolor[0] * 255);
-	      c1 = int (nodecolor[1] * 255);
-	      c2 = int (nodecolor[2] * 255);
-	      QColor n(c0, c1, c2);
+              vtkFloatingPointType nodecolor[3];
+              anActor->GetNodeColor(nodecolor[0], nodecolor[1], nodecolor[2]);
+              c0 = int (nodecolor[0] * 255);
+              c1 = int (nodecolor[1] * 255);
+              c2 = int (nodecolor[2] * 255);
+              QColor n(c0, c1, c2);
 
-	      int Edgewidth = (int)anActor->GetLineWidth();
-	      if(Edgewidth == 0)
-		Edgewidth = 1;
-	      int intValue = int(anActor->GetNodeSize());
-	      vtkFloatingPointType Shrink = anActor->GetShrinkFactor();
+              int Edgewidth = (int)anActor->GetLineWidth();
+              if(Edgewidth == 0)
+                Edgewidth = 1;
+              int intValue = int(anActor->GetNodeSize());
+              vtkFloatingPointType Shrink = anActor->GetShrinkFactor();
 
-	      SMESHGUI_Preferences_ColorDlg *aDlg =
-		new SMESHGUI_Preferences_ColorDlg( SMESHGUI::GetSMESHGUI() );
-	      aDlg->SetColor(1, c);
-	      aDlg->SetColor(2, e);
-	      aDlg->SetColor(3, n);
-	      aDlg->SetColor(4, b);
-	      aDlg->SetIntValue(1, Edgewidth);
-	      aDlg->SetIntValue(2, intValue);
-	      aDlg->SetIntValue(3, int(Shrink*100.));
-	      if(aDlg->exec()){
-		QColor color = aDlg->GetColor(1);
-		QColor edgecolor = aDlg->GetColor(2);
-		QColor nodecolor = aDlg->GetColor(3);
-		QColor backfacecolor = aDlg->GetColor(4);
-		/* actor color and backface color */
-		anActor->SetSufaceColor(vtkFloatingPointType (color.red()) / 255.,
-					vtkFloatingPointType (color.green()) / 255.,
-					vtkFloatingPointType (color.blue()) / 255.);
-		anActor->SetBackSufaceColor(vtkFloatingPointType (backfacecolor.red()) / 255.,
-					    vtkFloatingPointType (backfacecolor.green()) / 255.,
-					    vtkFloatingPointType (backfacecolor.blue()) / 255.);
+              SMESHGUI_Preferences_ColorDlg *aDlg =
+                new SMESHGUI_Preferences_ColorDlg( SMESHGUI::GetSMESHGUI() );
+              aDlg->SetColor(1, c);
+              aDlg->SetColor(2, e);
+              aDlg->SetColor(3, n);
+              aDlg->SetColor(4, b);
+              aDlg->SetIntValue(1, Edgewidth);
+              aDlg->SetIntValue(2, intValue);
+              aDlg->SetIntValue(3, int(Shrink*100.));
+              if(aDlg->exec()){
+                QColor color = aDlg->GetColor(1);
+                QColor edgecolor = aDlg->GetColor(2);
+                QColor nodecolor = aDlg->GetColor(3);
+                QColor backfacecolor = aDlg->GetColor(4);
+                /* actor color and backface color */
+                anActor->SetSufaceColor(vtkFloatingPointType (color.red()) / 255.,
+                                        vtkFloatingPointType (color.green()) / 255.,
+                                        vtkFloatingPointType (color.blue()) / 255.);
+                anActor->SetBackSufaceColor(vtkFloatingPointType (backfacecolor.red()) / 255.,
+                                            vtkFloatingPointType (backfacecolor.green()) / 255.,
+                                            vtkFloatingPointType (backfacecolor.blue()) / 255.);
 
-		/* edge color */
-		anActor->SetEdgeColor(vtkFloatingPointType (edgecolor.red()) / 255.,
-				      vtkFloatingPointType (edgecolor.green()) / 255.,
-				      vtkFloatingPointType (edgecolor.blue()) / 255.);
+                /* edge color */
+                anActor->SetEdgeColor(vtkFloatingPointType (edgecolor.red()) / 255.,
+                                      vtkFloatingPointType (edgecolor.green()) / 255.,
+                                      vtkFloatingPointType (edgecolor.blue()) / 255.);
 
-		/* Shrink factor and size edges */
-		anActor->SetShrinkFactor(aDlg->GetIntValue(3) / 100.);
-		anActor->SetLineWidth(aDlg->GetIntValue(1));
+                /* Shrink factor and size edges */
+                anActor->SetShrinkFactor(aDlg->GetIntValue(3) / 100.);
+                anActor->SetLineWidth(aDlg->GetIntValue(1));
 
-		/* Nodes color and size */
-		anActor->SetNodeColor(vtkFloatingPointType (nodecolor.red()) / 255.,
-				      vtkFloatingPointType (nodecolor.green()) / 255.,
-				      vtkFloatingPointType (nodecolor.blue()) / 255.);
-		anActor->SetNodeSize(aDlg->GetIntValue(2));
+                /* Nodes color and size */
+                anActor->SetNodeColor(vtkFloatingPointType (nodecolor.red()) / 255.,
+                                      vtkFloatingPointType (nodecolor.green()) / 255.,
+                                      vtkFloatingPointType (nodecolor.blue()) / 255.);
+                anActor->SetNodeSize(aDlg->GetIntValue(2));
 
-		SMESH::SMESH_GroupBase_var aGroupObject = SMESH::IObjectToInterface<SMESH::SMESH_GroupBase>(IObject);
-		if( !aGroupObject->_is_nil() )
-		{
-		  SMESH::ElementType anElementType = aGroupObject->GetType();
-		  QColor aColor;
-		  switch( anElementType )
-		  {
-		    case SMESH::NODE: aColor = nodecolor; break;
-		    case SMESH::EDGE: aColor = edgecolor; break;
-		    default: aColor = color; break;
-		  }
+                SMESH::SMESH_GroupBase_var aGroupObject = SMESH::IObjectToInterface<SMESH::SMESH_GroupBase>(IObject);
+                if( !aGroupObject->_is_nil() )
+                {
+                  SMESH::ElementType anElementType = aGroupObject->GetType();
+                  QColor aColor;
+                  switch( anElementType )
+                  {
+                    case SMESH::NODE: aColor = nodecolor; break;
+                    case SMESH::EDGE: aColor = edgecolor; break;
+                    default: aColor = color; break;
+                  }
 
-		  SALOMEDS::Color aGroupColor;
-		  aGroupColor.R = (float)aColor.red() / 255.0;
-		  aGroupColor.G = (float)aColor.green() / 255.0;
-		  aGroupColor.B = (float)aColor.blue() / 255.0;
-		  aGroupObject->SetColor( aGroupColor );
-		}
+                  SALOMEDS::Color aGroupColor;
+                  aGroupColor.R = (float)aColor.red() / 255.0;
+                  aGroupColor.G = (float)aColor.green() / 255.0;
+                  aGroupColor.B = (float)aColor.blue() / 255.0;
+                  aGroupObject->SetColor( aGroupColor );
+                }
 
-		delete aDlg;
-	      }
-	      break;
-	    }}
-	  }
-	}
+                delete aDlg;
+              }
+              break;
+            }}
+          }
+        }
       }
       SMESH::RepaintCurrentView();
     }
@@ -770,88 +770,88 @@
     if( !selected.IsEmpty() ){
       Handle(SALOME_InteractiveObject) anIO = selected.First();
       if(!anIO.IsNull()){
-	QString aTitle;
-	SMESH_Actor::eControl aControl = SMESH_Actor::eNone;
-	if(SMESH_Actor *anActor = SMESH::FindActorByEntry(anIO->getEntry())){
-	  switch ( theCommandID ){
-	  case 6001:
-	    aTitle = QObject::tr( "LENGTH_EDGES" );
-	    aControl = SMESH_Actor::eLength;
-	    break;
-	  case 6018:
-	    aTitle = QObject::tr( "LENGTH2D_EDGES" );
-	    aControl = SMESH_Actor::eLength2D;
-	    break;
-	  case 6002:
-	    aTitle = QObject::tr( "FREE_EDGES" );
-	    aControl = SMESH_Actor::eFreeEdges;
-	    break;
-	  case 6003:
-	    aTitle = QObject::tr( "FREE_BORDERS" );
-	    aControl = SMESH_Actor::eFreeBorders;
-	    break;
-	  case 6004:
-	    aTitle = QObject::tr( "MULTI_BORDERS" );
-	    aControl = SMESH_Actor::eMultiConnection;
-	    break;
-	  case 6005:
-	    aTitle = QObject::tr( "FREE_NODES" );
-	    aControl = SMESH_Actor::eFreeNodes;
-	    break;
-	  case 6019:
-	    aTitle = QObject::tr( "MULTI2D_BORDERS" );
-	    aControl = SMESH_Actor::eMultiConnection2D;
-	    break;
-	  case 6011:
-	    aTitle = QObject::tr( "AREA_ELEMENTS" );
-	    aControl = SMESH_Actor::eArea;
-	    break;
-	  case 6012:
-	    aTitle = QObject::tr( "TAPER_ELEMENTS" );
-	    aControl = SMESH_Actor::eTaper;
-	    break;
-	  case 6013:
-	    aTitle = QObject::tr( "ASPECTRATIO_ELEMENTS" );
-	    aControl = SMESH_Actor::eAspectRatio;
-	    break;
-	  case 6017:
-	    aTitle = QObject::tr( "ASPECTRATIO_3D_ELEMENTS" );
-	    aControl = SMESH_Actor::eAspectRatio3D;
-	    break;
-	  case 6014:
-	    aTitle = QObject::tr( "MINIMUMANGLE_ELEMENTS" );
-	    aControl = SMESH_Actor::eMinimumAngle;
-	    break;
-	  case 6015:
-	    aTitle = QObject::tr( "WARP_ELEMENTS" );
-	    aControl = SMESH_Actor::eWarping;
-	    break;
-	  case 6016:
-	    aTitle = QObject::tr( "SKEW_ELEMENTS" );
-	    aControl = SMESH_Actor::eSkew;
-	    break;
-	  case 6009:
-	    aTitle = QObject::tr( "SMESH_VOLUME" );
-	    aControl = SMESH_Actor::eVolume3D;
-	    break;
-	  case 6021:
-	    aTitle = QObject::tr( "FREE_FACES" );
-	    aControl = SMESH_Actor::eFreeFaces;
-	    break;
-	  }
-	  anActor->SetControlMode(aControl);
-	  anActor->GetScalarBarActor()->SetTitle(aTitle.toLatin1().data());
-	  SMESH::RepaintCurrentView();
-	}
+        QString aTitle;
+        SMESH_Actor::eControl aControl = SMESH_Actor::eNone;
+        if(SMESH_Actor *anActor = SMESH::FindActorByEntry(anIO->getEntry())){
+          switch ( theCommandID ){
+          case 6001:
+            aTitle = QObject::tr( "LENGTH_EDGES" );
+            aControl = SMESH_Actor::eLength;
+            break;
+          case 6018:
+            aTitle = QObject::tr( "LENGTH2D_EDGES" );
+            aControl = SMESH_Actor::eLength2D;
+            break;
+          case 6002:
+            aTitle = QObject::tr( "FREE_EDGES" );
+            aControl = SMESH_Actor::eFreeEdges;
+            break;
+          case 6003:
+            aTitle = QObject::tr( "FREE_BORDERS" );
+            aControl = SMESH_Actor::eFreeBorders;
+            break;
+          case 6004:
+            aTitle = QObject::tr( "MULTI_BORDERS" );
+            aControl = SMESH_Actor::eMultiConnection;
+            break;
+          case 6005:
+            aTitle = QObject::tr( "FREE_NODES" );
+            aControl = SMESH_Actor::eFreeNodes;
+            break;
+          case 6019:
+            aTitle = QObject::tr( "MULTI2D_BORDERS" );
+            aControl = SMESH_Actor::eMultiConnection2D;
+            break;
+          case 6011:
+            aTitle = QObject::tr( "AREA_ELEMENTS" );
+            aControl = SMESH_Actor::eArea;
+            break;
+          case 6012:
+            aTitle = QObject::tr( "TAPER_ELEMENTS" );
+            aControl = SMESH_Actor::eTaper;
+            break;
+          case 6013:
+            aTitle = QObject::tr( "ASPECTRATIO_ELEMENTS" );
+            aControl = SMESH_Actor::eAspectRatio;
+            break;
+          case 6017:
+            aTitle = QObject::tr( "ASPECTRATIO_3D_ELEMENTS" );
+            aControl = SMESH_Actor::eAspectRatio3D;
+            break;
+          case 6014:
+            aTitle = QObject::tr( "MINIMUMANGLE_ELEMENTS" );
+            aControl = SMESH_Actor::eMinimumAngle;
+            break;
+          case 6015:
+            aTitle = QObject::tr( "WARP_ELEMENTS" );
+            aControl = SMESH_Actor::eWarping;
+            break;
+          case 6016:
+            aTitle = QObject::tr( "SKEW_ELEMENTS" );
+            aControl = SMESH_Actor::eSkew;
+            break;
+          case 6009:
+            aTitle = QObject::tr( "SMESH_VOLUME" );
+            aControl = SMESH_Actor::eVolume3D;
+            break;
+          case 6021:
+            aTitle = QObject::tr( "FREE_FACES" );
+            aControl = SMESH_Actor::eFreeFaces;
+            break;
+          }
+          anActor->SetControlMode(aControl);
+          anActor->GetScalarBarActor()->SetTitle(aTitle.toLatin1().data());
+          SMESH::RepaintCurrentView();
+        }
       }
     }
   }
 
 
   bool CheckOIType(const Handle(SALOME_InteractiveObject) & theIO,
-		   MeshObjectType                           theType,
-		   const QString                            theInTypeName,
-		   QString &                                theOutTypeName)
+                   MeshObjectType                           theType,
+                   const QString                            theInTypeName,
+                   QString &                                theOutTypeName)
   {
     SMESH_TypeFilter aTypeFilter( theType );
     QString entry;
@@ -876,17 +876,17 @@
       _PTR(SComponent) aSComp = aSObj->GetFatherComponent();
       CORBA::String_var anID = aSComp->GetID().c_str();
       if (!strcmp(anID.in(),theIO->getEntry()))
-	return "Component";
+        return "Component";
     }
 
     QString aTypeName;
     if (
-	CheckOIType ( theIO, HYPOTHESIS,    "Hypothesis", aTypeName ) ||
-	CheckOIType ( theIO, ALGORITHM,     "Algorithm",  aTypeName ) ||
-	CheckOIType ( theIO, MESH,          "Mesh",       aTypeName ) ||
-	CheckOIType ( theIO, SUBMESH,       "SubMesh",    aTypeName ) ||
-	CheckOIType ( theIO, GROUP,         "Group",      aTypeName )
-	)
+        CheckOIType ( theIO, HYPOTHESIS,    "Hypothesis", aTypeName ) ||
+        CheckOIType ( theIO, ALGORITHM,     "Algorithm",  aTypeName ) ||
+        CheckOIType ( theIO, MESH,          "Mesh",       aTypeName ) ||
+        CheckOIType ( theIO, SUBMESH,       "SubMesh",    aTypeName ) ||
+        CheckOIType ( theIO, GROUP,         "Group",      aTypeName )
+        )
       return aTypeName;
 
     return "NoType";
@@ -905,10 +905,10 @@
     SALOME_ListIteratorOfListIO It(selected);
     for ( ; It.More(); It.Next())
       {
-	Handle(SALOME_InteractiveObject) IObject = It.Value();
-	QString Type = CheckTypeObject(IObject);
-	if (Type.compare(RefType) != 0)
-	  return "Heterogeneous Selection";
+        Handle(SALOME_InteractiveObject) IObject = It.Value();
+        QString Type = CheckTypeObject(IObject);
+        if (Type.compare(RefType) != 0)
+          return "Heterogeneous Selection";
       }
 
     return RefType;
@@ -936,17 +936,17 @@
       QString cur = anIO->getComponentDataType();
       _PTR(SObject) aSO = aStudy->FindObjectID(anIO->getEntry());
       if (aSO) {
-	// check if object is reference
-	_PTR(SObject) aRefSObj;
-	aNameList.append("\n    - ");
-	if ( aSO->ReferencedObject( aRefSObj ) ) {
-	  QString aRefName = QString::fromStdString ( aRefSObj->GetName() );
-	  aNameList.append( aRefName );
-	  cur = QString::fromStdString ( aRefSObj->GetFatherComponent()->ComponentDataType() );
-	}
-	else
-	  aNameList.append(anIO->getName());
-	objectCount++;
+        // check if object is reference
+        _PTR(SObject) aRefSObj;
+        aNameList.append("\n    - ");
+        if ( aSO->ReferencedObject( aRefSObj ) ) {
+          QString aRefName = QString::fromStdString ( aRefSObj->GetName() );
+          aNameList.append( aRefName );
+          cur = QString::fromStdString ( aRefSObj->GetFatherComponent()->ComponentDataType() );
+        }
+        else
+          aNameList.append(anIO->getName());
+        objectCount++;
       }
 
       if( aParentComponent.isNull() )
@@ -960,17 +960,17 @@
 
     if ( aParentComponent != SMESHGUI::GetSMESHGUI()->name() )  {
       SUIT_MessageBox::warning( SMESHGUI::desktop(),
-				QObject::tr("ERR_ERROR"),
-				QObject::tr("NON_SMESH_OBJECTS_SELECTED").arg( SMESHGUI::GetSMESHGUI()->moduleName() ) );
+                                QObject::tr("ERR_ERROR"),
+                                QObject::tr("NON_SMESH_OBJECTS_SELECTED").arg( SMESHGUI::GetSMESHGUI()->moduleName() ) );
       return;
     }
     // VSR 17/11/04: check if all objects selected belong to SMESH component <-- finish
     if (SUIT_MessageBox::warning
-	(SMESHGUI::desktop(),
-	 QObject::tr("SMESH_WRN_WARNING"),
-	 QObject::tr("SMESH_REALLY_DELETE").arg( objectCount ).arg( aNameList ),
-	 SUIT_MessageBox::Yes | SUIT_MessageBox::No,
-	 SUIT_MessageBox::Yes) != SUIT_MessageBox::Yes)
+        (SMESHGUI::desktop(),
+         QObject::tr("SMESH_WRN_WARNING"),
+         QObject::tr("SMESH_REALLY_DELETE").arg( objectCount ).arg( aNameList ),
+         SUIT_MessageBox::Yes | SUIT_MessageBox::No,
+         SUIT_MessageBox::Yes) != SUIT_MessageBox::Yes)
       return;
 
     SalomeApp_Application* anApp = dynamic_cast<SalomeApp_Application*>( SUIT_Session::session()->activeApplication() );
@@ -983,18 +983,18 @@
     for( ; It.More(); It.Next()){ // loop on selected IO's
       Handle(SALOME_InteractiveObject) IObject = It.Value();
       if(IObject->hasEntry()) {
-	_PTR(SObject) aSO = aStudy->FindObjectID(IObject->getEntry());
+        _PTR(SObject) aSO = aStudy->FindObjectID(IObject->getEntry());
 
-	// disable removal of "SMESH" component object
-	if(aSO->FindAttribute(anAttr, "AttributeIOR")){
-	  anIOR = anAttr;
-	  if ( engineIOR() == anIOR->Value().c_str() )
-	    continue;
-	}
-	//Check the referenced object
-	_PTR(SObject) aRefSObject;
-	if ( aSO && aSO->ReferencedObject( aRefSObject ) )
-	  aSO = aRefSObject; // Delete main Object instead of reference
+        // disable removal of "SMESH" component object
+        if(aSO->FindAttribute(anAttr, "AttributeIOR")){
+          anIOR = anAttr;
+          if ( engineIOR() == anIOR->Value().c_str() )
+            continue;
+        }
+        //Check the referenced object
+        _PTR(SObject) aRefSObject;
+        if ( aSO && aSO->ReferencedObject( aRefSObject ) )
+          aSO = aRefSObject; // Delete main Object instead of reference
 
         // put the whole hierarchy of sub-objects of the selected SO into a list and
         // then treat them all starting from the deepest objects (at list back)
@@ -1017,15 +1017,15 @@
           std::string anEntry = SO->GetID();
 
           /** Erase graphical object **/
-	  if(SO->FindAttribute(anAttr, "AttributeIOR")){
-	    QVector<SUIT_ViewWindow*> aViews = vm->getViews();
-	    for(int i = 0; i < nbSf; i++){
-	      SUIT_ViewWindow *sf = aViews[i];
-	      if(SMESH_Actor* anActor = SMESH::FindActorByEntry(sf,anEntry.c_str())){
-		SMESH::RemoveActor(sf,anActor);
-	      }
-	    }
-	  }
+          if(SO->FindAttribute(anAttr, "AttributeIOR")){
+            QVector<SUIT_ViewWindow*> aViews = vm->getViews();
+            for(int i = 0; i < nbSf; i++){
+              SUIT_ViewWindow *sf = aViews[i];
+              if(SMESH_Actor* anActor = SMESH::FindActorByEntry(sf,anEntry.c_str())){
+                SMESH::RemoveActor(sf,anActor);
+              }
+            }
+          }
 
           /** Remove an object from data structures **/
           SMESH::SMESH_GroupBase_var aGroup = SMESH::SMESH_GroupBase::_narrow( SMESH::SObjectToObject( SO ));
@@ -1058,7 +1058,7 @@
               //op->finish();
             }
           }
-	} /* listSO back loop */
+        } /* listSO back loop */
       } /* IObject->hasEntry() */
     } /* more/next */
     aStudyBuilder->CommitCommand();
@@ -1180,7 +1180,7 @@ SMESHGUI* SMESHGUI::GetSMESHGUI()
     {
       _PTR(Study) aStudy = study->studyDS();
       if ( aStudy )
-	GetSMESHGen()->SetCurrentStudy( _CAST(Study,aStudy)->GetStudy() );
+        GetSMESHGen()->SetCurrentStudy( _CAST(Study,aStudy)->GetStudy() );
     }
   }
 
@@ -1322,8 +1322,8 @@ static int isStudyLocked(_PTR(Study) theStudy){
 static bool checkLock(_PTR(Study) theStudy) {
   if (isStudyLocked(theStudy)) {
     SUIT_MessageBox::warning( SMESHGUI::desktop(),
-			      QObject::tr("WRN_WARNING"),
-			      QObject::tr("WRN_STUDY_LOCKED") );
+                              QObject::tr("WRN_WARNING"),
+                              QObject::tr("WRN_STUDY_LOCKED") );
     return true;
   }
   return false;
@@ -1365,13 +1365,13 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
 
   //QAction* act = action( theCommandID );
 
-  switch (theCommandID)	{
-  case 33:					// DELETE
+  switch (theCommandID) {
+  case 33:                                      // DELETE
     if(checkLock(aStudy)) break;
     OnEditDelete();
     break;
 
-  case 113:					// IMPORT
+  case 113:                                     // IMPORT
   case 112:
   case 111:
     {
@@ -1399,7 +1399,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       break;
     }
 
-  case 122:					// EXPORT MED
+  case 122:                                     // EXPORT MED
   case 121:
   case 123:
   case 124:
@@ -1412,7 +1412,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       break;
     }
 
-  case 200:					// SCALAR BAR
+  case 200:                                     // SCALAR BAR
     {
       LightApp_SelectionMgr *aSel = SMESHGUI::selectionMgr();
       SALOME_ListIO selected;
@@ -1420,12 +1420,12 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
         aSel->selectedObjects( selected );
 
       if( selected.Extent() ) {
-	Handle(SALOME_InteractiveObject) anIO = selected.First();
-	if( anIO->hasEntry() ) {
-	  if( SMESH_Actor* anActor = SMESH::FindActorByEntry( anIO->getEntry() ) ) {
-	    anActor->SetControlMode( SMESH_Actor::eNone );
-	  }
-	}
+        Handle(SALOME_InteractiveObject) anIO = selected.First();
+        if( anIO->hasEntry() ) {
+          if( SMESH_Actor* anActor = SMESH::FindActorByEntry( anIO->getEntry() ) ) {
+            anActor->SetControlMode( SMESH_Actor::eNone );
+          }
+        }
       }
       break;
     }
@@ -1479,16 +1479,16 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       SALOME_ListIteratorOfListIO it(selected);
       for( ; it.More(); it.Next()) {
         Handle(SALOME_InteractiveObject) anIObject = it.Value();
-	if(anIObject->hasEntry()) {
-	  if(SMESH_Actor *anActor = SMESH::FindActorByEntry(anIObject->getEntry())){
-	    anActor->SetFacesOriented( !anActor->GetFacesOriented() );
-	  }
-	}
+        if(anIObject->hasEntry()) {
+          if(SMESH_Actor *anActor = SMESH::FindActorByEntry(anIObject->getEntry())){
+            anActor->SetFacesOriented( !anActor->GetFacesOriented() );
+          }
+        }
       }
       break;
     }
 
-  case 214:					// UPDATE
+  case 214:                                     // UPDATE
     {
       if(checkLock(aStudy)) break;
       try {
@@ -1511,15 +1511,15 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       break;
     }
 
-  case 300:					// ERASE
-  case 301:					// DISPLAY
-  case 302:					// DISPLAY ONLY
+  case 300:                                     // ERASE
+  case 301:                                     // DISPLAY
+  case 302:                                     // DISPLAY ONLY
     {
       SMESH::EDisplaing anAction;
       switch (theCommandID) {
-      case 300:	anAction = SMESH::eErase; break;
-      case 301:	anAction = SMESH::eDisplay; break;
-      case 302:	anAction = SMESH::eDisplayOnly; break;
+      case 300: anAction = SMESH::eErase; break;
+      case 301: anAction = SMESH::eDisplay; break;
+      case 302: anAction = SMESH::eDisplayOnly; break;
       }
 
       LightApp_SelectionMgr *aSel = SMESHGUI::selectionMgr();
@@ -1528,7 +1528,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
         aSel->selectedObjects( sel_objects );
 
       if( theCommandID==302 )
-	startOperation( myEraseAll );
+        startOperation( myEraseAll );
 
       extractContainers( sel_objects, to_process );
 
@@ -1559,28 +1559,28 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       }
 
       if (anAction == SMESH::eErase) {
-	SALOME_ListIO l1;
-	aSel->setSelectedObjects( l1 );
+        SALOME_ListIO l1;
+        aSel->setSelectedObjects( l1 );
       }
       else
-	aSel->setSelectedObjects( to_process );
+        aSel->setSelectedObjects( to_process );
 
       break;
     }
 
-  case 4000:					// NODES
+  case 4000:                                    // NODES
     {
       if(checkLock(aStudy)) break;
 
       if ( vtkwnd ) {
-	EmitSignalDeactivateDialog();
+        EmitSignalDeactivateDialog();
 
-	( new SMESHGUI_NodesDlg( this ) )->show();
+        ( new SMESHGUI_NodesDlg( this ) )->show();
       }
       else {
-	SUIT_MessageBox::warning(desktop(),
-				 tr("SMESH_WRN_WARNING"),
-				 tr("SMESH_WRN_VIEWER_VTK"));
+        SUIT_MessageBox::warning(desktop(),
+                                 tr("SMESH_WRN_WARNING"),
+                                 tr("SMESH_WRN_VIEWER_VTK"));
       }
       break;
     }
@@ -1595,12 +1595,12 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     break;
   }
 
-  case 406:					// MOVE NODE
+  case 406:                                     // MOVE NODE
     {
       if ( !vtkwnd )
       {
         SUIT_MessageBox::warning( desktop(), tr( "SMESH_WRN_WARNING" ),
-				  tr( "NOT_A_VTK_VIEWER" ) );
+                                  tr( "NOT_A_VTK_VIEWER" ) );
         break;
       }
 
@@ -1609,9 +1609,9 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       break;
     }
 
-  case 701:					// COMPUTE MESH
-  case 711:					// PRECOMPUTE MESH
-  case 712:					// EVALUATE MESH
+  case 701:                                     // COMPUTE MESH
+  case 711:                                     // PRECOMPUTE MESH
+  case 712:                                     // EVALUATE MESH
     {
       if (checkLock(aStudy)) break;
       startOperation( theCommandID );
@@ -1637,7 +1637,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       if ( !vtkwnd )
       {
         SUIT_MessageBox::warning( desktop(), tr( "SMESH_WRN_WARNING" ),
-				  tr( "NOT_A_VTK_VIEWER" ) );
+                                  tr( "NOT_A_VTK_VIEWER" ) );
         break;
       }
 
@@ -1667,7 +1667,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       if ( !vtkwnd )
       {
         SUIT_MessageBox::warning( desktop(), tr( "SMESH_WRN_WARNING" ),
-				  tr( "NOT_A_VTK_VIEWER" ) );
+                                  tr( "NOT_A_VTK_VIEWER" ) );
         break;
       }
 
@@ -1690,12 +1690,12 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     {
       if(checkLock(aStudy)) break;
       if( vtkwnd ) {
-	EmitSignalDeactivateDialog();
-	( new SMESHGUI_SmoothingDlg( this ) )->show();
+        EmitSignalDeactivateDialog();
+        ( new SMESHGUI_SmoothingDlg( this ) )->show();
       }
       else {
-	SUIT_MessageBox::warning(desktop(),
-				 tr("SMESH_WRN_WARNING"), tr("SMESH_WRN_VIEWER_VTK"));
+        SUIT_MessageBox::warning(desktop(),
+                                 tr("SMESH_WRN_WARNING"), tr("SMESH_WRN_VIEWER_VTK"));
       }
       break;
     }
@@ -1703,11 +1703,11 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     {
       if (checkLock(aStudy)) break;
       if (vtkwnd) {
-	EmitSignalDeactivateDialog();
-	( new SMESHGUI_ExtrusionDlg ( this ) )->show();
+        EmitSignalDeactivateDialog();
+        ( new SMESHGUI_ExtrusionDlg ( this ) )->show();
       } else {
-	SUIT_MessageBox::warning(desktop(),
-				 tr("SMESH_WRN_WARNING"), tr("SMESH_WRN_VIEWER_VTK"));
+        SUIT_MessageBox::warning(desktop(),
+                                 tr("SMESH_WRN_WARNING"), tr("SMESH_WRN_VIEWER_VTK"));
       }
       break;
     }
@@ -1715,12 +1715,12 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     {
       if(checkLock(aStudy)) break;
       if( vtkwnd ) {
-	EmitSignalDeactivateDialog();
-	( new SMESHGUI_RevolutionDlg( this ) )->show();
+        EmitSignalDeactivateDialog();
+        ( new SMESHGUI_RevolutionDlg( this ) )->show();
       }
       else {
-	SUIT_MessageBox::warning(desktop(),
-				 tr("SMESH_WRN_WARNING"), tr("SMESH_WRN_VIEWER_VTK"));
+        SUIT_MessageBox::warning(desktop(),
+                                 tr("SMESH_WRN_WARNING"), tr("SMESH_WRN_VIEWER_VTK"));
       }
       break;
     }
@@ -1734,8 +1734,8 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
         ( new SMESHGUI_MeshPatternDlg( this ) )->show();
       }
       else {
-	SUIT_MessageBox::warning(desktop(),
-				 tr("SMESH_WRN_WARNING"), tr("SMESH_WRN_VIEWER_VTK"));
+        SUIT_MessageBox::warning(desktop(),
+                                 tr("SMESH_WRN_WARNING"), tr("SMESH_WRN_VIEWER_VTK"));
       }
       break;
     }
@@ -1743,11 +1743,11 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     {
       if (checkLock(aStudy)) break;
       if (vtkwnd) {
-	EmitSignalDeactivateDialog();
-	( new SMESHGUI_ExtrusionAlongPathDlg( this ) )->show();
+        EmitSignalDeactivateDialog();
+        ( new SMESHGUI_ExtrusionAlongPathDlg( this ) )->show();
       } else {
-	SUIT_MessageBox::warning(desktop(),
-				 tr("SMESH_WRN_WARNING"), tr("SMESH_WRN_VIEWER_VTK"));
+        SUIT_MessageBox::warning(desktop(),
+                                 tr("SMESH_WRN_WARNING"), tr("SMESH_WRN_VIEWER_VTK"));
       }
       break;
     }
@@ -1756,12 +1756,12 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     startOperation( 417 );
       /*      if (checkLock(aStudy)) break;
       if (vtkwnd) {
-	EmitSignalDeactivateDialog();
-	new SMESHGUI_ConvToQuadDlg();
+        EmitSignalDeactivateDialog();
+        new SMESHGUI_ConvToQuadDlg();
       } else {
-	SUIT_MessageBox::warning(desktop(),
+        SUIT_MessageBox::warning(desktop(),
                                tr("SMESH_WRN_WARNING"), tr("SMESH_WRN_VIEWER_VTK"));
-			       }*/
+                               }*/
       break;
     }
   case 418: // create 2D mesh from 3D
@@ -1779,7 +1779,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       if ( !vtkwnd )
       {
         SUIT_MessageBox::warning( desktop(), tr( "SMESH_WRN_WARNING" ),
-				  tr( "NOT_A_VTK_VIEWER" ) );
+                                  tr( "NOT_A_VTK_VIEWER" ) );
         break;
       }
 
@@ -1794,7 +1794,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
 
       int nbSel = selected.Extent();
       if (nbSel == 1) {
-	// check if mesh is selected
+        // check if mesh is selected
         aMesh = SMESH::GetMeshByIO( selected.First() );
       }
       SMESHGUI_GroupDlg *aDlg = new SMESHGUI_GroupDlg( this, aMesh);
@@ -1807,7 +1807,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       if ( !vtkwnd )
       {
         SUIT_MessageBox::warning( desktop(), tr( "SMESH_WRN_WARNING" ),
-				  tr( "NOT_A_VTK_VIEWER" ) );
+                                  tr( "NOT_A_VTK_VIEWER" ) );
         break;
       }
 
@@ -1821,52 +1821,52 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
 
       int nbSel = selected.Extent();
       if (nbSel == 1) {
-	// check if submesh is selected
-	Handle(SALOME_InteractiveObject) IObject = selected.First();
-	if (IObject->hasEntry()) {
-	  _PTR(SObject) aSObj = aStudy->FindObjectID(IObject->getEntry());
-	  if( aSObj ) {
-	    SMESH::SMESH_subMesh_var aSubMesh = SMESH::SMESH_subMesh::_narrow( SMESH::SObjectToObject( aSObj ) );
-	    if (!aSubMesh->_is_nil()) {
-	      try {
-		SMESH::SMESH_Mesh_var aMesh = aSubMesh->GetFather();
-		// get submesh elements list by types
-		SMESH::long_array_var aNodes = aSubMesh->GetElementsByType(SMESH::NODE);
-		SMESH::long_array_var aEdges = aSubMesh->GetElementsByType(SMESH::EDGE);
-		SMESH::long_array_var aFaces = aSubMesh->GetElementsByType(SMESH::FACE);
-		SMESH::long_array_var aVolumes = aSubMesh->GetElementsByType(SMESH::VOLUME);
-		// create group for each type o elements
-		QString aName = IObject->getName();
-		if (aNodes->length() > 0) {
-		  SMESH::SMESH_Group_var aGroup = SMESH::AddGroup(aMesh, SMESH::NODE, aName + "_Nodes");
-		  aGroup->Add(aNodes.inout());
-		}
-		if (aEdges->length() > 0) {
-		  SMESH::SMESH_Group_var aGroup = SMESH::AddGroup(aMesh, SMESH::EDGE, aName + "_Edges");
-		  aGroup->Add(aEdges.inout());
-		}
-		if (aFaces->length() > 0) {
-		  SMESH::SMESH_Group_var aGroup = SMESH::AddGroup(aMesh, SMESH::FACE, aName + "_Faces");
-		  aGroup->Add(aFaces.inout());
-		}
-		if (aVolumes->length() > 0) {
-		  SMESH::SMESH_Group_var aGroup = SMESH::AddGroup(aMesh, SMESH::VOLUME, aName + "_Volumes");
-		  aGroup->Add(aVolumes.inout());
-		}
-		updateObjBrowser();
+        // check if submesh is selected
+        Handle(SALOME_InteractiveObject) IObject = selected.First();
+        if (IObject->hasEntry()) {
+          _PTR(SObject) aSObj = aStudy->FindObjectID(IObject->getEntry());
+          if( aSObj ) {
+            SMESH::SMESH_subMesh_var aSubMesh = SMESH::SMESH_subMesh::_narrow( SMESH::SObjectToObject( aSObj ) );
+            if (!aSubMesh->_is_nil()) {
+              try {
+                SMESH::SMESH_Mesh_var aMesh = aSubMesh->GetFather();
+                // get submesh elements list by types
+                SMESH::long_array_var aNodes = aSubMesh->GetElementsByType(SMESH::NODE);
+                SMESH::long_array_var aEdges = aSubMesh->GetElementsByType(SMESH::EDGE);
+                SMESH::long_array_var aFaces = aSubMesh->GetElementsByType(SMESH::FACE);
+                SMESH::long_array_var aVolumes = aSubMesh->GetElementsByType(SMESH::VOLUME);
+                // create group for each type o elements
+                QString aName = IObject->getName();
+                if (aNodes->length() > 0) {
+                  SMESH::SMESH_Group_var aGroup = SMESH::AddGroup(aMesh, SMESH::NODE, aName + "_Nodes");
+                  aGroup->Add(aNodes.inout());
+                }
+                if (aEdges->length() > 0) {
+                  SMESH::SMESH_Group_var aGroup = SMESH::AddGroup(aMesh, SMESH::EDGE, aName + "_Edges");
+                  aGroup->Add(aEdges.inout());
+                }
+                if (aFaces->length() > 0) {
+                  SMESH::SMESH_Group_var aGroup = SMESH::AddGroup(aMesh, SMESH::FACE, aName + "_Faces");
+                  aGroup->Add(aFaces.inout());
+                }
+                if (aVolumes->length() > 0) {
+                  SMESH::SMESH_Group_var aGroup = SMESH::AddGroup(aMesh, SMESH::VOLUME, aName + "_Volumes");
+                  aGroup->Add(aVolumes.inout());
+                }
+                updateObjBrowser();
 
-	      }
+              }
               catch(const SALOME::SALOME_Exception & S_ex){
-		SalomeApp_Tools::QtCatchCorbaException(S_ex);
-	      }
-	    }
-	  }
-	}
+                SalomeApp_Tools::QtCatchCorbaException(S_ex);
+              }
+            }
+          }
+        }
       }
       else if(nbSel==0) {
         SUIT_MessageBox::warning(desktop(),
-				 tr("SMESH_WRN_WARNING"),
-				 tr("SMESH_WRN_NO_AVAILABLE_DATA"));
+                                 tr("SMESH_WRN_WARNING"),
+                                 tr("SMESH_WRN_NO_AVAILABLE_DATA"));
       }
       break;
     }
@@ -1876,7 +1876,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       if ( !vtkwnd )
       {
         SUIT_MessageBox::warning( desktop(), tr( "SMESH_WRN_WARNING" ),
-				  tr( "NOT_A_VTK_VIEWER" ) );
+                                  tr( "NOT_A_VTK_VIEWER" ) );
         break;
       }
 
@@ -1895,16 +1895,16 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
         SMESH::SMESH_GroupBase_var aGroup =
           SMESH::IObjectToInterface<SMESH::SMESH_GroupBase>(It.Value());
         if (!aGroup->_is_nil()) {
-	  nbSelectedGroups++;
+          nbSelectedGroups++;
           SMESHGUI_GroupDlg *aDlg = new SMESHGUI_GroupDlg( this, aGroup);
           aDlg->show();
-	}
+        }
       }
       if (nbSelectedGroups == 0)
-	{
-	  SMESHGUI_GroupDlg *aDlg = new SMESHGUI_GroupDlg( this, SMESH::SMESH_GroupBase::_nil());
-	  aDlg->show();
-	}
+        {
+          SMESHGUI_GroupDlg *aDlg = new SMESHGUI_GroupDlg( this, SMESH::SMESH_GroupBase::_nil());
+          aDlg->show();
+        }
       break;
     }
 
@@ -1912,8 +1912,8 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     {
       if(checkLock(aStudy)) break;
       if (myState == 800) {
-	SMESHGUI_GroupDlg *aDlg = (SMESHGUI_GroupDlg*) myActiveDialogBox;
-	if (aDlg) aDlg->onAdd();
+        SMESHGUI_GroupDlg *aDlg = (SMESHGUI_GroupDlg*) myActiveDialogBox;
+        if (aDlg) aDlg->onAdd();
       }
       break;
     }
@@ -1922,8 +1922,8 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     {
       if(checkLock(aStudy)) break;
       if (myState == 800) {
-	SMESHGUI_GroupDlg *aDlg = (SMESHGUI_GroupDlg*) myActiveDialogBox;
-	if (aDlg) aDlg->onRemove();
+        SMESHGUI_GroupDlg *aDlg = (SMESHGUI_GroupDlg*) myActiveDialogBox;
+        if (aDlg) aDlg->onRemove();
       }
       break;
     }
@@ -1933,7 +1933,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       if ( !vtkwnd )
       {
         SUIT_MessageBox::warning( desktop(), tr( "SMESH_WRN_WARNING" ),
-				  tr( "NOT_A_VTK_VIEWER" ) );
+                                  tr( "NOT_A_VTK_VIEWER" ) );
         break;
       }
 
@@ -1953,7 +1953,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
         if (!aGroup->_is_nil()) {
           SMESHGUI_GroupDlg *aDlg = new SMESHGUI_GroupDlg( this, aGroup, true );
           aDlg->show();
-	}
+        }
       }
       break;
     }
@@ -1965,7 +1965,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       if ( !vtkwnd )
       {
         SUIT_MessageBox::warning( desktop(), tr( "SMESH_WRN_WARNING" ),
-				  tr( "NOT_A_VTK_VIEWER" ) );
+                                  tr( "NOT_A_VTK_VIEWER" ) );
         break;
       }
 
@@ -2004,7 +2004,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       if ( !vtkwnd )
       {
         SUIT_MessageBox::warning( desktop(), tr( "SMESH_WRN_WARNING" ),
-				  tr( "NOT_A_VTK_VIEWER" ) );
+                                  tr( "NOT_A_VTK_VIEWER" ) );
         break;
       }
 
@@ -2017,7 +2017,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       break;
     }
 
-  case 900:					// MESH INFOS
+  case 900:                                     // MESH INFOS
     {
       EmitSignalDeactivateDialog();
       LightApp_SelectionMgr *aSel = SMESHGUI::selectionMgr();
@@ -2029,8 +2029,8 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
         SALOME_ListIO IOs;
         SALOME_ListIteratorOfListIO It (selected);
         for ( ; It.More(); It.Next() ) {
-	  IOs.Clear(); IOs.Append( It.Value() );
-	  aSel->setSelectedObjects( IOs );
+          IOs.Clear(); IOs.Append( It.Value() );
+          aSel->setSelectedObjects( IOs );
           ( new SMESHGUI_MeshInfosDlg( this ) )->show();
         }
         // restore selection
@@ -2041,7 +2041,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       break;
     }
 
-  case 902:					// STANDARD MESH INFOS
+  case 902:                                     // STANDARD MESH INFOS
     {
       EmitSignalDeactivateDialog();
       LightApp_SelectionMgr *aSel = SMESHGUI::selectionMgr();
@@ -2053,27 +2053,27 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
         SALOME_ListIO IOs;
         SALOME_ListIteratorOfListIO It (selected);
         for ( ; It.More(); It.Next() ) {
-	  IOs.Clear();
-	  IOs.Append( It.Value() );
-	  aSel->setSelectedObjects( IOs );
+          IOs.Clear();
+          IOs.Append( It.Value() );
+          aSel->setSelectedObjects( IOs );
           ( new SMESHGUI_StandardMeshInfosDlg( this ) )->show();
         }
         // restore selection
-	aSel->setSelectedObjects( selected );
+        aSel->setSelectedObjects( selected );
       }
       else
         ( new SMESHGUI_StandardMeshInfosDlg( this ) )->show();
       break;
     }
 
-  case 903:					// WHAT IS
+  case 903:                                     // WHAT IS
     {
       EmitSignalDeactivateDialog();
       ( new SMESHGUI_WhatIsDlg( this ) )->show();
       break;
     }
 
-  case 1100:					// EDIT HYPOTHESIS
+  case 1100:                                    // EDIT HYPOTHESIS
     {
       if(checkLock(aStudy)) break;
 
@@ -2086,7 +2086,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
 
       if (nbSel == 1) {
         Handle(SALOME_InteractiveObject) anIObject = selected.First();
-	SMESH::SMESH_Hypothesis_var aHypothesis = SMESH::IObjectToInterface<SMESH::SMESH_Hypothesis>(anIObject);
+        SMESH::SMESH_Hypothesis_var aHypothesis = SMESH::IObjectToInterface<SMESH::SMESH_Hypothesis>(anIObject);
 
         /* Look for all mesh objects that have this hypothesis affected in order to flag as ModifiedMesh */
         /* At end below '...->updateObjBrowser(true)' will change icon of mesh objects                   */
@@ -2108,7 +2108,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       break;
     }
 
-  case 1101:					// RENAME
+  case 1101:                                    // RENAME
     {
       if ( checkLock( aStudy ) )
         break;
@@ -2148,14 +2148,14 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
               {
                 SMESHGUI::GetSMESHGen()->SetName(obj->GetIOR().c_str(), newName.toLatin1().data());
 
-		// update name of group object and its actor
-		SMESH::SMESH_GroupBase_var aGroupObject = SMESH::IObjectToInterface<SMESH::SMESH_GroupBase>(IObject);
-		if( !aGroupObject->_is_nil() )
-		{
-		  aGroupObject->SetName( newName.toLatin1().data() );
-		  if ( SMESH_Actor *anActor = SMESH::FindActorByEntry( IObject->getEntry() ) )
-		    anActor->setName( newName.toLatin1().data() );
-		}
+                // update name of group object and its actor
+                SMESH::SMESH_GroupBase_var aGroupObject = SMESH::IObjectToInterface<SMESH::SMESH_GroupBase>(IObject);
+                if( !aGroupObject->_is_nil() )
+                {
+                  aGroupObject->SetName( newName.toLatin1().data() );
+                  if ( SMESH_Actor *anActor = SMESH::FindActorByEntry( IObject->getEntry() ) )
+                    anActor->setName( newName.toLatin1().data() );
+                }
 
                 updateObjBrowser();
               }
@@ -2166,13 +2166,13 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
 
       if (!isAny) {
         SUIT_MessageBox::warning(desktop(),
-				 QObject::tr("SMESH_WRN_WARNING"),
-				 QObject::tr("SMESH_WRN_NO_APPROPRIATE_SELECTION"));
+                                 QObject::tr("SMESH_WRN_WARNING"),
+                                 QObject::tr("SMESH_WRN_NO_APPROPRIATE_SELECTION"));
       }
       break;
     }
 
-  case 1102:					// REMOVE HYPOTHESIS / ALGORITHMS
+  case 1102:                                    // REMOVE HYPOTHESIS / ALGORITHMS
     {
       if(checkLock(aStudy)) break;
       SUIT_OverrideCursor wc;
@@ -2184,8 +2184,8 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
 
       SALOME_ListIteratorOfListIO It(selected);
       for (int i = 0; It.More(); It.Next(), i++) {
-	Handle(SALOME_InteractiveObject) IObject = It.Value();
-	SMESH::RemoveHypothesisOrAlgorithmOnMesh(IObject);
+        Handle(SALOME_InteractiveObject) IObject = It.Value();
+        SMESH::RemoveHypothesisOrAlgorithmOnMesh(IObject);
       }
       SALOME_ListIO l1;
       aSel->setSelectedObjects( l1 );
@@ -2193,17 +2193,17 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       break;
     }
 
-  case 4009:					// ELEM0D
-  case 4010:					// GEOM::EDGE
-  case 4021:					// TRIANGLE
-  case 4022:					// QUAD
-  case 4023:					// POLYGON
-  case 4031:					// TETRA
-  case 4032:					// HEXA
+  case 4009:                                    // ELEM0D
+  case 4010:                                    // GEOM::EDGE
+  case 4021:                                    // TRIANGLE
+  case 4022:                                    // QUAD
+  case 4023:                                    // POLYGON
+  case 4031:                                    // TETRA
+  case 4032:                                    // HEXA
     {
       if(checkLock(aStudy)) break;
       if ( vtkwnd ) {
-	EmitSignalDeactivateDialog();
+        EmitSignalDeactivateDialog();
         SMDSAbs_ElementType type    = SMDSAbs_Edge;
         int                 nbNodes = 2;
         switch (theCommandID) {
@@ -2215,32 +2215,32 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
           type = SMDSAbs_Face; nbNodes = 4; break;
         case 4031:                                      // TETRA
           type = SMDSAbs_Volume; nbNodes = 4; break;
-	case 4023:                                      // POLYGON
-	  type = SMDSAbs_Face; nbNodes = 5; break;     // 5 - identificator for POLYGON
+        case 4023:                                      // POLYGON
+          type = SMDSAbs_Face; nbNodes = 5; break;     // 5 - identificator for POLYGON
         case 4032:                                      // HEXA
           type = SMDSAbs_Volume; nbNodes = 8; break;
-	case 4033:                                      // POLYHEDRE
-	  type = SMDSAbs_Volume; nbNodes = 9; break; // 9 - identificator for POLYHEDRE
+        case 4033:                                      // POLYHEDRE
+          type = SMDSAbs_Volume; nbNodes = 9; break; // 9 - identificator for POLYHEDRE
         default:;
         }
-	( new SMESHGUI_AddMeshElementDlg( this, type, nbNodes ) )->show();
+        ( new SMESHGUI_AddMeshElementDlg( this, type, nbNodes ) )->show();
       }
       else {
-	SUIT_MessageBox::warning(desktop(),
-				 tr("SMESH_WRN_WARNING"), tr("SMESH_WRN_VIEWER_VTK"));
+        SUIT_MessageBox::warning(desktop(),
+                                 tr("SMESH_WRN_WARNING"), tr("SMESH_WRN_VIEWER_VTK"));
       }
       break;
     }
-  case 4033:					// POLYHEDRON
+  case 4033:                                    // POLYHEDRON
     {
       if(checkLock(aStudy)) break;
       if ( vtkwnd ) {
-	EmitSignalDeactivateDialog();
-	( new SMESHGUI_CreatePolyhedralVolumeDlg( this ) )->show();
+        EmitSignalDeactivateDialog();
+        ( new SMESHGUI_CreatePolyhedralVolumeDlg( this ) )->show();
       }
       else {
-	SUIT_MessageBox::warning(SMESHGUI::desktop(),
-				 tr("SMESH_WRN_WARNING"), tr("SMESH_WRN_VIEWER_VTK"));
+        SUIT_MessageBox::warning(SMESHGUI::desktop(),
+                                 tr("SMESH_WRN_WARNING"), tr("SMESH_WRN_VIEWER_VTK"));
       }
       break;
     }
@@ -2254,60 +2254,60 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     {
       if(checkLock(aStudy)) break;
       if ( vtkwnd ) {
-	EmitSignalDeactivateDialog();
-	int type;
+        EmitSignalDeactivateDialog();
+        int type;
 
-	switch (theCommandID) {
-	case 4034:
-	  type = QUAD_EDGE; break;
-	case 4035:
-	  type = QUAD_TRIANGLE; break;
-	case 4036:
-	  type = QUAD_QUADRANGLE; break;
-	case 4037:
-	  type = QUAD_TETRAHEDRON; break;
-	case 4038:
-	  type = QUAD_PYRAMID; break;
-	case 4039:
-	  type = QUAD_PENTAHEDRON; break;
-	case 4040:
-	  type = QUAD_HEXAHEDRON;
-	  break;
-	default:;
-	}
-	 ( new SMESHGUI_AddQuadraticElementDlg( this, type ) )->show();
+        switch (theCommandID) {
+        case 4034:
+          type = QUAD_EDGE; break;
+        case 4035:
+          type = QUAD_TRIANGLE; break;
+        case 4036:
+          type = QUAD_QUADRANGLE; break;
+        case 4037:
+          type = QUAD_TETRAHEDRON; break;
+        case 4038:
+          type = QUAD_PYRAMID; break;
+        case 4039:
+          type = QUAD_PENTAHEDRON; break;
+        case 4040:
+          type = QUAD_HEXAHEDRON;
+          break;
+        default:;
+        }
+         ( new SMESHGUI_AddQuadraticElementDlg( this, type ) )->show();
       }
       else {
-	SUIT_MessageBox::warning(SMESHGUI::desktop(),
-				 tr("SMESH_WRN_WARNING"), tr("SMESH_WRN_VIEWER_VTK"));
+        SUIT_MessageBox::warning(SMESHGUI::desktop(),
+                                 tr("SMESH_WRN_WARNING"), tr("SMESH_WRN_VIEWER_VTK"));
       }
       break;
     }
-  case 4041:					// REMOVES NODES
+  case 4041:                                    // REMOVES NODES
     {
       if(checkLock(aStudy)) break;
       if ( vtkwnd ) {
-	EmitSignalDeactivateDialog();
-	( new SMESHGUI_RemoveNodesDlg( this ) )->show();
+        EmitSignalDeactivateDialog();
+        ( new SMESHGUI_RemoveNodesDlg( this ) )->show();
       }
       else {
-	SUIT_MessageBox::warning(SMESHGUI::desktop(),
-				 tr("SMESH_WRN_WARNING"), tr("SMESH_WRN_VIEWER_VTK"));
+        SUIT_MessageBox::warning(SMESHGUI::desktop(),
+                                 tr("SMESH_WRN_WARNING"), tr("SMESH_WRN_VIEWER_VTK"));
       }
       break;
     }
-  case 4042:					// REMOVES ELEMENTS
+  case 4042:                                    // REMOVES ELEMENTS
     {
       if(checkLock(aStudy)) break;
       if( vtkwnd ) {
-	EmitSignalDeactivateDialog();
-	( new SMESHGUI_RemoveElementsDlg( this ) )->show();
+        EmitSignalDeactivateDialog();
+        ( new SMESHGUI_RemoveElementsDlg( this ) )->show();
       }
       else
-	{
-	  SUIT_MessageBox::warning(SMESHGUI::desktop(),
-				   tr("SMESH_WRN_WARNING"), tr("SMESH_WRN_VIEWER_VTK"));
-	}
+        {
+          SUIT_MessageBox::warning(SMESHGUI::desktop(),
+                                   tr("SMESH_WRN_WARNING"), tr("SMESH_WRN_VIEWER_VTK"));
+        }
       break;
     }
   case 4043: {                                // CLEAR_MESH
@@ -2341,53 +2341,53 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
         }
       }
       catch (const SALOME::SALOME_Exception& S_ex){
-	wc.suspend();
-	SalomeApp_Tools::QtCatchCorbaException(S_ex);
-	wc.resume();
+        wc.suspend();
+        SalomeApp_Tools::QtCatchCorbaException(S_ex);
+        wc.resume();
       }
     }
     SMESH::UpdateView();
     updateObjBrowser();
     break;
   }
-  case 4051:					// RENUMBERING NODES
+  case 4051:                                    // RENUMBERING NODES
     {
       if(checkLock(aStudy)) break;
       if( vtkwnd ) {
-	EmitSignalDeactivateDialog();
-	( new SMESHGUI_RenumberingDlg( this, 0 ) )->show();
+        EmitSignalDeactivateDialog();
+        ( new SMESHGUI_RenumberingDlg( this, 0 ) )->show();
       }
       else
-	{
-	  SUIT_MessageBox::warning(SMESHGUI::desktop(),
-				   tr("SMESH_WRN_WARNING"), tr("SMESH_WRN_VIEWER_VTK"));
-	}
+        {
+          SUIT_MessageBox::warning(SMESHGUI::desktop(),
+                                   tr("SMESH_WRN_WARNING"), tr("SMESH_WRN_VIEWER_VTK"));
+        }
       break;
     }
-  case 4052:					// RENUMBERING ELEMENTS
+  case 4052:                                    // RENUMBERING ELEMENTS
     {
       if(checkLock(aStudy)) break;
       if ( vtkwnd ) {
-	EmitSignalDeactivateDialog();
-	( new SMESHGUI_RenumberingDlg( this, 1 ) )->show();
+        EmitSignalDeactivateDialog();
+        ( new SMESHGUI_RenumberingDlg( this, 1 ) )->show();
       }
       else
-	{
-	  SUIT_MessageBox::warning(SMESHGUI::desktop(),
-				   tr("SMESH_WRN_WARNING"), tr("SMESH_WRN_VIEWER_VTK"));
-	}
+        {
+          SUIT_MessageBox::warning(SMESHGUI::desktop(),
+                                   tr("SMESH_WRN_WARNING"), tr("SMESH_WRN_VIEWER_VTK"));
+        }
       break;
     }
   case 4061:                                   // TRANSLATION
     {
       if(checkLock(aStudy)) break;
       if ( vtkwnd ) {
-	EmitSignalDeactivateDialog();
-	( new SMESHGUI_TranslationDlg( this ) )->show();
+        EmitSignalDeactivateDialog();
+        ( new SMESHGUI_TranslationDlg( this ) )->show();
       }
       else {
-	SUIT_MessageBox::warning(SMESHGUI::desktop(),
-				 tr("SMESH_WRN_WARNING"), tr("SMESH_WRN_VIEWER_VTK"));
+        SUIT_MessageBox::warning(SMESHGUI::desktop(),
+                                 tr("SMESH_WRN_WARNING"), tr("SMESH_WRN_VIEWER_VTK"));
       }
       break;
     }
@@ -2395,12 +2395,12 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     {
       if(checkLock(aStudy)) break;
       if( vtkwnd ) {
-	EmitSignalDeactivateDialog();
-	( new SMESHGUI_RotationDlg( this ) )->show();
+        EmitSignalDeactivateDialog();
+        ( new SMESHGUI_RotationDlg( this ) )->show();
       }
       else {
-	SUIT_MessageBox::warning(SMESHGUI::desktop(),
-				 tr("SMESH_WRN_WARNING"), tr("SMESH_WRN_VIEWER_VTK"));
+        SUIT_MessageBox::warning(SMESHGUI::desktop(),
+                                 tr("SMESH_WRN_WARNING"), tr("SMESH_WRN_VIEWER_VTK"));
       }
       break;
     }
@@ -2408,12 +2408,12 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     {
       if(checkLock(aStudy)) break;
       if(vtkwnd) {
-	EmitSignalDeactivateDialog();
-	( new SMESHGUI_SymmetryDlg( this ) )->show();
+        EmitSignalDeactivateDialog();
+        ( new SMESHGUI_SymmetryDlg( this ) )->show();
       }
       else {
-	SUIT_MessageBox::warning(SMESHGUI::desktop(),
-				 tr("SMESH_WRN_WARNING"), tr("SMESH_WRN_VIEWER_VTK"));
+        SUIT_MessageBox::warning(SMESHGUI::desktop(),
+                                 tr("SMESH_WRN_WARNING"), tr("SMESH_WRN_VIEWER_VTK"));
       }
       break;
     }
@@ -2421,12 +2421,12 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     {
       if(checkLock(aStudy)) break;
       if(vtkwnd) {
-	EmitSignalDeactivateDialog();
-	( new SMESHGUI_SewingDlg( this ) )->show();
+        EmitSignalDeactivateDialog();
+        ( new SMESHGUI_SewingDlg( this ) )->show();
       }
       else {
-	SUIT_MessageBox::warning(SMESHGUI::desktop(),
-				 tr("SMESH_WRN_WARNING"), tr("SMESH_WRN_VIEWER_VTK"));
+        SUIT_MessageBox::warning(SMESHGUI::desktop(),
+                                 tr("SMESH_WRN_WARNING"), tr("SMESH_WRN_VIEWER_VTK"));
       }
       break;
     }
@@ -2434,12 +2434,12 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     {
       if(checkLock(aStudy)) break;
       if(vtkwnd) {
-	EmitSignalDeactivateDialog();
-	( new SMESHGUI_EditMeshDlg( this, 0 ) )->show();
+        EmitSignalDeactivateDialog();
+        ( new SMESHGUI_EditMeshDlg( this, 0 ) )->show();
       }
       else {
-	SUIT_MessageBox::warning(SMESHGUI::desktop(),
-				 tr("SMESH_WRN_WARNING"), tr("SMESH_WRN_VIEWER_VTK"));
+        SUIT_MessageBox::warning(SMESHGUI::desktop(),
+                                 tr("SMESH_WRN_WARNING"), tr("SMESH_WRN_VIEWER_VTK"));
       }
       break;
     }
@@ -2447,11 +2447,11 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     {
       if (checkLock(aStudy)) break;
       if (vtkwnd) {
-	EmitSignalDeactivateDialog();
-	( new SMESHGUI_EditMeshDlg( this, 1 ) )->show();
+        EmitSignalDeactivateDialog();
+        ( new SMESHGUI_EditMeshDlg( this, 1 ) )->show();
       } else {
-	SUIT_MessageBox::warning(SMESHGUI::desktop(),
-				 tr("SMESH_WRN_WARNING"), tr("SMESH_WRN_VIEWER_VTK"));
+        SUIT_MessageBox::warning(SMESHGUI::desktop(),
+                                 tr("SMESH_WRN_WARNING"), tr("SMESH_WRN_VIEWER_VTK"));
       }
       break;
     }
@@ -2478,7 +2478,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
   }
   break;
 
-  case 6017:					// CONTROLS
+  case 6017:                                    // CONTROLS
   case 6016:
   case 6015:
   case 6014:
@@ -2500,27 +2500,27 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       SALOME_ListIO selected; mgr->selectedObjects( selected );
 
       if ( selected.Extent() == 1 && selected.First()->hasEntry() ) {
-	_PTR(SObject) SO = aStudy->FindObjectID( selected.First()->getEntry() );
-	if ( SO ) {
-	  CORBA::Object_var aObject = SMESH::SObjectToObject( SO );
-	  SMESH::SMESH_Mesh_var      aMesh    = SMESH::SMESH_Mesh::_narrow( aObject );
-	  SMESH::SMESH_subMesh_var   aSubMesh = SMESH::SMESH_subMesh::_narrow( aObject );
-	  SMESH::SMESH_GroupBase_var aGroup   = SMESH::SMESH_GroupBase::_narrow( aObject );
-	  if ( !aMesh->_is_nil() || !aSubMesh->_is_nil() || !aGroup->_is_nil() ) {
-	    ::Control( theCommandID );
-	    break;
-	  }
-	}
+        _PTR(SObject) SO = aStudy->FindObjectID( selected.First()->getEntry() );
+        if ( SO ) {
+          CORBA::Object_var aObject = SMESH::SObjectToObject( SO );
+          SMESH::SMESH_Mesh_var      aMesh    = SMESH::SMESH_Mesh::_narrow( aObject );
+          SMESH::SMESH_subMesh_var   aSubMesh = SMESH::SMESH_subMesh::_narrow( aObject );
+          SMESH::SMESH_GroupBase_var aGroup   = SMESH::SMESH_GroupBase::_narrow( aObject );
+          if ( !aMesh->_is_nil() || !aSubMesh->_is_nil() || !aGroup->_is_nil() ) {
+            ::Control( theCommandID );
+            break;
+          }
+        }
       }
       SUIT_MessageBox::warning(desktop(),
-			       tr( "SMESH_WRN_WARNING" ),
-			       tr( "SMESH_BAD_SELECTION" ) );
+                               tr( "SMESH_WRN_WARNING" ),
+                               tr( "SMESH_BAD_SELECTION" ) );
       break;
     }
     else {
       SUIT_MessageBox::warning(desktop(),
-			       tr( "SMESH_WRN_WARNING" ),
-			       tr( "NOT_A_VTK_VIEWER" ) );
+                               tr( "SMESH_WRN_WARNING" ),
+                               tr( "NOT_A_VTK_VIEWER" ) );
     }
     break;
   case 9010:
@@ -2531,11 +2531,11 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       SALOME_ListIteratorOfListIO it(selected);
       for( ; it.More(); it.Next()) {
         Handle(SALOME_InteractiveObject) anIObject = it.Value();
-	if(anIObject->hasEntry()) {
-	  if(SMESH_Actor *anActor = SMESH::FindActorByEntry(anIObject->getEntry())){
-	    anActor->SetPointsLabeled( !anActor->GetPointsLabeled() );
-	  }
-	}
+        if(anIObject->hasEntry()) {
+          if(SMESH_Actor *anActor = SMESH::FindActorByEntry(anIObject->getEntry())){
+            anActor->SetPointsLabeled( !anActor->GetPointsLabeled() );
+          }
+        }
       }
       break;
     }
@@ -2544,12 +2544,12 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       LightApp_SelectionMgr* mgr = selectionMgr();
       SALOME_ListIO selected; mgr->selectedObjects( selected );
 
-      if (selected.Extent() == 1)	{
-	Handle(SALOME_InteractiveObject) anIObject = selected.First();
-	if(anIObject->hasEntry())
-	  if(SMESH_Actor *anActor = SMESH::FindActorByEntry(anIObject->getEntry())){
-	    anActor->SetCellsLabeled( !anActor->GetCellsLabeled() );
-	  }
+      if (selected.Extent() == 1)       {
+        Handle(SALOME_InteractiveObject) anIObject = selected.First();
+        if(anIObject->hasEntry())
+          if(SMESH_Actor *anActor = SMESH::FindActorByEntry(anIObject->getEntry())){
+            anActor->SetCellsLabeled( !anActor->GetCellsLabeled() );
+          }
       }
       break;
     }
@@ -2636,7 +2636,7 @@ void SMESHGUI::createPopupItem( const int id,
                                 const QString& clients,
                                 const QString& types,
                                 const QString& theRule,
-				const int pId )
+                                const int pId )
 {
   int parentId = pId;
   if( pId!=-1 )
@@ -3040,22 +3040,22 @@ void SMESHGUI::initialize( CAM_Application* app )
 
   myRules.clear();
   QString OB = "'ObjectBrowser'",
-	  View = "'" + SVTK_Viewer::Type() + "'",
-	  pat = "'%1'",
-	  mesh    = pat.arg( SMESHGUI_Selection::typeName( MESH ) ),
-	  group   = pat.arg( SMESHGUI_Selection::typeName( GROUP ) ),
-	  hypo    = pat.arg( SMESHGUI_Selection::typeName( HYPOTHESIS ) ),
-	  algo    = pat.arg( SMESHGUI_Selection::typeName( ALGORITHM ) ),
-	  elems   = QString( "'%1' '%2' '%3' '%4' '%5' '%6'" ).
+          View = "'" + SVTK_Viewer::Type() + "'",
+          pat = "'%1'",
+          mesh    = pat.arg( SMESHGUI_Selection::typeName( MESH ) ),
+          group   = pat.arg( SMESHGUI_Selection::typeName( GROUP ) ),
+          hypo    = pat.arg( SMESHGUI_Selection::typeName( HYPOTHESIS ) ),
+          algo    = pat.arg( SMESHGUI_Selection::typeName( ALGORITHM ) ),
+          elems   = QString( "'%1' '%2' '%3' '%4' '%5' '%6'" ).
                        arg( SMESHGUI_Selection::typeName( SUBMESH_VERTEX ) ).
-		       arg( SMESHGUI_Selection::typeName( SUBMESH_EDGE ) ).
-		       arg( SMESHGUI_Selection::typeName( SUBMESH_FACE ) ).
-		       arg( SMESHGUI_Selection::typeName( SUBMESH_SOLID ) ).
-		       arg( SMESHGUI_Selection::typeName( SUBMESH_COMPOUND ) ).
-		       arg( SMESHGUI_Selection::typeName( SUBMESH ) ),
+                       arg( SMESHGUI_Selection::typeName( SUBMESH_EDGE ) ).
+                       arg( SMESHGUI_Selection::typeName( SUBMESH_FACE ) ).
+                       arg( SMESHGUI_Selection::typeName( SUBMESH_SOLID ) ).
+                       arg( SMESHGUI_Selection::typeName( SUBMESH_COMPOUND ) ).
+                       arg( SMESHGUI_Selection::typeName( SUBMESH ) ),
           subMesh = elems,
-	  mesh_group = mesh + " " + subMesh + " " + group,
-	  hyp_alg = hypo + " " + algo;
+          mesh_group = mesh + " " + subMesh + " " + group,
+          hyp_alg = hypo + " " + algo;
 
   // popup for object browser
   QString
@@ -3353,7 +3353,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   popupMgr()->insert( separator(), -1, -1 );
 
   connect( application(), SIGNAL( viewManagerActivated( SUIT_ViewManager* ) ),
-	   this, SLOT( onViewManagerActivated( SUIT_ViewManager* ) ) );
+           this, SLOT( onViewManagerActivated( SUIT_ViewManager* ) ) );
 }
 
 //================================================================================
@@ -3475,7 +3475,7 @@ void SMESHGUI::contextMenuPopup( const QString& client, QMenu* menu, QString& ti
     if ( obj ) {
       QString aName = QString( obj->GetName().c_str() );
       while ( aName.at( aName.length() - 1 ) == ' ' ) // Remove extraspaces in Name of Popup
-	  aName.remove( (aName.length() - 1), 1 );
+          aName.remove( (aName.length() - 1), 1 );
       title = aName;
     }
   }
@@ -3752,48 +3752,48 @@ void SMESHGUI::preferencesChanged( const QString& sect, const QString& name )
     if( name=="selection_object_color" || name=="selection_element_color" ||
         name=="selection_width" || name=="highlight_color" || name=="highlight_width" ||
         name=="selection_precision_node" || name=="selection_precision_element" ||
-	name=="selection_precision_object")
+        name=="selection_precision_object")
       SMESH::UpdateSelectionProp( this );
     else if (name == QString("scalar_bar_vertical_x") || name == QString("scalar_bar_vertical_width")){
       sbX1 = aResourceMgr->doubleValue("SMESH", "scalar_bar_vertical_x", sbX1);
       sbW = aResourceMgr->doubleValue("SMESH", "scalar_bar_vertical_width", sbW);
       if(sbX1+sbW > aTol){
-	aWarning = "Origin and Size Vertical: X+Width > 1\n";
-	sbX1=0.01;
-	sbW=0.08;
-	aResourceMgr->setValue("SMESH", "scalar_bar_vertical_x", sbX1);
-	aResourceMgr->setValue("SMESH", "scalar_bar_vertical_width", sbW);
+        aWarning = "Origin and Size Vertical: X+Width > 1\n";
+        sbX1=0.01;
+        sbW=0.08;
+        aResourceMgr->setValue("SMESH", "scalar_bar_vertical_x", sbX1);
+        aResourceMgr->setValue("SMESH", "scalar_bar_vertical_width", sbW);
       }
     }
     else if(name == QString("scalar_bar_vertical_y") || name == QString("scalar_bar_vertical_height")){
       sbY1 = aResourceMgr->doubleValue("SMESH", "scalar_bar_vertical_y", sbY1);
       sbH = aResourceMgr->doubleValue("SMESH", "scalar_bar_vertical_height",sbH);
       if(sbY1+sbH > aTol){
-	aWarning = "Origin and Size Vertical: Y+Height > 1\n";
-	aResourceMgr->setValue("SMESH", "scalar_bar_vertical_y", sbY1);
-	aResourceMgr->setValue("SMESH", "scalar_bar_vertical_height",sbH);
+        aWarning = "Origin and Size Vertical: Y+Height > 1\n";
+        aResourceMgr->setValue("SMESH", "scalar_bar_vertical_y", sbY1);
+        aResourceMgr->setValue("SMESH", "scalar_bar_vertical_height",sbH);
       }
     }
     else if(name ==  QString("scalar_bar_horizontal_x") || name ==  QString("scalar_bar_horizontal_width")){
       sbX1 = aResourceMgr->doubleValue("SMESH", "scalar_bar_horizontal_x", sbX1);
       sbW = aResourceMgr->doubleValue("SMESH", "scalar_bar_horizontal_width", sbW);
       if(sbX1+sbW > aTol){
-	aWarning = "Origin and Size Horizontal: X+Width > 1\n";
-	sbX1=0.1;
-	sbW=0.08;
-	aResourceMgr->setValue("SMESH", "scalar_bar_horizontal_x", sbX1);
-	aResourceMgr->setValue("SMESH", "scalar_bar_horizontal_width", sbW);
+        aWarning = "Origin and Size Horizontal: X+Width > 1\n";
+        sbX1=0.1;
+        sbW=0.08;
+        aResourceMgr->setValue("SMESH", "scalar_bar_horizontal_x", sbX1);
+        aResourceMgr->setValue("SMESH", "scalar_bar_horizontal_width", sbW);
       }
     }
     else if(name ==  QString("scalar_bar_horizontal_y") || name ==  QString("scalar_bar_horizontal_height")){
       sbY1 = aResourceMgr->doubleValue("SMESH", "scalar_bar_horizontal_y", sbY1);
       sbH = aResourceMgr->doubleValue("SMESH", "scalar_bar_horizontal_height",sbH);
       if(sbY1+sbH > aTol){
-	aWarning = "Origin and Size Horizontal: Y+Height > 1\n";
-	sbY1=0.01;
-	sbH=0.08;
-	aResourceMgr->setValue("SMESH", "scalar_bar_horizontal_y", sbY1);
-	aResourceMgr->setValue("SMESH", "scalar_bar_horizontal_height",sbH);
+        aWarning = "Origin and Size Horizontal: Y+Height > 1\n";
+        sbY1=0.01;
+        sbH=0.08;
+        aResourceMgr->setValue("SMESH", "scalar_bar_horizontal_y", sbY1);
+        aResourceMgr->setValue("SMESH", "scalar_bar_horizontal_height",sbH);
       }
     }
     else if ( name == "segmentation" ) {
@@ -3808,8 +3808,8 @@ void SMESHGUI::preferencesChanged( const QString& sect, const QString& name )
     if(aWarning.size() != 0){
       aWarning += "The default values are applied instead.";
       SUIT_MessageBox::warning(SMESHGUI::desktop(),
-			       QObject::tr("SMESH_ERR_SCALARBAR_PARAMS"),
-			       QObject::tr(aWarning.c_str()));
+                               QObject::tr("SMESH_ERR_SCALARBAR_PARAMS"),
+                               QObject::tr(aWarning.c_str()));
     }
   }
 }
@@ -3951,7 +3951,7 @@ SALOMEDS::Color SMESHGUI::getUniqueColor( const QList<SALOMEDS::Color>& theReser
     {
       aTolerance /= 2;
       if( aTolerance < 1 )
-	break;
+        break;
     }
     //cout << "Iteration N" << anIterations << " (tolerance=" << aTolerance << ")"<< endl;
 
@@ -3972,9 +3972,9 @@ SALOMEDS::Color SMESHGUI::getUniqueColor( const QList<SALOMEDS::Color>& theReser
       //cout << h << " ";
       if( abs( h - aHue ) < aTolerance )
       {
-	ok = false;
-	//cout << "break (diff = " << abs( h - aHue ) << ")";
-	break;
+        ok = false;
+        //cout << "break (diff = " << abs( h - aHue ) << ")";
+        break;
       }
     }
     //cout << endl;
@@ -4040,19 +4040,19 @@ void SMESHGUI::storeVisualParameters (int savePoint)
       QVector<SUIT_ViewWindow*> views = vman->getViews();
       for (int i = 0, iEnd = vman->getViewsCount(); i < iEnd; i++)
       {
-	if (SVTK_ViewWindow* vtkView = dynamic_cast<SVTK_ViewWindow*>(views[i]))
+        if (SVTK_ViewWindow* vtkView = dynamic_cast<SVTK_ViewWindow*>(views[i]))
         {
-	  VTK::ActorCollectionCopy aCopy(vtkView->getRenderer()->GetActors());
-	  vtkActorCollection* allActors = aCopy.GetActors();
-	  allActors->InitTraversal();
-	  while (vtkActor* actor = allActors->GetNextActor())
+          VTK::ActorCollectionCopy aCopy(vtkView->getRenderer()->GetActors());
+          vtkActorCollection* allActors = aCopy.GetActors();
+          allActors->InitTraversal();
+          while (vtkActor* actor = allActors->GetNextActor())
           {
-	    if (actor->GetVisibility()) // store only visible actors
+            if (actor->GetVisibility()) // store only visible actors
             {
               SMESH_Actor* aSmeshActor = 0;
               if (actor->IsA("SMESH_Actor"))
                 aSmeshActor = SMESH_Actor::SafeDownCast(actor);
-	      if (aSmeshActor && aSmeshActor->hasIO())
+              if (aSmeshActor && aSmeshActor->hasIO())
               {
                 Handle(SALOME_InteractiveObject) io = aSmeshActor->getIO();
                 if (io->hasEntry())
@@ -4161,10 +4161,10 @@ void SMESHGUI::storeVisualParameters (int savePoint)
                     ip->setParameter(entry, param + QString::number(ipl+1).toLatin1().data(), planeValue);
                   }
                 } // if (io->hasEntry())
-	      } // SMESH_Actor && hasIO
-	    } // isVisible
-	  } // while.. actors traversal
-	} // if (vtkView)
+              } // SMESH_Actor && hasIO
+            } // isVisible
+          } // while.. actors traversal
+        } // if (vtkView)
       } // for (views)
       vtkViewers++;
     } // if (SVTK view model)
@@ -4232,7 +4232,7 @@ void SMESHGUI::restoreVisualParameters (int savePoint)
       bool ok;
       int viewIndex = viewIndexStr.toUInt(&ok);
       if (!ok) // bad conversion of view index to integer
-	continue;
+        continue;
 
       // viewers
       if (viewerTypStr == SVTK_Viewer::Type())
@@ -4259,7 +4259,7 @@ void SMESHGUI::restoreVisualParameters (int savePoint)
               // access later when restoring other parameters
               SVTK_ViewWindow* vtkView = (SVTK_ViewWindow*) vman->getActiveView();
               vtkRenderer* Renderer = vtkView->getRenderer();
-	      VTK::ActorCollectionCopy aCopy(Renderer->GetActors());
+              VTK::ActorCollectionCopy aCopy(Renderer->GetActors());
               vtkActorCollection* theActors = aCopy.GetActors();
               theActors->InitTraversal();
               bool isFound = false;
@@ -4280,10 +4280,10 @@ void SMESHGUI::restoreVisualParameters (int savePoint)
             }
           }
         } // if (paramNameStr == "Visibility")
-	else
+        else
         {
           // the rest properties "work" with SMESH_Actor
-	  if (aSmeshActor)
+          if (aSmeshActor)
           {
             QString val ((*valuesIt).c_str());
 
@@ -4386,7 +4386,7 @@ void SMESHGUI::restoreVisualParameters (int savePoint)
               }
             }
           } // if (aSmeshActor)
-	} // other parameters than Visibility
+        } // other parameters than Visibility
       }
     } // for names/parameters iterator
   } // for entries iterator

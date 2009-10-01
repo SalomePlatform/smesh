@@ -189,7 +189,7 @@ bool SMESHGUI_DeleteGroupDlg::isValid()
 {
   if (myListBox->count() == 0) {
     SUIT_MessageBox::information(SMESHGUI::desktop(), tr("SMESH_INSUFFICIENT_DATA"),
-				 tr("NO_SELECTED_GROUPS"));
+                                 tr("NO_SELECTED_GROUPS"));
     return false;
   }
 
@@ -266,10 +266,10 @@ void SMESHGUI_DeleteGroupDlg::onHelp()
     platform = "application";
 #endif
     SUIT_MessageBox::warning(this, tr("WRN_WARNING"),
-			     tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
-			     arg(app->resourceMgr()->stringValue("ExternalBrowser", 
-								 platform)).
-			     arg(myHelpFileName));
+                             tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
+                             arg(app->resourceMgr()->stringValue("ExternalBrowser", 
+                                                                 platform)).
+                             arg(myHelpFileName));
   }
 }
 

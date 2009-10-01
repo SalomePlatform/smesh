@@ -82,16 +82,16 @@ public:
   // used in SMESHGUI::restoreVisualParameters() to avoid
   // declaration of OrientedPlane outside of SMESHGUI_ClippingDlg.cxx
   static void             AddPlane (SMESH_Actor*         theActor,
-				    SVTK_ViewWindow*     theViewWindow,
-				    SMESH::Orientation   theOrientation,
-				    double               theDistance,
-				    vtkFloatingPointType theAngle[2]);
+                                    SVTK_ViewWindow*     theViewWindow,
+                                    SMESH::Orientation   theOrientation,
+                                    double               theDistance,
+                                    vtkFloatingPointType theAngle[2]);
 
   static void             GetPlaneParam (SMESH_Actor*          theActor,
-					 int                   thePlaneIndex,
-					 SMESH::Orientation&   theOrientation,
-					 double&               theDistance,
-					 vtkFloatingPointType* theAngle);
+                                         int                   thePlaneIndex,
+                                         SMESH::Orientation&   theOrientation,
+                                         double&               theDistance,
+                                         vtkFloatingPointType* theAngle);
 
 protected:  
   void                    keyPressEvent( QKeyEvent* );

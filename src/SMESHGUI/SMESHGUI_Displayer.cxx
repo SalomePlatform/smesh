@@ -59,16 +59,16 @@ SALOME_Prs* SMESHGUI_Displayer::buildPresentation( const QString& entry, SALOME_
       SUIT_ViewWindow* wnd = vtk_viewer->getViewManager()->getActiveView();
       SMESH_Actor* anActor = SMESH::FindActorByEntry( wnd, entry.toLatin1().data() );
       if( !anActor )
-	anActor = SMESH::CreateActor( study()->studyDS(), entry.toLatin1().data(), true );
+        anActor = SMESH::CreateActor( study()->studyDS(), entry.toLatin1().data(), true );
       if( anActor )
       {
-	SMESH::DisplayActor( wnd, anActor );
+        SMESH::DisplayActor( wnd, anActor );
         prs = LightApp_Displayer::buildPresentation( entry.toLatin1().data(), aViewFrame );
       }
       if( prs )
-	UpdatePrs( prs );
+        UpdatePrs( prs );
       else if( anActor )
-	SMESH::RemoveActor( vtk_viewer->getViewManager()->getActiveView(), anActor );
+        SMESH::RemoveActor( vtk_viewer->getViewManager()->getActiveView(), anActor );
     }
   }
 
