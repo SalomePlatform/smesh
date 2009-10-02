@@ -7689,7 +7689,6 @@ void SMESH_MeshEditor::ConvertToQuadratic(const bool theForce3d)
         SMESH_subMesh* sm = smIt->next();
         if ( SMESHDS_SubMesh *smDS = sm->GetSubMeshDS() ) {
           aHelper.SetSubShape( sm->GetSubShape() );
-          if ( !theForce3d) aHelper.SetCheckNodePosition(true);
           nbCheckedElems += convertElemToQuadratic(smDS, aHelper, theForce3d);
         }
       }

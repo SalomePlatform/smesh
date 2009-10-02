@@ -152,15 +152,6 @@ public:
   void SetElementsOnShape(bool toSet) { mySetElemOnShape = toSet; }
 
   /*!
-   * \brief Enable/disable checking of node parameters on shapes while adding elements.
-   * In case of incorrect parameters mudium node place is computed as the middle
-   * of two nodes. Default is false.
-   * NOTE that this flag is reset to "not to check" if check with non-default partameter
-   * is successful
-   */
-  void SetCheckNodePosition(bool toCheck) { myCheckNodePos = toCheck; }
-
-  /*!
    * \brief Set shape to make elements on without calling IsQuadraticSubMesh()
    */
   void SetSubShape(const int           subShapeID);//!==SMESHDS_Mesh::ShapeToIndex(shape)
@@ -260,6 +251,14 @@ public:
                   const SMDS_MeshNode* n,
                   const SMDS_MeshNode* inFaceNode=0,
                   bool*                check=0) const;
+  /*!
+   * \brief Check and fix node UV on a face
+   *  \retval bool - false if UV is bad and could not be fixed
+   */
+  bool CheckNodeUV(const TopoDS_Face&   F,
+                   const SMDS_MeshNode* n,
+                   gp_XY&               uv,
+                   const double         tol) const;
   /*!
    * \brief Return middle UV taking in account surface period
    */
@@ -393,7 +392,7 @@ protected:
   // to create quadratic elements
   bool            myCreateQuadratic;
   bool            mySetElemOnShape;
-  bool            myCheckNodePos;
+  std::set< int > myOkNodePosShapes;
 
 };
 
