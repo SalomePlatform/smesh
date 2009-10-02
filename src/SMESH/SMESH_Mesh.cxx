@@ -81,10 +81,10 @@ typedef SMESH_HypoFilter THypType;
 //=============================================================================
 
 SMESH_Mesh::SMESH_Mesh(int               theLocalId, 
-		       int               theStudyId, 
-		       SMESH_Gen*        theGen,
-		       bool              theIsEmbeddedMode,
-		       SMESHDS_Document* theDocument):
+                       int               theStudyId, 
+                       SMESH_Gen*        theGen,
+                       bool              theIsEmbeddedMode,
+                       SMESHDS_Document* theDocument):
   _groupId( 0 ), _nbSubShapes( 0 )
 {
   MESSAGE("SMESH_Mesh::SMESH_Mesh(int localId)");
@@ -325,14 +325,14 @@ void SMESH_Mesh::ClearSubMesh(const int theShapeId)
   if ( SMESH_subMesh *sm = GetSubMeshContaining( theShapeId ) )
   {
     SMESH_subMeshIteratorPtr smIt = sm->getDependsOnIterator(/*includeSelf=*/true,
-							     /*complexShapeFirst=*/false);
+                                                             /*complexShapeFirst=*/false);
     while ( smIt->more() )
     {
       sm = smIt->next();
       TopAbs_ShapeEnum shapeType = sm->GetSubShape().ShapeType();      
       if ( shapeType == TopAbs_VERTEX || shapeType < TopAbs_SOLID )
-	// all other shapes depends on vertices so they are already cleaned
-	sm->ComputeStateEngine( SMESH_subMesh::CLEAN );
+        // all other shapes depends on vertices so they are already cleaned
+        sm->ComputeStateEngine( SMESH_subMesh::CLEAN );
       // to recompute even if failed
       sm->ComputeStateEngine( SMESH_subMesh::CHECK_COMPUTE_STATE );
     }
@@ -373,21 +373,21 @@ int SMESH_Mesh::UNVToMesh(const char* theFileName)
 
       SMESH_Group* aSMESHGroup = AddGroup( aSubGroup->GetType(), aName.c_str(), aId );
       if ( aSMESHGroup ) {
-	if(MYDEBUG) MESSAGE("UNVToMesh - group added: "<<aName);      
-	SMESHDS_Group* aGroupDS = dynamic_cast<SMESHDS_Group*>( aSMESHGroup->GetGroupDS() );
-	if ( aGroupDS ) {
-	  aGroupDS->SetStoreName(aName.c_str());
-	  aSubGroup->InitIterator();
-	  const SMDS_MeshElement* aElement = 0;
-	  while (aSubGroup->More()) {
-	    aElement = aSubGroup->Next();
-	    if (aElement) {
-	      aGroupDS->SMDSGroup().Add(aElement);
-	    }
-	  }
-	  if (aElement)
-	    aGroupDS->SetType(aElement->GetType());
-	}
+        if(MYDEBUG) MESSAGE("UNVToMesh - group added: "<<aName);      
+        SMESHDS_Group* aGroupDS = dynamic_cast<SMESHDS_Group*>( aSMESHGroup->GetGroupDS() );
+        if ( aGroupDS ) {
+          aGroupDS->SetStoreName(aName.c_str());
+          aSubGroup->InitIterator();
+          const SMDS_MeshElement* aElement = 0;
+          while (aSubGroup->More()) {
+            aElement = aSubGroup->Next();
+            if (aElement) {
+              aGroupDS->SMDSGroup().Add(aElement);
+            }
+          }
+          if (aElement)
+            aGroupDS->SetType(aElement->GetType());
+        }
       }
     }
   }
@@ -1086,9 +1086,9 @@ bool SMESH_Mesh::HasDuplicatedGroupNamesMED()
 }
 
 void SMESH_Mesh::ExportMED(const char *file, 
-			   const char* theMeshName, 
-			   bool theAutoGroups,
-			   int theVersion) 
+                           const char* theMeshName, 
+                           bool theAutoGroups,
+                           int theVersion) 
   throw(SALOME_Exception)
 {
   Unexpect aCatch(SalomeException);
@@ -1376,7 +1376,7 @@ bool SMESH_Mesh::IsMainShape(const TopoDS_Shape& theShape) const
 
 SMESH_Group* SMESH_Mesh::AddGroup (const SMDSAbs_ElementType theType,
                                    const char*               theName,
-				   int&                      theId,
+                                   int&                      theId,
                                    const TopoDS_Shape&       theShape)
 {
   if (_mapGroup.find(_groupId) != _mapGroup.end())

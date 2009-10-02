@@ -39,8 +39,8 @@ using namespace std;
 //=============================================================================
 
 SMESH_Hypothesis::SMESH_Hypothesis(int hypId,
-				   int studyId,
-				   SMESH_Gen* gen) : SMESHDS_Hypothesis(hypId)
+                                   int studyId,
+                                   SMESH_Gen* gen) : SMESHDS_Hypothesis(hypId)
 {
   //MESSAGE("SMESH_Hypothesis::SMESH_Hypothesis");
   _gen = gen;

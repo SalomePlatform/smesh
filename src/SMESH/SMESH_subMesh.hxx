@@ -61,7 +61,7 @@ class SMESH_EXPORT SMESH_subMesh
 {
  public:
   SMESH_subMesh(int Id, SMESH_Mesh * father, SMESHDS_Mesh * meshDS,
-		const TopoDS_Shape & aSubShape);
+                const TopoDS_Shape & aSubShape);
   virtual ~ SMESH_subMesh();
 
   int GetId() const;
