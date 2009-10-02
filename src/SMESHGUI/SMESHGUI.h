@@ -103,6 +103,7 @@ public :
   void                            EmitSignalDeactivateDialog();
   void                            EmitSignalStudyFrameChanged();
   void                            EmitSignalCloseAllDialogs();
+  void                            EmitSignalVisibilityChanged();
 
   virtual void                    contextMenuPopup( const QString&, QMenu*, QString& );
   virtual void                    createPreferences();
@@ -131,6 +132,7 @@ signals:
   void                            SignalDeactivateActiveDialog();
   void                            SignalStudyFrameChanged();
   void                            SignalCloseAllDialogs();
+  void                            SignalVisibilityChanged();
 
 protected:
   void                            createSMESHAction( const int,

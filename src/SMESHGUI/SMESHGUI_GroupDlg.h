@@ -90,6 +90,7 @@ private slots:
   bool                          onApply();
   void                          onHelp();
   void                          onDeactivate();
+  void                          onVisibilityChanged();
   
   void                          onListSelectionChanged();
   void                          onObjectSelectionChanged();
@@ -137,7 +138,6 @@ private:
   
   SMESHGUI*                     mySMESHGUI;              /* Current SMESHGUI object */
   LightApp_SelectionMgr*        mySelectionMgr;          /* User shape selection */
-  SMESH_Actor*                  myActor;                 /* Current mesh actor */
   int                           myGrpTypeId;             /* Current group type id : standalone or group on geometry */
   int                           myTypeId;                /* Current type id = radio button id */
   int                           myStoredShownEntity;     /* Store ShowEntity mode of myMesh */
@@ -180,6 +180,7 @@ private:
   SMESHGUI_ShapeByMeshOp*       myShapeByMeshOp;
   
   SMESH::SMESH_Mesh_var         myMesh;
+  QList<SMESH_Actor*>           myActorsList;
   SMESH::SMESH_Group_var        myGroup;
   SMESH::SMESH_GroupOnGeom_var  myGroupOnGeom;
   QList<int>                    myIdList;

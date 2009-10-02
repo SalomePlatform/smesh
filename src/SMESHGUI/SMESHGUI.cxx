@@ -1250,6 +1250,16 @@ void SMESHGUI::EmitSignalCloseAllDialogs()
  *
  */
 //=============================================================================
+void SMESHGUI::EmitSignalVisibilityChanged()
+{
+  emit SignalVisibilityChanged();
+}
+
+//=============================================================================
+/*!
+ *
+ */
+//=============================================================================
 QDialog *SMESHGUI::GetActiveDialogBox()
 {
   return myActiveDialogBox;
@@ -1541,8 +1551,10 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
           for ( ; It.More(); It.Next()) {
             Handle(SALOME_InteractiveObject) IOS = It.Value();
             if (IOS->hasEntry()) {
-              if (!SMESH::UpdateView(anAction, IOS->getEntry()))
+              if (!SMESH::UpdateView(anAction, IOS->getEntry())) {
+                SMESHGUI::GetSMESHGUI()->EmitSignalVisibilityChanged();
                 break; // PAL16774 (Crash after display of many groups)
+              }
               if (anAction == SMESH::eDisplayOnly)
                 anAction = SMESH::eDisplay;
             }
@@ -1550,8 +1562,10 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
         }
 
         // PAL13338 + PAL15161 -->
-        if ( ( theCommandID==301 || theCommandID==302 ) && !checkLock(aStudy))
+        if ( ( theCommandID==301 || theCommandID==302 ) && !checkLock(aStudy)) {
           SMESH::UpdateView();
+          SMESHGUI::GetSMESHGUI()->EmitSignalVisibilityChanged();
+        }
         // PAL13338 + PAL15161 <--
       }
       catch (...) { // PAL16774 (Crash after display of many groups)
@@ -1564,7 +1578,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       }
       else
         aSel->setSelectedObjects( to_process );
-
+      
       break;
     }
 
