@@ -1250,7 +1250,11 @@ void SMESH_ActorDef::SetEntityMode(unsigned int theMode)
 
   VTKViewer_ExtractUnstructuredGrid* aHightFilter = myHighlitableActor->GetExtractUnstructuredGrid();
   aHightFilter->ClearRegisteredCellsWithType();
-  aHightFilter->SetModeOfChanging(VTKViewer_ExtractUnstructuredGrid::eAdding);
+
+  // The following row has been commented (initially added in 1.28.2.3.1 revision)
+  // Reason: seems to be unnecessary, this filter should always have default (ePassAll) mode of changing
+  // In addition, it leads to exception (see bug IPAL21372)
+  //aHightFilter->SetModeOfChanging(VTKViewer_ExtractUnstructuredGrid::eAdding);
 
   if (myEntityMode & e0DElements) {
     if (MYDEBUG) MESSAGE("0D ELEMENTS");
