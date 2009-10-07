@@ -1298,20 +1298,32 @@ void SMESHGUI_GroupDlg::onObjectSelectionChanged()
   }
   
   if (myActorsList.count() == 0) {
-    if (!myGroup->_is_nil())
-      myActorsList.append( SMESH::FindActorByObject(myGroup) );
-    else if(!myGroupOnGeom->_is_nil())
-      myActorsList.append( SMESH::FindActorByObject(myGroupOnGeom) );
-    else
-      myActorsList.append( SMESH::FindActorByObject(myMesh) );
+    if (!myGroup->_is_nil()) {
+      SMESH_Actor* anActor = SMESH::FindActorByObject(myGroup);
+      if ( anActor )
+        myActorsList.append( anActor  );
+    }
+    else if(!myGroupOnGeom->_is_nil()) {
+      SMESH_Actor* anActor = SMESH::FindActorByObject(myGroupOnGeom);
+      if ( anActor )
+        myActorsList.append( anActor );
+    }
+    else {
+      SMESH_Actor* anActor = SMESH::FindActorByObject( myMesh );
+      if ( anActor )
+        myActorsList.append( anActor );
+    }
   }
 
   // somehow, if we display the mesh, while selecting from another actor,
   // the mesh becomes pickable, and there is no way to select any element
   if (myActorsList.count() > 0) {
     QListIterator<SMESH_Actor*> it( myActorsList );
-    while ( it.hasNext() )
-      it.next()->SetPickable(true);
+    while ( it.hasNext() ) {
+      SMESH_Actor* anActor = it.next();
+      if ( IsActorVisible(anActor) )
+        anActor->SetPickable(true);
+    }
   }
 
   myIsBusy = false;
@@ -2257,8 +2269,11 @@ bool SMESHGUI_GroupDlg::SetAppropriateActor()
   
   if (myActorsList.count() > 0) {
     QListIterator<SMESH_Actor*> it( myActorsList );
-    while ( it.hasNext() )
-      it.next()->SetPickable(true);
+    while ( it.hasNext() ) {
+      SMESH_Actor* anActor = it.next();
+      if ( IsActorVisible(anActor) )
+        anActor->SetPickable(true);
+    }
   }
   
   return ( isActor || (myActorsList.count() > 0) );
@@ -2296,4 +2311,16 @@ void SMESHGUI_GroupDlg::restoreShowEntityMode()
     }
   }
   myStoredShownEntity = 0;
+}
+
+//=======================================================================
+//function : IsActorVisible
+//purpose  : return visibility of the actor
+//=======================================================================
+bool SMESHGUI_GroupDlg::IsActorVisible( SMESH_Actor* theActor )
+{
+  SVTK_ViewWindow* aViewWindow = SMESH::GetCurrentVtkView();
+  if (theActor && aViewWindow)
+    return aViewWindow->isVisible(theActor->getIO());
+  return false;
 }

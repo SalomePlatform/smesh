@@ -127,6 +127,8 @@ private:
   bool                          SetAppropriateActor();
   void                          setShowEntityMode();
   void                          restoreShowEntityMode();
+
+  bool                          IsActorVisible( SMESH_Actor* );
   
   void                          setGroupColor( const SALOMEDS::Color& );
   SALOMEDS::Color               getGroupColor() const;
