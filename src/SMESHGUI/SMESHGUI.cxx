@@ -226,6 +226,38 @@
               }
               break;
             }
+	  case 115:
+	    {
+	      std::string file_in = filename.toLatin1().constData();
+	      std::string file_tmp = file_in + ".med";
+	      std::string cmd;
+#ifdef WNT
+	      cmd = "%PYTHONBIN% ";
+#else
+	      cmd = "python ";
+#endif
+	      cmd += "-c \"";
+	      cmd += "from medutilities import convert ; convert(r'" + file_in + "', 'GIBI', 'MED', 1, r'" + file_tmp + "')";
+	      cmd += "\"";
+	      system(cmd.c_str());
+	      // MED format
+	      SMESH::DriverMED_ReadStatus res;
+	      aMeshes = theComponentMesh->CreateMeshesFromMED( file_tmp.c_str(), res );
+	      if ( res != SMESH::DRS_OK ) {
+		errors.append( QString( "%1 :\n\t%2" ).arg( filename ).
+			       arg( QObject::tr( QString( "SMESH_DRS_%1" ).arg( res ).toLatin1().data() ) ) );
+	      }
+#ifdef WNT
+	      cmd = "%PYTHONBIN% ";
+#else
+	      cmd = "python ";
+#endif
+	      cmd += "-c \"";
+	      cmd += "from medutilities import my_remove ; my_remove(r'" + file_tmp + "')";
+	      cmd += "\"";
+	      system(cmd.c_str());
+	      break;
+	    }
           }
         }
         catch ( const SALOME::SALOME_Exception& S_ex ) {
@@ -2693,7 +2725,7 @@ void SMESHGUI::createPopupItem( const int id,
                                 const QString& clients,
                                 const QString& types,
                                 const QString& theRule,
-				const int pId )
+                                const int pId )
 {
   int parentId = pId;
   if( pId!=-1 )
