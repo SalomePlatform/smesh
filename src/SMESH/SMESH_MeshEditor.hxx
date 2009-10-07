@@ -84,7 +84,7 @@ struct SMESH_ElementSearcher
 {
   virtual void FindElementsByPoint(const gp_Pnt&                           point,
                                    SMDSAbs_ElementType                     type,
-                                   std::vector< const SMDS_MeshElement* >& foundNodes)=0;
+                                   std::vector< const SMDS_MeshElement* >& foundElems)=0;
 };
 
 //=======================================================================

@@ -23,7 +23,6 @@
 //  File   : SMESH_Hypothesis.cxx
 //  Author : Paul RASCLE, EDF
 //  Module : SMESH
-//  $Header$
 //
 #include "SMESH_Hypothesis.hxx"
 #include "SMESH_Gen.hxx"
