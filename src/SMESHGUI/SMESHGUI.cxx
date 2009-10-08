@@ -174,10 +174,6 @@
     else if ( theCommandID == 111 ) {
       filter.append( QObject::tr( "DAT files (*.dat)" ) );
     }
-    else if ( theCommandID == 115 ) {
-      filter.append( QObject::tr( "SAUV files (*.sauv *.sauve)" ) );
-      filter.append( QObject::tr( "All files (*)" ) );
-    }
 
     QString anInitialPath = "";
     if ( SUIT_FileDlg::getLastVisitedPath().isEmpty() )
@@ -226,38 +222,6 @@
               }
               break;
             }
-	  case 115:
-	    {
-	      std::string file_in = filename.toLatin1().constData();
-	      std::string file_tmp = file_in + ".med";
-	      std::string cmd;
-#ifdef WNT
-	      cmd = "%PYTHONBIN% ";
-#else
-	      cmd = "python ";
-#endif
-	      cmd += "-c \"";
-	      cmd += "from medutilities import convert ; convert(r'" + file_in + "', 'GIBI', 'MED', 1, r'" + file_tmp + "')";
-	      cmd += "\"";
-	      system(cmd.c_str());
-	      // MED format
-	      SMESH::DriverMED_ReadStatus res;
-	      aMeshes = theComponentMesh->CreateMeshesFromMED( file_tmp.c_str(), res );
-	      if ( res != SMESH::DRS_OK ) {
-		errors.append( QString( "%1 :\n\t%2" ).arg( filename ).
-			       arg( QObject::tr( QString( "SMESH_DRS_%1" ).arg( res ).toLatin1().data() ) ) );
-	      }
-#ifdef WNT
-	      cmd = "%PYTHONBIN% ";
-#else
-	      cmd = "python ";
-#endif
-	      cmd += "-c \"";
-	      cmd += "from medutilities import my_remove ; my_remove(r'" + file_tmp + "')";
-	      cmd += "\"";
-	      system(cmd.c_str());
-	      break;
-	    }
           }
         }
         catch ( const SALOME::SALOME_Exception& S_ex ) {
@@ -323,8 +287,6 @@
     switch ( theCommandID ) {
     case 125:
     case 122:
-    case 142:
-    case 143:
       {
         if (aMesh->HasDuplicatedGroupNamesMED()) {
           int aRet = SUIT_MessageBox::warning
@@ -335,25 +297,11 @@
           if (aRet != SUIT_MessageBox::Yes)
             return;
         }
-	switch ( theCommandID ) {
-	case 125:
-	case 122:
-	  {
-	    // PAL18696
-	    QString v21 (aMesh->GetVersionString(SMESH::MED_V2_1, 2));
-	    QString v22 (aMesh->GetVersionString(SMESH::MED_V2_2, 2));
-	    aFilterMap.insert( QString("MED ") +  v21 + " (*.med)", SMESH::MED_V2_1 );
-	    aFilterMap.insert( QString("MED ") +  v22 + " (*.med)", SMESH::MED_V2_2 );
-	  }
-	  break;
-	case 142:
-	case 143:
-	  {
-	    aFilterMap.insert("SAUV files (*.sauv *.sauve)", SMESH::MED_V2_2 );
-	    aFilterMap.insert("All files (*)", SMESH::MED_V2_1 );
-	  }
-	  break;
-	}
+        // PAL18696
+        QString v21 (aMesh->GetVersionString(SMESH::MED_V2_1, 2));
+        QString v22 (aMesh->GetVersionString(SMESH::MED_V2_2, 2));
+        aFilterMap.insert( QString("MED ") +  v21 + " (*.med)", SMESH::MED_V2_1 );
+        aFilterMap.insert( QString("MED ") +  v22 + " (*.med)", SMESH::MED_V2_2 );
       }
       break;
     case 124:
@@ -420,7 +368,7 @@
     if ( SUIT_FileDlg::getLastVisitedPath().isEmpty() )
       anInitialPath = QDir::currentPath();
 
-    if ( theCommandID != 122 && theCommandID != 125 && theCommandID != 140 && theCommandID != 141 && theCommandID != 142 && theCommandID != 143) {
+    if ( theCommandID != 122 && theCommandID != 125 && theCommandID != 140 && theCommandID != 141) {
       if ( anInitialPath.isEmpty() ) anInitialPath = SUIT_FileDlg::getLastVisitedPath();
       aFilename = SUIT_FileDlg::getFileName(SMESHGUI::desktop(), anInitialPath + QString("/") + anIObject->getName(),
                                             aFilter, aTitle, false);
@@ -513,26 +461,6 @@
         case 122:
           aMesh->ExportToMED( aFilename.toLatin1().data(), toCreateGroups, aFormat );
           break;
-        case 142:
-        case 143:
-	  {
-	    std::string file_out = aFilename.toLatin1().data();
-	    std::string file_tmp = file_out + "_tmp.med";
-	    std::string cmd;
-	    aMesh->ExportToMED( file_tmp.c_str(), toCreateGroups, aFormat );
-#ifdef WNT
-	    cmd = "%PYTHONBIN% ";
-#else
-	    cmd = "python ";
-#endif
-	    cmd += "-c \"";
-	    cmd += "from medutilities import convert ; convert(r'" + file_tmp + "', 'MED', 'GIBI', 1, r'" + file_out + "')";
-	    cmd += " ; ";
-	    cmd += "from medutilities import my_remove ; my_remove(r'" + file_tmp + "')";
-	    cmd += "\"";
-	    system(cmd.c_str());
-	  }
-	  break;
         case 124:
         case 121:
           aMesh->ExportDAT( aFilename.toLatin1().data() );
@@ -1456,7 +1384,6 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
   case 113:                                     // IMPORT
   case 112:
   case 111:
-  case 115:
     {
       if(checkLock(aStudy)) break;
       ::ImportMeshesFromFile(GetSMESHGen(),theCommandID);
@@ -1490,8 +1417,6 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
   case 126:
   case 140:
   case 141:
-  case 142:
-  case 143:
     {
       ::ExportMeshToFile(theCommandID);
       break;
@@ -2771,18 +2696,15 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction(  111, "DAT", "", (Qt::CTRL+Qt::Key_B) );
   createSMESHAction(  112, "UNV", "", (Qt::CTRL+Qt::Key_U) );
   createSMESHAction(  113, "MED", "", (Qt::CTRL+Qt::Key_M) );
-  createSMESHAction(  115, "SAUV" );
   createSMESHAction(  114, "NUM" );
   createSMESHAction(  121, "DAT" );
   createSMESHAction(  122, "MED" );
   createSMESHAction(  123, "UNV" );
   createSMESHAction(  140, "STL" );
-  createSMESHAction(  142, "SAUV" );
   createSMESHAction(  124, "EXPORT_DAT" );
   createSMESHAction(  125, "EXPORT_MED" );
   createSMESHAction(  126, "EXPORT_UNV" );
   createSMESHAction(  141, "EXPORT_STL" );
-  createSMESHAction(  143, "EXPORT_SAUV" );
   createSMESHAction(  150, "FILE_INFO" );
   createSMESHAction(   33, "DELETE",          "ICON_DELETE", Qt::Key_Delete );
   createSMESHAction( 5105, "SEL_FILTER_LIB" );
@@ -2921,13 +2843,11 @@ void SMESHGUI::initialize( CAM_Application* app )
   createMenu( 111, importId, -1 );
   createMenu( 112, importId, -1 );
   createMenu( 113, importId, -1 );
-  createMenu( 115, importId, -1 );
 
   createMenu( 121, exportId, -1 );
   createMenu( 122, exportId, -1 );
   createMenu( 123, exportId, -1 );
   createMenu( 140, exportId, -1 ); // export to stl STL
-  createMenu( 142, exportId, -1 );
 
   createMenu( separator(), fileId, 10 );
 
@@ -3202,7 +3122,6 @@ void SMESHGUI::initialize( CAM_Application* app )
   createPopupItem( 125, OB, mesh, only_one_non_empty );   // EXPORT_MED
   createPopupItem( 126, OB, mesh, only_one_non_empty );   // EXPORT_UNV
   createPopupItem( 141, OB, mesh, only_one_non_empty );   // EXPORT_STL
-  createPopupItem( 143, OB, mesh, only_one_non_empty );   // EXPORT_SAUV
   //createPopupItem( 33, OB, subMesh + " " + group );       // DELETE
   createPopupItem(  33, OB, mesh_group + " " + hyp_alg ); // DELETE
   popupMgr()->insert( separator(), -1, 0 );
