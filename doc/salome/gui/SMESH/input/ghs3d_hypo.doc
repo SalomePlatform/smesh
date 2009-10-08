@@ -5,6 +5,8 @@
 \n GHS3D Parameters hypothesis works only with <b>Tetrahedron (GHS3D)</b> 
 algorithm. This algorithm is a commercial software.
 
+<h1>General parameters</h1>
+
 \image html ghs3d_parameters_basic.png
 
 <ul>
@@ -20,6 +22,8 @@ to the solid.</li>
 optimization level: none, light, medium or strong. Higher level of
 optimisation provides better mesh, but can be time-consuming.
 </li>
+
+<h1>Advanced parameters</h1>
 
 \image html ghs3d_parameters_advanced.png
 
@@ -52,6 +56,18 @@ together with the characteristics of the final mesh.
 <li><b>To create new nodes</b> - if this option is checked off, ghs3d
 tries to create tetrahedrons using only the nodes of the 2D mesh.</li>
 
+<li><b>To remove initial central point</b> - TetMesh-GHS3D adds an internal point 
+at the centre of gravity of the bounding box in order to speed up and to simplify 
+the meshing process. It is however possible for TetMesh-GHS3D to refrain from creating 
+this point by using the command line option -no initial central point. This can be
+particularly useful to generate a volume mesh without internal points at all, and in some rare cases,
+to help the boundary regeneration phase when it failed with the standard options (for example when
+one dimension of the domain is large compared to the other two, with a ratio of 20 or more).
+Use this option when the boundary regeneration failed with the standard parameters and before using
+the recovery version (command line option -C).
+Note: when using this option, the speed of the meshing process may decrease, and quality may change.
+Note: the boundary regeneration may fail with this option, in some rare cases.</li>
+
 <li><b>To use boundary recovery version</b> - enables using a
 boundary recovery module which tries to
 create volume meshes starting from very poor quality surface meshes
@@ -60,6 +76,17 @@ extreme aspect ratios, etc.) which fails with the standard version. The
 resulting volume mesh will however most likely have a very poor
 quality (poor aspect ratio of elements, tetrahedra with a very small
 positive volume).</li>
+
+<li><b>To use FEM correction</b> - Applies finite-element correction by 
+replacing overconstrained elements where it is possible. The process is 
+first slicing the overconstrained edges and second the overconstrained 
+facets. This ensures that no edges have two boundary vertices and that 
+no facets have three boundary vertices. TetMesh-GHS3D gives the initial 
+and final overconstrained edges and facets. It also gives the facets
+which have three edges on the boundary.
+Note: when using this option, the speed of the meshing process may 
+decrease, quality may change, and the smallest volume may be smaller.
+The default is no correction.</li>
 
 <li><b>Option as text</b> - allows input of any text as command line
 for ghs3d. This allows the input of advanced options in a free from. </li>
