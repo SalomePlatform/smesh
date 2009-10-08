@@ -43,6 +43,37 @@ BLSURF_Parameters.SetSizeMap(Vertex_1, 'def f(): return 2' )
 
 # compute the mesh
 blsurfMesh.Compute()
+
+# Add enforced vertex for Face_1 on (50, 50, 50)
+# The projection coordinates will be (50, 50, 0)
+BLSURF_Parameters.SetEnforcedVertex(Face_1, 50, 50, 50)
+
+# Add another enforced vertex on (150, 150, 150)
+BLSURF_Parameters.SetEnforcedVertex(Face_1, 150, 150, 150)
+
+# Retrieve and print the list of enforced vertices defines on Face_1
+enfList = BLSURF_Parameters.GetEnforcedVertices(Face_1)
+print "List of enforced vertices for Face_1: "
+print enfList
+
+# compute the mesh
+blsurfMesh.Compute()
+
+# Remove an enforced vertex and print the list
+BLSURF_Parameters.UnsetEnforcedVertex(Face_1, 50, 50, 50)
+enfList = BLSURF_Parameters.GetEnforcedVertices(Face_1)
+print "List of enforced vertices for Face_1: "
+print enfList
+
+# compute the mesh
+blsurfMesh.Compute()
+
+# Remove all enforced vertices defined on Face_1
+BLSURF_Parameters.UnsetEnforcedVertices(Face_1)
+
+# compute the mesh
+blsurfMesh.Compute()
+
 \endcode
 
 */

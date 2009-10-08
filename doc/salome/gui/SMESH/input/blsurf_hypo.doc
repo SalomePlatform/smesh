@@ -5,6 +5,8 @@
 \n BLSURF Parameters hypothesis works only with <b>BLSURF</b> 2d
 algorithm. This algorithm is a commercial software.
 
+<h1>General parameters</h1>
+
 \image html blsurf_parameters.png
 
 <ul>
@@ -53,6 +55,8 @@ two adjacent edges. </li>
 edges are not respected and all geometrical faces are meshed as one
 hyper-face.</li>
 
+<h1>Advanced parameters</h1>
+
 \image html blsurf_parameters_advanced.png
 
 <li><b>Topology</b> - allows creation of a conform mesh on a shell of
@@ -83,12 +87,12 @@ the diagonal of the bounding box of the geometrical object to mesh.
 
 <ul>
 <li><b>topo_eps1</b> (real) - is the tolerance level inside a CAD
-patch. By default is equal to <i>diag</i> × 10-4. This tolerance is used to
+patch. By default is equal to <i>diag</i> ï¿½ 10-4. This tolerance is used to
 identify nodes to merge within one geometrical face when \b Topology
 option is to pre-process. Default is <i>diag</i>/10.0.</li>
 
 <li><b>topo_eps2</b> (real) - is the tolerance level between two CAD
-patches. By default is equal to <i>diag</i> × 10-4. This tolerance is used to
+patches. By default is equal to <i>diag</i> ï¿½ 10-4. This tolerance is used to
 identify nodes to merge over different geometrical faces when
 \b Topology option is to pre-process. Default is <i>diag</i>/10.0.</li>
 
@@ -199,12 +203,14 @@ String variables:
 <li>    import_option  </li>  
 </ul>
 
+<h1>Custom size map</h1>
+
 \image html blsurf_parameters_sizemap.png
 
 It is possible to define user sizes on faces, edges or verteces.
 <ul>
 <li>Those faces, edges and verteces must be sub-shapes (from explode command) of the meshed geometry object.</li>
-<li>Groups are currently not handled.</li>
+<li>Groups of faces, edges and verteces are also handled.</li>
 <li>Multi-selection is possible.</li>
 <li>The sizes are constant values.</li>
 </ul>
@@ -225,7 +231,22 @@ Each function can either return a value h (which is then trimmed between the two
 In order to compute the mean of several values, the arithmetic mean is used by default, but this can be modified by the parameter \ref blsurf_hmean_flag "hmean flag". In the same way, in order to interpolate two values, a linear interpolation is used by default, but this can be modified by \ref blsurf_hinterpol_flag "hinterpol flag".
 
 
-\n
+<h1>Custom enforced vertices</h1>
+
+\image html blsurf_parameters_enforced_vertices.png
+
+It is possible to define some enforced vertices to BLSurf algorithm without any vertex creation into the CAD.
+<ul>
+<li>Enforced vertices are the projection of a given point defines by its (x,y,z) coordinates on the concerned face.</li>
+<li>It is possible to define several enforced vertices on 1 face.</li>
+<li>Group of faces are also handled.</li>
+<li>If the projection point is on the boundary or outside the face, then it will be ignored.</li>
+</ul>
+
+<br><b>See Also</b> a sample TUI Script of the \ref tui_blsurf "creation of a BLSurf hypothesis", including enforced vertices.
+
+<h1>Limitations</h1>
+
 Currently BLSURF plugin has the following limitations.
 <ul>
   <li>The created mesh will contain inverted elements if it is based on a shape,
