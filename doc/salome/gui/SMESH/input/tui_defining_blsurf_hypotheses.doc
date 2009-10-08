@@ -19,6 +19,11 @@ Face_1   = geompy.SubShapeAllSorted(box, geompy.ShapeType["FACE"])[0]
 Edge_1   = geompy.SubShapeAllSorted(box, geompy.ShapeType["EDGE"])[0]
 Vertex_1 = geompy.SubShapeAllSorted(box, geompy.ShapeType["VERTEX"])[0]
 
+# /!\ Geom object with sizemaps on them must be published in study
+geompy.addToStudyInFather(box,Face_1, "Face_1")
+geompy.addToStudyInFather(box,Edge_1, "Edge_1")
+geompy.addToStudyInFather(box,Vertex_1, "Vertex_1")
+
 # create a mesh on the box
 blsurfMesh = smesh.Mesh(box,"box: BLSurf mesh")
 
