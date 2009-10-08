@@ -74,6 +74,8 @@ BLSURF_Parameters.UnsetEnforcedVertices(Face_1)
 # compute the mesh
 blsurfMesh.Compute()
 
+# End of script
+
 \endcode
 
 */
