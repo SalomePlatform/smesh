@@ -93,4 +93,20 @@ for ghs3d. This allows the input of advanced options in a free from. </li>
 
 </ul>
 
+
+<h1>Enforced vertices</h1>
+
+\image html ghs3d_enforced_vertices.png
+
+GHS3D algorithm can locally raffine the mesh. It is possible to define enforced vertices in the volume where the mesh will be raffined. A node will be created at the enforced vertex coordinates. There is no need to create a vertex in the CAD.
+
+An enforced vertex is defines by:
+<ul>
+<li>The (x,y,z) cartesian coordinates</li>
+<li>A constant physical size</li>
+</ul>
+
+<br><b>See Also</b> a sample TUI Script of the \ref tui_ghs3d "creation of a Ghs3D hypothesis", including enforced vertices.
+
+
 */

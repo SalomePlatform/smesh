@@ -1,0 +1,45 @@
+/*!
+
+\page tui_defining_ghs3d_hypotheses_page Defining Hypotheses for Ghs3D Algorithm
+
+\anchor tui_ghs3d
+<h2>Construction of Mesh using Ghs3D algorithm</h2>
+
+\code
+import geompy
+import smesh
+import BLSURFPlugin
+import GHS3DPlugin
+
+# create a box
+box = geompy.MakeBoxDXDYDZ(200., 200., 200.)
+geompy.addToStudy(box, "box")
+
+# create a mesh on the box
+ghs3dMesh = smesh.Mesh(box,"box: Ghs3D and BLSurf mesh")
+
+# create a BLSurf algorithm for faces
+BLSURF = ghs3dMesh.Triangle(algo=smesh.BLSURF)
+
+# create a Ghs3D algorithm for volume
+GHS3D = Mesh_1.Tetrahedron(algo=smesh.GHS3D)
+
+# get Ghs3D algorithm hypothesis
+GHS3D_Parameters = GHS3D.Parameters())
+
+# define an enforced vertex at (50,50,100) with a physical size of 2
+GHS3D_Parameters.SetEnforcedVertex( 50, 50, 100, 2 )
+
+# define an enforced vertex at (150,150,100) with a physical size of 5
+GHS3D_Parameters.SetEnforcedVertex( 150, 150, 100, 5 )
+
+# compute the mesh
+ghs3dMesh.Compute()
+
+# End of script
+
+\endcode
+
+\image html ghs3d_enforced_vertices_screenshot.png
+
+*/
