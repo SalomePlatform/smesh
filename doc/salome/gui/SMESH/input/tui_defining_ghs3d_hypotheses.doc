@@ -22,10 +22,10 @@ ghs3dMesh = smesh.Mesh(box,"box: Ghs3D and BLSurf mesh")
 BLSURF = ghs3dMesh.Triangle(algo=smesh.BLSURF)
 
 # create a Ghs3D algorithm for volume
-GHS3D = Mesh_1.Tetrahedron(algo=smesh.GHS3D)
+GHS3D = ghs3dMesh.Tetrahedron(algo=smesh.GHS3D)
 
 # get Ghs3D algorithm hypothesis
-GHS3D_Parameters = GHS3D.Parameters())
+GHS3D_Parameters = GHS3D.Parameters()
 
 # define an enforced vertex at (50,50,100) with a physical size of 2
 GHS3D_Parameters.SetEnforcedVertex( 50, 50, 100, 2 )
