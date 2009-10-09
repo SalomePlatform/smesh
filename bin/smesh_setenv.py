@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+#  -*- coding: iso-8859-1 -*-
 #  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
 #
 #  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
