@@ -1,4 +1,3 @@
-#! /usr/bin/python
 #  -*- coding: iso-8859-1 -*-
 #  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
 #

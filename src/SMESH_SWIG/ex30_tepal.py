@@ -1,4 +1,3 @@
-#! /usr/bin/python
 #  -*- coding: iso-8859-1 -*-
 # CEA/LGLS 2008, Christian Van Wambeke (CEA/LGLS), Francis KLOSS (OCC)
 # ====================================================================
