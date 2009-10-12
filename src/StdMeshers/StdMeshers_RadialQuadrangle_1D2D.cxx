@@ -221,20 +221,23 @@ bool StdMeshers_RadialQuadrangle_1D2D::Compute(SMESH_Mesh& aMesh,
     bool ok = _gen->Compute( aMesh, CircEdge, false, MeshDim_1D );
     if( !ok ) return false;
     std::map< double, const SMDS_MeshNode* > theNodes;
-    GetSortedNodesOnEdge(aMesh.GetMeshDS(),CircEdge,true,theNodes);
+    ok = GetSortedNodesOnEdge(aMesh.GetMeshDS(),CircEdge,true,theNodes);
+    if( !ok ) return false;
 
     CNodes.clear();
     std::map< double, const SMDS_MeshNode* >::iterator itn = theNodes.begin();
     const SMDS_MeshNode* NF = (*itn).second;
     CNodes.push_back( (*itn).second );
     double fang = (*itn).first;
-    itn++;
-    for(; itn != theNodes.end(); itn++ ) {
-      CNodes.push_back( (*itn).second );
-      double ang = (*itn).first - fang;
-      if( ang>PI ) ang = ang - 2*PI;
-      if( ang<-PI ) ang = ang + 2*PI;
-      Angles.Append( ang );
+    if ( itn != theNodes.end() ) {
+      itn++;
+      for(; itn != theNodes.end(); itn++ ) {
+        CNodes.push_back( (*itn).second );
+        double ang = (*itn).first - fang;
+        if( ang>PI ) ang = ang - 2*PI;
+        if( ang<-PI ) ang = ang + 2*PI;
+        Angles.Append( ang ); 
+      }
     }
     P1 = gp_Pnt( NF->X(), NF->Y(), NF->Z() );
     P0 = aCirc->Location();
