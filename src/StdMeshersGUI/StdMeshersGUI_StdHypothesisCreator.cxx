@@ -384,6 +384,12 @@ bool StdMeshersGUI_StdHypothesisCreator::checkParams( QString& msg ) const
       widget< StdMeshersGUI_LayerDistributionParamWdg >( 0 );
     ok = ( w && w->IsOk() );
   }
+  else if ( hypType() == "QuadrangleParams" )
+  {
+    StdMeshersGUI_SubShapeSelectorWdg* w = 
+      widget< StdMeshersGUI_SubShapeSelectorWdg >( 0 );
+    ok = ( w->GetListSize() > 0 );
+  }
   return ok;
 }
 
@@ -604,11 +610,11 @@ QString StdMeshersGUI_StdHypothesisCreator::storeParams() const
       StdMeshersGUI_SubShapeSelectorWdg* w = 
         widget< StdMeshersGUI_SubShapeSelectorWdg >( 0 );
       if (w) {
-        if( int id = w->GetListOfIDs()[0] ) {
-          h->SetTriaVertex( id );
+        if( w->GetListSize() > 0 ) {
+          h->SetTriaVertex( w->GetListOfIDs()[0] ); // getlist must be called once
+          const char * entry = w->GetMainShapeEntry();
+          h->SetObjectEntry( entry );
         }
-        const char * entry = w->GetMainShapeEntry();
-        h->SetObjectEntry( entry );
       }
     }
   }
