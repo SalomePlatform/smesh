@@ -786,7 +786,7 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
   }
 
   // set initial part of aSript
-  TCollection_AsciiString initPart = "import salome, SMESH\n";
+  TCollection_AsciiString initPart = "import salome, SMESH, SALOMEDS\n";
   initPart += helper + "import " + aSmeshpy + "\n\n";
   if ( importGeom )
   {
@@ -821,7 +821,7 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
       if( !CORBA::is_nil(aGroup) )
       {
         SALOMEDS::Color aColor = aGroup->GetColor();
-        if ( aColor.R > 0 || aColor.G > 0 || aColor.B > 0 )
+        if ( aColor.R >= 0 || aColor.G >= 0 || aColor.B >= 0 )
         {
           CORBA::String_var anEntry = aSObj->GetID();
           anUpdatedScript += SMESH_Comment("\n\t")

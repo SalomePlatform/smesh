@@ -3326,6 +3326,8 @@ class Mesh:
     #  @return a list of groups of equal elements
     #  @ingroup l2_modif_trsf
     def FindEqualElements (self, MeshOrSubMeshOrGroup):
+        if ( isinstance( MeshOrSubMeshOrGroup, Mesh )):
+            MeshOrSubMeshOrGroup = MeshOrSubMeshOrGroup.GetMesh()
         return self.editor.FindEqualElements(MeshOrSubMeshOrGroup)
 
     ## Merges elements in each given group.
