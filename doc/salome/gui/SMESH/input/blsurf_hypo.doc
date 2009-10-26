@@ -209,10 +209,18 @@ String variables:
 
 It is possible to define user sizes on faces, edges or verteces.
 <ul>
-<li>Those faces, edges and verteces must be sub-shapes (from explode command) of the meshed geometry object.</li>
+<li>Those faces, edges and verteces can be the meshed geometry object or sub-shapes (from explode command) of the meshed geometry object.</li>
 <li>Groups of faces, edges and verteces are also handled.</li>
-<li>Multi-selection is possible.</li>
-<li>The sizes are constant values.</li>
+<li>To add the same size on several geometries, multi-selection is possible.</li>
+<li>The sizes are either constant values or python functions.</li>
+<li>In the case of a python function, the following rules must be respected:
+<ul>
+<li>The name of the function is f</li>
+<li>If geometry is face or group of faces, function is f(u,v)</li>
+<li>If geometry is edge or group of edges, function is f(t)</li>
+<li>If geometry is vertex or group of vertices, function is f()</li>
+<li>The function must return a double</li>
+</ul></li>
 </ul>
 
 <br><b>See Also</b> a sample TUI Script of the \ref tui_blsurf "creation of a BLSurf hypothesis", including size map.
