@@ -2805,12 +2805,12 @@ void SMESH_MeshEditor::sweepElement(const SMDS_MeshElement*               elem,
       return;
     }
 
-    issimple[iNode] = (listNewNodes.size()==nbSteps);
+    issimple[iNode] = (listNewNodes.size()==nbSteps); // is node medium
 
     itNN[ iNode ] = listNewNodes.begin();
     prevNod[ iNode ] = node;
     nextNod[ iNode ] = listNewNodes.front();
-    if( !issimple[iNode] ) {
+    if( !elem->IsQuadratic() || !issimple[iNode] ) {
       if ( prevNod[ iNode ] != nextNod [ iNode ])
         iNotSameNode = iNode;
       else {
