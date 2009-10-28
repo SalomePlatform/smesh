@@ -2865,7 +2865,7 @@ class Mesh:
                                                    HasRefPoint, RefPoint, MakeGroups, ElemType)
         else:
             if isinstance(Base,Mesh):
-                return self.editor.ExtrusionAlongPathObjX(Base.GetMesh(), Path, NodeStart,
+                return self.editor.ExtrusionAlongPathObjX(Base, Path, NodeStart,
                                                           HasAngles, Angles, LinearVariation,
                                                           HasRefPoint, RefPoint, MakeGroups, ElemType)
             else:
