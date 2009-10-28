@@ -1271,7 +1271,7 @@ Handle(_pyHypothesis) _pyHypothesis::NewHypothesis( const Handle(_pyCommand)& th
   }
   else if ( hypType == "QuadranglePreference" ) {
     hyp->SetConvMethodAndType( "QuadranglePreference", "Quadrangle_2D");
-    hyp->SetConvMethodAndType( "QuadranglePreference", "NETGEN_2D_ONLY");
+    hyp->SetConvMethodAndType( "SetQuadAllowed", "NETGEN_2D_ONLY");
   }
   else if ( hypType == "TrianglePreference" ) {
     hyp->SetConvMethodAndType( "TrianglePreference", "Quadrangle_2D");
