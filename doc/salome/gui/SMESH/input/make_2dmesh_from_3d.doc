@@ -2,21 +2,21 @@
 
 \page make_2dmesh_from_3d_page Generate the skin elements (2D) of a mesh having 3D elements
 
-\n This functionality allows you to generate 2D mesh elements as skin
-on existing 3D mesh elements
+\n This functionality allows to generate 2D mesh elements as a skin
+on the existing 3D mesh elements.
 
 <em>To generate 2D mesh:</em>
 <ol>
-<li>From the Modification menu choose the "Create 2D mesh from 3D"
-Mesh item, or invoke from popup menu.
+<li>From the Modification menu choose "Create 2D mesh from 3D"
+item, or choose from the popup menu.
 
 \image html 2d_from_3d_menu.png
 
 The algorithm detects boundary volume faces without connections to
-other volumes and create 2D mesh elements on face nodes. If mesh
-already contains 2D elements on detected nodes - no new element
-created. The result dialog shows mesh information statistic about new
-created 2D mesh elements.
+other volumes and creates 2D mesh elements on face nodes. If the mesh
+already contains 2D elements on the detected nodes, new elements are not
+created. The the resulting dialog shows mesh information statistics
+about the newly created 2D mesh elements.
 </ol>
 
 */

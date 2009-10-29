@@ -56,16 +56,18 @@ together with the characteristics of the final mesh.
 <li><b>To create new nodes</b> - if this option is checked off, ghs3d
 tries to create tetrahedrons using only the nodes of the 2D mesh.</li>
 
-<li><b>To remove initial central point</b> - TetMesh-GHS3D adds an internal point 
-at the centre of gravity of the bounding box in order to speed up and to simplify 
-the meshing process. It is however possible for TetMesh-GHS3D to refrain from creating 
+<li><b>To remove the initial central point</b> TetMesh-GHS3D adds an internal point 
+at the gravity centre of the bounding box to speed up and to simplify 
+the meshing process. However, it is possible to refrain from creating 
 this point by using the command line option -no initial central point. This can be
-particularly useful to generate a volume mesh without internal points at all, and in some rare cases,
-to help the boundary regeneration phase when it failed with the standard options (for example when
-one dimension of the domain is large compared to the other two, with a ratio of 20 or more).
-Use this option when the boundary regeneration failed with the standard parameters and before using
+particularly useful to generate a volume mesh without internal points at all and in some rare cases
+at the boundary regeneration phase when it is impossible to proceed
+with the standard options
+(for example, when one dimension of the domain is more than 20 times greater than the other two).
+Use this option if the boundary regeneration has failed with the standard parameters and before using
 the recovery version (command line option -C).
-Note: when using this option, the speed of the meshing process may decrease, and quality may change.
+Note: when using this option, the speed of the meshing process may
+decrease, and the quality may change.
 Note: the boundary regeneration may fail with this option, in some rare cases.</li>
 
 <li><b>To use boundary recovery version</b> - enables using a
@@ -78,18 +80,18 @@ quality (poor aspect ratio of elements, tetrahedra with a very small
 positive volume).</li>
 
 <li><b>To use FEM correction</b> - Applies finite-element correction by 
-replacing overconstrained elements where it is possible. The process is 
-first slicing the overconstrained edges and second the overconstrained 
-facets. This ensures that no edges have two boundary vertices and that 
-no facets have three boundary vertices. TetMesh-GHS3D gives the initial 
+replacing overconstrained elements where it is possible. At first the process 
+slices the overconstrained edges and at second the overconstrained 
+facets. This ensures that there are no edges with two boundary
+vertices and that there are no facets with three boundary vertices. TetMesh-GHS3D gives the initial 
 and final overconstrained edges and facets. It also gives the facets
 which have three edges on the boundary.
 Note: when using this option, the speed of the meshing process may 
 decrease, quality may change, and the smallest volume may be smaller.
-The default is no correction.</li>
+By default, the FEM correction is not used.</li>
 
-<li><b>Option as text</b> - allows input of any text as command line
-for ghs3d. This allows the input of advanced options in a free from. </li>
+<li><b>Option as text</b> - allows to input in the command line any text
+for ghs3d, for example, advanced options. </li>
 
 </ul>
 
@@ -98,9 +100,9 @@ for ghs3d. This allows the input of advanced options in a free from. </li>
 
 \image html ghs3d_enforced_vertices.png
 
-GHS3D algorithm can locally raffine the mesh. It is possible to define enforced vertices in the volume where the mesh will be raffined.
+GHS3D algorithm can locally make the mesh finer. It is possible to define enforced vertices in the volume where the mesh will be detailed.
 
-A node will be created at the enforced vertex coordinates. There is no need to create a vertex in the CAD.
+A node will be created at the enforced vertex coordinates. There is no need to create a vertex in CAD.
 
 An enforced vertex is defined by:
 <ul>

@@ -207,19 +207,20 @@ String variables:
 
 \image html blsurf_parameters_sizemap.png
 
-It is possible to define user sizes on faces, edges or verteces.
+User sizes can be defined on faces, edges or vertices.
 <ul>
-<li>Those faces, edges and verteces can be the meshed geometry object or sub-shapes (from explode command) of the meshed geometry object.</li>
-<li>Groups of faces, edges and verteces are also handled.</li>
-<li>To add the same size on several geometries, multi-selection is possible.</li>
-<li>The sizes are either constant values or python functions.</li>
-<li>In the case of a python function, the following rules must be respected:
+<li>The faces, edges and vertices can belong to the meshed geometrical
+object or to its sub-shapes (created using <b>Explode</b> command).</li>
+<li>Groups of faces, edges and vertices are also handled.</li>
+<li>It is possible to attribute the same size to several geometries using multi-selection.</li>
+<li>The sizes are constant values or python functions.</li>
+<li>In case of a python function, the following rules must be respected:
 <ul>
-<li>The name of the function is f</li>
-<li>If geometry is face or group of faces, function is f(u,v)</li>
-<li>If geometry is edge or group of edges, function is f(t)</li>
-<li>If geometry is vertex or group of vertices, function is f()</li>
-<li>The function must return a double</li>
+<li>The name of the function is f.</li>
+<li>If geometry is a face or a group of faces, the function is f(u,v).</li>
+<li>If geometry is an edge or a group of edges, the function is f(t).</li>
+<li>If geometry is a vertex or a group of vertices, the function is f().</li>
+<li>The function must return a double.</li>
 </ul></li>
 </ul>
 
@@ -227,10 +228,12 @@ It is possible to define user sizes on faces, edges or verteces.
 
 \anchor blsurf_sizemap_computation
 <h2>Computation of the physical size</h2>
-Here is the detail on the calculation of the size (from BLSurf documentation).
 \n
-The size is obtained by querying sizemap functions associated to the input CAD object for surfaces, curves and points.
-Each function can either return a value h (which is then trimmed between the two bounds hphymin and hphymax), or "no answer" (by not assigning a value to h), thus providing great flexibility in the specification of the sizes. The computation depends whether point P is internal to a surface, internal to a curve, or at the end of several curves:
+The physical size is obtained by querying sizemap functions associated to the input CAD object for surfaces, curves and points.
+Each function can either return a value h (which is then trimmed
+between the two bounds hphymin and hphymax), or "no answer" (by not
+assigning a value to h), thus providing great flexibility in the
+specification of the sizes. The computation depends on whether point P is internal to a surface, internal to a curve, or at the end of several curves:
 <ul>
 <li> If point P is internal to a surface, the CAD surface size function is queried. If no answer is returned, one interpolates with the values at the vertices of the discretized interface curves.</li>
 <li> If point P is internal to a curve, the CAD curve size function is queried first. If no answer is returned, the surface size function is queried for every adjacent surface and the mean value of the returned values is computed. If no answer is returned, sizes h1 and h2 at both ends of the curve are considered (see next item) and the interpolated value is computed.</li>
@@ -243,12 +246,13 @@ In order to compute the mean of several values, the arithmetic mean is used by d
 
 \image html blsurf_parameters_enforced_vertices.png
 
-It is possible to define some enforced vertices to BLSurf algorithm without any vertex creation into the CAD.
+It is possible to define some enforced vertices to BLSurf algorithm
+without creating any vertices by CAD algorithms.
 <ul>
-<li>Enforced vertices are the projection of a given point defines by its (x,y,z) coordinates on the concerned face.</li>
-<li>It is possible to define several enforced vertices on 1 face.</li>
-<li>Group of faces are also handled.</li>
-<li>If the projection point is on the boundary or outside the face, then it will be ignored.</li>
+<li>The enforced vertex is the projection of a point defined by its
+(x,y,z) coordinates on the selected face.</li>
+<li>It is possible to define several enforced vertices on a face or a group of faces.</li>
+<li>If the projected point is on the boundary or outside of the face, it will be ignored.</li>
 </ul>
 
 <br><b>See Also</b> a sample TUI Script of the \ref tui_blsurf "creation of a BLSurf hypothesis", including enforced vertices.
