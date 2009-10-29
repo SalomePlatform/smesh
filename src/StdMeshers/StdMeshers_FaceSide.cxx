@@ -165,8 +165,8 @@ StdMeshers_FaceSide::StdMeshers_FaceSide(const TopoDS_Face& theFace,
 //================================================================================
 
 StdMeshers_FaceSide::StdMeshers_FaceSide(const SMDS_MeshNode* theNode,
-					 const gp_Pnt2d thePnt2d,
-					 const StdMeshers_FaceSide* theSide)
+                                         const gp_Pnt2d thePnt2d,
+                                         const StdMeshers_FaceSide* theSide)
 {
   myC2d.resize(1);
   myLength = 0;
