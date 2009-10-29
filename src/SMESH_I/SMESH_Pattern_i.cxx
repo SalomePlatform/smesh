@@ -149,7 +149,7 @@ CORBA::Boolean SMESH_Pattern_i::LoadFromFace(SMESH::SMESH_Mesh_ptr theMesh,
     return false;
 
   // Update Python script
-  TPythonDump() << "isDone = pattern.LoadFromFace( " << theMesh << ", "
+  TPythonDump() << "isDone = pattern.LoadFromFace( " << theMesh << ".GetMesh(), "
                 << theFace << ", " << theProject << " )";
   addErrorCode( "LoadFromFace" );
 
@@ -180,7 +180,7 @@ CORBA::Boolean SMESH_Pattern_i::LoadFrom3DBlock(SMESH::SMESH_Mesh_ptr theMesh,
     return false;
 
   // Update Python script
-  TPythonDump() << "isDone = pattern.LoadFrom3DBlock( " << theMesh << ", " << theBlock << " )";
+  TPythonDump() << "isDone = pattern.LoadFrom3DBlock( " << theMesh << ".GetMesh(), " << theBlock << " )";
   addErrorCode( "LoadFrom3DBlock" );
 
   return myPattern.Load( aMesh, TopoDS::Shell( exp.Current() ));
@@ -316,7 +316,7 @@ SMESH::point_array*
   }
 
   // Update Python script
-  TPythonDump() << "pattern.ApplyToMeshFaces( " << theMesh << ", "
+  TPythonDump() << "pattern.ApplyToMeshFaces( " << theMesh << ".GetMesh(), "
                 << theFacesIDs << ", "
                 << theNodeIndexOnKeyPoint1 << ", " << theReverse << " )";
 
@@ -361,7 +361,7 @@ SMESH::point_array*
   }
 
   // Update Python script
-  TPythonDump() << "pattern.ApplyToHexahedrons( " << theMesh << ", "
+  TPythonDump() << "pattern.ApplyToHexahedrons( " << theMesh << ".GetMesh(), "
                 << theVolumesIDs << ", "
                 << theNode000Index << ", " << theNode001Index << " )";
 
@@ -382,7 +382,7 @@ CORBA::Boolean SMESH_Pattern_i::MakeMesh (SMESH::SMESH_Mesh_ptr theMesh,
     return false;
 
   // Update Python script
-  TPythonDump() << "isDone = pattern.MakeMesh( " << theMesh << ", "
+  TPythonDump() << "isDone = pattern.MakeMesh( " << theMesh << ".GetMesh(), "
                 << CreatePolygons << ", " << CreatePolyedrs << " )";
   addErrorCode( "MakeMesh" );
 
