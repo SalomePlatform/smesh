@@ -97,7 +97,7 @@ public:
    * \brief Wrap for vertex using data from other FaceSide
    */
   StdMeshers_FaceSide(const SMDS_MeshNode* theNode,
-		      const gp_Pnt2d thePnt2d,
+                      const gp_Pnt2d thePnt2d,
                       const StdMeshers_FaceSide* theSide);
   /*!
    * \brief Return wires of a face as StdMeshers_FaceSide's
