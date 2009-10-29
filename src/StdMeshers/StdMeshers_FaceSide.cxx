@@ -541,15 +541,7 @@ TSideVector StdMeshers_FaceSide::GetFaceWires(const TopoDS_Face& theFace,
         return TSideVector(0);
       }
     }
-    // find out side orientation, which is important if there are several wires (PAL19080) 
-    bool isForward = true;
-    if ( nbWires > 1 ) {
-      TopExp_Explorer e( theFace, TopAbs_EDGE );
-      while ( ! e.Current().IsSame( wireEdges.back() ))
-        e.Next();
-      isForward = ( e.Current().Orientation() == wireEdges.back().Orientation() );
-    }
-
+    const bool isForward = true;
     StdMeshers_FaceSide* wire = new StdMeshers_FaceSide( theFace, wireEdges, &theMesh,
                                                          isForward, theIgnoreMediumNodes);
     wires[ iW ] = StdMeshers_FaceSidePtr( wire );
