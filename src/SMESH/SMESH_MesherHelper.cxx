@@ -356,9 +356,12 @@ gp_XY SMESH_MesherHelper::GetNodeUV(const TopoDS_Face&   F,
       static_cast<const SMDS_EdgePosition*>(n->GetPosition().get());
     int edgeID = Pos->GetShapeId();
     TopoDS_Edge E = TopoDS::Edge(GetMeshDS()->IndexToShape(edgeID));
-    double f, l;
+    double f, l, u = epos->GetUParameter();
     Handle(Geom2d_Curve) C2d = BRep_Tool::CurveOnSurface(E, F, f, l);
-    uv = C2d->Value( epos->GetUParameter() );
+    if ( f < u && u < l )
+      uv = C2d->Value( u );
+    else
+      uv.SetCoord(0.,0.);
     uvOK = CheckNodeUV( F, n, uv.ChangeCoord(), BRep_Tool::Tolerance( E ));
 
     // for a node on a seam edge select one of UVs on 2 pcurves
