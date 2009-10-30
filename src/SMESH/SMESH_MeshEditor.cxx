@@ -7645,6 +7645,9 @@ int SMESH_MeshEditor::convertElemToQuadratic(SMESHDS_SubMesh *   theSm,
         case 4:
           NewElem = theHelper.AddVolume(aNds[0], aNds[1], aNds[2], aNds[3], id, theForce3d);
           break;
+        case 5:
+          NewElem = theHelper.AddVolume(aNds[0], aNds[1], aNds[2], aNds[3], aNds[4], id, theForce3d);
+          break;
         case 6:
           NewElem = theHelper.AddVolume(aNds[0], aNds[1], aNds[2], aNds[3], aNds[4], aNds[5], id, theForce3d);
           break;
@@ -7768,6 +7771,10 @@ void SMESH_MeshEditor::ConvertToQuadratic(const bool theForce3d)
       case 4:
         NewVolume = aHelper.AddVolume(aNds[0], aNds[1], aNds[2],
                                       aNds[3], id, theForce3d );
+        break;
+      case 5:
+        NewVolume = aHelper.AddVolume(aNds[0], aNds[1], aNds[2],
+                                      aNds[3], aNds[4], id, theForce3d);
         break;
       case 6:
         NewVolume = aHelper.AddVolume(aNds[0], aNds[1], aNds[2],
