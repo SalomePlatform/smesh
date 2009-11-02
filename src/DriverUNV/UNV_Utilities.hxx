@@ -35,22 +35,6 @@
 namespace UNV{
   using namespace std;
 
-  class MESHDRIVERUNV_EXPORT Localizer
-  {
-  public:
-    Localizer()
-    {
-      myCurLocale = setlocale(LC_NUMERIC, 0);
-      setlocale(LC_NUMERIC, "C");
-    }
-    ~Localizer()
-    {
-      setlocale(LC_NUMERIC, myCurLocale.c_str());
-    }
-  private:
-    std::string myCurLocale;
-  };
-
   class MESHDRIVERUNV_EXPORT PrefixPrinter{
     static int myCounter;
   public:

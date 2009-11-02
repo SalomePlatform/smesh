@@ -26,10 +26,13 @@
 
 #include "utilities.h"
 
+#include <Basics_Utils.hxx>
+
 using namespace std;
 
 Driver_Mesh::Status DriverDAT_R_SMDS_Mesh::Perform()
 {
+  Kernel_Utils::Localizer loc;
   Status aResult = DRS_OK;
 
   int i, j;
