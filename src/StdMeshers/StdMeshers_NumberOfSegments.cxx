@@ -321,6 +321,10 @@ bool process( const TCollection_AsciiString& str, int convMode,
 	      bool& non_neg, bool& non_zero,
  	      bool& singulars, double& sing_point )
 {
+  // Set "C" numeric locale to save numbers correctly
+  std::string aCurLocale = setlocale(LC_NUMERIC, 0);
+  setlocale(LC_NUMERIC, "C");
+
   bool parsed_ok = true;
   Handle( ExprIntrp_GenExp ) myExpr;
   try {
@@ -372,6 +376,10 @@ bool process( const TCollection_AsciiString& str, int convMode,
 	non_zero = true;
     }
   }
+
+  // Return previous locale
+  setlocale(LC_NUMERIC, aCurLocale.data());
+
   return res && non_neg && non_zero && ( !singulars );
 }
 
