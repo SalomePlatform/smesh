@@ -66,8 +66,8 @@ namespace SMESH
       TCollection_AsciiString aCollection(Standard_CString(aString.c_str()));
       SALOMEDS::Study_ptr aStudy = aSMESHGen->GetCurrentStudy();
       if(!aStudy->_is_nil() && !aCollection.IsEmpty()){
-	aSMESHGen->AddToPythonScript(aStudy->StudyId(),aCollection);
-	if(MYDEBUG) MESSAGE(aString);
+        aSMESHGen->AddToPythonScript(aStudy->StudyId(),aCollection);
+        if(MYDEBUG) MESSAGE(aString);
       }
     }
   }
@@ -587,8 +587,8 @@ Handle(TColStd_HSequenceOfInteger) FindEntries (TCollection_AsciiString& theStri
  
       isFound = Standard_False;
       while((j < aLen) && ( isdigit(c) || c == ':' )) { //Check if it is an entry
-	c = (int)arr[j++];  
-	if(c == ':') isFound = Standard_True;
+        c = (int)arr[j++];  
+        if(c == ':') isFound = Standard_True;
       }
 
       if (isFound) {

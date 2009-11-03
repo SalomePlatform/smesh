@@ -2436,13 +2436,13 @@ CORBA::Boolean Filter_i::SetCriteria( const SMESH::Filter::Criteria& theCriteria
       pd << "aCriterion = SMESH.Filter.Criterion(" << aCriterion << "," << aCompare
          << "," << aThreshold << ",'" << aThresholdStr;
       if (aThresholdID && strlen(aThresholdID))
-	//pd << "',salome.ObjectToID(" << aThresholdID
+        //pd << "',salome.ObjectToID(" << aThresholdID
         pd << "','" << aThresholdID
-	   << "'," << aUnary << "," << aBinary << "," << aTolerance
-	   << "," << aTypeOfElem << "," << aPrecision << ")";
+           << "'," << aUnary << "," << aBinary << "," << aTolerance
+           << "," << aTypeOfElem << "," << aPrecision << ")";
       else
-	pd << "',''," << aUnary << "," << aBinary << "," << aTolerance
-	   << "," << aTypeOfElem << "," << aPrecision << ")";
+        pd << "',''," << aUnary << "," << aBinary << "," << aTolerance
+           << "," << aTypeOfElem << "," << aPrecision << ")";
     }
 
     SMESH::Predicate_ptr aPredicate = SMESH::Predicate::_nil();
@@ -2534,7 +2534,7 @@ CORBA::Boolean Filter_i::SetCriteria( const SMESH::Filter::Criteria& theCriteria
         {
           SMESH::LyingOnGeom_ptr tmpPred = aFilterMgr->CreateLyingOnGeom();
           tmpPred->SetElementType( aTypeOfElem );
-	  tmpPred->SetShape( aThresholdID, aThresholdStr );
+          tmpPred->SetShape( aThresholdID, aThresholdStr );
           tmpPred->SetTolerance( aTolerance );
           aPredicate = tmpPred;
         }

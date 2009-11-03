@@ -77,7 +77,7 @@ SMESH_MEDFamily_i::~SMESH_MEDFamily_i()
  */
 //=============================================================================
 SMESH_MEDFamily_i::SMESH_MEDFamily_i(int identifier, SMESH_subMesh_i* sm,
-				     string name, string description, SALOME_MED::medEntityMesh entity): 
+                                     string name, string description, SALOME_MED::medEntityMesh entity): 
   SMESH_MEDSupport_i( sm, name, description, entity ),
   
   _subMesh_i(sm),
@@ -103,7 +103,7 @@ throw (SALOME::SALOME_Exception)
 {
   if (_subMeshDS==NULL)
     THROW_SALOME_CORBA_EXCEPTION("No associated Family",\
-				 SALOME::INTERNAL_ERROR); 
+                                 SALOME::INTERNAL_ERROR); 
   return _identifier;
   
 }
@@ -117,7 +117,7 @@ throw (SALOME::SALOME_Exception)
 {
   if (_subMeshDS==NULL)
     THROW_SALOME_CORBA_EXCEPTION("No associated Family",\
-				 SALOME::INTERNAL_ERROR);
+                                 SALOME::INTERNAL_ERROR);
   return _numberOfAttribute;
 }
 //=============================================================================
@@ -130,12 +130,12 @@ throw (SALOME::SALOME_Exception)
 {
   if (_subMeshDS==NULL)
     THROW_SALOME_CORBA_EXCEPTION("No associated Family",\
-				 SALOME::INTERNAL_ERROR);
+                                 SALOME::INTERNAL_ERROR);
   if (_numberOfAttribute == 0)
     {
       MESSAGE("Les familles SMESH n ont pas d attribut");
       THROW_SALOME_CORBA_EXCEPTION("No attributes"\
-				   ,SALOME::BAD_PARAM);
+                                   ,SALOME::BAD_PARAM);
     };
   
   SALOME_MED::long_array_var myseq= new SALOME_MED::long_array;
@@ -157,15 +157,15 @@ CORBA::Long SMESH_MEDFamily_i::getAttributeIdentifier(CORBA::Long i)
 {    
   if (_subMeshDS==NULL)
     THROW_SALOME_CORBA_EXCEPTION("No associated Family",\
-				 SALOME::INTERNAL_ERROR);
+                                 SALOME::INTERNAL_ERROR);
   MESSAGE("Les familles SMESH n ont pas d attribut");
   THROW_SALOME_CORBA_EXCEPTION("No attributes"\
-			       ,SALOME::BAD_PARAM);
+                               ,SALOME::BAD_PARAM);
   if (_numberOfAttribute == 0)
     {
       MESSAGE("Les familles SMESH n ont pas d attribut");
       THROW_SALOME_CORBA_EXCEPTION("No attributes"\
-				   ,SALOME::BAD_PARAM);
+                                   ,SALOME::BAD_PARAM);
     };
   ASSERT (i <= _numberOfAttribute);
   return _attributeIdentifier[i];
@@ -180,13 +180,13 @@ SALOME_MED::long_array*  SMESH_MEDFamily_i::getAttributesValues()
 {
   if (_subMeshDS==NULL)
     THROW_SALOME_CORBA_EXCEPTION("No associated Family",\
-				 SALOME::INTERNAL_ERROR);
+                                 SALOME::INTERNAL_ERROR);
 
   if (_numberOfAttribute == 0)
     {
       MESSAGE("Les familles SMESH n ont pas d attribut");
       THROW_SALOME_CORBA_EXCEPTION("No attributes"\
-				   ,SALOME::BAD_PARAM);
+                                   ,SALOME::BAD_PARAM);
     };
 
   SALOME_MED::long_array_var myseq= new SALOME_MED::long_array;
@@ -207,12 +207,12 @@ CORBA::Long  SMESH_MEDFamily_i::getAttributeValue(CORBA::Long i)
 {   
   if (_subMeshDS==NULL)
     THROW_SALOME_CORBA_EXCEPTION("No associated Family",\
-				 SALOME::INTERNAL_ERROR);
+                                 SALOME::INTERNAL_ERROR);
   if (_numberOfAttribute == 0)
     {
       MESSAGE("Les familles SMESH n ont pas d attribut");
       THROW_SALOME_CORBA_EXCEPTION("No attributes"\
-				   ,SALOME::BAD_PARAM);
+                                   ,SALOME::BAD_PARAM);
     }
 
   ASSERT (i <= _numberOfAttribute);
@@ -228,12 +228,12 @@ SALOME_MED::string_array * SMESH_MEDFamily_i::getAttributesDescriptions()
 {
   if (_subMeshDS==NULL)
     THROW_SALOME_CORBA_EXCEPTION("No associated Family",\
-				 SALOME::INTERNAL_ERROR);
+                                 SALOME::INTERNAL_ERROR);
   if (_numberOfAttribute == 0)
     {
       MESSAGE("Les familles SMESH n ont pas d attribut");
       THROW_SALOME_CORBA_EXCEPTION("No attributes"\
-				   ,SALOME::BAD_PARAM);
+                                   ,SALOME::BAD_PARAM);
     }
   SALOME_MED::string_array_var myseq = new SALOME_MED::string_array;
   for (int i=0;i<_numberOfAttribute;i++)
@@ -252,12 +252,12 @@ char *  SMESH_MEDFamily_i::getAttributeDescription( CORBA::Long i)
 {   
   if (_subMeshDS==NULL)
     THROW_SALOME_CORBA_EXCEPTION("No associated Family",\
-				 SALOME::INTERNAL_ERROR);
+                                 SALOME::INTERNAL_ERROR);
   if (_numberOfAttribute == 0)
     {
       MESSAGE("Les familles SMESH n ont pas d attribut");
       THROW_SALOME_CORBA_EXCEPTION("No attributes"\
-				   ,SALOME::BAD_PARAM);
+                                   ,SALOME::BAD_PARAM);
     }
   ASSERT (i <= _numberOfAttribute);
   return CORBA::string_dup(_attributeDescription[i].c_str());

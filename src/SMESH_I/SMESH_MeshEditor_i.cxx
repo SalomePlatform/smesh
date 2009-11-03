@@ -2568,7 +2568,7 @@ ExtrusionAlongPathObjX(SMESH::SMESH_IDSource_ptr  Object,
                 << ( HasRefPoint ? RefPoint.x : 0 ) << ", "
                 << ( HasRefPoint ? RefPoint.y : 0 ) << ", "
                 << ( HasRefPoint ? RefPoint.z : 0 ) << " ), "
-		<< MakeGroups << ", "
+                << MakeGroups << ", "
                 << ElemType << " )";
   }
   return aGroups;

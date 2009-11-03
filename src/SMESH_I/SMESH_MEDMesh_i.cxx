@@ -240,8 +240,8 @@ char *SMESH_MEDMesh_i::getCoordinatesSystem() throw(SALOME::SALOME_Exception)
  * CORBA: Accessor for Coordinates
  */
 //=============================================================================
-SALOME_MED::double_array * SMESH_MEDMesh_i::getCoordinates(
-                                                           SALOME_MED::medModeSwitch typeSwitch) throw(SALOME::SALOME_Exception)
+SALOME_MED::double_array * SMESH_MEDMesh_i::getCoordinates
+(SALOME_MED::medModeSwitch typeSwitch) throw(SALOME::SALOME_Exception)
 {
   if (_mesh_i == 0)
     THROW_SALOME_CORBA_EXCEPTION("No associated Mesh",
