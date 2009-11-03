@@ -24,6 +24,7 @@
 //  Module : SMESH
 //
 #include "SMESH_MEDMesh_i.hxx"
+#include "SMESH_Gen_i.hxx"
 #include "SMESH_Mesh_i.hxx"
 
 #include "SMESHDS_Mesh.hxx"
@@ -115,9 +116,14 @@ char *SMESH_MEDMesh_i::getName() throw(SALOME::SALOME_Exception)
 
   try
   {
-    // A COMPLETER PAR LE NOM DU MAILLAGE
-    //return CORBA::string_dup(_mesh_i->getName().c_str());
-    return CORBA::string_dup("toto");
+    SMESH_Gen_i*             gen = SMESH_Gen_i::GetSMESHGen();
+    SALOMEDS::Study_var    study = gen->GetCurrentStudy();
+    SALOMEDS::SObject_var meshSO = gen->ObjectToSObject( study, _mesh_i->_this());
+    if ( meshSO->_is_nil() )
+      return CORBA::string_dup("toto");
+
+    CORBA::String_var name = meshSO->GetName();
+    return CORBA::string_dup( name.in() );
   }
   catch(...)
   {
@@ -125,6 +131,7 @@ char *SMESH_MEDMesh_i::getName() throw(SALOME::SALOME_Exception)
     THROW_SALOME_CORBA_EXCEPTION("Unable to acces Mesh C++ Object",
                                  SALOME::INTERNAL_ERROR);
   }
+  return 0;
 }
 
 //=============================================================================
