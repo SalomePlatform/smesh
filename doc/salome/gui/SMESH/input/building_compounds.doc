@@ -47,4 +47,6 @@ for this operation.</li>
 
 \image html image160.gif "Example of a compound of two meshed cubes"
 
+<b>See Also</b> a sample 
+\ref tui_building_compound "TUI Example of building compounds."
 */
