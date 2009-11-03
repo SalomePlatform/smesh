@@ -91,7 +91,7 @@ SMESH_DeviceActor
   myMapper = vtkPolyDataMapper::New();
 
   vtkMapper::GetResolveCoincidentTopologyPolygonOffsetParameters(myPolygonOffsetFactor,
-								 myPolygonOffsetUnits);
+                                                                 myPolygonOffsetUnits);
 
   myMapper->UseLookupTableScalarRangeOn();
   myMapper->SetColorModeToMapScalars();
@@ -281,8 +281,8 @@ SMESH_DeviceActor
 void
 SMESH_DeviceActor
 ::SetControlMode(SMESH::Controls::FunctorPtr theFunctor,
-		 vtkScalarBarActor* theScalarBarActor,
-		 vtkLookupTable* theLookupTable)
+                 vtkScalarBarActor* theScalarBarActor,
+                 vtkLookupTable* theLookupTable)
 {
   bool anIsInitialized = theFunctor;
   if(anIsInitialized){
@@ -304,23 +304,23 @@ SMESH_DeviceActor
     using namespace SMESH::Controls;
     if(NumericalFunctor* aNumericalFunctor = dynamic_cast<NumericalFunctor*>(theFunctor.get())){
       for(vtkIdType i = 0; i < aNbCells; i++){
-	vtkIdType anId = myExtractUnstructuredGrid->GetInputId(i);
-	vtkIdType anObjId = myVisualObj->GetElemObjId(anId);
-	double aValue = aNumericalFunctor->GetValue(anObjId);
-	aScalars->SetValue(i,aValue);
+        vtkIdType anId = myExtractUnstructuredGrid->GetInputId(i);
+        vtkIdType anObjId = myVisualObj->GetElemObjId(anId);
+        double aValue = aNumericalFunctor->GetValue(anObjId);
+        aScalars->SetValue(i,aValue);
       }
     }else if(Predicate* aPredicate = dynamic_cast<Predicate*>(theFunctor.get())){
       for(vtkIdType i = 0; i < aNbCells; i++){
-	vtkIdType anId = myExtractUnstructuredGrid->GetInputId(i);
-	vtkIdType anObjId = myVisualObj->GetElemObjId(anId);
-	bool aValue = aPredicate->IsSatisfy(anObjId);
-	aScalars->SetValue(i,aValue);
+        vtkIdType anId = myExtractUnstructuredGrid->GetInputId(i);
+        vtkIdType anObjId = myVisualObj->GetElemObjId(anId);
+        bool aValue = aPredicate->IsSatisfy(anObjId);
+        aScalars->SetValue(i,aValue);
       }
     }
 
     aDataSet->GetCellData()->SetScalars(aScalars);
     aScalars->Delete();
-	
+        
     theLookupTable->SetRange(aScalars->GetRange());
     theLookupTable->SetNumberOfTableValues(theScalarBarActor->GetMaximumNumberOfColors());
     theLookupTable->Build();
@@ -335,8 +335,8 @@ SMESH_DeviceActor
 void
 SMESH_DeviceActor
 ::SetExtControlMode(SMESH::Controls::FunctorPtr theFunctor,
-		    vtkScalarBarActor* theScalarBarActor,
-		    vtkLookupTable* theLookupTable)
+                    vtkScalarBarActor* theScalarBarActor,
+                    vtkLookupTable* theLookupTable)
 {
   bool anIsInitialized = theFunctor;
   myExtractUnstructuredGrid->ClearRegisteredCells();
@@ -374,18 +374,18 @@ SMESH_DeviceActor
       
       Length2D::TValues::const_iterator anIter = aValues.begin();
       for(vtkIdType aVtkId = 0; anIter != aValues.end(); anIter++,aVtkId++){
-	const Length2D::Value& aValue = *anIter;
-	int aNode[2] = {
-	  myVisualObj->GetNodeVTKId(aValue.myPntId[0]),
-	  myVisualObj->GetNodeVTKId(aValue.myPntId[1])
-	};
-	if(aNode[0] >= 0 && aNode[1] >= 0){
-	  anIdList->SetId( 0, aNode[0] );
-	  anIdList->SetId( 1, aNode[1] );
-	  aConnectivity->InsertNextCell( anIdList );
-	  aCellTypesArray->InsertNextValue( VTK_LINE );
-	  aScalars->SetValue(aVtkId,aValue.myLength);
-	}
+        const Length2D::Value& aValue = *anIter;
+        int aNode[2] = {
+          myVisualObj->GetNodeVTKId(aValue.myPntId[0]),
+          myVisualObj->GetNodeVTKId(aValue.myPntId[1])
+        };
+        if(aNode[0] >= 0 && aNode[1] >= 0){
+          anIdList->SetId( 0, aNode[0] );
+          anIdList->SetId( 1, aNode[1] );
+          aConnectivity->InsertNextCell( anIdList );
+          aCellTypesArray->InsertNextValue( VTK_LINE );
+          aScalars->SetValue(aVtkId,aValue.myLength);
+        }
       }
       
       VTKViewer_CellLocationsArray* aCellLocationsArray = VTKViewer_CellLocationsArray::New();
@@ -394,7 +394,7 @@ SMESH_DeviceActor
       
       aConnectivity->InitTraversal();
       for( vtkIdType idType = 0, *pts, npts; aConnectivity->GetNextCell( npts, pts ); idType++ )
-	aCellLocationsArray->SetValue( idType, aConnectivity->GetTraversalLocation( npts ) );
+        aCellLocationsArray->SetValue( idType, aConnectivity->GetTraversalLocation( npts ) );
       
       aDataSet->SetCells( aCellTypesArray, aCellLocationsArray,aConnectivity );
       SetUnstructuredGrid(aDataSet);
@@ -434,18 +434,18 @@ SMESH_DeviceActor
       
       MultiConnection2D::MValues::const_iterator anIter = aValues.begin();
       for(vtkIdType aVtkId = 0; anIter != aValues.end(); anIter++,aVtkId++){
-	const MultiConnection2D::Value& aValue = (*anIter).first;
-	int aNode[2] = {
-	  myVisualObj->GetNodeVTKId(aValue.myPntId[0]),
-	  myVisualObj->GetNodeVTKId(aValue.myPntId[1])
-	};
-	if(aNode[0] >= 0 && aNode[1] >= 0){
-	  anIdList->SetId( 0, aNode[0] );
-	  anIdList->SetId( 1, aNode[1] );
-	  aConnectivity->InsertNextCell( anIdList );
-	  aCellTypesArray->InsertNextValue( VTK_LINE );
-	  aScalars->SetValue(aVtkId,(*anIter).second);
-	}
+        const MultiConnection2D::Value& aValue = (*anIter).first;
+        int aNode[2] = {
+          myVisualObj->GetNodeVTKId(aValue.myPntId[0]),
+          myVisualObj->GetNodeVTKId(aValue.myPntId[1])
+        };
+        if(aNode[0] >= 0 && aNode[1] >= 0){
+          anIdList->SetId( 0, aNode[0] );
+          anIdList->SetId( 1, aNode[1] );
+          aConnectivity->InsertNextCell( anIdList );
+          aCellTypesArray->InsertNextValue( VTK_LINE );
+          aScalars->SetValue(aVtkId,(*anIter).second);
+        }
       }
       
       VTKViewer_CellLocationsArray* aCellLocationsArray = VTKViewer_CellLocationsArray::New();
@@ -454,7 +454,7 @@ SMESH_DeviceActor
       
       aConnectivity->InitTraversal();
       for( vtkIdType idType = 0, *pts, npts; aConnectivity->GetNextCell( npts, pts ); idType++ )
-	aCellLocationsArray->SetValue( idType, aConnectivity->GetTraversalLocation( npts ) );
+        aCellLocationsArray->SetValue( idType, aConnectivity->GetTraversalLocation( npts ) );
       
       aDataSet->SetCells( aCellTypesArray, aCellLocationsArray,aConnectivity );
       SetUnstructuredGrid(aDataSet);
@@ -492,7 +492,7 @@ SMESH_DeviceActor
     for( vtkIdType i = 0; i < aNbCells; i++ ){
       vtkIdType anObjId = myVisualObj->GetElemObjId(i);
       if(aFreePredicate->IsSatisfy(anObjId))
-	myExtractUnstructuredGrid->RegisterCell(i);
+        myExtractUnstructuredGrid->RegisterCell(i);
     }
     if(!myExtractUnstructuredGrid->IsCellsRegistered())
       myExtractUnstructuredGrid->RegisterCell(-1);
@@ -520,15 +520,15 @@ SMESH_DeviceActor
     for(; anIter != aBorders.end(); anIter++){
       const FreeEdges::Border& aBorder = *anIter;
       int aNode[2] = {
-	myVisualObj->GetNodeVTKId(aBorder.myPntId[0]),
-	myVisualObj->GetNodeVTKId(aBorder.myPntId[1])
+        myVisualObj->GetNodeVTKId(aBorder.myPntId[0]),
+        myVisualObj->GetNodeVTKId(aBorder.myPntId[1])
       };
       //cout<<"aNode = "<<aBorder.myPntId[0]<<"; "<<aBorder.myPntId[1]<<endl;
       if(aNode[0] >= 0 && aNode[1] >= 0){
-	anIdList->SetId( 0, aNode[0] );
-	anIdList->SetId( 1, aNode[1] );
-	aConnectivity->InsertNextCell( anIdList );
-	aCellTypesArray->InsertNextValue( VTK_LINE );
+        anIdList->SetId( 0, aNode[0] );
+        anIdList->SetId( 1, aNode[1] );
+        aConnectivity->InsertNextCell( anIdList );
+        aCellTypesArray->InsertNextValue( VTK_LINE );
       }
     }
     
@@ -550,7 +550,7 @@ SMESH_DeviceActor
     for( vtkIdType i = 0; i < aNbNodes; i++ ){
       vtkIdType anObjId = myVisualObj->GetNodeObjId(i);
       if(aFreeNodes->IsSatisfy(anObjId))
-	myExtractUnstructuredGrid->RegisterCell(i);
+        myExtractUnstructuredGrid->RegisterCell(i);
     }
     if(!myExtractUnstructuredGrid->IsCellsRegistered())
       myExtractUnstructuredGrid->RegisterCell(-1);
@@ -827,7 +827,7 @@ SMESH_DeviceActor
 void
 SMESH_DeviceActor
 ::SetPolygonOffsetParameters(vtkFloatingPointType factor, 
-			     vtkFloatingPointType units)
+                             vtkFloatingPointType units)
 {
   myPolygonOffsetFactor = factor;
   myPolygonOffsetUnits = units;

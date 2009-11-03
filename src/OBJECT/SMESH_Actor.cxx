@@ -90,9 +90,9 @@ SMESH_ActorDef* SMESH_ActorDef::New(){
 
 
 SMESH_Actor* SMESH_Actor::New(TVisualObjPtr theVisualObj, 
-			      const char* theEntry, 
-			      const char* theName,
-			      int theIsClear)
+                              const char* theEntry, 
+                              const char* theName,
+                              int theIsClear)
 {
   SMESH_ActorDef* anActor = SMESH_ActorDef::New();
   if(!anActor->Init(theVisualObj,theEntry,theName,theIsClear)){
@@ -664,7 +664,7 @@ SetControlMode(eControl theMode)
 void 
 SMESH_ActorDef::
 SetControlMode(eControl theMode,
-	       bool theCheckEntityMode)
+               bool theCheckEntityMode)
 {
   SUIT_ResourceMgr* mgr = SUIT_Session::session()->resourceMgr();  
   if( !mgr )
@@ -796,41 +796,41 @@ SetControlMode(eControl theMode,
       myControlMode = theMode;
       switch(myControlMode){
       case eFreeNodes:
-	myNodeExtActor->SetExtControlMode(aFunctor);
-	break;
+        myNodeExtActor->SetExtControlMode(aFunctor);
+        break;
       case eFreeEdges:
       case eFreeBorders:
-	my1DExtActor->SetExtControlMode(aFunctor);
-	break;
+        my1DExtActor->SetExtControlMode(aFunctor);
+        break;
       case eFreeFaces:
-	my2DExtActor->SetExtControlMode(aFunctor);
-	break;
+        my2DExtActor->SetExtControlMode(aFunctor);
+        break;
       case eLength2D:
       case eMultiConnection2D:
-	my1DExtActor->SetExtControlMode(aFunctor,myScalarBarActor,myLookupTable);
-	break;
+        my1DExtActor->SetExtControlMode(aFunctor,myScalarBarActor,myLookupTable);
+        break;
       default:
-	myControlActor->SetControlMode(aFunctor,myScalarBarActor,myLookupTable);
+        myControlActor->SetControlMode(aFunctor,myScalarBarActor,myLookupTable);
       }
     }
 
     if(theCheckEntityMode){
       if(myControlActor == my1DActor)
-	SetEntityMode(eEdges);
+        SetEntityMode(eEdges);
       else if(myControlActor == my2DActor){
-	switch(myControlMode){
-	case eLength2D:
-	case eFreeEdges:
-	case eFreeFaces:
-	case eMultiConnection2D:
-	  //SetEntityMode(eEdges);
-	  SetEntityMode(eFaces);
-	  break;
-	default:
-	  SetEntityMode(eFaces);
-	}
+        switch(myControlMode){
+        case eLength2D:
+        case eFreeEdges:
+        case eFreeFaces:
+        case eMultiConnection2D:
+          //SetEntityMode(eEdges);
+          SetEntityMode(eFaces);
+          break;
+        default:
+          SetEntityMode(eFaces);
+        }
       }else if(myControlActor == my3DActor)
-	SetEntityMode(eVolumes);
+        SetEntityMode(eVolumes);
     }
 
   }else if(theCheckEntityMode){
@@ -900,9 +900,9 @@ void SMESH_ActorDef::RemoveFromRender(vtkRenderer* theRenderer){
 
 
 bool SMESH_ActorDef::Init(TVisualObjPtr theVisualObj, 
-			  const char* theEntry, 
-			  const char* theName,
-			  int theIsClear)
+                          const char* theEntry, 
+                          const char* theName,
+                          int theIsClear)
 {
   Handle(SALOME_InteractiveObject) anIO = new SALOME_InteractiveObject(theEntry,"SMESH",theName);
   setIO(anIO);
@@ -1149,21 +1149,21 @@ void SMESH_ActorDef::SetVisibility(int theMode, bool theIsUpdateRepersentation){
     if(myControlMode != eNone){
       switch(myControlMode){
       case eFreeNodes:
-	myNodeExtActor->VisibilityOn();
-	break;
+        myNodeExtActor->VisibilityOn();
+        break;
       case eFreeEdges:
       case eFreeBorders:
-	my1DExtActor->VisibilityOn();
-	break;
+        my1DExtActor->VisibilityOn();
+        break;
       case eFreeFaces:
-	my2DExtActor->VisibilityOn();
-	break;
+        my2DExtActor->VisibilityOn();
+        break;
       case eLength2D:
       case eMultiConnection2D:
-	my1DExtActor->VisibilityOn();
+        my1DExtActor->VisibilityOn();
       default:
-	if(myControlActor->GetUnstructuredGrid()->GetNumberOfCells())
-	  myScalarBarActor->VisibilityOn();
+        if(myControlActor->GetUnstructuredGrid()->GetNumberOfCells())
+          myScalarBarActor->VisibilityOn();
       }
     }
 
@@ -1462,12 +1462,12 @@ void SMESH_ActorDef::UpdateHighlight(){
       myHighlitableActor->SetHighlited(anIsVisible);
       myHighlitableActor->SetVisibility(anIsVisible);
       myHighlitableActor->GetExtractUnstructuredGrid()->
-	SetModeOfExtraction(VTKViewer_ExtractUnstructuredGrid::eCells);
+        SetModeOfExtraction(VTKViewer_ExtractUnstructuredGrid::eCells);
       myHighlitableActor->SetRepresentation(SMESH_DeviceActor::eWireframe);
     }else if(myRepresentation == ePoint || GetPointRepresentation()){
       myHighlitableActor->SetHighlited(anIsVisible);
       myHighlitableActor->GetExtractUnstructuredGrid()->
-	SetModeOfExtraction(VTKViewer_ExtractUnstructuredGrid::ePoints);
+        SetModeOfExtraction(VTKViewer_ExtractUnstructuredGrid::ePoints);
       myHighlitableActor->SetVisibility(anIsVisible);
       myHighlitableActor->SetRepresentation(SMESH_DeviceActor::ePoint);
     }
@@ -1585,7 +1585,7 @@ void SMESH_ActorDef::SetSufaceColor(vtkFloatingPointType r,vtkFloatingPointType 
   mySurfaceProp->SetColor(r,g,b);
   if( SMESH_GroupObj* aGroupObj = dynamic_cast<SMESH_GroupObj*>( myVisualObj.get() ) )
     if( aGroupObj->GetElementType() == SMDSAbs_Face ||
-	aGroupObj->GetElementType() == SMDSAbs_Volume )
+        aGroupObj->GetElementType() == SMDSAbs_Volume )
       myNameActor->SetBackgroundColor(r,g,b);
   Modified();
 }
@@ -1758,8 +1758,8 @@ GetClippingPlane(vtkIdType theID)
 
 
 static void ComputeBoundsParam(vtkDataSet* theDataSet,
-			       vtkFloatingPointType theDirection[3], vtkFloatingPointType theMinPnt[3],
-			       vtkFloatingPointType& theMaxBoundPrj, vtkFloatingPointType& theMinBoundPrj)
+                               vtkFloatingPointType theDirection[3], vtkFloatingPointType theMinPnt[3],
+                               vtkFloatingPointType& theMaxBoundPrj, vtkFloatingPointType& theMinBoundPrj)
 {
   vtkFloatingPointType aBounds[6];
   theDataSet->GetBounds(aBounds);
@@ -1773,13 +1773,13 @@ static void ComputeBoundsParam(vtkDataSet* theDataSet,
   }
 
   vtkFloatingPointType aBoundPoints[8][3] = { {aBounds[0],aBounds[2],aBounds[4]},
-			       {aBounds[1],aBounds[2],aBounds[4]},
-			       {aBounds[0],aBounds[3],aBounds[4]},
-			       {aBounds[1],aBounds[3],aBounds[4]},
-			       {aBounds[0],aBounds[2],aBounds[5]},
-			       {aBounds[1],aBounds[2],aBounds[5]}, 
-			       {aBounds[0],aBounds[3],aBounds[5]}, 
-			       {aBounds[1],aBounds[3],aBounds[5]}};
+                               {aBounds[1],aBounds[2],aBounds[4]},
+                               {aBounds[0],aBounds[3],aBounds[4]},
+                               {aBounds[1],aBounds[3],aBounds[4]},
+                               {aBounds[0],aBounds[2],aBounds[5]},
+                               {aBounds[1],aBounds[2],aBounds[5]}, 
+                               {aBounds[0],aBounds[3],aBounds[5]}, 
+                               {aBounds[1],aBounds[3],aBounds[5]}};
 
   int aMaxId = 0, aMinId = aMaxId;
   theMaxBoundPrj = vtkMath::Dot(theDirection,aBoundPoints[aMaxId]);
@@ -1803,7 +1803,7 @@ static void ComputeBoundsParam(vtkDataSet* theDataSet,
 
 
 static void DistanceToPosition(vtkDataSet* theDataSet,
-			       vtkFloatingPointType theDirection[3], vtkFloatingPointType theDist, vtkFloatingPointType thePos[3])
+                               vtkFloatingPointType theDirection[3], vtkFloatingPointType theDist, vtkFloatingPointType thePos[3])
 {
   vtkFloatingPointType aMaxBoundPrj, aMinBoundPrj, aMinPnt[3];
   ComputeBoundsParam(theDataSet,theDirection,aMinPnt,aMaxBoundPrj,aMinBoundPrj);
@@ -1815,7 +1815,7 @@ static void DistanceToPosition(vtkDataSet* theDataSet,
 
 
 static void PositionToDistance(vtkDataSet* theDataSet, 
-			       vtkFloatingPointType theDirection[3], vtkFloatingPointType thePos[3], vtkFloatingPointType& theDist)
+                               vtkFloatingPointType theDirection[3], vtkFloatingPointType thePos[3], vtkFloatingPointType& theDist)
 {
   vtkFloatingPointType aMaxBoundPrj, aMinBoundPrj, aMinPnt[3];
   ComputeBoundsParam(theDataSet,theDirection,aMinPnt,aMaxBoundPrj,aMinBoundPrj);

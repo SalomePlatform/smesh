@@ -209,8 +209,8 @@ void GetFaceParams( vtkCell* theFace, double theNormal[3], double& theSize )
 
   double* aBounds = theFace->GetBounds();
   theSize = pow( pow( aBounds[1] - aBounds[0], 2 ) +
-		 pow( aBounds[3] - aBounds[2], 2 ) +
-		 pow( aBounds[5] - aBounds[4], 2 ), 0.5 );
+                 pow( aBounds[3] - aBounds[2], 2 ) +
+                 pow( aBounds[5] - aBounds[4], 2 ), 0.5 );
 }
 
 /*!
@@ -268,7 +268,7 @@ int SMESH_FaceOrientationFilter::RequestData(
 
       input->GetCellNeighbors( aCellId, aFace->PointIds, aNeighborIds );
       if( aNeighborIds->GetNumberOfIds() > 0 )
-	continue;
+        continue;
 
       double aSize, aNormal[3];
       GetFaceParams( aFace, aNormal, aSize );

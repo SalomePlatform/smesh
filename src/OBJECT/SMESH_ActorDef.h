@@ -272,9 +272,9 @@ class SMESH_ActorDef : public SMESH_Actor
   ~SMESH_ActorDef();
 
   bool Init(TVisualObjPtr theVisualObj, 
-	    const char* theEntry, 
-	    const char* theName,
-	    int theIsClear);
+            const char* theEntry, 
+            const char* theName,
+            int theIsClear);
 
   void SetIsShrunkable(bool theShrunkable);
   void UpdateHighlight();

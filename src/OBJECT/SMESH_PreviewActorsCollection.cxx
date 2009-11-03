@@ -137,25 +137,25 @@ GEOM_Actor* SMESH_PreviewActorsCollection::createActor(const TopoDS_Shape& shape
   actor->SetShape(shape,0,0);
 
   //Color Properties
-  /*	
-	vtkProperty* aProp = vtkProperty::New();
-	vtkProperty* aHLProp = vtkProperty::New();
-	vtkProperty* aPHLProp = vtkProperty::New();
-	
-	aProp->SetColor( 255, 0, 0);
-	actor->SetProperty(aProp);
+  /*    
+        vtkProperty* aProp = vtkProperty::New();
+        vtkProperty* aHLProp = vtkProperty::New();
+        vtkProperty* aPHLProp = vtkProperty::New();
+        
+        aProp->SetColor( 255, 0, 0);
+        actor->SetProperty(aProp);
 
-	aHLProp->SetColor( 255, 255, 255);
-	actor->SetHighlightProperty(aHLProp);
+        aHLProp->SetColor( 255, 255, 255);
+        actor->SetHighlightProperty(aHLProp);
 
-	aPHLProp->SetColor( 155, 155, 155);
-	aPHLProp->SetLineWidth ( 3 );
-	aPHLProp->SetOpacity ( 0.75 );
-	actor->SetPreHighlightProperty(aPHLProp);
+        aPHLProp->SetColor( 155, 155, 155);
+        aPHLProp->SetLineWidth ( 3 );
+        aPHLProp->SetOpacity ( 0.75 );
+        actor->SetPreHighlightProperty(aPHLProp);
 
-	aProp->Delete();
-	aHLProp->Delete();
-	aPHLProp->Delete();
+        aProp->Delete();
+        aHLProp->Delete();
+        aPHLProp->Delete();
   */
 
   return actor;

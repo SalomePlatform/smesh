@@ -109,11 +109,11 @@ class SMESHOBJECT_EXPORT SMESH_DeviceActor: public vtkLODActor{
   vtkUnstructuredGrid* GetUnstructuredGrid();
 
   void SetControlMode(SMESH::Controls::FunctorPtr theFunctor,
-		      vtkScalarBarActor* theScalarBarActor,
-		      vtkLookupTable* theLookupTable);
+                      vtkScalarBarActor* theScalarBarActor,
+                      vtkLookupTable* theLookupTable);
   void SetExtControlMode(SMESH::Controls::FunctorPtr theFunctor,
-			 vtkScalarBarActor* theScalarBarActor,
-			 vtkLookupTable* theLookupTable);
+                         vtkScalarBarActor* theScalarBarActor,
+                         vtkLookupTable* theLookupTable);
   void SetExtControlMode(SMESH::Controls::FunctorPtr theFunctor);
 
   bool IsHighlited() { return myIsHighlited;}
@@ -161,11 +161,11 @@ class SMESHOBJECT_EXPORT SMESH_DeviceActor: public vtkLODActor{
 
   void
   SetPolygonOffsetParameters(vtkFloatingPointType factor, 
-			     vtkFloatingPointType units);
+                             vtkFloatingPointType units);
 
   void
   GetPolygonOffsetParameters(vtkFloatingPointType& factor, 
-			     vtkFloatingPointType& units)
+                             vtkFloatingPointType& units)
   {
     factor = myPolygonOffsetFactor;
     units = myPolygonOffsetUnits;

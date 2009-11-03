@@ -33,42 +33,42 @@ namespace SMESH
 SMESHOBJECT_EXPORT  
   vtkFloatingPointType 
   GetFloat( const QString& theValue, 
-	    vtkFloatingPointType theDefault = 0 );
+            vtkFloatingPointType theDefault = 0 );
 
 SMESHOBJECT_EXPORT
   vtkFloatingPointType 
   GetFloat( const QString& theName, 
-	    const QString& theSection, 
-	    vtkFloatingPointType theDefault = 0 );
+            const QString& theSection, 
+            vtkFloatingPointType theDefault = 0 );
 
 SMESHOBJECT_EXPORT
   QColor 
   GetColor( const QString& theSect, 
-	    const QString& theName, 
-	    const QColor& = QColor() );
+            const QString& theName, 
+            const QColor& = QColor() );
 
 SMESHOBJECT_EXPORT
   void
   GetColor( const QString& theSect, 
-	    const QString& theName, 
-	    int&, 
-	    int&, 
-	    int&, 
-	    const QColor& = QColor() );
+            const QString& theName, 
+            int&, 
+            int&, 
+            int&, 
+            const QColor& = QColor() );
 
 SMESHOBJECT_EXPORT
   void
   GetColor( const QString& theSect, 
-	    const QString& theName, 
-	    vtkFloatingPointType&, 
-	    vtkFloatingPointType&, 
-	    vtkFloatingPointType&, 
-	    const QColor& = QColor() );
+            const QString& theName, 
+            vtkFloatingPointType&, 
+            vtkFloatingPointType&, 
+            vtkFloatingPointType&, 
+            const QColor& = QColor() );
 
 SMESHOBJECT_EXPORT
   void 
   WriteUnstructuredGrid(vtkUnstructuredGrid* theGrid, 
-			const char* theFileName);
+                        const char* theFileName);
 
 }
 
