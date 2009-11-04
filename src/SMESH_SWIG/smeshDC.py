@@ -181,7 +181,10 @@ VeryFine   = 4
 Custom     = 5
 
 # Optimization level of GHS3D
+# V3.1
 None_Optimization, Light_Optimization, Medium_Optimization, Strong_Optimization = 0,1,2,3
+# V4.1 (partialy redefines V3.1). Issue 0020574
+None_Optimization, Light_Optimization, Standard_Optimization, StandardPlus_Optimization, Strong_Optimization = 0,1,2,3,4
 
 # Topology treatment way of BLSURF
 FromCAD, PreProcess, PreProcessPlus = 0,1,2
@@ -4513,8 +4516,9 @@ class Mesh_Tetrahedron(Mesh_Algorithm):
         self.Parameters().SetToMeshHoles(toMesh)
 
     ## Set Optimization level:
-    #   None_Optimization, Light_Optimization, Medium_Optimization, Strong_Optimization.
-    #  Default is Medium_Optimization
+    #   None_Optimization, Light_Optimization, Standard_Optimization, StandardPlus_Optimization,
+    #   Strong_Optimization.
+    # Default is Standard_Optimization
     #  @ingroup l3_hypos_ghs3dh
     def SetOptimizationLevel(self, level):
         #  Parameter of GHS3D
