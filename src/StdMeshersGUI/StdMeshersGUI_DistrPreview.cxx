@@ -50,6 +50,8 @@
 # include <algorithm>
 #endif
 
+#include <Basics_Utils.hxx>
+
 StdMeshersGUI_DistrPreview::StdMeshersGUI_DistrPreview( QWidget* p, StdMeshers::StdMeshers_NumberOfSegments_ptr h )
 : QwtPlot( p ),
   myPoints( 50 ),
@@ -60,6 +62,7 @@ StdMeshersGUI_DistrPreview::StdMeshersGUI_DistrPreview( QWidget* p, StdMeshers::
   myIsDone( true ),
   myNbSeg( 1 )
 {
+  Kernel_Utils::Localizer loc;
   myHypo = StdMeshers::StdMeshers_NumberOfSegments::_duplicate( h );
   myVars.ChangeValue( 1 ) = new Expr_NamedUnknown( "t" );
   myDensity = new QwtPlotCurve( QString() );
@@ -200,6 +203,7 @@ bool StdMeshersGUI_DistrPreview::createTable( SMESH::double_array& func )
 
 void StdMeshersGUI_DistrPreview::update()
 {
+  Kernel_Utils::Localizer loc;
   SMESH::double_array graph, distr;
   if( isTableFunc() )
   {
@@ -343,6 +347,7 @@ bool isCorrectArg( const Handle( Expr_GeneralExpression )& expr )
 
 bool StdMeshersGUI_DistrPreview::init( const QString& str )
 {
+  Kernel_Utils::Localizer loc;
   bool parsed_ok = true;
   try {
 #ifdef NO_CAS_CATCH
