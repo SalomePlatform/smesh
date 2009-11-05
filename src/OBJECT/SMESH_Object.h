@@ -65,6 +65,7 @@ public:
                              const int theEdgeNum,
                              int&      theNodeId1,
                              int&      theNodeId2 ) const = 0;
+  virtual bool              IsValid() const = 0;
   
   virtual vtkUnstructuredGrid* GetUnstructuredGrid() = 0;
   

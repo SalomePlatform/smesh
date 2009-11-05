@@ -520,6 +520,19 @@ bool SMESH_VisualObjDef::GetEdgeNodes( const int theElemId,
   return true;
 }
 
+//=================================================================================
+// function : IsValid
+// purpose  : Return true if there are some entities
+//=================================================================================
+bool SMESH_VisualObjDef::IsValid() const
+{
+  return GetNbEntities(SMDSAbs_Node) > 0      || 
+         GetNbEntities(SMDSAbs_0DElement) > 0 || 
+         GetNbEntities(SMDSAbs_Edge) > 0      || 
+         GetNbEntities(SMDSAbs_Face) > 0      ||
+         GetNbEntities(SMDSAbs_Volume) > 0 ;
+}
+
 /*
   Class       : SMESH_MeshObj
   Description : Class for visualisation of mesh

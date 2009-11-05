@@ -712,7 +712,8 @@ namespace SMESH
               _PTR(Study) aDocument = aStudy->studyDS();
               // Pass non-visual objects (hypotheses, etc.), return true in this case
               CORBA::Long anId = aDocument->StudyId();
-              if (TVisualObjPtr aVisualObj = GetVisualObj(anId,theEntry))
+              TVisualObjPtr aVisualObj;
+              if ( (aVisualObj = GetVisualObj(anId,theEntry)) && aVisualObj->IsValid())
               {
                 if ((anActor = CreateActor(aDocument,theEntry,true))) {
                   bool needFitAll = noSmeshActors(theWnd); // fit for the first object only

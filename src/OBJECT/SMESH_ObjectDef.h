@@ -69,6 +69,8 @@ public:
   virtual bool              IsNodePrs() const = 0;
   virtual SMDS_Mesh*        GetMesh() const = 0;
 
+  virtual bool              IsValid() const;
+
   virtual bool              GetEdgeNodes( const int theElemId,
                                           const int theEdgeNum,
                                           int&      theNodeId1,
