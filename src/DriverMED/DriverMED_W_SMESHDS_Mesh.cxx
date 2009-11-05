@@ -54,7 +54,7 @@ DriverMED_W_SMESHDS_Mesh::DriverMED_W_SMESHDS_Mesh():
 {}
 
 void DriverMED_W_SMESHDS_Mesh::SetFile(const std::string& theFileName, 
-				       MED::EVersion theId)
+                                       MED::EVersion theId)
 {
   myMed = CrWrapper(theFileName,theId);
   Driver_SMESHDS_Mesh::SetFile(theFileName);
@@ -189,9 +189,9 @@ namespace{
     TUnit* myUnit;
   public:
     TCoordHelper(const SMDS_NodeIteratorPtr& theNodeIter,
-		 TGetCoord* theGetCoord,
-		 TName* theName,
-		 TUnit* theUnit = aUnit):
+                 TGetCoord* theGetCoord,
+                 TName* theName,
+                 TUnit* theUnit = aUnit):
       myNodeIter(theNodeIter),
       myGetCoord(theGetCoord),
       myName(theName),
@@ -200,7 +200,7 @@ namespace{
     virtual ~TCoordHelper(){}
     bool Next(){ 
       return myNodeIter->more() && 
-	(myCurrentNode = myNodeIter->next());
+        (myCurrentNode = myNodeIter->next());
     }
     const SMDS_MeshNode* GetNode(){
       return myCurrentNode;
@@ -352,33 +352,33 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
       bool anIsYDimension = false;
       bool anIsZDimension = false;
       {
-	SMDS_NodeIteratorPtr aNodesIter = myMesh->nodesIterator();
-	double aBounds[6];
-	if(aNodesIter->more()){
-	  const SMDS_MeshNode* aNode = aNodesIter->next();
-	  aBounds[0] = aBounds[1] = aNode->X();
-	  aBounds[2] = aBounds[3] = aNode->Y();
-	  aBounds[4] = aBounds[5] = aNode->Z();
-	}
-	while(aNodesIter->more()){
-	  const SMDS_MeshNode* aNode = aNodesIter->next();
-	  aBounds[0] = min(aBounds[0],aNode->X());
-	  aBounds[1] = max(aBounds[1],aNode->X());
-	  
-	  aBounds[2] = min(aBounds[2],aNode->Y());
-	  aBounds[3] = max(aBounds[3],aNode->Y());
-	  
-	  aBounds[4] = min(aBounds[4],aNode->Z());
-	  aBounds[5] = max(aBounds[5],aNode->Z());
-	}
+        SMDS_NodeIteratorPtr aNodesIter = myMesh->nodesIterator();
+        double aBounds[6];
+        if(aNodesIter->more()){
+          const SMDS_MeshNode* aNode = aNodesIter->next();
+          aBounds[0] = aBounds[1] = aNode->X();
+          aBounds[2] = aBounds[3] = aNode->Y();
+          aBounds[4] = aBounds[5] = aNode->Z();
+        }
+        while(aNodesIter->more()){
+          const SMDS_MeshNode* aNode = aNodesIter->next();
+          aBounds[0] = min(aBounds[0],aNode->X());
+          aBounds[1] = max(aBounds[1],aNode->X());
+          
+          aBounds[2] = min(aBounds[2],aNode->Y());
+          aBounds[3] = max(aBounds[3],aNode->Y());
+          
+          aBounds[4] = min(aBounds[4],aNode->Z());
+          aBounds[5] = max(aBounds[5],aNode->Z());
+        }
 
-	double EPS = 1.0E-7;
-	anIsXDimension = (aBounds[1] - aBounds[0]) + abs(aBounds[1]) + abs(aBounds[0]) > EPS;
-	anIsYDimension = (aBounds[3] - aBounds[2]) + abs(aBounds[3]) + abs(aBounds[2]) > EPS;
-	anIsZDimension = (aBounds[5] - aBounds[4]) + abs(aBounds[5]) + abs(aBounds[4]) > EPS;
-	aMeshDimension = anIsXDimension + anIsYDimension + anIsZDimension;
-	if(!aMeshDimension)
-	  aMeshDimension = 3;
+        double EPS = 1.0E-7;
+        anIsXDimension = (aBounds[1] - aBounds[0]) + abs(aBounds[1]) + abs(aBounds[0]) > EPS;
+        anIsYDimension = (aBounds[3] - aBounds[2]) + abs(aBounds[3]) + abs(aBounds[2]) > EPS;
+        anIsZDimension = (aBounds[5] - aBounds[4]) + abs(aBounds[5]) + abs(aBounds[4]) > EPS;
+        aMeshDimension = anIsXDimension + anIsYDimension + anIsZDimension;
+        if(!aMeshDimension)
+          aMeshDimension = 3;
         // PAL16857(SMESH not conform to the MED convention):
         if ( aMeshDimension == 2 && anIsZDimension ) // 2D only if mesh is in XOY plane
           aMeshDimension = 3;
@@ -395,24 +395,24 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
       SMDS_NodeIteratorPtr aNodesIter = myMesh->nodesIterator();
       switch(aMeshDimension){
       case 3:
-	aCoordHelperPtr.reset(new TCoordHelper(aNodesIter,aXYZGetCoord,aXYZName));
-	break;
+        aCoordHelperPtr.reset(new TCoordHelper(aNodesIter,aXYZGetCoord,aXYZName));
+        break;
       case 2:
-	if(anIsXDimension && anIsYDimension)
-	  aCoordHelperPtr.reset(new TCoordHelper(aNodesIter,aXYGetCoord,aXYName));
-	if(anIsYDimension && anIsZDimension)
-	  aCoordHelperPtr.reset(new TCoordHelper(aNodesIter,aYZGetCoord,aYZName));
-	if(anIsXDimension && anIsZDimension)
-	  aCoordHelperPtr.reset(new TCoordHelper(aNodesIter,aXZGetCoord,aXZName));
-	break;
+        if(anIsXDimension && anIsYDimension)
+          aCoordHelperPtr.reset(new TCoordHelper(aNodesIter,aXYGetCoord,aXYName));
+        if(anIsYDimension && anIsZDimension)
+          aCoordHelperPtr.reset(new TCoordHelper(aNodesIter,aYZGetCoord,aYZName));
+        if(anIsXDimension && anIsZDimension)
+          aCoordHelperPtr.reset(new TCoordHelper(aNodesIter,aXZGetCoord,aXZName));
+        break;
       case 1:
-	if(anIsXDimension)
-	  aCoordHelperPtr.reset(new TCoordHelper(aNodesIter,aXGetCoord,aXName));
-	if(anIsYDimension)
-	  aCoordHelperPtr.reset(new TCoordHelper(aNodesIter,aYGetCoord,aYName));
-	if(anIsZDimension)
-	  aCoordHelperPtr.reset(new TCoordHelper(aNodesIter,aZGetCoord,aZName));
-	break;
+        if(anIsXDimension)
+          aCoordHelperPtr.reset(new TCoordHelper(aNodesIter,aXGetCoord,aXName));
+        if(anIsYDimension)
+          aCoordHelperPtr.reset(new TCoordHelper(aNodesIter,aYGetCoord,aYName));
+        if(anIsZDimension)
+          aCoordHelperPtr.reset(new TCoordHelper(aNodesIter,aZGetCoord,aZName));
+        break;
       }
     }
 
@@ -495,7 +495,7 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
       // coordinates
       TCoordSlice aTCoordSlice = aNodeInfo->GetCoordSlice( iNode );
       for(TInt iCoord = 0; iCoord < aMeshDimension; iCoord++){
-	aTCoordSlice[iCoord] = aCoordHelperPtr->GetCoord(iCoord);
+        aTCoordSlice[iCoord] = aCoordHelperPtr->GetCoord(iCoord);
       }
       // node number
       int aNodeID = aCoordHelperPtr->GetID();
