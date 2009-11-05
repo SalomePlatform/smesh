@@ -1879,7 +1879,8 @@ SMESH_Gen_i::ConcatenateCommon(const SMESH::mesh_array& theMeshesArray,
   typedef map< pair<string, SMESH::ElementType>, TListOfNewGroups > TGroupsMap;
   typedef std::set<SMESHDS_GroupBase*> TGroups;
 
-  TPythonDump aPythonDump; // prevent dump of called methods
+  TPythonDump* pPythonDump = new TPythonDump;
+  TPythonDump& aPythonDump = *pPythonDump; // prevent dump of called methods
 
   // create mesh
   SMESH::SMESH_Mesh_var aNewMesh = CreateEmptyMesh();
@@ -2147,6 +2148,13 @@ SMESH_Gen_i::ConcatenateCommon(const SMESH::mesh_array& theMeshesArray,
               << theMergeNodesAndElements << ", "
               << theMergeTolerance << ")";
 
+  delete pPythonDump; // enable python dump from GetGroups()
+
+  // 0020577: EDF 1164 SMESH: Bad dump of concatenate with create common groups
+  if ( !aNewMesh->_is_nil() )
+  {
+    SMESH::ListOfGroups_var groups = aNewMesh->GetGroups();
+  }
   return aNewMesh._retn();
 }
 
