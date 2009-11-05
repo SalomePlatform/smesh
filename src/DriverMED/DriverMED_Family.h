@@ -23,7 +23,6 @@
 //  File   : DriverMED_Family.hxx
 //  Author : Julia DOROVSKIKH
 //  Module : SMESH
-//  $Header$
 //
 #ifndef _INCLUDE_DRIVERMED_FAMILY
 #define _INCLUDE_DRIVERMED_FAMILY
@@ -99,6 +98,7 @@ class MESHDRIVERMED_EXPORT DriverMED_Family
 
   void SetType(const SMDSAbs_ElementType theType);
   SMDSAbs_ElementType GetType();
+  const std::set< SMDSAbs_ElementType >& GetTypes() const;
 
   bool MemberOf(std::string theGroupName) const;
 
@@ -133,6 +133,7 @@ class MESHDRIVERMED_EXPORT DriverMED_Family
   ElementsSet                   myElements;
   MED::TStringSet               myGroupNames;
   int                           myGroupAttributVal;
+  std::set<SMDSAbs_ElementType> myTypes; // Issue 0020576
 };
 
 #endif

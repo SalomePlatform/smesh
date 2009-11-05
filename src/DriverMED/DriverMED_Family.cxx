@@ -23,7 +23,6 @@
 //  File   : DriverMED_Family.cxx
 //  Author : Julia DOROVSKIKH
 //  Module : SMESH
-//  $Header$
 //
 #include "DriverMED_Family.h"
 #include "MED_Factory.hxx"
@@ -83,7 +82,7 @@ void
 DriverMED_Family
 ::SetType(const SMDSAbs_ElementType theType) 
 { 
-  myType = theType; 
+  myTypes.insert( myType = theType );
 }
 
 SMDSAbs_ElementType
@@ -91,6 +90,13 @@ DriverMED_Family
 ::GetType()
 {
   return myType; 
+}
+
+const std::set< SMDSAbs_ElementType >&
+DriverMED_Family
+::GetTypes() const
+{
+  return myTypes;
 }
 
 bool
