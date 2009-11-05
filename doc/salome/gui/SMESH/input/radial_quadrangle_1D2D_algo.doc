@@ -18,4 +18,6 @@ and the bottom faces of a cylinder"
 
 \image html mesh_radquad_02.png "Radial Quadrangle 2D mesh on a part of circle"
 
+<br><b>See Also</b> a sample 
+\ref tui_radial_quadrangle "TUI Script".
 */
