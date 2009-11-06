@@ -816,6 +816,20 @@ class smeshDC(SMESH._objref_SMESH_Gen):
     def CreateHypothesis(self, theHType, theLibName="libStdMeshersEngine.so"):
         return SMESH._objref_SMESH_Gen.CreateHypothesis(self, theHType, theLibName )
 
+    ## Gets the mesh stattistic
+    #  @return dictionary type element - count of elements
+    #  @ingroup l1_meshinfo
+    def GetMeshInfo(self, obj):
+        if isinstance( obj, Mesh ):
+            obj = obj.GetMesh()
+        d = {}
+        if hasattr(obj, "_narrow") and obj._narrow(SMESH.SMESH_IDSource):
+            values = obj.GetMeshInfo() 
+            for i in range(SMESH.Entity_Last._v):
+                if i < len(values): d[SMESH.EntityType._item(i)]=values[i]
+            pass
+        return d
+
 import omniORB
 #Registering the new proxy for SMESH_Gen
 omniORB.registerObjref(SMESH._objref_SMESH_Gen._NP_RepositoryId, smeshDC)
@@ -1650,13 +1664,7 @@ class Mesh:
     #  @ingroup l1_meshinfo
     def GetMeshInfo(self, obj = None):
         if not obj: obj = self.mesh
-        d = {}
-        if hasattr(obj, "_narrow") and obj._narrow(SMESH.SMESH_IDSource):
-            values = obj.GetMeshInfo() 
-            for i in range(SMESH.Entity_Last._v):
-                if i < len(values): d[SMESH.EntityType._item(i)]=values[i]
-            pass
-        return d
+        return self.smeshpyD.GetMeshInfo(obj)
 
     ## Returns the number of nodes in the mesh
     #  @return an integer value
