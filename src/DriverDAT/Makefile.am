@@ -65,6 +65,7 @@ libMeshDriverDAT_la_CPPFLAGS = \
 
 libMeshDriverDAT_la_LDFLAGS  = \
 	../Driver/libMeshDriver.la \
+	$(KERNEL_LDFLAGS) -lSALOMEBasics \
 	$(CAS_KERNEL)
 
 DAT_Test_CPPFLAGS = \
