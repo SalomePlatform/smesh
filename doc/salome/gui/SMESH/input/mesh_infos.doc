@@ -44,11 +44,6 @@ The following information will be displayed:
 
 \image html advanced_mesh_infos.png
 
-In case you get Mesh Infos via a \ref tui_viewing_mesh_infos "TUI script", 
-the information is displayed in Python Console.
-
-\image html b-mesh_infos.png
-
 <br>
 \anchor mesh_element_info_anchor
 <h2>Mesh Element Info</h2> 
@@ -60,5 +55,8 @@ the Viewer.
 \image html eleminfo1.png
 
 \image html eleminfo2.png 
+
+In case you get Mesh Infos via a TUI script the information is displayed in Python Console.
+<b>See the</b> \ref tui_viewing_mesh_infos "TUI Example", 
 
 */
