@@ -2823,8 +2823,8 @@ void SMESH_MeshEditor::sweepElement(const SMDS_MeshElement*               elem,
 
   //cout<<"  nbSame = "<<nbSame<<endl;
   if ( nbSame == nbNodes || nbSame > 2) {
-    //MESSAGE( " Too many same nodes of element " << elem->GetID() );
-    INFOS( " Too many same nodes of element " << elem->GetID() );
+    MESSAGE( " Too many same nodes of element " << elem->GetID() );
+    //INFOS( " Too many same nodes of element " << elem->GetID() );
     return;
   }
 
