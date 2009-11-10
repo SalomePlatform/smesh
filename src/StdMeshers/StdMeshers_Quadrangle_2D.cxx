@@ -77,7 +77,7 @@ typedef SMESH_Comment TComm;
 //=============================================================================
 
 StdMeshers_Quadrangle_2D::StdMeshers_Quadrangle_2D (int hypId, int studyId,
-						    SMESH_Gen* gen)
+                                                    SMESH_Gen* gen)
      : SMESH_2D_Algo(hypId, studyId, gen)
 {
   MESSAGE("StdMeshers_Quadrangle_2D::StdMeshers_Quadrangle_2D");
@@ -123,7 +123,7 @@ bool StdMeshers_Quadrangle_2D::CheckHypothesis
     theHyp = hyps.front();
     if(strcmp("QuadrangleParams", theHyp->GetName()) == 0) {
       const StdMeshers_QuadrangleParams* theHyp1 = 
-	(const StdMeshers_QuadrangleParams*)theHyp;
+        (const StdMeshers_QuadrangleParams*)theHyp;
       myTriaVertexID = theHyp1->GetTriaVertex();
       myQuadranglePreference= false;
       myTrianglePreference= false; 
@@ -144,29 +144,29 @@ bool StdMeshers_Quadrangle_2D::CheckHypothesis
     theHyp = hyps.front();
     if(strcmp("QuadrangleParams", theHyp->GetName()) == 0) {
       const StdMeshers_QuadrangleParams* theHyp1 = 
-	(const StdMeshers_QuadrangleParams*)theHyp;
+        (const StdMeshers_QuadrangleParams*)theHyp;
       myTriaVertexID = theHyp1->GetTriaVertex();
       theHyp = hyps.back();
       if(strcmp("QuadranglePreference", theHyp->GetName()) == 0) {
-	myQuadranglePreference= true;
-	myTrianglePreference= false; 
+        myQuadranglePreference= true;
+        myTrianglePreference= false; 
       }
       else if(strcmp("TrianglePreference", theHyp->GetName()) == 0){
-	myQuadranglePreference= false;
-	myTrianglePreference= true; 
+        myQuadranglePreference= false;
+        myTrianglePreference= true; 
       }
     }
     else {
       if(strcmp("QuadranglePreference", theHyp->GetName()) == 0) {
-	myQuadranglePreference= true;
-	myTrianglePreference= false; 
+        myQuadranglePreference= true;
+        myTrianglePreference= false; 
       }
       else if(strcmp("TrianglePreference", theHyp->GetName()) == 0){
-	myQuadranglePreference= false;
-	myTrianglePreference= true; 
+        myQuadranglePreference= false;
+        myTrianglePreference= true; 
       }
       const StdMeshers_QuadrangleParams* theHyp2 = 
-	(const StdMeshers_QuadrangleParams*)hyps.back();
+        (const StdMeshers_QuadrangleParams*)hyps.back();
       myTriaVertexID = theHyp2->GetTriaVertex();
     }
   }
@@ -286,7 +286,7 @@ bool StdMeshers_Quadrangle_2D::Compute (SMESH_Mesh& aMesh,
       d = quad->uv_grid[(j + 1) * nbhoriz + i].node;
       SMDS_MeshFace* face = myTool->AddFace(a, b, c, d);
       if(face) {
-	meshDS->SetMeshElementOnShape(face, geomFaceID);
+        meshDS->SetMeshElementOnShape(face, geomFaceID);
       }
     }
   }
@@ -638,7 +638,7 @@ bool StdMeshers_Quadrangle_2D::Compute (SMESH_Mesh& aMesh,
 
 bool StdMeshers_Quadrangle_2D::Evaluate(SMESH_Mesh& aMesh,
                                         const TopoDS_Shape& aShape,
-					MapShapeNbElems& aResMap)
+                                        MapShapeNbElems& aResMap)
 
 {
   aMesh.GetSubMesh(aShape);
@@ -778,31 +778,31 @@ FaceQuadStruct* StdMeshers_Quadrangle_2D::CheckNbEdges(SMESH_Mesh &         aMes
       SMESHDS_Mesh* meshDS = aMesh.GetMeshDS();
       TopoDS_Vertex V = TopoDS::Vertex(meshDS->IndexToShape(myTriaVertexID));
       if(!V.IsNull()) {
-	TopoDS_Edge E1,E2,E3;
-	for(; edgeIt != edges.end(); ++edgeIt) {
-	  TopoDS_Edge E =  TopoDS::Edge(*edgeIt);
-	  TopoDS_Vertex VF, VL;
-	  TopExp::Vertices(E, VF, VL, true);
-	  if( VF.IsSame(V) )
-	    E1 = E;
-	  else if( VL.IsSame(V) )
-	    E3 = E;
-	  else
-	    E2 = E;
-	}
-	quad->side.reserve(4);
-	quad->side.push_back( new StdMeshers_FaceSide(F, E1, &aMesh, true, ignoreMediumNodes));
-	quad->side.push_back( new StdMeshers_FaceSide(F, E2, &aMesh, true, ignoreMediumNodes));
-	quad->side.push_back( new StdMeshers_FaceSide(F, E3, &aMesh, false, ignoreMediumNodes));
-	std::vector<UVPtStruct> UVPSleft = quad->side[0]->GetUVPtStruct(true,0);
-	std::vector<UVPtStruct> UVPStop = quad->side[1]->GetUVPtStruct(false,1);
-	std::vector<UVPtStruct> UVPSright = quad->side[2]->GetUVPtStruct(true,1);
-	const SMDS_MeshNode* aNode = UVPSleft[0].node;
-	gp_Pnt2d aPnt2d( UVPSleft[0].u, UVPSleft[0].v );
-	StdMeshers_FaceSide* VertFS =
-	  new StdMeshers_FaceSide(aNode, aPnt2d, quad->side[1]);
-	quad->side.push_back(VertFS);
-	return quad;
+        TopoDS_Edge E1,E2,E3;
+        for(; edgeIt != edges.end(); ++edgeIt) {
+          TopoDS_Edge E =  TopoDS::Edge(*edgeIt);
+          TopoDS_Vertex VF, VL;
+          TopExp::Vertices(E, VF, VL, true);
+          if( VF.IsSame(V) )
+            E1 = E;
+          else if( VL.IsSame(V) )
+            E3 = E;
+          else
+            E2 = E;
+        }
+        quad->side.reserve(4);
+        quad->side.push_back( new StdMeshers_FaceSide(F, E1, &aMesh, true, ignoreMediumNodes));
+        quad->side.push_back( new StdMeshers_FaceSide(F, E2, &aMesh, true, ignoreMediumNodes));
+        quad->side.push_back( new StdMeshers_FaceSide(F, E3, &aMesh, false, ignoreMediumNodes));
+        std::vector<UVPtStruct> UVPSleft = quad->side[0]->GetUVPtStruct(true,0);
+        std::vector<UVPtStruct> UVPStop = quad->side[1]->GetUVPtStruct(false,1);
+        std::vector<UVPtStruct> UVPSright = quad->side[2]->GetUVPtStruct(true,1);
+        const SMDS_MeshNode* aNode = UVPSleft[0].node;
+        gp_Pnt2d aPnt2d( UVPSleft[0].u, UVPSleft[0].v );
+        StdMeshers_FaceSide* VertFS =
+          new StdMeshers_FaceSide(aNode, aPnt2d, quad->side[1]);
+        quad->side.push_back(VertFS);
+        return quad;
       }
     }
     return 0;
@@ -900,10 +900,10 @@ FaceQuadStruct* StdMeshers_Quadrangle_2D::CheckNbEdges(SMESH_Mesh &         aMes
 //=============================================================================
 
 bool StdMeshers_Quadrangle_2D::CheckNbEdgesForEvaluate(SMESH_Mesh& aMesh,
-						       const TopoDS_Shape & aShape,
-						       MapShapeNbElems& aResMap,
-						       std::vector<int>& aNbNodes,
-						       bool& IsQuadratic)
+                                                       const TopoDS_Shape & aShape,
+                                                       MapShapeNbElems& aResMap,
+                                                       std::vector<int>& aNbNodes,
+                                                       bool& IsQuadratic)
 
 {
   const TopoDS_Face & F = TopoDS::Face(aShape);
@@ -933,45 +933,45 @@ bool StdMeshers_Quadrangle_2D::CheckNbEdgesForEvaluate(SMESH_Mesh& aMesh,
       SMESHDS_Mesh* meshDS = aMesh.GetMeshDS();
       TopoDS_Vertex V = TopoDS::Vertex(meshDS->IndexToShape(myTriaVertexID));
       if(!V.IsNull()) {
-	TopoDS_Edge E1,E2,E3;
-	for(; edgeIt != edges.end(); ++edgeIt) {
-	  TopoDS_Edge E =  TopoDS::Edge(*edgeIt);
-	  TopoDS_Vertex VF, VL;
-	  TopExp::Vertices(E, VF, VL, true);
-	  if( VF.IsSame(V) )
-	    E1 = E;
-	  else if( VL.IsSame(V) )
-	    E3 = E;
-	  else
-	    E2 = E;
-	}
-	SMESH_subMesh * sm = aMesh.GetSubMesh(E1);
-	MapShapeNbElemsItr anIt = aResMap.find(sm);
-	if(anIt==aResMap.end()) return false;
-	std::vector<int> aVec = (*anIt).second;
-	if(IsQuadratic)
-	  aNbNodes[0] = (aVec[SMDSEntity_Node]-1)/2 + 2;
-	else
-	  aNbNodes[0] = aVec[SMDSEntity_Node] + 2;
-	sm = aMesh.GetSubMesh(E2);
-	anIt = aResMap.find(sm);
-	if(anIt==aResMap.end()) return false;
-	aVec = (*anIt).second;
-	if(IsQuadratic)
-	  aNbNodes[1] = (aVec[SMDSEntity_Node]-1)/2 + 2;
-	else
-	  aNbNodes[1] = aVec[SMDSEntity_Node] + 2;
-	sm = aMesh.GetSubMesh(E3);
-	anIt = aResMap.find(sm);
-	if(anIt==aResMap.end()) return false;
-	aVec = (*anIt).second;
-	if(IsQuadratic)
-	  aNbNodes[2] = (aVec[SMDSEntity_Node]-1)/2 + 2;
-	else
-	  aNbNodes[2] = aVec[SMDSEntity_Node] + 2;
-	aNbNodes[3] = aNbNodes[1];
-	aNbNodes.resize(5);
-	nbSides = 4;
+        TopoDS_Edge E1,E2,E3;
+        for(; edgeIt != edges.end(); ++edgeIt) {
+          TopoDS_Edge E =  TopoDS::Edge(*edgeIt);
+          TopoDS_Vertex VF, VL;
+          TopExp::Vertices(E, VF, VL, true);
+          if( VF.IsSame(V) )
+            E1 = E;
+          else if( VL.IsSame(V) )
+            E3 = E;
+          else
+            E2 = E;
+        }
+        SMESH_subMesh * sm = aMesh.GetSubMesh(E1);
+        MapShapeNbElemsItr anIt = aResMap.find(sm);
+        if(anIt==aResMap.end()) return false;
+        std::vector<int> aVec = (*anIt).second;
+        if(IsQuadratic)
+          aNbNodes[0] = (aVec[SMDSEntity_Node]-1)/2 + 2;
+        else
+          aNbNodes[0] = aVec[SMDSEntity_Node] + 2;
+        sm = aMesh.GetSubMesh(E2);
+        anIt = aResMap.find(sm);
+        if(anIt==aResMap.end()) return false;
+        aVec = (*anIt).second;
+        if(IsQuadratic)
+          aNbNodes[1] = (aVec[SMDSEntity_Node]-1)/2 + 2;
+        else
+          aNbNodes[1] = aVec[SMDSEntity_Node] + 2;
+        sm = aMesh.GetSubMesh(E3);
+        anIt = aResMap.find(sm);
+        if(anIt==aResMap.end()) return false;
+        aVec = (*anIt).second;
+        if(IsQuadratic)
+          aNbNodes[2] = (aVec[SMDSEntity_Node]-1)/2 + 2;
+        else
+          aNbNodes[2] = aVec[SMDSEntity_Node] + 2;
+        aNbNodes[3] = aNbNodes[1];
+        aNbNodes.resize(5);
+        nbSides = 4;
       }
     }
   }
@@ -980,13 +980,13 @@ bool StdMeshers_Quadrangle_2D::CheckNbEdgesForEvaluate(SMESH_Mesh& aMesh,
       SMESH_subMesh * sm = aMesh.GetSubMesh( *edgeIt );
       MapShapeNbElemsItr anIt = aResMap.find(sm);
       if(anIt==aResMap.end()) {
-	return false;
+        return false;
       }
       std::vector<int> aVec = (*anIt).second;
       if(IsQuadratic)
-	aNbNodes[nbSides] = (aVec[SMDSEntity_Node]-1)/2 + 2;
+        aNbNodes[nbSides] = (aVec[SMDSEntity_Node]-1)/2 + 2;
       else
-	aNbNodes[nbSides] = aVec[SMDSEntity_Node] + 2;
+        aNbNodes[nbSides] = aVec[SMDSEntity_Node] + 2;
       nbSides++;
     }
   }
@@ -1012,16 +1012,16 @@ bool StdMeshers_Quadrangle_2D::CheckNbEdgesForEvaluate(SMESH_Mesh& aMesh,
       list<TopoDS_Edge>::iterator ite = sideEdges.begin();
       aNbNodes[nbSides] = 1;
       for(; ite!=sideEdges.end(); ite++) {
-	SMESH_subMesh * sm = aMesh.GetSubMesh( *ite );
-	MapShapeNbElemsItr anIt = aResMap.find(sm);
-	if(anIt==aResMap.end()) {
-	  return false;
-	}
-	std::vector<int> aVec = (*anIt).second;
-	if(IsQuadratic)
-	  aNbNodes[nbSides] += (aVec[SMDSEntity_Node]-1)/2 + 1;
-	else
-	  aNbNodes[nbSides] += aVec[SMDSEntity_Node] + 1;
+        SMESH_subMesh * sm = aMesh.GetSubMesh( *ite );
+        MapShapeNbElemsItr anIt = aResMap.find(sm);
+        if(anIt==aResMap.end()) {
+          return false;
+        }
+        std::vector<int> aVec = (*anIt).second;
+        if(IsQuadratic)
+          aNbNodes[nbSides] += (aVec[SMDSEntity_Node]-1)/2 + 1;
+        else
+          aNbNodes[nbSides] += aVec[SMDSEntity_Node] + 1;
       }
       ++nbSides;
     }
@@ -1050,20 +1050,20 @@ bool StdMeshers_Quadrangle_2D::CheckNbEdgesForEvaluate(SMESH_Mesh& aMesh,
               sideEdges.splice( sideEdges.begin(), edges, --edges.end());
           }
         }
-	list<TopoDS_Edge>::iterator ite = sideEdges.begin();
-	aNbNodes[nbSides] = 1;
-	for(; ite!=sideEdges.end(); ite++) {
-	  SMESH_subMesh * sm = aMesh.GetSubMesh( *ite );
-	  MapShapeNbElemsItr anIt = aResMap.find(sm);
-	  if(anIt==aResMap.end()) {
-	    return false;
-	  }
-	  std::vector<int> aVec = (*anIt).second;
-	  if(IsQuadratic)
-	    aNbNodes[nbSides] += (aVec[SMDSEntity_Node]-1)/2 + 1;
-	  else
-	    aNbNodes[nbSides] += aVec[SMDSEntity_Node] + 1;
-	}
+        list<TopoDS_Edge>::iterator ite = sideEdges.begin();
+        aNbNodes[nbSides] = 1;
+        for(; ite!=sideEdges.end(); ite++) {
+          SMESH_subMesh * sm = aMesh.GetSubMesh( *ite );
+          MapShapeNbElemsItr anIt = aResMap.find(sm);
+          if(anIt==aResMap.end()) {
+            return false;
+          }
+          std::vector<int> aVec = (*anIt).second;
+          if(IsQuadratic)
+            aNbNodes[nbSides] += (aVec[SMDSEntity_Node]-1)/2 + 1;
+          else
+            aNbNodes[nbSides] += aVec[SMDSEntity_Node] + 1;
+        }
         ++nbSides;
       }
     }
@@ -1221,11 +1221,11 @@ bool StdMeshers_Quadrangle_2D::SetNormalizedGrid (SMESH_Mesh & aMesh,
     for (int j = 0; j < nbvertic; j++) {
       int ij = j * nbhoriz + i;
       // --- droite i cste : x = x0 + y(x1-x0)
-      double x0 = uv_e0[i].normParam;	// bas - sud
-      double x1 = uv_e2[i].normParam;	// haut - nord
+      double x0 = uv_e0[i].normParam;   // bas - sud
+      double x1 = uv_e2[i].normParam;   // haut - nord
       // --- droite j cste : y = y0 + x(y1-y0)
-      double y0 = uv_e3[j].normParam;	// gauche-ouest
-      double y1 = uv_e1[j].normParam;	// droite - est
+      double y0 = uv_e3[j].normParam;   // gauche-ouest
+      double y1 = uv_e1[j].normParam;   // droite - est
       // --- intersection : x=x0+(y0+x(y1-y0))(x1-x0)
       double x = (x0 + y0 * (x1 - x0)) / (1 - (y1 - y0) * (x1 - x0));
       double y = y0 + x * (y1 - y0);
@@ -1754,7 +1754,7 @@ bool StdMeshers_Quadrangle_2D::ComputeQuadPref (SMESH_Mesh &        aMesh,
     int nbf=0;
     for(j=1; j<nnn-1; j++) {
       for(i=1; i<nb; i++) {
-	nbf++;
+        nbf++;
         if(WisF) {
           SMDS_MeshFace* F =
             myTool->AddFace(NodesBRD.Value(i,j), NodesBRD.Value(i+1,j),
@@ -1867,7 +1867,7 @@ bool StdMeshers_Quadrangle_2D::ComputeQuadPref (SMESH_Mesh &        aMesh,
       // create faces
       for(j=1; j<=drl+addv; j++) {
         for(i=1; i<nb; i++) {
-	  nbf++;
+          nbf++;
           if(WisF) {
             SMDS_MeshFace* F =
               myTool->AddFace(NodesC.Value(i,j), NodesC.Value(i+1,j),
@@ -1901,7 +1901,7 @@ bool StdMeshers_Quadrangle_2D::ComputeQuadPref (SMESH_Mesh &        aMesh,
         NodesLast.SetValue(nnn,1,NodesC.Value(nb,i));
       }
       for(i=1; i<nt; i++) {
-	nbf++;
+        nbf++;
         if(WisF) {
           SMDS_MeshFace* F =
             myTool->AddFace(NodesLast.Value(i,1), NodesLast.Value(i+1,1),
@@ -1933,8 +1933,8 @@ bool StdMeshers_Quadrangle_2D::ComputeQuadPref (SMESH_Mesh &        aMesh,
 bool StdMeshers_Quadrangle_2D::EvaluateQuadPref(SMESH_Mesh &        aMesh,
                                                 const TopoDS_Shape& aShape,
                                                 std::vector<int>& aNbNodes,
-						MapShapeNbElems& aResMap,
-						bool IsQuadratic)
+                                                MapShapeNbElems& aResMap,
+                                                bool IsQuadratic)
 {
   // Auxilary key in order to keep old variant
   // of meshing after implementation new variant
