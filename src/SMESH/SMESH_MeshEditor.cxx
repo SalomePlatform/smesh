@@ -8731,7 +8731,7 @@ bool SMESH_MeshEditor::doubleNodes( SMESHDS_Mesh*     theMeshDS,
         theNodeNodeMap[ aCurrNode ] = aNewNode;
         myLastCreatedNodes.Append( aNewNode );
       }
-      isDuplicate |= (aCurrNode == aNewNode);
+      isDuplicate |= (aCurrNode != aNewNode);
       newNodes[ ind++ ] = aNewNode;
     }
     if ( !isDuplicate )
