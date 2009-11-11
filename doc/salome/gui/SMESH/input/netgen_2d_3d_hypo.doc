@@ -2,7 +2,7 @@
 
 \page netgen_2d_3d_hypo_page Netgen 2D and 3D hypotheses
 
-\n <b>Netgen 2D</b> and <b>Netgen 3D</b> hypotheses work only with <b>Netgen 1D-2D</b> and
+<b>Netgen 2D</b> and <b>Netgen 3D</b> hypotheses work only with <b>Netgen 1D-2D</b> and
 <b>Netgen 1D-2D-3D</b> algorithms. These algorithms do not require
 definition of lower-level  hypotheses and algorithms (2D and 1D for
 meshing 3D objects and 1D for meshing 2D objects). They prove to be
@@ -11,68 +11,64 @@ of the meshed object.
 
 \image html netgen2d.png
 
-<ul>
-<li><b>Name</b> - allows to define the name for the algorithm (Netgen
-2D (or 3D) Parameters by default).</li>
-<li><b>Max Size</b> - maximum linear dimensions for mesh cells.</li>
-<li><b>Second Order</b> - if this box is checked in, the algorithm will
+- <b>Name</b> - allows to define the name for the algorithm (Netgen
+2D (or 3D) Parameters by default).
+- <b>Max Size</b> - maximum linear dimensions for mesh cells.
+- <b>Second Order</b> - if this box is checked in, the algorithm will
 create second order nodes on the mesh, which actually will become
-\ref adding_quadratic_elements_page "Quadratic".</li>
-<li><b>Fineness</b> - ranging from Very Coarse to Very Fine allows to set the
+\ref adding_quadratic_elements_page "Quadratic".
+- <b>Fineness</b> - ranging from Very Coarse to Very Fine allows to set the
 level of meshing detalization using the three parameters below. You
-can select Custom to define them manually.</li>
-<li><b>Growth rate</b> - allows to define how much the linear dimensions of
-two adjacent cells can differ (i.e. 0.3 means 30%).</li>
-<li><b>Nb. Segs per Edge</b> and <b>Nb Segs per Radius</b> - allows to define the
+can select Custom to define them manually.
+- <b>Growth rate</b> - allows to define how much the linear dimensions of
+two adjacent cells can differ (i.e. 0.3 means 30%).
+- <b>Nb. Segs per Edge</b> and <b>Nb Segs per Radius</b> - allows to define the
 minimum number of mesh segments in which edges and radiuses will be
-split.</li>
-<li><b>Allow Quadrangles</b> - allows to use quadrangle elements in a
+split.
+- <b>Allow Quadrangles</b> - allows to use quadrangle elements in a
 triangle 2D mesh. This checkbox is not present in Netgen 3D parameters
 because currently building a tetrahedral mesh with quadrangle faces is
-not possible.</li>
-<li><b>Optimize</b> - if this box is checked in, the algorithm will try to
-create regular (possessing even sides) elements.</li>
-</ul>
+not possible.
+- <b>Optimize</b> - if this box is checked in, the algorithm will try to
+create regular (possessing even sides) elements.
 
 \image html netgen3d_simple.png
 
-<b>Netgen 2D simple parameters</b> and <b>Netgen 3D simple parameters</b> allow defining the size of elements for each dimension. <br>
+<b>Netgen 2D simple parameters</b> and <b>Netgen 3D simple
+parameters</b> allow defining the size of elements for each
+dimension.
 
 \b 1D group allows defining the size of 1D elements in either of two ways: 
-<ul>
-<li><b>Number of Segments</b> has the same sense as \ref
+- <b>Number of Segments</b> has the same sense as \ref
 number_of_segments_anchor "Number of segments" hypothesis with
-equidistant distribution.</li>
-<li><b>Average Length</b> has the same sense as \ref 
-average_length_anchor "Average Length" hypothesis.</li>
-</ul>
+equidistant distribution.
+- <b>Average Length</b> has the same sense as \ref 
+average_length_anchor "Average Length" hypothesis.
 
 \b 2D group allows defining the size of 2D elements 
-<ul>
-<li><b>Length from edges</b> if checked in, acts like \ref
-length_from_edges_anchor "Length from Edges" hypothesis, else </li>
-<li><b>Max. Element Area</b> defines the maximum element area like \ref
-max_element_area_anchor "Max Element Area" hypothesis. </li>
-</ul>
+- <b>Length from edges</b> if checked in, acts like \ref
+length_from_edges_anchor "Length from Edges" hypothesis, else
+- <b>Max. Element Area</b> defines the maximum element area like \ref
+max_element_area_anchor "Max Element Area" hypothesis.
 
 \b 3D groups allows defining the size of 3D elements.
-<ul>
-<li><b>Length from faces</b> if checked in, the area of sides of
-volumic elements will be equal to an average area of 2D elements, else </li>
-<li><b>Max. Element Volume</b> defines the maximum element volume like
+- <b>Length from faces</b> if checked in, the area of sides of
+volumic elements will be equal to an average area of 2D elements, else
+- <b>Max. Element Volume</b> defines the maximum element volume like
 \ref max_element_volume_hypo_page "Max Element Volume"
-hypothesis.</li>
-<ul>
+hypothesis.
 
-\n Note that Netgen algorithm does not strictly follow the input
-parameters. The actual mesh can be more or less dense than required. There are several factors in it:
-<ol>
-<li> NETGEN does not actually use "NbOfSegments" parameter for discretization of
-edge. This parameter is used  only to define the local element size (size at the given point), so local sizes of adjacent edges influence each other. </li>
-<li> NETGEN additionally restricts the element size according to edge curvature.</li>
-<li> The local size of edges influences the size of close triangles.</li>
-<li> The order of elements and their size in the 1D mesh generated by
+\note Netgen algorithm does not strictly follow the input
+parameters. The actual mesh can be more or less dense than
+required. There are several factors in it:
+- NETGEN does not actually use "NbOfSegments" parameter for discretization of
+edge. This parameter is used  only to define the local element size
+(size at the given point), so local sizes of adjacent edges influence
+each other.
+- NETGEN additionally restricts the element size according to edge curvature.
+- The local size of edges influences the size of close triangles.
+- The order of elements and their size in the 1D mesh generated by
 NETGEN differ from those in the 1D mesh generated by Regular_1D
-algorithm, resulting in different 2D and 3D meshes.</li>
-</ol>
+algorithm, resulting in different 2D and 3D meshes.
+
 */

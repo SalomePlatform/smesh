@@ -2,7 +2,7 @@
 
 \page tui_creating_meshes_page Creating Meshes
 
-\n First of all see \ref introduction_to_mesh_python_page "Example of 3d mesh generation",
+\n First of all see \ref example_3d_mesh "Example of 3d mesh generation",
  which is an example of good python script style for Mesh module.
 
 <br>

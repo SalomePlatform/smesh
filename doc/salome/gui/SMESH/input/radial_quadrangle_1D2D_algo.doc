@@ -17,4 +17,6 @@ of mesh layers along the radius. The distribution of layers can be set with any 
 
 \image html mesh_radquad_02.png "Radial Quadrangle 2D mesh on a part of circle"
 
+\sa A sample \ref tui_radial_quadrangle "TUI Script".
+
 */

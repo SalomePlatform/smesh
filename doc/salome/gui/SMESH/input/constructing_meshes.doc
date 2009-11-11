@@ -126,7 +126,7 @@ visualizing the geometrical entity that causes it.
 
 \image html failed_computation.png "Example of the invalid input mesh"
 
-\Note Mesh Computation Information box does not appear if you set
+\note Mesh Computation Information box does not appear if you set
 "Mesh computation/Show a computation result notification" preference 
 to the "Never" value. This option gives the possibility to control mesh
 computation reporting. There are the following possibilities: always

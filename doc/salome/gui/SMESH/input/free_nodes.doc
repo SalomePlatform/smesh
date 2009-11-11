@@ -2,14 +2,15 @@
 
 \page free_nodes_page Free nodes
 
-\n This mesh quality control highlights the nodes which are not connected
+This mesh quality control highlights the nodes which are not connected
 to any  mesh element. 
 
 \image html free_nodes.png
-<center>In this picture some nodes are not connected to any mesh
+
+In this picture some nodes are not connected to any mesh
 element after deleting some elements and adding several isolated nodes.
 
-<br><b>See Also</b> a sample TUI Script of a 
-\ref tui_free_nodes "Free Nodes quality control" operation.  
+\sa A sample TUI Script of a \ref tui_free_nodes "Free Nodes quality control"
+operation.
 
 */

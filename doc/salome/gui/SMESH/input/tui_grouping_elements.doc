@@ -1,4 +1,4 @@
-/*!
+	/*!
 
 \page tui_grouping_elements_page Grouping Elements
 
@@ -318,10 +318,10 @@ salome.sg.updateObjBrowser(1)
 \endcode
 
 \image html dimgroup_tui1.png
-<center>Source groups of faces<\center>
+<center>Source groups of faces</center>
 
 \image html dimgroup_tui2.png
-<center>Result groups of edges and nodes<\center>
+<center>Result groups of edges and nodes</center>
 
 
 

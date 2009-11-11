@@ -12,19 +12,15 @@ dialog.</li>
 <li> by creating a group of elements of the selected type from all
 such elements of the chosen geometrical object - <b>Group on
 geometry</b> tab of  \ref creating_groups_page "Create group" dialog.</li>
-
 <li> by creating a group including all types of elements from an
 existing geometrical object - using \subpage create_groups_from_geometry_page "Create Groups from Geometry" dialog.</li>
-
 <li> by creating several groups of elements (nodes,
 edges, faces and volumes) from the chosen submesh - using <b>Mesh -> Construct
 Group</b> Menu item. In this case groups of elements are created
 automatically.</li>
-
 <li> by creating groups of entities from existing groups of superior
 dimensions - using \subpage group_of_underlying_elements_page "Create Group of Underlying Elements"
 dialog.</li>
-
 </ul>
 
 
@@ -32,12 +28,12 @@ The created groups can be later:
 
 <ul>
 <li>\subpage editing_groups_page "Edited"</li>
-<li>\subpage using_operations_on_groups_page "Subjected to Boolean operations", or</li>
+<li>\subpage using_operations_on_groups_page "Subjected to Boolean operations"</li>
 <li>\subpage deleting_groups_page "Deleted"</li>
 </ul>
 
 An important tool, providing filters for creation of \b Standalone
-groups is  \subpage selection_filter_library_page</li>.
+groups is \subpage selection_filter_library_page.
 
 
 */

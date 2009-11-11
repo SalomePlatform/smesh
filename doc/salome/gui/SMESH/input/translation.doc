@@ -64,13 +64,9 @@ name in the adjacent box);</li>
 </ul>
 </li>
 
-<li>Click \b Apply or <b> Apply and Close</b> button to confirm the
-operation.</li>
-
+<li>Click \b Apply or <b> Apply and Close</b> button to confirm the operation.</li>
 </ol>
 
-
-<br><b>See Also</b> a sample TUI Script of a 
-\ref tui_translation "Translation" operation.  
+<br><b>See Also</b> a sample TUI Script of a \ref tui_translation "Translation" operation.  
 
 */

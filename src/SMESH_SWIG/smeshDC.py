@@ -810,8 +810,8 @@ class smeshDC(SMESH._objref_SMESH_Gen):
             print "Error: given parameter is not numerucal functor type."
 
     ## Creates hypothesis
-    #  @param 
-    #  @param 
+    #  @param theHType mesh hypothesis type (string)
+    #  @param theLibName mesh plug-in library name
     #  @return created hypothesis instance
     def CreateHypothesis(self, theHType, theLibName="libStdMeshersEngine.so"):
         return SMESH._objref_SMESH_Gen.CreateHypothesis(self, theHType, theLibName )
@@ -1320,6 +1320,8 @@ class Mesh:
     #  Exports the mesh in a file in MED format and chooses the \a version of MED format
     #  @param f the file name
     #  @param version values are SMESH.MED_V2_1, SMESH.MED_V2_2
+    #  @param opt boolean parameter for creating/not creating
+    #  the groups Group_On_All_Nodes, Group_On_All_Faces, ...
     #  @ingroup l2_impexp
     def ExportToMED(self, f, version, opt=0):
         self.mesh.ExportToMED(f, opt, version)
@@ -2190,6 +2192,8 @@ class Mesh:
     #  @param x  the X coordinate of a point
     #  @param y  the Y coordinate of a point
     #  @param z  the Z coordinate of a point
+    #  @param NodeID if specified (>0), the node with this ID is moved,
+    #  otherwise, the node closest to point (@a x,@a y,@a z) is moved
     #  @return the ID of a node
     #  @ingroup l2_modif_throughp
     def MoveClosestNodeToPoint(self, x, y, z, NodeID):
@@ -5175,7 +5179,7 @@ omniORB.registerObjref(StdMeshers._objref_StdMeshers_MaxElementArea._NP_Reposito
 class MaxElementVolume(StdMeshers._objref_StdMeshers_MaxElementVolume):
     
     ## Set Max Element Volume parameter value
-    #  @param area  numerical value or name of variable from notebook
+    #  @param volume numerical value or name of variable from notebook
     def SetMaxElementVolume(self, volume):
         volume ,parameters = ParseParameters(StdMeshers._objref_StdMeshers_MaxElementVolume.GetLastParameters(self),1,1,volume)
         StdMeshers._objref_StdMeshers_MaxElementVolume.SetParameters(self,parameters)

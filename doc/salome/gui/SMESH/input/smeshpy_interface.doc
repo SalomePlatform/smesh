@@ -2,129 +2,140 @@
 
 \page smeshpy_interface_page Python interface
 
-\n Python package smesh defines several classes, destined for easy and
+Python package smesh defines several classes, destined for easy and
 clear mesh creation and edition.
 
-\n Documentation for smesh package is available in two forms:
+Documentation for smesh package is available in two forms:
 
-\n The <a href="smeshpy_doc/modules.html"> structured
-   documentation for smesh package</a>, where all methods and
-   classes are grouped by their functionality, like it is done in the GUI documentation
-\n and the \ref smeshDC "linear documentation for smesh package"
-   grouped only by classes, declared in the smesh.py file.
+The <a href="smeshpy_doc/modules.html"> structured
+documentation for smesh package</a>, where all methods and
+classes are grouped by their functionality, like it is done in the GUI documentation
+and the \ref smeshDC "linear documentation for smesh package"
+grouped only by classes, declared in the smesh.py file.
 
-\n The main page of the \ref smeshDC "linear documentation for smesh package"
-   contains a list of data structures and a list of
-   functions, provided by the package smesh.py. The first item in
-   the list of data structures (\ref smeshDC::smeshDC "class smesh")
-   also represents documentation for the methods of the package smesh.py itself.
+The main page of the \ref smeshDC "linear documentation for smesh package"
+contains a list of data structures and a list of
+functions, provided by the package smesh.py. The first item in
+the list of data structures (\ref smeshDC::smeshDC "class smesh")
+also represents documentation for the methods of the package smesh.py itself.
 
-\n The package smesh.py provides an interface to create and handle
-   meshes. Use it to create an empty mesh or to import it from the data file.
+The package smesh.py provides an interface to create and handle
+meshes. Use it to create an empty mesh or to import it from the data file.
 
-\n Once a mesh has been created, it is possible to  manage it via its own
-   methods, described at \ref smeshDC::Mesh "class Mesh" documentation
-   (it is also accessible by the second item "class Mesh" in the list of data structures).
+Once a mesh has been created, it is possible to  manage it via its own
+methods, described at \ref smeshDC::Mesh "class Mesh" documentation
+(it is also accessible by the second item "class Mesh" in the list of data structures).
 
-\n Class Mesh allows assigning algorithms to a mesh.
-\n Please note, that some algorithms,
-   included in the standard Salome installation are always available:
-      - REGULAR(1D), COMPOSITE(1D), MEFISTO(2D), Quadrangle(2D), Hexa(3D), etc.
+Class \b Mesh allows assigning algorithms to a mesh.
+Please note, that some algorithms, included in the standard SALOME
+distribution are always available:
+- REGULAR (1D)
+- COMPOSITE (1D)
+- MEFISTO (2D)
+- Quadrangle (2D)
+- Hexa(3D)
+- etc...
 
-\n There are also some algorithms, which can be installed optionally,
-\n some of them are based on open-source meshers:
-         - NETGEN(1D-2D,2D,1D-2D-3D,3D),
+There are also some algorithms, which can be installed optionally,
+some of them are based on open-source meshers:
+- NETGEN (1D-2D, 2D, 1D-2D-3D, 3D)
 
-\n others are based on commercial meshers:
-         - GHS3D(3D), BLSURF(2D).
+... and others are based on commercial meshers:
+- GHS3D (3D)
+- BLSURF (2D)
 
-\n    To add hypotheses, use the interfaces, provided by the assigned
+To add hypotheses, use the interfaces, provided by the assigned
 algorithms.
 
-\n Below you can see an example of usage of the package smesh for 3d mesh generation. 
+Below you can see an example of usage of the package smesh for 3d mesh generation. 
 
+\anchor example_3d_mesh
 <h2>Example of 3d mesh generation with NETGEN:</h2>
 
-\n from geompy import * 
-\n import smesh 
+\code
+from geompy import * 
+import smesh 
 
-<b># Geometry</b>
-\n <b># an assembly of a box, a cylinder and a truncated cone meshed with tetrahedral</b>. 
+###
+# Geometry: an assembly of a box, a cylinder and a truncated cone
+# meshed with tetrahedral 
+###
 
-<b># Define values</b>
-\n name = "ex21_lamp" 
-\n cote = 60 
-\n section = 20 
-\n size = 200 
-\n radius_1 = 80 
-\n radius_2 = 40 
-\n height = 100 
+# Define values
+name = "ex21_lamp" 
+cote = 60 
+section = 20 
+size = 200 
+radius_1 = 80 
+radius_2 = 40 
+height = 100 
 
-<b># Build a box</b>
-\n box = MakeBox(-cote, -cote, -cote, +cote, +cote, +cote) 
+# Build a box
+box = MakeBox(-cote, -cote, -cote, +cote, +cote, +cote) 
 
-<b># Build a cylinder</b>
-\n pt1 = MakeVertex(0, 0, cote/3) 
-\n di1 = MakeVectorDXDYDZ(0, 0, 1) 
-\n cyl = MakeCylinder(pt1, di1, section, size) 
+# Build a cylinder
+pt1 = MakeVertex(0, 0, cote/3) 
+di1 = MakeVectorDXDYDZ(0, 0, 1) 
+cyl = MakeCylinder(pt1, di1, section, size) 
 
-<b># Build a truncated cone</b>
-\n pt2 = MakeVertex(0, 0, size) 
-\n cone = MakeCone(pt2, di1, radius_1, radius_2, height) 
+# Build a truncated cone
+pt2 = MakeVertex(0, 0, size) 
+cone = MakeCone(pt2, di1, radius_1, radius_2, height) 
 
-<b># Fuse </b>
-\n box_cyl = MakeFuse(box, cyl) 
-\n piece = MakeFuse(box_cyl, cone) 
+# Fuse
+box_cyl = MakeFuse(box, cyl) 
+piece = MakeFuse(box_cyl, cone) 
 
-<b># Add in study</b>
-\n addToStudy(piece, name) 
+# Add to the study
+addToStudy(piece, name) 
 
-<b># Create a group of faces</b>
-\n group = CreateGroup(piece, ShapeType["FACE"]) 
-\n group_name = name + "_grp" 
-\n addToStudy(group, group_name) 
-\n group.SetName(group_name) 
+# Create a group of faces
+group = CreateGroup(piece, ShapeType["FACE"]) 
+group_name = name + "_grp" 
+addToStudy(group, group_name) 
+group.SetName(group_name) 
 
-<b># Add faces in the group</b>
-\n faces = SubShapeAllIDs(piece, ShapeType["FACE"]) 
-\n UnionIDs(group, faces) 
+# Add faces to the group
+faces = SubShapeAllIDs(piece, ShapeType["FACE"]) 
+UnionIDs(group, faces) 
 
-<b># Create a mesh</b>
+###
+# Create a mesh
+###
 
-<b># Define a mesh on a geometry</b>
-\n tetra = smesh.Mesh(piece, name) 
+# Define a mesh on a geometry
+tetra = smesh.Mesh(piece, name) 
 
-<b># Define 1D hypothesis</b>
-\n algo1d = tetra.Segment() 
-\n algo1d.LocalLength(10) 
+# Define 1D hypothesis
+algo1d = tetra.Segment() 
+algo1d.LocalLength(10) 
 
-<b># Define 2D hypothesis</b>
-\n algo2d = tetra.Triangle() 
-\n algo2d.LengthFromEdges() 
+# Define 2D hypothesis
+algo2d = tetra.Triangle() 
+algo2d.LengthFromEdges() 
 
-<b># Define 3D hypothesis</b>
-\n algo3d = tetra.Tetrahedron(smesh.NETGEN) 
-\n algo3d.MaxElementVolume(100) 
+# Define 3D hypothesis
+algo3d = tetra.Tetrahedron(smesh.NETGEN) 
+algo3d.MaxElementVolume(100) 
 
-<b># Compute the mesh</b>
-\n tetra.Compute() 
+# Compute the mesh
+tetra.Compute() 
 
-<b># Create a groupe of faces</b>
-\n tetra.Group(group)
+# Create a groupe of faces
+tetra.Group(group)
 
-\n Examples of Python scripts for all Mesh operations are available by
+\endcode
+
+Examples of Python scripts for all Mesh operations are available by
 the following links:
 
-<ul>
-<li>\subpage tui_creating_meshes_page</li>
-<li>\subpage tui_viewing_meshes_page</li>
-<li>\subpage tui_defining_hypotheses_page</li>
-<li>\subpage tui_quality_controls_page</li>
-<li>\subpage tui_grouping_elements_page</li>
-<li>\subpage tui_modifying_meshes_page</li>
-<li>\subpage tui_transforming_meshes_page</li>
-<li>\subpage tui_notebook_smesh_page</li>
-</ul>
-
+- \subpage tui_creating_meshes_page
+- \subpage tui_viewing_meshes_page
+- \subpage tui_defining_hypotheses_page
+- \subpage tui_quality_controls_page
+- \subpage tui_grouping_elements_page
+- \subpage tui_modifying_meshes_page
+- \subpage tui_transforming_meshes_page
+- \subpage tui_notebook_smesh_page
 
 */

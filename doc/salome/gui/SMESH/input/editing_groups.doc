@@ -2,7 +2,7 @@
 
 \page editing_groups_page Editing groups
 
-\n <em>To edit an existing group of elements:</em>
+<em>To edit an existing group of elements:</em>
 <ol>
 <li>Select your group in the Object Browser and in the \b Mesh menu click
 the <b>Edit Group</b> item or <em>"Edit Group"</em> button in the toolbar.</li>
@@ -17,11 +17,12 @@ The following dialog box will appear:
 In this dialog box you can modify the name of your group and add or
 remove the elements forming it. For more information see 
 \ref creating_groups_page "Creating Groups" page.
+
 <li>Click the \b Apply or <b>Apply and Close</b> button to confirm modification of the
 group.</li>
 </ol>
 
-\n <em>To convert an existing group on geometry into standalone group
+<em>To convert an existing group on geometry into standalone group
 of elements and modify:</em>
 <ol>
 <li>Select your group on geometry in the Object Browser and in the \b Mesh menu click
@@ -31,11 +32,12 @@ the <b>Edit Group as Standalone</b> item.</li>
 <center><em>"Edit Group as Standalone" button</em></center>
 
 The group on geometry will be converted into standalone group and can
-be modified as group of elements
+be modified as group of elements.
+
 <li>Click the \b Apply or <b>Apply and Close</b> button to confirm modification of the
 group.</li>
+</ol>
 
-<br><b>See Also</b> a sample TUI Script of an 
-\ref tui_edit_group "Edit Group" operation.  
+\sa A sample TUI Script of an \ref tui_edit_group "Edit Group" operation.  
 
 */

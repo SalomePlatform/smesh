@@ -47,7 +47,7 @@ tetrahedral (pyramidal) elements.</li>
 \image html image126.gif "Example of a hexahedral 3D mesh"
 </ul>
 
-\Note that BLSURF and GHS3D are commercial meshers and require a
+\note BLSURF and GHS3D are commercial meshers and require a
 license to be used within the Mesh module.
 
 There is also a number of more specific algorithms:
