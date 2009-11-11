@@ -13,11 +13,8 @@ of mesh layers along the radius. The distribution of layers can be set with any 
 
 \image html hypo_radquad_dlg.png
 
-\image html mesh_radquad_01.png "Radial Quadrangle 2D mesh on the top
-and the bottom faces of a cylinder"
+\image html mesh_radquad_01.png "Radial Quadrangle 2D mesh on the top and the bottom faces of a cylinder"
 
 \image html mesh_radquad_02.png "Radial Quadrangle 2D mesh on a part of circle"
 
-<br><b>See Also</b> a sample 
-\ref tui_radial_quadrangle "TUI Script".
 */
