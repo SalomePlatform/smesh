@@ -545,5 +545,6 @@ mesh.Compute()
 
 <ul>
 <li>\subpage tui_defining_blsurf_hypotheses_page</li>
+<li>\subpage tui_defining_ghs3d_hypotheses_page</li>
 </ul>
 */
