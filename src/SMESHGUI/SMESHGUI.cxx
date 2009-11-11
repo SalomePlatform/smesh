@@ -25,49 +25,50 @@
 // SMESH includes
 
 #include "SMESHGUI.h"
-#include "SMESHGUI_NodesDlg.h"
-#include "SMESHGUI_TransparencyDlg.h"
-#include "SMESHGUI_ClippingDlg.h"
-#include "SMESHGUI_GroupDlg.h"
-#include "SMESHGUI_RemoveNodesDlg.h"
-#include "SMESHGUI_RemoveElementsDlg.h"
-#include "SMESHGUI_MeshInfosDlg.h"
-#include "SMESHGUI_StandardMeshInfosDlg.h"
-#include "SMESHGUI_WhatIsDlg.h"
-#include "SMESHGUI_Preferences_ColorDlg.h"
-#include "SMESHGUI_Preferences_ScalarBarDlg.h"
-#include "SMESHGUI_Hypotheses.h"
-#include "SMESHGUI_MoveNodesDlg.h"
 #include "SMESHGUI_AddMeshElementDlg.h"
 #include "SMESHGUI_AddQuadraticElementDlg.h"
+#include "SMESHGUI_BuildCompoundDlg.h"
+#include "SMESHGUI_ClippingDlg.h"
+#include "SMESHGUI_ComputeDlg.h"
+#include "SMESHGUI_ConvToQuadOp.h"
+#include "SMESHGUI_CreatePolyhedralVolumeDlg.h"
+#include "SMESHGUI_DeleteGroupDlg.h"
+#include "SMESHGUI_Displayer.h"
+#include "SMESHGUI_EditMeshDlg.h"
+#include "SMESHGUI_ExtrusionAlongPathDlg.h"
+#include "SMESHGUI_ExtrusionDlg.h"
+#include "SMESHGUI_FileInfoDlg.h"
 #include "SMESHGUI_FilterDlg.h"
 #include "SMESHGUI_FilterLibraryDlg.h"
-#include "SMESHGUI_SingleEditDlg.h"
-#include "SMESHGUI_MultiEditDlg.h"
-#include "SMESHGUI_GroupOpDlg.h"
+#include "SMESHGUI_FindElemByPointDlg.h"
+#include "SMESHGUI_GroupDlg.h"
 #include "SMESHGUI_GroupOnShapeDlg.h"
-#include "SMESHGUI_DeleteGroupDlg.h"
-#include "SMESHGUI_SmoothingDlg.h"
-#include "SMESHGUI_RenumberingDlg.h"
-#include "SMESHGUI_ExtrusionDlg.h"
-#include "SMESHGUI_ExtrusionAlongPathDlg.h"
-#include "SMESHGUI_RevolutionDlg.h"
-#include "SMESHGUI_TranslationDlg.h"
-#include "SMESHGUI_RotationDlg.h"
-#include "SMESHGUI_SymmetryDlg.h"
-#include "SMESHGUI_SewingDlg.h"
-#include "SMESHGUI_EditMeshDlg.h"
-#include "SMESHGUI_MeshPatternDlg.h"
-#include "SMESHGUI_Selection.h"
-#include "SMESHGUI_CreatePolyhedralVolumeDlg.h"
-#include "SMESHGUI_ConvToQuadOp.h"
-#include "SMESHGUI_MeshOp.h"
-#include "SMESHGUI_Displayer.h"
-#include "SMESHGUI_MakeNodeAtPointDlg.h"
-#include "SMESHGUI_BuildCompoundDlg.h"
-#include "SMESHGUI_ComputeDlg.h"
-#include "SMESHGUI_FileInfoDlg.h"
+#include "SMESHGUI_GroupOpDlg.h"
+#include "SMESHGUI_Hypotheses.h"
 #include "SMESHGUI_Make2DFrom3DOp.h"
+#include "SMESHGUI_MakeNodeAtPointDlg.h"
+#include "SMESHGUI_MeshInfosDlg.h"
+#include "SMESHGUI_MeshOp.h"
+#include "SMESHGUI_MeshPatternDlg.h"
+#include "SMESHGUI_MoveNodesDlg.h"
+#include "SMESHGUI_MultiEditDlg.h"
+#include "SMESHGUI_NodesDlg.h"
+#include "SMESHGUI_Preferences_ColorDlg.h"
+#include "SMESHGUI_Preferences_ScalarBarDlg.h"
+#include "SMESHGUI_RemoveElementsDlg.h"
+#include "SMESHGUI_RemoveNodesDlg.h"
+#include "SMESHGUI_RenumberingDlg.h"
+#include "SMESHGUI_RevolutionDlg.h"
+#include "SMESHGUI_RotationDlg.h"
+#include "SMESHGUI_Selection.h"
+#include "SMESHGUI_SewingDlg.h"
+#include "SMESHGUI_SingleEditDlg.h"
+#include "SMESHGUI_SmoothingDlg.h"
+#include "SMESHGUI_StandardMeshInfosDlg.h"
+#include "SMESHGUI_SymmetryDlg.h"
+#include "SMESHGUI_TranslationDlg.h"
+#include "SMESHGUI_TransparencyDlg.h"
+#include "SMESHGUI_WhatIsDlg.h"
 
 #include "SMESHGUI_Utils.h"
 #include "SMESHGUI_MeshUtils.h"
@@ -2087,6 +2088,12 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       break;
     }
 
+  case 904:                                     // FIND ELEM
+    {
+      startOperation( theCommandID );
+      break;
+    }
+
   case 1100:                                    // EDIT HYPOTHESIS
     {
       if(checkLock(aStudy)) break;
@@ -2730,6 +2737,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction(  900, "ADV_INFO",        "ICON_ADV_INFO" );
   createSMESHAction(  902, "STD_INFO",        "ICON_STD_INFO" );
   createSMESHAction(  903, "WHAT_IS",         "ICON_WHAT_IS" );
+  createSMESHAction(  904, "FIND_ELEM",       "ICON_FIND_ELEM" );
   createSMESHAction( 6001, "LENGTH",          "ICON_LENGTH",        0, true );
   createSMESHAction( 6002, "FREE_EDGE",       "ICON_FREE_EDGE",     0, true );
   createSMESHAction( 6021, "FREE_FACES",      "ICON_FREE_FACES",    0, true );
@@ -2881,6 +2889,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createMenu( 900, meshId, -1 );
   createMenu( 902, meshId, -1 );
   createMenu( 903, meshId, -1 );
+  createMenu( 904, meshId, -1 );
   createMenu( separator(), meshId, -1 );
 
   createMenu( 6003, ctrlId, -1 );
@@ -2977,6 +2986,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createTool( 900, meshTb );
   createTool( 902, meshTb );
   createTool( 903, meshTb );
+  createTool( 904, meshTb );
   createTool( separator(), meshTb );
 
   createTool( 6001, ctrlTb );
@@ -3102,6 +3112,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createPopupItem( 900, OB, mesh_group );                  // ADV_INFO
   createPopupItem( 902, OB, mesh );                        // STD_INFO
   createPopupItem( 903, OB, mesh_group );                  // WHAT_IS
+  createPopupItem( 904, OB, mesh_group );                  // FIND_ELEM
   popupMgr()->insert( separator(), -1, 0 );
   createPopupItem( 801, OB, mesh );                        // CREATE_GROUP
   createPopupItem( 806, OB, mesh );                        // CREATE_GEO_GROUP
@@ -3136,6 +3147,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createPopupItem( 900, View, mesh_group ); // ADV_INFO
   createPopupItem( 902, View, mesh );       // STD_INFO
   createPopupItem( 903, View, mesh_group ); // WHAT_IS
+  createPopupItem( 904, View, mesh_group ); // FIND_ELEM
   popupMgr()->insert( separator(), -1, 0 );
 
   createPopupItem( 1136, OB + " " + View, mesh, "&& (not isAutoColor)" ); // AUTO_COLOR
@@ -3891,6 +3903,12 @@ LightApp_Operation* SMESHGUI::createOperation( const int id ) const
   // to do : create operation here
   switch( id )
   {
+    case 417: //convert to quadratic
+      op = new SMESHGUI_ConvToQuadOp();
+    break;
+    case 418: // create 2D mesh as boundary on 3D
+      op = new SMESHGUI_Make2DFrom3DOp();
+    break;
     case 701: // Compute mesh
       op = new SMESHGUI_ComputeOp();
     break;
@@ -3912,12 +3930,9 @@ LightApp_Operation* SMESHGUI::createOperation( const int id ) const
     case 806: // Create group on geom
       op = new SMESHGUI_GroupOnShapeOp();
       break;
-    case 417: //convert to quadratic
-      op = new SMESHGUI_ConvToQuadOp();
-    break;
-    case 418: // create 2D mesh as boundary on 3D
-      op = new SMESHGUI_Make2DFrom3DOp();
-    break;
+    case 904: // Find element
+      op = new SMESHGUI_FindElemByPointOp();
+      break;
     case 4067: // make mesh pass through point
       op = new SMESHGUI_MakeNodeAtPointOp();
       break;

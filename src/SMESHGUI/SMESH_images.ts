@@ -258,6 +258,10 @@
             <translation>mesh_free_faces.png</translation>
         </message>
         <message>
+            <source>ICON_FIND_ELEM</source>
+            <translation>mesh_find_elem_by_point.png</translation>
+        </message>
+        <message>
             <source>ICON_HYPO</source>
             <translation>mesh_hypo_length.png</translation>
         </message>

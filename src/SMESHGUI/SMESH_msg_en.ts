@@ -342,6 +342,10 @@
             <translation>File</translation>
         </message>
         <message>
+            <source>MEN_FIND_ELEM</source>
+            <translation>Find element by point</translation>
+        </message>
+        <message>
             <source>MEN_FREE_BORDER</source>
             <translation>Free Borders</translation>
         </message>
@@ -4262,6 +4266,37 @@ Please specify them and try again</translation>
         <message>
             <source>INVALID_MESH</source>
             <translation>Mesh to modify not selected</translation>
+        </message>
+    </context>
+    <context>
+        <name>SMESHGUI_FindElemByPointDlg</name>
+        <message>
+            <source>CAPTION</source>
+            <translation>Find elements at point</translation>
+        </message>
+        <message>
+            <source>CREATE_NEW_METHOD</source>
+            <translation>Create a node</translation>
+        </message>
+        <message>
+            <source>MESH_PASS_THROUGH_POINT</source>
+            <translation>Make a node at point</translation>
+        </message>
+        <message>
+            <source>METHOD</source>
+            <translation>Method</translation>
+        </message>
+        <message>
+            <source>MOVE_EXISTING_METHOD</source>
+            <translation>Move a node</translation>
+        </message>
+        <message>
+            <source>NODE_2MOVE</source>
+            <translation>Node to move</translation>
+        </message>
+        <message>
+            <source>NODE_2MOVE_ID</source>
+            <translation>ID</translation>
         </message>
     </context>
     <context>

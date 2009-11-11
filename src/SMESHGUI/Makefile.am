@@ -92,6 +92,7 @@ salomeinclude_HEADERS = \
 	SMESHGUI_IdValidator.h \
 	SMESHGUI_MeshInfosBox.h \
 	SMESHGUI_Make2DFrom3DOp.h \
+	SMESHGUI_FindElemByPointDlg.h \
 	SMESH_SMESHGUI.hxx
 
 # Libraries targets
@@ -215,7 +216,9 @@ MOC_FILES = \
 	SMESHGUI_GroupOnShapeDlg_moc.cxx \
 	SMESHGUI_FileInfoDlg_moc.cxx \
 	SMESHGUI_MeshInfosBox_moc.cxx \
-	SMESHGUI_Make2DFrom3DOp_moc.cxx
+	SMESHGUI_Make2DFrom3DOp_moc.cxx \
+	SMESHGUI_FindElemByPointDlg.cxx \
+	SMESHGUI_FindElemByPointDlg_moc.cxx
 
 nodist_libSMESH_la_SOURCES= \
 	$(MOC_FILES)
