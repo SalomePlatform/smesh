@@ -5581,75 +5581,125 @@ bool SMESH_MeshEditor::isOut( const SMDS_MeshElement* element, const gp_Pnt& poi
   while ( nodeIt->more() )
     xyz.push_back( TNodeXYZ( cast2Node( nodeIt->next() )));
 
+  int i, nbNodes = element->NbNodes();
+
   if ( element->GetType() == SMDSAbs_Face ) // --------------------------------------------------
   {
-    // gravity center
-    gp_XYZ gc(0,0,0);
-    gc = accumulate( xyz.begin(), xyz.end(), gc );
-    gc /= element->NbNodes();
-
-    // compute face normal using gc
-    gp_Vec normal(0,0,0);
+    // compute face normal
+    gp_Vec faceNorm(0,0,0);
     xyz.push_back( xyz.front() );
-    for ( int i = 0; i < element->NbNodes(); ++i )
+    for ( i = 0; i < nbNodes; ++i )
     {
-      gp_Vec edge( xyz[i], xyz[i+1]);
-      gp_Vec n2gc( xyz[i], gc );
-      normal += edge ^ n2gc;
+      gp_Vec edge1( xyz[i+1], xyz[i]);
+      gp_Vec edge2( xyz[i+1], xyz[(i+2)%nbNodes] );
+      faceNorm += edge1 ^ edge2;
     }
-    double faceDoubleArea = normal.Magnitude();
-    if ( faceDoubleArea <= numeric_limits<double>::min() )
-      return true; // invalid face
-    normal /= faceDoubleArea;
+    double normSize = faceNorm.Magnitude();
+    if ( normSize <= tol )
+    {
+      // degenerated face: point is out if it is out of all face edges
+      for ( i = 0; i < nbNodes; ++i )
+      {
+        SMDS_MeshNode n1( xyz[i].X(),   xyz[i].Y(),   xyz[i].Z() );
+        SMDS_MeshNode n2( xyz[i+1].X(), xyz[i+1].Y(), xyz[i+1].Z() );
+        SMDS_MeshEdge edge( &n1, &n2 );
+        if ( !isOut( &edge, point, tol ))
+          return false;
+      }
+      return true;
+    }
+    faceNorm /= normSize;
 
     // check if the point lays on face plane
     gp_Vec n2p( xyz[0], point );
-    if ( fabs( n2p * normal ) > tol )
+    if ( fabs( n2p * faceNorm ) > tol )
       return true; // not on face plane
 
-    // check if point is out of face boundary
-    int i, out = false;
-    for ( i = 0; !out && i < element->NbNodes(); ++i )
+    // check if point is out of face boundary:
+    // define it by closest transition of a ray point->infinity through face boundary
+    // on the face plane.
+    // First, find normal of a plane perpendicular to face plane, to be used as a cutting tool
+    // to find intersections of the ray with the boundary.
+    gp_Vec ray = n2p;
+    gp_Vec plnNorm = ray ^ faceNorm;
+    normSize = plnNorm.Magnitude();
+    if ( normSize <= tol ) return false; // point coincides with the first node
+    plnNorm /= normSize;
+    // for each node of the face, compute its signed distance to the plane
+    vector<double> dist( nbNodes + 1);
+    for ( i = 0; i < nbNodes; ++i )
     {
-      gp_Vec edge( xyz[i], xyz[i+1]);
-      gp_Vec n2p ( xyz[i], point );
-      gp_Vec cross = edge ^ n2p;
-      out = ( cross * normal < -tol );
+      gp_Vec n2p( xyz[i], point );
+      dist[i] = n2p * plnNorm;
     }
-    if ( out && element->IsPoly() )
+    dist.back() = dist.front();
+    // find the closest intersection
+    int    iClosest = -1;
+    double rClosest, distClosest = 1e100;;
+    gp_Pnt pClosest;
+    for ( i = 0; i < nbNodes; ++i )
     {
-      // define point position by the closest edge
-      double minDist = numeric_limits<double>::max();
-      int iMinDist;
-      for ( i = 0; i < element->NbNodes(); ++i )
+      double r;
+      if ( dist[i] < tol )
+        r = 0.;
+      else if ( dist[i+1] < tol )
+        r = 1.;
+      else if ( dist[i] * dist[i+1] < 0 )
+        r = dist[i] / ( dist[i] - dist[i+1] );
+      else
+        continue; // no intersection
+      gp_Pnt pInt = xyz[i] * (1.-r) + xyz[i+1] * r;
+      gp_Vec p2int ( point, pInt);
+      if ( p2int * ray > -tol ) // right half-space
       {
-        gp_Vec edge( xyz[i], xyz[i+1]);
-        gp_Vec n1p ( xyz[i], point);
-        double dist = ( edge ^ n1p ).Magnitude() / edge.Magnitude();
-        if ( dist < minDist )
-          iMinDist = i;
+        double intDist = p2int.SquareMagnitude();
+        if ( intDist < distClosest )
+        {
+          iClosest = i;
+          rClosest = r;
+          pClosest = pInt;
+          distClosest = intDist;
+        }
       }
-      gp_Vec edge( xyz[iMinDist], xyz[iMinDist+1]);
-      gp_Vec n2p ( xyz[iMinDist], point );
-      gp_Vec cross = edge ^ n2p;
-      out = ( cross * normal < -tol );
     }
-    return out;
+    if ( iClosest < 0 )
+      return true; // no intesections - out
+
+    // analyse transition
+    gp_Vec edge( xyz[iClosest], xyz[iClosest+1] );
+    gp_Vec edgeNorm = -( edge ^ faceNorm ); // normal to intersected edge pointing out of face
+    gp_Vec p2int ( point, pClosest );
+    bool out = (edgeNorm * p2int) < -tol;
+    if ( rClosest > 0. && rClosest < 1. ) // not node intersection
+      return out;
+
+    // ray pass through a face node; analyze transition through an adjacent edge
+    gp_Pnt p1 = xyz[ (rClosest == 0.) ? ((iClosest+nbNodes-1) % nbNodes) : (iClosest+1) ];
+    gp_Pnt p2 = xyz[ (rClosest == 0.) ? iClosest : ((iClosest+2) % nbNodes) ];
+    gp_Vec edgeAdjacent( p1, p2 );
+    gp_Vec edgeNorm2 = -( edgeAdjacent ^ faceNorm );
+    bool out2 = (edgeNorm2 * p2int) < -tol;
+
+    bool covexCorner = ( edgeNorm * edgeAdjacent * (rClosest==1. ? 1. : -1.)) < 0;
+    return covexCorner ? (out || out2) : (out && out2);
   }
   if ( element->GetType() == SMDSAbs_Edge ) // --------------------------------------------------
   {
-    for ( int i = 1; i < element->NbNodes(); ++i )
+    // point is out of edge if it is NOT ON any straight part of edge
+    // (we consider quadratic edge as being composed of two straight parts)
+    for ( i = 1; i < nbNodes; ++i )
     {
       gp_Vec edge( xyz[i-1], xyz[i]);
       gp_Vec n1p ( xyz[i-1], point);
       double dist = ( edge ^ n1p ).Magnitude() / edge.Magnitude();
       if ( dist > tol )
-        return true;
+        continue;
       gp_Vec n2p( xyz[i], point );
       if ( fabs( edge.Magnitude() - n1p.Magnitude() - n2p.Magnitude()) > tol )
-        return true;
+        continue;
+      return false; // point is ON this part
     }
-    return false;
+    return true;
   }
   // Node or 0D element -------------------------------------------------------------------------
   {
