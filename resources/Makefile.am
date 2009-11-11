@@ -55,6 +55,7 @@ dist_salomeres_DATA = \
 	mesh_init.png \
 	mesh_length.png \
 	mesh_length_2d.png \
+	mesh_find_elem_by_point.png \
 	mesh_free_edges.png \
 	mesh_free_edges_2d.png \
 	mesh_free_nodes.png \
