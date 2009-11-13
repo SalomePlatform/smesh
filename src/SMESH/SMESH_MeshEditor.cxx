@@ -8771,6 +8771,95 @@ static bool isInside(const SMDS_MeshElement* theElem,
 
 /*!
   \brief Creates a hole in a mesh by doubling the nodes of some particular elements
+  \param theNodes - identifiers of nodes to be doubled
+  \param theModifiedElems - identifiers of elements to be updated by the new (doubled) 
+         nodes. If list of element identifiers is empty then nodes are doubled but 
+         they not assigned to elements
+  \return TRUE if operation has been completed successfully, FALSE otherwise
+*/
+bool SMESH_MeshEditor::DoubleNodes( const std::list< int >& theListOfNodes, 
+                                    const std::list< int >& theListOfModifiedElems )
+{
+  myLastCreatedElems.Clear();
+  myLastCreatedNodes.Clear();
+
+  if ( theListOfNodes.size() == 0 )
+    return false;
+
+  SMESHDS_Mesh* aMeshDS = GetMeshDS();
+  if ( !aMeshDS )
+    return false;
+
+  // iterate through nodes and duplicate them
+
+  std::map< const SMDS_MeshNode*, const SMDS_MeshNode* > anOldNodeToNewNode;
+
+  std::list< int >::const_iterator aNodeIter;
+  for ( aNodeIter = theListOfNodes.begin(); aNodeIter != theListOfNodes.end(); ++aNodeIter )
+  {
+    int aCurr = *aNodeIter;
+    SMDS_MeshNode* aNode = (SMDS_MeshNode*)aMeshDS->FindNode( aCurr );
+    if ( !aNode )
+      continue;
+
+    // duplicate node
+
+    const SMDS_MeshNode* aNewNode = aMeshDS->AddNode( aNode->X(), aNode->Y(), aNode->Z() );
+    if ( aNewNode )
+    {
+      anOldNodeToNewNode[ aNode ] = aNewNode;
+      myLastCreatedNodes.Append( aNewNode );
+    }
+  }
+
+  // Create map of new nodes for modified elements
+
+  std::map< SMDS_MeshElement*, vector<const SMDS_MeshNode*> > anElemToNodes;
+
+  std::list< int >::const_iterator anElemIter;
+  for ( anElemIter = theListOfModifiedElems.begin(); 
+        anElemIter != theListOfModifiedElems.end(); ++anElemIter )
+  {
+    int aCurr = *anElemIter;
+    SMDS_MeshElement* anElem = (SMDS_MeshElement*)aMeshDS->FindElement( aCurr );
+    if ( !anElem )
+      continue;
+
+    vector<const SMDS_MeshNode*> aNodeArr( anElem->NbNodes() );
+
+    SMDS_ElemIteratorPtr anIter = anElem->nodesIterator();
+    int ind = 0;
+    while ( anIter->more() ) 
+    { 
+      SMDS_MeshNode* aCurrNode = (SMDS_MeshNode*)anIter->next();
+      if ( aCurr && anOldNodeToNewNode.find( aCurrNode ) != anOldNodeToNewNode.end() )
+      {
+        const SMDS_MeshNode* aNewNode = anOldNodeToNewNode[ aCurrNode ];
+        aNodeArr[ ind++ ] = aNewNode;
+      }
+      else
+        aNodeArr[ ind++ ] = aCurrNode;
+    }
+    anElemToNodes[ anElem ] = aNodeArr;
+  }
+
+  // Change nodes of elements  
+
+  std::map< SMDS_MeshElement*, vector<const SMDS_MeshNode*> >::iterator
+    anElemToNodesIter = anElemToNodes.begin();
+  for ( ; anElemToNodesIter != anElemToNodes.end(); ++anElemToNodesIter )
+  {
+    const SMDS_MeshElement* anElem = anElemToNodesIter->first;
+    vector<const SMDS_MeshNode*> aNodeArr = anElemToNodesIter->second;
+    if ( anElem )
+      aMeshDS->ChangeElementNodes( anElem, &aNodeArr[ 0 ], anElem->NbNodes() );
+  }
+
+  return true;
+}
+
+/*!
+  \brief Creates a hole in a mesh by doubling the nodes of some particular elements
   \param theElems - group of of elements (edges or faces) to be replicated
   \param theNodesNot - group of nodes not to replicated
   \param theShape - shape to detect affected elements (element which geometric center

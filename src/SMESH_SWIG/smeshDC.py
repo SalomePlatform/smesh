@@ -3420,6 +3420,43 @@ class Mesh:
     #  @ingroup l1_auxiliary
     def GetLastCreatedElems(self):
         return self.editor.GetLastCreatedElems()
+
+     ## Creates a hole in a mesh by doubling the nodes of some particular elements
+    #  @param theNodes identifiers of nodes to be doubled
+    #  @param theModifiedElems identifiers of elements to be updated by the new (doubled) 
+    #         nodes. If list of element identifiers is empty then nodes are doubled but 
+    #         they not assigned to elements
+    #  @return TRUE if operation has been completed successfully, FALSE otherwise
+    #  @ingroup l2_modif_edit
+    def DoubleNodes(self, theNodes, theModifiedElems):
+        return self.editor.DoubleNodes(theNodes, theModifiedElems)
+        
+    ## Creates a hole in a mesh by doubling the nodes of some particular elements
+    #  This method provided for convenience works as DoubleNodes() described above.
+    #  @param theNodes identifiers of node to be doubled
+    #  @param theModifiedElems identifiers of elements to be updated
+    #  @return TRUE if operation has been completed successfully, FALSE otherwise
+    #  @ingroup l2_modif_edit
+    def DoubleNode(self, theNodeId, theModifiedElems):
+        return self.editor.DoubleNode(theNodeId, theModifiedElems)
+        
+    ## Creates a hole in a mesh by doubling the nodes of some particular elements
+    #  This method provided for convenience works as DoubleNodes() described above.
+    #  @param theNodes group of nodes to be doubled
+    #  @param theModifiedElems group of elements to be updated.
+    #  @return TRUE if operation has been completed successfully, FALSE otherwise
+    #  @ingroup l2_modif_edit
+    def DoubleNodeGroup(self, theNodes, theModifiedElems):
+        return self.editor.DoubleNodeGroup(theNodes, theModifiedElems)
+        
+    ## Creates a hole in a mesh by doubling the nodes of some particular elements
+    #  This method provided for convenience works as DoubleNodes() described above.
+    #  @param theNodes list of groups of nodes to be doubled
+    #  @param theModifiedElems list of groups of elements to be updated.
+    #  @return TRUE if operation has been completed successfully, FALSE otherwise
+    #  @ingroup l2_modif_edit
+    def DoubleNodeGroups(self, theNodes, theModifiedElems):
+        return self.editor.DoubleNodeGroups(theNodes, theModifiedElems)
     
     ## Creates a hole in a mesh by doubling the nodes of some particular elements
     #  @param theElems - the list of elements (edges or faces) to be replicated
@@ -3429,8 +3466,8 @@ class Mesh:
     #         replicated nodes should be associated to.
     #  @return TRUE if operation has been completed successfully, FALSE otherwise
     #  @ingroup l2_modif_edit
-    def DoubleNodes(self, theElems, theNodesNot, theAffectedElems):
-        return self.editor.DoubleNodes(theElems, theNodesNot, theAffectedElems)
+    def DoubleNodeElem(self, theElems, theNodesNot, theAffectedElems):
+        return self.editor.DoubleNodeElem(theElems, theNodesNot, theAffectedElems)
         
     ## Creates a hole in a mesh by doubling the nodes of some particular elements
     #  @param theElems - the list of elements (edges or faces) to be replicated
@@ -3441,8 +3478,8 @@ class Mesh:
     #         The replicated nodes should be associated to affected elements.
     #  @return TRUE if operation has been completed successfully, FALSE otherwise
     #  @ingroup l2_modif_edit
-    def DoubleNodesInRegion(self, theElems, theNodesNot, theShape):
-        return self.editor.DoubleNodesInRegion(theElems, theNodesNot, theShape)
+    def DoubleNodeElemInRegion(self, theElems, theNodesNot, theShape):
+        return self.editor.DoubleNodeElemInRegion(theElems, theNodesNot, theShape)
     
     ## Creates a hole in a mesh by doubling the nodes of some particular elements
     #  This method provided for convenience works as DoubleNodes() described above.
@@ -3451,8 +3488,8 @@ class Mesh:
     #  @param theAffectedElems - group of elements to which the replicated nodes
     #         should be associated to.
     #  @ingroup l2_modif_edit
-    def DoubleNodeGroup(self, theElems, theNodesNot, theAffectedElems):
-        return self.editor.DoubleNodeGroup(theElems, theNodesNot, theAffectedElems)
+    def DoubleNodeElemGroup(self, theElems, theNodesNot, theAffectedElems):
+        return self.editor.DoubleNodeElemGroup(theElems, theNodesNot, theAffectedElems)
         
     ## Creates a hole in a mesh by doubling the nodes of some particular elements
     #  This method provided for convenience works as DoubleNodes() described above.
@@ -3462,8 +3499,8 @@ class Mesh:
     #         located on or inside shape).
     #         The replicated nodes should be associated to affected elements.
     #  @ingroup l2_modif_edit
-    def DoubleNodeGroupInRegion(self, theElems, theNodesNot, theShape):
-        return self.editor.DoubleNodeGroup(theElems, theNodesNot, theShape)
+    def DoubleNodeElemGroupInRegion(self, theElems, theNodesNot, theShape):
+        return self.editor.DoubleNodeElemGroup(theElems, theNodesNot, theShape)
         
     ## Creates a hole in a mesh by doubling the nodes of some particular elements
     #  This method provided for convenience works as DoubleNodes() described above.
@@ -3473,8 +3510,8 @@ class Mesh:
     #         should be associated to.
     #  @return TRUE if operation has been completed successfully, FALSE otherwise
     #  @ingroup l2_modif_edit
-    def DoubleNodeGroups(self, theElems, theNodesNot, theAffectedElems):
-        return self.editor.DoubleNodeGroups(theElems, theNodesNot, theAffectedElems)
+    def DoubleNodeElemGroups(self, theElems, theNodesNot, theAffectedElems):
+        return self.editor.DoubleNodeElemGroups(theElems, theNodesNot, theAffectedElems)
 
     ## Creates a hole in a mesh by doubling the nodes of some particular elements
     #  This method provided for convenience works as DoubleNodes() described above.
@@ -3485,8 +3522,8 @@ class Mesh:
     #         The replicated nodes should be associated to affected elements.
     #  @return TRUE if operation has been completed successfully, FALSE otherwise
     #  @ingroup l2_modif_edit
-    def DoubleNodeGroupsInRegion(self, theElems, theNodesNot, theShape):
-        return self.editor.DoubleNodeGroupsInRegion(theElems, theNodesNot, theShape)
+    def DoubleNodeElemGroupsInRegion(self, theElems, theNodesNot, theShape):
+        return self.editor.DoubleNodeElemGroupsInRegion(theElems, theNodesNot, theShape)
 
 ## The mother class to define algorithm, it is not recommended to use it directly.
 #
