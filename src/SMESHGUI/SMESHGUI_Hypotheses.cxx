@@ -540,7 +540,8 @@ QString SMESHGUI_GenericHypothesisCreator::helpPage() const
     aHelpFileName = "radial_quadrangle_1D2D_algo_page.html";
   else if ( aHypType == "SegmentLengthAroundVertex")
     aHelpFileName = "segments_around_vertex_algo_page.html";
-    
+  else if ( aHypType == "QuadrangleParams")
+    aHelpFileName = "a2d_meshing_hypo_page.html#hypo_quad_params_anchor";
   return aHelpFileName;
 }
 

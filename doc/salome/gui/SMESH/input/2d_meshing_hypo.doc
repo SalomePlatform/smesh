@@ -52,6 +52,20 @@ used as a degenerated edge.
 
 \image html hypo_quad_params_res.png "The resulting mesh"
 
+This hypothesis can be also used to mesh face that represents a
+segment of the circular face. There is one limitaion of the <b>Quadrangle
+mapping</b> algorithm related to the selecting of the degenerated
+vertex for the faces which are built from the angle > 180 degrees (see
+next picture).
+
+\image html hypo_quad_params_2.png "A 3/4 part of circle face"
+
+Selection of the wrong vertex for the <b>Quadrangle parameters</b>
+hypothesis will lead to the wrong mesh generation. The picture below
+shows good (left) and bad (right) results of meshing.
+
+\image html hypo_quad_params_res_2.png "The resulting meshes"
+
 <br>
 \anchor quadrangle_preference_anchor
 <h2>Quadrangle Preference</h2>
