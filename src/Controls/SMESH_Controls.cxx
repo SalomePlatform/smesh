@@ -1938,8 +1938,10 @@ bool ElemGeomType::IsSatisfy( long theId )
 {
   if (!myMesh) return false;
   const SMDS_MeshElement* anElem = myMesh->FindElement( theId );
+  if ( !anElem )
+    return false;
   const SMDSAbs_ElementType anElemType = anElem->GetType();
-  if ( !anElem || (myType != SMDSAbs_All && anElemType != myType) )
+  if ( myType != SMDSAbs_All && anElemType != myType )
     return false;
   const int aNbNode = anElem->NbNodes();
   bool isOk = false;
