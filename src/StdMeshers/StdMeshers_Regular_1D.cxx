@@ -757,7 +757,7 @@ bool StdMeshers_Regular_1D::computeInternalParameters(SMESH_Mesh &     theMesh,
     double an = _value[ END_LENGTH_IND ];
 
     double  q = ( an - a1 ) / ( 2 *theLength/( a1 + an ) - 1 );
-    int     n = int( 1 + ( an - a1 ) / q );
+    int n = fabs(q) > numeric_limits<double>::min() ? int( 1 + ( an - a1 ) / q ) : 1+theLength/a1;
 
     double U1 = theReverse ? l : f;
     double Un = theReverse ? f : l;
