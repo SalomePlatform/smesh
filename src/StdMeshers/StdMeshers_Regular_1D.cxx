@@ -63,6 +63,7 @@
 #include <TopoDS_Edge.hxx>
 
 #include <string>
+#include <limits>
 
 using namespace std;
 
