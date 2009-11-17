@@ -2155,6 +2155,17 @@ SMESH_Gen_i::ConcatenateCommon(const SMESH::mesh_array& theMeshesArray,
   {
     SMESH::ListOfGroups_var groups = aNewMesh->GetGroups();
   }
+
+  // IPAL21468 Change icon of compound because it need not be computed.
+  SALOMEDS::SObject_var aMeshSObj = ObjectToSObject( myCurrentStudy, aNewMesh );
+  if(aMeshSObj) {
+    SALOMEDS::GenericAttribute_var anAttr;
+    SALOMEDS::StudyBuilder_var aBuilder = myCurrentStudy->NewBuilder();
+    anAttr = aBuilder->FindOrCreateAttribute( aMeshSObj,"AttributePixMap" );
+    SALOMEDS::AttributePixMap_var aPixmap = SALOMEDS::AttributePixMap::_narrow(anAttr);
+    aPixmap->SetPixMap("ICON_SMESH_TREE_MESH");
+  }
+
   return aNewMesh._retn();
 }
 

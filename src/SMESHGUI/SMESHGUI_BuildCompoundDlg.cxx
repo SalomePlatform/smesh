@@ -289,6 +289,8 @@ bool SMESHGUI_BuildCompoundDlg::ClickOnApply()
   if (!isValid())
     return false;
 
+  SMESH::SMESH_Mesh_var aCompoundMesh;
+
   if (!myMesh->_is_nil()) {
     QStringList aParameters;
     aParameters << (CheckBoxMerge->isChecked() ? SpinBoxTol->text() : QString(" "));
@@ -297,7 +299,6 @@ bool SMESHGUI_BuildCompoundDlg::ClickOnApply()
 
       SMESH::SMESH_Gen_var aSMESHGen = SMESHGUI::GetSMESHGen();
       // concatenate meshes
-      SMESH::SMESH_Mesh_var aCompoundMesh;
       if(CheckBoxCommon->isChecked())
         aCompoundMesh = aSMESHGen->ConcatenateWithGroups(myMeshArray, 
                                                          !(ComboBoxUnion->currentIndex()), 
@@ -319,8 +320,16 @@ bool SMESHGUI_BuildCompoundDlg::ClickOnApply()
 
     LineEditName->setText(GetDefaultName(tr("COMPOUND_MESH")));
 
-    //mySelectionMgr->clearSelected();
-    SMESH::UpdateView();
+    // IPAL21468 Compound is hidden after creation.
+    if ( SMESHGUI::automaticUpdate() ) {
+      mySelectionMgr->clearSelected();
+      SMESH::UpdateView();
+      
+      _PTR(SObject) aSO = SMESH::FindSObject(aCompoundMesh.in());
+      if ( SMESH_Actor* anActor = SMESH::CreateActor(aSO->GetStudy(), aSO->GetID().c_str()) )
+        SMESH::DisplayActor(SMESH::GetActiveWindow(), anActor);
+    }// end IPAL21468
+
     return true;
   }
   return false;
