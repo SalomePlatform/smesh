@@ -49,6 +49,8 @@
 #include <Standard_ErrorHandler.hxx>
 #endif
 
+#include <Basics_Utils.hxx>
+
 using namespace std;
 
 const double PRECISION = 1e-7;
@@ -321,9 +323,7 @@ bool process( const TCollection_AsciiString& str, int convMode,
               bool& non_neg, bool& non_zero,
               bool& singulars, double& sing_point )
 {
-  // Set "C" numeric locale to save numbers correctly
-  std::string aCurLocale = setlocale(LC_NUMERIC, 0);
-  setlocale(LC_NUMERIC, "C");
+  Kernel_Utils::Localizer loc;
 
   bool parsed_ok = true;
   Handle( ExprIntrp_GenExp ) myExpr;
@@ -376,9 +376,6 @@ bool process( const TCollection_AsciiString& str, int convMode,
         non_zero = true;
     }
   }
-
-  // Return previous locale
-  setlocale(LC_NUMERIC, aCurLocale.data());
 
   return res && non_neg && non_zero && ( !singulars );
 }
