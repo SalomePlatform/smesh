@@ -4158,6 +4158,7 @@ class Mesh_Triangle(Mesh_Algorithm):
     #  @ingroup l3_hypos_blsurf
     def SetPhySize(self, theVal):
         # Parameter of BLSURF algo
+        self.SetPhysicalMesh(1) #Custom - else why to set the size?
         self.Parameters().SetPhySize(theVal)
 
     ## Sets lower boundary of mesh element size (PhySize).
