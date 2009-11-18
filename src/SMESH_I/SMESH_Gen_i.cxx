@@ -2158,7 +2158,7 @@ SMESH_Gen_i::ConcatenateCommon(const SMESH::mesh_array& theMeshesArray,
 
   // IPAL21468 Change icon of compound because it need not be computed.
   SALOMEDS::SObject_var aMeshSObj = ObjectToSObject( myCurrentStudy, aNewMesh );
-  if(aMeshSObj) {
+  if( !aMeshSObj->_is_nil() ) {
     SALOMEDS::GenericAttribute_var anAttr;
     SALOMEDS::StudyBuilder_var aBuilder = myCurrentStudy->NewBuilder();
     anAttr = aBuilder->FindOrCreateAttribute( aMeshSObj,"AttributePixMap" );
