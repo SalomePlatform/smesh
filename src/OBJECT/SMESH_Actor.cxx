@@ -399,7 +399,7 @@ SMESH_ActorDef::SMESH_ActorDef()
     
   myPtsLabeledDataMapper = vtkLabeledDataMapper::New();
   myPtsLabeledDataMapper->SetInput(myPtsSelectVisiblePoints->GetOutput());
-  myPtsLabeledDataMapper->SetLabelFormat("%g");
+  myPtsLabeledDataMapper->SetLabelFormat("%u");
   myPtsLabeledDataMapper->SetLabelModeToLabelScalars();
     
   vtkTextProperty* aPtsTextProp = vtkTextProperty::New();
@@ -440,7 +440,7 @@ SMESH_ActorDef::SMESH_ActorDef()
     
   myClsLabeledDataMapper = vtkLabeledDataMapper::New();
   myClsLabeledDataMapper->SetInput(myClsSelectVisiblePoints->GetOutput());
-  myClsLabeledDataMapper->SetLabelFormat("%g");
+  myClsLabeledDataMapper->SetLabelFormat("%u");
   myClsLabeledDataMapper->SetLabelModeToLabelScalars();
     
   vtkTextProperty* aClsTextProp = vtkTextProperty::New();
@@ -593,7 +593,7 @@ void SMESH_ActorDef::SetPointsLabeled( bool theIsPointsLabeled )
     vtkIntArray *anArray = vtkIntArray::New();
     anArray->SetNumberOfValues( aNbElem );
     
-    for ( int anId = 0; anId < aNbElem; anId++ )
+    for ( vtkIdType anId = 0; anId < aNbElem; anId++ )
     {
       int aSMDSId = myVisualObj->GetNodeObjId( anId );
       anArray->SetValue( anId, aSMDSId );
@@ -1034,8 +1034,8 @@ bool SMESH_ActorDef::IsInfinitive(){
   vtkDataSet *aDataSet = myPickableActor->GetUnstructuredGrid();
   aDataSet->Update();
   myIsInfinite = aDataSet->GetNumberOfCells() == 0 ||
-    aDataSet->GetNumberOfCells() == 1 && 
-    aDataSet->GetCell(0)->GetCellType() == VTK_VERTEX;
+    ( aDataSet->GetNumberOfCells() == 1 && 
+    aDataSet->GetCell(0)->GetCellType() == VTK_VERTEX );
   return SALOME_Actor::IsInfinitive();
 }
 
