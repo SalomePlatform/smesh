@@ -2145,7 +2145,7 @@ throw(SALOME::SALOME_Exception)
 void SMESH_Mesh_i::ClearLog() throw(SALOME::SALOME_Exception)
 {
   if(MYDEBUG) MESSAGE("SMESH_Mesh_i::ClearLog");
-  // ****
+  _impl->ClearLog();
 }
 
 //=============================================================================
