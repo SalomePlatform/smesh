@@ -72,6 +72,11 @@
 #include <vtkImplicitBoolean.h>
 #include <vtkImplicitFunctionCollection.h>
 
+#include <vtkConfigure.h>
+#if !defined(VTK_XVERSION)
+#define VTK_XVERSION (VTK_MAJOR_VERSION<<16)+(VTK_MINOR_VERSION<<8)+(VTK_BUILD_VERSION)
+#endif
+
 #include "utilities.h"
 
 #ifdef _DEBUG_
@@ -399,7 +404,11 @@ SMESH_ActorDef::SMESH_ActorDef()
     
   myPtsLabeledDataMapper = vtkLabeledDataMapper::New();
   myPtsLabeledDataMapper->SetInput(myPtsSelectVisiblePoints->GetOutput());
-  myPtsLabeledDataMapper->SetLabelFormat("%u");
+#if (VTK_XVERSION >= 0x050200)
+  myPtsLabeledDataMapper->SetLabelFormat("%d");
+#else
+  myPtsLabeledDataMapper->SetLabelFormat("%g");
+#endif
   myPtsLabeledDataMapper->SetLabelModeToLabelScalars();
     
   vtkTextProperty* aPtsTextProp = vtkTextProperty::New();
@@ -440,7 +449,11 @@ SMESH_ActorDef::SMESH_ActorDef()
     
   myClsLabeledDataMapper = vtkLabeledDataMapper::New();
   myClsLabeledDataMapper->SetInput(myClsSelectVisiblePoints->GetOutput());
-  myClsLabeledDataMapper->SetLabelFormat("%u");
+#if (VTK_XVERSION >= 0x050200)
+  myClsLabeledDataMapper->SetLabelFormat("%d");
+#else
+  myClsLabeledDataMapper->SetLabelFormat("%g");
+#endif
   myClsLabeledDataMapper->SetLabelModeToLabelScalars();
     
   vtkTextProperty* aClsTextProp = vtkTextProperty::New();
