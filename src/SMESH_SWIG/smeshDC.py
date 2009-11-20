@@ -1393,19 +1393,37 @@ class Mesh:
             elif tgeo == "SHELL":
                 typ = VOLUME
             elif tgeo == "COMPOUND":
-                if len( self.geompyD.GetObjectIDs( grp )) == 0:
-                    print "Mesh.Group: empty geometric group", GetName( grp )
-                    return 0
-                tgeo = self.geompyD.GetType(grp)
-                if tgeo == geompyDC.ShapeType["VERTEX"]:
-                    typ = NODE
-                elif tgeo == geompyDC.ShapeType["EDGE"]:
-                    typ = EDGE
-                elif tgeo == geompyDC.ShapeType["FACE"]:
-                    typ = FACE
-                elif tgeo == geompyDC.ShapeType["SOLID"]:
-                    typ = VOLUME
-
+                try: # it raises on a compound of compounds
+                    if len( self.geompyD.GetObjectIDs( grp )) == 0:
+                        print "Mesh.Group: empty geometric group", GetName( grp )
+                        return 0
+                    pass
+                except:
+                    pass
+                if grp.GetType() == 37: # GEOMImpl_Types.hxx: #define GEOM_GROUP 37
+                    # group
+                    tgeo = self.geompyD.GetType(grp)
+                    if tgeo == geompyDC.ShapeType["VERTEX"]:
+                        typ = NODE
+                    elif tgeo == geompyDC.ShapeType["EDGE"]:
+                        typ = EDGE
+                    elif tgeo == geompyDC.ShapeType["FACE"]:
+                        typ = FACE
+                    elif tgeo == geompyDC.ShapeType["SOLID"]:
+                        typ = VOLUME
+                        pass
+                    pass
+                else:
+                    # just a compound
+                    for elemType, shapeType in [[VOLUME,"SOLID"],[FACE,"FACE"],
+                                                [EDGE,"EDGE"],[NODE,"VERTEX"]]:
+                        if self.geompyD.SubShapeAll(grp,geompyDC.ShapeType[shapeType]):
+                            typ = elemType
+                            break
+                        pass
+                    pass
+                pass
+            pass
         if typ == None:
             print "Mesh.Group: bad first argument: expected a group, a vertex, an edge, a face or a solid"
             return 0
