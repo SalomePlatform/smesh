@@ -458,6 +458,7 @@ AC_OUTPUT([ \
   src/DriverUNV/Makefile \
   src/MEFISTO2/Makefile \
   src/OBJECT/Makefile \
+  src/PluginUtils/Makefile \
   src/SMDS/Makefile \
   src/SMESH/Makefile \
   src/SMESHClient/Makefile \
