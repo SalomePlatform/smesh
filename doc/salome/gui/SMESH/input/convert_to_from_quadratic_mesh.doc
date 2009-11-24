@@ -37,4 +37,6 @@ The following dialog box will appear:
 <li>Click the \b Apply or \b OK button.</li>
 </ol>
 
+<br><b>See Also</b> a sample TUI Script of a \ref tui_quadratic "Convert to/from quadratic" operation.
+
 */

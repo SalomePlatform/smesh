@@ -815,4 +815,48 @@ isDone = pattern.MakeMesh(Mesh_1.GetMesh(), 0, 0)
 if (isDone != 1): print 'MakeMesh :', pattern.GetErrorCode()  
 \endcode
 
+<br>
+\anchor tui_quadratic
+<h2>Convert mesh to/from quadratic</h2>
+
+\code
+import geompy
+import smesh
+
+# create sphere of radius 100
+
+Sphere = geompy.MakeSphereR( 100 )
+geompy.addToStudy( Sphere, "Sphere" )
+
+# create simple trihedral mesh
+
+Mesh = smesh.Mesh(Sphere)
+Regular_1D = Mesh.Segment()
+Nb_Segments = Regular_1D.NumberOfSegments(5)
+MEFISTO_2D = Mesh.Triangle()
+Tetrahedron_Netgen = Mesh.Tetrahedron(algo=smesh.NETGEN)
+
+# compute mesh
+
+isDone = Mesh.Compute()
+
+# convert to quadratic
+# theForce3d = 1; this results in the medium node lying at the
+# middle of the line segments connecting start and end node of a mesh
+# element
+
+Mesh.ConvertToQuadratic( theForce3d=1 )
+
+# revert back to the non-quadratic mesh
+
+Mesh.ConvertFromQuadratic()
+
+# convert to quadratic
+# theForce3d = 0; this results in the medium node lying at the
+# geometrical edge from which the mesh element is built
+
+Mesh.ConvertToQuadratic( theForce3d=0 )
+
+\endcode
+
 */
