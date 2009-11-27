@@ -96,8 +96,7 @@ libStdMeshersGUI_la_LDFLAGS  = \
 	../SMESHGUI/libSMESH.la \
 	../OBJECT/libSMESHObject.la \
 	$(GUI_LDFLAGS) -lSalomeApp \
-	$(CAS_LDPATH) -lTKernel -lTKBO -lTKAdvTools \
-	$(QWT_LIBS)
+	$(CAS_LDPATH) -lTKernel -lTKBO -lTKAdvTools
 
 # resources files
 nodist_salomeres_DATA= \
