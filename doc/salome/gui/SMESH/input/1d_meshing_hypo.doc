@@ -199,8 +199,8 @@ minimum and maximum value of this parameter.
 \anchor fixed_points_1d_anchor
 <h2>Fixed points 1D hypothesis</h2>
 
-<b>Fixed points 1D</b> hypothesis allows spliting edges through a
-set of points parametrized on the edge (from 1 to 0)and a number of segments for each
+<b>Fixed points 1D</b> hypothesis allows splitting edges through a
+set of points parameterized on the edge (from 1 to 0) and a number of segments for each
 interval limited by the points.
 
 \image html hypo_fixedpnt_dlg.png 
