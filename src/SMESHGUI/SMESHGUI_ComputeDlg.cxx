@@ -616,6 +616,15 @@ SMESHGUI_BaseComputeOp::SMESHGUI_BaseComputeOp()
   myHelpFileName = "about_meshes_page.html"; // V4
 }
 
+SMESH::SMESH_Mesh_ptr SMESHGUI_BaseComputeOp::getMesh()
+{
+  LightApp_SelectionMgr* Sel = selectionMgr();
+  SALOME_ListIO selected; Sel->selectedObjects( selected );
+  Handle(SALOME_InteractiveObject) anIO = selected.First();
+  SMESH::SMESH_Mesh_var aMesh = SMESH::GetMeshByIO(anIO);
+  return myMesh->_is_nil() ? aMesh._retn() : SMESH::SMESH_Mesh::_duplicate( myMesh );
+}
+
 //================================================================================
 /*!
  * \brief Start operation
@@ -1169,6 +1178,23 @@ void SMESHGUI_ComputeOp::startOperation()
   if (myMesh->_is_nil())
     return;
   computeMesh();
+}
+
+//================================================================================
+/*!
+ * \brief check the same operations on the same mesh
+ */
+//================================================================================
+
+bool SMESHGUI_BaseComputeOp::isValid(  SUIT_Operation* theOp  ) const
+{
+  SMESHGUI_BaseComputeOp* baseOp = dynamic_cast<SMESHGUI_BaseComputeOp*>( theOp );
+  bool ret = true;
+  if ( !myMesh->_is_nil() && baseOp ) {
+    SMESH::SMESH_Mesh_var aMesh = baseOp->getMesh();
+    if ( !aMesh->_is_nil() && aMesh->GetId() == myMesh->GetId() ) ret = false;
+  }
+  return ret;
 }
 
 //================================================================================

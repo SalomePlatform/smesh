@@ -3406,6 +3406,13 @@ bool SMESHGUI::isSelectionCompatible()
   return isCompatible;
 }
 
+
+bool SMESHGUI::reusableOperation( const int id )
+{
+  // compute, evaluate and precompute are not reusable operations
+  return ( id == 701 || id == 711 || id == 712 ) ? false : SalomeApp_Module::reusableOperation( id );
+} 
+
 bool SMESHGUI::activateModule( SUIT_Study* study )
 {
   bool res = SalomeApp_Module::activateModule( study );

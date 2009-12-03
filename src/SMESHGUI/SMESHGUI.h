@@ -150,6 +150,8 @@ protected:
 
   virtual bool                    isSelectionCompatible();
 
+  virtual bool                    reusableOperation( const int id ); 
+
 private:
   void                            OnEditDelete();
   int                             addVtkFontPref( const QString& label, 

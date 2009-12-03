@@ -72,6 +72,8 @@ public:
   SMESHGUI_BaseComputeOp();
   virtual ~SMESHGUI_BaseComputeOp();
 
+  SMESH::SMESH_Mesh_ptr          getMesh();
+
 protected:
   virtual void                   startOperation();
   virtual void                   stopOperation();
@@ -91,6 +93,8 @@ protected:
                                                     SMESH::compute_error_array_var&,
                                                     const bool,
                                                     const QString&);
+
+  virtual bool                   isValid( SUIT_Operation* theOp ) const;
     
 protected slots:
   virtual bool                   onApply();
