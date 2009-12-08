@@ -434,7 +434,7 @@ static bool checkConformIgnoredAlgos(SMESH_Mesh&               aMesh,
                                      const SMESH_Algo*         aGlobIgnoAlgo,
                                      const SMESH_Algo*         aLocIgnoAlgo,
                                      bool &                    checkConform,
-                                     map<int, SMESH_subMesh*>& aCheckedMap,
+                                     set<SMESH_subMesh*>&      aCheckedMap,
                                      list< SMESH_Gen::TAlgoStateError > & theErrors)
 {
   ASSERT( aSubMesh );
@@ -489,19 +489,15 @@ static bool checkConformIgnoredAlgos(SMESH_Mesh&               aMesh,
         }
 
         // sub-algos will be hidden by a local <algo>
-        const map<int, SMESH_subMesh*>& smMap = aSubMesh->DependsOn();
-        map<int, SMESH_subMesh*>::const_reverse_iterator revItSub;
+        SMESH_subMeshIteratorPtr revItSub =
+          aSubMesh->getDependsOnIterator( /*includeSelf=*/false, /*complexShapeFirst=*/true);
         bool checkConform2 = false;
-        for ( revItSub = smMap.rbegin(); revItSub != smMap.rend(); revItSub++)
+        while ( revItSub->more() )
         {
-          checkConformIgnoredAlgos (aMesh, (*revItSub).second, aGlobIgnoAlgo,
+          SMESH_subMesh* sm = revItSub->next();
+          checkConformIgnoredAlgos (aMesh, sm, aGlobIgnoAlgo,
                                     algo, checkConform2, aCheckedMap, theErrors);
-          int key = (*revItSub).first;
-          SMESH_subMesh* sm = (*revItSub).second;
-          if ( aCheckedMap.find( key ) == aCheckedMap.end() )
-          {
-            aCheckedMap[ key ] = sm;
-          }
+          aCheckedMap.insert( sm );
         }
       }
     }
@@ -522,7 +518,7 @@ static bool checkMissing(SMESH_Gen*                aGen,
                          const int                 aTopAlgoDim,
                          bool*                     globalChecked,
                          const bool                checkNoAlgo,
-                         map<int, SMESH_subMesh*>& aCheckedMap,
+                         set<SMESH_subMesh*>&      aCheckedMap,
                          list< SMESH_Gen::TAlgoStateError > & theErrors)
 {
   if ( aSubMesh->GetSubShape().ShapeType() == TopAbs_VERTEX)
@@ -595,15 +591,13 @@ static bool checkMissing(SMESH_Gen*                aGen,
   if (!algo->NeedDescretBoundary() || isTopLocalAlgo)
   {
     bool checkNoAlgo2 = ( algo->NeedDescretBoundary() );
-    const map<int, SMESH_subMesh*>& subMeshes = aSubMesh->DependsOn();
-    map<int, SMESH_subMesh*>::const_iterator itsub;
-    for (itsub = subMeshes.begin(); itsub != subMeshes.end(); itsub++)
+    SMESH_subMeshIteratorPtr itsub = aSubMesh->getDependsOnIterator( /*includeSelf=*/false,
+                                                                     /*complexShapeFirst=*/false);
+    while ( itsub->more() )
     {
       // sub-meshes should not be checked further more
-      int key = (*itsub).first;
-      SMESH_subMesh* sm = (*itsub).second;
-      if ( aCheckedMap.find( key ) == aCheckedMap.end() )
-        aCheckedMap[ key ] = sm;
+      SMESH_subMesh* sm = itsub->next();
+      aCheckedMap.insert( sm );
 
       if (isTopLocalAlgo)
       {
@@ -697,39 +691,25 @@ bool SMESH_Gen::GetAlgoState(SMESH_Mesh&               theMesh,
     }
   }
 
-  const map<int, SMESH_subMesh*>& smMap = sm->DependsOn();
-  map<int, SMESH_subMesh*>::const_reverse_iterator revItSub = smMap.rbegin();
-  map<int, SMESH_subMesh*> aCheckedMap;
+  set<SMESH_subMesh*> aCheckedSubs;
   bool checkConform = ( !theMesh.IsNotConformAllowed() );
-  int aKey = 1;
-  SMESH_subMesh* smToCheck = sm;
 
   // loop on theShape and its sub-shapes
-  while ( smToCheck )
+  SMESH_subMeshIteratorPtr revItSub = sm->getDependsOnIterator( /*includeSelf=*/true,
+                                                                /*complexShapeFirst=*/true);
+  while ( revItSub->more() )
   {
+    SMESH_subMesh* smToCheck = revItSub->next();
     if ( smToCheck->GetSubShape().ShapeType() == TopAbs_VERTEX)
       break;
 
-    if ( aCheckedMap.find( aKey ) == aCheckedMap.end() )
+    if ( aCheckedSubs.insert( smToCheck ).second ) // not yet checked
       if (!checkConformIgnoredAlgos (theMesh, smToCheck, aGlobIgnoAlgo,
-                                     0, checkConform, aCheckedMap, theErrors))
+                                     0, checkConform, aCheckedSubs, theErrors))
         ret = false;
 
     if ( smToCheck->GetAlgoState() != SMESH_subMesh::NO_ALGO )
       hasAlgo = true;
-
-    // next subMesh
-    if (revItSub != smMap.rend())
-    {
-      aKey = (*revItSub).first;
-      smToCheck = (*revItSub).second;
-      revItSub++;
-    }
-    else
-    {
-      smToCheck = 0;
-    }
-
   }
 
   // ----------------------------------------------------------------
@@ -749,36 +729,26 @@ bool SMESH_Gen::GetAlgoState(SMESH_Mesh&               theMesh,
       break;
     }
   }
-  aCheckedMap.clear();
-  smToCheck = sm;
-  revItSub = smMap.rbegin();
   bool checkNoAlgo = theMesh.HasShapeToMesh() ? bool( aTopAlgoDim ) : false;
   bool globalChecked[] = { false, false, false, false };
 
   // loop on theShape and its sub-shapes
-  while ( smToCheck )
+  aCheckedSubs.clear();
+  revItSub = sm->getDependsOnIterator( /*includeSelf=*/true, /*complexShapeFirst=*/true);
+  while ( revItSub->more() )
   {
+    SMESH_subMesh* smToCheck = revItSub->next();
     if ( smToCheck->GetSubShape().ShapeType() == TopAbs_VERTEX)
       break;
 
-    if ( aCheckedMap.find( aKey ) == aCheckedMap.end() )
+    if ( aCheckedSubs.insert( smToCheck ).second ) // not yet checked
       if (!checkMissing (this, theMesh, smToCheck, aTopAlgoDim,
-                         globalChecked, checkNoAlgo, aCheckedMap, theErrors))
+                         globalChecked, checkNoAlgo, aCheckedSubs, theErrors))
       {
         ret = false;
         if (smToCheck->GetAlgoState() == SMESH_subMesh::NO_ALGO )
           checkNoAlgo = false;
       }
-
-    // next subMesh
-    if (revItSub != smMap.rend())
-    {
-      aKey = (*revItSub).first;
-      smToCheck = (*revItSub).second;
-      revItSub++;
-    }
-    else
-      smToCheck = 0;
   }
 
   if ( !hasAlgo ) {

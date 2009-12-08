@@ -121,7 +121,7 @@ namespace {
 TCollection_AsciiString
 SMESH_2smeshpy::ConvertScript(const TCollection_AsciiString& theScript,
                               Resource_DataMapOfAsciiStringAsciiString& theEntry2AccessorMethod,
-			      Resource_DataMapOfAsciiStringAsciiString& theObjectNames)
+                              Resource_DataMapOfAsciiStringAsciiString& theObjectNames)
 {
   theGen = new _pyGen( theEntry2AccessorMethod, theObjectNames );
 
@@ -196,7 +196,7 @@ SMESH_2smeshpy::ConvertScript(const TCollection_AsciiString& theScript,
 //================================================================================
 
 _pyGen::_pyGen(Resource_DataMapOfAsciiStringAsciiString& theEntry2AccessorMethod,
-	       Resource_DataMapOfAsciiStringAsciiString& theObjectNames)
+               Resource_DataMapOfAsciiStringAsciiString& theObjectNames)
   : _pyObject( new _pyCommand( TPythonDump::SMESHGenName(), 0 )),
     myID2AccessorMethod( theEntry2AccessorMethod ),
     myObjectNames( theObjectNames )
@@ -541,7 +541,7 @@ Handle(_pyHypothesis) _pyGen::FindAlgo( const _pyID& theGeom, const _pyID& theMe
     if ( !hyp->IsNull() &&
          (*hyp)->IsAlgo() &&
          theHypothesis->CanBeCreatedBy( (*hyp)->GetAlgoType() ) &&
-	 (*hyp)->GetGeom() == theGeom &&
+         (*hyp)->GetGeom() == theGeom &&
          (*hyp)->GetMesh() == theMesh )
       return *hyp;
   return 0;
@@ -624,8 +624,8 @@ void _pyGen::SetCommandBefore( Handle(_pyCommand) theCmd, Handle(_pyCommand) the
 //================================================================================
 
 void _pyGen::setNeighbourCommand( Handle(_pyCommand)& theCmd,
-				  Handle(_pyCommand)& theOtherCmd,
-				  const bool theIsAfter )
+                                  Handle(_pyCommand)& theOtherCmd,
+                                  const bool theIsAfter )
 {
   list< Handle(_pyCommand) >::iterator pos;
   pos = find( myCommands.begin(), myCommands.end(), theCmd );
@@ -680,8 +680,8 @@ _pyID _pyGen::GenerateNewID( const _pyID& theID )
   while ( myObjectNames.IsBound( aNewID ) );
     
   myObjectNames.Bind( aNewID, myObjectNames.IsBound( theID ) 
-		      ? (myObjectNames.Find( theID ) + _pyID( "_" ) + _pyID( index-1 ))
-		      : _pyID( "A" ) + aNewID );
+                      ? (myObjectNames.Find( theID ) + _pyID( "_" ) + _pyID( index-1 ))
+                      : _pyID( "A" ) + aNewID );
   return aNewID;
 }
 
@@ -952,21 +952,21 @@ void _pyMesh::Flush()
     if ( algo->IsWrapped() ) {
       _pyID localAlgoID = theGen->GenerateNewID( algoID );
       TCollection_AsciiString aNewCmdStr = localAlgoID +
-	TCollection_AsciiString( " = " ) + theGen->GetID() +
-	TCollection_AsciiString( ".CreateHypothesis( \"" ) + algo->GetAlgoType() +
-	TCollection_AsciiString( "\" )" );
+        TCollection_AsciiString( " = " ) + theGen->GetID() +
+        TCollection_AsciiString( ".CreateHypothesis( \"" ) + algo->GetAlgoType() +
+        TCollection_AsciiString( "\" )" );
       
       Handle(_pyCommand) newCmd = theGen->AddCommand( aNewCmdStr );
       Handle(_pyAlgorithm) newAlgo = Handle(_pyAlgorithm)::DownCast(theGen->FindHyp( localAlgoID ));
       if ( !newAlgo.IsNull() ) {
-	newAlgo->Assign( algo, this->GetID() );
-	newAlgo->SetCreationCmd( newCmd );
-	algo = newAlgo;
-	// set algorithm creation
-	theGen->SetCommandBefore( newCmd, addCmd );
+        newAlgo->Assign( algo, this->GetID() );
+        newAlgo->SetCreationCmd( newCmd );
+        algo = newAlgo;
+        // set algorithm creation
+        theGen->SetCommandBefore( newCmd, addCmd );
       }
       else
-	newCmd->Clear();
+        newCmd->Clear();
     }
     _pyID geom = addCmd->GetArg( 1 );
     bool isLocalAlgo = ( geom != GetGeom() );
@@ -982,14 +982,14 @@ void _pyMesh::Flush()
         addCmd->SetArg( addCmd->GetNbArgs() + 1,
                         TCollection_AsciiString( "geom=" ) + geom );
         // sm = mesh.GetSubMesh(geom, name) --> sm = ALGO.GetSubMesh()
-	list < Handle(_pySubMesh) >::iterator smIt;
+        list < Handle(_pySubMesh) >::iterator smIt;
         for ( smIt = mySubmeshes.begin(); smIt != mySubmeshes.end(); ++smIt ) {
-	  Handle(_pySubMesh) subMesh = *smIt;
+          Handle(_pySubMesh) subMesh = *smIt;
           Handle(_pyCommand) subCmd = subMesh->GetCreationCmd();
           if ( geom == subCmd->GetArg( 1 )) {
             subCmd->SetObject( algo->GetID() );
             subCmd->RemoveArgs();
-	    subMesh->SetCreator( algo );
+            subMesh->SetCreator( algo );
           }
         }
       }
@@ -1271,11 +1271,11 @@ Handle(_pyHypothesis) _pyHypothesis::NewHypothesis( const Handle(_pyCommand)& th
   }
   else if ( hypType == "QuadranglePreference" ) {
     hyp->SetConvMethodAndType( "QuadranglePreference", "Quadrangle_2D");
-    hyp->SetConvMethodAndType( "QuadranglePreference", "NETGEN_2D_ONLY");
+    hyp->SetConvMethodAndType( "SetQuadAllowed", "NETGEN_2D_ONLY");
   }
   else if ( hypType == "TrianglePreference" ) {
     hyp->SetConvMethodAndType( "TrianglePreference", "Quadrangle_2D");
-  }	
+  }     
   // BLSURF ----------
   else if ( hypType == "BLSURF" ) {
     algo->SetConvMethodAndType( "Triangle", hypType.ToCString());
@@ -1532,7 +1532,7 @@ void _pyHypothesis::ClearAllCommands()
 //================================================================================
 
 void _pyHypothesis::Assign( const Handle(_pyHypothesis)& theOther,
-			    const _pyID&                 theMesh )
+                            const _pyID&                 theMesh )
 {
   myIsWrapped = false;
   myMesh = theMesh;
@@ -1995,15 +1995,15 @@ const TCollection_AsciiString & _pyCommand::GetObject()
       int nb1 = 0; // number of ' character at the left of =
       int nb2 = 0; // number of " character at the left of =
       for ( int i = 1; i < begPos-1; i++ ) {
-	if ( myString.Value( i )=='\'' )
-	  nb1 += 1;
-	else if ( myString.Value( i )=='"' )
-	  nb2 += 1;
+        if ( myString.Value( i )=='\'' )
+          nb1 += 1;
+        else if ( myString.Value( i )=='"' )
+          nb2 += 1;
       }
       // if number of ' or " is not divisible by 2,
       // then get an object at the start of the command
       if ( nb1 % 2 != 0 || nb2 % 2 != 0 )
-	begPos = 1;
+        begPos = 1;
     }
     myObj = GetWord( myString, begPos, true );
     // check if object is complex,
@@ -2073,16 +2073,16 @@ const TCollection_AsciiString & _pyCommand::GetArg( int index )
     while ( begPos != EMPTY ) {
       begPos += prevLen;
       if( myString.Value( begPos ) == '(' )
-	nbNestings++;
+        nbNestings++;
       // check if we are looking at the closing parenthesis
       while ( begPos <= Length() && isspace( myString.Value( begPos )))
         ++begPos;
       if ( begPos > Length() )
         break;
       if ( myString.Value( begPos ) == ')' ) {
-	nbNestings--;
-	if( nbNestings == 0 )
-	  break;
+        nbNestings--;
+        if( nbNestings == 0 )
+          break;
       }
       myArgs.Append( GetWord( myString, begPos, true, true ));
       SetBegPos( ARG1_IND + i, begPos );

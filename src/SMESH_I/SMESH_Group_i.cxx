@@ -305,8 +305,8 @@ typedef bool (SMESHDS_Group::*TFunChangeGroup)(const int);
 
 CORBA::Long 
 ChangeByPredicate( SMESH::Predicate_i* thePredicate,
-		   SMESHDS_GroupBase* theGroupBase,
-		   TFunChangeGroup theFun)
+                   SMESHDS_GroupBase* theGroupBase,
+                   TFunChangeGroup theFun)
 {
   CORBA::Long aNb = 0;
   if(SMESHDS_Group* aGroupDS = dynamic_cast<SMESHDS_Group*>(theGroupBase)){
@@ -317,7 +317,7 @@ ChangeByPredicate( SMESH::Predicate_i* thePredicate,
     CORBA::Long i = 0, iEnd = aSequence.size();
     for(; i < iEnd; i++)
       if((aGroupDS->*theFun)(aSequence[i]))
-	aNb++;
+        aNb++;
     return aNb;
   }
   return aNb;

@@ -176,7 +176,7 @@ public:
   // *****************************************
   // Set a new Mesh object name
   void SetName(const char* theIOR,
-	       const char* theName);
+               const char* theName);
 
   //GEOM::GEOM_Gen_ptr SetGeomEngine( const char* containerLoc );
   void SetGeomEngine( GEOM::GEOM_Gen_ptr geomcompo );
@@ -266,9 +266,9 @@ public:
    * Return mesh preview structure
    */
   SMESH::MeshPreviewStruct* Precompute( SMESH::SMESH_Mesh_ptr theMesh,
-					GEOM::GEOM_Object_ptr theSubObject,
-					SMESH::Dimension      theDimension,
-					SMESH::long_array&    theShapesId )
+                                        GEOM::GEOM_Object_ptr theSubObject,
+                                        SMESH::Dimension      theDimension,
+                                        SMESH::long_array&    theShapesId )
     throw ( SALOME::SALOME_Exception );
 
   // Returns errors of hypotheses definintion
@@ -294,30 +294,30 @@ public:
 
   // Return geometrical object the given element is built on. Don't publish it in study.
   GEOM::GEOM_Object_ptr FindGeometryByMeshElement( SMESH::SMESH_Mesh_ptr  theMesh,
-						   CORBA::Long            theElementID)
+                                                   CORBA::Long            theElementID)
     throw ( SALOME::SALOME_Exception );
 
   // Concatenate the given meshes into one mesh
   SMESH::SMESH_Mesh_ptr ConcatenateCommon(const SMESH::mesh_array& theMeshesArray, 
-					  CORBA::Boolean           theUniteIdenticalGroups, 
-					  CORBA::Boolean           theMergeNodesAndElements, 
-					  CORBA::Double            theMergeTolerance,
-					  CORBA::Boolean           theCommonGroups)
+                                          CORBA::Boolean           theUniteIdenticalGroups, 
+                                          CORBA::Boolean           theMergeNodesAndElements, 
+                                          CORBA::Double            theMergeTolerance,
+                                          CORBA::Boolean           theCommonGroups)
     throw ( SALOME::SALOME_Exception );
 
   // Concatenate the given meshes into one mesh
   SMESH::SMESH_Mesh_ptr Concatenate(const SMESH::mesh_array& theMeshesArray, 
-				    CORBA::Boolean           theUniteIdenticalGroups, 
-				    CORBA::Boolean           theMergeNodesAndElements, 
-				    CORBA::Double            theMergeTolerance)
+                                    CORBA::Boolean           theUniteIdenticalGroups, 
+                                    CORBA::Boolean           theMergeNodesAndElements, 
+                                    CORBA::Double            theMergeTolerance)
     throw ( SALOME::SALOME_Exception );
 
   // Concatenate the given meshes into one mesh
   // Create the groups of all elements from initial meshes
   SMESH::SMESH_Mesh_ptr ConcatenateWithGroups(const SMESH::mesh_array& theMeshesArray, 
-					      CORBA::Boolean           theUniteIdenticalGroups, 
-					      CORBA::Boolean           theMergeNodesAndElements, 
-					      CORBA::Double            theMergeTolerance)
+                                              CORBA::Boolean           theUniteIdenticalGroups, 
+                                              CORBA::Boolean           theMergeNodesAndElements, 
+                                              CORBA::Double            theMergeTolerance)
     throw ( SALOME::SALOME_Exception );
 
   // ****************************************************
@@ -326,22 +326,22 @@ public:
 
   // Save SMESH data
   SALOMEDS::TMPFile* Save( SALOMEDS::SComponent_ptr theComponent,
-			 const char*              theURL,
-			 bool                     isMultiFile );
+                         const char*              theURL,
+                         bool                     isMultiFile );
   // Load SMESH data
   bool Load( SALOMEDS::SComponent_ptr theComponent,
-	     const SALOMEDS::TMPFile& theStream,
-	     const char*              theURL,
-	     bool                     isMultiFile );
+             const SALOMEDS::TMPFile& theStream,
+             const char*              theURL,
+             bool                     isMultiFile );
   // Save SMESH data in ASCII format
   SALOMEDS::TMPFile* SaveASCII( SALOMEDS::SComponent_ptr theComponent,
-			        const char*              theURL,
-			        bool                     isMultiFile );
+                                const char*              theURL,
+                                bool                     isMultiFile );
   // Load SMESH data in ASCII format
   bool LoadASCII( SALOMEDS::SComponent_ptr theComponent,
-		  const SALOMEDS::TMPFile& theStream,
-		  const char*              theURL,
-		  bool                     isMultiFile );
+                  const SALOMEDS::TMPFile& theStream,
+                  const char*              theURL,
+                  bool                     isMultiFile );
 
   // Create filter manager
   SMESH::FilterManager_ptr CreateFilterManager();
@@ -357,22 +357,22 @@ public:
     
   // Transform data from transient form to persistent
   char* IORToLocalPersistentID( SALOMEDS::SObject_ptr theSObject,
-			        const char*           IORString,
-			        CORBA::Boolean        isMultiFile,
-			        CORBA::Boolean        isASCII );
+                                const char*           IORString,
+                                CORBA::Boolean        isMultiFile,
+                                CORBA::Boolean        isASCII );
   // Transform data from persistent form to transient
   char* LocalPersistentIDToIOR( SALOMEDS::SObject_ptr theSObject,
-			        const char*           aLocalPersistentID,
-			        CORBA::Boolean        isMultiFile,
-			        CORBA::Boolean        isASCII );
+                                const char*           aLocalPersistentID,
+                                CORBA::Boolean        isMultiFile,
+                                CORBA::Boolean        isASCII );
 
   // Returns true if object can be published in the study
   bool CanPublishInStudy( CORBA::Object_ptr theIOR );
   // Publish object in the study
   SALOMEDS::SObject_ptr PublishInStudy( SALOMEDS::Study_ptr   theStudy,
-		                        SALOMEDS::SObject_ptr theSObject,
-		                        CORBA::Object_ptr     theObject,
-		                        const char*           theName ) 
+                                        SALOMEDS::SObject_ptr theSObject,
+                                        CORBA::Object_ptr     theObject,
+                                        const char*           theName ) 
     throw ( SALOME::SALOME_Exception );
 
   // Copy-paste methods - returns true if object can be copied to the clipboard
@@ -383,8 +383,8 @@ public:
   CORBA::Boolean CanPaste( const char* theComponentName, CORBA::Long theObjectID ) { return false; }
   // Copy-paste methods - paste object from the clipboard
   SALOMEDS::SObject_ptr PasteInto( const SALOMEDS::TMPFile& theStream,
-				   CORBA::Long              theObjectID,
-				   SALOMEDS::SObject_ptr    theObject ) {
+                                   CORBA::Long              theObjectID,
+                                   SALOMEDS::SObject_ptr    theObject ) {
     SALOMEDS::SObject_var aResultSO;
     return aResultSO._retn();
   }
@@ -394,8 +394,8 @@ public:
   // ============
 
   virtual Engines::TMPFile* DumpPython(CORBA::Object_ptr theStudy, 
-				       CORBA::Boolean isPublished, 
-				       CORBA::Boolean& isValidScript);
+                                       CORBA::Boolean isPublished, 
+                                       CORBA::Boolean& isValidScript);
 
   void AddToPythonScript (int theStudyID, const TCollection_AsciiString& theString);
 
@@ -452,7 +452,7 @@ public:
                                         SMESH::SMESH_Mesh_ptr    theMesh,
                                         SMESH::SMESH_subMesh_ptr theSubMesh,
                                         GEOM::GEOM_Object_ptr    theShapeObject,
-		                        const char*              theName = 0);
+                                        const char*              theName = 0);
   SALOMEDS::SObject_ptr PublishGroup (SALOMEDS::Study_ptr    theStudy,
                                       SMESH::SMESH_Mesh_ptr  theMesh,
                                       SMESH::SMESH_GroupBase_ptr theGroup,

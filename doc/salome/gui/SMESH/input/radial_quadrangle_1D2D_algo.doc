@@ -2,27 +2,21 @@
 
 \page radial_quadrangle_1D2D_algo_page Radial Quadrangle 1D2D
 
-\n This algorithm applies to the meshing of a 2D shapes.
-Required conditions: Face must be a full circle or part of circle
-(i.e. number of edges <= 3 and one of them must be a circle curve).
-The resulting mesh consists of triangles (near center point) and
+\n This algorithm applies to the meshing of 2D shapes under the
+following conditions: the face must be a full circle or a part of circle
+(i.e. the number of edges is less or equal to 3 and one of them is a circle curve).
+The resulting mesh consists of triangles (near the center point) and
 quadrangles.
 
-This algorithm also requires the information concerning the number and
-distribution of mesh layers alond a radius of circle. Distribution of
-layers can be set with any of 1D Hypotheses.
-
-Creation hypothesis:
+This algorithm requires the hypothesis indicating the number
+of mesh layers along the radius. The distribution of layers can be set with any 1D Hypothesis.
 
 \image html hypo_radquad_dlg.png
 
-Resulting 3D mesh for the cylinder with <b>RadialQuadrangle_1D2D</b>
-hypothesis for top and bottom faces:
+\image html mesh_radquad_01.png "Radial Quadrangle 2D mesh on the top and the bottom faces of a cylinder"
 
-\image html mesh_radquad_01.png
+\image html mesh_radquad_02.png "Radial Quadrangle 2D mesh on a part of circle"
 
-Resulting 2D mesh for the part of circle:
-
-\image html mesh_radquad_02.png
+\sa A sample \ref tui_radial_quadrangle "TUI Script".
 
 */

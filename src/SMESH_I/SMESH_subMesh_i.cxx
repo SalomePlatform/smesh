@@ -59,9 +59,9 @@ SMESH_subMesh_i::SMESH_subMesh_i()
 //=============================================================================
 
 SMESH_subMesh_i::SMESH_subMesh_i( PortableServer::POA_ptr thePOA,
-				  SMESH_Gen_i*            gen_i,
- 				  SMESH_Mesh_i*           mesh_i,
-				  int                     localId )
+                                  SMESH_Gen_i*            gen_i,
+                                  SMESH_Mesh_i*           mesh_i,
+                                  int                     localId )
      : SALOME::GenericObj_i( thePOA )
 {
   MESSAGE("SMESH_subMesh_i::SMESH_subMesh_i");
@@ -458,11 +458,11 @@ GEOM::GEOM_Object_ptr SMESH_subMesh_i::GetSubShape()
       TopoDS_Shape S = _mesh_i->_mapSubMesh[ _localId ]->GetSubShape();
       if ( !S.IsNull() ) {
         aShapeObj = _gen_i->ShapeToGeomObject( S );
-	//mzn: N7PAL16232, N7PAL16233
-	//In some cases it's possible that GEOM_Client contains the shape same to S, but
-	//with another orientation.
-	if (aShapeObj->_is_nil())
-	  aShapeObj = _gen_i->ShapeToGeomObject( S.Reversed() );
+        //mzn: N7PAL16232, N7PAL16233
+        //In some cases it's possible that GEOM_Client contains the shape same to S, but
+        //with another orientation.
+        if (aShapeObj->_is_nil())
+          aShapeObj = _gen_i->ShapeToGeomObject( S.Reversed() );
       }
     }
   }

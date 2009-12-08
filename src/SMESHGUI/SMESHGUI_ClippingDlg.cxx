@@ -72,7 +72,7 @@
 
 class OrientedPlane: public vtkPlane
 {
-  SVTK_ViewWindow* myViewWindow;
+  QPointer<SVTK_ViewWindow> myViewWindow;
 
   vtkDataSetMapper* myMapper;
 
@@ -168,7 +168,8 @@ protected:
   }
 
   ~OrientedPlane(){
-    myViewWindow->RemoveActor(myActor);
+    if (myViewWindow)
+      myViewWindow->RemoveActor(myActor);
     myActor->Delete();
     
     myMapper->RemoveAllInputs();

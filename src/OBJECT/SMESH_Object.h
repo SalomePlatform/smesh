@@ -62,9 +62,10 @@ public:
   virtual SMDS_Mesh* GetMesh() const = 0;
 
   virtual bool GetEdgeNodes( const int theElemId,
-			     const int theEdgeNum,
-			     int&      theNodeId1,
-			     int&      theNodeId2 ) const = 0;
+                             const int theEdgeNum,
+                             int&      theNodeId1,
+                             int&      theNodeId2 ) const = 0;
+  virtual bool              IsValid() const = 0;
   
   virtual vtkUnstructuredGrid* GetUnstructuredGrid() = 0;
   

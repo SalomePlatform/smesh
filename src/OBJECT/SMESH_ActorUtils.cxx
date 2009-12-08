@@ -41,7 +41,7 @@ namespace SMESH
 
   vtkFloatingPointType
   GetFloat( const QString& theValue, 
-	    vtkFloatingPointType theDefault )
+            vtkFloatingPointType theDefault )
   {
     int pos = theValue.indexOf( ":" );
     vtkFloatingPointType val = theDefault;
@@ -50,15 +50,15 @@ namespace SMESH
       QString name = theValue.right( theValue.length()-pos-1 ),
               sect = theValue.left( pos );
       if( !name.isEmpty() && !sect.isEmpty() )
-	val = GetFloat( name, sect, theDefault );
+        val = GetFloat( name, sect, theDefault );
     }
     return val;
   }
 
   vtkFloatingPointType
   GetFloat( const QString& theValue, 
-	    const QString& theSection, 
-	    vtkFloatingPointType theDefault )
+            const QString& theSection, 
+            vtkFloatingPointType theDefault )
   {
     vtkFloatingPointType val = theDefault;
     SUIT_ResourceMgr* mgr = SUIT_Session::session()->resourceMgr();
@@ -70,7 +70,7 @@ namespace SMESH
 
   void
   WriteUnstructuredGrid(vtkUnstructuredGrid* theGrid, 
-			const char* theFileName)
+                        const char* theFileName)
   {
     vtkUnstructuredGridWriter* aWriter = vtkUnstructuredGridWriter::New();
     aWriter->SetFileName(theFileName);
@@ -83,8 +83,8 @@ namespace SMESH
 
   QColor
   GetColor( const QString& theSect, 
-	    const QString& theName, 
-	    const QColor& def )
+            const QString& theName, 
+            const QColor& def )
   {
     QColor c = def;
     SUIT_ResourceMgr* mgr = SUIT_Session::session()->resourceMgr();
@@ -95,11 +95,11 @@ namespace SMESH
 
   void
   GetColor( const QString& theSect, 
-	    const QString& theName, 
-	    int& r, 
-	    int& g, 
-	    int& b, 
-	    const QColor& def )
+            const QString& theName, 
+            int& r, 
+            int& g, 
+            int& b, 
+            const QColor& def )
   {
     QColor c = def;
     SUIT_ResourceMgr* mgr = SUIT_Session::session()->resourceMgr();
@@ -111,11 +111,11 @@ namespace SMESH
 
   void
   GetColor( const QString& theSect, 
-	    const QString& theName, 
-	    vtkFloatingPointType& r, 
-	    vtkFloatingPointType& g, 
-	    vtkFloatingPointType& b, 
-	    const QColor& def )
+            const QString& theName, 
+            vtkFloatingPointType& r, 
+            vtkFloatingPointType& g, 
+            vtkFloatingPointType& b, 
+            const QColor& def )
   {
     int ir( 0 ), ig( 0 ), ib( 0 );
     GetColor( theSect, theName, ir, ig, ib, def );

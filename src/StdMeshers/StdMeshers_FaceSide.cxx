@@ -165,8 +165,8 @@ StdMeshers_FaceSide::StdMeshers_FaceSide(const TopoDS_Face& theFace,
 //================================================================================
 
 StdMeshers_FaceSide::StdMeshers_FaceSide(const SMDS_MeshNode* theNode,
-					 const gp_Pnt2d thePnt2d,
-					 const StdMeshers_FaceSide* theSide)
+                                         const gp_Pnt2d thePnt2d,
+                                         const StdMeshers_FaceSide* theSide)
 {
   myC2d.resize(1);
   myLength = 0;
@@ -541,15 +541,7 @@ TSideVector StdMeshers_FaceSide::GetFaceWires(const TopoDS_Face& theFace,
         return TSideVector(0);
       }
     }
-    // find out side orientation, which is important if there are several wires (PAL19080) 
-    bool isForward = true;
-    if ( nbWires > 1 ) {
-      TopExp_Explorer e( theFace, TopAbs_EDGE );
-      while ( ! e.Current().IsSame( wireEdges.back() ))
-        e.Next();
-      isForward = ( e.Current().Orientation() == wireEdges.back().Orientation() );
-    }
-
+    const bool isForward = true;
     StdMeshers_FaceSide* wire = new StdMeshers_FaceSide( theFace, wireEdges, &theMesh,
                                                          isForward, theIgnoreMediumNodes);
     wires[ iW ] = StdMeshers_FaceSidePtr( wire );

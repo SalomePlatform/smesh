@@ -45,8 +45,8 @@ using namespace std;
 //=============================================================================
 SMESH_MEDSupport_i::SMESH_MEDSupport_i()
 {
-	BEGIN_OF("Default Constructor SMESH_MEDSupport_i");
-	END_OF("Default Constructor SMESH_MEDSupport_i");
+        BEGIN_OF("Default Constructor SMESH_MEDSupport_i");
+        END_OF("Default Constructor SMESH_MEDSupport_i");
 }
 
 //=============================================================================
@@ -55,40 +55,40 @@ SMESH_MEDSupport_i::SMESH_MEDSupport_i()
  */
 //=============================================================================
 SMESH_MEDSupport_i::SMESH_MEDSupport_i(SMESH_subMesh_i * sm, string name,
-	string description, SALOME_MED::medEntityMesh entity)
-	:_subMesh_i(sm), _name(name), _description(description), _entity(entity),
-	_seqNumber(false), _seqLength(0)
+        string description, SALOME_MED::medEntityMesh entity)
+        :_subMesh_i(sm), _name(name), _description(description), _entity(entity),
+        _seqNumber(false), _seqLength(0)
 {
-	BEGIN_OF("Constructor SMESH_MEDSupport_i");
+        BEGIN_OF("Constructor SMESH_MEDSupport_i");
 
-	_meshDS = _subMesh_i->_mesh_i->GetImpl().GetMeshDS();
+        _meshDS = _subMesh_i->_mesh_i->GetImpl().GetMeshDS();
 
-	int subMeshId = _subMesh_i->GetId();
+        int subMeshId = _subMesh_i->GetId();
 
-	MESSAGE(" subMeshId " << subMeshId)
+        MESSAGE(" subMeshId " << subMeshId)
 
-	if (_subMesh_i->_mesh_i->_mapSubMesh.find(subMeshId) !=
-		_subMesh_i->_mesh_i->_mapSubMesh.end())
-	{
-		::SMESH_subMesh * subMesh = _subMesh_i->_mesh_i->_mapSubMesh[subMeshId];
-		_subMeshDS = subMesh->GetSubMeshDS();
-	}
+        if (_subMesh_i->_mesh_i->_mapSubMesh.find(subMeshId) !=
+                _subMesh_i->_mesh_i->_mapSubMesh.end())
+        {
+                ::SMESH_subMesh * subMesh = _subMesh_i->_mesh_i->_mapSubMesh[subMeshId];
+                _subMeshDS = subMesh->GetSubMeshDS();
+        }
 
-	if (_entity == SALOME_MED::MED_NODE)
-	{
-		_numberOfGeometricType = 1;
-		_geometricType = new SALOME_MED::medGeometryElement[1];
-		_geometricType[0] = SALOME_MED::MED_NONE;
-	}
-	else
-	{
-		MESSAGE("Pas implemente dans cette version");
-		THROW_SALOME_CORBA_EXCEPTION
-			("Seules les familles de noeuds sont implementees ",
-			SALOME::BAD_PARAM);
-	}
+        if (_entity == SALOME_MED::MED_NODE)
+        {
+                _numberOfGeometricType = 1;
+                _geometricType = new SALOME_MED::medGeometryElement[1];
+                _geometricType[0] = SALOME_MED::MED_NONE;
+        }
+        else
+        {
+                MESSAGE("Pas implemente dans cette version");
+                THROW_SALOME_CORBA_EXCEPTION
+                        ("Seules les familles de noeuds sont implementees ",
+                        SALOME::BAD_PARAM);
+        }
 
-	END_OF("Constructor SMESH_MEDSupport_i");
+        END_OF("Constructor SMESH_MEDSupport_i");
 }
 
 //=============================================================================
@@ -101,19 +101,19 @@ SMESH_MEDSupport_i(const SMESH_MEDSupport_i & s):_subMesh_i(s._subMesh_i),
 _name(s._name), _description(s._description), _entity(s._entity),
 _seqNumber(false), _seqLength(0)
 {
-	BEGIN_OF("Constructor SMESH_MEDSupport_i");
+        BEGIN_OF("Constructor SMESH_MEDSupport_i");
 
-	_meshDS = _subMesh_i->_mesh_i->GetImpl().GetMeshDS();
+        _meshDS = _subMesh_i->_mesh_i->GetImpl().GetMeshDS();
 
-	int subMeshId = _subMesh_i->GetId();
-	if (_subMesh_i->_mesh_i->_mapSubMesh.find(subMeshId) !=
-		_subMesh_i->_mesh_i->_mapSubMesh.end())
-	{
-		::SMESH_subMesh * subMesh = _subMesh_i->_mesh_i->_mapSubMesh[subMeshId];
-		_subMeshDS = subMesh->GetSubMeshDS();
-	}
+        int subMeshId = _subMesh_i->GetId();
+        if (_subMesh_i->_mesh_i->_mapSubMesh.find(subMeshId) !=
+                _subMesh_i->_mesh_i->_mapSubMesh.end())
+        {
+                ::SMESH_subMesh * subMesh = _subMesh_i->_mesh_i->_mapSubMesh[subMeshId];
+                _subMeshDS = subMesh->GetSubMeshDS();
+        }
 
-	END_OF("Constructor SMESH_MEDSupport_i");
+        END_OF("Constructor SMESH_MEDSupport_i");
 }
 
 //=============================================================================
@@ -134,11 +134,11 @@ SMESH_MEDSupport_i::~SMESH_MEDSupport_i()
 
 CORBA::Long SMESH_MEDSupport_i::getCorbaIndex()throw(SALOME::SALOME_Exception)
 {
-	if (_subMeshDS == NULL)
-		THROW_SALOME_CORBA_EXCEPTION("No associated Support",
-			SALOME::INTERNAL_ERROR);
-	MESSAGE("Not implemented for SMESH_i");
-	THROW_SALOME_CORBA_EXCEPTION("Not Implemented ", SALOME::BAD_PARAM);
+        if (_subMeshDS == NULL)
+                THROW_SALOME_CORBA_EXCEPTION("No associated Support",
+                        SALOME::INTERNAL_ERROR);
+        MESSAGE("Not implemented for SMESH_i");
+        THROW_SALOME_CORBA_EXCEPTION("Not Implemented ", SALOME::BAD_PARAM);
 
 }
 
@@ -150,10 +150,10 @@ CORBA::Long SMESH_MEDSupport_i::getCorbaIndex()throw(SALOME::SALOME_Exception)
 
 char *SMESH_MEDSupport_i::getName() throw(SALOME::SALOME_Exception)
 {
-	if (_subMeshDS==NULL)
-		THROW_SALOME_CORBA_EXCEPTION("No associated Support",
-			SALOME::INTERNAL_ERROR);
-	return CORBA::string_dup(_name.c_str());
+        if (_subMeshDS==NULL)
+                THROW_SALOME_CORBA_EXCEPTION("No associated Support",
+                        SALOME::INTERNAL_ERROR);
+        return CORBA::string_dup(_name.c_str());
 
 }
 
@@ -165,10 +165,10 @@ char *SMESH_MEDSupport_i::getName() throw(SALOME::SALOME_Exception)
 
 char *SMESH_MEDSupport_i::getDescription() throw(SALOME::SALOME_Exception)
 {
-	if (_subMeshDS==NULL)
-		THROW_SALOME_CORBA_EXCEPTION("No associated Support",
-			SALOME::INTERNAL_ERROR);
-	return CORBA::string_dup(_description.c_str());
+        if (_subMeshDS==NULL)
+                THROW_SALOME_CORBA_EXCEPTION("No associated Support",
+                        SALOME::INTERNAL_ERROR);
+        return CORBA::string_dup(_description.c_str());
 }
 
 //=============================================================================
@@ -178,13 +178,13 @@ char *SMESH_MEDSupport_i::getDescription() throw(SALOME::SALOME_Exception)
 //=============================================================================
 
 SALOME_MED::MESH_ptr SMESH_MEDSupport_i::getMesh()throw(SALOME::
-	SALOME_Exception)
+        SALOME_Exception)
 {
-	if (_subMeshDS==NULL)
-		THROW_SALOME_CORBA_EXCEPTION("No associated Support",
-			SALOME::INTERNAL_ERROR);
+        if (_subMeshDS==NULL)
+                THROW_SALOME_CORBA_EXCEPTION("No associated Support",
+                        SALOME::INTERNAL_ERROR);
 
-	return _subMesh_i->_mesh_i->GetMEDMesh();
+        return _subMesh_i->_mesh_i->GetMEDMesh();
 }
 
 //=============================================================================
@@ -194,36 +194,36 @@ SALOME_MED::MESH_ptr SMESH_MEDSupport_i::getMesh()throw(SALOME::
 //=============================================================================
 
 CORBA::Boolean SMESH_MEDSupport_i::isOnAllElements()throw(SALOME::
-	SALOME_Exception)
+        SALOME_Exception)
 {
-	if (_subMeshDS==NULL)
-		THROW_SALOME_CORBA_EXCEPTION("No associated Support",
-			SALOME::INTERNAL_ERROR);
-	if (_seqNumber == false)
-	{
-		if (_entity != SALOME_MED::MED_NONE)
-		{
-			_seqLength = _subMeshDS->NbNodes();
-			_seqNumber = true;
-		}
-		else
-		{
-			MESSAGE("Only Node Families are implemented ");
-			THROW_SALOME_CORBA_EXCEPTION("Not implemented Yet ",
-				SALOME::BAD_PARAM);
-		}
-	}
-	try
-	{
-		_isOnAllElements = (_seqLength == _meshDS->NbNodes());
-	}
-	catch(...)
-	{
-		MESSAGE("unable to acces related Mesh");
-		THROW_SALOME_CORBA_EXCEPTION("No associated Mesh",
-			SALOME::INTERNAL_ERROR);
-	};
-	return _isOnAllElements;
+        if (_subMeshDS==NULL)
+                THROW_SALOME_CORBA_EXCEPTION("No associated Support",
+                        SALOME::INTERNAL_ERROR);
+        if (_seqNumber == false)
+        {
+                if (_entity != SALOME_MED::MED_NONE)
+                {
+                        _seqLength = _subMeshDS->NbNodes();
+                        _seqNumber = true;
+                }
+                else
+                {
+                        MESSAGE("Only Node Families are implemented ");
+                        THROW_SALOME_CORBA_EXCEPTION("Not implemented Yet ",
+                                SALOME::BAD_PARAM);
+                }
+        }
+        try
+        {
+                _isOnAllElements = (_seqLength == _meshDS->NbNodes());
+        }
+        catch(...)
+        {
+                MESSAGE("unable to acces related Mesh");
+                THROW_SALOME_CORBA_EXCEPTION("No associated Mesh",
+                        SALOME::INTERNAL_ERROR);
+        };
+        return _isOnAllElements;
 }
 
 //=============================================================================
@@ -233,12 +233,12 @@ CORBA::Boolean SMESH_MEDSupport_i::isOnAllElements()throw(SALOME::
 //=============================================================================
 
 SALOME_MED::medEntityMesh SMESH_MEDSupport_i::getEntity()throw(SALOME::
-	SALOME_Exception)
+        SALOME_Exception)
 {
-	if (_subMeshDS==NULL)
-		THROW_SALOME_CORBA_EXCEPTION("No associated Support",
-			SALOME::INTERNAL_ERROR);
-	return _entity;
+        if (_subMeshDS==NULL)
+                THROW_SALOME_CORBA_EXCEPTION("No associated Support",
+                        SALOME::INTERNAL_ERROR);
+        return _entity;
 }
 
 //=============================================================================
@@ -248,29 +248,29 @@ SALOME_MED::medEntityMesh SMESH_MEDSupport_i::getEntity()throw(SALOME::
 //=============================================================================
 
 SALOME_MED::medGeometryElement_array *
-	SMESH_MEDSupport_i::getTypes()throw(SALOME::SALOME_Exception)
+        SMESH_MEDSupport_i::getTypes()throw(SALOME::SALOME_Exception)
 {
-	if (_subMeshDS==NULL)
-		THROW_SALOME_CORBA_EXCEPTION("No associated Support",
-			SALOME::INTERNAL_ERROR);
-	SALOME_MED::medGeometryElement_array_var myseq =
-		new SALOME_MED::medGeometryElement_array;
-	try
-	{
-		int mySeqLength = _numberOfGeometricType;
-		myseq->length(mySeqLength);
-		for (int i = 0; i < mySeqLength; i++)
-		{
-			myseq[i] = _geometricType[i];
-		}
-	}
-	catch(...)
-	{
-		MESSAGE("Exception lors de la recherche des differents types");
-		THROW_SALOME_CORBA_EXCEPTION("Unable to acces Support Types",
-			SALOME::INTERNAL_ERROR);
-	}
-	return myseq._retn();
+        if (_subMeshDS==NULL)
+                THROW_SALOME_CORBA_EXCEPTION("No associated Support",
+                        SALOME::INTERNAL_ERROR);
+        SALOME_MED::medGeometryElement_array_var myseq =
+                new SALOME_MED::medGeometryElement_array;
+        try
+        {
+                int mySeqLength = _numberOfGeometricType;
+                myseq->length(mySeqLength);
+                for (int i = 0; i < mySeqLength; i++)
+                {
+                        myseq[i] = _geometricType[i];
+                }
+        }
+        catch(...)
+        {
+                MESSAGE("Exception lors de la recherche des differents types");
+                THROW_SALOME_CORBA_EXCEPTION("Unable to acces Support Types",
+                        SALOME::INTERNAL_ERROR);
+        }
+        return myseq._retn();
 }
 
 //=============================================================================
@@ -280,12 +280,12 @@ SALOME_MED::medGeometryElement_array *
  */
 //=============================================================================
 CORBA::Long SMESH_MEDSupport_i::getNumberOfElements(SALOME_MED::
-	medGeometryElement geomElement) throw(SALOME::SALOME_Exception)
+        medGeometryElement geomElement) throw(SALOME::SALOME_Exception)
 {
-	if (_subMeshDS==NULL)
-		THROW_SALOME_CORBA_EXCEPTION("No associated Support",
-			SALOME::INTERNAL_ERROR);
-	return _numberOfGeometricType;
+        if (_subMeshDS==NULL)
+                THROW_SALOME_CORBA_EXCEPTION("No associated Support",
+                        SALOME::INTERNAL_ERROR);
+        return _numberOfGeometricType;
 
 }
 
@@ -296,32 +296,32 @@ CORBA::Long SMESH_MEDSupport_i::getNumberOfElements(SALOME_MED::
 //=============================================================================
 
 SALOME_MED::long_array * SMESH_MEDSupport_i::getNumber(
-	SALOME_MED::medGeometryElement geomElement) throw(SALOME::SALOME_Exception)
+        SALOME_MED::medGeometryElement geomElement) throw(SALOME::SALOME_Exception)
 {
   Unexpect aCatch(SALOME_SalomeException);
-	if (_subMeshDS==NULL)
-		THROW_SALOME_CORBA_EXCEPTION("No associated Support",
-			SALOME::INTERNAL_ERROR);
+        if (_subMeshDS==NULL)
+                THROW_SALOME_CORBA_EXCEPTION("No associated Support",
+                        SALOME::INTERNAL_ERROR);
 
-	// A changer s'il ne s agit plus seulement de famille de noeuds
-	if (geomElement != SALOME_MED::MED_NONE)
-		THROW_SALOME_CORBA_EXCEPTION("Not implemented", SALOME::BAD_PARAM);
+        // A changer s'il ne s agit plus seulement de famille de noeuds
+        if (geomElement != SALOME_MED::MED_NONE)
+                THROW_SALOME_CORBA_EXCEPTION("Not implemented", SALOME::BAD_PARAM);
 
-	SALOME_MED::long_array_var myseq = new SALOME_MED::long_array;
+        SALOME_MED::long_array_var myseq = new SALOME_MED::long_array;
 
-	int i = 0;
-	myseq->length(_subMeshDS->NbNodes());
+        int i = 0;
+        myseq->length(_subMeshDS->NbNodes());
 
-	SMDS_NodeIteratorPtr it = _subMeshDS->GetNodes();
-	while(it->more())
-	{
-		myseq[i] = it->next()->GetID();
-		i++;
-	};
+        SMDS_NodeIteratorPtr it = _subMeshDS->GetNodes();
+        while(it->more())
+        {
+                myseq[i] = it->next()->GetID();
+                i++;
+        };
 
-	SCRUTE(myseq->length());
-	MESSAGE("End of SMESH_MEDSupport_i::getNumber");
-	return myseq._retn();
+        SCRUTE(myseq->length());
+        MESSAGE("End of SMESH_MEDSupport_i::getNumber");
+        return myseq._retn();
 
 }
 
@@ -332,7 +332,7 @@ SALOME_MED::long_array * SMESH_MEDSupport_i::getNumber(
 //=============================================================================
 
 SALOME_MED::long_array * SMESH_MEDSupport_i::getNumberFromFile(
-	SALOME_MED::medGeometryElement geomElement) throw(SALOME::SALOME_Exception)
+        SALOME_MED::medGeometryElement geomElement) throw(SALOME::SALOME_Exception)
 {
   return getNumber(geomElement);
 }
@@ -345,11 +345,11 @@ SALOME_MED::long_array * SMESH_MEDSupport_i::getNumberFromFile(
 //=============================================================================
 
 SALOME_MED::long_array *
-	SMESH_MEDSupport_i::getNumberIndex()throw(SALOME::SALOME_Exception)
+        SMESH_MEDSupport_i::getNumberIndex()throw(SALOME::SALOME_Exception)
 {
-	MESSAGE("Not implemented for SMESH_i");
-	THROW_SALOME_CORBA_EXCEPTION("Not Implemented", SALOME::BAD_PARAM);
-	return NULL;
+        MESSAGE("Not implemented for SMESH_i");
+        THROW_SALOME_CORBA_EXCEPTION("Not Implemented", SALOME::BAD_PARAM);
+        return NULL;
 }
 //=============================================================================
 /*!
@@ -358,10 +358,10 @@ SALOME_MED::long_array *
 //=============================================================================
 
 CORBA::Long SMESH_MEDSupport_i::getNumberOfGaussPoint(SALOME_MED::
-	medGeometryElement geomElement) throw(SALOME::SALOME_Exception)
+        medGeometryElement geomElement) throw(SALOME::SALOME_Exception)
 {
-	MESSAGE("Not implemented for SMESH_i");
-	return 0;
+        MESSAGE("Not implemented for SMESH_i");
+        return 0;
 }
 //=============================================================================
 /*!

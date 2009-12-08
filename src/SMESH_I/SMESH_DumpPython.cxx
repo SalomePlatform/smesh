@@ -66,8 +66,8 @@ namespace SMESH
       TCollection_AsciiString aCollection(Standard_CString(aString.c_str()));
       SALOMEDS::Study_ptr aStudy = aSMESHGen->GetCurrentStudy();
       if(!aStudy->_is_nil() && !aCollection.IsEmpty()){
-	aSMESHGen->AddToPythonScript(aStudy->StudyId(),aCollection);
-	if(MYDEBUG) MESSAGE(aString);
+        aSMESHGen->AddToPythonScript(aStudy->StudyId(),aCollection);
+        if(MYDEBUG) MESSAGE(aString);
       }
     }
   }
@@ -587,8 +587,8 @@ Handle(TColStd_HSequenceOfInteger) FindEntries (TCollection_AsciiString& theStri
  
       isFound = Standard_False;
       while((j < aLen) && ( isdigit(c) || c == ':' )) { //Check if it is an entry
-	c = (int)arr[j++];  
-	if(c == ':') isFound = Standard_True;
+        c = (int)arr[j++];  
+        if(c == ':') isFound = Standard_True;
       }
 
       if (isFound) {
@@ -786,7 +786,7 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
   }
 
   // set initial part of aSript
-  TCollection_AsciiString initPart = "import salome, SMESH\n";
+  TCollection_AsciiString initPart = "import salome, SMESH, SALOMEDS\n";
   initPart += helper + "import " + aSmeshpy + "\n\n";
   if ( importGeom )
   {
@@ -821,7 +821,7 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
       if( !CORBA::is_nil(aGroup) )
       {
         SALOMEDS::Color aColor = aGroup->GetColor();
-        if ( aColor.R > 0 || aColor.G > 0 || aColor.B > 0 )
+        if ( aColor.R >= 0 || aColor.G >= 0 || aColor.B >= 0 )
         {
           CORBA::String_var anEntry = aSObj->GetID();
           anUpdatedScript += SMESH_Comment("\n\t")

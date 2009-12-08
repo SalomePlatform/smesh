@@ -30,7 +30,6 @@
 
 enum SMESHDS_CommandType { 
   SMESHDS_AddNode,
-  SMESHDS_Add0DElement,
   SMESHDS_AddEdge,
   SMESHDS_AddTriangle,
   SMESHDS_AddQuadrangle,
@@ -54,7 +53,9 @@ enum SMESHDS_CommandType {
   SMESHDS_AddQuadTetrahedron,
   SMESHDS_AddQuadPyramid,
   SMESHDS_AddQuadPentahedron,
-  SMESHDS_AddQuadHexahedron
+  SMESHDS_AddQuadHexahedron,
+  // special type for 0D elements
+  SMESHDS_Add0DElement
 };
 
 

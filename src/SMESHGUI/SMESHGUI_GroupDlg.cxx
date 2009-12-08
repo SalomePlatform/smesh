@@ -1062,6 +1062,10 @@ void SMESHGUI_GroupDlg::onObjectSelectionChanged()
           myIsBusy = false;
           return;
         }
+
+        if ( myFilterDlg && !myMesh->_is_nil()){
+          myFilterDlg->SetMesh( myMesh );
+        }
         myGroup = SMESH::SMESH_Group::_nil();
 
         // NPAL19389: create a group with a selection in another group
@@ -1087,7 +1091,6 @@ void SMESHGUI_GroupDlg::onObjectSelectionChanged()
           return;
         }
         myIsBusy = false;
-        myCurrentLineEdit = 0;
 
         myGroup = SMESH::SMESH_Group::_nil();
         myGroupOnGeom = SMESH::SMESH_GroupOnGeom::_nil();
@@ -1417,11 +1420,14 @@ void SMESHGUI_GroupDlg::setCurrentSelection()
   QPushButton* send = (QPushButton*)sender();
   myCurrentLineEdit = 0;
   if (send == myMeshGroupBtn) {
-    myCurrentLineEdit = myMeshGroupLine;
+    disconnect(myMeshGroupBtn, SIGNAL(clicked()), this, SLOT(setCurrentSelection()));
+    mySelectionMgr->clearSelected();
     if (myCreate)
       setSelectionMode(6);
     else
       setSelectionMode(5);
+    connect(myMeshGroupBtn, SIGNAL(clicked()), this, SLOT(setCurrentSelection()));
+    myCurrentLineEdit = myMeshGroupLine;
     onObjectSelectionChanged();
   }
   else if (send == mySubMeshBtn) {

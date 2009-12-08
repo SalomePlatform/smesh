@@ -42,78 +42,78 @@
 class SMESH_subMesh_i;
 
 class SMESH_I_EXPORT SMESH_MEDSupport_i:
-	public virtual POA_SALOME_MED::SUPPORT, public virtual SALOME::GenericObj_i
+        public virtual POA_SALOME_MED::SUPPORT, public virtual SALOME::GenericObj_i
 {
   public:
 
 // Constructors and associated internal methods
-	SMESH_MEDSupport_i(SMESH_subMesh_i * sm,
-		std::string name, std::string description, SALOME_MED::medEntityMesh entity);
-	SMESH_MEDSupport_i(const SMESH_MEDSupport_i & s);
+        SMESH_MEDSupport_i(SMESH_subMesh_i * sm,
+                std::string name, std::string description, SALOME_MED::medEntityMesh entity);
+        SMESH_MEDSupport_i(const SMESH_MEDSupport_i & s);
 
 // IDL Methods
-	char *getName() throw(SALOME::SALOME_Exception);
-	char *getDescription() throw(SALOME::SALOME_Exception);
-	SALOME_MED::MESH_ptr getMesh() throw(SALOME::SALOME_Exception);
-	CORBA::Boolean isOnAllElements() throw(SALOME::SALOME_Exception);
-	SALOME_MED::medEntityMesh getEntity() throw(SALOME::SALOME_Exception);
+        char *getName() throw(SALOME::SALOME_Exception);
+        char *getDescription() throw(SALOME::SALOME_Exception);
+        SALOME_MED::MESH_ptr getMesh() throw(SALOME::SALOME_Exception);
+        CORBA::Boolean isOnAllElements() throw(SALOME::SALOME_Exception);
+        SALOME_MED::medEntityMesh getEntity() throw(SALOME::SALOME_Exception);
         CORBA::Long
-	getNumberOfElements(SALOME_MED::medGeometryElement geomElement)
-	  throw(SALOME::SALOME_Exception);
+        getNumberOfElements(SALOME_MED::medGeometryElement geomElement)
+          throw(SALOME::SALOME_Exception);
 
         CORBA::Long getNumberOfTypes() throw (SALOME::SALOME_Exception);
 
-	SALOME_MED::long_array *
-	getNumber(SALOME_MED::medGeometryElement geomElement)
-	  throw(SALOME::SALOME_Exception);
+        SALOME_MED::long_array *
+        getNumber(SALOME_MED::medGeometryElement geomElement)
+          throw(SALOME::SALOME_Exception);
 
   /*!
    * Same function as getNumber.
    */
-	SALOME_MED::long_array *
-	getNumberFromFile(SALOME_MED::medGeometryElement geomElement)
-	  throw(SALOME::SALOME_Exception);
+        SALOME_MED::long_array *
+        getNumberFromFile(SALOME_MED::medGeometryElement geomElement)
+          throw(SALOME::SALOME_Exception);
 
-	SALOME_MED::long_array * getNumberIndex()
-	  throw(SALOME::SALOME_Exception);
+        SALOME_MED::long_array * getNumberIndex()
+          throw(SALOME::SALOME_Exception);
 
         CORBA::Long
-	getNumberOfGaussPoint(SALOME_MED::medGeometryElement geomElement)
-	  throw(SALOME::SALOME_Exception);
+        getNumberOfGaussPoint(SALOME_MED::medGeometryElement geomElement)
+          throw(SALOME::SALOME_Exception);
 
         SALOME_MED::long_array* getNumbersOfGaussPoint()
-	  throw (SALOME::SALOME_Exception);
+          throw (SALOME::SALOME_Exception);
 
-	SALOME_MED::medGeometryElement_array *getTypes()
-	  throw(SALOME::SALOME_Exception);
+        SALOME_MED::medGeometryElement_array *getTypes()
+          throw(SALOME::SALOME_Exception);
 
         void getBoundaryElements() throw (SALOME::SALOME_Exception);
 
-	CORBA::Long getCorbaIndex() throw(SALOME::SALOME_Exception);
+        CORBA::Long getCorbaIndex() throw(SALOME::SALOME_Exception);
 
         SALOME_MED::SUPPORT::supportInfos * getSupportGlobal()
-	  throw (SALOME::SALOME_Exception);
+          throw (SALOME::SALOME_Exception);
 
-	void createSeq() throw(SALOME::SALOME_Exception);
+        void createSeq() throw(SALOME::SALOME_Exception);
 
   public: //public field
-	const SMESHDS_SubMesh * _subMeshDS;
-	::SMESH_subMesh_i * _subMesh_i;
+        const SMESHDS_SubMesh * _subMeshDS;
+        ::SMESH_subMesh_i * _subMesh_i;
 
-	SMESHDS_Mesh * _meshDS;
-	std::string _name;
+        SMESHDS_Mesh * _meshDS;
+        std::string _name;
         std::string _description;
-	bool _isOnAllElements;
-	bool _seqNumber;
-	int _seqLength;
+        bool _isOnAllElements;
+        bool _seqNumber;
+        int _seqLength;
 
-	SALOME_MED::medEntityMesh _entity;
-	SALOME_MED::medGeometryElement * _geometricType;
-	int _numberOfGeometricType;
+        SALOME_MED::medEntityMesh _entity;
+        SALOME_MED::medGeometryElement * _geometricType;
+        int _numberOfGeometricType;
 
   protected:
-	SMESH_MEDSupport_i();
-	~SMESH_MEDSupport_i();
+        SMESH_MEDSupport_i();
+        ~SMESH_MEDSupport_i();
 };
 
 #endif /* _MED_MEDSUPPORT_I_HXX_ */

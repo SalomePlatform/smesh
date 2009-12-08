@@ -53,7 +53,14 @@ public:
 
   virtual bool Evaluate(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape,
                         MapShapeNbElems& aResMap);
-
+  /*!
+   * \brief Allow algo to do something after persistent restoration
+    * \param subMesh - restored submesh
+   *
+   * This method is called only if a submesh has HYP_OK algo_state.
+   */
+  virtual void SubmeshRestored(SMESH_subMesh* subMesh);
+  
 protected:
 
   bool computeLayerPositions(const gp_Pnt& pIn,

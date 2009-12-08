@@ -108,6 +108,38 @@ except ImportError:
     noNETGENPlugin = 1
     pass
 
+# import GHS3DPlugin module if possible
+noGHS3DPlugin = 0
+try:
+    import GHS3DPlugin
+except ImportError:
+    noGHS3DPlugin = 1
+    pass
+
+# import GHS3DPRLPlugin module if possible
+noGHS3DPRLPlugin = 0
+try:
+    import GHS3DPRLPlugin
+except ImportError:
+    noGHS3DPRLPlugin = 1
+    pass
+
+# import HexoticPlugin module if possible
+noHexoticPlugin = 0
+try:
+    import HexoticPlugin
+except ImportError:
+    noHexoticPlugin = 1
+    pass
+
+# import BLSURFPlugin module if possible
+noBLSURFPlugin = 0
+try:
+    import BLSURFPlugin
+except ImportError:
+    noBLSURFPlugin = 1
+    pass
+
 ## @addtogroup l1_auxiliary
 ## @{
 
@@ -149,7 +181,10 @@ VeryFine   = 4
 Custom     = 5
 
 # Optimization level of GHS3D
+# V3.1
 None_Optimization, Light_Optimization, Medium_Optimization, Strong_Optimization = 0,1,2,3
+# V4.1 (partialy redefines V3.1). Issue 0020574
+None_Optimization, Light_Optimization, Standard_Optimization, StandardPlus_Optimization, Strong_Optimization = 0,1,2,3,4
 
 # Topology treatment way of BLSURF
 FromCAD, PreProcess, PreProcessPlus = 0,1,2
@@ -403,6 +438,25 @@ def TreatHypoStatus(status, hypName, geomName, isAlgo):
         print hypName, "was not assigned to",geomName,":", reason
         pass
 
+## Check meshing plugin availability
+def CheckPlugin(plugin):
+    if plugin == NETGEN and noNETGENPlugin:
+        print "Warning: NETGENPlugin module unavailable"
+        return False
+    elif plugin == GHS3D and noGHS3DPlugin:
+        print "Warning: GHS3DPlugin module unavailable"
+        return False
+    elif plugin == GHS3DPRL and noGHS3DPRLPlugin:
+        print "Warning: GHS3DPRLPlugin module unavailable"
+        return False
+    elif plugin == Hexotic and noHexoticPlugin:
+        print "Warning: HexoticPlugin module unavailable"
+        return False
+    elif plugin == BLSURF and noBLSURFPlugin:
+        print "Warning: BLSURFPlugin module unavailable"
+        return False
+    return True
+    
 # end of l1_auxiliary
 ## @}
 
@@ -756,11 +810,25 @@ class smeshDC(SMESH._objref_SMESH_Gen):
             print "Error: given parameter is not numerucal functor type."
 
     ## Creates hypothesis
-    #  @param 
-    #  @param 
+    #  @param theHType mesh hypothesis type (string)
+    #  @param theLibName mesh plug-in library name
     #  @return created hypothesis instance
     def CreateHypothesis(self, theHType, theLibName="libStdMeshersEngine.so"):
         return SMESH._objref_SMESH_Gen.CreateHypothesis(self, theHType, theLibName )
+
+    ## Gets the mesh stattistic
+    #  @return dictionary type element - count of elements
+    #  @ingroup l1_meshinfo
+    def GetMeshInfo(self, obj):
+        if isinstance( obj, Mesh ):
+            obj = obj.GetMesh()
+        d = {}
+        if hasattr(obj, "_narrow") and obj._narrow(SMESH.SMESH_IDSource):
+            values = obj.GetMeshInfo() 
+            for i in range(SMESH.Entity_Last._v):
+                if i < len(values): d[SMESH.EntityType._item(i)]=values[i]
+            pass
+        return d
 
 import omniORB
 #Registering the new proxy for SMESH_Gen
@@ -1252,6 +1320,8 @@ class Mesh:
     #  Exports the mesh in a file in MED format and chooses the \a version of MED format
     #  @param f the file name
     #  @param version values are SMESH.MED_V2_1, SMESH.MED_V2_2
+    #  @param opt boolean parameter for creating/not creating
+    #  the groups Group_On_All_Nodes, Group_On_All_Faces, ...
     #  @ingroup l2_impexp
     def ExportToMED(self, f, version, opt=0):
         self.mesh.ExportToMED(f, opt, version)
@@ -1323,19 +1393,37 @@ class Mesh:
             elif tgeo == "SHELL":
                 typ = VOLUME
             elif tgeo == "COMPOUND":
-                if len( self.geompyD.GetObjectIDs( grp )) == 0:
-                    print "Mesh.Group: empty geometric group", GetName( grp )
-                    return 0
-                tgeo = self.geompyD.GetType(grp)
-                if tgeo == geompyDC.ShapeType["VERTEX"]:
-                    typ = NODE
-                elif tgeo == geompyDC.ShapeType["EDGE"]:
-                    typ = EDGE
-                elif tgeo == geompyDC.ShapeType["FACE"]:
-                    typ = FACE
-                elif tgeo == geompyDC.ShapeType["SOLID"]:
-                    typ = VOLUME
-
+                try: # it raises on a compound of compounds
+                    if len( self.geompyD.GetObjectIDs( grp )) == 0:
+                        print "Mesh.Group: empty geometric group", GetName( grp )
+                        return 0
+                    pass
+                except:
+                    pass
+                if grp.GetType() == 37: # GEOMImpl_Types.hxx: #define GEOM_GROUP 37
+                    # group
+                    tgeo = self.geompyD.GetType(grp)
+                    if tgeo == geompyDC.ShapeType["VERTEX"]:
+                        typ = NODE
+                    elif tgeo == geompyDC.ShapeType["EDGE"]:
+                        typ = EDGE
+                    elif tgeo == geompyDC.ShapeType["FACE"]:
+                        typ = FACE
+                    elif tgeo == geompyDC.ShapeType["SOLID"]:
+                        typ = VOLUME
+                        pass
+                    pass
+                else:
+                    # just a compound
+                    for elemType, shapeType in [[VOLUME,"SOLID"],[FACE,"FACE"],
+                                                [EDGE,"EDGE"],[NODE,"VERTEX"]]:
+                        if self.geompyD.SubShapeAll(grp,geompyDC.ShapeType[shapeType]):
+                            typ = elemType
+                            break
+                        pass
+                    pass
+                pass
+            pass
         if typ == None:
             print "Mesh.Group: bad first argument: expected a group, a vertex, an edge, a face or a solid"
             return 0
@@ -1596,13 +1684,7 @@ class Mesh:
     #  @ingroup l1_meshinfo
     def GetMeshInfo(self, obj = None):
         if not obj: obj = self.mesh
-        d = {}
-        if hasattr(obj, "_narrow") and obj._narrow(SMESH.SMESH_IDSource):
-            values = obj.GetMeshInfo() 
-            for i in range(SMESH.Entity_Last._v):
-                if i < len(values): d[SMESH.EntityType._item(i)]=values[i]
-            pass
-        return d
+        return self.smeshpyD.GetMeshInfo(obj)
 
     ## Returns the number of nodes in the mesh
     #  @return an integer value
@@ -2128,6 +2210,8 @@ class Mesh:
     #  @param x  the X coordinate of a point
     #  @param y  the Y coordinate of a point
     #  @param z  the Z coordinate of a point
+    #  @param NodeID if specified (>0), the node with this ID is moved,
+    #  otherwise, the node closest to point (@a x,@a y,@a z) is moved
     #  @return the ID of a node
     #  @ingroup l2_modif_throughp
     def MoveClosestNodeToPoint(self, x, y, z, NodeID):
@@ -2814,7 +2898,7 @@ class Mesh:
                                                    HasRefPoint, RefPoint, MakeGroups, ElemType)
         else:
             if isinstance(Base,Mesh):
-                return self.editor.ExtrusionAlongPathObjX(Base.GetMesh(), Path, NodeStart,
+                return self.editor.ExtrusionAlongPathObjX(Base, Path, NodeStart,
                                                           HasAngles, Angles, LinearVariation,
                                                           HasRefPoint, RefPoint, MakeGroups, ElemType)
             else:
@@ -3275,6 +3359,8 @@ class Mesh:
     #  @return a list of groups of equal elements
     #  @ingroup l2_modif_trsf
     def FindEqualElements (self, MeshOrSubMeshOrGroup):
+        if ( isinstance( MeshOrSubMeshOrGroup, Mesh )):
+            MeshOrSubMeshOrGroup = MeshOrSubMeshOrGroup.GetMesh()
         return self.editor.FindEqualElements(MeshOrSubMeshOrGroup)
 
     ## Merges elements in each given group.
@@ -3352,6 +3438,43 @@ class Mesh:
     #  @ingroup l1_auxiliary
     def GetLastCreatedElems(self):
         return self.editor.GetLastCreatedElems()
+
+     ## Creates a hole in a mesh by doubling the nodes of some particular elements
+    #  @param theNodes identifiers of nodes to be doubled
+    #  @param theModifiedElems identifiers of elements to be updated by the new (doubled) 
+    #         nodes. If list of element identifiers is empty then nodes are doubled but 
+    #         they not assigned to elements
+    #  @return TRUE if operation has been completed successfully, FALSE otherwise
+    #  @ingroup l2_modif_edit
+    def DoubleNodes(self, theNodes, theModifiedElems):
+        return self.editor.DoubleNodes(theNodes, theModifiedElems)
+        
+    ## Creates a hole in a mesh by doubling the nodes of some particular elements
+    #  This method provided for convenience works as DoubleNodes() described above.
+    #  @param theNodes identifiers of node to be doubled
+    #  @param theModifiedElems identifiers of elements to be updated
+    #  @return TRUE if operation has been completed successfully, FALSE otherwise
+    #  @ingroup l2_modif_edit
+    def DoubleNode(self, theNodeId, theModifiedElems):
+        return self.editor.DoubleNode(theNodeId, theModifiedElems)
+        
+    ## Creates a hole in a mesh by doubling the nodes of some particular elements
+    #  This method provided for convenience works as DoubleNodes() described above.
+    #  @param theNodes group of nodes to be doubled
+    #  @param theModifiedElems group of elements to be updated.
+    #  @return TRUE if operation has been completed successfully, FALSE otherwise
+    #  @ingroup l2_modif_edit
+    def DoubleNodeGroup(self, theNodes, theModifiedElems):
+        return self.editor.DoubleNodeGroup(theNodes, theModifiedElems)
+        
+    ## Creates a hole in a mesh by doubling the nodes of some particular elements
+    #  This method provided for convenience works as DoubleNodes() described above.
+    #  @param theNodes list of groups of nodes to be doubled
+    #  @param theModifiedElems list of groups of elements to be updated.
+    #  @return TRUE if operation has been completed successfully, FALSE otherwise
+    #  @ingroup l2_modif_edit
+    def DoubleNodeGroups(self, theNodes, theModifiedElems):
+        return self.editor.DoubleNodeGroups(theNodes, theModifiedElems)
     
     ## Creates a hole in a mesh by doubling the nodes of some particular elements
     #  @param theElems - the list of elements (edges or faces) to be replicated
@@ -3361,8 +3484,8 @@ class Mesh:
     #         replicated nodes should be associated to.
     #  @return TRUE if operation has been completed successfully, FALSE otherwise
     #  @ingroup l2_modif_edit
-    def DoubleNodes(self, theElems, theNodesNot, theAffectedElems):
-        return self.editor.DoubleNodes(theElems, theNodesNot, theAffectedElems)
+    def DoubleNodeElem(self, theElems, theNodesNot, theAffectedElems):
+        return self.editor.DoubleNodeElem(theElems, theNodesNot, theAffectedElems)
         
     ## Creates a hole in a mesh by doubling the nodes of some particular elements
     #  @param theElems - the list of elements (edges or faces) to be replicated
@@ -3373,8 +3496,8 @@ class Mesh:
     #         The replicated nodes should be associated to affected elements.
     #  @return TRUE if operation has been completed successfully, FALSE otherwise
     #  @ingroup l2_modif_edit
-    def DoubleNodesInRegion(self, theElems, theNodesNot, theShape):
-        return self.editor.DoubleNodesInRegion(theElems, theNodesNot, theShape)
+    def DoubleNodeElemInRegion(self, theElems, theNodesNot, theShape):
+        return self.editor.DoubleNodeElemInRegion(theElems, theNodesNot, theShape)
     
     ## Creates a hole in a mesh by doubling the nodes of some particular elements
     #  This method provided for convenience works as DoubleNodes() described above.
@@ -3383,8 +3506,8 @@ class Mesh:
     #  @param theAffectedElems - group of elements to which the replicated nodes
     #         should be associated to.
     #  @ingroup l2_modif_edit
-    def DoubleNodeGroup(self, theElems, theNodesNot, theAffectedElems):
-        return self.editor.DoubleNodeGroup(theElems, theNodesNot, theAffectedElems)
+    def DoubleNodeElemGroup(self, theElems, theNodesNot, theAffectedElems):
+        return self.editor.DoubleNodeElemGroup(theElems, theNodesNot, theAffectedElems)
         
     ## Creates a hole in a mesh by doubling the nodes of some particular elements
     #  This method provided for convenience works as DoubleNodes() described above.
@@ -3394,8 +3517,8 @@ class Mesh:
     #         located on or inside shape).
     #         The replicated nodes should be associated to affected elements.
     #  @ingroup l2_modif_edit
-    def DoubleNodeGroupInRegion(self, theElems, theNodesNot, theShape):
-        return self.editor.DoubleNodeGroup(theElems, theNodesNot, theShape)
+    def DoubleNodeElemGroupInRegion(self, theElems, theNodesNot, theShape):
+        return self.editor.DoubleNodeElemGroup(theElems, theNodesNot, theShape)
         
     ## Creates a hole in a mesh by doubling the nodes of some particular elements
     #  This method provided for convenience works as DoubleNodes() described above.
@@ -3405,8 +3528,8 @@ class Mesh:
     #         should be associated to.
     #  @return TRUE if operation has been completed successfully, FALSE otherwise
     #  @ingroup l2_modif_edit
-    def DoubleNodeGroups(self, theElems, theNodesNot, theAffectedElems):
-        return self.editor.DoubleNodeGroups(theElems, theNodesNot, theAffectedElems)
+    def DoubleNodeElemGroups(self, theElems, theNodesNot, theAffectedElems):
+        return self.editor.DoubleNodeElemGroups(theElems, theNodesNot, theAffectedElems)
 
     ## Creates a hole in a mesh by doubling the nodes of some particular elements
     #  This method provided for convenience works as DoubleNodes() described above.
@@ -3417,8 +3540,8 @@ class Mesh:
     #         The replicated nodes should be associated to affected elements.
     #  @return TRUE if operation has been completed successfully, FALSE otherwise
     #  @ingroup l2_modif_edit
-    def DoubleNodeGroupsInRegion(self, theElems, theNodesNot, theShape):
-        return self.editor.DoubleNodeGroupsInRegion(theElems, theNodesNot, theShape)
+    def DoubleNodeElemGroupsInRegion(self, theElems, theNodesNot, theShape):
+        return self.editor.DoubleNodeElemGroupsInRegion(theElems, theNodesNot, theShape)
 
 ## The mother class to define algorithm, it is not recommended to use it directly.
 #
@@ -3996,19 +4119,15 @@ class Mesh_Triangle(Mesh_Algorithm):
             self.Create(mesh, geom, "MEFISTO_2D")
             pass
         elif algoType == BLSURF:
-            import BLSURFPlugin
+            CheckPlugin(BLSURF)
             self.Create(mesh, geom, "BLSURF", "libBLSURFEngine.so")
             #self.SetPhysicalMesh() - PAL19680
         elif algoType == NETGEN:
-            if noNETGENPlugin:
-                print "Warning: NETGENPlugin module unavailable"
-                pass
+            CheckPlugin(NETGEN)
             self.Create(mesh, geom, "NETGEN_2D", "libNETGENEngine.so")
             pass
         elif algoType == NETGEN_2D:
-            if noNETGENPlugin:
-                print "Warning: NETGENPlugin module unavailable"
-                pass
+            CheckPlugin(NETGEN)
             self.Create(mesh, geom, "NETGEN_2D_ONLY", "libNETGENEngine.so")
             pass
 
@@ -4057,6 +4176,7 @@ class Mesh_Triangle(Mesh_Algorithm):
     #  @ingroup l3_hypos_blsurf
     def SetPhySize(self, theVal):
         # Parameter of BLSURF algo
+        self.SetPhysicalMesh(1) #Custom - else why to set the size?
         self.Parameters().SetPhySize(theVal)
 
     ## Sets lower boundary of mesh element size (PhySize).
@@ -4311,22 +4431,22 @@ class Mesh_Tetrahedron(Mesh_Algorithm):
         Mesh_Algorithm.__init__(self)
 
         if algoType == NETGEN:
+            CheckPlugin(NETGEN)
             self.Create(mesh, geom, "NETGEN_3D", "libNETGENEngine.so")
             pass
 
         elif algoType == FULL_NETGEN:
-            if noNETGENPlugin:
-                print "Warning: NETGENPlugin module has not been imported."
+            CheckPlugin(NETGEN)
             self.Create(mesh, geom, "NETGEN_2D3D", "libNETGENEngine.so")
             pass
 
         elif algoType == GHS3D:
-            import GHS3DPlugin
+            CheckPlugin(GHS3D)
             self.Create(mesh, geom, "GHS3D_3D" , "libGHS3DEngine.so")
             pass
 
         elif algoType == GHS3DPRL:
-            import GHS3DPRLPlugin
+            CheckPlugin(GHS3DPRL)
             self.Create(mesh, geom, "GHS3DPRL_3D" , "libGHS3DPRLEngine.so")
             pass
 
@@ -4464,8 +4584,9 @@ class Mesh_Tetrahedron(Mesh_Algorithm):
         self.Parameters().SetToMeshHoles(toMesh)
 
     ## Set Optimization level:
-    #   None_Optimization, Light_Optimization, Medium_Optimization, Strong_Optimization.
-    #  Default is Medium_Optimization
+    #   None_Optimization, Light_Optimization, Standard_Optimization, StandardPlus_Optimization,
+    #   Strong_Optimization.
+    # Default is Standard_Optimization
     #  @ingroup l3_hypos_ghs3dh
     def SetOptimizationLevel(self, level):
         #  Parameter of GHS3D
@@ -4562,7 +4683,7 @@ class Mesh_Hexahedron(Mesh_Algorithm):
             pass
 
         elif algoType == Hexotic:
-            import HexoticPlugin
+            CheckPlugin(Hexotic)
             self.Create(mesh, geom, "Hexotic_3D", "libHexoticEngine.so")
             pass
 
@@ -4595,8 +4716,7 @@ class Mesh_Netgen(Mesh_Algorithm):
     def __init__(self, mesh, is3D, geom=0):
         Mesh_Algorithm.__init__(self)
 
-        if noNETGENPlugin:
-            print "Warning: NETGENPlugin module has not been imported."
+        CheckPlugin(NETGEN)
 
         self.is3D = is3D
         if is3D:
@@ -5115,7 +5235,7 @@ omniORB.registerObjref(StdMeshers._objref_StdMeshers_MaxElementArea._NP_Reposito
 class MaxElementVolume(StdMeshers._objref_StdMeshers_MaxElementVolume):
     
     ## Set Max Element Volume parameter value
-    #  @param area  numerical value or name of variable from notebook
+    #  @param volume numerical value or name of variable from notebook
     def SetMaxElementVolume(self, volume):
         volume ,parameters = ParseParameters(StdMeshers._objref_StdMeshers_MaxElementVolume.GetLastParameters(self),1,1,volume)
         StdMeshers._objref_StdMeshers_MaxElementVolume.SetParameters(self,parameters)
@@ -5159,110 +5279,112 @@ class NumberOfSegments(StdMeshers._objref_StdMeshers_NumberOfSegments):
 #Registering the new proxy for NumberOfSegments
 omniORB.registerObjref(StdMeshers._objref_StdMeshers_NumberOfSegments._NP_RepositoryId, NumberOfSegments)
 
+if not noNETGENPlugin:
+    #Wrapper class for NETGENPlugin_Hypothesis hypothesis
+    class NETGENPlugin_Hypothesis(NETGENPlugin._objref_NETGENPlugin_Hypothesis):
 
-#Wrapper class for NETGENPlugin_Hypothesis hypothesis
-class NETGENPlugin_Hypothesis(NETGENPlugin._objref_NETGENPlugin_Hypothesis):
+        ## Set Max Size parameter value
+        #  @param maxsize numerical value or name of variable from notebook
+        def SetMaxSize(self, maxsize):
+            lastParameters = NETGENPlugin._objref_NETGENPlugin_Hypothesis.GetLastParameters(self)
+            maxsize, parameters = ParseParameters(lastParameters,4,1,maxsize)
+            NETGENPlugin._objref_NETGENPlugin_Hypothesis.SetParameters(self,parameters)
+            NETGENPlugin._objref_NETGENPlugin_Hypothesis.SetMaxSize(self,maxsize)
 
-    ## Set Max Size parameter value
-    #  @param maxsize numerical value or name of variable from notebook
-    def SetMaxSize(self, maxsize):
-        lastParameters = NETGENPlugin._objref_NETGENPlugin_Hypothesis.GetLastParameters(self)
-        maxsize, parameters = ParseParameters(lastParameters,4,1,maxsize)
-        NETGENPlugin._objref_NETGENPlugin_Hypothesis.SetParameters(self,parameters)
-        NETGENPlugin._objref_NETGENPlugin_Hypothesis.SetMaxSize(self,maxsize)
-        
-    ## Set Growth Rate parameter value
-    #  @param value  numerical value or name of variable from notebook
-    def SetGrowthRate(self, value):
-        lastParameters = NETGENPlugin._objref_NETGENPlugin_Hypothesis.GetLastParameters(self)
-        value, parameters = ParseParameters(lastParameters,4,2,value)
-        NETGENPlugin._objref_NETGENPlugin_Hypothesis.SetParameters(self,parameters)
-        NETGENPlugin._objref_NETGENPlugin_Hypothesis.SetGrowthRate(self,value)
-        
-    ## Set Number of Segments per Edge parameter value
-    #  @param value  numerical value or name of variable from notebook
-    def SetNbSegPerEdge(self, value):
-        lastParameters = NETGENPlugin._objref_NETGENPlugin_Hypothesis.GetLastParameters(self)
-        value, parameters = ParseParameters(lastParameters,4,3,value)
-        NETGENPlugin._objref_NETGENPlugin_Hypothesis.SetParameters(self,parameters)
-        NETGENPlugin._objref_NETGENPlugin_Hypothesis.SetNbSegPerEdge(self,value)
-        
-    ## Set Number of Segments per Radius parameter value
-    #  @param value  numerical value or name of variable from notebook
-    def SetNbSegPerRadius(self, value):
-        lastParameters = NETGENPlugin._objref_NETGENPlugin_Hypothesis.GetLastParameters(self)
-        value, parameters = ParseParameters(lastParameters,4,4,value)
-        NETGENPlugin._objref_NETGENPlugin_Hypothesis.SetParameters(self,parameters)
-        NETGENPlugin._objref_NETGENPlugin_Hypothesis.SetNbSegPerRadius(self,value)
-        
-#Registering the new proxy for NETGENPlugin_Hypothesis
-omniORB.registerObjref(NETGENPlugin._objref_NETGENPlugin_Hypothesis._NP_RepositoryId, NETGENPlugin_Hypothesis)
+        ## Set Growth Rate parameter value
+        #  @param value  numerical value or name of variable from notebook
+        def SetGrowthRate(self, value):
+            lastParameters = NETGENPlugin._objref_NETGENPlugin_Hypothesis.GetLastParameters(self)
+            value, parameters = ParseParameters(lastParameters,4,2,value)
+            NETGENPlugin._objref_NETGENPlugin_Hypothesis.SetParameters(self,parameters)
+            NETGENPlugin._objref_NETGENPlugin_Hypothesis.SetGrowthRate(self,value)
 
+        ## Set Number of Segments per Edge parameter value
+        #  @param value  numerical value or name of variable from notebook
+        def SetNbSegPerEdge(self, value):
+            lastParameters = NETGENPlugin._objref_NETGENPlugin_Hypothesis.GetLastParameters(self)
+            value, parameters = ParseParameters(lastParameters,4,3,value)
+            NETGENPlugin._objref_NETGENPlugin_Hypothesis.SetParameters(self,parameters)
+            NETGENPlugin._objref_NETGENPlugin_Hypothesis.SetNbSegPerEdge(self,value)
 
-#Wrapper class for NETGENPlugin_Hypothesis_2D hypothesis
-class NETGENPlugin_Hypothesis_2D(NETGENPlugin_Hypothesis,NETGENPlugin._objref_NETGENPlugin_Hypothesis_2D):
-    pass
+        ## Set Number of Segments per Radius parameter value
+        #  @param value  numerical value or name of variable from notebook
+        def SetNbSegPerRadius(self, value):
+            lastParameters = NETGENPlugin._objref_NETGENPlugin_Hypothesis.GetLastParameters(self)
+            value, parameters = ParseParameters(lastParameters,4,4,value)
+            NETGENPlugin._objref_NETGENPlugin_Hypothesis.SetParameters(self,parameters)
+            NETGENPlugin._objref_NETGENPlugin_Hypothesis.SetNbSegPerRadius(self,value)
 
-#Registering the new proxy for NETGENPlugin_Hypothesis_2D
-omniORB.registerObjref(NETGENPlugin._objref_NETGENPlugin_Hypothesis_2D._NP_RepositoryId, NETGENPlugin_Hypothesis_2D)
-
-#Wrapper class for NETGENPlugin_SimpleHypothesis_2D hypothesis
-class NETGEN_SimpleParameters_2D(NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_2D):
-    
-    ## Set Number of Segments parameter value
-    #  @param nbSeg numerical value or name of variable from notebook
-    def SetNumberOfSegments(self, nbSeg):
-        lastParameters = NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_2D.GetLastParameters(self)
-        nbSeg, parameters = ParseParameters(lastParameters,2,1,nbSeg)
-        NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_2D.SetParameters(self,parameters)
-        NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_2D.SetNumberOfSegments(self, nbSeg)
-
-    ## Set Local Length parameter value
-    #  @param length numerical value or name of variable from notebook
-    def SetLocalLength(self, length):
-        lastParameters = NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_2D.GetLastParameters(self)
-        length, parameters = ParseParameters(lastParameters,2,1,length)
-        NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_2D.SetParameters(self,parameters)
-        NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_2D.SetLocalLength(self, length)
-
-    ## Set Max Element Area parameter value
-    #  @param area numerical value or name of variable from notebook    
-    def SetMaxElementArea(self, area):
-        lastParameters = NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_2D.GetLastParameters(self)
-        area, parameters = ParseParameters(lastParameters,2,2,area)
-        NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_2D.SetParameters(self,parameters)
-        NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_2D.SetMaxElementArea(self, area)
-
-    def LengthFromEdges(self):
-        lastParameters = NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_2D.GetLastParameters(self)
-        value = 0;
-        value, parameters = ParseParameters(lastParameters,2,2,value)
-        NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_2D.SetParameters(self,parameters)
-        NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_2D.LengthFromEdges(self)
-        
-#Registering the new proxy for NETGEN_SimpleParameters_2D
-omniORB.registerObjref(NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_2D._NP_RepositoryId, NETGEN_SimpleParameters_2D)
+    #Registering the new proxy for NETGENPlugin_Hypothesis
+    omniORB.registerObjref(NETGENPlugin._objref_NETGENPlugin_Hypothesis._NP_RepositoryId, NETGENPlugin_Hypothesis)
 
 
-#Wrapper class for NETGENPlugin_SimpleHypothesis_3D hypothesis
-class NETGEN_SimpleParameters_3D(NETGEN_SimpleParameters_2D,NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_3D):
-    ## Set Max Element Volume parameter value
-    #  @param volume numerical value or name of variable from notebook    
-    def SetMaxElementVolume(self, volume):
-        lastParameters = NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_3D.GetLastParameters(self)
-        volume, parameters = ParseParameters(lastParameters,3,3,volume)
-        NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_3D.SetParameters(self,parameters)
-        NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_3D.SetMaxElementVolume(self, volume)
+    #Wrapper class for NETGENPlugin_Hypothesis_2D hypothesis
+    class NETGENPlugin_Hypothesis_2D(NETGENPlugin_Hypothesis,NETGENPlugin._objref_NETGENPlugin_Hypothesis_2D):
+        pass
 
-    def LengthFromFaces(self):
-        lastParameters = NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_3D.GetLastParameters(self)
-        value = 0;
-        value, parameters = ParseParameters(lastParameters,3,3,value)
-        NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_3D.SetParameters(self,parameters)
-        NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_3D.LengthFromFaces(self)
-        
-#Registering the new proxy for NETGEN_SimpleParameters_3D
-omniORB.registerObjref(NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_3D._NP_RepositoryId, NETGEN_SimpleParameters_3D)
+    #Registering the new proxy for NETGENPlugin_Hypothesis_2D
+    omniORB.registerObjref(NETGENPlugin._objref_NETGENPlugin_Hypothesis_2D._NP_RepositoryId, NETGENPlugin_Hypothesis_2D)
+
+    #Wrapper class for NETGENPlugin_SimpleHypothesis_2D hypothesis
+    class NETGEN_SimpleParameters_2D(NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_2D):
+
+        ## Set Number of Segments parameter value
+        #  @param nbSeg numerical value or name of variable from notebook
+        def SetNumberOfSegments(self, nbSeg):
+            lastParameters = NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_2D.GetLastParameters(self)
+            nbSeg, parameters = ParseParameters(lastParameters,2,1,nbSeg)
+            NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_2D.SetParameters(self,parameters)
+            NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_2D.SetNumberOfSegments(self, nbSeg)
+
+        ## Set Local Length parameter value
+        #  @param length numerical value or name of variable from notebook
+        def SetLocalLength(self, length):
+            lastParameters = NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_2D.GetLastParameters(self)
+            length, parameters = ParseParameters(lastParameters,2,1,length)
+            NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_2D.SetParameters(self,parameters)
+            NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_2D.SetLocalLength(self, length)
+
+        ## Set Max Element Area parameter value
+        #  @param area numerical value or name of variable from notebook    
+        def SetMaxElementArea(self, area):
+            lastParameters = NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_2D.GetLastParameters(self)
+            area, parameters = ParseParameters(lastParameters,2,2,area)
+            NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_2D.SetParameters(self,parameters)
+            NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_2D.SetMaxElementArea(self, area)
+
+        def LengthFromEdges(self):
+            lastParameters = NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_2D.GetLastParameters(self)
+            value = 0;
+            value, parameters = ParseParameters(lastParameters,2,2,value)
+            NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_2D.SetParameters(self,parameters)
+            NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_2D.LengthFromEdges(self)
+
+    #Registering the new proxy for NETGEN_SimpleParameters_2D
+    omniORB.registerObjref(NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_2D._NP_RepositoryId, NETGEN_SimpleParameters_2D)
+
+
+    #Wrapper class for NETGENPlugin_SimpleHypothesis_3D hypothesis
+    class NETGEN_SimpleParameters_3D(NETGEN_SimpleParameters_2D,NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_3D):
+        ## Set Max Element Volume parameter value
+        #  @param volume numerical value or name of variable from notebook    
+        def SetMaxElementVolume(self, volume):
+            lastParameters = NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_3D.GetLastParameters(self)
+            volume, parameters = ParseParameters(lastParameters,3,3,volume)
+            NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_3D.SetParameters(self,parameters)
+            NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_3D.SetMaxElementVolume(self, volume)
+
+        def LengthFromFaces(self):
+            lastParameters = NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_3D.GetLastParameters(self)
+            value = 0;
+            value, parameters = ParseParameters(lastParameters,3,3,value)
+            NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_3D.SetParameters(self,parameters)
+            NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_3D.LengthFromFaces(self)
+
+    #Registering the new proxy for NETGEN_SimpleParameters_3D
+    omniORB.registerObjref(NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_3D._NP_RepositoryId, NETGEN_SimpleParameters_3D)
+
+    pass # if not noNETGENPlugin:
 
 class Pattern(SMESH._objref_SMESH_Pattern):
 

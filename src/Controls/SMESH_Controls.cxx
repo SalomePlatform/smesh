@@ -149,21 +149,21 @@ namespace{
 //     SMDS_ElemIteratorPtr anIter = anEdge->nodesIterator();
 //     if ( anIter != 0 ) {
 //       while( anIter->more() ) {
-// 	const SMDS_MeshNode* aNode = (SMDS_MeshNode*)anIter->next();
-// 	if ( aNode == 0 )
-// 	  return 0;
-// 	SMDS_ElemIteratorPtr anElemIter = aNode->GetInverseElementIterator();
-// 	while( anElemIter->more() ) {
-// 	  const SMDS_MeshElement* anElem = anElemIter->next();
-// 	  if ( anElem != 0 && anElem->GetType() != SMDSAbs_Edge ) {
-// 	    int anId = anElem->GetID();
+//      const SMDS_MeshNode* aNode = (SMDS_MeshNode*)anIter->next();
+//      if ( aNode == 0 )
+//        return 0;
+//      SMDS_ElemIteratorPtr anElemIter = aNode->GetInverseElementIterator();
+//      while( anElemIter->more() ) {
+//        const SMDS_MeshElement* anElem = anElemIter->next();
+//        if ( anElem != 0 && anElem->GetType() != SMDSAbs_Edge ) {
+//          int anId = anElem->GetID();
 
-// 	    if ( anIter->more() )              // i.e. first node
-// 	      aMap.Add( anId );
-// 	    else if ( aMap.Contains( anId ) )
-// 	      aResult++;
-// 	  }
-// 	}
+//          if ( anIter->more() )              // i.e. first node
+//            aMap.Add( anId );
+//          else if ( aMap.Contains( anId ) )
+//            aResult++;
+//        }
+//      }
 //       }
 //     }
 
@@ -476,9 +476,9 @@ namespace{
 
   inline double getArea(double theHalfPerim, double theTria[3]){
     return sqrt(theHalfPerim*
-		(theHalfPerim-theTria[0])*
-		(theHalfPerim-theTria[1])*
-		(theHalfPerim-theTria[2]));
+                (theHalfPerim-theTria[0])*
+                (theHalfPerim-theTria[1])*
+                (theHalfPerim-theTria[2]));
   }
 
   inline double getVolume(double theLen[6]){
@@ -1036,160 +1036,160 @@ double Length2D::GetValue( long theElementId)
     case SMDSAbs_Node:
     case SMDSAbs_Edge:
       if (len == 2){
-	aVal = getDistance( P( 1 ), P( 2 ) );
+        aVal = getDistance( P( 1 ), P( 2 ) );
         break;
       }
       else if (len == 3){ // quadratic edge
-	aVal = getDistance(P( 1 ),P( 3 )) + getDistance(P( 3 ),P( 2 ));
+        aVal = getDistance(P( 1 ),P( 3 )) + getDistance(P( 3 ),P( 2 ));
         break;
       }
     case SMDSAbs_Face:
       if (len == 3){ // triangles
-	double L1 = getDistance(P( 1 ),P( 2 ));
-	double L2 = getDistance(P( 2 ),P( 3 ));
-	double L3 = getDistance(P( 3 ),P( 1 ));
-	aVal = Max(L1,Max(L2,L3));
-	break;
+        double L1 = getDistance(P( 1 ),P( 2 ));
+        double L2 = getDistance(P( 2 ),P( 3 ));
+        double L3 = getDistance(P( 3 ),P( 1 ));
+        aVal = Max(L1,Max(L2,L3));
+        break;
       }
       else if (len == 4){ // quadrangles
-	double L1 = getDistance(P( 1 ),P( 2 ));
-	double L2 = getDistance(P( 2 ),P( 3 ));
-	double L3 = getDistance(P( 3 ),P( 4 ));
-	double L4 = getDistance(P( 4 ),P( 1 ));
-	aVal = Max(Max(L1,L2),Max(L3,L4));
-	break;
+        double L1 = getDistance(P( 1 ),P( 2 ));
+        double L2 = getDistance(P( 2 ),P( 3 ));
+        double L3 = getDistance(P( 3 ),P( 4 ));
+        double L4 = getDistance(P( 4 ),P( 1 ));
+        aVal = Max(Max(L1,L2),Max(L3,L4));
+        break;
       }
       if (len == 6){ // quadratic triangles
-	double L1 = getDistance(P( 1 ),P( 2 )) + getDistance(P( 2 ),P( 3 ));
-	double L2 = getDistance(P( 3 ),P( 4 )) + getDistance(P( 4 ),P( 5 ));
-	double L3 = getDistance(P( 5 ),P( 6 )) + getDistance(P( 6 ),P( 1 ));
-	aVal = Max(L1,Max(L2,L3));
+        double L1 = getDistance(P( 1 ),P( 2 )) + getDistance(P( 2 ),P( 3 ));
+        double L2 = getDistance(P( 3 ),P( 4 )) + getDistance(P( 4 ),P( 5 ));
+        double L3 = getDistance(P( 5 ),P( 6 )) + getDistance(P( 6 ),P( 1 ));
+        aVal = Max(L1,Max(L2,L3));
         //cout<<"L1="<<L1<<" L2="<<L2<<"L3="<<L3<<" aVal="<<aVal<<endl;
-	break;
+        break;
       }
       else if (len == 8){ // quadratic quadrangles
-	double L1 = getDistance(P( 1 ),P( 2 )) + getDistance(P( 2 ),P( 3 ));
-	double L2 = getDistance(P( 3 ),P( 4 )) + getDistance(P( 4 ),P( 5 ));
-	double L3 = getDistance(P( 5 ),P( 6 )) + getDistance(P( 6 ),P( 7 ));
-	double L4 = getDistance(P( 7 ),P( 8 )) + getDistance(P( 8 ),P( 1 ));
-	aVal = Max(Max(L1,L2),Max(L3,L4));
-	break;
+        double L1 = getDistance(P( 1 ),P( 2 )) + getDistance(P( 2 ),P( 3 ));
+        double L2 = getDistance(P( 3 ),P( 4 )) + getDistance(P( 4 ),P( 5 ));
+        double L3 = getDistance(P( 5 ),P( 6 )) + getDistance(P( 6 ),P( 7 ));
+        double L4 = getDistance(P( 7 ),P( 8 )) + getDistance(P( 8 ),P( 1 ));
+        aVal = Max(Max(L1,L2),Max(L3,L4));
+        break;
       }
     case SMDSAbs_Volume:
       if (len == 4){ // tetraidrs
-	double L1 = getDistance(P( 1 ),P( 2 ));
-	double L2 = getDistance(P( 2 ),P( 3 ));
-	double L3 = getDistance(P( 3 ),P( 1 ));
-	double L4 = getDistance(P( 1 ),P( 4 ));
-	double L5 = getDistance(P( 2 ),P( 4 ));
-	double L6 = getDistance(P( 3 ),P( 4 ));
-	aVal = Max(Max(Max(L1,L2),Max(L3,L4)),Max(L5,L6));
-	break;
+        double L1 = getDistance(P( 1 ),P( 2 ));
+        double L2 = getDistance(P( 2 ),P( 3 ));
+        double L3 = getDistance(P( 3 ),P( 1 ));
+        double L4 = getDistance(P( 1 ),P( 4 ));
+        double L5 = getDistance(P( 2 ),P( 4 ));
+        double L6 = getDistance(P( 3 ),P( 4 ));
+        aVal = Max(Max(Max(L1,L2),Max(L3,L4)),Max(L5,L6));
+        break;
       }
       else if (len == 5){ // piramids
-	double L1 = getDistance(P( 1 ),P( 2 ));
-	double L2 = getDistance(P( 2 ),P( 3 ));
-	double L3 = getDistance(P( 3 ),P( 1 ));
-	double L4 = getDistance(P( 4 ),P( 1 ));
-	double L5 = getDistance(P( 1 ),P( 5 ));
-	double L6 = getDistance(P( 2 ),P( 5 ));
-	double L7 = getDistance(P( 3 ),P( 5 ));
-	double L8 = getDistance(P( 4 ),P( 5 ));
+        double L1 = getDistance(P( 1 ),P( 2 ));
+        double L2 = getDistance(P( 2 ),P( 3 ));
+        double L3 = getDistance(P( 3 ),P( 1 ));
+        double L4 = getDistance(P( 4 ),P( 1 ));
+        double L5 = getDistance(P( 1 ),P( 5 ));
+        double L6 = getDistance(P( 2 ),P( 5 ));
+        double L7 = getDistance(P( 3 ),P( 5 ));
+        double L8 = getDistance(P( 4 ),P( 5 ));
 
-	aVal = Max(Max(Max(L1,L2),Max(L3,L4)),Max(L5,L6));
-	aVal = Max(aVal,Max(L7,L8));
-	break;
+        aVal = Max(Max(Max(L1,L2),Max(L3,L4)),Max(L5,L6));
+        aVal = Max(aVal,Max(L7,L8));
+        break;
       }
       else if (len == 6){ // pentaidres
-	double L1 = getDistance(P( 1 ),P( 2 ));
-	double L2 = getDistance(P( 2 ),P( 3 ));
-	double L3 = getDistance(P( 3 ),P( 1 ));
-	double L4 = getDistance(P( 4 ),P( 5 ));
-	double L5 = getDistance(P( 5 ),P( 6 ));
-	double L6 = getDistance(P( 6 ),P( 4 ));
-	double L7 = getDistance(P( 1 ),P( 4 ));
-	double L8 = getDistance(P( 2 ),P( 5 ));
-	double L9 = getDistance(P( 3 ),P( 6 ));
+        double L1 = getDistance(P( 1 ),P( 2 ));
+        double L2 = getDistance(P( 2 ),P( 3 ));
+        double L3 = getDistance(P( 3 ),P( 1 ));
+        double L4 = getDistance(P( 4 ),P( 5 ));
+        double L5 = getDistance(P( 5 ),P( 6 ));
+        double L6 = getDistance(P( 6 ),P( 4 ));
+        double L7 = getDistance(P( 1 ),P( 4 ));
+        double L8 = getDistance(P( 2 ),P( 5 ));
+        double L9 = getDistance(P( 3 ),P( 6 ));
 
-	aVal = Max(Max(Max(L1,L2),Max(L3,L4)),Max(L5,L6));
-	aVal = Max(aVal,Max(Max(L7,L8),L9));
-	break;
+        aVal = Max(Max(Max(L1,L2),Max(L3,L4)),Max(L5,L6));
+        aVal = Max(aVal,Max(Max(L7,L8),L9));
+        break;
       }
       else if (len == 8){ // hexaider
-	double L1 = getDistance(P( 1 ),P( 2 ));
-	double L2 = getDistance(P( 2 ),P( 3 ));
-	double L3 = getDistance(P( 3 ),P( 4 ));
-	double L4 = getDistance(P( 4 ),P( 1 ));
-	double L5 = getDistance(P( 5 ),P( 6 ));
-	double L6 = getDistance(P( 6 ),P( 7 ));
-	double L7 = getDistance(P( 7 ),P( 8 ));
-	double L8 = getDistance(P( 8 ),P( 5 ));
-	double L9 = getDistance(P( 1 ),P( 5 ));
-	double L10= getDistance(P( 2 ),P( 6 ));
-	double L11= getDistance(P( 3 ),P( 7 ));
-	double L12= getDistance(P( 4 ),P( 8 ));
+        double L1 = getDistance(P( 1 ),P( 2 ));
+        double L2 = getDistance(P( 2 ),P( 3 ));
+        double L3 = getDistance(P( 3 ),P( 4 ));
+        double L4 = getDistance(P( 4 ),P( 1 ));
+        double L5 = getDistance(P( 5 ),P( 6 ));
+        double L6 = getDistance(P( 6 ),P( 7 ));
+        double L7 = getDistance(P( 7 ),P( 8 ));
+        double L8 = getDistance(P( 8 ),P( 5 ));
+        double L9 = getDistance(P( 1 ),P( 5 ));
+        double L10= getDistance(P( 2 ),P( 6 ));
+        double L11= getDistance(P( 3 ),P( 7 ));
+        double L12= getDistance(P( 4 ),P( 8 ));
 
-	aVal = Max(Max(Max(L1,L2),Max(L3,L4)),Max(L5,L6));
-	aVal = Max(aVal,Max(Max(L7,L8),Max(L9,L10)));
-	aVal = Max(aVal,Max(L11,L12));
-	break;
+        aVal = Max(Max(Max(L1,L2),Max(L3,L4)),Max(L5,L6));
+        aVal = Max(aVal,Max(Max(L7,L8),Max(L9,L10)));
+        aVal = Max(aVal,Max(L11,L12));
+        break;
 
       }
 
       if (len == 10){ // quadratic tetraidrs
-	double L1 = getDistance(P( 1 ),P( 5 )) + getDistance(P( 5 ),P( 2 ));
-	double L2 = getDistance(P( 2 ),P( 6 )) + getDistance(P( 6 ),P( 3 ));
-	double L3 = getDistance(P( 3 ),P( 7 )) + getDistance(P( 7 ),P( 1 ));
-	double L4 = getDistance(P( 1 ),P( 8 )) + getDistance(P( 8 ),P( 4 ));
-	double L5 = getDistance(P( 2 ),P( 9 )) + getDistance(P( 9 ),P( 4 ));
-	double L6 = getDistance(P( 3 ),P( 10 )) + getDistance(P( 10 ),P( 4 ));
-	aVal = Max(Max(Max(L1,L2),Max(L3,L4)),Max(L5,L6));
-	break;
+        double L1 = getDistance(P( 1 ),P( 5 )) + getDistance(P( 5 ),P( 2 ));
+        double L2 = getDistance(P( 2 ),P( 6 )) + getDistance(P( 6 ),P( 3 ));
+        double L3 = getDistance(P( 3 ),P( 7 )) + getDistance(P( 7 ),P( 1 ));
+        double L4 = getDistance(P( 1 ),P( 8 )) + getDistance(P( 8 ),P( 4 ));
+        double L5 = getDistance(P( 2 ),P( 9 )) + getDistance(P( 9 ),P( 4 ));
+        double L6 = getDistance(P( 3 ),P( 10 )) + getDistance(P( 10 ),P( 4 ));
+        aVal = Max(Max(Max(L1,L2),Max(L3,L4)),Max(L5,L6));
+        break;
       }
       else if (len == 13){ // quadratic piramids
-	double L1 = getDistance(P( 1 ),P( 6 )) + getDistance(P( 6 ),P( 2 ));
-	double L2 = getDistance(P( 2 ),P( 7 )) + getDistance(P( 7 ),P( 3 ));
-	double L3 = getDistance(P( 3 ),P( 8 )) + getDistance(P( 8 ),P( 1 ));
-	double L4 = getDistance(P( 4 ),P( 9 )) + getDistance(P( 9 ),P( 1 ));
-	double L5 = getDistance(P( 1 ),P( 10 )) + getDistance(P( 10 ),P( 5 ));
-	double L6 = getDistance(P( 2 ),P( 11 )) + getDistance(P( 11 ),P( 5 ));
-	double L7 = getDistance(P( 3 ),P( 12 )) + getDistance(P( 12 ),P( 5 ));
-	double L8 = getDistance(P( 4 ),P( 13 )) + getDistance(P( 13 ),P( 5 ));
-	aVal = Max(Max(Max(L1,L2),Max(L3,L4)),Max(L5,L6));
-	aVal = Max(aVal,Max(L7,L8));
-	break;
+        double L1 = getDistance(P( 1 ),P( 6 )) + getDistance(P( 6 ),P( 2 ));
+        double L2 = getDistance(P( 2 ),P( 7 )) + getDistance(P( 7 ),P( 3 ));
+        double L3 = getDistance(P( 3 ),P( 8 )) + getDistance(P( 8 ),P( 1 ));
+        double L4 = getDistance(P( 4 ),P( 9 )) + getDistance(P( 9 ),P( 1 ));
+        double L5 = getDistance(P( 1 ),P( 10 )) + getDistance(P( 10 ),P( 5 ));
+        double L6 = getDistance(P( 2 ),P( 11 )) + getDistance(P( 11 ),P( 5 ));
+        double L7 = getDistance(P( 3 ),P( 12 )) + getDistance(P( 12 ),P( 5 ));
+        double L8 = getDistance(P( 4 ),P( 13 )) + getDistance(P( 13 ),P( 5 ));
+        aVal = Max(Max(Max(L1,L2),Max(L3,L4)),Max(L5,L6));
+        aVal = Max(aVal,Max(L7,L8));
+        break;
       }
       else if (len == 15){ // quadratic pentaidres
-	double L1 = getDistance(P( 1 ),P( 7 )) + getDistance(P( 7 ),P( 2 ));
-	double L2 = getDistance(P( 2 ),P( 8 )) + getDistance(P( 8 ),P( 3 ));
-	double L3 = getDistance(P( 3 ),P( 9 )) + getDistance(P( 9 ),P( 1 ));
-	double L4 = getDistance(P( 4 ),P( 10 )) + getDistance(P( 10 ),P( 5 ));
-	double L5 = getDistance(P( 5 ),P( 11 )) + getDistance(P( 11 ),P( 6 ));
-	double L6 = getDistance(P( 6 ),P( 12 )) + getDistance(P( 12 ),P( 4 ));
-	double L7 = getDistance(P( 1 ),P( 13 )) + getDistance(P( 13 ),P( 4 ));
-	double L8 = getDistance(P( 2 ),P( 14 )) + getDistance(P( 14 ),P( 5 ));
-	double L9 = getDistance(P( 3 ),P( 15 )) + getDistance(P( 15 ),P( 6 ));
-	aVal = Max(Max(Max(L1,L2),Max(L3,L4)),Max(L5,L6));
-	aVal = Max(aVal,Max(Max(L7,L8),L9));
-	break;
+        double L1 = getDistance(P( 1 ),P( 7 )) + getDistance(P( 7 ),P( 2 ));
+        double L2 = getDistance(P( 2 ),P( 8 )) + getDistance(P( 8 ),P( 3 ));
+        double L3 = getDistance(P( 3 ),P( 9 )) + getDistance(P( 9 ),P( 1 ));
+        double L4 = getDistance(P( 4 ),P( 10 )) + getDistance(P( 10 ),P( 5 ));
+        double L5 = getDistance(P( 5 ),P( 11 )) + getDistance(P( 11 ),P( 6 ));
+        double L6 = getDistance(P( 6 ),P( 12 )) + getDistance(P( 12 ),P( 4 ));
+        double L7 = getDistance(P( 1 ),P( 13 )) + getDistance(P( 13 ),P( 4 ));
+        double L8 = getDistance(P( 2 ),P( 14 )) + getDistance(P( 14 ),P( 5 ));
+        double L9 = getDistance(P( 3 ),P( 15 )) + getDistance(P( 15 ),P( 6 ));
+        aVal = Max(Max(Max(L1,L2),Max(L3,L4)),Max(L5,L6));
+        aVal = Max(aVal,Max(Max(L7,L8),L9));
+        break;
       }
       else if (len == 20){ // quadratic hexaider
-	double L1 = getDistance(P( 1 ),P( 9 )) + getDistance(P( 9 ),P( 2 ));
-	double L2 = getDistance(P( 2 ),P( 10 )) + getDistance(P( 10 ),P( 3 ));
-	double L3 = getDistance(P( 3 ),P( 11 )) + getDistance(P( 11 ),P( 4 ));
-	double L4 = getDistance(P( 4 ),P( 12 )) + getDistance(P( 12 ),P( 1 ));
-	double L5 = getDistance(P( 5 ),P( 13 )) + getDistance(P( 13 ),P( 6 ));
-	double L6 = getDistance(P( 6 ),P( 14 )) + getDistance(P( 14 ),P( 7 ));
-	double L7 = getDistance(P( 7 ),P( 15 )) + getDistance(P( 15 ),P( 8 ));
-	double L8 = getDistance(P( 8 ),P( 16 )) + getDistance(P( 16 ),P( 5 ));
-	double L9 = getDistance(P( 1 ),P( 17 )) + getDistance(P( 17 ),P( 5 ));
-	double L10= getDistance(P( 2 ),P( 18 )) + getDistance(P( 18 ),P( 6 ));
-	double L11= getDistance(P( 3 ),P( 19 )) + getDistance(P( 19 ),P( 7 ));
-	double L12= getDistance(P( 4 ),P( 20 )) + getDistance(P( 20 ),P( 8 ));
-	aVal = Max(Max(Max(L1,L2),Max(L3,L4)),Max(L5,L6));
-	aVal = Max(aVal,Max(Max(L7,L8),Max(L9,L10)));
-	aVal = Max(aVal,Max(L11,L12));
-	break;
+        double L1 = getDistance(P( 1 ),P( 9 )) + getDistance(P( 9 ),P( 2 ));
+        double L2 = getDistance(P( 2 ),P( 10 )) + getDistance(P( 10 ),P( 3 ));
+        double L3 = getDistance(P( 3 ),P( 11 )) + getDistance(P( 11 ),P( 4 ));
+        double L4 = getDistance(P( 4 ),P( 12 )) + getDistance(P( 12 ),P( 1 ));
+        double L5 = getDistance(P( 5 ),P( 13 )) + getDistance(P( 13 ),P( 6 ));
+        double L6 = getDistance(P( 6 ),P( 14 )) + getDistance(P( 14 ),P( 7 ));
+        double L7 = getDistance(P( 7 ),P( 15 )) + getDistance(P( 15 ),P( 8 ));
+        double L8 = getDistance(P( 8 ),P( 16 )) + getDistance(P( 16 ),P( 5 ));
+        double L9 = getDistance(P( 1 ),P( 17 )) + getDistance(P( 17 ),P( 5 ));
+        double L10= getDistance(P( 2 ),P( 18 )) + getDistance(P( 18 ),P( 6 ));
+        double L11= getDistance(P( 3 ),P( 19 )) + getDistance(P( 19 ),P( 7 ));
+        double L12= getDistance(P( 4 ),P( 20 )) + getDistance(P( 20 ),P( 8 ));
+        aVal = Max(Max(Max(L1,L2),Max(L3,L4)),Max(L5,L6));
+        aVal = Max(aVal,Max(Max(L7,L8),Max(L9,L10)));
+        aVal = Max(aVal,Max(L11,L12));
+        break;
 
       }
 
@@ -1467,12 +1467,12 @@ void MultiConnection2D::GetValues(MValues& theValues){
       Value aValue(aNodeId[1],aNodeId[2]);
       MValues::iterator aItr = theValues.find(aValue);
       if (aItr != theValues.end()){
-	aItr->second += 1;
-	//aNbConnects = nb;
+        aItr->second += 1;
+        //aNbConnects = nb;
       }
       else {
-	theValues[aValue] = 1;
-	//aNbConnects = 1;
+        theValues[aValue] = 1;
+        //aNbConnects = 1;
       }
       //cout << "NodeIds: "<<aNodeId[1]<<","<<aNodeId[2]<<" nbconn="<<aNbConnects<<endl;
       aNodeId[1] = aNodeId[2];
@@ -1651,8 +1651,8 @@ bool FreeEdges::Border::operator<(const FreeEdges::Border& x) const{
 }
 
 inline void UpdateBorders(const FreeEdges::Border& theBorder,
-			  FreeEdges::TBorders& theRegistry,
-			  FreeEdges::TBorders& theContainer)
+                          FreeEdges::TBorders& theRegistry,
+                          FreeEdges::TBorders& theContainer)
 {
   if(theRegistry.find(theBorder) == theRegistry.end()){
     theRegistry.insert(theBorder);
@@ -1938,8 +1938,10 @@ bool ElemGeomType::IsSatisfy( long theId )
 {
   if (!myMesh) return false;
   const SMDS_MeshElement* anElem = myMesh->FindElement( theId );
+  if ( !anElem )
+    return false;
   const SMDSAbs_ElementType anElemType = anElem->GetType();
-  if ( !anElem || (myType != SMDSAbs_All && anElemType != myType) )
+  if ( myType != SMDSAbs_All && anElemType != myType )
     return false;
   const int aNbNode = anElem->NbNodes();
   bool isOk = false;
@@ -2412,15 +2414,15 @@ void Filter::SetPredicate( PredicatePtr thePredicate )
 
 template<class TElement, class TIterator, class TPredicate>
 inline void FillSequence(const TIterator& theIterator,
-			 TPredicate& thePredicate,
-			 Filter::TIdSequence& theSequence)
+                         TPredicate& thePredicate,
+                         Filter::TIdSequence& theSequence)
 {
   if ( theIterator ) {
     while( theIterator->more() ) {
       TElement anElem = theIterator->next();
       long anId = anElem->GetID();
       if ( thePredicate->IsSatisfy( anId ) )
-	theSequence.push_back( anId );
+        theSequence.push_back( anId );
     }
   }
 }
@@ -2428,8 +2430,8 @@ inline void FillSequence(const TIterator& theIterator,
 void
 Filter::
 GetElementsId( const SMDS_Mesh* theMesh,
-	       PredicatePtr thePredicate,
-	       TIdSequence& theSequence )
+               PredicatePtr thePredicate,
+               TIdSequence& theSequence )
 {
   theSequence.clear();
 
@@ -2462,7 +2464,7 @@ GetElementsId( const SMDS_Mesh* theMesh,
 
 void
 Filter::GetElementsId( const SMDS_Mesh* theMesh,
-		       Filter::TIdSequence& theSequence )
+                       Filter::TIdSequence& theSequence )
 {
   GetElementsId(theMesh,myPredicate,theSequence);
 }

@@ -78,6 +78,7 @@ libMeshDriverUNV_la_CPPFLAGS = \
 
 libMeshDriverUNV_la_LDFLAGS  = \
 	../Driver/libMeshDriver.la \
+	$(KERNEL_LDFLAGS) -lSALOMEBasics \
 	$(CAS_KERNEL)
 
 UNV_Test_CPPFLAGS = \

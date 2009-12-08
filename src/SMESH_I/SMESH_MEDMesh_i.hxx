@@ -82,9 +82,9 @@ public:
   void release() {}
   SALOME::SenderDouble_ptr getSenderForCoordinates(SALOME_MED::medModeSwitch) {return SALOME::SenderDouble::_nil();}
   SALOME::SenderInt_ptr getSenderForConnectivity(SALOME_MED::medModeSwitch, 
-						 SALOME_MED::medConnectivity, 
-						 SALOME_MED::medEntityMesh, 
-						 SALOME_MED::medGeometryElement) 
+                                                 SALOME_MED::medConnectivity, 
+                                                 SALOME_MED::medEntityMesh, 
+                                                 SALOME_MED::medGeometryElement) 
   {
     return SALOME::SenderInt::_nil();
   }
@@ -103,7 +103,7 @@ public:
   
   CORBA::Boolean
   existConnectivity(SALOME_MED::medConnectivity connectivityType,
-		    SALOME_MED::medEntityMesh entity)
+                    SALOME_MED::medEntityMesh entity)
     throw (SALOME::SALOME_Exception);
   
   char *getCoordinatesSystem() throw(SALOME::SALOME_Exception);
@@ -127,27 +127,27 @@ public:
   
   SALOME_MED::medGeometryElement_array *
   getTypes(SALOME_MED::medEntityMesh entity) throw(SALOME::
-						   SALOME_Exception);
+                                                   SALOME_Exception);
   
   SALOME_MED::medGeometryElement
   getElementType(SALOME_MED::medEntityMesh entity,
-		 CORBA::Long number)
+                 CORBA::Long number)
     throw   (SALOME::SALOME_Exception);
   
   CORBA::Long getNumberOfElements(SALOME_MED::medEntityMesh entity,
-				  SALOME_MED::medGeometryElement geomElement)
+                                  SALOME_MED::medGeometryElement geomElement)
     throw(SALOME::SALOME_Exception);
   
   SALOME_MED::long_array *
   getConnectivity(SALOME_MED::medModeSwitch typeSwitch,
-		  SALOME_MED::medConnectivity mode,
-		  SALOME_MED::medEntityMesh entity,
-		  SALOME_MED::medGeometryElement geomElement)
+                  SALOME_MED::medConnectivity mode,
+                  SALOME_MED::medEntityMesh entity,
+                  SALOME_MED::medGeometryElement geomElement)
     throw(SALOME::SALOME_Exception);
   
   SALOME_MED::long_array *
   getConnectivityIndex(SALOME_MED::medConnectivity mode,
-		       SALOME_MED::medEntityMesh entity)
+                       SALOME_MED::medEntityMesh entity)
     throw(SALOME::SALOME_Exception);
   
   SALOME_MED::long_array*
@@ -155,9 +155,9 @@ public:
     throw (SALOME::SALOME_Exception);
   
   CORBA::Long getElementNumber(SALOME_MED::medConnectivity mode,
-			       SALOME_MED::medEntityMesh entity,
-			       SALOME_MED::medGeometryElement type,
-			       const SALOME_MED::long_array & connectivity)
+                               SALOME_MED::medEntityMesh entity,
+                               SALOME_MED::medGeometryElement type,
+                               const SALOME_MED::long_array & connectivity)
     throw(SALOME::SALOME_Exception);
   
   SALOME_MED::long_array *
@@ -180,14 +180,14 @@ public:
     throw(SALOME::SALOME_Exception);
   
   SALOME_MED::FAMILY_ptr getFamily(SALOME_MED::medEntityMesh entity,
-				   CORBA::Long i) 
+                                   CORBA::Long i) 
     throw(SALOME::SALOME_Exception);
   
   SALOME_MED::Group_array * getGroups(SALOME_MED::medEntityMesh entity)
     throw(SALOME::SALOME_Exception);
   
   SALOME_MED::GROUP_ptr getGroup(SALOME_MED::medEntityMesh entity,
-				 CORBA::Long i) 
+                                 CORBA::Long i) 
     throw(SALOME::SALOME_Exception);
   
   SALOME_MED::SUPPORT_ptr
@@ -221,10 +221,10 @@ public:
   
   // Others
   void addInStudy(SALOMEDS::Study_ptr myStudy,
-		  SALOME_MED::MESH_ptr myIor) 
+                  SALOME_MED::MESH_ptr myIor) 
     throw(SALOME::SALOME_Exception);
   CORBA::Long addDriver(SALOME_MED::medDriverTypes driverType,
-			const char *fileName, const char *meshName)
+                        const char *fileName, const char *meshName)
     throw(SALOME::SALOME_Exception);
   void rmDriver(CORBA::Long i) throw(SALOME::SALOME_Exception);
   void read(CORBA::Long i) throw(SALOME::SALOME_Exception);

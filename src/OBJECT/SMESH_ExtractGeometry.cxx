@@ -152,7 +152,7 @@ int SMESH_ExtractGeometry::RequestData(
         {
         newId = newPts->InsertNextPoint(x);
         pointMap[ptId] = newId;
-	myNodeVTK2ObjIds.push_back(ptId);
+        myNodeVTK2ObjIds.push_back(ptId);
         outputPD->CopyData(pd,ptId,newId);
         }
       }
@@ -175,7 +175,7 @@ int SMESH_ExtractGeometry::RequestData(
           {
           newId = newPts->InsertNextPoint(x);
           pointMap[ptId] = newId;
-	  myNodeVTK2ObjIds.push_back(ptId);
+          myNodeVTK2ObjIds.push_back(ptId);
           outputPD->CopyData(pd,ptId,newId);
           }
         }
@@ -228,7 +228,7 @@ int SMESH_ExtractGeometry::RequestData(
             x = input->GetPoint(ptId);
             newId = newPts->InsertNextPoint(x);
             pointMap[ptId] = newId;
-	    myNodeVTK2ObjIds.push_back(ptId);
+            myNodeVTK2ObjIds.push_back(ptId);
             outputPD->CopyData(pd,ptId,newId);
             }
           newCellPts->InsertId(i,pointMap[ptId]);

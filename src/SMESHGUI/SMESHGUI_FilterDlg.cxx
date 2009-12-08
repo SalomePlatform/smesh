@@ -2632,7 +2632,13 @@ void SMESHGUI_FilterDlg::SetSourceWg (QWidget* theWg,
 //=======================================================================
 void SMESHGUI_FilterDlg::SetMesh (SMESH::SMESH_Mesh_var theMesh)
 {
-  myMesh = theMesh;
+  if ( !theMesh->_is_nil() ) {
+    myMesh = theMesh;
+    if ( !myFilter[ myTable->GetType() ]->_is_nil() && !myFilter[ myTable->GetType() ]->GetPredicate()->_is_nil() ) {
+      SMESH::Predicate_ptr aPred = myFilter[ myTable->GetType() ]->GetPredicate();
+      aPred->SetMesh(myMesh);
+    }
+  }
   const bool isEnable = !(myMesh->_is_nil());
   myButtons[BTN_OK]->setEnabled(isEnable);
   myButtons[BTN_Apply]->setEnabled(isEnable);

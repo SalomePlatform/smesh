@@ -44,9 +44,9 @@ class SMESHOBJECT_EXPORT SMESH_Actor: public SALOME_Actor
  public:
   vtkTypeMacro(SMESH_Actor,SALOME_Actor);
   static SMESH_Actor* New(TVisualObjPtr theVisualObj, 
-			  const char* theEntry, 
-			  const char* theName,
-			  int theIsClear);
+                          const char* theEntry, 
+                          const char* theName,
+                          int theIsClear);
   
   virtual void SetSufaceColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b) = 0;
   virtual void GetSufaceColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b) = 0;
@@ -102,7 +102,7 @@ class SMESHOBJECT_EXPORT SMESH_Actor: public SALOME_Actor
 
   enum eControl{eNone, eLength, eLength2D, eFreeBorders, eFreeEdges, eFreeNodes,
                 eFreeFaces, eMultiConnection, eArea, eTaper, eAspectRatio,
-                eMinimumAngle, eWarping, eSkew,	eAspectRatio3D, eMultiConnection2D, eVolume3D};
+                eMinimumAngle, eWarping, eSkew, eAspectRatio3D, eMultiConnection2D, eVolume3D};
   virtual void SetControlMode(eControl theMode) = 0;
   virtual eControl GetControlMode() = 0;
 

@@ -1879,7 +1879,8 @@ SMESH_Gen_i::ConcatenateCommon(const SMESH::mesh_array& theMeshesArray,
   typedef map< pair<string, SMESH::ElementType>, TListOfNewGroups > TGroupsMap;
   typedef std::set<SMESHDS_GroupBase*> TGroups;
 
-  TPythonDump aPythonDump; // prevent dump of called methods
+  TPythonDump* pPythonDump = new TPythonDump;
+  TPythonDump& aPythonDump = *pPythonDump; // prevent dump of called methods
 
   // create mesh
   SMESH::SMESH_Mesh_var aNewMesh = CreateEmptyMesh();
@@ -2146,6 +2147,24 @@ SMESH_Gen_i::ConcatenateCommon(const SMESH::mesh_array& theMeshesArray,
   aPythonDump << theUniteIdenticalGroups << ", "
               << theMergeNodesAndElements << ", "
               << theMergeTolerance << ")";
+
+  delete pPythonDump; // enable python dump from GetGroups()
+
+  // 0020577: EDF 1164 SMESH: Bad dump of concatenate with create common groups
+  if ( !aNewMesh->_is_nil() )
+  {
+    SMESH::ListOfGroups_var groups = aNewMesh->GetGroups();
+  }
+
+  // IPAL21468 Change icon of compound because it need not be computed.
+  SALOMEDS::SObject_var aMeshSObj = ObjectToSObject( myCurrentStudy, aNewMesh );
+  if( !aMeshSObj->_is_nil() ) {
+    SALOMEDS::GenericAttribute_var anAttr;
+    SALOMEDS::StudyBuilder_var aBuilder = myCurrentStudy->NewBuilder();
+    anAttr = aBuilder->FindOrCreateAttribute( aMeshSObj,"AttributePixMap" );
+    SALOMEDS::AttributePixMap_var aPixmap = SALOMEDS::AttributePixMap::_narrow(anAttr);
+    aPixmap->SetPixMap("ICON_SMESH_TREE_MESH");
+  }
 
   return aNewMesh._retn();
 }

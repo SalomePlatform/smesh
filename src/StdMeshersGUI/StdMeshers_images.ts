@@ -73,6 +73,10 @@
             <source>ICON_DLG_NUMBER_OF_LAYERS</source>
             <translation>mesh_hypo_layer_distribution.png</translation>
         </message>
+	<message>
+            <source>ICON_DLG_NUMBER_OF_LAYERS_2D</source>
+            <translation>mesh_hypo_layer_distribution.png</translation>
+        </message>
         <message>
             <source>ICON_DLG_PROJECTION_SOURCE_1D</source>
             <translation>mesh_hypo_source_edge.png</translation>

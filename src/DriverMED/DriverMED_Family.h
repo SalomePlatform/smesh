@@ -23,7 +23,6 @@
 //  File   : DriverMED_Family.hxx
 //  Author : Julia DOROVSKIKH
 //  Module : SMESH
-//  $Header$
 //
 #ifndef _INCLUDE_DRIVERMED_FAMILY
 #define _INCLUDE_DRIVERMED_FAMILY
@@ -68,16 +67,16 @@ class MESHDRIVERMED_EXPORT DriverMED_Family
   static 
   DriverMED_FamilyPtrList
   MakeFamilies (const SMESHDS_SubMeshPtrMap& theSubMeshes,
-		const SMESHDS_GroupBasePtrList& theGroups,
-		const bool doGroupOfNodes,
-		const bool doGroupOfEdges,
-		const bool doGroupOfFaces,
-		const bool doGroupOfVolumes);
+                const SMESHDS_GroupBasePtrList& theGroups,
+                const bool doGroupOfNodes,
+                const bool doGroupOfEdges,
+                const bool doGroupOfFaces,
+                const bool doGroupOfVolumes);
 
   //! Create TFamilyInfo for this family
   MED::PFamilyInfo 
   GetFamilyInfo (const MED::PWrapper& theWrapper, 
-		 const MED::PMeshInfo& theMeshInfo) const;
+                 const MED::PMeshInfo& theMeshInfo) const;
 
   //! Returns elements of this family
   const ElementsSet& GetElements () const;
@@ -99,6 +98,7 @@ class MESHDRIVERMED_EXPORT DriverMED_Family
 
   void SetType(const SMDSAbs_ElementType theType);
   SMDSAbs_ElementType GetType();
+  const std::set< SMDSAbs_ElementType >& GetTypes() const;
 
   bool MemberOf(std::string theGroupName) const;
 
@@ -113,7 +113,7 @@ class MESHDRIVERMED_EXPORT DriverMED_Family
   static
   DriverMED_FamilyPtrList 
   SplitByType(SMESHDS_SubMesh* theSubMesh,
-	      const int        theId);
+              const int        theId);
 
 
   /*! Remove from <Elements> elements, common with <by>,
@@ -121,7 +121,7 @@ class MESHDRIVERMED_EXPORT DriverMED_Family
     Create family <common> from common elements, with combined groups list.
   */
   void Split (DriverMED_FamilyPtr by,
-	      DriverMED_FamilyPtr common);
+              DriverMED_FamilyPtr common);
 
   //! Check, if this family has empty list of elements
   bool IsEmpty () const;
@@ -133,6 +133,7 @@ class MESHDRIVERMED_EXPORT DriverMED_Family
   ElementsSet                   myElements;
   MED::TStringSet               myGroupNames;
   int                           myGroupAttributVal;
+  std::set<SMDSAbs_ElementType> myTypes; // Issue 0020576
 };
 
 #endif

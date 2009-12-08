@@ -468,9 +468,83 @@ src_mesh.TranslateObject( src_mesh, MakeDirStruct( 210, 0, 0 ), Copy=False)
 
 \endcode
 
+<br>
+
+\anchor tui_fixed_points
+
+<h2>1D Mesh with Fixed Points example</h2>
+
+\code
+import salome
+import geompy
+import smesh
+import StdMeshers
+
+# Create face and explode it on edges
+face = geompy.MakeFaceHW(100, 100, 1)
+edges = geompy.SubShapeAllSorted(face, geompy.ShapeType["EDGE"])
+geompy.addToStudy( face, "Face" )
+
+# get the first edge from exploded result
+edge1 = geompy.GetSubShapeID(face, edges[0])
+
+# Define Mesh on previously created face
+Mesh_1 = smesh.Mesh(face)
+
+# Create Fixed Point 1D hypothesis and define parameters.
+# Note: values greater than 1.0 and less than 0.0 are not taken into account;
+# duplicated values are removed. Also, if not specified explicitly, values 0.0 and 1.0
+# add added automatically.
+# The number of segments should correspond to the number of points (NbSeg = NbPnt-1);
+# extra values of segments splitting parameter are not taken into account,
+# while missing values are considered to be equal to 1.
+Fixed_points_1D_1 = smesh.CreateHypothesis('FixedPoints1D')
+Fixed_points_1D_1.SetPoints( [ 1.1, 0.9, 0.5, 0.0, 0.5, -0.3 ] )
+Fixed_points_1D_1.SetNbSegments( [ 3, 1, 2 ] )
+Fixed_points_1D_1.SetReversedEdges( [edge1] )
+
+# Add hypothesis to mesh and define 2D parameters
+Mesh_1.AddHypothesis(Fixed_points_1D_1)
+Regular_1D = Mesh_1.Segment()
+Quadrangle_2D = Mesh_1.Quadrangle()
+# Compute mesh
+Mesh_1.Compute()
+\endcode
+
+\anchor tui_radial_quadrangle
+<h2> Radial Quadrangle 1D2D example </h2>
+\code
+import salome
+import geompy
+import smesh
+import StdMeshers
+
+# Create face from the wire and add to study
+WirePath = geompy.MakeSketcher("Sketcher:F 0 0:TT 20 0:R 90:C 20 90:WW", [0, 0, 0, 1, 0, 0, 0, 0, 1])
+Face = geompy.MakeFace(WirePath,1)
+geompy.addToStudy(Face,"Face")
+
+# Define geometry for mesh, and 1D parameters
+mesh = smesh.Mesh(Face)
+Wire_discretisation = mesh.Segment()
+Nb_Segments = Wire_discretisation.NumberOfSegments(5)
+Nb_Segments.SetDistrType( 0 )
+
+# Define 2D parameters and Radial Quadrange hypothesis
+Number_of_Layers = smesh.CreateHypothesis('NumberOfLayers2D')
+Number_of_Layers.SetNumberOfLayers( 4 )
+mesh.AddHypothesis(Number_of_Layers)
+RadialQuadrangle_1D2D = smesh.CreateHypothesis('RadialQuadrangle_1D2D')
+mesh.AddHypothesis(RadialQuadrangle_1D2D)
+
+mesh.Compute()
+\endcode
+
+
 \n Other meshing algorithms:
 
 <ul>
 <li>\subpage tui_defining_blsurf_hypotheses_page</li>
+<li>\subpage tui_defining_ghs3d_hypotheses_page</li>
 </ul>
 */

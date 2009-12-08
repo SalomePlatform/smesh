@@ -327,7 +327,7 @@ public:
   void Process( const Handle(_pyCommand)& theCommand);
   void Flush();
   virtual void Assign( const Handle(_pyHypothesis)& theOther,
-		       const _pyID&                 theMesh );
+                       const _pyID&                 theMesh );
 
   DEFINE_STANDARD_RTTI (_pyHypothesis)
 };

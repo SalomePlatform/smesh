@@ -996,7 +996,8 @@ int SMESH_Block::GetOrderedEdges (const TopoDS_Face&   theFace,
     for ( iE = 0; wExp.More(); wExp.Next(), iE++ )
     {
       TopoDS_Edge edge = wExp.Current();
-      edge = TopoDS::Edge( edge.Oriented( wExp.Orientation() ));
+      // commented for issue 0020557, other related ones: 0020526, PAL19080
+      // edge = TopoDS::Edge( edge.Oriented( wExp.Orientation() ));
       theEdges.push_back( edge );
     }
     theNbVertexInWires.push_back( iE );

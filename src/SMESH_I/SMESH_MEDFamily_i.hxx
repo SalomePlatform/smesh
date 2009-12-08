@@ -56,7 +56,7 @@ public :
   
   // Constructors and associated internal methods
   SMESH_MEDFamily_i(int identifier, SMESH_subMesh_i* sm,
-		    std::string name, std::string description, SALOME_MED::medEntityMesh entity );
+                    std::string name, std::string description, SALOME_MED::medEntityMesh entity );
   SMESH_MEDFamily_i(const SMESH_MEDFamily_i & f);
   
   // IDL Methods

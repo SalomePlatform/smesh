@@ -48,8 +48,8 @@ public:
   SMESH_subMesh_i();
   SMESH_subMesh_i( PortableServer::POA_ptr thePOA,
                    SMESH_Gen_i*            gen_i,
-		   SMESH_Mesh_i*           mesh_i,
-		   int                     localId );
+                   SMESH_Mesh_i*           mesh_i,
+                   int                     localId );
   ~SMESH_subMesh_i();
 
   CORBA::Long GetNumberOfElements()

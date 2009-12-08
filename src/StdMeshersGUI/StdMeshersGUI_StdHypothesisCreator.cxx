@@ -384,6 +384,12 @@ bool StdMeshersGUI_StdHypothesisCreator::checkParams( QString& msg ) const
       widget< StdMeshersGUI_LayerDistributionParamWdg >( 0 );
     ok = ( w && w->IsOk() );
   }
+  else if ( hypType() == "QuadrangleParams" )
+  {
+    StdMeshersGUI_SubShapeSelectorWdg* w = 
+      widget< StdMeshersGUI_SubShapeSelectorWdg >( 0 );
+    ok = ( w->GetListSize() > 0 );
+  }
   return ok;
 }
 
@@ -604,11 +610,11 @@ QString StdMeshersGUI_StdHypothesisCreator::storeParams() const
       StdMeshersGUI_SubShapeSelectorWdg* w = 
         widget< StdMeshersGUI_SubShapeSelectorWdg >( 0 );
       if (w) {
-        if( int id = w->GetListOfIDs()[0] ) {
-          h->SetTriaVertex( id );
+        if( w->GetListSize() > 0 ) {
+          h->SetTriaVertex( w->GetListOfIDs()[0] ); // getlist must be called once
+          const char * entry = w->GetMainShapeEntry();
+          h->SetObjectEntry( entry );
         }
-        const char * entry = w->GetMainShapeEntry();
-        h->SetObjectEntry( entry );
       }
     }
   }
@@ -1122,7 +1128,7 @@ QString StdMeshersGUI_StdHypothesisCreator::hypTypeName( const QString& t ) cons
     types.insert( "ProjectionSource3D", "PROJECTION_SOURCE_3D" );
     types.insert( "NumberOfLayers", "NUMBER_OF_LAYERS" );
     types.insert( "LayerDistribution", "LAYER_DISTRIBUTION" );
-    types.insert( "NumberOfLayers2D", "NUMBER_OF_LAYERS" );
+    types.insert( "NumberOfLayers2D", "NUMBER_OF_LAYERS_2D" );
     types.insert( "LayerDistribution2D", "LAYER_DISTRIBUTION" );
     types.insert( "SegmentLengthAroundVertex", "SEGMENT_LENGTH_AROUND_VERTEX" );
     types.insert( "MaxLength", "MAX_LENGTH" );

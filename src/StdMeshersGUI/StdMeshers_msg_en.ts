@@ -221,8 +221,16 @@
             <source>SMESH_NUMBER_OF_LAYERS_HYPOTHESIS</source>
             <translation>Radial Prism Parameter</translation>
         </message>
+	<message>
+            <source>SMESH_NUMBER_OF_LAYERS_2D_HYPOTHESIS</source>
+            <translation>Radial Quadrangle Parameter</translation>
+        </message>
         <message>
             <source>SMESH_NUMBER_OF_LAYERS_TITLE</source>
+            <translation>Hypothesis Construction</translation>
+        </message>
+	<message>
+            <source>SMESH_NUMBER_OF_LAYERS_2D_TITLE</source>
             <translation>Hypothesis Construction</translation>
         </message>
         <message>

@@ -601,6 +601,9 @@ public:
   const SMESH_SequenceOfElemPtr& GetLastCreatedNodes() const { return myLastCreatedNodes; }
 
   const SMESH_SequenceOfElemPtr& GetLastCreatedElems() const { return myLastCreatedElems; }
+
+  bool DoubleNodes( const std::list< int >& theListOfNodes, 
+                    const std::list< int >& theListOfModifiedElems );
   
   bool DoubleNodes( const TIDSortedElemSet& theElems, 
                     const TIDSortedElemSet& theNodesNot,
@@ -609,7 +612,7 @@ public:
   bool DoubleNodesInRegion( const TIDSortedElemSet& theElems, 
                             const TIDSortedElemSet& theNodesNot,
                             const TopoDS_Shape&     theShape );
-
+  
   /*!
    * \brief Generated skin mesh (containing 2D cells) from 3D mesh
    * The created 2D mesh elements based on nodes of free faces of boundary volumes

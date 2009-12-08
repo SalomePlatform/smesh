@@ -514,6 +514,17 @@ class SMESH_MeshEditor_i: public POA_SMESH::SMESH_MeshEditor
    */
   int GetMeshId() const { return myMesh->GetId(); }
 
+ CORBA::Boolean DoubleNodes( const SMESH::long_array& theNodes,
+                              const SMESH::long_array& theModifiedElems );
+
+  CORBA::Boolean DoubleNode( CORBA::Long theNodeId,
+                             const SMESH::long_array& theModifiedElems );
+
+  CORBA::Boolean DoubleNodeGroup( SMESH::SMESH_GroupBase_ptr theNodes,
+                                  SMESH::SMESH_GroupBase_ptr theModifiedElems );
+
+  CORBA::Boolean DoubleNodeGroups( const SMESH::ListOfGroups& theNodes,
+                                   const SMESH::ListOfGroups& theModifiedElems);
 
   /*!
    * \brief Creates a hole in a mesh by doubling the nodes of some particular elements
@@ -525,9 +536,9 @@ class SMESH_MeshEditor_i: public POA_SMESH::SMESH_MeshEditor
    * \return TRUE if operation has been completed successfully, FALSE otherwise
    * \sa DoubleNodeGroup(), DoubleNodeGroups()
    */
-  CORBA::Boolean DoubleNodes( const SMESH::long_array& theElems, 
-                              const SMESH::long_array& theNodesNot,
-                              const SMESH::long_array& theAffectedElems );
+  CORBA::Boolean DoubleNodeElem( const SMESH::long_array& theElems, 
+                                 const SMESH::long_array& theNodesNot,
+                                 const SMESH::long_array& theAffectedElems );
 
   /*!
    * \brief Creates a hole in a mesh by doubling the nodes of some particular elements
@@ -540,9 +551,9 @@ class SMESH_MeshEditor_i: public POA_SMESH::SMESH_MeshEditor
    * \return TRUE if operation has been completed successfully, FALSE otherwise
    * \sa DoubleNodeGroupInRegion(), DoubleNodeGroupsInRegion()
    */
-  CORBA::Boolean DoubleNodesInRegion( const SMESH::long_array& theElems, 
-                                      const SMESH::long_array& theNodesNot,
-                                      GEOM::GEOM_Object_ptr    theShape );
+  CORBA::Boolean DoubleNodeElemInRegion( const SMESH::long_array& theElems, 
+                                         const SMESH::long_array& theNodesNot,
+                                         GEOM::GEOM_Object_ptr    theShape );
 
   /*!
    * \brief Creates a hole in a mesh by doubling the nodes of some particular elements
@@ -553,10 +564,10 @@ class SMESH_MeshEditor_i: public POA_SMESH::SMESH_MeshEditor
    * \return TRUE if operation has been completed successfully, FALSE otherwise
    * \sa DoubleNodes(), DoubleNodeGroups()
    */
-  CORBA::Boolean DoubleNodeGroup( SMESH::SMESH_GroupBase_ptr theElems,
-                                  SMESH::SMESH_GroupBase_ptr theNodesNot,
-                                  SMESH::SMESH_GroupBase_ptr theAffectedElems );
-
+  CORBA::Boolean DoubleNodeElemGroup( SMESH::SMESH_GroupBase_ptr theElems,
+                                      SMESH::SMESH_GroupBase_ptr theNodesNot,
+                                      SMESH::SMESH_GroupBase_ptr theAffectedElems );
+  
   /*!
    * \brief Creates a hole in a mesh by doubling the nodes of some particular elements
    * \param theElems - group of of elements (edges or faces) to be replicated
@@ -567,9 +578,9 @@ class SMESH_MeshEditor_i: public POA_SMESH::SMESH_MeshEditor
    * \return TRUE if operation has been completed successfully, FALSE otherwise
    * \sa DoubleNodesInRegion(), DoubleNodeGroupsInRegion()
    */
-  CORBA::Boolean DoubleNodeGroupInRegion( SMESH::SMESH_GroupBase_ptr theElems,
-                                          SMESH::SMESH_GroupBase_ptr theNodesNot,
-                                          GEOM::GEOM_Object_ptr      theShape );
+  CORBA::Boolean DoubleNodeElemGroupInRegion( SMESH::SMESH_GroupBase_ptr theElems,
+                                              SMESH::SMESH_GroupBase_ptr theNodesNot,
+                                              GEOM::GEOM_Object_ptr      theShape );
 
   /*!
    * \brief Creates a hole in a mesh by doubling the nodes of some particular elements
@@ -581,9 +592,9 @@ class SMESH_MeshEditor_i: public POA_SMESH::SMESH_MeshEditor
    * \return TRUE if operation has been completed successfully, FALSE otherwise
    * \sa DoubleNodeGroup(), DoubleNodes()
    */
-  CORBA::Boolean DoubleNodeGroups( const SMESH::ListOfGroups& theElems,
-                                   const SMESH::ListOfGroups& theNodesNot,
-                                   const SMESH::ListOfGroups& theAffectedElems );
+  CORBA::Boolean DoubleNodeElemGroups( const SMESH::ListOfGroups& theElems,
+                                       const SMESH::ListOfGroups& theNodesNot,
+                                       const SMESH::ListOfGroups& theAffectedElems );
 
 
   /*!
@@ -597,9 +608,9 @@ class SMESH_MeshEditor_i: public POA_SMESH::SMESH_MeshEditor
    * \return TRUE if operation has been completed successfully, FALSE otherwise
    * \sa DoubleNodeGroupInRegion(), DoubleNodesInRegion()
    */
-  CORBA::Boolean DoubleNodeGroupsInRegion( const SMESH::ListOfGroups& theElems,
-                                           const SMESH::ListOfGroups& theNodesNot,
-                                           GEOM::GEOM_Object_ptr      theShape );
+  CORBA::Boolean DoubleNodeElemGroupsInRegion( const SMESH::ListOfGroups& theElems,
+                                               const SMESH::ListOfGroups& theNodesNot,
+                                               GEOM::GEOM_Object_ptr      theShape );
 
     /*!
      * \brief Generated skin mesh (containing 2D cells) from 3D mesh

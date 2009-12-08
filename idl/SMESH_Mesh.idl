@@ -46,7 +46,6 @@ module SMESH
   enum log_command
     {
       ADD_NODE,
-      ADD_ELEM0D,
       ADD_EDGE,
       ADD_TRIANGLE,
       ADD_QUADRANGLE,
@@ -69,7 +68,8 @@ module SMESH
       ADD_QUADTETRAHEDRON,
       ADD_QUADPYRAMID,
       ADD_QUADPENTAHEDRON,
-      ADD_QUADHEXAHEDRON
+      ADD_QUADHEXAHEDRON,
+      ADD_ELEM0D
     };
 
   struct log_block

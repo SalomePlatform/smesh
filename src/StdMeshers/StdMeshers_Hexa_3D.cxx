@@ -61,10 +61,10 @@ typedef SMESH_Comment TComm;
 using namespace std;
 
 static SMESH_ComputeErrorPtr ComputePentahedralMesh(SMESH_Mesh &,
-						    const TopoDS_Shape &);
+                                                    const TopoDS_Shape &);
 
 static bool EvaluatePentahedralMesh(SMESH_Mesh &, const TopoDS_Shape &,
-				    MapShapeNbElems &);
+                                    MapShapeNbElems &);
 
 //=============================================================================
 /*!
@@ -77,7 +77,7 @@ StdMeshers_Hexa_3D::StdMeshers_Hexa_3D(int hypId, int studyId, SMESH_Gen * gen)
 {
   MESSAGE("StdMeshers_Hexa_3D::StdMeshers_Hexa_3D");
   _name = "Hexa_3D";
-  _shapeType = (1 << TopAbs_SHELL) | (1 << TopAbs_SOLID);	// 1 bit /shape type
+  _shapeType = (1 << TopAbs_SHELL) | (1 << TopAbs_SOLID);       // 1 bit /shape type
 }
 
 //=============================================================================
@@ -298,7 +298,7 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh &         aMesh,
     try {
       aQuads[i] = quadAlgo->CheckAnd2Dcompute(aMesh, aFace, _quadraticMesh);
       if(!aQuads[i]) {
-	return error( quadAlgo->GetComputeError());
+        return error( quadAlgo->GetComputeError());
       }
     }
     catch(SALOME_Exception & S_ex) {
@@ -361,7 +361,7 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh &         aMesh,
   int _indX1 = GetFaceIndex(aMesh, aShape, meshFaces,
                             aCube.V100, aCube.V101, aCube.V110, aCube.V111);
 
-  // IPAL21120:	SIGSEGV on Meshing attached Compound with Automatic Hexadralization
+  // IPAL21120: SIGSEGV on Meshing attached Compound with Automatic Hexadralization
   if ( _indY1 < 1 || _indZ0 < 1 || _indZ1 < 1 || _indX0 < 1 || _indX1 < 1 )
     return error(COMPERR_BAD_SHAPE);
 
@@ -374,8 +374,8 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh &         aMesh,
 
   // 1.7 - get convertion coefs from face 2D normalized to 3D normalized
 
-  Conv2DStruct cx0;			// for face X=0
-  Conv2DStruct cx1;			// for face X=1
+  Conv2DStruct cx0;                     // for face X=0
+  Conv2DStruct cx1;                     // for face X=1
   Conv2DStruct cy0;
   Conv2DStruct cy1;
   Conv2DStruct cz0;
@@ -414,12 +414,12 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh &         aMesh,
     const TopoDS_Face & F = TopoDS::Face(meshFaces[_indX0]->GetSubShape());
 
     faceQuadStruct *quad = aCube.quad_X0;
-    int i = 0;				// j = x/face , k = y/face
+    int i = 0;                          // j = x/face , k = y/face
     int nbdown = quad->side[0]->NbPoints();
     int nbright = quad->side[1]->NbPoints();
 
     SMDS_NodeIteratorPtr itf= aMesh.GetSubMesh(F)->GetSubMeshDS()->GetNodes();
-			
+                        
     while(itf->more()) {
       const SMDS_MeshNode * node = itf->next();
       if(aTool.IsMedium(node))
@@ -433,8 +433,8 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh &         aMesh,
     for (int i1 = 0; i1 < nbdown; i1++)
       for (int j1 = 0; j1 < nbright; j1++) {
         int ij1 = j1 * nbdown + i1;
-        int j = cx0.ia * i1 + cx0.ib * j1 + cx0.ic;	// j = x/face
-        int k = cx0.ja * i1 + cx0.jb * j1 + cx0.jc;	// k = y/face
+        int j = cx0.ia * i1 + cx0.ib * j1 + cx0.ic;     // j = x/face
+        int k = cx0.ja * i1 + cx0.jb * j1 + cx0.jc;     // k = y/face
         int ijk = k * nbx * nby + j * nbx + i;
         //MESSAGE(" "<<ij1<<" "<<i<<" "<<j<<" "<<ijk);
         np[ijk].node = quad->uv_grid[ij1].node;
@@ -448,7 +448,7 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh &         aMesh,
     SMDS_NodeIteratorPtr itf= aMesh.GetSubMesh(F)->GetSubMeshDS()->GetNodes();
 
     faceQuadStruct *quad = aCube.quad_X1;
-    int i = nbx - 1;		// j = x/face , k = y/face
+    int i = nbx - 1;            // j = x/face , k = y/face
     int nbdown = quad->side[0]->NbPoints();
     int nbright = quad->side[1]->NbPoints();
 
@@ -465,8 +465,8 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh &         aMesh,
     for (int i1 = 0; i1 < nbdown; i1++)
       for (int j1 = 0; j1 < nbright; j1++) {
         int ij1 = j1 * nbdown + i1;
-        int j = cx1.ia * i1 + cx1.ib * j1 + cx1.ic;	// j = x/face
-        int k = cx1.ja * i1 + cx1.jb * j1 + cx1.jc;	// k = y/face
+        int j = cx1.ia * i1 + cx1.ib * j1 + cx1.ic;     // j = x/face
+        int k = cx1.ja * i1 + cx1.jb * j1 + cx1.jc;     // k = y/face
         int ijk = k * nbx * nby + j * nbx + i;
         //MESSAGE(" "<<ij1<<" "<<i<<" "<<j<<" "<<ijk);
         np[ijk].node = quad->uv_grid[ij1].node;
@@ -480,7 +480,7 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh &         aMesh,
     SMDS_NodeIteratorPtr itf= aMesh.GetSubMesh(F)->GetSubMeshDS()->GetNodes();
 
     faceQuadStruct *quad = aCube.quad_Y0;
-    int j = 0;				// i = x/face , k = y/face
+    int j = 0;                          // i = x/face , k = y/face
     int nbdown = quad->side[0]->NbPoints();
     int nbright = quad->side[1]->NbPoints();
 
@@ -497,8 +497,8 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh &         aMesh,
     for (int i1 = 0; i1 < nbdown; i1++)
       for (int j1 = 0; j1 < nbright; j1++) {
         int ij1 = j1 * nbdown + i1;
-        int i = cy0.ia * i1 + cy0.ib * j1 + cy0.ic;	// i = x/face
-        int k = cy0.ja * i1 + cy0.jb * j1 + cy0.jc;	// k = y/face
+        int i = cy0.ia * i1 + cy0.ib * j1 + cy0.ic;     // i = x/face
+        int k = cy0.ja * i1 + cy0.jb * j1 + cy0.jc;     // k = y/face
         int ijk = k * nbx * nby + j * nbx + i;
         //MESSAGE(" "<<ij1<<" "<<i<<" "<<j<<" "<<ijk);
         np[ijk].node = quad->uv_grid[ij1].node;
@@ -512,7 +512,7 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh &         aMesh,
     SMDS_NodeIteratorPtr itf= aMesh.GetSubMesh(F)->GetSubMeshDS()->GetNodes();
 
     faceQuadStruct *quad = aCube.quad_Y1;
-    int j = nby - 1;		// i = x/face , k = y/face
+    int j = nby - 1;            // i = x/face , k = y/face
     int nbdown = quad->side[0]->NbPoints();
     int nbright = quad->side[1]->NbPoints();
 
@@ -529,8 +529,8 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh &         aMesh,
     for (int i1 = 0; i1 < nbdown; i1++)
       for (int j1 = 0; j1 < nbright; j1++) {
         int ij1 = j1 * nbdown + i1;
-        int i = cy1.ia * i1 + cy1.ib * j1 + cy1.ic;	// i = x/face
-        int k = cy1.ja * i1 + cy1.jb * j1 + cy1.jc;	// k = y/face
+        int i = cy1.ia * i1 + cy1.ib * j1 + cy1.ic;     // i = x/face
+        int k = cy1.ja * i1 + cy1.jb * j1 + cy1.jc;     // k = y/face
         int ijk = k * nbx * nby + j * nbx + i;
         //MESSAGE(" "<<ij1<<" "<<i<<" "<<j<<" "<<ijk);
         np[ijk].node = quad->uv_grid[ij1].node;
@@ -544,7 +544,7 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh &         aMesh,
     SMDS_NodeIteratorPtr itf= aMesh.GetSubMesh(F)->GetSubMeshDS()->GetNodes();
 
     faceQuadStruct *quad = aCube.quad_Z0;
-    int k = 0;				// i = x/face , j = y/face
+    int k = 0;                          // i = x/face , j = y/face
     int nbdown = quad->side[0]->NbPoints();
     int nbright = quad->side[1]->NbPoints();
 
@@ -561,8 +561,8 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh &         aMesh,
     for (int i1 = 0; i1 < nbdown; i1++)
       for (int j1 = 0; j1 < nbright; j1++) {
         int ij1 = j1 * nbdown + i1;
-        int i = cz0.ia * i1 + cz0.ib * j1 + cz0.ic;	// i = x/face
-        int j = cz0.ja * i1 + cz0.jb * j1 + cz0.jc;	// j = y/face
+        int i = cz0.ia * i1 + cz0.ib * j1 + cz0.ic;     // i = x/face
+        int j = cz0.ja * i1 + cz0.jb * j1 + cz0.jc;     // j = y/face
         int ijk = k * nbx * nby + j * nbx + i;
         //MESSAGE(" "<<ij1<<" "<<i<<" "<<j<<" "<<ijk);
         np[ijk].node = quad->uv_grid[ij1].node;
@@ -576,7 +576,7 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh &         aMesh,
     SMDS_NodeIteratorPtr itf= aMesh.GetSubMesh(F)->GetSubMeshDS()->GetNodes();
 
     faceQuadStruct *quad = aCube.quad_Z1;
-    int k = nbz - 1;		// i = x/face , j = y/face
+    int k = nbz - 1;            // i = x/face , j = y/face
     int nbdown = quad->side[0]->NbPoints();
     int nbright = quad->side[1]->NbPoints();
     
@@ -593,8 +593,8 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh &         aMesh,
     for (int i1 = 0; i1 < nbdown; i1++)
       for (int j1 = 0; j1 < nbright; j1++) {
         int ij1 = j1 * nbdown + i1;
-        int i = cz1.ia * i1 + cz1.ib * j1 + cz1.ic;	// i = x/face
-        int j = cz1.ja * i1 + cz1.jb * j1 + cz1.jc;	// j = y/face
+        int i = cz1.ia * i1 + cz1.ib * j1 + cz1.ic;     // i = x/face
+        int j = cz1.ja * i1 + cz1.jb * j1 + cz1.jc;     // j = y/face
         int ijk = k * nbx * nby + j * nbx + i;
         //MESSAGE(" "<<ij1<<" "<<i<<" "<<j<<" "<<ijk);
         np[ijk].node = quad->uv_grid[ij1].node;
@@ -655,9 +655,9 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh &         aMesh,
         GetPoint(p1yz, nbx - 1, j, k, nbx, nby, nbz, np, meshDS);
 
         int ijk = k * nbx * nby + j * nbx + i;
-        double x = double (i) / double (nbx - 1);	// *** seulement
-        double y = double (j) / double (nby - 1);	// *** maillage
-        double z = double (k) / double (nbz - 1);	// *** regulier
+        double x = double (i) / double (nbx - 1);       // *** seulement
+        double y = double (j) / double (nby - 1);       // *** maillage
+        double z = double (k) / double (nbz - 1);       // *** regulier
 
         Pt3 X;
         for (int i = 0; i < 3; i++) {
@@ -750,8 +750,8 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh &         aMesh,
 //=============================================================================
 
 bool StdMeshers_Hexa_3D::Evaluate(SMESH_Mesh & aMesh,
-				  const TopoDS_Shape & aShape,
-				  MapShapeNbElems& aResMap)
+                                  const TopoDS_Shape & aShape,
+                                  MapShapeNbElems& aResMap)
 {
   vector < SMESH_subMesh * >meshFaces;
   TopTools_SequenceOfShape aFaces;
@@ -789,7 +789,7 @@ bool StdMeshers_Hexa_3D::Evaluate(SMESH_Mesh & aMesh,
       std::vector<int> aVec = (*anIt).second;
       int nbtri = Max(aVec[SMDSEntity_Triangle],aVec[SMDSEntity_Quad_Triangle]);
       if( nbtri == 0 )
-	isAllQuad = true;
+        isAllQuad = true;
     }
     if ( ! isAllQuad ) {
       return EvaluatePentahedralMesh(aMesh, aShape, aResMap);
@@ -810,8 +810,8 @@ bool StdMeshers_Hexa_3D::Evaluate(SMESH_Mesh & aMesh,
       std::vector<int> aVec = (*anIt).second;
       nb1d += Max(aVec[SMDSEntity_Edge],aVec[SMDSEntity_Quad_Edge]);
       if(IsFirst) {
-	IsQuadratic = (aVec[SMDSEntity_Quad_Edge] > aVec[SMDSEntity_Edge]);
-	IsFirst = false;
+        IsQuadratic = (aVec[SMDSEntity_Quad_Edge] > aVec[SMDSEntity_Edge]);
+        IsFirst = false;
       }
     }
   }
@@ -821,8 +821,8 @@ bool StdMeshers_Hexa_3D::Evaluate(SMESH_Mesh & aMesh,
     bool IsOpposite = true;
     for(TopExp_Explorer exp(aFaces.Value(i), TopAbs_EDGE); exp.More(); exp.Next()) {
       if( Edges1.Contains(exp.Current()) ) {
-	IsOpposite = false;
-	break;
+        IsOpposite = false;
+        break;
       }
     }
     if(IsOpposite) {
@@ -872,12 +872,12 @@ bool StdMeshers_Hexa_3D::Evaluate(SMESH_Mesh & aMesh,
 void StdMeshers_Hexa_3D::GetPoint(Pt3 p, int i, int j, int k, int nbx, int nby, int nbz,
                                   Point3DStruct * np, const SMESHDS_Mesh * meshDS)
 {
-	int ijk = k * nbx * nby + j * nbx + i;
-	const SMDS_MeshNode * node = np[ijk].node;
-	p[0] = node->X();
-	p[1] = node->Y();
-	p[2] = node->Z();
-	//MESSAGE(" "<<i<<" "<<j<<" "<<k<<" "<<p[0]<<" "<<p[1]<<" "<<p[2]);
+        int ijk = k * nbx * nby + j * nbx + i;
+        const SMDS_MeshNode * node = np[ijk].node;
+        p[0] = node->X();
+        p[1] = node->Y();
+        p[2] = node->Z();
+        //MESSAGE(" "<<i<<" "<<j<<" "<<k<<" "<<p[0]<<" "<<p[1]<<" "<<p[2]);
 }
 
 //=============================================================================
@@ -887,35 +887,35 @@ void StdMeshers_Hexa_3D::GetPoint(Pt3 p, int i, int j, int k, int nbx, int nby, 
 //=============================================================================
 
 int StdMeshers_Hexa_3D::GetFaceIndex(SMESH_Mesh & aMesh,
-	const TopoDS_Shape & aShape,
-	const vector < SMESH_subMesh * >&meshFaces,
-	const TopoDS_Vertex & V0,
-	const TopoDS_Vertex & V1,
-	const TopoDS_Vertex & V2, const TopoDS_Vertex & V3)
+        const TopoDS_Shape & aShape,
+        const vector < SMESH_subMesh * >&meshFaces,
+        const TopoDS_Vertex & V0,
+        const TopoDS_Vertex & V1,
+        const TopoDS_Vertex & V2, const TopoDS_Vertex & V3)
 {
-	//MESSAGE("StdMeshers_Hexa_3D::GetFaceIndex");
-	int faceIndex = -1;
-	for (int i = 1; i < 6; i++)
-	{
-		const TopoDS_Shape & aFace = meshFaces[i]->GetSubShape();
-		//const TopoDS_Face& F = TopoDS::Face(aFace);
-		TopTools_IndexedMapOfShape M;
-		TopExp::MapShapes(aFace, TopAbs_VERTEX, M);
-		bool verticesInShape = false;
-		if (M.Contains(V0))
-			if (M.Contains(V1))
-				if (M.Contains(V2))
-					if (M.Contains(V3))
-						verticesInShape = true;
-		if (verticesInShape)
-		{
-			faceIndex = i;
-			break;
-		}
-	}
-	//IPAL21120 ASSERT(faceIndex > 0);
-	//SCRUTE(faceIndex);
-	return faceIndex;
+        //MESSAGE("StdMeshers_Hexa_3D::GetFaceIndex");
+        int faceIndex = -1;
+        for (int i = 1; i < 6; i++)
+        {
+                const TopoDS_Shape & aFace = meshFaces[i]->GetSubShape();
+                //const TopoDS_Face& F = TopoDS::Face(aFace);
+                TopTools_IndexedMapOfShape M;
+                TopExp::MapShapes(aFace, TopAbs_VERTEX, M);
+                bool verticesInShape = false;
+                if (M.Contains(V0))
+                        if (M.Contains(V1))
+                                if (M.Contains(V2))
+                                        if (M.Contains(V3))
+                                                verticesInShape = true;
+                if (verticesInShape)
+                {
+                        faceIndex = i;
+                        break;
+                }
+        }
+        //IPAL21120 ASSERT(faceIndex > 0);
+        //SCRUTE(faceIndex);
+        return faceIndex;
 }
 
 //=============================================================================
@@ -925,46 +925,46 @@ int StdMeshers_Hexa_3D::GetFaceIndex(SMESH_Mesh & aMesh,
 //=============================================================================
 
 TopoDS_Edge
-	StdMeshers_Hexa_3D::EdgeNotInFace(SMESH_Mesh & aMesh,
-	const TopoDS_Shape & aShape,
-	const TopoDS_Face & aFace,
-	const TopoDS_Vertex & aVertex,
-	const TopTools_IndexedDataMapOfShapeListOfShape & MS)
+        StdMeshers_Hexa_3D::EdgeNotInFace(SMESH_Mesh & aMesh,
+        const TopoDS_Shape & aShape,
+        const TopoDS_Face & aFace,
+        const TopoDS_Vertex & aVertex,
+        const TopTools_IndexedDataMapOfShapeListOfShape & MS)
 {
-	//MESSAGE("StdMeshers_Hexa_3D::EdgeNotInFace");
-	TopTools_IndexedDataMapOfShapeListOfShape MF;
-	TopExp::MapShapesAndAncestors(aFace, TopAbs_VERTEX, TopAbs_EDGE, MF);
-	const TopTools_ListOfShape & ancestorsInSolid = MS.FindFromKey(aVertex);
-	const TopTools_ListOfShape & ancestorsInFace = MF.FindFromKey(aVertex);
-// 	SCRUTE(ancestorsInSolid.Extent());
-// 	SCRUTE(ancestorsInFace.Extent());
-	ASSERT(ancestorsInSolid.Extent() == 6);	// 6 (edges doublees)
-	ASSERT(ancestorsInFace.Extent() == 2);
+        //MESSAGE("StdMeshers_Hexa_3D::EdgeNotInFace");
+        TopTools_IndexedDataMapOfShapeListOfShape MF;
+        TopExp::MapShapesAndAncestors(aFace, TopAbs_VERTEX, TopAbs_EDGE, MF);
+        const TopTools_ListOfShape & ancestorsInSolid = MS.FindFromKey(aVertex);
+        const TopTools_ListOfShape & ancestorsInFace = MF.FindFromKey(aVertex);
+//      SCRUTE(ancestorsInSolid.Extent());
+//      SCRUTE(ancestorsInFace.Extent());
+        ASSERT(ancestorsInSolid.Extent() == 6); // 6 (edges doublees)
+        ASSERT(ancestorsInFace.Extent() == 2);
 
-	TopoDS_Edge E;
-	E.Nullify();
-	TopTools_ListIteratorOfListOfShape its(ancestorsInSolid);
-	for (; its.More(); its.Next())
-	{
-		TopoDS_Shape ancestor = its.Value();
-		TopTools_ListIteratorOfListOfShape itf(ancestorsInFace);
-		bool isInFace = false;
-		for (; itf.More(); itf.Next())
-		{
-			TopoDS_Shape ancestorInFace = itf.Value();
-			if (ancestorInFace.IsSame(ancestor))
-			{
-				isInFace = true;
-				break;
-			}
-		}
-		if (!isInFace)
-		{
-			E = TopoDS::Edge(ancestor);
-			break;
-		}
-	}
-	return E;
+        TopoDS_Edge E;
+        E.Nullify();
+        TopTools_ListIteratorOfListOfShape its(ancestorsInSolid);
+        for (; its.More(); its.Next())
+        {
+                TopoDS_Shape ancestor = its.Value();
+                TopTools_ListIteratorOfListOfShape itf(ancestorsInFace);
+                bool isInFace = false;
+                for (; itf.More(); itf.Next())
+                {
+                        TopoDS_Shape ancestorInFace = itf.Value();
+                        if (ancestorInFace.IsSame(ancestor))
+                        {
+                                isInFace = true;
+                                break;
+                        }
+                }
+                if (!isInFace)
+                {
+                        E = TopoDS::Edge(ancestor);
+                        break;
+                }
+        }
+        return E;
 }
 
 //=============================================================================
@@ -974,135 +974,135 @@ TopoDS_Edge
 //=============================================================================
 
 void StdMeshers_Hexa_3D::GetConv2DCoefs(const faceQuadStruct & quad,
-	const TopoDS_Shape & aShape,
-	const TopoDS_Vertex & V0,
-	const TopoDS_Vertex & V1,
-	const TopoDS_Vertex & V2, const TopoDS_Vertex & V3, Conv2DStruct & conv)
+        const TopoDS_Shape & aShape,
+        const TopoDS_Vertex & V0,
+        const TopoDS_Vertex & V1,
+        const TopoDS_Vertex & V2, const TopoDS_Vertex & V3, Conv2DStruct & conv)
 {
-//	MESSAGE("StdMeshers_Hexa_3D::GetConv2DCoefs");
-// 	const TopoDS_Face & F = TopoDS::Face(aShape);
-// 	TopoDS_Edge E = quad.edge[0];
-// 	double f, l;
-// 	Handle(Geom2d_Curve) C2d = BRep_Tool::CurveOnSurface(E, F, f, l);
-// 	TopoDS_Vertex VFirst, VLast;
-// 	TopExp::Vertices(E, VFirst, VLast);	// corresponds to f and l
-// 	bool isForward = (((l - f) * (quad.last[0] - quad.first[0])) > 0);
+//      MESSAGE("StdMeshers_Hexa_3D::GetConv2DCoefs");
+//      const TopoDS_Face & F = TopoDS::Face(aShape);
+//      TopoDS_Edge E = quad.edge[0];
+//      double f, l;
+//      Handle(Geom2d_Curve) C2d = BRep_Tool::CurveOnSurface(E, F, f, l);
+//      TopoDS_Vertex VFirst, VLast;
+//      TopExp::Vertices(E, VFirst, VLast);     // corresponds to f and l
+//      bool isForward = (((l - f) * (quad.last[0] - quad.first[0])) > 0);
   TopoDS_Vertex VA, VB;
-// 	if (isForward)
-// 	{
-// 		VA = VFirst;
-// 		VB = VLast;
-// 	}
-// 	else
-// 	{
-// 		VA = VLast;
-// 		VB = VFirst;
-// 	}
+//      if (isForward)
+//      {
+//              VA = VFirst;
+//              VB = VLast;
+//      }
+//      else
+//      {
+//              VA = VLast;
+//              VB = VFirst;
+//      }
   VA = quad.side[0]->FirstVertex();
   VB = quad.side[0]->LastVertex();
   
-	int a1, b1, c1, a2, b2, c2;
-	if (VA.IsSame(V0))
-		if (VB.IsSame(V1))
-		{
-			a1 = 1;
-			b1 = 0;
-			c1 = 0;				// x
-			a2 = 0;
-			b2 = 1;
-			c2 = 0;				// y
-		}
-		else
-		{
-			ASSERT(VB.IsSame(V3));
-			a1 = 0;
-			b1 = 1;
-			c1 = 0;				// y
-			a2 = 1;
-			b2 = 0;
-			c2 = 0;				// x
-		}
-	if (VA.IsSame(V1))
-		if (VB.IsSame(V2))
-		{
-			a1 = 0;
-			b1 = -1;
-			c1 = 1;				// 1-y
-			a2 = 1;
-			b2 = 0;
-			c2 = 0;				// x
-		}
-		else
-		{
-			ASSERT(VB.IsSame(V0));
-			a1 = -1;
-			b1 = 0;
-			c1 = 1;				// 1-x
-			a2 = 0;
-			b2 = 1;
-			c2 = 0;				// y
-		}
-	if (VA.IsSame(V2))
-		if (VB.IsSame(V3))
-		{
-			a1 = -1;
-			b1 = 0;
-			c1 = 1;				// 1-x
-			a2 = 0;
-			b2 = -1;
-			c2 = 1;				// 1-y
-		}
-		else
-		{
-			ASSERT(VB.IsSame(V1));
-			a1 = 0;
-			b1 = -1;
-			c1 = 1;				// 1-y
-			a2 = -1;
-			b2 = 0;
-			c2 = 1;				// 1-x
-		}
-	if (VA.IsSame(V3))
-		if (VB.IsSame(V0))
-		{
-			a1 = 0;
-			b1 = 1;
-			c1 = 0;				// y
-			a2 = -1;
-			b2 = 0;
-			c2 = 1;				// 1-x
-		}
-		else
-		{
-			ASSERT(VB.IsSame(V2));
-			a1 = 1;
-			b1 = 0;
-			c1 = 0;				// x
-			a2 = 0;
-			b2 = -1;
-			c2 = 1;				// 1-y
-		}
-// 	MESSAGE("X = " << c1 << "+ " << a1 << "*x + " << b1 << "*y");
-// 	MESSAGE("Y = " << c2 << "+ " << a2 << "*x + " << b2 << "*y");
-	conv.a1 = a1;
-	conv.b1 = b1;
-	conv.c1 = c1;
-	conv.a2 = a2;
-	conv.b2 = b2;
-	conv.c2 = c2;
+        int a1, b1, c1, a2, b2, c2;
+        if (VA.IsSame(V0))
+                if (VB.IsSame(V1))
+                {
+                        a1 = 1;
+                        b1 = 0;
+                        c1 = 0;                         // x
+                        a2 = 0;
+                        b2 = 1;
+                        c2 = 0;                         // y
+                }
+                else
+                {
+                        ASSERT(VB.IsSame(V3));
+                        a1 = 0;
+                        b1 = 1;
+                        c1 = 0;                         // y
+                        a2 = 1;
+                        b2 = 0;
+                        c2 = 0;                         // x
+                }
+        if (VA.IsSame(V1))
+                if (VB.IsSame(V2))
+                {
+                        a1 = 0;
+                        b1 = -1;
+                        c1 = 1;                         // 1-y
+                        a2 = 1;
+                        b2 = 0;
+                        c2 = 0;                         // x
+                }
+                else
+                {
+                        ASSERT(VB.IsSame(V0));
+                        a1 = -1;
+                        b1 = 0;
+                        c1 = 1;                         // 1-x
+                        a2 = 0;
+                        b2 = 1;
+                        c2 = 0;                         // y
+                }
+        if (VA.IsSame(V2))
+                if (VB.IsSame(V3))
+                {
+                        a1 = -1;
+                        b1 = 0;
+                        c1 = 1;                         // 1-x
+                        a2 = 0;
+                        b2 = -1;
+                        c2 = 1;                         // 1-y
+                }
+                else
+                {
+                        ASSERT(VB.IsSame(V1));
+                        a1 = 0;
+                        b1 = -1;
+                        c1 = 1;                         // 1-y
+                        a2 = -1;
+                        b2 = 0;
+                        c2 = 1;                         // 1-x
+                }
+        if (VA.IsSame(V3))
+                if (VB.IsSame(V0))
+                {
+                        a1 = 0;
+                        b1 = 1;
+                        c1 = 0;                         // y
+                        a2 = -1;
+                        b2 = 0;
+                        c2 = 1;                         // 1-x
+                }
+                else
+                {
+                        ASSERT(VB.IsSame(V2));
+                        a1 = 1;
+                        b1 = 0;
+                        c1 = 0;                         // x
+                        a2 = 0;
+                        b2 = -1;
+                        c2 = 1;                         // 1-y
+                }
+//      MESSAGE("X = " << c1 << "+ " << a1 << "*x + " << b1 << "*y");
+//      MESSAGE("Y = " << c2 << "+ " << a2 << "*x + " << b2 << "*y");
+        conv.a1 = a1;
+        conv.b1 = b1;
+        conv.c1 = c1;
+        conv.a2 = a2;
+        conv.b2 = b2;
+        conv.c2 = c2;
 
-	int nbdown = quad.side[0]->NbPoints();
-	int nbright = quad.side[1]->NbPoints();
-	conv.ia = int (a1);
-	conv.ib = int (b1);
-	conv.ic =
-		int (c1 * a1 * a1) * (nbdown - 1) + int (c1 * b1 * b1) * (nbright - 1);
-	conv.ja = int (a2);
-	conv.jb = int (b2);
-	conv.jc =
-		int (c2 * a2 * a2) * (nbdown - 1) + int (c2 * b2 * b2) * (nbright - 1);
-// 	MESSAGE("I " << conv.ia << " " << conv.ib << " " << conv.ic);
-// 	MESSAGE("J " << conv.ja << " " << conv.jb << " " << conv.jc);
+        int nbdown = quad.side[0]->NbPoints();
+        int nbright = quad.side[1]->NbPoints();
+        conv.ia = int (a1);
+        conv.ib = int (b1);
+        conv.ic =
+                int (c1 * a1 * a1) * (nbdown - 1) + int (c1 * b1 * b1) * (nbright - 1);
+        conv.ja = int (a2);
+        conv.jb = int (b2);
+        conv.jc =
+                int (c2 * a2 * a2) * (nbdown - 1) + int (c2 * b2 * b2) * (nbright - 1);
+//      MESSAGE("I " << conv.ia << " " << conv.ib << " " << conv.ic);
+//      MESSAGE("J " << conv.ja << " " << conv.jb << " " << conv.jc);
 }
 
 //================================================================================
@@ -1189,8 +1189,8 @@ SMESH_ComputeErrorPtr ComputePentahedralMesh(SMESH_Mesh &         aMesh,
 //=======================================================================
 
 bool EvaluatePentahedralMesh(SMESH_Mesh & aMesh,
-			     const TopoDS_Shape & aShape,
-			     MapShapeNbElems& aResMap)
+                             const TopoDS_Shape & aShape,
+                             MapShapeNbElems& aResMap)
 {
   StdMeshers_Penta_3D anAlgo;
   bool bOK = anAlgo.Evaluate(aMesh, aShape, aResMap);

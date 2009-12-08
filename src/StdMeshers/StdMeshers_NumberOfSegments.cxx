@@ -49,6 +49,8 @@
 #include <Standard_ErrorHandler.hxx>
 #endif
 
+#include <Basics_Utils.hxx>
+
 using namespace std;
 
 const double PRECISION = 1e-7;
@@ -233,11 +235,11 @@ void StdMeshers_NumberOfSegments::SetTableFunction(const vector<double>& table)
 #ifdef NO_CAS_CATCH
         OCC_CATCH_SIGNALS;
 #endif
-	val = pow( 10.0, val );
+        val = pow( 10.0, val );
       } catch(Standard_Failure) {
-	Handle(Standard_Failure) aFail = Standard_Failure::Caught();
-	throw SALOME_Exception( LOCALIZED( "invalid value"));
-	return;
+        Handle(Standard_Failure) aFail = Standard_Failure::Caught();
+        throw SALOME_Exception( LOCALIZED( "invalid value"));
+        return;
       }
     }
     else if( _convMode==1 && val<0.0 )
@@ -303,7 +305,7 @@ bool isCorrectArg( const Handle( Expr_GeneralExpression )& expr )
     if( !name.IsNull() )
     {
       if( name->GetName()!="t" )
-	res = false;
+        res = false;
     }
     else
       res = isCorrectArg( sub );
@@ -317,10 +319,12 @@ bool isCorrectArg( const Handle( Expr_GeneralExpression )& expr )
  */
 //================================================================================
 bool process( const TCollection_AsciiString& str, int convMode,
-	      bool& syntax, bool& args,
-	      bool& non_neg, bool& non_zero,
- 	      bool& singulars, double& sing_point )
+              bool& syntax, bool& args,
+              bool& non_neg, bool& non_zero,
+              bool& singulars, double& sing_point )
 {
+  Kernel_Utils::Localizer loc;
+
   bool parsed_ok = true;
   Handle( ExprIntrp_GenExp ) myExpr;
   try {
@@ -359,19 +363,20 @@ bool process( const TCollection_AsciiString& str, int convMode,
       double t = double(i)/double(max), val;
       if( !f.value( t, val ) )
       {
-	sing_point = t;
-	singulars = true;
-	break;
+        sing_point = t;
+        singulars = true;
+        break;
       }
       if( val<0 )
       {
-	non_neg = false;
-	break;
+        non_neg = false;
+        break;
       }
       if( val>PRECISION )
-	non_zero = true;
+        non_zero = true;
     }
   }
+
   return res && non_neg && non_zero && ( !singulars );
 }
 

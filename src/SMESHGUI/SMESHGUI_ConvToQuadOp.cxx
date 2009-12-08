@@ -32,9 +32,10 @@
 #include <SMESH_TypeFilter.hxx>
 
 // SALOME GUI includes
-#include <SalomeApp_Tools.h>
-#include <SUIT_MessageBox.h>
 #include <LightApp_UpdateFlags.h>
+#include <SUIT_MessageBox.h>
+#include <SUIT_OverrideCursor.h>
+#include <SalomeApp_Tools.h>
 
 // IDL includes
 #include <SALOMEconfig.h>
@@ -176,6 +177,7 @@ SUIT_SelectionFilter* SMESHGUI_ConvToQuadOp::createFilter( const int theId ) con
 //================================================================================
 bool SMESHGUI_ConvToQuadOp::onApply()
 {
+  SUIT_OverrideCursor aWaitCursor;
 
   QString aMess;
 

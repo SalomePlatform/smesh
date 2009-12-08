@@ -533,14 +533,15 @@ QString SMESHGUI_GenericHypothesisCreator::helpPage() const
   else if ( aHypType == "NumberOfLayers")
     aHelpFileName = "radial_prism_algo_page.html";
   else if ( aHypType == "NumberOfLayers2D")
-    aHelpFileName = "radial_prism_algo_page.html";
+    aHelpFileName = "radial_quadrangle_1D2D_algo_page.html";
   else if ( aHypType == "LayerDistribution")
     aHelpFileName = "radial_prism_algo_page.html";
   else if ( aHypType == "LayerDistribution2D")
-    aHelpFileName = "radial_prism_algo_page.html";
+    aHelpFileName = "radial_quadrangle_1D2D_algo_page.html";
   else if ( aHypType == "SegmentLengthAroundVertex")
     aHelpFileName = "segments_around_vertex_algo_page.html";
-    
+  else if ( aHypType == "QuadrangleParams")
+    aHelpFileName = "a2d_meshing_hypo_page.html#hypo_quad_params_anchor";
   return aHelpFileName;
 }
 

@@ -23,12 +23,11 @@
 //  File   : DriverMED_Family.cxx
 //  Author : Julia DOROVSKIKH
 //  Module : SMESH
-//  $Header$
 //
 #include "DriverMED_Family.h"
 #include "MED_Factory.hxx"
 
-#include <sstream>	
+#include <sstream>      
 
 using namespace std;
 
@@ -83,7 +82,7 @@ void
 DriverMED_Family
 ::SetType(const SMDSAbs_ElementType theType) 
 { 
-  myType = theType; 
+  myTypes.insert( myType = theType );
 }
 
 SMDSAbs_ElementType
@@ -91,6 +90,13 @@ DriverMED_Family
 ::GetType()
 {
   return myType; 
+}
+
+const std::set< SMDSAbs_ElementType >&
+DriverMED_Family
+::GetTypes() const
+{
+  return myTypes;
 }
 
 bool
@@ -139,11 +145,11 @@ DriverMED_Family
 DriverMED_FamilyPtrList 
 DriverMED_Family
 ::MakeFamilies(const SMESHDS_SubMeshPtrMap& theSubMeshes,
-	       const SMESHDS_GroupBasePtrList& theGroups,
-	       const bool doGroupOfNodes,
-	       const bool doGroupOfEdges,
-	       const bool doGroupOfFaces,
-	       const bool doGroupOfVolumes)
+               const SMESHDS_GroupBasePtrList& theGroups,
+               const bool doGroupOfNodes,
+               const bool doGroupOfEdges,
+               const bool doGroupOfFaces,
+               const bool doGroupOfVolumes)
 {
   DriverMED_FamilyPtrList aFamilies;
 
@@ -189,7 +195,7 @@ DriverMED_Family
             aFamilies.erase(aCurrIter);
           }
           if (aFam2->IsEmpty()) 
-	    break;
+            break;
         }
       }
       // The rest elements of family
@@ -218,7 +224,7 @@ DriverMED_Family
         aFam1->Split(aFam2, aCommon);
         if (!aCommon->IsEmpty())
         {
-	  aCommon->SetGroupAttributVal(0);
+          aCommon->SetGroupAttributVal(0);
           aFamilies.push_back(aCommon);
         }
         if (aFam1->IsEmpty())
@@ -226,7 +232,7 @@ DriverMED_Family
           aFamilies.erase(aCurrIter);
         }
         if (aFam2->IsEmpty()) 
-	  break;
+          break;
       }
     }
     // The rest elements of group
@@ -310,7 +316,7 @@ DriverMED_Family
 //=============================================================================
 MED::PFamilyInfo 
 DriverMED_Family::GetFamilyInfo(const MED::PWrapper& theWrapper, 
-				const MED::PMeshInfo& theMeshInfo) const
+                                const MED::PMeshInfo& theMeshInfo) const
 {
   ostringstream aStr;
   aStr << "FAM_" << myId;
@@ -332,20 +338,20 @@ DriverMED_Family::GetFamilyInfo(const MED::PWrapper& theWrapper,
   MED::PFamilyInfo anInfo;
   if(myId == 0 || myGroupAttributVal == 0){
     anInfo = theWrapper->CrFamilyInfo(theMeshInfo,
-				      aValue,
-				      myId,
-				      myGroupNames);
+                                      aValue,
+                                      myId,
+                                      myGroupNames);
   }else{
     MED::TStringVector anAttrDescs (1, "");  // 1 attribute with empty description,
     MED::TIntVector anAttrIds (1, myId);        // Id=0,
     MED::TIntVector anAttrVals (1, myGroupAttributVal);
     anInfo = theWrapper->CrFamilyInfo(theMeshInfo,
-				      aValue,
-				      myId,
-				      myGroupNames,
-				      anAttrDescs,
-				      anAttrIds,
-				      anAttrVals);
+                                      aValue,
+                                      myId,
+                                      myGroupNames,
+                                      anAttrDescs,
+                                      anAttrIds,
+                                      anAttrVals);
   }
 
 //  cout << endl;
@@ -413,7 +419,7 @@ void DriverMED_Family::Init (SMESHDS_GroupBase* theGroup)
 DriverMED_FamilyPtrList 
 DriverMED_Family
 ::SplitByType (SMESHDS_SubMesh* theSubMesh,
-	       const int        theId)
+               const int        theId)
 {
   DriverMED_FamilyPtrList aFamilies;
   DriverMED_FamilyPtr aNodesFamily   (new DriverMED_Family);

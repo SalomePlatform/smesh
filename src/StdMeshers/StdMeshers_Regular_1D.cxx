@@ -63,6 +63,7 @@
 #include <TopoDS_Edge.hxx>
 
 #include <string>
+#include <limits>
 
 using namespace std;
 
@@ -757,7 +758,7 @@ bool StdMeshers_Regular_1D::computeInternalParameters(SMESH_Mesh &     theMesh,
     double an = _value[ END_LENGTH_IND ];
 
     double  q = ( an - a1 ) / ( 2 *theLength/( a1 + an ) - 1 );
-    int     n = int( 1 + ( an - a1 ) / q );
+    int n = int(fabs(q) > numeric_limits<double>::min() ? ( 1+( an-a1 )/q ) : ( 1+theLength/a1 ));
 
     double U1 = theReverse ? l : f;
     double Un = theReverse ? f : l;
@@ -1032,7 +1033,7 @@ bool StdMeshers_Regular_1D::Evaluate(SMESH_Mesh & theMesh,
   if ( _hypType == NONE )
     return false;
 
-  SMESHDS_Mesh * meshDS = theMesh.GetMeshDS();
+  //SMESHDS_Mesh * meshDS = theMesh.GetMeshDS();
 
   const TopoDS_Edge & EE = TopoDS::Edge(theShape);
   TopoDS_Edge E = TopoDS::Edge(EE.Oriented(TopAbs_FORWARD));

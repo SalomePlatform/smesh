@@ -199,31 +199,27 @@ minimum and maximum value of this parameter.
 \anchor fixed_points_1d_anchor
 <h2>Fixed points 1D hypothesis</h2>
 
-<b>Fixed points 1D</b> hypothesis allows to split edges into segments
-using set of fixed points given by normalized parameters on edge and
-set of numbers of segments for splitting each sub-segment between
-fixed points. Optionally it is possible to set flag
-<b>Same Nb. Segments for all intervals</b> and
-only one value for mentioned number of segments.
+<b>Fixed points 1D</b> hypothesis allows splitting edges through a
+set of points parameterized on the edge (from 1 to 0) and a number of segments for each
+interval limited by the points.
 
-The direction of the splitting is defined by the orientation of the
+\image html hypo_fixedpnt_dlg.png 
+
+It is possible to check in <b>Same Nb. Segments for all intervals</b> 
+option and to define one value for all intervals.
+
+The splitting direction is defined by the orientation of the
 underlying geometrical edge. <b>"Reverse Edges"</b> list box allows to
 specify the edges for which the splitting should be made in the
-direction opposing to their orientation. This list box is enabled only
-if the geometry object is selected for the meshing. In this case the
-user can select edges to be reversed either directly picking them in
-the 3D viewer or by selecting the edges or groups of edges in the
+direction opposite to their orientation. This list box is enabled only
+if the geometrical object is selected for meshing. In this case it is
+possible to select the edges to be reversed either directly picking them in
+the 3D viewer or selecting the edges or groups of edges in the
 Object browser.
 
-Using of this hypothesis for quadrangle face where main mesh is
-created using <b>Quadrangle(Mapping)</b> and <b>NumberOfSegments</b>
-hypothesises. Creation hypothesis <b>FixedPoint_1D</b> for submesh on
-one edge:
+\image html mesh_fixedpnt.png "Example of a submesh on the edge built using Fixed points 1D hypothesis"
 
-\image html hypo_fixedpnt_dlg.png
-
-Resulting 2D mesh:
-
-\image html mesh_fixedpnt.png
+<b>See Also</b> a sample TUI Script of a 
+\ref tui_fixed_points "Defining Fixed Points" hypothesis operation.
 
 */

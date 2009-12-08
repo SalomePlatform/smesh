@@ -252,7 +252,7 @@ StdMeshers_CompositeHexa_3D::StdMeshers_CompositeHexa_3D(int hypId, int studyId,
   :SMESH_3D_Algo(hypId, studyId, gen)
 {
   _name = "CompositeHexa_3D";
-  _shapeType = (1 << TopAbs_SHELL) | (1 << TopAbs_SOLID);	// 1 bit /shape type
+  _shapeType = (1 << TopAbs_SHELL) | (1 << TopAbs_SOLID);       // 1 bit /shape type
 }
 
 //================================================================================
@@ -514,7 +514,7 @@ bool StdMeshers_CompositeHexa_3D::Compute(SMESH_Mesh&         theMesh,
 //purpose  : auxilary for Evaluate
 //=======================================================================
 int GetNb2d(_QuadFaceGrid* QFG, SMESH_Mesh& theMesh,
-	    MapShapeNbElems& aResMap)
+            MapShapeNbElems& aResMap)
 {
   int nb2d = 0;
   _QuadFaceGrid::TChildIterator aCI = QFG->GetChildren();
@@ -539,8 +539,8 @@ int GetNb2d(_QuadFaceGrid* QFG, SMESH_Mesh& theMesh,
 //================================================================================
 
 bool StdMeshers_CompositeHexa_3D::Evaluate(SMESH_Mesh& theMesh,
-					   const TopoDS_Shape& theShape,
-					   MapShapeNbElems& aResMap)
+                                           const TopoDS_Shape& theShape,
+                                           MapShapeNbElems& aResMap)
 {
   SMESH_MesherHelper aTool(theMesh);
   bool _quadraticMesh = aTool.IsQuadraticSubMesh(theShape);
@@ -636,22 +636,22 @@ bool StdMeshers_CompositeHexa_3D::Evaluate(SMESH_Mesh& theMesh,
       int nb0 = 0;
       SMESH_subMesh *sm = theMesh.GetSubMesh(exp.Current());
       if( sm ) {
-	MapShapeNbElemsItr anIt = aResMap.find(sm);
-	if( anIt == aResMap.end() ) continue;
-	std::vector<int> aVec = (*anIt).second;
-	nb0 = aVec[SMDSEntity_Node];
+        MapShapeNbElemsItr anIt = aResMap.find(sm);
+        if( anIt == aResMap.end() ) continue;
+        std::vector<int> aVec = (*anIt).second;
+        nb0 = aVec[SMDSEntity_Node];
       }
       int j = 1;
       for(; j<=BndEdges.Length(); j++) {
-	if( BndEdges.Value(j) == exp.Current() ) {
-	  // internal edge => remove it
-	  BndEdges.Remove(j);
-	  nb0d_in += nb0;
-	  break;
-	}
+        if( BndEdges.Value(j) == exp.Current() ) {
+          // internal edge => remove it
+          BndEdges.Remove(j);
+          nb0d_in += nb0;
+          break;
+        }
       }
       if( j > BndEdges.Length() ) {
-	BndEdges.Append(exp.Current());
+        BndEdges.Append(exp.Current());
       }
       //if( BndEdges.Contains(exp.Current()) ) {
       //BndEdges.Remove( exp.Current() );

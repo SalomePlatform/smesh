@@ -23,6 +23,8 @@ which will compose the mesh of these 2D faces.
 
 \image html a-maxelarea.png
 
+\n
+
 \image html max_el_area.png "In this example, Max. element area is very small compared to the 1D hypothesis"
 
 <b>See Also</b> a sample TUI Script of a 
@@ -51,6 +53,18 @@ used as a degenerated edge.
 \image html hypo_quad_params_1.png "A face built from 3 edges"
 
 \image html hypo_quad_params_res.png "The resulting mesh"
+
+This hypothesis can be also used to mesh a segment of a circular face.
+Please, consider that there is a limitation on the selectiion of the degenerated
+vertex for the faces built with the angle > 180 degrees (see the picture).
+
+\image html hypo_quad_params_2.png "3/4 of a circular face"
+
+In this case, selection of a wrong vertex for the <b>Quadrangle parameters</b>
+hypothesis will generate a wrong mesh. The picture below
+shows the good (left) and the bad (right) results of meshing.
+
+\image html hypo_quad_params_res_2.png "The resulting meshes"
 
 <br>
 \anchor quadrangle_preference_anchor

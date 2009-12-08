@@ -38,7 +38,7 @@ meshes.</li>
 <li>\subpage transparency_page "Transparency" - allows to change the
 transparency of mesh elements.</li>
 <li>\subpage clipping_page "Clipping" - allows to create cross-sections of the selected objects.</li>
-<li>\ref about_quality_controls_page "Controls" - graphically
+<li>\ref quality_page "Controls" - graphically
 presents various information about meshes.</li>
 <li><b>Hide</b> - allows to hide the selected mesh from the viewer.</li>
 <li><b>Show Only</b> -allows to display only the selected mesh, hiding all other from the viewer.</li>

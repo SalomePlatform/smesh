@@ -77,6 +77,8 @@ public:
 
   void                           showPreview ( bool );
 
+  int                            GetListSize() { return myListOfIDs.size(); }
+
   void SetMaxSize(int aMaxSize) { myMaxSize = aMaxSize; }
   void SetSubShType(TopAbs_ShapeEnum aSubShType) { mySubShType = aSubShType; }
 

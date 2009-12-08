@@ -28,6 +28,7 @@ them, you operate numerical values):
 <ul>
 <li>\ref max_element_area_anchor "Max Element Area"</li>
 <li>\ref length_from_edges_anchor "Length from Edges"</li>
+<li>\ref hypo_quad_params_anchor "Quadrangle Parameters"</li>
 <li>\ref quadrangle_preference_anchor "Quadrangle Preference"</li>
 <li>\ref triangle_preference_anchor "Triangle Preference"</li>
 </ul>
