@@ -58,7 +58,7 @@ class SMESH_I_EXPORT SMESH_Mesh_i:
 public:
   SMESH_Mesh_i( PortableServer::POA_ptr thePOA,
                 SMESH_Gen_i*            myGen_i,
-              CORBA::Long             studyId );
+                CORBA::Long             studyId );
 
   virtual ~SMESH_Mesh_i();
 
@@ -500,6 +500,16 @@ public:
   static void CollectMeshInfo(const SMDS_ElemIteratorPtr theItr,
                               SMESH::long_array&         theInfo);
                           
+
+  /*!
+   * \brief Return submesh objects list in meshing order
+   */
+  virtual SMESH::submesh_array_array* GetMeshOrder();
+  /*!
+   * \brief Set submesh object order
+   */
+  virtual ::CORBA::Boolean SetMeshOrder(const SMESH::submesh_array_array& theSubMeshArray);
+
   
   std::map<int, SMESH_subMesh_i*> _mapSubMesh_i; //NRI
   std::map<int, ::SMESH_subMesh*> _mapSubMesh;   //NRI
@@ -509,6 +519,13 @@ private:
    * Check and correct names of mesh groups
    */
   void checkGroupNames();
+
+  /*!
+   * Convert submesh ids into submesh interfaces
+   */
+  void convertMeshOrder(const TListOfListOfInt&     theIdsOrder,
+                        SMESH::submesh_array_array& theSubMeshOrder,
+                        const bool                  theIsDump);
 
 private:
 

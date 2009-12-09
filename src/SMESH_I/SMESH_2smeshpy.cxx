@@ -261,6 +261,7 @@ Handle(_pyCommand) _pyGen::AddCommand( const TCollection_AsciiString& theCommand
       Handle(_pySubMesh) subMesh = new _pySubMesh( aCommand );
       myObjects.insert( make_pair( subMeshID, subMesh ));
     }
+    
     id_mesh->second->Process( aCommand );
     return aCommand;
   }
@@ -885,6 +886,34 @@ void _pyMesh::Process( const Handle(_pyCommand)& theCommand )
     // remove hyp from myHypos
     myHypos.remove( hyp );
   }
+  // check for SubMesh order commands
+  else if ( theCommand->GetMethod() == "GetMeshOrder" ||
+            theCommand->GetMethod() == "SetMeshOrder" ) {
+    // In fact arguments and result values does not support complex containers
+    // such as list of list
+    // So, here we parse it manually
+    // GetMeshOrder
+    //for(int ind = 0, n = theCommand->GetNbResultValues();ind<n;ind++) {
+    //  Handle(_pySubMesh) subMesh = theGen->FindSubMesh( theCommand->GetResultValue(ind) );
+    // SetMeshOrder
+    //for(int ind = 0, n = theCommand->GetNbArgs();ind<n;ind++) {
+    //  Handle(_pySubMesh) subMesh = theGen->FindSubMesh( theCommand->GetArg(ind) );
+    const bool isArg = theCommand->GetMethod() == "SetMeshOrder";
+    const TCollection_AsciiString& cmdStr = theCommand->GetString();
+    int begPos = (/*isArg ? cmdStr.Search( "(" ) :*/ cmdStr.Search( "[" )) + 1;
+    int endPos = (isArg ? cmdStr.Search( ")" ) : cmdStr.Search( "=" )) - 1;
+    if ( begPos != -1 && begPos < endPos && endPos <= cmdStr.Length() ) {
+      TCollection_AsciiString aSubStr = cmdStr.SubString( begPos, endPos );
+      Standard_Integer index = 1;
+      TCollection_AsciiString anIDStr = aSubStr.Token("\t ,[]", index++);
+      while ( !anIDStr.IsEmpty() ) {
+        Handle(_pySubMesh) subMesh = theGen->FindSubMesh( anIDStr );
+        if ( !subMesh.IsNull() )
+          subMesh->Process( theCommand );
+        anIDStr = aSubStr.Token("\t ,[]", index++);
+      }
+    }
+  }
   // add accessor method if necessary
   else
   {
@@ -919,7 +948,7 @@ bool _pyMesh::NeedMeshAccess( const Handle(_pyCommand)& theCommand )
         "GetNodeInverseElements","GetShapeID","GetShapeIDForElem","GetElemNbNodes",
         "GetElemNode","IsMediumNode","IsMediumNodeOfAnyElem","ElemNbEdges","ElemNbFaces",
         "IsPoly","IsQuadratic","BaryCenter","GetHypothesisList", "SetAutoColor", "GetAutoColor",
-        "Clear", "ConvertToStandalone"
+        "Clear", "ConvertToStandalone", "GetMeshOrder", "SetMeshOrder"
         ,"" }; // <- mark of end
     sameMethods.Insert( names );
   }

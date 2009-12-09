@@ -227,6 +227,15 @@ public:
   void SetIsAlwaysComputed(bool isAlCo);
   bool IsAlwaysComputed() { return _alwaysComputed; }
 
+  
+  /*!
+   * \brief  Find common submeshes (based on shared subshapes with other
+   * \param theOther submesh to check
+   * \param theCommonIds set of common submesh IDs
+   * NOTE: this method does not cleat set before collect common IDs
+   */
+  bool FindIntersection( const SMESH_subMesh *           theOther,
+                         std::set<const SMESH_subMesh*>& theSetOfCommon ) const;
 
 protected:
   // ==================================================================

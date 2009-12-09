@@ -1201,6 +1201,18 @@ class Mesh:
             pass
         return ok
 
+    ## Return submesh objects list in meshing order
+    #  @return list of list of submesh objects
+    #  @ingroup l2_construct
+    def GetMeshOrder(self):
+        return self.mesh.GetMeshOrder()
+
+    ## Return submesh objects list in meshing order
+    #  @return list of list of submesh objects
+    #  @ingroup l2_construct
+    def SetMeshOrder(self, submeshes):
+        return self.mesh.SetMeshOrder(submeshes)
+
     ## Removes all nodes and elements
     #  @ingroup l2_construct
     def Clear(self):

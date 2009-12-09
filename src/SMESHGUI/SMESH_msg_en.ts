@@ -206,6 +206,10 @@
             <translation>Create 2D mesh from 3D</translation>
         </message>
         <message>
+            <source>MEN_MESH_ORDER</source>
+            <translation>Change submesh priority</translation>
+        </message>
+        <message>
             <source>MEN_CREATE_GROUP</source>
             <translation>Create Group</translation>
         </message>
@@ -2064,6 +2068,10 @@ Consider saving your work before application crash</translation>
             <translation>Create 2D mesh from 3D</translation>
         </message>
         <message>
+            <source>STB_MESH_ORDER</source>
+            <translation>Change submesh priority</translation>
+        </message>
+        <message>
             <source>STB_CREATE_GROUP</source>
             <translation>Create Group</translation>
         </message>
@@ -2568,6 +2576,10 @@ Consider saving your work before application crash</translation>
         <message>
             <source>TOP_2D_FROM_3D</source>
             <translation>Create 2D mesh from 3D</translation>
+        </message>
+        <message>
+            <source>TOP_MESH_ORDER</source>
+            <translation>Change submesh priority</translation>
         </message>
         <message>
             <source>TOP_CREATE_GROUP</source>
@@ -3378,6 +3390,15 @@ Please, create VTK viewer and try again</translation>
             <translation>A temporary submeshes on the selected geometry
  created during preview operation.
  Do you want to remove all this submeshes?</translation>
+        </message>
+        <message>
+            <source>SMESH_WRN_NOTHING_PREVIEW</source>
+            <translation>No mesh preview is available</translation>
+        </message>
+        <message>
+            <source>SMESH_REJECT_MESH_ORDER</source>
+            <translation>The submesh priority changed during preview operation.
+Do you want to restore original submesh priority?</translation>
         </message>
     </context>
     <context>
@@ -4897,6 +4918,20 @@ It is impossible to read point coordinates from file</translation>
         <message>
             <source>SMESH_CREATE_GROUP_FROM_GEOM</source>
             <translation>Create Groups from Geometry</translation>
+        </message>
+    </context>
+    <context>
+        <name>SMESHGUI_MeshOrderDlg</name>
+        <message>
+            <source>SMESH_MESHORDER_TITLE</source>
+            <translation>Order of submesh in meshing process</translation>
+        </message>
+    </context>
+    <context>
+        <name>SMESHGUI_MeshOrderOp</name>
+        <message>
+            <source>SMESH_NO_CONCURENT_MESH</source>
+            <translation>No concurent submeshes detected</translation>
         </message>
     </context>
 </TS>

@@ -148,7 +148,7 @@ public:
 
 private:
 
-  int _localId;                     // unique Id of created objects, within SMESH_Gen entity
+  int _localId;				// unique Id of created objects, within SMESH_Gen entity
   std::map < int, StudyContextStruct * >_mapStudyContext;
 
   // hypotheses managing

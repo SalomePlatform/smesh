@@ -2191,3 +2191,29 @@ SMESH_subMeshIteratorPtr SMESH_subMesh::getDependsOnIterator(const bool includeS
       ( new _Iterator( new SMDS_mapIterator<TMap>( DependsOn() ), prepend, append ));
   }
 }
+
+//================================================================================
+/*!
+ * \brief  Find common submeshes (based on shared subshapes with other
+  * \param theOther submesh to check
+  * \param theSetOfCommon set of common submesh
+ */
+//================================================================================
+
+bool SMESH_subMesh::FindIntersection(const SMESH_subMesh* theOther,
+                                     std::set<const SMESH_subMesh*>& theSetOfCommon ) const
+{
+  int oldNb = theSetOfCommon.size();
+  // check main submeshes
+  const map <int, SMESH_subMesh*>::const_iterator otherEnd = theOther->_mapDepend.end();
+  if ( theOther->_mapDepend.find(this->GetId()) != otherEnd )
+    theSetOfCommon.insert( this );
+  if ( _mapDepend.find(theOther->GetId()) != _mapDepend.end() )
+    theSetOfCommon.insert( theOther );
+  // check common submeshes
+  map <int, SMESH_subMesh*>::const_iterator mapIt = _mapDepend.begin();
+  for( ; mapIt != _mapDepend.end(); mapIt++ )
+    if ( theOther->_mapDepend.find((*mapIt).first) != otherEnd )
+      theSetOfCommon.insert( (*mapIt).second );
+  return oldNb < theSetOfCommon.size();
+}

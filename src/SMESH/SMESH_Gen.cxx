@@ -207,7 +207,7 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
       if ( algo && !algo->NeedDescretBoundary() )
       {
         if ( algo->SupportSubmeshes() )
-          smWithAlgoSupportingSubmeshes.push_back( smToCompute );
+          smWithAlgoSupportingSubmeshes.push_front( smToCompute );
         else
         {
           smToCompute->ComputeStateEngine( SMESH_subMesh::COMPUTE );
@@ -216,13 +216,19 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
         }
       }
     }
+    
+    // ------------------------------------------------------------
+    // sort list of meshes according to mesh order
+    // ------------------------------------------------------------
+    aMesh.SortByMeshOrder( smWithAlgoSupportingSubmeshes );
+
     // ------------------------------------------------------------
     // compute submeshes under shapes with algos that DO NOT require
     // descretized boundaries and DO support submeshes
     // ------------------------------------------------------------
-    list< SMESH_subMesh* >::reverse_iterator subIt, subEnd;
-    subIt  = smWithAlgoSupportingSubmeshes.rbegin();
-    subEnd = smWithAlgoSupportingSubmeshes.rend();
+    list< SMESH_subMesh* >::iterator subIt, subEnd;
+    subIt  = smWithAlgoSupportingSubmeshes.begin();
+    subEnd = smWithAlgoSupportingSubmeshes.end();
     // start from lower shapes
     for ( ; subIt != subEnd; ++subIt )
     {
@@ -264,7 +270,7 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
     // ----------------------------------------------------------
     // apply the algos that do not require descretized boundaries
     // ----------------------------------------------------------
-    for ( subIt = smWithAlgoSupportingSubmeshes.rbegin(); subIt != subEnd; ++subIt )
+    for ( subIt = smWithAlgoSupportingSubmeshes.begin(); subIt != subEnd; ++subIt )
     {
       sm = *subIt;
       if ( sm->GetComputeState() == SMESH_subMesh::READY_TO_COMPUTE)
@@ -353,7 +359,7 @@ bool SMESH_Gen::Evaluate(SMESH_Mesh &          aMesh,
       SMESH_Algo* algo = GetAlgo( aMesh, aSubShape );
       if ( algo && !algo->NeedDescretBoundary() ) {
         if ( algo->SupportSubmeshes() ) {
-          smWithAlgoSupportingSubmeshes.push_back( smToCompute );
+          smWithAlgoSupportingSubmeshes.push_front( smToCompute );
         }
         else {
           smToCompute->Evaluate(aResMap);
@@ -362,13 +368,19 @@ bool SMESH_Gen::Evaluate(SMESH_Mesh &          aMesh,
         }
       }
     }
+
+    // ------------------------------------------------------------
+    // sort list of meshes according to mesh order
+    // ------------------------------------------------------------
+    aMesh.SortByMeshOrder( smWithAlgoSupportingSubmeshes );
+
     // ------------------------------------------------------------
     // compute submeshes under shapes with algos that DO NOT require
     // descretized boundaries and DO support submeshes
     // ------------------------------------------------------------
-    list< SMESH_subMesh* >::reverse_iterator subIt, subEnd;
-    subIt  = smWithAlgoSupportingSubmeshes.rbegin();
-    subEnd = smWithAlgoSupportingSubmeshes.rend();
+    list< SMESH_subMesh* >::iterator subIt, subEnd;
+    subIt  = smWithAlgoSupportingSubmeshes.begin();
+    subEnd = smWithAlgoSupportingSubmeshes.end();
     // start from lower shapes
     for ( ; subIt != subEnd; ++subIt ) {
       sm = *subIt;
@@ -405,7 +417,7 @@ bool SMESH_Gen::Evaluate(SMESH_Mesh &          aMesh,
     // ----------------------------------------------------------
     // apply the algos that do not require descretized boundaries
     // ----------------------------------------------------------
-    for ( subIt = smWithAlgoSupportingSubmeshes.rbegin(); subIt != subEnd; ++subIt )
+    for ( subIt = smWithAlgoSupportingSubmeshes.begin(); subIt != subEnd; ++subIt )
     {
       sm = *subIt;
       sm->Evaluate(aResMap);

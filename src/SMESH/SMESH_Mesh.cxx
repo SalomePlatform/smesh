@@ -175,14 +175,8 @@ void SMESH_Mesh::ShapeToMesh(const TopoDS_Shape & aShape)
     _isShapeToMesh = true;
     _nbSubShapes = _myMeshDS->MaxShapeIndex();
 
-    // fill _mapAncestors
-    int desType, ancType;
-    for ( desType = TopAbs_VERTEX; desType > TopAbs_COMPOUND; desType-- )
-      for ( ancType = desType - 1; ancType >= TopAbs_COMPOUND; ancType-- )
-        TopExp::MapShapesAndAncestors ( aShape,
-                                        (TopAbs_ShapeEnum) desType,
-                                        (TopAbs_ShapeEnum) ancType,
-                                        _mapAncestors );
+    // fill map of ancestors
+    fillAncestorsMap(aShape);
   }
   else
   {
@@ -479,33 +473,6 @@ SMESH_Hypothesis::Hypothesis_Status
   if ( !subMesh || !subMesh->GetId())
     return SMESH_Hypothesis::HYP_BAD_SUBSHAPE;
 
-  SMESHDS_SubMesh *subMeshDS = subMesh->GetSubMeshDS();
-  if ( subMeshDS && subMeshDS->IsComplexSubmesh() ) // group of sub-shapes and maybe of not sub-
-  {
-    MESSAGE("AddHypothesis() to complex submesh");
-    // return the worst but not fatal state of all group memebers
-    SMESH_Hypothesis::Hypothesis_Status aBestRet, aWorstNotFatal, ret;
-    aBestRet = SMESH_Hypothesis::HYP_BAD_DIM;
-    aWorstNotFatal = SMESH_Hypothesis::HYP_OK;
-    for ( TopoDS_Iterator itS ( aSubShape ); itS.More(); itS.Next())
-    {
-      if ( !GetMeshDS()->ShapeToIndex( itS.Value() ))
-        continue; // not sub-shape
-      ret = AddHypothesis( itS.Value(), anHypId );
-      if ( !SMESH_Hypothesis::IsStatusFatal( ret ) && ret > aWorstNotFatal )
-        aWorstNotFatal = ret;
-      if ( ret < aBestRet )
-        aBestRet = ret;
-    }
-    // bind hypotheses to a group just to know
-    SMESH_Hypothesis *anHyp = _gen->GetStudyContext(_studyId)->mapHypothesis[anHypId];
-    GetMeshDS()->AddHypothesis( aSubShape, anHyp );
-
-    if ( SMESH_Hypothesis::IsStatusFatal( aBestRet ))
-      return aBestRet;
-    return aWorstNotFatal;
-  }
-
   StudyContextStruct *sc = _gen->GetStudyContext(_studyId);
   if (sc->mapHypothesis.find(anHypId) == sc->mapHypothesis.end())
   {
@@ -586,32 +553,6 @@ SMESH_Hypothesis::Hypothesis_Status
   Unexpect aCatch(SalomeException);
   if(MYDEBUG) MESSAGE("SMESH_Mesh::RemoveHypothesis");
   
-  SMESH_subMesh *subMesh = GetSubMesh(aSubShape);
-  SMESHDS_SubMesh *subMeshDS = subMesh->GetSubMeshDS();
-  if ( subMeshDS && subMeshDS->IsComplexSubmesh() )
-  {
-    // return the worst but not fatal state of all group memebers
-    SMESH_Hypothesis::Hypothesis_Status aBestRet, aWorstNotFatal, ret;
-    aBestRet = SMESH_Hypothesis::HYP_BAD_DIM;
-    aWorstNotFatal = SMESH_Hypothesis::HYP_OK;
-    for ( TopoDS_Iterator itS ( aSubShape ); itS.More(); itS.Next())
-    {
-      if ( !GetMeshDS()->ShapeToIndex( itS.Value() ))
-        continue; // not sub-shape
-      ret = RemoveHypothesis( itS.Value(), anHypId );
-      if ( !SMESH_Hypothesis::IsStatusFatal( ret ) && ret > aWorstNotFatal )
-        aWorstNotFatal = ret;
-      if ( ret < aBestRet )
-        aBestRet = ret;
-    }
-    SMESH_Hypothesis *anHyp = _gen->GetStudyContext(_studyId)->mapHypothesis[anHypId];
-    GetMeshDS()->RemoveHypothesis( aSubShape, anHyp );
-
-    if ( SMESH_Hypothesis::IsStatusFatal( aBestRet ))
-      return aBestRet;
-    return aWorstNotFatal;
-  }
-
   StudyContextStruct *sc = _gen->GetStudyContext(_studyId);
   if (sc->mapHypothesis.find(anHypId) == sc->mapHypothesis.end())
     throw SALOME_Exception(LOCALIZED("hypothesis does not exist"));
@@ -624,6 +565,8 @@ SMESH_Hypothesis::Hypothesis_Status
   
   bool isAlgo = ( !anHyp->GetType() == SMESHDS_Hypothesis::PARAM_ALGO );
   int event = isAlgo ? SMESH_subMesh::REMOVE_ALGO : SMESH_subMesh::REMOVE_HYP;
+
+  SMESH_subMesh *subMesh = GetSubMesh(aSubShape);
 
   SMESH_Hypothesis::Hypothesis_Status ret = subMesh->AlgoStateEngine(event, anHyp);
 
@@ -709,15 +652,18 @@ const SMESH_Hypothesis * SMESH_Mesh::GetHypothesis(const TopoDS_Shape &    aSubS
   }
   if ( andAncestors )
   {
-    TopTools_ListIteratorOfListOfShape it( GetAncestors( aSubShape ));
-    for (; it.More(); it.Next() )
+    // user sorted submeshes of ancestors, according to stored submesh priority
+    const std::list<SMESH_subMesh*> smList = getAncestorsSubMeshes( aSubShape );
+    std::list<SMESH_subMesh*>::const_iterator smIt = smList.begin(); 
+    for ( ; smIt != smList.end(); smIt++ )
     {
-      const std::list<const SMESHDS_Hypothesis*>& hypList = _myMeshDS->GetHypothesis(it.Value());
+      const TopoDS_Shape& curSh = (*smIt)->GetSubShape();
+      const std::list<const SMESHDS_Hypothesis*>& hypList = _myMeshDS->GetHypothesis(curSh);
       std::list<const SMESHDS_Hypothesis*>::const_iterator hyp = hypList.begin();
       for ( ; hyp != hypList.end(); hyp++ ) {
         const SMESH_Hypothesis * h = cSMESH_Hyp( *hyp );
-        if (aFilter.IsOk( h, it.Value() )) {
-          if ( assignedTo ) *assignedTo = it.Value();
+        if (aFilter.IsOk( h, curSh )) {
+          if ( assignedTo ) *assignedTo = curSh;
           return h;
         }
       }
@@ -776,14 +722,18 @@ int SMESH_Mesh::GetHypotheses(const TopoDS_Shape &                aSubShape,
   if ( andAncestors )
   {
     TopTools_MapOfShape map;
-    TopTools_ListIteratorOfListOfShape it( GetAncestors( aSubShape ));
-    for (; it.More(); it.Next() )
+
+    // user sorted submeshes of ancestors, according to stored submesh priority
+    const std::list<SMESH_subMesh*> smList = getAncestorsSubMeshes( aSubShape );
+    std::list<SMESH_subMesh*>::const_iterator smIt = smList.begin(); 
+    for ( ; smIt != smList.end(); smIt++ )
     {
-     if ( !map.Add( it.Value() ))
+      const TopoDS_Shape& curSh = (*smIt)->GetSubShape();
+     if ( !map.Add( curSh ))
         continue;
-      const std::list<const SMESHDS_Hypothesis*>& hypList = _myMeshDS->GetHypothesis(it.Value());
+      const std::list<const SMESHDS_Hypothesis*>& hypList = _myMeshDS->GetHypothesis(curSh);
       for ( hyp = hypList.begin(); hyp != hypList.end(); hyp++ )
-        if (aFilter.IsOk( cSMESH_Hyp( *hyp ), it.Value() ) &&
+        if (aFilter.IsOk( cSMESH_Hyp( *hyp ), curSh ) &&
             ( cSMESH_Hyp(*hyp)->IsAuxiliary() || !mainHypFound ) &&
             hypTypes.insert( (*hyp)->GetName() ).second )
         {
@@ -842,6 +792,9 @@ SMESH_subMesh *SMESH_Mesh::GetSubMesh(const TopoDS_Shape & aSubShape)
     {
       index = _myMeshDS->AddCompoundSubmesh( aSubShape, it.Value().ShapeType() );
       if ( index > _nbSubShapes ) _nbSubShapes = index; // not to create sm for this group again
+
+      // fill map of Ancestors
+      fillAncestorsMap(aSubShape);
     }
   }
 //   if ( !index )
@@ -856,6 +809,7 @@ SMESH_subMesh *SMESH_Mesh::GetSubMesh(const TopoDS_Shape & aSubShape)
   {
     aSubMesh = new SMESH_subMesh(index, this, _myMeshDS, aSubShape);
     _mapSubMesh[index] = aSubMesh;
+    ClearMeshOrder();
   }
   return aSubMesh;
 }
@@ -1580,3 +1534,138 @@ SMESH_Group* SMESH_Mesh::ConvertToStandalone ( int theGroupID )
   return aGroup;
 }
 
+//=============================================================================
+/*!
+ *  \brief remove submesh order  from Mesh
+ */
+//=============================================================================
+
+void SMESH_Mesh::ClearMeshOrder()
+{
+  _mySubMeshOrder.clear();
+}
+
+//=============================================================================
+/*!
+ *  \brief remove submesh order  from Mesh
+ */
+//=============================================================================
+
+void SMESH_Mesh::SetMeshOrder(const TListOfListOfInt& theOrder )
+{
+  _mySubMeshOrder = theOrder;
+}
+
+//=============================================================================
+/*!
+ *  \brief return submesh order if any
+ */
+//=============================================================================
+
+const TListOfListOfInt& SMESH_Mesh::GetMeshOrder() const
+{
+  return _mySubMeshOrder;
+}
+
+//=============================================================================
+/*!
+ *  \brief fillAncestorsMap
+ */
+//=============================================================================
+
+void SMESH_Mesh::fillAncestorsMap(const TopoDS_Shape& theShape)
+{
+  // fill _mapAncestors
+  int desType, ancType;
+  for ( desType = TopAbs_VERTEX; desType > TopAbs_COMPOUND; desType-- )
+    for ( ancType = desType - 1; ancType >= TopAbs_COMPOUND; ancType-- )
+      TopExp::MapShapesAndAncestors ( theShape,
+                                      (TopAbs_ShapeEnum) desType,
+                                      (TopAbs_ShapeEnum) ancType,
+                                      _mapAncestors );
+}
+
+//=============================================================================
+/*!
+ * \brief sort submeshes according to stored mesh order
+ * \param theListToSort in out list to be sorted
+ * \return FALSE if nothing sorted
+ */
+//=============================================================================
+
+bool SMESH_Mesh::SortByMeshOrder(std::list<SMESH_subMesh*>& theListToSort) const
+{
+  if ( !_mySubMeshOrder.size() || theListToSort.size() < 2)
+    return true;
+  
+  bool res = false;
+  std::list<SMESH_subMesh*> onlyOrderedList;
+  // collect all ordered submeshes in one list as pointers
+  TListOfListOfInt::const_iterator listIddIt = _mySubMeshOrder.begin();
+  for( ; listIddIt != _mySubMeshOrder.end(); listIddIt++) {
+    const TListOfInt& listOfId = *listIddIt;
+    TListOfInt::const_iterator idIt = listOfId.begin();
+    for ( ; idIt != listOfId.end(); idIt++ ) {
+      map <int, SMESH_subMesh *>::const_iterator i_sm = _mapSubMesh.find(*idIt);
+      if ( i_sm != _mapSubMesh.end() )
+        onlyOrderedList.push_back(i_sm->second);
+    }
+  }
+  if (!onlyOrderedList.size())
+    return res;
+
+  std::list<SMESH_subMesh*>::iterator onlyBIt = onlyOrderedList.begin();
+  std::list<SMESH_subMesh*>::iterator onlyEIt = onlyOrderedList.end();
+
+  // check positions where ordered submeshes should be in result list
+  std::set<int> setOfPos; // remember positions of in set
+  std::list<SMESH_subMesh*>::const_iterator smIt = theListToSort.begin();
+  int i = 0;
+  for( ; smIt != theListToSort.end(); i++, smIt++ )
+    if ( find( onlyBIt, onlyEIt, *smIt ) != onlyEIt )
+      setOfPos.insert(i);
+
+  if ( !setOfPos.size() )
+    return res;
+
+  // new list of all submeshes to be sorted
+  std::list<SMESH_subMesh*> aNewList;
+  // iterates on submeshes and insert ordered in detected positions
+  for ( i = 0, smIt = theListToSort.begin(); smIt != theListToSort.end(); i++, smIt++ )
+    if ( setOfPos.find( i ) != setOfPos.end() &&
+         onlyBIt != onlyEIt ) { // position of ordered submesh detected
+      aNewList.push_back( *onlyBIt ); // ordered submesh
+      onlyBIt++;
+    }
+    else
+      aNewList.push_back( *smIt ); // other submesh from list
+  
+  theListToSort = aNewList;
+  return res;
+}
+
+//=============================================================================
+/*!
+ * \brief sort submeshes according to stored mesh order
+ * \param theListToSort in out list to be sorted
+ * \return FALSE if nothing sorted
+ */
+//=============================================================================
+
+std::list<SMESH_subMesh*> SMESH_Mesh::getAncestorsSubMeshes
+  (const TopoDS_Shape& theSubShape) const
+{
+  std::list<SMESH_subMesh*> listOfSubMesh;
+  TopTools_ListIteratorOfListOfShape it( GetAncestors( theSubShape ));
+  for (; it.More(); it.Next() ) {
+    int index = _myMeshDS->ShapeToIndex(it.Value());
+    map <int, SMESH_subMesh *>::const_iterator i_sm = _mapSubMesh.find(index);
+    if (i_sm != _mapSubMesh.end())
+      listOfSubMesh.push_back(i_sm->second);
+  }
+
+  // sort submeshes according to stored mesh order
+  SortByMeshOrder( listOfSubMesh );
+
+  return listOfSubMesh;
+}

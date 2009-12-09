@@ -32,6 +32,9 @@
 #include "SMESHGUI_MeshInfosBox.h"
 #include "SMESHGUI_HypothesesUtils.h"
 #include "SMESHGUI_MeshEditPreview.h"
+#include "SMESHGUI_MeshOrderOp.h"
+#include "SMESHGUI_MeshOrderDlg.h"
+
 #include "SMESH_ActorUtils.h"
 
 #include <SMDS_SetIterator.hxx>
@@ -1218,6 +1221,7 @@ LightApp_Dialog* SMESHGUI_ComputeOp::dlg() const
 SMESHGUI_PrecomputeOp::SMESHGUI_PrecomputeOp()
  : SMESHGUI_BaseComputeOp(),
  myDlg( 0 ),
+ myOrderMgr( 0 ),
  myActiveDlg( 0 ),
  myPreviewDisplayer( 0 )
 {
@@ -1234,6 +1238,8 @@ SMESHGUI_PrecomputeOp::~SMESHGUI_PrecomputeOp()
 {
   delete myDlg;
   myDlg = 0;
+  delete myOrderMgr;
+  myOrderMgr = 0;
   myActiveDlg = 0;
   if ( myPreviewDisplayer )
     delete myPreviewDisplayer;
@@ -1299,6 +1305,16 @@ void SMESHGUI_PrecomputeOp::startOperation()
   if (myMesh->_is_nil())
     return;
 
+  if (myDlg->getPreviewMode() == -1)
+  {
+    // nothing to preview
+    SUIT_MessageBox::warning(desktop(),
+                             tr("SMESH_WRN_WARNING"),
+                             tr("SMESH_WRN_NOTHING_PREVIEW"));
+    onCancel();
+    return;
+  }
+
   // disconnect slot from preview dialog to have Apply from results of compute operation only 
   disconnect( myDlg, SIGNAL( dlgOk() ), this, SLOT( onOk() ) );
   disconnect( myDlg, SIGNAL( dlgApply() ), this, SLOT( onApply() ) );
@@ -1363,6 +1379,15 @@ void SMESHGUI_PrecomputeOp::initDialog()
       modes.append( SMESH::DIM_1D );
   }
 
+  myOrderMgr = new SMESHGUI_MeshOrderMgr( myDlg->getMeshOrderBox() );
+  myOrderMgr->SetMesh( myMesh );
+  bool isOrder = myOrderMgr->GetMeshOrder(myPrevOrder);
+  myDlg->getMeshOrderBox()->setShown(isOrder);
+  if ( !isOrder ) {
+    delete myOrderMgr;
+    myOrderMgr = 0;
+  }
+
   myDlg->setPreviewModes( modes );
 }
 
@@ -1423,6 +1448,8 @@ void SMESHGUI_PrecomputeOp::getAssignedAlgos(_PTR(SObject) theMesh,
 void SMESHGUI_PrecomputeOp::onCompute()
 {
   myDlg->hide();
+  if (myOrderMgr && myOrderMgr->IsOrderChanged())
+    myOrderMgr->SetMeshOrder();
   myMapShapeId.clear();
   myActiveDlg = computeDlg();
   computeMesh();
@@ -1444,6 +1471,7 @@ void SMESHGUI_PrecomputeOp::onCancel()
     return;
   }
 
+  bool isRestoreOrder = false;
   if ( myActiveDlg == myDlg  && !myMesh->_is_nil() && myMapShapeId.count() )
   {
     // ask to remove already computed mesh elements
@@ -1455,8 +1483,24 @@ void SMESHGUI_PrecomputeOp::onCancel()
       QMap<int,int>::const_iterator it = myMapShapeId.constBegin();
       for ( ; it != myMapShapeId.constEnd(); ++it )
         myMesh->ClearSubMesh( *it );
+      isRestoreOrder = true;
     }
   }
+
+  // return previous mesh order
+  if (myOrderMgr && myOrderMgr->IsOrderChanged()) {
+    if (!isRestoreOrder)
+      isRestoreOrder = 
+        (SUIT_MessageBox::question( desktop(), tr( "SMESH_WARNING" ),
+                                    tr( "SMESH_REJECT_MESH_ORDER" ),
+                                    tr( "SMESH_BUT_YES" ), tr( "SMESH_BUT_NO" ), 0, 1 ) == 0);
+    if (isRestoreOrder)
+      myOrderMgr->SetMeshOrder(myPrevOrder);
+  }
+
+  delete myOrderMgr;
+  myOrderMgr = 0;
+
   myMapShapeId.clear();
   SMESHGUI_BaseComputeOp::onCancel();
 }
@@ -1475,6 +1519,11 @@ void SMESHGUI_PrecomputeOp::onPreview()
   _PTR(SObject) aMeshSObj = SMESH::FindSObject(myMesh);
   if ( !aMeshSObj )
     return;
+
+  // set modified submesh priority if any
+  if (myOrderMgr && myOrderMgr->IsOrderChanged())
+    myOrderMgr->SetMeshOrder();
+
   // Compute preview of mesh, 
   // i.e. compute mesh till indicated dimension
   int dim = myDlg->getPreviewMode();
@@ -1579,7 +1628,8 @@ void SMESHGUI_PrecomputeOp::onPreview()
 //================================================================================
 
 SMESHGUI_PrecomputeDlg::SMESHGUI_PrecomputeDlg( QWidget* parent )
- : SMESHGUI_Dialog( parent, false, false, OK | Cancel | Help )
+ : SMESHGUI_Dialog( parent, false, false, OK | Cancel | Help ),
+   myOrderBox(0)
 {
   setWindowTitle( tr( "CAPTION" ) );
 
@@ -1587,6 +1637,9 @@ SMESHGUI_PrecomputeDlg::SMESHGUI_PrecomputeDlg( QWidget* parent )
   QFrame* main = mainFrame();
 
   QVBoxLayout* layout = new QVBoxLayout( main );
+
+  myOrderBox = new SMESHGUI_MeshOrderBox( main );
+  layout->addWidget(myOrderBox);
 
   QFrame* frame = new QFrame( main );
   layout->setMargin(0); layout->setSpacing(0);
@@ -1642,6 +1695,17 @@ void SMESHGUI_PrecomputeDlg::setPreviewModes( const QList<int>& theModes )
 int SMESHGUI_PrecomputeDlg::getPreviewMode() const
 {
   return myPreviewMode->currentId();
+}
+
+//================================================================================
+/*!
+ * \brief Returns current preview mesh mode
+*/
+//================================================================================
+
+SMESHGUI_MeshOrderBox* SMESHGUI_PrecomputeDlg::getMeshOrderBox() const
+{
+  return myOrderBox;
 }
 
 

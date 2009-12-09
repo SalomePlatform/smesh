@@ -2722,6 +2722,40 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
             //if ( shapeRefFound )
             //myWriter.AddAllSubMeshes();
 
+            // store submesh order if any
+            const TListOfListOfInt& theOrderIds = myLocMesh.GetMeshOrder();
+            if ( theOrderIds.size() ) {
+              char order_list[ 30 ];
+              strcpy( order_list, "Mesh Order" );
+              // count number of submesh ids
+              int nbIDs = 0;
+              TListOfListOfInt::const_iterator idIt = theOrderIds.begin();
+              for ( ; idIt != theOrderIds.end(); idIt++ )
+                nbIDs += (*idIt).size();
+              // number of values = number of IDs +
+              //                    number of lists (for separators) - 1
+              int* smIDs = new int [ nbIDs + theOrderIds.size() - 1 ];
+              idIt = theOrderIds.begin();
+              for ( int i = 0; idIt != theOrderIds.end(); idIt++ ) {
+                const TListOfInt& idList = *idIt;
+                if (idIt != theOrderIds.begin()) // not first list
+                  smIDs[ i++ ] = -1/* *idList.size()*/; // separator between lists
+                // dump submesh ids from current list
+                TListOfInt::const_iterator id_smId = idList.begin();
+                for( ; id_smId != idList.end(); id_smId++ )
+                  smIDs[ i++ ] = *id_smId;
+              }
+              // write HDF group
+              aSize[ 0 ] = nbIDs + theOrderIds.size() - 1;
+
+              aDataset = new HDFdataset( order_list, aTopGroup, HDF_INT32, aSize, 1 );
+              aDataset->CreateOnDisk();
+              aDataset->WriteOnDisk( smIDs );
+              aDataset->CloseOnDisk();
+              //
+              delete[] smIDs;
+            }
+
             // groups root sub-branch
             SALOMEDS::SObject_var myGroupsBranch;
             for ( int i = GetNodeGroupsTag(); i <= GetVolumeGroupsTag(); i++ ) {
@@ -2906,7 +2940,7 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
                   aDataset->WriteOnDisk( smIDs );
                   aDataset->CloseOnDisk();
                   //
-                  delete smIDs;
+                  delete[] smIDs;
                 }
                 
                 // Store node positions on sub-shapes (SMDS_Position):
@@ -3494,7 +3528,6 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
               }
             }
           }
-
         }
       }
     }
@@ -4116,6 +4149,24 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
           }
           aGroup->CloseOnDisk();
         }
+      }
+      // read submeh order if any
+      if( aTopGroup->ExistInternalObject( "Mesh Order" ) ) {
+        aDataset = new HDFdataset( "Mesh Order", aTopGroup );
+        aDataset->OpenOnDisk();
+        size = aDataset->GetSize();
+        int* smIDs = new int[ size ];
+        aDataset->ReadFromDisk( smIDs );
+        aDataset->CloseOnDisk();
+        TListOfListOfInt anOrderIds;
+        anOrderIds.push_back( TListOfInt() );
+        for ( int i = 0; i < size; i++ )
+          if ( smIDs[ i ] < 0 ) // is separator
+            anOrderIds.push_back( TListOfInt() );
+          else
+            anOrderIds.back().push_back(smIDs[ i ]);
+        
+        myNewMeshImpl->GetImpl().SetMeshOrder( anOrderIds );
       }
     }
     // close mesh group

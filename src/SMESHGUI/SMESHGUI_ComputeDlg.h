@@ -36,6 +36,7 @@
 
 // Qt includes
 #include <QMap>
+#include <QList>
 #include <QPointer>
 #include <QGroupBox>
 
@@ -136,6 +137,8 @@ protected:
 protected slots:
 };
 
+class SMESHGUI_MeshOrderMgr;
+
 /*!
  * \brief Operation to preview and compute a mesh and show computation errors
  */
@@ -170,10 +173,16 @@ private slots:
   void                           onCompute();
 
 private:
+  //! private fields
   QMap< int, int >               myMapShapeId;
   QPointer<LightApp_Dialog>      myActiveDlg;
   QPointer<SMESHGUI_PrecomputeDlg> myDlg;
   SMESHGUI_MeshEditPreview*      myPreviewDisplayer;
+  //! fields for mesh order
+  typedef QList<int>             TListOfInt;
+  typedef QList<TListOfInt>      TListOfListOfInt;
+  TListOfListOfInt               myPrevOrder;
+  SMESHGUI_MeshOrderMgr*         myOrderMgr;
 };
 
 /*!
@@ -227,6 +236,8 @@ protected:
   friend class SMESHGUI_PrecomputeOp;
 };
 
+class SMESHGUI_MeshOrderBox;
+
 /*!
  * \brief Dialog to preview and compute a mesh and show computation errors
  */
@@ -241,11 +252,14 @@ public:
   
   void                         setPreviewModes( const QList<int>& );
   int                          getPreviewMode() const;
+  
+  SMESHGUI_MeshOrderBox*       getMeshOrderBox() const;
 
 signals:
   void                         preview();
 
 private:
+  SMESHGUI_MeshOrderBox*       myOrderBox;
   QPushButton*                 myPreviewBtn;
   QtxComboBox*                 myPreviewMode;
 };

@@ -68,8 +68,11 @@
 #include <TopExp.hxx>
 #include <TopExp_Explorer.hxx>
 #include <TopoDS_Compound.hxx>
+#include <TopTools_MapOfShape.hxx>
+#include <TopTools_MapIteratorOfMapOfShape.hxx>
 
 // STL Includes
+#include <algorithm>
 #include <string>
 #include <iostream>
 #include <sstream>
@@ -3456,4 +3459,425 @@ void SMESH_Mesh_i::CollectMeshInfo(const SMDS_ElemIteratorPtr theItr,
   if (!theItr) return;
   while (theItr->more())
     theInfo[ theItr->next()->GetEntityType() ]++;
+}
+
+//=============================================================================
+/*!
+ * \brief mapping of mesh dimension into shape type
+ */
+//=============================================================================
+static TopAbs_ShapeEnum shapeTypeByDim(const int theDim)
+{
+  TopAbs_ShapeEnum aType = TopAbs_SOLID;
+  switch ( theDim ) {
+  case 0: aType = TopAbs_VERTEX; break;
+  case 1: aType = TopAbs_EDGE; break;
+  case 2: aType = TopAbs_FACE; break;
+  case 3:
+  default:aType = TopAbs_SOLID; break;
+  }
+  return aType;
+}
+
+//=============================================================================
+/*!
+ * \brief Internal structure to collect concurent submeshes
+ */
+//=============================================================================
+class SMESH_DimHyp
+{
+ public:
+  //! fileds
+  int _dim;
+  int _ownDim;
+  TopTools_MapOfShape _shapeMap;
+  SMESH_subMesh*      _subMesh;
+  std::list<const SMESHDS_Hypothesis*> _hypothesises;
+  
+  //! Constructors
+  SMESH_DimHyp(const SMESH_subMesh*  theSubMesh,
+               const int             theDim,
+               const TopoDS_Shape&   theShape)
+  {
+    _subMesh = (SMESH_subMesh*)theSubMesh;
+    SetShape( theDim, theShape );
+  }
+  
+  //! set shape
+  void SetShape(const int theDim,
+                const TopoDS_Shape& theShape)
+  {
+    _dim = theDim;
+    _ownDim = (int)SMESH_Gen::GetShapeDim(theShape);
+    if (_dim >= _ownDim)
+      _shapeMap.Add( theShape );
+    else {
+      TopExp_Explorer anExp( theShape, shapeTypeByDim(theDim) );
+      for( ; anExp.More(); anExp.Next() )
+        _shapeMap.Add( anExp.Current() );
+    }
+  }
+
+  //! Check sharing of sub shapes
+  static bool isShareSubShapes(const TopTools_MapOfShape& theToCheck,
+                               const TopTools_MapOfShape& theToFind,
+                               const TopAbs_ShapeEnum     theType)
+  {
+    bool isShared = false;
+    TopTools_MapIteratorOfMapOfShape anItr( theToCheck );
+    for (; !isShared && anItr.More(); anItr.Next() ) {
+      const TopoDS_Shape aSubSh = anItr.Key();
+      // check for case when concurrent dimensions are same
+      isShared = theToFind.Contains( aSubSh );
+      // check for subshape with concurrent dimension
+      TopExp_Explorer anExp( aSubSh, theType );
+      for ( ; !isShared && anExp.More(); anExp.Next() )
+        isShared = theToFind.Contains( anExp.Current() );
+    }
+    return isShared;
+  }
+  
+  //! check algorithms
+  static bool checkAlgo(const SMESHDS_Hypothesis* theA1,
+                        const SMESHDS_Hypothesis* theA2)
+  {
+    if ( theA1->GetType() == SMESHDS_Hypothesis::PARAM_ALGO ||
+         theA2->GetType() == SMESHDS_Hypothesis::PARAM_ALGO )
+      return false; // one of the hypothesis is not algorithm
+    // check algorithm names (should be equal)
+    return strcmp( theA1->GetName(), theA2->GetName() ) == 0;
+  }
+
+  
+  //! Check if subhape hypothesises is concurrent
+  bool IsConcurrent(const SMESH_DimHyp* theOther) const
+  {
+    if ( _subMesh == theOther->_subMesh )
+      return false; // same subshape - should not be
+    if ( (_ownDim == theOther->_dim  || _dim == theOther->_ownDim ) &&
+         ((_subMesh->GetSubMeshDS() && !(_subMesh->GetSubMeshDS()->IsComplexSubmesh())) ||
+          (theOther->_subMesh->GetSubMeshDS() && !(theOther->_subMesh->GetSubMeshDS()->IsComplexSubmesh())) ) )
+      return false; // no concurrence on shape and group (compound)
+    bool checkSubShape = ( _dim >= theOther->_dim )
+      ? isShareSubShapes( _shapeMap, theOther->_shapeMap, shapeTypeByDim(theOther->_dim) )
+      : isShareSubShapes( theOther->_shapeMap, _shapeMap, shapeTypeByDim(_dim) ) ;
+    if ( !checkSubShape )
+        return false;
+
+    // check algorithms to be same
+    if (!checkAlgo( _hypothesises.front(), theOther->_hypothesises.front() ))
+      return true; // different algorithms
+    
+    // check hypothesises for concurrence (skip first as algorithm)
+    int nbSame = 0;
+    // pointers should be same, becase it is referenes from mesh hypothesis partition
+    std::list <const SMESHDS_Hypothesis*>::const_iterator hypIt = _hypothesises.begin();
+    std::list <const SMESHDS_Hypothesis*>::const_iterator otheEndIt = theOther->_hypothesises.end();
+    for ( hypIt++ /*skip first as algo*/; hypIt != _hypothesises.end(); hypIt++ )
+      if ( find( theOther->_hypothesises.begin(), otheEndIt, *hypIt ) != otheEndIt )
+        nbSame++;
+    // the submeshes is concurrent if their algorithms has different parameters
+    return nbSame != theOther->_hypothesises.size() - 1;
+  }
+  
+}; // end of SMESH_DimHyp
+
+typedef std::list<SMESH_DimHyp*> TDimHypList;
+
+static void addDimHypInstance(const int               theDim, 
+                              const TopoDS_Shape&     theShape,
+                              const SMESH_Algo*       theAlgo,
+                              const SMESH_subMesh*    theSubMesh,
+                              const std::list <const SMESHDS_Hypothesis*>& theHypList,
+                              TDimHypList*            theDimHypListArr )
+{
+  TDimHypList& listOfdimHyp = theDimHypListArr[theDim];
+  if ( !listOfdimHyp.size() || listOfdimHyp.back()->_subMesh != theSubMesh ) {
+    SMESH_DimHyp* dimHyp = new SMESH_DimHyp( theSubMesh, theDim, theShape );
+    listOfdimHyp.push_back( dimHyp );
+  }
+  
+  SMESH_DimHyp* dimHyp = listOfdimHyp.back();
+  dimHyp->_hypothesises.push_front(theAlgo);
+  std::list <const SMESHDS_Hypothesis*>::const_iterator hypIt = theHypList.begin();
+  for( ; hypIt != theHypList.end(); hypIt++ )
+    dimHyp->_hypothesises.push_back( *hypIt );
+}
+
+static void findConcurrents(const SMESH_DimHyp* theDimHyp,
+                            const TDimHypList&  theListOfDimHyp,
+                            TListOfInt&         theListOfConcurr )
+{
+  TDimHypList::const_reverse_iterator rIt = theListOfDimHyp.rbegin();
+  for ( ; rIt != theListOfDimHyp.rend(); rIt++ ) {
+    const SMESH_DimHyp* curDimHyp = *rIt;
+    if ( curDimHyp == theDimHyp )
+      break; // meet own dimHyp pointer in same dimension
+    else if ( theDimHyp->IsConcurrent( curDimHyp ) )
+      if ( find( theListOfConcurr.begin(),
+                 theListOfConcurr.end(),
+                 curDimHyp->_subMesh->GetId() ) == theListOfConcurr.end() )
+        theListOfConcurr.push_back( curDimHyp->_subMesh->GetId() );
+  }
+}
+
+static void unionLists(TListOfInt&       theListOfId,
+                       TListOfListOfInt& theListOfListOfId,
+                       const int         theIndx )
+{
+  TListOfListOfInt::iterator it = theListOfListOfId.begin();
+  for ( int i = 0; it != theListOfListOfId.end(); it++, i++ ) {
+    if ( i < theIndx )
+      continue; //skip already treated lists
+    // check is other list has any same submesh object
+    TListOfInt& otherListOfId = *it;
+    if ( find_first_of( theListOfId.begin(), theListOfId.end(),
+                        otherListOfId.begin(), otherListOfId.end() ) == theListOfId.end() )
+      continue;
+         
+    // union two lists (from source into target)
+    TListOfInt::iterator it2 = otherListOfId.begin();
+    for ( ; it2 != otherListOfId.end(); it2++ ) {
+      if ( find( theListOfId.begin(), theListOfId.end(), (*it2) ) == theListOfId.end() )
+        theListOfId.push_back(*it2);
+    }
+    // clear source list
+    otherListOfId.clear();
+  }
+}
+
+//! free memory allocated for dimension-hypothesis objects
+static void removeDimHyps( TDimHypList* theArrOfList )
+{
+  for (int i = 0; i < 4; i++ ) {
+    TDimHypList& listOfdimHyp = theArrOfList[i];
+    TDimHypList::const_iterator it = listOfdimHyp.begin();
+    for ( ; it != listOfdimHyp.end(); it++ )
+      delete (*it);
+  }
+}
+
+//=============================================================================
+/*!
+ * \brief Return submesh objects list in meshing order
+ */
+//=============================================================================
+
+SMESH::submesh_array_array* SMESH_Mesh_i::GetMeshOrder()
+{
+  SMESH::submesh_array_array_var aResult = new SMESH::submesh_array_array();
+
+  SMESHDS_Mesh* aMeshDS = _impl->GetMeshDS();
+  if ( !aMeshDS )
+    return aResult._retn();
+  
+  ::SMESH_Mesh& mesh = GetImpl();
+  TListOfListOfInt anOrder = mesh.GetMeshOrder();
+  if ( !anOrder.size() ) {
+
+    // collect submeshes detecting concurrent algorithms and hypothesises
+    TDimHypList* dimHypListArr = new TDimHypList[4]; // dimHyp list for each shape dimension
+    
+    map<int, ::SMESH_subMesh*>::iterator i_sm = _mapSubMesh.begin();
+    for ( ; i_sm != _mapSubMesh.end(); i_sm++ ) {
+      ::SMESH_subMesh* sm = (*i_sm).second;
+      // get shape of submesh
+      const TopoDS_Shape& aSubMeshShape = sm->GetSubShape();
+      
+      // get list of assigned hypothesises
+      const std::list <const SMESHDS_Hypothesis*>& hypList = mesh.GetHypothesisList(aSubMeshShape);
+      std::list <const SMESHDS_Hypothesis*>::const_iterator hypIt = hypList.begin();
+      for( ; hypIt != hypList.end(); hypIt++ ) {
+        SMESH_Algo* anAlgo = 0;
+        const SMESH_Hypothesis* hyp = dynamic_cast<const SMESH_Hypothesis*>(*hypIt);
+        if ( hyp->GetType() != SMESHDS_Hypothesis::PARAM_ALGO )
+          anAlgo = (SMESH_Algo*)dynamic_cast<const SMESH_Algo*>(hyp);
+        else {
+          // try to find algorithm with helkp of subshapes
+          TopExp_Explorer anExp( aSubMeshShape, shapeTypeByDim(hyp->GetDim()) );
+          for ( ; !anAlgo && anExp.More(); anExp.Next() )
+            anAlgo = mesh.GetGen()->GetAlgo( mesh, anExp.Current() );
+        }
+        if (!anAlgo) // shopuld not be, but...
+          continue; // no assigned algorithm to current submesh
+        int dim = anAlgo->GetDim();
+        // create instance od dimension-hypiotheis for founded concurrent dimension and algorithm
+        for ( int j = anAlgo->NeedDescretBoundary() ? dim : 1, jn = dim; j <= jn; j++ )
+          addDimHypInstance( j, aSubMeshShape, anAlgo, sm, hypList, dimHypListArr );
+      }
+    } // end iterations on submesh
+    
+    // iteartes on create dimension-hypothesises and check for concurrents
+    for ( int i = 0; i < 4; i++ ) {
+      const std::list<SMESH_DimHyp*>& listOfDimHyp = dimHypListArr[i];
+      // check for concurrents in own and other dimensions (step-by-step)
+      TDimHypList::const_iterator dhIt = listOfDimHyp.begin();
+      for ( ; dhIt != listOfDimHyp.end(); dhIt++ ) {
+        const SMESH_DimHyp* dimHyp = *dhIt;
+        TListOfInt listOfConcurr;
+        // looking for concurrents and collect into own list
+        for ( int j = i; j < 4; j++ )
+          findConcurrents( dimHyp, dimHypListArr[j], listOfConcurr );
+        // check if any concurrents found
+        if ( listOfConcurr.size() > 0 ) {
+          // add own submesh to list of concurrent
+          listOfConcurr.push_front( dimHyp->_subMesh->GetId() );
+          anOrder.push_back( listOfConcurr );
+        }
+      }
+    }
+    
+    removeDimHyps(dimHypListArr);
+    delete[] dimHypListArr;
+    
+    // now, minimise the number of concurrent groups
+    // Here we assume that lists of submhes can has same submesh
+    // in case of multi-dimension algorithms, as result
+    //  list with common submesh have to be union into one list
+    int listIndx = 0;
+    TListOfListOfInt::iterator listIt = anOrder.begin();
+    for(; listIt != anOrder.end(); listIt++, listIndx++ )
+      unionLists( *listIt,  anOrder, listIndx + 1 );
+  }
+  // convert submesh ids into interface instances
+  //  and dump command into python
+  convertMeshOrder( anOrder, aResult, true );
+
+  return aResult._retn();
+}
+
+//=============================================================================
+/*!
+ * \brief find common submeshes with given submesh
+ * \param theSubMeshList list of already collected submesh to check
+ * \param theSubMesh given submesh to intersect with other
+ * \param theCommonSubMeshes collected common submeshes
+ */
+//=============================================================================
+
+static void findCommonSubMesh
+ (std::list<const SMESH_subMesh*>& theSubMeshList,
+  const SMESH_subMesh*             theSubMesh,
+  std::set<const SMESH_subMesh*>&  theCommon )
+{
+  if ( !theSubMesh )
+    return;
+  std::list<const SMESH_subMesh*>::const_iterator it = theSubMeshList.begin();
+  for ( ; it != theSubMeshList.end(); it++ )
+    theSubMesh->FindIntersection( *it, theCommon );
+  theSubMeshList.push_back( theSubMesh );
+  //theCommon.insert( theSubMesh );
+}
+
+//=============================================================================
+/*!
+ * \brief Set submesh object order
+ * \param theSubMeshArray submesh array order
+ */
+//=============================================================================
+
+::CORBA::Boolean SMESH_Mesh_i::SetMeshOrder(const SMESH::submesh_array_array& theSubMeshArray)
+{
+  bool res = false;
+  ::SMESH_Mesh& mesh = GetImpl();
+
+  TPythonDump aPythonDump; // prevent dump of called methods
+  aPythonDump << "isDone = " << _this() << ".SetMeshOrder( [ ";
+
+  TListOfListOfInt subMeshOrder;
+  for ( int i = 0, n = theSubMeshArray.length(); i < n; i++ )
+  {
+    const SMESH::submesh_array& aSMArray = theSubMeshArray[i];
+    TListOfInt subMeshIds;
+    aPythonDump << "[ ";
+    // Collect subMeshes which should be clear
+    //  do it list-by-list, because modification of submesh order
+    //  take effect between concurrent submeshes only
+    std::set<const SMESH_subMesh*> subMeshToClear;
+    std::list<const SMESH_subMesh*> subMeshList;
+    for ( int j = 0, jn = aSMArray.length(); j < jn; j++ )
+    {
+      const SMESH::SMESH_subMesh_var subMesh = SMESH::SMESH_subMesh::_duplicate(aSMArray[j]);
+      if ( j > 0 )
+        aPythonDump << ", ";
+      aPythonDump << subMesh;
+      subMeshIds.push_back( subMesh->GetId() );
+      // detech common parts of submeshes
+      if ( _mapSubMesh.find(subMesh->GetId()) != _mapSubMesh.end() )
+        findCommonSubMesh( subMeshList, (*_mapSubMesh.find(subMesh->GetId())).second, subMeshToClear );
+    }
+    aPythonDump << " ]";
+    subMeshOrder.push_back( subMeshIds );
+
+    // clear collected submeshes
+    std::set<const SMESH_subMesh*>::iterator clrIt = subMeshToClear.begin();
+    for ( ; clrIt != subMeshToClear.end(); clrIt++ ) {
+      SMESH_subMesh* sm = (SMESH_subMesh*)*clrIt;
+        if ( sm )
+          sm->ComputeStateEngine( SMESH_subMesh::CLEAN );
+        // ClearSubMesh( *clrIt );
+      }
+  }
+  aPythonDump << " ])";
+
+  mesh.SetMeshOrder( subMeshOrder );
+  res = true;
+  
+  return res;
+}
+
+//=============================================================================
+/*!
+ * \brief Convert submesh ids into submesh interfaces
+ */
+//=============================================================================
+
+void SMESH_Mesh_i::convertMeshOrder
+(const TListOfListOfInt& theIdsOrder,
+ SMESH::submesh_array_array& theResOrder,
+ const bool theIsDump)
+{
+  int nbSet = theIdsOrder.size();
+  TPythonDump aPythonDump; // prevent dump of called methods
+  if ( theIsDump )
+    aPythonDump << "[ ";
+  theResOrder.length(nbSet);
+  TListOfListOfInt::const_iterator it = theIdsOrder.begin();
+  int listIndx = 0;
+  for( ; it != theIdsOrder.end(); it++ ) {
+    // translate submesh identificators into submesh objects
+    //  takeing into account real number of concurrent lists
+    const TListOfInt& aSubOrder = (*it);
+    if (!aSubOrder.size())
+      continue;
+    if ( theIsDump )
+      aPythonDump << "[ ";
+    // convert shape indeces into interfaces
+    SMESH::submesh_array_var aResSubSet = new SMESH::submesh_array();
+    aResSubSet->length(aSubOrder.size());
+    TListOfInt::const_iterator subIt = aSubOrder.begin();
+    for( int j = 0; subIt != aSubOrder.end(); subIt++ ) {
+      if ( _mapSubMeshIor.find(*subIt) == _mapSubMeshIor.end() )
+        continue;
+      SMESH::SMESH_subMesh_var subMesh =
+        SMESH::SMESH_subMesh::_duplicate( (*_mapSubMeshIor.find(*subIt)).second );
+      if ( theIsDump ) {
+        if ( j > 0 )
+          aPythonDump << ", ";
+        aPythonDump << subMesh;
+      }
+      aResSubSet[ j++ ] = subMesh;
+    }
+    if ( theIsDump )
+      aPythonDump << " ]";
+    theResOrder[ listIndx++ ] = aResSubSet;
+  }
+  // correct number of lists
+  theResOrder.length( listIndx );
+
+  if ( theIsDump ) {
+    // finilise python dump
+    aPythonDump << " ]";
+    aPythonDump << " = " << _this() << ".GetMeshOrder()";
+  }
 }

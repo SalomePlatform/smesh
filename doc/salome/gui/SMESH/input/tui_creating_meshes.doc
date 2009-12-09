@@ -83,6 +83,67 @@ quadra.Compute()
 \endcode
 
 <br>
+<h2>Change priority of submeshes in Mesh</h2>
+
+\code
+import salome
+import geompy
+import smesh
+import SMESH
+
+Box_1 = geompy.MakeBoxDXDYDZ(200, 200, 200)
+[Face_1,Face_2,Face_3,Face_4,Face_5,Face_6] = geompy.SubShapeAllSorted(Box_1, geompy.ShapeType["FACE"])
+
+# create Mesh object on Box shape
+Mesh_1 = smesh.Mesh(Box_1)
+
+# assign mesh algorithms
+Regular_1D = Mesh_1.Segment()
+Nb_Segments_1 = Regular_1D.NumberOfSegments(20)
+Nb_Segments_1.SetDistrType( 0 )
+MEFISTO_2D = Mesh_1.Triangle()
+Max_Element_Area_1 = MEFISTO_2D.MaxElementArea(1200)
+Tetrahedron_Netgen = Mesh_1.Tetrahedron(algo=smesh.NETGEN)
+Max_Element_Volume_1 = Tetrahedron_Netgen.MaxElementVolume(40000)
+
+# create submesh and assign algorithms on Face_1
+Netgen_1D_2D = Mesh_1.Triangle(algo=smesh.NETGEN,geom=Face_1)
+SubMesh_1 = Netgen_1D_2D.GetSubMesh()
+NETGEN_2D_Simple_Parameters_1 = Netgen_1D_2D.Parameters(which=smesh.SIMPLE)
+NETGEN_2D_Simple_Parameters_1.SetNumberOfSegments( 4 )
+NETGEN_2D_Simple_Parameters_1.LengthFromEdges()
+
+# create submesh and assign algorithms on Face_2
+Netgen_1D_2D_1 = Mesh_1.Triangle(algo=smesh.NETGEN,geom=Face_2)
+SubMesh_2 = Netgen_1D_2D_1.GetSubMesh()
+NETGEN_2D_Simple_Parameters_2 = Netgen_1D_2D_1.Parameters(which=smesh.SIMPLE)
+NETGEN_2D_Simple_Parameters_2.SetNumberOfSegments( 8 )
+NETGEN_2D_Simple_Parameters_2.LengthFromEdges()
+smeshObj_1 = smesh.CreateHypothesis('NETGEN_SimpleParameters_2D',
+'NETGENEngine')
+
+# create submesh and assign algorithms on Face_3
+Netgen_1D_2D_2 = Mesh_1.Triangle(algo=smesh.NETGEN,geom=Face_3)
+SubMesh_3 = Netgen_1D_2D_2.GetSubMesh()
+NETGEN_2D_Simple_Parameters_3 = Netgen_1D_2D_2.Parameters(which=smesh.SIMPLE)
+NETGEN_2D_Simple_Parameters_3.SetNumberOfSegments( 12 )
+NETGEN_2D_Simple_Parameters_3.LengthFromEdges()
+
+# check exisiting submesh priority order
+[ [ SubMesh_1, SubMesh_3, SubMesh_2 ] ] = Mesh_1.GetMeshOrder()
+# set new submesh order
+isDone = Mesh_1.SetMeshOrder( [ [ SubMesh_1, SubMesh_2, SubMesh_3 ] ])
+# compute mesh
+isDone = Mesh_1.Compute()
+
+# clear mesh result and compute with other submesh order
+Mesh_1.Clear()
+isDone = Mesh_1.SetMeshOrder( [ [ SubMesh_2, SubMesh_1, SubMesh_3 ] ])
+isDone = Mesh_1.Compute()
+
+\endcode
+
+<br>
 \anchor tui_editing_mesh
 <h2>Editing of a mesh</h2>
 

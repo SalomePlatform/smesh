@@ -263,6 +263,10 @@ module SMESH
   interface SMESH_GroupOnGeom;
   interface SMESH_subMesh;
   interface SMESH_MeshEditor;
+
+  typedef sequence<SMESH_subMesh>     submesh_array;
+  typedef sequence<submesh_array>     submesh_array_array;
+
   interface SMESH_Mesh : SALOME::GenericObj, SMESH_IDSource
   {
     /*!
@@ -660,6 +664,22 @@ module SMESH
     
     ElementType GetSubMeshElementType(in long ShapeID)
       raises (SALOME::SALOME_Exception);
+
+
+    /*!
+     * Methods to set meshing order of submeshes
+     */
+
+    /*!
+     * \brief Return submesh objects list in meshing order
+     */
+    submesh_array_array GetMeshOrder();
+
+    /*!
+     * \brief Set submesh object order
+     */
+    boolean SetMeshOrder(in submesh_array_array theSubMeshArray);
+
 
     /*!
      * Get mesh description
