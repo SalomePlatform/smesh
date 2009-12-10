@@ -48,7 +48,7 @@ using namespace std;
 //=============================================================================
 
 StdMeshers_QuadrangleParams::StdMeshers_QuadrangleParams(int hypId, int studyId,
-							 SMESH_Gen * gen)
+                                                         SMESH_Gen * gen)
   :SMESH_Hypothesis(hypId, studyId, gen)
 {
   _name = "QuadrangleParams";
@@ -142,7 +142,7 @@ istream & operator >>(istream & load, StdMeshers_QuadrangleParams & hyp)
 //================================================================================
 
 bool StdMeshers_QuadrangleParams::SetParametersByMesh(const SMESH_Mesh* theMesh,
-						      const TopoDS_Shape& theShape)
+                                                      const TopoDS_Shape& theShape)
 {
   if ( !theMesh || theShape.IsNull() )
     return false;
@@ -158,7 +158,7 @@ bool StdMeshers_QuadrangleParams::SetParametersByMesh(const SMESH_Mesh* theMesh,
 //================================================================================
 
 bool StdMeshers_QuadrangleParams::SetParametersByDefaults(const TDefaults&  dflts,
-							  const SMESH_Mesh* /*mesh*/)
+                                                          const SMESH_Mesh* /*mesh*/)
 {
   return true;
 }

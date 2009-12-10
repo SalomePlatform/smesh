@@ -296,8 +296,8 @@ bool StdMeshers_MEFISTO_2D::Compute(SMESH_Mesh & aMesh, const TopoDS_Shape & aSh
 //=============================================================================
 
 bool StdMeshers_MEFISTO_2D::Evaluate(SMESH_Mesh & aMesh,
-				     const TopoDS_Shape & aShape,
-				     MapShapeNbElems& aResMap)
+                                     const TopoDS_Shape & aShape,
+                                     MapShapeNbElems& aResMap)
 {
   MESSAGE("StdMeshers_MEFISTO_2D::Evaluate");
 

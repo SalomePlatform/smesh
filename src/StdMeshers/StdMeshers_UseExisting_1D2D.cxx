@@ -72,8 +72,8 @@ bool StdMeshers_UseExisting_1D::Compute(SMESH_Mesh&, const TopoDS_Shape&)
 //=======================================================================
 
 bool StdMeshers_UseExisting_1D::Evaluate(SMESH_Mesh&,
-					 const TopoDS_Shape&,
-					 MapShapeNbElems&)
+                                         const TopoDS_Shape&,
+                                         MapShapeNbElems&)
 {
   // This algorithm exists to allow mesh generation by mesh
   // edition functions in TUI mode
@@ -126,8 +126,8 @@ bool StdMeshers_UseExisting_2D::Compute(SMESH_Mesh&, const TopoDS_Shape&)
 //=======================================================================
 
 bool StdMeshers_UseExisting_2D::Evaluate(SMESH_Mesh&,
-					 const TopoDS_Shape&,
-					 MapShapeNbElems&)
+                                         const TopoDS_Shape&,
+                                         MapShapeNbElems&)
 {
   // This algorithm exists to allow mesh generation by mesh edition
   // functions in TUI mode

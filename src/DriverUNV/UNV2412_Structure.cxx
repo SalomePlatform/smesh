@@ -19,7 +19,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
-#include <fstream>	
+#include <fstream>      
 #include <iomanip>
 
 #include "UNV2412_Structure.hxx"
@@ -125,11 +125,11 @@ void UNV2412::Write(std::ofstream& out_stream, const TDataSet& theDataSet)
     for(int i = 0, k = 0; i < iEnd; i++){
       int jEnd = n_nodes - 8*(i+1);
       if(jEnd < 0) 
-	jEnd = 8 + jEnd;
+        jEnd = 8 + jEnd;
       else
-	jEnd = 8;
+        jEnd = 8;
       for(int j = 0; j < jEnd ; k++, j++){
-	out_stream<<std::setw(10)<<aRec.node_labels[k];
+        out_stream<<std::setw(10)<<aRec.node_labels[k];
       }
       out_stream<<std::endl;
     }

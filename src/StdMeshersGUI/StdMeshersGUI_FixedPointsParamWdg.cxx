@@ -76,8 +76,8 @@ StdMeshersGUI_FixedPointsParamWdg::LineDelegate::LineDelegate( QTreeWidget* pare
 }
 
 QWidget* StdMeshersGUI_FixedPointsParamWdg::LineDelegate::createEditor( QWidget* parent,
-									const QStyleOptionViewItem& option,
-									const QModelIndex& index ) const
+                                                                        const QStyleOptionViewItem& option,
+                                                                        const QModelIndex& index ) const
 {
   QWidget* w = 0;
   if ( (index.column() == 1 ) ) {
@@ -91,8 +91,8 @@ QWidget* StdMeshersGUI_FixedPointsParamWdg::LineDelegate::createEditor( QWidget*
 }
 
 void StdMeshersGUI_FixedPointsParamWdg::LineDelegate::setModelData( QWidget* editor, 
-								    QAbstractItemModel* model, 
-								    const QModelIndex& index ) const
+                                                                    QAbstractItemModel* model, 
+                                                                    const QModelIndex& index ) const
 {
   model->setData( index, qobject_cast<QtxIntSpinBox*>( editor )->value(), Qt::EditRole );
   model->setData( index, qobject_cast<QtxIntSpinBox*>( editor )->value(), Qt::UserRole );
@@ -205,7 +205,7 @@ void StdMeshersGUI_FixedPointsParamWdg::onAdd()
 {
   addPoint( mySpinBox->value() );
 }
-	 
+         
 //=================================================================================
 // function : onRemove()
 // purpose  : Called when Remove Button Clicked
@@ -264,7 +264,7 @@ void StdMeshersGUI_FixedPointsParamWdg::addPoint( double v)
       double lv = point( i );
       if ( EQUAL_DBL(lv, v) ) { toInsert = false; break; }
       else if ( GT_DBL(lv, v) ) {
-	idx = i; break;
+        idx = i; break;
       }
     }
     if ( toInsert ) {
@@ -292,7 +292,7 @@ void StdMeshersGUI_FixedPointsParamWdg::removePoints()
     delete myTreeWidget->topLevelItem( idx );
     delete item;
     myTreeWidget->topLevelItem( idx )->setText( 0, treeItemText( idx == 0 ? 0 : point( idx-1 ),
-								 idx > myListWidget->count()-1 ? 1 : point( idx ) ) );
+                                                                 idx > myListWidget->count()-1 ? 1 : point( idx ) ) );
   }
   onCheckBoxChanged();
   updateState();

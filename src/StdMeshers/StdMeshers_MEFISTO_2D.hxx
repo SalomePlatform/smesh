@@ -55,7 +55,7 @@ public:
                                SMESH_Hypothesis::Hypothesis_Status& aStatus);
 
   virtual bool Compute(SMESH_Mesh& aMesh,
-		       const TopoDS_Shape& aShape);
+                       const TopoDS_Shape& aShape);
 
   virtual bool Evaluate(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape,
                         MapShapeNbElems& aResMap);
@@ -64,19 +64,19 @@ public:
   typedef std::vector< StdMeshers_FaceSidePtr > TWireVector;
 
   bool LoadPoints(TWireVector &                       wires,
-		  R2*                                 uvslf, 
-		  std::vector< const SMDS_MeshNode*>& mefistoToDS,
+                  R2*                                 uvslf, 
+                  std::vector< const SMDS_MeshNode*>& mefistoToDS,
                   double scalex, double               scaley);
 
   void ComputeScaleOnFace(SMESH_Mesh& aMesh,
-			  const TopoDS_Face& aFace,
-			  double& scalex,
-			  double& scaley);
+                          const TopoDS_Face& aFace,
+                          double& scalex,
+                          double& scaley);
 
   void StoreResult (Z nbst, R2* uvst, Z nbt, Z* nust, 
-		    std::vector< const SMDS_MeshNode*>& mefistoToDS,
+                    std::vector< const SMDS_MeshNode*>& mefistoToDS,
                     double scalex, double scaley);
-					  
+                                          
 protected:
   double                            _edgeLength;
   double                            _maxElementArea;

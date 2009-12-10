@@ -67,7 +67,7 @@ StdMeshers_Projection_2D::StdMeshers_Projection_2D(int hypId, int studyId, SMESH
   :SMESH_2D_Algo(hypId, studyId, gen)
 {
   _name = "Projection_2D";
-  _shapeType = (1 << TopAbs_FACE);	// 1 bit per shape type
+  _shapeType = (1 << TopAbs_FACE);      // 1 bit per shape type
 
   _compatibleHypothesis.push_back("ProjectionSource2D");
   _sourceHypo = 0;
@@ -748,8 +748,8 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
 //=======================================================================
 
 bool StdMeshers_Projection_2D::Evaluate(SMESH_Mesh& theMesh,
-					const TopoDS_Shape& theShape,
-					MapShapeNbElems& aResMap)
+                                        const TopoDS_Shape& theShape,
+                                        MapShapeNbElems& aResMap)
 {
   if ( !_sourceHypo )
     return false;

@@ -39,14 +39,14 @@ SMDS_MeshIDFactory::SMDS_MeshIDFactory():myMaxID(0)
 
 int SMDS_MeshIDFactory::GetFreeID()
 {
-	if (myPoolOfID.empty()) return ++myMaxID;
-	else
-	{
+        if (myPoolOfID.empty()) return ++myMaxID;
+        else
+        {
                 set<int>::iterator i = myPoolOfID.begin();
-		int ID = *i;//myPoolOfID.top();
-		myPoolOfID.erase( i );//myPoolOfID.pop();
-		return ID;
-	}
+                int ID = *i;//myPoolOfID.top();
+                myPoolOfID.erase( i );//myPoolOfID.pop();
+                return ID;
+        }
 }
 
 //=======================================================================

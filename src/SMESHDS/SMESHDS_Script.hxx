@@ -37,35 +37,35 @@
 class SMESHDS_EXPORT SMESHDS_Script
 {
   public:
-	SMESHDS_Script(bool theIsEmbeddedMode);
-	~SMESHDS_Script();
+        SMESHDS_Script(bool theIsEmbeddedMode);
+        ~SMESHDS_Script();
   
         void SetModified(bool theModified);
         bool IsModified();
 
-	void AddNode(int NewNodeID, double x, double y, double z);
-	void Add0DElement(int New0DElementID, int idnode);
-	void AddEdge(int NewEdgeID, int idnode1, int idnode2);
-	void AddFace(int NewFaceID, int idnode1, int idnode2, int idnode3);
-	void AddFace(int NewFaceID, int idnode1, int idnode2, int idnode3,
-  		int idnode4);
-	void AddVolume(int NewVolID, int idnode1, int idnode2, int idnode3,
-  		int idnode4);
-	void AddVolume(int NewVolID, int idnode1, int idnode2, int idnode3,
-  		int idnode4, int idnode5);
-	void AddVolume(int NewVolID, int idnode1, int idnode2, int idnode3,
-  		int idnode4, int idnode5, int idnode6);
-	void AddVolume(int NewVolID, int idnode1, int idnode2, int idnode3,
-  		int idnode4, int idnode5, int idnode6, int idnode7, int idnode8);
+        void AddNode(int NewNodeID, double x, double y, double z);
+        void Add0DElement(int New0DElementID, int idnode);
+        void AddEdge(int NewEdgeID, int idnode1, int idnode2);
+        void AddFace(int NewFaceID, int idnode1, int idnode2, int idnode3);
+        void AddFace(int NewFaceID, int idnode1, int idnode2, int idnode3,
+                int idnode4);
+        void AddVolume(int NewVolID, int idnode1, int idnode2, int idnode3,
+                int idnode4);
+        void AddVolume(int NewVolID, int idnode1, int idnode2, int idnode3,
+                int idnode4, int idnode5);
+        void AddVolume(int NewVolID, int idnode1, int idnode2, int idnode3,
+                int idnode4, int idnode5, int idnode6);
+        void AddVolume(int NewVolID, int idnode1, int idnode2, int idnode3,
+                int idnode4, int idnode5, int idnode6, int idnode7, int idnode8);
 
         void AddPolygonalFace (const int NewFaceID,
                                std::vector<int> nodes_ids);
-	void AddPolyhedralVolume (const int NewVolID,
+        void AddPolyhedralVolume (const int NewVolID,
                                   std::vector<int> nodes_ids,
                                   std::vector<int> quantities);
 
         // special methods for quadratic elements
-	void AddEdge(int NewEdgeID, int n1, int n2, int n12);
+        void AddEdge(int NewEdgeID, int n1, int n2, int n12);
         void AddFace(int NewFaceID, int n1, int n2, int n3,
                      int n12, int n23, int n31);
         void AddFace(int NewFaceID, int n1, int n2, int n3, int n4,
@@ -86,21 +86,21 @@ class SMESHDS_EXPORT SMESHDS_Script
                        int n56, int n67, int n78, int n85,
                        int n15, int n26, int n37, int n48);
         void MoveNode(int NewNodeID, double x, double y, double z);
-	void RemoveNode(int NodeID);
-	void RemoveElement(int ElementID);
-	void ChangeElementNodes(int ElementID, int nodes[], int nbnodes);
-	void ChangePolyhedronNodes(const int        ElementID,
+        void RemoveNode(int NodeID);
+        void RemoveElement(int ElementID);
+        void ChangeElementNodes(int ElementID, int nodes[], int nbnodes);
+        void ChangePolyhedronNodes(const int        ElementID,
                                    std::vector<int> nodes_ids,
                                    std::vector<int> quantities);
-	void Renumber (const bool isNodes, const int startID, const int deltaID);
-	void ClearMesh();
-	void Clear();
-	const std::list<SMESHDS_Command*> & GetCommands();
+        void Renumber (const bool isNodes, const int startID, const int deltaID);
+        void ClearMesh();
+        void Clear();
+        const std::list<SMESHDS_Command*> & GetCommands();
 
   private:
-	SMESHDS_Command* getCommand(const SMESHDS_CommandType aType);
+        SMESHDS_Command* getCommand(const SMESHDS_CommandType aType);
 
-	std::list<SMESHDS_Command*> myCommands;
+        std::list<SMESHDS_Command*> myCommands;
 
         bool myIsEmbeddedMode;
         bool myIsModified;

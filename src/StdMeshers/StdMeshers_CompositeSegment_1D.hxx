@@ -43,7 +43,7 @@ public:
   virtual ~StdMeshers_CompositeSegment_1D();
 
   virtual bool Compute(SMESH_Mesh&         aMesh,
-		       const TopoDS_Shape& aShape);
+                       const TopoDS_Shape& aShape);
   /*!
    * \brief Sets event listener to submeshes if necessary
     * \param subMesh - submesh where algo is set

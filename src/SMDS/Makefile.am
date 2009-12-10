@@ -114,3 +114,5 @@ dist_SMDS_MemoryLimit_SOURCES = \
 
 SMDS_MemoryLimit_LDADD = \
 	$(KERNEL_LDFLAGS) -lSALOMELocalTrace
+
+#libSMDS_la_LDFLAGS += -L/data/eap/S5_MV/INSTALL/SMESH/lib/salome -lPerfmeter

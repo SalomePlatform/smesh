@@ -38,7 +38,7 @@ StdMeshers_SegmentAroundVertex_0D::StdMeshers_SegmentAroundVertex_0D
 {
   _name = "SegmentAroundVertex_0D";
   // it is assigned to vertices but influence a state of EDGE submeshes 
-  _shapeType = (1 << TopAbs_VERTEX);	// 1 bit per shape type
+  _shapeType = (1 << TopAbs_VERTEX);    // 1 bit per shape type
 
   _compatibleHypothesis.push_back("SegmentLengthAroundVertex");
 }
@@ -100,8 +100,8 @@ bool StdMeshers_SegmentAroundVertex_0D::Compute(SMESH_Mesh&, const TopoDS_Shape&
 //=======================================================================
 
 bool StdMeshers_SegmentAroundVertex_0D::Evaluate(SMESH_Mesh&,
-						 const TopoDS_Shape&,
-						 MapShapeNbElems&)
+                                                 const TopoDS_Shape&,
+                                                 MapShapeNbElems&)
 {
   // This algorithm exists in order just to enable assignation of
   // StdMeshers_SegmentLengthAroundVertex hypothesis

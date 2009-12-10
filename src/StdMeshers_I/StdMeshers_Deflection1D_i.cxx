@@ -47,15 +47,15 @@ using namespace std;
 //=============================================================================
 
 StdMeshers_Deflection1D_i::StdMeshers_Deflection1D_i( PortableServer::POA_ptr thePOA,
-					  int                     theStudyId,
-					  ::SMESH_Gen*            theGenImpl )
+                                          int                     theStudyId,
+                                          ::SMESH_Gen*            theGenImpl )
      : SALOME::GenericObj_i( thePOA ), 
        SMESH_Hypothesis_i( thePOA )
 {
   MESSAGE( "StdMeshers_Deflection1D_i::StdMeshers_Deflection1D_i" );
   myBaseImpl = new ::StdMeshers_Deflection1D( theGenImpl->GetANewId(),
-				        theStudyId,
-				        theGenImpl );
+                                        theStudyId,
+                                        theGenImpl );
 }
 
 //=============================================================================
@@ -89,7 +89,7 @@ void StdMeshers_Deflection1D_i::SetDeflection( CORBA::Double theValue )
   }
   catch ( SALOME_Exception& S_ex ) {
     THROW_SALOME_CORBA_EXCEPTION( S_ex.what(),
-				  SALOME::BAD_PARAM );
+                                  SALOME::BAD_PARAM );
   }
 
   // Update Python script

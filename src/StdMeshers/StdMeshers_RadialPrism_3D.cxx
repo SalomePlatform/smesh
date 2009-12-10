@@ -71,7 +71,7 @@ StdMeshers_RadialPrism_3D::StdMeshers_RadialPrism_3D(int hypId, int studyId, SME
   :SMESH_3D_Algo(hypId, studyId, gen)
 {
   _name = "RadialPrism_3D";
-  _shapeType = (1 << TopAbs_SOLID);	// 1 bit per shape type
+  _shapeType = (1 << TopAbs_SOLID);     // 1 bit per shape type
 
   _compatibleHypothesis.push_back("LayerDistribution");
   _compatibleHypothesis.push_back("NumberOfLayers");
@@ -396,8 +396,8 @@ bool StdMeshers_RadialPrism_3D::computeLayerPositions(const gp_Pnt& pIn,
 //=======================================================================
 
 bool StdMeshers_RadialPrism_3D::Evaluate(SMESH_Mesh& aMesh,
-					 const TopoDS_Shape& aShape,
-					 MapShapeNbElems& aResMap)
+                                         const TopoDS_Shape& aShape,
+                                         MapShapeNbElems& aResMap)
 {
   // get 2 shells
   TopoDS_Solid solid = TopoDS::Solid( aShape );

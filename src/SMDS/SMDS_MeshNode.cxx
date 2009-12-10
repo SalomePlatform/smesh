@@ -37,8 +37,8 @@ using namespace std;
 //=======================================================================
 
 SMDS_MeshNode::SMDS_MeshNode(double x, double y, double z):
-	myX(x), myY(y), myZ(z),
-	myPosition(SMDS_SpacePosition::originSpacePosition())
+        myX(x), myY(y), myZ(z),
+        myPosition(SMDS_SpacePosition::originSpacePosition())
 {
 }
 
@@ -66,8 +66,8 @@ void SMDS_MeshNode::RemoveInverseElement(const SMDS_MeshElement * parent)
 
 void SMDS_MeshNode::Print(ostream & OS) const
 {
-	OS << "Node <" << GetID() << "> : X = " << myX << " Y = "
-		<< myY << " Z = " << myZ << endl;
+        OS << "Node <" << GetID() << "> : X = " << myX << " Y = "
+                << myY << " Z = " << myZ << endl;
 }
 
 //=======================================================================
@@ -77,7 +77,7 @@ void SMDS_MeshNode::Print(ostream & OS) const
 
 void SMDS_MeshNode::SetPosition(const SMDS_PositionPtr& aPos)
 {
-	myPosition = aPos;
+        myPosition = aPos;
 }
 
 //=======================================================================
@@ -87,7 +87,7 @@ void SMDS_MeshNode::SetPosition(const SMDS_PositionPtr& aPos)
 
 const SMDS_PositionPtr& SMDS_MeshNode::GetPosition() const
 {
-	return myPosition;
+        return myPosition;
 }
 
 //=======================================================================
@@ -120,11 +120,11 @@ class SMDS_MeshNode_MyInvIterator:public SMDS_ElemIterator
     const SMDS_MeshElement* current=myIterator.Value();
     myIterator.Next();
     return current;
-  }	
+  }     
 };
 
 SMDS_ElemIteratorPtr SMDS_MeshNode::
-	GetInverseElementIterator(SMDSAbs_ElementType type) const
+        GetInverseElementIterator(SMDSAbs_ElementType type) const
 {
   return SMDS_ElemIteratorPtr(new SMDS_MeshNode_MyInvIterator(myInverseElements,type));
 }
@@ -170,7 +170,7 @@ class SMDS_MeshNode_MyIterator:public SMDS_ElemIterator
 };
 
 SMDS_ElemIteratorPtr SMDS_MeshNode::
-	elementsIterator(SMDSAbs_ElementType type) const
+        elementsIterator(SMDSAbs_ElementType type) const
 {
   if(type==SMDSAbs_Node)
     return SMDS_MeshElement::elementsIterator(SMDSAbs_Node); 
@@ -183,34 +183,34 @@ SMDS_ElemIteratorPtr SMDS_MeshNode::
 
 int SMDS_MeshNode::NbNodes() const
 {
-	return 1;
+        return 1;
 }
 
 double SMDS_MeshNode::X() const
 {
-	return myX;
+        return myX;
 }
 
 double SMDS_MeshNode::Y() const
 {
-	return myY;
+        return myY;
 }
 
 double SMDS_MeshNode::Z() const
 {
-	return myZ;
+        return myZ;
 }
 
 void SMDS_MeshNode::setXYZ(double x, double y, double z)
 {
-	myX=x;
-	myY=y;
-	myZ=z;	
+        myX=x;
+        myY=y;
+        myZ=z;  
 }
 
 SMDSAbs_ElementType SMDS_MeshNode::GetType() const
 {
-	return SMDSAbs_Node;
+        return SMDSAbs_Node;
 }
 
 //=======================================================================
@@ -265,14 +265,14 @@ int SMDS_MeshNode::NbInverseElements(SMDSAbs_ElementType type) const
 ///////////////////////////////////////////////////////////////////////////////
 bool operator<(const SMDS_MeshNode& e1, const SMDS_MeshNode& e2)
 {
-	return e1.GetID()<e2.GetID();
-	/*if(e1.myX<e2.myX) return true;
-	else if(e1.myX==e2.myX)
-	{
-	 	if(e1.myY<e2.myY) return true;
-		else if(e1.myY==e2.myY) return (e1.myZ<e2.myZ);
-		else return false;
-	}
-	else return false;*/
+        return e1.GetID()<e2.GetID();
+        /*if(e1.myX<e2.myX) return true;
+        else if(e1.myX==e2.myX)
+        {
+                if(e1.myY<e2.myY) return true;
+                else if(e1.myY==e2.myY) return (e1.myZ<e2.myZ);
+                else return false;
+        }
+        else return false;*/
 }
 

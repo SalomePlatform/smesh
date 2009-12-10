@@ -90,7 +90,7 @@ void StdMeshers_StartEndLength_i::SetLength(CORBA::Double theLength,
   }
   catch ( SALOME_Exception& S_ex ) {
     THROW_SALOME_CORBA_EXCEPTION( S_ex.what(),
-				  SALOME::BAD_PARAM );
+                                  SALOME::BAD_PARAM );
   }
 
   // Update Python script
@@ -158,7 +158,7 @@ void StdMeshers_StartEndLength_i::SetReversedEdges( const SMESH::long_array& the
   }
   catch ( SALOME_Exception& S_ex ) {
     THROW_SALOME_CORBA_EXCEPTION( S_ex.what(),
-				  SALOME::BAD_PARAM );
+                                  SALOME::BAD_PARAM );
   }
 
   // Update Python script

@@ -32,6 +32,6 @@
 
 SMDSAbs_ElementType SMDS_MeshVolume::GetType() const
 {
-	return SMDSAbs_Volume;
+        return SMDSAbs_Volume;
 }
 

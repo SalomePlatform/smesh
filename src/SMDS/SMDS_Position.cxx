@@ -42,7 +42,7 @@ SMDS_Position::SMDS_Position(int aShapeId) :myShapeId(aShapeId)
 
 void SMDS_Position::SetShapeId(int aShapeId)
 {
-	myShapeId = aShapeId;
+        myShapeId = aShapeId;
 }
 
 //=======================================================================
@@ -52,7 +52,7 @@ void SMDS_Position::SetShapeId(int aShapeId)
 
 int SMDS_Position::GetShapeId() const
 {
-	return myShapeId;
+        return myShapeId;
 }
 
 //=======================================================================

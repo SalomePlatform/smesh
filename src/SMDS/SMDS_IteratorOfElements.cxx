@@ -29,24 +29,24 @@
 
 bool SMDS_IteratorOfElements::subMore()
 {
-	if((t2Iterator.get()==NULL)||(!t2Iterator->more()))
-	{
-		if(t1Iterator->more())
-		{
-			t2Iterator=t1Iterator->next()->elementsIterator(myType);
-			return subMore();
-		}
-		else return false;
-	}
-	else return true;
+        if((t2Iterator.get()==NULL)||(!t2Iterator->more()))
+        {
+                if(t1Iterator->more())
+                {
+                        t2Iterator=t1Iterator->next()->elementsIterator(myType);
+                        return subMore();
+                }
+                else return false;
+        }
+        else return true;
 }
 
 const SMDS_MeshElement * SMDS_IteratorOfElements::subNext()
 {
-	if((t2Iterator.get()==NULL)||(!t2Iterator->more()))
-		if(t1Iterator->more())
-			t2Iterator=t1Iterator->next()->elementsIterator(myType);
-	return t2Iterator->next();
+        if((t2Iterator.get()==NULL)||(!t2Iterator->more()))
+                if(t1Iterator->more())
+                        t2Iterator=t1Iterator->next()->elementsIterator(myType);
+        return t2Iterator->next();
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -61,48 +61,48 @@ SMDS_IteratorOfElements::SMDS_IteratorOfElements(const SMDS_MeshElement * elemen
        myType(type), myElement(element),
        myProxyElement(NULL)
 {
-	while(subMore())
-		alreadyReturnedElements.insert(subNext());
-	itAlreadyReturned= alreadyReturnedElements.begin();
-	switch(myElement->GetType())
-	{
-	case SMDSAbs_Node: 
-	case SMDSAbs_Edge: myReverseIteration=true; break;
-	case SMDSAbs_Face: myReverseIteration=(type==SMDSAbs_Volume); break;
-	default: myReverseIteration=false;
-	}	
+        while(subMore())
+                alreadyReturnedElements.insert(subNext());
+        itAlreadyReturned= alreadyReturnedElements.begin();
+        switch(myElement->GetType())
+        {
+        case SMDSAbs_Node: 
+        case SMDSAbs_Edge: myReverseIteration=true; break;
+        case SMDSAbs_Face: myReverseIteration=(type==SMDSAbs_Volume); break;
+        default: myReverseIteration=false;
+        }       
 }
 
 bool SMDS_IteratorOfElements::more()
 {
-	if(myProxyElement==NULL)
-	{
-		while(itAlreadyReturned!=alreadyReturnedElements.end())
-		{
-			myProxyElement=*itAlreadyReturned;
-			itAlreadyReturned++;	
+        if(myProxyElement==NULL)
+        {
+                while(itAlreadyReturned!=alreadyReturnedElements.end())
+                {
+                        myProxyElement=*itAlreadyReturned;
+                        itAlreadyReturned++;    
 
-			if(myReverseIteration)
-			{
-				SMDS_ElemIteratorPtr it=
-					myProxyElement->elementsIterator(myElement->GetType());
-				while(it->more())
-				{				
-					if(it->next()==myElement) return true;
-				}
-			}
-			else return true;
-		}
-		myProxyElement=NULL;
-		return false;
-	}
-	else return true;
+                        if(myReverseIteration)
+                        {
+                                SMDS_ElemIteratorPtr it=
+                                        myProxyElement->elementsIterator(myElement->GetType());
+                                while(it->more())
+                                {                               
+                                        if(it->next()==myElement) return true;
+                                }
+                        }
+                        else return true;
+                }
+                myProxyElement=NULL;
+                return false;
+        }
+        else return true;
 }
 
 const SMDS_MeshElement * SMDS_IteratorOfElements::next()
 {
-	more();
-	const SMDS_MeshElement *e=myProxyElement;
-	myProxyElement=NULL;
-	return e;
+        more();
+        const SMDS_MeshElement *e=myProxyElement;
+        myProxyElement=NULL;
+        return e;
 }

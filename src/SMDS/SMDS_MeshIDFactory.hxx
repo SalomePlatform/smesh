@@ -40,9 +40,9 @@ public:
   virtual void Clear();
 
   protected:
-	SMDS_MeshIDFactory();
-	int myMaxID;
-	std::set<int> myPoolOfID;
+        SMDS_MeshIDFactory();
+        int myMaxID;
+        std::set<int> myPoolOfID;
 };
 
 #endif

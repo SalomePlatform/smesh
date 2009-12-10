@@ -50,7 +50,7 @@
 
 StdMeshersGUI_LayerDistributionParamWdg
 ::StdMeshersGUI_LayerDistributionParamWdg(SMESH::SMESH_Hypothesis_ptr hyp,
-					  const QString& theName,
+                                          const QString& theName,
                                           QDialog* dlg): 
   QWidget(), myName(theName), myDlg( dlg )
 {

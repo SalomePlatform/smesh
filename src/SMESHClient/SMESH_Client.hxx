@@ -54,10 +54,10 @@ public:
   static 
   SMESH::SMESH_Gen_var
   GetSMESHGen(CORBA::ORB_ptr theORB,
-	      CORBA::Boolean& theIsEmbeddedMode);
+              CORBA::Boolean& theIsEmbeddedMode);
 
   SMESH_Client(CORBA::ORB_ptr theORB,
-	       SMESH::SMESH_Mesh_ptr theMesh);
+               SMESH::SMESH_Mesh_ptr theMesh);
   ~SMESH_Client();
 
   bool 

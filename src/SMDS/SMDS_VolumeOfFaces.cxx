@@ -40,16 +40,16 @@ using namespace std;
 
 void SMDS_VolumeOfFaces::Print(ostream & OS) const
 {
-	OS << "volume <" << GetID() << "> : ";
-	int i;
-	for (i = 0; i < NbFaces()-1; ++i) OS << myFaces[i] << ",";
-	OS << myFaces[i]<< ") " << endl;
+        OS << "volume <" << GetID() << "> : ";
+        int i;
+        for (i = 0; i < NbFaces()-1; ++i) OS << myFaces[i] << ",";
+        OS << myFaces[i]<< ") " << endl;
 }
 
 
 int SMDS_VolumeOfFaces::NbFaces() const
 {
-	return myNbFaces;
+        return myNbFaces;
 }
 
 class SMDS_VolumeOfFaces_MyIterator:public SMDS_ElemIterator
@@ -74,7 +74,7 @@ class SMDS_VolumeOfFaces_MyIterator:public SMDS_ElemIterator
 };
 
 SMDS_ElemIteratorPtr SMDS_VolumeOfFaces::
-	elementsIterator(SMDSAbs_ElementType type) const
+        elementsIterator(SMDSAbs_ElementType type) const
 {
   switch(type)
   {
@@ -95,13 +95,13 @@ SMDS_VolumeOfFaces::SMDS_VolumeOfFaces(const SMDS_MeshFace * face1,
                                        const SMDS_MeshFace * face3,
                                        const SMDS_MeshFace * face4)
 {
-	myNbFaces = 4;
-	myFaces[0]=face1;
-	myFaces[1]=face2;
-	myFaces[2]=face3;
-	myFaces[3]=face4;
-	myFaces[4]=0;
-	myFaces[5]=0;
+        myNbFaces = 4;
+        myFaces[0]=face1;
+        myFaces[1]=face2;
+        myFaces[2]=face3;
+        myFaces[3]=face4;
+        myFaces[4]=0;
+        myFaces[5]=0;
 }
 
 SMDS_VolumeOfFaces::SMDS_VolumeOfFaces(const SMDS_MeshFace * face1,
@@ -110,13 +110,13 @@ SMDS_VolumeOfFaces::SMDS_VolumeOfFaces(const SMDS_MeshFace * face1,
                                        const SMDS_MeshFace * face4,
                                        const SMDS_MeshFace * face5)
 {
-	myNbFaces = 5;
-	myFaces[0]=face1;
-	myFaces[1]=face2;
-	myFaces[2]=face3;
-	myFaces[3]=face4;
-	myFaces[4]=face5;
-	myFaces[5]=0;
+        myNbFaces = 5;
+        myFaces[0]=face1;
+        myFaces[1]=face2;
+        myFaces[2]=face3;
+        myFaces[3]=face4;
+        myFaces[4]=face5;
+        myFaces[5]=0;
 }
 
 SMDS_VolumeOfFaces::SMDS_VolumeOfFaces(const SMDS_MeshFace * face1,
@@ -126,13 +126,13 @@ SMDS_VolumeOfFaces::SMDS_VolumeOfFaces(const SMDS_MeshFace * face1,
                                        const SMDS_MeshFace * face5,
                                        const SMDS_MeshFace * face6)
 {
-	myNbFaces = 6;
-	myFaces[0]=face1;
-	myFaces[1]=face2;
-	myFaces[2]=face3;
-	myFaces[3]=face4;
-	myFaces[4]=face5;
-	myFaces[5]=face6;
+        myNbFaces = 6;
+        myFaces[0]=face1;
+        myFaces[1]=face2;
+        myFaces[2]=face3;
+        myFaces[3]=face4;
+        myFaces[4]=face5;
+        myFaces[5]=face6;
 }
 
 SMDSAbs_EntityType SMDS_VolumeOfFaces::GetEntityType() const

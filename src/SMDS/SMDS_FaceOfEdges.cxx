@@ -38,12 +38,12 @@ using namespace std;
 
 int SMDS_FaceOfEdges::NbEdges() const
 {
-	return myNbEdges;
+        return myNbEdges;
 }
 
 int SMDS_FaceOfEdges::NbFaces() const
 {
-	return 1;
+        return 1;
 }
 //=======================================================================
 //function : Print
@@ -52,15 +52,15 @@ int SMDS_FaceOfEdges::NbFaces() const
 
 void SMDS_FaceOfEdges::Print(ostream & OS) const
 {
-	OS << "face <" << GetID() << " > : ";
-	int i;
-	for (i = 0; i < NbEdges() - 1; i++) OS << myEdges[i] << ",";
-	OS << myEdges[i] << ") " << endl;
+        OS << "face <" << GetID() << " > : ";
+        int i;
+        for (i = 0; i < NbEdges() - 1; i++) OS << myEdges[i] << ",";
+        OS << myEdges[i] << ") " << endl;
 }
 
 SMDSAbs_ElementType SMDS_FaceOfEdges::GetType() const
 {
-	return SMDSAbs_Face;
+        return SMDSAbs_Face;
 }
 
 //=======================================================================
@@ -86,7 +86,7 @@ class SMDS_FaceOfEdges_MyIterator:public SMDS_ElemIterator
   {
     index++;
     return mySet[index-1];
-  }	
+  }     
 };
 
 SMDS_ElemIteratorPtr SMDS_FaceOfEdges::elementsIterator
@@ -110,11 +110,11 @@ SMDS_FaceOfEdges::SMDS_FaceOfEdges(const SMDS_MeshEdge* edge1,
                                    const SMDS_MeshEdge* edge2,
                                    const SMDS_MeshEdge* edge3)
 {
-	myNbEdges = 3;
-	myEdges[0]=edge1;
-	myEdges[1]=edge2;
-	myEdges[2]=edge3;
-	myEdges[3]=0;
+        myNbEdges = 3;
+        myEdges[0]=edge1;
+        myEdges[1]=edge2;
+        myEdges[2]=edge3;
+        myEdges[3]=0;
 }
 
 SMDS_FaceOfEdges::SMDS_FaceOfEdges(const SMDS_MeshEdge* edge1,
@@ -122,38 +122,38 @@ SMDS_FaceOfEdges::SMDS_FaceOfEdges(const SMDS_MeshEdge* edge1,
                                    const SMDS_MeshEdge* edge3,
                                    const SMDS_MeshEdge* edge4)
 {
-	myNbEdges = 4;
-	myEdges[0]=edge1;
-	myEdges[1]=edge2;
-	myEdges[2]=edge3;
-	myEdges[3]=edge4;	
+        myNbEdges = 4;
+        myEdges[0]=edge1;
+        myEdges[1]=edge2;
+        myEdges[2]=edge3;
+        myEdges[3]=edge4;       
 }
 
 /*bool operator<(const SMDS_FaceOfEdges& f1, const SMDS_FaceOfEdges& f2)
 {
-	set<SMDS_MeshNode> set1,set2;
-	SMDS_ElemIteratorPtr it;
-	const SMDS_MeshNode * n;
+        set<SMDS_MeshNode> set1,set2;
+        SMDS_ElemIteratorPtr it;
+        const SMDS_MeshNode * n;
 
-	it=f1.nodesIterator();
+        it=f1.nodesIterator();
 
-	while(it->more())
-	{
-		n=static_cast<const SMDS_MeshNode *>(it->next());
-		set1.insert(*n);
-	}
+        while(it->more())
+        {
+                n=static_cast<const SMDS_MeshNode *>(it->next());
+                set1.insert(*n);
+        }
 
-	delete it;
-	it=f2.nodesIterator();
-	
-	while(it->more())
-	{	
-		n=static_cast<const SMDS_MeshNode *>(it->next());
-		set2.insert(*n);
-	}
+        delete it;
+        it=f2.nodesIterator();
+        
+        while(it->more())
+        {       
+                n=static_cast<const SMDS_MeshNode *>(it->next());
+                set2.insert(*n);
+        }
 
-	delete it;
-	return set1<set2;	
+        delete it;
+        return set1<set2;       
 
 }*/
 

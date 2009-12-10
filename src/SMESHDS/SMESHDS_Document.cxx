@@ -69,13 +69,13 @@ int SMESHDS_Document::NewMesh(bool theIsEmbeddedMode)
 //=======================================================================
 SMESHDS_Mesh *SMESHDS_Document::GetMesh(int MeshID)
 {
-	map<int,SMESHDS_Mesh*>::iterator it=myMeshes.find(MeshID);
-	if (it==myMeshes.end())
-	{
-		MESSAGE("SMESHDS_Document::GetMesh : ID not found");
-		return NULL;
-	}
-	else return (*it).second;
+        map<int,SMESHDS_Mesh*>::iterator it=myMeshes.find(MeshID);
+        if (it==myMeshes.end())
+        {
+                MESSAGE("SMESHDS_Document::GetMesh : ID not found");
+                return NULL;
+        }
+        else return (*it).second;
 }
 
 //=======================================================================
@@ -84,10 +84,10 @@ SMESHDS_Mesh *SMESHDS_Document::GetMesh(int MeshID)
 //=======================================================================
 void SMESHDS_Document::RemoveMesh(int MeshID)
 {
-	map<int,SMESHDS_Mesh*>::iterator it=myMeshes.find(MeshID);
-	if (it==myMeshes.end())
-		MESSAGE("SMESHDS_Document::RemoveMesh : ID not found");	
-	myMeshes.erase(it);
+        map<int,SMESHDS_Mesh*>::iterator it=myMeshes.find(MeshID);
+        if (it==myMeshes.end())
+                MESSAGE("SMESHDS_Document::RemoveMesh : ID not found"); 
+        myMeshes.erase(it);
 }
 
 //=======================================================================
@@ -96,7 +96,7 @@ void SMESHDS_Document::RemoveMesh(int MeshID)
 //=======================================================================
 void SMESHDS_Document::AddHypothesis(SMESHDS_Hypothesis * H)
 {
-	myHypothesis[H->GetID()]=H;
+        myHypothesis[H->GetID()]=H;
 }
 
 //=======================================================================
@@ -105,13 +105,13 @@ void SMESHDS_Document::AddHypothesis(SMESHDS_Hypothesis * H)
 //=======================================================================
 SMESHDS_Hypothesis * SMESHDS_Document::GetHypothesis(int HypID)
 {
-	map<int,SMESHDS_Hypothesis*>::iterator it=myHypothesis.find(HypID);
-	if (it==myHypothesis.end())
-	{
-		MESSAGE("SMESHDS_Document::GetHypothesis : ID not found");
-		return NULL;
-	}
-	else return (*it).second;
+        map<int,SMESHDS_Hypothesis*>::iterator it=myHypothesis.find(HypID);
+        if (it==myHypothesis.end())
+        {
+                MESSAGE("SMESHDS_Document::GetHypothesis : ID not found");
+                return NULL;
+        }
+        else return (*it).second;
 }
 
 //=======================================================================
@@ -120,10 +120,10 @@ SMESHDS_Hypothesis * SMESHDS_Document::GetHypothesis(int HypID)
 //=======================================================================
 void SMESHDS_Document::RemoveHypothesis(int HypID)
 {
-	map<int,SMESHDS_Hypothesis*>::iterator it=myHypothesis.find(HypID);
-	if (it==myHypothesis.end())
-		MESSAGE("SMESHDS_Document::RemoveHypothesis : ID not found");	
-	myHypothesis.erase(it);
+        map<int,SMESHDS_Hypothesis*>::iterator it=myHypothesis.find(HypID);
+        if (it==myHypothesis.end())
+                MESSAGE("SMESHDS_Document::RemoveHypothesis : ID not found");   
+        myHypothesis.erase(it);
 }
 
 //=======================================================================
@@ -132,7 +132,7 @@ void SMESHDS_Document::RemoveHypothesis(int HypID)
 //=======================================================================
 int SMESHDS_Document::NbMeshes()
 {
-	return myMeshes.size();
+        return myMeshes.size();
 }
 
 //=======================================================================
@@ -141,7 +141,7 @@ int SMESHDS_Document::NbMeshes()
 //=======================================================================
 int SMESHDS_Document::NbHypothesis()
 {
-	return myHypothesis.size();
+        return myHypothesis.size();
 }
 
 //=======================================================================
@@ -150,7 +150,7 @@ int SMESHDS_Document::NbHypothesis()
 //=======================================================================
 void SMESHDS_Document::InitMeshesIterator()
 {
-	myMeshesIt=myMeshes.begin();
+        myMeshesIt=myMeshes.begin();
 }
 
 //=======================================================================
@@ -159,9 +159,9 @@ void SMESHDS_Document::InitMeshesIterator()
 //=======================================================================
 SMESHDS_Mesh * SMESHDS_Document::NextMesh()
 {
-	SMESHDS_Mesh * toReturn=(*myMeshesIt).second;
-	myMeshesIt++;
-	return toReturn;
+        SMESHDS_Mesh * toReturn=(*myMeshesIt).second;
+        myMeshesIt++;
+        return toReturn;
 }
 
 //=======================================================================
@@ -170,7 +170,7 @@ SMESHDS_Mesh * SMESHDS_Document::NextMesh()
 //=======================================================================
 bool SMESHDS_Document::MoreMesh()
 {
-	return myMeshesIt!=myMeshes.end();
+        return myMeshesIt!=myMeshes.end();
 }
 
 //=======================================================================
@@ -179,7 +179,7 @@ bool SMESHDS_Document::MoreMesh()
 //=======================================================================
 void SMESHDS_Document::InitHypothesisIterator()
 {
-	myHypothesisIt=myHypothesis.begin();
+        myHypothesisIt=myHypothesis.begin();
 }
 
 //=======================================================================
@@ -188,9 +188,9 @@ void SMESHDS_Document::InitHypothesisIterator()
 //=======================================================================
 SMESHDS_Hypothesis * SMESHDS_Document::NextHypothesis()
 {
-	SMESHDS_Hypothesis * toReturn=(*myHypothesisIt).second;
-	myHypothesisIt++;
-	return toReturn;
+        SMESHDS_Hypothesis * toReturn=(*myHypothesisIt).second;
+        myHypothesisIt++;
+        return toReturn;
 }
 
 //=======================================================================
@@ -199,5 +199,5 @@ SMESHDS_Hypothesis * SMESHDS_Document::NextHypothesis()
 //=======================================================================
 bool SMESHDS_Document::MoreHypothesis()
 {
-	return myHypothesisIt!=myHypothesis.end();
+        return myHypothesisIt!=myHypothesis.end();
 }

@@ -36,18 +36,18 @@
 
 class SMDS_EXPORT SMDS_VolumeOfFaces:public SMDS_MeshVolume
 {
-	
+        
   public:
-	SMDS_VolumeOfFaces(const SMDS_MeshFace * face1,
+        SMDS_VolumeOfFaces(const SMDS_MeshFace * face1,
                            const SMDS_MeshFace * face2,
                            const SMDS_MeshFace * face3,
                            const SMDS_MeshFace * face4);
-	SMDS_VolumeOfFaces(const SMDS_MeshFace * face1,
+        SMDS_VolumeOfFaces(const SMDS_MeshFace * face1,
                            const SMDS_MeshFace * face2,
                            const SMDS_MeshFace * face3,
                            const SMDS_MeshFace * face4,
                            const SMDS_MeshFace * face5);
-	SMDS_VolumeOfFaces(const SMDS_MeshFace * face1,
+        SMDS_VolumeOfFaces(const SMDS_MeshFace * face1,
                            const SMDS_MeshFace * face2,
                            const SMDS_MeshFace * face3,
                            const SMDS_MeshFace * face4,
@@ -55,14 +55,14 @@ class SMDS_EXPORT SMDS_VolumeOfFaces:public SMDS_MeshVolume
                            const SMDS_MeshFace * face6);
 
         virtual SMDSAbs_EntityType GetEntityType() const;
-	void Print(std::ostream & OS) const;
-	
-	int NbFaces() const;
+        void Print(std::ostream & OS) const;
+        
+        int NbFaces() const;
 
   protected:
-	SMDS_ElemIteratorPtr
-		elementsIterator(SMDSAbs_ElementType type) const;
-	const SMDS_MeshFace * myFaces[6];
-	int                   myNbFaces;
+        SMDS_ElemIteratorPtr
+                elementsIterator(SMDSAbs_ElementType type) const;
+        const SMDS_MeshFace * myFaces[6];
+        int                   myNbFaces;
 };
 #endif

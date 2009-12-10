@@ -32,23 +32,23 @@
 //=======================================================================
 
 SMDS_SpacePosition::SMDS_SpacePosition(double x, double y, double z):
-	SMDS_Position(0)
+        SMDS_Position(0)
 {
-	myCoords[0]=x;
-	myCoords[1]=y;
-	myCoords[2]=z;
+        myCoords[0]=x;
+        myCoords[1]=y;
+        myCoords[2]=z;
 }
 
 /**
 */
 SMDS_TypeOfPosition SMDS_SpacePosition::GetTypeOfPosition() const
 {
-	return SMDS_TOP_3DSPACE;
+        return SMDS_TOP_3DSPACE;
 }
 
 const double * SMDS_SpacePosition::Coords() const
 {
-	return myCoords;
+        return myCoords;
 }
 
 SMDS_PositionPtr SMDS_SpacePosition::originSpacePosition()

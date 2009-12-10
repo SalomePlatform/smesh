@@ -49,7 +49,7 @@ public:
   // Constructor
   StdMeshers_NumberOfSegments_i( PortableServer::POA_ptr thePOA,
                             int                     theStudyId,
-			    ::SMESH_Gen*            theGenImpl );
+                            ::SMESH_Gen*            theGenImpl );
   // Destructor
   virtual ~StdMeshers_NumberOfSegments_i();
 

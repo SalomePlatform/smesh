@@ -77,11 +77,11 @@ Driver_Mesh::Status DriverDAT_W_SMDS_Mesh::Perform()
   fprintf(stdout, "(************************)\n");
   
   SMDS_NodeIteratorPtr itNodes=myMesh->nodesIterator();
-  while(itNodes->more()){		
+  while(itNodes->more()){               
     const SMDS_MeshNode * node = itNodes->next();
     fprintf(aFileId, "%d %e %e %e\n", node->GetID(), node->X(), node->Y(), node->Z());
   }
-	
+        
   /****************************************************************************
    *                       ECRITURE DES ELEMENTS                                *
    ****************************************************************************/

@@ -52,9 +52,9 @@ public:
   virtual std::ostream & SaveTo(std::ostream & save);
   virtual std::istream & LoadFrom(std::istream & load);
   friend std::ostream& operator << (std::ostream & save,
-				    StdMeshers_QuadrangleParams & hyp);
+                                    StdMeshers_QuadrangleParams & hyp);
   friend std::istream& operator >> (std::istream & load,
-				    StdMeshers_QuadrangleParams & hyp);
+                                    StdMeshers_QuadrangleParams & hyp);
 
   /*!
    * \brief Initialize start and end length by the mesh built on the geometry
@@ -63,14 +63,14 @@ public:
     * \retval bool - true if parameter values have been successfully defined
    */
   virtual bool SetParametersByMesh(const SMESH_Mesh* theMesh,
-				   const TopoDS_Shape& theShape);
+                                   const TopoDS_Shape& theShape);
 
   /*!
    * \brief Initialize my parameter values by default parameters.
    *  \retval bool - true if parameter values have been successfully defined
    */
   virtual bool SetParametersByDefaults(const TDefaults& dflts,
-				       const SMESH_Mesh* theMesh=0);
+                                       const SMESH_Mesh* theMesh=0);
 
 protected:
   int         _triaVertexID;

@@ -27,7 +27,7 @@
 #define _SMDS_MeshElement_HeaderFile
 
 #include "SMESH_SMDS.hxx"
-	
+        
 #include "SMDSAbs_ElementType.hxx"
 #include "SMDS_MeshObject.hxx"
 #include "SMDS_ElemIterator.hxx"
@@ -38,7 +38,7 @@
 
 class SMDS_MeshNode;
 class SMDS_MeshEdge;
-class SMDS_MeshFace;	
+class SMDS_MeshFace;    
 
 // ============================================================
 /*!

@@ -40,7 +40,7 @@ using namespace std;
 
 SMDS_MeshGroup::SMDS_MeshGroup(const SMDS_Mesh * theMesh,
                                const SMDSAbs_ElementType theType)
-	:myMesh(theMesh),myType(theType), myParent(NULL)
+        :myMesh(theMesh),myType(theType), myParent(NULL)
 {
 }
 
@@ -51,7 +51,7 @@ SMDS_MeshGroup::SMDS_MeshGroup(const SMDS_Mesh * theMesh,
 
 SMDS_MeshGroup::SMDS_MeshGroup(SMDS_MeshGroup * theParent,
                                const SMDSAbs_ElementType theType)
-	:myMesh(theParent->myMesh),myType(theType), myParent(theParent)
+        :myMesh(theParent->myMesh),myType(theType), myParent(theParent)
 {
 }
 
@@ -63,9 +63,9 @@ SMDS_MeshGroup::SMDS_MeshGroup(SMDS_MeshGroup * theParent,
 const SMDS_MeshGroup *SMDS_MeshGroup::AddSubGroup
                 (const SMDSAbs_ElementType theType)
 {
-	const SMDS_MeshGroup * subgroup = new SMDS_MeshGroup(this,theType);
-	myChildren.insert(myChildren.end(),subgroup);
-	return subgroup;
+        const SMDS_MeshGroup * subgroup = new SMDS_MeshGroup(this,theType);
+        myChildren.insert(myChildren.end(),subgroup);
+        return subgroup;
 }
 
 //=======================================================================
@@ -75,19 +75,19 @@ const SMDS_MeshGroup *SMDS_MeshGroup::AddSubGroup
 
 bool SMDS_MeshGroup::RemoveSubGroup(const SMDS_MeshGroup * theGroup)
 {
-	bool found = false;	
-	list<const SMDS_MeshGroup*>::iterator itgroup;
-	for(itgroup=myChildren.begin(); itgroup!=myChildren.end(); itgroup++)
-	{
-		const SMDS_MeshGroup* subgroup=*itgroup;
-		if (subgroup == theGroup)
-		{
-			found = true;
-			myChildren.erase(itgroup);
-		}
-	}
+        bool found = false;     
+        list<const SMDS_MeshGroup*>::iterator itgroup;
+        for(itgroup=myChildren.begin(); itgroup!=myChildren.end(); itgroup++)
+        {
+                const SMDS_MeshGroup* subgroup=*itgroup;
+                if (subgroup == theGroup)
+                {
+                        found = true;
+                        myChildren.erase(itgroup);
+                }
+        }
 
-	return found;
+        return found;
 }
 
 //=======================================================================
@@ -97,12 +97,12 @@ bool SMDS_MeshGroup::RemoveSubGroup(const SMDS_MeshGroup * theGroup)
 
 bool SMDS_MeshGroup::RemoveFromParent()
 {
-	
-	if (myParent==NULL) return false;
-	else
-	{
-		return (myParent->RemoveSubGroup(this));
-	}
+        
+        if (myParent==NULL) return false;
+        else
+        {
+                return (myParent->RemoveSubGroup(this));
+        }
 }
 //=======================================================================
 //function : Clear
@@ -111,8 +111,8 @@ bool SMDS_MeshGroup::RemoveFromParent()
 
 void SMDS_MeshGroup::Clear()
 {
-	myElements.clear();
-	myType = SMDSAbs_All;
+        myElements.clear();
+        myType = SMDSAbs_All;
 }
 
 //=======================================================================
@@ -122,14 +122,14 @@ void SMDS_MeshGroup::Clear()
 
 void SMDS_MeshGroup::Add(const SMDS_MeshElement * theElem)
 {
-	// the type of the group is determined by the first element added
-	if (myElements.empty()) myType = theElem->GetType();
-	else if (theElem->GetType() != myType) {
-	  MESSAGE("SMDS_MeshGroup::Add : Type Mismatch "<<theElem->GetType()<<"!="<<myType);
-	  return;
-	}
-	
-	myElements.insert(theElem);
+        // the type of the group is determined by the first element added
+        if (myElements.empty()) myType = theElem->GetType();
+        else if (theElem->GetType() != myType) {
+          MESSAGE("SMDS_MeshGroup::Add : Type Mismatch "<<theElem->GetType()<<"!="<<myType);
+          return;
+        }
+        
+        myElements.insert(theElem);
 }
 
 //=======================================================================
@@ -156,7 +156,7 @@ bool SMDS_MeshGroup::Remove(const SMDS_MeshElement * theElem)
 
 bool SMDS_MeshGroup::Contains(const SMDS_MeshElement * theElem) const
 {
-	return myElements.find(theElem)!=myElements.end();
+        return myElements.find(theElem)!=myElements.end();
 }
 
 //=======================================================================

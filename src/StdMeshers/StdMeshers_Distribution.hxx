@@ -102,16 +102,16 @@ private:
 
 STDMESHERS_EXPORT
 bool buildDistribution( const Function& f,
-		        const double start, const double end,
-		        const int nbSeg,
-		        std::vector<double>& data,
-		        const double eps );
+                        const double start, const double end,
+                        const int nbSeg,
+                        std::vector<double>& data,
+                        const double eps );
 
 STDMESHERS_EXPORT
 bool buildDistribution( const TCollection_AsciiString& f, const int conv, const double start, const double end,
-		        const int nbSeg, std::vector<double>& data, const double eps );
+                        const int nbSeg, std::vector<double>& data, const double eps );
 STDMESHERS_EXPORT
 bool buildDistribution( const std::vector<double>& f, const int conv, const double start, const double end,
-		        const int nbSeg, std::vector<double>& data, const double eps );
+                        const int nbSeg, std::vector<double>& data, const double eps );
 
 #endif

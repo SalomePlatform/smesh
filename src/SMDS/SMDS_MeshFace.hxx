@@ -33,7 +33,7 @@
 class SMDS_EXPORT SMDS_MeshFace:public SMDS_MeshElement
 {
   public:
-	SMDSAbs_ElementType GetType() const;
+        SMDSAbs_ElementType GetType() const;
 };
 
 #endif

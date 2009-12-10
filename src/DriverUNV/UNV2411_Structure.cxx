@@ -19,8 +19,8 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
-#include <fstream>	
-#include <stdio.h>	
+#include <fstream>      
+#include <stdio.h>      
 
 #include "UNV2411_Structure.hxx"
 #include "UNV_Utilities.hxx"
@@ -98,17 +98,17 @@ void UNV2411::Write(std::ofstream& out_stream, const TDataSet& theDataSet)
     const TRecord& aRec = anIter->second;
     char buf[78];
     sprintf(buf, "%10d%10d%10d%10d\n", 
-	    aLabel,
-	    aRec.exp_coord_sys_num,
-	    aRec.disp_coord_sys_num,
-	    aRec.color);
+            aLabel,
+            aRec.exp_coord_sys_num,
+            aRec.disp_coord_sys_num,
+            aRec.color);
     out_stream<<buf;
 
     // the coordinates
     sprintf(buf, "%25.16E%25.16E%25.16E\n", 
-	    aRec.coord[0],
-	    aRec.coord[1],
-	    aRec.coord[2]);
+            aRec.coord[0],
+            aRec.coord[1],
+            aRec.coord[2]);
     out_stream<<buf;
   }
   

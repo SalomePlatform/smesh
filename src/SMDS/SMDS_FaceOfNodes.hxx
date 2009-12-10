@@ -35,19 +35,19 @@
 class SMDS_EXPORT SMDS_FaceOfNodes:public SMDS_MeshFace
 {
   public:
-	void Print(std::ostream & OS) const;
-	SMDS_FaceOfNodes(const SMDS_MeshNode* node1,
+        void Print(std::ostream & OS) const;
+        SMDS_FaceOfNodes(const SMDS_MeshNode* node1,
                          const SMDS_MeshNode* node2,
                          const SMDS_MeshNode* node3);
-	SMDS_FaceOfNodes(const SMDS_MeshNode* node1,
+        SMDS_FaceOfNodes(const SMDS_MeshNode* node1,
                          const SMDS_MeshNode* node2,
                          const SMDS_MeshNode* node3,
                          const SMDS_MeshNode* node4);
         bool ChangeNodes(const SMDS_MeshNode* nodes[],
                          const int            nbNodes);
-	int NbEdges() const;
-	int NbFaces() const;
-	int NbNodes() const;
+        int NbEdges() const;
+        int NbFaces() const;
+        int NbNodes() const;
 
   /*!
    * \brief Return node by its index
@@ -59,11 +59,11 @@ class SMDS_EXPORT SMDS_FaceOfNodes:public SMDS_MeshFace
   virtual SMDSAbs_EntityType   GetEntityType() const;
 
   protected:
-  	SMDS_ElemIteratorPtr
-		elementsIterator(SMDSAbs_ElementType type) const;
+        SMDS_ElemIteratorPtr
+                elementsIterator(SMDSAbs_ElementType type) const;
 
   private:
-	const SMDS_MeshNode* myNodes[4];
+        const SMDS_MeshNode* myNodes[4];
         int                  myNbNodes;
 
 };

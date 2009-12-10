@@ -39,7 +39,7 @@ using namespace std;
 //purpose  :
 //=======================================================================
 SMDS_Mesh0DElement::SMDS_Mesh0DElement (const SMDS_MeshNode * node)
-{	
+{       
   myNode = node;
 }
 

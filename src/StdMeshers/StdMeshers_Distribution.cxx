@@ -303,21 +303,21 @@ double dihotomySolve( Function& f, const double val, const double _start, const 
 }
 
 bool buildDistribution( const TCollection_AsciiString& f, const int conv, const double start, const double end,
-		        const int nbSeg, vector<double>& data, const double eps )
+                        const int nbSeg, vector<double>& data, const double eps )
 {
   FunctionExpr F( f.ToCString(), conv );
   return buildDistribution( F, start, end, nbSeg, data, eps );
 }
 
 bool buildDistribution( const std::vector<double>& f, const int conv, const double start, const double end,
-		        const int nbSeg, vector<double>& data, const double eps )
+                        const int nbSeg, vector<double>& data, const double eps )
 {
   FunctionTable F( f, conv );
   return buildDistribution( F, start, end, nbSeg, data, eps );
 }
 
 bool buildDistribution( const Function& func, const double start, const double end, const int nbSeg,
-		        vector<double>& data, const double eps )
+                        vector<double>& data, const double eps )
 {
   if( nbSeg<=0 )
     return false;

@@ -38,18 +38,18 @@ class SMDS_EXPORT SMDS_Position
 {
 
   public:
-	const virtual double * Coords() const = 0;
-	virtual SMDS_TypeOfPosition GetTypeOfPosition() const = 0;
-	virtual int GetDim() const;
-	void SetShapeId(int aShapeId);
-	int GetShapeId() const;
-	virtual ~SMDS_Position() {}
+        const virtual double * Coords() const = 0;
+        virtual SMDS_TypeOfPosition GetTypeOfPosition() const = 0;
+        virtual int GetDim() const;
+        void SetShapeId(int aShapeId);
+        int GetShapeId() const;
+        virtual ~SMDS_Position() {}
 
   protected:
-	  SMDS_Position(int aShapeId);
+          SMDS_Position(int aShapeId);
 
   private:
-	int myShapeId;
+        int myShapeId;
 };
 
 

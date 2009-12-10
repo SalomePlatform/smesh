@@ -84,14 +84,14 @@ public:
   ~SpinBoxDelegate();
 
   QWidget* createEditor( QWidget*,
-			 const QStyleOptionViewItem&,
-			 const QModelIndex& ) const;
+                         const QStyleOptionViewItem&,
+                         const QModelIndex& ) const;
   void     setEditorData( QWidget*, const QModelIndex&) const;
   void     setModelData( QWidget*, QAbstractItemModel*, 
-			 const QModelIndex& ) const;
+                         const QModelIndex& ) const;
   void     updateEditorGeometry( QWidget*,
-				 const QStyleOptionViewItem&, 
-				 const QModelIndex& ) const;
+                                 const QStyleOptionViewItem&, 
+                                 const QModelIndex& ) const;
 
 private:
   StdMeshersGUI_DistrTableFrame::Table* myTable;
@@ -173,20 +173,20 @@ StdMeshersGUI_DistrTableFrame::SpinBoxDelegate::
 QWidget* 
 StdMeshersGUI_DistrTableFrame::SpinBoxDelegate::
 createEditor( QWidget* parent,
-	      const QStyleOptionViewItem& /*option*/,
-	      const QModelIndex& index ) const
+              const QStyleOptionViewItem& /*option*/,
+              const QModelIndex& index ) const
 {
   QDoubleSpinBox* sb = new QDoubleSpinBox( parent );
   sb->setFrame(false);
   sb->setMinimum( index.column() == StdMeshersGUI_DistrTableFrame::ArgColumn ? 
-		  myTable->argMinimum( index.row() ) : 
-		  myTable->funcMinimum( index.row() ) );
+                  myTable->argMinimum( index.row() ) : 
+                  myTable->funcMinimum( index.row() ) );
   sb->setMaximum( index.column() == StdMeshersGUI_DistrTableFrame::ArgColumn ? 
-		  myTable->argMaximum( index.row() ) : 
-		  myTable->funcMaximum( index.row() ) );
+                  myTable->argMaximum( index.row() ) : 
+                  myTable->funcMaximum( index.row() ) );
   sb->setSingleStep( index.column() == StdMeshersGUI_DistrTableFrame::ArgColumn ? 
-		     myTable->argStep( index.row() ) : 
-		     myTable->funcStep( index.row() ) );
+                     myTable->argStep( index.row() ) : 
+                     myTable->funcStep( index.row() ) );
   myTable->setEditor( index.row(), index.column(), sb );
   return sb;
 }
@@ -208,7 +208,7 @@ setEditorData( QWidget* editor, const QModelIndex& index ) const
 void
 StdMeshersGUI_DistrTableFrame::SpinBoxDelegate::
 setModelData( QWidget* editor, QAbstractItemModel* model, 
-	      const QModelIndex& index ) const
+              const QModelIndex& index ) const
 {
   QDoubleSpinBox* sb = static_cast<QDoubleSpinBox*>(editor);
   model->setData( index, QString::number( sb->value() ), Qt::DisplayRole );
@@ -217,8 +217,8 @@ setModelData( QWidget* editor, QAbstractItemModel* model,
 void 
 StdMeshersGUI_DistrTableFrame::SpinBoxDelegate::
 updateEditorGeometry( QWidget* editor,
-		      const QStyleOptionViewItem& option, 
-		      const QModelIndex& /*index*/ ) const
+                      const QStyleOptionViewItem& option, 
+                      const QModelIndex& /*index*/ ) const
 {
   editor->setGeometry( option.rect );
 }
@@ -530,9 +530,9 @@ StdMeshersGUI_DistrTableFrame( QWidget* parent )
   connect( myButtons[ InsertRowBtn ], SIGNAL( clicked() ), this, SLOT( onInsert() ) );
   connect( myButtons[ RemoveRowBtn ], SIGNAL( clicked() ), this, SLOT( onRemove() ) );
   connect( myTable, SIGNAL( currentCellChanged( int, int, int, int ) ),
-	   this,    SIGNAL( currentChanged( int, int ) ) );
+           this,    SIGNAL( currentChanged( int, int ) ) );
   connect( myTable, SIGNAL( cellChanged( int, int ) ),
-	   this,    SIGNAL( valueChanged( int, int ) ) );
+           this,    SIGNAL( valueChanged( int, int ) ) );
 }
 
 StdMeshersGUI_DistrTableFrame::

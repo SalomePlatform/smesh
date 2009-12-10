@@ -53,8 +53,8 @@ StdMeshers_Projection_3D_i::StdMeshers_Projection_3D_i( PortableServer::POA_ptr 
 {
   MESSAGE( "StdMeshers_Projection_3D_i::StdMeshers_Projection_3D_i" );
   myBaseImpl = new ::StdMeshers_Projection_3D( theGenImpl->GetANewId(),
-				    theStudyId,
-				    theGenImpl );
+                                    theStudyId,
+                                    theGenImpl );
 }
 //-----------------------------------------------------------------------------
 
@@ -87,8 +87,8 @@ StdMeshers_Projection_2D_i::StdMeshers_Projection_2D_i( PortableServer::POA_ptr 
 {
   MESSAGE( "StdMeshers_Projection_2D_i::StdMeshers_Projection_2D_i" );
   myBaseImpl = new ::StdMeshers_Projection_2D( theGenImpl->GetANewId(),
-				    theStudyId,
-				    theGenImpl );
+                                    theStudyId,
+                                    theGenImpl );
 }
 //-----------------------------------------------------------------------------
 
@@ -121,8 +121,8 @@ StdMeshers_Projection_1D_i::StdMeshers_Projection_1D_i( PortableServer::POA_ptr 
 {
   MESSAGE( "StdMeshers_Projection_1D_i::StdMeshers_Projection_1D_i" );
   myBaseImpl = new ::StdMeshers_Projection_1D( theGenImpl->GetANewId(),
-				    theStudyId,
-				    theGenImpl );
+                                    theStudyId,
+                                    theGenImpl );
 }
 //-----------------------------------------------------------------------------
 

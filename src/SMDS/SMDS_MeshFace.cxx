@@ -25,5 +25,5 @@
 
 SMDSAbs_ElementType SMDS_MeshFace::GetType() const
 {
-	return SMDSAbs_Face;
+        return SMDSAbs_Face;
 }

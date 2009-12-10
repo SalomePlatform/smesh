@@ -112,8 +112,8 @@ void SMESHGUI_MeshOrderOp::initDialog()
     aMesh = SMESH::GetMeshByIO(selected.First());
   if (aMesh->_is_nil()) {
     SUIT_MessageBox::warning(desktop(),
-			     tr("SMESH_WRN_WARNING"),
-			     tr("SMESH_WRN_NO_AVAILABLE_DATA"));
+                             tr("SMESH_WRN_WARNING"),
+                             tr("SMESH_WRN_NO_AVAILABLE_DATA"));
     onCancel();
     return;
   }
@@ -122,8 +122,8 @@ void SMESHGUI_MeshOrderOp::initDialog()
   myMgr->SetMesh( aMesh );
   if ( !myMgr->GetMeshOrder() ) {
     SUIT_MessageBox::information(desktop(),
-			     tr("SMESH_INFORMATION"),
-			     tr("SMESH_NO_CONCURENT_MESH"));
+                             tr("SMESH_INFORMATION"),
+                             tr("SMESH_NO_CONCURENT_MESH"));
     
     onCancel();
     return;

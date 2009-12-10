@@ -172,8 +172,8 @@ public:
 
   bool  DansPave( R3 & xyzMin, R3 & xyzMax )
     { return xyzMin.x<=x && x<=xyzMax.x &&
-     	     xyzMin.y<=y && y<=xyzMax.y &&
-	     xyzMin.z<=z && z<=xyzMax.z; }
+             xyzMin.y<=y && y<=xyzMax.y &&
+             xyzMin.z<=z && z<=xyzMax.z; }
 };
 
 //la classe R4

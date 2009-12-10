@@ -214,39 +214,39 @@ void StdMeshersGUI_SubShapeSelectorWdg::SelectionIntoArgument()
       QString aMainFatherEntry = "";
       TopoDS_Shape shape;
       if ( !CORBA::is_nil( aGeomFatherObj ) ) {
-	// Get Main Shape
-	GEOM::GEOM_Object_var aGeomMain = GetGeomObjectByEntry( myEntry );
-	if ( !CORBA::is_nil( aGeomMain ) && aGeomMain->GetType() == 37 ) {  // Main Shape is a Group
-	  GEOM::GEOM_Object_ptr aMainFatherObj = aGeomMain->GetMainShape();
-	  if ( !CORBA::is_nil( aMainFatherObj ) )
-	    aMainFatherEntry = aMainFatherObj->GetStudyEntry();
-	}
-	aFatherEntry = aGeomFatherObj->GetStudyEntry();
+        // Get Main Shape
+        GEOM::GEOM_Object_var aGeomMain = GetGeomObjectByEntry( myEntry );
+        if ( !CORBA::is_nil( aGeomMain ) && aGeomMain->GetType() == 37 ) {  // Main Shape is a Group
+          GEOM::GEOM_Object_ptr aMainFatherObj = aGeomMain->GetMainShape();
+          if ( !CORBA::is_nil( aMainFatherObj ) )
+            aMainFatherEntry = aMainFatherObj->GetStudyEntry();
+        }
+        aFatherEntry = aGeomFatherObj->GetStudyEntry();
       }
       
       if ( aFatherEntry != "" && ( aFatherEntry == myEntry || aFatherEntry == aMainFatherEntry ) ) {
-	if ( aGeomObj->GetType() == 37 /*GEOM_GROUP*/ ) { // Selected Group that belongs the main object
-	  GEOMBase::GetShape(aGeomObj, shape); 
-	  if ( !shape.IsNull() ) {
-	    TopExp_Explorer exp( shape, mySubShType );
-	    for ( ; exp.More(); exp.Next() ) {
-	      int index = myPreviewActor->GetIndexByShape( exp.Current() );
-	      if ( index ) {
-		mySelectedIDs.append( index );
-		myPreviewActor->HighlightID( index );
-	      }
-	    }
-	  }
-	} else if ( aGeomObj->GetType() == 28 /*GEOM_SUBSHAPE*/  ) {
-	  GEOMBase::GetShape(aGeomObj, shape); 
-	  if ( !shape.IsNull() && shape.ShapeType() == mySubShType ) {
-	    int index = myPreviewActor->GetIndexByShape( shape );
-	    if ( index ) {
-	      mySelectedIDs.append( index );
-	      myPreviewActor->HighlightID( index );
-	    }
-	  }
-	}
+        if ( aGeomObj->GetType() == 37 /*GEOM_GROUP*/ ) { // Selected Group that belongs the main object
+          GEOMBase::GetShape(aGeomObj, shape); 
+          if ( !shape.IsNull() ) {
+            TopExp_Explorer exp( shape, mySubShType );
+            for ( ; exp.More(); exp.Next() ) {
+              int index = myPreviewActor->GetIndexByShape( exp.Current() );
+              if ( index ) {
+                mySelectedIDs.append( index );
+                myPreviewActor->HighlightID( index );
+              }
+            }
+          }
+        } else if ( aGeomObj->GetType() == 28 /*GEOM_SUBSHAPE*/  ) {
+          GEOMBase::GetShape(aGeomObj, shape); 
+          if ( !shape.IsNull() && shape.ShapeType() == mySubShType ) {
+            int index = myPreviewActor->GetIndexByShape( shape );
+            if ( index ) {
+              mySelectedIDs.append( index );
+              myPreviewActor->HighlightID( index );
+            }
+          }
+        }
       }
     } else { // Selected Actor from Actor Collection
       QString anEntry = IO->getEntry();
@@ -255,7 +255,7 @@ void StdMeshersGUI_SubShapeSelectorWdg::SelectionIntoArgument()
       anEntry.remove(0, index+1);
       int ind = anEntry.toInt();
       if ( ind )
-	mySelectedIDs.append( ind );
+        mySelectedIDs.append( ind );
     }
   }
 }
@@ -284,7 +284,7 @@ void StdMeshersGUI_SubShapeSelectorWdg::onAdd()
   myListWidget->blockSignals( false );
   myAddButton->setEnabled( myListOfIDs.size() < myMaxSize );
 }
-	 
+         
 //=================================================================================
 // function : onRemove()
 // purpose  : Called when Remove Button Clicked
@@ -421,7 +421,7 @@ SMESH::long_array_var StdMeshersGUI_SubShapeSelectorWdg::GetListOfIDs()
   anArray->length( size );
   if ( size ) {
     for (int i = 0; i < size; i++) {
-	anArray[i] = myListOfIDs.at(i);
+        anArray[i] = myListOfIDs.at(i);
     }
   }
   return anArray;

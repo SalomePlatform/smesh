@@ -141,9 +141,9 @@ template<class ELEM, typename TSET> class MySetIterator:
 {
   typedef SMDS_SetIterator<ELEM, typename TSET::const_iterator > TFather;
   public:
-	MySetIterator(const TSET& s):TFather(s.begin(),s.end())
-	{
-	}
+        MySetIterator(const TSET& s):TFather(s.begin(),s.end())
+        {
+        }
 };
 
 // =====================

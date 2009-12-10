@@ -51,7 +51,7 @@ class STDMESHERSGUI_EXPORT StdMeshersGUI_LayerDistributionParamWdg : public QWid
 
 public:
   StdMeshersGUI_LayerDistributionParamWdg(SMESH::SMESH_Hypothesis_ptr,
-					  const QString&,
+                                          const QString&,
                                           QDialog*);
   ~StdMeshersGUI_LayerDistributionParamWdg();
 

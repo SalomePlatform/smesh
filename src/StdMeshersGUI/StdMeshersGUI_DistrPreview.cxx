@@ -222,13 +222,13 @@ void StdMeshersGUI_DistrPreview::update()
     {
       SMESH::double_array* arr = 0;
       if( isTableFunc() )
-	arr = h->BuildDistributionTab( myTableFunc, myNbSeg, ( int )myConv );
+        arr = h->BuildDistributionTab( myTableFunc, myNbSeg, ( int )myConv );
       else
-	arr = h->BuildDistributionExpr( myFunction.toLatin1().data(), myNbSeg, ( int )myConv );
+        arr = h->BuildDistributionExpr( myFunction.toLatin1().data(), myNbSeg, ( int )myConv );
       if( arr )
       {
-	distr = *arr;
-	delete arr;
+        distr = *arr;
+        delete arr;
       }
     }
   }
@@ -337,7 +337,7 @@ bool isCorrectArg( const Handle( Expr_GeneralExpression )& expr )
     if( !name.IsNull() )
     {
       if( name->GetName()!="t" )
-	res = false;
+        res = false;
     }
     else
       res = isCorrectArg( sub );
@@ -421,15 +421,15 @@ bool StdMeshersGUI_DistrPreview::convert( double& v ) const
 #ifdef NO_CAS_CATCH
         OCC_CATCH_SIGNALS;
 #endif
-	// in StdMeshers_NumberOfSegments.cc
-	// const double PRECISION = 1e-7;
-	//
-	if(v < -7) v = -7.0;
-	v = pow( 10.0, v );
+        // in StdMeshers_NumberOfSegments.cc
+        // const double PRECISION = 1e-7;
+        //
+        if(v < -7) v = -7.0;
+        v = pow( 10.0, v );
       } catch(Standard_Failure) {
-	Handle(Standard_Failure) aFail = Standard_Failure::Caught();
-	v = 0.0;
-	ok = false;
+        Handle(Standard_Failure) aFail = Standard_Failure::Caught();
+        v = 0.0;
+        ok = false;
       }
     }
     break;

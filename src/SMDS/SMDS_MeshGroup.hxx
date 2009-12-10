@@ -34,27 +34,27 @@
 class SMDS_EXPORT SMDS_MeshGroup:public SMDS_MeshObject
 {
   public:
-	SMDS_MeshGroup(const SMDS_Mesh * theMesh,
+        SMDS_MeshGroup(const SMDS_Mesh * theMesh,
                        const SMDSAbs_ElementType theType = SMDSAbs_All);
-	const SMDS_MeshGroup * AddSubGroup
+        const SMDS_MeshGroup * AddSubGroup
                       (const SMDSAbs_ElementType theType = SMDSAbs_All);
-	virtual bool RemoveSubGroup(const SMDS_MeshGroup* theGroup);
-	virtual bool RemoveFromParent();
+        virtual bool RemoveSubGroup(const SMDS_MeshGroup* theGroup);
+        virtual bool RemoveFromParent();
 
         const SMDS_Mesh* GetMesh() const { return myMesh; }
 
         void SetType (const SMDSAbs_ElementType theType);
         void Clear();
-	void Add(const SMDS_MeshElement * theElem);
-	bool Remove(const SMDS_MeshElement * theElem);
-	bool IsEmpty() const { return myElements.empty(); }
-	int Extent() const { return myElements.size(); }
+        void Add(const SMDS_MeshElement * theElem);
+        bool Remove(const SMDS_MeshElement * theElem);
+        bool IsEmpty() const { return myElements.empty(); }
+        int Extent() const { return myElements.size(); }
 
-	int SubGroupsNb() const { return myChildren.size(); }
+        int SubGroupsNb() const { return myChildren.size(); }
 
         SMDSAbs_ElementType GetType() const { return myType; }
 
-	bool Contains(const SMDS_MeshElement * theElem) const;
+        bool Contains(const SMDS_MeshElement * theElem) const;
 
         void InitIterator() const
         { const_cast<TIterator&>(myIterator) = myElements.begin(); }
@@ -73,17 +73,17 @@ class SMDS_EXPORT SMDS_MeshGroup:public SMDS_MeshObject
         { return *(const_cast<TGroupIterator&>(myGroupIterator))++; }
 
   private:
-	SMDS_MeshGroup(SMDS_MeshGroup* theParent,
+        SMDS_MeshGroup(SMDS_MeshGroup* theParent,
                        const SMDSAbs_ElementType theType = SMDSAbs_All);
 
         typedef std::set<const SMDS_MeshElement *>::const_iterator TIterator;
         typedef std::list<const SMDS_MeshGroup *>::const_iterator TGroupIterator;
 
-	const SMDS_Mesh *                       myMesh;
-	SMDSAbs_ElementType                     myType;
-	std::set<const SMDS_MeshElement *>      myElements;
-	SMDS_MeshGroup *                        myParent;
-	std::list<const SMDS_MeshGroup*>        myChildren;
+        const SMDS_Mesh *                       myMesh;
+        SMDSAbs_ElementType                     myType;
+        std::set<const SMDS_MeshElement *>      myElements;
+        SMDS_MeshGroup *                        myParent;
+        std::list<const SMDS_MeshGroup*>        myChildren;
         TIterator                               myIterator;
         TGroupIterator                          myGroupIterator;
 };

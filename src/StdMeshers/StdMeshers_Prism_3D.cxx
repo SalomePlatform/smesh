@@ -162,7 +162,7 @@ StdMeshers_Prism_3D::StdMeshers_Prism_3D(int hypId, int studyId, SMESH_Gen* gen)
   :SMESH_3D_Algo(hypId, studyId, gen)
 {
   _name = "Prism_3D";
-  _shapeType = (1 << TopAbs_SHELL) | (1 << TopAbs_SOLID);	// 1 bit per shape type
+  _shapeType = (1 << TopAbs_SHELL) | (1 << TopAbs_SOLID);       // 1 bit per shape type
   myProjectTriangles = false;
 }
 
@@ -375,8 +375,8 @@ bool StdMeshers_Prism_3D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& theSh
 //=======================================================================
 
 bool StdMeshers_Prism_3D::Evaluate(SMESH_Mesh& theMesh,
-				   const TopoDS_Shape& theShape,
-				   MapShapeNbElems& aResMap)
+                                   const TopoDS_Shape& theShape,
+                                   MapShapeNbElems& aResMap)
 {
   // find face contains only triangles
   vector < SMESH_subMesh * >meshFaces;
@@ -436,8 +436,8 @@ bool StdMeshers_Prism_3D::Evaluate(SMESH_Mesh& theMesh,
     bool IsOpposite = true;
     for(TopExp_Explorer exp(aFaces.Value(i), TopAbs_EDGE); exp.More(); exp.Next()) {
       if( Edges1.Contains(exp.Current()) ) {
-	IsOpposite = false;
-	break;
+        IsOpposite = false;
+        break;
       }
     }
     if(IsOpposite) {

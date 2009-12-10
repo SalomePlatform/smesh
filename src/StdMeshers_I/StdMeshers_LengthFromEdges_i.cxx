@@ -43,15 +43,15 @@ using namespace std;
 //=============================================================================
 
 StdMeshers_LengthFromEdges_i::StdMeshers_LengthFromEdges_i( PortableServer::POA_ptr thePOA,
-						  int                     theStudyId,
-						  ::SMESH_Gen*            theGenImpl )
+                                                  int                     theStudyId,
+                                                  ::SMESH_Gen*            theGenImpl )
      : SALOME::GenericObj_i( thePOA ), 
        SMESH_Hypothesis_i( thePOA )
 {
   MESSAGE( "StdMeshers_LengthFromEdges_i::StdMeshers_LengthFromEdges_i" );
   myBaseImpl = new ::StdMeshers_LengthFromEdges( theGenImpl->GetANewId(),
-					    theStudyId,
-					    theGenImpl );
+                                            theStudyId,
+                                            theGenImpl );
 }
 
 //=============================================================================
@@ -85,7 +85,7 @@ void StdMeshers_LengthFromEdges_i::SetMode( CORBA::Long theMode )
   }
   catch ( SALOME_Exception& S_ex ) {
     THROW_SALOME_CORBA_EXCEPTION( S_ex.what(),
-				  SALOME::BAD_PARAM );
+                                  SALOME::BAD_PARAM );
   }
 }
 

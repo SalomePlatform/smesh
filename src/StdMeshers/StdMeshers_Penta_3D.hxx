@@ -58,26 +58,26 @@ public:
   void Load (const TopoDS_Shell& theShell);
   
   void Load (const TopoDS_Shell& theShell,
-	     const TopoDS_Vertex& theV000,
-	     const TopoDS_Vertex& theV001);
+             const TopoDS_Vertex& theV000,
+             const TopoDS_Vertex& theV001);
   
   void ComputeParameters(const gp_Pnt& thePnt, 
-			 gp_XYZ& theXYZ);
+                         gp_XYZ& theXYZ);
   
   void ComputeParameters(const gp_Pnt& thePnt,
-			 const TopoDS_Shape& theShape,
-			 gp_XYZ& theXYZ);
+                         const TopoDS_Shape& theShape,
+                         gp_XYZ& theXYZ);
   
   void ComputeParameters(const double& theU,
-			 const TopoDS_Shape& theShape,
-			 gp_XYZ& theXYZ);
+                         const TopoDS_Shape& theShape,
+                         gp_XYZ& theXYZ);
   
   void Point(const gp_XYZ& theParams, 
-	     gp_Pnt& thePnt);
+             gp_Pnt& thePnt);
   
   void Point(const gp_XYZ& theParams,
-	     const TopoDS_Shape& theShape, 
-	     gp_Pnt& thePnt);
+             const TopoDS_Shape& theShape, 
+             gp_Pnt& thePnt);
   
   int ShapeID(const TopoDS_Shape& theShape); 
   
@@ -206,7 +206,7 @@ class STDMESHERS_EXPORT StdMeshers_Penta_3D {
     // 0-the node on theBaseEdge.
 
     bool Evaluate(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape,
-		  MapShapeNbElems& aResMap);
+                  MapShapeNbElems& aResMap);
 
 
   protected: // methods
@@ -223,17 +223,17 @@ class STDMESHERS_EXPORT StdMeshers_Penta_3D {
                            std::vector<const SMDS_MeshNode*>*& aCol2);
 
     void ShapeSupportID(const bool theIsUpperLayer,
-			const SMESH_Block::TShapeID theBNSSID,
-			SMESH_Block::TShapeID& theSSID);
+                        const SMESH_Block::TShapeID theBNSSID,
+                        SMESH_Block::TShapeID& theSSID);
 
     void FindNodeOnShape(const TopoDS_Shape& aS,
-			 const gp_XYZ& aParams,
+                         const gp_XYZ& aParams,
                          const int z,
-			 StdMeshers_TNode& aTN);
+                         StdMeshers_TNode& aTN);
 
     void CreateNode(const bool theIsUpperLayer,
-		    const gp_XYZ& aParams,
-		    StdMeshers_TNode& aTN);
+                    const gp_XYZ& aParams,
+                    StdMeshers_TNode& aTN);
 
     void ClearMeshOnFxy1();
 

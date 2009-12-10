@@ -87,90 +87,90 @@ bool SMESH_TypeFilter::isOk (const SUIT_DataOwner* theDataOwner) const
     switch (myType)
     {
       case HYPOTHESIS:
-	{
-	  if      (aLevel == 2 && (objFather->Tag() == SMESH::Tag_HypothesisRoot))
+        {
+          if      (aLevel == 2 && (objFather->Tag() == SMESH::Tag_HypothesisRoot))
             // hypo definition
-	    Ok = true;
-	  else if (aLevel == 3 && (objFather->Tag() == SMESH::Tag_RefOnAppliedHypothesis))
+            Ok = true;
+          else if (aLevel == 3 && (objFather->Tag() == SMESH::Tag_RefOnAppliedHypothesis))
             // applied global hypo
-	    Ok = true;
-	  else if (aLevel == 5 && (objFather->Tag() == SMESH::Tag_RefOnAppliedHypothesis))
+            Ok = true;
+          else if (aLevel == 5 && (objFather->Tag() == SMESH::Tag_RefOnAppliedHypothesis))
             // applied local hypo
-	    Ok = true;
-	  break;
-	}
+            Ok = true;
+          break;
+        }
       case ALGORITHM:
-	{
-	  if      (aLevel == 2 && (objFather->Tag() == SMESH::Tag_AlgorithmsRoot))
+        {
+          if      (aLevel == 2 && (objFather->Tag() == SMESH::Tag_AlgorithmsRoot))
             // algo definition
-	    Ok = true;
-	  else if (aLevel == 3 && (objFather->Tag() == SMESH::Tag_RefOnAppliedAlgorithms))
+            Ok = true;
+          else if (aLevel == 3 && (objFather->Tag() == SMESH::Tag_RefOnAppliedAlgorithms))
             // applied global algo
-	    Ok = true;
-	  else if (aLevel == 5 && (objFather->Tag() == SMESH::Tag_RefOnAppliedAlgorithms))
+            Ok = true;
+          else if (aLevel == 5 && (objFather->Tag() == SMESH::Tag_RefOnAppliedAlgorithms))
             // applied local algo
-	    Ok = true;
-	  break;
-	}
+            Ok = true;
+          break;
+        }
       case MESH:
-	{
-	  if (aLevel == 1 && (obj->Tag() >= SMESH::Tag_FirstMeshRoot))
-	    Ok = true;
-	  break;
-	}
+        {
+          if (aLevel == 1 && (obj->Tag() >= SMESH::Tag_FirstMeshRoot))
+            Ok = true;
+          break;
+        }
       case SUBMESH:
-	{
-	  // see SMESH_Gen_i.cxx for tag numbers
-	  if (aLevel == 3 && (objFather->Tag() >= SMESH::Tag_FirstSubMesh &&
+        {
+          // see SMESH_Gen_i.cxx for tag numbers
+          if (aLevel == 3 && (objFather->Tag() >= SMESH::Tag_FirstSubMesh &&
                               objFather->Tag() <= SMESH::Tag_LastSubMesh))
-	    Ok = true;
-	  break;
-	}
+            Ok = true;
+          break;
+        }
       case MESHorSUBMESH:
-	{
-	  if (aLevel == 1 && (obj->Tag() >= SMESH::Tag_FirstMeshRoot))
-	    Ok = true; // mesh
+        {
+          if (aLevel == 1 && (obj->Tag() >= SMESH::Tag_FirstMeshRoot))
+            Ok = true; // mesh
           else if (aLevel == 3 && (objFather->Tag() >= SMESH::Tag_FirstSubMesh &&
                                    objFather->Tag() <= SMESH::Tag_LastSubMesh))
-	    Ok = true;
-	  break;
-	}
+            Ok = true;
+          break;
+        }
       case SUBMESH_VERTEX: // Label "SubMeshes on vertexes"
-	{
-	  if (aLevel == 3 && (objFather->Tag() == SMESH::Tag_SubMeshOnVertex))
-	    Ok = true;
-	  break;
-	}
+        {
+          if (aLevel == 3 && (objFather->Tag() == SMESH::Tag_SubMeshOnVertex))
+            Ok = true;
+          break;
+        }
       case SUBMESH_EDGE:
-	{
-	  if (aLevel == 3 && (objFather->Tag() == SMESH::Tag_SubMeshOnEdge))
-	    Ok = true;
-	  break;
-	}
+        {
+          if (aLevel == 3 && (objFather->Tag() == SMESH::Tag_SubMeshOnEdge))
+            Ok = true;
+          break;
+        }
       case SUBMESH_FACE:
-	{
-	  if (aLevel == 3 && (objFather->Tag() == SMESH::Tag_SubMeshOnFace))
-	    Ok = true;
-	  break;
-	}
+        {
+          if (aLevel == 3 && (objFather->Tag() == SMESH::Tag_SubMeshOnFace))
+            Ok = true;
+          break;
+        }
       case SUBMESH_SOLID:
-	{
-	  if (aLevel == 3 && (objFather->Tag() == SMESH::Tag_SubMeshOnSolid))
-	    Ok = true;
-	  break;
-	}
+        {
+          if (aLevel == 3 && (objFather->Tag() == SMESH::Tag_SubMeshOnSolid))
+            Ok = true;
+          break;
+        }
       case SUBMESH_COMPOUND:
-	{
-	  if (aLevel == 3 && (objFather->Tag() == SMESH::Tag_SubMeshOnCompound))
-	    Ok = true;
-	  break;
-	}
+        {
+          if (aLevel == 3 && (objFather->Tag() == SMESH::Tag_SubMeshOnCompound))
+            Ok = true;
+          break;
+        }
       case GROUP:
-	{
-	  if (aLevel == 3 && (objFather->Tag() >= SMESH::Tag_FirstGroup))
-	    Ok = true;
-	  break;
-	}
+        {
+          if (aLevel == 3 && (objFather->Tag() >= SMESH::Tag_FirstGroup))
+            Ok = true;
+          break;
+        }
     }
   }
   return Ok;

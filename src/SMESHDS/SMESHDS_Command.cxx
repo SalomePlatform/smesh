@@ -54,16 +54,16 @@ SMESHDS_Command::~SMESHDS_Command()
 //=======================================================================
 void SMESHDS_Command::AddNode(int NewNodeID, double x, double y, double z)
 {
-	if (!myType == SMESHDS_AddNode)
-	{
-		MESSAGE("SMESHDS_Command::AddNode : Bad Type");
-		return;
-	}
-	myIntegers.push_back(NewNodeID);
-	myReals.push_back(x);
-	myReals.push_back(y);
-	myReals.push_back(z);
-	myNumber++;
+        if (!myType == SMESHDS_AddNode)
+        {
+                MESSAGE("SMESHDS_Command::AddNode : Bad Type");
+                return;
+        }
+        myIntegers.push_back(NewNodeID);
+        myReals.push_back(x);
+        myReals.push_back(y);
+        myReals.push_back(z);
+        myNumber++;
 }
 
 //=======================================================================
@@ -72,16 +72,16 @@ void SMESHDS_Command::AddNode(int NewNodeID, double x, double y, double z)
 //=======================================================================
 void SMESHDS_Command::MoveNode(int NodeID, double x, double y, double z)
 {
-	if (!myType == SMESHDS_MoveNode)
-	{
-		MESSAGE("SMESHDS_Command::MoveNode : Bad Type");
-		return;
-	}
-	myIntegers.push_back(NodeID);
-	myReals.push_back(x);
-	myReals.push_back(y);
-	myReals.push_back(z);
-	myNumber++;
+        if (!myType == SMESHDS_MoveNode)
+        {
+                MESSAGE("SMESHDS_Command::MoveNode : Bad Type");
+                return;
+        }
+        myIntegers.push_back(NodeID);
+        myReals.push_back(x);
+        myReals.push_back(y);
+        myReals.push_back(z);
+        myNumber++;
 }
 
 //=======================================================================
@@ -106,15 +106,15 @@ void SMESHDS_Command::Add0DElement(int New0DElementID, int idnode)
 //=======================================================================
 void SMESHDS_Command::AddEdge(int NewEdgeID, int idnode1, int idnode2)
 {
-	if (!myType == SMESHDS_AddEdge)
-	{
-		MESSAGE("SMESHDS_Command::AddEdge : Bad Type");
-		return;
-	}
-	myIntegers.push_back(NewEdgeID);
-	myIntegers.push_back(idnode1);
-	myIntegers.push_back(idnode2);
-	myNumber++;
+        if (!myType == SMESHDS_AddEdge)
+        {
+                MESSAGE("SMESHDS_Command::AddEdge : Bad Type");
+                return;
+        }
+        myIntegers.push_back(NewEdgeID);
+        myIntegers.push_back(idnode1);
+        myIntegers.push_back(idnode2);
+        myNumber++;
 }
 
 //=======================================================================
@@ -122,18 +122,18 @@ void SMESHDS_Command::AddEdge(int NewEdgeID, int idnode1, int idnode2)
 //purpose  : 
 //=======================================================================
 void SMESHDS_Command::AddFace(int NewFaceID,
-	int idnode1, int idnode2, int idnode3)
+        int idnode1, int idnode2, int idnode3)
 {
-	if (!myType == SMESHDS_AddTriangle)
-	{
-		MESSAGE("SMESHDS_Command::AddFace : Bad Type");
-		return;
-	}
-	myIntegers.push_back(NewFaceID);
-	myIntegers.push_back(idnode1);
-	myIntegers.push_back(idnode2);
-	myIntegers.push_back(idnode3);
-	myNumber++;
+        if (!myType == SMESHDS_AddTriangle)
+        {
+                MESSAGE("SMESHDS_Command::AddFace : Bad Type");
+                return;
+        }
+        myIntegers.push_back(NewFaceID);
+        myIntegers.push_back(idnode1);
+        myIntegers.push_back(idnode2);
+        myIntegers.push_back(idnode3);
+        myNumber++;
 }
 
 //=======================================================================
@@ -141,19 +141,19 @@ void SMESHDS_Command::AddFace(int NewFaceID,
 //purpose  : 
 //=======================================================================
 void SMESHDS_Command::AddFace(int NewFaceID,
-	int idnode1, int idnode2, int idnode3, int idnode4)
+        int idnode1, int idnode2, int idnode3, int idnode4)
 {
-	if (!myType == SMESHDS_AddQuadrangle)
-	{
-		MESSAGE("SMESHDS_Command::AddFace : Bad Type");
-		return;
-	}
-	myIntegers.push_back(NewFaceID);
-	myIntegers.push_back(idnode1);
-	myIntegers.push_back(idnode2);
-	myIntegers.push_back(idnode3);
-	myIntegers.push_back(idnode4);
-	myNumber++;
+        if (!myType == SMESHDS_AddQuadrangle)
+        {
+                MESSAGE("SMESHDS_Command::AddFace : Bad Type");
+                return;
+        }
+        myIntegers.push_back(NewFaceID);
+        myIntegers.push_back(idnode1);
+        myIntegers.push_back(idnode2);
+        myIntegers.push_back(idnode3);
+        myIntegers.push_back(idnode4);
+        myNumber++;
 }
 
 //=======================================================================
@@ -161,19 +161,19 @@ void SMESHDS_Command::AddFace(int NewFaceID,
 //purpose  : 
 //=======================================================================
 void SMESHDS_Command::AddVolume(int NewVolID,
-	int idnode1, int idnode2, int idnode3, int idnode4)
+        int idnode1, int idnode2, int idnode3, int idnode4)
 {
-	if (!myType == SMESHDS_AddTetrahedron)
-	{
-		MESSAGE("SMESHDS_Command::AddVolume : Bad Type");
-		return;
-	}
-	myIntegers.push_back(NewVolID);
-	myIntegers.push_back(idnode1);
-	myIntegers.push_back(idnode2);
-	myIntegers.push_back(idnode3);
-	myIntegers.push_back(idnode4);
-	myNumber++;
+        if (!myType == SMESHDS_AddTetrahedron)
+        {
+                MESSAGE("SMESHDS_Command::AddVolume : Bad Type");
+                return;
+        }
+        myIntegers.push_back(NewVolID);
+        myIntegers.push_back(idnode1);
+        myIntegers.push_back(idnode2);
+        myIntegers.push_back(idnode3);
+        myIntegers.push_back(idnode4);
+        myNumber++;
 }
 
 //=======================================================================
@@ -181,20 +181,20 @@ void SMESHDS_Command::AddVolume(int NewVolID,
 //purpose  : 
 //=======================================================================
 void SMESHDS_Command::AddVolume(int NewVolID,
-	int idnode1, int idnode2, int idnode3, int idnode4, int idnode5)
+        int idnode1, int idnode2, int idnode3, int idnode4, int idnode5)
 {
-	if (!myType == SMESHDS_AddPyramid)
-	{
-		MESSAGE("SMESHDS_Command::AddVolume : Bad Type");
-		return;
-	}
-	myIntegers.push_back(NewVolID);
-	myIntegers.push_back(idnode1);
-	myIntegers.push_back(idnode2);
-	myIntegers.push_back(idnode3);
-	myIntegers.push_back(idnode4);
-	myIntegers.push_back(idnode5);
-	myNumber++;
+        if (!myType == SMESHDS_AddPyramid)
+        {
+                MESSAGE("SMESHDS_Command::AddVolume : Bad Type");
+                return;
+        }
+        myIntegers.push_back(NewVolID);
+        myIntegers.push_back(idnode1);
+        myIntegers.push_back(idnode2);
+        myIntegers.push_back(idnode3);
+        myIntegers.push_back(idnode4);
+        myIntegers.push_back(idnode5);
+        myNumber++;
 }
 
 //=======================================================================
@@ -202,22 +202,22 @@ void SMESHDS_Command::AddVolume(int NewVolID,
 //purpose  : 
 //=======================================================================
 void SMESHDS_Command::AddVolume(int NewVolID,
-	int idnode1,
-	int idnode2, int idnode3, int idnode4, int idnode5, int idnode6)
+        int idnode1,
+        int idnode2, int idnode3, int idnode4, int idnode5, int idnode6)
 {
-	if (!myType == SMESHDS_AddPrism)
-	{
-		MESSAGE("SMESHDS_Command::AddVolume : Bad Type");
-		return;
-	}
-	myIntegers.push_back(NewVolID);
-	myIntegers.push_back(idnode1);
-	myIntegers.push_back(idnode2);
-	myIntegers.push_back(idnode3);
-	myIntegers.push_back(idnode4);
-	myIntegers.push_back(idnode5);
-	myIntegers.push_back(idnode6);
-	myNumber++;
+        if (!myType == SMESHDS_AddPrism)
+        {
+                MESSAGE("SMESHDS_Command::AddVolume : Bad Type");
+                return;
+        }
+        myIntegers.push_back(NewVolID);
+        myIntegers.push_back(idnode1);
+        myIntegers.push_back(idnode2);
+        myIntegers.push_back(idnode3);
+        myIntegers.push_back(idnode4);
+        myIntegers.push_back(idnode5);
+        myIntegers.push_back(idnode6);
+        myNumber++;
 }
 
 //=======================================================================
@@ -225,26 +225,26 @@ void SMESHDS_Command::AddVolume(int NewVolID,
 //purpose  : 
 //=======================================================================
 void SMESHDS_Command::AddVolume(int NewVolID,
-	int idnode1,
-	int idnode2,
-	int idnode3,
-	int idnode4, int idnode5, int idnode6, int idnode7, int idnode8)
+        int idnode1,
+        int idnode2,
+        int idnode3,
+        int idnode4, int idnode5, int idnode6, int idnode7, int idnode8)
 {
-	if (!myType == SMESHDS_AddHexahedron)
-	{
-		MESSAGE("SMESHDS_Command::AddVolume : Bad Type");
-		return;
-	}
-	myIntegers.push_back(NewVolID);
-	myIntegers.push_back(idnode1);
-	myIntegers.push_back(idnode2);
-	myIntegers.push_back(idnode3);
-	myIntegers.push_back(idnode4);
-	myIntegers.push_back(idnode5);
-	myIntegers.push_back(idnode6);
-	myIntegers.push_back(idnode7);
-	myIntegers.push_back(idnode8);
-	myNumber++;
+        if (!myType == SMESHDS_AddHexahedron)
+        {
+                MESSAGE("SMESHDS_Command::AddVolume : Bad Type");
+                return;
+        }
+        myIntegers.push_back(NewVolID);
+        myIntegers.push_back(idnode1);
+        myIntegers.push_back(idnode2);
+        myIntegers.push_back(idnode3);
+        myIntegers.push_back(idnode4);
+        myIntegers.push_back(idnode5);
+        myIntegers.push_back(idnode6);
+        myIntegers.push_back(idnode7);
+        myIntegers.push_back(idnode8);
+        myNumber++;
 }
 
 //=======================================================================
@@ -304,13 +304,13 @@ void SMESHDS_Command::AddPolyhedralVolume (const int        ElementID,
 //=======================================================================
 void SMESHDS_Command::RemoveNode(int NodeID)
 {
-	if (!myType == SMESHDS_RemoveNode)
-	{
-		MESSAGE("SMESHDS_Command::RemoveNode : Bad Type");
-		return;
-	}
-	myIntegers.push_back(NodeID);
-	myNumber++;
+        if (!myType == SMESHDS_RemoveNode)
+        {
+                MESSAGE("SMESHDS_Command::RemoveNode : Bad Type");
+                return;
+        }
+        myIntegers.push_back(NodeID);
+        myNumber++;
 }
 
 //=======================================================================
@@ -319,13 +319,13 @@ void SMESHDS_Command::RemoveNode(int NodeID)
 //=======================================================================
 void SMESHDS_Command::RemoveElement(int ElementID)
 {
-	if (!myType == SMESHDS_RemoveElement)
-	{
-		MESSAGE("SMESHDS_Command::RemoveElement : Bad Type");
-		return;
-	}
-	myIntegers.push_back(ElementID);
-	myNumber++;
+        if (!myType == SMESHDS_RemoveElement)
+        {
+                MESSAGE("SMESHDS_Command::RemoveElement : Bad Type");
+                return;
+        }
+        myIntegers.push_back(ElementID);
+        myNumber++;
 }
 
 //=======================================================================
@@ -402,7 +402,7 @@ void SMESHDS_Command::Renumber (const bool isNodes, const int startID, const int
 //=======================================================================
 SMESHDS_CommandType SMESHDS_Command::GetType()
 {
-	return myType;
+        return myType;
 }
 
 //=======================================================================
@@ -411,7 +411,7 @@ SMESHDS_CommandType SMESHDS_Command::GetType()
 //=======================================================================
 int SMESHDS_Command::GetNumber()
 {
-	return myNumber;
+        return myNumber;
 }
 
 //=======================================================================
@@ -420,7 +420,7 @@ int SMESHDS_Command::GetNumber()
 //=======================================================================
 const list < int >&SMESHDS_Command::GetIndexes()
 {
-	return myIntegers;
+        return myIntegers;
 }
 
 //=======================================================================
@@ -429,7 +429,7 @@ const list < int >&SMESHDS_Command::GetIndexes()
 //=======================================================================
 const list < double >&SMESHDS_Command::GetCoords()
 {
-	return myReals;
+        return myReals;
 }
 
 

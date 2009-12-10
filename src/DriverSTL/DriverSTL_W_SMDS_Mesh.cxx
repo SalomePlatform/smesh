@@ -71,7 +71,7 @@ Driver_Mesh::Status DriverSTL_W_SMDS_Mesh::Perform()
 // static methods
 
 static void writeInteger( const Standard_Integer& theVal,
-			 OSD_File& ofile )
+                         OSD_File& ofile )
 {
   union {
     Standard_Integer i;
@@ -90,7 +90,7 @@ static void writeInteger( const Standard_Integer& theVal,
 }
 
 static void writeFloat  ( const Standard_ShortReal& theVal,
-			 OSD_File& ofile)
+                         OSD_File& ofile)
 {
   union {
     Standard_ShortReal f;
@@ -179,7 +179,7 @@ Driver_Mesh::Status DriverSTL_W_SMDS_Mesh::writeAscii() const
       
       SMDS_ElemIteratorPtr aNodeIter = aFace->nodesIterator();
       for (; aNodeIter->more(); ) {
-	SMDS_MeshNode* node = (SMDS_MeshNode*)aNodeIter->next();
+        SMDS_MeshNode* node = (SMDS_MeshNode*)aNodeIter->next();
         buf += "     vertex "; 
         sprintf (sval,"% 12e",node->X());
         buf += sval;
@@ -249,10 +249,10 @@ Driver_Mesh::Status DriverSTL_W_SMDS_Mesh::writeBinary() const
 
       SMDS_ElemIteratorPtr aNodeIter = aFace->nodesIterator();
       for (; aNodeIter->more(); ) {
-	SMDS_MeshNode* node = (SMDS_MeshNode*)aNodeIter->next();
-	writeFloat(node->X(),aFile);
-	writeFloat(node->Y(),aFile);
-	writeFloat(node->Z(),aFile);
+        SMDS_MeshNode* node = (SMDS_MeshNode*)aNodeIter->next();
+        writeFloat(node->X(),aFile);
+        writeFloat(node->Y(),aFile);
+        writeFloat(node->Z(),aFile);
       }
       aFile.Write (&dum,2);
     } 

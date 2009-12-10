@@ -24,8 +24,8 @@
 
 #include "SMESH_DriverUNV.hxx"
 
-#include <iostream>	
-#include <sstream>	
+#include <iostream>     
+#include <sstream>      
 #include <fstream>
 #include <string>
 #include <stdexcept>
@@ -62,14 +62,14 @@ namespace UNV{
        * a "-1" followed by a number means the beginning of a dataset
        * stop combing at the end of the file
        */
-      while( ((olds != "-1") || (news == "-1") ) && !in_file.eof() ){	  
-	olds = news;
-	in_file >> news;
+      while( ((olds != "-1") || (news == "-1") ) && !in_file.eof() ){     
+        olds = news;
+        in_file >> news;
       }
       if(in_file.eof())
-	return false;
+        return false;
       if (news == ds_name)
-	return true;
+        return true;
     }
     // should never end up here
     return false;

@@ -28,11 +28,11 @@
 
 enum SMDS_TypeOfPosition // Value is equal to shape dimention
 {
-	SMDS_TOP_UNSPEC  = -1,
-	SMDS_TOP_VERTEX  = 0,
-	SMDS_TOP_EDGE    = 1,
-	SMDS_TOP_FACE    = 2,
-	SMDS_TOP_3DSPACE = 3
+        SMDS_TOP_UNSPEC  = -1,
+        SMDS_TOP_VERTEX  = 0,
+        SMDS_TOP_EDGE    = 1,
+        SMDS_TOP_FACE    = 2,
+        SMDS_TOP_3DSPACE = 3
 };
 
 #endif
