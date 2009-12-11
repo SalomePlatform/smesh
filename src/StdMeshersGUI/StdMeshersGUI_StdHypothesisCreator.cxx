@@ -1004,8 +1004,8 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
     if(vertID>0) {
       aVec->length(1);
       aVec[0] = vertID;
+      aDirectionWidget->SetListOfIDs( aVec );
     }
-    aDirectionWidget->SetListOfIDs( aVec );
     aDirectionWidget->showPreview( true );
     customWidgets()->append ( aDirectionWidget );
   }
