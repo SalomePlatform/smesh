@@ -107,9 +107,11 @@
 #include "OpUtil.hxx"
 
 #include CORBA_CLIENT_HEADER(SALOME_ModuleCatalog)
+#include CORBA_CLIENT_HEADER(SALOME_Session)
 
 #include "GEOM_Client.hxx"
 #include "Utils_ExceptHandlers.hxx"
+#include "Basics_Utils.hxx"
 
 #include <map>
 
@@ -279,6 +281,28 @@ SMESH_Gen_i::SMESH_Gen_i( CORBA::ORB_ptr            orb,
 
   // set it in standalone mode only
   //OSD::SetSignal( true );
+
+  // 0020605: EDF 1190 SMESH: Display performance. 80 seconds for 52000 cells.
+  // find out mode (embedded or standalone) here else
+  // meshes created before calling SMESH_Client::GetSMESHGen(), which calls
+  // SMESH_Gen_i::SetEmbeddedMode(), have wrong IsEmbeddedMode flag
+  if ( SALOME_NamingService* ns = GetNS() )
+  {
+    CORBA::Object_var obj = ns->Resolve( "/Kernel/Session" );
+    SALOME::Session_var session = SALOME::Session::_narrow( obj ) ;
+    if ( !session->_is_nil() )
+    {
+      CORBA::String_var s_host = session->getHostname();
+      CORBA::Long        s_pid = session->getPID();
+      string my_host = Kernel_Utils::GetHostname();
+#ifdef WNT
+      long    my_pid = (long)_getpid();
+#else
+      long    my_pid = (long) getpid();
+#endif
+      SetEmbeddedMode( s_pid == my_pid && my_host == s_host.in() );
+    }
+  }
 }
 
 //=============================================================================
