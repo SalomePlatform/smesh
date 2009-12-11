@@ -73,6 +73,10 @@
 #include <vtkIntArray.h>
 #include <vtkProperty2D.h>
 #include <vtkPointData.h>
+#include <vtkConfigure.h>
+#if !defined(VTK_XVERSION)
+#define VTK_XVERSION (VTK_MAJOR_VERSION<<16)+(VTK_MINOR_VERSION<<8)+(VTK_BUILD_VERSION)
+#endif
 
 // Qt includes
 #include <QApplication>
@@ -145,7 +149,9 @@ namespace SMESH
     
       myPtsLabeledDataMapper = vtkLabeledDataMapper::New();
       myPtsLabeledDataMapper->SetInput(myPtsSelectVisiblePoints->GetOutput());
+#if (VTK_XVERSION < 0x050200)
       myPtsLabeledDataMapper->SetLabelFormat("%g");
+#endif
       myPtsLabeledDataMapper->SetLabelModeToLabelScalars();
     
       vtkTextProperty* aPtsTextProp = vtkTextProperty::New();

@@ -404,9 +404,7 @@ SMESH_ActorDef::SMESH_ActorDef()
     
   myPtsLabeledDataMapper = vtkLabeledDataMapper::New();
   myPtsLabeledDataMapper->SetInput(myPtsSelectVisiblePoints->GetOutput());
-#if (VTK_XVERSION >= 0x050200)
-  myPtsLabeledDataMapper->SetLabelFormat("%d");
-#else
+#if (VTK_XVERSION < 0x050200)
   myPtsLabeledDataMapper->SetLabelFormat("%g");
 #endif
   myPtsLabeledDataMapper->SetLabelModeToLabelScalars();
@@ -449,9 +447,7 @@ SMESH_ActorDef::SMESH_ActorDef()
     
   myClsLabeledDataMapper = vtkLabeledDataMapper::New();
   myClsLabeledDataMapper->SetInput(myClsSelectVisiblePoints->GetOutput());
-#if (VTK_XVERSION >= 0x050200)
-  myClsLabeledDataMapper->SetLabelFormat("%d");
-#else
+#if (VTK_XVERSION < 0x050200)
   myClsLabeledDataMapper->SetLabelFormat("%g");
 #endif
   myClsLabeledDataMapper->SetLabelModeToLabelScalars();
