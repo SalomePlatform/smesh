@@ -1630,7 +1630,7 @@ bool SMESH_Mesh::SortByMeshOrder(list<SMESH_subMesh*>& theListToSort) const
 
   // iterates on ordered submeshes and insert them in detected positions
   map< int, TPosInList >::iterator i_pos = sortedPos.begin();
-  for ( ; onlyBIt != onlyEIt; ++onlyBIt )
+  for ( ; onlyBIt != onlyEIt; ++onlyBIt, ++i_pos )
     *(i_pos->second) = *onlyBIt;
 
   return res;
@@ -1649,12 +1649,9 @@ list<SMESH_subMesh*> SMESH_Mesh::getAncestorsSubMeshes
 {
   list<SMESH_subMesh*> listOfSubMesh;
   TopTools_ListIteratorOfListOfShape it( GetAncestors( theSubShape ));
-  for (; it.More(); it.Next() ) {
-    int index = _myMeshDS->ShapeToIndex(it.Value());
-    map <int, SMESH_subMesh *>::const_iterator i_sm = _mapSubMesh.find(index);
-    if (i_sm != _mapSubMesh.end())
-      listOfSubMesh.push_back(i_sm->second);
-  }
+  for (; it.More(); it.Next() )
+    if ( SMESH_subMesh* sm = GetSubMeshContaining( it.Value() ))
+      listOfSubMesh.push_back(sm);
 
   // sort submeshes according to stored mesh order
   SortByMeshOrder( listOfSubMesh );
