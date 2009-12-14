@@ -3451,7 +3451,7 @@ class Mesh:
     def GetLastCreatedElems(self):
         return self.editor.GetLastCreatedElems()
 
-     ## Creates a hole in a mesh by doubling the nodes of some particular elements
+    ## Creates a hole in a mesh by doubling the nodes of some particular elements
     #  @param theNodes identifiers of nodes to be doubled
     #  @param theModifiedElems identifiers of elements to be updated by the new (doubled) 
     #         nodes. If list of element identifiers is empty then nodes are doubled but 
