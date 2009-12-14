@@ -163,9 +163,12 @@ applying algorithms on shared subshapes of Mesh shape.
 <em>To change submesh priority:</em>
 <ol>
 <li>From the Mesh menu choose the "Change submesh priority" on
-selected Mesh item, or invoke from popup menu.
+selected Mesh item, or invoke from popup menu. The opened dialogue box
+shows a list of submeshes in the order of their priority. Algorithm and its
+hypotheses of a submesh being upper in the list are applied before those of
+a submesh lower in the list.
 
-There are example of submesh order modifications of Mesh created on a Box
+There is an example of submesh order modifications of Mesh created on a Box
 shape. The main Mesh object:
 <ul>
 <li><i>3D</i> <b>Tetrahedron (Netgen)</b> with Hypothesis<b>Max Element Volume</b></li>
@@ -192,7 +195,7 @@ is:
 <li><i>2D</i> Netgen 1D-2D with Hypothesis <b>Netgen Simple parameters</b>
 (Number of Segments = 12)</li>
 </ul>
-The submeshes can become concurrent if thir algorithms leads to mesh shared subshape
+The submeshes can become concurrent if their algorithms leads to mesh shared subshape
 with different algorithms (or different algorithms parameters, i.e. hypothesises).
 In fact, we have three submeshes with concurrent algorithms, becase
 they has different hypothesises assigned to them. 
