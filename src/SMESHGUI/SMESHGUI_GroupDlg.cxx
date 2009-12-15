@@ -2236,14 +2236,20 @@ bool SMESHGUI_GroupDlg::SetAppropriateActor()
   } else {
     // try mesh actor
     SMESH_Actor* anActor = SMESH::FindActorByObject(myMesh);
-    if (anActor && anActor->hasIO())
-      {
-        isActor = true;
-        if (aViewWindow && !aViewWindow->isVisible(anActor->getIO()))
-          isActor = false;
-        else
-          myActorsList.append(anActor);
-      }
+    if (anActor && anActor->hasIO()) {
+      isActor = true;
+      if (aViewWindow && !aViewWindow->isVisible(anActor->getIO()))
+        isActor = false;
+      else
+        myActorsList.append(anActor);
+    }
+    
+    // try group actor
+    if (!isActor && !myGroup->_is_nil()) {
+      SMESH_Actor* anActor = SMESH::FindActorByObject(myGroup);
+      if (anActor && anActor->hasIO())
+        myActorsList.append(anActor);
+    }
     
     // try any visible actor of group or submesh of current mesh
     if (aViewWindow) {
@@ -2264,7 +2270,7 @@ bool SMESHGUI_GroupDlg::SetAppropriateActor()
             if (anActor && anActor->hasIO()) {
               Handle(SALOME_InteractiveObject) anIO = anActor->getIO();
               if (aViewWindow->isVisible(anIO)) {
-                if (anIO->hasEntry() && strncmp(anIO->getEntry(), meshEntry, len) == 0)
+                if (anIO->hasEntry() && strncmp(anIO->getEntry(), meshEntry, len) == 0 && !myActorsList.contains(anActor) )
                   myActorsList.append(anActor);
               }
             }
