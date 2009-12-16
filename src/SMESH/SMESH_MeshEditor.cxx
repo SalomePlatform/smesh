@@ -5640,9 +5640,9 @@ bool SMESH_MeshEditor::isOut( const SMDS_MeshElement* element, const gp_Pnt& poi
     for ( i = 0; i < nbNodes; ++i )
     {
       double r;
-      if ( dist[i] < tol )
+      if ( fabs( dist[i]) < tol )
         r = 0.;
-      else if ( dist[i+1] < tol )
+      else if ( fabs( dist[i+1]) < tol )
         r = 1.;
       else if ( dist[i] * dist[i+1] < 0 )
         r = dist[i] / ( dist[i] - dist[i+1] );
