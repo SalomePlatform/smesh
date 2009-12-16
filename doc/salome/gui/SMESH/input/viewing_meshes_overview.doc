@@ -24,6 +24,9 @@ Object Browser, applying all recent changes. </li>
 information about the mesh.</li>
 <li>\ref mesh_element_info_anchor "Mesh Element Info" - provides basic
 information about the selected element of the mesh. </li>
+<li>\subpage find_element_by_point_page "Find Element by Point" -
+allows to find all mesh elements, to which belongs a point with the
+given coordinates.</li>
 <li>\subpage numbering_page "Numbering"  - allows to display the ID
 numbers of all meshing elements or nodes composing your mesh in the
 viewer.</li>
@@ -31,6 +34,8 @@ viewer.</li>
 Wireframe, Shading and Nodes presentation.</li>
 <li>\subpage display_entity_page "Display Entity" - allows to display
 Faces, Edges or both.</li>
+<li><b>2D Quadratic</b> - allows to select between the representation
+of quadratic edges as broken <b>lines</b> or as <b>arcs</b></li>
 <li><b>Orientation of faces</b> - shows vectors of orientation of
 faces of the selected mesh</li> 
 <li><b>Colors / Size</b> - allows to select color and size of
@@ -43,7 +48,12 @@ presents various information about meshes.</li>
 <li><b>Hide</b> - allows to hide the selected mesh from the viewer.</li>
 <li><b>Show Only</b> -allows to display only the selected mesh, hiding all other from the viewer.</li>
 <li><b>Dump view</b> - exports an object from the viewer in bmp, png, jpg or jpeg image format.</li>
-<li><b>Change background</b> - allows to redefine the background color. By default it is black.</li>
+<li><b>Change background</b> - allows to redefine the background
+color. By default it is black.</li>
+<li><b>View Operations</b> checkbox - allows to show/hide the
+visualization toolbar in the viewer window.</li>
+<li><b>Recording Operations</b> - allows to show/hide the recording
+toolbar in the viewer window.</li>
 </ul>
 
 */
