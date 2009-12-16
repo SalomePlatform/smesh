@@ -347,7 +347,11 @@
         </message>
         <message>
             <source>MEN_FIND_ELEM</source>
-            <translation>Find element by point</translation>
+            <translation>Find Element by Point</translation>
+        </message>
+        <message>
+            <source>TOP_FIND_ELEM</source>
+            <translation>Find Element by Point</translation>
         </message>
         <message>
             <source>MEN_FREE_BORDER</source>
@@ -4293,7 +4297,7 @@ Please specify them and try again</translation>
         <name>SMESHGUI_FindElemByPointDlg</name>
         <message>
             <source>CAPTION</source>
-            <translation>Find elements at point</translation>
+            <translation>Find Element by Point</translation>
         </message>
         <message>
             <source>CREATE_NEW_METHOD</source>
