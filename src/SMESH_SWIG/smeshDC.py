@@ -3451,7 +3451,7 @@ class Mesh:
     def GetLastCreatedElems(self):
         return self.editor.GetLastCreatedElems()
 
-    ## Creates a hole in a mesh by doubling the nodes of some particular elements
+     ## Creates a hole in a mesh by doubling the nodes of some particular elements
     #  @param theNodes identifiers of nodes to be doubled
     #  @param theModifiedElems identifiers of elements to be updated by the new (doubled) 
     #         nodes. If list of element identifiers is empty then nodes are doubled but 
@@ -3530,7 +3530,7 @@ class Mesh:
     #         The replicated nodes should be associated to affected elements.
     #  @ingroup l2_modif_edit
     def DoubleNodeElemGroupInRegion(self, theElems, theNodesNot, theShape):
-        return self.editor.DoubleNodeElemGroup(theElems, theNodesNot, theShape)
+        return self.editor.DoubleNodeElemGroupInRegion(theElems, theNodesNot, theShape)
         
     ## Creates a hole in a mesh by doubling the nodes of some particular elements
     #  This method provided for convenience works as DoubleNodes() described above.
