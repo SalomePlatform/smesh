@@ -46,8 +46,9 @@
 
 #include "utilities.h"
 
-#include <BRep_Tool.hxx>
+#include <BRepAdaptor_Surface.hxx>
 #include <BRepClass3d_SolidClassifier.hxx>
+#include <BRep_Tool.hxx>
 #include <ElCLib.hxx>
 #include <Extrema_GenExtPS.hxx>
 #include <Extrema_POnSurf.hxx>
@@ -8705,6 +8706,7 @@ SMESH_MeshEditor::FindMatchingNodes(set<const SMDS_MeshElement*>& theSide1,
   return SEW_OK;
 }
 
+//================================================================================
 /*!
   \brief Creates a hole in a mesh by doubling the nodes of some particular elements
   \param theElems - the list of elements (edges or faces) to be replicated
@@ -8714,6 +8716,8 @@ SMESH_MeshEditor::FindMatchingNodes(set<const SMDS_MeshElement*>& theSide1,
   replicated nodes should be associated to.
   \return TRUE if operation has been completed successfully, FALSE otherwise
 */
+//================================================================================
+
 bool SMESH_MeshEditor::DoubleNodes( const TIDSortedElemSet& theElems,
                                     const TIDSortedElemSet& theNodesNot,
                                     const TIDSortedElemSet& theAffectedElems )
@@ -8737,6 +8741,7 @@ bool SMESH_MeshEditor::DoubleNodes( const TIDSortedElemSet& theElems,
   return res;
 }
 
+//================================================================================
 /*!
   \brief Creates a hole in a mesh by doubling the nodes of some particular elements
   \param theMeshDS - mesh instance
@@ -8746,6 +8751,8 @@ bool SMESH_MeshEditor::DoubleNodes( const TIDSortedElemSet& theElems,
   \param theIsDoubleElem - flag os to replicate element or modify
   \return TRUE if operation has been completed successfully, FALSE otherwise
 */
+//================================================================================
+
 bool SMESH_MeshEditor::doubleNodes( SMESHDS_Mesh*     theMeshDS,
                                     const TIDSortedElemSet& theElems,
                                     const TIDSortedElemSet& theNodesNot,
@@ -8797,28 +8804,7 @@ bool SMESH_MeshEditor::doubleNodes( SMESHDS_Mesh*     theMeshDS,
   return res;
 }
 
-/*!
-  \brief Check if element located inside shape
-  \return TRUE if IN or ON shape, FALSE otherwise
-*/
-
-static bool isInside(const SMDS_MeshElement* theElem,
-                     BRepClass3d_SolidClassifier& theBsc3d,
-                     const double theTol)
-{
-  gp_XYZ centerXYZ (0, 0, 0);
-  SMDS_ElemIteratorPtr aNodeItr = theElem->nodesIterator();
-  while (aNodeItr->more())
-  {
-    SMDS_MeshNode* aNode = (SMDS_MeshNode*)aNodeItr->next();
-    centerXYZ += gp_XYZ(aNode->X(), aNode->Y(), aNode->Z());
-  }
-  gp_Pnt aPnt(centerXYZ);
-  theBsc3d.Perform(aPnt, theTol);
-  TopAbs_State aState = theBsc3d.State();
-  return (aState == TopAbs_IN || aState == TopAbs_ON );
-}
-
+//================================================================================
 /*!
   \brief Creates a hole in a mesh by doubling the nodes of some particular elements
   \param theNodes - identifiers of nodes to be doubled
@@ -8827,6 +8813,8 @@ static bool isInside(const SMDS_MeshElement* theElem,
          they not assigned to elements
   \return TRUE if operation has been completed successfully, FALSE otherwise
 */
+//================================================================================
+
 bool SMESH_MeshEditor::DoubleNodes( const std::list< int >& theListOfNodes, 
                                     const std::list< int >& theListOfModifiedElems )
 {
@@ -8908,15 +8896,77 @@ bool SMESH_MeshEditor::DoubleNodes( const std::list< int >& theListOfNodes,
   return true;
 }
 
+namespace {
+
+  //================================================================================
+  /*!
+  \brief Check if element located inside shape
+  \return TRUE if IN or ON shape, FALSE otherwise
+  */
+  //================================================================================
+
+  template<class Classifier>
+  bool isInside(const SMDS_MeshElement* theElem,
+                Classifier&             theClassifier,
+                const double            theTol)
+  {
+    gp_XYZ centerXYZ (0, 0, 0);
+    SMDS_ElemIteratorPtr aNodeItr = theElem->nodesIterator();
+    while (aNodeItr->more())
+      centerXYZ += TNodeXYZ(cast2Node( aNodeItr->next()));
+
+    gp_Pnt aPnt = centerXYZ / theElem->NbNodes();
+    theClassifier.Perform(aPnt, theTol);
+    TopAbs_State aState = theClassifier.State();
+    return (aState == TopAbs_IN || aState == TopAbs_ON );
+  }
+
+  //================================================================================
+  /*!
+   * \brief Classifier of the 3D point on the TopoDS_Face
+   *        with interaface suitable for isInside()
+   */
+  //================================================================================
+
+  struct _FaceClassifier
+  {
+    Extrema_ExtPS       _extremum;
+    BRepAdaptor_Surface _surface;
+    TopAbs_State        _state;
+
+    _FaceClassifier(const TopoDS_Face& face):_extremum(),_surface(face),_state(TopAbs_OUT)
+    {
+      _extremum.Initialize( _surface,
+                            _surface.FirstUParameter(), _surface.LastUParameter(),
+                            _surface.FirstVParameter(), _surface.LastVParameter(),
+                            _surface.Tolerance(), _surface.Tolerance() );
+    }
+    void Perform(const gp_Pnt& aPnt, double theTol)
+    {
+      _state = TopAbs_OUT;
+      _extremum.Perform(aPnt);
+      if ( _extremum.IsDone() )
+        for ( int iSol = 1; iSol <= _extremum.NbExt() && _state == TopAbs_OUT; ++iSol)
+          _state = ( _extremum.Value(iSol) <= theTol ? TopAbs_IN : TopAbs_OUT );
+    }
+    TopAbs_State State() const
+    {
+      return _state;
+    }
+  };
+}
+
+//================================================================================
 /*!
   \brief Creates a hole in a mesh by doubling the nodes of some particular elements
   \param theElems - group of of elements (edges or faces) to be replicated
-  \param theNodesNot - group of nodes not to replicated
+  \param theNodesNot - group of nodes not to replicate
   \param theShape - shape to detect affected elements (element which geometric center
   located on or inside shape).
   The replicated nodes should be associated to affected elements.
   \return TRUE if operation has been completed successfully, FALSE otherwise
 */
+//================================================================================
 
 bool SMESH_MeshEditor::DoubleNodesInRegion( const TIDSortedElemSet& theElems,
                                             const TIDSortedElemSet& theNodesNot,
@@ -8926,8 +8976,17 @@ bool SMESH_MeshEditor::DoubleNodesInRegion( const TIDSortedElemSet& theElems,
     return false;
 
   const double aTol = Precision::Confusion();
-  BRepClass3d_SolidClassifier bsc3d(theShape);
-  bsc3d.PerformInfinitePoint(aTol);
+  auto_ptr< BRepClass3d_SolidClassifier> bsc3d;
+  auto_ptr<_FaceClassifier>              aFaceClassifier;
+  if ( theShape.ShapeType() == TopAbs_SOLID )
+  {
+    bsc3d.reset( new BRepClass3d_SolidClassifier(theShape));;
+    bsc3d->PerformInfinitePoint(aTol);
+  }
+  else if (theShape.ShapeType() == TopAbs_FACE )
+  {
+    aFaceClassifier.reset( new _FaceClassifier(TopoDS::Face(theShape)));
+  }
 
   // iterates on indicated elements and get elements by back references from their nodes
   TIDSortedElemSet anAffected;
@@ -8941,15 +9000,17 @@ bool SMESH_MeshEditor::DoubleNodesInRegion( const TIDSortedElemSet& theElems,
     SMDS_ElemIteratorPtr nodeItr = anElem->nodesIterator();
     while ( nodeItr->more() )
     {
-      const SMDS_MeshNode* aNode = static_cast<const SMDS_MeshNode*>(nodeItr->next());
+      const SMDS_MeshNode* aNode = cast2Node(nodeItr->next());
       if ( !aNode || theNodesNot.find(aNode) != theNodesNot.end() )
         continue;
       SMDS_ElemIteratorPtr backElemItr = aNode->GetInverseElementIterator();
       while ( backElemItr->more() )
       {
-        SMDS_MeshElement* curElem = (SMDS_MeshElement*)backElemItr->next();
+        const SMDS_MeshElement* curElem = backElemItr->next();
         if ( curElem && theElems.find(curElem) == theElems.end() &&
-             isInside( curElem, bsc3d, aTol ) )
+             ( bsc3d.get() ?
+               isInside( curElem, *bsc3d, aTol ) :
+               isInside( curElem, *aFaceClassifier, aTol )))
           anAffected.insert( curElem );
       }
     }
@@ -8957,11 +9018,13 @@ bool SMESH_MeshEditor::DoubleNodesInRegion( const TIDSortedElemSet& theElems,
   return DoubleNodes( theElems, theNodesNot, anAffected );
 }
 
+//================================================================================
 /*!
  * \brief Generated skin mesh (containing 2D cells) from 3D mesh
  * The created 2D mesh elements based on nodes of free faces of boundary volumes
  * \return TRUE if operation has been completed successfully, FALSE otherwise
  */
+//================================================================================
 
 bool SMESH_MeshEditor::Make2DMeshFrom3D()
 {
