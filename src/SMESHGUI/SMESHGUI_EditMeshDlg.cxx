@@ -638,13 +638,17 @@ void SMESHGUI_EditMeshDlg::ClickOnOk()
 void SMESHGUI_EditMeshDlg::ClickOnCancel()
 {
   myIdPreview->SetPointsLabeled(false);
+  SMESH::SetPointRepresentation(false);
+  disconnect(mySelectionMgr, 0, this, 0);
+  disconnect(mySMESHGUI, 0, this, 0);
+  mySMESHGUI->ResetState();
+
   mySelectionMgr->clearFilters();
   //mySelectionMgr->clearSelected();
-  SMESH::SetPointRepresentation(false);
+
   if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
     aViewWindow->SetSelectionMode(ActorSelection);
-  disconnect(mySelectionMgr, 0, this, 0);
-  mySMESHGUI->ResetState();
+
   reject();
 }
 
@@ -862,7 +866,11 @@ void SMESHGUI_EditMeshDlg::onAddGroup()
     return;
 
   QString anIDs = "";
-  SMESH::GetNameOfSelectedNodes(mySelector, myActor->getIO(), anIDs);
+  int aNbElements = 0;
+  aNbElements = SMESH::GetNameOfSelectedNodes(mySelector, myActor->getIO(), anIDs);
+
+  if (aNbElements < 1)
+    return;
   
   ListCoincident->clearSelection();
   ListCoincident->addItem(anIDs);
