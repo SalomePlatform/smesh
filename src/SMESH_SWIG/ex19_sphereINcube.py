@@ -168,6 +168,8 @@ UnionList(groupe, groupe_sphere)
 # Meshing
 # =======
 
+smesh.SetCurrentStudy(salome.myStudy)
+
 # Create a hexahedral mesh
 # ------------------------
 

@@ -28,6 +28,8 @@ geompy.addToStudy(cylinder, "Cylinder")
 # Define a mesh on a geometry
 # ---------------------------
 
+smesh.SetCurrentStudy(salome.myStudy)
+
 m = smesh.Mesh(cylinder)
 
 # 2D mesh with BLSURF

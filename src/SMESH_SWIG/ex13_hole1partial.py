@@ -214,6 +214,8 @@ piece_id = addToStudy(piece, "ex13_hole1partial")
 # Meshing
 # =======
 
+smesh.SetCurrentStudy(salome.myStudy)
+
 # Create a mesh
 # -------------
 

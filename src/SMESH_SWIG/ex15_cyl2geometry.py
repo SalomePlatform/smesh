@@ -178,6 +178,8 @@ piece_id = addToStudy(piece, "ex15_cyl2geometry")
 # Meshing
 # =======
 
+smesh.SetCurrentStudy(salome.myStudy)
+
 # Create a hexahedral mesh
 # ------------------------
 

@@ -98,6 +98,8 @@ geo.DifferenceList(group_1, [group_1_box])
 # Mesh the blocks with hexahedral
 # -------------------------------
 
+smesh.SetCurrentStudy(salome.myStudy)
+
 def discretize(x, y, z,  n, s=blocks):
     p = geo.MakeVertex(x, y, z)
     e = geo.GetEdgeNearPoint(s, p)

@@ -36,6 +36,7 @@ import GEOM_Spanner
 isBlocksTest = 0 # False
 isMeshTest   = 1 # True
 
+smesh.SetCurrentStudy(salome.myStudy)
 
 GEOM_Spanner.MakeSpanner(geompy, math, isBlocksTest, isMeshTest, smesh)
 

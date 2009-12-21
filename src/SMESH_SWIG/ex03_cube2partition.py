@@ -85,6 +85,8 @@ piece_id = addToStudy(piece, "ex03_cube2partition")
 # Meshing
 # =======
 
+smesh.SetCurrentStudy(salome.myStudy)
+
 # Create hexahedrical mesh on piece
 # ---------------------------------
 

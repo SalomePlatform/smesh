@@ -118,6 +118,8 @@ piece_id = addToStudy(piece, "ex18_dome2")
 # Maillage
 # ========
 
+smesh.SetCurrentStudy(salome.myStudy)
+
 # Maillage hexahedrique
 # ---------------------
 

@@ -99,6 +99,8 @@ piece_id = addToStudy(piece, "ex14_cyl1holed")
 # Maillage
 # ========
 
+smesh.SetCurrentStudy(salome.myStudy)
+
 # Creer un maillage hexahedrique
 # ------------------------------
 

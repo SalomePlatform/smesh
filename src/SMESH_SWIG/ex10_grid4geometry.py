@@ -80,6 +80,8 @@ piece_id = addToStudy(piece, "ex10_grid4geometry")
 # Meshing
 # =======
 
+smesh.SetCurrentStudy(salome.myStudy)
+
 # Create a hexahedral mesh
 # ------------------------
 

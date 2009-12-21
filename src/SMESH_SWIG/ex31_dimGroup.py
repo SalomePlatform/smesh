@@ -18,7 +18,7 @@ global Box_1
 Box_1 = geompy.MakeBoxDXDYDZ(200, 200, 200)
 geompy.addToStudy( Box_1, "Box_1" )
 
-#smesh.smesh.SetCurrentStudy(theStudy)
+smesh.SetCurrentStudy(salome.myStudy)
 import StdMeshers
 Mesh_1 = smesh.Mesh(Box_1)
 Regular_1D = Mesh_1.Segment()

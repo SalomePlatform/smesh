@@ -93,6 +93,8 @@ UnionIDs(group, faces)
 # Create a mesh
 # =============
 
+smesh.SetCurrentStudy(salome.myStudy)
+
 # Define a mesh on a geometry
 # ---------------------------
 

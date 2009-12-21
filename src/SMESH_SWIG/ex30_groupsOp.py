@@ -16,7 +16,7 @@ global Face_1
 Face_1 = geompy.MakeFaceHW(100, 100, 1)
 geompy.addToStudy( Face_1, "Face_1" )
 
-#smesh.smesh.SetCurrentStudy(aStudyId)
+smesh.SetCurrentStudy(salome.myStudy)
 import StdMeshers
 pattern = smesh.GetPattern()
 Mesh_1 = smesh.Mesh(Face_1)

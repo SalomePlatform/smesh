@@ -22,6 +22,8 @@
 #
 import smesh
 
+smesh.SetCurrentStudy(salome.myStudy)
+
 def BuildGroupLyingOn(theMesh, theElemType, theName, theShape):
     aFilterMgr = smesh.smesh.CreateFilterManager()
     aFilter = aFilterMgr.CreateFilter()

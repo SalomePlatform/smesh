@@ -33,6 +33,7 @@ import SMESH
 modulecatalog = naming_service.Resolve("/Kernel/ModulCatalog")
 
 smesh = lcc.FindOrLoadComponent("FactoryServer", "SMESH")
+smesh.SetCurrentStudy(myStudy)
 myStudyBuilder = myStudy.NewBuilder()
 
 if myStudyBuilder is None:
