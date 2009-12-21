@@ -73,6 +73,7 @@ print "number of Edges  in shell : ", len(subEdgeList)
 
 
 ### ---------------------------- SMESH --------------------------------------
+smesh.SetCurrentStudy(salome.myStudy)
 
 # ---- init a Mesh with the shell
 

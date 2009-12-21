@@ -52,6 +52,7 @@ id_ellipse2 = geompy.addToStudy(ellipse2, "Ellips 2")
 
 
 #---------------------------------SMESH
+smesh.SetCurrentStudy(salome.myStudy)
 
 # create the path mesh
 mesh1 = smesh.Mesh(ellipse1, "Path Mesh")

@@ -124,6 +124,7 @@ for i in range(8):
     idEdgeZ.append(geompy.addToStudyInFather(vol,edgeZ[i],"EdgeZ"+str(i+1)))
 
 ### ---------------------------- SMESH --------------------------------------
+smesh.SetCurrentStudy(salome.myStudy)
 
 # ---- init a Mesh with the volume
 

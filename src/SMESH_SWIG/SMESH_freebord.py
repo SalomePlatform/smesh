@@ -41,6 +41,7 @@ idbox = geompy.addToStudy( aBox, "box" )
 aBox  = salome.IDToObject( idbox )
 
 # Create mesh
+smesh.SetCurrentStudy(salome.myStudy)
 
 mesh = smesh.Mesh(aBox, "Mesh_freebord")
 

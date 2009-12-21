@@ -58,7 +58,7 @@ salome.sg.updateObjBrowser(1);
 # ---- launch SMESH
 smeshgui = salome.ImportComponentGUI("SMESH")
 smeshgui.Init(salome.myStudyId)
-
+smesh.SetCurrentStudy(salome.myStudy)
 
 # ---- Creating meshes
 

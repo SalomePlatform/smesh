@@ -45,6 +45,7 @@ status = geompy.CheckShape(compshell)
 print " check status ", status
 
 ### ---------------------------- SMESH --------------------------------------
+smesh.SetCurrentStudy(salome.myStudy)
 
 # ---- init a Mesh with the compshell
 

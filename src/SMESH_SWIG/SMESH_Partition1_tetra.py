@@ -119,6 +119,7 @@ status = geompy.CheckShape(alveole)
 print " check status ", status
 
 # ---- launch SMESH
+smesh.SetCurrentStudy(salome.myStudy)
 
 # ---- init a Mesh with the alveole
 shape_mesh = salome.IDToObject( idalveole )

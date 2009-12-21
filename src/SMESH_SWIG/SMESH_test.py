@@ -56,6 +56,7 @@ ide = geompy.addToStudyInFather(face, edge, name)
 
 # ---- SMESH
 
+smesh.SetCurrentStudy(salome.myStudy)
 box = salome.IDToObject(idb)
 mesh = smesh.Mesh(box, "Meshbox")
 

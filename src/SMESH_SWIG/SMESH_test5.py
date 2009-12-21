@@ -30,6 +30,8 @@ import CORBA
 import os
 import os.path
 
+smesh.SetCurrentStudy(salome.myStudy)
+
 def SetSObjName(theSObj,theName) :
     ok, anAttr = theSObj.FindAttribute("AttributeName")
     if ok:

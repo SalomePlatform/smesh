@@ -60,6 +60,8 @@ idedge = geompy.addToStudyInFather(face, edge, name)
 
 # ---- SMESH
 
+smesh.SetCurrentStudy(salome.myStudy)
+
 # ---- Init a Mesh with the box
 
 mesh = smesh.Mesh(box, "Meshbox")

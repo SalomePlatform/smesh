@@ -103,6 +103,7 @@ Id_Result      = addToStudy(Result, "Result")
 
 #-----------------------------------------------------------------------
 #Meshing
+smesh.SetCurrentStudy(salome.myStudy)
 my_hexa = smesh.Mesh(Result, "Sphere_Mesh")
 algo = my_hexa.Segment()
 algo.NumberOfSegments(NbSeg)

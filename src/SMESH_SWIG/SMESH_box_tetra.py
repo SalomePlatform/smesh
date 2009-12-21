@@ -45,6 +45,7 @@ print "number of Edges  in box : ", len(subEdgeList)
 
 
 ### ---------------------------- SMESH --------------------------------------
+smesh.SetCurrentStudy(salome.myStudy)
 
 # ---- init a Mesh with the boxe
 

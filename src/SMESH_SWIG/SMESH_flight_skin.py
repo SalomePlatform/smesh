@@ -55,6 +55,7 @@ print "number of Edges  in flight : ", len(subEdgeList)
 
 
 ### ---------------------------- SMESH --------------------------------------
+smesh.SetCurrentStudy(salome.myStudy)
 
 # ---- init a Mesh with the shell
 shape_mesh = salome.IDToObject( idShape )

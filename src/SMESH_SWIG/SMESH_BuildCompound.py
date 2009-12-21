@@ -61,6 +61,8 @@ geompy.addToStudy(Box_sup, "Box_sup")
 geompy.addToStudyInFather(Box_sup, Fsup2, "Fsup")
 geompy.addToStudyInFather(Box_sup, Finf2, "Finf")
 
+smesh.SetCurrentStudy(salome.myStudy)
+
 ## create a bottom mesh
 Mesh_inf = smesh.Mesh(Box_inf, "Mesh_inf")
 algo1D_1=Mesh_inf.Segment()

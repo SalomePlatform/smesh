@@ -51,7 +51,8 @@ def GetNewNodes(mesh,Elems,OldNodes):
         pass
     return newnodes
             
-    
+smesh.SetCurrentStudy(salome.myStudy)
+
 # create empty mesh
 mesh = smesh.Mesh()
 

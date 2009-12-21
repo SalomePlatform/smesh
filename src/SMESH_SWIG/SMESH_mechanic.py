@@ -120,6 +120,7 @@ name      = geompy.SubShapeName( sub_face4, mechanic )
 Id_SubFace4 = geompy.addToStudyInFather( mechanic, sub_face4, name )
 
 # ---------------------------- SMESH --------------------------------------
+smesh.SetCurrentStudy(salome.myStudy)
 
 # -- Init --
 shape_mesh = salome.IDToObject( Id_mechanic )

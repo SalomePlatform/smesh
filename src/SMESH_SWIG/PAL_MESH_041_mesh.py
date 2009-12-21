@@ -54,7 +54,7 @@ Id_face1 = geompy.addToStudy(face1,"Face1")
 
 
 #-----------------------------SMESH-------------------------------------------
-
+smesh.SetCurrentStudy(salome.myStudy)
 
 # -- Init mesh --
 plane_mesh = salome.IDToObject( Id_face1)

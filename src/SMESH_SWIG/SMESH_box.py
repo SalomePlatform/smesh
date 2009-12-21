@@ -47,6 +47,7 @@ box    = geompy.MakeBox(0.,0.,0.,1.,1.,1.)
 boxId  = geompy.addToStudy(box,"box")
 
 # ---- SMESH
+smesh.SetCurrentStudy(salome.myStudy)
 
 # ---- init a Mesh
 

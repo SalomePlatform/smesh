@@ -50,6 +50,7 @@ idcircle = geompy.addToStudy(circle, "Circle")
 idface   = geompy.addToStudy(face,   "Circular face")
 
 
+smesh.SetCurrentStudy(salome.myStudy)
 
 # init a Mesh with the circular face
 mesh1 = smesh.Mesh(face, "Mesh on circular face")

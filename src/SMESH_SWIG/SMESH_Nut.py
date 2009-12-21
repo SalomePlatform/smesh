@@ -97,6 +97,8 @@ Cut_1_ID = geompy.addToStudy(Cut_1, "Cut_1")
 
 #Mesh creation
 
+smesh.SetCurrentStudy(salome.myStudy)
+
 # -- Init --
 shape_mesh = salome.IDToObject( Cut_1_ID )
 

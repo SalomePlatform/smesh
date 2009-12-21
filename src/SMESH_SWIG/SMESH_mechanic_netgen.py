@@ -104,6 +104,7 @@ print "number of Faces in mechanic : ",len(subFaceList)
 print "number of Edges in mechanic : ",len(subEdgeList)
 
 ### ---------------------------- SMESH --------------------------------------
+smesh.SetCurrentStudy(salome.myStudy)
 
 print "-------------------------- create Mesh, algorithm, hypothesis"
 

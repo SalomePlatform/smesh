@@ -95,6 +95,7 @@ salome.sg.updateObjBrowser(1)
 # -----------------------------------------------------------------------------
 
 print "-------------------------- mesh"
+smesh.SetCurrentStudy(salome.myStudy)
 
 # ---- init a Mesh with the geom shape
 shape_mesh = blob

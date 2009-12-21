@@ -40,6 +40,7 @@ face = salome.IDToObject(idface)
 
 # ---- SMESH
 
+smesh.SetCurrentStudy(salome.myStudy)
 mesh = smesh.Mesh(box, "Meshbox")
 
 # Set 1D algorithm/hypotheses to mesh
