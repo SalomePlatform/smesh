@@ -92,8 +92,8 @@ void StdMeshers_QuadrangleParams_i::SetTriaVertex(CORBA::Long vertID)
   }
 
   // Update Python script
-  /*  SMESH::TPythonDump() << _this() << ".SetEdgesToReverse( "
-      << theList << " )";*/
+  SMESH::TPythonDump() << _this() << ".SetTriaVertex( "
+      << vertID << " )";
 }
 
 //=============================================================================
