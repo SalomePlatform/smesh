@@ -1029,12 +1029,15 @@ bool SMESH_Mesh::GetAutoColor() throw(SALOME_Exception)
 
 bool SMESH_Mesh::HasDuplicatedGroupNamesMED()
 {
-  set<string> aGroupNames;
-  for ( map<int, SMESH_Group*>::iterator it = _mapGroup.begin(); it != _mapGroup.end(); it++ ) {
+  //set<string> aGroupNames; // Corrected for Mantis issue 0020028
+  map< SMDSAbs_ElementType, set<string> > aGroupNames;
+  for ( map<int, SMESH_Group*>::iterator it = _mapGroup.begin(); it != _mapGroup.end(); it++ )
+  {
     SMESH_Group* aGroup = it->second;
+    SMDSAbs_ElementType aType = aGroup->GetGroupDS()->GetType();
     string aGroupName = aGroup->GetName();
     aGroupName.resize(MAX_MED_GROUP_NAME_LENGTH);
-    if (!aGroupNames.insert(aGroupName).second)
+    if (!aGroupNames[aType].insert(aGroupName).second)
       return true;
   }
 
@@ -1067,17 +1070,19 @@ void SMESH_Mesh::ExportMED(const char *file,
   }
 
   // Pass groups to writer. Provide unique group names.
-  set<string> aGroupNames;
+  //set<string> aGroupNames; // Corrected for Mantis issue 0020028
+  map< SMDSAbs_ElementType, set<string> > aGroupNames;
   char aString [256];
   int maxNbIter = 10000; // to guarantee cycle finish
   for ( map<int, SMESH_Group*>::iterator it = _mapGroup.begin(); it != _mapGroup.end(); it++ ) {
     SMESH_Group*       aGroup   = it->second;
     SMESHDS_GroupBase* aGroupDS = aGroup->GetGroupDS();
     if ( aGroupDS ) {
+      SMDSAbs_ElementType aType = aGroupDS->GetType();
       string aGroupName0 = aGroup->GetName();
       aGroupName0.resize(MAX_MED_GROUP_NAME_LENGTH);
       string aGroupName = aGroupName0;
-      for (int i = 1; !aGroupNames.insert(aGroupName).second && i < maxNbIter; i++) {
+      for (int i = 1; !aGroupNames[aType].insert(aGroupName).second && i < maxNbIter; i++) {
         sprintf(&aString[0], "GR_%d_%s", i, aGroupName0.c_str());
         aGroupName = aString;
         aGroupName.resize(MAX_MED_GROUP_NAME_LENGTH);
