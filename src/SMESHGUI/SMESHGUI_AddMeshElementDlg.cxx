@@ -30,6 +30,7 @@
 #include "SMESHGUI_Utils.h"
 #include "SMESHGUI_VTKUtils.h"
 #include "SMESHGUI_MeshUtils.h"
+#include "SMESHGUI_GroupUtils.h"
 #include "SMESHGUI_IdValidator.h"
 
 #include <SMESH_Actor.h>
@@ -64,6 +65,7 @@
 #include <vtkProperty.h>
 
 // Qt includes
+#include <QComboBox>
 #include <QGroupBox>
 #include <QLabel>
 #include <QLineEdit>
@@ -359,6 +361,20 @@ SMESHGUI_AddMeshElementDlg::SMESHGUI_AddMeshElementDlg( SMESHGUI* theModule,
   if ( Reverse ) GroupC1Layout->addWidget(Reverse, 1, 0, 1, 3);
 
   /***************************************************************/
+  GroupGroups = new QGroupBox( tr( "SMESH_ADD_TO_GROUP" ), this );
+  GroupGroups->setCheckable( true );
+  QHBoxLayout* GroupGroupsLayout = new QHBoxLayout(GroupGroups);
+  GroupGroupsLayout->setSpacing(SPACING);
+  GroupGroupsLayout->setMargin(MARGIN);
+
+  TextLabel_GroupName = new QLabel( tr( "SMESH_GROUP" ), GroupGroups );
+  ComboBox_GroupName = new QComboBox( GroupGroups );
+  ComboBox_GroupName->setEditable( true );
+
+  GroupGroupsLayout->addWidget( TextLabel_GroupName );
+  GroupGroupsLayout->addWidget( ComboBox_GroupName, 1 );
+
+  /***************************************************************/
   GroupButtons = new QGroupBox(this);
   QHBoxLayout* GroupButtonsLayout = new QHBoxLayout(GroupButtons);
   GroupButtonsLayout->setSpacing(SPACING);
@@ -385,6 +401,7 @@ SMESHGUI_AddMeshElementDlg::SMESHGUI_AddMeshElementDlg( SMESHGUI* theModule,
   /***************************************************************/
   aTopLayout->addWidget(GroupConstructors);
   aTopLayout->addWidget(GroupC1);
+  aTopLayout->addWidget(GroupGroups);
   aTopLayout->addWidget(GroupButtons);
 
   Init(); /* Initialisations */
@@ -409,6 +426,9 @@ void SMESHGUI_AddMeshElementDlg::Init()
   Constructor1->setChecked(true);
   myEditCurrentArgument = LineEditC1A1;
   mySMESHGUI->SetActiveDialogBox((QDialog*)this);
+
+  /* reset "Add to group" control */
+  GroupGroups->setChecked( false );
 
   myNbOkNodes = 0;
   myActor = 0;
@@ -446,6 +466,9 @@ void SMESHGUI_AddMeshElementDlg::Init()
 //=================================================================================
 void SMESHGUI_AddMeshElementDlg::ClickOnApply()
 {
+  if( !isValid() )
+    return;
+
   if (myNbOkNodes && !mySMESHGUI->isActiveStudyLocked()) {
     myBusy = true;
     SMESH::long_array_var anArrayOfIndices = new SMESH::long_array;
@@ -458,22 +481,51 @@ void SMESHGUI_AddMeshElementDlg::ClickOnApply()
       else
         anArrayOfIndices[i] = aListId[ i ].toInt();
 
+    long anElemId = -1;
     SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditor();
     switch (myElementType) {
     case SMDSAbs_0DElement:
-      aMeshEditor->Add0DElement(anArrayOfIndices[0]); break;
+      anElemId = aMeshEditor->Add0DElement(anArrayOfIndices[0]); break;
     case SMDSAbs_Edge:
-      aMeshEditor->AddEdge(anArrayOfIndices.inout()); break;
+      anElemId = aMeshEditor->AddEdge(anArrayOfIndices.inout()); break;
     case SMDSAbs_Face: {
       if(myIsPoly)
-        aMeshEditor->AddPolygonalFace(anArrayOfIndices.inout());
+        anElemId = aMeshEditor->AddPolygonalFace(anArrayOfIndices.inout());
       else
-        aMeshEditor->AddFace(anArrayOfIndices.inout());
+        anElemId = aMeshEditor->AddFace(anArrayOfIndices.inout());
       break;
     }
     case SMDSAbs_Volume:
-      aMeshEditor->AddVolume(anArrayOfIndices.inout()); break;
+      anElemId = aMeshEditor->AddVolume(anArrayOfIndices.inout()); break;
     default:;
+    }
+
+    if( anElemId != -1 && GroupGroups->isChecked() ) {
+      SMESH::SMESH_Group_var aGroup;
+      QString aGroupName = ComboBox_GroupName->currentText();
+      SMESH::ListOfGroups aListOfGroups = *myMesh->GetGroups();
+      for( int i = 0, n = aListOfGroups.length(); i < n; i++ ) {
+        SMESH::SMESH_GroupBase_var aGroupBase = aListOfGroups[i];
+        if( !aGroupBase->_is_nil() ) {
+          SMESH::SMESH_Group_var aRefGroup = SMESH::SMESH_Group::_narrow( aGroupBase );
+          if( !aRefGroup->_is_nil() ) {
+            QString aRefGroupName( aRefGroup->GetName() );
+            if( aRefGroupName == aGroupName ) {
+              aGroup = aRefGroup; // // add node to existing group
+              break;
+            }
+          }
+        }
+      }
+      if( aGroup->_is_nil() ) // create new group
+        aGroup = SMESH::AddGroup( myMesh, (SMESH::ElementType)myElementType, aGroupName );
+
+      if( !aGroup->_is_nil() ) {
+        SMESH::long_array_var anIdList = new SMESH::long_array;
+        anIdList->length( 1 );
+        anIdList[0] = anElemId;
+        aGroup->Add( anIdList.inout() );
+      }
     }
 
     SALOME_ListIO aList; aList.Append( myActor->getIO() );
@@ -628,6 +680,8 @@ void SMESHGUI_AddMeshElementDlg::SelectionIntoArgument()
   mySimulation->SetVisibility(false);
   //  SMESH::SetPointRepresentation(true);
 
+  QString aCurrentEntry = myEntry;
+
   // get selected mesh
   SALOME_ListIO aList;
   mySelectionMgr->selectedObjects(aList,SVTK_Viewer::Type());
@@ -636,9 +690,28 @@ void SMESHGUI_AddMeshElementDlg::SelectionIntoArgument()
     return;
 
   Handle(SALOME_InteractiveObject) anIO = aList.First();
+  myEntry = anIO->getEntry();
   myMesh = SMESH::GetMeshByIO(anIO);
   if (myMesh->_is_nil())
     return;
+
+  // process groups
+  if ( !myMesh->_is_nil() && myEntry != aCurrentEntry ) {
+    ComboBox_GroupName->clear();
+    ComboBox_GroupName->addItem( QString() );
+    SMESH::ListOfGroups aListOfGroups = *myMesh->GetGroups();
+    for ( int i = 0, n = aListOfGroups.length(); i < n; i++ ) {
+      SMESH::SMESH_GroupBase_var aGroupBase = aListOfGroups[i];
+      if ( !aGroupBase->_is_nil() && aGroupBase->GetType() == (SMESH::ElementType)myElementType ) {
+        SMESH::SMESH_Group_var aGroup = SMESH::SMESH_Group::_narrow( aGroupBase );
+        if ( !aGroup->_is_nil() ) {
+          QString aGroupName( aGroup->GetName() );
+          if ( !aGroupName.isEmpty() )
+            ComboBox_GroupName->addItem( aGroupName );
+        }
+      }
+    }
+  }
 
   myActor = SMESH::FindActorByEntry(anIO->getEntry());
   if (!myActor)
@@ -811,4 +884,17 @@ void SMESHGUI_AddMeshElementDlg::keyPressEvent( QKeyEvent* e )
     e->accept();
     ClickOnHelp();
   }
+}
+
+//=================================================================================
+// function : isValid
+// purpose  :
+//=================================================================================
+bool SMESHGUI_AddMeshElementDlg::isValid()
+{
+  if( GroupGroups->isChecked() && ComboBox_GroupName->currentText().isEmpty() ) {
+    SUIT_MessageBox::warning( this, tr( "SMESH_WRN_WARNING" ), tr( "GROUP_NAME_IS_EMPTY" ) );
+    return false;
+  }
+  return true;
 }

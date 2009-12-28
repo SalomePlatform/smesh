@@ -31,6 +31,7 @@
 #include "SMESHGUI_Utils.h"
 #include "SMESHGUI_VTKUtils.h"
 #include "SMESHGUI_MeshUtils.h"
+#include "SMESHGUI_GroupUtils.h"
 
 #include <SMESH_Actor.h>
 #include <SMESH_ActorUtils.h>
@@ -70,6 +71,7 @@
 #include <vtkPoints.h>
 
 // Qt includes
+#include <QComboBox>
 #include <QGroupBox>
 #include <QLabel>
 #include <QPushButton>
@@ -88,13 +90,14 @@
 
 namespace SMESH
 {
-  void AddNode( SMESH::SMESH_Mesh_ptr theMesh, float x, float y, float z, const QStringList& theParameters )
+  long AddNode( SMESH::SMESH_Mesh_ptr theMesh, float x, float y, float z, const QStringList& theParameters )
   {
+    long aNodeId = -1;
     SUIT_OverrideCursor wc;
     try {
       _PTR(SObject) aSobj = SMESH::FindSObject( theMesh );
       SMESH::SMESH_MeshEditor_var aMeshEditor = theMesh->GetMeshEditor();
-      aMeshEditor->AddNode( x, y, z );
+      aNodeId = aMeshEditor->AddNode( x, y, z );
       theMesh->SetParameters( theParameters.join(":").toLatin1().constData() );
       _PTR(Study) aStudy = GetActiveStudyDocument();
       CORBA::Long anId = aStudy->StudyId();
@@ -111,6 +114,7 @@ namespace SMESH
     catch ( ... ) {
       INFOS( "Unknown exception was cought !!!" );
     }
+    return aNodeId;
   }
 
   class TNodeSimulation 
@@ -277,6 +281,21 @@ SMESHGUI_NodesDlg::SMESHGUI_NodesDlg( SMESHGUI* theModule ):
   GroupCoordinatesLayout->addWidget( TextLabel_Z );
   GroupCoordinatesLayout->addWidget( SpinBox_Z );
 
+
+  /***************************************************************/
+  GroupGroups = new QGroupBox( tr( "SMESH_ADD_TO_GROUP" ), this );
+  GroupGroups->setCheckable( true );
+  QHBoxLayout* GroupGroupsLayout = new QHBoxLayout(GroupGroups);
+  GroupGroupsLayout->setSpacing(SPACING);
+  GroupGroupsLayout->setMargin(MARGIN);
+
+  TextLabel_GroupName = new QLabel( tr( "SMESH_GROUP" ), GroupGroups );
+  ComboBox_GroupName = new QComboBox( GroupGroups );
+  ComboBox_GroupName->setEditable( true );
+
+  GroupGroupsLayout->addWidget( TextLabel_GroupName );
+  GroupGroupsLayout->addWidget( ComboBox_GroupName, 1 );
+
   /***************************************************************/
   GroupButtons = new QGroupBox( this );
   QHBoxLayout* GroupButtonsLayout = new QHBoxLayout( GroupButtons );
@@ -303,6 +322,7 @@ SMESHGUI_NodesDlg::SMESHGUI_NodesDlg( SMESHGUI* theModule ):
   /***************************************************************/
   SMESHGUI_NodesDlgLayout->addWidget( GroupConstructors );
   SMESHGUI_NodesDlgLayout->addWidget( GroupCoordinates );
+  SMESHGUI_NodesDlgLayout->addWidget( GroupGroups );
   SMESHGUI_NodesDlgLayout->addWidget( GroupButtons );
 
   myHelpFileName = "adding_nodes_and_elements_page.html#adding_nodes_anchor";
@@ -336,6 +356,9 @@ void SMESHGUI_NodesDlg::Init()
   SpinBox_X->SetValue( 0.0 );
   SpinBox_Y->SetValue( 0.0 );
   SpinBox_Z->SetValue( 0.0 );
+
+  /* reset "Add to group" control */
+  GroupGroups->setChecked( false );
 
   mySMESHGUI->SetActiveDialogBox( this );
 
@@ -416,8 +439,36 @@ bool SMESHGUI_NodesDlg::ClickOnApply()
   aParameters << SpinBox_Z->text();
 
   mySimulation->SetVisibility( false );
-  SMESH::AddNode( myMesh, x, y, z, aParameters );
+  long aNodeId = SMESH::AddNode( myMesh, x, y, z, aParameters );
   SMESH::SetPointRepresentation( true );
+
+  if( aNodeId != -1 && GroupGroups->isChecked() ) {
+    SMESH::SMESH_Group_var aGroup;
+    QString aGroupName = ComboBox_GroupName->currentText();
+    SMESH::ListOfGroups aListOfGroups = *myMesh->GetGroups();
+    for( int i = 0, n = aListOfGroups.length(); i < n; i++ ) {
+      SMESH::SMESH_GroupBase_var aGroupBase = aListOfGroups[i];
+      if( !aGroupBase->_is_nil() ) {
+        SMESH::SMESH_Group_var aRefGroup = SMESH::SMESH_Group::_narrow( aGroupBase );
+        if( !aRefGroup->_is_nil() ) {
+          QString aRefGroupName( aRefGroup->GetName() );
+          if( aRefGroupName == aGroupName ) {
+            aGroup = aRefGroup; // // add node to existing group
+            break;
+          }
+        }
+      }
+    }
+    if( aGroup->_is_nil() ) // create new group
+      aGroup = SMESH::AddGroup( myMesh, SMESH::NODE, aGroupName );
+
+    if( !aGroup->_is_nil() ) {
+      SMESH::long_array_var anIdList = new SMESH::long_array;
+      anIdList->length( 1 );
+      anIdList[0] = aNodeId;
+      aGroup->Add( anIdList.inout() );
+    }
+  }
 
   // select myMesh
   SALOME_ListIO aList;
@@ -500,10 +551,13 @@ void SMESHGUI_NodesDlg::SelectionIntoArgument()
   mySimulation->SetVisibility( false );
   SMESH::SetPointRepresentation( true );
 
+  QString aCurrentEntry = myEntry;
+
   const SALOME_ListIO& aList = mySelector->StoredIObjects();
   if ( aList.Extent() == 1 ) {
     Handle(SALOME_InteractiveObject) anIO = aList.First();
     if ( anIO->hasEntry() ) {
+      myEntry = anIO->getEntry();
       myMesh = SMESH::GetMeshByIO( anIO );
       if ( myMesh->_is_nil() ) return;
       QString aText;
@@ -521,6 +575,24 @@ void SMESHGUI_NodesDlg::SelectionIntoArgument()
       mySimulation->SetPosition( SpinBox_X->GetValue(),
                                  SpinBox_Y->GetValue(),
                                  SpinBox_Z->GetValue() );
+    }
+  }
+
+  // process groups
+  if ( !myMesh->_is_nil() && myEntry != aCurrentEntry ) {
+    ComboBox_GroupName->clear();
+    ComboBox_GroupName->addItem( QString() );
+    SMESH::ListOfGroups aListOfGroups = *myMesh->GetGroups();
+    for( int i = 0, n = aListOfGroups.length(); i < n; i++ ) {
+      SMESH::SMESH_GroupBase_var aGroupBase = aListOfGroups[i];
+      if ( !aGroupBase->_is_nil() && aGroupBase->GetType() == SMESH::NODE ) {
+        SMESH::SMESH_Group_var aGroup = SMESH::SMESH_Group::_narrow( aGroupBase );
+        if ( !aGroup->_is_nil() ) {
+          QString aGroupName( aGroup->GetName() );
+          if ( !aGroupName.isEmpty() )
+            ComboBox_GroupName->addItem( aGroupName );
+        }
+      }
     }
   }
 }
@@ -621,6 +693,11 @@ bool SMESHGUI_NodesDlg::isValid()
     if ( !msg.isEmpty() )
       str += "\n" + msg;
     SUIT_MessageBox::critical( this, tr( "SMESH_ERROR" ), str );
+    return false;
+  }
+
+  if( GroupGroups->isChecked() && ComboBox_GroupName->currentText().isEmpty() ) {
+    SUIT_MessageBox::warning( this, tr( "SMESH_WRN_WARNING" ), tr( "GROUP_NAME_IS_EMPTY" ) );
     return false;
   }
   return true;

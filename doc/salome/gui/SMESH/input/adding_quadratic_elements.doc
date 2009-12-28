@@ -18,6 +18,11 @@ one of the following:
 
 \image html image152.png
 
+\note All dialogs intended for adding quadratic elements to mesh provide a possibility
+to add these elements to the specified group (or to create the group if it doesn't exist).
+<b>Add to group</b> box allows to choose an existing group for created element or
+to specify a name for new group.
+
 To create any <b>Quadratic Element</b> specify the nodes which will form your
 triangle by selecting them in the 3D viewer with pressed Shift
 button. Their numbers will appear in the dialog box as <b>Corner Nodes</b>

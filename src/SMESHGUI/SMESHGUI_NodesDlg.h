@@ -36,6 +36,7 @@
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
 
+class QComboBox;
 class QGroupBox;
 class QLabel;
 class QPushButton;
@@ -70,6 +71,7 @@ private:
   
   SMESH::SMESH_Mesh_var   myMesh;
   SMESH::TNodeSimulation* mySimulation;
+  QString                 myEntry;
 
   void                    Init();
   void                    enterEvent( QEvent* );
@@ -89,6 +91,10 @@ private:
   QLabel*                 TextLabel_X;
   QLabel*                 TextLabel_Y;
   QLabel*                 TextLabel_Z;
+
+  QGroupBox*              GroupGroups;
+  QLabel*                 TextLabel_GroupName;
+  QComboBox*              ComboBox_GroupName;
 
   QGroupBox*              GroupButtons;
   QPushButton*            buttonApply;

@@ -743,6 +743,11 @@ Please, select a mesh and try again</translation>
             <translation>Borders at Multi-Connections</translation>
         </message>
         <message>
+            <source>GROUP_NAME_IS_EMPTY</source>
+            <translation>Name of group is empty
+Please input a name of new group or choose the existing one</translation>
+        </message>
+        <message>
             <source>NODE_ID</source>
             <translation>Node ID</translation>
         </message>
@@ -863,6 +868,10 @@ Please enter correct values and try again</translation>
         <message>
             <source>SMESH_ADD_TETRAS_TITLE</source>
             <translation>Add Tetrahedron</translation>
+        </message>
+        <message>
+            <source>SMESH_ADD_TO_GROUP</source>
+            <translation>Add to group</translation>
         </message>
         <message>
             <source>SMESH_ADD_TRIANGLE</source>

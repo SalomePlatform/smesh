@@ -38,6 +38,7 @@
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
 
+class QComboBox;
 class QGroupBox;
 class QLabel;
 class QLineEdit;
@@ -74,6 +75,8 @@ private:
   void                        keyPressEvent( QKeyEvent* );
   void                        displaySimulation();
   
+  bool                        isValid();
+  
   SMESHGUI*                   mySMESHGUI;              /* Current SMESHGUI object */
   LightApp_SelectionMgr*      mySelectionMgr;          /* User shape selection */
   int                         myNbOkNodes;             /* to check when arguments is defined */
@@ -89,9 +92,13 @@ private:
   SMESH::SMESH_Mesh_var       myMesh;
   SMESH_Actor*                myActor;
   SMESH::TElementSimulation*  mySimulation;
+  QString                     myEntry;
   
   QGroupBox*                  GroupConstructors;
   QRadioButton*               Constructor1;
+  QGroupBox*                  GroupGroups;
+  QLabel*                     TextLabel_GroupName;
+  QComboBox*                  ComboBox_GroupName;
   QGroupBox*                  GroupButtons;
   QPushButton*                buttonOk;
   QPushButton*                buttonCancel;

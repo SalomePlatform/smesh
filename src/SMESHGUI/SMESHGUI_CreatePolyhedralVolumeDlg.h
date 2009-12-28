@@ -37,6 +37,7 @@
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
 
 class QButtonGroup;
+class QComboBox;
 class QGroupBox;
 class QListWidget;
 class QLabel;
@@ -75,6 +76,8 @@ private:
   int                      GetConstructorId();
   void                     displaySimulation();
     
+  bool                     isValid();
+  
   int                      checkEditLine( bool = true ); /*! Checking for indices, return 1 if all ok, esle -1*/
     
   SMESHGUI*                mySMESHGUI;                   /* Current SMESHGUI object */
@@ -88,12 +91,16 @@ private:
   SMESH::SMESH_Mesh_var    myMesh;
   SMESH_Actor*             myActor;
   SMESH::TPolySimulation*  mySimulation;
+  QString                  myEntry;
   
   QGroupBox*               ConstructorsBox;
   QButtonGroup*            GroupConstructors;
   QRadioButton*            RadioButton1;
   QRadioButton*            RadioButton2;
   QCheckBox*               Preview;
+  QGroupBox*               GroupGroups;
+  QLabel*                  TextLabel_GroupName;
+  QComboBox*               ComboBox_GroupName;
   QGroupBox*               GroupButtons;
   QPushButton*             buttonOk;
   QPushButton*             buttonCancel;

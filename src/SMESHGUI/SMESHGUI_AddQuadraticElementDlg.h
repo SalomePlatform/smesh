@@ -36,7 +36,9 @@
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
 
+class QComboBox;
 class QGroupBox;
+class QLabel;
 class QLineEdit;
 class QPushButton;
 class QRadioButton;
@@ -78,6 +80,8 @@ private:
   bool                        IsValid();
   void                        updateButtons();
 
+  bool                        isValid();
+  
   SMESHGUI*                   mySMESHGUI;       /* Current SMESHGUI object */
   LightApp_SelectionMgr*      mySelectionMgr;   /* User shape selection */
   int                         myNbCorners;      /* The required number of corners */
@@ -87,6 +91,7 @@ private:
   SMESH::SMESH_Mesh_var       myMesh;
   SMESH_Actor*                myActor;
   SMESH::TElementSimulation*  mySimulation;
+  QString                     myEntry;
   
   int                         myType;
   bool                        myIsEditCorners;
@@ -100,6 +105,10 @@ private:
   QTableWidget*               myTable;
   QCheckBox*                  myReverseCB;
   
+  QGroupBox*                  GroupGroups;
+  QLabel*                     TextLabel_GroupName;
+  QComboBox*                  ComboBox_GroupName;
+
   QGroupBox*                  GroupButtons;
   QPushButton*                buttonOk;
   QPushButton*                buttonCancel;
