@@ -429,6 +429,7 @@ void SMESHGUI_AddMeshElementDlg::Init()
 
   /* reset "Add to group" control */
   GroupGroups->setChecked( false );
+  GroupGroups->setVisible( myElementType != SMDSAbs_0DElement );
 
   myNbOkNodes = 0;
   myActor = 0;

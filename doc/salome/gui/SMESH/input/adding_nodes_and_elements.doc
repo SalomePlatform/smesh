@@ -26,10 +26,10 @@ following associated submenu will appear:</li>
 \image html image146.png
 
 From this submenu select the type of element which you would like to add to your mesh.
-\note All dialogs intended for adding nodes or elements to mesh provide a possibility
-to add these nodes/elements to the specified group (or to create the group if it
-doesn't exist). <b>Add to group</b> box allows to choose an existing group for created
-node or element or to specify a name for new group.
+\note All dialogs intended for adding nodes or elements to mesh (except dialog for adding
+0D elements) provide a possibility to add these nodes/elements to the specified group
+(or to create the group if it doesn't exist). <b>Add to group</b> box allows to choose
+an existing group for created node or element or to specify a name for new group.
 </ol>
 
 <b>See Also</b> sample TUI Scripts of  
