@@ -39,6 +39,12 @@ public:
   /*!Create a new SMESH_FaceOrientationFilter.*/
   static SMESH_FaceOrientationFilter *New();
 
+  void SetOrientationScale( vtkFloatingPointType );
+  vtkFloatingPointType GetOrientationScale() const { return myOrientationScale; }
+
+  void Set3dVectors( bool );
+  bool Get3dVectors() const { return my3dVectors; }
+
 protected:
   SMESH_FaceOrientationFilter();
   virtual ~SMESH_FaceOrientationFilter();

@@ -627,6 +627,48 @@ SMESH_DeviceActor
 
 void
 SMESH_DeviceActor
+::SetFacesOrientationColor(vtkFloatingPointType theColor[3])
+{
+  myFaceOrientation->GetProperty()->SetColor( theColor );
+}
+
+void
+SMESH_DeviceActor
+::GetFacesOrientationColor(vtkFloatingPointType theColor[3])
+{
+  myFaceOrientation->GetProperty()->GetColor( theColor );
+}
+
+void
+SMESH_DeviceActor
+::SetFacesOrientationScale(vtkFloatingPointType theScale)
+{
+  myFaceOrientationFilter->SetOrientationScale( theScale );
+}
+
+vtkFloatingPointType
+SMESH_DeviceActor
+::GetFacesOrientationScale()
+{
+  return myFaceOrientationFilter->GetOrientationScale();
+}
+
+void
+SMESH_DeviceActor
+::SetFacesOrientation3DVectors(bool theState)
+{
+  myFaceOrientationFilter->Set3dVectors( theState );
+}
+
+bool
+SMESH_DeviceActor
+::GetFacesOrientation3DVectors()
+{
+  return myFaceOrientationFilter->Get3dVectors();
+}
+
+void
+SMESH_DeviceActor
 ::UpdateFaceOrientation()
 {
   bool aShowFaceOrientation = myIsFacesOriented;

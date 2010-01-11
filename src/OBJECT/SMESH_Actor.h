@@ -60,6 +60,9 @@ class SMESHOBJECT_EXPORT SMESH_Actor: public SALOME_Actor
   virtual void SetNodeColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b) = 0;
   virtual void GetNodeColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b) = 0;
 
+  virtual void Set0DColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b) = 0;
+  virtual void Get0DColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b) = 0;
+
   virtual void SetHighlightColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b) = 0;
   virtual void GetHighlightColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b) = 0;
 
@@ -71,6 +74,9 @@ class SMESHOBJECT_EXPORT SMESH_Actor: public SALOME_Actor
 
   virtual void SetNodeSize(vtkFloatingPointType size) = 0;
   virtual vtkFloatingPointType GetNodeSize() = 0;
+
+  virtual void Set0DSize(vtkFloatingPointType size) = 0;
+  virtual vtkFloatingPointType Get0DSize() = 0;
 
   enum EReperesent { ePoint, eEdge, eSurface};
   
@@ -99,6 +105,15 @@ class SMESHOBJECT_EXPORT SMESH_Actor: public SALOME_Actor
 
   virtual void SetFacesOriented(bool theIsFacesOriented) = 0;
   virtual bool GetFacesOriented() = 0;
+
+  virtual void SetFacesOrientationColor(vtkFloatingPointType theColor[3]) = 0;
+  virtual void GetFacesOrientationColor(vtkFloatingPointType theColor[3]) = 0;
+
+  virtual void SetFacesOrientationScale(vtkFloatingPointType theScale) = 0;
+  virtual vtkFloatingPointType GetFacesOrientationScale() = 0;
+
+  virtual void SetFacesOrientation3DVectors(bool theState) = 0;
+  virtual bool GetFacesOrientation3DVectors() = 0;
 
   enum eControl{eNone, eLength, eLength2D, eFreeBorders, eFreeEdges, eFreeNodes,
                 eFreeFaces, eMultiConnection, eArea, eTaper, eAspectRatio,

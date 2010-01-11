@@ -115,6 +115,9 @@ class SMESH_ActorDef : public SMESH_Actor
   virtual void SetNodeColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b);
   virtual void GetNodeColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b);
 
+  virtual void Set0DColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b);
+  virtual void Get0DColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b);
+
   virtual void SetHighlightColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b);
   virtual void GetHighlightColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b);
 
@@ -126,6 +129,9 @@ class SMESH_ActorDef : public SMESH_Actor
 
   virtual void SetNodeSize(vtkFloatingPointType size) ;
   virtual vtkFloatingPointType GetNodeSize() ;
+
+  virtual void Set0DSize(vtkFloatingPointType size);
+  virtual vtkFloatingPointType Get0DSize();
 
   virtual int GetNodeObjId(int theVtkID);
   virtual vtkFloatingPointType* GetNodeCoord(int theObjID);
@@ -169,6 +175,15 @@ class SMESH_ActorDef : public SMESH_Actor
 
   virtual void SetFacesOriented(bool theIsFacesOriented);
   virtual bool GetFacesOriented();
+
+  virtual void SetFacesOrientationColor(vtkFloatingPointType theColor[3]);
+  virtual void GetFacesOrientationColor(vtkFloatingPointType theColor[3]);
+
+  virtual void SetFacesOrientationScale(vtkFloatingPointType theScale);
+  virtual vtkFloatingPointType GetFacesOrientationScale();
+
+  virtual void SetFacesOrientation3DVectors(bool theState);
+  virtual bool GetFacesOrientation3DVectors();
 
   virtual void SetControlMode(eControl theMode);
   virtual eControl GetControlMode(){ return myControlMode;}

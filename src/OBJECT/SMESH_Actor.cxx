@@ -661,6 +661,39 @@ bool SMESH_ActorDef::GetFacesOriented()
   return myIsFacesOriented;
 }
 
+void SMESH_ActorDef::SetFacesOrientationColor(vtkFloatingPointType theColor[3])
+{
+  my2DActor->SetFacesOrientationColor( theColor );
+  my3DActor->SetFacesOrientationColor( theColor );
+}
+
+void SMESH_ActorDef::GetFacesOrientationColor(vtkFloatingPointType theColor[3])
+{
+  my3DActor->GetFacesOrientationColor( theColor );
+}
+
+void SMESH_ActorDef::SetFacesOrientationScale(vtkFloatingPointType theScale)
+{
+  my2DActor->SetFacesOrientationScale( theScale );
+  my3DActor->SetFacesOrientationScale( theScale );
+}
+
+vtkFloatingPointType SMESH_ActorDef::GetFacesOrientationScale()
+{
+  return my3DActor->GetFacesOrientationScale();
+}
+
+void SMESH_ActorDef::SetFacesOrientation3DVectors(bool theState)
+{
+  my2DActor->SetFacesOrientation3DVectors( theState );
+  my3DActor->SetFacesOrientation3DVectors( theState );
+}
+
+bool SMESH_ActorDef::GetFacesOrientation3DVectors()
+{
+  return my3DActor->GetFacesOrientation3DVectors();
+}
+
 
 void 
 SMESH_ActorDef::
@@ -1640,6 +1673,15 @@ void SMESH_ActorDef::GetNodeColor(vtkFloatingPointType& r,vtkFloatingPointType& 
   ::GetColor(myNodeProp,r,g,b);
 }
 
+void SMESH_ActorDef::Set0DColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b){ 
+  my0DProp->SetColor(r,g,b);
+  Modified();
+}
+
+void SMESH_ActorDef::Get0DColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b){ 
+  ::GetColor(my0DProp,r,g,b);
+}
+
 void SMESH_ActorDef::SetHighlightColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b){ 
   myHighlightProp->SetColor(r,g,b);
   Modified();
@@ -1692,6 +1734,22 @@ void SMESH_ActorDef::SetNodeSize(vtkFloatingPointType theVal){
 
 vtkFloatingPointType SMESH_ActorDef::GetNodeSize(){
   return myNodeProp->GetPointSize();
+}
+
+void SMESH_ActorDef::Set0DSize(vtkFloatingPointType theVal){
+  my0DProp->SetPointSize(theVal);
+
+  vtkFloatingPointType aPointSize = myNodeProp->GetPointSize() > theVal ? myNodeProp->GetPointSize() : theVal;
+  //myHighlightProp->SetPointSize(theVal);
+  myHighlightProp->SetPointSize(aPointSize); // ??
+  //myPreselectProp->SetPointSize(theVal);
+  myPreselectProp->SetPointSize(aPointSize); // ??
+
+  Modified();
+}
+
+vtkFloatingPointType SMESH_ActorDef::Get0DSize(){
+  return my0DProp->GetPointSize();
 }
 
 int SMESH_ActorDef::GetObjDimension( const int theObjId )

@@ -91,6 +91,19 @@ SMESH_FaceOrientationFilter::~SMESH_FaceOrientationFilter()
   myBaseGlyph->Delete();
 }
 
+void SMESH_FaceOrientationFilter::SetOrientationScale( vtkFloatingPointType theScale )
+{
+  myOrientationScale = theScale;
+  Modified();
+}
+
+void SMESH_FaceOrientationFilter::Set3dVectors( bool theState )
+{
+  my3dVectors = theState;
+  myBaseGlyph->SetSource(my3dVectors ? myArrowPolyData : myGlyphSource->GetOutput());
+  Modified();
+}
+
 vtkPolyData* SMESH_FaceOrientationFilter::CreateArrowPolyData()
 {
   vtkPoints* points = vtkPoints::New();

@@ -797,11 +797,31 @@
               c2 = int (nodecolor[2] * 255);
               QColor n(c0, c1, c2);
 
+              vtkFloatingPointType color0D[3];
+              anActor->Get0DColor(color0D[0], color0D[1], color0D[2]);
+              c0 = int (color0D[0] * 255);
+              c1 = int (color0D[1] * 255);
+              c2 = int (color0D[2] * 255);
+              QColor c0D(c0, c1, c2);
+
+              int size0D = (int)anActor->Get0DSize();
+              if(size0D == 0)
+                size0D = 1;
               int Edgewidth = (int)anActor->GetLineWidth();
               if(Edgewidth == 0)
                 Edgewidth = 1;
               int intValue = int(anActor->GetNodeSize());
               vtkFloatingPointType Shrink = anActor->GetShrinkFactor();
+
+              vtkFloatingPointType faces_orientation_color[3];
+              anActor->GetFacesOrientationColor(faces_orientation_color);
+              c0 = int (faces_orientation_color[0] * 255);
+              c1 = int (faces_orientation_color[1] * 255);
+              c2 = int (faces_orientation_color[2] * 255);
+              QColor o(c0, c1, c2);
+
+              vtkFloatingPointType faces_orientation_scale = anActor->GetFacesOrientationScale();
+              bool faces_orientation_3dvectors = anActor->GetFacesOrientation3DVectors();
 
               SMESHGUI_Preferences_ColorDlg *aDlg =
                 new SMESHGUI_Preferences_ColorDlg( SMESHGUI::GetSMESHGUI() );
@@ -809,14 +829,21 @@
               aDlg->SetColor(2, e);
               aDlg->SetColor(3, n);
               aDlg->SetColor(4, b);
+              aDlg->SetColor(5, c0D);
+              aDlg->SetColor(6, o);
               aDlg->SetIntValue(1, Edgewidth);
               aDlg->SetIntValue(2, intValue);
               aDlg->SetIntValue(3, int(Shrink*100.));
+              aDlg->SetIntValue(4, size0D);
+              aDlg->SetDoubleValue(1, faces_orientation_scale);
+              aDlg->SetBooleanValue(1, faces_orientation_3dvectors);
               if(aDlg->exec()){
                 QColor color = aDlg->GetColor(1);
                 QColor edgecolor = aDlg->GetColor(2);
                 QColor nodecolor = aDlg->GetColor(3);
                 QColor backfacecolor = aDlg->GetColor(4);
+                QColor color0D = aDlg->GetColor(5);
+                QColor faces_orientation_color = aDlg->GetColor(6);
                 /* actor color and backface color */
                 anActor->SetSufaceColor(vtkFloatingPointType (color.red()) / 255.,
                                         vtkFloatingPointType (color.green()) / 255.,
@@ -839,6 +866,20 @@
                                       vtkFloatingPointType (nodecolor.green()) / 255.,
                                       vtkFloatingPointType (nodecolor.blue()) / 255.);
                 anActor->SetNodeSize(aDlg->GetIntValue(2));
+
+                /* 0D elements */
+                anActor->Set0DColor(vtkFloatingPointType (color0D.red()) / 255.,
+                                    vtkFloatingPointType (color0D.green()) / 255.,
+                                    vtkFloatingPointType (color0D.blue()) / 255.);
+                anActor->Set0DSize(aDlg->GetIntValue(4));
+
+                /* Faces orientation */
+                vtkFloatingPointType c[3] = {vtkFloatingPointType(faces_orientation_color.redF()),
+                                             vtkFloatingPointType(faces_orientation_color.greenF()),
+                                             vtkFloatingPointType(faces_orientation_color.blueF())};
+                anActor->SetFacesOrientationColor(c);
+                anActor->SetFacesOrientationScale(aDlg->GetDoubleValue(1));
+                anActor->SetFacesOrientation3DVectors(aDlg->GetBooleanValue(1));
 
                 SMESH::SMESH_GroupBase_var aGroupObject = SMESH::IObjectToInterface<SMESH::SMESH_GroupBase>(IObject);
                 if( !aGroupObject->_is_nil() )

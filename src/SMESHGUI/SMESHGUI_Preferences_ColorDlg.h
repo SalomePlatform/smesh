@@ -32,8 +32,10 @@
 // Qt includes
 #include <QDialog>
 
+class QCheckBox;
 class QSpinBox;
 class SMESHGUI;
+class QtxDoubleSpinBox;
 class QtxIntSpinBox;
 class QtxColorButton;
 
@@ -49,6 +51,10 @@ public:
   QColor                GetColor( int );
   void                  SetIntValue( int, int );
   int                   GetIntValue( int );
+  void                  SetDoubleValue( int, double );
+  double                GetDoubleValue( int );
+  void                  SetBooleanValue( int, bool );
+  bool                  GetBooleanValue( int );
 
 protected:
   void                  closeEvent( QCloseEvent* );
@@ -65,10 +71,15 @@ private:
   QtxColorButton*       btnFillColor;
   QtxColorButton*       btnBackFaceColor;
   QtxColorButton*       btnOutlineColor;
+  QtxColorButton*       btn0DElementsColor;
+  QSpinBox*             SpinBox_0DElements_Size;
   QSpinBox*             SpinBox_Width;
   QtxIntSpinBox*        SpinBox_Shrink;
   QtxColorButton*       btnNodeColor;
   QSpinBox*             SpinBox_Nodes_Size;
+  QtxColorButton*       btnOrientationColor;
+  QtxDoubleSpinBox*     SpinBox_Orientation_Scale;
+  QCheckBox*            CheckBox_Orientation_3DVectors;
 };
 
 #endif // SMESHGUI_PREFERENCES_COLORDLG_H
