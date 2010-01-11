@@ -343,6 +343,7 @@ namespace SMESH
       CASE2TEXT( COMPERR_EXCEPTION     );
       CASE2TEXT( COMPERR_MEMORY_PB     );
       CASE2TEXT( COMPERR_BAD_SHAPE     );
+      CASE2TEXT( COMPERR_BAD_FACE      );
     case SMESH::COMPERR_ALGO_FAILED:
       if ( strlen(comment) == 0 )
         text = QObject::tr("COMPERR_ALGO_FAILED");

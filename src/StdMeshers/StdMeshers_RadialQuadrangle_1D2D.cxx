@@ -316,7 +316,7 @@ bool StdMeshers_RadialQuadrangle_1D2D::Compute(SMESH_Mesh&         aMesh,
   TopoDS_Edge CircEdge, LinEdge1, LinEdge2;
   int nbe = analyseFace( aShape, CircEdge, LinEdge1, LinEdge2 );
   if( nbe>3 || nbe < 1 || CircEdge.IsNull() )
-    return error(COMPERR_BAD_SHAPE);
+    return error(COMPERR_BAD_FACE);
   
   gp_Pnt P0,P1;
   // points for rotation

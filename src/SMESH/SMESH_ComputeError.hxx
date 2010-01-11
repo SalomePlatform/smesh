@@ -52,7 +52,8 @@ enum SMESH_ComputeErrorName
   COMPERR_EXCEPTION      = -6,  //!< other exception raised
   COMPERR_MEMORY_PB      = -7,  //!< std::bad_alloc exception
   COMPERR_ALGO_FAILED    = -8,  //!< algo failed for some reason
-  COMPERR_BAD_SHAPE      = -9   //!< bad geometry
+  COMPERR_BAD_SHAPE      = -9,  //!< bad geometry
+  COMPERR_BAD_FACE       = -10  //!< incorrect face type (Radial Algorithms)
 };
 
 // =============================================================
@@ -98,6 +99,8 @@ std::string SMESH_ComputeError::CommonName() const
   _case2char(COMPERR_EXCEPTION     );
   _case2char(COMPERR_MEMORY_PB     );
   _case2char(COMPERR_ALGO_FAILED   );
+  _case2char(COMPERR_BAD_SHAPE     );
+  _case2char(COMPERR_BAD_FACE      );
   default:;
   }
   return "";
