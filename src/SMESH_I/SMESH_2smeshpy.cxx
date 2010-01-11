@@ -846,7 +846,8 @@ void _pyMesh::Process( const Handle(_pyCommand)& theCommand )
     }
   }
   // ----------------------------------------------------------------------
-  else if ( method == "ExportToMED" ) { // ExportToMED() --> ExportMED()
+  else if ( method == "ExportToMED" ||   // ExportToMED() --> ExportMED()
+            method == "ExportToMEDX" ) { // ExportToMEDX() --> ExportMED()
     theCommand->SetMethod( "ExportMED" );
   }
   // ----------------------------------------------------------------------

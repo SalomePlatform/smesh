@@ -339,6 +339,16 @@ module SMESH
      * Can be used to check if the object was created in the same container, as this engine.
      */
     long GetObjectId(in Object theObject);
+
+    /*!
+     * \brief Get MED version of the file by its name.
+     */
+    boolean GetMEDVersion(in string theFileName, out MED_VERSION theVersion);
+
+    /*!
+     * \brief Get names of meshes defined in file with the specified name.
+     */
+    string_array GetMeshNames(in string theFileName);
   };
 
 };

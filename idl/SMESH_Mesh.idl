@@ -532,13 +532,23 @@ module SMESH
      *   the groups Group_On_All_Nodes, Group_On_All_Faces, ... ;
      *   the typical use is auto_groups=false.
      * - theVersion : define the version of format of MED file, that will be created
+     * - overwrite : boolean parameter for overwriting/not overwriting the file, if it exists
+     */
+    void ExportToMEDX( in string file, in boolean auto_groups, in MED_VERSION theVersion, in boolean overwrite )
+      raises (SALOME::SALOME_Exception);
+
+    /*!
+     * Export Mesh to different MED Formats
+     * Works, just the same as ExportToMEDX, with overwrite parameter equal to true.
+     * The method is kept in order to support old functionality
      */
     void ExportToMED( in string file, in boolean auto_groups, in MED_VERSION theVersion )
       raises (SALOME::SALOME_Exception);
 
     /*!
      * Export Mesh to MED_V2_1 MED format
-     * Works, just the same as ExportToMED, with MED_VERSION parameter equal to MED_V2_1.
+     * Works, just the same as ExportToMEDX with MED_VERSION parameter equal to MED_V2_1
+     * and overwrite parameter equal to true
      * The method is kept in order to support old functionality
      */
     void ExportMED( in string file, in boolean auto_groups )

@@ -2263,7 +2263,7 @@ CORBA::Boolean SMESH_Mesh_i::HasDuplicatedGroupNamesMED()
   return _impl->HasDuplicatedGroupNamesMED();
 }
 
-void SMESH_Mesh_i::PrepareForWriting (const char* file)
+void SMESH_Mesh_i::PrepareForWriting (const char* file, bool overwrite)
 {
   TCollection_AsciiString aFullName ((char*)file);
   OSD_Path aPath (aFullName);
@@ -2272,8 +2272,10 @@ void SMESH_Mesh_i::PrepareForWriting (const char* file)
     // existing filesystem node
     if (aFile.KindOfFile() == OSD_FILE) {
       if (aFile.IsWriteable()) {
-        aFile.Reset();
-        aFile.Remove();
+        if (overwrite) {
+          aFile.Reset();
+          aFile.Remove();
+        }
         if (aFile.Failed()) {
           TCollection_AsciiString msg ("File ");
           msg += aFullName + " cannot be replaced.";
@@ -2304,15 +2306,16 @@ void SMESH_Mesh_i::PrepareForWriting (const char* file)
   }
 }
 
-void SMESH_Mesh_i::ExportToMED (const char* file,
-                                CORBA::Boolean auto_groups,
-                                SMESH::MED_VERSION theVersion)
+void SMESH_Mesh_i::ExportToMEDX (const char* file,
+                                 CORBA::Boolean auto_groups,
+                                 SMESH::MED_VERSION theVersion,
+                                 CORBA::Boolean overwrite)
   throw(SALOME::SALOME_Exception)
 {
   Unexpect aCatch(SALOME_SalomeException);
 
   // Perform Export
-  PrepareForWriting(file);
+  PrepareForWriting(file, overwrite);
   const char* aMeshName = "Mesh";
   SALOMEDS::Study_ptr aStudy = _gen_i->GetCurrentStudy();
   if ( !aStudy->_is_nil() ) {
@@ -2344,17 +2347,25 @@ void SMESH_Mesh_i::ExportToMED (const char* file,
   // check names of groups
   checkGroupNames();
 
-  TPythonDump() << _this() << ".ExportToMED( '"
-                << file << "', " << auto_groups << ", " << theVersion << " )";
+  TPythonDump() << _this() << ".ExportToMEDX( '"
+                << file << "', " << auto_groups << ", " << theVersion << ", " << overwrite << " )";
 
   _impl->ExportMED( file, aMeshName, auto_groups, theVersion );
+}
+
+void SMESH_Mesh_i::ExportToMED (const char* file,
+                                CORBA::Boolean auto_groups,
+                                SMESH::MED_VERSION theVersion)
+  throw(SALOME::SALOME_Exception)
+{
+  ExportToMEDX(file,auto_groups,theVersion,true);
 }
 
 void SMESH_Mesh_i::ExportMED (const char* file,
                               CORBA::Boolean auto_groups)
   throw(SALOME::SALOME_Exception)
 {
-  ExportToMED(file,auto_groups,SMESH::MED_V2_1);
+  ExportToMEDX(file,auto_groups,SMESH::MED_V2_1,true);
 }
 
 void SMESH_Mesh_i::ExportDAT (const char *file)

@@ -970,6 +970,10 @@ Please enter correct values and try again</translation>
             <translation>&amp;Ok</translation>
         </message>
         <message>
+            <source>SMESH_BUT_OVERWRITE</source>
+            <translation>Over&amp;write</translation>
+        </message>
+        <message>
             <source>SMESH_BUT_APPLY_AND_CLOSE</source>
             <translation>A&amp;pply and Close</translation>
         </message>
@@ -1178,11 +1182,30 @@ will not match ones in the study.
 Do you want to continue ?</translation>
         </message>
         <message>
+            <source>SMESH_EXPORT_MED_DUPLICATED_MESH_NAMES</source>
+            <translation>There are some meshes with the same names in the selection.
+The result file may be incorrect.
+Do you want to continue ?</translation>
+        </message>
+        <message>
             <source>SMESH_EXPORT_MED_V2_1</source>
             <translation>During export mesh with name - "%1" to MED 2.1
 polygons and polyhedrons elements will be missed
 For correct export use MED 2.2
 Are you sure want to export to MED 2.1 ?</translation>
+        </message>
+        <message>
+            <source>SMESH_EXPORT_MED_VERSION_COLLISION</source>
+            <translation>MED version of the file "%1"
+is unknown or doesn't match the selected version.
+Overwrite the file?</translation>
+        </message>
+        <message>
+            <source>SMESH_EXPORT_MED_MESH_NAMES_COLLISION</source>
+            <translation>The selected file already contains
+meshes with the following names: %1
+The result file may be incorrect.
+Overwrite the file?</translation>
         </message>
         <message>
             <source>SMESH_EXPORT_STL1</source>
@@ -1220,6 +1243,12 @@ Are you sure want to export to MED 2.1 ?</translation>
         <message>
             <source>SMESH_FEATUREEDGES</source>
             <translation>Feature Edges</translation>
+        </message>
+        <message>
+            <source>SMESH_FILE_EXISTS</source>
+            <translation>The file "%1" already exists.
+Do you want to overwrite it or
+add the exported data to its contents?</translation>
         </message>
         <message>
             <source>SMESH_FONT_ARIAL</source>

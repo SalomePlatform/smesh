@@ -320,6 +320,13 @@ public:
                                               CORBA::Double            theMergeTolerance)
     throw ( SALOME::SALOME_Exception );
 
+  // Get MED version of the file by its name
+  CORBA::Boolean GetMEDVersion(const char* theFileName,
+                               SMESH::MED_VERSION& theVersion);
+
+  // Get names of meshes defined in file with the specified name
+  SMESH::string_array* GetMeshNames(const char* theFileName);
+
   // ****************************************************
   // Interface inherited methods (from SALOMEDS::Driver)
   // ****************************************************

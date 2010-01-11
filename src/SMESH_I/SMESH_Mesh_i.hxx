@@ -206,6 +206,8 @@ public:
    */
   char* GetVersionString(SMESH::MED_VERSION version, CORBA::Short nbDigits);
 
+  void ExportToMEDX( const char* file, CORBA::Boolean auto_groups, SMESH::MED_VERSION theVersion, CORBA::Boolean overwrite )
+    throw (SALOME::SALOME_Exception);
   void ExportToMED( const char* file, CORBA::Boolean auto_groups, SMESH::MED_VERSION theVersion )
     throw (SALOME::SALOME_Exception);
   void ExportMED( const char* file, CORBA::Boolean auto_groups )
@@ -338,7 +340,7 @@ public:
   static SMESH::Hypothesis_Status
   ConvertHypothesisStatus (SMESH_Hypothesis::Hypothesis_Status theStatus);
 
-  static void PrepareForWriting (const char* file);
+  static void PrepareForWriting (const char* file, bool overwrite = true);
 
   //int importMEDFile( const char* theFileName, const char* theMeshName );
 

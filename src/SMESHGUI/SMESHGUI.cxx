@@ -38,6 +38,7 @@
 #include "SMESHGUI_ExtrusionAlongPathDlg.h"
 #include "SMESHGUI_ExtrusionDlg.h"
 #include "SMESHGUI_FileInfoDlg.h"
+#include "SMESHGUI_FileValidator.h"
 #include "SMESHGUI_FilterDlg.h"
 #include "SMESHGUI_FilterLibraryDlg.h"
 #include "SMESHGUI_FindElemByPointDlg.h"
@@ -272,17 +273,54 @@
     if( aSel )
       aSel->selectedObjects( selected );
 
-    SMESH::SMESH_Mesh_var aMesh;
-    if(selected.Extent() == 1)
-      aMesh = SMESH::IObjectToInterface<SMESH::SMESH_Mesh>(selected.First());
-    if ( aMesh->_is_nil() ) {
-      SUIT_MessageBox::warning( SMESHGUI::desktop(),
-                                QObject::tr( "SMESH_WRN_WARNING" ),
-                                QObject::tr( "SMESH_BAD_MESH_SELECTION" ));
+    // actually, the following condition can't be met (added for insurance)
+    if( selected.Extent() == 0 ||
+        selected.Extent() > 1 && theCommandID != 122 && theCommandID != 125 )
       return;
+
+    bool hasDuplicatedMeshNames = false;
+    QList< QPair< SMESH::SMESH_Mesh_var, QString > > aMeshList;
+    QList< QPair< SMESH::SMESH_Mesh_var, QString > >::iterator aMeshIter;
+    SALOME_ListIteratorOfListIO It( selected );
+    for( ; It.More(); It.Next() ) {
+      Handle(SALOME_InteractiveObject) anIObject = It.Value();
+      SMESH::SMESH_Mesh_var aMeshItem = SMESH::IObjectToInterface<SMESH::SMESH_Mesh>( anIObject );
+      if ( aMeshItem->_is_nil() ) {
+        SUIT_MessageBox::warning( SMESHGUI::desktop(),
+                                  QObject::tr( "SMESH_WRN_WARNING" ),
+                                  QObject::tr( "SMESH_BAD_MESH_SELECTION" ));
+        return;
+      }
+
+      QString aMeshName = anIObject->getName();
+
+      // check for duplications
+      for( aMeshIter = aMeshList.begin(); aMeshIter != aMeshList.end(); aMeshIter++ ) {
+        if( aMeshName == (*aMeshIter).second ) {
+          hasDuplicatedMeshNames = true;
+          break;
+        }
+      }
+
+      aMeshList.append( QPair< SMESH::SMESH_Mesh_var, QString >( aMeshItem, aMeshName ) );
     }
 
-    Handle(SALOME_InteractiveObject) anIObject = selected.First();
+    if( hasDuplicatedMeshNames ) {
+      int aRet = SUIT_MessageBox::warning(SMESHGUI::desktop(),
+                                          QObject::tr("SMESH_WRN_WARNING"),
+                                          QObject::tr("SMESH_EXPORT_MED_DUPLICATED_MESH_NAMES"),
+                                          QObject::tr("SMESH_BUT_YES"),
+                                          QObject::tr("SMESH_BUT_NO"), 0, 1);
+      if (aRet != 0)
+        return;
+    }
+
+    aMeshIter = aMeshList.begin();
+    SMESH::SMESH_Mesh_var aMesh = (*aMeshIter).first;
+    QString aMeshName = (*aMeshIter).second;
+
+    QList<SALOMEDS::Color> aReservedColors;
+
     QString aFilter, aTitle = QObject::tr("Export mesh");
     QMap<QString, SMESH::MED_VERSION> aFilterMap;
     QMap<QString, int> aFilterMapSTL;
@@ -290,14 +328,18 @@
     case 125:
     case 122:
       {
-        if (aMesh->HasDuplicatedGroupNamesMED()) {
-          int aRet = SUIT_MessageBox::warning
-            (SMESHGUI::desktop(),
-             QObject::tr("SMESH_WRN_WARNING"),
-             QObject::tr("SMESH_EXPORT_MED_DUPLICATED_GRP").arg(anIObject->getName()),
-             SUIT_MessageBox::Yes | SUIT_MessageBox::No, SUIT_MessageBox::Yes);
-          if (aRet != SUIT_MessageBox::Yes)
-            return;
+        for( aMeshIter = aMeshList.begin(); aMeshIter != aMeshList.end(); aMeshIter++ ) {
+          SMESH::SMESH_Mesh_var aMeshItem = (*aMeshIter).first;
+          if (aMeshItem->HasDuplicatedGroupNamesMED()) {
+            int aRet = SUIT_MessageBox::warning
+              (SMESHGUI::desktop(),
+               QObject::tr("SMESH_WRN_WARNING"),
+               QObject::tr("SMESH_EXPORT_MED_DUPLICATED_GRP").arg((*aMeshIter).second),
+               QObject::tr("SMESH_BUT_YES"),
+               QObject::tr("SMESH_BUT_NO"), 0, 1);
+            if (aRet != 0)
+              return;
+          }
         }
         // PAL18696
         QString v21 (aMesh->GetVersionString(SMESH::MED_V2_1, 2));
@@ -317,9 +359,10 @@
           int aRet = SUIT_MessageBox::warning
             (SMESHGUI::desktop(),
              QObject::tr("SMESH_WRN_WARNING"),
-             QObject::tr("SMESH_EXPORT_UNV").arg(anIObject->getName()),
-             SUIT_MessageBox::Yes | SUIT_MessageBox::No, SUIT_MessageBox::Yes);
-          if (aRet != SUIT_MessageBox::Yes)
+             QObject::tr("SMESH_EXPORT_UNV").arg(aMeshName),
+             QObject::tr("SMESH_BUT_YES"),
+             QObject::tr("SMESH_BUT_NO"), 0, 1);
+          if (aRet != 0)
             return;
         }
         aFilter = QObject::tr("IDEAS files (*.unv)");
@@ -336,16 +379,17 @@
           SUIT_MessageBox::warning
             (SMESHGUI::desktop(),
              QObject::tr("SMESH_WRN_WARNING"),
-             QObject::tr("SMESH_EXPORT_STL1").arg(anIObject->getName()));
+             QObject::tr("SMESH_EXPORT_STL1").arg(aMeshName));
           return;
         }
         if (!(aMesh->NbElements() - aMesh->NbTriangles())) {
           int aRet = SUIT_MessageBox::warning
             (SMESHGUI::desktop(),
              QObject::tr("SMESH_WRN_WARNING"),
-             QObject::tr("SMESH_EXPORT_STL2").arg(anIObject->getName()),
-             SUIT_MessageBox::Yes | SUIT_MessageBox::No, SUIT_MessageBox::Yes);
-          if (aRet != SUIT_MessageBox::Yes)
+             QObject::tr("SMESH_EXPORT_STL2").arg(aMeshName),
+             QObject::tr("SMESH_BUT_YES"),
+             QObject::tr("SMESH_BUT_NO"), 0, 1);
+          if (aRet != 0)
             return;
         }
 
@@ -365,6 +409,7 @@
     SUIT_ResourceMgr* resMgr = SUIT_Session::session()->resourceMgr();
     if ( resMgr )
       toCreateGroups = resMgr->booleanValue( "SMESH", "auto_groups", false );
+    bool toOverwrite = true;
 
     QString anInitialPath = "";
     if ( SUIT_FileDlg::getLastVisitedPath().isEmpty() )
@@ -372,7 +417,7 @@
 
     if ( theCommandID != 122 && theCommandID != 125 && theCommandID != 140 && theCommandID != 141) {
       if ( anInitialPath.isEmpty() ) anInitialPath = SUIT_FileDlg::getLastVisitedPath();
-      aFilename = SUIT_FileDlg::getFileName(SMESHGUI::desktop(), anInitialPath + QString("/") + anIObject->getName(),
+      aFilename = SUIT_FileDlg::getFileName(SMESHGUI::desktop(), anInitialPath + QString("/") + aMeshName,
                                             aFilter, aTitle, false);
     }
     else if(theCommandID == 140 || theCommandID == 141) { // Export to STL
@@ -387,7 +432,7 @@
       fd->selectFilter( QObject::tr("STL ASCII  (*.stl)") );
       if ( !anInitialPath.isEmpty() )
         fd->setDirectory( anInitialPath );
-      fd->selectFile(anIObject->getName());
+      fd->selectFile(aMeshName);
       bool is_ok = false;
       while (!is_ok) {
         if ( fd->exec() )
@@ -417,22 +462,79 @@
       fd->SetChecked(toCreateGroups);
       if ( !anInitialPath.isEmpty() )
         fd->setDirectory( anInitialPath );
-      fd->selectFile(anIObject->getName());
+      fd->selectFile(aMeshName);
+
+      SMESHGUI_FileValidator* fv = new SMESHGUI_FileValidator( fd );
+      fd->setValidator( fv );
+
       bool is_ok = false;
       while (!is_ok) {
         if ( fd->exec() )
           aFilename = fd->selectedFile();
+        else {
+          aFilename = QString::null;
+          break;
+        }
         aFormat = aFilterMap[fd->selectedFilter()];
+        toOverwrite = fv->isOverwrite();
         is_ok = true;
-        if ( !aFilename.isEmpty()
-             && (aMesh->NbPolygons()>0 || aMesh->NbPolyhedrons()>0)
-             && aFormat==SMESH::MED_V2_1) {
-          int aRet = SUIT_MessageBox::warning(SMESHGUI::desktop(),
-                                              QObject::tr("SMESH_WRN_WARNING"),
-                                              QObject::tr("SMESH_EXPORT_MED_V2_1").arg(anIObject->getName()),
-                                              SUIT_MessageBox::Yes | SUIT_MessageBox::No, SUIT_MessageBox::Yes);
-          if (aRet != SUIT_MessageBox::Yes) {
-            is_ok = false;
+        if ( !aFilename.isEmpty() ) {
+          for( aMeshIter = aMeshList.begin(); aMeshIter != aMeshList.end(); aMeshIter++ ) {
+            SMESH::SMESH_Mesh_var aMeshItem = (*aMeshIter).first;
+            if( (aMeshItem->NbPolygons()>0 || aMeshItem->NbPolyhedrons()>0)
+                && aFormat==SMESH::MED_V2_1) {
+              int aRet = SUIT_MessageBox::warning(SMESHGUI::desktop(),
+                                                  QObject::tr("SMESH_WRN_WARNING"),
+                                                  QObject::tr("SMESH_EXPORT_MED_V2_1").arg((*aMeshIter).second),
+                                                  QObject::tr("SMESH_BUT_YES"),
+                                                  QObject::tr("SMESH_BUT_NO"), 0, 1);
+              if (aRet != 0) {
+                is_ok = false;
+                break;
+              }
+            }
+          }
+          if( !toOverwrite ) {
+            SMESH::MED_VERSION aVersion = SMESH::MED_V2_1;
+            bool isVersionOk = SMESHGUI::GetSMESHGen()->GetMEDVersion( aFilename.toLatin1().constData(), aVersion );
+            if( !isVersionOk || aVersion != aFormat ) {
+              int aRet = SUIT_MessageBox::warning(SMESHGUI::desktop(),
+                                                  QObject::tr("SMESH_WRN_WARNING"),
+                                                  QObject::tr("SMESH_EXPORT_MED_VERSION_COLLISION").arg(aFilename),
+                                                  QObject::tr("SMESH_BUT_YES"),
+                                                  QObject::tr("SMESH_BUT_NO"), 0, 1);
+              if (aRet == 0)
+                toOverwrite = true;
+              else
+                is_ok = false;
+            }
+
+            QStringList aMeshNamesCollisionList;
+            SMESH::string_array_var aMeshNames = SMESHGUI::GetSMESHGen()->GetMeshNames( aFilename.toLatin1().constData() );
+            for( int i = 0, n = aMeshNames->length(); i < n; i++ ) {
+              QString anExistingMeshName( aMeshNames[ i ] );
+              for( aMeshIter = aMeshList.begin(); aMeshIter != aMeshList.end(); aMeshIter++ ) {
+                QString anExportMeshName = (*aMeshIter).second;
+                if( anExportMeshName == anExistingMeshName ) {
+                  aMeshNamesCollisionList.append( anExportMeshName );
+                  break;
+                }
+              }
+            }
+
+            if( !aMeshNamesCollisionList.isEmpty() ) {
+              QString aMeshNamesCollisionString = aMeshNamesCollisionList.join( ", " );
+              int aRet = SUIT_MessageBox::warning(SMESHGUI::desktop(),
+                                                  QObject::tr("SMESH_WRN_WARNING"),
+                                                  QObject::tr("SMESH_EXPORT_MED_MESH_NAMES_COLLISION").arg(aMeshNamesCollisionString),
+                                                  QObject::tr("SMESH_BUT_YES"),
+                                                  QObject::tr("SMESH_BUT_NO"),
+                                                  QObject::tr("SMESH_BUT_CANCEL"), 0, 2);
+              if (aRet == 0)
+                toOverwrite = true;
+              else if (aRet == 2)
+                is_ok = false;
+            }
           }
         }
       }
@@ -442,7 +544,7 @@
     if ( !aFilename.isEmpty() ) {
       // Check whether the file already exists and delete it if yes
       QFile aFile( aFilename );
-      if ( aFile.exists() )
+      if ( aFile.exists() && toOverwrite )
         aFile.remove();
       SUIT_OverrideCursor wc;
 
@@ -460,8 +562,14 @@
         }
         switch ( theCommandID ) {
         case 125:
-        case 122:
-          aMesh->ExportToMED( aFilename.toLatin1().data(), toCreateGroups, aFormat );
+        case 122: {
+            int aMeshIndex = 0;
+            for( aMeshIter = aMeshList.begin(); aMeshIter != aMeshList.end(); aMeshIter++, aMeshIndex++ ) {
+              SMESH::SMESH_Mesh_var aMeshItem = (*aMeshIter).first;
+              if( !aMeshItem->_is_nil() )
+                aMeshItem->ExportToMEDX( aFilename.toLatin1().data(), toCreateGroups, aFormat, toOverwrite && aMeshIndex == 0 );
+            }
+          }
           break;
         case 124:
         case 121:
@@ -3135,8 +3243,9 @@ void SMESHGUI::initialize( CAM_Application* app )
   popupMgr()->insert( separator(), -1, 0 );
 
   QString only_one_non_empty = QString( " && %1=1 && numberOfNodes>0" ).arg( dc );
+  QString multiple_non_empty = QString( " && %1>0 && numberOfNodes>0" ).arg( dc );
 
-  createPopupItem( 125, OB, mesh, only_one_non_empty );   // EXPORT_MED
+  createPopupItem( 125, OB, mesh, multiple_non_empty );   // EXPORT_MED
   createPopupItem( 126, OB, mesh, only_one_non_empty );   // EXPORT_UNV
   createPopupItem( 141, OB, mesh, only_one_non_empty );   // EXPORT_STL
   //createPopupItem( 33, OB, subMesh + " " + group );       // DELETE

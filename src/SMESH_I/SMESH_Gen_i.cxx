@@ -2193,6 +2193,49 @@ SMESH_Gen_i::ConcatenateCommon(const SMESH::mesh_array& theMeshesArray,
   return aNewMesh._retn();
 }
 
+//================================================================================
+/*!
+ *  SMESH_Gen_i::GetMEDVersion
+ *
+ *  Get MED version of the file by its name
+ */
+//================================================================================
+CORBA::Boolean SMESH_Gen_i::GetMEDVersion(const char* theFileName,
+                                          SMESH::MED_VERSION& theVersion)
+{
+  theVersion = SMESH::MED_V2_1;
+  MED::EVersion aVersion = MED::GetVersionId( theFileName );
+  switch( aVersion ) {
+    case MED::eV2_1     : theVersion = SMESH::MED_V2_1; return true;
+    case MED::eV2_2     : theVersion = SMESH::MED_V2_2; return true;
+    case MED::eVUnknown : return false;
+  }
+  return false;
+}
+
+//================================================================================
+/*!
+ *  SMESH_Gen_i::GetMeshNames
+ *
+ *  Get names of meshes defined in file with the specified name
+ */
+//================================================================================
+SMESH::string_array* SMESH_Gen_i::GetMeshNames(const char* theFileName)
+{
+  SMESH::string_array_var aResult = new SMESH::string_array();
+  MED::PWrapper aMed = MED::CrWrapper( theFileName );
+  MED::TErr anErr;
+  MED::TInt aNbMeshes = aMed->GetNbMeshes( &anErr );
+  if( anErr >= 0 ) {
+    aResult->length( aNbMeshes );
+    for( MED::TInt i = 0; i < aNbMeshes; i++ ) {
+      MED::PMeshInfo aMeshInfo = aMed->GetPMeshInfo( i+1 );
+      aResult[i] = CORBA::string_dup( aMeshInfo->GetName().c_str() );
+    }
+  }
+  return aResult._retn();
+}
+
 //=============================================================================
 /*!
  *  SMESH_Gen_i::Save
