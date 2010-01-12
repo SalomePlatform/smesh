@@ -61,11 +61,6 @@
             <source>COMPERR_BAD_SHAPE</source>
             <translation>Unexpected geometry</translation>
         </message>
-	<message>
-            <source>COMPERR_BAD_FACE</source>
-            <translation>The face must be a full circle or a part of circle 
-(i.e. the number of edges is less or equal to 3 and one of them is a circle curve)</translation>
-        </message>
         <message>
             <source>COMPERR_EXCEPTION</source>
             <translation>Unknown exception</translation>

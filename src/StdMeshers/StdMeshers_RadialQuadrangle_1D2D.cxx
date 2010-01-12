@@ -316,7 +316,7 @@ bool StdMeshers_RadialQuadrangle_1D2D::Compute(SMESH_Mesh&         aMesh,
   TopoDS_Edge CircEdge, LinEdge1, LinEdge2;
   int nbe = analyseFace( aShape, CircEdge, LinEdge1, LinEdge2 );
   if( nbe>3 || nbe < 1 || CircEdge.IsNull() )
-    return error(COMPERR_BAD_FACE);
+    return error("The face must be a full circle or a part of circle (i.e. the number of edges is less or equal to 3 and one of them is a circle curve)");
   
   gp_Pnt P0,P1;
   // points for rotation
