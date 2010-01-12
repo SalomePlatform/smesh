@@ -82,6 +82,7 @@ StdMeshers_RadialQuadrangle_1D2D::StdMeshers_RadialQuadrangle_1D2D(int hypId,
   myNbLayerHypo = 0;
   myDistributionHypo = 0;
   _requireDescretBoundary = false;
+  _supportSubmeshes = true;
 }
 
 
