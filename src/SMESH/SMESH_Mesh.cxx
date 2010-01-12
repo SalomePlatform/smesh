@@ -538,7 +538,7 @@ SMESH_Hypothesis::Hypothesis_Status
   }
 
   if(MYDEBUG) subMesh->DumpAlgoState(true);
-  SCRUTE(ret);
+  if(MYDEBUG) SCRUTE(ret);
   return ret;
 }
 
@@ -560,8 +560,10 @@ SMESH_Hypothesis::Hypothesis_Status
     throw SALOME_Exception(LOCALIZED("hypothesis does not exist"));
   
   SMESH_Hypothesis *anHyp = sc->mapHypothesis[anHypId];
-  int hypType = anHyp->GetType();
-  if(MYDEBUG) SCRUTE(hypType);
+  if(MYDEBUG) {
+    int hypType = anHyp->GetType();
+    SCRUTE(hypType);
+  }
   
   // shape 
   
