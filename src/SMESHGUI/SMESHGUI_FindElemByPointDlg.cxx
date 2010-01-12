@@ -188,7 +188,7 @@ SMESHGUI_FindElemByPointOp::SMESHGUI_FindElemByPointOp()
 {
   mySimulation = 0;
   myDlg = new SMESHGUI_FindElemByPointDlg;
-  myHelpFileName = "mesh_through_point_page.html";
+  myHelpFileName = "find_element_by_point_page.html";
   myFilter = new SMESH_TypeFilter( MESH );
 
   myPreview = new SMESH::MeshPreviewStruct();
