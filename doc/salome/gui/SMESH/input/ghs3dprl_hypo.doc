@@ -2,20 +2,22 @@
 
 \page ghs3dprl_hypo_page GHS3DPRL Parameters hypothesis
 
-\n GHS3DPRL Parameters hypothesis works only with <b>Tetrahedron (Tepal with TetMesh-GHS3D)</b> algorithm.
-\n
-\n This algorithm is a commercial software, its use requires a licence (http://www.distene.com/fr/build/offer.html).
-
-\n Tepal gives the possibility to generate a partitioned
+\n GHS3DPRL Parameters hypothesis works only with <b>Tetrahedron (Tepal with TetMesh-GHS3D)</b> algorithm. 
+This algorithm is a commercial software, its use requires a licence (http://www.distene.com/fr/build/offer.html).
+\n Tepal_V1.4 gives the possibility to generate a partitioned
 mesh with 200 million tetrahedrons on a computer with average memory size
-(2Go RAM) in about 50 hours on one CPU (Xeon, 2008). 
-This is a serious alternative to GHS3D, which requires a much less common
+(2Go RAM) in about 50 hours on one CPU (Xeon, 2008).
+\n New Tepal_V2.0 gives the possibility to generate a partitioned mesh with (for the moment) no more than 100 million 
+tetrahedrons on computers using MPI, (Total 16 Go RAM) 
+in about 900 seconds (!yes! : !seconds!) on 2 octo processors (Xeon, 2009).
+The launch of this beta-version is described below.
+\n This is a serious alternative to GHS3D, which requires a much less common
 configuration with 64Go RAM to only try to make a partition of a mesh with
 200 million tetrahedrons, no result guaranteed.
 \n
 \note The Plugin doesn't load in the Memory the supposedly large resulting meshes. 
 The meshes are saved in MED files and can be imported in the user-defined location via menu File-Import-MED Files.
-\n Pay attention, that Salome GUI needs 2Go RAM. to load a MED
+\n Pay attention, that Salome GUI needs 2Go RAM to load a MED
 file with 5 million tetrahedrons.
 
 \image html ghs3dprl_parameters_basic.png
@@ -89,11 +91,10 @@ example:
              --verbose=0 --test=yes --menu=no --launchtepal=no
 
 \endverbatim
-
+\n
 </li>
 <li>
-<p>
- <b>Advanced tepal Parameters</b> <p>
+<b>Advanced Tepal_V1.4 Parameters</b> <p>
 
 \verbatim
 
@@ -142,11 +143,10 @@ With options :
           Arguments to pass to Tetmesh during cutting process
 
 \endverbatim
-
+\n
 </li>
 <li>
-<p>
-<b>Advanced ghs3d Parameters (through tepal's --tetmesh_args)</b> - type "ghs3d -h" in a Terminal. <p>
+<b>Advanced ghs3d Parameters (through Tepal_V1.4's --tetmesh_args)</b> - type "ghs3d -h" in a Terminal. <p>
 
 \verbatim
 myname@myhost > ghs3d -h
@@ -231,14 +231,16 @@ DESCRIPTION
         EMail: support@distene.com )
 
 \endverbatim
-
+\n
 </li>
 <h1>Saving user's preferred GHS3DPRL Advanced Parameters</h1><br>
 GHS3DPRL Plugin launches standalone binary executable tepal2med.<br>
-You may rename tepal2med as tepal2med.exe for example, and replace
-tepal2med by a shell script at your convenience to overriding parameters.<br>... or else $PATH modification... .<br>Idem for tepal.<br><br>
+You may rename file tepal2med as tepal2med.exe for example, and replace
+tepal2med by a shell script at your convenience to overriding parameters.
+<br>... or else $PATH modification... .<br>Idem for file tepal.<br><br>
 <li>
 <b>Advanced tepal2med Parameters</b> - overriding parameter deletegroups<p>
+You may rename tepal2med as tepal2med.exe for example.
 
 \code
 #!/bin/bash
@@ -250,11 +252,11 @@ tepal2med by a shell script at your convenience to overriding parameters.<br>...
 tepal2med.exe $* --deletegroups="(\bAll_Nodes|\bAll_Faces)"
 
 \endcode
-
+\n
 </li>
 <li>
-<p>
-<b>Advanced tepal Parameters</b> - overriding parameter component of ghs3d (to mesh holes). <p>
+<b>Advanced Tepal_V1.4 Parameters</b> - overriding parameter component of ghs3d (to mesh holes). <p>
+You may rename tepal as tepal.exe for example.
 
 \code
 #!/bin/bash
@@ -269,11 +271,11 @@ SIMULOGD_LICENSE_FILE=29029@is142356
 tepal.exe $* --tetmesh_args "-c 0"
 
 \endcode
-
+\n
 </li>
 <li>
-<p>
 <b>Advanced tepal Parameters</b> - overriding launching tepal on other host. <p>
+You may rename tepal as tepal.exe for example.
 
 \code
 #!/bin/bash
@@ -293,13 +295,107 @@ ssh otherhost "tepal.exe $* > /home/myname/tmp/tepal.log"
 #ssh otherhost "tepal.exe $* --tetmesh_args \"-c 0\"" > /home/myname/tmp/tepal.log
 
 \endcode
+\n
+</li>
 
+<h1>Tepal_V2.0 and MPI use.</h1><br>
+This all new beta-version needs MPI, (openmpi-1.3.1 was used). To use it you have to proceed 
+as done in "overriding parameter component of ghs3d".
+Advanced ghs3d Parameters (through Tepal_V1.4's --tetmesh_args) are not assumed yet.
+It meshes holes.
+\n You may rename tepal as tepal64_v2.exe for example, and replace tepal by a shell script like below.
+
+<li>
+<b>example tepal_v2_mpirun.</b><p>
+
+\code
+
+#!/bin/bash
+#script tepal overriding launching Tepal_V2.0 whith MPI (tepal run 64 bits only).
+#we have renamed binary executable tepal as tepal64_v2.exe.
+#typical command to launch tepal v1 :
+#tepal -f /tmp/myname/GHS3DPRL -n 16 > /tmp/myname/tepal.log
+#this file is an exemple to transform this call for tepal v2.0, 
+#   (beta version using .mesh input file)
+#you have to adapt for your convenience.
+
+#first problem  is convert v1 input files GHS3DPRL.faces and GHS3DPRL.points 
+#               to v2 input file GHS3DPRL.mesh.
+#second problem is to launch on heterogeneous system linux cluster of 
+#               2 hosts (64 bits) of 8 nodes (by example)
+#               whith different 2 executables codes linked on 2 different
+#               openmpi shared library codes.
+#third problem  is convert tepal v2 output files GHS3DPRL*.mesh
+#               to v1 input files GHS3DPRL*.faces an GHS3DPRL*.points.
+
+#you have to work on the same physical disk and same path input and ouput files : $SAME_DIR
+#you have to work on different physical disk but same path and name for executable files 
+#    (and shared libraries) : $DIFF_DIR
+
+echo "parameter 0="$0
+echo "parameter 1="$1
+echo "parameter 2="$2
+echo "parameter 3="$3
+echo "parameter 4="$4
+
+export SAME_DIR=/same_physical_disk_and_same path/tmp
+export DIFF_DIR=/different_physical_disk_but_same path/myname
+
+#copy input local files from local current directory (something like /tmp/myname)
+#in this case we need /tmp/myname and $SAME_DIR different
+cd $SAME_DIR
+rm *
+cp $2* .
+
+export IN_FILES=`basename $2`
+export IN_DIR=`dirname $2`
+#created .mesh from .faces et .points
+/through_salome_path/facespoints2mesh.py $IN_FILES
+
+#there are 2 executable openmpi and library through 2 physical DIFF_DIR
+export PATH=$DIFF_DIR/openmpi-1.3.1_install/bin:${PATH}
+export LD_LIBRARY_PATH=$DIFF_DIR/openmpi-1.3.1_install/lib:${LD_LIBRARY_PATH}
+
+#there are 2 executables tepal_v2 through 2 physical DIFF_DIR
+export LD_LIBRARY_PATH=$DIFF_DIR/tepal-2.0.0/bin/Linux_64:${LD_LIBRARY_PATH}
+export PATH=$DIFF_DIR/tepal-2.0.0/bin/Linux_64:$PATH
+
+#small test betweeen friends
+#rm hostnames.log
+#mpirun -n $4 hostname >> hostnames.log
+
+#there necessary set env licence file for tepal v2
+export DISTENE_LICENSE_FILE="Use global envvar: DLIM8VAR"
+export DLIM8VAR="dlim8 1:1:29030@is142356/0016175ef08c::a1ba...9e19"
+export SIMULOGD_LICENSE_FILE=29029@is142356 
+export LICENSE_FILE=/product/distene/dlim8.var.sh
+
+#mpirun whith necessary set envenvironment
+export TMP_ENV="-x PATH -x LD_LIBRARY_PATH -x DISTENE_LICENSE_FILE -x DLIM8VAR \
+                -x SIMULOGD_LICENSE_FILE -x LICENSE_FILE"
+#mpirun $TMPENV -n $4 which tepal64_v2.exe >> hostnames.log
+
+#real mpirun uncomment after verify small test
+mpirun $TMPENV -n $4 tepal64_v2.exe --in $IN_FILES.mesh --out $IN_FILES.mesh --verbose 100
+
+#convert output files tepalv1 format
+/through_salome_path/mesh2facespoints.py $IN_FILES
+
+#copy ouputs files from $SAME_DIR to local current directory (something like /tmp/myname)
+cp -f hostnames.log $IN_DIR
+cp -f $IN_FILES* $IN_DIR
+
+#ls -al $SAME_DIR
+#cat $SAME_DIR/hostnames.log
+#cat /tmp/myname/tepal.log
+
+\endcode
+\n
 </li>
 
 <h1>TUI use.</h1><br>
 
 <li>
-<p>
 <b>example ex30_tepal.py.</b><p>
 
 \code
@@ -367,7 +463,7 @@ if os.access(results+".xml", os.F_OK):
 else:
     print "KO: tepal"
 \endcode
-
+\n
 </li>
 </ul>
 
