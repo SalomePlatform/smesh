@@ -44,61 +44,33 @@ using namespace std;
 
 //=============================================================================
 /*!
- *  default constructor:
+ *  Constructor
  */
 //=============================================================================
 
 SMESH_Gen::SMESH_Gen()
 {
-        MESSAGE("SMESH_Gen::SMESH_Gen");
-        _localId = 0;
-        _hypId = 0;
-        _segmentation = 10;
+  MESSAGE("SMESH_Gen::SMESH_Gen");
+  _localId = 0;
+  _hypId = 0;
+  _segmentation = _nbSegments = 10;
 }
 
 //=============================================================================
 /*!
- *
+ * Destructor
  */
 //=============================================================================
 
 SMESH_Gen::~SMESH_Gen()
 {
-        MESSAGE("SMESH_Gen::~SMESH_Gen");
+  MESSAGE("SMESH_Gen::~SMESH_Gen");
 }
 
 //=============================================================================
 /*!
- *
- */
-//=============================================================================
-
-/*SMESH_Hypothesis *SMESH_Gen::CreateHypothesis(const char *anHyp, int studyId)
-        throw(SALOME_Exception)
-{
-
-        MESSAGE("CreateHypothesis("<<anHyp<<","<<studyId<<")");
-        // Get studyContext, create it if it does'nt exist, with a SMESHDS_Document
-
-        StudyContextStruct *myStudyContext = GetStudyContext(studyId);
-
-        // create a new hypothesis object, store its ref. in studyContext
-
-        SMESH_Hypothesis *myHypothesis = _hypothesisFactory.Create(anHyp, studyId);
-        int hypId = myHypothesis->GetID();
-        myStudyContext->mapHypothesis[hypId] = myHypothesis;
-        SCRUTE(studyId);
-        SCRUTE(hypId);
-
-        // store hypothesis in SMESHDS document
-
-        myStudyContext->myDocument->AddHypothesis(myHypothesis);
-        return myHypothesis;
-}*/
-
-//=============================================================================
-/*!
- *
+ * Creates a mesh in a study.
+ * if (theIsEmbeddedMode) { mesh modification commands are not logged }
  */
 //=============================================================================
 
@@ -786,7 +758,7 @@ bool SMESH_Gen::IsGlobalHypothesis(const SMESH_Hypothesis* theHyp, SMESH_Mesh& a
 
 //=============================================================================
 /*!
- *
+ * Finds algo to mesh a shape. Optionally returns a shape the found algo is bound to
  */
 //=============================================================================
 
@@ -794,7 +766,6 @@ SMESH_Algo *SMESH_Gen::GetAlgo(SMESH_Mesh &         aMesh,
                                const TopoDS_Shape & aShape,
                                TopoDS_Shape*        assignedTo)
 {
-
   SMESH_HypoFilter filter( SMESH_HypoFilter::IsAlgo() );
   filter.And( filter.IsApplicableTo( aShape ));
 
@@ -803,59 +774,28 @@ SMESH_Algo *SMESH_Gen::GetAlgo(SMESH_Mesh &         aMesh,
 
 //=============================================================================
 /*!
- *
+ * Returns StudyContextStruct for a study
  */
 //=============================================================================
 
 StudyContextStruct *SMESH_Gen::GetStudyContext(int studyId)
 {
-        // Get studyContext, create it if it does'nt exist, with a SMESHDS_Document
+  // Get studyContext, create it if it does'nt exist, with a SMESHDS_Document
 
-        if (_mapStudyContext.find(studyId) == _mapStudyContext.end())
-        {
-                _mapStudyContext[studyId] = new StudyContextStruct;
-                _mapStudyContext[studyId]->myDocument = new SMESHDS_Document(studyId);
-        }
-        StudyContextStruct *myStudyContext = _mapStudyContext[studyId];
-//   ASSERT(_mapStudyContext.find(studyId) != _mapStudyContext.end());
-        return myStudyContext;
+  if (_mapStudyContext.find(studyId) == _mapStudyContext.end())
+  {
+    _mapStudyContext[studyId] = new StudyContextStruct;
+    _mapStudyContext[studyId]->myDocument = new SMESHDS_Document(studyId);
+  }
+  StudyContextStruct *myStudyContext = _mapStudyContext[studyId];
+  return myStudyContext;
 }
 
-// //=============================================================================
-// /*!
-//  *
-//  */
-// //=============================================================================
-
-// void SMESH_Gen::Save(int studyId, const char *aUrlOfFile)
-// {
-// }
-
-// //=============================================================================
-// /*!
-//  *
-//  */
-// //=============================================================================
-
-// void SMESH_Gen::Load(int studyId, const char *aUrlOfFile)
-// {
-// }
-
-// //=============================================================================
-// /*!
-//  *
-//  */
-// //=============================================================================
-
-// void SMESH_Gen::Close(int studyId)
-// {
-// }
-
-//=============================================================================
+//================================================================================
 /*!
- *
+ * \brief Return shape dimension by TopAbs_ShapeEnum
  */
-//=============================================================================
+//================================================================================
 
 int SMESH_Gen::GetShapeDim(const TopAbs_ShapeEnum & aShapeType)
 {
@@ -877,12 +817,11 @@ int SMESH_Gen::GetShapeDim(const TopAbs_ShapeEnum & aShapeType)
 
 //=============================================================================
 /*!
- *
+ * Genarate a new id unique withing this Gen
  */
 //=============================================================================
 
 int SMESH_Gen::GetANewId()
 {
-        //MESSAGE("SMESH_Gen::GetANewId");
-        return _hypId++;
+  return _hypId++;
 }
