@@ -1306,6 +1306,19 @@ Handle(_pyHypothesis) _pyHypothesis::NewHypothesis( const Handle(_pyCommand)& th
   else if ( hypType == "TrianglePreference" ) {
     hyp->SetConvMethodAndType( "TrianglePreference", "Quadrangle_2D");
   }     
+  // RadialQuadrangle_1D2D ----------
+  else if ( hypType == "RadialQuadrangle_1D2D" ) {
+    algo->SetConvMethodAndType( "Quadrangle" , hypType.ToCString());
+    algo->myArgs.Append( "algo=smesh.RADIAL_QUAD" );
+  }
+  else if ( hypType == "NumberOfLayers2D" ) {
+    hyp->SetConvMethodAndType( "NumberOfLayers", "RadialQuadrangle_1D2D");
+    hyp->AddArgMethod( "SetNumberOfLayers" );
+  }
+  else if ( hypType == "LayerDistribution2D" ) {
+    hyp = new _pyLayerDistributionHypo( theCreationCmd );
+    hyp->SetConvMethodAndType( "LayerDistribution", "RadialQuadrangle_1D2D");
+  }
   // BLSURF ----------
   else if ( hypType == "BLSURF" ) {
     algo->SetConvMethodAndType( "Triangle", hypType.ToCString());
@@ -1645,46 +1658,10 @@ void _pyLayerDistributionHypo::Process( const Handle(_pyCommand)& theCommand)
     my1dHyp->ClearAllCommands();
   }
   my1dHyp = hyp1d;
-  if ( my1dHyp.IsNull() )
-    return; // something wrong :(
 
-  // make a new name for 1D hyp = "HypType" + "_Distribution"
-  if ( my1dHyp->GetCreationCmd()->GetMethod() == "CreateHypothesis" ) {
-    // not yet converted creation cmd
-    TCollection_AsciiString hypTypeQuoted = my1dHyp->GetCreationCmd()->GetArg(1);
-    TCollection_AsciiString hypType = hypTypeQuoted.SubString( 2, hypTypeQuoted.Length() - 1 );
-    newName = hypType + "_Distribution";
-    my1dHyp->GetCreationCmd()->SetResultValue( newName );
-  }
-  else {
-    // already converted creation cmd
-    newName = my1dHyp->GetCreationCmd()->GetResultValue();
-  }
-
-  // as creation of 1D hyp was written later then it's edition,
-  // we need to find all it's edition calls and process them
-  list< Handle(_pyCommand) >& cmds = theGen->GetCommands();
-  list< Handle(_pyCommand) >::iterator cmdIt = cmds.begin();
-  for ( ; cmdIt != cmds.end(); ++cmdIt ) {
-    const _pyID& objID = (*cmdIt)->GetObject();
-    if ( objID == hyp1dID ) {
-      my1dHyp->Process( *cmdIt );
-      my1dHyp->GetCreationCmd()->AddDependantCmd( *cmdIt );
-      ( *cmdIt )->SetObject( newName );
-    }
-  }
   if ( !myArgCommands.empty() )
     myArgCommands.front()->Clear();
-  theCommand->SetArg( 1, newName );
   myArgCommands.push_back( theCommand );
-  // copy hyp1d's creation method and args
-//   myCreationMethod = hyp1d->GetCreationMethod();
-//   myArgs           = hyp1d->GetArgs();
-//   // make them cleared at conversion
-//   myArgCommands = hyp1d->GetArgCommands();
-
-//   // to be cleared at convertion only
-//   myArgCommands.push_back( theCommand );
 }
 
 //================================================================================
@@ -1738,6 +1715,47 @@ bool _pyLayerDistributionHypo::Addition2Creation( const Handle(_pyCommand)& theA
 
 void _pyLayerDistributionHypo::Flush()
 {
+  // as creation of 1D hyp was written later then it's edition,
+  // we need to find all it's edition calls and process them
+  if ( !my1dHyp.IsNull() )
+  {
+    _pyID hyp1dID = my1dHyp->GetCreationCmd()->GetResultValue();
+
+    // make a new name for 1D hyp = "HypType" + "_Distribution"
+    _pyID newName;
+    if ( my1dHyp->GetCreationCmd()->GetMethod() == "CreateHypothesis" ) {
+      // not yet converted creation cmd
+      TCollection_AsciiString hypTypeQuoted = my1dHyp->GetCreationCmd()->GetArg(1);
+      TCollection_AsciiString hypType = hypTypeQuoted.SubString( 2, hypTypeQuoted.Length() - 1 );
+      newName = hypType + "_Distribution";
+      my1dHyp->GetCreationCmd()->SetResultValue( newName );
+    }
+    else {
+      // already converted creation cmd
+      newName = my1dHyp->GetCreationCmd()->GetResultValue();
+    }
+    list< Handle(_pyCommand) >& cmds = theGen->GetCommands();
+    list< Handle(_pyCommand) >::iterator cmdIt = cmds.begin();
+    for ( ; cmdIt != cmds.end(); ++cmdIt ) {
+      const _pyID& objID = (*cmdIt)->GetObject();
+      if ( objID == hyp1dID ) {
+        my1dHyp->Process( *cmdIt );
+        my1dHyp->GetCreationCmd()->AddDependantCmd( *cmdIt );
+        ( *cmdIt )->SetObject( newName );
+      }
+    }
+    if ( !myArgCommands.empty() )
+      myArgCommands.back()->SetArg( 1, newName );
+  }
+  // copy hyp1d's creation method and args
+  //   myCreationMethod = hyp1d->GetCreationMethod();
+  //   myArgs           = hyp1d->GetArgs();
+  //   // make them cleared at conversion
+  //   myArgCommands = hyp1d->GetArgCommands();
+
+//   // to be cleared at convertion only
+//   myArgCommands.push_back( theCommand );
+
   //my1dHyp.Nullify();
   //_pyHypothesis::Flush();
 }
