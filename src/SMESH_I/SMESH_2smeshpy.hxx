@@ -113,7 +113,7 @@ public:
   int GetOrderNb() const { return myOrderNb; }
   void SetOrderNb( int theNb ) { myOrderNb = theNb; }
   int Length() { return myString.Length(); }
-  void Clear() { myString.Clear(); myBegPos.Clear(); }
+  void Clear() { myString.Clear(); myBegPos.Clear(); myArgs.Clear(); }
   bool IsEmpty() const { return myString.IsEmpty(); }
   TCollection_AsciiString GetIndentation();
   const TCollection_AsciiString & GetResultValue();
@@ -373,9 +373,10 @@ DEFINE_STANDARD_HANDLE (_pyComplexParamHypo, _pyHypothesis);
 class _pyLayerDistributionHypo: public _pyHypothesis
 {
   Handle(_pyHypothesis) my1dHyp;
+  TCollection_AsciiString myAlgoMethod;
 public:
-  _pyLayerDistributionHypo(const Handle(_pyCommand)& theCreationCmd):
-    _pyHypothesis(theCreationCmd) {}
+  _pyLayerDistributionHypo(const Handle(_pyCommand)& theCreationCmd, const char* algoMethod):
+    _pyHypothesis(theCreationCmd), myAlgoMethod((char*)algoMethod) {}
   void Process( const Handle(_pyCommand)& theCommand);
   void Flush();
   bool Addition2Creation( const Handle(_pyCommand)& theAdditionCmd,

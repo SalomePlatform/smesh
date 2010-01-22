@@ -118,6 +118,9 @@ namespace SMESH
     operator<<(const SMESH::double_array& theArg);
 
     TPythonDump& 
+    operator<<(SMESH::SMESH_Hypothesis_ptr theArg);
+
+    TPythonDump& 
     operator<<(SALOMEDS::SObject_ptr theArg);
 
     TPythonDump& 

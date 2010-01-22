@@ -210,6 +210,19 @@ namespace SMESH
 
   TPythonDump& 
   TPythonDump::
+  operator<<(SMESH::SMESH_Hypothesis_ptr theArg)
+  {
+    SALOMEDS::Study_var aStudy = SMESH_Gen_i::GetSMESHGen()->GetCurrentStudy();
+    SALOMEDS::SObject_var aSObject = SMESH_Gen_i::ObjectToSObject(aStudy,theArg);
+    if(aSObject->_is_nil() && !CORBA::is_nil(theArg))
+      myStream << "hyp_" << theArg->GetId();
+    else
+      *this << CORBA::Object_ptr( theArg );
+    return *this;
+  }
+
+  TPythonDump& 
+  TPythonDump::
   operator<<(SMESH::FilterLibrary_i* theArg)
   {
     myStream<<"aFilterLibrary"<<theArg;

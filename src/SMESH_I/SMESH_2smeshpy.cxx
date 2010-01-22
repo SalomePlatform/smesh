@@ -1316,7 +1316,7 @@ Handle(_pyHypothesis) _pyHypothesis::NewHypothesis( const Handle(_pyCommand)& th
     hyp->AddArgMethod( "SetNumberOfLayers" );
   }
   else if ( hypType == "LayerDistribution2D" ) {
-    hyp = new _pyLayerDistributionHypo( theCreationCmd );
+    hyp = new _pyLayerDistributionHypo( theCreationCmd, "Get2DHypothesis" );
     hyp->SetConvMethodAndType( "LayerDistribution", "RadialQuadrangle_1D2D");
   }
   // BLSURF ----------
@@ -1418,14 +1418,11 @@ Handle(_pyHypothesis) _pyHypothesis::NewHypothesis( const Handle(_pyCommand)& th
     hyp->AddArgMethod( "SetNumberOfLayers" );
   }
   else if ( hypType == "LayerDistribution" ) {
-    hyp = new _pyLayerDistributionHypo( theCreationCmd );
+    hyp = new _pyLayerDistributionHypo( theCreationCmd, "Get3DHypothesis" );
     hyp->SetConvMethodAndType( "LayerDistribution", "RadialPrism_3D");
   }
 
-  if ( algo->IsValid() ) {
-    return algo;
-  }
-  return hyp;
+  return algo->IsValid() ? algo : hyp;
 }
 
 //================================================================================
@@ -1686,20 +1683,23 @@ bool _pyLayerDistributionHypo::Addition2Creation( const Handle(_pyCommand)& theA
 
   _pyID geom = theAdditionCmd->GetArg( 1 );
 
-  my1dHyp->SetMesh( theMesh );
-  if ( !my1dHyp->Addition2Creation( theAdditionCmd, theMesh ))
-    return false;
-
-  // clear "SetLayerDistribution()" cmd
-  myArgCommands.front()->Clear();
-
-  // Convert my creation => me = RadialPrismAlgo.Get3DHypothesis()
-
-  // find RadialPrism algo created on <geom> for theMesh
   Handle(_pyHypothesis) algo = theGen->FindAlgo( geom, theMesh, this );
-  if ( !algo.IsNull() ) {
+  if ( !algo.IsNull() )
+  {
+    my1dHyp->SetMesh( theMesh );
+    my1dHyp->SetConvMethodAndType(my1dHyp->GetAlgoCreationMethod().ToCString(),
+                                  algo->GetAlgoType().ToCString());
+    if ( !my1dHyp->Addition2Creation( theAdditionCmd, theMesh ))
+      return false;
+
+    // clear "SetLayerDistribution()" cmd
+    myArgCommands.back()->Clear();
+
+    // Convert my creation => me = RadialPrismAlgo.Get3DHypothesis()
+
+    // find RadialPrism algo created on <geom> for theMesh
     GetCreationCmd()->SetObject( algo->GetID() );
-    GetCreationCmd()->SetMethod( "Get3DHypothesis" );
+    GetCreationCmd()->SetMethod( myAlgoMethod );
     GetCreationCmd()->RemoveArgs();
     theAdditionCmd->AddDependantCmd( GetCreationCmd() );
     myIsWrapped = true;
@@ -1723,17 +1723,16 @@ void _pyLayerDistributionHypo::Flush()
 
     // make a new name for 1D hyp = "HypType" + "_Distribution"
     _pyID newName;
-    if ( my1dHyp->GetCreationCmd()->GetMethod() == "CreateHypothesis" ) {
-      // not yet converted creation cmd
-      TCollection_AsciiString hypTypeQuoted = my1dHyp->GetCreationCmd()->GetArg(1);
-      TCollection_AsciiString hypType = hypTypeQuoted.SubString( 2, hypTypeQuoted.Length() - 1 );
-      newName = hypType + "_Distribution";
-      my1dHyp->GetCreationCmd()->SetResultValue( newName );
+    if ( my1dHyp->IsWrapped() ) {
+      newName = my1dHyp->GetCreationCmd()->GetMethod();
     }
     else {
-      // already converted creation cmd
-      newName = my1dHyp->GetCreationCmd()->GetResultValue();
+      TCollection_AsciiString hypTypeQuoted = my1dHyp->GetCreationCmd()->GetArg(1);
+      newName = hypTypeQuoted.SubString( 2, hypTypeQuoted.Length() - 1 );
     }
+    newName += "_Distribution";
+    my1dHyp->GetCreationCmd()->SetResultValue( newName );
+
     list< Handle(_pyCommand) >& cmds = theGen->GetCommands();
     list< Handle(_pyCommand) >::iterator cmdIt = cmds.begin();
     for ( ; cmdIt != cmds.end(); ++cmdIt ) {
@@ -1744,20 +1743,10 @@ void _pyLayerDistributionHypo::Flush()
         ( *cmdIt )->SetObject( newName );
       }
     }
-    if ( !myArgCommands.empty() )
+    // Set new hyp name to SetLayerDistribution() cmd
+    if ( !myArgCommands.empty() && !myArgCommands.back()->IsEmpty() )
       myArgCommands.back()->SetArg( 1, newName );
   }
-  // copy hyp1d's creation method and args
-  //   myCreationMethod = hyp1d->GetCreationMethod();
-  //   myArgs           = hyp1d->GetArgs();
-  //   // make them cleared at conversion
-  //   myArgCommands = hyp1d->GetArgCommands();
-
-//   // to be cleared at convertion only
-//   myArgCommands.push_back( theCommand );
-
-  //my1dHyp.Nullify();
-  //_pyHypothesis::Flush();
 }
 
 //================================================================================
