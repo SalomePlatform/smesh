@@ -1598,11 +1598,9 @@ bool SMESH_subMesh::Evaluate(MapShapeNbElems& aResMap)
   bool ret = true;
 
   if (_subShape.ShapeType() == TopAbs_VERTEX) {
-    std::vector<int> aVec(SMDSEntity_Last);
-    for(int i= SMDSEntity_Node; i < SMDSEntity_Last; i++)
-      aVec[i] = 0;
+    vector<int> aVec(SMDSEntity_Last,0);
     aVec[SMDSEntity_Node] = 1;
-    aResMap.insert(std::make_pair(this,aVec));
+    aResMap.insert(make_pair(this,aVec));
     return ret;
   }
 
