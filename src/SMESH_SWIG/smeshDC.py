@@ -162,6 +162,8 @@ Hexa    = 8
 Hexotic = 9
 BLSURF  = 10
 GHS3DPRL = 11
+QUARDANGLE = 0
+RADIAL_QUAD = 1
 
 # MirrorType enumeration
 POINT = SMESH_MeshEditor.POINT
@@ -1031,17 +1033,20 @@ class Mesh:
         if (isinstance(algo, geompyDC.GEOM._objref_GEOM_Object)):
             geom = algo
             algo = MEFISTO
-
         return Mesh_Triangle(self, algo, geom)
 
     ## Creates a quadrangle 2D algorithm for faces.
     #  If the optional \a geom parameter is not set, this algorithm is global.
     #  \n Otherwise, this algorithm defines a submesh based on \a geom subshape.
     #  @param geom If defined, the subshape to be meshed (GEOM_Object)
+    #  @param algo values are: smesh.QUARDANGLE || smesh.RADIAL_QUAD
     #  @return an instance of Mesh_Quadrangle algorithm
     #  @ingroup l3_algos_basic
-    def Quadrangle(self, geom=0):
-        return Mesh_Quadrangle(self,  geom)
+    def Quadrangle(self, geom=0, algo=QUARDANGLE):
+        if algo==RADIAL_QUAD:
+            return Mesh_RadialQuadrangle1D2D(self,geom)
+        else:
+            return Mesh_Quadrangle(self, geom)
 
     ## Creates a tetrahedron 3D algorithm for solids.
     #  The parameter \a algo permits to choose the algorithm: NETGEN or GHS3D
@@ -1328,29 +1333,25 @@ class Mesh:
     def Group(self, grp, name=""):
         return self.GroupOnGeom(grp, name)
 
-    ## Deprecated, used only for compatibility! Please, use ExportToMEDX() method instead.
+    ## Deprecated, used only for compatibility! Please, use ExportMED() method instead.
     #  Exports the mesh in a file in MED format and chooses the \a version of MED format
-    ## allowing to overwrite the file if it exists or add the exported data to its contents
     #  @param f the file name
     #  @param version values are SMESH.MED_V2_1, SMESH.MED_V2_2
     #  @param opt boolean parameter for creating/not creating
     #  the groups Group_On_All_Nodes, Group_On_All_Faces, ...
-    #  @param overwrite boolean parameter for overwriting/not overwriting the file
     #  @ingroup l2_impexp
-    def ExportToMED(self, f, version, opt=0, overwrite=1):
-        self.mesh.ExportToMEDX(f, opt, version, overwrite)
+    def ExportToMED(self, f, version, opt=0):
+        self.mesh.ExportToMED(f, opt, version)
 
-    ## Exports the mesh in a file in MED format and chooses the \a version of MED format
-    ## allowing to overwrite the file if it exists or add the exported data to its contents
+    ## Exports the mesh in a file in MED format
     #  @param f is the file name
     #  @param auto_groups boolean parameter for creating/not creating
     #  the groups Group_On_All_Nodes, Group_On_All_Faces, ... ;
     #  the typical use is auto_groups=false.
     #  @param version MED format version(MED_V2_1 or MED_V2_2)
-    #  @param overwrite boolean parameter for overwriting/not overwriting the file
     #  @ingroup l2_impexp
-    def ExportMED(self, f, auto_groups=0, version=MED_V2_2, overwrite=1):
-        self.mesh.ExportToMEDX(f, auto_groups, version, overwrite)
+    def ExportMED(self, f, auto_groups=0, version=MED_V2_2):
+        self.mesh.ExportToMED(f, auto_groups, version)
 
     ## Exports the mesh in a file in DAT format
     #  @param f the file name
@@ -4928,6 +4929,7 @@ class Mesh_RadialPrism3D(Mesh_Algorithm):
             self.mesh.GetMesh().RemoveHypothesis( self.geom, self.nbLayers )
             self.mesh.GetMesh().AddHypothesis( self.geom, self.distribHyp )
         study = self.mesh.smeshpyD.GetCurrentStudy() # prevents publishing own 1D hypothesis
+        self.mesh.smeshpyD.SetCurrentStudy( None )
         hyp = self.mesh.smeshpyD.CreateHypothesis(hypType, so)
         self.mesh.smeshpyD.SetCurrentStudy( study ) # enables publishing
         self.distribHyp.SetLayerDistribution( hyp )
@@ -5014,7 +5016,7 @@ class Mesh_RadialQuadrangle1D2D(Mesh_Algorithm):
         Mesh_Algorithm.__init__(self)
         self.Create(mesh, geom, "RadialQuadrangle_1D2D")
 
-        self.distribHyp = self.Hypothesis("LayerDistribution2D", UseExisting=0)
+        self.distribHyp = None #self.Hypothesis("LayerDistribution2D", UseExisting=0)
         self.nbLayers = None
 
     ## Return 2D hypothesis holding the 1D one
@@ -5025,21 +5027,26 @@ class Mesh_RadialQuadrangle1D2D(Mesh_Algorithm):
     #  hypothesis. Returns the created hypothesis
     def OwnHypothesis(self, hypType, args=[], so="libStdMeshersEngine.so"):
         #print "OwnHypothesis",hypType
-        if not self.nbLayers is None:
+        if self.nbLayers:
             self.mesh.GetMesh().RemoveHypothesis( self.geom, self.nbLayers )
+        if self.distribHyp is None:
+            self.distribHyp = self.Hypothesis("LayerDistribution2D", UseExisting=0)
+        else:
             self.mesh.GetMesh().AddHypothesis( self.geom, self.distribHyp )
         study = self.mesh.smeshpyD.GetCurrentStudy() # prevents publishing own 1D hypothesis
+        self.mesh.smeshpyD.SetCurrentStudy( None )
         hyp = self.mesh.smeshpyD.CreateHypothesis(hypType, so)
         self.mesh.smeshpyD.SetCurrentStudy( study ) # enables publishing
         self.distribHyp.SetLayerDistribution( hyp )
         return hyp
 
-    ## Defines "NumberOfLayers2D" hypothesis, specifying the number of layers
+    ## Defines "NumberOfLayers" hypothesis, specifying the number of layers
     #  @param n number of layers
     #  @param UseExisting if ==true - searches for the existing hypothesis created with
     #                     the same parameters, else (default) - creates a new one
-    def NumberOfLayers2D(self, n, UseExisting=0):
-        self.mesh.GetMesh().RemoveHypothesis( self.geom, self.distribHyp )
+    def NumberOfLayers(self, n, UseExisting=0):
+        if self.distribHyp:
+            self.mesh.GetMesh().RemoveHypothesis( self.geom, self.distribHyp )
         self.nbLayers = self.Hypothesis("NumberOfLayers2D", [n], UseExisting=UseExisting,
                                         CompareMethod=self.CompareNumberOfLayers)
         self.nbLayers.SetNumberOfLayers( n )
