@@ -514,29 +514,36 @@ Mesh_1.Compute()
 \anchor tui_radial_quadrangle
 <h2> Radial Quadrangle 1D2D example </h2>
 \code
-import salome
-import geompy
-import smesh
-import StdMeshers
+from smesh import *
+
+SetCurrentStudy(salome.myStudy)
 
 # Create face from the wire and add to study
-WirePath = geompy.MakeSketcher("Sketcher:F 0 0:TT 20 0:R 90:C 20 90:WW", [0, 0, 0, 1, 0, 0, 0, 0, 1])
-Face = geompy.MakeFace(WirePath,1)
+Face = geompy.MakeSketcher("Sketcher:F 0 0:TT 20 0:R 90:C 20 90:WF", [0, 0, 0, 1, 0, 0, 0, 0, 1])
 geompy.addToStudy(Face,"Face")
+edges = geompy.SubShapeAllSorted(Face, geompy.ShapeType["EDGE"])
+circle, radius1, radius2 = edges
+geompy.addToStudyInFather(Face, radius1,"radius1")
+geompy.addToStudyInFather(Face, radius2,"radius2")
+geompy.addToStudyInFather(Face, circle,"circle")
 
-# Define geometry for mesh, and 1D parameters
+
+# Define geometry for mesh, and Radial Quadrange algorithm
 mesh = smesh.Mesh(Face)
-Wire_discretisation = mesh.Segment()
-Nb_Segments = Wire_discretisation.NumberOfSegments(5)
-Nb_Segments.SetDistrType( 0 )
+radial_Quad_algo = mesh.Quadrangle(algo=RADIAL_QUAD)
 
-# Define 2D parameters and Radial Quadrange hypothesis
-Number_of_Layers = smesh.CreateHypothesis('NumberOfLayers2D')
-Number_of_Layers.SetNumberOfLayers( 4 )
-mesh.AddHypothesis(Number_of_Layers)
-RadialQuadrangle_1D2D = smesh.CreateHypothesis('RadialQuadrangle_1D2D')
-mesh.AddHypothesis(RadialQuadrangle_1D2D)
+# The Radial Quadrange algorithm can work without any hypothesis
+# In this case it uses "Default Nb of Segments" preferences parameter to discretize edges
+mesh.Compute()
 
+# The Radial Quadrange uses global or local 1d hypotheses if no its own hypotheses assigned.
+# Define global hypotheses to discretize radial edges and a local one for circular edge
+global_Nb_Segments = mesh.Segment().NumberOfSegments(5)
+local_Nb_Segments  = mesh.Segment(circle).NumberOfSegments(10)
+mesh.Compute()
+
+# Define own parameters of Radial Quadrange algorithm
+radial_Quad_algo.NumberOfLayers( 4 )
 mesh.Compute()
 \endcode
 

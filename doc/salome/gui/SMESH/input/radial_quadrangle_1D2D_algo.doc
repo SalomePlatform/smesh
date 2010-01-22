@@ -8,8 +8,15 @@ following conditions: the face must be a full circle or a part of circle
 The resulting mesh consists of triangles (near the center point) and
 quadrangles.
 
-This algorithm requires the hypothesis indicating the number
+This algorithm is optionally parametrized by the hypothesis indicating the number
 of mesh layers along the radius. The distribution of layers can be set with any 1D Hypothesis.
+
+If no own hypothesis of the algorithm is assigned, any local or global hypothesis is used 
+by the algorithm to discretize edges. Note that if the geometrical face has two radial edges,
+they must be meshed with equal number of segments.
+
+If no 1D hypothesis is assigned to an edge, "Default Number of Segments" preferences parameter
+is used to discretize the edge.
 
 \image html hypo_radquad_dlg.png
 
