@@ -27,15 +27,15 @@
 //
 #include "StdMeshers_RadialQuadrangle_1D2D.hxx"
 
-//#include "StdMeshers_ProjectionUtils.hxx"
 #include "StdMeshers_NumberOfLayers.hxx"
 #include "StdMeshers_LayerDistribution.hxx"
-//#include "StdMeshers_Prism_3D.hxx"
 #include "StdMeshers_Regular_1D.hxx"
+#include "StdMeshers_NumberOfSegments.hxx"
 
 #include "SMDS_MeshNode.hxx"
 #include "SMESHDS_SubMesh.hxx"
 #include "SMESH_Gen.hxx"
+#include "SMESH_HypoFilter.hxx"
 #include "SMESH_Mesh.hxx"
 #include "SMESH_MesherHelper.hxx"
 #include "SMESH_subMesh.hxx"
@@ -53,6 +53,7 @@
 #include <TColgp_SequenceOfPnt.hxx>
 #include <TColgp_SequenceOfPnt2d.hxx>
 #include <TopExp_Explorer.hxx>
+#include <TopTools_ListIteratorOfListOfShape.hxx>
 #include <TopoDS.hxx>
 
 
@@ -60,8 +61,6 @@ using namespace std;
 
 #define RETURN_BAD_RESULT(msg) { MESSAGE(")-: Error: " << msg); return false; }
 #define gpXYZ(n) gp_XYZ(n->X(),n->Y(),n->Z())
-
-//typedef StdMeshers_ProjectionUtils TAssocTool;
 
 
 //=======================================================================
@@ -114,8 +113,8 @@ bool StdMeshers_RadialQuadrangle_1D2D::CheckHypothesis
 
   const list <const SMESHDS_Hypothesis * >&hyps = GetUsedHypothesis(aMesh, aShape);
   if ( hyps.size() == 0 ) {
-    aStatus = SMESH_Hypothesis::HYP_MISSING;
-    return false;  // can't work with no hypothesis
+    aStatus = SMESH_Hypothesis::HYP_OK;
+    return true;  // can work with no hypothesis
   }
 
   if ( hyps.size() > 1 ) {
@@ -147,27 +146,42 @@ namespace
   /*!
    * \brief Listener used to mark edges meshed by StdMeshers_RadialQuadrangle_1D2D
    */
-  class TLinEdgeMarker : public SMESH_subMeshEventListener
+  class TEdgeMarker : public SMESH_subMeshEventListener
   {
-    TLinEdgeMarker(): SMESH_subMeshEventListener(/*isDeletable=*/false) {}
+    TEdgeMarker(): SMESH_subMeshEventListener(/*isDeletable=*/false) {}
   public:
+    //!<  Return static listener
     static SMESH_subMeshEventListener* getListener()
     {
-      static TLinEdgeMarker theEdgeMarker;
+      static TEdgeMarker theEdgeMarker;
       return &theEdgeMarker;
     }
+    //! Clear face sumbesh if something happens on edges
+    void ProcessEvent(const int          event,
+                      const int          eventType,
+                      SMESH_subMesh*     edgeSubMesh,
+                      EventListenerData* data,
+                      const SMESH_Hypothesis*  /*hyp*/)
+    {
+      if ( data && !data->mySubMeshes.empty() && eventType == SMESH_subMesh::ALGO_EVENT)
+      {
+        ASSERT( data->mySubMeshes.front() != edgeSubMesh );
+        SMESH_subMesh* faceSubMesh = data->mySubMeshes.front();
+        faceSubMesh->ComputeStateEngine( SMESH_subMesh::CLEAN );
+      }
+    }
   };
-  
+
   // ------------------------------------------------------------------------------
   /*!
    * \brief Mark an edge as computed by StdMeshers_RadialQuadrangle_1D2D
    */
-  void markLinEdgeAsComputedByMe(const TopoDS_Edge& edge, SMESH_subMesh* faceSubMesh)
+  void markEdgeAsComputedByMe(const TopoDS_Edge& edge, SMESH_subMesh* faceSubMesh)
   {
     if ( SMESH_subMesh* edgeSM = faceSubMesh->GetFather()->GetSubMeshContaining( edge ))
     {
-      if ( !edgeSM->GetEventListenerData( TLinEdgeMarker::getListener() ))
-        faceSubMesh->SetEventListener( TLinEdgeMarker::getListener(),
+      if ( !edgeSM->GetEventListenerData( TEdgeMarker::getListener() ))
+        faceSubMesh->SetEventListener( TEdgeMarker::getListener(),
                                        SMESH_subMeshEventListenerData::MakeData(faceSubMesh),
                                        edgeSM);
     }
@@ -177,38 +191,30 @@ namespace
    * \brief Return true if a radial edge was meshed with StdMeshers_RadialQuadrangle_1D2D with
    * the same radial distribution
    */
-  bool isEdgeCompitaballyMeshed(const TopoDS_Edge& edge, SMESH_subMesh* faceSubMesh)
-  {
-    if ( SMESH_subMesh* edgeSM = faceSubMesh->GetFather()->GetSubMeshContaining( edge ))
-    {
-      if ( SMESH_subMeshEventListenerData* otherFaceData =
-           edgeSM->GetEventListenerData( TLinEdgeMarker::getListener() ))
-      {
-        // compare hypothesis aplied to two disk faces sharing radial edges
-        SMESH_Mesh& mesh = *faceSubMesh->GetFather();
-        SMESH_Algo* radialQuadAlgo = mesh.GetGen()->GetAlgo(mesh, faceSubMesh->GetSubShape() );
-        SMESH_subMesh* otherFaceSubMesh = otherFaceData->mySubMeshes.front();
-        const list <const SMESHDS_Hypothesis *> & hyps1 =
-          radialQuadAlgo->GetUsedHypothesis( mesh, faceSubMesh->GetSubShape());
-        const list <const SMESHDS_Hypothesis *> & hyps2 =
-          radialQuadAlgo->GetUsedHypothesis( mesh, otherFaceSubMesh->GetSubShape());
-        if( hyps1.empty() && hyps2.empty() )
-          return true; // defaul hyps
-        if ( hyps1.size() != hyps2.size() ||
-             strcmp( hyps1.front()->GetName(), hyps2.front()->GetName() ))
-          return false;
-        ostringstream hypDump1, hypDump2;
-        list <const SMESHDS_Hypothesis*>::const_iterator hyp1 = hyps1.begin();
-        for ( ; hyp1 != hyps1.end(); ++hyp1 )
-          const_cast<SMESHDS_Hypothesis*>(*hyp1)->SaveTo( hypDump1 );
-        list <const SMESHDS_Hypothesis*>::const_iterator hyp2 = hyps2.begin();
-        for ( ; hyp2 != hyps2.end(); ++hyp2 )
-          const_cast<SMESHDS_Hypothesis*>(*hyp2)->SaveTo( hypDump2 );
-        return hypDump1.str() == hypDump2.str();
-      }
-    }
-    return false;
-  }
+//   bool isEdgeCompatiballyMeshed(const TopoDS_Edge& edge, SMESH_subMesh* faceSubMesh)
+//   {
+//     if ( SMESH_subMesh* edgeSM = faceSubMesh->GetFather()->GetSubMeshContaining( edge ))
+//     {
+//       if ( SMESH_subMeshEventListenerData* otherFaceData =
+//            edgeSM->GetEventListenerData( TEdgeMarker::getListener() ))
+//       {
+//         // compare hypothesis aplied to two disk faces sharing radial edges
+//         SMESH_Mesh& mesh = *faceSubMesh->GetFather();
+//         SMESH_Algo* radialQuadAlgo = mesh.GetGen()->GetAlgo(mesh, faceSubMesh->GetSubShape() );
+//         SMESH_subMesh* otherFaceSubMesh = otherFaceData->mySubMeshes.front();
+//         list <const SMESHDS_Hypothesis *> hyps1 =
+//           radialQuadAlgo->GetUsedHypothesis( mesh, faceSubMesh->GetSubShape());
+//         list <const SMESHDS_Hypothesis *> hyps2 =
+//           radialQuadAlgo->GetUsedHypothesis( mesh, otherFaceSubMesh->GetSubShape());
+//         if( hyps1.empty() && hyps2.empty() )
+//           return true; // defaul hyps
+//         if ( hyps1.size() != hyps2.size() )
+//           return false;
+//         return *hyps1.front() == *hyps2.front();
+//       }
+//     }
+//     return false;
+//   }
 
   //================================================================================
   /*!
@@ -274,6 +280,123 @@ namespace
     }
     return nbe;
   }
+
+//================================================================================
+//================================================================================
+/*!
+ * \brief Class computing layers distribution using data of
+ *        StdMeshers_LayerDistribution hypothesis
+ */
+//================================================================================
+//================================================================================
+
+class TNodeDistributor: public StdMeshers_Regular_1D
+{
+  list <const SMESHDS_Hypothesis *> myUsedHyps;
+public:
+  // -----------------------------------------------------------------------------
+  static TNodeDistributor* GetDistributor(SMESH_Mesh& aMesh)
+  {
+    const int myID = -1000;
+    map < int, SMESH_1D_Algo * > & algoMap = aMesh.GetGen()->_map1D_Algo;
+    map < int, SMESH_1D_Algo * >::iterator id_algo = algoMap.find( myID );
+    if ( id_algo == algoMap.end() )
+      return new TNodeDistributor( myID, 0, aMesh.GetGen() );
+    return static_cast< TNodeDistributor* >( id_algo->second );
+  }
+  // -----------------------------------------------------------------------------
+  //! Computes distribution of nodes on a straight line ending at pIn and pOut
+  bool Compute( vector< double > &      positions,
+                gp_Pnt                  pIn,
+                gp_Pnt                  pOut,
+                SMESH_Mesh&             aMesh,
+                const SMESH_Hypothesis* hyp1d)
+  {
+    if ( !hyp1d ) return error( "Invalid LayerDistribution hypothesis");
+
+    double len = pIn.Distance( pOut );
+    if ( len <= DBL_MIN ) return error("Too close points of inner and outer shells");
+
+    myUsedHyps.clear();
+    myUsedHyps.push_back( hyp1d );
+
+    TopoDS_Edge edge = BRepBuilderAPI_MakeEdge( pIn, pOut );
+    SMESH_Hypothesis::Hypothesis_Status aStatus;
+    if ( !StdMeshers_Regular_1D::CheckHypothesis( aMesh, edge, aStatus ))
+      return error( "StdMeshers_Regular_1D::CheckHypothesis() failed "
+                    "with LayerDistribution hypothesis");
+
+    BRepAdaptor_Curve C3D(edge);
+    double f = C3D.FirstParameter(), l = C3D.LastParameter();
+    list< double > params;
+    if ( !StdMeshers_Regular_1D::computeInternalParameters( aMesh, C3D, len, f, l, params, false ))
+      return error("StdMeshers_Regular_1D failed to compute layers distribution");
+
+    positions.clear();
+    positions.reserve( params.size() );
+    for (list<double>::iterator itU = params.begin(); itU != params.end(); itU++)
+      positions.push_back( *itU / len );
+    return true;
+  }
+  // -----------------------------------------------------------------------------
+  //! Make mesh on an adge using assigned 1d hyp or defaut nb of segments
+  bool ComputeCircularEdge(SMESH_Mesh&         aMesh,
+                           const TopoDS_Edge& anEdge)
+  {
+    _gen->Compute( aMesh, anEdge);
+    SMESH_subMesh *sm = aMesh.GetSubMesh(anEdge);
+    if ( sm->GetComputeState() != SMESH_subMesh::COMPUTE_OK)
+    {
+      // find any 1d hyp assigned (there can be a hyp w/o algo)
+      myUsedHyps = SMESH_Algo::GetUsedHypothesis(aMesh, anEdge, /*ignoreAux=*/true);
+      Hypothesis_Status aStatus;
+      if ( !StdMeshers_Regular_1D::CheckHypothesis( aMesh, anEdge, aStatus ))
+      {
+        // no valid 1d hyp assigned, use default nb of segments
+        _hypType                    = NB_SEGMENTS;
+        _ivalue[ DISTR_TYPE_IND ]   = StdMeshers_NumberOfSegments::DT_Regular;
+        _ivalue[ NB_SEGMENTS_IND  ] = _gen->GetDefaultNbSegments();
+      }
+      return StdMeshers_Regular_1D::Compute( aMesh, anEdge );
+    }
+    return true;
+  }
+  // -----------------------------------------------------------------------------
+  //! Make mesh on an adge using assigned 1d hyp or defaut nb of segments
+  bool EvaluateCircularEdge(SMESH_Mesh&        aMesh,
+                            const TopoDS_Edge& anEdge,
+                            MapShapeNbElems&   aResMap)
+  {
+    _gen->Evaluate( aMesh, anEdge, aResMap );
+    if ( aResMap.count( aMesh.GetSubMesh( anEdge )))
+      return true;
+
+    // find any 1d hyp assigned
+    myUsedHyps = SMESH_Algo::GetUsedHypothesis(aMesh, anEdge, /*ignoreAux=*/true);
+    Hypothesis_Status aStatus;
+    if ( !StdMeshers_Regular_1D::CheckHypothesis( aMesh, anEdge, aStatus ))
+    {
+      // no valid 1d hyp assigned, use default nb of segments
+      _hypType                    = NB_SEGMENTS;
+      _ivalue[ DISTR_TYPE_IND ]   = StdMeshers_NumberOfSegments::DT_Regular;
+      _ivalue[ NB_SEGMENTS_IND  ] = _gen->GetDefaultNbSegments();
+    }
+    return StdMeshers_Regular_1D::Evaluate( aMesh, anEdge, aResMap );
+  }
+protected:
+  // -----------------------------------------------------------------------------
+  TNodeDistributor( int hypId, int studyId, SMESH_Gen* gen)
+    : StdMeshers_Regular_1D( hypId, studyId, gen)
+  {
+  }
+  // -----------------------------------------------------------------------------
+  virtual const list <const SMESHDS_Hypothesis *> &
+    GetUsedHypothesis(SMESH_Mesh &, const TopoDS_Shape &, const bool)
+  {
+    return myUsedHyps;
+  }
+  // -----------------------------------------------------------------------------
+};
 }
 
 //=======================================================================
@@ -281,7 +404,7 @@ namespace
  * \brief Allow algo to do something after persistent restoration
  * \param subMesh - restored submesh
  *
- * call markLinEdgeAsComputedByMe()
+ * call markEdgeAsComputedByMe()
  */
 //=======================================================================
 
@@ -291,8 +414,9 @@ void StdMeshers_RadialQuadrangle_1D2D::SubmeshRestored(SMESH_subMesh* faceSubMes
   {
     TopoDS_Edge CircEdge, LinEdge1, LinEdge2;
     analyseFace( faceSubMesh->GetSubShape(), CircEdge, LinEdge1, LinEdge2 );
-    if ( !LinEdge1.IsNull() ) markLinEdgeAsComputedByMe( LinEdge1, faceSubMesh );
-    if ( !LinEdge2.IsNull() ) markLinEdgeAsComputedByMe( LinEdge2, faceSubMesh );
+    if ( !CircEdge.IsNull() ) markEdgeAsComputedByMe( CircEdge, faceSubMesh );
+    if ( !LinEdge1.IsNull() ) markEdgeAsComputedByMe( LinEdge1, faceSubMesh );
+    if ( !LinEdge2.IsNull() ) markEdgeAsComputedByMe( LinEdge2, faceSubMesh );
   }
 }
 
@@ -312,14 +436,15 @@ bool StdMeshers_RadialQuadrangle_1D2D::Compute(SMESH_Mesh&         aMesh,
   // to delete helper at exit from Compute()
   auto_ptr<SMESH_MesherHelper> helperDeleter( myHelper );
 
-  myLayerPositions.clear();
+  TNodeDistributor* algo1d = TNodeDistributor::GetDistributor(aMesh);
 
   TopoDS_Edge CircEdge, LinEdge1, LinEdge2;
   int nbe = analyseFace( aShape, CircEdge, LinEdge1, LinEdge2 );
-  if( nbe>3 || nbe < 1 || CircEdge.IsNull() )
+  Handle(Geom_Circle) aCirc = Handle(Geom_Circle)::DownCast( getCurve( CircEdge ));
+  if( nbe>3 || nbe < 1 || aCirc.IsNull() )
     return error("The face must be a full circle or a part of circle (i.e. the number of edges is less or equal to 3 and one of them is a circle curve)");
   
-  gp_Pnt P0,P1;
+  gp_Pnt P0, P1;
   // points for rotation
   TColgp_SequenceOfPnt Points;
   // angles for rotation
@@ -336,15 +461,14 @@ bool StdMeshers_RadialQuadrangle_1D2D::Compute(SMESH_Mesh&         aMesh,
   TopoDS_Face F = TopoDS::Face(aShape);
   Handle(Geom_Surface) S = BRep_Tool::Surface(F);
 
+
   if(nbe==1)
   {
-    Handle(Geom_Circle) aCirc = Handle(Geom_Circle)::DownCast( getCurve( CircEdge ));
-
-    bool ok = _gen->Compute( aMesh, CircEdge );
-    if( !ok ) return false;
+    if (!algo1d->ComputeCircularEdge( aMesh, CircEdge ))
+      return error( algo1d->GetComputeError() );
     map< double, const SMDS_MeshNode* > theNodes;
-    ok = GetSortedNodesOnEdge(aMesh.GetMeshDS(),CircEdge,true,theNodes);
-    if( !ok ) return false;
+    if ( !GetSortedNodesOnEdge(aMesh.GetMeshDS(),CircEdge,true,theNodes))
+      return error("Circular edge is incorrectly meshed");
 
     CNodes.clear();
     map< double, const SMDS_MeshNode* >::iterator itn = theNodes.begin();
@@ -364,8 +488,8 @@ bool StdMeshers_RadialQuadrangle_1D2D::Compute(SMESH_Mesh&         aMesh,
     P1 = gp_Pnt( NF->X(), NF->Y(), NF->Z() );
     P0 = aCirc->Location();
 
-    myLayerPositions.clear();
-    computeLayerPositions(P0,P1);
+    if ( !computeLayerPositions(P0,P1))
+      return false;
 
     exp.Init( CircEdge, TopAbs_VERTEX );
     TopoDS_Vertex V1 = TopoDS::Vertex( exp.Current() );
@@ -414,20 +538,14 @@ bool StdMeshers_RadialQuadrangle_1D2D::Compute(SMESH_Mesh&         aMesh,
       // other curve not line
       return error(COMPERR_BAD_SHAPE);
     }
-    bool linEdgeComputed = false;
-    if( SMESH_subMesh* sm1 = aMesh.GetSubMesh(LinEdge1) ) {
-      if( !sm1->IsEmpty() )
-        if( isEdgeCompitaballyMeshed( LinEdge1, aMesh.GetSubMesh(F) ))
-          linEdgeComputed = true;
-        else
-          return error("Invalid set of hypotheses");
-    }
 
-    bool ok = _gen->Compute( aMesh, CircEdge );
-    if( !ok ) return false;
+    if ( !algo1d->ComputeCircularEdge( aMesh, CircEdge ))
+      return error( algo1d->GetComputeError() );
     map< double, const SMDS_MeshNode* > theNodes;
-    GetSortedNodesOnEdge(aMesh.GetMeshDS(),CircEdge,true,theNodes);
-
+    if ( !GetSortedNodesOnEdge(aMesh.GetMeshDS(),CircEdge,true,theNodes) ||
+         theNodes.size()%2 == 0 )
+      return error("Circular edge is incorrectly meshed");
+      
     CNodes.clear();
     map< double, const SMDS_MeshNode* >::iterator itn = theNodes.begin();
     double fang = (*itn).first;
@@ -446,8 +564,9 @@ bool StdMeshers_RadialQuadrangle_1D2D::Compute(SMESH_Mesh&         aMesh,
     gp_Pnt P2( NL->X(), NL->Y(), NL->Z() );
     P0 = aCirc->Location();
 
-    myLayerPositions.clear();
-    computeLayerPositions(P0,P1);
+    bool linEdgeComputed;
+    if ( !computeLayerPositions(P0,P1,LinEdge1,&linEdgeComputed))
+      return false;
 
     if ( linEdgeComputed )
     {
@@ -538,7 +657,7 @@ bool StdMeshers_RadialQuadrangle_1D2D::Compute(SMESH_Mesh&         aMesh,
         SMDS_MeshEdge* ME = myHelper->AddEdge( tmpNodes[i-1], tmpNodes[i] );
         if(ME) meshDS->SetMeshElementOnShape(ME, edgeID);
       }
-      markLinEdgeAsComputedByMe( LinEdge1, aMesh.GetSubMesh( F ));
+      markEdgeAsComputedByMe( LinEdge1, aMesh.GetSubMesh( F ));
     }
   }
   else // nbe==3 or ( nbe==2 && linEdge is INTERNAL )
@@ -550,33 +669,16 @@ bool StdMeshers_RadialQuadrangle_1D2D::Compute(SMESH_Mesh&         aMesh,
     // segments of line
     double fp, lp;
     Handle(Geom_Circle) aCirc = Handle(Geom_Circle)::DownCast( getCurve( CircEdge ));
-    Handle(Geom_Line) aLine1 = Handle(Geom_Line)::DownCast( getCurve( LinEdge1 ));
-    Handle(Geom_Line) aLine2 = Handle(Geom_Line)::DownCast( getCurve( LinEdge2 ));
-    if( aLine1.IsNull() || aLine2.IsNull() ) {
-      // other curve not line
+    Handle(Geom_Line)  aLine1 = Handle(Geom_Line)::DownCast( getCurve( LinEdge1 ));
+    Handle(Geom_Line)  aLine2 = Handle(Geom_Line)::DownCast( getCurve( LinEdge2 ));
+    if( aCirc.IsNull() || aLine1.IsNull() || aLine2.IsNull() )
       return error(COMPERR_BAD_SHAPE);
-    }
 
-    bool linEdge1Computed = false;
-    if ( SMESH_subMesh* sm1 = aMesh.GetSubMesh(LinEdge1))
-      if( !sm1->IsEmpty() )
-        if( isEdgeCompitaballyMeshed( LinEdge1, aMesh.GetSubMesh(F) ))
-          linEdge1Computed = true;
-        else
-          return error("Invalid set of hypotheses");
-
-    bool linEdge2Computed = false;
-    if ( SMESH_subMesh* sm2 = aMesh.GetSubMesh(LinEdge2))
-      if( !sm2->IsEmpty() )
-        if( isEdgeCompitaballyMeshed( LinEdge2, aMesh.GetSubMesh(F)  ))
-          linEdge2Computed = true;
-        else
-          return error("Invalid set of hypotheses");
-
-    bool ok = _gen->Compute( aMesh, CircEdge );
-    if( !ok ) return false;
+    if ( !algo1d->ComputeCircularEdge( aMesh, CircEdge ))
+      return error( algo1d->GetComputeError() );
     map< double, const SMDS_MeshNode* > theNodes;
-    GetSortedNodesOnEdge(aMesh.GetMeshDS(),CircEdge,true,theNodes);
+    if ( !GetSortedNodesOnEdge(aMesh.GetMeshDS(),CircEdge,true,theNodes))
+      return error("Circular edge is incorrectly meshed");
 
     const SMDS_MeshNode* NF = theNodes.begin()->second;
     const SMDS_MeshNode* NL = theNodes.rbegin()->second;
@@ -596,11 +698,18 @@ bool StdMeshers_RadialQuadrangle_1D2D::Compute(SMESH_Mesh&         aMesh,
     gp_Pnt P2( NL->X(), NL->Y(), NL->Z() );
     P0 = aCirc->Location();
 
-    myLayerPositions.clear();
-    computeLayerPositions(P0,P1);
+    bool linEdge1Computed, linEdge2Computed;
+    if ( !computeLayerPositions(P0,P1,LinEdge1,&linEdge1Computed))
+      return false;
 
     Nodes1.resize( myLayerPositions.size()+1 );
     Nodes2.resize( myLayerPositions.size()+1 );
+
+    // check that both linear edges have same hypotheses
+    if ( !computeLayerPositions(P0,P1,LinEdge2, &linEdge2Computed))
+         return false;
+    if ( Nodes1.size() != myLayerPositions.size()+1 )
+      return error("Different hypotheses apply to radial edges");
 
     exp.Init( LinEdge1, TopAbs_VERTEX );
     TopoDS_Vertex V1 = TopoDS::Vertex( exp.Current() );
@@ -702,7 +811,7 @@ bool StdMeshers_RadialQuadrangle_1D2D::Compute(SMESH_Mesh&         aMesh,
       if (nbe==2 && LinEdge1.Orientation() == TopAbs_INTERNAL )
         Nodes2 = Nodes1;
     }
-    markLinEdgeAsComputedByMe( LinEdge1, aMesh.GetSubMesh( F ));
+    markEdgeAsComputedByMe( LinEdge1, aMesh.GetSubMesh( F ));
 
     // LinEdge2
     if ( linEdge2Computed )
@@ -766,8 +875,9 @@ bool StdMeshers_RadialQuadrangle_1D2D::Compute(SMESH_Mesh&         aMesh,
         if(ME) meshDS->SetMeshElementOnShape(ME, edgeID);
       }
     }
-    markLinEdgeAsComputedByMe( LinEdge2, aMesh.GetSubMesh( F ));
+    markEdgeAsComputedByMe( LinEdge2, aMesh.GetSubMesh( F ));
   }
+  markEdgeAsComputedByMe( CircEdge, aMesh.GetSubMesh( F ));
 
   // orientation
   bool IsForward = ( CircEdge.Orientation()==TopAbs_FORWARD );
@@ -851,106 +961,103 @@ bool StdMeshers_RadialQuadrangle_1D2D::Compute(SMESH_Mesh&         aMesh,
   return true;
 }
 
-
-//================================================================================
 //================================================================================
 /*!
- * \brief Class computing layers distribution using data of
- *        StdMeshers_LayerDistribution hypothesis
- */
-//================================================================================
-//================================================================================
-
-class TNodeDistributor: public StdMeshers_Regular_1D
-{
-  list <const SMESHDS_Hypothesis *> myUsedHyps;
-public:
-  // -----------------------------------------------------------------------------
-  static TNodeDistributor* GetDistributor(SMESH_Mesh& aMesh)
-  {
-    const int myID = -1000;
-    map < int, SMESH_1D_Algo * > & algoMap = aMesh.GetGen()->_map1D_Algo;
-    map < int, SMESH_1D_Algo * >::iterator id_algo = algoMap.find( myID );
-    if ( id_algo == algoMap.end() )
-      return new TNodeDistributor( myID, 0, aMesh.GetGen() );
-    return static_cast< TNodeDistributor* >( id_algo->second );
-  }
-  // -----------------------------------------------------------------------------
-  bool Compute( vector< double > &                  positions,
-                gp_Pnt                              pIn,
-                gp_Pnt                              pOut,
-                SMESH_Mesh&                         aMesh,
-                const StdMeshers_LayerDistribution* hyp)
-  {
-    double len = pIn.Distance( pOut );
-    if ( len <= DBL_MIN ) return error("Too close points of inner and outer shells");
-
-    if ( !hyp || !hyp->GetLayerDistribution() )
-      return error( "Invalid LayerDistribution hypothesis");
-    myUsedHyps.clear();
-    myUsedHyps.push_back( hyp->GetLayerDistribution() );
-
-    TopoDS_Edge edge = BRepBuilderAPI_MakeEdge( pIn, pOut );
-    SMESH_Hypothesis::Hypothesis_Status aStatus;
-    if ( !StdMeshers_Regular_1D::CheckHypothesis( aMesh, edge, aStatus ))
-      return error( "StdMeshers_Regular_1D::CheckHypothesis() failed "
-                    "with LayerDistribution hypothesis");
-
-    BRepAdaptor_Curve C3D(edge);
-    double f = C3D.FirstParameter(), l = C3D.LastParameter();
-    list< double > params;
-    if ( !StdMeshers_Regular_1D::computeInternalParameters( aMesh, C3D, len, f, l, params, false ))
-      return error("StdMeshers_Regular_1D failed to compute layers distribution");
-
-    positions.clear();
-    positions.reserve( params.size() );
-    for (list<double>::iterator itU = params.begin(); itU != params.end(); itU++)
-      positions.push_back( *itU / len );
-    return true;
-  }
-protected:
-  // -----------------------------------------------------------------------------
-  TNodeDistributor( int hypId, int studyId, SMESH_Gen* gen)
-    : StdMeshers_Regular_1D( hypId, studyId, gen)
-  {
-  }
-  // -----------------------------------------------------------------------------
-  virtual const list <const SMESHDS_Hypothesis *> &
-    GetUsedHypothesis(SMESH_Mesh &, const TopoDS_Shape &, const bool)
-  {
-    return myUsedHyps;
-  }
-  // -----------------------------------------------------------------------------
-};
-
-//================================================================================
-/*!
- * \brief Compute positions of nodes between the internal and the external surfaces
+ * \brief Compute positions of nodes on the radial edge
   * \retval bool - is a success
  */
 //================================================================================
 
-bool StdMeshers_RadialQuadrangle_1D2D::computeLayerPositions(const gp_Pnt& pIn,
-                                                             const gp_Pnt& pOut)
+bool StdMeshers_RadialQuadrangle_1D2D::computeLayerPositions(const gp_Pnt&      p1,
+                                                             const gp_Pnt&      p2,
+                                                             const TopoDS_Edge& linEdge,
+                                                             bool*              linEdgeComputed)
 {
-  if ( myNbLayerHypo )
+  // First, try to compute positions of layers
+
+  myLayerPositions.clear();
+
+  SMESH_Mesh * mesh = myHelper->GetMesh();
+
+  const SMESH_Hypothesis* hyp1D = myDistributionHypo ? myDistributionHypo->GetLayerDistribution() : 0;
+  int                  nbLayers = myNbLayerHypo ? myNbLayerHypo->GetNumberOfLayers() : 0;
+
+  if ( !hyp1D && !nbLayers )
   {
-    int nbSegments = myNbLayerHypo->GetNumberOfLayers();
-    myLayerPositions.resize( nbSegments - 1 );
-    for ( int z = 1; z < nbSegments; ++z )
-      myLayerPositions[ z - 1 ] = double( z )/ double( nbSegments );
-    return true;
-  }
-  if ( myDistributionHypo ) {
-    SMESH_Mesh * mesh = myHelper->GetMesh();
-    if ( !TNodeDistributor::GetDistributor(*mesh)->Compute( myLayerPositions, pIn, pOut,
-                                                            *mesh, myDistributionHypo ))
+    // No own algo hypotheses assigned, so first try to find any 1D hypothesis.
+    // We need some edge
+    TopoDS_Shape edge = linEdge;
+    if ( edge.IsNull() && !myHelper->GetSubShape().IsNull())
+      for ( TopExp_Explorer e(myHelper->GetSubShape(), TopAbs_EDGE); e.More(); e.Next())
+        edge = e.Current();
+    if ( !edge.IsNull() )
     {
-      error( TNodeDistributor::GetDistributor(*mesh)->GetComputeError() );
-      return false;
+      // find a hyp usable by TNodeDistributor
+      SMESH_HypoFilter hypKind;
+      TNodeDistributor::GetDistributor(*mesh)->InitCompatibleHypoFilter(hypKind,/*ignoreAux=*/1);
+      hyp1D = mesh->GetHypothesis( edge, hypKind, /*fromAncestors=*/true);
     }
   }
-  RETURN_BAD_RESULT("Bad hypothesis");
+  if ( hyp1D ) // try to compute with hyp1D
+  {
+    if ( !TNodeDistributor::GetDistributor(*mesh)->Compute( myLayerPositions,p1,p2,*mesh,hyp1D ))
+      if ( myDistributionHypo ) { // bad hyp assigned 
+        return error( TNodeDistributor::GetDistributor(*mesh)->GetComputeError() );
+      }
+      else {
+        // bad hyp found, its Ok, lets try with default nb of segnents
+      }
+  }
+  
+  if ( myLayerPositions.empty() ) // try to use nb of layers
+  {
+    if ( !nbLayers )
+      nbLayers = _gen->GetDefaultNbSegments();
+
+    if ( nbLayers )
+    {
+      myLayerPositions.resize( nbLayers - 1 );
+      for ( int z = 1; z < nbLayers; ++z )
+        myLayerPositions[ z - 1 ] = double( z )/ double( nbLayers );
+    }
+  }
+
+  // Second, check presence of a mesh built by other algo on linEdge
+  // and mesh conformity to my hypothesis
+
+  bool meshComputed = (!linEdge.IsNull() && !mesh->GetSubMesh(linEdge)->IsEmpty() );
+  if ( linEdgeComputed ) *linEdgeComputed = meshComputed;
+
+  if ( meshComputed )
+  {
+    vector< double > nodeParams;
+    GetNodeParamOnEdge( mesh->GetMeshDS(), linEdge, nodeParams );
+
+    if ( myLayerPositions.empty() )
+    {
+      myLayerPositions.resize( nodeParams.size() - 2 );
+    }
+    else if ( myDistributionHypo || myNbLayerHypo )
+    {
+      // linEdge is computed by other algo. Check if there is a meshed face
+      // using nodes on linEdge
+      bool nodesAreUsed = false;
+      TopTools_ListIteratorOfListOfShape ancestIt = mesh->GetAncestors( linEdge );
+      for ( ; ancestIt.More() && !nodesAreUsed; ancestIt.Next() )
+        if ( ancestIt.Value().ShapeType() == TopAbs_FACE )
+          nodesAreUsed = (!mesh->GetSubMesh( ancestIt.Value() )->IsEmpty());
+      if ( !nodesAreUsed ) {
+        // rebuild them
+        mesh->GetSubMesh( linEdge )->ComputeStateEngine( SMESH_subMesh::CLEAN );
+        if ( linEdgeComputed ) *linEdgeComputed = false;
+      }
+      else if ( myLayerPositions.size() != nodeParams.size()-2 ) {
+        return error("Radial edge is meshed by other algorithm");
+      }
+    }
+  }
+
+  return !myLayerPositions.empty();
 }
 
 
@@ -966,113 +1073,82 @@ bool StdMeshers_RadialQuadrangle_1D2D::Evaluate(SMESH_Mesh& aMesh,
   if( aShape.ShapeType() != TopAbs_FACE ) {
     return false;
   }
-  SMESH_subMesh * smf = aMesh.GetSubMesh(aShape);
-  MapShapeNbElemsItr anIt = aResMap.find(smf);
-  if( anIt != aResMap.end() ) {
+  SMESH_subMesh * sm = aMesh.GetSubMesh(aShape);
+  if( aResMap.count(sm) )
     return false;
-  }
 
-  myLayerPositions.clear();
-  gp_Pnt P0(0,0,0);
-  gp_Pnt P1(100,0,0);
-  computeLayerPositions(P0,P1);
+  vector<int>& aResVec =
+    aResMap.insert( make_pair(sm, vector<int>(SMDSEntity_Last,0))).first->second;
 
-  TopoDS_Edge E1,E2,E3;
-  Handle(Geom_Curve) C1,C2,C3;
-  double f1,l1,f2,l2,f3,l3;
-  int nbe = 0;
-  TopExp_Explorer exp;
-  for ( exp.Init( aShape, TopAbs_EDGE ); exp.More(); exp.Next() ) {
-    nbe++;
-    TopoDS_Edge E = TopoDS::Edge( exp.Current() );
-    if(nbe==1) {
-      E1 = E;
-      C1 = BRep_Tool::Curve(E,f1,l1);
-    }
-    else if(nbe==2) {
-      E2 = E;
-      C2 = BRep_Tool::Curve(E,f2,l2);
-    }
-    else if(nbe==3) {
-      E3 = E;
-      C3 = BRep_Tool::Curve(E,f3,l3);
-    }
-  }
+  myHelper = new SMESH_MesherHelper( aMesh );
+  myHelper->SetSubShape( aShape );
+  auto_ptr<SMESH_MesherHelper> helperDeleter( myHelper );
+
+  TNodeDistributor* algo1d = TNodeDistributor::GetDistributor(aMesh);
 
   TopoDS_Edge CircEdge, LinEdge1, LinEdge2;
+  int nbe = analyseFace( aShape, CircEdge, LinEdge1, LinEdge2 );
+  if( nbe>3 || nbe < 1 || CircEdge.IsNull() )
+    return false;
+
+  Handle(Geom_Circle) aCirc = Handle(Geom_Circle)::DownCast( getCurve( CircEdge ));
+  if( aCirc.IsNull() )
+    return error(COMPERR_BAD_SHAPE);
+
+  gp_Pnt P0 = aCirc->Location();
+  gp_Pnt P1 = aCirc->Value(0.);
+  computeLayerPositions( P0, P1, LinEdge1 );
+
   int nb0d=0, nb2d_tria=0, nb2d_quad=0;
-  bool isQuadratic = false;
-  if(nbe==1) {
+  bool isQuadratic = false, ok = true;
+  if(nbe==1)
+  {
     // C1 must be a circle
-    Handle(Geom_Circle) aCirc = Handle(Geom_Circle)::DownCast(C1);
-    if( !aCirc.IsNull() ) {
-      bool ok = _gen->Evaluate( aMesh, CircEdge, aResMap );
-      if(ok) {
-        SMESH_subMesh * sm = aMesh.GetSubMesh(CircEdge);
-        MapShapeNbElemsItr anIt = aResMap.find(sm);
-        vector<int> aVec = (*anIt).second;
-        isQuadratic = aVec[SMDSEntity_Quad_Edge]>aVec[SMDSEntity_Edge];
-        if(isQuadratic) {
-          // main nodes
-          nb0d = (aVec[SMDSEntity_Node]+1) * myLayerPositions.size();
-          // radial medium nodes
-          nb0d += (aVec[SMDSEntity_Node]+1) * (myLayerPositions.size()+1);
-          // other medium nodes
-          nb0d += (aVec[SMDSEntity_Node]+1) * myLayerPositions.size();
-        }
-        else {
-          nb0d = (aVec[SMDSEntity_Node]+1) * myLayerPositions.size();
-        }
-        nb2d_tria = aVec[SMDSEntity_Node] + 1;
-        nb2d_quad = nb0d;
+    ok = algo1d->EvaluateCircularEdge( aMesh, CircEdge, aResMap );
+    if(ok) {
+      const vector<int>& aVec = aResMap[aMesh.GetSubMesh(CircEdge)];
+      isQuadratic = aVec[SMDSEntity_Quad_Edge]>aVec[SMDSEntity_Edge];
+      if(isQuadratic) {
+        // main nodes
+        nb0d = (aVec[SMDSEntity_Node]+1) * myLayerPositions.size();
+        // radial medium nodes
+        nb0d += (aVec[SMDSEntity_Node]+1) * (myLayerPositions.size()+1);
+        // other medium nodes
+        nb0d += (aVec[SMDSEntity_Node]+1) * myLayerPositions.size();
       }
+      else {
+        nb0d = (aVec[SMDSEntity_Node]+1) * myLayerPositions.size();
+      }
+      nb2d_tria = aVec[SMDSEntity_Node] + 1;
+      nb2d_quad = nb0d;
     }
   }
-  else if(nbe==2) {
+  else if(nbe==2 && LinEdge1.Orientation() != TopAbs_INTERNAL)
+  {
     // one curve must be a half of circle and other curve must be
     // a segment of line
-    Handle(Geom_TrimmedCurve) tc = Handle(Geom_TrimmedCurve)::DownCast(C1);
-    while( !tc.IsNull() ) {
-      C1 = tc->BasisCurve();
-      tc = Handle(Geom_TrimmedCurve)::DownCast(C1);
-    }
-    tc = Handle(Geom_TrimmedCurve)::DownCast(C2);
-    while( !tc.IsNull() ) {
-      C2 = tc->BasisCurve();
-      tc = Handle(Geom_TrimmedCurve)::DownCast(C2);
-    }
-    Handle(Geom_Circle) aCirc = Handle(Geom_Circle)::DownCast(C1);
-    Handle(Geom_Line) aLine = Handle(Geom_Line)::DownCast(C2);
-    CircEdge = E1;
-    LinEdge1 = E2;
-    double fp = f1;
-    double lp = l1;
-    if( aCirc.IsNull() ) {
-      aCirc = Handle(Geom_Circle)::DownCast(C2);
-      CircEdge = E2;
-      LinEdge1 = E1;
-      fp = f2;
-      lp = l2;
-      aLine = Handle(Geom_Line)::DownCast(C3);
-    }
-    bool ok = !aCirc.IsNull() && !aLine.IsNull();
+    double fp, lp;
+    Handle(Geom_Circle) aCirc = Handle(Geom_Circle)::DownCast( getCurve( CircEdge, &fp, &lp ));
     if( fabs(fabs(lp-fp)-PI) > Precision::Confusion() ) {
       // not half of circle
-      ok = false;
+      return error(COMPERR_BAD_SHAPE);
     }
-    SMESH_subMesh* sm1 = aMesh.GetSubMesh(LinEdge1);
-    MapShapeNbElemsItr anIt = aResMap.find(sm1);
-    if( anIt!=aResMap.end() ) {
-      ok = false;
+    Handle(Geom_Line) aLine = Handle(Geom_Line)::DownCast( getCurve( LinEdge1 ));
+    if( aLine.IsNull() ) {
+      // other curve not line
+      return error(COMPERR_BAD_SHAPE);
+    }
+    ok = !aResMap.count( aMesh.GetSubMesh(LinEdge1) );
+    if ( !ok ) {
+      const vector<int>& aVec = aResMap[ aMesh.GetSubMesh(LinEdge1) ];
+      ok = ( aVec[SMDSEntity_Node] == myLayerPositions.size() );
     }
     if(ok) {
-      ok = _gen->Evaluate( aMesh, CircEdge, aResMap );
+      ok = algo1d->EvaluateCircularEdge( aMesh, CircEdge, aResMap );
     }
     if(ok) {
-      SMESH_subMesh * sm = aMesh.GetSubMesh(CircEdge);
-      MapShapeNbElemsItr anIt = aResMap.find(sm);
-      vector<int> aVec = (*anIt).second;
-      isQuadratic = aVec[SMDSEntity_Quad_Edge]>aVec[SMDSEntity_Edge];
+      const vector<int>& aVec = aResMap[ aMesh.GetSubMesh(CircEdge) ];
+      isQuadratic = aVec[SMDSEntity_Quad_Edge] > aVec[SMDSEntity_Edge];
       if(isQuadratic) {
         // main nodes
         nb0d = aVec[SMDSEntity_Node] * myLayerPositions.size();
@@ -1087,8 +1163,7 @@ bool StdMeshers_RadialQuadrangle_1D2D::Evaluate(SMESH_Mesh& aMesh,
       nb2d_tria = aVec[SMDSEntity_Node] + 1;
       nb2d_quad = nb2d_tria * myLayerPositions.size();
       // add evaluation for edges
-      vector<int> aResVec(SMDSEntity_Last);
-      for(int i=SMDSEntity_Node; i<SMDSEntity_Last; i++) aResVec[i] = 0;
+      vector<int> aResVec(SMDSEntity_Last,0);
       if(isQuadratic) {
         aResVec[SMDSEntity_Node] = 4*myLayerPositions.size() + 3;
         aResVec[SMDSEntity_Quad_Edge] = 2*myLayerPositions.size() + 2;
@@ -1097,74 +1172,49 @@ bool StdMeshers_RadialQuadrangle_1D2D::Evaluate(SMESH_Mesh& aMesh,
         aResVec[SMDSEntity_Node] = 2*myLayerPositions.size() + 1;
         aResVec[SMDSEntity_Edge] = 2*myLayerPositions.size() + 2;
       }
-      sm = aMesh.GetSubMesh(LinEdge1);
-      aResMap.insert(make_pair(sm,aResVec));
+      aResMap[ aMesh.GetSubMesh(LinEdge1) ] = aResVec;
     }
   }
-  else { // nbe==3
+  else  // nbe==3 or ( nbe==2 && linEdge is INTERNAL )
+  {
+    if (nbe==2 && LinEdge1.Orientation() == TopAbs_INTERNAL )
+      LinEdge2 = LinEdge1;
+
     // one curve must be a part of circle and other curves must be
     // segments of line
-    Handle(Geom_TrimmedCurve) tc = Handle(Geom_TrimmedCurve)::DownCast(C1);
-    while( !tc.IsNull() ) {
-      C1 = tc->BasisCurve();
-      tc = Handle(Geom_TrimmedCurve)::DownCast(C1);
+    Handle(Geom_Line)  aLine1 = Handle(Geom_Line)::DownCast( getCurve( LinEdge1 ));
+    Handle(Geom_Line)  aLine2 = Handle(Geom_Line)::DownCast( getCurve( LinEdge2 ));
+    if( aLine1.IsNull() || aLine2.IsNull() ) {
+      // other curve not line
+      return error(COMPERR_BAD_SHAPE);
     }
-    tc = Handle(Geom_TrimmedCurve)::DownCast(C2);
-    while( !tc.IsNull() ) {
-      C2 = tc->BasisCurve();
-      tc = Handle(Geom_TrimmedCurve)::DownCast(C2);
-    }
-    tc = Handle(Geom_TrimmedCurve)::DownCast(C3);
-    while( !tc.IsNull() ) {
-      C3 = tc->BasisCurve();
-      tc = Handle(Geom_TrimmedCurve)::DownCast(C3);
-    }
-    Handle(Geom_Circle) aCirc = Handle(Geom_Circle)::DownCast(C1);
-    Handle(Geom_Line) aLine1 = Handle(Geom_Line)::DownCast(C2);
-    Handle(Geom_Line) aLine2 = Handle(Geom_Line)::DownCast(C3);
-    CircEdge = E1;
-    LinEdge1 = E2;
-    LinEdge2 = E3;
-    double fp = f1;
-    double lp = l1;
-    if( aCirc.IsNull() ) {
-      aCirc = Handle(Geom_Circle)::DownCast(C2);
-      CircEdge = E2;
-      LinEdge1 = E3;
-      LinEdge2 = E1;
-      fp = f2;
-      lp = l2;
-      aLine1 = Handle(Geom_Line)::DownCast(C3);
-      aLine2 = Handle(Geom_Line)::DownCast(C1);
-      if( aCirc.IsNull() ) {
-        aCirc = Handle(Geom_Circle)::DownCast(C3);
-        CircEdge = E3;
-        LinEdge1 = E1;
-        LinEdge2 = E2;
-        fp = f3;
-        lp = l3;
-        aLine1 = Handle(Geom_Line)::DownCast(C1);
-        aLine2 = Handle(Geom_Line)::DownCast(C2);
+    int nbLayers = myLayerPositions.size();
+    computeLayerPositions( P0, P1, LinEdge2 );
+    if ( nbLayers != myLayerPositions.size() )
+      return error("Different hypotheses apply to radial edges");
+      
+    bool ok = !aResMap.count( aMesh.GetSubMesh(LinEdge1));
+    if ( !ok ) {
+      if ( myDistributionHypo || myNbLayerHypo )
+        ok = true; // override other 1d hyps
+      else {
+        const vector<int>& aVec = aResMap[ aMesh.GetSubMesh(LinEdge1) ];
+        ok = ( aVec[SMDSEntity_Node] == myLayerPositions.size() );
       }
     }
-    bool ok = !aCirc.IsNull() && !aLine1.IsNull() && !aLine1.IsNull();
-    SMESH_subMesh* sm = aMesh.GetSubMesh(LinEdge1);
-    MapShapeNbElemsItr anIt = aResMap.find(sm);
-    if( anIt!=aResMap.end() ) {
-      ok = false;
-    }
-    sm = aMesh.GetSubMesh(LinEdge2);
-    anIt = aResMap.find(sm);
-    if( anIt!=aResMap.end() ) {
-      ok = false;
+    if( ok && aResMap.count( aMesh.GetSubMesh(LinEdge2) )) {
+      if ( myDistributionHypo || myNbLayerHypo )
+        ok = true; // override other 1d hyps
+      else {
+        const vector<int>& aVec = aResMap[ aMesh.GetSubMesh(LinEdge2) ];
+        ok = ( aVec[SMDSEntity_Node] == myLayerPositions.size() );
+      }
     }
     if(ok) {
-      ok = _gen->Evaluate( aMesh, CircEdge, aResMap );
+      ok = algo1d->EvaluateCircularEdge( aMesh, CircEdge, aResMap );
     }
     if(ok) {
-      SMESH_subMesh * sm = aMesh.GetSubMesh(CircEdge);
-      MapShapeNbElemsItr anIt = aResMap.find(sm);
-      vector<int> aVec = (*anIt).second;
+      const vector<int>& aVec = aResMap[ aMesh.GetSubMesh(CircEdge) ];
       isQuadratic = aVec[SMDSEntity_Quad_Edge]>aVec[SMDSEntity_Edge];
       if(isQuadratic) {
         // main nodes
@@ -1180,8 +1230,7 @@ bool StdMeshers_RadialQuadrangle_1D2D::Evaluate(SMESH_Mesh& aMesh,
       nb2d_tria = aVec[SMDSEntity_Node] + 1;
       nb2d_quad = nb2d_tria * myLayerPositions.size();
       // add evaluation for edges
-      vector<int> aResVec(SMDSEntity_Last);
-      for(int i=SMDSEntity_Node; i<SMDSEntity_Last; i++) aResVec[i] = 0;
+      vector<int> aResVec(SMDSEntity_Last, 0);
       if(isQuadratic) {
         aResVec[SMDSEntity_Node] = 2*myLayerPositions.size() + 1;
         aResVec[SMDSEntity_Quad_Edge] = myLayerPositions.size() + 1;
@@ -1191,17 +1240,12 @@ bool StdMeshers_RadialQuadrangle_1D2D::Evaluate(SMESH_Mesh& aMesh,
         aResVec[SMDSEntity_Edge] = myLayerPositions.size() + 1;
       }
       sm = aMesh.GetSubMesh(LinEdge1);
-      aResMap.insert(make_pair(sm,aResVec));
+      aResMap[sm] = aResVec;
       sm = aMesh.GetSubMesh(LinEdge2);
-      aResMap.insert(make_pair(sm,aResVec));
+      aResMap[sm] = aResVec;
     }
   }
 
-  vector<int> aResVec(SMDSEntity_Last);
-  for(int i=SMDSEntity_Node; i<SMDSEntity_Last; i++) aResVec[i] = 0;
-  SMESH_subMesh * sm = aMesh.GetSubMesh(aShape);
-
-  //cout<<"nb0d = "<<nb0d<<"   nb2d_tria = "<<nb2d_tria<<"   nb2d_quad = "<<nb2d_quad<<endl;
   if(nb0d>0) {
     aResVec[0] = nb0d;
     if(isQuadratic) {
@@ -1212,12 +1256,11 @@ bool StdMeshers_RadialQuadrangle_1D2D::Evaluate(SMESH_Mesh& aMesh,
       aResVec[SMDSEntity_Triangle] = nb2d_tria;
       aResVec[SMDSEntity_Quadrangle] = nb2d_quad;
     }
-    aResMap.insert(make_pair(sm,aResVec));
     return true;
   }
 
   // invalid case
-  aResMap.insert(make_pair(sm,aResVec));
+  sm = aMesh.GetSubMesh(aShape);
   SMESH_ComputeErrorPtr& smError = sm->GetComputeError();
   smError.reset( new SMESH_ComputeError(COMPERR_ALGO_FAILED,
                                         "Submesh can not be evaluated",this));

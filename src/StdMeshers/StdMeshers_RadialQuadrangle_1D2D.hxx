@@ -29,10 +29,10 @@
 #include "SMESH_StdMeshers.hxx"
 
 #include "SMESH_2D_Algo.hxx"
-//#include "SMDS_MeshNode.hxx"
 
-//#include <vector>
-//#include <map>
+#include <TopoDS_Edge.hxx>
+
+#include <vector>
 
 class StdMeshers_NumberOfLayers;
 class StdMeshers_LayerDistribution;
@@ -63,8 +63,10 @@ public:
   
 protected:
 
-  bool computeLayerPositions(const gp_Pnt& pIn,
-                             const gp_Pnt& pOut);
+  bool computeLayerPositions(const gp_Pnt&      p1,
+                             const gp_Pnt&      p2,
+                             const TopoDS_Edge& linEdge=TopoDS_Edge(),
+                             bool*              linEdgeComputed = 0);
 
 
   const StdMeshers_NumberOfLayers*    myNbLayerHypo;
