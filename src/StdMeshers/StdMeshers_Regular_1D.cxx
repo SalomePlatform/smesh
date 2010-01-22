@@ -1048,8 +1048,7 @@ bool StdMeshers_Regular_1D::Evaluate(SMESH_Mesh & theMesh,
   ASSERT(!VFirst.IsNull());
   ASSERT(!VLast.IsNull());
 
-  std::vector<int> aVec(SMDSEntity_Last);
-  for(int i=SMDSEntity_Node; i<SMDSEntity_Last; i++) aVec[i] = 0;
+  std::vector<int> aVec(SMDSEntity_Last,0);
 
   if (!Curve.IsNull()) {
     list< double > params;
