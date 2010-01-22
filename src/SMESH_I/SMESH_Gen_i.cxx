@@ -791,7 +791,7 @@ void SMESH_Gen_i::SetBoundaryBoxSegmentation( CORBA::Long theNbSegments )
 void SMESH_Gen_i::SetDefaultNbSegments(CORBA::Long theNbSegments)
   throw ( SALOME::SALOME_Exception )
 {
-  if ( theNbSegments )
+  if ( theNbSegments > 0 )
     myGen.SetDefaultNbSegments( int(theNbSegments) );
   else
     THROW_SALOME_CORBA_EXCEPTION( "non-positive number of segments", SALOME::BAD_PARAM );
@@ -1690,9 +1690,6 @@ SMESH::long_array* SMESH_Gen_i::Evaluate(SMESH::SMESH_Mesh_ptr theMesh,
           nbels[i] += aVec[i];
         }
       }
-#ifdef _DEBUG_
-      cout<<endl;
-#endif
       return nbels._retn();
     }
   }
