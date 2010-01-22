@@ -433,8 +433,8 @@ bool StdMeshers_Projection_1D::Evaluate(SMESH_Mesh& theMesh,
   // Find out nodes distribution on the source edge
   // -----------------------------------------------
 
-  double srcLength = EdgeLength( srcEdge );
-  double tgtLength = EdgeLength( tgtEdge );
+  //double srcLength = EdgeLength( srcEdge );
+  //double tgtLength = EdgeLength( tgtEdge );
   
   vector< double > params; // sorted parameters of nodes on the source edge
   if ( !SMESH_Algo::GetNodeParamOnEdge( srcMesh->GetMeshDS(), srcEdge, params ))
