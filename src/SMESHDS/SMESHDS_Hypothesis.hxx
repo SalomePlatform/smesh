@@ -46,6 +46,9 @@ public:
   virtual std::ostream & SaveTo(std::ostream & save)=0;
   virtual std::istream & LoadFrom(std::istream & load)=0;
 
+  virtual bool operator==(const SMESHDS_Hypothesis& other) const;
+  bool operator!=(const SMESHDS_Hypothesis& other) const { return !(*this==other); }
+
 enum hypothesis_type {PARAM_ALGO, ALGO_0D, ALGO_1D, ALGO_2D, ALGO_3D};
 
 protected:
