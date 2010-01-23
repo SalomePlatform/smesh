@@ -1336,7 +1336,7 @@ add the exported data to its contents?</translation>
         </message>
         <message>
             <source>SMESH_HYP_12</source>
-            <translation>Geomerty mismatches algorithm's expectation\nCheck algorithm documentation for supported geometry</translation>
+            <translation>Geometry mismatches algorithm's expectation\nCheck algorithm documentation for supported geometry</translation>
         </message>
         <message>
             <source>SMESH_HYP_13</source>
