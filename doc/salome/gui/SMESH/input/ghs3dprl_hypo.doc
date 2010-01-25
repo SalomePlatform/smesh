@@ -311,7 +311,7 @@ It meshes holes.
 \code
 
 #!/bin/bash
-#script tepal overriding launching Tepal_V2.0 whith MPI (tepal run 64 bits only).
+#script tepal overriding launching Tepal_V2.0 with MPI (tepal run 64 bits only).
 #we have renamed binary executable tepal as tepal64_v2.exe.
 #typical command to launch tepal v1 :
 #tepal -f /tmp/myname/GHS3DPRL -n 16 > /tmp/myname/tepal.log
@@ -323,7 +323,7 @@ It meshes holes.
 #               to v2 input file GHS3DPRL.mesh.
 #second problem is to launch on heterogeneous system linux cluster of 
 #               2 hosts (64 bits) of 8 nodes (by example)
-#               whith different 2 executables codes linked on 2 different
+#               with different 2 executables codes linked on 2 different
 #               openmpi shared library codes.
 #third problem  is convert tepal v2 output files GHS3DPRL*.mesh
 #               to v1 input files GHS3DPRL*.faces an GHS3DPRL*.points.
@@ -370,7 +370,7 @@ export DLIM8VAR="dlim8 1:1:29030@is142356/0016175ef08c::a1ba...9e19"
 export SIMULOGD_LICENSE_FILE=29029@is142356 
 export LICENSE_FILE=/product/distene/dlim8.var.sh
 
-#mpirun whith necessary set envenvironment
+#mpirun with necessary set envenvironment
 export TMP_ENV="-x PATH -x LD_LIBRARY_PATH -x DISTENE_LICENSE_FILE -x DLIM8VAR \
                 -x SIMULOGD_LICENSE_FILE -x LICENSE_FILE"
 #mpirun $TMPENV -n $4 which tepal64_v2.exe >> hostnames.log
