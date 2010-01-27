@@ -26,7 +26,6 @@
 import salome
 import geompy
 import smesh
-import StdMeshers
 
 # ---- define a box
 
