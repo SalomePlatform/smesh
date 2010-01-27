@@ -29,6 +29,7 @@
 # ! as some sequences of symbols from this example are used during
 # ! documentation generation to identify certain places of this file
 #
+import salome
 import geompy
 import smesh
 
