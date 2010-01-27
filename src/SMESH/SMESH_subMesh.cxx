@@ -1613,11 +1613,13 @@ bool SMESH_subMesh::Evaluate(MapShapeNbElems& aResMap)
     ret = algo->CheckHypothesis((*_father), _subShape, hyp_status);
     if (!ret) return false;
 
-    TopoDS_Shape shape = _subShape;
+    if ( !aResMap.count(this) )
+    {
+      _computeError = SMESH_ComputeError::New(COMPERR_OK,"",algo);
+      ret = algo->Evaluate((*_father), _subShape, aResMap);
 
-    _computeError = SMESH_ComputeError::New(COMPERR_OK,"",algo);
-
-    ret = algo->Evaluate((*_father), shape, aResMap);
+      aResMap.insert( make_pair( this,vector<int>(0)));
+    }
   }
 
   return ret;
