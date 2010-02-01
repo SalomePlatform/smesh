@@ -54,6 +54,8 @@
 #include <Standard_OutOfMemory.hxx>
 #include <Standard_ErrorHandler.hxx>
 
+#include <numeric>
+
 using namespace std;
 
 //=============================================================================
@@ -1609,17 +1611,32 @@ bool SMESH_subMesh::Evaluate(MapShapeNbElems& aResMap)
   SMESH_Hypothesis::Hypothesis_Status hyp_status;
 
   algo = gen->GetAlgo((*_father), _subShape);
-  if(algo) {
+  if(algo && !aResMap.count(this) )
+  {
     ret = algo->CheckHypothesis((*_father), _subShape, hyp_status);
     if (!ret) return false;
 
-    if ( !aResMap.count(this) )
+    if (_father->HasShapeToMesh() && algo->NeedDescretBoundary())
     {
-      _computeError = SMESH_ComputeError::New(COMPERR_OK,"",algo);
-      ret = algo->Evaluate((*_father), _subShape, aResMap);
-
-      aResMap.insert( make_pair( this,vector<int>(0)));
+      // check submeshes needed
+      bool subMeshEvaluated = true;
+      int dimToCheck = SMESH_Gen::GetShapeDim( _subShape ) - 1;
+      SMESH_subMeshIteratorPtr smIt = getDependsOnIterator(false,/*complexShapeFirst=*/true);
+      while ( smIt->more() && subMeshEvaluated )
+      {
+        SMESH_subMesh* sm = smIt->next();
+        int dim = SMESH_Gen::GetShapeDim( sm->GetSubShape() );
+        if (dim < dimToCheck) break; // the rest subMeshes are all of less dimension
+        const vector<int> & nbs = aResMap[ sm ];
+        subMeshEvaluated = (std::accumulate( nbs.begin(), nbs.end(), 0 ) > 0 );
+      }
+      if ( !subMeshEvaluated )
+        return false;
     }
+    _computeError = SMESH_ComputeError::New(COMPERR_OK,"",algo);
+    ret = algo->Evaluate((*_father), _subShape, aResMap);
+
+    aResMap.insert( make_pair( this,vector<int>(0)));
   }
 
   return ret;
