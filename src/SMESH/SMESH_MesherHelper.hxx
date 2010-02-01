@@ -288,7 +288,7 @@ public:
    *        has a degenerated edges
     * \retval bool - true if it has
    */
-  bool HasDegenenaratedEdges() const { return !myDegenShapeIds.empty(); }
+  bool HasDegeneratedEdges() const { return !myDegenShapeIds.empty(); }
 
   /*!
    * \brief Check if shape is a seam edge or it's vertex

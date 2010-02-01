@@ -802,7 +802,7 @@ void StdMeshers_MEFISTO_2D::StoreResult(Z nbst, R2 * uvst, Z nbt, Z * nust,
     const SMDS_MeshNode * n3 = mefistoToDS[ nust[m++] - 1 ];
 
     // avoid creating degenetrated faces
-    bool isDegen = ( myTool->HasDegenenaratedEdges() && ( n1 == n2 || n1 == n3 || n2 == n3 ));
+    bool isDegen = ( myTool->HasDegeneratedEdges() && ( n1 == n2 || n1 == n3 || n2 == n3 ));
     if ( !isDegen )
     {
       SMDS_MeshElement * elt;
