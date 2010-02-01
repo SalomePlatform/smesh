@@ -284,6 +284,13 @@ public:
   bool IsDegenShape(const int subShape) const
   { return myDegenShapeIds.find( subShape ) != myDegenShapeIds.end(); }
   /*!
+   * \brief Check if the shape set through IsQuadraticSubMesh() or SetSubShape()
+   *        has a degenerated edges
+    * \retval bool - true if it has
+   */
+  bool HasDegenenaratedEdges() const { return !myDegenShapeIds.empty(); }
+
+  /*!
    * \brief Check if shape is a seam edge or it's vertex
     * \param subShape - edge or vertex index in SMESHDS
     * \retval bool - true if subShape is a seam shape
