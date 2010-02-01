@@ -604,8 +604,31 @@ bool StdMeshers_MEFISTO_2D::LoadPoints(TWireVector &                 wires,
       // set UV
       uvslf[m].x = uvPt->u * scalex;
       uvslf[m].y = uvPt->v * scaley;
-      if ( uvPt->node->GetPosition()->GetTypeOfPosition() == SMDS_TOP_VERTEX )
+      switch ( uvPt->node->GetPosition()->GetTypeOfPosition())
+      {
+      case SMDS_TOP_VERTEX:
         mOnVertex.push_back( m );
+        break;
+      case SMDS_TOP_EDGE:
+        // In order to detect degenerated faces easily, we replace
+        // nodes on a degenerated edge by node on the vertex of that edge
+        if ( myTool->IsDegenShape( uvPt->node->GetPosition()->GetShapeId() ))
+        {
+          int edgeID = uvPt->node->GetPosition()->GetShapeId();
+          SMESH_subMesh* edgeSM = myTool->GetMesh()->GetSubMeshContaining( edgeID );
+          SMESH_subMeshIteratorPtr smIt = edgeSM->getDependsOnIterator( /*includeSelf=*/0,
+                                                                        /*complexShapeFirst=*/0);
+          if ( smIt->more() )
+          {
+            SMESH_subMesh* vertexSM = smIt->next();
+            SMDS_NodeIteratorPtr nIt = vertexSM->GetSubMeshDS()->GetNodes();
+            if ( nIt->more() )
+              mefistoToDS[m] = nIt->next();
+          }
+        }
+        break;
+      default:;
+      }
       m++;
     }
 
@@ -778,13 +801,17 @@ void StdMeshers_MEFISTO_2D::StoreResult(Z nbst, R2 * uvst, Z nbt, Z * nust,
     const SMDS_MeshNode * n2 = mefistoToDS[ nust[m++] - 1 ];
     const SMDS_MeshNode * n3 = mefistoToDS[ nust[m++] - 1 ];
 
-    SMDS_MeshElement * elt;
-    if (triangleIsWellOriented)
-      elt = myTool->AddFace(n1, n2, n3);
-    else
-      elt = myTool->AddFace(n1, n3, n2);
-
-    meshDS->SetMeshElementOnShape(elt, faceID);
+    // avoid creating degenetrated faces
+    bool isDegen = ( myTool->HasDegenenaratedEdges() && ( n1 == n2 || n1 == n3 || n2 == n3 ));
+    if ( !isDegen )
+    {
+      SMDS_MeshElement * elt;
+      if (triangleIsWellOriented)
+        elt = myTool->AddFace(n1, n2, n3);
+      else
+        elt = myTool->AddFace(n1, n3, n2);
+      meshDS->SetMeshElementOnShape(elt, faceID);
+    }
     m++;
   }
 
