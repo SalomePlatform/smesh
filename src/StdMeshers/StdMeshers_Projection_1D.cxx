@@ -390,7 +390,7 @@ bool StdMeshers_Projection_1D::Evaluate(SMESH_Mesh& theMesh,
   if ( !srcMesh )
     srcMesh = tgtMesh;
 
-  SMESHDS_Mesh * meshDS = theMesh.GetMeshDS();
+  //SMESHDS_Mesh * meshDS = theMesh.GetMeshDS();
 
   // ---------------------------
   // Make subshapes association
