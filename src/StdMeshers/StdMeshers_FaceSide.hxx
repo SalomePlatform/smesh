@@ -124,7 +124,7 @@ public:
    */
   SMESH_Mesh* GetMesh() const { return myMesh; }
   /*!
-   * \brief Return true if there vertices without nodes
+   * \brief Return true if there are vertices without nodes
    */
   bool MissVertexNode() const { return myMissingVertexNodes; }
   /*!
