@@ -1686,8 +1686,20 @@ SMESH::long_array* SMESH_Gen_i::Evaluate(SMESH::SMESH_Mesh_ptr theMesh,
       MapShapeNbElemsItr anIt = aResMap.begin();
       for(; anIt!=aResMap.end(); anIt++) {
         const vector<int>& aVec = (*anIt).second;
-        for(i = SMESH::Entity_Node; i < SMESH::Entity_Last; i++) {
-          nbels[i] += aVec[i];
+        for(i = SMESH::Entity_Node; i < aVec.size(); i++) {
+          int nbElem = aVec[i];
+          if ( nbElem < 0 ) // algo failed, check that it has reported a message
+          {
+            SMESH_subMesh* sm = anIt->first;
+            SMESH_ComputeErrorPtr& error = sm->GetComputeError();
+            const SMESH_Algo* algo = myGen.GetAlgo( myLocMesh, sm->GetSubShape());
+            if ( algo && !error.get() || error->IsOK() )
+              error.reset( new SMESH_ComputeError( COMPERR_ALGO_FAILED,"Failed to evaluate",algo));
+          }
+          else
+          {
+            nbels[i] += aVec[i];
+          }
         }
       }
       return nbels._retn();
