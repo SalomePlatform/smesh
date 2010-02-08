@@ -86,7 +86,7 @@ void SMESHGUI_Selection::init( const QString& client, LightApp_SelectionMgr* mgr
 //function : processOwner
 //purpose  : 
 //=======================================================================
-void SMESHGUI_Selection::processOwner( const LightApp_DataOwner* ow )
+bool SMESHGUI_Selection::processOwner( const LightApp_DataOwner* ow )
 {
   const LightApp_SVTKDataOwner* owner =
     dynamic_cast<const LightApp_SVTKDataOwner*> ( ow );
@@ -94,6 +94,7 @@ void SMESHGUI_Selection::processOwner( const LightApp_DataOwner* ow )
     myActors.append( dynamic_cast<SMESH_Actor*>( owner->GetActor() ) );
   else
     myActors.append( 0 );
+  return true;
 }
 
 //=======================================================================

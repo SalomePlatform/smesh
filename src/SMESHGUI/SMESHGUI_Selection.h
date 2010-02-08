@@ -48,7 +48,7 @@ public:
 
   virtual void            init( const QString&, LightApp_SelectionMgr* );
   virtual QVariant        parameter( const int, const QString& ) const;
-  virtual void            processOwner( const LightApp_DataOwner* );
+  virtual bool            processOwner( const LightApp_DataOwner* );
 
   // got from object, not from actor
   virtual bool            isAutoColor( int ) const;
