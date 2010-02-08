@@ -392,7 +392,7 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
           }
       }
 
-      SMDS_NodeIteratorPtr aNodesIter = myMesh->nodesIterator();
+      SMDS_NodeIteratorPtr aNodesIter = myMesh->nodesIterator(/*idInceasingOrder=*/true);
       switch(aMeshDimension){
       case 3:
         aCoordHelperPtr.reset(new TCoordHelper(aNodesIter,aXYZGetCoord,aXYZName));
