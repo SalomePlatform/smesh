@@ -393,7 +393,7 @@
             return;
         }
 
-        aFilterMapSTL.insert( QObject::tr("STL ASCII  (*.stl)"), 1 ); // 1 - ASCII mode
+        aFilterMapSTL.insert( QObject::tr("STL ASCII (*.stl)"), 1 ); // 1 - ASCII mode
         aFilterMapSTL.insert( QObject::tr("STL Binary (*.stl)"), 0 ); // 0 - Binary mode
       }
       break;
@@ -428,8 +428,8 @@
 
       SUIT_FileDlg* fd = new SUIT_FileDlg( SMESHGUI::desktop(), false, true, true );
       fd->setWindowTitle( aTitle );
-      fd->setFilters( filters );
-      fd->selectFilter( QObject::tr("STL ASCII  (*.stl)") );
+      fd->setNameFilters( filters );
+      fd->selectNameFilter( QObject::tr("STL ASCII (*.stl)") );
       if ( !anInitialPath.isEmpty() )
         fd->setDirectory( anInitialPath );
       fd->selectFile(aMeshName);
@@ -437,7 +437,7 @@
       while (!is_ok) {
         if ( fd->exec() )
           aFilename = fd->selectedFile();
-        aIsASCII_STL = (aFilterMapSTL[fd->selectedFilter()]) == 1 ? true: false;
+        aIsASCII_STL = (aFilterMapSTL[fd->selectedNameFilter()]) == 1 ? true: false;
         is_ok = true;
       }
       delete fd;
@@ -456,9 +456,9 @@
       SalomeApp_CheckFileDlg* fd = new SalomeApp_CheckFileDlg
         ( SMESHGUI::desktop(), false, QObject::tr("SMESH_AUTO_GROUPS"), true, true );
       fd->setWindowTitle( aTitle );
-      fd->setFilters( filters );
-      //fd->setSelectedFilter( QObject::tr("MED 2.2 (*.med)") );
-      fd->selectFilter(aDefaultFilter);
+      fd->setNameFilters( filters );
+      //fd->setSelectedNameFilter( QObject::tr("MED 2.2 (*.med)") );
+      fd->selectNameFilter(aDefaultFilter);
       fd->SetChecked(toCreateGroups);
       if ( !anInitialPath.isEmpty() )
         fd->setDirectory( anInitialPath );
@@ -475,7 +475,7 @@
           aFilename = QString::null;
           break;
         }
-        aFormat = aFilterMap[fd->selectedFilter()];
+        aFormat = aFilterMap[fd->selectedNameFilter()];
         toOverwrite = fv->isOverwrite();
         is_ok = true;
         if ( !aFilename.isEmpty() ) {
