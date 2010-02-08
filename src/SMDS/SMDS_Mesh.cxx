@@ -2125,50 +2125,85 @@ void SMDS_Mesh::setConstructionFaces(bool b)
 ///////////////////////////////////////////////////////////////////////////////
 void SMDS_Mesh::setInverseElements(bool b)
 {
-        if(!b) MESSAGE("Error : inverseElement=false not implemented");
-        myHasInverseElements=b;
+  if(!b) MESSAGE("Error : inverseElement=false not implemented");
+  myHasInverseElements=b;
 }
 
-///////////////////////////////////////////////////////////////////////////////
-///Iterator on NCollection_Map
-///////////////////////////////////////////////////////////////////////////////
-template <class MAP, typename ELEM=const SMDS_MeshElement*, class FATHER=SMDS_ElemIterator>
-struct MYNCollection_Map_Iterator: public FATHER
-{
-  typename MAP::Iterator myIterator;
+namespace {
 
-  MYNCollection_Map_Iterator(const MAP& map):myIterator(map){}
-
-  bool more()
+  ///////////////////////////////////////////////////////////////////////////////
+  ///Iterator on NCollection_Map
+  ///////////////////////////////////////////////////////////////////////////////
+  template <class MAP, typename ELEM=const SMDS_MeshElement*, class FATHER=SMDS_ElemIterator>
+  struct MYNCollection_Map_Iterator: public FATHER
   {
-    while(myIterator.More())
+    typename MAP::Iterator myIterator;
+
+    MYNCollection_Map_Iterator(const MAP& map):myIterator(map){}
+
+    bool more()
     {
-      if(myIterator.Value()->GetID()!=-1)
-        return true;
-      myIterator.Next();
+      while(myIterator.More())
+      {
+        if(myIterator.Value()->GetID()!=-1)
+          return true;
+        myIterator.Next();
+      }
+      return false;
     }
-    return false;
-  }
 
-  ELEM next()
+    ELEM next()
+    {
+      ELEM current = (ELEM) myIterator.Value();
+      myIterator.Next();
+      return current;
+    }
+  };
+  //================================================================================
+  /*!
+   * \brief Iterator on elements in id increasing order
+   */
+  //================================================================================
+
+  template <typename ELEM=const SMDS_MeshElement*>
+  class IdSortedIterator : public SMDS_Iterator<ELEM>
   {
-    ELEM current = (ELEM) myIterator.Value();
-    myIterator.Next();
-    return current;
-  }
-};
+    const SMDS_MeshElementIDFactory& myIDFact;
+    int                              myID, myMaxID;
+    ELEM                             myElem;
+
+  public:
+    IdSortedIterator(const SMDS_MeshElementIDFactory& fact)
+      :myIDFact( fact ), myID(1), myMaxID( myIDFact.GetMaxID() ), myElem(0)
+    {
+      next();
+    }
+    bool more()
+    {
+      return myElem;
+    }
+    ELEM next()
+    {
+      ELEM current = myElem;
+      for ( myElem = 0; myID <= myMaxID && !myElem; ++myID )
+        myElem = (ELEM) myIDFact.MeshElement( myID );
+      return current;
+    }
+  };
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 /// Return an iterator on nodes of the current mesh factory
 ///////////////////////////////////////////////////////////////////////////////
 
-SMDS_NodeIteratorPtr SMDS_Mesh::nodesIterator() const
+SMDS_NodeIteratorPtr SMDS_Mesh::nodesIterator(bool idInceasingOrder) const
 {
-  //return SMDS_NodeIteratorPtr
-  //  (new SMDS_Mesh_MyNodeIterator(myNodeIDFactory->elementsIterator()));
   typedef MYNCollection_Map_Iterator
     < SetOfNodes, const SMDS_MeshNode*, SMDS_NodeIterator > TIterator;
-  return SMDS_NodeIteratorPtr(new TIterator(myNodes));
+  typedef IdSortedIterator< const SMDS_MeshNode* >          TSortedIterator;
+  return ( idInceasingOrder ?
+           SMDS_NodeIteratorPtr( new TSortedIterator( *myNodeIDFactory )) :
+           SMDS_NodeIteratorPtr( new TIterator(myNodes)));
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -47,7 +47,7 @@ public:
 
   SMDS_Mesh();
 
-  SMDS_NodeIteratorPtr nodesIterator() const;
+  SMDS_NodeIteratorPtr nodesIterator(bool idInceasingOrder=false) const;
   SMDS_0DElementIteratorPtr elements0dIterator() const;
   SMDS_EdgeIteratorPtr edgesIterator() const;
   SMDS_FaceIteratorPtr facesIterator() const;
