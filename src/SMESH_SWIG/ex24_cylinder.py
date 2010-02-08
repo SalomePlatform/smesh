@@ -26,7 +26,7 @@ import math
 
 import geompy
 import smesh
-
+import salome
 geo = geompy
 
 # Parameters
