@@ -117,6 +117,7 @@ class SMDS_MeshNode_MyInvIterator:public SMDS_ElemIterator
 
   const SMDS_MeshElement* next()
   {
+    if ( !more() ) return 0;
     const SMDS_MeshElement* current=myIterator.Value();
     myIterator.Next();
     return current;
