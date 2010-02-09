@@ -26,11 +26,18 @@
 #ifndef _SMESH_QuadToTriaAdaptor_HXX_
 #define _SMESH_QuadToTriaAdaptor_HXX_
 
-#include <SMESH_Mesh.hxx>
 #include "SMESH_StdMeshers.hxx"
-#include <SMDS_FaceOfNodes.hxx>
-#include <TColgp_HArray1OfPnt.hxx>
-#include <TColgp_HArray1OfVec.hxx>
+#include "SMDS_FaceOfNodes.hxx"
+
+class SMESH_Mesh;
+class SMDS_MeshElement;
+class SMDS_MeshNode;
+class Handle(TColgp_HArray1OfPnt);
+class Handle(TColgp_HArray1OfVec);
+class TopoDS_Shape;
+class gp_Pnt;
+class gp_Vec;
+
 
 #include <map>
 #include <list>
@@ -39,8 +46,6 @@
 class STDMESHERS_EXPORT StdMeshers_QuadToTriaAdaptor
 {
 public:
-
-  StdMeshers_QuadToTriaAdaptor();
 
   ~StdMeshers_QuadToTriaAdaptor();
 
@@ -58,7 +63,8 @@ protected:
                   Handle(TColgp_HArray1OfPnt)& PN,
                   Handle(TColgp_HArray1OfVec)& VN,
                   std::vector<const SMDS_MeshNode*>& FNodes,
-                  gp_Pnt& PC, gp_Vec& VNorm);
+                  gp_Pnt& PC, gp_Vec& VNorm,
+                  const SMDS_MeshElement** volumes=0);
 
   bool CheckIntersection(const gp_Pnt& P, const gp_Pnt& PC,
                          gp_Pnt& Pint, SMESH_Mesh& aMesh,
@@ -67,10 +73,13 @@ protected:
 
   bool Compute2ndPart(SMESH_Mesh& aMesh);
 
-  typedef std::map< const SMDS_MeshElement*, const SMDS_MeshElement*, TIDCompare > TF2PyramMap;
+  typedef std::list<const SMDS_FaceOfNodes* >                        TTriaList;
+  typedef std::multimap<const SMDS_MeshElement*, TTriaList >         TQuad2Trias;
+  typedef std::map<const SMDS_MeshElement*, TTriaList *, TIDCompare> TPyram2Trias;
 
-  std::map< const SMDS_MeshElement*, std::list<const SMDS_FaceOfNodes*> > myResMap;
-  TF2PyramMap myMapFPyram;
+  TQuad2Trias  myResMap;
+  TPyram2Trias myPyram2Trias;
+
   std::list< const SMDS_MeshNode* > myDegNodes;
 
 };
