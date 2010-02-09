@@ -61,7 +61,7 @@ bool SMDS_MeshElementIDFactory::BindID(int ID, SMDS_MeshElement * elem)
 //function : MeshElement
 //purpose  : 
 //=======================================================================
-SMDS_MeshElement* SMDS_MeshElementIDFactory::MeshElement(int ID)
+SMDS_MeshElement* SMDS_MeshElementIDFactory::MeshElement(int ID) const
 {
   if (!myIDElements.IsBound(ID))
     return NULL;

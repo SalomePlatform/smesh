@@ -42,7 +42,7 @@ class SMDS_EXPORT SMDS_MeshElementIDFactory:public SMDS_MeshIDFactory
 public:
   SMDS_MeshElementIDFactory();
   bool BindID(int ID, SMDS_MeshElement * elem);
-  SMDS_MeshElement * MeshElement(int ID);
+  SMDS_MeshElement * MeshElement(int ID) const;
   virtual int GetFreeID();
   virtual void ReleaseID(int ID);
   int GetMaxID() const;
