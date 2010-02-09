@@ -89,28 +89,6 @@ using namespace SMESH::Controls;
 
 typedef map<const SMDS_MeshElement*, list<const SMDS_MeshNode*> >    TElemOfNodeListMap;
 typedef map<const SMDS_MeshElement*, list<const SMDS_MeshElement*> > TElemOfElemListMap;
-//typedef map<const SMDS_MeshNode*, vector<const SMDS_MeshNode*> >     TNodeOfNodeVecMap;
-//typedef TNodeOfNodeVecMap::iterator                                  TNodeOfNodeVecMapItr;
-//typedef map<const SMDS_MeshElement*, vector<TNodeOfNodeVecMapItr> >  TElemOfVecOfMapNodesMap;
-
-//=======================================================================
-/*!
- * \brief SMDS_MeshNode -> gp_XYZ convertor
- */
-//=======================================================================
-
-struct TNodeXYZ : public gp_XYZ
-{
-  TNodeXYZ( const SMDS_MeshNode* n ):gp_XYZ( n->X(), n->Y(), n->Z() ) {}
-  double Distance( const SMDS_MeshNode* n )
-  {
-    return gp_Vec( *this, TNodeXYZ( n )).Magnitude();
-  }
-  double SquareDistance( const SMDS_MeshNode* n )
-  {
-    return gp_Vec( *this, TNodeXYZ( n )).SquareMagnitude();
-  }
-};
 
 //=======================================================================
 //function : SMESH_MeshEditor
@@ -5224,7 +5202,7 @@ struct SMESH_NodeSearcherImpl: public SMESH_NodeSearcher
     const SMDS_MeshNode* closestNode = 0;
     list<const SMDS_MeshNode*>::iterator nIt = nodes.begin();
     for ( ; nIt != nodes.end(); ++nIt ) {
-      double sqDist = thePnt.SquareDistance( TNodeXYZ( *nIt ) );
+      double sqDist = thePnt.SquareDistance( SMESH_MeshEditor::TNodeXYZ( *nIt ) );
       if ( minSqDist > sqDist ) {
         closestNode = *nIt;
         minSqDist = sqDist;
@@ -5418,7 +5396,7 @@ namespace // Utils used in SMESH_ElementSearcherImpl::FindElementsByPoint()
     _refCount = 1;
     SMDS_ElemIteratorPtr nIt = elem->nodesIterator();
     while ( nIt->more() )
-      Add( TNodeXYZ( cast2Node( nIt->next() )));
+      Add( SMESH_MeshEditor::TNodeXYZ( cast2Node( nIt->next() )));
     Enlarge( NodeRadius );
   }
 
@@ -5445,13 +5423,14 @@ struct SMESH_ElementSearcherImpl: public SMESH_ElementSearcher
   }
 
   /*!
-   * \brief Return elements of given type where the given point is IN or ON.
+   * \brief Find elements of given type where the given point is IN or ON.
+   *        Returns nb of found elements and elements them-selves.
    *
    * 'ALL' type means elements of any type excluding nodes and 0D elements
    */
-  void FindElementsByPoint(const gp_Pnt&                      point,
-                           SMDSAbs_ElementType                type,
-                           vector< const SMDS_MeshElement* >& foundElements)
+  int FindElementsByPoint(const gp_Pnt&                      point,
+                          SMDSAbs_ElementType                type,
+                          vector< const SMDS_MeshElement* >& foundElements)
   {
     foundElements.clear();
 
@@ -5478,7 +5457,7 @@ struct SMESH_ElementSearcherImpl: public SMESH_ElementSearcher
       while ( complexType > SMDSAbs_All &&
               meshInfo.NbElements( SMDSAbs_ElementType( complexType )) < 1 )
         --complexType;
-      if ( complexType == SMDSAbs_All ) return; // empty mesh
+      if ( complexType == SMDSAbs_All ) return foundElements.size(); // empty mesh
 
       double elemSize;
       if ( complexType == int( SMDSAbs_Node ))
@@ -5486,14 +5465,14 @@ struct SMESH_ElementSearcherImpl: public SMESH_ElementSearcher
         SMDS_NodeIteratorPtr nodeIt = _mesh->nodesIterator();
         elemSize = 1;
         if ( meshInfo.NbNodes() > 2 )
-          elemSize = TNodeXYZ( nodeIt->next() ).Distance( nodeIt->next() );
+          elemSize = SMESH_MeshEditor::TNodeXYZ( nodeIt->next() ).Distance( nodeIt->next() );
       }
       else
       {
         const SMDS_MeshElement* elem =
           _mesh->elementsIterator( SMDSAbs_ElementType( complexType ))->next();
         SMDS_ElemIteratorPtr nodeIt = elem->nodesIterator();
-        TNodeXYZ n1( cast2Node( nodeIt->next() ));
+        SMESH_MeshEditor::TNodeXYZ n1( cast2Node( nodeIt->next() ));
         while ( nodeIt->more() )
         {
           double dist = n1.Distance( cast2Node( nodeIt->next() ));
@@ -5510,10 +5489,10 @@ struct SMESH_ElementSearcherImpl: public SMESH_ElementSearcher
         _nodeSearcher = new SMESH_NodeSearcherImpl( _mesh );
 
       const SMDS_MeshNode* closeNode = _nodeSearcher->FindClosestTo( point );
-      if ( !closeNode ) return;
+      if ( !closeNode ) return foundElements.size();
 
-      if ( point.Distance( TNodeXYZ( closeNode )) > tolerance )
-        return; // to far from any node
+      if ( point.Distance( SMESH_MeshEditor::TNodeXYZ( closeNode )) > tolerance )
+        return foundElements.size(); // to far from any node
 
       if ( type == SMDSAbs_Node )
       {
@@ -5541,6 +5520,7 @@ struct SMESH_ElementSearcherImpl: public SMESH_ElementSearcher
         if ( !SMESH_MeshEditor::isOut( *elem, point, tolerance ))
           foundElements.push_back( *elem );
     }
+    return foundElements.size();
   }
 }; // struct SMESH_ElementSearcherImpl
 
@@ -6498,83 +6478,65 @@ void SMESH_MeshEditor::MergeEqualElements()
 //purpose  : Return a face having linked nodes n1 and n2 and which is
 //           - not in avoidSet,
 //           - in elemSet provided that !elemSet.empty()
+//           i1 and i2 optionally returns indices of n1 and n2
 //=======================================================================
 
 const SMDS_MeshElement*
 SMESH_MeshEditor::FindFaceInSet(const SMDS_MeshNode*    n1,
                                 const SMDS_MeshNode*    n2,
                                 const TIDSortedElemSet& elemSet,
-                                const TIDSortedElemSet& avoidSet)
+                                const TIDSortedElemSet& avoidSet,
+                                int*                    n1ind,
+                                int*                    n2ind)
 
 {
+  int i1, i2;
+  const SMDS_MeshElement* face = 0;
+
   SMDS_ElemIteratorPtr invElemIt = n1->GetInverseElementIterator(SMDSAbs_Face);
-  while ( invElemIt->more() ) { // loop on inverse elements of n1
+  while ( invElemIt->more() && !face ) // loop on inverse faces of n1
+  {
     const SMDS_MeshElement* elem = invElemIt->next();
-    if (avoidSet.find( elem ) != avoidSet.end() )
+    if (avoidSet.count( elem ))
       continue;
-    if ( !elemSet.empty() && elemSet.find( elem ) == elemSet.end())
+    if ( !elemSet.empty() && !elemSet.count( elem ))
       continue;
-    // get face nodes and find index of n1
-    int i1, nbN = elem->NbNodes(), iNode = 0;
-    //const SMDS_MeshNode* faceNodes[ nbN ], *n;
-    vector<const SMDS_MeshNode*> faceNodes( nbN );
-    const SMDS_MeshNode* n;
-    SMDS_ElemIteratorPtr nIt = elem->nodesIterator();
-    while ( nIt->more() ) {
-      faceNodes[ iNode ] = static_cast<const SMDS_MeshNode*>( nIt->next() );
-      if ( faceNodes[ iNode++ ] == n1 )
-        i1 = iNode - 1;
-    }
+    // index of n1
+    i1 = elem->GetNodeIndex( n1 );
     // find a n2 linked to n1
-    if(!elem->IsQuadratic()) {
-      for ( iNode = 0; iNode < 2; iNode++ ) {
-        if ( iNode ) // node before n1
-          n = faceNodes[ i1 == 0 ? nbN - 1 : i1 - 1 ];
-        else         // node after n1
-          n = faceNodes[ i1 + 1 == nbN ? 0 : i1 + 1 ];
-        if ( n == n2 )
-          return elem;
+    int nbN = elem->IsQuadratic() ? elem->NbNodes()/2 : elem->NbNodes();
+    for ( int di = -1; di < 2 && !face; di += 2 )
+    {
+      i2 = (i1+di+nbN) % nbN;
+      if ( elem->GetNode( i2 ) == n2 )
+        face = elem;
+    }
+    if ( !face && elem->IsQuadratic())
+    {
+      // analysis for quadratic elements using all nodes
+      const SMDS_QuadraticFaceOfNodes* F =
+        static_cast<const SMDS_QuadraticFaceOfNodes*>(elem);
+      // use special nodes iterator
+      SMDS_NodeIteratorPtr anIter = F->interlacedNodesIterator();
+      const SMDS_MeshNode* prevN = cast2Node( anIter->next() );
+      for ( i1 = -1, i2 = 0; anIter->more() && !face; i1++, i2++ )
+      {
+        const SMDS_MeshNode* n = cast2Node( anIter->next() );
+        if ( n1 == prevN && n2 == n )
+        {
+          face = elem;
+        }
+        else if ( n2 == prevN && n1 == n )
+        {
+          face = elem; swap( i1, i2 );
+        }
+        prevN = n;
       }
     }
-    else { // analysis for quadratic elements
-      bool IsFind = false;
-      // check using only corner nodes
-      for ( iNode = 0; iNode < 2; iNode++ ) {
-        if ( iNode ) // node before n1
-          n = faceNodes[ i1 == 0 ? nbN/2 - 1 : i1 - 1 ];
-        else         // node after n1
-          n = faceNodes[ i1 + 1 == nbN/2 ? 0 : i1 + 1 ];
-        if ( n == n2 )
-          IsFind = true;
-      }
-      if(IsFind) {
-        return elem;
-      }
-      else {
-        // check using all nodes
-        const SMDS_QuadraticFaceOfNodes* F =
-          static_cast<const SMDS_QuadraticFaceOfNodes*>(elem);
-        // use special nodes iterator
-        iNode = 0;
-        SMDS_NodeIteratorPtr anIter = F->interlacedNodesIterator();
-        while ( anIter->more() ) {
-          faceNodes[iNode] = static_cast<const SMDS_MeshNode*>(anIter->next());
-          if ( faceNodes[ iNode++ ] == n1 )
-            i1 = iNode - 1;
-        }
-        for ( iNode = 0; iNode < 2; iNode++ ) {
-          if ( iNode ) // node before n1
-            n = faceNodes[ i1 == 0 ? nbN - 1 : i1 - 1 ];
-          else         // node after n1
-            n = faceNodes[ i1 + 1 == nbN ? 0 : i1 + 1 ];
-          if ( n == n2 ) {
-            return elem;
-          }
-        }
-      }
-    } // end analysis for quadratic elements
   }
-  return 0;
+  if ( n1ind ) *n1ind = i1;
+  if ( n2ind ) *n2ind = i2;
+  return face;
 }
 
 //=======================================================================
@@ -8913,7 +8875,7 @@ namespace {
     gp_XYZ centerXYZ (0, 0, 0);
     SMDS_ElemIteratorPtr aNodeItr = theElem->nodesIterator();
     while (aNodeItr->more())
-      centerXYZ += TNodeXYZ(cast2Node( aNodeItr->next()));
+      centerXYZ += SMESH_MeshEditor::TNodeXYZ(cast2Node( aNodeItr->next()));
 
     gp_Pnt aPnt = centerXYZ / theElem->NbNodes();
     theClassifier.Perform(aPnt, theTol);

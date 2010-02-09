@@ -36,6 +36,8 @@
 #include "SMESH_SequenceOfElemPtr.hxx"
 #include "SMESH_SequenceOfNode.hxx"
 
+#include <utilities.h>
+
 #include <TColStd_HSequenceOfReal.hxx>
 #include <gp_Dir.hxx>
 
@@ -74,7 +76,8 @@ struct SMESH_NodeSearcher
 
 //=======================================================================
 /*!
- * \brief Return elements of given type where the given point is IN or ON.
+ * \brief Find elements of given type where the given point is IN or ON.
+ *        Returns nb of found elements and elements them-selves.
  *
  * 'ALL' type means elements of any type excluding nodes and 0D elements
  */
@@ -82,9 +85,9 @@ struct SMESH_NodeSearcher
 
 struct SMESH_ElementSearcher
 {
-  virtual void FindElementsByPoint(const gp_Pnt&                           point,
-                                   SMDSAbs_ElementType                     type,
-                                   std::vector< const SMDS_MeshElement* >& foundElems)=0;
+  virtual int FindElementsByPoint(const gp_Pnt&                           point,
+                                  SMDSAbs_ElementType                     type,
+                                  std::vector< const SMDS_MeshElement* >& foundElems)=0;
 };
 
 //=======================================================================
@@ -103,51 +106,6 @@ struct SMESH_TLink: public NLink
   const SMDS_MeshNode* node2() const { return second; }
 };
 
-//=======================================================================
-/*!
- * auxiliary class
- */
-//=======================================================================
-class SMESH_MeshEditor_PathPoint {
-public:
-  SMESH_MeshEditor_PathPoint() {
-    myPnt.SetCoord(99., 99., 99.);
-    myTgt.SetCoord(1.,0.,0.);
-    myAngle=0.;
-    myPrm=0.;
-  }
-  void SetPnt(const gp_Pnt& aP3D){
-    myPnt=aP3D;
-  }
-  void SetTangent(const gp_Dir& aTgt){
-    myTgt=aTgt;
-  }
-  void SetAngle(const double& aBeta){
-    myAngle=aBeta;
-  }
-  void SetParameter(const double& aPrm){
-    myPrm=aPrm;
-  }
-  const gp_Pnt& Pnt()const{
-    return myPnt;
-  }
-  const gp_Dir& Tangent()const{
-    return myTgt;
-  }
-  double Angle()const{
-    return myAngle;
-  }
-  double Parameter()const{
-    return myPrm;
-  }
-
-protected:
-  gp_Pnt myPnt;
-  gp_Dir myTgt;
-  double myAngle;
-  double myPrm;
-};
-
 
 // ============================================================
 /*!
@@ -155,7 +113,28 @@ protected:
  */
 // ============================================================
 
-class SMESH_EXPORT SMESH_MeshEditor {
+class SMESH_EXPORT SMESH_MeshEditor
+{
+public:
+  //------------------------------------------
+  /*!
+   * \brief SMDS_MeshNode -> gp_XYZ convertor
+   */
+  //------------------------------------------
+  struct TNodeXYZ : public gp_XYZ
+  {
+    const SMDS_MeshNode* _node;
+    TNodeXYZ( const SMDS_MeshElement* e):_node(0) {
+      if (e) {
+        ASSERT( e->GetType() == SMDSAbs_Node );
+        _node = static_cast<const SMDS_MeshNode*>(e);
+        SetCoord( _node->X(), _node->Y(), _node->Z() );
+      }
+    }
+    double Distance(const SMDS_MeshNode* n)       const { return (TNodeXYZ( n )-*this).Modulus(); }
+    double SquareDistance(const SMDS_MeshNode* n) const { return (TNodeXYZ( n )-*this).SquareModulus(); }
+    bool operator==(const TNodeXYZ& other) const { return _node == other._node; }
+  };
 
 public:
 
@@ -520,18 +499,6 @@ public:
   //converts all mesh from quadratic to ordinary ones, deletes old quadratic elements, replacing 
   //them with ordinary mesh elements with the same id.
 
-
-//  static int SortQuadNodes (const SMDS_Mesh * theMesh,
-//                            int               theNodeIds[] );
-//  // Set 4 nodes of a quadrangle face in a good order.
-//  // Swap 1<->2 or 2<->3 nodes and correspondingly return
-//  // 1 or 2 else 0.
-//
-//  static bool SortHexaNodes (const SMDS_Mesh * theMesh,
-//                             int               theNodeIds[] );
-//  // Set 8 nodes of a hexahedron in a good order.
-//  // Return success status
-
   static void AddToSameGroups (const SMDS_MeshElement* elemToAdd,
                                const SMDS_MeshElement* elemInGroups,
                                SMESHDS_Mesh *          aMesh);
@@ -553,14 +520,16 @@ public:
                               TIDSortedElemSet &   linkedNodes,
                               SMDSAbs_ElementType  type = SMDSAbs_All );
 
-  static const SMDS_MeshElement*
-    FindFaceInSet(const SMDS_MeshNode*    n1,
-                  const SMDS_MeshNode*    n2,
-                  const TIDSortedElemSet& elemSet,
-                  const TIDSortedElemSet& avoidSet);
+  static const SMDS_MeshElement* FindFaceInSet(const SMDS_MeshNode*    n1,
+                                               const SMDS_MeshNode*    n2,
+                                               const TIDSortedElemSet& elemSet,
+                                               const TIDSortedElemSet& avoidSet,
+                                               int*                    i1=0,
+                                               int*                    i2=0);
   // Return a face having linked nodes n1 and n2 and which is
   // - not in avoidSet,
   // - in elemSet provided that !elemSet.empty()
+  // i1 and i2 optionally returns indices of n1 and n2
 
   /*!
    * \brief Find corresponding nodes in two sets of faces 
@@ -575,11 +544,11 @@ public:
    */
   static Sew_Error FindMatchingNodes(std::set<const SMDS_MeshElement*>& theSide1,
                                      std::set<const SMDS_MeshElement*>& theSide2,
-                                     const SMDS_MeshNode*          theFirstNode1,
-                                     const SMDS_MeshNode*          theFirstNode2,
-                                     const SMDS_MeshNode*          theSecondNode1,
-                                     const SMDS_MeshNode*          theSecondNode2,
-                                     TNodeNodeMap &                nReplaceMap);
+                                     const SMDS_MeshNode*               theFirstNode1,
+                                     const SMDS_MeshNode*               theFirstNode2,
+                                     const SMDS_MeshNode*               theSecondNode1,
+                                     const SMDS_MeshNode*               theSecondNode2,
+                                     TNodeNodeMap &                     theNodeReplaceMap);
 
   /*!
    * \brief Returns true if given node is medium
@@ -684,30 +653,42 @@ private:
                   const int                nbSteps,
                   SMESH_SequenceOfElemPtr& srcElements);
 
-  /*!
-   * auxilary for ExtrusionAlongTrack
-   */
-  Extrusion_Error MakeEdgePathPoints(std::list<double>& aPrms,
-                                     const TopoDS_Edge& aTrackEdge,
-                                     bool FirstIsStart,
-                                     list<SMESH_MeshEditor_PathPoint>& LPP);
-  Extrusion_Error MakeExtrElements(TIDSortedElemSet& theElements,
-                                   list<SMESH_MeshEditor_PathPoint>& fullList,
-                                   const bool theHasAngles,
-                                   list<double>& theAngles,
-                                   const bool theLinearVariation,
-                                   const bool theHasRefPoint,
-                                   const gp_Pnt& theRefPoint,
-                                   const bool theMakeGroups);
-  void LinearAngleVariation(const int NbSteps,
+  struct SMESH_MeshEditor_PathPoint
+  {
+    gp_Pnt myPnt;
+    gp_Dir myTgt;
+    double myAngle, myPrm;
+
+    SMESH_MeshEditor_PathPoint(): myPnt(99., 99., 99.), myTgt(1.,0.,0.), myAngle(0), myPrm(0) {}
+    void          SetPnt      (const gp_Pnt& aP3D)  { myPnt  =aP3D; }
+    void          SetTangent  (const gp_Dir& aTgt)  { myTgt  =aTgt; }
+    void          SetAngle    (const double& aBeta) { myAngle=aBeta; }
+    void          SetParameter(const double& aPrm)  { myPrm  =aPrm; }
+    const gp_Pnt& Pnt         ()const               { return myPnt; }
+    const gp_Dir& Tangent     ()const               { return myTgt; }
+    double        Angle       ()const               { return myAngle; }
+    double        Parameter   ()const               { return myPrm; }
+  };
+  Extrusion_Error MakeEdgePathPoints(std::list<double>&                     aPrms,
+                                     const TopoDS_Edge&                     aTrackEdge,
+                                     bool                                   aFirstIsStart,
+                                     std::list<SMESH_MeshEditor_PathPoint>& aLPP);
+  Extrusion_Error MakeExtrElements(TIDSortedElemSet&                      theElements,
+                                   std::list<SMESH_MeshEditor_PathPoint>& theFullList,
+                                   const bool                             theHasAngles,
+                                   std::list<double>&                     theAngles,
+                                   const bool                             theLinearVariation,
+                                   const bool                             theHasRefPoint,
+                                   const gp_Pnt&                          theRefPoint,
+                                   const bool                             theMakeGroups);
+  void LinearAngleVariation(const int     NbSteps,
                             list<double>& theAngles);
 
-  bool doubleNodes( SMESHDS_Mesh*     theMeshDS,
-                    const TIDSortedElemSet& theElems,
-                    const TIDSortedElemSet& theNodesNot,
-                    std::map< const SMDS_MeshNode*,
-                    const SMDS_MeshNode* >& theNodeNodeMap,
-                    const bool theIsDoubleElem );
+  bool doubleNodes( SMESHDS_Mesh*                                           theMeshDS,
+                    const TIDSortedElemSet&                                 theElems,
+                    const TIDSortedElemSet&                                 theNodesNot,
+                    std::map< const SMDS_MeshNode*, const SMDS_MeshNode* >& theNodeNodeMap,
+                    const bool                                              theIsDoubleElem );
 
 private:
 
