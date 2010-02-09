@@ -32,6 +32,7 @@
 #include "SMDS_MeshObject.hxx"
 #include "SMDS_ElemIterator.hxx"
 #include "SMDS_MeshElementIDFactory.hxx"
+#include "SMDS_StdIterator.hxx"
 
 #include <vector>
 #include <iostream>
@@ -54,6 +55,11 @@ public:
   SMDS_ElemIteratorPtr edgesIterator() const;
   SMDS_ElemIteratorPtr facesIterator() const;
   virtual SMDS_ElemIteratorPtr elementsIterator(SMDSAbs_ElementType type) const;
+
+  // std-like iteration on nodes
+  typedef SMDS_StdIterator< const SMDS_MeshNode*, SMDS_ElemIteratorPtr > iterator;
+  iterator begin_nodes() const { return iterator( nodesIterator() ); }
+  iterator end_nodes()   const { return iterator(); }
 
   virtual int NbNodes() const;
   virtual int NbEdges() const;
