@@ -907,11 +907,11 @@ bool StdMeshers_QuadToTriaAdaptor::Compute2ndPart(SMESH_Mesh& aMesh)
           if(ang2<PI/3)
             coef2 -= cos(ang1)*0.25;
 
-          SMDS_MeshNode* aNode1 = const_cast<SMDS_MeshNode*>(PrmI->GetNode(4));
           VN1.Scale(coef1);
+          VN2.Scale(coef2);
+          SMDS_MeshNode* aNode1 = const_cast<SMDS_MeshNode*>(PrmI->GetNode(4));
           aNode1->setXYZ( PC1.X()+VN1.X(), PC1.Y()+VN1.Y(), PC1.Z()+VN1.Z() );
           SMDS_MeshNode* aNode2 = const_cast<SMDS_MeshNode*>(PrmJ->GetNode(4));
-          VN2.Scale(coef2);
           aNode2->setXYZ( PC2.X()+VN2.X(), PC2.Y()+VN2.Y(), PC2.Z()+VN2.Z() );
           NeedMove = true;
         }
@@ -932,6 +932,9 @@ bool StdMeshers_QuadToTriaAdaptor::Compute2ndPart(SMESH_Mesh& aMesh)
     if ( q2t->first == q2tPrev->first )
       q2tPrev->second.splice( q2tPrev->second.end(), q2t->second );
   }
+
+  myPyram2Trias.clear(); // no more needed
+  myDegNodes.clear();
 
   return true;
 }
