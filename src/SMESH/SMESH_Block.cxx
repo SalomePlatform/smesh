@@ -1000,6 +1000,11 @@ int SMESH_Block::GetOrderedEdges (const TopoDS_Face&   theFace,
       // edge = TopoDS::Edge( edge.Oriented( wExp.Orientation() ));
       theEdges.push_back( edge );
     }
+    if ( iE == 0 ) // wExp returns nothing if e.g. the wire contains one internal edge
+    { // Issue 0020676
+      for ( TopoDS_Iterator e( *wlIt ); e.More(); e.Next(), ++iE )
+        theEdges.push_back( TopoDS::Edge( e.Value() ));
+    }
     theNbVertexInWires.push_back( iE );
     iE = 0;
     if ( wlIt == aWireList.begin() && theEdges.size() > 1 ) { // the outer wire
