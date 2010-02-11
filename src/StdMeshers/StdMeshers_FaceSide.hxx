@@ -170,11 +170,11 @@ public:
   /*!
    * \brief Return 1st vertex of the i-the edge (count starts from zero)
    */
-  inline TopoDS_Vertex FirstVertex(int i=0) const;
+  TopoDS_Vertex FirstVertex(int i=0) const;
   /*!
    * \brief Return last vertex of the i-the edge (count starts from zero)
    */
-  inline TopoDS_Vertex LastVertex(int i=-1) const;
+  TopoDS_Vertex LastVertex(int i=-1) const;
   /*!
    * \brief Return first normalized parameter of the i-the edge (count starts from zero)
    */
@@ -241,28 +241,6 @@ inline double StdMeshers_FaceSide::Parameter(double U, TopoDS_Edge & edge) const
   double prevU = i ? myNormPar[ i-1 ] : 0;
   double r = ( U - prevU )/ ( myNormPar[ i ] - prevU );
   return myFirst[i] * ( 1 - r ) + myLast[i] * r;
-}
-
-//================================================================================
-/*!
- * \brief Return 1st vertex of the i-the edge
- */
-//================================================================================
-
-inline TopoDS_Vertex StdMeshers_FaceSide::FirstVertex(int i) const
-{
-  return i < myEdge.size() ? TopExp::FirstVertex( myEdge[i], 1 ) : TopoDS_Vertex();
-}
-
-//================================================================================
-/*!
- * \brief Return last vertex of the i-the edge
- */
-//================================================================================
-
-inline TopoDS_Vertex StdMeshers_FaceSide::LastVertex(int i) const
-{
-  return i<0 ? TopExp::LastVertex( myEdge.back(), 1) : i<myEdge.size() ? TopExp::LastVertex( myEdge[i], 1 ) : TopoDS_Vertex();
 }
 
 //================================================================================

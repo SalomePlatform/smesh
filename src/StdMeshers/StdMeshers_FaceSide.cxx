@@ -44,6 +44,7 @@
 #include <BRep_Tool.hxx>
 #include <TopExp.hxx>
 #include <TopExp_Explorer.hxx>
+#include <TopoDS.hxx>
 #include <TopoDS_Face.hxx>
 #include <TopoDS_Vertex.hxx>
 #include <TopoDS_Wire.hxx>
@@ -103,6 +104,7 @@ StdMeshers_FaceSide::StdMeshers_FaceSide(const TopoDS_Face& theFace,
 
   int nbDegen = 0;
   list<TopoDS_Edge>::iterator edge = theEdges.begin();
+  TopoDS_Iterator vExp;
   for ( int index = 0; edge != theEdges.end(); ++index, ++edge )
   {
     int i = theIsForward ? index : nbEdges - index - 1;
@@ -129,16 +131,20 @@ StdMeshers_FaceSide::StdMeshers_FaceSide(const TopoDS_Face& theFace,
       myNbPonits += nbN;
       myNbSegments += sm->NbElements();
     }
-    if ( SMESH_Algo::VertexNode( TopExp::FirstVertex( *edge, 1), meshDS ))
+    vExp.Initialize( *edge );
+    if ( SMESH_Algo::VertexNode( TopoDS::Vertex( vExp.Value()), meshDS ))
       myNbPonits += 1; // for the first end
     else
       myMissingVertexNodes = true;
   }
-  if ( SMESH_Algo::VertexNode( TopExp::LastVertex( theEdges.back(), 1), meshDS ))
-    myNbPonits++; // for the last end
-  else
-    myMissingVertexNodes = true;
-
+  vExp.Next();
+  if ( vExp.More() )
+  {
+    if ( SMESH_Algo::VertexNode( TopoDS::Vertex( vExp.Value()), meshDS ))
+      myNbPonits++; // for the last end
+    else
+      myMissingVertexNodes = true;
+  }
   if ( nbEdges > 1 && myLength > DBL_MIN ) {
     const double degenNormLen = 1.e-5;
     double totLength = myLength;
@@ -206,9 +212,11 @@ const vector<UVPtStruct>& StdMeshers_FaceSide::GetUVPtStruct(bool   isXConst,
     //int nbOnDegen = 0;
     for ( int i = 0; i < myEdge.size(); ++i ) {
       // put 1st vertex node
-      TopoDS_Vertex VFirst, VLast;
-      TopExp::Vertices( myEdge[i], VFirst, VLast, true);
-      const SMDS_MeshNode* node = SMESH_Algo::VertexNode( VFirst, meshDS );
+      TopoDS_Vertex VV[2]; // TopExp::FirstVertex() returns NULL for INTERNAL edge
+      for ( TopoDS_Iterator vIt(myEdge[i]); vIt.More(); vIt.Next() )
+        VV[ VV[0].IsNull() ? 0 : 1 ] = TopoDS::Vertex(vIt.Value());
+      if ( VV[0].Orientation() == TopAbs_REVERSED ) std::swap ( VV[0], VV[1] );
+      const SMDS_MeshNode* node = SMESH_Algo::VertexNode( VV[0], meshDS );
       double prevNormPar = ( i == 0 ? 0 : myNormPar[ i-1 ]); // normalized param
       if ( node ) { // internal nodes may be missing
         u2node.insert( make_pair( prevNormPar, node ));
@@ -220,7 +228,7 @@ const vector<UVPtStruct>& StdMeshers_FaceSide::GetUVPtStruct(bool   isXConst,
 
       // put 2nd vertex node for a last edge
       if ( i+1 == myEdge.size() ) {
-        node = SMESH_Algo::VertexNode( VLast, meshDS );
+        node = SMESH_Algo::VertexNode( VV[1], meshDS );
         if ( !node ) {
           MESSAGE(" NO NODE on VERTEX" );
           return myPoints;
@@ -527,20 +535,28 @@ TSideVector StdMeshers_FaceSide::GetFaceWires(const TopoDS_Face& theFace,
   for ( int iW = 0; iW < nbWires; ++iW )
   {
     std::advance( to, *nbE++ );
+    if ( *nbE == 0 ) // Issue 0020676
+    {
+      --nbWires;
+      --iW;
+      wires.resize( nbWires );
+      continue;
+    }
     list< TopoDS_Edge > wireEdges( from, to );
     // assure that there is a node on the first vertex
     // as StdMeshers_FaceSide::GetUVPtStruct() requires
-    while ( !SMESH_Algo::VertexNode( TopExp::FirstVertex( wireEdges.front(), true),
-                                     theMesh.GetMeshDS()))
-    {
-      wireEdges.splice(wireEdges.end(), wireEdges,
-                       wireEdges.begin(), ++wireEdges.begin());
-      if ( from->IsSame( wireEdges.front() )) {
-        theError = TError
-          ( new SMESH_ComputeError(COMPERR_BAD_INPUT_MESH,"No nodes on vertices"));
-        return TSideVector(0);
+    if ( wireEdges.front().Orientation() != TopAbs_INTERNAL ) // Issue 0020676
+      while ( !SMESH_Algo::VertexNode( TopExp::FirstVertex( wireEdges.front(), true),
+                                       theMesh.GetMeshDS()))
+      {
+        wireEdges.splice(wireEdges.end(), wireEdges,
+                         wireEdges.begin(), ++wireEdges.begin());
+        if ( from->IsSame( wireEdges.front() )) {
+          theError = TError
+            ( new SMESH_ComputeError(COMPERR_BAD_INPUT_MESH,"No nodes on vertices"));
+          return TSideVector(0);
+        }
       }
-    }
     const bool isForward = true;
     StdMeshers_FaceSide* wire = new StdMeshers_FaceSide( theFace, wireEdges, &theMesh,
                                                          isForward, theIgnoreMediumNodes);
@@ -548,5 +564,42 @@ TSideVector StdMeshers_FaceSide::GetFaceWires(const TopoDS_Face& theFace,
     from = to;
   }
   return wires;
+}
+
+//================================================================================
+/*!
+ * \brief Return 1st vertex of the i-the edge
+ */
+//================================================================================
+
+TopoDS_Vertex StdMeshers_FaceSide::FirstVertex(int i) const
+{
+  return (i >= NbEdges()) ? (TopoDS_Vertex()) :
+    (
+     myEdge[i].Orientation() <= TopAbs_REVERSED ? // FORWARD || REVERSED
+     TopExp::FirstVertex( myEdge[i], 1 )        :
+     TopoDS::Vertex( TopoDS_Iterator( myEdge[i] ).Value())
+     );
+}
+
+//================================================================================
+/*!
+ * \brief Return last vertex of the i-the edge
+ */
+//================================================================================
+
+TopoDS_Vertex StdMeshers_FaceSide::LastVertex(int i) const
+{
+  TopoDS_Vertex v;
+  if ( i < NbEdges() )
+  {
+    const TopoDS_Edge& edge = i<0 ? myEdge[ NbEdges() + i ] : myEdge[i];
+    if ( edge.Orientation() <= TopAbs_REVERSED ) // FORWARD || REVERSED
+      v = TopExp::LastVertex( edge, 1 );
+    else
+      for ( TopoDS_Iterator vIt( edge ); vIt.More(); vIt.Next() )
+        v = TopoDS::Vertex( vIt.Value() );
+  }
+  return v;
 }
 
