@@ -35,6 +35,7 @@
 #include <BRepTools_WireExplorer.hxx>
 #include <BRep_Tool.hxx>
 #include <Geom2d_Curve.hxx>
+#include <GeomAPI_ProjectPointOnCurve.hxx>
 #include <GeomAPI_ProjectPointOnSurf.hxx>
 #include <Geom_Curve.hxx>
 #include <Geom_Surface.hxx>
@@ -71,14 +72,16 @@ namespace {
 //================================================================================
 
 SMESH_MesherHelper::SMESH_MesherHelper(SMESH_Mesh& theMesh)
-  : myMesh(&theMesh), myShapeID(0), myCreateQuadratic(false)
+  : myPar1(0), myPar2(0), myParIndex(0), myMesh(&theMesh), myShapeID(0), myCreateQuadratic(false)
 {
   mySetElemOnShape = ( ! myMesh->HasShapeToMesh() );
 }
 
 //=======================================================================
-//function : CheckShape
-//purpose  : 
+//function : IsQuadraticSubMesh
+//purpose  : Check submesh for given shape: if all elements on this shape 
+//           are quadratic, quadratic elements will be created.
+//           Also fill myTLinkNodeMap
 //=======================================================================
 
 bool SMESH_MesherHelper::IsQuadraticSubMesh(const TopoDS_Shape& aSh)
@@ -141,12 +144,10 @@ bool SMESH_MesherHelper::IsQuadraticSubMesh(const TopoDS_Shape& aSh)
   return myCreateQuadratic;
 }
 
-//================================================================================
-/*!
- * \brief Set geomerty to make elements on
-  * \param aSh - geomertic shape
- */
-//================================================================================
+//=======================================================================
+//function : SetSubShape
+//purpose  : Set geomerty to make elements on
+//=======================================================================
 
 void SMESH_MesherHelper::SetSubShape(const int aShID)
 {
@@ -158,12 +159,10 @@ void SMESH_MesherHelper::SetSubShape(const int aShID)
     SetSubShape( TopoDS_Shape() );
 }
 
-//================================================================================
-/*!
- * \brief Set geomerty to make elements on
-  * \param aSh - geomertic shape
- */
-//================================================================================
+//=======================================================================
+//function : SetSubShape
+//purpose  : Set geomerty to create elements on
+//=======================================================================
 
 void SMESH_MesherHelper::SetSubShape(const TopoDS_Shape& aSh)
 {
@@ -229,13 +228,13 @@ void SMESH_MesherHelper::SetSubShape(const TopoDS_Shape& aSh)
   }
 }
 
-//================================================================================
-  /*!
-   * \brief Check if inFaceNode argument is necessary for call GetNodeUV(F,..)
-    * \param F - the face
-    * \retval bool - return true if the face is periodic
-   */
-//================================================================================
+//=======================================================================
+//function : GetNodeUVneedInFaceNode
+//purpose  : Check if inFaceNode argument is necessary for call GetNodeUV(F,..)
+//           Return true if the face is periodic.
+//           If F is Null, answer about subshape set through IsQuadraticSubMesh() or
+//           * SetSubShape()
+//=======================================================================
 
 bool SMESH_MesherHelper::GetNodeUVneedInFaceNode(const TopoDS_Face& F) const
 {
@@ -264,12 +263,8 @@ bool SMESH_MesherHelper::IsMedium(const SMDS_MeshNode*      node,
 }
 
 //=======================================================================
-/*!
- * \brief Return support shape of a node
- * \param node - the node
- * \param meshDS - mesh DS
- * \retval TopoDS_Shape - found support shape
- */
+//function : GetSubShapeByNode
+//purpose  : Return support shape of a node
 //=======================================================================
 
 TopoDS_Shape SMESH_MesherHelper::GetSubShapeByNode(const SMDS_MeshNode* node,
@@ -285,11 +280,9 @@ TopoDS_Shape SMESH_MesherHelper::GetSubShapeByNode(const SMDS_MeshNode* node,
 
 //=======================================================================
 //function : AddTLinkNode
-//purpose  : 
+//purpose  : add a link in my data structure
 //=======================================================================
-/*!
- * Auxilary function for filling myTLinkNodeMap
- */
+
 void SMESH_MesherHelper::AddTLinkNode(const SMDS_MeshNode* n1,
                                       const SMDS_MeshNode* n2,
                                       const SMDS_MeshNode* n12)
@@ -300,12 +293,8 @@ void SMESH_MesherHelper::AddTLinkNode(const SMDS_MeshNode* n1,
 }
 
 //=======================================================================
-/*!
- * \brief Select UV on either of 2 pcurves of a seam edge, closest to the given UV
- * \param uv1 - UV on the seam
- * \param uv2 - UV within a face
- * \retval gp_Pnt2d - selected UV
- */
+//function : GetUVOnSeam
+//purpose  : Select UV on either of 2 pcurves of a seam edge, closest to the given UV
 //=======================================================================
 
 gp_Pnt2d SMESH_MesherHelper::GetUVOnSeam( const gp_Pnt2d& uv1, const gp_Pnt2d& uv2 ) const
@@ -321,14 +310,8 @@ gp_Pnt2d SMESH_MesherHelper::GetUVOnSeam( const gp_Pnt2d& uv1, const gp_Pnt2d& u
 }
 
 //=======================================================================
-/*!
- * \brief Return node UV on face
- * \param F - the face
- * \param n - the node
- * \param n2 - a node of element being created located inside a face
- * \param check - optional flag returing false if found UV are invalid
- * \retval gp_XY - resulting UV
- */
+//function : GetNodeUV
+//purpose  : Return node UV on face
 //=======================================================================
 
 gp_XY SMESH_MesherHelper::GetNodeUV(const TopoDS_Face&   F,
@@ -345,7 +328,8 @@ gp_XY SMESH_MesherHelper::GetNodeUV(const TopoDS_Face&   F,
     const SMDS_FacePosition* fpos =
       static_cast<const SMDS_FacePosition*>(n->GetPosition().get());
     uv.SetCoord(fpos->GetUParameter(),fpos->GetVParameter());
-    uvOK = CheckNodeUV( F, n, uv.ChangeCoord(), BRep_Tool::Tolerance( F ));
+    if ( check )
+      uvOK = CheckNodeUV( F, n, uv.ChangeCoord(), BRep_Tool::Tolerance( F ));
   }
   else if(Pos->GetTypeOfPosition()==SMDS_TOP_EDGE)
   {
@@ -358,11 +342,13 @@ gp_XY SMESH_MesherHelper::GetNodeUV(const TopoDS_Face&   F,
     TopoDS_Edge E = TopoDS::Edge(GetMeshDS()->IndexToShape(edgeID));
     double f, l, u = epos->GetUParameter();
     Handle(Geom2d_Curve) C2d = BRep_Tool::CurveOnSurface(E, F, f, l);
-    if ( f < u && u < l )
+    bool validU = ( f < u && u < l );
+    if ( validU )
       uv = C2d->Value( u );
     else
       uv.SetCoord(0.,0.);
-    uvOK = CheckNodeUV( F, n, uv.ChangeCoord(), BRep_Tool::Tolerance( E ));
+    if ( check || !validU )
+      uvOK = CheckNodeUV( F, n, uv.ChangeCoord(), BRep_Tool::Tolerance( E ),/*force=*/ !validU );
 
     // for a node on a seam edge select one of UVs on 2 pcurves
     if ( n2 && IsSeamShape( edgeID ) )
@@ -445,18 +431,17 @@ gp_XY SMESH_MesherHelper::GetNodeUV(const TopoDS_Face&   F,
 }
 
 //=======================================================================
-/*!
- * \brief Check and fix node UV on a face
- *  \retval bool - false if UV is bad and could not be fixed
- */
+//function : CheckNodeUV
+//purpose  : Check and fix node UV on a face
 //=======================================================================
 
 bool SMESH_MesherHelper::CheckNodeUV(const TopoDS_Face&   F,
                                      const SMDS_MeshNode* n,
                                      gp_XY&               uv,
-                                     const double         tol) const
+                                     const double         tol,
+                                     const bool           force) const
 {
-  if ( !myOkNodePosShapes.count( n->GetPosition()->GetShapeId() ))
+  if ( force || !myOkNodePosShapes.count( n->GetPosition()->GetShapeId() ))
   {
     // check that uv is correct
     TopLoc_Location loc;
@@ -490,9 +475,8 @@ bool SMESH_MesherHelper::CheckNodeUV(const TopoDS_Face&   F,
 }
 
 //=======================================================================
-/*!
- * \brief Return middle UV taking in account surface period
- */
+//function : GetMiddleUV
+//purpose  : Return middle UV taking in account surface period
 //=======================================================================
 
 gp_XY SMESH_MesherHelper::GetMiddleUV(const Handle(Geom_Surface)& surface,
@@ -530,14 +514,8 @@ gp_XY SMESH_MesherHelper::GetMiddleUV(const Handle(Geom_Surface)& surface,
 }
 
 //=======================================================================
-/*!
- * \brief Return node U on edge
- * \param E - the Edge
- * \param n - the node
- * \retval double - resulting U
- * 
- * Auxilary function called form GetMediumNode()
- */
+//function : GetNodeU
+//purpose  : Return node U on edge
 //=======================================================================
 
 double SMESH_MesherHelper::GetNodeU(const TopoDS_Edge&   E,
@@ -557,29 +535,89 @@ double SMESH_MesherHelper::GetNodeU(const TopoDS_Edge&   E,
     const TopoDS_Vertex& V = TopoDS::Vertex(meshDS->IndexToShape(vertexID));
     param =  BRep_Tool::Parameter( V, E );
   }
+  if ( check )
+    *check = CheckNodeU( E, n, param, BRep_Tool::Tolerance( E ));
   return param;
 }
 
-//================================================================================
-/*!
- * \brief Return existing or create new medium nodes between given ones
- *  \param force3d - if true, new node is the middle of n1 and n2,
- *                   else is located on geom face or geom edge
- */
-//================================================================================
+//=======================================================================
+//function : CheckNodeU
+//purpose  : Check and fix node U on an edge
+//           Return false if U is bad and could not be fixed
+//=======================================================================
+
+bool SMESH_MesherHelper::CheckNodeU(const TopoDS_Edge&   E,
+                                    const SMDS_MeshNode* n,
+                                    double&              u,
+                                    const double         tol,
+                                    const bool           force) const
+{
+  if ( force || !myOkNodePosShapes.count( n->GetPosition()->GetShapeId() ))
+  {
+    // check that u is correct
+    TopLoc_Location loc; double f,l;
+    Handle(Geom_Curve) curve = BRep_Tool::Curve( E,loc,f,l );
+    if ( curve.IsNull() ) // degenerated edge
+    {
+      if ( u+tol < f || u-tol > l )
+      {
+        double r = Max( 0.5, 1 - tol*n->GetID()); // to get a unique u on edge
+        u =  f*r + l*(1-r);
+      }
+    }
+    else
+    {
+      gp_Pnt nodePnt = SMESH_MeshEditor::TNodeXYZ( n );
+      if ( !loc.IsIdentity() ) nodePnt.Transform( loc.Transformation().Inverted() );
+      if ( nodePnt.Distance( curve->Value( u )) > tol )
+      {
+        // u incorrect, project the node to the curve
+        GeomAPI_ProjectPointOnCurve projector( nodePnt, curve, f, l );
+        if ( projector.NbPoints() < 1 )
+        {
+          MESSAGE( "SMESH_MesherHelper::CheckNodeU() failed to project" );
+          return false;
+        }
+        Quantity_Parameter U = projector.LowerDistanceParameter();
+        if ( nodePnt.Distance( curve->Value( U )) > tol )
+        {
+          MESSAGE( "SMESH_MesherHelper::CheckNodeU(), invalid projection" );
+          return false;
+        }
+        u = double( U );
+      }
+      else if ( fabs( u ) > numeric_limits<double>::min() )
+      {
+        ((SMESH_MesherHelper*) this)->myOkNodePosShapes.insert( n->GetPosition()->GetShapeId() );
+      }
+    }
+  }
+  return true;
+}
+
+//=======================================================================
+//function : GetMediumNode
+//purpose  : Return existing or create new medium nodes between given ones
+//=======================================================================
 
 const SMDS_MeshNode* SMESH_MesherHelper::GetMediumNode(const SMDS_MeshNode* n1,
                                                        const SMDS_MeshNode* n2,
-                                                       bool force3d)
+                                                       bool                 force3d)
 {
+  // Find existing node
+
   SMESH_TLink link(n1,n2);
   ItTLinkNode itLN = myTLinkNodeMap.find( link );
   if ( itLN != myTLinkNodeMap.end() ) {
     return (*itLN).second;
   }
-  // create medium node
+
+  // Create medium node
+
   SMDS_MeshNode* n12;
   SMESHDS_Mesh* meshDS = GetMeshDS();
+
+  // get type of shape for the new medium node
   int faceID = -1, edgeID = -1;
   const SMDS_PositionPtr Pos1 = n1->GetPosition();
   const SMDS_PositionPtr Pos2 = n2->GetPosition();
@@ -600,73 +638,76 @@ const SMDS_MeshNode* SMESH_MesherHelper::GetMediumNode(const SMDS_MeshNode* n1,
       edgeID = Pos2->GetShapeId();
     }
   }
+  // get positions of the given nodes on shapes
+  TopoDS_Edge E; double u [2];
+  TopoDS_Face F; gp_XY  uv[2];
+  bool uvOK[2] = { false, false };
+  TopAbs_ShapeEnum shapeType = myShape.IsNull() ? TopAbs_SHAPE : myShape.ShapeType();
+  if ( faceID>0 || shapeType == TopAbs_FACE)
+  {
+    if( myShape.IsNull() )
+      F = TopoDS::Face(meshDS->IndexToShape(faceID));
+    else {
+      F = TopoDS::Face(myShape);
+      faceID = myShapeID;
+    }
+    uv[0] = GetNodeUV(F,n1,n2, force3d ? 0 : &uvOK[0]);
+    uv[1] = GetNodeUV(F,n2,n1, force3d ? 0 : &uvOK[1]);
+  }
+  else if (edgeID>0 || shapeType == TopAbs_EDGE)
+  {
+    if( myShape.IsNull() )
+      E = TopoDS::Edge(meshDS->IndexToShape(edgeID));
+    else {
+      E = TopoDS::Edge(myShape);
+      edgeID = myShapeID;
+    }
+    u[0] = GetNodeU(E,n1, force3d ? 0 : &uvOK[0]);
+    u[1] = GetNodeU(E,n2, force3d ? 0 : &uvOK[1]);
+  }
   if(!force3d)
   {
     // we try to create medium node using UV parameters of
     // nodes, else - medium between corresponding 3d points
-
-    TopAbs_ShapeEnum shapeType = myShape.IsNull() ? TopAbs_SHAPE : myShape.ShapeType();
-    if(faceID>0 || shapeType == TopAbs_FACE) {
-      // obtaining a face and 2d points for nodes
-      TopoDS_Face F;
-      if( myShape.IsNull() )
-        F = TopoDS::Face(meshDS->IndexToShape(faceID));
-      else {
-        F = TopoDS::Face(myShape);
-        faceID = myShapeID;
-      }
-      bool uvOK1, uvOK2;
-      gp_XY p1 = GetNodeUV(F,n1,n2, &uvOK1);
-      gp_XY p2 = GetNodeUV(F,n2,n1, &uvOK2);
-
-      if ( uvOK1 && uvOK2 )
+    if( ! F.IsNull() )
+    {
+      if ( uvOK[0] && uvOK[1] )
       {
         if ( IsDegenShape( Pos1->GetShapeId() ))
-          p1.SetCoord( myParIndex, p2.Coord( myParIndex ));
+          uv[0].SetCoord( myParIndex, uv[1].Coord( myParIndex ));
         else if ( IsDegenShape( Pos2->GetShapeId() ))
-          p2.SetCoord( myParIndex, p1.Coord( myParIndex ));
+          uv[1].SetCoord( myParIndex, uv[0].Coord( myParIndex ));
 
         TopLoc_Location loc;
         Handle(Geom_Surface) S = BRep_Tool::Surface(F,loc);
-        gp_XY uv = GetMiddleUV( S, p1, p2 );
-        gp_Pnt P = S->Value( uv.X(), uv.Y() ).Transformed(loc);
+        gp_XY UV = GetMiddleUV( S, uv[0], uv[1] );
+        gp_Pnt P = S->Value( UV.X(), UV.Y() ).Transformed(loc);
         n12 = meshDS->AddNode(P.X(), P.Y(), P.Z());
-        meshDS->SetNodeOnFace(n12, faceID, uv.X(), uv.Y());
+        meshDS->SetNodeOnFace(n12, faceID, UV.X(), UV.Y());
         myTLinkNodeMap.insert(make_pair(link,n12));
         return n12;
       }
     }
-    if (edgeID>0 || shapeType == TopAbs_EDGE) {
-
-      TopoDS_Edge E;
-      if( myShape.IsNull() )
-        E = TopoDS::Edge(meshDS->IndexToShape(edgeID));
-      else {
-        E = TopoDS::Edge(myShape);
-        edgeID = myShapeID;
-      }
-
-      double p1 = GetNodeU(E,n1);
-      double p2 = GetNodeU(E,n2);
-
+    else if ( !E.IsNull() )
+    {
       double f,l;
       Handle(Geom_Curve) C = BRep_Tool::Curve(E, f, l);
-      if(!C.IsNull()) {
-
+      if(!C.IsNull())
+      {
         Standard_Boolean isPeriodic = C->IsPeriodic();
-        double u;
+        double U;
         if(isPeriodic) {
           Standard_Real Period = C->Period();
-          Standard_Real p = p2+ShapeAnalysis::AdjustByPeriod(p2,p1,Period);
-          Standard_Real pmid = (p1+p)/2.;
-          u = pmid+ShapeAnalysis::AdjustToPeriod(pmid,C->FirstParameter(),C->LastParameter());
+          Standard_Real p = u[1]+ShapeAnalysis::AdjustByPeriod(u[1],u[0],Period);
+          Standard_Real pmid = (u[0]+p)/2.;
+          U = pmid+ShapeAnalysis::AdjustToPeriod(pmid,C->FirstParameter(),C->LastParameter());
         }
         else
-          u = (p1+p2)/2.;
+          U = (u[0]+u[1])/2.;
 
-        gp_Pnt P = C->Value( u );
+        gp_Pnt P = C->Value( U );
         n12 = meshDS->AddNode(P.X(), P.Y(), P.Z());
-        meshDS->SetNodeOnEdge(n12, edgeID, u);
+        meshDS->SetNodeOnEdge(n12, edgeID, U);
         myTLinkNodeMap.insert(make_pair(link,n12));
         return n12;
       }
@@ -677,20 +718,29 @@ const SMDS_MeshNode* SMESH_MesherHelper::GetMediumNode(const SMDS_MeshNode* n1,
   double y = ( n1->Y() + n2->Y() )/2.;
   double z = ( n1->Z() + n2->Z() )/2.;
   n12 = meshDS->AddNode(x,y,z);
-  if(edgeID>0)
-    meshDS->SetNodeOnEdge(n12, edgeID);
-  else if(faceID>0)
-    meshDS->SetNodeOnFace(n12, faceID);
+  if ( !F.IsNull() )
+  {
+    gp_XY UV = ( uv[0] + uv[1] ) / 2.;
+    CheckNodeUV( F, n12, UV, BRep_Tool::Tolerance( F ), /*force=*/true);
+    meshDS->SetNodeOnFace(n12, faceID, UV.X(), UV.Y() );
+  }
+  else if ( !E.IsNull() )
+  {
+    double U = ( u[0] + u[1] ) / 2.;
+    CheckNodeU( E, n12, U, BRep_Tool::Tolerance( E ), /*force=*/true);
+    meshDS->SetNodeOnEdge(n12, edgeID, U);
+  }
   else
+  {
     meshDS->SetNodeInVolume(n12, myShapeID);
+  }
   myTLinkNodeMap.insert( make_pair( link, n12 ));
   return n12;
 }
 
 //=======================================================================
-/*!
- * Creates a node
- */
+//function : AddNode
+//purpose  : Creates a node
 //=======================================================================
 
 SMDS_MeshNode* SMESH_MesherHelper::AddNode(double x, double y, double z, int ID)
@@ -715,15 +765,14 @@ SMDS_MeshNode* SMESH_MesherHelper::AddNode(double x, double y, double z, int ID)
 }
 
 //=======================================================================
-/*!
- * Creates quadratic or linear edge
- */
+//function : AddEdge
+//purpose  : Creates quadratic or linear edge
 //=======================================================================
 
 SMDS_MeshEdge* SMESH_MesherHelper::AddEdge(const SMDS_MeshNode* n1,
-                                                const SMDS_MeshNode* n2,
-                                                const int id,
-                                                const bool force3d)
+                                           const SMDS_MeshNode* n2,
+                                           const int            id,
+                                           const bool           force3d)
 {
   SMESHDS_Mesh * meshDS = GetMeshDS();
   
@@ -749,9 +798,8 @@ SMDS_MeshEdge* SMESH_MesherHelper::AddEdge(const SMDS_MeshNode* n1,
 }
 
 //=======================================================================
-/*!
- * Creates quadratic or linear triangle
- */
+//function : AddFace
+//purpose  : Creates quadratic or linear triangle
 //=======================================================================
 
 SMDS_MeshFace* SMESH_MesherHelper::AddFace(const SMDS_MeshNode* n1,
@@ -789,17 +837,16 @@ SMDS_MeshFace* SMESH_MesherHelper::AddFace(const SMDS_MeshNode* n1,
 }
 
 //=======================================================================
-/*!
- * Creates quadratic or linear quadrangle
- */
+//function : AddFace
+//purpose  : Creates quadratic or linear quadrangle
 //=======================================================================
 
 SMDS_MeshFace* SMESH_MesherHelper::AddFace(const SMDS_MeshNode* n1,
                                            const SMDS_MeshNode* n2,
                                            const SMDS_MeshNode* n3,
                                            const SMDS_MeshNode* n4,
-                                           const int id,
-                                           const bool force3d)
+                                           const int            id,
+                                           const bool           force3d)
 {
   SMESHDS_Mesh * meshDS = GetMeshDS();
   SMDS_MeshFace* elem = 0;
@@ -847,9 +894,8 @@ SMDS_MeshFace* SMESH_MesherHelper::AddFace(const SMDS_MeshNode* n1,
 }
 
 //=======================================================================
-/*!
- * Creates quadratic or linear volume
- */
+//function : AddVolume
+//purpose  : Creates quadratic or linear prism
 //=======================================================================
 
 SMDS_MeshVolume* SMESH_MesherHelper::AddVolume(const SMDS_MeshNode* n1,
@@ -896,9 +942,8 @@ SMDS_MeshVolume* SMESH_MesherHelper::AddVolume(const SMDS_MeshNode* n1,
 }
 
 //=======================================================================
-/*!
- * Creates quadratic or linear volume
- */
+//function : AddVolume
+//purpose  : Creates quadratic or linear tetrahedron
 //=======================================================================
 
 SMDS_MeshVolume* SMESH_MesherHelper::AddVolume(const SMDS_MeshNode* n1,
@@ -937,9 +982,8 @@ SMDS_MeshVolume* SMESH_MesherHelper::AddVolume(const SMDS_MeshNode* n1,
 }
 
 //=======================================================================
-/*!
- * Creates quadratic or linear pyramid
- */
+//function : AddVolume
+//purpose  : Creates quadratic or linear pyramid
 //=======================================================================
 
 SMDS_MeshVolume* SMESH_MesherHelper::AddVolume(const SMDS_MeshNode* n1,
@@ -985,9 +1029,8 @@ SMDS_MeshVolume* SMESH_MesherHelper::AddVolume(const SMDS_MeshNode* n1,
 }
 
 //=======================================================================
-/*!
- * Creates quadratic or linear hexahedron
- */
+//function : AddVolume
+//purpose  : Creates quadratic or linear hexahedron
 //=======================================================================
 
 SMDS_MeshVolume* SMESH_MesherHelper::AddVolume(const SMDS_MeshNode* n1,
@@ -1041,19 +1084,8 @@ SMDS_MeshVolume* SMESH_MesherHelper::AddVolume(const SMDS_MeshNode* n1,
 }
 
 //=======================================================================
-/*!
- * \brief Load nodes bound to face into a map of node columns
- * \param theParam2ColumnMap - map of node columns to fill
- * \param theFace - the face on which nodes are searched for
- * \param theBaseEdge - the edge nodes of which are columns' bases
- * \param theMesh - the mesh containing nodes
- * \retval bool - false if something is wrong
- * 
- * The key of the map is a normalized parameter of each
- * base node on theBaseEdge.
- * This method works in supposition that nodes on the face
- * forms a rectangular grid and elements can be quardrangles or triangles
- */
+//function : LoadNodeColumns
+//purpose  : Load nodes bound to face into a map of node columns
 //=======================================================================
 
 bool SMESH_MesherHelper::LoadNodeColumns(TParam2ColumnMap & theParam2ColumnMap,
@@ -1303,9 +1335,8 @@ bool SMESH_MesherHelper::LoadNodeColumns(TParam2ColumnMap & theParam2ColumnMap,
 }
 
 //=======================================================================
-/*!
- * \brief Return number of unique ancestors of the shape
- */
+//function : NbAncestors
+//purpose  : Return number of unique ancestors of the shape
 //=======================================================================
 
 int SMESH_MesherHelper::NbAncestors(const TopoDS_Shape& shape,
@@ -1322,11 +1353,10 @@ int SMESH_MesherHelper::NbAncestors(const TopoDS_Shape& shape,
 }
 
 //=======================================================================
-/**
- * Check mesh without geometry for: if all elements on this shape are quadratic,
- * quadratic elements will be created.
- * Used then generated 3D mesh without geometry.
- */
+//function : IsQuadraticMesh
+//purpose  : Check mesh without geometry for: if all elements on this shape are quadratic,
+//           quadratic elements will be created.
+//           Used then generated 3D mesh without geometry.
 //=======================================================================
 
 SMESH_MesherHelper:: MType SMESH_MesherHelper::IsQuadraticMesh()
@@ -1357,9 +1387,8 @@ SMESH_MesherHelper:: MType SMESH_MesherHelper::IsQuadraticMesh()
 }
 
 //=======================================================================
-/*!
- * \brief Return an alternative parameter for a node on seam
- */
+//function : GetOtherParam
+//purpose  : Return an alternative parameter for a node on seam
 //=======================================================================
 
 double SMESH_MesherHelper::GetOtherParam(const double param) const
@@ -2247,14 +2276,14 @@ void SMESH_MesherHelper::FixQuadraticElements(bool volumeOnly)
     for ( TopExp_Explorer f(myShape,TopAbs_FACE,TopAbs_SOLID); f.More(); f.Next() ) {
       faces.Add( f.Current() );
     }
-    for ( TopExp_Explorer v(myShape,TopAbs_SOLID); v.More(); v.Next() ) {
-      if ( myMesh->GetSubMesh( v.Current() )->IsEmpty() ) { // get faces of solid
-        for ( TopExp_Explorer f( v.Current(), TopAbs_FACE); f.More(); f.Next() )
+    for ( TopExp_Explorer s(myShape,TopAbs_SOLID); s.More(); s.Next() ) {
+      if ( myMesh->GetSubMesh( s.Current() )->IsEmpty() ) { // get faces of solid
+        for ( TopExp_Explorer f( s.Current(), TopAbs_FACE); f.More(); f.Next() )
           faces.Add( f.Current() );
       }
       else { // fix nodes in the solid and its faces
         SMESH_MesherHelper h(*myMesh);
-        h.SetSubShape( v.Current() );
+        h.SetSubShape( s.Current() );
         h.FixQuadraticElements(false);
       }
     }
@@ -2262,7 +2291,7 @@ void SMESH_MesherHelper::FixQuadraticElements(bool volumeOnly)
     for ( TopTools_MapIteratorOfMapOfShape fIt( faces ); fIt.More(); fIt.Next() ) {
       SMESH_MesherHelper h(*myMesh);
       h.SetSubShape( fIt.Key() );
-      h.FixQuadraticElements();
+      h.FixQuadraticElements(true);
     }
     return;
   }

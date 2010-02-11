@@ -253,12 +253,24 @@ public:
                   bool*                check=0) const;
   /*!
    * \brief Check and fix node UV on a face
+   *  \param force - check even if checks of other nodes on this face passed OK
    *  \retval bool - false if UV is bad and could not be fixed
    */
   bool CheckNodeUV(const TopoDS_Face&   F,
                    const SMDS_MeshNode* n,
                    gp_XY&               uv,
-                   const double         tol) const;
+                   const double         tol,
+                   const bool           force=false) const;
+  /*!
+   * \brief Check and fix node U on an edge
+   *  \param force - check even if checks of other nodes on this edge passed OK
+   *  \retval bool - false if U is bad and could not be fixed
+   */
+  bool CheckNodeU(const TopoDS_Edge&   E,
+                  const SMDS_MeshNode* n,
+                  double&              u,
+                  const double         tol,
+                  const bool           force=false) const;
   /*!
    * \brief Return middle UV taking in account surface period
    */
@@ -269,7 +281,7 @@ public:
    * \brief Check if inFaceNode argument is necessary for call GetNodeUV(F,..)
     * \retval bool - return true if the face is periodic
     *
-    * if F is Null, answer about subshape set through IsQuadraticSubMesh() or
+    * If F is Null, answer about subshape set through IsQuadraticSubMesh() or
     * SetSubShape()
    */
   bool GetNodeUVneedInFaceNode(const TopoDS_Face& F = TopoDS_Face()) const;
@@ -338,20 +350,23 @@ public:
    */
   double GetOtherParam(const double param) const;
 
-  /**
-   * Special function for search or creation medium node
+  /*!
+   * \brief Return existing or create new medium nodes between given ones
+   *  \param force3d - true means node creation at the middle between the
+   *                   two given nodes, else node position is found on its
+   *                   supporting geometrical shape, if any.
    */
   const SMDS_MeshNode* GetMediumNode(const SMDS_MeshNode* n1,
                                      const SMDS_MeshNode* n2,
                                      const bool force3d);
   /*!
-   * Auxilary function for filling myTLinkNodeMap
+   * \brief Add a link in my data structure
    */
   void AddTLinkNode(const SMDS_MeshNode* n1,
                     const SMDS_MeshNode* n2,
                     const SMDS_MeshNode* n12);
-  /**
-   * Auxilary function for filling myTLinkNodeMap
+  /*!
+   * \brief Add many links in my data structure
    */
   void AddTLinkNodeMap(const TLinkNodeMap& aMap)
     { myTLinkNodeMap.insert(aMap.begin(), aMap.end()); }
