@@ -49,6 +49,7 @@ class QPushButton;
 class QRadioButton;
 class QCheckBox;
 class QListWidget;
+class QButtonGroup;
 class SMESHGUI;
 class SMESHGUI_SpinBox;
 class SMESH_Actor;
@@ -102,6 +103,7 @@ private:
 
   int                       myAction;
   bool                      myIsBusy;
+  int                       myTypeId;
 
   // Widgets
   QGroupBox*                GroupConstructors;
@@ -119,6 +121,7 @@ private:
   QLineEdit*                LineEditMesh;
 
   QGroupBox*                GroupCoincident;
+  QWidget*                  GroupCoincidentWidget;
   QLabel*                   TextLabelTolerance;
   SMESHGUI_SpinBox*         SpinBoxTolerance;
   QPushButton*              DetectButton;
@@ -132,6 +135,9 @@ private:
   QPushButton*              AddElemButton;
   QPushButton*              RemoveElemButton;
   QPushButton*              SetFirstButton;
+
+  QGroupBox*                TypeBox;
+  QButtonGroup*             GroupType;
     
   QString                   myHelpFileName;
 
@@ -154,6 +160,7 @@ private:
   void                      SelectionIntoArgument();
   void                      DeactivateActiveDialog();
   void                      ActivateThisDialog();
+  void                      onTypeChanged(int);
 };
 
 #endif // SMESHGUI_EDITMESHDLG_H

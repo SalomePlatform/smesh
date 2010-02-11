@@ -5,42 +5,55 @@
 \n This functionality allows to merge coincident elements of a mesh
 selectable in the dialog box.
 
+<ol>
+<li>From the \b Modification choose \b Transformation and  from its
+sub-menu select the <b>Merge elements</b> item. The following dialog box
+shall appear:</li>
 
 \image html mergeelems_ico.png "Merge elements button"
 
+\image html mergeelems_auto.png
+
+<li><b>Automatic mode:</b>
+<ul>
+<li>\b Name is the name of the mesh whose elements will be merged.</li>
+<li>\b Automatic Mode or \b Manual Mode is to switch the dialog
+controls type.
+<li>In \b Automatic Mode the elements that were created on the same nodes will be merged.</li>
+</ul>
+</li><br>
 
 \image html mergeelems.png
 
+
+<li>If the \b Manual Mode is selected there are additional controls to 
+manage the elements to be merged in more detail:
 <ul>
-  <li>\b Name is the name of the mesh whose elements will be merged.</li>
-  <li>\b Tolerance is a maximum distance between elements sufficient for merging.
-    <ul>
-      <li>\b Detect button generates the list of coincident elements for the given \b Tolerance.</li>
-    </ul></li>
-  <li><b>Coincident elements</b> is a list of groupes of elements for
-    merging. All elements of each group will form one after the operation.
-    <ul>
-      <li>\b Remove button deletes the selected group from the list.</li>
-      <li>\b Add button adds to the list a group of elements selected in the
-        viewer with pressed "Shift" key.</li>
-      <li><b>Select all</b> checkbox selects all groups.</li>
-    </ul></li>
-  <li><b>Edit selected group</b> list allows editing the selected group:
-    <br><br>
-    \image html add.png
-    <center>adds to the group the element selected in the viewer.</center>
-    <br>
-    \image html remove.png
-    <center>removes from the group the selected element.</center>
-    <br>
-    \image html sort.png
-    <center>moves the selected element to the first position in the
-    group. This means that all other elements will be merged into this
-    one.</center>
-    <br>
-  </li>
-  <li>To confirm your choice click \b Apply or <b>Apply and Close</b> button.</li>
-</ul>
+<li>\b Detect button generates the list of coincident elements for the given \b Tolerance.</li>
+<li><b>Coincident elements</b> is a list of groupes of elements for
+merging. All elements of each group will form one after the operation.
+<ul>
+<li>\b Remove button deletes the selected group from the list.</li>
+<li>\b Add button adds to the list a group of elements selected in the
+viewer with pressed "Shift" key.</li>
+<li><b>Select all</b> checkbox selects all groups.</li>
+</ul></li>
+<li><b>Edit selected group</b> list allows editing the selected group:
+<br><br>
+\image html add.png
+<center>adds to the group the element selected in the viewer.</center>
+<br>
+\image html remove.png
+<center>removes from the group the selected element.</center>
+<br>
+\image html sort.png
+<center>moves the selected element to the first position in the
+group. This means that all other elements will be merged into this
+one.</center>
+<br>
+</li>
+<li>To confirm your choice click \b Apply or <b>Apply and Close</b> button.</li>
+</ol>
 
 In this picture you see a triangle which coincides with one of the
 elements of the mesh. After we apply <b>Merge Elements</b> functionality, the

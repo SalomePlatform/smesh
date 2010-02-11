@@ -425,6 +425,7 @@
             <source>MEN_MERGE_ELEMENTS</source>
             <translation>Merge Elements</translation>
         </message>
+
         <message>
             <source>MEN_MESH</source>
             <translation>Mesh</translation>
@@ -811,7 +812,7 @@ Please enter correct values and try again</translation>
         <message>
             <source>SMESH_ADD_HYP_WRN</source>
             <translation>"%1" assigned but:
-</translation>
+        </translation>
         </message>
         <message>
             <source>SMESH_ADD_POLYGON</source>
@@ -1474,9 +1475,37 @@ add the exported data to its contents?</translation>
             <source>SMESH_MEN_SubMeshesOnVertex</source>
             <translation>SubMeshes On Vertex</translation>
         </message>
+	<message>
+            <source>SMESH_AUTOMATIC</source>
+            <translation>Automatic</translation>
+        </message>
+	<message>
+            <source>SMESH_MANUAL</source>
+            <translation>Manual</translation>
+        </message>
         <message>
             <source>SMESH_MERGE_ELEMENTS</source>
             <translation>Merge elements</translation>
+        </message>
+	<message>
+            <source>SMESH_MODE</source>
+            <translation>Mode</translation>
+        </message>
+	<message>
+            <source>SMESH_MERGED_ELEMENTS</source>
+            <translation>%1 elements successfully merged.</translation>
+        </message>
+	<message>
+            <source>SMESH_MERGED_NODES</source>
+            <translation>%1 nodes successfully merged.</translation>
+        </message>
+	<message>
+            <source>SMESH_NO_ELEMENTS_DETECTED</source>
+            <translation>There are no elements to merge.</translation>
+        </message>
+	<message>
+            <source>SMESH_NO_NODES_DETECTED</source>
+            <translation>There are no nodes to merge.</translation>
         </message>
         <message>
             <source>SMESH_MERGE_NODES</source>
@@ -4810,6 +4839,7 @@ It is impossible to read point coordinates from file</translation>
             <source>MERGE_EQUAL_ELEMENTS</source>
             <translation>Merge equal elements</translation>
         </message>
+
         <message>
             <source>NODE1_TO_MERGE</source>
             <translation>Node 1 To Merge</translation>
