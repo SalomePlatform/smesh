@@ -574,12 +574,14 @@ TSideVector StdMeshers_FaceSide::GetFaceWires(const TopoDS_Face& theFace,
 
 TopoDS_Vertex StdMeshers_FaceSide::FirstVertex(int i) const
 {
-  return (i >= NbEdges()) ? (TopoDS_Vertex()) :
-    (
-     myEdge[i].Orientation() <= TopAbs_REVERSED ? // FORWARD || REVERSED
-     TopExp::FirstVertex( myEdge[i], 1 )        :
-     TopoDS::Vertex( TopoDS_Iterator( myEdge[i] ).Value())
-     );
+  TopoDS_Vertex v;
+  if ( i < NbEdges() )
+  {
+    v = myEdge[i].Orientation() <= TopAbs_REVERSED ? // FORWARD || REVERSED
+        TopExp::FirstVertex( myEdge[i], 1 )        :
+        TopoDS::Vertex( TopoDS_Iterator( myEdge[i] ).Value() );
+  }
+  return v;
 }
 
 //================================================================================
