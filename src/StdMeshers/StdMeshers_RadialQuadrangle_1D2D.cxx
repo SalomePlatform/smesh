@@ -542,10 +542,11 @@ bool StdMeshers_RadialQuadrangle_1D2D::Compute(SMESH_Mesh&         aMesh,
     if ( !algo1d->ComputeCircularEdge( aMesh, CircEdge ))
       return error( algo1d->GetComputeError() );
     map< double, const SMDS_MeshNode* > theNodes;
-    if ( !GetSortedNodesOnEdge(aMesh.GetMeshDS(),CircEdge,true,theNodes) ||
-         theNodes.size()%2 == 0 )
+    if ( !GetSortedNodesOnEdge(aMesh.GetMeshDS(),CircEdge,true,theNodes) )
       return error("Circular edge is incorrectly meshed");
-      
+    if (theNodes.size()%2 == 0 )
+      return error("Circular edge is incorrectly meshed, number of segments must be even");
+
     CNodes.clear();
     map< double, const SMDS_MeshNode* >::iterator itn = theNodes.begin();
     double fang = (*itn).first;
