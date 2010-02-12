@@ -43,7 +43,6 @@
 #include "SMDS_EdgePosition.hxx"
 #include "SMDS_FacePosition.hxx"
 
-#include <BRepTools_WireExplorer.hxx>
 #include <BRep_Tool.hxx>
 #include <Geom_Surface.hxx>
 #include <NCollection_DefineArray2.hxx>
@@ -51,7 +50,9 @@
 #include <TColStd_SequenceOfReal.hxx>
 #include <TColgp_SequenceOfXY.hxx>
 #include <TopExp.hxx>
+#include <TopExp_Explorer.hxx>
 #include <TopTools_ListIteratorOfListOfShape.hxx>
+#include <TopTools_MapOfShape.hxx>
 #include <TopoDS.hxx>
 
 #include "utilities.h"
@@ -773,14 +774,21 @@ FaceQuadStruct* StdMeshers_Quadrangle_2D::CheckNbEdges(SMESH_Mesh &         aMes
 
   int nbSides = 0;
   list< TopoDS_Edge >::iterator edgeIt = edges.begin();
-  if ( nbEdgesInWire.front() == 3 ) { // exactly 3 edges
-    if(myTriaVertexID>0) {
-      SMESHDS_Mesh* meshDS = aMesh.GetMeshDS();
+  if ( nbEdgesInWire.front() == 3 ) // exactly 3 edges
+  {
+    SMESH_Comment comment;
+    SMESHDS_Mesh* meshDS = aMesh.GetMeshDS();
+    if ( myTriaVertexID == -1)
+    {
+      comment << "No Base vertex parameter provided for a trilateral geometrical face";
+    }
+    else
+    {
       TopoDS_Vertex V = TopoDS::Vertex(meshDS->IndexToShape(myTriaVertexID));
-      if(!V.IsNull()) {
+      if ( !V.IsNull() ) {
         TopoDS_Edge E1,E2,E3;
         for(; edgeIt != edges.end(); ++edgeIt) {
-          TopoDS_Edge E =  TopoDS::Edge(*edgeIt);
+          TopoDS_Edge E =  *edgeIt;
           TopoDS_Vertex VF, VL;
           TopExp::Vertices(E, VF, VL, true);
           if( VF.IsSame(V) )
@@ -790,22 +798,29 @@ FaceQuadStruct* StdMeshers_Quadrangle_2D::CheckNbEdges(SMESH_Mesh &         aMes
           else
             E2 = E;
         }
-        quad->side.reserve(4);
-        quad->side.push_back( new StdMeshers_FaceSide(F, E1, &aMesh, true, ignoreMediumNodes));
-        quad->side.push_back( new StdMeshers_FaceSide(F, E2, &aMesh, true, ignoreMediumNodes));
-        quad->side.push_back( new StdMeshers_FaceSide(F, E3, &aMesh, false, ignoreMediumNodes));
-        std::vector<UVPtStruct> UVPSleft = quad->side[0]->GetUVPtStruct(true,0);
-        std::vector<UVPtStruct> UVPStop = quad->side[1]->GetUVPtStruct(false,1);
-        std::vector<UVPtStruct> UVPSright = quad->side[2]->GetUVPtStruct(true,1);
-        const SMDS_MeshNode* aNode = UVPSleft[0].node;
-        gp_Pnt2d aPnt2d( UVPSleft[0].u, UVPSleft[0].v );
-        StdMeshers_FaceSide* VertFS =
-          new StdMeshers_FaceSide(aNode, aPnt2d, quad->side[1]);
-        quad->side.push_back(VertFS);
-        return quad;
+        if ( !E1.IsNull() && !E2.IsNull() && !E3.IsNull() )
+        {
+          quad->side.push_back( new StdMeshers_FaceSide(F, E1, &aMesh, true, ignoreMediumNodes));
+          quad->side.push_back( new StdMeshers_FaceSide(F, E2, &aMesh, true, ignoreMediumNodes));
+          quad->side.push_back( new StdMeshers_FaceSide(F, E3, &aMesh, false,ignoreMediumNodes));
+          const vector<UVPtStruct>& UVPSleft  = quad->side[0]->GetUVPtStruct(true,0);
+          /*  vector<UVPtStruct>& UVPStop   = */quad->side[1]->GetUVPtStruct(false,1);
+          /*  vector<UVPtStruct>& UVPSright = */quad->side[2]->GetUVPtStruct(true,1);
+          const SMDS_MeshNode* aNode = UVPSleft[0].node;
+          gp_Pnt2d aPnt2d( UVPSleft[0].u, UVPSleft[0].v );
+          quad->side.push_back( new StdMeshers_FaceSide(aNode, aPnt2d, quad->side[1]));
+          return quad;
+        }
       }
+      comment << "Invalid Base vertex parameter: " << myTriaVertexID << " is not among [";
+      TopTools_MapOfShape vMap;
+      for ( TopExp_Explorer v( aShape, TopAbs_VERTEX ); v.More(); v.Next())
+        if ( vMap.Add( v.Current() ))
+          comment << meshDS->ShapeToIndex( v.Current() ) << ( vMap.Extent()==3 ? "]" : ", ");
     }
-    return 0;
+    error( comment );
+    delete quad;
+    return quad = 0;
   }
   else if ( nbEdgesInWire.front() == 4 ) { // exactly 4 edges
     for ( ; edgeIt != edges.end(); ++edgeIt, nbSides++ )
