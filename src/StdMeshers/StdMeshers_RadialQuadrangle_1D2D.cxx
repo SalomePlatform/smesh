@@ -544,11 +544,10 @@ bool StdMeshers_RadialQuadrangle_1D2D::Compute(SMESH_Mesh&         aMesh,
     map< double, const SMDS_MeshNode* > theNodes;
     if ( !GetSortedNodesOnEdge(aMesh.GetMeshDS(),CircEdge,true,theNodes) )
       return error("Circular edge is incorrectly meshed");
-    if (theNodes.size()%2 == 0 )
-      return error("Circular edge is incorrectly meshed, number of segments must be even");
 
-    CNodes.clear();
     map< double, const SMDS_MeshNode* >::iterator itn = theNodes.begin();
+    CNodes.clear();
+    CNodes.push_back( itn->second );
     double fang = (*itn).first;
     itn++;
     for(; itn != theNodes.end(); itn++ ) {
@@ -560,7 +559,6 @@ bool StdMeshers_RadialQuadrangle_1D2D::Compute(SMESH_Mesh&         aMesh,
     }
     const SMDS_MeshNode* NF = theNodes.begin()->second;
     const SMDS_MeshNode* NL = theNodes.rbegin()->second;
-    CNodes.push_back( NF );
     P1 = gp_Pnt( NF->X(), NF->Y(), NF->Z() );
     gp_Pnt P2( NL->X(), NL->Y(), NL->Z() );
     P0 = aCirc->Location();
