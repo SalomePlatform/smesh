@@ -34,8 +34,10 @@
 #include "SMDS_SpacePosition.hxx"
 #include "SMESHDS_GroupOnGeom.hxx"
 
-#include <TopExp_Explorer.hxx>
+#include <Standard_ErrorHandler.hxx>
+#include <Standard_OutOfRange.hxx>
 #include <TopExp.hxx>
+#include <TopExp_Explorer.hxx>
 #include <TopoDS_Iterator.hxx>
 
 #include "utilities.h"
@@ -1235,7 +1237,15 @@ int SMESHDS_Mesh::AddCompoundSubmesh(const TopoDS_Shape& S,
 //=======================================================================
 const TopoDS_Shape& SMESHDS_Mesh::IndexToShape(int ShapeIndex) const
 {
-        return myIndexToShape.FindKey(ShapeIndex);
+  try
+  {
+    return myIndexToShape.FindKey(ShapeIndex);
+  }
+  catch ( Standard_OutOfRange )
+  {
+  }
+  static TopoDS_Shape nullShape;
+  return nullShape;
 }
 
 //=======================================================================
