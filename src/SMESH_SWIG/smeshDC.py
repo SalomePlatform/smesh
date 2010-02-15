@@ -390,8 +390,6 @@ def IsEqual(val1, val2, tol=PrecisionConfusion):
         return True
     return False
 
-NO_NAME = "NoName"
-
 ## Gets object name
 def GetName(obj):
     if isinstance(obj, SALOMEDS._objref_SObject):
@@ -3711,10 +3709,13 @@ class Mesh_Algorithm:
             self.geom = piece
         else:
             self.geom = geom
-            name = GetName(geom)
-            if name==NO_NAME:
+            try:
+                name = GetName(geom)
+                pass
+            except:
                 name = mesh.geompyD.SubShapeName(geom, piece)
                 mesh.geompyD.addToStudyInFather(piece, geom, name)
+                pass
             self.subm = mesh.mesh.GetSubMesh(geom, algo.GetName())
 
         self.algo = algo
@@ -4036,11 +4037,14 @@ class Mesh_Segment(Mesh_Algorithm):
         ### 0D algorithm
         if self.geom is None:
             raise RuntimeError, "Attemp to create SegmentAroundVertex_0D algoritm on None shape"
-        name = GetName(self.geom)
-        if name == NO_NAME:
+        try:
+            name = GetName(self.geom)
+            pass
+        except:
             piece = self.mesh.geom
             name = self.mesh.geompyD.SubShapeName(self.geom, piece)
             self.mesh.geompyD.addToStudyInFather(piece, self.geom, name)
+            pass
         algo = self.FindAlgorithm("SegmentAroundVertex_0D", self.mesh.smeshpyD)
         if algo is None:
             algo = self.mesh.smeshpyD.CreateHypothesis("SegmentAroundVertex_0D", "libStdMeshersEngine.so")
