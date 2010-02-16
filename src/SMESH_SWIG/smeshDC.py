@@ -390,18 +390,36 @@ def IsEqual(val1, val2, tol=PrecisionConfusion):
         return True
     return False
 
+NO_NAME = "NoName"
+
 ## Gets object name
 def GetName(obj):
-    if isinstance(obj, SALOMEDS._objref_SObject):
-        return obj.GetName()
-    ior  = salome.orb.object_to_string(obj)
-    studies = salome.myStudyManager.GetOpenStudies()
-    for sname in studies:
-        s = salome.myStudyManager.GetStudyByName(sname)
-        if not s: continue
-        sobj = s.FindObjectIOR(ior)
-        if not sobj: continue
-        return sobj.GetName()
+    if obj:
+        # object not null
+        if isinstance(obj, SALOMEDS._objref_SObject):
+            # study object
+            return obj.GetName()
+        ior  = salome.orb.object_to_string(obj)
+        if ior:
+            # CORBA object
+            studies = salome.myStudyManager.GetOpenStudies()
+            for sname in studies:
+                s = salome.myStudyManager.GetStudyByName(sname)
+                if not s: continue
+                sobj = s.FindObjectIOR(ior)
+                if not sobj: continue
+                return sobj.GetName()
+            if hasattr(obj, "GetName"):
+                # unknown CORBA object, having GetName() method
+                return obj.GetName()
+            else:
+                # unknown CORBA object, no GetName() method
+                return NO_NAME
+            pass
+        if hasattr(obj, "GetName"):
+            # unknown non-CORBA object, having GetName() method
+            return obj.GetName()
+        pass
     raise RuntimeError, "Null or invalid object"
 
 ## Prints error message if a hypothesis was not assigned.
