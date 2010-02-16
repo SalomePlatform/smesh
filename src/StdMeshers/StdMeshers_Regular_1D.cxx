@@ -804,20 +804,31 @@ bool StdMeshers_Regular_1D::computeInternalParameters(SMESH_Mesh &     theMesh,
       }
       if(!IsExist) Params.InsertBefore(j,aPnts[i]);
     }
-    double par2, par1;
+    double par2, par1, lp;
     par1 = f;
+    lp = l;
+    double sign = 1.0;
+    if(theReverse) {
+      par1 = l;
+      lp = f;
+      sign = -1.0;
+    }
     double eltSize, segmentSize = 0.;
     double currAbscissa = 0;
     for(i=0; i<Params.Length(); i++) {
       int nbseg = ( i > nbsegs.size()-1 ) ? nbsegs[0] : nbsegs[i];
       segmentSize = Params.Value(i+1)*theLength - currAbscissa;
       currAbscissa += segmentSize;
-      GCPnts_AbscissaPoint APnt(theC3d, segmentSize, par1);
+      GCPnts_AbscissaPoint APnt(theC3d, sign*segmentSize, par1);
       if( !APnt.IsDone() )
         return error( "GCPnts_AbscissaPoint failed");
       par2 = APnt.Parameter();
       eltSize = segmentSize/nbseg;
       GCPnts_UniformAbscissa Discret(theC3d, eltSize, par1, par2);
+      if(theReverse)
+        Discret.Initialize(theC3d, eltSize, par2, par1);
+      else
+        Discret.Initialize(theC3d, eltSize, par1, par2);
       if ( !Discret.IsDone() )
         return error( "GCPnts_UniformAbscissa failed");
       int NbPoints = Discret.NbPoints();
@@ -826,7 +837,13 @@ bool StdMeshers_Regular_1D::computeInternalParameters(SMESH_Mesh &     theMesh,
         double param = Discret.Parameter(i);
         tmpParams.push_back( param );
       }
-      compensateError( eltSize, eltSize, par1, par2, theLength, theC3d, tmpParams );
+      if (theReverse) {
+        compensateError( eltSize, eltSize, par2, par1, segmentSize, theC3d, tmpParams );
+        tmpParams.reverse();
+      }
+      else {
+        compensateError( eltSize, eltSize, par1, par2, segmentSize, theC3d, tmpParams );
+      }
       list<double>::iterator itP = tmpParams.begin();
       for(; itP != tmpParams.end(); itP++) {
         theParams.push_back( *(itP) );
@@ -837,9 +854,13 @@ bool StdMeshers_Regular_1D::computeInternalParameters(SMESH_Mesh &     theMesh,
     }
     // add for last
     int nbseg = ( nbsegs.size() > Params.Length() ) ? nbsegs[Params.Length()] : nbsegs[0];
-    segmentSize = theLength - segmentSize;
+    segmentSize = theLength - currAbscissa;
     eltSize = segmentSize/nbseg;
-    GCPnts_UniformAbscissa Discret(theC3d, eltSize, par1, l);
+    GCPnts_UniformAbscissa Discret;
+    if(theReverse)
+      Discret.Initialize(theC3d, eltSize, par1, lp);
+    else
+      Discret.Initialize(theC3d, eltSize, lp, par1);
     if ( !Discret.IsDone() )
       return error( "GCPnts_UniformAbscissa failed");
     int NbPoints = Discret.NbPoints();
@@ -848,7 +869,13 @@ bool StdMeshers_Regular_1D::computeInternalParameters(SMESH_Mesh &     theMesh,
       double param = Discret.Parameter(i);
       tmpParams.push_back( param );
     }
-    compensateError(eltSize, eltSize, par1, l, segmentSize, theC3d, tmpParams);
+    if (theReverse) {
+      compensateError( eltSize, eltSize, lp, par1, segmentSize, theC3d, tmpParams );
+      tmpParams.reverse();
+    }
+    else {
+      compensateError( eltSize, eltSize, par1, lp, segmentSize, theC3d, tmpParams );
+    }
     list<double>::iterator itP = tmpParams.begin();
     for(; itP != tmpParams.end(); itP++) {
       theParams.push_back( *(itP) );
