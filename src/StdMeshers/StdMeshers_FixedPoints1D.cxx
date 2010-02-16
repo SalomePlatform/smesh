@@ -123,13 +123,13 @@ ostream & StdMeshers_FixedPoints1D::SaveTo(ostream & save)
   }
 
   listSize = _nbsegs.size();
-  save << listSize;
+  save << " " << listSize;
   if ( listSize > 0 ) {
     for ( int i = 0; i < listSize; i++) save << " " << _nbsegs[i];
   }
 
   listSize = _edgeIDs.size();
-  save << listSize;
+  save << " " << listSize;
   if ( listSize > 0 ) {
     for ( int i = 0; i < listSize; i++)
       save << " " << _edgeIDs[i];
@@ -154,6 +154,7 @@ istream & StdMeshers_FixedPoints1D::LoadFrom(istream & load)
 
   isOK = (load >> intVal);
   if (isOK && intVal > 0) {
+    _params.clear();
     _params.reserve( intVal );
     for (int i = 0; i < _params.capacity() && isOK; i++) {
       isOK = (load >> dblVal);
@@ -163,6 +164,7 @@ istream & StdMeshers_FixedPoints1D::LoadFrom(istream & load)
 
   isOK = (load >> intVal);
   if (isOK && intVal > 0) {
+    _nbsegs.clear();
     _nbsegs.reserve( intVal );
     for (int i = 0; i < _nbsegs.capacity() && isOK; i++) {
       isOK = (load >> intVal);
@@ -172,6 +174,7 @@ istream & StdMeshers_FixedPoints1D::LoadFrom(istream & load)
 
   isOK = (load >> intVal);
   if (isOK && intVal > 0) {
+    _edgeIDs.clear();
     _edgeIDs.reserve( intVal );
     for (int i = 0; i < _edgeIDs.capacity() && isOK; i++) {
       isOK = (load >> intVal);
