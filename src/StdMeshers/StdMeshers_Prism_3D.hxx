@@ -46,6 +46,7 @@
 #include <BRepAdaptor_Surface.hxx>
 #include <TopTools_IndexedMapOfOrientedShape.hxx>
 #include <gp_XYZ.hxx>
+#include <gp_Trsf.hxx>
 
 
 class SMESHDS_SubMesh;
@@ -58,7 +59,7 @@ typedef std::vector<const SMDS_MeshNode* > TNodeColumn;
 
 // map of bottom nodes to the column of nodes above them
 // (the column includes the bottom nodes)
-typedef std::map< TNode, TNodeColumn > TNode2ColumnMap;
+typedef std::map< TNode, TNodeColumn >  TNode2ColumnMap;
 typedef std::map< double, TNodeColumn > TParam2ColumnMap;
 typedef std::map< double, TNodeColumn >::const_iterator TParam2ColumnIt;
 
@@ -73,11 +74,11 @@ typedef TopTools_IndexedMapOfOrientedShape TBlockShapes;
 struct TNode
 {
   const SMDS_MeshNode* myNode;
-  gp_XYZ               myParams;
+  mutable gp_XYZ       myParams;
 
   gp_XYZ GetCoords() const { return gp_XYZ( myNode->X(), myNode->Y(), myNode->Z() ); }
   gp_XYZ GetParams() const { return myParams; }
-  gp_XYZ& ChangeParams() { return myParams; }
+  gp_XYZ& ChangeParams() const { return myParams; }
   bool HasParams() const { return myParams.X() >= 0.0; }
   SMDS_TypeOfPosition GetPositionType() const
   { return myNode ? myNode->GetPosition()->GetTypeOfPosition() : SMDS_TOP_UNSPEC; }
@@ -144,13 +145,20 @@ public:
     * \retval const TParam2ColumnMap& - map
    */
   const TParam2ColumnMap& GetParam2ColumnMap(const int baseEdgeID,
-                                             bool &    isReverse)
+                                             bool &    isReverse) const
   {
-    std::pair< TParam2ColumnMap*, bool > & col_frw =
-      myShapeIndex2ColumnMap[ baseEdgeID ];
+    std::pair< TParam2ColumnMap*, bool > col_frw =
+      myShapeIndex2ColumnMap.find( baseEdgeID )->second;
     isReverse = !col_frw.second;
     return * col_frw.first;
   }
+
+  /*!
+   * \brief Return transformations to get coordinates of nodes of each internal layer
+   *        by nodes of the bottom. Layer is a set of nodes at a certain step
+   *        from bottom to top.
+   */
+  bool GetLayersTransformation(std::vector<gp_Trsf> & trsf) const;
   
   /*!
    * \brief Return pointer to mesh
@@ -284,6 +292,8 @@ private:
     int InsertSubShapes( TBlockShapes& shapeMap ) const;
     // redefine Adaptor methods
     gp_Pnt Value(const Standard_Real U,const Standard_Real V) const;
+    // debug
+    void dumpNodes(int nbNodes) const;
   };
 
   // --------------------------------------------------------------------
@@ -299,6 +309,8 @@ private:
     gp_Pnt Value(const Standard_Real U) const;
     Standard_Real FirstParameter() const { return 0; }
     Standard_Real LastParameter() const { return 1; }
+    // debug
+    void dumpNodes(int nbNodes) const;
   };
 
   // --------------------------------------------------------------------
@@ -316,6 +328,8 @@ private:
     gp_Pnt Value(const Standard_Real U) const;
     Standard_Real FirstParameter() const { return 0; }
     Standard_Real LastParameter() const { return 1; }
+    // debug
+    void dumpNodes(int nbNodes) const;
   };
 
   // --------------------------------------------------------------------
@@ -337,20 +351,19 @@ private:
     Standard_Real FirstParameter() const { return 0; }
     Standard_Real LastParameter() const { return 1; }
   };
-  // --------------------------------------------------------------------
 
-  bool myNotQuadOnTop;
-  SMESH_MesherHelper* myHelper;
-  TBlockShapes myShapeIDMap;
+  bool                  myNotQuadOnTop;
+  SMESH_MesherHelper*   myHelper;
+  TBlockShapes          myShapeIDMap;
+  SMESH_ComputeErrorPtr myError;
 
   // container of 4 side faces
-  TSideFace*                 mySide; 
+  TSideFace*            mySide; 
   // node columns for each base edge
-  std::vector< TParam2ColumnMap > myParam2ColumnMaps;
+  std::vector< TParam2ColumnMap >                       myParam2ColumnMaps;
   // to find a column for a node by edge SMESHDS Index
   std::map< int, std::pair< TParam2ColumnMap*, bool > > myShapeIndex2ColumnMap;
 
-  SMESH_ComputeErrorPtr myError;
   /*!
    * \brief store error and comment and then return ( error == COMPERR_OK )
    */
@@ -358,7 +371,6 @@ private:
     myError = SMESH_ComputeError::New(error,comment);
     return myError->IsOK();
   }
-  //std::vector< SMESH_subMesh* >           mySubMeshesVec; // submesh by in-block id
 };
 
 // =============================================
@@ -432,7 +444,7 @@ private:
   StdMeshers_PrismAsBlock myBlock;
   SMESH_MesherHelper*     myHelper;
 
-  std::vector<gp_XYZ>     myShapeXYZ; // point on each sub-shape
+  std::vector<gp_XYZ>     myShapeXYZ; // point on each sub-shape of the block
 
   // map of bottom nodes to the column of nodes above them
   // (the column includes the bottom node)
