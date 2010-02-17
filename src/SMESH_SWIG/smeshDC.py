@@ -3943,10 +3943,13 @@ class Mesh_Segment(Mesh_Algorithm):
     def FixedPoints1D(self, points, nbSegs=[1], reversedEdges=[], UseExisting=0):
         if not isinstance(reversedEdges,list): #old version script, before adding reversedEdges
             reversedEdges, UseExisting = [], reversedEdges
+        if reversedEdges and isinstance( reversedEdges[0], geompyDC.GEOM._objref_GEOM_Object ):
+            for i in range( len( reversedEdges )):
+                reversedEdges[i] = self.mesh.geompyD.GetSubShapeID(self.mesh.geom, reversedEdges[i] )
         entry = self.MainShapeEntry()
         hyp = self.Hypothesis("FixedPoints1D", [points, nbSegs, reversedEdges, entry],
                               UseExisting=UseExisting,
-                              CompareMethod=self.CompareArithmetic1D)
+                              CompareMethod=self.CompareFixedPoints1D)
         hyp.SetPoints(points)
         hyp.SetNbSegments(nbSegs)
         hyp.SetReversedEdges(reversedEdges)
@@ -4458,6 +4461,23 @@ class Mesh_Quadrangle(Mesh_Algorithm):
         hyp = self.Hypothesis("TrianglePreference", UseExisting=1,
                               CompareMethod=self.CompareEqualHyp)
         return hyp
+
+    ## Defines "QuadrangleParams" hypothesis
+    #  @param vertex: vertex of a trilateral geometrical face, around which triangles
+    #                 will be created while other elements will be quadrangles.
+    #                 Vertex can be either a GEOM_Object or a vertex ID within the
+    #                 shape to mesh
+    #
+    #  @ingroup l3_hypos_additi
+    def TriangleVertex(self, vertex, UseExisting=0):
+        vertexID = vertex
+        if isinstance( vertexID, geompyDC.GEOM._objref_GEOM_Object ):
+            vertexID = self.mesh.geompyD.GetSubShapeID( self.mesh.geom, vertex )
+        hyp = self.Hypothesis("QuadrangleParams", [vertexID], UseExisting = UseExisting,
+                              CompareMethod=lambda hyp,args: hyp.GetTriaVertex()==args[0])
+        hyp.SetTriaVertex( vertexID )
+        return hyp
+
 
 # Public class: Mesh_Tetrahedron
 # ------------------------------
