@@ -72,12 +72,12 @@
     <parameter name="nb_segments_per_edge"         value="15"/>
     <parameter name="quadratic_mode"               value="0"/>
     <parameter name="max_angle"                    value="2"/>
-    <parameter name="documentation"                value="HELP_SMESH"/>
+    <parameter name="documentation"                value="smesh_help"/>
   </section>
-  <section name="HELP_SMESH" >
-    <parameter name="sub_menu" value="%1"/>
-    <parameter name="SMESH User's Documentation" value="${SMESH_ROOT_DIR}/share/doc/salome/gui/SMESH/index.html"/>
-    <parameter name="SMESH Developer's Documentation" value="${SMESH_ROOT_DIR}/share/doc/salome/tui/SMESH/index.html"/>
+  <section name="smesh_help" >
+    <parameter name="sub_menu"          value="%1 module"/>
+    <parameter name="User's Guide"      value="${SMESH_ROOT_DIR}/share/doc/salome/gui/SMESH/index.html"/>
+    <parameter name="Developer's Guide" value="${SMESH_ROOT_DIR}/share/doc/salome/tui/SMESH/index.html"/>
   </section>
   <section name="resources">
     <!-- Module resources -->
