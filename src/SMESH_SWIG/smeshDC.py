@@ -455,10 +455,12 @@ def TreatHypoStatus(status, hypName, geomName, isAlgo):
         return
     hypName = '"' + hypName + '"'
     geomName= '"' + geomName+ '"'
-    if status < HYP_UNKNOWN_FATAL:
+    if status < HYP_UNKNOWN_FATAL and not geomName =='""':
         print hypName, "was assigned to",    geomName,"but", reason
-    else:
+    elif not geomName == '""':
         print hypName, "was not assigned to",geomName,":", reason
+    else:
+        print hypName, "was not assigned:", reason
         pass
 
 ## Check meshing plugin availability
@@ -1309,7 +1311,11 @@ class Mesh:
             pass
         status = self.mesh.AddHypothesis(geom, hyp)
         isAlgo = hyp._narrow( SMESH_Algo )
-        TreatHypoStatus( status, GetName( hyp ), GetName( geom ), isAlgo )
+        hyp_name = GetName( hyp )
+        geom_name = ""
+        if geom:
+            hyp_name = GetName( geom )
+        TreatHypoStatus( status, hyp_name, geom_name, isAlgo )
         return status
 
     ## Unassigns a hypothesis
