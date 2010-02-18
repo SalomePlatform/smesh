@@ -70,13 +70,18 @@ shows the good (left) and the bad (right) results of meshing.
 \anchor quadrangle_preference_anchor
 <h2>Quadrangle Preference</h2>
 
-This algorithm can be used only together with Quadrangle (Mapping)
-algorithm. It allows to build quadrangular meshes even if the number
+This algorithm can be used together with Quadrangle (Mapping) and Netgen 2D
+algorithms. 
+
+It allows Netgen 2D to build quadrangular meshes at any conditions.
+
+It allows Quadrangle (Mapping) to build quadrangular meshes even if the number
 of nodes at the opposite edges of a meshed face is not equal,
 otherwise this mesh will contain some triangular elements.
 <br>
 This hypothesis has one restriction on its work: the total quantity of
 segments on all four sides of the face must be even (divisible by 2).
+
 
 <br>
 \anchor triangle_preference_anchor
