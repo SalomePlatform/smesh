@@ -520,7 +520,7 @@ SMESH_Hypothesis::Hypothesis_Status
     if (ret2 > ret)
       ret = ret2;
 
-    // check concurent hypotheses on ansestors
+    // check concurent hypotheses on ancestors
     if (ret < SMESH_Hypothesis::HYP_CONCURENT && !isGlobalHyp )
     {
       SMESH_subMeshIteratorPtr smIt = subMesh->getDependsOnIterator(false,false);
@@ -591,7 +591,7 @@ SMESH_Hypothesis::Hypothesis_Status
     if (ret2 > ret) // more severe
       ret = ret2;
 
-    // check concurent hypotheses on ansestors
+    // check concurent hypotheses on ancestors
     if (ret < SMESH_Hypothesis::HYP_CONCURENT && !IsMainShape( aSubShape ) )
     {
       SMESH_subMeshIteratorPtr smIt = subMesh->getDependsOnIterator(false,false);
@@ -1578,20 +1578,38 @@ const TListOfListOfInt& SMESH_Mesh::GetMeshOrder() const
 
 //=============================================================================
 /*!
- *  \brief fillAncestorsMap
+ *  \brief fill _mapAncestors
  */
 //=============================================================================
 
 void SMESH_Mesh::fillAncestorsMap(const TopoDS_Shape& theShape)
 {
-  // fill _mapAncestors
+
   int desType, ancType;
-  for ( desType = TopAbs_VERTEX; desType > TopAbs_COMPOUND; desType-- )
-    for ( ancType = desType - 1; ancType >= TopAbs_COMPOUND; ancType-- )
-      TopExp::MapShapesAndAncestors ( theShape,
-                                      (TopAbs_ShapeEnum) desType,
-                                      (TopAbs_ShapeEnum) ancType,
-                                      _mapAncestors );
+  if ( !theShape.IsSame( GetShapeToMesh()) && theShape.ShapeType() == TopAbs_COMPOUND )
+  {
+    // a geom group is added. Insert it into lists of ancestors before
+    // the first ancestor more complex than group members
+    int memberType = TopoDS_Iterator( theShape ).Value().ShapeType();
+    for ( desType = TopAbs_VERTEX; desType >= memberType; desType-- )
+      for (TopExp_Explorer des( theShape, TopAbs_ShapeEnum( desType )); des.More(); des.Next())
+      {
+        TopTools_ListOfShape& ancList = _mapAncestors.ChangeFromKey( des.Current() );
+        TopTools_ListIteratorOfListOfShape ancIt (ancList);
+        while ( ancIt.More() && ancIt.Value().ShapeType() >= memberType )
+          ancIt.Next();
+        if ( ancIt.More() )
+          ancList.InsertBefore( theShape, ancIt );
+      }
+  }
+  {
+    for ( desType = TopAbs_VERTEX; desType > TopAbs_COMPOUND; desType-- )
+      for ( ancType = desType - 1; ancType >= TopAbs_COMPOUND; ancType-- )
+        TopExp::MapShapesAndAncestors ( theShape,
+                                        (TopAbs_ShapeEnum) desType,
+                                        (TopAbs_ShapeEnum) ancType,
+                                        _mapAncestors );
+  }
 }
 
 //=============================================================================
