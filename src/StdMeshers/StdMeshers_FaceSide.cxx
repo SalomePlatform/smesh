@@ -49,6 +49,9 @@
 #include <TopoDS_Vertex.hxx>
 #include <TopoDS_Wire.hxx>
 
+#include <GCPnts_AbscissaPoint.hxx>
+#include <Geom2dAdaptor_Curve.hxx>
+
 #include <map>
 
 #include "utilities.h"
@@ -190,6 +193,28 @@ StdMeshers_FaceSide::StdMeshers_FaceSide(const SMDS_MeshNode* theNode,
   }
 }
 
+
+//=======================================================================
+//function : IsUniform
+//purpose  : auxilary function
+//=======================================================================
+bool IsUniform(const Handle(Geom2d_Curve)& C2d, double fp, double lp)
+{
+  //cout<<"IsUniform  fp = "<<fp<<"  lp = "<<lp<<endl;
+  if(C2d.IsNull())
+    return true;
+  Geom2dAdaptor_Curve A2dC(C2d);
+  double d1 = GCPnts_AbscissaPoint::Length( A2dC, fp, lp );
+  double d2 = GCPnts_AbscissaPoint::Length( A2dC, fp, fp+(lp-fp)/2. );
+  double d4 = GCPnts_AbscissaPoint::Length( A2dC, fp, fp+(lp-fp)/4. );
+  //cout<<"d1 = "<<d1<<"  d2 = "<<d2<<"  fabs(2*d2/d1-1.0) = "<<fabs(2*d2/d1-1.0)<<endl;
+  if( fabs(2*d2/d1-1.0) > 0.01 || fabs(2*d4/d2-1.0) > 0.01 )
+    return false;
+
+  return true;
+}
+
+
 //================================================================================
 /*!
  * \brief Return info on nodes on the side
@@ -236,11 +261,14 @@ const vector<UVPtStruct>& StdMeshers_FaceSide::GetUVPtStruct(bool   isXConst,
         u2node.insert( make_pair( 1., node ));
       }
 
+      bool IsUni = IsUniform( myC2d[i], myFirst[i], myLast[i] );
+
       // put internal nodes
       SMESHDS_SubMesh* sm = meshDS->MeshElements( myEdge[i] );
       if ( !sm ) continue;
       SMDS_NodeIteratorPtr nItr = sm->GetNodes();
-      double paramSize = myLast[i] - myFirst[i], r = myNormPar[i] - prevNormPar;
+      double paramSize = myLast[i] - myFirst[i];
+      double r = myNormPar[i] - prevNormPar;
       while ( nItr->more() ) {
         const SMDS_MeshNode* node = nItr->next();
         if ( myIgnoreMediumNodes && SMESH_MeshEditor::IsMedium( node, SMDSAbs_Edge ))
@@ -249,7 +277,17 @@ const vector<UVPtStruct>& StdMeshers_FaceSide::GetUVPtStruct(bool   isXConst,
           static_cast<const SMDS_EdgePosition*>(node->GetPosition().get());
         double u = epos->GetUParameter();
         // paramSize is signed so orientation is taken into account
+
         double normPar = prevNormPar + r * ( u - myFirst[i] ) / paramSize;
+        if(!IsUni) {
+          double fp,lp;
+          TopLoc_Location L;
+          Handle(Geom_Curve) C3d = BRep_Tool::Curve(myEdge[i],L,fp,lp);
+          GeomAdaptor_Curve A3dC( C3d );
+          double aLen = GCPnts_AbscissaPoint::Length( A3dC, myFirst[i], myLast[i] );
+          double aLenU = GCPnts_AbscissaPoint::Length( A3dC, myFirst[i], u );
+          normPar = prevNormPar + r*aLenU/aLen;
+        }
 #ifdef _DEBUG_
         if ( normPar > 1 || normPar < 0) {
           dump("DEBUG");
@@ -491,6 +529,7 @@ BRepAdaptor_CompCurve* StdMeshers_FaceSide::GetCurve3d() const
   return new BRepAdaptor_CompCurve( aWire );
 }
 
+
 //================================================================================
 /*!
  * \brief Return 2D point by normalized parameter
@@ -505,7 +544,29 @@ gp_Pnt2d StdMeshers_FaceSide::Value2d(double U) const
     int i = EdgeIndex( U );
     double prevU = i ? myNormPar[ i-1 ] : 0;
     double r = ( U - prevU )/ ( myNormPar[ i ] - prevU );
-    return myC2d[ i ]->Value( myFirst[i] * ( 1 - r ) + myLast[i] * r );
+
+    double par = myFirst[i] * ( 1 - r ) + myLast[i] * r;
+    
+    // check parametrization of curve
+    if( !IsUniform( myC2d[i], myFirst[i], myLast[i] ) ) {
+      double fp,lp;
+      TopLoc_Location L;
+      Handle(Geom_Curve) C3d = BRep_Tool::Curve(myEdge[i],L,fp,lp);
+      fp = myFirst[i];
+      lp = myLast[i];
+      GeomAdaptor_Curve A3dC( C3d );
+      double aLen3d = GCPnts_AbscissaPoint::Length( A3dC, fp, lp );
+      double aLen3dU = aLen3d*r;
+      if(fp>lp) {
+        aLen3dU = -aLen3dU;
+      }
+      GCPnts_AbscissaPoint AbPnt( A3dC, aLen3dU, fp );
+      if( AbPnt.IsDone() ) {
+        par = AbPnt.Parameter();
+      }
+    }
+    return myC2d[ i ]->Value(par);
+
   }
   //return gp_Pnt2d( 1e+100, 1e+100 );
   return myDefaultPnt2d;
