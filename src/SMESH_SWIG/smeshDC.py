@@ -1314,7 +1314,7 @@ class Mesh:
         hyp_name = GetName( hyp )
         geom_name = ""
         if geom:
-            hyp_name = GetName( geom )
+            geom_name = GetName( geom )
         TreatHypoStatus( status, hyp_name, geom_name, isAlgo )
         return status
 
@@ -3729,6 +3729,7 @@ class Mesh_Algorithm:
             raise RuntimeError, "Attemp to create " + algo + " algoritm on None shape"
         self.mesh = mesh
         piece = mesh.geom
+        name = ""
         if not geom:
             self.geom = piece
         else:
@@ -3744,7 +3745,7 @@ class Mesh_Algorithm:
 
         self.algo = algo
         status = mesh.mesh.AddHypothesis(self.geom, self.algo)
-        TreatHypoStatus( status, algo.GetName(), GetName(self.geom), True )
+        TreatHypoStatus( status, algo.GetName(), name, True )
 
     def CompareHyp (self, hyp, args):
         print "CompareHyp is not implemented for ", self.__class__.__name__, ":", hyp.GetName()
