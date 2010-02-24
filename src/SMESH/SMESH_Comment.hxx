@@ -50,6 +50,12 @@ public :
     this->string::operator=( _s.str() );
   }
 
+  SMESH_Comment & operator=(const SMESH_Comment& c) {
+    _s << c.c_str() ;
+    this->string::operator=( _s.str() );
+    return *this;
+  }
+
   template <class T>
   SMESH_Comment( const T &anything ) {
     _s << anything ;
