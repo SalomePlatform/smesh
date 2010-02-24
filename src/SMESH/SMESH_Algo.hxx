@@ -53,11 +53,20 @@ class SMESHDS_Mesh;
 class SMDS_MeshNode;
 class SMESH_subMesh;
 class SMESH_MesherHelper;
+class gp_XYZ;
 
-typedef std::map< SMESH_subMesh*, std::vector<int> > MapShapeNbElems;
-// vector must have size corresponding to EntityType_Last from SMDSAbs:
+typedef std::map< SMESH_subMesh*, std::vector<int> >           MapShapeNbElems;
 typedef std::map< SMESH_subMesh*, std::vector<int> >::iterator MapShapeNbElemsItr;
 
+/*!
+ * \brief Root of all algorithms
+ *
+ *  Methods of the class are grouped into several parts:
+ *  - main lifecycle methods, like Compute()
+ *  - methods describing features of the algorithm, like NeedShape()
+ *  - methods related to dependencies between sub-meshes imposed by the algorith
+ *  - static utilities, like EdgeLength()
+ */
 class SMESH_EXPORT SMESH_Algo:public SMESH_Hypothesis
 {
 public:
@@ -280,6 +289,11 @@ public:
     * \retval double - the length
    */
   static double EdgeLength(const TopoDS_Edge & E);
+
+  /*!
+   * \brief Calculate normal of a mesh face
+   */
+  static bool FaceNormal(const SMDS_MeshElement* F, gp_XYZ& normal, bool normalized=true);
 
   /*!
    * \brief Return continuity of two edges

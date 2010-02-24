@@ -177,6 +177,37 @@ double SMESH_Algo::EdgeLength(const TopoDS_Edge & E)
 
 //================================================================================
 /*!
+ * \brief Calculate normal of a mesh face
+ */
+//================================================================================
+
+bool SMESH_Algo::FaceNormal(const SMDS_MeshElement* F, gp_XYZ& normal, bool normalized)
+{
+  if ( !F || F->GetType() != SMDSAbs_Face )
+    return false;
+
+  normal.SetCoord(0,0,0);
+  int nbNodes = F->IsQuadratic() ? F->NbNodes()/2 : F->NbNodes();
+  for ( int i = 0; i < nbNodes-2; ++i )
+  {
+    gp_XYZ p[3];
+    for ( int n = 0; n < 3; ++n )
+    {
+      const SMDS_MeshNode* node = F->GetNode( n );
+      p[n].SetCoord( node->X(), node->Y(), node->Z() );
+    }
+    normal += ( p[0] - p[1] ) ^ ( p[2] - p[1] );
+  }
+  double size2 = normal.SquareModulus();
+  bool ok = ( size2 > numeric_limits<double>::min() * numeric_limits<double>::min());
+  if ( normalized && ok )
+    normal /= sqrt( size2 );
+
+  return ok;
+}
+
+//================================================================================
+/*!
  * \brief Find out elements orientation on a geometrical face
  * \param theFace - The face correctly oriented in the shape being meshed
  * \param theMeshDS - The mesh data structure
