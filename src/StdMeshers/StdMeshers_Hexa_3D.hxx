@@ -73,9 +73,9 @@ public:
                                const TopoDS_Shape& aShape,
                                SMESH_Hypothesis::Hypothesis_Status& aStatus);
 
-  virtual bool Compute(SMESH_Mesh& aMesh,
-                       const TopoDS_Shape& aShape)
-    /*throw (SALOME_Exception)*/;
+  virtual bool Compute(SMESH_Mesh& aMesh,  const TopoDS_Shape& aShape);
+
+  virtual bool Compute(SMESH_Mesh & aMesh, SMESH_MesherHelper* aHelper);
 
   virtual bool Evaluate(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape,
                         MapShapeNbElems& aResMap);
