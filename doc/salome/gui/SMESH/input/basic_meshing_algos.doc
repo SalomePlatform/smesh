@@ -47,6 +47,15 @@ tetrahedral (pyramidal) elements.</li>
 \image html image126.gif "Example of a hexahedral 3D mesh"
 </ul>
 
+Some of 3D meshing algorithms also can generate 3D meshes from 2D meshes, working without
+geometrical objects. Such algorithms are
+<ul>
+<li>Hexahedron meshing algorithm (i,j,k),</li>
+<li>Tetrahedron (Netgen and GHS3D) meshing algorithms,</li>
+<li>Hexotic.</li>
+</ul>
+
+
 \note BLSURF and GHS3D are commercial meshers and require a
 license to be used within the Mesh module.
 
