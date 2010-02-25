@@ -45,6 +45,7 @@ meshers and thus, work only with definite algorithms.
 <li>\subpage ghs3d_hypo_page</li> - works with GHS3D algorithm.
 <li>\subpage ghs3dprl_hypo_page</li> - works with GHS3DPRL (tepal) algorithm.
 <li>\subpage blsurf_hypo_page</li> - works with BLSURF algorithm.
+<li>\subpage hexotic_hypo_page</li> - works with Hexotic algorithm.
 </ul>
 
 There also exist  
