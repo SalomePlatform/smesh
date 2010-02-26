@@ -271,6 +271,27 @@ void SMESH_MeshEditor_i::initData(bool deleteSearchers)
   }
 }
 
+//=======================================================================
+//function : MakeIDSource
+//purpose  : Wrap a sequence of ids in a SMESH_IDSource
+//=======================================================================
+
+struct _IDSource : public POA_SMESH::SMESH_IDSource
+{
+  SMESH::long_array _ids;
+  SMESH::long_array* GetIDs()      { return & _ids; }
+  SMESH::long_array* GetMeshInfo() { return 0; }
+};
+
+SMESH::SMESH_IDSource_ptr SMESH_MeshEditor_i::MakeIDSource(const SMESH::long_array& ids)
+{
+  _IDSource* anIDSource = new _IDSource;
+  anIDSource->_ids = ids;
+  SMESH::SMESH_IDSource_var anIDSourceVar = anIDSource->_this();
+  
+  return anIDSourceVar._retn();
+}
+
 //=============================================================================
 /*!
  *

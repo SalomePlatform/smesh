@@ -35,6 +35,11 @@ module SMESH
   interface NumericalFunctor;
   interface SMESH_MeshEditor
   {
+    /*!
+     * \brief Wrap a sequence of ids in a SMESH_IDSource
+     */
+    SMESH_IDSource MakeIDSource(in long_array IDsOfElements);
+
     boolean RemoveElements(in long_array IDsOfElements);
 
     boolean RemoveNodes(in long_array IDsOfNodes);
@@ -210,6 +215,17 @@ module SMESH
      */
     long BestSplit (in long             IDOfQuad,
 		    in NumericalFunctor Criterion);
+
+    /*!
+     * \brief Split volumic elements into tetrahedrons
+     *  \param elems - elements to split
+     *  \param methodFlags - flags passing splitting method:
+     *         1 - split the hexahedron into 5 tetrahedrons
+     *         2 - split the hexahedron into 6 tetrahedrons
+     */
+    //void SplitVolumesIntoTetra(in SMESH_IDSource elems, in short methodFlags)
+    //raises (SALOME::SALOME_Exception);
+
 
     enum Smooth_Method { LAPLACIAN_SMOOTH, CENTROIDAL_SMOOTH };
 

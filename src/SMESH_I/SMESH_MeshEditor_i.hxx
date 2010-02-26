@@ -41,12 +41,18 @@ class SMESH_Mesh_i;
 
 class SMESH_MeshEditor_i: public POA_SMESH::SMESH_MeshEditor
 {
- public:
+public:
   SMESH_MeshEditor_i(SMESH_Mesh_i * theMesh, bool isPreview);
 
   virtual ~ SMESH_MeshEditor_i();
 
   // --- CORBA
+
+  /*!
+   * \brief Wrap a sequence of ids in a SMESH_IDSource
+   */
+  SMESH::SMESH_IDSource_ptr MakeIDSource(const SMESH::long_array& IDsOfElements);
+
   CORBA::Boolean RemoveElements(const SMESH::long_array & IDsOfElements);
   CORBA::Boolean RemoveNodes(const SMESH::long_array & IDsOfNodes);
 
