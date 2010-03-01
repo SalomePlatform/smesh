@@ -83,7 +83,7 @@ StdMeshersGUI_SubShapeSelectorWdg
 ::StdMeshersGUI_SubShapeSelectorWdg( QWidget * parent ): 
   QWidget( parent ),
   myPreviewActor( 0 ),
-  myMaxSize( 0 )
+  myMaxSize( -1 )
 {
   QPixmap image0( SMESH::GetResourceMgr( mySMESHGUI )->loadPixmap( "SMESH", tr( "ICON_SELECT" ) ) );
 
@@ -270,7 +270,7 @@ void StdMeshersGUI_SubShapeSelectorWdg::onAdd()
     return;
 
   myListWidget->blockSignals( true );
-  for (int i = 0; i < mySelectedIDs.size() && (myMaxSize < 1 || myListOfIDs.size() < myMaxSize); i++) {
+  for (int i = 0; i < mySelectedIDs.size() && (myMaxSize == -1 || myListOfIDs.size() < myMaxSize); i++) {
     if ( myListOfIDs.indexOf( mySelectedIDs.at(i) ) == -1 ) {
       QString anID = QString(" %1").arg( mySelectedIDs.at(i) );
 
@@ -282,7 +282,7 @@ void StdMeshersGUI_SubShapeSelectorWdg::onAdd()
   }
   onListSelectionChanged();
   myListWidget->blockSignals( false );
-  myAddButton->setEnabled( myListOfIDs.size() < myMaxSize );
+  myAddButton->setEnabled( myMaxSize == -1 || myListOfIDs.size() < myMaxSize );
 }
          
 //=================================================================================
