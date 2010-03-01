@@ -54,6 +54,7 @@
 
 #ifdef WNT
  #include <windows.h>
+ #include <process.h>
 #else
  #include <dlfcn.h>
 #endif
