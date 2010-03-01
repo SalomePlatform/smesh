@@ -166,6 +166,7 @@ dist_libSMESH_la_SOURCES = \
 	SMESHGUI_FileInfoDlg.cxx \
 	SMESHGUI_MeshInfosBox.cxx \
 	SMESHGUI_Make2DFrom3DOp.cxx \
+	SMESHGUI_FindElemByPointDlg.cxx \
 	SMESHGUI_MeshOrderDlg.cxx \
 	SMESHGUI_MeshOrderOp.cxx \
 	SMESHGUI_FileValidator.cxx
@@ -223,7 +224,6 @@ MOC_FILES = \
 	SMESHGUI_FileInfoDlg_moc.cxx \
 	SMESHGUI_MeshInfosBox_moc.cxx \
 	SMESHGUI_Make2DFrom3DOp_moc.cxx \
-	SMESHGUI_FindElemByPointDlg.cxx \
 	SMESHGUI_FindElemByPointDlg_moc.cxx \
 	SMESHGUI_MeshOrderDlg_moc.cxx \
 	SMESHGUI_MeshOrderOp_moc.cxx
