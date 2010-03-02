@@ -22,6 +22,7 @@
 
 SET(SMESH_CXXFLAGS -I${SMESH_ROOT_DIR}/include/salome)
 
+FIND_LIBRARY(GeomSelectionTools GeomSelectionTools ${SMESH_ROOT_DIR}/lib/salome)
 FIND_LIBRARY(MEFISTO2D MEFISTO2D ${SMESH_ROOT_DIR}/lib/salome)
 FIND_LIBRARY(MeshDriverDAT MeshDriverDAT ${SMESH_ROOT_DIR}/lib/salome)
 FIND_LIBRARY(MeshDriverMED MeshDriverMED ${SMESH_ROOT_DIR}/lib/salome)
