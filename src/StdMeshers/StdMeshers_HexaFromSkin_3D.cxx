@@ -410,7 +410,7 @@ namespace
     int nbBlocks = 0;
     while ( nbBlockSides >= 6 )
     {
-      // get any side not bound to all blocks to belongs to
+      // get any side not bound to all blocks it belongs to
       sideIt = _allSides.begin();
       while ( sideIt != _allSides.end() && sideIt->isBound())
         ++sideIt;
@@ -633,10 +633,7 @@ namespace
       gp_XYZ gc;
       for (int i = 0; i < B_UNDEFINED; ++i )
         if ( block._side[ i ] )
-        {
           gc += block._side[ i ]._side->getGC();
-          nbLoadedSides++;
-        }
       gc /= nbLoadedSides;
 
       gp_XYZ p1 ( n1->X(),n1->Y(),n1->Z()),  p2 (n2->X(),n2->Y(),n2->Z());
