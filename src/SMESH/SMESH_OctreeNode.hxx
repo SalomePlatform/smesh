@@ -50,7 +50,7 @@ class SMESH_OctreeNode : public SMESH_Octree {
 public:
 
   // Constructor
-  SMESH_OctreeNode (const std::set<const SMDS_MeshNode*>& theNodes, const int maxLevel = -1,
+  SMESH_OctreeNode (const std::set<const SMDS_MeshNode*>& theNodes, const int maxLevel = 8,
                     const int maxNbNodes = 5, const double minBoxSize = 0.);
 
 //=============================
