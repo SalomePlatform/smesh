@@ -71,6 +71,7 @@ salomeinclude_HEADERS = \
 	SMESHGUI_RevolutionDlg.h \
 	SMESHGUI_RotationDlg.h \
 	SMESHGUI_TranslationDlg.h \
+	SMESHGUI_ScaleDlg.h \
 	SMESHGUI_SymmetryDlg.h \
 	SMESHGUI_SewingDlg.h \
 	SMESHGUI_EditMeshDlg.h \
@@ -134,6 +135,7 @@ dist_libSMESH_la_SOURCES = \
 	SMESHGUI_RevolutionDlg.cxx \
 	SMESHGUI_RotationDlg.cxx \
 	SMESHGUI_TranslationDlg.cxx \
+	SMESHGUI_ScaleDlg.cxx \
 	SMESHGUI_SymmetryDlg.cxx \
 	SMESHGUI_SewingDlg.cxx \
 	SMESHGUI_EditMeshDlg.cxx \
@@ -203,6 +205,7 @@ MOC_FILES = \
 	SMESHGUI_RevolutionDlg_moc.cxx \
 	SMESHGUI_RotationDlg_moc.cxx \
 	SMESHGUI_TranslationDlg_moc.cxx \
+	SMESHGUI_ScaleDlg_moc.cxx \
 	SMESHGUI_SymmetryDlg_moc.cxx \
 	SMESHGUI_SewingDlg_moc.cxx \
 	SMESHGUI_EditMeshDlg_moc.cxx \

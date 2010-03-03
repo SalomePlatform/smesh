@@ -643,6 +643,10 @@
             <translation>Translation</translation>
         </message>
         <message>
+            <source>MEN_SCALE</source>
+            <translation>Scale Transform</translation>
+        </message>
+        <message>
             <source>MEN_TRANSF</source>
             <translation>Transformation</translation>
         </message>
@@ -1716,6 +1720,10 @@ add the exported data to its contents?</translation>
             <translation>Point 2</translation>
         </message>
         <message>
+            <source>SMESH_BASE_POINT</source>
+            <translation>Base Point</translation>
+        </message>
+        <message>
             <source>SMESH_POLYEDRE_CREATE_ERROR</source>
             <translation>Polyedron creation error</translation>
         </message>
@@ -1915,6 +1923,30 @@ add the exported data to its contents?</translation>
         <message>
             <source>SMESH_TRANSLATION</source>
             <translation>Translation</translation>
+        </message>
+        <message>
+            <source>SMESH_SCALE_TITLE</source>
+            <translation>Scale Transform</translation>
+        </message>
+        <message>
+            <source>SMESH_SCALE</source>
+            <translation>Scale</translation>
+        </message>
+        <message>
+            <source>SMESH_SCALE_FACTOR</source>
+            <translation>Scale Factor :</translation>
+        </message>
+        <message>
+            <source>SMESH_SCALE_FACTOR_X</source>
+            <translation>Scale Factor X :</translation>
+        </message>
+        <message>
+            <source>SMESH_SCALE_FACTOR_Y</source>
+            <translation>Scale Factor Y :</translation>
+        </message>
+        <message>
+            <source>SMESH_SCALE_FACTOR_Z</source>
+            <translation>Scale Factor Z :</translation>
         </message>
         <message>
             <source>SMESH_TRANSPARENCY_OPAQUE</source>
@@ -2493,6 +2525,10 @@ Consider saving your work before application crash</translation>
             <translation>Translation</translation>
         </message>
         <message>
+            <source>STB_SCALE</source>
+            <translation>Scale Transform</translation>
+        </message>
+        <message>
             <source>STB_TRANSP</source>
             <translation>Transparency</translation>
         </message>
@@ -3001,6 +3037,10 @@ Consider saving your work before application crash</translation>
         <message>
             <source>TOP_TRANS</source>
             <translation>Translation</translation>
+        </message>
+        <message>
+            <source>TOP_SCALE</source>
+            <translation>Scale Transform</translation>
         </message>
         <message>
             <source>TOP_TRANSP</source>

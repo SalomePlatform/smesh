@@ -18,6 +18,7 @@ elements of the mesh.</li>
 its elements.</li>
 <li>\subpage rotation_page "Rotate" by the indicated axis and angle
 the mesh or some of its elements.</li>
+<li>\subpage scale_page "Scale Transform" the mesh or some of its elements.</li>
 <li>Create a \subpage symmetry_page "symmetrical copy" of the mesh
 through a point or a vector of symmetry.</li>
 <li>Unite meshes by \subpage sewing_meshes_page "sewing" free borders,

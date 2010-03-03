@@ -374,6 +374,14 @@
             <translation>mesh_translation_vector.png</translation>
         </message>
         <message>
+            <source>ICON_DLG_MESH_SCALE</source>
+            <translation>scale.png</translation>
+        </message>
+        <message>
+            <source>ICON_DLG_SCALE_ALONG_AXES</source>
+            <translation>scale_along_axes.png</translation>
+        </message>
+        <message>
             <source>ICON_SMESH_TREE_ALGO</source>
             <translation>mesh_tree_algo.png</translation>
         </message>

@@ -4936,6 +4936,331 @@ SMESH_MeshEditor::Transform (TIDSortedElemSet & theElems,
   return newGroupIDs;
 }
 
+
+//=======================================================================
+//function : Scale
+//purpose  :
+//=======================================================================
+
+SMESH_MeshEditor::PGroupIDs
+SMESH_MeshEditor::Scale (TIDSortedElemSet & theElems,
+                         const gp_Pnt&            thePoint,
+                         const std::list<double>& theScaleFact,
+                         const bool         theCopy,
+                         const bool         theMakeGroups,
+                         SMESH_Mesh*        theTargetMesh)
+{
+  myLastCreatedElems.Clear();
+  myLastCreatedNodes.Clear();
+
+  SMESH_MeshEditor targetMeshEditor( theTargetMesh );
+  SMESHDS_Mesh* aTgtMesh = theTargetMesh ? theTargetMesh->GetMeshDS() : 0;
+  SMESHDS_Mesh* aMesh    = GetMeshDS();
+
+  double scaleX=1.0, scaleY=1.0, scaleZ=1.0;
+  std::list<double>::const_iterator itS = theScaleFact.begin();
+  scaleX = (*itS);
+  if(theScaleFact.size()==1) {
+    scaleY = (*itS);
+    scaleZ= (*itS);
+  }
+  if(theScaleFact.size()==2) {
+    itS++;
+    scaleY = (*itS);
+    scaleZ= (*itS);
+  }
+  if(theScaleFact.size()>2) {
+    itS++;
+    scaleY = (*itS);
+    itS++;
+    scaleZ= (*itS);
+  }
+  
+  // map old node to new one
+  TNodeNodeMap nodeMap;
+
+  // elements sharing moved nodes; those of them which have all
+  // nodes mirrored but are not in theElems are to be reversed
+  TIDSortedElemSet inverseElemSet;
+
+  // source elements for each generated one
+  SMESH_SequenceOfElemPtr srcElems, srcNodes;
+
+  // loop on theElems
+  TIDSortedElemSet::iterator itElem;
+  for ( itElem = theElems.begin(); itElem != theElems.end(); itElem++ ) {
+    const SMDS_MeshElement* elem = *itElem;
+    if ( !elem )
+      continue;
+
+    // loop on elem nodes
+    SMDS_ElemIteratorPtr itN = elem->nodesIterator();
+    while ( itN->more() ) {
+
+      // check if a node has been already transformed
+      const SMDS_MeshNode* node = cast2Node( itN->next() );
+      pair<TNodeNodeMap::iterator,bool> n2n_isnew =
+        nodeMap.insert( make_pair ( node, node ));
+      if ( !n2n_isnew.second )
+        continue;
+
+      //double coord[3];
+      //coord[0] = node->X();
+      //coord[1] = node->Y();
+      //coord[2] = node->Z();
+      //theTrsf.Transforms( coord[0], coord[1], coord[2] );
+      double dx = (node->X() - thePoint.X()) * scaleX;
+      double dy = (node->Y() - thePoint.Y()) * scaleY;
+      double dz = (node->Z() - thePoint.Z()) * scaleZ;
+      if ( theTargetMesh ) {
+        //const SMDS_MeshNode * newNode = aTgtMesh->AddNode( coord[0], coord[1], coord[2] );
+        const SMDS_MeshNode * newNode =
+          aTgtMesh->AddNode( thePoint.X()+dx, thePoint.Y()+dy, thePoint.Z()+dz );
+        n2n_isnew.first->second = newNode;
+        myLastCreatedNodes.Append(newNode);
+        srcNodes.Append( node );
+      }
+      else if ( theCopy ) {
+        //const SMDS_MeshNode * newNode = aMesh->AddNode( coord[0], coord[1], coord[2] );
+        const SMDS_MeshNode * newNode =
+          aMesh->AddNode( thePoint.X()+dx, thePoint.Y()+dy, thePoint.Z()+dz );
+        n2n_isnew.first->second = newNode;
+        myLastCreatedNodes.Append(newNode);
+        srcNodes.Append( node );
+      }
+      else {
+        //aMesh->MoveNode( node, coord[0], coord[1], coord[2] );
+        aMesh->MoveNode( node, thePoint.X()+dx, thePoint.Y()+dy, thePoint.Z()+dz );
+        // node position on shape becomes invalid
+        const_cast< SMDS_MeshNode* > ( node )->SetPosition
+          ( SMDS_SpacePosition::originSpacePosition() );
+      }
+
+      // keep inverse elements
+      //if ( !theCopy && !theTargetMesh && needReverse ) {
+      //  SMDS_ElemIteratorPtr invElemIt = node->GetInverseElementIterator();
+      //  while ( invElemIt->more() ) {
+      //    const SMDS_MeshElement* iel = invElemIt->next();
+      //    inverseElemSet.insert( iel );
+      //  }
+      //}
+    }
+  }
+
+  // either create new elements or reverse mirrored ones
+  //if ( !theCopy && !needReverse && !theTargetMesh )
+  if ( !theCopy && !theTargetMesh )
+    return PGroupIDs();
+
+  TIDSortedElemSet::iterator invElemIt = inverseElemSet.begin();
+  for ( ; invElemIt != inverseElemSet.end(); invElemIt++ )
+    theElems.insert( *invElemIt );
+
+  // replicate or reverse elements
+
+  enum {
+    REV_TETRA   = 0,  //  = nbNodes - 4
+    REV_PYRAMID = 1,  //  = nbNodes - 4
+    REV_PENTA   = 2,  //  = nbNodes - 4
+    REV_FACE    = 3,
+    REV_HEXA    = 4,  //  = nbNodes - 4
+    FORWARD     = 5
+  };
+  int index[][8] = {
+    { 2, 1, 0, 3, 4, 0, 0, 0 },  // REV_TETRA
+    { 2, 1, 0, 3, 4, 0, 0, 0 },  // REV_PYRAMID
+    { 2, 1, 0, 5, 4, 3, 0, 0 },  // REV_PENTA
+    { 2, 1, 0, 3, 0, 0, 0, 0 },  // REV_FACE
+    { 2, 1, 0, 3, 6, 5, 4, 7 },  // REV_HEXA
+    { 0, 1, 2, 3, 4, 5, 6, 7 }   // FORWARD
+  };
+
+  for ( itElem = theElems.begin(); itElem != theElems.end(); itElem++ )
+  {
+    const SMDS_MeshElement* elem = *itElem;
+    if ( !elem || elem->GetType() == SMDSAbs_Node )
+      continue;
+
+    int nbNodes = elem->NbNodes();
+    int elemType = elem->GetType();
+
+    if (elem->IsPoly()) {
+      // Polygon or Polyhedral Volume
+      switch ( elemType ) {
+      case SMDSAbs_Face:
+        {
+          vector<const SMDS_MeshNode*> poly_nodes (nbNodes);
+          int iNode = 0;
+          SMDS_ElemIteratorPtr itN = elem->nodesIterator();
+          while (itN->more()) {
+            const SMDS_MeshNode* node =
+              static_cast<const SMDS_MeshNode*>(itN->next());
+            TNodeNodeMap::iterator nodeMapIt = nodeMap.find(node);
+            if (nodeMapIt == nodeMap.end())
+              break; // not all nodes transformed
+            //if (needReverse) {
+            //  // reverse mirrored faces and volumes
+            //  poly_nodes[nbNodes - iNode - 1] = (*nodeMapIt).second;
+            //} else {
+            poly_nodes[iNode] = (*nodeMapIt).second;
+            //}
+            iNode++;
+          }
+          if ( iNode != nbNodes )
+            continue; // not all nodes transformed
+
+          if ( theTargetMesh ) {
+            myLastCreatedElems.Append(aTgtMesh->AddPolygonalFace(poly_nodes));
+            srcElems.Append( elem );
+          }
+          else if ( theCopy ) {
+            myLastCreatedElems.Append(aMesh->AddPolygonalFace(poly_nodes));
+            srcElems.Append( elem );
+          }
+          else {
+            aMesh->ChangePolygonNodes(elem, poly_nodes);
+          }
+        }
+        break;
+      case SMDSAbs_Volume:
+        {
+          // ATTENTION: Reversing is not yet done!!!
+          const SMDS_PolyhedralVolumeOfNodes* aPolyedre =
+            dynamic_cast<const SMDS_PolyhedralVolumeOfNodes*>( elem );
+          if (!aPolyedre) {
+            MESSAGE("Warning: bad volumic element");
+            continue;
+          }
+
+          vector<const SMDS_MeshNode*> poly_nodes;
+          vector<int> quantities;
+
+          bool allTransformed = true;
+          int nbFaces = aPolyedre->NbFaces();
+          for (int iface = 1; iface <= nbFaces && allTransformed; iface++) {
+            int nbFaceNodes = aPolyedre->NbFaceNodes(iface);
+            for (int inode = 1; inode <= nbFaceNodes && allTransformed; inode++) {
+              const SMDS_MeshNode* node = aPolyedre->GetFaceNode(iface, inode);
+              TNodeNodeMap::iterator nodeMapIt = nodeMap.find(node);
+              if (nodeMapIt == nodeMap.end()) {
+                allTransformed = false; // not all nodes transformed
+              } else {
+                poly_nodes.push_back((*nodeMapIt).second);
+              }
+            }
+            quantities.push_back(nbFaceNodes);
+          }
+          if ( !allTransformed )
+            continue; // not all nodes transformed
+
+          if ( theTargetMesh ) {
+            myLastCreatedElems.Append(aTgtMesh->AddPolyhedralVolume(poly_nodes, quantities));
+            srcElems.Append( elem );
+          }
+          else if ( theCopy ) {
+            myLastCreatedElems.Append(aMesh->AddPolyhedralVolume(poly_nodes, quantities));
+            srcElems.Append( elem );
+          }
+          else {
+            aMesh->ChangePolyhedronNodes(elem, poly_nodes, quantities);
+          }
+        }
+        break;
+      default:;
+      }
+      continue;
+    }
+
+    // Regular elements
+    int* i = index[ FORWARD ];
+    //if ( needReverse && nbNodes > 2) // reverse mirrored faces and volumes
+    //  if ( elemType == SMDSAbs_Face )
+    //    i = index[ REV_FACE ];
+    //  else
+    //    i = index[ nbNodes - 4 ];
+
+    if(elem->IsQuadratic()) {
+      static int anIds[] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19};
+      i = anIds;
+      //if(needReverse) {
+      //  if(nbNodes==3) { // quadratic edge
+      //    static int anIds[] = {1,0,2};
+      //    i = anIds;
+      //  }
+      //  else if(nbNodes==6) { // quadratic triangle
+      //    static int anIds[] = {0,2,1,5,4,3};
+      //    i = anIds;
+      //  }
+      //  else if(nbNodes==8) { // quadratic quadrangle
+      //    static int anIds[] = {0,3,2,1,7,6,5,4};
+      //    i = anIds;
+      //  }
+      //  else if(nbNodes==10) { // quadratic tetrahedron of 10 nodes
+      //    static int anIds[] = {0,2,1,3,6,5,4,7,9,8};
+      //    i = anIds;
+      //  }
+      //  else if(nbNodes==13) { // quadratic pyramid of 13 nodes
+      //    static int anIds[] = {0,3,2,1,4,8,7,6,5,9,12,11,10};
+      //    i = anIds;
+      //  }
+      //  else if(nbNodes==15) { // quadratic pentahedron with 15 nodes
+      //    static int anIds[] = {0,2,1,3,5,4,8,7,6,11,10,9,12,14,13};
+      //    i = anIds;
+      //  }
+      //  else { // nbNodes==20 - quadratic hexahedron with 20 nodes
+      //    static int anIds[] = {0,3,2,1,4,7,6,5,11,10,9,8,15,14,13,12,16,19,18,17};
+      //    i = anIds;
+      //  }
+      //}
+    }
+
+    // find transformed nodes
+    vector<const SMDS_MeshNode*> nodes(nbNodes);
+    int iNode = 0;
+    SMDS_ElemIteratorPtr itN = elem->nodesIterator();
+    while ( itN->more() ) {
+      const SMDS_MeshNode* node =
+        static_cast<const SMDS_MeshNode*>( itN->next() );
+      TNodeNodeMap::iterator nodeMapIt = nodeMap.find( node );
+      if ( nodeMapIt == nodeMap.end() )
+        break; // not all nodes transformed
+      nodes[ i [ iNode++ ]] = (*nodeMapIt).second;
+    }
+    if ( iNode != nbNodes )
+      continue; // not all nodes transformed
+
+    if ( theTargetMesh ) {
+      if ( SMDS_MeshElement* copy =
+           targetMeshEditor.AddElement( nodes, elem->GetType(), elem->IsPoly() )) {
+        myLastCreatedElems.Append( copy );
+        srcElems.Append( elem );
+      }
+    }
+    else if ( theCopy ) {
+      if ( SMDS_MeshElement* copy = AddElement( nodes, elem->GetType(), elem->IsPoly() )) {
+        myLastCreatedElems.Append( copy );
+        srcElems.Append( elem );
+      }
+    }
+    else {
+      // reverse element as it was reversed by transformation
+      if ( nbNodes > 2 )
+        aMesh->ChangeElementNodes( elem, &nodes[0], nbNodes );
+    }
+  }
+
+  PGroupIDs newGroupIDs;
+
+  if ( theMakeGroups && theCopy ||
+       theMakeGroups && theTargetMesh ) {
+    string groupPostfix = "scaled";
+    newGroupIDs = generateGroups( srcNodes, srcElems, groupPostfix, theTargetMesh );
+  }
+
+  return newGroupIDs;
+}
+
+
 //=======================================================================
 /*!
  * \brief Create groups of elements made during transformation

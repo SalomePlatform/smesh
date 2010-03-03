@@ -3271,6 +3271,51 @@ class Mesh:
         mesh.SetParameters(Parameters)
         return Mesh( self.smeshpyD, self.geompyD, mesh )
 
+
+
+    ## Scales the object
+    #  @param theObject - the object to translate (mesh, submesh, or group)
+    #  @param thePoint - base point for scale
+    #  @param theScaleFact - scale factors for axises
+    #  @param Copy - allows copying the translated elements
+    #  @param MakeGroups - forces the generation of new groups from existing
+    #                      ones (if Copy)
+    #  @return list of created groups (SMESH_GroupBase) if MakeGroups=True,
+    #          empty list otherwise
+    def Scale(self, theObject, thePoint, theScaleFact, Copy, MakeGroups=False):
+        if ( isinstance( theObject, Mesh )):
+            theObject = theObject.GetMesh()
+        if ( isinstance( theObject, list )):
+            theObject = self.editor.MakeIDSource(theObject)
+
+        thePoint, Parameters = ParsePointStruct(thePoint)
+        self.mesh.SetParameters(Parameters)
+
+        if Copy and MakeGroups:
+            return self.editor.ScaleMakeGroups(theObject, thePoint, theScaleFact)
+        self.editor.Scale(theObject, thePoint, theScaleFact, Copy)
+        return []
+
+    ## Creates a new mesh from the translated object
+    #  @param theObject - the object to translate (mesh, submesh, or group)
+    #  @param thePoint - base point for scale
+    #  @param theScaleFact - scale factors for axises
+    #  @param MakeGroups - forces the generation of new groups from existing ones
+    #  @param NewMeshName - the name of the newly created mesh
+    #  @return instance of Mesh class
+    def ScaleMakeMesh(self, theObject, thePoint, theScaleFact, MakeGroups=False, NewMeshName=""):
+        if (isinstance(theObject, Mesh)):
+            theObject = theObject.GetMesh()
+        if ( isinstance( theObject, list )):
+            theObject = self.editor.MakeIDSource(theObject)
+
+        mesh = self.editor.ScaleMakeMesh(theObject, thePoint, theScaleFact,
+                                         MakeGroups, NewMeshName)
+        #mesh.SetParameters(Parameters)
+        return Mesh( self.smeshpyD, self.geompyD, mesh )
+
+
+
     ## Rotates the elements
     #  @param IDsOfElements list of elements ids
     #  @param Axis the axis of rotation (AxisStruct or geom line)

@@ -570,6 +570,19 @@ module SMESH
                                         in boolean        CopyGroups,
                                         in string         MeshName);
 
+    void Scale (in SMESH_IDSource theObject,
+                in PointStruct    thePoint,
+                in double_array   theScaleFact,
+                in boolean        Copy);
+    ListOfGroups ScaleMakeGroups (in SMESH_IDSource theObject,
+                                  in PointStruct    thePoint,
+                                  in double_array   theScaleFact);
+    SMESH_Mesh ScaleMakeMesh (in SMESH_IDSource theObject,
+                              in PointStruct    thePoint,
+                              in double_array   theScaleFact,
+                              in boolean        CopyGroups,
+                              in string         MeshName);
+
     void Rotate (in long_array IDsOfElements,
                  in AxisStruct Axis,
                  in double     AngleInRadians,

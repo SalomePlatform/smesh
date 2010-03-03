@@ -426,6 +426,21 @@ public:
                                              CORBA::Boolean            CopyGroups,
                                              const char*               MeshName);
 
+  void Scale(SMESH::SMESH_IDSource_ptr  theObject,
+             const SMESH::PointStruct&  thePoint,
+             const SMESH::double_array& theScaleFact,
+             CORBA::Boolean             theCopy);
+
+  SMESH::ListOfGroups* ScaleMakeGroups(SMESH::SMESH_IDSource_ptr  theObject,
+                                       const SMESH::PointStruct&  thePoint,
+                                       const SMESH::double_array& theScaleFact);
+
+  SMESH::SMESH_Mesh_ptr ScaleMakeMesh(SMESH::SMESH_IDSource_ptr Object,
+                                      const SMESH::PointStruct& Point,
+                                      const SMESH::double_array& theScaleFact,
+                                      CORBA::Boolean            CopyGroups,
+                                      const char*               MeshName);
+
   void FindCoincidentNodes (CORBA::Double                  Tolerance,
                             SMESH::array_of_long_array_out GroupsOfNodes);
   void FindCoincidentNodesOnPart(SMESH::SMESH_IDSource_ptr      Object,
@@ -701,6 +716,13 @@ public:
                               CORBA::Boolean            Copy,
                               const bool                MakeGroups,
                               ::SMESH_Mesh*             TargetMesh=0);
+
+  SMESH::ListOfGroups* scale(const SMESH::long_array &  theIDsOfElements,
+                             const SMESH::PointStruct&  thePoint,
+                             const SMESH::double_array& theScaleFact,
+                             CORBA::Boolean             theCopy,
+                             const bool                 theMakeGroups,
+                             ::SMESH_Mesh*              theTargetMesh=0);
 
   SMESH::SMESH_Mesh_ptr makeMesh(const char* theMeshName);
 

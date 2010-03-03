@@ -69,6 +69,7 @@
 #include "SMESHGUI_StandardMeshInfosDlg.h"
 #include "SMESHGUI_SymmetryDlg.h"
 #include "SMESHGUI_TranslationDlg.h"
+#include "SMESHGUI_ScaleDlg.h"
 #include "SMESHGUI_TransparencyDlg.h"
 #include "SMESHGUI_WhatIsDlg.h"
 
@@ -2632,6 +2633,20 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     startOperation( 4067 );
     break;
 
+  case 4068: // SCALE
+    {
+      if(checkLock(aStudy)) break;
+      if ( vtkwnd ) {
+        EmitSignalDeactivateDialog();
+        ( new SMESHGUI_ScaleDlg( this ) )->show();
+      }
+      else {
+        SUIT_MessageBox::warning(SMESHGUI::desktop(),
+                                 tr("SMESH_WRN_WARNING"), tr("SMESH_WRN_VIEWER_VTK"));
+      }
+      break;
+    }
+
   case 5105: // Library of selection filters
   {
     static QList<int> aTypes;
@@ -2926,6 +2941,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction( 4065, "MERGE",           "ICON_SMESH_MERGE_NODES" );
   createSMESHAction( 4066, "MERGE_ELEMENTS",  "ICON_DLG_MERGE_ELEMENTS" );
   createSMESHAction( 4067, "MESH_THROU_POINT","ICON_DLG_MESH_THROU_POINT" );
+  createSMESHAction( 4068, "SCALE",           "ICON_DLG_MESH_SCALE" );
   createSMESHAction(  406, "MOVE",            "ICON_DLG_MOVE_NODE" );
   createSMESHAction(  407, "INV",             "ICON_DLG_MESH_DIAGONAL" );
   createSMESHAction(  408, "UNION2",          "ICON_UNION2TRI" );
@@ -3096,6 +3112,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createMenu( 4064, transfId, -1 );
   createMenu( 4065, transfId, -1 );
   createMenu( 4066, transfId, -1 );
+  createMenu( 4068, transfId, -1 );
 
   createMenu( 406, modifyId, -1 );
   createMenu( 4067,modifyId, -1 );
@@ -3194,6 +3211,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createTool( 4064, addRemTb );
   createTool( 4065, addRemTb );
   createTool( 4066, addRemTb );
+  createTool( 4068, addRemTb );
   createTool( separator(), addRemTb );
 
   createTool( 406, modifyTb );

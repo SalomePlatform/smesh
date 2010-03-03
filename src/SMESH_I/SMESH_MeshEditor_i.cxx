@@ -279,7 +279,7 @@ void SMESH_MeshEditor_i::initData(bool deleteSearchers)
 struct _IDSource : public POA_SMESH::SMESH_IDSource
 {
   SMESH::long_array _ids;
-  SMESH::long_array* GetIDs()      { return & _ids; }
+  SMESH::long_array* GetIDs()      { return new SMESH::long_array( _ids ); }
   SMESH::long_array* GetMeshInfo() { return 0; }
 };
 
@@ -3366,6 +3366,140 @@ SMESH_MeshEditor_i::RotateObjectMakeMesh(SMESH::SMESH_IDSource_ptr theObject,
 
   return mesh._retn();
 }
+
+
+//=======================================================================
+//function : scale
+//purpose  : 
+//=======================================================================
+
+SMESH::ListOfGroups*
+SMESH_MeshEditor_i::scale(const SMESH::long_array &  theIDsOfElements,
+                          const SMESH::PointStruct&  thePoint,
+                          const SMESH::double_array& theScaleFact,
+                          CORBA::Boolean             theCopy,
+                          const bool                 theMakeGroups,
+                          ::SMESH_Mesh*              theTargetMesh)
+{
+  initData();
+
+  TIDSortedElemSet elements;
+  arrayToSet(theIDsOfElements, GetMeshDS(), elements);
+
+  gp_Pnt aPnt( thePoint.x, thePoint.y, thePoint.z );
+  list<double> aScaleFact;
+  for (int i = 0; i < theScaleFact.length(); i++) {
+    aScaleFact.push_back( theScaleFact[i] );
+  }
+
+  ::SMESH_MeshEditor anEditor( myMesh );
+  ::SMESH_MeshEditor::PGroupIDs groupIds =
+      anEditor.Scale (elements, aPnt, aScaleFact, theCopy,
+                      theMakeGroups, theTargetMesh);
+
+  if(theCopy)
+    storeResult(anEditor);
+
+  return theMakeGroups ? getGroups(groupIds.get()) : 0;
+}
+
+
+//=======================================================================
+//function : Scale
+//purpose  :
+//=======================================================================
+
+void SMESH_MeshEditor_i::Scale(SMESH::SMESH_IDSource_ptr  theObject,
+                               const SMESH::PointStruct&  thePoint,
+                               const SMESH::double_array& theScaleFact,
+                               CORBA::Boolean             theCopy)
+{
+  if ( !myPreviewMode ) {
+    TPythonDump() << this << ".Scale( "
+                  << theObject << ", "
+                  << "SMESH.PointStruct( "  << thePoint.x << ", "
+                  << thePoint.y << ", " << thePoint.z << " ) ,"
+                  << theScaleFact << ", "
+                  << theCopy << " )";
+  }
+  SMESH::long_array_var anElementsId = theObject->GetIDs();
+  scale(anElementsId, thePoint, theScaleFact, theCopy, false);
+}
+
+
+//=======================================================================
+//function : ScaleMakeGroups
+//purpose  : 
+//=======================================================================
+
+SMESH::ListOfGroups*
+SMESH_MeshEditor_i::ScaleMakeGroups(SMESH::SMESH_IDSource_ptr  theObject,
+                                    const SMESH::PointStruct&  thePoint,
+                                    const SMESH::double_array& theScaleFact)
+{
+  SMESH::long_array_var anElementsId = theObject->GetIDs();
+  SMESH::ListOfGroups * aGroups = 
+    scale(anElementsId, thePoint, theScaleFact, true, true);
+
+  if ( !myPreviewMode ) {
+
+    TPythonDump aPythonDump;
+    DumpGroupsList(aPythonDump,aGroups);
+    aPythonDump << this << ".Scale("
+                << theObject << ","
+                << "SMESH.PointStruct(" <<thePoint.x << ","
+                << thePoint.y << "," << thePoint.z << "),"
+                << theScaleFact << ",True,True)";
+  }
+  return aGroups;
+}
+
+
+//=======================================================================
+//function : ScaleMakeMesh
+//purpose  : 
+//=======================================================================
+
+SMESH::SMESH_Mesh_ptr
+SMESH_MeshEditor_i::ScaleMakeMesh(SMESH::SMESH_IDSource_ptr  theObject,
+                                  const SMESH::PointStruct&  thePoint,
+                                  const SMESH::double_array& theScaleFact,
+                                  CORBA::Boolean             theCopyGroups,
+                                  const char*                theMeshName)
+{
+  SMESH_Mesh_i* mesh_i;
+  SMESH::SMESH_Mesh_var mesh;
+  { // open new scope to dump "MakeMesh" command
+    // and then "GetGroups" using SMESH_Mesh::GetGroups()
+
+    TPythonDump pydump; // to prevent dump at mesh creation
+    mesh = makeMesh( theMeshName );
+    mesh_i = SMESH::DownCast<SMESH_Mesh_i*>( mesh );
+
+    if ( mesh_i ) {
+      SMESH::long_array_var anElementsId = theObject->GetIDs();
+      scale(anElementsId, thePoint, theScaleFact,
+            false, theCopyGroups, & mesh_i->GetImpl());
+      mesh_i->CreateGroupServants();
+    }
+    if ( !myPreviewMode ) {
+      pydump << mesh << " = " << this << ".ScaleMakeMesh( "
+             << theObject << ", "
+             << "SMESH.PointStruct( "  << thePoint.x << ", "
+             << thePoint.y << ", " << thePoint.z << " ) ,"
+             << theScaleFact << ", "
+             << theCopyGroups << ", '"
+             << theMeshName << "' )";
+    }
+  }
+
+  //dump "GetGroups"
+  if(!myPreviewMode && mesh_i)
+    mesh_i->GetGroups();
+
+  return mesh._retn();
+}
+
 
 //=======================================================================
 //function : FindCoincidentNodes
