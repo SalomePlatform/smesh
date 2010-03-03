@@ -404,8 +404,8 @@ protected:
 
   std::set< int > myDegenShapeIds;
   std::set< int > mySeamShapeIds;
-  double          myPar1, myPar2; // bounds of a closed periodic surface
-  int             myParIndex;     // bounds' index (1-U, 2-V)
+  double          myPar1[2], myPar2[2]; // U and V bounds of a closed periodic surface
+  int             myParIndex;     // bounds' index (1-U, 2-V, 3-both)
 
   TopoDS_Shape    myShape;
   SMESH_Mesh*     myMesh;

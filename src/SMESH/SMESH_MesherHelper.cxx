@@ -63,6 +63,7 @@ namespace {
 
   gp_XYZ XYZ(const SMDS_MeshNode* n) { return gp_XYZ(n->X(), n->Y(), n->Z()); }
 
+  enum { U_periodic = 1, V_periodic = 2 };
 }
 
 //================================================================================
@@ -72,8 +73,9 @@ namespace {
 //================================================================================
 
 SMESH_MesherHelper::SMESH_MesherHelper(SMESH_Mesh& theMesh)
-  : myPar1(0), myPar2(0), myParIndex(0), myMesh(&theMesh), myShapeID(0), myCreateQuadratic(false)
+  : myParIndex(0), myMesh(&theMesh), myShapeID(0), myCreateQuadratic(false)
 {
+  myPar1[0] = myPar2[0] = myPar1[1] = myPar2[1] = 0;
   mySetElemOnShape = ( ! myMesh->HasShapeToMesh() );
 }
 
@@ -179,6 +181,7 @@ void SMESH_MesherHelper::SetSubShape(const TopoDS_Shape& aSh)
   }
   SMESHDS_Mesh* meshDS = GetMeshDS();
   myShapeID = meshDS->ShapeToIndex(aSh);
+  myParIndex = 0;
 
   // treatment of periodic faces
   for ( TopExp_Explorer eF( aSh, TopAbs_FACE ); eF.More(); eF.Next() )
@@ -193,20 +196,18 @@ void SMESH_MesherHelper::SetSubShape(const TopoDS_Shape& aSh)
         const TopoDS_Edge& edge = TopoDS::Edge( exp.Current() );
         if ( BRep_Tool::IsClosed( edge, face )) {
           // initialize myPar1, myPar2 and myParIndex
-          if ( mySeamShapeIds.empty() ) {
-            gp_Pnt2d uv1, uv2;
-            BRep_Tool::UVPoints( edge, face, uv1, uv2 );
-            if ( Abs( uv1.Coord(1) - uv2.Coord(1) ) < Abs( uv1.Coord(2) - uv2.Coord(2) ))
-            {
-              myParIndex = 1; // U periodic
-              myPar1 = surface.FirstUParameter();
-              myPar2 = surface.LastUParameter();
-            }
-            else {
-              myParIndex = 2;  // V periodic
-              myPar1 = surface.FirstVParameter();
-              myPar2 = surface.LastVParameter();
-            }
+          gp_Pnt2d uv1, uv2;
+          BRep_Tool::UVPoints( edge, face, uv1, uv2 );
+          if ( Abs( uv1.Coord(1) - uv2.Coord(1) ) < Abs( uv1.Coord(2) - uv2.Coord(2) ))
+          {
+            myParIndex |= U_periodic;
+            myPar1[0] = surface.FirstUParameter();
+            myPar2[0] = surface.LastUParameter();
+          }
+          else {
+            myParIndex |= V_periodic;
+            myPar1[1] = surface.FirstVParameter();
+            myPar2[1] = surface.LastVParameter();
           }
           // store seam shape indices, negative if shape encounters twice
           int edgeID = meshDS->ShapeToIndex( edge );
@@ -299,13 +300,24 @@ void SMESH_MesherHelper::AddTLinkNode(const SMDS_MeshNode* n1,
 
 gp_Pnt2d SMESH_MesherHelper::GetUVOnSeam( const gp_Pnt2d& uv1, const gp_Pnt2d& uv2 ) const
 {
-  double p1 = uv1.Coord( myParIndex );
-  double p2 = uv2.Coord( myParIndex );
-  double p3 = ( Abs( p1 - myPar1 ) < Abs( p1 - myPar2 )) ? myPar2 : myPar1;
-  if ( Abs( p2 - p1 ) > Abs( p2 - p3 ))
-    p1 = p3;
   gp_Pnt2d result = uv1;
-  result.SetCoord( myParIndex, p1 );
+  for ( int i = U_periodic; i <= V_periodic ; ++i )
+  {
+    if ( myParIndex & i )
+    {
+      double p1 = uv1.Coord( i );
+      double dp1 = Abs( p1-myPar1[i-1]), dp2 = Abs( p1-myPar2[i-1]);
+      if ( myParIndex == i ||
+           dp1 < ( myPar2[i-1] - myPar2[i-1] ) / 100. ||
+           dp2 < ( myPar2[i-1] - myPar2[i-1] ) / 100. )
+      {
+        double p2 = uv2.Coord( i );
+        double p1Alt = ( dp1 < dp2 ) ? myPar2[i-1] : myPar1[i-1];
+        if ( Abs( p2 - p1 ) > Abs( p2 - p1Alt ))
+          result.SetCoord( i, p1Alt );
+      }
+    }
+  }
   return result;
 }
 
@@ -674,9 +686,11 @@ const SMDS_MeshNode* SMESH_MesherHelper::GetMediumNode(const SMDS_MeshNode* n1,
       if ( uvOK[0] && uvOK[1] )
       {
         if ( IsDegenShape( Pos1->GetShapeId() ))
-          uv[0].SetCoord( myParIndex, uv[1].Coord( myParIndex ));
+          if ( myParIndex & U_periodic ) uv[0].SetCoord( 1, uv[1].Coord( 1 ));
+          else                           uv[0].SetCoord( 2, uv[1].Coord( 2 ));
         else if ( IsDegenShape( Pos2->GetShapeId() ))
-          uv[1].SetCoord( myParIndex, uv[0].Coord( myParIndex ));
+          if ( myParIndex & U_periodic ) uv[1].SetCoord( 1, uv[0].Coord( 1 ));
+          else                           uv[1].SetCoord( 2, uv[0].Coord( 2 ));
 
         TopLoc_Location loc;
         Handle(Geom_Surface) S = BRep_Tool::Surface(F,loc);
@@ -1393,7 +1407,8 @@ SMESH_MesherHelper:: MType SMESH_MesherHelper::IsQuadraticMesh()
 
 double SMESH_MesherHelper::GetOtherParam(const double param) const
 {
-  return fabs(param-myPar1) < fabs(param-myPar2) ? myPar2 : myPar1;
+  int i = myParIndex & U_periodic ? 0 : 1;
+  return fabs(param-myPar1[i]) < fabs(param-myPar2[i]) ? myPar2[i] : myPar1[i];
 }
 
 //=======================================================================
@@ -1504,8 +1519,11 @@ namespace { // Structures used by FixQuadraticElements()
     mutable vector< const QLink* >  _sides;
     mutable bool                    _sideIsAdded[4]; // added in chain of links
     gp_Vec                          _normal;
+#ifdef _DEBUG_
+    mutable const SMDS_MeshElement* _face;
+#endif
 
-    QFace( const vector< const QLink*>& links );
+    QFace( const vector< const QLink*>& links, const SMDS_MeshElement* face=0 );
 
     void SetVolume(const SMDS_MeshElement* v) const { _volumes[ _volumes[0] ? 1 : 0 ] = v; }
 
@@ -1519,16 +1537,16 @@ namespace { // Structures used by FixQuadraticElements()
       for (int i=0; i<_sides.size(); ++i ) if ( _sides[i] == side ) return i;
       return -1;
     }
-    bool GetLinkChain( int iSide, TChain& chain, SMDS_TypeOfPosition pos, int& error) const;
+    bool GetLinkChain( int iSide, TChain& chain, SMDS_TypeOfPosition pos, int& err) const;
 
-    bool GetLinkChain( TChainLink& link, TChain& chain, SMDS_TypeOfPosition pos, int& error) const
+    bool GetLinkChain( TChainLink& link, TChain& chain, SMDS_TypeOfPosition pos, int& err) const
     {
       int i = LinkIndex( link._qlink );
       if ( i < 0 ) return true;
       _sideIsAdded[i] = true;
       link.SetFace( this );
       // continue from opposite link
-      return GetLinkChain( (i+2)%_sides.size(), chain, pos, error );
+      return GetLinkChain( (i+2)%_sides.size(), chain, pos, err );
     }
     bool IsBoundary() const { return !_volumes[1]; }
 
@@ -1538,7 +1556,8 @@ namespace { // Structures used by FixQuadraticElements()
                                 const TChainLink&    avoidLink,
                                 TLinkInSet *         notBoundaryLink = 0,
                                 const SMDS_MeshNode* nodeToContain = 0,
-                                bool *               isAdjacentUsed = 0) const;
+                                bool *               isAdjacentUsed = 0,
+                                int                  nbRecursionsLeft = -1) const;
 
     TLinkInSet GetLinkByNode( const TLinkSet&      links,
                               const TChainLink&    avoidLink,
@@ -1592,7 +1611,7 @@ namespace { // Structures used by FixQuadraticElements()
    */
   //================================================================================
 
-  QFace::QFace( const vector< const QLink*>& links )
+  QFace::QFace( const vector< const QLink*>& links, const SMDS_MeshElement* face )
   {
     _volumes[0] = _volumes[1] = 0;
     _sides = links;
@@ -1613,6 +1632,10 @@ namespace { // Structures used by FixQuadraticElements()
       _normal /= sqrt( normSqSize );
     else
       _normal.SetCoord(1e-33,0,0);
+
+#ifdef _DEBUG_
+    _face = face;
+#endif
   }
   //================================================================================
   /*!
@@ -1635,14 +1658,18 @@ namespace { // Structures used by FixQuadraticElements()
 
     if ( _sides.size() != 4 ) { // triangle - visit all my continous faces
       MSGBEG( *this );
-      for ( int i = 0; i < _sides.size(); ++i ) {
-        if ( !_sideIsAdded[i] && _sides[i] ) {
-          _sideIsAdded[i]=true;
-          TChain::iterator chLink = chain.insert( chain.begin(), TChainLink(_sides[i]));
-          chLink->SetFace( this );
-          if ( _sides[i]->MediumPos() >= pos )
-            if ( const QFace* f = _sides[i]->GetContinuesFace( this ))
-              f->GetLinkChain( *chLink, chain, pos, error );
+      list< const QFace* > faces( 1, this );
+      for (list< const QFace* >::iterator fIt = faces.begin(); fIt != faces.end(); ++fIt ) {
+        const QFace* face = *fIt;
+        for ( int i = 0; i < face->_sides.size(); ++i ) {
+          if ( !face->_sideIsAdded[i] && face->_sides[i] ) {
+            face->_sideIsAdded[i] = true;
+            TChain::iterator chLink = chain.insert( chain.begin(), TChainLink(face->_sides[i]));
+            chLink->SetFace( face );
+            if ( face->_sides[i]->MediumPos() >= pos )
+              if ( const QFace* contFace = face->_sides[i]->GetContinuesFace( face ))
+                faces.push_back( contFace );
+          }
         }
       }
       if ( error < ERR_TRI )
@@ -1659,7 +1686,7 @@ namespace { // Structures used by FixQuadraticElements()
     chLink->SetFace( this );
     MSGBEG( *this );
 
-    // propagate from rectangle to neighbour faces
+    // propagate from quadrangle to neighbour faces
     if ( link->MediumPos() >= pos ) {
       int nbLinkFaces = link->_faces.size();
       if ( nbLinkFaces == 4 || nbLinkFaces < 4 && link->OnBoundary()) {
@@ -1689,6 +1716,7 @@ namespace { // Structures used by FixQuadraticElements()
    *  \param nodeToContain - node the returned link must contain; if provided, search
    *                         also performed on adjacent faces
    *  \param isAdjacentUsed - returns true if link is found in adjacent faces
+   *  \param nbRecursionsLeft - to limit recursion
    */
   //================================================================================
 
@@ -1696,7 +1724,8 @@ namespace { // Structures used by FixQuadraticElements()
                                      const TChainLink&    avoidLink,
                                      TLinkInSet *         notBoundaryLink,
                                      const SMDS_MeshNode* nodeToContain,
-                                     bool *               isAdjacentUsed) const
+                                     bool *               isAdjacentUsed,
+                                     int                  nbRecursionsLeft) const
   {
     TLinkInSet linksEnd = links.end(), boundaryLink = linksEnd;
 
@@ -1709,6 +1738,8 @@ namespace { // Structures used by FixQuadraticElements()
         continue;
       TLinkInSet link = links.find( _sides[iL] );
       if ( link == linksEnd ) continue;
+      if ( (*link)->MediumPos() > SMDS_TOP_FACE )
+        continue; // We work on faces here, don't go into a volume
 
       // check link
       if ( link->IsBoundary() ) {
@@ -1725,19 +1756,21 @@ namespace { // Structures used by FixQuadraticElements()
         if ( boundaryLink != linksEnd ) break;
       }
 
-      if ( boundaryLink == linksEnd && nodeToContain ) // cellect adjacent faces
+      if ( boundaryLink == linksEnd && nodeToContain ) // collect adjacent faces
         if ( const QFace* adj = link->NextFace( this ))
           if ( adj->Contains( nodeToContain ))
             adjacentFaces.push_back( make_pair( adj, link ));
     }
 
     if ( isAdjacentUsed ) *isAdjacentUsed = false;
-    if ( boundaryLink == linksEnd && nodeToContain ) // check adjacent faces
+    if ( boundaryLink == linksEnd && nodeToContain && nbRecursionsLeft) // check adjacent faces
     {
+      if ( nbRecursionsLeft < 0 )
+        nbRecursionsLeft = nodeToContain->NbInverseElements();
       TFaceLinkList::iterator adj = adjacentFaces.begin();
       for ( ; boundaryLink == linksEnd && adj != adjacentFaces.end(); ++adj )
-        boundaryLink = adj->first->GetBoundaryLink( links, *(adj->second),
-                                                    0, nodeToContain, isAdjacentUsed);
+        boundaryLink = adj->first->GetBoundaryLink( links, *(adj->second), 0, nodeToContain,
+                                                    isAdjacentUsed, nbRecursionsLeft-1);
       if ( isAdjacentUsed ) *isAdjacentUsed = true;
     }
     return boundaryLink;
@@ -1841,6 +1874,8 @@ namespace { // Structures used by FixQuadraticElements()
     int iL1 = (iL + 1) % 3, iL2 = (iL + 2) % 3; // indices of the two other links of triangle
     TLinkInSet link1 = theLinks.find( _sides[iL1] );
     TLinkInSet link2 = theLinks.find( _sides[iL2] );
+    if ( link1 == theLinks.end() || link2 == theLinks.end() )
+      return thePrevLen;
     const QFace* f1 = link1->NextFace( this ); // adjacent faces
     const QFace* f2 = link2->NextFace( this );
 
@@ -2360,6 +2395,13 @@ void SMESH_MesherHelper::FixQuadraticElements(bool volumeOnly)
         hasRectFaces = hasRectFaces ||
           ( volTool.GetVolumeType() == SMDS_VolumeTool::QUAD_HEXA ||
             volTool.GetVolumeType() == SMDS_VolumeTool::QUAD_PENTA );
+#ifdef _DEBUG_
+        if ( nbN == 6 )
+          pFace->_face = GetMeshDS()->FindFace(faceNodes[0],faceNodes[2],faceNodes[4]);
+        else
+          pFace->_face = GetMeshDS()->FindFace(faceNodes[0],faceNodes[2],
+                                               faceNodes[4],faceNodes[6] );
+#endif
       }
     }
     set< QLink >::iterator pLink = links.begin();
