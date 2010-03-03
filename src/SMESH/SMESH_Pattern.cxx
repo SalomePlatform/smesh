@@ -3922,7 +3922,7 @@ bool SMESH_Pattern::MakeMesh(SMESH_Mesh* theMesh,
                                                 point->myXYZ.Z());
         nodesVector [ pIndex ] = node;
 
-        if ( true /*subMeshDS*/ ) {
+        if ( !S.IsNull() /*subMeshDS*/ ) {
           // !!!!! do not merge new nodes with ones existing on submeshes (see method comment)
           switch ( S.ShapeType() ) {
           case TopAbs_VERTEX: {
