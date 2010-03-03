@@ -78,7 +78,6 @@ struct SMESH_NodeSearcher
 /*!
  * \brief Find elements of given type where the given point is IN or ON.
  *        Returns nb of found elements and elements them-selves.
- *        Another task is to find out if the given point is out of closed 2D mesh.
  *
  * 'ALL' type means elements of any type excluding nodes and 0D elements
  */
@@ -89,8 +88,6 @@ struct SMESH_ElementSearcher
   virtual int FindElementsByPoint(const gp_Pnt&                           point,
                                   SMDSAbs_ElementType                     type,
                                   std::vector< const SMDS_MeshElement* >& foundElems)=0;
-
-  virtual TopAbs_State GetPointState(const gp_Pnt& point) = 0;
 };
 
 //=======================================================================
@@ -127,7 +124,7 @@ public:
   struct TNodeXYZ : public gp_XYZ
   {
     const SMDS_MeshNode* _node;
-    TNodeXYZ( const SMDS_MeshElement* e):gp_XYZ(0,0,0),_node(0) {
+    TNodeXYZ( const SMDS_MeshElement* e):_node(0) {
       if (e) {
         ASSERT( e->GetType() == SMDSAbs_Node );
         _node = static_cast<const SMDS_MeshNode*>(e);
@@ -222,13 +219,6 @@ public:
    */
   int BestSplit (const SMDS_MeshElement*              theQuad,
                  SMESH::Controls::NumericalFunctorPtr theCriterion);
-
-
-  enum SplitVolumToTetraFlags { HEXA_TO_5 = 1, HEXA_TO_6 = 2 };//!<arg of SplitVolumesIntoTetra()
-  /*!
-   * \brief Split volumic elements into tetrahedra.
-   */
-  void SplitVolumesIntoTetra (const TIDSortedElemSet & theElems, const int theMethodFlags);
 
 
   enum SmoothMethod { LAPLACIAN = 0, CENTROIDAL };
@@ -734,3 +724,5 @@ private:
 };
 
 #endif
+
+
