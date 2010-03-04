@@ -197,6 +197,10 @@ DefaultSize, DefaultGeom, Custom = 0,0,1
 
 PrecisionConfusion = 1e-07
 
+# TopAbs_State enumeration
+[TopAbs_IN, TopAbs_OUT, TopAbs_ON, TopAbs_UNKNOWN] = range(4)
+
+
 ## Converts an angle from degrees to radians
 def DegreesToRadians(AngleInDegrees):
     from math import pi
@@ -1920,6 +1924,12 @@ class Mesh:
     def GetElementType(self, id, iselem):
         return self.mesh.GetElementType(id, iselem)
 
+    ## Returns the geometric type of mesh element
+    #  @return the value from SMESH::EntityType enumeration
+    #  @ingroup l1_meshinfo
+    def GetElementGeomType(self, id):
+        return self.mesh.GetElementGeomType(id)
+
     ## Returns the list of submesh elements IDs
     #  @param Shape a geom object(subshape) IOR
     #         Shape must be the subshape of a ShapeToMesh()
@@ -2285,6 +2295,11 @@ class Mesh:
     def FindElementsByPoint(self, x, y, z, elementType = SMESH.ALL):
         return self.editor.FindElementsByPoint(x, y, z, elementType)
         
+    # Return point state in a closed 2D mesh in terms of TopAbs_State enumeration.
+    # TopAbs_UNKNOWN state means that either mesh is wrong or the analysis fails.
+     
+    def GetPointState(self, x, y, z):
+        return self.editor.GetPointState(x, y, z)
 
     ## Finds the node closest to a point and moves it to a point location
     #  @param x  the X coordinate of a point
