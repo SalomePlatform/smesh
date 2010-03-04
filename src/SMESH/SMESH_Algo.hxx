@@ -316,9 +316,13 @@ public:
     * \param meshDS - mesh
     * \retval const SMDS_MeshNode* - found node or NULL
    */
-  static const SMDS_MeshNode* VertexNode(const TopoDS_Vertex& V,
-                                         const SMESHDS_Mesh* meshDS);
+  static const SMDS_MeshNode* VertexNode(const TopoDS_Vertex& V, const SMESHDS_Mesh* meshDS);
 
+  /*!
+   * \brief Return nodes common to two elements
+   */
+  static std::vector< const SMDS_MeshNode*> GetCommonNodes(const SMDS_MeshElement* e1,
+                                                           const SMDS_MeshElement* e2);
 protected:
 
   /*!
