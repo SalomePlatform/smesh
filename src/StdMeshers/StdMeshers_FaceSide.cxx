@@ -134,13 +134,16 @@ StdMeshers_FaceSide::StdMeshers_FaceSide(const TopoDS_Face& theFace,
       myNbPonits += nbN;
       myNbSegments += sm->NbElements();
     }
+    // TopExp::FirstVertex() and TopExp::LastVertex() return NULL from INTERNAL edge
     vExp.Initialize( *edge );
+    if ( vExp.Value().Orientation() == TopAbs_REVERSED ) vExp.Next();
     if ( SMESH_Algo::VertexNode( TopoDS::Vertex( vExp.Value()), meshDS ))
       myNbPonits += 1; // for the first end
     else
       myMissingVertexNodes = true;
   }
-  vExp.Next();
+  vExp.Initialize( theEdges.back() );
+  if ( vExp.Value().Orientation() != TopAbs_REVERSED ) vExp.Next();
   if ( vExp.More() )
   {
     if ( SMESH_Algo::VertexNode( TopoDS::Vertex( vExp.Value()), meshDS ))
