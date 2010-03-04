@@ -38,11 +38,12 @@
 #include "SMESHDS_Group.hxx"
 #include "SMESHDS_Mesh.hxx"
 
-#include "SMESH_subMesh.hxx"
+#include "SMESH_Algo.hxx"
 #include "SMESH_ControlsDef.hxx"
+#include "SMESH_Group.hxx"
 #include "SMESH_MesherHelper.hxx"
 #include "SMESH_OctreeNode.hxx"
-#include "SMESH_Group.hxx"
+#include "SMESH_subMesh.hxx"
 
 #include "utilities.h"
 
@@ -51,11 +52,17 @@
 #include <BRep_Tool.hxx>
 #include <ElCLib.hxx>
 #include <Extrema_GenExtPS.hxx>
+#include <Extrema_POnCurv.hxx>
 #include <Extrema_POnSurf.hxx>
+#include <GC_MakeSegment.hxx>
 #include <Geom2d_Curve.hxx>
+#include <GeomAPI_ExtremaCurveCurve.hxx>
 #include <GeomAdaptor_Surface.hxx>
 #include <Geom_Curve.hxx>
+#include <Geom_Line.hxx>
 #include <Geom_Surface.hxx>
+#include <IntAna_IntConicQuad.hxx>
+#include <IntAna_Quadric.hxx>
 #include <Precision.hxx>
 #include <TColStd_ListOfInteger.hxx>
 #include <TopAbs_State.hxx>
@@ -75,6 +82,7 @@
 #include <gp_Vec.hxx>
 #include <gp_XY.hxx>
 #include <gp_XYZ.hxx>
+
 #include <math.h>
 
 #include <map>
@@ -1102,6 +1110,7 @@ bool SMESH_MeshEditor::QuadToTri (TIDSortedElemSet &                   theElems,
 //function : BestSplit
 //purpose  : Find better diagonal for cutting.
 //=======================================================================
+
 int SMESH_MeshEditor::BestSplit (const SMDS_MeshElement*              theQuad,
                                  SMESH::Controls::NumericalFunctorPtr theCrit)
 {
@@ -1142,6 +1151,164 @@ int SMESH_MeshEditor::BestSplit (const SMDS_MeshElement*              theQuad,
   }
   return -1;
 }
+
+namespace
+{
+  // Methods of splitting volumes into tetra
+
+  const int theHexTo5[5*4] =
+    {
+      0, 1, 5, 2,
+      0, 4, 5, 7,
+      0, 3, 7, 2,
+      5, 6, 7, 2,
+      0, 2, 5, 7
+    };
+  const int theHexTo6[6*4] =
+    {
+      0, 1, 5, 2,
+      0, 4, 5, 7,
+      0, 3, 7, 2,
+      5, 6, 7, 2,
+      0, 2, 5, 7
+    };
+  const int thePyraTo2[2*4] =
+    {
+      0, 1, 2, 4,
+      0, 2, 3, 4
+    };
+
+  const int thePentaTo8[8*4] =
+    {
+      0, 1, 2, 6,
+      3, 5, 4, 6,
+      0, 3, 4, 6,
+      0, 4, 1, 6,
+      1, 4, 5, 6,
+      1, 5, 2, 6,
+      2, 5, 3, 6,
+      2, 3, 0, 6
+    };
+
+  struct TSplitMethod
+  {
+    int        _nbTetra;
+    const int* _connectivity;
+    bool       _addNode; // additional node is to be created
+    TSplitMethod( int nbTet=0, const int* conn=0, bool addNode=false)
+      : _nbTetra(nbTet), _connectivity(conn), _addNode(addNode) {}
+  };
+
+  /*!
+   * \brief return TSplitMethod for the given element
+   */
+  TSplitMethod getSplitMethod( const SMDS_MeshElement* vol, const int theMethodFlags)
+  {
+    TSplitMethod method;
+    if ( vol->GetType() == SMDSAbs_Volume && !vol->IsPoly())
+      switch ( vol->NbNodes() )
+      {
+      case 8:
+      case 20:
+        if ( theMethodFlags & SMESH_MeshEditor::HEXA_TO_5 )
+          method = TSplitMethod( 5, theHexTo5 );
+        else
+          method = TSplitMethod( 6, theHexTo6 );
+        break;
+      case 5:
+      case 13:
+        method = TSplitMethod( 2, thePyraTo2 );
+        break;
+      case 6:
+      case 15:
+        method = TSplitMethod( 8, thePentaTo8, /*addNode=*/true );
+        break;
+      default:;
+      }
+    return method;
+  }
+}
+
+//=======================================================================
+//function : SplitVolumesIntoTetra
+//purpose  : Split volumic elements into tetrahedra.
+//=======================================================================
+
+// void SMESH_MeshEditor::SplitVolumesIntoTetra (const TIDSortedElemSet & theElems,
+//                                               const int                theMethodFlags)
+// {
+//   // sdt-like iterator on coordinates of nodes of mesh element
+//   typedef SMDS_StdIterator< TNodeXYZ, SMDS_ElemIteratorPtr > NXyzIterator;
+//   NXyzIterator xyzEnd;
+
+//   SMESH_MesherHelper helper( *GetMesh());
+
+//   TIDSortedElemSet::const_iterator elem = theElems.begin();
+//   for ( ; elem != theElems.end(); ++elem )
+//   {
+//     SMDSAbs_EntityType geomType = (*elem)->GetEntityType();
+//     if ( geomType <= SMDSEntity_Quad_Tetra )
+//       continue; // tetra or face or edge
+
+//     if ( (*elem)->IsQuadratic() )
+//     {
+//       // add quadratic links to the helper
+//       SMDS_VolumeTool vol( *elem );
+//       for ( int iF = 0; iF < vol.NbFaces(); ++iF )
+//       {
+//         const SMDS_MeshNode** fNodes = vol.GetFaceNodes( iF );
+//         for ( int iN = 0; iN < vol.NbFaceNodes( iF ); iN += 2)
+//           helper.AddTLinkNode( fNodes[iF], fNodes[iF+2], fNodes[iF+1] );
+//       }
+//       helper.SetIsQuadratic( true );
+//     }
+//     else
+//     {
+//       helper.SetIsQuadratic( false );
+//     }
+
+//     vector<const SMDS_MeshElement* > tetras; // splits of a volume
+
+//     if ( geomType == SMDSEntity_Polyhedra )
+//     {
+//       // Each face of a polyhedron is split into triangles and
+//       // each of triangles and a cell barycenter form a tetrahedron.
+
+//       SMDS_VolumeTool vol( *elem );
+
+//       // make a node at barycenter
+//       gp_XYZ gc = std::accumulate( NXyzIterator((*elem)->nodesIterator()), xyzEnd,gp_XYZ(0,0,0));
+//       gc /= vol.NbNodes();
+//       SMDS_MeshNode* gcNode = GetMeshDS()->AddNode( gc.X(), gc.Y(), gc.Z() );
+
+//       for ( int iF = 0; iF < vol.NbFaces(); ++iF )
+//       {
+//         const SMDS_MeshNode** fNodes = vol.GetFaceNodes( iF );
+//         int nbFNodes = vol.NbFaceNodes( iF );
+//         int nbTria = nbFNodes - 2;
+//         bool extFace =  vol.IsFaceExternal( iF );
+//         SMDS_MeshElement* tet;
+//         for ( int i = 0; i < nbTria; ++i )
+//         {
+//           if ( extFace )
+//             tet = helper.AddVolume( fNodes[0], fNodes[i+1], fNodes[i+2], gcNode );
+//           else
+//             tet = helper.AddVolume( fNodes[0], fNodes[i+2], fNodes[i+1], gcNode );
+//           tetras.push_back( tet );
+//         }
+//       }
+
+//     }
+//     else
+//     {
+
+//       TSplitMethod splitMethod = getSplitMethod( *elem, theMethodFlags );
+//       if ( splitMethod._nbTetra < 1 ) continue;
+
+//       vector<const SMDS_MeshNode*> volNodes( (*elem)->begin_nodes(), (*elem)->end_nodes());
+//     }
+//   }
+// }
 
 //=======================================================================
 //function : AddToSameGroups
@@ -5584,6 +5751,7 @@ namespace // Utils used in SMESH_ElementSearcherImpl::FindElementsByPoint()
 
     ElementBndBoxTree(const SMDS_Mesh& mesh, SMDSAbs_ElementType elemType);
     void getElementsNearPoint( const gp_Pnt& point, TIDSortedElemSet& foundElems);
+    void getElementsNearLine ( const gp_Ax1& line, TIDSortedElemSet& foundElems);
     ~ElementBndBoxTree();
 
   protected:
@@ -5711,6 +5879,31 @@ namespace // Utils used in SMESH_ElementSearcherImpl::FindElementsByPoint()
 
   //================================================================================
   /*!
+   * \brief Return elements which can be intersected by the line
+   */
+  //================================================================================
+
+  void ElementBndBoxTree::getElementsNearLine( const gp_Ax1&     line,
+                                               TIDSortedElemSet& foundElems)
+  {
+    if ( level() && getBox().IsOut( line ))
+      return;
+
+    if ( isLeaf() )
+    {
+      for ( int i = 0; i < _elements.size(); ++i )
+        if ( !_elements[i]->IsOut( line ))
+          foundElems.insert( _elements[i]->_element );
+    }
+    else
+    {
+      for (int i = 0; i < 8; i++)
+        ((ElementBndBoxTree*) myChildren[i])->getElementsNearLine( line, foundElems );
+    }
+  }
+
+  //================================================================================
+  /*!
    * \brief Construct the element box
    */
   //================================================================================
@@ -5729,60 +5922,89 @@ namespace // Utils used in SMESH_ElementSearcherImpl::FindElementsByPoint()
 
 //=======================================================================
 /*!
- * \brief Implementation of search for the elements by point
+ * \brief Implementation of search for the elements by point and
+ *        of classification of point in 2D mesh
  */
 //=======================================================================
 
 struct SMESH_ElementSearcherImpl: public SMESH_ElementSearcher
 {
-  SMESHDS_Mesh*           _mesh;
-  ElementBndBoxTree*      _ebbTree;
-  SMESH_NodeSearcherImpl* _nodeSearcher;
-  SMDSAbs_ElementType     _elementType;
+  SMESHDS_Mesh*                _mesh;
+  ElementBndBoxTree*           _ebbTree;
+  SMESH_NodeSearcherImpl*      _nodeSearcher;
+  SMDSAbs_ElementType          _elementType;
+  double                       _tolerance;
+  bool                         _outerFacesFound;
+  set<const SMDS_MeshElement*> _outerFaces; // empty means "no internal faces at all"
 
-  SMESH_ElementSearcherImpl( SMESHDS_Mesh& mesh ): _mesh(&mesh),_ebbTree(0),_nodeSearcher(0) {}
+  SMESH_ElementSearcherImpl( SMESHDS_Mesh& mesh )
+    : _mesh(&mesh),_ebbTree(0),_nodeSearcher(0), _tolerance(-1), _outerFacesFound(false) {}
   ~SMESH_ElementSearcherImpl()
   {
     if ( _ebbTree )      delete _ebbTree;      _ebbTree      = 0;
     if ( _nodeSearcher ) delete _nodeSearcher; _nodeSearcher = 0;
   }
+  virtual int FindElementsByPoint(const gp_Pnt&                      point,
+                                  SMDSAbs_ElementType                type,
+                                  vector< const SMDS_MeshElement* >& foundElements);
+  virtual TopAbs_State GetPointState(const gp_Pnt& point);
 
-  /*!
-   * \brief Find elements of given type where the given point is IN or ON.
-   *        Returns nb of found elements and elements them-selves.
-   *
-   * 'ALL' type means elements of any type excluding nodes and 0D elements
-   */
-  int FindElementsByPoint(const gp_Pnt&                      point,
-                          SMDSAbs_ElementType                type,
-                          vector< const SMDS_MeshElement* >& foundElements)
+  double getTolerance();
+  bool getIntersParamOnLine(const gp_Lin& line, const SMDS_MeshElement* face,
+                            const double tolerance, double & param);
+  void findOuterBoundary(const SMDS_MeshElement* anyOuterFace);
+  bool isOuterBoundary(const SMDS_MeshElement* face) const
   {
-    foundElements.clear();
+    return _outerFaces.empty() || _outerFaces.count(face);
+  }
+  struct TInters //!< data of intersection of the line and the mesh face used in GetPointState()
+  {
+    const SMDS_MeshElement* _face;
+    gp_Vec                  _faceNorm;
+    bool                    _coincides; //!< the line lays in face plane
+    TInters(const SMDS_MeshElement* face, const gp_Vec& faceNorm, bool coinc=false)
+      : _face(face), _faceNorm( faceNorm ), _coincides( coinc ) {}
+  };
+  struct TFaceLink //!< link and faces sharing it (used in findOuterBoundary())
+  {
+    SMESH_TLink      _link;
+    TIDSortedElemSet _faces;
+    TFaceLink( const SMDS_MeshNode* n1, const SMDS_MeshNode* n2, const SMDS_MeshElement* face)
+      : _link( n1, n2 ), _faces( &face, &face + 1) {}
+  };
+};
 
+//=======================================================================
+/*!
+ * \brief define tolerance for search
+ */
+//=======================================================================
+
+double SMESH_ElementSearcherImpl::getTolerance()
+{
+  if ( _tolerance < 0 )
+  {
     const SMDS_MeshInfo& meshInfo = _mesh->GetMeshInfo();
 
-    // -----------------
-    // define tolerance
-    // -----------------
-    double tolerance = 0;
+    _tolerance = 0;
     if ( _nodeSearcher && meshInfo.NbNodes() > 1 )
     {
       double boxSize = _nodeSearcher->getTree()->maxSize();
-      tolerance = 1e-8 * boxSize/* / meshInfo.NbNodes()*/;
+      _tolerance = 1e-8 * boxSize/* / meshInfo.NbNodes()*/;
     }
     else if ( _ebbTree && meshInfo.NbElements() > 0 )
     {
       double boxSize = _ebbTree->maxSize();
-      tolerance = 1e-8 * boxSize/* / meshInfo.NbElements()*/;
+      _tolerance = 1e-8 * boxSize/* / meshInfo.NbElements()*/;
     }
-    if ( tolerance == 0 )
+    if ( _tolerance == 0 )
     {
       // define tolerance by size of a most complex element
       int complexType = SMDSAbs_Volume;
       while ( complexType > SMDSAbs_All &&
               meshInfo.NbElements( SMDSAbs_ElementType( complexType )) < 1 )
         --complexType;
-      if ( complexType == SMDSAbs_All ) return foundElements.size(); // empty mesh
+      if ( complexType == SMDSAbs_All ) return 0; // empty mesh
 
       double elemSize;
       if ( complexType == int( SMDSAbs_Node ))
@@ -5804,50 +6026,418 @@ struct SMESH_ElementSearcherImpl: public SMESH_ElementSearcher
           elemSize = max( dist, elemSize );
         }
       }
-      tolerance = 1e-6 * elemSize;
+      _tolerance = 1e-6 * elemSize;
     }
-
-    // =================================================================================
-    if ( type == SMDSAbs_Node || type == SMDSAbs_0DElement )
-    {
-      if ( !_nodeSearcher )
-        _nodeSearcher = new SMESH_NodeSearcherImpl( _mesh );
-
-      const SMDS_MeshNode* closeNode = _nodeSearcher->FindClosestTo( point );
-      if ( !closeNode ) return foundElements.size();
-
-      if ( point.Distance( SMESH_MeshEditor::TNodeXYZ( closeNode )) > tolerance )
-        return foundElements.size(); // to far from any node
-
-      if ( type == SMDSAbs_Node )
-      {
-        foundElements.push_back( closeNode );
-      }
-      else
-      {
-        SMDS_ElemIteratorPtr elemIt = closeNode->GetInverseElementIterator( SMDSAbs_0DElement );
-        while ( elemIt->more() )
-          foundElements.push_back( elemIt->next() );
-      }
-    }
-    // =================================================================================
-    else // elements more complex than 0D
-    {
-      if ( !_ebbTree || _elementType != type )
-      {
-        if ( _ebbTree ) delete _ebbTree;
-        _ebbTree = new ElementBndBoxTree( *_mesh, _elementType = type );
-      }
-      TIDSortedElemSet suspectElems;
-      _ebbTree->getElementsNearPoint( point, suspectElems );
-      TIDSortedElemSet::iterator elem = suspectElems.begin();
-      for ( ; elem != suspectElems.end(); ++elem )
-        if ( !SMESH_MeshEditor::isOut( *elem, point, tolerance ))
-          foundElements.push_back( *elem );
-    }
-    return foundElements.size();
   }
-}; // struct SMESH_ElementSearcherImpl
+  return _tolerance;
+}
+
+//================================================================================
+/*!
+ * \brief Find intersection of the line and an edge of face and return parameter on line
+ */
+//================================================================================
+
+bool SMESH_ElementSearcherImpl::getIntersParamOnLine(const gp_Lin&           line,
+                                                     const SMDS_MeshElement* face,
+                                                     const double            tol,
+                                                     double &                param)
+{
+  int nbInts = 0;
+  param = 0;
+
+  GeomAPI_ExtremaCurveCurve anExtCC;
+  Handle(Geom_Curve) lineCurve = new Geom_Line( line );
+  
+  int nbNodes = face->IsQuadratic() ? face->NbNodes()/2 : face->NbNodes();
+  for ( int i = 0; i < nbNodes && nbInts < 2; ++i )
+  {
+    GC_MakeSegment edge( SMESH_MeshEditor::TNodeXYZ( face->GetNode( i )),
+                         SMESH_MeshEditor::TNodeXYZ( face->GetNode( (i+1)%nbNodes) )); 
+    anExtCC.Init( lineCurve, edge);
+    if ( anExtCC.NbExtrema() > 0 && anExtCC.LowerDistance() <= tol)
+    {
+      Quantity_Parameter pl, pe;
+      anExtCC.LowerDistanceParameters( pl, pe );
+      param += pl;
+      if ( ++nbInts == 2 )
+        break;
+    }
+  }
+  if ( nbInts > 0 ) param /= nbInts;
+  return nbInts > 0;
+}
+//================================================================================
+/*!
+ * \brief Find all faces belonging to the outer boundary of mesh
+ */
+//================================================================================
+
+void SMESH_ElementSearcherImpl::findOuterBoundary(const SMDS_MeshElement* outerFace)
+{
+  if ( _outerFacesFound ) return;
+
+  // Collect all outer faces passing from one outer face to another via their links
+  // and BTW find out if there are internal faces at all.
+
+  bool hasInternal = false;
+
+  // checked links
+  set< SMESH_TLink > visitedLinks;
+
+  // links to treat with already visited faces sharing them
+  list < TFaceLink > startLinks;
+
+  // load startLinks with the first outerFace
+  startLinks.push_back( TFaceLink( outerFace->GetNode(0), outerFace->GetNode(1), outerFace));
+  _outerFaces.insert( outerFace );
+
+  TIDSortedElemSet emptySet;
+  while ( !startLinks.empty() )
+  {
+    const SMESH_TLink& link  = startLinks.front()._link;
+    TIDSortedElemSet&  faces = startLinks.front()._faces;
+
+    outerFace = *faces.begin();
+    // find other faces sharing the link
+    const SMDS_MeshElement* f;
+    while (( f = SMESH_MeshEditor::FindFaceInSet(link.node1(), link.node2(), emptySet, faces )))
+      faces.insert( f );
+
+    // select another outer face among the found 
+    const SMDS_MeshElement* outerFace2 = 0;
+    if ( faces.size() == 2 )
+    {
+      outerFace2 = (outerFace == *faces.begin() ? *faces.rbegin() : *faces.begin());
+    }
+    else if ( faces.size() > 2 )
+    {
+      hasInternal = true;
+      // link direction within the outerFace
+      gp_Vec n1n2( SMESH_MeshEditor::TNodeXYZ( link.node1()),
+                   SMESH_MeshEditor::TNodeXYZ( link.node2()));
+      int i1 = outerFace->GetNodeIndex( link.node1() );
+      int i2 = outerFace->GetNodeIndex( link.node2() );
+      bool rev = ( abs(i2-i1) == 1 ? i1 > i2 : i2 > i1 );
+      if ( rev ) n1n2.Reverse();
+      // outerFace normal
+      gp_XYZ ofNorm, fNorm;
+      if ( SMESH_Algo::FaceNormal( outerFace, ofNorm, /*normalized=*/false ))
+      {
+        // direction from the link inside outerFace
+        gp_Vec dirInOF = gp_Vec( ofNorm ) ^ n1n2;
+        // sort all other faces by angle with the dirInOF
+        map< double, const SMDS_MeshElement* > angle2Face;
+        set< const SMDS_MeshElement* >::const_iterator face = faces.begin();
+        for ( ; face != faces.end(); ++face )
+        {
+          if ( !SMESH_Algo::FaceNormal( *face, fNorm, /*normalized=*/false ))
+            continue;
+          gp_Vec dirInF = gp_Vec( fNorm ) ^ n1n2;
+          double angle = dirInOF.AngleWithRef( dirInF, n1n2 );
+          if ( angle < 0 ) angle += 2*PI;
+          angle2Face.insert( make_pair( angle, *face ));
+        }
+        if ( !angle2Face.empty() )
+          outerFace2 = angle2Face.begin()->second;
+      }
+    }
+    // store the found outer face and add its links to continue seaching from
+    if ( outerFace2 )
+    {
+      _outerFaces.insert( outerFace );
+      int nbNodes = outerFace2->NbNodes()/( outerFace2->IsQuadratic() ? 2 : 1 );
+      for ( int i = 0; i < nbNodes; ++i )
+      {
+        SMESH_TLink link2( outerFace2->GetNode(i), outerFace2->GetNode((i+1)%nbNodes));
+        if ( visitedLinks.insert( link2 ).second )
+          startLinks.push_back( TFaceLink( link2.node1(), link2.node2(), outerFace2 ));
+      }
+    }
+    startLinks.pop_front();
+  }
+  _outerFacesFound = true;
+  if ( !hasInternal )
+    _outerFaces.clear();
+}
+
+//=======================================================================
+/*!
+ * \brief Find elements of given type where the given point is IN or ON.
+ *        Returns nb of found elements and elements them-selves.
+ *
+ * 'ALL' type means elements of any type excluding nodes and 0D elements
+ */
+//=======================================================================
+
+int SMESH_ElementSearcherImpl::
+FindElementsByPoint(const gp_Pnt&                      point,
+                    SMDSAbs_ElementType                type,
+                    vector< const SMDS_MeshElement* >& foundElements)
+{
+  foundElements.clear();
+
+  double tolerance = getTolerance();
+
+  // =================================================================================
+  if ( type == SMDSAbs_Node || type == SMDSAbs_0DElement )
+  {
+    if ( !_nodeSearcher )
+      _nodeSearcher = new SMESH_NodeSearcherImpl( _mesh );
+
+    const SMDS_MeshNode* closeNode = _nodeSearcher->FindClosestTo( point );
+    if ( !closeNode ) return foundElements.size();
+
+    if ( point.Distance( SMESH_MeshEditor::TNodeXYZ( closeNode )) > tolerance )
+      return foundElements.size(); // to far from any node
+
+    if ( type == SMDSAbs_Node )
+    {
+      foundElements.push_back( closeNode );
+    }
+    else
+    {
+      SMDS_ElemIteratorPtr elemIt = closeNode->GetInverseElementIterator( SMDSAbs_0DElement );
+      while ( elemIt->more() )
+        foundElements.push_back( elemIt->next() );
+    }
+  }
+  // =================================================================================
+  else // elements more complex than 0D
+  {
+    if ( !_ebbTree || _elementType != type )
+    {
+      if ( _ebbTree ) delete _ebbTree;
+      _ebbTree = new ElementBndBoxTree( *_mesh, _elementType = type );
+    }
+    TIDSortedElemSet suspectElems;
+    _ebbTree->getElementsNearPoint( point, suspectElems );
+    TIDSortedElemSet::iterator elem = suspectElems.begin();
+    for ( ; elem != suspectElems.end(); ++elem )
+      if ( !SMESH_MeshEditor::isOut( *elem, point, tolerance ))
+        foundElements.push_back( *elem );
+  }
+  return foundElements.size();
+}
+
+//================================================================================
+/*!
+ * \brief Classify the given point in the closed 2D mesh
+ */
+//================================================================================
+
+TopAbs_State SMESH_ElementSearcherImpl::GetPointState(const gp_Pnt& point)
+{
+  double tolerance = getTolerance();
+  if ( !_ebbTree || _elementType != SMDSAbs_Face )
+  {
+    if ( _ebbTree ) delete _ebbTree;
+    _ebbTree = new ElementBndBoxTree( *_mesh, _elementType = SMDSAbs_Face );
+  }
+  // Algo: analyse transition of a line starting at the point through mesh boundary;
+  // try three lines parallel to axis of the coordinate system and perform rough
+  // analysis. If solution is not clear perform thorough analysis.
+
+  const int nbAxes = 3;
+  gp_Dir axisDir[ nbAxes ] = { gp::DX(), gp::DY(), gp::DZ() };
+  map< double, TInters >   paramOnLine2TInters[ nbAxes ];
+  list< TInters > tangentInters[ nbAxes ]; // of faces whose plane includes the line
+  multimap< int, int > nbInt2Axis; // to find the simplest case
+  for ( int axis = 0; axis < nbAxes; ++axis )
+  {
+    gp_Ax1 lineAxis( point, axisDir[axis]);
+    gp_Lin line    ( lineAxis );
+
+    TIDSortedElemSet suspectFaces; // faces possibly intersecting the line
+    _ebbTree->getElementsNearLine( lineAxis, suspectFaces );
+
+    // Intersect faces with the line
+
+    map< double, TInters > & u2inters = paramOnLine2TInters[ axis ];
+    TIDSortedElemSet::iterator face = suspectFaces.begin();
+    for ( ; face != suspectFaces.end(); ++face )
+    {
+      // get face plane
+      gp_XYZ fNorm;
+      if ( !SMESH_Algo::FaceNormal( *face, fNorm, /*normalized=*/false)) continue;
+      gp_Pln facePlane( SMESH_MeshEditor::TNodeXYZ( (*face)->GetNode(0)), fNorm );
+
+      // perform intersection
+      IntAna_IntConicQuad intersection( line, IntAna_Quadric( facePlane ));
+      if ( !intersection.IsDone() )
+        continue;
+      if ( intersection.IsInQuadric() )
+      {
+        tangentInters[ axis ].push_back( TInters( *face, fNorm, true ));
+      }
+      else if ( ! intersection.IsParallel() && intersection.NbPoints() > 0 )
+      {
+        gp_Pnt intersectionPoint = intersection.Point(1);
+        if ( !SMESH_MeshEditor::isOut( *face, intersectionPoint, tolerance ))
+          u2inters.insert(make_pair( intersection.ParamOnConic(1), TInters( *face, fNorm )));
+      }
+    }
+    // Analyse intersections roughly
+
+    int nbInter = u2inters.size();
+    if ( nbInter == 0 )
+      return TopAbs_OUT; 
+
+    double f = u2inters.begin()->first, l = u2inters.rbegin()->first;
+    if ( nbInter == 1 ) // not closed mesh
+      return fabs( f ) < tolerance ? TopAbs_ON : TopAbs_UNKNOWN;
+
+    if ( fabs( f ) < tolerance || fabs( l ) < tolerance )
+      return TopAbs_ON;
+
+    if ( (f<0) == (l<0) )
+      return TopAbs_OUT;
+
+    int nbIntBeforePoint = std::distance( u2inters.begin(), u2inters.lower_bound(0));
+    int nbIntAfterPoint  = nbInter - nbIntBeforePoint;
+    if ( nbIntBeforePoint == 1 || nbIntAfterPoint == 1 )
+      return TopAbs_IN;
+
+    nbInt2Axis.insert( make_pair( min( nbIntBeforePoint, nbIntAfterPoint ), axis ));
+
+  } // three attempts - loop on CS axes
+
+  // Analyse intersections thoroughly.
+  // We make two loops maximum, on the first one we only exclude touching intersections,
+  // on the second, if situation is still unclear, we gather and use information on
+  // position of faces (internal or outer). If faces position is already gathered,
+  // we make the second loop right away.
+
+  for ( int hasPositionInfo = _outerFacesFound; hasPositionInfo < 2; ++hasPositionInfo )
+  {
+    multimap< int, int >::const_iterator nb_axis = nbInt2Axis.begin();
+    for ( ; nb_axis != nbInt2Axis.end(); ++nb_axis )
+    {
+      int axis = nb_axis->second;
+      map< double, TInters > & u2inters = paramOnLine2TInters[ axis ];
+
+      gp_Ax1 lineAxis( point, axisDir[axis]);
+      gp_Lin line    ( lineAxis );
+
+      // add tangent intersections to u2inters
+      double param;
+      list< TInters >::const_iterator tgtInt = tangentInters[ axis ].begin();
+      for ( ; tgtInt != tangentInters[ axis ].end(); ++tgtInt )
+        if ( getIntersParamOnLine( line, tgtInt->_face, tolerance, param ))
+          u2inters.insert(make_pair( param, *tgtInt ));
+      tangentInters[ axis ].clear();
+
+      // Count intersections before and after the point excluding touching ones.
+      // If hasPositionInfo we count intersections of outer boundary only
+
+      int nbIntBeforePoint = 0, nbIntAfterPoint = 0;
+      double f = numeric_limits<double>::max(), l = -numeric_limits<double>::max();
+      map< double, TInters >::iterator u_int2 = u2inters.begin(), u_int1 = u_int2++;
+      bool ok = ! u_int1->second._coincides;
+      while ( ok && u_int1 != u2inters.end() )
+      {
+        // skip intersections at the same point (if the line passes through edge or node)
+        int nbSamePnt = 0;
+        double u = u_int1->first;
+        while ( u_int2 != u2inters.end() && fabs( u_int2->first - u ) < tolerance )
+        {
+          ++nbSamePnt;
+          ++u_int2;
+        }
+
+        // skip tangent intersections
+        int nbTgt = 0;
+        const SMDS_MeshElement* prevFace = u_int1->second._face;
+        while ( ok && u_int2->second._coincides )
+        {
+          if ( SMESH_Algo::GetCommonNodes(prevFace , u_int2->second._face).empty() )
+            ok = false;
+          else
+          {
+            nbTgt++;
+            u_int2++;
+            ok = ( u_int2 != u2inters.end() );
+          }
+        }
+        if ( !ok ) break;
+
+        // skip intersections at the same point after tangent intersections
+        if ( nbTgt > 0 )
+        {
+          double u = u_int2->first;
+          ++u_int2;
+          while ( u_int2 != u2inters.end() && fabs( u_int2->first - u ) < tolerance )
+          {
+            ++nbSamePnt;
+            ++u_int2;
+          }
+        }
+
+        bool touchingInt = false;
+        if ( nbSamePnt + nbTgt > 0 )
+        {
+          double minDot = numeric_limits<double>::max(), maxDot = -numeric_limits<double>::max();
+          map< double, TInters >::iterator u_int = u_int1;
+          for ( ; u_int != u_int2; ++u_int )
+          {
+            if ( u_int->second._coincides ) continue;
+            double dot = u_int->second._faceNorm * line.Direction();
+            if ( dot > maxDot ) maxDot = dot;
+            if ( dot < minDot ) minDot = dot;
+          }
+          touchingInt = ( minDot*maxDot < 0 );
+        }
+        if ( !touchingInt )
+        {
+          if ( !hasPositionInfo || isOuterBoundary( u_int1->second._face ))
+          {
+            if ( u < 0 )
+              ++nbIntBeforePoint;
+            else
+              ++nbIntAfterPoint;
+
+          }
+          if ( u < f ) f = u;
+          if ( u > l ) l = u;
+        }
+
+        u_int1 = u_int2++; // to next intersection
+
+      } // loop on intersections with one line
+
+      if ( ok )
+      {
+        if ( fabs( f ) < tolerance || fabs( l ) < tolerance )
+          return TopAbs_ON;
+
+        if ( nbIntBeforePoint == 0  || nbIntAfterPoint == 0)
+          return TopAbs_OUT; 
+
+        if ( nbIntBeforePoint + nbIntAfterPoint == 1 ) // not closed mesh
+          return fabs( f ) < tolerance ? TopAbs_ON : TopAbs_UNKNOWN;
+
+        if ( nbIntBeforePoint == 1 || nbIntAfterPoint == 1 )
+          return TopAbs_IN;
+
+        if ( (f<0) == (l<0) )
+          return TopAbs_OUT;
+
+        if ( hasPositionInfo )
+          return nbIntBeforePoint % 2 ? TopAbs_IN : TopAbs_OUT;
+      }
+    } // loop on intersections of the tree lines - thorough analysis
+
+    if ( !hasPositionInfo )
+    {
+      // gather info on faces position - is face in the outer boundary or not
+      map< double, TInters > & u2inters = paramOnLine2TInters[ 0 ];
+      findOuterBoundary( u2inters.begin()->second._face );
+    }
+
+  } // two attempts - with and w/o faces position info in the mesh
+
+  return TopAbs_UNKNOWN;
+}
 
 //=======================================================================
 /*!
@@ -9351,5 +9941,3 @@ bool SMESH_MeshEditor::Make2DMeshFrom3D()
   }
   return res;
 }
-
-

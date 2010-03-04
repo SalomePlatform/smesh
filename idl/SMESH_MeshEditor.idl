@@ -655,6 +655,12 @@ module SMESH
      */
     long_array FindElementsByPoint(in double x, in double y, in double z, in ElementType type);
 
+    /*!
+     * Return point state in a closed 2D mesh in terms of TopAbs_State enumeration.
+     * TopAbs_UNKNOWN state means that either mesh is wrong or the analysis fails.
+     */
+    short GetPointState(in double x, in double y, in double z);
+
     enum Sew_Error {
       SEW_OK,
       SEW_BORDER1_NOT_FOUND,

@@ -1159,6 +1159,10 @@ CORBA::Long SMESH_MeshEditor_i::BestSplit (CORBA::Long                 IDOfQuad,
   return -1;
 }
 
+void SMESH_MeshEditor_i::SplitVolumesIntoTetra (SMESH::SMESH_IDSource_ptr elems,
+                                                CORBA::Short methodFlags)
+{
+}
 
 //=======================================================================
 //function : Smooth
@@ -3884,6 +3888,24 @@ SMESH::long_array* SMESH_MeshEditor_i::FindElementsByPoint(CORBA::Double      x,
                   << type << " )";
 
   return res._retn();
+}
+
+//=======================================================================
+//function : GetPointState
+//purpose  : Return point state in a closed 2D mesh in terms of TopAbs_State enumeration.
+//           TopAbs_UNKNOWN state means that either mesh is wrong or the analysis fails.
+//=======================================================================
+
+CORBA::Short SMESH_MeshEditor_i::GetPointState(CORBA::Double x,
+                                               CORBA::Double y,
+                                               CORBA::Double z)
+{
+  theSearchersDeleter.Set( myMesh );
+  if ( !theElementSearcher ) {
+    ::SMESH_MeshEditor anEditor( myMesh );
+    theElementSearcher = anEditor.GetElementSearcher();
+  }
+  return CORBA::Short( theElementSearcher->GetPointState( gp_Pnt( x,y,z )));
 }
 
 //=======================================================================

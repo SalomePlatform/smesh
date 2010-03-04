@@ -137,6 +137,8 @@ public:
                                   CORBA::Boolean              Diag13);
   CORBA::Long    BestSplit       (CORBA::Long                 IDOfQuad,
                                   SMESH::NumericalFunctor_ptr Criterion);
+  void SplitVolumesIntoTetra     (SMESH::SMESH_IDSource_ptr elems,
+                                  CORBA::Short methodFlags);
 
   CORBA::Boolean Smooth(const SMESH::long_array &              IDsOfElements,
                         const SMESH::long_array &              IDsOfFixedNodes,
@@ -463,7 +465,6 @@ public:
                                 CORBA::Double z);
   /*!
    * Return elements of given type where the given point is IN or ON.
-   *
    * 'ALL' type means elements of any type excluding nodes
    */
   SMESH::long_array* FindElementsByPoint(CORBA::Double      x,
@@ -471,6 +472,11 @@ public:
                                          CORBA::Double      z,
                                          SMESH::ElementType type);
 
+  /*!
+   * Return point state in a closed 2D mesh in terms of TopAbs_State enumeration.
+   * TopAbs_UNKNOWN state means that either mesh is wrong or the analysis fails.
+   */
+  CORBA::Short GetPointState(CORBA::Double x, CORBA::Double y, CORBA::Double z);
 
   SMESH::SMESH_MeshEditor::Sew_Error
   SewFreeBorders(CORBA::Long FirstNodeID1,
