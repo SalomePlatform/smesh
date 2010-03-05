@@ -39,6 +39,7 @@
 
 #include "utilities.h"
 #include "OpUtil.hxx"
+#include "Basics_Utils.hxx"
 
 #include <BRep_Builder.hxx>
 #include <BRep_Tool.hxx>
@@ -1370,6 +1371,7 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
           algo->InitComputeError();
           MemoryReserve aMemoryReserve;
           SMDS_Mesh::CheckMemory();
+          Kernel_Utils::Localizer loc;
           if ( !_father->HasShapeToMesh() ) // no shape
           {
             SMESH_MesherHelper helper( *_father );
