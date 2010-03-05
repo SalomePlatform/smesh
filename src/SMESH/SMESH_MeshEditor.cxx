@@ -5974,6 +5974,12 @@ struct SMESH_ElementSearcherImpl: public SMESH_ElementSearcher
   };
 };
 
+ostream& operator<< (ostream& out, const SMESH_ElementSearcherImpl::TInters& i)
+{
+  return out << "TInters(face=" << ( i._face ? i._face->GetID() : 0)
+             << ", _coincides="<<i._coincides << ")";
+}
+
 //=======================================================================
 /*!
  * \brief define tolerance for search
@@ -6077,13 +6083,11 @@ void SMESH_ElementSearcherImpl::findOuterBoundary(const SMDS_MeshElement* outerF
 {
   if ( _outerFacesFound ) return;
 
-  // Collect all outer faces passing from one outer face to another via their links
+  // Collect all outer faces by passing from one outer face to another via their links
   // and BTW find out if there are internal faces at all.
 
-  bool hasInternal = false;
-
-  // checked links
-  set< SMESH_TLink > visitedLinks;
+  // checked links and links where outer boundary meets internal one
+  set< SMESH_TLink > visitedLinks, seamLinks;
 
   // links to treat with already visited faces sharing them
   list < TFaceLink > startLinks;
@@ -6112,7 +6116,8 @@ void SMESH_ElementSearcherImpl::findOuterBoundary(const SMDS_MeshElement* outerF
     }
     else if ( faces.size() > 2 )
     {
-      hasInternal = true;
+      seamLinks.insert( link );
+
       // link direction within the outerFace
       gp_Vec n1n2( SMESH_MeshEditor::TNodeXYZ( link.node1()),
                    SMESH_MeshEditor::TNodeXYZ( link.node2()));
@@ -6157,8 +6162,18 @@ void SMESH_ElementSearcherImpl::findOuterBoundary(const SMDS_MeshElement* outerF
     startLinks.pop_front();
   }
   _outerFacesFound = true;
-  if ( !hasInternal )
+
+  if ( !seamLinks.empty() )
+  {
+    // There are internal boundaries touching the outher one,
+    // find all faces of internal boundaries in order to find
+    // faces of boundaries of holes, if any.
+    
+  }
+  else
+  {
     _outerFaces.clear();
+  }
 }
 
 //=======================================================================
@@ -6300,6 +6315,8 @@ TopAbs_State SMESH_ElementSearcherImpl::GetPointState(const gp_Pnt& point)
 
     nbInt2Axis.insert( make_pair( min( nbIntBeforePoint, nbIntAfterPoint ), axis ));
 
+    if ( _outerFacesFound ) break; // pass to thorough analysis
+
   } // three attempts - loop on CS axes
 
   // Analyse intersections thoroughly.
@@ -6332,60 +6349,63 @@ TopAbs_State SMESH_ElementSearcherImpl::GetPointState(const gp_Pnt& point)
 
       int nbIntBeforePoint = 0, nbIntAfterPoint = 0;
       double f = numeric_limits<double>::max(), l = -numeric_limits<double>::max();
-      map< double, TInters >::iterator u_int2 = u2inters.begin(), u_int1 = u_int2++;
+      map< double, TInters >::iterator u_int1 = u2inters.begin(), u_int2 = u_int1;
       bool ok = ! u_int1->second._coincides;
       while ( ok && u_int1 != u2inters.end() )
       {
-        // skip intersections at the same point (if the line passes through edge or node)
-        int nbSamePnt = 0;
         double u = u_int1->first;
-        while ( u_int2 != u2inters.end() && fabs( u_int2->first - u ) < tolerance )
+        bool touchingInt = false;
+        if ( ++u_int2 != u2inters.end() )
         {
-          ++nbSamePnt;
-          ++u_int2;
-        }
-
-        // skip tangent intersections
-        int nbTgt = 0;
-        const SMDS_MeshElement* prevFace = u_int1->second._face;
-        while ( ok && u_int2->second._coincides )
-        {
-          if ( SMESH_Algo::GetCommonNodes(prevFace , u_int2->second._face).empty() )
-            ok = false;
-          else
-          {
-            nbTgt++;
-            u_int2++;
-            ok = ( u_int2 != u2inters.end() );
-          }
-        }
-        if ( !ok ) break;
-
-        // skip intersections at the same point after tangent intersections
-        if ( nbTgt > 0 )
-        {
-          double u = u_int2->first;
-          ++u_int2;
+          // skip intersections at the same point (if the line passes through edge or node)
+          int nbSamePnt = 0;
           while ( u_int2 != u2inters.end() && fabs( u_int2->first - u ) < tolerance )
           {
             ++nbSamePnt;
             ++u_int2;
           }
-        }
 
-        bool touchingInt = false;
-        if ( nbSamePnt + nbTgt > 0 )
-        {
-          double minDot = numeric_limits<double>::max(), maxDot = -numeric_limits<double>::max();
-          map< double, TInters >::iterator u_int = u_int1;
-          for ( ; u_int != u_int2; ++u_int )
+          // skip tangent intersections
+          int nbTgt = 0;
+          const SMDS_MeshElement* prevFace = u_int1->second._face;
+          while ( ok && u_int2->second._coincides )
           {
-            if ( u_int->second._coincides ) continue;
-            double dot = u_int->second._faceNorm * line.Direction();
-            if ( dot > maxDot ) maxDot = dot;
-            if ( dot < minDot ) minDot = dot;
+            if ( SMESH_Algo::GetCommonNodes(prevFace , u_int2->second._face).empty() )
+              ok = false;
+            else
+            {
+              nbTgt++;
+              u_int2++;
+              ok = ( u_int2 != u2inters.end() );
+            }
           }
-          touchingInt = ( minDot*maxDot < 0 );
+          if ( !ok ) break;
+
+          // skip intersections at the same point after tangent intersections
+          if ( nbTgt > 0 )
+          {
+            double u2 = u_int2->first;
+            ++u_int2;
+            while ( u_int2 != u2inters.end() && fabs( u_int2->first - u2 ) < tolerance )
+            {
+              ++nbSamePnt;
+              ++u_int2;
+            }
+          }
+          // decide if we skipped a touching intersection
+          if ( nbSamePnt + nbTgt > 0 )
+          {
+            double minDot = numeric_limits<double>::max(), maxDot = -numeric_limits<double>::max();
+            map< double, TInters >::iterator u_int = u_int1;
+            for ( ; u_int != u_int2; ++u_int )
+            {
+              if ( u_int->second._coincides ) continue;
+              double dot = u_int->second._faceNorm * line.Direction();
+              if ( dot > maxDot ) maxDot = dot;
+              if ( dot < minDot ) minDot = dot;
+            }
+            touchingInt = ( minDot*maxDot < 0 );
+          }
         }
         if ( !touchingInt )
         {
@@ -6395,13 +6415,12 @@ TopAbs_State SMESH_ElementSearcherImpl::GetPointState(const gp_Pnt& point)
               ++nbIntBeforePoint;
             else
               ++nbIntAfterPoint;
-
           }
           if ( u < f ) f = u;
           if ( u > l ) l = u;
         }
 
-        u_int1 = u_int2++; // to next intersection
+        u_int1 = u_int2; // to next intersection
 
       } // loop on intersections with one line
 
