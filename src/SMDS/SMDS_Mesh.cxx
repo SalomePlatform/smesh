@@ -1782,15 +1782,10 @@ const SMDS_MeshFace* SMDS_Mesh::FindFace (std::vector<const SMDS_MeshNode *> nod
     while (itF->more()) {
       const SMDS_MeshElement* f = itF->next();
       if ( f->NbNodes() == nodes.size() ) {
-        SMDS_ElemIteratorPtr it2 = f->nodesIterator();
-        while(it2->more()) {
-          if ( find( nodes.begin(), nodes.end(), it2->next() ) == nodes.end() ) {
-            f = 0;
-            break;
-          }
-        }
-        if ( f )
-          return static_cast<const SMDS_MeshFace *> (f);
+        for ( int i = 1; i < nodes.size(); ++ i )
+          if ( f->GetNodeIndex( nodes[ i ]) < 0 )
+            return NULL;
+        return static_cast<const SMDS_MeshFace *> (f);
       }
     }
   }
