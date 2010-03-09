@@ -84,7 +84,7 @@ static gp_Pnt FindBestPoint(const gp_Pnt& P1, const gp_Pnt& P2,
   if( a < (b+c)/2 )
     return PC;
   else {
-    // find shift along V in order to a became equal to (b+c)/2
+    // find shift along V in order a to became equal to (b+c)/2
     double shift = sqrt( a*a + (b*b-c*c)*(b*b-c*c)/16/a/a - (b*b+c*c)/2 );
     gp_Dir aDir(V);
     gp_Pnt Pbest = PC.XYZ() + aDir.XYZ() * shift;
@@ -649,7 +649,8 @@ bool StdMeshers_QuadToTriaAdaptor::Compute(SMESH_Mesh& aMesh)
       const SMDS_MeshElement* F = *itF;
       if(F==face) continue;
       Handle(TColgp_HSequenceOfPnt) aContour = new TColgp_HSequenceOfPnt;
-      for ( i = 0; i < 4; ++i )
+      int nbN = F->NbNodes() / ( F->IsQuadratic() ? 2 : 1 );
+      for ( i = 0; i < nbN; ++i )
         aContour->Append( SMESH_MeshEditor::TNodeXYZ( F->GetNode(i) ));
       gp_Pnt intP;
       for ( int isRev = 0; isRev < 2; ++isRev )
