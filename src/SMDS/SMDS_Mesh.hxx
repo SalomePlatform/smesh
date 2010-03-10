@@ -490,8 +490,8 @@ public:
                                        const SMDS_MeshNode *n7,
                                        const SMDS_MeshNode *n8);
 
-  const SMDS_MeshFace *FindFace(std::vector<int> nodes_ids) const;
-  static const SMDS_MeshFace* FindFace(std::vector<const SMDS_MeshNode *> nodes);
+  const SMDS_MeshFace *FindFace(const std::vector<int>& nodes_ids) const;
+  static const SMDS_MeshFace* FindFace(const std::vector<const SMDS_MeshNode *>& nodes);
 
   /*!
    * \brief Raise an exception if free memory (ram+swap) too low

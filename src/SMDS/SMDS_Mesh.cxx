@@ -1763,7 +1763,7 @@ const SMDS_MeshElement* SMDS_Mesh::FindElement(int IDelem) const
 //purpose  : find polygon
 //=======================================================================
 
-const SMDS_MeshFace* SMDS_Mesh::FindFace (std::vector<int> nodes_ids) const
+const SMDS_MeshFace* SMDS_Mesh::FindFace (const std::vector<int>& nodes_ids) const
 {
   int nbnodes = nodes_ids.size();
   std::vector<const SMDS_MeshNode *> poly_nodes (nbnodes);
@@ -1775,7 +1775,7 @@ const SMDS_MeshFace* SMDS_Mesh::FindFace (std::vector<int> nodes_ids) const
   return FindFace(poly_nodes);
 }
 
-const SMDS_MeshFace* SMDS_Mesh::FindFace (std::vector<const SMDS_MeshNode *> nodes)
+const SMDS_MeshFace* SMDS_Mesh::FindFace (const std::vector<const SMDS_MeshNode *>& nodes)
 {
   if ( nodes.size() > 2 && nodes[0] ) {
     SMDS_ElemIteratorPtr itF = nodes[0]->GetInverseElementIterator(SMDSAbs_Face);
