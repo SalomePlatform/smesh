@@ -1782,10 +1782,11 @@ const SMDS_MeshFace* SMDS_Mesh::FindFace (const std::vector<const SMDS_MeshNode 
     while (itF->more()) {
       const SMDS_MeshElement* f = itF->next();
       if ( f->NbNodes() == nodes.size() ) {
-        for ( int i = 1; i < nodes.size(); ++ i )
+        for ( int i = 1; f && i < nodes.size(); ++ i )
           if ( f->GetNodeIndex( nodes[ i ]) < 0 )
-            return NULL;
-        return static_cast<const SMDS_MeshFace *> (f);
+            f = 0;
+        if ( f )
+          return static_cast<const SMDS_MeshFace *> (f);
       }
     }
   }
