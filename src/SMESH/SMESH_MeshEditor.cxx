@@ -9928,7 +9928,8 @@ bool SMESH_MeshEditor::Make2DMeshFrom3D()
   SMESHDS_Mesh* aMesh = GetMeshDS();
   if (!aMesh)
     return false;
-  bool res = false;
+  //bool res = false;
+  int nbFree = 0, nbExisted = 0, nbCreated = 0;
   SMDS_VolumeIteratorPtr vIt = aMesh->volumesIterator();
   while(vIt->more())
   {
@@ -9941,6 +9942,7 @@ bool SMESH_MeshEditor::Make2DMeshFrom3D()
     {
       if (!vTool.IsFreeFace(iface))
         continue;
+      nbFree++;
       vector<const SMDS_MeshNode *> nodes;
       int nbFaceNodes = vTool.NbFaceNodes(iface);
       const SMDS_MeshNode** faceNodes = vTool.GetFaceNodes(iface);
@@ -9952,11 +9954,13 @@ bool SMESH_MeshEditor::Make2DMeshFrom3D()
           nodes.push_back(faceNodes[inode]);
 
       // add new face based on volume nodes
-      if (aMesh->FindFace( nodes ) )
+      if (aMesh->FindFace( nodes ) ) {
+        nbExisted++;
         continue; // face already exsist
+      }
       myLastCreatedElems.Append( AddElement(nodes, SMDSAbs_Face, isPoly && iface == 1) );
-      res = true;
+      nbCreated++;
     }
   }
-  return res;
+  return ( nbFree==(nbExisted+nbCreated) );
 }
