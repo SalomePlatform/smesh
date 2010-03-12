@@ -266,9 +266,15 @@ SMESHGUI_ScaleDlg::SMESHGUI_ScaleDlg( SMESHGUI* theModule )
   SpinBox1_1->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, DBL_DIGITS_DISPLAY);
   SpinBox1_2->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, DBL_DIGITS_DISPLAY);
   SpinBox1_3->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, DBL_DIGITS_DISPLAY);
-  SpinBox_FX->RangeStepAndValidator(0.0, COORD_MAX, 1.0, DBL_DIGITS_DISPLAY);
-  SpinBox_FY->RangeStepAndValidator(0.0, COORD_MAX, 1.0, DBL_DIGITS_DISPLAY);
-  SpinBox_FZ->RangeStepAndValidator(0.0, COORD_MAX, 1.0, DBL_DIGITS_DISPLAY);
+  //SpinBox_FX->RangeStepAndValidator(0.0, COORD_MAX, 1.0, DBL_DIGITS_DISPLAY);
+  //SpinBox_FY->RangeStepAndValidator(0.0, COORD_MAX, 1.0, DBL_DIGITS_DISPLAY);
+  //SpinBox_FZ->RangeStepAndValidator(0.0, COORD_MAX, 1.0, DBL_DIGITS_DISPLAY);
+  SpinBox_FX->RangeStepAndValidator(1.e-6, 1.e+6, 1.0, DBL_DIGITS_DISPLAY);
+  SpinBox_FX->SetStep(0.1);
+  SpinBox_FY->RangeStepAndValidator(1.e-6, 1.e+6, 1.0, DBL_DIGITS_DISPLAY);
+  SpinBox_FY->SetStep(0.1);
+  SpinBox_FZ->RangeStepAndValidator(1.e-6, 1.e+6, 1.0, DBL_DIGITS_DISPLAY);
+  SpinBox_FZ->SetStep(0.1);
 
   RadioButton1->setChecked(true);
 
