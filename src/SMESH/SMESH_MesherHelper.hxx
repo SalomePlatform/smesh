@@ -113,6 +113,12 @@ public:
                          const SMESH_Mesh&   mesh,
                          TopAbs_ShapeEnum    ancestorType=TopAbs_SHAPE);
 
+  /*!
+   * \brief Return orientation of sub-shape in the main shape
+   */
+  static TopAbs_Orientation GetSubShapeOri(const TopoDS_Shape& shape,
+                                           const TopoDS_Shape& subShape);
+
 public:
   // ---------- PUBLIC INSTANCE METHODS ----------
 

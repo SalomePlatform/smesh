@@ -1367,6 +1367,27 @@ int SMESH_MesherHelper::NbAncestors(const TopoDS_Shape& shape,
 }
 
 //=======================================================================
+//function : GetSubShapeOri
+//purpose  : Return orientation of sub-shape in the main shape
+//=======================================================================
+
+TopAbs_Orientation SMESH_MesherHelper::GetSubShapeOri(const TopoDS_Shape& shape,
+                                                      const TopoDS_Shape& subShape)
+{
+  TopAbs_Orientation ori = TopAbs_Orientation(-1);
+  if ( !shape.IsNull() && !subShape.IsNull() )
+  {
+    TopExp_Explorer e( shape, subShape.ShapeType() );
+    for ( ; e.More(); e.Next())
+      if ( subShape.IsSame( e.Current() ))
+        break;
+    if ( e.More() )
+      ori = e.Current().Orientation();
+  }
+  return ori;
+}
+
+//=======================================================================
 //function : IsQuadraticMesh
 //purpose  : Check mesh without geometry for: if all elements on this shape are quadratic,
 //           quadratic elements will be created.

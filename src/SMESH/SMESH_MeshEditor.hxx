@@ -109,6 +109,18 @@ struct SMESH_TLink: public NLink
   const SMDS_MeshNode* node2() const { return second; }
 };
 
+//=======================================================================
+/*!
+ * \brief SMESH_TLink knowing its orientation
+ */
+//=======================================================================
+
+struct SMESH_OrientedLink: public SMESH_TLink
+{
+  bool _reversed;
+  SMESH_OrientedLink(const SMDS_MeshNode* n1, const SMDS_MeshNode* n2 )
+    : SMESH_TLink( n1, n2 ), _reversed( n1 != node1() ) {}
+};
 
 // ============================================================
 /*!
@@ -538,6 +550,11 @@ public:
   static void ReplaceElemInGroups (const SMDS_MeshElement* elemToRm,
                                    const SMDS_MeshElement* elemToAdd,
                                    SMESHDS_Mesh *          aMesh);
+  // replace elemToRm by elemToAdd in the all groups
+
+//   static void ReplaceElemInGroups (const SMDS_MeshElement*                     elemToRm,
+//                                    const std::vector<const SMDS_MeshElement*>& elemToAdd,
+//                                    SMESHDS_Mesh *                              aMesh);
   // replace elemToRm by elemToAdd in the all groups
 
   /*!
