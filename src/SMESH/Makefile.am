@@ -54,6 +54,7 @@ salomeinclude_HEADERS = \
 	SMESH_OctreeNode.hxx \
 	SMESH_Comment.hxx \
 	SMESH_ComputeError.hxx \
+	SMESH_File.hxx \
 	SMESH_SMESH.hxx
 
 # Libraries targets
@@ -77,7 +78,8 @@ dist_libSMESHimpl_la_SOURCES = \
 	SMESH_HypoFilter.cxx \
 	SMESH_MesherHelper.cxx \
 	SMESH_Octree.cxx \
-	SMESH_OctreeNode.cxx
+	SMESH_OctreeNode.cxx \
+	SMESH_File.cxx
 
 # additionnal information to compile and link file
 libSMESHimpl_la_CPPFLAGS = \
