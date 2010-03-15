@@ -7,6 +7,7 @@
 #include "utilities.h"
 
 #include <OSD_File.hxx>
+#include <OSD_Path.hxx>
 #include <Standard_ProgramError.hxx>
 #include <Standard_ErrorHandler.hxx>
 #include <Standard_Failure.hxx>
@@ -125,7 +126,8 @@ bool SMESH_File::remove()
 {
   close();
   try {
-    OSD_File( TCollection_AsciiString((char*)_name.data()) ).Remove();
+    OSD_Path filePath(TCollection_AsciiString((char*)_name.data()));
+    OSD_File(filePath).Remove();
   }
   catch ( Standard_ProgramError ) {
     MESSAGE("Can't remove file: " << _name << " ; file does not exist or permission denied");
