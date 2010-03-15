@@ -6133,7 +6133,7 @@ void SMESH_ElementSearcherImpl::findOuterBoundary(const SMDS_MeshElement* outerF
         gp_Vec dirInOF = gp_Vec( ofNorm ) ^ n1n2;
         // sort all other faces by angle with the dirInOF
         map< double, const SMDS_MeshElement* > angle2Face;
-        set< const SMDS_MeshElement* >::const_iterator face = faces.begin();
+        set< const SMDS_MeshElement*, TIDCompare >::const_iterator face = faces.begin();
         for ( ; face != faces.end(); ++face )
         {
           if ( !SMESH_Algo::FaceNormal( *face, fNorm, /*normalized=*/false ))

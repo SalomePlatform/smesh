@@ -32,6 +32,12 @@
 #include <string>
 #include <vector>
 
+#ifdef WNT
+#include <windows.h>
+#else
+#include <dlfcn.h>
+#endif
+
 /*!
  * \brief High level util for effective file reading and other file operations
  */
