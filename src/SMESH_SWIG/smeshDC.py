@@ -163,7 +163,7 @@ Hexa    = 8
 Hexotic = 9
 BLSURF  = 10
 GHS3DPRL = 11
-QUARDANGLE = 0
+QUADRANGLE = 0
 RADIAL_QUAD = 1
 
 # MirrorType enumeration
@@ -1066,10 +1066,10 @@ class Mesh:
     #  If the optional \a geom parameter is not set, this algorithm is global.
     #  \n Otherwise, this algorithm defines a submesh based on \a geom subshape.
     #  @param geom If defined, the subshape to be meshed (GEOM_Object)
-    #  @param algo values are: smesh.QUARDANGLE || smesh.RADIAL_QUAD
+    #  @param algo values are: smesh.QUADRANGLE || smesh.RADIAL_QUAD
     #  @return an instance of Mesh_Quadrangle algorithm
     #  @ingroup l3_algos_basic
-    def Quadrangle(self, geom=0, algo=QUARDANGLE):
+    def Quadrangle(self, geom=0, algo=QUADRANGLE):
         if algo==RADIAL_QUAD:
             return Mesh_RadialQuadrangle1D2D(self,geom)
         else:
