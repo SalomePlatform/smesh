@@ -41,7 +41,7 @@
 /*!
  * \brief High level util for effective file reading and other file operations
  */
-class SMESH_File
+class SMESH_EXPORT SMESH_File
 {
 public:
 
