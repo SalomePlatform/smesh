@@ -981,10 +981,13 @@ int SMESH_Block::GetOrderedEdges (const TopoDS_Face&   theFace,
   TopoDS_Wire anOuterWire =
     theShapeAnalysisAlgo ? ShapeAnalysis::OuterWire( theFace ) : BRepTools::OuterWire( theFace );
   for ( TopoDS_Iterator wIt (theFace); wIt.More(); wIt.Next() )
-    if ( !anOuterWire.IsSame( wIt.Value() ))
-      aWireList.push_back( TopoDS::Wire( wIt.Value() ));
-    else
-      aWireList.push_front( TopoDS::Wire( wIt.Value() ));
+    if ( wIt.Value().ShapeType() == TopAbs_WIRE ) // it can be internal vertex!
+    {
+      if ( !anOuterWire.IsSame( wIt.Value() ))
+        aWireList.push_back( TopoDS::Wire( wIt.Value() ));
+      else
+        aWireList.push_front( TopoDS::Wire( wIt.Value() ));
+    }
 
   // loop on edges of wires
   theNbVertexInWires.clear();
