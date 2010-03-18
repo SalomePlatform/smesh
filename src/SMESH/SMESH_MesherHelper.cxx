@@ -331,7 +331,7 @@ gp_XY SMESH_MesherHelper::GetNodeUV(const TopoDS_Face&   F,
                                     const SMDS_MeshNode* n2,
                                     bool*                check) const
 {
-  gp_Pnt2d uv( 1e100, 1e100 );
+  gp_Pnt2d uv( Precision::Infinite(), Precision::Infinite() );
   const SMDS_PositionPtr Pos = n->GetPosition();
   bool uvOK = false;
   if(Pos->GetTypeOfPosition()==SMDS_TOP_FACE)
@@ -416,6 +416,7 @@ gp_XY SMESH_MesherHelper::GetNodeUV(const TopoDS_Face&   F,
           }
         }
         else {
+          uvOK = false;
           TopTools_ListIteratorOfListOfShape it( myMesh->GetAncestors( V ));
           for ( ; it.More(); it.Next() ) {
             if ( it.Value().ShapeType() == TopAbs_EDGE ) {
@@ -425,6 +426,7 @@ gp_XY SMESH_MesherHelper::GetNodeUV(const TopoDS_Face&   F,
               if ( !C2d.IsNull() ) {
                 double u = ( V == TopExp::FirstVertex( edge ) ) ?  f : l;
                 uv = C2d->Value( u );
+                uvOK = true;
                 break;
               }
             }
@@ -460,7 +462,9 @@ bool SMESH_MesherHelper::CheckNodeUV(const TopoDS_Face&   F,
     Handle(Geom_Surface) surface = BRep_Tool::Surface( F,loc );
     gp_Pnt nodePnt = XYZ( n );
     if ( !loc.IsIdentity() ) nodePnt.Transform( loc.Transformation().Inverted() );
-    if ( nodePnt.Distance( surface->Value( uv.X(), uv.Y() )) > tol )
+    if ( Precision::IsInfinite( uv.X() ) ||
+         Precision::IsInfinite( uv.Y() ) ||
+         nodePnt.Distance( surface->Value( uv.X(), uv.Y() )) > tol )
     {
       // uv incorrect, project the node to surface
       GeomAPI_ProjectPointOnSurf projector( nodePnt, surface, tol );
@@ -1378,6 +1382,8 @@ TopAbs_Orientation SMESH_MesherHelper::GetSubShapeOri(const TopoDS_Shape& shape,
   if ( !shape.IsNull() && !subShape.IsNull() )
   {
     TopExp_Explorer e( shape, subShape.ShapeType() );
+    if ( shape.Orientation() >= TopAbs_INTERNAL ) // TopAbs_INTERNAL or TopAbs_EXTERNAL
+      e.Init( shape.Oriented(TopAbs_FORWARD), subShape.ShapeType() );
     for ( ; e.More(); e.Next())
       if ( subShape.IsSame( e.Current() ))
         break;
@@ -2630,4 +2636,47 @@ void SMESH_MesherHelper::FixQuadraticElements(bool volumeOnly)
       GetMeshDS()->MoveNode( pLink->_mediumNode, p.X(), p.Y(), p.Z());
     }
   }
+}
+
+//=======================================================================
+/*!
+ * \brief Iterator on ancestors of the given type
+ */
+//=======================================================================
+
+struct TAncestorsIterator : public SMDS_Iterator<const TopoDS_Shape*>
+{
+  TopTools_ListIteratorOfListOfShape _ancIter;
+  TopAbs_ShapeEnum                   _type;
+  TAncestorsIterator( const TopTools_ListOfShape& ancestors, TopAbs_ShapeEnum type)
+    : _ancIter( ancestors ), _type( type )
+  {
+    if ( _ancIter.More() && _ancIter.Value().ShapeType() != _type ) next();
+  }
+  virtual bool more()
+  {
+    return _ancIter.More();
+  }
+  virtual const TopoDS_Shape* next()
+  {
+    const TopoDS_Shape* s = _ancIter.More() ? & _ancIter.Value() : 0;
+    if ( _ancIter.More() )
+      for ( _ancIter.Next();  _ancIter.More(); _ancIter.Next())
+        if ( _ancIter.Value().ShapeType() == _type )
+          break;
+    return s;
+  }
+};
+
+//=======================================================================
+/*!
+ * \brief Return iterator on ancestors of the given type
+ */
+//=======================================================================
+
+PShapeIteratorPtr SMESH_MesherHelper::GetAncestors(const TopoDS_Shape& shape,
+                                                   const SMESH_Mesh&   mesh,
+                                                   TopAbs_ShapeEnum    ancestorType)
+{
+  return PShapeIteratorPtr( new TAncestorsIterator( mesh.GetAncestors(shape), ancestorType));
 }
