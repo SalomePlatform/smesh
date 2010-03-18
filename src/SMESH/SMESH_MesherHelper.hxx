@@ -42,6 +42,13 @@
 typedef std::map<SMESH_TLink, const SMDS_MeshNode*>           TLinkNodeMap;
 typedef std::map<SMESH_TLink, const SMDS_MeshNode*>::iterator ItTLinkNode;
 
+typedef SMDS_Iterator<const TopoDS_Shape*>  PShapeIterator;
+typedef boost::shared_ptr< PShapeIterator > PShapeIteratorPtr;
+  
+typedef std::vector<const SMDS_MeshNode* > TNodeColumn;
+typedef std::map< double, TNodeColumn >    TParam2ColumnMap;
+
+//=======================================================================
 /*!
  * \brief It helps meshers to add elements
  *
@@ -50,9 +57,7 @@ typedef std::map<SMESH_TLink, const SMDS_MeshNode*>::iterator ItTLinkNode;
  * It defines degree of elements to create when IsQuadraticSubMesh()
  * is called.
  */
-
-typedef std::vector<const SMDS_MeshNode* > TNodeColumn;
-typedef std::map< double, TNodeColumn > TParam2ColumnMap;
+//=======================================================================
 
 class SMESH_EXPORT SMESH_MesherHelper
 {
@@ -112,6 +117,12 @@ public:
   static int NbAncestors(const TopoDS_Shape& shape,
                          const SMESH_Mesh&   mesh,
                          TopAbs_ShapeEnum    ancestorType=TopAbs_SHAPE);
+  /*!
+   * \brief Return iterator on ancestors of the given type
+   */
+  static PShapeIteratorPtr GetAncestors(const TopoDS_Shape& shape,
+                                        const SMESH_Mesh&   mesh,
+                                        TopAbs_ShapeEnum    ancestorType);
 
   /*!
    * \brief Return orientation of sub-shape in the main shape
@@ -170,7 +181,7 @@ public:
   /*!
    * \brief Return the shape set by IsQuadraticSubMesh() or SetSubShape() 
    */
-  TopoDS_Shape GetSubShape() const  { return myShape; }
+  const TopoDS_Shape& GetSubShape() const  { return myShape; }
 
   /*!
    * Creates a node
