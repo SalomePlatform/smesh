@@ -490,6 +490,62 @@ bool SMESH_MesherHelper::CheckNodeUV(const TopoDS_Face&   F,
   return true;
 }
 
+namespace
+{
+  struct TMiddle
+  {
+    gp_XY operator()(const gp_XY& uv1, const gp_XY& uv2) const { return ( uv1 + uv2 ) / 2.; }
+  };
+  struct TAdd
+  {
+    gp_XY operator()(const gp_XY& uv1, const gp_XY& uv2) const { return ( uv1 + uv2 ); }
+  };
+  struct TSubtract
+  {
+    gp_XY operator()(const gp_XY& uv1, const gp_XY& uv2) const { return ( uv1 - uv2 ); }
+  };
+
+  //================================================================================
+  /*!
+   * \brief Perform given operation on two points in parametric space of given surface
+   * Example: gp_XY uvSum = applyXYFUN( surf, uv1, uv2, gp_XYFun(Added))
+   */
+  //================================================================================
+
+  template<typename FUNC>
+  gp_XY applyFunc(const Handle(Geom_Surface)& surface,
+                  const gp_XY&                uv1,
+                  gp_XY                       uv2,
+                  const bool                  resultInPeriod=true)
+  {
+    Standard_Boolean isUPeriodic = surface.IsNull() ? false : surface->IsUPeriodic();
+    Standard_Boolean isVPeriodic = surface.IsNull() ? false : surface->IsVPeriodic();
+    if ( !isUPeriodic && !isVPeriodic )
+      return FUNC()(uv1,uv2);
+
+    // move uv2 not far than half-period from uv1
+    if ( isUPeriodic )
+      uv2.SetX( uv2.X()+ShapeAnalysis::AdjustByPeriod(uv2.X(),uv1.X(),surface->UPeriod()) );
+    if ( isVPeriodic )
+      uv2.SetY( uv2.Y()+ShapeAnalysis::AdjustByPeriod(uv2.Y(),uv1.Y(),surface->VPeriod()) );
+
+    // execute operation
+    gp_XY res = FUNC()(uv1,uv2);
+
+    // move result within period
+    if ( resultInPeriod )
+    {
+      Standard_Real UF,UL,VF,VL;
+      surface->Bounds(UF,UL,VF,VL);
+      if ( isUPeriodic )
+        res.SetX( res.X() + ShapeAnalysis::AdjustToPeriod(res.X(),UF,UL));
+      if ( isVPeriodic )
+        res.SetY( res.Y() + ShapeAnalysis::AdjustToPeriod(res.Y(),VF,VL));
+    }
+
+    return res;
+  }
+}
 //=======================================================================
 //function : GetMiddleUV
 //purpose  : Return middle UV taking in account surface period
@@ -499,34 +555,7 @@ gp_XY SMESH_MesherHelper::GetMiddleUV(const Handle(Geom_Surface)& surface,
                                       const gp_XY&                p1,
                                       const gp_XY&                p2)
 {
-  if ( surface.IsNull() )
-    return 0.5 * ( p1 + p2 );
-  //checking if surface is periodic
-  Standard_Real UF,UL,VF,VL;
-  surface->Bounds(UF,UL,VF,VL);
-
-  Standard_Real u,v;
-  Standard_Boolean isUPeriodic = surface->IsUPeriodic();
-  if(isUPeriodic) {
-    Standard_Real UPeriod = surface->UPeriod();
-    Standard_Real p2x = p2.X()+ShapeAnalysis::AdjustByPeriod(p2.X(),p1.X(),UPeriod);
-    Standard_Real pmid = (p1.X()+p2x)/2.;
-    u = pmid+ShapeAnalysis::AdjustToPeriod(pmid,UF,UL);
-  }
-  else {
-    u= (p1.X()+p2.X())/2.;
-  }
-  Standard_Boolean isVPeriodic = surface->IsVPeriodic();
-  if(isVPeriodic) {
-    Standard_Real VPeriod = surface->VPeriod();
-    Standard_Real p2y = p2.Y()+ShapeAnalysis::AdjustByPeriod(p2.Y(),p1.Y(),VPeriod);
-    Standard_Real pmid = (p1.Y()+p2y)/2.;
-    v = pmid+ShapeAnalysis::AdjustToPeriod(pmid,VF,VL);
-  }
-  else {
-    v = (p1.Y()+p2.Y())/2.;
-  }
-  return gp_XY( u,v );
+  return applyFunc<TMiddle>( surface, p1, p2 );
 }
 
 //=======================================================================
@@ -2471,7 +2500,7 @@ void SMESH_MesherHelper::FixQuadraticElements(bool volumeOnly)
   // not treat boundary of volumic submesh
   int isInside = ( elemType == SMDSAbs_Volume && volumeOnly ) ? 1 : 0;
   for ( ; isInside < 2; ++isInside ) {
-    MSG( "--------------- LOOP " << isInside << " ------------------");
+    MSG( "--------------- LOOP (inside=" << isInside << ") ------------------");
     SMDS_TypeOfPosition pos = isInside ? SMDS_TOP_3DSPACE : SMDS_TOP_FACE;
 
     for ( pFace = faces.begin(); pFace != faces.end(); ++pFace ) {
@@ -2488,18 +2517,18 @@ void SMESH_MesherHelper::FixQuadraticElements(bool volumeOnly)
         if ( !pFace->GetLinkChain( dir+2, rawChain, pos, error ) && error ==ERR_UNKNOWN ) continue;
 
         vector< TChain > chains;
-        if ( error == ERR_OK ) { // chains contains continues rectangles
+        if ( error == ERR_OK ) { // chain contains continues rectangles
           chains.resize(1);
           chains[0].splice( chains[0].begin(), rawChain );
         }
-        else if ( error == ERR_TRI ) {  // chains contains continues triangles
+        else if ( error == ERR_TRI ) {  // chain contains continues triangles
           TSplitTriaResult res = splitTrianglesIntoChains( rawChain, chains, pos );
-          if ( res != _OK ) { // not rectangles split into triangles
+          if ( res != _OK ) { // not quadrangles split into triangles
             fixTriaNearBoundary( rawChain, *this );
             break;
           }
         }
-        else if ( error == ERR_PRISM ) { // side faces of prisms
+        else if ( error == ERR_PRISM ) { // quadrangle side faces of prisms
           fixPrism( rawChain );
           break;
         }
@@ -2544,16 +2573,20 @@ void SMESH_MesherHelper::FixQuadraticElements(bool volumeOnly)
             // compute node displacement of end links in parametric space of face
             const SMDS_MeshNode* nodeOnFace = (*(++chain.begin()))->_mediumNode;
             TopoDS_Shape f = GetSubShapeByNode( nodeOnFace, GetMeshDS() );
-            if ( !f.IsNull() && f.ShapeType() == TopAbs_FACE ) {
+            if ( !f.IsNull() && f.ShapeType() == TopAbs_FACE )
+            {
               face = TopoDS::Face( f );
-              for ( int is1 = 0; is1 < 2; ++is1 ) { // move0 or move1
+              Handle(Geom_Surface) surf = BRep_Tool::Surface(face,loc);
+              for ( int is1 = 0; is1 < 2; ++is1 ) // move0 or move1
+              {
                 TChainLink& link = is1 ? chain.back() : chain.front();
+                gp_XY uvm = GetNodeUV( face, link->_mediumNode, nodeOnFace, &checkUV);
                 gp_XY uv1 = GetNodeUV( face, link->node1(), nodeOnFace, &checkUV);
                 gp_XY uv2 = GetNodeUV( face, link->node2(), nodeOnFace, &checkUV);
-                gp_XY uvm = GetNodeUV( face, link->_mediumNode, nodeOnFace, &checkUV);
-                gp_XY uvMove = uvm - GetMiddleUV( BRep_Tool::Surface(face,loc), uv1, uv2);
-                if ( is1 ) move1.SetCoord( uvMove.X(), uvMove.Y(), 0 );
-                else       move0.SetCoord( uvMove.X(), uvMove.Y(), 0 );
+                gp_XY uv12 = GetMiddleUV( surf, uv1, uv2);
+                // uvMove = uvm - uv12
+                gp_XY uvMove = applyFunc<TSubtract>(surf, uvm, uv12,/*inPeriod=*/false);
+                ( is1 ? move1 : move0 ).SetCoord( uvMove.X(), uvMove.Y(), 0 );
               }
               if ( move0.SquareMagnitude() < straightTol2 &&
                    move1.SquareMagnitude() < straightTol2 ) {
@@ -2598,9 +2631,10 @@ void SMESH_MesherHelper::FixQuadraticElements(bool volumeOnly)
             }
             else {
               // compute 3D displacement by 2D one
+              Handle(Geom_Surface) s = BRep_Tool::Surface(face,loc);
               gp_XY oldUV   = GetNodeUV( face, (*link1)->_mediumNode, 0, &checkUV);
-              gp_XY newUV   = oldUV + gp_XY( move.X(), move.Y() );
-              gp_Pnt newPnt = BRep_Tool::Surface(face,loc)->Value( newUV.X(), newUV.Y());
+              gp_XY newUV   = applyFunc<TAdd>( s, oldUV, gp_XY( move.X(),move.Y() ));
+              gp_Pnt newPnt = s->Value( newUV.X(), newUV.Y());
               move = gp_Vec( XYZ((*link1)->_mediumNode), newPnt.Transformed(loc) );
 #ifdef _DEBUG_
               if ( (XYZ((*link1)->node1()) - XYZ((*link1)->node2())).SquareModulus() <
