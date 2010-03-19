@@ -121,6 +121,9 @@ namespace SMESH
     operator<<(SMESH::SMESH_Hypothesis_ptr theArg);
 
     TPythonDump& 
+    operator<<(SMESH::SMESH_IDSource_ptr theArg);
+
+    TPythonDump& 
     operator<<(SALOMEDS::SObject_ptr theArg);
 
     TPythonDump& 

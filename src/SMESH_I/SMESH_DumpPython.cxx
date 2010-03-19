@@ -223,6 +223,19 @@ namespace SMESH
 
   TPythonDump& 
   TPythonDump::
+  operator<<(SMESH::SMESH_IDSource_ptr theArg)
+  {
+    SMESH_Gen_i* aSMESHGen = SMESH_Gen_i::GetSMESHGen();
+    SALOMEDS::Study_var aStudy = aSMESHGen->GetCurrentStudy();
+    SALOMEDS::SObject_var aSObject = SMESH_Gen_i::ObjectToSObject(aStudy,theArg);
+    if(!aSObject->_is_nil())
+      return *this << aSObject;
+    SMESH::long_array_var anElementsId = theArg->GetIDs();
+    return *this << anElementsId;
+  }
+
+  TPythonDump& 
+  TPythonDump::
   operator<<(SMESH::FilterLibrary_i* theArg)
   {
     myStream<<"aFilterLibrary"<<theArg;
