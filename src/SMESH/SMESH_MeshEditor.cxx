@@ -124,6 +124,11 @@ SMESH_MeshEditor::AddElement(const vector<const SMDS_MeshNode*> & node,
   int nbnode = node.size();
   SMESHDS_Mesh* mesh = GetMeshDS();
   switch ( type ) {
+  case SMDSAbs_0DElement:
+    if ( nbnode == 1 )
+      if ( ID ) e = mesh->Add0DElementWithID(node[0], ID);
+      else      e = mesh->Add0DElement      (node[0] );
+    break;
   case SMDSAbs_Edge:
     if ( nbnode == 2 )
       if ( ID ) e = mesh->AddEdgeWithID(node[0], node[1], ID);
