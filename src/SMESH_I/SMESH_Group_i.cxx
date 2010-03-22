@@ -165,11 +165,12 @@ SMESH::ElementType SMESH_GroupBase_i::GetType()
     SMDSAbs_ElementType aSMDSType = aGroupDS->GetType();
     SMESH::ElementType aType;
     switch (aSMDSType) {
-    case SMDSAbs_Node:   aType = SMESH::NODE; break;
-    case SMDSAbs_Edge:   aType = SMESH::EDGE; break;
-    case SMDSAbs_Face:   aType = SMESH::FACE; break;
-    case SMDSAbs_Volume: aType = SMESH::VOLUME; break;
-    default:             aType = SMESH::ALL; break;
+    case SMDSAbs_Node:      aType = SMESH::NODE;   break;
+    case SMDSAbs_Edge:      aType = SMESH::EDGE;   break;
+    case SMDSAbs_Face:      aType = SMESH::FACE;   break;
+    case SMDSAbs_Volume:    aType = SMESH::VOLUME; break;
+    case SMDSAbs_0DElement: aType = SMESH::ELEM0D; break;
+    default:                aType = SMESH::ALL;    break;
     }
     return aType;
   }
