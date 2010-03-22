@@ -228,7 +228,7 @@ namespace SMESH
     SMESH_Gen_i* aSMESHGen = SMESH_Gen_i::GetSMESHGen();
     SALOMEDS::Study_var aStudy = aSMESHGen->GetCurrentStudy();
     SALOMEDS::SObject_var aSObject = SMESH_Gen_i::ObjectToSObject(aStudy,theArg);
-    if(!aSObject->_is_nil())
+    if(!aSObject->_is_nil() || CORBA::is_nil( theArg ))
       return *this << aSObject;
     SMESH::long_array_var anElementsId = theArg->GetIDs();
     return *this << anElementsId;
