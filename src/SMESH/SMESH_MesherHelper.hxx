@@ -39,6 +39,8 @@
 
 #include <map>
 
+class GeomAPI_ProjectPointOnSurf;
+
 typedef std::map<SMESH_TLink, const SMDS_MeshNode*>           TLinkNodeMap;
 typedef std::map<SMESH_TLink, const SMDS_MeshNode*>::iterator ItTLinkNode;
 
@@ -47,6 +49,8 @@ typedef boost::shared_ptr< PShapeIterator > PShapeIteratorPtr;
   
 typedef std::vector<const SMDS_MeshNode* > TNodeColumn;
 typedef std::map< double, TNodeColumn >    TParam2ColumnMap;
+
+typedef gp_XY (*xyFunPtr)(const gp_XY& uv1, const gp_XY& uv2);
 
 //=======================================================================
 /*!
@@ -295,6 +299,28 @@ public:
                            const gp_XY&                uv1,
                            const gp_XY&                uv2);
   /*!
+   * \brief Define a pointer to wrapper over a function of gp_XY class,
+   *       suitable to pass as xyFunPtr to applyIn2D().
+   *       For exaple gp_XY_FunPtr(Added) defines pointer gp_XY_Added to function
+   *       calling gp_XY::Added(gp_XY), which is to be used like following
+   *       applyIn2D(surf, uv1, uv2, gp_XY_Added)
+   */
+#define gp_XY_FunPtr(meth) \
+  static gp_XY __gpXY_##meth (const gp_XY& uv1, const gp_XY& uv2) { return uv1.meth( uv2 ); } \
+  static xyFunPtr gp_XY_##meth = & __gpXY_##meth
+
+  /*!
+   * \brief Perform given operation on two 2d points in parameric space of given surface.
+   *        It takes into account period of the surface. Use gp_XY_FunPtr macro
+   *        to easily define pointer to function of gp_XY class.
+   */
+  static gp_XY applyIn2D(const Handle(Geom_Surface)& surface,
+                         const gp_XY&                uv1,
+                         const gp_XY&                uv2,
+                         xyFunPtr                    fun,
+                         const bool                  resultInPeriod=true);
+                          
+  /*!
    * \brief Check if inFaceNode argument is necessary for call GetNodeUV(F,..)
     * \retval bool - return true if the face is periodic
     *
@@ -302,6 +328,13 @@ public:
     * SetSubShape()
    */
   bool GetNodeUVneedInFaceNode(const TopoDS_Face& F = TopoDS_Face()) const;
+
+  /*!
+   * \brief Return projector intitialized by given face without location, which is returned
+   */
+  GeomAPI_ProjectPointOnSurf& GetProjector(const TopoDS_Face& F,
+                                           TopLoc_Location&   loc,
+                                           double             tol=0 ) const; 
 
   /*!
    * \brief Check if shape is a degenerated edge or it's vertex
@@ -401,6 +434,8 @@ public:
   enum MType{ LINEAR, QUADRATIC, COMP };
   MType IsQuadraticMesh();
   
+  virtual ~SMESH_MesherHelper();
+
 protected:
 
   /*!
@@ -423,6 +458,9 @@ protected:
   std::set< int > mySeamShapeIds;
   double          myPar1[2], myPar2[2]; // U and V bounds of a closed periodic surface
   int             myParIndex;     // bounds' index (1-U, 2-V, 3-both)
+
+  typedef std::map< int, GeomAPI_ProjectPointOnSurf* > TID2Projector;
+  TID2Projector   myFace2Projector;
 
   TopoDS_Shape    myShape;
   SMESH_Mesh*     myMesh;

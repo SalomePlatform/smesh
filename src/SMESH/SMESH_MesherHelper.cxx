@@ -80,6 +80,18 @@ SMESH_MesherHelper::SMESH_MesherHelper(SMESH_Mesh& theMesh)
 }
 
 //=======================================================================
+//function : ~SMESH_MesherHelper
+//purpose  : 
+//=======================================================================
+
+SMESH_MesherHelper::~SMESH_MesherHelper()
+{
+  TID2Projector::iterator i_proj = myFace2Projector.begin();
+  for ( ; i_proj != myFace2Projector.end(); ++i_proj )
+    delete i_proj->second;
+}
+
+//=======================================================================
 //function : IsQuadraticSubMesh
 //purpose  : Check submesh for given shape: if all elements on this shape 
 //           are quadratic, quadratic elements will be created.
@@ -467,7 +479,8 @@ bool SMESH_MesherHelper::CheckNodeUV(const TopoDS_Face&   F,
          nodePnt.Distance( surface->Value( uv.X(), uv.Y() )) > tol )
     {
       // uv incorrect, project the node to surface
-      GeomAPI_ProjectPointOnSurf projector( nodePnt, surface, tol );
+      GeomAPI_ProjectPointOnSurf& projector = GetProjector( F, loc, tol );
+      projector.Perform( nodePnt );
       if ( !projector.IsDone() || projector.NbPoints() < 1 )
       {
         MESSAGE( "SMESH_MesherHelper::CheckNodeUV() failed to project" );
@@ -490,61 +503,77 @@ bool SMESH_MesherHelper::CheckNodeUV(const TopoDS_Face&   F,
   return true;
 }
 
+//=======================================================================
+//function : GetProjector
+//purpose  : Return projector intitialized by given face without location, which is returned
+//=======================================================================
+
+GeomAPI_ProjectPointOnSurf& SMESH_MesherHelper::GetProjector(const TopoDS_Face& F,
+                                                             TopLoc_Location&   loc,
+                                                             double             tol ) const
+{
+  Handle(Geom_Surface) surface = BRep_Tool::Surface( F,loc );
+  int faceID = GetMeshDS()->ShapeToIndex( F );
+  TID2Projector& i2proj = const_cast< TID2Projector&>( myFace2Projector );
+  TID2Projector::iterator i_proj = i2proj.find( faceID );
+  if ( i_proj == i2proj.end() )
+  {
+    if ( tol == 0 ) tol = BRep_Tool::Tolerance( F );
+    double U1, U2, V1, V2;
+    surface->Bounds(U1, U2, V1, V2);
+    GeomAPI_ProjectPointOnSurf* proj = new GeomAPI_ProjectPointOnSurf();
+    proj->Init( surface, U1, U2, V1, V2, tol );
+    i_proj = i2proj.insert( make_pair( faceID, proj )).first;
+  }
+  return *( i_proj->second );
+}
+
 namespace
 {
-  struct TMiddle
-  {
-    gp_XY operator()(const gp_XY& uv1, const gp_XY& uv2) const { return ( uv1 + uv2 ) / 2.; }
-  };
-  struct TAdd
-  {
-    gp_XY operator()(const gp_XY& uv1, const gp_XY& uv2) const { return ( uv1 + uv2 ); }
-  };
-  struct TSubtract
-  {
-    gp_XY operator()(const gp_XY& uv1, const gp_XY& uv2) const { return ( uv1 - uv2 ); }
-  };
+  gp_XY AverageUV(const gp_XY& uv1, const gp_XY& uv2) { return ( uv1 + uv2 ) / 2.; }
+  gp_XY_FunPtr(Added); // define gp_XY_Added pointer to function calling gp_XY::Added(gp_XY)
+  gp_XY_FunPtr(Subtracted); 
+}
 
-  //================================================================================
-  /*!
-   * \brief Perform given operation on two points in parametric space of given surface
-   * Example: gp_XY uvSum = applyXYFUN( surf, uv1, uv2, gp_XYFun(Added))
-   */
-  //================================================================================
+//=======================================================================
+//function : applyIn2D
+//purpose  : Perform given operation on two 2d points in parameric space of given surface.
+//           It takes into account period of the surface. Use gp_XY_FunPtr macro
+//           to easily define pointer to function of gp_XY class.
+//=======================================================================
 
-  template<typename FUNC>
-  gp_XY applyFunc(const Handle(Geom_Surface)& surface,
-                  const gp_XY&                uv1,
-                  gp_XY                       uv2,
-                  const bool                  resultInPeriod=true)
+gp_XY SMESH_MesherHelper::applyIn2D(const Handle(Geom_Surface)& surface,
+                                    const gp_XY&                uv1,
+                                    const gp_XY&                uv2,
+                                    xyFunPtr                    fun,
+                                    const bool                  resultInPeriod)
+{
+  Standard_Boolean isUPeriodic = surface.IsNull() ? false : surface->IsUPeriodic();
+  Standard_Boolean isVPeriodic = surface.IsNull() ? false : surface->IsVPeriodic();
+  if ( !isUPeriodic && !isVPeriodic )
+    return fun(uv1,uv2);
+
+  // move uv2 not far than half-period from uv1
+  double u2 = 
+    uv2.X()+(isUPeriodic ? ShapeAnalysis::AdjustByPeriod(uv2.X(),uv1.X(),surface->UPeriod()) :0);
+  double v2 = 
+    uv2.Y()+(isVPeriodic ? ShapeAnalysis::AdjustByPeriod(uv2.Y(),uv1.Y(),surface->VPeriod()) :0);
+
+  // execute operation
+  gp_XY res = fun( uv1, gp_XY(u2,v2) );
+
+  // move result within period
+  if ( resultInPeriod )
   {
-    Standard_Boolean isUPeriodic = surface.IsNull() ? false : surface->IsUPeriodic();
-    Standard_Boolean isVPeriodic = surface.IsNull() ? false : surface->IsVPeriodic();
-    if ( !isUPeriodic && !isVPeriodic )
-      return FUNC()(uv1,uv2);
-
-    // move uv2 not far than half-period from uv1
+    Standard_Real UF,UL,VF,VL;
+    surface->Bounds(UF,UL,VF,VL);
     if ( isUPeriodic )
-      uv2.SetX( uv2.X()+ShapeAnalysis::AdjustByPeriod(uv2.X(),uv1.X(),surface->UPeriod()) );
+      res.SetX( res.X() + ShapeAnalysis::AdjustToPeriod(res.X(),UF,UL));
     if ( isVPeriodic )
-      uv2.SetY( uv2.Y()+ShapeAnalysis::AdjustByPeriod(uv2.Y(),uv1.Y(),surface->VPeriod()) );
-
-    // execute operation
-    gp_XY res = FUNC()(uv1,uv2);
-
-    // move result within period
-    if ( resultInPeriod )
-    {
-      Standard_Real UF,UL,VF,VL;
-      surface->Bounds(UF,UL,VF,VL);
-      if ( isUPeriodic )
-        res.SetX( res.X() + ShapeAnalysis::AdjustToPeriod(res.X(),UF,UL));
-      if ( isVPeriodic )
-        res.SetY( res.Y() + ShapeAnalysis::AdjustToPeriod(res.Y(),VF,VL));
-    }
-
-    return res;
+      res.SetY( res.Y() + ShapeAnalysis::AdjustToPeriod(res.Y(),VF,VL));
   }
+
+  return res;
 }
 //=======================================================================
 //function : GetMiddleUV
@@ -555,7 +584,7 @@ gp_XY SMESH_MesherHelper::GetMiddleUV(const Handle(Geom_Surface)& surface,
                                       const gp_XY&                p1,
                                       const gp_XY&                p2)
 {
-  return applyFunc<TMiddle>( surface, p1, p2 );
+  return applyIn2D( surface, p1, p2, & AverageUV );
 }
 
 //=======================================================================
@@ -2585,7 +2614,7 @@ void SMESH_MesherHelper::FixQuadraticElements(bool volumeOnly)
                 gp_XY uv2 = GetNodeUV( face, link->node2(), nodeOnFace, &checkUV);
                 gp_XY uv12 = GetMiddleUV( surf, uv1, uv2);
                 // uvMove = uvm - uv12
-                gp_XY uvMove = applyFunc<TSubtract>(surf, uvm, uv12,/*inPeriod=*/false);
+                gp_XY uvMove = applyIn2D(surf, uvm, uv12, gp_XY_Subtracted, /*inPeriod=*/false);
                 ( is1 ? move1 : move0 ).SetCoord( uvMove.X(), uvMove.Y(), 0 );
               }
               if ( move0.SquareMagnitude() < straightTol2 &&
@@ -2633,7 +2662,7 @@ void SMESH_MesherHelper::FixQuadraticElements(bool volumeOnly)
               // compute 3D displacement by 2D one
               Handle(Geom_Surface) s = BRep_Tool::Surface(face,loc);
               gp_XY oldUV   = GetNodeUV( face, (*link1)->_mediumNode, 0, &checkUV);
-              gp_XY newUV   = applyFunc<TAdd>( s, oldUV, gp_XY( move.X(),move.Y() ));
+              gp_XY newUV   = applyIn2D( s, oldUV, gp_XY( move.X(),move.Y()), gp_XY_Added);
               gp_Pnt newPnt = s->Value( newUV.X(), newUV.Y());
               move = gp_Vec( XYZ((*link1)->_mediumNode), newPnt.Transformed(loc) );
 #ifdef _DEBUG_
