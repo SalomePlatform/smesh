@@ -134,6 +134,11 @@ public:
   static TopAbs_Orientation GetSubShapeOri(const TopoDS_Shape& shape,
                                            const TopoDS_Shape& subShape);
 
+  static bool IsSubShape( const TopoDS_Shape& shape, const TopoDS_Shape& mainShape );
+
+  static bool IsSubShape( const TopoDS_Shape& shape, SMESH_Mesh* aMesh );
+
+
 public:
   // ---------- PUBLIC INSTANCE METHODS ----------
 

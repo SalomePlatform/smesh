@@ -1452,6 +1452,42 @@ TopAbs_Orientation SMESH_MesherHelper::GetSubShapeOri(const TopoDS_Shape& shape,
 }
 
 //=======================================================================
+//function : IsSubShape
+//purpose  : 
+//=======================================================================
+
+bool SMESH_MesherHelper::IsSubShape( const TopoDS_Shape& shape,
+                                     const TopoDS_Shape& mainShape )
+{
+  if ( !shape.IsNull() && !mainShape.IsNull() )
+  {
+    for ( TopExp_Explorer exp( mainShape, shape.ShapeType());
+          exp.More();
+          exp.Next() )
+      if ( shape.IsSame( exp.Current() ))
+        return true;
+  }
+  SCRUTE((shape.IsNull()));
+  SCRUTE((mainShape.IsNull()));
+  return false;
+}
+
+//=======================================================================
+//function : IsSubShape
+//purpose  : 
+//=======================================================================
+
+bool SMESH_MesherHelper::IsSubShape( const TopoDS_Shape& shape, SMESH_Mesh* aMesh )
+{
+  if ( shape.IsNull() || !aMesh )
+    return false;
+  return
+    aMesh->GetMeshDS()->ShapeToIndex( shape ) ||
+    // PAL16202
+    shape.ShapeType() == TopAbs_COMPOUND && aMesh->GetMeshDS()->IsGroupOfSubShapes( shape );
+}
+
+//=======================================================================
 //function : IsQuadraticMesh
 //purpose  : Check mesh without geometry for: if all elements on this shape are quadratic,
 //           quadratic elements will be created.
