@@ -128,25 +128,25 @@ bool StdMeshers_Projection_1D::CheckHypothesis(SMESH_Mesh&                      
     if ( _sourceHypo->HasVertexAssociation() )
     {
       // source and target vertices
-      if ( !TAssocTool::IsSubShape( _sourceHypo->GetSourceVertex(), srcMesh ) ||
-           !TAssocTool::IsSubShape( _sourceHypo->GetTargetVertex(), tgtMesh ) ||
-           !TAssocTool::IsSubShape( _sourceHypo->GetSourceVertex(),
-                                    _sourceHypo->GetSourceEdge() ))
+      if ( !SMESH_MesherHelper::IsSubShape( _sourceHypo->GetSourceVertex(), srcMesh ) ||
+           !SMESH_MesherHelper::IsSubShape( _sourceHypo->GetTargetVertex(), tgtMesh ) ||
+           !SMESH_MesherHelper::IsSubShape( _sourceHypo->GetSourceVertex(),
+                                            _sourceHypo->GetSourceEdge() ))
       {
         aStatus = HYP_BAD_PARAMETER;
-        SCRUTE((TAssocTool::IsSubShape( _sourceHypo->GetSourceVertex(), srcMesh )));
-        SCRUTE((TAssocTool::IsSubShape( _sourceHypo->GetTargetVertex(), tgtMesh )));
-        SCRUTE((TAssocTool::IsSubShape( _sourceHypo->GetSourceVertex(),
-                                        _sourceHypo->GetSourceEdge() )));
+        SCRUTE((SMESH_MesherHelper::IsSubShape( _sourceHypo->GetSourceVertex(), srcMesh )));
+        SCRUTE((SMESH_MesherHelper::IsSubShape( _sourceHypo->GetTargetVertex(), tgtMesh )));
+        SCRUTE((SMESH_MesherHelper::IsSubShape( _sourceHypo->GetSourceVertex(),
+                                                _sourceHypo->GetSourceEdge() )));
       }
       // PAL16202
-      else 
+      else
       {
-        bool isSub = TAssocTool::IsSubShape( _sourceHypo->GetTargetVertex(), aShape );
+        bool isSub = SMESH_MesherHelper::IsSubShape( _sourceHypo->GetTargetVertex(), aShape );
         if ( !_sourceHypo->IsCompoundSource() ) {
           if ( !isSub ) {
             aStatus = HYP_BAD_PARAMETER;
-            SCRUTE((TAssocTool::IsSubShape( _sourceHypo->GetTargetVertex(), aShape)));
+            SCRUTE((SMESH_MesherHelper::IsSubShape( _sourceHypo->GetTargetVertex(), aShape)));
           }
         }
         else if ( isSub ) {
@@ -159,7 +159,7 @@ bool StdMeshers_Projection_1D::CheckHypothesis(SMESH_Mesh&                      
           {
             const TopoDS_Shape& ancestor = ancestIt.Value();
             if ( ancestor.ShapeType() == TopAbs_EDGE &&
-                 TAssocTool::IsSubShape( ancestor, _sourceHypo->GetSourceEdge() ))
+                 SMESH_MesherHelper::IsSubShape( ancestor, _sourceHypo->GetSourceEdge() ))
             {
               if ( sharingEdge.IsNull() || ancestor.IsSame( sharingEdge ))
                 sharingEdge = ancestor;
@@ -175,11 +175,11 @@ bool StdMeshers_Projection_1D::CheckHypothesis(SMESH_Mesh&                      
       }
     }
     // check source edge
-    if ( !TAssocTool::IsSubShape( _sourceHypo->GetSourceEdge(), srcMesh ) ||
+    if ( !SMESH_MesherHelper::IsSubShape( _sourceHypo->GetSourceEdge(), srcMesh ) ||
          ( srcMesh == tgtMesh && aShape == _sourceHypo->GetSourceEdge() ))
     {
       aStatus = HYP_BAD_PARAMETER;
-      SCRUTE((TAssocTool::IsSubShape( _sourceHypo->GetSourceEdge(), srcMesh )));
+      SCRUTE((SMESH_MesherHelper::IsSubShape( _sourceHypo->GetSourceEdge(), srcMesh )));
       SCRUTE((srcMesh == tgtMesh));
       SCRUTE(( aShape == _sourceHypo->GetSourceEdge() ));
     }

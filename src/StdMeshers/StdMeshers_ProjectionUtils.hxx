@@ -111,10 +111,6 @@ class StdMeshers_ProjectionUtils
                                  TShapeShapeMap &    theAssociationMap,
                                  const bool          theBidirectional=true);
 
-  static bool IsSubShape( const TopoDS_Shape& shape, SMESH_Mesh* aMesh );
-
-  static bool IsSubShape( const TopoDS_Shape& shape, const TopoDS_Shape& mainShape );
-
   /*!
    * \brief Finds an edge by its vertices in a main shape of the mesh
    */

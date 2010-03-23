@@ -130,40 +130,40 @@ bool StdMeshers_Projection_2D::CheckHypothesis(SMESH_Mesh&                      
       TopoDS_Shape edge = TAssocTool::GetEdgeByVertices
         ( srcMesh, _sourceHypo->GetSourceVertex(1), _sourceHypo->GetSourceVertex(2) );
       if ( edge.IsNull() ||
-           !TAssocTool::IsSubShape( edge, srcMesh ) ||
-           !TAssocTool::IsSubShape( edge, _sourceHypo->GetSourceFace() ))
+           !SMESH_MesherHelper::IsSubShape( edge, srcMesh ) ||
+           !SMESH_MesherHelper::IsSubShape( edge, _sourceHypo->GetSourceFace() ))
       {
         theStatus = HYP_BAD_PARAMETER;
         SCRUTE((edge.IsNull()));
-        SCRUTE((TAssocTool::IsSubShape( edge, srcMesh )));
-        SCRUTE((TAssocTool::IsSubShape( edge, _sourceHypo->GetSourceFace() )));
+        SCRUTE((SMESH_MesherHelper::IsSubShape( edge, srcMesh )));
+        SCRUTE((SMESH_MesherHelper::IsSubShape( edge, _sourceHypo->GetSourceFace() )));
       }
       else
       {
         // target vertices
         edge = TAssocTool::GetEdgeByVertices
           ( tgtMesh, _sourceHypo->GetTargetVertex(1), _sourceHypo->GetTargetVertex(2) );
-        if ( edge.IsNull() || !TAssocTool::IsSubShape( edge, tgtMesh ))
+        if ( edge.IsNull() || !SMESH_MesherHelper::IsSubShape( edge, tgtMesh ))
         {
           theStatus = HYP_BAD_PARAMETER;
           SCRUTE((edge.IsNull()));
-          SCRUTE((TAssocTool::IsSubShape( edge, tgtMesh )));
+          SCRUTE((SMESH_MesherHelper::IsSubShape( edge, tgtMesh )));
         }
         // PAL16203
         else if ( !_sourceHypo->IsCompoundSource() &&
-                  !TAssocTool::IsSubShape( edge, theShape ))
+                  !SMESH_MesherHelper::IsSubShape( edge, theShape ))
         {
           theStatus = HYP_BAD_PARAMETER;
-          SCRUTE((TAssocTool::IsSubShape( edge, theShape )));
+          SCRUTE((SMESH_MesherHelper::IsSubShape( edge, theShape )));
         }
       }
     }
     // check a source face
-    if ( !TAssocTool::IsSubShape( _sourceHypo->GetSourceFace(), srcMesh ) ||
+    if ( !SMESH_MesherHelper::IsSubShape( _sourceHypo->GetSourceFace(), srcMesh ) ||
          ( srcMesh == tgtMesh && theShape == _sourceHypo->GetSourceFace() ))
     {
       theStatus = HYP_BAD_PARAMETER;
-      SCRUTE((TAssocTool::IsSubShape( _sourceHypo->GetSourceFace(), srcMesh )));
+      SCRUTE((SMESH_MesherHelper::IsSubShape( _sourceHypo->GetSourceFace(), srcMesh )));
       SCRUTE((srcMesh == tgtMesh));
       SCRUTE(( theShape == _sourceHypo->GetSourceFace() ));
     }
@@ -177,12 +177,11 @@ bool StdMeshers_Projection_2D::CheckHypothesis(SMESH_Mesh&                      
 
 namespace {
 
-
   //================================================================================
   /*!
    * \brief define if a node is new or old
-    * \param node - node to check
-    * \retval bool - true if the node existed before Compute() is called
+   * \param node - node to check
+   * \retval bool - true if the node existed before Compute() is called
    */
   //================================================================================
 
@@ -545,9 +544,9 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
     RETURN_BAD_RESULT("Not associated vertices, srcV1 " << srcV1.TShape().operator->() );
   TopoDS_Vertex tgtV1 = TopoDS::Vertex( shape2ShapeMap( srcV1 ));
 
-  if ( !TAssocTool::IsSubShape( srcV1, srcFace ))
+  if ( !SMESH_MesherHelper::IsSubShape( srcV1, srcFace ))
     RETURN_BAD_RESULT("Wrong srcV1 " << srcV1.TShape().operator->());
-  if ( !TAssocTool::IsSubShape( tgtV1, tgtFace ))
+  if ( !SMESH_MesherHelper::IsSubShape( tgtV1, tgtFace ))
     RETURN_BAD_RESULT("Wrong tgtV1 " << tgtV1.TShape().operator->());
 
   // try to find out orientation by order of edges
