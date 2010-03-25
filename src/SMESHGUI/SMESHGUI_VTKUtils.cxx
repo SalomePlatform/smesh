@@ -594,8 +594,8 @@ namespace SMESH
             anActor->SetNodeColor( aColor.R, aColor.G, aColor.B );
           else if( aGroup->GetType() == SMESH::EDGE )
             anActor->SetEdgeColor( aColor.R, aColor.G, aColor.B );
-	  else if( aGroup->GetType() == SMESH::ELEM0D )
-	    anActor->Set0DColor( aColor.R, aColor.G, aColor.B );
+          else if( aGroup->GetType() == SMESH::ELEM0D )
+            anActor->Set0DColor( aColor.R, aColor.G, aColor.B );
           else
             anActor->SetSufaceColor( aColor.R, aColor.G, aColor.B );
         }
