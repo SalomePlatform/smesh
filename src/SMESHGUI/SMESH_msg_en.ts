@@ -3279,6 +3279,10 @@ Please, create VTK viewer and try again</translation>
             <translation>Labels color</translation>
         </message>
         <message>
+            <source>PREF_MARKER_SCALE</source>
+            <translation>Scale of marker</translation>
+        </message>
+        <message>
             <source>PREF_NODES</source>
             <translation>Nodes</translation>
         </message>
@@ -3311,10 +3315,6 @@ Please, create VTK viewer and try again</translation>
             <translation>Shrink coef.</translation>
         </message>
         <message>
-            <source>PREF_SIZE</source>
-            <translation>Size</translation>
-        </message>
-        <message>
             <source>PREF_TAB_GENERAL</source>
             <translation>General</translation>
         </message>
@@ -3329,6 +3329,10 @@ Please, create VTK viewer and try again</translation>
         <message>
             <source>PREF_TITLE_COLOR</source>
             <translation>Title color</translation>
+        </message>
+        <message>
+            <source>PREF_TYPE_OF_MARKER</source>
+            <translation>Type of marker</translation>
         </message>
         <message>
             <source>PREF_COLOR_0D</source>

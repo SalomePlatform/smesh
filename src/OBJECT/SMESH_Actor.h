@@ -72,9 +72,6 @@ class SMESHOBJECT_EXPORT SMESH_Actor: public SALOME_Actor
   virtual vtkFloatingPointType GetLineWidth() = 0;
   virtual void SetLineWidth(vtkFloatingPointType theVal) = 0;
 
-  virtual void SetNodeSize(vtkFloatingPointType size) = 0;
-  virtual vtkFloatingPointType GetNodeSize() = 0;
-
   virtual void Set0DSize(vtkFloatingPointType size) = 0;
   virtual vtkFloatingPointType Get0DSize() = 0;
 

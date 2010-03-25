@@ -31,6 +31,7 @@
 
 // SALOME GUI includes
 #include <SalomeApp_Module.h>
+#include <VTKViewer_MarkerDef.h>
 #include <SALOME_InteractiveObject.hxx>
 
 // IDL includes
@@ -51,6 +52,8 @@ class LightApp_Selection;
 class LightApp_SelectionMgr;
 
 class SMESHGUI_FilterLibraryDlg;
+
+typedef std::map<int, VTK::MarkerMap> SMESHGUI_StudyId2MarkerMap;
 
 //=================================================================================
 // class    : SMESHGUI
@@ -166,6 +169,8 @@ private :
   LightApp_Displayer*             myDisplayer;
 
   SMESHGUI_FilterLibraryDlg*      myFilterLibraryDlg;
+
+  SMESHGUI_StudyId2MarkerMap      myMarkerMap;
 };
 
 #endif // SMESHGUI_H

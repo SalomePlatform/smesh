@@ -29,6 +29,9 @@
 // SMESH includes
 #include "SMESH_SMESHGUI.hxx"
 
+// SALOME GUI includes
+#include <VTKViewer_MarkerDef.h>
+
 // Qt includes
 #include <QDialog>
 
@@ -38,6 +41,7 @@ class SMESHGUI;
 class QtxDoubleSpinBox;
 class QtxIntSpinBox;
 class QtxColorButton;
+class VTKViewer_MarkerWidget;
 
 class SMESHGUI_EXPORT SMESHGUI_Preferences_ColorDlg : public QDialog
 { 
@@ -55,6 +59,15 @@ public:
   double                GetDoubleValue( int );
   void                  SetBooleanValue( int, bool );
   bool                  GetBooleanValue( int );
+
+  void                  setCustomMarkerMap( VTK::MarkerMap );
+  VTK::MarkerMap        getCustomMarkerMap();
+
+  void                  setStandardMarker( VTK::MarkerType, VTK::MarkerScale );
+  void                  setCustomMarker( int );
+  VTK::MarkerType       getMarkerType() const;
+  VTK::MarkerScale      getStandardMarkerScale() const;
+  int                   getCustomMarkerID() const;
 
 protected:
   void                  closeEvent( QCloseEvent* );
@@ -76,7 +89,7 @@ private:
   QSpinBox*             SpinBox_Width;
   QtxIntSpinBox*        SpinBox_Shrink;
   QtxColorButton*       btnNodeColor;
-  QSpinBox*             SpinBox_Nodes_Size;
+  VTKViewer_MarkerWidget* MarkerWidget;
   QtxColorButton*       btnOrientationColor;
   QtxDoubleSpinBox*     SpinBox_Orientation_Scale;
   QCheckBox*            CheckBox_Orientation_3DVectors;
