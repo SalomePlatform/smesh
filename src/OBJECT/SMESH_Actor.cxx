@@ -881,8 +881,6 @@ SetControlMode(eControl theMode,
 
 
 void SMESH_ActorDef::AddToRender(vtkRenderer* theRenderer){
-  SALOME_Actor::AddToRender(theRenderer);
-
   theRenderer->AddActor(myNodeActor);
   theRenderer->AddActor(myBaseActor);
   
@@ -907,6 +905,10 @@ void SMESH_ActorDef::AddToRender(vtkRenderer* theRenderer){
 
   theRenderer->AddActor2D(myPointLabels);
   theRenderer->AddActor2D(myCellsLabels);
+
+  // the superclass' method should be called at the end
+  // (in particular, for correct work of selection)
+  SALOME_Actor::AddToRender(theRenderer);
 }
 
 void SMESH_ActorDef::RemoveFromRender(vtkRenderer* theRenderer){
