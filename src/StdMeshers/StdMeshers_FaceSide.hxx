@@ -32,10 +32,8 @@
 #include <TopoDS_Edge.hxx>
 #include <TopoDS_Vertex.hxx>
 #include <Geom2d_Curve.hxx>
-#include <TopExp.hxx>
 
 #include "SMESH_StdMeshers.hxx"
-#include "SMESH_Algo.hxx"
 
 #include <vector>
 #include <list>
