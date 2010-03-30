@@ -711,6 +711,18 @@
             <translation>Wireframe</translation>
         </message>
         <message>
+            <source>MEN_SPLIT_TO_TETRA</source>
+            <translation>Split into Tetrahedra</translation>
+        </message>
+        <message>
+            <source>TOP_SPLIT_TO_TETRA</source>
+            <translation>Split into Tetrahedra</translation>
+        </message>
+        <message>
+            <source>STB_SPLIT_TO_TETRA</source>
+            <translation>Split into Tetrahedra</translation>
+        </message>
+        <message>
             <source>MESHERS_FILE_CANT_OPEN</source>
             <translation>Can not open resource file</translation>
         </message>
@@ -4761,6 +4773,25 @@ It is impossible to read point coordinates from file</translation>
         <message>
             <source>USE_NUMERIC_FUNC</source>
             <translation>Use numeric functor</translation>
+        </message>
+    </context>
+    <context>
+        <name>SMESHGUI_CuttingIntoTetraDlg</name>
+        <message>
+            <source>CAPTION</source>
+            <translation>Splitting volumes into tetrahedra</translation>
+        </message>
+        <message>
+            <source>SPLIT_METHOD</source>
+            <translation>Split hexahedron</translation>
+        </message>
+        <message>
+            <source>SPLIT_HEX_TO_5_TETRA</source>
+            <translation>Into 5 tetrahedra</translation>
+        </message>
+        <message>
+            <source>SPLIT_HEX_TO_6_TETRA</source>
+            <translation>Into 6 tetrahedra</translation>
         </message>
     </context>
     <context>

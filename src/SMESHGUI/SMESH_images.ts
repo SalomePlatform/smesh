@@ -461,5 +461,9 @@
             <source>ICON_2D_FROM_3D</source>
             <translation>mesh_2d_from_3d.png</translation>
         </message>
+        <message>
+            <source>ICON_SPLIT_TO_TETRA</source>
+            <translation>split_into_tetra.png</translation>
+        </message>
     </context>
 </TS>

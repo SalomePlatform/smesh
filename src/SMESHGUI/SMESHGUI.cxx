@@ -690,8 +690,8 @@
             anActor->SetNodeColor( aColor.R, aColor.G, aColor.B );
           else if( aGroupObject->GetType() == SMESH::EDGE )
             anActor->SetEdgeColor( aColor.R, aColor.G, aColor.B );
-	  else if( aGroupObject->GetType() == SMESH::ELEM0D )
-	    anActor->Set0DColor( aColor.R, aColor.G, aColor.B );
+          else if( aGroupObject->GetType() == SMESH::ELEM0D )
+            anActor->Set0DColor( aColor.R, aColor.G, aColor.B );
           else
             anActor->SetSufaceColor( aColor.R, aColor.G, aColor.B );
         }
@@ -1853,9 +1853,10 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
         ( new SMESHGUI_UnionOfTwoTrianglesDlg( this ) )->show();
       break;
     }
-    case 409: // Change orientation
-    case 410: // Union of triangles
-    case 411: // Cutting of quadrangles
+  case 409: // Change orientation
+  case 410: // Union of triangles
+  case 411: // Cutting of quadrangles
+  case 419: // Splitting volumes into tetrahedra
     {
       if ( !vtkwnd )
       {
@@ -1873,6 +1874,8 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
         aDlg = new SMESHGUI_ChangeOrientationDlg(this);
       else if ( theCommandID == 410 )
         aDlg = new SMESHGUI_UnionOfTrianglesDlg(this);
+      else if ( theCommandID == 419 )
+        aDlg = new SMESHGUI_CuttingIntoTetraDlg(this);
       else
         aDlg = new SMESHGUI_CuttingOfQuadsDlg(this);
 
@@ -2981,6 +2984,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction(  416, "EXTRUSION_ALONG", "ICON_EXTRUSION_ALONG" );
   createSMESHAction(  417, "CONV_TO_QUAD",    "ICON_CONV_TO_QUAD" );
   createSMESHAction(  418, "2D_FROM_3D",      "ICON_2D_FROM_3D" );
+  createSMESHAction(  419, "SPLIT_TO_TETRA",  "ICON_SPLIT_TO_TETRA" );
   createSMESHAction(  200, "RESET" );
   createSMESHAction(  201, "SCALAR_BAR_PROP" );
   createSMESHAction(  211, "WIRE",           "ICON_WIRE", 0, true );
@@ -3147,6 +3151,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createMenu( 409, modifyId, -1 );
   createMenu( 410, modifyId, -1 );
   createMenu( 411, modifyId, -1 );
+  createMenu( 419, modifyId, -1 );
   createMenu( 412, modifyId, -1 );
   createMenu( 413, modifyId, -1 );
   createMenu( 416, modifyId, -1 );
@@ -3247,6 +3252,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createTool( 409, modifyTb );
   createTool( 410, modifyTb );
   createTool( 411, modifyTb );
+  createTool( 419, modifyTb );
   createTool( 412, modifyTb );
   createTool( 413, modifyTb );
   createTool( 416, modifyTb );

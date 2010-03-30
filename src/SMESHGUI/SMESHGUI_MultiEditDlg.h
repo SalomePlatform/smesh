@@ -108,12 +108,13 @@ protected:
   QWidget*                  createButtonFrame( QWidget* );
   QWidget*                  createMainFrame( QWidget*, const bool );
   virtual bool              isValid( const bool );
-  SMESH::long_array_var     getIds();
+  SMESH::long_array_var     getIds(SMESH::SMESH_IDSource_var& obj);
   void                      updateButtons();
   void                      setSelectionMode();
   virtual bool              isIdValid( const int ) const;
   virtual bool              process( SMESH::SMESH_MeshEditor_ptr, 
-                                     const SMESH::long_array& ) = 0;
+                                     const SMESH::long_array& ,
+                                     SMESH::SMESH_IDSource_ptr obj) = 0;
   int                       entityType();
 
 protected:
@@ -174,7 +175,9 @@ public:
   virtual ~SMESHGUI_ChangeOrientationDlg();
 
 protected:
-  virtual bool process( SMESH::SMESH_MeshEditor_ptr, const SMESH::long_array& );
+  virtual bool process( SMESH::SMESH_MeshEditor_ptr,
+                        const SMESH::long_array& ,
+                        SMESH::SMESH_IDSource_ptr obj);
 };
 
 /*!
@@ -191,7 +194,9 @@ public:
 
 protected:
   virtual bool      isValid( const bool );
-  virtual bool      process( SMESH::SMESH_MeshEditor_ptr, const SMESH::long_array& );
+  virtual bool      process( SMESH::SMESH_MeshEditor_ptr,
+                             const SMESH::long_array&,
+                             SMESH::SMESH_IDSource_ptr obj );
 
 private:
   SMESHGUI_SpinBox* myMaxAngleSpin;
@@ -210,7 +215,9 @@ public:
   virtual ~SMESHGUI_CuttingOfQuadsDlg();
 
 protected:
-  virtual bool  process( SMESH::SMESH_MeshEditor_ptr, const SMESH::long_array& );
+  virtual bool  process( SMESH::SMESH_MeshEditor_ptr,
+                         const SMESH::long_array& ,
+                         SMESH::SMESH_IDSource_ptr obj);
 
 protected slots:
   virtual void  onClose();
@@ -224,6 +231,24 @@ private:
 private:
   SALOME_Actor* myPreviewActor;
   QCheckBox*    myPreviewChk;
+};
+
+/*!
+ * Class       : SMESHGUI_CuttingIntoTetraDlg
+ * Description : Split all volumes into tetrahedrons
+ */
+class  SMESHGUI_CuttingIntoTetraDlg : public SMESHGUI_MultiEditDlg
+{
+  Q_OBJECT
+
+public:
+  SMESHGUI_CuttingIntoTetraDlg( SMESHGUI* );
+  virtual ~SMESHGUI_CuttingIntoTetraDlg();
+
+protected:
+  virtual bool process( SMESH::SMESH_MeshEditor_ptr,
+                        const SMESH::long_array&,
+                        SMESH::SMESH_IDSource_ptr obj );
 };
 
 #endif // SMESHGUI_MULTIEDITDLG_H
