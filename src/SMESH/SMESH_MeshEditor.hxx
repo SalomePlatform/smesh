@@ -240,7 +240,7 @@ public:
   /*!
    * \brief Split volumic elements into tetrahedra.
    */
-  //void SplitVolumesIntoTetra (const TIDSortedElemSet & theElems, const int theMethodFlags);
+  void SplitVolumesIntoTetra (const TIDSortedElemSet & theElems, const int theMethodFlags);
 
 
   enum SmoothMethod { LAPLACIAN = 0, CENTROIDAL };
@@ -552,9 +552,9 @@ public:
                                    SMESHDS_Mesh *          aMesh);
   // replace elemToRm by elemToAdd in the all groups
 
-//   static void ReplaceElemInGroups (const SMDS_MeshElement*                     elemToRm,
-//                                    const std::vector<const SMDS_MeshElement*>& elemToAdd,
-//                                    SMESHDS_Mesh *                              aMesh);
+  static void ReplaceElemInGroups (const SMDS_MeshElement*                     elemToRm,
+                                   const std::vector<const SMDS_MeshElement*>& elemToAdd,
+                                   SMESHDS_Mesh *                              aMesh);
   // replace elemToRm by elemToAdd in the all groups
 
   /*!

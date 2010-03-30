@@ -1159,9 +1159,27 @@ CORBA::Long SMESH_MeshEditor_i::BestSplit (CORBA::Long                 IDOfQuad,
   return -1;
 }
 
+//================================================================================
+/*!
+ * \brief Split volumic elements into tetrahedrons
+ */
+//================================================================================
+
 void SMESH_MeshEditor_i::SplitVolumesIntoTetra (SMESH::SMESH_IDSource_ptr elems,
-                                                CORBA::Short methodFlags)
+                                                CORBA::Short              methodFlags)
+  throw (SALOME::SALOME_Exception)
 {
+  Unexpect aCatch(SALOME_SalomeException);
+
+  SMESH::long_array_var anElementsId = elems->GetIDs();
+  TIDSortedElemSet elemSet;
+  arrayToSet( anElementsId, GetMeshDS(), elemSet, SMDSAbs_Volume );
+  
+  ::SMESH_MeshEditor anEditor (myMesh);
+  anEditor.SplitVolumesIntoTetra( elemSet, int( methodFlags ));
+
+  TPythonDump() << this << ".SplitVolumesIntoTetra( "
+                << elems << ", " << methodFlags << " )";
 }
 
 //=======================================================================

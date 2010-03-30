@@ -2053,6 +2053,16 @@ class Mesh:
     def ElemNbFaces(self, id):
         return self.mesh.ElemNbFaces(id)
 
+    ## Returns nodes of given face (counted from zero) for given volumic element.
+    #  @ingroup l1_meshinfo
+    def GetElemFaceNodes(self,elemId, faceIndex):
+        return self.mesh.GetElemFaceNodes(elemId, faceIndex)
+
+    ## Returns an element based on all given nodes.
+    #  @ingroup l1_meshinfo
+    def FindElementByNodes(self,nodes):
+        return self.mesh.FindElementByNodes(nodes)
+
     ## Returns true if the given element is a polygon
     #  @ingroup l1_meshinfo
     def IsPoly(self, id):
@@ -2431,6 +2441,17 @@ class Mesh:
     #  @ingroup l2_modif_cutquadr
     def BestSplit (self, IDOfQuad, theCriterion):
         return self.editor.BestSplit(IDOfQuad, self.smeshpyD.GetFunctor(theCriterion))
+
+    ## Splits volumic elements into tetrahedrons
+    #  @param elemIDs either list of elements or mesh or group or submesh
+    #  @param method  flags passing splitting method:
+    #         1 - split the hexahedron into 5 tetrahedrons
+    #         2 - split the hexahedron into 6 tetrahedrons
+    #  @ingroup l2_modif_cutquadr
+    def SplitVolumesIntoTetra(self, elemIDs, method=1 ):
+        if isinstance( elemIDs, Mesh ):
+            elemIDs = elemIDs.GetMesh()
+        self.editor.SplitVolumesIntoTetra(elemIDs, method)
 
     ## Splits quadrangle faces near triangular facets of volumes
     #

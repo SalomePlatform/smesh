@@ -223,8 +223,8 @@ module SMESH
      *         1 - split the hexahedron into 5 tetrahedrons
      *         2 - split the hexahedron into 6 tetrahedrons
      */
-    //void SplitVolumesIntoTetra(in SMESH_IDSource elems, in short methodFlags)
-    //raises (SALOME::SALOME_Exception);
+    void SplitVolumesIntoTetra(in SMESH_IDSource elems, in short methodFlags)
+      raises (SALOME::SALOME_Exception);
 
 
     enum Smooth_Method { LAPLACIAN_SMOOTH, CENTROIDAL_SMOOTH };
