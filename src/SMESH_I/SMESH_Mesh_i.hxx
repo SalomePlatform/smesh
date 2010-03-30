@@ -455,7 +455,16 @@ public:
    * Returns number of faces for given element
    */
   CORBA::Long ElemNbFaces(CORBA::Long id);
-  
+  /*!
+   * Returns nodes of given face (counted from zero) for given element.
+   */
+  SMESH::long_array* GetElemFaceNodes(CORBA::Long elemId, CORBA::Short faceIndex);
+
+  /*!
+   * Returns an element based on all given nodes.
+   */
+  CORBA::Long FindElementByNodes(const SMESH::long_array& nodes);
+
   /*!
    * Returns true if given element is polygon
    */

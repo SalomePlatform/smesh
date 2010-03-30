@@ -492,6 +492,9 @@ public:
 
   const SMDS_MeshFace *FindFace(const std::vector<int>& nodes_ids) const;
   static const SMDS_MeshFace* FindFace(const std::vector<const SMDS_MeshNode *>& nodes);
+  static const SMDS_MeshElement* FindElement(const std::vector<const SMDS_MeshNode *>& nodes,
+                                             const SMDSAbs_ElementType                 type=SMDSAbs_All,
+                                             const bool                                noMedium=true);
 
   /*!
    * \brief Raise an exception if free memory (ram+swap) too low

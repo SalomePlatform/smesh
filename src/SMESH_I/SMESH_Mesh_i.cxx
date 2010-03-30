@@ -3195,6 +3195,57 @@ CORBA::Long SMESH_Mesh_i::ElemNbFaces(const CORBA::Long id)
   return elem->NbFaces();
 }
 
+//=======================================================================
+//function : GetElemFaceNodes
+//purpose  : Returns nodes of given face (counted from zero) for given element.
+//=======================================================================
+
+SMESH::long_array* SMESH_Mesh_i::GetElemFaceNodes(CORBA::Long  elemId,
+                                                  CORBA::Short faceIndex)
+{
+  SMESH::long_array_var aResult = new SMESH::long_array();
+  if ( SMESHDS_Mesh* aSMESHDS_Mesh = _impl->GetMeshDS() )
+  {
+    if ( const SMDS_MeshElement* elem = aSMESHDS_Mesh->FindElement(elemId) )
+    {
+      SMDS_VolumeTool vtool( elem );
+      if ( faceIndex < vtool.NbFaces() )
+      {
+        aResult->length( vtool.NbFaceNodes( faceIndex ));
+        const SMDS_MeshNode** nn = vtool.GetFaceNodes( faceIndex );
+        for ( int i = 0; i < aResult->length(); ++i )
+          aResult[ i ] = nn[ i ]->GetID();
+      }
+    }
+  }
+  return aResult._retn();
+}
+
+//=======================================================================
+//function : FindElementByNodes
+//purpose  : Returns an element based on all given nodes.
+//=======================================================================
+
+CORBA::Long SMESH_Mesh_i::FindElementByNodes(const SMESH::long_array& nodes)
+{
+  CORBA::Long elemID(0);
+  if ( SMESHDS_Mesh* mesh = _impl->GetMeshDS() )
+  {
+    vector< const SMDS_MeshNode * > nn( nodes.length() );
+    for ( int i = 0; i < nodes.length(); ++i )
+      if ( !( nn[i] = mesh->FindNode( nodes[i] )))
+        return elemID;
+
+    const SMDS_MeshElement* elem = mesh->FindElement( nn );
+    if ( !elem && ( _impl->NbEdges( ORDER_QUADRATIC ) ||
+                    _impl->NbFaces( ORDER_QUADRATIC ) ||
+                    _impl->NbVolumes( ORDER_QUADRATIC )))
+      elem = mesh->FindElement( nn, SMDSAbs_All, /*noMedium=*/true );
+
+    if ( elem ) elemID = CORBA::Long( elem->GetID() );
+  }
+  return elemID;
+}
 
 //=============================================================================
 /*!

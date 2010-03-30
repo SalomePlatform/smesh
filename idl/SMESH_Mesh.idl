@@ -775,6 +775,16 @@ module SMESH
     long ElemNbFaces(in long id);
 
     /*!
+     * Returns nodes of given face (counted from zero) for given volumic element.
+     */
+    long_array GetElemFaceNodes(in long elemId, in short faceIndex);
+
+    /*!
+     * Returns an element based on all given nodes.
+     */
+    long FindElementByNodes(in long_array nodes);
+
+    /*!
      * Returns true if given element is polygon
      */
     boolean IsPoly(in long id);
