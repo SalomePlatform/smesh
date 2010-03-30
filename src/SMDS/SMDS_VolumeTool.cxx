@@ -447,14 +447,11 @@ SMDS_VolumeTool::SMDS_VolumeTool (const SMDS_MeshElement* theVolume)
 
 SMDS_VolumeTool::~SMDS_VolumeTool()
 {
-  if (myVolumeNodes != NULL) {
-    delete [] myVolumeNodes;
-    myVolumeNodes = NULL;
-  }
-  if (myFaceNodes != NULL) {
-    delete [] myFaceNodes;
-    myFaceNodes = NULL;
-  }
+  if ( myVolumeNodes != NULL ) delete [] myVolumeNodes;
+  if ( myFaceNodes != NULL   ) delete [] myFaceNodes;
+
+  myFaceNodeIndices = NULL;
+  myVolumeNodes = myFaceNodes = NULL;
 }
 
 //=======================================================================
@@ -914,12 +911,16 @@ const SMDS_MeshNode** SMDS_VolumeTool::GetFaceNodes( int faceIndex )
 
 const int* SMDS_VolumeTool::GetFaceNodesIndices( int faceIndex )
 {
-  if (myVolume->IsPoly()) {
-    MESSAGE("Warning: attempt to obtain FaceNodesIndices of polyhedral volume");
-    return NULL;
-  }
   if ( !setFace( faceIndex ))
     return 0;
+
+  if (myVolume->IsPoly())
+  {
+    myPolyIndices.resize( myFaceNbNodes + 1 );
+    myFaceNodeIndices = & myPolyIndices[0];
+    for ( int i = 0; i <= myFaceNbNodes; ++i )
+      myFaceNodeIndices[i] = myVolume->GetNodeIndex( myFaceNodes[i] );
+  }
   return myFaceNodeIndices;
 }
 
@@ -1686,7 +1687,7 @@ int SMDS_VolumeTool::NbFaceNodes(VolumeType type,
 //purpose  : return element
 //=======================================================================
 
-const SMDS_MeshVolume* SMDS_VolumeTool::Get() const
+const SMDS_MeshVolume* SMDS_VolumeTool::Element() const
 {
   return static_cast<const SMDS_MeshVolume*>( myVolume );
 }

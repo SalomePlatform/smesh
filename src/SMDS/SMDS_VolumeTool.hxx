@@ -61,7 +61,7 @@ class SMDS_EXPORT SMDS_VolumeTool
   // Set volume.
   // Return false if theVolume is not of type SMDSAbs_Volume
 
-  const SMDS_MeshVolume* Get() const;
+  const SMDS_MeshVolume* Element() const;
   // return element
 
   int ID() const;
@@ -210,6 +210,7 @@ private:
   int                     myNbFaces;
   int                     myVolumeNbNodes;
   const SMDS_MeshNode**   myVolumeNodes;
+  std::vector< int >      myPolyIndices;
 
   bool                    myExternalFaces;
 
