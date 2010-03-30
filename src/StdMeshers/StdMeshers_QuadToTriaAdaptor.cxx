@@ -40,9 +40,14 @@
 #include <gp_Lin.hxx>
 #include <gp_Pln.hxx>
 
+#include <numeric>
+
 using namespace std;
 
 enum EQuadNature { NOT_QUAD, QUAD, DEGEN_QUAD };
+
+  // sdt-like iterator used to get coordinates of nodes of mesh element
+typedef SMDS_StdIterator< SMESH_MeshEditor::TNodeXYZ, SMDS_ElemIteratorPtr > TXyzIterator;
 
 //================================================================================
 /*!
@@ -378,11 +383,9 @@ int StdMeshers_QuadToTriaAdaptor::Preparation(const SMDS_MeshElement*       face
     if ( volumes[0] )
     {
       // get volume gc
-      gp_XYZ volGC(0,0,0);
       SMDS_ElemIteratorPtr nodeIt = volumes[0]->nodesIterator();
-      while ( nodeIt->more() )
-        volGC += SMESH_MeshEditor::TNodeXYZ( nodeIt->next() );
-      volGC /= volumes[0]->NbNodes();
+      gp_XYZ volGC(0,0,0);
+      volGC = accumulate( TXyzIterator(nodeIt), TXyzIterator(), volGC ) / volumes[0]->NbNodes();
 
       if ( VNorm * gp_Vec( PC, volGC ) < 0 )
         swap( volumes[0], volumes[1] );
@@ -496,6 +499,7 @@ bool StdMeshers_QuadToTriaAdaptor::Compute(SMESH_Mesh& aMesh, const TopoDS_Shape
           triaList.push_back( new SMDS_FaceOfNodes( NewNode, FNodes[i], FNodes[i+1] ));
 
         // create pyramid
+        if ( isRev ) swap( FNodes[1], FNodes[3]);
         SMDS_MeshVolume* aPyram =
           helper.AddVolume( FNodes[0], FNodes[1], FNodes[2], FNodes[3], NewNode );
         myPyram2Trias.insert(make_pair(aPyram, & triaList));
@@ -715,10 +719,6 @@ bool StdMeshers_QuadToTriaAdaptor::Compute2ndPart(SMESH_Mesh& aMesh)
   if(myPyram2Trias.empty())
     return true;
 
-  // sdt-like iterator used to get coordinates of nodes of mesh element
-  typedef SMDS_StdIterator< SMESH_MeshEditor::TNodeXYZ, SMDS_ElemIteratorPtr > TXyzIterator;
-  TXyzIterator xyzEnd;
-
   int k = 0;
 
   // for each pyramid store list of merged pyramids with their faces
@@ -733,7 +733,7 @@ bool StdMeshers_QuadToTriaAdaptor::Compute2ndPart(SMESH_Mesh& aMesh)
     TPyram2Merged::iterator pMergesI = MergesInfo.find( PrmI );
 
     TXyzIterator xyzIt( PrmI->nodesIterator() );
-    vector<gp_Pnt> PsI( xyzIt, xyzEnd );
+    vector<gp_Pnt> PsI( xyzIt, TXyzIterator() );
 
     // compare PrmI with all the rest pyramids
     bool NeedMove = false;
@@ -749,7 +749,7 @@ bool StdMeshers_QuadToTriaAdaptor::Compute2ndPart(SMESH_Mesh& aMesh)
         continue; // already merged
 
       xyzIt = TXyzIterator( PrmJ->nodesIterator() );
-      vector<gp_Pnt> PsJ( xyzIt, xyzEnd );
+      vector<gp_Pnt> PsJ( xyzIt, TXyzIterator() );
 
       bool hasInt = false;
       gp_Pnt Pint;
