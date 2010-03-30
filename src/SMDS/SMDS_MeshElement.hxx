@@ -74,6 +74,7 @@ public:
   virtual SMDSAbs_EntityType  GetEntityType() const = 0;
 
   virtual bool IsMediumNode(const SMDS_MeshNode* node) const;
+  virtual int  NbCornerNodes() const;
 
   friend SMDS_EXPORT std::ostream & operator <<(std::ostream & OS, const SMDS_MeshElement *);
   friend SMDS_EXPORT bool SMDS_MeshElementIDFactory::BindID(int ID,SMDS_MeshElement*elem);

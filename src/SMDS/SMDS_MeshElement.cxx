@@ -223,6 +223,17 @@ bool SMDS_MeshElement::IsMediumNode(const SMDS_MeshNode* node) const
 }
 
 //================================================================================
+/*!
+ * \brief Return number of nodes excluding medium ones
+ */
+//================================================================================
+
+int SMDS_MeshElement::NbCornerNodes() const
+{
+  return IsQuadratic() ? NbNodes() - NbEdges() : NbNodes();
+}
+
+//================================================================================
   /*!
    * \brief Check if a node belongs to the element
     * \param node - the node to check
