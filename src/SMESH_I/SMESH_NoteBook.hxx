@@ -36,12 +36,12 @@ typedef std::vector<TCollection_AsciiString>  TState;
 typedef std::vector<TState>                   TAllStates;
 typedef TCollection_AsciiString _pyID;
 
-class ObjectStates{
+class SMESH_ObjectStates{
   
 public:
   
-  ObjectStates(TCollection_AsciiString theType);
-  virtual ~ObjectStates();
+  SMESH_ObjectStates(TCollection_AsciiString theType);
+  virtual ~SMESH_ObjectStates();
 
   void AddState(const TState &theState);
 
@@ -58,7 +58,7 @@ private:
   int                                       _dumpstate;
 };
 
-class LayerDistributionStates : public ObjectStates
+class LayerDistributionStates : public SMESH_ObjectStates
 {
 public:
   typedef std::map<TCollection_AsciiString,TCollection_AsciiString> TDistributionMap;
@@ -81,7 +81,7 @@ private:
 class SMESH_NoteBook
 {
 public:
-  typedef std::map<TCollection_AsciiString,ObjectStates*> TVariablesMap;
+  typedef std::map<TCollection_AsciiString,SMESH_ObjectStates*> TVariablesMap;
   typedef std::map<TCollection_AsciiString,TCollection_AsciiString> TMeshEditorMap;
   SMESH_NoteBook();
   ~SMESH_NoteBook();
