@@ -54,12 +54,11 @@ public:
   void       RangeStepAndValidator( double         = -1000000.0,
                                     double         = +1000000.0,
                                     double         = 100.0,
-                                    unsigned short = 3 );
+                                    const char*    = "length_precision" );
   void              SetValue( double );
   double            GetValue() const;
   QString           GetString() const;
   QLineEdit*        editor() const;
-  QDoubleValidator* validator() const;
 
 public slots:
   void              SetStep( double );

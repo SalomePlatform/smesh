@@ -520,7 +520,7 @@ SMESHGUI_EditMeshDlg::~SMESHGUI_EditMeshDlg()
 void SMESHGUI_EditMeshDlg::Init()
 {
   if (myAction == 0) {
-    SpinBoxTolerance->RangeStepAndValidator(0.0, COORD_MAX, 0.00001, 5);
+    SpinBoxTolerance->RangeStepAndValidator(0.0, COORD_MAX, 0.00001, "len_tol_precision");
     SpinBoxTolerance->SetValue(1e-05);
   }
 

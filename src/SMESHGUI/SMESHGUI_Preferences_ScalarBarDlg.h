@@ -39,11 +39,11 @@ class QLineEdit;
 class QPushButton;
 class QToolButton;
 class QRadioButton;
-class QSpinBox;
 
 class SMESHGUI;
 class SMESH_Actor;
-class QtxDoubleSpinBox;
+class SMESHGUI_SpinBox;
+class SalomeApp_IntSpinBox;
 class QtxColorButton;
 class LightApp_SelectionMgr;
 
@@ -103,18 +103,18 @@ private:
   QCheckBox*               myLabelsShadowCheck;
   
   QGroupBox*               myLabColorGrp;
-  QSpinBox*                myColorsSpin;
-  QSpinBox*                myLabelsSpin;
+  SalomeApp_IntSpinBox*    myColorsSpin;
+  SalomeApp_IntSpinBox*    myLabelsSpin;
 
   QGroupBox*               myOrientationGrp;
   QRadioButton*            myVertRadioBtn;
   QRadioButton*            myHorizRadioBtn;
 
   QGroupBox*               myOriginDimGrp;
-  QtxDoubleSpinBox*        myXSpin;
-  QtxDoubleSpinBox*        myYSpin;
-  QtxDoubleSpinBox*        myWidthSpin;
-  QtxDoubleSpinBox*        myHeightSpin;
+  SMESHGUI_SpinBox*        myXSpin;
+  SMESHGUI_SpinBox*        myYSpin;
+  SMESHGUI_SpinBox*        myWidthSpin;
+  SMESHGUI_SpinBox*        myHeightSpin;
 
   QGroupBox*               myButtonGrp;
   QPushButton*             myOkBtn;

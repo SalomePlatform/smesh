@@ -34,7 +34,7 @@
 #include <QStringList>
 
 class SMESHGUI;
-class QtxDoubleSpinBox;
+class SMESHGUI_SpinBox;
 class QPushButton;
 class QLineEdit;
 class QCheckBox;
@@ -84,7 +84,7 @@ private:
 private:
   QListWidget*                   myListWidget;
   QTreeWidget*                   myTreeWidget;
-  QtxDoubleSpinBox*              mySpinBox;
+  SMESHGUI_SpinBox*              mySpinBox;
   QPushButton*                   myAddButton;
   QPushButton*                   myRemoveButton;
   QCheckBox*                     mySameValues;

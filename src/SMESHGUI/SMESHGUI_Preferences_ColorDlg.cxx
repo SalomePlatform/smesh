@@ -27,14 +27,14 @@
 #include "SMESHGUI_Preferences_ColorDlg.h"
 
 #include "SMESHGUI.h"
+#include "SMESHGUI_SpinBox.h"
 #include "SMESHGUI_Utils.h"
 
 // SALOME GUI includes
 #include <SUIT_Desktop.h>
 #include <QtxColorButton.h>
-#include <QtxDoubleSpinBox.h>
-#include <QtxIntSpinBox.h>
 #include <VTKViewer_MarkerWidget.h>
+#include <SalomeApp_IntSpinBox.h>
 
 // Qt includes
 #include <QGroupBox>
@@ -43,7 +43,6 @@
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QGridLayout>
-#include <QSpinBox>
 #include <QCheckBox>
 
 #define SPACING 6
@@ -88,21 +87,24 @@ SMESHGUI_Preferences_ColorDlg::SMESHGUI_Preferences_ColorDlg( SMESHGUI* theModul
   btn0DElementsColor = new QtxColorButton( ButtonGroup1 );
 
   QLabel* TextLabel_0DElements_Size = new QLabel( tr( "Size of 0D elements" ), ButtonGroup1 );
-  SpinBox_0DElements_Size = new QSpinBox( ButtonGroup1 );
+  SpinBox_0DElements_Size = new SalomeApp_IntSpinBox( ButtonGroup1 );
+  SpinBox_0DElements_Size->setAcceptNames( false ); // No Notebook variables allowed
   SpinBox_0DElements_Size->setRange( 1, 10 );
   SpinBox_0DElements_Size->setSingleStep( 1 );
   SpinBox_0DElements_Size->setSizePolicy( QSizePolicy( QSizePolicy::Expanding, QSizePolicy::Fixed ) );
   SpinBox_0DElements_Size->setButtonSymbols( QSpinBox::PlusMinus );
 
   QLabel* TextLabel_Width = new QLabel( tr( "Width" ), ButtonGroup1 );
-  SpinBox_Width = new QSpinBox( ButtonGroup1 );
+  SpinBox_Width = new SalomeApp_IntSpinBox( ButtonGroup1 );
+  SpinBox_Width->setAcceptNames( false ); // No Notebook variables allowed
   SpinBox_Width->setRange( 0, 5 );
   SpinBox_Width->setSingleStep( 1 );
   SpinBox_Width->setSizePolicy( QSizePolicy( QSizePolicy::Expanding, QSizePolicy::Fixed ) );
   SpinBox_Width->setButtonSymbols( QSpinBox::PlusMinus );
 
   QLabel* TextLabel_ShrinkCoeff = new QLabel( tr( "Shrink coef." ), ButtonGroup1 );
-  SpinBox_Shrink = new QtxIntSpinBox( ButtonGroup1 );
+  SpinBox_Shrink = new SalomeApp_IntSpinBox( ButtonGroup1 );
+  SpinBox_Shrink->setAcceptNames( false ); // No Notebook variables allowed
   SpinBox_Shrink->setRange( 20, 100 );
   SpinBox_Shrink->setSingleStep( 1 );
   SpinBox_Shrink->setSizePolicy( QSizePolicy( QSizePolicy::Expanding, QSizePolicy::Fixed ) );
@@ -156,9 +158,9 @@ SMESHGUI_Preferences_ColorDlg::SMESHGUI_Preferences_ColorDlg( SMESHGUI* theModul
   btnOrientationColor = new QtxColorButton( ButtonGroup3 );
 
   QLabel* TextLabel_Orientation_Scale = new QLabel( tr( "Scale" ), ButtonGroup3 );
-  SpinBox_Orientation_Scale = new QtxDoubleSpinBox( ButtonGroup3 );
-  SpinBox_Orientation_Scale->setRange( 0.05, 0.5 );
-  SpinBox_Orientation_Scale->setSingleStep( 0.05 );
+  SpinBox_Orientation_Scale = new SMESHGUI_SpinBox( ButtonGroup3 );
+  SpinBox_Orientation_Scale->setAcceptNames( false ); // No Notebook variables allowed
+  SpinBox_Orientation_Scale->RangeStepAndValidator( .05, .5, .05, "parametric_precision" );
   SpinBox_Orientation_Scale->setSizePolicy( QSizePolicy( QSizePolicy::Expanding, QSizePolicy::Fixed ) );
   SpinBox_Orientation_Scale->setButtonSymbols( QSpinBox::PlusMinus );
 

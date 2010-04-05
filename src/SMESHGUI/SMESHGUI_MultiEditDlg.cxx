@@ -1163,7 +1163,7 @@ SMESHGUI_UnionOfTrianglesDlg
 
   QLabel* aLab = new QLabel (tr("MAXIMUM_ANGLE"), aMaxAngleGrp);
   myMaxAngleSpin = new SMESHGUI_SpinBox (aMaxAngleGrp);
-  myMaxAngleSpin->RangeStepAndValidator(0, 180.0, 1.0, 3);
+  myMaxAngleSpin->RangeStepAndValidator(0, 180.0, 1.0, "angle_precision");
   myMaxAngleSpin->SetValue(30.0);
 
   aMaxAngleGrpLayout->addWidget(aLab);

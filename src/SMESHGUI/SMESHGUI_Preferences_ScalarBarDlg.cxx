@@ -27,6 +27,7 @@
 #include "SMESHGUI_Preferences_ScalarBarDlg.h"
 
 #include "SMESHGUI.h"
+#include "SMESHGUI_SpinBox.h"
 #include "SMESHGUI_VTKUtils.h"
 #include "SMESHGUI_Utils.h"
 
@@ -41,8 +42,8 @@
 #include <LightApp_Application.h>
 #include <LightApp_SelectionMgr.h>
 #include <SALOME_ListIO.hxx>
+#include <SalomeApp_IntSpinBox.h>
 
-#include <QtxDoubleSpinBox.h>
 #include <QtxColorButton.h>
 
 // Qt includes
@@ -54,7 +55,6 @@
 #include <QLineEdit>
 #include <QPushButton>
 #include <QRadioButton>
-#include <QSpinBox>
 #include <QHBoxLayout>
 #include <QVBoxLayout>
 #include <QGridLayout>
@@ -199,13 +199,15 @@ SMESHGUI_Preferences_ScalarBarDlg::SMESHGUI_Preferences_ScalarBarDlg( SMESHGUI* 
   QHBoxLayout* myLabColorGrpLayout = new QHBoxLayout( myLabColorGrp );
   myLabColorGrpLayout->setSpacing( SPACING_SIZE ); myLabColorGrpLayout->setMargin( MARGIN_SIZE );
 
-  myColorsSpin = new QSpinBox( myLabColorGrp );
+  myColorsSpin = new SalomeApp_IntSpinBox( myLabColorGrp );
+  myColorsSpin->setAcceptNames( false ); // No Notebook variables allowed
   myColorsSpin->setRange( 2, 256 );
   myColorsSpin->setSingleStep( 1 );
   myColorsSpin->setMinimumWidth( MINIMUM_WIDTH );
   myColorsSpin->setSizePolicy( QSizePolicy( QSizePolicy::Expanding, QSizePolicy::Fixed ) );
 
-  myLabelsSpin = new QSpinBox( myLabColorGrp );
+  myLabelsSpin = new SalomeApp_IntSpinBox( myLabColorGrp );
+  myLabelsSpin->setAcceptNames( false ); // No Notebook variables allowed
   myLabelsSpin->setRange( 2, 65 );
   myLabelsSpin->setSingleStep( 1 );
   myLabelsSpin->setMinimumWidth( MINIMUM_WIDTH );
@@ -242,19 +244,27 @@ SMESHGUI_Preferences_ScalarBarDlg::SMESHGUI_Preferences_ScalarBarDlg( SMESHGUI* 
   QGridLayout* myOriginDimGrpLayout = new QGridLayout( myOriginDimGrp );
   myOriginDimGrpLayout->setSpacing( SPACING_SIZE ); myOriginDimGrpLayout->setMargin( MARGIN_SIZE );
 
-  myXSpin = new QtxDoubleSpinBox (0.0, 1.0, 0.1, myOriginDimGrp);
+  myXSpin = new SMESHGUI_SpinBox(myOriginDimGrp);
+  myXSpin->setAcceptNames( false );
+  myXSpin->RangeStepAndValidator( 0.0, 1.0, 0.1, "parametric_precision" );
   myXSpin->setMinimumWidth( MINIMUM_WIDTH );
   myXSpin->setSizePolicy( QSizePolicy( QSizePolicy::Expanding, QSizePolicy::Fixed ) );
 
-  myYSpin = new QtxDoubleSpinBox(0.0, 1.0, 0.1, myOriginDimGrp);
+  myYSpin = new SMESHGUI_SpinBox(myOriginDimGrp);
+  myYSpin->setAcceptNames( false );
+  myYSpin->RangeStepAndValidator( 0.0, 1.0, 0.1, "parametric_precision" );  
   myYSpin->setMinimumWidth( MINIMUM_WIDTH );
   myYSpin->setSizePolicy( QSizePolicy( QSizePolicy::Expanding, QSizePolicy::Fixed ) );
 
-  myWidthSpin = new QtxDoubleSpinBox(0.0, 1.0, 0.1, myOriginDimGrp);
+  myWidthSpin = new SMESHGUI_SpinBox(myOriginDimGrp);
+  myWidthSpin->setAcceptNames( false );
+  myWidthSpin->RangeStepAndValidator( 0.0, 1.0, 0.1, "parametric_precision" );    
   myWidthSpin->setMinimumWidth( MINIMUM_WIDTH );
   myWidthSpin->setSizePolicy( QSizePolicy( QSizePolicy::Expanding, QSizePolicy::Fixed ) );
 
-  myHeightSpin = new QtxDoubleSpinBox(0.0, 1.0, 0.1, myOriginDimGrp);
+  myHeightSpin = new SMESHGUI_SpinBox(myOriginDimGrp);
+  myHeightSpin->setAcceptNames( false );
+  myHeightSpin->RangeStepAndValidator( 0.0, 1.0, 0.1, "parametric_precision" );    
   myHeightSpin->setMinimumWidth( MINIMUM_WIDTH );
   myHeightSpin->setSizePolicy( QSizePolicy( QSizePolicy::Expanding, QSizePolicy::Fixed ) );
 

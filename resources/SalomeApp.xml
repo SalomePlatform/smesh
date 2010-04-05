@@ -74,6 +74,14 @@
     <parameter name="quadratic_mode"               value="0"/>
     <parameter name="max_angle"                    value="2"/>
     <parameter name="documentation"                value="smesh_help"/>
+    <!-- Input field precisions -->
+    <parameter name="def_precision"                value="3"  />
+    <parameter name="length_precision"             value="-6"  />
+    <parameter name="angle_precision"              value="-3"  />
+    <parameter name="len_tol_precision"            value="-7"  />
+    <parameter name="parametric_precision"         value="-6"  />
+    <parameter name="area_precision"               value="-6"  />
+    <parameter name="vol_precision"                value="-6"  />
   </section>
   <section name="smesh_help" >
     <parameter name="sub_menu"          value="%1 module"/>

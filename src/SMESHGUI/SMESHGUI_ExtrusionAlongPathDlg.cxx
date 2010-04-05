@@ -307,10 +307,10 @@ SMESHGUI_ExtrusionAlongPathDlg::SMESHGUI_ExtrusionAlongPathDlg( SMESHGUI* theMod
 
   /***************************************************************/
   // Initialisations
-  XSpin->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, 3);
-  YSpin->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, 3);
-  ZSpin->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, 3);
-  AngleSpin->RangeStepAndValidator(-180.0, 180.0, 5.0, 3);
+  XSpin->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, "length_precision");
+  YSpin->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, "length_precision");
+  ZSpin->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, "length_precision");
+  AngleSpin->RangeStepAndValidator(-180.0, 180.0, 5.0, "angle_precision");
 
   mySelector = (SMESH::GetViewWindow( mySMESHGUI ))->GetSelector();
 

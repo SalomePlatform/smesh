@@ -350,9 +350,9 @@ void SMESHGUI_NodesDlg::Init()
   double step = 25.0;
 
   /* min, max, step and decimals for spin boxes */
-  SpinBox_X->RangeStepAndValidator( COORD_MIN, COORD_MAX, step, DBL_DIGITS_DISPLAY );
-  SpinBox_Y->RangeStepAndValidator( COORD_MIN, COORD_MAX, step, DBL_DIGITS_DISPLAY );
-  SpinBox_Z->RangeStepAndValidator( COORD_MIN, COORD_MAX, step, DBL_DIGITS_DISPLAY );
+  SpinBox_X->RangeStepAndValidator( COORD_MIN, COORD_MAX, step, "length_precision" );
+  SpinBox_Y->RangeStepAndValidator( COORD_MIN, COORD_MAX, step, "length_precision" );
+  SpinBox_Z->RangeStepAndValidator( COORD_MIN, COORD_MAX, step, "length_precision" );
   SpinBox_X->SetValue( 0.0 );
   SpinBox_Y->SetValue( 0.0 );
   SpinBox_Z->SetValue( 0.0 );

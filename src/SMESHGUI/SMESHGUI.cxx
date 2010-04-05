@@ -3822,6 +3822,32 @@ void SMESHGUI::createPreferences()
                              "SMESH", "nb_segments_per_edge" );
   setPreferenceProperty( nbSeg, "min", 1 );
   setPreferenceProperty( nbSeg, "max", 10000000 );
+  
+  // Quantities with individual precision settings
+  int precGroup = addPreference( tr( "SMESH_PREF_GROUP_PRECISION" ), genTab );
+  setPreferenceProperty( precGroup, "columns", 2 );
+  
+  const int nbQuantities = 6;
+  int precs[nbQuantities], ii = 0;
+  precs[ii++] = addPreference( tr( "SMESH_PREF_length_precision" ), precGroup,
+                            LightApp_Preferences::IntSpin, "SMESH", "length_precision" );  
+  precs[ii++] = addPreference( tr( "SMESH_PREF_angle_precision" ), precGroup,
+                            LightApp_Preferences::IntSpin, "SMESH", "angle_precision" );
+  precs[ii++] = addPreference( tr( "SMESH_PREF_len_tol_precision" ), precGroup,
+                            LightApp_Preferences::IntSpin, "SMESH", "len_tol_precision" );
+  precs[ii++] = addPreference( tr( "SMESH_PREF_parametric_precision" ), precGroup,
+                            LightApp_Preferences::IntSpin, "SMESH", "parametric_precision" );
+  precs[ii++] = addPreference( tr( "SMESH_PREF_area_precision" ), precGroup,
+                            LightApp_Preferences::IntSpin, "SMESH", "area_precision" );
+  precs[ii  ] = addPreference( tr( "SMESH_PREF_vol_precision" ), precGroup,
+                            LightApp_Preferences::IntSpin, "SMESH", "vol_precision" );  
+  
+  // Set property for precision value for spinboxes
+  for ( ii = 0; ii < nbQuantities; ii++ ){
+    setPreferenceProperty( precs[ii], "min", -10 );
+    setPreferenceProperty( precs[ii], "max", 10 );
+    setPreferenceProperty( precs[ii], "precision", 2 );
+  }   
 
   // Mesh tab ------------------------------------------------------------------------
   int meshTab = addPreference( tr( "PREF_TAB_MESH" ) );

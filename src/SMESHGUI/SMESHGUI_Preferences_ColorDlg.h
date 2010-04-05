@@ -36,10 +36,9 @@
 #include <QDialog>
 
 class QCheckBox;
-class QSpinBox;
 class SMESHGUI;
-class QtxDoubleSpinBox;
-class QtxIntSpinBox;
+class SMESHGUI_SpinBox;
+class SalomeApp_IntSpinBox;
 class QtxColorButton;
 class VTKViewer_MarkerWidget;
 
@@ -85,13 +84,13 @@ private:
   QtxColorButton*       btnBackFaceColor;
   QtxColorButton*       btnOutlineColor;
   QtxColorButton*       btn0DElementsColor;
-  QSpinBox*             SpinBox_0DElements_Size;
-  QSpinBox*             SpinBox_Width;
-  QtxIntSpinBox*        SpinBox_Shrink;
+  SalomeApp_IntSpinBox* SpinBox_0DElements_Size;
+  SalomeApp_IntSpinBox* SpinBox_Width;
+  SalomeApp_IntSpinBox* SpinBox_Shrink;
   QtxColorButton*       btnNodeColor;
   VTKViewer_MarkerWidget* MarkerWidget;
   QtxColorButton*       btnOrientationColor;
-  QtxDoubleSpinBox*     SpinBox_Orientation_Scale;
+  SMESHGUI_SpinBox*     SpinBox_Orientation_Scale;
   QCheckBox*            CheckBox_Orientation_3DVectors;
 };
 

@@ -3162,6 +3162,40 @@ Consider saving your work before application crash</translation>
             <source>NO_MESH_SELECTED</source>
             <translation>No mesh selected</translation>
         </message>
+        <message>
+            <source>SMESH_PREF_def_precision</source>
+            <translation>Default precision</translation>
+        </message>
+        <message>
+            <source>SMESH_PREF_length_precision</source>
+            <translation>Length precision</translation>
+        </message>
+        <message>
+            <source>SMESH_PREF_angle_precision</source>
+            <translation>Angular precision</translation>
+        </message>
+        <message>
+            <source>SMESH_PREF_len_tol_precision</source>
+            <translation>Length tolerance precision</translation>
+        </message>
+        <message>
+            <source>SMESH_PREF_parametric_precision</source>
+            <translation>Parametric precision</translation>
+        </message>
+        <message>
+            <source>SMESH_PREF_area_precision</source>
+            <translation>Area precision</translation>
+        </message>
+        <message>
+            <source>SMESH_PREF_vol_precision</source>
+            <translation>Volume precision</translation>
+        </message>
+        <message>
+            <source>SMESH_PRECISION_HINT</source>
+            <translation>
+Input value precision can be adjusted using
+'%1' parameter in Mesh module preferences.</translation>
+        </message>
     </context>
     <context>
         <name>SMESHGUI</name>
@@ -3241,6 +3275,10 @@ Please, create VTK viewer and try again</translation>
         <message>
             <source>PREF_NOTIFY_MODE</source>
             <translation>Show a computation result notification</translation>
+        </message>
+        <message>
+            <source>SMESH_PREF_GROUP_PRECISION</source>
+            <translation>Input fields precision</translation>
         </message>
         <message>
             <source>PREF_GROUP_ELEMENTS</source>
@@ -5079,6 +5117,65 @@ It is impossible to read point coordinates from file</translation>
         <message>
             <source>SMESH_NO_CONCURENT_MESH</source>
             <translation>No concurent submeshes detected</translation>
+        </message>
+    </context>
+    <context>
+        <name>SMESHGUI_ClippingDlg</name>
+       <message>
+            <source>CLIP_PLANES</source>
+            <translation>Clipping planes</translation>
+        </message>
+        <message>
+            <source>ROTATION_AROUND_X_Y2Z</source>
+            <translation>Rotation around X (Y to Z):</translation>
+        </message>
+        <message>
+            <source>ROTATION_AROUND_Y_X2Z</source>
+            <translation>Rotation around Y (X to Z):</translation>
+        </message>
+        <message>
+            <source>ROTATION_AROUND_Z_Y2X</source>
+            <translation>Rotation around Z (Y to X):</translation>
+        </message>
+        <message>
+            <source>ROTATION_AROUND_X_Z2Y</source>
+            <translation>Rotation around X (Z to Y):</translation>
+        </message>
+        <message>
+            <source>ROTATION_AROUND_Y_Z2X</source>
+            <translation>Rotation around Y (Z to X):</translation>
+        </message>
+        <message>
+            <source>ROTATION_AROUND_Z_X2Y</source>
+            <translation>Rotation around Z (X to Y):</translation>
+        </message>
+        <message>
+            <source>SHOW_PREVIEW</source>
+            <translation>Show preview</translation>
+        </message>
+        <message>
+            <source>AUTO_APPLY</source>
+            <translation>Auto Apply</translation>
+        </message>
+        <message>
+            <source>ALONG_XY</source>
+            <translation>|| X-Y</translation>
+        </message>
+        <message>
+            <source>ALONG_YZ</source>
+            <translation>|| Y-Z</translation>
+        </message>
+        <message>
+            <source>ALONG_ZX</source>
+            <translation>|| Z-X</translation>
+        </message>
+        <message>
+            <source>PLANE_NUM</source>
+            <translation>Plane# %1</translation>
+        </message>
+        <message>
+            <source>NO_PLANES</source>
+            <translation>No planes</translation>
         </message>
     </context>
 </TS>

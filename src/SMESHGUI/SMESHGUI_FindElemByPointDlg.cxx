@@ -124,9 +124,9 @@ QWidget* SMESHGUI_FindElemByPointDlg::createMainFrame (QWidget* theParent)
   QLabel* aZLabel = new QLabel(tr("SMESH_Z"), aCoordGrp);
   myZ = new SMESHGUI_SpinBox(aCoordGrp);
 
-  myX->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, DBL_DIGITS_DISPLAY);
-  myY->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, DBL_DIGITS_DISPLAY);
-  myZ->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, DBL_DIGITS_DISPLAY);
+  myX->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, "length_precision");
+  myY->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, "length_precision");
+  myZ->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, "length_precision");
   myX->SetValue(0);
   myY->SetValue(0);
   myZ->SetValue(0);

@@ -149,7 +149,7 @@ QFrame* StdMeshersGUI_NbSegmentsCreator::buildFrame()
   // 3)  scale
   myGroupLayout->addWidget( myLScale = new QLabel( tr( "SMESH_NB_SEGMENTS_SCALE_PARAM" ), GroupC1 ), row, 0 );
   myScale = new SMESHGUI_SpinBox( GroupC1 );
-  myScale->RangeStepAndValidator( 1E-5, 1E+5, 0.1, 6 );
+  myScale->RangeStepAndValidator( 1E-5, 1E+5, 0.1, "parametric_precision" );
   myGroupLayout->addWidget( myScale, row, 1 );
   row++;
 

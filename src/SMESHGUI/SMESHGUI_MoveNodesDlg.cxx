@@ -210,9 +210,9 @@ QWidget* SMESHGUI_MoveNodesDlg::createMainFrame (QWidget* theParent)
   aCoordGrpLayout->addWidget(myZ);
 
   //------------------------------------------------------------
-  myX->RangeStepAndValidator(COORD_MIN, COORD_MAX, 25.0, DBL_DIGITS_DISPLAY);
-  myY->RangeStepAndValidator(COORD_MIN, COORD_MAX, 25.0, DBL_DIGITS_DISPLAY);
-  myZ->RangeStepAndValidator(COORD_MIN, COORD_MAX, 25.0, DBL_DIGITS_DISPLAY);
+  myX->RangeStepAndValidator(COORD_MIN, COORD_MAX, 25.0, "length_precision");
+  myY->RangeStepAndValidator(COORD_MIN, COORD_MAX, 25.0, "length_precision");
+  myZ->RangeStepAndValidator(COORD_MIN, COORD_MAX, 25.0, "length_precision");
 
   //------------------------------------------------------------
   QVBoxLayout* aLay = new QVBoxLayout(aFrame);

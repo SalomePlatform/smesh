@@ -249,16 +249,16 @@ SMESHGUI_ExtrusionDlg::SMESHGUI_ExtrusionDlg (SMESHGUI* theModule)
   SMESHGUI_ExtrusionDlgLayout->addWidget(GroupButtons);
 
   /* Initialisations */
-  SpinBox_Vx->RangeStepAndValidator(COORD_MIN, COORD_MAX, 0.01, 3);
-  SpinBox_Vy->RangeStepAndValidator(COORD_MIN, COORD_MAX, 0.01, 3);
-  SpinBox_Vz->RangeStepAndValidator(COORD_MIN, COORD_MAX, 0.01, 3);
+  SpinBox_Vx->RangeStepAndValidator(COORD_MIN, COORD_MAX, 0.01, "length_precision");
+  SpinBox_Vy->RangeStepAndValidator(COORD_MIN, COORD_MAX, 0.01, "length_precision");
+  SpinBox_Vz->RangeStepAndValidator(COORD_MIN, COORD_MAX, 0.01, "length_precision");
 
-  SpinBox_Dx->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, 3);
-  SpinBox_Dy->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, 3);
-  SpinBox_Dz->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, 3);
+  SpinBox_Dx->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, "length_precision");
+  SpinBox_Dy->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, "length_precision");
+  SpinBox_Dz->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, "length_precision");
   
   SpinBox_NbSteps->setRange(1, 999999);
-  SpinBox_VDist->RangeStepAndValidator(0, COORD_MAX, 10.0, 3);
+  SpinBox_VDist->RangeStepAndValidator(0, COORD_MAX, 10.0, "length_precision");
 
   RadioButton1->setChecked(true);
   RadioButton3->setChecked(true);

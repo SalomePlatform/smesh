@@ -229,7 +229,7 @@ SMESHGUI_SmoothingDlg::SMESHGUI_SmoothingDlg( SMESHGUI* theModule )
   
   SpinBox_IterationLimit->setRange(1, 999999);
   SpinBox_IterationLimit->setValue(20);
-  SpinBox_AspectRatio->RangeStepAndValidator(0.0, +999999.999, 0.1, 3);
+  SpinBox_AspectRatio->RangeStepAndValidator(0.0, +999999.999, 0.1, "parametric_precision");
   SpinBox_AspectRatio->SetValue(1.1);
 
   GroupArguments->show();

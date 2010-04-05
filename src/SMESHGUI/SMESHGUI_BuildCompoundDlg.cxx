@@ -137,7 +137,7 @@ SMESHGUI_BuildCompoundDlg::SMESHGUI_BuildCompoundDlg( SMESHGUI* theModule )
   TextLabelTol = new QLabel(tr("SMESH_TOLERANCE"), GroupArgs);
   TextLabelTol->setAlignment(Qt::AlignCenter);
   SpinBoxTol = new SMESHGUI_SpinBox(GroupArgs);
-  SpinBoxTol->RangeStepAndValidator(0.0, COORD_MAX, 0.00001, 6);
+  SpinBoxTol->RangeStepAndValidator(0.0, COORD_MAX, 0.00001, "len_tol_precision" );
 
   GroupArgsLayout->addWidget(TextLabelMeshes, 0, 0);
   GroupArgsLayout->addWidget(SelectButton,    0, 1);

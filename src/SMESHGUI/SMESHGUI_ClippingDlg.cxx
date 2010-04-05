@@ -343,7 +343,7 @@ SMESHGUI_ClippingDlg::SMESHGUI_ClippingDlg( SMESHGUI* theModule ):
   SMESHGUI_ClippingDlgLayout->setMargin(MARGIN);
 
   // Controls for selecting, creating, deleting planes
-  QGroupBox* GroupPlanes = new QGroupBox(tr("Clipping planes"), this);
+  QGroupBox* GroupPlanes = new QGroupBox(tr("CLIP_PLANES"), this);
   QHBoxLayout* GroupPlanesLayout = new QHBoxLayout(GroupPlanes);
   GroupPlanesLayout->setSpacing(SPACING);
   GroupPlanesLayout->setMargin(MARGIN);
@@ -373,18 +373,18 @@ SMESHGUI_ClippingDlg::SMESHGUI_ClippingDlg( SMESHGUI* theModule ):
 
   SpinBoxDistance = new SMESHGUI_SpinBox(GroupParameters);
 
-  TextLabelRot1 = new QLabel(tr("Rotation around X (Y to Z):"), GroupParameters);
+  TextLabelRot1 = new QLabel(tr("ROTATION_AROUND_X_Y2Z"), GroupParameters);
 
   SpinBoxRot1 = new SMESHGUI_SpinBox(GroupParameters);
 
-  TextLabelRot2 = new QLabel(tr("Rotation around Y (X to Z):"), GroupParameters);
+  TextLabelRot2 = new QLabel(tr("ROTATION_AROUND_Y_X2Z"), GroupParameters);
 
   SpinBoxRot2 = new SMESHGUI_SpinBox(GroupParameters);
 
-  PreviewCheckBox = new QCheckBox(tr("Show preview"), GroupParameters);
+  PreviewCheckBox = new QCheckBox(tr("SHOW_PREVIEW"), GroupParameters);
   PreviewCheckBox->setChecked(true);
 
-  AutoApplyCheckBox = new QCheckBox(tr("Auto Apply"), GroupParameters);
+  AutoApplyCheckBox = new QCheckBox(tr("AUTO_APPLY"), GroupParameters);
   AutoApplyCheckBox->setChecked(false);
 
   GroupParametersLayout->addWidget(TextLabelOrientation, 0, 0);
@@ -426,13 +426,13 @@ SMESHGUI_ClippingDlg::SMESHGUI_ClippingDlg( SMESHGUI* theModule ):
   SMESHGUI_ClippingDlgLayout->addWidget(GroupButtons);
 
   // Initial state
-  SpinBoxDistance->RangeStepAndValidator(0.0, 1.0, 0.01, 3);
-  SpinBoxRot1->RangeStepAndValidator(-180.0, 180.0, 1, 3);
-  SpinBoxRot2->RangeStepAndValidator(-180.0, 180.0, 1, 3);
+  SpinBoxDistance->RangeStepAndValidator(0.0, 1.0, 0.01, "length_precision" );
+  SpinBoxRot1->RangeStepAndValidator(-180.0, 180.0, 1, "angle_precision" );
+  SpinBoxRot2->RangeStepAndValidator(-180.0, 180.0, 1, "angle_precision" );
 
-  ComboBoxOrientation->addItem(tr("|| X-Y"));
-  ComboBoxOrientation->addItem(tr("|| Y-Z"));
-  ComboBoxOrientation->addItem(tr("|| Z-X"));
+  ComboBoxOrientation->addItem(tr("ALONG_XY"));
+  ComboBoxOrientation->addItem(tr("ALONG_YZ"));
+  ComboBoxOrientation->addItem(tr("ALONG_ZX"));
 
   SpinBoxDistance->SetValue(0.5);
 
@@ -699,16 +699,16 @@ void SMESHGUI_ClippingDlg::onSelectOrientation (int theItem)
     return;
 
   if      (theItem == 0) {
-    TextLabelRot1->setText(tr("Rotation around X (Y to Z):"));
-    TextLabelRot2->setText(tr("Rotation around Y (X to Z):"));
+    TextLabelRot1->setText(tr("ROTATION_AROUND_X_Y2Z"));
+    TextLabelRot2->setText(tr("ROTATION_AROUND_Y_X2Z"));
   }
   else if (theItem == 1) {
-    TextLabelRot1->setText(tr("Rotation around Y (Z to X):"));
-    TextLabelRot2->setText(tr("Rotation around Z (Y to X):"));
+    TextLabelRot1->setText(tr("ROTATION_AROUND_Y_Z2X"));
+    TextLabelRot2->setText(tr("ROTATION_AROUND_Z_Y2X"));
   }
   else if (theItem == 2) {
-    TextLabelRot1->setText(tr("Rotation around Z (X to Y):"));
-    TextLabelRot2->setText(tr("Rotation around X (Z to Y):"));
+    TextLabelRot1->setText(tr("ROTATION_AROUND_Z_X2Y"));
+    TextLabelRot2->setText(tr("ROTATION_AROUND_X_Z2Y"));
   }
 
   if((QComboBox*)sender() == ComboBoxOrientation)
@@ -726,7 +726,7 @@ void SMESHGUI_ClippingDlg::Sinchronize()
 
   QString aName;
   for(int i = 1; i<=aNbPlanes; i++) {
-    aName = QString(tr("Plane# %1")).arg(i);
+    aName = QString(tr("PLANE_NUM")).arg(i);
     ComboBoxPlanes->addItem(aName);
   }
 
@@ -737,7 +737,7 @@ void SMESHGUI_ClippingDlg::Sinchronize()
   if (anIsControlsEnable) {
     onSelectPlane(aPos);
   } else {
-    ComboBoxPlanes->addItem(tr("No planes"));
+    ComboBoxPlanes->addItem(tr("NO_PLANES"));
     SpinBoxRot1->SetValue(0.0);
     SpinBoxRot2->SetValue(0.0);
     SpinBoxDistance->SetValue(0.5);
