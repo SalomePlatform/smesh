@@ -25,7 +25,10 @@
 #
 include $(top_srcdir)/adm_local/unix/make_common_starter.am
 
-EXTRA_DIST += images static
+EXTRA_DIST += images static/doxygen.css static/footer.html
+
+tuidocdir = $(docdir)/tui/SMESH
+tuidoc_DATA = images/head.png images/smeshscreen.png
 
 dist_doc_DATA = \
 	extra/AddNetgenInSalome2.pdf	\

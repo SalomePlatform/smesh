@@ -447,8 +447,10 @@ AC_OUTPUT([ \
   doc/salome/gui/SMESH/Makefile \
   doc/salome/gui/SMESH/doxyfile \
   doc/salome/gui/SMESH/doxyfile_py \
+  doc/salome/gui/SMESH/static/header.html \
   doc/salome/tui/Makefile \
   doc/salome/tui/doxyfile \
+  doc/salome/tui/static/header.html \
   src/Makefile \
   src/Controls/Makefile \
   src/Driver/Makefile \
