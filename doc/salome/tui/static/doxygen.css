@@ -332,3 +332,112 @@ div.version {
    -moz-border-radius: 8px;
  //   -moz-box-shadow:5px 5px 5px rgba(0, 0, 0, 0.15);
 }
+
+
+/* @group Member Descriptions */
+
+.mdescLeft, .mdescRight,
+.memItemLeft, .memItemRight,
+.memTemplItemLeft, .memTemplItemRight, .memTemplParams {
+        background-color: #FAFAFA;
+        border: none;
+        margin: 4px;
+        padding: 1px 0 0 8px;
+}
+
+.mdescLeft, .mdescRight {
+        padding: 0px 8px 4px 8px;
+        color: #555;
+}
+
+.memItemLeft, .memItemRight, .memTemplParams {
+        border-top: 1px solid #ccc;
+}
+
+.memItemLeft, .memTemplItemLeft {
+        white-space: nowrap;
+}
+
+.memTemplParams {
+        color: #606060;
+        white-space: nowrap;
+}
+
+/* @end */
+
+/* Styles for detailed member documentation */
+
+.memtemplate {
+        font-size: 80%;
+        color: #606060;
+        font-weight: normal;
+        margin-left: 3px;
+}
+
+.memnav {
+        background-color: #e8eef2;
+        border: 1px solid #84b0c7;
+        text-align: center;
+        margin: 2px;
+        margin-right: 15px;
+        padding: 2px;
+}
+
+.memitem {
+        padding: 0;
+        margin-bottom: 10px;
+}
+
+.memname {
+        white-space: nowrap;
+        font-weight: bold;
+}
+
+.memproto, .memdoc {
+        border: 1px solid #84b0c7;
+}
+
+.memproto {
+        padding: 0;
+        background-color: #d5e1e8;
+        font-weight: bold;
+        -webkit-border-top-left-radius: 8px;
+        -webkit-border-top-right-radius: 8px;
+        -webkit-box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.15);
+        -moz-border-radius-topleft: 8px;
+        -moz-border-radius-topright: 8px;
+        -moz-box-shadow: rgba(0, 0, 0, 0.15) 5px 5px 5px;
+
+}
+
+
+
+.memdoc {
+        padding: 2px 5px;
+        background-color: #eef3f5;
+        border-top-width: 0;
+        -webkit-border-bottom-left-radius: 8px;
+        -webkit-border-bottom-right-radius: 8px;
+        -webkit-box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.15);
+        -moz-border-radius-bottomleft: 8px;
+        -moz-border-radius-bottomright: 8px;
+        -moz-box-shadow: rgba(0, 0, 0, 0.15) 5px 5px 5px;
+}
+
+.paramkey {
+        text-align: right;
+}
+
+.paramtype {
+        white-space: nowrap;
+}
+
+.paramname {
+        color: #602020;
+        white-space: nowrap;
+}
+.paramname em {
+        font-style: normal;
+}
+
+/* @end */
