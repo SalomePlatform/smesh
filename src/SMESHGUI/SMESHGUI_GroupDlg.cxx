@@ -590,7 +590,8 @@ void SMESHGUI_GroupDlg::init (SMESH::SMESH_GroupBase_ptr theGroup,
     if (!aGroupShape->_is_nil())
     {
       _PTR(SObject) aGroupShapeSO = aStudy->FindObjectID(aGroupShape->GetStudyEntry());
-      aShapeName = aGroupShapeSO->GetName().c_str();
+      if ( aGroupShapeSO )
+        aShapeName = aGroupShapeSO->GetName().c_str();
     }
     myGeomGroupLine->setText( aShapeName );
     myNameChanged = true;
