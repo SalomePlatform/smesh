@@ -32,7 +32,7 @@
 </path-prefix-list>
 
 <type-list>
-  <objref name="SMESH_Mesh" id="IDL:Mesh/SMESH_Mesh:1.0"/>
+  <objref name="SMESH_Mesh" id="IDL:SMESH/SMESH_Mesh:1.0"/>
   <objref name="SMESH_Hypothesis" id="IDL:SMESH/SMESH_Hypothesis:1.0"/>
 </type-list>
 
