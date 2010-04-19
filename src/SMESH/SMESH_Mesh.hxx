@@ -43,6 +43,11 @@
 #include <map>
 #include <list>
 
+#ifdef WNT
+#pragma warning(disable:4251) // Warning DLL Interface ...
+#pragma warning(disable:4290) // Warning Exception ...
+#endif
+
 class SMESH_Gen;
 class SMESHDS_Document;
 class SMESH_Group;
