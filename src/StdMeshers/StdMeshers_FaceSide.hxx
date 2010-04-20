@@ -45,7 +45,7 @@ class Adaptor2d_Curve2d;
 class Adaptor3d_Curve;
 class BRepAdaptor_CompCurve;
 class TopoDS_Face;
-class SMESH_ComputeError;
+struct SMESH_ComputeError;
 
 typedef struct uvPtStruct
 {
