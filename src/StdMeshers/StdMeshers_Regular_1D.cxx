@@ -325,6 +325,8 @@ static bool computeParamByFunc(Adaptor3d_Curve& C3d, double first, double last,
       return false;
     prevU = U;
   }
+  if ( theReverse )
+    theParams.reverse();
   return true;
 }
 
