@@ -81,7 +81,16 @@ namespace {
     TopTools_MapOfShape edgeCounter;
     edgeCounter.Add( edge );
     TopoDS_Vertex v;
-    v = forward ? TopExp::LastVertex( edge,1 ) : TopExp::FirstVertex( edge,1 );
+    if (edge.Orientation() <= TopAbs_REVERSED) // FORWARD || REVERSED
+      v = forward ? TopExp::LastVertex(edge,true) : TopExp::FirstVertex(edge,true);
+    else {
+      TopoDS_Iterator vIt (edge);
+      if (forward)
+        for (; vIt.More(); vIt.Next())
+          v = TopoDS::Vertex(vIt.Value()); // last
+      else if (vIt.More())
+        v = TopoDS::Vertex(vIt.Value()); // first
+    }
     TopTools_ListIteratorOfListOfShape ancestIt = aMesh.GetAncestors( v );
     for ( ; ancestIt.More(); ancestIt.Next() )
     {
@@ -92,11 +101,19 @@ namespace {
     if ( edgeCounter.Extent() < 3 && !eNext.IsNull() ) {
       if ( SMESH_Algo::IsContinuous( edge, eNext )) {
         // care of orientation
-        bool reverse;
-        if ( forward )
-          reverse = ( !v.IsSame( TopExp::FirstVertex( eNext, true )));
-        else
-          reverse = ( !v.IsSame( TopExp::LastVertex( eNext, true )));
+        TopoDS_Vertex vn;
+        if (eNext.Orientation() <= TopAbs_REVERSED) // FORWARD || REVERSED
+          vn = forward ? TopExp::FirstVertex(eNext,true) : TopExp::LastVertex(eNext,true);
+        else {
+          TopoDS_Iterator vIt (eNext);
+          if (forward)
+            vn = TopoDS::Vertex(vIt.Value()); // first
+          else if (vIt.More())
+            for (; vIt.More(); vIt.Next())
+              vn = TopoDS::Vertex(vIt.Value()); // last
+        }
+
+        bool reverse = (!v.IsSame(vn));
         if ( reverse )
           eNext.Reverse();
         return eNext;
