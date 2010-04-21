@@ -676,8 +676,9 @@ void SMESHGUI_TranslationDlg::SelectionIntoArgument()
   myActor = SMESH::FindActorByObject(myMesh);
   if (!myActor)
     myActor = SMESH::FindActorByEntry(IO->getEntry());
-  if (!myActor)
-    return;
+
+  if (!myActor && !CheckBoxMesh->isChecked())
+      return;
 
   int aNbUnits = 0;
 

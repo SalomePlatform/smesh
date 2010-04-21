@@ -386,11 +386,13 @@ bool SMESHGUI_SmoothingDlg::ClickOnApply()
     }
 
     if (aResult) {
-      Handle(SALOME_InteractiveObject) anIO = myActor->getIO();
+      if ( myActor ) {
+        Handle(SALOME_InteractiveObject) anIO = myActor->getIO();
+        SALOME_ListIO aList;
+        aList.Append(anIO);
+        mySelectionMgr->setSelectedObjects(aList, false);
+      }
 
-      SALOME_ListIO aList;
-      aList.Append(anIO);
-      mySelectionMgr->setSelectedObjects(aList, false);
       SMESH::UpdateView();
       Init();
 
@@ -564,7 +566,7 @@ void SMESHGUI_SmoothingDlg::SelectionIntoArgument()
     return;
 
   myActor = SMESH::FindActorByObject(myMesh);
-  if (!myActor)
+  if (!myActor && !CheckBoxMesh->isChecked())
     return;
 
   int aNbUnits = 0;

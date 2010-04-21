@@ -714,7 +714,7 @@ void SMESHGUI_RevolutionDlg::SelectionIntoArgument()
   SMESH_Actor* anActor = SMESH::FindActorByObject(aMeshVar);
   if (!anActor)
     anActor = SMESH::FindActorByEntry(IO->getEntry());
-  if (!anActor)
+  if (!anActor && !CheckBoxMesh->isChecked())
     return;
 
   int aNbUnits = 0;
