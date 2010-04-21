@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,12 +19,13 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  SMESH SMDS : implementaion of Salome mesh data structure
 //  File   : SMDS_MeshElement.hxx
 //  Module : SMESH
 //  Created:   12.01.05 18:02:52
 //  Author:    Michael Sazonov
-
+//
 #ifndef SMDS_ElemIterator_HeaderFile
 #define SMDS_ElemIterator_HeaderFile
 
