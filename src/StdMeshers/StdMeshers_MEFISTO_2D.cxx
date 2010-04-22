@@ -656,6 +656,9 @@ bool StdMeshers_MEFISTO_2D::LoadPoints(TWireVector &                 wires,
       fixOverlappedLinkUV (uvslf[ mB ], uvslf[ m ], uvslf[ mA ]);
     }
   }
+//   cout << "MEFISTO INPUT************" << endl;
+//   for ( int i =0; i < m; ++i )
+//     cout << i << ": \t" << uvslf[i].x << ", " << uvslf[i].y << " Node " << mefistoToDS[i]->GetID()<< endl;
 
   return true;
 }
