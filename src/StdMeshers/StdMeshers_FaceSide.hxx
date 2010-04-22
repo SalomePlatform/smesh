@@ -29,10 +29,11 @@
 #ifndef StdMeshers_FaceSide_HeaderFile
 #define StdMeshers_FaceSide_HeaderFile
 
-#include <gp_Pnt2d.hxx>
+#include <Geom2d_Curve.hxx>
+#include <GeomAdaptor_Curve.hxx>
 #include <TopoDS_Edge.hxx>
 #include <TopoDS_Vertex.hxx>
-#include <Geom2d_Curve.hxx>
+#include <gp_Pnt2d.hxx>
 
 #include "SMESH_StdMeshers.hxx"
 
@@ -200,8 +201,11 @@ protected:
   std::vector<uvPtStruct>           myPoints, myFalsePoints;
   std::vector<TopoDS_Edge>          myEdge;
   std::vector<Handle(Geom2d_Curve)> myC2d;
+  std::vector<GeomAdaptor_Curve>    myC3dAdaptor;
   std::vector<double>               myFirst, myLast;
   std::vector<double>               myNormPar;
+  std::vector<double>               myEdgeLength;
+  std::vector<double>               myIsUniform;
   double                            myLength;
   int                               myNbPonits, myNbSegments;
   SMESH_Mesh*                       myMesh;
