@@ -58,6 +58,8 @@
 
 #include <limits>
 
+using namespace std;
+
 #define RETURN_BAD_RESULT(msg) { MESSAGE(msg); return false; }
 
 namespace {
@@ -1170,244 +1172,63 @@ bool SMESH_MesherHelper::LoadNodeColumns(TParam2ColumnMap & theParam2ColumnMap,
                                          const TopoDS_Edge& theBaseEdge,
                                          SMESHDS_Mesh*      theMesh)
 {
-  // get vertices of theBaseEdge
-  TopoDS_Vertex vfb, vlb, vft; // first and last, bottom and top vertices
-  TopoDS_Edge eFrw = TopoDS::Edge( theBaseEdge.Oriented( TopAbs_FORWARD ));
-  TopExp::Vertices( eFrw, vfb, vlb );
+  SMESHDS_SubMesh* faceSubMesh = theMesh->MeshElements( theFace );
+  if ( !faceSubMesh || faceSubMesh->NbElements() == 0 )
+    return false;
 
-  // find the other edges of theFace and orientation of e1
-  TopoDS_Edge e1, e2, eTop;
-  bool rev1, CumOri = false;
-  TopExp_Explorer exp( theFace, TopAbs_EDGE );
-  int nbEdges = 0;
-  for ( ; exp.More(); exp.Next() ) {
-    if ( ++nbEdges > 4 ) {
-      return false; // more than 4 edges in theFace
-    }
-    TopoDS_Edge e = TopoDS::Edge( exp.Current() );
-    if ( theBaseEdge.IsSame( e ))
-      continue;
-    TopoDS_Vertex vCommon;
-    if ( !TopExp::CommonVertex( theBaseEdge, e, vCommon ))
-      eTop = e;
-    else if ( vCommon.IsSame( vfb )) {
-      e1 = e;
-      vft = TopExp::LastVertex( e1, CumOri );
-      rev1 = vfb.IsSame( vft );
-      if ( rev1 )
-        vft = TopExp::FirstVertex( e1, CumOri );
-    }
-    else
-      e2 = e;
-  }
-  if ( nbEdges < 4 ) {
-    return false; // less than 4 edges in theFace
-  }
-  if ( e2.IsNull() && vfb.IsSame( vlb ))
-    e2 = e1;
+  // get nodes on theBaseEdge sorted by param on edge and initialize theParam2ColumnMap with them
 
-  // submeshes corresponding to shapes
-  SMESHDS_SubMesh* smFace = theMesh->MeshElements( theFace );
-  SMESHDS_SubMesh* smb = theMesh->MeshElements( theBaseEdge );
-  SMESHDS_SubMesh* smt = theMesh->MeshElements( eTop );
-  SMESHDS_SubMesh* sm1 = theMesh->MeshElements( e1 );
-  SMESHDS_SubMesh* sm2 = theMesh->MeshElements( e2 );
-  SMESHDS_SubMesh* smVfb = theMesh->MeshElements( vfb );
-  SMESHDS_SubMesh* smVlb = theMesh->MeshElements( vlb );
-  SMESHDS_SubMesh* smVft = theMesh->MeshElements( vft );
-  if (!smFace || !smb || !smt || !sm1 || !sm2 || !smVfb || !smVlb || !smVft ) {
-    RETURN_BAD_RESULT( "NULL submesh " <<smFace<<" "<<smb<<" "<<smt<<" "<<
-                       sm1<<" "<<sm2<<" "<<smVfb<<" "<<smVlb<<" "<<smVft);
-  }
-  if ( smb->NbNodes() != smt->NbNodes() || sm1->NbNodes() != sm2->NbNodes() ) {
-    RETURN_BAD_RESULT(" Diff nb of nodes on opposite edges" );
-  }
-  if (smVfb->NbNodes() != 1 || smVlb->NbNodes() != 1 || smVft->NbNodes() != 1) {
-    RETURN_BAD_RESULT("Empty submesh of vertex");
-  }
-  // define whether mesh is quadratic
-  bool isQuadraticMesh = false;
-  SMDS_ElemIteratorPtr eIt = smFace->GetElements();
-  if ( !eIt->more() ) {
-    RETURN_BAD_RESULT("No elements on the face");
-  }
-  const SMDS_MeshElement* e = eIt->next();
-  isQuadraticMesh = e->IsQuadratic();
-  
-  if ( sm1->NbNodes() * smb->NbNodes() != smFace->NbNodes() ) {
-    // check quadratic case
-    if ( isQuadraticMesh ) {
-      // what if there are quadrangles and triangles mixed?
-//       int n1 = sm1->NbNodes()/2;
-//       int n2 = smb->NbNodes()/2;
-//       int n3 = sm1->NbNodes() - n1;
-//       int n4 = smb->NbNodes() - n2;
-//       int nf = sm1->NbNodes()*smb->NbNodes() - n3*n4;
-//       if( nf != smFace->NbNodes() ) {
-//         MESSAGE( "Wrong nb face nodes: " <<
-//                 sm1->NbNodes()<<" "<<smb->NbNodes()<<" "<<smFace->NbNodes());
-//         return false;
-//       }
-    }
-    else {
-      RETURN_BAD_RESULT( "Wrong nb face nodes: " <<
-                         sm1->NbNodes()<<" "<<smb->NbNodes()<<" "<<smFace->NbNodes());
-    }
-  }
-  // IJ size
-  int vsize = sm1->NbNodes() + 2;
-  int hsize = smb->NbNodes() + 2;
-  if(isQuadraticMesh) {
-    vsize = vsize - sm1->NbNodes()/2 -1;
-    hsize = hsize - smb->NbNodes()/2 -1;
+  map< double, const SMDS_MeshNode*> sortedBaseNodes;
+  if ( !SMESH_Algo::GetSortedNodesOnEdge( theMesh, theBaseEdge,/*noMedium=*/true, sortedBaseNodes)
+       || sortedBaseNodes.size() < 2 )
+    return false;
+
+  int nbRows = faceSubMesh->NbElements() / ( sortedBaseNodes.size()-1 ) + 1;
+  map< double, const SMDS_MeshNode*>::iterator u_n = sortedBaseNodes.begin();
+  double f = u_n->first, range = sortedBaseNodes.rbegin()->first - f;
+  for ( ; u_n != sortedBaseNodes.end(); u_n++ )
+  {
+    double par = ( u_n->first - f ) / range;
+    vector<const SMDS_MeshNode*>& nCol = theParam2ColumnMap[ par ];
+    nCol.resize( nbRows );
+    nCol[0] = u_n->second;
   }
 
-  // load nodes from theBaseEdge
+  // fill theParam2ColumnMap column by column by passing from nodes on
+  // theBaseEdge up via mesh faces on theFace
 
-  std::set<const SMDS_MeshNode*> loadedNodes;
-  const SMDS_MeshNode* nullNode = 0;
+  TParam2ColumnMap::iterator par_nVec_2 = theParam2ColumnMap.begin();
+  TParam2ColumnMap::iterator par_nVec_1 = par_nVec_2++;
+  TIDSortedElemSet emptySet, avoidSet;
+  for ( ; par_nVec_2 != theParam2ColumnMap.end(); ++par_nVec_1, ++par_nVec_2 )
+  {
+    vector<const SMDS_MeshNode*>& nCol1 = par_nVec_1->second;
+    vector<const SMDS_MeshNode*>& nCol2 = par_nVec_2->second;
 
-  std::vector<const SMDS_MeshNode*> & nVecf = theParam2ColumnMap[ 0.];
-  nVecf.resize( vsize, nullNode );
-  loadedNodes.insert( nVecf[ 0 ] = smVfb->GetNodes()->next() );
-
-  std::vector<const SMDS_MeshNode*> & nVecl = theParam2ColumnMap[ 1.];
-  nVecl.resize( vsize, nullNode );
-  loadedNodes.insert( nVecl[ 0 ] = smVlb->GetNodes()->next() );
-
-  double f, l;
-  BRep_Tool::Range( eFrw, f, l );
-  double range = l - f;
-  SMDS_NodeIteratorPtr nIt = smb->GetNodes();
-  const SMDS_MeshNode* node;
-  while ( nIt->more() ) {
-    node = nIt->next();
-    if(IsMedium(node, SMDSAbs_Edge))
-      continue;
-    const SMDS_EdgePosition* pos =
-      dynamic_cast<const SMDS_EdgePosition*>( node->GetPosition().get() );
-    if ( !pos ) {
-      return false;
-    }
-    double u = ( pos->GetUParameter() - f ) / range;
-    std::vector<const SMDS_MeshNode*> & nVec = theParam2ColumnMap[ u ];
-    nVec.resize( vsize, nullNode );
-    loadedNodes.insert( nVec[ 0 ] = node );
-  }
-  if ( theParam2ColumnMap.size() != hsize ) {
-    RETURN_BAD_RESULT( "Wrong node positions on theBaseEdge" );
-  }
-
-  // load nodes from e1
-
-  std::map< double, const SMDS_MeshNode*> sortedNodes; // sort by param on edge
-  nIt = sm1->GetNodes();
-  while ( nIt->more() ) {
-    node = nIt->next();
-    if(IsMedium(node))
-      continue;
-    const SMDS_EdgePosition* pos =
-      dynamic_cast<const SMDS_EdgePosition*>( node->GetPosition().get() );
-    if ( !pos ) {
-      return false;
-    }
-    sortedNodes.insert( std::make_pair( pos->GetUParameter(), node ));
-  }
-  loadedNodes.insert( nVecf[ vsize - 1 ] = smVft->GetNodes()->next() );
-  std::map< double, const SMDS_MeshNode*>::iterator u_n = sortedNodes.begin();
-  int row  = rev1 ? vsize - 1 : 0;
-  int dRow = rev1 ? -1 : +1;
-  for ( ; u_n != sortedNodes.end(); u_n++ ) {
-    row += dRow;
-    loadedNodes.insert( nVecf[ row ] = u_n->second );
-  }
-
-  // try to load the rest nodes
-
-  // get all faces from theFace
-  TIDSortedElemSet allFaces, foundFaces;
-  eIt = smFace->GetElements();
-  while ( eIt->more() ) {
-    const SMDS_MeshElement* e = eIt->next();
-    if ( e->GetType() == SMDSAbs_Face )
-      allFaces.insert( e );
-  }
-  // Starting from 2 neighbour nodes on theBaseEdge, look for a face
-  // the nodes belong to, and between the nodes of the found face,
-  // look for a not loaded node considering this node to be the next
-  // in a column of the starting second node. Repeat, starting
-  // from nodes next to the previous starting nodes in their columns,
-  // and so on while a face can be found. Then go the the next pair
-  // of nodes on theBaseEdge.
-  TParam2ColumnMap::iterator par_nVec_1 = theParam2ColumnMap.begin();
-  TParam2ColumnMap::iterator par_nVec_2 = par_nVec_1;
-  // loop on columns
-  int col = 0;
-  for ( par_nVec_2++; par_nVec_2 != theParam2ColumnMap.end(); par_nVec_1++, par_nVec_2++ ) {
-    col++;
-    row = 0;
-    const SMDS_MeshNode* n1 = par_nVec_1->second[ row ];
-    const SMDS_MeshNode* n2 = par_nVec_2->second[ row ];
-    const SMDS_MeshElement* face = 0;
-    bool lastColOnClosedFace = ( nVecf[ row ] == n2 );
-    do {
-      // look for a face by 2 nodes
-      face = SMESH_MeshEditor::FindFaceInSet( n1, n2, allFaces, foundFaces );
-      if ( face ) {
-        int nbFaceNodes = face->NbNodes();
-        if ( face->IsQuadratic() )
-          nbFaceNodes /= 2;
-        if ( nbFaceNodes>4 ) {
-          RETURN_BAD_RESULT(" Too many nodes in a face: " << nbFaceNodes );
-        }
-        // look for a not loaded node of the <face>
-        bool found = false;
-        const SMDS_MeshNode* n3 = 0; // a node defferent from n1 and n2
-        for ( int i = 0; i < nbFaceNodes && !found; ++i ) {
-          node = face->GetNode( i );
-          found = loadedNodes.insert( node ).second;
-          if ( !found && node != n1 && node != n2 )
-            n3 = node;
-        }
-        if ( lastColOnClosedFace && row + 1 < vsize ) {
-          node = nVecf[ row + 1 ];
-          found = ( face->GetNodeIndex( node ) >= 0 );
-        }
-        if ( found ) {
-          if ( ++row > vsize - 1 ) {
-            RETURN_BAD_RESULT( "Too many nodes in column "<< col <<": "<< row+1);
-          }
-          par_nVec_2->second[ row ] = node;
-          foundFaces.insert( face );
-          n2 = node;
-          if ( nbFaceNodes==4 ) {
-            n1 = par_nVec_1->second[ row ];
-          }
-        }
-        else if ( nbFaceNodes==3 && n3 == par_nVec_1->second[ row + 1 ] ) {
-          n1 = n3;
-        }
-        else  {
-          RETURN_BAD_RESULT( "Not quad mesh, column "<< col );
-        }
+    int i1, i2, iRow = 0;
+    const SMDS_MeshNode *n1 = nCol1[0], *n2 = nCol2[0];
+    // find face sharing node n1 and n2 and belonging to faceSubMesh
+    while ( const SMDS_MeshElement* face =
+            SMESH_MeshEditor::FindFaceInSet( n1, n2, emptySet, avoidSet, &i1, &i2))
+    {
+      if ( faceSubMesh->Contains( face ))
+      {
+        int nbNodes = face->IsQuadratic() ? face->NbNodes()/2 : face->NbNodes();
+        if ( nbNodes != 4 )
+          return false;
+        n1 = face->GetNode( (i2+2) % 4 ); // opposite corner of quadrangle face
+        n2 = face->GetNode( (i1+2) % 4 );
+        if ( ++iRow >= nbRows )
+          return false;
+        nCol1[ iRow ] = n1;
+        nCol2[ iRow ] = n2;
+        avoidSet.clear();
       }
+      avoidSet.insert( face );
     }
-    while ( face && n1 && n2 );
-
-    if ( row < vsize - 1 ) {
-      MESSAGE( "Too few nodes in column "<< col <<": "<< row+1);
-      MESSAGE( "Base node 1: "<< par_nVec_1->second[0]);
-      MESSAGE( "Base node 2: "<< par_nVec_2->second[0]);
-      if ( n1 ) { MESSAGE( "Current node 1: "<< n1); }
-      else      { MESSAGE( "Current node 1: NULL");  }
-      if ( n2 ) { MESSAGE( "Current node 2: "<< n2); }
-      else      { MESSAGE( "Current node 2: NULL");  }
-      MESSAGE( "first base node: "<< theParam2ColumnMap.begin()->second[0]);
-      MESSAGE( "last base node: "<< theParam2ColumnMap.rbegin()->second[0]);
-      return false;
-    }
-  } // loop on columns
-
+    if ( iRow + 1 < nbRows ) // compact if necessary
+      nCol1.resize( iRow + 1 ), nCol2.resize( iRow + 1 );
+  }
   return true;
 }
 
