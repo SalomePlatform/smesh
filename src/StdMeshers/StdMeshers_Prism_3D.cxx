@@ -214,6 +214,94 @@ namespace {
 
     return gp_Ax2( O, Z, X);
   }
+
+  //================================================================================
+  /*!
+   * \brief Removes submeshes meshed with regular grid from given list
+   *  \retval int - nb of removed submeshes
+   */
+  //================================================================================
+
+  int removeQuasiQuads(list< SMESH_subMesh* >& notQuadSubMesh)
+  {
+    int oldNbSM = notQuadSubMesh.size();
+    SMESHDS_Mesh* mesh = notQuadSubMesh.front()->GetFather()->GetMeshDS();
+    list< SMESH_subMesh* >::iterator smIt = notQuadSubMesh.begin();
+#define __NEXT_SM { ++smIt; continue; }
+    while ( smIt != notQuadSubMesh.end() )
+    {
+      SMESH_subMesh* faceSm = *smIt;
+      SMESHDS_SubMesh* faceSmDS = faceSm->GetSubMeshDS();
+      int nbQuads = faceSmDS->NbElements();
+      if ( nbQuads == 0 ) __NEXT_SM;
+
+      // get oredered edges
+      list< TopoDS_Edge > orderedEdges;
+      list< int >         nbEdgesInWires;
+      TopoDS_Vertex       V000;
+      int nbWires = SMESH_Block::GetOrderedEdges( TopoDS::Face( faceSm->GetSubShape() ),
+                                                  V000, orderedEdges, nbEdgesInWires );
+      if ( nbWires != 1 || nbEdgesInWires.front() <= 4 )
+        __NEXT_SM;
+
+      // get nb of segements on edges
+      list<int> nbSegOnEdge;
+      list< TopoDS_Edge >::iterator edge = orderedEdges.begin();
+      for ( ; edge != orderedEdges.end(); ++edge )
+      {
+        if ( SMESHDS_SubMesh* edgeSmDS = mesh->MeshElements( *edge ))
+          nbSegOnEdge.push_back( edgeSmDS->NbElements() );
+        else
+          nbSegOnEdge.push_back(0);
+      }
+
+      // unite nbSegOnEdge of continues edges
+      int nbEdges = nbEdgesInWires.front();
+      list<int>::iterator nbSegIt = nbSegOnEdge.begin();
+      for ( edge = orderedEdges.begin(); edge != orderedEdges.end(); )
+      {
+        const TopoDS_Edge& e1 = *edge++;
+        const TopoDS_Edge& e2 = ( edge == orderedEdges.end() ? orderedEdges.front() : *edge );
+        if ( SMESH_Algo::IsContinuous( e1, e2 ))
+        {
+          // common vertex of continues edges must be shared by two 2D mesh elems of geom face
+          TopoDS_Vertex vCommon = TopExp::LastVertex( e1, true );
+          const SMDS_MeshNode* vNode = SMESH_Algo::VertexNode( vCommon, mesh );
+          int nbF = 0;
+          if ( vNode )
+          {
+            SMDS_ElemIteratorPtr fIt = vNode->GetInverseElementIterator(SMDSAbs_Face);
+            while ( fIt->more() )
+              nbF += faceSmDS->Contains( fIt->next() );
+          }
+          list<int>::iterator nbSegIt1 = nbSegIt++;
+          if ( !vNode || nbF == 2 ) // !vNode - two edges can be meshed as one
+          {
+            // unite
+            if ( nbSegIt == nbSegOnEdge.end() ) nbSegIt = nbSegOnEdge.begin();
+            *nbSegIt += *nbSegIt1;
+            nbSegOnEdge.erase( nbSegIt1 );
+            --nbEdges;
+          }
+        }
+        else
+        {
+          ++nbSegIt;
+        }
+      }
+      vector<int> nbSegVec( nbSegOnEdge.begin(), nbSegOnEdge.end());
+      if ( nbSegVec.size() == 4 &&
+           nbSegVec[0] == nbSegVec[2] &&
+           nbSegVec[1] == nbSegVec[3] &&
+           nbSegVec[0] * nbSegVec[1] == nbQuads
+           )
+        smIt = notQuadSubMesh.erase( smIt );
+      else
+        __NEXT_SM;
+    }
+
+    return oldNbSM - notQuadSubMesh.size();
+  }
 }
 
 //=======================================================================
@@ -320,7 +408,7 @@ bool StdMeshers_Prism_3D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& theSh
   // Projections on the top and bottom faces are taken from nodes existing
   // on these faces; find correspondence between bottom and top nodes
   myBotToColumnMap.clear();
-  if ( !assocOrProjBottom2Top() ) // it also fill myBotToColumnMap
+  if ( !assocOrProjBottom2Top() ) // it also fills myBotToColumnMap
     return false;
 
 
@@ -763,19 +851,8 @@ bool StdMeshers_Prism_3D::assocOrProjBottom2Top()
     const SMDS_MeshNode* topNode = bN_tN->second;
     if ( botNode->GetPosition()->GetTypeOfPosition() != SMDS_TOP_FACE )
       continue; // wall columns are contained in myBlock
-    // compute bottom node params
-    TNode bN( botNode );
-//     if ( zSize > 2 ) {
-//       gp_XYZ paramHint(-1,-1,-1);
-//       if ( prevTNode.IsNeighbor( bN ))
-//         paramHint = prevTNode.GetParams();
-//       if ( !myBlock.ComputeParameters( bN.GetCoords(), bN.ChangeParams(),
-//                                        ID_BOT_FACE, paramHint ))
-//         return error(TCom("Can't compute normalized parameters for node ")
-//                      << botNode->GetID() << " on the face #"<< botSM->GetId() );
-//       prevTNode = bN;
-//     }
     // create node column
+    TNode bN( botNode );
     TNode2ColumnMap::iterator bN_col = 
       myBotToColumnMap.insert( make_pair ( bN, TNodeColumn() )).first;
     TNodeColumn & column = bN_col->second;
@@ -1078,7 +1155,7 @@ bool StdMeshers_PrismAsBlock::Init(SMESH_MesherHelper* helper,
   }
 
   // ----------------------------------------------------------------------
-  // Analyse faces mesh and topology: choose the bottom submesh.
+  // Analyse mesh and topology of faces: choose the bottom submesh.
   // If there are not quadrangle geom faces, they are top and bottom ones.
   // Not quadrangle geom faces must be only on top and bottom.
   // ----------------------------------------------------------------------
@@ -1091,14 +1168,24 @@ bool StdMeshers_PrismAsBlock::Init(SMESH_MesherHelper* helper,
   bool hasNotQuad = ( nbNotQuad || nbNotQuadMeshed );
 
   // detect bad cases
-  if ( nbNotQuad > 0 && nbNotQuad != 2 )
-    return error(COMPERR_BAD_SHAPE,
-                 TCom("More than 2 not quadrilateral faces: ")
-                 <<nbNotQuad);
   if ( nbNotQuadMeshed > 2 )
+  {
     return error(COMPERR_BAD_INPUT_MESH,
                  TCom("More than 2 faces with not quadrangle elements: ")
                  <<nbNotQuadMeshed);
+  }
+  int nbQuasiQuads = 0;
+  if ( nbNotQuad > 0 && nbNotQuad != 2 )
+  {
+    // Issue 0020843 - one of side faces is quasi-quadrilateral.
+    // Remove from notQuadGeomSubMesh faces meshed with regular grid
+    nbQuasiQuads = removeQuasiQuads( notQuadGeomSubMesh );
+    nbNotQuad -= nbQuasiQuads;
+    if ( nbNotQuad > 0 && nbNotQuad != 2 )
+      return error(COMPERR_BAD_SHAPE,
+                   TCom("More than 2 not quadrilateral faces: ")
+                   <<nbNotQuad);
+  }
 
   // get found submeshes
   if ( hasNotQuad )
