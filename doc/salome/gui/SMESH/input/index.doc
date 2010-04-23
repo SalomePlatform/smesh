@@ -17,6 +17,7 @@ allowing to highlight important elements:
 <li>\subpage modifying_meshes_page "modifying meshes" with a vast
 array of dedicated operations.</li> 
 <li>\subpage using_notebook_mesh_page.</li>
+<li>\subpage user_preferences_page.</li>
 </ul>
 
 Almost all mesh module functionalities are accessible via
