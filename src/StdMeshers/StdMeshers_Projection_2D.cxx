@@ -51,6 +51,8 @@
 #include <TopExp_Explorer.hxx>
 #include <TopTools_ListIteratorOfListOfShape.hxx>
 #include <TopoDS.hxx>
+#include <gp_Ax2.hxx>
+#include <gp_Ax3.hxx>
 
 
 using namespace std;
@@ -356,7 +358,8 @@ namespace {
 
   //================================================================================
   /*!
-   * \brief Preform projection in case if tgtFace.IsPartner( srcFace )
+   * \brief Preform projection in case if tgtFace.IsPartner( srcFace ) and in case
+   * if projection by transformation is possible
    *  \param tgtFace - target face
    *  \param srcFace - source face
    *  \param tgtMesh - target mesh
@@ -371,8 +374,96 @@ namespace {
                       SMESH_Mesh *                      srcMesh,
                       const TAssocTool::TShapeShapeMap& shape2ShapeMap)
   {
-    if ( !tgtFace.IsPartner( srcFace ))
-      return false;
+    const double tol = 1e-6;
+
+    gp_Trsf trsf; // transformation to get location of target nodes from source ones
+    if ( tgtFace.IsPartner( srcFace ))
+    {
+      gp_Trsf srcTrsf = srcFace.Location();
+      gp_Trsf tgtTrsf = tgtFace.Location();
+      trsf = srcTrsf.Inverted() * tgtTrsf;
+    }
+    else
+    {
+      // Try to find the transformation
+
+      // make any local coord systems of src and tgt faces
+      vector<gp_Pnt> srcPP, tgtPP; // 3 points on face boundaries to make axes of CS
+      SMESH_subMesh * srcSM = srcMesh->GetSubMesh( srcFace );
+      SMESH_subMeshIteratorPtr smIt = srcSM->getDependsOnIterator(/*includeSelf=*/false,false);
+      srcSM = smIt->next(); // sm of a vertex
+      while ( smIt->more() && srcPP.size() < 3 )
+      {
+        srcSM = smIt->next();
+        SMESHDS_SubMesh* srcSmds = srcSM->GetSubMeshDS();
+        if ( !srcSmds ) continue;
+        SMDS_NodeIteratorPtr nIt = srcSmds->GetNodes();
+        while ( nIt->more() )
+        {
+          SMESH_MeshEditor::TNodeXYZ p ( nIt->next());
+          bool pOK = false;
+          switch ( srcPP.size() )
+          {
+          case 0: pOK = true; break;
+
+          case 1: pOK = ( srcPP[0].SquareDistance( p ) > tol ); break;
+            
+          case 2:
+            {
+              gp_Vec p0p1( srcPP[0], srcPP[1] ), p0p( srcPP[0], p );
+              pOK = !p0p1.IsParallel( p0p, tol );
+              break;
+            }
+          }
+          if ( !pOK )
+            continue;
+
+          // find corresponding point on target shape
+          pOK = false;
+          gp_Pnt tgtP;
+          const TopoDS_Shape& tgtShape = shape2ShapeMap( srcSM->GetSubShape() );
+          if ( tgtShape.ShapeType() == TopAbs_VERTEX )
+          {
+            tgtP = BRep_Tool::Pnt( TopoDS::Vertex( tgtShape ));
+            pOK = true;
+            //cout << "V - nS " << p._node->GetID() << " - nT " << SMESH_Algo::VertexNode(TopoDS::Vertex( tgtShape),tgtMesh->GetMeshDS())->GetID() << endl;
+          }
+          else if ( tgtPP.size() > 0 )
+          {
+            if ( SMESHDS_SubMesh* tgtSmds = tgtMesh->GetMeshDS()->MeshElements( tgtShape ))
+            {
+              double srcDist = srcPP[0].Distance( p );
+              double eTol = BRep_Tool::Tolerance( TopoDS::Edge( tgtShape ));
+              SMDS_NodeIteratorPtr nItT = tgtSmds->GetNodes();
+              while ( nItT->more() && !pOK )
+              {
+                const SMDS_MeshNode* n = nItT->next();
+                tgtP = SMESH_MeshEditor::TNodeXYZ( n );
+                pOK = ( fabs( srcDist - tgtPP[0].Distance( tgtP )) < 2*eTol );
+                //cout << "E - nS " << p._node->GetID() << " - nT " << n->GetID()<< " OK - " << pOK<< " " << fabs( srcDist - tgtPP[0].Distance( tgtP ))<< " tol " << eTol<< endl;
+              }
+            }
+          }
+          if ( !pOK )
+            continue;
+
+          srcPP.push_back( p );
+          tgtPP.push_back( tgtP );
+        }
+      }
+      if ( srcPP.size() != 3 )
+        return false;
+
+      // make transformation
+      gp_Trsf fromTgtCS, toSrcCS; // from/to global CS
+      gp_Ax2 srcCS( srcPP[0], gp_Vec( srcPP[0], srcPP[1] ), gp_Vec( srcPP[0], srcPP[2]));
+      gp_Ax2 tgtCS( tgtPP[0], gp_Vec( tgtPP[0], tgtPP[1] ), gp_Vec( tgtPP[0], tgtPP[2]));
+      toSrcCS  .SetTransformation( gp_Ax3( srcCS ));
+      fromTgtCS.SetTransformation( gp_Ax3( tgtCS ));
+      fromTgtCS.Invert();
+
+      trsf = fromTgtCS * toSrcCS;
+    }
 
     // Fill map of src to tgt nodes with nodes on edges
 
@@ -382,8 +473,6 @@ namespace {
     for ( TopExp_Explorer srcEdge( srcFace, TopAbs_EDGE); srcEdge.More(); srcEdge.Next() )
     {
       const TopoDS_Shape& tgtEdge = shape2ShapeMap( srcEdge.Current() );
-      if ( !tgtEdge.IsPartner( srcEdge.Current() ))
-        return false;
 
       map< double, const SMDS_MeshNode* > srcNodes, tgtNodes;
       if ( !SMESH_Algo::GetSortedNodesOnEdge( srcMesh->GetMeshDS(),
@@ -399,6 +488,30 @@ namespace {
            srcNodes.size() != tgtNodes.size())
         return false;
 
+      if ( !tgtEdge.IsPartner( srcEdge.Current() ))
+      {
+        // check that transormation is OK by three nodes
+        gp_Pnt p0S = SMESH_MeshEditor::TNodeXYZ( (srcNodes.begin())  ->second);
+        gp_Pnt p1S = SMESH_MeshEditor::TNodeXYZ( (srcNodes.rbegin()) ->second);
+        gp_Pnt p2S = SMESH_MeshEditor::TNodeXYZ( (++srcNodes.begin())->second);
+
+        gp_Pnt p0T = SMESH_MeshEditor::TNodeXYZ( (tgtNodes.begin())  ->second);
+        gp_Pnt p1T = SMESH_MeshEditor::TNodeXYZ( (tgtNodes.rbegin()) ->second);
+        gp_Pnt p2T = SMESH_MeshEditor::TNodeXYZ( (++tgtNodes.begin())->second);
+
+        // transform source points, they must coinside with target ones
+        if ( p0T.SquareDistance( p0S.Transformed( trsf )) > tol ||
+             p1T.SquareDistance( p1S.Transformed( trsf )) > tol ||
+             p2T.SquareDistance( p2S.Transformed( trsf )) > tol )
+        {
+          //cout << "KO trsf, 3 dist: "
+          //<< p0T.SquareDistance( p0S.Transformed( trsf ))<< ", "
+          //<< p1T.SquareDistance( p1S.Transformed( trsf ))<< ", "
+          //<< p2T.SquareDistance( p2S.Transformed( trsf ))<< ", "<<endl;
+          return false;
+        }
+      }
+
       map< double, const SMDS_MeshNode* >::iterator u_tn = tgtNodes.begin();
       map< double, const SMDS_MeshNode* >::iterator u_sn = srcNodes.begin();
       for ( ; u_tn != tgtNodes.end(); ++u_tn, ++u_sn)
@@ -406,11 +519,6 @@ namespace {
     }
 
     // Make new faces
-
-    // transformation to get location of target nodes from source ones
-    gp_Trsf srcTrsf = srcFace.Location();
-    gp_Trsf tgtTrsf = tgtFace.Location();
-    gp_Trsf trsf = srcTrsf.Inverted() * tgtTrsf;
 
     // prepare the helper adding quadratic elements if necessary
     SMESH_MesherHelper helper( *tgtMesh );
