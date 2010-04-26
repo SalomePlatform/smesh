@@ -169,7 +169,7 @@ cpd = cpd + r_element
 # Compound
 # --------
 
-piece = RemoveExtraEdges(MakeCompound(cpd), 0)
+piece = RemoveExtraEdges(MakeCompound(cpd), True)
 
 # Ajouter la piece dans l'etude
 # -----------------------------
