@@ -1677,6 +1677,9 @@ void SMESH_ActorDef::GetNodeColor(vtkFloatingPointType& r,vtkFloatingPointType& 
 
 void SMESH_ActorDef::Set0DColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b){ 
   my0DProp->SetColor(r,g,b);
+  if( SMESH_GroupObj* aGroupObj = dynamic_cast<SMESH_GroupObj*>( myVisualObj.get() ) )
+    if( aGroupObj->GetElementType() == SMDSAbs_0DElement )
+      myNameActor->SetBackgroundColor(r,g,b);
   Modified();
 }
 
