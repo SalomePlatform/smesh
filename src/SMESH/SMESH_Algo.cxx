@@ -489,9 +489,10 @@ bool SMESH_Algo::InitCompatibleHypoFilter( SMESH_HypoFilter & theFilter,
  */
 //================================================================================
 
-GeomAbs_Shape SMESH_Algo::Continuity(const TopoDS_Edge & E1,
-                                     const TopoDS_Edge & E2)
+GeomAbs_Shape SMESH_Algo::Continuity(TopoDS_Edge E1,
+                                     TopoDS_Edge E2)
 {
+  E1.Orientation(TopAbs_FORWARD), E2.Orientation(TopAbs_FORWARD); // avoid pb with internal edges
   TopoDS_Vertex V = TopExp::LastVertex (E1, true);
   if ( !V.IsSame( TopExp::FirstVertex(E2, true )))
     if ( !TopExp::CommonVertex( E1, E2, V ))
