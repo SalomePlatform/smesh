@@ -190,7 +190,10 @@ namespace SMESH
       if (theSObject->FindAttribute(anAttr, "AttributeIOR")) {
         _PTR(AttributeIOR) anIOR = anAttr;
         CORBA::String_var aVal = anIOR->Value().c_str();
-        return app->orb()->string_to_object(aVal);
+        // string_to_object() DOC: If the input string is not valid ...
+        // a CORBA::SystemException is thrown.
+        if ( aVal && strlen( aVal ) > 0 )
+          return app->orb()->string_to_object(aVal);
       }
     }
     return CORBA::Object::_nil();
