@@ -946,12 +946,19 @@ SMESHGUI_MeshOp::getInitParamsHypothesis( const QString& aHypType,
     }
   }
 
-  return SMESHGUI::GetSMESHGen()->GetHypothesisParameterValues( aHypType.toLatin1().data(),
-                                                                aServerLib.toLatin1().data(),
-                                                                aMeshVar,
-                                                                aGeomVar,
-                                                                /*byMesh = */isSubMesh);
-
+  SMESH::SMESH_Hypothesis_var hyp =
+    SMESHGUI::GetSMESHGen()->GetHypothesisParameterValues( aHypType.toLatin1().data(),
+                                                           aServerLib.toLatin1().data(),
+                                                           aMeshVar,
+                                                           aGeomVar,
+                                                           /*byMesh = */isSubMesh);
+  if ( hyp->_is_nil() && isSubMesh )
+    hyp = SMESHGUI::GetSMESHGen()->GetHypothesisParameterValues( aHypType.toLatin1().data(),
+                                                                 aServerLib.toLatin1().data(),
+                                                                 aMeshVar,
+                                                                 aGeomVar,
+                                                                 /*byMesh = */false);
+  return hyp;
 }
 
 //================================================================================
