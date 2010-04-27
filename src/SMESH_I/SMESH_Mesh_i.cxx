@@ -1861,7 +1861,6 @@ void SMESH_Mesh_i::CheckGeomGroupModif()
 //=============================================================================
 /*!
  * \brief Create standalone group instead if group on geometry
- * 
  */
 //=============================================================================
 
@@ -1918,8 +1917,8 @@ SMESH::SMESH_Group_ptr SMESH_Mesh_i::ConvertToStandalone( SMESH::SMESH_GroupOnGe
   _mapGroups[anId] = SMESH::SMESH_GroupBase::_duplicate( aGroup );
 
   // register CORBA object for persistence
-  //int nextId = _gen_i->RegisterObject( aGroup );
-  //if(MYDEBUG) MESSAGE( "Add group to map with id = "<< nextId);
+  /*int nextId =*/ _gen_i->RegisterObject( aGroup );
+
   builder->SetIOR( aGroupSO, _gen_i->GetORB()->object_to_string( aGroup ) );
 
   return aGroup._retn();
