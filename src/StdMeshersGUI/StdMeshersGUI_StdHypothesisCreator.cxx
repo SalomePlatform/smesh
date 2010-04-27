@@ -1000,12 +1000,14 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
       anEntry = h->GetObjectEntry();
     aDirectionWidget->SetGeomShapeEntry( anEntry );
     aDirectionWidget->SetMainShapeEntry( aMainEntry );
-    SMESH::long_array_var aVec = new SMESH::long_array;
-    int vertID = h->GetTriaVertex();
-    if(vertID>0) {
-      aVec->length(1);
-      aVec[0] = vertID;
-      aDirectionWidget->SetListOfIDs( aVec );
+    if ( !isCreation() ) {
+      SMESH::long_array_var aVec = new SMESH::long_array;
+      int vertID = h->GetTriaVertex();
+      if(vertID>0) {
+        aVec->length(1);
+        aVec[0] = vertID;
+        aDirectionWidget->SetListOfIDs( aVec );
+      }
     }
     aDirectionWidget->showPreview( true );
     customWidgets()->append ( aDirectionWidget );
