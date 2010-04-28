@@ -827,7 +827,7 @@ void SMESHGUI_BaseComputeOp::showComputeResult( const bool theMemoryLack,
   {
     QTableWidget* tbl = aCompDlg->myTable;
     SMESH::long_array_var aRes = myMesh->GetMeshInfo();
-    aCompDlg->myFullInfo->SetMeshInfo( aRes );
+    aCompDlg->myBriefInfo->SetMeshInfo( aRes );
     aCompDlg->myBriefInfo->show();
     aCompDlg->myFullInfo->hide();
 
