@@ -97,7 +97,7 @@ StdMeshers_FaceSide::StdMeshers_FaceSide(const TopoDS_Face& theFace,
   myLast.resize( nbEdges );
   myNormPar.resize( nbEdges );
   myEdgeLength.resize( nbEdges );
-  myIsUniform.resize( nbEdges );
+  myIsUniform.resize( nbEdges, true );
   myLength = 0;
   myNbPonits = myNbSegments = 0;
   myMesh = theMesh;
@@ -146,7 +146,7 @@ StdMeshers_FaceSide::StdMeshers_FaceSide(const TopoDS_Face& theFace,
       myMissingVertexNodes = true;
 
     // check if edge has non-uniform parametrization (issue 0020705)
-    if ( !myC2d[i].IsNull() )
+    if ( !myC2d[i].IsNull() && myEdgeLength[i] > DBL_MIN)
     {
       Geom2dAdaptor_Curve A2dC( myC2d[i] );
       double p2 = myFirst[i]+(myLast[i]-myFirst[i])/2., p4 = myFirst[i]+(myLast[i]-myFirst[i])/4.;
