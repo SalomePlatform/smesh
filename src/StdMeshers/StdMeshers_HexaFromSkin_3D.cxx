@@ -1,7 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
-//
-//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  This library is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU Lesser General Public
@@ -19,11 +16,11 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 // File      : StdMeshers_HexaFromSkin_3D.cxx
 // Created   : Wed Jan 27 12:28:07 2010
 // Author    : Edward AGAPOV (eap)
-
-
+//
 #include "StdMeshers_HexaFromSkin_3D.hxx"
 
 #include "SMDS_VolumeOfNodes.hxx"
@@ -630,7 +627,7 @@ namespace
       // Select one of found sides most close to startBlockSide
 
       // gravity center of already loaded block sides
-      gp_XYZ gc;
+      gp_XYZ gc(0,0,0);
       for (int i = 0; i < B_UNDEFINED; ++i )
         if ( block._side[ i ] )
           gc += block._side[ i ]._side->getGC();
