@@ -627,7 +627,7 @@ namespace
       // Select one of found sides most close to startBlockSide
 
       // gravity center of already loaded block sides
-      gp_XYZ gc;
+      gp_XYZ gc(0,0,0);
       for (int i = 0; i < B_UNDEFINED; ++i )
         if ( block._side[ i ] )
           gc += block._side[ i ]._side->getGC();
