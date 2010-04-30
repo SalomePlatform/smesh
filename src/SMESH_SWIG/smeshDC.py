@@ -1183,8 +1183,63 @@ class Mesh:
             print "Mesh computation failed, exception caught:"
             traceback.print_exc()
         if True:#not ok:
-            errors = self.smeshpyD.GetAlgoState( self.mesh, geom )
             allReasons = ""
+
+            # Treat compute errors
+            computeErrors = self.smeshpyD.GetComputeErrors( self.mesh, geom )
+            for err in computeErrors:
+                shapeText = ""
+                try:
+                    mainIOR  = salome.orb.object_to_string(geom)
+                    for sname in salome.myStudyManager.GetOpenStudies():
+                        s = salome.myStudyManager.GetStudyByName(sname)
+                        if not s: continue
+                        mainSO = s.FindObjectIOR(mainIOR)
+                        if not mainSO: continue
+                        subIt = s.NewChildIterator(mainSO)
+                        while subIt.More():
+                            subSO = subIt.Value()
+                            subIt.Next()
+                            obj = subSO.GetObject()
+                            if not obj: continue
+                            go = obj._narrow( geompyDC.GEOM._objref_GEOM_Object )
+                            if not go: continue
+                            ids = go.GetSubShapeIndices()
+                            if len(ids) == 1 and ids[0] == err.subShapeID:
+                                shapeText = '"%s"' % subSO.GetName()
+                                break
+                            pass
+                        pass
+                    pass
+                except: pass
+                if not shapeText:
+                    shape = self.geompyD.GetSubShape( geom, [err.subShapeID])
+                    if shape:
+                        shapeText = "%s #%s" % (shape.GetShapeType(), err.subShapeID)
+                    else:
+                        shapeText = "%subshape #%s" % (err.subShapeID)
+                    pass
+                errText = ""
+                stdErrors = ["OK",                 #COMPERR_OK            
+                             "Invalid input mesh", #COMPERR_BAD_INPUT_MESH
+                             "std::exception",     #COMPERR_STD_EXCEPTION 
+                             "OCC exception",      #COMPERR_OCC_EXCEPTION 
+                             "SALOME exception",   #COMPERR_SLM_EXCEPTION 
+                             "Unknown exception",  #COMPERR_EXCEPTION     
+                             "Memory allocation problem", #COMPERR_MEMORY_PB     
+                             "Algorithm failed",   #COMPERR_ALGO_FAILED   
+                             "Unexpected geometry"]#COMPERR_BAD_SHAPE
+                if err.code > 0:
+                    if err.code < len(stdErrors): errText = stdErrors[err.code]
+                else:
+                    errText = "code %s" % -err.code
+                if errText: errText += ". "
+                errText += err.comment
+                allReasons += '"%s" failed on %s. Error: %s' %(err.algoName, shapeText, errText)
+                pass
+
+            # Treat hyp errors
+            errors = self.smeshpyD.GetAlgoState( self.mesh, geom )
             for err in errors:
                 if err.isGlobalAlgo:
                     glob = "global"
