@@ -1208,17 +1208,14 @@ class Mesh:
                             if len(ids) == 1 and ids[0] == err.subShapeID:
                                 shapeText = '"%s"' % subSO.GetName()
                                 break
-                            pass
-                        pass
-                    pass
-                except: pass
-                if not shapeText:
-                    shape = self.geompyD.GetSubShape( geom, [err.subShapeID])
-                    if shape:
-                        shapeText = "%s #%s" % (shape.GetShapeType(), err.subShapeID)
-                    else:
-                        shapeText = "%subshape #%s" % (err.subShapeID)
-                    pass
+                    if not shapeText:
+                        shape = self.geompyD.GetSubShape( geom, [err.subShapeID])
+                        if shape:
+                            shapeText = "%s #%s" % (shape.GetShapeType(), err.subShapeID)
+                        else:
+                            shapeText = "%subshape #%s" % (err.subShapeID)
+                except:
+                    shapeText = "%subshape #%s" % (err.subShapeID)
                 errText = ""
                 stdErrors = ["OK",                 #COMPERR_OK            
                              "Invalid input mesh", #COMPERR_BAD_INPUT_MESH
