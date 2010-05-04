@@ -3625,7 +3625,7 @@ class Mesh:
         
     ## Creates a hole in a mesh by doubling the nodes of some particular elements
     #  This method provided for convenience works as DoubleNodes() described above.
-    #  @param theNodes identifiers of node to be doubled
+    #  @param theNodeId identifiers of node to be doubled
     #  @param theModifiedElems identifiers of elements to be updated
     #  @return TRUE if operation has been completed successfully, FALSE otherwise
     #  @ingroup l2_modif_edit
@@ -4604,6 +4604,8 @@ class Mesh_Quadrangle(Mesh_Algorithm):
     #                 will be created while other elements will be quadrangles.
     #                 Vertex can be either a GEOM_Object or a vertex ID within the
     #                 shape to mesh
+    #  @param UseExisting: if ==true - searches for the existing hypothesis created with
+    #                   the same parameters, else (default) - creates a new one
     #
     #  @ingroup l3_hypos_additi
     def TriangleVertex(self, vertex, UseExisting=0):

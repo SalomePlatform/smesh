@@ -62,11 +62,12 @@ name in the adjacent box);</li>
 </li>
 
 <li>Click \b Apply or <b> Apply and Close</b> button to confirm the operation.</li>
+</ul>
 </ol>
 
 
 
-<b>Examle of using:</b>
+<b>Example of using:</b>
 
 1. Create quandrangle mesh 3x3 on simple planar face (200x200)
 
@@ -78,7 +79,7 @@ and union 3 face (along axis Z) to group "gr_faces"
 
 
 
-2. Perform scale opration for whole mesh with creation of new mesh:
+2. Perform scale operation for whole mesh with creation of new mesh:
 
 \image html scale03.png
 
@@ -98,7 +99,7 @@ result after operation:
 
 
 
-4. Perform scale opration for group of faces with copy of elements:
+4. Perform scale operation for group of faces with copy of elements:
 
 \image html scale06.png
 
@@ -108,7 +109,7 @@ result after operation:
 
 
 
-5. Perform scale opration for two edges with moving of elements:
+5. Perform scale operation for two edges with moving of elements:
 
 \image html scale07.png
 
@@ -118,7 +119,7 @@ result after operation:
 
 
 
-6. Perform scale opration for one face with moving of elements:
+6. Perform scale operation for one face with moving of elements:
 
 \image html scale09.png
 
