@@ -11,9 +11,9 @@ algorithm. This algorithm is a commercial software.
 <li><b>Name</b> - allows to define the name of the hypothesis (Hexotic 
 Parameters by default).</li>
 
-<li><b>Nb. Hexes Max Level</b> - allows defining the maximal level of recursive partitioning on the initial octree cube.</li>
-
 <li><b>Nb. Hexes Min Level</b> - allows defining the minimal level of recursive partitioning on the initial octree cube.</li>
+
+<li><b>Nb. Hexes Max Level</b> - allows defining the maximal level of recursive partitioning on the initial octree cube.</li>
 
 <li><b>Salome Quadrangles</b> - not documented.</li>
 
