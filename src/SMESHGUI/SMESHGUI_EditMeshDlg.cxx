@@ -672,7 +672,6 @@ bool SMESHGUI_EditMeshDlg::ClickOnApply()
   }
   
   SMESH::UpdateView();
-  onDetect();
   
   return true;
 }
