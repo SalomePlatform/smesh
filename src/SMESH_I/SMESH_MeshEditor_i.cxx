@@ -4703,7 +4703,7 @@ CORBA::Boolean SMESH_MeshEditor_i::DoubleNodeElemGroups(
   storeResult( aMeshEditor) ;
 
   // Update Python script
-  TPythonDump() << "isDone = " << this << ".DoubleNodeGroups( " << &theElems << ", "
+  TPythonDump() << "isDone = " << this << ".DoubleNodeElemGroups( " << &theElems << ", "
     << &theNodesNot << ", " << &theAffectedElems << " )";
   return aResult;
 }
