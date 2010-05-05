@@ -69,6 +69,8 @@ public:
   ~SMESHGUI_CreatePolyhedralVolumeDlg();
 
 private:
+  typedef QList<SMESH::SMESH_GroupBase_var> GrpList;
+
   void                     Init();
   void                     closeEvent( QCloseEvent* );
   void                     enterEvent( QEvent* );          /* mouse enter the QWidget */
@@ -93,6 +95,7 @@ private:
   SMESH_Actor*             myActor;
   SMESH::TPolySimulation*  mySimulation;
   QString                  myEntry;
+  GrpList                  myGroups;
   
   QGroupBox*               ConstructorsBox;
   QButtonGroup*            GroupConstructors;

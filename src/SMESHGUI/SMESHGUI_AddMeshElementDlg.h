@@ -78,6 +78,8 @@ private:
   
   bool                        isValid();
   
+  typedef QList<SMESH::SMESH_GroupBase_var> GrpList;
+  
   SMESHGUI*                   mySMESHGUI;              /* Current SMESHGUI object */
   LightApp_SelectionMgr*      mySelectionMgr;          /* User shape selection */
   int                         myNbOkNodes;             /* to check when arguments is defined */
@@ -94,6 +96,7 @@ private:
   SMESH_Actor*                myActor;
   SMESH::TElementSimulation*  mySimulation;
   QString                     myEntry;
+  GrpList                     myGroups;
   
   QGroupBox*                  GroupConstructors;
   QRadioButton*               Constructor1;

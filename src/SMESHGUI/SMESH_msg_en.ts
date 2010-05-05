@@ -761,8 +761,13 @@ Please, select a mesh and try again</translation>
         </message>
         <message>
             <source>GROUP_NAME_IS_EMPTY</source>
-            <translation>Name of group is empty
-Please input a name of new group or choose the existing one</translation>
+            <translation>Name of group is not specified.
+Please enter a name of new group to be created or choose an existing one.</translation>
+        </message>
+        <message>
+            <source>MESH_STANDALONE_GRP_CHOSEN</source>
+            <translation>Group on geometry is chosen: %1.
+Do you want to convert it to the standalone group?</translation>
         </message>
         <message>
             <source>NODE_ID</source>

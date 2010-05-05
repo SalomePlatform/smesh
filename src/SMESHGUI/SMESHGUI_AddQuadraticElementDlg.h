@@ -71,6 +71,8 @@ public:
   ~SMESHGUI_AddQuadraticElementDlg();
   
 private:
+  typedef QList<SMESH::SMESH_GroupBase_var> GrpList;
+
   void                        Init();
   void                        closeEvent( QCloseEvent* );
   void                        hideEvent( QHideEvent* );    /* ESC key */
@@ -93,6 +95,7 @@ private:
   SMESH_Actor*                myActor;
   SMESH::TElementSimulation*  mySimulation;
   QString                     myEntry;
+  GrpList                     myGroups;
   
   int                         myType;
   bool                        myIsEditCorners;

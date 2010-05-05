@@ -66,6 +66,8 @@ public:
   ~SMESHGUI_NodesDlg();
 
 private:
+  typedef QList<SMESH::SMESH_GroupBase_var> GrpList;
+  
   LightApp_SelectionMgr*  mySelectionMgr;
   SVTK_Selector*          mySelector;
   SMESHGUI*               mySMESHGUI;
@@ -73,6 +75,7 @@ private:
   SMESH::SMESH_Mesh_var   myMesh;
   SMESH::TNodeSimulation* mySimulation;
   QString                 myEntry;
+  GrpList                 myGroups;
 
   void                    Init();
   void                    enterEvent( QEvent* );
@@ -81,7 +84,7 @@ private:
   void                    keyPressEvent( QKeyEvent* );
   
   bool                    isValid();
-  
+
   QGroupBox*              GroupConstructors;
   QRadioButton*           Constructor1;
   QGroupBox*              GroupCoordinates;
