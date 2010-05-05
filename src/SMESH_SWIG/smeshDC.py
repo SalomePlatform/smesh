@@ -1189,33 +1189,34 @@ class Mesh:
             computeErrors = self.smeshpyD.GetComputeErrors( self.mesh, geom )
             for err in computeErrors:
                 shapeText = ""
-                try:
-                    mainIOR  = salome.orb.object_to_string(geom)
-                    for sname in salome.myStudyManager.GetOpenStudies():
-                        s = salome.myStudyManager.GetStudyByName(sname)
-                        if not s: continue
-                        mainSO = s.FindObjectIOR(mainIOR)
-                        if not mainSO: continue
-                        subIt = s.NewChildIterator(mainSO)
-                        while subIt.More():
-                            subSO = subIt.Value()
-                            subIt.Next()
-                            obj = subSO.GetObject()
-                            if not obj: continue
-                            go = obj._narrow( geompyDC.GEOM._objref_GEOM_Object )
-                            if not go: continue
-                            ids = go.GetSubShapeIndices()
-                            if len(ids) == 1 and ids[0] == err.subShapeID:
-                                shapeText = '"%s"' % subSO.GetName()
-                                break
-                    if not shapeText:
-                        shape = self.geompyD.GetSubShape( geom, [err.subShapeID])
-                        if shape:
-                            shapeText = "%s #%s" % (shape.GetShapeType(), err.subShapeID)
-                        else:
-                            shapeText = "%subshape #%s" % (err.subShapeID)
-                except:
-                    shapeText = "%subshape #%s" % (err.subShapeID)
+                if self.mesh.HasShapeToMesh():
+                    try:
+                        mainIOR  = salome.orb.object_to_string(geom)
+                        for sname in salome.myStudyManager.GetOpenStudies():
+                            s = salome.myStudyManager.GetStudyByName(sname)
+                            if not s: continue
+                            mainSO = s.FindObjectIOR(mainIOR)
+                            if not mainSO: continue
+                            subIt = s.NewChildIterator(mainSO)
+                            while subIt.More():
+                                subSO = subIt.Value()
+                                subIt.Next()
+                                obj = subSO.GetObject()
+                                if not obj: continue
+                                go = obj._narrow( geompyDC.GEOM._objref_GEOM_Object )
+                                if not go: continue
+                                ids = go.GetSubShapeIndices()
+                                if len(ids) == 1 and ids[0] == err.subShapeID:
+                                    shapeText = ' on "%s"' % subSO.GetName()
+                                    break
+                        if not shapeText:
+                            shape = self.geompyD.GetSubShape( geom, [err.subShapeID])
+                            if shape:
+                                shapeText = " on %s #%s" % (shape.GetShapeType(), err.subShapeID)
+                            else:
+                                shapeText = " on subshape #%s" % (err.subShapeID)
+                    except:
+                        shapeText = " on subshape #%s" % (err.subShapeID)
                 errText = ""
                 stdErrors = ["OK",                 #COMPERR_OK            
                              "Invalid input mesh", #COMPERR_BAD_INPUT_MESH
@@ -1233,7 +1234,7 @@ class Mesh:
                 if errText: errText += ". "
                 errText += err.comment
                 if allReasons != "":allReasons += "\n"
-                allReasons += '"%s" failed on %s. Error: %s' %(err.algoName, shapeText, errText)
+                allReasons += '"%s" failed%s. Error: %s' %(err.algoName, shapeText, errText)
                 pass
 
             # Treat hyp errors
