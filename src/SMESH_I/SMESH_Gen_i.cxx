@@ -3048,6 +3048,8 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
                   if ( nbNodes == 0 ) continue;
                   
                   int aShapeID = (*itSubM).first;
+                  if ( aShapeID < 1 || aShapeID > mySMESHDSMesh->MaxShapeIndex() )
+                    continue;
                   int aShapeType = mySMESHDSMesh->IndexToShape( aShapeID ).ShapeType();
                   // write only SMDS_FacePosition and SMDS_EdgePosition
                   switch ( aShapeType ) {
