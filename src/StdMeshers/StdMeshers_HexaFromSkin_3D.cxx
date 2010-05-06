@@ -28,7 +28,9 @@
 #include "SMESH_Block.hxx"
 #include "SMESH_MesherHelper.hxx"
 
-#include "utilities.h"
+#include <gp_Ax2.hxx>
+
+//#include "utilities.h"
 
 // Define error message
 #ifdef _DEBUG_
@@ -41,7 +43,7 @@
 #endif
 
 // Debug output
-#define _DUMP_(msg) // cout << msg << endl
+#define _DUMP_(msg) //cout << msg << endl
 
 
 
@@ -59,6 +61,28 @@ namespace
     {
       Q_BOTTOM, Q_RIGHT, Q_TOP, Q_LEFT, Q_UNDEFINED
     };
+
+
+  //================================================================================
+  /*!
+   * \brief return logical coordinates (i.e. min or max) of ends of edge
+   */
+  //================================================================================
+
+  bool getEdgeEnds(EQuadEdge edge, bool& xMax1, bool& yMax1, bool& xMax2, bool& yMax2 )
+  {
+    xMax1=0, yMax1=0, xMax2=1, yMax2=1;
+    switch( edge )
+    {
+    case Q_BOTTOM: yMax2 = 0; break;
+    case Q_RIGHT:  xMax1 = 1; break;
+    case Q_TOP:    yMax1 = 1; break;
+    case Q_LEFT:   xMax2 = 0; break;
+    default:
+      return false;
+    }
+    return true;
+  }
 
   //================================================================================
   /*!
@@ -174,6 +198,12 @@ namespace
     const SMDS_MeshNode* getNode(int x, int y) const { return _grid_access_( _index( x, y )); }
     //!< Set node at XY
     void setNode(int x, int y, const SMDS_MeshNode* n) { _grid_access_( _index( x, y )) = n; }
+    //!< Return an edge
+    SMESH_OrientedLink getEdge(EQuadEdge edge) const
+    {
+      bool x1, y1, x2, y2; getEdgeEnds( edge, x1, y1, x2, y2 );
+      return SMESH_OrientedLink( getCornerNode ( x1, y1 ), getCornerNode( x2, y2 ));
+    }
     //!< Return a corner node
     const SMDS_MeshNode* getCornerNode(bool isXMax, bool isYMax) const
     {
@@ -220,6 +250,12 @@ namespace
       int i = _index( x, y );
       return ( i < 0 || i >= _side->_grid.size()) ? 0 : _side->_grid[i];
     }
+    //!< Return an edge
+    SMESH_OrientedLink edge(EQuadEdge edge) const
+    {
+      bool x1, y1, x2, y2; getEdgeEnds( edge, x1, y1, x2, y2 );
+      return SMESH_OrientedLink( cornerNode ( x1, y1 ), cornerNode( x2, y2 ));
+    }
     //!< Return a corner node
     const SMDS_MeshNode* cornerNode(bool isXMax, bool isYMax) const
     {
@@ -243,6 +279,11 @@ namespace
     _OrientedBlockSide _side[6]; // 6 sides of a sub-block
 
     const _OrientedBlockSide& getSide(int i) const { return _side[i]; }
+    bool hasSide( const _OrientedBlockSide& s) const
+    {
+      if ( s ) for (int i=0;i<6;++i) if ( _side[i] && _side[i]._side == s._side ) return true;
+      return false;
+    }
   };
   //================================================================================
   /*!
@@ -275,10 +316,8 @@ namespace
       side._nbBlocksFound++;
       if ( side.isBound() )
       {
-        _corner2sides[ side.getCornerNode(0,0) ].erase( &side );
-        _corner2sides[ side.getCornerNode(1,0) ].erase( &side );
-        _corner2sides[ side.getCornerNode(0,1) ].erase( &side );
-        _corner2sides[ side.getCornerNode(1,1) ].erase( &side );
+        for ( int e = 0; e < int(Q_UNDEFINED); ++e )
+          _edge2sides[ side.getEdge( (EQuadEdge) e ) ].erase( &side );
       }
     }
     //!< store reason of error
@@ -289,7 +328,8 @@ namespace
     list< _BlockSide > _allSides;
     vector< _Block >   _blocks;
 
-    map< const SMDS_MeshNode*, set< _BlockSide* > > _corner2sides;
+    //map< const SMDS_MeshNode*, set< _BlockSide* > > _corner2sides;
+    map< SMESH_OrientedLink, set< _BlockSide* > > _edge2sides;
   };
 
   //================================================================================
@@ -356,10 +396,13 @@ namespace
               const SMDS_MeshNode* nCorner = side.getCornerNode(isXMax,isYMax );
               if ( !isCornerNode( nCorner ))
                 return BAD_MESH_ERR;
-              _corner2sides[ nCorner ].insert( &side );
+              //_corner2sides[ nCorner ].insert( &side );
               corners.push_back( nCorner );
               cornerFaces.insert( side.getCornerFace( nCorner ));
             }
+          for ( int e = 0; e < int(Q_UNDEFINED); ++e )
+            _edge2sides[ side.getEdge( (EQuadEdge) e ) ].insert( &side );
+
           nbFacesOnSides += side.getNbFaces();
         }
       }
@@ -394,10 +437,8 @@ namespace
     {
       _BlockSide& side = *sideIt;
       bool isSharedSide = true;
-      for ( int isXMax = 0; isXMax < 2; ++isXMax )
-        for ( int isYMax = 0; isYMax < 2; ++isYMax )
-          if ( _corner2sides[ side.getCornerNode(isXMax,isYMax) ].size() < 5 )
-            isSharedSide = false;
+      for ( int e = 0; e < int(Q_UNDEFINED) && isSharedSide; ++e )
+        isSharedSide = _edge2sides[ side.getEdge( (EQuadEdge) e ) ].size() > 2;
       side._nbBlocksFound = 0;
       side._nbBlocksExpected = isSharedSide ? 2 : 1;
       nbBlockSides += side._nbBlocksExpected;
@@ -430,11 +471,25 @@ namespace
       if ( ok )
         ok = ( block._side[B_BACK] = findBlockSide( B_TOP, Q_TOP, Q_TOP ));
 
+      if ( ok )
+      {
+        // check if just found block is same as one of previously found
+        bool isSame = false;
+        for ( int i = 1; i < _blocks.size() && !isSame; ++i )
+        {
+          _Block& prevBlock = _blocks[i-1];
+          isSame = true;
+          for ( int j = 0; j < 6 && isSame; ++j )
+            isSame = prevBlock.hasSide( block._side[ j ]);
+        }
+        ok = !isSame;
+      }
+
       // count the found sides
       _DUMP_(endl);
       for (int i = 0; i < B_UNDEFINED; ++i )
       {
-        _DUMP_("** Block side "<< SBoxSides[i]);
+        _DUMP_("** Block side "<< SBoxSides[i] <<" "<< block._side[ i ]._side);
         if ( block._side[ i ] )
         {
           if ( ok && i != B_FRONT)
@@ -573,34 +628,13 @@ namespace
     _OrientedBlockSide& side1 = block._side[ startBlockSide ];
 
     // get corner nodes of the given block edge
-    bool xMax1=0, yMax1=0, xMax2=1, yMax2=1;
-    switch( sharedSideEdge1 )
-    {
-    case Q_BOTTOM: yMax2 = 0; break;
-    case Q_RIGHT:  xMax1 = 1; break;
-    case Q_TOP:    yMax1 = 1; break;
-    case Q_LEFT:   xMax2 = 0; break;
-    default:
-      error(SMESH_Comment("Internal error at")<<__FILE__<<":"<<__LINE__);
-      return 0;
-    }
-    const SMDS_MeshNode* n1 = side1.cornerNode( xMax1, yMax1);
-    const SMDS_MeshNode* n2 = side1.cornerNode( xMax2, yMax2);
-
-    set< _BlockSide* >& sidesWithN1 = _corner2sides[ n1 ];
-    set< _BlockSide* >& sidesWithN2 = _corner2sides[ n2 ];
-    if ( sidesWithN1.empty() || sidesWithN2.empty() )
-    {
-      _DUMP_("no sides by nodes "<< n1->GetID() << " " << n2->GetID() );
-      return 0;
-    }
+    SMESH_OrientedLink edge = side1.edge( sharedSideEdge1 );
+    const SMDS_MeshNode* n1 = edge.node1();
+    const SMDS_MeshNode* n2 = edge.node2();
+    if ( edge._reversed ) swap( n1, n2 );
 
     // find all sides sharing both nodes n1 and n2
-    set< _BlockSide* > sidesOnEdge;
-    set< _BlockSide* >::iterator sideIt;
-    std::set_intersection( sidesWithN1.begin(), sidesWithN1.end(),
-                           sidesWithN2.begin(), sidesWithN2.end(),
-                           inserter( sidesOnEdge, sidesOnEdge.begin()));
+    set< _BlockSide* > sidesOnEdge = _edge2sides[ edge ]; // copy a set
 
     // exclude loaded sides of block from sidesOnEdge
     int nbLoadedSides = 0;
@@ -613,12 +647,12 @@ namespace
       }
     }
     int nbSidesOnEdge = sidesOnEdge.size();
-    _DUMP_("nbSidesOnEdge "<< nbSidesOnEdge);
+    _DUMP_("nbSidesOnEdge "<< nbSidesOnEdge << " " << n1->GetID() << "-" << n2->GetID() );
     if ( nbSidesOnEdge == 0 )
       return 0;
 
     _BlockSide* foundSide = 0;
-    if ( nbSidesOnEdge == 1 || nbSidesOnEdge == 2 && nbLoadedSides == 1 )
+    if ( nbSidesOnEdge == 1 /*|| nbSidesOnEdge == 2 && nbLoadedSides == 1 */)
     {
       foundSide = *sidesOnEdge.begin();
     }
@@ -634,42 +668,47 @@ namespace
       gc /= nbLoadedSides;
 
       gp_XYZ p1 ( n1->X(),n1->Y(),n1->Z()),  p2 (n2->X(),n2->Y(),n2->Z());
-      gp_Vec p2p1( p1 - p2 );
+      gp_Vec p1p2( p1, p2 );
 
       const SMDS_MeshElement* face1 = side1->getCornerFace( n1 );
       gp_XYZ p1Op = SMESH_MeshEditor::TNodeXYZ( oppositeNode( face1, face1->GetNodeIndex(n1)));
       gp_Vec side1Dir( p1, p1Op );
+      gp_Ax2 pln( p1, p1p2, side1Dir ); // plane with normal p1p2 and X dir side1Dir
+      _DUMP_("  Select adjacent for "<< side1._side << " - side dir ("
+             << side1Dir.X() << ", " << side1Dir.Y() << ", " << side1Dir.Z() << ")" );
       
       map < double , _BlockSide* > angleOfSide;
-      for (sideIt = sidesOnEdge.begin(); sideIt != sidesOnEdge.end(); ++sideIt )
+      set< _BlockSide* >::iterator sideIt = sidesOnEdge.begin();
+      for (; sideIt != sidesOnEdge.end(); ++sideIt )
       {
         _BlockSide* sideI = *sideIt;
         const SMDS_MeshElement* faceI = sideI->getCornerFace( n1 );
         gp_XYZ p1Op = SMESH_MeshEditor::TNodeXYZ( oppositeNode( faceI, faceI->GetNodeIndex(n1)));
         gp_Vec sideIDir( p1, p1Op );
-        double angle = side1Dir.AngleWithRef( sideIDir, p2p1 );
+        // compute angle of (sideIDir projection to pln) and (X dir of pln)
+        gp_Vec2d sideIDirProj( sideIDir * pln.XDirection(), sideIDir * pln.YDirection());
+        double angle = sideIDirProj.Angle( gp::DX2d() );
         if ( angle < 0 ) angle += 2 * PI;
         angleOfSide.insert( make_pair( angle, sideI ));
+        _DUMP_("  "<< sideI << " - side dir ("
+               << sideIDir.X() << ", " << sideIDir.Y() << ", " << sideIDir.Z() << ")"
+               << " angle " << angle);
       }
       gp_Vec gcDir( p1, gc );
-      double gcAngle = side1Dir.AngleWithRef( gcDir, p2p1 );
+      gp_Vec2d gcDirProj( gcDir * pln.XDirection(), gcDir * pln.YDirection());
+      double gcAngle = gcDirProj.Angle( gp::DX2d() );
       foundSide = gcAngle < 0 ? angleOfSide.rbegin()->second : angleOfSide.begin()->second;
+      _DUMP_("  selected "<< foundSide );
     }
 
     // Orient the found side correctly
 
     // corners of found side corresponding to nodes n1 and n2
-    xMax1= yMax1 = 0; xMax2 = yMax2 = 1;
-    switch( sharedSideEdge2 )
-    {
-    case Q_BOTTOM: yMax2 = 0; break;
-    case Q_RIGHT:  xMax1 = 1; break;
-    case Q_TOP:    yMax1 = 1; break;
-    case Q_LEFT:   xMax2 = 0; break;
-    default:
-      error(SMESH_Comment("Internal error at")<<__FILE__<<":"<<__LINE__);
-      return 0;
-    }
+    bool xMax1, yMax1, xMax2, yMax2;
+    if ( !getEdgeEnds( sharedSideEdge2, xMax1, yMax1, xMax2, yMax2 ))
+      return error(SMESH_Comment("Internal error at ")<<__FILE__<<":"<<__LINE__),
+        _OrientedBlockSide(0);
+
     for ( int ori = 0; ori < _OrientedIndexer::MAX_ORI+1; ++ori )
     {
       _OrientedBlockSide orientedSide( foundSide, ori );
