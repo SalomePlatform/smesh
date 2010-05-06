@@ -809,7 +809,7 @@ const SMDS_MeshNode* SMESH_MesherHelper::GetMediumNode(const SMDS_MeshNode* n1,
     CheckNodeU( E, n12, U, BRep_Tool::Tolerance( E ), /*force=*/true);
     meshDS->SetNodeOnEdge(n12, edgeID, U);
   }
-  else
+  else if ( myShapeID > 1 )
   {
     meshDS->SetNodeInVolume(n12, myShapeID);
   }
