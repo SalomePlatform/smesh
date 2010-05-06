@@ -239,8 +239,9 @@ const vector<UVPtStruct>& StdMeshers_FaceSide::GetUVPtStruct(bool   isXConst,
 
     map< double, const SMDS_MeshNode*> u2node;
     //int nbOnDegen = 0;
-    for ( int i = 0; i < myEdge.size(); ++i ) {
-      // put 1st vertex node
+    for ( int i = 0; i < myEdge.size(); ++i )
+    {
+      // Put 1st vertex node of a current edge
       TopoDS_Vertex VV[2]; // TopExp::FirstVertex() returns NULL for INTERNAL edge
       for ( TopoDS_Iterator vIt(myEdge[i]); vIt.More(); vIt.Next() )
         VV[ VV[0].IsNull() ? 0 : 1 ] = TopoDS::Vertex(vIt.Value());
@@ -255,7 +256,47 @@ const vector<UVPtStruct>& StdMeshers_FaceSide::GetUVPtStruct(bool   isXConst,
         return myPoints;
       }
 
-      // put 2nd vertex node for a last edge
+      // Put internal nodes
+      SMESHDS_SubMesh* sm = meshDS->MeshElements( myEdge[i] );
+      if ( !sm ) continue;
+      vector< pair< double, const SMDS_MeshNode*> > u2nodeVec;
+      u2nodeVec.reserve( sm->NbNodes() );
+      SMDS_NodeIteratorPtr nItr = sm->GetNodes();
+      double paramSize = myLast[i] - myFirst[i];
+      double r = myNormPar[i] - prevNormPar;
+      if ( !myIsUniform[i] )
+        while ( nItr->more() )
+        {
+          const SMDS_MeshNode* node = nItr->next();
+          if ( myIgnoreMediumNodes && SMESH_MeshEditor::IsMedium( node, SMDSAbs_Edge ))
+            continue;
+          double u = helper.GetNodeU( myEdge[i], node, &paramOK );
+          double aLenU = GCPnts_AbscissaPoint::Length
+            ( const_cast<GeomAdaptor_Curve&>( myC3dAdaptor[i]), myFirst[i], u );
+          if ( myEdgeLength[i] < aLenU ) // nonregression test "3D_mesh_NETGEN/G6"
+          {
+            u2nodeVec.clear();
+            break;
+          }
+          double normPar = prevNormPar + r*aLenU/myEdgeLength[i];
+          u2nodeVec.push_back( make_pair( normPar, node ));
+        }
+      nItr = sm->GetNodes();
+      if ( u2nodeVec.empty() )
+        while ( nItr->more() )
+        {
+          const SMDS_MeshNode* node = nItr->next();
+          if ( myIgnoreMediumNodes && SMESH_MeshEditor::IsMedium( node, SMDSAbs_Edge ))
+            continue;
+          double u = helper.GetNodeU( myEdge[i], node, &paramOK );
+
+          // paramSize is signed so orientation is taken into account
+          double normPar = prevNormPar + r * ( u - myFirst[i] ) / paramSize;
+          u2nodeVec.push_back( make_pair( normPar, node ));
+        }
+      u2node.insert( u2nodeVec.begin(), u2nodeVec.end() );
+
+      // Put 2nd vertex node for a last edge
       if ( i+1 == myEdge.size() ) {
         node = SMESH_Algo::VertexNode( VV[1], meshDS );
         if ( !node ) {
@@ -263,39 +304,6 @@ const vector<UVPtStruct>& StdMeshers_FaceSide::GetUVPtStruct(bool   isXConst,
           return myPoints;
         }
         u2node.insert( make_pair( 1., node ));
-      }
-
-      // put internal nodes
-      SMESHDS_SubMesh* sm = meshDS->MeshElements( myEdge[i] );
-      if ( !sm ) continue;
-      SMDS_NodeIteratorPtr nItr = sm->GetNodes();
-      double paramSize = myLast[i] - myFirst[i];
-      double r = myNormPar[i] - prevNormPar;
-      while ( nItr->more() )
-      {
-        const SMDS_MeshNode* node = nItr->next();
-        if ( myIgnoreMediumNodes && SMESH_MeshEditor::IsMedium( node, SMDSAbs_Edge ))
-          continue;
-        double u = helper.GetNodeU( myEdge[i], node, &paramOK );
-
-        // paramSize is signed so orientation is taken into account
-        double normPar = prevNormPar + r * ( u - myFirst[i] ) / paramSize;
-        if(!myIsUniform[i])
-        {
-          double aLenU = GCPnts_AbscissaPoint::Length
-            ( const_cast<GeomAdaptor_Curve&>( myC3dAdaptor[i]), myFirst[i], u );
-          if ( myEdgeLength[i] > aLenU ) // nonregression test "3D_mesh_NETGEN/G6"
-            normPar = prevNormPar + r*aLenU/myEdgeLength[i];
-        }
-#ifdef _DEBUG_
-        if ( normPar > 1 || normPar < 0) {
-          dump("DEBUG");
-          MESSAGE ( "WRONG normPar: "<<normPar<< " prevNormPar="<<prevNormPar
-                    << " u="<<u << " myFirst[i]="<<myFirst[i]<< " myLast[i]="<<myLast[i]
-                    << " paramSize="<<paramSize );
-        }
-#endif
-        u2node.insert( make_pair( normPar, node ));
       }
     }
     if ( u2node.size() != myNbPonits ) {
@@ -437,9 +445,12 @@ void StdMeshers_FaceSide::Reverse()
   if ( nbEdges > 1 ) {
     reverse( myEdge );
     reverse( myC2d );
+    reverse( myC3dAdaptor );
     reverse( myFirst );
     reverse( myLast );
     reverse( myNormPar );
+    reverse( myEdgeLength );
+    reverse( myIsUniform );
   }
   myNormPar[nbEdges-1]=1.;
   myPoints.clear();

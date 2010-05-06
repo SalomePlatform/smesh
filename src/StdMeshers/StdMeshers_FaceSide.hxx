@@ -198,6 +198,8 @@ public:
   
 
 protected:
+
+  // DON't FORGET tO update Reverse() when adding one more vector!
   std::vector<uvPtStruct>           myPoints, myFalsePoints;
   std::vector<TopoDS_Edge>          myEdge;
   std::vector<Handle(Geom2d_Curve)> myC2d;
