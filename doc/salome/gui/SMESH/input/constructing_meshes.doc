@@ -197,8 +197,8 @@ is:
 </ul>
 The submeshes can become concurrent if their algorithms leads to mesh shared subshape
 with different algorithms (or different algorithms parameters, i.e. hypothesises).
-In fact, we have three submeshes with concurrent algorithms, becase
-they has different hypothesises assigned to them. 
+In fact, we have three submeshes with concurrent algorithms, because
+they have different hypothesises assigned to them. 
 
 The first mesh computation made with:
 \image html mesh_order_123.png
@@ -219,8 +219,8 @@ And the last mesh computation with:
 <center><em>"Result mesh with order SubMesh_3, SubMesh_2, SubMesh_1 "</em></center>
 
 As we can see each mesh computation has different number of result
-elements and different mesh descretisation on shared edges (edges,
-that shared between <b>Face_1</b>, <b>Face_2</b> and <b>Face_3</b>)
+elements and different mesh discretisation on shared edges (edges 
+that are shared between <b>Face_1</b>, <b>Face_2</b> and <b>Face_3</b>)
 
 Additionally, submesh priority (order of algorithms to be applied) can
 be modified not only in separate dialog box, but in <b>Preview</b>
@@ -229,11 +229,11 @@ order.
 \image html mesh_order_preview.png
 <center><em>"Preview with submesh priority list box"</em></center>
 
-If no concurrent submeshes under Mesh object user will see the
+If there are no concurrent submeshes under Mesh object, then user will see the
 following information dialog box
 \image html mesh_order_no_concurrent.png
 <center><em>"No concurrent submeshes detected"</em></center>
-and no mesh order list box appear in Preview dialog box.
+and no mesh order list box will appear in Preview dialog box.
 
 </ol>
 

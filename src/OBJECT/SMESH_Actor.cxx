@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,12 +19,12 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  SMESH OBJECT : interactive object for SMESH visualization
 //  File   : SMESH_Actor.cxx
 //  Author : Nicolas REJNERI
 //  Module : SMESH
-
-
+//
 #include "SMESH_ActorDef.h"
 #include "SMESH_ActorUtils.h"
 #include "SMESH_DeviceActor.h"
@@ -1677,6 +1677,9 @@ void SMESH_ActorDef::GetNodeColor(vtkFloatingPointType& r,vtkFloatingPointType& 
 
 void SMESH_ActorDef::Set0DColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b){ 
   my0DProp->SetColor(r,g,b);
+  if( SMESH_GroupObj* aGroupObj = dynamic_cast<SMESH_GroupObj*>( myVisualObj.get() ) )
+    if( aGroupObj->GetElementType() == SMDSAbs_0DElement )
+      myNameActor->SetBackgroundColor(r,g,b);
   Modified();
 }
 

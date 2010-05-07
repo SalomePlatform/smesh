@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,6 +19,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 // SMESH SMESHGUI : GUI for SMESH component
 // File   : SMESHGUI_AddMeshElementDlg.h
 // Author : Nicolas REJNERI, Open CASCADE S.A.S.
@@ -70,6 +71,8 @@ public:
   ~SMESHGUI_AddQuadraticElementDlg();
   
 private:
+  typedef QList<SMESH::SMESH_GroupBase_var> GrpList;
+
   void                        Init();
   void                        closeEvent( QCloseEvent* );
   void                        hideEvent( QHideEvent* );    /* ESC key */
@@ -92,6 +95,7 @@ private:
   SMESH_Actor*                myActor;
   SMESH::TElementSimulation*  mySimulation;
   QString                     myEntry;
+  GrpList                     myGroups;
   
   int                         myType;
   bool                        myIsEditCorners;

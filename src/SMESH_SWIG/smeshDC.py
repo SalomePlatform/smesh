@@ -1,8 +1,5 @@
 #  -*- coding: iso-8859-1 -*-
-#  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
-#
-#  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-#  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+#  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 #
 #  This library is free software; you can redistribute it and/or
 #  modify it under the terms of the GNU Lesser General Public
@@ -20,6 +17,7 @@
 #
 #  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+
 #  File   : smesh.py
 #  Author : Francis KLOSS, OCC
 #  Module : SMESH
@@ -1185,8 +1183,62 @@ class Mesh:
             print "Mesh computation failed, exception caught:"
             traceback.print_exc()
         if True:#not ok:
-            errors = self.smeshpyD.GetAlgoState( self.mesh, geom )
             allReasons = ""
+
+            # Treat compute errors
+            computeErrors = self.smeshpyD.GetComputeErrors( self.mesh, geom )
+            for err in computeErrors:
+                shapeText = ""
+                if self.mesh.HasShapeToMesh():
+                    try:
+                        mainIOR  = salome.orb.object_to_string(geom)
+                        for sname in salome.myStudyManager.GetOpenStudies():
+                            s = salome.myStudyManager.GetStudyByName(sname)
+                            if not s: continue
+                            mainSO = s.FindObjectIOR(mainIOR)
+                            if not mainSO: continue
+                            subIt = s.NewChildIterator(mainSO)
+                            while subIt.More():
+                                subSO = subIt.Value()
+                                subIt.Next()
+                                obj = subSO.GetObject()
+                                if not obj: continue
+                                go = obj._narrow( geompyDC.GEOM._objref_GEOM_Object )
+                                if not go: continue
+                                ids = go.GetSubShapeIndices()
+                                if len(ids) == 1 and ids[0] == err.subShapeID:
+                                    shapeText = ' on "%s"' % subSO.GetName()
+                                    break
+                        if not shapeText:
+                            shape = self.geompyD.GetSubShape( geom, [err.subShapeID])
+                            if shape:
+                                shapeText = " on %s #%s" % (shape.GetShapeType(), err.subShapeID)
+                            else:
+                                shapeText = " on subshape #%s" % (err.subShapeID)
+                    except:
+                        shapeText = " on subshape #%s" % (err.subShapeID)
+                errText = ""
+                stdErrors = ["OK",                 #COMPERR_OK            
+                             "Invalid input mesh", #COMPERR_BAD_INPUT_MESH
+                             "std::exception",     #COMPERR_STD_EXCEPTION 
+                             "OCC exception",      #COMPERR_OCC_EXCEPTION 
+                             "SALOME exception",   #COMPERR_SLM_EXCEPTION 
+                             "Unknown exception",  #COMPERR_EXCEPTION     
+                             "Memory allocation problem", #COMPERR_MEMORY_PB     
+                             "Algorithm failed",   #COMPERR_ALGO_FAILED   
+                             "Unexpected geometry"]#COMPERR_BAD_SHAPE
+                if err.code > 0:
+                    if err.code < len(stdErrors): errText = stdErrors[err.code]
+                else:
+                    errText = "code %s" % -err.code
+                if errText: errText += ". "
+                errText += err.comment
+                if allReasons != "":allReasons += "\n"
+                allReasons += '"%s" failed%s. Error: %s' %(err.algoName, shapeText, errText)
+                pass
+
+            # Treat hyp errors
+            errors = self.smeshpyD.GetAlgoState( self.mesh, geom )
             for err in errors:
                 if err.isGlobalAlgo:
                     glob = "global"
@@ -1212,9 +1264,7 @@ class Mesh:
                     reason = "For unknown reason."+\
                              " Revise Mesh.Compute() implementation in smeshDC.py!"
                     pass
-                if allReasons != "":
-                    allReasons += "\n"
-                    pass
+                if allReasons != "":allReasons += "\n"
                 allReasons += reason
                 pass
             if allReasons != "":
@@ -3576,7 +3626,7 @@ class Mesh:
         
     ## Creates a hole in a mesh by doubling the nodes of some particular elements
     #  This method provided for convenience works as DoubleNodes() described above.
-    #  @param theNodes identifiers of node to be doubled
+    #  @param theNodeId identifiers of node to be doubled
     #  @param theModifiedElems identifiers of elements to be updated
     #  @return TRUE if operation has been completed successfully, FALSE otherwise
     #  @ingroup l2_modif_edit
@@ -4555,6 +4605,8 @@ class Mesh_Quadrangle(Mesh_Algorithm):
     #                 will be created while other elements will be quadrangles.
     #                 Vertex can be either a GEOM_Object or a vertex ID within the
     #                 shape to mesh
+    #  @param UseExisting: if ==true - searches for the existing hypothesis created with
+    #                   the same parameters, else (default) - creates a new one
     #
     #  @ingroup l3_hypos_additi
     def TriangleVertex(self, vertex, UseExisting=0):

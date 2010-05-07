@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,6 +19,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 // SMESH SMESHGUI : GUI for SMESH component
 // File   : SMESHGUI_NodesDlg.h
 // Author : Nicolas REJNERI, Open CASCADE S.A.S.
@@ -65,6 +66,8 @@ public:
   ~SMESHGUI_NodesDlg();
 
 private:
+  typedef QList<SMESH::SMESH_GroupBase_var> GrpList;
+  
   LightApp_SelectionMgr*  mySelectionMgr;
   SVTK_Selector*          mySelector;
   SMESHGUI*               mySMESHGUI;
@@ -72,6 +75,7 @@ private:
   SMESH::SMESH_Mesh_var   myMesh;
   SMESH::TNodeSimulation* mySimulation;
   QString                 myEntry;
+  GrpList                 myGroups;
 
   void                    Init();
   void                    enterEvent( QEvent* );
@@ -80,7 +84,7 @@ private:
   void                    keyPressEvent( QKeyEvent* );
   
   bool                    isValid();
-  
+
   QGroupBox*              GroupConstructors;
   QRadioButton*           Constructor1;
   QGroupBox*              GroupCoordinates;

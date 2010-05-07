@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,11 +19,12 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  SMESH SMESH_I : idl implementation based on 'SMESH' unit's calsses
 //  File   : SMESH_MeshEditor_i.cxx
 //  Author : Nicolas REJNERI
 //  Module : SMESH
-
+//
 #include "SMESH_MeshEditor_i.hxx"
 
 #include "SMDS_Mesh0DElement.hxx"
@@ -4702,7 +4703,7 @@ CORBA::Boolean SMESH_MeshEditor_i::DoubleNodeElemGroups(
   storeResult( aMeshEditor) ;
 
   // Update Python script
-  TPythonDump() << "isDone = " << this << ".DoubleNodeGroups( " << &theElems << ", "
+  TPythonDump() << "isDone = " << this << ".DoubleNodeElemGroups( " << &theElems << ", "
     << &theNodesNot << ", " << &theAffectedElems << " )";
   return aResult;
 }

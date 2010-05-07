@@ -1,7 +1,4 @@
-#  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
-#
-#  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-#  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+#  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 #
 #  This library is free software; you can redistribute it and/or
 #  modify it under the terms of the GNU Lesser General Public
@@ -19,6 +16,7 @@
 #
 #  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+
 #  SMESH StdMeshersGUI : GUI for StdMeshers plugin
 #  File   : Makefile.in
 #  Author : Julia DOROVSKIKH
@@ -96,7 +94,8 @@ libStdMeshersGUI_la_LDFLAGS  = \
 	../SMESHGUI/libSMESH.la \
 	../OBJECT/libSMESHObject.la \
 	$(GUI_LDFLAGS) -lSalomeApp \
-	$(CAS_LDPATH) -lTKernel -lTKBO -lTKAdvTools
+	$(CAS_LDPATH) -lTKernel -lTKBO -lTKAdvTools \
+	$(QWT_LIBS)
 
 # resources files
 nodist_salomeres_DATA= \

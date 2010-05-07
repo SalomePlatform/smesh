@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,11 +19,12 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  SMESH SMESH : idl implementation based on 'SMESH' unit's classes
 //  File   : StdMeshers_ProjectionSource2D.cxx
 //  Author : Edward AGAPOV
 //  Module : SMESH
-
+//
 #include "StdMeshers_ProjectionSource2D.hxx"
 
 #include "SMESH_Mesh.hxx"

@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,12 +19,13 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  SMESH SMESH : implementaion of SMESH idl descriptions
 //  File   : StdMeshers_Regular_1D.cxx
 //           Moved here from SMESH_Regular_1D.cxx
 //  Author : Paul RASCLE, EDF
 //  Module : SMESH
-
+//
 #include "StdMeshers_Regular_1D.hxx"
 #include "StdMeshers_Distribution.hxx"
 
@@ -325,6 +326,8 @@ static bool computeParamByFunc(Adaptor3d_Curve& C3d, double first, double last,
       return false;
     prevU = U;
   }
+  if ( theReverse )
+    theParams.reverse();
   return true;
 }
 

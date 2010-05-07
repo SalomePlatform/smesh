@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,12 +19,12 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  SMESH SMESH : implementaion of SMESH idl descriptions
 //  File   : SMESH_Algo.hxx
 //  Author : Paul RASCLE, EDF
 //  Module : SMESH
 //
-
 #ifndef _SMESH_ALGO_HXX_
 #define _SMESH_ALGO_HXX_
 
@@ -301,7 +301,7 @@ public:
     * \param E2 - the 2nd edge
     * \retval GeomAbs_Shape - regularity at the junction between E1 and E2
    */
-  static GeomAbs_Shape Continuity(const TopoDS_Edge & E1, const TopoDS_Edge & E2);
+  static GeomAbs_Shape Continuity(TopoDS_Edge E1, TopoDS_Edge E2);
 
   /*!
    * \brief Return true if an edge can be considered as a continuation of another

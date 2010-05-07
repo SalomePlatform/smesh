@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,6 +19,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 // SMESH SMESHGUI : GUI for SMESH component
 // File   : SMESHGUI_Utils.cxx
 // Author : Open CASCADE S.A.S.
@@ -189,7 +190,10 @@ namespace SMESH
       if (theSObject->FindAttribute(anAttr, "AttributeIOR")) {
         _PTR(AttributeIOR) anIOR = anAttr;
         CORBA::String_var aVal = anIOR->Value().c_str();
-        return app->orb()->string_to_object(aVal);
+        // string_to_object() DOC: If the input string is not valid ...
+        // a CORBA::SystemException is thrown.
+        if ( aVal && strlen( aVal ) > 0 )
+          return app->orb()->string_to_object(aVal);
       }
     }
     return CORBA::Object::_nil();

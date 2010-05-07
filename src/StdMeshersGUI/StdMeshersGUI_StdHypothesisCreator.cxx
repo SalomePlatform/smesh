@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,6 +19,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 // File   : StdMeshersGUI_StdHypothesisCreator.cxx
 // Author : Alexander SOLOVYOV, Open CASCADE S.A.S.
 // SMESH includes
@@ -999,12 +1000,14 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
       anEntry = h->GetObjectEntry();
     aDirectionWidget->SetGeomShapeEntry( anEntry );
     aDirectionWidget->SetMainShapeEntry( aMainEntry );
-    SMESH::long_array_var aVec = new SMESH::long_array;
-    int vertID = h->GetTriaVertex();
-    if(vertID>0) {
-      aVec->length(1);
-      aVec[0] = vertID;
-      aDirectionWidget->SetListOfIDs( aVec );
+    if ( !isCreation() ) {
+      SMESH::long_array_var aVec = new SMESH::long_array;
+      int vertID = h->GetTriaVertex();
+      if(vertID>0) {
+        aVec->length(1);
+        aVec[0] = vertID;
+        aDirectionWidget->SetListOfIDs( aVec );
+      }
     }
     aDirectionWidget->showPreview( true );
     customWidgets()->append ( aDirectionWidget );

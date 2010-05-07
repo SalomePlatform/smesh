@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,12 +19,12 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  SMESH SMESH : implementaion of SMESH idl descriptions
 //  File   : SMESH_Algo.cxx
 //  Author : Paul RASCLE, EDF
 //  Module : SMESH
 //
-
 #include "SMESH_Algo.hxx"
 #include "SMESH_Comment.hxx"
 #include "SMESH_Gen.hxx"
@@ -489,9 +489,10 @@ bool SMESH_Algo::InitCompatibleHypoFilter( SMESH_HypoFilter & theFilter,
  */
 //================================================================================
 
-GeomAbs_Shape SMESH_Algo::Continuity(const TopoDS_Edge & E1,
-                                     const TopoDS_Edge & E2)
+GeomAbs_Shape SMESH_Algo::Continuity(TopoDS_Edge E1,
+                                     TopoDS_Edge E2)
 {
+  E1.Orientation(TopAbs_FORWARD), E2.Orientation(TopAbs_FORWARD); // avoid pb with internal edges
   TopoDS_Vertex V = TopExp::LastVertex (E1, true);
   if ( !V.IsSame( TopExp::FirstVertex(E2, true )))
     if ( !TopExp::CommonVertex( E1, E2, V ))
