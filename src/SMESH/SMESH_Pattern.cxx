@@ -73,6 +73,7 @@
 #include "SMESH_MesherHelper.hxx"
 #include "SMESH_subMesh.hxx"
 
+#include <Basics_Utils.hxx>
 #include "utilities.h"
 
 using namespace std;
@@ -210,6 +211,8 @@ bool SMESH_Pattern::Load (const char* theFileContents)
 {
   MESSAGE("Load( file ) ");
 
+  Kernel_Utils::Localizer loc;
+  
   // file structure:
 
   // ! This is a comment
@@ -353,6 +356,9 @@ bool SMESH_Pattern::Load (const char* theFileContents)
 bool SMESH_Pattern::Save (ostream& theFile)
 {
   MESSAGE(" ::Save(file) " );
+  
+  Kernel_Utils::Localizer loc;
+    
   if ( !IsLoaded() ) {
     MESSAGE(" Pattern not loaded ");
     return setErrorCode( ERR_SAVE_NOT_LOADED );
