@@ -424,6 +424,7 @@ bool SMESHGUI_MakeNodeAtPointOp::onApply()
       aList.Append(myMeshActor->getIO());
       selectionMgr()->setSelectedObjects(aList,false);
       SMESH::UpdateView();
+      SMESHGUI::Modified();
     }
   }
   catch (const SALOME::SALOME_Exception& S_ex) {

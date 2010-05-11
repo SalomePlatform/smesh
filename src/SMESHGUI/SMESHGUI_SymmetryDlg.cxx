@@ -546,6 +546,8 @@ bool SMESHGUI_SymmetryDlg::ClickOnApply()
     ConstructorsClicked(GetConstructorId());
     mySelectedObject = SMESH::SMESH_IDSource::_nil();
     SelectionIntoArgument();
+
+    SMESHGUI::Modified();
   }
   return true;
 }

@@ -671,6 +671,8 @@ bool SMESHGUI_ExtrusionAlongPathDlg::ClickOnApply()
   if ( myMeshActor )
     SMESH::Update( myMeshActor->getIO(), myMeshActor->GetVisibility() );
     
+  SMESHGUI::Modified();
+
   if ( MakeGroupsCheck->isEnabled() && MakeGroupsCheck->isChecked() )
     mySMESHGUI->updateObjBrowser(true); // new groups may appear
   //SMESH::UpdateView();

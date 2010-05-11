@@ -27,6 +27,7 @@
 //
 #include "SMESHGUI_ConvToQuadOp.h"
 
+#include "SMESHGUI.h"
 #include "SMESHGUI_ConvToQuadDlg.h"
 #include "SMESHGUI_Utils.h"
 
@@ -234,6 +235,7 @@ bool SMESHGUI_ConvToQuadOp::onApply()
   }
   if( aResult )
   {
+    SMESHGUI::Modified();
     update( UF_ObjBrowser | UF_Model | UF_Viewer );
     selectionDone();
   }

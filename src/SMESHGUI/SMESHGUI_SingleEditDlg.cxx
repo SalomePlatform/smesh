@@ -514,6 +514,7 @@ bool SMESHGUI_SingleEditDlg::onApply()
     mySelectionMgr->setSelectedObjects(aList, false);
     onSelectionDone();
     SMESH::UpdateView();
+    SMESHGUI::Modified();
   }
 
   return aResult;

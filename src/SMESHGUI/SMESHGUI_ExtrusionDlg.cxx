@@ -572,6 +572,8 @@ bool SMESHGUI_ExtrusionDlg::ClickOnApply()
     mySelectionMgr->clearSelected();
     mySelectedObject = SMESH::SMESH_IDSource::_nil();
     SelectionIntoArgument();
+
+    SMESHGUI::Modified();
   }
   return true;
 }

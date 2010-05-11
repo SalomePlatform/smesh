@@ -530,6 +530,8 @@ bool SMESHGUI_TranslationDlg::ClickOnApply()
     ConstructorsClicked(GetConstructorId());
     mySelectedObject = SMESH::SMESH_IDSource::_nil();
     SelectionIntoArgument();
+
+    SMESHGUI::Modified();
   }
   
   return true;

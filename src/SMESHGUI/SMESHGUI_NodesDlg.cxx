@@ -526,6 +526,9 @@ bool SMESHGUI_NodesDlg::ClickOnApply()
       }
     }
   }
+
+  SMESHGUI::Modified();
+
   return true;
 }
 

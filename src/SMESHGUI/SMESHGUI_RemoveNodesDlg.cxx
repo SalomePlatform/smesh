@@ -246,6 +246,7 @@ void SMESHGUI_RemoveNodesDlg::ClickOnApply()
       myEditCurrentArgument->clear();
       mySelector->ClearIndex();
       SMESH::UpdateView();
+      SMESHGUI::Modified();
     }
 
     SMESH::SetPointRepresentation(true);

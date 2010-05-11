@@ -456,6 +456,8 @@ bool SMESHGUI_RotationDlg::ClickOnApply()
     Init(false);
     mySelectedObject = SMESH::SMESH_IDSource::_nil();
     SelectionIntoArgument();
+
+    SMESHGUI::Modified();
   }
 
   return true;

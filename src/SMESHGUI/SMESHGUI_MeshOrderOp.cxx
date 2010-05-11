@@ -138,6 +138,9 @@ bool SMESHGUI_MeshOrderOp::onApply()
   SUIT_OverrideCursor aWaitCursor;
   bool res = myMgr ? myMgr->SetMeshOrder() : false;
 
+  if( res )
+    SMESHGUI::Modified();
+
   delete myMgr;
   myMgr = 0;
 

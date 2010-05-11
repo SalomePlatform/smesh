@@ -395,6 +395,7 @@ bool SMESHGUI_SmoothingDlg::ClickOnApply()
       }
 
       SMESH::UpdateView();
+      SMESHGUI::Modified();
       Init();
 
       mySelectedObject = SMESH::SMESH_IDSource::_nil();

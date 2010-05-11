@@ -557,6 +557,8 @@ bool SMESHGUI_RevolutionDlg::ClickOnApply()
     ConstructorsClicked(GetConstructorId());
     mySelectedObject = SMESH::SMESH_IDSource::_nil();
     SelectionIntoArgument();
+
+    SMESHGUI::Modified();
   }
 
   return true;

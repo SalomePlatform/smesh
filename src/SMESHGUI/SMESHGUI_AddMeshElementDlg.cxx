@@ -570,6 +570,8 @@ void SMESHGUI_AddMeshElementDlg::ClickOnApply()
     myEditCurrentArgument->setText("");
 
     myBusy = false;
+
+    SMESHGUI::Modified();
   }
 }
 

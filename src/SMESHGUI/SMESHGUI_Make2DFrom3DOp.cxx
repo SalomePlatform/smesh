@@ -233,6 +233,7 @@ void SMESHGUI_Make2DFrom3DOp::startOperation()
   myDlg->SetMeshInfo( aNewInfo );
   myDlg->show(); /*exec();*/
   commit();
+  SMESHGUI::Modified();
 }
 
 //================================================================================

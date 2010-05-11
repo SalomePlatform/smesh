@@ -806,6 +806,8 @@ void SMESHGUI_AddQuadraticElementDlg::ClickOnApply()
   SetEditCorners();
 
   updateButtons();
+
+  SMESHGUI::Modified();
 }
 
 //=================================================================================

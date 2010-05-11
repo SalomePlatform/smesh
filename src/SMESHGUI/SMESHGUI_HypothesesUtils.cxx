@@ -414,6 +414,7 @@ namespace SMESH
         if (aHypSObject) {
           if (!aHypName.isEmpty())
             SMESH::SetName(aHypSObject, aHypName);
+          SMESHGUI::Modified();
           SMESHGUI::GetSMESHGUI()->updateObjBrowser();
           return aHypothesis._retn();
         }

@@ -244,6 +244,7 @@ void SMESHGUI_RemoveElementsDlg::ClickOnApply()
       myEditCurrentArgument->clear();
       mySelector->ClearIndex();
       SMESH::UpdateView();
+      SMESHGUI::Modified();
     }
   }
 }
