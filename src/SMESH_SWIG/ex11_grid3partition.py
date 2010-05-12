@@ -85,7 +85,7 @@ p_tools.append(MakePlane(e_centre, MakeVectorDXDYDZ(-1, 0, 1), g_trim))
 
 p_part = MakePartition([e_blo1, e_blo2, e_blo3], p_tools, [], [], ShapeType["SOLID"])
 
-p_element = RemoveExtraEdges(p_part)
+p_element = RemoveExtraEdges(p_part, doUnionFaces=True)
 
 # Grid and glue
 # -------------
