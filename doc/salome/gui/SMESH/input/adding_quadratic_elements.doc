@@ -2,7 +2,7 @@
 
 \page adding_quadratic_elements_page Adding Quadratic Elements
 
-\n MESH modules allows you to work with <b>Quadratic Elements</b>.
+\n MESH module allows you to work with <b>Quadratic Elements</b>.
 
 Quadratic Edge is not a straight but a broken line and can be defined
 by three points: first, middle and last. All more complex \b Quadratic
@@ -18,10 +18,10 @@ one of the following:
 
 \image html image152.png
 
-\note All dialogs intended for adding quadratic elements to mesh provide a possibility
-to add these elements to the specified group (or to create the group if it doesn't exist).
-<b>Add to group</b> box allows to choose an existing group for created element or
-to specify a name for new group.
+\note All dialogs adding quadratic elements to mesh provide a possibility
+to add them to the specified group or to create it anew using <b>Add
+to group</b> box, which allows to choose an existing group for the created element or
+to give name to a new group.
 
 To create any <b>Quadratic Element</b> specify the nodes which will form your
 triangle by selecting them in the 3D viewer with pressed Shift

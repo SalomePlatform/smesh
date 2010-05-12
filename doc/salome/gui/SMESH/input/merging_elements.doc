@@ -8,32 +8,31 @@ selectable in the dialog box.
 \image html mergeelems_ico.png "Merge elements button"
 
 <ol>
-<li>From the \b Modification choose \b Transformation and  from its
-sub-menu select the <b>Merge elements</b> item. The following dialog box
+<li>Choose in the main menu \b Modification -> \b Transformation -> <b>Merge elements</b> item. The following dialog box
 shall appear:</li>
 
 \image html mergeelems_auto.png
 <br>
 <ul>
 <li>\b Name is the name of the mesh whose elements will be merged.</li>
-<li>\b Automatic Mode or \b Manual Mode is to switch the dialog
-controls type.
+<li>\b Automatic or \b Manual Mode allows choosing how the elements
+are processed.
 </ul>
 
 <li><b>Automatic mode:</b>
 <ul>
-<li>In \b Automatic Mode the elements that were created on the same nodes will be merged.</li>
+<li>In the \b Automatic Mode the elements created on the same nodes will be merged.</li>
 </ul>
 </li>
 
-<li>If the \b Manual Mode is selected there are additional controls to 
-manage the elements to be merged in more detail:
+<li>If the \b Manual Mode is selected, additional controls are
+available:
 
 \image html mergeelems.png
 <br>
 <ul>
 <li>\b Detect button generates the list of coincident elements for the given \b Tolerance.</li>
-<li><b>Coincident elements</b> is a list of groupes of elements for
+<li><b>Coincident elements</b> is a list of groups of elements for
 merging. All elements of each group will form one after the operation.
 <ul>
 <li>\b Remove button deletes the selected group from the list.</li>

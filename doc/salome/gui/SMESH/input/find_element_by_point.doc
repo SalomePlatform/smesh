@@ -24,8 +24,8 @@ The following dialog box will appear:
 <ul>
 <li>the coordinates of the point;</li>
 <li>the type of elements to be found; it is also possible to find elements
-of all types related to the reference point. To be exact, type "All"
-means to find elements of any type except nodes and 0D elements.</li>
+of all types related to the reference point. Choose type "All" to find
+elements of any type except for nodes and 0D elements.</li>
 </ul>
 
 </li>
