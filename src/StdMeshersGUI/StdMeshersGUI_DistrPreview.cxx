@@ -50,6 +50,7 @@
 #ifdef WIN32
 # include <algorithm>
 #endif
+#include <math.h>
 
 #include <Basics_Utils.hxx>
 
@@ -262,6 +263,10 @@ void StdMeshersGUI_DistrPreview::update()
       showError();
       return;
     }
+    if ( isinf(y[i]))
+      y[i] = std::numeric_limits<double>::max()/100.;
+//     if ( y[i] > 1e3 )
+//       y[i] = 1e3;
     if( i==0 || y[i]<min_y )
       min_y = y[i];
     if( i==0 || y[i]>max_y )
