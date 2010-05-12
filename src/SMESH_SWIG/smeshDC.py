@@ -1197,6 +1197,8 @@ class Mesh:
                             if not s: continue
                             mainSO = s.FindObjectIOR(mainIOR)
                             if not mainSO: continue
+                            if err.subShapeID == 1:
+                                shapeText = ' on "%s"' % mainSO.GetName()
                             subIt = s.NewChildIterator(mainSO)
                             while subIt.More():
                                 subSO = subIt.Value()
