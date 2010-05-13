@@ -162,6 +162,8 @@ public:
 
   SMESH::SMESH_MeshEditor_ptr GetMeshEditPreviewer();
 
+  CORBA::Boolean HasModificationsToDiscard() throw (SALOME::SALOME_Exception);
+
   void ClearLog()
     throw (SALOME::SALOME_Exception);
 

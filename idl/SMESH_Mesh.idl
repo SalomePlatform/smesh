@@ -520,6 +520,13 @@ module SMESH
     SMESH_MeshEditor GetMeshEditPreviewer()
       raises (SALOME::SALOME_Exception);
 
+    /*!
+     * Return true if the mesh has been edited since a total re-compute
+     * and those modifications may prevent successful partial re-compute
+     */
+    boolean HasModificationsToDiscard()
+      raises (SALOME::SALOME_Exception);
+
     /*! Check group names for duplications.
      *  Consider maximum group name length stored in MED file.
      */

@@ -2229,6 +2229,19 @@ SMESH::SMESH_MeshEditor_ptr SMESH_Mesh_i::GetMeshEditPreviewer()
   return aMesh._retn();
 }
 
+//================================================================================
+/*!
+ * \brief Return true if the mesh has been edited since a last total re-compute
+ *        and those modifications may prevent successful partial re-compute
+ */
+//================================================================================
+
+CORBA::Boolean SMESH_Mesh_i::HasModificationsToDiscard() throw(SALOME::SALOME_Exception)
+{
+  Unexpect aCatch(SALOME_SalomeException);
+  return _impl->HasModificationsToDiscard();
+}
+
 //=============================================================================
 /*!
  *
