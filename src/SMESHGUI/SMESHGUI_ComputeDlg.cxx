@@ -698,6 +698,11 @@ void SMESHGUI_BaseComputeOp::computeMesh()
     if ( errors->length() > 0 ) {
       aHypErrors = SMESH::GetMessageOnAlgoStateErrors( errors.in() );
     }
+    if ( myMesh->HasModificationsToDiscard() && // issue 0020693
+         SUIT_MessageBox::question( desktop(), tr( "SMESH_WARNING" ),
+                                    tr( "FULL_RECOMPUTE_QUESTION" ),
+                                    tr( "SMESH_BUT_YES" ), tr( "SMESH_BUT_NO" ), 1, 0 ) == 0 )
+      myMesh->Clear();
     SUIT_OverrideCursor aWaitCursor;
     try {
 #if (OCC_VERSION_MAJOR << 16 | OCC_VERSION_MINOR << 8 | OCC_VERSION_MAINTENANCE) > 0x060100
