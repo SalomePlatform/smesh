@@ -189,6 +189,21 @@ public:
   bool GetAutoColor() throw(SALOME_Exception);
 
   /*!
+   * \brief Set the flag meaning that the mesh has been edited "manually".
+   * It is to set to false after Clear() and to set to true by MeshEditor
+   */
+  void SetIsModified(bool isModified);
+
+  bool GetIsModified() const { return _isModified; }
+
+  /*!
+   * \brief Return true if the mesh has been edited since a total re-compute
+   *        and those modifications may prevent successful partial re-compute.
+   *        As a side effect reset _isModified flag if mesh is empty
+   */
+  bool HasModificationsToDiscard() const;
+
+  /*!
    * \brief Return data map of descendant to ancestor shapes
    */
   typedef TopTools_IndexedDataMapOfShapeListOfShape TAncestorMap;
@@ -293,6 +308,7 @@ protected:
   SMESH_Gen *                _gen;
   
   bool                       _isAutoColor;
+  bool                       _isModified; //!< modified since last total re-compute, issue 0020693
 
   double                     _shapeDiagonal; //!< diagonal size of bounding box of shape to mesh
   

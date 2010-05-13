@@ -99,6 +99,7 @@ SMESH_Mesh::SMESH_Mesh(int               theLocalId,
   _myMeshDS      = theDocument->GetMesh(_idDoc);
   _isShapeToMesh = false;
   _isAutoColor   = false;
+  _isModified    = false;
   _shapeDiagonal = 0.0;
   _myMeshDS->ShapeToMesh( PseudoShape() );
 }
@@ -187,6 +188,7 @@ void SMESH_Mesh::ShapeToMesh(const TopoDS_Shape & aShape)
     _shapeDiagonal = 0.0;
     _myMeshDS->ShapeToMesh( PseudoShape() );
   }
+  _isModified = false;
 }
 
 //=======================================================================
@@ -267,6 +269,7 @@ void SMESH_Mesh::Clear()
       sm->ComputeStateEngine( SMESH_subMesh::CHECK_COMPUTE_STATE );
     }
   }
+  _isModified = false;
 }
 
 //=======================================================================
@@ -496,6 +499,7 @@ SMESH_Hypothesis::Hypothesis_Status
       }
     }
   }
+  HasModificationsToDiscard(); // to reset _isModified flag if mesh become empty
 
   if(MYDEBUG) subMesh->DumpAlgoState(true);
   if(MYDEBUG) SCRUTE(ret);
@@ -567,7 +571,9 @@ SMESH_Hypothesis::Hypothesis_Status
       }
     }
   }
-  
+
+  HasModificationsToDiscard(); // to reset _isModified flag if mesh become empty
+
   if(MYDEBUG) subMesh->DumpAlgoState(true);
   if(MYDEBUG) SCRUTE(ret);
   return ret;
@@ -964,6 +970,7 @@ void SMESH_Mesh::NotifySubMeshesHypothesisModification(const SMESH_Hypothesis* h
       }
     }
   }
+  HasModificationsToDiscard(); // to reset _isModified flag if mesh become empty
 }
 
 //=============================================================================
@@ -981,6 +988,57 @@ bool SMESH_Mesh::GetAutoColor() throw(SALOME_Exception)
 {
   Unexpect aCatch(SalomeException);
   return _isAutoColor;
+}
+
+//=======================================================================
+//function : SetIsModified
+//purpose  : Set the flag meaning that the mesh has been edited "manually"
+//=======================================================================
+
+void SMESH_Mesh::SetIsModified(bool isModified)
+{
+  _isModified = isModified;
+
+  if ( _isModified )
+    // check if mesh becomes empty as result of modification
+    HasModificationsToDiscard();
+}
+
+//=======================================================================
+//function : HasModificationsToDiscard
+//purpose  : Return true if the mesh has been edited since a total re-compute
+//           and those modifications may prevent successful partial re-compute.
+//           As a side effect reset _isModified flag if mesh is empty
+//issue    : 0020693
+//=======================================================================
+
+bool SMESH_Mesh::HasModificationsToDiscard() const
+{
+  if ( ! _isModified )
+    return false;
+
+  // return true if there the next Compute() will be partial and
+  // existing but changed elements may prevent successful re-compute
+  bool hasComputed = false, hasNotComputed = false;
+  map <int, SMESH_subMesh*>::const_iterator i_sm = _mapSubMesh.begin();
+  for ( ; i_sm != _mapSubMesh.end() ; ++i_sm )
+    switch ( i_sm->second->GetSubShape().ShapeType() )
+    {
+    case TopAbs_EDGE:
+    case TopAbs_FACE:
+    case TopAbs_SOLID:
+      if ( i_sm->second->IsMeshComputed() )
+        hasComputed = true;
+      else
+        hasNotComputed = true;
+      if ( hasComputed && hasNotComputed)
+        return true;
+    }
+
+  if ( !hasComputed )
+    const_cast<SMESH_Mesh*>(this)->_isModified = false;
+
+  return false;
 }
 
 //=============================================================================
