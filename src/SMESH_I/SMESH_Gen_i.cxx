@@ -2518,6 +2518,14 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
             aDataset->WriteOnDisk( anAutoColor );
             aDataset->CloseOnDisk();
 
+            // issue 0020693. Store _isModified flag
+            int isModified = myImpl->GetImpl().GetIsModified();
+            aSize[ 0 ] = 1;
+            aDataset = new HDFdataset( "_isModified", aTopGroup, HDF_INT32, aSize, 1 );
+            aDataset->CreateOnDisk();
+            aDataset->WriteOnDisk( &isModified );
+            aDataset->CloseOnDisk();
+
             // write reference on a shape if exists
             SALOMEDS::SObject_var myRef;
             bool shapeRefFound = false;
@@ -3607,6 +3615,18 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
                   myNewMeshImpl->SetShape( aShapeObject );
               }
             }
+          }
+
+          // issue 0020693. Restore _isModified flag
+          if( aTopGroup->ExistInternalObject( "_isModified" ) )
+          {
+            aDataset = new HDFdataset( "_isModified", aTopGroup );
+            aDataset->OpenOnDisk();
+            size = aDataset->GetSize();
+            int* isModified = new int[ size ];
+            aDataset->ReadFromDisk( isModified );
+            aDataset->CloseOnDisk();
+            myNewMeshImpl->GetImpl().SetIsModified( bool(*isModified));
           }
         }
       }
