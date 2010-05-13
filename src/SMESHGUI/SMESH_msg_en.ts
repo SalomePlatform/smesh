@@ -3192,6 +3192,14 @@ Consider saving your work before application crash</translation>
             <translation>Area precision</translation>
         </message>
         <message>
+            <source>FULL_RECOMPUTE_QUESTION</source>
+            <translation>
+The mesh has been edited since a last total re-compute 
+that may prevent successful computation. 
+Do you wish to re-compute the mesh totally to discard the modifications?
+            </translation>
+        </message>
+        <message>
             <source>SMESH_PREF_vol_precision</source>
             <translation>Volume precision</translation>
         </message>
