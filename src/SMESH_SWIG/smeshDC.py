@@ -438,6 +438,7 @@ def TreatHypoStatus(status, hypName, geomName, isAlgo):
     elif status == HYP_NOTCONFORM :
         reason = "a non-conform mesh would be built"
     elif status == HYP_ALREADY_EXIST :
+        if isAlgo: return # it does not influence anything
         reason = hypType + " of the same dimension is already assigned to this shape"
     elif status == HYP_BAD_DIM :
         reason = hypType + " mismatches the shape"
@@ -1164,9 +1165,12 @@ class Mesh:
 
 
     ## Computes the mesh and returns the status of the computation
+    #  @param discardModifs if True and the mesh has been edited since
+    #         a last total re-compute and that may prevent successful partial re-compute,
+    #         then the mesh is cleaned before Compute()
     #  @return True or False
     #  @ingroup l2_construct
-    def Compute(self, geom=0):
+    def Compute(self, geom=0, discardModifs=False):
         if geom == 0 or not isinstance(geom, geompyDC.GEOM._objref_GEOM_Object):
             if self.geom == 0:
                 geom = self.mesh.GetShapeToMesh()
@@ -1174,6 +1178,8 @@ class Mesh:
                 geom = self.geom
         ok = False
         try:
+            if discardModifs and self.mesh.HasModificationsToDiscard(): # issue 0020693
+                self.mesh.Clear()
             ok = self.smeshpyD.Compute(self.mesh, geom)
         except SALOME.SALOME_Exception, ex:
             print "Mesh computation failed, exception caught:"
@@ -1197,6 +1203,8 @@ class Mesh:
                             if not s: continue
                             mainSO = s.FindObjectIOR(mainIOR)
                             if not mainSO: continue
+                            if err.subShapeID == 1:
+                                shapeText = ' on "%s"' % mainSO.GetName()
                             subIt = s.NewChildIterator(mainSO)
                             while subIt.More():
                                 subSO = subIt.Value()
