@@ -71,10 +71,12 @@ public:
 
 protected:
   void                  closeEvent( QCloseEvent* );
+  void                  keyPressEvent( QKeyEvent* );
 
 private slots:
   void                  ClickOnOk();
   void                  ClickOnCancel();
+  void                  ClickOnHelp();
   void                  DeactivateActiveDialog();
   void                  ActivateThisDialog();
   
@@ -93,6 +95,8 @@ private:
   QtxColorButton*       btnOrientationColor;
   SMESHGUI_SpinBox*     SpinBox_Orientation_Scale;
   QCheckBox*            CheckBox_Orientation_3DVectors;
+
+  QString               myHelpFileName;
 };
 
 #endif // SMESHGUI_PREFERENCES_COLORDLG_H
