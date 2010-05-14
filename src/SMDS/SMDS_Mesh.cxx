@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,8 +19,9 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
-//  SMESH SMDS : implementaion of Salome mesh data structure
 
+//  SMESH SMDS : implementaion of Salome mesh data structure
+//
 #ifdef _MSC_VER
 #pragma warning(disable:4786)
 #endif
@@ -941,11 +942,11 @@ SMDS_MeshVolume* SMDS_Mesh::AddVolumeWithID(const SMDS_MeshFace * f1,
 /// Add a polygon defined by its nodes IDs
 ///////////////////////////////////////////////////////////////////////////////
 
-SMDS_MeshFace* SMDS_Mesh::AddPolygonalFaceWithID (std::vector<int> nodes_ids,
+SMDS_MeshFace* SMDS_Mesh::AddPolygonalFaceWithID (vector<int> nodes_ids,
                                                   const int        ID)
 {
   int nbNodes = nodes_ids.size();
-  std::vector<const SMDS_MeshNode*> nodes (nbNodes);
+  vector<const SMDS_MeshNode*> nodes (nbNodes);
   for (int i = 0; i < nbNodes; i++) {
     nodes[i] = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(nodes_ids[i]);
     if (!nodes[i]) return NULL;
@@ -958,7 +959,7 @@ SMDS_MeshFace* SMDS_Mesh::AddPolygonalFaceWithID (std::vector<int> nodes_ids,
 ///////////////////////////////////////////////////////////////////////////////
 
 SMDS_MeshFace* SMDS_Mesh::AddPolygonalFaceWithID
-                          (std::vector<const SMDS_MeshNode*> nodes,
+                          (vector<const SMDS_MeshNode*> nodes,
                            const int                         ID)
 {
   SMDS_MeshFace * face;
@@ -990,7 +991,7 @@ SMDS_MeshFace* SMDS_Mesh::AddPolygonalFaceWithID
 /// An ID is automatically affected to the created face.
 ///////////////////////////////////////////////////////////////////////////////
 
-SMDS_MeshFace* SMDS_Mesh::AddPolygonalFace (std::vector<const SMDS_MeshNode*> nodes)
+SMDS_MeshFace* SMDS_Mesh::AddPolygonalFace (vector<const SMDS_MeshNode*> nodes)
 {
   return SMDS_Mesh::AddPolygonalFaceWithID(nodes, myElementIDFactory->GetFreeID());
 }
@@ -1003,12 +1004,12 @@ SMDS_MeshFace* SMDS_Mesh::AddPolygonalFace (std::vector<const SMDS_MeshNode*> no
 ///////////////////////////////////////////////////////////////////////////////
 
 SMDS_MeshVolume * SMDS_Mesh::AddPolyhedralVolumeWithID
-                             (std::vector<int> nodes_ids,
-                              std::vector<int> quantities,
+                             (vector<int> nodes_ids,
+                              vector<int> quantities,
                               const int        ID)
 {
   int nbNodes = nodes_ids.size();
-  std::vector<const SMDS_MeshNode*> nodes (nbNodes);
+  vector<const SMDS_MeshNode*> nodes (nbNodes);
   for (int i = 0; i < nbNodes; i++) {
     nodes[i] = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(nodes_ids[i]);
     if (!nodes[i]) return NULL;
@@ -1023,8 +1024,8 @@ SMDS_MeshVolume * SMDS_Mesh::AddPolyhedralVolumeWithID
 ///////////////////////////////////////////////////////////////////////////////
 
 SMDS_MeshVolume* SMDS_Mesh::AddPolyhedralVolumeWithID
-                            (std::vector<const SMDS_MeshNode*> nodes,
-                             std::vector<int>                  quantities,
+                            (vector<const SMDS_MeshNode*> nodes,
+                             vector<int>                  quantities,
                              const int                         ID)
 {
   SMDS_MeshVolume* volume;
@@ -1056,8 +1057,8 @@ SMDS_MeshVolume* SMDS_Mesh::AddPolyhedralVolumeWithID
 ///////////////////////////////////////////////////////////////////////////////
 
 SMDS_MeshVolume* SMDS_Mesh::AddPolyhedralVolume
-                            (std::vector<const SMDS_MeshNode*> nodes,
-                             std::vector<int>                  quantities)
+                            (vector<const SMDS_MeshNode*> nodes,
+                             vector<int>                  quantities)
 {
   int ID = myElementIDFactory->GetFreeID();
   SMDS_MeshVolume * v = SMDS_Mesh::AddPolyhedralVolumeWithID(nodes, quantities, ID);
@@ -1763,10 +1764,10 @@ const SMDS_MeshElement* SMDS_Mesh::FindElement(int IDelem) const
 //purpose  : find polygon
 //=======================================================================
 
-const SMDS_MeshFace* SMDS_Mesh::FindFace (std::vector<int> nodes_ids) const
+const SMDS_MeshFace* SMDS_Mesh::FindFace (const vector<int>& nodes_ids) const
 {
   int nbnodes = nodes_ids.size();
-  std::vector<const SMDS_MeshNode *> poly_nodes (nbnodes);
+  vector<const SMDS_MeshNode *> poly_nodes (nbnodes);
   for (int inode = 0; inode < nbnodes; inode++) {
     const SMDS_MeshNode * node = FindNode(nodes_ids[inode]);
     if (node == NULL) return NULL;
@@ -1775,22 +1776,43 @@ const SMDS_MeshFace* SMDS_Mesh::FindFace (std::vector<int> nodes_ids) const
   return FindFace(poly_nodes);
 }
 
-const SMDS_MeshFace* SMDS_Mesh::FindFace (std::vector<const SMDS_MeshNode *> nodes)
+const SMDS_MeshFace* SMDS_Mesh::FindFace (const vector<const SMDS_MeshNode *>& nodes)
 {
-  if ( nodes.size() > 2 && nodes[0] ) {
-    SMDS_ElemIteratorPtr itF = nodes[0]->GetInverseElementIterator(SMDSAbs_Face);
-    while (itF->more()) {
-      const SMDS_MeshElement* f = itF->next();
-      if ( f->NbNodes() == nodes.size() ) {
-        SMDS_ElemIteratorPtr it2 = f->nodesIterator();
-        while(it2->more()) {
-          if ( find( nodes.begin(), nodes.end(), it2->next() ) == nodes.end() ) {
-            f = 0;
-            break;
-          }
+  return (const SMDS_MeshFace*) FindElement( nodes, SMDSAbs_Face );
+}
+
+
+//================================================================================
+/*!
+ * \brief Return element based on all given nodes
+ *  \param nodes - node of element
+ *  \param type - type of element
+ *  \param noMedium - true if medium nodes of quadratic element are not included in <nodes>
+ *  \retval const SMDS_MeshElement* - found element or NULL
+ */
+//================================================================================
+
+const SMDS_MeshElement* SMDS_Mesh::FindElement (const vector<const SMDS_MeshNode *>& nodes,
+                                                const SMDSAbs_ElementType            type,
+                                                const bool                           noMedium)
+{
+  if ( nodes.size() > 0 && nodes[0] )
+  {
+    SMDS_ElemIteratorPtr itF = nodes[0]->GetInverseElementIterator(type);
+    while (itF->more())
+    {
+      const SMDS_MeshElement* e = itF->next();
+      int nbNodesToCheck = noMedium ? e->NbCornerNodes() : e->NbNodes();
+      if ( nbNodesToCheck == nodes.size() )
+      {
+        for ( int i = 1; e && i < nodes.size(); ++ i )
+        {
+          int nodeIndex = e->GetNodeIndex( nodes[ i ]);
+          if ( nodeIndex < 0 || nodeIndex >= nbNodesToCheck )
+            e = 0;
         }
-        if ( f )
-          return static_cast<const SMDS_MeshFace *> (f);
+        if ( e )
+          return static_cast<const SMDS_MeshFace *> (e);
       }
     }
   }

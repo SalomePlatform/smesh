@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,6 +19,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 // File      : SMESH_Pattern.hxx
 // Created   : Mon Aug  2 10:30:00 2004
 // Author    : Edward AGAPOV (eap)
@@ -981,10 +982,13 @@ int SMESH_Block::GetOrderedEdges (const TopoDS_Face&   theFace,
   TopoDS_Wire anOuterWire =
     theShapeAnalysisAlgo ? ShapeAnalysis::OuterWire( theFace ) : BRepTools::OuterWire( theFace );
   for ( TopoDS_Iterator wIt (theFace); wIt.More(); wIt.Next() )
-    if ( !anOuterWire.IsSame( wIt.Value() ))
-      aWireList.push_back( TopoDS::Wire( wIt.Value() ));
-    else
-      aWireList.push_front( TopoDS::Wire( wIt.Value() ));
+    if ( wIt.Value().ShapeType() == TopAbs_WIRE ) // it can be internal vertex!
+    {
+      if ( !anOuterWire.IsSame( wIt.Value() ))
+        aWireList.push_back( TopoDS::Wire( wIt.Value() ));
+      else
+        aWireList.push_front( TopoDS::Wire( wIt.Value() ));
+    }
 
   // loop on edges of wires
   theNbVertexInWires.clear();

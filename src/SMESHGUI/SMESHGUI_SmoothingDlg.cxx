@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,6 +19,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 // SMESH SMESHGUI : GUI for SMESH component
 // File   : SMESHGUI_SmoothingDlg.cxx
 // Author : Michael ZORIN, Open CASCADE S.A.S.
@@ -229,7 +230,7 @@ SMESHGUI_SmoothingDlg::SMESHGUI_SmoothingDlg( SMESHGUI* theModule )
   
   SpinBox_IterationLimit->setRange(1, 999999);
   SpinBox_IterationLimit->setValue(20);
-  SpinBox_AspectRatio->RangeStepAndValidator(0.0, +999999.999, 0.1, 3);
+  SpinBox_AspectRatio->RangeStepAndValidator(0.0, +999999.999, 0.1, "parametric_precision");
   SpinBox_AspectRatio->SetValue(1.1);
 
   GroupArguments->show();
@@ -386,11 +387,13 @@ bool SMESHGUI_SmoothingDlg::ClickOnApply()
     }
 
     if (aResult) {
-      Handle(SALOME_InteractiveObject) anIO = myActor->getIO();
+      if ( myActor ) {
+        Handle(SALOME_InteractiveObject) anIO = myActor->getIO();
+        SALOME_ListIO aList;
+        aList.Append(anIO);
+        mySelectionMgr->setSelectedObjects(aList, false);
+      }
 
-      SALOME_ListIO aList;
-      aList.Append(anIO);
-      mySelectionMgr->setSelectedObjects(aList, false);
       SMESH::UpdateView();
       Init();
 
@@ -564,7 +567,7 @@ void SMESHGUI_SmoothingDlg::SelectionIntoArgument()
     return;
 
   myActor = SMESH::FindActorByObject(myMesh);
-  if (!myActor)
+  if (!myActor && !CheckBoxMesh->isChecked())
     return;
 
   int aNbUnits = 0;

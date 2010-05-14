@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,6 +19,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  SMESH SMESH_I : idl implementation based on 'SMESH' unit's classes
 //  File   : SMESH_Group_i.cxx
 //  Author : Sergey ANIKIN, OCC
@@ -165,11 +166,12 @@ SMESH::ElementType SMESH_GroupBase_i::GetType()
     SMDSAbs_ElementType aSMDSType = aGroupDS->GetType();
     SMESH::ElementType aType;
     switch (aSMDSType) {
-    case SMDSAbs_Node:   aType = SMESH::NODE; break;
-    case SMDSAbs_Edge:   aType = SMESH::EDGE; break;
-    case SMDSAbs_Face:   aType = SMESH::FACE; break;
-    case SMDSAbs_Volume: aType = SMESH::VOLUME; break;
-    default:             aType = SMESH::ALL; break;
+    case SMDSAbs_Node:      aType = SMESH::NODE;   break;
+    case SMDSAbs_Edge:      aType = SMESH::EDGE;   break;
+    case SMDSAbs_Face:      aType = SMESH::FACE;   break;
+    case SMDSAbs_Volume:    aType = SMESH::VOLUME; break;
+    case SMDSAbs_0DElement: aType = SMESH::ELEM0D; break;
+    default:                aType = SMESH::ALL;    break;
     }
     return aType;
   }

@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,6 +19,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 // SMESH SMESHGUI : GUI for SMESH component
 // File   : SMESHGUI_TranslationDlg.cxx
 // Author : Michael ZORIN, Open CASCADE S.A.S.
@@ -266,12 +267,12 @@ SMESHGUI_TranslationDlg::SMESHGUI_TranslationDlg( SMESHGUI* theModule )
   SMESHGUI_TranslationDlgLayout->addWidget(GroupButtons);
 
   /* Initialisations */
-  SpinBox1_1->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, DBL_DIGITS_DISPLAY);
-  SpinBox1_2->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, DBL_DIGITS_DISPLAY);
-  SpinBox1_3->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, DBL_DIGITS_DISPLAY);
-  SpinBox2_1->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, DBL_DIGITS_DISPLAY);
-  SpinBox2_2->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, DBL_DIGITS_DISPLAY);
-  SpinBox2_3->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, DBL_DIGITS_DISPLAY);
+  SpinBox1_1->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, "length_precision");
+  SpinBox1_2->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, "length_precision");
+  SpinBox1_3->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, "length_precision");
+  SpinBox2_1->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, "length_precision");
+  SpinBox2_2->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, "length_precision");
+  SpinBox2_3->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, "length_precision");
 
   RadioButton1->setChecked(true);
 
@@ -676,8 +677,9 @@ void SMESHGUI_TranslationDlg::SelectionIntoArgument()
   myActor = SMESH::FindActorByObject(myMesh);
   if (!myActor)
     myActor = SMESH::FindActorByEntry(IO->getEntry());
-  if (!myActor)
-    return;
+
+  if (!myActor && !CheckBoxMesh->isChecked())
+      return;
 
   int aNbUnits = 0;
 

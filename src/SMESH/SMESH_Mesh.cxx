@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,6 +19,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  SMESH SMESH : implementaion of SMESH idl descriptions
 //  File   : SMESH_Mesh.cxx
 //  Author : Paul RASCLE, EDF
@@ -98,6 +99,7 @@ SMESH_Mesh::SMESH_Mesh(int               theLocalId,
   _myMeshDS      = theDocument->GetMesh(_idDoc);
   _isShapeToMesh = false;
   _isAutoColor   = false;
+  _isModified    = false;
   _shapeDiagonal = 0.0;
   _myMeshDS->ShapeToMesh( PseudoShape() );
 }
@@ -186,6 +188,7 @@ void SMESH_Mesh::ShapeToMesh(const TopoDS_Shape & aShape)
     _shapeDiagonal = 0.0;
     _myMeshDS->ShapeToMesh( PseudoShape() );
   }
+  _isModified = false;
 }
 
 //=======================================================================
@@ -266,47 +269,7 @@ void SMESH_Mesh::Clear()
       sm->ComputeStateEngine( SMESH_subMesh::CHECK_COMPUTE_STATE );
     }
   }
-
-//   // clear sub-meshes; get ready to re-compute as a side-effect 
-
-//   if ( SMESH_subMesh *sm = GetSubMeshContaining( GetShapeToMesh() ) )
-//   {
-//     SMESH_subMeshIteratorPtr smIt = sm->getDependsOnIterator(/*includeSelf=*/true,
-//                                                              /*complexShapeFirst=*/false);
-//     while ( smIt->more() )
-//     {
-//       sm = smIt->next();
-//       TopAbs_ShapeEnum shapeType = sm->GetSubShape().ShapeType();      
-//       if ( shapeType == TopAbs_VERTEX || shapeType < TopAbs_SOLID )
-//         // all other shapes depends on vertices so they are already cleaned
-//         sm->ComputeStateEngine( SMESH_subMesh::CLEAN );
-//       // to recompute even if failed
-//       sm->ComputeStateEngine( SMESH_subMesh::CHECK_COMPUTE_STATE );
-//     }
-//   }
-
-//   // clear entities not on sub-meshes
-
-//   SMDS_VolumeIteratorPtr vIt = _myMeshDS->volumesIterator();
-//   while ( vIt->more() )
-//     _myMeshDS->RemoveFreeElement( vIt->next(), 0 );
-
-//   SMDS_FaceIteratorPtr fIt = _myMeshDS->facesIterator();
-//   while ( fIt->more() )
-//     _myMeshDS->RemoveFreeElement( fIt->next(), 0 );
-
-//   SMDS_EdgeIteratorPtr eIt = _myMeshDS->edgesIterator();
-//   while ( eIt->more() )
-//     _myMeshDS->RemoveFreeElement( eIt->next(), 0 );
-
-//   SMDS_NodeIteratorPtr nIt = _myMeshDS->nodesIterator();
-//   while ( nIt->more() ) {
-//     const SMDS_MeshNode * node = nIt->next();
-//     if ( node->NbInverseElements() == 0 )
-//       _myMeshDS->RemoveFreeNode( node, 0 );
-//     else
-//       _myMeshDS->RemoveNode(node);
-//   }
+  _isModified = false;
 }
 
 //=======================================================================
@@ -536,6 +499,7 @@ SMESH_Hypothesis::Hypothesis_Status
       }
     }
   }
+  HasModificationsToDiscard(); // to reset _isModified flag if mesh become empty
 
   if(MYDEBUG) subMesh->DumpAlgoState(true);
   if(MYDEBUG) SCRUTE(ret);
@@ -607,7 +571,9 @@ SMESH_Hypothesis::Hypothesis_Status
       }
     }
   }
-  
+
+  HasModificationsToDiscard(); // to reset _isModified flag if mesh become empty
+
   if(MYDEBUG) subMesh->DumpAlgoState(true);
   if(MYDEBUG) SCRUTE(ret);
   return ret;
@@ -1004,6 +970,7 @@ void SMESH_Mesh::NotifySubMeshesHypothesisModification(const SMESH_Hypothesis* h
       }
     }
   }
+  HasModificationsToDiscard(); // to reset _isModified flag if mesh become empty
 }
 
 //=============================================================================
@@ -1021,6 +988,57 @@ bool SMESH_Mesh::GetAutoColor() throw(SALOME_Exception)
 {
   Unexpect aCatch(SalomeException);
   return _isAutoColor;
+}
+
+//=======================================================================
+//function : SetIsModified
+//purpose  : Set the flag meaning that the mesh has been edited "manually"
+//=======================================================================
+
+void SMESH_Mesh::SetIsModified(bool isModified)
+{
+  _isModified = isModified;
+
+  if ( _isModified )
+    // check if mesh becomes empty as result of modification
+    HasModificationsToDiscard();
+}
+
+//=======================================================================
+//function : HasModificationsToDiscard
+//purpose  : Return true if the mesh has been edited since a total re-compute
+//           and those modifications may prevent successful partial re-compute.
+//           As a side effect reset _isModified flag if mesh is empty
+//issue    : 0020693
+//=======================================================================
+
+bool SMESH_Mesh::HasModificationsToDiscard() const
+{
+  if ( ! _isModified )
+    return false;
+
+  // return true if there the next Compute() will be partial and
+  // existing but changed elements may prevent successful re-compute
+  bool hasComputed = false, hasNotComputed = false;
+  map <int, SMESH_subMesh*>::const_iterator i_sm = _mapSubMesh.begin();
+  for ( ; i_sm != _mapSubMesh.end() ; ++i_sm )
+    switch ( i_sm->second->GetSubShape().ShapeType() )
+    {
+    case TopAbs_EDGE:
+    case TopAbs_FACE:
+    case TopAbs_SOLID:
+      if ( i_sm->second->IsMeshComputed() )
+        hasComputed = true;
+      else
+        hasNotComputed = true;
+      if ( hasComputed && hasNotComputed)
+        return true;
+    }
+
+  if ( !hasComputed )
+    const_cast<SMESH_Mesh*>(this)->_isModified = false;
+
+  return false;
 }
 
 //=============================================================================

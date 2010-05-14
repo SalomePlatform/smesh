@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,12 +19,12 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  SMESH OBJECT : interactive object for SMESH visualization
 //  File   : SMESH_Actor.cxx
 //  Author : Nicolas REJNERI
 //  Module : SMESH
-
-
+//
 #include "SMESH_ActorDef.h"
 #include "SMESH_ActorUtils.h"
 #include "SMESH_DeviceActor.h"
@@ -86,7 +86,6 @@ static int MYDEBUG = 0;
 #endif
 
 static int aLineWidthInc = 2;
-static int aPointSizeInc = 2;
 
 
 SMESH_ActorDef* SMESH_ActorDef::New(){
@@ -129,7 +128,6 @@ SMESH_ActorDef::SMESH_ActorDef()
   if ( mgr && mgr->booleanValue( "SMESH", "use_precision", false ) )
     myControlsPrecision = mgr->integerValue( "SMESH", "controls_precision", -1);
 
-  vtkFloatingPointType aPointSize  = SMESH::GetFloat("SMESH:node_size",3);
   vtkFloatingPointType aElem0DSize = SMESH::GetFloat("SMESH:elem0d_size",5);
   vtkFloatingPointType aLineWidth  = SMESH::GetFloat("SMESH:element_width",1);
 
@@ -224,7 +222,7 @@ SMESH_ActorDef::SMESH_ActorDef()
   my1DProp = vtkProperty::New();
   my1DProp->DeepCopy(myEdgeProp);
   my1DProp->SetLineWidth(aLineWidth + aLineWidthInc);
-  my1DProp->SetPointSize(aPointSize);
+  my1DProp->SetPointSize(aElem0DSize);
   
   my1DExtProp = vtkProperty::New();
   my1DExtProp->DeepCopy(myEdgeProp);
@@ -233,7 +231,7 @@ SMESH_ActorDef::SMESH_ActorDef()
   anRGB[2] = 1 - anRGB[2];
   my1DExtProp->SetColor(anRGB[0],anRGB[1],anRGB[2]);
   my1DExtProp->SetLineWidth(aLineWidth + aLineWidthInc);
-  my1DExtProp->SetPointSize(aPointSize + aPointSizeInc);
+  my1DExtProp->SetPointSize(aElem0DSize);
 
   my1DExtActor = SMESH_DeviceActor::New();
   my1DExtActor->SetUserMatrix(aMatrix);
@@ -294,7 +292,6 @@ SMESH_ActorDef::SMESH_ActorDef()
   myNodeProp = vtkProperty::New();
   SMESH::GetColor( "SMESH", "node_color", anRGB[0], anRGB[1], anRGB[2], QColor( 255, 0, 0 ) );
   myNodeProp->SetColor(anRGB[0],anRGB[1],anRGB[2]);
-  myNodeProp->SetPointSize(aPointSize);
 
   myNodeActor = SMESH_DeviceActor::New();
   myNodeActor->SetUserMatrix(aMatrix);
@@ -312,7 +309,6 @@ SMESH_ActorDef::SMESH_ActorDef()
   anRGB[1] = 1 - anRGB[1];
   anRGB[2] = 1 - anRGB[2];
   myNodeExtProp->SetColor(anRGB[0],anRGB[1],anRGB[2]);
-  myNodeExtProp->SetPointSize(aPointSize);
 
   myNodeExtActor = SMESH_DeviceActor::New();
   myNodeExtActor->SetUserMatrix(aMatrix);
@@ -342,8 +338,7 @@ SMESH_ActorDef::SMESH_ActorDef()
   myHighlightProp->SetSpecular(0.0);
   SMESH::GetColor( "SMESH", "selection_object_color", anRGB[0], anRGB[1], anRGB[2], QColor( 255, 255, 255 ) );
   myHighlightProp->SetColor(anRGB[0],anRGB[1],anRGB[2]);
-  //myHighlightProp->SetPointSize(aPointSize);
-  myHighlightProp->SetPointSize(std::max(aElem0DSize,aPointSize)); // ??
+  myHighlightProp->SetPointSize(aElem0DSize); // ??
   myHighlightProp->SetRepresentation(1);
 
   myPreselectProp = vtkProperty::New();
@@ -352,8 +347,7 @@ SMESH_ActorDef::SMESH_ActorDef()
   myPreselectProp->SetSpecular(0.0);
   SMESH::GetColor( "SMESH", "highlight_color", anRGB[0], anRGB[1], anRGB[2], QColor( 0, 255, 255 ) );
   myPreselectProp->SetColor(anRGB[0],anRGB[1],anRGB[2]);
-  //myPreselectProp->SetPointSize(aPointSize);
-  myPreselectProp->SetPointSize(std::max(aElem0DSize,aPointSize)); // ??
+  myPreselectProp->SetPointSize(aElem0DSize); // ??
   myPreselectProp->SetRepresentation(1);
 
   myHighlitableActor = SMESH_DeviceActor::New();
@@ -887,8 +881,6 @@ SetControlMode(eControl theMode,
 
 
 void SMESH_ActorDef::AddToRender(vtkRenderer* theRenderer){
-  SALOME_Actor::AddToRender(theRenderer);
-
   theRenderer->AddActor(myNodeActor);
   theRenderer->AddActor(myBaseActor);
   
@@ -913,6 +905,10 @@ void SMESH_ActorDef::AddToRender(vtkRenderer* theRenderer){
 
   theRenderer->AddActor2D(myPointLabels);
   theRenderer->AddActor2D(myCellsLabels);
+
+  // the superclass' method should be called at the end
+  // (in particular, for correct work of selection)
+  SALOME_Actor::AddToRender(theRenderer);
 }
 
 void SMESH_ActorDef::RemoveFromRender(vtkRenderer* theRenderer){
@@ -1011,6 +1007,10 @@ bool SMESH_ActorDef::Init(TVisualObjPtr theVisualObj,
 
   if( dynamic_cast<SMESH_GroupObj*>( myVisualObj.get() ) )
     SetIsDisplayNameActor( true );
+
+  int aMarkerType = mgr->integerValue( "SMESH", "type_of_marker", 1 ); // dot
+  int aMarkerScale = mgr->integerValue( "SMESH", "marker_scale", 9 );  // 5 pixels
+  SetMarkerStd( (VTK::MarkerType)aMarkerType, (VTK::MarkerScale)aMarkerScale );
 
   myTimeStamp->Modified();
   Modified();
@@ -1219,15 +1219,15 @@ void SMESH_ActorDef::SetVisibility(int theMode, bool theIsUpdateRepersentation){
       my0DActor->VisibilityOn();
     }
 
-    if(myEntityMode & eEdges){
+    if(myEntityMode & eEdges && GetRepresentation() != ePoint){
       my1DActor->VisibilityOn();
     }
     
-    if(myEntityMode & eFaces){
+    if(myEntityMode & eFaces && GetRepresentation() != ePoint){
       my2DActor->VisibilityOn();
     }
     
-    if(myEntityMode & eVolumes){
+    if(myEntityMode & eVolumes && GetRepresentation() != ePoint){
       my3DActor->VisibilityOn();
     }
     
@@ -1508,6 +1508,12 @@ void SMESH_ActorDef::UpdateHighlight(){
         SetModeOfExtraction(VTKViewer_ExtractUnstructuredGrid::ePoints);
       myHighlitableActor->SetVisibility(anIsVisible);
       myHighlitableActor->SetRepresentation(SMESH_DeviceActor::ePoint);
+
+      VTK::MarkerType aMarkerType = GetMarkerType();
+      if(aMarkerType != VTK::MT_USER)
+        myHighlitableActor->SetMarkerStd(aMarkerType, GetMarkerScale());
+      else
+        myHighlitableActor->SetMarkerTexture(GetMarkerTexture(), myMarkerTexture);
     }
   }
 }
@@ -1671,6 +1677,9 @@ void SMESH_ActorDef::GetNodeColor(vtkFloatingPointType& r,vtkFloatingPointType& 
 
 void SMESH_ActorDef::Set0DColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b){ 
   my0DProp->SetColor(r,g,b);
+  if( SMESH_GroupObj* aGroupObj = dynamic_cast<SMESH_GroupObj*>( myVisualObj.get() ) )
+    if( aGroupObj->GetElementType() == SMDSAbs_0DElement )
+      myNameActor->SetBackgroundColor(r,g,b);
   Modified();
 }
 
@@ -1712,35 +1721,8 @@ void SMESH_ActorDef::SetLineWidth(vtkFloatingPointType theVal){
 }
 
 
-void SMESH_ActorDef::SetNodeSize(vtkFloatingPointType theVal){
-  myNodeProp->SetPointSize(theVal);
-  myNodeExtProp->SetPointSize(theVal);
-
-  vtkFloatingPointType aPointSize = my0DProp->GetPointSize() > theVal ? my0DProp->GetPointSize() : theVal;
-  //myHighlightProp->SetPointSize(theVal);
-  myHighlightProp->SetPointSize(aPointSize); // ??
-  //myPreselectProp->SetPointSize(theVal);
-  myPreselectProp->SetPointSize(aPointSize); // ??
-
-  my1DProp->SetPointSize(theVal + aPointSizeInc);
-  my1DExtProp->SetPointSize(theVal + aPointSizeInc);
-
-  Modified();
-}
-
-vtkFloatingPointType SMESH_ActorDef::GetNodeSize(){
-  return myNodeProp->GetPointSize();
-}
-
 void SMESH_ActorDef::Set0DSize(vtkFloatingPointType theVal){
   my0DProp->SetPointSize(theVal);
-
-  vtkFloatingPointType aPointSize = myNodeProp->GetPointSize() > theVal ? myNodeProp->GetPointSize() : theVal;
-  //myHighlightProp->SetPointSize(theVal);
-  myHighlightProp->SetPointSize(aPointSize); // ??
-  //myPreselectProp->SetPointSize(theVal);
-  myPreselectProp->SetPointSize(aPointSize); // ??
-
   Modified();
 }
 
@@ -2048,4 +2030,19 @@ SMESH_Actor::EQuadratic2DRepresentation SMESH_ActorDef::GetQuadratic2DRepresenta
     return SMESH_Actor::eArcs;
   else
     return SMESH_Actor::eLines;
+}
+
+void SMESH_ActorDef::SetMarkerStd( VTK::MarkerType theMarkerType, VTK::MarkerScale theMarkerScale )
+{
+  SALOME_Actor::SetMarkerStd( theMarkerType, theMarkerScale );
+  myNodeActor->SetMarkerStd( theMarkerType, theMarkerScale );
+  myNodeExtActor->SetMarkerStd( theMarkerType, theMarkerScale );
+}
+
+void SMESH_ActorDef::SetMarkerTexture( int theMarkerId, VTK::MarkerTexture theMarkerTexture )
+{
+  SALOME_Actor::SetMarkerTexture( theMarkerId, theMarkerTexture );
+  myNodeActor->SetMarkerTexture( theMarkerId, theMarkerTexture );
+  myNodeExtActor->SetMarkerTexture( theMarkerId, theMarkerTexture );
+  myMarkerTexture = theMarkerTexture; // for deferred update of myHighlightActor
 }

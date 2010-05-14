@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,14 +19,14 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  SMESH SMESH_OctreeNode : Octree with Nodes set
 //  inherites global class SMESH_Octree
-//
 //  File      : SMESH_OctreeNode.cxx
 //  Created   : Tue Jan 16 16:00:00 2007
 //  Author    : Nicolas Geimer & Aurélien Motteux (OCC)
 //  Module    : SMESH
-
+//
 #include "SMESH_OctreeNode.hxx"
 
 #include "SMDS_MeshNode.hxx"

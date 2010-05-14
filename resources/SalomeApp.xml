@@ -1,5 +1,5 @@
 <!--
-  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 
   Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
   CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -33,7 +33,8 @@
     <parameter name="backface_color"               value="0, 0,   255"/>
     <parameter name="elem0d_color"                 value="0, 255,   0"/>
     <parameter name="highlight_color"              value="0, 255, 255"/>
-    <parameter name="node_size"                    value="3" />
+    <parameter name="type_of_marker"               value="1"  />
+    <parameter name="marker_scale"                 value="9"  />
     <parameter name="elem0d_size"                  value="5" />
     <parameter name="element_width"                value="1" />
     <parameter name="shrink_coeff"                 value="75"/>
@@ -73,6 +74,14 @@
     <parameter name="quadratic_mode"               value="0"/>
     <parameter name="max_angle"                    value="2"/>
     <parameter name="documentation"                value="smesh_help"/>
+    <!-- Input field precisions -->
+    <parameter name="def_precision"                value="3"  />
+    <parameter name="length_precision"             value="-6"  />
+    <parameter name="angle_precision"              value="-3"  />
+    <parameter name="len_tol_precision"            value="-7"  />
+    <parameter name="parametric_precision"         value="-6"  />
+    <parameter name="area_precision"               value="-6"  />
+    <parameter name="vol_precision"                value="-6"  />
   </section>
   <section name="smesh_help" >
     <parameter name="sub_menu"          value="%1 module"/>

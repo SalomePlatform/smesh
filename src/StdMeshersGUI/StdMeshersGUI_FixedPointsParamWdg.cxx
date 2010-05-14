@@ -1,7 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
-//
-//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  This library is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU Lesser General Public
@@ -19,14 +16,16 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 // File   : StdMeshersGUI_FixedPointsParamWdg.cxx
 // Author : Open CASCADE S.A.S.
 // SMESH includes
 //
 #include "StdMeshersGUI_FixedPointsParamWdg.h"
 
-#include <QtxIntSpinBox.h>
-#include <QtxDoubleSpinBox.h>
+#include <SMESHGUI_SpinBox.h>
+
+#include <SalomeApp_IntSpinBox.h>
 
 // Qt includes
 #include <QPushButton>
@@ -81,7 +80,8 @@ QWidget* StdMeshersGUI_FixedPointsParamWdg::LineDelegate::createEditor( QWidget*
 {
   QWidget* w = 0;
   if ( (index.column() == 1 ) ) {
-    QtxIntSpinBox* sb = new QtxIntSpinBox( parent );
+    SalomeApp_IntSpinBox* sb = new SalomeApp_IntSpinBox( parent );
+    sb->setAcceptNames( false ); // No Notebook variables allowed
     sb->setFrame( false );
     sb->setRange( 1, 999);
     w = sb;
@@ -94,8 +94,8 @@ void StdMeshersGUI_FixedPointsParamWdg::LineDelegate::setModelData( QWidget* edi
                                                                     QAbstractItemModel* model, 
                                                                     const QModelIndex& index ) const
 {
-  model->setData( index, qobject_cast<QtxIntSpinBox*>( editor )->value(), Qt::EditRole );
-  model->setData( index, qobject_cast<QtxIntSpinBox*>( editor )->value(), Qt::UserRole );
+  model->setData( index, qobject_cast<SalomeApp_IntSpinBox*>( editor )->value(), Qt::EditRole );
+  model->setData( index, qobject_cast<SalomeApp_IntSpinBox*>( editor )->value(), Qt::UserRole );
 }
 
 //================================================================================
@@ -114,7 +114,7 @@ StdMeshersGUI_FixedPointsParamWdg
   
   myListWidget   = new QListWidget( this );
   myTreeWidget   = new QTreeWidget( this );
-  mySpinBox      = new QtxDoubleSpinBox( this );
+  mySpinBox      = new SMESHGUI_SpinBox( this );
   myAddButton    = new QPushButton( tr( "SMESH_BUT_ADD" ),    this );
   myRemoveButton = new QPushButton( tr( "SMESH_BUT_REMOVE" ), this );      
   mySameValues   = new QCheckBox( tr("SMESH_SAME_NB_SEGMENTS"), this);
@@ -141,10 +141,8 @@ StdMeshersGUI_FixedPointsParamWdg
   myListWidget->setMinimumWidth( 80 );
   myTreeWidget->setMinimumWidth( 200 );
 
-  mySpinBox->setRange( 0, 1 );
-  mySpinBox->setSingleStep( 0.1 );
-  mySpinBox->setDecimals( 4 );
-  mySpinBox->setPrecision( 4 );
+  mySpinBox->setAcceptNames( false ); // No Notebook variables allowed
+  mySpinBox->RangeStepAndValidator( 0., 1., .1, "parametric_precision" );
   myListWidget->setMinimumWidth( 70 );
 
   connect( myAddButton,    SIGNAL( clicked() ),              SLOT( onAdd() ) );

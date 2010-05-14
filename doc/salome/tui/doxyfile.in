@@ -1,4 +1,4 @@
-#  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+#  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 #
 #  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 #  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -24,7 +24,7 @@
 #---------------------------------------------------------------------------
 # Project related configuration options
 #---------------------------------------------------------------------------
-PROJECT_NAME           = "Mesh Module Programming Guide v.@VERSION@"
+PROJECT_NAME           = "SALOME Mesh Module Developer"
 PROJECT_NUMBER         = 
 OUTPUT_DIRECTORY       = SMESH
 CREATE_SUBDIRS         = NO
@@ -99,8 +99,9 @@ WARN_LOGFILE           =
 INPUT                  = @top_srcdir@/src \
 			 @top_srcdir@/bin \
 			 @top_srcdir@/idl \
-			 @top_builddir@/bin
-FILE_PATTERNS          = *.idl *.hxx *.cxx *.h *.c *.hh *.cc @DOXYGEN_PYTHON_EXTENSION@
+			 @top_builddir@/bin \
+			 @srcdir@/input
+FILE_PATTERNS          = *.idl *.hxx *.cxx *.h *.c *.hh *.cc @DOXYGEN_PYTHON_EXTENSION@ *.doc
 RECURSIVE              = YES
 EXCLUDE                = 
 EXCLUDE_SYMLINKS       = NO
@@ -137,7 +138,7 @@ IGNORE_PREFIX          =
 GENERATE_HTML          = YES
 HTML_OUTPUT            = .
 HTML_FILE_EXTENSION    = .html
-HTML_HEADER            = @srcdir@/static/myheader.html
+HTML_HEADER            = @builddir@/static/header.html
 HTML_FOOTER            = @srcdir@/static/footer.html
 HTML_STYLESHEET        = @srcdir@/static/doxygen.css
 HTML_ALIGN_MEMBERS     = YES

@@ -1,0 +1,30 @@
+/*!
+
+\page hexotic_hypo_page Hexotic Parameters hypothesis
+
+\n Hexotic Parameters hypothesis works only with <b>Hexotic</b> 
+algorithm. This algorithm is a commercial software.
+
+\image html hexotic_parameters.png
+
+<ul>
+<li><b>Name</b> - allows to define the name of the hypothesis (Hexotic 
+Parameters by default).</li>
+
+<li><b>Nb. Hexes Min Level</b> - allows defining the minimal level of recursive partitioning on the initial octree cube.</li>
+
+<li><b>Nb. Hexes Max Level</b> - allows defining the maximal level of recursive partitioning on the initial octree cube.</li>
+
+<li><b>Salome Quadrangles</b> - not documented.</li>
+
+<li><b>Generate smooth meshes no ridges</b> - specifies that the mesher can ignore ridges. A ridge is a geometrical entity (a sharp edge). The resulting meshes will have better quality elements, at the price of "smoothing" out the geometry.
+</li>
+
+<li><b>Authorize invalid elements</b> - specifies that the mesher must conform as much as possible to the geometry (especially the sharp edges). The resulting meshes may contain invalid elements (but with positive volumes: for example, three vertices of an hexahedron on the same edge), for the benefit of better geometry accuracy.
+</li>
+
+<li><b>Sharp angle threshold in degrees</b> - specifies the angle between two triangles above which the hex mesher will consider the edge common to these two triangles as being a "ridge". A ridge is a geometrical entity (a sharp edge) which has to be kept as it is in the final hex mesh.The default value is 60 (degrees).<br>If you raise this value, the hex mesher will detect less ridges, and the final solid mesh will therefore be smoother. On the other hand, if you reduce this value, more ridges will be detected and the algorithm will face harder situations to conform to.
+</li>
+</ul>
+
+*/

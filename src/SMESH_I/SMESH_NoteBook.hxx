@@ -1,26 +1,25 @@
-// Copyright (C) 2008  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-// This library is free software; you can redistribute it and/or
-// modify it under the terms of the GNU Lesser General Public
-// License as published by the Free Software Foundation; either
-// version 2.1 of the License.
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
 //
-// This library is distributed in the hope that it will be useful
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-// Lesser General Public License for more details.
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
 //
-// You should have received a copy of the GNU Lesser General Public
-// License along with this library; if not, write to the Free Software
-// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 // File      : SMESH_NoteBook.hxx
 // Author    : Roman NIKOLAEV ()
-
-
+//
 #ifndef SMESH_NoteBook_HeaderFile
 #define SMESH_NoteBook_HeaderFile
 
@@ -36,12 +35,12 @@ typedef std::vector<TCollection_AsciiString>  TState;
 typedef std::vector<TState>                   TAllStates;
 typedef TCollection_AsciiString _pyID;
 
-class ObjectStates{
+class SMESH_ObjectStates{
   
 public:
   
-  ObjectStates(TCollection_AsciiString theType);
-  virtual ~ObjectStates();
+  SMESH_ObjectStates(TCollection_AsciiString theType);
+  virtual ~SMESH_ObjectStates();
 
   void AddState(const TState &theState);
 
@@ -58,7 +57,7 @@ private:
   int                                       _dumpstate;
 };
 
-class LayerDistributionStates : public ObjectStates
+class LayerDistributionStates : public SMESH_ObjectStates
 {
 public:
   typedef std::map<TCollection_AsciiString,TCollection_AsciiString> TDistributionMap;
@@ -81,7 +80,7 @@ private:
 class SMESH_NoteBook
 {
 public:
-  typedef std::map<TCollection_AsciiString,ObjectStates*> TVariablesMap;
+  typedef std::map<TCollection_AsciiString,SMESH_ObjectStates*> TVariablesMap;
   typedef std::map<TCollection_AsciiString,TCollection_AsciiString> TMeshEditorMap;
   SMESH_NoteBook();
   ~SMESH_NoteBook();

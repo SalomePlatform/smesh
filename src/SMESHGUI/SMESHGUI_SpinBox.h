@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,6 +19,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 // SMESH SMESHGUI : GUI for SMESH component
 // File   : SMESHGUI_SpinBox.h
 // Author : Lucien PIGNOLONI, Open CASCADE S.A.S.
@@ -54,12 +55,11 @@ public:
   void       RangeStepAndValidator( double         = -1000000.0,
                                     double         = +1000000.0,
                                     double         = 100.0,
-                                    unsigned short = 3 );
+                                    const char*    = "length_precision" );
   void              SetValue( double );
   double            GetValue() const;
   QString           GetString() const;
   QLineEdit*        editor() const;
-  QDoubleValidator* validator() const;
 
 public slots:
   void              SetStep( double );

@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='us-ascii'?>
 <!DOCTYPE meshers PUBLIC "" "desktop.dtd">
 <!--
-  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 
   Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
   CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -215,6 +215,7 @@
                label-id="Hexahedron (i,j,k)"
                icon-id="mesh_algo_hexa.png"
                input="QUAD"
+	       need-geom="false"
                dim="3"/>
 
     <algorithm type="Projection_1D"

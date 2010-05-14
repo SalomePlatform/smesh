@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,10 +19,10 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  File   : SMESH_Mesh.idl
 //  Author : Paul RASCLE, EDF
 //
-
 #ifndef _SMESH_MESH_IDL_
 #define _SMESH_MESH_IDL_
 
@@ -520,6 +520,13 @@ module SMESH
     SMESH_MeshEditor GetMeshEditPreviewer()
       raises (SALOME::SALOME_Exception);
 
+    /*!
+     * Return true if the mesh has been edited since a total re-compute
+     * and those modifications may prevent successful partial re-compute
+     */
+    boolean HasModificationsToDiscard()
+      raises (SALOME::SALOME_Exception);
+
     /*! Check group names for duplications.
      *  Consider maximum group name length stored in MED file.
      */
@@ -666,6 +673,9 @@ module SMESH
     ElementType GetElementType( in long id, in boolean iselem )
       raises (SALOME::SALOME_Exception);
 
+    EntityType GetElementGeomType( in long id )
+      raises (SALOME::SALOME_Exception);
+
     long_array GetSubMeshElementsId(in long ShapeID)
       raises (SALOME::SALOME_Exception);
 
@@ -770,6 +780,16 @@ module SMESH
      * Returns number of faces for given element
      */
     long ElemNbFaces(in long id);
+
+    /*!
+     * Returns nodes of given face (counted from zero) for given volumic element.
+     */
+    long_array GetElemFaceNodes(in long elemId, in short faceIndex);
+
+    /*!
+     * Returns an element based on all given nodes.
+     */
+    long FindElementByNodes(in long_array nodes);
 
     /*!
      * Returns true if given element is polygon

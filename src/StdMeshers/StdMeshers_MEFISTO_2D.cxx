@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,6 +19,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  SMESH SMESH : implementaion of SMESH idl descriptions
 //  File   : StdMeshers_MEFISTO_2D.cxx
 //           Moved here from SMESH_MEFISTO_2D.cxx
@@ -655,6 +656,9 @@ bool StdMeshers_MEFISTO_2D::LoadPoints(TWireVector &                 wires,
       fixOverlappedLinkUV (uvslf[ mB ], uvslf[ m ], uvslf[ mA ]);
     }
   }
+//   cout << "MEFISTO INPUT************" << endl;
+//   for ( int i =0; i < m; ++i )
+//     cout << i << ": \t" << uvslf[i].x << ", " << uvslf[i].y << " Node " << mefistoToDS[i]->GetID()<< endl;
 
   return true;
 }

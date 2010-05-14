@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,6 +19,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  SMESH SMESH_I : idl implementation based on 'SMESH' unit's calsses
 //  File   : SMESH_Mesh_i.hxx
 //  Author : Paul RASCLE, EDF
@@ -160,6 +161,8 @@ public:
   SMESH::SMESH_MeshEditor_ptr GetMeshEditor();
 
   SMESH::SMESH_MeshEditor_ptr GetMeshEditPreviewer();
+
+  CORBA::Boolean HasModificationsToDiscard() throw (SALOME::SALOME_Exception);
 
   void ClearLog()
     throw (SALOME::SALOME_Exception);
@@ -307,6 +310,9 @@ public:
   SMESH::ElementType GetElementType( CORBA::Long id, bool iselem )
     throw (SALOME::SALOME_Exception);
   
+  SMESH::EntityType GetElementGeomType( CORBA::Long id )
+    throw (SALOME::SALOME_Exception);
+  
   /*!
    * Returns ID of elements for given submesh
    */
@@ -452,7 +458,16 @@ public:
    * Returns number of faces for given element
    */
   CORBA::Long ElemNbFaces(CORBA::Long id);
-  
+  /*!
+   * Returns nodes of given face (counted from zero) for given element.
+   */
+  SMESH::long_array* GetElemFaceNodes(CORBA::Long elemId, CORBA::Short faceIndex);
+
+  /*!
+   * Returns an element based on all given nodes.
+   */
+  CORBA::Long FindElementByNodes(const SMESH::long_array& nodes);
+
   /*!
    * Returns true if given element is polygon
    */

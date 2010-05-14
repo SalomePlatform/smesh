@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,6 +19,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 // SMESH SMESHGUI : GUI for SMESH component
 // File   : SMESHGUI.h
 // Author : Nicolas REJNERI, Open CASCADE S.A.S.
@@ -31,6 +32,7 @@
 
 // SALOME GUI includes
 #include <SalomeApp_Module.h>
+#include <VTKViewer_MarkerDef.h>
 #include <SALOME_InteractiveObject.hxx>
 
 // IDL includes
@@ -51,6 +53,8 @@ class LightApp_Selection;
 class LightApp_SelectionMgr;
 
 class SMESHGUI_FilterLibraryDlg;
+
+typedef std::map<int, VTK::MarkerMap> SMESHGUI_StudyId2MarkerMap;
 
 //=================================================================================
 // class    : SMESHGUI
@@ -166,6 +170,8 @@ private :
   LightApp_Displayer*             myDisplayer;
 
   SMESHGUI_FilterLibraryDlg*      myFilterLibraryDlg;
+
+  SMESHGUI_StudyId2MarkerMap      myMarkerMap;
 };
 
 #endif // SMESHGUI_H

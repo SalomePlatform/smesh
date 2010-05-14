@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,6 +19,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 // SMESH SMESHGUI : GUI for SMESH component
 // File   : SMESHGUI_BuildCompoundDlg.cxx
 // Author : Alexander KOVALEV, Open CASCADE S.A.S.
@@ -137,7 +138,7 @@ SMESHGUI_BuildCompoundDlg::SMESHGUI_BuildCompoundDlg( SMESHGUI* theModule )
   TextLabelTol = new QLabel(tr("SMESH_TOLERANCE"), GroupArgs);
   TextLabelTol->setAlignment(Qt::AlignCenter);
   SpinBoxTol = new SMESHGUI_SpinBox(GroupArgs);
-  SpinBoxTol->RangeStepAndValidator(0.0, COORD_MAX, 0.00001, 6);
+  SpinBoxTol->RangeStepAndValidator(0.0, COORD_MAX, 0.00001, "len_tol_precision" );
 
   GroupArgsLayout->addWidget(TextLabelMeshes, 0, 0);
   GroupArgsLayout->addWidget(SelectButton,    0, 1);

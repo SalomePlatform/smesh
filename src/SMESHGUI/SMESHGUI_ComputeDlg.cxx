@@ -1,7 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
-//
-//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  This library is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU Lesser General Public
@@ -19,6 +16,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 // File   : SMESHGUI_ComputeDlg.cxx
 // Author : Edward AGAPOV, Open CASCADE S.A.S.
 // SMESH includes
@@ -700,6 +698,11 @@ void SMESHGUI_BaseComputeOp::computeMesh()
     if ( errors->length() > 0 ) {
       aHypErrors = SMESH::GetMessageOnAlgoStateErrors( errors.in() );
     }
+    if ( myMesh->HasModificationsToDiscard() && // issue 0020693
+         SUIT_MessageBox::question( desktop(), tr( "SMESH_WARNING" ),
+                                    tr( "FULL_RECOMPUTE_QUESTION" ),
+                                    tr( "SMESH_BUT_YES" ), tr( "SMESH_BUT_NO" ), 1, 0 ) == 0 )
+      myMesh->Clear();
     SUIT_OverrideCursor aWaitCursor;
     try {
 #if (OCC_VERSION_MAJOR << 16 | OCC_VERSION_MINOR << 8 | OCC_VERSION_MAINTENANCE) > 0x060100
@@ -829,7 +832,7 @@ void SMESHGUI_BaseComputeOp::showComputeResult( const bool theMemoryLack,
   {
     QTableWidget* tbl = aCompDlg->myTable;
     SMESH::long_array_var aRes = myMesh->GetMeshInfo();
-    aCompDlg->myFullInfo->SetMeshInfo( aRes );
+    aCompDlg->myBriefInfo->SetMeshInfo( aRes );
     aCompDlg->myBriefInfo->show();
     aCompDlg->myFullInfo->hide();
 

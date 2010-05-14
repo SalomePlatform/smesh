@@ -1,7 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
-//
-//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  This library is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU Lesser General Public
@@ -19,11 +16,11 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 // File   : StdMeshersGUI_SubShapeSelectorWdg.cxx
 // Author : Open CASCADE S.A.S. (dmv)
 // SMESH includes
 //
-
 #include "StdMeshersGUI_SubShapeSelectorWdg.h"
 
 // SMESH Includes
@@ -83,7 +80,7 @@ StdMeshersGUI_SubShapeSelectorWdg
 ::StdMeshersGUI_SubShapeSelectorWdg( QWidget * parent ): 
   QWidget( parent ),
   myPreviewActor( 0 ),
-  myMaxSize( 0 )
+  myMaxSize( -1 )
 {
   QPixmap image0( SMESH::GetResourceMgr( mySMESHGUI )->loadPixmap( "SMESH", tr( "ICON_SELECT" ) ) );
 
@@ -146,6 +143,9 @@ void StdMeshersGUI_SubShapeSelectorWdg::init()
   myListOfIDs.clear();
   mySelectedIDs.clear();
 
+  myAddButton->setEnabled( false );
+  myRemoveButton->setEnabled( false );
+
   mySMESHGUI     = SMESHGUI::GetSMESHGUI();
   mySelectionMgr = SMESH::GetSelectionMgr( mySMESHGUI );
   mySelector = (SMESH::GetViewWindow( mySMESHGUI ))->GetSelector();
@@ -199,63 +199,76 @@ void StdMeshersGUI_SubShapeSelectorWdg::SelectionIntoArgument()
   mySelectionMgr->selectedObjects( aList );
   int nbSel = aList.Extent();
 
-  if (nbSel < 1)
-    return;
-
-  SALOME_ListIteratorOfListIO anIt (aList);
+  if (nbSel > 0) {
+    SALOME_ListIteratorOfListIO anIt (aList);
     
-  for ( ; anIt.More(); anIt.Next()) { // Loop on selected objects
-    Handle(SALOME_InteractiveObject) IO = anIt.Value();
-
-    GEOM::GEOM_Object_var aGeomObj = GetGeomObjectByEntry( IO->getEntry() );  
-    if ( !CORBA::is_nil( aGeomObj ) ) { // Selected Object From Study
-      GEOM::GEOM_Object_ptr aGeomFatherObj = aGeomObj->GetMainShape();
-      QString aFatherEntry = "";
-      QString aMainFatherEntry = "";
-      TopoDS_Shape shape;
-      if ( !CORBA::is_nil( aGeomFatherObj ) ) {
-        // Get Main Shape
-        GEOM::GEOM_Object_var aGeomMain = GetGeomObjectByEntry( myEntry );
-        if ( !CORBA::is_nil( aGeomMain ) && aGeomMain->GetType() == 37 ) {  // Main Shape is a Group
-          GEOM::GEOM_Object_ptr aMainFatherObj = aGeomMain->GetMainShape();
-          if ( !CORBA::is_nil( aMainFatherObj ) )
-            aMainFatherEntry = aMainFatherObj->GetStudyEntry();
-        }
-        aFatherEntry = aGeomFatherObj->GetStudyEntry();
-      }
+    for ( ; anIt.More(); anIt.Next()) { // Loop on selected objects
+      Handle(SALOME_InteractiveObject) IO = anIt.Value();
       
-      if ( aFatherEntry != "" && ( aFatherEntry == myEntry || aFatherEntry == aMainFatherEntry ) ) {
-        if ( aGeomObj->GetType() == 37 /*GEOM_GROUP*/ ) { // Selected Group that belongs the main object
-          GEOMBase::GetShape(aGeomObj, shape); 
-          if ( !shape.IsNull() ) {
-            TopExp_Explorer exp( shape, mySubShType );
-            for ( ; exp.More(); exp.Next() ) {
-              int index = myPreviewActor->GetIndexByShape( exp.Current() );
+      GEOM::GEOM_Object_var aGeomObj = GetGeomObjectByEntry( IO->getEntry() );  
+      if ( !CORBA::is_nil( aGeomObj ) ) { // Selected Object From Study
+        GEOM::GEOM_Object_ptr aGeomFatherObj = aGeomObj->GetMainShape();
+        QString aFatherEntry = "";
+        QString aMainFatherEntry = "";
+        TopoDS_Shape shape;
+        if ( !CORBA::is_nil( aGeomFatherObj ) ) {
+          // Get Main Shape
+          GEOM::GEOM_Object_var aGeomMain = GetGeomObjectByEntry( myEntry );
+          if ( !CORBA::is_nil( aGeomMain ) && aGeomMain->GetType() == 37 ) {  // Main Shape is a Group
+            GEOM::GEOM_Object_ptr aMainFatherObj = aGeomMain->GetMainShape();
+            if ( !CORBA::is_nil( aMainFatherObj ) )
+              aMainFatherEntry = aMainFatherObj->GetStudyEntry();
+          }
+          aFatherEntry = aGeomFatherObj->GetStudyEntry();
+        }
+        
+        if ( aFatherEntry != "" && ( aFatherEntry == myEntry || aFatherEntry == aMainFatherEntry ) ) {
+          if ( aGeomObj->GetType() == 37 /*GEOM_GROUP*/ ) { // Selected Group that belongs the main object
+            GEOMBase::GetShape(aGeomObj, shape); 
+            if ( !shape.IsNull() ) {
+              TopExp_Explorer exp( shape, mySubShType );
+              for ( ; exp.More(); exp.Next() ) {
+                int index = myPreviewActor->GetIndexByShape( exp.Current() );
+                if ( index ) {
+                  mySelectedIDs.append( index );
+                  myPreviewActor->HighlightID( index );
+                }
+              }
+            }
+          } else if ( aGeomObj->GetType() == 28 /*GEOM_SUBSHAPE*/  ) {
+            GEOMBase::GetShape(aGeomObj, shape); 
+            if ( !shape.IsNull() && shape.ShapeType() == mySubShType ) {
+              int index = myPreviewActor->GetIndexByShape( shape );
               if ( index ) {
                 mySelectedIDs.append( index );
                 myPreviewActor->HighlightID( index );
               }
             }
           }
-        } else if ( aGeomObj->GetType() == 28 /*GEOM_SUBSHAPE*/  ) {
-          GEOMBase::GetShape(aGeomObj, shape); 
-          if ( !shape.IsNull() && shape.ShapeType() == mySubShType ) {
-            int index = myPreviewActor->GetIndexByShape( shape );
-            if ( index ) {
-              mySelectedIDs.append( index );
-              myPreviewActor->HighlightID( index );
-            }
-          }
         }
+      } else { // Selected Actor from Actor Collection
+        QString anEntry = IO->getEntry();
+        QString str = "_";
+        int index = anEntry.lastIndexOf( str );
+        anEntry.remove(0, index+1);
+        int ind = anEntry.toInt();
+        if ( ind )
+          mySelectedIDs.append( ind );
       }
-    } else { // Selected Actor from Actor Collection
-      QString anEntry = IO->getEntry();
-      QString str = "_";
-      int index = anEntry.lastIndexOf( str );
-      anEntry.remove(0, index+1);
-      int ind = anEntry.toInt();
-      if ( ind )
-        mySelectedIDs.append( ind );
+    }
+  }
+  // update add button
+  myAddButton->setEnabled( myListWidget->count() < myMaxSize && mySelectedIDs.size() > 0 && ( mySelectedIDs.size() <= myMaxSize || myMaxSize == -1 ) );
+
+  //Connect Selected Ids in viewer and dialog's Ids list
+  myListWidget->clearSelection();
+  if ( mySelectedIDs.size() > 0 ) {
+    for (int i = 0; i < mySelectedIDs.size(); i++) {
+      QString anID = QString(" %1").arg( mySelectedIDs.at(i) );
+      QList<QListWidgetItem*> anItems = myListWidget->findItems ( anID, Qt::MatchExactly );
+      QListWidgetItem* item;
+      foreach(item, anItems)
+        item->setSelected(true);
     }
   }
 }
@@ -270,7 +283,7 @@ void StdMeshersGUI_SubShapeSelectorWdg::onAdd()
     return;
 
   myListWidget->blockSignals( true );
-  for (int i = 0; i < mySelectedIDs.size() && (myMaxSize < 1 || myListOfIDs.size() < myMaxSize); i++) {
+  for (int i = 0; i < mySelectedIDs.size() && (myMaxSize == -1 || myListOfIDs.size() < myMaxSize); i++) {
     if ( myListOfIDs.indexOf( mySelectedIDs.at(i) ) == -1 ) {
       QString anID = QString(" %1").arg( mySelectedIDs.at(i) );
 
@@ -282,7 +295,7 @@ void StdMeshersGUI_SubShapeSelectorWdg::onAdd()
   }
   onListSelectionChanged();
   myListWidget->blockSignals( false );
-  myAddButton->setEnabled( myListOfIDs.size() < myMaxSize );
+  myAddButton->setEnabled( myMaxSize == -1 || myListOfIDs.size() < myMaxSize );
 }
          
 //=================================================================================
@@ -327,6 +340,9 @@ void StdMeshersGUI_SubShapeSelectorWdg::onListSelectionChanged()
   QListWidgetItem* anItem;
   foreach(anItem, selItems)
     myPreviewActor->HighlightID( anItem->text().toInt() );
+
+  // update remove button
+  myRemoveButton->setEnabled( selItems.size() > 0 );
 }
 
 //=================================================================================
@@ -355,8 +371,7 @@ void StdMeshersGUI_SubShapeSelectorWdg::updateState()
     state = true;
   
   myListWidget->setEnabled( state );
-  myAddButton->setEnabled( state );
-  myRemoveButton->setEnabled( state );
+  myAddButton->setEnabled( mySelectedIDs.size() > 0 );
   
   if (state) {
     myPreviewActor = new SMESH_PreviewActorsCollection();

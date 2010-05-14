@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,6 +19,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 // SMESH SMESHGUI : GUI for SMESH component
 // File   : SMESHGUI_VTKUtils.cxx
 // Author : Open CASCADE S.A.S.
@@ -594,6 +595,8 @@ namespace SMESH
             anActor->SetNodeColor( aColor.R, aColor.G, aColor.B );
           else if( aGroup->GetType() == SMESH::EDGE )
             anActor->SetEdgeColor( aColor.R, aColor.G, aColor.B );
+          else if( aGroup->GetType() == SMESH::ELEM0D )
+            anActor->Set0DColor( aColor.R, aColor.G, aColor.B );
           else
             anActor->SetSufaceColor( aColor.R, aColor.G, aColor.B );
         }
@@ -820,10 +823,9 @@ namespace SMESH
         PW = mgr->integerValue( "SMESH", "highlight_width", 5 );
 
     // adjust highlight_width to the width of mesh entities
-    int aPointSize  = mgr->integerValue("SMESH", "node_size", 3);
     int aElem0DSize = mgr->integerValue("SMESH", "elem0d_size", 5);
     int aLineWidth  = mgr->integerValue("SMESH", "element_width", 1);
-    int maxSize = aPointSize;
+    int maxSize = aElem0DSize;
     if (aElem0DSize > maxSize) maxSize = aElem0DSize;
     if (aLineWidth > maxSize) maxSize = aLineWidth;
     if (PW < maxSize + 2) PW = maxSize + 2;

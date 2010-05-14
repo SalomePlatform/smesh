@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,6 +19,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 // SMESH SMESHGUI : GUI for SMESH component
 // File   : SMESHGUI_ExtrusionAlongPathDlg.cxx
 // Author : Vadim SANDLER, Open CASCADE S.A.S.
@@ -307,10 +308,10 @@ SMESHGUI_ExtrusionAlongPathDlg::SMESHGUI_ExtrusionAlongPathDlg( SMESHGUI* theMod
 
   /***************************************************************/
   // Initialisations
-  XSpin->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, 3);
-  YSpin->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, 3);
-  ZSpin->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, 3);
-  AngleSpin->RangeStepAndValidator(-180.0, 180.0, 5.0, 3);
+  XSpin->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, "length_precision");
+  YSpin->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, "length_precision");
+  ZSpin->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, "length_precision");
+  AngleSpin->RangeStepAndValidator(-180.0, 180.0, 5.0, "angle_precision");
 
   mySelector = (SMESH::GetViewWindow( mySMESHGUI ))->GetSelector();
 
@@ -472,7 +473,7 @@ bool SMESHGUI_ExtrusionAlongPathDlg::ClickOnApply()
   //if (myMesh->_is_nil() || MeshCheck->isChecked() && myIDSource->_is_nil() ||
   //    !myMeshActor || myPathMesh->_is_nil() || myPathShape->_is_nil())
   if ( myMesh->_is_nil() || MeshCheck->isChecked() && myIDSource->_is_nil() ||
-       !myMeshActor || myPath->_is_nil() )
+       /*!myMeshActor ||*/ myPath->_is_nil() )
     return false;
 
   if (!isValid())
@@ -484,7 +485,10 @@ bool SMESHGUI_ExtrusionAlongPathDlg::ClickOnApply()
     // If "Select whole mesh, submesh or group" check box is off ->
     // use only elements of given type selected by user
 
-    SMDS_Mesh* aMesh = myMeshActor->GetObject()->GetMesh();
+    SMDS_Mesh* aMesh;
+    if ( myMeshActor )
+      aMesh = myMeshActor->GetObject()->GetMesh();
+
     if (aMesh) {
       QStringList aListElementsId = ElementsLineEdit->text().split(" ", QString::SkipEmptyParts);
       anElementsId = new SMESH::long_array;
@@ -664,7 +668,9 @@ bool SMESHGUI_ExtrusionAlongPathDlg::ClickOnApply()
   }
 
   //mySelectionMgr->clearSelected();
-  SMESH::Update( myMeshActor->getIO(), myMeshActor->GetVisibility() );
+  if ( myMeshActor )
+    SMESH::Update( myMeshActor->getIO(), myMeshActor->GetVisibility() );
+    
   if ( MakeGroupsCheck->isEnabled() && MakeGroupsCheck->isChecked() )
     mySMESHGUI->updateObjBrowser(true); // new groups may appear
   //SMESH::UpdateView();
@@ -855,7 +861,7 @@ void SMESHGUI_ExtrusionAlongPathDlg::SelectionIntoArgument()
     }
     // find actor
     myMeshActor = SMESH::FindActorByObject(myMesh);
-    if (!myMeshActor)
+    if (!myMeshActor && !MeshCheck->isChecked())
       return;
 
     if (MeshCheck->isChecked()) {
@@ -988,7 +994,7 @@ void SMESHGUI_ExtrusionAlongPathDlg::SetEditCurrentArgument()
 void SMESHGUI_ExtrusionAlongPathDlg::SetEditCurrentArgument (QToolButton* button)
 {
   disconnect(mySelectionMgr, 0, this, 0);
-  mySelectionMgr->clearSelected();
+  //  mySelectionMgr->clearSelected();
   mySelectionMgr->clearFilters();
   SMESH::SetPickable();
 

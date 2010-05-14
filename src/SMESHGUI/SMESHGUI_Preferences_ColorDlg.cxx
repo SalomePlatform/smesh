@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,6 +19,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 // SMESH SMESHGUI : GUI for SMESH component
 // File   : SMESHGUI_Preferences_ColorDlg.cxx
 // Author : Nicolas REJNERI, Open CASCADE S.A.S.
@@ -27,13 +28,14 @@
 #include "SMESHGUI_Preferences_ColorDlg.h"
 
 #include "SMESHGUI.h"
+#include "SMESHGUI_SpinBox.h"
 #include "SMESHGUI_Utils.h"
 
 // SALOME GUI includes
 #include <SUIT_Desktop.h>
 #include <QtxColorButton.h>
-#include <QtxDoubleSpinBox.h>
-#include <QtxIntSpinBox.h>
+#include <VTKViewer_MarkerWidget.h>
+#include <SalomeApp_IntSpinBox.h>
 
 // Qt includes
 #include <QGroupBox>
@@ -42,7 +44,6 @@
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QGridLayout>
-#include <QSpinBox>
 #include <QCheckBox>
 
 #define SPACING 6
@@ -87,21 +88,24 @@ SMESHGUI_Preferences_ColorDlg::SMESHGUI_Preferences_ColorDlg( SMESHGUI* theModul
   btn0DElementsColor = new QtxColorButton( ButtonGroup1 );
 
   QLabel* TextLabel_0DElements_Size = new QLabel( tr( "Size of 0D elements" ), ButtonGroup1 );
-  SpinBox_0DElements_Size = new QSpinBox( ButtonGroup1 );
+  SpinBox_0DElements_Size = new SalomeApp_IntSpinBox( ButtonGroup1 );
+  SpinBox_0DElements_Size->setAcceptNames( false ); // No Notebook variables allowed
   SpinBox_0DElements_Size->setRange( 1, 10 );
   SpinBox_0DElements_Size->setSingleStep( 1 );
   SpinBox_0DElements_Size->setSizePolicy( QSizePolicy( QSizePolicy::Expanding, QSizePolicy::Fixed ) );
   SpinBox_0DElements_Size->setButtonSymbols( QSpinBox::PlusMinus );
 
   QLabel* TextLabel_Width = new QLabel( tr( "Width" ), ButtonGroup1 );
-  SpinBox_Width = new QSpinBox( ButtonGroup1 );
+  SpinBox_Width = new SalomeApp_IntSpinBox( ButtonGroup1 );
+  SpinBox_Width->setAcceptNames( false ); // No Notebook variables allowed
   SpinBox_Width->setRange( 0, 5 );
   SpinBox_Width->setSingleStep( 1 );
   SpinBox_Width->setSizePolicy( QSizePolicy( QSizePolicy::Expanding, QSizePolicy::Fixed ) );
   SpinBox_Width->setButtonSymbols( QSpinBox::PlusMinus );
 
   QLabel* TextLabel_ShrinkCoeff = new QLabel( tr( "Shrink coef." ), ButtonGroup1 );
-  SpinBox_Shrink = new QtxIntSpinBox( ButtonGroup1 );
+  SpinBox_Shrink = new SalomeApp_IntSpinBox( ButtonGroup1 );
+  SpinBox_Shrink->setAcceptNames( false ); // No Notebook variables allowed
   SpinBox_Shrink->setRange( 20, 100 );
   SpinBox_Shrink->setSingleStep( 1 );
   SpinBox_Shrink->setSizePolicy( QSizePolicy( QSizePolicy::Expanding, QSizePolicy::Fixed ) );
@@ -124,24 +128,26 @@ SMESHGUI_Preferences_ColorDlg::SMESHGUI_Preferences_ColorDlg( SMESHGUI* theModul
 
   // -------------------------------
   QGroupBox* ButtonGroup2 = new QGroupBox( tr( "Nodes" ), this );
-  QHBoxLayout* ButtonGroup2Layout = new QHBoxLayout( ButtonGroup2 );
+  QGridLayout* ButtonGroup2Layout = new QGridLayout( ButtonGroup2 );
   ButtonGroup2Layout->setSpacing( SPACING );
   ButtonGroup2Layout->setMargin( MARGIN );
 
   QLabel* TextLabel_Nodes_Color = new QLabel( tr( "Color" ), ButtonGroup2 );
   btnNodeColor = new QtxColorButton( ButtonGroup2 );
 
-  QLabel* TextLabel_Nodes_Size = new QLabel( tr( "Size" ), ButtonGroup2 );
-  SpinBox_Nodes_Size = new QSpinBox( ButtonGroup2 );
-  SpinBox_Nodes_Size->setRange( 0, 5 );
-  SpinBox_Nodes_Size->setSingleStep( 1 );
-  SpinBox_Nodes_Size->setSizePolicy( QSizePolicy( QSizePolicy::Expanding, QSizePolicy::Fixed ) );
-  SpinBox_Nodes_Size->setButtonSymbols( QSpinBox::PlusMinus );
+  QGroupBox* MarkerGroup = new QGroupBox( tr( "Marker" ), ButtonGroup2 );
+  QVBoxLayout* MarkerGroupLayout = new QVBoxLayout( MarkerGroup );
+  MarkerGroupLayout->setSpacing( 0 );
+  MarkerGroupLayout->setMargin( 0 );
 
-  ButtonGroup2Layout->addWidget( TextLabel_Nodes_Color );
-  ButtonGroup2Layout->addWidget( btnNodeColor );
-  ButtonGroup2Layout->addWidget( TextLabel_Nodes_Size );
-  ButtonGroup2Layout->addWidget( SpinBox_Nodes_Size );
+  MarkerWidget = new VTKViewer_MarkerWidget( MarkerGroup );
+
+  MarkerGroupLayout->addWidget( MarkerWidget );
+
+  ButtonGroup2Layout->addWidget( TextLabel_Nodes_Color, 0, 0 );
+  ButtonGroup2Layout->addWidget( btnNodeColor,          0, 1 );
+  ButtonGroup2Layout->addWidget( MarkerGroup,           1, 0, 1, 3 );
+  ButtonGroup2Layout->setColumnStretch( 2, 1 );
 
   // -------------------------------
   QGroupBox* ButtonGroup3 = new QGroupBox( tr( "Orientation of faces" ), this );
@@ -153,9 +159,9 @@ SMESHGUI_Preferences_ColorDlg::SMESHGUI_Preferences_ColorDlg( SMESHGUI* theModul
   btnOrientationColor = new QtxColorButton( ButtonGroup3 );
 
   QLabel* TextLabel_Orientation_Scale = new QLabel( tr( "Scale" ), ButtonGroup3 );
-  SpinBox_Orientation_Scale = new QtxDoubleSpinBox( ButtonGroup3 );
-  SpinBox_Orientation_Scale->setRange( 0.05, 0.5 );
-  SpinBox_Orientation_Scale->setSingleStep( 0.05 );
+  SpinBox_Orientation_Scale = new SMESHGUI_SpinBox( ButtonGroup3 );
+  SpinBox_Orientation_Scale->setAcceptNames( false ); // No Notebook variables allowed
+  SpinBox_Orientation_Scale->RangeStepAndValidator( .05, .5, .05, "parametric_precision" );
   SpinBox_Orientation_Scale->setSizePolicy( QSizePolicy( QSizePolicy::Expanding, QSizePolicy::Fixed ) );
   SpinBox_Orientation_Scale->setButtonSymbols( QSpinBox::PlusMinus );
 
@@ -304,9 +310,8 @@ void SMESHGUI_Preferences_ColorDlg::SetIntValue( int type, int value )
 {
   switch ( type ) {
   case 1 : SpinBox_Width->setValue( value );           break; // width
-  case 2 : SpinBox_Nodes_Size->setValue( value );      break; // nodes size = value; break;
-  case 3 : SpinBox_Shrink->setValue( value );          break; // shrink coeff
-  case 4 : SpinBox_0DElements_Size->setValue( value ); break; // 0d elements
+  case 2 : SpinBox_Shrink->setValue( value );          break; // shrink coeff
+  case 3 : SpinBox_0DElements_Size->setValue( value ); break; // 0d elements
   default: break;
   }
 }
@@ -320,9 +325,8 @@ int SMESHGUI_Preferences_ColorDlg::GetIntValue( int type )
   int res = 0;
   switch ( type ) {
   case 1 : res = SpinBox_Width->value();           break; // width
-  case 2 : res = SpinBox_Nodes_Size->value();      break; // nodes size
-  case 3 : res = SpinBox_Shrink->value();          break; // shrink coeff
-  case 4 : res = SpinBox_0DElements_Size->value(); break; // 0d elements
+  case 2 : res = SpinBox_Shrink->value();          break; // shrink coeff
+  case 3 : res = SpinBox_0DElements_Size->value(); break; // 0d elements
   default: break;
   }
   return res;
@@ -378,4 +382,68 @@ bool SMESHGUI_Preferences_ColorDlg::GetBooleanValue( int type )
   default: break;
   }
   return res;
+}
+
+//=================================================================================
+// function : setCustomMarkerMap()
+// purpose  :
+//=================================================================================
+void SMESHGUI_Preferences_ColorDlg::setCustomMarkerMap( VTK::MarkerMap theMarkerMap )
+{
+  MarkerWidget->setCustomMarkerMap( theMarkerMap );
+}
+
+//=================================================================================
+// function : getCustomMarkerMap()
+// purpose  :
+//=================================================================================
+VTK::MarkerMap SMESHGUI_Preferences_ColorDlg::getCustomMarkerMap()
+{
+  return MarkerWidget->getCustomMarkerMap();
+}
+
+//=================================================================================
+// function : setStandardMarker()
+// purpose  :
+//=================================================================================
+void SMESHGUI_Preferences_ColorDlg::setStandardMarker( VTK::MarkerType theMarkerType,
+                                                       VTK::MarkerScale theMarkerScale )
+{
+  MarkerWidget->setStandardMarker( theMarkerType, theMarkerScale );
+}
+
+//=================================================================================
+// function : setCustomMarker()
+// purpose  :
+//=================================================================================
+void SMESHGUI_Preferences_ColorDlg::setCustomMarker( int theId )
+{
+  MarkerWidget->setCustomMarker( theId );
+}
+
+//=================================================================================
+// function : getMarkerType()
+// purpose  :
+//=================================================================================
+VTK::MarkerType SMESHGUI_Preferences_ColorDlg::getMarkerType() const
+{
+  return MarkerWidget->getMarkerType();
+}
+
+//=================================================================================
+// function : getStandardMarkerScale()
+// purpose  :
+//=================================================================================
+VTK::MarkerScale SMESHGUI_Preferences_ColorDlg::getStandardMarkerScale() const
+{
+  return MarkerWidget->getStandardMarkerScale();
+}
+
+//=================================================================================
+// function : getCustomMarkerID()
+// purpose  :
+//=================================================================================
+int SMESHGUI_Preferences_ColorDlg::getCustomMarkerID() const
+{
+  return MarkerWidget->getCustomMarkerID();
 }

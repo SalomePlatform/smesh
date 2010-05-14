@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,6 +19,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 // SMESH SMESHGUI : GUI for SMESH component
 // File   : SMESHGUI_ExtrusionDlg.cxx
 // Author : Michael ZORIN, Open CASCADE S.A.S.
@@ -249,16 +250,16 @@ SMESHGUI_ExtrusionDlg::SMESHGUI_ExtrusionDlg (SMESHGUI* theModule)
   SMESHGUI_ExtrusionDlgLayout->addWidget(GroupButtons);
 
   /* Initialisations */
-  SpinBox_Vx->RangeStepAndValidator(COORD_MIN, COORD_MAX, 0.01, 3);
-  SpinBox_Vy->RangeStepAndValidator(COORD_MIN, COORD_MAX, 0.01, 3);
-  SpinBox_Vz->RangeStepAndValidator(COORD_MIN, COORD_MAX, 0.01, 3);
+  SpinBox_Vx->RangeStepAndValidator(COORD_MIN, COORD_MAX, 0.01, "length_precision");
+  SpinBox_Vy->RangeStepAndValidator(COORD_MIN, COORD_MAX, 0.01, "length_precision");
+  SpinBox_Vz->RangeStepAndValidator(COORD_MIN, COORD_MAX, 0.01, "length_precision");
 
-  SpinBox_Dx->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, 3);
-  SpinBox_Dy->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, 3);
-  SpinBox_Dz->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, 3);
+  SpinBox_Dx->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, "length_precision");
+  SpinBox_Dy->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, "length_precision");
+  SpinBox_Dz->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, "length_precision");
   
   SpinBox_NbSteps->setRange(1, 999999);
-  SpinBox_VDist->RangeStepAndValidator(0, COORD_MAX, 10.0, 3);
+  SpinBox_VDist->RangeStepAndValidator(0, COORD_MAX, 10.0, "length_precision");
 
   RadioButton1->setChecked(true);
   RadioButton3->setChecked(true);

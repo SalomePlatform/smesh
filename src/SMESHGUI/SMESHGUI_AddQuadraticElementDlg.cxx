@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,6 +19,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 // SMESH SMESHGUI : GUI for SMESH component
 // File   : SMESHGUI_AddMeshElementDlg.cxx
 // Author : Nicolas REJNERI, Open CASCADE S.A.S.
@@ -719,6 +720,30 @@ void SMESHGUI_AddQuadraticElementDlg::ClickOnApply()
   for (int i = 0; i < aNumberOfIds; i++)
     anArrayOfIdeces[i] = anIds[ i ];
 
+  bool addToGroup = GroupGroups->isChecked();
+  QString aGroupName;
+  
+  SMESH::SMESH_GroupBase_var aGroup;
+  int idx = 0;
+  if( addToGroup ) {
+    aGroupName = ComboBox_GroupName->currentText();
+    for ( int i = 1; i < ComboBox_GroupName->count(); i++ ) {
+      QString aName = ComboBox_GroupName->itemText( i );
+      if ( aGroupName == aName && ( i == ComboBox_GroupName->currentIndex() || idx == 0 ) )
+	idx = i;
+    }
+    if ( idx > 0 ) {
+      SMESH::SMESH_GroupOnGeom_var aGeomGroup = SMESH::SMESH_GroupOnGeom::_narrow( myGroups[idx-1] );
+      if ( !aGeomGroup->_is_nil() ) {
+	int res = SUIT_MessageBox::question( this, tr( "SMESH_WRN_WARNING" ),
+					     tr( "MESH_STANDALONE_GRP_CHOSEN" ).arg( aGroupName ),
+					     tr( "SMESH_BUT_YES" ), tr( "SMESH_BUT_NO" ), 0, 1 );
+	if ( res == 1 ) return;
+      }
+      aGroup = myGroups[idx-1];
+    }
+  }
+
   SMESH::ElementType anElementType;
   long anElemId = -1;
   SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditor();
@@ -736,33 +761,37 @@ void SMESHGUI_AddQuadraticElementDlg::ClickOnApply()
   case QUAD_HEXAHEDRON:
     anElementType = SMESH::VOLUME;
     anElemId = aMeshEditor->AddVolume(anArrayOfIdeces.inout()); break;
+  default: break;
   }
     
-  if( anElemId != -1 && GroupGroups->isChecked() ) {
-    SMESH::SMESH_Group_var aGroup;
-    QString aGroupName = ComboBox_GroupName->currentText();
-    SMESH::ListOfGroups aListOfGroups = *myMesh->GetGroups();
-    for( int i = 0, n = aListOfGroups.length(); i < n; i++ ) {
-      SMESH::SMESH_GroupBase_var aGroupBase = aListOfGroups[i];
-      if( !aGroupBase->_is_nil() ) {
-        SMESH::SMESH_Group_var aRefGroup = SMESH::SMESH_Group::_narrow( aGroupBase );
-        if( !aRefGroup->_is_nil() ) {
-          QString aRefGroupName( aRefGroup->GetName() );
-          if( aRefGroupName == aGroupName ) {
-            aGroup = aRefGroup; // // add node to existing group
-            break;
-          }
-        }
+  if ( anElemId != -1 && addToGroup && !aGroupName.isEmpty() ) {
+    SMESH::SMESH_Group_var aGroupUsed;
+    if ( aGroup->_is_nil() ) {
+      // create new group 
+      aGroupUsed = SMESH::AddGroup( myMesh, anElementType, aGroupName );
+      if ( !aGroupUsed->_is_nil() ) {
+	myGroups.append(SMESH::SMESH_GroupBase::_duplicate(aGroupUsed));
+	ComboBox_GroupName->addItem( aGroupName );
       }
     }
-    if( aGroup->_is_nil() ) // create new group
-      aGroup = SMESH::AddGroup( myMesh, anElementType, aGroupName );
-
-    if( !aGroup->_is_nil() ) {
+    else {
+      SMESH::SMESH_GroupOnGeom_var aGeomGroup = SMESH::SMESH_GroupOnGeom::_narrow( aGroup );
+      if ( !aGeomGroup->_is_nil() ) {
+	aGroupUsed = myMesh->ConvertToStandalone( aGeomGroup );
+	if ( !aGroupUsed->_is_nil() && idx > 0 ) {
+	  myGroups[idx-1] = SMESH::SMESH_GroupBase::_duplicate(aGroupUsed);
+	  SMESHGUI::GetSMESHGUI()->getApp()->updateObjectBrowser();
+	}
+      }
+      else
+	aGroupUsed = SMESH::SMESH_Group::_narrow( aGroup );
+    }
+    
+    if ( !aGroupUsed->_is_nil() ) {
       SMESH::long_array_var anIdList = new SMESH::long_array;
       anIdList->length( 1 );
       anIdList[0] = anElemId;
-      aGroup->Add( anIdList.inout() );
+      aGroupUsed->Add( anIdList.inout() );
     }
   }
 
@@ -935,18 +964,18 @@ void SMESHGUI_AddQuadraticElementDlg::SelectionIntoArgument()
     case QUAD_HEXAHEDRON:
       anElementType = SMESH::VOLUME; break;
     }
+    myGroups.clear();
     ComboBox_GroupName->clear();
     ComboBox_GroupName->addItem( QString() );
     SMESH::ListOfGroups aListOfGroups = *myMesh->GetGroups();
     for ( int i = 0, n = aListOfGroups.length(); i < n; i++ ) {
-      SMESH::SMESH_GroupBase_var aGroupBase = aListOfGroups[i];
-      if ( !aGroupBase->_is_nil() && aGroupBase->GetType() == anElementType ) {
-        SMESH::SMESH_Group_var aGroup = SMESH::SMESH_Group::_narrow( aGroupBase );
-        if ( !aGroup->_is_nil() ) {
-          QString aGroupName( aGroup->GetName() );
-          if ( !aGroupName.isEmpty() )
-            ComboBox_GroupName->addItem( aGroupName );
-        }
+      SMESH::SMESH_GroupBase_var aGroup = aListOfGroups[i];
+      if ( !aGroup->_is_nil() && aGroup->GetType() == anElementType ) {
+	QString aGroupName( aGroup->GetName() );
+	if ( !aGroupName.isEmpty() ) {
+	  myGroups.append(SMESH::SMESH_GroupBase::_duplicate(aGroup));
+	  ComboBox_GroupName->addItem( aGroupName );
+	}
       }
     }
   }

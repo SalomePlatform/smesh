@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,6 +19,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  SMESH SMESH : implementaion of SMESH idl descriptions
 //  File   : StdMeshers_Regular_1D.cxx
 //           Moved here from SMESH_Regular_1D.cxx
@@ -73,15 +74,16 @@ namespace {
    */
   //================================================================================
 
-  TopoDS_Edge nextC1Edge(const TopoDS_Edge&  edge,
-                         SMESH_Mesh &        aMesh,
-                         const bool          forward)
+  TopoDS_Edge nextC1Edge(TopoDS_Edge  edge,
+                         SMESH_Mesh & aMesh,
+                         const bool   forward)
   {
+    if (edge.Orientation() > TopAbs_REVERSED) // INTERNAL
+      edge.Orientation( TopAbs_FORWARD );
     TopoDS_Edge eNext;
     TopTools_MapOfShape edgeCounter;
     edgeCounter.Add( edge );
-    TopoDS_Vertex v;
-    v = forward ? TopExp::LastVertex( edge,1 ) : TopExp::FirstVertex( edge,1 );
+    TopoDS_Vertex v = forward ? TopExp::LastVertex(edge,true) : TopExp::FirstVertex(edge,true);
     TopTools_ListIteratorOfListOfShape ancestIt = aMesh.GetAncestors( v );
     for ( ; ancestIt.More(); ancestIt.Next() )
     {
@@ -92,11 +94,11 @@ namespace {
     if ( edgeCounter.Extent() < 3 && !eNext.IsNull() ) {
       if ( SMESH_Algo::IsContinuous( edge, eNext )) {
         // care of orientation
-        bool reverse;
-        if ( forward )
-          reverse = ( !v.IsSame( TopExp::FirstVertex( eNext, true )));
-        else
-          reverse = ( !v.IsSame( TopExp::LastVertex( eNext, true )));
+        if (eNext.Orientation() > TopAbs_REVERSED) // INTERNAL
+          eNext.Orientation( TopAbs_FORWARD );
+        TopoDS_Vertex vn =
+          forward ? TopExp::FirstVertex(eNext,true) : TopExp::LastVertex(eNext,true);
+        bool reverse = (!v.IsSame(vn));
         if ( reverse )
           eNext.Reverse();
         return eNext;
@@ -297,14 +299,17 @@ StdMeshers_CompositeSegment_1D::GetFaceSide(SMESH_Mesh&        aMesh,
                                             const bool         ignoreMeshed)
 {
   list< TopoDS_Edge > edges;
-  edges.push_back( anEdge );
+  if ( anEdge.Orientation() <= TopAbs_REVERSED )
+    edges.push_back( anEdge );
+  else
+    edges.push_back( TopoDS::Edge( anEdge.Oriented( TopAbs_FORWARD ))); // PAL21718
 
   list <const SMESHDS_Hypothesis *> hypList;
   SMESH_Algo* theAlgo = aMesh.GetGen()->GetAlgo( aMesh, anEdge );
   if ( theAlgo ) hypList = theAlgo->GetUsedHypothesis(aMesh, anEdge, false);
   for ( int forward = 0; forward < 2; ++forward )
   {
-    TopoDS_Edge eNext = nextC1Edge( anEdge, aMesh, forward );
+    TopoDS_Edge eNext = nextC1Edge( edges.back(), aMesh, forward );
     while ( !eNext.IsNull() ) {
       if ( ignoreMeshed ) {
         // eNext must not have computed mesh

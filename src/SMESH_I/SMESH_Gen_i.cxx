@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,6 +19,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  SMESH SMESH_I : idl implementation based on 'SMESH' unit's calsses
 //  File   : SMESH_Gen_i.cxx
 //  Author : Paul RASCLE, EDF
@@ -54,6 +55,7 @@
 
 #ifdef WNT
  #include <windows.h>
+ #include <process.h>
 #else
  #include <dlfcn.h>
 #endif
@@ -2516,6 +2518,14 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
             aDataset->WriteOnDisk( anAutoColor );
             aDataset->CloseOnDisk();
 
+            // issue 0020693. Store _isModified flag
+            int isModified = myImpl->GetImpl().GetIsModified();
+            aSize[ 0 ] = 1;
+            aDataset = new HDFdataset( "_isModified", aTopGroup, HDF_INT32, aSize, 1 );
+            aDataset->CreateOnDisk();
+            aDataset->WriteOnDisk( &isModified );
+            aDataset->CloseOnDisk();
+
             // write reference on a shape if exists
             SALOMEDS::SObject_var myRef;
             bool shapeRefFound = false;
@@ -3046,6 +3056,8 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
                   if ( nbNodes == 0 ) continue;
                   
                   int aShapeID = (*itSubM).first;
+                  if ( aShapeID < 1 || aShapeID > mySMESHDSMesh->MaxShapeIndex() )
+                    continue;
                   int aShapeType = mySMESHDSMesh->IndexToShape( aShapeID ).ShapeType();
                   // write only SMDS_FacePosition and SMDS_EdgePosition
                   switch ( aShapeType ) {
@@ -3603,6 +3615,18 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
                   myNewMeshImpl->SetShape( aShapeObject );
               }
             }
+          }
+
+          // issue 0020693. Restore _isModified flag
+          if( aTopGroup->ExistInternalObject( "_isModified" ) )
+          {
+            aDataset = new HDFdataset( "_isModified", aTopGroup );
+            aDataset->OpenOnDisk();
+            size = aDataset->GetSize();
+            int* isModified = new int[ size ];
+            aDataset->ReadFromDisk( isModified );
+            aDataset->CloseOnDisk();
+            myNewMeshImpl->GetImpl().SetIsModified( bool(*isModified));
           }
         }
       }

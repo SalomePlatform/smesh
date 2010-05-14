@@ -5,7 +5,7 @@
 \n This geometrical operation allows to perform a symmetrical copy of
 your mesh or some of its elements.
 
-<em>To create a symmtrical copy of the mesh:</em>
+<em>To create a symmetrical copy of the mesh:</em>
 
 <ol>
 <li>From the \b Modification menu choose \b Transformation -> \b Symmetry item  or click
@@ -76,6 +76,7 @@ name in the adjacent box);</li>
 </ul>
 <li>Click \b Apply or <b> Apply and Close</b> button to confirm the
 operation.</li>
+</ul>
 
 </ol>
 

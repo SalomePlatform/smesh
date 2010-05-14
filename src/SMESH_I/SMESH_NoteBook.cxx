@@ -1,25 +1,25 @@
-// Copyright (C) 2008  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-// This library is free software; you can redistribute it and/or
-// modify it under the terms of the GNU Lesser General Public
-// License as published by the Free Software Foundation; either
-// version 2.1 of the License.
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
 //
-// This library is distributed in the hope that it will be useful
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-// Lesser General Public License for more details.
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
 //
-// You should have received a copy of the GNU Lesser General Public
-// License along with this library; if not, write to the Free Software
-// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 // File      : SMESH_NoteBook.cxx
 // Author    : Roman NIKOLAEV
-
+//
 #include "SMESH_2smeshpy.hxx"
 #include "SMESH_NoteBook.hxx"
 #include "SMESH_Gen_i.hxx"
@@ -41,14 +41,14 @@ static int MYDEBUG = 0;
 using namespace std;
 
 
-void SetVariable(Handle(_pyCommand) theCommand,const ObjectStates* theStates, int position, int theArgNb);
+void SetVariable(Handle(_pyCommand) theCommand,const SMESH_ObjectStates* theStates, int position, int theArgNb);
 
 //================================================================================
 /*!
  * \brief Constructor
  */
 //================================================================================
-ObjectStates::ObjectStates(TCollection_AsciiString theType)
+SMESH_ObjectStates::SMESH_ObjectStates(TCollection_AsciiString theType)
 {
   _type = theType;
   _dumpstate = 0;
@@ -59,7 +59,7 @@ ObjectStates::ObjectStates(TCollection_AsciiString theType)
  * \brief Destructor
  */
 //================================================================================
-ObjectStates::~ObjectStates()
+SMESH_ObjectStates::~SMESH_ObjectStates()
 {
 }
 
@@ -69,7 +69,7 @@ ObjectStates::~ObjectStates()
  * \param theState - Object state (vector of notebook variable)
  */
 //================================================================================
-void ObjectStates::AddState(const TState &theState)
+void SMESH_ObjectStates::AddState(const TState &theState)
 {
   _states.push_back(theState);
 }
@@ -80,7 +80,7 @@ void ObjectStates::AddState(const TState &theState)
  * \\retval state - Object state (vector of notebook variable)
  */
 //================================================================================
-TState ObjectStates::GetCurrectState() const
+TState SMESH_ObjectStates::GetCurrectState() const
 {
   if(_states.size() > _dumpstate)
     return _states[_dumpstate];
@@ -94,7 +94,7 @@ TState ObjectStates::GetCurrectState() const
  *
  */
 //================================================================================
-TAllStates ObjectStates::GetAllStates() const
+TAllStates SMESH_ObjectStates::GetAllStates() const
 {
   return _states;
 }
@@ -104,7 +104,7 @@ TAllStates ObjectStates::GetAllStates() const
  *
  */
 //================================================================================
-void ObjectStates::IncrementState()
+void SMESH_ObjectStates::IncrementState()
 {
   _dumpstate++;
 }
@@ -114,7 +114,7 @@ void ObjectStates::IncrementState()
  *
  */
 //================================================================================
-TCollection_AsciiString ObjectStates::GetObjectType() const{
+TCollection_AsciiString SMESH_ObjectStates::GetObjectType() const{
   return _type;
 }
 
@@ -125,7 +125,7 @@ TCollection_AsciiString ObjectStates::GetObjectType() const{
  */
 //================================================================================
 LayerDistributionStates::LayerDistributionStates():
-  ObjectStates("LayerDistribution")
+  SMESH_ObjectStates("LayerDistribution")
 {
 }
 //================================================================================
@@ -252,7 +252,7 @@ void SMESH_NoteBook::ReplaceVariables()
     if(it != _objectMap.end()) {
       if(MYDEBUG)
         cout << "Found object : " << (*it).first << endl;
-      ObjectStates *aStates = (*it).second;
+      SMESH_ObjectStates *aStates = (*it).second;
       // Case for LocalLength hypothesis
       if(aStates->GetObjectType().IsEqual("LocalLength") && aStates->GetCurrectState().size() >= 2) {
         if(aMethod.IsEqual("SetLength")) {
@@ -674,12 +674,12 @@ void SMESH_NoteBook::InitObjectMap()
       }
       if(MYDEBUG)
         cout<<"The object Type : "<<anObjType<<endl;
-      ObjectStates *aState = NULL;
+      SMESH_ObjectStates *aState = NULL;
       if(anObjType == "LayerDistribution") {
         aState = new LayerDistributionStates();
       }
       else
-        aState = new  ObjectStates(anObjType);
+        aState = new  SMESH_ObjectStates(anObjType);
       
       for(int i = 0; i < aSections->length(); i++) {
         TState aVars;
@@ -697,7 +697,7 @@ void SMESH_NoteBook::InitObjectMap()
         }
         aState->AddState(aVars);
       }
-      _objectMap.insert(pair<TCollection_AsciiString,ObjectStates*>(TCollection_AsciiString(aSObject->GetID()),aState));
+      _objectMap.insert(pair<TCollection_AsciiString,SMESH_ObjectStates*>(TCollection_AsciiString(aSObject->GetID()),aState));
     }
   }
 }
@@ -850,10 +850,10 @@ bool SMESH_NoteBook::GetReal(const TCollection_AsciiString& theVarName, double& 
 
 
 /*!
- *  Set variable of the ObjectStates from position to the _pyCommand
+ *  Set variable of the SMESH_ObjectStates from position to the _pyCommand
  *  method as nbArg argument
  */
-void SetVariable(Handle(_pyCommand) theCommand, const ObjectStates* theStates, int position, int theArgNb)
+void SetVariable(Handle(_pyCommand) theCommand, const SMESH_ObjectStates* theStates, int position, int theArgNb)
 {
   if(theStates->GetCurrectState().size() > position)
     if(!theStates->GetCurrectState().at(position).IsEmpty())

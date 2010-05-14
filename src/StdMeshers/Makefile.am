@@ -1,7 +1,4 @@
-#  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
-#
-#  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-#  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+#  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 #
 #  This library is free software; you can redistribute it and/or
 #  modify it under the terms of the GNU Lesser General Public
@@ -19,6 +16,7 @@
 #
 #  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+
 #  SMESH StdMeshers : implementaion of SMESH idl descriptions
 #  File   : Makefile.in
 #  Author : Julia DOROVSKIKH
@@ -73,7 +71,8 @@ salomeinclude_HEADERS = \
 	StdMeshers_CompositeHexa_3D.hxx \
 	StdMeshers_MaxLength.hxx \
 	StdMeshers_QuadrangleParams.hxx \
-	StdMeshers_RadialQuadrangle_1D2D.hxx
+	StdMeshers_RadialQuadrangle_1D2D.hxx \
+	StdMeshers_HexaFromSkin_3D.hxx
 
 # Libraries targets
 
@@ -123,7 +122,8 @@ dist_libStdMeshers_la_SOURCES = \
 	StdMeshers_CompositeHexa_3D.cxx \
 	StdMeshers_MaxLength.cxx \
 	StdMeshers_QuadrangleParams.cxx \
-	StdMeshers_RadialQuadrangle_1D2D.cxx
+	StdMeshers_RadialQuadrangle_1D2D.cxx \
+	StdMeshers_HexaFromSkin_3D.cxx
 
 
 # additionnal information to compil and link file

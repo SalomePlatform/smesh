@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,6 +19,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 // SMESH SMESHGUI : GUI for SMESH component
 // File   : SMESHGUI_MoveNodesDlg.cxx
 // Author : Nicolas REJNERI, Open CASCADE S.A.S.
@@ -210,9 +211,9 @@ QWidget* SMESHGUI_MoveNodesDlg::createMainFrame (QWidget* theParent)
   aCoordGrpLayout->addWidget(myZ);
 
   //------------------------------------------------------------
-  myX->RangeStepAndValidator(COORD_MIN, COORD_MAX, 25.0, DBL_DIGITS_DISPLAY);
-  myY->RangeStepAndValidator(COORD_MIN, COORD_MAX, 25.0, DBL_DIGITS_DISPLAY);
-  myZ->RangeStepAndValidator(COORD_MIN, COORD_MAX, 25.0, DBL_DIGITS_DISPLAY);
+  myX->RangeStepAndValidator(COORD_MIN, COORD_MAX, 25.0, "length_precision");
+  myY->RangeStepAndValidator(COORD_MIN, COORD_MAX, 25.0, "length_precision");
+  myZ->RangeStepAndValidator(COORD_MIN, COORD_MAX, 25.0, "length_precision");
 
   //------------------------------------------------------------
   QVBoxLayout* aLay = new QVBoxLayout(aFrame);

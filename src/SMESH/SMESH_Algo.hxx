@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,12 +19,12 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  SMESH SMESH : implementaion of SMESH idl descriptions
 //  File   : SMESH_Algo.hxx
 //  Author : Paul RASCLE, EDF
 //  Module : SMESH
 //
-
 #ifndef _SMESH_ALGO_HXX_
 #define _SMESH_ALGO_HXX_
 
@@ -53,11 +53,20 @@ class SMESHDS_Mesh;
 class SMDS_MeshNode;
 class SMESH_subMesh;
 class SMESH_MesherHelper;
+class gp_XYZ;
 
-typedef std::map< SMESH_subMesh*, std::vector<int> > MapShapeNbElems;
-// vector must have size corresponding to EntityType_Last from SMDSAbs:
+typedef std::map< SMESH_subMesh*, std::vector<int> >           MapShapeNbElems;
 typedef std::map< SMESH_subMesh*, std::vector<int> >::iterator MapShapeNbElemsItr;
 
+/*!
+ * \brief Root of all algorithms
+ *
+ *  Methods of the class are grouped into several parts:
+ *  - main lifecycle methods, like Compute()
+ *  - methods describing features of the algorithm, like NeedShape()
+ *  - methods related to dependencies between sub-meshes imposed by the algorith
+ *  - static utilities, like EdgeLength()
+ */
 class SMESH_EXPORT SMESH_Algo:public SMESH_Hypothesis
 {
 public:
@@ -282,12 +291,17 @@ public:
   static double EdgeLength(const TopoDS_Edge & E);
 
   /*!
+   * \brief Calculate normal of a mesh face
+   */
+  static bool FaceNormal(const SMDS_MeshElement* F, gp_XYZ& normal, bool normalized=true);
+
+  /*!
    * \brief Return continuity of two edges
     * \param E1 - the 1st edge
     * \param E2 - the 2nd edge
     * \retval GeomAbs_Shape - regularity at the junction between E1 and E2
    */
-  static GeomAbs_Shape Continuity(const TopoDS_Edge & E1, const TopoDS_Edge & E2);
+  static GeomAbs_Shape Continuity(TopoDS_Edge E1, TopoDS_Edge E2);
 
   /*!
    * \brief Return true if an edge can be considered as a continuation of another
@@ -302,9 +316,13 @@ public:
     * \param meshDS - mesh
     * \retval const SMDS_MeshNode* - found node or NULL
    */
-  static const SMDS_MeshNode* VertexNode(const TopoDS_Vertex& V,
-                                         const SMESHDS_Mesh* meshDS);
+  static const SMDS_MeshNode* VertexNode(const TopoDS_Vertex& V, const SMESHDS_Mesh* meshDS);
 
+  /*!
+   * \brief Return nodes common to two elements
+   */
+  static std::vector< const SMDS_MeshNode*> GetCommonNodes(const SMDS_MeshElement* e1,
+                                                           const SMDS_MeshElement* e2);
 protected:
 
   /*!

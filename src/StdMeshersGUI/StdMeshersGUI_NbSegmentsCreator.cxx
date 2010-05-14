@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,6 +19,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 // File   : StdMeshersGUI_NbSegmentsCreator.cxx
 // Author : Open CASCADE S.A.S.
 // SMESH includes
@@ -149,7 +150,7 @@ QFrame* StdMeshersGUI_NbSegmentsCreator::buildFrame()
   // 3)  scale
   myGroupLayout->addWidget( myLScale = new QLabel( tr( "SMESH_NB_SEGMENTS_SCALE_PARAM" ), GroupC1 ), row, 0 );
   myScale = new SMESHGUI_SpinBox( GroupC1 );
-  myScale->RangeStepAndValidator( 1E-5, 1E+5, 0.1, 6 );
+  myScale->RangeStepAndValidator( 1E-5, 1E+5, 0.1, "parametric_precision" );
   myGroupLayout->addWidget( myScale, row, 1 );
   row++;
 

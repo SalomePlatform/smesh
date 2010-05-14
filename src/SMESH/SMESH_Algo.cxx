@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,12 +19,12 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  SMESH SMESH : implementaion of SMESH idl descriptions
 //  File   : SMESH_Algo.cxx
 //  Author : Paul RASCLE, EDF
 //  Module : SMESH
 //
-
 #include "SMESH_Algo.hxx"
 #include "SMESH_Comment.hxx"
 #include "SMESH_Gen.hxx"
@@ -61,6 +61,7 @@
 #include "utilities.h"
 
 #include <algorithm>
+#include <limits>
 
 using namespace std;
 
@@ -173,6 +174,37 @@ double SMESH_Algo::EdgeLength(const TopoDS_Edge & E)
   GeomAdaptor_Curve AdaptCurve(C);
   double length = GCPnts_AbscissaPoint::Length(AdaptCurve, UMin, UMax);
   return length;
+}
+
+//================================================================================
+/*!
+ * \brief Calculate normal of a mesh face
+ */
+//================================================================================
+
+bool SMESH_Algo::FaceNormal(const SMDS_MeshElement* F, gp_XYZ& normal, bool normalized)
+{
+  if ( !F || F->GetType() != SMDSAbs_Face )
+    return false;
+
+  normal.SetCoord(0,0,0);
+  int nbNodes = F->IsQuadratic() ? F->NbNodes()/2 : F->NbNodes();
+  for ( int i = 0; i < nbNodes-2; ++i )
+  {
+    gp_XYZ p[3];
+    for ( int n = 0; n < 3; ++n )
+    {
+      const SMDS_MeshNode* node = F->GetNode( i + n );
+      p[n].SetCoord( node->X(), node->Y(), node->Z() );
+    }
+    normal += ( p[2] - p[1] ) ^ ( p[0] - p[1] );
+  }
+  double size2 = normal.SquareModulus();
+  bool ok = ( size2 > numeric_limits<double>::min() * numeric_limits<double>::min());
+  if ( normalized && ok )
+    normal /= sqrt( size2 );
+
+  return ok;
 }
 
 //================================================================================
@@ -457,9 +489,10 @@ bool SMESH_Algo::InitCompatibleHypoFilter( SMESH_HypoFilter & theFilter,
  */
 //================================================================================
 
-GeomAbs_Shape SMESH_Algo::Continuity(const TopoDS_Edge & E1,
-                                     const TopoDS_Edge & E2)
+GeomAbs_Shape SMESH_Algo::Continuity(TopoDS_Edge E1,
+                                     TopoDS_Edge E2)
 {
+  E1.Orientation(TopAbs_FORWARD), E2.Orientation(TopAbs_FORWARD); // avoid pb with internal edges
   TopoDS_Vertex V = TopExp::LastVertex (E1, true);
   if ( !V.IsSame( TopExp::FirstVertex(E2, true )))
     if ( !TopExp::CommonVertex( E1, E2, V ))
@@ -498,6 +531,21 @@ const SMDS_MeshNode* SMESH_Algo::VertexNode(const TopoDS_Vertex& V,
       return nIt->next();
   }
   return 0;
+}
+
+//=======================================================================
+//function : GetCommonNodes
+//purpose  : Return nodes common to two elements
+//=======================================================================
+
+vector< const SMDS_MeshNode*> SMESH_Algo::GetCommonNodes(const SMDS_MeshElement* e1,
+                                                         const SMDS_MeshElement* e2)
+{
+  vector< const SMDS_MeshNode*> common;
+  for ( int i = 0 ; i < e1->NbNodes(); ++i )
+    if ( e2->GetNodeIndex( e1->GetNode( i )) >= 0 )
+      common.push_back( e1->GetNode( i ));
+  return common;
 }
 
 //================================================================================

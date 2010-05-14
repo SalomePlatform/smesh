@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,11 +19,12 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 // SMESH SMESHGUI : GUI for SMESH component
 // File   : SMESHGUI_MeshOp.cxx
 // Author : Sergey LITONIN, Open CASCADE S.A.S.
-
 // SMESH includes
+//
 #include "SMESHGUI_MeshOp.h"
 
 #include "SMESHGUI.h"
@@ -945,12 +946,19 @@ SMESHGUI_MeshOp::getInitParamsHypothesis( const QString& aHypType,
     }
   }
 
-  return SMESHGUI::GetSMESHGen()->GetHypothesisParameterValues( aHypType.toLatin1().data(),
-                                                                aServerLib.toLatin1().data(),
-                                                                aMeshVar,
-                                                                aGeomVar,
-                                                                /*byMesh = */isSubMesh);
-
+  SMESH::SMESH_Hypothesis_var hyp =
+    SMESHGUI::GetSMESHGen()->GetHypothesisParameterValues( aHypType.toLatin1().data(),
+                                                           aServerLib.toLatin1().data(),
+                                                           aMeshVar,
+                                                           aGeomVar,
+                                                           /*byMesh = */isSubMesh);
+  if ( hyp->_is_nil() && isSubMesh )
+    hyp = SMESHGUI::GetSMESHGen()->GetHypothesisParameterValues( aHypType.toLatin1().data(),
+                                                                 aServerLib.toLatin1().data(),
+                                                                 aMeshVar,
+                                                                 aGeomVar,
+                                                                 /*byMesh = */false);
+  return hyp;
 }
 
 //================================================================================

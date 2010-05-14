@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,6 +19,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  SMESH SMESH : implementaion of SMESH idl descriptions
 //  File   : SMESH_Mesh.hxx
 //  Author : Paul RASCLE, EDF
@@ -42,6 +43,11 @@
 
 #include <map>
 #include <list>
+
+#ifdef WNT
+#pragma warning(disable:4251) // Warning DLL Interface ...
+#pragma warning(disable:4290) // Warning Exception ...
+#endif
 
 class SMESH_Gen;
 class SMESHDS_Document;
@@ -183,6 +189,21 @@ public:
   bool GetAutoColor() throw(SALOME_Exception);
 
   /*!
+   * \brief Set the flag meaning that the mesh has been edited "manually".
+   * It is to set to false after Clear() and to set to true by MeshEditor
+   */
+  void SetIsModified(bool isModified);
+
+  bool GetIsModified() const { return _isModified; }
+
+  /*!
+   * \brief Return true if the mesh has been edited since a total re-compute
+   *        and those modifications may prevent successful partial re-compute.
+   *        As a side effect reset _isModified flag if mesh is empty
+   */
+  bool HasModificationsToDiscard() const;
+
+  /*!
    * \brief Return data map of descendant to ancestor shapes
    */
   typedef TopTools_IndexedDataMapOfShapeListOfShape TAncestorMap;
@@ -287,6 +308,7 @@ protected:
   SMESH_Gen *                _gen;
   
   bool                       _isAutoColor;
+  bool                       _isModified; //!< modified since last total re-compute, issue 0020693
 
   double                     _shapeDiagonal; //!< diagonal size of bounding box of shape to mesh
   

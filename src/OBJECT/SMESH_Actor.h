@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,11 +19,12 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  SMESH OBJECT : interactive object for SMESH visualization
 //  File   : SMESH_Actor.h
 //  Author : Nicolas REJNERI
 //  Module : SMESH
-
+//
 #ifndef SMESH_ACTOR_H
 #define SMESH_ACTOR_H
 
@@ -71,9 +72,6 @@ class SMESHOBJECT_EXPORT SMESH_Actor: public SALOME_Actor
  
   virtual vtkFloatingPointType GetLineWidth() = 0;
   virtual void SetLineWidth(vtkFloatingPointType theVal) = 0;
-
-  virtual void SetNodeSize(vtkFloatingPointType size) = 0;
-  virtual vtkFloatingPointType GetNodeSize() = 0;
 
   virtual void Set0DSize(vtkFloatingPointType size) = 0;
   virtual vtkFloatingPointType Get0DSize() = 0;

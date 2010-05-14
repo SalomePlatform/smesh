@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,10 +19,11 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  SMESH SMDS : implementaion of Salome mesh data structure
 //  File   : SMDS_Mesh.hxx
 //  Module : SMESH
-
+//
 #ifndef _SMDS_Mesh_HeaderFile
 #define _SMDS_Mesh_HeaderFile
 
@@ -490,8 +491,11 @@ public:
                                        const SMDS_MeshNode *n7,
                                        const SMDS_MeshNode *n8);
 
-  const SMDS_MeshFace *FindFace(std::vector<int> nodes_ids) const;
-  static const SMDS_MeshFace* FindFace(std::vector<const SMDS_MeshNode *> nodes);
+  const SMDS_MeshFace *FindFace(const std::vector<int>& nodes_ids) const;
+  static const SMDS_MeshFace* FindFace(const std::vector<const SMDS_MeshNode *>& nodes);
+  static const SMDS_MeshElement* FindElement(const std::vector<const SMDS_MeshNode *>& nodes,
+                                             const SMDSAbs_ElementType                 type=SMDSAbs_All,
+                                             const bool                                noMedium=true);
 
   /*!
    * \brief Raise an exception if free memory (ram+swap) too low

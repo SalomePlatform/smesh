@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,6 +19,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  SMESH SMESH_I : idl implementation based on 'SMESH' unit's calsses
 //  File   : SMESH_Mesh_i.cxx
 //  Author : Paul RASCLE, EDF
@@ -1860,7 +1861,6 @@ void SMESH_Mesh_i::CheckGeomGroupModif()
 //=============================================================================
 /*!
  * \brief Create standalone group instead if group on geometry
- * 
  */
 //=============================================================================
 
@@ -1917,8 +1917,8 @@ SMESH::SMESH_Group_ptr SMESH_Mesh_i::ConvertToStandalone( SMESH::SMESH_GroupOnGe
   _mapGroups[anId] = SMESH::SMESH_GroupBase::_duplicate( aGroup );
 
   // register CORBA object for persistence
-  //int nextId = _gen_i->RegisterObject( aGroup );
-  //if(MYDEBUG) MESSAGE( "Add group to map with id = "<< nextId);
+  /*int nextId =*/ _gen_i->RegisterObject( aGroup );
+
   builder->SetIOR( aGroupSO, _gen_i->GetORB()->object_to_string( aGroup ) );
 
   return aGroup._retn();
@@ -2227,6 +2227,19 @@ SMESH::SMESH_MeshEditor_ptr SMESH_Mesh_i::GetMeshEditPreviewer()
   SMESH_MeshEditor_i *aMeshEditor = new SMESH_MeshEditor_i( this, true );
   SMESH::SMESH_MeshEditor_var aMesh = aMeshEditor->_this();
   return aMesh._retn();
+}
+
+//================================================================================
+/*!
+ * \brief Return true if the mesh has been edited since a last total re-compute
+ *        and those modifications may prevent successful partial re-compute
+ */
+//================================================================================
+
+CORBA::Boolean SMESH_Mesh_i::HasModificationsToDiscard() throw(SALOME::SALOME_Exception)
+{
+  Unexpect aCatch(SALOME_SalomeException);
+  return _impl->HasModificationsToDiscard();
 }
 
 //=============================================================================
@@ -2755,6 +2768,21 @@ SMESH::ElementType SMESH_Mesh_i::GetElementType( const CORBA::Long id, const boo
   return ( SMESH::ElementType )_impl->GetElementType( id, iselem );
 }
 
+//=============================================================================
+/*!
+ *
+ */
+//=============================================================================
+
+SMESH::EntityType SMESH_Mesh_i::GetElementGeomType( const CORBA::Long id )
+  throw (SALOME::SALOME_Exception)
+{
+  const SMDS_MeshElement* e = _impl->GetMeshDS()->FindElement(id);
+  if ( !e )
+    THROW_SALOME_CORBA_EXCEPTION( "invalid element id", SALOME::BAD_PARAM );
+
+  return ( SMESH::EntityType ) e->GetEntityType();
+}
 
 //=============================================================================
 /*!
@@ -3180,6 +3208,57 @@ CORBA::Long SMESH_Mesh_i::ElemNbFaces(const CORBA::Long id)
   return elem->NbFaces();
 }
 
+//=======================================================================
+//function : GetElemFaceNodes
+//purpose  : Returns nodes of given face (counted from zero) for given element.
+//=======================================================================
+
+SMESH::long_array* SMESH_Mesh_i::GetElemFaceNodes(CORBA::Long  elemId,
+                                                  CORBA::Short faceIndex)
+{
+  SMESH::long_array_var aResult = new SMESH::long_array();
+  if ( SMESHDS_Mesh* aSMESHDS_Mesh = _impl->GetMeshDS() )
+  {
+    if ( const SMDS_MeshElement* elem = aSMESHDS_Mesh->FindElement(elemId) )
+    {
+      SMDS_VolumeTool vtool( elem );
+      if ( faceIndex < vtool.NbFaces() )
+      {
+        aResult->length( vtool.NbFaceNodes( faceIndex ));
+        const SMDS_MeshNode** nn = vtool.GetFaceNodes( faceIndex );
+        for ( int i = 0; i < aResult->length(); ++i )
+          aResult[ i ] = nn[ i ]->GetID();
+      }
+    }
+  }
+  return aResult._retn();
+}
+
+//=======================================================================
+//function : FindElementByNodes
+//purpose  : Returns an element based on all given nodes.
+//=======================================================================
+
+CORBA::Long SMESH_Mesh_i::FindElementByNodes(const SMESH::long_array& nodes)
+{
+  CORBA::Long elemID(0);
+  if ( SMESHDS_Mesh* mesh = _impl->GetMeshDS() )
+  {
+    vector< const SMDS_MeshNode * > nn( nodes.length() );
+    for ( int i = 0; i < nodes.length(); ++i )
+      if ( !( nn[i] = mesh->FindNode( nodes[i] )))
+        return elemID;
+
+    const SMDS_MeshElement* elem = mesh->FindElement( nn );
+    if ( !elem && ( _impl->NbEdges( ORDER_QUADRATIC ) ||
+                    _impl->NbFaces( ORDER_QUADRATIC ) ||
+                    _impl->NbVolumes( ORDER_QUADRATIC )))
+      elem = mesh->FindElement( nn, SMDSAbs_All, /*noMedium=*/true );
+
+    if ( elem ) elemID = CORBA::Long( elem->GetID() );
+  }
+  return elemID;
+}
 
 //=============================================================================
 /*!

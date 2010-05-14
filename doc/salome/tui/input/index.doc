@@ -1,0 +1,13 @@
+/*! \mainpage
+
+\image html smeshscreen.png
+
+To browse the \b SALOME Mesh module Developer Documentation, follow the links below or use navigation menu at the top of the page:
+<ul>
+<li> <a href="modules.html">Modules</a> - documentation of TUI functionality.</li>
+<li> <a href="namespaces.html">Name Spaces</a> - list of TUI packages and scripts.</li>
+<li> <a href="annotated.html">Data Structures</a> - list of all data structures and classes with brief descriptions.</li>
+<li> <a href="files.html">Files</a> - list of all files with brief descriptions.</li>
+</ul>
+
+*/

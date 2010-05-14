@@ -1,5 +1,32 @@
-H1 { 
+body {
+   font-family: Arial, Helvetica, sans-serif;
+   background-color: #ffffff;
+}
+
+h1 { 
    text-align: center; 
+   text-decoration: none;
+   border: none;
+   line-height: 25px;
+   text-align: center;
+//   text-transform:uppercase;
+   background: #D9f4fd;
+   font-size: 12pt;
+   font-weight: bold;
+   border: 1px solid #CCCCCC;
+   margin-top: 50px;
+   -moz-border-radius: 8px;
+   -moz-box-shadow:5px 5px 5px rgba(0, 0, 0, 0.15);
+}
+
+h2 {
+   font-size: 12pt;
+   font-weight: bold;
+}
+
+table {
+   font-size: 10pt;
+   padding-left: 20px;
 }
 
 CAPTION { 
@@ -10,16 +37,6 @@ CAPTION {
 A.qindex {}
 
 A.qindexRef {}
-
-/* Link to any cross-referenced Doxygen element */
-A.el { 
-   text-decoration: none; 
-   font-weight: bold 
-}
-
-A.elRef { 
-   font-weight: bold 
-}
 
 /* Link to any cross-referenced Doxygen element inside a code section 
    (ex: header)
@@ -37,7 +54,53 @@ A.codeRef {
 
 A:hover { 
    text-decoration: none; 
-   background-color: lightblue 
+   background-color: lightblue; 
+}
+
+div.contents {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 10pt;
+  padding: 20px;
+}
+
+div.navpath {
+  font-size: 11pt;
+}
+
+div.header {
+  background: url("head.png");
+  background-color: #175783;
+  border: 1px solid;
+  height: 80px;
+  background-repeat: no-repeat;
+  margin-bottom:20px;
+}
+
+div.tabs { 
+  text-align: justify; 
+  margin-left    : 2px;	 
+  margin-right   : 2px;  
+  margin-top     : 2px; 
+  margin-bottom  : 2px
+  font-weight: bold;
+  color: #FFFFFF;
+}
+
+div.footer {
+  background-color: #D9f4fd;
+  border: 1px solid #AAAAAA;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 11px;
+  padding: 10px;
+}
+
+div.div-footer {
+  background-color: #D9f4fd;
+  border: 1px solid #AAAAAA;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 11px;
+  padding: 10px;
+  text-align: center;
 }
 
 DL.el { 
@@ -45,10 +108,8 @@ DL.el {
 }
 
 /* A code fragment (ex: header) */
-DIV.fragment { 
-   width: 100%; 
+div.fragment { 
    border: none; 
-   background-color: #CCCCCC 
 }
 
 /* In the alpha list (coumpound index), style of an alphabetical index letter */
@@ -94,10 +155,6 @@ DIV.groupText {
    font-size: smaller 
 }
 
-BODY { 
-   background: #FFFFFF;
-}
-
 /*div.div-page { 
   background-color: #FFFFFF; 
   margin-left: 1em;
@@ -115,17 +172,19 @@ BODY {
   border-color: #0D299A; 
 }*/
 
-DIV.div-footer { 
-  margin-left: 1em;
-  margin-right: 1em;
-  margin-bottom: 0.2em;
-  text-align: right;
-  font-size: 9pt; 
+div.tabs { 
+  text-align: justify; 
+  margin-left    : 2px;	 
+  margin-right   : 2px;  
+  margin-top     : 2px; 
+  margin-bottom  : 2px
+  font-weight: bold;
+  color: #FFFFFF;
 }
 
 /* In File List, Coumpound List, etc, 1st column of the index */
 TD.indexkey { 
-   background-color: #CCCCCC; 
+   background-color: #DDDDEE; 
    font-weight: bold; 
    padding-right  : 10px; 
    padding-top    : 2px; 
@@ -139,7 +198,7 @@ TD.indexkey {
 
 /* In File List, Coumpound List, etc, 2nd column of the index */
 TD.indexvalue { 
-   background-color: #CCCCCC; 
+   background-color: #EEEEFF; 
    font-style: italic; 
    padding-right  : 10px; 
    padding-top    : 2px; 
@@ -158,3 +217,227 @@ span.comment       { color: #800000 }
 span.preprocessor  { color: #806020 }
 span.stringliteral { color: #002080 }
 span.charliteral   { color: #008080 }
+
+/* @group Code Colorization */
+
+.fragment {
+	font-family: monospace, fixed;
+	font-size: 10pt;
+}
+
+pre.fragment {
+        width: 95%;
+	border: 1px solid #CCCCCC;
+        -moz-border-radius: 8px;
+        -moz-box-shadow:5px 5px 5px rgba(0, 0, 0, 0.15);
+        background-color:#EEF3F5;
+	padding: 4px 6px;
+	margin: 20px;
+}
+
+/* Top Navigation style */
+
+div.navigation {
+  margin-bottom:20px;
+}
+
+/* Left navigation panel style */
+
+body.ftvtree {
+   background-color: #D9f4fd;
+  margin: 10px;
+}
+
+div.directory {
+  margin: 0;
+}
+
+div.directory.p {
+  margin: 0;
+}
+
+h3.swap {
+   font-size: 10pt;
+   margin-bottom: 0;
+}
+
+/* Link to any cross-referenced Doxygen element */
+a.el { 
+   text-decoration: none; 
+   font-family: Arial, Helvetica, sans-serif;
+   font-weight: bold;
+   font-size: 10pt;
+   color: #551a8b;
+}
+
+a.el:hover {
+   background-color: transparent;
+   color: #551acc;
+}
+
+a { 
+// text-decoration: none; 
+   font-family: Arial, Helvetica, sans-serif;
+   font-weight: bold;
+   font-size: 10pt;
+   color: #551a8b;
+}
+
+a:hover {
+   background-color: transparent;
+   color: #551acc;
+}
+
+a.elRef { 
+   font-weight: normal;
+}
+
+
+#MSearchBox {
+  -moz-border-radius:8px 8px 8px 8px;
+  background-color:white;
+  border:1px solid #84B0C7;
+  margin:0;
+  padding:0;
+  white-space:nowrap;
+}
+
+div.directory img {
+  vertical-align:-30%;
+}
+
+div.directory p {
+  white-space:nowrap;
+  margin: 0;
+}
+
+div.directory-alt div {
+	display: none;
+	margin: 0px;
+}
+
+
+div.directory div {
+	display: none;
+	margin: 0px;
+}
+
+div.version {
+   background-color:#ffffde;
+   border:1px solid #cccccc;
+   font-family: Arial, Helvetica, sans-serif;
+   font-size: 9pt;
+   text-align: center;
+   width:100px;
+   -moz-border-radius: 8px;
+ //   -moz-box-shadow:5px 5px 5px rgba(0, 0, 0, 0.15);
+}
+
+
+/* @group Member Descriptions */
+
+.mdescLeft, .mdescRight,
+.memItemLeft, .memItemRight,
+.memTemplItemLeft, .memTemplItemRight, .memTemplParams {
+        background-color: #FAFAFA;
+        border: none;
+        margin: 4px;
+        padding: 1px 0 0 8px;
+}
+
+.mdescLeft, .mdescRight {
+        padding: 0px 8px 4px 8px;
+        color: #555;
+}
+
+.memItemLeft, .memItemRight, .memTemplParams {
+        border-top: 1px solid #ccc;
+}
+
+.memItemLeft, .memTemplItemLeft {
+        white-space: nowrap;
+}
+
+.memTemplParams {
+        color: #606060;
+        white-space: nowrap;
+}
+
+/* @end */
+
+/* Styles for detailed member documentation */
+
+.memtemplate {
+        font-size: 80%;
+        color: #606060;
+        font-weight: normal;
+        margin-left: 3px;
+}
+
+.memnav {
+        background-color: #e8eef2;
+        border: 1px solid #84b0c7;
+        text-align: center;
+        margin: 2px;
+        margin-right: 15px;
+        padding: 2px;
+}
+
+.memitem {
+        padding: 0;
+        margin-bottom: 10px;
+}
+
+.memname {
+        white-space: nowrap;
+        font-weight: bold;
+}
+
+.memproto, .memdoc {
+        border: 1px solid #84b0c7;
+}
+
+.memproto {
+        padding: 0;
+        background-color: #d5e1e8;
+        font-weight: bold;
+        -webkit-border-top-left-radius: 8px;
+        -webkit-border-top-right-radius: 8px;
+        -webkit-box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.15);
+        -moz-border-radius-topleft: 8px;
+        -moz-border-radius-topright: 8px;
+        -moz-box-shadow: rgba(0, 0, 0, 0.15) 5px 5px 5px;
+
+}
+
+
+
+.memdoc {
+        padding: 2px 5px;
+        background-color: #eef3f5;
+        border-top-width: 0;
+        -webkit-border-bottom-left-radius: 8px;
+        -webkit-border-bottom-right-radius: 8px;
+        -webkit-box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.15);
+        -moz-border-radius-bottomleft: 8px;
+        -moz-border-radius-bottomright: 8px;
+        -moz-box-shadow: rgba(0, 0, 0, 0.15) 5px 5px 5px;
+}
+
+.paramkey {
+        text-align: right;
+}
+
+.paramtype {
+        white-space: nowrap;
+}
+
+.paramname {
+        color: #602020;
+        white-space: nowrap;
+}
+.paramname em {
+        font-style: normal;
+}
+
+/* @end */

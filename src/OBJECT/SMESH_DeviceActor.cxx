@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,18 +19,19 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  SMESH OBJECT : interactive object for SMESH visualization
 //  File   : SMESH_DeviceActor.cxx
 //  Author : 
 //  Module : SMESH
 //
-
 #include "SMESH_DeviceActor.h"
 #include "SMESH_ExtractGeometry.h"
 #include "SMESH_ControlsDef.hxx"
 #include "SMESH_ActorUtils.h"
 #include "SMESH_FaceOrientationFilter.h"
 #include "VTKViewer_CellLocationsArray.h"
+#include "VTKViewer_PolyDataMapper.h"
 
 #include <VTKViewer_Transform.h>
 #include <VTKViewer_TransformFilter.h>
@@ -88,7 +89,7 @@ SMESH_DeviceActor
   myRepresentation = eSurface;
 
   myProperty = vtkProperty::New();
-  myMapper = vtkPolyDataMapper::New();
+  myMapper = VTKViewer_PolyDataMapper::New();
 
   vtkMapper::GetResolveCoincidentTopologyPolygonOffsetParameters(myPolygonOffsetFactor,
                                                                  myPolygonOffsetUnits);
@@ -703,6 +704,7 @@ SMESH_DeviceActor
     myGeomFilter->SetWireframeMode(false);
     GetProperty()->SetRepresentation(theMode);
   }
+  SetMarkerEnabled(theMode == ePoint);
   myRepresentation = theMode;
   UpdateFaceOrientation();
   GetProperty()->Modified();
@@ -900,4 +902,59 @@ void SMESH_DeviceActor::SetQuadraticArcAngle(vtkFloatingPointType theMaxAngle){
  */
 vtkFloatingPointType SMESH_DeviceActor::GetQuadraticArcAngle(){
   return myGeomFilter->GetQuadraticArcAngle();
+}
+
+/*!
+ * Set point marker enabled
+ * \param theMarkerEnabled flag to enable/disable point marker
+ */
+void SMESH_DeviceActor::SetMarkerEnabled( bool theMarkerEnabled )
+{
+  myMapper->SetMarkerEnabled( theMarkerEnabled );
+}
+
+/*!
+ * Set standard point marker
+ * \param theMarkerType type of the marker
+ */
+void SMESH_DeviceActor::SetMarkerStd( VTK::MarkerType theMarkerType, VTK::MarkerScale theMarkerScale )
+{
+  myMapper->SetMarkerStd( theMarkerType, theMarkerScale );
+}
+
+/*!
+ * Set custom point marker
+ * \param theMarkerId id of the marker texture
+ * \param theMarkerTexture marker texture
+ */
+void SMESH_DeviceActor::SetMarkerTexture( int theMarkerId, VTK::MarkerTexture theMarkerTexture )
+{
+  myMapper->SetMarkerTexture( theMarkerId, theMarkerTexture );
+}
+
+/*!
+ * Get type of the point marker
+ * \return type of the point marker
+ */
+VTK::MarkerType SMESH_DeviceActor::GetMarkerType()
+{
+  return myMapper->GetMarkerType();
+}
+
+/*!
+  Get scale of the point marker
+  \return scale of the point marker
+*/
+VTK::MarkerScale SMESH_DeviceActor::GetMarkerScale()
+{
+  return myMapper->GetMarkerScale();
+}
+
+/*!
+ * Get texture identifier of the point marker
+ * \return texture identifier of the point marker
+ */
+int SMESH_DeviceActor::GetMarkerTexture()
+{
+  return myMapper->GetMarkerTexture();
 }

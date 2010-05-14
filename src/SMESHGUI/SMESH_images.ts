@@ -1,6 +1,6 @@
 <!DOCTYPE TS>
 <!--
-  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 
   Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
   CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -374,6 +374,14 @@
             <translation>mesh_translation_vector.png</translation>
         </message>
         <message>
+            <source>ICON_DLG_MESH_SCALE</source>
+            <translation>scale.png</translation>
+        </message>
+        <message>
+            <source>ICON_DLG_SCALE_ALONG_AXES</source>
+            <translation>scale_along_axes.png</translation>
+        </message>
+        <message>
             <source>ICON_SMESH_TREE_ALGO</source>
             <translation>mesh_tree_algo.png</translation>
         </message>
@@ -452,6 +460,10 @@
         <message>
             <source>ICON_2D_FROM_3D</source>
             <translation>mesh_2d_from_3d.png</translation>
+        </message>
+        <message>
+            <source>ICON_SPLIT_TO_TETRA</source>
+            <translation>split_into_tetra.png</translation>
         </message>
     </context>
 </TS>

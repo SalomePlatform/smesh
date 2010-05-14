@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,11 +19,12 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 // SMESH SMESHGUI : GUI for SMESH component
 // File   : SMESHGUI.cxx
 // Author : Nicolas REJNERI, Open CASCADE S.A.S.
 // SMESH includes
-
+//
 #include "SMESHGUI.h"
 #include "SMESHGUI_AddMeshElementDlg.h"
 #include "SMESHGUI_AddQuadraticElementDlg.h"
@@ -69,6 +70,7 @@
 #include "SMESHGUI_StandardMeshInfosDlg.h"
 #include "SMESHGUI_SymmetryDlg.h"
 #include "SMESHGUI_TranslationDlg.h"
+#include "SMESHGUI_ScaleDlg.h"
 #include "SMESHGUI_TransparencyDlg.h"
 #include "SMESHGUI_WhatIsDlg.h"
 
@@ -152,7 +154,7 @@
 
   void ExportMeshToFile(int theCommandID);
 
-  void SetDisplayMode(int theCommandID);
+  void SetDisplayMode(int theCommandID, SMESHGUI_StudyId2MarkerMap& theMarkerMap);
 
   void SetDisplayEntity(int theCommandID);
 
@@ -683,14 +685,17 @@
       aReservedColors.append( aColor );
 
       _PTR(SObject) aGroupSObject = SMESH::FindSObject(aGroupObject);
-      if(SMESH_Actor *anActor = SMESH::FindActorByEntry(aGroupSObject->GetID().c_str()))
-      {
-        if( aGroupObject->GetType() == SMESH::NODE )
-          anActor->SetNodeColor( aColor.R, aColor.G, aColor.B );
-        else if( aGroupObject->GetType() == SMESH::EDGE )
-          anActor->SetEdgeColor( aColor.R, aColor.G, aColor.B );
-        else
-          anActor->SetSufaceColor( aColor.R, aColor.G, aColor.B );
+      if (aGroupSObject) {
+        if(SMESH_Actor *anActor = SMESH::FindActorByEntry(aGroupSObject->GetID().c_str())) {
+          if( aGroupObject->GetType() == SMESH::NODE )
+            anActor->SetNodeColor( aColor.R, aColor.G, aColor.B );
+          else if( aGroupObject->GetType() == SMESH::EDGE )
+            anActor->SetEdgeColor( aColor.R, aColor.G, aColor.B );
+          else if( aGroupObject->GetType() == SMESH::ELEM0D )
+            anActor->Set0DColor( aColor.R, aColor.G, aColor.B );
+          else
+            anActor->SetSufaceColor( aColor.R, aColor.G, aColor.B );
+        }
       }
     }
 
@@ -712,7 +717,7 @@
     }
   }
 
-  void SetDisplayMode(int theCommandID){
+  void SetDisplayMode(int theCommandID, SMESHGUI_StudyId2MarkerMap& theMarkerMap){
     SALOME_ListIO selected;
     SalomeApp_Application* app = dynamic_cast< SalomeApp_Application* >( SUIT_Session::session()->activeApplication() );
     if( !app )
@@ -810,7 +815,6 @@
               int Edgewidth = (int)anActor->GetLineWidth();
               if(Edgewidth == 0)
                 Edgewidth = 1;
-              int intValue = int(anActor->GetNodeSize());
               vtkFloatingPointType Shrink = anActor->GetShrinkFactor();
 
               vtkFloatingPointType faces_orientation_color[3];
@@ -832,11 +836,21 @@
               aDlg->SetColor(5, c0D);
               aDlg->SetColor(6, o);
               aDlg->SetIntValue(1, Edgewidth);
-              aDlg->SetIntValue(2, intValue);
-              aDlg->SetIntValue(3, int(Shrink*100.));
-              aDlg->SetIntValue(4, size0D);
+              aDlg->SetIntValue(2, int(Shrink*100.));
+              aDlg->SetIntValue(3, size0D);
               aDlg->SetDoubleValue(1, faces_orientation_scale);
               aDlg->SetBooleanValue(1, faces_orientation_3dvectors);
+
+              aDlg->setCustomMarkerMap( theMarkerMap[ aStudy->StudyId() ] );
+
+              VTK::MarkerType aMarkerTypeCurrent = anActor->GetMarkerType();
+              VTK::MarkerScale aMarkerScaleCurrent = anActor->GetMarkerScale();
+              int aMarkerTextureCurrent = anActor->GetMarkerTexture();
+              if( aMarkerTypeCurrent != VTK::MT_USER )
+                aDlg->setStandardMarker( aMarkerTypeCurrent, aMarkerScaleCurrent );
+              else
+                aDlg->setCustomMarker( aMarkerTextureCurrent );
+
               if(aDlg->exec()){
                 QColor color = aDlg->GetColor(1);
                 QColor edgecolor = aDlg->GetColor(2);
@@ -858,20 +872,19 @@
                                       vtkFloatingPointType (edgecolor.blue()) / 255.);
 
                 /* Shrink factor and size edges */
-                anActor->SetShrinkFactor(aDlg->GetIntValue(3) / 100.);
+                anActor->SetShrinkFactor(aDlg->GetIntValue(2) / 100.);
                 anActor->SetLineWidth(aDlg->GetIntValue(1));
 
                 /* Nodes color and size */
                 anActor->SetNodeColor(vtkFloatingPointType (nodecolor.red()) / 255.,
                                       vtkFloatingPointType (nodecolor.green()) / 255.,
                                       vtkFloatingPointType (nodecolor.blue()) / 255.);
-                anActor->SetNodeSize(aDlg->GetIntValue(2));
 
                 /* 0D elements */
                 anActor->Set0DColor(vtkFloatingPointType (color0D.red()) / 255.,
                                     vtkFloatingPointType (color0D.green()) / 255.,
                                     vtkFloatingPointType (color0D.blue()) / 255.);
-                anActor->Set0DSize(aDlg->GetIntValue(4));
+                anActor->Set0DSize(aDlg->GetIntValue(3));
 
                 /* Faces orientation */
                 vtkFloatingPointType c[3] = {vtkFloatingPointType(faces_orientation_color.redF()),
@@ -880,6 +893,21 @@
                 anActor->SetFacesOrientationColor(c);
                 anActor->SetFacesOrientationScale(aDlg->GetDoubleValue(1));
                 anActor->SetFacesOrientation3DVectors(aDlg->GetBooleanValue(1));
+
+                /* Point marker */
+                theMarkerMap[ aStudy->StudyId() ] = aDlg->getCustomMarkerMap();
+
+                VTK::MarkerType aMarkerTypeNew = aDlg->getMarkerType();
+                VTK::MarkerScale aMarkerScaleNew = aDlg->getStandardMarkerScale();
+                int aMarkerTextureNew = aDlg->getCustomMarkerID();
+                if( aMarkerTypeNew != VTK::MT_USER )
+                  anActor->SetMarkerStd( aMarkerTypeNew, aMarkerScaleNew );
+                else {
+                  const VTK::MarkerMap& aMarkerMap = theMarkerMap[ aStudy->StudyId() ];
+                  VTK::MarkerMap::const_iterator anIter = aMarkerMap.find( aMarkerTextureNew );
+                  if( anIter != aMarkerMap.end() )
+                    anActor->SetMarkerTexture( aMarkerTextureNew, anIter->second.second );
+                }
 
                 SMESH::SMESH_GroupBase_var aGroupObject = SMESH::IObjectToInterface<SMESH::SMESH_GroupBase>(IObject);
                 if( !aGroupObject->_is_nil() )
@@ -1614,13 +1642,13 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
   case 213: // Nodes
   case 212: // Nodes
   case 211: // Nodes
-    ::SetDisplayMode(theCommandID);
+    ::SetDisplayMode(theCommandID, myMarkerMap);
   break;
 
   //2D quadratic representation
   case 231:
   case 232:
-    ::SetDisplayMode(theCommandID);
+    ::SetDisplayMode(theCommandID, myMarkerMap);
   break;
   
   // Display Entity
@@ -1826,9 +1854,10 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
         ( new SMESHGUI_UnionOfTwoTrianglesDlg( this ) )->show();
       break;
     }
-    case 409: // Change orientation
-    case 410: // Union of triangles
-    case 411: // Cutting of quadrangles
+  case 409: // Change orientation
+  case 410: // Union of triangles
+  case 411: // Cutting of quadrangles
+  case 419: // Splitting volumes into tetrahedra
     {
       if ( !vtkwnd )
       {
@@ -1846,6 +1875,8 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
         aDlg = new SMESHGUI_ChangeOrientationDlg(this);
       else if ( theCommandID == 410 )
         aDlg = new SMESHGUI_UnionOfTrianglesDlg(this);
+      else if ( theCommandID == 419 )
+        aDlg = new SMESHGUI_CuttingIntoTetraDlg(this);
       else
         aDlg = new SMESHGUI_CuttingOfQuadsDlg(this);
 
@@ -2632,6 +2663,20 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     startOperation( 4067 );
     break;
 
+  case 4068: // SCALE
+    {
+      if(checkLock(aStudy)) break;
+      if ( vtkwnd ) {
+        EmitSignalDeactivateDialog();
+        ( new SMESHGUI_ScaleDlg( this ) )->show();
+      }
+      else {
+        SUIT_MessageBox::warning(SMESHGUI::desktop(),
+                                 tr("SMESH_WRN_WARNING"), tr("SMESH_WRN_VIEWER_VTK"));
+      }
+      break;
+    }
+
   case 5105: // Library of selection filters
   {
     static QList<int> aTypes;
@@ -2926,6 +2971,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction( 4065, "MERGE",           "ICON_SMESH_MERGE_NODES" );
   createSMESHAction( 4066, "MERGE_ELEMENTS",  "ICON_DLG_MERGE_ELEMENTS" );
   createSMESHAction( 4067, "MESH_THROU_POINT","ICON_DLG_MESH_THROU_POINT" );
+  createSMESHAction( 4068, "SCALE",           "ICON_DLG_MESH_SCALE" );
   createSMESHAction(  406, "MOVE",            "ICON_DLG_MOVE_NODE" );
   createSMESHAction(  407, "INV",             "ICON_DLG_MESH_DIAGONAL" );
   createSMESHAction(  408, "UNION2",          "ICON_UNION2TRI" );
@@ -2939,6 +2985,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction(  416, "EXTRUSION_ALONG", "ICON_EXTRUSION_ALONG" );
   createSMESHAction(  417, "CONV_TO_QUAD",    "ICON_CONV_TO_QUAD" );
   createSMESHAction(  418, "2D_FROM_3D",      "ICON_2D_FROM_3D" );
+  createSMESHAction(  419, "SPLIT_TO_TETRA",  "ICON_SPLIT_TO_TETRA" );
   createSMESHAction(  200, "RESET" );
   createSMESHAction(  201, "SCALAR_BAR_PROP" );
   createSMESHAction(  211, "WIRE",           "ICON_WIRE", 0, true );
@@ -3096,6 +3143,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createMenu( 4064, transfId, -1 );
   createMenu( 4065, transfId, -1 );
   createMenu( 4066, transfId, -1 );
+  createMenu( 4068, transfId, -1 );
 
   createMenu( 406, modifyId, -1 );
   createMenu( 4067,modifyId, -1 );
@@ -3104,6 +3152,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createMenu( 409, modifyId, -1 );
   createMenu( 410, modifyId, -1 );
   createMenu( 411, modifyId, -1 );
+  createMenu( 419, modifyId, -1 );
   createMenu( 412, modifyId, -1 );
   createMenu( 413, modifyId, -1 );
   createMenu( 416, modifyId, -1 );
@@ -3194,6 +3243,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createTool( 4064, addRemTb );
   createTool( 4065, addRemTb );
   createTool( 4066, addRemTb );
+  createTool( 4068, addRemTb );
   createTool( separator(), addRemTb );
 
   createTool( 406, modifyTb );
@@ -3203,6 +3253,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createTool( 409, modifyTb );
   createTool( 410, modifyTb );
   createTool( 411, modifyTb );
+  createTool( 419, modifyTb );
   createTool( 412, modifyTb );
   createTool( 413, modifyTb );
   createTool( 416, modifyTb );
@@ -3772,17 +3823,64 @@ void SMESHGUI::createPreferences()
                              "SMESH", "nb_segments_per_edge" );
   setPreferenceProperty( nbSeg, "min", 1 );
   setPreferenceProperty( nbSeg, "max", 10000000 );
+  
+  // Quantities with individual precision settings
+  int precGroup = addPreference( tr( "SMESH_PREF_GROUP_PRECISION" ), genTab );
+  setPreferenceProperty( precGroup, "columns", 2 );
+  
+  const int nbQuantities = 6;
+  int precs[nbQuantities], ii = 0;
+  precs[ii++] = addPreference( tr( "SMESH_PREF_length_precision" ), precGroup,
+                            LightApp_Preferences::IntSpin, "SMESH", "length_precision" );  
+  precs[ii++] = addPreference( tr( "SMESH_PREF_angle_precision" ), precGroup,
+                            LightApp_Preferences::IntSpin, "SMESH", "angle_precision" );
+  precs[ii++] = addPreference( tr( "SMESH_PREF_len_tol_precision" ), precGroup,
+                            LightApp_Preferences::IntSpin, "SMESH", "len_tol_precision" );
+  precs[ii++] = addPreference( tr( "SMESH_PREF_parametric_precision" ), precGroup,
+                            LightApp_Preferences::IntSpin, "SMESH", "parametric_precision" );
+  precs[ii++] = addPreference( tr( "SMESH_PREF_area_precision" ), precGroup,
+                            LightApp_Preferences::IntSpin, "SMESH", "area_precision" );
+  precs[ii  ] = addPreference( tr( "SMESH_PREF_vol_precision" ), precGroup,
+                            LightApp_Preferences::IntSpin, "SMESH", "vol_precision" );  
+  
+  // Set property for precision value for spinboxes
+  for ( ii = 0; ii < nbQuantities; ii++ ){
+    setPreferenceProperty( precs[ii], "min", -10 );
+    setPreferenceProperty( precs[ii], "max", 10 );
+    setPreferenceProperty( precs[ii], "precision", 2 );
+  }   
 
   // Mesh tab ------------------------------------------------------------------------
   int meshTab = addPreference( tr( "PREF_TAB_MESH" ) );
   int nodeGroup = addPreference( tr( "PREF_GROUP_NODES" ), meshTab );
-  setPreferenceProperty( nodeGroup, "columns", 2 );
+  setPreferenceProperty( nodeGroup, "columns", 3 );
 
   addPreference( tr( "PREF_COLOR" ), nodeGroup, LightApp_Preferences::Color, "SMESH", "node_color" );
-  int nodeSz = addPreference( tr( "PREF_SIZE" ), nodeGroup, LightApp_Preferences::IntSpin, "SMESH", "node_size" );
 
-  setPreferenceProperty( nodeSz, "min", 1 );
-  setPreferenceProperty( nodeSz, "max", 5 );
+  int typeOfMarker = addPreference( tr( "PREF_TYPE_OF_MARKER" ), nodeGroup, LightApp_Preferences::Selector, "SMESH", "type_of_marker" );
+
+  SUIT_ResourceMgr* aResourceMgr = SMESH::GetResourceMgr(this);
+  QList<QVariant> aMarkerTypeIndicesList;
+  QList<QVariant> aMarkerTypeIconsList;
+  for ( int i = VTK::MT_POINT; i < VTK::MT_USER; i++ ) {
+    QString icoFile = QString( "ICON_VERTEX_MARKER_%1" ).arg( i );
+    QPixmap pixmap = aResourceMgr->loadPixmap( "VTKViewer", tr( qPrintable( icoFile ) ) );
+    aMarkerTypeIndicesList << i;
+    aMarkerTypeIconsList << pixmap;
+  }
+  setPreferenceProperty( typeOfMarker, "indexes", aMarkerTypeIndicesList );
+  setPreferenceProperty( typeOfMarker, "icons",   aMarkerTypeIconsList );
+
+  int markerScale = addPreference( tr( "PREF_MARKER_SCALE" ), nodeGroup, LightApp_Preferences::Selector, "SMESH", "marker_scale" );
+
+  QList<QVariant> aMarkerScaleIndicesList;
+  QStringList     aMarkerScaleValuesList;
+  for ( int i = VTK::MS_10; i <= VTK::MS_70; i++ ) {
+    aMarkerScaleIndicesList << i;
+    aMarkerScaleValuesList  << QString::number( (i-(int)VTK::MS_10)*0.5 + 1.0 );
+  }
+  setPreferenceProperty( markerScale, "strings", aMarkerScaleValuesList );
+  setPreferenceProperty( markerScale, "indexes", aMarkerScaleIndicesList );
 
   int elemGroup = addPreference( tr( "PREF_GROUP_ELEMENTS" ), meshTab );
   setPreferenceProperty( elemGroup, "columns", 2 );
@@ -4192,6 +4290,7 @@ SALOMEDS::Color SMESHGUI::getUniqueColor( const QList<SALOMEDS::Color>& theReser
 
 const char gSeparator = '_'; // character used to separate parameter names
 const char gDigitsSep = ':'; // character used to separate numeric parameter values (color = r:g:b)
+const char gPathSep   = '|'; // character used to separate paths
 
 /*!
  * \brief Store visual parameters
@@ -4216,6 +4315,39 @@ void SMESHGUI::storeVisualParameters (int savePoint)
                                                              componentName.c_str(),
                                                              savePoint);
   _PTR(IParameters) ip = ClientFactory::getIParameters(ap);
+
+  // store map of custom markers
+  const VTK::MarkerMap& aMarkerMap = myMarkerMap[ studyDS->StudyId() ];
+  if( !aMarkerMap.empty() )
+  {
+    VTK::MarkerMap::const_iterator anIter = aMarkerMap.begin();
+    for( ; anIter != aMarkerMap.end(); anIter++ )
+    {
+      int anId = anIter->first;
+      VTK::MarkerData aMarkerData = anIter->second;
+      std::string aMarkerFileName = aMarkerData.first;
+      VTK::MarkerTexture aMarkerTexture = aMarkerData.second;
+      if( aMarkerTexture.size() < 3 )
+        continue; // should contain at least width, height and the first value
+
+      QString aPropertyName( "texture" );
+      aPropertyName += gSeparator;
+      aPropertyName += QString::number( anId );
+
+      QString aPropertyValue = aMarkerFileName.c_str();
+      aPropertyValue += gPathSep;
+
+      VTK::MarkerTexture::const_iterator aTextureIter = aMarkerTexture.begin();
+      ushort aWidth = *aTextureIter++;
+      ushort aHeight = *aTextureIter++;
+      aPropertyValue += QString::number( aWidth ); aPropertyValue += gDigitsSep;
+      aPropertyValue += QString::number( aHeight ); aPropertyValue += gDigitsSep;
+      for( ; aTextureIter != aMarkerTexture.end(); aTextureIter++ )
+        aPropertyValue += QString::number( *aTextureIter );
+
+      ip->setProperty( aPropertyName.toStdString(), aPropertyValue.toStdString() );
+    }
+  }
 
   // viewers counters are used for storing view_numbers in IParameters
   int vtkViewers = 0;
@@ -4324,13 +4456,31 @@ void SMESHGUI::storeVisualParameters (int savePoint)
                   // Sizes of lines and points
                   QString sizeStr ("line");
                   sizeStr += gDigitsSep; sizeStr += QString::number((int)aSmeshActor->GetLineWidth());
-                  sizeStr += gDigitsSep; sizeStr += "node";
-                  sizeStr += gDigitsSep; sizeStr += QString::number((int)aSmeshActor->GetNodeSize());
                   sizeStr += gDigitsSep; sizeStr += "shrink";
                   sizeStr += gDigitsSep; sizeStr += QString::number(aSmeshActor->GetShrinkFactor());
 
                   param = vtkParam + "Sizes";
                   ip->setParameter(entry, param, sizeStr.toLatin1().data());
+
+                  // Point marker
+                  QString markerStr;
+
+                  VTK::MarkerType aMarkerType = aSmeshActor->GetMarkerType();
+                  if( aMarkerType == VTK::MT_USER ) {
+                    markerStr += "custom";
+                    markerStr += gDigitsSep;
+                    markerStr += QString::number( aSmeshActor->GetMarkerTexture() );
+                  }
+                  else {
+                    markerStr += "std";
+                    markerStr += gDigitsSep;
+                    markerStr += QString::number( (int)aMarkerType );
+                    markerStr += gDigitsSep;
+                    markerStr += QString::number( (int)aSmeshActor->GetMarkerScale() );
+                  }
+
+                  param = vtkParam + "PointMarker";
+                  ip->setParameter(entry, param, markerStr.toLatin1().data());
 
                   // Opacity
                   param = vtkParam + "Opacity";
@@ -4389,6 +4539,63 @@ void SMESHGUI::restoreVisualParameters (int savePoint)
                                                              componentName.c_str(),
                                                              savePoint);
   _PTR(IParameters) ip = ClientFactory::getIParameters(ap);
+
+  // restore map of custom markers
+  VTK::MarkerMap& aMarkerMap = myMarkerMap[ studyDS->StudyId() ];
+
+  std::vector<std::string> properties = ip->getProperties();
+  for (std::vector<std::string>::iterator propIt = properties.begin(); propIt != properties.end(); ++propIt)
+  {
+    std::string property = *propIt;
+    QString aPropertyName( property.c_str() );
+    QString aPropertyValue( ip->getProperty( property ).c_str() );
+
+    QStringList aPropertyNameList = aPropertyName.split( gSeparator, QString::SkipEmptyParts );
+    if( aPropertyNameList.size() != 2 )
+      continue;
+
+    int anId = 0;
+    bool ok = false;
+    if( aPropertyNameList[0] == "texture" )
+      anId = aPropertyNameList[1].toInt( &ok );
+
+    if( !ok || anId < 1 )
+      continue;
+
+    QStringList aPropertyValueList = aPropertyValue.split( gPathSep, QString::SkipEmptyParts );
+    if( aPropertyValueList.size() != 2 )
+      continue;
+
+    std::string aMarkerFileName = aPropertyValueList[0].toStdString();
+    QString aMarkerTextureString = aPropertyValueList[1];
+    QStringList aMarkerTextureStringList = aMarkerTextureString.split( gDigitsSep, QString::SkipEmptyParts );
+    if( aMarkerTextureStringList.size() != 3 )
+      continue;
+
+    ok = false;
+    ushort aWidth = aMarkerTextureStringList[0].toUShort( &ok );
+    if( !ok )
+      continue;
+
+    ok = false;
+    ushort aHeight = aMarkerTextureStringList[1].toUShort( &ok );
+    if( !ok )
+      continue;
+
+    VTK::MarkerTexture aMarkerTexture;
+    aMarkerTexture.push_back( aWidth );
+    aMarkerTexture.push_back( aHeight );
+
+    QString aMarkerTextureData = aMarkerTextureStringList[2];
+    for( int i = 0, n = aMarkerTextureData.length(); i < n; i++ )
+    {
+      QChar aChar = aMarkerTextureData.at( i );
+      if( aChar.isDigit() )
+        aMarkerTexture.push_back( aChar.digitValue() );
+    }
+
+    aMarkerMap[ anId ] = VTK::MarkerData( aMarkerFileName, aMarkerTexture );
+  }
 
   std::vector<std::string> entries = ip->getEntries();
 
@@ -4536,15 +4743,46 @@ void SMESHGUI::restoreVisualParameters (int savePoint)
             // Sizes of lines and points
             else if (paramNameStr == "Sizes") {
               QStringList sizes = val.split(gDigitsSep, QString::SkipEmptyParts);
-              if (sizes.count() == 6) {
+              if (sizes.count() == 4) {
+                if (sizes[0] != "line" || sizes[2] != "shrink") {
+                  MESSAGE("Invalid order of data in Sizes, must be: "
+                          "line:int:shrink:float");
+                }
+                else {
+                  aSmeshActor->SetLineWidth(sizes[1].toInt());
+                  aSmeshActor->SetShrinkFactor(sizes[3].toFloat());
+                }
+              }
+              else if (sizes.count() == 6) { // just to support old format
                 if (sizes[0] != "line" || sizes[2]  != "node" || sizes[4] != "shrink") {
                   MESSAGE("Invalid order of data in Sizes, must be: "
                           "line:int:node:int:shrink:float");
                 }
                 else {
                   aSmeshActor->SetLineWidth(sizes[1].toInt());
-                  aSmeshActor->SetNodeSize(sizes[3].toInt());
+                  //aSmeshActor->SetNodeSize(sizes[3].toInt()); // made obsolete
                   aSmeshActor->SetShrinkFactor(sizes[5].toFloat());
+                }
+              }
+            }
+            // Point marker
+            else if (paramNameStr == "PointMarker") {
+              QStringList data = val.split(gDigitsSep, QString::SkipEmptyParts);
+              if( data.count() >= 2 ) {
+                bool ok = false;
+                int aParam1 = data[1].toInt( &ok );
+                if( ok ) {
+                  if( data[0] == "std" && data.count() == 3 ) {
+                    int aParam2 = data[2].toInt( &ok );
+                    aSmeshActor->SetMarkerStd( (VTK::MarkerType)aParam1, (VTK::MarkerScale)aParam2 );
+                  }
+                  else if( data[0] == "custom" ) {
+                    VTK::MarkerMap::const_iterator markerIt = aMarkerMap.find( aParam1 );
+                    if( markerIt != aMarkerMap.end() ) {
+                      VTK::MarkerData aMarkerData = markerIt->second;
+                      aSmeshActor->SetMarkerTexture( aParam1, aMarkerData.second );
+                    }
+                  }
                 }
               }
             }

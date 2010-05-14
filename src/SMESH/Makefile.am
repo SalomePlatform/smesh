@@ -1,7 +1,4 @@
-#  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
-#
-#  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-#  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+#  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 #
 #  This library is free software; you can redistribute it and/or
 #  modify it under the terms of the GNU Lesser General Public
@@ -19,6 +16,7 @@
 #
 #  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+
 #  SMESH SMESH : implementaion of SMESH idl descriptions
 #  File   : Makefile.in
 #  Author : Paul RASCLE, EDF
@@ -54,6 +52,7 @@ salomeinclude_HEADERS = \
 	SMESH_OctreeNode.hxx \
 	SMESH_Comment.hxx \
 	SMESH_ComputeError.hxx \
+	SMESH_File.hxx \
 	SMESH_SMESH.hxx
 
 # Libraries targets
@@ -77,7 +76,8 @@ dist_libSMESHimpl_la_SOURCES = \
 	SMESH_HypoFilter.cxx \
 	SMESH_MesherHelper.cxx \
 	SMESH_Octree.cxx \
-	SMESH_OctreeNode.cxx
+	SMESH_OctreeNode.cxx \
+	SMESH_File.cxx
 
 # additionnal information to compile and link file
 libSMESHimpl_la_CPPFLAGS = \

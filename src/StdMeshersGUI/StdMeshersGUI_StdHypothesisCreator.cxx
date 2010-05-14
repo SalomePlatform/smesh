@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,6 +19,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 // File   : StdMeshersGUI_StdHypothesisCreator.cxx
 // Author : Alexander SOLOVYOV, Open CASCADE S.A.S.
 // SMESH includes
@@ -999,12 +1000,14 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
       anEntry = h->GetObjectEntry();
     aDirectionWidget->SetGeomShapeEntry( anEntry );
     aDirectionWidget->SetMainShapeEntry( aMainEntry );
-    SMESH::long_array_var aVec = new SMESH::long_array;
-    int vertID = h->GetTriaVertex();
-    if(vertID>0) {
-      aVec->length(1);
-      aVec[0] = vertID;
-      aDirectionWidget->SetListOfIDs( aVec );
+    if ( !isCreation() ) {
+      SMESH::long_array_var aVec = new SMESH::long_array;
+      int vertID = h->GetTriaVertex();
+      if(vertID>0) {
+        aVec->length(1);
+        aVec[0] = vertID;
+        aDirectionWidget->SetListOfIDs( aVec );
+      }
     }
     aDirectionWidget->showPreview( true );
     customWidgets()->append ( aDirectionWidget );
@@ -1028,38 +1031,38 @@ void StdMeshersGUI_StdHypothesisCreator::attuneStdWidget (QWidget* w, const int)
   if( hypType()=="LocalLength" &&  sb )
   {
     if (sb->objectName() == tr("SMESH_LOCAL_LENGTH_PARAM"))
-      sb->RangeStepAndValidator( VALUE_SMALL, VALUE_MAX, 1.0, 6 );
+      sb->RangeStepAndValidator( VALUE_SMALL, VALUE_MAX, 1.0, "length_precision" );
     else if (sb->objectName() == tr("SMESH_LOCAL_LENGTH_PRECISION"))
-      sb->RangeStepAndValidator( 0.0, 1.0, 0.05, 7 );
+      sb->RangeStepAndValidator( 0.0, 1.0, 0.05, "len_tol_precision" );
   }
   else if( hypType()=="Arithmetic1D" && sb )
   {
-    sb->RangeStepAndValidator( VALUE_SMALL, VALUE_MAX, 1.0, 6 );
+    sb->RangeStepAndValidator( VALUE_SMALL, VALUE_MAX, 1.0, "parametric_precision" );
   }
   else if( hypType()=="MaxLength" && sb )
   {
-    sb->RangeStepAndValidator( VALUE_SMALL, VALUE_MAX, 1.0, 6 );
+    sb->RangeStepAndValidator( VALUE_SMALL, VALUE_MAX, 1.0, "length_precision" );
     sb->setEnabled( !widget< QCheckBox >( 1 )->isChecked() );
   }
   else if( hypType()=="MaxElementArea" && sb )
   {
-    sb->RangeStepAndValidator( VALUE_SMALL_2, VALUE_MAX_2, 1.0, 6 );
+    sb->RangeStepAndValidator( VALUE_SMALL_2, VALUE_MAX_2, 1.0, "area_precision" );
   }
   else if( hypType()=="MaxElementVolume" && sb )
   {
-    sb->RangeStepAndValidator( VALUE_SMALL_3, VALUE_MAX_3, 1.0, 6 );
+    sb->RangeStepAndValidator( VALUE_SMALL_3, VALUE_MAX_3, 1.0, "vol_precision" );
   }
   else if( hypType()=="StartEndLength" && sb )
   {
-    sb->RangeStepAndValidator( VALUE_SMALL, VALUE_MAX, 1.0, 6 );
+    sb->RangeStepAndValidator( VALUE_SMALL, VALUE_MAX, 1.0, "length_precision" );
   }
   else if( hypType()=="Deflection1D" && sb )
   {
-    sb->RangeStepAndValidator( VALUE_SMALL, VALUE_MAX, 1.0, 6 );
+    sb->RangeStepAndValidator( VALUE_SMALL, VALUE_MAX, 1.0, "parametric_precision" );
   }
   else if ( sb ) // default validator for possible ancestors
   {
-    sb->RangeStepAndValidator( VALUE_SMALL, VALUE_MAX, 1.0, 6 );
+    sb->RangeStepAndValidator( VALUE_SMALL, VALUE_MAX, 1.0, "length_precision" );
   }
 }
 

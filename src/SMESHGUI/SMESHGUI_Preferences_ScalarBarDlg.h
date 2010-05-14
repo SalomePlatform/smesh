@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,6 +19,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 // SMESH SMESHGUI : GUI for SMESH component
 // File   : SMESHGUI_Preferences_ScalarBarDlg.h
 // Author : Nicolas REJNERI, Open CASCADE S.A.S.
@@ -39,11 +40,11 @@ class QLineEdit;
 class QPushButton;
 class QToolButton;
 class QRadioButton;
-class QSpinBox;
 
 class SMESHGUI;
 class SMESH_Actor;
-class QtxDoubleSpinBox;
+class SMESHGUI_SpinBox;
+class SalomeApp_IntSpinBox;
 class QtxColorButton;
 class LightApp_SelectionMgr;
 
@@ -103,18 +104,18 @@ private:
   QCheckBox*               myLabelsShadowCheck;
   
   QGroupBox*               myLabColorGrp;
-  QSpinBox*                myColorsSpin;
-  QSpinBox*                myLabelsSpin;
+  SalomeApp_IntSpinBox*    myColorsSpin;
+  SalomeApp_IntSpinBox*    myLabelsSpin;
 
   QGroupBox*               myOrientationGrp;
   QRadioButton*            myVertRadioBtn;
   QRadioButton*            myHorizRadioBtn;
 
   QGroupBox*               myOriginDimGrp;
-  QtxDoubleSpinBox*        myXSpin;
-  QtxDoubleSpinBox*        myYSpin;
-  QtxDoubleSpinBox*        myWidthSpin;
-  QtxDoubleSpinBox*        myHeightSpin;
+  SMESHGUI_SpinBox*        myXSpin;
+  SMESHGUI_SpinBox*        myYSpin;
+  SMESHGUI_SpinBox*        myWidthSpin;
+  SMESHGUI_SpinBox*        myHeightSpin;
 
   QGroupBox*               myButtonGrp;
   QPushButton*             myOkBtn;

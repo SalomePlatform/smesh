@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,6 +19,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 // SMESH SMESHGUI : GUI for SMESH component
 // File   : SMESHGUI_EditMeshDlg.cxx
 // Author : Open CASCADE S.A.S.
@@ -520,7 +521,7 @@ SMESHGUI_EditMeshDlg::~SMESHGUI_EditMeshDlg()
 void SMESHGUI_EditMeshDlg::Init()
 {
   if (myAction == 0) {
-    SpinBoxTolerance->RangeStepAndValidator(0.0, COORD_MAX, 0.00001, 5);
+    SpinBoxTolerance->RangeStepAndValidator(0.0, COORD_MAX, 0.00001, "len_tol_precision");
     SpinBoxTolerance->SetValue(1e-05);
   }
 
@@ -671,7 +672,6 @@ bool SMESHGUI_EditMeshDlg::ClickOnApply()
   }
   
   SMESH::UpdateView();
-  onDetect();
   
   return true;
 }

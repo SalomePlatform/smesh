@@ -1,7 +1,4 @@
-#  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
-#
-#  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-#  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+#  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 #
 #  This library is free software; you can redistribute it and/or
 #  modify it under the terms of the GNU Lesser General Public
@@ -19,6 +16,7 @@
 #
 #  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+
 #  File   : Makefile.in
 #  Author : Vasily Rusyaev (Open Cascade NN)
 #  Modified by : Alexander BORODIN (OCN) - autotools usage
@@ -26,7 +24,11 @@
 #
 include $(top_srcdir)/adm_local/unix/make_common_starter.am
 
-EXTRA_DIST += images input static
+EXTRA_DIST += images input static/footer.html static/doxygen.css
+
+guidocdir = $(docdir)/gui/SMESH
+guidoc_DATA = images/head.png
+
 
 usr_docs: doxyfile_py doxyfile 
 	echo "===========================================" ;		\

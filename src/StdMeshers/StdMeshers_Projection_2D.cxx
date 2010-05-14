@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,6 +19,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  SMESH SMESH : implementaion of SMESH idl descriptions
 // File      : StdMeshers_Projection_2D.cxx
 // Module    : SMESH
@@ -50,6 +51,8 @@
 #include <TopExp_Explorer.hxx>
 #include <TopTools_ListIteratorOfListOfShape.hxx>
 #include <TopoDS.hxx>
+#include <gp_Ax2.hxx>
+#include <gp_Ax3.hxx>
 
 
 using namespace std;
@@ -130,40 +133,40 @@ bool StdMeshers_Projection_2D::CheckHypothesis(SMESH_Mesh&                      
       TopoDS_Shape edge = TAssocTool::GetEdgeByVertices
         ( srcMesh, _sourceHypo->GetSourceVertex(1), _sourceHypo->GetSourceVertex(2) );
       if ( edge.IsNull() ||
-           !TAssocTool::IsSubShape( edge, srcMesh ) ||
-           !TAssocTool::IsSubShape( edge, _sourceHypo->GetSourceFace() ))
+           !SMESH_MesherHelper::IsSubShape( edge, srcMesh ) ||
+           !SMESH_MesherHelper::IsSubShape( edge, _sourceHypo->GetSourceFace() ))
       {
         theStatus = HYP_BAD_PARAMETER;
         SCRUTE((edge.IsNull()));
-        SCRUTE((TAssocTool::IsSubShape( edge, srcMesh )));
-        SCRUTE((TAssocTool::IsSubShape( edge, _sourceHypo->GetSourceFace() )));
+        SCRUTE((SMESH_MesherHelper::IsSubShape( edge, srcMesh )));
+        SCRUTE((SMESH_MesherHelper::IsSubShape( edge, _sourceHypo->GetSourceFace() )));
       }
       else
       {
         // target vertices
         edge = TAssocTool::GetEdgeByVertices
           ( tgtMesh, _sourceHypo->GetTargetVertex(1), _sourceHypo->GetTargetVertex(2) );
-        if ( edge.IsNull() || !TAssocTool::IsSubShape( edge, tgtMesh ))
+        if ( edge.IsNull() || !SMESH_MesherHelper::IsSubShape( edge, tgtMesh ))
         {
           theStatus = HYP_BAD_PARAMETER;
           SCRUTE((edge.IsNull()));
-          SCRUTE((TAssocTool::IsSubShape( edge, tgtMesh )));
+          SCRUTE((SMESH_MesherHelper::IsSubShape( edge, tgtMesh )));
         }
         // PAL16203
         else if ( !_sourceHypo->IsCompoundSource() &&
-                  !TAssocTool::IsSubShape( edge, theShape ))
+                  !SMESH_MesherHelper::IsSubShape( edge, theShape ))
         {
           theStatus = HYP_BAD_PARAMETER;
-          SCRUTE((TAssocTool::IsSubShape( edge, theShape )));
+          SCRUTE((SMESH_MesherHelper::IsSubShape( edge, theShape )));
         }
       }
     }
     // check a source face
-    if ( !TAssocTool::IsSubShape( _sourceHypo->GetSourceFace(), srcMesh ) ||
+    if ( !SMESH_MesherHelper::IsSubShape( _sourceHypo->GetSourceFace(), srcMesh ) ||
          ( srcMesh == tgtMesh && theShape == _sourceHypo->GetSourceFace() ))
     {
       theStatus = HYP_BAD_PARAMETER;
-      SCRUTE((TAssocTool::IsSubShape( _sourceHypo->GetSourceFace(), srcMesh )));
+      SCRUTE((SMESH_MesherHelper::IsSubShape( _sourceHypo->GetSourceFace(), srcMesh )));
       SCRUTE((srcMesh == tgtMesh));
       SCRUTE(( theShape == _sourceHypo->GetSourceFace() ));
     }
@@ -177,12 +180,11 @@ bool StdMeshers_Projection_2D::CheckHypothesis(SMESH_Mesh&                      
 
 namespace {
 
-
   //================================================================================
   /*!
    * \brief define if a node is new or old
-    * \param node - node to check
-    * \retval bool - true if the node existed before Compute() is called
+   * \param node - node to check
+   * \retval bool - true if the node existed before Compute() is called
    */
   //================================================================================
 
@@ -356,7 +358,8 @@ namespace {
 
   //================================================================================
   /*!
-   * \brief Preform projection in case if tgtFace.IsPartner( srcFace )
+   * \brief Preform projection in case if tgtFace.IsPartner( srcFace ) and in case
+   * if projection by transformation is possible
    *  \param tgtFace - target face
    *  \param srcFace - source face
    *  \param tgtMesh - target mesh
@@ -371,8 +374,96 @@ namespace {
                       SMESH_Mesh *                      srcMesh,
                       const TAssocTool::TShapeShapeMap& shape2ShapeMap)
   {
-    if ( !tgtFace.IsPartner( srcFace ))
-      return false;
+    const double tol = 1e-6;
+
+    gp_Trsf trsf; // transformation to get location of target nodes from source ones
+    if ( tgtFace.IsPartner( srcFace ))
+    {
+      gp_Trsf srcTrsf = srcFace.Location();
+      gp_Trsf tgtTrsf = tgtFace.Location();
+      trsf = srcTrsf.Inverted() * tgtTrsf;
+    }
+    else
+    {
+      // Try to find the transformation
+
+      // make any local coord systems of src and tgt faces
+      vector<gp_Pnt> srcPP, tgtPP; // 3 points on face boundaries to make axes of CS
+      SMESH_subMesh * srcSM = srcMesh->GetSubMesh( srcFace );
+      SMESH_subMeshIteratorPtr smIt = srcSM->getDependsOnIterator(/*includeSelf=*/false,false);
+      srcSM = smIt->next(); // sm of a vertex
+      while ( smIt->more() && srcPP.size() < 3 )
+      {
+        srcSM = smIt->next();
+        SMESHDS_SubMesh* srcSmds = srcSM->GetSubMeshDS();
+        if ( !srcSmds ) continue;
+        SMDS_NodeIteratorPtr nIt = srcSmds->GetNodes();
+        while ( nIt->more() )
+        {
+          SMESH_MeshEditor::TNodeXYZ p ( nIt->next());
+          bool pOK = false;
+          switch ( srcPP.size() )
+          {
+          case 0: pOK = true; break;
+
+          case 1: pOK = ( srcPP[0].SquareDistance( p ) > tol ); break;
+            
+          case 2:
+            {
+              gp_Vec p0p1( srcPP[0], srcPP[1] ), p0p( srcPP[0], p );
+              pOK = !p0p1.IsParallel( p0p, tol );
+              break;
+            }
+          }
+          if ( !pOK )
+            continue;
+
+          // find corresponding point on target shape
+          pOK = false;
+          gp_Pnt tgtP;
+          const TopoDS_Shape& tgtShape = shape2ShapeMap( srcSM->GetSubShape() );
+          if ( tgtShape.ShapeType() == TopAbs_VERTEX )
+          {
+            tgtP = BRep_Tool::Pnt( TopoDS::Vertex( tgtShape ));
+            pOK = true;
+            //cout << "V - nS " << p._node->GetID() << " - nT " << SMESH_Algo::VertexNode(TopoDS::Vertex( tgtShape),tgtMesh->GetMeshDS())->GetID() << endl;
+          }
+          else if ( tgtPP.size() > 0 )
+          {
+            if ( SMESHDS_SubMesh* tgtSmds = tgtMesh->GetMeshDS()->MeshElements( tgtShape ))
+            {
+              double srcDist = srcPP[0].Distance( p );
+              double eTol = BRep_Tool::Tolerance( TopoDS::Edge( tgtShape ));
+              SMDS_NodeIteratorPtr nItT = tgtSmds->GetNodes();
+              while ( nItT->more() && !pOK )
+              {
+                const SMDS_MeshNode* n = nItT->next();
+                tgtP = SMESH_MeshEditor::TNodeXYZ( n );
+                pOK = ( fabs( srcDist - tgtPP[0].Distance( tgtP )) < 2*eTol );
+                //cout << "E - nS " << p._node->GetID() << " - nT " << n->GetID()<< " OK - " << pOK<< " " << fabs( srcDist - tgtPP[0].Distance( tgtP ))<< " tol " << eTol<< endl;
+              }
+            }
+          }
+          if ( !pOK )
+            continue;
+
+          srcPP.push_back( p );
+          tgtPP.push_back( tgtP );
+        }
+      }
+      if ( srcPP.size() != 3 )
+        return false;
+
+      // make transformation
+      gp_Trsf fromTgtCS, toSrcCS; // from/to global CS
+      gp_Ax2 srcCS( srcPP[0], gp_Vec( srcPP[0], srcPP[1] ), gp_Vec( srcPP[0], srcPP[2]));
+      gp_Ax2 tgtCS( tgtPP[0], gp_Vec( tgtPP[0], tgtPP[1] ), gp_Vec( tgtPP[0], tgtPP[2]));
+      toSrcCS  .SetTransformation( gp_Ax3( srcCS ));
+      fromTgtCS.SetTransformation( gp_Ax3( tgtCS ));
+      fromTgtCS.Invert();
+
+      trsf = fromTgtCS * toSrcCS;
+    }
 
     // Fill map of src to tgt nodes with nodes on edges
 
@@ -382,8 +473,6 @@ namespace {
     for ( TopExp_Explorer srcEdge( srcFace, TopAbs_EDGE); srcEdge.More(); srcEdge.Next() )
     {
       const TopoDS_Shape& tgtEdge = shape2ShapeMap( srcEdge.Current() );
-      if ( !tgtEdge.IsPartner( srcEdge.Current() ))
-        return false;
 
       map< double, const SMDS_MeshNode* > srcNodes, tgtNodes;
       if ( !SMESH_Algo::GetSortedNodesOnEdge( srcMesh->GetMeshDS(),
@@ -399,6 +488,30 @@ namespace {
            srcNodes.size() != tgtNodes.size())
         return false;
 
+      if ( !tgtEdge.IsPartner( srcEdge.Current() ))
+      {
+        // check that transormation is OK by three nodes
+        gp_Pnt p0S = SMESH_MeshEditor::TNodeXYZ( (srcNodes.begin())  ->second);
+        gp_Pnt p1S = SMESH_MeshEditor::TNodeXYZ( (srcNodes.rbegin()) ->second);
+        gp_Pnt p2S = SMESH_MeshEditor::TNodeXYZ( (++srcNodes.begin())->second);
+
+        gp_Pnt p0T = SMESH_MeshEditor::TNodeXYZ( (tgtNodes.begin())  ->second);
+        gp_Pnt p1T = SMESH_MeshEditor::TNodeXYZ( (tgtNodes.rbegin()) ->second);
+        gp_Pnt p2T = SMESH_MeshEditor::TNodeXYZ( (++tgtNodes.begin())->second);
+
+        // transform source points, they must coinside with target ones
+        if ( p0T.SquareDistance( p0S.Transformed( trsf )) > tol ||
+             p1T.SquareDistance( p1S.Transformed( trsf )) > tol ||
+             p2T.SquareDistance( p2S.Transformed( trsf )) > tol )
+        {
+          //cout << "KO trsf, 3 dist: "
+          //<< p0T.SquareDistance( p0S.Transformed( trsf ))<< ", "
+          //<< p1T.SquareDistance( p1S.Transformed( trsf ))<< ", "
+          //<< p2T.SquareDistance( p2S.Transformed( trsf ))<< ", "<<endl;
+          return false;
+        }
+      }
+
       map< double, const SMDS_MeshNode* >::iterator u_tn = tgtNodes.begin();
       map< double, const SMDS_MeshNode* >::iterator u_sn = srcNodes.begin();
       for ( ; u_tn != tgtNodes.end(); ++u_tn, ++u_sn)
@@ -406,11 +519,6 @@ namespace {
     }
 
     // Make new faces
-
-    // transformation to get location of target nodes from source ones
-    gp_Trsf srcTrsf = srcFace.Location();
-    gp_Trsf tgtTrsf = tgtFace.Location();
-    gp_Trsf trsf = srcTrsf.Inverted() * tgtTrsf;
 
     // prepare the helper adding quadratic elements if necessary
     SMESH_MesherHelper helper( *tgtMesh );
@@ -545,9 +653,9 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
     RETURN_BAD_RESULT("Not associated vertices, srcV1 " << srcV1.TShape().operator->() );
   TopoDS_Vertex tgtV1 = TopoDS::Vertex( shape2ShapeMap( srcV1 ));
 
-  if ( !TAssocTool::IsSubShape( srcV1, srcFace ))
+  if ( !SMESH_MesherHelper::IsSubShape( srcV1, srcFace ))
     RETURN_BAD_RESULT("Wrong srcV1 " << srcV1.TShape().operator->());
-  if ( !TAssocTool::IsSubShape( tgtV1, tgtFace ))
+  if ( !SMESH_MesherHelper::IsSubShape( tgtV1, tgtFace ))
     RETURN_BAD_RESULT("Wrong tgtV1 " << tgtV1.TShape().operator->());
 
   // try to find out orientation by order of edges

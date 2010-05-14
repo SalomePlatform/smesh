@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,11 +19,12 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  SMESH SMESHGUI : GUI for SMESH component
 //  File   : SMESHGUI_GroupDlg.cxx
 //  Author : Natalia KOPNOVA, Open CASCADE S.A.S.
 //  SMESH includes
-
+//
 #include "SMESHGUI_GroupDlg.h"
 
 #include "SMESHGUI.h"
@@ -590,7 +591,8 @@ void SMESHGUI_GroupDlg::init (SMESH::SMESH_GroupBase_ptr theGroup,
     if (!aGroupShape->_is_nil())
     {
       _PTR(SObject) aGroupShapeSO = aStudy->FindObjectID(aGroupShape->GetStudyEntry());
-      aShapeName = aGroupShapeSO->GetName().c_str();
+      if ( aGroupShapeSO )
+        aShapeName = aGroupShapeSO->GetName().c_str();
     }
     myGeomGroupLine->setText( aShapeName );
     myNameChanged = true;

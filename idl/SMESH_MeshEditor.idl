@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,9 +19,9 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  File   : SMESH_MeshEditor.idl
 //
-
 #ifndef _SMESH_MESHEDITOR_IDL_
 #define _SMESH_MESHEDITOR_IDL_
 
@@ -35,6 +35,11 @@ module SMESH
   interface NumericalFunctor;
   interface SMESH_MeshEditor
   {
+    /*!
+     * \brief Wrap a sequence of ids in a SMESH_IDSource
+     */
+    SMESH_IDSource MakeIDSource(in long_array IDsOfElements);
+
     boolean RemoveElements(in long_array IDsOfElements);
 
     boolean RemoveNodes(in long_array IDsOfNodes);
@@ -210,6 +215,17 @@ module SMESH
      */
     long BestSplit (in long             IDOfQuad,
 		    in NumericalFunctor Criterion);
+
+    /*!
+     * \brief Split volumic elements into tetrahedrons
+     *  \param elems - elements to split
+     *  \param methodFlags - flags passing splitting method:
+     *         1 - split the hexahedron into 5 tetrahedrons
+     *         2 - split the hexahedron into 6 tetrahedrons
+     */
+    void SplitVolumesIntoTetra(in SMESH_IDSource elems, in short methodFlags)
+      raises (SALOME::SALOME_Exception);
+
 
     enum Smooth_Method { LAPLACIAN_SMOOTH, CENTROIDAL_SMOOTH };
 
@@ -554,6 +570,19 @@ module SMESH
                                         in boolean        CopyGroups,
                                         in string         MeshName);
 
+    void Scale (in SMESH_IDSource theObject,
+                in PointStruct    thePoint,
+                in double_array   theScaleFact,
+                in boolean        Copy);
+    ListOfGroups ScaleMakeGroups (in SMESH_IDSource theObject,
+                                  in PointStruct    thePoint,
+                                  in double_array   theScaleFact);
+    SMESH_Mesh ScaleMakeMesh (in SMESH_IDSource theObject,
+                              in PointStruct    thePoint,
+                              in double_array   theScaleFact,
+                              in boolean        CopyGroups,
+                              in string         MeshName);
+
     void Rotate (in long_array IDsOfElements,
                  in AxisStruct Axis,
                  in double     AngleInRadians,
@@ -625,6 +654,12 @@ module SMESH
      * 'ALL' type means elements of any type excluding nodes and 0D elements
      */
     long_array FindElementsByPoint(in double x, in double y, in double z, in ElementType type);
+
+    /*!
+     * Return point state in a closed 2D mesh in terms of TopAbs_State enumeration.
+     * TopAbs_UNKNOWN state means that either mesh is wrong or the analysis fails.
+     */
+    short GetPointState(in double x, in double y, in double z);
 
     enum Sew_Error {
       SEW_OK,

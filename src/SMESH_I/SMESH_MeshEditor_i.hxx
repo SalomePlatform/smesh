@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,6 +19,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  SMESH SMESH_I : idl implementation based on 'SMESH' unit's calsses
 //  File   : SMESH_MeshEditor_i.hxx
 //  Author : Nicolas REJNERI
@@ -41,12 +42,18 @@ class SMESH_Mesh_i;
 
 class SMESH_MeshEditor_i: public POA_SMESH::SMESH_MeshEditor
 {
- public:
+public:
   SMESH_MeshEditor_i(SMESH_Mesh_i * theMesh, bool isPreview);
 
   virtual ~ SMESH_MeshEditor_i();
 
   // --- CORBA
+
+  /*!
+   * \brief Wrap a sequence of ids in a SMESH_IDSource
+   */
+  SMESH::SMESH_IDSource_ptr MakeIDSource(const SMESH::long_array& IDsOfElements);
+
   CORBA::Boolean RemoveElements(const SMESH::long_array & IDsOfElements);
   CORBA::Boolean RemoveNodes(const SMESH::long_array & IDsOfNodes);
 
@@ -131,6 +138,8 @@ class SMESH_MeshEditor_i: public POA_SMESH::SMESH_MeshEditor
                                   CORBA::Boolean              Diag13);
   CORBA::Long    BestSplit       (CORBA::Long                 IDOfQuad,
                                   SMESH::NumericalFunctor_ptr Criterion);
+  void SplitVolumesIntoTetra     (SMESH::SMESH_IDSource_ptr elems,
+                                  CORBA::Short methodFlags) throw (SALOME::SALOME_Exception);
 
   CORBA::Boolean Smooth(const SMESH::long_array &              IDsOfElements,
                         const SMESH::long_array &              IDsOfFixedNodes,
@@ -420,6 +429,21 @@ class SMESH_MeshEditor_i: public POA_SMESH::SMESH_MeshEditor
                                              CORBA::Boolean            CopyGroups,
                                              const char*               MeshName);
 
+  void Scale(SMESH::SMESH_IDSource_ptr  theObject,
+             const SMESH::PointStruct&  thePoint,
+             const SMESH::double_array& theScaleFact,
+             CORBA::Boolean             theCopy);
+
+  SMESH::ListOfGroups* ScaleMakeGroups(SMESH::SMESH_IDSource_ptr  theObject,
+                                       const SMESH::PointStruct&  thePoint,
+                                       const SMESH::double_array& theScaleFact);
+
+  SMESH::SMESH_Mesh_ptr ScaleMakeMesh(SMESH::SMESH_IDSource_ptr Object,
+                                      const SMESH::PointStruct& Point,
+                                      const SMESH::double_array& theScaleFact,
+                                      CORBA::Boolean            CopyGroups,
+                                      const char*               MeshName);
+
   void FindCoincidentNodes (CORBA::Double                  Tolerance,
                             SMESH::array_of_long_array_out GroupsOfNodes);
   void FindCoincidentNodesOnPart(SMESH::SMESH_IDSource_ptr      Object,
@@ -442,7 +466,6 @@ class SMESH_MeshEditor_i: public POA_SMESH::SMESH_MeshEditor
                                 CORBA::Double z);
   /*!
    * Return elements of given type where the given point is IN or ON.
-   *
    * 'ALL' type means elements of any type excluding nodes
    */
   SMESH::long_array* FindElementsByPoint(CORBA::Double      x,
@@ -450,6 +473,11 @@ class SMESH_MeshEditor_i: public POA_SMESH::SMESH_MeshEditor
                                          CORBA::Double      z,
                                          SMESH::ElementType type);
 
+  /*!
+   * Return point state in a closed 2D mesh in terms of TopAbs_State enumeration.
+   * TopAbs_UNKNOWN state means that either mesh is wrong or the analysis fails.
+   */
+  CORBA::Short GetPointState(CORBA::Double x, CORBA::Double y, CORBA::Double z);
 
   SMESH::SMESH_MeshEditor::Sew_Error
   SewFreeBorders(CORBA::Long FirstNodeID1,
@@ -695,6 +723,13 @@ class SMESH_MeshEditor_i: public POA_SMESH::SMESH_MeshEditor
                               CORBA::Boolean            Copy,
                               const bool                MakeGroups,
                               ::SMESH_Mesh*             TargetMesh=0);
+
+  SMESH::ListOfGroups* scale(const SMESH::long_array &  theIDsOfElements,
+                             const SMESH::PointStruct&  thePoint,
+                             const SMESH::double_array& theScaleFact,
+                             CORBA::Boolean             theCopy,
+                             const bool                 theMakeGroups,
+                             ::SMESH_Mesh*              theTargetMesh=0);
 
   SMESH::SMESH_Mesh_ptr makeMesh(const char* theMeshName);
 

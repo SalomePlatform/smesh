@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,6 +19,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  SMESH SMESH_I : idl implementation based on 'SMESH' unit's calsses
 // File      : SMESH_MeshEditor.hxx
 // Created   : Mon Apr 12 14:56:19 2004
@@ -78,6 +79,7 @@ struct SMESH_NodeSearcher
 /*!
  * \brief Find elements of given type where the given point is IN or ON.
  *        Returns nb of found elements and elements them-selves.
+ *        Another task is to find out if the given point is out of closed 2D mesh.
  *
  * 'ALL' type means elements of any type excluding nodes and 0D elements
  */
@@ -88,6 +90,8 @@ struct SMESH_ElementSearcher
   virtual int FindElementsByPoint(const gp_Pnt&                           point,
                                   SMDSAbs_ElementType                     type,
                                   std::vector< const SMDS_MeshElement* >& foundElems)=0;
+
+  virtual TopAbs_State GetPointState(const gp_Pnt& point) = 0;
 };
 
 //=======================================================================
@@ -106,6 +110,18 @@ struct SMESH_TLink: public NLink
   const SMDS_MeshNode* node2() const { return second; }
 };
 
+//=======================================================================
+/*!
+ * \brief SMESH_TLink knowing its orientation
+ */
+//=======================================================================
+
+struct SMESH_OrientedLink: public SMESH_TLink
+{
+  bool _reversed;
+  SMESH_OrientedLink(const SMDS_MeshNode* n1, const SMDS_MeshNode* n2 )
+    : SMESH_TLink( n1, n2 ), _reversed( n1 != node1() ) {}
+};
 
 // ============================================================
 /*!
@@ -124,7 +140,7 @@ public:
   struct TNodeXYZ : public gp_XYZ
   {
     const SMDS_MeshNode* _node;
-    TNodeXYZ( const SMDS_MeshElement* e):_node(0) {
+    TNodeXYZ( const SMDS_MeshElement* e):gp_XYZ(0,0,0),_node(0) {
       if (e) {
         ASSERT( e->GetType() == SMDSAbs_Node );
         _node = static_cast<const SMDS_MeshNode*>(e);
@@ -219,6 +235,13 @@ public:
    */
   int BestSplit (const SMDS_MeshElement*              theQuad,
                  SMESH::Controls::NumericalFunctorPtr theCriterion);
+
+
+  enum SplitVolumToTetraFlags { HEXA_TO_5 = 1, HEXA_TO_6 = 2 };//!<arg of SplitVolumesIntoTetra()
+  /*!
+   * \brief Split volumic elements into tetrahedra.
+   */
+  void SplitVolumesIntoTetra (const TIDSortedElemSet & theElems, const int theMethodFlags);
 
 
   enum SmoothMethod { LAPLACIAN = 0, CENTROIDAL };
@@ -358,6 +381,23 @@ public:
                        SMESH_Mesh*        theTargetMesh=0);
   // Move or copy theElements applying theTrsf to their nodes
 
+
+  /*!
+   * Generate new elements by extrusion of theElements
+   * param theElems - list of elements for scale
+   * param thePoint - base point for scale
+   * param theScaleFact - scale factors for axises
+   * param theCopy - allows copying the translated elements
+   * param theMakeGroups - forces the generation of new groups from existing ones
+   * param theTargetMesh - the name of the newly created mesh
+   * return instance of Mesh class
+   */
+  PGroupIDs Scale (TIDSortedElemSet&        theElements,
+                   const gp_Pnt&            thePoint,
+                   const std::list<double>& theScaleFact,
+                   const bool               theCopy,
+                   const bool               theMakeGroups,
+                   SMESH_Mesh*              theTargetMesh=0);
 
   typedef std::list< std::list< const SMDS_MeshNode* > > TListOfListOfNodes;
 
@@ -511,6 +551,11 @@ public:
   static void ReplaceElemInGroups (const SMDS_MeshElement* elemToRm,
                                    const SMDS_MeshElement* elemToAdd,
                                    SMESHDS_Mesh *          aMesh);
+  // replace elemToRm by elemToAdd in the all groups
+
+  static void ReplaceElemInGroups (const SMDS_MeshElement*                     elemToRm,
+                                   const std::vector<const SMDS_MeshElement*>& elemToAdd,
+                                   SMESHDS_Mesh *                              aMesh);
   // replace elemToRm by elemToAdd in the all groups
 
   /*!

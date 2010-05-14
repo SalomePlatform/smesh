@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,6 +19,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 // SMESH SMESHGUI : GUI for SMESH component
 // File   : SMESHGUI_Preferences_ColorDlg.h
 // Author : Nicolas REJNERI, Open CASCADE S.A.S.
@@ -29,15 +30,18 @@
 // SMESH includes
 #include "SMESH_SMESHGUI.hxx"
 
+// SALOME GUI includes
+#include <VTKViewer_MarkerDef.h>
+
 // Qt includes
 #include <QDialog>
 
 class QCheckBox;
-class QSpinBox;
 class SMESHGUI;
-class QtxDoubleSpinBox;
-class QtxIntSpinBox;
+class SMESHGUI_SpinBox;
+class SalomeApp_IntSpinBox;
 class QtxColorButton;
+class VTKViewer_MarkerWidget;
 
 class SMESHGUI_EXPORT SMESHGUI_Preferences_ColorDlg : public QDialog
 { 
@@ -56,6 +60,15 @@ public:
   void                  SetBooleanValue( int, bool );
   bool                  GetBooleanValue( int );
 
+  void                  setCustomMarkerMap( VTK::MarkerMap );
+  VTK::MarkerMap        getCustomMarkerMap();
+
+  void                  setStandardMarker( VTK::MarkerType, VTK::MarkerScale );
+  void                  setCustomMarker( int );
+  VTK::MarkerType       getMarkerType() const;
+  VTK::MarkerScale      getStandardMarkerScale() const;
+  int                   getCustomMarkerID() const;
+
 protected:
   void                  closeEvent( QCloseEvent* );
 
@@ -72,13 +85,13 @@ private:
   QtxColorButton*       btnBackFaceColor;
   QtxColorButton*       btnOutlineColor;
   QtxColorButton*       btn0DElementsColor;
-  QSpinBox*             SpinBox_0DElements_Size;
-  QSpinBox*             SpinBox_Width;
-  QtxIntSpinBox*        SpinBox_Shrink;
+  SalomeApp_IntSpinBox* SpinBox_0DElements_Size;
+  SalomeApp_IntSpinBox* SpinBox_Width;
+  SalomeApp_IntSpinBox* SpinBox_Shrink;
   QtxColorButton*       btnNodeColor;
-  QSpinBox*             SpinBox_Nodes_Size;
+  VTKViewer_MarkerWidget* MarkerWidget;
   QtxColorButton*       btnOrientationColor;
-  QtxDoubleSpinBox*     SpinBox_Orientation_Scale;
+  SMESHGUI_SpinBox*     SpinBox_Orientation_Scale;
   QCheckBox*            CheckBox_Orientation_3DVectors;
 };
 

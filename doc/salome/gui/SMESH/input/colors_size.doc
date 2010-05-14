@@ -1,0 +1,35 @@
+/*!
+
+\page colors_size_page Colors / Size
+
+\image html colors_size.png
+
+Using this dialog you can define the following set of mesh visualization
+parameters:
+<ul>
+<li><b>Elements</b></li>
+<ul>
+<li><b>Fill</b> - color of surface of elements (seen in Shading mode).</li>
+<li><b>Back Face</b> - color of interior surface of elements.</li>
+<li><b>Outline</b> - color of borders of elements.</li>
+<li><b>0D slements</b> - color of 0D elements.</li>
+<li><b>Size of 0D slements</b> - size of 0D elements.</li>
+<li><b>Width</b> - width of lines (edges and borders of elements).</li>
+<li><b>Shrink coef.</b> - relative space of elements compared to gaps between
+       them in shrink mode.</li>
+</ul>
+<li><b>Nodes</b></li>
+<ul>
+<li><b>Color</b> - color of nodes.</li>
+<li><b>Marker</b> - group of options allowing to change the representation of
+       points (see \subpage point_marker_page "Point Marker" page).</li>
+</ul>
+<li><b>Orientation of faces</b></li>
+<ul>
+<li><b>Color</b> - color of orientation vertors.</li>
+<li><b>Scale</b> - size of orientation vectors.</li>
+<li><b>3D vectors</b> - allows to choose between 2D planar and 3D vectors.</li>
+</ul>
+</ul>
+
+*/

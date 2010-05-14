@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,6 +19,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 // File   : SMESHGUI_MakeNodeAtPointDlg.cxx
 // Author : Edward AGAPOV, Open CASCADE S.A.S.
 // SMESH includes
@@ -147,9 +148,9 @@ QWidget* SMESHGUI_MakeNodeAtPointDlg::createMainFrame (QWidget* theParent)
   QLabel* aZLabel = new QLabel(tr("SMESH_Z"), aCoordGrp);
   myZ = new SMESHGUI_SpinBox(aCoordGrp);
 
-  myX->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, DBL_DIGITS_DISPLAY);
-  myY->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, DBL_DIGITS_DISPLAY);
-  myZ->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, DBL_DIGITS_DISPLAY);
+  myX->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, "length_precision");
+  myY->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, "length_precision");
+  myZ->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, "length_precision");
 
   aCoordGrpLayout->addWidget(myCoordBtn);
   aCoordGrpLayout->addWidget(aXLabel);

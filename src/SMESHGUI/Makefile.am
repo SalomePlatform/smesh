@@ -1,7 +1,4 @@
-#  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
-#
-#  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-#  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+#  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 #
 #  This library is free software; you can redistribute it and/or
 #  modify it under the terms of the GNU Lesser General Public
@@ -19,6 +16,7 @@
 #
 #  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
+
 # SMESH SMESHGUI : GUI for SMESH component
 # File   : Makefile.am
 # Author : Alexander BORODIN, Open CASCADE S.A.S.
@@ -71,6 +69,7 @@ salomeinclude_HEADERS = \
 	SMESHGUI_RevolutionDlg.h \
 	SMESHGUI_RotationDlg.h \
 	SMESHGUI_TranslationDlg.h \
+	SMESHGUI_ScaleDlg.h \
 	SMESHGUI_SymmetryDlg.h \
 	SMESHGUI_SewingDlg.h \
 	SMESHGUI_EditMeshDlg.h \
@@ -134,6 +133,7 @@ dist_libSMESH_la_SOURCES = \
 	SMESHGUI_RevolutionDlg.cxx \
 	SMESHGUI_RotationDlg.cxx \
 	SMESHGUI_TranslationDlg.cxx \
+	SMESHGUI_ScaleDlg.cxx \
 	SMESHGUI_SymmetryDlg.cxx \
 	SMESHGUI_SewingDlg.cxx \
 	SMESHGUI_EditMeshDlg.cxx \
@@ -166,6 +166,7 @@ dist_libSMESH_la_SOURCES = \
 	SMESHGUI_FileInfoDlg.cxx \
 	SMESHGUI_MeshInfosBox.cxx \
 	SMESHGUI_Make2DFrom3DOp.cxx \
+	SMESHGUI_FindElemByPointDlg.cxx \
 	SMESHGUI_MeshOrderDlg.cxx \
 	SMESHGUI_MeshOrderOp.cxx \
 	SMESHGUI_FileValidator.cxx
@@ -202,6 +203,7 @@ MOC_FILES = \
 	SMESHGUI_RevolutionDlg_moc.cxx \
 	SMESHGUI_RotationDlg_moc.cxx \
 	SMESHGUI_TranslationDlg_moc.cxx \
+	SMESHGUI_ScaleDlg_moc.cxx \
 	SMESHGUI_SymmetryDlg_moc.cxx \
 	SMESHGUI_SewingDlg_moc.cxx \
 	SMESHGUI_EditMeshDlg_moc.cxx \
@@ -223,7 +225,6 @@ MOC_FILES = \
 	SMESHGUI_FileInfoDlg_moc.cxx \
 	SMESHGUI_MeshInfosBox_moc.cxx \
 	SMESHGUI_Make2DFrom3DOp_moc.cxx \
-	SMESHGUI_FindElemByPointDlg.cxx \
 	SMESHGUI_FindElemByPointDlg_moc.cxx \
 	SMESHGUI_MeshOrderDlg_moc.cxx \
 	SMESHGUI_MeshOrderOp_moc.cxx

@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,6 +19,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 // File:      SMESH_MesherHelper.hxx
 // Created:   15.02.06 14:48:09
 // Author:    Sergey KUUL
@@ -39,9 +40,20 @@
 
 #include <map>
 
+class GeomAPI_ProjectPointOnSurf;
+
 typedef std::map<SMESH_TLink, const SMDS_MeshNode*>           TLinkNodeMap;
 typedef std::map<SMESH_TLink, const SMDS_MeshNode*>::iterator ItTLinkNode;
 
+typedef SMDS_Iterator<const TopoDS_Shape*>  PShapeIterator;
+typedef boost::shared_ptr< PShapeIterator > PShapeIteratorPtr;
+  
+typedef std::vector<const SMDS_MeshNode* > TNodeColumn;
+typedef std::map< double, TNodeColumn >    TParam2ColumnMap;
+
+typedef gp_XY (*xyFunPtr)(const gp_XY& uv1, const gp_XY& uv2);
+
+//=======================================================================
 /*!
  * \brief It helps meshers to add elements
  *
@@ -50,9 +62,7 @@ typedef std::map<SMESH_TLink, const SMDS_MeshNode*>::iterator ItTLinkNode;
  * It defines degree of elements to create when IsQuadraticSubMesh()
  * is called.
  */
-
-typedef std::vector<const SMDS_MeshNode* > TNodeColumn;
-typedef std::map< double, TNodeColumn > TParam2ColumnMap;
+//=======================================================================
 
 class SMESH_EXPORT SMESH_MesherHelper
 {
@@ -112,6 +122,23 @@ public:
   static int NbAncestors(const TopoDS_Shape& shape,
                          const SMESH_Mesh&   mesh,
                          TopAbs_ShapeEnum    ancestorType=TopAbs_SHAPE);
+  /*!
+   * \brief Return iterator on ancestors of the given type
+   */
+  static PShapeIteratorPtr GetAncestors(const TopoDS_Shape& shape,
+                                        const SMESH_Mesh&   mesh,
+                                        TopAbs_ShapeEnum    ancestorType);
+
+  /*!
+   * \brief Return orientation of sub-shape in the main shape
+   */
+  static TopAbs_Orientation GetSubShapeOri(const TopoDS_Shape& shape,
+                                           const TopoDS_Shape& subShape);
+
+  static bool IsSubShape( const TopoDS_Shape& shape, const TopoDS_Shape& mainShape );
+
+  static bool IsSubShape( const TopoDS_Shape& shape, SMESH_Mesh* aMesh );
+
 
 public:
   // ---------- PUBLIC INSTANCE METHODS ----------
@@ -164,7 +191,7 @@ public:
   /*!
    * \brief Return the shape set by IsQuadraticSubMesh() or SetSubShape() 
    */
-  TopoDS_Shape GetSubShape() const  { return myShape; }
+  const TopoDS_Shape& GetSubShape() const  { return myShape; }
 
   /*!
    * Creates a node
@@ -278,6 +305,28 @@ public:
                            const gp_XY&                uv1,
                            const gp_XY&                uv2);
   /*!
+   * \brief Define a pointer to wrapper over a function of gp_XY class,
+   *       suitable to pass as xyFunPtr to applyIn2D().
+   *       For exaple gp_XY_FunPtr(Added) defines pointer gp_XY_Added to function
+   *       calling gp_XY::Added(gp_XY), which is to be used like following
+   *       applyIn2D(surf, uv1, uv2, gp_XY_Added)
+   */
+#define gp_XY_FunPtr(meth) \
+  static gp_XY __gpXY_##meth (const gp_XY& uv1, const gp_XY& uv2) { return uv1.meth( uv2 ); } \
+  static xyFunPtr gp_XY_##meth = & __gpXY_##meth
+
+  /*!
+   * \brief Perform given operation on two 2d points in parameric space of given surface.
+   *        It takes into account period of the surface. Use gp_XY_FunPtr macro
+   *        to easily define pointer to function of gp_XY class.
+   */
+  static gp_XY applyIn2D(const Handle(Geom_Surface)& surface,
+                         const gp_XY&                uv1,
+                         const gp_XY&                uv2,
+                         xyFunPtr                    fun,
+                         const bool                  resultInPeriod=true);
+                          
+  /*!
    * \brief Check if inFaceNode argument is necessary for call GetNodeUV(F,..)
     * \retval bool - return true if the face is periodic
     *
@@ -285,6 +334,13 @@ public:
     * SetSubShape()
    */
   bool GetNodeUVneedInFaceNode(const TopoDS_Face& F = TopoDS_Face()) const;
+
+  /*!
+   * \brief Return projector intitialized by given face without location, which is returned
+   */
+  GeomAPI_ProjectPointOnSurf& GetProjector(const TopoDS_Face& F,
+                                           TopLoc_Location&   loc,
+                                           double             tol=0 ) const; 
 
   /*!
    * \brief Check if shape is a degenerated edge or it's vertex
@@ -384,6 +440,8 @@ public:
   enum MType{ LINEAR, QUADRATIC, COMP };
   MType IsQuadraticMesh();
   
+  virtual ~SMESH_MesherHelper();
+
 protected:
 
   /*!
@@ -404,8 +462,11 @@ protected:
 
   std::set< int > myDegenShapeIds;
   std::set< int > mySeamShapeIds;
-  double          myPar1, myPar2; // bounds of a closed periodic surface
-  int             myParIndex;     // bounds' index (1-U, 2-V)
+  double          myPar1[2], myPar2[2]; // U and V bounds of a closed periodic surface
+  int             myParIndex;     // bounds' index (1-U, 2-V, 3-both)
+
+  typedef std::map< int, GeomAPI_ProjectPointOnSurf* > TID2Projector;
+  TID2Projector   myFace2Projector;
 
   TopoDS_Shape    myShape;
   SMESH_Mesh*     myMesh;

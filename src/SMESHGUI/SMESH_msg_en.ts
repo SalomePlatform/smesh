@@ -1,6 +1,6 @@
 <!DOCTYPE TS>
 <!--
-  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 
   Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
   CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -643,6 +643,10 @@
             <translation>Translation</translation>
         </message>
         <message>
+            <source>MEN_SCALE</source>
+            <translation>Scale Transform</translation>
+        </message>
+        <message>
             <source>MEN_TRANSF</source>
             <translation>Transformation</translation>
         </message>
@@ -707,6 +711,18 @@
             <translation>Wireframe</translation>
         </message>
         <message>
+            <source>MEN_SPLIT_TO_TETRA</source>
+            <translation>Split into Tetrahedra</translation>
+        </message>
+        <message>
+            <source>TOP_SPLIT_TO_TETRA</source>
+            <translation>Split into Tetrahedra</translation>
+        </message>
+        <message>
+            <source>STB_SPLIT_TO_TETRA</source>
+            <translation>Split into Tetrahedra</translation>
+        </message>
+        <message>
             <source>MESHERS_FILE_CANT_OPEN</source>
             <translation>Can not open resource file</translation>
         </message>
@@ -745,8 +761,13 @@ Please, select a mesh and try again</translation>
         </message>
         <message>
             <source>GROUP_NAME_IS_EMPTY</source>
-            <translation>Name of group is empty
-Please input a name of new group or choose the existing one</translation>
+            <translation>Name of group is not specified.
+Please enter a name of new group to be created or choose an existing one.</translation>
+        </message>
+        <message>
+            <source>MESH_STANDALONE_GRP_CHOSEN</source>
+            <translation>Group on geometry is chosen: %1.
+Do you want to convert it to the standalone group?</translation>
         </message>
         <message>
             <source>NODE_ID</source>
@@ -1716,6 +1737,10 @@ add the exported data to its contents?</translation>
             <translation>Point 2</translation>
         </message>
         <message>
+            <source>SMESH_BASE_POINT</source>
+            <translation>Base Point</translation>
+        </message>
+        <message>
             <source>SMESH_POLYEDRE_CREATE_ERROR</source>
             <translation>Polyedron creation error</translation>
         </message>
@@ -1915,6 +1940,30 @@ add the exported data to its contents?</translation>
         <message>
             <source>SMESH_TRANSLATION</source>
             <translation>Translation</translation>
+        </message>
+        <message>
+            <source>SMESH_SCALE_TITLE</source>
+            <translation>Scale Transform</translation>
+        </message>
+        <message>
+            <source>SMESH_SCALE</source>
+            <translation>Scale</translation>
+        </message>
+        <message>
+            <source>SMESH_SCALE_FACTOR</source>
+            <translation>Scale Factor :</translation>
+        </message>
+        <message>
+            <source>SMESH_SCALE_FACTOR_X</source>
+            <translation>Scale Factor X :</translation>
+        </message>
+        <message>
+            <source>SMESH_SCALE_FACTOR_Y</source>
+            <translation>Scale Factor Y :</translation>
+        </message>
+        <message>
+            <source>SMESH_SCALE_FACTOR_Z</source>
+            <translation>Scale Factor Z :</translation>
         </message>
         <message>
             <source>SMESH_TRANSPARENCY_OPAQUE</source>
@@ -2493,6 +2542,10 @@ Consider saving your work before application crash</translation>
             <translation>Translation</translation>
         </message>
         <message>
+            <source>STB_SCALE</source>
+            <translation>Scale Transform</translation>
+        </message>
+        <message>
             <source>STB_TRANSP</source>
             <translation>Transparency</translation>
         </message>
@@ -3003,6 +3056,10 @@ Consider saving your work before application crash</translation>
             <translation>Translation</translation>
         </message>
         <message>
+            <source>TOP_SCALE</source>
+            <translation>Scale Transform</translation>
+        </message>
+        <message>
             <source>TOP_TRANSP</source>
             <translation>Transparency</translation>
         </message>
@@ -3110,6 +3167,48 @@ Consider saving your work before application crash</translation>
             <source>NO_MESH_SELECTED</source>
             <translation>No mesh selected</translation>
         </message>
+        <message>
+            <source>SMESH_PREF_def_precision</source>
+            <translation>Default precision</translation>
+        </message>
+        <message>
+            <source>SMESH_PREF_length_precision</source>
+            <translation>Length precision</translation>
+        </message>
+        <message>
+            <source>SMESH_PREF_angle_precision</source>
+            <translation>Angular precision</translation>
+        </message>
+        <message>
+            <source>SMESH_PREF_len_tol_precision</source>
+            <translation>Length tolerance precision</translation>
+        </message>
+        <message>
+            <source>SMESH_PREF_parametric_precision</source>
+            <translation>Parametric precision</translation>
+        </message>
+        <message>
+            <source>SMESH_PREF_area_precision</source>
+            <translation>Area precision</translation>
+        </message>
+        <message>
+            <source>FULL_RECOMPUTE_QUESTION</source>
+            <translation>
+The mesh has been edited since a last total re-compute 
+that may prevent successful computation. 
+Do you wish to re-compute the mesh totally to discard the modifications?
+            </translation>
+        </message>
+        <message>
+            <source>SMESH_PREF_vol_precision</source>
+            <translation>Volume precision</translation>
+        </message>
+        <message>
+            <source>SMESH_PRECISION_HINT</source>
+            <translation>
+Input value precision can be adjusted using
+'%1' parameter in Mesh module preferences.</translation>
+        </message>
     </context>
     <context>
         <name>SMESHGUI</name>
@@ -3191,6 +3290,10 @@ Please, create VTK viewer and try again</translation>
             <translation>Show a computation result notification</translation>
         </message>
         <message>
+            <source>SMESH_PREF_GROUP_PRECISION</source>
+            <translation>Input fields precision</translation>
+        </message>
+        <message>
             <source>PREF_GROUP_ELEMENTS</source>
             <translation>Elements</translation>
         </message>
@@ -3239,6 +3342,10 @@ Please, create VTK viewer and try again</translation>
             <translation>Labels color</translation>
         </message>
         <message>
+            <source>PREF_MARKER_SCALE</source>
+            <translation>Scale of marker</translation>
+        </message>
+        <message>
             <source>PREF_NODES</source>
             <translation>Nodes</translation>
         </message>
@@ -3271,10 +3378,6 @@ Please, create VTK viewer and try again</translation>
             <translation>Shrink coef.</translation>
         </message>
         <message>
-            <source>PREF_SIZE</source>
-            <translation>Size</translation>
-        </message>
-        <message>
             <source>PREF_TAB_GENERAL</source>
             <translation>General</translation>
         </message>
@@ -3289,6 +3392,10 @@ Please, create VTK viewer and try again</translation>
         <message>
             <source>PREF_TITLE_COLOR</source>
             <translation>Title color</translation>
+        </message>
+        <message>
+            <source>PREF_TYPE_OF_MARKER</source>
+            <translation>Type of marker</translation>
         </message>
         <message>
             <source>PREF_COLOR_0D</source>
@@ -4720,6 +4827,25 @@ It is impossible to read point coordinates from file</translation>
         </message>
     </context>
     <context>
+        <name>SMESHGUI_CuttingIntoTetraDlg</name>
+        <message>
+            <source>CAPTION</source>
+            <translation>Splitting volumes into tetrahedra</translation>
+        </message>
+        <message>
+            <source>SPLIT_METHOD</source>
+            <translation>Split hexahedron</translation>
+        </message>
+        <message>
+            <source>SPLIT_HEX_TO_5_TETRA</source>
+            <translation>Into 5 tetrahedra</translation>
+        </message>
+        <message>
+            <source>SPLIT_HEX_TO_6_TETRA</source>
+            <translation>Into 6 tetrahedra</translation>
+        </message>
+    </context>
+    <context>
         <name>SMESHGUI_PrecisionDlg</name>
         <message>
             <source>CAPTION</source>
@@ -5004,6 +5130,65 @@ It is impossible to read point coordinates from file</translation>
         <message>
             <source>SMESH_NO_CONCURENT_MESH</source>
             <translation>No concurent submeshes detected</translation>
+        </message>
+    </context>
+    <context>
+        <name>SMESHGUI_ClippingDlg</name>
+       <message>
+            <source>CLIP_PLANES</source>
+            <translation>Clipping planes</translation>
+        </message>
+        <message>
+            <source>ROTATION_AROUND_X_Y2Z</source>
+            <translation>Rotation around X (Y to Z):</translation>
+        </message>
+        <message>
+            <source>ROTATION_AROUND_Y_X2Z</source>
+            <translation>Rotation around Y (X to Z):</translation>
+        </message>
+        <message>
+            <source>ROTATION_AROUND_Z_Y2X</source>
+            <translation>Rotation around Z (Y to X):</translation>
+        </message>
+        <message>
+            <source>ROTATION_AROUND_X_Z2Y</source>
+            <translation>Rotation around X (Z to Y):</translation>
+        </message>
+        <message>
+            <source>ROTATION_AROUND_Y_Z2X</source>
+            <translation>Rotation around Y (Z to X):</translation>
+        </message>
+        <message>
+            <source>ROTATION_AROUND_Z_X2Y</source>
+            <translation>Rotation around Z (X to Y):</translation>
+        </message>
+        <message>
+            <source>SHOW_PREVIEW</source>
+            <translation>Show preview</translation>
+        </message>
+        <message>
+            <source>AUTO_APPLY</source>
+            <translation>Auto Apply</translation>
+        </message>
+        <message>
+            <source>ALONG_XY</source>
+            <translation>|| X-Y</translation>
+        </message>
+        <message>
+            <source>ALONG_YZ</source>
+            <translation>|| Y-Z</translation>
+        </message>
+        <message>
+            <source>ALONG_ZX</source>
+            <translation>|| Z-X</translation>
+        </message>
+        <message>
+            <source>PLANE_NUM</source>
+            <translation>Plane# %1</translation>
+        </message>
+        <message>
+            <source>NO_PLANES</source>
+            <translation>No planes</translation>
         </message>
     </context>
 </TS>

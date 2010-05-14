@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,6 +19,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 // File    : SMESH_Gen_i_DumpPython.cxx
 // Created : Thu Mar 24 17:17:59 2005
 // Author  : Julia DOROVSKIKH
@@ -219,6 +220,19 @@ namespace SMESH
     else
       *this << CORBA::Object_ptr( theArg );
     return *this;
+  }
+
+  TPythonDump& 
+  TPythonDump::
+  operator<<(SMESH::SMESH_IDSource_ptr theArg)
+  {
+    SMESH_Gen_i* aSMESHGen = SMESH_Gen_i::GetSMESHGen();
+    SALOMEDS::Study_var aStudy = aSMESHGen->GetCurrentStudy();
+    SALOMEDS::SObject_var aSObject = SMESH_Gen_i::ObjectToSObject(aStudy,theArg);
+    if(!aSObject->_is_nil() || CORBA::is_nil( theArg ))
+      return *this << aSObject;
+    SMESH::long_array_var anElementsId = theArg->GetIDs();
+    return *this << anElementsId;
   }
 
   TPythonDump& 

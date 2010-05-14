@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,6 +19,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  SMESH SMESH : implementaion of SMESH idl descriptions
 // File      : StdMeshers_Projection_3D.cxx
 // Module    : SMESH
@@ -141,12 +142,12 @@ bool StdMeshers_Projection_3D::CheckHypothesis(SMESH_Mesh&                      
       TopoDS_Shape edge = TAssocTool::GetEdgeByVertices
         ( srcMesh, _sourceHypo->GetSourceVertex(1), _sourceHypo->GetSourceVertex(2) );
       if ( edge.IsNull() ||
-           !TAssocTool::IsSubShape( edge, srcMesh ) ||
-           !TAssocTool::IsSubShape( edge, _sourceHypo->GetSource3DShape() ))
+           !SMESH_MesherHelper::IsSubShape( edge, srcMesh ) ||
+           !SMESH_MesherHelper::IsSubShape( edge, _sourceHypo->GetSource3DShape() ))
       {
         SCRUTE((edge.IsNull()));
-        SCRUTE((TAssocTool::IsSubShape( edge, srcMesh )));
-        SCRUTE((TAssocTool::IsSubShape( edge, _sourceHypo->GetSource3DShape() )));
+        SCRUTE((SMESH_MesherHelper::IsSubShape( edge, srcMesh )));
+        SCRUTE((SMESH_MesherHelper::IsSubShape( edge, _sourceHypo->GetSource3DShape() )));
         aStatus = SMESH_Hypothesis::HYP_BAD_PARAMETER;
       }
       else
@@ -155,21 +156,21 @@ bool StdMeshers_Projection_3D::CheckHypothesis(SMESH_Mesh&                      
         edge = TAssocTool::GetEdgeByVertices
           ( tgtMesh, _sourceHypo->GetTargetVertex(1), _sourceHypo->GetTargetVertex(2) );
         if ( edge.IsNull() ||
-             !TAssocTool::IsSubShape( edge, tgtMesh ) ||
-             !TAssocTool::IsSubShape( edge, aShape ))
+             !SMESH_MesherHelper::IsSubShape( edge, tgtMesh ) ||
+             !SMESH_MesherHelper::IsSubShape( edge, aShape ))
         {
           SCRUTE((edge.IsNull()));
-          SCRUTE((TAssocTool::IsSubShape( edge, tgtMesh )));
-          SCRUTE((TAssocTool::IsSubShape( edge, aShape )));
+          SCRUTE((SMESH_MesherHelper::IsSubShape( edge, tgtMesh )));
+          SCRUTE((SMESH_MesherHelper::IsSubShape( edge, aShape )));
           aStatus = SMESH_Hypothesis::HYP_BAD_PARAMETER;
         }
       }
     }
     // check a source shape
-    if ( !TAssocTool::IsSubShape( _sourceHypo->GetSource3DShape(), srcMesh ) ||
+    if ( !SMESH_MesherHelper::IsSubShape( _sourceHypo->GetSource3DShape(), srcMesh ) ||
          ( srcMesh == tgtMesh && aShape == _sourceHypo->GetSource3DShape()))
     {
-      SCRUTE((TAssocTool::IsSubShape( _sourceHypo->GetSource3DShape(), srcMesh)));
+      SCRUTE((SMESH_MesherHelper::IsSubShape( _sourceHypo->GetSource3DShape(), srcMesh)));
       SCRUTE((srcMesh == tgtMesh));
       SCRUTE((aShape == _sourceHypo->GetSource3DShape()));
       aStatus = SMESH_Hypothesis::HYP_BAD_PARAMETER;
@@ -266,8 +267,8 @@ bool StdMeshers_Projection_3D::Compute(SMESH_Mesh& aMesh, const TopoDS_Shape& aS
       return error("Association of subshapes failed" );
     srcV000 = TopoDS::Vertex( shape2ShapeMap( tgtV000 ));
     srcV100 = TopoDS::Vertex( shape2ShapeMap( tgtV100 ));
-    if ( !TAssocTool::IsSubShape( srcV000, srcShell ) ||
-         !TAssocTool::IsSubShape( srcV100, srcShell ))
+    if ( !SMESH_MesherHelper::IsSubShape( srcV000, srcShell ) ||
+         !SMESH_MesherHelper::IsSubShape( srcV100, srcShell ))
       return error("Incorrect association of subshapes" );
   }
 

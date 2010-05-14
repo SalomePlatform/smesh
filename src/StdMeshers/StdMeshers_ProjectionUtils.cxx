@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,6 +19,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  SMESH SMESH : idl implementation based on 'SMESH' unit's calsses
 // File      : StdMeshers_ProjectionUtils.cxx
 // Created   : Fri Oct 27 10:24:28 2006
@@ -1284,44 +1285,6 @@ bool StdMeshers_ProjectionUtils::InsertAssociation( const TopoDS_Shape& theShape
 }
 
 //=======================================================================
-//function : IsSubShape
-//purpose  : 
-//=======================================================================
-
-bool StdMeshers_ProjectionUtils::IsSubShape( const TopoDS_Shape& shape,
-                                             SMESH_Mesh*         aMesh )
-{
-  if ( shape.IsNull() || !aMesh )
-    return false;
-  return
-    aMesh->GetMeshDS()->ShapeToIndex( shape ) ||
-    // PAL16202
-    shape.ShapeType() == TopAbs_COMPOUND && aMesh->GetMeshDS()->IsGroupOfSubShapes( shape );
-}
-
-//=======================================================================
-//function : IsSubShape
-//purpose  : 
-//=======================================================================
-
-bool StdMeshers_ProjectionUtils::IsSubShape( const TopoDS_Shape& shape,
-                                             const TopoDS_Shape& mainShape )
-{
-  if ( !shape.IsNull() && !mainShape.IsNull() )
-  {
-    for ( TopExp_Explorer exp( mainShape, shape.ShapeType());
-          exp.More();
-          exp.Next() )
-      if ( shape.IsSame( exp.Current() ))
-        return true;
-  }
-  SCRUTE((shape.IsNull()));
-  SCRUTE((mainShape.IsNull()));
-  return false;
-}
-
-
-//=======================================================================
 /*!
  * \brief Finds an edge by its vertices in a main shape of the mesh
  * \param aMesh - the mesh
@@ -1536,7 +1499,7 @@ FindMatchingNodesOnFaces( const TopoDS_Face&     face1,
     if ( !assocMap.IsBound( e2 ))
       RETURN_BAD_RESULT("Association not found for edge " << meshDS2->ShapeToIndex( e2 ));
     TopoDS_Edge e1 = TopoDS::Edge( assocMap( e2 ));
-    if ( !IsSubShape( e1, face1 ))
+    if ( !helper1.IsSubShape( e1, face1 ))
       RETURN_BAD_RESULT("Wrong association, edge " << meshDS1->ShapeToIndex( e1 ) <<
                         " isn't a subshape of face " << meshDS1->ShapeToIndex( face1 ));
     // check that there are nodes on edges

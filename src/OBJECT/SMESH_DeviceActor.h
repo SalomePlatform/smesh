@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,6 +19,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  SMESH OBJECT : interactive object for SMESH visualization
 //  File   : SMESH_DeviceActor.h
 //  Author : Nicolas REJNERI
@@ -29,6 +30,7 @@
 #define SMESH_DEVICE_ACTOR_H
 
 #include <VTKViewer_GeometryFilter.h>
+#include <VTKViewer_MarkerDef.h>
 #include "SMESH_Controls.hxx"
 #include "SMESH_Object.h"
 
@@ -39,7 +41,6 @@ class vtkCell;
 class vtkProperty;
 class vtkMergeFilter;
 class vtkShrinkFilter;
-class vtkPolyDataMapper;
 class vtkUnstructuredGrid;
 class vtkScalarBarActor;
 class vtkLookupTable;
@@ -49,6 +50,7 @@ class vtkPassThroughFilter;
 class VTKViewer_Transform;
 class VTKViewer_TransformFilter;
 class VTKViewer_ExtractUnstructuredGrid;
+class VTKViewer_PolyDataMapper;
 
 class SMESH_ExtractGeometry;
 class SMESH_FaceOrientationFilter;
@@ -133,11 +135,18 @@ class SMESHOBJECT_EXPORT SMESH_DeviceActor: public vtkLODActor{
   void SetImplicitFunctionUsed(bool theIsImplicitFunctionUsed);
   bool IsImplicitFunctionUsed() const{ return myIsImplicitFunctionUsed;}
 
+  void SetMarkerEnabled( bool );
+  void SetMarkerStd( VTK::MarkerType, VTK::MarkerScale );
+  void SetMarkerTexture( int, VTK::MarkerTexture );
+  VTK::MarkerType GetMarkerType();
+  VTK::MarkerScale GetMarkerScale();
+  int GetMarkerTexture();
+
  protected:
   void Init(TVisualObjPtr theVisualObj, vtkImplicitBoolean* theImplicitBoolean);
   void SetUnstructuredGrid(vtkUnstructuredGrid* theGrid);
 
-  vtkPolyDataMapper *myMapper;
+  VTKViewer_PolyDataMapper *myMapper;
   TVisualObjPtr myVisualObj;
 
   vtkProperty *myProperty;

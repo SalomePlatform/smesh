@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,6 +19,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 // SMESH SMESHGUI : GUI for SMESH component
 // File   : SMESHGUI_RevolutionDlg.cxx
 // Author : Michael ZORIN, Open CASCADE S.A.S.
@@ -278,20 +279,20 @@ SMESHGUI_RevolutionDlg::SMESHGUI_RevolutionDlg( SMESHGUI* theModule )
   SMESHGUI_RevolutionDlgLayout->addWidget(GroupButtons);
 
   /* Initialisations */
-  SpinBox_X->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, 3);
-  SpinBox_Y->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, 3);
-  SpinBox_Z->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, 3);
-  SpinBox_DX->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, 3);
-  SpinBox_DY->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, 3);
-  SpinBox_DZ->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, 3);
+  SpinBox_X->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, "length_precision");
+  SpinBox_Y->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, "length_precision");
+  SpinBox_Z->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, "length_precision");
+  SpinBox_DX->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, "length_precision");
+  SpinBox_DY->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, "length_precision");
+  SpinBox_DZ->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, "length_precision");
 
   RadioButton3->setChecked(true);
 
-  SpinBox_Angle->RangeStepAndValidator(COORD_MIN, COORD_MAX, 5.0, 3);
+  SpinBox_Angle->RangeStepAndValidator(COORD_MIN, COORD_MAX, 5.0, "angle_precision");
 
   SpinBox_NbSteps->setRange(1, 999999);
 
-  SpinBox_Tolerance->RangeStepAndValidator(0.0, COORD_MAX, 0.00001, 6);
+  SpinBox_Tolerance->RangeStepAndValidator(0.0, COORD_MAX, 0.00001, "len_tol_precision");
 
   RadioButton1->setChecked(true);
 
@@ -714,7 +715,7 @@ void SMESHGUI_RevolutionDlg::SelectionIntoArgument()
   SMESH_Actor* anActor = SMESH::FindActorByObject(aMeshVar);
   if (!anActor)
     anActor = SMESH::FindActorByEntry(IO->getEntry());
-  if (!anActor)
+  if (!anActor && !CheckBoxMesh->isChecked())
     return;
 
   int aNbUnits = 0;

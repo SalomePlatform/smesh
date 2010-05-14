@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,6 +19,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  SMESH SMESH : implementaion of SMESH idl descriptions
 // File      : StdMeshers_FaceSide.hxx
 // Created   : Wed Jan 31 18:41:25 2007
@@ -28,14 +29,13 @@
 #ifndef StdMeshers_FaceSide_HeaderFile
 #define StdMeshers_FaceSide_HeaderFile
 
-#include <gp_Pnt2d.hxx>
+#include <Geom2d_Curve.hxx>
+#include <GeomAdaptor_Curve.hxx>
 #include <TopoDS_Edge.hxx>
 #include <TopoDS_Vertex.hxx>
-#include <Geom2d_Curve.hxx>
-#include <TopExp.hxx>
+#include <gp_Pnt2d.hxx>
 
 #include "SMESH_StdMeshers.hxx"
-#include "SMESH_Algo.hxx"
 
 #include <vector>
 #include <list>
@@ -47,7 +47,7 @@ class Adaptor2d_Curve2d;
 class Adaptor3d_Curve;
 class BRepAdaptor_CompCurve;
 class TopoDS_Face;
-class SMESH_ComputeError;
+struct SMESH_ComputeError;
 
 typedef struct uvPtStruct
 {
@@ -198,11 +198,16 @@ public:
   
 
 protected:
+
+  // DON't FORGET tO update Reverse() when adding one more vector!
   std::vector<uvPtStruct>           myPoints, myFalsePoints;
   std::vector<TopoDS_Edge>          myEdge;
   std::vector<Handle(Geom2d_Curve)> myC2d;
+  std::vector<GeomAdaptor_Curve>    myC3dAdaptor;
   std::vector<double>               myFirst, myLast;
   std::vector<double>               myNormPar;
+  std::vector<double>               myEdgeLength;
+  std::vector<double>               myIsUniform;
   double                            myLength;
   int                               myNbPonits, myNbSegments;
   SMESH_Mesh*                       myMesh;

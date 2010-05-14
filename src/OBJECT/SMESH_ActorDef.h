@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,12 +19,12 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  SMESH OBJECT : interactive object for SMESH visualization
 //  File   : SMESH_ActorDef.h
 //  Author : Nicolas REJNERI
 //  Module : SMESH
 //
-
 #ifndef SMESH_ACTORDEF_H
 #define SMESH_ACTORDEF_H
 
@@ -127,9 +127,6 @@ class SMESH_ActorDef : public SMESH_Actor
   virtual vtkFloatingPointType GetLineWidth();
   virtual void SetLineWidth(vtkFloatingPointType theVal);
 
-  virtual void SetNodeSize(vtkFloatingPointType size) ;
-  virtual vtkFloatingPointType GetNodeSize() ;
-
   virtual void Set0DSize(vtkFloatingPointType size);
   virtual vtkFloatingPointType Get0DSize();
 
@@ -209,6 +206,9 @@ class SMESH_ActorDef : public SMESH_Actor
   virtual void SetQuadratic2DRepresentation(EQuadratic2DRepresentation);
   virtual EQuadratic2DRepresentation GetQuadratic2DRepresentation();
   
+  virtual void SetMarkerStd( VTK::MarkerType, VTK::MarkerScale );
+  virtual void SetMarkerTexture( int, VTK::MarkerTexture );
+
  protected:
   void SetControlMode(eControl theMode, bool theCheckEntityMode);
   void SetImplicitFunctionUsed(bool theIsImplicitFunctionUsed);
@@ -282,6 +282,8 @@ class SMESH_ActorDef : public SMESH_Actor
   long myControlsPrecision;
 
   bool myIsFacesOriented;
+
+  VTK::MarkerTexture myMarkerTexture;
 
   SMESH_ActorDef();
   ~SMESH_ActorDef();

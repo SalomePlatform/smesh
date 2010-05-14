@@ -1,4 +1,4 @@
-//  Copyright (C) 2007-2008  CEA/DEN, EDF R&D, OPEN CASCADE
+//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 //  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -19,6 +19,7 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 //  SMESH SMESH : implementaion of SMESH idl descriptions
 //  File   : StdMeshers_Hexa_3D.cxx
 //           Moved here from SMESH_Hexa_3D.cxx
@@ -26,8 +27,10 @@
 //  Module : SMESH
 //
 #include "StdMeshers_Hexa_3D.hxx"
+
 #include "StdMeshers_CompositeHexa_3D.hxx"
 #include "StdMeshers_FaceSide.hxx"
+#include "StdMeshers_HexaFromSkin_3D.hxx"
 #include "StdMeshers_Penta_3D.hxx"
 #include "StdMeshers_Prism_3D.hxx"
 #include "StdMeshers_Quadrangle_2D.hxx"
@@ -78,6 +81,7 @@ StdMeshers_Hexa_3D::StdMeshers_Hexa_3D(int hypId, int studyId, SMESH_Gen * gen)
   MESSAGE("StdMeshers_Hexa_3D::StdMeshers_Hexa_3D");
   _name = "Hexa_3D";
   _shapeType = (1 << TopAbs_SHELL) | (1 << TopAbs_SOLID);       // 1 bit /shape type
+  _requireShape = false;
 }
 
 //=============================================================================
@@ -862,10 +866,27 @@ bool StdMeshers_Hexa_3D::Evaluate(SMESH_Mesh & aMesh,
   return true;
 }
 
+//================================================================================
+/*!
+ * \brief Computes hexahedral mesh from 2D mesh of block
+ */
+//================================================================================
+
+bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh & aMesh, SMESH_MesherHelper* aHelper)
+{
+  static StdMeshers_HexaFromSkin_3D * algo = 0;
+  if ( !algo ) {
+    SMESH_Gen* gen = aMesh.GetGen();
+    algo = new StdMeshers_HexaFromSkin_3D( gen->GetANewId(), 0, gen );
+  }
+  algo->InitComputeError();
+  algo->Compute( aMesh, aHelper );
+  return error( algo->GetComputeError());
+}
 
 //=============================================================================
 /*!
- *  
+ *
  */
 //=============================================================================
 
