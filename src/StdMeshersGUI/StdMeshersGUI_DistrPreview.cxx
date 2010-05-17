@@ -51,6 +51,7 @@
 # include <algorithm>
 #endif
 #include <math.h>
+#include <limits>
 
 #include <Basics_Utils.hxx>
 
