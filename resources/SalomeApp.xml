@@ -99,7 +99,7 @@
     <parameter name="NETGENPlugin" value="${NETGENPlugin_ROOT_DIR}/share/salome/resources/netgenplugin"/>
     <parameter name="GHS3DPlugin"  value="${GHS3DPlugin_ROOT_DIR}/share/salome/resources/ghs3dplugin"/>
     <parameter name="BLSURFPlugin" value="${BLSURFPlugin_ROOT_DIR}/share/salome/resources"/>
-    <parameter name="HexoticPLUGIN" value="${HexoticPlugin_ROOT_DIR}/share/salome/resources"/>
+    <parameter name="HexoticPlugin" value="${HexoticPLUGIN_ROOT_DIR}/share/salome/resources/hexoticplugin"/>
     <parameter name="GHS3DPRLPlugin" value="${GHS3DPRLPLUGIN_ROOT_DIR}/share/salome/resources"/>
   </section>
 </document>
