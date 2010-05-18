@@ -264,8 +264,13 @@ void StdMeshersGUI_DistrPreview::update()
       showError();
       return;
     }
+#ifdef WIN32
+    if ( std::fabs(y[i]) >= HUGE_VAL)
+      y[i] = HUGE_VAL/100.;
+#else
     if ( isinf(y[i]))
       y[i] = std::numeric_limits<double>::max()/100.;
+#endif
 //     if ( y[i] > 1e3 )
 //       y[i] = 1e3;
     if( i==0 || y[i]<min_y )
