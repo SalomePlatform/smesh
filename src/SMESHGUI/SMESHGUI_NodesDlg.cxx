@@ -379,6 +379,7 @@ void SMESHGUI_NodesDlg::Init()
   connect( mySMESHGUI,     SIGNAL( SignalDeactivateActiveDialog() ), SLOT( DeactivateActiveDialog() ) );
   /* to close dialog if study frame change */
   connect( mySMESHGUI,     SIGNAL( SignalStudyFrameChanged() ),      SLOT( ClickOnCancel() ) );
+  connect(mySMESHGUI,      SIGNAL(SignalCloseAllDialogs()),          SLOT(ClickOnCancel()));
 
   // set selection mode
   SMESH::SetPointRepresentation( true );
