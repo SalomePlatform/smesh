@@ -597,20 +597,33 @@ gp_XY SMESH_MesherHelper::GetMiddleUV(const Handle(Geom_Surface)& surface,
 
 double SMESH_MesherHelper::GetNodeU(const TopoDS_Edge&   E,
                                     const SMDS_MeshNode* n,
+                                    const SMDS_MeshNode* inEdgeNode,
                                     bool*                check)
 {
   double param = 0;
   const SMDS_PositionPtr Pos = n->GetPosition();
-  if(Pos->GetTypeOfPosition()==SMDS_TOP_EDGE) {
+  if ( Pos->GetTypeOfPosition()==SMDS_TOP_EDGE )
+  {
     const SMDS_EdgePosition* epos =
       static_cast<const SMDS_EdgePosition*>(n->GetPosition().get());
     param =  epos->GetUParameter();
   }
-  else if(Pos->GetTypeOfPosition()==SMDS_TOP_VERTEX) {
-    SMESHDS_Mesh * meshDS = GetMeshDS();
-    int vertexID = n->GetPosition()->GetShapeId();
-    const TopoDS_Vertex& V = TopoDS::Vertex(meshDS->IndexToShape(vertexID));
-    param =  BRep_Tool::Parameter( V, E );
+  else if( Pos->GetTypeOfPosition() == SMDS_TOP_VERTEX )
+  {
+    if ( inEdgeNode && TopExp::FirstVertex( E ).IsSame( TopExp::LastVertex( E ))) // issue 0020809
+    {
+      Standard_Real f,l;
+      BRep_Tool::Range( E, f,l );
+      double uInEdge = GetNodeU( E, inEdgeNode );
+      param = ( fabs( uInEdge - f ) < fabs( l - uInEdge )) ? f : l;
+    }
+    else
+    {
+      SMESHDS_Mesh * meshDS = GetMeshDS();
+      int vertexID = n->GetPosition()->GetShapeId();
+      const TopoDS_Vertex& V = TopoDS::Vertex(meshDS->IndexToShape(vertexID));
+      param =  BRep_Tool::Parameter( V, E );
+    }
   }
   if ( check )
     *check = CheckNodeU( E, n, param, BRep_Tool::Tolerance( E ));
@@ -739,8 +752,8 @@ const SMDS_MeshNode* SMESH_MesherHelper::GetMediumNode(const SMDS_MeshNode* n1,
       E = TopoDS::Edge(myShape);
       edgeID = myShapeID;
     }
-    u[0] = GetNodeU(E,n1, force3d ? 0 : &uvOK[0]);
-    u[1] = GetNodeU(E,n2, force3d ? 0 : &uvOK[1]);
+    u[0] = GetNodeU(E,n1,n2, force3d ? 0 : &uvOK[0]);
+    u[1] = GetNodeU(E,n2,n1, force3d ? 0 : &uvOK[1]);
   }
   if(!force3d)
   {
