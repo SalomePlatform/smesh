@@ -86,7 +86,40 @@ namespace
 
   //================================================================================
   /*!
+   * \brief Description of node used to detect corner nodes
+   */
+  struct _NodeDescriptor
+  {
+    int nbInverseFaces, nbNodesInInverseFaces;
+
+    _NodeDescriptor(const SMDS_MeshNode* n): nbInverseFaces(0), nbNodesInInverseFaces(0)
+    {
+      if ( n )
+      {
+        set<const SMDS_MeshNode*> nodes;
+        SMDS_ElemIteratorPtr fIt = n->GetInverseElementIterator(SMDSAbs_Face );
+        while ( fIt->more() )
+        {
+          const SMDS_MeshElement* face = fIt->next();
+          nodes.insert( face->begin_nodes(), face->end_nodes() );
+          nbInverseFaces++;
+        }
+        nbNodesInInverseFaces = nodes.size();
+      }
+    }
+    bool operator==(const _NodeDescriptor& other) const
+    {
+      return
+        nbInverseFaces == other.nbInverseFaces &&
+        nbNodesInInverseFaces == other.nbNodesInInverseFaces;
+    }
+  };
+
+  //================================================================================
+  /*!
    * \brief return true if a node is at block corner
+   *
+   * This check is valid for simple cases only
    */
   //================================================================================
 
@@ -189,15 +222,15 @@ namespace
     int                          _nbBlocksExpected;
     int                          _nbBlocksFound;
 
-#ifdef _DEBUG_
-#define _grid_access_(args) _grid.at( args )
+#ifdef _DEBUG_ // want to get SIGSEGV in case of invalid index
+#define _grid_access_(pobj, i) pobj->_grid[ ((i) < pobj->_grid.size()) ? i : int(1e100)]
 #else
-#define _grid_access_(args) _grid[ args ]
+#define _grid_access_(pobj, i) pobj->_grid[ i ]
 #endif
     //!< Return node at XY
-    const SMDS_MeshNode* getNode(int x, int y) const { return _grid_access_( _index( x, y )); }
+    const SMDS_MeshNode* getNode(int x, int y) const { return _grid_access_(this, _index( x,y ));}
     //!< Set node at XY
-    void setNode(int x, int y, const SMDS_MeshNode* n) { _grid_access_( _index( x, y )) = n; }
+    void setNode(int x, int y, const SMDS_MeshNode* n) { _grid_access_(this, _index( x,y )) = n; }
     //!< Return an edge
     SMESH_OrientedLink getEdge(EQuadEdge edge) const
     {
@@ -242,7 +275,7 @@ namespace
     //!< return coordinates by XY
     gp_XYZ xyz(int x, int y) const
     {
-      return SMESH_MeshEditor::TNodeXYZ( _side->_grid_access_( _index( x, y )) );
+      return SMESH_MeshEditor::TNodeXYZ( _grid_access_(_side, _index( x, y )) );
     }
     //!< safely return a node by XY
     const SMDS_MeshNode* node(int x, int y) const
@@ -259,7 +292,7 @@ namespace
     //!< Return a corner node
     const SMDS_MeshNode* cornerNode(bool isXMax, bool isYMax) const
     {
-      return _side->_grid_access_( _index.corner( isXMax, isYMax ));
+      return _grid_access_(_side, _index.corner( isXMax, isYMax ));
     }
     //!< return its size in nodes
     int getHoriSize() const { return _index.xSize(); }
@@ -300,7 +333,9 @@ namespace
     const SMESH_Comment& error() const { return _error; }
 
   private:
-    bool fillSide( _BlockSide& side, const SMDS_MeshElement* cornerQuad);
+    bool fillSide( _BlockSide&             side,
+                   const SMDS_MeshElement* cornerQuad,
+                   const SMDS_MeshNode*    cornerNode);
     bool fillRowsUntilCorner(const SMDS_MeshElement* quad,
                              const SMDS_MeshNode*    n1,
                              const SMDS_MeshNode*    n2,
@@ -383,7 +418,7 @@ namespace
           _allSides.push_back( _BlockSide() );
 
         _BlockSide& side = _allSides.back();
-        if ( !fillSide( side, face ) )
+        if ( !fillSide( side, face, *corner ) )
         {
           if ( !_error.empty() )
             return false;
@@ -394,9 +429,6 @@ namespace
             for ( int isYMax = 0; isYMax < 2; ++isYMax )
             {
               const SMDS_MeshNode* nCorner = side.getCornerNode(isXMax,isYMax );
-              if ( !isCornerNode( nCorner ))
-                return BAD_MESH_ERR;
-              //_corner2sides[ nCorner ].insert( &side );
               corners.push_back( nCorner );
               cornerFaces.insert( side.getCornerFace( nCorner ));
             }
@@ -425,6 +457,7 @@ namespace
       return BAD_MESH_ERR;
     if ( _allSides.back()._grid.empty() )
       _allSides.pop_back();
+    _DUMP_("Nb detected sides "<< _allSides.size());
 
     // ---------------------------
     // Organize sides into blocks
@@ -466,6 +499,8 @@ namespace
       // edges of neighbour sides of B_FRONT corresponding to front's edges
       EQuadEdge edgeOfFront[4] = { Q_BOTTOM, Q_RIGHT, Q_TOP, Q_LEFT };
       EQuadEdge edgeToFind [4] = { Q_BOTTOM, Q_LEFT, Q_BOTTOM, Q_LEFT };
+      // TODO: first find all sides where no choice of sides is needed,
+      // then perform search with selection, which is then easier
       for ( int i = Q_BOTTOM; ok && i <= Q_LEFT; ++i )
         ok = ( block._side[i] = findBlockSide( B_FRONT, edgeOfFront[i], edgeToFind[i]));
       if ( ok )
@@ -483,6 +518,24 @@ namespace
             isSame = prevBlock.hasSide( block._side[ j ]);
         }
         ok = !isSame;
+      }
+      if ( ok )
+      {
+        // check block validity
+        int x = block._side[B_BOTTOM].getHoriSize();
+        ok = (  block._side[B_TOP   ].getHoriSize() == x &&
+                block._side[B_FRONT ].getHoriSize() == x &&
+                block._side[B_BACK  ].getHoriSize() == x );
+        int y = block._side[B_BOTTOM].getVertSize();
+        ok = (  ok &&
+                block._side[B_TOP   ].getVertSize() == y &&
+                block._side[B_LEFT  ].getHoriSize() == y &&
+                block._side[B_RIGHT ].getHoriSize() == y);
+        int z = block._side[B_FRONT].getVertSize();
+        ok = (  ok &&
+                block._side[B_BACK  ].getVertSize() == z &&
+                block._side[B_LEFT  ].getVertSize() == z &&
+                block._side[B_RIGHT ].getVertSize() == z);
       }
 
       // count the found sides
@@ -525,7 +578,9 @@ namespace
    */
   //================================================================================
 
-  bool _Skin::fillSide( _BlockSide& side, const SMDS_MeshElement* cornerQuad)
+  bool _Skin::fillSide( _BlockSide&             side,
+                        const SMDS_MeshElement* cornerQuad,
+                        const SMDS_MeshNode*    nCorner)
   {
     // Find out size of block side mesured in nodes and by the way find two rows
     // of nodes in two directions.
@@ -533,13 +588,6 @@ namespace
     int x, y, nbX, nbY;
     const SMDS_MeshElement* firstQuad = cornerQuad;
     {
-      // get corner node of cornerQuad
-      const SMDS_MeshNode* nCorner = 0;
-      for ( int i = 0; i < 4 && !nCorner; ++i )
-        if ( isCornerNode( firstQuad->GetNode(i)))
-          nCorner = firstQuad->GetNode(i);
-      if ( !nCorner ) return false;
-
       // get a node on block edge
       int iCorner = firstQuad->GetNodeIndex( nCorner );
       const SMDS_MeshNode* nOnEdge = firstQuad->GetNode( (iCorner+1) % 4);
@@ -611,7 +659,14 @@ namespace
       }
     }
 
-    return true;
+    // check side validity
+    bool ok =
+      side.getCornerFace( side.getCornerNode( 0, 0 )) &&
+      side.getCornerFace( side.getCornerNode( 1, 0 )) &&
+      side.getCornerFace( side.getCornerNode( 0, 1 )) &&
+      side.getCornerFace( side.getCornerNode( 1, 1 ));
+
+    return ok;
   }
 
   //================================================================================
@@ -658,46 +713,82 @@ namespace
     }
     else
     {
-      // Select one of found sides most close to startBlockSide
-
-      // gravity center of already loaded block sides
-      gp_XYZ gc(0,0,0);
-      for (int i = 0; i < B_UNDEFINED; ++i )
-        if ( block._side[ i ] )
-          gc += block._side[ i ]._side->getGC();
-      gc /= nbLoadedSides;
-
-      gp_XYZ p1 ( n1->X(),n1->Y(),n1->Z()),  p2 (n2->X(),n2->Y(),n2->Z());
-      gp_Vec p1p2( p1, p2 );
-
-      const SMDS_MeshElement* face1 = side1->getCornerFace( n1 );
-      gp_XYZ p1Op = SMESH_MeshEditor::TNodeXYZ( oppositeNode( face1, face1->GetNodeIndex(n1)));
-      gp_Vec side1Dir( p1, p1Op );
-      gp_Ax2 pln( p1, p1p2, side1Dir ); // plane with normal p1p2 and X dir side1Dir
-      _DUMP_("  Select adjacent for "<< side1._side << " - side dir ("
-             << side1Dir.X() << ", " << side1Dir.Y() << ", " << side1Dir.Z() << ")" );
-      
-      map < double , _BlockSide* > angleOfSide;
       set< _BlockSide* >::iterator sideIt = sidesOnEdge.begin();
-      for (; sideIt != sidesOnEdge.end(); ++sideIt )
+      gp_XYZ gc(0,0,0); // gravity center of already loaded block sides
+      if ( nbLoadedSides > 1 )
       {
-        _BlockSide* sideI = *sideIt;
-        const SMDS_MeshElement* faceI = sideI->getCornerFace( n1 );
-        gp_XYZ p1Op = SMESH_MeshEditor::TNodeXYZ( oppositeNode( faceI, faceI->GetNodeIndex(n1)));
-        gp_Vec sideIDir( p1, p1Op );
-        // compute angle of (sideIDir projection to pln) and (X dir of pln)
-        gp_Vec2d sideIDirProj( sideIDir * pln.XDirection(), sideIDir * pln.YDirection());
-        double angle = sideIDirProj.Angle( gp::DX2d() );
-        if ( angle < 0 ) angle += 2 * PI;
-        angleOfSide.insert( make_pair( angle, sideI ));
-        _DUMP_("  "<< sideI << " - side dir ("
-               << sideIDir.X() << ", " << sideIDir.Y() << ", " << sideIDir.Z() << ")"
-               << " angle " << angle);
+        // Find the side having more than 2 corners common with already loaded sides
+
+        set<const SMDS_MeshNode*> loadedCorners;
+        for (int i = 0; i < B_UNDEFINED; ++i )
+          if ( block._side[ i ] )
+          {
+            loadedCorners.insert( block._side[ i ]->getCornerNode(0,0));
+            loadedCorners.insert( block._side[ i ]->getCornerNode(1,0));
+            loadedCorners.insert( block._side[ i ]->getCornerNode(0,1));
+            loadedCorners.insert( block._side[ i ]->getCornerNode(1,1));
+            gc += block._side[ i ]._side->getGC();
+          }
+        gc /= nbLoadedSides;
+
+        for (; !foundSide && sideIt != sidesOnEdge.end(); ++sideIt )
+        {
+          _BlockSide* sideI = *sideIt;
+          int nbCommonCorners =
+            loadedCorners.count( sideI->getCornerNode(0,0)) +
+            loadedCorners.count( sideI->getCornerNode(1,0)) +
+            loadedCorners.count( sideI->getCornerNode(0,1)) +
+            loadedCorners.count( sideI->getCornerNode(1,1));
+          if ( nbCommonCorners > 2 )
+            foundSide = sideI;
+        }
       }
-      gp_Vec gcDir( p1, gc );
-      gp_Vec2d gcDirProj( gcDir * pln.XDirection(), gcDir * pln.YDirection());
-      double gcAngle = gcDirProj.Angle( gp::DX2d() );
-      foundSide = gcAngle < 0 ? angleOfSide.rbegin()->second : angleOfSide.begin()->second;
+
+      if ( !foundSide )
+      {
+        // Select one of found sides most close to startBlockSide
+
+        gp_XYZ p1 ( n1->X(),n1->Y(),n1->Z()),  p2 (n2->X(),n2->Y(),n2->Z());
+        gp_Vec p1p2( p1, p2 );
+
+        const SMDS_MeshElement* face1 = side1->getCornerFace( n1 );
+        gp_XYZ p1Op = SMESH_MeshEditor::TNodeXYZ( oppositeNode( face1, face1->GetNodeIndex(n1)));
+        gp_Vec side1Dir( p1, p1Op );
+        gp_Ax2 pln( p1, p1p2, side1Dir ); // plane with normal p1p2 and X dir side1Dir
+        _DUMP_("  Select adjacent for "<< side1._side << " - side dir ("
+               << side1Dir.X() << ", " << side1Dir.Y() << ", " << side1Dir.Z() << ")" );
+
+        map < double , _BlockSide* > angleOfSide;
+        for (sidesOnEdge.begin(); sideIt != sidesOnEdge.end(); ++sideIt )
+        {
+          _BlockSide* sideI = *sideIt;
+          const SMDS_MeshElement* faceI = sideI->getCornerFace( n1 );
+          gp_XYZ p1Op = SMESH_MeshEditor::TNodeXYZ( oppositeNode( faceI, faceI->GetNodeIndex(n1)));
+          gp_Vec sideIDir( p1, p1Op );
+          // compute angle of (sideIDir projection to pln) and (X dir of pln)
+          gp_Vec2d sideIDirProj( sideIDir * pln.XDirection(), sideIDir * pln.YDirection());
+          double angle = sideIDirProj.Angle( gp::DX2d() );
+          if ( angle < 0 ) angle += 2 * PI; // angle [0-2*PI]
+          angleOfSide.insert( make_pair( angle, sideI ));
+          _DUMP_("  "<< sideI << " - side dir ("
+                 << sideIDir.X() << ", " << sideIDir.Y() << ", " << sideIDir.Z() << ")"
+                 << " angle " << angle);
+        }
+        if ( nbLoadedSides == 1 )
+        {
+          double angF = angleOfSide.begin()->first, angL = angleOfSide.rbegin()->first;
+          if ( angF > PI ) angF = 2*PI - angF;
+          if ( angL > PI ) angL = 2*PI - angL;
+          foundSide = angF < angL ? angleOfSide.begin()->second : angleOfSide.rbegin()->second;
+        }
+        else
+        {
+          gp_Vec gcDir( p1, gc );
+          gp_Vec2d gcDirProj( gcDir * pln.XDirection(), gcDir * pln.YDirection());
+          double gcAngle = gcDirProj.Angle( gp::DX2d() );
+          foundSide = gcAngle < 0 ? angleOfSide.rbegin()->second : angleOfSide.begin()->second;
+        }
+      }
       _DUMP_("  selected "<< foundSide );
     }
 
@@ -759,9 +850,14 @@ namespace
       row2.push_back( n1 = oppositeNode( quad, i1 ));
     }
 
+    _NodeDescriptor nDesc( row1[1] );
+    if ( nDesc == _NodeDescriptor( row1[0] ))
+      return true; // row of 2 nodes
+
     // Find the rest nodes
     TIDSortedElemSet emptySet, avoidSet;
-    while ( !isCornerNode( n2 ))
+    //while ( !isCornerNode( n2 ))
+    while ( nDesc == _NodeDescriptor( n2 ))
     {
       avoidSet.clear(); avoidSet.insert( quad );
       quad = SMESH_MeshEditor::FindFaceInSet( n1, n2, emptySet, avoidSet, &i1, &i2 );
