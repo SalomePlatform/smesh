@@ -610,7 +610,7 @@ double SMESH_MesherHelper::GetNodeU(const TopoDS_Edge&   E,
   }
   else if( Pos->GetTypeOfPosition() == SMDS_TOP_VERTEX )
   {
-    if ( inEdgeNode && TopExp::FirstVertex( E ).IsSame( TopExp::LastVertex( E ))) // issue 0020809
+    if ( inEdgeNode && TopExp::FirstVertex( E ).IsSame( TopExp::LastVertex( E ))) // issue 0020128
     {
       Standard_Real f,l;
       BRep_Tool::Range( E, f,l );
