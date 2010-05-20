@@ -51,7 +51,7 @@ namespace
 {
   enum EBoxSides //!< sides of the block
     {
-      B_BOTTOM=0, B_RIGHT, B_TOP, B_LEFT, B_FRONT, B_BACK, B_UNDEFINED
+      B_BOTTOM=0, B_RIGHT, B_TOP, B_LEFT, B_FRONT, B_BACK, NB_BLOCK_SIDES
     };
   const char* SBoxSides[] = //!< names of block sides
     {
@@ -59,7 +59,7 @@ namespace
     };
   enum EQuadEdge //!< edges of quadrangle side
     {
-      Q_BOTTOM, Q_RIGHT, Q_TOP, Q_LEFT, Q_UNDEFINED
+      Q_BOTTOM = 0, Q_RIGHT, Q_TOP, Q_LEFT, NB_QUAD_SIDES
     };
 
 
@@ -309,14 +309,29 @@ namespace
    */
   struct _Block
   {
-    _OrientedBlockSide _side[6]; // 6 sides of a sub-block
+    _OrientedBlockSide        _side[6]; // 6 sides of a sub-block
+    set<const SMDS_MeshNode*> _corners;
 
     const _OrientedBlockSide& getSide(int i) const { return _side[i]; }
+    bool setSide( int i, const _OrientedBlockSide& s)
+    {
+      if (( _side[i] = s ))
+      {
+        _corners.insert( s.cornerNode(0,0));
+        _corners.insert( s.cornerNode(1,0));
+        _corners.insert( s.cornerNode(0,1));
+        _corners.insert( s.cornerNode(1,1));
+      }
+      return s;
+    }
+    void clear() { for (int i=0;i<6;++i) _side[i]=0; _corners.clear(); }
     bool hasSide( const _OrientedBlockSide& s) const
     {
       if ( s ) for (int i=0;i<6;++i) if ( _side[i] && _side[i]._side == s._side ) return true;
       return false;
     }
+    int nbSides() const { int n=0; for (int i=0;i<6;++i) if ( _side[i] ) ++n; return n; }
+    bool isValid() const;
   };
   //================================================================================
   /*!
@@ -344,16 +359,14 @@ namespace
                              bool alongN1N2 );
     _OrientedBlockSide findBlockSide( EBoxSides startBlockSide,
                                       EQuadEdge sharedSideEdge1,
-                                      EQuadEdge sharedSideEdge2);
+                                      EQuadEdge sharedSideEdge2,
+                                      bool      withGeometricAnalysis);
     //!< update own data and data of the side bound to block
     void setSideBoundToBlock( _BlockSide& side )
     {
-      side._nbBlocksFound++;
-      if ( side.isBound() )
-      {
-        for ( int e = 0; e < int(Q_UNDEFINED); ++e )
+      if ( side._nbBlocksFound++, side.isBound() )
+        for ( int e = 0; e < int(NB_QUAD_SIDES); ++e )
           _edge2sides[ side.getEdge( (EQuadEdge) e ) ].erase( &side );
-      }
     }
     //!< store reason of error
     int error(const SMESH_Comment& reason) { _error = reason; return 0; }
@@ -432,7 +445,7 @@ namespace
               corners.push_back( nCorner );
               cornerFaces.insert( side.getCornerFace( nCorner ));
             }
-          for ( int e = 0; e < int(Q_UNDEFINED); ++e )
+          for ( int e = 0; e < int(NB_QUAD_SIDES); ++e )
             _edge2sides[ side.getEdge( (EQuadEdge) e ) ].insert( &side );
 
           nbFacesOnSides += side.getNbFaces();
@@ -463,18 +476,27 @@ namespace
     // Organize sides into blocks
     // ---------------------------
 
-    // analyse sharing of sides by blocks
-    int nbBlockSides = 0; // nb of block sides taking into account their sharing
-    list < _BlockSide >::iterator sideIt = _allSides.begin();
-    for ( ; sideIt != _allSides.end(); ++sideIt )
+    // analyse sharing of sides by blocks and sort sides by nb of adjacent sides
+    int nbBlockSides = 0; // total nb of block sides taking into account their sharing
+    multimap<int, _BlockSide* > sortedSides;
     {
-      _BlockSide& side = *sideIt;
-      bool isSharedSide = true;
-      for ( int e = 0; e < int(Q_UNDEFINED) && isSharedSide; ++e )
-        isSharedSide = _edge2sides[ side.getEdge( (EQuadEdge) e ) ].size() > 2;
-      side._nbBlocksFound = 0;
-      side._nbBlocksExpected = isSharedSide ? 2 : 1;
-      nbBlockSides += side._nbBlocksExpected;
+      list < _BlockSide >::iterator sideIt = _allSides.begin();
+      for ( ; sideIt != _allSides.end(); ++sideIt )
+      {
+        _BlockSide& side = *sideIt;
+        bool isSharedSide = true;
+        int nbAdjacent = 0;
+        for ( int e = 0; e < int(NB_QUAD_SIDES) && isSharedSide; ++e )
+        {
+          int nbAdj = _edge2sides[ side.getEdge( (EQuadEdge) e ) ].size();
+          nbAdjacent += nbAdj;
+          isSharedSide = ( nbAdj > 2 );
+        }
+        side._nbBlocksFound = 0;
+        side._nbBlocksExpected = isSharedSide ? 2 : 1;
+        nbBlockSides += side._nbBlocksExpected;
+        sortedSides.insert( make_pair( nbAdjacent, & side ));
+      }
     }
 
     // find sides of each block
@@ -482,9 +504,9 @@ namespace
     while ( nbBlockSides >= 6 )
     {
       // get any side not bound to all blocks it belongs to
-      sideIt = _allSides.begin();
-      while ( sideIt != _allSides.end() && sideIt->isBound())
-        ++sideIt;
+      multimap<int, _BlockSide*>::iterator i_side = sortedSides.begin();
+      while ( i_side != sortedSides.end() && i_side->second->isBound())
+        ++i_side;
 
       // start searching for block sides from the got side
       bool ok = true;
@@ -492,57 +514,40 @@ namespace
         _blocks.resize( _blocks.size() + 1 );
 
       _Block& block = _blocks.back();
-      block._side[B_FRONT] = &(*sideIt);
-      setSideBoundToBlock( *sideIt );
+      block.setSide( B_FRONT, i_side->second );
+      setSideBoundToBlock( *i_side->second );
       nbBlockSides--;
-      
-      // edges of neighbour sides of B_FRONT corresponding to front's edges
-      EQuadEdge edgeOfFront[4] = { Q_BOTTOM, Q_RIGHT, Q_TOP, Q_LEFT };
-      EQuadEdge edgeToFind [4] = { Q_BOTTOM, Q_LEFT, Q_BOTTOM, Q_LEFT };
-      // TODO: first find all sides where no choice of sides is needed,
-      // then perform search with selection, which is then easier
-      for ( int i = Q_BOTTOM; ok && i <= Q_LEFT; ++i )
-        ok = ( block._side[i] = findBlockSide( B_FRONT, edgeOfFront[i], edgeToFind[i]));
-      if ( ok )
-        ok = ( block._side[B_BACK] = findBlockSide( B_TOP, Q_TOP, Q_TOP ));
 
+      // edges of adjacent sides of B_FRONT corresponding to front's edges
+      EQuadEdge edgeOfFront[4] = { Q_BOTTOM, Q_RIGHT, Q_TOP, Q_LEFT };
+      EQuadEdge edgeOfAdj  [4] = { Q_BOTTOM, Q_LEFT, Q_BOTTOM, Q_LEFT };
+      // first find all sides detectable w/o advanced analysis,
+      // then repeat the search, which then may pass without advanced analysis
+      for ( int advAnalys = 0; advAnalys < 2; ++advAnalys )
+      {
+        for ( int i = 0; (ok || !advAnalys) && i < NB_QUAD_SIDES; ++i )
+          if ( !block._side[i] ) // try to find 4 sides adjacent to front side
+            ok = block.setSide( i, findBlockSide( B_FRONT, edgeOfFront[i],edgeOfAdj[i],advAnalys));
+        if ( ok || !advAnalys)
+          if ( !block._side[B_BACK] && block._side[B_TOP] ) // try to find back side by top one
+            ok = block.setSide( B_BACK, findBlockSide( B_TOP, Q_TOP, Q_TOP, advAnalys ));
+        if ( !advAnalys ) ok = true;
+      }
+      ok = block.isValid();
       if ( ok )
       {
         // check if just found block is same as one of previously found
         bool isSame = false;
         for ( int i = 1; i < _blocks.size() && !isSame; ++i )
-        {
-          _Block& prevBlock = _blocks[i-1];
-          isSame = true;
-          for ( int j = 0; j < 6 && isSame; ++j )
-            isSame = prevBlock.hasSide( block._side[ j ]);
-        }
+          isSame = ( block._corners == _blocks[i-1]._corners );
         ok = !isSame;
-      }
-      if ( ok )
-      {
-        // check block validity
-        int x = block._side[B_BOTTOM].getHoriSize();
-        ok = (  block._side[B_TOP   ].getHoriSize() == x &&
-                block._side[B_FRONT ].getHoriSize() == x &&
-                block._side[B_BACK  ].getHoriSize() == x );
-        int y = block._side[B_BOTTOM].getVertSize();
-        ok = (  ok &&
-                block._side[B_TOP   ].getVertSize() == y &&
-                block._side[B_LEFT  ].getHoriSize() == y &&
-                block._side[B_RIGHT ].getHoriSize() == y);
-        int z = block._side[B_FRONT].getVertSize();
-        ok = (  ok &&
-                block._side[B_BACK  ].getVertSize() == z &&
-                block._side[B_LEFT  ].getVertSize() == z &&
-                block._side[B_RIGHT ].getVertSize() == z);
       }
 
       // count the found sides
-      _DUMP_(endl);
-      for (int i = 0; i < B_UNDEFINED; ++i )
+      _DUMP_(endl << "** Block " << _blocks.size() << " valid: " << block.isValid());
+      for (int i = 0; i < NB_BLOCK_SIDES; ++i )
       {
-        _DUMP_("** Block side "<< SBoxSides[i] <<" "<< block._side[ i ]._side);
+        _DUMP_("\tSide "<< SBoxSides[i] <<" "<< block._side[ i ]._side);
         if ( block._side[ i ] )
         {
           if ( ok && i != B_FRONT)
@@ -550,22 +555,24 @@ namespace
             setSideBoundToBlock( *block._side[ i ]._side );
             nbBlockSides--;
           }
-          _DUMP_("Corner 0,0 "<< block._side[ i ].cornerNode(0,0));
-          _DUMP_("Corner 1,0 "<< block._side[ i ].cornerNode(1,0));    
-          _DUMP_("Corner 1,1 "<< block._side[ i ].cornerNode(1,1));
-          _DUMP_("Corner 0,1 "<< block._side[ i ].cornerNode(0,1));
+          _DUMP_("\t corners "<<
+                 block._side[ i ].cornerNode(0,0)->GetID() << ", " <<
+                 block._side[ i ].cornerNode(1,0)->GetID() << ", " <<
+                 block._side[ i ].cornerNode(1,1)->GetID() << ", " <<
+                 block._side[ i ].cornerNode(0,1)->GetID() << ", "<<endl);
         }
         else
         {
-          _DUMP_("Not found"<<endl);
+          _DUMP_("\t not found"<<endl);
         }
       }
       if ( !ok )
-        block._side[0] = block._side[1] = block._side[2] =
-          block._side[3] = block._side[4] = block._side[5] = 0;
+        block.clear();
       else
         nbBlocks++;
     }
+    _DUMP_("Nb found blocks "<< nbBlocks <<endl);
+
     if ( nbBlocks == 0 && _error.empty() )
       return BAD_MESH_ERR;
 
@@ -677,7 +684,8 @@ namespace
 
   _OrientedBlockSide _Skin::findBlockSide( EBoxSides startBlockSide,
                                            EQuadEdge sharedSideEdge1,
-                                           EQuadEdge sharedSideEdge2)
+                                           EQuadEdge sharedSideEdge2,
+                                           bool      withGeometricAnalysis)
   {
     _Block& block = _blocks.back();
     _OrientedBlockSide& side1 = block._side[ startBlockSide ];
@@ -692,53 +700,35 @@ namespace
     set< _BlockSide* > sidesOnEdge = _edge2sides[ edge ]; // copy a set
 
     // exclude loaded sides of block from sidesOnEdge
-    int nbLoadedSides = 0;
-    for (int i = 0; i < B_UNDEFINED; ++i )
-    {
+    for (int i = 0; i < NB_BLOCK_SIDES; ++i )
       if ( block._side[ i ] )
-      {
-        nbLoadedSides++;
         sidesOnEdge.erase( block._side[ i ]._side );
-      }
-    }
+
     int nbSidesOnEdge = sidesOnEdge.size();
     _DUMP_("nbSidesOnEdge "<< nbSidesOnEdge << " " << n1->GetID() << "-" << n2->GetID() );
     if ( nbSidesOnEdge == 0 )
       return 0;
 
     _BlockSide* foundSide = 0;
-    if ( nbSidesOnEdge == 1 /*|| nbSidesOnEdge == 2 && nbLoadedSides == 1 */)
+    if ( nbSidesOnEdge == 1 )
     {
       foundSide = *sidesOnEdge.begin();
     }
     else
     {
       set< _BlockSide* >::iterator sideIt = sidesOnEdge.begin();
-      gp_XYZ gc(0,0,0); // gravity center of already loaded block sides
+      int nbLoadedSides = block.nbSides();
       if ( nbLoadedSides > 1 )
       {
         // Find the side having more than 2 corners common with already loaded sides
-
-        set<const SMDS_MeshNode*> loadedCorners;
-        for (int i = 0; i < B_UNDEFINED; ++i )
-          if ( block._side[ i ] )
-          {
-            loadedCorners.insert( block._side[ i ]->getCornerNode(0,0));
-            loadedCorners.insert( block._side[ i ]->getCornerNode(1,0));
-            loadedCorners.insert( block._side[ i ]->getCornerNode(0,1));
-            loadedCorners.insert( block._side[ i ]->getCornerNode(1,1));
-            gc += block._side[ i ]._side->getGC();
-          }
-        gc /= nbLoadedSides;
-
         for (; !foundSide && sideIt != sidesOnEdge.end(); ++sideIt )
         {
           _BlockSide* sideI = *sideIt;
           int nbCommonCorners =
-            loadedCorners.count( sideI->getCornerNode(0,0)) +
-            loadedCorners.count( sideI->getCornerNode(1,0)) +
-            loadedCorners.count( sideI->getCornerNode(0,1)) +
-            loadedCorners.count( sideI->getCornerNode(1,1));
+            block._corners.count( sideI->getCornerNode(0,0)) +
+            block._corners.count( sideI->getCornerNode(1,0)) +
+            block._corners.count( sideI->getCornerNode(0,1)) +
+            block._corners.count( sideI->getCornerNode(1,1));
           if ( nbCommonCorners > 2 )
             foundSide = sideI;
         }
@@ -746,6 +736,8 @@ namespace
 
       if ( !foundSide )
       {
+        if ( !withGeometricAnalysis ) return 0;
+
         // Select one of found sides most close to startBlockSide
 
         gp_XYZ p1 ( n1->X(),n1->Y(),n1->Z()),  p2 (n2->X(),n2->Y(),n2->Z());
@@ -759,7 +751,7 @@ namespace
                << side1Dir.X() << ", " << side1Dir.Y() << ", " << side1Dir.Z() << ")" );
 
         map < double , _BlockSide* > angleOfSide;
-        for (sidesOnEdge.begin(); sideIt != sidesOnEdge.end(); ++sideIt )
+        for (sideIt = sidesOnEdge.begin(); sideIt != sidesOnEdge.end(); ++sideIt )
         {
           _BlockSide* sideI = *sideIt;
           const SMDS_MeshElement* faceI = sideI->getCornerFace( n1 );
@@ -783,6 +775,12 @@ namespace
         }
         else
         {
+          gp_XYZ gc(0,0,0); // gravity center of already loaded block sides
+          for (int i = 0; i < NB_BLOCK_SIDES; ++i )
+            if ( block._side[ i ] )
+              gc += block._side[ i ]._side->getGC();
+          gc /= nbLoadedSides;
+
           gp_Vec gcDir( p1, gc );
           gp_Vec2d gcDirProj( gcDir * pln.XDirection(), gcDir * pln.YDirection());
           double gcAngle = gcDirProj.Angle( gp::DX2d() );
@@ -900,7 +898,31 @@ namespace
     return SMDS_Mesh::FindFace(n1, n2, n3, n4 );
   }
 
-}
+  //================================================================================
+  /*!
+   * \brief Checks own validity
+   */
+  //================================================================================
+
+  bool _Block::isValid() const
+  {
+    bool ok = ( nbSides() == 6 );
+
+    // check only corners depending on side selection
+    EBoxSides adjacent[4] = { B_BOTTOM, B_RIGHT, B_TOP, B_LEFT };
+    EQuadEdge edgeAdj [4] = { Q_TOP,    Q_RIGHT, Q_TOP, Q_RIGHT };
+    EQuadEdge edgeBack[4] = { Q_BOTTOM, Q_RIGHT, Q_TOP, Q_LEFT };
+
+    for ( int i=0; ok && i < NB_QUAD_SIDES; ++i )
+    { 
+      SMESH_OrientedLink eBack = _side[ B_BACK      ].edge( edgeBack[i] );
+      SMESH_OrientedLink eAdja = _side[ adjacent[i] ].edge( edgeAdj[i] );
+      ok = ( eBack == eAdja );
+    }
+    return ok;
+  }
+
+} // namespace
 
 //=======================================================================
 //function : StdMeshers_HexaFromSkin_3D
