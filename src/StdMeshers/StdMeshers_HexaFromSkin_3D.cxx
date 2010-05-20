@@ -136,7 +136,7 @@ namespace
 
   bool isQuadrangle(const SMDS_MeshElement* e)
   {
-    return ( e && e->NbNodes() == ( e->IsQuadratic() ? 8 : 4 ));
+    return ( e && e->NbCornerNodes() == 4 );
   }
 
   //================================================================================
