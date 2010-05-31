@@ -23,7 +23,7 @@ elements which will form your group:</li>
 SALOME Platform distinguishes between the two Group types:
 <b>Standalone Group</b> and <b>Group on Geometry</b>.
 
-<br><h2>Standalone Group</h2>
+\anchor standalone_group <br><h2>"Standalone Group"</h2>
 
 <b>Standalone Group</b> consists of mesh elements, which you can define in
 two possible ways.
@@ -79,7 +79,7 @@ be changed, the new one will not be modified.
 \ref tui_create_standalone_group "Create a Standalone Group"
 operation.  
 
-<br><h2>Group on Geometry</h2>
+\anchor group_on_geom <br><h2>"Group on Geometry"</h2>
 
 To create a group on geometry check <b>Group on geometry</b> in the \b Group
 \b type field. <b>Group on geometry</b> contains the elements of a certain type
