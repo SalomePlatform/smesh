@@ -601,14 +601,13 @@ double SMESH_MesherHelper::GetNodeU(const TopoDS_Edge&   E,
                                     bool*                check)
 {
   double param = 0;
-  const SMDS_PositionPtr Pos = n->GetPosition();
-  if ( Pos->GetTypeOfPosition()==SMDS_TOP_EDGE )
+  const SMDS_PositionPtr pos = n->GetPosition();
+  if ( pos->GetTypeOfPosition()==SMDS_TOP_EDGE )
   {
-    const SMDS_EdgePosition* epos =
-      static_cast<const SMDS_EdgePosition*>(n->GetPosition().get());
+    const SMDS_EdgePosition* epos = static_cast<const SMDS_EdgePosition*>( pos.get() );
     param =  epos->GetUParameter();
   }
-  else if( Pos->GetTypeOfPosition() == SMDS_TOP_VERTEX )
+  else if( pos->GetTypeOfPosition() == SMDS_TOP_VERTEX )
   {
     if ( inEdgeNode && TopExp::FirstVertex( E ).IsSame( TopExp::LastVertex( E ))) // issue 0020128
     {
@@ -620,13 +619,21 @@ double SMESH_MesherHelper::GetNodeU(const TopoDS_Edge&   E,
     else
     {
       SMESHDS_Mesh * meshDS = GetMeshDS();
-      int vertexID = n->GetPosition()->GetShapeId();
+      int vertexID = pos->GetShapeId();
       const TopoDS_Vertex& V = TopoDS::Vertex(meshDS->IndexToShape(vertexID));
       param =  BRep_Tool::Parameter( V, E );
     }
   }
   if ( check )
-    *check = CheckNodeU( E, n, param, BRep_Tool::Tolerance( E ));
+  {
+    double tol = BRep_Tool::Tolerance( E );
+    double f,l;  BRep_Tool::Range( E, f,l );
+    bool force = ( param < f-tol || param > l+tol );
+    if ( !force && pos->GetTypeOfPosition()==SMDS_TOP_EDGE )
+      force = ( GetMeshDS()->ShapeToIndex( E ) != pos->GetShapeId() );
+
+    *check = CheckNodeU( E, n, param, tol, force );
+  }
   return param;
 }
 
@@ -679,6 +686,20 @@ bool SMESH_MesherHelper::CheckNodeU(const TopoDS_Edge&   E,
       else if ( fabs( u ) > numeric_limits<double>::min() )
       {
         ((SMESH_MesherHelper*) this)->myOkNodePosShapes.insert( n->GetPosition()->GetShapeId() );
+      }
+      if (( u < f-tol || u > l+tol ) && force )
+      {
+        // node is on vertex but is set on periodic but trimmed edge (issue 0020890)
+        try
+        {
+          // do not use IsPeriodic() as Geom_TrimmedCurve::IsPeriodic () returns false
+          double period = curve->Period();
+          u = ( u < f ) ? u + period : u - period;
+        }
+        catch (Standard_Failure& exc)
+        {
+          return false;
+        }
       }
     }
   }
