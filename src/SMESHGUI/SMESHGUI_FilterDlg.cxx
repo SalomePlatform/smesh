@@ -2517,31 +2517,18 @@ void SMESHGUI_FilterDlg::setIdsToWg (QWidget* theWg, const QList<int>& theIds)
   if (theWg == 0)
     return;
 
+  QStringList aStrList;
+  foreach(int id, theIds)
+    aStrList << QString::number(id);
+
   if (theWg->inherits("QListWidget"))
   {
-    QListWidget* aListBox = qobject_cast<QListWidget*>( theWg );
-    aListBox->clear();
-
-    QStringList aStrList;
-    QList<int>::const_iterator anIter;
-    for (anIter = theIds.begin(); anIter != theIds.end(); ++anIter)
-      aStrList.append(QString("%1").arg(*anIter));
-
-    aListBox->addItems(aStrList);
+    qobject_cast<QListWidget*>(theWg)->clear();
+    qobject_cast<QListWidget*>(theWg)->addItems(aStrList);
   }
   else if (theWg->inherits("QLineEdit"))
   {
-    QLineEdit* aLineEdit = qobject_cast<QLineEdit*>( theWg );
-    QString aStr;
-    QList<int>::const_iterator anIter;
-
-    for (anIter = theIds.begin(); anIter != theIds.end(); ++ anIter)
-      aStr += QString("%1 ").arg(*anIter);
-
-    if (!aStr.isEmpty())
-      aStr.remove(aStr.length() - 1, 1);
-
-    aLineEdit->setText(aStr);
+    qobject_cast<QLineEdit*>( theWg )->setText(aStrList.join(" "));
   }
 }
 
