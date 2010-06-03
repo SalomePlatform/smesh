@@ -2987,14 +2987,12 @@ void SMESHGUI_FilterDlg::onSelectionDone()
     }
   }
 
-  int aCriterionType = myTable->GetCriterionType(aRow);
-  if (aList.Extent() != 1 ||
-      !myTable->CurrentCell(aRow, aCol) ||
-      aCriterionType != SMESH::FT_BelongToGeom &&
-      aCriterionType != SMESH::FT_BelongToPlane &&
-      aCriterionType != SMESH::FT_BelongToCylinder &&
-      aCriterionType != SMESH::FT_BelongToGenSurface &&
-      aCriterionType != SMESH::FT_LyingOnGeom)
+  QList<int> types; 
+  types << SMESH::FT_BelongToGeom     << SMESH::FT_BelongToPlane 
+	<< SMESH::FT_BelongToCylinder << SMESH::FT_BelongToGenSurface
+	<< SMESH::FT_LyingOnGeom;
+  if (aList.Extent() != 1 || !myTable->CurrentCell(aRow, aCol) || 
+      !types.contains(myTable->GetCriterionType(aRow)))
     return;
 
   Handle(SALOME_InteractiveObject) anIO = aList.First();
