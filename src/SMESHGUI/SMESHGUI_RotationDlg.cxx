@@ -134,6 +134,7 @@ SMESHGUI_RotationDlg::SMESHGUI_RotationDlg( SMESHGUI* theModule )
   SelectElementsButton->setIcon(image1);
   LineEditElements = new QLineEdit(GroupArguments);
   LineEditElements->setValidator(myIdValidator);
+  LineEditElements->setMaxLength(-1);
   myFilterBtn = new QPushButton( tr( "SMESH_BUT_FILTER" ), GroupArguments );
   connect(myFilterBtn,   SIGNAL(clicked()), this, SLOT(setFilters()));
 

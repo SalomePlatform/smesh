@@ -167,6 +167,7 @@ SMESHGUI_ExtrusionAlongPathDlg::SMESHGUI_ExtrusionAlongPathDlg( SMESHGUI* theMod
 
   ElementsLineEdit = new QLineEdit(GroupArguments);
   ElementsLineEdit->setValidator(myIdValidator);
+  ElementsLineEdit->setMaxLength(-1);
   myFilterBtn = new QPushButton( tr( "SMESH_BUT_FILTER" ), GroupArguments );
   connect(myFilterBtn,   SIGNAL(clicked()), this, SLOT(setFilters()));
 

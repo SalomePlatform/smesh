@@ -146,6 +146,7 @@ SMESHGUI_RevolutionDlg::SMESHGUI_RevolutionDlg( SMESHGUI* theModule )
 
   LineEditElements  = new QLineEdit(GroupArguments);
   LineEditElements->setValidator(myIdValidator);
+  LineEditElements->setMaxLength(-1);
   myFilterBtn = new QPushButton( tr( "SMESH_BUT_FILTER" ), GroupArguments );
   connect(myFilterBtn,   SIGNAL(clicked()), this, SLOT(setFilters()));
 
