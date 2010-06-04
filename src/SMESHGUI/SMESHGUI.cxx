@@ -3861,8 +3861,8 @@ void SMESHGUI::createPreferences()
   
   // Set property for precision value for spinboxes
   for ( ii = 0; ii < nbQuantities; ii++ ){
-    setPreferenceProperty( precs[ii], "min", -10 );
-    setPreferenceProperty( precs[ii], "max", 10 );
+    setPreferenceProperty( precs[ii], "min", -14 );
+    setPreferenceProperty( precs[ii], "max", 14 );
     setPreferenceProperty( precs[ii], "precision", 2 );
   }   
 
