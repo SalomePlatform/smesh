@@ -585,18 +585,17 @@ TSideVector StdMeshers_FaceSide::GetFaceWires(const TopoDS_Face& theFace,
                                               TError &           theError)
 {
   TopoDS_Vertex V1;
-  list< TopoDS_Edge > edges;
+  list< TopoDS_Edge > edges, internalEdges;
   list< int > nbEdgesInWires;
   int nbWires = SMESH_Block::GetOrderedEdges (theFace, V1, edges, nbEdgesInWires);
 
   // split list of all edges into separate wires
   TSideVector wires( nbWires );
   list< int >::iterator nbE = nbEdgesInWires.begin();
-  list< TopoDS_Edge >::iterator from, to;
-  from = to = edges.begin();
-  for ( int iW = 0; iW < nbWires; ++iW )
+  list< TopoDS_Edge >::iterator from = edges.begin(), to = from;
+  for ( int iW = 0; iW < nbWires; ++iW, ++nbE )
   {
-    std::advance( to, *nbE++ );
+    std::advance( to, *nbE );
     if ( *nbE == 0 ) // Issue 0020676
     {
       --nbWires;
@@ -608,6 +607,7 @@ TSideVector StdMeshers_FaceSide::GetFaceWires(const TopoDS_Face& theFace,
     // assure that there is a node on the first vertex
     // as StdMeshers_FaceSide::GetUVPtStruct() requires
     if ( wireEdges.front().Orientation() != TopAbs_INTERNAL ) // Issue 0020676
+    {
       while ( !SMESH_Algo::VertexNode( TopExp::FirstVertex( wireEdges.front(), true),
                                        theMesh.GetMeshDS()))
       {
@@ -619,11 +619,23 @@ TSideVector StdMeshers_FaceSide::GetFaceWires(const TopoDS_Face& theFace,
           return TSideVector(0);
         }
       }
-    const bool isForward = true;
+    }
+    else if ( *nbE > 1 ) // Issue 0020676 (Face_pb_netgen.brep) - several internal edges in a wire
+    {
+      internalEdges.splice( internalEdges.end(), wireEdges, ++wireEdges.begin(), wireEdges.end());
+    }
+
     StdMeshers_FaceSide* wire = new StdMeshers_FaceSide( theFace, wireEdges, &theMesh,
-                                                         isForward, theIgnoreMediumNodes);
+                                                         /*isForward=*/true, theIgnoreMediumNodes);
     wires[ iW ] = StdMeshers_FaceSidePtr( wire );
     from = to;
+  }
+  while ( !internalEdges.empty() )
+  {
+    StdMeshers_FaceSide* wire = new StdMeshers_FaceSide( theFace, internalEdges.back(), &theMesh,
+                                                         /*isForward=*/true, theIgnoreMediumNodes);
+    wires.push_back( StdMeshers_FaceSidePtr( wire ));
+    internalEdges.pop_back();
   }
   return wires;
 }
