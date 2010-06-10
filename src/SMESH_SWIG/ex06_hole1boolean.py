@@ -109,7 +109,7 @@ c_l.append(baseHexa4)
 
 c_cpd = MakeCompound(c_l)
 c_glu = MakeGlueFaces(c_cpd, 1.e-5)
-piece = RemoveExtraEdges(c_glu)
+piece = RemoveExtraEdges(c_glu, doUnionFaces=True)
 
 # Add in study
 # ------------

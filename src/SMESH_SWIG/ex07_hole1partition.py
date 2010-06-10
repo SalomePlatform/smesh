@@ -72,7 +72,7 @@ p_tools.append(MakePlane(p_centre, MakeVectorDXDYDZ(-g_largeur, 0, g_longueur), 
 
 p_part = MakePartition([c_piece], p_tools, [], [], ShapeType["SOLID"])
 
-p_blocs = RemoveExtraEdges(p_part)
+p_blocs = RemoveExtraEdges(p_part, doUnionFaces=True)
 piece   = MakeGlueFaces(p_blocs, 1.e-5)
 
 # Add in study

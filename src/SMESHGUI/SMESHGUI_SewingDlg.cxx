@@ -533,6 +533,8 @@ bool SMESHGUI_SewingDlg::ClickOnApply()
 
       Init();
       ConstructorsClicked(GetConstructorId());
+
+      SMESHGUI::Modified();
     }
   }
 

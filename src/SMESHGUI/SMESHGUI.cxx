@@ -1488,6 +1488,22 @@ SalomeApp_Study* SMESHGUI::activeStudy()
  *
  */
 //=============================================================================
+void SMESHGUI::Modified( bool theIsUpdateActions )
+{
+  if( SalomeApp_Application* app = dynamic_cast<SalomeApp_Application*>( SUIT_Session::session()->activeApplication() ) ) {
+    if( SalomeApp_Study* appStudy = dynamic_cast<SalomeApp_Study*>( app->activeStudy() ) ) {
+      appStudy->Modified();
+      if( theIsUpdateActions )
+        app->updateActions();
+    }
+  }
+}
+
+//=============================================================================
+/*!
+ *
+ */
+//=============================================================================
 bool SMESHGUI::DefineDlgPosition(QWidget * aDlg, int &x, int &y)
 {
   /* Here the position is on the bottom right corner - 10 */
@@ -3845,8 +3861,8 @@ void SMESHGUI::createPreferences()
   
   // Set property for precision value for spinboxes
   for ( ii = 0; ii < nbQuantities; ii++ ){
-    setPreferenceProperty( precs[ii], "min", -10 );
-    setPreferenceProperty( precs[ii], "max", 10 );
+    setPreferenceProperty( precs[ii], "min", -14 );
+    setPreferenceProperty( precs[ii], "max", 14 );
     setPreferenceProperty( precs[ii], "precision", 2 );
   }   
 
@@ -4869,5 +4885,7 @@ int SMESHGUI::addVtkFontPref( const QString& label, const int pId, const QString
 */
 void SMESHGUI::onHypothesisEdit( int result )
 {
+  if( result == 1 )
+    SMESHGUI::Modified();
   updateObjBrowser( true );
 }

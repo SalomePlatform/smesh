@@ -130,6 +130,7 @@ SMESHGUI_WhatIsDlg::SMESHGUI_WhatIsDlg( SMESHGUI* theModule )
 
   LineEditElements  = new QLineEdit(GroupArguments);
   LineEditElements->setValidator(new SMESHGUI_IdValidator(this));
+  LineEditElements->setMaxLength(-1);
   GroupArgumentsLayout->addWidget(LineEditElements, 0, 1);
 
   // information text browser

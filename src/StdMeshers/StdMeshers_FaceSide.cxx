@@ -270,7 +270,7 @@ const vector<UVPtStruct>& StdMeshers_FaceSide::GetUVPtStruct(bool   isXConst,
           const SMDS_MeshNode* node = nItr->next();
           if ( myIgnoreMediumNodes && SMESH_MeshEditor::IsMedium( node, SMDSAbs_Edge ))
             continue;
-          double u = helper.GetNodeU( myEdge[i], node, &paramOK );
+          double u = helper.GetNodeU( myEdge[i], node, 0, &paramOK );
           double aLenU = GCPnts_AbscissaPoint::Length
             ( const_cast<GeomAdaptor_Curve&>( myC3dAdaptor[i]), myFirst[i], u );
           if ( myEdgeLength[i] < aLenU ) // nonregression test "3D_mesh_NETGEN/G6"
@@ -288,7 +288,7 @@ const vector<UVPtStruct>& StdMeshers_FaceSide::GetUVPtStruct(bool   isXConst,
           const SMDS_MeshNode* node = nItr->next();
           if ( myIgnoreMediumNodes && SMESH_MeshEditor::IsMedium( node, SMDSAbs_Edge ))
             continue;
-          double u = helper.GetNodeU( myEdge[i], node, &paramOK );
+          double u = helper.GetNodeU( myEdge[i], node, 0, &paramOK );
 
           // paramSize is signed so orientation is taken into account
           double normPar = prevNormPar + r * ( u - myFirst[i] ) / paramSize;

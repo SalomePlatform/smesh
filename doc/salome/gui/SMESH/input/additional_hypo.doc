@@ -28,8 +28,30 @@ hypothesis onto an opposite edge. If a local hypothesis and
 propagation are defined on an edge of a quadrangular face, the
 opposite edge will have the same hypothesis, unless another hypothesis
 has been locally defined on the opposite edge.
-
+ 
 <br><b>See Also</b> a sample TUI Script of a 
-\ref tui_propagation "Propagation hypothesis" operation.  
+\ref tui_propagation "Propagation hypothesis" operation
+
+<h2>Quadrangle Preference</h2>
+
+This additional hypothesis can be used together with Quadrangle (Mapping) and Netgen 2D
+algorithms. 
+
+It allows Netgen 2D to build quadrangular meshes at any conditions.
+
+It allows Quadrangle (Mapping) to build quadrangular meshes even if the number
+of nodes at the opposite edges of a meshed face is not equal,
+otherwise this mesh will contain some triangular elements.
+<br>
+This hypothesis has one restriction on its work: the total quantity of
+segments on all four sides of the face must be even (divisible by 2).
+
+<h2>Triangle Preference</h2>
+
+This additional hypothesis can be used only together with Quadrangle (Mapping)
+algorithm. It allows to build triangular mesh faces in the refinement
+area if the number of nodes at the opposite edges of a meshed face is not equal,
+otherwise refinement area will contain some quadrangular elements.
+ 
 
 */

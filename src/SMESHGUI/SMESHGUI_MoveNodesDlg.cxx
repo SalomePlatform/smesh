@@ -356,6 +356,7 @@ bool SMESHGUI_MoveNodesDlg::onApply()
     aList.Append(myMeshActor->getIO());
     mySelectionMgr->setSelectedObjects(aList,false);
     SMESH::UpdateView();
+    SMESHGUI::Modified();
     reset();
   }
 

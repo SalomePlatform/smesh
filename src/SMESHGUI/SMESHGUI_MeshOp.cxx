@@ -150,7 +150,10 @@ bool SMESHGUI_MeshOp::onApply()
     else if ( !myToCreate )
       aResult = editMeshOrSubMesh( aMess );
     if ( aResult )
+    {
+      SMESHGUI::Modified();
       update( UF_ObjBrowser | UF_Model );
+    }
   }
   catch ( const SALOME::SALOME_Exception& S_ex )
   {

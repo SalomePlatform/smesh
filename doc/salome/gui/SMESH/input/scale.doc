@@ -69,17 +69,17 @@ name in the adjacent box);</li>
 
 <b>Example of using:</b>
 
-1. Create quandrangle mesh 3x3 on simple planar face (200x200)
+1. Create quandrangle mesh 3x3 on a simple planar face (200x200)
 
 \image html scaleinit01.png
 
-and union 3 face (along axis Z) to group "gr_faces"
+and union 3 faces (along axis Z) to group "gr_faces"
 
 \image html scaleinit02.png
 
 
 
-2. Perform scale operation for whole mesh with creation of new mesh:
+2. Perform scale operation for the whole mesh and create a new mesh:
 
 \image html scale03.png
 
@@ -89,7 +89,7 @@ result after operation:
 
 
 
-3. Perform scale operation for whole mesh with copy of elements:
+3. Perform scale operation for the whole mesh and copy elements:
 
 \image html scale04.png
 
@@ -99,7 +99,7 @@ result after operation:
 
 
 
-4. Perform scale operation for group of faces with copy of elements:
+4. Perform scale operation for a group of faces and copy elements:
 
 \image html scale06.png
 
@@ -109,7 +109,7 @@ result after operation:
 
 
 
-5. Perform scale operation for two edges with moving of elements:
+5. Perform scale operation for two edges and move elements:
 
 \image html scale07.png
 
@@ -119,7 +119,7 @@ result after operation:
 
 
 
-6. Perform scale operation for one face with moving of elements:
+6. Perform scale operation for one face and move elements:
 
 \image html scale09.png
 

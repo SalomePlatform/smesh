@@ -122,6 +122,7 @@ void SMESHGUI_GenericHypothesisCreator::editHypothesis( SMESH::SMESH_Hypothesis_
   SMESHGUI_HypothesisDlg* Dlg = new SMESHGUI_HypothesisDlg( this, theParent );
   connect( Dlg, SIGNAL( finished( int ) ), this, SLOT( onDialogFinished( int ) ) );
   connect( this, SIGNAL( finished( int ) ), obj, slot.toLatin1().constData() );
+  connect( SMESHGUI::GetSMESHGUI(), SIGNAL( SignalCloseAllDialogs() ), Dlg, SLOT( reject() ));
 
   myDlg = Dlg;
   QFrame* fr = buildFrame();

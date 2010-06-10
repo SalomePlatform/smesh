@@ -447,6 +447,7 @@ void SMESHGUI_AddMeshElementDlg::Init()
   connect(mySelectionMgr, SIGNAL(currentSelectionChanged()), SLOT(SelectionIntoArgument()));
   /* to close dialog if study frame change */
   connect(mySMESHGUI, SIGNAL (SignalStudyFrameChanged()), SLOT(ClickOnCancel()));
+  connect(mySMESHGUI, SIGNAL (SignalCloseAllDialogs()), SLOT(ClickOnCancel()));    
 
   if (Reverse)
     connect(Reverse, SIGNAL(stateChanged(int)), SLOT(CheckBox(int)));
@@ -570,6 +571,8 @@ void SMESHGUI_AddMeshElementDlg::ClickOnApply()
     myEditCurrentArgument->setText("");
 
     myBusy = false;
+
+    SMESHGUI::Modified();
   }
 }
 

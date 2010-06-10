@@ -574,6 +574,8 @@ void SMESHGUI_CreatePolyhedralVolumeDlg::ClickOnApply()
       }
       //ConstructorsClicked( GetConstructorId() );
       busy = false;
+
+      SMESHGUI::Modified();
     }
 }
 

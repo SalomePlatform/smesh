@@ -27,6 +27,7 @@
 #include "SMESHGUI_GroupOnShapeDlg.h"
 
 #include "SMESH_TypeFilter.hxx"
+#include "SMESHGUI.h"
 #include "SMESHGUI_Utils.h"
 #include "SMESHGUI_GEOMGenUtils.h"
 
@@ -347,6 +348,8 @@ bool SMESHGUI_GroupOnShapeOp::onApply()
       group = mesh->CreateGroupFromGEOM( elemType, name.toLatin1().data(), geom );
     }
   }
+  SMESHGUI::Modified();
+
   update( UF_ObjBrowser | UF_Model );
 
   init();

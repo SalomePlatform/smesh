@@ -219,6 +219,7 @@ bool SMESHGUI_DeleteGroupDlg::onApply()
   myListGrp.clear();
   mySelectionMgr->clearSelected();
   SMESH::UpdateView();
+  SMESHGUI::Modified();
   mySMESHGUI->updateObjBrowser(true);
 
   myBlockSelection = false;

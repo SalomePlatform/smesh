@@ -17,25 +17,24 @@ shall appear:</li>
 <br>
 <ul>
 <li>\b Name is the name of the mesh whose nodes will be merged.</li>
-<li>\b Automatic Mode or \b Manual Mode is to switch the dialog
-controls type.
+<li>\b Automatic or \b Manual Mode allows choosing how the nodes are
+processed.
 <li>\b Tolerance is a maximum distance between nodes sufficient for
-merging, that is able in both dialog modes.</li>
+merging.</li>
 </ul>
 
 <li><b>Automatic mode:</b>
 <br>
 <ul>
-<li>In \b Automatic Mode to merge the Nodes, just input the tolerance
-value and confirm by \b Apply button.</li>
+<li>In the \b Automatic Mode all Nodes within the indicated tolerance
+will be merged.</li>
 </ul>
 </li><br>
-<li>If the \b Manual Mode is selected there are additional controls to 
-manage the nodes to be merged in more detail:
+<li>If the \b Manual Mode is selected, additional controls are available:
 <ul>
 <li>\b Detect button generates the list of coincident nodes for the given
 \b Tolerance.</li>
-<li><b>Coincident nodes</b> is a list of groupes of nodes for
+<li><b>Coincident nodes</b> is a list of groups of nodes for
 merging. All nodes of each group will form one after the
 operation.
 <ul>

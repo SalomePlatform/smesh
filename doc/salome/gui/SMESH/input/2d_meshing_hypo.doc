@@ -7,8 +7,6 @@
 <li>\ref max_element_area_anchor "Max Element Area"</li>
 <li>\ref length_from_edges_anchor "Length from Edges"</li>
 <li>\ref hypo_quad_params_anchor "Quadrangle parameters"</li>
-<li>\ref quadrangle_preference_anchor "Quadrangle Preference"</li>
-<li>\ref triangle_preference_anchor "Triangle Preference"</li>
 </ul>
 
 <br>
@@ -69,29 +67,5 @@ shows the good (left) and the bad (right) results of meshing.
 <b>See Also</b> a sample TUI Script of a 
 \ref tui_quadrangle_parameters "Quadrangle Parameters" hypothesis.
 
-\anchor quadrangle_preference_anchor
-<h2>Quadrangle Preference</h2>
-
-This algorithm can be used together with Quadrangle (Mapping) and Netgen 2D
-algorithms. 
-
-It allows Netgen 2D to build quadrangular meshes at any conditions.
-
-It allows Quadrangle (Mapping) to build quadrangular meshes even if the number
-of nodes at the opposite edges of a meshed face is not equal,
-otherwise this mesh will contain some triangular elements.
-<br>
-This hypothesis has one restriction on its work: the total quantity of
-segments on all four sides of the face must be even (divisible by 2).
-
-
-<br>
-\anchor triangle_preference_anchor
-<h2>Triangle Preference</h2>
-
-This algorithm can be used only together with Quadrangle (Mapping)
-algorithm. It allows to build triangular mesh faces in the refinement
-area if the number of nodes at the opposite edges of a meshed face is not equal,
-otherwise refinement area will contain some quadrangular elements.
 <br>
 */

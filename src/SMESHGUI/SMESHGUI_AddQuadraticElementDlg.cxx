@@ -666,6 +666,7 @@ void SMESHGUI_AddQuadraticElementDlg::Init()
 
   connect(mySMESHGUI, SIGNAL (SignalDeactivateActiveDialog()), SLOT(DeactivateActiveDialog()));
   connect(mySMESHGUI, SIGNAL (SignalStudyFrameChanged()), SLOT(ClickOnCancel()));
+  connect(mySMESHGUI, SIGNAL (SignalCloseAllDialogs()), SLOT(ClickOnCancel()));
 
   // set selection mode
   SMESH::SetPointRepresentation(true);
@@ -806,6 +807,8 @@ void SMESHGUI_AddQuadraticElementDlg::ClickOnApply()
   SetEditCorners();
 
   updateButtons();
+
+  SMESHGUI::Modified();
 }
 
 //=================================================================================

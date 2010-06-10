@@ -206,7 +206,7 @@ blocks.append(full_parts)
 
 piece_cpd = MakeCompound(blocks)
 
-piece_ok = RemoveExtraEdges(piece_cpd)
+piece_ok = RemoveExtraEdges(piece_cpd, doUnionFaces=True)
 
 piece = MakeGlueFaces(piece_ok, 1.e-3)
 

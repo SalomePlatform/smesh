@@ -33,8 +33,12 @@
 
 // SALOME GUI includes
 #include <SUIT_Desktop.h>
+#include <SUIT_MessageBox.h>
+#include <SUIT_ResourceMgr.h>
+#include <SUIT_Session.h>
 #include <QtxColorButton.h>
 #include <VTKViewer_MarkerWidget.h>
+#include <LightApp_Application.h>
 #include <SalomeApp_IntSpinBox.h>
 
 // Qt includes
@@ -45,6 +49,7 @@
 #include <QHBoxLayout>
 #include <QGridLayout>
 #include <QCheckBox>
+#include <QKeyEvent>
 
 #define SPACING 6
 #define MARGIN  11
@@ -186,10 +191,14 @@ SMESHGUI_Preferences_ColorDlg::SMESHGUI_Preferences_ColorDlg( SMESHGUI* theModul
   QPushButton* buttonCancel = new QPushButton( tr( "&Cancel" ), GroupButtons );
   buttonCancel->setAutoDefault( true );
 
+  QPushButton* buttonHelp = new QPushButton( tr( "&Help" ), GroupButtons );
+  buttonHelp->setAutoDefault( true );
+
   GroupButtonsLayout->addWidget( buttonOk );
   GroupButtonsLayout->addSpacing( 10 );
   GroupButtonsLayout->addStretch();
   GroupButtonsLayout->addWidget( buttonCancel );
+  GroupButtonsLayout->addWidget( buttonHelp );
 
   // -------------------------------
   topLayout->addWidget( ButtonGroup1 );
@@ -200,9 +209,12 @@ SMESHGUI_Preferences_ColorDlg::SMESHGUI_Preferences_ColorDlg( SMESHGUI* theModul
   // -------------------------------
   mySMESHGUI->SetActiveDialogBox( this );
 
+  myHelpFileName = "colors_size_page.html";
+
   /* signals and slots connections */
   connect( buttonOk,     SIGNAL( clicked() ), this, SLOT( ClickOnOk() ) );
   connect( buttonCancel, SIGNAL( clicked() ), this, SLOT( ClickOnCancel() ) );
+  connect( buttonHelp,   SIGNAL( clicked() ), this, SLOT( ClickOnHelp() ) );
 
   connect( mySMESHGUI, SIGNAL ( SignalDeactivateActiveDialog() ),
            this,       SLOT( DeactivateActiveDialog() ) );
@@ -237,6 +249,30 @@ void SMESHGUI_Preferences_ColorDlg::ClickOnCancel()
 {
   mySMESHGUI->ResetState();
   reject();
+}
+
+//=================================================================================
+// function : ClickOnHelp()
+// purpose  :
+//=================================================================================
+void SMESHGUI_Preferences_ColorDlg::ClickOnHelp()
+{
+  LightApp_Application* app = (LightApp_Application*)(SUIT_Session::session()->activeApplication());
+  if (app) 
+    app->onHelpContextModule(mySMESHGUI ? app->moduleName(mySMESHGUI->moduleName()) : QString(""), myHelpFileName);
+  else {
+    QString platform;
+#ifdef WIN32
+    platform = "winapplication";
+#else
+    platform = "application";
+#endif
+    SUIT_MessageBox::warning(this, tr("WRN_WARNING"),
+                             tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
+                             arg(app->resourceMgr()->stringValue("ExternalBrowser", 
+                                                                 platform)).
+                             arg(myHelpFileName));
+  }
 }
 
 //=================================================================================
@@ -446,4 +482,20 @@ VTK::MarkerScale SMESHGUI_Preferences_ColorDlg::getStandardMarkerScale() const
 int SMESHGUI_Preferences_ColorDlg::getCustomMarkerID() const
 {
   return MarkerWidget->getCustomMarkerID();
+}
+
+//=================================================================================
+// function : keyPressEvent()
+// purpose  :
+//=================================================================================
+void SMESHGUI_Preferences_ColorDlg::keyPressEvent( QKeyEvent* e )
+{
+  QDialog::keyPressEvent( e );
+  if ( e->isAccepted() )
+    return;
+
+  if ( e->key() == Qt::Key_F1 ) {
+    e->accept();
+    ClickOnHelp();
+  }
 }

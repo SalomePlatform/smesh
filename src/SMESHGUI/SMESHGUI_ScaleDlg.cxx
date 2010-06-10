@@ -154,6 +154,7 @@ SMESHGUI_ScaleDlg::SMESHGUI_ScaleDlg( SMESHGUI* theModule )
   SelectElementsButton->setIcon(image2);
   LineEditElements = new QLineEdit(GroupArguments);
   LineEditElements->setValidator(myIdValidator);
+  LineEditElements->setMaxLength(-1);
   myFilterBtn = new QPushButton( tr( "SMESH_BUT_FILTER" ), GroupArguments );
   connect(myFilterBtn,   SIGNAL(clicked()), this, SLOT(setFilters()));
 
@@ -526,6 +527,8 @@ bool SMESHGUI_ScaleDlg::ClickOnApply()
     ConstructorsClicked(GetConstructorId());
     mySelectedObject = SMESH::SMESH_IDSource::_nil();
     SelectionIntoArgument();
+
+    SMESHGUI::Modified();
   }
   
   return true;

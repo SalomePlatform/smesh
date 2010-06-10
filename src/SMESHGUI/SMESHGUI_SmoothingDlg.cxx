@@ -138,6 +138,7 @@ SMESHGUI_SmoothingDlg::SMESHGUI_SmoothingDlg( SMESHGUI* theModule )
 
   LineEditElements = new QLineEdit(GroupArguments);
   LineEditElements->setValidator(myIdValidator);
+  LineEditElements->setMaxLength(-1);
   myElemFilterBtn = new QPushButton( tr( "SMESH_BUT_FILTER" ), GroupArguments );
   connect(myElemFilterBtn,   SIGNAL(clicked()), this, SLOT(setElemFilters()));
 
@@ -152,6 +153,7 @@ SMESHGUI_SmoothingDlg::SMESHGUI_SmoothingDlg( SMESHGUI* theModule )
 
   LineEditNodes  = new QLineEdit(GroupArguments);
   LineEditNodes->setValidator(myIdValidator);
+  LineEditNodes->setMaxLength(-1);
   QPushButton* filterNodeBtn = new QPushButton( tr( "SMESH_BUT_FILTER" ), GroupArguments );
   connect(filterNodeBtn,   SIGNAL(clicked()), this, SLOT(setNodeFilters()));
 
@@ -395,6 +397,7 @@ bool SMESHGUI_SmoothingDlg::ClickOnApply()
       }
 
       SMESH::UpdateView();
+      SMESHGUI::Modified();
       Init();
 
       mySelectedObject = SMESH::SMESH_IDSource::_nil();

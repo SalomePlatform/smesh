@@ -37,9 +37,9 @@ Faces, Edges or both.</li>
 <li><b>2D Quadratic</b> - allows to select between the representation
 of quadratic edges as broken <b>lines</b> or as <b>arcs</b></li>
 <li><b>Orientation of faces</b> - shows vectors of orientation of
-faces of the selected mesh. Vector is shown for each 2D mesh element 
-and for each free face of 3D mesh element. Vector direction is calculated by 
-the first three nodes of face as a cross product of vectors n1-n2 and n1-n3.</li> 
+faces of the selected mesh. The orientation vector is shown for each 2D mesh element 
+and for each free face of a 3D mesh element. the vector direction is calculated by 
+the first three nodes of the face produced by vectors n1-n2 and n1-n3.</li> 
 <li>\subpage colors_size_page "Colors / Size" - allows to select color and size of
 meshes.</li>
 <li>\subpage transparency_page "Transparency" - allows to change the
