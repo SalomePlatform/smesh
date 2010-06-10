@@ -79,6 +79,8 @@ public :
 
   static bool                     automaticUpdate();
 
+  static void                     Modified( bool = true );
+
   virtual LightApp_Displayer*     displayer();
   virtual QString                 engineIOR() const;
   virtual void                    initialize( CAM_Application* );

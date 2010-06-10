@@ -165,6 +165,7 @@ SMESHGUI_ExtrusionDlg::SMESHGUI_ExtrusionDlg (SMESHGUI* theModule)
 
   LineEditElements = new QLineEdit(GroupArguments);
   LineEditElements->setValidator(myIdValidator);
+  LineEditElements->setMaxLength(-1);
   myFilterBtn = new QPushButton( tr( "SMESH_BUT_FILTER" ), GroupArguments );
   connect(myFilterBtn,   SIGNAL(clicked()), this, SLOT(setFilters()));
 
@@ -572,6 +573,8 @@ bool SMESHGUI_ExtrusionDlg::ClickOnApply()
     mySelectionMgr->clearSelected();
     mySelectedObject = SMESH::SMESH_IDSource::_nil();
     SelectionIntoArgument();
+
+    SMESHGUI::Modified();
   }
   return true;
 }

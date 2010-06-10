@@ -23,7 +23,7 @@ the mesh or some of its elements.</li>
 through a point or a vector of symmetry.</li>
 <li>Unite meshes by \subpage sewing_meshes_page "sewing" free borders,
 conform free borders, border to side or side elements.</li>
-<li>\subpage merging_nodes_page "Merge Notes", considered coincident
+<li>\subpage merging_nodes_page "Merge Nodes", considered coincident
 within the indicated tolerance.</li>
 <li>\subpage merging_elements_page "Merge Elements", considered coincident
 within the indicated tolerance.</li>

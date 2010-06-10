@@ -107,6 +107,7 @@ private slots:
   void                   ActivateThisDialog();
   void                   onTextChange( const QString& );
   void                   setFilters();
+  void                   updateButtons();
 };
 
 #endif // SMESHGUI_REMOVEELEMENTSDLG_H

@@ -55,6 +55,8 @@ with other hypotheses:
 <li>Propagation of 1D Hypothesis on opposite edges</li>
 <li>Non conform mesh allowed</li>
 <li>Quadratic mesh</li>
+<li>Quadrangle preference</li>
+<li>Triangle preference</li>
 </ul>
 
 The choice of a hypothesis depends on:

@@ -510,6 +510,7 @@ bool SMESHGUI_MeshPatternDlg::onApply()
       }
       mySelectionMgr->clearSelected();
       SMESH::UpdateView();
+      SMESHGUI::Modified();
 
       mySMESHGUI->updateObjBrowser(true);
 

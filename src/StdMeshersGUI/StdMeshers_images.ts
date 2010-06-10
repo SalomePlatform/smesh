@@ -105,6 +105,14 @@
             <source>ICON_SMESH_TREE_ALGO_CompositeSegment_1D</source>
             <translation>mesh_tree_algo_regular.png</translation>
         </message>
+	<message>
+            <source>ICON_SMESH_TREE_ALGO_UseExisting_2D</source>
+            <translation>mesh_tree_algo_existing_2D.png</translation>
+        </message>
+	<message>
+            <source>ICON_SMESH_TREE_ALGO_UseExisting_1D</source>
+            <translation>mesh_tree_algo_regular.png</translation>
+        </message>
         <message>
             <source>ICON_SMESH_TREE_ALGO_Hexa_3D</source>
             <translation>mesh_tree_algo_hexa.png</translation>
@@ -129,6 +137,14 @@
             <source>ICON_SMESH_TREE_ALGO_Quadrangle_2D</source>
             <translation>mesh_tree_algo_quad.png</translation>
         </message>
+	<message>
+            <source>ICON_SMESH_TREE_ALGO_RadialQuadrangle_1D2D</source>
+            <translation>mesh_tree_algo_radial_quadrangle_1D2D.png</translation>
+        </message>
+	<message>
+            <source>ICON_SMESH_TREE_ALGO_Prism_3D</source>
+            <translation>mesh_tree_algo_prism.png</translation>
+        </message>
         <message>
             <source>ICON_SMESH_TREE_ALGO_RadialPrism_3D</source>
             <translation>mesh_tree_algo_radial_prism.png</translation>
@@ -139,7 +155,7 @@
         </message>
         <message>
             <source>ICON_SMESH_TREE_ALGO_SegmentAroundVertex_0D</source>
-            <translation>mesh_tree_algo_regular.png</translation>
+            <translation>mesh_tree_algo_0D.png</translation>
         </message>
         <message>
             <source>ICON_SMESH_TREE_HYPO_Arithmetic1D</source>

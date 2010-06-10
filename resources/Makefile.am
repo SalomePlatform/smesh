@@ -80,6 +80,7 @@ dist_salomeres_DATA = \
 	mesh_tree_algo_hexa.png \
 	mesh_tree_algo_mefisto.png \
 	mesh_tree_algo.png \
+	mesh_tree_algo_0D.png \
 	mesh_tree_algo_quad.png \
 	mesh_tree_algo_regular.png \
 	mesh_tree_algo_tetra.png \
@@ -149,6 +150,9 @@ dist_salomeres_DATA = \
 	mesh_conv_to_quad.png \
 	mesh_tree_hypo_layers_distribution.png \
 	mesh_tree_algo_radial_prism.png \
+	mesh_tree_algo_radial_quadrangle_1D2D.png \
+	mesh_tree_algo_existing_2D.png \
+	mesh_tree_algo_prism.png \
 	mesh_tree_algo_projection_2d.png \
 	mesh_hypo_source_edge.png \
 	mesh_hypo_source_3d.png \

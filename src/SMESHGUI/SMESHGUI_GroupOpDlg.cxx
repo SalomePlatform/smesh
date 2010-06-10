@@ -604,6 +604,7 @@ bool SMESHGUI_UnionGroupsDlg::onApply()
 
   if ( aRes ) 
   {
+    SMESHGUI::Modified();
     getSMESHGUI()->updateObjBrowser(true);
     reset();
     return true;
@@ -706,6 +707,7 @@ bool SMESHGUI_IntersectGroupsDlg::onApply()
 
   if ( aRes ) 
   {
+    SMESHGUI::Modified();
     getSMESHGUI()->updateObjBrowser(true);
     reset();
     return true;
@@ -872,6 +874,7 @@ bool SMESHGUI_CutGroupsDlg::onApply()
 
   if ( aRes ) 
   {
+    SMESHGUI::Modified();
     getSMESHGUI()->updateObjBrowser(true);
     reset();
     return true;
@@ -1023,6 +1026,7 @@ bool SMESHGUI_DimGroupDlg::onApply()
 
   if ( aRes ) 
   {
+    SMESHGUI::Modified();
     getSMESHGUI()->updateObjBrowser(true);
     reset();
     return true;

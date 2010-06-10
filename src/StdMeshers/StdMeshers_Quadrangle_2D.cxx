@@ -1483,6 +1483,9 @@ bool StdMeshers_Quadrangle_2D::ComputeQuadPref (SMESH_Mesh &        aMesh,
   const vector<UVPtStruct>& uv_et = quad->side[2]->GetUVPtStruct(true,1 );
   const vector<UVPtStruct>& uv_el = quad->side[3]->GetUVPtStruct(false,0);
 
+  if ( uv_eb.size() != nb || uv_er.size() != nr || uv_et.size() != nt || uv_el.size() != nl )
+    return error( COMPERR_BAD_INPUT_MESH );
+
   // arrays for normalized params
   //cout<<"Dump B:"<<endl;
   TColStd_SequenceOfReal npb, npr, npt, npl;

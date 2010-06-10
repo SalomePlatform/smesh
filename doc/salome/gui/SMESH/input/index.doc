@@ -16,7 +16,8 @@ the VTK viewer;</li>
 allowing to highlight important elements:
 <li>\subpage modifying_meshes_page "modifying meshes" with a vast
 array of dedicated operations.</li> 
-<li>\subpage using_notebook_mesh_page.</li>
+<li>easily setting parameters via the variables predefined in
+\subpage using_notebook_mesh_page "Salome notebook".</li>
 </ul>
 
 Almost all mesh module functionalities are accessible via

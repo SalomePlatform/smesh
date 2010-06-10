@@ -205,7 +205,7 @@ public: //** Access to member fields **//
 
 private:
 
-  bool error(std::string& text, int code = COMPERR_ALGO_FAILED)
+  bool error(const std::string& text, int code = COMPERR_ALGO_FAILED)
   { myError = SMESH_ComputeError::New( code, text ); return false; }
 
   bool error(const SMESH_ComputeErrorPtr& err)
@@ -987,6 +987,13 @@ bool _QuadFaceGrid::LoadGrid( SMESH_Mesh& mesh )
   if ( !myGrid.empty() )
     return true;
 
+  SMESHDS_SubMesh* faceSubMesh = mesh.GetSubMesh( myFace )->GetSubMeshDS();
+  // check that all faces are quadrangular
+  SMDS_ElemIteratorPtr fIt = faceSubMesh->GetElements();
+  while ( fIt->more() )
+    if ( fIt->next()->NbNodes() % 4 > 0 )
+      return error("Non-quadrangular mesh faces are not allowed on sides of a composite block");
+  
   myIndexer._xSize = 1 + mySides.GetSide( Q_BOTTOM )->GetNbSegments( mesh );
   myIndexer._ySize = 1 + mySides.GetSide( Q_LEFT   )->GetNbSegments( mesh );
 
@@ -996,8 +1003,6 @@ bool _QuadFaceGrid::LoadGrid( SMESH_Mesh& mesh )
   mySides.GetSide( Q_BOTTOM )->StoreNodes( mesh, myGrid, myReverse );
 
   // store the rest nodes row by row
-
-  SMESHDS_SubMesh* faceSubMesh = mesh.GetSubMesh( myFace )->GetSubMeshDS();
 
   SMDS_MeshNode dummy(0,0,0);
   const SMDS_MeshElement* firstQuad = &dummy;// most left face above the last row of found nodes

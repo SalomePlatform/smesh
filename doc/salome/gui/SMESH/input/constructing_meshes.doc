@@ -154,21 +154,20 @@ evaluation will be displayed in the following information box:
 
 </li>
 
-</ol>
 
 \anchor mesh_order_anchor
-It is allowed to change submesh priority in mesh computation when
-there are concurrent submeshes present. I.e. user can change priority of
-applying algorithms on shared subshapes of Mesh shape.
-<em>To change submesh priority:</em>
-<ol>
-<li>From the Mesh menu choose the "Change submesh priority" on
-selected Mesh item, or invoke from popup menu. The opened dialogue box
-shows a list of submeshes in the order of their priority. Algorithm and its
-hypotheses of a submesh being upper in the list are applied before those of
-a submesh lower in the list.
 
-There is an example of submesh order modifications of Mesh created on a Box
+<li>
+If the mesh contains concurrent submeshes, it is possible to change
+the priority of their computation, i.e. to change the priority of
+applying algorithms to the shared subshapes of the Mesh shape.</li>
+
+<em>To change submesh priority:</em>
+
+<li>Choose "Change submesh priority" from the Mesh menu or a popup menu. The opened dialogue
+shows a list of submeshes in the order of their priority. 
+
+There is an example of submesh order modifications of the Mesh created on a Box
 shape. The main Mesh object:
 <ul>
 <li><i>3D</i> <b>Tetrahedron (Netgen)</b> with Hypothesis<b>Max Element Volume</b></li>
@@ -189,51 +188,50 @@ is:
 (Number of Segments = 8)</li>
 </ul>
 
-And the last third submesh object <b>Submesh_3</b> created on <b>Face_3</b>
+And the last submesh object <b>Submesh_3</b> created on <b>Face_3</b>
 is:
 <ul>
 <li><i>2D</i> Netgen 1D-2D with Hypothesis <b>Netgen Simple parameters</b>
 (Number of Segments = 12)</li>
 </ul>
-The submeshes can become concurrent if their algorithms leads to mesh shared subshape
-with different algorithms (or different algorithms parameters, i.e. hypothesises).
-In fact, we have three submeshes with concurrent algorithms, because
-they have different hypothesises assigned to them. 
+The submeshes become concurrent if they share subshapes that can be meshed 
+with different algorithms (or different hypothesises).
+In the example, we have three submeshes with concurrent algorithms,
+because they have different hypotheses. 
 
-The first mesh computation made with:
+The first mesh computation is made with:
 \image html mesh_order_123.png
 <center><em>"Mesh order SubMesh_1, SubMesh_2, SubMesh_3"</em></center>
 \image html mesh_order_123_res.png
 <center><em>"Result mesh with order SubMesh_1, SubMesh_2, SubMesh_3 "</em></center>
 
-The next mesh computation with:
+The next mesh computation is made with:
 \image html mesh_order_213.png
 <center><em>"Mesh order SubMesh_2, SubMesh_1, SubMesh_3"</em></center>
 \image html mesh_order_213_res.png
 <center><em>"Result mesh with order SubMesh_2, SubMesh_1, SubMesh_3 "</em></center>
 
-And the last mesh computation with:
+And the last mesh computation is made with:
 \image html mesh_order_321.png
 <center><em>"Mesh order SubMesh_3, SubMesh_2, SubMesh_1"</em></center>
 \image html mesh_order_321_res.png
 <center><em>"Result mesh with order SubMesh_3, SubMesh_2, SubMesh_1 "</em></center>
 
-As we can see each mesh computation has different number of result
-elements and different mesh discretisation on shared edges (edges 
+As we can see, each mesh computation has a different number of result
+elements and a different mesh discretisation on the shared edges (the edges 
 that are shared between <b>Face_1</b>, <b>Face_2</b> and <b>Face_3</b>)
 
-Additionally, submesh priority (order of algorithms to be applied) can
-be modified not only in separate dialog box, but in <b>Preview</b>
-also. This helps to preview different mesh results, modifying submesh
-order.
+Additionally, submesh priority (the order of applied algorithms) can
+be modified not only in a separate dialog box, but also in the
+<b>Preview</b>. This helps to preview different mesh results,
+modifying the order of submeshes.
 \image html mesh_order_preview.png
 <center><em>"Preview with submesh priority list box"</em></center>
 
-If there are no concurrent submeshes under Mesh object, then user will see the
-following information dialog box
+If there are no concurrent submeshes under the Mesh object, the user will see the
+following information.
 \image html mesh_order_no_concurrent.png
 <center><em>"No concurrent submeshes detected"</em></center>
-and no mesh order list box will appear in Preview dialog box.
 
 </ol>
 

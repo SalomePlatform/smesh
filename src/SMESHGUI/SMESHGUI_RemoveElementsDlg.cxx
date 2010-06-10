@@ -123,6 +123,7 @@ SMESHGUI_RemoveElementsDlg
   SelectButtonC1A1->setIcon(image1);
   LineEditC1A1 = new QLineEdit(GroupC1);
   LineEditC1A1->setValidator(new SMESHGUI_IdValidator(this));
+  LineEditC1A1->setMaxLength(-1);
   QPushButton* filterBtn = new QPushButton( tr( "SMESH_BUT_FILTER" ), GroupC1 );
   connect(filterBtn,   SIGNAL(clicked()), this, SLOT(setFilters()));
 
@@ -232,7 +233,7 @@ void SMESHGUI_RemoveElementsDlg::ClickOnApply()
     bool aResult = false;
     try {
       SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditor();
-      aResult = aMeshEditor->RemoveElements(anArrayOfIdeces.inout());
+      aResult = aMeshEditor->RemoveElements(anArrayOfIdeces.in());
     } catch (const SALOME::SALOME_Exception& S_ex) {
       SalomeApp_Tools::QtCatchCorbaException(S_ex);
       myEditCurrentArgument->clear();
@@ -244,6 +245,7 @@ void SMESHGUI_RemoveElementsDlg::ClickOnApply()
       myEditCurrentArgument->clear();
       mySelector->ClearIndex();
       SMESH::UpdateView();
+      SMESHGUI::Modified();
     }
   }
 }
@@ -310,9 +312,6 @@ void SMESHGUI_RemoveElementsDlg::onTextChange(const QString& theNewText)
 
   myNbOkElements = 0;
 
-  buttonOk->setEnabled(false);
-  buttonApply->setEnabled(false);
-
   // hilight entered elements
   if(myActor){
     if(SMDS_Mesh* aMesh = myActor->GetObject()->GetMesh()){
@@ -334,12 +333,8 @@ void SMESHGUI_RemoveElementsDlg::onTextChange(const QString& theNewText)
     }
   }
   
-  if (myNbOkElements) {
-    buttonOk->setEnabled(true);
-    buttonApply->setEnabled(true);
-  }
-  
   myBusy = false;
+  updateButtons();
 }
 
 //=================================================================================
@@ -348,22 +343,18 @@ void SMESHGUI_RemoveElementsDlg::onTextChange(const QString& theNewText)
 //=================================================================================
 void SMESHGUI_RemoveElementsDlg::SelectionIntoArgument()
 {
-  if (myBusy) return;
+  if (myBusy) return;                                  // busy
+  if (myFilterDlg && myFilterDlg->isVisible()) return; // filter digl active
+  if (!GroupButtons->isEnabled()) return;              // inactive
 
   // clear
 
-  myNbOkElements = false;
+  myNbOkElements = 0;
   myActor = 0;
 
   myBusy = true;
   myEditCurrentArgument->setText("");
   myBusy = false;
-
-  if (!GroupButtons->isEnabled()) // inactive
-    return;
-
-  buttonOk->setEnabled(false);
-  buttonApply->setEnabled(false);
 
   // get selected mesh
 
@@ -371,33 +362,33 @@ void SMESHGUI_RemoveElementsDlg::SelectionIntoArgument()
   mySelectionMgr->selectedObjects(aList,SVTK_Viewer::Type());
 
   int nbSel = aList.Extent();
-  if (nbSel != 1)
-    return;
+  if (nbSel == 1) {
 
-  Handle(SALOME_InteractiveObject) anIO = aList.First();
-  myMesh = SMESH::GetMeshByIO(anIO);
-  if (myMesh->_is_nil())
-    return;
+    Handle(SALOME_InteractiveObject) anIO = aList.First();
+    myMesh = SMESH::GetMeshByIO(anIO);
 
-  myActor = SMESH::FindActorByEntry(anIO->getEntry());
-  if (!myActor)
-    return;
+    if (!myMesh->_is_nil()) {
 
-  // get selected nodes
-  QString aString = "";
-  int nbElems = SMESH::GetNameOfSelectedElements(mySelector,anIO,aString);
-  if(nbElems < 1)
-    return;
-  myBusy = true;
-  myEditCurrentArgument->setText(aString);
-  myBusy = false;
+      myActor = SMESH::FindActorByEntry(anIO->getEntry());
+      if (myActor) {
+	
+	// get selected nodes
+	QString aString = "";
+	int nbElems = SMESH::GetNameOfSelectedElements(mySelector,anIO,aString);
+	if (nbElems > 0) {
+	  myBusy = true;
+	  myEditCurrentArgument->setText(aString);
+	  myBusy = false;
+	  
+	  // OK
+	  
+	  myNbOkElements = nbElems;
+	} // if (nbElems > 0)
+      } // if (myActor)
+    } // if (!myMesh->_is_nil())
+  } // if (nbSel == 1) {
 
-  // OK
-
-  myNbOkElements = nbElems;
-
-  buttonOk->setEnabled(true);
-  buttonApply->setEnabled(true);
+  updateButtons();	  
 }
 
 //=================================================================================
@@ -522,4 +513,14 @@ void SMESHGUI_RemoveElementsDlg::setFilters()
   myFilterDlg->SetSourceWg( LineEditC1A1 );
 
   myFilterDlg->show();
+}
+
+//=================================================================================
+// function : updateButtons
+// purpose  : enable / disable control buttons
+//=================================================================================
+void SMESHGUI_RemoveElementsDlg::updateButtons()
+{
+  buttonOk->setEnabled(myNbOkElements > 0);
+  buttonApply->setEnabled(myNbOkElements > 0);
 }

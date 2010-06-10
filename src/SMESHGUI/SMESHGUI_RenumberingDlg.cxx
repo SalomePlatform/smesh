@@ -243,6 +243,7 @@ void SMESHGUI_RenumberingDlg::ClickOnApply()
     
     //mySelectionMgr->clearSelected();
     SMESH::UpdateView();
+    SMESHGUI::Modified();
   }
 }
 

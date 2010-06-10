@@ -269,6 +269,7 @@ public:
    */
   double GetNodeU(const TopoDS_Edge&   theEdge,
                   const SMDS_MeshNode* theNode,
+                  const SMDS_MeshNode* inEdgeNode=0,
                   bool*                check=0);
   /*!
    * \brief Return node UV on face

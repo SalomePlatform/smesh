@@ -852,6 +852,7 @@ bool SMESHGUI_GroupDlg::onApply()
       }
     }
 
+    SMESHGUI::Modified();
     mySMESHGUI->updateObjBrowser(true);
     SMESH::UpdateView(); // asv: fix of BUG PAL5515
     mySelectionMgr->clearSelected();
@@ -957,6 +958,7 @@ bool SMESHGUI_GroupDlg::onApply()
       }
     }
 
+    SMESHGUI::Modified();
     mySMESHGUI->updateObjBrowser(true);
     mySelectionMgr->clearSelected();
     return true;

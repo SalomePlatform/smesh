@@ -22,6 +22,7 @@ remove the elements forming it. For more information see
 group.</li>
 </ol>
 
+\anchor convert_to_standalone
 <em>To convert an existing group on geometry into standalone group
 of elements and modify:</em>
 <ol>

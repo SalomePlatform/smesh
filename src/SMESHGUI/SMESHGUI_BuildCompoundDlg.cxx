@@ -331,6 +331,8 @@ bool SMESHGUI_BuildCompoundDlg::ClickOnApply()
         SMESH::DisplayActor(SMESH::GetActiveWindow(), anActor);
     }// end IPAL21468
 
+    SMESHGUI::Modified();
+
     return true;
   }
   return false;

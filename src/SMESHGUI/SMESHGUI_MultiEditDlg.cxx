@@ -1052,6 +1052,7 @@ bool SMESHGUI_MultiEditDlg::onApply()
       mySelector->ClearIndex();
       mySelectionMgr->setSelectedObjects( sel );
       SMESH::UpdateView();
+      SMESHGUI::Modified();
     }
 
     myListBox->clear();
