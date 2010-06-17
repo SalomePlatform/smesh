@@ -5977,7 +5977,7 @@ struct SMESH_NodeSearcherImpl: public SMESH_NodeSearcher
         SMESH_OctreeNode* tree = *trIt;
         if ( !tree->isLeaf() ) // put children to the queue
         {
-          if ( !tree->isInside( &pointNode, myHalfLeafSize )) continue;
+          //if ( !tree->isInside( &pointNode, myHalfLeafSize )) continue;
           SMESH_OctreeNodeIteratorPtr cIt = tree->GetChildrenIterator();
           while ( cIt->more() )
             treeList.push_back( cIt->next() );
