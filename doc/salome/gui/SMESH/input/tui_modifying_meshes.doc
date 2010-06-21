@@ -300,19 +300,6 @@ mesh.RenumberElements()
 <h2>Moving Nodes</h2>
 
 \code
-import SMESH_mechanic
-
-mesh = SMESH_mechanic.mesh
-
-# move node #38
-mesh.MoveNode(38, 20., 10., 0.)
-\endcode
-
-<br>
-\anchor tui_mesh_through_point
-<h2>Mesh through point</h2>
-
-\code
 from geompy import *
 from smesh import *
 
@@ -344,16 +331,11 @@ n = mesh.FindNodeClosestTo( -1,-1,-1 )
 if not n == node000:
     raise "FindNodeClosestTo() returns " + str( n ) + " != " + str( node000 )
 
-# check if any node will be found for a point inside a box
-n = mesh.FindNodeClosestTo( 100, 100, 100 )
-if not n > 0:
-    raise "FindNodeClosestTo( 100, 100, 100 ) fails"
-
 # move node000 to a new location
 x,y,z = -10, -10, -10
-n = mesh.MeshToPassThroughAPoint( x,y,z )
-if not n == node000:
-    raise "FindNodeClosestTo() returns " + str( n ) + " != " + str( node000 )
+n = mesh.MoveNode( n,x,y,z )
+if not n:
+    raise "MoveNode() returns " + n
 
 # check the coordinates of the node000
 xyz = mesh.GetNodeXYZ( node000 )

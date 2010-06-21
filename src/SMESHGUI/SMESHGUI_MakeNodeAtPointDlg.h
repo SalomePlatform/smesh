@@ -36,7 +36,6 @@ class QGroupBox;
 class QLineEdit;
 class QPushButton;
 class QCheckBox;
-class QRadioButton;
 class SMESHGUI_SpinBox;
 class SMESHGUI_MeshEditPreview;
 class SMESHGUI_MakeNodeAtPointDlg;
@@ -98,11 +97,15 @@ private:
   SMESHGUI_SpinBox*             myX;
   SMESHGUI_SpinBox*             myY;
   SMESHGUI_SpinBox*             myZ;
-  QRadioButton*                 myMoveRBtn;
-  QRadioButton*                 myCreateRBtn;
   QGroupBox*                    myNodeToMoveGrp;
   QPushButton*                  myIdBtn;
   QLineEdit*                    myId;
+  SMESHGUI_SpinBox*             myCurrentX;
+  SMESHGUI_SpinBox*             myCurrentY;
+  SMESHGUI_SpinBox*             myCurrentZ;
+  SMESHGUI_SpinBox*             myDX;
+  SMESHGUI_SpinBox*             myDY;
+  SMESHGUI_SpinBox*             myDZ;
   QCheckBox*                    myAutoSearchChkBox;
   QCheckBox*                    myPreviewChkBox;
 

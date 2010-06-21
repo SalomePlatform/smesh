@@ -92,7 +92,7 @@ SMESHGUI_MakeNodeAtPointDlg::SMESHGUI_MakeNodeAtPointDlg()
   setWindowTitle(tr("CAPTION"));
 
   QVBoxLayout* aDlgLay = new QVBoxLayout (mainFrame());
-  aDlgLay->setMargin(MARGIN);;
+  aDlgLay->setMargin(0);
   aDlgLay->setSpacing(SPACING);
 
   QWidget* aMainFrame = createMainFrame  (mainFrame());
@@ -116,7 +116,7 @@ QWidget* SMESHGUI_MakeNodeAtPointDlg::createMainFrame (QWidget* theParent)
 
   // constructor
 
-  QGroupBox* aPixGrp = new QGroupBox(tr("MESH_PASS_THROUGH_POINT"), aFrame);
+  QGroupBox* aPixGrp = new QGroupBox(tr("MOVE_NODE"), aFrame);
   QButtonGroup* aBtnGrp = new QButtonGroup(this);
   QHBoxLayout* aPixGrpLayout = new QHBoxLayout(aPixGrp);
   aPixGrpLayout->setMargin(MARGIN);
@@ -130,7 +130,7 @@ QWidget* SMESHGUI_MakeNodeAtPointDlg::createMainFrame (QWidget* theParent)
 
   // coordinates
 
-  QGroupBox* aCoordGrp = new QGroupBox(tr("SMESH_COORDINATES"), aFrame);
+  QGroupBox* aCoordGrp = new QGroupBox(tr("DESTINATION"), aFrame);
   QHBoxLayout* aCoordGrpLayout = new QHBoxLayout(aCoordGrp);
   aCoordGrpLayout->setMargin(MARGIN);
   aCoordGrpLayout->setSpacing(SPACING);
@@ -160,19 +160,6 @@ QWidget* SMESHGUI_MakeNodeAtPointDlg::createMainFrame (QWidget* theParent)
   aCoordGrpLayout->addWidget(aZLabel);
   aCoordGrpLayout->addWidget(myZ);
 
-  // Method selection
-
-  QGroupBox* aMethodGrp = new QGroupBox(tr("METHOD"), aFrame);
-  QHBoxLayout* aMethodGrpLayout = new QHBoxLayout(aMethodGrp);
-  aMethodGrpLayout->setMargin(MARGIN);
-  aMethodGrpLayout->setSpacing(SPACING);
-
-  myMoveRBtn = new QRadioButton(tr("MOVE_EXISTING_METHOD"), aMethodGrp);
-  myCreateRBtn = new QRadioButton(tr("CREATE_NEW_METHOD"), aMethodGrp);
-
-  aMethodGrpLayout->addWidget(myMoveRBtn);
-  aMethodGrpLayout->addWidget(myCreateRBtn);
-
   // node ID
 
   myNodeToMoveGrp = new QGroupBox(tr("NODE_2MOVE"), aFrame);
@@ -183,6 +170,62 @@ QWidget* SMESHGUI_MakeNodeAtPointDlg::createMainFrame (QWidget* theParent)
   myIdBtn->setCheckable(true);
   myId = new QLineEdit(myNodeToMoveGrp);
   myId->setValidator(new SMESHGUI_IdValidator(this, 1));
+
+  QWidget* aCoordWidget = new QWidget(myNodeToMoveGrp);
+
+  QLabel* aCurrentXLabel = new QLabel(tr("SMESH_X"), aCoordWidget);
+  myCurrentX = new SMESHGUI_SpinBox(aCoordWidget);
+  myCurrentX->setButtonSymbols(QAbstractSpinBox::NoButtons);
+  myCurrentX->setReadOnly(true);
+
+  QLabel* aCurrentYLabel = new QLabel(tr("SMESH_Y"), aCoordWidget);
+  myCurrentY = new SMESHGUI_SpinBox(aCoordWidget);
+  myCurrentY->setButtonSymbols(QAbstractSpinBox::NoButtons);
+  myCurrentY->setReadOnly(true);
+
+  QLabel* aCurrentZLabel = new QLabel(tr("SMESH_Z"), aCoordWidget);
+  myCurrentZ = new SMESHGUI_SpinBox(aCoordWidget);
+  myCurrentZ->setButtonSymbols(QAbstractSpinBox::NoButtons);
+  myCurrentZ->setReadOnly(true);
+
+  QLabel* aDXLabel = new QLabel(tr("SMESH_DX"), aCoordWidget);
+  myDX = new SMESHGUI_SpinBox(aCoordWidget);
+  myDX->setButtonSymbols(QAbstractSpinBox::NoButtons);
+  myDX->setReadOnly(true);
+
+  QLabel* aDYLabel = new QLabel(tr("SMESH_DY"), aCoordWidget);
+  myDY = new SMESHGUI_SpinBox(aCoordWidget);
+  myDY->setButtonSymbols(QAbstractSpinBox::NoButtons);
+  myDY->setReadOnly(true);
+
+  QLabel* aDZLabel = new QLabel(tr("SMESH_DZ"), aCoordWidget);
+  myDZ = new SMESHGUI_SpinBox(aCoordWidget);
+  myDZ->setButtonSymbols(QAbstractSpinBox::NoButtons);
+  myDZ->setReadOnly(true);
+
+  myCurrentX->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, "length_precision");
+  myCurrentY->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, "length_precision");
+  myCurrentZ->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, "length_precision");
+  myDX->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, "length_precision");
+  myDY->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, "length_precision");
+  myDZ->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, "length_precision");
+
+  QGridLayout* aCoordLayout = new QGridLayout(aCoordWidget);
+  aCoordLayout->setMargin(0);
+  aCoordLayout->setSpacing(SPACING);
+  aCoordLayout->addWidget(aCurrentXLabel, 0, 0);
+  aCoordLayout->addWidget(myCurrentX,     0, 1);
+  aCoordLayout->addWidget(aCurrentYLabel, 0, 2);
+  aCoordLayout->addWidget(myCurrentY,     0, 3);
+  aCoordLayout->addWidget(aCurrentZLabel, 0, 4);
+  aCoordLayout->addWidget(myCurrentZ,     0, 5);
+  aCoordLayout->addWidget(aDXLabel,       1, 0);
+  aCoordLayout->addWidget(myDX,           1, 1);
+  aCoordLayout->addWidget(aDYLabel,       1, 2);
+  aCoordLayout->addWidget(myDY,           1, 3);
+  aCoordLayout->addWidget(aDZLabel,       1, 4);
+  aCoordLayout->addWidget(myDZ,           1, 5);
+
   myAutoSearchChkBox = new QCheckBox( tr("AUTO_SEARCH"), myNodeToMoveGrp);
   myPreviewChkBox = new QCheckBox( tr("PREVIEW"), myNodeToMoveGrp);
 
@@ -193,22 +236,19 @@ QWidget* SMESHGUI_MakeNodeAtPointDlg::createMainFrame (QWidget* theParent)
   myNodeToMoveGrpLayout->addWidget( idLabel, 0, 0 );
   myNodeToMoveGrpLayout->addWidget( myIdBtn, 0, 1 );
   myNodeToMoveGrpLayout->addWidget( myId,    0, 2 );
-  myNodeToMoveGrpLayout->addWidget( myAutoSearchChkBox, 1, 0, 1, 3 );
-  myNodeToMoveGrpLayout->addWidget( myPreviewChkBox,    2, 0, 1, 3 );
+  myNodeToMoveGrpLayout->addWidget( aCoordWidget,       1, 0, 1, 3 );
+  myNodeToMoveGrpLayout->addWidget( myAutoSearchChkBox, 2, 0, 1, 3 );
+  myNodeToMoveGrpLayout->addWidget( myPreviewChkBox,    3, 0, 1, 3 );
 
   QVBoxLayout* aLay = new QVBoxLayout(aFrame);
   aLay->addWidget(aPixGrp);
   aLay->addWidget(aCoordGrp);
-  aLay->addWidget(aMethodGrp);
   aLay->addWidget(myNodeToMoveGrp);
 
   connect(myCoordBtn,         SIGNAL (toggled(bool)), this, SLOT(ButtonToggled(bool)));
-  connect(myMoveRBtn,         SIGNAL (toggled(bool)), this, SLOT(ButtonToggled(bool)));
-  connect(myCreateRBtn,       SIGNAL (toggled(bool)), this, SLOT(ButtonToggled(bool)));
   connect(myIdBtn,            SIGNAL (toggled(bool)), this, SLOT(ButtonToggled(bool)));
   connect(myAutoSearchChkBox, SIGNAL (toggled(bool)), this, SLOT(ButtonToggled(bool)));
 
-  myMoveRBtn->setChecked(true);
   myIdBtn->setChecked(true);
   myAutoSearchChkBox->setChecked(true);
 
@@ -235,19 +275,16 @@ void SMESHGUI_MakeNodeAtPointDlg::ButtonToggled (bool on)
     {
       myCoordBtn->setChecked( !on );
     }
-    else if ( aSender == myMoveRBtn ) // move node method
-    {
-      myNodeToMoveGrp->setEnabled( true );
-    }
-    else if ( aSender == myCreateRBtn ) // create node method
-    {
-      myNodeToMoveGrp->setEnabled( false );
-      myCoordBtn->setChecked( true ); 
-    }
   }      
   if ( aSender == myAutoSearchChkBox ) // automatic node search
   {
     if ( on ) {
+      myCurrentX->SetValue(0);
+      myCurrentY->SetValue(0);
+      myCurrentZ->SetValue(0);
+      myDX->SetValue(0);
+      myDY->SetValue(0);
+      myDZ->SetValue(0);
       myId->setText("");
       myId->setReadOnly ( true );
       myIdBtn->setChecked( false );
@@ -281,8 +318,6 @@ SMESHGUI_MakeNodeAtPointOp::SMESHGUI_MakeNodeAtPointOp()
   connect(myDlg->myId,SIGNAL (textChanged(const QString&)),SLOT(redisplayPreview()));
   connect(myDlg->myPreviewChkBox,   SIGNAL (toggled(bool)),SLOT(redisplayPreview()));
   connect(myDlg->myAutoSearchChkBox,SIGNAL (toggled(bool)),SLOT(redisplayPreview()));
-  connect(myDlg->myMoveRBtn,        SIGNAL (toggled(bool)),SLOT(redisplayPreview()));
-  connect(myDlg->myCreateRBtn,      SIGNAL (toggled(bool)),SLOT(redisplayPreview()));
 }
 
 //=======================================================================
@@ -321,6 +356,12 @@ void SMESHGUI_MakeNodeAtPointOp::startOperation()
   myDlg->myX->SetValue(0);
   myDlg->myY->SetValue(0);
   myDlg->myZ->SetValue(0);
+  myDlg->myCurrentX->SetValue(0);
+  myDlg->myCurrentY->SetValue(0);
+  myDlg->myCurrentZ->SetValue(0);
+  myDlg->myDX->SetValue(0);
+  myDlg->myDY->SetValue(0);
+  myDlg->myDZ->SetValue(0);
   myDlg->myId->setText("");
   myDlg->show();
 
@@ -394,21 +435,18 @@ bool SMESHGUI_MakeNodeAtPointOp::onApply()
     if (aMeshEditor->_is_nil())
       return true;
 
-    int aResult = 0;
-    if ( myDlg->myCreateRBtn->isChecked() )
-    {
-      aResult = aMeshEditor->AddNode(myDlg->myX->GetValue(),
-                                     myDlg->myY->GetValue(),
-                                     myDlg->myZ->GetValue());
-    }
-    else
-    {
-      int anId = myDlg->myId->text().toInt();
-      aResult = aMeshEditor->MoveClosestNodeToPoint(myDlg->myX->GetValue(),
-                                                    myDlg->myY->GetValue(),
-                                                    myDlg->myZ->GetValue(),
-                                                    anId);
-    }
+    bool ok;
+    int anId = myDlg->myId->text().toInt( &ok );
+    if( !ok || anId < 1 )
+      anId = aMeshEditor->FindNodeClosestTo(myDlg->myX->GetValue(),
+                                            myDlg->myY->GetValue(),
+                                            myDlg->myZ->GetValue());
+
+    int aResult = aMeshEditor->MoveNode(anId,
+                                        myDlg->myX->GetValue(),
+                                        myDlg->myY->GetValue(),
+                                        myDlg->myZ->GetValue() );
+
     if (aResult)
     {
       QStringList aParameters;
@@ -417,6 +455,12 @@ bool SMESHGUI_MakeNodeAtPointOp::onApply()
       aParameters << myDlg->myZ->text();
       aMesh->SetParameters( aParameters.join(":").toLatin1().constData() );
 
+      myDlg->myCurrentX->SetValue(0);
+      myDlg->myCurrentY->SetValue(0);
+      myDlg->myCurrentZ->SetValue(0);
+      myDlg->myDX->SetValue(0);
+      myDlg->myDY->SetValue(0);
+      myDlg->myDZ->SetValue(0);
       myDlg->myId->setText("");
 
       SALOME_ListIO aList;
@@ -446,7 +490,6 @@ bool SMESHGUI_MakeNodeAtPointOp::isValid( QString& msg )
 {
   bool ok = true;
   if ( myMeshActor &&
-       myDlg->myMoveRBtn->isChecked() &&
        !myDlg->myAutoSearchChkBox->isChecked() )
   {
     ok = false;
@@ -525,6 +568,21 @@ void SMESHGUI_MakeNodeAtPointOp::onSelectionDone()
             myNoPreview = false;
             redisplayPreview();
           }
+
+          if (const SMDS_MeshNode* aCurrentNode = aMesh->FindNode(myDlg->myId->text().toInt())) {
+            double x = aCurrentNode->X();
+            double y = aCurrentNode->Y();
+            double z = aCurrentNode->Z();
+            double dx = myDlg->myX->GetValue() - x;
+            double dy = myDlg->myY->GetValue() - y;
+            double dz = myDlg->myZ->GetValue() - z;
+            myDlg->myCurrentX->SetValue(x);
+            myDlg->myCurrentY->SetValue(y);
+            myDlg->myCurrentZ->SetValue(z);
+            myDlg->myDX->SetValue(dx);
+            myDlg->myDY->SetValue(dy);
+            myDlg->myDZ->SetValue(dz);
+          }
         }
       }
     }
@@ -547,15 +605,22 @@ void SMESHGUI_MakeNodeAtPointOp::redisplayPreview()
   SMESH::MeshPreviewStruct_var aMeshPreviewStruct;
 
   bool moveShown = false;
-  if ( myDlg->myMoveRBtn->isChecked() && // Move method
-       myMeshActor)
+  if ( myMeshActor)
   {
     const bool autoSearch = myDlg->myAutoSearchChkBox->isChecked();
     const bool preview    = myDlg->myPreviewChkBox->isChecked();
     if ( autoSearch )
+    {
+      myDlg->myCurrentX->SetValue(0);
+      myDlg->myCurrentY->SetValue(0);
+      myDlg->myCurrentZ->SetValue(0);
+      myDlg->myDX->SetValue(0);
+      myDlg->myDY->SetValue(0);
+      myDlg->myDZ->SetValue(0);
       myDlg->myId->setText("");
+    }
     QString msg;
-    if ( preview && ( autoSearch || isValid( msg ) ))
+    if ( autoSearch || isValid( msg ) )
     {
       try {
         SMESH::SMESH_Mesh_var aMesh = SMESH::GetMeshByIO(myMeshActor->getIO());
@@ -565,11 +630,19 @@ void SMESHGUI_MakeNodeAtPointOp::redisplayPreview()
           {
             SUIT_OverrideCursor aWaitCursor;
 
+            int anId = 0;
+            if ( autoSearch )
+              anId = aPreviewer->FindNodeClosestTo(myDlg->myX->GetValue(),
+                                                   myDlg->myY->GetValue(),
+                                                   myDlg->myZ->GetValue());
+            else
+              anId = myDlg->myId->text().toInt();
+
             // find id and/or just compute preview
-            int anId = aPreviewer->MoveClosestNodeToPoint(myDlg->myX->GetValue(),
-                                                          myDlg->myY->GetValue(),
-                                                          myDlg->myZ->GetValue(),
-                                                          myDlg->myId->text().toInt());
+            aPreviewer->MoveNode(anId,
+                                 myDlg->myX->GetValue(),
+                                 myDlg->myY->GetValue(),
+                                 myDlg->myZ->GetValue());
             if ( autoSearch ) { // set found id
               QString idTxt("%1");
               if ( anId > 0 )
@@ -578,6 +651,24 @@ void SMESHGUI_MakeNodeAtPointOp::redisplayPreview()
                 idTxt = "";
               myDlg->myId->setText( idTxt );
             }
+
+            SMESH::double_array* aXYZ = aMesh->GetNodeXYZ( anId );
+            if( aXYZ && aXYZ->length() >= 3 )
+            {
+              double x = aXYZ->operator[](0);
+              double y = aXYZ->operator[](1);
+              double z = aXYZ->operator[](2);
+              double dx = myDlg->myX->GetValue() - x;
+              double dy = myDlg->myY->GetValue() - y;
+              double dz = myDlg->myZ->GetValue() - z;
+              myDlg->myCurrentX->SetValue(x);
+              myDlg->myCurrentY->SetValue(y);
+              myDlg->myCurrentZ->SetValue(z);
+              myDlg->myDX->SetValue(dx);
+              myDlg->myDY->SetValue(dy);
+              myDlg->myDZ->SetValue(dz);
+            }
+
             if ( preview ) { // fill preview data
               aMeshPreviewStruct = aPreviewer->GetPreviewData();
               moveShown = ( anId > 0 );

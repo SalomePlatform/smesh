@@ -53,7 +53,6 @@
 #include "SMESHGUI_MeshOp.h"
 #include "SMESHGUI_MeshOrderOp.h"
 #include "SMESHGUI_MeshPatternDlg.h"
-#include "SMESHGUI_MoveNodesDlg.h"
 #include "SMESHGUI_MultiEditDlg.h"
 #include "SMESHGUI_NodesDlg.h"
 #include "SMESHGUI_Preferences_ColorDlg.h"
@@ -1804,20 +1803,6 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     break;
   }
 
-  case 406:                                     // MOVE NODE
-    {
-      if ( !vtkwnd )
-      {
-        SUIT_MessageBox::warning( desktop(), tr( "SMESH_WRN_WARNING" ),
-                                  tr( "NOT_A_VTK_VIEWER" ) );
-        break;
-      }
-
-      if(checkLock(aStudy)) break;
-      ( new SMESHGUI_MoveNodesDlg( this ) )->show();
-      break;
-    }
-
   case 701:                                     // COMPUTE MESH
   case 711:                                     // PRECOMPUTE MESH
   case 712:                                     // EVALUATE MESH
@@ -2986,9 +2971,8 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction( 4064, "SEW",             "ICON_SMESH_SEWING_FREEBORDERS" );
   createSMESHAction( 4065, "MERGE",           "ICON_SMESH_MERGE_NODES" );
   createSMESHAction( 4066, "MERGE_ELEMENTS",  "ICON_DLG_MERGE_ELEMENTS" );
-  createSMESHAction( 4067, "MESH_THROU_POINT","ICON_DLG_MESH_THROU_POINT" );
+  createSMESHAction( 4067, "MESH_THROU_POINT","ICON_DLG_MOVE_NODE" );
   createSMESHAction( 4068, "SCALE",           "ICON_DLG_MESH_SCALE" );
-  createSMESHAction(  406, "MOVE",            "ICON_DLG_MOVE_NODE" );
   createSMESHAction(  407, "INV",             "ICON_DLG_MESH_DIAGONAL" );
   createSMESHAction(  408, "UNION2",          "ICON_UNION2TRI" );
   createSMESHAction(  409, "ORIENT",          "ICON_DLG_MESH_ORIENTATION" );
@@ -3161,7 +3145,6 @@ void SMESHGUI::initialize( CAM_Application* app )
   createMenu( 4066, transfId, -1 );
   createMenu( 4068, transfId, -1 );
 
-  createMenu( 406, modifyId, -1 );
   createMenu( 4067,modifyId, -1 );
   createMenu( 407, modifyId, -1 );
   createMenu( 408, modifyId, -1 );
@@ -3262,7 +3245,6 @@ void SMESHGUI::initialize( CAM_Application* app )
   createTool( 4068, addRemTb );
   createTool( separator(), addRemTb );
 
-  createTool( 406, modifyTb );
   createTool( 4067,modifyTb );
   createTool( 407, modifyTb );
   createTool( 408, modifyTb );

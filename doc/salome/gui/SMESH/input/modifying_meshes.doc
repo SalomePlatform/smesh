@@ -27,10 +27,8 @@ conform free borders, border to side or side elements.</li>
 within the indicated tolerance.</li>
 <li>\subpage merging_elements_page "Merge Elements", considered coincident
 within the indicated tolerance.</li>
-<li>\subpage moving_nodes_page "Move Nodes" to an arbitrary location
+<li>\subpage mesh_through_point_page "Move Nodes" to an arbitrary location
 with consequent transformation of all adjacent elements and edges.</li>
-<li>\subpage mesh_through_point_page "Make node at a point", existing
-or created anew.</li>
 <li>\subpage diagonal_inversion_of_elements_page "Invert an edge" between neighboring triangles.</li>
 <li>\subpage uniting_two_triangles_page "Unite two triangles".</li>
 <li>\subpage uniting_set_of_triangles_page "Unite several adjacent triangles".</li>

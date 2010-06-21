@@ -52,7 +52,6 @@ salomeinclude_HEADERS = \
 	SMESHGUI_WhatIsDlg.h \
 	SMESHGUI_Preferences_ColorDlg.h \
 	SMESHGUI_Preferences_ScalarBarDlg.h \
-	SMESHGUI_MoveNodesDlg.h \
 	SMESHGUI_AddMeshElementDlg.h \
 	SMESHGUI_XmlHandler.h \
 	SMESHGUI_Filter.h \
@@ -116,7 +115,6 @@ dist_libSMESH_la_SOURCES = \
 	SMESHGUI_WhatIsDlg.cxx \
 	SMESHGUI_Preferences_ColorDlg.cxx \
 	SMESHGUI_Preferences_ScalarBarDlg.cxx \
-	SMESHGUI_MoveNodesDlg.cxx \
 	SMESHGUI_AddMeshElementDlg.cxx \
 	SMESHGUI_XmlHandler.cxx \
 	SMESHGUI_Filter.cxx \
@@ -188,7 +186,6 @@ MOC_FILES = \
 	SMESHGUI_WhatIsDlg_moc.cxx \
 	SMESHGUI_Preferences_ColorDlg_moc.cxx \
 	SMESHGUI_Preferences_ScalarBarDlg_moc.cxx \
-	SMESHGUI_MoveNodesDlg_moc.cxx \
 	SMESHGUI_AddMeshElementDlg_moc.cxx \
 	SMESHGUI_FilterDlg_moc.cxx \
 	SMESHGUI_FilterLibraryDlg_moc.cxx \

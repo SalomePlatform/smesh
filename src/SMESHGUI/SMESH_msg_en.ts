@@ -432,7 +432,7 @@
         </message>
         <message>
             <source>MEN_MESH_THROU_POINT</source>
-            <translation>Mesh to Pass Through a Point</translation>
+            <translation>Move Node</translation>
         </message>
         <message>
             <source>MEN_MIN_ANG</source>
@@ -2375,7 +2375,7 @@ Consider saving your work before application crash</translation>
         </message>
         <message>
             <source>STB_MESH_THROU_POINT</source>
-            <translation>Mesh to pass through a point</translation>
+            <translation>Move Node</translation>
         </message>
         <message>
             <source>STB_MIN_ANG</source>
@@ -2889,7 +2889,7 @@ Consider saving your work before application crash</translation>
         </message>
         <message>
             <source>TOP_MESH_THROU_POINT</source>
-            <translation>Mesh to pass through a point</translation>
+            <translation>Move Node</translation>
         </message>
         <message>
             <source>TOP_MIN_ANG</source>
@@ -4425,27 +4425,23 @@ Please specify them and try again</translation>
         <name>SMESHGUI_MakeNodeAtPointDlg</name>
         <message>
             <source>AUTO_SEARCH</source>
-            <translation>Automatic search</translation>
+            <translation>Find closest to destination</translation>
         </message>
         <message>
             <source>CAPTION</source>
-            <translation>Mesh to pass through a point</translation>
+            <translation>Move node</translation>
         </message>
         <message>
-            <source>CREATE_NEW_METHOD</source>
-            <translation>Create a node</translation>
+            <source>DESTINATION</source>
+            <translation>Destination</translation>
         </message>
         <message>
-            <source>MESH_PASS_THROUGH_POINT</source>
-            <translation>Make a node at point</translation>
+            <source>MOVE_NODE</source>
+            <translation>Move node</translation>
         </message>
         <message>
             <source>METHOD</source>
             <translation>Method</translation>
-        </message>
-        <message>
-            <source>MOVE_EXISTING_METHOD</source>
-            <translation>Move a node</translation>
         </message>
         <message>
             <source>NODE_2MOVE</source>
@@ -4770,17 +4766,6 @@ It is impossible to read point coordinates from file</translation>
         <message>
             <source>NONE</source>
             <translation>&lt;None></translation>
-        </message>
-    </context>
-    <context>
-        <name>SMESHGUI_MoveNodesDlg</name>
-        <message>
-            <source>CAPTION</source>
-            <translation>Move node</translation>
-        </message>
-        <message>
-            <source>NODE_ID_IS_NOT_DEFINED</source>
-            <translation>Node ID is not defined</translation>
         </message>
     </context>
     <context>

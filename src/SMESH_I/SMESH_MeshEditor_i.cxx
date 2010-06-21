@@ -3750,16 +3750,39 @@ CORBA::Boolean SMESH_MeshEditor_i::MoveNode(CORBA::Long   NodeID,
   if ( theNodeSearcher )
     theSearchersDeleter.Set( myMesh ); // remove theNodeSearcher if mesh is other
 
-  if ( theNodeSearcher ) // move node and update theNodeSearcher data accordingly
+  if ( myPreviewMode ) // make preview data
+  {
+    // in a preview mesh, make edges linked to a node
+    TPreviewMesh tmpMesh;
+    TIDSortedElemSet linkedNodes;
+    ::SMESH_MeshEditor::GetLinkedNodes( node, linkedNodes );
+    TIDSortedElemSet::iterator nIt = linkedNodes.begin();
+    for ( ; nIt != linkedNodes.end(); ++nIt )
+    {
+      SMDS_MeshEdge edge( node, cast2Node( *nIt ));
+      tmpMesh.Copy( &edge );
+    }
+    // move copied node
+    node = tmpMesh.GetMeshDS()->FindNode( NodeID );
+    if ( node )
+      tmpMesh.GetMeshDS()->MoveNode(node, x, y, z);
+    // fill preview data
+    ::SMESH_MeshEditor anEditor( & tmpMesh );
+    storeResult( anEditor );
+  }
+  else if ( theNodeSearcher ) // move node and update theNodeSearcher data accordingly
     theNodeSearcher->MoveNode(node, gp_Pnt( x,y,z ));
   else
     GetMeshDS()->MoveNode(node, x, y, z);
 
-  // Update Python script
-  TPythonDump() << "isDone = " << this << ".MoveNode( "
-                << NodeID << ", " << x << ", " << y << ", " << z << " )";
+  if ( !myPreviewMode )
+  {
+    // Update Python script
+    TPythonDump() << "isDone = " << this << ".MoveNode( "
+                  << NodeID << ", " << x << ", " << y << ", " << z << " )";
 
-  myMesh->SetIsModified( true );
+    myMesh->SetIsModified( true );
+  }
 
   return true;
 }
