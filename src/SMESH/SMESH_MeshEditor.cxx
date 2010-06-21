@@ -5972,12 +5972,13 @@ struct SMESH_NodeSearcherImpl: public SMESH_NodeSearcher
       treeList.push_back( myOctreeNode );
 
       SMDS_MeshNode pointNode( thePnt.X(), thePnt.Y(), thePnt.Z() );
+      bool pointInside = myOctreeNode->isInside( &pointNode, myHalfLeafSize );
       for ( trIt = treeList.begin(); trIt != treeList.end(); ++trIt)
       {
         SMESH_OctreeNode* tree = *trIt;
         if ( !tree->isLeaf() ) // put children to the queue
         {
-          //if ( !tree->isInside( &pointNode, myHalfLeafSize )) continue;
+          if ( pointInside && !tree->isInside( &pointNode, myHalfLeafSize )) continue;
           SMESH_OctreeNodeIteratorPtr cIt = tree->GetChildrenIterator();
           while ( cIt->more() )
             treeList.push_back( cIt->next() );
