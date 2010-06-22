@@ -70,3 +70,4 @@ GENERATE_RTF      = NO
 #External reference options
 #---------------------------------------------------------------------------
 TAGFILES          = smeshpy_doc.tag=smeshpy_doc
+SEARCHENGINE      = YES

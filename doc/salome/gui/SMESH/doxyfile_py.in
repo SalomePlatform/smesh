@@ -157,3 +157,4 @@ DOT_CLEANUP            = YES
 #External reference options
 #---------------------------------------------------------------------------
 GENERATE_TAGFILE  = smeshpy_doc.tag
+SEARCHENGINE           = YES

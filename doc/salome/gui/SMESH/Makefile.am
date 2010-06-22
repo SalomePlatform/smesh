@@ -52,21 +52,21 @@ usr_docs: doxyfile_py doxyfile
 docs: usr_docs
 
 clean-local:
-	@for filen in `find . -maxdepth 1` ; do				\
+	@for filen in `find . -maxdepth 1` ; do			\
 	  case $${filen} in					\
 	    ./Makefile | ./doxyfile | ./doxyfile_py ) ;;	\
-	    . | .. ) ;;						\
+	    . | .. | ./static ) ;;				\
 	    *) echo "Removing $${filen}" ; rm -rf $${filen} ;;	\
 	  esac ;						\
 	done ;
 
 install-data-local: usr_docs
 	$(INSTALL) -d $(DESTDIR)$(docdir)/gui/SMESH
-	@for filen in `find . -maxdepth 1` ; do								\
+	@for filen in `find . -maxdepth 1` ; do							\
 	  case $${filen} in									\
 	    ./Makefile | ./doxyfile | ./doxyfile_py ) ;;					\
 	    ./doxyfile.bak | ./doxyfile_py.bak ) ;;						\
-	    . | .. ) ;;										\
+	    . | .. | ./static ) ;;								\
 	    *) echo "Installing $${filen}" ; cp -rp $${filen} $(DESTDIR)$(docdir)/gui/SMESH ;;	\
 	  esac ;										\
 	done ;
