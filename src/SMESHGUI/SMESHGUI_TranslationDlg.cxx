@@ -19,12 +19,11 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+//  SMESH SMESHGUI : GUI for SMESH component
+//  File   : SMESHGUI_TranslationDlg.cxx
+//  Author : Michael ZORIN, Open CASCADE S.A.S.
+//  SMESH includes
 
-// SMESH SMESHGUI : GUI for SMESH component
-// File   : SMESHGUI_TranslationDlg.cxx
-// Author : Michael ZORIN, Open CASCADE S.A.S.
-// SMESH includes
-//
 #include "SMESHGUI_TranslationDlg.h"
 
 #include "SMESHGUI.h"
@@ -101,6 +100,10 @@ private:
 
 #define SPACING 6
 #define MARGIN  11
+
+//To disable automatic genericobj management, the following line should be commented.
+//Otherwise, it should be uncommented. Refer to KERNEL_SRC/src/SALOMEDSImpl/SALOMEDSImpl_AttributeIOR.cxx
+#define WITHGENERICOBJ
 
 //=================================================================================
 // class    : SMESHGUI_TranslationDlg()
@@ -494,7 +497,7 @@ bool SMESHGUI_TranslationDlg::ClickOnApply()
         break;
       case COPY_ELEMS_BUTTON:
         if ( makeGroups ) {
-          SMESH::ListOfGroups_var groups; 
+          SMESH::ListOfGroups_var groups;
           if(CheckBoxMesh->isChecked())
             groups = aMeshEditor->TranslateObjectMakeGroups(mySelectedObject,aVector);
           else
@@ -510,19 +513,26 @@ bool SMESHGUI_TranslationDlg::ClickOnApply()
           myMesh->SetParameters( aParameters.join(":").toLatin1().constData() );
         break;
       case MAKE_MESH_BUTTON:
-        SMESH::SMESH_Mesh_var mesh; 
-        if(CheckBoxMesh->isChecked())
+        SMESH::SMESH_Mesh_var mesh;
+        if (CheckBoxMesh->isChecked())
           mesh = aMeshEditor->TranslateObjectMakeMesh(mySelectedObject, aVector, makeGroups,
                                                       LineEditNewMesh->text().toLatin1().data());
         else
           mesh = aMeshEditor->TranslateMakeMesh(anElementsId, aVector, makeGroups,
                                                 LineEditNewMesh->text().toLatin1().data());
-        if( !mesh->_is_nil())
-          mesh->SetParameters( aParameters.join(":").toLatin1().constData() );
+        if (!mesh->_is_nil()) {
+          mesh->SetParameters(aParameters.join(":").toLatin1().constData());
+#ifdef WITHGENERICOBJ
+          // obj has been published in study. Its refcount has been incremented.
+          // It is safe to decrement its refcount
+          // so that it will be destroyed when the entry in study will be removed
+          mesh->Destroy();
+#endif
+        }
       }
     } catch (...) {
     }
-    
+
     SMESH::UpdateView();
     if ( MakeGroupsCheck->isEnabled() && MakeGroupsCheck->isChecked() ||
          actionButton == MAKE_MESH_BUTTON )
@@ -534,7 +544,7 @@ bool SMESHGUI_TranslationDlg::ClickOnApply()
 
     SMESHGUI::Modified();
   }
-  
+
   return true;
 }
 
@@ -574,7 +584,7 @@ void SMESHGUI_TranslationDlg::ClickOnCancel()
 void SMESHGUI_TranslationDlg::ClickOnHelp()
 {
   LightApp_Application* app = (LightApp_Application*)(SUIT_Session::session()->activeApplication());
-  if (app) 
+  if (app)
     app->onHelpContextModule(mySMESHGUI ? app->moduleName(mySMESHGUI->moduleName()) : QString(""), myHelpFileName);
   else {
     QString platform;
@@ -585,7 +595,7 @@ void SMESHGUI_TranslationDlg::ClickOnHelp()
 #endif
     SUIT_MessageBox::warning(this, tr("WRN_WARNING"),
                              tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
-                             arg(app->resourceMgr()->stringValue("ExternalBrowser", 
+                             arg(app->resourceMgr()->stringValue("ExternalBrowser",
                                                                  platform)).
                              arg(myHelpFileName));
   }
@@ -615,7 +625,7 @@ void SMESHGUI_TranslationDlg::onTextChange (const QString& theNewText)
 
   if (aMesh) {
     Handle(SALOME_InteractiveObject) anIO = myActor->getIO();
-    
+
     TColStd_MapOfInteger newIndices;
 
     QStringList aListId = theNewText.split(" ", QString::SkipEmptyParts);
@@ -632,7 +642,7 @@ void SMESHGUI_TranslationDlg::onTextChange (const QString& theNewText)
     mySelector->AddOrRemoveIndex( anIO, newIndices, false );
     if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
       aViewWindow->highlight( anIO, true, true );
-    
+
     myElementsId = theNewText;
   }
 
@@ -750,7 +760,7 @@ void SMESHGUI_TranslationDlg::SelectionIntoArgument()
       aNbUnits = SMESH::GetNameOfSelectedElements(mySelector, IO, aString);
       myElementsId = aString;
       if (aNbUnits < 1)
-        return;  
+        return;
     }
 
     myNbOkElements = true;
@@ -786,7 +796,7 @@ void SMESHGUI_TranslationDlg::SelectionIntoArgument()
     LineEditElements->setText(aString);
     LineEditElements->repaint();
     LineEditElements->setEnabled(false); // to fully update lineedit IPAL 19809
-    LineEditElements->setEnabled(true); 
+    LineEditElements->setEnabled(true);
     setNewMeshName();
   }
 

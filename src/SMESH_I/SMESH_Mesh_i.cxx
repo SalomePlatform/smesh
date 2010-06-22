@@ -19,12 +19,11 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
-
 //  SMESH SMESH_I : idl implementation based on 'SMESH' unit's calsses
 //  File   : SMESH_Mesh_i.cxx
 //  Author : Paul RASCLE, EDF
 //  Module : SMESH
-//
+
 #include "SMESH_Mesh_i.hxx"
 
 #include "SMESH_Filter_i.hxx"
@@ -90,7 +89,9 @@ using SMESH::TPythonDump;
 
 int SMESH_Mesh_i::myIdGenerator = 0;
 
-
+//To disable automatic genericobj management, the following line should be commented.
+//Otherwise, it should be uncommented. Refer to KERNEL_SRC/src/SALOMEDSImpl/SALOMEDSImpl_AttributeIOR.cxx
+#define WITHGENERICOBJ
 
 //=============================================================================
 /*!
@@ -119,17 +120,43 @@ SMESH_Mesh_i::SMESH_Mesh_i( PortableServer::POA_ptr thePOA,
 SMESH_Mesh_i::~SMESH_Mesh_i()
 {
   INFOS("~SMESH_Mesh_i");
-  map<int, SMESH::SMESH_GroupBase_ptr>::iterator it;
-  for ( it = _mapGroups.begin(); it != _mapGroups.end(); it++ ) {
-    SMESH_GroupBase_i* aGroup = dynamic_cast<SMESH_GroupBase_i*>( SMESH_Gen_i::GetServant( it->second ).in() );
-    if ( aGroup ) {
-      // this method is colled from destructor of group (PAL6331)
+
+  // destroy groups
+  map<int, SMESH::SMESH_GroupBase_ptr>::iterator itGr;
+  for (itGr = _mapGroups.begin(); itGr != _mapGroups.end(); itGr++) {
+    SMESH_GroupBase_i* aGroup = dynamic_cast<SMESH_GroupBase_i*>(SMESH_Gen_i::GetServant(itGr->second).in());
+    if (aGroup) {
+      // this method is called from destructor of group (PAL6331)
       //_impl->RemoveGroup( aGroup->GetLocalID() );
-      
+#ifdef WITHGENERICOBJ
       aGroup->Destroy();
+#endif
     }
   }
   _mapGroups.clear();
+
+#ifdef WITHGENERICOBJ
+  // destroy submeshes
+  map<int, SMESH::SMESH_subMesh_ptr>::iterator itSM;
+  for ( itSM = _mapSubMeshIor.begin(); itSM != _mapSubMeshIor.end(); itSM++ ) {
+    SMESH_subMesh_i* aSubMesh = dynamic_cast<SMESH_subMesh_i*>(SMESH_Gen_i::GetServant(itSM->second).in());
+    if (aSubMesh) {
+      aSubMesh->Destroy();
+    }
+  }
+  _mapSubMeshIor.clear();
+
+  // destroy hypotheses
+  map<int, SMESH::SMESH_Hypothesis_ptr>::iterator itH;
+  for ( itH = _mapHypo.begin(); itH != _mapHypo.end(); itH++ ) {
+    SMESH_Hypothesis_i* aHypo = dynamic_cast<SMESH_Hypothesis_i*>(SMESH_Gen_i::GetServant(itH->second).in());
+    if (aHypo) {
+      aHypo->Destroy();
+    }
+  }
+  _mapHypo.clear();
+#endif
+
   delete _impl;
 }
 
@@ -474,6 +501,9 @@ SMESH_Hypothesis::Hypothesis_Status
     status = _impl->AddHypothesis(myLocSubShape, hypId);
     if ( !SMESH_Hypothesis::IsStatusFatal(status) ) {
       _mapHypo[hypId] = SMESH::SMESH_Hypothesis::_duplicate( myHyp );
+#ifdef WITHGENERICOBJ
+      _mapHypo[hypId]->Register();
+#endif
       // assure there is a corresponding submesh
       if ( !_impl->IsMainShape( myLocSubShape )) {
         int shapeId = _impl->GetMeshDS()->ShapeToIndex( myLocSubShape );

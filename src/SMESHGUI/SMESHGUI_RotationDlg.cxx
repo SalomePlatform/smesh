@@ -19,12 +19,11 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+//  SMESH SMESHGUI : GUI for SMESH component
+//  File   : SMESHGUI_RotationDlg.cxx
+//  Author : Michael ZORIN, Open CASCADE S.A.S.
+//  SMESH includes
 
-// SMESH SMESHGUI : GUI for SMESH component
-// File   : SMESHGUI_RotationDlg.cxx
-// Author : Michael ZORIN, Open CASCADE S.A.S.
-// SMESH includes
-//
 #include "SMESHGUI_RotationDlg.h"
 
 #include "SMESHGUI.h"
@@ -83,6 +82,10 @@ enum { MOVE_ELEMS_BUTTON = 0, COPY_ELEMS_BUTTON, MAKE_MESH_BUTTON }; //!< action
 
 #define SPACING 8
 #define MARGIN  11
+
+//To disable automatic genericobj management, the following line should be commented.
+//Otherwise, it should be uncommented. Refer to KERNEL_SRC/src/SALOMEDSImpl/SALOMEDSImpl_AttributeIOR.cxx
+#define WITHGENERICOBJ
 
 //=================================================================================
 // class    : SMESHGUI_RotationDlg()
@@ -430,22 +433,31 @@ bool SMESHGUI_RotationDlg::ClickOnApply()
         else {
           if(CheckBoxMesh->isChecked())
             aMeshEditor->RotateObject(mySelectedObject, anAxis, anAngle, true);
-          else 
+          else
             aMeshEditor->Rotate(anElementsId, anAxis, anAngle, true);
         }
         if( !myMesh->_is_nil())
           myMesh->SetParameters( aParameters.join(":").toLatin1().constData() );
         break;
-      case MAKE_MESH_BUTTON:
+      case MAKE_MESH_BUTTON: {
         SMESH::SMESH_Mesh_var mesh;
-        if(CheckBoxMesh->isChecked())
+        if (CheckBoxMesh->isChecked())
           mesh = aMeshEditor->RotateObjectMakeMesh(mySelectedObject, anAxis, anAngle, makeGroups,
                                                    LineEditNewMesh->text().toLatin1().data());
-        else 
+        else
           mesh = aMeshEditor->RotateMakeMesh(anElementsId, anAxis, anAngle, makeGroups,
                                              LineEditNewMesh->text().toLatin1().data());
-        if( !mesh->_is_nil())
-          mesh->SetParameters( aParameters.join(":").toLatin1().constData() );
+        if (!mesh->_is_nil()) {
+          mesh->SetParameters(aParameters.join(":").toLatin1().constData());
+#ifdef WITHGENERICOBJ
+          // obj has been published in study. Its refcount has been incremented.
+          // It is safe to decrement its refcount
+          // so that it will be destroyed when the entry in study will be removed
+          mesh->Destroy();
+#endif
+        }
+        break;
+      }
       }
     } catch (...) {
     }
@@ -500,7 +512,7 @@ void SMESHGUI_RotationDlg::ClickOnCancel()
 void SMESHGUI_RotationDlg::ClickOnHelp()
 {
   LightApp_Application* app = (LightApp_Application*)(SUIT_Session::session()->activeApplication());
-  if (app) 
+  if (app)
     app->onHelpContextModule(mySMESHGUI ? app->moduleName(mySMESHGUI->moduleName()) : QString(""), myHelpFileName);
   else {
     QString platform;
@@ -542,9 +554,9 @@ void SMESHGUI_RotationDlg::onTextChange (const QString& theNewText)
   if (aMesh) {
     if (send == LineEditElements) {
       Handle(SALOME_InteractiveObject) anIO = myActor->getIO();
-      
+
       TColStd_MapOfInteger newIndices;
-      
+
       QStringList aListId = theNewText.split(" ", QString::SkipEmptyParts);
       for (int i = 0; i < aListId.count(); i++) {
         const SMDS_MeshElement * e = aMesh->FindElement(aListId[ i ].toInt());
@@ -556,7 +568,7 @@ void SMESHGUI_RotationDlg::onTextChange (const QString& theNewText)
       mySelector->AddOrRemoveIndex( anIO, newIndices, false );
       if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
         aViewWindow->highlight( anIO, true, true );
-      
+
       myElementsId = theNewText;
     }
   }
@@ -649,7 +661,7 @@ void SMESHGUI_RotationDlg::SelectionIntoArgument()
       } else if (!SMESH::IObjectToInterface<SMESH::SMESH_subMesh>(IO)->_is_nil()) { //SUBMESH
       // get submesh
         SMESH::SMESH_subMesh_var aSubMesh = SMESH::IObjectToInterface<SMESH::SMESH_subMesh>(IO);
-        
+
         // get IDs from submesh
         SMESH::long_array_var anElementsIds = new SMESH::long_array;
         anElementsIds = aSubMesh->GetElementsId();
@@ -715,7 +727,7 @@ void SMESHGUI_RotationDlg::SelectionIntoArgument()
     LineEditElements->setText(aString);
     LineEditElements->repaint();
     LineEditElements->setEnabled(false); // to update lineedit IPAL 19809
-    LineEditElements->setEnabled(true); 
+    LineEditElements->setEnabled(true);
     setNewMeshName();
   }
   myBusy = false;

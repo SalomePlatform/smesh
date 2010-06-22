@@ -19,12 +19,11 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+//  SMESH SMESHGUI : GUI for SMESH component
+//  File   : SMESHGUI_Hypotheses.cxx
+//  Author : Julia DOROVSKIKH, Open CASCADE S.A.S.
+//  SMESH includes
 
-// SMESH SMESHGUI : GUI for SMESH component
-// File   : SMESHGUI_Hypotheses.cxx
-// Author : Julia DOROVSKIKH, Open CASCADE S.A.S.
-// SMESH includes
-//
 #include "SMESHGUI_Hypotheses.h"
 
 #include "SMESHGUI.h"
@@ -52,6 +51,10 @@
 
 #define SPACING 6
 #define MARGIN  11
+
+//To disable automatic genericobj management, the following line should be commented.
+//Otherwise, it should be uncommented. Refer to KERNEL_SRC/src/SALOMEDSImpl/SALOMEDSImpl_AttributeIOR.cxx
+#define WITHGENERICOBJ
 
 SMESHGUI_GenericHypothesisCreator::SMESHGUI_GenericHypothesisCreator( const QString& theHypType )
   : myHypType( theHypType ), myIsCreate( false ), myDlg( 0 )
@@ -86,14 +89,22 @@ void SMESHGUI_GenericHypothesisCreator::create( bool isAlgo,
   myIsCreate = true;
 
   // Create hypothesis/algorithm
-  if (isAlgo)
-    SMESH::CreateHypothesis( hypType(), theHypName, isAlgo );
-
-  else
-  {
-    SMESH::SMESH_Hypothesis_var aHypothesis = 
+  if (isAlgo) {
+    SMESH::SMESH_Hypothesis_var anAlgo =
+      SMESH::CreateHypothesis( hypType(), theHypName, isAlgo );
+#ifdef WITHGENERICOBJ
+    if (!CORBA::is_nil(anAlgo))
+      anAlgo->Destroy();
+#endif
+  }
+  else {
+    SMESH::SMESH_Hypothesis_var aHypothesis =
       SMESH::CreateHypothesis( hypType(), theHypName, false );
     editHypothesis( aHypothesis.in(), theHypName, theParent, obj, slot );
+#ifdef WITHGENERICOBJ
+    if (!CORBA::is_nil(aHypothesis))
+      aHypothesis->Destroy();
+#endif
   }
 }
 
@@ -111,13 +122,16 @@ void SMESHGUI_GenericHypothesisCreator::edit( SMESH::SMESH_Hypothesis_ptr theHyp
   editHypothesis( theHypothesis, theHypName, theParent, obj, slot );
 }
 
-void SMESHGUI_GenericHypothesisCreator::editHypothesis( SMESH::SMESH_Hypothesis_ptr h, 
+void SMESHGUI_GenericHypothesisCreator::editHypothesis( SMESH::SMESH_Hypothesis_ptr h,
                                                         const QString& theHypName,
                                                         QWidget* theParent,
                                                         QObject* obj, const QString& slot )
 {
   myHypName = theHypName;
   myHypo = SMESH::SMESH_Hypothesis::_duplicate( h );
+#ifdef WITHGENERICOBJ
+  myHypo->Register();
+#endif
 
   SMESHGUI_HypothesisDlg* Dlg = new SMESHGUI_HypothesisDlg( this, theParent );
   connect( Dlg, SIGNAL( finished( int ) ), this, SLOT( onDialogFinished( int ) ) );
@@ -140,7 +154,7 @@ void SMESHGUI_GenericHypothesisCreator::editHypothesis( SMESH::SMESH_Hypothesis_
   else
     emit finished( QDialog::Accepted );
 }
-  
+
 QFrame* SMESHGUI_GenericHypothesisCreator::buildStdFrame()
 {
   if( CORBA::is_nil( hypothesis() ) )
@@ -169,7 +183,7 @@ QFrame* SMESHGUI_GenericHypothesisCreator::buildStdFrame()
     GroupC1Layout->addWidget( lab, i, 0 );
 
     QWidget* w = getCustomWidget( *anIt, GroupC1, i );
-    if ( !w ) 
+    if ( !w )
       switch( (*anIt).myValue.type() )
       {
       case QVariant::Int:
@@ -287,6 +301,9 @@ void SMESHGUI_GenericHypothesisCreator::onDialogFinished( int result )
       }
   }
   SMESHGUI::GetSMESHGUI()->updateObjBrowser( true, 0 );
+#ifdef WITHGENERICOBJ
+  myHypo->Destroy();
+#endif
   myHypo = SMESH::SMESH_Hypothesis::_nil();
   myInitParamsHypo = SMESH::SMESH_Hypothesis::_nil();
 
@@ -316,26 +333,22 @@ bool SMESHGUI_GenericHypothesisCreator::getStdParamFromDlg( ListOfStdParams& par
       item.myValue = sb->value();
       params.append( item );
     }
-    
     else if( (*anIt)->inherits( "SalomeApp_DoubleSpinBox" ) )
     {
       SalomeApp_DoubleSpinBox* sb = ( SalomeApp_DoubleSpinBox* )( *anIt );
       item.myValue = sb->value();
       params.append( item );
     }
-
     else if( (*anIt)->inherits( "QLineEdit" ) )
     {
       QLineEdit* line = ( QLineEdit* )( *anIt );
       item.myValue = line->text();
       params.append( item );
     }
-
     else if ( getParamFromCustomWidget( item, *anIt ))
     {
       params.append( item );
     }
-
     else
       res = false;
   }
@@ -351,7 +364,7 @@ QStringList SMESHGUI_GenericHypothesisCreator::getVariablesFromDlg() const
     if( (*anIt)->inherits( "QAbstractSpinBox" ) ) {
       QAbstractSpinBox* sb = ( QAbstractSpinBox* )( *anIt );
       aResult.append(sb->text());
-    } 
+    }
   }
   return aResult;
 }
@@ -440,7 +453,7 @@ SMESHGUI_GenericHypothesisCreator::ListOfWidgets& SMESHGUI_GenericHypothesisCrea
 }
 
 QtxDialog* SMESHGUI_GenericHypothesisCreator:: dlg() const
-{ 
+{
   return myDlg;
 }
 
@@ -565,7 +578,7 @@ SMESHGUI_HypothesisDlg::SMESHGUI_HypothesisDlg( SMESHGUI_GenericHypothesisCreato
   QHBoxLayout* titLay = new QHBoxLayout( titFrame );
   titLay->setMargin( 0 );
   titLay->setSpacing( SPACING );
-  
+
   myIconLabel = new QLabel( titFrame );
   myIconLabel->setScaledContents( false );
   myIconLabel->setSizePolicy( QSizePolicy( QSizePolicy::Fixed, QSizePolicy::Fixed ) );
@@ -634,7 +647,7 @@ void SMESHGUI_HypothesisDlg::onHelp()
 #endif
     SUIT_MessageBox::warning(this, tr("WRN_WARNING"),
                              tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
-                             arg(app->resourceMgr()->stringValue("ExternalBrowser", 
+                             arg(app->resourceMgr()->stringValue("ExternalBrowser",
                                                                  platform)).
                              arg(myHelpFileName));
   }
@@ -642,7 +655,7 @@ void SMESHGUI_HypothesisDlg::onHelp()
 
 void SMESHGUI_HypothesisDlg::setHIcon( const QPixmap& p )
 {
-  myIconLabel->setPixmap( p );  
+  myIconLabel->setPixmap( p );
 }
 
 void SMESHGUI_HypothesisDlg::setType( const QString& t )
@@ -672,7 +685,7 @@ HypothesisData::HypothesisData( const QString& theTypeName,
     IconId( theIconId ),
     Dim( theDim ),
     IsAux( theIsAux ),
-    NeededHypos( theNeededHypos ), 
+    NeededHypos( theNeededHypos ),
     OptionalHypos( theOptionalHypos ),
     InputTypes( theInputTypes ),
     OutputTypes( theOutputTypes ),
@@ -681,7 +694,7 @@ HypothesisData::HypothesisData( const QString& theTypeName,
 {
 }
 
-HypothesesSet::HypothesesSet( const QString& theSetName ) 
+HypothesesSet::HypothesesSet( const QString& theSetName )
   : myHypoSetName( theSetName ),
     myIsAlgo( false )
 {
@@ -690,8 +703,8 @@ HypothesesSet::HypothesesSet( const QString& theSetName )
 HypothesesSet::HypothesesSet( const QString&     theSetName,
                               const QStringList& theHypoList,
                               const QStringList& theAlgoList )
-  : myHypoSetName( theSetName ), 
-    myHypoList( theHypoList ), 
+  : myHypoSetName( theSetName ),
+    myHypoList( theHypoList ),
     myAlgoList( theAlgoList ),
     myIsAlgo( false )
 {
@@ -747,4 +760,3 @@ QString HypothesesSet::current() const
 {
   return list()->at(myIndex);
 }
-

@@ -19,12 +19,11 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+//  SMESH SMESHGUI : GUI for SMESH component
+//  File   : SMESHGUI.cxx
+//  Author : Nicolas REJNERI, Open CASCADE S.A.S.
 
-// SMESH SMESHGUI : GUI for SMESH component
-// File   : SMESHGUI.cxx
-// Author : Nicolas REJNERI, Open CASCADE S.A.S.
-// SMESH includes
-//
+//  SMESH includes
 #include "SMESHGUI.h"
 #include "SMESHGUI_AddMeshElementDlg.h"
 #include "SMESHGUI_AddQuadraticElementDlg.h"
@@ -145,6 +144,10 @@
 #include <Standard_ErrorHandler.hxx>
 #include <NCollection_DataMap.hxx>
 
+//To disable automatic genericobj management, the following line should be commented.
+//Otherwise, it should be uncommented. Refer to KERNEL_SRC/src/SALOMEDSImpl/SALOMEDSImpl_AttributeIOR.cxx
+#define WITHGENERICOBJ
+
 //namespace{
   // Declarations
   //=============================================================
@@ -241,6 +244,13 @@
             aPixmap->SetPixMap( "ICON_SMESH_TREE_MESH_IMPORTED" );
             if ( theCommandID == 112 ) // mesh names aren't taken from the file for UNV import
               SMESH::SetName( aMeshSO, QFileInfo(filename).fileName() );
+
+#ifdef WITHGENERICOBJ
+            // obj has been published in study. Its refcount has been incremented.
+            // It is safe to decrement its refcount
+            // so that it will be destroyed when the entry in study will be removed
+            aMeshes[i]->Destroy();
+#endif
           }
           else {
             isEmpty = true;
@@ -1299,7 +1309,9 @@ LightApp_Module( "SMESH" )
 //=============================================================================
 SMESHGUI::~SMESHGUI()
 {
+#ifdef WITHGENERICOBJ
   SMESH::GetFilterManager()->Destroy();
+#endif
   SMESH::GetFilterManager() = SMESH::FilterManager::_nil();
 }
 
@@ -1665,7 +1677,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
   case 232:
     ::SetDisplayMode(theCommandID, myMarkerMap);
   break;
-  
+
   // Display Entity
   case 216: // 0D elements
   case 217: // Edges
@@ -1772,7 +1784,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       }
       else
         aSel->setSelectedObjects( to_process );
-      
+
       break;
     }
 
@@ -3438,12 +3450,12 @@ void SMESHGUI::initialize( CAM_Application* app )
 
   //-------------------------------------------------
   // Representation of the 2D Quadratic elements
-  //-------------------------------------------------  
+  //-------------------------------------------------
   anId = popupMgr()->insert( tr( "MEN_QUADRATIC_REPRESENT" ), -1, -1 );
   popupMgr()->insert( action( 231 ), anId, -1 ); // LINE REPRESENTATION
   popupMgr()->setRule( action( 231 ), aMeshInVTK + "and isVisible",QtxPopupMgr::VisibleRule );
   popupMgr()->setRule( action( 231 ), "quadratic2DMode = 'eLines'", QtxPopupMgr::ToggleRule );
-  
+
   popupMgr()->insert( action( 232 ), anId, -1 ); // ARC REPRESENTATION
   popupMgr()->setRule( action( 232 ), aMeshInVTK + "and isVisible", QtxPopupMgr::VisibleRule );
   popupMgr()->setRule( action( 232 ), "quadratic2DMode = 'eArcs'", QtxPopupMgr::ToggleRule );
@@ -3485,7 +3497,7 @@ void SMESHGUI::initialize( CAM_Application* app )
     aMeshInVtkHasVolumes = aMeshInVTK + "&&" + hasVolumes;
 
   anId = popupMgr()->insert( tr( "MEN_CTRL" ), -1, -1 );
-  
+
   popupMgr()->insert( action( 200 ), anId, -1 ); // RESET
   popupMgr()->setRule( action( 200 ), aMeshInVTK + "&& controlMode <> 'eNone'", QtxPopupMgr::VisibleRule );
 
@@ -3566,7 +3578,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   popupMgr()->setRule( action( 201 ), aMeshInVTK + "&& controlMode <> 'eNone'", QtxPopupMgr::VisibleRule );
 
   popupMgr()->insert( separator(), -1, -1 );
-  
+
   //-------------------------------------------------
   // Display / Erase
   //-------------------------------------------------
@@ -3616,7 +3628,7 @@ bool SMESHGUI::reusableOperation( const int id )
 {
   // compute, evaluate and precompute are not reusable operations
   return ( id == 701 || id == 711 || id == 712 ) ? false : SalomeApp_Module::reusableOperation( id );
-} 
+}
 
 bool SMESHGUI::activateModule( SUIT_Study* study )
 {
@@ -3789,8 +3801,8 @@ void SMESHGUI::createPreferences()
                               "SMESH", "max_angle" );
   setPreferenceProperty( maxAngle, "min", 1 );
   setPreferenceProperty( maxAngle, "max", 90 );
-  
-  
+
+
 
   int exportgroup = addPreference( tr( "PREF_GROUP_EXPORT" ), genTab );
   setPreferenceProperty( exportgroup, "columns", 2 );
@@ -3821,15 +3833,15 @@ void SMESHGUI::createPreferences()
                              "SMESH", "nb_segments_per_edge" );
   setPreferenceProperty( nbSeg, "min", 1 );
   setPreferenceProperty( nbSeg, "max", 10000000 );
-  
+
   // Quantities with individual precision settings
   int precGroup = addPreference( tr( "SMESH_PREF_GROUP_PRECISION" ), genTab );
   setPreferenceProperty( precGroup, "columns", 2 );
-  
+
   const int nbQuantities = 6;
   int precs[nbQuantities], ii = 0;
   precs[ii++] = addPreference( tr( "SMESH_PREF_length_precision" ), precGroup,
-                            LightApp_Preferences::IntSpin, "SMESH", "length_precision" );  
+                            LightApp_Preferences::IntSpin, "SMESH", "length_precision" );
   precs[ii++] = addPreference( tr( "SMESH_PREF_angle_precision" ), precGroup,
                             LightApp_Preferences::IntSpin, "SMESH", "angle_precision" );
   precs[ii++] = addPreference( tr( "SMESH_PREF_len_tol_precision" ), precGroup,
@@ -3839,14 +3851,14 @@ void SMESHGUI::createPreferences()
   precs[ii++] = addPreference( tr( "SMESH_PREF_area_precision" ), precGroup,
                             LightApp_Preferences::IntSpin, "SMESH", "area_precision" );
   precs[ii  ] = addPreference( tr( "SMESH_PREF_vol_precision" ), precGroup,
-                            LightApp_Preferences::IntSpin, "SMESH", "vol_precision" );  
-  
+                            LightApp_Preferences::IntSpin, "SMESH", "vol_precision" );
+
   // Set property for precision value for spinboxes
   for ( ii = 0; ii < nbQuantities; ii++ ){
     setPreferenceProperty( precs[ii], "min", -14 );
     setPreferenceProperty( precs[ii], "max", 14 );
     setPreferenceProperty( precs[ii], "precision", 2 );
-  }   
+  }
 
   // Mesh tab ------------------------------------------------------------------------
   int meshTab = addPreference( tr( "PREF_TAB_MESH" ) );
@@ -4845,7 +4857,7 @@ void SMESHGUI::restoreVisualParameters (int savePoint)
 int SMESHGUI::addVtkFontPref( const QString& label, const int pId, const QString& param )
 {
   int tfont = addPreference( label, pId, LightApp_Preferences::Font, "VISU", param );
-  
+
   setPreferenceProperty( tfont, "mode", QtxFontEdit::Custom );
 
   QStringList fam;
