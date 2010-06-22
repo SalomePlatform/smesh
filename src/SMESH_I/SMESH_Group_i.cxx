@@ -347,6 +347,36 @@ RemoveByPredicate( SMESH::Predicate_ptr thePredicate )
   return 0;
 }
 
+CORBA::Long SMESH_Group_i::AddFrom( SMESH::SMESH_IDSource_ptr theSource )
+{
+  long nbAdd = 0;
+  SMESHDS_Group* aGroupDS = dynamic_cast<SMESHDS_Group*>( GetGroupDS() );
+  if (aGroupDS) {
+    SMESH::long_array_var anIds;
+    if ( !CORBA::is_nil(SMESH::SMESH_GroupBase::_narrow(theSource)) &&
+	 SMESH::SMESH_GroupBase::_narrow(theSource)->GetType() == GetType() ) {
+      anIds = theSource->GetIDs();
+    }
+    else if ( !CORBA::is_nil(SMESH::SMESH_Mesh::_narrow(theSource)) ) {
+      anIds = SMESH::SMESH_Mesh::_narrow(theSource)->GetElementsByType( GetType() );
+    }
+    else if ( !CORBA::is_nil(SMESH::SMESH_subMesh::_narrow(theSource)) ) {
+      anIds = SMESH::SMESH_subMesh::_narrow(theSource)->GetElementsByType( GetType() );
+    }
+    else {
+      anIds->length( 0 );
+    }
+    for ( int i = 0, total = anIds->length(); i < total; i++ ) {
+      if ( aGroupDS->Add((int)anIds[i]) ) nbAdd++;
+    }
+  }
+
+  // Update Python script
+  TPythonDump() << "nbAdd = " << _this() << ".AddFrom( " << theSource << " )";
+
+  return nbAdd;
+}
+
 //=============================================================================
 /*!
  *  

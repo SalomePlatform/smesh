@@ -113,6 +113,8 @@ class SMESH_I_EXPORT SMESH_Group_i:
 
   CORBA::Long AddByPredicate( SMESH::Predicate_ptr thePredicate );
   CORBA::Long RemoveByPredicate( SMESH::Predicate_ptr thePredicate );
+
+  CORBA::Long AddFrom( SMESH::SMESH_IDSource_ptr theSource );
 };
 
 // =========================

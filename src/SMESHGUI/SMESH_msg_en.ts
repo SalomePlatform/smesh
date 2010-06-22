@@ -4366,6 +4366,13 @@ Please specify them and try again</translation>
         </message>
     </context>
     <context>
+        <name>SMESHGUI_GroupDlg</name>
+        <message>
+            <source>SELECT_ALL</source>
+            <translation>Select All</translation>
+        </message>
+    </context>
+    <context>
         <name>SMESHGUI_UnionGroupsDlg</name>
         <message>
             <source>UNION_OF_GROUPS</source>
