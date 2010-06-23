@@ -487,9 +487,11 @@ SMESH_ActorDef::SMESH_ActorDef()
   myHighlitableActor->SetQuadraticArcAngle(aQuadraticAngle);
   my2DActor->SetQuadraticArcAngle(aQuadraticAngle);
   
-  // Set color of the name actor
+  // Set colors of the name actor
   SMESH::GetColor( "SMESH", "fill_color", anRGB[0], anRGB[1], anRGB[2], QColor( 0, 170, 255 ) );
   myNameActor->SetBackgroundColor(anRGB[0], anRGB[1], anRGB[2]);
+  SMESH::GetColor( "SMESH", "group_name_color", anRGB[0], anRGB[1], anRGB[2], QColor( 255, 255, 255 ) );
+  myNameActor->SetForegroundColor(anRGB[0], anRGB[1], anRGB[2]);
 }
 
 

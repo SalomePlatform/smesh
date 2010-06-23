@@ -3900,6 +3900,11 @@ void SMESHGUI::createPreferences()
   addPreference( tr( "PREF_BACKFACE" ), elemGroup, LightApp_Preferences::Color, "SMESH", "backface_color" );
   addPreference( tr( "PREF_COLOR_0D" ), elemGroup, LightApp_Preferences::Color, "SMESH", "elem0d_color" );
 
+  int grpGroup = addPreference( tr( "PREF_GROUP_GROUPS" ), meshTab );
+  setPreferenceProperty( grpGroup, "columns", 2 );
+
+  addPreference( tr( "PREF_GRP_NAMES" ), grpGroup, LightApp_Preferences::Color, "SMESH", "group_name_color" );
+
   //int sp = addPreference( "", elemGroup, LightApp_Preferences::Space );
   //setPreferenceProperty( sp, "hstretch", 0 );
   //setPreferenceProperty( sp, "vstretch", 0 );

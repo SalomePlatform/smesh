@@ -3314,6 +3314,14 @@ Please, create VTK viewer and try again</translation>
             <translation>Nodes</translation>
         </message>
         <message>
+            <source>PREF_GROUP_GROUPS</source>
+            <translation>Groups</translation>
+        </message>
+        <message>
+            <source>PREF_GRP_NAMES</source>
+            <translation>Names color</translation>
+        </message>
+        <message>
             <source>PREF_GROUP_PRECISION</source>
             <translation>Precision</translation>
         </message>
