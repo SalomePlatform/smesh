@@ -1422,25 +1422,29 @@ class Mesh:
     def Group(self, grp, name=""):
         return self.GroupOnGeom(grp, name)
 
-    ## Deprecated, used only for compatibility! Please, use ExportMED() method instead.
+    ## Deprecated, used only for compatibility! Please, use ExportToMEDX() method instead.
     #  Exports the mesh in a file in MED format and chooses the \a version of MED format
+    ## allowing to overwrite the file if it exists or add the exported data to its contents
     #  @param f the file name
     #  @param version values are SMESH.MED_V2_1, SMESH.MED_V2_2
     #  @param opt boolean parameter for creating/not creating
     #  the groups Group_On_All_Nodes, Group_On_All_Faces, ...
+    #  @param overwrite boolean parameter for overwriting/not overwriting the file
     #  @ingroup l2_impexp
-    def ExportToMED(self, f, version, opt=0):
-        self.mesh.ExportToMED(f, opt, version)
+    def ExportToMED(self, f, version, opt=0, overwrite=1):
+        self.mesh.ExportToMEDX(f, opt, version, overwrite)
 
-    ## Exports the mesh in a file in MED format
+    ## Exports the mesh in a file in MED format and chooses the \a version of MED format
+    ## allowing to overwrite the file if it exists or add the exported data to its contents
     #  @param f is the file name
     #  @param auto_groups boolean parameter for creating/not creating
     #  the groups Group_On_All_Nodes, Group_On_All_Faces, ... ;
     #  the typical use is auto_groups=false.
     #  @param version MED format version(MED_V2_1 or MED_V2_2)
+    #  @param overwrite boolean parameter for overwriting/not overwriting the file
     #  @ingroup l2_impexp
-    def ExportMED(self, f, auto_groups=0, version=MED_V2_2):
-        self.mesh.ExportToMED(f, auto_groups, version)
+    def ExportMED(self, f, auto_groups=0, version=MED_V2_2, overwrite=1):
+        self.mesh.ExportToMEDX(f, auto_groups, version, overwrite)
 
     ## Exports the mesh in a file in DAT format
     #  @param f the file name
