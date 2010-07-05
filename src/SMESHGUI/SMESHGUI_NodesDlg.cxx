@@ -529,6 +529,8 @@ bool SMESHGUI_NodesDlg::ClickOnApply()
   }
 
   SMESHGUI::Modified();
+  SMESH::UpdateView();
+  mySimulation->SetVisibility(false);
 
   return true;
 }
