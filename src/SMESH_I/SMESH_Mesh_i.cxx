@@ -2390,7 +2390,7 @@ void SMESH_Mesh_i::ExportToMEDX (const char* file,
   // check names of groups
   checkGroupNames();
 
-  TPythonDump() << _this() << ".ExportToMEDX( '"
+  TPythonDump() << _this() << ".ExportToMEDX( r'"
                 << file << "', " << auto_groups << ", " << theVersion << ", " << overwrite << " )";
 
   _impl->ExportMED( file, aMeshName, auto_groups, theVersion );
@@ -2419,7 +2419,7 @@ void SMESH_Mesh_i::ExportDAT (const char *file)
   // Update Python script
   // check names of groups
   checkGroupNames();
-  TPythonDump() << _this() << ".ExportDAT( '" << file << "' )";
+  TPythonDump() << _this() << ".ExportDAT( r'" << file << "' )";
 
   // Perform Export
   PrepareForWriting(file);
@@ -2434,7 +2434,7 @@ void SMESH_Mesh_i::ExportUNV (const char *file)
   // Update Python script
   // check names of groups
   checkGroupNames();
-  TPythonDump() << _this() << ".ExportUNV( '" << file << "' )";
+  TPythonDump() << _this() << ".ExportUNV( r'" << file << "' )";
 
   // Perform Export
   PrepareForWriting(file);
@@ -2449,7 +2449,7 @@ void SMESH_Mesh_i::ExportSTL (const char *file, const bool isascii)
   // Update Python script
   // check names of groups
   checkGroupNames();
-  TPythonDump() << _this() << ".ExportSTL( '" << file << "', " << isascii << " )";
+  TPythonDump() << _this() << ".ExportSTL( r'" << file << "', " << isascii << " )";
 
   // Perform Export
   PrepareForWriting(file);

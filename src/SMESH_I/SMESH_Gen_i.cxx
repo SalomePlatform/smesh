@@ -889,7 +889,7 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CreateMeshesFromUNV( const char* theFileName 
     aStudyBuilder->CommitCommand();
     if ( !aSO->_is_nil() ) {
       // Update Python script
-      TPythonDump() << aSO << " = smeshgen.CreateMeshesFromUNV('" << theFileName << "')";
+      TPythonDump() << aSO << " = smeshgen.CreateMeshesFromUNV(r'" << theFileName << "')";
     }
   }
 
@@ -978,7 +978,7 @@ SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromMED( const char* theFileName,
   }
 
   // Update Python script
-  aPythonDump << "], status) = " << this << ".CreateMeshesFromMED('" << theFileName << "')";
+  aPythonDump << "], status) = " << this << ".CreateMeshesFromMED(r'" << theFileName << "')";
   }
   // Dump creation of groups
   for ( int i = 0; i < aResult->length(); ++i )
@@ -1012,7 +1012,7 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CreateMeshesFromSTL( const char* theFileName 
     aStudyBuilder->CommitCommand();
     if ( !aSO->_is_nil() ) {
       // Update Python script
-      TPythonDump() << aSO << " = " << this << ".CreateMeshesFromSTL('" << theFileName << "')";
+      TPythonDump() << aSO << " = " << this << ".CreateMeshesFromSTL(r'" << theFileName << "')";
     }
   }
 
