@@ -37,13 +37,38 @@ module SMESH
   {
     /*!
      * \brief Wrap a sequence of ids in a SMESH_IDSource
+     * \param IDsOfElements list of mesh elements identifiers
+     * \return new ID source object
      */
     SMESH_IDSource MakeIDSource(in long_array IDsOfElements);
 
+    /*!
+     * \brief Remove mesh elements specified by their identifiers.
+     * \param IDsOfElements list of mesh elements identifiers
+     * \return \c true if elements are correctly removed or \c false otherwise
+     */
     boolean RemoveElements(in long_array IDsOfElements);
 
+    /*!
+     * \brief Remove mesh nodes specified by their identifiers.
+     * \param IDsOfNodes list of mesh nodes identifiers
+     * \return \c true if nodes are correctly removed or \c false otherwise
+     */
     boolean RemoveNodes(in long_array IDsOfNodes);
+    
+    /*!
+     * \brief Remove all orphan nodes.
+     * \return number of removed nodes
+     */
+    long RemoveOrphanNodes();
 
+    /*!
+     * \brief Add new node.
+     * \param x X coordinate of new node
+     * \param y Y coordinate of new node
+     * \param z Z coordinate of new node
+     * \return integer identifier of new node
+     */
     long AddNode(in double x, in double y, in double z);
 
     /*!

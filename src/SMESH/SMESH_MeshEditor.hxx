@@ -171,7 +171,7 @@ public:
                                const bool                isPoly,
                                const int                 ID = 0);
 
-  bool Remove (const std::list< int >& theElemIDs, const bool isNodes);
+  int Remove (const std::list< int >& theElemIDs, const bool isNodes);
   // Remove a node or an element.
   // Modify a compute state of sub-meshes which become empty
 

@@ -286,7 +286,7 @@
 
     // actually, the following condition can't be met (added for insurance)
     if( selected.Extent() == 0 ||
-        selected.Extent() > 1 && theCommandID != 122 && theCommandID != 125 )
+        ( selected.Extent() > 1 && theCommandID != 122 && theCommandID != 125 ) )
       return;
 
     bool hasDuplicatedMeshNames = false;
@@ -2566,6 +2566,44 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     updateObjBrowser();
     break;
   }
+  case 4044:                                     // REMOVE ORPHAN NODES
+    {
+      if(checkLock(aStudy)) break;
+      SALOME_ListIO selected;
+      if( LightApp_SelectionMgr *aSel = SMESHGUI::selectionMgr() )
+	aSel->selectedObjects( selected );
+      if ( selected.Extent() == 1 ) {
+	Handle(SALOME_InteractiveObject) anIO = selected.First();
+	SMESH::SMESH_Mesh_var aMesh = SMESH::GetMeshByIO(anIO);
+	if ( !aMesh->_is_nil() ) {
+	  bool confirm = SUIT_MessageBox::question( SMESHGUI::desktop(),
+						    tr( "SMESH_WARNING" ),
+						    tr( "REMOVE_ORPHAN_NODES_QUESTION"),
+						    SUIT_MessageBox::Yes |
+						    SUIT_MessageBox::No,
+						    SUIT_MessageBox::No ) == SUIT_MessageBox::Yes;
+	  if( confirm ) {
+	    try {
+	      SMESH::SMESH_MeshEditor_var aMeshEditor = aMesh->GetMeshEditor();
+	      int removed = aMeshEditor->RemoveOrphanNodes();
+	      SUIT_MessageBox::information(SMESHGUI::desktop(),
+					   tr("SMESH_INFORMATION"),
+					   tr("NB_NODES_REMOVED").arg(removed));
+	      if ( removed > 0 ) {
+		SMESH::UpdateView();
+		SMESHGUI::Modified();
+	      }
+	    }
+	    catch (const SALOME::SALOME_Exception& S_ex) {
+	      SalomeApp_Tools::QtCatchCorbaException(S_ex);
+	    } 
+	    catch (...) {
+	    }
+	  }
+	}
+      }
+      break;
+    }
   case 4051:                                    // RENUMBERING NODES
     {
       if(checkLock(aStudy)) break;
@@ -2974,6 +3012,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction( 4032, "HEXA",            "ICON_DLG_HEXAS" );
   createSMESHAction( 4041, "REMOVE_NODES",    "ICON_DLG_REM_NODE" );
   createSMESHAction( 4042, "REMOVE_ELEMENTS", "ICON_DLG_REM_ELEMENT" );
+  createSMESHAction( 4044, "REMOVE_ORPHAN_NODES", "ICON_DLG_REM_ORPHAN_NODES" );
   createSMESHAction( 4043, "CLEAR_MESH"    ,  "ICON_CLEAR_MESH" );
   createSMESHAction( 4051, "RENUM_NODES",     "ICON_DLG_RENUMBERING_NODES" );
   createSMESHAction( 4052, "RENUM_ELEMENTS",  "ICON_DLG_RENUMBERING_ELEMENTS" );
@@ -3144,6 +3183,8 @@ void SMESHGUI::initialize( CAM_Application* app )
 
   createMenu( 4041, removeId, -1 );
   createMenu( 4042, removeId, -1 );
+  createMenu( 4044, removeId, -1 );
+  createMenu( separator(), removeId, -1 );
   createMenu( 4043, removeId, -1 );
 
   createMenu( 4051, renumId, -1 );
@@ -3243,6 +3284,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createTool( separator(), addRemTb );
   createTool( 4041, addRemTb );
   createTool( 4042, addRemTb );
+  createTool( 4044, addRemTb );
   createTool( 4043, addRemTb );
   createTool( separator(), addRemTb );
   createTool( 4051, addRemTb );

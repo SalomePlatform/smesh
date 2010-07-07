@@ -206,6 +206,10 @@
             <translation>mesh_rem_node.png</translation>
         </message>
         <message>
+            <source>ICON_DLG_REM_ORPHAN_NODES</source>
+            <translation>mesh_rem_orphan_nodes.png</translation>
+        </message>
+        <message>
             <source>ICON_DLG_RENUMBERING_ELEMENTS</source>
             <translation>mesh_renumbering_elements.png</translation>
         </message>

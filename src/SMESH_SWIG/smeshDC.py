@@ -2160,6 +2160,12 @@ class Mesh:
     def RemoveNodes(self, IDsOfNodes):
         return self.editor.RemoveNodes(IDsOfNodes)
 
+    ## Removes all orphan (free) nodes from mesh
+    #  @return number of the removed nodes
+    #  @ingroup l2_modif_del
+    def RemoveOrphanNodes(self):
+        return self.editor.RemoveOrphanNodes()
+
     ## Add a node to the mesh by coordinates
     #  @return Id of the new node
     #  @ingroup l2_modif_add

@@ -535,6 +535,10 @@
             <translation>Nodes</translation>
         </message>
         <message>
+            <source>MEN_REMOVE_ORPHAN_NODES</source>
+            <translation>Orphan Nodes</translation>
+        </message>
+        <message>
             <source>MEN_RENAME</source>
             <translation>Rename</translation>
         </message>
@@ -2458,6 +2462,10 @@ Consider saving your work before application crash</translation>
             <translation>Remove nodes</translation>
         </message>
         <message>
+            <source>STB_REMOVE_ORPHAN_NODES</source>
+            <translation>Remove orphan nodes</translation>
+        </message>
+        <message>
             <source>STB_RENAME</source>
             <translation>Rename</translation>
         </message>
@@ -2972,6 +2980,10 @@ Consider saving your work before application crash</translation>
             <translation>Remove nodes</translation>
         </message>
         <message>
+            <source>TOP_REMOVE_ORPHAN_NODES</source>
+            <translation>Remove orphan nodes</translation>
+        </message>
+        <message>
             <source>TOP_RENAME</source>
             <translation>Rename</translation>
         </message>
@@ -3208,6 +3220,14 @@ Do you wish to re-compute the mesh totally to discard the modifications?
             <translation>
 Input value precision can be adjusted using
 '%1' parameter in Mesh module preferences.</translation>
+        </message>
+        <message>
+            <source>REMOVE_ORPHAN_NODES_QUESTION</source>
+            <translation>Do you really want to remove all orphan nodes?</translation>
+        </message>
+        <message>
+            <source>NB_NODES_REMOVED</source>
+            <translation>Removed %1 node(s).</translation>
         </message>
     </context>
     <context>

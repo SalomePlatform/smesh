@@ -251,8 +251,8 @@ SMDS_MeshElement* SMESH_MeshEditor::AddElement(const vector<int> &       nodeIDs
 //           Modify a compute state of sub-meshes which become empty
 //=======================================================================
 
-bool SMESH_MeshEditor::Remove (const list< int >& theIDs,
-                               const bool         isNodes )
+int SMESH_MeshEditor::Remove (const list< int >& theIDs,
+			      const bool         isNodes )
 {
   myLastCreatedElems.Clear();
   myLastCreatedNodes.Clear();
@@ -260,6 +260,7 @@ bool SMESH_MeshEditor::Remove (const list< int >& theIDs,
   SMESHDS_Mesh* aMesh = GetMeshDS();
   set< SMESH_subMesh *> smmap;
 
+  int removed = 0;
   list<int>::const_iterator it = theIDs.begin();
   for ( ; it != theIDs.end(); it++ ) {
     const SMDS_MeshElement * elem;
@@ -296,6 +297,7 @@ bool SMESH_MeshEditor::Remove (const list< int >& theIDs,
       aMesh->RemoveNode( static_cast< const SMDS_MeshNode* >( elem ));
     else
       aMesh->RemoveElement( elem );
+    removed++;
   }
 
   // Notify sub-meshes about modification
@@ -309,7 +311,7 @@ bool SMESH_MeshEditor::Remove (const list< int >& theIDs,
   //   if ( SMESH_subMesh * sm = GetMesh()->GetSubMeshContaining( 1 ) )
   //     sm->ComputeStateEngine( SMESH_subMesh::CHECK_COMPUTE_STATE );
 
-  return true;
+  return removed;
 }
 
 //=======================================================================

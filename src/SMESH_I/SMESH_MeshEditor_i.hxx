@@ -56,6 +56,7 @@ public:
 
   CORBA::Boolean RemoveElements(const SMESH::long_array & IDsOfElements);
   CORBA::Boolean RemoveNodes(const SMESH::long_array & IDsOfNodes);
+  CORBA::Long    RemoveOrphanNodes();
 
   /*!
    * Methods for creation new elements.

@@ -39,6 +39,7 @@
 #include "SMESH_subMesh_i.hxx"
 #include "SMESH_Group_i.hxx"
 #include "SMESH_PythonDump.hxx"
+#include "SMESH_ControlsDef.hxx"
 
 #include "utilities.h"
 #include "Utils_ExceptHandlers.hxx"
@@ -340,6 +341,37 @@ CORBA::Boolean SMESH_MeshEditor_i::RemoveNodes(const SMESH::long_array & IDsOfNo
 
   if ( IDsOfNodes.length() )
     myMesh->SetIsModified( true ); // issue 0020693
+
+  return anEditor.Remove( IdList, true );
+}
+
+//=============================================================================
+/*!
+ *
+ */
+//=============================================================================
+
+CORBA::Long SMESH_MeshEditor_i::RemoveOrphanNodes()
+{
+  initData();
+
+  ::SMESH_MeshEditor anEditor( myMesh );
+
+  // Update Python script
+  TPythonDump() << "nbRemoved = " << this << ".RemoveOrphanNodes()";
+
+  // Create filter to find all orphan nodes
+  SMESH::Controls::Filter::TIdSequence seq;
+  SMESH::Controls::PredicatePtr predicate( new SMESH::Controls::FreeNodes() );
+  SMESH::Controls::Filter::GetElementsId( GetMeshDS(), predicate, seq );
+
+  // remove orphan nodes (if there are any)
+  list< int > IdList;
+  for ( int i = 0; i < seq.size(); i++ )
+    IdList.push_back( seq[i] );
+
+  if ( IdList.size() )
+    myMesh->SetIsModified( true );
 
   return anEditor.Remove( IdList, true );
 }

@@ -72,6 +72,7 @@ dist_salomeres_DATA = \
 	mesh_quad.png \
 	mesh_rem_element.png \
 	mesh_rem_node.png \
+	mesh_rem_orphan_nodes.png \
 	mesh_shading.png \
 	mesh_shrink.png \
 	mesh_skew.png \
