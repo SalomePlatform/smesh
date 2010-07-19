@@ -70,15 +70,15 @@ public :
     throw (SALOME::SALOME_Exception);
   CORBA::Long            getNumberOfAttributes() 
     throw (SALOME::SALOME_Exception);
-  SALOME_MED::long_array*   getAttributesIdentifiers() 
+  SALOME_TYPES::ListOfLong*   getAttributesIdentifiers() 
     throw (SALOME::SALOME_Exception);
   CORBA::Long            getAttributeIdentifier(CORBA::Long i) 
     throw (SALOME::SALOME_Exception);
-  SALOME_MED::long_array*   getAttributesValues() 
+  SALOME_TYPES::ListOfLong*   getAttributesValues() 
     throw (SALOME::SALOME_Exception);
   CORBA::Long            getAttributeValue(CORBA::Long i) 
     throw (SALOME::SALOME_Exception);
-  SALOME_MED::string_array* getAttributesDescriptions() 
+  SALOME_TYPES::ListOfString* getAttributesDescriptions() 
     throw (SALOME::SALOME_Exception);
   char*                  getAttributeDescription( CORBA::Long i) 
     throw (SALOME::SALOME_Exception);
@@ -86,7 +86,7 @@ public :
     throw (SALOME::SALOME_Exception);
   char *                    getGroupName( CORBA::Long i)
     throw (SALOME::SALOME_Exception);
-  SALOME_MED::string_array* getGroupsNames()
+  SALOME_TYPES::ListOfString* getGroupsNames()
     throw (SALOME::SALOME_Exception);  
 };
 #endif /* MED_FAMILY_I_HXX_ */
