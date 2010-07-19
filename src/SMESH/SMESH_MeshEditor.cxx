@@ -252,7 +252,7 @@ SMDS_MeshElement* SMESH_MeshEditor::AddElement(const vector<int> &       nodeIDs
 //=======================================================================
 
 int SMESH_MeshEditor::Remove (const list< int >& theIDs,
-			      const bool         isNodes )
+                              const bool         isNodes )
 {
   myLastCreatedElems.Clear();
   myLastCreatedNodes.Clear();
