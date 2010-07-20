@@ -1393,7 +1393,7 @@ namespace { // Structures used by FixQuadraticElements()
 //=======================================================================
 
 #define __DMP__(txt) \
-//cout << txt
+  //cout << txt
 #define MSG(txt) __DMP__(txt<<endl)
 #define MSGBEG(txt) __DMP__(txt)
 
@@ -2508,6 +2508,8 @@ void SMESH_MesherHelper::FixQuadraticElements(bool volumeOnly)
                 // uvMove = uvm - uv12
                 gp_XY uvMove = applyIn2D(surf, uvm, uv12, gp_XY_Subtracted, /*inPeriod=*/false);
                 ( is1 ? move1 : move0 ).SetCoord( uvMove.X(), uvMove.Y(), 0 );
+                if ( !is1 ) // correct nodeOnFace for move1 (issue 0020919)
+                  nodeOnFace = (*(++chain.rbegin()))->_mediumNode;
               }
               if ( move0.SquareMagnitude() < straightTol2 &&
                    move1.SquareMagnitude() < straightTol2 ) {
