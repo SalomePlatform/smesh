@@ -9059,8 +9059,9 @@ void SMESH_MeshEditor::ConvertToQuadratic(const bool theForce3d)
       ReplaceElemInGroups(volume, NewVolume, meshDS);
     }
   }
-  if ( !theForce3d  && !getenv("NO_FixQuadraticElements")) {
-    aHelper.SetSubShape(0); // apply to the whole mesh
+  if ( !theForce3d  && !getenv("NO_FixQuadraticElements"))
+  { // setenv NO_FixQuadraticElements to know if FixQuadraticElements() is guilty of bad conversion
+    aHelper.SetSubShape(0); // apply FixQuadraticElements() to the whole mesh
     aHelper.FixQuadraticElements();
   }
 }
