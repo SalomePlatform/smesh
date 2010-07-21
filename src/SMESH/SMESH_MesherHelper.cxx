@@ -1393,7 +1393,7 @@ namespace { // Structures used by FixQuadraticElements()
 //=======================================================================
 
 #define __DMP__(txt) \
-  //cout << txt
+  //  cout << txt
 #define MSG(txt) __DMP__(txt<<endl)
 #define MSGBEG(txt) __DMP__(txt)
 
@@ -2423,6 +2423,7 @@ void SMESH_MesherHelper::FixQuadraticElements(bool volumeOnly)
   for ( ; isInside < 2; ++isInside ) {
     MSG( "--------------- LOOP (inside=" << isInside << ") ------------------");
     SMDS_TypeOfPosition pos = isInside ? SMDS_TOP_3DSPACE : SMDS_TOP_FACE;
+    SMDS_TypeOfPosition bndPos = isInside ? SMDS_TOP_FACE : SMDS_TOP_EDGE;
 
     for ( pFace = faces.begin(); pFace != faces.end(); ++pFace ) {
       if ( bool(isInside) == pFace->IsBoundary() )
@@ -2461,7 +2462,12 @@ void SMESH_MesherHelper::FixQuadraticElements(bool volumeOnly)
           TChain& chain = chains[iC];
           if ( chain.empty() ) continue;
           if ( chain.front()->IsStraight() && chain.back()->IsStraight() ) {
-            MSG("3D straight");
+            MSG("3D straight - ignore");
+            continue;
+          }
+          if ( chain.front()->MediumPos() > bndPos ||
+               chain.back()->MediumPos() > bndPos ) {
+            MSG("Internal chain - ignore");
             continue;
           }
           // mesure chain length and compute link position along the chain
@@ -2513,7 +2519,7 @@ void SMESH_MesherHelper::FixQuadraticElements(bool volumeOnly)
               }
               if ( move0.SquareMagnitude() < straightTol2 &&
                    move1.SquareMagnitude() < straightTol2 ) {
-                MSG("2D straight");
+                MSG("2D straight - ignore");
                 continue; // straight - no need to move nodes of internal links
               }
             }
@@ -2565,7 +2571,8 @@ void SMESH_MesherHelper::FixQuadraticElements(bool volumeOnly)
               {
                 gp_XY uv0 = GetNodeUV( face, (*link0)->_mediumNode, 0, &checkUV);
                 gp_XY uv2 = GetNodeUV( face, (*link2)->_mediumNode, 0, &checkUV);
-                MSG( "uv0: "<<uv0.X()<<", "<<uv0.Y()<<" \t" <<
+                MSG( "TOO LONG MOVE \t" <<
+                     "uv0: "<<uv0.X()<<", "<<uv0.Y()<<" \t" <<
                      "uv2: "<<uv2.X()<<", "<<uv2.Y()<<" \t" <<
                      "uvOld: "<<oldUV.X()<<", "<<oldUV.Y()<<" \t" <<
                      "newUV: "<<newUV.X()<<", "<<newUV.Y()<<" \t");
