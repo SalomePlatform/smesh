@@ -24,8 +24,12 @@ The following dialog box shall appear:
 select the necessary node manually (X, Y, Z, dX, dY, dZ fields allow
 to see original coordinates and displacement of the node to move).
 \b Preview check-box allows to see the results of the operation.</li>
-<li>Click the \b Apply or \b OK button.</li>
+<li>Click the \b Apply or <b>Apply and Close</b> button.</li>
 </ol>
+
+\image html moving_nodes1.png "The initial mesh"
+
+\image html moving_nodes2.png "The modified mesh"
 
 <br><b>See Also</b> a sample TUI Script of a 
 \ref tui_moving_nodes "Moving Nodes" operation.  
