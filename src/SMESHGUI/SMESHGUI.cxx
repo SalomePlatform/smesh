@@ -2571,36 +2571,36 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       if(checkLock(aStudy)) break;
       SALOME_ListIO selected;
       if( LightApp_SelectionMgr *aSel = SMESHGUI::selectionMgr() )
-	aSel->selectedObjects( selected );
+        aSel->selectedObjects( selected );
       if ( selected.Extent() == 1 ) {
-	Handle(SALOME_InteractiveObject) anIO = selected.First();
-	SMESH::SMESH_Mesh_var aMesh = SMESH::GetMeshByIO(anIO);
-	if ( !aMesh->_is_nil() ) {
-	  bool confirm = SUIT_MessageBox::question( SMESHGUI::desktop(),
-						    tr( "SMESH_WARNING" ),
-						    tr( "REMOVE_ORPHAN_NODES_QUESTION"),
-						    SUIT_MessageBox::Yes |
-						    SUIT_MessageBox::No,
-						    SUIT_MessageBox::No ) == SUIT_MessageBox::Yes;
-	  if( confirm ) {
-	    try {
-	      SMESH::SMESH_MeshEditor_var aMeshEditor = aMesh->GetMeshEditor();
-	      int removed = aMeshEditor->RemoveOrphanNodes();
-	      SUIT_MessageBox::information(SMESHGUI::desktop(),
-					   tr("SMESH_INFORMATION"),
-					   tr("NB_NODES_REMOVED").arg(removed));
-	      if ( removed > 0 ) {
-		SMESH::UpdateView();
-		SMESHGUI::Modified();
-	      }
-	    }
-	    catch (const SALOME::SALOME_Exception& S_ex) {
-	      SalomeApp_Tools::QtCatchCorbaException(S_ex);
-	    } 
-	    catch (...) {
-	    }
-	  }
-	}
+        Handle(SALOME_InteractiveObject) anIO = selected.First();
+        SMESH::SMESH_Mesh_var aMesh = SMESH::GetMeshByIO(anIO);
+        if ( !aMesh->_is_nil() ) {
+          bool confirm = SUIT_MessageBox::question( SMESHGUI::desktop(),
+                                                    tr( "SMESH_WARNING" ),
+                                                    tr( "REMOVE_ORPHAN_NODES_QUESTION"),
+                                                    SUIT_MessageBox::Yes |
+                                                    SUIT_MessageBox::No,
+                                                    SUIT_MessageBox::No ) == SUIT_MessageBox::Yes;
+          if( confirm ) {
+            try {
+              SMESH::SMESH_MeshEditor_var aMeshEditor = aMesh->GetMeshEditor();
+              int removed = aMeshEditor->RemoveOrphanNodes();
+              SUIT_MessageBox::information(SMESHGUI::desktop(),
+                                           tr("SMESH_INFORMATION"),
+                                           tr("NB_NODES_REMOVED").arg(removed));
+              if ( removed > 0 ) {
+                SMESH::UpdateView();
+                SMESHGUI::Modified();
+              }
+            }
+            catch (const SALOME::SALOME_Exception& S_ex) {
+              SalomeApp_Tools::QtCatchCorbaException(S_ex);
+            } 
+            catch (...) {
+            }
+          }
+        }
       }
       break;
     }
