@@ -380,7 +380,7 @@ gp_XY SMESH_MesherHelper::GetNodeUV(const TopoDS_Face&   F,
     // for a node on a seam edge select one of UVs on 2 pcurves
     if ( n2 && IsSeamShape( edgeID ) )
     {
-      uv = GetUVOnSeam( uv, GetNodeUV( F, n2, 0 ));
+      uv = GetUVOnSeam( uv, GetNodeUV( F, n2, 0, check ));
     }
     else
     { // adjust uv to period
@@ -843,7 +843,7 @@ const SMDS_MeshNode* SMESH_MesherHelper::GetMediumNode(const SMDS_MeshNode* n1,
     CheckNodeU( E, n12, U, BRep_Tool::Tolerance( E ), /*force=*/true);
     meshDS->SetNodeOnEdge(n12, edgeID, U);
   }
-  else if ( myShapeID > 1 )
+  else if ( myShapeID > 0 )
   {
     meshDS->SetNodeInVolume(n12, myShapeID);
   }
@@ -1393,7 +1393,7 @@ namespace { // Structures used by FixQuadraticElements()
 //=======================================================================
 
 #define __DMP__(txt) \
-  //  cout << txt
+  //cout << txt
 #define MSG(txt) __DMP__(txt<<endl)
 #define MSGBEG(txt) __DMP__(txt)
 
@@ -1616,7 +1616,7 @@ namespace { // Structures used by FixQuadraticElements()
   }
   //================================================================================
   /*!
-   * \brief Make up chain of links
+   * \brief Make up a chain of links
    *  \param iSide - link to add first
    *  \param chain - chain to fill in
    *  \param pos   - postion of medium nodes the links should have
@@ -1636,18 +1636,26 @@ namespace { // Structures used by FixQuadraticElements()
     if ( _sides.size() != 4 ) { // triangle - visit all my continous faces
       MSGBEG( *this );
       list< const QFace* > faces( 1, this );
-      for (list< const QFace* >::iterator fIt = faces.begin(); fIt != faces.end(); ++fIt ) {
-        const QFace* face = *fIt;
+      while ( !faces.empty() ) {
+        const QFace* face = faces.front();
         for ( int i = 0; i < face->_sides.size(); ++i ) {
           if ( !face->_sideIsAdded[i] && face->_sides[i] ) {
             face->_sideIsAdded[i] = true;
-            TChain::iterator chLink = chain.insert( chain.begin(), TChainLink(face->_sides[i]));
+            // find a face side in the chain
+            TChain::iterator chLink = chain.begin();
+            for ( ; chLink != chain.end(); ++chLink )
+              if ( chLink->_qlink == face->_sides[i] )
+                break;
+            if ( chLink == chain.end() )
+              chLink = chain.insert( chain.begin(), TChainLink(face->_sides[i]));
+            // add a face to a chained link and put a continues face in the queue
             chLink->SetFace( face );
             if ( face->_sides[i]->MediumPos() >= pos )
               if ( const QFace* contFace = face->_sides[i]->GetContinuesFace( face ))
                 faces.push_back( contFace );
           }
         }
+        faces.pop_front();
       }
       if ( error < ERR_TRI )
         error = ERR_TRI;
