@@ -3247,13 +3247,15 @@ public:
   }
   PositionCreator() {
     myFuncTable.resize( (size_t) TopAbs_SHAPE, & PositionCreator::defaultPosition );
-    myFuncTable[ TopAbs_FACE ] = & PositionCreator::facePosition;
-    myFuncTable[ TopAbs_EDGE ] = & PositionCreator::edgePosition;
+    myFuncTable[ TopAbs_SOLID  ] = & PositionCreator::volumePosition;
+    myFuncTable[ TopAbs_FACE   ] = & PositionCreator::facePosition;
+    myFuncTable[ TopAbs_EDGE   ] = & PositionCreator::edgePosition;
     myFuncTable[ TopAbs_VERTEX ] = & PositionCreator::vertexPosition;
   }
 private:
   SMDS_PositionPtr edgePosition()    const { return SMDS_PositionPtr( new SMDS_EdgePosition  ); }
   SMDS_PositionPtr facePosition()    const { return SMDS_PositionPtr( new SMDS_FacePosition  ); }
+  SMDS_PositionPtr volumePosition()  const { return SMDS_PositionPtr( new SMDS_SpacePosition ); }
   SMDS_PositionPtr vertexPosition()  const { return SMDS_PositionPtr( new SMDS_VertexPosition); }
   SMDS_PositionPtr defaultPosition() const { return SMDS_SpacePosition::originSpacePosition();  }
   typedef SMDS_PositionPtr (PositionCreator:: * FmakePos)() const;
