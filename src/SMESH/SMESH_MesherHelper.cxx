@@ -491,12 +491,13 @@ bool SMESH_MesherHelper::CheckNodeUV(const TopoDS_Face&   F,
       }
       Quantity_Parameter U,V;
       projector.LowerDistanceParameters(U,V);
+      uv.SetCoord( U,V );
       if ( nodePnt.Distance( surface->Value( U, V )) > tol )
       {
         MESSAGE( "SMESH_MesherHelper::CheckNodeUV(), invalid projection" );
         return false;
       }
-      uv.SetCoord( U,V );
+      //uv.SetCoord( U,V );
     }
     else if ( uv.Modulus() > numeric_limits<double>::min() )
     {
@@ -676,12 +677,13 @@ bool SMESH_MesherHelper::CheckNodeU(const TopoDS_Edge&   E,
           return false;
         }
         Quantity_Parameter U = projector.LowerDistanceParameter();
+        u = double( U );
         if ( nodePnt.Distance( curve->Value( U )) > tol )
         {
           MESSAGE( "SMESH_MesherHelper::CheckNodeU(), invalid projection" );
           return false;
         }
-        u = double( U );
+        //u = double( U );
       }
       else if ( fabs( u ) > numeric_limits<double>::min() )
       {
@@ -1724,7 +1726,7 @@ namespace { // Structures used by FixQuadraticElements()
       TLinkInSet link = links.find( _sides[iL] );
       if ( link == linksEnd ) continue;
       if ( (*link)->MediumPos() > SMDS_TOP_FACE )
-        continue; // We work on faces here, don't go into a volume
+        continue; // We work on faces here, don't go inside a solid
 
       // check link
       if ( link->IsBoundary() ) {
@@ -1867,7 +1869,8 @@ namespace { // Structures used by FixQuadraticElements()
     // propagate to adjacent faces till limit step or boundary
     double len1 = thePrevLen + (theLink->MiddlePnt() - _sides[iL1]->MiddlePnt()).Modulus();
     double len2 = thePrevLen + (theLink->MiddlePnt() - _sides[iL2]->MiddlePnt()).Modulus();
-    gp_Vec linkDir1, linkDir2;
+    gp_Vec linkDir1(0,0,0); // initialize to avoid valgrind error ("Conditional jump...")
+    gp_Vec linkDir2(0,0,0);
     try {
       OCC_CATCH_SIGNALS;
       if ( f1 )
@@ -2103,7 +2106,7 @@ namespace { // Structures used by FixQuadraticElements()
 
   enum TSplitTriaResult {
     _OK, _NO_CORNERS, _FEW_ROWS, _MANY_ROWS, _NO_SIDELINK, _BAD_MIDQUAD, _NOT_RECT,
-    _NO_MIDQUAD, _NO_UPTRIA, _BAD_SET_SIZE, _BAD_CORNER, _BAD_START, _NO_BOTLINK };
+    _NO_MIDQUAD, _NO_UPTRIA, _BAD_SET_SIZE, _BAD_CORNER, _BAD_START, _NO_BOTLINK, _TWISTED_CHAIN };
 
   TSplitTriaResult splitTrianglesIntoChains( TChain &            allLinks,
                                              vector< TChain> &   resultChains,
@@ -2169,6 +2172,8 @@ namespace { // Structures used by FixQuadraticElements()
         const QFace* botTria = botLink->_qfaces[0]; // bottom triangle bound by botLink
         if ( !botTria )
         { // the column ends
+          if ( botLink == startLink )
+            return _TWISTED_CHAIN; // issue 0020951
           linkSet.erase( botLink );
           if ( iRow != rowChains.size() )
             return _FEW_ROWS; // different nb of rows in columns
@@ -2228,8 +2233,10 @@ namespace { // Structures used by FixQuadraticElements()
         // next bottom link ends at the new corner
         linkSet.erase( botLink );
         botLink = upTria->GetLinkByNode( linkSet, (isCase2 ? *sideLink : *midQuadLink), corner );
-        if ( botLink == linksEnd || botLink == (isCase2 ? midQuadLink : sideLink))
+        if ( botLink == linksEnd || botLink == midQuadLink || botLink == sideLink)
           return _NO_BOTLINK;
+        if ( midQuadLink == startLink || sideLink == startLink )
+          return _TWISTED_CHAIN; // issue 0020951
         linkSet.erase( midQuadLink );
         linkSet.erase( sideLink );
 
