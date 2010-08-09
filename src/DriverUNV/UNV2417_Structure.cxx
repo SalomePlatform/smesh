@@ -30,13 +30,6 @@ using namespace std;
 using namespace UNV;
 using namespace UNV2417;
 
-#ifdef _DEBUG_
-static int MYDEBUG = 0;
-#else
-static int MYDEBUG = 0;
-#endif
-
-
 static string _group_labels[] = {"2417", "2429", "2430", "2432",
                                  "2435", "2452", "2467", "2477"};
 #define NBGROUP 8
