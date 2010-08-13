@@ -87,7 +87,7 @@ geompy.addToStudy(Chamfer_2, "Chamfer_2")
 #Import of the shape from "slots.brep"
 print "Import multi-rotation from the DATA_DIR/Shapes/Brep/slots.brep"
 thePath = os.getenv("DATA_DIR")
-theFileName = thePath + "/Shapes/Brep/slots.brep"
+theFileName = os.path.join( thePath,"Shapes","Brep","slots.brep")
 theShapeForCut = geompy.ImportBREP(theFileName)
 geompy.addToStudy(theShapeForCut, "slot.brep_1")
 
