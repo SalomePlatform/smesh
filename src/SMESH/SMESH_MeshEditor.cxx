@@ -6271,6 +6271,9 @@ struct SMESH_ElementSearcherImpl: public SMESH_ElementSearcher
                                   vector< const SMDS_MeshElement* >& foundElements);
   virtual TopAbs_State GetPointState(const gp_Pnt& point);
 
+  void GetElementsNearLine( const gp_Ax1&                      line,
+                            SMDSAbs_ElementType                type,
+                            vector< const SMDS_MeshElement* >& foundElems);
   double getTolerance();
   bool getIntersParamOnLine(const gp_Lin& line, const SMDS_MeshElement* face,
                             const double tolerance, double & param);
@@ -6279,7 +6282,7 @@ struct SMESH_ElementSearcherImpl: public SMESH_ElementSearcher
   {
     return _outerFaces.empty() || _outerFaces.count(face);
   }
-  struct TInters //!< data of intersection of the line and the mesh face used in GetPointState()
+  struct TInters //!< data of intersection of the line and the mesh face (used in GetPointState())
   {
     const SMDS_MeshElement* _face;
     gp_Vec                  _faceNorm;
@@ -6778,6 +6781,26 @@ TopAbs_State SMESH_ElementSearcherImpl::GetPointState(const gp_Pnt& point)
   } // two attempts - with and w/o faces position info in the mesh
 
   return TopAbs_UNKNOWN;
+}
+
+//=======================================================================
+/*!
+ * \brief Return elements possibly intersecting the line
+ */
+//=======================================================================
+
+void SMESH_ElementSearcherImpl::GetElementsNearLine( const gp_Ax1&                      line,
+                                                     SMDSAbs_ElementType                type,
+                                                     vector< const SMDS_MeshElement* >& foundElems)
+{
+  if ( !_ebbTree || _elementType != type )
+  {
+    if ( _ebbTree ) delete _ebbTree;
+    _ebbTree = new ElementBndBoxTree( *_mesh, _elementType = type );
+  }
+  TIDSortedElemSet suspectFaces; // elements possibly intersecting the line
+  _ebbTree->getElementsNearLine( line, suspectFaces );
+  foundElems.assign( suspectFaces.begin(), suspectFaces.end());
 }
 
 //=======================================================================

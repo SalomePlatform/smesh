@@ -92,6 +92,13 @@ struct SMESH_ElementSearcher
                                   std::vector< const SMDS_MeshElement* >& foundElems)=0;
 
   virtual TopAbs_State GetPointState(const gp_Pnt& point) = 0;
+
+  /*!
+   * \brief Return elements possibly intersecting the line
+   */
+  virtual void GetElementsNearLine( const gp_Ax1&                           line,
+                                    SMDSAbs_ElementType                     type,
+                                    std::vector< const SMDS_MeshElement* >& foundElems)=0;
 };
 
 //=======================================================================
@@ -408,12 +415,12 @@ public:
   // Search among theNodes or in the whole mesh if theNodes is empty.
 
   /*!
-   * \brief Return SMESH_NodeSearcher
+   * \brief Return SMESH_NodeSearcher. The caller is responsible for deleteing it
    */
   SMESH_NodeSearcher* GetNodeSearcher();
 
   /*!
-   * \brief Return SMESH_ElementSearcher
+   * \brief Return SMESH_ElementSearcher. The caller is responsible for deleteing it
    */
   SMESH_ElementSearcher* GetElementSearcher();
   /*!
