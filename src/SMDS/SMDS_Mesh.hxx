@@ -48,11 +48,11 @@ public:
 
   SMDS_Mesh();
 
-  SMDS_NodeIteratorPtr nodesIterator(bool idInceasingOrder=false) const;
-  SMDS_0DElementIteratorPtr elements0dIterator() const;
-  SMDS_EdgeIteratorPtr edgesIterator() const;
-  SMDS_FaceIteratorPtr facesIterator() const;
-  SMDS_VolumeIteratorPtr volumesIterator() const;
+  SMDS_NodeIteratorPtr nodesIterator          (bool idInceasingOrder=false) const;
+  SMDS_0DElementIteratorPtr elements0dIterator(bool idInceasingOrder=false) const;
+  SMDS_EdgeIteratorPtr edgesIterator          (bool idInceasingOrder=false) const;
+  SMDS_FaceIteratorPtr facesIterator          (bool idInceasingOrder=false) const;
+  SMDS_VolumeIteratorPtr volumesIterator      (bool idInceasingOrder=false) const;
   SMDS_ElemIteratorPtr elementsIterator(SMDSAbs_ElementType type=SMDSAbs_All) const;
 
   SMDSAbs_ElementType GetElementType( const int id, const bool iselem ) const;
