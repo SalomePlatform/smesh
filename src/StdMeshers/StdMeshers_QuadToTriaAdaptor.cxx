@@ -756,7 +756,6 @@ bool StdMeshers_QuadToTriaAdaptor::Compute(SMESH_Mesh& aMesh)
 
 bool StdMeshers_QuadToTriaAdaptor::Compute2ndPart(SMESH_Mesh& aMesh)
 {
-  cout << "Compute2ndPart(), nb pyramids = " << myPyram2Trias.size() << endl;
   SMESHDS_Mesh * meshDS = aMesh.GetMeshDS();
 
   // check intersections between created pyramids
@@ -842,7 +841,6 @@ bool StdMeshers_QuadToTriaAdaptor::Compute2ndPart(SMESH_Mesh& aMesh)
 
           if(nbc>0)
           {
-            cout << "Merge pyram " << PrmI->GetID() <<" to " << PrmJ->GetID() << endl;
             // Merge the two pyramids and others already merged with them
 
             // initialize merge info of pyramids
@@ -1001,7 +999,6 @@ bool StdMeshers_QuadToTriaAdaptor::Compute2ndPart(SMESH_Mesh& aMesh)
   delete myElemSearcher;
   myElemSearcher=0;
 
-  cout << "END Compute2ndPart()" << endl;
   return true;
 }
 
