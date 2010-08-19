@@ -28,6 +28,7 @@
 #include "SMDS_FaceOfNodes.hxx"
 
 class SMESH_Mesh;
+class SMESH_ElementSearcher;
 class SMDS_MeshElement;
 class SMDS_MeshNode;
 class Handle(TColgp_HArray1OfPnt);
@@ -41,9 +42,13 @@ class gp_Vec;
 #include <list>
 #include <vector>
 
+/*!
+ * \brief "Transforms" quadrilateral faces into triangular ones by creation of pyramids
+ */
 class STDMESHERS_EXPORT StdMeshers_QuadToTriaAdaptor
 {
 public:
+  StdMeshers_QuadToTriaAdaptor();
 
   ~StdMeshers_QuadToTriaAdaptor();
 
@@ -71,6 +76,7 @@ protected:
 
   bool Compute2ndPart(SMESH_Mesh& aMesh);
 
+
   typedef std::list<const SMDS_FaceOfNodes* >                        TTriaList;
   typedef std::multimap<const SMDS_MeshElement*, TTriaList >         TQuad2Trias;
   typedef std::map<const SMDS_MeshElement*, TTriaList *, TIDCompare> TPyram2Trias;
@@ -80,6 +86,7 @@ protected:
 
   std::list< const SMDS_MeshNode* > myDegNodes;
 
+  const SMESH_ElementSearcher* myElemSearcher;
 };
 
 #endif
