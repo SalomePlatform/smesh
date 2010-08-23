@@ -72,7 +72,7 @@ protected:
   bool CheckIntersection(const gp_Pnt& P, const gp_Pnt& PC,
                          gp_Pnt& Pint, SMESH_Mesh& aMesh,
                          const TopoDS_Shape& aShape,
-                         const TopoDS_Shape& NotCheckedFace);
+                         const SMDS_MeshElement* NotCheckedFace);
 
   bool Compute2ndPart(SMESH_Mesh& aMesh);
 

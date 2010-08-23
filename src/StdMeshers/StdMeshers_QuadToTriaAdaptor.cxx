@@ -228,7 +228,7 @@ static bool HasIntersection(const gp_Pnt& P, const gp_Pnt& PC, gp_Pnt& Pint,
  *  \param Pint - (out) intersection point
  *  \param aMesh - mesh
  *  \param aShape - shape to check faces on
- *  \param NotCheckedFace - not used
+ *  \param NotCheckedFace - mesh face not to check
  *  \retval bool - true if there is an intersection
  */
 //================================================================================
@@ -238,7 +238,7 @@ bool StdMeshers_QuadToTriaAdaptor::CheckIntersection (const gp_Pnt&       P,
                                                       gp_Pnt&             Pint,
                                                       SMESH_Mesh&         aMesh,
                                                       const TopoDS_Shape& aShape,
-                                                      const TopoDS_Shape& NotCheckedFace)
+                                                      const SMDS_MeshElement* NotCheckedFace)
 {
   if ( !myElemSearcher )
     myElemSearcher = SMESH_MeshEditor(&aMesh).GetElementSearcher();
@@ -266,6 +266,7 @@ bool StdMeshers_QuadToTriaAdaptor::CheckIntersection (const gp_Pnt&       P,
   for ( int i = 0; i < suspectElems.size(); ++i )
   {
     const SMDS_MeshElement* face = suspectElems[i];
+    if ( face == NotCheckedFace ) continue;
     Handle(TColgp_HSequenceOfPnt) aContour = new TColgp_HSequenceOfPnt;
     for ( int i = 0; i < face->NbCornerNodes(); ++i ) 
       aContour->Append( SMESH_MeshEditor::TNodeXYZ( face->GetNode(i) ));
@@ -501,7 +502,7 @@ bool StdMeshers_QuadToTriaAdaptor::Compute(SMESH_Mesh& aMesh, const TopoDS_Shape
         else {
           // check possible intersection with other faces
           gp_Pnt Pint;
-          bool check = CheckIntersection(PCbest, PC, Pint, aMesh, aShape, aShapeFace);
+          bool check = CheckIntersection(PCbest, PC, Pint, aMesh, aShape, face);
           if(check) {
             //cout<<"--PC("<<PC.X()<<","<<PC.Y()<<","<<PC.Z()<<")"<<endl;
             //cout<<"  PCbest("<<PCbest.X()<<","<<PCbest.Y()<<","<<PCbest.Z()<<")"<<endl;
@@ -512,7 +513,7 @@ bool StdMeshers_QuadToTriaAdaptor::Compute(SMESH_Mesh& aMesh, const TopoDS_Shape
           else {
             gp_Vec VB(PC,PCbest);
             gp_Pnt PCbestTmp = PC.XYZ() + VB.XYZ() * 3.0;
-            check = CheckIntersection(PCbestTmp, PC, Pint, aMesh, aShape, aShapeFace);
+            check = CheckIntersection(PCbestTmp, PC, Pint, aMesh, aShape, face);
             if(check) {
               double dist = PC.Distance(Pint)/3.;
               if(dist<height) {
