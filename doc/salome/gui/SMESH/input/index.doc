@@ -14,6 +14,8 @@ the VTK viewer;</li>
 <li>\subpage grouping_elements_page "creating groups of mesh elements";</li>
 <li>applying to meshes \subpage quality_page "Quality Controls" , 
 allowing to highlight important elements:
+<li>filtering sub-sets of mesh entities (nodes elements) using
+\subpage filters_page "Filters" functionality.</li>
 <li>\subpage modifying_meshes_page "modifying meshes" with a vast
 array of dedicated operations.</li> 
 <li>easily setting parameters via the variables predefined in

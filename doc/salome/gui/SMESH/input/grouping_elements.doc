@@ -33,7 +33,7 @@ The created groups can be later:
 </ul>
 
 An important tool, providing filters for creation of \b Standalone
-groups is \subpage selection_filter_library_page.
+groups is \ref selection_filter_library_page.
 
 
 */
