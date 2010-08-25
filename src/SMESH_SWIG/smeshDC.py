@@ -513,6 +513,20 @@ class smeshDC(SMESH._objref_SMESH_Gen):
     def EnumToLong(self,theItem):
         return theItem._v
 
+    ## Returns a string representation of the color.
+    #  To be used with filters.
+    #  @param c color value (SALOMEDS.Color)
+    #  @ingroup l1_controls
+    def ColorToString(self,c):
+        val = ""
+        if isinstance(c, SALOMEDS.Color):
+            val = "%s;%s;%s" % (c.R, c.G, c.B)
+        elif isinstance(c, str):
+            val = c
+        else:
+            raise ValueError, "Color value should be of string or SALOMEDS.Color type"
+        return val
+
     ## Gets PointStruct from vertex
     #  @param theVertex a GEOM object(vertex)
     #  @return SMESH.PointStruct
@@ -753,8 +767,28 @@ class smeshDC(SMESH._objref_SMESH_Gen):
             else:
                 print "Error: The treshold should be a string."
                 return None
+        elif CritType == FT_ElemGeomType:
+            # Checks the treshold
+            try:
+                aCriterion.Threshold = self.EnumToLong(aTreshold)
+            except:
+                if isinstance(aTreshold, int):
+                    aCriterion.Threshold = aTreshold
+                else:
+                    print "Error: The treshold should be an integer or SMESH.GeometryType."
+                    return None
+                pass
+            pass
+        elif CritType == FT_GroupColor:
+            # Checks the treshold
+            try:
+                aCriterion.ThresholdStr = self.ColorToString(aTreshold)
+            except:
+                print "Error: The threshold value should be of SALOMEDS.Color type"
+                return None
+            pass
         elif CritType in [FT_FreeBorders, FT_FreeEdges, FT_BadOrientedVolume, FT_FreeNodes,
-                          FT_FreeFaces, FT_ElemGeomType, FT_GroupColor]:
+                          FT_FreeFaces, FT_LinearOrQuadratic]:
             # At this point the treshold is unnecessary
             if aTreshold ==  FT_LogicalNOT:
                 aCriterion.UnaryOp = self.EnumToLong(FT_LogicalNOT)
@@ -1165,6 +1199,7 @@ class Mesh:
 
 
     ## Computes the mesh and returns the status of the computation
+    #  @param geom geomtrical shape on which mesh data should be computed
     #  @param discardModifs if True and the mesh has been edited since
     #         a last total re-compute and that may prevent successful partial re-compute,
     #         then the mesh is cleaned before Compute()
