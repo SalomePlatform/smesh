@@ -325,23 +325,23 @@ bool SMESHGUI_DuplicateNodesDlg::onApply()
 
     if (operationMode == 0) {
       if (toCreateGroup) {
-	SMESH::SMESH_GroupBase_ptr aNewGroup = 
-	  aMeshEditor->DoubleNodeGroupNew(myGroup1, myGroup2);
-	if (!CORBA::is_nil(aNewGroup))
+        SMESH::SMESH_GroupBase_ptr aNewGroup = 
+          aMeshEditor->DoubleNodeGroupNew(myGroup1, myGroup2);
+        if (!CORBA::is_nil(aNewGroup))
       result = true;
       }
       else
-	result = aMeshEditor->DoubleNodeGroup(myGroup1, myGroup2);
+        result = aMeshEditor->DoubleNodeGroup(myGroup1, myGroup2);
     }
     else {
       if (toCreateGroup) {
-	SMESH::SMESH_GroupBase_ptr aNewGroup = 
-	  aMeshEditor->DoubleNodeElemGroupNew(myGroup1, myGroup2, myGroup3);
-	if (!CORBA::is_nil(aNewGroup))
-	  result = true;
+        SMESH::SMESH_GroupBase_ptr aNewGroup = 
+          aMeshEditor->DoubleNodeElemGroupNew(myGroup1, myGroup2, myGroup3);
+        if (!CORBA::is_nil(aNewGroup))
+          result = true;
       }
       else
-	result = aMeshEditor->DoubleNodeElemGroup(myGroup1, myGroup2, myGroup3);
+        result = aMeshEditor->DoubleNodeElemGroup(myGroup1, myGroup2, myGroup3);
     }
   }
   catch (const SALOME::SALOME_Exception& S_ex) {
@@ -419,20 +419,20 @@ void SMESHGUI_DuplicateNodesDlg::onSelectionChanged()
       bool isTypeValid = true;
       
       if (operationMode == 0) {
-	if ( (myCurrentLineEdit == myLineEdit1 && aGroupType != SMESH::NODE) ||
-	     (myCurrentLineEdit == myLineEdit2 && aGroupType == SMESH::NODE) )
-	  isTypeValid = false;
+        if ( (myCurrentLineEdit == myLineEdit1 && aGroupType != SMESH::NODE) ||
+             (myCurrentLineEdit == myLineEdit2 && aGroupType == SMESH::NODE) )
+          isTypeValid = false;
       }
       else if (operationMode == 1) {
-	if ( (myCurrentLineEdit == myLineEdit1 && aGroupType != SMESH::EDGE &&
-	      aGroupType != SMESH::FACE) ||
-	     (myCurrentLineEdit == myLineEdit2 && aGroupType != SMESH::NODE) || 
-	     (myCurrentLineEdit == myLineEdit3 && aGroupType == SMESH::NODE) )
-	  isTypeValid = false;
+        if ( (myCurrentLineEdit == myLineEdit1 && aGroupType != SMESH::EDGE &&
+              aGroupType != SMESH::FACE) ||
+             (myCurrentLineEdit == myLineEdit2 && aGroupType != SMESH::NODE) || 
+             (myCurrentLineEdit == myLineEdit3 && aGroupType == SMESH::NODE) )
+          isTypeValid = false;
       }
     
       if (!isTypeValid)
-	aGroup = SMESH::SMESH_GroupBase::_nil();
+        aGroup = SMESH::SMESH_GroupBase::_nil();
     }
   }
 

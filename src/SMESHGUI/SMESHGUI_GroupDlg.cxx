@@ -718,12 +718,12 @@ void SMESHGUI_GroupDlg::setSelectionMode (int theMode)
     switch (theMode) {
     case grpNodeSelection:
       if (myActorsList.count() > 0) {
-	QListIterator<SMESH_Actor*> it( myActorsList );
-	while ( it.hasNext() )
-	  it.next()->SetPointRepresentation(true);
+        QListIterator<SMESH_Actor*> it( myActorsList );
+        while ( it.hasNext() )
+          it.next()->SetPointRepresentation(true);
       }
       else {
-	SMESH::SetPointRepresentation(true);
+        SMESH::SetPointRepresentation(true);
       }
       if ( aViewWindow ) aViewWindow->SetSelectionMode(isSelectAll ? ActorSelection : NodeSelection);
       break;
@@ -805,19 +805,19 @@ bool SMESHGUI_GroupDlg::onApply()
       myGroup = SMESH::AddGroup(myMesh, aType, myName->text());
 
       if ( mySelectAll->isChecked() ) {
-	// select all
-	myGroup->AddFrom(myMesh.in());
+        // select all
+        myGroup->AddFrom(myMesh.in());
       }
       else {
-	// select manually
-	SMESH::long_array_var anIdList = new SMESH::long_array;
-	int i, k = myElements->count();
-	anIdList->length(k);
-	for (i = 0; i < k; i++) {
-	  anIdList[i] = myElements->item(i)->text().toInt();
-	}
-	
-	myGroup->Add(anIdList.inout());
+        // select manually
+        SMESH::long_array_var anIdList = new SMESH::long_array;
+        int i, k = myElements->count();
+        anIdList->length(k);
+        for (i = 0; i < k; i++) {
+          anIdList[i] = myElements->item(i)->text().toInt();
+        }
+        
+        myGroup->Add(anIdList.inout());
       }
 
       SALOMEDS::Color aColor = getGroupColor();
@@ -851,43 +851,43 @@ bool SMESHGUI_GroupDlg::onApply()
       }
 
       if ( mySelectAll->isChecked() ) {
-	// select all
-	myGroup->Clear();
-	myGroup->AddFrom(myMesh.in());
+        // select all
+        myGroup->Clear();
+        myGroup->AddFrom(myMesh.in());
       }
       else {
-	QList<int> aAddList;
-	
-	int i, total = myElements->count();
-	for (i = 0; i < total; i++) {
-	  int anId = myElements->item(i)->text().toInt();
-	  int idx = myIdList.indexOf(anId);
-	  if ( idx == -1 )
-	    aAddList.append(anId);
-	  else
-	    myIdList.removeAt(idx);
-	}
-	if (!aAddList.empty()) {
-	  SMESH::long_array_var anIdList = new SMESH::long_array;
-	  int added = aAddList.count();
-	  anIdList->length(added);
-	  for (i = 0; i < added; i++)
-	    anIdList[i] = aAddList[i];
-	  myGroup->Add(anIdList.inout());
-	}
-	if (!myIdList.empty()) {
-	  SMESH::long_array_var anIdList = new SMESH::long_array;
-	  int removed = myIdList.count();
-	  anIdList->length(removed);
-	  for (i = 0; i < removed; i++)
-	    anIdList[i] = myIdList[i];
-	  myGroup->Remove(anIdList.inout());
-	}
-	/* init for next operation */
-	myIdList.clear();
-	for (i = 0; i < total; i++) {
-	  myIdList.append(myElements->item(i)->text().toInt());
-	}
+        QList<int> aAddList;
+        
+        int i, total = myElements->count();
+        for (i = 0; i < total; i++) {
+          int anId = myElements->item(i)->text().toInt();
+          int idx = myIdList.indexOf(anId);
+          if ( idx == -1 )
+            aAddList.append(anId);
+          else
+            myIdList.removeAt(idx);
+        }
+        if (!aAddList.empty()) {
+          SMESH::long_array_var anIdList = new SMESH::long_array;
+          int added = aAddList.count();
+          anIdList->length(added);
+          for (i = 0; i < added; i++)
+            anIdList[i] = aAddList[i];
+          myGroup->Add(anIdList.inout());
+        }
+        if (!myIdList.empty()) {
+          SMESH::long_array_var anIdList = new SMESH::long_array;
+          int removed = myIdList.count();
+          anIdList->length(removed);
+          for (i = 0; i < removed; i++)
+            anIdList[i] = myIdList[i];
+          myGroup->Remove(anIdList.inout());
+        }
+        /* init for next operation */
+        myIdList.clear();
+        for (i = 0; i < total; i++) {
+          myIdList.append(myElements->item(i)->text().toInt());
+        }
       }
     }
 

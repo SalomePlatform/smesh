@@ -2892,7 +2892,7 @@ void SMESHGUI::BuildPresentation( const Handle(SALOME_InteractiveObject) & theIO
 // purpose  :
 //=======================================================================
 void SMESHGUI::createSMESHAction( const int id, const QString& po_id, const QString& icon_id, 
-				  const int key, const bool toggle, const QString& shortcutAction  )
+                                  const int key, const bool toggle, const QString& shortcutAction  )
 {
   QIcon icon;
   QWidget* parent = application()->desktop();
@@ -2910,7 +2910,7 @@ void SMESHGUI::createSMESHAction( const int id, const QString& po_id, const QStr
           status_bar = tr( QString( "STB_%1" ).arg( po_id ).toLatin1().data() );
 
   createAction( id, tooltip, icon, menu, status_bar, key, parent, 
-		toggle, this, SLOT( OnGUIEvent() ), shortcutAction );
+                toggle, this, SLOT( OnGUIEvent() ), shortcutAction );
 }
 
 //=======================================================================

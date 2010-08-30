@@ -377,23 +377,23 @@ void SMESHGUI_RemoveNodesDlg::SelectionIntoArgument()
       myActor = SMESH::FindActorByEntry(anIO->getEntry());
       if (myActor) {
 
-	// get selected nodes
-	QString aString = "";
-	int nbNodes = SMESH::GetNameOfSelectedNodes(mySelector,anIO,aString);
-	if (nbNodes > 0) {
-	  myBusy = true;
-	  myEditCurrentArgument->setText(aString);
-	  myBusy = false;
-	  
-	  // OK
-	  
-	  myNbOkNodes = nbNodes;
-	} // if (nbNodes > 0)
+        // get selected nodes
+        QString aString = "";
+        int nbNodes = SMESH::GetNameOfSelectedNodes(mySelector,anIO,aString);
+        if (nbNodes > 0) {
+          myBusy = true;
+          myEditCurrentArgument->setText(aString);
+          myBusy = false;
+          
+          // OK
+          
+          myNbOkNodes = nbNodes;
+        } // if (nbNodes > 0)
       } // if (myActor)
     } // if (!myMesh->_is_nil())
   } // if (nbSel == 1)
 
-  updateButtons();	  
+  updateButtons();        
 }
 
 //=================================================================================

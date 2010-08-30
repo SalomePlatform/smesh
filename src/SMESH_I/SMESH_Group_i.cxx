@@ -354,7 +354,7 @@ CORBA::Long SMESH_Group_i::AddFrom( SMESH::SMESH_IDSource_ptr theSource )
   if (aGroupDS) {
     SMESH::long_array_var anIds;
     if ( !CORBA::is_nil(SMESH::SMESH_GroupBase::_narrow(theSource)) &&
-	 SMESH::SMESH_GroupBase::_narrow(theSource)->GetType() == GetType() ) {
+         SMESH::SMESH_GroupBase::_narrow(theSource)->GetType() == GetType() ) {
       anIds = theSource->GetIDs();
     }
     else if ( !CORBA::is_nil(SMESH::SMESH_Mesh::_narrow(theSource)) ) {

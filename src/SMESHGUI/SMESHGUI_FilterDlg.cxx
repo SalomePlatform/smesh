@@ -2976,8 +2976,8 @@ void SMESHGUI_FilterDlg::onSelectionDone()
 
   QList<int> types; 
   types << SMESH::FT_BelongToGeom     << SMESH::FT_BelongToPlane 
-	<< SMESH::FT_BelongToCylinder << SMESH::FT_BelongToGenSurface
-	<< SMESH::FT_LyingOnGeom;
+        << SMESH::FT_BelongToCylinder << SMESH::FT_BelongToGenSurface
+        << SMESH::FT_LyingOnGeom;
   if (aList.Extent() != 1 || !myTable->CurrentCell(aRow, aCol) || 
       !types.contains(myTable->GetCriterionType(aRow)))
     return;
