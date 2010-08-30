@@ -71,6 +71,7 @@
 #include "SMESHGUI_ScaleDlg.h"
 #include "SMESHGUI_TransparencyDlg.h"
 #include "SMESHGUI_WhatIsDlg.h"
+#include "SMESHGUI_DuplicateNodesDlg.h"
 
 #include "SMESHGUI_Utils.h"
 #include "SMESHGUI_MeshUtils.h"
@@ -2728,6 +2729,20 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       break;
     }
 
+  case 4069: // DUPLICATE NODES
+    {
+      if(checkLock(aStudy)) break;
+      if ( vtkwnd ) {
+        EmitSignalDeactivateDialog();
+        ( new SMESHGUI_DuplicateNodesDlg( this ) )->show();
+      }
+      else {
+        SUIT_MessageBox::warning(SMESHGUI::desktop(),
+                                 tr("SMESH_WRN_WARNING"), tr("SMESH_WRN_VIEWER_VTK"));
+      }
+      break;
+    }
+
   case 5105: // Library of selection filters
   {
     static QList<int> aTypes;
@@ -2876,7 +2891,8 @@ void SMESHGUI::BuildPresentation( const Handle(SALOME_InteractiveObject) & theIO
 // function : createSMESHAction
 // purpose  :
 //=======================================================================
-void SMESHGUI::createSMESHAction( const int id, const QString& po_id, const QString& icon_id, const int key, const bool toggle  )
+void SMESHGUI::createSMESHAction( const int id, const QString& po_id, const QString& icon_id, 
+				  const int key, const bool toggle, const QString& shortcutAction  )
 {
   QIcon icon;
   QWidget* parent = application()->desktop();
@@ -2893,7 +2909,8 @@ void SMESHGUI::createSMESHAction( const int id, const QString& po_id, const QStr
           menu       = tr( QString( "MEN_%1" ).arg( po_id ).toLatin1().data() ),
           status_bar = tr( QString( "STB_%1" ).arg( po_id ).toLatin1().data() );
 
-  createAction( id, tooltip, icon, menu, status_bar, key, parent, toggle, this, SLOT( OnGUIEvent() )  );
+  createAction( id, tooltip, icon, menu, status_bar, key, parent, 
+		toggle, this, SLOT( OnGUIEvent() ), shortcutAction );
 }
 
 //=======================================================================
@@ -3024,6 +3041,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction( 4066, "MERGE_ELEMENTS",  "ICON_DLG_MERGE_ELEMENTS" );
   createSMESHAction( 4067, "MESH_THROU_POINT","ICON_DLG_MOVE_NODE" );
   createSMESHAction( 4068, "SCALE",           "ICON_DLG_MESH_SCALE" );
+  createSMESHAction( 4069, "DUPLICATE_NODES", "ICON_SMESH_DUPLICATE_NODES" );
   createSMESHAction(  407, "INV",             "ICON_DLG_MESH_DIAGONAL" );
   createSMESHAction(  408, "UNION2",          "ICON_UNION2TRI" );
   createSMESHAction(  409, "ORIENT",          "ICON_DLG_MESH_ORIENTATION" );
@@ -3197,6 +3215,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createMenu( 4065, transfId, -1 );
   createMenu( 4066, transfId, -1 );
   createMenu( 4068, transfId, -1 );
+  createMenu( 4069, transfId, -1 );
 
   createMenu( 4067,modifyId, -1 );
   createMenu( 407, modifyId, -1 );
@@ -3297,6 +3316,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createTool( 4065, addRemTb );
   createTool( 4066, addRemTb );
   createTool( 4068, addRemTb );
+  createTool( 4069, addRemTb );
   createTool( separator(), addRemTb );
 
   createTool( 4067,modifyTb );

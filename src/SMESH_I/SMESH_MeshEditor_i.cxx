@@ -4471,6 +4471,46 @@ void SMESH_MeshEditor_i::DumpGroupsList(TPythonDump &               theDumpPytho
 
 //================================================================================
 /*!
+  \brief Generates the unique group name.
+  \param thePrefix name prefix
+  \return unique name
+*/
+//================================================================================
+string SMESH_MeshEditor_i::generateGroupName(const string& thePrefix)
+{
+  SMESH::ListOfGroups_var groups = myMesh_i->GetGroups();
+  set<string> groupNames;
+  
+  // Get existing group names
+  for (int i = 0, nbGroups = groups->length(); i < nbGroups; i++ ) {
+    SMESH::SMESH_GroupBase_var aGroup = groups[i];
+    if (CORBA::is_nil(aGroup))
+      continue;
+
+    groupNames.insert(aGroup->GetName());
+  }
+
+  // Find new name
+  string name = thePrefix;
+  int index = 0;
+
+  while (!groupNames.insert(name).second) {
+    if (index == 0) {
+      name += "_1";
+    }
+    else {
+      TCollection_AsciiString nbStr(index+1);
+      name.resize( name.rfind('_')+1 );
+      name += nbStr.ToCString();
+    }
+    ++index;
+  }
+  
+  return name;
+}
+
+//================================================================================
+/*!
   \brief Creates a hole in a mesh by doubling the nodes of some particular elements
   \param theNodes - identifiers of nodes to be doubled
   \param theModifiedElems - identifiers of elements to be updated by the new (doubled) 
@@ -4562,6 +4602,53 @@ CORBA::Boolean SMESH_MeshEditor_i::DoubleNodeGroup(
     myMesh->SetIsModified( true );
 
   return done;
+}
+
+/*!
+ * \brief Creates a hole in a mesh by doubling the nodes of some particular elements.
+ * Works as DoubleNodeGroup(), but returns a new group with newly created nodes.
+ * \param theNodes - group of nodes to be doubled.
+ * \param theModifiedElems - group of elements to be updated.
+ * \return a new group with newly created nodes
+ * \sa DoubleNodeGroup()
+ */
+SMESH::SMESH_Group_ptr SMESH_MeshEditor_i::DoubleNodeGroupNew( SMESH::SMESH_GroupBase_ptr theNodes,
+							       SMESH::SMESH_GroupBase_ptr theModifiedElems )
+{
+  if ( CORBA::is_nil( theNodes ) && theNodes->GetType() != SMESH::NODE )
+    return false;
+  
+  SMESH::SMESH_Group_var aNewGroup;
+
+  // Duplicate nodes
+  SMESH::long_array_var aNodes = theNodes->GetListOfID();
+  SMESH::long_array_var aModifiedElems;
+  if ( !CORBA::is_nil( theModifiedElems ) )
+    aModifiedElems = theModifiedElems->GetListOfID();
+  else {
+    aModifiedElems = new SMESH::long_array;
+    aModifiedElems->length( 0 );
+  }
+  
+  bool aResult = DoubleNodes( aNodes, aModifiedElems );
+
+  if ( aResult ) {
+    myMesh->SetIsModified( true );
+
+    // Create group with newly created nodes
+    SMESH::long_array_var anIds = GetLastCreatedNodes();
+    if (anIds->length() > 0) {
+      string anUnindexedName (theNodes->GetName());
+      string aNewName = generateGroupName(anUnindexedName + "_double");
+      aNewGroup = myMesh_i->CreateGroup(SMESH::NODE, aNewName.c_str());
+      aNewGroup->Add(anIds);
+    }
+  }
+  
+  // Update Python script
+  TPythonDump() << "createdNodes = " << this << ".DoubleNodeGroupNew( " << theNodes << ", "
+    << theModifiedElems << " )";
+  return aNewGroup._retn();
 }
 
 //================================================================================
@@ -4754,6 +4841,60 @@ CORBA::Boolean SMESH_MeshEditor_i::DoubleNodeElemGroup(SMESH::SMESH_GroupBase_pt
   TPythonDump() << "isDone = " << this << ".DoubleNodeGroup( " << theElems << ", "
     << theNodesNot << ", " << theAffectedElems << " )";
   return aResult;
+}
+
+/*!
+ * \brief Creates a hole in a mesh by doubling the nodes of some particular elements
+ * Works as DoubleNodeElemGroup(), but returns a new group with newly created elements.
+ * \param theElems - group of of elements (edges or faces) to be replicated
+ * \param theNodesNot - group of nodes not to replicated
+ * \param theAffectedElems - group of elements to which the replicated nodes
+ *        should be associated to.
+ * \return a new group with newly created elements
+ * \sa DoubleNodeElemGroup()
+ */
+SMESH::SMESH_Group_ptr SMESH_MeshEditor_i::DoubleNodeElemGroupNew(SMESH::SMESH_GroupBase_ptr theElems,
+								  SMESH::SMESH_GroupBase_ptr theNodesNot,
+								  SMESH::SMESH_GroupBase_ptr theAffectedElems)
+{
+  if ( CORBA::is_nil( theElems ) && theElems->GetType() == SMESH::NODE )
+    return false;
+
+  SMESH::SMESH_Group_var aNewGroup;
+
+  initData();
+
+  ::SMESH_MeshEditor aMeshEditor( myMesh );
+
+  SMESHDS_Mesh* aMeshDS = GetMeshDS();
+  TIDSortedElemSet anElems, aNodes, anAffected;
+  groupToSet( theElems, aMeshDS, anElems, SMDSAbs_All ); 
+  groupToSet( theNodesNot, aMeshDS, aNodes, SMDSAbs_Node ); 
+  groupToSet( theAffectedElems, aMeshDS, anAffected, SMDSAbs_All );
+
+  
+  bool aResult = aMeshEditor.DoubleNodes( anElems, aNodes, anAffected );
+  
+  storeResult( aMeshEditor) ;
+
+  if ( aResult ) {
+    myMesh->SetIsModified( true );
+
+    // Create group with newly created elements
+    SMESH::long_array_var anIds = GetLastCreatedElems();
+    if (anIds->length() > 0) {
+      SMESH::ElementType aGroupType = myMesh_i->GetElementType(anIds[0], true);
+      string anUnindexedName (theElems->GetName());
+      string aNewName = generateGroupName(anUnindexedName + "_double");
+      aNewGroup = myMesh_i->CreateGroup(aGroupType, aNewName.c_str());
+      aNewGroup->Add(anIds);
+    }
+  }
+
+  // Update Python script
+  TPythonDump() << "createdElems = " << this << ".DoubleNodeElemGroupNew( " << theElems << ", "
+    << theNodesNot << ", " << theAffectedElems << " )";
+  return aNewGroup._retn();
 }
 
 //================================================================================

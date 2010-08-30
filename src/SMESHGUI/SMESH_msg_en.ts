@@ -650,6 +650,10 @@
             <source>MEN_SCALE</source>
             <translation>Scale Transform</translation>
         </message>
+	<message>
+            <source>MEN_DUPLICATE_NODES</source>
+            <translation>Duplicate Nodes</translation>
+        </message>
         <message>
             <source>MEN_TRANSF</source>
             <translation>Transformation</translation>
@@ -1949,6 +1953,10 @@ add the exported data to its contents?</translation>
             <source>SMESH_SCALE_TITLE</source>
             <translation>Scale Transform</translation>
         </message>
+	<message>
+            <source>SMESH_DUPLICATE_TITLE</source>
+            <translation>Duplicate Nodes</translation>
+        </message>
         <message>
             <source>SMESH_SCALE</source>
             <translation>Scale</translation>
@@ -2553,6 +2561,10 @@ Consider saving your work before application crash</translation>
             <source>STB_SCALE</source>
             <translation>Scale Transform</translation>
         </message>
+	<message>
+            <source>STB_DUPLICATE_NODES</source>
+            <translation>Duplicate Nodes</translation>
+        </message>
         <message>
             <source>STB_TRANSP</source>
             <translation>Transparency</translation>
@@ -3070,6 +3082,10 @@ Consider saving your work before application crash</translation>
         <message>
             <source>TOP_SCALE</source>
             <translation>Scale Transform</translation>
+        </message>
+	<message>
+            <source>TOP_DUPLICATE_NODES</source>
+            <translation>Duplicate Nodes</translation>
         </message>
         <message>
             <source>TOP_TRANSP</source>
@@ -5209,6 +5225,49 @@ It is impossible to read point coordinates from file</translation>
         <message>
             <source>NO_PLANES</source>
             <translation>No planes</translation>
+        </message>
+    </context>
+    <context>
+        <name>SMESHGUI_DuplicateNodesDlg</name>
+        <message>
+            <source>DUPLICATION_MODE</source>
+            <translation>Duplication mode</translation>
+        </message>
+	<message>
+            <source>DUPLICATION_WITHOUT_ELEMS</source>	
+            <translation>Without duplication of border elements</translation>
+        </message>
+	<message>
+            <source>GROUP_NODES_TO_DUPLICATE</source>
+            <translation>Group of nodes to duplicate</translation>
+        </message>
+	<message>
+            <source>GROUP_NODES_TO_REPLACE</source>
+            <translation>Group of elements to replace nodes with new ones</translation>
+        </message>
+	<message>
+            <source>DUPLICATION_WITH_ELEMS</source>	
+            <translation>With duplication of border elements</translation>
+        </message>
+	<message>
+            <source>GROUP_ELEMS_TO_DUPLICATE</source>
+            <translation>Group of elements to duplicate</translation>
+        </message>
+	<message>
+            <source>GROUP_NODES_NOT_DUPLICATE</source>
+            <translation>Group of nodes not to duplicate</translation>
+        </message>
+	<message>
+            <source>GROUP_ELEMS_TO_REPLACE</source>
+            <translation>Group of elements to replace nodes with new ones</translation>
+        </message>
+	<message>
+            <source>CONSTRUCT_NEW_GROUP_NODES</source>
+            <translation>Construct group with newly created nodes</translation>
+        </message>
+	<message>
+            <source>CONSTRUCT_NEW_GROUP_ELEMENTS</source>
+            <translation>Construct group with newly created elements</translation>
         </message>
     </context>
 </TS>

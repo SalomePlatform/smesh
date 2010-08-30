@@ -173,7 +173,9 @@ dist_salomeres_DATA = \
         mesh_free_faces.png \
         scale.png \
         scale_along_axes.png \
-	split_into_tetra.png
+	split_into_tetra.png \
+	mesh_duplicate_nodes.png \
+	mesh_duplicate_nodes_with_elem.png
 
 # VSR: little trick to avoid putting if SMESHCatalog.xml to the distribution archive
 nodist_salomeres_SCRIPTS = SMESHCatalog.xml

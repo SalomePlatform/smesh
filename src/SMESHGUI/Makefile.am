@@ -71,6 +71,7 @@ salomeinclude_HEADERS = \
 	SMESHGUI_ScaleDlg.h \
 	SMESHGUI_SymmetryDlg.h \
 	SMESHGUI_SewingDlg.h \
+	SMESHGUI_DuplicateNodesDlg.h \
 	SMESHGUI_EditMeshDlg.h \
 	SMESHGUI_MeshUtils.h \
 	SMESHGUI_CreatePolyhedralVolumeDlg.h \
@@ -134,6 +135,7 @@ dist_libSMESH_la_SOURCES = \
 	SMESHGUI_ScaleDlg.cxx \
 	SMESHGUI_SymmetryDlg.cxx \
 	SMESHGUI_SewingDlg.cxx \
+	SMESHGUI_DuplicateNodesDlg.cxx \
 	SMESHGUI_EditMeshDlg.cxx \
 	SMESHGUI_Utils.cxx \
 	SMESHGUI_GEOMGenUtils.cxx \
@@ -203,6 +205,7 @@ MOC_FILES = \
 	SMESHGUI_ScaleDlg_moc.cxx \
 	SMESHGUI_SymmetryDlg_moc.cxx \
 	SMESHGUI_SewingDlg_moc.cxx \
+	SMESHGUI_DuplicateNodesDlg_moc.cxx \
 	SMESHGUI_EditMeshDlg_moc.cxx \
 	SMESHGUI_CreatePolyhedralVolumeDlg_moc.cxx \
 	SMESHGUI_Operation_moc.cxx \

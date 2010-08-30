@@ -145,7 +145,8 @@ protected:
                                                      const QString&,
                                                      const QString& = QString(),
                                                      const int = 0,
-                                                     const bool = false );
+                                                     const bool = false,
+						     const QString& = QString() );
   void                            createPopupItem( const int,
                                                    const QString&,
                                                    const QString&,

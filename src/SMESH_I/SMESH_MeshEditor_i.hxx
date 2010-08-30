@@ -552,6 +552,17 @@ public:
   CORBA::Boolean DoubleNodeGroup( SMESH::SMESH_GroupBase_ptr theNodes,
                                   SMESH::SMESH_GroupBase_ptr theModifiedElems );
 
+  /*!
+   * \brief Creates a hole in a mesh by doubling the nodes of some particular elements.
+   * Works as DoubleNodeGroup(), but returns a new group with newly created nodes.
+   * \param theNodes - group of nodes to be doubled.
+   * \param theModifiedElems - group of elements to be updated.
+   * \return a new group with newly created nodes
+   * \sa DoubleNodeGroup()
+   */
+  SMESH::SMESH_Group_ptr DoubleNodeGroupNew( SMESH::SMESH_GroupBase_ptr theNodes,
+					     SMESH::SMESH_GroupBase_ptr theModifiedElems );
+
   CORBA::Boolean DoubleNodeGroups( const SMESH::ListOfGroups& theNodes,
                                    const SMESH::ListOfGroups& theModifiedElems);
 
@@ -596,6 +607,20 @@ public:
   CORBA::Boolean DoubleNodeElemGroup( SMESH::SMESH_GroupBase_ptr theElems,
                                       SMESH::SMESH_GroupBase_ptr theNodesNot,
                                       SMESH::SMESH_GroupBase_ptr theAffectedElems );
+
+  /*!
+   * \brief Creates a hole in a mesh by doubling the nodes of some particular elements
+   * Works as DoubleNodeElemGroup(), but returns a new group with newly created elements.
+   * \param theElems - group of of elements (edges or faces) to be replicated
+   * \param theNodesNot - group of nodes not to replicated
+   * \param theAffectedElems - group of elements to which the replicated nodes
+   *        should be associated to.
+   * \return a new group with newly created elements
+   * \sa DoubleNodeElemGroup()
+   */
+  SMESH::SMESH_Group_ptr DoubleNodeElemGroupNew( SMESH::SMESH_GroupBase_ptr theElems,
+						 SMESH::SMESH_GroupBase_ptr theNodesNot,
+						 SMESH::SMESH_GroupBase_ptr theAffectedElems );
   
   /*!
    * \brief Creates a hole in a mesh by doubling the nodes of some particular elements
@@ -736,6 +761,8 @@ public:
 
   void DumpGroupsList(SMESH::TPythonDump & theDumpPython, 
                       const SMESH::ListOfGroups * theGroupList);
+
+  string generateGroupName(const string& thePrefix);
 
 private: //!< fields
 

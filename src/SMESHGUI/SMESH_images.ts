@@ -385,6 +385,14 @@
             <source>ICON_DLG_SCALE_ALONG_AXES</source>
             <translation>scale_along_axes.png</translation>
         </message>
+	<message>
+            <source>ICON_SMESH_DUPLICATE_NODES</source>
+            <translation>mesh_duplicate_nodes.png</translation>
+        </message>
+	<message>
+            <source>ICON_SMESH_DUPLICATE_NODES_WITH_ELEM</source>
+            <translation>mesh_duplicate_nodes_with_elem.png</translation>
+        </message>
         <message>
             <source>ICON_SMESH_TREE_ALGO</source>
             <translation>mesh_tree_algo.png</translation>

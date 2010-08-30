@@ -3694,6 +3694,16 @@ class Mesh:
     #  @ingroup l2_modif_edit
     def DoubleNodeGroup(self, theNodes, theModifiedElems):
         return self.editor.DoubleNodeGroup(theNodes, theModifiedElems)
+
+    ## Creates a hole in a mesh by doubling the nodes of some particular elements
+    #  Works as DoubleNodeGroup() described above, but returns a new group with 
+    #  newly created nodes.
+    #  @param theNodes group of nodes to be doubled
+    #  @param theModifiedElems group of elements to be updated.
+    #  @return a new group with newly created nodes
+    #  @ingroup l2_modif_edit
+    def DoubleNodeGroupNew(self, theNodes, theModifiedElems):
+        return self.editor.DoubleNodeGroupNew(theNodes, theModifiedElems)
         
     ## Creates a hole in a mesh by doubling the nodes of some particular elements
     #  This method provided for convenience works as DoubleNodes() described above.
@@ -3736,6 +3746,18 @@ class Mesh:
     #  @ingroup l2_modif_edit
     def DoubleNodeElemGroup(self, theElems, theNodesNot, theAffectedElems):
         return self.editor.DoubleNodeElemGroup(theElems, theNodesNot, theAffectedElems)
+
+    ## Creates a hole in a mesh by doubling the nodes of some particular elements
+    #  Works as DoubleNodeElemGroup() described above, but returns a new group with 
+    #  newly created elements.
+    #  @param theElems - group of of elements (edges or faces) to be replicated
+    #  @param theNodesNot - group of nodes not to replicated
+    #  @param theAffectedElems - group of elements to which the replicated nodes
+    #         should be associated to.
+    #  @return a new group with newly created elements
+    #  @ingroup l2_modif_edit
+    def DoubleNodeElemGroupNew(self, theElems, theNodesNot, theAffectedElems):
+        return self.editor.DoubleNodeElemGroupNew(theElems, theNodesNot, theAffectedElems)
         
     ## Creates a hole in a mesh by doubling the nodes of some particular elements
     #  This method provided for convenience works as DoubleNodes() described above.
