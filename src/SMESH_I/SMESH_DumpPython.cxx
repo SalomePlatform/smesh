@@ -354,21 +354,23 @@ namespace SMESH
     return *this;
   }
 
-  TPythonDump& TPythonDump::operator<<(const SMESH::ListOfGroups * theList){
-    if(theList && theList->length() > 0 ) {
-      SMESH_Gen_i* aSMESHGen = SMESH_Gen_i::GetSMESHGen();
-      SALOMEDS::Study_ptr aStudy = aSMESHGen->GetCurrentStudy();
-      myStream << "[";
-      int aListLen = theList->length();
-      for(int i = 0 ; i < aListLen; i++){
-        SALOMEDS::SObject_var aSObject = SMESH_Gen_i::ObjectToSObject(aStudy,(*theList)[i]);
-        if(!aSObject->_is_nil()) {
-          myStream << aSObject->GetID();
-          i < (aListLen - 1) ? myStream<<", " : myStream<<"]";
-        }
-        
+  TPythonDump& TPythonDump::operator<<(const SMESH::ListOfGroups& theList)
+  {
+    SMESH_Gen_i* aSMESHGen = SMESH_Gen_i::GetSMESHGen();
+    SALOMEDS::Study_ptr aStudy = aSMESHGen->GetCurrentStudy();
+    myStream << "[";
+    int aListLen = theList.length();
+    for(int i = 0 ; i < aListLen; i++)
+    {
+      SALOMEDS::SObject_var aSObject = SMESH_Gen_i::ObjectToSObject(aStudy,theList[i]);
+      if(!aSObject->_is_nil()) {
+        CORBA::String_var entry = aSObject->GetID();
+        myStream << entry;
+        if ( i < (aListLen - 1) )
+          myStream<<", ";
       }
     }
+    myStream<<"]";
     return *this;
   }
 
@@ -377,10 +379,10 @@ namespace SMESH
 
   //================================================================================
   /*!
-     * \brief Return marker of long string literal beginning
-      * \param type - a name of functionality producing the string literal 
-      * \retval TCollection_AsciiString - the marker string to be written into
-      * a raw python script
+   * \brief Return marker of long string literal beginning
+   * \param type - a name of functionality producing the string literal 
+   * \retval TCollection_AsciiString - the marker string to be written into
+   * a raw python script
    */
   //================================================================================
 
