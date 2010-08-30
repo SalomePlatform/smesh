@@ -4542,6 +4542,9 @@ CORBA::Boolean SMESH_MeshEditor_i::DoubleNodes( const SMESH::long_array& theNode
   if ( aResult )
     myMesh->SetIsModified( true );
 
+  // Update Python script
+  TPythonDump() << this << ".DoubleNodes( " << theNodes << ", "<< theModifiedElems << " )";
+
   return aResult;
 }
 
@@ -4562,9 +4565,13 @@ CORBA::Boolean SMESH_MeshEditor_i::DoubleNode( CORBA::Long              theNodeI
   SMESH::long_array_var aNodes = new SMESH::long_array;
   aNodes->length( 1 );
   aNodes[ 0 ] = theNodeId;
-  bool done = DoubleNodes( aNodes, theModifiedElems );
-  if ( done )
-    myMesh->SetIsModified( true );
+
+  TPythonDump pyDump; // suppress dump by the next line
+
+  CORBA::Boolean done = DoubleNodes( aNodes, theModifiedElems );
+
+  pyDump << this << ".DoubleNode( " << theNodeId << ", " << theModifiedElems << " )";
+
   return done;
 }
 
@@ -4579,9 +4586,8 @@ CORBA::Boolean SMESH_MeshEditor_i::DoubleNode( CORBA::Long              theNodeI
 */
 //================================================================================
 
-CORBA::Boolean SMESH_MeshEditor_i::DoubleNodeGroup( 
-  SMESH::SMESH_GroupBase_ptr theNodes,
-  SMESH::SMESH_GroupBase_ptr theModifiedElems )
+CORBA::Boolean SMESH_MeshEditor_i::DoubleNodeGroup(SMESH::SMESH_GroupBase_ptr theNodes,
+                                                   SMESH::SMESH_GroupBase_ptr theModifiedElems )
 {
   if ( CORBA::is_nil( theNodes ) && theNodes->GetType() != SMESH::NODE )
     return false;
@@ -4596,10 +4602,11 @@ CORBA::Boolean SMESH_MeshEditor_i::DoubleNodeGroup(
     aModifiedElems->length( 0 );
   }
 
+  TPythonDump pyDump; // suppress dump by the next line
+
   bool done = DoubleNodes( aNodes, aModifiedElems );
 
-  if ( done )
-    myMesh->SetIsModified( true );
+  pyDump << this << ".DoubleNodeGroup( " << theNodes << ", " << theModifiedElems << " )";
 
   return done;
 }
@@ -4613,7 +4620,7 @@ CORBA::Boolean SMESH_MeshEditor_i::DoubleNodeGroup(
  * \sa DoubleNodeGroup()
  */
 SMESH::SMESH_Group_ptr SMESH_MeshEditor_i::DoubleNodeGroupNew( SMESH::SMESH_GroupBase_ptr theNodes,
-							       SMESH::SMESH_GroupBase_ptr theModifiedElems )
+                                                               SMESH::SMESH_GroupBase_ptr theModifiedElems )
 {
   if ( CORBA::is_nil( theNodes ) && theNodes->GetType() != SMESH::NODE )
     return false;
@@ -4630,11 +4637,12 @@ SMESH::SMESH_Group_ptr SMESH_MeshEditor_i::DoubleNodeGroupNew( SMESH::SMESH_Grou
     aModifiedElems->length( 0 );
   }
   
+  TPythonDump pyDump; // suppress dump by the next line
+
   bool aResult = DoubleNodes( aNodes, aModifiedElems );
 
-  if ( aResult ) {
-    myMesh->SetIsModified( true );
-
+  if ( aResult )
+  {
     // Create group with newly created nodes
     SMESH::long_array_var anIds = GetLastCreatedNodes();
     if (anIds->length() > 0) {
@@ -4645,9 +4653,9 @@ SMESH::SMESH_Group_ptr SMESH_MeshEditor_i::DoubleNodeGroupNew( SMESH::SMESH_Grou
     }
   }
   
-  // Update Python script
-  TPythonDump() << "createdNodes = " << this << ".DoubleNodeGroupNew( " << theNodes << ", "
+  pyDump << "createdNodes = " << this << ".DoubleNodeGroupNew( " << theNodes << ", "
     << theModifiedElems << " )";
+
   return aNewGroup._retn();
 }
 
@@ -4662,9 +4670,8 @@ SMESH::SMESH_Group_ptr SMESH_MeshEditor_i::DoubleNodeGroupNew( SMESH::SMESH_Grou
 */
 //================================================================================
 
-CORBA::Boolean SMESH_MeshEditor_i::DoubleNodeGroups( 
-  const SMESH::ListOfGroups& theNodes,
-  const SMESH::ListOfGroups& theModifiedElems )
+CORBA::Boolean SMESH_MeshEditor_i::DoubleNodeGroups(const SMESH::ListOfGroups& theNodes,
+                                                    const SMESH::ListOfGroups& theModifiedElems )
 {
   initData();
 
@@ -4701,6 +4708,9 @@ CORBA::Boolean SMESH_MeshEditor_i::DoubleNodeGroups(
 
   if ( aResult )
     myMesh->SetIsModified( true );
+
+
+  TPythonDump() << this << ".DoubleNodeGroups( " << theNodes << ", " << theModifiedElems << " )";
 
   return aResult;
 }
@@ -4741,8 +4751,8 @@ CORBA::Boolean SMESH_MeshEditor_i::DoubleNodeElem( const SMESH::long_array& theE
     myMesh->SetIsModified( true );
 
   // Update Python script
-  TPythonDump() << "isDone = " << this << ".DoubleNodes( " << theElems << ", "
-    << theNodesNot << ", " << theAffectedElems << " )";
+  TPythonDump() << this << ".DoubleNodeElem( " << theElems << ", "
+                << theNodesNot << ", " << theAffectedElems << " )";
   return aResult;
 }
 
@@ -4760,10 +4770,9 @@ CORBA::Boolean SMESH_MeshEditor_i::DoubleNodeElem( const SMESH::long_array& theE
 */
 //================================================================================
 
-CORBA::Boolean SMESH_MeshEditor_i::DoubleNodeElemInRegion
-( const SMESH::long_array& theElems, 
-  const SMESH::long_array& theNodesNot,
-  GEOM::GEOM_Object_ptr    theShape )
+CORBA::Boolean SMESH_MeshEditor_i::DoubleNodeElemInRegion ( const SMESH::long_array& theElems, 
+                                                            const SMESH::long_array& theNodesNot,
+                                                            GEOM::GEOM_Object_ptr    theShape )
 
 {
   initData();
@@ -4784,8 +4793,8 @@ CORBA::Boolean SMESH_MeshEditor_i::DoubleNodeElemInRegion
     myMesh->SetIsModified( true );
 
   // Update Python script
-  TPythonDump() << "isDone = " << this << ".DoubleNodesInRegion( " << theElems << ", "
-    << theNodesNot << ", " << theShape << " )";
+  TPythonDump() << "isDone = " << this << ".DoubleNodeElemInRegion( " << theElems << ", "
+                << theNodesNot << ", " << theShape << " )";
   return aResult;
 }
 
@@ -4838,8 +4847,8 @@ CORBA::Boolean SMESH_MeshEditor_i::DoubleNodeElemGroup(SMESH::SMESH_GroupBase_pt
     myMesh->SetIsModified( true );
 
   // Update Python script
-  TPythonDump() << "isDone = " << this << ".DoubleNodeGroup( " << theElems << ", "
-    << theNodesNot << ", " << theAffectedElems << " )";
+  TPythonDump() << "isDone = " << this << ".DoubleNodeElemGroup( " << theElems << ", "
+                << theNodesNot << ", " << theAffectedElems << " )";
   return aResult;
 }
 
@@ -4854,8 +4863,8 @@ CORBA::Boolean SMESH_MeshEditor_i::DoubleNodeElemGroup(SMESH::SMESH_GroupBase_pt
  * \sa DoubleNodeElemGroup()
  */
 SMESH::SMESH_Group_ptr SMESH_MeshEditor_i::DoubleNodeElemGroupNew(SMESH::SMESH_GroupBase_ptr theElems,
-								  SMESH::SMESH_GroupBase_ptr theNodesNot,
-								  SMESH::SMESH_GroupBase_ptr theAffectedElems)
+                                                                  SMESH::SMESH_GroupBase_ptr theNodesNot,
+                                                                  SMESH::SMESH_GroupBase_ptr theAffectedElems)
 {
   if ( CORBA::is_nil( theElems ) && theElems->GetType() == SMESH::NODE )
     return false;
@@ -4910,8 +4919,7 @@ SMESH::SMESH_Group_ptr SMESH_MeshEditor_i::DoubleNodeElemGroupNew(SMESH::SMESH_G
 */
 //================================================================================
 
-CORBA::Boolean SMESH_MeshEditor_i::DoubleNodeElemGroupInRegion( 
-                                                               SMESH::SMESH_GroupBase_ptr theElems,
+CORBA::Boolean SMESH_MeshEditor_i::DoubleNodeElemGroupInRegion(SMESH::SMESH_GroupBase_ptr theElems,
                                                                SMESH::SMESH_GroupBase_ptr theNodesNot,
                                                                GEOM::GEOM_Object_ptr      theShape )
 
@@ -4937,8 +4945,8 @@ CORBA::Boolean SMESH_MeshEditor_i::DoubleNodeElemGroupInRegion(
     myMesh->SetIsModified( true );
 
   // Update Python script
-  TPythonDump() << "isDone = " << this << ".DoubleNodeGroupInRegion( " << theElems << ", "
-    << theNodesNot << ", " << theShape << " )";
+  TPythonDump() << "isDone = " << this << ".DoubleNodeElemGroupInRegion( " << theElems << ", "
+                << theNodesNot << ", " << theShape << " )";
   return aResult;
 }
 
@@ -4995,7 +5003,7 @@ CORBA::Boolean SMESH_MeshEditor_i::DoubleNodeElemGroups(const SMESH::ListOfGroup
 
   // Update Python script
   TPythonDump() << "isDone = " << this << ".DoubleNodeElemGroups( " << &theElems << ", "
-    << &theNodesNot << ", " << &theAffectedElems << " )";
+                << &theNodesNot << ", " << &theAffectedElems << " )";
   return aResult;
 }
 
@@ -5036,8 +5044,8 @@ SMESH_MeshEditor_i::DoubleNodeElemGroupsInRegion(const SMESH::ListOfGroups& theE
     myMesh->SetIsModified( true );
 
   // Update Python script
-  TPythonDump() << "isDone = " << this << ".DoubleNodeGroupsInRegion( " << &theElems << ", "
-    << &theNodesNot << ", " << theShape << " )";
+  TPythonDump() << "isDone = " << this << ".DoubleNodeElemGroupsInRegion( " << &theElems << ", "
+                << &theNodesNot << ", " << theShape << " )";
   return aResult;
 }
 
