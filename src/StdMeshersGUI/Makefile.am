@@ -100,4 +100,5 @@ libStdMeshersGUI_la_LDFLAGS  = \
 # resources files
 nodist_salomeres_DATA= \
 	StdMeshers_images.qm \
-	StdMeshers_msg_en.qm
+	StdMeshers_msg_en.qm \
+	StdMeshers_msg_fr.qm
