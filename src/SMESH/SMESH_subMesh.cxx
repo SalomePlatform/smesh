@@ -372,23 +372,24 @@ const map < int, SMESH_subMesh * >& SMESH_subMesh::DependsOn()
   case TopAbs_COMPOUND:
     {
       //MESSAGE("compound");
-      for (TopExp_Explorer exp(_subShape, TopAbs_SOLID); exp.More();
-           exp.Next())
+      for (TopExp_Explorer exp(_subShape, TopAbs_SOLID); exp.More();exp.Next())
       {
         InsertDependence(exp.Current());
       }
-      for (TopExp_Explorer exp(_subShape, TopAbs_SHELL, TopAbs_SOLID); exp.More();
-           exp.Next())
+      for (TopExp_Explorer exp(_subShape, TopAbs_SHELL, TopAbs_SOLID); exp.More(); exp.Next())
       {
+        if ( BRep_Tool::IsClosed(exp.Current() ))
           InsertDependence(exp.Current());      //only shell not in solid
+        else
+          for (TopExp_Explorer exp(exp.Current(), TopAbs_FACE); exp.More();exp.Next())
+            InsertDependence(exp.Current());      // issue 0020959: HEXA_3D fails on shell
+
       }
-      for (TopExp_Explorer exp(_subShape, TopAbs_FACE, TopAbs_SHELL); exp.More();
-           exp.Next())
+      for (TopExp_Explorer exp(_subShape, TopAbs_FACE, TopAbs_SHELL); exp.More();exp.Next())
       {
         InsertDependence(exp.Current());
       }
-      for (TopExp_Explorer exp(_subShape, TopAbs_EDGE, TopAbs_FACE); exp.More();
-           exp.Next())
+      for (TopExp_Explorer exp(_subShape, TopAbs_EDGE, TopAbs_FACE); exp.More();exp.Next())
       {
         InsertDependence(exp.Current());
       }
@@ -396,9 +397,8 @@ const map < int, SMESH_subMesh * >& SMESH_subMesh::DependsOn()
     }
   case TopAbs_COMPSOLID:
     {
-                //MESSAGE("compsolid");
-      for (TopExp_Explorer exp(_subShape, TopAbs_SOLID); exp.More();
-           exp.Next())
+      //MESSAGE("compsolid");
+      for (TopExp_Explorer exp(_subShape, TopAbs_SOLID); exp.More(); exp.Next())
       {
         InsertDependence(exp.Current());
       }
@@ -407,8 +407,7 @@ const map < int, SMESH_subMesh * >& SMESH_subMesh::DependsOn()
   case TopAbs_SHELL:
     {
       //MESSAGE("shell");
-      for (TopExp_Explorer exp(_subShape, TopAbs_FACE); exp.More();
-           exp.Next())
+      for (TopExp_Explorer exp(_subShape, TopAbs_FACE); exp.More(); exp.Next())
       {
         InsertDependence(exp.Current());
       }
@@ -417,8 +416,7 @@ const map < int, SMESH_subMesh * >& SMESH_subMesh::DependsOn()
   case TopAbs_WIRE:
     {
       //MESSAGE("wire");
-      for (TopExp_Explorer exp(_subShape, TopAbs_EDGE); exp.More();
-           exp.Next())
+      for (TopExp_Explorer exp(_subShape, TopAbs_EDGE); exp.More(); exp.Next())
       {
         InsertDependence(exp.Current());
       }
@@ -428,8 +426,7 @@ const map < int, SMESH_subMesh * >& SMESH_subMesh::DependsOn()
     {
       //MESSAGE("solid");
       if(_father->HasShapeToMesh()) {
-        for (TopExp_Explorer exp(_subShape, TopAbs_FACE); exp.More();
-             exp.Next())
+        for (TopExp_Explorer exp(_subShape, TopAbs_FACE); exp.More();exp.Next())
         {
           InsertDependence(exp.Current());
         }
@@ -439,8 +436,7 @@ const map < int, SMESH_subMesh * >& SMESH_subMesh::DependsOn()
   case TopAbs_FACE:
     {
       //MESSAGE("face");
-      for (TopExp_Explorer exp(_subShape, TopAbs_EDGE); exp.More();
-           exp.Next())
+      for (TopExp_Explorer exp(_subShape, TopAbs_EDGE); exp.More();exp.Next())
       {
         InsertDependence(exp.Current());
       }
@@ -449,11 +445,10 @@ const map < int, SMESH_subMesh * >& SMESH_subMesh::DependsOn()
   case TopAbs_EDGE:
     {
       //MESSAGE("edge");
-      for (TopExp_Explorer exp(_subShape, TopAbs_VERTEX); exp.More();
-           exp.Next())
+      for (TopExp_Explorer exp(_subShape, TopAbs_VERTEX); exp.More(); exp.Next())
       {
-                        InsertDependence(exp.Current());
-                      }
+        InsertDependence(exp.Current());
+      }
       break;
     }
   case TopAbs_VERTEX:
