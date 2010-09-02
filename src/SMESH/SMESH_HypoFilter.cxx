@@ -30,6 +30,8 @@
 #include "SMESH_Hypothesis.hxx"
 #include "SMESH_subMesh.hxx"
 
+#include <TopExp_Explorer.hxx>
+
 using namespace std;
 
 
@@ -126,6 +128,13 @@ bool SMESH_HypoFilter::IsAssignedToPredicate::IsOk(const SMESH_Hypothesis* aHyp,
 bool SMESH_HypoFilter::IsMoreLocalThanPredicate::IsOk(const SMESH_Hypothesis* aHyp,
                                                       const TopoDS_Shape&     aShape) const
 {
+  // issue 0020963
+  // if aShape is COMPOUND (i.e. most probably a GEOM group) then
+  // it is more local if it contains shapes of less dimension than _shapeType
+  if ( aShape.ShapeType() == TopAbs_COMPOUND )
+    for ( int moreLocalType = _shapeType+1; moreLocalType < int(TopAbs_SHAPE); ++moreLocalType )
+      if ( TopExp_Explorer( aShape, TopAbs_ShapeEnum(moreLocalType)).More())
+        return true;
   return ( aShape.ShapeType() > _shapeType );
 }
 
