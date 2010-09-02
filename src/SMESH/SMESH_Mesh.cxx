@@ -457,6 +457,9 @@ SMESH_Hypothesis::Hypothesis_Status
   // NotConformAllowed can be only global
   if ( !isGlobalHyp )
   {
+    // NOTE: this is not a correct way to check a name of hypothesis,
+    // there should be an attribute of hypothesis saying that it can/can't
+    // be global/local
     string hypName = anHyp->GetName();
     if ( hypName == "NotConformAllowed" )
     {
@@ -499,7 +502,7 @@ SMESH_Hypothesis::Hypothesis_Status
       }
     }
   }
-  HasModificationsToDiscard(); // to reset _isModified flag if mesh become empty
+  HasModificationsToDiscard(); // to reset _isModified flag if a mesh becomes empty
 
   if(MYDEBUG) subMesh->DumpAlgoState(true);
   if(MYDEBUG) SCRUTE(ret);
