@@ -627,7 +627,7 @@ bool StdMeshers_Regular_1D::computeInternalParameters(SMESH_Mesh &     theMesh,
           bool computed = sm->IsMeshComputed();
           if (!computed) {
             if (sm->GetComputeState() == SMESH_subMesh::READY_TO_COMPUTE) {
-              sm->ComputeStateEngine(SMESH_subMesh::COMPUTE);
+              _gen->Compute( theMesh, _mainEdge, /*anUpward=*/true);
               computed = sm->IsMeshComputed();
             }
           }
