@@ -265,7 +265,7 @@ bool SMESH_subMesh::SubMeshesComputed()
       break; // the rest subMeshes are all of less dimension
     SMESHDS_SubMesh * ds = sm->GetSubMeshDS();
     bool computeOk = (sm->GetComputeState() == COMPUTE_OK ||
-                      (ds && ( ds->NbNodes() || ds->NbElements() )));
+                      (ds && ( dimToCheck ? ds->NbElements() : ds->NbNodes()  )));
     if (!computeOk)
     {
       int type = ss.ShapeType();
@@ -1425,18 +1425,29 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
           else
             ret = false;
         }
-        if (ret && !_alwaysComputed && shape == _subShape) { // check if anything was built
-          ret = ( GetSubMeshDS() && ( GetSubMeshDS()->NbElements() || GetSubMeshDS()->NbNodes() ));
+        TopExp_Explorer subS(shape, _subShape.ShapeType());
+        if (ret) // check if anything was built
+        {
+          for (; ret && subS.More(); subS.Next())
+            ret = _father->GetSubMesh( subS.Current() )->IsMeshComputed();
         }
         bool isComputeErrorSet = !CheckComputeError( algo, shape );
         if (!ret && !isComputeErrorSet)
         {
           // Set _computeError
-          if ( !_computeError )
-            _computeError = SMESH_ComputeError::New();
-          if ( _computeError->IsOK() )
-            _computeError->myName = COMPERR_ALGO_FAILED;
-          _computeState = FAILED_TO_COMPUTE;
+          for (subS.ReInit(); subS.More(); subS.Next())
+          {
+            SMESH_subMesh* sm = _father->GetSubMesh( subS.Current() );
+            if ( !sm->IsMeshComputed() )
+            {
+              if ( !sm->_computeError )
+                sm->_computeError = SMESH_ComputeError::New();
+              if ( sm->_computeError->IsOK() )
+                sm->_computeError->myName = COMPERR_ALGO_FAILED;
+              sm->_computeState = FAILED_TO_COMPUTE;
+              sm->_computeError->myAlgo = algo;
+            }
+          }
         }
         if (ret)
         {
