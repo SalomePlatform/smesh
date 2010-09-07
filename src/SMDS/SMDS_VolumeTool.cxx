@@ -518,8 +518,10 @@ bool SMDS_VolumeTool::Set (const SMDS_MeshElement* theVolume)
         // define volume orientation
         XYZ botNormal;
         GetFaceNormal( 0, botNormal.x, botNormal.y, botNormal.z );
-        const SMDS_MeshNode* topNode = myVolumeNodes[ myVolumeNbNodes - 1 ];
         const SMDS_MeshNode* botNode = myVolumeNodes[ 0 ];
+        int topNodeIndex = myVolume->NbCornerNodes() - 1;
+        while ( !IsLinked( 0, topNodeIndex )) --topNodeIndex;
+        const SMDS_MeshNode* topNode = myVolumeNodes[ topNodeIndex ];
         XYZ upDir (topNode->X() - botNode->X(),
                    topNode->Y() - botNode->Y(),
                    topNode->Z() - botNode->Z() );
