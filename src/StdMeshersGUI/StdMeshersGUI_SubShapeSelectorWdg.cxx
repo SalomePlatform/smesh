@@ -258,7 +258,7 @@ void StdMeshersGUI_SubShapeSelectorWdg::SelectionIntoArgument()
     }
   }
   // update add button
-  myAddButton->setEnabled( myListWidget->count() < myMaxSize && mySelectedIDs.size() > 0 && ( mySelectedIDs.size() <= myMaxSize || myMaxSize == -1 ) );
+  myAddButton->setEnabled( ( myListWidget->count() < myMaxSize || myMaxSize == -1 ) && mySelectedIDs.size() > 0 && ( mySelectedIDs.size() <= myMaxSize || myMaxSize == -1 ) );
 
   //Connect Selected Ids in viewer and dialog's Ids list
   myListWidget->clearSelection();
