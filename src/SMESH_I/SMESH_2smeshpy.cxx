@@ -1157,6 +1157,12 @@ void _pyMeshEditor::Process( const Handle(_pyCommand)& theCommand)
     isPyMeshMethod=true;
     theCommand->SetMethod("FindCoincidentNodesOnPart");
   }
+  // DoubleNodeElemGroupNew() -> DoubleNodeElemGroup()
+  if ( !isPyMeshMethod && ( method == "DoubleNodeElemGroupNew" || method == "DoubleNodeGroupNew"))
+  {
+    isPyMeshMethod=true;
+    theCommand->SetMethod( method.SubString( 1, method.Length()-3));
+  }
 
   // meshes made by *MakeMesh() methods are not wrapped by _pyMesh,
   // so let _pyMesh care of it (TMP?)
