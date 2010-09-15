@@ -3697,10 +3697,14 @@ class Mesh:
     #  This method provided for convenience works as DoubleNodes() described above.
     #  @param theNodes group of nodes to be doubled
     #  @param theModifiedElems group of elements to be updated.
-    #  @return TRUE if operation has been completed successfully, FALSE otherwise
+    #  @param theMakeGroup forces the generation of a group containing new nodes.
+    #  @return TRUE or a created group if operation has been completed successfully,
+    #          FALSE or None otherwise
     #  @ingroup l2_modif_edit
-    def DoubleNodeGroup(self, theNodes, theModifiedElems):
-        return self.editor.DoubleNodeGroupNew(theNodes, theModifiedElems)
+    def DoubleNodeGroup(self, theNodes, theModifiedElems, theMakeGroup=False):
+        if theMakeGroup:
+            return self.editor.DoubleNodeGroupNew(theNodes, theModifiedElems)
+        return self.editor.DoubleNodeGroup(theNodes, theModifiedElems)
 
     ## Creates a hole in a mesh by doubling the nodes of some particular elements
     #  This method provided for convenience works as DoubleNodes() described above.
@@ -3740,9 +3744,12 @@ class Mesh:
     #  @param theNodesNot - group of nodes not to replicated
     #  @param theAffectedElems - group of elements to which the replicated nodes
     #         should be associated to.
+    #  @param theMakeGroup forces the generation of a group containing new elements.
     #  @ingroup l2_modif_edit
-    def DoubleNodeElemGroup(self, theElems, theNodesNot, theAffectedElems):
-        return self.editor.DoubleNodeElemGroupNew(theElems, theNodesNot, theAffectedElems)
+    def DoubleNodeElemGroup(self, theElems, theNodesNot, theAffectedElems, theMakeGroup=False):
+        if theMakeGroup:
+            return self.editor.DoubleNodeElemGroupNew(theElems, theNodesNot, theAffectedElems)
+        return self.editor.DoubleNodeElemGroup(theElems, theNodesNot, theAffectedElems)
 
     ## Creates a hole in a mesh by doubling the nodes of some particular elements
     #  This method provided for convenience works as DoubleNodes() described above.

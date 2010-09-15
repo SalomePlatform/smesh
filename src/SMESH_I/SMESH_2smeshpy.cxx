@@ -1162,6 +1162,7 @@ void _pyMeshEditor::Process( const Handle(_pyCommand)& theCommand)
   {
     isPyMeshMethod=true;
     theCommand->SetMethod( method.SubString( 1, method.Length()-3));
+    theCommand->SetArg(theCommand->GetNbArgs()+1,"True");
   }
 
   // meshes made by *MakeMesh() methods are not wrapped by _pyMesh,

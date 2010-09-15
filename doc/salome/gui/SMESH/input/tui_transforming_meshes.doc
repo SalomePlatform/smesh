@@ -380,7 +380,7 @@ print "Nodes      : ", mesh.NbNodes()
 print "Edges      : ", mesh.NbEdges()
 print "Triangles  : ", mesh.NbTriangles()
 
-groupOfCreatedNodes = mesh.DoubleNodeGroup(nodes1, faces1)
+groupOfCreatedNodes = mesh.DoubleNodeGroup(nodes1, faces1, theMakeGroup=True)
 print "New nodes:", groupOfCreatedNodes.GetIDs()
 
 print "\nMesh after the first nodes duplication:"
@@ -408,7 +408,7 @@ print "Nodes      : ", mesh.NbNodes()
 print "Edges      : ", mesh.NbEdges()
 print "Triangles  : ", mesh.NbTriangles()
 
-groupOfNewEdges = mesh.DoubleNodeElemGroup( edges, nodes2, faces2 )
+groupOfNewEdges = mesh.DoubleNodeElemGroup( edges, nodes2, faces2, theMakeGroup=True )
 print "New edges:", groupOfNewEdges.GetIDs()
 
 print "\nMesh after the second nodes duplication:"
