@@ -52,8 +52,8 @@ public:
   /*!
    * \brief Wrap a sequence of ids in a SMESH_IDSource
    */
-  SMESH::SMESH_IDSource_ptr MakeIDSource(const SMESH::long_array& IDsOfElements);
-
+  SMESH::SMESH_IDSource_ptr MakeIDSource(const SMESH::long_array& IDsOfElements,
+                                         SMESH::ElementType       type);
   CORBA::Boolean RemoveElements(const SMESH::long_array & IDsOfElements);
   CORBA::Boolean RemoveNodes(const SMESH::long_array & IDsOfNodes);
   CORBA::Long    RemoveOrphanNodes();
@@ -450,6 +450,10 @@ public:
   void FindCoincidentNodesOnPart(SMESH::SMESH_IDSource_ptr      Object,
                                  CORBA::Double                  Tolerance,
                                  SMESH::array_of_long_array_out GroupsOfNodes);
+  void FindCoincidentNodesOnPartBut(SMESH::SMESH_IDSource_ptr      Object,
+                                    CORBA::Double                  Tolerance,
+                                    SMESH::array_of_long_array_out GroupsOfNodes,
+                                    const SMESH::ListOfIDSources&  ExceptSubMeshOrGroups);
   void MergeNodes (const SMESH::array_of_long_array& GroupsOfNodes);
   void FindEqualElements(SMESH::SMESH_IDSource_ptr      Object,
                          SMESH::array_of_long_array_out GroupsOfElementsID);

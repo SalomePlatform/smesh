@@ -229,6 +229,73 @@ namespace {
     }
     return typeStr;
   }
+  //================================================================================
+  /*!
+   * \brief function for conversion long_array to TIDSortedElemSet
+   * \param IDs - array of IDs
+   * \param aMesh - mesh
+   * \param aMap - collection to fill
+   * \param aType - element type
+   */
+  //================================================================================
+
+  void arrayToSet(const SMESH::long_array & IDs,
+                  const SMESHDS_Mesh*       aMesh,
+                  TIDSortedElemSet&         aMap,
+                  const SMDSAbs_ElementType aType = SMDSAbs_All )
+  {
+    for (int i=0; i<IDs.length(); i++) {
+      CORBA::Long ind = IDs[i];
+      const SMDS_MeshElement * elem =
+        (aType == SMDSAbs_Node ? aMesh->FindNode(ind) : aMesh->FindElement(ind));
+      if ( elem && ( aType == SMDSAbs_All || elem->GetType() == aType ))
+        aMap.insert( elem );
+    }
+  }
+  //================================================================================
+  /*!
+   * \brief Retrieve elements of given type from SMESH_IDSource
+   */
+  //================================================================================
+
+  void idSourceToSet(SMESH::SMESH_IDSource_ptr  theIDSource,
+                     const SMESHDS_Mesh*        theMeshDS,
+                     TIDSortedElemSet&          theElemSet,
+                     const SMDSAbs_ElementType  theType)
+
+  {
+    if ( CORBA::is_nil( theIDSource ) )
+      return;
+    SMESH::long_array_var anIDs = theIDSource->GetIDs();
+    arrayToSet( anIDs, theMeshDS, theElemSet, theType);
+  }
+  //================================================================================
+  /*!
+   * \brief Retrieve nodes from SMESH_IDSource
+   */
+  //================================================================================
+
+  void idSourceToNodeSet(SMESH::SMESH_IDSource_ptr  theObject,
+                         const SMESHDS_Mesh*        theMeshDS,
+                         TIDSortedNodeSet&          theNodeSet)
+
+  {
+    if ( CORBA::is_nil( theObject ) )
+      return;
+    SMESH::array_of_ElementType_var types = theObject->GetTypes();
+    SMESH::long_array_var     aElementsId = theObject->GetIDs();
+    if ( types->length() == 1 && types[0] == SMESH::NODE)
+    {
+      for(int i = 0; i < aElementsId->length(); i++)
+        if ( const SMDS_MeshNode * n = theMeshDS->FindNode( aElementsId[i] ))
+          theNodeSet.insert( theNodeSet.end(), n);
+    }
+    else {
+      for(int i = 0; i < aElementsId->length(); i++)
+        if( const SMDS_MeshElement * elem = theMeshDS->FindElement( aElementsId[i] ))
+          theNodeSet.insert( elem->begin_nodes(), elem->end_nodes());
+    }
+  }
 }
 
 //=============================================================================
@@ -281,16 +348,26 @@ void SMESH_MeshEditor_i::initData(bool deleteSearchers)
 struct _IDSource : public POA_SMESH::SMESH_IDSource
 {
   SMESH::long_array _ids;
+  SMESH::ElementType _type;
   SMESH::long_array* GetIDs()      { return new SMESH::long_array( _ids ); }
   SMESH::long_array* GetMeshInfo() { return 0; }
+  SMESH::array_of_ElementType* GetTypes()
+  {
+    SMESH::array_of_ElementType_var types = new SMESH::array_of_ElementType;
+    types->length( 1 );
+    types[0] = _type;
+    return types._retn();
+  }
 };
 
-SMESH::SMESH_IDSource_ptr SMESH_MeshEditor_i::MakeIDSource(const SMESH::long_array& ids)
+SMESH::SMESH_IDSource_ptr SMESH_MeshEditor_i::MakeIDSource(const SMESH::long_array& ids,
+                                                           SMESH::ElementType       type)
 {
   _IDSource* anIDSource = new _IDSource;
   anIDSource->_ids = ids;
+  anIDSource->_type = type;
   SMESH::SMESH_IDSource_var anIDSourceVar = anIDSource->_this();
-  
+
   return anIDSourceVar._retn();
 }
 
@@ -930,34 +1007,6 @@ CORBA::Boolean SMESH_MeshEditor_i::ReorientObject(SMESH::SMESH_IDSource_ptr theO
   aTPythonDump << "isDone = " << this << ".ReorientObject( " << theObject << " )";
 
   return isDone;
-}
-
-namespace
-{
-  //================================================================================
-  /*!
-   * \brief function for conversion long_array to TIDSortedElemSet
-   * \param IDs - array of IDs
-   * \param aMesh - mesh
-   * \param aMap - collection to fill
-   * \param aType - element type
-   */
-  //================================================================================
-
-  void arrayToSet(const SMESH::long_array & IDs,
-                  const SMESHDS_Mesh*       aMesh,
-                  TIDSortedElemSet&         aMap,
-                  const SMDSAbs_ElementType aType = SMDSAbs_All )
-  { 
-    for (int i=0; i<IDs.length(); i++) {
-      CORBA::Long ind = IDs[i];
-      const SMDS_MeshElement * elem =
-        (aType == SMDSAbs_Node ? aMesh->FindNode(ind)
-         : aMesh->FindElement(ind));
-      if ( elem && ( aType == SMDSAbs_All || elem->GetType() == aType ))
-        aMap.insert( elem );
-    }
-  }
 }
 
 //=============================================================================
@@ -3547,7 +3596,7 @@ void SMESH_MeshEditor_i::FindCoincidentNodes (CORBA::Double                  Tol
 
   ::SMESH_MeshEditor::TListOfListOfNodes aListOfListOfNodes;
   ::SMESH_MeshEditor anEditor( myMesh );
-  set<const SMDS_MeshNode*> nodes; // no input nodes
+  TIDSortedNodeSet nodes; // no input nodes
   anEditor.FindCoincidentNodes( nodes, Tolerance, aListOfListOfNodes );
 
   GroupsOfNodes = new SMESH::array_of_long_array;
@@ -3574,33 +3623,9 @@ void SMESH_MeshEditor_i::FindCoincidentNodesOnPart(SMESH::SMESH_IDSource_ptr    
                                                    SMESH::array_of_long_array_out GroupsOfNodes)
 {
   initData();
-  SMESH::long_array_var aElementsId = theObject->GetIDs();
 
-  SMESHDS_Mesh* aMesh = GetMeshDS();
-  set<const SMDS_MeshNode*> nodes;
-
-  SMESH::SMESH_GroupBase_var group = SMESH::SMESH_GroupBase::_narrow(theObject);
-  if ( !group->_is_nil() && group->GetType() == SMESH::NODE)
-  {
-    for(int i = 0; i < aElementsId->length(); i++) {
-      CORBA::Long ind = aElementsId[i];
-      const SMDS_MeshNode * elem = aMesh->FindNode(ind);
-      if(elem)
-        nodes.insert(elem);
-    }
-  }
-  else {
-    for(int i = 0; i < aElementsId->length(); i++) {
-      CORBA::Long ind = aElementsId[i];
-      const SMDS_MeshElement * elem = aMesh->FindElement(ind);
-      if(elem) {
-        SMDS_ElemIteratorPtr nIt = elem->nodesIterator();
-        while ( nIt->more() )
-          nodes.insert( nodes.end(),static_cast<const SMDS_MeshNode*>(nIt->next()));
-      }
-    }
-  }
-
+  TIDSortedNodeSet nodes;
+  idSourceToNodeSet( theObject, GetMeshDS(), nodes );
 
   ::SMESH_MeshEditor::TListOfListOfNodes aListOfListOfNodes;
   ::SMESH_MeshEditor anEditor( myMesh );
@@ -3610,7 +3635,8 @@ void SMESH_MeshEditor_i::FindCoincidentNodesOnPart(SMESH::SMESH_IDSource_ptr    
   GroupsOfNodes = new SMESH::array_of_long_array;
   GroupsOfNodes->length( aListOfListOfNodes.size() );
   ::SMESH_MeshEditor::TListOfListOfNodes::iterator llIt = aListOfListOfNodes.begin();
-  for ( CORBA::Long i = 0; llIt != aListOfListOfNodes.end(); llIt++, i++ ) {
+  for ( CORBA::Long i = 0; llIt != aListOfListOfNodes.end(); llIt++, i++ )
+  {
     list< const SMDS_MeshNode* >& aListOfNodes = *llIt;
     list< const SMDS_MeshNode* >::iterator lIt = aListOfNodes.begin();;
     SMESH::long_array& aGroup = (*GroupsOfNodes)[ i ];
@@ -3621,6 +3647,55 @@ void SMESH_MeshEditor_i::FindCoincidentNodesOnPart(SMESH::SMESH_IDSource_ptr    
   TPythonDump() << "coincident_nodes_on_part = " << this << ".FindCoincidentNodesOnPart( "
                 <<theObject<<", "
                 << Tolerance << " )";
+}
+
+//================================================================================
+/*!
+ * \brief Finds nodes coinsident with Tolerance within Object excluding nodes within
+ *        ExceptSubMeshOrGroups
+ */
+//================================================================================
+
+void SMESH_MeshEditor_i::
+FindCoincidentNodesOnPartBut(SMESH::SMESH_IDSource_ptr      theObject,
+                             CORBA::Double                  theTolerance,
+                             SMESH::array_of_long_array_out theGroupsOfNodes,
+                             const SMESH::ListOfIDSources&  theExceptSubMeshOrGroups)
+{
+  initData();
+
+  TIDSortedNodeSet nodes;
+  idSourceToNodeSet( theObject, GetMeshDS(), nodes );
+
+  for ( int i = 0; i < theExceptSubMeshOrGroups.length(); ++i )
+  {
+    TIDSortedNodeSet exceptNodes;
+    idSourceToNodeSet( theExceptSubMeshOrGroups[i], GetMeshDS(), exceptNodes );
+    TIDSortedNodeSet::iterator avoidNode = exceptNodes.begin();
+    for ( ; avoidNode != exceptNodes.end(); ++avoidNode)
+      nodes.erase( *avoidNode );
+  }
+  ::SMESH_MeshEditor::TListOfListOfNodes aListOfListOfNodes;
+  ::SMESH_MeshEditor anEditor( myMesh );
+  if(!nodes.empty())
+    anEditor.FindCoincidentNodes( nodes, theTolerance, aListOfListOfNodes );
+
+  theGroupsOfNodes = new SMESH::array_of_long_array;
+  theGroupsOfNodes->length( aListOfListOfNodes.size() );
+  ::SMESH_MeshEditor::TListOfListOfNodes::iterator llIt = aListOfListOfNodes.begin();
+  for ( CORBA::Long i = 0; llIt != aListOfListOfNodes.end(); llIt++, i++ )
+  {
+    list< const SMDS_MeshNode* >& aListOfNodes = *llIt;
+    list< const SMDS_MeshNode* >::iterator lIt = aListOfNodes.begin();;
+    SMESH::long_array& aGroup = (*theGroupsOfNodes)[ i ];
+    aGroup.length( aListOfNodes.size() );
+    for ( int j = 0; lIt != aListOfNodes.end(); lIt++, j++ )
+      aGroup[ j ] = (*lIt)->GetID();
+  }
+  TPythonDump() << "coincident_nodes_on_part = " << this << ".FindCoincidentNodesOnPartBut( "
+                << theObject<<", "
+                << theTolerance << ", "
+                << theExceptSubMeshOrGroups << " )";
 }
 
 //=======================================================================
@@ -4810,18 +4885,6 @@ CORBA::Boolean SMESH_MeshEditor_i::DoubleNodeElemInRegion ( const SMESH::long_ar
 */
 //================================================================================
 
-static void groupToSet(SMESH::SMESH_GroupBase_ptr theGrp,
-                       SMESHDS_Mesh*              theMeshDS,
-                       TIDSortedElemSet&          theElemSet,
-                       const SMDSAbs_ElementType  theType)
-
-{
-  if ( CORBA::is_nil( theGrp ) )
-    return;
-  SMESH::long_array_var anIDs = theGrp->GetIDs();
-  arrayToSet( anIDs, theMeshDS, theElemSet, theType);
-}
-
 CORBA::Boolean SMESH_MeshEditor_i::DoubleNodeElemGroup(SMESH::SMESH_GroupBase_ptr theElems,
                                                        SMESH::SMESH_GroupBase_ptr theNodesNot,
                                                        SMESH::SMESH_GroupBase_ptr theAffectedElems)
@@ -4835,9 +4898,9 @@ CORBA::Boolean SMESH_MeshEditor_i::DoubleNodeElemGroup(SMESH::SMESH_GroupBase_pt
 
   SMESHDS_Mesh* aMeshDS = GetMeshDS();
   TIDSortedElemSet anElems, aNodes, anAffected;
-  groupToSet( theElems, aMeshDS, anElems, SMDSAbs_All ); 
-  groupToSet( theNodesNot, aMeshDS, aNodes, SMDSAbs_Node ); 
-  groupToSet( theAffectedElems, aMeshDS, anAffected, SMDSAbs_All );
+  idSourceToSet( theElems, aMeshDS, anElems, SMDSAbs_All ); 
+  idSourceToSet( theNodesNot, aMeshDS, aNodes, SMDSAbs_Node ); 
+  idSourceToSet( theAffectedElems, aMeshDS, anAffected, SMDSAbs_All );
 
   bool aResult = aMeshEditor.DoubleNodes( anElems, aNodes, anAffected );
 
@@ -4877,9 +4940,9 @@ SMESH::SMESH_Group_ptr SMESH_MeshEditor_i::DoubleNodeElemGroupNew(SMESH::SMESH_G
 
   SMESHDS_Mesh* aMeshDS = GetMeshDS();
   TIDSortedElemSet anElems, aNodes, anAffected;
-  groupToSet( theElems, aMeshDS, anElems, SMDSAbs_All ); 
-  groupToSet( theNodesNot, aMeshDS, aNodes, SMDSAbs_Node ); 
-  groupToSet( theAffectedElems, aMeshDS, anAffected, SMDSAbs_All );
+  idSourceToSet( theElems, aMeshDS, anElems, SMDSAbs_All ); 
+  idSourceToSet( theNodesNot, aMeshDS, aNodes, SMDSAbs_Node ); 
+  idSourceToSet( theAffectedElems, aMeshDS, anAffected, SMDSAbs_All );
 
   
   bool aResult = aMeshEditor.DoubleNodes( anElems, aNodes, anAffected );
@@ -4933,8 +4996,8 @@ CORBA::Boolean SMESH_MeshEditor_i::DoubleNodeElemGroupInRegion(SMESH::SMESH_Grou
 
   SMESHDS_Mesh* aMeshDS = GetMeshDS();
   TIDSortedElemSet anElems, aNodes, anAffected;
-  groupToSet( theElems, aMeshDS, anElems, SMDSAbs_All ); 
-  groupToSet( theNodesNot, aMeshDS, aNodes, SMDSAbs_Node ); 
+  idSourceToSet( theElems, aMeshDS, anElems, SMDSAbs_All ); 
+  idSourceToSet( theNodesNot, aMeshDS, aNodes, SMDSAbs_Node ); 
 
   TopoDS_Shape aShape = SMESH_Gen_i::GetSMESHGen()->GeomObjectToShape( theShape );
   bool aResult = aMeshEditor.DoubleNodesInRegion( anElems, aNodes, aShape );
