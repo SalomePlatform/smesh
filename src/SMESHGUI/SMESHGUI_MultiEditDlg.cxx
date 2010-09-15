@@ -1512,7 +1512,7 @@ bool SMESHGUI_CuttingIntoTetraDlg::process (SMESH::SMESH_MeshEditor_ptr theEdito
 {
   SMESH::SMESH_IDSource_var obj = theObj;
   if ( CORBA::is_nil( obj ))
-    obj = theEditor->MakeIDSource( theIds );
+    obj = theEditor->MakeIDSource( theIds, myEntityType ? SMESH::VOLUME : SMESH::FACE );
   try {
     theEditor->SplitVolumesIntoTetra( obj, myGroupChoice->checkedId()+1 );
   }

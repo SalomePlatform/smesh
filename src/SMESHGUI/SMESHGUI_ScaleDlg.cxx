@@ -470,52 +470,34 @@ bool SMESHGUI_ScaleDlg::ClickOnApply()
     try {
       SUIT_OverrideCursor aWaitCursor;
       SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditor();
+      SMESH::SMESH_IDSource_var obj;
+      if ( CheckBoxMesh->isChecked() )
+        obj = mySelectedObject;
+      else
+        obj = aMeshEditor->MakeIDSource(anElementsId, SMESH::ALL);
+
       switch ( actionButton ) {
+
       case MOVE_ELEMS_BUTTON:
-        if(CheckBoxMesh->isChecked()) {
-          aMeshEditor->Scale(mySelectedObject, aPoint, aScaleFact, false);
-        }
-        else {
-          SMESH::SMESH_IDSource_ptr anObj = aMeshEditor->MakeIDSource(anElementsId);
-          aMeshEditor->Scale(anObj, aPoint, aScaleFact, false);
-        }
+        aMeshEditor->Scale(obj, aPoint, aScaleFact, false);
         if( !myMesh->_is_nil())
           myMesh->SetParameters( aParameters.join(":").toLatin1().constData() );
         break;
+
       case COPY_ELEMS_BUTTON:
-        if ( makeGroups ) {
-          SMESH::ListOfGroups_var groups;
-          if(CheckBoxMesh->isChecked()) {
-            groups = aMeshEditor->ScaleMakeGroups(mySelectedObject, aPoint, aScaleFact);
-          }
-          else {
-            groups = aMeshEditor->ScaleMakeGroups(aMeshEditor->MakeIDSource(anElementsId),
-                                                  aPoint, aScaleFact);
-          }
-        }
-        else {
-          if(CheckBoxMesh->isChecked()) {
-            aMeshEditor->Scale(mySelectedObject, aPoint, aScaleFact, true);
-          }
-          else {
-            aMeshEditor->Scale(aMeshEditor->MakeIDSource(anElementsId),
-                               aPoint, aScaleFact, true);
-          }
-        }
+        if ( makeGroups )
+          SMESH::ListOfGroups_var groups = 
+            aMeshEditor->ScaleMakeGroups(obj, aPoint, aScaleFact);
+        else 
+          aMeshEditor->Scale(obj, aPoint, aScaleFact, true);
         if( !myMesh->_is_nil())
           myMesh->SetParameters( aParameters.join(":").toLatin1().constData() );
         break;
+
       case MAKE_MESH_BUTTON: {
-        SMESH::SMESH_Mesh_var mesh;
-        if (CheckBoxMesh->isChecked()) {
-          mesh = aMeshEditor->ScaleMakeMesh(mySelectedObject, aPoint, aScaleFact, makeGroups,
-                                            LineEditNewMesh->text().toLatin1().data());
-        }
-        else {
-          mesh = aMeshEditor->ScaleMakeMesh(aMeshEditor->MakeIDSource(anElementsId),
-                                            aPoint, aScaleFact, makeGroups,
-                                            LineEditNewMesh->text().toLatin1().data());
-        }
+        SMESH::SMESH_Mesh_var mesh =
+          aMeshEditor->ScaleMakeMesh(obj, aPoint, aScaleFact, makeGroups,
+                                     LineEditNewMesh->text().toLatin1().data());
         if (!mesh->_is_nil()) {
           mesh->SetParameters(aParameters.join(":").toLatin1().constData());
 #ifdef WITHGENERICOBJ
