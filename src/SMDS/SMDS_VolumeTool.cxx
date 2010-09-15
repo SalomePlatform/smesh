@@ -520,7 +520,7 @@ bool SMDS_VolumeTool::Set (const SMDS_MeshElement* theVolume)
         GetFaceNormal( 0, botNormal.x, botNormal.y, botNormal.z );
         const SMDS_MeshNode* botNode = myVolumeNodes[ 0 ];
         int topNodeIndex = myVolume->NbCornerNodes() - 1;
-        while ( !IsLinked( 0, topNodeIndex )) --topNodeIndex;
+        while ( !IsLinked( 0, topNodeIndex, /*ignoreMediumNodes=*/true )) --topNodeIndex;
         const SMDS_MeshNode* topNode = myVolumeNodes[ topNodeIndex ];
         XYZ upDir (topNode->X() - botNode->X(),
                    topNode->Y() - botNode->Y(),
@@ -1087,10 +1087,12 @@ int SMDS_VolumeTool::GetOppFaceIndex( int faceIndex ) const
 //=======================================================================
 //function : IsLinked
 //purpose  : return true if theNode1 is linked with theNode2
+// If theIgnoreMediumNodes then corner nodes of quadratic cell are considered linked as well
 //=======================================================================
 
 bool SMDS_VolumeTool::IsLinked (const SMDS_MeshNode* theNode1,
-                                const SMDS_MeshNode* theNode2) const
+                                const SMDS_MeshNode* theNode2,
+                                const bool           theIgnoreMediumNodes) const
 {
   if ( !myVolume )
     return false;
@@ -1137,10 +1139,12 @@ bool SMDS_VolumeTool::IsLinked (const SMDS_MeshNode* theNode1,
 //function : IsLinked
 //purpose  : return true if the node with theNode1Index is linked
 //           with the node with theNode2Index
+// If theIgnoreMediumNodes then corner nodes of quadratic cell are considered linked as well
 //=======================================================================
 
 bool SMDS_VolumeTool::IsLinked (const int theNode1Index,
-                                const int theNode2Index) const
+                                const int theNode2Index,
+                                bool      theIgnoreMediumNodes) const
 {
   if ( myVolume->IsPoly() ) {
     return IsLinked(myVolumeNodes[theNode1Index], myVolumeNodes[theNode2Index]);
@@ -1152,7 +1156,20 @@ bool SMDS_VolumeTool::IsLinked (const int theNode1Index,
   if ( minInd < 0 || maxInd > myVolumeNbNodes - 1 || maxInd == minInd )
     return false;
 
-  switch ( myVolumeNbNodes ) {
+  int quadraticDivisor = 1;
+  if ( myVolume->IsQuadratic() )
+  {
+    int firstMediumInd = myVolume->NbCornerNodes();
+    if ( minInd >= firstMediumInd )
+      return false; // medium nodes are not linked
+    if ( maxInd < firstMediumInd ) // both nodes are corners
+      if ( theIgnoreMediumNodes )
+        quadraticDivisor = 2; // check linkage of corner nodes
+      else
+        return false; // corner nodes are not linked directly in a quadratic cell
+  }
+
+  switch ( myVolumeNbNodes / quadraticDivisor ) {
   case 4:
     return true;
   case 5:
