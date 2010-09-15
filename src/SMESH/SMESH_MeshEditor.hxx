@@ -60,6 +60,7 @@ typedef std::map<const SMDS_MeshNode*, const SMDS_MeshNode*> TNodeNodeMap;
 
 //!< Set of elements sorted by ID, to be used to assure predictability of edition
 typedef std::set< const SMDS_MeshElement*, TIDCompare >      TIDSortedElemSet;
+typedef std::set< const SMDS_MeshNode*,    TIDCompare >      TIDSortedNodeSet;
 
 typedef pair< const SMDS_MeshNode*, const SMDS_MeshNode* >   NLink;
 
@@ -408,9 +409,9 @@ public:
 
   typedef std::list< std::list< const SMDS_MeshNode* > > TListOfListOfNodes;
 
-  void FindCoincidentNodes (std::set<const SMDS_MeshNode*> & theNodes,
-                            const double                     theTolerance,
-                            TListOfListOfNodes &             theGroupsOfNodes);
+  void FindCoincidentNodes (TIDSortedNodeSet &   theNodes,
+                            const double         theTolerance,
+                            TListOfListOfNodes & theGroupsOfNodes);
   // Return list of group of nodes close to each other within theTolerance.
   // Search among theNodes or in the whole mesh if theNodes is empty.
 

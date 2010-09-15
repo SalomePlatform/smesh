@@ -5883,24 +5883,21 @@ SMESH_MeshEditor::generateGroups(const SMESH_SequenceOfElemPtr& nodeGens,
  */
 //================================================================================
 
-void SMESH_MeshEditor::FindCoincidentNodes (set<const SMDS_MeshNode*> & theNodes,
-                                            const double                theTolerance,
-                                            TListOfListOfNodes &        theGroupsOfNodes)
+void SMESH_MeshEditor::FindCoincidentNodes (TIDSortedNodeSet &   theNodes,
+                                            const double         theTolerance,
+                                            TListOfListOfNodes & theGroupsOfNodes)
 {
   myLastCreatedElems.Clear();
   myLastCreatedNodes.Clear();
 
-  set<const SMDS_MeshNode*> nodes;
   if ( theNodes.empty() )
   { // get all nodes in the mesh
-    SMDS_NodeIteratorPtr nIt = GetMeshDS()->nodesIterator();
+    SMDS_NodeIteratorPtr nIt = GetMeshDS()->nodesIterator(/*idInceasingOrder=*/true);
     while ( nIt->more() )
-      nodes.insert( nodes.end(),nIt->next());
+      theNodes.insert( theNodes.end(),nIt->next());
   }
-  else
-    nodes=theNodes;
 
-  SMESH_OctreeNode::FindCoincidentNodes ( nodes, &theGroupsOfNodes, theTolerance);
+  SMESH_OctreeNode::FindCoincidentNodes ( theNodes, &theGroupsOfNodes, theTolerance);
 }
 
 
@@ -5920,9 +5917,9 @@ struct SMESH_NodeSearcherImpl: public SMESH_NodeSearcher
   {
     myMesh = ( SMESHDS_Mesh* ) theMesh;
 
-    set<const SMDS_MeshNode*> nodes;
+    TIDSortedNodeSet nodes;
     if ( theMesh ) {
-      SMDS_NodeIteratorPtr nIt = theMesh->nodesIterator();
+      SMDS_NodeIteratorPtr nIt = theMesh->nodesIterator(/*idInceasingOrder=*/true);
       while ( nIt->more() )
         nodes.insert( nodes.end(), nIt->next() );
     }
