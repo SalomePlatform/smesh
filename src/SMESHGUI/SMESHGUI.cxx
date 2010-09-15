@@ -2827,8 +2827,9 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       LightApp_SelectionMgr* mgr = selectionMgr();
       SALOME_ListIO selected; mgr->selectedObjects( selected );
 
-      if (selected.Extent() == 1)       {
-        Handle(SALOME_InteractiveObject) anIObject = selected.First();
+      SALOME_ListIteratorOfListIO it(selected);
+      for( ; it.More(); it.Next()) {
+        Handle(SALOME_InteractiveObject) anIObject = it.Value();
         if(anIObject->hasEntry())
           if(SMESH_Actor *anActor = SMESH::FindActorByEntry(anIObject->getEntry())){
             anActor->SetCellsLabeled( !anActor->GetCellsLabeled() );
