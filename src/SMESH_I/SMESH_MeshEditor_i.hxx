@@ -547,7 +547,7 @@ public:
    */
   int GetMeshId() const { return myMesh->GetId(); }
 
- CORBA::Boolean DoubleNodes( const SMESH::long_array& theNodes,
+  CORBA::Boolean DoubleNodes( const SMESH::long_array& theNodes,
                               const SMESH::long_array& theModifiedElems );
 
   CORBA::Boolean DoubleNode( CORBA::Long theNodeId,
