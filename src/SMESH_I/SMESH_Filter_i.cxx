@@ -2206,6 +2206,21 @@ SMESH::long_array* ::Filter_i::GetMeshInfo()
   return aRes._retn();  
 }
 
+//================================================================================
+/*!
+ * \brief Return GetElementType() within an array
+ * Implement SMESH_IDSource interface
+ */
+//================================================================================
+
+SMESH::array_of_ElementType* Filter_i::GetTypes()
+{
+  SMESH::array_of_ElementType_var types = new SMESH::array_of_ElementType;
+  types->length( 1 );
+  types[0] = GetElementType();
+  return types._retn();
+}
+
 //=======================================================================
 // name    : getCriteria
 // Purpose : Retrieve criterions from predicate

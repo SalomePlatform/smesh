@@ -75,6 +75,12 @@ class SMESH_I_EXPORT SMESH_GroupBase_i:
   // Inherited from SMESH_IDSource interface
   virtual SMESH::long_array* GetIDs();
 
+  /*!
+   * Returns types of elements it contains
+   * Inherited from SMESH_IDSource interface
+   */
+  virtual SMESH::array_of_ElementType* GetTypes();
+
   // Internal C++ interface
   int GetLocalID() const { return myLocalID; }
   SMESH_Mesh_i* GetMeshServant() const { return myMeshServant; }

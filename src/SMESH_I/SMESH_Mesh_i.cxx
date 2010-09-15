@@ -655,6 +655,8 @@ SMESH::SMESH_subMesh_ptr SMESH_Mesh_i::GetSubMesh(GEOM::GEOM_Object_ptr aSubShap
     //Get or Create the SMESH_subMesh object implementation
 
     int subMeshId = _impl->GetMeshDS()->ShapeToIndex( myLocSubShape );
+    if ( !subMeshId )
+      THROW_SALOME_CORBA_EXCEPTION("not sub-shape of the main shape", SALOME::BAD_PARAM);
     subMesh = getSubMesh( subMeshId );
 
     // create a new subMesh object servant if there is none for the shape
@@ -3546,6 +3548,30 @@ SMESH::string_array* SMESH_Mesh_i::GetLastParameters()
     }
   }
   return aResult._retn();
+}
+
+//=======================================================================
+//function : GetTypes
+//purpose  : Returns types of elements it contains
+//=======================================================================
+
+SMESH::array_of_ElementType* SMESH_Mesh_i::GetTypes()
+{
+  SMESH::array_of_ElementType_var types = new SMESH::array_of_ElementType;
+
+  types->length( 4 );
+  int nbTypes = 0;
+  if (_impl->NbEdges())
+    types[nbTypes++] = SMESH::EDGE;
+  if (_impl->NbFaces())
+    types[nbTypes++] = SMESH::FACE;
+  if (_impl->NbVolumes())
+    types[nbTypes++] = SMESH::VOLUME;
+  if (_impl->Nb0DElements())
+    types[nbTypes++] = SMESH::ELEM0D;
+  types->length( nbTypes );
+
+  return types._retn();
 }
 
 //=============================================================================

@@ -545,3 +545,26 @@ SMESH::long_array* SMESH_subMesh_i::GetMeshInfo()
 
   return aRes._retn();
 }
+
+
+//=======================================================================
+//function : GetTypes
+//purpose  : Returns types of elements it contains
+//=======================================================================
+
+SMESH::array_of_ElementType* SMESH_subMesh_i::GetTypes()
+{
+  SMESH::array_of_ElementType_var types = new SMESH::array_of_ElementType;
+  types->length( 1 );
+  ::SMESH_subMesh* aSubMesh = _mesh_i->_mapSubMesh[_localId];
+  switch ( ::SMESH_Gen::GetShapeDim( aSubMesh->GetSubShape() ))
+  {
+  case 0: types[0] = SMESH::ELEM0D; break;
+  case 1: types[0] = SMESH::EDGE; break;
+  case 2: types[0] = SMESH::FACE; break;
+  case 3: types[0] = SMESH::VOLUME; break;
+  default:
+    types->length(0);
+  }
+  return types._retn();
+}

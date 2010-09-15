@@ -790,6 +790,10 @@ namespace SMESH
     SMESH::long_array*
     GetMeshInfo();
 
+    virtual
+    SMESH::array_of_ElementType*
+    GetTypes();
+
     static
     void
     GetElementsId( Predicate_i*,

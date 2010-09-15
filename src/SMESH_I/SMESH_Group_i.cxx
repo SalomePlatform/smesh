@@ -426,17 +426,6 @@ SMESH::SMESH_Mesh_ptr SMESH_GroupBase_i::GetMesh()
   return aMesh._retn();
 }
 
-//=============================================================================
-/*!
- *  
- */
-//=============================================================================
-SMESH::long_array* SMESH_GroupBase_i::GetIDs()
-{
-  SMESH::long_array_var aResult = GetListOfID();
-  return aResult._retn();
-}
-
 //=======================================================================
 //function : GetShape
 //purpose  : 
@@ -543,3 +532,28 @@ SMESH::long_array* SMESH_GroupBase_i::GetMeshInfo()
     SMESH_Mesh_i::CollectMeshInfo( aGrpDS->GetElements(), aRes);
   return aRes._retn();
 }
+
+//=======================================================================
+//function : GetIDs
+//purpose  : Returns ids of members
+//=======================================================================
+
+SMESH::long_array* SMESH_GroupBase_i::GetIDs()
+{
+  SMESH::long_array_var aResult = GetListOfID();
+  return aResult._retn();
+}
+
+//=======================================================================
+//function : GetTypes
+//purpose  : Returns types of elements it contains
+//=======================================================================
+
+SMESH::array_of_ElementType* SMESH_GroupBase_i::GetTypes()
+{
+  SMESH::array_of_ElementType_var types = new SMESH::array_of_ElementType;
+  types->length( 1 );
+  types[0] = GetType();
+  return types._retn();
+}
+

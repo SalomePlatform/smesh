@@ -94,6 +94,12 @@ public:
    */
   virtual SMESH::long_array* GetMeshInfo();
 
+  /*!
+   * Returns types of elements it contains
+   */
+  virtual SMESH::array_of_ElementType* GetTypes();
+
+
   SMESH_Mesh_i* _mesh_i; //NRI
 
 protected:
