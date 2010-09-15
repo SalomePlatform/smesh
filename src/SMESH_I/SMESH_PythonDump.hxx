@@ -163,6 +163,9 @@ namespace SMESH
     TPythonDump&
     operator<<(const SMESH::ListOfGroups& theList);
 
+    TPythonDump&
+    operator<<(const SMESH::ListOfIDSources& theList);
+
     static const char* SMESHGenName() { return "smeshgen"; }
     static const char* MeshEditorName() { return "mesh_editor"; }
 

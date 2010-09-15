@@ -152,7 +152,7 @@ namespace SMESH
   }
 
   template<class TArray>
-  void DumpArray(const TArray& theArray, std::ostringstream & theStream)
+  void DumpArray(const TArray& theArray, TPythonDump & theStream)
   {
     theStream << "[ ";
     for (int i = 1; i <= theArray.length(); i++) {
@@ -166,14 +166,14 @@ namespace SMESH
   TPythonDump& 
   TPythonDump::operator<<(const SMESH::long_array& theArg)
   {
-    DumpArray( theArg, myStream );
+    DumpArray( theArg, *this );
     return *this;
   }
 
   TPythonDump& 
   TPythonDump::operator<<(const SMESH::double_array& theArg)
   {
-    DumpArray( theArg, myStream );
+    DumpArray( theArg, *this );
     return *this;
   }
 
@@ -356,21 +356,12 @@ namespace SMESH
 
   TPythonDump& TPythonDump::operator<<(const SMESH::ListOfGroups& theList)
   {
-    SMESH_Gen_i* aSMESHGen = SMESH_Gen_i::GetSMESHGen();
-    SALOMEDS::Study_ptr aStudy = aSMESHGen->GetCurrentStudy();
-    myStream << "[";
-    int aListLen = theList.length();
-    for(int i = 0 ; i < aListLen; i++)
-    {
-      SALOMEDS::SObject_var aSObject = SMESH_Gen_i::ObjectToSObject(aStudy,theList[i]);
-      if(!aSObject->_is_nil()) {
-        CORBA::String_var entry = aSObject->GetID();
-        myStream << entry;
-        if ( i < (aListLen - 1) )
-          myStream<<", ";
-      }
-    }
-    myStream<<"]";
+    DumpArray( theList, *this );
+    return *this;
+  }
+  TPythonDump& TPythonDump::operator<<(const SMESH::ListOfIDSources& theList)
+  {
+    DumpArray( theList, *this );
     return *this;
   }
 
