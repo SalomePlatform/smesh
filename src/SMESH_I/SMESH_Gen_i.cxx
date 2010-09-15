@@ -2157,7 +2157,7 @@ SMESH_Gen_i::ConcatenateCommon(const SMESH::mesh_array& theMeshesArray,
 
       if (theMergeNodesAndElements) {
         // merge nodes
-        set<const SMDS_MeshNode*> aMeshNodes; // no input nodes
+        TIDSortedNodeSet aMeshNodes; // no input nodes
         SMESH_MeshEditor::TListOfListOfNodes aGroupsOfNodes;
         aNewEditor.FindCoincidentNodes( aMeshNodes, theMergeTolerance, aGroupsOfNodes );
         aNewEditor.MergeNodes( aGroupsOfNodes );
