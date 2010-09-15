@@ -3571,10 +3571,17 @@ class Mesh:
     ## Finds groups of ajacent nodes within Tolerance.
     #  @param Tolerance the value of tolerance
     #  @param SubMeshOrGroup SubMesh or Group
+    #  @param exceptNodes list of either SubMeshes, Groups or node IDs to exclude from search
     #  @return the list of groups of nodes
     #  @ingroup l2_modif_trsf
-    def FindCoincidentNodesOnPart (self, SubMeshOrGroup, Tolerance):
-        return self.editor.FindCoincidentNodesOnPart(SubMeshOrGroup, Tolerance)
+    def FindCoincidentNodesOnPart (self, SubMeshOrGroup, Tolerance, exceptNodes=[]):
+        if (isinstance( SubMeshOrGroup, Mesh )):
+            SubMeshOrGroup = SubMeshOrGroup.GetMesh()
+        if not isinstance( ExceptSubMeshOrGroups, list):
+            ExceptSubMeshOrGroups = [ ExceptSubMeshOrGroups ]
+        if ExceptSubMeshOrGroups and isinstance( ExceptSubMeshOrGroups[0], int):
+            ExceptSubMeshOrGroups = [ self.editor.MakeIDSource( ExceptSubMeshOrGroups, SMESH.NODE)]
+        return self.editor.FindCoincidentNodesOnPartBut(SubMeshOrGroup, Tolerance,ExceptSubMeshOrGroups)
 
     ## Merges nodes
     #  @param GroupsOfNodes the list of groups of nodes
