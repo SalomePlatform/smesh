@@ -119,7 +119,7 @@ static inline vtkIdType getCellType( const SMDSAbs_ElementType theType,
         return VTK_QUADRATIC_WEDGE;
       }
       else if ( theNbNodes==13 )  {
-        return VTK_CONVEX_POINT_SET;
+        return VTK_QUADRATIC_PYRAMID; //VTK_CONVEX_POINT_SET;
       }
       else return VTK_EMPTY_CELL;
 

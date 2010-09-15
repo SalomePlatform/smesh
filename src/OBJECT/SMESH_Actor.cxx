@@ -196,6 +196,7 @@ SMESH_ActorDef::SMESH_ActorDef()
   aFilter->RegisterCellsWithType(VTK_QUADRATIC_TETRA);
   aFilter->RegisterCellsWithType(VTK_QUADRATIC_HEXAHEDRON);
   aFilter->RegisterCellsWithType(VTK_QUADRATIC_WEDGE);
+  aFilter->RegisterCellsWithType(VTK_QUADRATIC_PYRAMID);
   aFilter->RegisterCellsWithType(VTK_CONVEX_POINT_SET);
 
   //Definition 1D device of the actor
@@ -1346,6 +1347,7 @@ void SMESH_ActorDef::SetEntityMode(unsigned int theMode)
     aHightFilter->RegisterCellsWithType(VTK_QUADRATIC_TETRA);
     aHightFilter->RegisterCellsWithType(VTK_QUADRATIC_HEXAHEDRON);
     aHightFilter->RegisterCellsWithType(VTK_QUADRATIC_WEDGE);
+    aHightFilter->RegisterCellsWithType(VTK_QUADRATIC_PYRAMID);
     aHightFilter->RegisterCellsWithType(VTK_CONVEX_POINT_SET);
   }
   aFilter->Update();
