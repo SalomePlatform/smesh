@@ -3758,7 +3758,7 @@ Please select a groups and try again</translation>
     </message>
 </context>
 <context>
-    <name>SMESHGUI_EditMeshDlg</name>
+    <name>SMESHGUI_MergeDlg</name>
     <message>
         <source>COINCIDENT_ELEMENTS</source>
         <translation>Coincident elements</translation>

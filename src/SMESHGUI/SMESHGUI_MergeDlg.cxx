@@ -21,11 +21,11 @@
 //
 
 // SMESH SMESHGUI : GUI for SMESH component
-// File   : SMESHGUI_EditMeshDlg.cxx
+// File   : SMESHGUI_MergeDlg.cxx
 // Author : Open CASCADE S.A.S.
 // SMESH includes
 //
-#include "SMESHGUI_EditMeshDlg.h"
+#include "SMESHGUI_MergeDlg.h"
 
 #include "SMESHGUI.h"
 #include "SMESHGUI_Utils.h"
@@ -303,11 +303,10 @@ static const char * IconFirst[] = {
 "         .     .  "};
 
 //=================================================================================
-// class    : SMESHGUI_EditMeshDlg()
+// class    : SMESHGUI_MergeDlg()
 // purpose  :
 //=================================================================================
-SMESHGUI_EditMeshDlg::SMESHGUI_EditMeshDlg (SMESHGUI* theModule, 
-                                            int theAction)
+SMESHGUI_MergeDlg::SMESHGUI_MergeDlg (SMESHGUI* theModule, int theAction)
   : QDialog(SMESH::GetDesktop(theModule)),
     mySMESHGUI(theModule),
     mySelectionMgr(SMESH::GetSelectionMgr(theModule)),
@@ -506,10 +505,10 @@ SMESHGUI_EditMeshDlg::SMESHGUI_EditMeshDlg (SMESHGUI* theModule,
 }
 
 //=================================================================================
-// function : ~SMESHGUI_EditMeshDlg()
+// function : ~SMESHGUI_MergeDlg()
 // purpose  : Destroys the object and frees any allocated resources
 //=================================================================================
-SMESHGUI_EditMeshDlg::~SMESHGUI_EditMeshDlg()
+SMESHGUI_MergeDlg::~SMESHGUI_MergeDlg()
 {
   delete myIdPreview;
 }
@@ -518,7 +517,7 @@ SMESHGUI_EditMeshDlg::~SMESHGUI_EditMeshDlg()
 // function : Init()
 // purpose  :
 //=================================================================================
-void SMESHGUI_EditMeshDlg::Init()
+void SMESHGUI_MergeDlg::Init()
 {
   if (myAction == 0) {
     SpinBoxTolerance->RangeStepAndValidator(0.0, COORD_MAX, 0.00001, "len_tol_precision");
@@ -578,8 +577,8 @@ void SMESHGUI_EditMeshDlg::Init()
 // function : FindGravityCenter()
 // purpose  :
 //=================================================================================
-void SMESHGUI_EditMeshDlg::FindGravityCenter(TColStd_MapOfInteger & theElemsIdMap, 
-                                             std::list< gp_XYZ > & theGrCentersXYZ)
+void SMESHGUI_MergeDlg::FindGravityCenter(TColStd_MapOfInteger & theElemsIdMap, 
+                                          std::list< gp_XYZ > & theGrCentersXYZ)
 {
   if (!myActor)
     return;
@@ -613,7 +612,7 @@ void SMESHGUI_EditMeshDlg::FindGravityCenter(TColStd_MapOfInteger & theElemsIdMa
 // function : ClickOnApply()
 // purpose  :
 //=================================================================================
-bool SMESHGUI_EditMeshDlg::ClickOnApply()
+bool SMESHGUI_MergeDlg::ClickOnApply()
 {
   if (mySMESHGUI->isActiveStudyLocked() || myMesh->_is_nil())
     return false;
@@ -681,7 +680,7 @@ bool SMESHGUI_EditMeshDlg::ClickOnApply()
 // function : ClickOnOk()
 // purpose  :
 //=================================================================================
-void SMESHGUI_EditMeshDlg::ClickOnOk()
+void SMESHGUI_MergeDlg::ClickOnOk()
 {
   if (ClickOnApply())
     ClickOnCancel();
@@ -691,7 +690,7 @@ void SMESHGUI_EditMeshDlg::ClickOnOk()
 // function : ClickOnCancel()
 // purpose  :
 //=================================================================================
-void SMESHGUI_EditMeshDlg::ClickOnCancel()
+void SMESHGUI_MergeDlg::ClickOnCancel()
 {
   myIdPreview->SetPointsLabeled(false);
   SMESH::SetPointRepresentation(false);
@@ -712,7 +711,7 @@ void SMESHGUI_EditMeshDlg::ClickOnCancel()
 // function : ClickOnHelp()
 // purpose  :
 //=================================================================================
-void SMESHGUI_EditMeshDlg::ClickOnHelp()
+void SMESHGUI_MergeDlg::ClickOnHelp()
 {
   LightApp_Application* app = (LightApp_Application*)(SUIT_Session::session()->activeApplication());
   if (app) 
@@ -736,7 +735,7 @@ void SMESHGUI_EditMeshDlg::ClickOnHelp()
 // function : onEditGroup()
 // purpose  :
 //=================================================================================
-void SMESHGUI_EditMeshDlg::onEditGroup()
+void SMESHGUI_MergeDlg::onEditGroup()
 {
   QList<QListWidgetItem*> selItems = ListCoincident->selectedItems();
   if ( selItems.count() != 1 ) {
@@ -758,7 +757,7 @@ void SMESHGUI_EditMeshDlg::onEditGroup()
 // function : updateControls()
 // purpose  :
 //=================================================================================
-void SMESHGUI_EditMeshDlg::updateControls()
+void SMESHGUI_MergeDlg::updateControls()
 {
   if (ListEdit->count() == 0)
     SetFirstButton->setEnabled(false);
@@ -771,7 +770,7 @@ void SMESHGUI_EditMeshDlg::updateControls()
 // function : onDetect()
 // purpose  :
 //=================================================================================
-void SMESHGUI_EditMeshDlg::onDetect()
+void SMESHGUI_MergeDlg::onDetect()
 {
   if ( myMesh->_is_nil() || LineEditMesh->text().isEmpty() )
     return;
@@ -820,7 +819,7 @@ void SMESHGUI_EditMeshDlg::onDetect()
 // function : onSelectGroup()
 // purpose  :
 //=================================================================================
-void SMESHGUI_EditMeshDlg::onSelectGroup()
+void SMESHGUI_MergeDlg::onSelectGroup()
 {
   if (myIsBusy || !myActor)
     return;
@@ -869,7 +868,7 @@ void SMESHGUI_EditMeshDlg::onSelectGroup()
 // function : onSelectAll()
 // purpose  :
 //=================================================================================
-void SMESHGUI_EditMeshDlg::onSelectAll (bool isToggled)
+void SMESHGUI_MergeDlg::onSelectAll (bool isToggled)
 {
   if ( isToggled )
     ListCoincident->selectAll();
@@ -881,7 +880,7 @@ void SMESHGUI_EditMeshDlg::onSelectAll (bool isToggled)
 // function : onSelectElementFromGroup()
 // purpose  :
 //=================================================================================
-void SMESHGUI_EditMeshDlg::onSelectElementFromGroup()
+void SMESHGUI_MergeDlg::onSelectElementFromGroup()
 {
   if (myIsBusy || !myActor)
     return;
@@ -916,7 +915,7 @@ void SMESHGUI_EditMeshDlg::onSelectElementFromGroup()
 // function : onAddGroup()
 // purpose  :
 //=================================================================================
-void SMESHGUI_EditMeshDlg::onAddGroup()
+void SMESHGUI_MergeDlg::onAddGroup()
 {
   if ( myMesh->_is_nil() || LineEditMesh->text().isEmpty() )
     return;
@@ -948,7 +947,7 @@ void SMESHGUI_EditMeshDlg::onAddGroup()
 // function : onRemoveGroup()
 // purpose  :
 //=================================================================================
-void SMESHGUI_EditMeshDlg::onRemoveGroup()
+void SMESHGUI_MergeDlg::onRemoveGroup()
 {
   if (myEditCurrentArgument != (QWidget*)ListCoincident)
     return;
@@ -970,7 +969,7 @@ void SMESHGUI_EditMeshDlg::onRemoveGroup()
 // function : onAddElement()
 // purpose  :
 //=================================================================================
-void SMESHGUI_EditMeshDlg::onAddElement()
+void SMESHGUI_MergeDlg::onAddElement()
 {
   if (!myActor)
     return;
@@ -1006,7 +1005,7 @@ void SMESHGUI_EditMeshDlg::onAddElement()
 // function : onRemoveElement()
 // purpose  :
 //=================================================================================
-void SMESHGUI_EditMeshDlg::onRemoveElement()
+void SMESHGUI_MergeDlg::onRemoveElement()
 {
   if (myEditCurrentArgument != (QWidget*)ListCoincident)
     return;
@@ -1026,7 +1025,7 @@ void SMESHGUI_EditMeshDlg::onRemoveElement()
 // function : onSetFirst()
 // purpose  :
 //=================================================================================
-void SMESHGUI_EditMeshDlg::onSetFirst()
+void SMESHGUI_MergeDlg::onSetFirst()
 {
   if (myEditCurrentArgument != (QWidget*)ListCoincident)
     return;
@@ -1048,7 +1047,7 @@ void SMESHGUI_EditMeshDlg::onSetFirst()
 // function : SetEditCurrentArgument()
 // purpose  :
 //=================================================================================
-void SMESHGUI_EditMeshDlg::SetEditCurrentArgument()
+void SMESHGUI_MergeDlg::SetEditCurrentArgument()
 {
   QPushButton* send = (QPushButton*)sender();
 
@@ -1074,7 +1073,7 @@ void SMESHGUI_EditMeshDlg::SetEditCurrentArgument()
 // function : SelectionIntoArgument()
 // purpose  : Called when selection as changed or other case
 //=================================================================================
-void SMESHGUI_EditMeshDlg::SelectionIntoArgument()
+void SMESHGUI_MergeDlg::SelectionIntoArgument()
 {
   if (myEditCurrentArgument == (QWidget*)LineEditMesh) {
     QString aString = "";
@@ -1136,7 +1135,7 @@ void SMESHGUI_EditMeshDlg::SelectionIntoArgument()
 // function : DeactivateActiveDialog()
 // purpose  :
 //=================================================================================
-void SMESHGUI_EditMeshDlg::DeactivateActiveDialog()
+void SMESHGUI_MergeDlg::DeactivateActiveDialog()
 {
   if (GroupConstructors->isEnabled()) {
     GroupConstructors->setEnabled(false);
@@ -1157,7 +1156,7 @@ void SMESHGUI_EditMeshDlg::DeactivateActiveDialog()
 // function : ActivateThisDialog()
 // purpose  :
 //=================================================================================
-void SMESHGUI_EditMeshDlg::ActivateThisDialog()
+void SMESHGUI_MergeDlg::ActivateThisDialog()
 {
   /* Emit a signal to deactivate the active dialog */
   mySMESHGUI->EmitSignalDeactivateDialog();
@@ -1177,7 +1176,7 @@ void SMESHGUI_EditMeshDlg::ActivateThisDialog()
 // function : enterEvent()
 // purpose  :
 //=================================================================================
-void SMESHGUI_EditMeshDlg::enterEvent(QEvent*)
+void SMESHGUI_MergeDlg::enterEvent(QEvent*)
 {
   if (!GroupConstructors->isEnabled())
     ActivateThisDialog();
@@ -1187,7 +1186,7 @@ void SMESHGUI_EditMeshDlg::enterEvent(QEvent*)
 // function : closeEvent()
 // purpose  :
 //=================================================================================
-void SMESHGUI_EditMeshDlg::closeEvent(QCloseEvent*)
+void SMESHGUI_MergeDlg::closeEvent(QCloseEvent*)
 {
   /* same than click on cancel button */
   ClickOnCancel();
@@ -1197,7 +1196,7 @@ void SMESHGUI_EditMeshDlg::closeEvent(QCloseEvent*)
 //function : hideEvent
 //purpose  : caused by ESC key
 //=======================================================================
-void SMESHGUI_EditMeshDlg::hideEvent (QHideEvent *)
+void SMESHGUI_MergeDlg::hideEvent (QHideEvent *)
 {
   if (!isMinimized())
     ClickOnCancel();
@@ -1207,7 +1206,7 @@ void SMESHGUI_EditMeshDlg::hideEvent (QHideEvent *)
 // function : keyPressEvent()
 // purpose  :
 //=================================================================================
-void SMESHGUI_EditMeshDlg::keyPressEvent( QKeyEvent* e)
+void SMESHGUI_MergeDlg::keyPressEvent( QKeyEvent* e)
 {
   QDialog::keyPressEvent( e );
   if ( e->isAccepted() )
@@ -1223,14 +1222,15 @@ void SMESHGUI_EditMeshDlg::keyPressEvent( QKeyEvent* e)
 // function : onTypeChanged()
 // purpose  : the type radio button management
 //=================================================================================
-void SMESHGUI_EditMeshDlg::onTypeChanged (int id)
+void SMESHGUI_MergeDlg::onTypeChanged (int id)
 {
   if (myTypeId == id)
     return;
 
   myTypeId = id;
-  switch (id) {
-  case 0:
+  switch (id)
+  {
+  case 0: // automatic
     myIdPreview->SetPointsLabeled(false);
     SMESH::SetPointRepresentation(false);
     if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
@@ -1242,7 +1242,8 @@ void SMESHGUI_EditMeshDlg::onTypeChanged (int id)
       GroupCoincident->hide();
     GroupEdit->hide();
     break;
-  case 1:
+
+  case 1: // manual
     SMESH::UpdateView();
 
     // Costruction of the logical filter

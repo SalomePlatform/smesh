@@ -34,7 +34,7 @@
 #include "SMESHGUI_CreatePolyhedralVolumeDlg.h"
 #include "SMESHGUI_DeleteGroupDlg.h"
 #include "SMESHGUI_Displayer.h"
-#include "SMESHGUI_EditMeshDlg.h"
+#include "SMESHGUI_MergeDlg.h"
 #include "SMESHGUI_ExtrusionAlongPathDlg.h"
 #include "SMESHGUI_ExtrusionDlg.h"
 #include "SMESHGUI_FileInfoDlg.h"
@@ -2690,7 +2690,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       if(checkLock(aStudy)) break;
       if(vtkwnd) {
         EmitSignalDeactivateDialog();
-        ( new SMESHGUI_EditMeshDlg( this, 0 ) )->show();
+        ( new SMESHGUI_MergeDlg( this, 0 ) )->show();
       }
       else {
         SUIT_MessageBox::warning(SMESHGUI::desktop(),
@@ -2703,7 +2703,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       if (checkLock(aStudy)) break;
       if (vtkwnd) {
         EmitSignalDeactivateDialog();
-        ( new SMESHGUI_EditMeshDlg( this, 1 ) )->show();
+        ( new SMESHGUI_MergeDlg( this, 1 ) )->show();
       } else {
         SUIT_MessageBox::warning(SMESHGUI::desktop(),
                                  tr("SMESH_WRN_WARNING"), tr("SMESH_WRN_VIEWER_VTK"));
