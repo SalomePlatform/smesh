@@ -1615,6 +1615,7 @@ void SMESH_Mesh::fillAncestorsMap(const TopoDS_Shape& theShape)
     for ( desType = TopAbs_VERTEX; desType >= memberType; desType-- )
       for (TopExp_Explorer des( theShape, TopAbs_ShapeEnum( desType )); des.More(); des.Next())
       {
+        if ( !_mapAncestors.Contains( des.Current() )) continue;// issue 0020982
         TopTools_ListOfShape& ancList = _mapAncestors.ChangeFromKey( des.Current() );
         TopTools_ListIteratorOfListOfShape ancIt (ancList);
         while ( ancIt.More() && ancIt.Value().ShapeType() >= memberType )
