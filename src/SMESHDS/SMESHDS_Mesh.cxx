@@ -1073,15 +1073,13 @@ TopoDS_Shape SMESHDS_Mesh::ShapeToMesh() const
 
 bool SMESHDS_Mesh::IsGroupOfSubShapes (const TopoDS_Shape& theShape) const
 {
-  if ( myShape.IsSame( theShape ))
+  if ( myIndexToShape.Contains(theShape) )
     return true;
 
-  for ( TopoDS_Iterator it( theShape ); it.More(); it.Next() ) {
-    if (myIndexToShape.Contains( it.Value() ) ||
-        IsGroupOfSubShapes( it.Value() ))
+  for ( TopoDS_Iterator it( theShape ); it.More(); it.Next() )
+    if (IsGroupOfSubShapes( it.Value() ))
       return true;
-  }
-  
+
   return false;
 }
 
@@ -1205,7 +1203,7 @@ int SMESHDS_Mesh::AddCompoundSubmesh(const TopoDS_Shape& S,
                                      TopAbs_ShapeEnum    type)
 {
   int aMainIndex = 0;
-  if ( IsGroupOfSubShapes( S ) || (S.ShapeType() == TopAbs_VERTEX && myIndexToShape.Contains(S)) )
+  if ( IsGroupOfSubShapes( S ))
   {
     aMainIndex = myIndexToShape.Add( S );
     bool all = ( type == TopAbs_SHAPE );
