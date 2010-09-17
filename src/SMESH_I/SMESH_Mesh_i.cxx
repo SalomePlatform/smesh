@@ -655,8 +655,9 @@ SMESH::SMESH_subMesh_ptr SMESH_Mesh_i::GetSubMesh(GEOM::GEOM_Object_ptr aSubShap
     //Get or Create the SMESH_subMesh object implementation
 
     int subMeshId = _impl->GetMeshDS()->ShapeToIndex( myLocSubShape );
-    if ( !subMeshId )
+    if ( !subMeshId && ! _impl->GetMeshDS()->IsGroupOfSubShapes( myLocSubShape ))
       THROW_SALOME_CORBA_EXCEPTION("not sub-shape of the main shape", SALOME::BAD_PARAM);
+
     subMesh = getSubMesh( subMeshId );
 
     // create a new subMesh object servant if there is none for the shape
