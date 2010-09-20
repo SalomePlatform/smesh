@@ -30,6 +30,7 @@
 #include "SMESH_DeviceActor.h"
 #include "SMESH_ObjectDef.h"
 #include "SMESH_ControlsDef.hxx"
+#include "VTKViewer_CellCenters.h"
 #include "VTKViewer_ExtractUnstructuredGrid.h"
 #include "VTKViewer_FramedTextActor.h"
 #include "SALOME_InteractiveObject.hxx"
@@ -59,7 +60,6 @@
 #include <vtkProperty2D.h>
 #include <vtkPolyData.h>
 #include <vtkMaskPoints.h>
-#include <vtkCellCenters.h>
 #include <vtkTextProperty.h>
 #include <vtkLabeledDataMapper.h>
 #include <vtkSelectVisiblePoints.h>
@@ -428,7 +428,7 @@ SMESH_ActorDef::SMESH_ActorDef()
   //---------------------------------------
   myCellsNumDataSet = vtkUnstructuredGrid::New();
 
-  myCellCenters = vtkCellCenters::New();
+  myCellCenters = VTKViewer_CellCenters::New();
   myCellCenters->SetInput(myCellsNumDataSet);
 
   myClsMaskPoints = vtkMaskPoints::New();

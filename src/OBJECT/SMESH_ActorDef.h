@@ -63,7 +63,6 @@ class vtkPolyData;
 class vtkMapper;
 class vtkActor2D;
 class vtkMaskPoints;
-class vtkCellCenters;
 class vtkLabeledDataMapper;
 class vtkSelectVisiblePoints;
 
@@ -74,6 +73,8 @@ class vtkPlane;
 class vtkImplicitBoolean;
 
 class vtkTimeStamp;
+
+class VTKViewer_CellCenters;
 
 class SMESH_DeviceActor;
 
@@ -271,7 +272,7 @@ class SMESH_ActorDef : public SMESH_Actor
   vtkUnstructuredGrid* myCellsNumDataSet;
   vtkActor2D *myCellsLabels;
   vtkMaskPoints* myClsMaskPoints;
-  vtkCellCenters* myCellCenters;
+  VTKViewer_CellCenters* myCellCenters;
   vtkLabeledDataMapper* myClsLabeledDataMapper;
   vtkSelectVisiblePoints* myClsSelectVisiblePoints;
 

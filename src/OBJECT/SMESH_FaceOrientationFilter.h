@@ -24,10 +24,11 @@
 
 #include <vtkPolyDataAlgorithm.h>
 
-class vtkCellCenters;
 class vtkGlyph3D;
 class vtkGlyphSource2D;
 class vtkMaskPoints;
+
+class VTKViewer_CellCenters;
 
 class SMESHOBJECT_EXPORT SMESH_FaceOrientationFilter : public vtkPolyDataAlgorithm
 {
@@ -63,7 +64,7 @@ private:
   vtkFloatingPointType myOrientationScale;
   vtkPolyData* myArrowPolyData;
   vtkPolyData* myFacePolyData;
-  vtkCellCenters* myFaceCenters;
+  VTKViewer_CellCenters* myFaceCenters;
   vtkMaskPoints* myFaceMaskPoints;
   vtkGlyphSource2D* myGlyphSource;
   vtkGlyph3D* myBaseGlyph;
