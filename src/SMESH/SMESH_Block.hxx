@@ -277,7 +277,7 @@ public:
   static int GetOrderedEdges (const TopoDS_Face&        theFace,
                               TopoDS_Vertex             theFirstVertex,
                               std::list< TopoDS_Edge >& theEdges,
-                              std::list< int >  &       theNbVertexInWires,
+                              std::list< int >  &       theNbEdgesInWires,
                               const bool                theShapeAnalysisAlgo=false);
   // Return nb wires and a list of oredered edges.
   // It is used to assign indices to subshapes.
