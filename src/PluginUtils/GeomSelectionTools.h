@@ -78,6 +78,14 @@ public:
   _PTR(Study) getMyStudy();
 };
 
+//////////////////////////////////////////
+// Utility functions
+//////////////////////////////////////////
+
+namespace PluginUtils
+{
+  GEOMSELECTIONTOOLS_EXPORT QString PrintDoubleValue( double, int = 16 );
+};
 
 #endif // _GEOMSELECTIONTOOLS_H_
 

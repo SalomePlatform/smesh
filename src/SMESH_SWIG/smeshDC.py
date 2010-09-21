@@ -2768,6 +2768,9 @@ class Mesh:
 
     ## Converts the mesh to quadratic, deletes old elements, replacing
     #  them with quadratic with the same id.
+    #  @param theForce3d new node creation method:
+    #         0 - the medium node lies at the geometrical edge from which the mesh element is built
+    #         1 - the medium node lies at the middle of the line segments connecting start and end node of a mesh element
     #  @ingroup l2_modif_tofromqu
     def ConvertToQuadratic(self, theForce3d):
         self.editor.ConvertToQuadratic(theForce3d)

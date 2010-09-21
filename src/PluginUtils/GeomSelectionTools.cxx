@@ -297,5 +297,47 @@ GeomAbs_SurfaceType GeomSelectionTools::getFaceInformation(TopoDS_Shape S)
 }
 
 
+//////////////////////////////////////////
+// Utility functions
+//////////////////////////////////////////
+#include <QLocale>
+#include <QRegExp>
 
+QString PluginUtils::PrintDoubleValue( double theValue, int thePrecision )
+{
+  const double prec = 1e-12;
+  
+  if ( qAbs(theValue) < prec )
+    return "0";
+
+  QString aRes = QLocale().toString( theValue, thePrecision >= 0 ? 'f' : 'g', qAbs( thePrecision ) );
+
+  if ( prec > 0 ) {
+    int p = 0;
+    while ( p < thePrecision ) {
+      QString aRes = QLocale().toString( theValue, thePrecision >= 0 ? 'f' : 'g', qAbs( p++ ) );
+      double v = aRes.toDouble();
+      double err = qAbs( theValue - v );
+      if ( err > 0 && err <= prec )
+        break;
+    }
+  }
+
+  // remove trailing zeroes
+
+  QRegExp expre( QString( "(%1|%2)[+-]?[0-9]+$" ).arg( QLocale().exponential().toLower(), 
+                               QLocale().exponential().toUpper() ) );
+
+  int idx = aRes.indexOf( expre );
+  QString aResExp = "";
+  if ( idx >= 0 ) {
+    aResExp = aRes.mid( idx );
+    aRes = aRes.left( idx );
+  }
+
+  if ( aRes.contains( QLocale().decimalPoint() ) )
+    aRes.remove( QRegExp( QString( "(\\%1|0)0*$" ).arg( QLocale().decimalPoint() ) ) );
+
+  return aRes == "-0" ? QString( "0" ) : aRes + aResExp;
+}
 

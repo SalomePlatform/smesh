@@ -540,12 +540,18 @@ public:
   // theBetweenNode1 - theBetweenNode2, between theBetweenNode1 and theBetweenNode2.
 
   void ConvertToQuadratic(const bool theForce3d);
-  //converts all mesh to quadratic one, deletes old elements, replacing 
-  //them with quadratic ones with the same id.
+  // Converts all mesh to quadratic one, deletes old elements, replacing 
+  // them with quadratic ones with the same id.
+  // If theForce3d = 1; this results in the medium node lying at the 
+  // middle of the line segments connecting start and end node of a mesh 
+  // element
+  // If theForce3d = 0; this results in the medium node lying at the 
+  // geometrical edge from which the mesh element is built
 
   bool ConvertFromQuadratic();
-  //converts all mesh from quadratic to ordinary ones, deletes old quadratic elements, replacing 
-  //them with ordinary mesh elements with the same id.
+  // Converts all mesh from quadratic to ordinary ones, deletes old quadratic elements, replacing 
+  // them with ordinary mesh elements with the same id.
+  // Returns true in case of success, false otherwise.
 
   static void AddToSameGroups (const SMDS_MeshElement* elemToAdd,
                                const SMDS_MeshElement* elemInGroups,
