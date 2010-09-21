@@ -44,6 +44,7 @@
 
 #include "utilities.h"
 
+#include <BRepAdaptor_Surface.hxx>
 #include <BRepTools.hxx>
 #include <BRepTools_WireExplorer.hxx>
 #include <BRep_Builder.hxx>
@@ -53,6 +54,8 @@
 #include <TopExp.hxx>
 #include <TopExp_Explorer.hxx>
 #include <TopTools_Array1OfShape.hxx>
+#include <TopTools_DataMapIteratorOfDataMapOfShapeListOfShape.hxx>
+#include <TopTools_DataMapIteratorOfDataMapOfShapeShape.hxx>
 #include <TopTools_ListIteratorOfListOfShape.hxx>
 #include <TopTools_ListOfShape.hxx>
 #include <TopTools_MapOfShape.hxx>
@@ -61,22 +64,22 @@
 #include <TopoDS_Shape.hxx>
 #include <gp_Pnt.hxx>
 #include <gp_Vec.hxx>
-#include <TopTools_DataMapIteratorOfDataMapOfShapeShape.hxx>
-#include <TopTools_DataMapIteratorOfDataMapOfShapeListOfShape.hxx>
+
+#include <numeric>
 
 using namespace std;
 
 
 #define RETURN_BAD_RESULT(msg) { MESSAGE(")-: Error: " << msg); return false; }
 #define CONT_BAD_RESULT(msg) { MESSAGE(")-: Error: " << msg); continue; }
-#define SHOW_VERTEX(v,msg) \
+#define SHOW_SHAPE(v,msg) \
 // { \
 //  if ( (v).IsNull() ) cout << msg << " NULL SHAPE" << endl; \
 // else if ((v).ShapeType() == TopAbs_VERTEX) {\
 //   gp_Pnt p = BRep_Tool::Pnt( TopoDS::Vertex( (v) ));\
-//   cout<<msg<<" "<<(v).TShape().operator->()<<" ( "<<p.X()<<", "<<p.Y()<<", "<<p.Z()<<" )"<<endl;}\
+//   cout<<msg<<" "<<shapeIndex((v))<<" ( "<<p.X()<<", "<<p.Y()<<", "<<p.Z()<<" )"<<endl;} \
 // else {\
-// cout << msg << " "; TopAbs::Print((v).ShapeType(),cout) <<" "<<(v).TShape().operator->()<<endl;}\
+// cout << msg << " "; TopAbs::Print((v).ShapeType(),cout) <<" "<<shapeIndex((v))<<endl;}\
 // }
 #define SHOW_LIST(msg,l) \
 // { \
@@ -91,6 +94,14 @@ using namespace std;
 #define HERE StdMeshers_ProjectionUtils
 
 namespace {
+
+  static SMESHDS_Mesh* theMeshDS[2] = { 0, 0 }; // used to debug only
+  long shapeIndex(const TopoDS_Shape& S)
+  {
+    if ( theMeshDS[0] && theMeshDS[1] )
+      return max(theMeshDS[0]->ShapeToIndex(S), theMeshDS[1]->ShapeToIndex(S) );
+    return long(S.TShape().operator->());
+  }
 
   //================================================================================
   /*!
@@ -116,31 +127,24 @@ namespace {
    */
   //================================================================================
 
-  void Reverse( list< TopoDS_Edge > & edges, const int nbEdges )
+  void Reverse( list< TopoDS_Edge > & edges, const int nbEdges, const int firstEdge=0)
   {
     SHOW_LIST("BEFORE REVERSE", edges);
 
     list< TopoDS_Edge >::iterator eIt = edges.begin();
-    if ( edges.size() == nbEdges )
+    std::advance( eIt, firstEdge );
+    list< TopoDS_Edge >::iterator eBackIt = eIt;
+    for ( int i = 0; i < nbEdges; ++i, ++eBackIt )
+      eBackIt->Reverse(); // reverse edge
+    // reverse list
+    --eBackIt;
+    while ( eIt != eBackIt )
     {
-      edges.reverse();
-    }
-    else  // reverse only the given nb of edges
-    {
-      // look for the last edge to be reversed
-      list< TopoDS_Edge >::iterator eBackIt = edges.begin();
-      for ( int i = 1; i < nbEdges; ++i )
-        ++eBackIt;
-      // reverse
-      while ( eIt != eBackIt ) {
-        std::swap( *eIt, *eBackIt );
-        SHOW_LIST("# AFTER SWAP", edges)
+      std::swap( *eIt, *eBackIt );
+      SHOW_LIST("# AFTER SWAP", edges)
         if ( (++eIt) != eBackIt )
           --eBackIt;
-      }
     }
-    for ( eIt = edges.begin(); eIt != edges.end(); ++eIt )
-      eIt->Reverse();
     SHOW_LIST("ATFER REVERSE", edges)
   }
 
@@ -351,6 +355,26 @@ namespace {
     return true;
   }
 
+  //================================================================================
+  /*!
+   * \brief Return true if uv position of the vIndex-th vertex of edge on face is close
+   * enough to given uv 
+   */
+  //================================================================================
+
+  bool sameVertexUV( const TopoDS_Edge& edge,
+                     const TopoDS_Face& face,
+                     const int&         vIndex,
+                     const gp_Pnt2d&    uv,
+                     const double&      tol2d )
+  {
+    TopoDS_Vertex VV[2];
+    TopExp::Vertices( edge, VV[0], VV[1], true);
+    gp_Pnt2d v1UV = BRep_Tool::Parameters( VV[vIndex], face);
+    double dist2d = v1UV.Distance( uv );
+    return dist2d < tol2d;
+  }
+
 } // namespace
 
 //=======================================================================
@@ -381,7 +405,7 @@ bool StdMeshers_ProjectionUtils::FindSubShapeAssociation(const TopoDS_Shape& the
   //         case TopAbs_EDGE:
   //         case ...:
   //       }
-  //    else try to accosiate in different ways:
+  // 4) else try to accosiate in different ways:
   //       a) accosiate shapes by propagation and other simple cases
   //            switch ( ShapeType ) {
   //            case TopAbs_EDGE:
@@ -390,8 +414,11 @@ bool StdMeshers_ProjectionUtils::FindSubShapeAssociation(const TopoDS_Shape& the
   //       b) find association of a couple of vertices and recall self.
   //
 
+  theMeshDS[0] = theMesh1->GetMeshDS(); // debug
+  theMeshDS[1] = theMesh2->GetMeshDS();
+
   // =================================================================================
-  // Is it the case of associating a group member -> another group? (PAL16202, 16203)
+  // 1) Is it the case of associating a group member -> another group? (PAL16202, 16203)
   // =================================================================================
   if ( theShape1.ShapeType() != theShape2.ShapeType() ) {
     TopoDS_Shape group1, group2;
@@ -412,7 +439,7 @@ bool StdMeshers_ProjectionUtils::FindSubShapeAssociation(const TopoDS_Shape& the
   bool bidirect = ( !theShape1.IsSame( theShape2 ));
 
   // ============
-  // Is partner?
+  // 2) Is partner?
   // ============
   bool partner = theShape1.IsPartner( theShape2 );
   TopTools_DataMapIteratorOfDataMapOfShapeShape vvIt( theMap );
@@ -438,7 +465,7 @@ bool StdMeshers_ProjectionUtils::FindSubShapeAssociation(const TopoDS_Shape& the
   if ( !theMap.IsEmpty() )
   {
     //======================================================================
-    // HAS initial vertex association
+    // 3) HAS initial vertex association
     //======================================================================
     switch ( theShape1.ShapeType() ) {
       // ----------------------------------------------------------------------
@@ -876,7 +903,7 @@ bool StdMeshers_ProjectionUtils::FindSubShapeAssociation(const TopoDS_Shape& the
   } // end case of available initial vertex association
 
   //======================================================================
-  // NO INITIAL VERTEX ASSOCIATION
+  // 4) NO INITIAL VERTEX ASSOCIATION
   //======================================================================
 
   switch ( theShape1.ShapeType() ) {
@@ -1161,19 +1188,19 @@ int StdMeshers_ProjectionUtils::FindFaceAssociation(const TopoDS_Face&    face1,
                                                     list< TopoDS_Edge > & edges1,
                                                     list< TopoDS_Edge > & edges2)
 {
-  list< int > nbVInW1, nbVInW2;
+  list< int > nbEInW1, nbEInW2;
   for ( int outer_wire_algo = 0; outer_wire_algo < 2; ++outer_wire_algo )
   {
     edges1.clear();
     edges2.clear();
 
-    if ( SMESH_Block::GetOrderedEdges( face1, VV1[0], edges1, nbVInW1, outer_wire_algo) !=
-         SMESH_Block::GetOrderedEdges( face2, VV2[0], edges2, nbVInW2, outer_wire_algo) )
+    if ( SMESH_Block::GetOrderedEdges( face1, VV1[0], edges1, nbEInW1, outer_wire_algo) !=
+         SMESH_Block::GetOrderedEdges( face2, VV2[0], edges2, nbEInW2, outer_wire_algo) )
       CONT_BAD_RESULT("Different number of wires in faces ");
 
-    if ( nbVInW1.front() != nbVInW2.front() )
+    if ( nbEInW1.front() != nbEInW2.front() )
       CONT_BAD_RESULT("Different number of edges in faces: " <<
-                      nbVInW1.front() << " != " << nbVInW2.front());
+                      nbEInW1.front() << " != " << nbEInW2.front());
 
     // Define if we need to reverse one of wires to make edges in lists match each other
 
@@ -1186,9 +1213,9 @@ int StdMeshers_ProjectionUtils::FindFaceAssociation(const TopoDS_Face&    face1,
       // check if the second vertex belongs to the first or last edge in the wire
       if ( !VV1[1].IsSame( TopExp::FirstVertex( *edgeIt, true ))) {
         bool KO = true; // belongs to none
-        if ( nbVInW1.size() > 1 ) { // several wires
+        if ( nbEInW1.size() > 1 ) { // several wires
           edgeIt = edges1.begin();
-          for ( int i = 1; i < nbVInW1.front(); ++i ) ++edgeIt;
+          std::advance( edgeIt, nbEInW1.front()-1 );
           KO = !VV1[1].IsSame( TopExp::FirstVertex( *edgeIt, true ));
         }
         if ( KO )
@@ -1201,9 +1228,9 @@ int StdMeshers_ProjectionUtils::FindFaceAssociation(const TopoDS_Face&    face1,
       // check if the second vertex belongs to the first or last edge in the wire
       if ( !VV2[1].IsSame( TopExp::FirstVertex( *edgeIt, true ))) {
         bool KO = true; // belongs to none
-        if ( nbVInW2.size() > 1 ) { // several wires
+        if ( nbEInW2.size() > 1 ) { // several wires
           edgeIt = edges2.begin();
-          for ( int i = 1; i < nbVInW2.front(); ++i ) ++edgeIt;
+          std::advance( edgeIt, nbEInW2.front()-1 );
           KO = !VV2[1].IsSame( TopExp::FirstVertex( *edgeIt, true ));
         }
         if ( KO )
@@ -1212,13 +1239,67 @@ int StdMeshers_ProjectionUtils::FindFaceAssociation(const TopoDS_Face&    face1,
     }
     if ( reverse )
     {
-      Reverse( edges2 , nbVInW2.front());
+      Reverse( edges2 , nbEInW2.front());
       if (( VV1[1].IsSame( TopExp::LastVertex( edges1.front(), true ))) !=
           ( VV2[1].IsSame( TopExp::LastVertex( edges2.front(), true ))))
         CONT_BAD_RESULT("GetOrderedEdges() failed");
     }
-  }
-  return nbVInW2.front();
+
+    // Try to orient internal wires (0020996)
+    if ( nbEInW1.size() > 1 )
+    {
+      // Try by UV similarity. Check that Vec(VV1[0],VV1[1]) in 2D on face1 is the same
+      // as Vec(VV2[0],VV2[1]) on face2
+      double vTol = BRep_Tool::Tolerance( VV1[0] );
+      BRepAdaptor_Surface surface1( face1, false );
+      double vTolUV =
+        surface1.UResolution( vTol ) + surface1.VResolution( vTol ); // let's be tolerant
+      gp_Pnt2d v1UV = BRep_Tool::Parameters( VV1[0], face1 );
+      gp_Pnt2d v2UV = BRep_Tool::Parameters( VV2[0], face2 );
+      gp_Pnt2d v1UV1 = BRep_Tool::Parameters( VV1[1], face1 );
+      gp_Pnt2d v2UV1 = BRep_Tool::Parameters( VV2[1], face2 );
+      gp_Vec2d e1Vec( v1UV, v1UV1 );
+      gp_Vec2d e2Vec( v2UV, v2UV1 );
+      if ( Abs( e1Vec.X()-e2Vec.X()) < vTolUV && Abs( e1Vec.Y()-e2Vec.Y()) < vTolUV )
+      {
+        gp_XY dUV = v2UV.XY() - v1UV.XY();
+        // skip edges of the outer wire
+        list< int >::iterator nbEInW = nbEInW1.begin();
+        list< TopoDS_Edge >::iterator edge1Beg = edges1.begin(), edge2Beg = edges2.begin();
+        for ( int i = 0; i < *nbEInW; ++i )
+          ++edge1Beg, ++edge2Beg;
+        for ( ++nbEInW; nbEInW != nbEInW1.end(); ++nbEInW ) // loop on inner wires
+        {
+          // reach an end of edges of a current innner wire
+          list< TopoDS_Edge >::iterator edge1End = edge1Beg, edge2End = edge2Beg;
+          for ( int i = 0; i < *nbEInW; ++i )
+            ++edge1End, ++edge2End;
+          // rotate edges2 untill coincident with edges1 in 2D
+          v1UV = BRep_Tool::Parameters( TopExp::FirstVertex(*edge1Beg,true), face1 );
+          v2UV = BRep_Tool::Parameters( TopExp::LastVertex (*edge1Beg,true), face1 );
+          v1UV.ChangeCoord() += dUV;
+          v2UV.ChangeCoord() += dUV;
+          int i = *nbEInW;
+          while ( --i > 0 && !sameVertexUV( *edge2Beg, face2, 0, v1UV, vTolUV ))
+            edges2.splice( edge2End, edges2, edge2Beg++ ); // move edge2Beg to place before edge2End
+          // reverse edges2 if needed
+          if ( sameVertexUV( *edge2Beg, face2, 0, v1UV, vTolUV ) &&
+               !sameVertexUV( *edge2Beg, face2, 1, v2UV, vTolUV ))
+          {
+            Reverse( edges2 , *nbEInW, distance( edges2.begin(),edge2Beg ));
+            edge2End = edges2.begin();
+            std::advance( edge2End, std::accumulate( nbEInW1.begin(), nbEInW, *nbEInW));
+          }
+          // prepare to the next wire loop
+          edge1Beg = edge1End, edge2Beg = edge2End;
+        }
+      }
+    }
+    break; // OK
+
+  } // loop algos getting an outer wire
+
+  return nbEInW2.front();
 }
 
 //=======================================================================
@@ -1271,8 +1352,8 @@ bool StdMeshers_ProjectionUtils::InsertAssociation( const TopoDS_Shape& theShape
                                                     const bool          theBidirectional)
 {
   if ( !theShape1.IsNull() && !theShape2.IsNull() ) {
-    SHOW_VERTEX(theShape1,"Assoc ");
-    SHOW_VERTEX(theShape2," to ");
+    SHOW_SHAPE(theShape1,"Assoc ");
+    SHOW_SHAPE(theShape2," to ");
     bool isNew = ( theAssociationMap.Bind( theShape1, theShape2 ));
     if ( theBidirectional )
       theAssociationMap.Bind( theShape2, theShape1 );
