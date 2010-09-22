@@ -479,7 +479,7 @@ bool SMESH_MesherHelper::CheckNodeUV(const TopoDS_Face&   F,
     if ( !loc.IsIdentity() ) nodePnt.Transform( loc.Transformation().Inverted() );
     if ( Precision::IsInfinite( uv.X() ) ||
          Precision::IsInfinite( uv.Y() ) ||
-         nodePnt.Distance( surface->Value( uv.X(), uv.Y() )) > tol )
+         nodePnt.Distance( surface->Value( uv.X(), uv.Y() )) > 2*tol )
     {
       // uv incorrect, project the node to surface
       GeomAPI_ProjectPointOnSurf& projector = GetProjector( F, loc, tol );
@@ -492,12 +492,11 @@ bool SMESH_MesherHelper::CheckNodeUV(const TopoDS_Face&   F,
       Quantity_Parameter U,V;
       projector.LowerDistanceParameters(U,V);
       uv.SetCoord( U,V );
-      if ( nodePnt.Distance( surface->Value( U, V )) > tol )
+      if ( nodePnt.Distance( surface->Value( U, V )) > 2*tol )
       {
         MESSAGE( "SMESH_MesherHelper::CheckNodeUV(), invalid projection" );
         return false;
       }
-      //uv.SetCoord( U,V );
     }
     else if ( uv.Modulus() > numeric_limits<double>::min() )
     {
@@ -1390,6 +1389,8 @@ double SMESH_MesherHelper::GetOtherParam(const double param) const
   return fabs(param-myPar1[i]) < fabs(param-myPar2[i]) ? myPar2[i] : myPar1[i];
 }
 
+//#include <Perf_Meter.hxx>
+
 //=======================================================================
 namespace { // Structures used by FixQuadraticElements()
 //=======================================================================
@@ -1399,7 +1400,12 @@ namespace { // Structures used by FixQuadraticElements()
 #define MSG(txt) __DMP__(txt<<endl)
 #define MSGBEG(txt) __DMP__(txt)
 
-  const double straightTol2 = 1e-33; // to detect straing links
+  //const double straightTol2 = 1e-33; // to detect straing links
+  bool isStraightLink(double linkLen2, double middleNodeMove2)
+  {
+    // straight if <node move> < 1/15 * <link length>
+    return middleNodeMove2 < 1/15./15. * linkLen2;
+  }
 
   struct QFace;
   // ---------------------------------------
@@ -1436,8 +1442,10 @@ namespace { // Structures used by FixQuadraticElements()
     { _nodeMove += move; _nbMoves += sum ? (_nbMoves==0) : 1; }
     gp_XYZ Move() const { return _nodeMove.XYZ() / _nbMoves; }
     bool IsMoved() const { return (_nbMoves > 0 && !IsStraight()); }
-    bool IsStraight() const { return _nodeMove.SquareMagnitude() <= straightTol2; }
-
+    bool IsStraight() const
+    { return isStraightLink( (XYZ(node1())-XYZ(node2())).SquareModulus(),
+                             _nodeMove.SquareMagnitude());
+    }
     bool operator<(const QLink& other) const {
       return (node1()->GetID() == other.node1()->GetID() ?
               node2()->GetID() < other.node2()->GetID() :
@@ -1459,7 +1467,7 @@ namespace { // Structures used by FixQuadraticElements()
     TChainLink(const QLink* qlink=0):_qlink(qlink) {
       _qfaces[0] = _qfaces[1] = 0;
     }
-    void SetFace(const QFace* face) { int iF = _qfaces[0] ? 1 : 0; _qfaces[iF]=face; }
+    void SetFace(const QFace* face) const { int iF = _qfaces[0] ? 1 : 0; _qfaces[iF]=face; }
 
     bool IsBoundary() const { return !_qfaces[1]; }
 
@@ -1637,6 +1645,7 @@ namespace { // Structures used by FixQuadraticElements()
 
     if ( _sides.size() != 4 ) { // triangle - visit all my continous faces
       MSGBEG( *this );
+      TLinkSet links;
       list< const QFace* > faces( 1, this );
       while ( !faces.empty() ) {
         const QFace* face = faces.front();
@@ -1644,12 +1653,13 @@ namespace { // Structures used by FixQuadraticElements()
           if ( !face->_sideIsAdded[i] && face->_sides[i] ) {
             face->_sideIsAdded[i] = true;
             // find a face side in the chain
-            TChain::iterator chLink = chain.begin();
-            for ( ; chLink != chain.end(); ++chLink )
-              if ( chLink->_qlink == face->_sides[i] )
-                break;
-            if ( chLink == chain.end() )
-              chLink = chain.insert( chain.begin(), TChainLink(face->_sides[i]));
+            TLinkInSet chLink = links.insert( TChainLink(face->_sides[i])).first;
+//             TChain::iterator chLink = chain.begin();
+//             for ( ; chLink != chain.end(); ++chLink )
+//               if ( chLink->_qlink == face->_sides[i] )
+//                 break;
+//             if ( chLink == chain.end() )
+//               chLink = chain.insert( chain.begin(), TChainLink(face->_sides[i]));
             // add a face to a chained link and put a continues face in the queue
             chLink->SetFace( face );
             if ( face->_sides[i]->MediumPos() >= pos )
@@ -1661,6 +1671,7 @@ namespace { // Structures used by FixQuadraticElements()
       }
       if ( error < ERR_TRI )
         error = ERR_TRI;
+      chain.insert( chain.end(), links.begin(),links.end() );
       return false;
     }
     _sideIsAdded[iSide] = true; // not to add this link to chain again
@@ -2293,37 +2304,49 @@ namespace { // Structures used by FixQuadraticElements()
 
 void SMESH_MesherHelper::FixQuadraticElements(bool volumeOnly)
 {
-  // apply algorithm to solids or geom faces
+  // 0. Apply algorithm to solids or geom faces
   // ----------------------------------------------
   if ( myShape.IsNull() ) {
     if ( !myMesh->HasShapeToMesh() ) return;
     SetSubShape( myMesh->GetShapeToMesh() );
 
+#ifdef _DEBUG_
+    int nbSolids = 0;
+    TopTools_IndexedMapOfShape solids;
+    TopExp::MapShapes(myShape,TopAbs_SOLID,solids);
+    nbSolids = solids.Extent();
+#endif
     TopTools_MapOfShape faces; // faces not in solid or in not meshed solid
     for ( TopExp_Explorer f(myShape,TopAbs_FACE,TopAbs_SOLID); f.More(); f.Next() ) {
-      faces.Add( f.Current() );
+      faces.Add( f.Current() ); // not in solid
     }
     for ( TopExp_Explorer s(myShape,TopAbs_SOLID); s.More(); s.Next() ) {
       if ( myMesh->GetSubMesh( s.Current() )->IsEmpty() ) { // get faces of solid
         for ( TopExp_Explorer f( s.Current(), TopAbs_FACE); f.More(); f.Next() )
-          faces.Add( f.Current() );
+          faces.Add( f.Current() ); // in not meshed solid
       }
       else { // fix nodes in the solid and its faces
+        MSG("FIX SOLID " << nbSolids-- << " #" << GetMeshDS()->ShapeToIndex(s.Current()));
         SMESH_MesherHelper h(*myMesh);
         h.SetSubShape( s.Current() );
         h.FixQuadraticElements(false);
       }
     }
     // fix nodes on geom faces
+#ifdef _DEBUG_
+    int nbfaces = faces.Extent();
+#endif
     for ( TopTools_MapIteratorOfMapOfShape fIt( faces ); fIt.More(); fIt.Next() ) {
+      MSG("FIX FACE " << nbfaces-- << " #" << GetMeshDS()->ShapeToIndex(fIt.Key()));
       SMESH_MesherHelper h(*myMesh);
       h.SetSubShape( fIt.Key() );
       h.FixQuadraticElements(true);
     }
+    //perf_print_all_meters(1);
     return;
   }
 
-  // Find out type of elements and get iterator on them
+  // 1. Find out type of elements and get iterator on them
   // ---------------------------------------------------
 
   SMDS_ElemIteratorPtr elemIt;
@@ -2342,7 +2365,7 @@ void SMESH_MesherHelper::FixQuadraticElements(bool volumeOnly)
   if ( !elemIt || !elemIt->more() || elemType < SMDSAbs_Face )
     return;
 
-  // Fill in auxiliary data structures
+  // 2. Fill in auxiliary data structures
   // ----------------------------------
 
   set< QLink > links;
@@ -2351,7 +2374,7 @@ void SMESH_MesherHelper::FixQuadraticElements(bool volumeOnly)
   set< QFace >::iterator pFace;
 
   bool isCurved = false;
-  bool hasRectFaces = false;
+  //bool hasRectFaces = false;
   set<int> nbElemNodeSet;
 
   if ( elemType == SMDSAbs_Volume )
@@ -2384,9 +2407,9 @@ void SMESH_MesherHelper::FixQuadraticElements(bool volumeOnly)
         if ( pFace->NbVolumes() == 0 )
           pFace->AddSelfToLinks();
         pFace->SetVolume( vol );
-        hasRectFaces = hasRectFaces ||
-          ( volTool.GetVolumeType() == SMDS_VolumeTool::QUAD_HEXA ||
-            volTool.GetVolumeType() == SMDS_VolumeTool::QUAD_PENTA );
+//         hasRectFaces = hasRectFaces ||
+//           ( volTool.GetVolumeType() == SMDS_VolumeTool::QUAD_HEXA ||
+//             volTool.GetVolumeType() == SMDS_VolumeTool::QUAD_PENTA );
 #ifdef _DEBUG_
         if ( nbN == 6 )
           pFace->_face = GetMeshDS()->FindFace(faceNodes[0],faceNodes[2],faceNodes[4]);
@@ -2422,13 +2445,13 @@ void SMESH_MesherHelper::FixQuadraticElements(bool volumeOnly)
       // store QFace
       pFace = faces.insert( QFace( faceLinks )).first;
       pFace->AddSelfToLinks();
-      hasRectFaces = ( hasRectFaces || nbN == 4 );
+      //hasRectFaces = ( hasRectFaces || nbN == 4 );
     }
   }
   if ( !isCurved )
     return; // no curved edges of faces
 
-  // Compute displacement of medium nodes
+  // 3. Compute displacement of medium nodes
   // -------------------------------------
 
   // two loops on faces: the first is to treat boundary links, the second is for internal ones
@@ -2519,6 +2542,7 @@ void SMESH_MesherHelper::FixQuadraticElements(bool volumeOnly)
             {
               face = TopoDS::Face( f );
               Handle(Geom_Surface) surf = BRep_Tool::Surface(face,loc);
+              bool isStraight[2];
               for ( int is1 = 0; is1 < 2; ++is1 ) // move0 or move1
               {
                 TChainLink& link = is1 ? chain.back() : chain.front();
@@ -2531,9 +2555,11 @@ void SMESH_MesherHelper::FixQuadraticElements(bool volumeOnly)
                 ( is1 ? move1 : move0 ).SetCoord( uvMove.X(), uvMove.Y(), 0 );
                 if ( !is1 ) // correct nodeOnFace for move1 (issue 0020919)
                   nodeOnFace = (*(++chain.rbegin()))->_mediumNode;
+                isStraight[is1] = isStraightLink( (uv2-uv1).SquareModulus(),uvMove.SquareModulus());
               }
-              if ( move0.SquareMagnitude() < straightTol2 &&
-                   move1.SquareMagnitude() < straightTol2 ) {
+//               if ( move0.SquareMagnitude() < straightTol2 &&
+//                    move1.SquareMagnitude() < straightTol2 ) {
+              if ( isStraight[0] && isStraight[1] ) {
                 MSG("2D straight - ignore");
                 continue; // straight - no need to move nodes of internal links
               }
@@ -2605,7 +2631,7 @@ void SMESH_MesherHelper::FixQuadraticElements(bool volumeOnly)
     } // loop on faces
   }
 
-  // Move nodes
+  // 4. Move nodes
   // -----------
 
   for ( pLink = links.begin(); pLink != links.end(); ++pLink ) {
