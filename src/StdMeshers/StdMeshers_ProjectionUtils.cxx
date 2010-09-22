@@ -1188,8 +1188,10 @@ int StdMeshers_ProjectionUtils::FindFaceAssociation(const TopoDS_Face&    face1,
                                                     list< TopoDS_Edge > & edges1,
                                                     list< TopoDS_Edge > & edges2)
 {
+  bool OK = false;
   list< int > nbEInW1, nbEInW2;
-  for ( int outer_wire_algo = 0; outer_wire_algo < 2; ++outer_wire_algo )
+  int i_ok_wire_algo = -1;
+  for ( int outer_wire_algo = 0; outer_wire_algo < 2 && !OK; ++outer_wire_algo )
   {
     edges1.clear();
     edges2.clear();
@@ -1198,9 +1200,11 @@ int StdMeshers_ProjectionUtils::FindFaceAssociation(const TopoDS_Face&    face1,
          SMESH_Block::GetOrderedEdges( face2, VV2[0], edges2, nbEInW2, outer_wire_algo) )
       CONT_BAD_RESULT("Different number of wires in faces ");
 
-    if ( nbEInW1.front() != nbEInW2.front() )
+    if ( nbEInW1 != nbEInW2 )
       CONT_BAD_RESULT("Different number of edges in faces: " <<
                       nbEInW1.front() << " != " << nbEInW2.front());
+
+    i_ok_wire_algo = outer_wire_algo;
 
     // Define if we need to reverse one of wires to make edges in lists match each other
 
@@ -1244,62 +1248,78 @@ int StdMeshers_ProjectionUtils::FindFaceAssociation(const TopoDS_Face&    face1,
           ( VV2[1].IsSame( TopExp::LastVertex( edges2.front(), true ))))
         CONT_BAD_RESULT("GetOrderedEdges() failed");
     }
+    OK = true;
 
-    // Try to orient internal wires (0020996)
-    if ( nbEInW1.size() > 1 )
+  } // loop algos getting an outer wire
+  
+  // Try to orient all (if !OK) or only internal wires (issue 0020996) by UV similarity
+  if (( !OK || nbEInW1.size() > 1 ) && i_ok_wire_algo > -1 )
+  {
+    // Check that Vec(VV1[0],VV1[1]) in 2D on face1 is the same
+    // as Vec(VV2[0],VV2[1]) on face2
+    double vTol = BRep_Tool::Tolerance( VV1[0] );
+    BRepAdaptor_Surface surface1( face1, false );
+    double vTolUV =
+      surface1.UResolution( vTol ) + surface1.VResolution( vTol ); // let's be tolerant
+    gp_Pnt2d v0f1UV = BRep_Tool::Parameters( VV1[0], face1 );
+    gp_Pnt2d v0f2UV = BRep_Tool::Parameters( VV2[0], face2 );
+    gp_Pnt2d v1f1UV = BRep_Tool::Parameters( VV1[1], face1 );
+    gp_Pnt2d v1f2UV = BRep_Tool::Parameters( VV2[1], face2 );
+    gp_Vec2d v01f1Vec( v0f1UV, v1f1UV );
+    gp_Vec2d v01f2Vec( v0f2UV, v1f2UV );
+    if ( Abs( v01f1Vec.X()-v01f2Vec.X()) < vTolUV && Abs( v01f1Vec.Y()-v01f2Vec.Y()) < vTolUV )
     {
-      // Try by UV similarity. Check that Vec(VV1[0],VV1[1]) in 2D on face1 is the same
-      // as Vec(VV2[0],VV2[1]) on face2
-      double vTol = BRep_Tool::Tolerance( VV1[0] );
-      BRepAdaptor_Surface surface1( face1, false );
-      double vTolUV =
-        surface1.UResolution( vTol ) + surface1.VResolution( vTol ); // let's be tolerant
-      gp_Pnt2d v1UV = BRep_Tool::Parameters( VV1[0], face1 );
-      gp_Pnt2d v2UV = BRep_Tool::Parameters( VV2[0], face2 );
-      gp_Pnt2d v1UV1 = BRep_Tool::Parameters( VV1[1], face1 );
-      gp_Pnt2d v2UV1 = BRep_Tool::Parameters( VV2[1], face2 );
-      gp_Vec2d e1Vec( v1UV, v1UV1 );
-      gp_Vec2d e2Vec( v2UV, v2UV1 );
-      if ( Abs( e1Vec.X()-e2Vec.X()) < vTolUV && Abs( e1Vec.Y()-e2Vec.Y()) < vTolUV )
+      if ( i_ok_wire_algo != 1 )
       {
-        gp_XY dUV = v2UV.XY() - v1UV.XY();
-        // skip edges of the outer wire
-        list< int >::iterator nbEInW = nbEInW1.begin();
-        list< TopoDS_Edge >::iterator edge1Beg = edges1.begin(), edge2Beg = edges2.begin();
+        edges1.clear();
+        edges2.clear();
+        SMESH_Block::GetOrderedEdges( face1, VV1[0], edges1, nbEInW1, i_ok_wire_algo);
+        SMESH_Block::GetOrderedEdges( face2, VV2[0], edges2, nbEInW2, i_ok_wire_algo);
+      }
+      gp_XY dUV = v0f2UV.XY() - v0f1UV.XY(); // UV shift between 2 faces
+      // skip edges of the outer wire (if the outer wire is OK)
+      list< int >::iterator nbEInW = nbEInW1.begin();
+      list< TopoDS_Edge >::iterator edge1Beg = edges1.begin(), edge2Beg = edges2.begin();
+      if ( OK )
+      {
         for ( int i = 0; i < *nbEInW; ++i )
           ++edge1Beg, ++edge2Beg;
-        for ( ++nbEInW; nbEInW != nbEInW1.end(); ++nbEInW ) // loop on inner wires
+        ++nbEInW;
+      }
+      for ( ; nbEInW != nbEInW1.end(); ++nbEInW ) // loop on wires
+      {
+        // reach an end of edges of a current wire
+        list< TopoDS_Edge >::iterator edge1End = edge1Beg, edge2End = edge2Beg;
+        for ( int i = 0; i < *nbEInW; ++i )
+          ++edge1End, ++edge2End;
+        // rotate edges2 untill coincident with edges1 in 2D
+        v0f1UV = BRep_Tool::Parameters( TopExp::FirstVertex(*edge1Beg,true), face1 );
+        v1f1UV = BRep_Tool::Parameters( TopExp::LastVertex (*edge1Beg,true), face1 );
+        v0f1UV.ChangeCoord() += dUV;
+        v1f1UV.ChangeCoord() += dUV;
+        int i = *nbEInW;
+        while ( --i > 0 && !sameVertexUV( *edge2Beg, face2, 0, v0f1UV, vTolUV ))
+          edges2.splice( edge2End, edges2, edge2Beg++ ); // move edge2Beg to place before edge2End
+        if ( sameVertexUV( *edge2Beg, face2, 0, v0f1UV, vTolUV ))
         {
-          // reach an end of edges of a current innner wire
-          list< TopoDS_Edge >::iterator edge1End = edge1Beg, edge2End = edge2Beg;
-          for ( int i = 0; i < *nbEInW; ++i )
-            ++edge1End, ++edge2End;
-          // rotate edges2 untill coincident with edges1 in 2D
-          v1UV = BRep_Tool::Parameters( TopExp::FirstVertex(*edge1Beg,true), face1 );
-          v2UV = BRep_Tool::Parameters( TopExp::LastVertex (*edge1Beg,true), face1 );
-          v1UV.ChangeCoord() += dUV;
-          v2UV.ChangeCoord() += dUV;
-          int i = *nbEInW;
-          while ( --i > 0 && !sameVertexUV( *edge2Beg, face2, 0, v1UV, vTolUV ))
-            edges2.splice( edge2End, edges2, edge2Beg++ ); // move edge2Beg to place before edge2End
+          if ( nbEInW == nbEInW1.begin() )
+            OK = true; // OK is for the first wire
           // reverse edges2 if needed
-          if ( sameVertexUV( *edge2Beg, face2, 0, v1UV, vTolUV ) &&
-               !sameVertexUV( *edge2Beg, face2, 1, v2UV, vTolUV ))
+          if ( !sameVertexUV( *edge2Beg, face2, 1, v1f1UV, vTolUV ))
           {
             Reverse( edges2 , *nbEInW, distance( edges2.begin(),edge2Beg ));
+            // set correct edge2End
             edge2End = edges2.begin();
             std::advance( edge2End, std::accumulate( nbEInW1.begin(), nbEInW, *nbEInW));
           }
-          // prepare to the next wire loop
-          edge1Beg = edge1End, edge2Beg = edge2End;
         }
+        // prepare to the next wire loop
+        edge1Beg = edge1End, edge2Beg = edge2End;
       }
     }
-    break; // OK
+  }
 
-  } // loop algos getting an outer wire
-
-  return nbEInW2.front();
+  return OK ? nbEInW1.front() : 0;
 }
 
 //=======================================================================
