@@ -476,3 +476,5 @@ AC_OUTPUT([ \
   idl/Makefile \
   Makefile
 ])
+
+AC_HACK_LIBTOOL
