@@ -381,8 +381,8 @@ const map < int, SMESH_subMesh * >& SMESH_subMesh::DependsOn()
         if ( BRep_Tool::IsClosed(exp.Current() ))
           InsertDependence(exp.Current());      //only shell not in solid
         else
-          for (TopExp_Explorer exp(exp.Current(), TopAbs_FACE); exp.More();exp.Next())
-            InsertDependence(exp.Current());      // issue 0020959: HEXA_3D fails on shell
+          for (TopExp_Explorer expF(exp.Current(), TopAbs_FACE); expF.More();expF.Next())
+            InsertDependence(expF.Current());    // issue 0020959: HEXA_3D fails on shell
 
       }
       for (TopExp_Explorer exp(_subShape, TopAbs_FACE, TopAbs_SHELL); exp.More();exp.Next())
