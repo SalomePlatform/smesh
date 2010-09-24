@@ -772,11 +772,12 @@ SMESH::Length2D::Values* Length2D_i::GetValues()
 {
   INFOS("Length2D_i::GetValues");
   SMESH::Controls::Length2D::TValues aValues;
-  myLength2DPtr->GetValues( aValues );
+  (dynamic_cast<SMESH::Controls::Length2D*>(myFunctorPtr.get()))->GetValues( aValues );
 
   long i = 0, iEnd = aValues.size();
 
   SMESH::Length2D::Values_var aResult = new SMESH::Length2D::Values(iEnd);
+  aResult->length(iEnd);
 
   SMESH::Controls::Length2D::TValues::const_iterator anIter;
   for ( anIter = aValues.begin() ; anIter != aValues.end(); anIter++, i++ )
@@ -827,11 +828,12 @@ SMESH::MultiConnection2D::Values* MultiConnection2D_i::GetValues()
 {
   INFOS("MultiConnection2D_i::GetValues");
   SMESH::Controls::MultiConnection2D::MValues aValues;
-  myMulticonnection2DPtr->GetValues( aValues );
-
+  (dynamic_cast<SMESH::Controls::MultiConnection2D*>(myFunctorPtr.get()))->GetValues( aValues );
+  
   long i = 0, iEnd = aValues.size();
 
   SMESH::MultiConnection2D::Values_var aResult = new SMESH::MultiConnection2D::Values(iEnd);
+  aResult->length(iEnd);
 
   SMESH::Controls::MultiConnection2D::MValues::const_iterator anIter;
   for ( anIter = aValues.begin() ; anIter != aValues.end(); anIter++, i++ )
