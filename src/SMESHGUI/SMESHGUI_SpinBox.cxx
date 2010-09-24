@@ -66,7 +66,7 @@ void SMESHGUI_SpinBox::SetStep( double newStep )
 //=================================================================================
 void SMESHGUI_SpinBox::SetValue( double v )
 {
-  setValue(v);
+  setValue(valueFromText(textFromValue(v)));
   editor()->setCursorPosition( 0 );
 }
 
@@ -113,7 +113,7 @@ void SMESHGUI_SpinBox::RangeStepAndValidator( double min,
   setPrecision(precision); // PAL8769. Minus is for using 'g' double->string conversion specifier,
   //                          see QtxDoubleSpinBox::mapValueToText( double v )
   //                          san: this can be achieved using preferences
-  setDecimals(qAbs(precision));
+  setDecimals( 20 ); // qAbs(precision)
   setRange(min, max);
   setSingleStep( step );
   setDefaultValue( min );

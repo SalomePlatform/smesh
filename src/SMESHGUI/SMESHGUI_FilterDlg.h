@@ -168,6 +168,7 @@ private:
   void                      updateBtnState();
   void                      removeAdditionalWidget( QTableWidget*, const int );
   void                      updateAdditionalWidget();
+  const char*               getPrecision( const int );
 
   const QMap<int, QString>& getSupportedTypes() const;
 

@@ -37,6 +37,7 @@
 #include <SMESH_Actor.h>
 #include <SMESH_NumberFilter.hxx>
 #include <SMESH_TypeFilter.hxx>
+#include <SMESHGUI_SpinBox.h>
 
 // SALOME GEOM includes
 #include <GEOMBase.h>
@@ -160,30 +161,32 @@ public:
   virtual void            SetString(const int, const QString&);
   void                    SetEditable(const int, const bool);
   void                    SetEditable(const bool);
+  void                    SetPrecision(const int, const char* = 0);
 
 private:
-  QMap< int, QLineEdit* > myLineEdits;
+  QMap< int, QWidget* > myWidgets;
 };
 
 SMESHGUI_FilterTable::AdditionalWidget::AdditionalWidget (QWidget* theParent)
   : QWidget(theParent)
 {
   QLabel* aLabel = new QLabel(tr("SMESH_TOLERANCE"), this);
-  myLineEdits[ Tolerance ] = new QLineEdit(this);
-  QDoubleValidator* aValidator = new QDoubleValidator(myLineEdits[ Tolerance ]);
-  aValidator->setBottom(0);
-  myLineEdits[ Tolerance ]->setValidator(aValidator);
+
+  SMESHGUI_SpinBox* sb = new SMESHGUI_SpinBox(this);
+  sb->setAcceptNames( false ); // No Notebook variables allowed
+  sb->setSizePolicy( QSizePolicy( QSizePolicy::Expanding, QSizePolicy::Fixed ) );
+  sb->RangeStepAndValidator( 0., 1.e20, 0.1, "len_tol_precision" );
+  myWidgets[ Tolerance ] = sb;
 
   QHBoxLayout* aLay = new QHBoxLayout(this);
   aLay->setSpacing(SPACING);
   aLay->setMargin(0);
 
   aLay->addWidget(aLabel);
-  aLay->addWidget(myLineEdits[ Tolerance ]);
+  aLay->addWidget(myWidgets[ Tolerance ]);
   aLay->addStretch();
 
-  QString aText = QString("%1").arg(Precision::Confusion());
-  myLineEdits[ Tolerance ]->setText(aText);
+  SetDouble( Tolerance, Precision::Confusion() );
 }
 
 SMESHGUI_FilterTable::AdditionalWidget::~AdditionalWidget()
@@ -205,13 +208,18 @@ bool SMESHGUI_FilterTable::AdditionalWidget::IsValid (const bool theMsg) const
   QList<int> aParams = GetParameters();
   QList<int>::const_iterator anIter;
   for (anIter = aParams.begin(); anIter != aParams.end(); ++anIter) {
-    const QLineEdit* aWg = myLineEdits[ *anIter ];
-    int p = 0;
-    QString aText = aWg->text();
-    if (aWg->isEnabled() && aWg->validator()->validate(aText, p) != QValidator::Acceptable) {
-      if (theMsg)
-        SUIT_MessageBox::information(SMESHGUI::desktop(), tr("SMESH_INSUFFICIENT_DATA"),
-                                     tr("SMESHGUI_INVALID_PARAMETERS"));
+    if ( !myWidgets.contains( *anIter ) ) continue;
+    bool valid = true;
+    if ( qobject_cast<QLineEdit*>( myWidgets[ *anIter ] ) ) {
+      valid = qobject_cast<QLineEdit*>( myWidgets[ *anIter ] )->hasAcceptableInput();
+    }
+    else if ( qobject_cast<SMESHGUI_SpinBox*>( myWidgets[ *anIter ] ) ) {
+      QString foo;
+      valid = qobject_cast<SMESHGUI_SpinBox*>( myWidgets[ *anIter ] )->isValid( foo, false );
+    }
+    if (!valid && theMsg) {
+      SUIT_MessageBox::information(SMESHGUI::desktop(), tr("SMESH_INSUFFICIENT_DATA"),
+				   tr("SMESHGUI_INVALID_PARAMETERS"));
       return false;
     }
   }
@@ -221,41 +229,78 @@ bool SMESHGUI_FilterTable::AdditionalWidget::IsValid (const bool theMsg) const
 
 double SMESHGUI_FilterTable::AdditionalWidget::GetDouble (const int theId) const
 {
-  return myLineEdits.contains(theId) ? myLineEdits[ theId ]->text().toDouble() : 0;
+  double retval = 0;
+  if ( myWidgets.contains( theId ) ) {
+    if ( qobject_cast<QLineEdit*>( myWidgets[ theId ] ) )
+      retval = qobject_cast<QLineEdit*>( myWidgets[ theId ] )->text().toDouble();
+    if ( qobject_cast<SMESHGUI_SpinBox*>( myWidgets[ theId ] ) )
+      retval = qobject_cast<SMESHGUI_SpinBox*>( myWidgets[ theId ] )->GetValue();
+  }
+  return retval;
 }
 
 int SMESHGUI_FilterTable::AdditionalWidget::GetInteger (const int theId) const
 {
-  return myLineEdits.contains(theId) ? myLineEdits[ theId ]->text().toInt() : 0;
+  int retval = 0;
+  if ( myWidgets.contains( theId ) ) {
+    if ( qobject_cast<QLineEdit*>( myWidgets[ theId ] ) )
+      retval = qobject_cast<QLineEdit*>( myWidgets[ theId ] )->text().toInt();
+    if ( qobject_cast<SMESHGUI_SpinBox*>( myWidgets[ theId ] ) )
+      retval = (int)( qobject_cast<SMESHGUI_SpinBox*>( myWidgets[ theId ] )->GetValue() );
+  }
+  return retval;
 }
 
 QString SMESHGUI_FilterTable::AdditionalWidget::GetString (const int theId) const
 {
-  return myLineEdits.contains(theId) ? myLineEdits[ theId ]->text() : QString("");
+  QString retval = "";
+  if ( myWidgets.contains( theId ) ) {
+    if ( qobject_cast<QLineEdit*>( myWidgets[ theId ] ) )
+      retval = qobject_cast<QLineEdit*>( myWidgets[ theId ] )->text();
+    if ( qobject_cast<SMESHGUI_SpinBox*>( myWidgets[ theId ] ) )
+      retval = QString::number( qobject_cast<SMESHGUI_SpinBox*>( myWidgets[ theId ] )->GetValue() );
+  }
+  return retval;
 }
 
 void SMESHGUI_FilterTable::AdditionalWidget::SetDouble (const int theId, const double theVal)
 {
-  if (myLineEdits.contains(theId))
-    myLineEdits[ theId ]->setText(QString("%1").arg(theVal));
+  if ( myWidgets.contains( theId ) ) {
+    if ( qobject_cast<QLineEdit*>( myWidgets[ theId ] ) )
+      qobject_cast<QLineEdit*>( myWidgets[ theId ] )->setText( QString::number( theVal ) );
+    if ( qobject_cast<SMESHGUI_SpinBox*>( myWidgets[ theId ] ) )
+      qobject_cast<SMESHGUI_SpinBox*>( myWidgets[ theId ] )->SetValue( theVal );
+  }
 }
 
 void SMESHGUI_FilterTable::AdditionalWidget::SetInteger (const int theId, const int theVal)
 {
-  if (myLineEdits.contains(theId))
-    myLineEdits[ theId ]->setText(QString("%1").arg(theVal));
+  if ( myWidgets.contains( theId ) ) {
+    if ( qobject_cast<QLineEdit*>( myWidgets[ theId ] ) )
+      qobject_cast<QLineEdit*>( myWidgets[ theId ] )->setText( QString::number( theVal ) );
+    if ( qobject_cast<SMESHGUI_SpinBox*>( myWidgets[ theId ] ) )
+      qobject_cast<SMESHGUI_SpinBox*>( myWidgets[ theId ] )->SetValue( (double)theVal );
+  }
 }
 
 void SMESHGUI_FilterTable::AdditionalWidget::SetString (const int theId, const QString& theVal)
 {
-  if (myLineEdits.contains(theId))
-    myLineEdits[ theId ]->setText(theVal);
+  if ( myWidgets.contains( theId ) ) {
+    if ( qobject_cast<QLineEdit*>( myWidgets[ theId ] ) )
+      qobject_cast<QLineEdit*>( myWidgets[ theId ] )->setText( theVal );
+    if ( qobject_cast<SMESHGUI_SpinBox*>( myWidgets[ theId ] ) )
+      qobject_cast<SMESHGUI_SpinBox*>( myWidgets[ theId ] )->SetValue( theVal.toDouble() );
+  }
 }
 
 void SMESHGUI_FilterTable::AdditionalWidget::SetEditable (const int theId, const bool isEditable)
 {
-  if (myLineEdits.contains(theId))
-    myLineEdits[ theId ]->setReadOnly(!isEditable);
+  if ( myWidgets.contains( theId ) ) {
+    if ( qobject_cast<QLineEdit*>( myWidgets[ theId ] ) )
+      qobject_cast<QLineEdit*>( myWidgets[ theId ] )->setReadOnly( !isEditable );
+    if ( qobject_cast<SMESHGUI_SpinBox*>( myWidgets[ theId ] ) )
+      qobject_cast<SMESHGUI_SpinBox*>( myWidgets[ theId ] )->setReadOnly( !isEditable );
+  }
 }
 
 void SMESHGUI_FilterTable::AdditionalWidget::SetEditable (const bool isEditable)
@@ -264,6 +309,19 @@ void SMESHGUI_FilterTable::AdditionalWidget::SetEditable (const bool isEditable)
   QList<int>::const_iterator anIter;
   for (anIter = aParams.begin(); anIter != aParams.end(); ++anIter)
     SetEditable( *anIter,  isEditable );
+}
+
+void SMESHGUI_FilterTable::AdditionalWidget::SetPrecision(const int theId, const char* precision)
+{
+  if ( myWidgets.contains( theId ) ) {
+    if ( qobject_cast<SMESHGUI_SpinBox*>( myWidgets[ theId ] ) ) {
+      SMESHGUI_SpinBox* sb = qobject_cast<SMESHGUI_SpinBox*>( myWidgets[ theId ] );
+      double val = sb->GetValue();
+      double min = pow(10, -(sb->decimals()));
+      sb->RangeStepAndValidator( 0., 1.e20, 0.1, precision ? precision : "len_tol_precision" );
+      sb->SetValue( qMax( val, min ) );
+    }
+  }
 }
 
 /*
@@ -1279,7 +1337,39 @@ void SMESHGUI_FilterTable::updateAdditionalWidget()
   }
 
   myWgStack->setCurrentWidget(myAddWidgets[ anItem ]);
+  myAddWidgets[ anItem ]->SetPrecision( AdditionalWidget::Tolerance, getPrecision( aCriterion ) );
   myWgStack->setEnabled(toEnable);
+}
+
+const char* SMESHGUI_FilterTable::getPrecision( const int aType )
+{
+  const char* retval = 0;
+  switch ( aType ) {
+  case SMESH::FT_AspectRatio:
+  case SMESH::FT_AspectRatio3D:
+  case SMESH::FT_Taper:
+    retval = "parametric_precision"; break;
+  case SMESH::FT_Warping:
+  case SMESH::FT_MinimumAngle:
+  case SMESH::FT_Skew:
+    retval = "angle_precision"; break;
+  case SMESH::FT_Area:
+    retval = "area_precision"; break;
+  case SMESH::FT_BelongToGeom:
+  case SMESH::FT_BelongToPlane:
+  case SMESH::FT_BelongToCylinder:
+  case SMESH::FT_BelongToGenSurface:
+  case SMESH::FT_LyingOnGeom:
+    retval = "len_tol_precision"; break;
+  case SMESH::FT_Length:
+  case SMESH::FT_Length2D:
+    retval = "length_precision"; break;
+  case SMESH::FT_Volume3D:
+    retval = "vol_precision"; break;
+  default:
+    break;
+  }
+  return retval;
 }
 
 //=======================================================================
@@ -2026,8 +2116,8 @@ bool SMESHGUI_FilterTable::GetThreshold (const int      theRow,
 // Purpose : Set text and internal value in cell of ID value 
 //=======================================================================
 void SMESHGUI_FilterTable::SetID( const int      theRow,
-                                         const QString& theText,
-                                         const int      theEntityType )
+				  const QString& theText,
+				  const int      theEntityType )
 {
   Table* aTable = myTables[ theEntityType == -1 ? GetType() : theEntityType ];
   aTable->item( theRow, 5 )->setText( theText );
