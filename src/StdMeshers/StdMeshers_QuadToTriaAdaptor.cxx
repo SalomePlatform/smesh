@@ -47,6 +47,271 @@ enum EQuadNature { NOT_QUAD, QUAD, DEGEN_QUAD };
   // std-like iterator used to get coordinates of nodes of mesh element
 typedef SMDS_StdIterator< SMESH_MeshEditor::TNodeXYZ, SMDS_ElemIteratorPtr > TXyzIterator;
 
+namespace
+{
+  const int Q2TAbs_TmpTriangle = SMDSEntity_Last + 1;
+
+  //================================================================================
+  /*!
+   * \brief Temporary face. It's key feature is that it adds itself to an apex node
+   * as inverse element, so that tmp triangles of a piramid can be easily found
+   */
+  //================================================================================
+
+  class SMDS_EXPORT Q2TAdaptor_Triangle : public SMDS_MeshFace
+  {
+    const SMDS_MeshNode* _nodes[3];
+  public:
+    Q2TAdaptor_Triangle(const SMDS_MeshNode* apexNode,
+                        const SMDS_MeshNode* node2,
+                        const SMDS_MeshNode* node3)
+    {
+      _nodes[0]=0; ChangeApex(apexNode);
+      _nodes[1]=node2;
+      _nodes[2]=node3;
+    }
+    ~Q2TAdaptor_Triangle() { MarkAsRemoved(); }
+    void ChangeApex(const SMDS_MeshNode* node)
+    {
+      MarkAsRemoved();
+      _nodes[0]=node;
+      const_cast<SMDS_MeshNode*>(node)->AddInverseElement(this);
+    }
+    void MarkAsRemoved()
+    {
+      if ( _nodes[0] )
+        const_cast<SMDS_MeshNode*>(_nodes[0])->RemoveInverseElement(this), _nodes[0] = 0;
+    }
+    bool IsRemoved() const { return !_nodes[0]; }
+    virtual int NbNodes() const { return 3; }
+    virtual const SMDS_MeshNode* GetNode(const int ind) const { return _nodes[ind]; }
+    virtual SMDSAbs_EntityType   GetEntityType() const
+    {
+      return SMDSAbs_EntityType( Q2TAbs_TmpTriangle );
+    }
+  };
+
+  //================================================================================
+  /*!
+   * \brief Return true if two nodes of triangles are equal
+   */
+  //================================================================================
+
+  bool EqualTriangles(const SMDS_MeshElement* F1,const SMDS_MeshElement* F2)
+  {
+    return
+      ( F1->GetNode(1)==F2->GetNode(2) && F1->GetNode(2)==F2->GetNode(1) ) ||
+      ( F1->GetNode(1)==F2->GetNode(1) && F1->GetNode(2)==F2->GetNode(2) );
+  }
+
+  //================================================================================
+  /*!
+   * \brief Merge the two pyramids (i.e. fuse their apex) and others already merged with them
+   */
+  //================================================================================
+
+  void MergePiramids( const SMDS_MeshElement*     PrmI,
+                      const SMDS_MeshElement*     PrmJ,
+                      SMESHDS_Mesh*               meshDS,
+                      set<const SMDS_MeshNode*> & nodesToMove)
+  {
+    const SMDS_MeshNode* Nrem = PrmJ->GetNode(4); // node to remove
+    int nbJ = Nrem->NbInverseElements( SMDSAbs_Volume );
+    SMESH_MeshEditor::TNodeXYZ Pj( Nrem );
+
+    // an apex node to make common to all merged pyramids
+    SMDS_MeshNode* CommonNode = const_cast<SMDS_MeshNode*>(PrmI->GetNode(4));
+    if ( CommonNode == Nrem ) return; // already merged
+    int nbI = CommonNode->NbInverseElements( SMDSAbs_Volume );
+    SMESH_MeshEditor::TNodeXYZ Pi( CommonNode );
+    gp_XYZ Pnew = ( nbI*Pi + nbJ*Pj ) / (nbI+nbJ);
+    CommonNode->setXYZ( Pnew.X(), Pnew.Y(), Pnew.Z() );
+
+    nodesToMove.insert( CommonNode );
+    nodesToMove.erase ( Nrem );
+
+    // find and remove coincided faces of merged pyramids
+    SMDS_ElemIteratorPtr triItI = CommonNode->GetInverseElementIterator(SMDSAbs_Face);
+    while ( triItI->more() )
+    {
+      const SMDS_MeshElement* FI = triItI->next();
+      const SMDS_MeshElement* FJEqual = 0;
+      SMDS_ElemIteratorPtr triItJ = Nrem->GetInverseElementIterator(SMDSAbs_Face);
+      while ( !FJEqual && triItJ->more() )
+      {
+        const SMDS_MeshElement* FJ = triItJ->next();
+        if ( EqualTriangles( FJ, FI ))
+          FJEqual = FJ;
+      }
+      if ( FJEqual )
+      {
+        ((Q2TAdaptor_Triangle*) FI)->MarkAsRemoved();
+        ((Q2TAdaptor_Triangle*) FJEqual)->MarkAsRemoved();
+      }
+    }
+
+    // set the common apex node to pyramids and triangles merged with J
+    SMDS_ElemIteratorPtr itJ = Nrem->GetInverseElementIterator();
+    while ( itJ->more() )
+    {
+      const SMDS_MeshElement* elem = itJ->next();
+      if ( elem->GetType() == SMDSAbs_Volume ) // pyramid
+      {
+        vector< const SMDS_MeshNode* > nodes( elem->begin_nodes(), elem->end_nodes() );
+        nodes[4] = CommonNode;
+        meshDS->ChangeElementNodes( elem, &nodes[0], nodes.size());
+      }
+      else if ( elem->GetEntityType() == Q2TAbs_TmpTriangle ) // tmp triangle
+      {
+        ((Q2TAdaptor_Triangle*) elem )->ChangeApex( CommonNode );
+      }
+    }
+    ASSERT( Nrem->NbInverseElements() == 0 );
+    meshDS->RemoveFreeNode( Nrem,
+                            meshDS->MeshElements( Nrem->GetPosition()->GetShapeId()),
+                            /*fromGroups=*/false);
+  }
+
+  //================================================================================
+  /*!
+   * \brief Return true if two adjacent pyramids are too close one to another
+   * so that a tetrahedron to built between them whoul have too poor quality
+   */
+  //================================================================================
+
+  bool TooCloseAdjacent( const SMDS_MeshElement* PrmI,
+                         const SMDS_MeshElement* PrmJ,
+                         const bool              hasShape)
+  {
+    const SMDS_MeshNode* nApexI = PrmI->GetNode(4);
+    const SMDS_MeshNode* nApexJ = PrmJ->GetNode(4);
+    if ( nApexI == nApexJ ||
+         nApexI->GetPosition()->GetShapeId() != nApexJ->GetPosition()->GetShapeId() )
+      return false;
+
+    // Find two common base nodes and their indices within PrmI and PrmJ
+    const SMDS_MeshNode* baseNodes[2] = { 0,0 };
+    int baseNodesIndI[2], baseNodesIndJ[2];
+    for ( int i = 0; i < 4 ; ++i )
+    {
+      int j = PrmJ->GetNodeIndex( PrmI->GetNode(i));
+      if ( j >= 0 )
+      {
+        int ind = baseNodes[0] ? 1:0;
+        if ( baseNodes[ ind ])
+          return false; // pyramids with a common base face
+        baseNodes   [ ind ] = PrmI->GetNode(i);
+        baseNodesIndI[ ind ] = i;
+        baseNodesIndJ[ ind ] = j;
+      }
+    }
+    if ( !baseNodes[1] ) return false; // not adjacent
+
+    // Get normals of triangles sharing baseNodes
+    gp_XYZ apexI = SMESH_MeshEditor::TNodeXYZ( nApexI );
+    gp_XYZ apexJ = SMESH_MeshEditor::TNodeXYZ( nApexJ );
+    gp_XYZ base1 = SMESH_MeshEditor::TNodeXYZ( baseNodes[0]);
+    gp_XYZ base2 = SMESH_MeshEditor::TNodeXYZ( baseNodes[1]);
+    gp_Vec baseVec( base1, base2 );
+    gp_Vec baI( base1, apexI );
+    gp_Vec baJ( base1, apexJ );
+    gp_Vec nI = baseVec.Crossed( baI );
+    gp_Vec nJ = baseVec.Crossed( baJ );
+
+    // Check angle between normals
+    double angle = nI.Angle( nJ );
+    bool tooClose = ( angle < 10 * PI180 );
+
+    // Check if pyramids collide
+    bool isOutI, isOutJ;
+    if ( !tooClose && baI * baJ > 0 )
+    {
+      // find out if nI points outside of PrmI or inside
+      int dInd = baseNodesIndI[1] - baseNodesIndI[0];
+      isOutI = ( abs(dInd)==1 ) ? dInd < 0 : dInd > 0;
+
+      // find out sign of projection of nJ to baI
+      double proj = baI * nJ;
+
+      tooClose = isOutI ? proj > 0 : proj < 0;
+    }
+
+    // Check if PrmI and PrmJ are in same domain
+    if ( tooClose && !hasShape )
+    {
+      // check order of baseNodes within pyramids, it must be opposite
+      int dInd = baseNodesIndJ[1] - baseNodesIndJ[0];
+      isOutJ = ( abs(dInd)==1 ) ? dInd < 0 : dInd > 0;
+      if ( isOutJ == isOutI )
+        return false; // other domain
+
+      // check absence of a face separating domains between pyramids
+      TIDSortedElemSet emptySet, avoidSet;
+      int i1, i2;
+      while ( const SMDS_MeshElement* f =
+              SMESH_MeshEditor::FindFaceInSet( baseNodes[0], baseNodes[1],
+                                               emptySet, avoidSet, &i1, &i2 ))
+      {
+        avoidSet.insert( f );
+
+        // face node other than baseNodes
+        int otherNodeInd = 0;
+        while ( otherNodeInd == i1 || otherNodeInd == i2 ) otherNodeInd++;
+        const SMDS_MeshNode* otherFaceNode = f->GetNode( otherNodeInd );
+
+        // check if f is a base face of either of pyramids
+        if ( f->NbCornerNodes() == 4 &&
+             ( PrmI->GetNodeIndex( otherFaceNode ) >= 0 ||
+               PrmJ->GetNodeIndex( otherFaceNode ) >= 0 ))
+          continue; // f is a base quadrangle
+
+        // check projections of face direction (baOFN) to triange normals (nI and nJ)
+        gp_Vec baOFN( base1, SMESH_MeshEditor::TNodeXYZ( otherFaceNode ));
+        ( isOutI ? nJ : nI ).Reverse();
+        if ( nI * baOFN > 0 && nJ * baOFN > 0 )
+        {
+          tooClose = false; // f is between pyramids
+          break;
+        }
+      }
+    }
+
+    return tooClose;
+  }
+
+  //================================================================================
+  /*!
+   * \brief Merges adjacent pyramids
+   */
+  //================================================================================
+
+  void MergeAdjacent(const SMDS_MeshElement*    PrmI,
+                     SMESH_Mesh&                mesh,
+                     set<const SMDS_MeshNode*>& nodesToMove)
+  {
+    TIDSortedElemSet adjacentPyrams, mergedPyrams;
+    for(int k=0; k<4; k++) // loop on 4 base nodes of PrmI
+    {
+      const SMDS_MeshNode* n = PrmI->GetNode(k);
+      SMDS_ElemIteratorPtr vIt = n->GetInverseElementIterator( SMDSAbs_Volume );
+      while ( vIt->more() )
+      {
+        const SMDS_MeshElement* PrmJ = vIt->next();
+        if ( PrmJ->NbCornerNodes() != 5 || !adjacentPyrams.insert( PrmJ ).second  )
+          continue;
+        if ( PrmI != PrmJ && TooCloseAdjacent( PrmI, PrmJ, mesh.HasShapeToMesh() ))
+        {
+          MergePiramids( PrmI, PrmJ, mesh.GetMeshDS(), nodesToMove );
+          mergedPyrams.insert( PrmJ );
+        }
+      }
+    }
+    if ( !mergedPyrams.empty() )
+      for (TIDSortedElemSet::iterator prm = mergedPyrams.begin(); prm != mergedPyrams.end(); ++prm)
+        MergeAdjacent( *prm, mesh, nodesToMove );
+  }
+}
+
 //================================================================================
 /*!
  * \brief Constructor
@@ -76,10 +341,6 @@ StdMeshers_QuadToTriaAdaptor::~StdMeshers_QuadToTriaAdaptor()
       delete *f;
   }
   myResMap.clear();
-
-//   TF2PyramMap::iterator itp = myPyram2Trias.begin();
-//   for(; itp!=myPyram2Trias.end(); itp++)
-//     cout << itp->second << endl;
 
   if ( myElemSearcher ) delete myElemSearcher;
   myElemSearcher=0;
@@ -282,18 +543,6 @@ bool StdMeshers_QuadToTriaAdaptor::CheckIntersection (const gp_Pnt&       P,
   return res;
 }
 
-
-//=======================================================================
-//function : EqualTriangles
-//purpose  : Auxilare for Compute()
-//=======================================================================
-static bool EqualTriangles(const SMDS_MeshElement* F1,const SMDS_MeshElement* F2)
-{
-  return
-    ( F1->GetNode(1)==F2->GetNode(2) && F1->GetNode(2)==F2->GetNode(1) ) ||
-    ( F1->GetNode(1)==F2->GetNode(1) && F1->GetNode(2)==F2->GetNode(2) );
-}
-
 //================================================================================
 /*!
  * \brief Prepare data for the given face
@@ -432,14 +681,12 @@ int StdMeshers_QuadToTriaAdaptor::Preparation(const SMDS_MeshElement*       face
 bool StdMeshers_QuadToTriaAdaptor::Compute(SMESH_Mesh& aMesh, const TopoDS_Shape& aShape)
 {
   myResMap.clear();
-  myPyram2Trias.clear();
+  myPyramids.clear();
 
   SMESHDS_Mesh * meshDS = aMesh.GetMeshDS();
   SMESH_MesherHelper helper(aMesh);
   helper.IsQuadraticSubMesh(aShape);
   helper.SetElementsOnShape( true );
-
-  
 
   for (TopExp_Explorer exp(aShape,TopAbs_FACE);exp.More();exp.Next())
   {
@@ -468,11 +715,11 @@ bool StdMeshers_QuadToTriaAdaptor::Compute(SMESH_Mesh& aMesh, const TopoDS_Shape
         {
           // degenerate face
           // add triangles to result map
-          SMDS_FaceOfNodes* NewFace;
+          SMDS_MeshFace* NewFace;
           if(!isRev)
-            NewFace = new SMDS_FaceOfNodes( FNodes[0], FNodes[1], FNodes[2] );
+            NewFace = new Q2TAdaptor_Triangle( FNodes[0], FNodes[1], FNodes[2] );
           else
-            NewFace = new SMDS_FaceOfNodes( FNodes[0], FNodes[2], FNodes[1] );
+            NewFace = new Q2TAdaptor_Triangle( FNodes[0], FNodes[2], FNodes[1] );
           TTriaList aList( 1, NewFace );
           myResMap.insert(make_pair(face,aList));
           continue;
@@ -529,13 +776,13 @@ bool StdMeshers_QuadToTriaAdaptor::Compute(SMESH_Mesh& aMesh, const TopoDS_Shape
         // add triangles to result map
         TTriaList& triaList = myResMap.insert( make_pair( face, TTriaList() ))->second;
         for(i=0; i<4; i++)
-          triaList.push_back( new SMDS_FaceOfNodes( NewNode, FNodes[i], FNodes[i+1] ));
+          triaList.push_back( new Q2TAdaptor_Triangle( NewNode, FNodes[i], FNodes[i+1] ));
 
         // create a pyramid
         if ( isRev ) swap( FNodes[1], FNodes[3]);
         SMDS_MeshVolume* aPyram =
           helper.AddVolume( FNodes[0], FNodes[1], FNodes[2], FNodes[3], NewNode );
-        myPyram2Trias.insert(make_pair(aPyram, & triaList));
+        myPyramids.push_back(aPyram);
 
       } // end loop on elements on a face submesh
     }
@@ -553,7 +800,7 @@ bool StdMeshers_QuadToTriaAdaptor::Compute(SMESH_Mesh& aMesh, const TopoDS_Shape
 bool StdMeshers_QuadToTriaAdaptor::Compute(SMESH_Mesh& aMesh)
 {
   myResMap.clear();
-  myPyram2Trias.clear();
+  myPyramids.clear();
   SMESH_MesherHelper helper(aMesh);
   helper.IsQuadraticSubMesh(aMesh.GetShapeToMesh());
   helper.SetElementsOnShape( true );
@@ -588,7 +835,7 @@ bool StdMeshers_QuadToTriaAdaptor::Compute(SMESH_Mesh& aMesh)
       // degenerate face
       // add triangles to result map
       TTriaList aList;
-      SMDS_FaceOfNodes* NewFace;
+      SMDS_MeshFace* NewFace;
       // check orientation
 
       double tmp = PN->Value(1).Distance(PN->Value(2)) + PN->Value(2).Distance(PN->Value(3));
@@ -651,9 +898,9 @@ bool StdMeshers_QuadToTriaAdaptor::Compute(SMESH_Mesh& aMesh)
         }
       }
       if(!IsRev)
-        NewFace = new SMDS_FaceOfNodes( FNodes[0], FNodes[1], FNodes[2] );
+        NewFace = new Q2TAdaptor_Triangle( FNodes[0], FNodes[1], FNodes[2] );
       else
-        NewFace = new SMDS_FaceOfNodes( FNodes[0], FNodes[2], FNodes[1] );
+        NewFace = new Q2TAdaptor_Triangle( FNodes[0], FNodes[2], FNodes[1] );
       aList.push_back(NewFace);
       myResMap.insert(make_pair(face,aList));
       continue;
@@ -729,11 +976,11 @@ bool StdMeshers_QuadToTriaAdaptor::Compute(SMESH_Mesh& aMesh)
       // add triangles to result map
       TTriaList& aList = myResMap.insert( make_pair( face, TTriaList()))->second;
       for(i=0; i<4; i++) {
-        SMDS_FaceOfNodes* NewFace;
+        SMDS_MeshFace* NewFace;
         if(isRev)
-          NewFace = new SMDS_FaceOfNodes( NewNode, FNodes[i], FNodes[i+1] );
+          NewFace = new Q2TAdaptor_Triangle( NewNode, FNodes[i], FNodes[i+1] );
         else
-          NewFace = new SMDS_FaceOfNodes( NewNode, FNodes[i+1], FNodes[i] );
+          NewFace = new Q2TAdaptor_Triangle( NewNode, FNodes[i+1], FNodes[i] );
         aList.push_back(NewFace);
       }
       // create a pyramid
@@ -742,7 +989,7 @@ bool StdMeshers_QuadToTriaAdaptor::Compute(SMESH_Mesh& aMesh)
         aPyram = helper.AddVolume( FNodes[0], FNodes[1], FNodes[2], FNodes[3], NewNode );
       else
         aPyram = helper.AddVolume( FNodes[0], FNodes[3], FNodes[2], FNodes[1], NewNode );
-      myPyram2Trias.insert(make_pair(aPyram, & aList));
+      myPyramids.push_back(aPyram);
     }
   } // end loop on all faces
 
@@ -757,39 +1004,47 @@ bool StdMeshers_QuadToTriaAdaptor::Compute(SMESH_Mesh& aMesh)
 
 bool StdMeshers_QuadToTriaAdaptor::Compute2ndPart(SMESH_Mesh& aMesh)
 {
-  SMESHDS_Mesh * meshDS = aMesh.GetMeshDS();
-
-  // check intersections between created pyramids
-
-  if(myPyram2Trias.empty())
+  if(myPyramids.empty())
     return true;
 
-  int k = 0;
-
-  // for each pyramid store list of merged pyramids with their faces
-  typedef map< const SMDS_MeshElement*, list< TPyram2Trias::iterator > > TPyram2Merged;
-  TPyram2Merged MergesInfo;
+  SMESHDS_Mesh * meshDS = aMesh.GetMeshDS();
+  int i, j, k, myShapeID = myPyramids[0]->GetNode(4)->GetPosition()->GetShapeId();
 
   if ( !myElemSearcher )
     myElemSearcher = SMESH_MeshEditor(&aMesh).GetElementSearcher();
   SMESH_ElementSearcher* searcher = const_cast<SMESH_ElementSearcher*>(myElemSearcher);
 
-  // iterate on all pyramids
-  TPyram2Trias::iterator itPi = myPyram2Trias.begin(), itPEnd = myPyram2Trias.end();
-  for ( ; itPi != itPEnd; ++itPi )
-  {
-    const SMDS_MeshElement* PrmI = itPi->first;
-    TPyram2Merged::iterator pMergesI = MergesInfo.find( PrmI );
+  set<const SMDS_MeshNode*> nodesToMove;
 
-    TXyzIterator xyzIt( PrmI->nodesIterator() );
-    vector<gp_Pnt> PsI( xyzIt, TXyzIterator() );
+  // check adjacent pyramids
+
+  for ( i = 0; i <  myPyramids.size(); ++i )
+  {
+    const SMDS_MeshElement* PrmI = myPyramids[i];
+    MergeAdjacent( PrmI, aMesh, nodesToMove );
+  }
+
+  // iterate on all pyramids
+  for ( i = 0; i <  myPyramids.size(); ++i )
+  {
+    const SMDS_MeshElement* PrmI = myPyramids[i];
 
     // compare PrmI with all the rest pyramids
 
-    bool NeedMove = false;
+    // collect adjacent pyramids and nodes coordinates of PrmI
+    set<const SMDS_MeshElement*> checkedPyrams;
+    vector<gp_Pnt> PsI(5);
+    for(k=0; k<5; k++) // loop on 4 base nodes of PrmI
+    {
+      const SMDS_MeshNode* n = PrmI->GetNode(k);
+      PsI[k] = SMESH_MeshEditor::TNodeXYZ( n );
+      SMDS_ElemIteratorPtr vIt = n->GetInverseElementIterator( SMDSAbs_Volume );
+      while ( vIt->more() )
+        checkedPyrams.insert( vIt->next() );
+    }
 
-    bool hasInt = false;
-    for(k=0; k<4 && !hasInt; k++) // loop on 4 base nodes of PrmI
+    // check intersection with distant pyramids
+    for(k=0; k<4; k++) // loop on 4 base nodes of PrmI
     {
       gp_Vec Vtmp(PsI[k],PsI[4]);
       gp_Pnt Pshift = PsI[k].XYZ() + Vtmp.XYZ() * 0.01; // base node moved a bit to apex
@@ -798,25 +1053,23 @@ bool StdMeshers_QuadToTriaAdaptor::Compute2ndPart(SMESH_Mesh& aMesh)
       vector< const SMDS_MeshElement* > suspectPyrams;
       searcher->GetElementsNearLine( line, SMDSAbs_Volume, suspectPyrams);
 
-      for ( int j = 0; j < suspectPyrams.size(); ++j )
+      for ( j = 0; j < suspectPyrams.size(); ++j )
       {
         const SMDS_MeshElement* PrmJ = suspectPyrams[j];
-        if ( PrmJ == PrmI || PrmJ->NbCornerNodes() != 5 ) continue;
-
-        TPyram2Trias::iterator itPj = myPyram2Trias.find( PrmJ );
-        if ( itPj == myPyram2Trias.end() ) continue; // pyramid from other SOLID
-
-        // check if two pyramids already merged
-        TPyram2Merged::iterator pMergesJ = MergesInfo.find( PrmJ );
-        if ( pMergesJ != MergesInfo.end() &&
-             find(pMergesJ->second.begin(),pMergesJ->second.end(), itPi )!=pMergesJ->second.end())
+        if ( PrmJ == PrmI || PrmJ->NbCornerNodes() != 5 )
           continue;
-        
-        xyzIt = TXyzIterator( PrmJ->nodesIterator() );
+        if ( myShapeID != PrmJ->GetNode(4)->GetPosition()->GetShapeId())
+          continue; // pyramid from other SOLID
+        if ( PrmI->GetNode(4) == PrmJ->GetNode(4) )
+          continue; // pyramids PrmI and PrmJ already merged
+        if ( !checkedPyrams.insert( PrmJ ).second )
+          continue; // already checked
+
+        TXyzIterator xyzIt( PrmJ->nodesIterator() );
         vector<gp_Pnt> PsJ( xyzIt, TXyzIterator() );
 
         gp_Pnt Pint;
-        hasInt = 
+        bool hasInt = 
           ( HasIntersection3( Pshift, PsI[4], Pint, PsJ[0], PsJ[1], PsJ[4]) ||
             HasIntersection3( Pshift, PsI[4], Pint, PsJ[1], PsJ[2], PsJ[4]) ||
             HasIntersection3( Pshift, PsI[4], Pint, PsJ[2], PsJ[3], PsJ[4]) ||
@@ -831,10 +1084,12 @@ bool StdMeshers_QuadToTriaAdaptor::Compute2ndPart(SMESH_Mesh& aMesh)
               HasIntersection3( Pshift, PsJ[4], Pint, PsI[2], PsI[3], PsI[4]) ||
               HasIntersection3( Pshift, PsJ[4], Pint, PsI[3], PsI[0], PsI[4]) );
         }
-        if ( hasInt ) {
+
+        if ( hasInt )
+        {
           // count common nodes of base faces of two pyramids
           int nbc = 0;
-          for(k=0; k<4; k++)
+          for (k=0; k<4; k++)
             nbc += int ( PrmI->GetNodeIndex( PrmJ->GetNode(k) ) >= 0 );
 
           if ( nbc == 4 )
@@ -843,147 +1098,50 @@ bool StdMeshers_QuadToTriaAdaptor::Compute2ndPart(SMESH_Mesh& aMesh)
           if(nbc>0)
           {
             // Merge the two pyramids and others already merged with them
-
-            // initialize merge info of pyramids
-            if ( pMergesI == MergesInfo.end() ) // first merge of PrmI
-            {
-              pMergesI = MergesInfo.insert( make_pair( PrmI, list<TPyram2Trias::iterator >())).first;
-              pMergesI->second.push_back( itPi );
-            }
-            if ( pMergesJ == MergesInfo.end() ) // first merge of PrmJ
-            {
-              pMergesJ = MergesInfo.insert( make_pair( PrmJ, list<TPyram2Trias::iterator >())).first;
-              pMergesJ->second.push_back( itPj );
-            }
-            int nbI = pMergesI->second.size(), nbJ = pMergesJ->second.size();
-
-            // an apex node to make common to all merged pyramids
-            SMDS_MeshNode* CommonNode = const_cast<SMDS_MeshNode*>(PrmI->GetNode(4));
-            CommonNode->setXYZ( ( nbI*PsI[4].X() + nbJ*PsJ[4].X() ) / (nbI+nbJ),
-                                ( nbI*PsI[4].Y() + nbJ*PsJ[4].Y() ) / (nbI+nbJ),
-                                ( nbI*PsI[4].Z() + nbJ*PsJ[4].Z() ) / (nbI+nbJ) );
-            NeedMove = true;
-            const SMDS_MeshNode* Nrem = PrmJ->GetNode(4); // node to remove
-
-            list< TPyram2Trias::iterator >& aMergesI = pMergesI->second;
-            list< TPyram2Trias::iterator >& aMergesJ = pMergesJ->second;
-
-            // find and remove coincided faces of merged pyramids
-            list< TPyram2Trias::iterator >::iterator itPttI, itPttJ;
-            TTriaList::iterator trI, trJ;
-            for ( itPttI = aMergesI.begin(); itPttI != aMergesI.end(); ++itPttI )
-            {
-              TTriaList* triaListI = (*itPttI)->second;
-              for ( trI = triaListI->begin(); trI != triaListI->end(); )
-              {
-                const SMDS_FaceOfNodes* FI = *trI;
-
-                for ( itPttJ = aMergesJ.begin(); itPttJ != aMergesJ.end() && FI; ++itPttJ )
-                {
-                  TTriaList* triaListJ = (*itPttJ)->second;
-                  for ( trJ = triaListJ->begin(); trJ != triaListJ->end();  )
-                  {
-                    const SMDS_FaceOfNodes* FJ = *trJ;
-
-                    if( EqualTriangles(FI,FJ) )
-                    {
-                      delete FI;
-                      delete FJ;
-                      FI = FJ = 0;
-                      trI = triaListI->erase( trI );
-                      trJ = triaListJ->erase( trJ ); 
-                      break; // only one triangle of a pyramid can coincide with another pyramid
-                    }
-                    ++trJ;
-                  }
-                }
-                if ( FI ) ++trI; // increament if triangle not deleted
-              }
-            }
-
-            // set the common apex node to pyramids and triangles merged with J
-            for ( itPttJ = aMergesJ.begin(); itPttJ != aMergesJ.end(); ++itPttJ )
-            {
-              const SMDS_MeshElement* Prm = (*itPttJ)->first;
-              TTriaList*         triaList = (*itPttJ)->second;
-
-              vector< const SMDS_MeshNode* > nodes( Prm->begin_nodes(), Prm->end_nodes() );
-              nodes[4] = CommonNode;
-              meshDS->ChangeElementNodes( Prm, &nodes[0], nodes.size());
-
-              for ( TTriaList::iterator trIt = triaList->begin(); trIt != triaList->end(); ++trIt )
-              {
-                SMDS_FaceOfNodes* Ftria = const_cast< SMDS_FaceOfNodes*>( *trIt );
-                const SMDS_MeshNode* NF[3] = { CommonNode, Ftria->GetNode(1), Ftria->GetNode(2)};
-                Ftria->ChangeNodes(NF, 3);
-              }
-            }
-
-            // join MergesInfo of merged pyramids
-            for ( k = 0, itPttI = aMergesI.begin(); k < nbI; ++itPttI, ++k )
-            {
-              const SMDS_MeshElement* PrmI = (*itPttI)->first;
-              list< TPyram2Trias::iterator >& merges = MergesInfo[ PrmI ];
-              merges.insert( merges.end(), aMergesJ.begin(), aMergesJ.end() );
-            }
-            for ( k = 0, itPttJ = aMergesJ.begin(); k < nbJ; ++itPttJ, ++k )
-            {
-              const SMDS_MeshElement* PrmJ = (*itPttJ)->first;
-              list< TPyram2Trias::iterator >& merges = MergesInfo[ PrmJ ];
-              merges.insert( merges.end(), aMergesI.begin(), aMergesI.end() );
-            }
-
-            // removing node
-            meshDS->RemoveNode(Nrem);
+            MergePiramids( PrmI, PrmJ, meshDS, nodesToMove );
           }
           else { // nbc==0
 
             // decrease height of pyramids
-            gp_XYZ PC1(0,0,0), PC2(0,0,0);
+            gp_XYZ PCi(0,0,0), PCj(0,0,0);
             for(k=0; k<4; k++) {
-              PC1 += PsI[k].XYZ();
-              PC2 += PsJ[k].XYZ();
+              PCi += PsI[k].XYZ();
+              PCj += PsJ[k].XYZ();
             }
-            PC1 /= 4; PC2 /= 4; 
-            gp_Vec VN1(PC1,PsI[4]);
-            gp_Vec VI1(PC1,Pint);
-            gp_Vec VN2(PC2,PsJ[4]);
-            gp_Vec VI2(PC2,Pint);
+            PCi /= 4; PCj /= 4; 
+            gp_Vec VN1(PCi,PsI[4]);
+            gp_Vec VN2(PCj,PsJ[4]);
+            gp_Vec VI1(PCi,Pint);
+            gp_Vec VI2(PCj,Pint);
             double ang1 = fabs(VN1.Angle(VI1));
             double ang2 = fabs(VN2.Angle(VI2));
-            double h1,h2;
-            if(ang1>PI/3.)
-              h1 = VI1.Magnitude()/2;
-            else
-              h1 = VI1.Magnitude()*cos(ang1);
-            if(ang2>PI/3.)
-              h2 = VI2.Magnitude()/2;
-            else
-              h2 = VI2.Magnitude()*cos(ang2);
-            double coef1 = 0.5;
-            if(ang1<PI/3)
-              coef1 -= cos(ang1)*0.25;
-            double coef2 = 0.5;
-            if(ang2<PI/3)
-              coef2 -= cos(ang1)*0.25;
+            double coef1 = 0.5 - (( ang1<PI/3 ) ? cos(ang1)*0.25 : 0 );
+            double coef2 = 0.5 - (( ang2<PI/3 ) ? cos(ang2)*0.25 : 0 ); // cos(ang2) ?
+//             double coef2 = 0.5;
+//             if(ang2<PI/3)
+//               coef2 -= cos(ang1)*0.25;
 
             VN1.Scale(coef1);
             VN2.Scale(coef2);
             SMDS_MeshNode* aNode1 = const_cast<SMDS_MeshNode*>(PrmI->GetNode(4));
-            aNode1->setXYZ( PC1.X()+VN1.X(), PC1.Y()+VN1.Y(), PC1.Z()+VN1.Z() );
+            aNode1->setXYZ( PCi.X()+VN1.X(), PCi.Y()+VN1.Y(), PCi.Z()+VN1.Z() );
             SMDS_MeshNode* aNode2 = const_cast<SMDS_MeshNode*>(PrmJ->GetNode(4));
-            aNode2->setXYZ( PC2.X()+VN2.X(), PC2.Y()+VN2.Y(), PC2.Z()+VN2.Z() );
-            NeedMove = true;
+            aNode2->setXYZ( PCj.X()+VN2.X(), PCj.Y()+VN2.Y(), PCj.Z()+VN2.Z() );
+            nodesToMove.insert( aNode1 );
+            nodesToMove.insert( aNode2 );
           }
         } // end if(hasInt)
       } // loop on suspectPyrams
     }  // loop on 4 base nodes of PrmI
-    if( NeedMove && !meshDS->IsEmbeddedMode() )
-    {
-      const SMDS_MeshNode* apex = PrmI->GetNode( 4 );
-      meshDS->MoveNode( apex, apex->X(), apex->Y(), apex->Z() );
-    }
+
   } // loop on all pyramids
+
+  if( !nodesToMove.empty() && !meshDS->IsEmbeddedMode() )
+  {
+    set<const SMDS_MeshNode*>::iterator n = nodesToMove.begin();
+    for ( ; n != nodesToMove.end(); ++n )
+      meshDS->MoveNode( *n, (*n)->X(), (*n)->Y(), (*n)->Z() );
+  }
 
   // rebind triangles of pyramids sharing the same base quadrangle to the first
   // entrance of the base quadrangle
@@ -993,8 +1151,18 @@ bool StdMeshers_QuadToTriaAdaptor::Compute2ndPart(SMESH_Mesh& aMesh)
     if ( q2t->first == q2tPrev->first )
       q2tPrev->second.splice( q2tPrev->second.end(), q2t->second );
   }
+  // delete removed triangles
+  for ( q2t = myResMap.begin(); q2t != myResMap.end(); ++q2t )
+  {
+    TTriaList & trias = q2t->second;
+    for ( TTriaList::iterator tri = trias.begin(); tri != trias.end(); )
+      if ( ((const Q2TAdaptor_Triangle*) *tri)->IsRemoved() )
+        delete *tri, trias.erase( tri++ );
+      else
+        tri++;
+  }
 
-  myPyram2Trias.clear(); // no more needed
+  myPyramids.clear(); // no more needed
   myDegNodes.clear();
 
   delete myElemSearcher;
@@ -1009,11 +1177,8 @@ bool StdMeshers_QuadToTriaAdaptor::Compute2ndPart(SMESH_Mesh& aMesh)
  */
 //================================================================================
 
-const list<const SMDS_FaceOfNodes* >* StdMeshers_QuadToTriaAdaptor::GetTriangles (const SMDS_MeshElement* aQuad)
+const list<const SMDS_MeshFace* >* StdMeshers_QuadToTriaAdaptor::GetTriangles (const SMDS_MeshElement* aQuad)
 {
   TQuad2Trias::iterator it = myResMap.find(aQuad);
-  if( it != myResMap.end() ) {
-    return & it->second;
-  }
-  return 0;
+  return ( it != myResMap.end() ?  & it->second : 0 );
 }

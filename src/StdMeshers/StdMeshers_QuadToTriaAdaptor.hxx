@@ -56,7 +56,7 @@ public:
 
   bool Compute(SMESH_Mesh& aMesh);
 
-  const std::list<const SMDS_FaceOfNodes*>* GetTriangles(const SMDS_MeshElement* aFace);
+  const std::list<const SMDS_MeshFace*>* GetTriangles(const SMDS_MeshElement* aFace);
 
 protected:
 
@@ -77,12 +77,13 @@ protected:
   bool Compute2ndPart(SMESH_Mesh& aMesh);
 
 
-  typedef std::list<const SMDS_FaceOfNodes* >                        TTriaList;
+  typedef std::list<const SMDS_MeshFace* >                           TTriaList;
   typedef std::multimap<const SMDS_MeshElement*, TTriaList >         TQuad2Trias;
-  typedef std::map<const SMDS_MeshElement*, TTriaList *, TIDCompare> TPyram2Trias;
+  //typedef std::map<const SMDS_MeshElement*, TTriaList *, TIDCompare> TPyram2Trias;
 
   TQuad2Trias  myResMap;
-  TPyram2Trias myPyram2Trias;
+  //TPyram2Trias myPyram2Trias;
+  std::vector<const SMDS_MeshElement*> myPyramids;
 
   std::list< const SMDS_MeshNode* > myDegNodes;
 
