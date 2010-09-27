@@ -40,7 +40,8 @@ SUBDIRS = \
 	SMESH_SWIG \
 	MEFISTO2 \
 	StdMeshers \
-	StdMeshers_I
+	StdMeshers_I \
+	SMESH_PY
 
 if SMESH_ENABLE_GUI
   SUBDIRS += \
@@ -54,4 +55,4 @@ endif
 
 DIST_SUBDIRS = 	SMDS SMESHDS Controls Driver DriverMED DriverDAT DriverUNV DriverSTL SMESH	\
 		SMESH_I SMESHClient SMESH_SWIG MEFISTO2 StdMeshers StdMeshers_I OBJECT		\
-		SMESHFiltersSelection SMESHGUI PluginUtils SMESH_SWIG_WITHIHM StdMeshersGUI
+		SMESHFiltersSelection SMESHGUI PluginUtils SMESH_SWIG_WITHIHM StdMeshersGUI SMESH_PY

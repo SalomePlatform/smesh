@@ -349,6 +349,13 @@ CHECK_HTML_GENERATORS
 
 echo
 echo ---------------------------------------------
+echo testing sphinx
+echo ---------------------------------------------
+echo
+CHECK_SPHINX
+
+echo
+echo ---------------------------------------------
 echo Testing Kernel
 echo ---------------------------------------------
 echo
@@ -382,11 +389,11 @@ echo
 echo Configure
 
 if test "${gui_ok}" = "yes"; then
-  variables="cc_ok fortran_ok boost_ok lex_yacc_ok python_ok swig_ok threads_ok OpenGL_ok qt_ok vtk_ok hdf5_ok omniORB_ok occ_ok doxygen_ok graphviz_ok qwt_ok Kernel_ok Geom_ok Med_ok gui_ok"
+  variables="cc_ok fortran_ok boost_ok lex_yacc_ok python_ok swig_ok threads_ok OpenGL_ok qt_ok vtk_ok hdf5_ok omniORB_ok occ_ok doxygen_ok graphviz_ok sphinx_ok qwt_ok Kernel_ok Geom_ok Med_ok gui_ok"
 elif test "${SalomeGUI_need}" != "no"; then
-  variables="cc_ok fortran_ok boost_ok lex_yacc_ok python_ok swig_ok threads_ok hdf5_ok omniORB_ok occ_ok doxygen_ok graphviz_ok Kernel_ok Geom_ok Med_ok gui_ok"
+  variables="cc_ok fortran_ok boost_ok lex_yacc_ok python_ok swig_ok threads_ok hdf5_ok omniORB_ok occ_ok doxygen_ok graphviz_ok sphinx_ok Kernel_ok Geom_ok Med_ok gui_ok"
 else
-  variables="cc_ok fortran_ok boost_ok lex_yacc_ok python_ok swig_ok threads_ok hdf5_ok omniORB_ok occ_ok doxygen_ok graphviz_ok Kernel_ok Geom_ok Med_ok"
+  variables="cc_ok fortran_ok boost_ok lex_yacc_ok python_ok swig_ok threads_ok hdf5_ok omniORB_ok occ_ok doxygen_ok graphviz_ok sphinx_ok Kernel_ok Geom_ok Med_ok"
 fi
 
 for var in $variables
@@ -440,6 +447,7 @@ AC_OUTPUT([ \
   bin/Makefile \
   SMESH_version.h \
   doc/Makefile \
+  doc/docutils/Makefile \
   doc/salome/Makefile \
   doc/salome/gui/Makefile \
   doc/salome/gui/SMESH/Makefile \
@@ -471,6 +479,7 @@ AC_OUTPUT([ \
   src/StdMeshers/Makefile \
   src/StdMeshersGUI/Makefile \
   src/StdMeshers_I/Makefile \
+  src/SMESH_PY/Makefile \
   resources/Makefile \
   resources/SMESHCatalog.xml \
   idl/Makefile \

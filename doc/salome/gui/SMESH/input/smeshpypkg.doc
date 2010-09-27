@@ -1,0 +1,14 @@
+/*!
+
+\page smeshpypkg_page Programming Interface of the SMESH python package
+
+Sorry, but the documentation is not available yet in doxygen format.
+
+Fortunately, a documentation exists in restructured format and then
+can be generated here using sphinx, in the expectative of the doxygen
+version.
+
+Please refer to this <a href="../../tui/SMESH/docutils/index.html">
+documentation of the SMESH python packages</a>.
+
+*/

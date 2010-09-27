@@ -1,4 +1,3 @@
-#!/bin/sh
 #  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 #
 #  This library is free software; you can redistribute it and/or
@@ -18,16 +17,9 @@
 #  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
-rm -rf autom4te.cache aclocal.m4 configure make_config
-find . -name "*~" -print -exec rm {} \;
-find . -name "*.pyc" -print -exec rm {} \;
-#exit
-# ==================== ON SORT AVANT
+include $(top_srcdir)/adm_local/unix/make_common_starter.am
 
-find bin -name Makefile.in | xargs rm -f
-find doc -name Makefile.in | xargs rm -f
-find idl -name Makefile.in | xargs rm -f
-find resources -name Makefile.in | xargs rm -f
-find adm_local -name Makefile.in | xargs rm -f
-find src -name Makefile.in | xargs rm -f
-rm -f Makefile.in
+salomepypkgdir = $(salomepythondir)/salome/smesh
+salomepypkg_PYTHON = \
+	__init__.py \
+	smeshstudytools.py
