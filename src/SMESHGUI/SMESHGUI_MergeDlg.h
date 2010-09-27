@@ -89,6 +89,8 @@ private:
   // add the centers of gravity of ElemsIdMap elements to the GrCentersXYZ list
 
 private:
+  typedef QList<SMESH::SMESH_GroupBase_var> GrpList;
+
   SMESHGUI*                 mySMESHGUI;     /* Current SMESHGUI object */
   LightApp_SelectionMgr*    mySelectionMgr; /* User shape selection */
   SVTK_Selector*            mySelector;
@@ -137,10 +139,16 @@ private:
   QPushButton*              RemoveElemButton;
   QPushButton*              SetFirstButton;
 
+  QGroupBox*                GroupExclude;
+  QListWidget*              ListExclude;
+
   QGroupBox*                TypeBox;
   QButtonGroup*             GroupType;
     
   QString                   myHelpFileName;
+
+  QString                   myEntry;
+  GrpList                   myGroups;
 
  private slots:
   void                      ClickOnOk();

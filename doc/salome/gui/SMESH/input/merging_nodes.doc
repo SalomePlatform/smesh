@@ -2,17 +2,18 @@
 
 \page merging_nodes_page Merging nodes
 
-\n This functionality allows user to detect groups of coincident nodes
-with desirable tolerance, edit these groups and merge.
+This functionality allows user to detect groups of coincident nodes
+with specified tolerance; each group of the coincident nodes can be
+then converted to the single node.
 
 \image html mergenodes_ico.png "Merge nodes button"
 
 <em>To merge nodes of your mesh:</em>
 <ol>
-<li>From the \b Modification choose \b Transformation and  from its
+<li>From the \b Modification choose \b Transformation and from its
 sub-menu select the <b>Merge nodes</b> item. The following dialog box
 shall appear:</li>
-
+<br>
 \image html mergenodes_auto.png
 <br>
 <ul>
@@ -21,13 +22,16 @@ shall appear:</li>
 processed.
 <li>\b Tolerance is a maximum distance between nodes sufficient for
 merging.</li>
+<li><b>Exclude Groups</b> group box allows to ignore the nodes which
+belong to the specified mesh groups.
 </ul>
 
 <li><b>Automatic mode:</b>
 <br>
 <ul>
 <li>In the \b Automatic Mode all Nodes within the indicated tolerance
-will be merged.</li>
+will be merged. The nodes which belong to the groups specified in the
+<b>Exclude Groups</b> will be not taken into account.</li>
 </ul>
 </li><br>
 <li>If the \b Manual Mode is selected, additional controls are available:
@@ -44,8 +48,9 @@ viewer with pressed "Shift" key.</li>
 <li><b>Select all</b> checkbox selects all groups.</li>
 </ul>
 
+<br>
 \image html mergenodes.png
-
+<br>
 </li>
 <li><b>Edit selected group</b> list allows editing the selected
 group:

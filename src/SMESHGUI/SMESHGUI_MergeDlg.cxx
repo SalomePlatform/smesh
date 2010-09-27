@@ -391,29 +391,43 @@ SMESHGUI_MergeDlg::SMESHGUI_MergeDlg (SMESHGUI* theModule, int theAction)
                                   this);
 
   QVBoxLayout* aCoincidentLayout = new QVBoxLayout(GroupCoincident);
+  aCoincidentLayout->setSpacing(SPACING);
+  aCoincidentLayout->setMargin(MARGIN);
 
-  GroupCoincident->setLayout(aCoincidentLayout);
-
-  QHBoxLayout* aSpinBoxLayout = new QHBoxLayout( GroupCoincident );
-  
   if (myAction == 0) { // case merge nodes
-    TextLabelTolerance = new QLabel(tr("SMESH_TOLERANCE"), GroupCoincident);
-    SpinBoxTolerance = new SMESHGUI_SpinBox(GroupCoincident);
+    QWidget* foo = new QWidget(GroupCoincident);
+    TextLabelTolerance = new QLabel(tr("SMESH_TOLERANCE"), foo);
+    SpinBoxTolerance = new SMESHGUI_SpinBox(foo);
     SpinBoxTolerance->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed));
 
-    aSpinBoxLayout->addWidget(TextLabelTolerance);
-    aSpinBoxLayout->addWidget(SpinBoxTolerance);
-    aCoincidentLayout->addLayout(aSpinBoxLayout);
+    GroupExclude = new QGroupBox(tr("EXCLUDE_GROUPS"), foo);
+    GroupExclude->setCheckable( true );
+    GroupExclude->setChecked( false );
+    ListExclude = new QListWidget( GroupExclude );
+    QVBoxLayout* GroupExcludeLayout = new QVBoxLayout(GroupExclude);
+    GroupExcludeLayout->setSpacing(SPACING);
+    GroupExcludeLayout->setMargin(MARGIN);
+    GroupExcludeLayout->addWidget(ListExclude);
+
+    QGridLayout* fooLayout = new QGridLayout( foo );
+    fooLayout->setSpacing(SPACING);
+    fooLayout->setMargin(0);
+    fooLayout->addWidget(TextLabelTolerance, 0, 0 );
+    fooLayout->addWidget(SpinBoxTolerance,   0, 1 );
+    fooLayout->addWidget(GroupExclude,       1, 0, 1, 2 );
+    aCoincidentLayout->addWidget(foo);
   }
   else {
     TextLabelTolerance = 0;
     SpinBoxTolerance = 0;
+    GroupExclude = 0;
+    ListExclude = 0;
   }
 
   GroupCoincidentWidget = new QWidget(GroupCoincident);
   QGridLayout* GroupCoincidentLayout = new QGridLayout(GroupCoincidentWidget);
   GroupCoincidentLayout->setSpacing(SPACING);
-  GroupCoincidentLayout->setMargin(MARGIN);
+  GroupCoincidentLayout->setMargin(0);
 
   ListCoincident = new QListWidget(GroupCoincidentWidget);
   ListCoincident->setSelectionMode(QListWidget::ExtendedSelection);
@@ -423,11 +437,6 @@ SMESHGUI_MergeDlg::SMESHGUI_MergeDlg (SMESHGUI* theModule, int theAction)
   RemoveGroupButton = new QPushButton(tr("SMESH_BUT_REMOVE"), GroupCoincidentWidget);
 
   SelectAllCB = new QCheckBox(tr("SELECT_ALL"), GroupCoincidentWidget);
-
-  if (myAction == 0)
-    GroupCoincidentWidget->hide();
-  else
-    GroupCoincident->hide();
 
   GroupCoincidentLayout->addWidget(ListCoincident,    0,   0, 4, 2);
   GroupCoincidentLayout->addWidget(DetectButton,      0,   2);
@@ -465,8 +474,6 @@ SMESHGUI_MergeDlg::SMESHGUI_MergeDlg (SMESHGUI* theModule, int theAction)
   GroupEditLayout->addWidget(RemoveElemButton, 0, 2);
   GroupEditLayout->addWidget(SetFirstButton,   1, 1, 1, 2);
 
-  GroupEdit->hide();
-
   /***************************************************************/
   GroupButtons = new QGroupBox(this);
   QHBoxLayout* GroupButtonsLayout = new QHBoxLayout(GroupButtons);
@@ -498,6 +505,11 @@ SMESHGUI_MergeDlg::SMESHGUI_MergeDlg (SMESHGUI* theModule, int theAction)
   DlgLayout->addWidget(GroupCoincident);
   DlgLayout->addWidget(GroupEdit);
   DlgLayout->addWidget(GroupButtons);
+
+  GroupCoincidentWidget->setVisible( myAction != 0 );
+  GroupCoincident->setVisible( myAction == 0 );
+  //if GroupExclude->setVisible( myAction == 0 );
+  GroupEdit->hide();
 
   this->resize(10,10);
 
@@ -783,19 +795,27 @@ void SMESHGUI_MergeDlg::onDetect()
     ListEdit->clear();
 
     SMESH::array_of_long_array_var aGroupsArray;
+    SMESH::ListOfIDSources_var aExcludeGroups = new SMESH::ListOfIDSources;
+
+    SMESH::SMESH_IDSource_var src;
+    if ( mySubMeshOrGroup->_is_nil() ) src = SMESH::SMESH_IDSource::_duplicate( myMesh );
+    else src = SMESH::SMESH_IDSource::_duplicate( mySubMeshOrGroup );
 
     switch (myAction) {
     case 0 :
-      if(!mySubMeshOrGroup->_is_nil())
-        aMeshEditor->FindCoincidentNodesOnPart(mySubMeshOrGroup, SpinBoxTolerance->GetValue(), aGroupsArray);
-      else
-        aMeshEditor->FindCoincidentNodes(SpinBoxTolerance->GetValue(), aGroupsArray);
+      for ( int i = 0; GroupExclude->isChecked() && i < ListExclude->count(); i++ ) {
+	if ( ListExclude->item( i )->checkState() == Qt::Checked ) {
+	  aExcludeGroups->length( aExcludeGroups->length()+1 );
+	  aExcludeGroups[ aExcludeGroups->length()-1 ] = SMESH::SMESH_IDSource::_duplicate( myGroups[i] );
+	}
+      }
+      aMeshEditor->FindCoincidentNodesOnPartBut(src.in(),
+						SpinBoxTolerance->GetValue(), 
+						aGroupsArray.out(),
+						aExcludeGroups.in());
       break;
     case 1 :
-      if(!mySubMeshOrGroup->_is_nil())
-        aMeshEditor->FindEqualElements(mySubMeshOrGroup, aGroupsArray);
-      else
-        aMeshEditor->FindEqualElements(myMesh, aGroupsArray);
+      aMeshEditor->FindEqualElements(src.in(), aGroupsArray.out());
       break;
     }
     
@@ -1082,6 +1102,7 @@ void SMESHGUI_MergeDlg::SelectionIntoArgument()
     ListCoincident->clear();
     ListEdit->clear();
     myActor = 0;
+    QString aCurrentEntry = myEntry;
     
     int nbSel = SMESH::GetNameOfSelectedIObjects(mySelectionMgr, aString);
     if (nbSel != 1) {
@@ -1097,6 +1118,7 @@ void SMESHGUI_MergeDlg::SelectionIntoArgument()
     mySelectionMgr->selectedObjects(aList);
     
     Handle(SALOME_InteractiveObject) IO = aList.First();
+    myEntry = IO->getEntry();
     myMesh = SMESH::GetMeshByIO(IO);
     
     if (myMesh->_is_nil())
@@ -1125,6 +1147,26 @@ void SMESHGUI_MergeDlg::SelectionIntoArgument()
       else
         if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
           aViewWindow->SetSelectionMode(CellSelection);
+    }
+
+    // process groups
+    if ( myAction == 0 && !myMesh->_is_nil() && myEntry != aCurrentEntry ) {
+      myGroups.clear();
+      ListExclude->clear();
+      SMESH::ListOfGroups_var aListOfGroups = myMesh->GetGroups();
+      for( int i = 0, n = aListOfGroups->length(); i < n; i++ ) {
+	SMESH::SMESH_GroupBase_var aGroup = aListOfGroups[i];
+	if ( !aGroup->_is_nil() ) { // && aGroup->GetType() == SMESH::NODE
+	  QString aGroupName( aGroup->GetName() );
+	  if ( !aGroupName.isEmpty() ) {
+	    myGroups.append(SMESH::SMESH_GroupBase::_duplicate(aGroup));
+	    QListWidgetItem* item = new QListWidgetItem( aGroupName );
+	    item->setFlags( Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsUserCheckable );
+	    item->setCheckState( Qt::Unchecked );
+	    ListExclude->addItem( item );
+	  }
+	}
+      }
     }
 
     updateControls();

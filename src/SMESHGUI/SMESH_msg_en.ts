@@ -3779,6 +3779,10 @@ Please select a groups and try again</translation>
         <source>SELECT_ALL</source>
         <translation>Select all</translation>
     </message>
+    <message>
+        <source>EXCLUDE_GROUPS</source>
+        <translation>Exclude Groups</translation>
+    </message>
 </context>
 <context>
     <name>SMESHGUI_ExtrusionAlongPathDlg</name>
