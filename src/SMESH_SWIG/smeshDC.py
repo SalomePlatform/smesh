@@ -4447,7 +4447,7 @@ class Mesh_Triangle(Mesh_Algorithm):
         self.Parameters().SetPhyMax(theVal)
 
     ## Sets a way to define maximum angular deflection of mesh from CAD model.
-    #  @param theGeometricMesh is: DefaultGeom or Custom
+    #  @param theGeometricMesh is: 0 (None) or 1 (Custom)
     #  @ingroup l3_hypos_blsurf
     def SetGeometricMesh(self, theGeometricMesh=0):
         #  Parameter of BLSURF algo
