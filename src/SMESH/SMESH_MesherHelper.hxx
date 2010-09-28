@@ -298,7 +298,8 @@ public:
                   const SMDS_MeshNode* n,
                   double&              u,
                   const double         tol,
-                  const bool           force=false) const;
+                  const bool           force=false,
+                  double*              distance=0) const;
   /*!
    * \brief Return middle UV taking in account surface period
    */
@@ -453,6 +454,9 @@ protected:
    */
   gp_Pnt2d GetUVOnSeam( const gp_Pnt2d& uv1, const gp_Pnt2d& uv2 ) const;
 
+  const SMDS_MeshNode* getMediumNodeOnComposedWire(const SMDS_MeshNode* n1,
+                                                   const SMDS_MeshNode* n2,
+                                                   bool                 force3d);
  private:
 
   // Forbiden copy constructor
