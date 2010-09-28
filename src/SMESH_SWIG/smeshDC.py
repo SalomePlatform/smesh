@@ -2000,7 +2000,7 @@ class Mesh:
         return self.mesh.GetElementsId()
 
     ## Returns the list of IDs of mesh elements with the given type
-    #  @param elementType  the required type of elements
+    #  @param elementType  the required type of elements (SMESH.NODE, SMESH.EDGE, SMESH.FACE or SMESH.VOLUME)
     #  @return list of integer values
     #  @ingroup l1_meshinfo
     def GetElementsByType(self, elementType):
