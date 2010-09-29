@@ -25,14 +25,14 @@
 #define _SMESH_QuadToTriaAdaptor_HXX_
 
 #include "SMESH_StdMeshers.hxx"
-#include "SMDS_FaceOfNodes.hxx"
 
 class SMESH_Mesh;
 class SMESH_ElementSearcher;
 class SMDS_MeshElement;
 class SMDS_MeshNode;
-class Handle(TColgp_HArray1OfPnt);
-class Handle(TColgp_HArray1OfVec);
+class SMDS_MeshFace;
+class Handle_TColgp_HArray1OfPnt;
+class Handle_TColgp_HArray1OfVec;
 class TopoDS_Shape;
 class gp_Pnt;
 class gp_Vec;
@@ -63,8 +63,8 @@ protected:
   //bool CheckDegenerate(const SMDS_MeshElement* aFace);
 
   int Preparation(const SMDS_MeshElement* face,
-                  Handle(TColgp_HArray1OfPnt)& PN,
-                  Handle(TColgp_HArray1OfVec)& VN,
+                  Handle_TColgp_HArray1OfPnt& PN,
+                  Handle_TColgp_HArray1OfVec& VN,
                   std::vector<const SMDS_MeshNode*>& FNodes,
                   gp_Pnt& PC, gp_Vec& VNorm,
                   const SMDS_MeshElement** volumes=0);
