@@ -40,7 +40,7 @@
                 dim="0"/>
 
     <hypothesis type="LocalLength"
-                label-id="Average length"
+                label-id="Local Length"
                 icon-id="mesh_hypo_length.png"
                 dim="1"/>
 

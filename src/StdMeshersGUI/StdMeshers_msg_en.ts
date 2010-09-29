@@ -113,7 +113,7 @@
     </message>
     <message>
         <source>SMESH_LOCAL_LENGTH_HYPOTHESIS</source>
-        <translation>Average Length</translation>
+        <translation>Local Length</translation>
     </message>
     <message>
         <source>SMESH_LOCAL_LENGTH_PARAM</source>
