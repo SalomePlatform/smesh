@@ -25,8 +25,10 @@
 //
 #include "StdMeshers_QuadToTriaAdaptor.hxx"
 
-#include <SMESH_Algo.hxx>
-#include <SMESH_MesherHelper.hxx>
+#include "SMDS_SetIterator.hxx"
+
+#include "SMESH_Algo.hxx"
+#include "SMESH_MesherHelper.hxx"
 
 #include <IntAna_IntConicQuad.hxx>
 #include <IntAna_Quadric.hxx>
@@ -88,6 +90,12 @@ namespace
     virtual SMDSAbs_EntityType   GetEntityType() const
     {
       return SMDSAbs_EntityType( Q2TAbs_TmpTriangle );
+    }
+    virtual SMDS_ElemIteratorPtr elementsIterator(SMDSAbs_ElementType type) const
+    {
+      if ( type == SMDSAbs_Node )
+        return SMDS_ElemIteratorPtr( new SMDS_NodeArrayElemIterator( _nodes, _nodes+3 ));
+      throw SALOME_Exception(LOCALIZED("Not implemented"));
     }
   };
 
