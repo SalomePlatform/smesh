@@ -71,6 +71,9 @@ dnl Export the AR macro so that it will be placed in the libtool file
 dnl correctly.
 export AR
 
+AC_PROG_MKDIR_P
+AC_SUBST(MKDIR_P)
+
 echo
 echo ---------------------------------------------
 echo testing make

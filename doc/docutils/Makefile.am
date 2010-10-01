@@ -28,13 +28,10 @@ pydocdir = $(docdir)/tui/SMESH/docutils
 
 if SPHINX_IS_OK
 
-pydoc_DATA=html/index.html
 html/index.html:$(RSTFILES)
 	make htm
 
 endif
-
-EXTRA_DIST+= html
 
 SPHINXOPTS      =
 SOURCEDIR       = $(srcdir)
@@ -47,25 +44,25 @@ SPHINX_PYTHONPATH = $(prefix)/lib/python$(PYTHON_VERSION)/site-packages/salome:$
 SPHINX_LD_LIBRARY_PATH = $(OMNIORB_ROOT)/lib
 
 htm:
-	mkdir -p html doctrees
+	$(MKDIR_P) html doctrees
 	PYTHONPATH=$(SPHINX_PYTHONPATH):${PYTHONPATH}; \
 	LD_LIBRARY_PATH=$(SPHINX_LD_LIBRARY_PATH):${LD_LIBRARY_PATH}; \
-	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) html
+	$(SPHINXBUILD) -W -b html $(ALLSPHINXOPTS) html
 	@echo
 	@echo "Build finished. The HTML pages are in html."
 
 latex:
-	mkdir -p latex doctrees
+	$(MKDIR_P) latex doctrees
 	PYTHONPATH=$(SPHINX_PYTHONPATH):${PYTHONPATH}; \
 	LD_LIBRARY_PATH=$(SPHINX_LD_LIBRARY_PATH):${LD_LIBRARY_PATH}; \
-	$(SPHINXBUILD) -b latex $(ALLSPHINXOPTS) latex
+	$(SPHINXBUILD) -W -b latex $(ALLSPHINXOPTS) latex
 	@echo
 	@echo "Build finished; the LaTeX files are in latex."
 	@echo "Run \`make all-pdf' or \`make all-ps' in that directory to" \
 	      "run these through (pdf)latex."
 
 html:
-	mkdir -p $@
+	$(MKDIR_P) $@
 
 RSTFILES= \
 	index.rst \
@@ -77,16 +74,18 @@ EXTRA_DIST+= $(RSTFILES)
 EXTRA_DIST+= \
 	conf.py 
 
-install-data-local:
-	$(INSTALL) -d $(pydocdir)
+install-data-local: html/index.html
+	test -z $(pydocdir) || $(MKDIR_P) $(DESTDIR)$(pydocdir)
 	if test -d "html"; then b=; else b="$(srcdir)/"; fi; \
 	cp -rf $$b"html"/* $(pydocdir) ; \
 	if test -f $$b"latex"/smeshpy.pdf; then cp -f $$b"latex"/smeshpy.pdf $(pydocdir) ; fi;
 
 uninstall-local:
-	chmod -R +w $(pydocdir)
-	rm -rf $(pydocdir)/*
+	-test -d $(pydocdir) && chmod -R +w $(pydocdir) && rm -rf $(pydocdir)/*
 
 clean-local:
 	-rm -rf html latex doctrees
 	if test -d "html"; then rm -rf html ; fi
+
+disthook :
+	-test -d html && cp -Rp html $(distdir)
