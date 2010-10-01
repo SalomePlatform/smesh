@@ -3428,7 +3428,7 @@ class Mesh:
         if ( isinstance( theObject, Mesh )):
             theObject = theObject.GetMesh()
         if ( isinstance( theObject, list )):
-            theObject = self.editor.MakeIDSource(theObject)
+            theObject = self.editor.MakeIDSource(theObject, SMESH.ALL)
 
         thePoint, Parameters = ParsePointStruct(thePoint)
         self.mesh.SetParameters(Parameters)
@@ -3449,7 +3449,7 @@ class Mesh:
         if (isinstance(theObject, Mesh)):
             theObject = theObject.GetMesh()
         if ( isinstance( theObject, list )):
-            theObject = self.editor.MakeIDSource(theObject)
+            theObject = self.editor.MakeIDSource(theObject,SMESH.ALL)
 
         mesh = self.editor.ScaleMakeMesh(theObject, thePoint, theScaleFact,
                                          MakeGroups, NewMeshName)
