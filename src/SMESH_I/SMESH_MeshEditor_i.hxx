@@ -35,6 +35,7 @@
 
 #include "SMESH_Mesh.hxx"
 #include "SMESH_PythonDump.hxx"
+#include "SMESH_MeshEditor.hxx"
 #include <list>
 
 class SMESH_MeshEditor;
@@ -736,30 +737,30 @@ public:
                                            const bool                 MakeGroups,
                                            const SMDSAbs_ElementType  ElementType,
                                            SMESH::SMESH_MeshEditor::Extrusion_Error & theError);
-  SMESH::ListOfGroups* mirror(const SMESH::long_array &           IDsOfElements,
+  SMESH::ListOfGroups* mirror(TIDSortedElemSet &                  IDsOfElements,
                               const SMESH::AxisStruct &           Axis,
                               SMESH::SMESH_MeshEditor::MirrorType MirrorType,
                               CORBA::Boolean                      Copy,
                               const bool                          MakeGroups,
                               ::SMESH_Mesh*                       TargetMesh=0);
-  SMESH::ListOfGroups* translate(const SMESH::long_array & IDsOfElements,
+  SMESH::ListOfGroups* translate(TIDSortedElemSet        & IDsOfElements,
                                  const SMESH::DirStruct &  Vector,
                                  CORBA::Boolean            Copy,
                                  const bool                MakeGroups,
                                  ::SMESH_Mesh*             TargetMesh=0);
-  SMESH::ListOfGroups* rotate(const SMESH::long_array & IDsOfElements,
+  SMESH::ListOfGroups* rotate(TIDSortedElemSet &           IDsOfElements,
                               const SMESH::AxisStruct &  Axis,
                               CORBA::Double             Angle,
                               CORBA::Boolean            Copy,
                               const bool                MakeGroups,
                               ::SMESH_Mesh*             TargetMesh=0);
 
-  SMESH::ListOfGroups* scale(const SMESH::long_array &  theIDsOfElements,
-                             const SMESH::PointStruct&  thePoint,
-                             const SMESH::double_array& theScaleFact,
-                             CORBA::Boolean             theCopy,
-                             const bool                 theMakeGroups,
-                             ::SMESH_Mesh*              theTargetMesh=0);
+  SMESH::ListOfGroups* scale(SMESH::SMESH_IDSource_ptr   theObject,
+                             const SMESH::PointStruct&   thePoint,
+                             const SMESH::double_array&  theScaleFact,
+                             CORBA::Boolean              theCopy,
+                             const bool                  theMakeGroups,
+                             ::SMESH_Mesh*               theTargetMesh=0);
 
   SMESH::SMESH_Mesh_ptr makeMesh(const char* theMeshName);
 
