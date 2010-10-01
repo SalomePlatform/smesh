@@ -390,23 +390,6 @@ public:
   // Move or copy theElements applying theTrsf to their nodes
 
 
-  /*!
-   * Generate new elements by extrusion of theElements
-   * param theElems - list of elements for scale
-   * param thePoint - base point for scale
-   * param theScaleFact - scale factors for axises
-   * param theCopy - allows copying the translated elements
-   * param theMakeGroups - forces the generation of new groups from existing ones
-   * param theTargetMesh - the name of the newly created mesh
-   * return instance of Mesh class
-   */
-  PGroupIDs Scale (TIDSortedElemSet&        theElements,
-                   const gp_Pnt&            thePoint,
-                   const std::list<double>& theScaleFact,
-                   const bool               theCopy,
-                   const bool               theMakeGroups,
-                   SMESH_Mesh*              theTargetMesh=0);
-
   typedef std::list< std::list< const SMDS_MeshNode* > > TListOfListOfNodes;
 
   void FindCoincidentNodes (TIDSortedNodeSet &   theNodes,
