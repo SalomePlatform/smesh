@@ -4855,6 +4855,10 @@ It is impossible to read point coordinates from file</translation>
         <source>SPLIT_HEX_TO_6_TETRA</source>
         <translation>Into 6 tetrahedra</translation>
     </message>
+    <message>
+        <source>SPLIT_HEX_TO_24_TETRA</source>
+        <translation>Into 24 tetrahedra</translation>
+    </message>
 </context>
 <context>
     <name>SMESHGUI_PrecisionDlg</name>
