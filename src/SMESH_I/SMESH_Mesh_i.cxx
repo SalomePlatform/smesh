@@ -121,24 +121,27 @@ SMESH_Mesh_i::~SMESH_Mesh_i()
 {
   INFOS("~SMESH_Mesh_i");
 
+#ifdef WITHGENERICOBJ
   // destroy groups
   map<int, SMESH::SMESH_GroupBase_ptr>::iterator itGr;
   for (itGr = _mapGroups.begin(); itGr != _mapGroups.end(); itGr++) {
+    if ( CORBA::is_nil( itGr->second ))
+      continue;
     SMESH_GroupBase_i* aGroup = dynamic_cast<SMESH_GroupBase_i*>(SMESH_Gen_i::GetServant(itGr->second).in());
     if (aGroup) {
       // this method is called from destructor of group (PAL6331)
       //_impl->RemoveGroup( aGroup->GetLocalID() );
-#ifdef WITHGENERICOBJ
+      aGroup->myMeshServant = 0;
       aGroup->Destroy();
-#endif
     }
   }
   _mapGroups.clear();
 
-#ifdef WITHGENERICOBJ
   // destroy submeshes
   map<int, SMESH::SMESH_subMesh_ptr>::iterator itSM;
   for ( itSM = _mapSubMeshIor.begin(); itSM != _mapSubMeshIor.end(); itSM++ ) {
+    if ( CORBA::is_nil( itSM->second ))
+      continue;
     SMESH_subMesh_i* aSubMesh = dynamic_cast<SMESH_subMesh_i*>(SMESH_Gen_i::GetServant(itSM->second).in());
     if (aSubMesh) {
       aSubMesh->Destroy();
@@ -149,6 +152,8 @@ SMESH_Mesh_i::~SMESH_Mesh_i()
   // destroy hypotheses
   map<int, SMESH::SMESH_Hypothesis_ptr>::iterator itH;
   for ( itH = _mapHypo.begin(); itH != _mapHypo.end(); itH++ ) {
+    if ( CORBA::is_nil( itH->second ))
+      continue;
     SMESH_Hypothesis_i* aHypo = dynamic_cast<SMESH_Hypothesis_i*>(SMESH_Gen_i::GetServant(itH->second).in());
     if (aHypo) {
       aHypo->Destroy();
