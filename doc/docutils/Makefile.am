@@ -41,10 +41,10 @@ ALLSPHINXOPTS   = -d doctrees $(PAPEROPT_a4) $(SPHINXOPTS) $(SOURCEDIR)
 
 SPHINX_PYTHONPATH = $(prefix)/lib/python$(PYTHON_VERSION)/site-packages/salome:$(KERNEL_ROOT_DIR)/bin/salome:$(KERNEL_ROOT_DIR)/lib/python$(PYTHON_VERSION)/site-packages/salome:$(OMNIORB_ROOT)/lib/python$(PYTHON_VERSION)/site-packages
 
-SPHINX_LD_LIBRARY_PATH = $(OMNIORB_ROOT)/lib
+SPHINX_LD_LIBRARY_PATH = $(KERNEL_ROOT_DIR)/lib/salome:$(OMNIORB_ROOT)/lib
 
 htm:
-	$(MKDIR_P) html doctrees
+	mkdir -p html doctrees
 	PYTHONPATH=$(SPHINX_PYTHONPATH):${PYTHONPATH}; \
 	LD_LIBRARY_PATH=$(SPHINX_LD_LIBRARY_PATH):${LD_LIBRARY_PATH}; \
 	$(SPHINXBUILD) -W -b html $(ALLSPHINXOPTS) html
@@ -52,7 +52,7 @@ htm:
 	@echo "Build finished. The HTML pages are in html."
 
 latex:
-	$(MKDIR_P) latex doctrees
+	mkdir -p latex doctrees
 	PYTHONPATH=$(SPHINX_PYTHONPATH):${PYTHONPATH}; \
 	LD_LIBRARY_PATH=$(SPHINX_LD_LIBRARY_PATH):${LD_LIBRARY_PATH}; \
 	$(SPHINXBUILD) -W -b latex $(ALLSPHINXOPTS) latex
@@ -62,7 +62,7 @@ latex:
 	      "run these through (pdf)latex."
 
 html:
-	$(MKDIR_P) $@
+	mkdir -p $@
 
 RSTFILES= \
 	index.rst \
@@ -75,7 +75,7 @@ EXTRA_DIST+= \
 	conf.py 
 
 install-data-local: html/index.html
-	test -z $(pydocdir) || $(MKDIR_P) $(DESTDIR)$(pydocdir)
+	test -z $(pydocdir) || mkdir -p $(DESTDIR)$(pydocdir)
 	if test -d "html"; then b=; else b="$(srcdir)/"; fi; \
 	cp -rf $$b"html"/* $(pydocdir) ; \
 	if test -f $$b"latex"/smeshpy.pdf; then cp -f $$b"latex"/smeshpy.pdf $(pydocdir) ; fi;
