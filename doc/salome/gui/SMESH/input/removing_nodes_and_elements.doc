@@ -69,6 +69,7 @@ The following Warning message box will appear:
 \image html removeorphannodes.png
 
 Confirm removing nodes by pressing "Yes" button.
+</ol>
 
 <br>
 \anchor removing_elements_anchor
@@ -118,7 +119,7 @@ about filters in the \ref selection_filter_library_page "Selection filter librar
 <li>From the Modification menu choose Remove and from the associated
 submenu select the Clear Mesh Data, or just click <em>"Clear Mesh Data"</em>
 button in the toolbar. You can also right-click on the mesh in the
-Object Browser and select Clear Mesh Data in the pop-up menu.
+Object Browser and select Clear Mesh Data in the pop-up menu.</li>
 </ol>
 
 \image html mesh_clear.png
