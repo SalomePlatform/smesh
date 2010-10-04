@@ -354,27 +354,27 @@ public:
                                      const SMDS_MeshNode * n37,
                                      const SMDS_MeshNode * n48);
 
-  virtual SMDS_MeshFace* AddPolygonalFaceWithID (std::vector<int> nodes_ids,
-                                                 const int        ID);
+  virtual SMDS_MeshFace* AddPolygonalFaceWithID (const std::vector<int>& nodes_ids,
+                                                 const int               ID);
 
-  virtual SMDS_MeshFace* AddPolygonalFaceWithID (std::vector<const SMDS_MeshNode*> nodes,
-                                                 const int                         ID);
+  virtual SMDS_MeshFace* AddPolygonalFaceWithID (const std::vector<const SMDS_MeshNode*>& nodes,
+                                                 const int                                ID);
 
-  virtual SMDS_MeshFace* AddPolygonalFace (std::vector<const SMDS_MeshNode*> nodes);
-
-  virtual SMDS_MeshVolume* AddPolyhedralVolumeWithID
-                           (std::vector<int> nodes_ids,
-                            std::vector<int> quantities,
-                            const int        ID);
+  virtual SMDS_MeshFace* AddPolygonalFace (const std::vector<const SMDS_MeshNode*>& nodes);
 
   virtual SMDS_MeshVolume* AddPolyhedralVolumeWithID
-                           (std::vector<const SMDS_MeshNode*> nodes,
-                            std::vector<int>                  quantities,
-                            const int                         ID);
+                           (const std::vector<int>& nodes_ids,
+                            const std::vector<int>& quantities,
+                            const int               ID);
+
+  virtual SMDS_MeshVolume* AddPolyhedralVolumeWithID
+                           (const std::vector<const SMDS_MeshNode*>& nodes,
+                            const std::vector<int>&                  quantities,
+                            const int                                ID);
 
   virtual SMDS_MeshVolume* AddPolyhedralVolume
-                           (std::vector<const SMDS_MeshNode*> nodes,
-                            std::vector<int>                  quantities);
+                           (const std::vector<const SMDS_MeshNode*>& nodes,
+                            const std::vector<int>&                  quantities);
 
   void MoveNode(const SMDS_MeshNode *, double x, double y, double z);
   virtual void RemoveNode(const SMDS_MeshNode *);
