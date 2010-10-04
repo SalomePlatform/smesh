@@ -198,6 +198,8 @@ PrecisionConfusion = 1e-07
 # TopAbs_State enumeration
 [TopAbs_IN, TopAbs_OUT, TopAbs_ON, TopAbs_UNKNOWN] = range(4)
 
+# Methods of splitting a hexahedron into tetrahedra
+Hex_5Tet, Hex_6Tet, Hex_24Tet = 1, 2, 3
 
 ## Converts an angle from degrees to radians
 def DegreesToRadians(AngleInDegrees):
@@ -687,6 +689,9 @@ class smeshDC(SMESH._objref_SMESH_Gen):
     def Concatenate( self, meshes, uniteIdenticalGroups,
                      mergeNodesAndElements = False, mergeTolerance = 1e-5, allGroups = False):
         mergeTolerance,Parameters = geompyDC.ParseParameters(mergeTolerance)
+        for i,m in enumerate(meshes):
+            if isinstance(m, Mesh):
+                meshes[i] = m.GetMesh()
         if allGroups:
             aSmeshMesh = SMESH._objref_SMESH_Gen.ConcatenateWithGroups(
                 self,meshes,uniteIdenticalGroups,mergeNodesAndElements,mergeTolerance)
@@ -2547,11 +2552,10 @@ class Mesh:
 
     ## Splits volumic elements into tetrahedrons
     #  @param elemIDs either list of elements or mesh or group or submesh
-    #  @param method  flags passing splitting method:
-    #         1 - split the hexahedron into 5 tetrahedrons
-    #         2 - split the hexahedron into 6 tetrahedrons
+    #  @param method  flags passing splitting method: Hex_5Tet, Hex_6Tet, Hex_24Tet
+    #         Hex_5Tet - split the hexahedron into 5 tetrahedrons, etc
     #  @ingroup l2_modif_cutquadr
-    def SplitVolumesIntoTetra(self, elemIDs, method=1 ):
+    def SplitVolumesIntoTetra(self, elemIDs, method=Hex_5Tet ):
         if isinstance( elemIDs, Mesh ):
             elemIDs = elemIDs.GetMesh()
         self.editor.SplitVolumesIntoTetra(elemIDs, method)
