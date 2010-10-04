@@ -1242,6 +1242,7 @@ namespace
     const int* _connectivity; //!< foursomes of tetra connectivy finished by -1
     bool       _baryNode;     //!< additional node is to be created at cell barycenter
     bool       _ownConn;      //!< to delete _connectivity in destructor
+    map<int, const SMDS_MeshNode*> _faceBaryNode; //!< map face index to node at BC of face
 
     TSplitMethod( int nbTet=0, const int* conn=0, bool addNode=false)
       : _nbTetra(nbTet), _connectivity(conn), _baryNode(addNode), _ownConn(false) {}
@@ -1267,7 +1268,12 @@ namespace
 
   TSplitMethod getSplitMethod( SMDS_VolumeTool& vol, const int theMethodFlags)
   {
-    int iQ = vol.Element()->IsQuadratic() ? 2 : 1;
+    const int iQ = vol.Element()->IsQuadratic() ? 2 : 1;
+
+    // at HEXA_TO_24 method, each face of volume is split into triangles each based on
+    // an edge and a face barycenter; tertaherdons are based on triangles and
+    // a volume barycenter
+    const bool is24TetMode = ( theMethodFlags == SMESH_MeshEditor::HEXA_TO_24 );
 
     // Find out how adjacent volumes are split
 
@@ -1276,7 +1282,7 @@ namespace
     for ( int iF = 0; iF < vol.NbFaces(); ++iF )
     {
       int nbNodes = vol.NbFaceNodes( iF ) / iQ;
-      maxTetConnSize += 4 * ( nbNodes - 2 );
+      maxTetConnSize += 4 * ( nbNodes - (is24TetMode ? 0 : 2));
       if ( nbNodes < 4 ) continue;
 
       list< TTriangleFacet >& triaSplits = triaSplitsByFace[ iF ];
@@ -1314,7 +1320,7 @@ namespace
     // Among variants of split method select one compliant with adjacent volumes
 
     TSplitMethod method;
-    if ( !vol.Element()->IsPoly() )
+    if ( !vol.Element()->IsPoly() && !is24TetMode )
     {
       int nbVariants = 2, nbTet = 0;
       const int** connVariants = 0;
@@ -1322,7 +1328,7 @@ namespace
       {
       case SMDSEntity_Hexa:
       case SMDSEntity_Quad_Hexa:
-        if ( theMethodFlags & SMESH_MeshEditor::HEXA_TO_5 )
+        if ( theMethodFlags == SMESH_MeshEditor::HEXA_TO_5 )
           connVariants = theHexTo5, nbTet = 5;
         else
           connVariants = theHexTo6, nbTet = 6, nbVariants = 4;
@@ -1386,7 +1392,7 @@ namespace
                  facet->contains( nInd[ iQ * ((iCommon+2)%nbNodes) ]))
               break;
         }
-        else if ( nbNodes > 3 )
+        else if ( nbNodes > 3 && !is24TetMode )
         {
           // find the best method of splitting into triangles by aspect ratio
           SMESH::Controls::NumericalFunctorPtr aspectRatio( new SMESH::Controls::AspectRatio);
@@ -1407,18 +1413,37 @@ namespace
         }
         if ( iCommon >= nbNodes )
           iCommon = 0; // something wrong
-        // fill connectivity of tetra
+
+        // fill connectivity of tetrahedra based on a current face
         int nbTet = nbNodes - 2;
-        for ( int i = 0; i < nbTet; ++i )
+        if ( is24TetMode && nbNodes > 3 && triaSplits.empty())
         {
-          int i1 = (iCommon+1+i) % nbNodes, i2 = (iCommon+2+i) % nbNodes;
-          if ( !vol.IsFaceExternal( iF )) swap( i1, i2 );
-          connectivity[ connSize++ ] = nInd[ iQ * iCommon ];
-          connectivity[ connSize++ ] = nInd[ iQ * i1 ];
-          connectivity[ connSize++ ] = nInd[ iQ * i2 ];
-          connectivity[ connSize++ ] = baryCenInd;
-          ++method._nbTetra;
+          method._faceBaryNode.insert( make_pair( iF, (const SMDS_MeshNode*)0 ));
+          int faceBaryCenInd = baryCenInd + method._faceBaryNode.size();
+          nbTet = nbNodes;
+          for ( int i = 0; i < nbTet; ++i )
+          {
+            int i1 = i, i2 = (i+1) % nbNodes;
+            if ( !vol.IsFaceExternal( iF )) swap( i1, i2 );
+            connectivity[ connSize++ ] = nInd[ iQ * i1 ];
+            connectivity[ connSize++ ] = nInd[ iQ * i2 ];
+            connectivity[ connSize++ ] = faceBaryCenInd;
+            connectivity[ connSize++ ] = baryCenInd;
+          }
         }
+        else
+        {
+          for ( int i = 0; i < nbTet; ++i )
+          {
+            int i1 = (iCommon+1+i) % nbNodes, i2 = (iCommon+2+i) % nbNodes;
+            if ( !vol.IsFaceExternal( iF )) swap( i1, i2 );
+            connectivity[ connSize++ ] = nInd[ iQ * iCommon ];
+            connectivity[ connSize++ ] = nInd[ iQ * i1 ];
+            connectivity[ connSize++ ] = nInd[ iQ * i2 ];
+            connectivity[ connSize++ ] = baryCenInd;
+          }
+        }
+        method._nbTetra += nbTet;
       }
       connectivity[ connSize++ ] = -1;
     }
@@ -1453,6 +1478,29 @@ namespace
     }
     return false;
   }
+
+  //=======================================================================
+  /*!
+   * \brief A key of a face of volume
+   */
+  //=======================================================================
+
+  struct TVolumeFaceKey: pair< int, pair< int, int> >
+  {
+    TVolumeFaceKey( SMDS_VolumeTool& vol, int iF )
+    {
+      TIDSortedNodeSet sortedNodes;
+      const int iQ = vol.Element()->IsQuadratic() ? 2 : 1;
+      int nbNodes = vol.NbFaceNodes( iF );
+      const SMDS_MeshNode** fNodes = vol.GetFaceNodes( iF );
+      for ( int i = 0; i < nbNodes; i += iQ )
+        sortedNodes.insert( fNodes[i] );
+      TIDSortedNodeSet::iterator n = sortedNodes.begin();
+      first = (*(n++))->GetID();
+      second.first = (*(n++))->GetID();
+      second.second = (*(n++))->GetID();
+    }
+  };
 } // namespace
 
 //=======================================================================
@@ -1475,6 +1523,10 @@ void SMESH_MeshEditor::SplitVolumesIntoTetra (const TIDSortedElemSet & theElems,
   
   SMESH_SequenceOfElemPtr newNodes, newElems;
 
+  // map face of volume to it's baricenrtic node
+  map< TVolumeFaceKey, const SMDS_MeshNode* > volFace2BaryNode;
+  double bc[3];
+
   TIDSortedElemSet::const_iterator elem = theElems.begin();
   for ( ; elem != theElems.end(); ++elem )
   {
@@ -1487,7 +1539,7 @@ void SMESH_MeshEditor::SplitVolumesIntoTetra (const TIDSortedElemSet & theElems,
     TSplitMethod splitMethod = getSplitMethod( volTool, theMethodFlags );
     if ( splitMethod._nbTetra < 1 ) continue;
 
-    // find submesh to add new tetras in
+    // find submesh to add new tetras to
     if ( !subMesh || !subMesh->Contains( *elem ))
     {
       int shapeID = FindShape( *elem );
@@ -1516,11 +1568,27 @@ void SMESH_MeshEditor::SplitVolumesIntoTetra (const TIDSortedElemSet & theElems,
     if ( splitMethod._baryNode )
     {
       // make a node at barycenter
-      gp_XYZ gc( 0,0,0 );
-      gc = accumulate( NXyzIterator((*elem)->nodesIterator()), xyzEnd, gc ) / nodes.size();
-      SMDS_MeshNode* gcNode = helper.AddNode( gc.X(), gc.Y(), gc.Z() );
+      volTool.GetBaryCenter( bc[0], bc[1], bc[2] );
+      SMDS_MeshNode* gcNode = helper.AddNode( bc[0], bc[1], bc[2] );
       nodes.push_back( gcNode );
       newNodes.Append( gcNode );
+    }
+    if ( !splitMethod._faceBaryNode.empty() )
+    {
+      // make or find baricentric nodes of faces
+      map<int, const SMDS_MeshNode*>::iterator iF_n = splitMethod._faceBaryNode.begin();
+      for ( ; iF_n != splitMethod._faceBaryNode.end(); ++iF_n )
+      {
+        map< TVolumeFaceKey, const SMDS_MeshNode* >::iterator f_n =
+          volFace2BaryNode.insert
+          ( make_pair( TVolumeFaceKey( volTool,iF_n->first ), (const SMDS_MeshNode*)0) ).first;
+        if ( !f_n->second )
+        {
+          volTool.GetFaceBaryCenter( iF_n->first, bc[0], bc[1], bc[2] );
+          newNodes.Append( f_n->second = helper.AddNode( bc[0], bc[1], bc[2] ));
+        }
+        nodes.push_back( iF_n->second = f_n->second );
+      }
     }
 
     // make tetras
@@ -1548,48 +1616,69 @@ void SMESH_MeshEditor::SplitVolumesIntoTetra (const TIDSortedElemSet & theElems,
                                            volTool.GetFaceNodes( iF ) + nbNodes*iQ );
       while ( const SMDS_MeshElement* face = GetMeshDS()->FindFace( fNodes ))
       {
-        // among possible triangles create ones discribed by split method
-        const int* nInd = volTool.GetFaceNodesIndices( iF );
-        int nbVariants = ( nbNodes == 4 ? 2 : nbNodes );
-        int iCom = 0; // common node of triangle faces to split into
-        list< TTriangleFacet > facets;
-        for ( int iVar = 0; iVar < nbVariants; ++iVar, ++iCom )
+        // make triangles
+        helper.SetElementsOnShape( false );
+        vector< const SMDS_MeshElement* > triangles;
+
+        map<int, const SMDS_MeshNode*>::iterator iF_n = splitMethod._faceBaryNode.find(iF);
+        if ( iF_n != splitMethod._faceBaryNode.end() )
         {
-          TTriangleFacet t012( nInd[ iQ * ( iCom                )],
-                               nInd[ iQ * ( (iCom+1)%nbNodes )],
-                               nInd[ iQ * ( (iCom+2)%nbNodes )]);
-          TTriangleFacet t023( nInd[ iQ * ( iCom                )],
-                               nInd[ iQ * ( (iCom+2)%nbNodes )],
-                               nInd[ iQ * ( (iCom+3)%nbNodes )]);
-          if ( splitMethod.hasFacet( t012 ) && splitMethod.hasFacet( t023 ))
+          for ( int iN = 0; iN < nbNodes*iQ; iN += iQ )
           {
-            facets.push_back( t012 );
-            facets.push_back( t023 );
-            for ( int iLast = iCom+4; iLast < iCom+nbNodes; ++iLast )
-              facets.push_back( TTriangleFacet( nInd[ iQ * ( iCom             )],
-                                                nInd[ iQ * ((iLast-1)%nbNodes )],
-                                                nInd[ iQ * ((iLast  )%nbNodes )]));
-            break;
+            const SMDS_MeshNode* n1 = fNodes[iN];
+            const SMDS_MeshNode *n2 = fNodes[(iN+iQ)%nbNodes*iQ];
+            const SMDS_MeshNode *n3 = iF_n->second;
+            if ( !volTool.IsFaceExternal( iF ))
+              swap( n2, n3 );
+            triangles.push_back( helper.AddFace( n1,n2,n3 ));
           }
         }
-        // find submesh to add new faces in
+        else
+        {
+          // among possible triangles create ones discribed by split method
+          const int* nInd = volTool.GetFaceNodesIndices( iF );
+          int nbVariants = ( nbNodes == 4 ? 2 : nbNodes );
+          int iCom = 0; // common node of triangle faces to split into
+          list< TTriangleFacet > facets;
+          for ( int iVar = 0; iVar < nbVariants; ++iVar, ++iCom )
+          {
+            TTriangleFacet t012( nInd[ iQ * ( iCom                )],
+                                 nInd[ iQ * ( (iCom+1)%nbNodes )],
+                                 nInd[ iQ * ( (iCom+2)%nbNodes )]);
+            TTriangleFacet t023( nInd[ iQ * ( iCom                )],
+                                 nInd[ iQ * ( (iCom+2)%nbNodes )],
+                                 nInd[ iQ * ( (iCom+3)%nbNodes )]);
+            if ( splitMethod.hasFacet( t012 ) && splitMethod.hasFacet( t023 ))
+            {
+              facets.push_back( t012 );
+              facets.push_back( t023 );
+              for ( int iLast = iCom+4; iLast < iCom+nbNodes; ++iLast )
+                facets.push_back( TTriangleFacet( nInd[ iQ * ( iCom             )],
+                                                  nInd[ iQ * ((iLast-1)%nbNodes )],
+                                                  nInd[ iQ * ((iLast  )%nbNodes )]));
+              break;
+            }
+          }
+          list< TTriangleFacet >::iterator facet = facets.begin();
+          for ( ; facet != facets.end(); ++facet )
+          {
+            if ( !volTool.IsFaceExternal( iF ))
+              swap( facet->_n2, facet->_n3 );
+            triangles.push_back( helper.AddFace( volNodes[ facet->_n1 ],
+                                                 volNodes[ facet->_n2 ],
+                                                 volNodes[ facet->_n3 ]));
+          }
+        }
+        // find submesh to add new triangles in
         if ( !fSubMesh || !fSubMesh->Contains( face ))
         {
           int shapeID = FindShape( face );
           fSubMesh = GetMeshDS()->MeshElements( shapeID );
         }
-        // make triangles
-        helper.SetElementsOnShape( false );
-        vector< const SMDS_MeshElement* > triangles;
-        list< TTriangleFacet >::iterator facet = facets.begin();
-        for ( ; facet != facets.end(); ++facet )
+        for ( int i = 0; i < triangles.size(); ++i )
         {
-          if ( !volTool.IsFaceExternal( iF ))
-            swap( facet->_n2, facet->_n3 );
-          triangles.push_back( helper.AddFace( volNodes[ facet->_n1 ],
-                                               volNodes[ facet->_n2 ],
-                                               volNodes[ facet->_n3 ]));
-          if ( triangles.back() && fSubMesh )
+          if ( !triangles.back() ) continue;
+          if ( fSubMesh )
             fSubMesh->AddElement( triangles.back());
           newElems.Append( triangles.back() );
         }
@@ -8597,7 +8686,7 @@ int SMESH_MeshEditor::convertElemToQuadratic(SMESHDS_SubMesh *   theSm,
   int nbElem = 0;
   if( !theSm ) return nbElem;
 
-  const bool notFromGroups = false;
+  vector<int> nbNodeInFaces;
   SMDS_ElemIteratorPtr ElemItr = theSm->GetElements();
   while(ElemItr->more())
   {
@@ -8607,15 +8696,13 @@ int SMESH_MeshEditor::convertElemToQuadratic(SMESHDS_SubMesh *   theSm,
 
     int id = elem->GetID();
     int nbNodes = elem->NbNodes();
-    vector<const SMDS_MeshNode *> aNds (nbNodes);
-
-    for(int i = 0; i < nbNodes; i++)
-    {
-      aNds[i] = elem->GetNode(i);
-    }
     SMDSAbs_ElementType aType = elem->GetType();
 
-    GetMeshDS()->RemoveFreeElement(elem, theSm, notFromGroups);
+    vector<const SMDS_MeshNode *> nodes (elem->begin_nodes(), elem->end_nodes());
+    if ( elem->GetEntityType() == SMDSEntity_Polyhedra )
+      nbNodeInFaces = static_cast<const SMDS_PolyhedralVolumeOfNodes* >( elem )->GetQuanities();
+
+    GetMeshDS()->RemoveFreeElement(elem, theSm, /*fromGroups=*/false);
 
     const SMDS_MeshElement* NewElem = 0;
 
@@ -8623,7 +8710,7 @@ int SMESH_MeshEditor::convertElemToQuadratic(SMESHDS_SubMesh *   theSm,
     {
     case SMDSAbs_Edge :
       {
-        NewElem = theHelper.AddEdge(aNds[0], aNds[1], id, theForce3d);
+        NewElem = theHelper.AddEdge(nodes[0], nodes[1], id, theForce3d);
         break;
       }
     case SMDSAbs_Face :
@@ -8631,12 +8718,13 @@ int SMESH_MeshEditor::convertElemToQuadratic(SMESHDS_SubMesh *   theSm,
         switch(nbNodes)
         {
         case 3:
-          NewElem = theHelper.AddFace(aNds[0], aNds[1], aNds[2], id, theForce3d);
+          NewElem = theHelper.AddFace(nodes[0], nodes[1], nodes[2], id, theForce3d);
           break;
         case 4:
-          NewElem = theHelper.AddFace(aNds[0], aNds[1], aNds[2], aNds[3], id, theForce3d);
+          NewElem = theHelper.AddFace(nodes[0], nodes[1], nodes[2], nodes[3], id, theForce3d);
           break;
         default:
+          NewElem = theHelper.AddPolygonalFace(nodes, id, theForce3d);
           continue;
         }
         break;
@@ -8646,20 +8734,20 @@ int SMESH_MeshEditor::convertElemToQuadratic(SMESHDS_SubMesh *   theSm,
         switch(nbNodes)
         {
         case 4:
-          NewElem = theHelper.AddVolume(aNds[0], aNds[1], aNds[2], aNds[3], id, theForce3d);
+          NewElem = theHelper.AddVolume(nodes[0], nodes[1], nodes[2], nodes[3], id, theForce3d);
           break;
         case 5:
-          NewElem = theHelper.AddVolume(aNds[0], aNds[1], aNds[2], aNds[3], aNds[4], id, theForce3d);
+          NewElem = theHelper.AddVolume(nodes[0], nodes[1], nodes[2], nodes[3], nodes[4], id, theForce3d);
           break;
         case 6:
-          NewElem = theHelper.AddVolume(aNds[0], aNds[1], aNds[2], aNds[3], aNds[4], aNds[5], id, theForce3d);
+          NewElem = theHelper.AddVolume(nodes[0], nodes[1], nodes[2], nodes[3], nodes[4], nodes[5], id, theForce3d);
           break;
         case 8:
-          NewElem = theHelper.AddVolume(aNds[0], aNds[1], aNds[2], aNds[3],
-                                        aNds[4], aNds[5], aNds[6], aNds[7], id, theForce3d);
+          NewElem = theHelper.AddVolume(nodes[0], nodes[1], nodes[2], nodes[3],
+                                        nodes[4], nodes[5], nodes[6], nodes[7], id, theForce3d);
           break;
         default:
-          continue;
+          NewElem = theHelper.AddPolyhedralVolume(nodes, nbNodeInFaces, id, theForce3d);
         }
         break;
       }
@@ -8683,7 +8771,6 @@ void SMESH_MeshEditor::ConvertToQuadratic(const bool theForce3d)
 
   SMESH_MesherHelper aHelper(*myMesh);
   aHelper.SetIsQuadratic( true );
-  const bool notFromGroups = false;
 
   int nbCheckedElems = 0;
   if ( myMesh->HasShapeToMesh() )
@@ -8714,7 +8801,7 @@ void SMESH_MeshEditor::ConvertToQuadratic(const bool theForce3d)
         const SMDS_MeshNode* n1 = edge->GetNode(0);
         const SMDS_MeshNode* n2 = edge->GetNode(1);
 
-        meshDS->RemoveFreeElement(edge, smDS, notFromGroups);
+        meshDS->RemoveFreeElement(edge, smDS, /*fromGroups=*/false);
 
         const SMDS_MeshEdge* NewEdge = aHelper.AddEdge(n1, n2, id, theForce3d);
         ReplaceElemInGroups( edge, NewEdge, GetMeshDS());
@@ -8728,29 +8815,25 @@ void SMESH_MeshEditor::ConvertToQuadratic(const bool theForce3d)
 
       int id = face->GetID();
       int nbNodes = face->NbNodes();
-      vector<const SMDS_MeshNode *> aNds (nbNodes);
+      vector<const SMDS_MeshNode *> nodes ( face->begin_nodes(), face->end_nodes());
 
-      for(int i = 0; i < nbNodes; i++)
-      {
-        aNds[i] = face->GetNode(i);
-      }
-
-      meshDS->RemoveFreeElement(face, smDS, notFromGroups);
+      meshDS->RemoveFreeElement(face, smDS, /*fromGroups=*/false);
 
       SMDS_MeshFace * NewFace = 0;
       switch(nbNodes)
       {
       case 3:
-        NewFace = aHelper.AddFace(aNds[0], aNds[1], aNds[2], id, theForce3d);
+        NewFace = aHelper.AddFace(nodes[0], nodes[1], nodes[2], id, theForce3d);
         break;
       case 4:
-        NewFace = aHelper.AddFace(aNds[0], aNds[1], aNds[2], aNds[3], id, theForce3d);
+        NewFace = aHelper.AddFace(nodes[0], nodes[1], nodes[2], nodes[3], id, theForce3d);
         break;
       default:
-        continue;
+        NewFace = aHelper.AddPolygonalFace(nodes, id, theForce3d);
       }
       ReplaceElemInGroups( face, NewFace, GetMeshDS());
     }
+    vector<int> nbNodeInFaces;
     SMDS_VolumeIteratorPtr aVolumeItr = meshDS->volumesIterator();
     while(aVolumeItr->more())
     {
@@ -8759,40 +8842,38 @@ void SMESH_MeshEditor::ConvertToQuadratic(const bool theForce3d)
 
       int id = volume->GetID();
       int nbNodes = volume->NbNodes();
-      vector<const SMDS_MeshNode *> aNds (nbNodes);
+      vector<const SMDS_MeshNode *> nodes (volume->begin_nodes(), volume->end_nodes());
+      if ( volume->GetEntityType() == SMDSEntity_Polyhedra )
+        nbNodeInFaces = static_cast<const SMDS_PolyhedralVolumeOfNodes* >(volume)->GetQuanities();
 
-      for(int i = 0; i < nbNodes; i++)
-      {
-        aNds[i] = volume->GetNode(i);
-      }
-
-      meshDS->RemoveFreeElement(volume, smDS, notFromGroups);
+      meshDS->RemoveFreeElement(volume, smDS, /*fromGroups=*/false);
 
       SMDS_MeshVolume * NewVolume = 0;
       switch(nbNodes)
       {
       case 4:
-        NewVolume = aHelper.AddVolume(aNds[0], aNds[1], aNds[2],
-                                      aNds[3], id, theForce3d );
+        NewVolume = aHelper.AddVolume(nodes[0], nodes[1], nodes[2],
+                                      nodes[3], id, theForce3d );
         break;
       case 5:
-        NewVolume = aHelper.AddVolume(aNds[0], aNds[1], aNds[2],
-                                      aNds[3], aNds[4], id, theForce3d);
+        NewVolume = aHelper.AddVolume(nodes[0], nodes[1], nodes[2],
+                                      nodes[3], nodes[4], id, theForce3d);
         break;
       case 6:
-        NewVolume = aHelper.AddVolume(aNds[0], aNds[1], aNds[2],
-                                      aNds[3], aNds[4], aNds[5], id, theForce3d);
+        NewVolume = aHelper.AddVolume(nodes[0], nodes[1], nodes[2],
+                                      nodes[3], nodes[4], nodes[5], id, theForce3d);
         break;
       case 8:
-        NewVolume = aHelper.AddVolume(aNds[0], aNds[1], aNds[2], aNds[3],
-                                      aNds[4], aNds[5], aNds[6], aNds[7], id, theForce3d);
+        NewVolume = aHelper.AddVolume(nodes[0], nodes[1], nodes[2], nodes[3],
+                                      nodes[4], nodes[5], nodes[6], nodes[7], id, theForce3d);
         break;
       default:
-        continue;
+        NewVolume = aHelper.AddPolyhedralVolume(nodes, nbNodeInFaces, id, theForce3d);
       }
       ReplaceElemInGroups(volume, NewVolume, meshDS);
     }
   }
+
   if ( !theForce3d  && !getenv("NO_FixQuadraticElements"))
   { // setenv NO_FixQuadraticElements to know if FixQuadraticElements() is guilty of bad conversion
     aHelper.SetSubShape(0); // apply FixQuadraticElements() to the whole mesh
@@ -8823,8 +8904,8 @@ int SMESH_MeshEditor::removeQuadElem(SMESHDS_SubMesh *    theSm,
     {
       int id = elem->GetID();
       int nbNodes = elem->NbNodes();
-      vector<const SMDS_MeshNode *> aNds, mediumNodes;
-      aNds.reserve( nbNodes );
+      vector<const SMDS_MeshNode *> nodes, mediumNodes;
+      nodes.reserve( nbNodes );
       mediumNodes.reserve( nbNodes );
 
       for(int i = 0; i < nbNodes; i++)
@@ -8834,15 +8915,15 @@ int SMESH_MeshEditor::removeQuadElem(SMESHDS_SubMesh *    theSm,
         if( elem->IsMediumNode( n ) )
           mediumNodes.push_back( n );
         else
-          aNds.push_back( n );
+          nodes.push_back( n );
       }
-      if( aNds.empty() ) continue;
+      if( nodes.empty() ) continue;
       SMDSAbs_ElementType aType = elem->GetType();
 
       //remove old quadratic element
       meshDS->RemoveFreeElement( elem, theSm, notFromGroups );
 
-      SMDS_MeshElement * NewElem = AddElement( aNds, aType, false, id );
+      SMDS_MeshElement * NewElem = AddElement( nodes, aType, false, id );
       ReplaceElemInGroups(elem, NewElem, meshDS);
       if( theSm && NewElem )
         theSm->AddElement( NewElem );

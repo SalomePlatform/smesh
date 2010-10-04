@@ -245,7 +245,7 @@ public:
                  SMESH::Controls::NumericalFunctorPtr theCriterion);
 
 
-  enum SplitVolumToTetraFlags { HEXA_TO_5 = 1, HEXA_TO_6 = 2 };//!<arg of SplitVolumesIntoTetra()
+  enum SplitVolumToTetraFlags { HEXA_TO_5 = 1, HEXA_TO_6 = 2, HEXA_TO_24 = 3 };//!<arg of SplitVolumesIntoTetra()
   /*!
    * \brief Split volumic elements into tetrahedra.
    */
