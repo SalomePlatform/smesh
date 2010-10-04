@@ -1215,6 +1215,8 @@ CORBA::Boolean SMESH_MeshEditor_i::SplitQuadObject (SMESH::SMESH_IDSource_ptr th
 CORBA::Long SMESH_MeshEditor_i::BestSplit (CORBA::Long                 IDOfQuad,
                                            SMESH::NumericalFunctor_ptr Criterion)
 {
+  initData();
+
   const SMDS_MeshElement* quad = GetMeshDS()->FindElement(IDOfQuad);
   if (quad && quad->GetType() == SMDSAbs_Face && quad->NbNodes() == 4)
   {
@@ -1243,6 +1245,8 @@ void SMESH_MeshEditor_i::SplitVolumesIntoTetra (SMESH::SMESH_IDSource_ptr elems,
   throw (SALOME::SALOME_Exception)
 {
   Unexpect aCatch(SALOME_SalomeException);
+
+  initData();
 
   SMESH::long_array_var anElementsId = elems->GetIDs();
   TIDSortedElemSet elemSet;
