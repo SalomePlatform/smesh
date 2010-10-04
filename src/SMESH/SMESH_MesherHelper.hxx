@@ -39,6 +39,7 @@
 #include <gp_Pnt2d.hxx>
 
 #include <map>
+#include <vector>
 
 class GeomAPI_ProjectPointOnSurf;
 
@@ -221,6 +222,13 @@ public:
                          const SMDS_MeshNode* n4,
                          const int id = 0,
                          const bool force3d = false);
+
+  /*!
+   * Creates polygon, with additional nodes in quadratic mesh
+   */
+  SMDS_MeshFace* AddPolygonalFace (const std::vector<const SMDS_MeshNode*>& nodes,
+                                   const int id = 0,
+                                   const bool force3d = false);
   /*!
    * Creates quadratic or linear tetraahedron
    */
@@ -264,6 +272,14 @@ public:
                              const SMDS_MeshNode* n8,
                              const int id = 0, 
                              bool force3d = true);
+
+  /*!
+   * Creates polyhedron. In quadratic mesh, adds medium nodes
+   */
+  SMDS_MeshVolume* AddPolyhedralVolume (const std::vector<const SMDS_MeshNode*>& nodes,
+                                        const std::vector<int>&                  quantities,
+                                        const int                                ID=0,
+                                        const bool                               force3d = true);
   /*!
    * \brief Return U of the given node on the edge
    */

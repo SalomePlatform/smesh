@@ -1090,6 +1090,45 @@ SMDS_MeshFace* SMESH_MesherHelper::AddFace(const SMDS_MeshNode* n1,
 }
 
 //=======================================================================
+//function : AddPolygonalFace
+//purpose  : Creates polygon, with additional nodes in quadratic mesh
+//=======================================================================
+
+SMDS_MeshFace* SMESH_MesherHelper::AddPolygonalFace (const vector<const SMDS_MeshNode*>& nodes,
+                                                     const int                           id,
+                                                     const bool                          force3d)
+{
+  SMESHDS_Mesh * meshDS = GetMeshDS();
+  SMDS_MeshFace* elem = 0;
+
+  if(!myCreateQuadratic) {
+    if(id)
+      elem = meshDS->AddPolygonalFaceWithID(nodes, id);
+    else
+      elem = meshDS->AddPolygonalFace(nodes);
+  }
+  else {
+    vector<const SMDS_MeshNode*> newNodes;
+    for ( int i = 0; i < nodes.size(); ++i )
+    {
+      const SMDS_MeshNode* n1 = nodes[i];
+      const SMDS_MeshNode* n2 = nodes[(i+1)/nodes.size()];
+      const SMDS_MeshNode* n12 = GetMediumNode(n1,n2,force3d);
+      newNodes.push_back( n1 );
+      newNodes.push_back( n12 );
+    }
+    if(id)
+      elem = meshDS->AddPolygonalFaceWithID(newNodes, id);
+    else
+      elem = meshDS->AddPolygonalFace(newNodes);
+  }
+  if ( mySetElemOnShape && myShapeID > 0 )
+    meshDS->SetMeshElementOnShape( elem, myShapeID );
+
+  return elem;
+}
+
+//=======================================================================
 //function : AddVolume
 //purpose  : Creates quadratic or linear prism
 //=======================================================================
@@ -1272,6 +1311,62 @@ SMDS_MeshVolume* SMESH_MesherHelper::AddVolume(const SMDS_MeshNode* n1,
       elem = meshDS->AddVolume(n1, n2, n3, n4, n5, n6, n7, n8,
                                n12, n23, n34, n41, n56, n67,
                                n78, n85, n15, n26, n37, n48);
+  }
+  if ( mySetElemOnShape && myShapeID > 0 )
+    meshDS->SetMeshElementOnShape( elem, myShapeID );
+
+  return elem;
+}
+
+//=======================================================================
+//function : AddPolyhedralVolume
+//purpose  : Creates polyhedron. In quadratic mesh, adds medium nodes
+//=======================================================================
+
+SMDS_MeshVolume*
+SMESH_MesherHelper::AddPolyhedralVolume (const std::vector<const SMDS_MeshNode*>& nodes,
+                                         const std::vector<int>&                  quantities,
+                                         const int                                id,
+                                         const bool                               force3d)
+{
+  SMESHDS_Mesh * meshDS = GetMeshDS();
+  SMDS_MeshVolume* elem = 0;
+  if(!myCreateQuadratic)
+  {
+    if(id)
+      elem = meshDS->AddPolyhedralVolumeWithID(nodes, quantities, id);
+    else
+      elem = meshDS->AddPolyhedralVolume(nodes, quantities);
+  }
+  else
+  {
+    vector<const SMDS_MeshNode*> newNodes;
+    vector<int> newQuantities;
+    for ( int iFace=0, iN=0; iFace < quantities.size(); ++iFace)
+    {
+      int nbNodesInFace = quantities[iFace];
+      newQuantities.push_back(0);
+      for ( int i = 0; i < nbNodesInFace; ++i )
+      {
+        const SMDS_MeshNode* n1 = nodes[ iN + i ];
+        newNodes.push_back( n1 );
+        newQuantities.back()++;
+        
+        const SMDS_MeshNode* n2 = nodes[ iN + ( i+1==nbNodesInFace ? 0 : i+1 )];
+//         if ( n1->GetPosition()->GetTypeOfPosition() != SMDS_TOP_3DSPACE &&
+//              n2->GetPosition()->GetTypeOfPosition() != SMDS_TOP_3DSPACE )
+        {
+          const SMDS_MeshNode* n12 = GetMediumNode(n1,n2,force3d);
+          newNodes.push_back( n12 );
+          newQuantities.back()++;
+        }
+      }
+      iN += nbNodesInFace;
+    }
+    if(id)
+      elem = meshDS->AddPolyhedralVolumeWithID( newNodes, newQuantities, id );
+    else
+      elem = meshDS->AddPolyhedralVolume( newNodes, newQuantities );
   }
   if ( mySetElemOnShape && myShapeID > 0 )
     meshDS->SetMeshElementOnShape( elem, myShapeID );
