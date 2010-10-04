@@ -731,6 +731,7 @@ inline TCollection_AsciiString ElementTypeString (SMESH::ElementType theElemType
     CASE2STRING( EDGE );
     CASE2STRING( FACE );
     CASE2STRING( VOLUME );
+    CASE2STRING( ELEM0D );
   default:;
   }
   return "";
