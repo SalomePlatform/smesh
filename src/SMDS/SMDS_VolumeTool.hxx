@@ -162,6 +162,9 @@ class SMDS_EXPORT SMDS_VolumeTool
   bool GetFaceNormal (int faceIndex, double & X, double & Y, double & Z);
   // Return a normal to a face
 
+  bool GetFaceBaryCenter (int faceIndex, double & X, double & Y, double & Z);
+  // Return barycenter of a face
+
   double GetFaceArea( int faceIndex );
   // Return face area
 
