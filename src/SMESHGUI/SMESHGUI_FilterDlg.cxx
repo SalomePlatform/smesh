@@ -33,11 +33,11 @@
 #include "SMESHGUI_Filter.h"
 #include "SMESHGUI_FilterUtils.h"
 #include "SMESHGUI_FilterLibraryDlg.h"
+#include "SMESHGUI_SpinBox.h"
 
 #include <SMESH_Actor.h>
 #include <SMESH_NumberFilter.hxx>
 #include <SMESH_TypeFilter.hxx>
-#include <SMESHGUI_SpinBox.h>
 
 // SALOME GEOM includes
 #include <GEOMBase.h>
