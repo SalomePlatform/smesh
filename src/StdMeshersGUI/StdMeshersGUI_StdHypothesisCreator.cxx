@@ -187,10 +187,10 @@ namespace {
    */
   //================================================================================
 
-  class TDoubleSliderWith2Lables: public QWidget
+  class TDoubleSliderWith2Labels: public QWidget
   {
   public:
-    TDoubleSliderWith2Lables( const QString& leftLabel, const QString& rightLabel,
+    TDoubleSliderWith2Labels( const QString& leftLabel, const QString& rightLabel,
                               const double   initValue, const double   bottom,
                               const double   top      , const double   precision,
                               QWidget *      parent=0 , const char *   name=0 )
@@ -199,7 +199,7 @@ namespace {
       setObjectName(name);
 
       QHBoxLayout* aHBoxL = new QHBoxLayout(this);
-      
+
       if ( !leftLabel.isEmpty() ) {
         QLabel* aLeftLabel = new QLabel( this );
         aLeftLabel->setText( leftLabel );
@@ -860,8 +860,10 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
     item.myName = tr( "SMESH_FINENESS_PARAM" );
     //item.myValue = h->GetFineness();
     p.append( item );
-    customWidgets()->append
-      ( new TDoubleSliderWith2Lables( "0 ", " 1", h->GetFineness(), 0, 1, 0.01, 0 ));
+    SMESHGUI_SpinBox* _autoLengthSpinBox = new SMESHGUI_SpinBox(dlg());
+    _autoLengthSpinBox->RangeStepAndValidator(0, 1, 0.01, "length_precision");
+    _autoLengthSpinBox->SetValue(h->GetFineness());
+    customWidgets()->append( _autoLengthSpinBox);
   }
   else if( hypType()=="NumberOfLayers" )
   {
@@ -1181,9 +1183,9 @@ bool StdMeshersGUI_StdHypothesisCreator::getParamFromCustomWidget( StdParam & pa
                                                                    QWidget*   widget) const
 {
   if ( hypType()=="AutomaticLength" ) {
-    TDoubleSliderWith2Lables* w = dynamic_cast<TDoubleSliderWith2Lables*>( widget );
+    SMESHGUI_SpinBox* w = dynamic_cast<SMESHGUI_SpinBox*>( widget );
     if ( w ) {
-      param.myValue = w->value();
+      param.myValue = w->GetValue();
       return true;
     }
   }
