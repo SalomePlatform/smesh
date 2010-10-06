@@ -731,6 +731,9 @@ bool StdMeshers_Regular_1D::computeInternalParameters(SMESH_Mesh &     theMesh,
     double a1 = _value[ BEG_LENGTH_IND ];
     double an = _value[ END_LENGTH_IND ];
     double q  = ( theLength - a1 ) / ( theLength - an );
+    if ( q < theLength/1e6 || 1.01*theLength < a1 + an)
+      return error ( SMESH_Comment("Invalid segment lengths (")<<a1<<" and "<<an<<") "<<
+                     "for an edge of length "<<theLength);
 
     double U1 = theReverse ? l : f;
     double Un = theReverse ? f : l;
@@ -759,6 +762,9 @@ bool StdMeshers_Regular_1D::computeInternalParameters(SMESH_Mesh &     theMesh,
 
     double a1 = _value[ BEG_LENGTH_IND ];
     double an = _value[ END_LENGTH_IND ];
+    if ( 1.01*theLength < a1 + an)
+      return error ( SMESH_Comment("Invalid segment lengths (")<<a1<<" and "<<an<<") "<<
+                     "for an edge of length "<<theLength);
 
     double  q = ( an - a1 ) / ( 2 *theLength/( a1 + an ) - 1 );
     int n = int(fabs(q) > numeric_limits<double>::min() ? ( 1+( an-a1 )/q ) : ( 1+theLength/a1 ));
