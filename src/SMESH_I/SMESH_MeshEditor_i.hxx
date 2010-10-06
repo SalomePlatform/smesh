@@ -671,14 +671,22 @@ public:
                                                const SMESH::ListOfGroups& theNodesNot,
                                                GEOM::GEOM_Object_ptr      theShape );
 
-    /*!
-     * \brief Generated skin mesh (containing 2D cells) from 3D mesh
-     * The created 2D mesh elements based on nodes of free faces of boundary volumes
-     * \return TRUE if operation has been completed successfully, FALSE otherwise
-    */
-    CORBA::Boolean Make2DMeshFrom3D();
+  /*!
+   * \brief Generated skin mesh (containing 2D cells) from 3D mesh
+   * The created 2D mesh elements based on nodes of free faces of boundary volumes
+   * \return TRUE if operation has been completed successfully, FALSE otherwise
+   */
+  CORBA::Boolean Make2DMeshFrom3D();
 
- private: //!< private methods
+  SMESH::SMESH_Mesh_ptr MakeBoundaryMesh(SMESH::SMESH_IDSource_ptr elements,
+                                         SMESH::Bnd_Dimension      dimension,
+                                         const char*               groupName,
+                                         const char*               meshName,
+                                         CORBA::Boolean            toCopyElements,
+                                         CORBA::Boolean            toCopyMissingBondary,
+                                         SMESH::SMESH_Group_out    group);
+
+private: //!< private methods
 
   SMESHDS_Mesh * GetMeshDS() { return myMesh->GetMeshDS(); }
 

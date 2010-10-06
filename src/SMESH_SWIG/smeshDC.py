@@ -201,6 +201,7 @@ PrecisionConfusion = 1e-07
 # Methods of splitting a hexahedron into tetrahedra
 Hex_5Tet, Hex_6Tet, Hex_24Tet = 1, 2, 3
 
+
 ## Converts an angle from degrees to radians
 def DegreesToRadians(AngleInDegrees):
     from math import pi
@@ -2558,6 +2559,8 @@ class Mesh:
     def SplitVolumesIntoTetra(self, elemIDs, method=Hex_5Tet ):
         if isinstance( elemIDs, Mesh ):
             elemIDs = elemIDs.GetMesh()
+        if ( isinstance( elemIDs, list )):
+            elemIDs = self.editor.MakeIDSource(elemIDs, SMESH.VOLUME)
         self.editor.SplitVolumesIntoTetra(elemIDs, method)
 
     ## Splits quadrangle faces near triangular facets of volumes
@@ -2792,7 +2795,30 @@ class Mesh:
     #  @ingroup l2_modif_edit
     def  Make2DMeshFrom3D(self):
         return self.editor. Make2DMeshFrom3D()
-        
+
+    ## Creates missing boundary elements
+    #  @param elements - elements whose boundary is to be checked:
+    #                    mesh, group, sub-mesh or list of elements
+    #  @param dimension - defines type of boundary elements to create:
+    #                     SMESH.BND_2DFROM3D, SMESH.BND_1DFROM3D, SMESH.BND_1DFROM2D
+    #  @param groupName - a name of group to store created boundary elements in,
+    #                     "" means not to create the group
+    #  @param meshName - a name of new mesh to store created boundary elements in,
+    #                     "" means not to create the new mesh
+    #  @param toCopyElements - if true, the checked elements will be copied into the new mesh
+    #  @param toCopyExistingBondary - if true, not only new but also pre-existing 
+    #                                boundary elements will be copied into the new mesh
+    #  @return tuple (mesh, group) where bondary elements were added to
+    #  @ingroup l2_modif_edit
+    def MakeBoundaryMesh(self, elements, dimension=SMESH.BND_2DFROM3D, groupName="", meshName="",
+                         toCopyElements=False, toCopyExistingBondary=False):
+        if isinstance( elements, Mesh ):
+            elements = elements.GetMesh()
+        if ( isinstance( elements, list )):
+            elements = self.editor.MakeIDSource(elements, SMESH.ALL)
+        return self.editor.MakeBoundaryMesh(elements,dimension,groupName,meshName,
+                                            toCopyElements,toCopyExistingBondary)
+
     ## Renumber mesh nodes
     #  @ingroup l2_modif_renumber
     def RenumberNodes(self):

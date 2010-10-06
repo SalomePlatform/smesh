@@ -29,6 +29,8 @@
 
 module SMESH
 {
+  enum Bnd_Dimension { BND_2DFROM3D, BND_1DFROM3D, BND_1DFROM2D };
+  
   /*!
    * This interface makes modifications on the Mesh - removing elements and nodes etc.
    */
@@ -921,11 +923,33 @@ module SMESH
                                           in GEOM::GEOM_Object theShape );
 
     /*!
-     * \brief Generated skin mesh (containing 2D cells) from 3D mesh
+     * \brief Generates skin mesh (containing 2D cells) from 3D mesh
      * The created 2D mesh elements based on nodes of free faces of boundary volumes
      * \return TRUE if operation has been completed successfully, FALSE otherwise
      */
     boolean Make2DMeshFrom3D();
+
+    /*!
+     * \brief Creates missing boundary elements
+     *  \param elements - elements whose boundary is to be checked
+     *  \param dimension - defines type of boundary elements to create
+     *  \param groupName - a name of group to store created boundary elements in,
+     *                     "" means not to create the group
+     *  \param meshName - a name of new mesh to store created boundary elements in,
+     *                     "" means not to create the new mesh
+     *  \param toCopyElements - if true, the checked elements will be copied into the new mesh
+     *  \param toCopyExistingBondary - if true, not only new but also pre-existing 
+     *                                boundary elements will be copied into the new mesh
+     *  \param group - returns the create group, if any
+     *  \retval SMESH::SMESH_Mesh - the mesh where elements were added to
+     */
+    SMESH::SMESH_Mesh MakeBoundaryMesh(in SMESH_IDSource elements,
+                                       in Bnd_Dimension  dimension, 
+                                       in string         groupName,
+                                       in string         meshName,
+                                       in boolean        toCopyElements,
+                                       in boolean        toCopyExistingBondary,
+                                       out SMESH_Group   group);
 
   };
 };

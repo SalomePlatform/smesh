@@ -5182,7 +5182,37 @@ CORBA::Boolean SMESH_MeshEditor_i::Make2DMeshFrom3D()
   ::SMESH_MeshEditor aMeshEditor( myMesh );
   bool aResult = aMeshEditor.Make2DMeshFrom3D();
   storeResult( aMeshEditor) ;
-  
+
   TPythonDump() << "isDone = " << this << ".Make2DMeshFrom3D()";
   return aResult;
+}
+
+//================================================================================
+/*!
+ * \brief Creates missing boundary elements
+ *  \param elements - elements whose boundary is to be checked
+ *  \param dimension - defines type of boundary elements to create
+ *  \param groupName - a name of group to store created boundary elements in,
+ *                     "" means not to create the group
+ *  \param meshName - a name of new mesh to store created boundary elements in,
+ *                     "" means not to create the new mesh
+ *  \param toCopyElements - if true, the checked elements will be copied into the new mesh
+ *  \param toCopyExistingBondary - if true, not only new but also pre-existing 
+ *                                boundary elements will be copied into the new mesh
+ *  \param group - returns the create group, if any
+ *  \retval SMESH::SMESH_Mesh - the mesh where elements were added to
+ */
+//================================================================================
+
+SMESH::SMESH_Mesh_ptr
+SMESH_MeshEditor_i::MakeBoundaryMesh(SMESH::SMESH_IDSource_ptr elements,
+                                     SMESH::Bnd_Dimension      dimension,
+                                     const char*               groupName,
+                                     const char*               meshName,
+                                     CORBA::Boolean            toCopyElements,
+                                     CORBA::Boolean            toCopyMissingBondary,
+                                     SMESH::SMESH_Group_out    group)
+{
+
+  return SMESH::SMESH_Mesh::_duplicate( myMesh_i->_this() );
 }
