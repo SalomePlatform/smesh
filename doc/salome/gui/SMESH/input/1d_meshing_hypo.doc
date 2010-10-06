@@ -157,7 +157,7 @@ operation.
 
 <b>Start and End Length</b> hypothesis allows to divide a geometrical edge
 into segments so that the first and the last segments have a specified
-length. The length medium segments changes with automatically chosen
+length. The length of medium segments changes with automatically chosen
 geometric progression. Then mesh nodes are
 constructed at segment ends location and 1D mesh elements are
 constructed on them.
