@@ -555,16 +555,26 @@ SMESH::long_array* SMESH_subMesh_i::GetMeshInfo()
 SMESH::array_of_ElementType* SMESH_subMesh_i::GetTypes()
 {
   SMESH::array_of_ElementType_var types = new SMESH::array_of_ElementType;
-  types->length( 1 );
+
   ::SMESH_subMesh* aSubMesh = _mesh_i->_mapSubMesh[_localId];
-  switch ( ::SMESH_Gen::GetShapeDim( aSubMesh->GetSubShape() ))
+  TopoDS_Shape shape = aSubMesh->GetSubShape();
+  while ( !shape.IsNull() && shape.ShapeType() == TopAbs_COMPOUND )
   {
-  case 0: types[0] = SMESH::ELEM0D; break;
-  case 1: types[0] = SMESH::EDGE; break;
-  case 2: types[0] = SMESH::FACE; break;
-  case 3: types[0] = SMESH::VOLUME; break;
-  default:
-    types->length(0);
+    TopoDS_Iterator it( shape );
+    shape = it.More() ? it.Value() : TopoDS_Shape();
+  }
+  if ( !shape.IsNull() )
+  {
+    types->length( 1 );
+    switch ( ::SMESH_Gen::GetShapeDim( shape ))
+    {
+    case 0: types[0] = SMESH::ELEM0D; break;
+    case 1: types[0] = SMESH::EDGE; break;
+    case 2: types[0] = SMESH::FACE; break;
+    case 3: types[0] = SMESH::VOLUME; break;
+    default:
+      types->length(0);
+    }
   }
   return types._retn();
 }
