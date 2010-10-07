@@ -1164,7 +1164,7 @@
 
     SalomeApp_Application* anApp = dynamic_cast<SalomeApp_Application*>( SUIT_Session::session()->activeApplication() );
     SUIT_ViewManager* vm = anApp->activeViewManager();
-    int nbSf = vm->getViewsCount();
+    int nbSf = vm ? vm->getViewsCount() : 0;
 
     SALOME_ListIteratorOfListIO It(selected);
 
@@ -1206,7 +1206,7 @@
           std::string anEntry = SO->GetID();
 
           /** Erase graphical object **/
-          if(SO->FindAttribute(anAttr, "AttributeIOR")){
+          if(SO->FindAttribute(anAttr, "AttributeIOR") && vm ){
             QVector<SUIT_ViewWindow*> aViews = vm->getViews();
             for(int i = 0; i < nbSf; i++){
               SUIT_ViewWindow *sf = aViews[i];
