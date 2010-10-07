@@ -77,7 +77,7 @@ public :
   
   bool                            isActiveStudyLocked();
 
-  static bool                     automaticUpdate();
+  static bool                     automaticUpdate(unsigned int requestedSize = 0, bool* limitExceeded = 0);
 
   static void                     Modified( bool = true );
 

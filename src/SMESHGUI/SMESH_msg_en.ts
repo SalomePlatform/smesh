@@ -2061,6 +2061,11 @@ Consider saving your work before application crash</translation>
         <translation>Study frame with VTK Viewer must be activated</translation>
     </message>
     <message>
+        <source>SMESH_WRN_SIZE_LIMIT_EXCEEDED</source>
+        <translation>Mesh size limit has been exceeded.
+No automatic update of the presentation has been done.</translation>
+    </message>
+    <message>
         <source>SMESH_WRN_WARNING</source>
         <translation>Warning</translation>
     </message>
@@ -3247,6 +3252,14 @@ Please, create VTK viewer and try again</translation>
         <translation>Automatic update</translation>
     </message>
     <message>
+        <source>PREF_UPDATE_LIMIT</source>
+        <translation>Size limit (elements)</translation>
+    </message>
+    <message>
+        <source>PREF_UPDATE_LIMIT_NOLIMIT</source>
+        <translation>No limit</translation>
+    </message>
+    <message>
         <source>PREF_BACKFACE</source>
         <translation>Back face</translation>
     </message>
@@ -3345,10 +3358,6 @@ Please, create VTK viewer and try again</translation>
     <message>
         <source>PREF_GROUP_SELECTION</source>
         <translation>Selection</translation>
-    </message>
-    <message>
-        <source>PREF_GROUP_UPDATE</source>
-        <translation>Update</translation>
     </message>
     <message>
         <source>PREF_HIGHLIGHT_COLOR</source>

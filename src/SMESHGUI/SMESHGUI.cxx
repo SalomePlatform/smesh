@@ -1330,13 +1330,22 @@ LightApp_SelectionMgr* SMESHGUI::selectionMgr()
     return 0;
 }
 
-bool SMESHGUI::automaticUpdate()
+//=============================================================================
+/*!
+ *
+ */
+//=============================================================================
+bool SMESHGUI::automaticUpdate(unsigned int requestedSize, bool* limitExceeded)
 {
   SUIT_ResourceMgr* resMgr = SUIT_Session::session()->resourceMgr();
   if ( !resMgr )
     return false;
 
-  return resMgr->booleanValue( "SMESH", "auto_update", false );
+  bool autoUpdate  = resMgr->booleanValue( "SMESH", "auto_update",  false );
+  long updateLimit = resMgr->integerValue( "SMESH", "update_limit", 500000 );
+  bool exceeded = updateLimit > 0 && requestedSize > updateLimit;
+  if ( limitExceeded ) *limitExceeded = autoUpdate && exceeded;
+  return autoUpdate && !exceeded;
 }
 
 //=============================================================================
@@ -3821,8 +3830,12 @@ void SMESHGUI::createPreferences()
   // General tab ------------------------------------------------------------------------
   int genTab = addPreference( tr( "PREF_TAB_GENERAL" ) );
 
-  int updateGroup = addPreference( tr( "PREF_GROUP_UPDATE" ), genTab );
-  addPreference( tr( "PREF_AUTO_UPDATE" ), updateGroup, LightApp_Preferences::Bool, "SMESH", "auto_update" );
+  int autoUpdate = addPreference( tr( "PREF_AUTO_UPDATE" ), genTab, LightApp_Preferences::Auto, "SMESH", "auto_update" );
+  int lim = addPreference( tr( "PREF_UPDATE_LIMIT" ), autoUpdate, LightApp_Preferences::IntSpin, "SMESH", "update_limit" );
+  setPreferenceProperty( lim, "min",  0 );
+  setPreferenceProperty( lim, "max",  100000000 );
+  setPreferenceProperty( lim, "step", 1000 );
+  setPreferenceProperty( lim, "special", tr( "PREF_UPDATE_LIMIT_NOLIMIT" ) );
 
   int qaGroup = addPreference( tr( "PREF_GROUP_QUALITY" ), genTab );
   setPreferenceProperty( qaGroup, "columns", 2 );

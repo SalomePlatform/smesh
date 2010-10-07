@@ -734,25 +734,36 @@ void SMESHGUI_BaseComputeOp::computeMesh()
 
       // SHOW MESH
       // NPAL16631: if ( getSMESHGUI()->automaticUpdate() )
-      if ( !memoryLack && getSMESHGUI()->automaticUpdate() )
+      long newSize = myMesh->NbElements();
+      bool limitExceeded;
+      if ( !memoryLack )
       {
-        try {
+	if ( getSMESHGUI()->automaticUpdate( newSize, &limitExceeded ) )
+	{
+	  try {
 #if (OCC_VERSION_MAJOR << 16 | OCC_VERSION_MINOR << 8 | OCC_VERSION_MAINTENANCE) > 0x060100
-          OCC_CATCH_SIGNALS;
+	    OCC_CATCH_SIGNALS;
 #endif
-          SMESH::Update(myIObject, true);
-        }
-        catch (...) {
+	    SMESH::Update(myIObject, true);
+	  }
+	  catch (...) {
 #ifdef _DEBUG_
-          MESSAGE ( "Exception thrown during mesh visualization" );
+	    MESSAGE ( "Exception thrown during mesh visualization" );
 #endif
-          if ( SMDS_Mesh::CheckMemory(true) ) { // has memory to show warning?
-            SMESH::OnVisuException();
-          }
-          else {
-            memoryLack = true;
-          }
+	    if ( SMDS_Mesh::CheckMemory(true) ) { // has memory to show warning?
+	      SMESH::OnVisuException();
+	    }
+	    else {
+	      memoryLack = true;
+	    }
+	  }
         }
+	else if ( limitExceeded )
+	{
+	  SUIT_MessageBox::warning( desktop(),
+				    tr( "SMESH_WRN_WARNING" ),
+				    tr( "SMESH_WRN_SIZE_LIMIT_EXCEEDED" ) );
+	}
       }
       LightApp_SelectionMgr *Sel = selectionMgr();
       if ( Sel )
@@ -804,7 +815,7 @@ void SMESHGUI_BaseComputeOp::computeMesh()
 void SMESHGUI_BaseComputeOp::showComputeResult( const bool theMemoryLack,
                                                 const bool theNoCompError,
                                                 SMESH::compute_error_array_var& theCompErrors,
-                                                const bool     theNoHypoError,
+                                                const bool theNoHypoError,
                                                 const QString& theHypErrors )
 {
   bool hasShape = myMesh->HasShapeToMesh();
@@ -1562,6 +1573,7 @@ void SMESHGUI_PrecomputeOp::onPreview()
       
     SMESH::MeshPreviewStruct_var previewData =
       gen->Precompute(myMesh, myMainShape, (SMESH::Dimension)dim, aShapesId);
+
     SMESH::MeshPreviewStruct* previewRes = previewData._retn();
     if ( previewRes && previewRes->nodesXYZ.length() > 0 )
     {
