@@ -42,8 +42,8 @@ dimension.
 - <b>Number of Segments</b> has the same sense as \ref
 number_of_segments_anchor "Number of segments" hypothesis with
 equidistant distribution.
-- <b>Average Length</b> has the same sense as \ref 
-average_length_anchor "Average Length" hypothesis.
+- <b>Local Length</b> has the same sense as \ref 
+average_length_anchor "Local Length" hypothesis.
 
 \b 2D group allows defining the size of 2D elements 
 - <b>Length from edges</b> if checked in, acts like \ref

@@ -128,7 +128,7 @@ hexa.Compute()
 
 <br>
 \anchor tui_average_length
-<h3>Average Length</h3>
+<h3>Local Length</h3>
 
 \code
 from geompy import *
