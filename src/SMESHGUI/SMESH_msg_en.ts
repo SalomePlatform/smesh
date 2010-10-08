@@ -5257,4 +5257,78 @@ It is impossible to read point coordinates from file</translation>
         <translation>Construct group with newly created elements</translation>
     </message>
 </context>
+<context>
+    <name>SMESHGUI_CopyMeshDlg</name>
+    <message>
+        <source>CAPTION</source>
+        <translation>Copy mesh elements</translation>
+    </message>
+    <message>
+        <source>MESH</source>
+        <translation>Mesh, submesh or group</translation>
+    </message>
+    <message>
+        <source>MODE</source>
+        <translation>Mode</translation>
+    </message>
+    <message>
+        <source>2D_FROM_3D</source>
+        <translation>2D from 3D</translation>
+    </message>
+    <message>
+        <source>1D_FROM_3D</source>
+        <translation>1D from 3D</translation>
+    </message>
+    <message>
+        <source>1D_FROM_2D</source>
+        <translation>1D from 2D</translation>
+    </message>
+    <message>
+        <source>TARGET</source>
+        <translation>Target</translation>
+    </message>
+    <message>
+        <source>THIS_MESH</source>
+        <translation>This mesh</translation>
+    </message>
+    <message>
+        <source>NEW_MESH</source>
+        <translation>New mesh</translation>
+    </message>
+    <message>
+        <source>COPY_SRC</source>
+        <translation>Copy source mesh</translation>
+    </message>
+    <message>
+        <source>MISSING_ONLY</source>
+        <translation>Copy missing elements only</translation>
+    </message>
+    <message>
+        <source>CREATE_GROUP</source>
+        <translation>Create group</translation>
+    </message>
+</context>
+<context>
+    <name>SMESHGUI_Make2DFrom3DOp</name>
+    <message>
+        <source>SMESH_ERR_NO_INPUT_MESH</source>
+        <translation>Source mesh, sub-mesh or group is not specified</translation>
+    </message>
+    <message>
+        <source>SMESH_ERR_NO_3D_ELEMENTS</source>
+        <translation>The source object does not contain 3D elements</translation>
+    </message>
+    <message>
+        <source>SMESH_ERR_NO_2D_ELEMENTS</source>
+        <translation>The source object does not contain 2D elements</translation>
+    </message>
+    <message>
+        <source>SMESH_ERR_MESH_NAME_NOT_SPECIFIED</source>
+        <translation>New mesh name is not specified</translation>
+    </message>
+    <message>
+        <source>SMESH_ERR_GRP_NAME_NOT_SPECIFIED</source>
+        <translation>Group name is not specified</translation>
+    </message>
+</context>
 </TS>
