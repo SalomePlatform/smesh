@@ -60,7 +60,7 @@ namespace
    */
   //================================================================================
 
-  class SMDS_EXPORT Q2TAdaptor_Triangle : public SMDS_MeshFace
+  class STDMESHERS_EXPORT Q2TAdaptor_Triangle : public SMDS_MeshFace
   {
     const SMDS_MeshNode* _nodes[3];
   public:

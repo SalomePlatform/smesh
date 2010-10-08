@@ -25,6 +25,10 @@
 //  Author : Nicolas REJNERI
 //  Module : SMESH
 //
+#ifdef WNT
+#define NOMINMAX
+#endif
+
 #include "SMESH_MeshEditor_i.hxx"
 
 #include "SMDS_Mesh0DElement.hxx"

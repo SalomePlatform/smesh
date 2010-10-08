@@ -317,7 +317,7 @@ void SMESHGUI_FilterTable::AdditionalWidget::SetPrecision(const int theId, const
     if ( qobject_cast<SMESHGUI_SpinBox*>( myWidgets[ theId ] ) ) {
       SMESHGUI_SpinBox* sb = qobject_cast<SMESHGUI_SpinBox*>( myWidgets[ theId ] );
       double val = sb->GetValue();
-      double min = pow(10, -(sb->decimals()));
+      double min = pow(10.0, -(sb->decimals()));
       sb->RangeStepAndValidator( 0., 1.e20, 0.1, precision ? precision : "len_tol_precision" );
       sb->SetValue( qMax( val, min ) );
     }
