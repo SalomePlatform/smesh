@@ -70,6 +70,11 @@ dist_salomeres_DATA = \
 	mesh_pyramid.png \
 	mesh_quad_n.png \
 	mesh_quad.png \
+	mesh_quadrangle_quadpref.png \
+	mesh_quadrangle_quadpref_reversed.png \
+	mesh_quadrangle_reduced.png \
+	mesh_quadrangle_standard.png \
+	mesh_quadrangle_triapref.png \
 	mesh_rem_element.png \
 	mesh_rem_node.png \
 	mesh_rem_orphan_nodes.png \

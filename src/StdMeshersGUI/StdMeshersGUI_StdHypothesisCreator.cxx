@@ -19,23 +19,26 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+//  File   : StdMeshersGUI_StdHypothesisCreator.cxx
+//  Author : Alexander SOLOVYOV, Open CASCADE S.A.S.
+//  SMESH includes
 
-// File   : StdMeshersGUI_StdHypothesisCreator.cxx
-// Author : Alexander SOLOVYOV, Open CASCADE S.A.S.
-// SMESH includes
-//
 #include "StdMeshersGUI_StdHypothesisCreator.h"
 
 #include <SMESHGUI.h>
 #include <SMESHGUI_SpinBox.h>
 #include <SMESHGUI_HypothesesUtils.h>
 #include <SMESHGUI_Utils.h>
+
 #include <SMESH_TypeFilter.hxx>
 #include <SMESH_NumberFilter.hxx>
-#include "StdMeshersGUI_ObjectReferenceParamWdg.h"
-#include "StdMeshersGUI_LayerDistributionParamWdg.h"
-#include "StdMeshersGUI_SubShapeSelectorWdg.h"
+
 #include "StdMeshersGUI_FixedPointsParamWdg.h"
+#include "StdMeshersGUI_LayerDistributionParamWdg.h"
+#include "StdMeshersGUI_ObjectReferenceParamWdg.h"
+#include "StdMeshersGUI_QuadrangleParamWdg.h"
+#include "StdMeshersGUI_SubShapeSelectorWdg.h"
+
 #include <SALOMEDSClient_Study.hxx>
 
 // SALOME GUI includes
@@ -387,9 +390,11 @@ bool StdMeshersGUI_StdHypothesisCreator::checkParams( QString& msg ) const
   }
   else if ( hypType() == "QuadrangleParams" )
   {
-    StdMeshersGUI_SubShapeSelectorWdg* w = 
-      widget< StdMeshersGUI_SubShapeSelectorWdg >( 0 );
-    ok = ( w->GetListSize() > 0 );
+    //StdMeshersGUI_SubShapeSelectorWdg* w =
+    //  widget< StdMeshersGUI_SubShapeSelectorWdg >( 0 );
+    //ok = ( w->GetListSize() > 0 );
+    //StdMeshersGUI_QuadrangleParamWdg* w =
+    //  widget< StdMeshersGUI_QuadrangleParamWdg >( 1 );
   }
   return ok;
 }
@@ -608,14 +613,17 @@ QString StdMeshersGUI_StdHypothesisCreator::storeParams() const
     {
       StdMeshers::StdMeshers_QuadrangleParams_var h =
         StdMeshers::StdMeshers_QuadrangleParams::_narrow( hypothesis() );
-      StdMeshersGUI_SubShapeSelectorWdg* w = 
+      StdMeshersGUI_SubShapeSelectorWdg* w1 =
         widget< StdMeshersGUI_SubShapeSelectorWdg >( 0 );
-      if (w) {
-        if( w->GetListSize() > 0 ) {
-          h->SetTriaVertex( w->GetListOfIDs()[0] ); // getlist must be called once
-          const char * entry = w->GetMainShapeEntry();
-          h->SetObjectEntry( entry );
+      StdMeshersGUI_QuadrangleParamWdg* w2 =
+        widget< StdMeshersGUI_QuadrangleParamWdg >( 1 );
+      if (w1 && w2) {
+        if (w1->GetListSize() > 0) {
+          h->SetTriaVertex(w1->GetListOfIDs()[0]); // getlist must be called once
+          const char * entry = w1->GetMainShapeEntry();
+          h->SetObjectEntry(entry);
         }
+        h->SetQuadType(StdMeshers::QuadType(w2->GetType()));
       }
     }
   }
@@ -984,13 +992,13 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
     customWidgets()->append( newObjRefParamWdg( filterForShapeOfDim( 0 ),
                                                h->GetTargetVertex( 2 )));
   }
-  else if( hypType()=="QuadrangleParams" )
+  else if (hypType() == "QuadrangleParams")
   {
     StdMeshers::StdMeshers_QuadrangleParams_var h =
-      StdMeshers::StdMeshers_QuadrangleParams::_narrow( hyp );
+      StdMeshers::StdMeshers_QuadrangleParams::_narrow(hyp);
 
-    item.myName = tr( "SMESH_BASE_VERTEX" );
-    p.append( item );
+    item.myName = tr("SMESH_BASE_VERTEX");
+    p.append(item);
 
     StdMeshersGUI_SubShapeSelectorWdg* aDirectionWidget =
       new StdMeshersGUI_SubShapeSelectorWdg();
@@ -998,21 +1006,32 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
     aDirectionWidget->SetSubShType(TopAbs_VERTEX);
     QString anEntry = SMESHGUI_GenericHypothesisCreator::getShapeEntry();
     QString aMainEntry = SMESHGUI_GenericHypothesisCreator::getMainShapeEntry();
-    if ( anEntry == "" )
+    if (anEntry == "")
       anEntry = h->GetObjectEntry();
-    aDirectionWidget->SetGeomShapeEntry( anEntry );
-    aDirectionWidget->SetMainShapeEntry( aMainEntry );
-    if ( !isCreation() ) {
+    aDirectionWidget->SetGeomShapeEntry(anEntry);
+    aDirectionWidget->SetMainShapeEntry(aMainEntry);
+    if (!isCreation()) {
       SMESH::long_array_var aVec = new SMESH::long_array;
       int vertID = h->GetTriaVertex();
-      if(vertID>0) {
+      if (vertID > 0) {
         aVec->length(1);
         aVec[0] = vertID;
-        aDirectionWidget->SetListOfIDs( aVec );
+        aDirectionWidget->SetListOfIDs(aVec);
       }
     }
-    aDirectionWidget->showPreview( true );
-    customWidgets()->append ( aDirectionWidget );
+    aDirectionWidget->showPreview(true);
+
+    item.myName = tr("SMESH_QUAD_TYPE");
+    p.append(item);
+
+    StdMeshersGUI_QuadrangleParamWdg* aTypeWidget =
+      new StdMeshersGUI_QuadrangleParamWdg();
+    if (!isCreation()) {
+      aTypeWidget->SetType(int(h->GetQuadType()));
+    }
+
+    customWidgets()->append(aDirectionWidget);
+    customWidgets()->append(aTypeWidget);
   }
   else
     res = false;
@@ -1215,6 +1234,13 @@ bool StdMeshersGUI_StdHypothesisCreator::getParamFromCustomWidget( StdParam & pa
     const StdMeshersGUI_SubShapeSelectorWdg * w =
       static_cast<const StdMeshersGUI_SubShapeSelectorWdg*>( widget );
     param.myValue = w->GetValue();
+    return true;
+  }
+  if ( widget->inherits( "StdMeshersGUI_QuadrangleParamWdg" ))
+  {
+    //const StdMeshersGUI_QuadrangleParamWdg * w =
+    //  static_cast<const StdMeshersGUI_QuadrangleParamWdg*>( widget );
+    param.myValue = "QuadType";
     return true;
   }
   if ( widget->inherits( "StdMeshersGUI_FixedPointsParamWdg" ))

@@ -16,13 +16,11 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
-
 //  SMESH SMESH_I : idl implementation based on 'SMESH' unit's calsses
 //  File   : StdMeshers_QuadrangleParams_i.cxx
 //  Author : Sergey KUUL, OCC
 //  Module : SMESH
-//  $Header$
-//
+
 #include "StdMeshers_QuadrangleParams_i.hxx"
 #include "SMESH_Gen_i.hxx"
 #include "SMESH_Gen.hxx"
@@ -96,6 +94,21 @@ void StdMeshers_QuadrangleParams_i::SetTriaVertex(CORBA::Long vertID)
 
 //=============================================================================
 /*!
+ *  StdMeshers_QuadrangleParams_i::GetTriaVertex
+ *
+ *  Get base vertex for triangles
+ */
+//=============================================================================
+
+CORBA::Long StdMeshers_QuadrangleParams_i::GetTriaVertex()
+{
+  MESSAGE( "StdMeshers_QuadrangleParams_i::GetTriaVertex" );
+  ASSERT( myBaseImpl );
+  return this->GetImpl()->GetTriaVertex();
+}
+
+//=============================================================================
+/*!
  *  StdMeshers_QuadrangleParams_i::SetObjectEntry
  *
  *  Set the Entry for the Main Object
@@ -143,17 +156,65 @@ char* StdMeshers_QuadrangleParams_i::GetObjectEntry()
 
 //=============================================================================
 /*!
- *  StdMeshers_QuadrangleParams_i::GetTriaVertex
+ *  StdMeshers_QuadrangleParams_i::SetQuadType
  *
- *  Get base vertex for triangles
+ *  Set the type of quadrangulation
  */
 //=============================================================================
-
-CORBA::Long StdMeshers_QuadrangleParams_i::GetTriaVertex()
+void StdMeshers_QuadrangleParams_i::SetQuadType(StdMeshers::QuadType type)
 {
-  MESSAGE( "StdMeshers_QuadrangleParams_i::GetTriaVertex" );
-  ASSERT( myBaseImpl );
-  return this->GetImpl()->GetTriaVertex();
+  //static char* quadTypes[5] = {"StdMeshers.QUAD_STANDARD",
+  //                             "StdMeshers.QUAD_TRIANGLE_PREF",
+  //                             "StdMeshers.QUAD_QUADRANGLE_PREF",
+  //                             "StdMeshers.QUAD_QUADRANGLE_PREF_REVERSED",
+  //                             "StdMeshers.QUAD_REDUCED"};
+
+  MESSAGE("StdMeshers_QuadrangleParams_i::SetQuadType");
+  ASSERT(myBaseImpl);
+
+  if (int(type) >= int(StdMeshers::QUAD_NB_TYPES)) {
+    THROW_SALOME_CORBA_EXCEPTION("Bad type of quadrangulation", SALOME::BAD_PARAM);
+  }
+
+  try {
+    this->GetImpl()->SetQuadType(StdMeshers_QuadType(int(type)));
+  }
+  catch (SALOME_Exception& S_ex) {
+    THROW_SALOME_CORBA_EXCEPTION(S_ex.what(), SALOME::BAD_PARAM);
+  }
+
+  // Update Python script
+  const char* quadType;
+  switch (type) {
+  case StdMeshers::QUAD_STANDARD:
+    quadType = "StdMeshers.QUAD_STANDARD"; break;
+  case StdMeshers::QUAD_TRIANGLE_PREF:
+    quadType = "StdMeshers.QUAD_TRIANGLE_PREF"; break;
+  case StdMeshers::QUAD_QUADRANGLE_PREF:
+    quadType = "StdMeshers.QUAD_QUADRANGLE_PREF"; break;
+  case StdMeshers::QUAD_QUADRANGLE_PREF_REVERSED:
+    quadType = "StdMeshers.QUAD_QUADRANGLE_PREF_REVERSED"; break;
+  case StdMeshers::QUAD_REDUCED:
+    quadType = "StdMeshers.QUAD_REDUCED"; break;
+  default:
+    quadType = "UNKNOWN";
+  }
+  SMESH::TPythonDump() << _this() << ".SetQuadType( " << quadType << " )";
+  //SMESH::TPythonDump() << _this() << ".SetQuadType( " << quadTypes[int(type)] << " )";
+}
+
+//=============================================================================
+/*!
+ *  StdMeshers_QuadrangleParams_i::GetQuadType
+ *
+ *  Get the type of quadrangulation
+ */
+//=============================================================================
+StdMeshers::QuadType StdMeshers_QuadrangleParams_i::GetQuadType()
+{
+  MESSAGE("StdMeshers_QuadrangleParams_i::GetQuadType");
+  ASSERT(myBaseImpl);
+  return StdMeshers::QuadType(int(this->GetImpl()->GetQuadType()));
 }
 
 //=============================================================================
@@ -183,4 +244,3 @@ CORBA::Boolean StdMeshers_QuadrangleParams_i::IsDimSupported( SMESH::Dimension t
 {
   return type == SMESH::DIM_2D;
 }
-

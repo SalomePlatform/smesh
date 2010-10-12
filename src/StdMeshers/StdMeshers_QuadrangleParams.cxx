@@ -16,12 +16,11 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
-
 //  SMESH SMESH : implementaion of SMESH idl descriptions
 //  File   : StdMeshers_QuadrangleParams.cxx
 //  Author : Sergey KUUL, OCC
 //  Module : SMESH
-//
+
 #include "StdMeshers_QuadrangleParams.hxx"
 
 #include "SMESH_Algo.hxx"
@@ -41,38 +40,36 @@ using namespace std;
 
 //=============================================================================
 /*!
- *  
+ *
  */
 //=============================================================================
-
 StdMeshers_QuadrangleParams::StdMeshers_QuadrangleParams(int hypId, int studyId,
                                                          SMESH_Gen * gen)
-  :SMESH_Hypothesis(hypId, studyId, gen)
+  : SMESH_Hypothesis(hypId, studyId, gen)
 {
   _name = "QuadrangleParams";
   _param_algo_dim = 2;
   _triaVertexID = -1;
+  _quadType = QUAD_STANDARD;
 }
 
 //=============================================================================
 /*!
- *  
+ *
  */
 //=============================================================================
-
 StdMeshers_QuadrangleParams::~StdMeshers_QuadrangleParams()
 {
 }
 
 //=============================================================================
 /*!
- *  
+ *
  */
 //=============================================================================
-
-void StdMeshers_QuadrangleParams::SetTriaVertex(int id)
+void StdMeshers_QuadrangleParams::SetTriaVertex (int id)
 {
-  if ( id != _triaVertexID ) {
+  if (id != _triaVertexID) {
     _triaVertexID = id;
     NotifySubMeshesHypothesisModification();
   }
@@ -80,22 +77,36 @@ void StdMeshers_QuadrangleParams::SetTriaVertex(int id)
 
 //=============================================================================
 /*!
- *  
+ *
  */
 //=============================================================================
+void StdMeshers_QuadrangleParams::SetQuadType (StdMeshers_QuadType type)
+{
+  if (type != _quadType) {
+    _quadType = type;
+    NotifySubMeshesHypothesisModification();
+  }
+}
 
+//=============================================================================
+/*!
+ *
+ */
+//=============================================================================
 ostream & StdMeshers_QuadrangleParams::SaveTo(ostream & save)
 {
-  save << _triaVertexID << " " << _objEntry;
+  if (_objEntry.size() == 0)
+    save << _triaVertexID << " UNDEFINED " << int(_quadType);
+  else
+    save << _triaVertexID << " " << _objEntry << " " << int(_quadType);
   return save;
 }
 
 //=============================================================================
 /*!
- *  
+ *
  */
 //=============================================================================
-
 istream & StdMeshers_QuadrangleParams::LoadFrom(istream & load)
 {
   bool isOK = true;
@@ -104,16 +115,22 @@ istream & StdMeshers_QuadrangleParams::LoadFrom(istream & load)
     load.clear(ios::badbit | load.rdstate());
 
   isOK = (load >> _objEntry);
+  if (!isOK)
+    load.clear(ios::badbit | load.rdstate());
+
+  int type;
+  isOK = (load >> type);
+  if (isOK)
+    _quadType = StdMeshers_QuadType(type);
 
   return load;
 }
 
 //=============================================================================
 /*!
- *  
+ *
  */
 //=============================================================================
-
 ostream & operator <<(ostream & save, StdMeshers_QuadrangleParams & hyp)
 {
   return hyp.SaveTo( save );
@@ -121,10 +138,9 @@ ostream & operator <<(ostream & save, StdMeshers_QuadrangleParams & hyp)
 
 //=============================================================================
 /*!
- *  
+ *
  */
 //=============================================================================
-
 istream & operator >>(istream & load, StdMeshers_QuadrangleParams & hyp)
 {
   return hyp.LoadFrom( load );
@@ -138,7 +154,6 @@ istream & operator >>(istream & load, StdMeshers_QuadrangleParams & hyp)
  * \retval bool - true if parameter values have been successfully defined
  */
 //================================================================================
-
 bool StdMeshers_QuadrangleParams::SetParametersByMesh(const SMESH_Mesh* theMesh,
                                                       const TopoDS_Shape& theShape)
 {
@@ -154,10 +169,8 @@ bool StdMeshers_QuadrangleParams::SetParametersByMesh(const SMESH_Mesh* theMesh,
  *  \retval bool - true if parameter values have been successfully defined
  */
 //================================================================================
-
 bool StdMeshers_QuadrangleParams::SetParametersByDefaults(const TDefaults&  dflts,
                                                           const SMESH_Mesh* /*mesh*/)
 {
   return true;
 }
-

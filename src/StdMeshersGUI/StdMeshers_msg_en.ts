@@ -339,6 +339,33 @@
         <source>SMESH_QUADRANGLE_PARAMS_TITLE</source>
         <translation>Hypothesis Construction</translation>
     </message>
+    <message>
+        <source>SMESH_QUAD_TYPE</source>
+        <translation>Type</translation>
+    </message>
+</context>
+<context>
+    <name>StdMeshersGUI_QuadrangleParamWdg</name>
+    <message>
+        <source>SMESH_QUAD_TYPE_0</source>
+        <translation>Standard</translation>
+    </message>
+    <message>
+        <source>SMESH_QUAD_TYPE_1</source>
+        <translation>Triangle preference</translation>
+    </message>
+    <message>
+        <source>SMESH_QUAD_TYPE_2</source>
+        <translation>Quadrangle preference</translation>
+    </message>
+    <message>
+        <source>SMESH_QUAD_TYPE_3</source>
+        <translation>Quadrangle preference (reversed)</translation>
+    </message>
+    <message>
+        <source>SMESH_QUAD_TYPE_4</source>
+        <translation>Reduced</translation>
+    </message>
 </context>
 <context>
     <name>StdMeshersGUI_LayerDistributionParamWdg</name>

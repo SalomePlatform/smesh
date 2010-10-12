@@ -122,7 +122,7 @@
     <hypothesis type="MaxElementVolume"
                 label-id="Max. Element Volume"
                 icon-id="mesh_hypo_volume.png"
-		need-geom = "false"
+		need-geom="false"
                 dim="3"/>
 
     <hypothesis type="ProjectionSource3D"

@@ -92,7 +92,7 @@ private:
   QLabel          *myLScale, *myLTable, *myLExpr, *myInfo;
   QGridLayout*     myGroupLayout;
   int              myTableRow, myPreviewRow;
-  QRadioButton*    myCutNeg;
+  //QRadioButton*    myCutNeg;
   QGroupBox*       myReversedEdgesBox;
 
   StdMeshersGUI_SubShapeSelectorWdg*    myDirectionWidget;

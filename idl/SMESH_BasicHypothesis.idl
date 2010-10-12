@@ -753,6 +753,16 @@ module StdMeshers
   /*!
    * StdMeshers_QuadrangleParams: interface of "Quadrangle Params" hypothesis
    */
+  enum QuadType
+  {
+    QUAD_STANDARD,
+    QUAD_TRIANGLE_PREF,
+    QUAD_QUADRANGLE_PREF,
+    QUAD_QUADRANGLE_PREF_REVERSED,
+    QUAD_REDUCED,
+    QUAD_NB_TYPES /* this is not a type of quadrangulation */
+  };
+
   interface StdMeshers_QuadrangleParams : SMESH::SMESH_Hypothesis
   {
     /*!
@@ -774,6 +784,16 @@ module StdMeshers
      * Get the entry of the main object
      */
     string GetObjectEntry();
+    
+    /*!
+     * Set the type of quadrangulation
+     */
+    void SetQuadType( in QuadType type );
+
+    /*!
+     * Get the type of quadrangulation
+     */
+    QuadType GetQuadType();
   };
 
   /*!

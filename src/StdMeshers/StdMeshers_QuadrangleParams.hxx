@@ -16,21 +16,28 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
-
 //  SMESH SMESH : implementaion of SMESH idl descriptions
 //  File   : StdMeshers_QuadrangleParams.hxx
 //  Author : Sergey KUUL, OCC
 //  Module : SMESH
-//
+
 #ifndef _SMESH_QUADRANGLEPARAMS_HXX_
 #define _SMESH_QUADRANGLEPARAMS_HXX_
-
-
 
 #include "SMESH_StdMeshers.hxx"
 
 #include "SMESH_Hypothesis.hxx"
 #include "Utils_SALOME_Exception.hxx"
+
+enum StdMeshers_QuadType
+  {
+    QUAD_STANDARD,
+    QUAD_TRIANGLE_PREF,
+    QUAD_QUADRANGLE_PREF,
+    QUAD_QUADRANGLE_PREF_REVERSED,
+    QUAD_REDUCED,
+    QUAD_NB_TYPES
+  };
 
 class STDMESHERS_EXPORT StdMeshers_QuadrangleParams:
   public SMESH_Hypothesis
@@ -39,13 +46,14 @@ public:
   StdMeshers_QuadrangleParams(int hypId, int studyId, SMESH_Gen* gen);
   virtual ~StdMeshers_QuadrangleParams();
 
-  void SetTriaVertex(int id);
+  void SetTriaVertex (int id);
+  int GetTriaVertex() const { return _triaVertexID; }
 
-  void SetObjectEntry( const char* entry ) { _objEntry = entry; }
-
+  void SetObjectEntry (const char* entry) { _objEntry = entry; }
   const char* GetObjectEntry() { return _objEntry.c_str(); }
 
-  int GetTriaVertex() const { return _triaVertexID; }
+  void SetQuadType (StdMeshers_QuadType type);
+  StdMeshers_QuadType GetQuadType() const { return _quadType; }
 
   virtual std::ostream & SaveTo(std::ostream & save);
   virtual std::istream & LoadFrom(std::istream & load);
@@ -71,8 +79,9 @@ public:
                                        const SMESH_Mesh* theMesh=0);
 
 protected:
-  int         _triaVertexID;
-  std::string _objEntry;
+  int                 _triaVertexID;
+  std::string         _objEntry;
+  StdMeshers_QuadType _quadType;
 };
 
 #endif
