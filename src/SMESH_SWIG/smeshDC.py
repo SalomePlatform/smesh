@@ -2815,9 +2815,13 @@ class Mesh:
         if isinstance( elements, Mesh ):
             elements = elements.GetMesh()
         if ( isinstance( elements, list )):
-            elements = self.editor.MakeIDSource(elements, SMESH.ALL)
-        return self.editor.MakeBoundaryMesh(elements,dimension,groupName,meshName,
-                                            toCopyElements,toCopyExistingBondary)
+            elemType = SMESH.ALL
+            if elements: elemType = self.GetElementType( elements[0], iselem=True)
+            elements = self.editor.MakeIDSource(elements, elemType)
+        mesh, group = self.editor.MakeBoundaryMesh(elements,dimension,groupName,meshName,
+                                                   toCopyElements,toCopyExistingBondary)
+        if mesh: mesh = self.smeshpyD.Mesh(mesh)
+        return mesh, group
 
     ## Renumber mesh nodes
     #  @ingroup l2_modif_renumber
@@ -3610,11 +3614,11 @@ class Mesh:
     def FindCoincidentNodesOnPart (self, SubMeshOrGroup, Tolerance, exceptNodes=[]):
         if (isinstance( SubMeshOrGroup, Mesh )):
             SubMeshOrGroup = SubMeshOrGroup.GetMesh()
-        if not isinstance( ExceptSubMeshOrGroups, list):
-            ExceptSubMeshOrGroups = [ ExceptSubMeshOrGroups ]
-        if ExceptSubMeshOrGroups and isinstance( ExceptSubMeshOrGroups[0], int):
-            ExceptSubMeshOrGroups = [ self.editor.MakeIDSource( ExceptSubMeshOrGroups, SMESH.NODE)]
-        return self.editor.FindCoincidentNodesOnPartBut(SubMeshOrGroup, Tolerance,ExceptSubMeshOrGroups)
+        if not isinstance( exceptNodes, list):
+            exceptNodes = [ exceptNodes ]
+        if exceptNodes and isinstance( exceptNodes[0], int):
+            exceptNodes = [ self.editor.MakeIDSource( exceptNodes, SMESH.NODE)]
+        return self.editor.FindCoincidentNodesOnPartBut(SubMeshOrGroup, Tolerance,exceptNodes)
 
     ## Merges nodes
     #  @param GroupsOfNodes the list of groups of nodes
