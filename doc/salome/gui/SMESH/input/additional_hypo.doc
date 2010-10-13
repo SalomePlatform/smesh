@@ -41,17 +41,20 @@ It allows Netgen 2D to build quadrangular meshes at any conditions.
 
 It allows Quadrangle (Mapping) to build quadrangular meshes even if the number
 of nodes at the opposite edges of a meshed face is not equal,
-otherwise this mesh will contain some triangular elements.
+otherwise this mesh will contain some triangular elements. <i>This use
+case is obsolete now. Use <b>Quadrangle Parameters</b> hypothesis with
+type <b>Quadrangle Preference</b> set instead.</i>
 <br>
 This hypothesis has one restriction on its work: the total quantity of
 segments on all four sides of the face must be even (divisible by 2).
 
-<h2>Triangle Preference</h2>
+<h2>Triangle Preference <i>(obsolete)</i></h2>
 
 This additional hypothesis can be used only together with Quadrangle (Mapping)
 algorithm. It allows to build triangular mesh faces in the refinement
 area if the number of nodes at the opposite edges of a meshed face is not equal,
 otherwise refinement area will contain some quadrangular elements.
- 
+<i>This hypothesis is obsolete now. Use <b>Quadrangle Parameters</b>
+hypothesis with type <b>Triangle Preference</b> set instead.</i>
 
 */
