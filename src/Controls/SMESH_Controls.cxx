@@ -23,6 +23,7 @@
 #include "SMESH_ControlsDef.hxx"
 
 #include <set>
+#include <limits>
 
 #include <BRepAdaptor_Surface.hxx>
 #include <BRepClass_FaceClassifier.hxx>
