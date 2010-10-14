@@ -2788,7 +2788,7 @@ SMESH::long_array* SMESH_Mesh_i::GetNodesId()
 
   long nbNodes = NbNodes();
   aResult->length( nbNodes );
-  SMDS_NodeIteratorPtr anIt = aSMESHDS_Mesh->nodesIterator();
+  SMDS_NodeIteratorPtr anIt = aSMESHDS_Mesh->nodesIterator(/*idInceasingOrder=*/true);
   for ( int i = 0, n = nbNodes; i < n && anIt->more(); i++ )
     aResult[i] = anIt->next()->GetID();
 
