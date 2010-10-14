@@ -65,6 +65,7 @@ module SMESH
     FT_LinearOrQuadratic,
     FT_GroupColor,
     FT_ElemGeomType,
+    FT_CoplanarFaces,
     FT_LessThan,
     FT_MoreThan,
     FT_EqualTo,
@@ -347,6 +348,16 @@ module SMESH
   };
 
   /*!
+  * Functor "Coplanar faces"
+  * Returns true if a mesh face is a coplanar neighbour to a given one. It checks
+  * if normal of a face has angle with the threshold face less than a tolerance.
+  */
+  interface CoplanarFaces : Predicate{
+    void            SetFace ( in long theFaceID );
+    void            SetTolerance( in double theToler );
+  };
+
+  /*!
   *  Filter
   */
   interface Filter: SALOME::GenericObj, SMESH_IDSource
@@ -360,13 +371,13 @@ module SMESH
     *   BinaryOp      - binary logical operation FT_LogicalAND, FT_LogicalOR or
     *                   (FT_Undefined must be for the last criterion)
     *   ThresholdStr  - Threshold value defined as string. Used for:
-    *                   1. Diaposon of identifiers. Example: "1,2,3,5-10,12,27-29"
+    *                   1. Diapason of identifiers. Example: "1,2,3,5-10,12,27-29"
     *                   2. BelongToGeom predicate for storing name of shape
     *                   3. GroupColor predicate for storing group color "0.2;0;0.5"
     *   ThresholdID   - One more threshold value defined as string. Used for:
     *                   1. BelongToGeom predicate for storing id of shape
     *   Tolerance     - Tolerance is used for comparators (EqualTo comparision) and for
-    *                   "Belong to plane" and "Belong to cylinder" predicates
+    *                   "Belong to plane", "Belong to cylinder" etc predicates
     *   TypeOfElement - type of element SMESH::NODE, SMESH::FACE (used by BelongToGeom predicate only)
     *   Precision     - Precision of numerical functors
     */
@@ -477,6 +488,7 @@ module SMESH
 
     GroupColor        CreateGroupColor();
     ElemGeomType      CreateElemGeomType();
+    CoplanarFaces     CreateCoplanarFaces();
 
     /*!
     *  Create comparators ( predicates )

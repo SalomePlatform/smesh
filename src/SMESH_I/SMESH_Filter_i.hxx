@@ -623,6 +623,26 @@ namespace SMESH
   };
   
   /*
+    Class       : CoplanarFaces_i
+    Description : Returns true if a mesh face is a coplanar neighbour to a given one
+  */
+  class SMESH_I_EXPORT CoplanarFaces_i: public virtual POA_SMESH::CoplanarFaces,
+                  public virtual Predicate_i
+  {
+  public:
+    CoplanarFaces_i();
+    FunctorType             GetFunctorType();
+
+    void                    SetFace ( CORBA::Long theFaceID );
+    void                    SetTolerance( CORBA::Double theToler );
+    char*                   GetFaceAsString () const;
+    CORBA::Long             GetFace () const;
+    CORBA::Double           GetTolerance () const;
+  private:
+    Controls::CoplanarFacesPtr myCoplanarFacesPtr;
+  };
+  
+  /*
     Class       : Comparator_i
     Description : Base class for comparators
   */
@@ -908,13 +928,11 @@ namespace SMESH
     FreeFaces_ptr             CreateFreeFaces();
     
     RangeOfIds_ptr            CreateRangeOfIds();
-    
     BadOrientedVolume_ptr     CreateBadOrientedVolume();
     LinearOrQuadratic_ptr     CreateLinearOrQuadratic();
-    
     GroupColor_ptr            CreateGroupColor();
-
     ElemGeomType_ptr          CreateElemGeomType();
+    CoplanarFaces_ptr         CreateCoplanarFaces();
 
     LessThan_ptr              CreateLessThan();
     MoreThan_ptr              CreateMoreThan();

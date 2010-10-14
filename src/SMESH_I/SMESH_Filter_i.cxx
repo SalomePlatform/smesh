@@ -1443,12 +1443,55 @@ void ElemGeomType_i::SetGeometryType(GeometryType theType)
 
 GeometryType ElemGeomType_i::GetGeometryType() const
 {
-  return (GeometryType)myElemGeomTypePtr->GetGeomType();;
+  return (GeometryType)myElemGeomTypePtr->GetGeomType();
 }
 
 FunctorType ElemGeomType_i::GetFunctorType()
 {
   return SMESH::FT_ElemGeomType;
+}
+
+/*
+  Class       : CoplanarFaces_i
+  Description : Returns true if a mesh face is a coplanar neighbour to a given one
+*/
+CoplanarFaces_i::CoplanarFaces_i()
+{
+  myCoplanarFacesPtr.reset(new Controls::CoplanarFaces());
+  myFunctorPtr = myPredicatePtr = myCoplanarFacesPtr;
+}
+
+void CoplanarFaces_i::SetFace ( CORBA::Long theFaceID )
+{
+  myCoplanarFacesPtr->SetFace(theFaceID);
+  TPythonDump()<<this<<".SetFace("<<theFaceID<<")";
+}
+
+void CoplanarFaces_i::SetTolerance( CORBA::Double theToler )
+{
+  myCoplanarFacesPtr->SetTolerance(theToler);
+  TPythonDump()<<this<<".SetTolerance("<<theToler<<")";
+}
+
+CORBA::Long CoplanarFaces_i::GetFace () const
+{
+  return myCoplanarFacesPtr->GetFace();
+}
+
+char* CoplanarFaces_i::GetFaceAsString () const
+{
+  TCollection_AsciiString str(Standard_Integer(myCoplanarFacesPtr->GetFace()));
+  return CORBA::string_dup( str.ToCString() );
+}
+
+CORBA::Double CoplanarFaces_i::GetTolerance() const
+{
+  return myCoplanarFacesPtr->GetTolerance();
+}
+
+FunctorType CoplanarFaces_i::GetFunctorType()
+{
+  return SMESH::FT_CoplanarFaces;
 }
 
 /*
@@ -1864,6 +1907,14 @@ LyingOnGeom_ptr FilterManager_i::CreateLyingOnGeom()
   SMESH::LyingOnGeom_i* aServant = new SMESH::LyingOnGeom_i();
   SMESH::LyingOnGeom_var anObj = aServant->_this();
   TPythonDump()<<aServant<<" = "<<this<<".CreateLyingOnGeom()";
+  return anObj._retn();
+}
+
+CoplanarFaces_ptr FilterManager_i::CreateCoplanarFaces()
+{
+  SMESH::CoplanarFaces_i* aServant = new SMESH::CoplanarFaces_i();
+  SMESH::CoplanarFaces_var anObj = aServant->_this();
+  TPythonDump()<<aServant<<" = "<<this<<".CreateCoplanarFaces()";
   return anObj._retn();
 }
 
@@ -2302,6 +2353,22 @@ static inline bool getCriteria( Predicate_i*                thePred,
 
       return true;
     }
+   case FT_CoplanarFaces:
+    {
+      CoplanarFaces_i* aPred = dynamic_cast<CoplanarFaces_i*>( thePred );
+
+      CORBA::ULong i = theCriteria->length();
+      theCriteria->length( i + 1 );
+
+      theCriteria[ i ] = createCriterion();
+      CORBA::String_var faceId = aPred->GetFaceAsString();
+
+      theCriteria[ i ].Type          = FT_CoplanarFaces;
+      theCriteria[ i ].ThresholdID   = faceId;
+      theCriteria[ i ].Tolerance     = aPred->GetTolerance();
+
+      return true;
+    }
   case FT_RangeOfIds:
     {
       RangeOfIds_i* aPred = dynamic_cast<RangeOfIds_i*>( thePred );
@@ -2590,6 +2657,14 @@ CORBA::Boolean Filter_i::SetCriteria( const SMESH::Filter::Criteria& theCriteria
           SMESH::ElemGeomType_ptr tmpPred = aFilterMgr->CreateElemGeomType();
           tmpPred->SetElementType( aTypeOfElem );
           tmpPred->SetGeometryType( (GeometryType)(int)(aThreshold + 0.5) );
+          aPredicate = tmpPred;
+          break;
+        }
+      case SMESH::FT_CoplanarFaces:
+        {
+          SMESH::CoplanarFaces_ptr tmpPred = aFilterMgr->CreateCoplanarFaces();
+          tmpPred->SetFace( atol (aThresholdID ));
+          tmpPred->SetTolerance( aTolerance );
           aPredicate = tmpPred;
           break;
         }

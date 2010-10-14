@@ -3934,6 +3934,16 @@ Please select a face and try again</translation>
 Please select a plane and try again</translation>
     </message>
     <message>
+        <source>FACE_ID_NOT_SELECTED</source>
+        <translation>Mesh face is not selected
+Please specify it and try again</translation>
+    </message>
+    <message>
+        <source>NOT_FACE_ID</source>
+        <translation>&quot;%1&quot; is not an ID of a mesh face.
+Please select a face and try again</translation>
+    </message>
+    <message>
         <source>SOURCE</source>
         <translation>Source</translation>
     </message>
@@ -4139,6 +4149,10 @@ Please check input data and try again</translation>
     <message>
         <source>COMPARE</source>
         <translation>Compare</translation>
+    </message>
+    <message>
+        <source>COPLANAR_FACES</source>
+        <translation>Coplanar faces</translation>
     </message>
     <message>
         <source>COPY_FROM</source>

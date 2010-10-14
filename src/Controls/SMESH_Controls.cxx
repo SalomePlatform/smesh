@@ -70,6 +70,12 @@
 */
 
 namespace{
+
+  inline gp_XYZ gpXYZ(const SMDS_MeshNode* aNode )
+  {
+    return gp_XYZ(aNode->X(), aNode->Y(), aNode->Z() );
+  }
+
   inline double getAngle( const gp_XYZ& P1, const gp_XYZ& P2, const gp_XYZ& P3 )
   {
     gp_Vec v1( P1 - P2 ), v2( P3 - P2 );
@@ -171,6 +177,26 @@ namespace{
     return aResult;
   }
 
+  gp_XYZ getNormale( const SMDS_MeshFace* theFace, bool* ok=0 )
+  {
+    int aNbNode = theFace->NbNodes();
+
+    gp_XYZ q1 = gpXYZ( theFace->GetNode(1)) - gpXYZ( theFace->GetNode(0));
+    gp_XYZ q2 = gpXYZ( theFace->GetNode(2)) - gpXYZ( theFace->GetNode(0));
+    gp_XYZ n  = q1 ^ q2;
+    if ( aNbNode > 3 ) {
+      gp_XYZ q3 = gpXYZ( theFace->GetNode(3)) - gpXYZ( theFace->GetNode(0));
+      n += q2 ^ q3;
+    }
+    double len = n.Modulus();
+    bool zeroLen = ( len <= numeric_limits<double>::min());
+    if ( !zeroLen )
+      n /= len;
+
+    if (ok) *ok = !zeroLen;
+
+    return n;
+  }
 }
 
 
@@ -178,8 +204,8 @@ namespace{
 using namespace SMESH::Controls;
 
 /*
-                                FUNCTORS
-*/
+ *                               FUNCTORS
+ */
 
 /*
   Class       : NumericalFunctor
@@ -2002,13 +2028,71 @@ SMDSAbs_GeometryType ElemGeomType::GetGeomType() const
   return myGeomType;
 }
 
+//================================================================================
+/*!
+ * \brief Class CoplanarFaces
+ */
+//================================================================================
+
+CoplanarFaces::CoplanarFaces()
+  : myMesh(0), myFaceID(0), myToler(0)
+{
+}
+bool CoplanarFaces::IsSatisfy( long theElementId )
+{
+  if ( myCoplanarIDs.empty() )
+  {
+    // Build a set of coplanar face ids
+
+    if ( !myMesh || !myFaceID || !myToler )
+      return false;
+
+    const SMDS_MeshElement* face = myMesh->FindElement( myFaceID );
+    if ( !face || face->GetType() != SMDSAbs_Face )
+      return false;
+
+    bool normOK;
+    gp_Vec myNorm = getNormale( static_cast<const SMDS_MeshFace*>(face), &normOK );
+    if (!normOK)
+      return false;
+
+    const double radianTol = myToler * PI180;
+    typedef SMDS_StdIterator< const SMDS_MeshElement*, SMDS_ElemIteratorPtr > TFaceIt;
+    std::set<const SMDS_MeshElement*> checkedFaces, checkedNodes;
+    std::list<const SMDS_MeshElement*> faceQueue( 1, face );
+    while ( !faceQueue.empty() )
+    {
+      face = faceQueue.front();
+      if ( checkedFaces.insert( face ).second )
+      {
+        gp_Vec norm = getNormale( static_cast<const SMDS_MeshFace*>(face), &normOK );
+        if (!normOK || myNorm.Angle( norm ) <= radianTol)
+        {
+          myCoplanarIDs.insert( face->GetID() );
+          std::set<const SMDS_MeshElement*> neighborFaces;
+          for ( int i = 0; i < face->NbCornerNodes(); ++i )
+          {
+            const SMDS_MeshNode* n = face->GetNode( i );
+            if ( checkedNodes.insert( n ).second )
+              neighborFaces.insert( TFaceIt( n->GetInverseElementIterator(SMDSAbs_Face)),
+                                    TFaceIt());
+          }
+          faceQueue.insert( faceQueue.end(), neighborFaces.begin(), neighborFaces.end() );
+        }
+      }
+      faceQueue.pop_front();
+    }
+  }
+  return myCoplanarIDs.count( theElementId );
+}
+
 /*
-  Class       : RangeOfIds
-  Description : Predicate for Range of Ids.
-                Range may be specified with two ways.
-                1. Using AddToRange method
-                2. With SetRangeStr method. Parameter of this method is a string
-                   like as "1,2,3,50-60,63,67,70-"
+  *Class       : RangeOfIds
+  *Description : Predicate for Range of Ids.
+  *              Range may be specified with two ways.
+  *              1. Using AddToRange method
+  *              2. With SetRangeStr method. Parameter of this method is a string
+  *                 like as "1,2,3,50-60,63,67,70-"
 */
 
 //=======================================================================
@@ -2636,32 +2720,6 @@ static void getLinks( const SMDS_MeshFace* theFace,
     ManifoldPart::Link aLink( aN1, aN2 );
     theLinks.push_back( aLink );
   }
-}
-
-static gp_XYZ getNormale( const SMDS_MeshFace* theFace )
-{
-  gp_XYZ n;
-  int aNbNode = theFace->NbNodes();
-  TColgp_Array1OfXYZ anArrOfXYZ(1,4);
-  SMDS_ElemIteratorPtr aNodeItr = theFace->nodesIterator();
-  int i = 1;
-  for ( ; aNodeItr->more() && i <= 4; i++ ) {
-    SMDS_MeshNode* aNode = (SMDS_MeshNode*)aNodeItr->next();
-    anArrOfXYZ.SetValue(i, gp_XYZ( aNode->X(), aNode->Y(), aNode->Z() ) );
-  }
-
-  gp_XYZ q1 = anArrOfXYZ.Value(2) - anArrOfXYZ.Value(1);
-  gp_XYZ q2 = anArrOfXYZ.Value(3) - anArrOfXYZ.Value(1);
-  n  = q1 ^ q2;
-  if ( aNbNode > 3 ) {
-    gp_XYZ q3 = anArrOfXYZ.Value(4) - anArrOfXYZ.Value(1);
-    n += q2 ^ q3;
-  }
-  double len = n.Modulus();
-  if ( len > 0 )
-    n /= len;
-
-  return n;
 }
 
 bool ManifoldPart::findConnected
