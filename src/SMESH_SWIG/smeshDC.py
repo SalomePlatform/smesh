@@ -773,6 +773,18 @@ class smeshDC(SMESH._objref_SMESH_Gen):
             else:
                 print "Error: The treshold should be a string."
                 return None
+        elif CritType == FT_CoplanarFaces:
+            # Checks the treshold
+            if isinstance(aTreshold, int):
+                aCriterion.ThresholdID = "%s"%aTreshold
+            elif isinstance(aTreshold, str):
+                ID = int(aTreshold)
+                if ID < 1:
+                    raise ValueError, "Invalid ID of mesh face: '%s'"%aTreshold
+                aCriterion.ThresholdID = aTreshold
+            else:
+                raise ValueError,\
+                      "The treshold should be an ID of mesh face and not '%s'"%aTreshold
         elif CritType == FT_ElemGeomType:
             # Checks the treshold
             try:
