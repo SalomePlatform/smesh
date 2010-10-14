@@ -156,6 +156,12 @@ See also a
 length, which is more, less or equal (within a given <b>Tolerance</b>) to the predefined
 <b>Threshold Value</b>. See also a
 \ref length_2d_page "Length 2D quality control".
+</li><li>
+<b>Coplanar faces</b> selects mesh faces neighboring the one defined by
+<b>Threshold Value</b> and whose normal has an angle less then an
+angular tolerance (defined in degrees) with normal of the face
+selected as threshold. Selection continues among neighboring faces of already 
+selected ones.<br>
 </li>
 </ul>
 
