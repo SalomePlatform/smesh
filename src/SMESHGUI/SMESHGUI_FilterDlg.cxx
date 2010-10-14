@@ -3203,7 +3203,8 @@ void SMESHGUI_FilterDlg::updateSelection()
   else
   {
     if (myIsSelectionChanged) {
-      mySelectionMgr->installFilter( new GEOM_TypeFilter( aStudy, -1 ) ); // This filter deactivates selection
+      // mySelectionMgr->installFilter( new GEOM_TypeFilter( aStudy, -1 ) ); // This filter deactivates selection
+      // Impossible to select any object in the OB on the second opening of FilterDlg
     }
   }
 }
