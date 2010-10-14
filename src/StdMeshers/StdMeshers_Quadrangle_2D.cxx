@@ -2190,7 +2190,7 @@ bool StdMeshers_Quadrangle_2D::ComputeReduced (SMESH_Mesh &        aMesh,
     // maximum number of bottom elements for "linear" simple reduce
     //int max_lin = ncol_top + npair_top * 2 * nrows;
     // maximum number of bottom elements for "tree" simple reduce
-    int max_tree = npair_top * pow(2, nrows + 1);
+    int max_tree = npair_top * pow(2.0, nrows + 1);
     if (ncol_top > npair_top * 2) {
       int delta = ncol_bot - max_tree;
       for (int irow = 1; irow < nrows; irow++) {
