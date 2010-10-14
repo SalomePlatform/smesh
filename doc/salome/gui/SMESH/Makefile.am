@@ -31,23 +31,21 @@ guidoc_DATA = images/head.png
 
 
 usr_docs: doxyfile_py doxyfile 
-	echo "===========================================" ;		\
-	echo "Generating Python interface documentation";		\
-	echo "===========================================" ;		\
-	$(DOXYGEN) doxyfile_py ;					\
-	echo "===========================================" ;		\
-	echo "Replacing smeshDC by smesh" ;				\
-	echo "===========================================" ;		\
-	files=`find smeshpy_doc -type f` ;				\
-	for filen in $${files} ; do					\
-	  sed -e "s/\<smeshDC\>/smesh/g" -e "s/smesh\.smesh/smesh/g"	\
-	      -e "s/smesh::smesh/smesh/g" $${filen} > $${filen}_ ;	\
-	  mv -f $${filen}_ $${filen} ;					\
-	done ;								\
-	echo "===========================================" ;		\
-	echo "Generating GUI documentation" ;				\
-	echo "===========================================" ;		\
-	$(DOXYGEN) doxyfile ;
+	echo "===========================================" ;			\
+	echo "Replacing smeshDC by smesh" ;					\
+	echo "===========================================" ;			\
+	sed -e "/class smeshDC/d" -e "s/^ *#/#/g" -e "s/^ *def /def /g" 	\
+	  -e "s/smeshDC/smesh/g" $(top_srcdir)/src/SMESH_SWIG/smeshDC.py > 	\
+	  $(top_builddir)/src/SMESH_SWIG/smesh.py ; 				\
+	echo "===========================================" ;			\
+	echo "Generating Python interface documentation";			\
+	echo "===========================================" ;			\
+	$(DOXYGEN) doxyfile_py ;						\
+	echo "===========================================" ;			\
+	echo "Generating GUI documentation" ;					\
+	echo "===========================================" ;			\
+	$(DOXYGEN) doxyfile ;                        				\
+	rm -f $(top_builddir)/src/SMESH_SWIG/smesh.py
 
 docs: usr_docs
 
