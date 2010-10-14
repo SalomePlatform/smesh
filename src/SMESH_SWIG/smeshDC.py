@@ -851,6 +851,7 @@ class smeshDC(SMESH._objref_SMESH_Gen):
         aCriterion = self.GetCriterion(elementType, CritType, Compare, Treshold, UnaryOp, FT_Undefined)
         aFilterMgr = self.CreateFilterManager()
         aFilter = aFilterMgr.CreateFilter()
+        aFilter.SetMesh( self.mesh )
         aCriteria = []
         aCriteria.append(aCriterion)
         aFilter.SetCriteria(aCriteria)
@@ -1632,6 +1633,7 @@ class Mesh:
     def MakeGroupByCriterion(self, groupName, Criterion):
         aFilterMgr = self.smeshpyD.CreateFilterManager()
         aFilter = aFilterMgr.CreateFilter()
+        aFilter.SetMesh( self.mesh )
         aCriteria = []
         aCriteria.append(Criterion)
         aFilter.SetCriteria(aCriteria)
@@ -1646,6 +1648,7 @@ class Mesh:
     def MakeGroupByCriteria(self, groupName, theCriteria):
         aFilterMgr = self.smeshpyD.CreateFilterManager()
         aFilter = aFilterMgr.CreateFilter()
+        aFilter.SetMesh( self.mesh )
         aFilter.SetCriteria(theCriteria)
         group = self.MakeGroupByFilter(groupName, aFilter)
         return group
@@ -1656,9 +1659,8 @@ class Mesh:
     #  @return SMESH_Group
     #  @ingroup l2_grps_create
     def MakeGroupByFilter(self, groupName, theFilter):
-        anIds = theFilter.GetElementsId(self.mesh)
-        anElemType = theFilter.GetElementType()
-        group = self.MakeGroupByIds(groupName, anElemType, anIds)
+        group = self.CreateEmptyGroup(theFilter.GetElementType(), groupName)
+        group.AddFrom( theFilter )
         return group
 
     ## Passes mesh elements through the given filter and return IDs of fitting elements
@@ -1666,7 +1668,7 @@ class Mesh:
     #  @return a list of ids
     #  @ingroup l1_controls
     def GetIdsFromFilter(self, theFilter):
-        return theFilter.GetElementsId(self.mesh)
+        return theFilter.GetIDs()
 
     ## Verifies whether a 2D mesh element has free edges (edges connected to one face only)\n
     #  Returns a list of special structures (borders).
