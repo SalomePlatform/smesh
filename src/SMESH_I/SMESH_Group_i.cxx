@@ -36,6 +36,8 @@
 #include "SMESH_Filter_i.hxx"
 #include "SMESH_PythonDump.hxx"
 
+#include CORBA_SERVER_HEADER(SMESH_Filter)
+
 #include "utilities.h"
 
 using namespace SMESH;
@@ -353,19 +355,20 @@ CORBA::Long SMESH_Group_i::AddFrom( SMESH::SMESH_IDSource_ptr theSource )
   SMESHDS_Group* aGroupDS = dynamic_cast<SMESHDS_Group*>( GetGroupDS() );
   if (aGroupDS) {
     SMESH::long_array_var anIds;
-    if ( !CORBA::is_nil(SMESH::SMESH_GroupBase::_narrow(theSource)) &&
-         SMESH::SMESH_GroupBase::_narrow(theSource)->GetType() == GetType() ) {
+    SMESH::SMESH_GroupBase_var group = SMESH::SMESH_GroupBase::_narrow(theSource);
+    SMESH::SMESH_Mesh_var mesh       = SMESH::SMESH_Mesh::_narrow(theSource);
+    SMESH::SMESH_subMesh_var submesh = SMESH::SMESH_subMesh::_narrow(theSource);
+    SMESH::Filter_var filter         = SMESH::Filter::_narrow(theSource);
+    if ( !group->_is_nil())
+      anIds = group->GetType()==GetType() ? theSource->GetIDs() :  new SMESH::long_array();
+    else if ( !mesh->_is_nil() )
+      anIds = mesh->GetElementsByType( GetType() );
+    else if ( !submesh->_is_nil())
+      anIds = submesh->GetElementsByType( GetType() );
+    else if ( !filter->_is_nil() )
+      anIds = filter->GetElementType()==GetType() ? theSource->GetIDs() : new SMESH::long_array();
+    else 
       anIds = theSource->GetIDs();
-    }
-    else if ( !CORBA::is_nil(SMESH::SMESH_Mesh::_narrow(theSource)) ) {
-      anIds = SMESH::SMESH_Mesh::_narrow(theSource)->GetElementsByType( GetType() );
-    }
-    else if ( !CORBA::is_nil(SMESH::SMESH_subMesh::_narrow(theSource)) ) {
-      anIds = SMESH::SMESH_subMesh::_narrow(theSource)->GetElementsByType( GetType() );
-    }
-    else {
-      anIds->length( 0 );
-    }
     for ( int i = 0, total = anIds->length(); i < total; i++ ) {
       if ( aGroupDS->Add((int)anIds[i]) ) nbAdd++;
     }
