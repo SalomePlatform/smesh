@@ -624,13 +624,17 @@ public:
                             const TIDSortedElemSet& theNodesNot,
                             const TopoDS_Shape&     theShape );
   
-  /*!
-   * \brief Generated skin mesh (containing 2D cells) from 3D mesh
-   * The created 2D mesh elements based on nodes of free faces of boundary volumes
-   * \return TRUE if operation has been completed successfully, FALSE otherwise
-   */
   bool Make2DMeshFrom3D();
-  
+
+  enum Bnd_Dimension { BND_2DFROM3D, BND_1DFROM3D, BND_1DFROM2D };
+
+  void MakeBoundaryMesh(const TIDSortedElemSet& elements,
+                        Bnd_Dimension           dimension,
+                        SMESH_Group*            group = 0,
+                        SMESH_Mesh*             targetMesh = 0,
+                        bool                    toCopyElements = false,
+                        bool                    toCopyExistingBondary = false);
+
 private:
 
   /*!

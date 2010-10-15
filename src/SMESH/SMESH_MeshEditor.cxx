@@ -35,6 +35,7 @@
 #include "SMDS_SpacePosition.hxx"
 #include "SMDS_QuadraticFaceOfNodes.hxx"
 #include "SMDS_MeshGroup.hxx"
+#include "SMDS_SetIterator.hxx"
 
 #include "SMESHDS_Group.hxx"
 #include "SMESHDS_Mesh.hxx"
@@ -98,6 +99,8 @@ using namespace SMESH::Controls;
 
 typedef map<const SMDS_MeshElement*, list<const SMDS_MeshNode*> >    TElemOfNodeListMap;
 typedef map<const SMDS_MeshElement*, list<const SMDS_MeshElement*> > TElemOfElemListMap;
+
+typedef SMDS_SetIterator< SMDS_pElement, TIDSortedElemSet::const_iterator> TSetIterator;
 
 //=======================================================================
 //function : SMESH_MeshEditor
@@ -219,6 +222,7 @@ SMESH_MeshEditor::AddElement(const vector<const SMDS_MeshNode*> & node,
                                             node[16],node[17],node[18],node[19] );
     }
   }
+  if ( e ) myLastCreatedElems.Append( e );
   return e;
 }
 
@@ -5531,10 +5535,8 @@ SMESH_MeshEditor::Transform (TIDSortedElemSet & theElems,
       }
     }
     else if ( theCopy ) {
-      if ( SMDS_MeshElement* copy = AddElement( nodes, elem->GetType(), elem->IsPoly() )) {
-        myLastCreatedElems.Append( copy );
+      if ( AddElement( nodes, elem->GetType(), elem->IsPoly() ))
         srcElems.Append( elem );
-      }
     }
     else {
       // reverse element as it was reversed by transformation
@@ -9829,7 +9831,7 @@ bool SMESH_MeshEditor::doubleNodes( SMESHDS_Mesh*     theMeshDS,
       continue;
 
     if ( theIsDoubleElem )
-      myLastCreatedElems.Append( AddElement(newNodes, anElem->GetType(), anElem->IsPoly()) );
+      AddElement(newNodes, anElem->GetType(), anElem->IsPoly());
     else
       theMeshDS->ChangeElementNodes( anElem, &newNodes[ 0 ], anElem->NbNodes() );
 
@@ -10054,7 +10056,7 @@ bool SMESH_MeshEditor::DoubleNodesInRegion( const TIDSortedElemSet& theElems,
 
 //================================================================================
 /*!
- * \brief Generated skin mesh (containing 2D cells) from 3D mesh
+ * \brief Generates skin mesh (containing 2D cells) from 3D mesh
  * The created 2D mesh elements based on nodes of free faces of boundary volumes
  * \return TRUE if operation has been completed successfully, FALSE otherwise
  */
@@ -10096,9 +10098,195 @@ bool SMESH_MeshEditor::Make2DMeshFrom3D()
         nbExisted++;
         continue; // face already exsist
       }
-      myLastCreatedElems.Append( AddElement(nodes, SMDSAbs_Face, isPoly && iface == 1) );
+      AddElement(nodes, SMDSAbs_Face, isPoly && iface == 1);
       nbCreated++;
     }
   }
   return ( nbFree==(nbExisted+nbCreated) );
+}
+
+namespace
+{
+  inline const SMDS_MeshNode* getNodeWithSameID(SMESHDS_Mesh* mesh, const SMDS_MeshNode* node)
+  {
+    if ( const SMDS_MeshNode* n = mesh->FindNode( node->GetID() ))
+      return n;
+    return mesh->AddNodeWithID( node->X(),node->Y(),node->Z(), node->GetID() );
+  }
+}
+//================================================================================
+/*!
+ * \brief Creates missing boundary elements
+ *  \param elements - elements whose boundary is to be checked
+ *  \param dimension - defines type of boundary elements to create
+ *  \param group - a group to store created boundary elements in
+ *  \param targetMesh - a mesh to store created boundary elements in
+ *  \param toCopyElements - if true, the checked elements will be copied into the targetMesh
+ *  \param toCopyExistingBondary - if true, not only new but also pre-existing 
+ *                                boundary elements will be copied into the targetMesh
+ */
+//================================================================================
+
+void SMESH_MeshEditor::MakeBoundaryMesh(const TIDSortedElemSet& elements,
+                                        Bnd_Dimension           dimension,
+                                        SMESH_Group*            group/*=0*/,
+                                        SMESH_Mesh*             targetMesh/*=0*/,
+                                        bool                    toCopyElements/*=false*/,
+                                        bool                    toCopyExistingBondary/*=false*/)
+{
+  SMDSAbs_ElementType missType = (dimension == BND_2DFROM3D) ? SMDSAbs_Face : SMDSAbs_Edge;
+  SMDSAbs_ElementType elemType = (dimension == BND_1DFROM2D) ? SMDSAbs_Face : SMDSAbs_Volume;
+  // hope that all elements are of the same type, do not check them all
+  if ( !elements.empty() && (*elements.begin())->GetType() != elemType )
+    throw SALOME_Exception(LOCALIZED("wrong element type"));
+
+  if ( !targetMesh )
+    toCopyElements = toCopyExistingBondary = false;
+
+  SMESH_MeshEditor tgtEditor( targetMesh ? targetMesh : myMesh );
+  SMESHDS_Mesh* aMesh = GetMeshDS(), *tgtMeshDS = tgtEditor.GetMeshDS();
+
+  SMDS_VolumeTool vTool;
+  TIDSortedElemSet emptySet, avoidSet;
+  int inode;
+
+  typedef vector<const SMDS_MeshNode*> TConnectivity;
+
+  SMDS_ElemIteratorPtr eIt;
+  if (elements.empty())
+    eIt = aMesh->elementsIterator(elemType);
+  else
+    eIt = SMDS_ElemIteratorPtr( new TSetIterator( elements.begin(), elements.end() ));
+
+  while (eIt->more())
+  {
+    const SMDS_MeshElement* elem = eIt->next();
+    const int iQuad = elem->IsQuadratic();
+
+    // 1. For an elem, get present bnd elements and connectivities of missing bnd elements
+    vector<const SMDS_MeshElement*> presentBndElems;
+    vector<TConnectivity>           missingBndElems;
+    TConnectivity nodes;
+    if ( vTool.Set(elem) ) // elem is a volume ------------------------------------------
+    { 
+      vTool.SetExternalNormal();
+      for ( int iface = 0, n = vTool.NbFaces(); iface < n; iface++ )
+      {
+        if (!vTool.IsFreeFace(iface))
+          continue;
+        int nbFaceNodes = vTool.NbFaceNodes(iface);
+        const SMDS_MeshNode** nn = vTool.GetFaceNodes(iface);
+        if ( missType == SMDSAbs_Edge ) // boundary edges
+        {
+          nodes.resize( 2+iQuad );
+          for ( int i = 0; i < nbFaceNodes; i += 1+iQuad)
+          {
+            for ( int j = 0; j < nodes.size(); ++j )
+              nodes[j] =nn[i+j];
+            if ( const SMDS_MeshElement* edge =
+                 aMesh->FindElement(nodes,SMDSAbs_Edge,/*noMedium=*/0))
+              presentBndElems.push_back( edge );
+            else
+              missingBndElems.push_back( nodes );
+          }
+        }
+        else // boundary face
+        {
+          nodes.clear();
+          for ( inode = 0; inode < nbFaceNodes; inode += 1+iQuad)
+            nodes.push_back( nn[inode] );
+          if (iQuad)
+            for ( inode = 1; inode < nbFaceNodes; inode += 2)
+              nodes.push_back( nn[inode] );
+
+          if (const SMDS_MeshFace * f = aMesh->FindFace( nodes ) )
+            presentBndElems.push_back( f );
+          else
+            missingBndElems.push_back( nodes );
+        }
+      }
+    }
+    else                     // elem is a face ------------------------------------------
+    {
+      avoidSet.clear(), avoidSet.insert( elem );
+      int nbNodes = elem->NbCornerNodes();
+      nodes.resize( 2 /*+ iQuad*/);
+      for ( int i = 0; i < nbNodes; i++ )
+      {
+        nodes[0] = elem->GetNode(i);
+        nodes[1] = elem->GetNode((i+1)%nbNodes);
+        if ( FindFaceInSet( nodes[0], nodes[1], emptySet, avoidSet))
+          continue; // not free link
+
+        //if ( iQuad )
+        //nodes[2] = elem->GetNode( i + nbNodes );
+        if ( const SMDS_MeshElement* edge =
+             aMesh->FindElement(nodes,SMDSAbs_Edge,/*noMedium=*/true))
+          presentBndElems.push_back( edge );
+        else
+          missingBndElems.push_back( nodes );
+      }
+    }
+
+    // 2. Add missing boundary elements
+    if ( targetMesh != myMesh )
+      // instead of making a map of nodes in this mesh and targetMesh,
+      // we create nodes with same IDs. We can renumber them later, if needed
+      for ( int i = 0; i < missingBndElems.size(); ++i )
+      {
+        TConnectivity& srcNodes = missingBndElems[i];
+        TConnectivity  nodes( srcNodes.size() );
+        for ( inode = 0; inode < nodes.size(); ++inode )
+          nodes[inode] = getNodeWithSameID( tgtMeshDS, srcNodes[inode] );
+        tgtEditor.AddElement(nodes, missType, elem->IsPoly() && nodes.size()/(iQuad+1)>4);
+      }
+    else
+      for ( int i = 0; i < missingBndElems.size(); ++i )
+      {
+        TConnectivity&  nodes = missingBndElems[i];
+        tgtEditor.AddElement(nodes, missType, elem->IsPoly() && nodes.size()/(iQuad+1)>4);
+      }
+
+    // 3. Copy present boundary elements
+    if ( toCopyExistingBondary )
+      for ( int i = 0 ; i < presentBndElems.size(); ++i )
+      {
+        const SMDS_MeshElement* e = presentBndElems[i];
+        TConnectivity nodes( e->NbNodes() );
+        for ( inode = 0; inode < nodes.size(); ++inode )
+          nodes[inode] = getNodeWithSameID( tgtMeshDS, e->GetNode(inode) );
+        tgtEditor.AddElement(nodes, missType, e->IsPoly());
+        // leave only missing elements in tgtEditor.myLastCreatedElems
+        tgtEditor.myLastCreatedElems.Remove( tgtEditor.myLastCreatedElems.Size() );
+      }
+  } // loop on given elements
+
+  // 4. Fill group with missing boundary elements
+  if ( group )
+  {
+    if ( SMESHDS_Group* g = dynamic_cast<SMESHDS_Group*>( group->GetGroupDS() ))
+      for ( int i = 0; i < tgtEditor.myLastCreatedElems.Size(); ++i )
+        g->SMDSGroup().Add( tgtEditor.myLastCreatedElems( i+1 ));
+  }
+  tgtEditor.myLastCreatedElems.Clear();
+
+  // 5. Copy given elements
+  if ( toCopyElements )
+  {
+    if (elements.empty())
+      eIt = aMesh->elementsIterator(elemType);
+    else
+      eIt = SMDS_ElemIteratorPtr( new TSetIterator( elements.begin(), elements.end() ));
+    while (eIt->more())
+    {
+      const SMDS_MeshElement* elem = eIt->next();
+      TConnectivity nodes( elem->NbNodes() );
+      for ( inode = 0; inode < nodes.size(); ++inode )
+        nodes[inode] = getNodeWithSameID( tgtMeshDS, elem->GetNode(inode) );
+      tgtEditor.AddElement(nodes, elemType, elem->IsPoly());
+
+      tgtEditor.myLastCreatedElems.Clear();
+    }
+  }
+  return;
 }
