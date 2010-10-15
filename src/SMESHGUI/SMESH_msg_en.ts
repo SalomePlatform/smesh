@@ -5275,7 +5275,7 @@ It is impossible to read point coordinates from file</translation>
     <name>SMESHGUI_CopyMeshDlg</name>
     <message>
         <source>CAPTION</source>
-        <translation>Copy mesh elements</translation>
+        <translation>Create boundary elements</translation>
     </message>
     <message>
         <source>MESH</source>
