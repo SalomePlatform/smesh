@@ -23,7 +23,6 @@
 //  SMESH SMESH : implementaion of SMESH idl descriptions
 //  File   : SMESH_HypoFilter.hxx
 //  Module : SMESH
-//  $Header$
 //
 #ifndef SMESH_HypoFilter_HeaderFile
 #define SMESH_HypoFilter_HeaderFile
@@ -168,8 +167,8 @@ class SMESH_EXPORT SMESH_HypoFilter: public SMESH_HypoPredicate
   };
         
   struct IsMoreLocalThanPredicate : public SMESH_HypoPredicate {
-    TopAbs_ShapeEnum _shapeType;
-    IsMoreLocalThanPredicate( const TopoDS_Shape& shape ):_shapeType(shape.ShapeType()){}
+    TopoDS_Shape _shape;
+    IsMoreLocalThanPredicate( const TopoDS_Shape& shape ):_shape(shape){}
     bool IsOk(const SMESH_Hypothesis* aHyp,
               const TopoDS_Shape&     aShape) const;
   };
