@@ -236,9 +236,9 @@ void SMESHGUI_Make2DFrom3DOp::selectionDone()
       LightApp_Dialog::TypesList types;
       selected( names, types, ids );
       if ( names.count() == 1 )
-	myDlg->selectObject( names, types, ids );
+        myDlg->selectObject( names, types, ids );
       else
-	myDlg->clearSelection();
+        myDlg->clearSelection();
     }
     catch ( const SALOME::SALOME_Exception& S_ex ) {
       SalomeApp_Tools::QtCatchCorbaException( S_ex );
@@ -331,32 +331,32 @@ bool SMESHGUI_Make2DFrom3DOp::compute2DMesh()
     if ( CORBA::is_nil( srcMesh ) ) {
       SMESH::SMESH_subMesh_var subMesh = SMESH::SMESH_subMesh::_narrow( obj );
       if ( !CORBA::is_nil( subMesh ) )
-	srcMesh = subMesh->GetFather();
+        srcMesh = subMesh->GetFather();
     }
     if ( CORBA::is_nil( srcMesh ) ) {
       SMESH::SMESH_GroupBase_var grp = SMESH::SMESH_GroupBase::_narrow( obj );
       if ( !CORBA::is_nil( grp ) )
-	srcMesh = grp->GetMesh();
+        srcMesh = grp->GetMesh();
     }
 
     if ( !CORBA::is_nil( srcMesh ) ) {
       SMESH::SMESH_MeshEditor_var aMeshEditor = srcMesh->GetMeshEditor();
       SMESH::SMESH_Group_var newGrp;
       SMESH::SMESH_Mesh_var mesh = aMeshEditor->MakeBoundaryMesh( obj.in(), 
-								  mode,
-								  meshName.toLatin1().constData(),
-								  groupName.toLatin1().constData(),
-								  copySrc,
-								  copyAll,
-								  newGrp.out() );
+                                                                  mode,
+                                                                  groupName.toLatin1().constData(),
+                                                                  meshName.toLatin1().constData(),
+                                                                  copySrc,
+                                                                  copyAll,
+                                                                  newGrp.out() );
       if ( !mesh->_is_nil() ) {
 #ifdef WITHGENERICOBJ
-	mesh->Destroy();
+        mesh->Destroy();
 #endif
       }
       if ( !newGrp->_is_nil() ) {
 #ifdef WITHGENERICOBJ
-	newGrp->Destroy();
+        newGrp->Destroy();
 #endif
       }
       ok = true;
