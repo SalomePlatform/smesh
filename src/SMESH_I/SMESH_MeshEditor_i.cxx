@@ -5191,7 +5191,7 @@ CORBA::Boolean SMESH_MeshEditor_i::Make2DMeshFrom3D()
   return aResult;
 }
 
-//================================================================================
+// issue 20749 ===================================================================
 /*!
  * \brief Creates missing boundary elements
  *  \param elements - elements whose boundary is to be checked
@@ -5206,17 +5206,78 @@ CORBA::Boolean SMESH_MeshEditor_i::Make2DMeshFrom3D()
  *  \param group - returns the create group, if any
  *  \retval SMESH::SMESH_Mesh - the mesh where elements were added to
  */
-//================================================================================
+// ================================================================================
 
 SMESH::SMESH_Mesh_ptr
-SMESH_MeshEditor_i::MakeBoundaryMesh(SMESH::SMESH_IDSource_ptr elements,
-                                     SMESH::Bnd_Dimension      dimension,
+SMESH_MeshEditor_i::MakeBoundaryMesh(SMESH::SMESH_IDSource_ptr idSource,
+                                     SMESH::Bnd_Dimension      dim,
                                      const char*               groupName,
                                      const char*               meshName,
                                      CORBA::Boolean            toCopyElements,
-                                     CORBA::Boolean            toCopyMissingBondary,
+                                     CORBA::Boolean            toCopyExistingBondary,
                                      SMESH::SMESH_Group_out    group)
 {
+  initData();
 
-  return SMESH::SMESH_Mesh::_duplicate( myMesh_i->_this() );
+  if ( dim > SMESH::BND_1DFROM2D )
+    THROW_SALOME_CORBA_EXCEPTION("Invalid boundary dimension", SALOME::BAD_PARAM);
+
+  
+  SMESHDS_Mesh* aMeshDS = GetMeshDS();
+
+  SMESH::SMESH_Mesh_var mesh_var;
+  SMESH::SMESH_Group_var group_var;
+
+  TPythonDump pyDump;
+
+  TIDSortedElemSet elements;
+  SMDSAbs_ElementType elemType = (dim == SMESH::BND_1DFROM2D) ? SMDSAbs_Face : SMDSAbs_Volume;
+  if ( idSourceToSet( idSource, aMeshDS, elements, elemType,/*emptyIfIsMesh=*/true ))
+  {
+    // mesh to fill in
+    mesh_var =
+      strlen(meshName) ? makeMesh(meshName) : SMESH::SMESH_Mesh::_duplicate(myMesh_i->_this());
+    SMESH_Mesh_i* mesh_i = SMESH::DownCast<SMESH_Mesh_i*>( mesh_var );
+    // other mesh
+    SMESH_Mesh* smesh_mesh = (mesh_i==myMesh_i) ? (SMESH_Mesh*)0 : &mesh_i->GetImpl();
+
+    // group of new boundary elements
+    SMESH_Group* smesh_group = 0;
+    if ( strlen(groupName) )
+    {
+      group_var = mesh_i->CreateGroup( SMESH::ElementType(elemType),groupName);
+      if ( SMESH_GroupBase_i* group_i = SMESH::DownCast<SMESH_GroupBase_i*>( group_var ))
+        smesh_group = group_i->GetSmeshGroup();
+    }
+
+    // do it
+    ::SMESH_MeshEditor aMeshEditor( myMesh );
+    aMeshEditor.MakeBoundaryMesh( elements,
+                                  ::SMESH_MeshEditor::Bnd_Dimension(dim),
+                                  smesh_group,
+                                  smesh_mesh,
+                                  toCopyElements,
+                                  toCopyExistingBondary);
+    storeResult( aMeshEditor );
+  }
+
+  // result of MakeBoundaryMesh() is a tuple (mesh, group)
+  if ( mesh_var->_is_nil() )
+    pyDump << myMesh_i->_this() << ", ";
+  else
+    pyDump << mesh_var << ", ";
+  if ( group_var->_is_nil() )
+    pyDump << "_NoneGroup = "; // assignment to None is forbiden
+  else
+    pyDump << group_var << " = ";
+  pyDump << this << ".MakeBoundaryMesh( "
+         << idSource << ", "
+         << dim << ", "
+         << groupName << ", "
+         << meshName<< ", "
+         << toCopyElements << ", "
+         << toCopyExistingBondary << ")";
+
+  group = group_var._retn();
+  return mesh_var._retn();
 }
