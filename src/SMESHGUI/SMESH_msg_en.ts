@@ -2062,8 +2062,9 @@ Consider saving your work before application crash</translation>
     </message>
     <message>
         <source>SMESH_WRN_SIZE_LIMIT_EXCEEDED</source>
-        <translation>Mesh size limit has been exceeded.
-No automatic update of the presentation has been done.</translation>
+        <translation>No automatic update of the presentation has been done: new mesh size (%1 elements) exceeds current size limit (%2 elements).
+Please check preferences of Mesh module.
+</translation>
     </message>
     <message>
         <source>SMESH_WRN_WARNING</source>

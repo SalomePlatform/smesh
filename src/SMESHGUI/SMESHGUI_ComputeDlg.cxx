@@ -98,6 +98,7 @@
 
 #define COLONIZE(str)   (QString(str).contains(":") > 0 ? QString(str) : QString(str) + " :" )
 
+/* OBSOLETE
 static void addSeparator( QWidget* parent )
 {
   QGridLayout* l = qobject_cast<QGridLayout*>( parent->layout() );
@@ -109,6 +110,7 @@ static void addSeparator( QWidget* parent )
     l->addWidget( hline, row, i );
   }
 }
+*/
 
 enum TCol {
   COL_ALGO = 0, COL_SHAPE, COL_ERROR, COL_SHAPEID, COL_PUBLISHED, COL_BAD_MESH, NB_COLUMNS
@@ -734,7 +736,9 @@ void SMESHGUI_BaseComputeOp::computeMesh()
 
       // SHOW MESH
       // NPAL16631: if ( getSMESHGUI()->automaticUpdate() )
+      SUIT_ResourceMgr* resMgr = SMESH::GetResourceMgr( SMESHGUI::GetSMESHGUI() );
       long newSize = myMesh->NbElements();
+      long limitSize = resMgr->integerValue( "SMESH", "update_limit", 500000 );
       bool limitExceeded;
       if ( !memoryLack )
       {
@@ -762,7 +766,7 @@ void SMESHGUI_BaseComputeOp::computeMesh()
 	{
 	  SUIT_MessageBox::warning( desktop(),
 				    tr( "SMESH_WRN_WARNING" ),
-				    tr( "SMESH_WRN_SIZE_LIMIT_EXCEEDED" ) );
+				    tr( "SMESH_WRN_SIZE_LIMIT_EXCEEDED" ).arg( newSize ).arg( limitSize ) );
 	}
       }
       LightApp_SelectionMgr *Sel = selectionMgr();
