@@ -5873,7 +5873,7 @@ namespace // Utils used in SMESH_ElementSearcherImpl::FindElementsByPoint()
   {
   public:
 
-    ElementBndBoxTree(const SMDS_Mesh& mesh, SMDSAbs_ElementType elemType);
+    ElementBndBoxTree(const SMDS_Mesh& mesh, SMDSAbs_ElementType elemType, double tolerance = NodeRadius );
     void getElementsNearPoint( const gp_Pnt& point, TIDSortedElemSet& foundElems);
     void getElementsNearLine ( const gp_Ax1& line, TIDSortedElemSet& foundElems);
     ~ElementBndBoxTree();
@@ -5889,7 +5889,7 @@ namespace // Utils used in SMESH_ElementSearcherImpl::FindElementsByPoint()
     {
       const SMDS_MeshElement* _element;
       int                     _refCount; // an ElementBox can be included in several tree branches
-      ElementBox(const SMDS_MeshElement* elem);
+      ElementBox(const SMDS_MeshElement* elem, double tolerance);
     };
     vector< ElementBox* > _elements;
   };
@@ -5900,7 +5900,7 @@ namespace // Utils used in SMESH_ElementSearcherImpl::FindElementsByPoint()
    */
   //================================================================================
 
-  ElementBndBoxTree::ElementBndBoxTree(const SMDS_Mesh& mesh, SMDSAbs_ElementType elemType)
+  ElementBndBoxTree::ElementBndBoxTree(const SMDS_Mesh& mesh, SMDSAbs_ElementType elemType, double tolerance)
     :SMESH_Octree( new SMESH_Octree::Limit( MaxLevel, /*minSize=*/0. ))
   {
     int nbElems = mesh.GetMeshInfo().NbElements( elemType );
@@ -5908,7 +5908,7 @@ namespace // Utils used in SMESH_ElementSearcherImpl::FindElementsByPoint()
 
     SMDS_ElemIteratorPtr elemIt = mesh.elementsIterator( elemType );
     while ( elemIt->more() )
-      _elements.push_back( new ElementBox( elemIt->next() ));
+      _elements.push_back( new ElementBox( elemIt->next(),tolerance  ));
 
     if ( _elements.size() > MaxNbElemsInLeaf )
       compute();
@@ -6032,14 +6032,14 @@ namespace // Utils used in SMESH_ElementSearcherImpl::FindElementsByPoint()
    */
   //================================================================================
 
-  ElementBndBoxTree::ElementBox::ElementBox(const SMDS_MeshElement* elem)
+  ElementBndBoxTree::ElementBox::ElementBox(const SMDS_MeshElement* elem, double tolerance)
   {
     _element  = elem;
     _refCount = 1;
     SMDS_ElemIteratorPtr nIt = elem->nodesIterator();
     while ( nIt->more() )
       Add( SMESH_MeshEditor::TNodeXYZ( cast2Node( nIt->next() )));
-    Enlarge( NodeRadius );
+    Enlarge( tolerance );
   }
 
 } // namespace
@@ -6159,7 +6159,7 @@ double SMESH_ElementSearcherImpl::getTolerance()
           elemSize = max( dist, elemSize );
         }
       }
-      _tolerance = 1e-6 * elemSize;
+      _tolerance = 1e-4 * elemSize;
     }
   }
   return _tolerance;
@@ -6350,7 +6350,7 @@ FindElementsByPoint(const gp_Pnt&                      point,
     if ( !_ebbTree || _elementType != type )
     {
       if ( _ebbTree ) delete _ebbTree;
-      _ebbTree = new ElementBndBoxTree( *_mesh, _elementType = type );
+      _ebbTree = new ElementBndBoxTree( *_mesh, _elementType = type, tolerance );
     }
     TIDSortedElemSet suspectElems;
     _ebbTree->getElementsNearPoint( point, suspectElems );
