@@ -39,7 +39,7 @@ Parameters to be defined in this mode:
 <li><b>Group of elements to replace nodes with new ones</b> (<em>optional</em>): the duplicated nodes
  will be associated with these elements.</li>
 <li><b>Construct group with newly created nodes</b> option (<em>checked by default</em>): 
- if checked - the group with just created nodes will be builded.</li>
+ if checked - the group with just created nodes will be built.</li>
 </ol>
 
 <br>
