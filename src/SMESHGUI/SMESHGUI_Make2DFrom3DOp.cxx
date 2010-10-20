@@ -51,11 +51,11 @@
 #define MARGIN  11
 
 /*!
-  \class SMESHGUI_CopyMeshDlg
+  \class SMESHGUI_Make2DFrom3DDlg
   \brief Copy Mesh dialog box
 */
 
-SMESHGUI_CopyMeshDlg::SMESHGUI_CopyMeshDlg( QWidget* parent )
+SMESHGUI_Make2DFrom3DDlg::SMESHGUI_Make2DFrom3DDlg( QWidget* parent )
  : SMESHGUI_Dialog( parent, false, true, OK | Apply | Close | Help )
 {
   // title
@@ -120,11 +120,11 @@ SMESHGUI_CopyMeshDlg::SMESHGUI_CopyMeshDlg( QWidget* parent )
   onGroupChecked();
 }
 
-SMESHGUI_CopyMeshDlg::~SMESHGUI_CopyMeshDlg()
+SMESHGUI_Make2DFrom3DDlg::~SMESHGUI_Make2DFrom3DDlg()
 {
 }
 
-SMESH::Bnd_Dimension SMESHGUI_CopyMeshDlg::mode() const
+SMESH::Bnd_Dimension SMESHGUI_Make2DFrom3DDlg::mode() const
 {
   if ( my2dFrom3dRB->isChecked() )
     return SMESH::BND_2DFROM3D;
@@ -134,54 +134,54 @@ SMESH::Bnd_Dimension SMESHGUI_CopyMeshDlg::mode() const
     return SMESH::BND_1DFROM3D;
 }
 
-bool SMESHGUI_CopyMeshDlg::needNewMesh() const
+bool SMESHGUI_Make2DFrom3DDlg::needNewMesh() const
 {
   return myNewMeshRB->isChecked();
 }
 
-QString SMESHGUI_CopyMeshDlg::getNewMeshName() const
+QString SMESHGUI_Make2DFrom3DDlg::getNewMeshName() const
 {
   return myMeshName->text().trimmed();
 }
 
-void SMESHGUI_CopyMeshDlg::setNewMeshName( const QString& name )
+void SMESHGUI_Make2DFrom3DDlg::setNewMeshName( const QString& name )
 {
   myMeshName->setText( name );
 }
 
-bool SMESHGUI_CopyMeshDlg::needGroup() const
+bool SMESHGUI_Make2DFrom3DDlg::needGroup() const
 {
   return myGroupCheck->isChecked();
 }
 
-QString SMESHGUI_CopyMeshDlg::getGroupName() const
+QString SMESHGUI_Make2DFrom3DDlg::getGroupName() const
 {
   return myGroupName->text().trimmed();
 }
 
-void SMESHGUI_CopyMeshDlg::setGroupName( const QString& name )
+void SMESHGUI_Make2DFrom3DDlg::setGroupName( const QString& name )
 {
   myGroupName->setText( name );
 }
 
-bool SMESHGUI_CopyMeshDlg::copySource() const
+bool SMESHGUI_Make2DFrom3DDlg::copySource() const
 {
   return myCopyCheck->isChecked();
 }
 
-bool SMESHGUI_CopyMeshDlg::copyMissingOnly() const
+bool SMESHGUI_Make2DFrom3DDlg::copyMissingOnly() const
 {
   return myMissingCheck->isChecked();
 }
 
-void SMESHGUI_CopyMeshDlg::onTargetChanged()
+void SMESHGUI_Make2DFrom3DDlg::onTargetChanged()
 {
   myMeshName->setEnabled( myNewMeshRB->isChecked() );
   myCopyCheck->setEnabled( myNewMeshRB->isChecked() );
   myMissingCheck->setEnabled( myNewMeshRB->isChecked() );
 }
 
-void SMESHGUI_CopyMeshDlg::onGroupChecked()
+void SMESHGUI_Make2DFrom3DDlg::onGroupChecked()
 {
   myGroupName->setEnabled( myGroupCheck->isChecked() );
 }
@@ -210,15 +210,15 @@ LightApp_Dialog* SMESHGUI_Make2DFrom3DOp::dlg() const
 void SMESHGUI_Make2DFrom3DOp::startOperation()
 {
   if( !myDlg )
-    myDlg = new SMESHGUI_CopyMeshDlg( desktop() );
+    myDlg = new SMESHGUI_Make2DFrom3DDlg( desktop() );
 
   mySrc = SMESH::SMESH_IDSource::_nil();
   
-  myHelpFileName = "copy_mesh_page.html";
+  myHelpFileName = "make_2dmesh_from_3d_page.html";
 
   SMESHGUI_SelectionOp::startOperation();
 
-  myDlg->activateObject( SMESHGUI_CopyMeshDlg::Mesh );
+  myDlg->activateObject( SMESHGUI_Make2DFrom3DDlg::Mesh );
   myDlg->setNewMeshName( SMESH::UniqueName( "Mesh_1" ) );
   myDlg->setGroupName( SMESH::UniqueName( "Group" ) );
   myDlg->show();
@@ -251,7 +251,7 @@ void SMESHGUI_Make2DFrom3DOp::selectionDone()
 SUIT_SelectionFilter* SMESHGUI_Make2DFrom3DOp::createFilter( const int theId ) const
 {
   SUIT_SelectionFilter* f = 0;
-  if ( theId == SMESHGUI_CopyMeshDlg::Mesh ) {
+  if ( theId == SMESHGUI_Make2DFrom3DDlg::Mesh ) {
     QList<SUIT_SelectionFilter*> filters;
     filters.append( new SMESH_TypeFilter( MESHorSUBMESH ) );
     filters.append( new SMESH_TypeFilter( GROUP ) );
@@ -265,7 +265,7 @@ bool SMESHGUI_Make2DFrom3DOp::isValid( QString& msg ) const
   if ( !dlg() ) return false;
 
   // check if any source data is selected
-  QString entry = myDlg->selectedObject( SMESHGUI_CopyMeshDlg::Mesh );
+  QString entry = myDlg->selectedObject( SMESHGUI_Make2DFrom3DDlg::Mesh );
   SMESH::SMESH_IDSource_var obj;
   _PTR(SObject) sobj = SMESHGUI::activeStudy()->studyDS()->FindObjectID( entry.toLatin1().constData() );
   if ( sobj )
@@ -317,7 +317,7 @@ bool SMESHGUI_Make2DFrom3DOp::compute2DMesh()
 
   bool ok = false;
   try {
-    QString entry = myDlg->selectedObject( SMESHGUI_CopyMeshDlg::Mesh );
+    QString entry = myDlg->selectedObject( SMESHGUI_Make2DFrom3DDlg::Mesh );
     _PTR(SObject) sobj = SMESHGUI::activeStudy()->studyDS()->FindObjectID( entry.toLatin1().constData() );
     SMESH::SMESH_IDSource_var obj = SMESH::SObjectToInterface<SMESH::SMESH_IDSource>( sobj );  
     

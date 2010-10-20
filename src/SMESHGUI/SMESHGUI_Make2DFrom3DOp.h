@@ -38,15 +38,15 @@ class QRadioButton;
  * \brief Dialog to show result mesh statistic
  */
 
-class SMESHGUI_EXPORT SMESHGUI_CopyMeshDlg :  public SMESHGUI_Dialog
+class SMESHGUI_EXPORT SMESHGUI_Make2DFrom3DDlg :  public SMESHGUI_Dialog
 {
   Q_OBJECT
 
 public:
   enum { Mesh };
 
-  SMESHGUI_CopyMeshDlg( QWidget* );
-  virtual ~SMESHGUI_CopyMeshDlg();
+  SMESHGUI_Make2DFrom3DDlg( QWidget* );
+  virtual ~SMESHGUI_Make2DFrom3DDlg();
 
   SMESH::Bnd_Dimension mode() const;
 
@@ -106,7 +106,7 @@ private:
 
 private:
   SMESH::SMESH_IDSource_var          mySrc;
-  QPointer<SMESHGUI_CopyMeshDlg>     myDlg;
+  QPointer<SMESHGUI_Make2DFrom3DDlg> myDlg;
 };
 
 #endif // SMESHGUI_Make2DFrom3DOp_H

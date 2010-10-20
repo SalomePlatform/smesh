@@ -181,7 +181,7 @@
     </message>
     <message>
         <source>MEN_2D_FROM_3D</source>
-        <translation>Create 2D mesh from 3D</translation>
+        <translation>Create boundary elements</translation>
     </message>
     <message>
         <source>MEN_MESH_ORDER</source>
@@ -2180,7 +2180,7 @@ Please check preferences of Mesh module.
     </message>
     <message>
         <source>STB_2D_FROM_3D</source>
-        <translation>Create 2D mesh from 3D</translation>
+        <translation>Create boundary elements</translation>
     </message>
     <message>
         <source>STB_MESH_ORDER</source>
@@ -2700,7 +2700,7 @@ Please check preferences of Mesh module.
     </message>
     <message>
         <source>TOP_2D_FROM_3D</source>
-        <translation>Create 2D mesh from 3D</translation>
+        <translation>Create boundary elements</translation>
     </message>
     <message>
         <source>TOP_MESH_ORDER</source>
@@ -3645,7 +3645,7 @@ Please specify it and try again</translation>
     <name>SMESHGUI_Make2DFrom3DDlg</name>
     <message>
         <source>CAPTION</source>
-        <translation>Create 2D mesh from 3D</translation>
+        <translation>Create boundary elements</translation>
     </message>
 </context>
 <context>
@@ -5273,7 +5273,7 @@ It is impossible to read point coordinates from file</translation>
     </message>
 </context>
 <context>
-    <name>SMESHGUI_CopyMeshDlg</name>
+    <name>SMESHGUI_Make2DFrom3DDlg</name>
     <message>
         <source>CAPTION</source>
         <translation>Create boundary elements</translation>
