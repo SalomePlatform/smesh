@@ -1,6 +1,6 @@
 /*!
 
-\page make_2dmesh_from_3d_page Generate the skin elements (2D) of a mesh having 3D elements
+\page make_2dmesh_from_3d_page Create 2D mesh from 3D
 
 \n This functionality allows to generate 2D mesh elements as a skin
 on the existing 3D mesh elements.

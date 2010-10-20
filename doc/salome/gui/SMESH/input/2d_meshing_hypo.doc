@@ -49,7 +49,7 @@ length calculated as an average edge length for a given wire.
 
 <b>Base vertex</b> parameter allows using Quadrangle (Mapping)
 algorithm for meshing of triangular faces. In this case it is
-necessary to select a vertex, which will be used as the fourth edge
+necessary to select the vertex, which will be used as the fourth edge
 (degenerated).
 
 \image html hypo_quad_params_1.png "A face built from 3 edges"
@@ -68,31 +68,31 @@ shows the good (left) and the bad (right) results of meshing.
 
 \image html hypo_quad_params_res_2.png "The resulting meshes"
 
-<b>Type</b> parameter has sense on faces with different number of
-segments on opposite sides. The following types are available:
+<b>Type</b> parameter is used on faces with a different number of
+segments on opposite sides to define the algorithm of transition
+between them. The following types are available:
 
 <ul>
-<li><b>Standard</b> means the default case, triangles and quadrangles
-    are possible along the longest sides (in the refinement area).</li>
+<li><b>Standard</b> is the default case, when both triangles and quadrangles
+    are possible in the transition area along the finer meshed sides.</li>
 <li><b>Triangle preference</b> forces building only triangles in the
-    refinement area for transition to higher number of segments.
+    transition area along the finer meshed sides.
     <i>This type corresponds to <b>Triangle Preference</b> additional
     hypothesis, which is obsolete now.</i></li>
-<li><b>Quadrangle preference</b> forces building only quadrangles for
-    transition to higher number of segments. This hypothesis has one
-    restriction on its work: the total quantity of segments on all
+<li><b>Quadrangle preference</b> forces building only quadrangles in the
+    transition area along the finer meshed sides. This hypothesis has a
+    restriction: the total quantity of segments on all
     four sides of the face must be even (divisible by 2).</li>
     <i>This type corresponds to <b>Quadrangle Preference</b>
     additional hypothesis, which is obsolete now.</i></li>
-<li><b>Quadrangle preference (reversed)</b> works like
-    <b>Quadrangle preference</b> (and with same restriction), but
-    transition is made near the sides with smaller number of
-    segments.</li>
-<li><b>Reduced</b> type forces building only quadrangles, transition
-    to other number of segments is made layer by layer. This type has
-    a limitation on number of segments: two opposite edges must have
-    the same number of segments, two another must have even difference
-    between their numbers of segments.</li>
+<li><b>Quadrangle preference (reversed)</b> works in the same way and
+with the same restriction as <b>Quadrangle preference</b>, but
+    the transition area is located along the coarser meshed sides.</li>
+<li><b>Reduced</b> type forces building only quadrangles and the transition
+    between the sides is made gradually, layer by layer. This type has
+    a limitation on the number of segments: one pair of opposite sides must have
+    the same number of segments, the other pair must have an even difference
+    between the numbers of segments on the sides.</li>
 </ul>
 
 <b>See Also</b> a sample TUI Script of a 

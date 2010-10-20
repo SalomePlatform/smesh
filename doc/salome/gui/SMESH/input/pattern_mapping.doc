@@ -5,33 +5,31 @@
 <br><h2>About patterns</h2>
 
 The pattern describes a mesh to generate: positions of nodes within a
-geometrical domain and nodal connectivity of elements. As well, a
-pattern specifies the so-called key-points, i.e. nodes that will be
-located at geometrical vertices. Pattern description is stored in
+geometrical domain and nodal connectivity of elements. A
+pattern also specifies the so-called key-points, i.e. the nodes that will be
+located at geometrical vertices. The pattern description is stored in
 \<pattern_name\>.smp file.
 
 The smp file contains 4 sections:
 
--# The first line holds the total number of the pattern nodes (N).
--# The next N lines describe nodes coordinates. Each line holds 2
-coordinates of a node for 2D pattern or 3 cordinates for 3D pattern.
-Note, that for 3D pattern only relateive values in range [0;1] are
-valid for coordinates of the nodes.
--# A key-points line: indices of nodes to be mapped on geometrical
-vertices (for 2D pattern only). An index n refers to a node described 
-on an n-th line of section 2. The first node index is zero. For 3D 
-pattern key points are not specified.
--# The rest lines describe nodal connectivity of elements, one line
-for an element. A line holds indices of nodes forming an element. An
-index n refers to a node described on an n-th line of the section
-2. The first node index is zero. There must be 3 or 4 indices on a
-line for 2D pattern (only 2d elements are allowed) and 4, 5, 6 or 8
-indices for 3D pattern (only 3d elements are allowed).
+-# The first line indicates the total number of pattern nodes (N).
+-# The next N lines describe nodes coordinates. Each line contains 2
+node coordinates for a 2D pattern or 3 node cordinates for a 3D pattern.
+Note, that node coordinates of a 3D pattern can be defined only by relative values in range [0;1].
+-# The key-points line contains the indices of the nodes to be mapped on geometrical
+vertices (for a 2D pattern only). Index n refers to the node described 
+on the n-th line of section 2. The index of the first node zero. For a 3D pattern the key points are not specified.
+-# The remaining lines describe nodal connectivity of elements, one line
+for each element. Each line holds indices of nodes forming an element.
+Index n refers to the node described on the n-th line of section 2.
+The first node index is zero. There must be 3 or 4 indices on each
+line for a 2D pattern (only 2d elements are allowed) and 4, 5, 6 or 8
+indices for a 3D pattern (only 3d elements are allowed).
 
-The 2D pattern must contain at least one element and at least one
-key-point. All key-points must lay on boundaries.
+A 2D pattern must contain at least one element and at least one
+key-point. All key-points must lie on boundaries.
 
-The 3D pattern must contain at least one element.
+A 3D pattern must contain at least one element.
 
 An example of a simple 2D pattern smp file:
 
@@ -60,7 +58,7 @@ An example of a simple 2D pattern smp file:
  8 1 2
 \endcode
 
-The image below provides a preview of above described pattern:
+The image below provides a preview of the above pattern:
 
 \image html pattern2d.png
 
@@ -99,38 +97,41 @@ From the \b Modification menu choose the <b>Pattern Mapping</b> item or click
 \image html image98.png
 <center><em>"Pattern mapping" button</em></center>
 
-The following dialog box shall appear:
+The following dialog box will appear:
+
+\n <b>2D pattern</b>
 
 \image html patternmapping1.png
 
-<center><b> 2D Pattern Mapping dialog box</b></center>
+In this dialog you should specify:
+
+<ul>
+   <li> A face with the number of vertices equal to the number of
+     key-points in the pattern; the number of key-points on internal
+     boundaries of the pattern must also be equal to the number of vertices
+     on internal boundaries of the face;</li>
+   <li> A vertex to which the first key-point should be mapped;</li>
+   <li> If the order of key-points is reversed or not. (The order of vertices of
+     a face is counterclockwise looking from the outside).</li>
+</ul>
+
+\n <b>3D pattern</b>
 
 \image html patternmapping2.png
 
-<center><b> 3D Pattern Mapping dialog box</b></center>
-
-To apply a pattern to a geometrical object, you should specify:
-
--# For 2D pattern
-   - A face having the number of vertices equal to the number of
-     key-points in the pattern; the number of key-points on internal
-     boundaries of a pattern must also be equal to the number of vertices
-     on internal boundaries of a face;
-   - A vertex to which the first key-point should be mapped;
-   - Reverse or not the order of key-points. (The order of vertices of
-     a face is counterclockwise looking from outside).
--# For 3D pattern
-   - 3D block (Solid) object;
-   - Two vertices that specify the order of nodes in the resulting
-     mesh.
+In this dialog you should specify:
+<ul>
+   <li> A 3D block (Solid) object;</li>
+   <li> Two vertices that specify the order of nodes in the resulting mesh.</li>
+</ul>
 
 Then you either load a .smp pattern file previously created manually
 by clicking on the <em>"Load pattern"</em> button, or click on the \b
 New button for automatic generation of the pattern.
 
-For an automatic generation you just specify a geometrical face (for
-2D) or solid (for 3d) having a mesh built on it. Mesh nodes lying on
-face vertices become key-points of 2D pattern. Additionally, for 2D
+For automatic generation you should specify a geometrical face (for a
+2D pattern) or a solid (for a 3D pattern) with a mesh built on it. Mesh nodes lying on
+face vertices become key-points of the pattern. Additionally, for a 2D
 pattern you may choose the way of getting nodes coordinates by
 <b>projecting nodes on the face</b> instead of using
 "positions on face" generated by mesher (if there is any). Faces

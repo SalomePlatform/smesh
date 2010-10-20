@@ -157,10 +157,10 @@ length, which is more, less or equal (within a given <b>Tolerance</b>) to the pr
 <b>Threshold Value</b>. See also a
 \ref length_2d_page "Length 2D quality control".
 </li><li>
-<b>Coplanar faces</b> selects mesh faces neighboring the one defined by
-<b>Threshold Value</b> and whose normal has an angle less then an
-angular tolerance (defined in degrees) with normal of the face
-selected as threshold. Selection continues among neighboring faces of already 
+<b>Coplanar faces</b> selects mesh faces neighboring the one selected
+by ID in <b>Threshold Value</b> field, if the angle between the
+normal to the neighboring face and the normal to the selected face is less then the
+angular tolerance (defined in degrees). Selection continues among all neighbor faces of already 
 selected ones.<br>
 </li>
 </ul>

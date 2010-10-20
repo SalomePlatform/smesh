@@ -18,7 +18,9 @@ elements of the mesh.</li>
 its elements.</li>
 <li>\subpage rotation_page "Rotate" by the indicated axis and angle
 the mesh or some of its elements.</li>
-<li>\subpage scale_page "Scale Transform" the mesh or some of its elements.</li>
+<li>\subpage scale_page "Scale Transform" the mesh or some of its
+elements.</li>
+<li>\subpage double_nodes_page "Duplicate nodes".</li>
 <li>Create a \subpage symmetry_page "symmetrical copy" of the mesh
 through a point or a vector of symmetry.</li>
 <li>Unite meshes by \subpage sewing_meshes_page "sewing" free borders,
@@ -45,7 +47,6 @@ of the selected node or edge.</li>
 <li>Apply \subpage pattern_mapping_page "pattern mapping".</li>
 <li>\subpage convert_to_from_quadratic_mesh_page "Convert regular mesh to quadratic", 
 or vice versa.</li>
-<li>Create \subpage double_nodes_page "double nodes".</li>
 <li>\subpage make_2dmesh_from_3d_page "Create 2D mesh from 3D".</li>
 
 </ul>

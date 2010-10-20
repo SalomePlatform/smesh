@@ -2,8 +2,8 @@
 
 \page tui_filters_page Filters usage
 
-Filters allows to pick only those mesh elements which satisfy to
-specific condition or set of conditions. Filters can be used to create
+Filters allow picking only the mesh elements satisfying to a
+specific condition or a set of conditions. Filters can be used to create
 or edit mesh groups, remove elements from the mesh object, control
 mesh quality by different parameters, etc.
 
@@ -12,10 +12,10 @@ AND and \a OR. In addition, applied filter criterion can be reverted
 using logical operator \a NOT.
 
 Mesh filters use the functionality of mesh quality controls to filter
-mesh nodes / elements by specific characteristic (Area, Length, etc).
+mesh nodes / elements by a specific characteristic (Area, Length, etc).
 
 This page provides a short description of the existing mesh filters,
-describing required parameters and gives simple examples of usage in
+describes required parameters and gives simple examples of usage in
 Python scripts.
 
 \sa \ref tui_quality_controls_page

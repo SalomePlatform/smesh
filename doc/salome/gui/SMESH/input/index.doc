@@ -25,6 +25,10 @@ array of dedicated operations.</li>
 Almost all mesh module functionalities are accessible via
 \subpage smeshpy_interface_page "Mesh module Python interface".
 
+Also it can be useful to have a look at the
+\subpage smeshpypkg_page "documentation on SMESH python package". 
+
+
 \image html image7.jpg "Example of MESH module usage for engineering tasks"
 
 */

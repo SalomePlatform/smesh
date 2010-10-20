@@ -51,14 +51,14 @@ node of your mesh all adjacent elements will be also deleted.
 \anchor removing_orphan_nodes_anchor
 <h2>Removing orphan nodes</h2>
 
-There is a quick way to remove all the orphan (free) nodes.
+There is a quick way to remove all orphan (free) nodes.
 
-<em>To remove the orphan nodes:</em>
+<em>To remove orphan nodes:</em>
 <ol>
 <li>Select your mesh in the Object Browser or in the 3D viewer.</li>
 
 <li>From the <em>Modification</em> menu choose <em>Remove</em> and from the associated
-submenu select the <em>Orphan Nodes</em>, or just click <em>"Remove orphan nodes"</em>
+submenu select <em>Orphan Nodes</em>, or just click <em>"Remove orphan nodes"</em>
 button in the toolbar.
 
 \image html remove_orphan_nodes_icon.png
@@ -68,7 +68,7 @@ The following Warning message box will appear:
 
 \image html removeorphannodes.png
 
-Confirm removing nodes by pressing "Yes" button.
+Confirm nodes removal by pressing "Yes" button.
 </ol>
 
 <br>
