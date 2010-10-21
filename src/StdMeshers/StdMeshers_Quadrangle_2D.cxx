@@ -1165,6 +1165,14 @@ namespace {
       quad->side[i]->SimulateUVPtStruct(nbSeg,isXConst,constValue) :
       quad->side[i]->GetUVPtStruct(isXConst,constValue);
   }
+  inline gp_UV CalcUV(double x, double y,
+                      const gp_UV& a0,const gp_UV& a1,const gp_UV& a2,const gp_UV& a3,
+                      const gp_UV& p0,const gp_UV& p1,const gp_UV& p2,const gp_UV& p3)
+  {
+    return
+      ((1 - y) * p0 + x * p1 + y * p2 + (1 - x) * p3 ) -
+      ((1 - x) * (1 - y) * a0 + x * (1 - y) * a1 + x * y * a2 + (1 - x) * y * a3);
+  }
 }
 
 //=============================================================================
@@ -1292,8 +1300,7 @@ bool StdMeshers_Quadrangle_2D::SetNormalizedGrid (SMESH_Mesh & aMesh,
       gp_UV p2 = quad->side[2]->Value2d(param_2).XY();
       gp_UV p3 = quad->side[3]->Value2d(param_3).XY();
 
-      gp_UV uv = (1 - y) * p0 + x * p1 + y * p2 + (1 - x) * p3;
-      uv -= (1 - x) * (1 - y) * a0 + x * (1 - y) * a1 + x * y * a2 + (1 - x) * y * a3;
+      gp_UV uv = CalcUV(x,y, a0,a1,a2,a3, p0,p1,p2,p3);
 
       uv_grid[ij].u = uv.X();
       uv_grid[ij].v = uv.Y();
@@ -1348,9 +1355,7 @@ static gp_UV CalcUV(double x0, double x1, double y0, double y1,
   gp_UV p2 = quad->side[TOP_SIDE   ]->Value2d(param_t).XY();
   gp_UV p3 = quad->side[LEFT_SIDE  ]->Value2d(param_l).XY();
 
-  gp_UV uv = p0 * (1 - y) + p1 * x + p2 * y + p3 * (1 - x);
-
-  uv -= (1 - x) * (1 - y) * a0 + x * (1 - y) * a1 + x * y * a2 + (1 - x) * y * a3;
+  gp_UV uv = CalcUV(x,y, a0,a1,a2,a3, p0,p1,p2,p3);
 
   return uv;
 }
@@ -1365,27 +1370,12 @@ static gp_UV CalcUV2(double x, double y,
                      const gp_UV& a0, const gp_UV& a1,
                      const gp_UV& a2, const gp_UV& a3)
 {
-  const vector<UVPtStruct>& uv_eb = quad->side[0]->GetUVPtStruct(true,0);
-  const vector<UVPtStruct>& uv_er = quad->side[1]->GetUVPtStruct(false,1);
-  const vector<UVPtStruct>& uv_et = quad->side[2]->GetUVPtStruct(true,1);
-  const vector<UVPtStruct>& uv_el = quad->side[3]->GetUVPtStruct(false,0);
+  gp_UV p0 = quad->side[BOTTOM_SIDE]->Value2d(x).XY();
+  gp_UV p1 = quad->side[RIGHT_SIDE ]->Value2d(y).XY();
+  gp_UV p2 = quad->side[TOP_SIDE   ]->Value2d(x).XY();
+  gp_UV p3 = quad->side[LEFT_SIDE  ]->Value2d(y).XY();
 
-  //double x = (x0 + y0 * (x1 - x0)) / (1 - (y1 - y0) * (x1 - x0));
-  //double y = y0 + x * (y1 - y0);
-
-  double param_b = uv_eb[0].normParam + x * (uv_eb.back().normParam - uv_eb[0].normParam);
-  double param_t = uv_et[0].normParam + x * (uv_et.back().normParam - uv_et[0].normParam);
-  double param_r = uv_er[0].normParam + y * (uv_er.back().normParam - uv_er[0].normParam);
-  double param_l = uv_el[0].normParam + y * (uv_el.back().normParam - uv_el[0].normParam);
-
-  gp_UV p0 = quad->side[BOTTOM_SIDE]->Value2d(param_b).XY();
-  gp_UV p1 = quad->side[RIGHT_SIDE ]->Value2d(param_r).XY();
-  gp_UV p2 = quad->side[TOP_SIDE   ]->Value2d(param_t).XY();
-  gp_UV p3 = quad->side[LEFT_SIDE  ]->Value2d(param_l).XY();
-
-  gp_UV uv = p0 * (1 - y) + p1 * x + p2 * y + p3 * (1 - x);
-
-  uv -= (1 - x) * (1 - y) * a0 + x * (1 - y) * a1 + x * y * a2 + (1 - x) * y * a3;
+  gp_UV uv = CalcUV(x,y, a0,a1,a2,a3, p0,p1,p2,p3);
 
   return uv;
 }
@@ -1549,9 +1539,8 @@ bool StdMeshers_Quadrangle_2D::ComputeQuadPref (SMESH_Mesh &        aMesh,
   int nnn = Min(nr,nl);
   // auxilary sequence of XY for creation nodes
   // in the bottom part of central domain
-  // it's length must be == nbv-nnn-1
-  TColgp_SequenceOfXY UVL;
-  TColgp_SequenceOfXY UVR;
+  // Length of UVL and UVR must be == nbv-nnn
+  TColgp_SequenceOfXY UVL, UVR, UVT;
 
   if (OldVersion) {
     // step1: create faces for left domain
@@ -1576,7 +1565,7 @@ bool StdMeshers_Quadrangle_2D::ComputeQuadPref (SMESH_Mesh &        aMesh,
         SMDS_MeshNode * N = meshDS->AddNode(P.X(), P.Y(), P.Z());
         meshDS->SetNodeOnFace(N, geomFaceID, UV.X(), UV.Y());
         NodesL.SetValue(i+1,1,N);
-        if (UVL.Length()<nbv-nnn-1) UVL.Append(UV);
+        if (UVL.Length()<nbv-nnn) UVL.Append(UV);
         // internal nodes
         for (j=2; j<nl; j++) {
           double y0 = npl.Value(dl+j);
@@ -1589,7 +1578,7 @@ bool StdMeshers_Quadrangle_2D::ComputeQuadPref (SMESH_Mesh &        aMesh,
           if (i==dl) UVtmp.Append(UV);
         }
       }
-      for (i=1; i<=UVtmp.Length() && UVL.Length()<nbv-nnn-1; i++) {
+      for (i=1; i<=UVtmp.Length() && UVL.Length()<nbv-nnn; i++) {
         UVL.Append(UVtmp.Value(i));
       }
       //cout<<"Dump NodesL:"<<endl;
@@ -1620,7 +1609,7 @@ bool StdMeshers_Quadrangle_2D::ComputeQuadPref (SMESH_Mesh &        aMesh,
     }
     else {
       // fill UVL using c2d
-      for (i=1; i<npl.Length() && UVL.Length()<nbv-nnn-1; i++) {
+      for (i=1; i<npl.Length() && UVL.Length()<nbv-nnn; i++) {
         UVL.Append(gp_UV (uv_el[i].u, uv_el[i].v));
       }
     }
@@ -1647,7 +1636,7 @@ bool StdMeshers_Quadrangle_2D::ComputeQuadPref (SMESH_Mesh &        aMesh,
         SMDS_MeshNode * N = meshDS->AddNode(P.X(), P.Y(), P.Z());
         meshDS->SetNodeOnFace(N, geomFaceID, UV.X(), UV.Y());
         NodesR.SetValue(i+1,nr,N);
-        if (UVR.Length()<nbv-nnn-1) UVR.Append(UV);
+        if (UVR.Length()<nbv-nnn) UVR.Append(UV);
         // internal nodes
         for (j=2; j<nr; j++) {
           double y0 = npl.Value(nbv-j+1);
@@ -1660,7 +1649,7 @@ bool StdMeshers_Quadrangle_2D::ComputeQuadPref (SMESH_Mesh &        aMesh,
           if (i==dr) UVtmp.Prepend(UV);
         }
       }
-      for (i=1; i<=UVtmp.Length() && UVR.Length()<nbv-nnn-1; i++) {
+      for (i=1; i<=UVtmp.Length() && UVR.Length()<nbv-nnn; i++) {
         UVR.Append(UVtmp.Value(i));
       }
       // create faces
@@ -1683,19 +1672,19 @@ bool StdMeshers_Quadrangle_2D::ComputeQuadPref (SMESH_Mesh &        aMesh,
     }
     else {
       // fill UVR using c2d
-      for (i=1; i<npr.Length() && UVR.Length()<nbv-nnn-1; i++) {
+      for (i=1; i<npr.Length() && UVR.Length()<nbv-nnn; i++) {
         UVR.Append(gp_UV(uv_er[i].u, uv_er[i].v));
       }
     }
     
     // step3: create faces for central domain
     StdMeshers_Array2OfNode NodesC(1,nb,1,nbv);
-    // add first string using NodesL
+    // add first line using NodesL
     for (i=1; i<=dl+1; i++)
       NodesC.SetValue(1,i,NodesL(i,1));
     for (i=2; i<=nl; i++)
       NodesC.SetValue(1,dl+i,NodesL(dl+1,i));
-    // add last string using NodesR
+    // add last line using NodesR
     for (i=1; i<=dr+1; i++)
       NodesC.SetValue(nb,i,NodesR(i,nr));
     for (i=1; i<nr; i++)
@@ -1720,6 +1709,8 @@ bool StdMeshers_Quadrangle_2D::ComputeQuadPref (SMESH_Mesh &        aMesh,
         SMDS_MeshNode* N = meshDS->AddNode(P.X(), P.Y(), P.Z());
         meshDS->SetNodeOnFace(N, geomFaceID, UV.X(), UV.Y());
         NodesC.SetValue(i,nbv-nnn+j,N);
+        if ( j==1 )
+          UVT.Append( UV );
       }
     }
     // add diagonal layers
@@ -1729,15 +1720,20 @@ bool StdMeshers_Quadrangle_2D::ComputeQuadPref (SMESH_Mesh &        aMesh,
     //  cout<<" ("<<UVL.Value(i).X()<<","<<UVL.Value(i).Y()<<")";
     //}
     //cout<<endl;
+    gp_UV A2 = UVR.Value(nbv-nnn);
+    gp_UV A3 = UVL.Value(nbv-nnn);
     for (i=1; i<nbv-nnn; i++) {
-      double du = UVR.Value(i).X() - UVL.Value(i).X();
-      double dv = UVR.Value(i).Y() - UVL.Value(i).Y();
+      gp_UV p1 = UVR.Value(i);
+      gp_UV p3 = UVL.Value(i);
+      double y = i / double(nbv-nnn);
       for (j=2; j<nb; j++) {
-        double u = UVL.Value(i).X() + du*npb.Value(j);
-        double v = UVL.Value(i).Y() + dv*npb.Value(j);
-        gp_Pnt P = S->Value(u,v);
+        double x = npb.Value(j);
+        gp_UV p0( uv_eb[j-1].u, uv_eb[j-1].v );
+        gp_UV p2 = UVT.Value( j-1 );
+        gp_UV UV = CalcUV(x, y, a0, a1, A2, A3, p0,p1,p2,p3 );
+        gp_Pnt P = S->Value(UV.X(),UV.Y());
         SMDS_MeshNode* N = meshDS->AddNode(P.X(), P.Y(), P.Z());
-        meshDS->SetNodeOnFace(N, geomFaceID, u, v);
+        meshDS->SetNodeOnFace(N, geomFaceID, UV.X(),UV.Y());
         NodesC.SetValue(j,i+1,N);
       }
     }
@@ -1770,16 +1766,14 @@ bool StdMeshers_Quadrangle_2D::ComputeQuadPref (SMESH_Mesh &        aMesh,
     for (i=1; i<nnn-1; i++) {
       NodesBRD.SetValue(1,i+1,uv_el[i].node);
       NodesBRD.SetValue(nb,i+1,uv_er[i].node);
-      double du = uv_er[i].u - uv_el[i].u;
-      double dv = uv_er[i].v - uv_el[i].v;
       for (j=2; j<nb; j++) {
-        double u = uv_el[i].u + du*npb.Value(j);
-        double v = uv_el[i].v + dv*npb.Value(j);
-        gp_Pnt P = S->Value(u,v);
+        double x = npb.Value(j);
+        double y = (1-x) * npl.Value(i+1) + x * npr.Value(i+1);
+        gp_UV UV = CalcUV2(x, y, quad, a0, a1, a2, a3);
+        gp_Pnt P = S->Value(UV.X(),UV.Y());
         SMDS_MeshNode* N = meshDS->AddNode(P.X(), P.Y(), P.Z());
-        meshDS->SetNodeOnFace(N, geomFaceID, u, v);
+        meshDS->SetNodeOnFace(N, geomFaceID, UV.X(),UV.Y());
         NodesBRD.SetValue(j,i+1,N);
-
       }
     }
     for (j=1; j<nnn-1; j++) {
@@ -2427,12 +2421,12 @@ bool StdMeshers_Quadrangle_2D::ComputeReduced (SMESH_Mesh &        aMesh,
     
     // step3: create faces for central domain
     StdMeshers_Array2OfNode NodesC(1,nb,1,nbv);
-    // add first string using NodesL
+    // add first line using NodesL
     for (i=1; i<=dl+1; i++)
       NodesC.SetValue(1,i,NodesL(i,1));
     for (i=2; i<=nl; i++)
       NodesC.SetValue(1,dl+i,NodesL(dl+1,i));
-    // add last string using NodesR
+    // add last line using NodesR
     for (i=1; i<=dr+1; i++)
       NodesC.SetValue(nb,i,NodesR(i,nr));
     for (i=1; i<nr; i++)
