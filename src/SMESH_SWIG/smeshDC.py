@@ -50,6 +50,7 @@
 ##     @defgroup l3_hypos_ghs3dh GHS3D Parameters hypothesis
 ##     @defgroup l3_hypos_blsurf BLSURF Parameters hypothesis
 ##     @defgroup l3_hypos_hexotic Hexotic Parameters hypothesis
+##     @defgroup l3_hypos_quad Quadrangle Parameters hypothesis
 ##     @defgroup l3_hypos_additi Additional Hypotheses
 
 ##   @}
@@ -201,6 +202,8 @@ PrecisionConfusion = 1e-07
 # Methods of splitting a hexahedron into tetrahedra
 Hex_5Tet, Hex_6Tet, Hex_24Tet = 1, 2, 3
 
+# import items of enum QuadType
+for e in StdMeshers.QuadType._items: exec('%s = StdMeshers.%s'%(e,e))
 
 ## Converts an angle from degrees to radians
 def DegreesToRadians(AngleInDegrees):
@@ -4693,48 +4696,96 @@ class Mesh_Triangle(Mesh_Algorithm):
 #  @ingroup l3_algos_basic
 class Mesh_Quadrangle(Mesh_Algorithm):
 
+    params=0
+
     ## Private constructor.
     def __init__(self, mesh, geom=0):
         Mesh_Algorithm.__init__(self)
         self.Create(mesh, geom, "Quadrangle_2D")
+        return
 
-    ## Defines "QuadranglePreference" hypothesis, forcing construction
-    #  of quadrangles if the number of nodes on the opposite edges is not the same
-    #  while the total number of nodes on edges is even
-    #
-    #  @ingroup l3_hypos_additi
-    def QuadranglePreference(self):
-        hyp = self.Hypothesis("QuadranglePreference", UseExisting=1,
-                              CompareMethod=self.CompareEqualHyp)
-        return hyp
+    ## Defines "QuadrangleParameters" hypothesis
+    #  @param quadType defines the algorithm of transition between differently descretized
+    #                  sides of a geometrical face:
+    #  - QUAD_STANDARD - both triangles and quadrangles are possible in the transition
+    #                    area along the finer meshed sides. 
+    #  - QUAD_TRIANGLE_PREF - only triangles are built in the transition area along the
+    #                    finer meshed sides.
+    #  - QUAD_QUADRANGLE_PREF - only quadrangles are built in the transition area along
+    #                    the finer meshed sides, iff the total quantity of segments on
+    #                    all four sides of the face is even (divisible by 2).
+    #  - QUAD_QUADRANGLE_PREF_REVERSED - same as QUAD_QUADRANGLE_PREF but the transition
+    #                    area is located along the coarser meshed sides. 
+    #  - QUAD_REDUCED - only quadrangles are built and the transition between the sides
+    #                    is made gradually, layer by layer. This type has a limitation on
+    #                    the number of segments: one pair of opposite sides must have the
+    #                    same number of segments, the other pair must have an even difference
+    #                    between the numbers of segments on the sides.
+    #  @param triangleVertex: vertex of a trilateral geometrical face, around which triangles
+    #                  will be created while other elements will be quadrangles.
+    #                  Vertex can be either a GEOM_Object or a vertex ID within the
+    #                  shape to mesh
+    #  @param UseExisting: if ==true - searches for the existing hypothesis created with
+    #                  the same parameters, else (default) - creates a new one
+    #  @ingroup l3_hypos_quad
+    def QuadrangleParameters(self, quadType=StdMeshers.QUAD_STANDARD, triangleVertex=0, UseExisting=0):
+        vertexID = triangleVertex
+        if isinstance( triangleVertex, geompyDC.GEOM._objref_GEOM_Object ):
+            vertexID = self.mesh.geompyD.GetSubShapeID( self.mesh.geom, triangleVertex )
+        if not self.params:
+            compFun = lambda hyp,args: \
+                hyp.GetQuadType() == args[0] and \
+                ( hyp.GetTriaVertex()==args[1] or ( hyp.GetTriaVertex()<1 and args[1]<1))
+            self.params = self.Hypothesis("QuadrangleParams", [quadType,vertexID],
+                                          UseExisting = UseExisting, CompareMethod=compFun)
+            pass
+        if self.params.GetQuadType() != quadType:
+            self.params.SetQuadType(quadType)
+        if vertexID > 0:
+            self.params.SetTriaVertex( vertexID )
+        return self.params
 
-    ## Defines "TrianglePreference" hypothesis, forcing construction
-    #  of triangles in the refinement area if the number of nodes
-    #  on the opposite edges is not the same
-    #
-    #  @ingroup l3_hypos_additi
-    def TrianglePreference(self):
-        hyp = self.Hypothesis("TrianglePreference", UseExisting=1,
-                              CompareMethod=self.CompareEqualHyp)
-        return hyp
+    ## Defines "QuadrangleParams" hypothesis with a type of quadrangulation that only
+    #   quadrangles are built in the transition area along the finer meshed sides,
+    #   iff the total quantity of segments on all four sides of the face is even.
+    #  @param reversed if True, transition area is located along the coarser meshed sides.
+    #  @param UseExisting: if ==true - searches for the existing hypothesis created with
+    #                  the same parameters, else (default) - creates a new one
+    #  @ingroup l3_hypos_quad
+    def QuadranglePreference(self, reversed=False, UseExisting=0):
+        if reversed:
+            return self.QuadrangleParameters(QUAD_QUADRANGLE_PREF_REVERSED,UseExisting=UseExisting)
+        return self.QuadrangleParameters(QUAD_QUADRANGLE_PREF,UseExisting=UseExisting)
 
-    ## Defines "QuadrangleParams" hypothesis
+    ## Defines "QuadrangleParams" hypothesis with a type of quadrangulation that only
+    #   triangles are built in the transition area along the finer meshed sides.
+    #  @param UseExisting: if ==true - searches for the existing hypothesis created with
+    #                  the same parameters, else (default) - creates a new one
+    #  @ingroup l3_hypos_quad
+    def TrianglePreference(self, UseExisting=0):
+        return self.QuadrangleParameters(QUAD_TRIANGLE_PREF,UseExisting=UseExisting)
+
+    ## Defines "QuadrangleParams" hypothesis with a type of quadrangulation that only
+    #   quadrangles are built and the transition between the sides is made gradually,
+    #   layer by layer. This type has a limitation on the number of segments: one pair
+    #   of opposite sides must have the same number of segments, the other pair must
+    #   have an even difference between the numbers of segments on the sides.
+    #  @param UseExisting: if ==true - searches for the existing hypothesis created with
+    #                  the same parameters, else (default) - creates a new one
+    #  @ingroup l3_hypos_quad
+    def Reduced(self, UseExisting=0):
+        return self.QuadrangleParameters(QUAD_REDUCED,UseExisting=UseExisting)
+
+    ## Defines "QuadrangleParams" hypothesis with QUAD_STANDARD type of quadrangulation
     #  @param vertex: vertex of a trilateral geometrical face, around which triangles
     #                 will be created while other elements will be quadrangles.
     #                 Vertex can be either a GEOM_Object or a vertex ID within the
     #                 shape to mesh
     #  @param UseExisting: if ==true - searches for the existing hypothesis created with
     #                   the same parameters, else (default) - creates a new one
-    #
-    #  @ingroup l3_hypos_additi
+    #  @ingroup l3_hypos_quad
     def TriangleVertex(self, vertex, UseExisting=0):
-        vertexID = vertex
-        if isinstance( vertexID, geompyDC.GEOM._objref_GEOM_Object ):
-            vertexID = self.mesh.geompyD.GetSubShapeID( self.mesh.geom, vertex )
-        hyp = self.Hypothesis("QuadrangleParams", [vertexID], UseExisting = UseExisting,
-                              CompareMethod=lambda hyp,args: hyp.GetTriaVertex()==args[0])
-        hyp.SetTriaVertex( vertexID )
-        return hyp
+        return self.QuadrangleParameters(QUAD_STANDARD,vertex,UseExisting)
 
 
 # Public class: Mesh_Tetrahedron
