@@ -452,9 +452,12 @@ void StdMeshers_FaceSide::Reverse()
     reverse( myEdgeLength );
     reverse( myIsUniform );
   }
-  myNormPar[nbEdges-1]=1.;
-  myPoints.clear();
-  myFalsePoints.clear();
+  if ( nbEdges > 0 )
+  {
+    myNormPar[nbEdges-1]=1.;
+    myPoints.clear();
+    myFalsePoints.clear();
+  }
 }
 
 //================================================================================
