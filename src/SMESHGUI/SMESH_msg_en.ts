@@ -3642,13 +3642,6 @@ Please specify it and try again</translation>
     </message>
 </context>
 <context>
-    <name>SMESHGUI_Make2DFrom3DDlg</name>
-    <message>
-        <source>CAPTION</source>
-        <translation>Create boundary elements</translation>
-    </message>
-</context>
-<context>
     <name>SMESHGUI_CreatePatternDlg</name>
     <message>
         <source>CAPTION</source>

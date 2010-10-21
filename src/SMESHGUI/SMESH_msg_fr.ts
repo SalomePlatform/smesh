@@ -181,7 +181,7 @@
     </message>
     <message>
         <source>MEN_2D_FROM_3D</source>
-        <translation>Créer un maillage 2D à partir de 3D</translation>
+        <translation>Créer les éléments de frontière</translation>
     </message>
     <message>
         <source>MEN_MESH_ORDER</source>
@@ -2057,6 +2057,12 @@ Enregistrez votre progrès avant que l&apos;application se plante</translation>
         <translation>Il faut ouvrir la scène dans le visualisateur VTK</translation>
     </message>
     <message>
+        <source>SMESH_WRN_SIZE_LIMIT_EXCEEDED</source>
+        <translation>La présentation n&apos;a pas été mise à jour automatiquement: la taille nouvelle du maillage (%1 éléments) dépasse la limite de taille actuelle (%2 éléments).
+Il serait utile de changer la limite dans les préférences du module Mesh.
+</translation>
+    </message>
+    <message>
         <source>SMESH_WRN_WARNING</source>
         <translation>Avertissement</translation>
     </message>
@@ -2170,7 +2176,7 @@ Enregistrez votre progrès avant que l&apos;application se plante</translation>
     </message>
     <message>
         <source>STB_2D_FROM_3D</source>
-        <translation>Créer un maillage 2D à partir de 3D</translation>
+        <translation>Créer les éléments de frontière</translation>
     </message>
     <message>
         <source>STB_MESH_ORDER</source>
@@ -2690,7 +2696,7 @@ Enregistrez votre progrès avant que l&apos;application se plante</translation>
     </message>
     <message>
         <source>TOP_2D_FROM_3D</source>
-        <translation>Créer un Maillage 2D à partir de 3D</translation>
+        <translation>Créer les éléments de frontière</translation>
     </message>
     <message>
         <source>TOP_MESH_ORDER</source>
@@ -3241,6 +3247,14 @@ Ouvrez le visualisateur VTK et essayez de nouveau</translation>
         <translation>Mettre à Jour Automatiquement</translation>
     </message>
     <message>
+        <source>PREF_UPDATE_LIMIT</source>
+        <translation>Limite de taille (nombre d&apos;éléments)</translation>
+    </message>
+    <message>
+        <source>PREF_UPDATE_LIMIT_NOLIMIT</source>
+        <translation>Sans limite</translation>
+    </message>
+    <message>
         <source>PREF_BACKFACE</source>
         <translation>Face Arrière</translation>
     </message>
@@ -3339,10 +3353,6 @@ Ouvrez le visualisateur VTK et essayez de nouveau</translation>
     <message>
         <source>PREF_GROUP_SELECTION</source>
         <translation>Sélection</translation>
-    </message>
-    <message>
-        <source>PREF_GROUP_UPDATE</source>
-        <translation>Mettre à jour</translation>
     </message>
     <message>
         <source>PREF_HIGHLIGHT_COLOR</source>
@@ -3626,13 +3636,6 @@ Indiquez-le et essayez de nouveau</translation>
     </message>
 </context>
 <context>
-    <name>SMESHGUI_Make2DFrom3DDlg</name>
-    <message>
-        <source>CAPTION</source>
-        <translation>Créer un maillage 2D à partir de 3D</translation>
-    </message>
-</context>
-<context>
     <name>SMESHGUI_CreatePatternDlg</name>
     <message>
         <source>CAPTION</source>
@@ -3752,7 +3755,7 @@ Choisissez un groupe et essayez de nouveau</translation>
     </message>
 </context>
 <context>
-    <name>SMESHGUI_EditMeshDlg</name>
+    <name>SMESHGUI_MergeDlg</name>
     <message>
         <source>COINCIDENT_ELEMENTS</source>
         <translation>Eléments Coïncidents</translation>
@@ -3772,6 +3775,10 @@ Choisissez un groupe et essayez de nouveau</translation>
     <message>
         <source>SELECT_ALL</source>
         <translation>Choisir Tous</translation>
+    </message>
+    <message>
+        <source>EXCLUDE_GROUPS</source>
+        <translation>Exclure les Groupes</translation>
     </message>
 </context>
 <context>
@@ -3913,6 +3920,16 @@ Choisissez une face et essayez de nouveau</translation>
         <source>SHAPE_IS_NOT_A_PLANE</source>
         <translation>&quot;%1&quot; n&apos;est pas un plan
 Choisissez un plan et essayez de nouveau</translation>
+    </message>
+    <message>
+        <source>FACE_ID_NOT_SELECTED</source>
+        <translation>La face de maillage n&apos;est pas choisie.
+Indiquez-la et essayez de nouveau.</translation>
+    </message>
+    <message>
+        <source>NOT_FACE_ID</source>
+        <translation>&quot;%1&quot; n&apos;est l&apos;ID valide d&apos;une face du maillage.
+Choisissez la face et essayez de nouveau.</translation>
     </message>
     <message>
         <source>SOURCE</source>
@@ -4120,6 +4137,10 @@ Vérifiez la validité de l&apos;information d&apos;entrée et essayez de nouvea
     <message>
         <source>COMPARE</source>
         <translation>Comparer</translation>
+    </message>
+    <message>
+        <source>COPLANAR_FACES</source>
+        <translation>Faces Coplanaires</translation>
     </message>
     <message>
         <source>COPY_FROM</source>
@@ -4845,6 +4866,10 @@ Il y a trop peu de points au fichier pour charger le circuit</translation>
         <source>SPLIT_HEX_TO_6_TETRA</source>
         <translation>En 6 tétraèdres</translation>
     </message>
+    <message>
+        <source>SPLIT_HEX_TO_24_TETRA</source>
+        <translation>En 24 tétraèdres</translation>
+    </message>
 </context>
 <context>
     <name>SMESHGUI_PrecisionDlg</name>
@@ -5232,6 +5257,80 @@ Il y a trop peu de points au fichier pour charger le circuit</translation>
     <message>
         <source>CONSTRUCT_NEW_GROUP_ELEMENTS</source>
         <translation>Construire un groupe avec les éléments créés de nouveau</translation>
+    </message>
+</context>
+<context>
+    <name>SMESHGUI_Make2DFrom3DDlg</name>
+    <message>
+        <source>CAPTION</source>
+        <translation>Créer les éléments de frontière</translation>
+    </message>
+    <message>
+        <source>MESH</source>
+        <translation>Maillage, sous-maillage ou groupe</translation>
+    </message>
+    <message>
+        <source>MODE</source>
+        <translation>Mode</translation>
+    </message>
+    <message>
+        <source>2D_FROM_3D</source>
+        <translation>2D à partir de 3D</translation>
+    </message>
+    <message>
+        <source>1D_FROM_3D</source>
+        <translation>1D à partir de 3D</translation>
+    </message>
+    <message>
+        <source>1D_FROM_2D</source>
+        <translation>1D à partir de 2D</translation>
+    </message>
+    <message>
+        <source>TARGET</source>
+        <translation>Cible</translation>
+    </message>
+    <message>
+        <source>THIS_MESH</source>
+        <translation>Ce maillage</translation>
+    </message>
+    <message>
+        <source>NEW_MESH</source>
+        <translation>Maillage nouveau</translation>
+    </message>
+    <message>
+        <source>COPY_SRC</source>
+        <translation>Copier le maillage source</translation>
+    </message>
+    <message>
+        <source>MISSING_ONLY</source>
+        <translation>Copier seulment les éléments manquants</translation>
+    </message>
+    <message>
+        <source>CREATE_GROUP</source>
+        <translation>Créer un groupe</translation>
+    </message>
+</context>
+<context>
+    <name>SMESHGUI_Make2DFrom3DOp</name>
+    <message>
+        <source>SMESH_ERR_NO_INPUT_MESH</source>
+        <translation>Aucun maillage, sous-maillage ou groupe source n&apos;est indiqué</translation>
+    </message>
+    <message>
+        <source>SMESH_ERR_NO_3D_ELEMENTS</source>
+        <translation>L&apos;objet source ne contient pas d&apos;éléments 3D</translation>
+    </message>
+    <message>
+        <source>SMESH_ERR_NO_2D_ELEMENTS</source>
+        <translation>L&apos;objet source ne contient pas d&apos;éléments 2D</translation>
+    </message>
+    <message>
+        <source>SMESH_ERR_MESH_NAME_NOT_SPECIFIED</source>
+        <translation>Le nouveau nom du maillage n&apos;est pas indiqué</translation>
+    </message>
+    <message>
+        <source>SMESH_ERR_GRP_NAME_NOT_SPECIFIED</source>
+        <translation>Le nom du groupe n&apos;est pas indiqué</translation>
     </message>
 </context>
 </TS>
