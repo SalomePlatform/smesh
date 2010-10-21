@@ -3198,7 +3198,7 @@ SALOMEDS::TMPFile* SMESH_Gen_i::SaveASCII( SALOMEDS::SComponent_ptr theComponent
                                            bool                     isMultiFile ) {
   if(MYDEBUG) MESSAGE( "SMESH_Gen_i::SaveASCII" );
   SALOMEDS::TMPFile_var aStreamFile = Save( theComponent, theURL, isMultiFile );
-  //return aStreamFile._retn();
+  return aStreamFile._retn();
 
   //after usual saving needs to encipher binary to text string
   //Any binary symbol will be represent as "|xx" () hexadecimal format number
@@ -4300,7 +4300,7 @@ bool SMESH_Gen_i::LoadASCII( SALOMEDS::SComponent_ptr theComponent,
                              const char*              theURL,
                              bool                     isMultiFile ) {
   if(MYDEBUG) MESSAGE( "SMESH_Gen_i::LoadASCII" );
-  //return Load( theComponent, theStream, theURL, isMultiFile );
+  return Load( theComponent, theStream, theURL, isMultiFile );
 
   //before call main ::Load method it's need for decipher text format to
   //binary ( "|xx" => x' )
