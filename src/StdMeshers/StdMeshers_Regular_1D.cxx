@@ -947,6 +947,9 @@ bool StdMeshers_Regular_1D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & t
   if (!idFirst || !idLast)
     return error( COMPERR_BAD_INPUT_MESH, "No node on vertex");
 
+  // remove elements created by e.g. patern mapping (PAL21999)
+  theMesh.GetSubMesh(theShape)->ComputeStateEngine( SMESH_subMesh::CLEAN );
+
   if (!Curve.IsNull())
   {
     list< double > params;
@@ -988,7 +991,6 @@ bool StdMeshers_Regular_1D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & t
       parLast = f;
     }
     */
-
     for (list<double>::iterator itU = params.begin(); itU != params.end(); itU++) {
       double param = *itU;
       gp_Pnt P = Curve->Value(param);
