@@ -3,6 +3,9 @@
 \page double_nodes_page Duplicate Nodes
 
 \n This operation allows to duplicate nodes of your mesh.
+Duplication consists in replacement of an existing mesh element by another one.
+Lower level elements of the duplicated ones are cloned
+automatically. 
 
 <em>To duplicate nodes:</em>
 <ol>
@@ -34,13 +37,13 @@ In this mode the dialog looks like:
 \image html duplicate01.png
 
 Parameters to be defined in this mode:
-<ol>
+<ul>
 <li><b>Group of nodes to duplicate</b> (<em>mandatory</em>): these nodes will be duplicated.</li>
 <li><b>Group of elements to replace nodes with new ones</b> (<em>optional</em>): the duplicated nodes
  will be associated with these elements.</li>
 <li><b>Construct group with newly created nodes</b> option (<em>checked by default</em>): 
  if checked - the group with just created nodes will be built.</li>
-</ol>
+</ul>
 
 <br>
 \anchor mode_with_elem_anchor
@@ -51,15 +54,15 @@ In this mode the dialog looks like:
 \image html duplicate02.png
 
 Parameters to be defined in this mode:
-<ol>
+<ul>
 <li><b>Group of elements to duplicate</b> (<em>mandatory</em>): these elements will be duplicated.</li>
 <li><b>Group of nodes at not to duplicate</b> (<em>optional</em>): group of nodes at crack bottom
  which will not be duplicated.</li>
 <li><b>Group of elements to replace nodes with new ones</b> (<em>mandatory</em>): the duplicated nodes
  will be associated with these elements.</li>
 <li><b>Construct group with newly created elements</b> option (<em>checked by default</em>): 
- if checked - the group with just created elements will be builded.</li>
-</ol>
+ if checked - the group with just created elements will be built.</li>
+</ul>
 
 
 <br><b>See Also</b> a sample TUI Script of a \ref tui_duplicate_nodes "Duplicate nodes" operation.  

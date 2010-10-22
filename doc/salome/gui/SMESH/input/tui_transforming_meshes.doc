@@ -426,15 +426,15 @@ if salome.sg.hasDesktop():
 <h3>Create boundary elements</h3>
 
 \code
-# The goal of this feature is to enable the following use cases:
-# 1) The mesh MESH1 with 3D cells does not have or have only a part of its skin (2D cells):
-#    1.1) Add the 2D skin (missing 2D cells) to MESH1 (what it's done now by the algorithm).
-#    1.2) Create new 3D Mesh MESH2 that consists of MESH1 and added 2D skin cells.
-#    1.3) Create new 2D Mesh MESH3 that consists of only the 2D skin cells.
+# The objective of these samples is to illustrate the following use cases:
+# 1) The mesh MESH1 with 3D cells has no or only a part of its skin (2D cells):
+#    1.1) Add the 2D skin (missing 2D cells) to MESH1 (what is done now by the algorithm).
+#    1.2) Create a new 3D Mesh MESH2 that consists of MESH1 and added 2D skin cells.
+#    1.3) Create a new 2D Mesh MESH3 that consists only of 2D skin cells.
 # 2) The mesh MESH1 with 3D cells has all its skin (2D cells):
-#    Create new 2D Mesh MESH3 that consists of only the 2D skin cells.
+#    Create a new 2D Mesh MESH3 that consists only of 2D skin cells.
 #
-# In all cases an option to create a group containing these 2D skin cells should be available.
+# In all cases an option to create a group containing these 2D skin cells is available.
 
 from smesh import *
 
@@ -451,7 +451,7 @@ init_nb_faces = MESH1.NbFaces()
 init_nb_volumes = MESH1.NbVolumes()
 
 # =========================================================================================
-# 1) The mesh MESH1 with 3D cells does not have or have only a part of its skin (2D cells)
+# 1) The mesh MESH1 with 3D cells has no or only a part of its skin (2D cells)
 # =========================================================================================
 # remove some faces
 all_faces = MESH1.GetElementsByType(SMESH.FACE)
@@ -479,7 +479,7 @@ for v in volumes:
 assert(init_nb_faces == MESH1.NbFaces())
 assert(init_nb_edges == MESH1.NbEdges())
 
-# 1.1.3) to group of elements
+# 1.1.3) to a group of elements
 volGroup1 = MESH1.CreateEmptyGroup(SMESH.VOLUME, "volGroup1")
 volGroup1.Add( volumes[: init_nb_volumes/2])
 volGroup2 = MESH1.CreateEmptyGroup(SMESH.VOLUME, "volGroup2")
@@ -490,8 +490,8 @@ MESH1.MakeBoundaryMesh(volGroup2)
 assert(init_nb_faces == MESH1.NbFaces())
 assert(init_nb_edges == MESH1.NbEdges())
 
-# 1.1.4) to submesh.
-# The submesh has no volumes, so check if it pass w/o a crash and does not create
+# 1.1.4) to a submesh.
+# The submesh has no volumes, so it is required to check if it passes without crash and does not create
 # missing faces
 faceSubmesh = MESH1.GetSubMesh( boxFace, "boxFace" )
 MESH1.RemoveElements(rm_faces)
@@ -507,7 +507,7 @@ assert(group.GetName() == groupName)
 assert(group.Size() == len(rm_faces))
 
 
-# 1.2) Create new 3D Mesh MESH2 that consists of MESH1 and added 2D skin cells.
+# 1.2) Create a new 3D Mesh MESH2 that consists of MESH1 and added 2D skin cells.
 # ------------------------------------------------------------------------------
 MESH1.RemoveElements(rm_faces)
 meshName = "MESH2"
@@ -526,7 +526,7 @@ assert(group.GetName() == groupName)
 assert(group.Size() == len(rm_faces))
 assert(group.GetMesh()._is_equivalent(MESH2.GetMesh()))
 
-# 1.3) Create new 2D Mesh MESH3 that consists of only the 2D skin cells.
+# 1.3) Create a new 2D Mesh MESH3 that consists only of 2D skin cells.
 # -----------------------------------------------------------------------
 MESH1.RemoveElements(rm_faces)
 meshName = "MESH3"
@@ -549,7 +549,7 @@ assert(MESH3.NbFaces() == init_nb_faces)
 
 # ==================================================================
 # 2) The mesh MESH1 with 3D cells has all its skin (2D cells)
-# Create new 2D Mesh MESH3 that consists of only the 2D skin cells.
+# Create a new 2D Mesh MESH3 that consists only of 2D skin cells.
 # ==================================================================
 MESH1.MakeBoundaryMesh(MESH1)
 MESH3,group = MESH1.MakeBoundaryMesh(MESH1,meshName=meshName,toCopyExistingBondary=True)

@@ -2,18 +2,18 @@
 
 \page make_2dmesh_from_3d_page Generate boundary elements
 
-\n This functionality allows to generate mesh elements on borders of
-elements of higher dimension.
-
+\n This functionality allows to generate mesh elements on the borders of
+elements of a higher dimension.
 
 <em>To generate border elements:</em>
 <ol>
 <li>From the Modification menu choose "Create boundary elements"
-item, or choose from the popup menu.
+item, or click "Create boundary elements" button in the toolbar
 
-\image html 2d_from_3d_menu.png
+\image html 2d_from_3d_ico.png "Create boundary elements icon"
+
 The following dialog box will appear:
-\image html 2d_from_3d_dlg.png
+\image html 2d_from_3d_dlg.png "Create boundary elements dialog box".
 </li>
 <li>Check in the dialog box one of three radio buttons corresponding to
 the type of operation you would like to perform.</li>
@@ -28,32 +28,30 @@ of three types.
 <li><b>1D from 2D</b> creates mesh edges on free edges of mesh faces</li>
 <li><b>1D from 3D</b> creates mesh edges on all borders of free facets of volume elements</li>
 </ul>
-Here <em>free facet</em> means a facet shared by only one volume, <em>free edge</em>
+Here a <em>free facet</em> means a facet shared by only one volume, a <em>free edge</em>
 means an edge shared by only one mesh face.
 
 In this dialog:
 <ul>
-<li>specify <b>Mesh, submesh or group</b> to analyze the boundary.</li>
-<li>specify <b>Target</b> mesh where boundary elements will
+<li>specify the <b>Mesh, submesh or group</b>, the boundary which of
+will be analyzed.</li>
+<li>specify the <b>Target</b> mesh, where the boundary elements will
   be created.
   <ul>
   <li><b>This mesh</b> adds elements in the selected mesh or the mesh
   the selected submesh or group belongs to.</li>
-  <li><b>New mesh</b> add elements to a new mesh. The new mesh appears
-  in the Object Browser with the name specified in the adjacent box
-  that you can change. </li>
+  <li><b>New mesh</b> adds elements to a new mesh. The new mesh appears
+  in the Object Browser with the name that you can change in the adjacent box. </li>
   </ul></li>
 <li>activate <b>Copy source mesh</b> checkbox to copy 2D or 3D
-  elements (depending on operation type) belonging to the object
-  specified in <b>Mesh, submesh or group</b> field to the new
-  mesh.</li>
+  elements (depending on the operation type), which belong to the analyzed 
+<b>Mesh, submesh or group</b> field, to the new mesh.</li>
 <li>deactivate <b>Copy missing elements only</b> checkbox to copy
-  boundary elements already present in the mesh being checked to the
+  boundary elements already present in the analyzed mesh to the
   new mesh.</li>
-<li>activate <b>Create group</b> checkbox to create a group where
-  missing boundary elements are added to. The new group appears
-  in the Object Browser with the name specified in the adjacent box
-  that you can change. </li>
+<li>activate <b>Create group</b> checkbox to create a group to which the
+  missing boundary elements are added. The new group appears
+  in the Object Browser with the name that you can change in the adjacent box. </li>
 </ul>
 <br><b>See Also</b> a sample TUI Script of a \ref tui_make_2dmesh_from_3d "Create boundary elements" operation.  
 
