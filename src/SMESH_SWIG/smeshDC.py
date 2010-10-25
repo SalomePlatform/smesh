@@ -4733,8 +4733,8 @@ class Mesh_Quadrangle(Mesh_Algorithm):
             vertexID = self.mesh.geompyD.GetSubShapeID( self.mesh.geom, triangleVertex )
         if not self.params:
             compFun = lambda hyp,args: \
-                hyp.GetQuadType() == args[0] and \
-                ( hyp.GetTriaVertex()==args[1] or ( hyp.GetTriaVertex()<1 and args[1]<1))
+                      hyp.GetQuadType() == args[0] and \
+                      ( hyp.GetTriaVertex()==args[1] or ( hyp.GetTriaVertex()<1 and args[1]<1))
             self.params = self.Hypothesis("QuadrangleParams", [quadType,vertexID],
                                           UseExisting = UseExisting, CompareMethod=compFun)
             pass
