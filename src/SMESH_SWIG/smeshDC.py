@@ -854,7 +854,6 @@ class smeshDC(SMESH._objref_SMESH_Gen):
         aCriterion = self.GetCriterion(elementType, CritType, Compare, Treshold, UnaryOp, FT_Undefined)
         aFilterMgr = self.CreateFilterManager()
         aFilter = aFilterMgr.CreateFilter()
-        aFilter.SetMesh( self.mesh )
         aCriteria = []
         aCriteria.append(aCriterion)
         aFilter.SetCriteria(aCriteria)
