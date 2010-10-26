@@ -1635,7 +1635,6 @@ class Mesh:
     def MakeGroupByCriterion(self, groupName, Criterion):
         aFilterMgr = self.smeshpyD.CreateFilterManager()
         aFilter = aFilterMgr.CreateFilter()
-        aFilter.SetMesh( self.mesh )
         aCriteria = []
         aCriteria.append(Criterion)
         aFilter.SetCriteria(aCriteria)
@@ -1650,7 +1649,6 @@ class Mesh:
     def MakeGroupByCriteria(self, groupName, theCriteria):
         aFilterMgr = self.smeshpyD.CreateFilterManager()
         aFilter = aFilterMgr.CreateFilter()
-        aFilter.SetMesh( self.mesh )
         aFilter.SetCriteria(theCriteria)
         group = self.MakeGroupByFilter(groupName, aFilter)
         return group
@@ -1662,6 +1660,7 @@ class Mesh:
     #  @ingroup l2_grps_create
     def MakeGroupByFilter(self, groupName, theFilter):
         group = self.CreateEmptyGroup(theFilter.GetElementType(), groupName)
+        theFilter.SetMesh( self.mesh )
         group.AddFrom( theFilter )
         return group
 
@@ -1670,6 +1669,7 @@ class Mesh:
     #  @return a list of ids
     #  @ingroup l1_controls
     def GetIdsFromFilter(self, theFilter):
+        theFilter.SetMesh( self.mesh )
         return theFilter.GetIDs()
 
     ## Verifies whether a 2D mesh element has free edges (edges connected to one face only)\n
@@ -3990,7 +3990,8 @@ class Mesh_Algorithm:
                 pass
             except:
                 name = mesh.geompyD.SubShapeName(geom, piece)
-                mesh.geompyD.addToStudyInFather(piece, geom, name)
+                if not name:
+                    name = "%s_%s"%(geom.GetShapeType(), id(geom%1000))
                 pass
             self.subm = mesh.mesh.GetSubMesh(geom, algo.GetName())
 
