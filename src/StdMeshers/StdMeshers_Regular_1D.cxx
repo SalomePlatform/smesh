@@ -948,7 +948,23 @@ bool StdMeshers_Regular_1D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & t
     return error( COMPERR_BAD_INPUT_MESH, "No node on vertex");
 
   // remove elements created by e.g. patern mapping (PAL21999)
-  theMesh.GetSubMesh(theShape)->ComputeStateEngine( SMESH_subMesh::CLEAN );
+  // CLEAN event is incorrectly ptopagated seemingly due to Propagation hyp
+  // so TEMPORARY solution is to clean the submesh manually
+  //theMesh.GetSubMesh(theShape)->ComputeStateEngine( SMESH_subMesh::CLEAN );
+  if (SMESHDS_SubMesh * subMeshDS = meshDS->MeshElements(theShape))
+  {
+    SMDS_ElemIteratorPtr ite = subMeshDS->GetElements();
+    while (ite->more())
+      meshDS->RemoveFreeElement(ite->next(), subMeshDS);
+    SMDS_NodeIteratorPtr itn = subMeshDS->GetNodes();
+    while (itn->more()) {
+      const SMDS_MeshNode * node = itn->next();
+      if ( node->NbInverseElements() == 0 )
+        meshDS->RemoveFreeNode(node, subMeshDS);
+      else
+        meshDS->RemoveNode(node);
+    }
+  }
 
   if (!Curve.IsNull())
   {
