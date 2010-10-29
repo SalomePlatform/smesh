@@ -475,6 +475,8 @@ bool StdMeshers_ProjectionUtils::FindSubShapeAssociation(const TopoDS_Shape& the
         RETURN_BAD_RESULT("Wrong map extent " << theMap.Extent() );
       TopoDS_Edge edge1 = TopoDS::Edge( theShape1 );
       TopoDS_Edge edge2 = TopoDS::Edge( theShape2 );
+      if ( edge1.Orientation() >= TopAbs_INTERNAL ) edge1.Orientation( TopAbs_FORWARD );
+      if ( edge2.Orientation() >= TopAbs_INTERNAL ) edge2.Orientation( TopAbs_FORWARD );
       TopoDS_Vertex VV1[2], VV2[2];
       TopExp::Vertices( edge1, VV1[0], VV1[1] );
       TopExp::Vertices( edge2, VV2[0], VV2[1] );
@@ -490,6 +492,8 @@ bool StdMeshers_ProjectionUtils::FindSubShapeAssociation(const TopoDS_Shape& the
       // ----------------------------------------------------------------------
       TopoDS_Face face1 = TopoDS::Face( theShape1 );
       TopoDS_Face face2 = TopoDS::Face( theShape2 );
+      if ( face1.Orientation() >= TopAbs_INTERNAL ) face1.Orientation( TopAbs_FORWARD );
+      if ( face2.Orientation() >= TopAbs_INTERNAL ) face2.Orientation( TopAbs_FORWARD );
 
       TopoDS_Vertex VV1[2], VV2[2];
       // find a not closed edge of face1 both vertices of which are associated
@@ -537,6 +541,7 @@ bool StdMeshers_ProjectionUtils::FindSubShapeAssociation(const TopoDS_Shape& the
       TopExp_Explorer exp ( theShape1, TopAbs_EDGE );
       for ( ; VV2[ 1 ].IsNull() && exp.More(); exp.Next() ) {
         edge1 = TopoDS::Edge( exp.Current() );
+        if ( edge1.Orientation() >= TopAbs_INTERNAL ) edge1.Orientation( TopAbs_FORWARD );
         TopExp::Vertices( edge1 , VV1[0], VV1[1] );
         if ( theMap.IsBound( VV1[0] )) {
           VV2[ 0 ] = TopoDS::Vertex( theMap( VV1[0] ));
@@ -700,7 +705,7 @@ bool StdMeshers_ProjectionUtils::FindSubShapeAssociation(const TopoDS_Shape& the
           if ( !initAssocOK ) {
             // for shell association there must be an edge with both vertices bound
             TopoDS_Vertex v1, v2;
-            TopExp::Vertices( TopoDS::Edge( it1.Value()), v1, v2 );
+            TopExp::Vertices( TopoDS::Edge( it1.Value().Oriented(TopAbs_FORWARD)), v1, v2 );
             initAssocOK = ( theMap.IsBound( v1 ) && theMap.IsBound( v2 ));
           }
         }
@@ -949,6 +954,8 @@ bool StdMeshers_ProjectionUtils::FindSubShapeAssociation(const TopoDS_Shape& the
     {
       TopoDS_Face face1 = TopoDS::Face(theShape1);
       TopoDS_Face face2 = TopoDS::Face(theShape2);
+      if ( face1.Orientation() >= TopAbs_INTERNAL ) face1.Orientation( TopAbs_FORWARD );
+      if ( face2.Orientation() >= TopAbs_INTERNAL ) face2.Orientation( TopAbs_FORWARD );
       TopoDS_Edge edge1, edge2;
       // get outer edge of theShape1
       edge1 = TopoDS::Edge( OuterShape( face1, TopAbs_EDGE ));
@@ -1132,7 +1139,7 @@ bool StdMeshers_ProjectionUtils::FindSubShapeAssociation(const TopoDS_Shape& the
   if ( edge.IsNull() || edge.ShapeType() != TopAbs_EDGE )
     RETURN_BAD_RESULT("Edge not found");
 
-  TopExp::Vertices( TopoDS::Edge( edge ), VV1[0], VV1[1]);
+  TopExp::Vertices( TopoDS::Edge( edge.Oriented(TopAbs_FORWARD)), VV1[0], VV1[1]);
   if ( VV1[0].IsSame( VV1[1] ))
     RETURN_BAD_RESULT("Only closed edges");
 

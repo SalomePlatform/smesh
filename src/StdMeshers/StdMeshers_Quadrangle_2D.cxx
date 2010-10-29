@@ -776,7 +776,8 @@ FaceQuadStruct* StdMeshers_Quadrangle_2D::CheckNbEdges(SMESH_Mesh &         aMes
                                                        const TopoDS_Shape & aShape)
   //throw(SALOME_Exception)
 {
-  const TopoDS_Face & F = TopoDS::Face(aShape);
+  TopoDS_Face F = TopoDS::Face(aShape);
+  if ( F.Orientation() >= TopAbs_INTERNAL ) F.Orientation( TopAbs_FORWARD );
   const bool ignoreMediumNodes = _quadraticMesh;
 
   // verify 1 wire only, with 4 edges
