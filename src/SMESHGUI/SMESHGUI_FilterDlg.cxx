@@ -1191,7 +1191,7 @@ void SMESHGUI_FilterTable::SetCriterion (const int                       theRow,
       aTable->item( theRow, 5 )->setText( QString( theCriterion.ThresholdID ) );
   }
 
-  if (theCriterion.Compare  == SMESH::FT_EqualTo ||
+  if (theCriterion.Compare == SMESH::FT_EqualTo ||
       theCriterion.Type    == SMESH::FT_BelongToPlane ||
       theCriterion.Type    == SMESH::FT_BelongToCylinder ||
       theCriterion.Type    == SMESH::FT_BelongToGenSurface ||
@@ -1203,13 +1203,13 @@ void SMESHGUI_FilterTable::SetCriterion (const int                       theRow,
     if (!myAddWidgets.contains(anItem))
     {
       myAddWidgets[ anItem ] = new AdditionalWidget(myWgStack);
+      myAddWidgets[ anItem ]->SetPrecision( AdditionalWidget::Tolerance, getPrecision( theCriterion.Type ) );
       myWgStack->addWidget(myAddWidgets[ anItem ]);
     }
     myAddWidgets[ anItem ]->SetDouble(AdditionalWidget::Tolerance, theCriterion.Tolerance);
   }
 
   emit CriterionChanged(theRow, aType);
-
 }
 
 //=======================================================================
