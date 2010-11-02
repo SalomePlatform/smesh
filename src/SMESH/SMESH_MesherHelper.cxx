@@ -356,7 +356,7 @@ gp_XY SMESH_MesherHelper::GetNodeUV(const TopoDS_Face&   F,
       static_cast<const SMDS_FacePosition*>(n->GetPosition().get());
     uv.SetCoord(fpos->GetUParameter(),fpos->GetVParameter());
     if ( check )
-      uvOK = CheckNodeUV( F, n, uv.ChangeCoord(), 2*BRep_Tool::Tolerance( F ));
+      uvOK = CheckNodeUV( F, n, uv.ChangeCoord(), 10*MaxTolerance( F ));
   }
   else if(Pos->GetTypeOfPosition()==SMDS_TOP_EDGE)
   {
@@ -375,7 +375,7 @@ gp_XY SMESH_MesherHelper::GetNodeUV(const TopoDS_Face&   F,
     else
       uv.SetCoord(0.,0.);
     if ( check || !validU )
-      uvOK = CheckNodeUV( F, n, uv.ChangeCoord(), 2*BRep_Tool::Tolerance( E ),/*force=*/ !validU );
+      uvOK = CheckNodeUV( F, n, uv.ChangeCoord(), 10*MaxTolerance( F ),/*force=*/ !validU );
 
     // for a node on a seam edge select one of UVs on 2 pcurves
     if ( n2 && IsSeamShape( edgeID ) )
@@ -1519,6 +1519,26 @@ bool SMESH_MesherHelper::IsSubShape( const TopoDS_Shape& shape, SMESH_Mesh* aMes
     aMesh->GetMeshDS()->ShapeToIndex( shape ) ||
     // PAL16202
     shape.ShapeType() == TopAbs_COMPOUND && aMesh->GetMeshDS()->IsGroupOfSubShapes( shape );
+}
+
+//================================================================================
+/*!
+ * \brief Return maximal tolerance of shape
+ */
+//================================================================================
+
+double SMESH_MesherHelper::MaxTolerance( const TopoDS_Shape& shape )
+{
+  double tol = Precision::Confusion();
+  TopExp_Explorer exp;
+  for ( exp.Init( shape, TopAbs_FACE ); exp.More(); exp.Next() )
+    tol = Max( tol, BRep_Tool::Tolerance( TopoDS::Face( exp.Current())));
+  for ( exp.Init( shape, TopAbs_EDGE ); exp.More(); exp.Next() )
+    tol = Max( tol, BRep_Tool::Tolerance( TopoDS::Edge( exp.Current())));
+  for ( exp.Init( shape, TopAbs_VERTEX ); exp.More(); exp.Next() )
+    tol = Max( tol, BRep_Tool::Tolerance( TopoDS::Vertex( exp.Current())));
+
+  return tol;
 }
 
 //=======================================================================

@@ -140,6 +140,8 @@ public:
 
   static bool IsSubShape( const TopoDS_Shape& shape, SMESH_Mesh* aMesh );
 
+  static double MaxTolerance( const TopoDS_Shape& shape );
+
 
 public:
   // ---------- PUBLIC INSTANCE METHODS ----------
