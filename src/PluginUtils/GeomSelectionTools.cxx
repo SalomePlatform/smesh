@@ -274,7 +274,7 @@ GeomAbs_SurfaceType GeomSelectionTools::getFaceInformation(TopoDS_Shape S)
   if (!S.IsNull() &&  S.ShapeType()==TopAbs_FACE){
     TopoDS_Face f=TopoDS::Face(S);
     Handle(Geom_Surface) surf = BRep_Tool::Surface(f);
-    BRepAdaptor_Surface surf_adap=BRepAdaptor_Surface::BRepAdaptor_Surface(f);
+    BRepAdaptor_Surface surf_adap(f);
 
     /* Global Information */
     std::cout << "GLOBAL INFORMATION" << std::endl;
