@@ -377,10 +377,14 @@ static void compensateError(double a1, double an,
     }
 
     double q  = dUn / ( nPar - 1 );
-    if ( !adjustNeighbors2an ) {
-      for ( itU = theParams.rbegin(), i = 1; i < nPar; itU++, i++ ) {
+    if ( !adjustNeighbors2an )
+    {
+      q = Abs( dUn / ( Utgt - Un )); // factor of segment length change
+      for ( itU = theParams.rbegin(), i = 1; i < nPar; i++ ) {
+        double prevU = *itU;
         (*itU) += dUn;
-        dUn -= q;
+        ++itU;
+        dUn = q * (*itU - prevU) * (prevU-U1)/(Un-U1);
       }
     }
     else {
