@@ -2243,7 +2243,7 @@ class Mesh:
     #  @param IDsOfNodes the list of node IDs for creation of the element.
     #  The order of nodes in this list should correspond to the description
     #  of MED. \n This description is located by the following link:
-    #  http://www.salome-platform.org/salome2/web_med_internet/logiciels/medV2.2.2_doc_html/html/modele_de_donnees.html#3.
+    #  http://www.code-aster.org/outils/med/html/modele_de_donnees.html#3.
     #  @return the Id of the new edge
     #  @ingroup l2_modif_add
     def AddEdge(self, IDsOfNodes):
@@ -2254,7 +2254,7 @@ class Mesh:
     #  @param IDsOfNodes the list of node IDs for creation of the element.
     #  The order of nodes in this list should correspond to the description
     #  of MED. \n This description is located by the following link:
-    #  http://www.salome-platform.org/salome2/web_med_internet/logiciels/medV2.2.2_doc_html/html/modele_de_donnees.html#3.
+    #  http://www.code-aster.org/outils/med/html/modele_de_donnees.html#3.
     #  @return the Id of the new face
     #  @ingroup l2_modif_add
     def AddFace(self, IDsOfNodes):
@@ -2272,7 +2272,7 @@ class Mesh:
     #  @param IDsOfNodes the list of node IDs for creation of the element.
     #  The order of nodes in this list should correspond to the description
     #  of MED. \n This description is located by the following link:
-    #  http://www.salome-platform.org/salome2/web_med_internet/logiciels/medV2.2.2_doc_html/html/modele_de_donnees.html#3.
+    #  http://www.code-aster.org/outils/med/html/modele_de_donnees.html#3.
     #  @return the Id of the new volumic element
     #  @ingroup l2_modif_add
     def AddVolume(self, IDsOfNodes):
