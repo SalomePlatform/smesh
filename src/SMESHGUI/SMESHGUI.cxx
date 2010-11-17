@@ -23,6 +23,8 @@
 //  File   : SMESHGUI.cxx
 //  Author : Nicolas REJNERI, Open CASCADE S.A.S.
 
+#include <Standard_math.hxx>  // E.A. must be included before Python.h to fix compilation on windows
+#include "Python.h"
 //  SMESH includes
 #include "SMESHGUI.h"
 #include "SMESHGUI_AddMeshElementDlg.h"
@@ -3708,6 +3710,21 @@ bool SMESHGUI::activateModule( SUIT_Study* study )
 
   setMenuShown( true );
   setToolShown( true );
+
+  // import Python module that manages SMESH plugins (need to be here because SalomePyQt API uses active module)
+  PyGILState_STATE gstate = PyGILState_Ensure();
+  PyObject* pluginsmanager=PyImport_ImportModule((char*)"salome_pluginsmanager");
+  if(pluginsmanager==NULL)
+    PyErr_Print();
+  else
+    {
+      PyObject* result=PyObject_CallMethod( pluginsmanager, (char*)"initialize", (char*)"isss",1,"smesh",tr("MEN_MESH").toStdString().c_str(),tr("SMESH_PLUGINS_OTHER").toStdString().c_str());
+      if(result==NULL)
+        PyErr_Print();
+      Py_XDECREF(result);
+    }
+  PyGILState_Release(gstate);
+  // end of GEOM plugins loading
 
   // Reset actions accelerator keys
   action(111)->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_B)); // Import DAT

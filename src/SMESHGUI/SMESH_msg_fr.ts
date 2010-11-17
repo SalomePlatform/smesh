@@ -3225,6 +3225,10 @@ avec le paramètre &apos;%1&apos; des préférences du module Mesh.</translation
         <source>NB_NODES_REMOVED</source>
         <translation>%1 nœud(s) supprimés.</translation>
     </message>
+    <message>
+        <source>SMESH_PLUGINS_OTHER</source>
+        <translation>Extensions SMESH</translation>
+    </message>   
 </context>
 <context>
     <name>SMESHGUI</name>

@@ -3228,6 +3228,10 @@ Input value precision can be adjusted using
         <source>NB_NODES_REMOVED</source>
         <translation>Removed %1 node(s).</translation>
     </message>
+    <message>
+        <source>SMESH_PLUGINS_OTHER</source>
+        <translation>SMESH plugins</translation>
+    </message>  
 </context>
 <context>
     <name>SMESHGUI</name>
