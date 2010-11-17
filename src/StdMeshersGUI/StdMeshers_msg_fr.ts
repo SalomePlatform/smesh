@@ -9,27 +9,27 @@
     </message>
     <message>
         <source>SMESH_ARITHMETIC_1D_PARAM</source>
-        <translation>Raison Arithmétique</translation>
+        <translation>Raison arithmétique</translation>
     </message>
     <message>
         <source>SMESH_ARITHMETIC_1D_TITLE</source>
-        <translation>Construction de l&apos;Hypothèse</translation>
+        <translation>Construction de l&apos;hypothèse</translation>
     </message>
     <message>
         <source>SMESH_AUTOMATIC_LENGTH_HYPOTHESIS</source>
-        <translation>Longueur Automatique</translation>
+        <translation>Longueur automatique</translation>
     </message>
     <message>
         <source>SMESH_AUTOMATIC_LENGTH_TITLE</source>
-        <translation>Construction de l&apos;Hypothèse</translation>
+        <translation>Construction de l&apos;hypothèse</translation>
     </message>
     <message>
         <source>SMESH_CONV_MODE</source>
-        <translation>Mode de Conversion</translation>
+        <translation>Mode de conversion</translation>
     </message>
     <message>
         <source>SMESH_CUT_NEG_MODE</source>
-        <translation>Section Négative</translation>
+        <translation>Section négative</translation>
     </message>
     <message>
         <source>SMESH_DEFLECTION1D_HYPOTHESIS</source>
@@ -41,11 +41,11 @@
     </message>
     <message>
         <source>SMESH_DEFLECTION1D_TITLE</source>
-        <translation>Construction de l&apos;Hypothèse</translation>
+        <translation>Construction de l&apos;hypothèse</translation>
     </message>
     <message>
         <source>SMESH_DENSITY_FUNC</source>
-        <translation>Fonction de la Densité </translation>
+        <translation>Fonction de densité </translation>
     </message>
     <message>
         <source>SMESH_DISTR</source>
@@ -53,31 +53,31 @@
     </message>
     <message>
         <source>SMESH_DISTR_EXPR</source>
-        <translation>Distribution avec une densité analytique</translation>
+        <translation>Distribution de densité analytique</translation>
     </message>
     <message>
         <source>SMESH_DISTR_REGULAR</source>
-        <translation>Distribution Equidistante</translation>
+        <translation>Distribution équidistante</translation>
     </message>
     <message>
         <source>SMESH_DISTR_SCALE</source>
-        <translation>Distribution d&apos;Echelle</translation>
+        <translation>Distribution linéaire</translation>
     </message>
     <message>
         <source>SMESH_DISTR_TAB</source>
-        <translation>Distribution avec une densité de table</translation>
+        <translation>Table de densités</translation>
     </message>
     <message>
         <source>SMESH_DISTR_TYPE</source>
-        <translation>Type de la distribution</translation>
+        <translation>Type de distribution</translation>
     </message>
     <message>
         <source>SMESH_END_LENGTH_PARAM</source>
-        <translation>Longueur Finale</translation>
+        <translation>Longueur finale</translation>
     </message>
     <message>
         <source>SMESH_EXPR_FUNC</source>
-        <translation>Fonction de la Densité f(t) = </translation>
+        <translation>Expression de la densité f(t) = </translation>
     </message>
     <message>
         <source>SMESH_EXP_MODE</source>
@@ -93,11 +93,11 @@
     </message>
     <message>
         <source>SMESH_INSERT_ROW</source>
-        <translation>Insérer une rangée</translation>
+        <translation>Insérer une ligne</translation>
     </message>
     <message>
         <source>SMESH_INVALID_FUNCTION</source>
-        <translation>La Fonction est invalide</translation>
+        <translation>La fonction n&apos;est pas valide</translation>
     </message>
     <message>
         <source>SMESH_LAYERS_DISTRIBUTION</source>
@@ -105,15 +105,15 @@
     </message>
     <message>
         <source>SMESH_LAYER_DISTRIBUTION_HYPOTHESIS</source>
-        <translation>Distribution des Niveaux</translation>
+        <translation>Distribution des couches</translation>
     </message>
     <message>
         <source>SMESH_LAYER_DISTRIBUTION_TITLE</source>
-        <translation>Construction de l&apos;Hypothèse</translation>
+        <translation>Construction de l&apos;hypothèse</translation>
     </message>
     <message>
         <source>SMESH_LOCAL_LENGTH_HYPOTHESIS</source>
-        <translation>Longueur Moyen</translation>
+        <translation>Longueur moyennne</translation>
     </message>
     <message>
         <source>SMESH_LOCAL_LENGTH_PARAM</source>
@@ -125,19 +125,19 @@
     </message>
     <message>
         <source>SMESH_LOCAL_LENGTH_TITLE</source>
-        <translation>Construction de l&apos;Hypothèse</translation>
+        <translation>Construction de l&apos;hypothèse</translation>
     </message>
     <message>
         <source>SMESH_FIXED_POINTS_1D_HYPOTHESIS</source>
-        <translation>Points Fixes 1D</translation>
+        <translation>Points fixes 1D</translation>
     </message>
     <message>
         <source>SMESH_FIXED_POINTS_1D_TITLE</source>
-        <translation>Construction de l&apos;Hypothèse</translation>
+        <translation>Construction de l&apos;hypothèse</translation>
     </message>
     <message>
         <source>SMESH_MAX_LENGTH_HYPOTHESIS</source>
-        <translation>Longueur Maximale</translation>
+        <translation>Longueur maximale</translation>
     </message>
     <message>
         <source>SMESH_USE_PREESTIMATED_LENGTH</source>
@@ -145,39 +145,39 @@
     </message>
     <message>
         <source>SMESH_MAX_LENGTH_TITLE</source>
-        <translation>Construction de l&apos;Hypothèse</translation>
+        <translation>Construction de l&apos;hypothèse</translation>
     </message>
     <message>
         <source>SMESH_MAX_ELEMENT_AREA_HYPOTHESIS</source>
-        <translation>Aire d&apos;élément maximale</translation>
+        <translation>Aire maximale d&apos;une maille</translation>
     </message>
     <message>
         <source>SMESH_MAX_ELEMENT_AREA_PARAM</source>
-        <translation>Aire Maximale</translation>
+        <translation>Aire maximale</translation>
     </message>
     <message>
         <source>SMESH_MAX_ELEMENT_AREA_TITLE</source>
-        <translation>Construction de l&apos;Hypothèse</translation>
+        <translation>Construction de l&apos;hypothèse</translation>
     </message>
     <message>
         <source>SMESH_MAX_ELEMENT_VOLUME_HYPOTHESIS</source>
-        <translation>Volume d&apos;élément maximal</translation>
+        <translation>Volume maximal d&apos;une maille</translation>
     </message>
     <message>
         <source>SMESH_MAX_ELEMENT_VOLUME_PARAM</source>
-        <translation>Volume Maximal</translation>
+        <translation>Volume maximal</translation>
     </message>
     <message>
         <source>SMESH_MAX_ELEMENT_VOLUME_TITLE</source>
-        <translation>Construction de l&apos;Hypothèse</translation>
+        <translation>Construction de l&apos;hypothèse</translation>
     </message>
     <message>
         <source>SMESH_NB_SEGMENTS_HYPOTHESIS</source>
-        <translation>Nombre des Segments</translation>
+        <translation>Nombre de segments</translation>
     </message>
     <message>
         <source>SMESH_NB_SEGMENTS_PARAM</source>
-        <translation>Nombre des Segments</translation>
+        <translation>Nombre de segments</translation>
     </message>
     <message>
         <source>SMESH_NB_SEGMENTS_SCALE_PARAM</source>
@@ -185,7 +185,7 @@
     </message>
     <message>
         <source>SMESH_NB_SEGMENTS_TITLE</source>
-        <translation>Construction de l&apos;Hypothèse</translation>
+        <translation>Construction de l&apos;hypothèse</translation>
     </message>
     <message>
         <source>SMESH_NO_CONV</source>
@@ -193,79 +193,79 @@
     </message>
     <message>
         <source>SMESH_NUMBER_OF_LAYERS</source>
-        <translation>Nombre de Niveaux</translation>
+        <translation>Nombre de couches</translation>
     </message>
     <message>
         <source>SMESH_NUMBER_OF_LAYERS_HYPOTHESIS</source>
-        <translation>Paramètre de la Prisme Radiale</translation>
+        <translation>Paramètre des prismes radiaux</translation>
     </message>
     <message>
         <source>SMESH_NUMBER_OF_LAYERS_2D_HYPOTHESIS</source>
-        <translation>Paramètre Quadrangle Radial</translation>
+        <translation>Paramètre des quadrangles radiaux</translation>
     </message>
     <message>
         <source>SMESH_NUMBER_OF_LAYERS_TITLE</source>
-        <translation>Construction de l&apos;Hypothèse</translation>
+        <translation>Construction de l&apos;hypothèse</translation>
     </message>
     <message>
         <source>SMESH_NUMBER_OF_LAYERS_2D_TITLE</source>
-        <translation>Construction de l&apos;Hypothèse</translation>
+        <translation>Construction de l&apos;hypothèse</translation>
     </message>
     <message>
         <source>SMESH_PROJECTION_SOURCE_1D_HYPOTHESIS</source>
-        <translation>Source de Projection 1D</translation>
+        <translation>Source pour le projection 1D</translation>
     </message>
     <message>
         <source>SMESH_PROJECTION_SOURCE_1D_TITLE</source>
-        <translation>Construction de l&apos;Hypothèse</translation>
+        <translation>Construction de l&apos;hypothèse</translation>
     </message>
     <message>
         <source>SMESH_PROJECTION_SOURCE_2D_HYPOTHESIS</source>
-        <translation>Source de Projection 2D</translation>
+        <translation>Source pour la projection 2D</translation>
     </message>
     <message>
         <source>SMESH_PROJECTION_SOURCE_2D_TITLE</source>
-        <translation>Construction de l&apos;Hypothèse</translation>
+        <translation>Construction de l&apos;hypothèse</translation>
     </message>
     <message>
         <source>SMESH_PROJECTION_SOURCE_3D_HYPOTHESIS</source>
-        <translation>Source de Projection 3D</translation>
+        <translation>Source pour la projection 3D</translation>
     </message>
     <message>
         <source>SMESH_PROJECTION_SOURCE_3D_TITLE</source>
-        <translation>Construction de l&apos;Hypothèse</translation>
+        <translation>Construction de l&apos;hypothèse</translation>
     </message>
     <message>
         <source>SMESH_REMOVE_ROW</source>
-        <translation>Supprimer une rangée</translation>
+        <translation>Supprimer une ligne</translation>
     </message>
     <message>
         <source>SMESH_REVERSED_EDGES</source>
-        <translation>Arêtes Inverties</translation>
+        <translation>Arêtes inversées</translation>
     </message>
     <message>
         <source>SMESH_FIXED_POINTS</source>
-        <translation>Points Fixés</translation>
+        <translation>Points fixés</translation>
     </message>
     <message>
         <source>SMESH_RANGE</source>
-        <translation>Diapason</translation>
+        <translation>Intervalle</translation>
     </message>
     <message>
         <source>SMESH_NB_SEGMENTS</source>
-        <translation>Nb. Segments</translation>
+        <translation>Nb. segments</translation>
     </message>
     <message>
         <source>SMESH_SAME_NB_SEGMENTS</source>
-        <translation>Le même Nb. Segments pour tous les diapasons</translation>
+        <translation>Le même Nb. segments dans chaque intervalle</translation>
     </message>
     <message>
         <source>SMESH_BASE_VERTEX</source>
-        <translation>Point de Base</translation>
+        <translation>Point de base</translation>
     </message>
     <message>
         <source>SMESH_SEGMENT_LENGTH_AROUND_VERTEX_HYPOTHESIS</source>
-        <translation>Longueur du Segment autour d&apos;un Point</translation>
+        <translation>Longueur des segments autour d&apos;un point</translation>
     </message>
     <message>
         <source>SMESH_SEGMENT_LENGTH_AROUND_VERTEX_PARAM</source>
@@ -273,11 +273,11 @@
     </message>
     <message>
         <source>SMESH_SEGMENT_LENGTH_AROUND_VERTEX_TITLE</source>
-        <translation>Construction de l&apos;Hypothèse</translation>
+        <translation>Construction de l&apos;hypothèse</translation>
     </message>
     <message>
         <source>SMESH_SOURCE_3DSHAPE</source>
-        <translation>Forme 3D</translation>
+        <translation>Objet 3D</translation>
     </message>
     <message>
         <source>SMESH_SOURCE_EDGE</source>
@@ -293,58 +293,85 @@
     </message>
     <message>
         <source>SMESH_SOURCE_VERTEX</source>
-        <translation>Point Source</translation>
+        <translation>Point source</translation>
     </message>
     <message>
         <source>SMESH_SOURCE_VERTEX1</source>
-        <translation>Point Source 1</translation>
+        <translation>Point source 1</translation>
     </message>
     <message>
         <source>SMESH_SOURCE_VERTEX2</source>
-        <translation>Point Source 2</translation>
+        <translation>Point source 2</translation>
     </message>
     <message>
         <source>SMESH_START_END_LENGTH_HYPOTHESIS</source>
-        <translation>Start and End local Length</translation>
+        <translation>Start and end local Length</translation>
     </message>
     <message>
         <source>SMESH_START_END_LENGTH_TITLE</source>
-        <translation>Construction de l&apos;Hypothèse</translation>
+        <translation>Construction de l&apos;hypothèse</translation>
     </message>
     <message>
         <source>SMESH_START_LENGTH_PARAM</source>
-        <translation>Longueur du début</translation>
+        <translation>Longueur initiale</translation>
     </message>
     <message>
         <source>SMESH_TAB_FUNC</source>
-        <translation>Fonction Table</translation>
+        <translation>Table de valeurs de la fonction</translation>
     </message>
     <message>
         <source>SMESH_TARGET_VERTEX</source>
-        <translation>Point d&apos;Objectif</translation>
+        <translation>Point cible</translation>
     </message>
     <message>
         <source>SMESH_TARGET_VERTEX1</source>
-        <translation>Point d&apos;Objectif 1</translation>
+        <translation>Point cible 1</translation>
     </message>
     <message>
         <source>SMESH_TARGET_VERTEX2</source>
-        <translation>Point d&apos;Objectif 2</translation>
+        <translation>Point cible 2</translation>
     </message>
     <message>
         <source>SMESH_QUADRANGLE_PARAMS_HYPOTHESIS</source>
-        <translation>Paramètres Quadrangulaires </translation>
+        <translation>Paramètres pour le maillage quadrangulaire</translation>
     </message>
     <message>
         <source>SMESH_QUADRANGLE_PARAMS_TITLE</source>
-        <translation>Construction de l&apos;Hypothèse</translation>
+        <translation>Construction de l&apos;hypothèse</translation>
+    </message>
+    <message>
+        <source>SMESH_QUAD_TYPE</source>
+        <translation>Type</translation>
+    </message>
+</context>
+<context>
+    <name>StdMeshersGUI_QuadrangleParamWdg</name>
+    <message>
+        <source>SMESH_QUAD_TYPE_0</source>
+        <translation>Standard</translation>
+    </message>
+    <message>
+        <source>SMESH_QUAD_TYPE_1</source>
+        <translation>Triangles privilégiés</translation>
+    </message>
+    <message>
+        <source>SMESH_QUAD_TYPE_2</source>
+        <translation>Quadrangles privilégiés</translation>
+    </message>
+    <message>
+        <source>SMESH_QUAD_TYPE_3</source>
+        <translation>Quadrangles privilégiés (inversé)</translation>
+    </message>
+    <message>
+        <source>SMESH_QUAD_TYPE_4</source>
+        <translation>Réduction</translation>
     </message>
 </context>
 <context>
     <name>StdMeshersGUI_LayerDistributionParamWdg</name>
     <message>
         <source>CHANGE_TYPE</source>
-        <translation>Changer un Type</translation>
+        <translation>Changer le type</translation>
     </message>
     <message>
         <source>CREATE</source>

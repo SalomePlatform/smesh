@@ -332,6 +332,10 @@
         <translation>Find Element by Point</translation>
     </message>
     <message>
+        <source>STB_FIND_ELEM</source>
+        <translation>Find Element by Point</translation>
+    </message>
+    <message>
         <source>MEN_FREE_BORDER</source>
         <translation>Free Borders</translation>
     </message>
@@ -3204,7 +3208,7 @@ Please check preferences of Mesh module.
 The mesh has been edited since a last total re-compute 
 that may prevent successful computation. 
 Do you wish to re-compute the mesh totally to discard the modifications?
-            </translation>
+</translation>
     </message>
     <message>
         <source>SMESH_PREF_vol_precision</source>
@@ -3592,9 +3596,9 @@ Please, create VTK viewer and try again</translation>
     <name>SMESHGUI_PrecomputeOp</name>
     <message>
         <source>CLEAR_SUBMESH_QUESTION</source>
-        <translation>A temporary submeshes on the selected geometry
- created during preview operation.
- Do you want to remove all this submeshes?</translation>
+        <translation>Temporary submeshes on the selected geometry
+were created during preview operation.
+Do you want to remove all these submeshes?</translation>
     </message>
     <message>
         <source>SMESH_WRN_NOTHING_PREVIEW</source>
@@ -3753,7 +3757,7 @@ Please verify validity of entered information</translation>
     <message>
         <source>NO_SELECTED_GROUPS</source>
         <translation>There are no selected groups
-Please select a groups and try again</translation>
+Please select a group and try again</translation>
     </message>
     <message>
         <source>SELECTED_GROUPS</source>
@@ -3886,7 +3890,7 @@ Please select valid object and try again</translation>
     </message>
     <message>
         <source>CURRENT_DIALOG</source>
-        <translation>Current Dialog</translation>
+        <translation>Current Group</translation>
     </message>
     <message>
         <source>EDGES_TLT</source>
