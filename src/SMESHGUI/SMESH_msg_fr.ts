@@ -1311,7 +1311,7 @@ Voulez-vous le réécrire ou y ajouter les données exportées ?</translation>
     </message>
     <message>
         <source>SMESH_HEIGHT</source>
-        <translation>Hauteur</translation>
+        <translation>Hauteur :</translation>
     </message>
     <message>
         <source>SMESH_HEXAS</source>
@@ -1323,7 +1323,7 @@ Voulez-vous le réécrire ou y ajouter les données exportées ?</translation>
     </message>
     <message>
         <source>SMESH_HORIZONTAL</source>
-        <translation>Horizontal</translation>
+        <translation>Horizontale</translation>
     </message>
     <message>
         <source>SMESH_HYPOTHESES</source>
@@ -1985,7 +1985,7 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie suppo
     </message>
     <message>
         <source>SMESH_VERTICAL</source>
-        <translation>Vertical</translation>
+        <translation>Verticale</translation>
     </message>
     <message>
         <source>SMESH_VISU_PROBLEM</source>
@@ -3419,11 +3419,11 @@ Ouvrez une fenêtre VTK et essayez de nouveau</translation>
     </message>
     <message>
         <source>PREF_TITLE_COLOR</source>
-        <translation>Couleur du Titre</translation>
+        <translation>Couleur du titre</translation>
     </message>
     <message>
         <source>PREF_TYPE_OF_MARKER</source>
-        <translation>Type de repère</translation>
+        <translation>Type de marqueur</translation>
     </message>
     <message>
         <source>PREF_COLOR_0D</source>
@@ -3435,7 +3435,7 @@ Ouvrez une fenêtre VTK et essayez de nouveau</translation>
     </message>
     <message>
         <source>PREF_WIDTH</source>
-        <translation>Largeur</translation>
+        <translation>Epaisseur</translation>
     </message>
 </context>
 <context>
