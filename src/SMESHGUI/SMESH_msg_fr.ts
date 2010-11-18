@@ -237,7 +237,7 @@
     </message>
     <message>
         <source>MEN_DISPLAY_ONLY</source>
-        <translation>Afficher seulement</translation>
+	<translation>Afficher uniquement</translation>
     </message>
     <message>
         <source>MEN_DISPMODE</source>

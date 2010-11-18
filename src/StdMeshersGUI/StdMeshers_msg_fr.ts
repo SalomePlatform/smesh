@@ -61,7 +61,7 @@
     </message>
     <message>
         <source>SMESH_DISTR_SCALE</source>
-        <translation>Distribution linéaire</translation>
+        <translation>Progression géométrique</translation>
     </message>
     <message>
         <source>SMESH_DISTR_TAB</source>
