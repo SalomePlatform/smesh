@@ -30,6 +30,7 @@
 
 #include "SMDS_SetIterator.hxx"
 #include "SMESH_Algo.hxx"
+#include "SMESH_Gen.hxx"
 #include "SMESH_HypoFilter.hxx"
 #include "SMESH_Mesh.hxx"
 #include "SMESH_subMesh.hxx"
@@ -40,7 +41,7 @@
 #include <TopoDS.hxx>
 
 #define DBGMSG(txt) \
-//  cout << txt << endl;
+  //  cout << txt << endl;
 
 using namespace std;
 
@@ -347,6 +348,10 @@ namespace {
             oppSM->ComputeStateEngine( SMESH_subMesh::CLEAN );
             oppData->SetState( IN_CHAIN );
             DBGMSG( "set IN_CHAIN on " << oppSM->GetId() );
+            if ( oppSM->GetAlgoState() != SMESH_subMesh::HYP_OK )
+              // make oppSM check algo state
+              if ( SMESH_Algo* algo = mesh->GetGen()->GetAlgo( *mesh, anOppE ))
+                oppSM->AlgoStateEngine(SMESH_subMesh::ADD_FATHER_ALGO,algo);
           }
           else {
             oppData->SetState( LAST_IN_CHAIN );
@@ -455,6 +460,7 @@ namespace {
 
   void PropagationMgr::Set(SMESH_subMesh * submesh)
   {
+    if ( findData( submesh )) return;
     DBGMSG( "PropagationMgr::Set() on  " << submesh->GetId() );
     EventListenerData* data = new PropagationMgrData();
     submesh->SetEventListener( getListener(), data, submesh );
