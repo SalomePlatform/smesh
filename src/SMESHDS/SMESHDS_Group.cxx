@@ -156,7 +156,7 @@ class MyGroupIterator: public SMDS_ElemIterator
 //purpose  : 
 //=======================================================================
 
-SMDS_ElemIteratorPtr SMESHDS_Group::GetElements()
+SMDS_ElemIteratorPtr SMESHDS_Group::GetElements() const
 {
   return SMDS_ElemIteratorPtr( new MyGroupIterator ( myGroup ));
 }

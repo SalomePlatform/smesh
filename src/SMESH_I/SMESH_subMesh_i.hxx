@@ -85,14 +85,29 @@ public:
   SALOME_MED::FAMILY_ptr GetFamily()
     throw (SALOME::SALOME_Exception);
 
-  virtual SMESH::long_array* GetIDs();
 
+  // =========================
+  // interface SMESH_IDSource
+  // =========================
+  /*!
+   * Returns a sequence of all element IDs
+   */
+  virtual SMESH::long_array* GetIDs();
   /*!
    * Returns statistic of mesh elements
    * Result array of number enityties
    * Inherited from SMESH_IDSource
    */
   virtual SMESH::long_array* GetMeshInfo();
+  /*!
+   * Returns types of elements it contains
+   */
+  virtual SMESH::array_of_ElementType* GetTypes();
+  /*!
+   * Returns the mesh
+   */
+  SMESH::SMESH_Mesh_ptr GetMesh();
+
 
   SMESH_Mesh_i* _mesh_i; //NRI
 

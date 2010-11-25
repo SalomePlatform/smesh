@@ -17,7 +17,7 @@ them, you operate numerical values):
 <b>edges</b>):</li>
 <ul>
 <li>\ref arithmetic_1d_anchor "Arithmetic 1D"</li>
-<li>\ref average_length_anchor "Average Length"</li>
+<li>\ref average_length_anchor "Local Length"</li>
 <li>\ref max_length_anchor "Max Size"</li>
 <li>\ref deflection_1d_anchor "Deflection 1D"</li>
 <li>\ref number_of_segments_anchor "Number of segments"</li>
@@ -29,8 +29,6 @@ them, you operate numerical values):
 <li>\ref max_element_area_anchor "Max Element Area"</li>
 <li>\ref length_from_edges_anchor "Length from Edges"</li>
 <li>\ref hypo_quad_params_anchor "Quadrangle Parameters"</li>
-<li>\ref quadrangle_preference_anchor "Quadrangle Preference"</li>
-<li>\ref triangle_preference_anchor "Triangle Preference"</li>
 </ul>
 <li>3D Hypothesis (for meshing of <b>volumes</b>):</li>
 <ul>

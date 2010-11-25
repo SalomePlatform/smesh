@@ -40,6 +40,8 @@
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
 #include CORBA_SERVER_HEADER(SMESH_Group)
 
+class QGroupBox;
+class QLabel;
 class QLineEdit;
 class QButtonGroup;
 class QListWidget;
@@ -96,6 +98,7 @@ private slots:
   void                          onListSelectionChanged();
   void                          onObjectSelectionChanged();
   
+  void                          onSelectAll();
   void                          onSelectSubMesh( bool );
   void                          onSelectGroup( bool );
   void                          onSelectGeomGroup( bool );
@@ -157,13 +160,18 @@ private:
   QButtonGroup*                 myGrpTypeGroup;
   
   QStackedWidget*               myWGStack;
+  QCheckBox*                    mySelectAll;
+  QLabel*                       myElementsLab;
   QListWidget*                  myElements;
   QPushButton*                  myFilter;
+  QPushButton*                  myAddBtn;
+  QPushButton*                  myRemoveBtn;
+  QPushButton*                  mySortBtn;
   
+  QGroupBox*                    mySelectBox;
   QCheckBox*                    mySelectSubMesh;
   QPushButton*                  mySubMeshBtn;
   QLineEdit*                    mySubMeshLine;
-  
   QCheckBox*                    mySelectGroup;
   QPushButton*                  myGroupBtn;
   QLineEdit*                    myGroupLine;

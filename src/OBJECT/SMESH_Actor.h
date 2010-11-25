@@ -31,12 +31,19 @@
 #include <SALOME_Actor.h>
 #include "SMESH_Object.h"
 
+#include <vtkCommand.h>
+
 class vtkUnstructuredGrid;
 
-class vtkScalarBarActor;
+class SMESH_ScalarBarActor;
 
 class vtkPlane;
 class vtkImplicitBoolean;
+
+namespace SMESH
+{
+  const vtkIdType DeleteActorEvent = vtkCommand::UserEvent + 100;
+}
 
 class SMESHOBJECT_EXPORT SMESH_Actor: public SALOME_Actor
 {
@@ -115,14 +122,13 @@ class SMESHOBJECT_EXPORT SMESH_Actor: public SALOME_Actor
 
   enum eControl{eNone, eLength, eLength2D, eFreeBorders, eFreeEdges, eFreeNodes,
                 eFreeFaces, eMultiConnection, eArea, eTaper, eAspectRatio,
-                eMinimumAngle, eWarping, eSkew, eAspectRatio3D, eMultiConnection2D, eVolume3D};
+                eMinimumAngle, eWarping, eSkew, eAspectRatio3D, eMultiConnection2D, eVolume3D,
+                eMaxElementLength2D, eMaxElementLength3D};
   virtual void SetControlMode(eControl theMode) = 0;
   virtual eControl GetControlMode() = 0;
+  virtual SMESH::Controls::FunctorPtr GetFunctor() = 0;
 
-  virtual vtkScalarBarActor* GetScalarBarActor() = 0;
-
-  virtual void SetPlaneParam(vtkFloatingPointType theDir[3], vtkFloatingPointType theDist, vtkPlane* thePlane) = 0;
-  virtual void GetPlaneParam(vtkFloatingPointType theDir[3], vtkFloatingPointType& theDist, vtkPlane* thePlane) = 0;
+  virtual SMESH_ScalarBarActor* GetScalarBarActor() = 0;
 
   virtual void RemoveAllClippingPlanes() = 0; 
   virtual vtkIdType GetNumberOfClippingPlanes() = 0; 

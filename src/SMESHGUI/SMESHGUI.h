@@ -39,6 +39,14 @@
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_Gen)
 
+// VTK includes
+#include <vtkSmartPointer.h>
+#include <vtkType.h>
+
+class vtkActor;
+class vtkCallbackCommand;
+class vtkObject;
+
 class QDialog;
 
 class SUIT_Desktop;
@@ -52,9 +60,23 @@ class SalomeApp_Study;
 class LightApp_Selection;
 class LightApp_SelectionMgr;
 
+class SMESH_Actor;
 class SMESHGUI_FilterLibraryDlg;
 
 typedef std::map<int, VTK::MarkerMap> SMESHGUI_StudyId2MarkerMap;
+
+namespace SMESH
+{
+  class OrientedPlane;
+  struct ClippingPlaneInfo
+  {
+    OrientedPlane*       Plane;
+    std::list<vtkActor*> ActorList;
+  };
+}
+
+typedef std::list<SMESH::ClippingPlaneInfo>                         SMESHGUI_ClippingPlaneInfoList;
+typedef std::map<SUIT_ViewManager*, SMESHGUI_ClippingPlaneInfoList> SMESHGUI_ClippingPlaneInfoMap;
 
 //=================================================================================
 // class    : SMESHGUI
@@ -77,7 +99,7 @@ public :
   
   bool                            isActiveStudyLocked();
 
-  static bool                     automaticUpdate();
+  static bool                     automaticUpdate(unsigned int requestedSize = 0, bool* limitExceeded = 0);
 
   static void                     Modified( bool = true );
 
@@ -122,6 +144,10 @@ public :
   virtual void                    storeVisualParameters  (int savePoint);
   virtual void                    restoreVisualParameters(int savePoint);
 
+  virtual void                    addActorAsObserver( SMESH_Actor* theActor );
+
+  SMESHGUI_ClippingPlaneInfoMap&  getClippingPlaneInfoMap() { return myClippingPlaneInfoMap; }
+
 public slots:
   virtual bool                    deactivateModule( SUIT_Study* );
   virtual bool                    activateModule( SUIT_Study* );
@@ -130,6 +156,7 @@ public slots:
 private slots:
   void                            OnGUIEvent();
   void                            onViewManagerActivated( SUIT_ViewManager* );
+  void                            onViewManagerRemoved( SUIT_ViewManager* );
   void                            onOperationCommited( SUIT_Operation* );
   void                            onOperationAborted( SUIT_Operation* );
   void                            onHypothesisEdit( int result );
@@ -145,7 +172,8 @@ protected:
                                                      const QString&,
                                                      const QString& = QString(),
                                                      const int = 0,
-                                                     const bool = false );
+                                                     const bool = false,
+                                                     const QString& = QString() );
   void                            createPopupItem( const int,
                                                    const QString&,
                                                    const QString&,
@@ -157,6 +185,11 @@ protected:
   virtual bool                    isSelectionCompatible();
 
   virtual bool                    reusableOperation( const int id ); 
+
+  static void                     ProcessEvents( vtkObject* theObject, 
+                                                 unsigned long theEvent,
+                                                 void* theClientData, 
+                                                 void* theCallData );
 
 private:
   void                            OnEditDelete();
@@ -174,6 +207,10 @@ private :
   SMESHGUI_FilterLibraryDlg*      myFilterLibraryDlg;
 
   SMESHGUI_StudyId2MarkerMap      myMarkerMap;
+  SMESHGUI_ClippingPlaneInfoMap   myClippingPlaneInfoMap;
+
+  vtkSmartPointer<vtkCallbackCommand> myEventCallbackCommand;
+  vtkFloatingPointType            myPriority;
 };
 
 #endif // SMESHGUI_H

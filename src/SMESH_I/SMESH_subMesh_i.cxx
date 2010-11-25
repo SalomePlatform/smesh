@@ -545,3 +545,46 @@ SMESH::long_array* SMESH_subMesh_i::GetMeshInfo()
 
   return aRes._retn();
 }
+
+
+//=======================================================================
+//function : GetTypes
+//purpose  : Returns types of elements it contains
+//=======================================================================
+
+SMESH::array_of_ElementType* SMESH_subMesh_i::GetTypes()
+{
+  SMESH::array_of_ElementType_var types = new SMESH::array_of_ElementType;
+
+  ::SMESH_subMesh* aSubMesh = _mesh_i->_mapSubMesh[_localId];
+  TopoDS_Shape shape = aSubMesh->GetSubShape();
+  while ( !shape.IsNull() && shape.ShapeType() == TopAbs_COMPOUND )
+  {
+    TopoDS_Iterator it( shape );
+    shape = it.More() ? it.Value() : TopoDS_Shape();
+  }
+  if ( !shape.IsNull() )
+  {
+    types->length( 1 );
+    switch ( ::SMESH_Gen::GetShapeDim( shape ))
+    {
+    case 0: types[0] = SMESH::ELEM0D; break;
+    case 1: types[0] = SMESH::EDGE; break;
+    case 2: types[0] = SMESH::FACE; break;
+    case 3: types[0] = SMESH::VOLUME; break;
+    default:
+      types->length(0);
+    }
+  }
+  return types._retn();
+}
+
+//=======================================================================
+//function : GetMesh
+//purpose  : interface SMESH_IDSource
+//=======================================================================
+
+SMESH::SMESH_Mesh_ptr SMESH_subMesh_i::GetMesh()
+{
+  return GetFather();
+}

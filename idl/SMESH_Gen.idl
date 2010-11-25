@@ -42,6 +42,7 @@ module SMESH
 
   interface FilterManager;
   interface SMESH_Pattern;
+  interface Measurements;
 
   /*!
    * Tags definition
@@ -118,6 +119,8 @@ module SMESH
     FilterManager CreateFilterManager();
 
     SMESH_Pattern GetPattern();
+
+    Measurements  CreateMeasurements();
 
     /*!
       Set the current mode
@@ -244,7 +247,6 @@ module SMESH
      */
     long_array  Evaluate(in SMESH_Mesh        theMesh, 
 			 in GEOM::GEOM_Object theSubObject)
-      //inout long_array     theNbElems)
       raises ( SALOME::SALOME_Exception );
 
     /*!

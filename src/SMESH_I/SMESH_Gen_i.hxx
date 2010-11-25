@@ -223,7 +223,7 @@ public:
   SMESH::SMESH_Mesh_ptr CreateEmptyMesh()
     throw ( SALOME::SALOME_Exception );
 
-  //  Create mesh(es) and import data from UNV file
+  //  Create mesh(es) and import data from UNV fileter
   SMESH::SMESH_Mesh_ptr CreateMeshesFromUNV( const char* theFileName )
     throw ( SALOME::SALOME_Exception );
 
@@ -356,6 +356,9 @@ public:
 
   // Return a pattern mesher
   SMESH::SMESH_Pattern_ptr GetPattern();
+
+  // Create measurement instance
+  SMESH::Measurements_ptr  CreateMeasurements();
 
   // Clears study-connected data when it is closed
   void Close( SALOMEDS::SComponent_ptr theComponent );

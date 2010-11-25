@@ -518,8 +518,10 @@ bool SMDS_VolumeTool::Set (const SMDS_MeshElement* theVolume)
         // define volume orientation
         XYZ botNormal;
         GetFaceNormal( 0, botNormal.x, botNormal.y, botNormal.z );
-        const SMDS_MeshNode* topNode = myVolumeNodes[ myVolumeNbNodes - 1 ];
         const SMDS_MeshNode* botNode = myVolumeNodes[ 0 ];
+        int topNodeIndex = myVolume->NbCornerNodes() - 1;
+        while ( !IsLinked( 0, topNodeIndex, /*ignoreMediumNodes=*/true )) --topNodeIndex;
+        const SMDS_MeshNode* topNode = myVolumeNodes[ topNodeIndex ];
         XYZ upDir (topNode->X() - botNode->X(),
                    topNode->Y() - botNode->Y(),
                    topNode->Z() - botNode->Z() );
@@ -1024,6 +1026,27 @@ bool SMDS_VolumeTool::GetFaceNormal (int faceIndex, double & X, double & Y, doub
   return true;
 }
 
+//================================================================================
+/*!
+ * \brief Return barycenter of a face
+ */
+//================================================================================
+
+bool SMDS_VolumeTool::GetFaceBaryCenter (int faceIndex, double & X, double & Y, double & Z)
+{
+  if ( !setFace( faceIndex ))
+    return false;
+
+  X = Y = Z = 0.0;
+  for ( int i = 0; i < myFaceNbNodes; ++i )
+  {
+    X += myFaceNodes[i]->X() / myFaceNbNodes;
+    Y += myFaceNodes[i]->Y() / myFaceNbNodes;
+    Z += myFaceNodes[i]->Z() / myFaceNbNodes;
+  }
+  return true;
+}
+
 //=======================================================================
 //function : GetFaceArea
 //purpose  : Return face area
@@ -1085,10 +1108,12 @@ int SMDS_VolumeTool::GetOppFaceIndex( int faceIndex ) const
 //=======================================================================
 //function : IsLinked
 //purpose  : return true if theNode1 is linked with theNode2
+// If theIgnoreMediumNodes then corner nodes of quadratic cell are considered linked as well
 //=======================================================================
 
 bool SMDS_VolumeTool::IsLinked (const SMDS_MeshNode* theNode1,
-                                const SMDS_MeshNode* theNode2) const
+                                const SMDS_MeshNode* theNode2,
+                                const bool           theIgnoreMediumNodes) const
 {
   if ( !myVolume )
     return false;
@@ -1135,10 +1160,12 @@ bool SMDS_VolumeTool::IsLinked (const SMDS_MeshNode* theNode1,
 //function : IsLinked
 //purpose  : return true if the node with theNode1Index is linked
 //           with the node with theNode2Index
+// If theIgnoreMediumNodes then corner nodes of quadratic cell are considered linked as well
 //=======================================================================
 
 bool SMDS_VolumeTool::IsLinked (const int theNode1Index,
-                                const int theNode2Index) const
+                                const int theNode2Index,
+                                bool      theIgnoreMediumNodes) const
 {
   if ( myVolume->IsPoly() ) {
     return IsLinked(myVolumeNodes[theNode1Index], myVolumeNodes[theNode2Index]);
@@ -1150,10 +1177,31 @@ bool SMDS_VolumeTool::IsLinked (const int theNode1Index,
   if ( minInd < 0 || maxInd > myVolumeNbNodes - 1 || maxInd == minInd )
     return false;
 
-  switch ( myVolumeNbNodes ) {
-  case 4:
+  SMDSAbs_EntityType type = myVolume->GetEntityType();
+  if ( myVolume->IsQuadratic() )
+  {
+    int firstMediumInd = myVolume->NbCornerNodes();
+    if ( minInd >= firstMediumInd )
+      return false; // medium nodes are not linked
+    if ( maxInd < firstMediumInd ) // both nodes are corners
+      if ( theIgnoreMediumNodes )
+        type = SMDSAbs_EntityType( int(type)-1 ); // check linkage of corner nodes
+      else
+        return false; // corner nodes are not linked directly in a quadratic cell
+  }
+
+  switch ( type ) {
+  case SMDSEntity_Tetra:
     return true;
-  case 5:
+  case SMDSEntity_Hexa:
+    switch ( maxInd - minInd ) {
+    case 1: return minInd != 3;
+    case 3: return minInd == 0 || minInd == 4;
+    case 4: return true;
+    default:;
+    }
+    break;
+  case SMDSEntity_Pyramid:
     if ( maxInd == 4 )
       return true;
     switch ( maxInd - minInd ) {
@@ -1162,7 +1210,7 @@ bool SMDS_VolumeTool::IsLinked (const int theNode1Index,
     default:;
     }
     break;
-  case 6:
+  case SMDSEntity_Penta:
     switch ( maxInd - minInd ) {
     case 1: return minInd != 2;
     case 2: return minInd == 0 || minInd == 3;
@@ -1170,15 +1218,7 @@ bool SMDS_VolumeTool::IsLinked (const int theNode1Index,
     default:;
     }
     break;
-  case 8:
-    switch ( maxInd - minInd ) {
-    case 1: return minInd != 3;
-    case 3: return minInd == 0 || minInd == 4;
-    case 4: return true;
-    default:;
-    }
-    break;
-  case 10:
+  case SMDSEntity_Quad_Tetra:
     {
       switch ( minInd ) {
       case 0: if( maxInd==4 ||  maxInd==6 ||  maxInd==7 ) return true;
@@ -1189,7 +1229,22 @@ bool SMDS_VolumeTool::IsLinked (const int theNode1Index,
       }
       break;
     }
-  case 13:
+  case SMDSEntity_Quad_Hexa:
+    {
+      switch ( minInd ) {
+      case 0: if( maxInd==8 ||  maxInd==11 ||  maxInd==16 ) return true;
+      case 1: if( maxInd==8 ||  maxInd==9 ||  maxInd==17 ) return true;
+      case 2: if( maxInd==9 ||  maxInd==10 ||  maxInd==18 ) return true;
+      case 3: if( maxInd==10 ||  maxInd==11 ||  maxInd==19 ) return true;
+      case 4: if( maxInd==12 ||  maxInd==15 ||  maxInd==16 ) return true;
+      case 5: if( maxInd==12 ||  maxInd==13 ||  maxInd==17 ) return true;
+      case 6: if( maxInd==13 ||  maxInd==14 ||  maxInd==18 ) return true;
+      case 7: if( maxInd==14 ||  maxInd==15 ||  maxInd==19 ) return true;
+      default:;
+      }
+      break;
+    }
+  case SMDSEntity_Quad_Pyramid:
     {
       switch ( minInd ) {
       case 0: if( maxInd==5 ||  maxInd==8 ||  maxInd==9 ) return true;
@@ -1201,7 +1256,7 @@ bool SMDS_VolumeTool::IsLinked (const int theNode1Index,
       }
       break;
     }
-  case 15:
+  case SMDSEntity_Quad_Penta:
     {
       switch ( minInd ) {
       case 0: if( maxInd==6 ||  maxInd==8 ||  maxInd==12 ) return true;
@@ -1210,21 +1265,6 @@ bool SMDS_VolumeTool::IsLinked (const int theNode1Index,
       case 3: if( maxInd==9 ||  maxInd==11 ||  maxInd==12 ) return true;
       case 4: if( maxInd==9 ||  maxInd==10 ||  maxInd==13 ) return true;
       case 5: if( maxInd==10 ||  maxInd==11 ||  maxInd==14 ) return true;
-      default:;
-      }
-      break;
-    }
-  case 20:
-    {
-      switch ( minInd ) {
-      case 0: if( maxInd==8 ||  maxInd==11 ||  maxInd==16 ) return true;
-      case 1: if( maxInd==8 ||  maxInd==9 ||  maxInd==17 ) return true;
-      case 2: if( maxInd==9 ||  maxInd==10 ||  maxInd==18 ) return true;
-      case 3: if( maxInd==10 ||  maxInd==11 ||  maxInd==19 ) return true;
-      case 4: if( maxInd==12 ||  maxInd==15 ||  maxInd==16 ) return true;
-      case 5: if( maxInd==12 ||  maxInd==13 ||  maxInd==17 ) return true;
-      case 6: if( maxInd==13 ||  maxInd==14 ||  maxInd==18 ) return true;
-      case 7: if( maxInd==14 ||  maxInd==15 ||  maxInd==19 ) return true;
       default:;
       }
       break;

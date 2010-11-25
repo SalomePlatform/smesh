@@ -128,4 +128,16 @@ print "Criterion: Borders at multi-connections = 2 Nb = ", len( anIds )
   #print anIds[ i ]
 
 
+# Criterion : Element Diameter 2D > 10
+
+# create group
+aGroup = mesh.MakeGroup("Element Diameter 2D > 10", smesh.FACE, smesh.FT_MaxElementLength2D, smesh.FT_MoreThan, 10 )
+
+# print result
+anIds = aGroup.GetIDs()
+print "Criterion: Element Diameter 2D > 10 Nb = ", len( anIds )
+#for i in range( len( anIds ) ):
+  #print anIds[ i ]
+
+
 salome.sg.updateObjBrowser(1)

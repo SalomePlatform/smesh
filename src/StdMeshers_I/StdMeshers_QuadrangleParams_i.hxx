@@ -16,13 +16,12 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
-
-//  SMESH SMESH_I : idl implementation based on 'SMESH' unit's calsses
+//  SMESH SMESH_I : idl implementation based on 'SMESH' unit's classes
 //  File   : StdMeshers_QuadrangleParams_i.hxx
 //  Author : Sergey KUUL, OCC
 //  Module : SMESH
 //  $Header$
-//
+
 #ifndef _SMESH_QUADRANGLEPARAMS_I_HXX_
 #define _SMESH_QUADRANGLEPARAMS_I_HXX_
 
@@ -43,9 +42,9 @@ class STDMESHERS_I_EXPORT StdMeshers_QuadrangleParams_i:
 {
 public:
   // Constructor
-  StdMeshers_QuadrangleParams_i( PortableServer::POA_ptr thePOA,
+  StdMeshers_QuadrangleParams_i (PortableServer::POA_ptr thePOA,
                                  int                     theStudyId,
-                                 ::SMESH_Gen*            theGenImpl );
+                                 ::SMESH_Gen*            theGenImpl);
   // Destructor
   virtual ~StdMeshers_QuadrangleParams_i();
 
@@ -56,17 +55,23 @@ public:
   // Get length
   //CORBA::Double GetLength(CORBA::Boolean theIsStart);
 
-  //Set base vertex for triangles
-  void SetTriaVertex(CORBA::Long vertID);
+  // Set base vertex for triangles
+  void SetTriaVertex (CORBA::Long vertID);
 
-  //Get base vertex for triangles
+  // Get base vertex for triangles
   CORBA::Long GetTriaVertex();
   
-  //Set the Entry of the Object
-  void SetObjectEntry(const char* theEntry);
+  // Set the Entry of the Object
+  void SetObjectEntry (const char* theEntry);
 
-  //Get Object Entry
+  // Get Object Entry
   char* GetObjectEntry();
+
+  // Set the type of quadrangulation
+  void SetQuadType (StdMeshers::QuadType type);
+
+  // Get the type of quadrangulation
+  StdMeshers::QuadType GetQuadType();
 
   // Get implementation
   ::StdMeshers_QuadrangleParams* GetImpl();

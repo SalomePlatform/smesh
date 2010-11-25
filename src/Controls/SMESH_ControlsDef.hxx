@@ -127,6 +127,9 @@ namespace SMESH{
       virtual void SetMesh( const SMDS_Mesh* theMesh );
       virtual double GetValue( long theElementId );
       virtual double GetValue(const TSequenceOfXYZ& thePoints) { return -1.0;};
+      void GetHistogram(int                  nbIntervals,
+                        std::vector<int>&    nbEvents,
+                        std::vector<double>& funValues);
       virtual SMDSAbs_ElementType GetType() const = 0;
       virtual double GetBadRate( double Value, int nbNodes ) const = 0;
       long  GetPrecision() const;
@@ -151,6 +154,30 @@ namespace SMESH{
     public:
       virtual double GetValue( long theElementId );
       //virtual double GetValue( const TSequenceOfXYZ& thePoints );
+      virtual double GetBadRate( double Value, int nbNodes ) const;
+      virtual SMDSAbs_ElementType GetType() const;
+    };
+  
+  
+    /*
+      Class       : MaxElementLength2D
+      Description : Functor calculating maximum length of 2D element
+    */
+    class SMESHCONTROLS_EXPORT MaxElementLength2D: public virtual NumericalFunctor{
+    public:
+      virtual double GetValue( long theElementId );
+      virtual double GetBadRate( double Value, int nbNodes ) const;
+      virtual SMDSAbs_ElementType GetType() const;
+    };
+  
+  
+    /*
+      Class       : MaxElementLength3D
+      Description : Functor calculating maximum length of 3D element
+    */
+    class SMESHCONTROLS_EXPORT MaxElementLength3D: public virtual NumericalFunctor{
+    public:
+      virtual double GetValue( long theElementId );
       virtual double GetBadRate( double Value, int nbNodes ) const;
       virtual SMDSAbs_ElementType GetType() const;
     };
@@ -770,11 +797,11 @@ namespace SMESH{
     class SMESHCONTROLS_EXPORT ElemGeomType: public virtual Predicate{
     public:
       ElemGeomType();
-      virtual void        SetMesh( const SMDS_Mesh* theMesh );
-      virtual bool        IsSatisfy( long theElementId );
-      void                SetType( SMDSAbs_ElementType theType );
-      virtual             SMDSAbs_ElementType GetType() const;
-      void                SetGeomType( SMDSAbs_GeometryType theType );
+      virtual void         SetMesh( const SMDS_Mesh* theMesh );
+      virtual bool         IsSatisfy( long theElementId );
+      void                 SetType( SMDSAbs_ElementType theType );
+      virtual              SMDSAbs_ElementType GetType() const;
+      void                 SetGeomType( SMDSAbs_GeometryType theType );
       virtual SMDSAbs_GeometryType GetGeomType() const;
 
     private:
@@ -783,6 +810,31 @@ namespace SMESH{
       SMDSAbs_GeometryType myGeomType;
     };
     typedef boost::shared_ptr<ElemGeomType> ElemGeomTypePtr;
+
+    /*
+      Class       : CoplanarFaces
+      Description : Predicate to check angle between faces
+    */
+    class SMESHCONTROLS_EXPORT CoplanarFaces: public virtual Predicate
+    {
+    public:
+      CoplanarFaces();
+      void                 SetFace( long theID )                   { myFaceID = theID; }
+      long                 GetFace() const                         { return myFaceID; }
+      void                 SetTolerance (const double theToler)    { myToler = theToler; }
+      double               GetTolerance () const                   { return myToler; }
+      virtual void         SetMesh( const SMDS_Mesh* theMesh )     { myMesh = theMesh; }
+      virtual              SMDSAbs_ElementType GetType() const     { return SMDSAbs_Face; }
+
+      virtual bool         IsSatisfy( long theElementId );
+
+    private:
+      const SMDS_Mesh*     myMesh;
+      long                 myFaceID;
+      double               myToler;
+      std::set< long >     myCoplanarIDs;
+    };
+    typedef boost::shared_ptr<CoplanarFaces> CoplanarFacesPtr;
 
     /*
       FILTER

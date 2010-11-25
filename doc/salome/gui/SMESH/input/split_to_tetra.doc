@@ -37,7 +37,7 @@ volumes of the currently displayed mesh or submesh.</li>
 <li>\b Split hexahedron
 
 <ul>
-<li><b>Into 5 tetrahedra</b> and <b>Into 6 tetrahedra</b> allows to
+<li><b>Into 5 tetrahedra</b>, <b>Into 5 tetrahedra</b> and <b>Into 24 tetrahedra</b> allows to
 specify the number of tetrahedra a hexahedron will be split into. If the specified method does
 not allow to get a conform mesh, a generic solution is applied: an additional node 
 is created at the gravity center of a hexahedron, serving an apex of tetrahedra, all quadrangle sides of the hexahedron are split into two triangles each serving a base of a new tetrahedron.</li>

@@ -64,25 +64,25 @@ class SMESH_I_EXPORT SMESH_MEDSupport_i:
 
         CORBA::Long getNumberOfTypes() throw (SALOME::SALOME_Exception);
 
-        SALOME_MED::long_array *
+        SALOME_TYPES::ListOfLong *
         getNumber(SALOME_MED::medGeometryElement geomElement)
           throw(SALOME::SALOME_Exception);
 
   /*!
    * Same function as getNumber.
    */
-        SALOME_MED::long_array *
+        SALOME_TYPES::ListOfLong *
         getNumberFromFile(SALOME_MED::medGeometryElement geomElement)
           throw(SALOME::SALOME_Exception);
 
-        SALOME_MED::long_array * getNumberIndex()
+        SALOME_TYPES::ListOfLong * getNumberIndex()
           throw(SALOME::SALOME_Exception);
 
         CORBA::Long
         getNumberOfGaussPoint(SALOME_MED::medGeometryElement geomElement)
           throw(SALOME::SALOME_Exception);
 
-        SALOME_MED::long_array* getNumbersOfGaussPoint()
+        SALOME_TYPES::ListOfLong* getNumbersOfGaussPoint()
           throw (SALOME::SALOME_Exception);
 
         SALOME_MED::medGeometryElement_array *getTypes()

@@ -19,12 +19,11 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
-
 //  SMESH SMESH_I : idl implementation based on 'SMESH' unit's calsses
 //  File   : SMESH_Mesh_i.hxx
 //  Author : Paul RASCLE, EDF
 //  Module : SMESH
-//
+
 #ifndef _SMESH_MESH_I_HXX_
 #define _SMESH_MESH_I_HXX_
 
@@ -98,7 +97,7 @@ public:
 
   SMESH::SMESH_Group_ptr CreateGroup( SMESH::ElementType theElemType, const char* theName )
     throw (SALOME::SALOME_Exception);
-  
+
   SMESH::SMESH_GroupOnGeom_ptr CreateGroupFromGEOM(SMESH::ElementType    theElemType,
                                                    const char*           theName,
                                                    GEOM::GEOM_Object_ptr theGeomObj )
@@ -106,49 +105,49 @@ public:
 
   void RemoveGroup( SMESH::SMESH_GroupBase_ptr theGroup )
     throw (SALOME::SALOME_Exception);
-  
+
   void RemoveGroupWithContents( SMESH::SMESH_GroupBase_ptr theGroup )
     throw (SALOME::SALOME_Exception);
-  
+
   SMESH::ListOfGroups* GetGroups()
     throw (SALOME::SALOME_Exception);
 
   CORBA::Long NbGroups()
     throw (SALOME::SALOME_Exception);
 
-  SMESH::SMESH_Group_ptr UnionGroups( SMESH::SMESH_GroupBase_ptr theGroup1, 
-                                      SMESH::SMESH_GroupBase_ptr theGroup2, 
+  SMESH::SMESH_Group_ptr UnionGroups( SMESH::SMESH_GroupBase_ptr theGroup1,
+                                      SMESH::SMESH_GroupBase_ptr theGroup2,
                                       const char* theName )
     throw (SALOME::SALOME_Exception);
 
-  SMESH::SMESH_Group_ptr UnionListOfGroups( const SMESH::ListOfGroups& theGroups, 
+  SMESH::SMESH_Group_ptr UnionListOfGroups( const SMESH::ListOfGroups& theGroups,
                                             const char* theName)
     throw (SALOME::SALOME_Exception);
-  
-  SMESH::SMESH_Group_ptr IntersectGroups( SMESH::SMESH_GroupBase_ptr theGroup1, 
-                                          SMESH::SMESH_GroupBase_ptr theGroup2, 
+
+  SMESH::SMESH_Group_ptr IntersectGroups( SMESH::SMESH_GroupBase_ptr theGroup1,
+                                          SMESH::SMESH_GroupBase_ptr theGroup2,
                                           const char* theName )
     throw (SALOME::SALOME_Exception);
 
-  SMESH::SMESH_Group_ptr IntersectListOfGroups( const SMESH::ListOfGroups&  theGroups, 
+  SMESH::SMESH_Group_ptr IntersectListOfGroups( const SMESH::ListOfGroups&  theGroups,
                                                 const char* theName )
     throw (SALOME::SALOME_Exception);
-  
-  SMESH::SMESH_Group_ptr CutGroups( SMESH::SMESH_GroupBase_ptr theGroup1, 
-                                    SMESH::SMESH_GroupBase_ptr theGroup2, 
+
+  SMESH::SMESH_Group_ptr CutGroups( SMESH::SMESH_GroupBase_ptr theGroup1,
+                                    SMESH::SMESH_GroupBase_ptr theGroup2,
                                     const char* theName )
     throw (SALOME::SALOME_Exception);
 
-  SMESH::SMESH_Group_ptr CutListOfGroups( const SMESH::ListOfGroups& theMainGroups, 
-                                          const SMESH::ListOfGroups& theToolGroups, 
+  SMESH::SMESH_Group_ptr CutListOfGroups( const SMESH::ListOfGroups& theMainGroups,
+                                          const SMESH::ListOfGroups& theToolGroups,
                                           const char* theName )
   throw (SALOME::SALOME_Exception);
 
-  SMESH::SMESH_Group_ptr CreateDimGroup( const SMESH::ListOfGroups& theGroups, 
-                                         SMESH::ElementType theElemType, 
+  SMESH::SMESH_Group_ptr CreateDimGroup( const SMESH::ListOfGroups& theGroups,
+                                         SMESH::ElementType theElemType,
                                          const char* theName )
   throw (SALOME::SALOME_Exception);
-  
+
 
   SMESH::SMESH_Group_ptr ConvertToStandalone( SMESH::SMESH_GroupOnGeom_ptr theGeomGroup );
 
@@ -303,16 +302,16 @@ public:
 
   SMESH::long_array* GetElementsByType( SMESH::ElementType theElemType )
     throw (SALOME::SALOME_Exception);
-  
+
   SMESH::long_array* GetNodesId()
     throw (SALOME::SALOME_Exception);
-  
+
   SMESH::ElementType GetElementType( CORBA::Long id, bool iselem )
     throw (SALOME::SALOME_Exception);
-  
+
   SMESH::EntityType GetElementGeomType( CORBA::Long id )
     throw (SALOME::SALOME_Exception);
-  
+
   /*!
    * Returns ID of elements for given submesh
    */
@@ -326,15 +325,15 @@ public:
    */
   SMESH::long_array* GetSubMeshNodesId(CORBA::Long ShapeID, CORBA::Boolean all)
     throw (SALOME::SALOME_Exception);
-  
+
   /*!
    * Returns type of elements for given submesh
    */
   SMESH::ElementType GetSubMeshElementType(CORBA::Long ShapeID)
     throw (SALOME::SALOME_Exception);
-  
+
   char* Dump();
-  
+
   // Internal methods not available through CORBA
   // They are called by corresponding interface methods
   SMESH_Hypothesis::Hypothesis_Status addHypothesis(GEOM::GEOM_Object_ptr aSubShapeObject,
@@ -342,7 +341,7 @@ public:
 
   SMESH_Hypothesis::Hypothesis_Status removeHypothesis(GEOM::GEOM_Object_ptr aSubShapeObject,
                                                        SMESH::SMESH_Hypothesis_ptr anHyp);
-  
+
   static SMESH::Hypothesis_Status
   ConvertHypothesisStatus (SMESH_Hypothesis::Hypothesis_Status theStatus);
 
@@ -369,12 +368,10 @@ public:
 
   /*!
    * \brief Update hypotheses assigned to geom groups if the latter change
-   * 
+   *
    * NPAL16168: "geometrical group edition from a submesh don't modifiy mesh computation"
    */
   void CheckGeomGroupModif();
-
-  virtual SMESH::long_array* GetIDs();
 
   CORBA::LongLong GetMeshPtr();
 
@@ -393,7 +390,7 @@ public:
    * If there is not node for given ID - returns empty list
    */
   SMESH::double_array* GetNodeXYZ(CORBA::Long id);
-  
+
   /*!
    * For given node returns list of IDs of inverse elements
    * If there is not node for given ID - returns empty list
@@ -412,7 +409,7 @@ public:
   CORBA::Long GetShapeID(CORBA::Long id);
 
   /*!
-   * For given element returns ID of result shape after 
+   * For given element returns ID of result shape after
    * ::FindShape() from SMESH_MeshEditor
    * If there is not element for given ID - returns -1
    */
@@ -435,25 +432,25 @@ public:
    * If there is not node for given index - returns -2
    */
   CORBA::Long GetElemNode(CORBA::Long id, CORBA::Long index);
-  
+
   /*!
    * Returns true if given node is medium node
    * in given quadratic element
    */
   CORBA::Boolean IsMediumNode(CORBA::Long ide, CORBA::Long idn);
-  
+
   /*!
    * Returns true if given node is medium node
    * in one of quadratic elements
    */
   CORBA::Boolean IsMediumNodeOfAnyElem(CORBA::Long idn,
                                        SMESH::ElementType theElemType);
-  
+
   /*!
    * Returns number of edges for given element
    */
   CORBA::Long ElemNbEdges(CORBA::Long id);
-  
+
   /*!
    * Returns number of faces for given element
    */
@@ -472,12 +469,12 @@ public:
    * Returns true if given element is polygon
    */
   CORBA::Boolean IsPoly(CORBA::Long id);
-  
+
   /*!
    * Returns true if given element is quadratic
    */
   CORBA::Boolean IsQuadratic(CORBA::Long id);
-  
+
   /*!
    * Returns bary center for given element
    */
@@ -492,7 +489,7 @@ public:
    * Sets list of notebook variables used for Mesh operations separated by ":" symbol
    */
   void SetParameters (const char* theParameters);
-  
+
   /*!
    * Returns list of notebook variables used for Mesh operations separated by ":" symbol
    */
@@ -503,20 +500,11 @@ public:
    */
   SMESH::string_array* GetLastParameters();
 
-
-  /*!
-   * Returns statistic of mesh elements
-   * Result array of number enityties
-   * Inherited from SMESH_IDSource
-   */
-  virtual SMESH::long_array* GetMeshInfo();
-
   /*!
    * Collect statistic of mesh elements given by iterator
    */
   static void CollectMeshInfo(const SMDS_ElemIteratorPtr theItr,
                               SMESH::long_array&         theInfo);
-                          
 
   /*!
    * \brief Return submesh objects list in meshing order
@@ -527,7 +515,28 @@ public:
    */
   virtual ::CORBA::Boolean SetMeshOrder(const SMESH::submesh_array_array& theSubMeshArray);
 
-  
+
+  // =========================
+  // SMESH_IDSource interface
+  // =========================
+
+  virtual SMESH::long_array* GetIDs();
+  /*!
+   * Returns statistic of mesh elements
+   * Result array of number enityties
+   * Inherited from SMESH_IDSource
+   */
+  virtual SMESH::long_array* GetMeshInfo();
+  /*!
+   * Returns types of elements it contains
+   */
+  virtual SMESH::array_of_ElementType* GetTypes();
+  /*!
+   * Returns self
+   */
+  virtual SMESH::SMESH_Mesh_ptr GetMesh();
+
+
   std::map<int, SMESH_subMesh_i*> _mapSubMesh_i; //NRI
   std::map<int, ::SMESH_subMesh*> _mapSubMesh;   //NRI
 
@@ -581,8 +590,7 @@ private:
    * \brief Return new group contents if it has been changed and update group data
    */
   TopoDS_Shape newGroupShape( TGeomGroupData & groupData);
-  
+
 };
 
 #endif
-

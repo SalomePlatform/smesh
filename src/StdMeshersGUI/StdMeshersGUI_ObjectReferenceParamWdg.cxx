@@ -35,9 +35,11 @@
 #include <LightApp_SelectionMgr.h>
 #include <SVTK_ViewWindow.h>
 #include <SALOME_ListIO.hxx>
+#include <SALOME_ListIteratorOfListIO.hxx>
 
 // SALOME KERNEL incldues
 #include <SALOMEDSClient_SObject.hxx>
+#include <SALOMEDSClient_Study.hxx>
 
 // Qt includes
 #include <QPushButton>
@@ -54,8 +56,8 @@
 //================================================================================
 
 StdMeshersGUI_ObjectReferenceParamWdg::StdMeshersGUI_ObjectReferenceParamWdg
-( SUIT_SelectionFilter* f, QWidget* parent)
-  : QWidget( parent )
+( SUIT_SelectionFilter* f, QWidget* parent, bool multiSelection)
+  : QWidget( parent ), myMultiSelection( multiSelection )
 {
   myFilter = f;
   init();
@@ -69,8 +71,8 @@ StdMeshersGUI_ObjectReferenceParamWdg::StdMeshersGUI_ObjectReferenceParamWdg
 //================================================================================
 
 StdMeshersGUI_ObjectReferenceParamWdg::StdMeshersGUI_ObjectReferenceParamWdg
-( MeshObjectType objType, QWidget* parent )
-  : QWidget( parent )
+( MeshObjectType objType, QWidget* parent, bool multiSelection )
+  : QWidget( parent ), myMultiSelection( multiSelection )
 {
   myFilter = new SMESH_TypeFilter( objType );
   init();
@@ -84,7 +86,10 @@ StdMeshersGUI_ObjectReferenceParamWdg::StdMeshersGUI_ObjectReferenceParamWdg
 StdMeshersGUI_ObjectReferenceParamWdg::~StdMeshersGUI_ObjectReferenceParamWdg()
 {
   if ( myFilter )
+  {
+    mySelectionMgr->removeFilter( myFilter );
     delete myFilter;
+  }
 }
 
 
@@ -184,7 +189,7 @@ void StdMeshersGUI_ObjectReferenceParamWdg::AvoidSimultaneousSelection
 
 void StdMeshersGUI_ObjectReferenceParamWdg::SetObject(CORBA::Object_ptr obj)
 {
-  myObject = CORBA::Object::_nil();
+  myObjects.clear();
   myObjNameLineEdit->setText( "" );
   myParamValue = "";
 
@@ -194,8 +199,40 @@ void StdMeshersGUI_ObjectReferenceParamWdg::SetObject(CORBA::Object_ptr obj)
   if ( sobj ) {
     std::string name = sobj->GetName();
     myObjNameLineEdit->setText( name.c_str() );
-    myObject = CORBA::Object::_duplicate( obj );
+    myObjects.push_back( CORBA::Object::_duplicate( obj ));
     myParamValue = sobj->GetID().c_str();
+  }
+}
+
+//================================================================================
+/*!
+ * \brief Initialize selected objects
+ * \param objects - entries of objects
+ */
+//================================================================================
+
+void StdMeshersGUI_ObjectReferenceParamWdg::SetObjects(SMESH::string_array_var& objects)
+{
+  myObjects.clear();
+  myObjNameLineEdit->setText( "" );
+  myParamValue = "";
+
+  for ( unsigned i = 0; i < objects->length(); ++i )
+  {
+    _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
+    _PTR(SObject) aSObj = aStudy->FindObjectID(objects[i].in());
+    CORBA::Object_var anObj = SMESH::SObjectToObject(aSObj,aStudy);
+    if ( !CORBA::is_nil( anObj )) {
+      std::string name = aSObj->GetName();
+      QString text = myObjNameLineEdit->text();
+      if ( !text.isEmpty() )
+        text += " ";
+      text += name.c_str();
+      myObjNameLineEdit->setText( text );
+      myObjects.push_back( anObj );
+      myParamValue += " ";
+      myParamValue += objects[i];
+    }
   }
 }
 
@@ -212,7 +249,26 @@ void StdMeshersGUI_ObjectReferenceParamWdg::onSelectionDone()
     SALOME_ListIO aList;
     mySelectionMgr->selectedObjects(aList);
     if (aList.Extent() == 1)
+    {
       obj = SMESH::IObjectToObject( aList.First() );
-    SetObject( obj.in() );
+      SetObject( obj.in() );
+    }
+    else if (myMultiSelection)
+    {
+      SMESH::string_array_var objIds = new SMESH::string_array;
+      objIds->length( aList.Extent());
+      SALOME_ListIteratorOfListIO io( aList );
+      int i = 0;
+      for ( ; io.More(); io.Next(), ++i )
+      {
+        Handle(SALOME_InteractiveObject) anIO = io.Value();
+        if ( anIO->hasEntry() )
+          objIds[i] = anIO->getEntry();
+        else
+          i--;
+      }
+      objIds->length(i);
+      SetObjects( objIds );
+    }
   }
 }

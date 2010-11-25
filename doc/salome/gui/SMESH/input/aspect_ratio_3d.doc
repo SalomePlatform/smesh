@@ -21,8 +21,8 @@ by the formula:
 <ol>
 <li>Display your mesh in the viewer.</li>
 
-<li>Choose <b>Controls > Aspect Ratio 3D</b> or click <em>"Aspect Ratio 3D"</em> 
-button of the toolbar.
+<li>Choose <b>Controls > Volume Controls > Aspect Ratio 3D</b> or click
+<em>"Aspect Ratio 3D"</em> button of the toolbar.
 
 \image html image144.png
 <center><em>"Aspect Ratio 3D" button</em></center>

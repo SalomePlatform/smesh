@@ -31,42 +31,40 @@ guidoc_DATA = images/head.png
 
 
 usr_docs: doxyfile_py doxyfile 
-	echo "===========================================" ;		\
-	echo "Generating Python interface documentation";		\
-	echo "===========================================" ;		\
-	$(DOXYGEN) doxyfile_py ;					\
-	echo "===========================================" ;		\
-	echo "Replacing smeshDC by smesh" ;				\
-	echo "===========================================" ;		\
-	files=`find smeshpy_doc -type f` ;				\
-	for filen in $${files} ; do					\
-	  sed -e "s/\<smeshDC\>/smesh/g" -e "s/smesh\.smesh/smesh/g"	\
-	      -e "s/smesh::smesh/smesh/g" $${filen} > $${filen}_ ;	\
-	  mv -f $${filen}_ $${filen} ;					\
-	done ;								\
-	echo "===========================================" ;		\
-	echo "Generating GUI documentation" ;				\
-	echo "===========================================" ;		\
-	$(DOXYGEN) doxyfile ;
+	echo "===========================================" ;			\
+	echo "Replacing smeshDC by smesh" ;					\
+	echo "===========================================" ;			\
+	sed -e "/class smeshDC/d" -e "s/^ *#/#/g" -e "s/^ *def /def /g" 	\
+	  -e "s/smeshDC/smesh/g" $(top_srcdir)/src/SMESH_SWIG/smeshDC.py > 	\
+	  $(top_builddir)/src/SMESH_SWIG/smesh.py ; 				\
+	echo "===========================================" ;			\
+	echo "Generating Python interface documentation";			\
+	echo "===========================================" ;			\
+	$(DOXYGEN) doxyfile_py ;						\
+	echo "===========================================" ;			\
+	echo "Generating GUI documentation" ;					\
+	echo "===========================================" ;			\
+	$(DOXYGEN) doxyfile ;                        				\
+	rm -f $(top_builddir)/src/SMESH_SWIG/smesh.py
 
 docs: usr_docs
 
 clean-local:
-	@for filen in `find . -maxdepth 1` ; do				\
+	@for filen in `find . -maxdepth 1` ; do			\
 	  case $${filen} in					\
 	    ./Makefile | ./doxyfile | ./doxyfile_py ) ;;	\
-	    . | .. ) ;;						\
+	    . | .. | ./static ) ;;				\
 	    *) echo "Removing $${filen}" ; rm -rf $${filen} ;;	\
 	  esac ;						\
 	done ;
 
 install-data-local: usr_docs
 	$(INSTALL) -d $(DESTDIR)$(docdir)/gui/SMESH
-	@for filen in `find . -maxdepth 1` ; do								\
+	@for filen in `find . -maxdepth 1` ; do							\
 	  case $${filen} in									\
 	    ./Makefile | ./doxyfile | ./doxyfile_py ) ;;					\
 	    ./doxyfile.bak | ./doxyfile_py.bak ) ;;						\
-	    . | .. ) ;;										\
+	    . | .. | ./static ) ;;								\
 	    *) echo "Installing $${filen}" ; cp -rp $${filen} $(DESTDIR)$(docdir)/gui/SMESH ;;	\
 	  esac ;										\
 	done ;

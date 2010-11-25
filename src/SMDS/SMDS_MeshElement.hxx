@@ -69,7 +69,7 @@ public:
 
   ///Return the type of the current element
   virtual SMDSAbs_ElementType GetType() const = 0;
-  virtual bool IsPoly() const { return false; };
+  virtual bool IsPoly() const { return false; }
   virtual bool IsQuadratic() const;
   //! Return type of entity
   virtual SMDSAbs_EntityType  GetEntityType() const = 0;

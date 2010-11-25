@@ -296,7 +296,7 @@ CORBA::Long SMESH_MEDSupport_i::getNumberOfElements(SALOME_MED::
  */
 //=============================================================================
 
-SALOME_MED::long_array * SMESH_MEDSupport_i::getNumber(
+SALOME_TYPES::ListOfLong * SMESH_MEDSupport_i::getNumber(
         SALOME_MED::medGeometryElement geomElement) throw(SALOME::SALOME_Exception)
 {
   Unexpect aCatch(SALOME_SalomeException);
@@ -308,7 +308,7 @@ SALOME_MED::long_array * SMESH_MEDSupport_i::getNumber(
         if (geomElement != SALOME_MED::MED_NONE)
                 THROW_SALOME_CORBA_EXCEPTION("Not implemented", SALOME::BAD_PARAM);
 
-        SALOME_MED::long_array_var myseq = new SALOME_MED::long_array;
+        SALOME_TYPES::ListOfLong_var myseq = new SALOME_TYPES::ListOfLong;
 
         int i = 0;
         myseq->length(_subMeshDS->NbNodes());
@@ -332,7 +332,7 @@ SALOME_MED::long_array * SMESH_MEDSupport_i::getNumber(
  */
 //=============================================================================
 
-SALOME_MED::long_array * SMESH_MEDSupport_i::getNumberFromFile(
+SALOME_TYPES::ListOfLong * SMESH_MEDSupport_i::getNumberFromFile(
         SALOME_MED::medGeometryElement geomElement) throw(SALOME::SALOME_Exception)
 {
   return getNumber(geomElement);
@@ -345,7 +345,7 @@ SALOME_MED::long_array * SMESH_MEDSupport_i::getNumberFromFile(
  */
 //=============================================================================
 
-SALOME_MED::long_array *
+SALOME_TYPES::ListOfLong *
         SMESH_MEDSupport_i::getNumberIndex()throw(SALOME::SALOME_Exception)
 {
         MESSAGE("Not implemented for SMESH_i");
@@ -382,7 +382,7 @@ CORBA::Long SMESH_MEDSupport_i::getNumberOfTypes()
  * included in the support 
  */
 //=============================================================================
-SALOME_MED::long_array* SMESH_MEDSupport_i::getNumbersOfGaussPoint()
+SALOME_TYPES::ListOfLong* SMESH_MEDSupport_i::getNumbersOfGaussPoint()
   throw (SALOME::SALOME_Exception)
 {
   MESSAGE("!!! NOT YET IMPLEMENTED !!!!");

@@ -18,23 +18,23 @@ one of the following:
 
 \image html image152.png
 
-\note All dialogs for adding quadratic element to the mesh
-provide a possibility to add new element
-automatically to the specified group or to create it anew using
-<b>Add to group</b> box, that allows to choose an existing group for
-the created node or element or to give the name to a new group. By
-default, the <b>Add to group</b> check box is switched off. If user
+\note All dialogs for quadratic element adding to the mesh
+provide the possibility to automatically add an element
+to the specified group or to create the group anew using
+<b>Add to group</b> box, that allows choosing an existing group for
+the created node or element or giving the name to a new group. By
+default, the <b>Add to group</b> check box is switched off. If the user
 swiches this check box on, the combo box listing all currently
 existing groups of the corresponding type becomes available. By
-default, no any group is selected. In such a case, when user presses
+default, no group is selected. In this case, when the user presses
 <b>Apply</b> or <b>Apply & Close</b> button, the warning message box
-informing the user about the necessity to input new group name is
-shown. The combo box lists both \ref standalone_group "standalone groups"
-and \ref group_on_geom "groups on geometry". If the user has 
-chosen the group on geometry, he is warned and proposed to
-\ref convert_to_standalone "convert this group to the standalone".
-If user refuses converting operation, an operation is cancelled and
-new node/element is not created!
+informs the user about the necessity to input a new group name. The
+combo box lists both \ref standalone_group "standalone groups"
+and \ref group_on_geom "groups on geometry". If the user chooses a
+group on geometry, he is warned and proposed to
+\ref convert_to_standalone "convert this group to standalone".
+If the user rejects conversion operation, it is cancelled and
+a new quadratic element is not created.
 
 
 To create any <b>Quadratic Element</b> specify the nodes which will form your

@@ -19,12 +19,11 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
-
 //  SMESH SMESH_I : idl implementation based on 'SMESH' unit's calsses
 //  File   : SMESH_Mesh_i.cxx
 //  Author : Paul RASCLE, EDF
 //  Module : SMESH
-//
+
 #include "SMESH_Mesh_i.hxx"
 
 #include "SMESH_Filter_i.hxx"
@@ -90,7 +89,9 @@ using SMESH::TPythonDump;
 
 int SMESH_Mesh_i::myIdGenerator = 0;
 
-
+//To disable automatic genericobj management, the following line should be commented.
+//Otherwise, it should be uncommented. Refer to KERNEL_SRC/src/SALOMEDSImpl/SALOMEDSImpl_AttributeIOR.cxx
+#define WITHGENERICOBJ
 
 //=============================================================================
 /*!
@@ -119,17 +120,48 @@ SMESH_Mesh_i::SMESH_Mesh_i( PortableServer::POA_ptr thePOA,
 SMESH_Mesh_i::~SMESH_Mesh_i()
 {
   INFOS("~SMESH_Mesh_i");
-  map<int, SMESH::SMESH_GroupBase_ptr>::iterator it;
-  for ( it = _mapGroups.begin(); it != _mapGroups.end(); it++ ) {
-    SMESH_GroupBase_i* aGroup = dynamic_cast<SMESH_GroupBase_i*>( SMESH_Gen_i::GetServant( it->second ).in() );
-    if ( aGroup ) {
-      // this method is colled from destructor of group (PAL6331)
+
+#ifdef WITHGENERICOBJ
+  // destroy groups
+  map<int, SMESH::SMESH_GroupBase_ptr>::iterator itGr;
+  for (itGr = _mapGroups.begin(); itGr != _mapGroups.end(); itGr++) {
+    if ( CORBA::is_nil( itGr->second ))
+      continue;
+    SMESH_GroupBase_i* aGroup = dynamic_cast<SMESH_GroupBase_i*>(SMESH_Gen_i::GetServant(itGr->second).in());
+    if (aGroup) {
+      // this method is called from destructor of group (PAL6331)
       //_impl->RemoveGroup( aGroup->GetLocalID() );
-      
+      aGroup->myMeshServant = 0;
       aGroup->Destroy();
     }
   }
   _mapGroups.clear();
+
+  // destroy submeshes
+  map<int, SMESH::SMESH_subMesh_ptr>::iterator itSM;
+  for ( itSM = _mapSubMeshIor.begin(); itSM != _mapSubMeshIor.end(); itSM++ ) {
+    if ( CORBA::is_nil( itSM->second ))
+      continue;
+    SMESH_subMesh_i* aSubMesh = dynamic_cast<SMESH_subMesh_i*>(SMESH_Gen_i::GetServant(itSM->second).in());
+    if (aSubMesh) {
+      aSubMesh->Destroy();
+    }
+  }
+  _mapSubMeshIor.clear();
+
+  // destroy hypotheses
+  map<int, SMESH::SMESH_Hypothesis_ptr>::iterator itH;
+  for ( itH = _mapHypo.begin(); itH != _mapHypo.end(); itH++ ) {
+    if ( CORBA::is_nil( itH->second ))
+      continue;
+    SMESH_Hypothesis_i* aHypo = dynamic_cast<SMESH_Hypothesis_i*>(SMESH_Gen_i::GetServant(itH->second).in());
+    if (aHypo) {
+      aHypo->Destroy();
+    }
+  }
+  _mapHypo.clear();
+#endif
+
   delete _impl;
 }
 
@@ -474,6 +506,9 @@ SMESH_Hypothesis::Hypothesis_Status
     status = _impl->AddHypothesis(myLocSubShape, hypId);
     if ( !SMESH_Hypothesis::IsStatusFatal(status) ) {
       _mapHypo[hypId] = SMESH::SMESH_Hypothesis::_duplicate( myHyp );
+#ifdef WITHGENERICOBJ
+      _mapHypo[hypId]->Register();
+#endif
       // assure there is a corresponding submesh
       if ( !_impl->IsMainShape( myLocSubShape )) {
         int shapeId = _impl->GetMeshDS()->ShapeToIndex( myLocSubShape );
@@ -625,6 +660,9 @@ SMESH::SMESH_subMesh_ptr SMESH_Mesh_i::GetSubMesh(GEOM::GEOM_Object_ptr aSubShap
     //Get or Create the SMESH_subMesh object implementation
 
     int subMeshId = _impl->GetMeshDS()->ShapeToIndex( myLocSubShape );
+    if ( !subMeshId && ! _impl->GetMeshDS()->IsGroupOfSubShapes( myLocSubShape ))
+      THROW_SALOME_CORBA_EXCEPTION("not sub-shape of the main shape", SALOME::BAD_PARAM);
+
     subMesh = getSubMesh( subMeshId );
 
     // create a new subMesh object servant if there is none for the shape
@@ -698,6 +736,7 @@ inline TCollection_AsciiString ElementTypeString (SMESH::ElementType theElemType
     CASE2STRING( EDGE );
     CASE2STRING( FACE );
     CASE2STRING( VOLUME );
+    CASE2STRING( ELEM0D );
   default:;
   }
   return "";
@@ -819,8 +858,7 @@ void SMESH_Mesh_i::RemoveGroupWithContents( SMESH::SMESH_GroupBase_ptr theGroup 
   SMESH::long_array_var anIds = aGroup->GetListOfID();
   SMESH::SMESH_MeshEditor_var aMeshEditor = SMESH_Mesh_i::GetMeshEditor();
 
-  // Update Python script
-  TPythonDump() << _this() << ".RemoveGroupWithContents( " << theGroup << " )";
+  TPythonDump pyDump; // Supress dump from RemoveNodes/Elements() and RemoveGroup()
 
   // Remove contents
   if ( aGroup->GetType() == SMESH::NODE )
@@ -831,11 +869,9 @@ void SMESH_Mesh_i::RemoveGroupWithContents( SMESH::SMESH_GroupBase_ptr theGroup 
   // Remove group
   RemoveGroup( theGroup );
 
-  // Clear python lines, created by RemoveNodes/Elements() and RemoveGroup()
-  _gen_i->RemoveLastFromPythonScript(_gen_i->GetCurrentStudy()->StudyId());
-  _gen_i->RemoveLastFromPythonScript(_gen_i->GetCurrentStudy()->StudyId());
+  // Update Python script
+  pyDump << _this() << ".RemoveGroupWithContents( " << theGroup << " )";
 }
-
 
 //================================================================================
 /*!
@@ -879,6 +915,7 @@ SMESH::ListOfGroups * SMESH_Mesh_i::GetGroups() throw(SALOME::SALOME_Exception)
 
   return aList._retn();
 }
+
 //=============================================================================
 /*!
  *  Get number of groups existing in the mesh
@@ -2071,12 +2108,16 @@ void SMESH_Mesh_i::removeGroup( const int theId )
 {
   if(MYDEBUG) MESSAGE("SMESH_Mesh_i::removeGroup()" );
   if ( _mapGroups.find( theId ) != _mapGroups.end() ) {
-    removeGeomGroupData( _mapGroups[theId] );
+    SMESH::SMESH_GroupBase_ptr group = _mapGroups[theId];
     _mapGroups.erase( theId );
-    _impl->RemoveGroup( theId );
+    removeGeomGroupData( group );
+    if (! _impl->RemoveGroup( theId ))
+    {
+      // it seems to be a call up from _impl caused by hyp modification (issue 0020918)
+      RemoveGroup( group );
+    }
   }
 }
-
 
 //=============================================================================
 /*!
@@ -2175,6 +2216,19 @@ CORBA::Long SMESH_Mesh_i::GetStudyId()throw(SALOME::SALOME_Exception)
 }
 
 //=============================================================================
+namespace
+{
+  //!< implementation of struct used to call SMESH_Mesh_i::removeGroup() from
+  // SMESH_Mesh::RemoveGroup() (issue 0020918)
+  struct TRmGroupCallUp_i : public SMESH_Mesh::TRmGroupCallUp
+  {
+    SMESH_Mesh_i* _mesh;
+    TRmGroupCallUp_i(SMESH_Mesh_i* mesh):_mesh(mesh) {}
+    virtual void RemoveGroup (const int theGroupID) { _mesh->removeGroup( theGroupID ); }
+  };
+}
+
+//=============================================================================
 /*!
  *
  */
@@ -2184,6 +2238,8 @@ void SMESH_Mesh_i::SetImpl(::SMESH_Mesh * impl)
 {
   if(MYDEBUG) MESSAGE("SMESH_Mesh_i::SetImpl");
   _impl = impl;
+  if ( _impl )
+    _impl->SetRemoveGroupCallUp( new TRmGroupCallUp_i(this));
 }
 
 //=============================================================================
@@ -2360,7 +2416,7 @@ void SMESH_Mesh_i::ExportToMEDX (const char* file,
   // check names of groups
   checkGroupNames();
 
-  TPythonDump() << _this() << ".ExportToMEDX( '"
+  TPythonDump() << _this() << ".ExportToMEDX( r'"
                 << file << "', " << auto_groups << ", " << theVersion << ", " << overwrite << " )";
 
   _impl->ExportMED( file, aMeshName, auto_groups, theVersion );
@@ -2389,7 +2445,7 @@ void SMESH_Mesh_i::ExportDAT (const char *file)
   // Update Python script
   // check names of groups
   checkGroupNames();
-  TPythonDump() << _this() << ".ExportDAT( '" << file << "' )";
+  TPythonDump() << _this() << ".ExportDAT( r'" << file << "' )";
 
   // Perform Export
   PrepareForWriting(file);
@@ -2404,7 +2460,7 @@ void SMESH_Mesh_i::ExportUNV (const char *file)
   // Update Python script
   // check names of groups
   checkGroupNames();
-  TPythonDump() << _this() << ".ExportUNV( '" << file << "' )";
+  TPythonDump() << _this() << ".ExportUNV( r'" << file << "' )";
 
   // Perform Export
   PrepareForWriting(file);
@@ -2419,7 +2475,7 @@ void SMESH_Mesh_i::ExportSTL (const char *file, const bool isascii)
   // Update Python script
   // check names of groups
   checkGroupNames();
-  TPythonDump() << _this() << ".ExportSTL( '" << file << "', " << isascii << " )";
+  TPythonDump() << _this() << ".ExportSTL( r'" << file << "', " << isascii << " )";
 
   // Perform Export
   PrepareForWriting(file);
@@ -2749,7 +2805,7 @@ SMESH::long_array* SMESH_Mesh_i::GetNodesId()
 
   long nbNodes = NbNodes();
   aResult->length( nbNodes );
-  SMDS_NodeIteratorPtr anIt = aSMESHDS_Mesh->nodesIterator();
+  SMDS_NodeIteratorPtr anIt = aSMESHDS_Mesh->nodesIterator(/*idInceasingOrder=*/true);
   for ( int i = 0, n = nbNodes; i < n && anIt->more(); i++ )
     aResult[i] = anIt->next()->GetID();
 
@@ -3351,6 +3407,7 @@ void SMESH_Mesh_i::CreateGroupServants()
 {
   SALOMEDS::Study_ptr aStudy = _gen_i->GetCurrentStudy();
 
+  set<int> addedIDs;
   ::SMESH_Mesh::GroupIteratorPtr groupIt = _impl->GetGroups();
   while ( groupIt->more() )
   {
@@ -3360,6 +3417,7 @@ void SMESH_Mesh_i::CreateGroupServants()
     map<int, SMESH::SMESH_GroupBase_ptr>::iterator it = _mapGroups.find(anId);
     if ( it != _mapGroups.end() && !CORBA::is_nil( it->second ))
       continue;
+    addedIDs.insert( anId );
 
     SMESH_GroupBase_i* aGroupImpl;
     TopoDS_Shape       shape;
@@ -3385,10 +3443,21 @@ void SMESH_Mesh_i::CreateGroupServants()
     int nextId = _gen_i->RegisterObject( groupVar );
     if(MYDEBUG) MESSAGE( "Add group to map with id = "<< nextId);
 
-    // publishing of the groups in the study
+    // publishing the groups in the study
     if ( !aStudy->_is_nil() ) {
       GEOM::GEOM_Object_var shapeVar = _gen_i->ShapeToGeomObject( shape );
       _gen_i->PublishGroup( aStudy, _this(), groupVar, shapeVar, groupVar->GetName());
+    }
+  }
+  if ( !addedIDs.empty() )
+  {
+    // python dump
+    set<int>::iterator id = addedIDs.begin();
+    for ( ; id != addedIDs.end(); ++id )
+    {
+      map<int, SMESH::SMESH_GroupBase_ptr>::iterator it = _mapGroups.find(*id);
+      int i = std::distance( _mapGroups.begin(), it );
+      TPythonDump() << it->second << " = " << _this() << ".GetGroups()[ "<< i << " ]";
     }
   }
 }
@@ -3516,6 +3585,40 @@ SMESH::string_array* SMESH_Mesh_i::GetLastParameters()
     }
   }
   return aResult._retn();
+}
+
+//=======================================================================
+//function : GetTypes
+//purpose  : Returns types of elements it contains
+//=======================================================================
+
+SMESH::array_of_ElementType* SMESH_Mesh_i::GetTypes()
+{
+  SMESH::array_of_ElementType_var types = new SMESH::array_of_ElementType;
+
+  types->length( 4 );
+  int nbTypes = 0;
+  if (_impl->NbEdges())
+    types[nbTypes++] = SMESH::EDGE;
+  if (_impl->NbFaces())
+    types[nbTypes++] = SMESH::FACE;
+  if (_impl->NbVolumes())
+    types[nbTypes++] = SMESH::VOLUME;
+  if (_impl->Nb0DElements())
+    types[nbTypes++] = SMESH::ELEM0D;
+  types->length( nbTypes );
+
+  return types._retn();
+}
+
+//=======================================================================
+//function : GetMesh
+//purpose  : Returns self
+//=======================================================================
+
+SMESH::SMESH_Mesh_ptr SMESH_Mesh_i::GetMesh()
+{
+  return SMESH::SMESH_Mesh::_duplicate( _this() );
 }
 
 //=============================================================================
@@ -3862,10 +3965,9 @@ SMESH::submesh_array_array* SMESH_Mesh_i::GetMeshOrder()
  */
 //=============================================================================
 
-static void findCommonSubMesh
- (list<const SMESH_subMesh*>& theSubMeshList,
-  const SMESH_subMesh*             theSubMesh,
-  set<const SMESH_subMesh*>&  theCommon )
+static void findCommonSubMesh (list<const SMESH_subMesh*>& theSubMeshList,
+                               const SMESH_subMesh*        theSubMesh,
+                               set<const SMESH_subMesh*>&  theCommon )
 {
   if ( !theSubMesh )
     return;

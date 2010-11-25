@@ -456,22 +456,22 @@ void SMESHGUI_CreatePolyhedralVolumeDlg::ClickOnApply()
       SMESH::SMESH_GroupBase_var aGroup;
       int idx = 0;
       if( addToGroup ) {
-	aGroupName = ComboBox_GroupName->currentText();
-	for ( int i = 1; i < ComboBox_GroupName->count(); i++ ) {
-	  QString aName = ComboBox_GroupName->itemText( i );
-	  if ( aGroupName == aName && ( i == ComboBox_GroupName->currentIndex() || idx == 0 ) )
-	    idx = i;
-	}
-	if ( idx > 0 ) {
-	  SMESH::SMESH_GroupOnGeom_var aGeomGroup = SMESH::SMESH_GroupOnGeom::_narrow( myGroups[idx-1] );
-	  if ( !aGeomGroup->_is_nil() ) {
-	    int res = SUIT_MessageBox::question( this, tr( "SMESH_WRN_WARNING" ),
-						 tr( "MESH_STANDALONE_GRP_CHOSEN" ).arg( aGroupName ),
-						 tr( "SMESH_BUT_YES" ), tr( "SMESH_BUT_NO" ), 0, 1 );
-	    if ( res == 1 ) return;
-	  }
-	  aGroup = myGroups[idx-1];
-	}
+        aGroupName = ComboBox_GroupName->currentText();
+        for ( int i = 1; i < ComboBox_GroupName->count(); i++ ) {
+          QString aName = ComboBox_GroupName->itemText( i );
+          if ( aGroupName == aName && ( i == ComboBox_GroupName->currentIndex() || idx == 0 ) )
+            idx = i;
+        }
+        if ( idx > 0 ) {
+          SMESH::SMESH_GroupOnGeom_var aGeomGroup = SMESH::SMESH_GroupOnGeom::_narrow( myGroups[idx-1] );
+          if ( !aGeomGroup->_is_nil() ) {
+            int res = SUIT_MessageBox::question( this, tr( "SMESH_WRN_WARNING" ),
+                                                 tr( "MESH_STANDALONE_GRP_CHOSEN" ).arg( aGroupName ),
+                                                 tr( "SMESH_BUT_YES" ), tr( "SMESH_BUT_NO" ), 0, 1 );
+            if ( res == 1 ) return;
+          }
+          aGroup = myGroups[idx-1];
+        }
       }
 
       if (GetConstructorId() == 0)
@@ -535,28 +535,28 @@ void SMESHGUI_CreatePolyhedralVolumeDlg::ClickOnApply()
         }
 
       if ( anElemId != -1 && addToGroup && !aGroupName.isEmpty() ) {
-	SMESH::SMESH_Group_var aGroupUsed;
-	if ( aGroup->_is_nil() ) {
-	  // create new group 
-	  aGroupUsed = SMESH::AddGroup( myMesh, SMESH::VOLUME, aGroupName );
-	  if ( !aGroupUsed->_is_nil() ) {
-	    myGroups.append(SMESH::SMESH_GroupBase::_duplicate(aGroupUsed));
-	    ComboBox_GroupName->addItem( aGroupName );
-	  }
-	}
-	else {
-	  SMESH::SMESH_GroupOnGeom_var aGeomGroup = SMESH::SMESH_GroupOnGeom::_narrow( aGroup );
-	  if ( !aGeomGroup->_is_nil() ) {
-	    aGroupUsed = myMesh->ConvertToStandalone( aGeomGroup );
-	    if ( !aGroupUsed->_is_nil() && idx > 0 ) {
-	      myGroups[idx-1] = SMESH::SMESH_GroupBase::_duplicate(aGroupUsed);
-	      SMESHGUI::GetSMESHGUI()->getApp()->updateObjectBrowser();
-	    }
-	  }
-	  else
-	    aGroupUsed = SMESH::SMESH_Group::_narrow( aGroup );
-	}
-	
+        SMESH::SMESH_Group_var aGroupUsed;
+        if ( aGroup->_is_nil() ) {
+          // create new group 
+          aGroupUsed = SMESH::AddGroup( myMesh, SMESH::VOLUME, aGroupName );
+          if ( !aGroupUsed->_is_nil() ) {
+            myGroups.append(SMESH::SMESH_GroupBase::_duplicate(aGroupUsed));
+            ComboBox_GroupName->addItem( aGroupName );
+          }
+        }
+        else {
+          SMESH::SMESH_GroupOnGeom_var aGeomGroup = SMESH::SMESH_GroupOnGeom::_narrow( aGroup );
+          if ( !aGeomGroup->_is_nil() ) {
+            aGroupUsed = myMesh->ConvertToStandalone( aGeomGroup );
+            if ( !aGroupUsed->_is_nil() && idx > 0 ) {
+              myGroups[idx-1] = SMESH::SMESH_GroupBase::_duplicate(aGroupUsed);
+              SMESHGUI::GetSMESHGUI()->getApp()->updateObjectBrowser();
+            }
+          }
+          else
+            aGroupUsed = SMESH::SMESH_Group::_narrow( aGroup );
+        }
+        
         if ( !aGroupUsed->_is_nil() ) {
           SMESH::long_array_var anIdList = new SMESH::long_array;
           anIdList->length( 1 );
@@ -771,10 +771,10 @@ void SMESHGUI_CreatePolyhedralVolumeDlg::SelectionIntoArgument()
     for ( int i = 0, n = aListOfGroups.length(); i < n; i++ ) {
       SMESH::SMESH_GroupBase_var aGroup = aListOfGroups[i];
       if ( !aGroup->_is_nil() && aGroup->GetType() == SMESH::VOLUME ) {
-	QString aGroupName( aGroup->GetName() );
-	if ( !aGroupName.isEmpty() ) {
-	  myGroups.append(SMESH::SMESH_GroupBase::_duplicate(aGroup));
-	  ComboBox_GroupName->addItem( aGroupName );
+        QString aGroupName( aGroup->GetName() );
+        if ( !aGroupName.isEmpty() ) {
+          myGroups.append(SMESH::SMESH_GroupBase::_duplicate(aGroup));
+          ComboBox_GroupName->addItem( aGroupName );
         }
       }
     }

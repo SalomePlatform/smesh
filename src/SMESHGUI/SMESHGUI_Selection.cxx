@@ -34,6 +34,7 @@
 
 #include <SMESH_Type.h>
 #include <SMESH_Actor.h>
+#include <SMESH_ScalarBarActor.h>
 
 // SALOME GUI includes
 #include <SalomeApp_Study.h>
@@ -114,6 +115,7 @@ QVariant SMESHGUI_Selection::parameter( const int ind, const QString& p ) const
   else if ( p=="shrinkMode" )    val = QVariant( shrinkMode( ind ) );
   else if ( p=="entityMode" )    val = QVariant( entityMode( ind ) );
   else if ( p=="controlMode" )   val = QVariant( controlMode( ind ) );
+  else if ( p=="isNumFunctor" )  val = QVariant( isNumFunctor( ind ) );
   else if ( p=="displayMode" )   val = QVariant( displayMode( ind ) );
   else if ( p=="isComputable" )  val = QVariant( isComputable( ind ) );
   else if ( p=="isPreComputable" )  val = QVariant( isPreComputable( ind ) );
@@ -122,6 +124,7 @@ QVariant SMESHGUI_Selection::parameter( const int ind, const QString& p ) const
   else if ( p=="facesOrientationMode" ) val = QVariant( facesOrientationMode( ind ) );
   else if ( p=="groupType" )     val = QVariant( groupType( ind ) );
   else if ( p=="quadratic2DMode") val =  QVariant(quadratic2DMode(ind));
+  else if ( p=="isDistributionVisible") val = QVariant(isDistributionVisible(ind));
 
   if( val.isValid() )
     return val;
@@ -217,6 +220,16 @@ QString SMESHGUI_Selection::quadratic2DMode( int ind ) const
 }
 
 //=======================================================================
+//function : isDistributionVisible
+//purpose  : Visible/Invisible distribution of the ScalarBar Actor
+//=======================================================================
+
+bool SMESHGUI_Selection::isDistributionVisible(int ind) const {
+  SMESH_Actor* actor = getActor( ind );
+  return (actor && actor->GetScalarBarActor() && actor->GetScalarBarActor()->GetDistributionVisibility());
+} 
+
+//=======================================================================
 //function : shrinkMode
 //purpose  : return either 'IsSrunk', 'IsNotShrunk' or 'IsNotShrinkable'
 //=======================================================================
@@ -271,6 +284,8 @@ QString SMESHGUI_Selection::controlMode( int ind ) const
     case SMESH_Actor::eMultiConnection2D: return "eMultiConnection2D";
     case SMESH_Actor::eArea:              return "eArea";
     case SMESH_Actor::eVolume3D:          return "eVolume3D";
+    case SMESH_Actor::eMaxElementLength2D: return "eMaxElementLength2D";
+    case SMESH_Actor::eMaxElementLength3D: return "eMaxElementLength3D";
     case SMESH_Actor::eTaper:             return "eTaper";
     case SMESH_Actor::eAspectRatio:       return "eAspectRatio";
     case SMESH_Actor::eAspectRatio3D:     return "eAspectRatio3D";
@@ -281,6 +296,35 @@ QString SMESHGUI_Selection::controlMode( int ind ) const
     }
   }
   return "eNone";
+}
+
+bool SMESHGUI_Selection::isNumFunctor( int ind ) const
+{
+  bool result = false;
+  SMESH_Actor* actor = getActor( ind );
+  if ( actor ) {
+    switch( actor->GetControlMode() ) {
+    case SMESH_Actor::eLength:
+    case SMESH_Actor::eLength2D:
+    case SMESH_Actor::eMultiConnection:
+    case SMESH_Actor::eMultiConnection2D:
+    case SMESH_Actor::eArea:
+    case SMESH_Actor::eVolume3D:
+    case SMESH_Actor::eMaxElementLength2D:
+    case SMESH_Actor::eMaxElementLength3D:
+    case SMESH_Actor::eTaper:
+    case SMESH_Actor::eAspectRatio:
+    case SMESH_Actor::eAspectRatio3D:
+    case SMESH_Actor::eMinimumAngle:
+    case SMESH_Actor::eWarping:
+    case SMESH_Actor::eSkew:
+      result = true;
+      break;
+    default:
+      break;
+    }
+  }
+  return result;
 }
 
 //=======================================================================
@@ -590,4 +634,3 @@ QString SMESHGUI_Selection::groupType( int ind ) const
   }
   return type;
 }
-

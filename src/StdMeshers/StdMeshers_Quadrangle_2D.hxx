@@ -19,18 +19,19 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
-
 //  SMESH SMESH : implementaion of SMESH idl descriptions
 //  File   : StdMeshers_Quadrangle_2D.hxx
 //           Moved here from SMESH_Quadrangle_2D.hxx
 //  Author : Paul RASCLE, EDF
 //  Module : SMESH
 //  $Header$
-//
+
 #ifndef _SMESH_QUADRANGLE_2D_HXX_
 #define _SMESH_QUADRANGLE_2D_HXX_
 
 #include "SMESH_StdMeshers.hxx"
+
+#include "StdMeshers_QuadrangleParams.hxx"
 
 #include "SMESH_2D_Algo.hxx"
 #include "Utils_SALOME_Exception.hxx"
@@ -120,6 +121,10 @@ protected:
                              const TopoDS_Face& F, const TopoDS_Edge& E,
                              double first, double last, int nb_segm);
 
+  bool ComputeReduced (SMESH_Mesh& aMesh,
+                       const TopoDS_Shape& aShape,
+                       FaceQuadStruct* quad);
+
   // true if QuadranglePreference hypothesis is assigned that forces
   // construction of quadrangles if the number of nodes on opposite edges
   // is not the same in the case where the global number of nodes on edges
@@ -129,6 +134,8 @@ protected:
   bool myTrianglePreference;
 
   int myTriaVertexID;
+
+  StdMeshers_QuadType myQuadType;
 
   SMESH_MesherHelper* myTool; // tool for working with quadratic elements
 };

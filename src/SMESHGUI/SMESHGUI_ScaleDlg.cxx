@@ -16,12 +16,11 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+//  SMESH SMESHGUI : GUI for SMESH component
+//  File   : SMESHGUI_ScaleDlg.cxx
+//  Author : Michael ZORIN, Open CASCADE S.A.S.
+//  SMESH includes
 
-// SMESH SMESHGUI : GUI for SMESH component
-// File   : SMESHGUI_ScaleDlg.cxx
-// Author : Michael ZORIN, Open CASCADE S.A.S.
-// SMESH includes
-//
 #include "SMESHGUI_ScaleDlg.h"
 
 #include "SMESHGUI.h"
@@ -98,6 +97,10 @@ private:
 
 #define SPACING 6
 #define MARGIN  11
+
+//To disable automatic genericobj management, the following line should be commented.
+//Otherwise, it should be uncommented. Refer to KERNEL_SRC/src/SALOMEDSImpl/SALOMEDSImpl_AttributeIOR.cxx
+#define WITHGENERICOBJ
 
 //=================================================================================
 // class    : SMESHGUI_ScaleDlg()
@@ -467,58 +470,49 @@ bool SMESHGUI_ScaleDlg::ClickOnApply()
     try {
       SUIT_OverrideCursor aWaitCursor;
       SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditor();
+      SMESH::SMESH_IDSource_var obj;
+      if ( CheckBoxMesh->isChecked() )
+        obj = mySelectedObject;
+      else
+        obj = aMeshEditor->MakeIDSource(anElementsId, SMESH::ALL);
+
       switch ( actionButton ) {
+
       case MOVE_ELEMS_BUTTON:
-        if(CheckBoxMesh->isChecked()) {
-          aMeshEditor->Scale(mySelectedObject, aPoint, aScaleFact, false);
-        }
-        else {
-          SMESH::SMESH_IDSource_ptr anObj = aMeshEditor->MakeIDSource(anElementsId);
-          aMeshEditor->Scale(anObj, aPoint, aScaleFact, false);
-        }
+        aMeshEditor->Scale(obj, aPoint, aScaleFact, false);
         if( !myMesh->_is_nil())
           myMesh->SetParameters( aParameters.join(":").toLatin1().constData() );
         break;
+
       case COPY_ELEMS_BUTTON:
-        if ( makeGroups ) {
-          SMESH::ListOfGroups_var groups; 
-          if(CheckBoxMesh->isChecked()) {
-            groups = aMeshEditor->ScaleMakeGroups(mySelectedObject, aPoint, aScaleFact);
-          }
-          else {
-            groups = aMeshEditor->ScaleMakeGroups(aMeshEditor->MakeIDSource(anElementsId),
-                                                  aPoint, aScaleFact);
-          }
-        }
-        else {
-          if(CheckBoxMesh->isChecked()) {
-            aMeshEditor->Scale(mySelectedObject, aPoint, aScaleFact, true);
-          }
-          else {
-            aMeshEditor->Scale(aMeshEditor->MakeIDSource(anElementsId),
-                               aPoint, aScaleFact, true);
-          }
-        }
+        if ( makeGroups )
+          SMESH::ListOfGroups_var groups = 
+            aMeshEditor->ScaleMakeGroups(obj, aPoint, aScaleFact);
+        else 
+          aMeshEditor->Scale(obj, aPoint, aScaleFact, true);
         if( !myMesh->_is_nil())
           myMesh->SetParameters( aParameters.join(":").toLatin1().constData() );
         break;
-      case MAKE_MESH_BUTTON:
-        SMESH::SMESH_Mesh_var mesh; 
-        if(CheckBoxMesh->isChecked()) {
-          mesh = aMeshEditor->ScaleMakeMesh(mySelectedObject, aPoint, aScaleFact, makeGroups,
-                                            LineEditNewMesh->text().toLatin1().data());
+
+      case MAKE_MESH_BUTTON: {
+        SMESH::SMESH_Mesh_var mesh =
+          aMeshEditor->ScaleMakeMesh(obj, aPoint, aScaleFact, makeGroups,
+                                     LineEditNewMesh->text().toLatin1().data());
+        if (!mesh->_is_nil()) {
+          mesh->SetParameters(aParameters.join(":").toLatin1().constData());
+#ifdef WITHGENERICOBJ
+          // obj has been published in study. Its refcount has been incremented.
+          // It is safe to decrement its refcount
+          // so that it will be destroyed when the entry in study will be removed
+          mesh->Destroy();
+#endif
         }
-        else {
-          mesh = aMeshEditor->ScaleMakeMesh(aMeshEditor->MakeIDSource(anElementsId),
-                                            aPoint, aScaleFact, makeGroups,
-                                            LineEditNewMesh->text().toLatin1().data());
-        }
-        if( !mesh->_is_nil())
-          mesh->SetParameters( aParameters.join(":").toLatin1().constData() );
+        break;
+      }
       }
     } catch (...) {
     }
-    
+
     SMESH::UpdateView();
     if ( MakeGroupsCheck->isEnabled() && MakeGroupsCheck->isChecked() ||
          actionButton == MAKE_MESH_BUTTON )
@@ -530,7 +524,7 @@ bool SMESHGUI_ScaleDlg::ClickOnApply()
 
     SMESHGUI::Modified();
   }
-  
+
   return true;
 }
 
@@ -570,7 +564,7 @@ void SMESHGUI_ScaleDlg::ClickOnCancel()
 void SMESHGUI_ScaleDlg::ClickOnHelp()
 {
   LightApp_Application* app = (LightApp_Application*)(SUIT_Session::session()->activeApplication());
-  if (app) 
+  if (app)
     app->onHelpContextModule(mySMESHGUI ? app->moduleName(mySMESHGUI->moduleName()) : QString(""), myHelpFileName);
   else {
     QString platform;
@@ -581,7 +575,7 @@ void SMESHGUI_ScaleDlg::ClickOnHelp()
 #endif
     SUIT_MessageBox::warning(this, tr("WRN_WARNING"),
                              tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
-                             arg(app->resourceMgr()->stringValue("ExternalBrowser", 
+                             arg(app->resourceMgr()->stringValue("ExternalBrowser",
                                                                  platform)).
                              arg(myHelpFileName));
   }
@@ -611,7 +605,7 @@ void SMESHGUI_ScaleDlg::onTextChange (const QString& theNewText)
 
   if (aMesh) {
     Handle(SALOME_InteractiveObject) anIO = myActor->getIO();
-    
+
     TColStd_MapOfInteger newIndices;
 
     QStringList aListId = theNewText.split(" ", QString::SkipEmptyParts);
@@ -628,7 +622,7 @@ void SMESHGUI_ScaleDlg::onTextChange (const QString& theNewText)
     mySelector->AddOrRemoveIndex( anIO, newIndices, false );
     if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
       aViewWindow->highlight( anIO, true, true );
-    
+
     myElementsId = theNewText;
   }
 
@@ -745,7 +739,7 @@ void SMESHGUI_ScaleDlg::SelectionIntoArgument()
       aNbUnits = SMESH::GetNameOfSelectedElements(mySelector, IO, aString);
       myElementsId = aString;
       if (aNbUnits < 1)
-        return;  
+        return;
     }
 
     myNbOkElements = true;
@@ -782,7 +776,7 @@ void SMESHGUI_ScaleDlg::SelectionIntoArgument()
     LineEditElements->setText(aString);
     LineEditElements->repaint();
     LineEditElements->setEnabled(false); // to fully update lineedit IPAL 19809
-    LineEditElements->setEnabled(true); 
+    LineEditElements->setEnabled(true);
     setNewMeshName();
   }
 

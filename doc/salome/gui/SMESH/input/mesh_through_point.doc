@@ -1,34 +1,37 @@
 /*!
 
-\page mesh_through_point_page Mesh through point
+\page mesh_through_point_page Moving nodes
 
-\n In mesh you can define a node at a certain point either by creation
-of a new node, by movement of the node closest to the point or by
+\n In mesh you can define a node at a certain point either
+by movement of the node closest to the point or by
 movement of any node to the point.
 
-<em>To create a mesh passing through a point:</em>
+<em>To displace a node:</em>
 <ol>
-<li>From the \b Modification menu choose the <b>Mesh through point</b> item or
-click <em>"Mesh to pass through a point"</em> button in the toolbar.
+<li>From the \b Modification menu choose the <b>Move node</b> item or
+click <em>"Move Node"</em> button in the toolbar.
 
-\image html mesh_node_to_point.png
-<center><em>"Mesh to pass through a point" button</em></center>
+\image html image67.png
+<center><em>"Move Node" button</em></center>
 
 The following dialog box shall appear:
 
 \image html meshtopass.png
 
 </li>
-<li>Enter the coordinates of the point.</li>
-<li>Choose one of several methods: you can either \b Create a new node at
-the indicated point or Move the existing node to the point. In the
-latter case you can check in <b>Automatic search</b> of the closest node or
-select the necessary node manually. \b Preview check-box allows to see
-the results of the operation.</li>
-<li>Click the \b Apply or \b OK button.</li>
+<li>Enter the coordinates of the destination point.</li>
+<li>Check in <b>Find closest to destination</b> option or
+select the necessary node manually (X, Y, Z, dX, dY, dZ fields allow
+to see original coordinates and displacement of the node to move).
+\b Preview check-box allows to see the results of the operation.</li>
+<li>Click the \b Apply or <b>Apply and Close</b> button.</li>
 </ol>
 
+\image html moving_nodes1.png "The initial mesh"
+
+\image html moving_nodes2.png "The modified mesh"
+
 <br><b>See Also</b> a sample TUI Script of a 
-\ref tui_mesh_through_point "Mesh through point" operation.  
+\ref tui_moving_nodes "Moving Nodes" operation.  
 
 */

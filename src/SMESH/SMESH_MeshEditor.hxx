@@ -60,6 +60,7 @@ typedef std::map<const SMDS_MeshNode*, const SMDS_MeshNode*> TNodeNodeMap;
 
 //!< Set of elements sorted by ID, to be used to assure predictability of edition
 typedef std::set< const SMDS_MeshElement*, TIDCompare >      TIDSortedElemSet;
+typedef std::set< const SMDS_MeshNode*,    TIDCompare >      TIDSortedNodeSet;
 
 typedef pair< const SMDS_MeshNode*, const SMDS_MeshNode* >   NLink;
 
@@ -92,6 +93,13 @@ struct SMESH_ElementSearcher
                                   std::vector< const SMDS_MeshElement* >& foundElems)=0;
 
   virtual TopAbs_State GetPointState(const gp_Pnt& point) = 0;
+
+  /*!
+   * \brief Return elements possibly intersecting the line
+   */
+  virtual void GetElementsNearLine( const gp_Ax1&                           line,
+                                    SMDSAbs_ElementType                     type,
+                                    std::vector< const SMDS_MeshElement* >& foundElems)=0;
 };
 
 //=======================================================================
@@ -171,7 +179,7 @@ public:
                                const bool                isPoly,
                                const int                 ID = 0);
 
-  bool Remove (const std::list< int >& theElemIDs, const bool isNodes);
+  int Remove (const std::list< int >& theElemIDs, const bool isNodes);
   // Remove a node or an element.
   // Modify a compute state of sub-meshes which become empty
 
@@ -237,7 +245,7 @@ public:
                  SMESH::Controls::NumericalFunctorPtr theCriterion);
 
 
-  enum SplitVolumToTetraFlags { HEXA_TO_5 = 1, HEXA_TO_6 = 2 };//!<arg of SplitVolumesIntoTetra()
+  enum SplitVolumToTetraFlags { HEXA_TO_5 = 1, HEXA_TO_6 = 2, HEXA_TO_24 = 3 };//!<arg of SplitVolumesIntoTetra()
   /*!
    * \brief Split volumic elements into tetrahedra.
    */
@@ -382,38 +390,21 @@ public:
   // Move or copy theElements applying theTrsf to their nodes
 
 
-  /*!
-   * Generate new elements by extrusion of theElements
-   * param theElems - list of elements for scale
-   * param thePoint - base point for scale
-   * param theScaleFact - scale factors for axises
-   * param theCopy - allows copying the translated elements
-   * param theMakeGroups - forces the generation of new groups from existing ones
-   * param theTargetMesh - the name of the newly created mesh
-   * return instance of Mesh class
-   */
-  PGroupIDs Scale (TIDSortedElemSet&        theElements,
-                   const gp_Pnt&            thePoint,
-                   const std::list<double>& theScaleFact,
-                   const bool               theCopy,
-                   const bool               theMakeGroups,
-                   SMESH_Mesh*              theTargetMesh=0);
-
   typedef std::list< std::list< const SMDS_MeshNode* > > TListOfListOfNodes;
 
-  void FindCoincidentNodes (std::set<const SMDS_MeshNode*> & theNodes,
-                            const double                     theTolerance,
-                            TListOfListOfNodes &             theGroupsOfNodes);
+  void FindCoincidentNodes (TIDSortedNodeSet &   theNodes,
+                            const double         theTolerance,
+                            TListOfListOfNodes & theGroupsOfNodes);
   // Return list of group of nodes close to each other within theTolerance.
   // Search among theNodes or in the whole mesh if theNodes is empty.
 
   /*!
-   * \brief Return SMESH_NodeSearcher
+   * \brief Return SMESH_NodeSearcher. The caller is responsible for deleteing it
    */
   SMESH_NodeSearcher* GetNodeSearcher();
 
   /*!
-   * \brief Return SMESH_ElementSearcher
+   * \brief Return SMESH_ElementSearcher. The caller is responsible for deleteing it
    */
   SMESH_ElementSearcher* GetElementSearcher();
   /*!
@@ -532,12 +523,18 @@ public:
   // theBetweenNode1 - theBetweenNode2, between theBetweenNode1 and theBetweenNode2.
 
   void ConvertToQuadratic(const bool theForce3d);
-  //converts all mesh to quadratic one, deletes old elements, replacing 
-  //them with quadratic ones with the same id.
+  // Converts all mesh to quadratic one, deletes old elements, replacing 
+  // them with quadratic ones with the same id.
+  // If theForce3d = 1; this results in the medium node lying at the 
+  // middle of the line segments connecting start and end node of a mesh 
+  // element
+  // If theForce3d = 0; this results in the medium node lying at the 
+  // geometrical edge from which the mesh element is built
 
   bool ConvertFromQuadratic();
-  //converts all mesh from quadratic to ordinary ones, deletes old quadratic elements, replacing 
-  //them with ordinary mesh elements with the same id.
+  // Converts all mesh from quadratic to ordinary ones, deletes old quadratic elements, replacing 
+  // them with ordinary mesh elements with the same id.
+  // Returns true in case of success, false otherwise.
 
   static void AddToSameGroups (const SMDS_MeshElement* elemToAdd,
                                const SMDS_MeshElement* elemInGroups,
@@ -627,13 +624,17 @@ public:
                             const TIDSortedElemSet& theNodesNot,
                             const TopoDS_Shape&     theShape );
   
-  /*!
-   * \brief Generated skin mesh (containing 2D cells) from 3D mesh
-   * The created 2D mesh elements based on nodes of free faces of boundary volumes
-   * \return TRUE if operation has been completed successfully, FALSE otherwise
-   */
   bool Make2DMeshFrom3D();
-  
+
+  enum Bnd_Dimension { BND_2DFROM3D, BND_1DFROM3D, BND_1DFROM2D };
+
+  void MakeBoundaryMesh(const TIDSortedElemSet& elements,
+                        Bnd_Dimension           dimension,
+                        SMESH_Group*            group = 0,
+                        SMESH_Mesh*             targetMesh = 0,
+                        bool                    toCopyElements = false,
+                        bool                    toCopyExistingBondary = false);
+
 private:
 
   /*!

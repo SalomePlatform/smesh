@@ -25,7 +25,6 @@
 //           Moved here from SMESH_LocalLength_i.cxx
 //  Author : Paul RASCLE, EDF
 //  Module : SMESH
-//  $Header$
 //
 #include "StdMeshers_Deflection1D_i.hxx"
 #include "SMESH_Gen_i.hxx"

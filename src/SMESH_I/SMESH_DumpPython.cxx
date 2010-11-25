@@ -152,7 +152,7 @@ namespace SMESH
   }
 
   template<class TArray>
-  void DumpArray(const TArray& theArray, std::ostringstream & theStream)
+  void DumpArray(const TArray& theArray, TPythonDump & theStream)
   {
     theStream << "[ ";
     for (int i = 1; i <= theArray.length(); i++) {
@@ -166,14 +166,14 @@ namespace SMESH
   TPythonDump& 
   TPythonDump::operator<<(const SMESH::long_array& theArg)
   {
-    DumpArray( theArg, myStream );
+    DumpArray( theArg, *this );
     return *this;
   }
 
   TPythonDump& 
   TPythonDump::operator<<(const SMESH::double_array& theArg)
   {
-    DumpArray( theArg, myStream );
+    DumpArray( theArg, *this );
     return *this;
   }
 
@@ -274,6 +274,8 @@ namespace SMESH
       case FT_Skew:             myStream<< "aSkew";             break;
       case FT_Area:             myStream<< "aArea";             break;
       case FT_Volume3D:         myStream<< "aVolume3D";         break;
+      case FT_MaxElementLength2D:myStream<< "aMaxElementLength2D";break;
+      case FT_MaxElementLength3D:myStream<< "aMaxElementLength3D";break;
       case FT_FreeBorders:      myStream<< "aFreeBorders";      break;
       case FT_FreeEdges:        myStream<< "aFreeEdges";        break;
       case FT_FreeNodes:        myStream<< "aFreeNodes";        break;
@@ -287,6 +289,7 @@ namespace SMESH
       case FT_BelongToCylinder: myStream<< "aBelongToCylinder"; break;
       case FT_BelongToGenSurface:myStream<<"aBelongToGenSurface";break;
       case FT_LyingOnGeom:      myStream<< "aLyingOnGeom";      break;
+      case FT_CoplanarFaces:    myStream<< "aCoplanarFaces";    break;
       case FT_RangeOfIds:       myStream<< "aRangeOfIds";       break;
       case FT_BadOrientedVolume:myStream<< "aBadOrientedVolume";break;
       case FT_LinearOrQuadratic:myStream<< "aLinearOrQuadratic";break;
@@ -305,6 +308,15 @@ namespace SMESH
     }
     return *this;
   }
+
+  TPythonDump& 
+  TPythonDump::
+  operator<<(SMESH::Measurements_i* theArg)
+  {
+    myStream<<"aMeasurements";
+    return *this;
+  }
+
 
   TPythonDump& TPythonDump:: operator<<(SMESH_Gen_i* theArg)
   {
@@ -354,21 +366,14 @@ namespace SMESH
     return *this;
   }
 
-  TPythonDump& TPythonDump::operator<<(const SMESH::ListOfGroups * theList){
-    if(theList && theList->length() > 0 ) {
-      SMESH_Gen_i* aSMESHGen = SMESH_Gen_i::GetSMESHGen();
-      SALOMEDS::Study_ptr aStudy = aSMESHGen->GetCurrentStudy();
-      myStream << "[";
-      int aListLen = theList->length();
-      for(int i = 0 ; i < aListLen; i++){
-        SALOMEDS::SObject_var aSObject = SMESH_Gen_i::ObjectToSObject(aStudy,(*theList)[i]);
-        if(!aSObject->_is_nil()) {
-          myStream << aSObject->GetID();
-          i < (aListLen - 1) ? myStream<<", " : myStream<<"]";
-        }
-        
-      }
-    }
+  TPythonDump& TPythonDump::operator<<(const SMESH::ListOfGroups& theList)
+  {
+    DumpArray( theList, *this );
+    return *this;
+  }
+  TPythonDump& TPythonDump::operator<<(const SMESH::ListOfIDSources& theList)
+  {
+    DumpArray( theList, *this );
     return *this;
   }
 
@@ -377,10 +382,10 @@ namespace SMESH
 
   //================================================================================
   /*!
-     * \brief Return marker of long string literal beginning
-      * \param type - a name of functionality producing the string literal 
-      * \retval TCollection_AsciiString - the marker string to be written into
-      * a raw python script
+   * \brief Return marker of long string literal beginning
+   * \param type - a name of functionality producing the string literal 
+   * \retval TCollection_AsciiString - the marker string to be written into
+   * a raw python script
    */
   //================================================================================
 
@@ -690,6 +695,7 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
   TCollection_AsciiString aScript;
   aScript = "def RebuildData(theStudy):\n\t";
   aScript += helper + "aFilterManager = " + aSMESHGen + ".CreateFilterManager()\n\t";
+  aScript += helper + "aMeasurements = " + aSMESHGen + ".CreateMeasurements()\n\t";
   if ( isPublished )
     aScript += aSMESHGen + ".SetCurrentStudy(theStudy)";
   else

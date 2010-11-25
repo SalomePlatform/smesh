@@ -205,6 +205,20 @@ namespace SMESH
     return SObjectToObject(theSObject,aStudy);
   }
 
+  _PTR(SObject) ObjectToSObject( CORBA::Object_ptr theObject )
+  {
+    _PTR(SObject) res;
+    SalomeApp_Application* app = dynamic_cast<SalomeApp_Application*>
+      (SUIT_Session::session()->activeApplication());
+    if ( app ) {
+      QString IOR = app->orb()->object_to_string( theObject );
+      SalomeApp_Study* study = dynamic_cast<SalomeApp_Study*>( app->activeStudy() );
+      if ( study && !IOR.isEmpty() )
+	res = study->studyDS()->FindObjectIOR( IOR.toLatin1().constData() );
+    }
+    return res;
+  }
+
   CORBA::Object_var IObjectToObject (const Handle(SALOME_InteractiveObject)& theIO)
   {
     if (!theIO.IsNull()) {

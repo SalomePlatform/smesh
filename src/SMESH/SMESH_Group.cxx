@@ -63,5 +63,5 @@ SMESH_Group::SMESH_Group (int                       theID,
 
 SMESH_Group::~SMESH_Group ()
 {
-  delete myGroupDS;
+  delete myGroupDS; myGroupDS=0;
 }

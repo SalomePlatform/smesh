@@ -25,14 +25,14 @@
 #define _SMESH_QuadToTriaAdaptor_HXX_
 
 #include "SMESH_StdMeshers.hxx"
-#include "SMDS_FaceOfNodes.hxx"
 
 class SMESH_Mesh;
+class SMESH_ElementSearcher;
 class SMDS_MeshElement;
 class SMDS_MeshNode;
-class Handle(TColgp_HArray1OfPnt);
-class Handle(TColgp_HArray1OfVec);
-class TopoDS_Shape;
+class SMDS_MeshFace;
+class Handle_TColgp_HArray1OfPnt;
+class Handle_TColgp_HArray1OfVec;
 class gp_Pnt;
 class gp_Vec;
 
@@ -41,9 +41,15 @@ class gp_Vec;
 #include <list>
 #include <vector>
 
+#include <TopoDS_Shape.hxx>
+
+/*!
+ * \brief "Transforms" quadrilateral faces into triangular ones by creation of pyramids
+ */
 class STDMESHERS_EXPORT StdMeshers_QuadToTriaAdaptor
 {
 public:
+  StdMeshers_QuadToTriaAdaptor();
 
   ~StdMeshers_QuadToTriaAdaptor();
 
@@ -51,15 +57,22 @@ public:
 
   bool Compute(SMESH_Mesh& aMesh);
 
-  const std::list<const SMDS_FaceOfNodes*>* GetTriangles(const SMDS_MeshElement* aFace);
+  const std::list<const SMDS_MeshFace*>* GetTriangles(const SMDS_MeshElement* aFace);
+
+  /*!
+   * \brief Return sum of generated and already present triangles
+   */
+  int TotalNbOfTriangles() const { return myNbTriangles; }
+
+  TopoDS_Shape GetShape() const { return myShape; }
 
 protected:
 
   //bool CheckDegenerate(const SMDS_MeshElement* aFace);
 
   int Preparation(const SMDS_MeshElement* face,
-                  Handle(TColgp_HArray1OfPnt)& PN,
-                  Handle(TColgp_HArray1OfVec)& VN,
+                  Handle_TColgp_HArray1OfPnt& PN,
+                  Handle_TColgp_HArray1OfVec& VN,
                   std::vector<const SMDS_MeshNode*>& FNodes,
                   gp_Pnt& PC, gp_Vec& VNorm,
                   const SMDS_MeshElement** volumes=0);
@@ -67,19 +80,24 @@ protected:
   bool CheckIntersection(const gp_Pnt& P, const gp_Pnt& PC,
                          gp_Pnt& Pint, SMESH_Mesh& aMesh,
                          const TopoDS_Shape& aShape,
-                         const TopoDS_Shape& NotCheckedFace);
+                         const SMDS_MeshElement* NotCheckedFace);
 
   bool Compute2ndPart(SMESH_Mesh& aMesh);
 
-  typedef std::list<const SMDS_FaceOfNodes* >                        TTriaList;
-  typedef std::multimap<const SMDS_MeshElement*, TTriaList >         TQuad2Trias;
-  typedef std::map<const SMDS_MeshElement*, TTriaList *, TIDCompare> TPyram2Trias;
+
+  typedef std::list<const SMDS_MeshFace* >                   TTriaList;
+  typedef std::multimap<const SMDS_MeshElement*, TTriaList > TQuad2Trias;
 
   TQuad2Trias  myResMap;
-  TPyram2Trias myPyram2Trias;
+  std::vector<const SMDS_MeshElement*> myPyramids;
 
   std::list< const SMDS_MeshNode* > myDegNodes;
 
+  const SMESH_ElementSearcher* myElemSearcher;
+
+  int myNbTriangles;
+
+  TopoDS_Shape myShape;
 };
 
 #endif

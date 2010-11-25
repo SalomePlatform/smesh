@@ -27,6 +27,7 @@
 //
 #include "SMESHGUI_MeshUtils.h"
 
+#include "SMESHGUI.h"
 #include "SMESHGUI_Utils.h"
 
 // SALOME KERNEL includes
@@ -38,6 +39,7 @@
 // IDL includes
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_Group)
+#include CORBA_SERVER_HEADER(SMESH_Measurements)
 
 namespace SMESH
 {
@@ -81,5 +83,54 @@ namespace SMESH
       return name;
     }
     return baseName;
+  }
+
+  QString UniqueName(const QString& theBaseName, _PTR(SObject) theParent, const QString& thePostfix)
+  {
+    QString baseName = thePostfix.isEmpty() ? 
+      theBaseName : theBaseName + "_" + thePostfix;
+    QString name = baseName;
+    if ( _PTR(Study) aStudy = GetActiveStudyDocument() ) {
+      _PTR(SObject) p = theParent;
+      if ( !p ) p = aStudy->FindComponent( "SMESH" );
+      if ( p ) {
+	_PTR(ChildIterator) iter = aStudy->NewChildIterator( p );
+	int idx = 0;
+	while( true ) {
+	  bool found = false;
+	  for ( ; iter->More(); iter->Next() ) {
+	    _PTR(SObject) so = iter->Value();
+	    if ( !so ) continue; // skip bad objects
+	    _PTR(SObject) ref;
+	    if ( so->ReferencedObject( ref ) ) continue; // skip references
+	    QString n = so->GetName().c_str();
+	    if ( !n.isEmpty() && n == name ) {
+	      QStringList names = name.split("_", QString::KeepEmptyParts);
+	      if ( names.count() > 0 ) {
+		bool ok;
+		names.last().toInt( &ok );
+		if ( ok )
+		  names.removeLast();
+	      }
+	      names.append( QString::number( ++idx ) );
+	      name = names.join( "_" );
+	      found = true;
+	      break;
+	    }
+	  }
+	  if ( !found ) break;
+	}
+      }
+    }
+    return name;
+  }
+
+  SMESH::Measurements_var& GetMeasurements()
+  {
+    static SMESH::Measurements_var aMeasurements;
+    if (CORBA::is_nil(aMeasurements)) {
+      aMeasurements = SMESHGUI::GetSMESHGen()->CreateMeasurements();
+    }
+    return aMeasurements;
   }
 } // end of namespace SMESH

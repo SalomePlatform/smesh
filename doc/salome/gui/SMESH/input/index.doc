@@ -12,16 +12,23 @@ previously created or imported by the Geometry component; </li>
 <li>\subpage viewing_meshes_overview_page "viewing created meshes" in
 the VTK viewer;</li>
 <li>\subpage grouping_elements_page "creating groups of mesh elements";</li>
-<li>applying to meshes \subpage quality_page "Quality Controls" , 
-allowing to highlight important elements:
+<li>applying to meshes \subpage quality_page "Quality Controls", 
+allowing to highlight important elements;
+<li>filtering sub-sets of mesh entities (nodes elements) using
+\subpage filters_page "Filters" functionality;</li>
 <li>\subpage modifying_meshes_page "modifying meshes" with a vast
-array of dedicated operations.</li> 
+array of dedicated operations;</li> 
+<li>different \subpage measurements_page "measurements" of the mesh objects;
 <li>easily setting parameters via the variables predefined in
 \subpage using_notebook_mesh_page "Salome notebook".</li>
 </ul>
 
 Almost all mesh module functionalities are accessible via
 \subpage smeshpy_interface_page "Mesh module Python interface".
+
+Also it can be useful to have a look at the
+\subpage smeshpypkg_page "documentation on SMESH python package". 
+
 
 \image html image7.jpg "Example of MESH module usage for engineering tasks"
 

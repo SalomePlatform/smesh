@@ -16,13 +16,12 @@
 #
 #  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
-
 #  SMESH StdMeshersGUI : GUI for StdMeshers plugin
 #  File   : Makefile.in
 #  Author : Julia DOROVSKIKH
 #  Modified by : Alexander BORODIN (OCN) - autotools usage
 #  Module : SMESH
-#
+
 include $(top_srcdir)/adm_local/unix/make_common_starter.am
 
 # header files 
@@ -33,12 +32,14 @@ salomeinclude_HEADERS = \
 	StdMeshersGUI_DistrTable.h \
 	StdMeshersGUI_NbSegmentsCreator.h \
 	StdMeshersGUI_ObjectReferenceParamWdg.h \
+	StdMeshersGUI_QuadrangleParamWdg.h \
 	StdMeshersGUI_LayerDistributionParamWdg.h \
 	StdMeshersGUI_FixedPointsParamWdg.h \
 	StdMeshersGUI_SubShapeSelectorWdg.h
 
 # Libraries targets
 lib_LTLIBRARIES = libStdMeshersGUI.la
+
 dist_libStdMeshersGUI_la_SOURCES = \
 	StdMeshersGUI.cxx \
 	StdMeshersGUI_StdHypothesisCreator.cxx \
@@ -46,6 +47,7 @@ dist_libStdMeshersGUI_la_SOURCES = \
 	StdMeshersGUI_DistrTable.cxx \
 	StdMeshersGUI_NbSegmentsCreator.cxx \
 	StdMeshersGUI_ObjectReferenceParamWdg.cxx \
+	StdMeshersGUI_QuadrangleParamWdg.cxx \
 	StdMeshersGUI_LayerDistributionParamWdg.cxx \
 	StdMeshersGUI_FixedPointsParamWdg.cxx \
 	StdMeshersGUI_SubShapeSelectorWdg.cxx
@@ -56,6 +58,7 @@ MOC_FILES = \
 	StdMeshersGUI_DistrTable_moc.cxx \
 	StdMeshersGUI_NbSegmentsCreator_moc.cxx \
 	StdMeshersGUI_ObjectReferenceParamWdg_moc.cxx \
+	StdMeshersGUI_QuadrangleParamWdg_moc.cxx \
 	StdMeshersGUI_LayerDistributionParamWdg_moc.cxx \
 	StdMeshersGUI_FixedPointsParamWdg_moc.cxx \
 	StdMeshersGUI_SubShapeSelectorWdg_moc.cxx
@@ -100,4 +103,5 @@ libStdMeshersGUI_la_LDFLAGS  = \
 # resources files
 nodist_salomeres_DATA= \
 	StdMeshers_images.qm \
-	StdMeshers_msg_en.qm
+	StdMeshers_msg_en.qm \
+	StdMeshers_msg_fr.qm

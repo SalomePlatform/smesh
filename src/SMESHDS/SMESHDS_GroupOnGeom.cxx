@@ -102,7 +102,7 @@ class MyIterator: public SMDS_ElemIterator
 //purpose  : 
 //=======================================================================
 
-SMDS_ElemIteratorPtr SMESHDS_GroupOnGeom::GetElements()
+SMDS_ElemIteratorPtr SMESHDS_GroupOnGeom::GetElements() const
 {
   return SMDS_ElemIteratorPtr( new MyIterator ( GetType(), mySubMesh ));
 }

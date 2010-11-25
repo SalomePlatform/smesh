@@ -83,11 +83,6 @@ module SMESH
     long_array GetListOfID();
 
     /*!
-     * Returns the mesh object this group belongs to
-     */
-    SMESH_Mesh GetMesh();
-
-    /*!
      * Sets group color
      */
     void SetColor(in SALOMEDS::Color theColor);
@@ -121,15 +116,25 @@ module SMESH
     void Clear();
 
     /*!
-     * Adds elements to the group
+     * Adds elements or nodes with specified identifiers to the group
      */
     long Add( in long_array elem_ids );
+    /*!
+     * Adds elements or nodes that match specified predicate to the group
+     */
     long AddByPredicate( in Predicate thePredicate );
+    /*!
+     * Add all elements or nodes from the specified source to the group
+     */
+    long AddFrom( in SMESH_IDSource theSource );
 
     /*!
-     * Removes elements from the group
+     * Removes elements or nodes with specified identifiers from the group
      */
     long Remove( in long_array elem_ids );
+    /*!
+     * Removes elements or nodes that match specified predicate from the group
+     */
     long RemoveByPredicate( in Predicate thePredicate );
 
   };

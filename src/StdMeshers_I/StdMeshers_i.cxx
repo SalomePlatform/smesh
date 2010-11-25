@@ -56,6 +56,8 @@
 #include "StdMeshers_SegmentLengthAroundVertex_i.hxx"
 #include "StdMeshers_MaxLength_i.hxx"
 #include "StdMeshers_QuadrangleParams_i.hxx"
+#include "StdMeshers_ImportSource1D_i.hxx"
+#include "StdMeshers_ImportSource2D_i.hxx"
 
 #include "StdMeshers_Regular_1D_i.hxx"
 #include "StdMeshers_MEFISTO_2D_i.hxx"
@@ -67,6 +69,8 @@
 #include "StdMeshers_CompositeSegment_1D_i.hxx"
 #include "StdMeshers_UseExisting_1D2D_i.hxx"
 #include "StdMeshers_RadialQuadrangle_1D2D_i.hxx"
+#include "StdMeshers_Import_1D_i.hxx"
+#include "StdMeshers_Import_1D2D_i.hxx"
 
 
 template <class T> class StdHypothesisCreator_i:public HypothesisCreator_i<T>
@@ -141,6 +145,10 @@ STDMESHERS_I_EXPORT
       aCreator = new StdHypothesisCreator_i<StdMeshers_SegmentLengthAroundVertex_i>;
     else if (strcmp(aHypName, "QuadrangleParams") == 0)
       aCreator = new StdHypothesisCreator_i<StdMeshers_QuadrangleParams_i>;
+    else if (strcmp(aHypName, "ImportSource1D") == 0)
+      aCreator = new StdHypothesisCreator_i<StdMeshers_ImportSource1D_i>;
+    else if (strcmp(aHypName, "ImportSource2D") == 0)
+      aCreator = new StdHypothesisCreator_i<StdMeshers_ImportSource2D_i>;
 
     // Algorithms
     else if (strcmp(aHypName, "Regular_1D") == 0)
@@ -171,6 +179,10 @@ STDMESHERS_I_EXPORT
       aCreator = new StdHypothesisCreator_i<StdMeshers_UseExisting_2D_i>;
     else if (strcmp(aHypName, "RadialQuadrangle_1D2D") == 0)
       aCreator = new StdHypothesisCreator_i<StdMeshers_RadialQuadrangle_1D2D_i>;
+    else if (strcmp(aHypName, "Import_1D") == 0)
+      aCreator = new StdHypothesisCreator_i<StdMeshers_Import_1D_i>;
+    else if (strcmp(aHypName, "Import_1D2D") == 0)
+      aCreator = new StdHypothesisCreator_i<StdMeshers_Import_1D2D_i>;
     else ;
 
     return aCreator;

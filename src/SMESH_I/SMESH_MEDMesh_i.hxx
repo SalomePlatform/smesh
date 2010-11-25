@@ -63,7 +63,7 @@ protected:
   int _famIdent;
   
   std::map < SALOME_MED::medGeometryElement, int >_mapIndToSeqElts;
-  SALOME_MED::long_array_var _seq_elemId[MED_NBR_GEOMETRIE_MAILLE];
+  SALOME_TYPES::ListOfLong_var _seq_elemId[MED_NBR_GEOMETRIE_MAILLE];
   
   std::map < SALOME_MED::medEntityMesh, int >_mapNbTypes;
   std::map < SALOME_MED::medEntityMesh, int >_mapIndToVectTypes;
@@ -112,13 +112,13 @@ public:
   CORBA::Double getCoordinate(CORBA::Long Number, CORBA::Long Axis)
     throw (SALOME::SALOME_Exception);
   
-  SALOME_MED::double_array * getCoordinates(SALOME_MED::medModeSwitch typeSwitch)
+  SALOME_TYPES::ListOfDouble * getCoordinates(SALOME_MED::medModeSwitch typeSwitch)
     throw(SALOME::SALOME_Exception);
 
-  SALOME_MED::string_array * getCoordinatesNames()
+  SALOME_TYPES::ListOfString * getCoordinatesNames()
     throw(SALOME::SALOME_Exception);
   
-  SALOME_MED::string_array * getCoordinatesUnits()
+  SALOME_TYPES::ListOfString * getCoordinatesUnits()
     throw(SALOME::SALOME_Exception);
   
   CORBA::Long getNumberOfNodes() throw(SALOME::SALOME_Exception);
@@ -139,33 +139,33 @@ public:
                                   SALOME_MED::medGeometryElement geomElement)
     throw(SALOME::SALOME_Exception);
   
-  SALOME_MED::long_array *
+  SALOME_TYPES::ListOfLong *
   getConnectivity(SALOME_MED::medModeSwitch typeSwitch,
                   SALOME_MED::medConnectivity mode,
                   SALOME_MED::medEntityMesh entity,
                   SALOME_MED::medGeometryElement geomElement)
     throw(SALOME::SALOME_Exception);
   
-  SALOME_MED::long_array *
+  SALOME_TYPES::ListOfLong *
   getConnectivityIndex(SALOME_MED::medConnectivity mode,
                        SALOME_MED::medEntityMesh entity)
     throw(SALOME::SALOME_Exception);
   
-  SALOME_MED::long_array*
+  SALOME_TYPES::ListOfLong*
   getGlobalNumberingIndex(SALOME_MED::medEntityMesh entity)
     throw (SALOME::SALOME_Exception);
   
   CORBA::Long getElementNumber(SALOME_MED::medConnectivity mode,
                                SALOME_MED::medEntityMesh entity,
                                SALOME_MED::medGeometryElement type,
-                               const SALOME_MED::long_array & connectivity)
+                               const SALOME_TYPES::ListOfLong & connectivity)
     throw(SALOME::SALOME_Exception);
   
-  SALOME_MED::long_array *
+  SALOME_TYPES::ListOfLong *
   getReverseConnectivity(SALOME_MED::medConnectivity mode)
     throw(SALOME::SALOME_Exception);
   
-  SALOME_MED::long_array *
+  SALOME_TYPES::ListOfLong *
   getReverseConnectivityIndex(SALOME_MED::medConnectivity mode) 
     throw(SALOME::SALOME_Exception);
   

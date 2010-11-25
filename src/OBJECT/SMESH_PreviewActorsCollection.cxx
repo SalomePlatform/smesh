@@ -35,7 +35,6 @@
 
 // VTK includes
 #include <vtkUnstructuredGrid.h>
-#include <vtkScalarBarActor.h>
 #include <vtkPlane.h>
 #include <vtkRenderer.h>
 #include <vtkProperty.h>

@@ -66,7 +66,7 @@ class SMESHDS_EXPORT SMESHDS_GroupBase
 
   virtual bool Contains (const SMDS_MeshElement* elem);
 
-  virtual SMDS_ElemIteratorPtr GetElements() = 0;
+  virtual SMDS_ElemIteratorPtr GetElements() const = 0;
 
   int GetID (const int theIndex);
   // use it for iterations 1..Extent()

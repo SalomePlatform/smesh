@@ -43,26 +43,57 @@ length calculated as an average edge length for a given wire.
 \anchor hypo_quad_params_anchor
 <h2>Quadrangle parameters</h2>
 
-<b>Quadrangle parameters</b> is a hypothesis for
-Quadrangle (Mapping), which allows using this algorithm for meshing of
-triangular faces.In this case it is necessary to select the <b>Base vertex</b> 
-used as a degenerated edge.
+\image html hypo_quad_params_dialog.png "Quadrangle parameters creation/edition dialog"
+
+<b>Quadrangle parameters</b> is a hypothesis for Quadrangle (Mapping).
+
+<b>Base vertex</b> parameter allows using Quadrangle (Mapping)
+algorithm for meshing of triangular faces. In this case it is
+necessary to select the vertex, which will be used as the fourth edge
+(degenerated).
 
 \image html hypo_quad_params_1.png "A face built from 3 edges"
 
 \image html hypo_quad_params_res.png "The resulting mesh"
 
-This hypothesis can be also used to mesh a segment of a circular face.
-Please, consider that there is a limitation on the selectiion of the degenerated
+This parameter can be also used to mesh a segment of a circular face.
+Please, consider that there is a limitation on the selection of the
 vertex for the faces built with the angle > 180 degrees (see the picture).
 
 \image html hypo_quad_params_2.png "3/4 of a circular face"
 
-In this case, selection of a wrong vertex for the <b>Quadrangle parameters</b>
-hypothesis will generate a wrong mesh. The picture below
+In this case, selection of a wrong vertex for the <b>Base vertex</b>
+parameter will generate a wrong mesh. The picture below
 shows the good (left) and the bad (right) results of meshing.
 
 \image html hypo_quad_params_res_2.png "The resulting meshes"
+
+<b>Type</b> parameter is used on faces with a different number of
+segments on opposite sides to define the algorithm of transition
+between them. The following types are available:
+
+<ul>
+<li><b>Standard</b> is the default case, when both triangles and quadrangles
+    are possible in the transition area along the finer meshed sides.</li>
+<li><b>Triangle preference</b> forces building only triangles in the
+    transition area along the finer meshed sides.
+    <i>This type corresponds to <b>Triangle Preference</b> additional
+    hypothesis, which is obsolete now.</i></li>
+<li><b>Quadrangle preference</b> forces building only quadrangles in the
+    transition area along the finer meshed sides. This hypothesis has a
+    restriction: the total quantity of segments on all
+    four sides of the face must be even (divisible by 2).</li>
+    <i>This type corresponds to <b>Quadrangle Preference</b>
+    additional hypothesis, which is obsolete now.</i></li>
+<li><b>Quadrangle preference (reversed)</b> works in the same way and
+with the same restriction as <b>Quadrangle preference</b>, but
+    the transition area is located along the coarser meshed sides.</li>
+<li><b>Reduced</b> type forces building only quadrangles and the transition
+    between the sides is made gradually, layer by layer. This type has
+    a limitation on the number of segments: one pair of opposite sides must have
+    the same number of segments, the other pair must have an even difference
+    between the numbers of segments on the sides.</li>
+</ul>
 
 <b>See Also</b> a sample TUI Script of a 
 \ref tui_quadrangle_parameters "Quadrangle Parameters" hypothesis.

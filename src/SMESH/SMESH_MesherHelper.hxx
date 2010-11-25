@@ -39,8 +39,10 @@
 #include <gp_Pnt2d.hxx>
 
 #include <map>
+#include <vector>
 
 class GeomAPI_ProjectPointOnSurf;
+class GeomAPI_ProjectPointOnCurve;
 
 typedef std::map<SMESH_TLink, const SMDS_MeshNode*>           TLinkNodeMap;
 typedef std::map<SMESH_TLink, const SMDS_MeshNode*>::iterator ItTLinkNode;
@@ -139,6 +141,8 @@ public:
 
   static bool IsSubShape( const TopoDS_Shape& shape, SMESH_Mesh* aMesh );
 
+  static double MaxTolerance( const TopoDS_Shape& shape );
+
 
 public:
   // ---------- PUBLIC INSTANCE METHODS ----------
@@ -221,8 +225,15 @@ public:
                          const SMDS_MeshNode* n4,
                          const int id = 0,
                          const bool force3d = false);
+
   /*!
-   * Creates quadratic or linear tetraahedron
+   * Creates polygon, with additional nodes in quadratic mesh
+   */
+  SMDS_MeshFace* AddPolygonalFace (const std::vector<const SMDS_MeshNode*>& nodes,
+                                   const int id = 0,
+                                   const bool force3d = false);
+  /*!
+   * Creates quadratic or linear tetrahedron
    */
   SMDS_MeshVolume* AddVolume(const SMDS_MeshNode* n1,
                              const SMDS_MeshNode* n2,
@@ -264,6 +275,14 @@ public:
                              const SMDS_MeshNode* n8,
                              const int id = 0, 
                              bool force3d = true);
+
+  /*!
+   * Creates polyhedron. In quadratic mesh, adds medium nodes
+   */
+  SMDS_MeshVolume* AddPolyhedralVolume (const std::vector<const SMDS_MeshNode*>& nodes,
+                                        const std::vector<int>&                  quantities,
+                                        const int                                ID=0,
+                                        const bool                               force3d = true);
   /*!
    * \brief Return U of the given node on the edge
    */
@@ -298,7 +317,8 @@ public:
                   const SMDS_MeshNode* n,
                   double&              u,
                   const double         tol,
-                  const bool           force=false) const;
+                  const bool           force=false,
+                  double*              distance=0) const;
   /*!
    * \brief Return middle UV taking in account surface period
    */
@@ -453,6 +473,9 @@ protected:
    */
   gp_Pnt2d GetUVOnSeam( const gp_Pnt2d& uv1, const gp_Pnt2d& uv2 ) const;
 
+  const SMDS_MeshNode* getMediumNodeOnComposedWire(const SMDS_MeshNode* n1,
+                                                   const SMDS_MeshNode* n2,
+                                                   bool                 force3d);
  private:
 
   // Forbiden copy constructor
@@ -466,8 +489,10 @@ protected:
   double          myPar1[2], myPar2[2]; // U and V bounds of a closed periodic surface
   int             myParIndex;     // bounds' index (1-U, 2-V, 3-both)
 
-  typedef std::map< int, GeomAPI_ProjectPointOnSurf* > TID2Projector;
-  TID2Projector   myFace2Projector;
+  typedef std::map< int, GeomAPI_ProjectPointOnSurf* > TID2ProjectorOnSurf;
+  TID2ProjectorOnSurf myFace2Projector;
+  typedef std::map< int, GeomAPI_ProjectPointOnCurve* > TID2ProjectorOnCurve;
+  TID2ProjectorOnCurve myEdge2Projector;
 
   TopoDS_Shape    myShape;
   SMESH_Mesh*     myMesh;

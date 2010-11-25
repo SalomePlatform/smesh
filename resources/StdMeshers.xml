@@ -40,7 +40,7 @@
                 dim="0"/>
 
     <hypothesis type="LocalLength"
-                label-id="Average length"
+                label-id="Local Length"
                 icon-id="mesh_hypo_length.png"
                 dim="1"/>
 
@@ -122,7 +122,6 @@
     <hypothesis type="MaxElementVolume"
                 label-id="Max. Element Volume"
                 icon-id="mesh_hypo_volume.png"
-		need-geom = "false"
                 dim="3"/>
 
     <hypothesis type="ProjectionSource3D"
@@ -137,6 +136,16 @@
 
     <hypothesis type="ProjectionSource1D"
                 label-id="Source Edge"
+                icon-id="mesh_hypo_length.png"
+                dim="1"/>
+
+    <hypothesis type="ImportSource2D"
+                label-id="Source Faces"
+                icon-id="mesh_hypo_area.png"
+                dim="2"/>
+
+    <hypothesis type="ImportSource1D"
+                label-id="Source Edges"
                 icon-id="mesh_hypo_length.png"
                 dim="1"/>
 
@@ -239,6 +248,21 @@
                hypos="ProjectionSource3D"
                input="QUAD,TRIA"
                dim="3"/>
+
+    <algorithm type="Import_1D"
+               label-id="Use existing 1D elements"
+               icon-id="mesh_algo_regular.png"
+               hypos="ImportSource1D"
+               output="EDGE"
+               dim="1"/>
+
+    <algorithm type="Import_1D2D"
+               label-id="Use existing 2D elements"
+               icon-id="mesh_algo_quad.png"
+               hypos="ImportSource2D"
+               output="QUAD,TRIA"
+               support-submeshes="false"
+               dim="2"/>
 
     <algorithm type="Prism_3D"
                label-id="3D extrusion"

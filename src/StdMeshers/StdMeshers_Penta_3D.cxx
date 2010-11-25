@@ -676,22 +676,16 @@ void StdMeshers_Penta_3D::MakeVolumeMesh()
     if ( aN.size() < nbFaceNodes * 2 )
       aN.resize( nbFaceNodes * 2 );
     //
-    k=0;
-    aItNodes=pE0->nodesIterator();
-    while (aItNodes->more()) {
-      //const SMDS_MeshElement* pNode = aItNodes->next();
-      const SMDS_MeshNode* pNode =
-        static_cast<const SMDS_MeshNode*> (aItNodes->next());
-      if(myTool->IsMedium(pNode))
-        continue;
+    for ( k=0; k<nbFaceNodes; ++k ) {
+      const SMDS_MeshNode* pNode = pE0->GetNode(k);
+//       if(myTool->IsMedium(pNode))
+//         continue;
       aID0 = pNode->GetID();
       aJ[k] = GetIndexOnLayer(aID0);
       if (!myErrorStatus->IsOK()) {
         MESSAGE("StdMeshers_Penta_3D::MakeVolumeMesh");
         return;
       }
-      //
-      ++k;
     }
     //
     bool forward = true;

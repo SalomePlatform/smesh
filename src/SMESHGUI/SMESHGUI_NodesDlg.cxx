@@ -452,15 +452,15 @@ bool SMESHGUI_NodesDlg::ClickOnApply()
     for ( int i = 1; i < ComboBox_GroupName->count(); i++ ) {
       QString aName = ComboBox_GroupName->itemText( i );
       if ( aGroupName == aName && ( i == ComboBox_GroupName->currentIndex() || idx == 0 ) )
-	idx = i;
+        idx = i;
     }
     if ( idx > 0 ) {
       SMESH::SMESH_GroupOnGeom_var aGeomGroup = SMESH::SMESH_GroupOnGeom::_narrow( myGroups[idx-1] );
       if ( !aGeomGroup->_is_nil() ) {
-	int res = SUIT_MessageBox::question( this, tr( "SMESH_WRN_WARNING" ),
-					     tr( "MESH_STANDALONE_GRP_CHOSEN" ).arg( aGroupName ),
-					     tr( "SMESH_BUT_YES" ), tr( "SMESH_BUT_NO" ), 0, 1 );
-	if ( res == 1 ) return false;
+        int res = SUIT_MessageBox::question( this, tr( "SMESH_WRN_WARNING" ),
+                                             tr( "MESH_STANDALONE_GRP_CHOSEN" ).arg( aGroupName ),
+                                             tr( "SMESH_BUT_YES" ), tr( "SMESH_BUT_NO" ), 0, 1 );
+        if ( res == 1 ) return false;
       }
       aGroup = myGroups[idx-1];
     }
@@ -478,21 +478,21 @@ bool SMESHGUI_NodesDlg::ClickOnApply()
       // create new group 
       aGroupUsed = SMESH::AddGroup( myMesh, SMESH::NODE, aGroupName );
       if ( !aGroupUsed->_is_nil() ) {
-	myGroups.append(SMESH::SMESH_GroupBase::_duplicate(aGroupUsed));
-	ComboBox_GroupName->addItem( aGroupName );
+        myGroups.append(SMESH::SMESH_GroupBase::_duplicate(aGroupUsed));
+        ComboBox_GroupName->addItem( aGroupName );
       }
     }
     else {
       SMESH::SMESH_GroupOnGeom_var aGeomGroup = SMESH::SMESH_GroupOnGeom::_narrow( aGroup );
       if ( !aGeomGroup->_is_nil() ) {
-	aGroupUsed = myMesh->ConvertToStandalone( aGeomGroup );
-	if ( !aGroupUsed->_is_nil() && idx > 0 ) {
-	  myGroups[idx-1] = SMESH::SMESH_GroupBase::_duplicate(aGroupUsed);
-	  SMESHGUI::GetSMESHGUI()->getApp()->updateObjectBrowser();
-	}
+        aGroupUsed = myMesh->ConvertToStandalone( aGeomGroup );
+        if ( !aGroupUsed->_is_nil() && idx > 0 ) {
+          myGroups[idx-1] = SMESH::SMESH_GroupBase::_duplicate(aGroupUsed);
+          SMESHGUI::GetSMESHGUI()->getApp()->updateObjectBrowser();
+        }
       }
       else
-	aGroupUsed = SMESH::SMESH_Group::_narrow( aGroup );
+        aGroupUsed = SMESH::SMESH_Group::_narrow( aGroup );
     }
 
     if ( !aGroupUsed->_is_nil() ) {
@@ -529,6 +529,8 @@ bool SMESHGUI_NodesDlg::ClickOnApply()
   }
 
   SMESHGUI::Modified();
+  SMESH::UpdateView();
+  mySimulation->SetVisibility(false);
 
   return true;
 }
@@ -623,10 +625,10 @@ void SMESHGUI_NodesDlg::SelectionIntoArgument()
     for( int i = 0, n = aListOfGroups.length(); i < n; i++ ) {
       SMESH::SMESH_GroupBase_var aGroup = aListOfGroups[i];
       if ( !aGroup->_is_nil() && aGroup->GetType() == SMESH::NODE ) {
-	QString aGroupName( aGroup->GetName() );
-	if ( !aGroupName.isEmpty() ) {
-	  myGroups.append(SMESH::SMESH_GroupBase::_duplicate(aGroup));
-	  ComboBox_GroupName->addItem( aGroupName );
+        QString aGroupName( aGroup->GetName() );
+        if ( !aGroupName.isEmpty() ) {
+          myGroups.append(SMESH::SMESH_GroupBase::_duplicate(aGroup));
+          ComboBox_GroupName->addItem( aGroupName );
         }
       }
     }

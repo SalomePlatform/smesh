@@ -1,62 +1,67 @@
 /*!
 
-\page mesh_infos_page Mesh infos
+\page mesh_infos_page Mesh Information
 
-\n There are three information boxes: <b>Standard Mesh
-Infos</b>, <b>Advanced Mesh Infos</b> and <b> Mesh Element Info</b>.
+The user can obtain an information about the selected mesh object
+(mesh, sub-mesh or group) using <b>Mesh Information</b> dialog box.
 
-<br>
-\anchor standard_mesh_infos_anchor
-<h2>Standard Mesh Infos</h2>
+The <b>Mesh Information</b> dialog box provides two tab pages:
+- <b>Base Info</b> - to show base information about selected mesh
+object
+- <b>Element Info</b> - to show detail information about selected mesh
+node or element.
 
-The <b>Standard Mesh Infos</b> box gives only the information on the
-number of elements of maximum dimension and the number of nodes in the
-mesh. However, from this Info you can learn about groups selected on
-this mesh.
-\n To view the <b>Standard Mesh Infos</b>, select your mesh or submesh
-in the <b>Object Browser</b> and select <b>Standard Mesh Infos</b>
-from the \b Mesh menu or click <em>"Standard Mesh Infos"</em> button
+\anchor advanced_mesh_infos_anchor
+<h2>Base Info</h2>
+
+The <b>Base Info</b> tab page of the dialog box provides general
+information on the selected object - mesh, sub-mesh or mesh group:
+name, type, total number of nodes and elements separately for each
+type: 0D elements, edges, faces and volumes.
+
+To view the <b>Mesh Information</b>, select your mesh, sub-mesh or
+group in the <b>Object Browser</b> and invoke <b>Mesh Information</b>
+item from the \b Mesh menu or click <em>"Mesh Information"</em> button
 in the toolbar. 
 
 \image html image49.png
-<center><em>"Standard Mesh Infos" button</em></center>
-
-The following information will be displayed:
-
-\image html a-standmeshinfo.png
-
-<br>
-\anchor advanced_mesh_infos_anchor
-<h2>Advanced Mesh Infos</h2>
-
-The <b>Advanced Mesh Infos</b> box gives more information about the mesh,
-including the total number of faces and volumes and their geometrical
-types.
-\n To view the <b>Advanced Mesh Infos</b>, select your mesh or submesh
-in the <b>Object Browser</b> and select <b>Advanced Mesh Infos</b>
-from the \b Mesh menu or click <em>"Advanced Mesh Infos"</em> button
-in the toolbar.
-
-\image html image50.gif
-<center><em>"Advanced Mesh Infos" button</em></center>
+<center><em>"Mesh Information" button</em></center>
 
 The following information will be displayed:
 
 \image html advanced_mesh_infos.png
+<center><em>"Base Info" page</em></center>
 
-<br>
 \anchor mesh_element_info_anchor
-<h2>Mesh Element Info</h2> 
+<h2>Mesh Element Information</h2> 
 
-The <b>Mesh Element Info</b> dialog box gives basic information about the type, coordinates and connectivity of the selected mesh node or element.
-\n It is possible to input the Element ID or to select the Element in
-the Viewer.
+The <b>Element Info</b> tab page of the dialog box gives basic
+information about the type, coordinates and connectivity of the
+selected mesh node or element.
+
+To view the <b>Mesh Element Information</b>, select your mesh, sub-mesh or
+group in the <b>Object Browser</b> and invoke <b>Mesh Element Information</b>
+item from the \b Mesh menu or click <em>"Mesh Element Information"</em> button
+in the toolbar. 
+
+\image html elem_info.png
+<center><em>"Mesh Element Information" button</em></center>
+
+The following information will be displayed:
 
 \image html eleminfo1.png
-
+<center><em>"Element Info" page, node</em></center>
+<br>
 \image html eleminfo2.png 
+<center><em>"Element Info" page, element</em></center>
 
-In case you get Mesh Infos via a TUI script the information is displayed in Python Console.
-<b>See the</b> \ref tui_viewing_mesh_infos "TUI Example", 
+The use can either input the ID of a node or element he wants to
+analyze directly in the dialog box or select the node or element in
+the 3D viewer.
+
+In case you get <b>Mesh Information</b> via a TUI script, the information is
+displayed in the Python Console. 
+<b>See the</b> \ref tui_viewing_mesh_infos "TUI Example".
 
 */
+	

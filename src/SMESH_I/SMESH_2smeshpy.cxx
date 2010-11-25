@@ -342,6 +342,7 @@ void _pyGen::Process( const Handle(_pyCommand)& theCommand )
   // Concatenate( [mesh1, ...], ... )
   // CreateHypothesis( theHypType, theLibName )
   // Compute( mesh, geom )
+  // Evaluate( mesh, geom )
   // mesh creation
   TCollection_AsciiString method = theCommand->GetMethod();
 
@@ -391,6 +392,20 @@ void _pyGen::Process( const Handle(_pyCommand)& theCommand )
       theCommand->SetObject( meshID );
       theCommand->RemoveArgs();
       id_mesh->second->Flush();
+      return;
+    }
+  }
+
+  // smeshgen.Evaluate( mesh, geom ) --> mesh.Evaluate(geom)
+  if ( method == "Evaluate" )
+  {
+    const _pyID& meshID = theCommand->GetArg( 1 );
+    map< _pyID, Handle(_pyMesh) >::iterator id_mesh = myMeshes.find( meshID );
+    if ( id_mesh != myMeshes.end() ) {
+      theCommand->SetObject( meshID );
+      _pyID geom = theCommand->GetArg( 2 );
+      theCommand->RemoveArgs();
+      theCommand->SetArg( 1, geom );
       return;
     }
   }
@@ -1091,12 +1106,12 @@ _pyMeshEditor::_pyMeshEditor(const Handle(_pyCommand)& theCreationCmd):
 
 void _pyMeshEditor::Process( const Handle(_pyCommand)& theCommand)
 {
-  // names of SMESH_MeshEditor methods fully equal to methods of class Mesh, so
+  // names of SMESH_MeshEditor methods fully equal to methods of python class Mesh, so
   // commands calling this methods are converted to calls of methods of Mesh
   static TStringSet sameMethods;
   if ( sameMethods.empty() ) {
     const char * names[] = {
-      "RemoveElements","RemoveNodes","AddNode","Add0DElement","AddEdge","AddFace","AddPolygonalFace",
+      "RemoveElements","RemoveNodes","RemoveOrphanNodes","AddNode","Add0DElement","AddEdge","AddFace","AddPolygonalFace",
       "AddVolume","AddPolyhedralVolume","AddPolyhedralVolumeByFaces","MoveNode", "MoveClosestNodeToPoint",
       "InverseDiag","DeleteDiag","Reorient","ReorientObject","TriToQuad","SplitQuad","SplitQuadObject",
       "BestSplit","Smooth","SmoothObject","SmoothParametric","SmoothParametricObject",
@@ -1105,7 +1120,7 @@ void _pyMeshEditor::Process( const Handle(_pyCommand)& theCommand)
       "ExtrusionSweep","AdvancedExtrusion","ExtrusionSweepObject","ExtrusionSweepObject1D","ExtrusionSweepObject2D",
       "ExtrusionAlongPath","ExtrusionAlongPathObject","ExtrusionAlongPathObject1D","ExtrusionAlongPathObject2D",
       "Mirror","MirrorObject","Translate","TranslateObject","Rotate","RotateObject",
-      "FindCoincidentNodes","FindCoincidentNodesOnPart","MergeNodes","FindEqualElements",
+      "FindCoincidentNodes",/*"FindCoincidentNodesOnPart",*/"MergeNodes","FindEqualElements",
       "MergeElements","MergeEqualElements","SewFreeBorders","SewConformFreeBorders",
       "SewBorderToSide","SewSideElements","ChangeElemNodes","GetLastCreatedNodes",
       "GetLastCreatedElems",
@@ -1116,9 +1131,9 @@ void _pyMeshEditor::Process( const Handle(_pyCommand)& theCommand)
   }
 
   // names of SMESH_MeshEditor methods which differ from methods of class Mesh
-  // only last two arguments
+  // only by last two arguments
   static TStringSet diffLastTwoArgsMethods;
-  if (diffLastTwoArgsMethods.empty() ){
+  if (diffLastTwoArgsMethods.empty() ) {
     const char * names[] = {
       "MirrorMakeGroups","MirrorObjectMakeGroups",
       "TranslateMakeGroups","TranslateObjectMakeGroups",
@@ -1127,41 +1142,59 @@ void _pyMeshEditor::Process( const Handle(_pyCommand)& theCommand)
     diffLastTwoArgsMethods.Insert( names );
   }
 
-  if ( sameMethods.Contains( theCommand->GetMethod() )) {
-    theCommand->SetObject( myMesh );
-
-    // meshes made by *MakeMesh() methods are not wrapped by _pyMesh,
-    // so let _pyMesh care of it (TMP?)
-//     if ( theCommand->GetMethod().Search("MakeMesh") != -1 )
-//       _pyMesh( new _pyCommand( theCommand->GetString(), 0 )); // for theGen->SetAccessorMethod()
-  }
-  else {
-    
+  const TCollection_AsciiString & method = theCommand->GetMethod();
+  bool isPyMeshMethod = sameMethods.Contains( method );
+  if ( !isPyMeshMethod )
+  {
     //Replace SMESH_MeshEditor "MakeGroups" functions on the Mesh 
     //functions with the flag "theMakeGroups = True" like:
     //SMESH_MeshEditor.CmdMakeGroups => Mesh.Cmd(...,True)
-    int pos = theCommand->GetMethod().Search("MakeGroups");
-    if( pos != -1) {  
+    int pos = method.Search("MakeGroups");
+    if( pos != -1)
+    {
+      isPyMeshMethod = true;
+
       // 1. Remove "MakeGroups" from the Command
       TCollection_AsciiString aMethod = theCommand->GetMethod();
       int nbArgsToAdd = diffLastTwoArgsMethods.Contains(aMethod) ? 2 : 1;
       aMethod.Trunc(pos-1);
       theCommand->SetMethod(aMethod);
 
-      // 2. Set Mesh object instead of SMESH_MeshEditor
-      theCommand->SetObject( myMesh );
-
-      // 3. And add last "True" argument
+      // 2. And add last "True" argument(s)
       while(nbArgsToAdd--)
-        theCommand->SetArg(theCommand->GetNbArgs()+1,"True ");
+        theCommand->SetArg(theCommand->GetNbArgs()+1,"True");
     }
-    else {
-      // editor creation command is needed only if any editor function is called
-      theGen->AddMeshAccessorMethod( theCommand ); // for *Object()
-      if ( !myCreationCmdStr.IsEmpty() ) {
-        GetCreationCmd()->GetString() = myCreationCmdStr;
-        myCreationCmdStr.Clear();
-      }
+  }
+
+  // set "FindCoincidentNodesOnPart()" instead of "FindCoincidentNodesOnPartBut()"
+  if ( !isPyMeshMethod && method == "FindCoincidentNodesOnPartBut")
+  {
+    isPyMeshMethod=true;
+    theCommand->SetMethod("FindCoincidentNodesOnPart");
+  }
+  // DoubleNodeElemGroupNew() -> DoubleNodeElemGroup()
+  if ( !isPyMeshMethod && ( method == "DoubleNodeElemGroupNew" || method == "DoubleNodeGroupNew"))
+  {
+    isPyMeshMethod=true;
+    theCommand->SetMethod( method.SubString( 1, method.Length()-3));
+    theCommand->SetArg(theCommand->GetNbArgs()+1,"True");
+  }
+
+  // meshes made by *MakeMesh() methods are not wrapped by _pyMesh,
+  // so let _pyMesh care of it (TMP?)
+  //     if ( theCommand->GetMethod().Search("MakeMesh") != -1 )
+  //       _pyMesh( new _pyCommand( theCommand->GetString(), 0 )); // for theGen->SetAccessorMethod()
+  if ( isPyMeshMethod )
+  {
+    theCommand->SetObject( myMesh );
+  }
+  else
+  {
+    // editor creation command is needed only if any editor function is called
+    theGen->AddMeshAccessorMethod( theCommand ); // for *Object()
+    if ( !myCreationCmdStr.IsEmpty() ) {
+      GetCreationCmd()->GetString() = myCreationCmdStr;
+      myCreationCmdStr.Clear();
     }
   }
 }

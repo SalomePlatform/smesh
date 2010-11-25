@@ -16,69 +16,96 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
-
-// SMESH SMESHGUI : GUI for SMESH component
 // File   : SMESHGUI_Make2DFrom3D.h
-// Author : Open CASCADE S.A.S.
-//
+// Author : Vadim SANDLER, Open CASCADE S.A.S. (vadim.sandler@opencascade.com)
+
 #ifndef SMESHGUI_Make2DFrom3DOp_H
 #define SMESHGUI_Make2DFrom3DOp_H
 
 // SMESH includes
 #include "SMESH_SMESHGUI.hxx"
-
 #include "SMESHGUI_Dialog.h"
-#include "SMESHGUI_Operation.h"
+#include "SMESHGUI_SelectionOp.h"
 
-// IDL includes
 #include <SALOMEconfig.h>
-#include CORBA_SERVER_HEADER(SMESH_Mesh)
+#include CORBA_SERVER_HEADER(SMESH_MeshEditor)
 
-class QFrame;
-class SMESHGUI_MeshInfosBox;
+class QCheckBox;
+class QLineEdit;
+class QRadioButton;
 
 /*!
  * \brief Dialog to show result mesh statistic
  */
 
-class SMESHGUI_Make2DFrom3DDlg :  public SMESHGUI_Dialog
+class SMESHGUI_EXPORT SMESHGUI_Make2DFrom3DDlg :  public SMESHGUI_Dialog
 {
   Q_OBJECT
 
- public:
+public:
+  enum { Mesh };
+
   SMESHGUI_Make2DFrom3DDlg( QWidget* );
   virtual ~SMESHGUI_Make2DFrom3DDlg();
 
-  void                   SetMeshName(const QString& theName);
-  void                   SetMeshInfo(const SMESH::long_array& theInfo);
+  SMESH::Bnd_Dimension mode() const;
 
- private:
-  QFrame*                createMainFrame( QWidget* );
+  bool                 needNewMesh() const;
+  QString              getNewMeshName() const;
+  void                 setNewMeshName( const QString& );
 
- private:
-  QLabel*                myMeshName;
-  SMESHGUI_MeshInfosBox* myFullInfo;
+  bool                 needGroup() const;
+  QString              getGroupName() const;
+  void                 setGroupName( const QString& );
+
+  bool                 copySource() const;
+  bool                 copyMissingOnly() const;
+
+private slots:
+  void                 onTargetChanged();
+  void                 onGroupChecked();
+
+private:
+  QRadioButton* my2dFrom3dRB;
+  QRadioButton* my1dFrom2dRB;
+  QRadioButton* my1dFrom3dRB;
+  QRadioButton* myThisMeshRB;
+  QRadioButton* myNewMeshRB;
+  QLineEdit*    myMeshName;
+  QCheckBox*    myCopyCheck;
+  QCheckBox*    myMissingCheck;
+  QCheckBox*    myGroupCheck;
+  QLineEdit*    myGroupName;
 };
-
 
 /*!
  * \brief Operation to compute 2D mesh on 3D
  */
 
-class SMESHGUI_Make2DFrom3DOp : public SMESHGUI_Operation
+class SMESHGUI_EXPORT SMESHGUI_Make2DFrom3DOp : public SMESHGUI_SelectionOp
 {
- public:
+  Q_OBJECT
+
+public:
   SMESHGUI_Make2DFrom3DOp();
   virtual ~SMESHGUI_Make2DFrom3DOp();
 
- protected:
-  virtual void                       startOperation();
+  virtual LightApp_Dialog*           dlg() const;
 
- private:
+protected:
+  virtual void                       startOperation();
+  virtual void                       selectionDone();
+  virtual SUIT_SelectionFilter*      createFilter( const int ) const;
+  bool                               isValid( QString& ) const;
+
+protected slots:
+  virtual bool                       onApply();
+
+private:
   bool                               compute2DMesh();
 
- private:
-  SMESH::SMESH_Mesh_var              myMesh;
+private:
+  SMESH::SMESH_IDSource_var          mySrc;
   QPointer<SMESHGUI_Make2DFrom3DDlg> myDlg;
 };
 

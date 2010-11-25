@@ -128,7 +128,7 @@ hexa.Compute()
 
 <br>
 \anchor tui_average_length
-<h3>Average Length</h3>
+<h3>Local Length</h3>
 
 \code
 from geompy import *
@@ -549,11 +549,10 @@ mesh.Compute()
 \endcode
 
 \anchor tui_quadrangle_parameters
-<h2>Quadrangle Parameters example </h2>
+<h2>Quadrangle Parameters example 1 (meshing a face with 3 edges) </h2>
 \code
-import geompy
-import smesh
-import StdMeshers
+from smesh import *
+SetCurrentStudy(salome.myStudy)
 
 # Get 1/4 part from the disk face.
 Box_1 = geompy.MakeBoxDXDYDZ(100, 100, 100)
@@ -566,17 +565,112 @@ geompy.addToStudy( Common_1, "Common_1" )
 # Set the Geometry for meshing
 Mesh_1 = smesh.Mesh(Common_1)
 
-# Create Quadrangle parameters and define the Base Vertex.
-Quadrangle_Parameters_1 = smesh.CreateHypothesis('QuadrangleParams')
-Quadrangle_Parameters_1.SetTriaVertex( 8 )
 
-# Define 1D hypothesis and cmpute the mesh
+# Define 1D hypothesis and compute the mesh
 Regular_1D = Mesh_1.Segment()
 Nb_Segments_1 = Regular_1D.NumberOfSegments(10)
 Nb_Segments_1.SetDistrType( 0 )
+
+# Create Quadrangle parameters and define the Base Vertex.
+Quadrangle_2D = Mesh_1.Quadrangle().TriangleVertex( 8 )
+
+Mesh_1.Compute()
+\endcode
+
+<h2>Quadrangle Parameters example 2 (using different types) </h2>
+\code
+import geompy
+import smesh
+import StdMeshers
+
+# Make quadrangle face and explode it on edges.
+Vertex_1 = geompy.MakeVertex(0, 0, 0)
+Vertex_2 = geompy.MakeVertex(40, 0, 0)
+Vertex_3 = geompy.MakeVertex(40, 30, 0)
+Vertex_4 = geompy.MakeVertex(0, 30, 0)
+Quadrangle_Face_1 = geompy.MakeQuad4Vertices(Vertex_1, Vertex_4, Vertex_3, Vertex_2)
+[Edge_1,Edge_2,Edge_3,Edge_4] = geompy.SubShapeAllSorted(Quadrangle_Face_1, geompy.ShapeType["EDGE"])
+geompy.addToStudy( Vertex_1, "Vertex_1" )
+geompy.addToStudy( Vertex_2, "Vertex_2" )
+geompy.addToStudy( Vertex_3, "Vertex_3" )
+geompy.addToStudy( Vertex_4, "Vertex_4" )
+geompy.addToStudy( Quadrangle_Face_1, "Quadrangle Face_1" )
+geompy.addToStudyInFather( Quadrangle_Face_1, Edge_2, "Edge_2" )
+
+# Set the Geometry for meshing
+Mesh_1 = smesh.Mesh(Quadrangle_Face_1)
+
+# Create Quadrangle parameters and
+# define the Type as Quadrangle Preference
+Quadrangle_Parameters_1 = smesh.CreateHypothesis('QuadrangleParams')
+Quadrangle_Parameters_1.SetQuadType( StdMeshers.QUAD_QUADRANGLE_PREF )
+
+# Define other hypotheses and algorithms
+Regular_1D = Mesh_1.Segment()
+Nb_Segments_1 = Regular_1D.NumberOfSegments(4)
+Nb_Segments_1.SetDistrType( 0 )
 status = Mesh_1.AddHypothesis(Quadrangle_Parameters_1)
 Quadrangle_2D = Mesh_1.Quadrangle()
-Mesh_1.Compute()
+
+# Define submesh on one edge to provide different number of segments
+Regular_1D_1 = Mesh_1.Segment(geom=Edge_2)
+Nb_Segments_2 = Regular_1D_1.NumberOfSegments(10)
+Nb_Segments_2.SetDistrType( 0 )
+SubMesh_1 = Regular_1D_1.GetSubMesh()
+
+# Compute mesh (with Quadrangle Preference type)
+isDone = Mesh_1.Compute()
+
+# Change type to Reduced and compute again
+Quadrangle_Parameters_1.SetQuadType( StdMeshers.QUAD_REDUCED )
+isDone = Mesh_1.Compute()
+\endcode
+
+\anchor tui_import
+<h2>"Use Existing Elements" example </h2>
+\code
+
+from smesh import *
+SetCurrentStudy(salome.myStudy)
+
+# Make a patritioned box
+
+box = geompy.MakeBoxDXDYDZ(100,100,100)
+
+N = geompy.MakeVectorDXDYDZ( 1,0,0 )
+O = geompy.MakeVertex( 50,0,0 )
+plane = geompy.MakePlane( O, N, 200 ) # plane YOZ
+
+shape2boxes = geompy.MakeHalfPartition( box, plane )
+boxes = geompy.SubShapeAllSorted(shape2boxes, geompy.ShapeType["SOLID"])
+
+geompy.addToStudy( boxes[0], "boxes[0]")
+geompy.addToStudy( boxes[1], "boxes[1]")
+midFace0 = geompy.SubShapeAllSorted(boxes[0], geompy.ShapeType["FACE"])[5]
+geompy.addToStudyInFather( boxes[0], midFace0, "middle Face")
+midFace1 = geompy.SubShapeAllSorted(boxes[1], geompy.ShapeType["FACE"])[0]
+geompy.addToStudyInFather( boxes[1], midFace1, "middle Face")
+
+# Mesh one of boxes with quadrangles. It is a source mesh
+
+srcMesh = Mesh(boxes[0], "source mesh") # box coloser to CS origin
+nSeg1 = srcMesh.Segment().NumberOfSegments(4)
+srcMesh.Quadrangle()
+srcMesh.Compute()
+srcFaceGroup = srcMesh.GroupOnGeom( midFace0, "src faces", FACE )
+
+# Import faces from midFace0 to the target mesh
+
+tgtMesh = Mesh(boxes[1], "target mesh")
+importAlgo = tgtMesh.UseExisting2DElements(midFace1)
+import2hyp = importAlgo.SourceFaces( [srcFaceGroup] )
+tgtMesh.Segment().NumberOfSegments(3)
+tgtMesh.Quadrangle()
+tgtMesh.Compute()
+
+# Import the whole source mesh with groups
+import2hyp.SetCopySourceMesh(True,True)
+tgtMesh.Compute()
 \endcode
 
 \n Other meshing algorithms:

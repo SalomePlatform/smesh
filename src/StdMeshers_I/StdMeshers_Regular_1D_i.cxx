@@ -25,7 +25,6 @@
 //           Moved here from SMESH_Regular_1D_i.cxx
 //  Author : Paul RASCLE, EDF
 //  Module : SMESH
-//  $Header$
 //
 #include "StdMeshers_Regular_1D_i.hxx"
 #include "SMESH_Gen.hxx"

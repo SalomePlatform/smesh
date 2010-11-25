@@ -279,4 +279,17 @@ void SMESH_Hypothesis_i::LoadFrom( const char* theStream )
   MESSAGE( "SMESH_Hypothesis_i::LoadFrom" );
   std::istringstream is( theStream );
   myBaseImpl->LoadFrom( is );
+  // let listeners know about loading (issue 0020918)
+  myBaseImpl->NotifySubMeshesHypothesisModification();
+}
+
+//================================================================================
+/*!
+ * \brief This mesthod is called after completion of loading a study 
+ */
+//================================================================================
+
+void SMESH_Hypothesis_i::UpdateAsMeshesRestored()
+{
+  // for hyps needing full data restored
 }

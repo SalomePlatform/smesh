@@ -31,6 +31,8 @@ int main(int argc, char** argv)
   new Taper();
   new Skew();
   new Area();
+  new MaxElementLength2D();
+  new MaxElementLength3D();
   new Length();
   //  new Length2D();
   new MultiConnection();

@@ -50,6 +50,7 @@
 #include <Geom_TrimmedCurve.hxx>
 #include <TColgp_SequenceOfPnt.hxx>
 #include <TColgp_SequenceOfPnt2d.hxx>
+#include <TopExp.hxx>
 #include <TopExp_Explorer.hxx>
 #include <TopTools_ListIteratorOfListOfShape.hxx>
 #include <TopoDS.hxx>
@@ -570,6 +571,8 @@ bool StdMeshers_RadialQuadrangle_1D2D::Compute(SMESH_Mesh&         aMesh,
       if (!GetSortedNodesOnEdge(aMesh.GetMeshDS(),LinEdge1,true,theNodes))
         return error("Invalid mesh on a straight edge");
 
+      Nodes1.resize( myLayerPositions.size()+1 );
+      Nodes2.resize( myLayerPositions.size()+1 );
       vector< const SMDS_MeshNode* > *pNodes1 = &Nodes1, *pNodes2 = &Nodes2;
       bool nodesFromP0ToP1 = ( theNodes.rbegin()->second == NF );
       if ( !nodesFromP0ToP1 ) std::swap( pNodes1, pNodes2 );
@@ -580,8 +583,8 @@ bool StdMeshers_RadialQuadrangle_1D2D::Compute(SMESH_Mesh&         aMesh,
       {
         (*pNodes1)[i] = ritn->second;
         (*pNodes2)[i] =  itn->second;
-        Points.Append( gpXYZ( Nodes1[i]));
-        Pnts2d1.Append( myHelper->GetNodeUV( F, Nodes1[i]));
+        Points.Prepend( gpXYZ( Nodes1[i]));
+        Pnts2d1.Prepend( myHelper->GetNodeUV( F, Nodes1[i]));
       }
       NC = const_cast<SMDS_MeshNode*>( itn->second );
       Points.Remove( Nodes1.size() );
@@ -1030,9 +1033,25 @@ bool StdMeshers_RadialQuadrangle_1D2D::computeLayerPositions(const gp_Pnt&      
     vector< double > nodeParams;
     GetNodeParamOnEdge( mesh->GetMeshDS(), linEdge, nodeParams );
 
+    // nb of present nodes must be different in cases of 1 and 2 straight edges
+
+    TopoDS_Vertex VV[2];
+    TopExp::Vertices( linEdge, VV[0], VV[1]);
+    const gp_Pnt* points[] = { &p1, &p2 };
+    gp_Pnt       vPoints[] = { BRep_Tool::Pnt(VV[0]), BRep_Tool::Pnt(VV[1]) };
+    const double     tol[] = { BRep_Tool::Tolerance(VV[0]), BRep_Tool::Tolerance(VV[1]) };
+    bool pointsAreOnVertices = true;
+    for ( int iP = 0; iP < 2 && pointsAreOnVertices; ++iP )
+      pointsAreOnVertices = ( points[iP]->Distance( vPoints[0] ) < tol[0] ||
+                              points[iP]->Distance( vPoints[1] ) < tol[1] );
+
+    int nbNodes = nodeParams.size() - 2; // 2 straight edges
+    if ( !pointsAreOnVertices )
+      nbNodes = ( nodeParams.size() - 3 ) / 2; // 1 straight edge
+
     if ( myLayerPositions.empty() )
     {
-      myLayerPositions.resize( nodeParams.size() - 2 );
+      myLayerPositions.resize( nbNodes );
     }
     else if ( myDistributionHypo || myNbLayerHypo )
     {
@@ -1048,8 +1067,10 @@ bool StdMeshers_RadialQuadrangle_1D2D::computeLayerPositions(const gp_Pnt&      
         mesh->GetSubMesh( linEdge )->ComputeStateEngine( SMESH_subMesh::CLEAN );
         if ( linEdgeComputed ) *linEdgeComputed = false;
       }
-      else if ( myLayerPositions.size() != nodeParams.size()-2 ) {
-        return error("Radial edge is meshed by other algorithm");
+      else {
+        
+        if ( myLayerPositions.size() != nbNodes )
+          return error("Radial edge is meshed by other algorithm");
       }
     }
   }

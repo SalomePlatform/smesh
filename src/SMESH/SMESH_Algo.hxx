@@ -86,14 +86,14 @@ public:
   /*!
    * \brief Saves nothing in a stream
     * \param save - the stream
-    * \retval virtual std::ostream & - the stream
+    * \retval std::ostream & - the stream
    */
   virtual std::ostream & SaveTo(std::ostream & save);
 
   /*!
    * \brief Loads nothing from a stream
     * \param load - the stream
-    * \retval virtual std::ostream & - the stream
+    * \retval std::ostream & - the stream
    */
   virtual std::istream & LoadFrom(std::istream & load);
 
@@ -236,7 +236,7 @@ public:
    *
    * This method is called when a submesh gets HYP_OK algo_state.
    * After being set, event listener is notified on each event of a submesh.
-   * By default non listener is set
+   * By default none listener is set
    */
   virtual void SetEventListener(SMESH_subMesh* subMesh);
   
@@ -323,7 +323,8 @@ public:
    */
   static std::vector< const SMDS_MeshNode*> GetCommonNodes(const SMDS_MeshElement* e1,
                                                            const SMDS_MeshElement* e2);
-protected:
+
+ protected:
 
   /*!
    * \brief store error and comment and then return ( error == COMPERR_OK )

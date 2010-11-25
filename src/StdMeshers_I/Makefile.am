@@ -63,7 +63,11 @@ salomeinclude_HEADERS = \
 	StdMeshers_MaxLength_i.hxx \
 	StdMeshers_QuadrangleParams_i.hxx \
 	StdMeshers_RadialQuadrangle_1D2D_i.hxx \
-	SMESH_StdMeshers_I.hxx
+	SMESH_StdMeshers_I.hxx \
+	StdMeshers_ImportSource1D_i.hxx \
+	StdMeshers_ImportSource2D_i.hxx \
+	StdMeshers_Import_1D_i.hxx \
+	StdMeshers_Import_1D2D_i.hxx
 
 # Libraries targets
 lib_LTLIBRARIES = libStdMeshersEngine.la
@@ -105,7 +109,11 @@ dist_libStdMeshersEngine_la_SOURCES = \
 	StdMeshers_TrianglePreference_i.cxx \
 	StdMeshers_MaxLength_i.cxx \
 	StdMeshers_QuadrangleParams_i.cxx \
-	StdMeshers_RadialQuadrangle_1D2D_i.cxx
+	StdMeshers_RadialQuadrangle_1D2D_i.cxx \
+	StdMeshers_ImportSource1D_i.cxx \
+	StdMeshers_ImportSource2D_i.cxx \
+	StdMeshers_Import_1D_i.cxx \
+	StdMeshers_Import_1D2D_i.cxx
 
 # additionnal information to compil and link file
 libStdMeshersEngine_la_CPPFLAGS = \

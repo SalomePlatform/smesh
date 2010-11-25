@@ -1489,9 +1489,9 @@ SMESHGUI_CuttingIntoTetraDlg::SMESHGUI_CuttingIntoTetraDlg(SMESHGUI* theModule)
 
   if ( hasHexa )
   {
-    myGroupChoice->button(2)->hide();
     myGroupChoice->button(0)->setText( tr("SPLIT_HEX_TO_5_TETRA"));
     myGroupChoice->button(1)->setText( tr("SPLIT_HEX_TO_6_TETRA"));
+    myGroupChoice->button(2)->setText( tr("SPLIT_HEX_TO_24_TETRA"));
 
     myCriterionGrp->setTitle( tr("SPLIT_METHOD"));
     myCriterionGrp->show();
@@ -1512,7 +1512,7 @@ bool SMESHGUI_CuttingIntoTetraDlg::process (SMESH::SMESH_MeshEditor_ptr theEdito
 {
   SMESH::SMESH_IDSource_var obj = theObj;
   if ( CORBA::is_nil( obj ))
-    obj = theEditor->MakeIDSource( theIds );
+    obj = theEditor->MakeIDSource( theIds, myEntityType ? SMESH::VOLUME : SMESH::FACE );
   try {
     theEditor->SplitVolumesIntoTetra( obj, myGroupChoice->checkedId()+1 );
   }

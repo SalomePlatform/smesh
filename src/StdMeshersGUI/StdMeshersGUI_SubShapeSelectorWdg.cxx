@@ -24,14 +24,15 @@
 #include "StdMeshersGUI_SubShapeSelectorWdg.h"
 
 // SMESH Includes
-#include <SMESH_Type.h>
+#include "SMESH_Type.h"
 #include "SMESHGUI_MeshUtils.h"
-#include <SMESH_Actor.h>
-#include <SMESH_PreviewActorsCollection.h>
-#include <SMESH_ActorUtils.h>
+#include "SMESH_Actor.h"
+#include "SMESH_PreviewActorsCollection.h"
+#include "SMESH_ActorUtils.h"
 #include "SMESHGUI_GroupUtils.h"
 #include "SMESH_Gen_i.hxx"
 #include "SMESHGUI_GEOMGenUtils.h"
+#include "SMESH_LogicalFilter.hxx"
 
 // SVTK Includes
 #include <SVTK_ViewWindow.h>
@@ -49,6 +50,8 @@
 
 // GEOM Includes
 #include <GEOMBase.h>
+#include <GEOM_EdgeFilter.h>
+#include <GEOM_CompoundFilter.h>
 
 // Qt includes
 #include <QPushButton>
@@ -63,9 +66,11 @@
 #include <TopoDS_Shape.hxx>
 #include <TopExp.hxx>
 #include <TopExp_Explorer.hxx>
+#include <StdSelect_TypeOfEdge.hxx>
 
 // SALOME KERNEL includes
 #include <SALOMEDS_SObject.hxx>
+
 
 #define SPACING 6
 #define MARGIN 0
@@ -128,6 +133,14 @@ StdMeshersGUI_SubShapeSelectorWdg::~StdMeshersGUI_SubShapeSelectorWdg()
   myEntry = "";
   myParamValue = "";
   myMainShape.Nullify();
+
+  if ( mySelectionMgr && myFilter )
+    mySelectionMgr->removeFilter( myFilter );
+  delete myFilter; myFilter=0;
+
+  SUIT_SelectionFilter* filter;
+  foreach( filter, myGeomFilters )
+    delete filter;
 }
 
 //================================================================================
@@ -152,6 +165,16 @@ void StdMeshersGUI_SubShapeSelectorWdg::init()
 
   if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
     aViewWindow->SetSelectionMode( ActorSelection );
+
+
+  SalomeApp_Study* study = mySMESHGUI->activeStudy();
+  GEOM_EdgeFilter* edgeFilter = new GEOM_EdgeFilter(study,StdSelect_AnyEdge);
+  GEOM_CompoundFilter* gpoupFilter = new GEOM_CompoundFilter(study);
+  gpoupFilter->addSubType( TopAbs_EDGE );
+  myGeomFilters.append( edgeFilter );
+  myGeomFilters.append( gpoupFilter );
+  myFilter = new SMESH_LogicalFilter( myGeomFilters, SMESH_LogicalFilter::LO_OR );
+  mySelectionMgr->installFilter( myFilter );
 
   connect( myAddButton,    SIGNAL(clicked()), SLOT(onAdd()));
   connect( myRemoveButton, SIGNAL(clicked()), SLOT(onRemove()));
@@ -222,7 +245,8 @@ void StdMeshersGUI_SubShapeSelectorWdg::SelectionIntoArgument()
           aFatherEntry = aGeomFatherObj->GetStudyEntry();
         }
         
-        if ( aFatherEntry != "" && ( aFatherEntry == myEntry || aFatherEntry == aMainFatherEntry ) ) {
+        if ( aFatherEntry != "" && ( aFatherEntry == myEntry || aFatherEntry == aMainFatherEntry ) )
+        {
           if ( aGeomObj->GetType() == 37 /*GEOM_GROUP*/ ) { // Selected Group that belongs the main object
             GEOMBase::GetShape(aGeomObj, shape); 
             if ( !shape.IsNull() ) {
@@ -258,7 +282,7 @@ void StdMeshersGUI_SubShapeSelectorWdg::SelectionIntoArgument()
     }
   }
   // update add button
-  myAddButton->setEnabled( myListWidget->count() < myMaxSize && mySelectedIDs.size() > 0 && ( mySelectedIDs.size() <= myMaxSize || myMaxSize == -1 ) );
+  myAddButton->setEnabled( ( myListWidget->count() < myMaxSize || myMaxSize == -1 ) && mySelectedIDs.size() > 0 && ( mySelectedIDs.size() <= myMaxSize || myMaxSize == -1 ) );
 
   //Connect Selected Ids in viewer and dialog's Ids list
   myListWidget->clearSelection();

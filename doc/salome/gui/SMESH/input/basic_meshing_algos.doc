@@ -62,6 +62,7 @@ license to be used within the Mesh module.
 There is also a number of more specific algorithms:
 <ul>
 <li>\subpage projection_algos_page "for meshing by projection of another mesh"</li>
+<li>\subpage import_algos_page "for meshing by importing elements from another mesh"</li>
 <li>\subpage radial_prism_algo_page "for meshing geometrical objects with cavities"</li>
 <li>\subpage segments_around_vertex_algo_page "for defining the local size of elements around a certain node"</li>
 <li>\subpage prism_3d_algo_page "for meshing prismatic shapes"</li>

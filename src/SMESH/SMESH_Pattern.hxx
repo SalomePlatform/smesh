@@ -191,7 +191,9 @@ class SMESH_EXPORT SMESH_Pattern {
     // Apply(mesh_face)
     ERR_APPLF_BAD_FACE_GEOM, // bad face geometry
     // MakeMesh
-    ERR_MAKEM_NOT_COMPUTED // mapping failed
+    ERR_MAKEM_NOT_COMPUTED, // mapping failed
+    //Unexpected error 
+    ERR_UNEXPECTED // Unexpected of the pattern mapping alorithm
   };
 
   ErrorCode GetErrorCode() const { return myErrorCode; }

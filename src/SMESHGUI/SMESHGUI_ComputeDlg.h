@@ -53,8 +53,6 @@ class SMESHGUI_MeshInfosBox;
 class SMESHGUI_PrecomputeDlg;
 class SMESHGUI_MeshEditPreview;
 
-class SMESH::compute_error_array;
-
 namespace SMESH
 {
   class TShapeDisplayer;

@@ -49,6 +49,7 @@ dist_salomeres_DATA = \
 	mesh_info.png \
 	advanced_mesh_info.png \
 	standard_mesh_info.png \
+	mesh_elem_info.png \
 	mesh_whatis.png \
 	mesh_init.png \
 	mesh_length.png \
@@ -57,6 +58,8 @@ dist_salomeres_DATA = \
 	mesh_free_edges.png \
 	mesh_free_edges_2d.png \
 	mesh_free_nodes.png \
+	mesh_max_element_length_2d.png \
+	mesh_max_element_length_3d.png \
 	mesh_multi_edges.png \
 	mesh_multi_edges_2d.png \
 	mesh_line_n.png \
@@ -70,8 +73,14 @@ dist_salomeres_DATA = \
 	mesh_pyramid.png \
 	mesh_quad_n.png \
 	mesh_quad.png \
+	mesh_quadrangle_quadpref.png \
+	mesh_quadrangle_quadpref_reversed.png \
+	mesh_quadrangle_reduced.png \
+	mesh_quadrangle_standard.png \
+	mesh_quadrangle_triapref.png \
 	mesh_rem_element.png \
 	mesh_rem_node.png \
+	mesh_rem_orphan_nodes.png \
 	mesh_shading.png \
 	mesh_shrink.png \
 	mesh_skew.png \
@@ -172,7 +181,11 @@ dist_salomeres_DATA = \
         mesh_free_faces.png \
         scale.png \
         scale_along_axes.png \
-	split_into_tetra.png
+	split_into_tetra.png \
+	mesh_duplicate_nodes.png \
+	mesh_duplicate_nodes_with_elem.png \
+	mesh_bounding_box.png \
+	mesh_min_dist.png
 
 # VSR: little trick to avoid putting if SMESHCatalog.xml to the distribution archive
 nodist_salomeres_SCRIPTS = SMESHCatalog.xml

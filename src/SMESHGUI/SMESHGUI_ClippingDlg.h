@@ -35,31 +35,91 @@
 
 // Qt includes
 #include <QDialog>
+#include <QPointer>
 
 // VTK includes
+#include <vtkPlane.h>
 #include <vtkSmartPointer.h>
 
 // STL includes
+#include <list>
+#include <map>
 #include <vector>
 
 class QLabel;
 class QPushButton;
 class QCheckBox;
 class QComboBox;
-class LightApp_SelectionMgr;
-class SVTK_Selector;
+class QListWidget;
+class QListWidgetItem;
+class SALOME_Actor;
 class SMESHGUI;
 class SMESH_Actor;
-class OrientedPlane;
 class SMESHGUI_SpinBox;
+class vtkActor;
+class vtkDataSetMapper;
+class vtkPlaneSource;
 
 namespace SMESH
 {
-  typedef vtkSmartPointer<OrientedPlane> TVTKPlane;
-  typedef std::vector<TVTKPlane> TPlanes;
   enum Orientation { XY, YZ, ZX };
-};
 
+  class OrientedPlane: public vtkPlane
+  {
+    QPointer<SVTK_ViewWindow> myViewWindow;
+    vtkDataSetMapper* myMapper;
+
+  public:
+    static OrientedPlane *New();
+    static OrientedPlane *New(SVTK_ViewWindow* theViewWindow);
+    vtkTypeMacro (OrientedPlane, vtkPlane);
+
+    SMESH::Orientation myOrientation;
+    float myDistance;
+    double myAngle[2];
+
+    vtkPlaneSource* myPlaneSource;
+    SALOME_Actor *myActor;
+
+    void SetOrientation (SMESH::Orientation theOrientation) { myOrientation = theOrientation; }
+    SMESH::Orientation GetOrientation() { return myOrientation; }
+
+    void SetDistance (float theDistance) { myDistance = theDistance; }
+    float GetDistance() { return myDistance; }
+
+    void ShallowCopy (OrientedPlane* theOrientedPlane);
+
+  protected:
+    OrientedPlane(SVTK_ViewWindow* theViewWindow);
+    OrientedPlane();
+
+    void Init();
+
+    ~OrientedPlane();
+  private:
+    // Not implemented.
+    OrientedPlane (const OrientedPlane&);
+    void operator= (const OrientedPlane&);
+  };
+
+  typedef vtkSmartPointer<OrientedPlane>    TPlane;
+  typedef std::list<vtkActor*>              TActorList;
+
+  struct TPlaneData
+  {
+    TPlaneData( TPlane thePlane,
+                TActorList theActorList )
+    {
+      Plane = thePlane;
+      ActorList = theActorList;
+    }
+    TPlane     Plane;
+    TActorList ActorList;
+  };
+
+  typedef std::vector<TPlane>               TPlaneVector;
+  typedef std::vector<TPlaneData>           TPlaneDataVector;
+};
 
 //=================================================================================
 // class    : SMESHGUI_ClippingDlg
@@ -70,7 +130,7 @@ class SMESHGUI_EXPORT SMESHGUI_ClippingDlg : public QDialog
   Q_OBJECT
 
 public:
-  SMESHGUI_ClippingDlg( SMESHGUI* );
+  SMESHGUI_ClippingDlg( SMESHGUI*, SVTK_ViewWindow* );
   ~SMESHGUI_ClippingDlg();
   
   double                  getDistance() const;
@@ -78,35 +138,42 @@ public:
   double                  getRotation1() const;
   double                  getRotation2() const;
   void                    setRotation( const double, const double );
-  void                    Sinchronize();
 
   // used in SMESHGUI::restoreVisualParameters() to avoid
   // declaration of OrientedPlane outside of SMESHGUI_ClippingDlg.cxx
-  static void             AddPlane (SMESH_Actor*         theActor,
-                                    SVTK_ViewWindow*     theViewWindow,
-                                    SMESH::Orientation   theOrientation,
-                                    double               theDistance,
-                                    vtkFloatingPointType theAngle[2]);
-
-  static void             GetPlaneParam (SMESH_Actor*          theActor,
-                                         int                   thePlaneIndex,
-                                         SMESH::Orientation&   theOrientation,
-                                         double&               theDistance,
-                                         vtkFloatingPointType* theAngle);
+  static SMESH::OrientedPlane* AddPlane (SMESH::TActorList          theActorList,
+                                         SVTK_ViewWindow*           theViewWindow,
+                                         SMESH::Orientation         theOrientation,
+                                         double                     theDistance,
+                                         const vtkFloatingPointType theAngle[2]);
 
 protected:  
   void                    keyPressEvent( QKeyEvent* );
 
 private:
-  LightApp_SelectionMgr*  mySelectionMgr;
-  SVTK_Selector*          mySelector;
+  void                    initializePlaneData();
+
+  void                    synchronize();
+
+  void                    updateActorList();
+  SMESH::TActorList       getCurrentActors();
+
+  void                    updateActorItem( QListWidgetItem* theItem,
+                                           bool theUpdateSelectAll,
+                                           bool theUpdateClippingPlaneMap );
+
+  void                    dumpPlaneData() const;
+
+private:
   SMESHGUI*               mySMESHGUI;
-  SMESH_Actor*            myActor;
-  SMESH::TPlanes          myPlanes;
+  SVTK_ViewWindow*        myViewWindow;
+  SMESH::TPlaneDataVector myPlanes;
   
   QComboBox*              ComboBoxPlanes;
   QPushButton*            buttonNew;
   QPushButton*            buttonDelete;
+  QListWidget*            ActorList;
+  QCheckBox*              SelectAllCheckBox;
   QLabel*                 TextLabelOrientation;
   QComboBox*              ComboBoxOrientation;
   QLabel*                 TextLabelDistance;
@@ -129,9 +196,10 @@ public slots:
   void                    onSelectPlane( int );
   void                    ClickOnNew();
   void                    ClickOnDelete();
+  void                    onActorItemChanged( QListWidgetItem* );
+  void                    onSelectAll( int );
   void                    onSelectOrientation( int );
   void                    SetCurrentPlaneParam();
-  void                    onSelectionChanged();
   void                    OnPreviewToggle( bool );
   void                    ClickOnOk();
   void                    ClickOnCancel();

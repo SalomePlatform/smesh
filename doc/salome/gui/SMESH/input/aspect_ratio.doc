@@ -13,10 +13,10 @@ nodes is calculated by the formula:
 
 \image html formula4.png
 
-- The <b>Aspect Ratio</b> of a \b quadrangle 2D element consisting of
- 4 nodes is the worst (i.e. the greatest) value from all triangles
- which can be built taking three nodes of the quadrangle. There are
- four triangles to consider:
+- The <b>Aspect Ratio</b> of a \b quadrangle 2D element consisting of 4
+nodes is calculated by the formula:
+
+\image html formula5.png
 
 \image html image138.gif
 
@@ -24,8 +24,8 @@ nodes is calculated by the formula:
 <ol>
 <li>Display your mesh in the viewer.</li>
 
-<li>Choose <b>Controls > Aspect Ratio</b> or click <em>"Aspect
-Ratio"</em> button in the toolbar.
+<li>Choose <b>Controls > Face Controls > Aspect Ratio</b> or click
+<em>"Aspect Ratio"</em> button in the toolbar.
 
 \image html image37.png
 <center><em>"Aspect Ratio" button</em></center>

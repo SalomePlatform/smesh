@@ -141,12 +141,14 @@ public:
   
   void ClearLog() throw(SALOME_Exception);
   
-  int GetId()                { return _id; }
+  int GetId() const          { return _id; }
   
   SMESHDS_Mesh * GetMeshDS() { return _myMeshDS; }
   
-  SMESH_Gen *GetGen()        { return _gen; }
+  const SMESHDS_Mesh * GetMeshDS() const { return _myMeshDS; }
   
+  SMESH_Gen *GetGen()        { return _gen; }
+
   SMESH_subMesh *GetSubMesh(const TopoDS_Shape & aSubShape)
     throw(SALOME_Exception);
   
@@ -266,9 +268,17 @@ public:
   
   SMESH_Group* GetGroup (const int theGroupID);
 
-  void RemoveGroup (const int theGroupID);
+  bool RemoveGroup (const int theGroupID);
 
   SMESH_Group* ConvertToStandalone ( int theGroupID );
+
+  struct TRmGroupCallUp
+  {
+    virtual void RemoveGroup (const int theGroupID)=0;
+    virtual ~TRmGroupCallUp() {}
+  };
+  void SetRemoveGroupCallUp( TRmGroupCallUp * upCaller );
+
 
   SMDSAbs_ElementType GetElementType( const int id, const bool iselem );
 
@@ -303,9 +313,9 @@ protected:
   std::list <SMESH_subMesh*> _subMeshesUsingHypothesisList;
   SMESHDS_Document *         _myDocument;
   SMESHDS_Mesh *             _myMeshDS;
+  SMESH_Gen *                _gen;
   std::map <int, SMESH_subMesh*> _mapSubMesh;
   std::map <int, SMESH_Group*>   _mapGroup;
-  SMESH_Gen *                _gen;
   
   bool                       _isAutoColor;
   bool                       _isModified; //!< modified since last total re-compute, issue 0020693
@@ -315,6 +325,11 @@ protected:
   TopTools_IndexedDataMapOfShapeListOfShape _mapAncestors;
 
   TListOfListOfInt           _mySubMeshOrder;
+
+  // Struct calling RemoveGroup at CORBA API implementation level, used
+  // to make an upper level be consistent with a lower one when group removal
+  // is invoked by hyp modification 
+  TRmGroupCallUp*            _rmGroupCallUp;
 
 protected:
   SMESH_Mesh() {};

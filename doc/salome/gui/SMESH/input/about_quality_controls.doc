@@ -13,24 +13,25 @@ the meshing elements and these calculated values is shown with the
 help of a scalar bar, which is displayed near the presentation of your
 mesh.
 
-There are 0D, 1D, 2D and 3D quality controls.
+There are four types of quality controls, corresponding to node, edge,
+face and volume entity type.
 
-0D mesh quality controls:
-<ul>
-<li>\ref free_nodes_page "Free nodes"</li>
-</ul>
-
-1D mesh quality controls:
-<ul>
-<li>\subpage free_borders_page "Free borders"</li>
-<li>\subpage borders_at_multi_connection_page "Borders at multi-connection"</li>
-<li>\subpage length_page "Length"</li>
-</ul>
-
-2D mesh quality controls:
+Node quality controls:
 <ul>
 <li>\subpage free_nodes_page "Free nodes"</li>
+</ul>
+
+Edge quality controls:
+<ul>
 <li>\subpage free_edges_page "Free edges"</li>
+<li>\subpage free_borders_page "Free borders"</li>
+<li>\subpage length_page "Length"</li>
+<li>\subpage borders_at_multi_connection_page "Borders at multi-connection"</li>
+</ul>
+
+Face quality controls:
+<ul>
+<li>\subpage free_faces_page "Free faces"</li>
 <li>\subpage length_2d_page "Length 2D"</li>
 <li>\subpage borders_at_multi_connection_2d_page "Borders at multi-connection 2D"</li>
 <li>\subpage area_page "Area"</li>
@@ -39,13 +40,14 @@ There are 0D, 1D, 2D and 3D quality controls.
 <li>\subpage minimum_angle_page "Minimum angle"</li>
 <li>\subpage warping_page "Warping"</li>
 <li>\subpage skew_page "Skew"</li>
+<li>\subpage max_element_length_2d_page "Max element length 2D"</li>
 </ul>
 
-3D mesh quality controls:
+Volume quality controls:
 <ul>
 <li>\subpage aspect_ratio_3d_page "Aspect ratio 3D"</li>
 <li>\subpage volume_page "Volume"</li>
-<li>\subpage free_faces_page "Free faces"</li>
+<li>\subpage max_element_length_3d_page "Max element length 3D"</li>
 </ul>
 
 */

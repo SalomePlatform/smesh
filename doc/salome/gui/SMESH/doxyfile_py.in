@@ -98,8 +98,8 @@ EXAMPLE_RECURSIVE      = NO
 #---------------------------------------------------------------------------
 #Input related options
 #---------------------------------------------------------------------------
-INPUT             = @top_srcdir@/src/SMESH_SWIG
-FILE_PATTERNS     = smeshDC.py
+INPUT             = @top_builddir@/src/SMESH_SWIG
+FILE_PATTERNS     = smesh.py
 IMAGE_PATH        = @srcdir@/images
 RECURSIVE         = NO
 EXAMPLE_PATH      = @top_srcdir@/src/SMESH_SWIG
@@ -157,3 +157,4 @@ DOT_CLEANUP            = YES
 #External reference options
 #---------------------------------------------------------------------------
 GENERATE_TAGFILE  = smeshpy_doc.tag
+SEARCHENGINE           = YES

@@ -37,6 +37,8 @@
 // CORBA includes
 #include <CORBA.h>
 
+#include CORBA_SERVER_HEADER(SMESH_Mesh)
+
 class SUIT_SelectionFilter;
 class SMESHGUI;
 class LightApp_SelectionMgr;
@@ -52,22 +54,29 @@ class STDMESHERSGUI_EXPORT StdMeshersGUI_ObjectReferenceParamWdg : public QWidge
 
 public:
   StdMeshersGUI_ObjectReferenceParamWdg( SUIT_SelectionFilter* filter, 
-                                         QWidget*              parent);
+                                         QWidget*              parent,
+                                         bool                  multiSelection=false);
   StdMeshersGUI_ObjectReferenceParamWdg( MeshObjectType objType,
-                                         QWidget*       parent);
+                                         QWidget*       parent,
+                                         bool           multiSelection=false);
   ~StdMeshersGUI_ObjectReferenceParamWdg();
 
   void SetObject(CORBA::Object_ptr obj);
 
+  void SetObjects(SMESH::string_array_var& objEntries);
+
   template<class TInterface> 
-    typename TInterface::_var_type GetObject() const {
-    if ( IsObjectSelected() ) return TInterface::_narrow(myObject);
+    typename TInterface::_var_type GetObject(unsigned i=0) const {
+    if ( IsObjectSelected(i) ) return TInterface::_narrow(myObjects[i]);
     return TInterface::_nil();
   }
 
+  int NbObjects() const { return myObjects.size(); }
+
   QString GetValue() const { return myParamValue; }
 
-  bool IsObjectSelected() const { return !CORBA::is_nil(myObject); }
+  bool IsObjectSelected(unsigned i=0) const
+  { return i < myObjects.size() && !CORBA::is_nil(myObjects[i]); }
 
   void AvoidSimultaneousSelection( StdMeshersGUI_ObjectReferenceParamWdg* other);
 
@@ -97,7 +106,10 @@ private:
   void init();
   
 private:
- CORBA::Object_var      myObject;
+
+  bool                                myMultiSelection;
+  std::vector<CORBA::Object_var>      myObjects;
+
  SUIT_SelectionFilter*  myFilter;
  bool                   mySelectionActivated;
 

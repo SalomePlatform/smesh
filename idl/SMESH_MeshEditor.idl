@@ -29,6 +29,8 @@
 
 module SMESH
 {
+  enum Bnd_Dimension { BND_2DFROM3D, BND_1DFROM3D, BND_1DFROM2D };
+  
   /*!
    * This interface makes modifications on the Mesh - removing elements and nodes etc.
    */
@@ -37,13 +39,38 @@ module SMESH
   {
     /*!
      * \brief Wrap a sequence of ids in a SMESH_IDSource
+     * \param IDsOfElements list of mesh elements identifiers
+     * \return new ID source object
      */
-    SMESH_IDSource MakeIDSource(in long_array IDsOfElements);
+    SMESH_IDSource MakeIDSource(in long_array IDsOfElements, in ElementType type);
 
+    /*!
+     * \brief Remove mesh elements specified by their identifiers.
+     * \param IDsOfElements list of mesh elements identifiers
+     * \return \c true if elements are correctly removed or \c false otherwise
+     */
     boolean RemoveElements(in long_array IDsOfElements);
 
+    /*!
+     * \brief Remove mesh nodes specified by their identifiers.
+     * \param IDsOfNodes list of mesh nodes identifiers
+     * \return \c true if nodes are correctly removed or \c false otherwise
+     */
     boolean RemoveNodes(in long_array IDsOfNodes);
+    
+    /*!
+     * \brief Remove all orphan nodes.
+     * \return number of removed nodes
+     */
+    long RemoveOrphanNodes();
 
+    /*!
+     * \brief Add new node.
+     * \param x X coordinate of new node
+     * \param y Y coordinate of new node
+     * \param z Z coordinate of new node
+     * \return integer identifier of new node
+     */
     long AddNode(in double x, in double y, in double z);
 
     /*!
@@ -222,6 +249,7 @@ module SMESH
      *  \param methodFlags - flags passing splitting method:
      *         1 - split the hexahedron into 5 tetrahedrons
      *         2 - split the hexahedron into 6 tetrahedrons
+     *         3 - split the hexahedron into 24 tetrahedrons
      */
     void SplitVolumesIntoTetra(in SMESH_IDSource elems, in short methodFlags)
       raises (SALOME::SALOME_Exception);
@@ -616,6 +644,11 @@ module SMESH
 				    in  double              Tolerance,
 				    out array_of_long_array GroupsOfNodes);
 
+    void FindCoincidentNodesOnPartBut (in  SMESH_IDSource      SubMeshOrGroup,
+                                       in  double              Tolerance,
+                                       out array_of_long_array GroupsOfNodes,
+                                       in  ListOfIDSources     ExceptSubMeshOrGroups);
+
     void MergeNodes (in array_of_long_array GroupsOfNodes);
 
     /*!
@@ -759,10 +792,22 @@ module SMESH
     * \param theNodes - group of nodes to be doubled.
     * \param theModifiedElems - group of elements to be updated.
     * \return TRUE if operation has been completed successfully, FALSE otherwise
-    * \sa DoubleNode(), DoubleNodes(), DoubleNodeGroups()
+    * \sa DoubleNode(), DoubleNodes(), DoubleNodeGroups(), DoubleNodeGroupNew()
     */
     boolean DoubleNodeGroup( in SMESH_GroupBase theNodes, 
                              in SMESH_GroupBase theModifiedElems );
+
+    /*!
+     * \brief Creates a hole in a mesh by doubling the nodes of some particular elements.
+     * Works as DoubleNodeGroup() described above, but returns a new group with 
+     * newly created nodes.
+     * \param theNodes - group of nodes to be doubled.
+     * \param theModifiedElems - group of elements to be updated.
+     * \return a new group with newly created nodes
+     * \sa DoubleNodeGroup()
+     */
+    SMESH_Group DoubleNodeGroupNew( in SMESH_GroupBase theNodes, 
+				    in SMESH_GroupBase theModifiedElems );
 
     /*!
     \brief Creates a hole in a mesh by doubling the nodes of some particular elements
@@ -812,12 +857,27 @@ module SMESH
      * \param theAffectedElems - group of elements to which the replicated nodes
      *        should be associated to.
      * \return TRUE if operation has been completed successfully, FALSE otherwise
-     * \sa DoubleNodes(), DoubleNodeGroups()
+     * \sa DoubleNodes(), DoubleNodeGroups(), DoubleNodeElemGroupNew()
     */
     boolean DoubleNodeElemGroup( in SMESH_GroupBase theElems, 
                                  in SMESH_GroupBase theNodesNot,
                                  in SMESH_GroupBase theAffectedElems );
 
+    /*!
+     * \brief Creates a hole in a mesh by doubling the nodes of some particular elements.
+     * Works as DoubleNodeElemGroup() described above, but returns a new group with 
+     * newly created elements.
+     * \param theElems - group of of elements (edges or faces) to be replicated
+     * \param theNodesNot - group of nodes not to replicated
+     * \param theAffectedElems - group of elements to which the replicated nodes
+     *        should be associated to.
+     * \return a new group with newly created elements
+     * \sa DoubleNodeElemGroup()
+    */
+    SMESH_Group DoubleNodeElemGroupNew( in SMESH_GroupBase theElems, 
+					in SMESH_GroupBase theNodesNot,
+					in SMESH_GroupBase theAffectedElems );
+    
     /*!
      * \brief Creates a hole in a mesh by doubling the nodes of some particular elements
      * This method provided for convenience works as DoubleNodes() described above.
@@ -863,11 +923,33 @@ module SMESH
                                           in GEOM::GEOM_Object theShape );
 
     /*!
-     * \brief Generated skin mesh (containing 2D cells) from 3D mesh
+     * \brief Generates skin mesh (containing 2D cells) from 3D mesh
      * The created 2D mesh elements based on nodes of free faces of boundary volumes
      * \return TRUE if operation has been completed successfully, FALSE otherwise
      */
     boolean Make2DMeshFrom3D();
+
+    /*!
+     * \brief Creates missing boundary elements
+     *  \param elements - elements whose boundary is to be checked
+     *  \param dimension - defines type of boundary elements to create
+     *  \param groupName - a name of group to store created boundary elements in,
+     *                     "" means not to create the group
+     *  \param meshName - a name of new mesh to store created boundary elements in,
+     *                     "" means not to create the new mesh
+     *  \param toCopyElements - if true, the checked elements will be copied into the new mesh
+     *  \param toCopyExistingBondary - if true, not only new but also pre-existing 
+     *                                boundary elements will be copied into the new mesh
+     *  \param group - returns the create group, if any
+     *  \retval SMESH::SMESH_Mesh - the mesh where elements were added to
+     */
+    SMESH::SMESH_Mesh MakeBoundaryMesh(in SMESH_IDSource elements,
+                                       in Bnd_Dimension  dimension, 
+                                       in string         groupName,
+                                       in string         meshName,
+                                       in boolean        toCopyElements,
+                                       in boolean        toCopyExistingBondary,
+                                       out SMESH_Group   group);
 
   };
 };

@@ -26,7 +26,7 @@ SALOME Platform distinguishes between the two Group types:
 \anchor standalone_group <br><h2>"Standalone Group"</h2>
 
 <b>Standalone Group</b> consists of mesh elements, which you can define in
-two possible ways.
+the following ways:
 <ul>
 <li>Choosing them manually with the mouse in the 3D Viewer. You can
 click on an element in the 3D viewer and it will be highlighted. After
@@ -36,6 +36,9 @@ the list.</li>
 definite filter to selection of the elements of your group. See more
 about filters on the
 \ref selection_filter_library_page "Selection filter library" page.</li>
+<li>By adding all existing entities of the chosen type to the
+group. For this turn on the <b>Select All</b> check box. In this
+mode all controls, which allow selecting the entities manually or by filters, are disabled.</li>
 </ul>
 To remove a selected element or elements from the list click the
 \b Remove button. The <b>Sort List</b> button allows to sort the list of IDs of

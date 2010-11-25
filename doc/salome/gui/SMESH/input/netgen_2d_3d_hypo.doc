@@ -5,11 +5,9 @@
 <b>Netgen 2D</b> and <b>Netgen 3D</b> hypotheses work only with <b>Netgen 1D-2D</b> and
 <b>Netgen 1D-2D-3D</b> algorithms. These algorithms do not require
 definition of lower-level  hypotheses and algorithms (2D and 1D for
-meshing 3D objects and 1D for meshing 2D objects). They prove to be
-useful if lower-level meshing is homogeneous for all wires and faces
-of the meshed object.
+meshing 3D objects and 1D for meshing 2D objects).
 
-\image html netgen2d.png
+\image html netgen2d3d.png
 
 - <b>Name</b> - allows to define the name for the algorithm (Netgen
 2D (or 3D) Parameters by default).
@@ -32,7 +30,18 @@ not possible.
 - <b>Optimize</b> - if this box is checked in, the algorithm will try to
 create regular (possessing even sides) elements.
 
-\image html netgen3d_simple.png
+\image html netgen3d_local_size.png
+
+- <b>Local sizes</b> - allows to define size of elements on and
+around specified geometrical edges and vertices. To define the local
+size it is necessary to select a geometrical edge or vertex in the
+object browser or in the viewer, and to click <b>On Edge</b> or <b>On
+Vertex</b> correspondingly. <b>Name</b> of the geometrical object and
+a default <b>Value</b> will be added in the table where the
+<b>Value</b> can be changed.
+- <b>Remove</b> - deletes a selected row from the table.
+
+\image html netgen2d3d_simple.png
 
 <b>Netgen 2D simple parameters</b> and <b>Netgen 3D simple
 parameters</b> allow defining the size of elements for each
@@ -42,8 +51,8 @@ dimension.
 - <b>Number of Segments</b> has the same sense as \ref
 number_of_segments_anchor "Number of segments" hypothesis with
 equidistant distribution.
-- <b>Average Length</b> has the same sense as \ref 
-average_length_anchor "Average Length" hypothesis.
+- <b>Local Length</b> has the same sense as \ref 
+average_length_anchor "Local Length" hypothesis.
 
 \b 2D group allows defining the size of 2D elements 
 - <b>Length from edges</b> if checked in, acts like \ref

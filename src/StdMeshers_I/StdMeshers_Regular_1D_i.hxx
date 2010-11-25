@@ -25,7 +25,6 @@
 //           Moved here from SMESH_Regular_1D_i.hxx
 //  Author : Paul RASCLE, EDF
 //  Module : SMESH
-//  $Header$
 //
 #ifndef _SMESH_REGULAR_1D_I_HXX_
 #define _SMESH_REGULAR_1D_I_HXX_

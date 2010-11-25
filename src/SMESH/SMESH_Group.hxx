@@ -24,7 +24,6 @@
 //  File   : SMESH_Group.hxx
 //  Author : Michael Sazonov (OCC)
 //  Module : SMESH
-//  $Header$
 //
 #ifndef _SMESH_Group_HeaderFile
 #define _SMESH_Group_HeaderFile

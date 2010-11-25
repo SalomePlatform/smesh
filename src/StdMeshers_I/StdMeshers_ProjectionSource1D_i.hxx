@@ -24,7 +24,6 @@
 //  File   : StdMeshers_ProjectionSource1D_i.hxx
 //  Author : Edward AGAPOV
 //  Module : SMESH
-//  $Header$
 //
 #ifndef _SMESH_ProjectionSource1D_I_HXX_
 #define _SMESH_ProjectionSource1D_I_HXX_

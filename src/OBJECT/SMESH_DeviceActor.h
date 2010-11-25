@@ -42,7 +42,6 @@ class vtkProperty;
 class vtkMergeFilter;
 class vtkShrinkFilter;
 class vtkUnstructuredGrid;
-class vtkScalarBarActor;
 class vtkLookupTable;
 class vtkImplicitBoolean;
 class vtkPassThroughFilter;
@@ -54,6 +53,7 @@ class VTKViewer_PolyDataMapper;
 
 class SMESH_ExtractGeometry;
 class SMESH_FaceOrientationFilter;
+class SMESH_ScalarBarActor;
 
 
 class SMESHOBJECT_EXPORT SMESH_DeviceActor: public vtkLODActor{
@@ -120,10 +120,10 @@ class SMESHOBJECT_EXPORT SMESH_DeviceActor: public vtkLODActor{
   vtkUnstructuredGrid* GetUnstructuredGrid();
 
   void SetControlMode(SMESH::Controls::FunctorPtr theFunctor,
-                      vtkScalarBarActor* theScalarBarActor,
+                      SMESH_ScalarBarActor* theScalarBarActor,
                       vtkLookupTable* theLookupTable);
   void SetExtControlMode(SMESH::Controls::FunctorPtr theFunctor,
-                         vtkScalarBarActor* theScalarBarActor,
+                         SMESH_ScalarBarActor* theScalarBarActor,
                          vtkLookupTable* theLookupTable);
   void SetExtControlMode(SMESH::Controls::FunctorPtr theFunctor);
 

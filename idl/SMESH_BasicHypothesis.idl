@@ -753,6 +753,16 @@ module StdMeshers
   /*!
    * StdMeshers_QuadrangleParams: interface of "Quadrangle Params" hypothesis
    */
+  enum QuadType
+  {
+    QUAD_STANDARD,
+    QUAD_TRIANGLE_PREF,
+    QUAD_QUADRANGLE_PREF,
+    QUAD_QUADRANGLE_PREF_REVERSED,
+    QUAD_REDUCED,
+    QUAD_NB_TYPES /* this is not a type of quadrangulation */
+  };
+
   interface StdMeshers_QuadrangleParams : SMESH::SMESH_Hypothesis
   {
     /*!
@@ -774,6 +784,58 @@ module StdMeshers
      * Get the entry of the main object
      */
     string GetObjectEntry();
+    
+    /*!
+     * Set the type of quadrangulation
+     */
+    void SetQuadType( in QuadType type );
+
+    /*!
+     * Get the type of quadrangulation
+     */
+    QuadType GetQuadType();
+  };
+
+  /*!
+   * interface of "Source edges" hypothesis.
+   * This hypothesis specifies groups of edges of other mesh to be imported
+   * in this mesh
+   */
+  interface StdMeshers_ImportSource1D : SMESH::SMESH_Hypothesis
+  {
+    /*!
+     * Set edges to import from other mesh
+     */
+    void SetSourceEdges(in SMESH::ListOfGroups groups);
+    SMESH::string_array GetSourceEdges();
+
+    /*!
+     * Set to import the whole other mesh or not, and if yes, to
+     * copy groups of not. By default the mesh is not copied.
+     */
+    void SetCopySourceMesh(in boolean toCopyMesh, in boolean toCopyGroups);
+    void GetCopySourceMesh(out boolean toCopyMesh,out boolean toCopyGroups);
+  };
+
+  /*!
+   * interface of "Source faces" hypothesis.
+   * This hypothesis specifies groups of faces of other mesh to be imported
+   * in this mesh
+   */
+  interface StdMeshers_ImportSource2D : SMESH::SMESH_Hypothesis
+  {
+    /*!
+     * Set faces to import from other mesh
+     */
+    void SetSourceFaces(in SMESH::ListOfGroups groups);
+    SMESH::string_array GetSourceFaces();
+
+    /*!
+     * Set to import the whole other mesh or not, and if yes, to
+     * copy groups of not. By default the mesh is not copied.
+     */
+    void SetCopySourceMesh(in boolean toCopyMesh,in boolean toCopyGroups);
+    void GetCopySourceMesh(out boolean toCopyMesh,out boolean toCopyGroups);
   };
 
   /*!
@@ -873,6 +935,19 @@ module StdMeshers
    * StdMeshers_RadialQuadrangle_1D2D: interface of "Radial quadrangle" algorithm
    */
   interface StdMeshers_RadialQuadrangle_1D2D : SMESH::SMESH_2D_Algo
+  {
+  };
+
+  /*!
+   * StdMeshers_Import_1D2D: interface of "Use existing 2D elements" algorithm
+   */
+  interface StdMeshers_Import_1D2D : SMESH::SMESH_2D_Algo
+  {
+  };
+  /*!
+   * StdMeshers_Import_1D: interface of "Use existing 1D elements" algorithm
+   */
+  interface StdMeshers_Import_1D : SMESH::SMESH_1D_Algo
   {
   };
 

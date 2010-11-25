@@ -31,6 +31,7 @@
 #include <gp_Ax2.hxx>
 
 //#include "utilities.h"
+#include <limits>
 
 // Define error message
 #ifdef _DEBUG_
@@ -53,10 +54,12 @@ namespace
     {
       B_BOTTOM=0, B_RIGHT, B_TOP, B_LEFT, B_FRONT, B_BACK, NB_BLOCK_SIDES
     };
+#ifdef _DEBUG_ // avoid unused variables in release mode
   const char* SBoxSides[] = //!< names of block sides
     {
       "BOTTOM", "RIGHT", "TOP", "LEFT", "FRONT", "BACK", "UNDEFINED"
     };
+#endif
   enum EQuadEdge //!< edges of quadrangle side
     {
       Q_BOTTOM = 0, Q_RIGHT, Q_TOP, Q_LEFT, NB_QUAD_SIDES
@@ -1080,18 +1083,49 @@ bool StdMeshers_HexaFromSkin_3D::Compute(SMESH_Mesh & aMesh, SMESH_MesherHelper*
     // Add hexahedrons
     // ----------------
 
-    // find out orientation
-    const SMDS_MeshNode* n000 = block.getSide(B_BOTTOM).cornerNode( 0, 0 );
-    const SMDS_MeshNode* n100 = block.getSide(B_BOTTOM).cornerNode( 1, 0 );
-    const SMDS_MeshNode* n010 = block.getSide(B_BOTTOM).cornerNode( 0, 1 );
-    const SMDS_MeshNode* n110 = block.getSide(B_BOTTOM).cornerNode( 1, 1 );
-    const SMDS_MeshNode* n001 = block.getSide(B_TOP).cornerNode( 0, 0 );
-    const SMDS_MeshNode* n101 = block.getSide(B_TOP).cornerNode( 1, 0 );
-    const SMDS_MeshNode* n011 = block.getSide(B_TOP).cornerNode( 0, 1 );
-    const SMDS_MeshNode* n111 = block.getSide(B_TOP).cornerNode( 1, 1 );
-    SMDS_VolumeOfNodes probeVolume (n000,n010,n110,n100,
-                                    n001,n011,n111,n101);
-    bool isForw = SMDS_VolumeTool( &probeVolume ).IsForward();
+    // find out orientation by a least distorted hexahedron (issue 0020855);
+    // the last is defined by evaluating sum of face normals of 8 corner hexahedrons
+    double badness = numeric_limits<double>::max();
+    bool isForw = true;
+    for ( int xMax = 0; xMax < 2; ++xMax )
+      for ( int yMax = 0; yMax < 2; ++yMax )
+        for ( int zMax = 0; zMax < 2; ++zMax )
+        {
+          x = xMax ? xSize-1 : 1;
+          y = yMax ? ySize-1 : 1;
+          z = zMax ? zSize-1 : 1;
+          vector< const SMDS_MeshNode* >& col00 = columns[ colIndex( x-1, y-1 )];
+          vector< const SMDS_MeshNode* >& col10 = columns[ colIndex( x  , y-1 )];
+          vector< const SMDS_MeshNode* >& col01 = columns[ colIndex( x-1, y   )];
+          vector< const SMDS_MeshNode* >& col11 = columns[ colIndex( x  , y )];
+          
+          const SMDS_MeshNode* n000 = col00[z-1];
+          const SMDS_MeshNode* n100 = col10[z-1];
+          const SMDS_MeshNode* n010 = col01[z-1];
+          const SMDS_MeshNode* n110 = col11[z-1];
+          const SMDS_MeshNode* n001 = col00[z];
+          const SMDS_MeshNode* n101 = col10[z];
+          const SMDS_MeshNode* n011 = col01[z];
+          const SMDS_MeshNode* n111 = col11[z];
+          SMDS_VolumeOfNodes probeVolume (n000,n010,n110,n100,
+                                          n001,n011,n111,n101);
+          SMDS_VolumeTool volTool( &probeVolume );
+          double Nx=0.,Ny=0.,Nz=0.;
+          for ( int iFace = 0; iFace < volTool.NbFaces(); ++iFace )
+          {
+            double nx,ny,nz;
+            volTool.GetFaceNormal( iFace, nx,ny,nz );
+            Nx += nx;
+            Ny += ny;
+            Nz += nz;
+          }
+          double quality = Nx*Nx + Ny*Ny + Nz*Nz;
+          if ( quality < badness )
+          {
+            badness = quality;
+            isForw = volTool.IsForward();
+          }
+        }
 
     // add elements
     for ( x = 0; x < xSize-1; ++x ) {

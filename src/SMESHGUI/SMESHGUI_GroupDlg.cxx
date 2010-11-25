@@ -99,6 +99,19 @@
 #define SPACING 6
 #define MARGIN  11
 
+enum grpSelectionMode {
+  grpNoSelection       = -1,
+  grpNodeSelection     = 0,
+  grpEdgeSelection     = 1,
+  grpFaceSelection     = 2,
+  grpVolumeSelection   = 3,
+  grpSubMeshSelection  = 4,
+  grpGroupSelection    = 5,
+  grpMeshSelection     = 6,
+  grpGeomSelection     = 7,
+  grpAllSelection      = 8,
+};
+
 //=================================================================================
 // function : SMESHGUI_GroupDlg()
 // purpose  :
@@ -147,7 +160,7 @@ SMESHGUI_GroupDlg::SMESHGUI_GroupDlg( SMESHGUI* theModule,
     mySelectGroup->setEnabled( false );
 
     myCurrentLineEdit = myMeshGroupLine;
-    setSelectionMode( 5 );
+    setSelectionMode( grpGroupSelection );
   }
 }
 
@@ -241,59 +254,62 @@ void SMESHGUI_GroupDlg::initDialog( bool create)
   aContentBoxLayout->setMargin( MARGIN );
   aContentBoxLayout->setSpacing( SPACING );
 
-  QLabel* aLabel = new QLabel( tr( "SMESH_ID_ELEMENTS" ), aContentBox );
+  mySelectAll = new QCheckBox( tr( "SELECT_ALL" ), aContentBox );
+
+  myElementsLab = new QLabel( tr( "SMESH_ID_ELEMENTS" ), aContentBox );
   myElements = new QListWidget( aContentBox );
   myElements->setSelectionMode( QListWidget::ExtendedSelection );
 
   myFilter = new QPushButton( tr( "SMESH_BUT_FILTER" ), aContentBox );
-  QPushButton* aAddBtn = new QPushButton( tr( "SMESH_BUT_ADD" ), aContentBox );
-  QPushButton* aRemoveBtn = new QPushButton( tr( "SMESH_BUT_REMOVE" ), aContentBox );
-  QPushButton* aSortBtn = new QPushButton( tr( "SMESH_BUT_SORT" ), aContentBox );
+  myAddBtn = new QPushButton( tr( "SMESH_BUT_ADD" ), aContentBox );
+  myRemoveBtn = new QPushButton( tr( "SMESH_BUT_REMOVE" ), aContentBox );
+  mySortBtn = new QPushButton( tr( "SMESH_BUT_SORT" ), aContentBox );
 
-  aContentBoxLayout->addWidget( aLabel,     0, 0 );
-  aContentBoxLayout->addWidget( myElements, 1, 0, 6, 1 );
-  aContentBoxLayout->addWidget( myFilter,   1, 1 );
-  aContentBoxLayout->addWidget( aAddBtn,    3, 1 );
-  aContentBoxLayout->addWidget( aRemoveBtn, 4, 1 );
-  aContentBoxLayout->addWidget( aSortBtn,   6, 1 );
+  aContentBoxLayout->addWidget( mySelectAll,   0, 0 );
+  aContentBoxLayout->addWidget( myElementsLab, 1, 0 );
+  aContentBoxLayout->addWidget( myElements,    2, 0, 6, 1 );
+  aContentBoxLayout->addWidget( myFilter,      2, 1 );
+  aContentBoxLayout->addWidget( myAddBtn,      4, 1 );
+  aContentBoxLayout->addWidget( myRemoveBtn,   5, 1 );
+  aContentBoxLayout->addWidget( mySortBtn,     7, 1 );
 
   aContentBoxLayout->setColumnStretch( 0, 1 );
-  aContentBoxLayout->setRowStretch( 2, 1 );
-  aContentBoxLayout->setRowStretch( 5, 1 );
+  aContentBoxLayout->setRowStretch( 3, 1 );
+  aContentBoxLayout->setRowStretch( 6, 1 );
 
   /***************************************************************/
-  QGroupBox* aSelectBox = new QGroupBox( tr( "SMESH_SELECT_FROM" ), wg1 );
-  QGridLayout* aSelectBoxLayout = new QGridLayout( aSelectBox );
-  aSelectBoxLayout->setMargin( MARGIN );
-  aSelectBoxLayout->setSpacing( SPACING );
+  mySelectBox = new QGroupBox( tr( "SMESH_SELECT_FROM" ), wg1 );
+  QGridLayout* mySelectBoxLayout = new QGridLayout( mySelectBox );
+  mySelectBoxLayout->setMargin( MARGIN );
+  mySelectBoxLayout->setSpacing( SPACING );
 
-  mySelectSubMesh = new QCheckBox( tr( "SMESH_SUBMESH" ), aSelectBox );
-  mySubMeshBtn = new QPushButton( aSelectBox );
+  mySelectSubMesh = new QCheckBox( tr( "SMESH_SUBMESH" ), mySelectBox );
+  mySubMeshBtn = new QPushButton( mySelectBox );
   mySubMeshBtn->setIcon( image0 );
-  mySubMeshLine = new QLineEdit( aSelectBox );
+  mySubMeshLine = new QLineEdit( mySelectBox );
   mySubMeshLine->setReadOnly( true );
   onSelectSubMesh( false );
 
-  mySelectGroup = new QCheckBox( tr( "SMESH_GROUP" ), aSelectBox );
-  myGroupBtn = new QPushButton( aSelectBox );
+  mySelectGroup = new QCheckBox( tr( "SMESH_GROUP" ), mySelectBox );
+  myGroupBtn = new QPushButton( mySelectBox );
   myGroupBtn->setIcon( image0 );
-  myGroupLine = new QLineEdit( aSelectBox );
+  myGroupLine = new QLineEdit( mySelectBox );
   myGroupLine->setReadOnly( true );
   onSelectGroup( false );
 
-  aSelectBoxLayout->addWidget( mySelectSubMesh, 0, 0 );
-  aSelectBoxLayout->addWidget( mySubMeshBtn,    0, 1 );
-  aSelectBoxLayout->addWidget( mySubMeshLine,   0, 2 );
-  aSelectBoxLayout->addWidget( mySelectGroup,   1, 0 );
-  aSelectBoxLayout->addWidget( myGroupBtn,      1, 1 );
-  aSelectBoxLayout->addWidget( myGroupLine,     1, 2 );
+  mySelectBoxLayout->addWidget( mySelectSubMesh, 0, 0 );
+  mySelectBoxLayout->addWidget( mySubMeshBtn,    0, 1 );
+  mySelectBoxLayout->addWidget( mySubMeshLine,   0, 2 );
+  mySelectBoxLayout->addWidget( mySelectGroup,   1, 0 );
+  mySelectBoxLayout->addWidget( myGroupBtn,      1, 1 );
+  mySelectBoxLayout->addWidget( myGroupLine,     1, 2 );
 
   /***************************************************************/
   QVBoxLayout* wg1Layout = new QVBoxLayout( wg1 );
   wg1Layout->setMargin( 0 );
   wg1Layout->setSpacing( SPACING );
   wg1Layout->addWidget( aContentBox );
-  wg1Layout->addWidget( aSelectBox );
+  wg1Layout->addWidget( mySelectBox );
   wg1Layout->setStretchFactor( aContentBox, 10 );
 
   /***************************************************************/
@@ -374,36 +390,37 @@ void SMESHGUI_GroupDlg::initDialog( bool create)
   aMainLayout->addWidget(aButtons,        6, 0, 1, 3);
 
   /* signals and slots connections */
-  connect(myMeshGroupBtn, SIGNAL(clicked()),          this, SLOT(setCurrentSelection()));
-  connect(myGrpTypeGroup, SIGNAL(buttonClicked(int)), this, SLOT(onGrpTypeChanged(int)));
-  connect(myTypeGroup,    SIGNAL(buttonClicked(int)), this, SLOT(onTypeChanged(int)));
+  connect(myMeshGroupBtn,  SIGNAL(clicked()),          this, SLOT(setCurrentSelection()));
+  connect(myGrpTypeGroup,  SIGNAL(buttonClicked(int)), this, SLOT(onGrpTypeChanged(int)));
+  connect(myTypeGroup,     SIGNAL(buttonClicked(int)), this, SLOT(onTypeChanged(int)));
 
-  connect(myName,     SIGNAL(textChanged(const QString&)), this, SLOT(onNameChanged(const QString&)));
-  connect(myElements, SIGNAL(itemSelectionChanged()),      this, SLOT(onListSelectionChanged()));
+  connect(myName,          SIGNAL(textChanged(const QString&)), this, SLOT(onNameChanged(const QString&)));
+  connect(myElements,      SIGNAL(itemSelectionChanged()),      this, SLOT(onListSelectionChanged()));
 
-  connect(myFilter,   SIGNAL(clicked()), this, SLOT(setFilters()));
-  connect(aAddBtn,    SIGNAL(clicked()), this, SLOT(onAdd()));
-  connect(aRemoveBtn, SIGNAL(clicked()), this, SLOT(onRemove()));
-  connect(aSortBtn,   SIGNAL(clicked()), this, SLOT(onSort()));
+  connect(myFilter,        SIGNAL(clicked()),     this, SLOT(setFilters()));
+  connect(mySelectAll,     SIGNAL(toggled(bool)), this, SLOT(onSelectAll()));
+  connect(myAddBtn,        SIGNAL(clicked()),     this, SLOT(onAdd()));
+  connect(myRemoveBtn,     SIGNAL(clicked()),     this, SLOT(onRemove()));
+  connect(mySortBtn,       SIGNAL(clicked()),     this, SLOT(onSort()));
 
   connect(mySelectSubMesh, SIGNAL(toggled(bool)), this, SLOT(onSelectSubMesh(bool)));
   connect(mySelectGroup,   SIGNAL(toggled(bool)), this, SLOT(onSelectGroup(bool)));
-  connect(mySubMeshBtn,    SIGNAL(clicked()), this, SLOT(setCurrentSelection()));
-  connect(myGroupBtn,      SIGNAL(clicked()), this, SLOT(setCurrentSelection()));
+  connect(mySubMeshBtn,    SIGNAL(clicked()),     this, SLOT(setCurrentSelection()));
+  connect(myGroupBtn,      SIGNAL(clicked()),     this, SLOT(setCurrentSelection()));
   connect(myGeomGroupBtn,  SIGNAL(toggled(bool)), this, SLOT(onGeomSelectionButton(bool)));
 
-  connect(myColorBtn, SIGNAL(changed( QColor )), this, SLOT(onColorChanged( QColor )));
+  connect(myColorBtn,      SIGNAL(changed( QColor )),  this, SLOT(onColorChanged( QColor )));
 
-  connect(myOKBtn,    SIGNAL(clicked()), this, SLOT(onOK()));
-  connect(myApplyBtn, SIGNAL(clicked()), this, SLOT(onApply()));
-  connect(myCloseBtn, SIGNAL(clicked()), this, SLOT(onClose()));
-  connect(myHelpBtn,  SIGNAL(clicked()), this, SLOT(onHelp()));
+  connect(myOKBtn,         SIGNAL(clicked()), this, SLOT(onOK()));
+  connect(myApplyBtn,      SIGNAL(clicked()), this, SLOT(onApply()));
+  connect(myCloseBtn,      SIGNAL(clicked()), this, SLOT(onClose()));
+  connect(myHelpBtn,       SIGNAL(clicked()), this, SLOT(onHelp()));
 
   /* Init selection */
   mySMESHGUI->SetActiveDialogBox(this);
   mySMESHGUI->SetState(800);
 
-  mySelectionMode = -1;
+  mySelectionMode = grpNoSelection;
   myMeshFilter = new SMESH_TypeFilter(MESH);
   mySubMeshFilter = new SMESH_TypeFilter(SUBMESH);
   myGroupFilter = new SMESH_TypeFilter(GROUP);
@@ -612,7 +629,7 @@ void SMESHGUI_GroupDlg::updateButtons()
   bool enable = !myName->text().trimmed().isEmpty();
 
   if (myGrpTypeId == 0) {
-    enable = enable && myElements->count() > 0;
+    enable = enable && (mySelectAll->isChecked() || myElements->count() > 0);
     enable = enable && (!myGroup->_is_nil() || !myMesh->_is_nil());
   }
   else if (myGrpTypeId == 1) {
@@ -620,7 +637,7 @@ void SMESHGUI_GroupDlg::updateButtons()
       enable = enable && myGeomObjects->length() > 0 && !myMesh->_is_nil();
     }
   }
-
+  
   myOKBtn->setEnabled(enable);
   myApplyBtn->setEnabled(enable);
 }
@@ -685,6 +702,8 @@ void SMESHGUI_GroupDlg::setSelectionMode (int theMode)
   // PAL7314
   if (myMesh->_is_nil())
     return;
+  SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI );
+  bool isSelectAll = mySelectAll->isChecked();
   if (mySelectionMode != theMode) {
     // [PAL10408] mySelectionMgr->clearSelected();
     mySelectionMgr->clearFilters();
@@ -693,46 +712,51 @@ void SMESHGUI_GroupDlg::setSelectionMode (int theMode)
       while ( it.hasNext() )
         it.next()->SetPointRepresentation(false);
     }
-    else
+    else {
       SMESH::SetPointRepresentation(false);
-    if (theMode < 4) {
-      switch (theMode) {
-      case 0:
-        if (myActorsList.count() > 0) {
-          QListIterator<SMESH_Actor*> it( myActorsList );
-          while ( it.hasNext() )
-            it.next()->SetPointRepresentation(true);
-        }
-        else
-          SMESH::SetPointRepresentation(true);
-        if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
-          aViewWindow->SetSelectionMode(NodeSelection);
-        break;
-      case 1:
-        if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
-          aViewWindow->SetSelectionMode(EdgeSelection);
-        break;
-      case 2:
-        if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
-          aViewWindow->SetSelectionMode(FaceSelection);
-        break;
-      default:
-        if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
-          aViewWindow->SetSelectionMode(VolumeSelection);
-      }
-    } else {
-      if (theMode == 4)
-        mySelectionMgr->installFilter(mySubMeshFilter);
-      else if (theMode == 5)
-        mySelectionMgr->installFilter(myGroupFilter);
-      else if (theMode == 6)
-        mySelectionMgr->installFilter(myMeshFilter);
-      else if (theMode == 7)
-        mySelectionMgr->installFilter(myGeomFilter);
-
-      if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
-        aViewWindow->SetSelectionMode(ActorSelection);
     }
+    switch (theMode) {
+    case grpNodeSelection:
+      if (myActorsList.count() > 0) {
+        QListIterator<SMESH_Actor*> it( myActorsList );
+        while ( it.hasNext() )
+          it.next()->SetPointRepresentation(true);
+      }
+      else {
+        SMESH::SetPointRepresentation(true);
+      }
+      if ( aViewWindow ) aViewWindow->SetSelectionMode(isSelectAll ? ActorSelection : NodeSelection);
+      break;
+    case grpEdgeSelection:
+      if ( aViewWindow ) aViewWindow->SetSelectionMode(isSelectAll ? ActorSelection : EdgeSelection);
+      break;
+    case grpFaceSelection:
+      if ( aViewWindow ) aViewWindow->SetSelectionMode(isSelectAll ? ActorSelection : FaceSelection);
+      break;
+    case grpVolumeSelection:
+      if ( aViewWindow ) aViewWindow->SetSelectionMode(isSelectAll ? ActorSelection : VolumeSelection);
+      break;
+    case grpSubMeshSelection:
+      mySelectionMgr->installFilter(mySubMeshFilter);
+      if ( aViewWindow ) aViewWindow->SetSelectionMode(ActorSelection);
+      break;
+    case grpGroupSelection:
+      mySelectionMgr->installFilter(myGroupFilter);
+      if ( aViewWindow ) aViewWindow->SetSelectionMode(ActorSelection);
+      break;
+    case grpMeshSelection:
+      mySelectionMgr->installFilter(myMeshFilter);
+      if ( aViewWindow ) aViewWindow->SetSelectionMode(ActorSelection);
+      break;
+    case grpGeomSelection:
+      mySelectionMgr->installFilter(myGeomFilter);
+      if ( aViewWindow ) aViewWindow->SetSelectionMode(ActorSelection);
+      break;
+    default:
+      if ( aViewWindow ) aViewWindow->SetSelectionMode(ActorSelection);
+      break;
+    }
+    if ( aViewWindow ) aViewWindow->Repaint();
     mySelectionMode = theMode;
   }
 }
@@ -750,7 +774,7 @@ bool SMESHGUI_GroupDlg::onApply()
     return false;
 
   if (myGrpTypeId == 0) { // on mesh elements
-    if (!myElements->count())
+    if (!mySelectAll->isChecked() && !myElements->count())
       return false;
 
     mySelectionMgr->clearSelected();
@@ -778,15 +802,23 @@ bool SMESHGUI_GroupDlg::onApply()
       case 3: aType = SMESH::VOLUME; break;
       }
 
-      SMESH::long_array_var anIdList = new SMESH::long_array;
-      int i, k = myElements->count();
-      anIdList->length(k);
-      for (i = 0; i < k; i++) {
-        anIdList[i] = myElements->item(i)->text().toInt();
-      }
-
       myGroup = SMESH::AddGroup(myMesh, aType, myName->text());
-      myGroup->Add(anIdList.inout());
+
+      if ( mySelectAll->isChecked() ) {
+        // select all
+        myGroup->AddFrom(myMesh.in());
+      }
+      else {
+        // select manually
+        SMESH::long_array_var anIdList = new SMESH::long_array;
+        int i, k = myElements->count();
+        anIdList->length(k);
+        for (i = 0; i < k; i++) {
+          anIdList[i] = myElements->item(i)->text().toInt();
+        }
+        
+        myGroup->Add(anIdList.inout());
+      }
 
       SALOMEDS::Color aColor = getGroupColor();
       myGroup->SetColor(aColor);
@@ -818,37 +850,44 @@ bool SMESHGUI_GroupDlg::onApply()
         }
       }
 
-      QList<int> aAddList;
-
-      int i, total = myElements->count();
-      for (i = 0; i < total; i++) {
-        int anId = myElements->item(i)->text().toInt();
-        int idx = myIdList.indexOf(anId);
-        if ( idx == -1 )
-          aAddList.append(anId);
-        else
-          myIdList.removeAt(idx);
+      if ( mySelectAll->isChecked() ) {
+        // select all
+        myGroup->Clear();
+        myGroup->AddFrom(myMesh.in());
       }
-      if (!aAddList.empty()) {
-        SMESH::long_array_var anIdList = new SMESH::long_array;
-        int added = aAddList.count();
-        anIdList->length(added);
-        for (i = 0; i < added; i++)
-          anIdList[i] = aAddList[i];
-        myGroup->Add(anIdList.inout());
-      }
-      if (!myIdList.empty()) {
-        SMESH::long_array_var anIdList = new SMESH::long_array;
-        int removed = myIdList.count();
-        anIdList->length(removed);
-        for (i = 0; i < removed; i++)
-          anIdList[i] = myIdList[i];
-        myGroup->Remove(anIdList.inout());
-      }
-      /* init for next operation */
-      myIdList.clear();
-      for (i = 0; i < total; i++) {
-        myIdList.append(myElements->item(i)->text().toInt());
+      else {
+        QList<int> aAddList;
+        
+        int i, total = myElements->count();
+        for (i = 0; i < total; i++) {
+          int anId = myElements->item(i)->text().toInt();
+          int idx = myIdList.indexOf(anId);
+          if ( idx == -1 )
+            aAddList.append(anId);
+          else
+            myIdList.removeAt(idx);
+        }
+        if (!aAddList.empty()) {
+          SMESH::long_array_var anIdList = new SMESH::long_array;
+          int added = aAddList.count();
+          anIdList->length(added);
+          for (i = 0; i < added; i++)
+            anIdList[i] = aAddList[i];
+          myGroup->Add(anIdList.inout());
+        }
+        if (!myIdList.empty()) {
+          SMESH::long_array_var anIdList = new SMESH::long_array;
+          int removed = myIdList.count();
+          anIdList->length(removed);
+          for (i = 0; i < removed; i++)
+            anIdList[i] = myIdList[i];
+          myGroup->Remove(anIdList.inout());
+        }
+        /* init for next operation */
+        myIdList.clear();
+        for (i = 0; i < total; i++) {
+          myIdList.append(myElements->item(i)->text().toInt());
+        }
       }
     }
 
@@ -1340,6 +1379,24 @@ void SMESHGUI_GroupDlg::onObjectSelectionChanged()
 // function : onSelectSubMesh()
 // purpose  : Called when selection in 3D view or ObjectBrowser is changed
 //=================================================================================
+void SMESHGUI_GroupDlg::onSelectAll()
+{
+  myElementsLab->setEnabled( !mySelectAll->isChecked() );
+  myElements->setEnabled( !mySelectAll->isChecked() );
+  myFilter->setEnabled( !mySelectAll->isChecked() );
+  myAddBtn->setEnabled( !mySelectAll->isChecked() );
+  myRemoveBtn->setEnabled( !mySelectAll->isChecked() );
+  mySortBtn->setEnabled( !mySelectAll->isChecked() );
+  mySelectBox->setEnabled( !mySelectAll->isChecked() );
+  int selMode = mySelectionMode;
+  mySelectionMode = grpNoSelection;
+  setSelectionMode( selMode );
+}
+
+//=================================================================================
+// function : onSelectSubMesh()
+// purpose  : Called when selection in 3D view or ObjectBrowser is changed
+//=================================================================================
 void SMESHGUI_GroupDlg::onSelectSubMesh(bool on)
 {
   if (on) {
@@ -1350,7 +1407,7 @@ void SMESHGUI_GroupDlg::onSelectSubMesh(bool on)
     //VSR:   mySelectGeomGroup->setChecked(false);
     //VSR: }
     myCurrentLineEdit = mySubMeshLine;
-    setSelectionMode(4);
+    setSelectionMode(grpSubMeshSelection);
   }
   else {
     mySubMeshLine->setText( "" );
@@ -1374,7 +1431,7 @@ void SMESHGUI_GroupDlg::onSelectGroup(bool on)
       mySelectSubMesh->setChecked(false);
     }
     myCurrentLineEdit = myGroupLine;
-    setSelectionMode(5);
+    setSelectionMode(grpGroupSelection);
   }
   else {
     myGroupLine->setText( "" );
@@ -1402,7 +1459,7 @@ void SMESHGUI_GroupDlg::onSelectGeomGroup(bool on)
     }
     myCurrentLineEdit = myGeomGroupLine;
     updateGeomPopup();
-    setSelectionMode(8);
+    setSelectionMode(grpAllSelection);
   }
   else {
     myGeomGroupBtn->setChecked(false);
@@ -1427,9 +1484,9 @@ void SMESHGUI_GroupDlg::setCurrentSelection()
     disconnect(myMeshGroupBtn, SIGNAL(clicked()), this, SLOT(setCurrentSelection()));
     mySelectionMgr->clearSelected();
     if (myCreate)
-      setSelectionMode(6);
+      setSelectionMode(grpMeshSelection);
     else
-      setSelectionMode(5);
+      setSelectionMode(grpGroupSelection);
     connect(myMeshGroupBtn, SIGNAL(clicked()), this, SLOT(setCurrentSelection()));
     myCurrentLineEdit = myMeshGroupLine;
     onObjectSelectionChanged();
@@ -1960,7 +2017,7 @@ void SMESHGUI_GroupDlg::enterEvent (QEvent*)
   if (!isEnabled()) {
     mySMESHGUI->EmitSignalDeactivateDialog();
     setEnabled(true);
-    mySelectionMode = -1;
+    mySelectionMode = grpNoSelection;
     setSelectionMode(myTypeId);
     //mySMESHGUI->SetActiveDialogBox((QDialog*)this);
     mySMESHGUI->SetActiveDialogBox(this);
@@ -2038,12 +2095,12 @@ void SMESHGUI_GroupDlg::onGeomSelectionButton(bool isBtnOn)
       myCurrentLineEdit = myGeomGroupLine;
       QAction* a = myGeomPopup->exec( QCursor::pos() );
       if (!a || myActions[a] == DIRECT_GEOM_INDEX)
-        setSelectionMode(7);
+        setSelectionMode(grpGeomSelection);
     }
   else if (!isBtnOn)
     {
       myCurrentLineEdit = 0;
-      setSelectionMode(8);
+      setSelectionMode(grpAllSelection);
     }
 }
 
@@ -2056,7 +2113,7 @@ void SMESHGUI_GroupDlg::onGeomPopup( QAction* a )
   int index = myActions[a];
   if ( index == GEOM_BY_MESH_INDEX )
     {
-      mySelectionMode = -1;
+      mySelectionMode = grpNoSelection;
       if ( !myShapeByMeshOp ) {
         myShapeByMeshOp = new SMESHGUI_ShapeByMeshOp(true);
         connect(myShapeByMeshOp, SIGNAL(committed(SUIT_Operation*)),
@@ -2117,7 +2174,7 @@ void SMESHGUI_GroupDlg::onCloseShapeByMeshDlg(SUIT_Operation* op)
   if ( myShapeByMeshOp == op )
     {
       show();
-      setSelectionMode(7);
+      setSelectionMode(grpGeomSelection);
     }
 }
 

@@ -35,6 +35,7 @@
 
 #include "SMESH_Mesh.hxx"
 #include "SMESH_PythonDump.hxx"
+#include "SMESH_MeshEditor.hxx"
 #include <list>
 
 class SMESH_MeshEditor;
@@ -52,10 +53,11 @@ public:
   /*!
    * \brief Wrap a sequence of ids in a SMESH_IDSource
    */
-  SMESH::SMESH_IDSource_ptr MakeIDSource(const SMESH::long_array& IDsOfElements);
-
+  SMESH::SMESH_IDSource_ptr MakeIDSource(const SMESH::long_array& IDsOfElements,
+                                         SMESH::ElementType       type);
   CORBA::Boolean RemoveElements(const SMESH::long_array & IDsOfElements);
   CORBA::Boolean RemoveNodes(const SMESH::long_array & IDsOfNodes);
+  CORBA::Long    RemoveOrphanNodes();
 
   /*!
    * Methods for creation new elements.
@@ -449,6 +451,10 @@ public:
   void FindCoincidentNodesOnPart(SMESH::SMESH_IDSource_ptr      Object,
                                  CORBA::Double                  Tolerance,
                                  SMESH::array_of_long_array_out GroupsOfNodes);
+  void FindCoincidentNodesOnPartBut(SMESH::SMESH_IDSource_ptr      Object,
+                                    CORBA::Double                  Tolerance,
+                                    SMESH::array_of_long_array_out GroupsOfNodes,
+                                    const SMESH::ListOfIDSources&  ExceptSubMeshOrGroups);
   void MergeNodes (const SMESH::array_of_long_array& GroupsOfNodes);
   void FindEqualElements(SMESH::SMESH_IDSource_ptr      Object,
                          SMESH::array_of_long_array_out GroupsOfElementsID);
@@ -542,7 +548,7 @@ public:
    */
   int GetMeshId() const { return myMesh->GetId(); }
 
- CORBA::Boolean DoubleNodes( const SMESH::long_array& theNodes,
+  CORBA::Boolean DoubleNodes( const SMESH::long_array& theNodes,
                               const SMESH::long_array& theModifiedElems );
 
   CORBA::Boolean DoubleNode( CORBA::Long theNodeId,
@@ -550,6 +556,17 @@ public:
 
   CORBA::Boolean DoubleNodeGroup( SMESH::SMESH_GroupBase_ptr theNodes,
                                   SMESH::SMESH_GroupBase_ptr theModifiedElems );
+
+  /*!
+   * \brief Creates a hole in a mesh by doubling the nodes of some particular elements.
+   * Works as DoubleNodeGroup(), but returns a new group with newly created nodes.
+   * \param theNodes - group of nodes to be doubled.
+   * \param theModifiedElems - group of elements to be updated.
+   * \return a new group with newly created nodes
+   * \sa DoubleNodeGroup()
+   */
+  SMESH::SMESH_Group_ptr DoubleNodeGroupNew( SMESH::SMESH_GroupBase_ptr theNodes,
+                                             SMESH::SMESH_GroupBase_ptr theModifiedElems );
 
   CORBA::Boolean DoubleNodeGroups( const SMESH::ListOfGroups& theNodes,
                                    const SMESH::ListOfGroups& theModifiedElems);
@@ -595,6 +612,20 @@ public:
   CORBA::Boolean DoubleNodeElemGroup( SMESH::SMESH_GroupBase_ptr theElems,
                                       SMESH::SMESH_GroupBase_ptr theNodesNot,
                                       SMESH::SMESH_GroupBase_ptr theAffectedElems );
+
+  /*!
+   * \brief Creates a hole in a mesh by doubling the nodes of some particular elements
+   * Works as DoubleNodeElemGroup(), but returns a new group with newly created elements.
+   * \param theElems - group of of elements (edges or faces) to be replicated
+   * \param theNodesNot - group of nodes not to replicated
+   * \param theAffectedElems - group of elements to which the replicated nodes
+   *        should be associated to.
+   * \return a new group with newly created elements
+   * \sa DoubleNodeElemGroup()
+   */
+  SMESH::SMESH_Group_ptr DoubleNodeElemGroupNew( SMESH::SMESH_GroupBase_ptr theElems,
+                                                 SMESH::SMESH_GroupBase_ptr theNodesNot,
+                                                 SMESH::SMESH_GroupBase_ptr theAffectedElems );
   
   /*!
    * \brief Creates a hole in a mesh by doubling the nodes of some particular elements
@@ -640,14 +671,22 @@ public:
                                                const SMESH::ListOfGroups& theNodesNot,
                                                GEOM::GEOM_Object_ptr      theShape );
 
-    /*!
-     * \brief Generated skin mesh (containing 2D cells) from 3D mesh
-     * The created 2D mesh elements based on nodes of free faces of boundary volumes
-     * \return TRUE if operation has been completed successfully, FALSE otherwise
-    */
-    CORBA::Boolean Make2DMeshFrom3D();
+  /*!
+   * \brief Generated skin mesh (containing 2D cells) from 3D mesh
+   * The created 2D mesh elements based on nodes of free faces of boundary volumes
+   * \return TRUE if operation has been completed successfully, FALSE otherwise
+   */
+  CORBA::Boolean Make2DMeshFrom3D();
 
- private: //!< private methods
+  SMESH::SMESH_Mesh_ptr MakeBoundaryMesh(SMESH::SMESH_IDSource_ptr elements,
+                                         SMESH::Bnd_Dimension      dimension,
+                                         const char*               groupName,
+                                         const char*               meshName,
+                                         CORBA::Boolean            toCopyElements,
+                                         CORBA::Boolean            toCopyMissingBondary,
+                                         SMESH::SMESH_Group_out    group);
+
+private: //!< private methods
 
   SMESHDS_Mesh * GetMeshDS() { return myMesh->GetMeshDS(); }
 
@@ -706,35 +745,37 @@ public:
                                            const bool                 MakeGroups,
                                            const SMDSAbs_ElementType  ElementType,
                                            SMESH::SMESH_MeshEditor::Extrusion_Error & theError);
-  SMESH::ListOfGroups* mirror(const SMESH::long_array &           IDsOfElements,
+  SMESH::ListOfGroups* mirror(TIDSortedElemSet &                  IDsOfElements,
                               const SMESH::AxisStruct &           Axis,
                               SMESH::SMESH_MeshEditor::MirrorType MirrorType,
                               CORBA::Boolean                      Copy,
                               const bool                          MakeGroups,
                               ::SMESH_Mesh*                       TargetMesh=0);
-  SMESH::ListOfGroups* translate(const SMESH::long_array & IDsOfElements,
+  SMESH::ListOfGroups* translate(TIDSortedElemSet        & IDsOfElements,
                                  const SMESH::DirStruct &  Vector,
                                  CORBA::Boolean            Copy,
                                  const bool                MakeGroups,
                                  ::SMESH_Mesh*             TargetMesh=0);
-  SMESH::ListOfGroups* rotate(const SMESH::long_array & IDsOfElements,
+  SMESH::ListOfGroups* rotate(TIDSortedElemSet &           IDsOfElements,
                               const SMESH::AxisStruct &  Axis,
                               CORBA::Double             Angle,
                               CORBA::Boolean            Copy,
                               const bool                MakeGroups,
                               ::SMESH_Mesh*             TargetMesh=0);
 
-  SMESH::ListOfGroups* scale(const SMESH::long_array &  theIDsOfElements,
-                             const SMESH::PointStruct&  thePoint,
-                             const SMESH::double_array& theScaleFact,
-                             CORBA::Boolean             theCopy,
-                             const bool                 theMakeGroups,
-                             ::SMESH_Mesh*              theTargetMesh=0);
+  SMESH::ListOfGroups* scale(SMESH::SMESH_IDSource_ptr   theObject,
+                             const SMESH::PointStruct&   thePoint,
+                             const SMESH::double_array&  theScaleFact,
+                             CORBA::Boolean              theCopy,
+                             const bool                  theMakeGroups,
+                             ::SMESH_Mesh*               theTargetMesh=0);
 
   SMESH::SMESH_Mesh_ptr makeMesh(const char* theMeshName);
 
   void DumpGroupsList(SMESH::TPythonDump & theDumpPython, 
                       const SMESH::ListOfGroups * theGroupList);
+
+  string generateGroupName(const string& thePrefix);
 
 private: //!< fields
 

@@ -102,13 +102,17 @@ class SMDS_EXPORT SMDS_VolumeTool
   // -----------------------
 
   bool IsLinked (const SMDS_MeshNode* theNode1,
-                 const SMDS_MeshNode* theNode2) const;
+                 const SMDS_MeshNode* theNode2,
+                 const bool           theIgnoreMediumNodes=false) const;
   // Return true if theNode1 is linked with theNode2.
+  // If theIgnoreMediumNodes then corner nodes of quadratic cell are considered linked as well
 
   bool IsLinked (const int theNode1Index,
-                 const int theNode2Index) const;
+                 const int theNode2Index,
+                 bool      theIgnoreMediumNodes=false) const;
   // Return true if the node with theNode1Index is linked
   // with the node with theNode2Index
+  // If theIgnoreMediumNodes then corner nodes of quadratic cell are considered linked as well
 
   int GetNodeIndex(const SMDS_MeshNode* theNode) const;
   // Return an index of theNode
@@ -157,6 +161,9 @@ class SMDS_EXPORT SMDS_VolumeTool
 
   bool GetFaceNormal (int faceIndex, double & X, double & Y, double & Z);
   // Return a normal to a face
+
+  bool GetFaceBaryCenter (int faceIndex, double & X, double & Y, double & Z);
+  // Return barycenter of a face
 
   double GetFaceArea( int faceIndex );
   // Return face area

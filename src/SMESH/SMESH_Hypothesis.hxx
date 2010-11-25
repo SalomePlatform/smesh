@@ -114,6 +114,11 @@ public:
   virtual bool IsAuxiliary() const
   { return GetType() == PARAM_ALGO && _param_algo_dim < 0; }
 
+  /*!
+   * \brief Find a mesh with given persistent ID
+   */
+  SMESH_Mesh* GetMeshByPersistentID(int id);
+
 protected:
   SMESH_Gen* _gen;
   int _studyId;

@@ -36,9 +36,15 @@
 // SALOME GUI includes
 #include <SALOME_InteractiveObject.hxx>
 
+// SALOME KERNEL includes
+#include <SALOMEDSClient_definitions.hxx>
+
 // IDL includes
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
+#include CORBA_SERVER_HEADER(SMESH_Measurements)
+
+class SALOMEDSClient_SObject;
 
 namespace SMESH
 {
@@ -47,6 +53,10 @@ namespace SMESH
  
   SMESHGUI_EXPORT
     QString        UniqueMeshName( const QString&, const QString& = QString() );
+  SMESHGUI_EXPORT
+    QString        UniqueName( const QString&, _PTR(SObject) = _PTR(SObject)(), const QString& = QString() );
+
+  SMESHGUI_EXPORT  SMESH::Measurements_var& GetMeasurements();
 }
 
 #endif // SMESHGUI_MESHUTILS_H

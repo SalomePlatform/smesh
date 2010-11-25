@@ -19,12 +19,11 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+//  SMESH SMESHGUI : GUI for SMESH component
+//  File   : SMESHGUI_BuildCompoundDlg.cxx
+//  Author : Alexander KOVALEV, Open CASCADE S.A.S.
+//  SMESH includes
 
-// SMESH SMESHGUI : GUI for SMESH component
-// File   : SMESHGUI_BuildCompoundDlg.cxx
-// Author : Alexander KOVALEV, Open CASCADE S.A.S.
-// SMESH includes
-//
 #include "SMESHGUI_BuildCompoundDlg.h"
 
 #include "SMESHGUI.h"
@@ -66,6 +65,10 @@
 
 #define SPACING 6
 #define MARGIN  11
+
+//To disable automatic genericobj management, the following line should be commented.
+//Otherwise, it should be uncommented. Refer to KERNEL_SRC/src/SALOMEDSImpl/SALOMEDSImpl_AttributeIOR.cxx
+#define WITHGENERICOBJ
 
 //=================================================================================
 // name    : SMESHGUI_BuildCompoundDlg
@@ -143,7 +146,7 @@ SMESHGUI_BuildCompoundDlg::SMESHGUI_BuildCompoundDlg( SMESHGUI* theModule )
   GroupArgsLayout->addWidget(TextLabelMeshes, 0, 0);
   GroupArgsLayout->addWidget(SelectButton,    0, 1);
   GroupArgsLayout->addWidget(LineEditMeshes,  0, 2, 1, 2);
-  GroupArgsLayout->addWidget(TextLabelUnion,  1, 0, 1, 3); 
+  GroupArgsLayout->addWidget(TextLabelUnion,  1, 0, 1, 3);
   GroupArgsLayout->addWidget(ComboBoxUnion,   1, 3);
   GroupArgsLayout->addWidget(CheckBoxCommon,  2, 0, 1, 4);
   GroupArgsLayout->addWidget(CheckBoxMerge,   3, 0, 1, 4);
@@ -301,16 +304,16 @@ bool SMESHGUI_BuildCompoundDlg::ClickOnApply()
       SMESH::SMESH_Gen_var aSMESHGen = SMESHGUI::GetSMESHGen();
       // concatenate meshes
       if(CheckBoxCommon->isChecked())
-        aCompoundMesh = aSMESHGen->ConcatenateWithGroups(myMeshArray, 
-                                                         !(ComboBoxUnion->currentIndex()), 
-                                                         CheckBoxMerge->isChecked(), 
+        aCompoundMesh = aSMESHGen->ConcatenateWithGroups(myMeshArray,
+                                                         !(ComboBoxUnion->currentIndex()),
+                                                         CheckBoxMerge->isChecked(),
                                                          SpinBoxTol->GetValue());
       else
-        aCompoundMesh = aSMESHGen->Concatenate(myMeshArray, 
-                                               !(ComboBoxUnion->currentIndex()), 
-                                               CheckBoxMerge->isChecked(), 
+        aCompoundMesh = aSMESHGen->Concatenate(myMeshArray,
+                                               !(ComboBoxUnion->currentIndex()),
+                                               CheckBoxMerge->isChecked(),
                                                SpinBoxTol->GetValue());
-     
+
       aCompoundMesh->SetParameters( aParameters.join(":").toLatin1().constData() );
 
       SMESH::SetName( SMESH::FindSObject( aCompoundMesh ), LineEditName->text() );
@@ -325,13 +328,21 @@ bool SMESHGUI_BuildCompoundDlg::ClickOnApply()
     if ( SMESHGUI::automaticUpdate() ) {
       mySelectionMgr->clearSelected();
       SMESH::UpdateView();
-      
+
       _PTR(SObject) aSO = SMESH::FindSObject(aCompoundMesh.in());
       if ( SMESH_Actor* anActor = SMESH::CreateActor(aSO->GetStudy(), aSO->GetID().c_str()) )
         SMESH::DisplayActor(SMESH::GetActiveWindow(), anActor);
     }// end IPAL21468
 
     SMESHGUI::Modified();
+
+#ifdef WITHGENERICOBJ
+    // obj has been published in study. Its refcount has been incremented.
+    // It is safe to decrement its refcount
+    // so that it will be destroyed when the entry in study will be removed
+    if (!CORBA::is_nil(aCompoundMesh))
+      aCompoundMesh->Destroy();
+#endif
 
     return true;
   }
@@ -368,7 +379,7 @@ void SMESHGUI_BuildCompoundDlg::ClickOnCancel()
 void SMESHGUI_BuildCompoundDlg::ClickOnHelp()
 {
   LightApp_Application* app = (LightApp_Application*)(SUIT_Session::session()->activeApplication());
-  if (app) 
+  if (app)
     app->onHelpContextModule(mySMESHGUI ? app->moduleName(mySMESHGUI->moduleName()) : QString(""), myHelpFileName);
   else {
     SUIT_MessageBox::warning(this, tr("WRN_WARNING"),
@@ -503,7 +514,6 @@ void SMESHGUI_BuildCompoundDlg::keyPressEvent( QKeyEvent* e )
 //=================================================================================
 void SMESHGUI_BuildCompoundDlg::onSelectMerge(bool toMerge)
 {
-  
   TextLabelTol->setEnabled(toMerge);
   SpinBoxTol->setEnabled(toMerge);
   if(!toMerge)

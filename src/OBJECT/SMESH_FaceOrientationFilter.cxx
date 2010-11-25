@@ -23,6 +23,8 @@
 #include "SUIT_Session.h"
 #include "SUIT_ResourceMgr.h"
 
+#include <VTKViewer_CellCenters.h>
+
 #include <vtkCellData.h>
 #include <vtkDataSet.h>
 #include <vtkPolyData.h>
@@ -33,7 +35,6 @@
 #include <vtkFloatArray.h>
 #include <vtkCellArray.h>
 #include <vtkMaskPoints.h>
-#include <vtkCellCenters.h>
 #include <vtkGlyph3D.h>
 #include <vtkGlyphSource2D.h>
 
@@ -59,7 +60,7 @@ SMESH_FaceOrientationFilter::SMESH_FaceOrientationFilter()
 
   myFacePolyData = vtkPolyData::New();
 
-  myFaceCenters = vtkCellCenters::New();
+  myFaceCenters = VTKViewer_CellCenters::New();
   myFaceCenters->SetInput(myFacePolyData);
 
   myFaceMaskPoints = vtkMaskPoints::New();

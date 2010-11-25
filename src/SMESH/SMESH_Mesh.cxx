@@ -101,6 +101,7 @@ SMESH_Mesh::SMESH_Mesh(int               theLocalId,
   _isAutoColor   = false;
   _isModified    = false;
   _shapeDiagonal = 0.0;
+  _rmGroupCallUp = 0;
   _myMeshDS->ShapeToMesh( PseudoShape() );
 }
 
@@ -126,6 +127,9 @@ SMESH_Mesh::~SMESH_Mesh()
     delete aGroup;
   }
   _mapGroup.clear();
+
+  if ( _rmGroupCallUp) delete _rmGroupCallUp;
+  _rmGroupCallUp = 0;
 }
 
 //=============================================================================
@@ -267,6 +271,7 @@ void SMESH_Mesh::Clear()
     while ( smIt->more() ) {
       sm = smIt->next();
       sm->ComputeStateEngine( SMESH_subMesh::CHECK_COMPUTE_STATE );
+      sm->ComputeStateEngine( SMESH_subMesh::CLEAN ); // for event listeners (issue 0020918)
     }
   }
   _isModified = false;
@@ -457,6 +462,9 @@ SMESH_Hypothesis::Hypothesis_Status
   // NotConformAllowed can be only global
   if ( !isGlobalHyp )
   {
+    // NOTE: this is not a correct way to check a name of hypothesis,
+    // there should be an attribute of hypothesis saying that it can/can't
+    // be global/local
     string hypName = anHyp->GetName();
     if ( hypName == "NotConformAllowed" )
     {
@@ -499,7 +507,7 @@ SMESH_Hypothesis::Hypothesis_Status
       }
     }
   }
-  HasModificationsToDiscard(); // to reset _isModified flag if mesh become empty
+  HasModificationsToDiscard(); // to reset _isModified flag if a mesh becomes empty
 
   if(MYDEBUG) subMesh->DumpAlgoState(true);
   if(MYDEBUG) SCRUTE(ret);
@@ -970,7 +978,7 @@ void SMESH_Mesh::NotifySubMeshesHypothesisModification(const SMESH_Hypothesis* h
       }
     }
   }
-  HasModificationsToDiscard(); // to reset _isModified flag if mesh become empty
+  HasModificationsToDiscard(); // to reset _isModified flag if mesh becomes empty
 }
 
 //=============================================================================
@@ -1410,6 +1418,18 @@ list<int> SMESH_Mesh::GetGroupIds() const
   return anIds;
 }
 
+//================================================================================
+/*!
+ * \brief Set a caller of RemoveGroup() at level of CORBA API implementation.
+ * The set upCaller will be deleted by SMESH_Mesh
+ */
+//================================================================================
+
+void SMESH_Mesh::SetRemoveGroupCallUp( TRmGroupCallUp* upCaller )
+{
+  if ( _rmGroupCallUp ) delete _rmGroupCallUp;
+  _rmGroupCallUp = upCaller;
+}
 
 //=============================================================================
 /*!
@@ -1417,13 +1437,16 @@ list<int> SMESH_Mesh::GetGroupIds() const
  */
 //=============================================================================
 
-void SMESH_Mesh::RemoveGroup (const int theGroupID)
+bool SMESH_Mesh::RemoveGroup (const int theGroupID)
 {
   if (_mapGroup.find(theGroupID) == _mapGroup.end())
-    return;
+    return false;
   GetMeshDS()->RemoveGroup( _mapGroup[theGroupID]->GetGroupDS() );
   delete _mapGroup[theGroupID];
   _mapGroup.erase (theGroupID);
+  if (_rmGroupCallUp)
+    _rmGroupCallUp->RemoveGroup( theGroupID );
+  return true;
 }
 
 //=======================================================================
@@ -1612,6 +1635,7 @@ void SMESH_Mesh::fillAncestorsMap(const TopoDS_Shape& theShape)
     for ( desType = TopAbs_VERTEX; desType >= memberType; desType-- )
       for (TopExp_Explorer des( theShape, TopAbs_ShapeEnum( desType )); des.More(); des.Next())
       {
+        if ( !_mapAncestors.Contains( des.Current() )) continue;// issue 0020982
         TopTools_ListOfShape& ancList = _mapAncestors.ChangeFromKey( des.Current() );
         TopTools_ListIteratorOfListOfShape ancIt (ancList);
         while ( ancIt.More() && ancIt.Value().ShapeType() >= memberType )

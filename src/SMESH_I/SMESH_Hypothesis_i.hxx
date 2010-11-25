@@ -91,7 +91,8 @@ public:
   // Persistence
   virtual char* SaveTo();
   virtual void  LoadFrom( const char* theStream );
-  
+  virtual void  UpdateAsMeshesRestored(); // for hyps needing full data restored
+
 protected:
   ::SMESH_Hypothesis* myBaseImpl;    // base hypothesis implementation
 };

@@ -960,7 +960,7 @@ int SMESH_Block::GetShapeIDByParams ( const gp_XYZ& theCoord )
  *  \param theFirstVertex - the vertex of the outer wire to set first in the returned
  *         list ( theFirstVertex may be NULL )
  *  \param theEdges - all ordered edges of theFace (outer edges goes first).
- *  \param theNbVertexInWires - nb of vertices (== nb of edges) in each wire
+ *  \param theNbEdgesInWires - nb of edges (== nb of vertices in closed wire) in each wire
  *  \param theShapeAnalysisAlgo - if true, ShapeAnalysis::OuterWire() is used to find
  *         the outer wire else BRepTools::OuterWire() is used.
  *  \retval int - nb of wires
@@ -974,7 +974,7 @@ int SMESH_Block::GetShapeIDByParams ( const gp_XYZ& theCoord )
 int SMESH_Block::GetOrderedEdges (const TopoDS_Face&   theFace,
                                   TopoDS_Vertex        theFirstVertex,
                                   list< TopoDS_Edge >& theEdges,
-                                  list< int >  &       theNbVertexInWires,
+                                  list< int >  &       theNbEdgesInWires,
                                   const bool           theShapeAnalysisAlgo)
 {
   // put wires in a list, so that an outer wire comes first
@@ -991,7 +991,7 @@ int SMESH_Block::GetOrderedEdges (const TopoDS_Face&   theFace,
     }
 
   // loop on edges of wires
-  theNbVertexInWires.clear();
+  theNbEdgesInWires.clear();
   list<TopoDS_Wire>::iterator wlIt = aWireList.begin();
   for ( ; wlIt != aWireList.end(); wlIt++ )
   {
@@ -1009,7 +1009,7 @@ int SMESH_Block::GetOrderedEdges (const TopoDS_Face&   theFace,
       for ( TopoDS_Iterator e( *wlIt ); e.More(); e.Next(), ++iE )
         theEdges.push_back( TopoDS::Edge( e.Value() ));
     }
-    theNbVertexInWires.push_back( iE );
+    theNbEdgesInWires.push_back( iE );
     iE = 0;
     if ( wlIt == aWireList.begin() && theEdges.size() > 1 ) { // the outer wire
       // orient closed edges
@@ -1047,7 +1047,7 @@ int SMESH_Block::GetOrderedEdges (const TopoDS_Face&   theFace,
           theEdges.splice(theEdges.end(), theEdges,
                           theEdges.begin(), ++theEdges.begin());
           TopExp::Vertices( theEdges.front(), vv[0], vv[1], true );
-          if ( iE++ > theNbVertexInWires.back() ) {
+          if ( iE++ > theNbEdgesInWires.back() ) {
 #ifdef _DEBUG_
             gp_Pnt p = BRep_Tool::Pnt( theFirstVertex );
             MESSAGE ( " : Warning : vertex "<< theFirstVertex.TShape().operator->()

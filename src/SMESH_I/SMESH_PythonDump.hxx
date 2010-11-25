@@ -73,6 +73,7 @@ namespace SMESH
   class FilterManager_i;
   class Filter_i;
   class Functor_i;
+  class Measurements_i;
 
 // ===========================================================================================
 /*!
@@ -143,6 +144,9 @@ namespace SMESH
     operator<<(SMESH::Functor_i* theArg);
 
     TPythonDump& 
+    operator<<(SMESH::Measurements_i* theArg);
+
+    TPythonDump& 
     operator<<(SMESH_Gen_i* theArg);
 
     TPythonDump& 
@@ -161,7 +165,10 @@ namespace SMESH
     operator<<(const TCollection_AsciiString & theArg);
 
     TPythonDump&
-    operator<<(const SMESH::ListOfGroups * theList);
+    operator<<(const SMESH::ListOfGroups& theList);
+
+    TPythonDump&
+    operator<<(const SMESH::ListOfIDSources& theList);
 
     static const char* SMESHGenName() { return "smeshgen"; }
     static const char* MeshEditorName() { return "mesh_editor"; }

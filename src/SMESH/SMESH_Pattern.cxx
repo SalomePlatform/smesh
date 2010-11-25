@@ -766,7 +766,12 @@ bool SMESH_Pattern::Load (SMESH_Mesh*        theMesh,
             }
             paramNodeMap.insert( make_pair( u, node ));
           }
-        }
+
+          //rnv : To fix the bug IPAL21999 Pattern Mapping - New - collapse of pattern mesh
+          if ( paramNodeMap.size() != eSubMesh->NbNodes() )
+              return setErrorCode(ERR_UNEXPECTED);
+          }
+
         // put U in [0,1] so that the first key-point has U==0
         bool isSeam = helper.IsRealSeam( edge );
         double du = l - f;

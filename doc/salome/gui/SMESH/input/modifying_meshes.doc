@@ -18,7 +18,9 @@ elements of the mesh.</li>
 its elements.</li>
 <li>\subpage rotation_page "Rotate" by the indicated axis and angle
 the mesh or some of its elements.</li>
-<li>\subpage scale_page "Scale Transform" the mesh or some of its elements.</li>
+<li>\subpage scale_page "Scale Transform" the mesh or some of its
+elements.</li>
+<li>\subpage double_nodes_page "Duplicate nodes".</li>
 <li>Create a \subpage symmetry_page "symmetrical copy" of the mesh
 through a point or a vector of symmetry.</li>
 <li>Unite meshes by \subpage sewing_meshes_page "sewing" free borders,
@@ -27,10 +29,8 @@ conform free borders, border to side or side elements.</li>
 within the indicated tolerance.</li>
 <li>\subpage merging_elements_page "Merge Elements", considered coincident
 within the indicated tolerance.</li>
-<li>\subpage moving_nodes_page "Move Nodes" to an arbitrary location
+<li>\subpage mesh_through_point_page "Move Nodes" to an arbitrary location
 with consequent transformation of all adjacent elements and edges.</li>
-<li>\subpage mesh_through_point_page "Make node at a point", existing
-or created anew.</li>
 <li>\subpage diagonal_inversion_of_elements_page "Invert an edge" between neighboring triangles.</li>
 <li>\subpage uniting_two_triangles_page "Unite two triangles".</li>
 <li>\subpage uniting_set_of_triangles_page "Unite several adjacent triangles".</li>
@@ -47,8 +47,7 @@ of the selected node or edge.</li>
 <li>Apply \subpage pattern_mapping_page "pattern mapping".</li>
 <li>\subpage convert_to_from_quadratic_mesh_page "Convert regular mesh to quadratic", 
 or vice versa.</li>
-<li>\subpage make_2dmesh_from_3d_page "Create 2D mesh from 3D".</li>
-
+<li>\subpage make_2dmesh_from_3d_page "Generate boundary elements".</li>
 </ul>
 
 \note It is possible to use the variables defined in the SALOME \b NoteBook

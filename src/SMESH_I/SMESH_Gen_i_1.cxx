@@ -19,14 +19,14 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
-
 //  SMESH SMESH_I : idl implementation based on 'SMESH' unit's calsses
-// File      : SMESH_Gen_i_1.cxx
-// Created   : Thu Oct 21 17:24:06 2004
-// Author    : Edward AGAPOV (eap)
-// Module    : SMESH
-// $Header: 
 //
+//  File      : SMESH_Gen_i_1.cxx
+//  Created   : Thu Oct 21 17:24:06 2004
+//  Author    : Edward AGAPOV (eap)
+//  Module    : SMESH
+//  $Header   : $
+
 #include "SMESH_Gen_i.hxx"
 
 #include "SMESH_Mesh_i.hxx"
@@ -923,7 +923,30 @@ void SMESH_Gen_i::UpdateParameters(CORBA::Object_ptr theObject, const char* theP
   if(!hasAttr)
     aNewParams = anInputParams;
   else 
-    aNewParams = aOldParameters+"|"+anInputParams;
+    {
+      int pos = aOldParameters.SearchFromEnd("|");
+      if(pos==-1) pos = 0;
+      TCollection_AsciiString previousParamFull(aOldParameters.Split(pos));
+      TCollection_AsciiString previousParam(previousParamFull);
+      TCollection_AsciiString theRepet("1");
+      pos = previousParam.SearchFromEnd(";*=");
+      if(pos >= 0)
+        {
+          theRepet = previousParam.Split(pos+2);
+          pos = pos-1;
+          if(pos==-1) pos = 0;
+          previousParam.Split(pos);
+        }
+      if(previousParam == anInputParams)
+        {
+          theRepet = theRepet.IntegerValue()+1;
+          aNewParams = aOldParameters + previousParam + ";*=" + theRepet;
+        }
+      else
+        {
+          aNewParams = aOldParameters + previousParamFull + "|" + anInputParams;
+        }
+    }
 
   if(VARIABLE_DEBUG)
   {

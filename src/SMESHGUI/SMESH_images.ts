@@ -206,6 +206,10 @@
             <translation>mesh_rem_node.png</translation>
         </message>
         <message>
+            <source>ICON_DLG_REM_ORPHAN_NODES</source>
+            <translation>mesh_rem_orphan_nodes.png</translation>
+        </message>
+        <message>
             <source>ICON_DLG_RENUMBERING_ELEMENTS</source>
             <translation>mesh_renumbering_elements.png</translation>
         </message>
@@ -284,6 +288,14 @@
         <message>
             <source>ICON_MAP</source>
             <translation>mesh_pattern.png</translation>
+        </message>
+        <message>
+            <source>ICON_MAX_ELEMENT_LENGTH_2D</source>
+            <translation>mesh_max_element_length_2d.png</translation>
+        </message>
+        <message>
+            <source>ICON_MAX_ELEMENT_LENGTH_3D</source>
+            <translation>mesh_max_element_length_3d.png</translation>
         </message>
         <message>
             <source>ICON_OBJBROWSER_SMESH</source>
@@ -381,6 +393,14 @@
             <source>ICON_DLG_SCALE_ALONG_AXES</source>
             <translation>scale_along_axes.png</translation>
         </message>
+	<message>
+            <source>ICON_SMESH_DUPLICATE_NODES</source>
+            <translation>mesh_duplicate_nodes.png</translation>
+        </message>
+	<message>
+            <source>ICON_SMESH_DUPLICATE_NODES_WITH_ELEM</source>
+            <translation>mesh_duplicate_nodes_with_elem.png</translation>
+        </message>
         <message>
             <source>ICON_SMESH_TREE_ALGO</source>
             <translation>mesh_tree_algo.png</translation>
@@ -443,7 +463,7 @@
         </message>
         <message>
             <source>ICON_WHAT_IS</source>
-            <translation>mesh_whatis.png</translation>
+            <translation>mesh_elem_info.png</translation>
         </message>
         <message>
             <source>ICON_WIRE</source>
@@ -464,6 +484,14 @@
         <message>
             <source>ICON_SPLIT_TO_TETRA</source>
             <translation>split_into_tetra.png</translation>
+        </message>
+        <message>
+            <source>ICON_MEASURE_MIN_DIST</source>
+            <translation>mesh_min_dist.png</translation>
+        </message>
+        <message>
+            <source>ICON_MEASURE_BND_BOX</source>
+            <translation>mesh_bounding_box.png</translation>
         </message>
     </context>
 </TS>

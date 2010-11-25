@@ -156,6 +156,17 @@ See also a
 length, which is more, less or equal (within a given <b>Tolerance</b>) to the predefined
 <b>Threshold Value</b>. See also a
 \ref length_2d_page "Length 2D quality control".
+</li><li>
+<b>Coplanar faces</b> selects mesh faces neighboring the one selected
+by ID in <b>Threshold Value</b> field, if the angle between the
+normal to the neighboring face and the normal to the selected face is less then the
+angular tolerance (defined in degrees). Selection continues among all neighbor faces of already 
+selected ones.<br>
+</li><li>
+<b>Element Diameter 2D</b> selects triangles and quadrangles combining of the edges and
+diagonals with a value of length, which is more, less or equal
+(within a given <b>Tolerance</b>) to the predefined <b>Threshold Value</b>. See also a
+\ref max_element_length_2d_page "Element Diameter 2D quality control".
 </li>
 </ul>
 
@@ -168,6 +179,11 @@ Additional criteria to select mesh <b>Volumes</b> are the following:
 <b>Volume</b> selects 3D mesh elements with a value of volume (see also a
 \ref volume_page "Volume quality control"), which is more, less or equal (within a given
 <b>Tolerance</b>) to the predefined <b>Threshold Value</b>.
+</li><li>
+<b>Element Diameter 3D</b> selects 3D mesh elements combining of the edges and
+diagonals with a value of length, which is more, less or equal
+(within a given <b>Tolerance</b>) to the predefined <b>Threshold Value</b>. See also a
+\ref max_element_length_3d_page "Element Diameter 3D quality control".
 </li><li>
 <b>Bad oriented volume</b> selects mesh volumes, which are incorrectly oriented from
 the point of view of MED convention.

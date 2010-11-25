@@ -301,7 +301,7 @@ bool SMESHGUI_GroupOnShapeOp::onApply()
   if ( !aStudy ) return false;
 
   // mesh
-  _PTR(SObject)       meshSO = aStudy->FindObjectID( myMeshID.toLatin1().data() );
+  _PTR(SObject) meshSO = aStudy->FindObjectID( myMeshID.toLatin1().data() );
   SMESH::SMESH_Mesh_var mesh = SMESH::SObjectToInterface<SMESH::SMESH_Mesh>( meshSO );
   if ( mesh->_is_nil() ) return false;
 
@@ -352,7 +352,15 @@ bool SMESHGUI_GroupOnShapeOp::onApply()
 
   update( UF_ObjBrowser | UF_Model );
 
-  init();
+  // Re-init controls to create the next group
+  myElemGeoIDs.clear();
+  myNodeGeoIDs.clear();
+  removeCustomFilters();
+  myDlg->myNodeGeomList->clear();
+  myDlg->myElemGeomList->clear();
+  myDlg->myElemGeomBtn->setChecked(false); 
+  myDlg->myNodeGeomBtn->setChecked(false);
+  myDlg->updateButtons();
 
   return !group->_is_nil();
 }

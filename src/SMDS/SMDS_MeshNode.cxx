@@ -239,11 +239,6 @@ void SMDS_MeshNode::ClearInverseElements()
   myInverseElements.Clear();
 }
 
-bool SMDS_MeshNode::emptyInverseElements()
-{
-  return myInverseElements.IsEmpty() != Standard_False;
-}
-
 //================================================================================
 /*!
  * \brief Count inverse elements of given type

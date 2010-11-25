@@ -19,7 +19,6 @@
 
 //  SMESH SMESH_I : idl implementation based on 'SMESH' unit's calsses
 //  File   : StdMeshers_RadialQuadrangle_1D2D_i.cxx
-//  Author : Paul RASCLE, EDF
 //  Module : SMESH
 //
 #include "StdMeshers_RadialQuadrangle_1D2D_i.hxx"

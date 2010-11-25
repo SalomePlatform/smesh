@@ -130,6 +130,9 @@ SMESHGUI_EXPORT
     }
 
 SMESHGUI_EXPORT
+  _PTR(SObject) ObjectToSObject( CORBA::Object_ptr );
+
+SMESHGUI_EXPORT
   CORBA::Object_var IObjectToObject( const Handle(SALOME_InteractiveObject)& );
 
   template<class TInterface> typename TInterface::_var_type

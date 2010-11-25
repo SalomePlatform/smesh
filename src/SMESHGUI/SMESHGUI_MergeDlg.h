@@ -21,11 +21,11 @@
 //
 
 // SMESH SMESHGUI : GUI for SMESH component
-// File   : SMESHGUI_EditMeshDlg.h
+// File   : SMESHGUI_MergeDlg.h
 // Author : Open CASCADE S.A.S.
 //
-#ifndef SMESHGUI_EDITMESHDLG_H
-#define SMESHGUI_EDITMESHDLG_H
+#ifndef SMESHGUI_MergeDlg_H
+#define SMESHGUI_MergeDlg_H
 
 // SMESH includes
 #include "SMESH_SMESHGUI.hxx"
@@ -65,16 +65,16 @@ namespace SMESH
 }
 
 //=================================================================================
-// class    : SMESHGUI_EditMeshDlg
+// class    : SMESHGUI_MergeDlg
 // purpose  : 
 //=================================================================================
-class SMESHGUI_EXPORT SMESHGUI_EditMeshDlg : public QDialog
+class SMESHGUI_EXPORT SMESHGUI_MergeDlg : public QDialog
 {
   Q_OBJECT;
 
 public:
-  SMESHGUI_EditMeshDlg( SMESHGUI*, int );
-  ~SMESHGUI_EditMeshDlg();
+  SMESHGUI_MergeDlg( SMESHGUI*, int );
+  ~SMESHGUI_MergeDlg();
 
 private:
   void                      Init();
@@ -89,6 +89,8 @@ private:
   // add the centers of gravity of ElemsIdMap elements to the GrCentersXYZ list
 
 private:
+  typedef QList<SMESH::SMESH_GroupBase_var> GrpList;
+
   SMESHGUI*                 mySMESHGUI;     /* Current SMESHGUI object */
   LightApp_SelectionMgr*    mySelectionMgr; /* User shape selection */
   SVTK_Selector*            mySelector;
@@ -137,10 +139,16 @@ private:
   QPushButton*              RemoveElemButton;
   QPushButton*              SetFirstButton;
 
+  QGroupBox*                GroupExclude;
+  QListWidget*              ListExclude;
+
   QGroupBox*                TypeBox;
   QButtonGroup*             GroupType;
     
   QString                   myHelpFileName;
+
+  QString                   myEntry;
+  GrpList                   myGroups;
 
  private slots:
   void                      ClickOnOk();
@@ -164,4 +172,4 @@ private:
   void                      onTypeChanged(int);
 };
 
-#endif // SMESHGUI_EDITMESHDLG_H
+#endif // SMESHGUI_MergeDlg_H

@@ -45,6 +45,7 @@ class QListWidget;
 class SMESH_Actor;
 class SMESH_PreviewActorsCollection;
 class vtkRenderer;
+class SUIT_SelectionFilter;
 
 class STDMESHERSGUI_EXPORT StdMeshersGUI_SubShapeSelectorWdg : public QWidget
 {
@@ -119,6 +120,8 @@ private:
   TopAbs_ShapeEnum               mySubShType;
   
   SMESH_PreviewActorsCollection* myPreviewActor;
+  QList<SUIT_SelectionFilter*>   myGeomFilters;
+  SUIT_SelectionFilter*          myFilter;
 };
 
 #endif // STDMESHERSGUI_SUBSHAPESELECTORWDG_H

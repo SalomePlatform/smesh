@@ -6,6 +6,7 @@
 
 <ul>
 <li>\ref removing_nodes_anchor "Nodes"</li>
+<li>\ref removing_orphan_nodes_anchor "Orphan Nodes"</li>
 <li>\ref removing_elements_anchor "Elements"</li>
 <li>\ref clear_mesh_anchor "Clear Mesh Data"</li>
 </ul>
@@ -18,11 +19,11 @@
 <ol>
 <li>Select your mesh in the Object Browser or in the 3D viewer.</li>
 
-<li>From the Modification menu choose Remove and from the associated
-submenu select the Remove nodes, or just click <em>"Remove nodes"</em>
+<li>From the <em>Modification</em> menu choose <em>Remove</em> and from the associated
+submenu select the <em>Nodes</em>, or just click <em>"Remove nodes"</em>
 button in the toolbar.
 
-\image html image88.gif
+\image html remove_nodes_icon.png
 <center><em>"Remove nodes" button</em></center>
 
 The following dialog box will appear:
@@ -47,6 +48,30 @@ about filters in the \ref selection_filter_library_page "Selection filter librar
 node of your mesh all adjacent elements will be also deleted.
 
 <br>
+\anchor removing_orphan_nodes_anchor
+<h2>Removing orphan nodes</h2>
+
+There is a quick way to remove all orphan (free) nodes.
+
+<em>To remove orphan nodes:</em>
+<ol>
+<li>Select your mesh in the Object Browser or in the 3D viewer.</li>
+
+<li>From the <em>Modification</em> menu choose <em>Remove</em> and from the associated
+submenu select <em>Orphan Nodes</em>, or just click <em>"Remove orphan nodes"</em>
+button in the toolbar.
+
+\image html remove_orphan_nodes_icon.png
+<center><em>"Remove orphan nodes" button</em></center>
+
+The following Warning message box will appear:
+
+\image html removeorphannodes.png
+
+Confirm nodes removal by pressing "Yes" button.
+</ol>
+
+<br>
 \anchor removing_elements_anchor
 <h2>Removing elements</h2>
 
@@ -54,8 +79,8 @@ node of your mesh all adjacent elements will be also deleted.
 <ol>
 <li>Select your mesh in the Object Browser or in the 3D viewer.</li>
 
-<li>From the \b Modification menu choose \b Remove and from the
-associated submenu select the Remove elements, or just click
+<li>From the <em>Modification</em> menu choose <em>Remove</em> and from the
+associated submenu select the <em>Elements</em>, or just click
 <em>"Remove elements"</em> button in the toolbar.
 
 \image html remove_elements_icon.png
@@ -94,7 +119,7 @@ about filters in the \ref selection_filter_library_page "Selection filter librar
 <li>From the Modification menu choose Remove and from the associated
 submenu select the Clear Mesh Data, or just click <em>"Clear Mesh Data"</em>
 button in the toolbar. You can also right-click on the mesh in the
-Object Browser and select Clear Mesh Data in the pop-up menu.
+Object Browser and select Clear Mesh Data in the pop-up menu.</li>
 </ol>
 
 \image html mesh_clear.png

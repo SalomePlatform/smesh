@@ -47,12 +47,10 @@ salomeinclude_HEADERS = \
 	SMESHGUI_GroupDlg.h \
 	SMESHGUI_RemoveNodesDlg.h \
 	SMESHGUI_RemoveElementsDlg.h \
-	SMESHGUI_MeshInfosDlg.h \
-	SMESHGUI_StandardMeshInfosDlg.h \
-	SMESHGUI_WhatIsDlg.h \
+	SMESHGUI_MeshInfo.h \
+	SMESHGUI_Measurements.h \
 	SMESHGUI_Preferences_ColorDlg.h \
 	SMESHGUI_Preferences_ScalarBarDlg.h \
-	SMESHGUI_MoveNodesDlg.h \
 	SMESHGUI_AddMeshElementDlg.h \
 	SMESHGUI_XmlHandler.h \
 	SMESHGUI_Filter.h \
@@ -72,7 +70,8 @@ salomeinclude_HEADERS = \
 	SMESHGUI_ScaleDlg.h \
 	SMESHGUI_SymmetryDlg.h \
 	SMESHGUI_SewingDlg.h \
-	SMESHGUI_EditMeshDlg.h \
+	SMESHGUI_DuplicateNodesDlg.h \
+	SMESHGUI_MergeDlg.h \
 	SMESHGUI_MeshUtils.h \
 	SMESHGUI_CreatePolyhedralVolumeDlg.h \
 	SMESHGUI_Operation.h \
@@ -111,12 +110,10 @@ dist_libSMESH_la_SOURCES = \
 	SMESHGUI_GroupDlg.cxx \
 	SMESHGUI_RemoveNodesDlg.cxx \
 	SMESHGUI_RemoveElementsDlg.cxx \
-	SMESHGUI_MeshInfosDlg.cxx \
-	SMESHGUI_StandardMeshInfosDlg.cxx \
-	SMESHGUI_WhatIsDlg.cxx \
+	SMESHGUI_MeshInfo.cxx \
+	SMESHGUI_Measurements.cxx \
 	SMESHGUI_Preferences_ColorDlg.cxx \
 	SMESHGUI_Preferences_ScalarBarDlg.cxx \
-	SMESHGUI_MoveNodesDlg.cxx \
 	SMESHGUI_AddMeshElementDlg.cxx \
 	SMESHGUI_XmlHandler.cxx \
 	SMESHGUI_Filter.cxx \
@@ -136,7 +133,8 @@ dist_libSMESH_la_SOURCES = \
 	SMESHGUI_ScaleDlg.cxx \
 	SMESHGUI_SymmetryDlg.cxx \
 	SMESHGUI_SewingDlg.cxx \
-	SMESHGUI_EditMeshDlg.cxx \
+	SMESHGUI_DuplicateNodesDlg.cxx \
+	SMESHGUI_MergeDlg.cxx \
 	SMESHGUI_Utils.cxx \
 	SMESHGUI_GEOMGenUtils.cxx \
 	SMESHGUI_MeshUtils.cxx \
@@ -183,12 +181,10 @@ MOC_FILES = \
 	SMESHGUI_GroupDlg_moc.cxx \
 	SMESHGUI_RemoveNodesDlg_moc.cxx \
 	SMESHGUI_RemoveElementsDlg_moc.cxx \
-	SMESHGUI_MeshInfosDlg_moc.cxx \
-	SMESHGUI_StandardMeshInfosDlg_moc.cxx \
-	SMESHGUI_WhatIsDlg_moc.cxx \
+	SMESHGUI_MeshInfo_moc.cxx \
+	SMESHGUI_Measurements_moc.cxx \
 	SMESHGUI_Preferences_ColorDlg_moc.cxx \
 	SMESHGUI_Preferences_ScalarBarDlg_moc.cxx \
-	SMESHGUI_MoveNodesDlg_moc.cxx \
 	SMESHGUI_AddMeshElementDlg_moc.cxx \
 	SMESHGUI_FilterDlg_moc.cxx \
 	SMESHGUI_FilterLibraryDlg_moc.cxx \
@@ -206,7 +202,8 @@ MOC_FILES = \
 	SMESHGUI_ScaleDlg_moc.cxx \
 	SMESHGUI_SymmetryDlg_moc.cxx \
 	SMESHGUI_SewingDlg_moc.cxx \
-	SMESHGUI_EditMeshDlg_moc.cxx \
+	SMESHGUI_DuplicateNodesDlg_moc.cxx \
+	SMESHGUI_MergeDlg_moc.cxx \
 	SMESHGUI_CreatePolyhedralVolumeDlg_moc.cxx \
 	SMESHGUI_Operation_moc.cxx \
 	SMESHGUI_SelectionOp_moc.cxx \
@@ -269,4 +266,5 @@ libSMESH_la_LDFLAGS  = \
 # resources files
 nodist_salomeres_DATA= \
 	SMESH_images.qm \
-	SMESH_msg_en.qm
+	SMESH_msg_en.qm \
+	SMESH_msg_fr.qm

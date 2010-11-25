@@ -32,7 +32,8 @@ BASEIDL_FILES = \
 	SMESH_Filter.idl \
 	SMESH_Group.idl \
 	SMESH_Pattern.idl \
-	SMESH_MeshEditor.idl
+	SMESH_MeshEditor.idl \
+	SMESH_Measurements.idl
 
 # This variable defines the files to be installed
 dist_salomeidl_DATA = $(BASEIDL_FILES)
@@ -49,7 +50,8 @@ nodist_libSalomeIDLSMESH_la_SOURCES = \
 	SMESH_FilterSK.cc \
 	SMESH_GroupSK.cc \
 	SMESH_PatternSK.cc \
-	SMESH_MeshEditorSK.cc
+	SMESH_MeshEditorSK.cc \
+	SMESH_MeasurementsSK.cc
 
 # header files must be exported: other modules have to use this library
 nodist_salomeinclude_HEADERS = $(BASEIDL_FILES:%.idl=%.hh)

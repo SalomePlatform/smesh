@@ -141,7 +141,9 @@ SMESHGUI_MeshInfosDlg::SMESHGUI_MeshInfosDlg(SMESHGUI* theModule):
 
   // buttons --> OK and Help buttons
   myOkBtn = new QPushButton(tr("SMESH_BUT_OK" ), myButtonsGroup);
-  myOkBtn->setAutoDefault(true); myOkBtn->setDefault(true);
+  myOkBtn->setAutoDefault(true);
+  myOkBtn->setDefault(true);
+  myOkBtn->setFocus();
   myHelpBtn = new QPushButton(tr("SMESH_BUT_HELP" ), myButtonsGroup);
   myHelpBtn->setAutoDefault(true);
 

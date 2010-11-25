@@ -40,6 +40,8 @@ class QLineEdit;
 class QPushButton;
 class QToolButton;
 class QRadioButton;
+class QButtonGroup;
+class QLabel;
 
 class SMESHGUI;
 class SMESH_Actor;
@@ -77,6 +79,7 @@ protected slots:
   void                     onSelectionChanged();
   void                     onXYChanged();
   void                     onOrientationChanged();
+  void                     onDistributionChanged( int );
 
 private:
   SMESHGUI*                mySMESHGUI;
@@ -117,7 +120,14 @@ private:
   SMESHGUI_SpinBox*        myWidthSpin;
   SMESHGUI_SpinBox*        myHeightSpin;
 
+  QGroupBox*               myDistributionGrp;
+  QRadioButton*            myDMonoColor;
+  QRadioButton*            myDMultiColor;
+  QtxColorButton*          myMonoColorBtn;
+  QLabel*                  myDistributionColorLbl;
+
   QGroupBox*               myButtonGrp;
+  QButtonGroup*            myDistribColorGrp;
   QPushButton*             myOkBtn;
   QPushButton*             myApplyBtn;
   QPushButton*             myCancelBtn;

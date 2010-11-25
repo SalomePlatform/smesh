@@ -90,6 +90,18 @@
             <translation>mesh_hypo_source_3d.png</translation>
         </message>
         <message>
+            <source>ICON_DLG_QUADRANGLE_PARAMS</source>
+            <translation>mesh_hypo_length.png</translation>
+        </message>
+        <message>
+            <source>ICON_DLG_IMPORT_SOURCE_1D</source>
+            <translation>mesh_hypo_source_edge.png</translation>
+        </message>
+        <message>
+            <source>ICON_DLG_IMPORT_SOURCE_2D</source>
+            <translation>mesh_hypo_source_face.png</translation>
+        </message>
+        <message>
             <source>ICON_DLG_SEGMENT_LENGTH_AROUND_VERTEX</source>
             <translation>mesh_hypo_length.png</translation>
         </message>
@@ -241,9 +253,28 @@
             <source>ICON_SMESH_TREE_HYPO_StartEndLength</source>
             <translation>mesh_tree_hypo_length.png</translation>
         </message>
+    </context>
+    <context>
+        <name>StdMeshersGUI_QuadrangleParamWdg</name>
         <message>
-            <source>ICON_DLG_QUADRANGLE_PARAMS</source>
-            <translation>mesh_hypo_length.png</translation>
+            <source>ICON_StdMeshers_Quadrangle_Params_0</source>
+            <translation>mesh_quadrangle_standard.png</translation>
+        </message>
+        <message>
+            <source>ICON_StdMeshers_Quadrangle_Params_1</source>
+            <translation>mesh_quadrangle_triapref.png</translation>
+        </message>
+        <message>
+            <source>ICON_StdMeshers_Quadrangle_Params_2</source>
+            <translation>mesh_quadrangle_quadpref.png</translation>
+        </message>
+        <message>
+            <source>ICON_StdMeshers_Quadrangle_Params_3</source>
+            <translation>mesh_quadrangle_quadpref_reversed.png</translation>
+        </message>
+        <message>
+            <source>ICON_StdMeshers_Quadrangle_Params_4</source>
+            <translation>mesh_quadrangle_reduced.png</translation>
         </message>
     </context>
 </TS>

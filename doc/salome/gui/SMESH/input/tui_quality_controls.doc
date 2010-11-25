@@ -2,9 +2,7 @@
 
 \page tui_quality_controls_page Quality Controls
 
-<br>
-\anchor tui_free_borders
-<h2>Free Borders</h2>
+\section tui_free_borders Free Borders
 
 \code
 import salome
@@ -48,9 +46,7 @@ aGroup.Add(anIds)
 salome.sg.updateObjBrowser(1)
 \endcode
 
-<br>
-\anchor tui_borders_at_multiconnection
-<h2>Borders at Multiconnection</h2>
+\section tui_borders_at_multiconnection Borders at Multiconnection
 
 \code
 import salome
@@ -97,9 +93,7 @@ aGroup.Add(anIds)
 salome.sg.updateObjBrowser(1)
 \endcode
 
-<br>
-\anchor tui_length_1d
-<h2>Length 1D</h2>
+\section tui_length_1d Length 1D
 
 \code
 import salome
@@ -145,9 +139,7 @@ aGroup.Add(anIds)
 salome.sg.updateObjBrowser(1)
 \endcode
 
-<br>
-\anchor tui_free_edges
-<h2>Free Edges</h2>
+\section tui_free_edges Free Edges
 
 \code
 import SMESH_mechanic
@@ -189,9 +181,7 @@ for i in range(len(aBorders)):
 salome.sg.updateObjBrowser(1)
 \endcode
 
-<br>
-\anchor tui_free_nodes
-<h2>Free Nodes</h2>
+\section tui_free_nodes Free Nodes
 
 \code
 import salome
@@ -242,10 +232,7 @@ print ""
 salome.sg.updateObjBrowser(1)
 \endcode
 
-
-<br>
-\anchor tui_free_faces
-<h2>Free Faces</h2>
+\section tui_free_faces Free Faces
 
 \code
 import salome
@@ -322,10 +309,7 @@ aGroup.Add(aFaceIds)
 salome.sg.updateObjBrowser(1)
 \endcode
 
-
-<br>
-\anchor tui_length_2d
-<h2>Length 2D</h2>
+\section tui_length_2d Length 2D
 
 \code
 import salome
@@ -372,9 +356,7 @@ aGroup.Add(anIds)
 salome.sg.updateObjBrowser(1)
 \endcode
 
-<br>
-\anchor tui_borders_at_multiconnection_2d
-<h2>Borders at Multiconnection 2D</h2>
+\section tui_borders_at_multiconnection_2d Borders at Multiconnection 2D
 
 \code
 import salome
@@ -421,9 +403,7 @@ aGroup.Add(anIds)
 salome.sg.updateObjBrowser(1)
 \endcode
 
-<br>
-\anchor tui_area
-<h2>Area</h2>
+\section tui_area Area
 
 \code
 import SMESH_mechanic
@@ -456,9 +436,7 @@ aGroup.Add(anIds)
 salome.sg.updateObjBrowser(1)  
 \endcode
 
-<br>
-\anchor tui_taper
-<h2>Taper</h2>
+\section tui_taper Taper
 
 \code
 import SMESH_mechanic
@@ -491,9 +469,7 @@ aGroup.Add(anIds)
 salome.sg.updateObjBrowser(1)
 \endcode
 
-<br>
-\anchor tui_aspect_ratio
-<h2>Aspect Ratio</h2>
+\section tui_aspect_ratio Aspect Ratio
 
 \code
 import SMESH_mechanic
@@ -526,9 +502,7 @@ aGroup.Add(anIds)
 salome.sg.updateObjBrowser(1)
 \endcode
 
-<br>
-\anchor tui_minimum_angle
-<h2>Minimum Angle</h2>
+\section tui_minimum_angle Minimum Angle
 
 \code
 import SMESH_mechanic
@@ -562,9 +536,7 @@ aGroup.Add(anIds)
 salome.sg.updateObjBrowser(1)
 \endcode
 
-<br>
-\anchor tui_warping
-<h2>Warping</h2>
+\section tui_warping Warping
 
 \code
 import SMESH_mechanic
@@ -598,9 +570,7 @@ aGroup.Add(anIds)
 salome.sg.updateObjBrowser(1) 
 \endcode
 
-<br>
-\anchor tui_skew
-<h2>Skew</h2>
+\section tui_skew Skew
 
 \code
 import SMESH_mechanic
@@ -633,9 +603,40 @@ aGroup.Add(anIds)
 salome.sg.updateObjBrowser(1)
 \endcode
 
-<br>
-\anchor tui_aspect_ratio_3d
-<h2>Aspect Ratio 3D</h2>
+\section tui_max_element_length_2d Element Diameter 2D
+
+\code
+import SMESH_mechanic
+
+smesh  = SMESH_mechanic.smesh
+mesh   = SMESH_mechanic.mesh
+salome = SMESH_mechanic.salome
+
+# Criterion : ELEMENT DIAMETER 2D > 10
+mel_2d_margin = 10
+
+aFilter = smesh.GetFilter(smesh.FACE, smesh.FT_MaxElementLength2D, smesh.FT_MoreThan, mel_2d_margin)
+
+anIds = mesh.GetIdsFromFilter(aFilter) 
+
+# print the result
+print "Criterion: Element Diameter 2D Ratio > ", mel_2d_margin, " Nb = ", len(anIds)
+j = 1
+for i in range(len(anIds)):
+  if j > 20: j = 1; print ""
+  print anIds[i],
+  j = j + 1
+  pass
+print ""
+
+# create a group
+aGroup = mesh.CreateEmptyGroup(smesh.FACE, "Element Diameter 2D > " + `mel_2d_margin`)
+aGroup.Add(anIds)
+
+salome.sg.updateObjBrowser(1)
+\endcode
+
+\section tui_aspect_ratio_3d Aspect Ratio 3D
 
 \code
 import SMESH_mechanic_tetra 
@@ -669,9 +670,7 @@ aGroup.Add(anIds)
 salome.sg.updateObjBrowser(1)
 \endcode
 
-<br>
-\anchor tui_volume
-<h2>Volume</h2>
+\section tui_volume Volume
 
 \code
 import SMESH_mechanic_tetra
@@ -704,6 +703,39 @@ aGroup = mesh.CreateEmptyGroup(smesh.VOLUME, "Volume < " + `volume_margin`)
 aGroup.Add(anIds)
 
 salome.sg.updateObjBrowser(1) 
+\endcode
+
+\section tui_max_element_length_3d Element Diameter 3D
+
+\code
+import SMESH_mechanic_tetra
+
+smesh  = SMESH_mechanic_tetra.smesh
+mesh   = SMESH_mechanic_tetra.mesh
+salome = SMESH_mechanic_tetra.salome
+
+# Criterion : ELEMENT DIAMETER 3D > 10
+mel_3d_margin = 10
+
+aFilter = smesh.GetFilter(smesh.FACE, smesh.FT_MaxElementLength3D, smesh.FT_MoreThan, mel_3d_margin)
+
+anIds = mesh.GetIdsFromFilter(aFilter) 
+
+# print the result
+print "Criterion: Element Diameter 3D Ratio > ", mel_3d_margin, " Nb = ", len(anIds)
+j = 1
+for i in range(len(anIds)):
+  if j > 20: j = 1; print ""
+  print anIds[i],
+  j = j + 1
+  pass
+print ""
+
+# create a group
+aGroup = mesh.CreateEmptyGroup(smesh.FACE, "Element Diameter 3D > " + `mel_3d_margin`)
+aGroup.Add(anIds)
+
+salome.sg.updateObjBrowser(1)
 \endcode
 
 */

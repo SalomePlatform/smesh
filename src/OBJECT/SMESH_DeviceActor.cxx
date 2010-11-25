@@ -26,6 +26,7 @@
 //  Module : SMESH
 //
 #include "SMESH_DeviceActor.h"
+#include "SMESH_ScalarBarActor.h"
 #include "SMESH_ExtractGeometry.h"
 #include "SMESH_ControlsDef.hxx"
 #include "SMESH_ActorUtils.h"
@@ -48,7 +49,6 @@
 #include <vtkPolyDataMapper.h>
 #include <vtkUnstructuredGrid.h>
 
-#include <vtkScalarBarActor.h>
 #include <vtkLookupTable.h>
 #include <vtkDoubleArray.h>
 #include <vtkCellData.h>
@@ -282,7 +282,7 @@ SMESH_DeviceActor
 void
 SMESH_DeviceActor
 ::SetControlMode(SMESH::Controls::FunctorPtr theFunctor,
-                 vtkScalarBarActor* theScalarBarActor,
+                 SMESH_ScalarBarActor* theScalarBarActor,
                  vtkLookupTable* theLookupTable)
 {
   bool anIsInitialized = theFunctor;
@@ -310,6 +310,12 @@ SMESH_DeviceActor
         double aValue = aNumericalFunctor->GetValue(anObjId);
         aScalars->SetValue(i,aValue);
       }
+      int nbIntervals = theScalarBarActor->GetMaximumNumberOfColors();
+      std::vector<int> nbEvents;
+      std::vector<double> funValues;
+      aNumericalFunctor->GetHistogram(nbIntervals, nbEvents, funValues);
+      theScalarBarActor->SetDistribution(nbEvents);
+
     }else if(Predicate* aPredicate = dynamic_cast<Predicate*>(theFunctor.get())){
       for(vtkIdType i = 0; i < aNbCells; i++){
         vtkIdType anId = myExtractUnstructuredGrid->GetInputId(i);
@@ -336,7 +342,7 @@ SMESH_DeviceActor
 void
 SMESH_DeviceActor
 ::SetExtControlMode(SMESH::Controls::FunctorPtr theFunctor,
-                    vtkScalarBarActor* theScalarBarActor,
+                    SMESH_ScalarBarActor* theScalarBarActor,
                     vtkLookupTable* theLookupTable)
 {
   bool anIsInitialized = theFunctor;
@@ -469,6 +475,16 @@ SMESH_DeviceActor
       myMergeFilter->SetScalars(aDataSet);
       aDataSet->Delete();
     }
+    
+    //Set Distribution 
+    if(NumericalFunctor* aNumericalFunctor = dynamic_cast<NumericalFunctor*>(theFunctor.get())){
+      int nbIntervals = theScalarBarActor->GetMaximumNumberOfColors();
+      std::vector<int> nbEvents;
+      std::vector<double> funValues;
+      aNumericalFunctor->GetHistogram(nbIntervals, nbEvents, funValues);
+      theScalarBarActor->SetDistribution(nbEvents);
+    }
+    
   }
   GetMapper()->SetScalarVisibility(anIsInitialized);
   theScalarBarActor->SetVisibility(anIsInitialized);

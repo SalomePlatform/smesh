@@ -30,6 +30,8 @@
 #include "SMESH_DeviceActor.h"
 #include "SMESH_ObjectDef.h"
 #include "SMESH_ControlsDef.hxx"
+#include "SMESH_ScalarBarActor.h"
+#include "VTKViewer_CellCenters.h"
 #include "VTKViewer_ExtractUnstructuredGrid.h"
 #include "VTKViewer_FramedTextActor.h"
 #include "SALOME_InteractiveObject.hxx"
@@ -59,12 +61,10 @@
 #include <vtkProperty2D.h>
 #include <vtkPolyData.h>
 #include <vtkMaskPoints.h>
-#include <vtkCellCenters.h>
 #include <vtkTextProperty.h>
 #include <vtkLabeledDataMapper.h>
 #include <vtkSelectVisiblePoints.h>
 
-#include <vtkScalarBarActor.h>
 #include <vtkLookupTable.h>
 
 #include <vtkMath.h>
@@ -196,6 +196,7 @@ SMESH_ActorDef::SMESH_ActorDef()
   aFilter->RegisterCellsWithType(VTK_QUADRATIC_TETRA);
   aFilter->RegisterCellsWithType(VTK_QUADRATIC_HEXAHEDRON);
   aFilter->RegisterCellsWithType(VTK_QUADRATIC_WEDGE);
+  aFilter->RegisterCellsWithType(VTK_QUADRATIC_PYRAMID);
   aFilter->RegisterCellsWithType(VTK_CONVEX_POINT_SET);
 
   //Definition 1D device of the actor
@@ -370,7 +371,7 @@ SMESH_ActorDef::SMESH_ActorDef()
   //Controls - Aspect Ratio: incorrect colors of the best and worst values
   myLookupTable->SetHueRange(0.667,0.0);
 
-  myScalarBarActor = vtkScalarBarActor::New();
+  myScalarBarActor = SMESH_ScalarBarActor::New();
   myScalarBarActor->SetVisibility(false);
   myScalarBarActor->SetLookupTable(myLookupTable);
 
@@ -427,7 +428,7 @@ SMESH_ActorDef::SMESH_ActorDef()
   //---------------------------------------
   myCellsNumDataSet = vtkUnstructuredGrid::New();
 
-  myCellCenters = vtkCellCenters::New();
+  myCellCenters = VTKViewer_CellCenters::New();
   myCellCenters->SetInput(myCellsNumDataSet);
 
   myClsMaskPoints = vtkMaskPoints::New();
@@ -487,15 +488,20 @@ SMESH_ActorDef::SMESH_ActorDef()
   myHighlitableActor->SetQuadraticArcAngle(aQuadraticAngle);
   my2DActor->SetQuadraticArcAngle(aQuadraticAngle);
   
-  // Set color of the name actor
+  // Set colors of the name actor
   SMESH::GetColor( "SMESH", "fill_color", anRGB[0], anRGB[1], anRGB[2], QColor( 0, 170, 255 ) );
   myNameActor->SetBackgroundColor(anRGB[0], anRGB[1], anRGB[2]);
+  SMESH::GetColor( "SMESH", "group_name_color", anRGB[0], anRGB[1], anRGB[2], QColor( 255, 255, 255 ) );
+  myNameActor->SetForegroundColor(anRGB[0], anRGB[1], anRGB[2]);
 }
 
 
 SMESH_ActorDef::~SMESH_ActorDef()
 {
   if(MYDEBUG) MESSAGE("~SMESH_ActorDef - "<<this);
+
+  // caught by SMESHGUI::ProcessEvents() static method
+  this->InvokeEvent( SMESH::DeleteActorEvent, NULL );
 
   myScalarBarActor->Delete();
   myLookupTable->Delete();
@@ -718,51 +724,50 @@ SetControlMode(eControl theMode,
   bool anIsScalarVisible = theMode > eNone;
 
   if(anIsScalarVisible){
-    SMESH::Controls::FunctorPtr aFunctor;
     switch(theMode){
     case eLength:
     {
       SMESH::Controls::Length* aControl = new SMESH::Controls::Length();
       aControl->SetPrecision( myControlsPrecision );
-      aFunctor.reset( aControl );
+      myFunctor.reset( aControl );
       myControlActor = my1DActor;
       break;
     }
     case eLength2D:
     {
-      aFunctor.reset(new SMESH::Controls::Length2D());
+      myFunctor.reset(new SMESH::Controls::Length2D());
       myControlActor = my2DActor;
       break;
     }
     case eFreeBorders:
-      aFunctor.reset(new SMESH::Controls::FreeBorders());
+      myFunctor.reset(new SMESH::Controls::FreeBorders());
       myControlActor = my1DActor;
       break;
     case eFreeEdges:
-      aFunctor.reset(new SMESH::Controls::FreeEdges());
+      myFunctor.reset(new SMESH::Controls::FreeEdges());
       myControlActor = my2DActor;
       break;
     case eFreeNodes:
-      aFunctor.reset(new SMESH::Controls::FreeNodes());
+      myFunctor.reset(new SMESH::Controls::FreeNodes());
       myControlActor = myNodeActor;
       break;
     case eFreeFaces:
-      aFunctor.reset(new SMESH::Controls::FreeFaces());
+      myFunctor.reset(new SMESH::Controls::FreeFaces());
       myControlActor = my2DActor;
       break;
     case eMultiConnection:
-      aFunctor.reset(new SMESH::Controls::MultiConnection());
+      myFunctor.reset(new SMESH::Controls::MultiConnection());
       myControlActor = my1DActor;
       break;
     case eMultiConnection2D:
-      aFunctor.reset(new SMESH::Controls::MultiConnection2D());
+      myFunctor.reset(new SMESH::Controls::MultiConnection2D());
       myControlActor = my2DActor;
       break;
     case eArea:
     {
       SMESH::Controls::Area* aControl = new SMESH::Controls::Area();
       aControl->SetPrecision( myControlsPrecision );
-      aFunctor.reset( aControl );
+      myFunctor.reset( aControl );
       myControlActor = my2DActor;
       break;
     }
@@ -770,7 +775,7 @@ SetControlMode(eControl theMode,
     {
       SMESH::Controls::Taper* aControl = new SMESH::Controls::Taper();
       aControl->SetPrecision( myControlsPrecision );
-      aFunctor.reset( aControl );
+      myFunctor.reset( aControl );
       myControlActor = my2DActor;
       break;
     }
@@ -778,7 +783,7 @@ SetControlMode(eControl theMode,
     {
       SMESH::Controls::AspectRatio* aControl = new SMESH::Controls::AspectRatio();
       aControl->SetPrecision( myControlsPrecision );
-      aFunctor.reset( aControl );
+      myFunctor.reset( aControl );
       myControlActor = my2DActor;
       break;
     }
@@ -786,7 +791,7 @@ SetControlMode(eControl theMode,
     {
       SMESH::Controls::AspectRatio3D* aControl = new SMESH::Controls::AspectRatio3D();
       aControl->SetPrecision( myControlsPrecision );
-      aFunctor.reset( aControl );
+      myFunctor.reset( aControl );
       myControlActor = my3DActor;
       break;
     }
@@ -794,7 +799,23 @@ SetControlMode(eControl theMode,
     {
       SMESH::Controls::Volume* aControl = new SMESH::Controls::Volume();
       aControl->SetPrecision( myControlsPrecision );
-      aFunctor.reset( aControl );
+      myFunctor.reset( aControl );
+      myControlActor = my3DActor;
+      break;
+    }
+    case eMaxElementLength2D:
+    {
+      SMESH::Controls::MaxElementLength2D* aControl = new SMESH::Controls::MaxElementLength2D();
+      aControl->SetPrecision( myControlsPrecision );
+      myFunctor.reset( aControl );
+      myControlActor = my2DActor;
+      break;
+    }
+    case eMaxElementLength3D:
+    {
+      SMESH::Controls::MaxElementLength3D* aControl = new SMESH::Controls::MaxElementLength3D();
+      aControl->SetPrecision( myControlsPrecision );
+      myFunctor.reset( aControl );
       myControlActor = my3DActor;
       break;
     }
@@ -802,7 +823,7 @@ SetControlMode(eControl theMode,
     {
       SMESH::Controls::MinimumAngle* aControl = new SMESH::Controls::MinimumAngle();
       aControl->SetPrecision( myControlsPrecision );
-      aFunctor.reset( aControl );
+      myFunctor.reset( aControl );
       myControlActor = my2DActor;
       break;
     }
@@ -810,7 +831,7 @@ SetControlMode(eControl theMode,
     {
       SMESH::Controls::Warping* aControl = new SMESH::Controls::Warping();
       aControl->SetPrecision( myControlsPrecision );
-      aFunctor.reset( aControl );
+      myFunctor.reset( aControl );
       myControlActor = my2DActor;
       break;
     }
@@ -818,7 +839,7 @@ SetControlMode(eControl theMode,
     {
       SMESH::Controls::Skew* aControl = new SMESH::Controls::Skew();
       aControl->SetPrecision( myControlsPrecision );
-      aFunctor.reset( aControl );
+      myFunctor.reset( aControl );
       myControlActor = my2DActor;
       break;
     }
@@ -832,21 +853,21 @@ SetControlMode(eControl theMode,
       myControlMode = theMode;
       switch(myControlMode){
       case eFreeNodes:
-        myNodeExtActor->SetExtControlMode(aFunctor);
+        myNodeExtActor->SetExtControlMode(myFunctor);
         break;
       case eFreeEdges:
       case eFreeBorders:
-        my1DExtActor->SetExtControlMode(aFunctor);
+        my1DExtActor->SetExtControlMode(myFunctor);
         break;
       case eFreeFaces:
-        my2DExtActor->SetExtControlMode(aFunctor);
+        my2DExtActor->SetExtControlMode(myFunctor);
         break;
       case eLength2D:
       case eMultiConnection2D:
-        my1DExtActor->SetExtControlMode(aFunctor,myScalarBarActor,myLookupTable);
+        my1DExtActor->SetExtControlMode(myFunctor,myScalarBarActor,myLookupTable);
         break;
       default:
-        myControlActor->SetControlMode(aFunctor,myScalarBarActor,myLookupTable);
+        myControlActor->SetControlMode(myFunctor,myScalarBarActor,myLookupTable);
       }
     }
 
@@ -869,8 +890,11 @@ SetControlMode(eControl theMode,
         SetEntityMode(eVolumes);
     }
 
-  }else if(theCheckEntityMode){
-    myEntityMode = eAllEntity;
+  }
+  else {
+    if(theCheckEntityMode)
+      myEntityMode = eAllEntity;
+    myFunctor.reset();
   }
 
   SetRepresentation(GetRepresentation());
@@ -1344,6 +1368,7 @@ void SMESH_ActorDef::SetEntityMode(unsigned int theMode)
     aHightFilter->RegisterCellsWithType(VTK_QUADRATIC_TETRA);
     aHightFilter->RegisterCellsWithType(VTK_QUADRATIC_HEXAHEDRON);
     aHightFilter->RegisterCellsWithType(VTK_QUADRATIC_WEDGE);
+    aHightFilter->RegisterCellsWithType(VTK_QUADRATIC_PYRAMID);
     aHightFilter->RegisterCellsWithType(VTK_CONVEX_POINT_SET);
   }
   aFilter->Update();
@@ -1801,92 +1826,6 @@ GetClippingPlane(vtkIdType theID)
   return myCippingPlaneCont[theID].Get();
 }
 
-
-static void ComputeBoundsParam(vtkDataSet* theDataSet,
-                               vtkFloatingPointType theDirection[3], vtkFloatingPointType theMinPnt[3],
-                               vtkFloatingPointType& theMaxBoundPrj, vtkFloatingPointType& theMinBoundPrj)
-{
-  vtkFloatingPointType aBounds[6];
-  theDataSet->GetBounds(aBounds);
-
-  //Enlarge bounds in order to avoid conflicts of precision
-  for(int i = 0; i < 6; i += 2){
-    static double EPS = 1.0E-3;
-    vtkFloatingPointType aDelta = (aBounds[i+1] - aBounds[i])*EPS;
-    aBounds[i] -= aDelta;
-    aBounds[i+1] += aDelta;
-  }
-
-  vtkFloatingPointType aBoundPoints[8][3] = { {aBounds[0],aBounds[2],aBounds[4]},
-                               {aBounds[1],aBounds[2],aBounds[4]},
-                               {aBounds[0],aBounds[3],aBounds[4]},
-                               {aBounds[1],aBounds[3],aBounds[4]},
-                               {aBounds[0],aBounds[2],aBounds[5]},
-                               {aBounds[1],aBounds[2],aBounds[5]}, 
-                               {aBounds[0],aBounds[3],aBounds[5]}, 
-                               {aBounds[1],aBounds[3],aBounds[5]}};
-
-  int aMaxId = 0, aMinId = aMaxId;
-  theMaxBoundPrj = vtkMath::Dot(theDirection,aBoundPoints[aMaxId]);
-  theMinBoundPrj = theMaxBoundPrj;
-  for(int i = 1; i < 8; i++){
-    vtkFloatingPointType aTmp = vtkMath::Dot(theDirection,aBoundPoints[i]);
-    if(theMaxBoundPrj < aTmp){
-      theMaxBoundPrj = aTmp;
-      aMaxId = i;
-    }
-    if(theMinBoundPrj > aTmp){
-      theMinBoundPrj = aTmp;
-      aMinId = i;
-    }
-  }
-  vtkFloatingPointType *aMinPnt = aBoundPoints[aMaxId];
-  theMinPnt[0] = aMinPnt[0];
-  theMinPnt[1] = aMinPnt[1];
-  theMinPnt[2] = aMinPnt[2];
-}
-
-
-static void DistanceToPosition(vtkDataSet* theDataSet,
-                               vtkFloatingPointType theDirection[3], vtkFloatingPointType theDist, vtkFloatingPointType thePos[3])
-{
-  vtkFloatingPointType aMaxBoundPrj, aMinBoundPrj, aMinPnt[3];
-  ComputeBoundsParam(theDataSet,theDirection,aMinPnt,aMaxBoundPrj,aMinBoundPrj);
-  vtkFloatingPointType aLength = (aMaxBoundPrj-aMinBoundPrj)*theDist;
-  thePos[0] = aMinPnt[0]-theDirection[0]*aLength;
-  thePos[1] = aMinPnt[1]-theDirection[1]*aLength;
-  thePos[2] = aMinPnt[2]-theDirection[2]*aLength;
-}
-
-
-static void PositionToDistance(vtkDataSet* theDataSet, 
-                               vtkFloatingPointType theDirection[3], vtkFloatingPointType thePos[3], vtkFloatingPointType& theDist)
-{
-  vtkFloatingPointType aMaxBoundPrj, aMinBoundPrj, aMinPnt[3];
-  ComputeBoundsParam(theDataSet,theDirection,aMinPnt,aMaxBoundPrj,aMinBoundPrj);
-  vtkFloatingPointType aPrj = vtkMath::Dot(theDirection,thePos);
-  theDist = (aPrj-aMinBoundPrj)/(aMaxBoundPrj-aMinBoundPrj);
-}
-
-
-void SMESH_ActorDef::SetPlaneParam(vtkFloatingPointType theDir[3], vtkFloatingPointType theDist, vtkPlane* thePlane)
-{
-  thePlane->SetNormal(theDir);
-  vtkFloatingPointType anOrigin[3];
-  ::DistanceToPosition(GetUnstructuredGrid(),theDir,theDist,anOrigin);
-  thePlane->SetOrigin(anOrigin);
-}
-
-
-void SMESH_ActorDef::GetPlaneParam(vtkFloatingPointType theDir[3], vtkFloatingPointType& theDist, vtkPlane* thePlane)
-{
-  thePlane->GetNormal(theDir);
-
-  vtkFloatingPointType anOrigin[3];
-  thePlane->GetOrigin(anOrigin);
-  ::PositionToDistance(GetUnstructuredGrid(),theDir,anOrigin,theDist);
-}
-
 void SMESH_ActorDef::UpdateScalarBar()
 {
   SUIT_ResourceMgr* mgr = SUIT_Session::session()->resourceMgr();
@@ -2000,6 +1939,21 @@ void SMESH_ActorDef::UpdateScalarBar()
   if( mgr->hasValue( "SMESH", "scalar_bar_num_colors" ) )
     anIntVal = mgr->integerValue( "SMESH", "scalar_bar_num_colors", anIntVal );
   myScalarBarActor->SetMaximumNumberOfColors( anIntVal == 0 ? 64 : anIntVal );
+
+  bool distributionVisibility = mgr->booleanValue("SMESH","distribution_visibility");
+  myScalarBarActor->SetDistributionVisibility(distributionVisibility);
+
+  int coloringType = mgr->integerValue("SMESH", "distribution_coloring_type", 0);
+  myScalarBarActor->SetDistributionColoringType(coloringType);
+  
+  QColor distributionColor = mgr->colorValue("SMESH", "distribution_color",
+					     QColor(255, 255, 255));
+  double rgb[3];
+  rgb[0]= distributionColor.red()/255.;
+  rgb[1]= distributionColor.green()/255.;
+  rgb[2]= distributionColor.blue()/255.;
+  myScalarBarActor->SetDistributionColor(rgb);
+
   
 }
 

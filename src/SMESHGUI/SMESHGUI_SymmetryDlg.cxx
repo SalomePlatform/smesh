@@ -19,12 +19,11 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+//  SMESH SMESHGUI : GUI for SMESH component
+//  File   : SMESHGUI_SymmetryDlg.cxx
+//  Author : Michael ZORIN, Open CASCADE S.A.S.
+//  SMESH includes
 
-// SMESH SMESHGUI : GUI for SMESH component
-// File   : SMESHGUI_SymmetryDlg.cxx
-// Author : Michael ZORIN, Open CASCADE S.A.S.
-// SMESH includes
-//
 #include "SMESHGUI_SymmetryDlg.h"
 
 #include "SMESHGUI.h"
@@ -83,6 +82,10 @@ enum { MOVE_ELEMS_BUTTON = 0, COPY_ELEMS_BUTTON, MAKE_MESH_BUTTON }; //!< action
 
 #define SPACING 6
 #define MARGIN  11
+
+//To disable automatic genericobj management, the following line should be commented.
+//Otherwise, it should be uncommented. Refer to KERNEL_SRC/src/SALOMEDSImpl/SALOMEDSImpl_AttributeIOR.cxx
+#define WITHGENERICOBJ
 
 //=================================================================================
 // class    : SMESHGUI_SymmetryDlg()
@@ -500,7 +503,7 @@ bool SMESHGUI_SymmetryDlg::ClickOnApply()
           aMeshEditor->MirrorObject(mySelectedObject, aMirror, aMirrorType, false );
         else
           aMeshEditor->Mirror(anElementsId, aMirror, aMirrorType, false );
-        
+
         if( !myMesh->_is_nil())
           myMesh->SetParameters( aParameters.join(":").toLatin1().constData() );
         break;
@@ -525,20 +528,27 @@ bool SMESHGUI_SymmetryDlg::ClickOnApply()
         }
       case MAKE_MESH_BUTTON: {
         SMESH::SMESH_Mesh_var mesh;
-        if(CheckBoxMesh->isChecked())
+        if (CheckBoxMesh->isChecked())
           mesh = aMeshEditor->MirrorObjectMakeMesh(mySelectedObject, aMirror, aMirrorType, makeGroups,
                                                    LineEditNewMesh->text().toLatin1().data());
         else
           mesh = aMeshEditor->MirrorMakeMesh(anElementsId, aMirror, aMirrorType, makeGroups,
                                              LineEditNewMesh->text().toLatin1().data());
-        if( !mesh->_is_nil())
-          mesh->SetParameters( aParameters.join(":").toLatin1().constData() );
+        if (!mesh->_is_nil()) {
+          mesh->SetParameters(aParameters.join(":").toLatin1().constData());
+#ifdef WITHGENERICOBJ
+          // obj has been published in study. Its refcount has been incremented.
+          // It is safe to decrement its refcount
+          // so that it will be destroyed when the entry in study will be removed
+          mesh->Destroy();
+#endif
+        }
         break;
       }
       }
     } catch (...) {
     }
-    
+
     SMESH::UpdateView();
     if ( MakeGroupsCheck->isEnabled() && MakeGroupsCheck->isChecked() ||
          actionButton == MAKE_MESH_BUTTON )
@@ -589,7 +599,7 @@ void SMESHGUI_SymmetryDlg::ClickOnCancel()
 void SMESHGUI_SymmetryDlg::ClickOnHelp()
 {
   LightApp_Application* app = (LightApp_Application*)(SUIT_Session::session()->activeApplication());
-  if (app) 
+  if (app)
     app->onHelpContextModule(mySMESHGUI ? app->moduleName(mySMESHGUI->moduleName()) : QString(""), myHelpFileName);
   else {
     QString platform;
@@ -632,7 +642,7 @@ void SMESHGUI_SymmetryDlg::onTextChange (const QString& theNewText)
     Handle(SALOME_InteractiveObject) anIO = myActor->getIO();
 
     TColStd_MapOfInteger newIndices;
-    
+
     QStringList aListId = theNewText.split(" ", QString::SkipEmptyParts);
 
     if (send == LineEditElements) {
@@ -646,7 +656,7 @@ void SMESHGUI_SymmetryDlg::onTextChange (const QString& theNewText)
       mySelector->AddOrRemoveIndex( anIO, newIndices, false );
       if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
         aViewWindow->highlight( anIO, true, true );
-      
+
       myElementsId = theNewText;
     }
   }
@@ -736,7 +746,6 @@ void SMESHGUI_SymmetryDlg::SelectionIntoArgument()
             aNbUnits++;
           }
         }
-        
       } else if (!SMESH::IObjectToInterface<SMESH::SMESH_subMesh>(IO)->_is_nil()) { //SUBMESH
         // get submesh
         SMESH::SMESH_subMesh_var aSubMesh = SMESH::IObjectToInterface<SMESH::SMESH_subMesh>(IO);
@@ -749,7 +758,6 @@ void SMESHGUI_SymmetryDlg::SelectionIntoArgument()
           myElementsId += QString(" %1").arg(anElementsIds[i]);
         }
         aNbUnits = anElementsIds->length();
-        
       } else { // GROUP
         // get smesh group
         SMESH::SMESH_GroupBase_var aGroup =
@@ -772,7 +780,7 @@ void SMESHGUI_SymmetryDlg::SelectionIntoArgument()
       if (aNbUnits < 1)
         return;
     }
-    
+
     myNbOkElements = true;
   } else {
     aNbUnits = SMESH::GetNameOfSelectedNodes(mySelector, IO, aString);
@@ -807,7 +815,7 @@ void SMESHGUI_SymmetryDlg::SelectionIntoArgument()
     LineEditElements->setText(aString);
     LineEditElements->repaint();
     LineEditElements->setEnabled(false); // to update lineedit IPAL 19809
-    LineEditElements->setEnabled(true); 
+    LineEditElements->setEnabled(true);
     setNewMeshName();
   }
   myBusy = false;

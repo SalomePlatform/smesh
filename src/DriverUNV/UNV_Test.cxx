@@ -29,13 +29,6 @@
 
 using namespace std;
 
-#ifdef DEBUG
-static int MYDEBUG = 1;
-#else
-static int MYDEBUG = 0;
-#endif
-
-
 void ReadMed(const char* theFileName){
   std::ifstream in_stream(theFileName);
 

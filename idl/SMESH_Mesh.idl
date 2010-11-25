@@ -37,6 +37,8 @@ module SMESH
   typedef sequence<SMESH_Hypothesis> ListOfHypothesis;
   interface SMESH_GroupBase;
   typedef sequence<SMESH_GroupBase> ListOfGroups;
+  interface SMESH_IDSource;
+  typedef sequence<SMESH_IDSource> ListOfIDSources;
 
   typedef sequence<double    > double_array ;
   typedef sequence<long      > long_array ;
@@ -116,6 +118,7 @@ module SMESH
     VOLUME,
     ELEM0D
   };
+  typedef sequence<ElementType> array_of_ElementType ;
 
   /*!
    * Enumeration for element geometry type, like in SMDS
@@ -245,6 +248,8 @@ module SMESH
                              long_array  elementConnectivities;
                              types_array elementTypes; };
 
+  interface SMESH_Mesh;
+
   interface SMESH_IDSource
   {
     /*!
@@ -257,6 +262,16 @@ module SMESH
      * Result array of number enityties
      */
     long_array GetMeshInfo();
+
+    /*!
+     * Returns types of elements it contains
+     */
+    array_of_ElementType GetTypes();
+
+    /*!
+     * Returns the mesh
+     */
+    SMESH_Mesh GetMesh();
   };
 
   interface SMESH_Group;

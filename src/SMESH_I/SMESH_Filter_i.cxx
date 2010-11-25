@@ -596,6 +596,28 @@ CORBA::Double NumericalFunctor_i::GetValue( CORBA::Long theId )
   return myNumericalFunctorPtr->GetValue( theId );
 }
 
+SMESH::Histogram* NumericalFunctor_i::GetHistogram(CORBA::Short nbIntervals)
+{
+  std::vector<int> nbEvents;
+  std::vector<double> funValues;
+  myNumericalFunctorPtr->GetHistogram(nbIntervals,nbEvents,funValues);
+
+  nbIntervals = CORBA::Short( std::min( nbEvents.size(), funValues.size() - 1));
+  SMESH::Histogram_var histogram = new SMESH::Histogram;
+  if ( nbIntervals > 0 )
+  {
+    histogram->length( nbIntervals );
+    for ( int i = 0; i < nbIntervals; ++i )
+    {
+      HistogramRectangle& rect = histogram[i];
+      rect.nbEvents = nbEvents[i];
+      rect.min = funValues[i];
+      rect.max = funValues[i+1];
+    }
+  }
+  return histogram._retn();
+}
+
 void NumericalFunctor_i::SetPrecision( CORBA::Long thePrecision )
 {
   myNumericalFunctorPtr->SetPrecision( thePrecision );
@@ -739,6 +761,36 @@ FunctorType Volume3D_i::GetFunctorType()
 }
 
 /*
+  Class       : MaxElementLength2D_i
+  Description : Functor for calculating maximum length of 2D element
+*/
+MaxElementLength2D_i::MaxElementLength2D_i()
+{
+  myNumericalFunctorPtr.reset( new Controls::MaxElementLength2D() );
+  myFunctorPtr = myNumericalFunctorPtr;
+}
+
+FunctorType MaxElementLength2D_i::GetFunctorType()
+{
+  return SMESH::FT_MaxElementLength2D;
+}
+
+/*
+  Class       : MaxElementLength3D_i
+  Description : Functor for calculating maximum length of 3D element
+*/
+MaxElementLength3D_i::MaxElementLength3D_i()
+{
+  myNumericalFunctorPtr.reset( new Controls::MaxElementLength3D() );
+  myFunctorPtr = myNumericalFunctorPtr;
+}
+
+FunctorType MaxElementLength3D_i::GetFunctorType()
+{
+  return SMESH::FT_MaxElementLength3D;
+}
+
+/*
   Class       : Length_i
   Description : Functor for calculating length off edge
 */
@@ -772,11 +824,12 @@ SMESH::Length2D::Values* Length2D_i::GetValues()
 {
   INFOS("Length2D_i::GetValues");
   SMESH::Controls::Length2D::TValues aValues;
-  myLength2DPtr->GetValues( aValues );
+  (dynamic_cast<SMESH::Controls::Length2D*>(myFunctorPtr.get()))->GetValues( aValues );
 
   long i = 0, iEnd = aValues.size();
 
   SMESH::Length2D::Values_var aResult = new SMESH::Length2D::Values(iEnd);
+  aResult->length(iEnd);
 
   SMESH::Controls::Length2D::TValues::const_iterator anIter;
   for ( anIter = aValues.begin() ; anIter != aValues.end(); anIter++, i++ )
@@ -827,11 +880,12 @@ SMESH::MultiConnection2D::Values* MultiConnection2D_i::GetValues()
 {
   INFOS("MultiConnection2D_i::GetValues");
   SMESH::Controls::MultiConnection2D::MValues aValues;
-  myMulticonnection2DPtr->GetValues( aValues );
-
+  (dynamic_cast<SMESH::Controls::MultiConnection2D*>(myFunctorPtr.get()))->GetValues( aValues );
+  
   long i = 0, iEnd = aValues.size();
 
   SMESH::MultiConnection2D::Values_var aResult = new SMESH::MultiConnection2D::Values(iEnd);
+  aResult->length(iEnd);
 
   SMESH::Controls::MultiConnection2D::MValues::const_iterator anIter;
   for ( anIter = aValues.begin() ; anIter != aValues.end(); anIter++, i++ )
@@ -1441,12 +1495,55 @@ void ElemGeomType_i::SetGeometryType(GeometryType theType)
 
 GeometryType ElemGeomType_i::GetGeometryType() const
 {
-  return (GeometryType)myElemGeomTypePtr->GetGeomType();;
+  return (GeometryType)myElemGeomTypePtr->GetGeomType();
 }
 
 FunctorType ElemGeomType_i::GetFunctorType()
 {
   return SMESH::FT_ElemGeomType;
+}
+
+/*
+  Class       : CoplanarFaces_i
+  Description : Returns true if a mesh face is a coplanar neighbour to a given one
+*/
+CoplanarFaces_i::CoplanarFaces_i()
+{
+  myCoplanarFacesPtr.reset(new Controls::CoplanarFaces());
+  myFunctorPtr = myPredicatePtr = myCoplanarFacesPtr;
+}
+
+void CoplanarFaces_i::SetFace ( CORBA::Long theFaceID )
+{
+  myCoplanarFacesPtr->SetFace(theFaceID);
+  TPythonDump()<<this<<".SetFace("<<theFaceID<<")";
+}
+
+void CoplanarFaces_i::SetTolerance( CORBA::Double theToler )
+{
+  myCoplanarFacesPtr->SetTolerance(theToler);
+  TPythonDump()<<this<<".SetTolerance("<<theToler<<")";
+}
+
+CORBA::Long CoplanarFaces_i::GetFace () const
+{
+  return myCoplanarFacesPtr->GetFace();
+}
+
+char* CoplanarFaces_i::GetFaceAsString () const
+{
+  TCollection_AsciiString str(Standard_Integer(myCoplanarFacesPtr->GetFace()));
+  return CORBA::string_dup( str.ToCString() );
+}
+
+CORBA::Double CoplanarFaces_i::GetTolerance() const
+{
+  return myCoplanarFacesPtr->GetTolerance();
+}
+
+FunctorType CoplanarFaces_i::GetFunctorType()
+{
+  return SMESH::FT_CoplanarFaces;
 }
 
 /*
@@ -1793,6 +1890,24 @@ Volume3D_ptr FilterManager_i::CreateVolume3D()
 }
 
 
+MaxElementLength2D_ptr FilterManager_i::CreateMaxElementLength2D()
+{
+  SMESH::MaxElementLength2D_i* aServant = new SMESH::MaxElementLength2D_i();
+  SMESH::MaxElementLength2D_var anObj = aServant->_this();
+  TPythonDump()<<aServant<<" = "<<this<<".CreateMaxElementLength2D()";
+  return anObj._retn();
+}
+
+
+MaxElementLength3D_ptr FilterManager_i::CreateMaxElementLength3D()
+{
+  SMESH::MaxElementLength3D_i* aServant = new SMESH::MaxElementLength3D_i();
+  SMESH::MaxElementLength3D_var anObj = aServant->_this();
+  TPythonDump()<<aServant<<" = "<<this<<".CreateMaxElementLength3D()";
+  return anObj._retn();
+}
+
+
 Length_ptr FilterManager_i::CreateLength()
 {
   SMESH::Length_i* aServant = new SMESH::Length_i();
@@ -1862,6 +1977,14 @@ LyingOnGeom_ptr FilterManager_i::CreateLyingOnGeom()
   SMESH::LyingOnGeom_i* aServant = new SMESH::LyingOnGeom_i();
   SMESH::LyingOnGeom_var anObj = aServant->_this();
   TPythonDump()<<aServant<<" = "<<this<<".CreateLyingOnGeom()";
+  return anObj._retn();
+}
+
+CoplanarFaces_ptr FilterManager_i::CreateCoplanarFaces()
+{
+  SMESH::CoplanarFaces_i* aServant = new SMESH::CoplanarFaces_i();
+  SMESH::CoplanarFaces_var anObj = aServant->_this();
+  TPythonDump()<<aServant<<" = "<<this<<".CreateCoplanarFaces()";
   return anObj._retn();
 }
 
@@ -2206,6 +2329,31 @@ SMESH::long_array* ::Filter_i::GetMeshInfo()
   return aRes._retn();  
 }
 
+//================================================================================
+/*!
+ * \brief Return GetElementType() within an array
+ * Implement SMESH_IDSource interface
+ */
+//================================================================================
+
+SMESH::array_of_ElementType* Filter_i::GetTypes()
+{
+  SMESH::array_of_ElementType_var types = new SMESH::array_of_ElementType;
+  types->length( 1 );
+  types[0] = GetElementType();
+  return types._retn();
+}
+
+//=======================================================================
+//function : GetMesh
+//purpose  : Returns mesh
+//=======================================================================
+
+SMESH::SMESH_Mesh_ptr Filter_i::GetMesh()
+{
+  return SMESH_Mesh::_duplicate( myMesh );
+}
+
 //=======================================================================
 // name    : getCriteria
 // Purpose : Retrieve criterions from predicate
@@ -2281,6 +2429,22 @@ static inline bool getCriteria( Predicate_i*                thePred,
       theCriteria[ i ].ThresholdStr  = aPred->GetShapeName();
       theCriteria[ i ].ThresholdID   = aPred->GetShapeID();
       theCriteria[ i ].TypeOfElement = aPred->GetElementType();
+      theCriteria[ i ].Tolerance     = aPred->GetTolerance();
+
+      return true;
+    }
+   case FT_CoplanarFaces:
+    {
+      CoplanarFaces_i* aPred = dynamic_cast<CoplanarFaces_i*>( thePred );
+
+      CORBA::ULong i = theCriteria->length();
+      theCriteria->length( i + 1 );
+
+      theCriteria[ i ] = createCriterion();
+      CORBA::String_var faceId = aPred->GetFaceAsString();
+
+      theCriteria[ i ].Type          = FT_CoplanarFaces;
+      theCriteria[ i ].ThresholdID   = faceId;
       theCriteria[ i ].Tolerance     = aPred->GetTolerance();
 
       return true;
@@ -2489,6 +2653,12 @@ CORBA::Boolean Filter_i::SetCriteria( const SMESH::Filter::Criteria& theCriteria
       case SMESH::FT_Volume3D:
         aFunctor = aFilterMgr->CreateVolume3D();
         break;
+      case SMESH::FT_MaxElementLength2D:
+        aFunctor = aFilterMgr->CreateMaxElementLength2D();
+        break;
+      case SMESH::FT_MaxElementLength3D:
+        aFunctor = aFilterMgr->CreateMaxElementLength3D();
+        break;
 
       // Predicates
 
@@ -2573,6 +2743,14 @@ CORBA::Boolean Filter_i::SetCriteria( const SMESH::Filter::Criteria& theCriteria
           SMESH::ElemGeomType_ptr tmpPred = aFilterMgr->CreateElemGeomType();
           tmpPred->SetElementType( aTypeOfElem );
           tmpPred->SetGeometryType( (GeometryType)(int)(aThreshold + 0.5) );
+          aPredicate = tmpPred;
+          break;
+        }
+      case SMESH::FT_CoplanarFaces:
+        {
+          SMESH::CoplanarFaces_ptr tmpPred = aFilterMgr->CreateCoplanarFaces();
+          tmpPred->SetFace( atol (aThresholdID ));
+          tmpPred->SetTolerance( aTolerance );
           aPredicate = tmpPred;
           break;
         }
@@ -2778,6 +2956,8 @@ static inline LDOMString toString( CORBA::Long theType )
     case FT_Skew            : return "Skew";
     case FT_Area            : return "Area";
     case FT_Volume3D        : return "Volume3D";
+    case FT_MaxElementLength2D: return "Max element length 2D";
+    case FT_MaxElementLength3D: return "Max element length 3D";
     case FT_BelongToGeom    : return "Belong to Geom";
     case FT_BelongToPlane   : return "Belong to Plane";
     case FT_BelongToCylinder: return "Belong to Cylinder";
@@ -2820,6 +3000,8 @@ static inline SMESH::FunctorType toFunctorType( const LDOMString& theStr )
   else if ( theStr.equals( "Skew"                         ) ) return FT_Skew;
   else if ( theStr.equals( "Area"                         ) ) return FT_Area;
   else if ( theStr.equals( "Volume3D"                     ) ) return FT_Volume3D;
+  else if ( theStr.equals( "Max element length 2D"        ) ) return FT_MaxElementLength2D;
+  else if ( theStr.equals( "Max element length 3D"        ) ) return FT_MaxElementLength3D;
   else if ( theStr.equals( "Belong to Geom"               ) ) return FT_BelongToGeom;
   else if ( theStr.equals( "Belong to Plane"              ) ) return FT_BelongToPlane;
   else if ( theStr.equals( "Belong to Cylinder"           ) ) return FT_BelongToCylinder;

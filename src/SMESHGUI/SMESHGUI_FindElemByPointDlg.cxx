@@ -79,7 +79,7 @@ SMESHGUI_FindElemByPointDlg::SMESHGUI_FindElemByPointDlg()
   setWindowTitle(tr("CAPTION"));
 
   QVBoxLayout* aDlgLay = new QVBoxLayout (mainFrame());
-  aDlgLay->setMargin(MARGIN);;
+  aDlgLay->setMargin(0);
   aDlgLay->setSpacing(SPACING);
 
   QWidget* aMainFrame = createMainFrame  (mainFrame());
@@ -164,6 +164,8 @@ QWidget* SMESHGUI_FindElemByPointDlg::createMainFrame (QWidget* theParent)
 
 
   QVBoxLayout* aLay = new QVBoxLayout(aFrame);
+  aLay->setMargin( 0 );
+  aLay->setSpacing( SPACING );
   aLay->addWidget(aMeshGrp);
   aLay->addWidget(aCoordGrp);
   aLay->addWidget(elementGrp);

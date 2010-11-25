@@ -133,9 +133,11 @@ the following links:
 - \subpage tui_viewing_meshes_page
 - \subpage tui_defining_hypotheses_page
 - \subpage tui_quality_controls_page
+- \subpage tui_filters_page
 - \subpage tui_grouping_elements_page
 - \subpage tui_modifying_meshes_page
 - \subpage tui_transforming_meshes_page
 - \subpage tui_notebook_smesh_page
+- \subpage tui_measurements_page
 
 */

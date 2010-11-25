@@ -11,7 +11,8 @@ quadrangles).
 <ol>
 <li>Display your mesh in the viewer.</li>
 
-<li>Choose <b>Controls > Area</b> or click <em>"Area"</em> button. 
+<li>Choose <b>Controls > Face Controls > Area</b> or click
+<em>"Area"</em> button. 
 
 \image html image35.png
 <center><em>"Area" button</em></center>

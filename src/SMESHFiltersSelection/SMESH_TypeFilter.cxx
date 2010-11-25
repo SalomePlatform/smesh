@@ -81,6 +81,7 @@ bool SMESH_TypeFilter::isOk (const SUIT_DataOwner* theDataOwner) const
     // 4       |     |- Applied algorithms ( selectable in Use Case Browser )
     // 5       |          |- Regular 1D
     //         |- Group Of Nodes
+    //            |- Group 1
 
     if (aLevel <= 0)
       return false;
@@ -169,6 +170,36 @@ bool SMESH_TypeFilter::isOk (const SUIT_DataOwner* theDataOwner) const
       case GROUP:
         {
           if (aLevel == 3 && (objFather->Tag() >= SMESH::Tag_FirstGroup))
+            Ok = true;
+          break;
+        }
+      case GROUP_NODE:
+        {
+          if (aLevel == 3 && (objFather->Tag() == SMESH::Tag_NodeGroups))
+            Ok = true;
+          break;
+        }
+      case GROUP_EDGE:
+        {
+          if (aLevel == 3 && (objFather->Tag() == SMESH::Tag_EdgeGroups))
+            Ok = true;
+          break;
+        }
+      case GROUP_FACE:
+        {
+          if (aLevel == 3 && (objFather->Tag() == SMESH::Tag_FaceGroups))
+            Ok = true;
+          break;
+        }
+      case GROUP_VOLUME:
+        {
+          if (aLevel == 3 && (objFather->Tag() == SMESH::Tag_VolumeGroups))
+            Ok = true;
+          break;
+        }
+      case GROUP_0D:
+        {
+          if (aLevel == 3 && (objFather->Tag() == SMESH::Tag_VolumeGroups+1))
             Ok = true;
           break;
         }

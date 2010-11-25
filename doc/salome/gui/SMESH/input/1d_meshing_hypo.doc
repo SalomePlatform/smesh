@@ -5,7 +5,7 @@
 <br>
 <ul>
 <li>\ref arithmetic_1d_anchor "Arithmetic 1D"</li>
-<li>\ref average_length_anchor "Average Length"</li>
+<li>\ref average_length_anchor "Local Length"</li>
 <li>\ref max_length_anchor "Max Size"</li>
 <li>\ref deflection_1d_anchor "Deflection 1D"</li>
 <li>\ref number_of_segments_anchor "Number of segments"</li>
@@ -57,9 +57,9 @@ locations and 1D mesh elements are constructed on segments.
 
 <br>
 \anchor average_length_anchor
-<h2>Average Length hypothesis</h2>
+<h2>Local Length hypothesis</h2>
 
-<b>Average Length</b> hypothesis can be applied for meshing of edges
+<b>Local Length</b> hypothesis can be applied for meshing of edges
 composing your geometrical object. Definition of this hypothesis
 consists of setting the \b length of segments, which will split these
 edges, and the \b precision of rounding. The points on the edges
@@ -79,10 +79,10 @@ integer. Default value is 1e-07.
 
 \image html a-averagelength.png
 
-\image html b-erage_length.png "Average length hypothesis - all 1D mesh elements are roughly equal"
+\image html b-erage_length.png "Local Length hypothesis - all 1D mesh elements are roughly equal"
 
 <b>See Also</b> a sample TUI Script of a 
-\ref tui_average_length "Defining Average Length" hypothesis
+\ref tui_average_length "Defining Local Length" hypothesis
 operation.
 
 <br>\anchor max_length_anchor
@@ -157,7 +157,7 @@ operation.
 
 <b>Start and End Length</b> hypothesis allows to divide a geometrical edge
 into segments so that the first and the last segments have a specified
-length. The length medium segments changes with automatically chosen
+length. The length of medium segments changes with automatically chosen
 geometric progression. Then mesh nodes are
 constructed at segment ends location and 1D mesh elements are
 constructed on them.

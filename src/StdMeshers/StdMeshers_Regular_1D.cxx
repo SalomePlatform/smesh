@@ -119,9 +119,8 @@ bool StdMeshers_Regular_1D::CheckHypothesis
   _hypType = NONE;
   _quadraticMesh = false;
 
-  const bool ignoreAuxiliaryHyps = false;
   const list <const SMESHDS_Hypothesis * > & hyps =
-    GetUsedHypothesis(aMesh, aShape, ignoreAuxiliaryHyps);
+    GetUsedHypothesis(aMesh, aShape, /*ignoreAuxiliaryHyps=*/false);
 
   // find non-auxiliary hypothesis
   const SMESHDS_Hypothesis *theHyp = 0;
@@ -377,10 +376,14 @@ static void compensateError(double a1, double an,
     }
 
     double q  = dUn / ( nPar - 1 );
-    if ( !adjustNeighbors2an ) {
-      for ( itU = theParams.rbegin(), i = 1; i < nPar; itU++, i++ ) {
+    if ( !adjustNeighbors2an )
+    {
+      q = Abs( dUn / ( Utgt - Un )); // factor of segment length change
+      for ( itU = theParams.rbegin(), i = 1; i < nPar; i++ ) {
+        double prevU = *itU;
         (*itU) += dUn;
-        dUn -= q;
+        ++itU;
+        dUn = q * (*itU - prevU) * (prevU-U1)/(Un-U1);
       }
     }
     else {
@@ -627,7 +630,7 @@ bool StdMeshers_Regular_1D::computeInternalParameters(SMESH_Mesh &     theMesh,
           bool computed = sm->IsMeshComputed();
           if (!computed) {
             if (sm->GetComputeState() == SMESH_subMesh::READY_TO_COMPUTE) {
-              sm->ComputeStateEngine(SMESH_subMesh::COMPUTE);
+              _gen->Compute( theMesh, _mainEdge, /*anUpward=*/true);
               computed = sm->IsMeshComputed();
             }
           }
@@ -731,6 +734,9 @@ bool StdMeshers_Regular_1D::computeInternalParameters(SMESH_Mesh &     theMesh,
     double a1 = _value[ BEG_LENGTH_IND ];
     double an = _value[ END_LENGTH_IND ];
     double q  = ( theLength - a1 ) / ( theLength - an );
+    if ( q < theLength/1e6 || 1.01*theLength < a1 + an)
+      return error ( SMESH_Comment("Invalid segment lengths (")<<a1<<" and "<<an<<") "<<
+                     "for an edge of length "<<theLength);
 
     double U1 = theReverse ? l : f;
     double Un = theReverse ? f : l;
@@ -759,6 +765,9 @@ bool StdMeshers_Regular_1D::computeInternalParameters(SMESH_Mesh &     theMesh,
 
     double a1 = _value[ BEG_LENGTH_IND ];
     double an = _value[ END_LENGTH_IND ];
+    if ( 1.01*theLength < a1 + an)
+      return error ( SMESH_Comment("Invalid segment lengths (")<<a1<<" and "<<an<<") "<<
+                     "for an edge of length "<<theLength);
 
     double  q = ( an - a1 ) / ( 2 *theLength/( a1 + an ) - 1 );
     int n = int(fabs(q) > numeric_limits<double>::min() ? ( 1+( an-a1 )/q ) : ( 1+theLength/a1 ));
@@ -941,23 +950,43 @@ bool StdMeshers_Regular_1D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & t
   if (!idFirst || !idLast)
     return error( COMPERR_BAD_INPUT_MESH, "No node on vertex");
 
+  // remove elements created by e.g. patern mapping (PAL21999)
+  // CLEAN event is incorrectly ptopagated seemingly due to Propagation hyp
+  // so TEMPORARY solution is to clean the submesh manually
+  //theMesh.GetSubMesh(theShape)->ComputeStateEngine( SMESH_subMesh::CLEAN );
+  if (SMESHDS_SubMesh * subMeshDS = meshDS->MeshElements(theShape))
+  {
+    SMDS_ElemIteratorPtr ite = subMeshDS->GetElements();
+    while (ite->more())
+      meshDS->RemoveFreeElement(ite->next(), subMeshDS);
+    SMDS_NodeIteratorPtr itn = subMeshDS->GetNodes();
+    while (itn->more()) {
+      const SMDS_MeshNode * node = itn->next();
+      if ( node->NbInverseElements() == 0 )
+        meshDS->RemoveFreeNode(node, subMeshDS);
+      else
+        meshDS->RemoveNode(node);
+    }
+  }
+
   if (!Curve.IsNull())
   {
     list< double > params;
     bool reversed = false;
     if ( theMesh.GetShapeToMesh().ShapeType() >= TopAbs_WIRE ) {
+      // if the shape to mesh is WIRE or EDGE
       reversed = ( EE.Orientation() == TopAbs_REVERSED );
     }
     if ( !_mainEdge.IsNull() ) {
+      // take into account reversing the edge the hypothesis is propagated from
       reversed = ( _mainEdge.Orientation() == TopAbs_REVERSED );
+      int mainID = meshDS->ShapeToIndex(_mainEdge);
+      if ( std::find( _revEdgesIDs.begin(), _revEdgesIDs.end(), mainID) != _revEdgesIDs.end())
+        reversed = !reversed;
     }
-    else if ( _revEdgesIDs.size() > 0 ) {
-      for ( int i = 0; i < _revEdgesIDs.size(); i++) {
-        if ( _revEdgesIDs[i] == shapeID ) {
-          reversed = !reversed;
-        }
-      }
-    }
+    // take into account this edge reversing
+    if ( std::find( _revEdgesIDs.begin(), _revEdgesIDs.end(), shapeID) != _revEdgesIDs.end())
+      reversed = !reversed;
 
     BRepAdaptor_Curve C3d( E );
     double length = EdgeLength( E );
@@ -982,7 +1011,6 @@ bool StdMeshers_Regular_1D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & t
       parLast = f;
     }
     */
-
     for (list<double>::iterator itU = params.begin(); itU != params.end(); itU++) {
       double param = *itU;
       gp_Pnt P = Curve->Value(param);
@@ -1158,10 +1186,9 @@ StdMeshers_Regular_1D::GetUsedHypothesis(SMESH_Mesh &         aMesh,
 
   SMESH_HypoFilter auxiliaryFilter, compatibleFilter;
   auxiliaryFilter.Init( SMESH_HypoFilter::IsAuxiliary() );
-  const bool ignoreAux = true;
-  InitCompatibleHypoFilter( compatibleFilter, ignoreAux );
+  InitCompatibleHypoFilter( compatibleFilter, /*ignoreAux=*/true );
 
-  // get non-auxiliary assigned to aShape
+  // get non-auxiliary assigned directly to aShape
   int nbHyp = aMesh.GetHypotheses( aShape, compatibleFilter, _usedHypList, false );
 
   if (nbHyp == 0 && aShape.ShapeType() == TopAbs_EDGE)

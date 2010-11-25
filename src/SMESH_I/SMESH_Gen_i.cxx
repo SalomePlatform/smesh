@@ -889,7 +889,7 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CreateMeshesFromUNV( const char* theFileName 
     aStudyBuilder->CommitCommand();
     if ( !aSO->_is_nil() ) {
       // Update Python script
-      TPythonDump() << aSO << " = smeshgen.CreateMeshesFromUNV('" << theFileName << "')";
+      TPythonDump() << aSO << " = smeshgen.CreateMeshesFromUNV(r'" << theFileName << "')";
     }
   }
 
@@ -932,7 +932,6 @@ SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromMED( const char* theFileName,
   // Python Dump
   TPythonDump aPythonDump;
   aPythonDump << "([";
-  //TCollection_AsciiString aStr ("([");
 
   if (theStatus == SMESH::DRS_OK) {
     SALOMEDS::StudyBuilder_var aStudyBuilder = myCurrentStudy->NewBuilder();
@@ -943,7 +942,6 @@ SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromMED( const char* theFileName,
     // Iterate through all meshes and create mesh objects
     for ( list<string>::iterator it = aNames.begin(); it != aNames.end(); it++ ) {
       // Python Dump
-      //if (i > 0) aStr += ", ";
       if (i > 0) aPythonDump << ", ";
 
       // create mesh
@@ -956,12 +954,9 @@ SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromMED( const char* theFileName,
       if ( !aSO->_is_nil() ) {
         // Python Dump
         aPythonDump << aSO;
-        //aStr += aSO->GetID();
       } else {
         // Python Dump
         aPythonDump << "mesh_" << i;
-//         aStr += "mesh_";
-//         aStr += TCollection_AsciiString(i);
       }
 
       // Read mesh data (groups are published automatically by ImportMEDFile())
@@ -978,7 +973,7 @@ SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromMED( const char* theFileName,
   }
 
   // Update Python script
-  aPythonDump << "], status) = " << this << ".CreateMeshesFromMED('" << theFileName << "')";
+  aPythonDump << "], status) = " << this << ".CreateMeshesFromMED(r'" << theFileName << "')";
   }
   // Dump creation of groups
   for ( int i = 0; i < aResult->length(); ++i )
@@ -1012,7 +1007,7 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CreateMeshesFromSTL( const char* theFileName 
     aStudyBuilder->CommitCommand();
     if ( !aSO->_is_nil() ) {
       // Update Python script
-      TPythonDump() << aSO << " = " << this << ".CreateMeshesFromSTL('" << theFileName << "')";
+      TPythonDump() << aSO << " = " << this << ".CreateMeshesFromSTL(r'" << theFileName << "')";
     }
   }
 
@@ -1431,7 +1426,9 @@ CORBA::Boolean SMESH_Gen_i::Compute( SMESH::SMESH_Mesh_ptr theMesh,
         myLocShape = SMESH_Mesh::PseudoShape();
       // call implementation compute
       ::SMESH_Mesh& myLocMesh = meshServant->GetImpl();
-      return myGen.Compute( myLocMesh, myLocShape);
+      bool ok = myGen.Compute( myLocMesh, myLocShape);
+      meshServant->CreateGroupServants(); // algos can create groups (issue 0020918)
+      return ok;
     }
   }
   catch ( std::bad_alloc ) {
@@ -2157,7 +2154,7 @@ SMESH_Gen_i::ConcatenateCommon(const SMESH::mesh_array& theMeshesArray,
 
       if (theMergeNodesAndElements) {
         // merge nodes
-        set<const SMDS_MeshNode*> aMeshNodes; // no input nodes
+        TIDSortedNodeSet aMeshNodes; // no input nodes
         SMESH_MeshEditor::TListOfListOfNodes aGroupsOfNodes;
         aNewEditor.FindCoincidentNodes( aMeshNodes, theMergeTolerance, aGroupsOfNodes );
         aNewEditor.MergeNodes( aGroupsOfNodes );
@@ -2322,6 +2319,38 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
   // MED writer to be used by storage process
   DriverMED_W_SMESHDS_Mesh myWriter;
   myWriter.SetFile( meshfile.ToCString() );
+
+  // IMP issue 20918
+  // SetStoreName() to groups before storing hypotheses to let them refer to
+  // groups using "store name", which is "Group <group_persistent_id>"
+  {
+    SALOMEDS::ChildIterator_var itBig = myCurrentStudy->NewChildIterator( theComponent );
+    for ( ; itBig->More(); itBig->Next() ) {
+      SALOMEDS::SObject_var gotBranch = itBig->Value();
+      if ( gotBranch->Tag() > GetAlgorithmsRootTag() ) {
+        CORBA::Object_var anObject = SObjectToObject( gotBranch );
+        if ( !CORBA::is_nil( anObject ) ) {
+          SMESH::SMESH_Mesh_var myMesh = SMESH::SMESH_Mesh::_narrow( anObject ) ;
+          if ( !myMesh->_is_nil() ) {
+            SMESH::ListOfGroups_var groups = myMesh->GetGroups();
+            for ( int i = 0; i < groups->length(); ++i )
+            {
+              SMESH_GroupBase_i* grImpl = SMESH::DownCast<SMESH_GroupBase_i*>( groups[i]);
+              if ( grImpl )
+              {
+                CORBA::String_var objStr = GetORB()->object_to_string( grImpl->_this() );
+                int anId = myStudyContext->findId( string( objStr.in() ) );
+                char grpName[ 30 ];
+                sprintf( grpName, "Group %d", anId );
+                SMESHDS_GroupBase* aGrpBaseDS = grImpl->GetGroupDS();
+                aGrpBaseDS->SetStoreName( grpName );
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 
   // Write data
   // ---> create HDF file
@@ -2519,11 +2548,19 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
             aDataset->CloseOnDisk();
 
             // issue 0020693. Store _isModified flag
-            int isModified = myImpl->GetImpl().GetIsModified();
+            int isModified = myLocMesh.GetIsModified();
             aSize[ 0 ] = 1;
             aDataset = new HDFdataset( "_isModified", aTopGroup, HDF_INT32, aSize, 1 );
             aDataset->CreateOnDisk();
             aDataset->WriteOnDisk( &isModified );
+            aDataset->CloseOnDisk();
+
+            // issue 20918. Store Persistent Id of SMESHDS_Mesh
+            int meshPersistentId = mySMESHDSMesh->GetPersistentId();
+            aSize[ 0 ] = 1;
+            aDataset = new HDFdataset( "meshPersistentId", aTopGroup, HDF_INT32, aSize, 1 );
+            aDataset->CreateOnDisk();
+            aDataset->WriteOnDisk( &meshPersistentId );
             aDataset->CloseOnDisk();
 
             // write reference on a shape if exists
@@ -2869,17 +2906,19 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
                       dynamic_cast<SMESH_GroupBase_i*>( GetServant( aSubObject ).in() );
                     if ( !myGroupImpl )
                       continue;
+                    SMESHDS_GroupBase* aGrpBaseDS = myGroupImpl->GetGroupDS();
+                    if ( !aGrpBaseDS )
+                      continue;
                     
                     CORBA::String_var objStr = GetORB()->object_to_string( aSubObject );
                     int anId = myStudyContext->findId( string( objStr.in() ) );
-                    
+
                     // For each group, create a dataset named "Group <group_persistent_id>"
                     // and store the group's user name into it
-                    char grpName[ 30 ];
-                    sprintf( grpName, "Group %d", anId );
+                    const char* grpName = aGrpBaseDS->GetStoreName();
                     char* aUserName = myGroupImpl->GetName();
                     aSize[ 0 ] = strlen( aUserName ) + 1;
-                    
+
                     aDataset = new HDFdataset( grpName, aGroup, HDF_STRING, aSize, 1 );
                     aDataset->CreateOnDisk();
                     aDataset->WriteOnDisk( aUserName );
@@ -2901,45 +2940,35 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
                     aDataset->WriteOnDisk( anRGB );
                     aDataset->CloseOnDisk();
 
-                    // Store the group contents into MED file
-                    if ( myLocMesh.GetGroup( myGroupImpl->GetLocalID() ) ) {
-                      
-                      if(MYDEBUG) MESSAGE( "VSR - SMESH_Gen_i::Save(): saving group with StoreName = "
-                                          << grpName << " to MED file" );
-                      SMESHDS_GroupBase* aGrpBaseDS =
-                        myLocMesh.GetGroup( myGroupImpl->GetLocalID() )->GetGroupDS();
-                      aGrpBaseDS->SetStoreName( grpName );
+                    // Pass SMESHDS_Group to MED writer 
+                    SMESHDS_Group* aGrpDS = dynamic_cast<SMESHDS_Group*>( aGrpBaseDS );
+                    if ( aGrpDS )
+                      myWriter.AddGroup( aGrpDS );
 
-                      // Pass SMESHDS_Group to MED writer 
-                      SMESHDS_Group* aGrpDS = dynamic_cast<SMESHDS_Group*>( aGrpBaseDS );
-                      if ( aGrpDS )
-                        myWriter.AddGroup( aGrpDS );
-                      
-                      // write reference on a shape if exists
-                      SMESHDS_GroupOnGeom* aGeomGrp =
-                        dynamic_cast<SMESHDS_GroupOnGeom*>( aGrpBaseDS );
-                      if ( aGeomGrp ) {
-                        SALOMEDS::SObject_var mySubRef, myShape;
-                        if (mySObject->FindSubObject( GetRefOnShapeTag(), mySubRef ) &&
-                            mySubRef->ReferencedObject( myShape ) &&
-                            !CORBA::is_nil( myShape->GetObject() ))
-                        {
-                          string myRefOnObject = myShape->GetID();
-                          if ( myRefOnObject.length() > 0 ) {
-                            char aRefName[ 30 ];
-                            sprintf( aRefName, "Ref on shape %d", anId);
-                            aSize[ 0 ] = myRefOnObject.length() + 1;
-                            aDataset = new HDFdataset(aRefName, aGroup, HDF_STRING, aSize, 1);
-                            aDataset->CreateOnDisk();
-                            aDataset->WriteOnDisk( ( char* )( myRefOnObject.c_str() ) );
-                            aDataset->CloseOnDisk();
-                          }
+                    // write reference on a shape if exists
+                    SMESHDS_GroupOnGeom* aGeomGrp =
+                      dynamic_cast<SMESHDS_GroupOnGeom*>( aGrpBaseDS );
+                    if ( aGeomGrp ) {
+                      SALOMEDS::SObject_var mySubRef, myShape;
+                      if (mySObject->FindSubObject( GetRefOnShapeTag(), mySubRef ) &&
+                          mySubRef->ReferencedObject( myShape ) &&
+                          !CORBA::is_nil( myShape->GetObject() ))
+                      {
+                        string myRefOnObject = myShape->GetID();
+                        if ( myRefOnObject.length() > 0 ) {
+                          char aRefName[ 30 ];
+                          sprintf( aRefName, "Ref on shape %d", anId);
+                          aSize[ 0 ] = myRefOnObject.length() + 1;
+                          aDataset = new HDFdataset(aRefName, aGroup, HDF_STRING, aSize, 1);
+                          aDataset->CreateOnDisk();
+                          aDataset->WriteOnDisk( ( char* )( myRefOnObject.c_str() ) );
+                          aDataset->CloseOnDisk();
                         }
-                        else // shape ref is invalid:
-                        {
-                          // save a group on geometry as ordinary group
-                          myWriter.AddGroup( aGeomGrp );
-                        }
+                      }
+                      else // shape ref is invalid:
+                      {
+                        // save a group on geometry as ordinary group
+                        myWriter.AddGroup( aGeomGrp );
                       }
                     }
                   }
@@ -3247,13 +3276,15 @@ public:
   }
   PositionCreator() {
     myFuncTable.resize( (size_t) TopAbs_SHAPE, & PositionCreator::defaultPosition );
-    myFuncTable[ TopAbs_FACE ] = & PositionCreator::facePosition;
-    myFuncTable[ TopAbs_EDGE ] = & PositionCreator::edgePosition;
+    myFuncTable[ TopAbs_SOLID  ] = & PositionCreator::volumePosition;
+    myFuncTable[ TopAbs_FACE   ] = & PositionCreator::facePosition;
+    myFuncTable[ TopAbs_EDGE   ] = & PositionCreator::edgePosition;
     myFuncTable[ TopAbs_VERTEX ] = & PositionCreator::vertexPosition;
   }
 private:
   SMDS_PositionPtr edgePosition()    const { return SMDS_PositionPtr( new SMDS_EdgePosition  ); }
   SMDS_PositionPtr facePosition()    const { return SMDS_PositionPtr( new SMDS_FacePosition  ); }
+  SMDS_PositionPtr volumePosition()  const { return SMDS_PositionPtr( new SMDS_SpacePosition ); }
   SMDS_PositionPtr vertexPosition()  const { return SMDS_PositionPtr( new SMDS_VertexPosition); }
   SMDS_PositionPtr defaultPosition() const { return SMDS_SpacePosition::originSpacePosition();  }
   typedef SMDS_PositionPtr (PositionCreator:: * FmakePos)() const;
@@ -3628,6 +3659,18 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
             aDataset->CloseOnDisk();
             myNewMeshImpl->GetImpl().SetIsModified( bool(*isModified));
           }
+
+          // issue 20918. Restore Persistent Id of SMESHDS_Mesh
+          if( aTopGroup->ExistInternalObject( "meshPersistentId" ) )
+          {
+            aDataset = new HDFdataset( "meshPersistentId", aTopGroup );
+            aDataset->OpenOnDisk();
+            size = aDataset->GetSize();
+            int* meshPersistentId = new int[ size ];
+            aDataset->ReadFromDisk( meshPersistentId );
+            aDataset->CloseOnDisk();
+            myNewMeshImpl->GetImpl().GetMeshDS()->SetPersistentId( *meshPersistentId );
+          }
         }
       }
     }
@@ -3942,7 +3985,7 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
           aGroup = new HDFgroup( "Submeshes", aTopGroup ); 
           aGroup->OpenOnDisk();
 
-          int maxID = mySMESHDSMesh->MaxShapeIndex();
+          int maxID = Max( mySMESHDSMesh->MaxSubMeshIndex(), mySMESHDSMesh->MaxShapeIndex() );
           vector< SMESHDS_SubMesh * > subMeshes( maxID + 1, (SMESHDS_SubMesh*) 0 );
           vector< TopAbs_ShapeEnum  > smType   ( maxID + 1, TopAbs_SHAPE ); 
 
@@ -4130,20 +4173,6 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
         } // if ( aTopGroup->ExistInternalObject( "Node Positions" ) )
       } // if ( hasData )
 
-      // Recompute State (as computed sub-meshes are restored from MED)
-      if ( !aShapeObject->_is_nil() || !myNewMeshImpl->HasShapeToMesh()) {
-        MESSAGE("Compute State Engine ...");
-        TopoDS_Shape myLocShape;
-        if(myNewMeshImpl->HasShapeToMesh())
-          myLocShape = GeomObjectToShape( aShapeObject );
-        else
-          myLocShape = SMESH_Mesh::PseudoShape();
-        
-        myNewMeshImpl->GetImpl().GetSubMesh(myLocShape)->ComputeStateEngine
-          (SMESH_subMesh::SUBMESH_RESTORED);
-        MESSAGE("Compute State Engine finished");
-      }
-
       // try to get groups
       for ( int ii = GetNodeGroupsTag(); ii <= GetVolumeGroupsTag(); ii++ ) {
         char name_group[ 30 ];
@@ -4250,6 +4279,7 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
           aGroup->CloseOnDisk();
         }
       }
+
       // read submeh order if any
       if( aTopGroup->ExistInternalObject( "Mesh Order" ) ) {
         aDataset = new HDFdataset( "Mesh Order", aTopGroup );
@@ -4268,7 +4298,30 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
         
         myNewMeshImpl->GetImpl().SetMeshOrder( anOrderIds );
       }
+    } // loop on meshes
+
+    // notify algos on completed restoration
+    for ( meshi_group = meshGroupList.begin(); meshi_group != meshGroupList.end(); ++meshi_group )
+    {
+      SMESH_Mesh_i* myNewMeshImpl = meshi_group->first;
+      ::SMESH_Mesh& myLocMesh     = myNewMeshImpl->GetImpl();
+
+      TopoDS_Shape myLocShape;
+      if(myLocMesh.HasShapeToMesh())
+        myLocShape = myLocMesh.GetShapeToMesh();
+      else
+        myLocShape = SMESH_Mesh::PseudoShape();
+        
+      myLocMesh.GetSubMesh(myLocShape)->
+        ComputeStateEngine (SMESH_subMesh::SUBMESH_RESTORED);
     }
+
+    for ( hyp_data = hypDataList.begin(); hyp_data != hypDataList.end(); ++hyp_data )
+    {
+      SMESH_Hypothesis_i* hyp  = hyp_data->first;
+      hyp->UpdateAsMeshesRestored(); // for hyps needing full mesh data restored (issue 20918)
+    }
+
     // close mesh group
     if(aTopGroup)
       aTopGroup->CloseOnDisk();   

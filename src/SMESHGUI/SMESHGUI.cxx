@@ -19,12 +19,13 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+//  SMESH SMESHGUI : GUI for SMESH component
+//  File   : SMESHGUI.cxx
+//  Author : Nicolas REJNERI, Open CASCADE S.A.S.
 
-// SMESH SMESHGUI : GUI for SMESH component
-// File   : SMESHGUI.cxx
-// Author : Nicolas REJNERI, Open CASCADE S.A.S.
-// SMESH includes
-//
+#include <Standard_math.hxx>  // E.A. must be included before Python.h to fix compilation on windows
+#include "Python.h"
+//  SMESH includes
 #include "SMESHGUI.h"
 #include "SMESHGUI_AddMeshElementDlg.h"
 #include "SMESHGUI_AddQuadraticElementDlg.h"
@@ -35,7 +36,7 @@
 #include "SMESHGUI_CreatePolyhedralVolumeDlg.h"
 #include "SMESHGUI_DeleteGroupDlg.h"
 #include "SMESHGUI_Displayer.h"
-#include "SMESHGUI_EditMeshDlg.h"
+#include "SMESHGUI_MergeDlg.h"
 #include "SMESHGUI_ExtrusionAlongPathDlg.h"
 #include "SMESHGUI_ExtrusionDlg.h"
 #include "SMESHGUI_FileInfoDlg.h"
@@ -49,11 +50,12 @@
 #include "SMESHGUI_Hypotheses.h"
 #include "SMESHGUI_Make2DFrom3DOp.h"
 #include "SMESHGUI_MakeNodeAtPointDlg.h"
-#include "SMESHGUI_MeshInfosDlg.h"
+//#include "SMESHGUI_MeshInfosDlg.h"
+#include "SMESHGUI_Measurements.h"
+#include "SMESHGUI_MeshInfo.h"
 #include "SMESHGUI_MeshOp.h"
 #include "SMESHGUI_MeshOrderOp.h"
 #include "SMESHGUI_MeshPatternDlg.h"
-#include "SMESHGUI_MoveNodesDlg.h"
 #include "SMESHGUI_MultiEditDlg.h"
 #include "SMESHGUI_NodesDlg.h"
 #include "SMESHGUI_Preferences_ColorDlg.h"
@@ -67,12 +69,13 @@
 #include "SMESHGUI_SewingDlg.h"
 #include "SMESHGUI_SingleEditDlg.h"
 #include "SMESHGUI_SmoothingDlg.h"
-#include "SMESHGUI_StandardMeshInfosDlg.h"
+//#include "SMESHGUI_StandardMeshInfosDlg.h"
 #include "SMESHGUI_SymmetryDlg.h"
 #include "SMESHGUI_TranslationDlg.h"
 #include "SMESHGUI_ScaleDlg.h"
 #include "SMESHGUI_TransparencyDlg.h"
-#include "SMESHGUI_WhatIsDlg.h"
+//#include "SMESHGUI_WhatIsDlg.h"
+#include "SMESHGUI_DuplicateNodesDlg.h"
 
 #include "SMESHGUI_Utils.h"
 #include "SMESHGUI_MeshUtils.h"
@@ -84,7 +87,9 @@
 
 #include <SMESH_Client.hxx>
 #include <SMESH_Actor.h>
+#include <SMESH_ScalarBarActor.h>
 #include <SMESH_TypeFilter.hxx>
+#include "SMESH_ControlsDef.hxx"
 
 // SALOME GUI includes
 #include <SalomeApp_Tools.h>
@@ -121,19 +126,21 @@
 #include <SALOMEconfig.h>
 #include CORBA_CLIENT_HEADER(SALOMEDS_Attributes)
 #include CORBA_CLIENT_HEADER(SMESH_MeshEditor)
+#include CORBA_CLIENT_HEADER(SMESH_Measurements)
 
 // Qt includes
 // #define       INCLUDE_MENUITEM_DEF // VSR commented ????????
 #include <QMenu>
+#include <QTextStream>
 
 // BOOST includes
 #include <boost/shared_ptr.hpp>
 
 // VTK includes
-#include <vtkScalarBarActor.h>
 #include <vtkCamera.h>
 #include <vtkRenderer.h>
 #include <vtkPlane.h>
+#include <vtkCallbackCommand.h>
 
 // SALOME KERNEL includes
 #include <SALOMEDS_Study.hxx>
@@ -145,6 +152,10 @@
 // OCCT includes
 #include <Standard_ErrorHandler.hxx>
 #include <NCollection_DataMap.hxx>
+
+//To disable automatic genericobj management, the following line should be commented.
+//Otherwise, it should be uncommented. Refer to KERNEL_SRC/src/SALOMEDSImpl/SALOMEDSImpl_AttributeIOR.cxx
+#define WITHGENERICOBJ
 
 //namespace{
   // Declarations
@@ -170,14 +181,14 @@
     std::string myExtension;
 
     if ( theCommandID == 113 ) {
-      filter.append( QObject::tr( "MED files (*.med)" ) );
-      filter.append( QObject::tr( "All files (*)" ) );
+      filter.append( QObject::tr( "MED_FILES_FILTER" ) + " (*.med)" );
+      filter.append( QObject::tr( "ALL_FILES_FILTER" ) + " (*)" );
     }
     else if ( theCommandID == 112 ) {
-      filter.append( QObject::tr( "IDEAS files (*.unv)" ) );
+      filter.append( QObject::tr( "IDEAS_FILES_FILTER" ) + " (*.unv)" );
     }
     else if ( theCommandID == 111 ) {
-      filter.append( QObject::tr( "DAT files (*.dat)" ) );
+      filter.append( QObject::tr( "DAT_FILES_FILTER" ) + " (*.dat)" );
     }
 
     QString anInitialPath = "";
@@ -242,6 +253,13 @@
             aPixmap->SetPixMap( "ICON_SMESH_TREE_MESH_IMPORTED" );
             if ( theCommandID == 112 ) // mesh names aren't taken from the file for UNV import
               SMESH::SetName( aMeshSO, QFileInfo(filename).fileName() );
+
+#ifdef WITHGENERICOBJ
+            // obj has been published in study. Its refcount has been incremented.
+            // It is safe to decrement its refcount
+            // so that it will be destroyed when the entry in study will be removed
+            aMeshes[i]->Destroy();
+#endif
           }
           else {
             isEmpty = true;
@@ -277,7 +295,7 @@
 
     // actually, the following condition can't be met (added for insurance)
     if( selected.Extent() == 0 ||
-        selected.Extent() > 1 && theCommandID != 122 && theCommandID != 125 )
+        ( selected.Extent() > 1 && theCommandID != 122 && theCommandID != 125 ) )
       return;
 
     bool hasDuplicatedMeshNames = false;
@@ -323,7 +341,7 @@
 
     QList<SALOMEDS::Color> aReservedColors;
 
-    QString aFilter, aTitle = QObject::tr("Export mesh");
+    QString aFilter, aTitle = QObject::tr("SMESH_EXPORT_MESH");
     QMap<QString, SMESH::MED_VERSION> aFilterMap;
     QMap<QString, int> aFilterMapSTL;
     switch ( theCommandID ) {
@@ -346,13 +364,13 @@
         // PAL18696
         QString v21 (aMesh->GetVersionString(SMESH::MED_V2_1, 2));
         QString v22 (aMesh->GetVersionString(SMESH::MED_V2_2, 2));
-        aFilterMap.insert( QString("MED ") +  v21 + " (*.med)", SMESH::MED_V2_1 );
-        aFilterMap.insert( QString("MED ") +  v22 + " (*.med)", SMESH::MED_V2_2 );
+        aFilterMap.insert( QObject::tr( "MED_VX_FILES_FILTER" ).arg( v21 ) + " (*.med)", SMESH::MED_V2_1 );
+        aFilterMap.insert( QObject::tr( "MED_VX_FILES_FILTER" ).arg( v22 ) + " (*.med)", SMESH::MED_V2_2 );
       }
       break;
     case 124:
     case 121:
-      aFilter = QObject::tr("DAT files (*.dat)");
+      aFilter = QObject::tr( "DAT_FILES_FILTER" ) + " (*.dat)";
       break;
     case 126:
     case 123:
@@ -367,7 +385,7 @@
           if (aRet != 0)
             return;
         }
-        aFilter = QObject::tr("IDEAS files (*.unv)");
+        aFilter = QObject::tr( "IDEAS_FILES_FILTER" ) + " (*.unv)";
       }
       break;
     case 140:
@@ -395,8 +413,8 @@
             return;
         }
 
-        aFilterMapSTL.insert( QObject::tr("STL ASCII (*.stl)"), 1 ); // 1 - ASCII mode
-        aFilterMapSTL.insert( QObject::tr("STL Binary (*.stl)"), 0 ); // 0 - Binary mode
+        aFilterMapSTL.insert( QObject::tr( "STL_ASCII_FILES_FILTER" ) + " (*.stl)", 1 ); // 1 - ASCII mode
+        aFilterMapSTL.insert( QObject::tr( "STL_BIN_FILES_FILTER" )   + " (*.stl)", 0 ); // 0 - Binary mode
       }
       break;
     default:
@@ -431,7 +449,7 @@
       SUIT_FileDlg* fd = new SUIT_FileDlg( SMESHGUI::desktop(), false, true, true );
       fd->setWindowTitle( aTitle );
       fd->setNameFilters( filters );
-      fd->selectNameFilter( QObject::tr("STL ASCII (*.stl)") );
+      fd->selectNameFilter( QObject::tr( "STL_ASCII_FILES_FILTER" ) + " (*.stl)" );
       if ( !anInitialPath.isEmpty() )
         fd->setDirectory( anInitialPath );
       fd->selectFile(aMeshName);
@@ -702,6 +720,121 @@
     SMESH::RepaintCurrentView();
   }
 
+  QString functorToString( SMESH::Controls::FunctorPtr f )
+  {
+    QString type = QObject::tr( "UNKNOWN_CONTROL" );
+    if ( dynamic_cast< SMESH::Controls::Volume* >( f.get() ) )
+      type = QObject::tr( "VOLUME_3D_ELEMENTS" );
+    else if ( dynamic_cast< SMESH::Controls::MaxElementLength2D* >( f.get() ) )
+      type = QObject::tr( "MAX_ELEMENT_LENGTH_2D" );
+    else if ( dynamic_cast< SMESH::Controls::MaxElementLength3D* >( f.get() ) )
+      type = QObject::tr( "MAX_ELEMENT_LENGTH_3D" );
+    else if ( dynamic_cast< SMESH::Controls::MinimumAngle* >( f.get() ) )
+      type = QObject::tr( "MINIMUMANGLE_ELEMENTS" );
+    else if ( dynamic_cast< SMESH::Controls::AspectRatio* >( f.get() ) )
+      type = QObject::tr( "ASPECTRATIO_ELEMENTS" );
+    else if ( dynamic_cast< SMESH::Controls::AspectRatio3D* >( f.get() ) )
+      type = QObject::tr( "ASPECTRATIO_3D_ELEMENTS" );
+    else if ( dynamic_cast< SMESH::Controls::Warping* >( f.get() ) )
+      type = QObject::tr( "WARP_ELEMENTS" );
+    else if ( dynamic_cast< SMESH::Controls::Taper* >( f.get() ) )
+      type = QObject::tr( "TAPER_ELEMENTS" );
+    else if ( dynamic_cast< SMESH::Controls::Skew* >( f.get() ) )
+      type = QObject::tr( "SKEW_ELEMENTS" );
+    else if ( dynamic_cast< SMESH::Controls::Area* >( f.get() ) )
+      type = QObject::tr( "AREA_ELEMENTS" );
+    else if ( dynamic_cast< SMESH::Controls::Length* >( f.get() ) )
+      type = QObject::tr( "LENGTH_EDGES" );
+    else if ( dynamic_cast< SMESH::Controls::Length2D* >( f.get() ) )
+      type = QObject::tr( "LENGTH2D_EDGES" );
+    else if ( dynamic_cast< SMESH::Controls::MultiConnection* >( f.get() ) )
+      type = QObject::tr( "MULTI_BORDERS" );
+    else if ( dynamic_cast< SMESH::Controls::MultiConnection2D* >( f.get() ) )
+      type = QObject::tr( "MULTI2D_BORDERS" );
+    else if ( dynamic_cast< SMESH::Controls::FreeNodes* >( f.get() ) )
+      type = QObject::tr( "FREE_NODES" );
+    else if ( dynamic_cast< SMESH::Controls::FreeEdges* >( f.get() ) )
+      type = QObject::tr( "FREE_EDGES" );
+    else if ( dynamic_cast< SMESH::Controls::FreeBorders* >( f.get() ) )
+      type = QObject::tr( "FREE_BORDERS" );
+    else if ( dynamic_cast< SMESH::Controls::FreeFaces* >( f.get() ) )
+      type = QObject::tr( "FREE_FACES" );
+    return type;
+  }
+
+  void SaveDistribution()
+  {
+    LightApp_SelectionMgr* aSel = SMESHGUI::selectionMgr();
+    SALOME_ListIO selected;
+    if ( aSel )
+      aSel->selectedObjects( selected );
+
+    if ( selected.Extent() == 1 ) {
+      Handle(SALOME_InteractiveObject) anIO = selected.First();
+      if ( anIO->hasEntry() ) {
+        SMESH_Actor* anActor = SMESH::FindActorByEntry( anIO->getEntry() );
+        if ( anActor && anActor->GetScalarBarActor() && anActor->GetControlMode() != SMESH_Actor::eNone ) {
+          SMESH_ScalarBarActor* aScalarBarActor = anActor->GetScalarBarActor();
+          SMESH::Controls::FunctorPtr aFunctor = anActor->GetFunctor();
+          if ( aScalarBarActor && aFunctor ) {
+            SMESH::Controls::NumericalFunctor* aNumFun = dynamic_cast<SMESH::Controls::NumericalFunctor*>( aFunctor.get() );
+            if ( aNumFun ) {
+              int nbRanges = aScalarBarActor->GetMaximumNumberOfColors();
+              std::vector<int>    nbEvents;
+              std::vector<double> funValues;
+              aNumFun->GetHistogram( nbRanges, nbEvents, funValues );
+              QString anInitialPath = "";
+              if ( SUIT_FileDlg::getLastVisitedPath().isEmpty() )
+                anInitialPath = QDir::currentPath();
+              QString aMeshName = anIO->getName();
+              QStringList filter;
+              filter.append( QObject::tr( "TEXT_FILES_FILTER" ) + " (*.txt)" );
+              filter.append( QObject::tr( "ALL_FILES_FILTER" ) + " (*)" );
+              QString aFilename = anInitialPath + "/" + aMeshName + "_" + 
+                functorToString( aFunctor ).toLower().simplified().replace( QRegExp( " |-" ), "_" ) + ".txt";
+              aFilename = SUIT_FileDlg::getFileName( SMESHGUI::desktop(),
+                                                     aFilename,
+                                                     filter,
+                                                     QObject::tr( "SMESH_SAVE_DISTRIBUTION" ),
+                                                     false );
+              if ( !aFilename.isEmpty() ) {
+                QFile f( aFilename );
+                if ( f.open( QFile::WriteOnly | QFile::Truncate ) ) {
+                  QTextStream out( &f );
+                  out << "# Mesh: " << aMeshName << endl;
+                  out << "# Control: " << functorToString( aFunctor ) << endl;
+                  out << "#" << endl;
+                  out.setFieldWidth( 10 );
+                  for ( int i = 0; i < qMin( nbEvents.size(), funValues.size()-1 ); i++ )
+                    out << funValues[i] << "\t" << funValues[i+1] << "\t" << nbEvents[i] << endl;
+                  f.close();
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  void ShowDistribution() {
+    LightApp_SelectionMgr* aSel = SMESHGUI::selectionMgr();
+    SALOME_ListIO selected;
+    if ( aSel )
+      aSel->selectedObjects( selected );
+    
+    if ( selected.Extent() == 1 ) {
+      Handle(SALOME_InteractiveObject) anIO = selected.First();
+      if ( anIO->hasEntry() ) {
+	SMESH_Actor* anActor = SMESH::FindActorByEntry( anIO->getEntry() );
+	if ( anActor && anActor->GetScalarBarActor() && anActor->GetControlMode() != SMESH_Actor::eNone ) {
+	  SMESH_ScalarBarActor *aScalarBarActor = anActor->GetScalarBarActor();
+	  aScalarBarActor->SetDistributionVisibility(!aScalarBarActor->GetDistributionVisibility());
+	}
+      }
+    }
+  }
+
   void DisableAutoColor(){
     LightApp_SelectionMgr *aSel = SMESHGUI::selectionMgr();
     SALOME_ListIO selected;
@@ -728,136 +861,144 @@
     if( !aSel || !appStudy )
       return;
 
+    if( theCommandID == 1134 ) { // Clipping dialog can be activated without selection
+      if( SMESHGUI* aModule = SMESHGUI::GetSMESHGUI() ) {
+        aModule->EmitSignalDeactivateDialog();
+        if( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( aModule ) )
+          (new SMESHGUI_ClippingDlg( aModule, aViewWindow ))->show();
+      }
+      return;
+    }
+
     _PTR(Study) aStudy = appStudy->studyDS();
 
     aSel->selectedObjects( selected );
 
     if(selected.Extent() >= 1){
       switch(theCommandID){
-      case 1134:{
-        SMESHGUI::GetSMESHGUI()->EmitSignalDeactivateDialog();
-        (new SMESHGUI_ClippingDlg( SMESHGUI::GetSMESHGUI() ))->show();
-        return;
-      }
       case 1133:{
         SMESHGUI::GetSMESHGUI()->EmitSignalDeactivateDialog();
         (new SMESHGUI_TransparencyDlg( SMESHGUI::GetSMESHGUI() ))->show();
         return;
-      }}
-      SALOME_ListIteratorOfListIO It( selected );
-      for( ; It.More(); It.Next()){
-        Handle(SALOME_InteractiveObject) IObject = It.Value();
-        if(IObject->hasEntry()){
-          if(SMESH_Actor *anActor = SMESH::FindActorByEntry(IObject->getEntry())){
-            switch(theCommandID){
-            case 211:
-              anActor->SetRepresentation(SMESH_Actor::eEdge);
-              break;
-            case 212:
-              anActor->SetRepresentation(SMESH_Actor::eSurface);
-              break;
-            case 213:
-              if(anActor->IsShrunk())
-                anActor->UnShrink();
-              else
-                anActor->SetShrink();
-              break;
-            case 215:
-              anActor->SetRepresentation(SMESH_Actor::ePoint);
-              break;
-            case 231:
-              if(anActor->GetQuadratic2DRepresentation() != SMESH_Actor::eLines)
-                anActor->SetQuadratic2DRepresentation(SMESH_Actor::eLines);
-              break;
-            case 232:
-              if(anActor->GetQuadratic2DRepresentation() != SMESH_Actor::eArcs)
-                anActor->SetQuadratic2DRepresentation(SMESH_Actor::eArcs);
-              break;
-            case 1132:{
+      }
+      case 1132:{
+        QColor c, e, b, n, c0D, o;
+        int size0D = 0;
+        int Edgewidth = 0;
+        vtkFloatingPointType Shrink = 0.0;
+        vtkFloatingPointType faces_orientation_scale = 0.0;
+        bool faces_orientation_3dvectors = false;
+
+        VTK::MarkerType aMarkerTypeCurrent = VTK::MT_NONE;
+        VTK::MarkerScale aMarkerScaleCurrent = VTK::MS_NONE;
+        int aMarkerTextureCurrent = 0;
+
+        SALOME_ListIteratorOfListIO It( selected );
+        for( ; It.More(); It.Next()){
+          Handle(SALOME_InteractiveObject) IObject = It.Value();
+          if(IObject->hasEntry()){
+            if(SMESH_Actor *anActor = SMESH::FindActorByEntry(IObject->getEntry())){
               vtkFloatingPointType color[3];
               anActor->GetSufaceColor(color[0], color[1], color[2]);
               int c0 = int (color[0] * 255);
               int c1 = int (color[1] * 255);
               int c2 = int (color[2] * 255);
-              QColor c(c0, c1, c2);
+              c.setRgb(c0, c1, c2);
 
               vtkFloatingPointType edgecolor[3];
               anActor->GetEdgeColor(edgecolor[0], edgecolor[1], edgecolor[2]);
               c0 = int (edgecolor[0] * 255);
               c1 = int (edgecolor[1] * 255);
               c2 = int (edgecolor[2] * 255);
-              QColor e(c0, c1, c2);
+              e.setRgb(c0, c1, c2);
 
               vtkFloatingPointType backfacecolor[3];
               anActor->GetBackSufaceColor(backfacecolor[0], backfacecolor[1], backfacecolor[2]);
               c0 = int (backfacecolor[0] * 255);
               c1 = int (backfacecolor[1] * 255);
               c2 = int (backfacecolor[2] * 255);
-              QColor b(c0, c1, c2);
+              b.setRgb(c0, c1, c2);
 
               vtkFloatingPointType nodecolor[3];
               anActor->GetNodeColor(nodecolor[0], nodecolor[1], nodecolor[2]);
               c0 = int (nodecolor[0] * 255);
               c1 = int (nodecolor[1] * 255);
               c2 = int (nodecolor[2] * 255);
-              QColor n(c0, c1, c2);
+              n.setRgb(c0, c1, c2);
 
               vtkFloatingPointType color0D[3];
               anActor->Get0DColor(color0D[0], color0D[1], color0D[2]);
               c0 = int (color0D[0] * 255);
               c1 = int (color0D[1] * 255);
               c2 = int (color0D[2] * 255);
-              QColor c0D(c0, c1, c2);
+              c0D.setRgb(c0, c1, c2);
 
-              int size0D = (int)anActor->Get0DSize();
+              size0D = (int)anActor->Get0DSize();
               if(size0D == 0)
                 size0D = 1;
-              int Edgewidth = (int)anActor->GetLineWidth();
+              Edgewidth = (int)anActor->GetLineWidth();
               if(Edgewidth == 0)
                 Edgewidth = 1;
-              vtkFloatingPointType Shrink = anActor->GetShrinkFactor();
+              Shrink = anActor->GetShrinkFactor();
 
               vtkFloatingPointType faces_orientation_color[3];
               anActor->GetFacesOrientationColor(faces_orientation_color);
               c0 = int (faces_orientation_color[0] * 255);
               c1 = int (faces_orientation_color[1] * 255);
               c2 = int (faces_orientation_color[2] * 255);
-              QColor o(c0, c1, c2);
+              o.setRgb(c0, c1, c2);
 
-              vtkFloatingPointType faces_orientation_scale = anActor->GetFacesOrientationScale();
-              bool faces_orientation_3dvectors = anActor->GetFacesOrientation3DVectors();
+              faces_orientation_scale = anActor->GetFacesOrientationScale();
+              faces_orientation_3dvectors = anActor->GetFacesOrientation3DVectors();
 
-              SMESHGUI_Preferences_ColorDlg *aDlg =
-                new SMESHGUI_Preferences_ColorDlg( SMESHGUI::GetSMESHGUI() );
-              aDlg->SetColor(1, c);
-              aDlg->SetColor(2, e);
-              aDlg->SetColor(3, n);
-              aDlg->SetColor(4, b);
-              aDlg->SetColor(5, c0D);
-              aDlg->SetColor(6, o);
-              aDlg->SetIntValue(1, Edgewidth);
-              aDlg->SetIntValue(2, int(Shrink*100.));
-              aDlg->SetIntValue(3, size0D);
-              aDlg->SetDoubleValue(1, faces_orientation_scale);
-              aDlg->SetBooleanValue(1, faces_orientation_3dvectors);
+              aMarkerTypeCurrent = anActor->GetMarkerType();
+              aMarkerScaleCurrent = anActor->GetMarkerScale();
+              aMarkerTextureCurrent = anActor->GetMarkerTexture();
 
-              aDlg->setCustomMarkerMap( theMarkerMap[ aStudy->StudyId() ] );
+              // even if there are multiple objects in the selection,
+              // we need only the first one to get values for the dialog
+              break;
+            }
+          }
+        }
 
-              VTK::MarkerType aMarkerTypeCurrent = anActor->GetMarkerType();
-              VTK::MarkerScale aMarkerScaleCurrent = anActor->GetMarkerScale();
-              int aMarkerTextureCurrent = anActor->GetMarkerTexture();
-              if( aMarkerTypeCurrent != VTK::MT_USER )
-                aDlg->setStandardMarker( aMarkerTypeCurrent, aMarkerScaleCurrent );
-              else
-                aDlg->setCustomMarker( aMarkerTextureCurrent );
+        SMESHGUI_Preferences_ColorDlg *aDlg =
+          new SMESHGUI_Preferences_ColorDlg( SMESHGUI::GetSMESHGUI() );
+        aDlg->SetColor(1, c);
+        aDlg->SetColor(2, e);
+        aDlg->SetColor(3, n);
+        aDlg->SetColor(4, b);
+        aDlg->SetColor(5, c0D);
+        aDlg->SetColor(6, o);
+        aDlg->SetIntValue(1, Edgewidth);
+        aDlg->SetIntValue(2, int(Shrink*100.));
+        aDlg->SetIntValue(3, size0D);
+        aDlg->SetDoubleValue(1, faces_orientation_scale);
+        aDlg->SetBooleanValue(1, faces_orientation_3dvectors);
+ 
+        aDlg->setCustomMarkerMap( theMarkerMap[ aStudy->StudyId() ] );
 
-              if(aDlg->exec()){
-                QColor color = aDlg->GetColor(1);
-                QColor edgecolor = aDlg->GetColor(2);
-                QColor nodecolor = aDlg->GetColor(3);
-                QColor backfacecolor = aDlg->GetColor(4);
-                QColor color0D = aDlg->GetColor(5);
-                QColor faces_orientation_color = aDlg->GetColor(6);
+        if( aMarkerTypeCurrent != VTK::MT_USER )
+          aDlg->setStandardMarker( aMarkerTypeCurrent, aMarkerScaleCurrent );
+        else
+          aDlg->setCustomMarker( aMarkerTextureCurrent );
+
+        if(aDlg->exec()){
+          QColor color = aDlg->GetColor(1);
+          QColor edgecolor = aDlg->GetColor(2);
+          QColor nodecolor = aDlg->GetColor(3);
+          QColor backfacecolor = aDlg->GetColor(4);
+          QColor color0D = aDlg->GetColor(5);
+          QColor faces_orientation_color = aDlg->GetColor(6);
+
+          /* Point marker */
+          theMarkerMap[ aStudy->StudyId() ] = aDlg->getCustomMarkerMap();
+
+          SALOME_ListIteratorOfListIO It( selected );
+          for( ; It.More(); It.Next()){
+            Handle(SALOME_InteractiveObject) IObject = It.Value();
+            if(IObject->hasEntry()){
+              if(SMESH_Actor *anActor = SMESH::FindActorByEntry(IObject->getEntry())){
                 /* actor color and backface color */
                 anActor->SetSufaceColor(vtkFloatingPointType (color.red()) / 255.,
                                         vtkFloatingPointType (color.green()) / 255.,
@@ -894,9 +1035,6 @@
                 anActor->SetFacesOrientationScale(aDlg->GetDoubleValue(1));
                 anActor->SetFacesOrientation3DVectors(aDlg->GetBooleanValue(1));
 
-                /* Point marker */
-                theMarkerMap[ aStudy->StudyId() ] = aDlg->getCustomMarkerMap();
-
                 VTK::MarkerType aMarkerTypeNew = aDlg->getMarkerType();
                 VTK::MarkerScale aMarkerScaleNew = aDlg->getStandardMarkerScale();
                 int aMarkerTextureNew = aDlg->getCustomMarkerID();
@@ -927,11 +1065,45 @@
                   aGroupColor.B = (float)aColor.blue() / 255.0;
                   aGroupObject->SetColor( aGroupColor );
                 }
-
-                delete aDlg;
               }
+            }
+          }
+          SMESH::RepaintCurrentView();
+        }
+        delete aDlg;
+        return;
+      }
+      }
+      SALOME_ListIteratorOfListIO It( selected );
+      for( ; It.More(); It.Next()){
+        Handle(SALOME_InteractiveObject) IObject = It.Value();
+        if(IObject->hasEntry()){
+          if(SMESH_Actor *anActor = SMESH::FindActorByEntry(IObject->getEntry())){
+            switch(theCommandID){
+            case 211:
+              anActor->SetRepresentation(SMESH_Actor::eEdge);
               break;
-            }}
+            case 212:
+              anActor->SetRepresentation(SMESH_Actor::eSurface);
+              break;
+            case 213:
+              if(anActor->IsShrunk())
+                anActor->UnShrink();
+              else
+                anActor->SetShrink();
+              break;
+            case 215:
+              anActor->SetRepresentation(SMESH_Actor::ePoint);
+              break;
+            case 231:
+              if(anActor->GetQuadratic2DRepresentation() != SMESH_Actor::eLines)
+                anActor->SetQuadratic2DRepresentation(SMESH_Actor::eLines);
+              break;
+            case 232:
+              if(anActor->GetQuadratic2DRepresentation() != SMESH_Actor::eArcs)
+                anActor->SetQuadratic2DRepresentation(SMESH_Actor::eArcs);
+              break;
+            }
           }
         }
       }
@@ -949,77 +1121,66 @@
     if( !selected.IsEmpty() ){
       Handle(SALOME_InteractiveObject) anIO = selected.First();
       if(!anIO.IsNull()){
-        QString aTitle;
         SMESH_Actor::eControl aControl = SMESH_Actor::eNone;
         if(SMESH_Actor *anActor = SMESH::FindActorByEntry(anIO->getEntry())){
           switch ( theCommandID ){
           case 6001:
-            aTitle = QObject::tr( "LENGTH_EDGES" );
             aControl = SMESH_Actor::eLength;
             break;
           case 6018:
-            aTitle = QObject::tr( "LENGTH2D_EDGES" );
             aControl = SMESH_Actor::eLength2D;
             break;
           case 6002:
-            aTitle = QObject::tr( "FREE_EDGES" );
             aControl = SMESH_Actor::eFreeEdges;
             break;
           case 6003:
-            aTitle = QObject::tr( "FREE_BORDERS" );
             aControl = SMESH_Actor::eFreeBorders;
             break;
           case 6004:
-            aTitle = QObject::tr( "MULTI_BORDERS" );
             aControl = SMESH_Actor::eMultiConnection;
             break;
           case 6005:
-            aTitle = QObject::tr( "FREE_NODES" );
             aControl = SMESH_Actor::eFreeNodes;
             break;
           case 6019:
-            aTitle = QObject::tr( "MULTI2D_BORDERS" );
             aControl = SMESH_Actor::eMultiConnection2D;
             break;
           case 6011:
-            aTitle = QObject::tr( "AREA_ELEMENTS" );
             aControl = SMESH_Actor::eArea;
             break;
           case 6012:
-            aTitle = QObject::tr( "TAPER_ELEMENTS" );
             aControl = SMESH_Actor::eTaper;
             break;
           case 6013:
-            aTitle = QObject::tr( "ASPECTRATIO_ELEMENTS" );
             aControl = SMESH_Actor::eAspectRatio;
             break;
           case 6017:
-            aTitle = QObject::tr( "ASPECTRATIO_3D_ELEMENTS" );
             aControl = SMESH_Actor::eAspectRatio3D;
             break;
           case 6014:
-            aTitle = QObject::tr( "MINIMUMANGLE_ELEMENTS" );
             aControl = SMESH_Actor::eMinimumAngle;
             break;
           case 6015:
-            aTitle = QObject::tr( "WARP_ELEMENTS" );
             aControl = SMESH_Actor::eWarping;
             break;
           case 6016:
-            aTitle = QObject::tr( "SKEW_ELEMENTS" );
             aControl = SMESH_Actor::eSkew;
             break;
           case 6009:
-            aTitle = QObject::tr( "SMESH_VOLUME" );
             aControl = SMESH_Actor::eVolume3D;
             break;
           case 6021:
-            aTitle = QObject::tr( "FREE_FACES" );
             aControl = SMESH_Actor::eFreeFaces;
+            break;
+          case 6022:
+            aControl = SMESH_Actor::eMaxElementLength2D;
+            break;
+          case 6023:
+            aControl = SMESH_Actor::eMaxElementLength3D;
             break;
           }
           anActor->SetControlMode(aControl);
-          anActor->GetScalarBarActor()->SetTitle(aTitle.toLatin1().data());
+          anActor->GetScalarBarActor()->SetTitle( functorToString( anActor->GetFunctor() ).toLatin1().constData() );
           SMESH::RepaintCurrentView();
         }
       }
@@ -1154,7 +1315,7 @@
 
     SalomeApp_Application* anApp = dynamic_cast<SalomeApp_Application*>( SUIT_Session::session()->activeApplication() );
     SUIT_ViewManager* vm = anApp->activeViewManager();
-    int nbSf = vm->getViewsCount();
+    int nbSf = vm ? vm->getViewsCount() : 0;
 
     SALOME_ListIteratorOfListIO It(selected);
 
@@ -1196,7 +1357,7 @@
           std::string anEntry = SO->GetID();
 
           /** Erase graphical object **/
-          if(SO->FindAttribute(anAttr, "AttributeIOR")){
+          if(SO->FindAttribute(anAttr, "AttributeIOR") && vm ){
             QVector<SUIT_ViewWindow*> aViews = vm->getViews();
             for(int i = 0; i < nbSf; i++){
               SUIT_ViewWindow *sf = aViews[i];
@@ -1286,8 +1447,15 @@ LightApp_Module( "SMESH" )
   myState = -1;
   myDisplayer = 0;
 
+  myEventCallbackCommand = vtkCallbackCommand::New();
+  myEventCallbackCommand->Delete();
+  myEventCallbackCommand->SetClientData( this );
+  myEventCallbackCommand->SetCallback( SMESHGUI::ProcessEvents );
+  myPriority = 0.0;
+
   SMESH::GetFilterManager();
   SMESH::GetPattern();
+  SMESH::GetMeasurements();
 
   /* load resources for all available meshers */
   SMESH::InitAvailableHypotheses();
@@ -1300,8 +1468,12 @@ LightApp_Module( "SMESH" )
 //=============================================================================
 SMESHGUI::~SMESHGUI()
 {
+#ifdef WITHGENERICOBJ
   SMESH::GetFilterManager()->Destroy();
+  SMESH::GetMeasurements()->Destroy();
+#endif
   SMESH::GetFilterManager() = SMESH::FilterManager::_nil();
+  SMESH::GetMeasurements() = SMESH::Measurements::_nil();
 }
 
 //=============================================================================
@@ -1318,13 +1490,22 @@ LightApp_SelectionMgr* SMESHGUI::selectionMgr()
     return 0;
 }
 
-bool SMESHGUI::automaticUpdate()
+//=============================================================================
+/*!
+ *
+ */
+//=============================================================================
+bool SMESHGUI::automaticUpdate(unsigned int requestedSize, bool* limitExceeded)
 {
   SUIT_ResourceMgr* resMgr = SUIT_Session::session()->resourceMgr();
   if ( !resMgr )
     return false;
 
-  return resMgr->booleanValue( "SMESH", "auto_update", false );
+  bool autoUpdate  = resMgr->booleanValue( "SMESH", "auto_update",  false );
+  long updateLimit = resMgr->integerValue( "SMESH", "update_limit", 500000 );
+  bool exceeded = updateLimit > 0 && requestedSize > updateLimit;
+  if ( limitExceeded ) *limitExceeded = autoUpdate && exceeded;
+  return autoUpdate && !exceeded;
 }
 
 //=============================================================================
@@ -1639,6 +1820,19 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       SMESHGUI_Preferences_ScalarBarDlg::ScalarBarProperties( this );
       break;
     }
+  case 202:
+    {
+      // dump control distribution data to the text file
+      ::SaveDistribution();
+      break;
+    }
+
+  case 203:
+    {
+      // show/ distribution
+      ::ShowDistribution();
+      break;
+    }
 
     // Auto-color
   case 1136:
@@ -1666,7 +1860,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
   case 232:
     ::SetDisplayMode(theCommandID, myMarkerMap);
   break;
-  
+
   // Display Entity
   case 216: // 0D elements
   case 217: // Edges
@@ -1773,7 +1967,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       }
       else
         aSel->setSelectedObjects( to_process );
-      
+
       break;
     }
 
@@ -1803,20 +1997,6 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     }
     break;
   }
-
-  case 406:                                     // MOVE NODE
-    {
-      if ( !vtkwnd )
-      {
-        SUIT_MessageBox::warning( desktop(), tr( "SMESH_WRN_WARNING" ),
-                                  tr( "NOT_A_VTK_VIEWER" ) );
-        break;
-      }
-
-      if(checkLock(aStudy)) break;
-      ( new SMESHGUI_MoveNodesDlg( this ) )->show();
-      break;
-    }
 
   case 701:                                     // COMPUTE MESH
   case 711:                                     // PRECOMPUTE MESH
@@ -2231,7 +2411,9 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     }
 
   case 900:                                     // MESH INFOS
+  case 903:                                     // WHAT IS
     {
+      int page = theCommandID == 900 ? SMESHGUI_MeshInfoDlg::BaseInfo : SMESHGUI_MeshInfoDlg::ElemInfo;
       EmitSignalDeactivateDialog();
       LightApp_SelectionMgr *aSel = SMESHGUI::selectionMgr();
       SALOME_ListIO selected;
@@ -2239,21 +2421,20 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
         aSel->selectedObjects( selected );
 
       if ( selected.Extent() > 1 ) { // a dlg for each IO
-        SALOME_ListIO IOs;
-        SALOME_ListIteratorOfListIO It (selected);
+        SALOME_ListIteratorOfListIO It( selected );
         for ( ; It.More(); It.Next() ) {
-          IOs.Clear(); IOs.Append( It.Value() );
-          aSel->setSelectedObjects( IOs );
-          ( new SMESHGUI_MeshInfosDlg( this ) )->show();
+          SMESHGUI_MeshInfoDlg* dlg = new SMESHGUI_MeshInfoDlg( SMESHGUI::desktop(), page );
+          dlg->showInfo( It.Value() ); 
+          dlg->show();
         }
-        // restore selection
-        aSel->setSelectedObjects( selected );
       }
-      else
-        ( new SMESHGUI_MeshInfosDlg( this ) )->show();
+      else {
+        SMESHGUI_MeshInfoDlg* dlg = new SMESHGUI_MeshInfoDlg( SMESHGUI::desktop(), page );
+        dlg->show();
+      }
       break;
     }
-
+    /*
   case 902:                                     // STANDARD MESH INFOS
     {
       EmitSignalDeactivateDialog();
@@ -2278,13 +2459,13 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
         ( new SMESHGUI_StandardMeshInfosDlg( this ) )->show();
       break;
     }
-
   case 903:                                     // WHAT IS
     {
       EmitSignalDeactivateDialog();
       ( new SMESHGUI_WhatIsDlg( this ) )->show();
       break;
     }
+    */
 
   case 904:                                     // FIND ELEM
     {
@@ -2569,6 +2750,44 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     updateObjBrowser();
     break;
   }
+  case 4044:                                     // REMOVE ORPHAN NODES
+    {
+      if(checkLock(aStudy)) break;
+      SALOME_ListIO selected;
+      if( LightApp_SelectionMgr *aSel = SMESHGUI::selectionMgr() )
+        aSel->selectedObjects( selected );
+      if ( selected.Extent() == 1 ) {
+        Handle(SALOME_InteractiveObject) anIO = selected.First();
+        SMESH::SMESH_Mesh_var aMesh = SMESH::GetMeshByIO(anIO);
+        if ( !aMesh->_is_nil() ) {
+          bool confirm = SUIT_MessageBox::question( SMESHGUI::desktop(),
+                                                    tr( "SMESH_WARNING" ),
+                                                    tr( "REMOVE_ORPHAN_NODES_QUESTION"),
+                                                    SUIT_MessageBox::Yes |
+                                                    SUIT_MessageBox::No,
+                                                    SUIT_MessageBox::No ) == SUIT_MessageBox::Yes;
+          if( confirm ) {
+            try {
+              SMESH::SMESH_MeshEditor_var aMeshEditor = aMesh->GetMeshEditor();
+              int removed = aMeshEditor->RemoveOrphanNodes();
+              SUIT_MessageBox::information(SMESHGUI::desktop(),
+                                           tr("SMESH_INFORMATION"),
+                                           tr("NB_NODES_REMOVED").arg(removed));
+              if ( removed > 0 ) {
+                SMESH::UpdateView();
+                SMESHGUI::Modified();
+              }
+            }
+            catch (const SALOME::SALOME_Exception& S_ex) {
+              SalomeApp_Tools::QtCatchCorbaException(S_ex);
+            } 
+            catch (...) {
+            }
+          }
+        }
+      }
+      break;
+    }
   case 4051:                                    // RENUMBERING NODES
     {
       if(checkLock(aStudy)) break;
@@ -2654,7 +2873,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       if(checkLock(aStudy)) break;
       if(vtkwnd) {
         EmitSignalDeactivateDialog();
-        ( new SMESHGUI_EditMeshDlg( this, 0 ) )->show();
+        ( new SMESHGUI_MergeDlg( this, 0 ) )->show();
       }
       else {
         SUIT_MessageBox::warning(SMESHGUI::desktop(),
@@ -2667,7 +2886,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       if (checkLock(aStudy)) break;
       if (vtkwnd) {
         EmitSignalDeactivateDialog();
-        ( new SMESHGUI_EditMeshDlg( this, 1 ) )->show();
+        ( new SMESHGUI_MergeDlg( this, 1 ) )->show();
       } else {
         SUIT_MessageBox::warning(SMESHGUI::desktop(),
                                  tr("SMESH_WRN_WARNING"), tr("SMESH_WRN_VIEWER_VTK"));
@@ -2685,6 +2904,20 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       if ( vtkwnd ) {
         EmitSignalDeactivateDialog();
         ( new SMESHGUI_ScaleDlg( this ) )->show();
+      }
+      else {
+        SUIT_MessageBox::warning(SMESHGUI::desktop(),
+                                 tr("SMESH_WRN_WARNING"), tr("SMESH_WRN_VIEWER_VTK"));
+      }
+      break;
+    }
+
+  case 4069: // DUPLICATE NODES
+    {
+      if(checkLock(aStudy)) break;
+      if ( vtkwnd ) {
+        EmitSignalDeactivateDialog();
+        ( new SMESHGUI_DuplicateNodesDlg( this ) )->show();
       }
       else {
         SUIT_MessageBox::warning(SMESHGUI::desktop(),
@@ -2727,6 +2960,8 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
   case 6005:
   case 6009:
   case 6021:
+  case 6022:
+  case 6023:
     if ( vtkwnd ) {
 
       LightApp_SelectionMgr* mgr = selectionMgr();
@@ -2777,13 +3012,23 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       LightApp_SelectionMgr* mgr = selectionMgr();
       SALOME_ListIO selected; mgr->selectedObjects( selected );
 
-      if (selected.Extent() == 1)       {
-        Handle(SALOME_InteractiveObject) anIObject = selected.First();
+      SALOME_ListIteratorOfListIO it(selected);
+      for( ; it.More(); it.Next()) {
+        Handle(SALOME_InteractiveObject) anIObject = it.Value();
         if(anIObject->hasEntry())
           if(SMESH_Actor *anActor = SMESH::FindActorByEntry(anIObject->getEntry())){
             anActor->SetCellsLabeled( !anActor->GetCellsLabeled() );
           }
       }
+      break;
+    }
+  case 501:
+  case 502:
+    {
+      int page = theCommandID == 501 ? SMESHGUI_MeasureDlg::MinDistance : SMESHGUI_MeasureDlg::BoundingBox;
+      EmitSignalDeactivateDialog();
+      SMESHGUI_MeasureDlg* dlg = new SMESHGUI_MeasureDlg( SMESHGUI::desktop(), page );
+      dlg->show();
       break;
     }
   }
@@ -2841,7 +3086,8 @@ void SMESHGUI::BuildPresentation( const Handle(SALOME_InteractiveObject) & theIO
 // function : createSMESHAction
 // purpose  :
 //=======================================================================
-void SMESHGUI::createSMESHAction( const int id, const QString& po_id, const QString& icon_id, const int key, const bool toggle  )
+void SMESHGUI::createSMESHAction( const int id, const QString& po_id, const QString& icon_id, 
+                                  const int key, const bool toggle, const QString& shortcutAction  )
 {
   QIcon icon;
   QWidget* parent = application()->desktop();
@@ -2858,7 +3104,8 @@ void SMESHGUI::createSMESHAction( const int id, const QString& po_id, const QStr
           menu       = tr( QString( "MEN_%1" ).arg( po_id ).toLatin1().data() ),
           status_bar = tr( QString( "STB_%1" ).arg( po_id ).toLatin1().data() );
 
-  createAction( id, tooltip, icon, menu, status_bar, key, parent, toggle, this, SLOT( OnGUIEvent() )  );
+  createAction( id, tooltip, icon, menu, status_bar, key, parent, 
+                toggle, this, SLOT( OnGUIEvent() ), shortcutAction );
 }
 
 //=======================================================================
@@ -2948,12 +3195,14 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction(  814, "UNDERLYING_ELEMS","ICON_UNDERLYING_ELEMS" );
   createSMESHAction(  813, "DEL_GROUP",       "ICON_DEL_GROUP" );
   createSMESHAction(  900, "ADV_INFO",        "ICON_ADV_INFO" );
-  createSMESHAction(  902, "STD_INFO",        "ICON_STD_INFO" );
+  //createSMESHAction(  902, "STD_INFO",        "ICON_STD_INFO" );
   createSMESHAction(  903, "WHAT_IS",         "ICON_WHAT_IS" );
   createSMESHAction(  904, "FIND_ELEM",       "ICON_FIND_ELEM" );
   createSMESHAction( 6001, "LENGTH",          "ICON_LENGTH",        0, true );
   createSMESHAction( 6002, "FREE_EDGE",       "ICON_FREE_EDGE",     0, true );
   createSMESHAction( 6021, "FREE_FACES",      "ICON_FREE_FACES",    0, true );
+  createSMESHAction( 6022, "MAX_ELEMENT_LENGTH_2D", "ICON_MAX_ELEMENT_LENGTH_2D", 0, true );
+  createSMESHAction( 6023, "MAX_ELEMENT_LENGTH_3D", "ICON_MAX_ELEMENT_LENGTH_3D", 0, true );
   createSMESHAction( 6003, "FREE_BORDER",     "ICON_FREE_EDGE_2D",  0, true );
   createSMESHAction( 6004, "CONNECTION",      "ICON_CONNECTION",    0, true );
   createSMESHAction( 6005, "FREE_NODE",       "ICON_FREE_NODE",     0, true );
@@ -2977,6 +3226,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction( 4032, "HEXA",            "ICON_DLG_HEXAS" );
   createSMESHAction( 4041, "REMOVE_NODES",    "ICON_DLG_REM_NODE" );
   createSMESHAction( 4042, "REMOVE_ELEMENTS", "ICON_DLG_REM_ELEMENT" );
+  createSMESHAction( 4044, "REMOVE_ORPHAN_NODES", "ICON_DLG_REM_ORPHAN_NODES" );
   createSMESHAction( 4043, "CLEAR_MESH"    ,  "ICON_CLEAR_MESH" );
   createSMESHAction( 4051, "RENUM_NODES",     "ICON_DLG_RENUMBERING_NODES" );
   createSMESHAction( 4052, "RENUM_ELEMENTS",  "ICON_DLG_RENUMBERING_ELEMENTS" );
@@ -2986,9 +3236,9 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction( 4064, "SEW",             "ICON_SMESH_SEWING_FREEBORDERS" );
   createSMESHAction( 4065, "MERGE",           "ICON_SMESH_MERGE_NODES" );
   createSMESHAction( 4066, "MERGE_ELEMENTS",  "ICON_DLG_MERGE_ELEMENTS" );
-  createSMESHAction( 4067, "MESH_THROU_POINT","ICON_DLG_MESH_THROU_POINT" );
+  createSMESHAction( 4067, "MESH_THROU_POINT","ICON_DLG_MOVE_NODE" );
   createSMESHAction( 4068, "SCALE",           "ICON_DLG_MESH_SCALE" );
-  createSMESHAction(  406, "MOVE",            "ICON_DLG_MOVE_NODE" );
+  createSMESHAction( 4069, "DUPLICATE_NODES", "ICON_SMESH_DUPLICATE_NODES" );
   createSMESHAction(  407, "INV",             "ICON_DLG_MESH_DIAGONAL" );
   createSMESHAction(  408, "UNION2",          "ICON_UNION2TRI" );
   createSMESHAction(  409, "ORIENT",          "ICON_DLG_MESH_ORIENTATION" );
@@ -3004,6 +3254,8 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction(  419, "SPLIT_TO_TETRA",  "ICON_SPLIT_TO_TETRA" );
   createSMESHAction(  200, "RESET" );
   createSMESHAction(  201, "SCALAR_BAR_PROP" );
+  createSMESHAction(  202, "SAVE_DISTRIBUTION" );
+  createSMESHAction(  203, "SHOW_DISTRIBUTION","",0, true );
   createSMESHAction(  211, "WIRE",           "ICON_WIRE", 0, true );
   createSMESHAction(  212, "SHADE",          "ICON_SHADE", 0, true );
   createSMESHAction(  213, "SHRINK",         "ICON_SHRINK", 0, true );
@@ -3033,6 +3285,9 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction( 1137, "DISABLE_AUTO_COLOR" );
   createSMESHAction( 2000, "CTRL" );
 
+  createSMESHAction( 501, "MEASURE_MIN_DIST", "ICON_MEASURE_MIN_DIST" );
+  createSMESHAction( 502, "MEASURE_BND_BOX",  "ICON_MEASURE_BND_BOX" );
+
   createSMESHAction( 300, "ERASE" );
   createSMESHAction( 301, "DISPLAY" );
   createSMESHAction( 302, "DISPLAY_ONLY" );
@@ -3046,18 +3301,23 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction( 4040, "QUADRATIC_HEXAHEDRON", "ICON_DLG_QUADRATIC_HEXAHEDRON" );
 
   // ----- create menu --------------
-  int fileId   = createMenu( tr( "MEN_FILE" ),   -1,  1 ),
-      editId   = createMenu( tr( "MEN_EDIT" ),   -1,  3 ),
-      toolsId  = createMenu( tr( "MEN_TOOLS" ),  -1,  5, 50 ),
-      meshId   = createMenu( tr( "MEN_MESH" ),   -1, 70, 10 ),
-      ctrlId   = createMenu( tr( "MEN_CTRL" ),   -1, 60, 10 ),
-      modifyId = createMenu( tr( "MEN_MODIFY" ), -1, 40, 10 ),
-      viewId   = createMenu( tr( "MEN_VIEW" ),   -1,  2 );
+  int fileId    = createMenu( tr( "MEN_FILE" ),    -1,  1 ),
+      editId    = createMenu( tr( "MEN_EDIT" ),    -1,  3 ),
+      toolsId   = createMenu( tr( "MEN_TOOLS" ),   -1,  5, 50 ),
+      meshId    = createMenu( tr( "MEN_MESH" ),    -1, 70, 10 ),
+      ctrlId    = createMenu( tr( "MEN_CTRL" ),    -1, 60, 10 ),
+      modifyId  = createMenu( tr( "MEN_MODIFY" ),  -1, 40, 10 ),
+      measureId = createMenu( tr( "MEN_MEASURE" ), -1, 50, 10 ),
+      viewId    = createMenu( tr( "MEN_VIEW" ),    -1,  2 );
 
   createMenu( separator(), fileId );
 
   int importId = createMenu( tr( "MEN_IMPORT" ), fileId, -1, 10 ),
       exportId = createMenu( tr( "MEN_EXPORT" ), fileId, -1, 10 ),
+      nodeId   = createMenu( tr( "MEN_NODE_CTRL" ), ctrlId, -1, 10 ),
+      edgeId   = createMenu( tr( "MEN_EDGE_CTRL" ), ctrlId, -1, 10 ),
+      faceId   = createMenu( tr( "MEN_FACE_CTRL" ), ctrlId, -1, 10 ),
+      volumeId = createMenu( tr( "MEN_VOLUME_CTRL" ), ctrlId, -1, 10 ),
       addId    = createMenu( tr( "MEN_ADD" ),    modifyId, 402 ),
       removeId = createMenu( tr( "MEN_REMOVE" ), modifyId, 403 ),
       renumId  = createMenu( tr( "MEN_RENUM" ),  modifyId, 404 ),
@@ -3103,30 +3363,29 @@ void SMESHGUI::initialize( CAM_Application* app )
   createMenu( 813, meshId, -1 );
   createMenu( separator(), meshId, -1 );
   createMenu( 900, meshId, -1 );
-  createMenu( 902, meshId, -1 );
+  //createMenu( 902, meshId, -1 );
   createMenu( 903, meshId, -1 );
   createMenu( 904, meshId, -1 );
   createMenu( separator(), meshId, -1 );
 
-  createMenu( 6003, ctrlId, -1 );
-  createMenu( 6001, ctrlId, -1 );
-  createMenu( 6004, ctrlId, -1 );
-  createMenu( separator(), ctrlId, -1 );
-  createMenu( 6005, ctrlId, -1 );
-  createMenu( 6002, ctrlId, -1 );
-  createMenu( 6018, ctrlId, -1 );
-  createMenu( 6019, ctrlId, -1 );
-  createMenu( 6011, ctrlId, -1 );
-  createMenu( 6012, ctrlId, -1 );
-  createMenu( 6013, ctrlId, -1 );
-  createMenu( 6014, ctrlId, -1 );
-  createMenu( 6015, ctrlId, -1 );
-  createMenu( 6016, ctrlId, -1 );
-  createMenu( separator(), ctrlId, -1 );
-  createMenu( 6017, ctrlId, -1 );
-  createMenu( 6009, ctrlId, -1 );
-  createMenu( 6021, ctrlId, -1 );
-  createMenu( separator(), ctrlId, -1 );
+  createMenu( 6005, nodeId, -1 );
+  createMenu( 6002, edgeId, -1 );
+  createMenu( 6003, edgeId, -1 );
+  createMenu( 6001, edgeId, -1 );
+  createMenu( 6004, edgeId, -1 );
+  createMenu( 6021, faceId, -1 );
+  createMenu( 6018, faceId, -1 );
+  createMenu( 6019, faceId, -1 );
+  createMenu( 6011, faceId, -1 );
+  createMenu( 6012, faceId, -1 );
+  createMenu( 6013, faceId, -1 );
+  createMenu( 6014, faceId, -1 );
+  createMenu( 6015, faceId, -1 );
+  createMenu( 6016, faceId, -1 );
+  createMenu( 6022, faceId, -1 );
+  createMenu( 6017, volumeId, -1 );
+  createMenu( 6009, volumeId, -1 );
+  createMenu( 6023, volumeId, -1 );
 
   createMenu( 4000, addId, -1 );
   createMenu( 4009, addId, -1 );
@@ -3148,6 +3407,8 @@ void SMESHGUI::initialize( CAM_Application* app )
 
   createMenu( 4041, removeId, -1 );
   createMenu( 4042, removeId, -1 );
+  createMenu( 4044, removeId, -1 );
+  createMenu( separator(), removeId, -1 );
   createMenu( 4043, removeId, -1 );
 
   createMenu( 4051, renumId, -1 );
@@ -3160,8 +3421,8 @@ void SMESHGUI::initialize( CAM_Application* app )
   createMenu( 4065, transfId, -1 );
   createMenu( 4066, transfId, -1 );
   createMenu( 4068, transfId, -1 );
+  createMenu( 4069, transfId, -1 );
 
-  createMenu( 406, modifyId, -1 );
   createMenu( 4067,modifyId, -1 );
   createMenu( 407, modifyId, -1 );
   createMenu( 408, modifyId, -1 );
@@ -3177,6 +3438,8 @@ void SMESHGUI::initialize( CAM_Application* app )
   createMenu( 417, modifyId, -1 );
   createMenu( 418, modifyId, -1 );
 
+  createMenu( 501, measureId, -1 );
+  createMenu( 502, measureId, -1 );
   createMenu( 214, viewId, -1 );
 
   // ----- create toolbars --------------
@@ -3203,17 +3466,19 @@ void SMESHGUI::initialize( CAM_Application* app )
   //createTool( 815, meshTb );
   createTool( separator(), meshTb );
   createTool( 900, meshTb );
-  createTool( 902, meshTb );
+  //createTool( 902, meshTb );
   createTool( 903, meshTb );
   createTool( 904, meshTb );
   createTool( separator(), meshTb );
 
-  createTool( 6001, ctrlTb );
+  createTool( 6005, ctrlTb );
+  createTool( separator(), ctrlTb );
+  createTool( 6002, ctrlTb );
   createTool( 6003, ctrlTb );
+  createTool( 6001, ctrlTb );
   createTool( 6004, ctrlTb );
   createTool( separator(), ctrlTb );
-  createTool( 6005, ctrlTb );
-  createTool( 6002, ctrlTb );
+  createTool( 6021, ctrlTb );
   createTool( 6018, ctrlTb );
   createTool( 6019, ctrlTb );
   createTool( 6011, ctrlTb );
@@ -3222,10 +3487,11 @@ void SMESHGUI::initialize( CAM_Application* app )
   createTool( 6014, ctrlTb );
   createTool( 6015, ctrlTb );
   createTool( 6016, ctrlTb );
+  createTool( 6022, ctrlTb );
   createTool( separator(), ctrlTb );
   createTool( 6017, ctrlTb );
   createTool( 6009, ctrlTb );
-  createTool( 6021, ctrlTb );
+  createTool( 6023, ctrlTb );
   createTool( separator(), ctrlTb );
 
   createTool( 4000, addRemTb );
@@ -3248,6 +3514,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createTool( separator(), addRemTb );
   createTool( 4041, addRemTb );
   createTool( 4042, addRemTb );
+  createTool( 4044, addRemTb );
   createTool( 4043, addRemTb );
   createTool( separator(), addRemTb );
   createTool( 4051, addRemTb );
@@ -3260,9 +3527,9 @@ void SMESHGUI::initialize( CAM_Application* app )
   createTool( 4065, addRemTb );
   createTool( 4066, addRemTb );
   createTool( 4068, addRemTb );
+  createTool( 4069, addRemTb );
   createTool( separator(), addRemTb );
 
-  createTool( 406, modifyTb );
   createTool( 4067,modifyTb );
   createTool( 407, modifyTb );
   createTool( 408, modifyTb );
@@ -3332,7 +3599,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createPopupItem( 713, OB, mesh, "&& isComputable" );     // MESH ORDER
   createPopupItem( 214, OB, mesh_group );                  // UPDATE
   createPopupItem( 900, OB, mesh_group );                  // ADV_INFO
-  createPopupItem( 902, OB, mesh );                        // STD_INFO
+  //createPopupItem( 902, OB, mesh );                        // STD_INFO
   createPopupItem( 903, OB, mesh_group );                  // WHAT_IS
   createPopupItem( 904, OB, mesh_group );                  // FIND_ELEM
   popupMgr()->insert( separator(), -1, 0 );
@@ -3368,7 +3635,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   popupMgr()->insert( separator(), -1, 0 );
   createPopupItem( 214, View, mesh_group ); // UPDATE
   createPopupItem( 900, View, mesh_group ); // ADV_INFO
-  createPopupItem( 902, View, mesh );       // STD_INFO
+  //createPopupItem( 902, View, mesh );       // STD_INFO
   createPopupItem( 903, View, mesh_group ); // WHAT_IS
   createPopupItem( 904, View, mesh_group ); // FIND_ELEM
   popupMgr()->insert( separator(), -1, 0 );
@@ -3456,12 +3723,12 @@ void SMESHGUI::initialize( CAM_Application* app )
 
   //-------------------------------------------------
   // Representation of the 2D Quadratic elements
-  //-------------------------------------------------  
+  //-------------------------------------------------
   anId = popupMgr()->insert( tr( "MEN_QUADRATIC_REPRESENT" ), -1, -1 );
   popupMgr()->insert( action( 231 ), anId, -1 ); // LINE REPRESENTATION
   popupMgr()->setRule( action( 231 ), aMeshInVTK + "and isVisible",QtxPopupMgr::VisibleRule );
   popupMgr()->setRule( action( 231 ), "quadratic2DMode = 'eLines'", QtxPopupMgr::ToggleRule );
-  
+
   popupMgr()->insert( action( 232 ), anId, -1 ); // ARC REPRESENTATION
   popupMgr()->setRule( action( 232 ), aMeshInVTK + "and isVisible", QtxPopupMgr::VisibleRule );
   popupMgr()->setRule( action( 232 ), "quadratic2DMode = 'eArcs'", QtxPopupMgr::ToggleRule );
@@ -3486,14 +3753,6 @@ void SMESHGUI::initialize( CAM_Application* app )
   popupMgr()->setRule( action( 1133 ), aMeshInVTK + "&& isVisible", QtxPopupMgr::VisibleRule );
 
   //-------------------------------------------------
-  // Clipping
-  //-------------------------------------------------
-  popupMgr()->insert( action( 1134 ), -1, -1 );
-  popupMgr()->setRule( action( 1134 ), aMeshInVTK + "&& selcount=1 && isVisible", QtxPopupMgr::VisibleRule );
-
-  popupMgr()->insert( separator(), -1, -1 );
-
-  //-------------------------------------------------
   // Controls
   //-------------------------------------------------
   QString
@@ -3503,88 +3762,110 @@ void SMESHGUI::initialize( CAM_Application* app )
     aMeshInVtkHasVolumes = aMeshInVTK + "&&" + hasVolumes;
 
   anId = popupMgr()->insert( tr( "MEN_CTRL" ), -1, -1 );
-  
+
   popupMgr()->insert( action( 200 ), anId, -1 ); // RESET
   popupMgr()->setRule( action( 200 ), aMeshInVTK + "&& controlMode <> 'eNone'", QtxPopupMgr::VisibleRule );
 
   popupMgr()->insert( separator(), anId, -1 );
 
-  popupMgr()->insert( action( 6003 ), anId, -1 ); // FREE_BORDER
-  popupMgr()->setRule( action( 6003 ), aMeshInVtkHasEdges, QtxPopupMgr::VisibleRule );
-  popupMgr()->setRule( action( 6003 ), "controlMode = 'eFreeBorders'", QtxPopupMgr::ToggleRule );
+  int aSubId = popupMgr()->insert( tr( "MEN_NODE_CTRL" ), anId, -1 ); // NODE CONTROLS
 
-  popupMgr()->insert( action( 6001 ), anId, -1 ); // LENGTH
-  popupMgr()->setRule( action( 6001 ), aMeshInVtkHasEdges, QtxPopupMgr::VisibleRule );
-  popupMgr()->setRule( action( 6001 ), "controlMode = 'eLength'", QtxPopupMgr::ToggleRule );
-
-  popupMgr()->insert( action( 6004 ), anId, -1 ); // CONNECTION
-  popupMgr()->setRule( action( 6004 ), aMeshInVtkHasEdges, QtxPopupMgr::VisibleRule );
-  popupMgr()->setRule( action( 6004 ), "controlMode = 'eMultiConnection'", QtxPopupMgr::ToggleRule );
-
-  popupMgr()->insert( separator(), anId, -1 );
-
-  popupMgr()->insert( action( 6005 ), anId, -1 ); // FREE_NODE
+  popupMgr()->insert( action( 6005 ), aSubId, -1 ); // FREE_NODE
   popupMgr()->setRule( action( 6005 ), aMeshInVtkHasNodes, QtxPopupMgr::VisibleRule );
   popupMgr()->setRule( action( 6005 ), "controlMode = 'eFreeNodes'", QtxPopupMgr::ToggleRule );
 
-  popupMgr()->insert( action( 6002 ), anId, -1 ); // FREE_EDGE
+  aSubId = popupMgr()->insert( tr( "MEN_EDGE_CTRL" ), anId, -1 ); // EDGE CONTROLS
+
+  popupMgr()->insert( action( 6002 ), aSubId, -1 ); // FREE_EDGE
   popupMgr()->setRule( action( 6002 ), aMeshInVtkHasEdges, QtxPopupMgr::VisibleRule );
   popupMgr()->setRule( action( 6002 ), "controlMode = 'eFreeEdges'", QtxPopupMgr::ToggleRule );
 
-  popupMgr()->insert( action( 6018 ), anId, -1 ); // LENGTH_2D
-  popupMgr()->setRule( action( 6018 ), aMeshInVtkHasFaces, QtxPopupMgr::VisibleRule );
-  popupMgr()->setRule( action( 6018 ), "controlMode = 'eLength2D'", QtxPopupMgr::ToggleRule );
+  popupMgr()->insert( action( 6003 ), aSubId, -1 ); // FREE_BORDER
+  popupMgr()->setRule( action( 6003 ), aMeshInVtkHasEdges, QtxPopupMgr::VisibleRule );
+  popupMgr()->setRule( action( 6003 ), "controlMode = 'eFreeBorders'", QtxPopupMgr::ToggleRule );
 
-  popupMgr()->insert( action( 6019 ), anId, -1 ); // CONNECTION_2D
-  popupMgr()->setRule( action( 6019 ), aMeshInVtkHasFaces, QtxPopupMgr::VisibleRule );
-  popupMgr()->setRule( action( 6019 ), "controlMode = 'eMultiConnection2D'", QtxPopupMgr::ToggleRule );
+  popupMgr()->insert( action( 6001 ), aSubId, -1 ); // LENGTH
+  popupMgr()->setRule( action( 6001 ), aMeshInVtkHasEdges, QtxPopupMgr::VisibleRule );
+  popupMgr()->setRule( action( 6001 ), "controlMode = 'eLength'", QtxPopupMgr::ToggleRule );
 
-  popupMgr()->insert( action( 6011 ), anId, -1 ); // AREA
-  popupMgr()->setRule( action( 6011 ), aMeshInVtkHasFaces, QtxPopupMgr::VisibleRule );
-  popupMgr()->setRule( action( 6011 ), "controlMode = 'eArea'", QtxPopupMgr::ToggleRule );
+  popupMgr()->insert( action( 6004 ), aSubId, -1 ); // CONNECTION
+  popupMgr()->setRule( action( 6004 ), aMeshInVtkHasEdges, QtxPopupMgr::VisibleRule );
+  popupMgr()->setRule( action( 6004 ), "controlMode = 'eMultiConnection'", QtxPopupMgr::ToggleRule );
 
-  popupMgr()->insert( action( 6012 ), anId, -1 ); // TAPER
-  popupMgr()->setRule( action( 6012 ), aMeshInVtkHasFaces, QtxPopupMgr::VisibleRule );
-  popupMgr()->setRule( action( 6012 ), "controlMode = 'eTaper'", QtxPopupMgr::ToggleRule );
+  aSubId = popupMgr()->insert( tr( "MEN_FACE_CTRL" ), anId, -1 ); // FACE CONTROLS
 
-  popupMgr()->insert( action( 6013 ), anId, -1 ); // ASPECT
-  popupMgr()->setRule( action( 6013 ), aMeshInVtkHasFaces, QtxPopupMgr::VisibleRule );
-  popupMgr()->setRule( action( 6013 ), "controlMode = 'eAspectRatio'", QtxPopupMgr::ToggleRule );
-
-  popupMgr()->insert( action( 6014 ), anId, -1 ); // MIN_ANG
-  popupMgr()->setRule( action( 6014 ), aMeshInVtkHasFaces, QtxPopupMgr::VisibleRule );
-  popupMgr()->setRule( action( 6014 ), "controlMode = 'eMinimumAngle'", QtxPopupMgr::ToggleRule );
-
-  popupMgr()->insert( action( 6015 ), anId, -1 ); // WARP
-  popupMgr()->setRule( action( 6015 ), aMeshInVtkHasFaces, QtxPopupMgr::VisibleRule );
-  popupMgr()->setRule( action( 6015 ), "controlMode = 'eWarping'", QtxPopupMgr::ToggleRule );
-
-  popupMgr()->insert( action( 6016 ), anId, -1 ); // SKEW
-  popupMgr()->setRule( action( 6016 ), aMeshInVtkHasFaces, QtxPopupMgr::VisibleRule );
-  popupMgr()->setRule( action( 6016 ), "controlMode = 'eSkew'", QtxPopupMgr::ToggleRule );
-
-  popupMgr()->insert( separator(), anId, -1 );
-
-  popupMgr()->insert( action( 6017 ), anId, -1 ); // ASPECT_3D
-  popupMgr()->setRule( action( 6017 ), aMeshInVtkHasVolumes, QtxPopupMgr::VisibleRule );
-  popupMgr()->setRule( action( 6017 ), "controlMode = 'eAspectRatio3D'", QtxPopupMgr::ToggleRule );
-
-  popupMgr()->insert ( action( 6009 ), anId, -1 ); // VOLUME_3D
-  popupMgr()->setRule( action( 6009 ), aMeshInVtkHasVolumes, QtxPopupMgr::VisibleRule );
-  popupMgr()->setRule( action( 6009 ), "controlMode = 'eVolume3D'", QtxPopupMgr::ToggleRule );
-
-  popupMgr()->insert( action( 6021 ), anId, -1 ); // FREE_FACE
+  popupMgr()->insert( action( 6021 ), aSubId, -1 ); // FREE_FACE
   popupMgr()->setRule( action( 6021 ), aMeshInVtkHasFaces /*aMeshInVtkHasVolumes*/,
                                        QtxPopupMgr::VisibleRule );
   popupMgr()->setRule( action( 6021 ), "controlMode = 'eFreeFaces'", QtxPopupMgr::ToggleRule );
+
+  popupMgr()->insert( action( 6018 ), aSubId, -1 ); // LENGTH_2D
+  popupMgr()->setRule( action( 6018 ), aMeshInVtkHasFaces, QtxPopupMgr::VisibleRule );
+  popupMgr()->setRule( action( 6018 ), "controlMode = 'eLength2D'", QtxPopupMgr::ToggleRule );
+
+  popupMgr()->insert( action( 6019 ), aSubId, -1 ); // CONNECTION_2D
+  popupMgr()->setRule( action( 6019 ), aMeshInVtkHasFaces, QtxPopupMgr::VisibleRule );
+  popupMgr()->setRule( action( 6019 ), "controlMode = 'eMultiConnection2D'", QtxPopupMgr::ToggleRule );
+
+  popupMgr()->insert( action( 6011 ), aSubId, -1 ); // AREA
+  popupMgr()->setRule( action( 6011 ), aMeshInVtkHasFaces, QtxPopupMgr::VisibleRule );
+  popupMgr()->setRule( action( 6011 ), "controlMode = 'eArea'", QtxPopupMgr::ToggleRule );
+
+  popupMgr()->insert( action( 6012 ), aSubId, -1 ); // TAPER
+  popupMgr()->setRule( action( 6012 ), aMeshInVtkHasFaces, QtxPopupMgr::VisibleRule );
+  popupMgr()->setRule( action( 6012 ), "controlMode = 'eTaper'", QtxPopupMgr::ToggleRule );
+
+  popupMgr()->insert( action( 6013 ), aSubId, -1 ); // ASPECT
+  popupMgr()->setRule( action( 6013 ), aMeshInVtkHasFaces, QtxPopupMgr::VisibleRule );
+  popupMgr()->setRule( action( 6013 ), "controlMode = 'eAspectRatio'", QtxPopupMgr::ToggleRule );
+
+  popupMgr()->insert( action( 6014 ), aSubId, -1 ); // MIN_ANG
+  popupMgr()->setRule( action( 6014 ), aMeshInVtkHasFaces, QtxPopupMgr::VisibleRule );
+  popupMgr()->setRule( action( 6014 ), "controlMode = 'eMinimumAngle'", QtxPopupMgr::ToggleRule );
+
+  popupMgr()->insert( action( 6015 ), aSubId, -1 ); // WARP
+  popupMgr()->setRule( action( 6015 ), aMeshInVtkHasFaces, QtxPopupMgr::VisibleRule );
+  popupMgr()->setRule( action( 6015 ), "controlMode = 'eWarping'", QtxPopupMgr::ToggleRule );
+
+  popupMgr()->insert( action( 6016 ), aSubId, -1 ); // SKEW
+  popupMgr()->setRule( action( 6016 ), aMeshInVtkHasFaces, QtxPopupMgr::VisibleRule );
+  popupMgr()->setRule( action( 6016 ), "controlMode = 'eSkew'", QtxPopupMgr::ToggleRule );
+
+  popupMgr()->insert( action( 6022 ), aSubId, -1 ); // MAX_ELEMENT_LENGTH_2D
+  popupMgr()->setRule( action( 6022 ), aMeshInVtkHasFaces, QtxPopupMgr::VisibleRule );
+  popupMgr()->setRule( action( 6022 ), "controlMode = 'eMaxElementLength2D'", QtxPopupMgr::ToggleRule );
+
+  aSubId = popupMgr()->insert( tr( "MEN_VOLUME_CTRL" ), anId, -1 ); // VOLUME CONTROLS
+
+  popupMgr()->insert( action( 6017 ), aSubId, -1 ); // ASPECT_3D
+  popupMgr()->setRule( action( 6017 ), aMeshInVtkHasVolumes, QtxPopupMgr::VisibleRule );
+  popupMgr()->setRule( action( 6017 ), "controlMode = 'eAspectRatio3D'", QtxPopupMgr::ToggleRule );
+
+  popupMgr()->insert ( action( 6009 ), aSubId, -1 ); // VOLUME_3D
+  popupMgr()->setRule( action( 6009 ), aMeshInVtkHasVolumes, QtxPopupMgr::VisibleRule );
+  popupMgr()->setRule( action( 6009 ), "controlMode = 'eVolume3D'", QtxPopupMgr::ToggleRule );
+
+  popupMgr()->insert( action( 6023 ), aSubId, -1 ); // MAX_ELEMENT_LENGTH_3D
+  popupMgr()->setRule( action( 6023 ), aMeshInVtkHasVolumes, QtxPopupMgr::VisibleRule );
+  popupMgr()->setRule( action( 6023 ), "controlMode = 'eMaxElementLength3D'", QtxPopupMgr::ToggleRule );
 
   popupMgr()->insert( separator(), anId, -1 );
 
   popupMgr()->insert( action( 201 ), anId, -1 ); // SCALAR_BAR_PROP
   popupMgr()->setRule( action( 201 ), aMeshInVTK + "&& controlMode <> 'eNone'", QtxPopupMgr::VisibleRule );
 
+  popupMgr()->insert( separator(), anId, -1 );
+
+  popupMgr()->insert( action( 202 ), anId, -1 ); // SAVE_DISTRIBUTION
+  popupMgr()->setRule( action( 202 ), aMeshInVTK + "&& isNumFunctor", QtxPopupMgr::VisibleRule );
+
+  popupMgr()->insert( action( 203 ), anId, -1 ); // SHOW_DISTRIBUTION
+  popupMgr()->setRule( action( 203 ), aMeshInVTK + "&& isNumFunctor", QtxPopupMgr::VisibleRule );
+  popupMgr()->setRule( action( 203 ), aMeshInVTK + "&& isNumFunctor && isDistributionVisible", QtxPopupMgr::ToggleRule);
+
+
   popupMgr()->insert( separator(), -1, -1 );
-  
+
   //-------------------------------------------------
   // Display / Erase
   //-------------------------------------------------
@@ -3601,8 +3882,19 @@ void SMESHGUI::initialize( CAM_Application* app )
 
   popupMgr()->insert( separator(), -1, -1 );
 
+  //-------------------------------------------------
+  // Clipping
+  //-------------------------------------------------
+  popupMgr()->insert( action( 1134 ), -1, -1 );
+  popupMgr()->setRule( action( 1134 ), "client='VTKViewer'", QtxPopupMgr::VisibleRule );
+
+  popupMgr()->insert( separator(), -1, -1 );
+
   connect( application(), SIGNAL( viewManagerActivated( SUIT_ViewManager* ) ),
            this, SLOT( onViewManagerActivated( SUIT_ViewManager* ) ) );
+
+  connect( application(), SIGNAL( viewManagerRemoved( SUIT_ViewManager* ) ),
+           this, SLOT( onViewManagerRemoved( SUIT_ViewManager* ) ) );
 }
 
 //================================================================================
@@ -3634,7 +3926,7 @@ bool SMESHGUI::reusableOperation( const int id )
 {
   // compute, evaluate and precompute are not reusable operations
   return ( id == 701 || id == 711 || id == 712 ) ? false : SalomeApp_Module::reusableOperation( id );
-} 
+}
 
 bool SMESHGUI::activateModule( SUIT_Study* study )
 {
@@ -3642,6 +3934,21 @@ bool SMESHGUI::activateModule( SUIT_Study* study )
 
   setMenuShown( true );
   setToolShown( true );
+
+  // import Python module that manages SMESH plugins (need to be here because SalomePyQt API uses active module)
+  PyGILState_STATE gstate = PyGILState_Ensure();
+  PyObject* pluginsmanager=PyImport_ImportModule((char*)"salome_pluginsmanager");
+  if(pluginsmanager==NULL)
+    PyErr_Print();
+  else
+    {
+      PyObject* result=PyObject_CallMethod( pluginsmanager, (char*)"initialize", (char*)"isss",1,"smesh",tr("MEN_MESH").toStdString().c_str(),tr("SMESH_PLUGINS_OTHER").toStdString().c_str());
+      if(result==NULL)
+        PyErr_Print();
+      Py_XDECREF(result);
+    }
+  PyGILState_Release(gstate);
+  // end of GEOM plugins loading
 
   // Reset actions accelerator keys
   action(111)->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_B)); // Import DAT
@@ -3759,13 +4066,60 @@ void SMESHGUI::onViewManagerActivated( SUIT_ViewManager* mgr )
     SMESH::UpdateSelectionProp( this );
 }
 
+void SMESHGUI::onViewManagerRemoved( SUIT_ViewManager* theViewManager )
+{
+  if( theViewManager && theViewManager->getType() == SVTK_Viewer::Type() )
+    myClippingPlaneInfoMap.erase( theViewManager );
+}
+
+void SMESHGUI::addActorAsObserver( SMESH_Actor* theActor )
+{
+  theActor->AddObserver( SMESH::DeleteActorEvent,
+                         myEventCallbackCommand.GetPointer(),
+                         myPriority );
+}
+
+void SMESHGUI::ProcessEvents( vtkObject* theObject,
+                              unsigned long theEvent,
+                              void* theClientData,
+                              void* theCallData )
+{
+  if( SMESHGUI* aSMESHGUI = reinterpret_cast<SMESHGUI*>( theClientData ) ) {
+    if( theObject && theEvent == SMESH::DeleteActorEvent ) {
+      if( SMESH_Actor* anActor = SMESH_Actor::SafeDownCast( theObject ) ) {
+        SMESHGUI_ClippingPlaneInfoMap& aClippingPlaneInfoMap = aSMESHGUI->getClippingPlaneInfoMap();
+        SMESHGUI_ClippingPlaneInfoMap::iterator anIter1 = aClippingPlaneInfoMap.begin();
+        for( ; anIter1 != aClippingPlaneInfoMap.end(); anIter1++ ) {
+          SMESHGUI_ClippingPlaneInfoList& aClippingPlaneInfoList = anIter1->second;
+          SMESHGUI_ClippingPlaneInfoList::iterator anIter2 = aClippingPlaneInfoList.begin();
+          for( ; anIter2 != aClippingPlaneInfoList.end(); anIter2++ ) {
+            SMESH::ClippingPlaneInfo& aClippingPlaneInfo = *anIter2;
+            std::list<vtkActor*>& anActorList = aClippingPlaneInfo.ActorList;
+            SMESH::TActorList::iterator anIter3 = anActorList.begin();
+            for ( ; anIter3 != anActorList.end(); anIter3++ ) {
+              if( anActor == *anIter3 ) {
+                anActorList.erase( anIter3 );
+                break;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
 void SMESHGUI::createPreferences()
 {
   // General tab ------------------------------------------------------------------------
   int genTab = addPreference( tr( "PREF_TAB_GENERAL" ) );
 
-  int updateGroup = addPreference( tr( "PREF_GROUP_UPDATE" ), genTab );
-  addPreference( tr( "PREF_AUTO_UPDATE" ), updateGroup, LightApp_Preferences::Bool, "SMESH", "auto_update" );
+  int autoUpdate = addPreference( tr( "PREF_AUTO_UPDATE" ), genTab, LightApp_Preferences::Auto, "SMESH", "auto_update" );
+  int lim = addPreference( tr( "PREF_UPDATE_LIMIT" ), autoUpdate, LightApp_Preferences::IntSpin, "SMESH", "update_limit" );
+  setPreferenceProperty( lim, "min",  0 );
+  setPreferenceProperty( lim, "max",  100000000 );
+  setPreferenceProperty( lim, "step", 1000 );
+  setPreferenceProperty( lim, "special", tr( "PREF_UPDATE_LIMIT_NOLIMIT" ) );
 
   int qaGroup = addPreference( tr( "PREF_GROUP_QUALITY" ), genTab );
   setPreferenceProperty( qaGroup, "columns", 2 );
@@ -3807,8 +4161,8 @@ void SMESHGUI::createPreferences()
                               "SMESH", "max_angle" );
   setPreferenceProperty( maxAngle, "min", 1 );
   setPreferenceProperty( maxAngle, "max", 90 );
-  
-  
+
+
 
   int exportgroup = addPreference( tr( "PREF_GROUP_EXPORT" ), genTab );
   setPreferenceProperty( exportgroup, "columns", 2 );
@@ -3819,15 +4173,27 @@ void SMESHGUI::createPreferences()
   setPreferenceProperty( computeGroup, "columns", 2 );
   int notifyMode = addPreference( tr( "PREF_NOTIFY_MODE" ), computeGroup, LightApp_Preferences::Selector, "SMESH", "show_result_notification" );
   modes.clear();
-  modes.append( "Never" );
-  modes.append( "Errors only" );
-  modes.append( "Always" );
+  modes.append( tr( "PREF_NOTIFY_NEVER" ) );
+  modes.append( tr( "PREF_NOTIFY_ERROR" ) );
+  modes.append( tr( "PREF_NOTIFY_ALWAYS" ) );
   indices.clear();
   indices.append( 0 );
   indices.append( 1 );
   indices.append( 2 );
   setPreferenceProperty( notifyMode, "strings", modes );
   setPreferenceProperty( notifyMode, "indexes", indices );
+
+  int infoGroup = addPreference( tr( "PREF_GROUP_INFO" ), genTab );
+  setPreferenceProperty( computeGroup, "columns", 2 );
+  int elemInfo = addPreference( tr( "PREF_ELEM_INFO" ), infoGroup, LightApp_Preferences::Selector, "SMESH", "mesh_elem_info" );
+  modes.clear();
+  modes.append( tr( "PREF_ELEM_INFO_SIMPLE" ) );
+  modes.append( tr( "PREF_ELEM_INFO_TREE" ) );
+  indices.clear();
+  indices.append( 0 );
+  indices.append( 1 );
+  setPreferenceProperty( elemInfo, "strings", modes );
+  setPreferenceProperty( elemInfo, "indexes", indices );
 
   int segGroup = addPreference( tr( "PREF_GROUP_SEGMENT_LENGTH" ), genTab );
   setPreferenceProperty( segGroup, "columns", 2 );
@@ -3839,15 +4205,15 @@ void SMESHGUI::createPreferences()
                              "SMESH", "nb_segments_per_edge" );
   setPreferenceProperty( nbSeg, "min", 1 );
   setPreferenceProperty( nbSeg, "max", 10000000 );
-  
+
   // Quantities with individual precision settings
   int precGroup = addPreference( tr( "SMESH_PREF_GROUP_PRECISION" ), genTab );
   setPreferenceProperty( precGroup, "columns", 2 );
-  
+
   const int nbQuantities = 6;
   int precs[nbQuantities], ii = 0;
   precs[ii++] = addPreference( tr( "SMESH_PREF_length_precision" ), precGroup,
-                            LightApp_Preferences::IntSpin, "SMESH", "length_precision" );  
+                            LightApp_Preferences::IntSpin, "SMESH", "length_precision" );
   precs[ii++] = addPreference( tr( "SMESH_PREF_angle_precision" ), precGroup,
                             LightApp_Preferences::IntSpin, "SMESH", "angle_precision" );
   precs[ii++] = addPreference( tr( "SMESH_PREF_len_tol_precision" ), precGroup,
@@ -3857,14 +4223,14 @@ void SMESHGUI::createPreferences()
   precs[ii++] = addPreference( tr( "SMESH_PREF_area_precision" ), precGroup,
                             LightApp_Preferences::IntSpin, "SMESH", "area_precision" );
   precs[ii  ] = addPreference( tr( "SMESH_PREF_vol_precision" ), precGroup,
-                            LightApp_Preferences::IntSpin, "SMESH", "vol_precision" );  
-  
+                            LightApp_Preferences::IntSpin, "SMESH", "vol_precision" );
+
   // Set property for precision value for spinboxes
   for ( ii = 0; ii < nbQuantities; ii++ ){
     setPreferenceProperty( precs[ii], "min", -14 );
     setPreferenceProperty( precs[ii], "max", 14 );
     setPreferenceProperty( precs[ii], "precision", 2 );
-  }   
+  }
 
   // Mesh tab ------------------------------------------------------------------------
   int meshTab = addPreference( tr( "PREF_TAB_MESH" ) );
@@ -3905,6 +4271,11 @@ void SMESHGUI::createPreferences()
   addPreference( tr( "PREF_OUTLINE"  ), elemGroup, LightApp_Preferences::Color, "SMESH", "outline_color" );
   addPreference( tr( "PREF_BACKFACE" ), elemGroup, LightApp_Preferences::Color, "SMESH", "backface_color" );
   addPreference( tr( "PREF_COLOR_0D" ), elemGroup, LightApp_Preferences::Color, "SMESH", "elem0d_color" );
+
+  int grpGroup = addPreference( tr( "PREF_GROUP_GROUPS" ), meshTab );
+  setPreferenceProperty( grpGroup, "columns", 2 );
+
+  addPreference( tr( "PREF_GRP_NAMES" ), grpGroup, LightApp_Preferences::Color, "SMESH", "group_name_color" );
 
   //int sp = addPreference( "", elemGroup, LightApp_Preferences::Space );
   //setPreferenceProperty( sp, "hstretch", 0 );
@@ -4043,6 +4414,18 @@ void SMESHGUI::createPreferences()
   setPreferenceProperty( hh, "min", 0.0 );
   setPreferenceProperty( hh, "max", 1.0 );
   setPreferenceProperty( hh, "step", 0.1 );
+  
+  int distributionGr = addPreference( tr( "SMESH_DISTRIBUTION_SCALARBAR" ), sbarTab, LightApp_Preferences::Auto, "SMESH", "distribution_visibility" );
+  int coloringType = addPreference( tr( "SMESH_DISTRIBUTION_COLORING_TYPE" ), distributionGr, LightApp_Preferences::Selector, "SMESH", "distribution_coloring_type" );
+  setPreferenceProperty( distributionGr, "columns", 3 );
+  QStringList types;
+  types.append( tr( "SMESH_MONOCOLOR" ) ); 
+  types.append( tr( "SMESH_MULTICOLOR" ) );
+  indices.clear(); indices.append( 0 ); indices.append( 1 );
+  setPreferenceProperty( coloringType, "strings", types );
+  setPreferenceProperty( coloringType, "indexes", indices );
+  addPreference( tr( "SMESH_DISTRIBUTION_COLOR" ), distributionGr, LightApp_Preferences::Color, "SMESH", "distribution_color" );
+
 }
 
 void SMESHGUI::preferencesChanged( const QString& sect, const QString& name )
@@ -4262,12 +4645,9 @@ SALOMEDS::Color SMESHGUI::getUniqueColor( const QList<SALOMEDS::Color>& theReser
       if( aTolerance < 1 )
         break;
     }
-    //cout << "Iteration N" << anIterations << " (tolerance=" << aTolerance << ")"<< endl;
 
     aHue = (int)( 360.0 * rand() / RAND_MAX );
-    //cout << "Hue = " << aHue << endl;
 
-    //cout << "Auto colors : ";
     bool ok = true;
     QList<SALOMEDS::Color>::const_iterator it = theReservedColors.constBegin();
     QList<SALOMEDS::Color>::const_iterator itEnd = theReservedColors.constEnd();
@@ -4278,21 +4658,17 @@ SALOMEDS::Color SMESHGUI::getUniqueColor( const QList<SALOMEDS::Color>& theReser
 
       int h, s, v;
       aQColor.getHsv( &h, &s, &v );
-      //cout << h << " ";
       if( abs( h - aHue ) < aTolerance )
       {
         ok = false;
-        //cout << "break (diff = " << abs( h - aHue ) << ")";
         break;
       }
     }
-    //cout << endl;
 
     if( ok )
       break;
   }
 
-  //cout << "Hue of the returned color = " << aHue << endl;
   QColor aColor;
   aColor.setHsv( aHue, 255, 255 );
 
@@ -4380,6 +4756,37 @@ void SMESHGUI::storeVisualParameters (int savePoint)
     // saving VTK actors properties
     if (vType == SVTK_Viewer::Type())
     {
+      // store the clipping planes attached to the view manager
+      SMESHGUI_ClippingPlaneInfoList aClippingPlaneInfoList;
+      SMESHGUI_ClippingPlaneInfoMap::const_iterator anIter = myClippingPlaneInfoMap.find( vman );
+      if( anIter != myClippingPlaneInfoMap.end() )
+        aClippingPlaneInfoList = anIter->second;
+
+      if( !aClippingPlaneInfoList.empty() ) {
+        SMESHGUI_ClippingPlaneInfoList::const_iterator anIter = aClippingPlaneInfoList.begin();
+        for( int anId = 0; anIter != aClippingPlaneInfoList.end(); anIter++, anId++ )
+        {
+          const SMESH::ClippingPlaneInfo& aClippingPlaneInfo = *anIter;
+          SMESH::OrientedPlane* aPlane = aClippingPlaneInfo.Plane;
+
+          QString aPropertyName( "ClippingPlane" );
+          aPropertyName += gSeparator;
+          aPropertyName += QString::number( vtkViewers );
+          aPropertyName += gSeparator;
+          aPropertyName += QString::number( anId );
+
+          QString aPropertyValue = QString::number( (int)aPlane->GetOrientation() ).toLatin1().constData();
+          aPropertyValue += gDigitsSep;
+          aPropertyValue += QString::number( aPlane->GetDistance() ).toLatin1().constData();
+          aPropertyValue += gDigitsSep;
+          aPropertyValue += QString::number( aPlane->myAngle[0] ).toLatin1().constData();
+          aPropertyValue += gDigitsSep;
+          aPropertyValue += QString::number( aPlane->myAngle[1] ).toLatin1().constData();
+
+          ip->setProperty( aPropertyName.toStdString(), aPropertyValue.toStdString() );
+        }
+      }
+
       QVector<SUIT_ViewWindow*> views = vman->getViews();
       for (int i = 0, iEnd = vman->getViewsCount(); i < iEnd; i++)
       {
@@ -4505,22 +4912,25 @@ void SMESHGUI::storeVisualParameters (int savePoint)
 
                   // Clipping
                   param = vtkParam + "ClippingPlane";
-                  int nPlanes = aSmeshActor->GetNumberOfClippingPlanes();
-                  if (!nPlanes)
-                    ip->setParameter(entry, param, "Off");
-                  for (int ipl = 0; ipl < nPlanes; ipl++) {
-                    //vtkPlane* plane = aSmeshActor->GetClippingPlane(ipl);
-                    SMESH::Orientation anOrientation;
-                    double aDistance;
-                    vtkFloatingPointType anAngle[2];
-                    SMESHGUI_ClippingDlg::GetPlaneParam(aSmeshActor, ipl, anOrientation, aDistance, anAngle);
-                    std::string planeValue = QString::number((int)anOrientation).toLatin1().data();
-                    planeValue += gDigitsSep; planeValue += QString::number(aDistance).toLatin1().data();
-                    planeValue += gDigitsSep; planeValue += QString::number(anAngle[0]).toLatin1().data();
-                    planeValue += gDigitsSep; planeValue += QString::number(anAngle[1]).toLatin1().data();
-
-                    ip->setParameter(entry, param + QString::number(ipl+1).toLatin1().data(), planeValue);
+                  int aPlaneId = 0;
+                  if( !aClippingPlaneInfoList.empty() ) {
+                    SMESHGUI_ClippingPlaneInfoList::const_iterator anIter1 = aClippingPlaneInfoList.begin();
+                    for( int anId = 0; anIter1 != aClippingPlaneInfoList.end(); anIter1++, anId++ )
+                    {
+                      const SMESH::ClippingPlaneInfo& aClippingPlaneInfo = *anIter1;
+                      std::list<vtkActor*> anActorList = aClippingPlaneInfo.ActorList;
+                      SMESH::TActorList::iterator anIter2 = anActorList.begin();
+                      for ( ; anIter2 != anActorList.end(); anIter2++ ) {
+                        if( aSmeshActor == *anIter2 ) {
+                          ip->setParameter( entry, param + QString::number( ++aPlaneId ).toLatin1().constData(),
+                                            QString::number( anId ).toLatin1().constData() );                          
+                          break;
+                        }
+                      }
+                    }
                   }
+                  if( aPlaneId == 0 )
+                    ip->setParameter( entry, param, "Off" );
                 } // if (io->hasEntry())
               } // SMESH_Actor && hasIO
             } // isVisible
@@ -4531,6 +4941,25 @@ void SMESHGUI::storeVisualParameters (int savePoint)
     } // if (SVTK view model)
   } // for (viewManagers)
 }
+
+// data structures for clipping planes processing
+typedef struct {
+  int Id;
+  vtkIdType Orientation;
+  vtkFloatingPointType Distance;
+  vtkFloatingPointType Angle[2];
+} TPlaneData;
+typedef std::list<TPlaneData>         TPlaneDataList;
+typedef std::map<int, TPlaneDataList> TPlaneDataMap;
+
+typedef std::list<vtkActor*>          TActorList;
+typedef struct {
+  int PlaneId;
+  TActorList ActorList;
+  SUIT_ViewManager* ViewManager;
+} TPlaneInfo;
+typedef std::list<TPlaneInfo>         TPlaneInfoList;
+typedef std::map<int, TPlaneInfoList> TPlaneInfoMap;
 
 /*!
  * \brief Restore visual parameters
@@ -4556,8 +4985,9 @@ void SMESHGUI::restoreVisualParameters (int savePoint)
                                                              savePoint);
   _PTR(IParameters) ip = ClientFactory::getIParameters(ap);
 
-  // restore map of custom markers
+  // restore map of custom markers and map of clipping planes
   VTK::MarkerMap& aMarkerMap = myMarkerMap[ studyDS->StudyId() ];
+  TPlaneDataMap aPlaneDataMap;
 
   std::vector<std::string> properties = ip->getProperties();
   for (std::vector<std::string>::iterator propIt = properties.begin(); propIt != properties.end(); ++propIt)
@@ -4567,51 +4997,102 @@ void SMESHGUI::restoreVisualParameters (int savePoint)
     QString aPropertyValue( ip->getProperty( property ).c_str() );
 
     QStringList aPropertyNameList = aPropertyName.split( gSeparator, QString::SkipEmptyParts );
-    if( aPropertyNameList.size() != 2 )
+    if( aPropertyNameList.isEmpty() )
       continue;
 
-    int anId = 0;
-    bool ok = false;
-    if( aPropertyNameList[0] == "texture" )
-      anId = aPropertyNameList[1].toInt( &ok );
-
-    if( !ok || anId < 1 )
-      continue;
-
-    QStringList aPropertyValueList = aPropertyValue.split( gPathSep, QString::SkipEmptyParts );
-    if( aPropertyValueList.size() != 2 )
-      continue;
-
-    std::string aMarkerFileName = aPropertyValueList[0].toStdString();
-    QString aMarkerTextureString = aPropertyValueList[1];
-    QStringList aMarkerTextureStringList = aMarkerTextureString.split( gDigitsSep, QString::SkipEmptyParts );
-    if( aMarkerTextureStringList.size() != 3 )
-      continue;
-
-    ok = false;
-    ushort aWidth = aMarkerTextureStringList[0].toUShort( &ok );
-    if( !ok )
-      continue;
-
-    ok = false;
-    ushort aHeight = aMarkerTextureStringList[1].toUShort( &ok );
-    if( !ok )
-      continue;
-
-    VTK::MarkerTexture aMarkerTexture;
-    aMarkerTexture.push_back( aWidth );
-    aMarkerTexture.push_back( aHeight );
-
-    QString aMarkerTextureData = aMarkerTextureStringList[2];
-    for( int i = 0, n = aMarkerTextureData.length(); i < n; i++ )
+    QString aPropertyType = aPropertyNameList[0];
+    if( aPropertyType == "texture" )
     {
-      QChar aChar = aMarkerTextureData.at( i );
-      if( aChar.isDigit() )
-        aMarkerTexture.push_back( aChar.digitValue() );
-    }
+      if( aPropertyNameList.size() != 2 )
+        continue;
 
-    aMarkerMap[ anId ] = VTK::MarkerData( aMarkerFileName, aMarkerTexture );
+      bool ok = false;
+      int anId = aPropertyNameList[1].toInt( &ok );
+      if( !ok || anId < 1 )
+        continue;
+
+      QStringList aPropertyValueList = aPropertyValue.split( gPathSep, QString::SkipEmptyParts );
+      if( aPropertyValueList.size() != 2 )
+        continue;
+
+      std::string aMarkerFileName = aPropertyValueList[0].toStdString();
+      QString aMarkerTextureString = aPropertyValueList[1];
+      QStringList aMarkerTextureStringList = aMarkerTextureString.split( gDigitsSep, QString::SkipEmptyParts );
+      if( aMarkerTextureStringList.size() != 3 )
+        continue;
+
+      ok = false;
+      ushort aWidth = aMarkerTextureStringList[0].toUShort( &ok );
+      if( !ok )
+        continue;
+
+      ok = false;
+      ushort aHeight = aMarkerTextureStringList[1].toUShort( &ok );
+      if( !ok )
+        continue;
+
+      VTK::MarkerTexture aMarkerTexture;
+      aMarkerTexture.push_back( aWidth );
+      aMarkerTexture.push_back( aHeight );
+
+      QString aMarkerTextureData = aMarkerTextureStringList[2];
+      for( int i = 0, n = aMarkerTextureData.length(); i < n; i++ )
+      {
+        QChar aChar = aMarkerTextureData.at( i );
+        if( aChar.isDigit() )
+          aMarkerTexture.push_back( aChar.digitValue() );
+      }
+
+      aMarkerMap[ anId ] = VTK::MarkerData( aMarkerFileName, aMarkerTexture );
+    }
+    else if( aPropertyType == "ClippingPlane" )
+    {
+      if( aPropertyNameList.size() != 3 )
+        continue;
+
+      bool ok = false;
+      int aViewId = aPropertyNameList[1].toInt( &ok );
+      if( !ok || aViewId < 0 )
+        continue;
+
+      ok = false;
+      int aClippingPlaneId = aPropertyNameList[2].toInt( &ok );
+      if( !ok || aClippingPlaneId < 0 )
+        continue;
+
+      QStringList aPropertyValueList = aPropertyValue.split( gDigitsSep, QString::SkipEmptyParts );
+      if( aPropertyValueList.size() != 4 )
+        continue;
+
+      TPlaneData aPlaneData;
+      aPlaneData.Id = aClippingPlaneId;
+
+      ok = false;
+      aPlaneData.Orientation = aPropertyValueList[0].toInt( &ok );
+      if( !ok )
+        continue;
+
+      ok = false;
+      aPlaneData.Distance = aPropertyValueList[1].toDouble( &ok );
+      if( !ok )
+        continue;
+
+      ok = false;
+      aPlaneData.Angle[0] = aPropertyValueList[2].toDouble( &ok );
+      if( !ok )
+        continue;
+
+      ok = false;
+      aPlaneData.Angle[1] = aPropertyValueList[3].toDouble( &ok );
+      if( !ok )
+        continue;
+
+      TPlaneDataList& aPlaneDataList = aPlaneDataMap[ aViewId ];
+      aPlaneDataList.push_back( aPlaneData );      
+    }
   }
+
+  TPlaneInfoMap aPlaneInfoMap;
 
   std::vector<std::string> entries = ip->getEntries();
 
@@ -4659,39 +5140,40 @@ void SMESHGUI::restoreVisualParameters (int savePoint)
         if (vtkActors.IsBound(viewIndex))
           aSmeshActor = vtkActors.Find(viewIndex);
 
+        QList<SUIT_ViewManager*> lst;
+        getApp()->viewManagers(viewerTypStr, lst);
+
+        // SVTK ViewManager always has 1 ViewWindow, so view index is index of view manager
+        SUIT_ViewManager* vman = NULL;
+        if (viewIndex >= 0 && viewIndex < lst.count())
+          vman = lst.at(viewIndex);
+
         if (paramNameStr == "Visibility")
         {
-          if (!aSmeshActor && displayer())
+          if (!aSmeshActor && displayer() && vman)
           {
-            QList<SUIT_ViewManager*> lst;
-            getApp()->viewManagers(viewerTypStr, lst);
+            SUIT_ViewModel* vmodel = vman->getViewModel();
+            // SVTK view model can be casted to SALOME_View
+            displayer()->Display(entry, true, dynamic_cast<SALOME_View*>(vmodel));
 
-            // SVTK ViewManager always has 1 ViewWindow, so view index is index of view manager
-            if (viewIndex >= 0 && viewIndex < lst.count()) {
-              SUIT_ViewManager* vman = lst.at(viewIndex);
-              SUIT_ViewModel* vmodel = vman->getViewModel();
-              // SVTK view model can be casted to SALOME_View
-              displayer()->Display(entry, true, dynamic_cast<SALOME_View*>(vmodel));
-
-              // store displayed actor in a temporary map for quicker
-              // access later when restoring other parameters
-              SVTK_ViewWindow* vtkView = (SVTK_ViewWindow*) vman->getActiveView();
-              vtkRenderer* Renderer = vtkView->getRenderer();
-              VTK::ActorCollectionCopy aCopy(Renderer->GetActors());
-              vtkActorCollection* theActors = aCopy.GetActors();
-              theActors->InitTraversal();
-              bool isFound = false;
-              vtkActor *ac = theActors->GetNextActor();
-              for (; ac != NULL && !isFound; ac = theActors->GetNextActor()) {
-                if (ac->IsA("SMESH_Actor")) {
-                  SMESH_Actor* aGeomAc = SMESH_Actor::SafeDownCast(ac);
-                  if (aGeomAc->hasIO()) {
-                    Handle(SALOME_InteractiveObject) io =
-                      Handle(SALOME_InteractiveObject)::DownCast(aGeomAc->getIO());
-                    if (io->hasEntry() && strcmp(io->getEntry(), entry.toLatin1().data()) == 0) {
-                      isFound = true;
-                      vtkActors.Bind(viewIndex, aGeomAc);
-                    }
+            // store displayed actor in a temporary map for quicker
+            // access later when restoring other parameters
+            SVTK_ViewWindow* vtkView = (SVTK_ViewWindow*) vman->getActiveView();
+            vtkRenderer* Renderer = vtkView->getRenderer();
+            VTK::ActorCollectionCopy aCopy(Renderer->GetActors());
+            vtkActorCollection* theActors = aCopy.GetActors();
+            theActors->InitTraversal();
+            bool isFound = false;
+            vtkActor *ac = theActors->GetNextActor();
+            for (; ac != NULL && !isFound; ac = theActors->GetNextActor()) {
+              if (ac->IsA("SMESH_Actor")) {
+                SMESH_Actor* aGeomAc = SMESH_Actor::SafeDownCast(ac);
+                if (aGeomAc->hasIO()) {
+                  Handle(SALOME_InteractiveObject) io =
+                    Handle(SALOME_InteractiveObject)::DownCast(aGeomAc->getIO());
+                  if (io->hasEntry() && strcmp(io->getEntry(), entry.toLatin1().data()) == 0) {
+                    isFound = true;
+                    vtkActors.Bind(viewIndex, aGeomAc);
                   }
                 }
               }
@@ -4808,14 +5290,16 @@ void SMESHGUI::restoreVisualParameters (int savePoint)
             }
             // Clipping
             else if (paramNameStr.startsWith("ClippingPlane")) {
-              cout << "$$$ ClippingPlane 1" << endl;
-              if (paramNameStr == "ClippingPlane1" || val == "Off")
-                aSmeshActor->RemoveAllClippingPlanes();
-              if (val != "Off") {
-                cout << "$$$ ClippingPlane 2" << endl;
-                QStringList vals = val.split(gDigitsSep, QString::SkipEmptyParts);
-                if (vals.count() == 4) { // format check: 4 values
-                  cout << "$$$ ClippingPlane 3" << endl;
+              QStringList vals = val.split(gDigitsSep, QString::SkipEmptyParts);
+              // old format - val looks like "Off" or "0:0.5:0:0" (orientation, distance, two angles)
+              // new format - val looks like "Off" or "0" (plane id)
+              // (note: in new format "Off" value is used only for consistency,
+              //  so it is processed together with values in old format)
+              bool anIsOldFormat = ( vals.count() == 4 || val == "Off" );
+              if( anIsOldFormat ) {
+                if (paramNameStr == "ClippingPlane1" || val == "Off")
+                  aSmeshActor->RemoveAllClippingPlanes();
+                if (val != "Off") {
                   SMESH::Orientation anOrientation = (SMESH::Orientation)vals[0].toInt();
                   double aDistance = vals[1].toFloat();
                   vtkFloatingPointType anAngle[2];
@@ -4828,8 +5312,43 @@ void SMESHGUI::restoreVisualParameters (int savePoint)
                   if (viewIndex >= 0 && viewIndex < lst.count()) {
                     SUIT_ViewManager* vman = lst.at(viewIndex);
                     SVTK_ViewWindow* vtkView = (SVTK_ViewWindow*) vman->getActiveView();
-                    SMESHGUI_ClippingDlg::AddPlane(aSmeshActor, vtkView,
-                                                   anOrientation, aDistance, anAngle);
+
+                    SMESHGUI_ClippingPlaneInfoList& aClippingPlaneInfoList = myClippingPlaneInfoMap[ vman ];
+
+                    SMESH::TActorList anActorList;
+                    anActorList.push_back( aSmeshActor );
+                    SMESH::OrientedPlane* aPlane =
+                      SMESHGUI_ClippingDlg::AddPlane(anActorList, vtkView, anOrientation, aDistance, anAngle);
+                    if( aPlane ) {
+                      SMESH::ClippingPlaneInfo aClippingPlaneInfo;
+                      aClippingPlaneInfo.Plane = aPlane;
+                      aClippingPlaneInfo.ActorList = anActorList;
+                      aClippingPlaneInfoList.push_back( aClippingPlaneInfo );
+                    }
+                  }
+                }
+              }
+              else {
+                bool ok = false;
+                int aPlaneId = val.toInt( &ok );
+                if( ok && aPlaneId >= 0 ) {
+                  bool anIsDefinedPlane = false;
+                  TPlaneInfoList& aPlaneInfoList = aPlaneInfoMap[ viewIndex ];
+                  TPlaneInfoList::iterator anIter = aPlaneInfoList.begin();
+                  for( ; anIter != aPlaneInfoList.end(); anIter++ ) {
+                    TPlaneInfo& aPlaneInfo = *anIter;
+                    if( aPlaneInfo.PlaneId == aPlaneId ) {
+                      aPlaneInfo.ActorList.push_back( aSmeshActor );
+                      anIsDefinedPlane = true;
+                      break;
+                    }
+                  }
+                  if( !anIsDefinedPlane ) {
+                    TPlaneInfo aPlaneInfo;
+                    aPlaneInfo.PlaneId = aPlaneId;
+                    aPlaneInfo.ActorList.push_back( aSmeshActor );
+                    aPlaneInfo.ViewManager = vman;
+                    aPlaneInfoList.push_back( aPlaneInfo );
                   }
                 }
               }
@@ -4839,6 +5358,55 @@ void SMESHGUI::restoreVisualParameters (int savePoint)
       }
     } // for names/parameters iterator
   } // for entries iterator
+
+  // add clipping planes to actors according to the restored parameters
+  // and update the clipping plane map
+  TPlaneInfoMap::const_iterator anIter1 = aPlaneInfoMap.begin();
+  for( ; anIter1 != aPlaneInfoMap.end(); anIter1++ ) {
+    int aViewId = anIter1->first;
+    const TPlaneInfoList& aPlaneInfoList = anIter1->second;
+
+    TPlaneDataMap::const_iterator anIter2 = aPlaneDataMap.find( aViewId );
+    if( anIter2 == aPlaneDataMap.end() )
+      continue;
+    const TPlaneDataList& aPlaneDataList = anIter2->second;
+
+    TPlaneInfoList::const_iterator anIter3 = aPlaneInfoList.begin();
+    for( ; anIter3 != aPlaneInfoList.end(); anIter3++ ) {
+      const TPlaneInfo& aPlaneInfo = *anIter3;
+      int aPlaneId = aPlaneInfo.PlaneId;
+      const TActorList& anActorList = aPlaneInfo.ActorList;
+      SUIT_ViewManager* aViewManager = aPlaneInfo.ViewManager;
+      if( !aViewManager )
+        continue;
+
+      SVTK_ViewWindow* aViewWindow = dynamic_cast<SVTK_ViewWindow*>( aViewManager->getActiveView() );
+      if( !aViewWindow )
+        continue;
+
+      SMESHGUI_ClippingPlaneInfoList& aClippingPlaneInfoList = myClippingPlaneInfoMap[ aViewManager ];
+
+      TPlaneDataList::const_iterator anIter4 = aPlaneDataList.begin();
+      for( ; anIter4 != aPlaneDataList.end(); anIter4++ ) {
+        const TPlaneData& aPlaneData = *anIter4;
+        if( aPlaneData.Id == aPlaneId ) {
+          SMESH::OrientedPlane* aPlane =
+            SMESHGUI_ClippingDlg::AddPlane( anActorList,
+                                            aViewWindow,
+                                            (SMESH::Orientation)aPlaneData.Orientation,
+                                            aPlaneData.Distance,
+                                            aPlaneData.Angle );
+          if( aPlane ) {
+            SMESH::ClippingPlaneInfo aClippingPlaneInfo;
+            aClippingPlaneInfo.Plane = aPlane;
+            aClippingPlaneInfo.ActorList = anActorList;
+            aClippingPlaneInfoList.push_back( aClippingPlaneInfo );
+          }
+          break;
+        }
+      }
+    }
+  }
 
   // update all VTK views
   QList<SUIT_ViewManager*> lst;
@@ -4863,7 +5431,7 @@ void SMESHGUI::restoreVisualParameters (int savePoint)
 int SMESHGUI::addVtkFontPref( const QString& label, const int pId, const QString& param )
 {
   int tfont = addPreference( label, pId, LightApp_Preferences::Font, "VISU", param );
-  
+
   setPreferenceProperty( tfont, "mode", QtxFontEdit::Custom );
 
   QStringList fam;

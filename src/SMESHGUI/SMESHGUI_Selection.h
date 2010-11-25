@@ -61,6 +61,8 @@ public:
 
   virtual QString         quadratic2DMode(int ) const;
 
+  virtual bool            isDistributionVisible(int ) const;
+
   // parameters got from actor return nothing if an actor is not visible
   virtual QList<QVariant> elemTypes( int ) const;
   virtual QList<QVariant> labeledTypes( int ) const;
@@ -68,6 +70,7 @@ public:
   virtual QString         shrinkMode( int ) const;
   virtual QList<QVariant> entityMode( int ) const;
   virtual QString         controlMode( int ) const;
+  virtual bool            isNumFunctor( int ) const;
   virtual QString         facesOrientationMode( int ) const;
   virtual QString         groupType( int ) const;
   

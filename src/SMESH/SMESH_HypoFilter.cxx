@@ -23,12 +23,15 @@
 //  SMESH SMESH : implementaion of SMESH idl descriptions
 //  File   : SMESH_HypoFilter.cxx
 //  Module : SMESH
-//  $Header$
 //
 #include "SMESH_HypoFilter.hxx"
 
+#include "SMESH_Gen.hxx"
 #include "SMESH_Hypothesis.hxx"
+#include "SMESH_MesherHelper.hxx"
 #include "SMESH_subMesh.hxx"
+
+#include <TopExp_Explorer.hxx>
 
 using namespace std;
 
@@ -113,7 +116,7 @@ bool SMESH_HypoFilter::InstancePredicate::IsOk(const SMESH_Hypothesis* aHyp,
 //=======================================================================
 
 bool SMESH_HypoFilter::IsAssignedToPredicate::IsOk(const SMESH_Hypothesis* aHyp,
-                                               const TopoDS_Shape&     aShape) const
+                                                   const TopoDS_Shape&     aShape) const
 {
   return ( !_mainShape.IsNull() && !aShape.IsNull() && _mainShape.IsSame( aShape ));
 }
@@ -126,7 +129,19 @@ bool SMESH_HypoFilter::IsAssignedToPredicate::IsOk(const SMESH_Hypothesis* aHyp,
 bool SMESH_HypoFilter::IsMoreLocalThanPredicate::IsOk(const SMESH_Hypothesis* aHyp,
                                                       const TopoDS_Shape&     aShape) const
 {
-  return ( aShape.ShapeType() > _shapeType );
+  if ( SMESH_MesherHelper::IsSubShape( aShape, /*mainShape=*/_shape ))
+    return true;
+
+  if ( aShape.ShapeType() == TopAbs_COMPOUND && 
+       !SMESH_MesherHelper::IsSubShape( _shape, /*mainShape=*/aShape)) // issue 0020963
+  {
+    for ( int type = TopAbs_SOLID; type < TopAbs_SHAPE; ++type )
+      if ( aHyp->GetDim() == SMESH_Gen::GetShapeDim( TopAbs_ShapeEnum( type )))
+        for ( TopExp_Explorer exp( aShape, TopAbs_ShapeEnum( type )); exp.More(); exp.Next())
+          if ( SMESH_MesherHelper::IsSubShape( exp.Current(), /*mainShape=*/_shape ))
+            return true;
+  }
+  return false;
 }
 
 //=======================================================================
@@ -346,4 +361,6 @@ SMESH_HypoFilter::~SMESH_HypoFilter()
 {
   Init(0);
 }
+
+
 

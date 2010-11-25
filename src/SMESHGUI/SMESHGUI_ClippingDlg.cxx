@@ -41,11 +41,15 @@
 #include <SUIT_OverrideCursor.h>
 #include <SUIT_MessageBox.h>
 #include <SUIT_ResourceMgr.h>
+#include <SUIT_ViewManager.h>
 
 #include <SALOME_ListIO.hxx>
 
+#include <SalomeApp_Study.h>
+
 #include <LightApp_Application.h>
-#include <LightApp_SelectionMgr.h>
+
+#include <VTKViewer_Algorithm.h>
 
 #include <SVTK_ViewWindow.h>
 
@@ -59,139 +63,138 @@
 #include <QGridLayout>
 #include <QGroupBox>
 #include <QKeyEvent>
+#include <QListWidget>
 
 // VTK includes
 #include <vtkMath.h>
-#include <vtkPlane.h>
 #include <vtkDataSet.h>
 #include <vtkDataSetMapper.h>
 #include <vtkPlaneSource.h>
 #include <vtkProperty.h>
+#include <vtkRenderer.h>
 
 #define SPACING 6
 #define MARGIN  11
 
-class OrientedPlane: public vtkPlane
+//=================================================================================
+// class    : OrientedPlane
+// purpose  :
+//=================================================================================
+SMESH::OrientedPlane* SMESH::OrientedPlane::New()
 {
-  QPointer<SVTK_ViewWindow> myViewWindow;
+  return new OrientedPlane();
+}
 
-  vtkDataSetMapper* myMapper;
+SMESH::OrientedPlane* SMESH::OrientedPlane::New(SVTK_ViewWindow* theViewWindow)
+{
+  return new OrientedPlane(theViewWindow);
+}
 
-public:
-  static OrientedPlane *New()
-  {
-    return new OrientedPlane();
-  }
-  static OrientedPlane *New(SVTK_ViewWindow* theViewWindow)
-  {
-    return new OrientedPlane(theViewWindow);
-  }
-  vtkTypeMacro (OrientedPlane, vtkPlane);
+void SMESH::OrientedPlane::ShallowCopy(SMESH::OrientedPlane* theOrientedPlane)
+{
+  SetNormal(theOrientedPlane->GetNormal());
+  SetOrigin(theOrientedPlane->GetOrigin());
 
-  SMESH::Orientation myOrientation;
-  float myDistance;
-  double myAngle[2];
+  myOrientation = theOrientedPlane->GetOrientation();
+  myDistance = theOrientedPlane->GetDistance();
 
-  vtkPlaneSource* myPlaneSource;
-  SALOME_Actor *myActor;
+  myAngle[0] = theOrientedPlane->myAngle[0];
+  myAngle[1] = theOrientedPlane->myAngle[1];
 
-  void SetOrientation (SMESH::Orientation theOrientation) { myOrientation = theOrientation; }
-  SMESH::Orientation GetOrientation() { return myOrientation; }
+  myPlaneSource->SetNormal(theOrientedPlane->myPlaneSource->GetNormal());
+  myPlaneSource->SetOrigin(theOrientedPlane->myPlaneSource->GetOrigin());
+  myPlaneSource->SetPoint1(theOrientedPlane->myPlaneSource->GetPoint1());
+  myPlaneSource->SetPoint2(theOrientedPlane->myPlaneSource->GetPoint2());
+}
 
-  void SetDistance (float theDistance) { myDistance = theDistance; }
-  float GetDistance() { return myDistance; }
+SMESH::OrientedPlane::OrientedPlane(SVTK_ViewWindow* theViewWindow):
+  myViewWindow(theViewWindow),
+  myOrientation(SMESH::XY),
+  myDistance(0.5)
+{
+  Init();
+  myViewWindow->AddActor(myActor);
+}
 
-  void ShallowCopy (OrientedPlane* theOrientedPlane)
-  {
-    SetNormal(theOrientedPlane->GetNormal());
-    SetOrigin(theOrientedPlane->GetOrigin());
+SMESH::OrientedPlane::OrientedPlane():
+  myOrientation(SMESH::XY),
+  myViewWindow(NULL),
+  myDistance(0.5)
+{
+  Init();
+}
 
-    myOrientation = theOrientedPlane->GetOrientation();
-    myDistance = theOrientedPlane->GetDistance();
+void SMESH::OrientedPlane::Init()
+{
+  myPlaneSource = vtkPlaneSource::New();
 
-    myAngle[0] = theOrientedPlane->myAngle[0];
-    myAngle[1] = theOrientedPlane->myAngle[1];
+  myAngle[0] = myAngle[1] = 0.0;
 
-    myPlaneSource->SetNormal(theOrientedPlane->myPlaneSource->GetNormal());
-    myPlaneSource->SetOrigin(theOrientedPlane->myPlaneSource->GetOrigin());
-    myPlaneSource->SetPoint1(theOrientedPlane->myPlaneSource->GetPoint1());
-    myPlaneSource->SetPoint2(theOrientedPlane->myPlaneSource->GetPoint2());
-  }
+  // Create and display actor
+  myMapper = vtkDataSetMapper::New();
+  myMapper->SetInput(myPlaneSource->GetOutput());
 
-protected:
-  OrientedPlane(SVTK_ViewWindow* theViewWindow):
-    myViewWindow(theViewWindow),
-    myOrientation(SMESH::XY),
-    myDistance(0.5)
-  {
-    Init();
-    myViewWindow->AddActor(myActor);
-  }
+  myActor = SALOME_Actor::New();
+  myActor->VisibilityOff();
+  myActor->PickableOff();
+  myActor->SetInfinitive(true);
+  myActor->SetMapper(myMapper);
 
-  OrientedPlane():
-    myOrientation(SMESH::XY),
-    myViewWindow(NULL),
-    myDistance(0.5)
-  {
-    Init();
-  }
+  vtkFloatingPointType anRGB[3];
+  vtkProperty* aProp = vtkProperty::New();
+  SMESH::GetColor( "SMESH", "fill_color", anRGB[0], anRGB[1], anRGB[2], QColor( 0, 170, 255 ) );
+  aProp->SetColor(anRGB[0],anRGB[1],anRGB[2]);
+  aProp->SetOpacity(0.75);
+  myActor->SetProperty(aProp);
+  aProp->Delete();
 
-  void Init()
-  {
-    myPlaneSource = vtkPlaneSource::New();
+  vtkProperty* aBackProp = vtkProperty::New();
+  SMESH::GetColor( "SMESH", "backface_color", anRGB[0], anRGB[1], anRGB[2], QColor( 0, 0, 255 ) );
+  aBackProp->SetColor(anRGB[0],anRGB[1],anRGB[2]);
+  aBackProp->SetOpacity(0.75);
+  myActor->SetBackfaceProperty(aBackProp);
+  aBackProp->Delete();
+}
 
-    myAngle[0] = myAngle[1] = 0.0;
-
-    // Create and display actor
-    myMapper = vtkDataSetMapper::New();
-    myMapper->SetInput(myPlaneSource->GetOutput());
-
-    myActor = SALOME_Actor::New();
-    myActor->VisibilityOff();
-    myActor->PickableOff();
-    myActor->SetInfinitive(true);
-    myActor->SetMapper(myMapper);
-
-    vtkFloatingPointType anRGB[3];
-    vtkProperty* aProp = vtkProperty::New();
-    SMESH::GetColor( "SMESH", "fill_color", anRGB[0], anRGB[1], anRGB[2], QColor( 0, 170, 255 ) );
-    aProp->SetColor(anRGB[0],anRGB[1],anRGB[2]);
-    aProp->SetOpacity(0.75);
-    myActor->SetProperty(aProp);
-    aProp->Delete();
-
-    vtkProperty* aBackProp = vtkProperty::New();
-    SMESH::GetColor( "SMESH", "backface_color", anRGB[0], anRGB[1], anRGB[2], QColor( 0, 0, 255 ) );
-    aBackProp->SetColor(anRGB[0],anRGB[1],anRGB[2]);
-    aBackProp->SetOpacity(0.75);
-    myActor->SetBackfaceProperty(aBackProp);
-    aBackProp->Delete();
-  }
-
-  ~OrientedPlane(){
-    if (myViewWindow)
-      myViewWindow->RemoveActor(myActor);
-    myActor->Delete();
+SMESH::OrientedPlane::~OrientedPlane()
+{
+  if (myViewWindow)
+    myViewWindow->RemoveActor(myActor);
+  myActor->Delete();
     
-    myMapper->RemoveAllInputs();
-    myMapper->Delete();
+  myMapper->RemoveAllInputs();
+  myMapper->Delete();
 
-    // commented: porting to vtk 5.0
-    //    myPlaneSource->UnRegisterAllOutputs();
-    myPlaneSource->Delete();
-  };
+  // commented: porting to vtk 5.0
+  //    myPlaneSource->UnRegisterAllOutputs();
+  myPlaneSource->Delete();
+}
+
+//=================================================================================
+// class    : ActorItem
+// purpose  :
+//=================================================================================
+class ActorItem : public QListWidgetItem
+{
+public:
+  ActorItem( SMESH_Actor* theActor, const QString& theName, QListWidget* theListWidget ) :
+    QListWidgetItem( theName, theListWidget ),
+    myActor( theActor ) {}
+
+  SMESH_Actor* getActor() const { return myActor; }
 
 private:
-  // Not implemented.
-  OrientedPlane (const OrientedPlane&);
-  void operator= (const OrientedPlane&);
-
+  SMESH_Actor* myActor;
 };
 
-struct TSetVisiblity {
-  TSetVisiblity(int theIsVisible): myIsVisible(theIsVisible){}
-  void operator()(SMESH::TVTKPlane& theOrientedPlane){
-    theOrientedPlane->myActor->SetVisibility(myIsVisible);
+//=================================================================================
+// class    : TSetVisibility
+// purpose  :
+//=================================================================================
+struct TSetVisibility {
+  TSetVisibility(int theIsVisible): myIsVisible(theIsVisible){}
+  void operator()(SMESH::TPlaneData& thePlaneData){
+    thePlaneData.Plane.GetPointer()->myActor->SetVisibility(myIsVisible);
   }
   int myIsVisible;
 };
@@ -200,13 +203,13 @@ struct TSetVisiblity {
 // used in SMESHGUI::restoreVisualParameters() to avoid
 // declaration of OrientedPlane outside of SMESHGUI_ClippingDlg.cxx
 //=================================================================================
-void SMESHGUI_ClippingDlg::AddPlane (SMESH_Actor*         theActor,
-                                     SVTK_ViewWindow*     theViewWindow,
-                                     SMESH::Orientation   theOrientation,
-                                     double               theDistance,
-                                     vtkFloatingPointType theAngle[2])
+SMESH::OrientedPlane* SMESHGUI_ClippingDlg::AddPlane (SMESH::TActorList          theActorList,
+                                                      SVTK_ViewWindow*           theViewWindow,
+                                                      SMESH::Orientation         theOrientation,
+                                                      double                     theDistance,
+                                                      const vtkFloatingPointType theAngle[2])
 {
-  OrientedPlane* aPlane = OrientedPlane::New(theViewWindow);
+  SMESH::OrientedPlane* aPlane = SMESH::OrientedPlane::New(theViewWindow);
 
   aPlane->myAngle[0] = theAngle[0];
   aPlane->myAngle[1] = theAngle[1];
@@ -256,14 +259,26 @@ void SMESHGUI_ClippingDlg::AddPlane (SMESH_Actor*         theActor,
     vtkMath::Cross(aNormal,aDir[1],aDir[0]);
   }
 
-  // ???
-  theActor->SetPlaneParam(aNormal, theDistance, aPlane);
+  vtkFloatingPointType aBounds[6];
+  vtkFloatingPointType anOrigin[3];
+  bool anIsOk = SMESH::ComputeClippingPlaneParameters( theActorList,
+                                                       aNormal,
+                                                       theDistance,
+                                                       aBounds,
+                                                       anOrigin );
+  if( !anIsOk )
+    return NULL;
 
-  vtkDataSet* aDataSet = theActor->GetInput();
-  vtkFloatingPointType *aPnt = aDataSet->GetCenter();
+  aPlane->SetNormal( aNormal );
+  aPlane->SetOrigin( anOrigin );
 
-  vtkFloatingPointType* anOrigin = aPlane->GetOrigin();
-  vtkFloatingPointType aDel = aDataSet->GetLength()/2.0;
+  vtkFloatingPointType aPnt[3] = { ( aBounds[0] + aBounds[1] ) / 2.,
+                                   ( aBounds[2] + aBounds[3] ) / 2.,
+                                   ( aBounds[4] + aBounds[5] ) / 2. };
+
+  vtkFloatingPointType aDel = pow( pow( aBounds[1] - aBounds[0], 2 ) +
+                                   pow( aBounds[3] - aBounds[2], 2 ) +
+                                   pow( aBounds[5] - aBounds[4], 2 ), 0.5 );
 
   vtkFloatingPointType aDelta[2][3] = {{aDir[0][0]*aDel, aDir[0][1]*aDel, aDir[0][2]*aDel},
                                        {aDir[1][0]*aDel, aDir[1][1]*aDel, aDir[1][2]*aDel}};
@@ -299,28 +314,13 @@ void SMESHGUI_ClippingDlg::AddPlane (SMESH_Actor*         theActor,
   aPlaneSource->SetPoint1(aPnt1[0],aPnt1[1],aPnt1[2]);
   aPlaneSource->SetPoint2(aPnt2[0],aPnt2[1],aPnt2[2]);
 
-  theActor->AddClippingPlane(aPlane);
-  aPlane->Delete();
-}
+  SMESH::TActorList::iterator anIter = theActorList.begin();
+  for ( ; anIter != theActorList.end(); anIter++ )
+    if( vtkActor* aVTKActor = *anIter )
+      if( SMESH_Actor* anActor = SMESH_Actor::SafeDownCast( aVTKActor ) )
+        anActor->AddClippingPlane( aPlane );
 
-//=================================================================================
-// used in SMESHGUI::restoreVisualParameters() to avoid
-// declaration of OrientedPlane outside of SMESHGUI_ClippingDlg.cxx
-//=================================================================================
-void SMESHGUI_ClippingDlg::GetPlaneParam (SMESH_Actor*          theActor,
-                                          int                   thePlaneIndex,
-                                          SMESH::Orientation&   theOrientation,
-                                          double&               theDistance,
-                                          vtkFloatingPointType* theAngle)
-{
-  if (vtkPlane* aPln = theActor->GetClippingPlane(thePlaneIndex)) {
-    if (OrientedPlane* aPlane = OrientedPlane::SafeDownCast(aPln)) {
-      theOrientation = aPlane->GetOrientation();
-      theDistance = aPlane->GetDistance();
-      theAngle[0] = aPlane->myAngle[0];
-      theAngle[1] = aPlane->myAngle[1];
-    }
-  }
+  return aPlane;
 }
 
 //=================================================================================
@@ -328,11 +328,10 @@ void SMESHGUI_ClippingDlg::GetPlaneParam (SMESH_Actor*          theActor,
 // purpose  :
 //
 //=================================================================================
-SMESHGUI_ClippingDlg::SMESHGUI_ClippingDlg( SMESHGUI* theModule ):
+SMESHGUI_ClippingDlg::SMESHGUI_ClippingDlg( SMESHGUI* theModule, SVTK_ViewWindow* theViewWindow ):
   QDialog( SMESH::GetDesktop(theModule) ),
-  mySelector(SMESH::GetViewWindow(theModule)->GetSelector()),
-  mySelectionMgr(SMESH::GetSelectionMgr(theModule)),
-  mySMESHGUI(theModule)
+  mySMESHGUI(theModule),
+  myViewWindow(theViewWindow)
 {
   setModal( false );
   setAttribute( Qt::WA_DeleteOnClose, true );
@@ -345,7 +344,7 @@ SMESHGUI_ClippingDlg::SMESHGUI_ClippingDlg( SMESHGUI* theModule ):
 
   // Controls for selecting, creating, deleting planes
   QGroupBox* GroupPlanes = new QGroupBox(tr("CLIP_PLANES"), this);
-  QHBoxLayout* GroupPlanesLayout = new QHBoxLayout(GroupPlanes);
+  QGridLayout* GroupPlanesLayout = new QGridLayout(GroupPlanes);
   GroupPlanesLayout->setSpacing(SPACING);
   GroupPlanesLayout->setMargin(MARGIN);
 
@@ -355,10 +354,21 @@ SMESHGUI_ClippingDlg::SMESHGUI_ClippingDlg( SMESHGUI* theModule ):
 
   buttonDelete = new QPushButton(tr("SMESH_BUT_DELETE"), GroupPlanes);
 
-  GroupPlanesLayout->addWidget(ComboBoxPlanes);
-  GroupPlanesLayout->addStretch();
-  GroupPlanesLayout->addWidget(buttonNew);
-  GroupPlanesLayout->addWidget(buttonDelete);
+  QLabel* aLabel = new QLabel(tr("MESHES_SUBMESHES_GROUPS"), GroupPlanes);
+
+  ActorList = new QListWidget(GroupPlanes);
+  ActorList->setSelectionMode(QAbstractItemView::SingleSelection);
+
+  SelectAllCheckBox = new QCheckBox(tr("SELECT_ALL"), GroupPlanes);
+
+  GroupPlanesLayout->addWidget(ComboBoxPlanes,    0, 0);
+  GroupPlanesLayout->addWidget(new QWidget(),     0, 1);
+  GroupPlanesLayout->addWidget(buttonNew,         0, 2);
+  GroupPlanesLayout->addWidget(buttonDelete,      0, 3);
+  GroupPlanesLayout->addWidget(aLabel,            1, 0, 1, 4);
+  GroupPlanesLayout->addWidget(ActorList,         2, 0, 1, 4);
+  GroupPlanesLayout->addWidget(SelectAllCheckBox, 3, 0, 1, 4);
+  GroupPlanesLayout->setColumnStretch( 1, 1 );
 
   // Controls for defining plane parameters
   QGroupBox* GroupParameters = new QGroupBox(tr("SMESH_PARAMETERS"), this);
@@ -437,9 +447,10 @@ SMESHGUI_ClippingDlg::SMESHGUI_ClippingDlg( SMESHGUI* theModule ):
 
   SpinBoxDistance->SetValue(0.5);
 
-  myActor = 0;
   myIsSelectPlane = false;
-  onSelectionChanged();
+
+  initializePlaneData();
+  synchronize();
 
   myHelpFileName = "clipping_page.html";
 
@@ -447,6 +458,8 @@ SMESHGUI_ClippingDlg::SMESHGUI_ClippingDlg( SMESHGUI* theModule ):
   connect(ComboBoxPlanes, SIGNAL(activated(int)), this, SLOT(onSelectPlane(int)));
   connect(buttonNew, SIGNAL(clicked()), this, SLOT(ClickOnNew()));
   connect(buttonDelete, SIGNAL(clicked()), this, SLOT(ClickOnDelete()));
+  connect(ActorList, SIGNAL(itemChanged(QListWidgetItem*)), this, SLOT(onActorItemChanged(QListWidgetItem*)));
+  connect(SelectAllCheckBox, SIGNAL(stateChanged(int)), this, SLOT(onSelectAll(int)));
   connect(ComboBoxOrientation, SIGNAL(activated(int)), this, SLOT(onSelectOrientation(int)));
   connect(SpinBoxDistance, SIGNAL(valueChanged(double)), this, SLOT(SetCurrentPlaneParam()));
   connect(SpinBoxRot1, SIGNAL(valueChanged(double)), this, SLOT(SetCurrentPlaneParam()));
@@ -458,7 +471,6 @@ SMESHGUI_ClippingDlg::SMESHGUI_ClippingDlg( SMESHGUI* theModule ):
   connect(buttonApply, SIGNAL(clicked()), this, SLOT(ClickOnApply()));
   connect(buttonHelp, SIGNAL(clicked()), this, SLOT(ClickOnHelp()));
   connect(mySMESHGUI, SIGNAL (SignalCloseAllDialogs()), this, SLOT(ClickOnCancel()));
-  connect(mySelectionMgr,  SIGNAL(currentSelectionChanged()), this, SLOT(onSelectionChanged()));
   /* to close dialog if study frame change */
   connect(mySMESHGUI, SIGNAL (SignalStudyFrameChanged()), this, SLOT(ClickOnCancel()));
 
@@ -472,10 +484,9 @@ SMESHGUI_ClippingDlg::SMESHGUI_ClippingDlg( SMESHGUI* theModule ):
 SMESHGUI_ClippingDlg::~SMESHGUI_ClippingDlg()
 {
   // no need to delete child widgets, Qt does it all for us
-  std::for_each(myPlanes.begin(),myPlanes.end(),TSetVisiblity(false));
-  if (mySMESHGUI)
-    if (SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow(mySMESHGUI))
-      SMESH::RenderViewWindow(aViewWindow);
+  std::for_each(myPlanes.begin(),myPlanes.end(),TSetVisibility(false));
+  if (myViewWindow)
+    SMESH::RenderViewWindow(myViewWindow);
 }
 
 double SMESHGUI_ClippingDlg::getDistance() const
@@ -504,27 +515,56 @@ double SMESHGUI_ClippingDlg::getRotation2() const
 //=======================================================================
 void SMESHGUI_ClippingDlg::ClickOnApply()
 {
-  if (!myActor)
-    return;
-
-  if (SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow(mySMESHGUI)) {
+  if (myViewWindow) {
     SUIT_OverrideCursor wc;
     
     QWidget *aCurrWid = this->focusWidget();
     aCurrWid->clearFocus();
     aCurrWid->setFocus();
 
-    myActor->RemoveAllClippingPlanes();
+    SMESHGUI_ClippingPlaneInfoMap& aClippingPlaneInfoMap = mySMESHGUI->getClippingPlaneInfoMap();
+    SMESHGUI_ClippingPlaneInfoList& aClippingPlaneInfoList = aClippingPlaneInfoMap[ myViewWindow->getViewManager() ];
 
-    SMESH::TPlanes::iterator anIter = myPlanes.begin();
-    for ( ; anIter != myPlanes.end(); anIter++) {
-      OrientedPlane* anOrientedPlane = OrientedPlane::New(aViewWindow);
-      anOrientedPlane->ShallowCopy(anIter->GetPointer());
-      myActor->AddClippingPlane(anOrientedPlane);
-      anOrientedPlane->Delete();
+    // clean memory allocated for planes
+    SMESHGUI_ClippingPlaneInfoList::iterator anIter1 = aClippingPlaneInfoList.begin();
+    for( ; anIter1 != aClippingPlaneInfoList.end(); anIter1++ )
+      if( SMESH::OrientedPlane* aPlane = (*anIter1).Plane )
+        aPlane->Delete();
+
+    aClippingPlaneInfoList.clear();
+
+    VTK::ActorCollectionCopy aCopy( myViewWindow->getRenderer()->GetActors() );
+    vtkActorCollection* anAllActors = aCopy.GetActors();
+    anAllActors->InitTraversal();
+    while( vtkActor* aVTKActor = anAllActors->GetNextActor() )
+      if( SMESH_Actor* anActor = SMESH_Actor::SafeDownCast( aVTKActor ) )
+        anActor->RemoveAllClippingPlanes();
+
+    SMESH::TPlaneDataVector::iterator anIter2 = myPlanes.begin();
+    for( ; anIter2 != myPlanes.end(); anIter2++ ) {
+      SMESH::TPlaneData aPlaneData = *anIter2;
+      SMESH::TPlane aPlane = aPlaneData.Plane;
+      SMESH::TActorList anActorList = aPlaneData.ActorList;
+      if( anActorList.empty() )
+        continue;
+
+      SMESH::OrientedPlane* anOrientedPlane = SMESH::OrientedPlane::New(myViewWindow);
+      anOrientedPlane->ShallowCopy(aPlane.GetPointer());
+
+      SMESH::TActorList::iterator anIter3 = anActorList.begin();
+      for( ; anIter3 != anActorList.end(); anIter3++ )
+        if( vtkActor* aVTKActor = *anIter3 )
+          if( SMESH_Actor* anActor = SMESH_Actor::SafeDownCast( aVTKActor ) )
+            anActor->AddClippingPlane(anOrientedPlane);
+
+      SMESH::ClippingPlaneInfo aClippingPlaneInfo;
+      aClippingPlaneInfo.Plane = anOrientedPlane;
+      aClippingPlaneInfo.ActorList = anActorList;
+
+      aClippingPlaneInfoList.push_back( aClippingPlaneInfo );
     }
 
-    SMESH::RenderViewWindow(aViewWindow);
+    SMESH::RenderViewWindow( myViewWindow );
   }
 }
 
@@ -571,53 +611,17 @@ void SMESHGUI_ClippingDlg::ClickOnHelp()
   }
 }
 
-//=================================================================================
-// function : onSelectionChanged()
-// purpose  : Called when selection is changed
-//=================================================================================
-void SMESHGUI_ClippingDlg::onSelectionChanged()
-{
-  if (SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow(mySMESHGUI)) {
-    const SALOME_ListIO& aList = mySelector->StoredIObjects();
-    if (aList.Extent() > 0) {
-      Handle(SALOME_InteractiveObject) IOS = aList.First();
-      myActor = SMESH::FindActorByEntry(IOS->getEntry());
-      if (myActor) {
-        std::for_each(myPlanes.begin(),myPlanes.end(),TSetVisiblity(false));
-        myPlanes.clear();
-
-        vtkIdType anId = 0, anEnd = myActor->GetNumberOfClippingPlanes();
-        for ( ; anId < anEnd; anId++) {
-          if (vtkImplicitFunction* aFunction = myActor->GetClippingPlane(anId)) {
-            if(OrientedPlane* aPlane = OrientedPlane::SafeDownCast(aFunction)){
-              OrientedPlane* anOrientedPlane = OrientedPlane::New(aViewWindow);
-              SMESH::TVTKPlane aTVTKPlane(anOrientedPlane);
-              anOrientedPlane->Delete();
-              aTVTKPlane->ShallowCopy(aPlane);
-              myPlanes.push_back(aTVTKPlane);
-            }
-          }
-        }
-
-        std::for_each(myPlanes.begin(),myPlanes.end(),
-                      TSetVisiblity(PreviewCheckBox->isChecked()));
-      }
-    }
-    SMESH::RenderViewWindow(aViewWindow);
-  }
-  Sinchronize();
-}
-
 //=======================================================================
 // function : onSelectPlane()
 // purpose  :
 //=======================================================================
 void SMESHGUI_ClippingDlg::onSelectPlane (int theIndex)
 {
-  if (!myActor || myPlanes.empty())
+  if (myPlanes.empty())
     return;
 
-  OrientedPlane* aPlane = myPlanes[theIndex].GetPointer();
+  SMESH::TPlaneData aPlaneData = myPlanes[theIndex];
+  SMESH::OrientedPlane* aPlane = aPlaneData.Plane.GetPointer();
 
   // Orientation
   SMESH::Orientation anOrientation = aPlane->GetOrientation();
@@ -644,6 +648,11 @@ void SMESHGUI_ClippingDlg::onSelectPlane (int theIndex)
     break;
   }
   myIsSelectPlane = false;
+
+  // Actors
+  bool anIsBlocked = ActorList->blockSignals( true );
+  updateActorList();
+  ActorList->blockSignals( anIsBlocked );
 }
 
 //=======================================================================
@@ -652,19 +661,31 @@ void SMESHGUI_ClippingDlg::onSelectPlane (int theIndex)
 //=======================================================================
 void SMESHGUI_ClippingDlg::ClickOnNew()
 {
-  if (!myActor)
-    return;
+  if(myViewWindow){
+    SMESH::OrientedPlane* aPlane = SMESH::OrientedPlane::New(myViewWindow);
+    SMESH::TPlane aTPlane(aPlane);
 
-  if(SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow(mySMESHGUI)){
-    OrientedPlane* aPlane = OrientedPlane::New(aViewWindow);
-    SMESH::TVTKPlane aTVTKPlane(aPlane);
-    myPlanes.push_back(aTVTKPlane);
+    SMESH::TActorList anActorList;
+    VTK::ActorCollectionCopy aCopy( myViewWindow->getRenderer()->GetActors() );
+    vtkActorCollection* anAllActors = aCopy.GetActors();
+    anAllActors->InitTraversal();
+    while( vtkActor* aVTKActor = anAllActors->GetNextActor() )
+      if( SMESH_Actor* anActor = SMESH_Actor::SafeDownCast( aVTKActor ) )
+        anActorList.push_back( anActor );
+
+    SMESH::TPlaneData aPlaneData(aTPlane, anActorList);
+
+    myPlanes.push_back(aPlaneData);
 
     if (PreviewCheckBox->isChecked())
-      aTVTKPlane->myActor->VisibilityOn();
-    
-    Sinchronize();
+      aTPlane->myActor->VisibilityOn();
+
+    bool anIsBlocked = ActorList->blockSignals( true );
+
+    synchronize();
     SetCurrentPlaneParam();
+
+    ActorList->blockSignals( anIsBlocked );
   }
 }
 
@@ -674,20 +695,105 @@ void SMESHGUI_ClippingDlg::ClickOnNew()
 //=======================================================================
 void SMESHGUI_ClippingDlg::ClickOnDelete()
 {
-  if (!myActor || myPlanes.empty())
+  if (myPlanes.empty())
     return;
 
   int aPlaneIndex = ComboBoxPlanes->currentIndex();
 
-  SMESH::TPlanes::iterator anIter = myPlanes.begin() + aPlaneIndex;
-  anIter->GetPointer()->myActor->SetVisibility(false);
+  SMESH::TPlaneDataVector::iterator anIter = myPlanes.begin() + aPlaneIndex;
+  SMESH::TPlaneData aPlaneData = *anIter;
+  aPlaneData.Plane.GetPointer()->myActor->SetVisibility(false);
   myPlanes.erase(anIter);
 
   if(AutoApplyCheckBox->isChecked())
     ClickOnApply();
 
-  Sinchronize();
-  SMESH::RenderViewWindow(SMESH::GetCurrentVtkView());
+  synchronize();
+  SMESH::RenderViewWindow( myViewWindow );
+}
+
+//=======================================================================
+// function : updateActorItem()
+// purpose  :
+//=======================================================================
+void SMESHGUI_ClippingDlg::updateActorItem( QListWidgetItem* theItem,
+                                            bool theUpdateSelectAll,
+                                            bool theUpdateClippingPlaneMap )
+{
+  // update Select All check box
+  if( theUpdateSelectAll ) {
+    int aNbItems = ActorList->count(), aNbChecked = 0;
+    for( int i = 0; i < aNbItems; i++ )
+      if( QListWidgetItem* anItem = ActorList->item( i ) )
+        if( anItem->checkState() == Qt::Checked )
+          aNbChecked++;
+
+    Qt::CheckState aCheckState = Qt::Unchecked;
+    if( aNbChecked == aNbItems )
+      aCheckState = Qt::Checked;
+    else if( aNbChecked > 0 )
+      aCheckState = Qt::PartiallyChecked;
+
+    bool anIsBlocked = SelectAllCheckBox->blockSignals( true );
+    SelectAllCheckBox->setCheckState( aCheckState );
+    SelectAllCheckBox->blockSignals( anIsBlocked );
+  }
+
+  // update clipping plane map
+  if( theUpdateClippingPlaneMap ) {
+    int aCurPlaneIndex = ComboBoxPlanes->currentIndex();
+    if( ActorItem* anItem = dynamic_cast<ActorItem*>( theItem ) ) {
+      if( SMESH_Actor* anActor = anItem->getActor() ) {
+        SMESH::TPlaneData& aPlaneData = myPlanes[ aCurPlaneIndex ];
+        SMESH::TActorList& anActorList = aPlaneData.ActorList;
+        bool anIsPushed = false;
+        SMESH::TActorList::iterator anIter = anActorList.begin();
+        for ( ; anIter != anActorList.end(); anIter++ ) {
+          if( anActor == *anIter ) {
+            anIsPushed = true;
+            break;
+          }
+        }
+        if( theItem->checkState() == Qt::Checked && !anIsPushed )
+          anActorList.push_back( anActor );
+        else if( theItem->checkState() == Qt::Unchecked && anIsPushed )
+          anActorList.remove( anActor );
+      }
+    }
+  }
+}
+
+//=======================================================================
+// function : onActorItemChanged()
+// purpose  :
+//=======================================================================
+void SMESHGUI_ClippingDlg::onActorItemChanged( QListWidgetItem* theItem )
+{
+  updateActorItem( theItem, true, true );
+  SetCurrentPlaneParam();
+}
+
+//=======================================================================
+// function : onSelectAll()
+// purpose  :
+//=======================================================================
+void SMESHGUI_ClippingDlg::onSelectAll( int theState )
+{
+  if( theState == Qt::PartiallyChecked ) {
+    SelectAllCheckBox->setCheckState( Qt::Checked );
+    return;
+  }
+
+  bool anIsBlocked = ActorList->blockSignals( true );
+  for( int i = 0, n = ActorList->count(); i < n; i++ ) {
+    if( QListWidgetItem* anItem = ActorList->item( i ) ) {
+      anItem->setCheckState( theState == Qt::Checked ? Qt::Checked : Qt::Unchecked );
+      updateActorItem( anItem, false, true );
+    }
+  }
+  SelectAllCheckBox->setTristate( false );
+  ActorList->blockSignals( anIsBlocked );
+  SetCurrentPlaneParam();
 }
 
 //=======================================================================
@@ -717,10 +823,10 @@ void SMESHGUI_ClippingDlg::onSelectOrientation (int theItem)
 }
 
 //=======================================================================
-// function : Sinchronize()
+// function : synchronize()
 // purpose  :
 //=======================================================================
-void SMESHGUI_ClippingDlg::Sinchronize()
+void SMESHGUI_ClippingDlg::synchronize()
 {
   int aNbPlanes = myPlanes.size();
   ComboBoxPlanes->clear();
@@ -737,17 +843,22 @@ void SMESHGUI_ClippingDlg::Sinchronize()
   bool anIsControlsEnable = (aPos >= 0);
   if (anIsControlsEnable) {
     onSelectPlane(aPos);
+    updateActorList();
   } else {
     ComboBoxPlanes->addItem(tr("NO_PLANES"));
+    ActorList->clear();
     SpinBoxRot1->SetValue(0.0);
     SpinBoxRot2->SetValue(0.0);
     SpinBoxDistance->SetValue(0.5);
   }
 
+  ActorList->setEnabled(anIsControlsEnable);
+  SelectAllCheckBox->setEnabled(anIsControlsEnable);
   buttonDelete->setEnabled(anIsControlsEnable);
-  buttonApply->setEnabled(anIsControlsEnable);
-  PreviewCheckBox->setEnabled(anIsControlsEnable);
-  AutoApplyCheckBox->setEnabled(anIsControlsEnable);
+  // the following 3 controls should be enabled
+  //buttonApply->setEnabled(anIsControlsEnable);
+  //PreviewCheckBox->setEnabled(anIsControlsEnable);
+  //AutoApplyCheckBox->setEnabled(anIsControlsEnable);
   ComboBoxOrientation->setEnabled(anIsControlsEnable);
   SpinBoxDistance->setEnabled(anIsControlsEnable);
   SpinBoxRot1->setEnabled(anIsControlsEnable);
@@ -775,7 +886,8 @@ void SMESHGUI_ClippingDlg::SetCurrentPlaneParam()
 
   int aCurPlaneIndex = ComboBoxPlanes->currentIndex();
 
-  OrientedPlane* aPlane = myPlanes[aCurPlaneIndex].GetPointer();
+  SMESH::TPlaneData aPlaneData = myPlanes[aCurPlaneIndex];
+  SMESH::OrientedPlane* aPlane = aPlaneData.Plane.GetPointer();
 
   vtkFloatingPointType aNormal[3];
   SMESH::Orientation anOrientation;
@@ -833,52 +945,69 @@ void SMESHGUI_ClippingDlg::SetCurrentPlaneParam()
   aPlane->SetOrientation(anOrientation);
   aPlane->SetDistance(getDistance());
 
-  myActor->SetPlaneParam(aNormal, getDistance(), aPlane);
+  SMESH::TActorList anActorList = aPlaneData.ActorList;
 
-  vtkDataSet* aDataSet = myActor->GetInput();
-  vtkFloatingPointType *aPnt = aDataSet->GetCenter();
+  vtkFloatingPointType aBounds[6];
+  vtkFloatingPointType anOrigin[3];
+  bool anIsOk = SMESH::ComputeClippingPlaneParameters( anActorList,
+                                                       aNormal,
+                                                       getDistance(),
+                                                       aBounds,
+                                                       anOrigin );
 
-  vtkFloatingPointType* anOrigin = aPlane->GetOrigin();
-  vtkFloatingPointType aDel = aDataSet->GetLength()/2.0;
+  aPlane->myActor->SetVisibility( anIsOk && PreviewCheckBox->isChecked() );
 
-  vtkFloatingPointType aDelta[2][3] = {{aDir[0][0]*aDel, aDir[0][1]*aDel, aDir[0][2]*aDel},
-                                       {aDir[1][0]*aDel, aDir[1][1]*aDel, aDir[1][2]*aDel}};
-  vtkFloatingPointType aParam, aPnt0[3], aPnt1[3], aPnt2[3];
+  if( anIsOk ) {
+    aPlane->SetNormal( aNormal );
+    aPlane->SetOrigin( anOrigin );
 
-  vtkFloatingPointType aPnt01[3] = {aPnt[0] - aDelta[0][0] - aDelta[1][0],
-                                    aPnt[1] - aDelta[0][1] - aDelta[1][1],
-                                    aPnt[2] - aDelta[0][2] - aDelta[1][2]};
-  vtkFloatingPointType aPnt02[3] = {aPnt01[0] + aNormal[0],
-                                    aPnt01[1] + aNormal[1],
-                                    aPnt01[2] + aNormal[2]};
-  vtkPlane::IntersectWithLine(aPnt01,aPnt02,aNormal,anOrigin,aParam,aPnt0);
+    vtkFloatingPointType aPnt[3] = { ( aBounds[0] + aBounds[1] ) / 2.,
+                                     ( aBounds[2] + aBounds[3] ) / 2.,
+                                     ( aBounds[4] + aBounds[5] ) / 2. };
 
-  vtkFloatingPointType aPnt11[3] = {aPnt[0] - aDelta[0][0] + aDelta[1][0],
-                                    aPnt[1] - aDelta[0][1] + aDelta[1][1],
-                                    aPnt[2] - aDelta[0][2] + aDelta[1][2]};
-  vtkFloatingPointType aPnt12[3] = {aPnt11[0] + aNormal[0],
-                                    aPnt11[1] + aNormal[1],
-                                    aPnt11[2] + aNormal[2]};
-  vtkPlane::IntersectWithLine(aPnt11,aPnt12,aNormal,anOrigin,aParam,aPnt1);
+    vtkFloatingPointType aDel = pow( pow( aBounds[1] - aBounds[0], 2 ) +
+                                     pow( aBounds[3] - aBounds[2], 2 ) +
+                                     pow( aBounds[5] - aBounds[4], 2 ), 0.5 );
 
-  vtkFloatingPointType aPnt21[3] = {aPnt[0] + aDelta[0][0] - aDelta[1][0],
-                                    aPnt[1] + aDelta[0][1] - aDelta[1][1],
-                                    aPnt[2] + aDelta[0][2] - aDelta[1][2]};
-  vtkFloatingPointType aPnt22[3] = {aPnt21[0] + aNormal[0],
-                                    aPnt21[1] + aNormal[1],
-                                    aPnt21[2] + aNormal[2]};
-  vtkPlane::IntersectWithLine(aPnt21,aPnt22,aNormal,anOrigin,aParam,aPnt2);
+    vtkFloatingPointType aDelta[2][3] = {{aDir[0][0]*aDel, aDir[0][1]*aDel, aDir[0][2]*aDel},
+                                         {aDir[1][0]*aDel, aDir[1][1]*aDel, aDir[1][2]*aDel}};
+    vtkFloatingPointType aParam, aPnt0[3], aPnt1[3], aPnt2[3];
 
-  vtkPlaneSource* aPlaneSource = aPlane->myPlaneSource;
-  aPlaneSource->SetNormal(aNormal[0],aNormal[1],aNormal[2]);
-  aPlaneSource->SetOrigin(aPnt0[0],aPnt0[1],aPnt0[2]);
-  aPlaneSource->SetPoint1(aPnt1[0],aPnt1[1],aPnt1[2]);
-  aPlaneSource->SetPoint2(aPnt2[0],aPnt2[1],aPnt2[2]);
+    vtkFloatingPointType aPnt01[3] = {aPnt[0] - aDelta[0][0] - aDelta[1][0],
+                                      aPnt[1] - aDelta[0][1] - aDelta[1][1],
+                                      aPnt[2] - aDelta[0][2] - aDelta[1][2]};
+    vtkFloatingPointType aPnt02[3] = {aPnt01[0] + aNormal[0],
+                                      aPnt01[1] + aNormal[1],
+                                      aPnt01[2] + aNormal[2]};
+    vtkPlane::IntersectWithLine(aPnt01,aPnt02,aNormal,anOrigin,aParam,aPnt0);
+
+    vtkFloatingPointType aPnt11[3] = {aPnt[0] - aDelta[0][0] + aDelta[1][0],
+                                      aPnt[1] - aDelta[0][1] + aDelta[1][1],
+                                      aPnt[2] - aDelta[0][2] + aDelta[1][2]};
+    vtkFloatingPointType aPnt12[3] = {aPnt11[0] + aNormal[0],
+                                      aPnt11[1] + aNormal[1],
+                                      aPnt11[2] + aNormal[2]};
+    vtkPlane::IntersectWithLine(aPnt11,aPnt12,aNormal,anOrigin,aParam,aPnt1);
+
+    vtkFloatingPointType aPnt21[3] = {aPnt[0] + aDelta[0][0] - aDelta[1][0],
+                                      aPnt[1] + aDelta[0][1] - aDelta[1][1],
+                                      aPnt[2] + aDelta[0][2] - aDelta[1][2]};
+    vtkFloatingPointType aPnt22[3] = {aPnt21[0] + aNormal[0],
+                                      aPnt21[1] + aNormal[1],
+                                      aPnt21[2] + aNormal[2]};
+    vtkPlane::IntersectWithLine(aPnt21,aPnt22,aNormal,anOrigin,aParam,aPnt2);
+
+    vtkPlaneSource* aPlaneSource = aPlane->myPlaneSource;
+    aPlaneSource->SetNormal(aNormal[0],aNormal[1],aNormal[2]);
+    aPlaneSource->SetOrigin(aPnt0[0],aPnt0[1],aPnt0[2]);
+    aPlaneSource->SetPoint1(aPnt1[0],aPnt1[1],aPnt1[2]);
+    aPlaneSource->SetPoint2(aPnt2[0],aPnt2[1],aPnt2[2]);
+  }
 
   if(AutoApplyCheckBox->isChecked())
     ClickOnApply();
 
-  SMESH::RenderViewWindow(SMESH::GetCurrentVtkView());
+  SMESH::RenderViewWindow( myViewWindow );
 }
 
 //=======================================================================
@@ -887,8 +1016,8 @@ void SMESHGUI_ClippingDlg::SetCurrentPlaneParam()
 //=======================================================================
 void SMESHGUI_ClippingDlg::OnPreviewToggle (bool theIsToggled)
 {
-  std::for_each(myPlanes.begin(),myPlanes.end(),TSetVisiblity(theIsToggled));
-  SMESH::RenderViewWindow(SMESH::GetCurrentVtkView());
+  std::for_each(myPlanes.begin(),myPlanes.end(),TSetVisibility(theIsToggled));
+  SMESH::RenderViewWindow( myViewWindow );
 }
 
 //=================================================================================
@@ -905,4 +1034,125 @@ void SMESHGUI_ClippingDlg::keyPressEvent( QKeyEvent* e )
     e->accept();
     ClickOnHelp();
   }
+}
+
+//=================================================================================
+// function : initializePlaneData()
+// purpose  :
+//=================================================================================
+void SMESHGUI_ClippingDlg::initializePlaneData()
+{
+  const SMESHGUI_ClippingPlaneInfoMap& aClippingPlaneInfoMap = mySMESHGUI->getClippingPlaneInfoMap();
+  SMESHGUI_ClippingPlaneInfoMap::const_iterator anIter1 = aClippingPlaneInfoMap.find( myViewWindow->getViewManager() );
+  if( anIter1 != aClippingPlaneInfoMap.end() ) {
+    const SMESHGUI_ClippingPlaneInfoList& aClippingPlaneInfoList = anIter1->second;
+    SMESHGUI_ClippingPlaneInfoList::const_iterator anIter2 = aClippingPlaneInfoList.begin();
+    for( ; anIter2 != aClippingPlaneInfoList.end(); anIter2++ ) {
+      const SMESH::ClippingPlaneInfo& aClippingPlaneInfo = *anIter2;
+      SMESH::TPlane aTPlane( aClippingPlaneInfo.Plane );
+      SMESH::TPlaneData aPlaneData( aTPlane, aClippingPlaneInfo.ActorList );
+      myPlanes.push_back( aPlaneData );
+    }
+  }
+  std::for_each( myPlanes.begin(),myPlanes.end(), TSetVisibility( PreviewCheckBox->isChecked() ) );
+}
+
+//=================================================================================
+// function : updateActorList()
+// purpose  :
+//=================================================================================
+void SMESHGUI_ClippingDlg::updateActorList()
+{
+  ActorList->clear();
+
+  SalomeApp_Study* anAppStudy = SMESHGUI::activeStudy();
+  if( !anAppStudy )
+    return;
+
+  _PTR(Study) aStudy = anAppStudy->studyDS();
+  if( !aStudy )
+    return;
+
+  if( !myViewWindow )
+    return;
+
+  int aCurPlaneIndex = ComboBoxPlanes->currentIndex();
+  const SMESH::TPlaneData& aPlaneData = myPlanes[ aCurPlaneIndex ];
+  const SMESH::TActorList& anActorList = aPlaneData.ActorList;
+
+  VTK::ActorCollectionCopy aCopy( myViewWindow->getRenderer()->GetActors() );
+  vtkActorCollection* anAllActors = aCopy.GetActors();
+  anAllActors->InitTraversal();
+  while( vtkActor* aVTKActor = anAllActors->GetNextActor() ) {
+    if( SMESH_Actor* anActor = SMESH_Actor::SafeDownCast( aVTKActor ) ) {
+      if( anActor->hasIO() ) {
+        Handle(SALOME_InteractiveObject) anIO = anActor->getIO();
+        if( _PTR(SObject) aSObj = aStudy->FindObjectID( anIO->getEntry() ) ) {
+          bool anIsChecked = false;
+          SMESH::TActorList::const_iterator anIter = anActorList.begin();
+          for ( ; anIter != anActorList.end(); anIter++ ) {
+            if( vtkActor* aVTKActorRef = *anIter ) {
+              if( SMESH_Actor* anActorRef = SMESH_Actor::SafeDownCast( aVTKActorRef ) ) {
+                if( anActorRef == anActor ) {
+                  anIsChecked = true;
+                  break;
+                }
+              }
+            }
+          }
+          QString aName = QString( aSObj->GetName().c_str() );
+          QListWidgetItem* anItem = new ActorItem( anActor, aName, ActorList );
+          anItem->setCheckState( anIsChecked ? Qt::Checked : Qt::Unchecked );
+          updateActorItem( anItem, true, false );
+        }
+      }
+    }
+  }
+}
+
+//=================================================================================
+// function : getCurrentActors()
+// purpose  :
+//=================================================================================
+SMESH::TActorList SMESHGUI_ClippingDlg::getCurrentActors()
+{
+  SMESH::TActorList anActorList;
+  for( int i = 0, n = ActorList->count(); i < n; i++ )
+    if( ActorItem* anItem = dynamic_cast<ActorItem*>( ActorList->item( i ) ) )
+      if( anItem->checkState() == Qt::Checked )
+        if( SMESH_Actor* anActor = anItem->getActor() )
+          anActorList.push_back( anActor );
+  return anActorList;
+}
+
+//=================================================================================
+// function : dumpPlaneData()
+// purpose  :
+//=================================================================================
+void SMESHGUI_ClippingDlg::dumpPlaneData() const
+{
+  printf( "----------- Plane Data -----------\n" );
+  int anId = 1;
+  SMESH::TPlaneDataVector::const_iterator anIter1 = myPlanes.begin();
+  for ( ; anIter1 != myPlanes.end(); anIter1++, anId++ ) {
+    SMESH::TPlaneData aPlaneData = *anIter1;
+    SMESH::TPlane aPlane = aPlaneData.Plane;
+    vtkFloatingPointType* aNormal = aPlane->GetNormal();
+    vtkFloatingPointType* anOrigin = aPlane->GetOrigin();
+    printf( "Plane N%d:\n", anId );
+    printf( "  Normal = ( %f, %f, %f )\n", aNormal[0], aNormal[1], aNormal[2] );
+    printf( "  Origin = ( %f, %f, %f )\n", anOrigin[0], anOrigin[1], anOrigin[2] );
+
+    SMESH::TActorList anActorList = aPlaneData.ActorList;
+    SMESH::TActorList::const_iterator anIter2 = anActorList.begin();
+    for ( ; anIter2 != anActorList.end(); anIter2++ ) {
+      if( vtkActor* aVTKActor = *anIter2 ) {
+        if( SMESH_Actor* anActor = SMESH_Actor::SafeDownCast( aVTKActor ) )
+          printf( "  - Actor: '%s'\n", anActor->getName() );
+      }
+      else
+        printf( "  - Actor: NULL\n");
+    }
+  }
+  printf( "----------------------------------\n" );
 }

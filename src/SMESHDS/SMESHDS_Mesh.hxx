@@ -50,7 +50,7 @@
 #include <NCollection_DataMap.hxx>
 #include <map>
 /*
- * Using of native haah_map isn't portable and don't work on WIN32 platform.
+ * Using of native hash_map isn't portable and don't work on WIN32 platform.
  * So this functionality implement on new NCollection_DataMap technology
  */
 #include "SMESHDS_DataMapOfShape.hxx"
@@ -61,6 +61,8 @@ class SMESHDS_EXPORT SMESHDS_Mesh:public SMDS_Mesh{
 public:
   SMESHDS_Mesh(int theMeshID, bool theIsEmbeddedMode);
   bool IsEmbeddedMode();
+  void SetPersistentId(int id);
+  int GetPersistentId() const;
 
   void ShapeToMesh(const TopoDS_Shape & S);
   TopoDS_Shape ShapeToMesh() const;
@@ -354,27 +356,27 @@ public:
                                      const SMDS_MeshNode * n37,
                                      const SMDS_MeshNode * n48);
 
-  virtual SMDS_MeshFace* AddPolygonalFaceWithID (std::vector<int> nodes_ids,
-                                                 const int        ID);
+  virtual SMDS_MeshFace* AddPolygonalFaceWithID (const std::vector<int>& nodes_ids,
+                                                 const int               ID);
 
-  virtual SMDS_MeshFace* AddPolygonalFaceWithID (std::vector<const SMDS_MeshNode*> nodes,
-                                                 const int                         ID);
+  virtual SMDS_MeshFace* AddPolygonalFaceWithID (const std::vector<const SMDS_MeshNode*>& nodes,
+                                                 const int                                ID);
 
-  virtual SMDS_MeshFace* AddPolygonalFace (std::vector<const SMDS_MeshNode*> nodes);
-
-  virtual SMDS_MeshVolume* AddPolyhedralVolumeWithID
-                           (std::vector<int> nodes_ids,
-                            std::vector<int> quantities,
-                            const int        ID);
+  virtual SMDS_MeshFace* AddPolygonalFace (const std::vector<const SMDS_MeshNode*>& nodes);
 
   virtual SMDS_MeshVolume* AddPolyhedralVolumeWithID
-                           (std::vector<const SMDS_MeshNode*> nodes,
-                            std::vector<int>                  quantities,
-                            const int                         ID);
+                           (const std::vector<int>& nodes_ids,
+                            const std::vector<int>& quantities,
+                            const int               ID);
+
+  virtual SMDS_MeshVolume* AddPolyhedralVolumeWithID
+                           (const std::vector<const SMDS_MeshNode*>& nodes,
+                            const std::vector<int>&                  quantities,
+                            const int                                ID);
 
   virtual SMDS_MeshVolume* AddPolyhedralVolume
-                           (std::vector<const SMDS_MeshNode*> nodes,
-                            std::vector<int>                  quantities);
+                           (const std::vector<const SMDS_MeshNode*>& nodes,
+                            const std::vector<int>&                  quantities);
 
   void MoveNode(const SMDS_MeshNode *, double x, double y, double z);
   virtual void RemoveNode(const SMDS_MeshNode *);
@@ -423,6 +425,7 @@ public:
   int ShapeToIndex(const TopoDS_Shape & aShape) const;
   const TopoDS_Shape& IndexToShape(int ShapeIndex) const;
   int MaxShapeIndex() const { return myIndexToShape.Extent(); }
+  int MaxSubMeshIndex() const;
 
   SMESHDS_SubMesh * NewSubMesh(int Index);
   int AddCompoundSubmesh(const TopoDS_Shape& S, TopAbs_ShapeEnum type = TopAbs_SHAPE);
@@ -449,7 +452,7 @@ private:
     if ( it == myShapeIndexToSubMesh.end() )
       it = myShapeIndexToSubMesh.insert( std::make_pair(Index, new SMESHDS_SubMesh() )).first;
     it->second->AddNode( aNode ); // add aNode to submesh
-    }
+  }
   
   /*int HashCode( const TopoDS_Shape& S, const Standard_Integer theUpper ) const
   {
@@ -462,7 +465,7 @@ private:
 
   ShapeToHypothesis          myShapeToHypothesis;
 
-  int                        myMeshID;
+  int                        myMeshID, myPersistentID;
   TopoDS_Shape               myShape;
 
   typedef std::map<int,SMESHDS_SubMesh*> TShapeIndexToSubMesh;

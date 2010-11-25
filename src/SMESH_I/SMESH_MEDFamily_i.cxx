@@ -126,7 +126,7 @@ throw (SALOME::SALOME_Exception)
  * CORBA: Accessor for attributes identifiers
  */
 //=============================================================================
-SALOME_MED::long_array*  SMESH_MEDFamily_i::getAttributesIdentifiers() 
+SALOME_TYPES::ListOfLong*  SMESH_MEDFamily_i::getAttributesIdentifiers() 
 throw (SALOME::SALOME_Exception)
 {
   if (_subMeshDS==NULL)
@@ -139,7 +139,7 @@ throw (SALOME::SALOME_Exception)
                                    ,SALOME::BAD_PARAM);
     };
   
-  SALOME_MED::long_array_var myseq= new SALOME_MED::long_array;
+  SALOME_TYPES::ListOfLong_var myseq= new SALOME_TYPES::ListOfLong;
   myseq->length(_numberOfAttribute);
   for (int i=0;i<_numberOfAttribute;i++)
     {
@@ -176,7 +176,7 @@ CORBA::Long SMESH_MEDFamily_i::getAttributeIdentifier(CORBA::Long i)
  * CORBA: Accessor for attributes values
  */
 //=============================================================================
-SALOME_MED::long_array*  SMESH_MEDFamily_i::getAttributesValues() 
+SALOME_TYPES::ListOfLong*  SMESH_MEDFamily_i::getAttributesValues() 
   throw (SALOME::SALOME_Exception)
 {
   if (_subMeshDS==NULL)
@@ -190,7 +190,7 @@ SALOME_MED::long_array*  SMESH_MEDFamily_i::getAttributesValues()
                                    ,SALOME::BAD_PARAM);
     };
 
-  SALOME_MED::long_array_var myseq= new SALOME_MED::long_array;
+  SALOME_TYPES::ListOfLong_var myseq= new SALOME_TYPES::ListOfLong;
   myseq->length(_numberOfAttribute);
   for (int i=0;i<_numberOfAttribute;i++)
     {
@@ -224,7 +224,7 @@ CORBA::Long  SMESH_MEDFamily_i::getAttributeValue(CORBA::Long i)
  * CORBA: Accessor for attributes desriptions
  */
 //=============================================================================
-SALOME_MED::string_array * SMESH_MEDFamily_i::getAttributesDescriptions() 
+SALOME_TYPES::ListOfString * SMESH_MEDFamily_i::getAttributesDescriptions() 
   throw (SALOME::SALOME_Exception)
 {
   if (_subMeshDS==NULL)
@@ -236,7 +236,7 @@ SALOME_MED::string_array * SMESH_MEDFamily_i::getAttributesDescriptions()
       THROW_SALOME_CORBA_EXCEPTION("No attributes"\
                                    ,SALOME::BAD_PARAM);
     }
-  SALOME_MED::string_array_var myseq = new SALOME_MED::string_array;
+  SALOME_TYPES::ListOfString_var myseq = new SALOME_TYPES::ListOfString;
   for (int i=0;i<_numberOfAttribute;i++)
     {
       myseq[i]=CORBA::string_dup(_attributeDescription[i].c_str());
@@ -292,7 +292,7 @@ char * SMESH_MEDFamily_i::getGroupName( CORBA::Long i)
  * CORBA: Accessor for all the groups name
  */
 //=============================================================================
-SALOME_MED::string_array* SMESH_MEDFamily_i::getGroupsNames()
+SALOME_TYPES::ListOfString* SMESH_MEDFamily_i::getGroupsNames()
   throw (SALOME::SALOME_Exception)
 {
   MESSAGE("!!! NOT YET IMPLEMENTED !!!!");

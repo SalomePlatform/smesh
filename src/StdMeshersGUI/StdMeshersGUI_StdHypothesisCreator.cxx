@@ -19,23 +19,26 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+//  File   : StdMeshersGUI_StdHypothesisCreator.cxx
+//  Author : Alexander SOLOVYOV, Open CASCADE S.A.S.
+//  SMESH includes
 
-// File   : StdMeshersGUI_StdHypothesisCreator.cxx
-// Author : Alexander SOLOVYOV, Open CASCADE S.A.S.
-// SMESH includes
-//
 #include "StdMeshersGUI_StdHypothesisCreator.h"
 
 #include <SMESHGUI.h>
 #include <SMESHGUI_SpinBox.h>
 #include <SMESHGUI_HypothesesUtils.h>
 #include <SMESHGUI_Utils.h>
+
 #include <SMESH_TypeFilter.hxx>
 #include <SMESH_NumberFilter.hxx>
-#include "StdMeshersGUI_ObjectReferenceParamWdg.h"
-#include "StdMeshersGUI_LayerDistributionParamWdg.h"
-#include "StdMeshersGUI_SubShapeSelectorWdg.h"
+
 #include "StdMeshersGUI_FixedPointsParamWdg.h"
+#include "StdMeshersGUI_LayerDistributionParamWdg.h"
+#include "StdMeshersGUI_ObjectReferenceParamWdg.h"
+#include "StdMeshersGUI_QuadrangleParamWdg.h"
+#include "StdMeshersGUI_SubShapeSelectorWdg.h"
+
 #include <SALOMEDSClient_Study.hxx>
 
 // SALOME GUI includes
@@ -45,6 +48,7 @@
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_BasicHypothesis)
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
+#include CORBA_SERVER_HEADER(SMESH_Group)
 
 // Qt includes
 #include <QHBoxLayout>
@@ -187,10 +191,10 @@ namespace {
    */
   //================================================================================
 
-  class TDoubleSliderWith2Lables: public QWidget
+  class TDoubleSliderWith2Labels: public QWidget
   {
   public:
-    TDoubleSliderWith2Lables( const QString& leftLabel, const QString& rightLabel,
+    TDoubleSliderWith2Labels( const QString& leftLabel, const QString& rightLabel,
                               const double   initValue, const double   bottom,
                               const double   top      , const double   precision,
                               QWidget *      parent=0 , const char *   name=0 )
@@ -199,7 +203,7 @@ namespace {
       setObjectName(name);
 
       QHBoxLayout* aHBoxL = new QHBoxLayout(this);
-      
+
       if ( !leftLabel.isEmpty() ) {
         QLabel* aLeftLabel = new QLabel( this );
         aLeftLabel->setText( leftLabel );
@@ -259,6 +263,25 @@ namespace {
   }
   //================================================================================
   /*!
+   * \brief Retrieve SMESH_Mesh held by widget
+   */
+  //================================================================================
+
+  inline SMESH::ListOfGroups_var groupsFromWdg(const QWidget* wdg)
+  {
+    SMESH::ListOfGroups_var groups = new SMESH::ListOfGroups;
+    const StdMeshersGUI_ObjectReferenceParamWdg * objRefWdg =
+      dynamic_cast<const StdMeshersGUI_ObjectReferenceParamWdg*>( wdg );
+    if ( objRefWdg )
+    {
+      groups->length( objRefWdg->NbObjects() );
+      for ( unsigned i = 0; i < groups->length(); ++i )
+        groups[i] = objRefWdg->GetObject< SMESH::SMESH_GroupBase >(i);
+    }
+    return groups;
+  }
+  //================================================================================
+  /*!
    * \brief creates a filter for selection of shapes of given dimension
     * \param dim - dimension
     * \param subShapeType - required type of subshapes, number of which must be \a nbSubShapes
@@ -312,6 +335,15 @@ namespace {
     StdMeshersGUI_ObjectReferenceParamWdg* w =
       new StdMeshersGUI_ObjectReferenceParamWdg( filter, 0);
     w->SetObject( object.in() );
+    return w;
+  }
+  QWidget* newObjRefParamWdg( SUIT_SelectionFilter*    filter,
+                              SMESH::string_array_var& objEntries)
+  {
+    StdMeshersGUI_ObjectReferenceParamWdg* w =
+      new StdMeshersGUI_ObjectReferenceParamWdg( filter, 0, /*multiSel=*/true);
+    w->SetObjects( objEntries );
+    w->activateSelection();
     return w;
   }
 
@@ -379,6 +411,12 @@ bool StdMeshersGUI_StdHypothesisCreator::checkParams( QString& msg ) const
     if ( ok )
       deactivateObjRefParamWdg( customWidgets() );
   }
+  else if ( hypType().startsWith("ImportSource" ))
+  {
+    StdMeshersGUI_ObjectReferenceParamWdg* w =
+      widget< StdMeshersGUI_ObjectReferenceParamWdg >( 0 );
+    ok = ( w->IsObjectSelected() );
+  }
   else if ( hypType() == "LayerDistribution" || hypType() == "LayerDistribution2D" )
   {
     StdMeshersGUI_LayerDistributionParamWdg* w = 
@@ -387,9 +425,11 @@ bool StdMeshersGUI_StdHypothesisCreator::checkParams( QString& msg ) const
   }
   else if ( hypType() == "QuadrangleParams" )
   {
-    StdMeshersGUI_SubShapeSelectorWdg* w = 
-      widget< StdMeshersGUI_SubShapeSelectorWdg >( 0 );
-    ok = ( w->GetListSize() > 0 );
+    //StdMeshersGUI_SubShapeSelectorWdg* w =
+    //  widget< StdMeshersGUI_SubShapeSelectorWdg >( 0 );
+    //ok = ( w->GetListSize() > 0 );
+    //StdMeshersGUI_QuadrangleParamWdg* w =
+    //  widget< StdMeshersGUI_QuadrangleParamWdg >( 1 );
   }
   return ok;
 }
@@ -604,18 +644,43 @@ QString StdMeshersGUI_StdHypothesisCreator::storeParams() const
                                geomFromWdg ( getWidgetForParam( 3 )), // tgt1
                                geomFromWdg ( getWidgetForParam( 5 ))); // tgt2
     }
+    else if( hypType()=="ImportSource1D" )
+    {
+      StdMeshers::StdMeshers_ImportSource1D_var h =
+        StdMeshers::StdMeshers_ImportSource1D::_narrow( hypothesis() );
+
+      SMESH::ListOfGroups_var groups = groupsFromWdg( getWidgetForParam( 0 ));
+      h->SetSourceEdges( groups.in() );
+      QCheckBox* toCopyMesh   = widget< QCheckBox >( 1 );
+      QCheckBox* toCopyGroups = widget< QCheckBox >( 2 );
+      h->SetCopySourceMesh( toCopyMesh->isChecked(), toCopyGroups->isChecked());
+    }
+    else if( hypType()=="ImportSource2D" )
+    {
+      StdMeshers::StdMeshers_ImportSource2D_var h =
+        StdMeshers::StdMeshers_ImportSource2D::_narrow( hypothesis() );
+
+      SMESH::ListOfGroups_var groups = groupsFromWdg( getWidgetForParam( 0 ));
+      h->SetSourceFaces( groups.in() );
+      QCheckBox* toCopyMesh   = widget< QCheckBox >( 1 );
+      QCheckBox* toCopyGroups = widget< QCheckBox >( 2 );
+      h->SetCopySourceMesh( toCopyMesh->isChecked(), toCopyGroups->isChecked());
+    }
     else if( hypType()=="QuadrangleParams" )
     {
       StdMeshers::StdMeshers_QuadrangleParams_var h =
         StdMeshers::StdMeshers_QuadrangleParams::_narrow( hypothesis() );
-      StdMeshersGUI_SubShapeSelectorWdg* w = 
+      StdMeshersGUI_SubShapeSelectorWdg* w1 =
         widget< StdMeshersGUI_SubShapeSelectorWdg >( 0 );
-      if (w) {
-        if( w->GetListSize() > 0 ) {
-          h->SetTriaVertex( w->GetListOfIDs()[0] ); // getlist must be called once
-          const char * entry = w->GetMainShapeEntry();
-          h->SetObjectEntry( entry );
+      StdMeshersGUI_QuadrangleParamWdg* w2 =
+        widget< StdMeshersGUI_QuadrangleParamWdg >( 1 );
+      if (w1 && w2) {
+        if (w1->GetListSize() > 0) {
+          h->SetTriaVertex(w1->GetListOfIDs()[0]); // getlist must be called once
+          const char * entry = w1->GetMainShapeEntry();
+          h->SetObjectEntry(entry);
         }
+        h->SetQuadType(StdMeshers::QuadType(w2->GetType()));
       }
     }
   }
@@ -860,8 +925,10 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
     item.myName = tr( "SMESH_FINENESS_PARAM" );
     //item.myValue = h->GetFineness();
     p.append( item );
-    customWidgets()->append
-      ( new TDoubleSliderWith2Lables( "0 ", " 1", h->GetFineness(), 0, 1, 0.01, 0 ));
+    SMESHGUI_SpinBox* _autoLengthSpinBox = new SMESHGUI_SpinBox(dlg());
+    _autoLengthSpinBox->RangeStepAndValidator(0, 1, 0.01, "length_precision");
+    _autoLengthSpinBox->SetValue(h->GetFineness());
+    customWidgets()->append( _autoLengthSpinBox);
   }
   else if( hypType()=="NumberOfLayers" )
   {
@@ -982,13 +1049,63 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
     customWidgets()->append( newObjRefParamWdg( filterForShapeOfDim( 0 ),
                                                h->GetTargetVertex( 2 )));
   }
-  else if( hypType()=="QuadrangleParams" )
+  else if( hypType()=="ImportSource1D" )
+  {
+    StdMeshers::StdMeshers_ImportSource1D_var h =
+      StdMeshers::StdMeshers_ImportSource1D::_narrow( hyp );
+
+    SMESH::string_array_var groupEntries = h->GetSourceEdges();
+    CORBA::Boolean toCopyMesh, toCopyGroups;
+    h->GetCopySourceMesh(toCopyMesh, toCopyGroups);
+
+    item.myName = tr( "SMESH_SOURCE_EDGES" ); p.append( item );
+    customWidgets()->append( newObjRefParamWdg( new SMESH_TypeFilter( GROUP_EDGE ), 
+                                                groupEntries));
+
+    item.myName = tr( "SMESH_COPY_MESH" ); p.append( item );
+    QCheckBox* aQCheckBox = new QCheckBox(dlg());
+    aQCheckBox->setChecked( toCopyMesh );
+    connect( aQCheckBox, SIGNAL(  stateChanged(int) ), this, SLOT( onValueChanged() ));
+    customWidgets()->append( aQCheckBox );
+
+    item.myName = tr( "SMESH_TO_COPY_GROUPS" ); p.append( item );
+    aQCheckBox = new QCheckBox(dlg());
+    aQCheckBox->setChecked( toCopyGroups );
+    aQCheckBox->setEnabled( toCopyMesh );
+    customWidgets()->append( aQCheckBox );
+  }
+  else if( hypType()=="ImportSource2D" )
+  {
+    StdMeshers::StdMeshers_ImportSource2D_var h =
+      StdMeshers::StdMeshers_ImportSource2D::_narrow( hyp );
+
+    SMESH::string_array_var groupEntries = h->GetSourceFaces();
+    CORBA::Boolean toCopyMesh, toCopyGroups;
+    h->GetCopySourceMesh(toCopyMesh, toCopyGroups);
+
+    item.myName = tr( "SMESH_SOURCE_FACES" ); p.append( item );
+    customWidgets()->append( newObjRefParamWdg( new SMESH_TypeFilter( GROUP_FACE ), 
+                                                groupEntries));
+
+    item.myName = tr( "SMESH_COPY_MESH" ); p.append( item );
+    QCheckBox* aQCheckBox = new QCheckBox(dlg());
+    aQCheckBox->setChecked( toCopyMesh );
+    connect( aQCheckBox, SIGNAL(  stateChanged(int) ), this, SLOT( onValueChanged() ));
+    customWidgets()->append( aQCheckBox );
+
+    item.myName = tr( "SMESH_COPY_GROUPS" ); p.append( item );
+    aQCheckBox = new QCheckBox(dlg());
+    aQCheckBox->setChecked( toCopyGroups );
+    aQCheckBox->setEnabled( toCopyMesh );
+    customWidgets()->append( aQCheckBox );
+  }
+  else if (hypType() == "QuadrangleParams")
   {
     StdMeshers::StdMeshers_QuadrangleParams_var h =
-      StdMeshers::StdMeshers_QuadrangleParams::_narrow( hyp );
+      StdMeshers::StdMeshers_QuadrangleParams::_narrow(hyp);
 
-    item.myName = tr( "SMESH_BASE_VERTEX" );
-    p.append( item );
+    item.myName = tr("SMESH_BASE_VERTEX");
+    p.append(item);
 
     StdMeshersGUI_SubShapeSelectorWdg* aDirectionWidget =
       new StdMeshersGUI_SubShapeSelectorWdg();
@@ -996,21 +1113,32 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
     aDirectionWidget->SetSubShType(TopAbs_VERTEX);
     QString anEntry = SMESHGUI_GenericHypothesisCreator::getShapeEntry();
     QString aMainEntry = SMESHGUI_GenericHypothesisCreator::getMainShapeEntry();
-    if ( anEntry == "" )
+    if (anEntry == "")
       anEntry = h->GetObjectEntry();
-    aDirectionWidget->SetGeomShapeEntry( anEntry );
-    aDirectionWidget->SetMainShapeEntry( aMainEntry );
-    if ( !isCreation() ) {
+    aDirectionWidget->SetGeomShapeEntry(anEntry);
+    aDirectionWidget->SetMainShapeEntry(aMainEntry);
+    if (!isCreation()) {
       SMESH::long_array_var aVec = new SMESH::long_array;
       int vertID = h->GetTriaVertex();
-      if(vertID>0) {
+      if (vertID > 0) {
         aVec->length(1);
         aVec[0] = vertID;
-        aDirectionWidget->SetListOfIDs( aVec );
+        aDirectionWidget->SetListOfIDs(aVec);
       }
     }
-    aDirectionWidget->showPreview( true );
-    customWidgets()->append ( aDirectionWidget );
+    aDirectionWidget->showPreview(true);
+
+    item.myName = tr("SMESH_QUAD_TYPE");
+    p.append(item);
+
+    StdMeshersGUI_QuadrangleParamWdg* aTypeWidget =
+      new StdMeshersGUI_QuadrangleParamWdg();
+    if (!isCreation()) {
+      aTypeWidget->SetType(int(h->GetQuadType()));
+    }
+
+    customWidgets()->append(aDirectionWidget);
+    customWidgets()->append(aTypeWidget);
   }
   else
     res = false;
@@ -1129,6 +1257,8 @@ QString StdMeshersGUI_StdHypothesisCreator::hypTypeName( const QString& t ) cons
     types.insert( "ProjectionSource1D", "PROJECTION_SOURCE_1D" );
     types.insert( "ProjectionSource2D", "PROJECTION_SOURCE_2D" );
     types.insert( "ProjectionSource3D", "PROJECTION_SOURCE_3D" );
+    types.insert( "ImportSource1D", "IMPORT_SOURCE_1D" );
+    types.insert( "ImportSource2D", "IMPORT_SOURCE_2D" );
     types.insert( "NumberOfLayers", "NUMBER_OF_LAYERS" );
     types.insert( "LayerDistribution", "LAYER_DISTRIBUTION" );
     types.insert( "NumberOfLayers2D", "NUMBER_OF_LAYERS_2D" );
@@ -1181,9 +1311,9 @@ bool StdMeshersGUI_StdHypothesisCreator::getParamFromCustomWidget( StdParam & pa
                                                                    QWidget*   widget) const
 {
   if ( hypType()=="AutomaticLength" ) {
-    TDoubleSliderWith2Lables* w = dynamic_cast<TDoubleSliderWith2Lables*>( widget );
+    SMESHGUI_SpinBox* w = dynamic_cast<SMESHGUI_SpinBox*>( widget );
     if ( w ) {
-      param.myValue = w->value();
+      param.myValue = w->GetValue();
       return true;
     }
   }
@@ -1215,11 +1345,24 @@ bool StdMeshersGUI_StdHypothesisCreator::getParamFromCustomWidget( StdParam & pa
     param.myValue = w->GetValue();
     return true;
   }
+  if ( widget->inherits( "StdMeshersGUI_QuadrangleParamWdg" ))
+  {
+    //const StdMeshersGUI_QuadrangleParamWdg * w =
+    //  static_cast<const StdMeshersGUI_QuadrangleParamWdg*>( widget );
+    param.myValue = "QuadType";
+    return true;
+  }
   if ( widget->inherits( "StdMeshersGUI_FixedPointsParamWdg" ))
   {
     const StdMeshersGUI_FixedPointsParamWdg * w =
       static_cast<const StdMeshersGUI_FixedPointsParamWdg*>( widget );
     param.myValue = w->GetValue();
+    return true;
+  }
+  if ( widget->inherits( "QCheckBox" ))
+  {
+    //const QCheckBox * w = static_cast<const QCheckBox*>( widget );
+    //param.myValue = w->isChecked();
     return true;
   }
   return false;
@@ -1233,7 +1376,8 @@ bool StdMeshersGUI_StdHypothesisCreator::getParamFromCustomWidget( StdParam & pa
 
 void StdMeshersGUI_StdHypothesisCreator::onReject()
 {
-  if ( hypType().startsWith("ProjectionSource" ))
+  if ( hypType().startsWith("ProjectionSource" ) ||
+       hypType().startsWith("ImportSource" ))
   {
     // Uninstall filters of StdMeshersGUI_ObjectReferenceParamWdg
     deactivateObjRefParamWdg( customWidgets() );
@@ -1242,18 +1386,33 @@ void StdMeshersGUI_StdHypothesisCreator::onReject()
 
 //================================================================================
 /*!
- * \brief 
+ * \brief Update widgets dependent on paramWidget
  */
 //================================================================================
 
 void StdMeshersGUI_StdHypothesisCreator::valueChanged( QWidget* paramWidget)
 {
-  if ( hypType() == "MaxLength" && paramWidget == getWidgetForParam(1) ) {
+  if ( hypType() == "MaxLength" && paramWidget == getWidgetForParam(1) )
+  {
     getWidgetForParam(0)->setEnabled( !widget< QCheckBox >( 1 )->isChecked() );
     if ( !getWidgetForParam(0)->isEnabled() ) {
       StdMeshers::StdMeshers_MaxLength_var h =
         StdMeshers::StdMeshers_MaxLength::_narrow( initParamsHypothesis() );
       widget< QtxDoubleSpinBox >( 0 )->setValue( h->GetPreestimatedLength() );
+    }
+  }
+  else if ( hypType().startsWith("ImportSource") && paramWidget == getWidgetForParam(1) )
+  {
+    QCheckBox* toCopyMesh   = (QCheckBox*) paramWidget;
+    QCheckBox* toCopyGroups = widget< QCheckBox >( 2 );
+    if ( !toCopyMesh->isChecked() )
+    {
+      toCopyGroups->setChecked( false );
+      toCopyGroups->setEnabled( false );
+    }
+    else
+    {
+      toCopyGroups->setEnabled( true );
     }
   }
 }

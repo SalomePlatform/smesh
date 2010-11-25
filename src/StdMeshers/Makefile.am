@@ -72,7 +72,10 @@ salomeinclude_HEADERS = \
 	StdMeshers_MaxLength.hxx \
 	StdMeshers_QuadrangleParams.hxx \
 	StdMeshers_RadialQuadrangle_1D2D.hxx \
-	StdMeshers_HexaFromSkin_3D.hxx
+	StdMeshers_HexaFromSkin_3D.hxx \
+	StdMeshers_ImportSource.hxx \
+	StdMeshers_Import_1D.hxx \
+	StdMeshers_Import_1D2D.hxx
 
 # Libraries targets
 
@@ -123,7 +126,10 @@ dist_libStdMeshers_la_SOURCES = \
 	StdMeshers_MaxLength.cxx \
 	StdMeshers_QuadrangleParams.cxx \
 	StdMeshers_RadialQuadrangle_1D2D.cxx \
-	StdMeshers_HexaFromSkin_3D.cxx
+	StdMeshers_HexaFromSkin_3D.cxx \
+	StdMeshers_ImportSource.cxx \
+	StdMeshers_Import_1D.cxx \
+	StdMeshers_Import_1D2D.cxx
 
 
 # additionnal information to compil and link file

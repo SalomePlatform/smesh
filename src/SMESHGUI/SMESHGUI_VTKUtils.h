@@ -57,6 +57,8 @@ class SMESHGUI;
 class SMESH_Actor;
 class SALOME_Actor;
 
+class vtkActor;
+
 namespace SMESH
 {
   //----------------------------------------------------------------------------
@@ -185,6 +187,14 @@ SMESHGUI_EXPORT
 
 SMESHGUI_EXPORT
   void SetControlsPrecision( const long );
+
+  //----------------------------------------------------------------------------
+SMESHGUI_EXPORT
+  bool ComputeClippingPlaneParameters( std::list<vtkActor*> theActorList,
+                                       vtkFloatingPointType theNormal[3],
+                                       vtkFloatingPointType theDist,
+                                       vtkFloatingPointType theBounds[6],
+                                       vtkFloatingPointType theOrigin[3] );
 };
 
 #endif // SMESHGUI_VTKUTILS_H
