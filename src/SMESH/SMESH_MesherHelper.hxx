@@ -501,7 +501,10 @@ protected:
   // to create quadratic elements
   bool            myCreateQuadratic;
   bool            mySetElemOnShape;
-  std::set< int > myOkNodePosShapes;
+
+  std::map< int,bool > myNodePosShapesValidity;
+  bool toCheckPosOnShape(int shapeID ) const;
+  void setPosOnShapeValidity(int shapeID, bool ok ) const;
 
 };
 
