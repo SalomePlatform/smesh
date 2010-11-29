@@ -25,35 +25,21 @@
 //  Author : Jean-Michel BOULCOURT
 //  Module : SMESH
 //
+
 #include "SMDS_SpacePosition.hxx"
 
-//=======================================================================
-//function : SMDS_SpacePosition
-//purpose  : 
-//=======================================================================
+SMDS_SpacePosition* SMDS_SpacePosition::_originPosition = new SMDS_SpacePosition();
 
-SMDS_SpacePosition::SMDS_SpacePosition(double x, double y, double z):
-        SMDS_Position(0)
+SMDS_SpacePosition::SMDS_SpacePosition(double x, double y, double z)
 {
-        myCoords[0]=x;
-        myCoords[1]=y;
-        myCoords[2]=z;
 }
 
-/**
-*/
 SMDS_TypeOfPosition SMDS_SpacePosition::GetTypeOfPosition() const
 {
-        return SMDS_TOP_3DSPACE;
-}
-
-const double * SMDS_SpacePosition::Coords() const
-{
-        return myCoords;
+  return SMDS_TOP_3DSPACE;
 }
 
 SMDS_PositionPtr SMDS_SpacePosition::originSpacePosition()
 {
-  static SMDS_PositionPtr staticpos (new SMDS_SpacePosition());
-  return staticpos;
+  return _originPosition;
 }

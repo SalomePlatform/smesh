@@ -407,11 +407,13 @@ bool StdMeshers_Projection_3D::Compute(SMESH_Mesh& aMesh, const TopoDS_Shape& aS
                                  nodes[6],
                                  nodes[7], id, force3d); break;
     default: // polyhedron
-      const SMDS_PolyhedralVolumeOfNodes * poly =
-        dynamic_cast<const SMDS_PolyhedralVolumeOfNodes*>( srcVol );
+      const SMDS_VtkVolume * poly =
+        dynamic_cast<const SMDS_VtkVolume*>( srcVol );
       if ( !poly )
         RETURN_BAD_RESULT("Unexpected volume type");
-      tgtVol = tgtMeshDS->AddPolyhedralVolume( nodes, poly->GetQuanities() );
+      if ( !poly->IsPoly())
+        RETURN_BAD_RESULT("Unexpected volume type");
+      tgtVol = tgtMeshDS->AddPolyhedralVolume( nodes, poly->GetQuantities() );
     }
     if ( tgtVol ) {
       tgtMeshDS->SetMeshElementOnShape( tgtVol, helper.GetSubShapeID() );

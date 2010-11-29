@@ -25,12 +25,14 @@
 //  Author : Paul RASCLE, EDF
 //  Module : SMESH
 //
+#define CHRONODEF
 #include "SMESH_Gen.hxx"
 #include "SMESH_subMesh.hxx"
 #include "SMESH_HypoFilter.hxx"
 #include "SMESHDS_Document.hxx"
 #include "SMDS_MeshElement.hxx"
 #include "SMDS_MeshNode.hxx"
+#include "SMDS_Mesh.hxx"
 
 #include "utilities.h"
 #include "OpUtil.hxx"
@@ -40,6 +42,8 @@
 #include <BRep_Tool.hxx>
 #include <TopTools_ListOfShape.hxx>
 #include <TopTools_ListIteratorOfListOfShape.hxx>
+
+#include "memoire.h"
 
 using namespace std;
 
@@ -51,10 +55,13 @@ using namespace std;
 
 SMESH_Gen::SMESH_Gen()
 {
-  MESSAGE("SMESH_Gen::SMESH_Gen");
-  _localId = 0;
-  _hypId = 0;
-  _segmentation = _nbSegments = 10;
+        MESSAGE("SMESH_Gen::SMESH_Gen");
+        _localId = 0;
+        _hypId = 0;
+        _segmentation = 10;
+        SMDS_Mesh::_meshList.clear();
+        MESSAGE(SMDS_Mesh::_meshList.size());
+        _counters = new counters(100);
 }
 
 //=============================================================================
@@ -108,6 +115,7 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
                         TSetOfInt*            aShapesId)
 {
   MESSAGE("SMESH_Gen::Compute");
+  MEMOSTAT;
 
   bool ret = true;
 
@@ -151,6 +159,7 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
       else if ( aShapesId )
         aShapesId->insert( smToCompute->GetId() );
     }
+    //aMesh.GetMeshDS()->Modified();
     return ret;
   }
   else
@@ -265,6 +274,26 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
   }
 
   MESSAGE( "VSR - SMESH_Gen::Compute() finished, OK = " << ret);
+  MEMOSTAT;
+
+  SMESHDS_Mesh *myMesh = aMesh.GetMeshDS();
+  myMesh->adjustStructure();
+  MESSAGE("*** compactMesh after compute");
+  myMesh->compactMesh();
+  //myMesh->adjustStructure();
+  list<int> listind = myMesh->SubMeshIndices();
+  list<int>::iterator it = listind.begin();
+  int total = 0;
+  for(; it != listind.end(); ++it)
+    {
+      ::SMESHDS_SubMesh *subMesh = myMesh->MeshElements(*it);
+      total +=  subMesh->getSize();
+    }
+  MESSAGE("total elements and nodes in submesh sets:" << total);
+  MESSAGE("Number of node objects " << SMDS_MeshNode::nbNodes);
+  MESSAGE("Number of cell objects " << SMDS_MeshCell::nbCells);
+  //myMesh->dumpGrid();
+  //aMesh.GetMeshDS()->Modified();
   return ret;
 }
 

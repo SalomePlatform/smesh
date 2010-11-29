@@ -235,7 +235,7 @@ void StdMeshers_Penta_3D::MakeNodes()
       //
       if ( SMESH_Block::IsEdgeID (aSID)) {
         const SMDS_EdgePosition* epos =
-          static_cast<const SMDS_EdgePosition*>(aNode->GetPosition().get());
+          static_cast<const SMDS_EdgePosition*>(aNode->GetPosition());
         myBlock.ComputeParameters( epos->GetUParameter(), aS, aCoords );
       }
       else {
@@ -1465,7 +1465,7 @@ bool StdMeshers_Penta_3D::LoadIJNodes(StdMeshers_IJNodeMap & theIJNodes,
     if(myTool->IsMedium(node))
       continue;
     const SMDS_EdgePosition* pos =
-      dynamic_cast<const SMDS_EdgePosition*>( node->GetPosition().get() );
+      dynamic_cast<const SMDS_EdgePosition*>( node->GetPosition() );
     if ( !pos ) {
       return false;
     }
@@ -1488,7 +1488,7 @@ bool StdMeshers_Penta_3D::LoadIJNodes(StdMeshers_IJNodeMap & theIJNodes,
     if(myTool->IsMedium(node))
       continue;
     const SMDS_EdgePosition* pos =
-      dynamic_cast<const SMDS_EdgePosition*>( node->GetPosition().get() );
+      dynamic_cast<const SMDS_EdgePosition*>( node->GetPosition() );
     if ( !pos ) {
       return false;
     }

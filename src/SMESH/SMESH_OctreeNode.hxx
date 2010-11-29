@@ -24,13 +24,14 @@
 //  inherites global class SMESH_Octree
 //  File      : SMESH_OctreeNode.hxx
 //  Created   : Tue Jan 16 16:00:00 2007
-//  Author    : Nicolas Geimer & Aurélien Motteux  (OCC)
+//  Author    : Nicolas Geimer & Aurelien Motteux  (OCC)
 //  Module    : SMESH
 //
 #ifndef _SMESH_OCTREENODE_HXX_
 #define _SMESH_OCTREENODE_HXX_
 
 #include "SMESH_Octree.hxx"
+#include <gp_Pnt.hxx>
 #include "SMDS_MeshNode.hxx"
 
 #include <list>
@@ -63,7 +64,7 @@ public:
   virtual ~SMESH_OctreeNode () {};
 
   // Tells us if Node is inside the current box with the precision "precision"
-  virtual const bool isInside(const SMDS_MeshNode * Node, const double precision = 0.);
+  virtual const bool isInside(const gp_XYZ& p, const double precision = 0.);
 
   // Return in Result a list of Nodes potentials to be near Node
   void               NodesAround(const SMDS_MeshNode *            Node,
@@ -71,7 +72,7 @@ public:
                                  const double                     precision = 0.);
 
   // Return in dist2Nodes nodes mapped to their square distance from Node
-  bool               NodesAround(const SMDS_MeshNode *                   Node,
+  bool               NodesAround(const gp_XYZ& node,
                                  std::map<double, const SMDS_MeshNode*>& dist2Nodes,
                                  double                                  precision);
 

@@ -29,6 +29,7 @@
 #include "SMDS_FaceOfEdges.hxx"
 #include "SMDS_IteratorOfElements.hxx"
 #include "SMDS_MeshNode.hxx"
+#include "utilities.h"
 
 using namespace std;
 
@@ -111,6 +112,7 @@ SMDS_FaceOfEdges::SMDS_FaceOfEdges(const SMDS_MeshEdge* edge1,
                                    const SMDS_MeshEdge* edge2,
                                    const SMDS_MeshEdge* edge3)
 {
+  //MESSAGE("****************************************************** SMDS_FaceOfEdges");
         myNbEdges = 3;
         myEdges[0]=edge1;
         myEdges[1]=edge2;
@@ -123,6 +125,7 @@ SMDS_FaceOfEdges::SMDS_FaceOfEdges(const SMDS_MeshEdge* edge1,
                                    const SMDS_MeshEdge* edge3,
                                    const SMDS_MeshEdge* edge4)
 {
+  //MESSAGE("****************************************************** SMDS_FaceOfEdges");
         myNbEdges = 4;
         myEdges[0]=edge1;
         myEdges[1]=edge2;

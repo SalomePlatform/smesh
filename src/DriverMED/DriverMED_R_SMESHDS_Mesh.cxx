@@ -40,7 +40,7 @@
 #include <stdlib.h>
 
 #ifdef _DEBUG_
-static int MYDEBUG = 0;
+static int MYDEBUG = 1;
 //#define _DEXCEPT_
 #else
 static int MYDEBUG = 0;
@@ -161,9 +161,11 @@ DriverMED_R_SMESHDS_Mesh
           if(anIsNodeNum) {
             aNode = myMesh->AddNodeWithID
               (aCoords[0],aCoords[1],aCoords[2],aNodeInfo->GetElemNum(iElem));
+            //MESSAGE("AddNodeWithID " << aNodeInfo->GetElemNum(iElem));
           } else {
-            aNode = myMesh->AddNode
-              (aCoords[0],aCoords[1],aCoords[2]);
+            aNode = myMesh->AddNodeWithID
+              (aCoords[0],aCoords[1],aCoords[2], iElem+1);
+            //MESSAGE("AddNode " << aNode->GetID());
           }
           //cout<<aNode->GetID()<<": "<<aNode->X()<<", "<<aNode->Y()<<", "<<aNode->Z()<<endl;
 
@@ -225,12 +227,14 @@ DriverMED_R_SMESHDS_Mesh
                   if(anIsElemNum){
                     TInt anElemId = aPolygoneInfo->GetElemNum(iElem);
                     anElement = myMesh->AddPolygonalFaceWithID(aNodeIds,anElemId);
+                    //MESSAGE("AddPolygonalFaceWithID " << anElemId);
                   }
                   if(!anElement){
                     vector<const SMDS_MeshNode*> aNodes(aNbConn);
                     for(TInt iConn = 0; iConn < aNbConn; iConn++)
                       aNodes[iConn] = FindNode(myMesh,aNodeIds[iConn]);
                     anElement = myMesh->AddPolygonalFace(aNodes);
+                    //MESSAGE("AddPolygonalFace " << anElement->GetID());
                     isRenum = anIsElemNum;
                   }
 #ifndef _DEXCEPT_
@@ -270,21 +274,35 @@ DriverMED_R_SMESHDS_Mesh
                 typedef MED::TVector<int> TQuantities;
                 TQuantities aQuantities(aNbFaces);
                 TInt aNbNodes = aPolyedreInfo->GetNbNodes(iElem);
+                //MESSAGE("--- aNbNodes " << aNbNodes);
                 TNodeIds aNodeIds(aNbNodes);
                 for(TInt iFace = 0, iNode = 0; iFace < aNbFaces; iFace++){
+                  //MESSAGE("--- iface " << aNbFaces << " " << iFace);
                   MED::TCConnSlice aConnSlice = aConnSliceArr[iFace];
                   TInt aNbConn = aConnSlice.size();
                   aQuantities[iFace] = aNbConn;
 #ifdef _EDF_NODE_IDS_
+                  //MESSAGE(anIsNodeNum);
                   if(anIsNodeNum)
                     for(TInt iConn = 0; iConn < aNbConn; iConn++)
-                      aNodeIds[iNode++] = aNodeInfo->GetElemNum(aConnSlice[iConn] - 1);
+                      {
+                      //MESSAGE("iConn " << iConn << " aConnSlice[iConn] " << aConnSlice[iConn]);
+                      aNodeIds[iNode] = aNodeInfo->GetElemNum(aConnSlice[iConn] - 1);
+                      //MESSAGE("aNodeIds[" << iNode << "]=" << aNodeIds[iNode]);
+                      iNode++;
+                      }
                   else
                     for(TInt iConn = 0; iConn < aNbConn; iConn++)
+                      {
+                      //MESSAGE("iConn " << iConn);
                       aNodeIds[iNode++] = aConnSlice[iConn];
+                      }
 #else
                   for(TInt iConn = 0; iConn < aNbConn; iConn++)
+                    {
+                    //MESSAGE("iConn " << iConn);
                     aNodeIds[iNode++] = aConnSlice[iConn];
+                    }
 #endif          
                 }
 
@@ -298,12 +316,14 @@ DriverMED_R_SMESHDS_Mesh
                   if(anIsElemNum){
                     TInt anElemId = aPolyedreInfo->GetElemNum(iElem);
                     anElement = myMesh->AddPolyhedralVolumeWithID(aNodeIds,aQuantities,anElemId);
+                    //MESSAGE("AddPolyhedralVolumeWithID " << anElemId);
                   }
                   if(!anElement){
                     vector<const SMDS_MeshNode*> aNodes(aNbNodes);
                     for(TInt iConn = 0; iConn < aNbNodes; iConn++)
                       aNodes[iConn] = FindNode(myMesh,aNodeIds[iConn]);
                     anElement = myMesh->AddPolyhedralVolume(aNodes,aQuantities);
+                    //MESSAGE("AddPolyhedralVolume " << anElement->GetID());
                     isRenum = anIsElemNum;
                   }
 #ifndef _DEXCEPT_
@@ -378,10 +398,10 @@ DriverMED_R_SMESHDS_Mesh
                   anIsValidConnect = true;
 #ifndef _DEXCEPT_
                 }catch(const std::exception& exc){
-                  //INFOS("Follow exception was cought:\n\t"<<exc.what());
+                  INFOS("Following exception was caught:\n\t"<<exc.what());
                   aResult = DRS_FAIL;
                 }catch(...){
-                  //INFOS("Unknown exception was cought !!!");
+                  INFOS("Unknown exception was cought !!!");
                   aResult = DRS_FAIL;
                 }
 #endif          
@@ -552,7 +572,7 @@ DriverMED_R_SMESHDS_Mesh
                     break;
                   case ePYRA13:
                     aNbNodes = 13;
-                    // There is some differnce between SMDS and MED
+                    // There is some difference between SMDS and MED
                     if(anIsElemNum)
                       anElement = myMesh->AddVolumeWithID(aNodeIds[0], aNodeIds[1],
                                                           aNodeIds[2], aNodeIds[3],
@@ -693,13 +713,18 @@ DriverMED_R_SMESHDS_Mesh
                     }
                     break;
                   }
-
+//                  if (anIsElemNum) {
+//                    MESSAGE("add element with id " << aCellInfo->GetElemNum(iElem));
+//                  }
+//                  else {
+//                    MESSAGE("add element "<< anElement->GetID());
+//                  }
 #ifndef _DEXCEPT_
                 }catch(const std::exception& exc){
-                  //INFOS("Follow exception was cought:\n\t"<<exc.what());
+                  INFOS("The following exception was caught:\n\t"<<exc.what());
                   aResult = DRS_FAIL;
                 }catch(...){
-                  //INFOS("Unknown exception was cought !!!");
+                  INFOS("Unknown exception was caught !!!");
                   aResult = DRS_FAIL;
                 }
 #endif          
@@ -727,13 +752,15 @@ DriverMED_R_SMESHDS_Mesh
     }
 #ifndef _DEXCEPT_
   }catch(const std::exception& exc){
-    INFOS("Follow exception was cought:\n\t"<<exc.what());
+    INFOS("The following exception was caught:\n\t"<<exc.what());
     aResult = DRS_FAIL;
   }catch(...){
-    INFOS("Unknown exception was cought !!!");
+    INFOS("Unknown exception was caught !!!");
     aResult = DRS_FAIL;
   }
 #endif
+  if (myMesh)
+    myMesh->compactMesh();
   if(MYDEBUG) MESSAGE("Perform - aResult status = "<<aResult);
   return aResult;
 }
@@ -756,10 +783,10 @@ list<string> DriverMED_R_SMESHDS_Mesh::GetMeshNames(Status& theStatus)
       }
     }
   }catch(const std::exception& exc){
-    INFOS("Follow exception was cought:\n\t"<<exc.what());
+    INFOS("Following exception was caught:\n\t"<<exc.what());
     theStatus = DRS_FAIL;
   }catch(...){
-    INFOS("Unknown exception was cought !!!");
+    INFOS("Unknown exception was caught !!!");
     theStatus = DRS_FAIL;
   }
 
@@ -944,6 +971,9 @@ bool DriverMED_R_SMESHDS_Mesh::buildMeshGrille(const MED::PWrapper& theWrapper,
     for(MED::TInt iDim=0;iDim<aMeshDim;iDim++)
       aCoords[(int)iDim] = aMEDNodeCoord[(int)iDim];
     aNode = myMesh->AddNodeWithID(aCoords[0],aCoords[1],aCoords[2],(int)iNode);
+    if (!aNode) {
+      EXCEPTION(runtime_error,"buildMeshGrille Error. Node not created! "<<(int)iNode);
+    }
 
     if((aGrilleInfo->myFamNumNode).size() > 0){
       TInt aFamNum = aGrilleInfo->GetFamNumNode(iNode);
@@ -999,7 +1029,9 @@ bool DriverMED_R_SMESHDS_Mesh::buildMeshGrille(const MED::PWrapper& theWrapper,
     default:
       break;
     }
-    
+    if (!anElement) {
+      EXCEPTION(runtime_error,"buildMeshGrille Error. Element not created! "<<iCell);
+    }
     if((aGrilleInfo->myFamNum).size() > 0){
       TInt aFamNum = aGrilleInfo->GetFamNum(iCell);
       if ( checkFamilyID ( aFamily, aFamNum )){

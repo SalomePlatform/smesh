@@ -45,6 +45,7 @@ SMDS_PolyhedralVolumeOfNodes::SMDS_PolyhedralVolumeOfNodes
                                  vector<int>                   quantities)
 : SMDS_VolumeOfNodes(NULL, NULL, NULL, NULL)
 {
+  //MESSAGE("****************************************** SMDS_PolyhedralVolumeOfNodes");
   ChangeNodes(nodes, quantities);
 }
 

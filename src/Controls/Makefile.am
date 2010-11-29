@@ -43,6 +43,7 @@ dist_SMESHControls_SOURCES = \
 # additionnal information to compil and link file
 libSMESHControls_la_CPPFLAGS = \
 	$(CAS_CPPFLAGS) \
+        $(VTK_INCLUDES) \
 	$(BOOST_CPPFLAGS) \
 	$(KERNEL_CXXFLAGS) \
 	-I$(srcdir)/../SMDS \

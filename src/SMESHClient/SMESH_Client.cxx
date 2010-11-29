@@ -55,7 +55,7 @@
 #endif
 
 #ifdef _DEBUG_
-static int MYDEBUG = 0;
+static int MYDEBUG = 1;
 #else
 static int MYDEBUG = 0;
 #endif
@@ -635,6 +635,7 @@ SMESH_Client::SMESH_Client(CORBA::ORB_ptr theORB,
   mySMESHDSMesh(NULL),
   mySMDSMesh(NULL)
 {
+  MESSAGE("SMESH_Client::SMESH_Client");
   myMeshServer->Register();
 
   CORBA::Boolean anIsEmbeddedMode;
@@ -650,7 +651,8 @@ SMESH_Client::SMESH_Client(CORBA::ORB_ptr theORB,
     SMESH_Mesh* aMesh = reinterpret_cast<SMESH_Mesh*> (pointeur);
     if ( MYDEBUG )
       MESSAGE("SMESH_Client::SMESH_Client aMesh "<<aMesh);
-    if(aMesh->GetMeshDS()->IsEmbeddedMode()){
+    //if(aMesh->GetMeshDS()->IsEmbeddedMode()){
+    if(anIsEmbeddedMode){
       mySMESHDSMesh = aMesh->GetMeshDS();
       mySMDSMesh = mySMESHDSMesh;
     }
@@ -705,10 +707,12 @@ SMESH_Client::Update(bool theIsClear)
 {
   bool anIsModified = true;
   if(mySMESHDSMesh){
+	MESSAGE("Update mySMESHDSMesh");
     SMESHDS_Script* aScript = mySMESHDSMesh->GetScript();
     anIsModified = aScript->IsModified();
     aScript->SetModified(false);
   }else{
+	MESSAGE("Update CORBA");
     SMESH::log_array_var aSeq = myMeshServer->GetLog( theIsClear );
     CORBA::Long aLength = aSeq->length();
     anIsModified = aLength > 0;

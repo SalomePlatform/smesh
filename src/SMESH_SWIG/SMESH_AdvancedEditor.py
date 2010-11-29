@@ -1,4 +1,4 @@
-#  -*- coding: iso-8859-1 -*-
+# -*- coding: utf-8 -*-
 #  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 #
 #  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
@@ -24,6 +24,8 @@
 import salome
 import smesh
 import math
+
+salome.salome_init()
 
 def GetNewNodes(mesh,Elems,OldNodes):
     """

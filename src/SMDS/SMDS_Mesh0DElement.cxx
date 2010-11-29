@@ -29,6 +29,7 @@
 #include "SMDS_Mesh0DElement.hxx"
 #include "SMDS_IteratorOfElements.hxx"
 #include "SMDS_MeshNode.hxx"
+#include "utilities.h"
 
 using namespace std;
 
@@ -37,7 +38,8 @@ using namespace std;
 //purpose  :
 //=======================================================================
 SMDS_Mesh0DElement::SMDS_Mesh0DElement (const SMDS_MeshNode * node)
-{       
+{
+  MESSAGE("SMDS_Mesh0DElement " << GetID());
   myNode = node;
 }
 
@@ -75,6 +77,11 @@ int SMDS_Mesh0DElement::NbEdges() const
 SMDSAbs_ElementType SMDS_Mesh0DElement::GetType() const
 {
   return SMDSAbs_0DElement;
+}
+
+vtkIdType SMDS_Mesh0DElement::GetVtkType() const
+{
+  return VTK_VERTEX;
 }
 
 //=======================================================================
@@ -124,8 +131,8 @@ SMDS_ElemIteratorPtr SMDS_Mesh0DElement::elementsIterator (SMDSAbs_ElementType t
 //=======================================================================
 bool operator< (const SMDS_Mesh0DElement & e1, const SMDS_Mesh0DElement & e2)
 {
-  int id1 = e1.myNode->GetID();
-  int id2 = e2.myNode->GetID();
+  int id1 = e1.myNode->getVtkId();
+  int id2 = e2.myNode->getVtkId();
 
   return (id1 < id2);
 }

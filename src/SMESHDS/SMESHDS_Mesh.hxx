@@ -56,6 +56,7 @@
 #include "SMESHDS_DataMapOfShape.hxx"
 
 class SMESHDS_GroupBase;
+class DownIdType;
 
 class SMESHDS_EXPORT SMESHDS_Mesh:public SMDS_Mesh{
 public:
@@ -399,6 +400,8 @@ public:
   bool ChangePolyhedronNodes(const SMDS_MeshElement * elem,
                              std::vector<const SMDS_MeshNode*> nodes,
                              std::vector<int>                  quantities);
+  bool ModifyCellNodes(int smdsVolId, std::map<int,int> localClonedNodeIds);
+  bool extrudeVolumeFromFace(int vtkVolId, std::map<int,int>& localClonedNodeIds);
   void Renumber (const bool isNodes, const int startID=1, const int deltaID=1);
 
   void SetNodeInVolume(SMDS_MeshNode * aNode, const TopoDS_Shell & S);
@@ -442,6 +445,9 @@ public:
 
   bool IsGroupOfSubShapes (const TopoDS_Shape& aSubShape) const;
 
+  virtual void compactMesh();
+  void BuildDownWardConnectivity(bool withEdges);
+
   ~SMESHDS_Mesh();
   
 private:
@@ -450,7 +456,7 @@ private:
     //Update or build submesh
     std::map<int,SMESHDS_SubMesh*>::iterator it = myShapeIndexToSubMesh.find( Index );
     if ( it == myShapeIndexToSubMesh.end() )
-      it = myShapeIndexToSubMesh.insert( std::make_pair(Index, new SMESHDS_SubMesh() )).first;
+      it = myShapeIndexToSubMesh.insert( std::make_pair(Index, new SMESHDS_SubMesh(this, Index) )).first;
     it->second->AddNode( aNode ); // add aNode to submesh
   }
   

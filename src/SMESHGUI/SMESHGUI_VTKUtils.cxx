@@ -122,7 +122,7 @@ namespace SMESH
       TVisualObjCont::iterator anIter = VISUAL_OBJ_CONT.find(aKey);
       if(anIter != VISUAL_OBJ_CONT.end()) {
         // for unknown reason, object destructor is not called, so clear object manually
-        anIter->second->GetUnstructuredGrid()->SetCells(0,0,0);
+        anIter->second->GetUnstructuredGrid()->SetCells(0,0,0,0,0);
         anIter->second->GetUnstructuredGrid()->SetPoints(0);
       }
       VISUAL_OBJ_CONT.erase(aKey);
@@ -164,7 +164,7 @@ namespace SMESH
     TVisualObjCont::iterator anIter = VISUAL_OBJ_CONT.begin();
     for ( ; anIter != VISUAL_OBJ_CONT.end(); ++anIter ) {
       // for unknown reason, object destructor is not called, so clear object manually
-      anIter->second->GetUnstructuredGrid()->SetCells(0,0,0);
+      anIter->second->GetUnstructuredGrid()->SetCells(0,0,0,0,0);
       anIter->second->GetUnstructuredGrid()->SetPoints(0);
     }
     VISUAL_OBJ_CONT.clear();
@@ -209,7 +209,7 @@ namespace SMESH
       int curId = anIter->first.first;
       if ( curId == studyID ) {
         // for unknown reason, object destructor is not called, so clear object manually
-        anIter->second->GetUnstructuredGrid()->SetCells(0,0,0);
+        anIter->second->GetUnstructuredGrid()->SetCells(0,0,0,0,0);
         anIter->second->GetUnstructuredGrid()->SetPoints(0);
         VISUAL_OBJ_CONT.erase( anIter++ ); // anIter++ returns a copy of self before incrementing
       }
@@ -257,7 +257,7 @@ namespace SMESH
    */
   //================================================================================
 
-  TVisualObjPtr GetVisualObj(int theStudyId, const char* theEntry){
+  TVisualObjPtr GetVisualObj(int theStudyId, const char* theEntry, bool nulData){
     TVisualObjPtr aVisualObj;
     TVisualObjCont::key_type aKey(theStudyId,theEntry);
     try{
@@ -331,7 +331,11 @@ namespace SMESH
 #if (OCC_VERSION_MAJOR << 16 | OCC_VERSION_MINOR << 8 | OCC_VERSION_MAINTENANCE) > 0x060100
         OCC_CATCH_SIGNALS;
 #endif
-        objModified = aVisualObj->Update();
+        //MESSAGE("GetVisualObj");
+        if (nulData)
+        	objModified = aVisualObj->NulData();
+        else
+          objModified = aVisualObj->Update();
       }
       catch (...) {
 #ifdef _DEBUG_
@@ -355,24 +359,24 @@ namespace SMESH
         MESSAGE ( "SMESHGUI_VTKUtils::GetVisualObj(), freeMB=" << freeMB
                << ", usedMB=" << usedMB );
 #endif
-        bool continu = false;
-        if ( usedMB * 10 > freeMB )
-          // even dont try to show
-          SUIT_MessageBox::warning(SMESHGUI::desktop(), QObject::tr("SMESH_WRN_WARNING"),
-                                   QObject::tr("SMESH_NO_MESH_VISUALIZATION"));
-        else
-          // there is a chance to succeed
-          continu = SUIT_MessageBox::warning
-            (SMESHGUI::desktop(),
-             QObject::tr("SMESH_WRN_WARNING"),
-             QObject::tr("SMESH_CONTINUE_MESH_VISUALIZATION"),
-             SUIT_MessageBox::Yes | SUIT_MessageBox::No, 
-             SUIT_MessageBox::Yes ) == SUIT_MessageBox::Yes;
-        if ( !continu ) {
-          // remove the corresponding actors from all views
-          RemoveVisualObjectWithActors( theEntry );
-          aVisualObj.reset();
-        }
+//        bool continu = false;
+//        if ( usedMB * 10 > freeMB )
+//          // even dont try to show
+//          SUIT_MessageBox::warning(SMESHGUI::desktop(), QObject::tr("SMESH_WRN_WARNING"),
+//                                   QObject::tr("SMESH_NO_MESH_VISUALIZATION"));
+//        else
+//          // there is a chance to succeed
+//          continu = SUIT_MessageBox::warning
+//            (SMESHGUI::desktop(),
+//             QObject::tr("SMESH_WRN_WARNING"),
+//             QObject::tr("SMESH_CONTINUE_MESH_VISUALIZATION"),
+//             SUIT_MessageBox::Yes | SUIT_MessageBox::No,
+//             SUIT_MessageBox::Yes ) == SUIT_MessageBox::Yes;
+//        if ( !continu ) {
+//          // remove the corresponding actors from all views
+//          RemoveVisualObjectWithActors( theEntry );
+//          aVisualObj.reset();
+//        }
       }
     }
 
@@ -606,6 +610,7 @@ namespace SMESH
         }
       }
     }
+    MESSAGE("CreateActor " << anActor);
     if( anActor )
       if( SMESHGUI* aSMESHGUI = SMESHGUI::GetSMESHGUI() )
         aSMESHGUI->addActorAsObserver( anActor );
@@ -619,6 +624,7 @@ namespace SMESH
 #if (OCC_VERSION_MAJOR << 16 | OCC_VERSION_MINOR << 8 | OCC_VERSION_MAINTENANCE) > 0x060100
         OCC_CATCH_SIGNALS;
 #endif
+        MESSAGE("DisplayActor " << theActor);
         vtkWnd->AddActor(theActor);
         vtkWnd->Repaint();
       }
@@ -634,6 +640,7 @@ namespace SMESH
 
   void RemoveActor( SUIT_ViewWindow *theWnd, SMESH_Actor* theActor){
     if(SVTK_ViewWindow* vtkWnd = GetVtkViewWindow(theWnd)){
+    	MESSAGE("RemoveActor " << theActor);
       vtkWnd->RemoveActor(theActor);
       if(theActor->hasIO()){
         Handle(SALOME_InteractiveObject) anIO = theActor->getIO();
@@ -672,6 +679,7 @@ namespace SMESH
 
   bool UpdateView(SUIT_ViewWindow *theWnd, EDisplaing theAction, const char* theEntry)
   {
+  	//MESSAGE("UpdateView");
     bool OK = false;
     SVTK_ViewWindow* aViewWnd = GetVtkViewWindow(theWnd);
     if (!aViewWnd)
@@ -688,6 +696,7 @@ namespace SMESH
       case eDisplayAll: {
         while (vtkActor *anAct = aCollection->GetNextActor()) {
           if (SMESH_Actor *anActor = dynamic_cast<SMESH_Actor*>(anAct)) {
+          	MESSAGE("--- display " << anActor);
             anActor->SetVisibility(true);
           }
         }
@@ -695,8 +704,10 @@ namespace SMESH
       }
       case eDisplayOnly:
       case eEraseAll: {
+      	//MESSAGE("---case eDisplayOnly");
         while (vtkActor *anAct = aCollection->GetNextActor()) {
           if (SMESH_Actor *anActor = dynamic_cast<SMESH_Actor*>(anAct)) {
+           	//MESSAGE("--- erase " << anActor);
             anActor->SetVisibility(false);
           }
         }
@@ -706,10 +717,12 @@ namespace SMESH
           switch (theAction) {
             case eDisplay:
             case eDisplayOnly:
+            	//MESSAGE("--- display " << anActor);
               anActor->SetVisibility(true);
               if (theAction == eDisplayOnly) aRenderer->ResetCameraClippingRange();
               break;
             case eErase:
+             	//MESSAGE("--- erase " << anActor);
               anActor->SetVisibility(false);
               break;
           }
@@ -718,6 +731,7 @@ namespace SMESH
           case eDisplay:
           case eDisplayOnly:
             {
+            	//MESSAGE("---");
               SalomeApp_Study* aStudy = dynamic_cast<SalomeApp_Study*>(theWnd->getViewManager()->study());
               _PTR(Study) aDocument = aStudy->studyDS();
               // Pass non-visual objects (hypotheses, etc.), return true in this case
@@ -746,6 +760,7 @@ namespace SMESH
 
 
   bool UpdateView(EDisplaing theAction, const char* theEntry){
+  	//MESSAGE("UpdateView");
     SalomeApp_Study* aStudy = dynamic_cast< SalomeApp_Study* >( GetActiveStudy() );
     SalomeApp_Application* app = dynamic_cast< SalomeApp_Application* >( aStudy->application() );
     SUIT_ViewWindow *aWnd = app->activeViewManager()->getActiveView();
@@ -784,6 +799,7 @@ namespace SMESH
 
   bool Update(const Handle(SALOME_InteractiveObject)& theIO, bool theDisplay)
   {
+  	MESSAGE("Update");
     _PTR(Study) aStudy = GetActiveStudyDocument();
     CORBA::Long anId = aStudy->StudyId();
     if ( TVisualObjPtr aVisualObj = SMESH::GetVisualObj(anId,theIO->getEntry())) {
@@ -794,6 +810,18 @@ namespace SMESH
     return false;
   }
 
+  bool UpdateNulData(const Handle(SALOME_InteractiveObject)& theIO, bool theDisplay)
+  {
+  	MESSAGE("UpdateNulData");
+    _PTR(Study) aStudy = GetActiveStudyDocument();
+    CORBA::Long anId = aStudy->StudyId();
+    if ( TVisualObjPtr aVisualObj = SMESH::GetVisualObj(anId,theIO->getEntry(), true)) {
+      if ( theDisplay )
+        UpdateView(SMESH::eDisplay,theIO->getEntry());
+      return true;
+    }
+    return false;
+  }
 
   void UpdateSelectionProp( SMESHGUI* theModule ) {
     if( !theModule )

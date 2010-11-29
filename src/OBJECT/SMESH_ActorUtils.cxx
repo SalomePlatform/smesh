@@ -29,6 +29,7 @@
 #include "utilities.h"
 
 #include <vtkUnstructuredGrid.h>
+#include <vtkXMLUnstructuredGridWriter.h>
 #include <vtkUnstructuredGridWriter.h>
 
 #ifdef _DEBUG_
@@ -73,9 +74,10 @@ namespace SMESH
   WriteUnstructuredGrid(vtkUnstructuredGrid* theGrid, 
                         const char* theFileName)
   {
-    vtkUnstructuredGridWriter* aWriter = vtkUnstructuredGridWriter::New();
+    vtkXMLUnstructuredGridWriter* aWriter = vtkXMLUnstructuredGridWriter::New();
     aWriter->SetFileName(theFileName);
     aWriter->SetInput(theGrid);
+    aWriter->SetDataModeToAscii();
     if(theGrid->GetNumberOfCells()){
       aWriter->Write();
     }

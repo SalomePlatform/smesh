@@ -30,6 +30,7 @@
 #include "SMESH_DeviceActor.h"
 #include "SMESH_ObjectDef.h"
 #include "SMESH_ControlsDef.hxx"
+#include "SMDS_UnstructuredGrid.hxx"
 #include "SMESH_ScalarBarActor.h"
 #include "VTKViewer_CellCenters.h"
 #include "VTKViewer_ExtractUnstructuredGrid.h"
@@ -82,7 +83,7 @@
 #ifdef _DEBUG_
 static int MYDEBUG = 1;
 #else
-static int MYDEBUG = 0;
+static int MYDEBUG = 1;
 #endif
 
 static int aLineWidthInc = 2;
@@ -198,6 +199,10 @@ SMESH_ActorDef::SMESH_ActorDef()
   aFilter->RegisterCellsWithType(VTK_QUADRATIC_WEDGE);
   aFilter->RegisterCellsWithType(VTK_QUADRATIC_PYRAMID);
   aFilter->RegisterCellsWithType(VTK_CONVEX_POINT_SET);
+//#ifdef VTK_HAVE_POLYHEDRON
+  MESSAGE("RegisterCellsWithType(VTK_POLYHEDRON)");
+  aFilter->RegisterCellsWithType(VTK_POLYHEDRON);
+//#endif
 
   //Definition 1D device of the actor
   //---------------------------------
@@ -1359,6 +1364,9 @@ void SMESH_ActorDef::SetEntityMode(unsigned int theMode)
     aFilter->RegisterCellsWithType(VTK_QUADRATIC_HEXAHEDRON);
     aFilter->RegisterCellsWithType(VTK_QUADRATIC_WEDGE);
     aFilter->RegisterCellsWithType(VTK_CONVEX_POINT_SET);
+//#ifdef VTK_HAVE_POLYHEDRON
+    aFilter->RegisterCellsWithType(VTK_POLYHEDRON);
+//#endif
     
     aHightFilter->RegisterCellsWithType(VTK_TETRA);
     aHightFilter->RegisterCellsWithType(VTK_VOXEL);
@@ -1370,6 +1378,9 @@ void SMESH_ActorDef::SetEntityMode(unsigned int theMode)
     aHightFilter->RegisterCellsWithType(VTK_QUADRATIC_WEDGE);
     aHightFilter->RegisterCellsWithType(VTK_QUADRATIC_PYRAMID);
     aHightFilter->RegisterCellsWithType(VTK_CONVEX_POINT_SET);
+//#ifdef VTK_HAVE_POLYHEDRON
+    aHightFilter->RegisterCellsWithType(VTK_POLYHEDRON);
+//#endif
   }
   aFilter->Update();
   if (MYDEBUG) MESSAGE(aFilter->GetOutput()->GetNumberOfCells());

@@ -33,6 +33,7 @@
 #include "SMDS_EdgePosition.hxx"
 #include "SMDS_FacePosition.hxx"
 #include "SMDS_SpacePosition.hxx"
+#include "SMDS_Downward.hxx"
 #include "SMESHDS_GroupOnGeom.hxx"
 
 #include <Standard_ErrorHandler.hxx>
@@ -109,7 +110,7 @@ void SMESHDS_Mesh::ShapeToMesh(const TopoDS_Shape & S)
       if ( !i_sub->second->IsComplexSubmesh() ) {
         SMDS_NodeIteratorPtr nIt = i_sub->second->GetNodes();
         while ( nIt->more() )
-          nIt->next()->GetPosition()->SetShapeId( 0 );
+          i_sub->second->RemoveNode(nIt->next(), false);
       }
     }
     // - sub-meshes
@@ -215,6 +216,7 @@ bool SMESHDS_Mesh::ChangeElementNodes(const SMDS_MeshElement * elem,
                                       const SMDS_MeshNode    * nodes[],
                                       const int                nbnodes)
 {
+  MESSAGE("SMESHDS_Mesh::ChangeElementNodes");
   if ( ! SMDS_Mesh::ChangeElementNodes( elem, nodes, nbnodes ))
     return false;
 
@@ -270,8 +272,11 @@ bool SMESHDS_Mesh::ChangePolyhedronNodes
 
 void SMESHDS_Mesh::Renumber (const bool isNodes, const int startID, const int deltaID)
 {
-  SMDS_Mesh::Renumber( isNodes, startID, deltaID );
-  myScript->Renumber( isNodes, startID, deltaID );
+  // TODO not possible yet to have node numbers not starting to O and continuous.
+  if (!this->isCompacted())
+    this->compactMesh();
+//  SMDS_Mesh::Renumber( isNodes, startID, deltaID );
+//  myScript->Renumber( isNodes, startID, deltaID );
 }
 
 //=======================================================================
@@ -748,7 +753,7 @@ void SMESHDS_Mesh::RemoveNode(const SMDS_MeshNode * n)
   {
     SMESHDS_SubMesh* subMesh=0;
     map<int,SMESHDS_SubMesh*>::iterator SubIt =
-      myShapeIndexToSubMesh.find( n->GetPosition()->GetShapeId() );
+      myShapeIndexToSubMesh.find( n->getshapeId() );
     if ( SubIt != myShapeIndexToSubMesh.end() )
       subMesh = SubIt->second;
     else
@@ -819,7 +824,7 @@ void SMESHDS_Mesh::RemoveElement(const SMDS_MeshElement * elt)
     for ( ; !subMesh && SubIt != myShapeIndexToSubMesh.end(); SubIt++ )
       if (!SubIt->second->IsComplexSubmesh() && SubIt->second->Contains( elt ))
         subMesh = SubIt->second;
-
+    //MESSAGE("subMesh " << elt->getshapeId());
     RemoveFreeElement( elt, subMesh, true);
     return;
   }
@@ -842,6 +847,7 @@ void SMESHDS_Mesh::RemoveFreeElement(const SMDS_MeshElement * elt,
                                      SMESHDS_SubMesh *        subMesh,
                                      bool                     fromGroups)
 {
+  //MESSAGE(" --------------------------------> SMESHDS_Mesh::RemoveFreeElement " << subMesh << " " << fromGroups);
   if (elt->GetType() == SMDSAbs_Node) {
     RemoveFreeNode( static_cast<const SMDS_MeshNode*>(elt), subMesh);
     return;
@@ -937,7 +943,7 @@ SMESHDS_SubMesh* SMESHDS_Mesh::getSubmesh( const int Index )
   if ( Index != myCurSubID ) {
     map<int,SMESHDS_SubMesh*>::iterator it = myShapeIndexToSubMesh.find( Index );
     if ( it == myShapeIndexToSubMesh.end() )
-      it = myShapeIndexToSubMesh.insert( make_pair(Index, new SMESHDS_SubMesh() )).first;
+      it = myShapeIndexToSubMesh.insert( make_pair(Index, new SMESHDS_SubMesh(this, Index) )).first;
     myCurSubMesh = it->second;
     myCurSubID = Index;
     myCurSubShape.Nullify(); // myCurSubShape no more corresponds to submesh
@@ -965,22 +971,6 @@ bool SMESHDS_Mesh::add(const SMDS_MeshElement* elem, SMESHDS_SubMesh* subMesh )
   return false;
 }
 
-namespace {
-
-  //================================================================================
-  /*!
-   * \brief Creates a node position in volume
-   */
-  //================================================================================
-
-  inline SMDS_PositionPtr volumePosition(int volId)
-  {
-    SMDS_SpacePosition* pos = new SMDS_SpacePosition();
-    pos->SetShapeId( volId );
-    return SMDS_PositionPtr(pos);
-  }
-}
-
 //=======================================================================
 //function : SetNodeOnVolume
 //purpose  : 
@@ -989,8 +979,9 @@ void SMESHDS_Mesh::SetNodeInVolume(SMDS_MeshNode *      aNode,
                                    const TopoDS_Shell & S)
 {
   if ( add( aNode, getSubmesh(S) ))
-    aNode->SetPosition ( volumePosition( myCurSubID ));
+    aNode->SetPosition ( SMDS_SpacePosition::originSpacePosition() );
 }
+
 //=======================================================================
 //function : SetNodeOnVolume
 //purpose  : 
@@ -999,7 +990,7 @@ void SMESHDS_Mesh::SetNodeInVolume(SMDS_MeshNode *      aNode,
                                    const TopoDS_Solid & S)
 {
   if ( add( aNode, getSubmesh(S) ))
-    aNode->SetPosition ( volumePosition( myCurSubID ));
+    aNode->SetPosition ( SMDS_SpacePosition::originSpacePosition() );
 }
 
 //=======================================================================
@@ -1012,7 +1003,7 @@ void SMESHDS_Mesh::SetNodeOnFace(SMDS_MeshNode *     aNode,
                                  double              v)
 {
   if ( add( aNode, getSubmesh(S) ))
-    aNode->SetPosition(SMDS_PositionPtr(new SMDS_FacePosition(myCurSubID, u, v)));
+    aNode->SetPosition(SMDS_PositionPtr(new SMDS_FacePosition( u, v)));
 }
 
 //=======================================================================
@@ -1024,7 +1015,7 @@ void SMESHDS_Mesh::SetNodeOnEdge(SMDS_MeshNode *     aNode,
                                  double              u)
 {
   if ( add( aNode, getSubmesh(S) ))
-    aNode->SetPosition(SMDS_PositionPtr(new SMDS_EdgePosition(myCurSubID, u)));
+    aNode->SetPosition(SMDS_PositionPtr(new SMDS_EdgePosition(u)));
 }
 
 //=======================================================================
@@ -1035,7 +1026,7 @@ void SMESHDS_Mesh::SetNodeOnVertex(SMDS_MeshNode *       aNode,
                                    const TopoDS_Vertex & S)
 {
   if ( add( aNode, getSubmesh(S) ))
-    aNode->SetPosition(SMDS_PositionPtr(new SMDS_VertexPosition(myCurSubID)));
+    aNode->SetPosition(SMDS_PositionPtr(new SMDS_VertexPosition()));
 }
 
 //=======================================================================
@@ -1044,12 +1035,13 @@ void SMESHDS_Mesh::SetNodeOnVertex(SMDS_MeshNode *       aNode,
 //=======================================================================
 void SMESHDS_Mesh::UnSetNodeOnShape(const SMDS_MeshNode* aNode)
 {
-  if ( aNode && aNode->GetPosition() ) {
-    map<int,SMESHDS_SubMesh*>::iterator it =
-      myShapeIndexToSubMesh.find( aNode->GetPosition()->GetShapeId() );
-    if ( it != myShapeIndexToSubMesh.end() )
-      it->second->RemoveNode( aNode, /*deleted=*/false );
-  }
+  int shapeId = aNode->getshapeId();
+  if (shapeId >= 0)
+    {
+      map<int, SMESHDS_SubMesh*>::iterator it = myShapeIndexToSubMesh.find(shapeId);
+      if (it != myShapeIndexToSubMesh.end())
+        it->second->RemoveNode(aNode, /*deleted=*/false);
+    }
 }
 
 //=======================================================================
@@ -1209,7 +1201,7 @@ SMESHDS_SubMesh * SMESHDS_Mesh::NewSubMesh(int Index)
   TShapeIndexToSubMesh::iterator anIter = myShapeIndexToSubMesh.find(Index);
   if (anIter == myShapeIndexToSubMesh.end())
   {
-    SM = new SMESHDS_SubMesh();
+    SM = new SMESHDS_SubMesh(this, Index);
     myShapeIndexToSubMesh[Index]=SM;
   }
   else
@@ -1301,8 +1293,9 @@ int SMESHDS_Mesh::ShapeToIndex(const TopoDS_Shape & S) const
 //=======================================================================
 void SMESHDS_Mesh::SetNodeInVolume(const SMDS_MeshNode* aNode, int Index)
 {
+  //add(aNode, getSubmesh(Index));
   if ( add( aNode, getSubmesh( Index )))
-    ((SMDS_MeshNode*) aNode)->SetPosition( volumePosition( Index ));
+    ((SMDS_MeshNode*) aNode)->SetPosition( SMDS_SpacePosition::originSpacePosition());
 }
 
 //=======================================================================
@@ -1313,7 +1306,7 @@ void SMESHDS_Mesh::SetNodeOnFace(SMDS_MeshNode* aNode, int Index, double u, doub
 {
   //Set Position on Node
   if ( add( aNode, getSubmesh( Index )))
-    aNode->SetPosition(SMDS_PositionPtr(new SMDS_FacePosition(Index, u, v)));
+    aNode->SetPosition(SMDS_PositionPtr(new SMDS_FacePosition( u, v)));
 }
 
 //=======================================================================
@@ -1326,7 +1319,7 @@ void SMESHDS_Mesh::SetNodeOnEdge(SMDS_MeshNode* aNode,
 {
   //Set Position on Node
   if ( add( aNode, getSubmesh( Index )))
-    aNode->SetPosition(SMDS_PositionPtr(new SMDS_EdgePosition(Index, u)));
+    aNode->SetPosition(SMDS_PositionPtr(new SMDS_EdgePosition(u)));
 }
 
 //=======================================================================
@@ -1337,7 +1330,7 @@ void SMESHDS_Mesh::SetNodeOnVertex(SMDS_MeshNode* aNode, int Index)
 {
   //Set Position on Node
   if ( add( aNode, getSubmesh( Index )))
-    aNode->SetPosition(SMDS_PositionPtr(new SMDS_VertexPosition(Index)));
+    aNode->SetPosition(SMDS_PositionPtr(new SMDS_VertexPosition()));
 }
 
 //=======================================================================
@@ -1818,4 +1811,201 @@ SMDS_MeshVolume* SMESHDS_Mesh::AddVolumeWithID(const SMDS_MeshNode * n1,
                          ID);
 }
 
+void SMESHDS_Mesh::compactMesh()
+{
+  int newNodeSize = 0;
+  int nbNodes = myNodes.size();
+  int nbVtkNodes = myGrid->GetNumberOfPoints();
+  MESSAGE("nbNodes=" << nbNodes << " nbVtkNodes=" << nbVtkNodes);
+  int nbNodeTemp = nbVtkNodes;
+  if (nbNodes > nbVtkNodes)
+    nbNodeTemp = nbNodes;
+  vector<int> idNodesOldToNew;
+  idNodesOldToNew.clear();
+  idNodesOldToNew.resize(nbNodeTemp, -1); // all unused id will be -1
 
+  for (int i = 0; i < nbNodes; i++)
+    {
+      if (myNodes[i])
+        {
+          int vtkid = myNodes[i]->getVtkId();
+          idNodesOldToNew[vtkid] = i; // old vtkId --> old smdsId (valid smdsId are >= 0)
+          newNodeSize++;
+        }
+    }
+  bool areNodesModified = (newNodeSize < nbVtkNodes);
+  MESSAGE("------------------------- compactMesh Nodes Modified: " << areNodesModified);
+  areNodesModified = true;
+
+  int newCellSize = 0;
+  int nbCells = myCells.size();
+  int nbVtkCells = myGrid->GetNumberOfCells();
+  MESSAGE("nbCells=" << nbCells << " nbVtkCells=" << nbVtkCells);
+  int nbCellTemp = nbVtkCells;
+  if (nbCells > nbVtkCells)
+    nbCellTemp = nbCells;
+  vector<int> idCellsOldToNew;
+  idCellsOldToNew.clear();
+  idCellsOldToNew.resize(nbCellTemp, -1); // all unused id will be -1
+
+  for (int i = 0; i < nbCells; i++)
+    {
+      if (myCells[i])
+        {
+//          //idCellsOldToNew[i] = myCellIdVtkToSmds[i]; // valid vtk indexes are > = 0
+//          int vtkid = myCells[i]->getVtkId();
+//          idCellsOldToNew[vtkid] = i; // old vtkId --> old smdsId (not used in input)
+          newCellSize++;
+        }
+    }
+  if (areNodesModified)
+    myGrid->compactGrid(idNodesOldToNew, newNodeSize, idCellsOldToNew, newCellSize);
+  else
+    myGrid->compactGrid(idNodesOldToNew, 0, idCellsOldToNew, newCellSize);
+
+  int nbVtkPts = myGrid->GetNumberOfPoints();
+  nbVtkCells = myGrid->GetNumberOfCells();
+  if (nbVtkPts != newNodeSize)
+    {
+      MESSAGE("===> nbVtkPts != newNodeSize " << nbVtkPts << " " << newNodeSize);
+      if (nbVtkPts > newNodeSize) newNodeSize = nbVtkPts; // several points with same SMDS Id
+    }
+  if (nbVtkCells != newCellSize)
+    {
+      MESSAGE("===> nbVtkCells != newCellSize " << nbVtkCells << " " << newCellSize);
+      if (nbVtkCells > newCellSize) newCellSize = nbVtkCells; // several cells with same SMDS Id
+    }
+
+  // --- SMDS_MeshNode and myNodes (id in SMDS and in VTK are the same), myNodeIdFactory
+
+  if (areNodesModified)
+    {
+      MESSAGE("-------------- modify myNodes");
+      SetOfNodes newNodes;
+      newNodes.resize(newNodeSize+1,0); // 0 not used, SMDS numbers 1..n
+      int newSmdsId = 0;
+      for (int i = 0; i < nbNodes; i++)
+        {
+          if (myNodes[i])
+            {
+              newSmdsId++; // SMDS id start to 1
+              int oldVtkId = myNodes[i]->getVtkId();
+              int newVtkId = idNodesOldToNew[oldVtkId];
+              //MESSAGE("myNodes["<< i << "] vtkId " << oldVtkId << " --> " << newVtkId);
+              myNodes[i]->setVtkId(newVtkId);
+              myNodes[i]->setId(newSmdsId);
+              newNodes[newSmdsId] = myNodes[i];
+              //MESSAGE("myNodes["<< i << "] --> newNodes[" << newSmdsId << "]");
+            }
+        }
+      myNodes.swap(newNodes);
+      this->myNodeIDFactory->emptyPool(newSmdsId); // newSmdsId = number of nodes
+      MESSAGE("myNodes.size " << myNodes.size());
+    }
+
+  // --- SMDS_MeshCell, myCellIdVtkToSmds, myCellIdSmdsToVtk, myCells
+
+  int vtkIndexSize = myCellIdVtkToSmds.size();
+  int maxVtkId = -1;
+  for (int oldVtkId = 0; oldVtkId < vtkIndexSize; oldVtkId++)
+    {
+      int oldSmdsId = this->myCellIdVtkToSmds[oldVtkId];
+      if (oldSmdsId > 0)
+        {
+          int newVtkId = idCellsOldToNew[oldVtkId];
+          if (newVtkId > maxVtkId)
+            maxVtkId = newVtkId;
+          //MESSAGE("myCells["<< oldSmdsId << "] vtkId " << oldVtkId << " --> " << newVtkId);
+          myCells[oldSmdsId]->setVtkId(newVtkId);
+        }
+    }
+//  MESSAGE("myCells.size()=" << myCells.size()
+//          << " myCellIdSmdsToVtk.size()=" << myCellIdSmdsToVtk.size()
+//          << " myCellIdVtkToSmds.size()=" << myCellIdVtkToSmds.size() );
+
+  SetOfCells newCells;
+  //vector<int> newSmdsToVtk;
+  vector<int> newVtkToSmds;
+
+  assert(maxVtkId < newCellSize);
+  newCells.resize(newCellSize+1, 0); // 0 not used, SMDS numbers 1..n
+  //newSmdsToVtk.resize(newCellSize+1, -1);
+  newVtkToSmds.resize(newCellSize+1, -1);
+
+  int myCellsSize = myCells.size();
+  int newSmdsId = 0;
+  for (int i = 0; i < myCellsSize; i++)
+    {
+      if (myCells[i])
+        {
+          newSmdsId++; // SMDS id start to 1
+          assert(newSmdsId <= newCellSize);
+          newCells[newSmdsId] = myCells[i];
+          newCells[newSmdsId]->setId(newSmdsId);
+          //MESSAGE("myCells["<< i << "] --> newCells[" << newSmdsId << "]");
+          int idvtk = myCells[i]->getVtkId();
+          //newSmdsToVtk[newSmdsId] = idvtk;
+          assert(idvtk < newCellSize);
+          newVtkToSmds[idvtk] = newSmdsId;
+        }
+    }
+
+  myCells.swap(newCells);
+  //myCellIdSmdsToVtk.swap(newSmdsToVtk);
+  myCellIdVtkToSmds.swap(newVtkToSmds);
+  MESSAGE("myCells.size()=" << myCells.size()
+          << " myCellIdVtkToSmds.size()=" << myCellIdVtkToSmds.size() );
+  this->myElementIDFactory->emptyPool(newSmdsId);
+
+  this->myScript->SetModified(true); // notify GUI client for buildPrs when update
+
+  // --- compact list myNodes and myElements in submeshes
+
+  map<int,SMESHDS_SubMesh*>::iterator it = myShapeIndexToSubMesh.begin();
+  for(; it != myShapeIndexToSubMesh.end(); ++it)
+    {
+      (*it).second->compactList();
+    }
+
+}
+
+void SMESHDS_Mesh::BuildDownWardConnectivity(bool withEdges)
+{
+  myGrid->BuildDownwardConnectivity(withEdges);
+}
+
+/*! change some nodes in cell without modifying type or internal connectivity.
+ * Nodes inverse connectivity is maintained up to date.
+ * @param vtkVolId vtk id of the cell.
+ * @param localClonedNodeIds map old node id to new node id.
+ * @return ok if success.
+ */
+bool SMESHDS_Mesh::ModifyCellNodes(int vtkVolId, std::map<int,int> localClonedNodeIds)
+{
+  myGrid->ModifyCellNodes(vtkVolId, localClonedNodeIds);
+  return true;
+}
+
+/*! Create a volume (prism or hexahedron) by duplication of a face.
+ * the nodes of the new face are already created.
+ * @param vtkVolId vtk id of a volume containing the face, to get an orientation for the face.
+ * @param localClonedNodeIds map old node id to new node id. The old nodes define the face in the volume.
+ * @return ok if success.
+ */
+bool SMESHDS_Mesh::extrudeVolumeFromFace(int vtkVolId, std::map<int,int>& localClonedNodeIds)
+{
+  //MESSAGE("extrudeVolumeFromFace " << vtkVolId);
+  vector<int> orderedNodes;
+  orderedNodes.clear();
+  map<int, int>::const_iterator it = localClonedNodeIds.begin();
+  for (; it != localClonedNodeIds.end(); ++it)
+    orderedNodes.push_back(it->first);
+
+  int nbNodes = myGrid->getOrderedNodesOfFace(vtkVolId, orderedNodes);
+  for (int i=0; i<nbNodes; i++)
+    orderedNodes.push_back(localClonedNodeIds[orderedNodes[i]]);
+  SMDS_MeshVolume *vol = this->AddVolumeFromVtkIds(orderedNodes);
+
+  // TODO update subshape list of elements and nodes
+  return vol;
+}

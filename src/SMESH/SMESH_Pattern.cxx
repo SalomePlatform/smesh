@@ -463,8 +463,7 @@ template <class TFaceIterator> bool areNodesBound( TFaceIterator & faceItr )
     while ( nIt->more() )
     {
       const SMDS_MeshNode* node = smdsNode( nIt->next() );
-      SMDS_PositionPtr pos = node->GetPosition();
-      if ( !pos || !pos->GetShapeId() ) {
+      if (node->getshapeId() <0) {
         return false;
       }
     }
@@ -740,7 +739,7 @@ bool SMESH_Pattern::Load (SMESH_Mesh*        theMesh,
         {
           const SMDS_MeshNode* node = smdsNode( nIt->next() );
           const SMDS_EdgePosition* epos =
-            static_cast<const SMDS_EdgePosition*>(node->GetPosition().get());
+            static_cast<const SMDS_EdgePosition*>(node->GetPosition());
           double u = epos->GetUParameter();
           paramNodeMap.insert( make_pair( u, node ));
         }
@@ -862,7 +861,7 @@ bool SMESH_Pattern::Load (SMESH_Mesh*        theMesh,
           p->myInitUV = project( node, projector );
         else {
           const SMDS_FacePosition* pos =
-            static_cast<const SMDS_FacePosition*>(node->GetPosition().get());
+            static_cast<const SMDS_FacePosition*>(node->GetPosition());
           p->myInitUV.SetCoord( pos->GetUParameter(), pos->GetVParameter() );
         }
         p->myInitXYZ.SetCoord( p->myInitUV.X(), p->myInitUV.Y(), 0 );
@@ -882,7 +881,7 @@ bool SMESH_Pattern::Load (SMESH_Mesh*        theMesh,
           const SMDS_MeshNode* node = smdsNode( nIt->next() );
           iPoint = nodePointIDMap[ node ]; // point index of interest
           // for a node on a seam edge there are two points
-          if ( helper.IsRealSeam( node->GetPosition()->GetShapeId() ) &&
+          if ( helper.IsRealSeam( node->getshapeId() ) &&
                ( n_id = closeNodePointIDMap.find( node )) != not_found )
           {
             TPoint & p1 = myPoints[ iPoint ];
@@ -893,7 +892,7 @@ bool SMESH_Pattern::Load (SMESH_Mesh*        theMesh,
             // find node not on a seam edge
             while ( nIt2->more() && !notSeamNode ) {
               const SMDS_MeshNode* n = smdsNode( nIt2->next() );
-              if ( !helper.IsSeamShape( n->GetPosition()->GetShapeId() ))
+              if ( !helper.IsSeamShape( n->getshapeId() ))
                 notSeamNode = n;
             }
             gp_Pnt2d uv = helper.GetNodeUV( theFace, node, notSeamNode );
@@ -3220,7 +3219,7 @@ bool SMESH_Pattern::Load (SMESH_Mesh*         theMesh,
       {
         const SMDS_MeshNode* node = smdsNode( nIt->next() );
         const SMDS_EdgePosition* epos =
-          static_cast<const SMDS_EdgePosition*>(node->GetPosition().get());
+          static_cast<const SMDS_EdgePosition*>(node->GetPosition());
         double u = ( epos->GetUParameter() - f ) / ( l - f );
         (*pIt)->myInitXYZ.SetCoord( iCoord, isForward ? u : 1 - u );
       }
@@ -4119,7 +4118,7 @@ void SMESH_Pattern::createElements(SMESH_Mesh*                            theMes
         SMDS_ElemIteratorPtr noIt = elem->nodesIterator();
         while ( noIt->more() ) {
           SMDS_MeshNode* node = const_cast<SMDS_MeshNode*>(smdsNode( noIt->next() ));
-          if (!node->GetPosition()->GetShapeId() &&
+          if (!node->getshapeId() &&
               shellNodes.find( node ) == shellNodes.end() ) {
             if ( S.ShapeType() == TopAbs_FACE )
               aMeshDS->SetNodeOnFace( node, shapeID );

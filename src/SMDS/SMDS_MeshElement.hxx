@@ -38,15 +38,23 @@
 #include <vector>
 #include <iostream>
 
+#include <vtkType.h>
+#include <vtkCellType.h>
+
+//typedef unsigned short UShortType;
+typedef short ShortType;
+
 class SMDS_MeshNode;
 class SMDS_MeshEdge;
-class SMDS_MeshFace;    
+class SMDS_MeshFace;
+class SMDS_Mesh;
 
 // ============================================================
 /*!
  * \brief Base class for elements
  */
 // ============================================================
+
 
 class SMDS_EXPORT SMDS_MeshElement:public SMDS_MeshObject
 {
@@ -56,6 +64,8 @@ public:
   SMDS_ElemIteratorPtr edgesIterator() const;
   SMDS_ElemIteratorPtr facesIterator() const;
   virtual SMDS_ElemIteratorPtr elementsIterator(SMDSAbs_ElementType type) const;
+  virtual SMDS_ElemIteratorPtr nodesIteratorToUNV() const;
+  virtual SMDS_ElemIteratorPtr interlacedNodesElemIterator() const;
 
   // std-like iteration on nodes
   typedef SMDS_StdIterator< const SMDS_MeshNode*, SMDS_ElemIteratorPtr > iterator;
@@ -65,11 +75,12 @@ public:
   virtual int NbNodes() const;
   virtual int NbEdges() const;
   virtual int NbFaces() const;
-  int GetID() const;
+  inline int GetID() const { return myID; };
 
   ///Return the type of the current element
   virtual SMDSAbs_ElementType GetType() const = 0;
-  virtual bool IsPoly() const { return false; }
+  virtual vtkIdType GetVtkType() const = 0;
+  virtual bool IsPoly() const { return false; };
   virtual bool IsQuadratic() const;
   //! Return type of entity
   virtual SMDSAbs_EntityType  GetEntityType() const = 0;
@@ -78,7 +89,11 @@ public:
   virtual int  NbCornerNodes() const;
 
   friend SMDS_EXPORT std::ostream & operator <<(std::ostream & OS, const SMDS_MeshElement *);
-  friend SMDS_EXPORT bool SMDS_MeshElementIDFactory::BindID(int ID,SMDS_MeshElement*elem);
+  friend SMDS_EXPORT bool SMDS_MeshElementIDFactory::BindID(int ID,SMDS_MeshElement* elem);
+  friend class SMDS_Mesh;
+  friend class SMESHDS_Mesh;
+  friend class SMESHDS_SubMesh;
+  friend class SMDS_MeshElementIDFactory;
 
   // ===========================
   //  Access to nodes by index
@@ -124,13 +139,32 @@ public:
    */
   int GetNodeIndex( const SMDS_MeshNode* node ) const;
 
+  inline ShortType getMeshId() const {return myMeshId; };
+  inline ShortType getshapeId() const {return myShapeId; };
+  inline int getIdInShape() const { return myIdInShape; };
+  inline int getVtkId() const { return myVtkID; };
+
 protected:
+  inline void setId(int id) {myID = id; };
+  inline void setShapeId(ShortType shapeId) {myShapeId = shapeId; };
+  inline void setIdInShape(int id) { myIdInShape = id; };
+  inline void setVtkId(int vtkId) { myVtkID = vtkId; };
   SMDS_MeshElement(int ID=-1);
+  SMDS_MeshElement(int id, ShortType meshId, ShortType shapeId = 0);
   virtual void Print(std::ostream & OS) const;
 
-private:
+  //! Element index in vector SMDS_Mesh::myNodes or SMDS_Mesh::myCells
   int myID;
+  //! index in vtkUnstructuredGrid
+  int myVtkID;
+  //! SMDS_Mesh identification in SMESH
+  ShortType myMeshId;
+  //! SubShape and SubMesh identification in SMESHDS
+  ShortType myShapeId;
+  //! Element index in SMESHDS_SubMesh vector
+  int myIdInShape;
 };
+
 
 // ============================================================
 /*!

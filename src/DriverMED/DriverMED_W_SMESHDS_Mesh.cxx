@@ -622,6 +622,7 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
                                              nbElemInfo.NbHexas( ORDER_QUADRATIC ),
                                              SMDSAbs_Volume));
     if ( polyTypesSupported ) {
+      //MESSAGE("polyTypesSupported");
       aTElemTypeDatas.push_back( TElemTypeData(anEntity,
                                                ePOLYEDRE,
                                                nbElemInfo.NbPolyhedrons(),
@@ -738,18 +739,21 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
       // ----------------
       else if (aElemTypeData->_geomType == ePOLYEDRE )
       {
+        //MESSAGE("_geomType == ePOLYEDRE");
         if ( nbPolyhedronNodes == 0 ) {
           // Count nb of nodes
           while ( const SMDS_MeshElement* anElem = elemIterator->next() ) {
-            const SMDS_PolyhedralVolumeOfNodes* aPolyedre =
-              dynamic_cast<const SMDS_PolyhedralVolumeOfNodes*>( anElem );
-            if ( aPolyedre ) {
+              const SMDS_VtkVolume *aPolyedre = dynamic_cast<const SMDS_VtkVolume*>(anElem);
+              if ( aPolyedre && aPolyedre->IsPoly()) {
               nbPolyhedronNodes += aPolyedre->NbNodes();
               nbPolyhedronFaces += aPolyedre->NbFaces();
               if ( ++iElem == aElemTypeData->_nbElems )
                 break;
             }
           }
+          //MESSAGE("nbPolyhedronNodes=" << nbPolyhedronNodes);
+          //MESSAGE("nbPolyhedronFaces=" << nbPolyhedronFaces);
+          //MESSAGE("_nbElems="<< aElemTypeData->_nbElems);
         }
         else {
           // Store in med file
@@ -771,19 +775,22 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
           TInt iFace = 0, iNode = 0;
           while ( const SMDS_MeshElement* anElem = elemIterator->next() )
           {
-            const SMDS_PolyhedralVolumeOfNodes* aPolyedre =
-              dynamic_cast<const SMDS_PolyhedralVolumeOfNodes*>( anElem );
+            const SMDS_VtkVolume *aPolyedre = dynamic_cast<const SMDS_VtkVolume*>(anElem);
             if ( !aPolyedre )
               continue;
-
+            if ( !aPolyedre->IsPoly() )
+              continue;
+            //MESSAGE("index[" << iElem << "]=" << index[iElem] << " iElem=" << iElem);
             // index
             TInt aNbFaces = aPolyedre->NbFaces();
             index[ iElem+1 ] = index[ iElem ] + aNbFaces;
+            //MESSAGE("index[" << iElem+1 << "]=" << index[iElem+1] << " iElem=" << iElem);
 
             // face index
             for (TInt f = 1; f <= aNbFaces; ++f, ++iFace ) {
               int aNbFaceNodes = aPolyedre->NbFaceNodes( f );
               faces[ iFace+1 ] = faces[ iFace ] + aNbFaceNodes;
+              //MESSAGE("faces[" << iFace+1 << "]=" << faces[iFace+1] << " iFace=" << iFace);
             }
             // connectivity
             SMDS_ElemIteratorPtr nodeIt = anElem->nodesIterator();
@@ -791,8 +798,10 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
               const SMDS_MeshElement* aNode = nodeIt->next();
 #ifdef _EDF_NODE_IDS_
               conn[ iNode ] = aNodeIdMap[aNode->GetID()];
+              //MESSAGE("conn["<< iNode << "]=" << conn[iNode] << " aNode->GetID()=" << aNode->GetID());
 #else
               conn[ iNode ] = aNode->GetID();
+              //MESSAGE("conn["<< iNode << "]=" << conn[iNode]);
 #endif
               ++iNode;
             }
@@ -868,11 +877,11 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
 
   }
   catch(const std::exception& exc) {
-    INFOS("Follow exception was cought:\n\t"<<exc.what());
+    INFOS("The following exception was caught:\n\t"<<exc.what());
     throw;
   }
   catch(...) {
-    INFOS("Unknown exception was cought !!!");
+    INFOS("Unknown exception was caught !!!");
     throw;
   }
 

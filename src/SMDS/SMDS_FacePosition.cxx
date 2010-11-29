@@ -36,23 +36,11 @@ using namespace std;
 //purpose  : 
 //=======================================================================
 
-SMDS_FacePosition::SMDS_FacePosition(const int aEdgeId,
-                                     const double aUParam,
+SMDS_FacePosition::SMDS_FacePosition(const double aUParam,
                                      const double aVParam)
-  :SMDS_Position(aEdgeId),
-   myUParameter(aUParam),myVParameter(aVParam)
+   : myUParameter(aUParam),myVParameter(aVParam)
 {
-}
-
-//=======================================================================
-//function : Coords
-//purpose  : 
-//=======================================================================
-const double *SMDS_FacePosition::Coords() const
-{
-        static double origin[]={0,0,0};
-        MESSAGE("SMDS_EdgePosition::Coords not implemented");
-        return origin;
+  //MESSAGE("******************************************************** SMDS_FacePosition");
 }
 
 /**

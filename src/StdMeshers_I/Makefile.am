@@ -123,6 +123,7 @@ libStdMeshersEngine_la_CPPFLAGS = \
 	$(GEOM_CXXFLAGS) \
 	$(MED_CXXFLAGS) \
 	$(BOOST_CPPFLAGS) \
+        $(VTK_INCLUDES) \
 	$(CORBA_CXXFLAGS) \
 	$(CORBA_INCLUDES) \
 	-I$(srcdir)/../SMESHImpl \

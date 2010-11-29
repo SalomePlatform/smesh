@@ -30,23 +30,47 @@
 #include "SMESH_SMDS.hxx"
 
 #include "SMDS_MeshNode.hxx"
+#include "SMDS_MeshCell.hxx"
 #include "SMDS_Mesh0DElement.hxx"
 #include "SMDS_MeshEdge.hxx"
 #include "SMDS_MeshFace.hxx"
 #include "SMDS_MeshVolume.hxx"
+#include "SMDS_MeshNodeIDFactory.hxx"
 #include "SMDS_MeshElementIDFactory.hxx"
 #include "SMDS_MeshInfo.hxx"
 #include "SMDS_ElemIterator.hxx"
-#include <NCollection_Map.hxx>
+#include "SMDS_VolumeOfNodes.hxx"
+#include "SMDS_VtkEdge.hxx"
+#include "SMDS_VtkFace.hxx"
+#include "SMDS_VtkVolume.hxx"
+#include "ObjectPool.hxx"
+#include "SMDS_UnstructuredGrid.hxx"
 
 #include <boost/shared_ptr.hpp>
 #include <set>
 #include <list>
+#include <vector>
+#include <vtkSystemIncludes.h>
+
+#include "Utils_SALOME_Exception.hxx"
+#define MYASSERT(val) if (!(val)) throw SALOME_Exception(LOCALIZED("assertion not verified"));
 
 class SMDS_EXPORT SMDS_Mesh:public SMDS_MeshObject{
 public:
+  friend class SMDS_MeshIDFactory;
+  friend class SMDS_MeshNodeIDFactory;
+  friend class SMDS_MeshElementIDFactory;
+  friend class SMDS_MeshVolumeVtkNodes;
+  friend class SMDS_MeshNode;
 
   SMDS_Mesh();
+  
+  //! to retreive this SMDS_Mesh instance from its elements (index stored in SMDS_Elements)
+  static std::vector<SMDS_Mesh*> _meshList;
+
+  //! actual nodes coordinates, cells definition and reverse connectivity are stored in a vtkUnstructuredGrid
+  inline SMDS_UnstructuredGrid* getGrid() {return myGrid; };
+  inline int getMeshId() {return myMeshId; };
 
   SMDS_NodeIteratorPtr nodesIterator          (bool idInceasingOrder=false) const;
   SMDS_0DElementIteratorPtr elements0dIterator(bool idInceasingOrder=false) const;
@@ -420,6 +444,11 @@ public:
                            (std::vector<const SMDS_MeshNode*> nodes,
                             std::vector<int>                  quantities);
 
+  virtual SMDS_MeshVolume* AddVolumeFromVtkIds(const std::vector<int>& vtkNodeIds);
+
+  virtual SMDS_MeshVolume* AddVolumeFromVtkIdsWithID(const std::vector<int>& vtkNodeIds,
+                                                     const int ID);
+
   virtual void RemoveElement(const SMDS_MeshElement *        elem,
                              std::list<const SMDS_MeshElement *>& removedElems,
                              std::list<const SMDS_MeshElement *>& removedNodes,
@@ -451,8 +480,10 @@ public:
 
   virtual void Renumber (const bool isNodes, const int startID = 1, const int deltaID = 1);
   // Renumber all nodes or elements.
+  virtual void compactMesh();
 
   const SMDS_MeshNode *FindNode(int idnode) const;
+  const SMDS_MeshNode *FindNodeVtk(int idnode) const;
   const SMDS_Mesh0DElement* Find0DElement(int idnode) const;
   const SMDS_MeshEdge *FindEdge(int idnode1, int idnode2) const;
   const SMDS_MeshEdge *FindEdge(int idnode1, int idnode2, int idnode3) const;
@@ -541,23 +572,40 @@ public:
    */
   bool Contains (const SMDS_MeshElement* elem) const;
 
-  typedef NCollection_Map<SMDS_MeshNode *> SetOfNodes;
-  typedef NCollection_Map<SMDS_Mesh0DElement *> SetOf0DElements;
-  typedef NCollection_Map<SMDS_MeshEdge *> SetOfEdges;
-  typedef NCollection_Map<SMDS_MeshFace *> SetOfFaces;
-  typedef NCollection_Map<SMDS_MeshVolume *> SetOfVolumes;
+  typedef std::vector<SMDS_MeshNode *> SetOfNodes;
+  typedef std::vector<SMDS_MeshCell *> SetOfCells;
 
-private:
+  void updateNodeMinMax();
+  void updateBoundingBox();
+  double getMaxDim();
+  int fromVtkToSmds(int vtkid);
+
+  void incrementNodesCapacity(int nbNodes);
+  void incrementCellsCapacity(int nbCells);
+  void adjustStructure();
+  void dumpGrid(string ficdump="dumpGrid");
+  static int chunkSize;
+
+  //! low level modification: add, change or remove node or element
+  inline void setMyModified() { this->myModified = true; };
+
+  void Modified();
+  unsigned long GetMTime();
+  bool isCompacted();
+
+protected:
   SMDS_Mesh(SMDS_Mesh * parent);
 
   SMDS_MeshFace * createTriangle(const SMDS_MeshNode * node1,
                                  const SMDS_MeshNode * node2,
-                                 const SMDS_MeshNode * node3);
+                                 const SMDS_MeshNode * node3,
+                                 int ID);
   SMDS_MeshFace * createQuadrangle(const SMDS_MeshNode * node1,
                                    const SMDS_MeshNode * node2,
                                    const SMDS_MeshNode * node3,
-                                   const SMDS_MeshNode * node4);
-  SMDS_Mesh0DElement* Find0DElementOrCreate(const SMDS_MeshNode * n);
+                                   const SMDS_MeshNode * node4,
+                                   int ID);
+//  SMDS_Mesh0DElement* Find0DElementOrCreate(const SMDS_MeshNode * n);
   SMDS_MeshEdge* FindEdgeOrCreate(const SMDS_MeshNode * n1,
                                   const SMDS_MeshNode * n2);
   SMDS_MeshFace* FindFaceOrCreate(const SMDS_MeshNode *n1,
@@ -574,22 +622,77 @@ private:
                             const SMDS_MeshElement * element,
                             std::set<const SMDS_MeshElement*>& nodes);
 
+  inline void adjustmyCellsCapacity(int ID)
+  {
+    assert(ID >= 0);
+    myElementIDFactory->adjustMaxId(ID);
+    if (ID >= myCells.size())
+      myCells.resize(ID+SMDS_Mesh::chunkSize,0);
+  };
+
+  inline void adjustBoundingBox(double x, double y, double z)
+  {
+    if (x > xmax) xmax = x;
+    else if (x < xmin) xmin = x;
+    if (y > ymax) ymax = y;
+    else if (y < ymin) ymin = y;
+    if (z > zmax) zmax = z;
+    else if (z < zmin) zmin = z;
+  };
+
   // Fields PRIVATE
 
+  //! index of this SMDS_mesh in the static vector<SMDS_Mesh*> _meshList
+  int myMeshId;
+
+  //! actual nodes coordinates, cells definition and reverse connectivity are stored in a vtkUnstructuredGrid
+  SMDS_UnstructuredGrid*      myGrid;
+
+  //! Small objects like SMDS_MeshNode are allocated by chunks to limit memory costs of new
+  ObjectPool<SMDS_MeshNode>* myNodePool;
+
+  //! Small objects like SMDS_VtkVolume are allocated by chunks to limit memory costs of new
+  ObjectPool<SMDS_VtkVolume>* myVolumePool;
+  ObjectPool<SMDS_VtkFace>* myFacePool;
+  ObjectPool<SMDS_VtkEdge>* myEdgePool;
+
+  //! SMDS_MeshNodes refer to vtk nodes (vtk id = index in myNodes),store reference to this mesh, and subshape
   SetOfNodes             myNodes;
-  SetOf0DElements        my0DElements;
-  SetOfEdges             myEdges;
-  SetOfFaces             myFaces;
-  SetOfVolumes           myVolumes;
+
+  //! SMDS_MeshCells refer to vtk cells (vtk id != index in myCells),store reference to this mesh, and subshape
+  SetOfCells             myCells;
+
+  //! for cells only: index = ID for SMDS users, value = ID in vtkUnstructuredGrid
+  //std::vector<int>       myCellIdSmdsToVtk;
+
+  //! for cells only: index = ID in vtkUnstructuredGrid, value = ID for SMDS users
+  std::vector<int>       myCellIdVtkToSmds;
+
   SMDS_Mesh *            myParent;
   std::list<SMDS_Mesh *> myChildren;
-  SMDS_MeshElementIDFactory *myNodeIDFactory;
+  SMDS_MeshNodeIDFactory *myNodeIDFactory;
   SMDS_MeshElementIDFactory *myElementIDFactory;
   SMDS_MeshInfo          myInfo;
+
+  //! use a counter to keep track of modifications
+  unsigned long myModifTime, myCompactTime;
+
+  int myNodeMin;
+  int myNodeMax;
 
   bool myHasConstructionEdges;
   bool myHasConstructionFaces;
   bool myHasInverseElements;
+
+  //! any add, remove or change of node or cell
+  bool myModified;
+
+  double xmin;
+  double xmax;
+  double ymin;
+  double ymax;
+  double zmin;
+  double zmax;
 };
 
 

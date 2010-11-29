@@ -1,4 +1,4 @@
-#  -*- coding: iso-8859-1 -*-
+# -*- coding: utf-8 -*-
 #  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 #
 #  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
@@ -31,6 +31,7 @@ import salome
 import geompy
 import smesh
 
+salome.salome_init()
 # ---------------------------- GEOM --------------------------------------
 
 # ---- define contigous arcs and segment to define a closed wire
@@ -192,7 +193,7 @@ print "Number of tetrahedrons: ", mesh.NbTetras()
 mesh.SplitQuadObject(submesh2, 1)
 
 #2 cutting of triangles of the group
-FacesTriToQuad = [2381, 2382, 2383, 2384, 2385, 2386, 2387, 2388, 2389, 2390, 2391, 2392, 2393, 2394, 2395, 2396, 2397, 2398, 2399, 2400, 2401, 2402, 2403, 2404, 2405, 2406, 2407, 2408, 2409, 2410, 2411, 2412, 2413, 2414, 2415, 2416, 2417, 2418, 2419, 2420, 2421, 2422]
+FacesTriToQuad = [ 2391, 2824, 2825, 2826, 2827, 2828, 2832, 2833, 2834, 2835, 2836, 2837, 2838, 2839, 2841, 2844, 2845, 2847, 2854, 2861, 2863, 2922, 2923, 2924, 2925, 2926, 2927, 2928, 2929, 2930, 2931, 2932, 2933, 2934, 2935, 2936, 2937, 2938, 2940, 2941, 2946, 2951, 2970, 2971, 2972, 2973, 2974, 2975, 2976, 2977, 2978, 2979, 2980, 2981, 2982, 2983, 2984, 2985 ]
 GroupTriToQuad = mesh.MakeGroupByIds("Group of faces (quad)", smesh.FACE, FacesTriToQuad)
 mesh.TriToQuadObject(GroupTriToQuad, None , 1.57)
 

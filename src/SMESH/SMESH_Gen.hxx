@@ -41,6 +41,8 @@
 #include "SMESH_3D_Algo.hxx"
 #include "SMESH_Mesh.hxx"
 
+#include "chrono.hxx"
+
 #include <TopoDS_Shape.hxx>
 
 #include <map>
@@ -159,6 +161,7 @@ private:
   int _segmentation;
   // default of segments
   int _nbSegments;
+  counters *_counters;
 };
 
 #endif

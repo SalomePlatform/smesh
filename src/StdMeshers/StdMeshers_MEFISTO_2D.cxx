@@ -512,7 +512,7 @@ static bool fixCommonVertexUV (R2 &                 theUV,
         if ( theCreateQuadratic && SMESH_MesherHelper::IsMedium( node, SMDSAbs_Edge ))
           continue;
         const SMDS_EdgePosition* epos =
-          static_cast<const SMDS_EdgePosition*>(node->GetPosition().get());
+          static_cast<const SMDS_EdgePosition*>(node->GetPosition());
         double u = epos->GetUParameter();
         if ( u < umin )
           umin = u;
@@ -613,9 +613,9 @@ bool StdMeshers_MEFISTO_2D::LoadPoints(TWireVector &                 wires,
       case SMDS_TOP_EDGE:
         // In order to detect degenerated faces easily, we replace
         // nodes on a degenerated edge by node on the vertex of that edge
-        if ( myTool->IsDegenShape( uvPt->node->GetPosition()->GetShapeId() ))
+        if ( myTool->IsDegenShape( uvPt->node->getshapeId() ))
         {
-          int edgeID = uvPt->node->GetPosition()->GetShapeId();
+          int edgeID = uvPt->node->getshapeId();
           SMESH_subMesh* edgeSM = myTool->GetMesh()->GetSubMeshContaining( edgeID );
           SMESH_subMeshIteratorPtr smIt = edgeSM->getDependsOnIterator( /*includeSelf=*/0,
                                                                         /*complexShapeFirst=*/0);
@@ -640,7 +640,7 @@ bool StdMeshers_MEFISTO_2D::LoadPoints(TWireVector &                 wires,
       int m = *mIt;
       if ( iW && !VWMap.IsEmpty()) { // except outer wire
         // avoid passing same uv point for a vertex common to 2 wires
-        int vID = mefistoToDS[m]->GetPosition()->GetShapeId();
+        int vID = mefistoToDS[m]->getshapeId();
         TopoDS_Vertex V = TopoDS::Vertex( myTool->GetMeshDS()->IndexToShape( vID ));
         if ( fixCommonVertexUV( uvslf[m], V, F, VWMap, *myTool->GetMesh(),
                                 scalex, scaley, _quadraticMesh )) {

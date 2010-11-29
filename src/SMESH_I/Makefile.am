@@ -92,6 +92,7 @@ libSMESHEngine_la_CPPFLAGS = \
 	$(CORBA_INCLUDES) \
 	$(CAS_CPPFLAGS) \
 	@HDF5_INCLUDES@ \
+        $(VTK_INCLUDES) \
 	$(BOOST_CPPFLAGS) \
 	$(KERNEL_CXXFLAGS) \
 	$(GUI_CXXFLAGS) \
@@ -108,6 +109,7 @@ libSMESHEngine_la_CPPFLAGS = \
 libSMESHEngine_la_LDFLAGS  = \
 	../../idl/libSalomeIDLSMESH.la \
 	../SMESH/libSMESHimpl.la \
+	../SMDS/libSMDS.la \
 	../Controls/libSMESHControls.la \
 	$(KERNEL_LDFLAGS) \
 	-lSalomeContainer \

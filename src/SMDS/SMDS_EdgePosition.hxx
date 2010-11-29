@@ -35,8 +35,7 @@ class SMDS_EXPORT SMDS_EdgePosition:public SMDS_Position
 {
 
   public:
-        SMDS_EdgePosition(const int aEdgeId=0, const double aUParam=0);
-        const virtual double * Coords() const;
+        SMDS_EdgePosition(const double aUParam=0);
         SMDS_TypeOfPosition GetTypeOfPosition() const;
         void SetUParameter(double aUparam);
         double GetUParameter() const;

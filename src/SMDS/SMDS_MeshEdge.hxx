@@ -29,38 +29,13 @@
 
 #include "SMESH_SMDS.hxx"
 
-#include "SMDS_MeshElement.hxx"
-#include <iostream>
+#include "SMDS_MeshCell.hxx"
 
-class SMDS_EXPORT SMDS_MeshEdge:public SMDS_MeshElement
+class SMDS_EXPORT SMDS_MeshEdge:public SMDS_MeshCell
 {
-
+	
   public:
-        SMDS_MeshEdge(const SMDS_MeshNode * node1,
-                      const SMDS_MeshNode * node2);
-        bool ChangeNodes(const SMDS_MeshNode * node1,
-                         const SMDS_MeshNode * node2);
-        void Print(std::ostream & OS) const;
-
-        virtual SMDSAbs_ElementType GetType() const;
-        virtual SMDSAbs_EntityType GetEntityType() const { return SMDSEntity_Edge; }
-        int NbNodes() const;
-        int NbEdges() const;
-        friend bool operator<(const SMDS_MeshEdge& e1, const SMDS_MeshEdge& e2);
-
-  /*!
-   * \brief Return node by its index
-    * \param ind - node index
-    * \retval const SMDS_MeshNode* - the node
-   */
-  virtual const SMDS_MeshNode* GetNode(const int ind) const;
-
-  protected:
-        SMDS_ElemIteratorPtr
-                elementsIterator(SMDSAbs_ElementType type) const;
-
-  protected:
-        const SMDS_MeshNode* myNodes[3];
-
+        SMDSAbs_ElementType GetType() const;
+        virtual vtkIdType GetVtkType() const;
 };
 #endif

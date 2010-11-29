@@ -35,9 +35,7 @@ class SMDS_EXPORT SMDS_FacePosition:public SMDS_Position
 {
 
   public:
-        SMDS_FacePosition(int aFaceId=0, double aUParam=0,
-                double aVParam=0);
-        const virtual double * Coords() const;
+        SMDS_FacePosition(double aUParam=0, double aVParam=0);
         SMDS_TypeOfPosition GetTypeOfPosition() const;
         void SetUParameter(double aUparam);
         void SetVParameter(double aVparam);

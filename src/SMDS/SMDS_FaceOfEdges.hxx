@@ -20,7 +20,7 @@
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 
-//  SMESH SMDS : implementaion of Salome mesh data structure
+//  SMESH SMDS : implementation of Salome mesh data structure
 //
 #ifndef _SMDS_FaceOfEdges_HeaderFile
 #define _SMDS_FaceOfEdges_HeaderFile
@@ -48,6 +48,7 @@ class SMDS_EXPORT SMDS_FaceOfEdges:public SMDS_MeshFace
                 
         SMDSAbs_ElementType GetType() const;
         virtual SMDSAbs_EntityType   GetEntityType() const;
+        virtual bool ChangeNodes(const SMDS_MeshNode* nodes[], const int nbNodes) {return false;};
         int NbNodes() const;
         int NbEdges() const;
         int NbFaces() const;

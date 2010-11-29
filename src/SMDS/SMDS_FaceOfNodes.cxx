@@ -133,6 +133,7 @@ SMDS_FaceOfNodes::SMDS_FaceOfNodes(const SMDS_MeshNode* node1,
                                    const SMDS_MeshNode* node2,
                                    const SMDS_MeshNode* node3)
 {
+  //MESSAGE("******************************************************* SMDS_FaceOfNodes");
         myNbNodes = 3;
         myNodes[0]=node1;
         myNodes[1]=node2;
@@ -145,6 +146,7 @@ SMDS_FaceOfNodes::SMDS_FaceOfNodes(const SMDS_MeshNode* node1,
                                    const SMDS_MeshNode* node3,
                                    const SMDS_MeshNode* node4)
 {
+  //MESSAGE("******************************************************* SMDS_FaceOfNodes");
         myNbNodes = 4;
         myNodes[0]=node1;
         myNodes[1]=node2;

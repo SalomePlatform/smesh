@@ -170,14 +170,14 @@ public:
   SMDS_MeshElement* AddElement(const std::vector<const SMDS_MeshNode*> & nodes,
                                const SMDSAbs_ElementType                 type,
                                const bool                                isPoly,
-                               const int                                 ID = 0);
+                               const int                                 ID = -1);
   /*!
    * \brief Add element
    */
   SMDS_MeshElement* AddElement(const std::vector<int>  & nodeIDs,
                                const SMDSAbs_ElementType type,
                                const bool                isPoly,
-                               const int                 ID = 0);
+                               const int                 ID = -1);
 
   int Remove (const std::list< int >& theElemIDs, const bool isNodes);
   // Remove a node or an element.
@@ -624,6 +624,14 @@ public:
                             const TIDSortedElemSet& theNodesNot,
                             const TopoDS_Shape&     theShape );
   
+  bool DoubleNodesOnGroupBoundaries( const std::vector<TIDSortedElemSet>& theElems,
+                                     bool createJointElems);
+
+  /*!
+   * \brief Generated skin mesh (containing 2D cells) from 3D mesh
+   * The created 2D mesh elements based on nodes of free faces of boundary volumes
+   * \return TRUE if operation has been completed successfully, FALSE otherwise
+   */
   bool Make2DMeshFrom3D();
 
   enum Bnd_Dimension { BND_2DFROM3D, BND_1DFROM3D, BND_1DFROM2D };

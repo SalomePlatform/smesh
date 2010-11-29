@@ -56,6 +56,7 @@ class SMESHOBJECT_EXPORT SMESH_VisualObj
 {
 public:
   virtual bool Update( int theIsClear = true ) = 0;
+  virtual bool NulData() = 0;
   virtual void UpdateFunctor( const SMESH::Controls::FunctorPtr& theFunctor ) = 0;
   virtual int GetElemDimension( const int theObjId ) = 0;
 

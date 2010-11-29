@@ -29,12 +29,13 @@
 
 #include "SMESH_SMDS.hxx"
 
-#include "SMDS_MeshElement.hxx"
+#include "SMDS_MeshCell.hxx"
 
-class SMDS_EXPORT SMDS_MeshFace:public SMDS_MeshElement
+class SMDS_EXPORT SMDS_MeshFace:public SMDS_MeshCell
 {
   public:
         SMDSAbs_ElementType GetType() const;
+        virtual vtkIdType GetVtkType() const;
 };
 
 #endif

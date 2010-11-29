@@ -24,6 +24,7 @@
 //  File   : DriverMED_Family.hxx
 //  Author : Julia DOROVSKIKH
 //  Module : SMESH
+//  $Header$
 //
 #ifndef _INCLUDE_DRIVERMED_FAMILY
 #define _INCLUDE_DRIVERMED_FAMILY

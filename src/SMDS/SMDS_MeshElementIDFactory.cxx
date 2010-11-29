@@ -31,6 +31,12 @@
 
 #include "SMDS_MeshElementIDFactory.hxx"
 #include "SMDS_MeshElement.hxx"
+#include "SMDS_Mesh.hxx"
+
+#include "utilities.h"
+
+#include <SMDS_UnstructuredGrid.hxx>
+#include <vtkCellType.h>
 
 using namespace std;
 
@@ -39,86 +45,110 @@ using namespace std;
 //purpose  : 
 //=======================================================================
 SMDS_MeshElementIDFactory::SMDS_MeshElementIDFactory():
-  SMDS_MeshIDFactory(),
-  myMin(0), myMax(0)
+  SMDS_MeshNodeIDFactory()
 {
+//    myIDElements.clear();
+//    myVtkIndex.clear();
+    myVtkCellTypes.clear();
+    myVtkCellTypes.reserve(SMDSEntity_Last);
+    myVtkCellTypes[SMDSEntity_Node]            = VTK_VERTEX;
+    myVtkCellTypes[SMDSEntity_0D]              = VTK_VERTEX;
+    myVtkCellTypes[SMDSEntity_Edge]            = VTK_LINE;
+    myVtkCellTypes[SMDSEntity_Quad_Edge]       = VTK_QUADRATIC_EDGE;
+    myVtkCellTypes[SMDSEntity_Triangle]        = VTK_TRIANGLE;
+    myVtkCellTypes[SMDSEntity_Quad_Triangle]   = VTK_QUADRATIC_TRIANGLE;
+    myVtkCellTypes[SMDSEntity_Quadrangle]      = VTK_QUAD;
+    myVtkCellTypes[SMDSEntity_Quad_Quadrangle] = VTK_QUADRATIC_TRIANGLE;
+    myVtkCellTypes[SMDSEntity_Polygon]         = VTK_POLYGON;
+    myVtkCellTypes[SMDSEntity_Quad_Polygon]    = VTK_POLYGON; // -PR- verifer
+    myVtkCellTypes[SMDSEntity_Tetra]           = VTK_TETRA;
+    myVtkCellTypes[SMDSEntity_Quad_Tetra]      = VTK_QUADRATIC_TETRA;
+    myVtkCellTypes[SMDSEntity_Pyramid]         = VTK_PYRAMID;
+    myVtkCellTypes[SMDSEntity_Quad_Pyramid]    = VTK_CONVEX_POINT_SET;
+    myVtkCellTypes[SMDSEntity_Hexa]            = VTK_HEXAHEDRON;
+    myVtkCellTypes[SMDSEntity_Quad_Hexa]       = VTK_QUADRATIC_HEXAHEDRON;
+    myVtkCellTypes[SMDSEntity_Penta]           = VTK_WEDGE;
+    myVtkCellTypes[SMDSEntity_Quad_Penta]      = VTK_QUADRATIC_WEDGE;
+//#ifdef VTK_HAVE_POLYHEDRON
+    myVtkCellTypes[SMDSEntity_Polyhedra]       = VTK_POLYHEDRON;
+//#else
+//    myVtkCellTypes[SMDSEntity_Polyhedra]       = VTK_CONVEX_POINT_SET;
+//#endif
+    myVtkCellTypes[SMDSEntity_Quad_Polyhedra]  = VTK_CONVEX_POINT_SET;
+}
+
+int SMDS_MeshElementIDFactory::SetInVtkGrid(SMDS_MeshElement * elem)
+{
+   // --- retrieve nodes ID
+
+  SMDS_MeshCell *cell = dynamic_cast<SMDS_MeshCell*>(elem);
+  assert(cell);
+  vector<vtkIdType> nodeIds;
+  SMDS_ElemIteratorPtr it = elem->nodesIterator();
+  while(it->more())
+  {
+      int nodeId = (static_cast<const SMDS_MeshNode*>(it->next()))->getVtkId();
+      MESSAGE("   node in cell " << cell->getVtkId() << " : " << nodeId)
+      nodeIds.push_back(nodeId);
+  }
+
+  // --- insert cell in vtkUnstructuredGrid
+
+  vtkUnstructuredGrid * grid = myMesh->getGrid();
+  int typ = GetVtkCellType(elem->GetType());
+  int cellId = grid->InsertNextLinkedCell(typ, nodeIds.size(), &nodeIds[0]);
+  cell->setVtkId(cellId); 
+  //MESSAGE("SMDS_MeshElementIDFactory::SetInVtkGrid " << cellId);
+  return cellId;
 }
 
 //=======================================================================
 //function : BindID
 //purpose  : 
 //=======================================================================
+
 bool SMDS_MeshElementIDFactory::BindID(int ID, SMDS_MeshElement * elem)
 {
-  if (myIDElements.IsBound(ID))
-    return false;
-  myIDElements.Bind(ID,elem);
-  elem->myID=ID;
-  updateMinMax (ID);
-  return true;
+  MESSAGE("SMDS_MeshElementIDFactory::BindID " << ID);
+  SetInVtkGrid(elem);
+  return myMesh->registerElement(ID, elem);
 }
 
 //=======================================================================
 //function : MeshElement
 //purpose  : 
 //=======================================================================
-SMDS_MeshElement* SMDS_MeshElementIDFactory::MeshElement(int ID) const
+SMDS_MeshElement* SMDS_MeshElementIDFactory::MeshElement(int ID)
 {
-  if (!myIDElements.IsBound(ID))
+  if ((ID<1) || (ID>=myMesh->myCells.size()))
     return NULL;
-  return myIDElements.Find(ID);
-}
-
-
-//=======================================================================
-//function : GetFreeID
-//purpose  : 
-//=======================================================================
-int SMDS_MeshElementIDFactory::GetFreeID()
-{
-  int ID;
-  do {
-    ID = SMDS_MeshIDFactory::GetFreeID();
-  } while (myIDElements.IsBound(ID));
-  return ID;
+  const SMDS_MeshElement* elem = GetMesh()->FindElement(ID);
+  return (SMDS_MeshElement*)(elem);
 }
 
 //=======================================================================
 //function : ReleaseID
 //purpose  : 
 //=======================================================================
-void SMDS_MeshElementIDFactory::ReleaseID(const int ID)
+void SMDS_MeshElementIDFactory::ReleaseID(int ID, int vtkId)
 {
-  myIDElements.UnBind(ID);
+  if (ID < 1) // TODO check case ID == O
+    {
+      MESSAGE("~~~~~~~~~~~~~~ SMDS_MeshElementIDFactory::ReleaseID ID = " << ID);
+      return;
+    }
+  //MESSAGE("~~~~~~~~~~~~~~ SMDS_MeshElementIDFactory::ReleaseID smdsId vtkId " << ID << " " << vtkId);
+  if (vtkId >= 0)
+    {
+      assert(vtkId < myMesh->myCellIdVtkToSmds.size());
+      myMesh->myCellIdVtkToSmds[vtkId] = -1;
+      myMesh->setMyModified();
+    }
   SMDS_MeshIDFactory::ReleaseID(ID);
   if (ID == myMax)
     myMax = 0;
   if (ID == myMin)
-    myMin = 0;
-}
-
-//=======================================================================
-//function : GetMaxID
-//purpose  : 
-//=======================================================================
-
-int SMDS_MeshElementIDFactory::GetMaxID() const
-{
-  if (myMax == 0)
-    updateMinMax();
-  return myMax;
-}
-
-//=======================================================================
-//function : GetMinID
-//purpose  : 
-//=======================================================================
-
-int SMDS_MeshElementIDFactory::GetMinID() const
-{
-  if (myMin == 0)
-    updateMinMax();
-  return myMin;
+    myMax = 0;
 }
 
 //=======================================================================
@@ -130,9 +160,17 @@ void SMDS_MeshElementIDFactory::updateMinMax() const
 {
   myMin = IntegerLast();
   myMax = 0;
-  SMDS_IdElementMap::Iterator it(myIDElements);
-  for (; it.More(); it.Next())
-    updateMinMax (it.Key());
+  for (int i = 0; i < myMesh->myCells.size(); i++)
+    {
+      if (myMesh->myCells[i])
+        {
+          int id = myMesh->myCells[i]->GetID();
+          if (id > myMax)
+            myMax = id;
+          if (id < myMin)
+            myMin = id;
+        }
+    }
   if (myMin == IntegerLast())
     myMin = 0;
 }
@@ -142,35 +180,21 @@ void SMDS_MeshElementIDFactory::updateMinMax() const
 //purpose  : Return an iterator on elements of the factory
 //=======================================================================
 
-class SMDS_Fact_MyElemIterator:public SMDS_ElemIterator
-{
-  SMDS_IdElementMap::Iterator myIterator;
- public:
-  SMDS_Fact_MyElemIterator(const SMDS_IdElementMap& s):myIterator(s)
-  {}
-
-  bool more()
-  {
-    return myIterator.More() != Standard_False;
-  }
-
-  const SMDS_MeshElement* next()
-  {
-    const SMDS_MeshElement* current = myIterator.Value();
-    myIterator.Next();
-    return current;
-  }
-};
-
 SMDS_ElemIteratorPtr SMDS_MeshElementIDFactory::elementsIterator() const
 {
-  return SMDS_ElemIteratorPtr
-    (new SMDS_Fact_MyElemIterator(myIDElements));
+    return myMesh->elementsIterator(SMDSAbs_All);
 }
 
 void SMDS_MeshElementIDFactory::Clear()
 {
-  myIDElements.Clear();
+  //myMesh->myCellIdSmdsToVtk.clear();
+  myMesh->myCellIdVtkToSmds.clear();
   myMin = myMax = 0;
   SMDS_MeshIDFactory::Clear();
+}
+
+int SMDS_MeshElementIDFactory::GetVtkCellType(int SMDSType)
+{
+    assert((SMDSType >=0) && (SMDSType< SMDSEntity_Last));
+    return myVtkCellTypes[SMDSType];
 }

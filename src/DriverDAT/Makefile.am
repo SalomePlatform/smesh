@@ -56,6 +56,7 @@ dist_DAT_Test_SOURCES = \
 libMeshDriverDAT_la_CPPFLAGS = \
 	$(KERNEL_CXXFLAGS) \
 	$(CAS_CPPFLAGS) \
+        $(VTK_INCLUDES) \
 	$(BOOST_CPPFLAGS) \
 	-I$(srcdir)/../Driver \
 	-I$(srcdir)/../SMDS \

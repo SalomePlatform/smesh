@@ -113,6 +113,7 @@
 
 #include "GEOM_Client.hxx"
 #include "Utils_ExceptHandlers.hxx"
+#include "memoire.h"
 #include "Basics_Utils.hxx"
 
 #include <map>
@@ -484,6 +485,7 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::createMesh()
     // create a new mesh object servant, store it in a map in study context
     SMESH_Mesh_i* meshServant = new SMESH_Mesh_i( GetPOA(), this, GetCurrentStudyID() );
     // create a new mesh object
+    MESSAGE("myIsEmbeddedMode " << myIsEmbeddedMode);
     meshServant->SetImpl( myGen.CreateMesh( GetCurrentStudyID(), myIsEmbeddedMode ));
 
     // activate the CORBA servant of Mesh
@@ -541,6 +543,7 @@ void SMESH_Gen_i::SetGeomEngine( GEOM::GEOM_Gen_ptr geomcompo )
 void SMESH_Gen_i::SetEmbeddedMode( CORBA::Boolean theMode )
 {
   myIsEmbeddedMode = theMode;
+  MESSAGE("myIsEmbeddedMode " << myIsEmbeddedMode);
 
   if ( !myIsEmbeddedMode ) {
     //PAL10867: disable signals catching with "noexcepthandler" option
@@ -900,6 +903,7 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CreateMeshesFromUNV( const char* theFileName 
   // Dump creation of groups
   aServant->GetGroups();
 
+  aServant->GetImpl().GetMeshDS()->Modified();
   return aMesh._retn();
 }
 
@@ -968,6 +972,7 @@ SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromMED( const char* theFileName,
         theStatus = status1;
 
       aResult[i++] = SMESH::SMESH_Mesh::_duplicate( mesh );
+      meshServant->GetImpl().GetMeshDS()->Modified();
     }
     aStudyBuilder->CommitCommand();
   }
@@ -1014,6 +1019,7 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CreateMeshesFromSTL( const char* theFileName 
   SMESH_Mesh_i* aServant = dynamic_cast<SMESH_Mesh_i*>( GetServant( aMesh ).in() );
   ASSERT( aServant );
   aServant->ImportSTLFile( theFileName );
+  aServant->GetImpl().GetMeshDS()->Modified();
   return aMesh._retn();
 }
 
@@ -1396,6 +1402,7 @@ CORBA::Boolean SMESH_Gen_i::Compute( SMESH::SMESH_Mesh_ptr theMesh,
                                      GEOM::GEOM_Object_ptr theShapeObject )
      throw ( SALOME::SALOME_Exception )
 {
+  MEMOSTAT;
   Unexpect aCatch(SALOME_SalomeException);
   if(MYDEBUG) MESSAGE( "SMESH_Gen_i::Compute" );
 
@@ -1428,6 +1435,7 @@ CORBA::Boolean SMESH_Gen_i::Compute( SMESH::SMESH_Mesh_ptr theMesh,
       ::SMESH_Mesh& myLocMesh = meshServant->GetImpl();
       bool ok = myGen.Compute( myLocMesh, myLocShape);
       meshServant->CreateGroupServants(); // algos can create groups (issue 0020918)
+      myLocMesh.GetMeshDS()->Modified();
       return ok;
     }
   }
@@ -1917,11 +1925,12 @@ SMESH_Gen_i::ConcatenateCommon(const SMESH::mesh_array& theMeshesArray,
   // create mesh
   SMESH::SMESH_Mesh_var aNewMesh = CreateEmptyMesh();
   
+  SMESHDS_Mesh* aNewMeshDS = 0;
   if ( !aNewMesh->_is_nil() ) {
     SMESH_Mesh_i* aNewImpl = dynamic_cast<SMESH_Mesh_i*>( GetServant( aNewMesh ).in() );
     if ( aNewImpl ) {
       ::SMESH_Mesh& aLocMesh = aNewImpl->GetImpl();
-      SMESHDS_Mesh* aNewMeshDS = aLocMesh.GetMeshDS();
+      aNewMeshDS = aLocMesh.GetMeshDS();
 
       TGroupsMap aGroupsMap;
       TListOfNewGroups aListOfNewGroups;
@@ -1990,11 +1999,11 @@ SMESH_Gen_i::ConcatenateCommon(const SMESH::mesh_array& theMeshesArray,
               // creates a corresponding element on existent nodes in new mesh
               if ( anElem->IsPoly() && anElemType == SMDSAbs_Volume )
                 {
-                  const SMDS_PolyhedralVolumeOfNodes* aVolume =
-                    dynamic_cast<const SMDS_PolyhedralVolumeOfNodes*> (anElem);
+                  const SMDS_VtkVolume* aVolume =
+                    dynamic_cast<const SMDS_VtkVolume*> (anElem);
                   if ( aVolume ) {
                     aNewElem = aNewMeshDS->AddPolyhedralVolume(aNodesArray, 
-                                                               aVolume->GetQuanities());
+                                                               aVolume->GetQuantities());
                     elemsMap.insert(make_pair(anElem->GetID(), aNewElem->GetID()));
                     if( theCommonGroups )
                       anIDsVolumes[anNbVolumes++] = aNewElem->GetID();
@@ -2197,7 +2206,8 @@ SMESH_Gen_i::ConcatenateCommon(const SMESH::mesh_array& theMeshesArray,
     SALOMEDS::AttributePixMap_var aPixmap = SALOMEDS::AttributePixMap::_narrow(anAttr);
     aPixmap->SetPixMap("ICON_SMESH_TREE_MESH");
   }
-
+  if (aNewMeshDS)
+    aNewMeshDS->Modified();
   return aNewMesh._retn();
 }
 
@@ -3132,7 +3142,7 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
                       const SMDS_PositionPtr pos = node->GetPosition();
                       if ( onFace ) { // on FACE
                         const SMDS_FacePosition* fPos =
-                          dynamic_cast<const SMDS_FacePosition*>( pos.get() );
+                          dynamic_cast<const SMDS_FacePosition*>( pos );
                         if ( fPos ) {
                           aUPos[ iNode ] = fPos->GetUParameter();
                           aVPos[ iNode ] = fPos->GetVParameter();
@@ -3143,7 +3153,7 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
                       }
                       else { // on EDGE
                         const SMDS_EdgePosition* ePos =
-                          dynamic_cast<const SMDS_EdgePosition*>( pos.get() );
+                          dynamic_cast<const SMDS_EdgePosition*>( pos );
                         if ( ePos ) {
                           aUPos[ iNode ] = ePos->GetUParameter();
                           iNode++;
@@ -4043,7 +4053,6 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
                 // add
                 if ( isNode ) {
                   SMDS_PositionPtr pos = aPositionCreator.MakePosition( smType[ smID ]);
-                  pos->SetShapeId( smID );
                   SMDS_MeshNode* node = const_cast<SMDS_MeshNode*>( static_cast<const SMDS_MeshNode*>( elem ));
                   node->SetPosition( pos );
                   sm->AddNode( node );
@@ -4147,7 +4156,7 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
                 // not fixed bugs in SMDS_MeshInfo
                 if ( aPos->GetTypeOfPosition() == SMDS_TOP_FACE ) {
                   SMDS_FacePosition* fPos = const_cast<SMDS_FacePosition*>
-                    ( static_cast<const SMDS_FacePosition*>( aPos.get() ));
+                    ( static_cast<const SMDS_FacePosition*>( aPos ));
                   fPos->SetUParameter( aUPos[ iNode ]);
                   fPos->SetVParameter( aVPos[ iNode ]);
                 }
@@ -4156,7 +4165,7 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
                 // ASSERT( aPos->GetTypeOfPosition() == SMDS_TOP_EDGE );-- issue 20182
                 if ( aPos->GetTypeOfPosition() == SMDS_TOP_EDGE ) {
                   SMDS_EdgePosition* fPos = const_cast<SMDS_EdgePosition*>
-                    ( static_cast<const SMDS_EdgePosition*>( aPos.get() ));
+                    ( static_cast<const SMDS_EdgePosition*>( aPos ));
                   fPos->SetUParameter( aUPos[ iNode ]);
                 }
               }

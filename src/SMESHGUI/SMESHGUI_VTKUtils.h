@@ -65,7 +65,7 @@ namespace SMESH
   typedef std::pair<int,std::string> TKeyOfVisualObj;
   
 SMESHGUI_EXPORT
-  TVisualObjPtr GetVisualObj( int, const char* );
+  TVisualObjPtr GetVisualObj( int, const char*, bool nulData =false );
 SMESHGUI_EXPORT
   void OnVisuException(); // PAL16631
 
@@ -122,7 +122,10 @@ SMESHGUI_EXPORT
   void UpdateView();
 
 SMESHGUI_EXPORT
-  bool Update( const Handle(SALOME_InteractiveObject)&, bool );
+  bool UpdateNulData( const Handle(SALOME_InteractiveObject)& theIO, bool theDisplay);
+
+SMESHGUI_EXPORT
+  bool Update( const Handle(SALOME_InteractiveObject)& theIO, bool theDisplay);
 
   //----------------------------------------------------------------------------
 SMESHGUI_EXPORT  

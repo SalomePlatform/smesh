@@ -37,7 +37,6 @@ salomeinclude_HEADERS = \
 	SMESH_FaceOrientationFilter.h \
 	SMESH_ScalarBarActor.h
 
-
 # Libraries targets
 
 lib_LTLIBRARIES = libSMESHObject.la

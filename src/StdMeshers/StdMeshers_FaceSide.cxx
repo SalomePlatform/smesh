@@ -341,7 +341,7 @@ const vector<UVPtStruct>& StdMeshers_FaceSide::GetUVPtStruct(bool   isXConst,
         paramSize = myNormPar[ EdgeIndex ] - prevNormPar;
       }
       const SMDS_EdgePosition* epos =
-        dynamic_cast<const SMDS_EdgePosition*>(uvPt.node->GetPosition().get());
+        dynamic_cast<const SMDS_EdgePosition*>(uvPt.node->GetPosition());
       if ( epos ) {
         uvPt.param = epos->GetUParameter();
       }

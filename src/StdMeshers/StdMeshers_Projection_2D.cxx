@@ -341,7 +341,7 @@ namespace {
           RETURN_BAD_RESULT("Bad node position type: node " << node->GetID() <<
                             " pos type " << node->GetPosition()->GetTypeOfPosition());
         const SMDS_EdgePosition* pos =
-          static_cast<const SMDS_EdgePosition*>(node->GetPosition().get());
+          static_cast<const SMDS_EdgePosition*>(node->GetPosition());
         u2nodes.insert( make_pair( pos->GetUParameter(), node ));
         seamNodes.insert( node );
       }
@@ -374,7 +374,8 @@ namespace {
                       SMESH_Mesh *                      srcMesh,
                       const TAssocTool::TShapeShapeMap& shape2ShapeMap)
   {
-    const double tol = 1e-6;
+    MESSAGE("projectPartner");
+    const double tol = 1.e-7*srcMesh->GetMeshDS()->getMaxDim();
 
     gp_Trsf trsf; // transformation to get location of target nodes from source ones
     if ( tgtFace.IsPartner( srcFace ))
@@ -406,12 +407,13 @@ namespace {
           {
           case 0: pOK = true; break;
 
-          case 1: pOK = ( srcPP[0].SquareDistance( p ) > tol ); break;
+          case 1: pOK = ( srcPP[0].SquareDistance( p ) > 10*tol ); break;
             
           case 2:
             {
               gp_Vec p0p1( srcPP[0], srcPP[1] ), p0p( srcPP[0], p );
-              pOK = !p0p1.IsParallel( p0p, tol );
+              // pOK = !p0p1.IsParallel( p0p, tol );
+              pOK = !p0p1.IsParallel( p0p, 3.14/20 ); // angle min 18 degrees
               break;
             }
           }
@@ -434,6 +436,7 @@ namespace {
             {
               double srcDist = srcPP[0].Distance( p );
               double eTol = BRep_Tool::Tolerance( TopoDS::Edge( tgtShape ));
+              if (eTol < tol) eTol = tol;
               SMDS_NodeIteratorPtr nItT = tgtSmds->GetNodes();
               while ( nItT->more() && !pOK )
               {
@@ -490,7 +493,7 @@ namespace {
 
       if ( !tgtEdge.IsPartner( srcEdge.Current() ))
       {
-        // check that transormation is OK by three nodes
+        // check that transformation is OK by three nodes
         gp_Pnt p0S = SMESH_MeshEditor::TNodeXYZ( (srcNodes.begin())  ->second);
         gp_Pnt p1S = SMESH_MeshEditor::TNodeXYZ( (srcNodes.rbegin()) ->second);
         gp_Pnt p2S = SMESH_MeshEditor::TNodeXYZ( (++srcNodes.begin())->second);
@@ -499,7 +502,7 @@ namespace {
         gp_Pnt p1T = SMESH_MeshEditor::TNodeXYZ( (tgtNodes.rbegin()) ->second);
         gp_Pnt p2T = SMESH_MeshEditor::TNodeXYZ( (++tgtNodes.begin())->second);
 
-        // transform source points, they must coinside with target ones
+        // transform source points, they must coincide with target ones
         if ( p0T.SquareDistance( p0S.Transformed( trsf )) > tol ||
              p1T.SquareDistance( p1S.Transformed( trsf )) > tol ||
              p2T.SquareDistance( p2S.Transformed( trsf )) > tol )
@@ -522,6 +525,7 @@ namespace {
 
     // prepare the helper adding quadratic elements if necessary
     SMESH_MesherHelper helper( *tgtMesh );
+    helper.SetSubShape( tgtFace );
     helper.IsQuadraticSubMesh( tgtFace );
     helper.SetElementsOnShape( true );
 
@@ -538,20 +542,31 @@ namespace {
       while ( nodeIt->more() ) // loop on nodes of the source element
       {
         const SMDS_MeshNode* srcNode = (const SMDS_MeshNode*) nodeIt->next();
+        if (elem->IsMediumNode(srcNode))
+          continue;
         srcN_tgtN = src2tgtNodes.insert( make_pair( srcNode, nullNode )).first;
         if ( srcN_tgtN->second == nullNode )
         {
           // create a new node
           gp_Pnt tgtP = gp_Pnt(srcNode->X(),srcNode->Y(),srcNode->Z()).Transformed( trsf );
           srcN_tgtN->second = helper.AddNode( tgtP.X(), tgtP.Y(), tgtP.Z() );
+          //MESSAGE(tgtP.X() << " " << tgtP.Y() << " " <<  tgtP.Z());
         }
         tgtFaceNodes.push_back( srcN_tgtN->second );
       }
       // create a new face (with reversed orientation)
-      if ( tgtFaceNodes.size() == 3 )
-        helper.AddFace( tgtFaceNodes[0],tgtFaceNodes[2],tgtFaceNodes[1]);
-      else
-        helper.AddFace( tgtFaceNodes[0],tgtFaceNodes[3],tgtFaceNodes[2],tgtFaceNodes[1]);
+      //MESSAGE("tgtFaceNodes.size() " << tgtFaceNodes.size());
+      switch (tgtFaceNodes.size())
+         {
+            case 3:
+            case 6:
+              helper.AddFace(tgtFaceNodes[0], tgtFaceNodes[2], tgtFaceNodes[1]);
+              break;
+            case 4:
+            case 8:
+              helper.AddFace(tgtFaceNodes[0], tgtFaceNodes[3], tgtFaceNodes[2], tgtFaceNodes[1]);
+              break;
+         }
     }
     return true;
   }
@@ -566,6 +581,7 @@ namespace {
 
 bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& theShape)
 {
+  MESSAGE("Projection_2D Compute");
   if ( !_sourceHypo )
     return false;
 
@@ -752,7 +768,7 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
       }
       case  SMDS_TOP_EDGE:   {
         const SMDS_EdgePosition* pos =
-          static_cast<const SMDS_EdgePosition*>(node->GetPosition().get());
+          static_cast<const SMDS_EdgePosition*>(node->GetPosition());
         pos2nodes.insert( make_pair( pos->GetUParameter(), node ));
         break;
       }

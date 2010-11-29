@@ -478,7 +478,7 @@ bool StdMeshers_Prism_3D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& theSh
         if ( !myBlock.ComputeParameters( topCoords, topParams, ID_TOP_FACE, topParams ))
           return error(TCom("Can't compute normalized parameters ")
                        << "for node " << column.back()->GetID()
-                       << " on the face #"<< column.back()->GetPosition()->GetShapeId() );
+                       << " on the face #"<< column.back()->getshapeId() );
       }
 
       // vertical loop
@@ -806,6 +806,8 @@ bool StdMeshers_Prism_3D::assocOrProjBottom2Top()
        botSMDS->NbElements() != topSMDS->NbElements() ||
        botSMDS->NbNodes()    != topSMDS->NbNodes())
   {
+    MESSAGE("nb elem bot " << botSMDS->NbElements() << " top " << topSMDS->NbElements());
+    MESSAGE("nb node bot " << botSMDS->NbNodes() << " top " << topSMDS->NbNodes());
     if ( myBlock.HasNotQuadElemOnTop() )
       return error(TCom("Mesh on faces #") << botSM->GetId()
                    <<" and #"<< topSM->GetId() << " seems different" );
@@ -1208,6 +1210,7 @@ bool StdMeshers_PrismAsBlock::Init(SMESH_MesherHelper* helper,
   }
 
   myNotQuadOnTop = ( nbNotQuadMeshed > 1 );
+  MESSAGE("myNotQuadOnTop " << myNotQuadOnTop << " nbNotQuadMeshed " << nbNotQuadMeshed);
  
   // ----------------------------------------------------------
 
@@ -1364,11 +1367,11 @@ bool StdMeshers_PrismAsBlock::Init(SMESH_MesherHelper* helper,
     // columns for vertices
     // 1
     const SMDS_MeshNode* n0 = faceColumns.begin()->second.front();
-    id = n0->GetPosition()->GetShapeId();
+    id = n0->getshapeId();
     myShapeIndex2ColumnMap[ id ] = make_pair( & faceColumns, isForward );
     // 2
     const SMDS_MeshNode* n1 = faceColumns.rbegin()->second.front();
-    id = n1->GetPosition()->GetShapeId();
+    id = n1->getshapeId();
     myShapeIndex2ColumnMap[ id ] = make_pair( & faceColumns, isForward );
 //     SHOWYXZ("\np1 F "<<iE, gpXYZ(faceColumns.begin()->second.front() ));
 //     SHOWYXZ("p2 F "<<iE, gpXYZ(faceColumns.rbegin()->second.front() ));
@@ -1578,11 +1581,11 @@ bool StdMeshers_PrismAsBlock::Init(SMESH_MesherHelper* helper,
 
       // columns for vertices
       const SMDS_MeshNode* n0 = cols->begin()->second.front();
-      id = n0->GetPosition()->GetShapeId();
+      id = n0->getshapeId();
       myShapeIndex2ColumnMap[ id ] = make_pair( cols, isForward );
 
       const SMDS_MeshNode* n1 = cols->rbegin()->second.front();
-      id = n1->GetPosition()->GetShapeId();
+      id = n1->getshapeId();
       myShapeIndex2ColumnMap[ id ] = make_pair( cols, !isForward );
     }
   }
@@ -1609,7 +1612,7 @@ bool StdMeshers_PrismAsBlock::Init(SMESH_MesherHelper* helper,
 
 const TNodeColumn* StdMeshers_PrismAsBlock::GetNodeColumn(const SMDS_MeshNode* node) const
 {
-  int sID = node->GetPosition()->GetShapeId();
+  int sID = node->getshapeId();
 
   map<int, pair< TParam2ColumnMap*, bool > >::const_iterator col_frw =
     myShapeIndex2ColumnMap.find( sID );

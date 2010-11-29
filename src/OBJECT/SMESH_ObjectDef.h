@@ -62,6 +62,7 @@ public:
   virtual                   ~SMESH_VisualObjDef();
   
   virtual bool              Update( int theIsClear = true ) = 0;
+  virtual bool              NulData() {return 0; };
   virtual void              UpdateFunctor( const SMESH::Controls::FunctorPtr& theFunctor ) = 0;
   virtual int               GetElemDimension( const int theObjId ) = 0;
 
@@ -77,7 +78,7 @@ public:
                                           int&      theNodeId1,
                                           int&      theNodeId2 ) const;
 
-  virtual vtkUnstructuredGrid* GetUnstructuredGrid() { return myGrid; }
+  virtual vtkUnstructuredGrid* GetUnstructuredGrid();
   
   virtual vtkIdType         GetNodeObjId( int theVTKID );
   virtual vtkIdType         GetNodeVTKId( int theObjID );
@@ -87,16 +88,17 @@ public:
 protected:
 
   void                      createPoints( vtkPoints* );
-  void                      buildPrs();
+  void                      buildPrs(bool buildGrid = false);
   void                      buildNodePrs();
   void                      buildElemPrs();
   
-private:                                   
+//private:
 
   TMapOfIds                 mySMDS2VTKNodes;
   TMapOfIds                 myVTK2SMDSNodes;
   TMapOfIds                 mySMDS2VTKElems;
   TMapOfIds                 myVTK2SMDSElems;
+  bool                      myLocalGrid;
 
   vtkUnstructuredGrid*      myGrid;
 };
@@ -115,6 +117,7 @@ public:
   virtual                   ~SMESH_MeshObj();
   
   virtual bool              Update( int theIsClear = true );
+  virtual bool              NulData();
   
   virtual int               GetNbEntities( const SMDSAbs_ElementType) const;
   virtual int               GetEntities( const SMDSAbs_ElementType, TEntityList& ) const;
@@ -129,6 +132,7 @@ public:
 
 protected:
   SMESH_Client              myClient;
+  vtkUnstructuredGrid*      myEmptyGrid;
 };
 
 

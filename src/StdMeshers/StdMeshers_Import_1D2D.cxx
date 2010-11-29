@@ -200,7 +200,7 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
     StdMeshers_Import_1D::getMaps( srcMesh, &theMesh, n2n, e2e );
 
     SMDS_ElemIteratorPtr srcElems = srcGroup->GetElements();
-    SMDS_MeshNode tmpNode(0,0,0);
+    SMDS_MeshNode *tmpNode = helper.AddNode(0,0,0);
     gp_XY uv;
     while ( srcElems->more() ) // loop on group contents
     {
@@ -215,7 +215,7 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
         TNodeNodeMap::iterator n2nIt = n2n->insert( make_pair( *node, (SMDS_MeshNode*)0 )).first;
         if ( n2nIt->second )
         {
-          if ( !subShapeIDs.count( n2nIt->second->GetPosition()->GetShapeId() ))
+          if ( !subShapeIDs.count( n2nIt->second->getshapeId() ))
             break;
         }
         else
@@ -232,8 +232,8 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
         if ( !n2nIt->second )
         {
           // find out if node lies on theShape
-          tmpNode.setXYZ( (*node)->X(), (*node)->Y(), (*node)->Z());
-          if ( helper.CheckNodeUV( geomFace, &tmpNode, uv, 10 * faceTol, /*force=*/true ))
+          tmpNode->setXYZ( (*node)->X(), (*node)->Y(), (*node)->Z());
+          if ( helper.CheckNodeUV( geomFace, tmpNode, uv, 10 * faceTol, /*force=*/true ))
           {
             SMDS_MeshNode* newNode = tgtMesh->AddNode( (*node)->X(), (*node)->Y(), (*node)->Z());
             n2nIt->second = newNode;
@@ -315,6 +315,7 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
         ++link2Nb->second;
       }
     }
+    helper.GetMeshDS()->RemoveNode(tmpNode);
   }
 
   // ==========================================================
@@ -346,7 +347,7 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
         for ( int is1stN = 0; is1stN < 2 && nodesOnBoundary; ++is1stN )
         {
           const SMDS_MeshNode* n = is1stN ? link.node1() : link.node2();
-          if ( !subShapeIDs.count( n->GetPosition()->GetShapeId() ))
+          if ( !subShapeIDs.count( n->getshapeId() ))
           {
             for ( unsigned iE = 0; iE < edges.size(); ++iE )
               if ( helper.CheckNodeU( edges[iE], n, u, 10 * faceTol, /*force=*/true ))
@@ -358,7 +359,7 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
                 tgtMesh->SetNodeOnEdge( (SMDS_MeshNode*)n, edges[iE], u );
                 break;
               }
-            nodesOnBoundary = subShapeIDs.count( n->GetPosition()->GetShapeId());
+            nodesOnBoundary = subShapeIDs.count( n->getshapeId());
           }
           if ( nodesOnBoundary )
           {
@@ -554,7 +555,7 @@ bool StdMeshers_Import_1D2D::Evaluate(SMESH_Mesh &         theMesh,
     {
       const SMESHDS_GroupBase* srcGroup = srcGroups[iG]->GetGroupDS();
       SMDS_ElemIteratorPtr srcElems = srcGroup->GetElements();
-      SMDS_MeshNode tmpNode(0,0,0);
+      SMDS_MeshNode *tmpNode =helper.AddNode(0,0,0);
       while ( srcElems->more() ) // loop on group contents
       {
         const SMDS_MeshElement* face = srcElems->next();
@@ -562,8 +563,8 @@ bool StdMeshers_Import_1D2D::Evaluate(SMESH_Mesh &         theMesh,
         // a gravity center of face to geomFace
         gp_XYZ gc(0,0,0);
         gc = accumulate( TXyzIterator(face->nodesIterator()), TXyzIterator(), gc)/face->NbNodes();
-        tmpNode.setXYZ( gc.X(), gc.Y(), gc.Z());
-        if ( helper.CheckNodeUV( geomFace, &tmpNode, uv, 10 * faceTol, /*force=*/true ))
+        tmpNode->setXYZ( gc.X(), gc.Y(), gc.Z());
+        if ( helper.CheckNodeUV( geomFace, tmpNode, uv, 10 * faceTol, /*force=*/true ))
         {
           ++aVec[ face->GetEntityType() ];
 
@@ -585,6 +586,7 @@ bool StdMeshers_Import_1D2D::Evaluate(SMESH_Mesh &         theMesh,
           }
         }
       }
+      helper.GetMeshDS()->RemoveNode(tmpNode);
     }
 
     int nbNodes = allNodes.size();

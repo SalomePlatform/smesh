@@ -54,6 +54,7 @@ SMDS_QuadraticVolumeOfNodes::SMDS_QuadraticVolumeOfNodes
                                                 const SMDS_MeshNode * n24,
                                                 const SMDS_MeshNode * n34)
 {
+  //MESSAGE("*********************************************** SMDS_QuadraticVolumeOfNodes");
   myNodes.resize( 10 );
   myNodes[ 0 ] = n1;
   myNodes[ 1 ] = n2;
@@ -88,6 +89,7 @@ SMDS_QuadraticVolumeOfNodes::SMDS_QuadraticVolumeOfNodes
                                                 const SMDS_MeshNode * n35,
                                                 const SMDS_MeshNode * n45)
 {
+  //MESSAGE("*********************************************** SMDS_QuadraticVolumeOfNodes");
   myNodes.resize( 13 );
   myNodes[ 0 ] = n1;
   myNodes[ 1 ] = n2;
@@ -127,6 +129,7 @@ SMDS_QuadraticVolumeOfNodes::SMDS_QuadraticVolumeOfNodes
                                                 const SMDS_MeshNode * n25,
                                                 const SMDS_MeshNode * n36)
 {
+  //MESSAGE("*********************************************** SMDS_QuadraticVolumeOfNodes");
   myNodes.resize( 15 );
   myNodes[ 0 ] = n1;
   myNodes[ 1 ] = n2;
@@ -173,6 +176,7 @@ SMDS_QuadraticVolumeOfNodes::SMDS_QuadraticVolumeOfNodes
                                                 const SMDS_MeshNode * n37,
                                                 const SMDS_MeshNode * n48)
 {
+  //MESSAGE("*********************************************** SMDS_QuadraticVolumeOfNodes");
   myNodes.resize( 20 );
   myNodes[ 0 ] = n1;
   myNodes[ 1 ] = n2;

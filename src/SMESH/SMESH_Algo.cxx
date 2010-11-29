@@ -255,10 +255,10 @@ bool SMESH_Algo::IsReversedSubMesh (const TopoDS_Face&  theFace,
         const SMDS_PositionPtr& pos = node->GetPosition();
         if ( !pos ) continue;
         if ( pos->GetTypeOfPosition() == SMDS_TOP_FACE ) {
-          fPos = dynamic_cast< const SMDS_FacePosition* >( pos.get() );
+          fPos = dynamic_cast< const SMDS_FacePosition* >( pos );
         }
         else if ( pos->GetTypeOfPosition() == SMDS_TOP_VERTEX ) {
-          vID = pos->GetShapeId();
+          vID = node->getshapeId();
         }
       }
       if ( fPos || ( !normalOK && vID )) {
@@ -366,7 +366,7 @@ bool SMESH_Algo::GetNodeParamOnEdge(const SMESHDS_Mesh* theMesh,
       if ( pos->GetTypeOfPosition() != SMDS_TOP_EDGE )
         return false;
       const SMDS_EdgePosition* epos =
-        static_cast<const SMDS_EdgePosition*>(node->GetPosition().get());
+        static_cast<const SMDS_EdgePosition*>(node->GetPosition());
       if ( !paramSet.insert( epos->GetUParameter() ).second )
         return false; // equal parameters
     }
@@ -433,8 +433,9 @@ bool SMESH_Algo::GetSortedNodesOnEdge(const SMESHDS_Mesh*                   theM
       if ( pos->GetTypeOfPosition() != SMDS_TOP_EDGE )
         return false;
       const SMDS_EdgePosition* epos =
-        static_cast<const SMDS_EdgePosition*>(node->GetPosition().get());
+        static_cast<const SMDS_EdgePosition*>(node->GetPosition());
       theNodes.insert( make_pair( epos->GetUParameter(), node ));
+      //MESSAGE("U " << epos->GetUParameter() << " ID " << node->GetID());
       ++nbNodes;
     }
   }
@@ -443,6 +444,7 @@ bool SMESH_Algo::GetSortedNodesOnEdge(const SMESHDS_Mesh*                   theM
   TopExp::Vertices(theEdge, v1, v2);
   const SMDS_MeshNode* n1 = VertexNode( v1, (SMESHDS_Mesh*) theMesh );
   const SMDS_MeshNode* n2 = VertexNode( v2, (SMESHDS_Mesh*) theMesh );
+  //MESSAGE("Vertices ID " << n1->GetID() << " " << n2->GetID());
   Standard_Real f, l;
   BRep_Tool::Range(theEdge, f, l);
   if ( v1.Orientation() != TopAbs_FORWARD )

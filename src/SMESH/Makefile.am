@@ -85,6 +85,7 @@ libSMESHimpl_la_CPPFLAGS = \
 	$(CAS_CPPFLAGS) \
 	$(MED_CXXFLAGS) \
 	$(GEOM_CXX_FLAGS) \
+        $(VTK_INCLUDES) \
 	$(BOOST_CPPFLAGS) \
 	@HDF5_INCLUDES@ \
 	-I$(srcdir)/../Controls \

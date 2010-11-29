@@ -31,6 +31,7 @@
 
 #include "SMDS_VolumeOfFaces.hxx"
 #include "SMDS_IteratorOfElements.hxx"
+#include "utilities.h"
 
 using namespace std;
 
@@ -96,6 +97,7 @@ SMDS_VolumeOfFaces::SMDS_VolumeOfFaces(const SMDS_MeshFace * face1,
                                        const SMDS_MeshFace * face3,
                                        const SMDS_MeshFace * face4)
 {
+  //MESSAGE("****************************************************** SMDS_VolumeOfFaces");
         myNbFaces = 4;
         myFaces[0]=face1;
         myFaces[1]=face2;
@@ -111,6 +113,7 @@ SMDS_VolumeOfFaces::SMDS_VolumeOfFaces(const SMDS_MeshFace * face1,
                                        const SMDS_MeshFace * face4,
                                        const SMDS_MeshFace * face5)
 {
+  //MESSAGE("****************************************************** SMDS_VolumeOfFaces");
         myNbFaces = 5;
         myFaces[0]=face1;
         myFaces[1]=face2;
@@ -127,6 +130,7 @@ SMDS_VolumeOfFaces::SMDS_VolumeOfFaces(const SMDS_MeshFace * face1,
                                        const SMDS_MeshFace * face5,
                                        const SMDS_MeshFace * face6)
 {
+  //MESSAGE("****************************************************** SMDS_VolumeOfFaces");
         myNbFaces = 6;
         myFaces[0]=face1;
         myFaces[1]=face2;

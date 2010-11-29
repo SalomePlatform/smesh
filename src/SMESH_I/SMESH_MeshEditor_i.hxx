@@ -686,6 +686,20 @@ public:
                                          CORBA::Boolean            toCopyMissingBondary,
                                          SMESH::SMESH_Group_out    group);
 
+    /*!
+     * \brief Double nodes on shared faces between groups of volumes and create flat elements on demand.
+     * The list of groups must describe a partition of the mesh volumes.
+     * The nodes of the internal faces at the boundaries of the groups are doubled.
+     * In option, the internal faces are replaced by flat elements.
+     * Triangles are transformed in prisms, and quadrangles in hexahedrons.
+     * @param theDomains - list of groups of volumes
+     * @param createJointElems - if TRUE, create the elements
+     * @return TRUE if operation has been completed successfully, FALSE otherwise
+     */
+  CORBA::Boolean DoubleNodesOnGroupBoundaries( const SMESH::ListOfGroups& theDomains,
+                                               CORBA::Boolean createJointElems );
+
+
 private: //!< private methods
 
   SMESHDS_Mesh * GetMeshDS() { return myMesh->GetMeshDS(); }

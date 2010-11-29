@@ -30,9 +30,8 @@
 #include "SMDS_MeshNode.hxx"
 #include "SMDS_SetIterator.hxx"
 #include "SMDS_VolumeTool.hxx"
+#include "SMDS_Mesh.hxx"
 #include "utilities.h"
-
-#include <vector>
 
 using namespace std;
 
@@ -50,6 +49,7 @@ SMDS_VolumeOfNodes::SMDS_VolumeOfNodes(
                 const SMDS_MeshNode * node7,
                 const SMDS_MeshNode * node8)
 {
+  //MESSAGE("***************************************************** SMDS_VolumeOfNodes");
         myNbNodes = 8;
         myNodes = new const SMDS_MeshNode* [myNbNodes];
         myNodes[0]=node1;
@@ -68,6 +68,7 @@ SMDS_VolumeOfNodes::SMDS_VolumeOfNodes(
                 const SMDS_MeshNode * node3,
                 const SMDS_MeshNode * node4)
 {
+  //MESSAGE("***************************************************** SMDS_VolumeOfNodes");
         myNbNodes = 4;
         myNodes = new const SMDS_MeshNode* [myNbNodes];
         myNodes[0]=node1;
@@ -83,6 +84,7 @@ SMDS_VolumeOfNodes::SMDS_VolumeOfNodes(
                 const SMDS_MeshNode * node4,
                 const SMDS_MeshNode * node5)
 {
+  //MESSAGE("***************************************************** SMDS_VolumeOfNodes");
         myNbNodes = 5;
         myNodes = new const SMDS_MeshNode* [myNbNodes];
         myNodes[0]=node1;
@@ -100,6 +102,7 @@ SMDS_VolumeOfNodes::SMDS_VolumeOfNodes(
                 const SMDS_MeshNode * node5,
                 const SMDS_MeshNode * node6)
 {
+  //MESSAGE("***************************************************** SMDS_VolumeOfNodes");
         myNbNodes = 6;
         myNodes = new const SMDS_MeshNode* [myNbNodes];
         myNodes[0]=node1;
@@ -132,11 +135,6 @@ SMDS_VolumeOfNodes::~SMDS_VolumeOfNodes()
     myNodes = NULL;
   }
 }
-
-//=======================================================================
-//function : Print
-//purpose  : 
-//=======================================================================
 
 void SMDS_VolumeOfNodes::Print(ostream & OS) const
 {
@@ -177,12 +175,9 @@ int SMDS_VolumeOfNodes::NbEdges() const
         return 0;
 }
 
-/// ===================================================================
 /*!
  * \brief Iterator on node of volume
  */
-/// ===================================================================
-
 class SMDS_VolumeOfNodes_MyIterator:public SMDS_NodeArrayElemIterator
 {
  public:
@@ -190,12 +185,9 @@ class SMDS_VolumeOfNodes_MyIterator:public SMDS_NodeArrayElemIterator
     SMDS_NodeArrayElemIterator( s, & s[ l ]) {}
 };
 
-/// ===================================================================
 /*!
  * \brief Iterator on faces or edges of volume
  */
-/// ===================================================================
-
 class _MySubIterator : public SMDS_ElemIterator
 {
   vector< const SMDS_MeshElement* > myElems;
@@ -261,3 +253,5 @@ SMDSAbs_EntityType SMDS_VolumeOfNodes::GetEntityType() const
   }
   return aType;
 }
+
+

@@ -49,6 +49,7 @@ SMDS_QuadraticFaceOfNodes::SMDS_QuadraticFaceOfNodes(const SMDS_MeshNode * n1,
                                                      const SMDS_MeshNode * n23,
                                                      const SMDS_MeshNode * n31)
 {
+  //MESSAGE("********************************************** SMDS_QuadraticFaceOfNodes 1");
   myNodes.resize( 6 );
   myNodes[ 0 ] = n1;
   myNodes[ 1 ] = n2;
@@ -73,6 +74,7 @@ SMDS_QuadraticFaceOfNodes::SMDS_QuadraticFaceOfNodes(const SMDS_MeshNode * n1,
                                                      const SMDS_MeshNode * n34,
                                                      const SMDS_MeshNode * n41)
 {
+  //MESSAGE("********************************************* SMDS_QuadraticFaceOfNodes 2");
   myNodes.resize( 8 );
   myNodes[ 0 ] = n1;
   myNodes[ 1 ] = n2;

@@ -31,50 +31,52 @@
 
 #include "SMDS_MeshElement.hxx"
 #include "SMDS_Position.hxx"
+#include "ObjectPool.hxx"
 #include <NCollection_List.hxx>
 
 class SMDS_EXPORT SMDS_MeshNode:public SMDS_MeshElement
 {
-
 public:
-  SMDS_MeshNode(double x, double y, double z);
+  friend class SMESHDS_Mesh;
+  friend class SMDS_Mesh;
+  friend class ObjectPool<SMDS_MeshNode>;
 
+  void Print(std::ostream & OS) const;
   double X() const;
   double Y() const;
   double Z() const;
+  SMDS_ElemIteratorPtr GetInverseElementIterator(SMDSAbs_ElementType type=SMDSAbs_All) const;
+  int NbInverseElements(SMDSAbs_ElementType type=SMDSAbs_All) const;
+  const SMDS_PositionPtr& GetPosition() const;
+  SMDSAbs_ElementType GetType() const;
+  virtual vtkIdType GetVtkType() const;
+  SMDSAbs_EntityType  GetEntityType() const {return SMDSEntity_Node;}
+  int NbNodes() const;
+
+  friend bool operator<(const SMDS_MeshNode& e1, const SMDS_MeshNode& e2);
+
+  void SetPosition(const SMDS_PositionPtr& aPos);
   void setXYZ(double x, double y, double z);
 
+  static int nbNodes;
+
+protected:
+  SMDS_MeshNode();
+  SMDS_MeshNode(int id, int meshId, int shapeId = -1, double x=0, double y=0, double z=0);
+  virtual ~SMDS_MeshNode();
+  void init(int id, int meshId, int shapeId = -1, double x=0, double y=0, double z=0);
+  inline void setVtkId(int vtkId) { myVtkID = vtkId; };
+  double* getCoord() const;
   void AddInverseElement(const SMDS_MeshElement * ME);
   void RemoveInverseElement(const SMDS_MeshElement * parent);
   void ClearInverseElements();
-  SMDS_ElemIteratorPtr GetInverseElementIterator(SMDSAbs_ElementType type=SMDSAbs_All) const;
-  int NbInverseElements(SMDSAbs_ElementType type=SMDSAbs_All) const;
+  bool emptyInverseElements();
 
-  void SetPosition(const SMDS_PositionPtr& aPos);
-  const SMDS_PositionPtr& GetPosition() const;
-
-  SMDSAbs_ElementType GetType() const;
-  SMDSAbs_EntityType  GetEntityType() const {return SMDSEntity_Node;}
-
-  friend bool operator<(const SMDS_MeshNode& e1, const SMDS_MeshNode& e2);
-  void Print(std::ostream & OS) const;
-
-  /*!
-   * \brief Return node by its index
-   * \param ind - node index
-   * \retval const SMDS_MeshNode* - the node
-   */
-  virtual const SMDS_MeshNode* GetNode(const int) const { return this; }
-  virtual int NbNodes() const;
-
-protected:
   SMDS_ElemIteratorPtr
   elementsIterator(SMDSAbs_ElementType type) const;
 
 private:
-  double myX, myY, myZ;
   SMDS_PositionPtr myPosition;
-  NCollection_List<const SMDS_MeshElement*> myInverseElements;
 };
 
 #endif

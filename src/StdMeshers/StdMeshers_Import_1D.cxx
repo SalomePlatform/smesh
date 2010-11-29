@@ -575,7 +575,7 @@ bool StdMeshers_Import_1D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & th
 
     SMDS_ElemIteratorPtr srcElems = srcGroup->GetElements();
     vector<const SMDS_MeshNode*> newNodes;
-    SMDS_MeshNode tmpNode(0,0,0);
+    SMDS_MeshNode *tmpNode = helper.AddNode(0,0,0);
     double u;
     while ( srcElems->more() ) // loop on group contents
     {
@@ -589,7 +589,7 @@ bool StdMeshers_Import_1D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & th
         TNodeNodeMap::iterator n2nIt = n2n->insert( make_pair( *node, (SMDS_MeshNode*)0 )).first;
         if ( n2nIt->second )
         {
-          if ( !subShapeIDs.count( n2nIt->second->GetPosition()->GetShapeId() ))
+          if ( !subShapeIDs.count( n2nIt->second->getshapeId() ))
             break;
         }
         else
@@ -606,8 +606,8 @@ bool StdMeshers_Import_1D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & th
         if ( !n2nIt->second )
         {
           // find out if node lies on theShape
-          tmpNode.setXYZ( (*node)->X(), (*node)->Y(), (*node)->Z());
-          if ( helper.CheckNodeU( geomEdge, &tmpNode, u, 10 * edgeTol, /*force=*/true ))
+          tmpNode->setXYZ( (*node)->X(), (*node)->Y(), (*node)->Z());
+          if ( helper.CheckNodeU( geomEdge, tmpNode, u, 10 * edgeTol, /*force=*/true ))
           {
             SMDS_MeshNode* newNode = tgtMesh->AddNode( (*node)->X(), (*node)->Y(), (*node)->Z());
             n2nIt->second = newNode;
@@ -629,6 +629,7 @@ bool StdMeshers_Import_1D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & th
       tgtMesh->SetMeshElementOnShape( newEdge, shapeID );
       e2e->insert( make_pair( edge, newEdge ));
     }
+    helper.GetMeshDS()->RemoveNode(tmpNode);
   }
   if ( n2n->empty())
     return error("Empty source groups");
@@ -892,7 +893,7 @@ bool StdMeshers_Import_1D::Evaluate(SMESH_Mesh &         theMesh,
     {
       const SMESHDS_GroupBase* srcGroup = srcGroups[iG]->GetGroupDS();
       SMDS_ElemIteratorPtr srcElems = srcGroup->GetElements();
-      SMDS_MeshNode tmpNode(0,0,0);
+      SMDS_MeshNode *tmpNode = helper.AddNode(0,0,0);
       while ( srcElems->more() ) // loop on group contents
       {
         const SMDS_MeshElement* edge = srcElems->next();
@@ -901,11 +902,12 @@ bool StdMeshers_Import_1D::Evaluate(SMESH_Mesh &         theMesh,
         SMESH_MeshEditor::TNodeXYZ p1( edge->GetNode(0));
         SMESH_MeshEditor::TNodeXYZ p2( edge->GetNode(1));
         gp_XYZ middle = ( p1 + p2 ) / 2.;
-        tmpNode.setXYZ( middle.X(), middle.Y(), middle.Z());
+        tmpNode->setXYZ( middle.X(), middle.Y(), middle.Z());
         double u = 0;
-        if ( helper.CheckNodeU( geomEdge, &tmpNode, u, 10 * edgeTol, /*force=*/true ))
+        if ( helper.CheckNodeU( geomEdge, tmpNode, u, 10 * edgeTol, /*force=*/true ))
           ++( edge->IsQuadratic() ? nbQuadEdges : nbEdges);
       }
+      helper.GetMeshDS()->RemoveNode(tmpNode);
     }
 
     int nbNodes = nbEdges + 2 * nbQuadEdges - 1;

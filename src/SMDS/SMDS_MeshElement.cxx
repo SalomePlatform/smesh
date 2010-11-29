@@ -35,7 +35,12 @@
 
 using namespace std;
 
-SMDS_MeshElement::SMDS_MeshElement(int ID):myID(ID)
+SMDS_MeshElement::SMDS_MeshElement(int ID):myID(ID), myMeshId(-1), myShapeId(0), myIdInShape(-1)
+{
+}
+
+SMDS_MeshElement::SMDS_MeshElement(int id, ShortType meshId, ShortType shapeId):
+  myID(id), myMeshId(meshId), myShapeId(shapeId), myIdInShape(-1)
 {
 }
 
@@ -146,6 +151,7 @@ class SMDS_MeshElement_MyIterator:public SMDS_ElemIterator
     return myElement;   
   }     
 };
+
 SMDS_ElemIteratorPtr SMDS_MeshElement::
         elementsIterator(SMDSAbs_ElementType type) const
 {
@@ -162,12 +168,18 @@ SMDS_ElemIteratorPtr SMDS_MeshElement::
         }
 }
 
-///////////////////////////////////////////////////////////////////////////////
-///Return the ID of the element
-///////////////////////////////////////////////////////////////////////////////
-int SMDS_MeshElement::GetID() const
+//! virtual, redefined in vtkEdge, vtkFace and vtkVolume classes
+SMDS_ElemIteratorPtr SMDS_MeshElement::nodesIteratorToUNV() const
 {
-        return myID;
+  MESSAGE("Iterator not implemented");
+  return SMDS_ElemIteratorPtr((SMDS_ElemIterator*) NULL);
+}
+
+//! virtual, redefined in vtkEdge, vtkFace and vtkVolume classes
+SMDS_ElemIteratorPtr SMDS_MeshElement::interlacedNodesElemIterator() const
+{
+  MESSAGE("Iterator not implemented");
+  return SMDS_ElemIteratorPtr((SMDS_ElemIterator*) NULL);
 }
 
 bool operator<(const SMDS_MeshElement& e1, const SMDS_MeshElement& e2)

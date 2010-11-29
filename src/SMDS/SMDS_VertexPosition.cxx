@@ -36,25 +36,13 @@ using namespace std;
 //purpose  : 
 //=======================================================================
 
-SMDS_VertexPosition:: SMDS_VertexPosition(const int aVertexId)
-        :SMDS_Position(aVertexId)
+SMDS_VertexPosition:: SMDS_VertexPosition()
 {
+  //MESSAGE("*********************************************** SMDS_VertexPosition " << aVertexId);
 }
-
-//=======================================================================
-//function : Coords
-//purpose  : 
-//=======================================================================
-
-const double *SMDS_VertexPosition::Coords() const
-{
-        const static double origin[]={0,0,0};
-        MESSAGE("SMDS_VertexPosition::Coords not implemented");
-        return origin;
-}
-
 
 SMDS_TypeOfPosition SMDS_VertexPosition::GetTypeOfPosition() const
 {
+  //MESSAGE("################################################# GetTypeOfPosition");
         return SMDS_TOP_VERTEX;
 }

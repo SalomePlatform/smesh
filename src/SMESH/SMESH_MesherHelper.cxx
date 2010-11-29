@@ -293,7 +293,7 @@ bool SMESH_MesherHelper::IsMedium(const SMDS_MeshNode*      node,
 TopoDS_Shape SMESH_MesherHelper::GetSubShapeByNode(const SMDS_MeshNode* node,
                                                    SMESHDS_Mesh*        meshDS)
 {
-  int shapeID = node->GetPosition()->GetShapeId();
+  int shapeID = node->getshapeId();
   if ( 0 < shapeID && shapeID <= meshDS->MaxShapeIndex() )
     return meshDS->IndexToShape( shapeID );
   else
@@ -385,7 +385,7 @@ gp_XY SMESH_MesherHelper::GetNodeUV(const TopoDS_Face&   F,
   {
     // node has position on face
     const SMDS_FacePosition* fpos =
-      static_cast<const SMDS_FacePosition*>(n->GetPosition().get());
+      static_cast<const SMDS_FacePosition*>(n->GetPosition());
     uv.SetCoord(fpos->GetUParameter(),fpos->GetVParameter());
     if ( check )
       uvOK = CheckNodeUV( F, n, uv.ChangeCoord(), 10*MaxTolerance( F ));
@@ -396,8 +396,8 @@ gp_XY SMESH_MesherHelper::GetNodeUV(const TopoDS_Face&   F,
     // corresponding edge from face, get pcurve for this
     // edge and retrieve value from this pcurve
     const SMDS_EdgePosition* epos =
-      static_cast<const SMDS_EdgePosition*>(n->GetPosition().get());
-    int edgeID = Pos->GetShapeId();
+      static_cast<const SMDS_EdgePosition*>(n->GetPosition());
+    int edgeID = n->getshapeId();
     TopoDS_Edge E = TopoDS::Edge(GetMeshDS()->IndexToShape(edgeID));
     double f, l, u = epos->GetUParameter();
     Handle(Geom2d_Curve) C2d = BRep_Tool::CurveOnSurface(E, F, f, l);
@@ -432,7 +432,7 @@ gp_XY SMESH_MesherHelper::GetNodeUV(const TopoDS_Face&   F,
   }
   else if(Pos->GetTypeOfPosition()==SMDS_TOP_VERTEX)
   {
-    if ( int vertexID = n->GetPosition()->GetShapeId() ) {
+    if ( int vertexID = n->getshapeId() ) {
       const TopoDS_Vertex& V = TopoDS::Vertex(GetMeshDS()->IndexToShape(vertexID));
       try {
         uv = BRep_Tool::Parameters( V, F );
@@ -502,9 +502,12 @@ bool SMESH_MesherHelper::CheckNodeUV(const TopoDS_Face&   F,
                                      const double         tol,
                                      const bool           force) const
 {
-  int shapeID = n->GetPosition()->GetShapeId();
+  int shapeID = n->getshapeId();
   if ( force || toCheckPosOnShape( shapeID ))
   {
+    double toldis = tol;
+    double tolmin = 1.e-7*myMesh->GetMeshDS()->getMaxDim(); // nodes coordinates are stored in float format
+    if (toldis < tolmin) toldis = tolmin;
     // check that uv is correct
     TopLoc_Location loc;
     Handle(Geom_Surface) surface = BRep_Tool::Surface( F,loc );
@@ -512,7 +515,7 @@ bool SMESH_MesherHelper::CheckNodeUV(const TopoDS_Face&   F,
     if ( !loc.IsIdentity() ) nodePnt.Transform( loc.Transformation().Inverted() );
     if ( Precision::IsInfinite( uv.X() ) ||
          Precision::IsInfinite( uv.Y() ) ||
-         nodePnt.Distance( surface->Value( uv.X(), uv.Y() )) > tol )
+         nodePnt.Distance( surface->Value( uv.X(), uv.Y() )) > toldis )
     {
       setPosOnShapeValidity( shapeID, false );
       // uv incorrect, project the node to surface
@@ -526,7 +529,7 @@ bool SMESH_MesherHelper::CheckNodeUV(const TopoDS_Face&   F,
       Quantity_Parameter U,V;
       projector.LowerDistanceParameters(U,V);
       uv.SetCoord( U,V );
-      if ( nodePnt.Distance( surface->Value( U, V )) > tol )
+      if ( nodePnt.Distance( surface->Value( U, V )) > toldis )
       {
         MESSAGE( "SMESH_MesherHelper::CheckNodeUV(), invalid projection" );
         return false;
@@ -534,7 +537,7 @@ bool SMESH_MesherHelper::CheckNodeUV(const TopoDS_Face&   F,
       // store the fixed UV on the face
       if ( myShape.IsSame(F) && shapeID == myShapeID )
         const_cast<SMDS_MeshNode*>(n)->SetPosition
-          ( SMDS_PositionPtr( new SMDS_FacePosition( shapeID, U, V )));
+          ( SMDS_PositionPtr( new SMDS_FacePosition( U, V )));
     }
     else if ( uv.Modulus() > numeric_limits<double>::min() )
     {
@@ -642,7 +645,7 @@ double SMESH_MesherHelper::GetNodeU(const TopoDS_Edge&   E,
   const SMDS_PositionPtr pos = n->GetPosition();
   if ( pos->GetTypeOfPosition()==SMDS_TOP_EDGE )
   {
-    const SMDS_EdgePosition* epos = static_cast<const SMDS_EdgePosition*>( pos.get() );
+    const SMDS_EdgePosition* epos = static_cast<const SMDS_EdgePosition*>( pos );
     param =  epos->GetUParameter();
   }
   else if( pos->GetTypeOfPosition() == SMDS_TOP_VERTEX )
@@ -657,7 +660,7 @@ double SMESH_MesherHelper::GetNodeU(const TopoDS_Edge&   E,
     else
     {
       SMESHDS_Mesh * meshDS = GetMeshDS();
-      int vertexID = pos->GetShapeId();
+      int vertexID = n->getshapeId();
       const TopoDS_Vertex& V = TopoDS::Vertex(meshDS->IndexToShape(vertexID));
       param =  BRep_Tool::Parameter( V, E );
     }
@@ -668,7 +671,7 @@ double SMESH_MesherHelper::GetNodeU(const TopoDS_Edge&   E,
     double f,l;  BRep_Tool::Range( E, f,l );
     bool force = ( param < f-tol || param > l+tol );
     if ( !force && pos->GetTypeOfPosition()==SMDS_TOP_EDGE )
-      force = ( GetMeshDS()->ShapeToIndex( E ) != pos->GetShapeId() );
+      force = ( GetMeshDS()->ShapeToIndex( E ) != n->getshapeId() );
 
     *check = CheckNodeU( E, n, param, 2*tol, force );
   }
@@ -688,9 +691,12 @@ bool SMESH_MesherHelper::CheckNodeU(const TopoDS_Edge&   E,
                                     const bool           force,
                                     double*              distance) const
 {
-  int shapeID = n->GetPosition()->GetShapeId();
+  int shapeID = n->getshapeId();
   if ( force || toCheckPosOnShape( shapeID ))
   {
+    double toldis = tol;
+    double tolmin = 1.e-7*myMesh->GetMeshDS()->getMaxDim(); // nodes coordinates are stored in float format
+    if (toldis < tolmin) toldis = tolmin;
     // check that u is correct
     TopLoc_Location loc; double f,l;
     Handle(Geom_Curve) curve = BRep_Tool::Curve( E,loc,f,l );
@@ -708,7 +714,7 @@ bool SMESH_MesherHelper::CheckNodeU(const TopoDS_Edge&   E,
       if ( !loc.IsIdentity() ) nodePnt.Transform( loc.Transformation().Inverted() );
       double dist = nodePnt.Distance( curve->Value( u ));
       if ( distance ) *distance = dist;
-      if ( dist > tol )
+      if ( dist > toldis )
       {
         setPosOnShapeValidity( shapeID, false );
         // u incorrect, project the node to the curve
@@ -732,15 +738,16 @@ bool SMESH_MesherHelper::CheckNodeU(const TopoDS_Edge&   E,
         u = double( U );
         dist = nodePnt.Distance( curve->Value( U ));
         if ( distance ) *distance = dist;
-        if ( dist > tol )
+        if ( dist > toldis )
         {
           MESSAGE( "SMESH_MesherHelper::CheckNodeU(), invalid projection" );
+          MESSAGE("distance " << nodePnt.Distance(curve->Value( U )) << " " << toldis);
           return false;
         }
         // store the fixed U on the edge
         if ( myShape.IsSame(E) && shapeID == myShapeID )
           const_cast<SMDS_MeshNode*>(n)->SetPosition
-            ( SMDS_PositionPtr( new SMDS_EdgePosition( shapeID, U )));
+            ( SMDS_PositionPtr( new SMDS_EdgePosition( U )));
       }
       else if ( fabs( u ) > numeric_limits<double>::min() )
       {
@@ -787,7 +794,7 @@ const SMDS_MeshNode* SMESH_MesherHelper::GetMediumNode(const SMDS_MeshNode* n1,
   SMDS_MeshNode* n12;
   SMESHDS_Mesh* meshDS = GetMeshDS();
 
-  if ( IsSeamShape( n1->GetPosition()->GetShapeId() ))
+  if ( IsSeamShape( n1->getshapeId() ))
     // to get a correct UV of a node on seam, the second node must have checked UV
     std::swap( n1, n2 );
 
@@ -796,26 +803,27 @@ const SMDS_MeshNode* SMESH_MesherHelper::GetMediumNode(const SMDS_MeshNode* n1,
   const SMDS_PositionPtr Pos1 = n1->GetPosition();
   const SMDS_PositionPtr Pos2 = n2->GetPosition();
 
-  if( myShape.IsNull() )
-  {
-    if( Pos1->GetTypeOfPosition()==SMDS_TOP_FACE ) {
-      faceID = Pos1->GetShapeId();
-    }
-    else if( Pos2->GetTypeOfPosition()==SMDS_TOP_FACE ) {
-      faceID = Pos2->GetShapeId();
-    }
-
-    if( Pos1->GetTypeOfPosition()==SMDS_TOP_EDGE ) {
-      edgeID = Pos1->GetShapeId();
-    }
-    if( Pos2->GetTypeOfPosition()==SMDS_TOP_EDGE ) {
-      edgeID = Pos2->GetShapeId();
-    }
-  }
-  // get positions of the given nodes on shapes
   TopoDS_Edge E; double u [2];
   TopoDS_Face F; gp_XY  uv[2];
   bool uvOK[2] = { false, false };
+
+  if( myShape.IsNull() )
+  {
+    if( Pos1->GetTypeOfPosition()==SMDS_TOP_FACE ) {
+      faceID = n1->getshapeId();
+    }
+    else if( Pos2->GetTypeOfPosition()==SMDS_TOP_FACE ) {
+      faceID = n2->getshapeId();
+    }
+
+    if( Pos1->GetTypeOfPosition()==SMDS_TOP_EDGE ) {
+      edgeID = n1->getshapeId();
+    }
+    if( Pos2->GetTypeOfPosition()==SMDS_TOP_EDGE ) {
+      edgeID = n2->getshapeId();
+    }
+  }
+  // get positions of the given nodes on shapes
   TopAbs_ShapeEnum shapeType = myShape.IsNull() ? TopAbs_SHAPE : myShape.ShapeType();
   if ( faceID>0 || shapeType == TopAbs_FACE)
   {
@@ -832,7 +840,7 @@ const SMDS_MeshNode* SMESH_MesherHelper::GetMediumNode(const SMDS_MeshNode* n1,
   {
     if ( Pos1->GetTypeOfPosition()==SMDS_TOP_EDGE &&
          Pos2->GetTypeOfPosition()==SMDS_TOP_EDGE &&
-         Pos1->GetShapeId() != Pos2->GetShapeId() ) // issue 0021006
+         n1->getshapeId() != n2->getshapeId() ) // issue 0021006
     return getMediumNodeOnComposedWire(n1,n2,force3d);
 
     if( myShape.IsNull() )
@@ -852,10 +860,10 @@ const SMDS_MeshNode* SMESH_MesherHelper::GetMediumNode(const SMDS_MeshNode* n1,
     {
       if ( uvOK[0] && uvOK[1] )
       {
-        if ( IsDegenShape( Pos1->GetShapeId() ))
+        if ( IsDegenShape( n1->getshapeId() ))
           if ( myParIndex & U_periodic ) uv[0].SetCoord( 1, uv[1].Coord( 1 ));
           else                           uv[0].SetCoord( 2, uv[1].Coord( 2 ));
-        else if ( IsDegenShape( Pos2->GetShapeId() ))
+        else if ( IsDegenShape( n2->getshapeId() ))
           if ( myParIndex & U_periodic ) uv[1].SetCoord( 1, uv[0].Coord( 1 ));
           else                           uv[1].SetCoord( 2, uv[0].Coord( 2 ));
 
@@ -894,11 +902,13 @@ const SMDS_MeshNode* SMESH_MesherHelper::GetMediumNode(const SMDS_MeshNode* n1,
       }
     }
   }
+
   // 3d variant
   double x = ( n1->X() + n2->X() )/2.;
   double y = ( n1->Y() + n2->Y() )/2.;
   double z = ( n1->Z() + n2->Z() )/2.;
   n12 = meshDS->AddNode(x,y,z);
+
   if ( !F.IsNull() )
   {
     gp_XY UV = ( uv[0] + uv[1] ) / 2.;
@@ -915,6 +925,7 @@ const SMDS_MeshNode* SMESH_MesherHelper::GetMediumNode(const SMDS_MeshNode* n1,
   {
     meshDS->SetNodeInVolume(n12, myShapeID);
   }
+
   myTLinkNodeMap.insert( make_pair( link, n12 ));
   return n12;
 }

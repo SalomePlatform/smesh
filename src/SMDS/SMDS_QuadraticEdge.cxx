@@ -30,6 +30,7 @@
 #include "SMDS_SetIterator.hxx"
 #include "SMDS_IteratorOfElements.hxx"
 #include "SMDS_MeshNode.hxx"
+#include "utilities.h"
 
 using namespace std;
 
@@ -41,8 +42,9 @@ using namespace std;
 SMDS_QuadraticEdge::SMDS_QuadraticEdge(const SMDS_MeshNode * node1,
                                        const SMDS_MeshNode * node2,
                                        const SMDS_MeshNode * node12)
-     :SMDS_MeshEdge(node1,node2)
-{       
+     :SMDS_LinearEdge(node1,node2)
+{
+  //MESSAGE("******************************************************* SMDS_QuadraticEdge");
   myNodes[2]=node12;
 }
 

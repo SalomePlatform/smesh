@@ -61,6 +61,7 @@ libMeshDriverMED_la_CPPFLAGS = \
 	@HDF5_INCLUDES@ \
 	$(KERNEL_CXXFLAGS) \
 	$(CAS_CPPFLAGS) \
+        $(VTK_INCLUDES) \
 	$(BOOST_CPPFLAGS) \
 	-I$(srcdir)/../Driver \
 	-I$(srcdir)/../SMDS \

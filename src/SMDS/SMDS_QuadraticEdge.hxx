@@ -29,10 +29,10 @@
 
 #include "SMESH_SMDS.hxx"
 
-#include "SMDS_MeshEdge.hxx"
+#include "SMDS_LinearEdge.hxx"
 #include <iostream>
 
-class SMDS_EXPORT SMDS_QuadraticEdge: public SMDS_MeshEdge
+class SMDS_EXPORT SMDS_QuadraticEdge: public SMDS_LinearEdge
 {
 
 public:

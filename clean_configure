@@ -28,6 +28,9 @@ find bin -name Makefile.in | xargs rm -f
 find doc -name Makefile.in | xargs rm -f
 find idl -name Makefile.in | xargs rm -f
 find resources -name Makefile.in | xargs rm -f
+find salome_adm -name Makefile.in | xargs rm -f
 find adm_local -name Makefile.in | xargs rm -f
 find src -name Makefile.in | xargs rm -f
 rm -f Makefile.in
+cd adm_local/unix/config_files
+rm -f config.* depcomp install-sh l*.m4 ltmain.sh missing py-compile

@@ -85,5 +85,7 @@ class SMDS_EXPORT SMDS_VolumeOfNodes:public SMDS_MeshVolume
                 elementsIterator(SMDSAbs_ElementType type) const;
         const SMDS_MeshNode** myNodes;
         int                   myNbNodes;
+
 };
+
 #endif

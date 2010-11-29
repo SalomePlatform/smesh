@@ -36,32 +36,22 @@ using namespace std;
 //purpose  : 
 //=======================================================================
 
-SMDS_EdgePosition::SMDS_EdgePosition(const int aEdgeId,
-        const double aUParam):SMDS_Position(aEdgeId), myUParameter(aUParam)
+SMDS_EdgePosition::SMDS_EdgePosition(const double aUParam): myUParameter(aUParam)
 {
-}
-
-//=======================================================================
-//function : Coords
-//purpose  : 
-//=======================================================================
-
-const double *SMDS_EdgePosition::Coords() const
-{
-        static double origin[]={0,0,0};
-        MESSAGE("SMDS_EdgePosition::Coords not implemented");
-        return origin;
+  //MESSAGE("********************************* SMDS_EdgePosition " << myUParameter);
 }
 
 /**
 */
 SMDS_TypeOfPosition SMDS_EdgePosition::GetTypeOfPosition() const
 {
+  //MESSAGE("###################################### SMDS_EdgePosition::GetTypeOfPosition");
         return SMDS_TOP_EDGE;
 }
 
 void SMDS_EdgePosition::SetUParameter(double aUparam)
 {
+  //MESSAGE("############################### SMDS_EdgePosition::SetUParameter " << aUparam);
         myUParameter = aUparam;
 }
 
@@ -72,5 +62,6 @@ void SMDS_EdgePosition::SetUParameter(double aUparam)
 
 double SMDS_EdgePosition::GetUParameter() const 
 {
+  //MESSAGE("########################## SMDS_EdgePosition::GetUParameter " << myUParameter);
         return myUParameter;
 }

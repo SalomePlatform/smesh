@@ -69,6 +69,7 @@ libMeshDriverUNV_la_CPPFLAGS = \
 	$(CAS_CPPFLAGS) \
 	$(CORBA_CXXFLAGS) \
         $(CORBA_INCLUDES) \
+        $(VTK_INCLUDES) \
 	$(BOOST_CPPFLAGS) \
 	-I$(srcdir)/../Driver \
 	-I$(srcdir)/../SMDS \

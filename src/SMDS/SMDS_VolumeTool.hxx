@@ -33,7 +33,7 @@
 
 class SMDS_MeshElement;
 class SMDS_MeshNode;
-class SMDS_PolyhedralVolumeOfNodes;
+class SMDS_VtkVolume;
 class SMDS_MeshVolume;
 
 #include <vector>
@@ -212,7 +212,7 @@ private:
   bool setFace( int faceIndex );
 
   const SMDS_MeshElement* myVolume;
-  const SMDS_PolyhedralVolumeOfNodes* myPolyedre;
+  const SMDS_VtkVolume*   myPolyedre;
 
   bool                    myVolForward;
   int                     myNbFaces;

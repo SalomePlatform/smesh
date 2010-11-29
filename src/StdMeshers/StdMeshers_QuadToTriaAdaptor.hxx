@@ -43,6 +43,8 @@ class gp_Vec;
 
 #include <TopoDS_Shape.hxx>
 
+typedef std::map<const SMDS_MeshElement*, bool>               TRemTrias;
+
 /*!
  * \brief "Transforms" quadrilateral faces into triangular ones by creation of pyramids
  */
@@ -87,8 +89,9 @@ protected:
 
   typedef std::list<const SMDS_MeshFace* >                   TTriaList;
   typedef std::multimap<const SMDS_MeshElement*, TTriaList > TQuad2Trias;
-
   TQuad2Trias  myResMap;
+  TRemTrias myTempTriangles;
+
   std::vector<const SMDS_MeshElement*> myPyramids;
 
   std::list< const SMDS_MeshNode* > myDegNodes;

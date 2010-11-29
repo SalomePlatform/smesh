@@ -26,18 +26,20 @@
 
 #include "SMESH_SMDS.hxx"
 
-#include "SMDS_MeshElement.hxx"
+#include "SMDS_MeshCell.hxx"
 
 #include <iostream>
 
-class SMDS_EXPORT SMDS_Mesh0DElement: public SMDS_MeshElement
+class SMDS_EXPORT SMDS_Mesh0DElement: public SMDS_MeshCell
 {
  public:
   SMDS_Mesh0DElement (const SMDS_MeshNode * node);
   bool ChangeNode (const SMDS_MeshNode * node);
+  virtual bool ChangeNodes(const SMDS_MeshNode* nodes[], const int nbNodes) {return false;};
   void Print (std::ostream & OS) const;
 
   SMDSAbs_ElementType GetType() const;
+  virtual vtkIdType GetVtkType() const;
   SMDSAbs_EntityType  GetEntityType() const {return SMDSEntity_0D;}
   int NbNodes() const;
   int NbEdges() const;

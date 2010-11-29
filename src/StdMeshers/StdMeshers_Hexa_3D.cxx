@@ -165,7 +165,7 @@ inline bool isCloser(const int i, const int j, const int nbhoriz,
 static bool findIJ (const SMDS_MeshNode* node, const FaceQuadStruct * quad, int& I, int& J)
 {
   const SMDS_FacePosition* fpos =
-    static_cast<const SMDS_FacePosition*>(node->GetPosition().get());
+    static_cast<const SMDS_FacePosition*>(node->GetPosition());
   if ( ! fpos ) return false;
   gp_Pnt2d uv( fpos->GetUParameter(), fpos->GetVParameter() );
 
@@ -210,9 +210,9 @@ static bool findIJ (const SMDS_MeshNode* node, const FaceQuadStruct * quad, int&
  * -0.  - shape and face mesh verification
  * -1.  - identify faces and vertices of the "cube"
  * -2.  - Algorithm from:
- * "Application de l'interpolation transfinie à la création de maillages
+ * "Application de l'interpolation transfinie a la creation de maillages
  *  C0 ou G1 continus sur des triangles, quadrangles, tetraedres, pentaedres
- *  et hexaedres déformés."
+ *  et hexaedres deformes."
  * Alain PERONNET - 8 janvier 1999
  */
 //=============================================================================
@@ -411,6 +411,9 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh &         aMesh,
 
   int i1, j1, nbxyz = nbx * nby * nbz;
   Point3DStruct *np = new Point3DStruct[nbxyz];
+  
+  aMesh.GetMeshDS()->incrementNodesCapacity(nbx * nby * nbz);
+  aMesh.GetMeshDS()->incrementCellsCapacity((nbx-1) * (nby-1) * (nbz-1));
 
   // 1.9 - store node indexes of faces
 

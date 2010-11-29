@@ -215,7 +215,6 @@ SMESH::point_array* SMESH_Pattern_i::ApplyToFace(GEOM::GEOM_Object_ptr theFace,
       (*xyzIt)->Coord( p.x, p.y, p.z );
     }
   }
-
   // Update Python script
   TPythonDump() << "pattern.ApplyToFace( " << theFace << ", "
                 << theVertexOnKeyPoint1 << ", " << theReverse << " )";
@@ -392,8 +391,10 @@ CORBA::Boolean SMESH_Pattern_i::MakeMesh (SMESH::SMESH_Mesh_ptr theMesh,
   bool res = myPattern.MakeMesh( aMesh, CreatePolygons, CreatePolyedrs );
 
   if ( nb > 0 && nb != aMesh->NbNodes() + aMesh->NbEdges() + aMesh->NbFaces() + aMesh->NbVolumes())
-    aMesh->SetIsModified(true);
-
+    {
+      aMesh->SetIsModified(true);
+      aMesh->GetMeshDS()->Modified();
+    }
   return res;
 }
 

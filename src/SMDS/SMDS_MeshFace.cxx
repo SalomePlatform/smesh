@@ -28,3 +28,8 @@ SMDSAbs_ElementType SMDS_MeshFace::GetType() const
 {
         return SMDSAbs_Face;
 }
+
+vtkIdType SMDS_MeshFace::GetVtkType() const
+{
+  return VTK_POLY_LINE;  // --- must be reimplemented in derived classes
+}

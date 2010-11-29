@@ -99,12 +99,10 @@ Driver_Mesh::Status DriverUNV_W_SMDS_Mesh::Perform()
           TRecord aRec;
           aRec.node_labels.reserve(aNbNodes);
           SMDS_ElemIteratorPtr aNodesIter;
+          aNodesIter = anElem->nodesIteratorToUNV();
           if( anElem->IsQuadratic() ) {
-            aNodesIter = static_cast<const SMDS_QuadraticEdge* >
-              ( anElem )->interlacedNodesElemIterator();
             aRec.fe_descriptor_id = 22;
           } else {
-            aNodesIter = anElem->nodesIterator();
             aRec.fe_descriptor_id = 11;
           }
           for(; aNodesIter->more();){
@@ -126,11 +124,7 @@ Driver_Mesh::Status DriverUNV_W_SMDS_Mesh::Perform()
           TRecord aRec;
           aRec.node_labels.reserve(aNbNodes);
           SMDS_ElemIteratorPtr aNodesIter;
-          if( anElem->IsQuadratic() )
-            aNodesIter = static_cast<const SMDS_QuadraticFaceOfNodes* >
-              ( anElem )->interlacedNodesElemIterator();
-          else
-            aNodesIter = anElem->nodesIterator();
+          aNodesIter = anElem->nodesIteratorToUNV();
           for(; aNodesIter->more();){
             const SMDS_MeshElement* aNode = aNodesIter->next();
             aRec.node_labels.push_back(aNode->GetID());
@@ -164,72 +158,59 @@ Driver_Mesh::Status DriverUNV_W_SMDS_Mesh::Perform()
           TElementLab aLabel = anElem->GetID();
 
           int aNbNodes = anElem->NbNodes();
-          SMDS_ElemIteratorPtr aNodesIter = anElem->nodesIterator();
+          //MESSAGE("aNbNodes="<<aNbNodes);
+          SMDS_ElemIteratorPtr aNodesIter;
+          aNodesIter = anElem->nodesIteratorToUNV();
           if ( anElem->IsPoly() ) {
-            if ( const SMDS_PolyhedralVolumeOfNodes* ph =
-                 dynamic_cast<const SMDS_PolyhedralVolumeOfNodes*> (anElem))
+            MESSAGE("anElem->IsPoly");
+            if ( const SMDS_VtkVolume* ph =
+                 dynamic_cast<const SMDS_VtkVolume*> (anElem))
             {
               aNbNodes = ph->NbUniqueNodes();
               aNodesIter = ph->uniqueNodesIterator();
             }
           }
-          aConnect.resize(aNbNodes);
-          GetConnect(aNodesIter,aConnect);
 
           int anId = -1;
-          int* aConn = NULL;
           switch(aNbNodes){
           case 4: {
-            static int anIds[] = {0,2,1,3};
-            aConn = anIds;
             anId = 111;
             break;
           }
           case 6: {
-            static int anIds[] = {0,2,1,3,5,4};
-            aConn = anIds;
             anId = 112;
             break;
           }
           case 8: {
-            static int anIds[] = {0,3,2,1,4,7,6,5};
-            aConn = anIds;
             anId = 115;
             break;
           }
           case 10: {
-            static int anIds[] = {0,4,2,9,5,3, 1,6,8, 7};
-            aConn = anIds;
             anId = 118;
             break;
           }
           case 13: {
-            static int anIds[] = {0,6,4,2,7,5,3,1,8,11,10,9,12};
-            aConn = anIds;
             anId = 114;
             break;
           }
           case 15: {
-            static int anIds[] = {0,4,2,9,13,11,5,3,1,14,12,10,6,8,7};
-            aConn = anIds;
             anId = 113;
             break;
           }
           case 20: {
-            static int anIds[] = {0,6, 4,2, 12,18,16,14,7, 5, 3, 1, 19,17,15,13,8, 11,10,9};
-            aConn = anIds;
             anId = 116;
             break;
           }
           default:
             continue;
           }
-          if(aConn){
+          if(anId>0){
             TRecord aRec;
             aRec.fe_descriptor_id = anId;
-            aRec.node_labels.resize(aNbNodes);
-            for(int aNodeId = 0; aNodeId < aNbNodes; aNodeId++){
-              aRec.node_labels[aConn[aNodeId]] = aConnect[aNodeId];
+            aRec.node_labels.reserve(aNbNodes);
+            for(; aNodesIter->more();){
+              const SMDS_MeshElement* aNode = aNodesIter->next();
+              aRec.node_labels.push_back(aNode->GetID());
             }
             aDataSet2412.insert(TDataSet::value_type(aLabel,aRec));
           }
