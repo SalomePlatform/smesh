@@ -15,6 +15,31 @@
 
 using namespace std;
 
+SMDS_CellLinks* SMDS_CellLinks::New()
+{
+  MESSAGE("SMDS_CellLinks::New");
+  return new SMDS_CellLinks();
+}
+
+vtkCellLinks::Link* SMDS_CellLinks::ResizeL(vtkIdType sz)
+{
+  return vtkCellLinks::Resize(sz);
+}
+
+vtkIdType SMDS_CellLinks::GetLinksSize()
+{
+  return this->Size;
+}
+
+SMDS_CellLinks::SMDS_CellLinks() :
+  vtkCellLinks()
+{
+}
+
+SMDS_CellLinks::~SMDS_CellLinks()
+{
+}
+
 SMDS_UnstructuredGrid* SMDS_UnstructuredGrid::New()
 {
   MESSAGE("SMDS_UnstructuredGrid::New");
@@ -697,7 +722,7 @@ void SMDS_UnstructuredGrid::BuildDownwardConnectivity(bool withEdges)
                   int faceId2 = downFaces[idf];
                   int faceType = downTypes[idf];
                   //ASSERT(_downArray[faceType]);
-                  SMDS_Down2D* downFace2 = static_cast<SMDS_Down2D*> (_downArray[faceType]);
+                  //SMDS_Down2D* downFace2 = static_cast<SMDS_Down2D*> (_downArray[faceType]);
                   _downArray[vtkEdgeType]->addUpCell(connEdgeId, faceId2, faceType);
                   _downArray[faceType]->addDownCell(faceId2, connEdgeId, vtkEdgeType);
                   // MESSAGE(" From face t:" << vtkFaceType << " " << faceId <<
@@ -839,3 +864,17 @@ int SMDS_UnstructuredGrid::getOrderedNodesOfFace(int vtkVolId, std::vector<int>&
   return orderedNodes.size();
 }
 
+void SMDS_UnstructuredGrid::BuildLinks()
+{
+  // Remove the old links if they are already built
+  if (this->Links)
+    {
+    this->Links->UnRegister(this);
+    }
+
+  this->Links = SMDS_CellLinks::New();
+  this->Links->Allocate(this->GetNumberOfPoints());
+  this->Links->Register(this);
+  this->Links->BuildLinks(this, this->Connectivity);
+  this->Links->Delete();
+}

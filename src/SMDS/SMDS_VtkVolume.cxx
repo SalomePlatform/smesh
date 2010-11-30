@@ -171,6 +171,7 @@ bool SMDS_VtkVolume::vtkOrder(const SMDS_MeshNode* nodes[], const int nbNodes)
     default:
       break;
   }
+  return true;
 }
 
 SMDS_VtkVolume::~SMDS_VtkVolume()
@@ -355,7 +356,7 @@ const SMDS_MeshNode* SMDS_VtkVolume::GetFaceNode(const int face_ind, const int n
 /*! polyhedron only,
  *  return number of nodes for each face
  */
-const std::vector<int> & SMDS_VtkVolume::GetQuantities() const
+const std::vector<int> SMDS_VtkVolume::GetQuantities() const
 {
   vector<int> quantities;
   quantities.clear();

@@ -384,13 +384,14 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
         if ( aMeshDimension == 2 && anIsZDimension ) // 2D only if mesh is in XOY plane
           aMeshDimension = 3;
         // PAL18941(a saved study with a mesh belong Z is opened and the mesh is belong X)
-        if ( aMeshDimension == 1 && !anIsXDimension ) // 1D only if mesh is along OX
+        if ( aMeshDimension == 1 && !anIsXDimension ) {// 1D only if mesh is along OX
           if ( anIsYDimension ) {
             aMeshDimension = 2;
             anIsXDimension = true;
           } else {
             aMeshDimension = 3;
           }
+        }
       }
 
       SMDS_NodeIteratorPtr aNodesIter = myMesh->nodesIterator(/*idInceasingOrder=*/true);
@@ -430,7 +431,7 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
     int myFacesDefaultFamilyId   = 0;
     int myVolumesDefaultFamilyId = 0;
     int nbNodes   = myMesh->NbNodes();
-    int nb0DElements = myMesh->Nb0DElements();
+    //int nb0DElements = myMesh->Nb0DElements();
     int nbEdges   = myMesh->NbEdges();
     int nbFaces   = myMesh->NbFaces();
     int nbVolumes = myMesh->NbVolumes();

@@ -540,7 +540,7 @@ bool SMESH_VisualObjDef::GetEdgeNodes( const int theElemId,
     
   int nbNodes = anElem->NbNodes();
 
-  if ( theEdgeNum < 0 || theEdgeNum > 3 || nbNodes != 3 && nbNodes != 4 || theEdgeNum > nbNodes )
+  if ( theEdgeNum < 0 || theEdgeNum > 3 || (nbNodes != 3 && nbNodes != 4) || theEdgeNum > nbNodes )
     return false;
 
   vector<int> anIds( nbNodes );
@@ -642,6 +642,7 @@ bool SMESH_MeshObj::NulData()
 	  myEmptyGrid->BuildLinks();
 	}
 	myGrid->ShallowCopy(myEmptyGrid);
+	return true;
 }
 //=================================================================================
 // function : GetElemDimension

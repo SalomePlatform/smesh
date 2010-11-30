@@ -32,10 +32,6 @@
 #include "SMDS_Mesh.hxx"
 #include <vtkUnstructuredGrid.h>
 
-#define protected public
-#include <vtkCellLinks.h>
-#define protected protected
-
 #include "utilities.h"
 #include "Utils_SALOME_Exception.hxx"
 #include <cassert>
@@ -73,12 +69,13 @@ void SMDS_MeshNode::init(int id, int meshId, int shapeId, double x, double y, do
   myIdInShape = -1;
   //MESSAGE("Node " << myID << " " << myVtkID << " (" << x << ", " << y << ", " << z << ")");
   SMDS_Mesh* mesh = SMDS_Mesh::_meshList[myMeshId];
-  vtkUnstructuredGrid * grid = mesh->getGrid();
+  SMDS_UnstructuredGrid * grid = mesh->getGrid();
   vtkPoints *points = grid->GetPoints();
   points->InsertPoint(myVtkID, x, y, z);
-  vtkCellLinks *cellLinks = grid->GetCellLinks();
-  if (myVtkID >=cellLinks->Size)
-	  cellLinks->Resize(myVtkID+SMDS_Mesh::chunkSize);
+  SMDS_CellLinks *cellLinks = dynamic_cast<SMDS_CellLinks*>(grid->GetCellLinks());
+  assert(cellLinks);
+  if (myVtkID >= cellLinks->GetLinksSize())
+	  cellLinks->ResizeL(myVtkID+SMDS_Mesh::chunkSize);
 }
 
 SMDS_MeshNode::~SMDS_MeshNode()

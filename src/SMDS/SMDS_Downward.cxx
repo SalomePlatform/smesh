@@ -420,7 +420,7 @@ int SMDS_Down1D::computeFaces(int* pts, int* vtkIds, int nbcells, int* downFaces
         {
           int volId = _grid->CellIdToDownId(vtkId);
           SMDS_Downward * downvol = _grid->getDownArray(vtkType);
-          const int *downIds = downvol->getDownCells(volId);
+          //const int *downIds = downvol->getDownCells(volId);
           const unsigned char* downTypesVol = downvol->getDownTypes(volId);
           int nbFaces = downvol->getNumberOfDownCells(volId);
           const int* faceIds = downvol->getDownCells(volId);

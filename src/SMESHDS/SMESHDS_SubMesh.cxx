@@ -140,7 +140,7 @@ bool SMESHDS_SubMesh::RemoveNode(const SMDS_MeshNode * N, bool isNodeDeleted)
       // if (!isNodeDeleted) // alive node has valid ID and can be found
       // {
       int idInSubShape = N->getIdInShape();
-      int shapeId = N->getshapeId();
+      //int shapeId = N->getshapeId();
       //MESSAGE("in "<< myIndex << " RemoveNode " << shapeId << " " << idInSubShape << " " << N->GetID());
       SMDS_MeshNode* node = (SMDS_MeshNode*) (N);
       node->setShapeId(0);

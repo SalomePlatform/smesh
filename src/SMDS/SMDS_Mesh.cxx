@@ -269,7 +269,7 @@ SMDS_Mesh0DElement* SMDS_Mesh::Add0DElementWithID(const SMDS_MeshNode * n, int I
   //MESSAGE("Add0DElementWithID" << ID)
   SMDS_Mesh0DElement * el0d = new SMDS_Mesh0DElement(n);
   if (myElementIDFactory->BindID(ID, el0d)) {
-    SMDS_MeshNode *node = const_cast<SMDS_MeshNode*>(n);
+    //SMDS_MeshNode *node = const_cast<SMDS_MeshNode*>(n);
     //node->AddInverseElement(el0d);// --- fait avec BindID
     adjustmyCellsCapacity(ID);
     myCells[ID] = el0d;
@@ -2988,8 +2988,10 @@ void SMDS_Mesh::RemoveElement(const SMDS_MeshElement *        elem,
   //MESSAGE("SMDS_Mesh::RemoveElement " << elem->getVtkId() << " " << removenodes);
   // get finite elements built on elem
   set<const SMDS_MeshElement*> * s1;
-  if (elem->GetType() == SMDSAbs_0DElement || elem->GetType() == SMDSAbs_Edge && !hasConstructionEdges()
-      || elem->GetType() == SMDSAbs_Face && !hasConstructionFaces() || elem->GetType() == SMDSAbs_Volume)
+  if (    (elem->GetType() == SMDSAbs_0DElement)
+      || ((elem->GetType() == SMDSAbs_Edge) && !hasConstructionEdges())
+      || ((elem->GetType() == SMDSAbs_Face) && !hasConstructionFaces())
+      ||  (elem->GetType() == SMDSAbs_Volume) )
     {
       s1 = new set<const SMDS_MeshElement*> ();
       s1->insert(elem);

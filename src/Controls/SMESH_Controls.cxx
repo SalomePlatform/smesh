@@ -2588,8 +2588,8 @@ bool RangeOfIds::SetRangeStr( const TCollection_AsciiString& theStr )
       while ( aMinStr.Search( "-" ) != -1 ) aMinStr.RemoveAll( '-' );
       while ( aMaxStr.Search( "-" ) != -1 ) aMaxStr.RemoveAll( '-' );
 
-      if ( !aMinStr.IsEmpty() && !aMinStr.IsIntegerValue() ||
-           !aMaxStr.IsEmpty() && !aMaxStr.IsIntegerValue() )
+      if ( (!aMinStr.IsEmpty() && !aMinStr.IsIntegerValue()) ||
+           (!aMaxStr.IsEmpty() && !aMaxStr.IsIntegerValue()) )
         return false;
 
       myMin.Append( aMinStr.IsEmpty() ? IntegerFirst() : aMinStr.IntegerValue() );
@@ -2635,7 +2635,7 @@ bool RangeOfIds::IsSatisfy( long theId )
   else
   {
     const SMDS_MeshElement* anElem = myMesh->FindElement( theId );
-    if ( anElem == 0 || myType != anElem->GetType() && myType != SMDSAbs_All )
+    if ( anElem == 0 || (myType != anElem->GetType() && myType != SMDSAbs_All ))
       return false;
   }
 
@@ -2826,8 +2826,8 @@ bool LogicalOR::IsSatisfy( long theId )
   return
     myPredicate1 &&
     myPredicate2 &&
-    myPredicate1->IsSatisfy( theId ) ||
-    myPredicate2->IsSatisfy( theId );
+    (myPredicate1->IsSatisfy( theId ) ||
+    myPredicate2->IsSatisfy( theId ));
 }
 
 

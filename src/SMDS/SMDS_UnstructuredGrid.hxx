@@ -9,6 +9,7 @@
 #define	_SMDS_UNSTRUCTUREDGRID_HXX
 
 #include <vtkUnstructuredGrid.h>
+#include <vtkCellLinks.h>
 #include "chrono.hxx"
 
 #include <vector>
@@ -29,6 +30,17 @@
 
 class SMDS_Downward;
 class SMDS_Mesh;
+
+class SMDS_CellLinks: public vtkCellLinks
+{
+public:
+  vtkCellLinks::Link* ResizeL(vtkIdType sz);
+  vtkIdType GetLinksSize();
+  static SMDS_CellLinks* New();
+protected:
+  SMDS_CellLinks();
+  ~SMDS_CellLinks();
+};
 
 class SMDS_UnstructuredGrid: public vtkUnstructuredGrid
 {
@@ -53,6 +65,7 @@ public:
   void GetNodeIds(std::set<int>& nodeSet, int downId, unsigned char downType);
   void ModifyCellNodes(int vtkVolId, std::map<int, int> localClonedNodeIds);
   int getOrderedNodesOfFace(int vtkVolId, std::vector<int>& orderedNodes);
+  void BuildLinks();
   vtkCellLinks* GetLinks()
   {
     return Links;

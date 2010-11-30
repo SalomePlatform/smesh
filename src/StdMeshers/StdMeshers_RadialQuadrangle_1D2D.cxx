@@ -1000,13 +1000,14 @@ bool StdMeshers_RadialQuadrangle_1D2D::computeLayerPositions(const gp_Pnt&      
   }
   if ( hyp1D ) // try to compute with hyp1D
   {
-    if ( !TNodeDistributor::GetDistributor(*mesh)->Compute( myLayerPositions,p1,p2,*mesh,hyp1D ))
+    if ( !TNodeDistributor::GetDistributor(*mesh)->Compute( myLayerPositions,p1,p2,*mesh,hyp1D )) {
       if ( myDistributionHypo ) { // bad hyp assigned 
         return error( TNodeDistributor::GetDistributor(*mesh)->GetComputeError() );
       }
       else {
         // bad hyp found, its Ok, lets try with default nb of segnents
       }
+    }
   }
   
   if ( myLayerPositions.empty() ) // try to use nb of layers

@@ -45,7 +45,7 @@ public:
   static bool isForward(double* a,double* b,double* c,double* d);
   int NbUniqueNodes() const;
   SMDS_ElemIteratorPtr uniqueNodesIterator() const;
-  const std::vector<int> & GetQuantities() const;
+  const std::vector<int> GetQuantities() const;
 
   virtual SMDS_ElemIteratorPtr elementsIterator(SMDSAbs_ElementType type) const;
   virtual SMDS_ElemIteratorPtr nodesIteratorToUNV() const;

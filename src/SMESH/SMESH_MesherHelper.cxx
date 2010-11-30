@@ -860,12 +860,14 @@ const SMDS_MeshNode* SMESH_MesherHelper::GetMediumNode(const SMDS_MeshNode* n1,
     {
       if ( uvOK[0] && uvOK[1] )
       {
-        if ( IsDegenShape( n1->getshapeId() ))
+        if ( IsDegenShape( n1->getshapeId() )) {
           if ( myParIndex & U_periodic ) uv[0].SetCoord( 1, uv[1].Coord( 1 ));
           else                           uv[0].SetCoord( 2, uv[1].Coord( 2 ));
-        else if ( IsDegenShape( n2->getshapeId() ))
+        }
+        else if ( IsDegenShape( n2->getshapeId() )) {
           if ( myParIndex & U_periodic ) uv[1].SetCoord( 1, uv[0].Coord( 1 ));
           else                           uv[1].SetCoord( 2, uv[0].Coord( 2 ));
+        }
 
         TopLoc_Location loc;
         Handle(Geom_Surface) S = BRep_Tool::Surface(F,loc);
@@ -1586,7 +1588,7 @@ bool SMESH_MesherHelper::IsSubShape( const TopoDS_Shape& shape, SMESH_Mesh* aMes
   return
     aMesh->GetMeshDS()->ShapeToIndex( shape ) ||
     // PAL16202
-    shape.ShapeType() == TopAbs_COMPOUND && aMesh->GetMeshDS()->IsGroupOfSubShapes( shape );
+    (shape.ShapeType() == TopAbs_COMPOUND && aMesh->GetMeshDS()->IsGroupOfSubShapes( shape ));
 }
 
 //================================================================================
@@ -1954,7 +1956,7 @@ namespace { // Structures used by FixQuadraticElements()
     // propagate from quadrangle to neighbour faces
     if ( link->MediumPos() >= pos ) {
       int nbLinkFaces = link->_faces.size();
-      if ( nbLinkFaces == 4 || nbLinkFaces < 4 && link->OnBoundary()) {
+      if ( nbLinkFaces == 4 || (nbLinkFaces < 4 && link->OnBoundary())) {
         // hexahedral mesh or boundary quadrangles - goto a continous face
         if ( const QFace* f = link->GetContinuesFace( this ))
           return f->GetLinkChain( *chLink, chain, pos, error );
