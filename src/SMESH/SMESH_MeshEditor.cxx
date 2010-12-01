@@ -5345,38 +5345,29 @@ SMESH_MeshEditor::Transform (TIDSortedElemSet & theElems,
   // source elements for each generated one
   SMESH_SequenceOfElemPtr srcElems, srcNodes;
 
-//  // issue 021015: EDF 1578 SMESH: Free nodes are removed when translating a mesh
-//  list<SMDS_MeshNode>          orphanCopy; // copies of orphan nodes
-//  vector<const SMDS_MeshNode*> orphanNode; // original orphan nodes
-//
-//  if ( theElems.empty() ) // transform the whole mesh
-//  {
-//    // add all elements
-//    SMDS_ElemIteratorPtr eIt = aMesh->elementsIterator();
-//    while ( eIt->more() ) theElems.insert( eIt->next() );
-//    // add orphan nodes
-//    SMDS_MeshElementIDFactory idFactory;
-//    SMDS_NodeIteratorPtr nIt = aMesh->nodesIterator();
-//    while ( nIt->more() )
-//    {
-//      const SMDS_MeshNode* node = nIt->next();
-//      if ( node->NbInverseElements() == 0 && !theElems.insert( node ).second )
-//      {
-//        // node was not inserted into theElems because an element with the same ID
-//        // is already there. As a work around we insert a copy of node with
-//        // an ID = -<index in orphanNode>
-//        orphanCopy.push_back( *node ); // copy node
-//        SMDS_MeshNode* nodeCopy = &orphanCopy.back();
-//        int uniqueID = -orphanNode.size();
-//        orphanNode.push_back( node );
-//        idFactory.BindID( uniqueID, nodeCopy );
-//        theElems.insert( nodeCopy );
-//      }
-//    }
-//  }
-  // loop on theElems to transorm nodes
+  // issue 021015: EDF 1578 SMESH: Free nodes are removed when translating a mesh
+  TIDSortedElemSet orphanNode;
+
+  if ( theElems.empty() ) // transform the whole mesh
+  {
+    // add all elements
+    SMDS_ElemIteratorPtr eIt = aMesh->elementsIterator();
+    while ( eIt->more() ) theElems.insert( eIt->next() );
+    // add orphan nodes
+    SMDS_NodeIteratorPtr nIt = aMesh->nodesIterator();
+    while ( nIt->more() )
+    {
+      const SMDS_MeshNode* node = nIt->next();
+      if ( node->NbInverseElements() == 0)
+        orphanNode.insert( node );
+    }
+  }
+
+  // loop on elements to transform nodes : first orphan nodes then elems
   TIDSortedElemSet::iterator itElem;
-  for ( itElem = theElems.begin(); itElem != theElems.end(); itElem++ ) {
+  TIDSortedElemSet *elements[] = {&orphanNode, &theElems };
+  for (int i=0; i<2; i++)
+  for ( itElem = elements[i]->begin(); itElem != elements[i]->end(); itElem++ ) {
     const SMDS_MeshElement* elem = *itElem;
     if ( !elem )
       continue;
@@ -5386,8 +5377,6 @@ SMESH_MeshEditor::Transform (TIDSortedElemSet & theElems,
     while ( itN->more() ) {
 
       const SMDS_MeshNode* node = cast2Node( itN->next() );
-//      if ( node->GetID() < 0 )
-//        node = orphanNode[ -node->GetID() ];
       // check if a node has been already transformed
       pair<TNodeNodeMap::iterator,bool> n2n_isnew =
         nodeMap.insert( make_pair ( node, node ));
