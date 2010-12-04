@@ -309,26 +309,53 @@ void SMDS_UnstructuredGrid::compactGrid(std::vector<int>& idNodesOldToNew, int n
       this->SetPoints(newPoints);
       MESSAGE("NumberOfPoints: " << this->GetNumberOfPoints());
     }
-//#ifdef VTK_HAVE_POLYHEDRON
-  // TODO compact faces for Polyhedrons
-  // refaire completement faces et faceLocation
-  // pour chaque cell, recup oldCellId, oldFacesId, recopie dans newFaces de la faceStream
-  // en changeant les numeros de noeuds
-//  vtkIdTypeArray *newFaceLocations = vtkIdTypeArray::New();
-//  newFaceLocations->Initialize();
-//  vtkIdTypeArray *newFaces = vtkIdTypeArray::New();
-//  newFaces->Initialize();
-//  newFaceLocations->DeepCopy(this->FaceLocations);
-//  newFaces->DeepCopy(this->Faces);
-//  this->SetCells(newTypes, newLocations, newConnectivity, newFaceLocations, newFaces);
-//  newFaceLocations->Delete();
-//  newFaces->Delete();
-  if (this->FaceLocations) this->FaceLocations->Register(this);
-  if (this->Faces) this->Faces->Register(this);
-  this->SetCells(newTypes, newLocations, newConnectivity, FaceLocations, Faces);
-//#else
-//  this->SetCells(newTypes, newLocations, newConnectivity);
-//#endif
+
+  if (this->FaceLocations)
+    {
+      vtkIdTypeArray *newFaceLocations = vtkIdTypeArray::New();
+      newFaceLocations->Initialize();
+      newFaceLocations->Allocate(newTypes->GetSize());
+      vtkIdTypeArray *newFaces = vtkIdTypeArray::New();
+      newFaces->Initialize();
+      newFaces->Allocate(this->Faces->GetSize());
+      for (int i = 0; i < oldCellSize; i++)
+        {
+          if (newTypes->GetValue(i) == VTK_EMPTY_CELL)
+            continue;
+          int newCellId = idCellsOldToNew[i];
+          if (newTypes->GetValue(newCellId) == VTK_POLYHEDRON)
+            {
+               newFaceLocations->InsertNextValue(newFaces->GetMaxId()+1);
+               int oldFaceLoc = this->FaceLocations->GetValue(i);
+               int nCellFaces = this->Faces->GetValue(oldFaceLoc++);
+               newFaces->InsertNextValue(nCellFaces);
+               for (int n=0; n<nCellFaces; n++)
+                 {
+                   int nptsInFace = this->Faces->GetValue(oldFaceLoc++);
+                   newFaces->InsertNextValue(nptsInFace);
+                   for (int k=0; k<nptsInFace; k++)
+                     {
+                       int oldpt = this->Faces->GetValue(oldFaceLoc++);
+                       newFaces->InsertNextValue(idNodesOldToNew[oldpt]);
+                     }
+                 }
+            }
+          else
+            {
+               newFaceLocations->InsertNextValue(-1);
+            }
+        }
+      newFaceLocations->Squeeze();
+      newFaces->Squeeze();
+      newFaceLocations->Register(this);
+      newFaces->Register(this);
+      this->SetCells(newTypes, newLocations, newConnectivity, newFaceLocations, newFaces);
+      newFaceLocations->Delete();
+      newFaces->Delete();
+    }
+  else
+    this->SetCells(newTypes, newLocations, newConnectivity, FaceLocations, Faces);
+
   newTypes->Delete();
   newLocations->Delete();
   newConnectivity->Delete();
