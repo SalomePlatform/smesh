@@ -320,7 +320,7 @@ void SMDS_UnstructuredGrid::compactGrid(std::vector<int>& idNodesOldToNew, int n
       newFaces->Allocate(this->Faces->GetSize());
       for (int i = 0; i < oldCellSize; i++)
         {
-          if (newTypes->GetValue(i) == VTK_EMPTY_CELL)
+          if (this->Types->GetValue(i) == VTK_EMPTY_CELL)
             continue;
           int newCellId = idCellsOldToNew[i];
           if (newTypes->GetValue(newCellId) == VTK_POLYHEDRON)
