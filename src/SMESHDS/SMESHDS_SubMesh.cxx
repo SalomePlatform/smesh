@@ -55,13 +55,34 @@ void SMESHDS_SubMesh::AddElement(const SMDS_MeshElement * ME)
   if (!IsComplexSubmesh())
     {
       //MESSAGE("in " << myIndex << " AddElement "<< ME->GetID());
-      int idInSubShape = ME->getIdInShape();
-      if (idInSubShape != -1)
+      int oldShapeId = ME->getshapeId();
+      if ( oldShapeId > 0 )
         {
-          MESSAGE("add element in subshape already belonging to a subshape "
-              << ME->GetID() << "  " << ME->getIdInShape() << " " << ME->getshapeId());
-          throw SALOME_Exception(LOCALIZED("add element in subshape already belonging to a subshape"));
+          if (oldShapeId != myIndex)
+            {
+              MESSAGE("add element in subshape already belonging to another subshape "
+                << ME->GetID() << " " << oldShapeId << " " << myIndex);
+              throw SALOME_Exception(LOCALIZED("add element in subshape already belonging to a subshape"));
+            }
+          else
+            {
+              int idInSubShape = ME->getIdInShape();
+              MESSAGE("add element in subshape already belonging to that subshape "
+                << ME->GetID() << " " << oldShapeId << " " << idInSubShape);
+              // check if ok: do nothing if ok
+              if ((idInSubShape == -1) || (idInSubShape >= myElements.size()))
+                {
+                  MESSAGE("out of bounds");
+                  throw SALOME_Exception(LOCALIZED("out of bounds"));
+                }
+              if (ME != myElements[idInSubShape])
+                {
+                  MESSAGE("not the same element");
+                  throw SALOME_Exception(LOCALIZED("not the same element"));
+                }
+            }
         }
+
       SMDS_MeshElement* elem = (SMDS_MeshElement*) (ME);
       elem->setShapeId(myIndex);
       elem->setIdInShape(myElements.size());

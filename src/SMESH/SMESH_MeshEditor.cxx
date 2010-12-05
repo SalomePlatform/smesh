@@ -1717,10 +1717,10 @@ void SMESH_MeshEditor::SplitVolumesIntoTetra (const TIDSortedElemSet & theElems,
         }
         for ( int i = 0; i < triangles.size(); ++i )
         {
-          if ( !triangles.back() ) continue;
+          if ( !triangles[i] ) continue;
           if ( fSubMesh )
-            fSubMesh->AddElement( triangles.back());
-          newElems.Append( triangles.back() );
+            fSubMesh->AddElement( triangles[i]);
+          newElems.Append( triangles[i] );
         }
         ReplaceElemInGroups( face, triangles, GetMeshDS() );
         GetMeshDS()->RemoveFreeElement( face, fSubMesh, /*fromGroups=*/false );
