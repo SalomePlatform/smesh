@@ -63,9 +63,8 @@ void SMDS_VtkVolume::init(std::vector<vtkIdType> nodeIds, SMDS_Mesh* mesh)
 //#ifdef VTK_HAVE_POLYHEDRON
 void SMDS_VtkVolume::initPoly(std::vector<vtkIdType> nodeIds, std::vector<int> nbNodesPerFace, SMDS_Mesh* mesh)
 {
-  MESSAGE("SMDS_VtkVolume::initPoly");
+  //MESSAGE("SMDS_VtkVolume::initPoly");
   SMDS_UnstructuredGrid* grid = mesh->getGrid();
-  // TODO is it useful to orient faces ?
   double center[3];
   this->gravityCenter(grid, &nodeIds[0], nodeIds.size(), &center[0]);
   vector<vtkIdType> ptIds;
@@ -76,14 +75,13 @@ void SMDS_VtkVolume::initPoly(std::vector<vtkIdType> nodeIds, std::vector<int> n
     {
       int nf = nbNodesPerFace[i];
       ptIds.push_back(nf);
-//      double a[3];
-//      double b[3];
-//      double c[3];
-//      grid->GetPoints()->GetPoint(nodeIds[k], a);
-//      grid->GetPoints()->GetPoint(nodeIds[k + 1], b);
-//      grid->GetPoints()->GetPoint(nodeIds[k + 2], c);
-//      bool isFaceForward = this->isForward(a, b, c, center);
-      bool isFaceForward = true;
+      double a[3];
+      double b[3];
+      double c[3];
+      grid->GetPoints()->GetPoint(nodeIds[k], a);
+      grid->GetPoints()->GetPoint(nodeIds[k + 1], b);
+      grid->GetPoints()->GetPoint(nodeIds[k + 2], c);
+      bool isFaceForward = this->isForward(a, b, c, center);
       //MESSAGE("isFaceForward " << i << " " << isFaceForward);
       vtkIdType *facePts = &nodeIds[k];
       if (isFaceForward)
@@ -571,9 +569,10 @@ bool SMDS_VtkVolume::isForward(double* a, double* b, double* c, double* d)
       w[j] = d[j] - a[j];
       //MESSAGE("u,v,w " << u[j] << " " << v[j] << " " << w[j]);
     }
-  double prodmixte = (u[2] * v[3] - u[3] * v[2]) * w[1] + (u[3] * v[1] - u[1] * v[3]) * w[2] + (u[1] * v[2] - u[2]
-      * v[1]) * w[3];
-  return (prodmixte >= 0);
+  double prodmixte = (u[1]*v[2] - u[2]*v[1]) * w[0]
+                   + (u[2]*v[0] - u[0]*v[2]) * w[1]
+                   + (u[0]*v[1] - u[1]*v[0]) * w[2];
+  return (prodmixte < 0);
 }
 
 /*! For polyhedron only

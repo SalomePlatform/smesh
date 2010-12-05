@@ -55,6 +55,8 @@
 #include <QTreeWidget>
 #include <QVBoxLayout>
 
+#include "utilities.h"
+
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_Group)
 
@@ -667,7 +669,7 @@ void SMESHGUI_SimpleElemInfo::showInfo( long id, bool isElem )
 	gtype = tr( "QUADRANGLE" ); break;
       case SMDSEntity_Polygon:
       case SMDSEntity_Quad_Polygon:
-	gtype = tr( "QUADRANGLE" ); break;
+	gtype = tr( "POLYGON" ); break;
       case SMDSEntity_Tetra:
       case SMDSEntity_Quad_Tetra:
 	gtype = tr( "TETRAHEDRON" ); break;
@@ -913,7 +915,7 @@ void SMESHGUI_TreeElemInfo::showInfo( long id, bool isElem )
 	gtype = tr( "QUADRANGLE" ); break;
       case SMDSEntity_Polygon:
       case SMDSEntity_Quad_Polygon:
-	gtype = tr( "QUADRANGLE" ); break;
+	gtype = tr( "POLYGON" ); break;
       case SMDSEntity_Tetra:
       case SMDSEntity_Quad_Tetra:
 	gtype = tr( "TETRAHEDRON" ); break;

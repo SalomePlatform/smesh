@@ -92,7 +92,7 @@ int SMDS_UnstructuredGrid::InsertNextLinkedCell(int type, int npts, vtkIdType *p
     return vtkUnstructuredGrid::InsertNextLinkedCell(type, npts, pts);
 
   // --- type = VTK_POLYHEDRON
-  MESSAGE("InsertNextLinkedCell VTK_POLYHEDRON");
+  //MESSAGE("InsertNextLinkedCell VTK_POLYHEDRON");
   int cellid = this->InsertNextCell(type, npts, pts);
 
   set<vtkIdType> setOfNodes;
@@ -105,7 +105,7 @@ int SMDS_UnstructuredGrid::InsertNextLinkedCell(int type, int npts, vtkIdType *p
       i++;
       for (int k = 0; k < nbnodes; k++)
         {
-          MESSAGE(" cell " << cellid << " face " << nf << " node " << pts[i]);
+          //MESSAGE(" cell " << cellid << " face " << nf << " node " << pts[i]);
           setOfNodes.insert(pts[i]);
           i++;
         }
@@ -114,7 +114,7 @@ int SMDS_UnstructuredGrid::InsertNextLinkedCell(int type, int npts, vtkIdType *p
   set<vtkIdType>::iterator it = setOfNodes.begin();
   for (; it != setOfNodes.end(); ++it)
     {
-      MESSAGE("reverse link for node " << *it << " cell " << cellid);
+      //MESSAGE("reverse link for node " << *it << " cell " << cellid);
       this->Links->ResizeCellList(*it, 1);
       this->Links->AddCellReference(cellid, *it);
     }

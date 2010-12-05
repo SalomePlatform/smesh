@@ -216,7 +216,7 @@ bool SMESHDS_Mesh::ChangeElementNodes(const SMDS_MeshElement * elem,
                                       const SMDS_MeshNode    * nodes[],
                                       const int                nbnodes)
 {
-  MESSAGE("SMESHDS_Mesh::ChangeElementNodes");
+  //MESSAGE("SMESHDS_Mesh::ChangeElementNodes");
   if ( ! SMDS_Mesh::ChangeElementNodes( elem, nodes, nbnodes ))
     return false;
 

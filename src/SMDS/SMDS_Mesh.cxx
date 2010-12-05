@@ -1162,7 +1162,7 @@ SMDS_MeshFace* SMDS_Mesh::AddPolygonalFaceWithID
   else
     {
 //#ifdef VTK_HAVE_POLYHEDRON
-    MESSAGE("AddPolygonalFaceWithID vtk " << ID);
+    //MESSAGE("AddPolygonalFaceWithID vtk " << ID);
     vector<vtkIdType> nodeIds;
     nodeIds.clear();
     vector<const SMDS_MeshNode*>::iterator it = nodes.begin();
@@ -1257,7 +1257,7 @@ SMDS_MeshVolume* SMDS_Mesh::AddPolyhedralVolumeWithID
   else
     {
 //#ifdef VTK_HAVE_POLYHEDRON
-      MESSAGE("AddPolyhedralVolumeWithID vtk " << ID);
+      //MESSAGE("AddPolyhedralVolumeWithID vtk " << ID);
       vector<vtkIdType> nodeIds;
       nodeIds.clear();
       vector<const SMDS_MeshNode*>::iterator it = nodes.begin();

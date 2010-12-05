@@ -5310,22 +5310,37 @@ SMESH_MeshEditor::Transform (TIDSortedElemSet & theElems,
   string groupPostfix;
   switch ( theTrsf.Form() ) {
   case gp_PntMirror:
+    MESSAGE("gp_PntMirror");
+    needReverse = true;
+    groupPostfix = "mirrored";
+    break;
   case gp_Ax1Mirror:
+    MESSAGE("gp_Ax1Mirror");
+    groupPostfix = "mirrored";
+    break;
   case gp_Ax2Mirror:
+    MESSAGE("gp_Ax2Mirror");
     needReverse = true;
     groupPostfix = "mirrored";
     break;
   case gp_Rotation:
+    MESSAGE("gp_Rotation");
     groupPostfix = "rotated";
     break;
   case gp_Translation:
+    MESSAGE("gp_Translation");
     groupPostfix = "translated";
     break;
   case gp_Scale:
+    MESSAGE("gp_Scale");
+    groupPostfix = "scaled";
+    break;
   case gp_CompoundTrsf: // different scale by axis
+    MESSAGE("gp_CompoundTrsf");
     groupPostfix = "scaled";
     break;
   default:
+    MESSAGE("default");
     needReverse = false;
     groupPostfix = "transformed";
   }
@@ -7368,10 +7383,9 @@ void SMESH_MeshEditor::MergeNodes (TListOfListOfNodes & theGroupsOfNodes)
           vector<const SMDS_MeshNode *> polygons_nodes;
           vector<int> quantities;
           int nbNew = SimplifyFace(face_nodes, polygons_nodes, quantities);
-
           if (nbNew > 0) {
             inode = 0;
-            for (int iface = 0; iface < nbNew - 1; iface++) {
+            for (int iface = 0; iface < nbNew; iface++) {
               int nbNodes = quantities[iface];
               vector<const SMDS_MeshNode *> poly_nodes (nbNodes);
               for (int ii = 0; ii < nbNodes; ii++, inode++) {
@@ -7838,7 +7852,11 @@ void SMESH_MeshEditor::MergeNodes (TListOfListOfNodes & theGroupsOfNodes)
         //MESSAGE("Change regular element or polygon " << elemId);
         SMDSAbs_ElementType etyp = elem->GetType();
         uniqueNodes.resize(nbUniqueNodes);
-        SMDS_MeshElement* newElem = this->AddElement(uniqueNodes, etyp, false);
+        SMDS_MeshElement* newElem = 0;
+        if (elem->GetEntityType() == SMDSEntity_Polygon)
+          newElem = this->AddElement(uniqueNodes, etyp, true);
+        else
+          newElem = this->AddElement(uniqueNodes, etyp, false);
         if (newElem)
           {
             myLastCreatedElems.Append(newElem);
