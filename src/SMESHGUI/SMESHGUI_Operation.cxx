@@ -19,12 +19,10 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+//  SMESH SMESHGUI : implementaion of Salome mesh GUI
+//  File   : SMESHGUI_Operation.cxx
+//  Author : Sergey LITONIN, Open CASCADE S.A.S.
 
-// SMESH SMDS : implementaion of Salome mesh data structure
-// File   : SMESHGUI_Operation.cxx
-// Author : Sergey LITONIN, Open CASCADE S.A.S.
-// SMESH includes
-//
 #include "SMESHGUI_Operation.h"
 
 #include "SMESHGUI.h"
@@ -87,19 +85,19 @@ void SMESHGUI_Operation::startOperation()
     disconnect( dlg(), SIGNAL( dlgCancel() ), this, SLOT( onCancel() ) );
     disconnect( dlg(), SIGNAL( dlgClose() ), this, SLOT( onCancel() ) );
     disconnect( dlg(), SIGNAL( dlgHelp() ), this, SLOT( onHelp() ) );
-    
+
     if( dlg()->testButtonFlags( QtxDialog::OK ) )
       connect( dlg(), SIGNAL( dlgOk() ), this, SLOT( onOk() ) );
-      
+
     if( dlg()->testButtonFlags( QtxDialog::Apply ) )
       connect( dlg(), SIGNAL( dlgApply() ), this, SLOT( onApply() ) );
-      
+
     if( dlg()->testButtonFlags( QtxDialog::Cancel ) )
       connect( dlg(), SIGNAL( dlgCancel() ), this, SLOT( onCancel() ) );
 
     if( dlg()->testButtonFlags( QtxDialog::Help ) )
       connect( dlg(), SIGNAL( dlgHelp() ), this, SLOT( onHelp() ) );
-      
+
     //if( dlg()->testButtonFlags( QtxDialog::Close ) )
     //if dialog hasn't close, cancel, no and etc buttons, dlgClose will be emitted when dialog is closed not by OK
     connect( dlg(), SIGNAL( dlgClose() ), this, SLOT( onCancel() ) );
@@ -126,13 +124,13 @@ bool SMESHGUI_Operation::isReadyToStart() const
   }
   else if ( isStudyLocked() )
     return false;
-  
+
   return true;
 }
 
 //=======================================================================
 // name    : setDialogActive
-// Purpose : 
+// Purpose :
 //=======================================================================
 void SMESHGUI_Operation::setDialogActive( const bool active )
 {
@@ -191,7 +189,7 @@ void SMESHGUI_Operation::onCancel()
 void SMESHGUI_Operation::onHelp()
 {
   LightApp_Application* app = (LightApp_Application*)(SUIT_Session::session()->activeApplication());
-  if (app) 
+  if (app)
     app->onHelpContextModule(getSMESHGUI() ? app->moduleName(getSMESHGUI()->moduleName()) : QString(""), myHelpFileName);
   else {
     QString platform;
@@ -202,7 +200,7 @@ void SMESHGUI_Operation::onHelp()
 #endif
     SUIT_MessageBox::warning( desktop(), tr("WRN_WARNING"),
                               tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
-                              arg(app->resourceMgr()->stringValue("ExternalBrowser", 
+                              arg(app->resourceMgr()->stringValue("ExternalBrowser",
                                                                   platform)).
                               arg(myHelpFileName) );
   }
@@ -236,7 +234,7 @@ bool SMESHGUI_Operation::isStudyLocked( const bool theMess ) const
       return true;
     }
   }
-  
+
   return false;
 }
 
@@ -259,9 +257,11 @@ bool SMESHGUI_Operation::isValid( SUIT_Operation* theOtherOp ) const
     // to do add other operations here
   }
 
-  return theOtherOp && theOtherOp->inherits( "SMESHGUI_Operation" ) &&
-         ( !anOps.contains( theOtherOp->metaObject()->className() ) || 
-           anOps.contains( metaObject()->className() ) );
+  return ( theOtherOp &&
+           ( theOtherOp->inherits("SMESHGUI_Operation") &&
+             ( !anOps.contains(theOtherOp->metaObject()->className() ) ||
+               anOps.contains(metaObject()->className()) ) ) ||
+           ( theOtherOp->inherits("LightApp_ShowHideOp") ) );
 
   return true;
 }
