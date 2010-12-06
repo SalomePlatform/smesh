@@ -67,18 +67,23 @@ void SMESHDS_SubMesh::AddElement(const SMDS_MeshElement * ME)
           else
             {
               int idInSubShape = ME->getIdInShape();
-              MESSAGE("add element in subshape already belonging to that subshape "
-                << ME->GetID() << " " << oldShapeId << " " << idInSubShape);
-              // check if ok: do nothing if ok
-              if ((idInSubShape == -1) || (idInSubShape >= myElements.size()))
+              if (idInSubShape >= 0)
                 {
-                  MESSAGE("out of bounds");
-                  throw SALOME_Exception(LOCALIZED("out of bounds"));
-                }
-              if (ME != myElements[idInSubShape])
-                {
-                  MESSAGE("not the same element");
-                  throw SALOME_Exception(LOCALIZED("not the same element"));
+                  MESSAGE("add element in subshape already belonging to that subshape "
+                      << ME->GetID() << " " << oldShapeId << " " << idInSubShape);
+                  // check if ok: do nothing if ok
+                  if (idInSubShape >= myElements.size())
+                    {
+                      MESSAGE("out of bounds " << idInSubShape << " " << myElements.size());
+                      throw SALOME_Exception(LOCALIZED("out of bounds"));
+                    }
+                  if (ME != myElements[idInSubShape])
+                    {
+                      MESSAGE("not the same element");
+                      throw SALOME_Exception(LOCALIZED("not the same element"));
+                    }
+                  MESSAGE("already done, OK, nothing to do");
+                  return;
                 }
             }
         }
