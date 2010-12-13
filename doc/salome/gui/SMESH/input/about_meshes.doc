@@ -16,6 +16,9 @@ for example, a face.
 
 Several created meshes can be \subpage building_compounds_page "combined into mesh compounds".
 
+The whole mesh or it's part can be \subpage copy_mesh_page "copied"
+into another mesh.
+
 All created meshes and submeshes can be \subpage editing_meshes_page "edited".
 
 Meshes can be also edited using the MESH functions destined for 

@@ -1,0 +1,14 @@
+/*!
+
+\page over_constrained_faces_page Over-constrained faces
+
+\n This mesh quality control highlights faces sharing only one of its borders with other faces.
+
+\image html over_constrained_faces.png
+
+In this picture the over-constrained face is displayed in red.
+
+<br><b>See Also</b> a sample TUI Script of a 
+\ref tui_over_constrained_faces "Over-constrained faces" filter.  
+
+*/

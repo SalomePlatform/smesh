@@ -663,27 +663,6 @@ class smeshDC(SMESH._objref_SMESH_Gen):
         aMesh = Mesh(self, self.geompyD, aSmeshMesh)
         return aMesh
 
-    ## From SMESH_Gen interface
-    #  @return the list of integer values
-    #  @ingroup l1_auxiliary
-    def GetSubShapesId( self, theMainObject, theListOfSubObjects ):
-        return SMESH._objref_SMESH_Gen.GetSubShapesId(self,theMainObject, theListOfSubObjects)
-
-    ## From SMESH_Gen interface. Creates a pattern
-    #  @return an instance of SMESH_Pattern
-    #
-    #  <a href="../tui_modifying_meshes_page.html#tui_pattern_mapping">Example of Patterns usage</a>
-    #  @ingroup l2_modif_patterns
-    def GetPattern(self):
-        return SMESH._objref_SMESH_Gen.GetPattern(self)
-
-    ## Sets number of segments per diagonal of boundary box of geometry by which
-    #  default segment length of appropriate 1D hypotheses is defined.
-    #  Default value is 10
-    #  @ingroup l1_auxiliary
-    def SetBoundaryBoxSegmentation(self, nbSegments):
-        SMESH._objref_SMESH_Gen.SetBoundaryBoxSegmentation(self,nbSegments)
-
     ## Concatenate the given meshes into one mesh.
     #  @return an instance of Mesh class
     #  @param meshes the meshes to combine into one mesh
@@ -706,6 +685,41 @@ class smeshDC(SMESH._objref_SMESH_Gen):
         aSmeshMesh.SetParameters(Parameters)
         aMesh = Mesh(self, self.geompyD, aSmeshMesh)
         return aMesh
+
+    ## Create a mesh by copying a part of another mesh.
+    #  @param meshPart a part of mesh to copy, either a Mesh, a sub-mesh or a group;
+    #                  to copy nodes or elements not contained in any mesh object,
+    #                  pass result of Mesh.GetIDSource( list_of_ids, type ) as meshPart
+    #  @param meshName a name of the new mesh
+    #  @param toCopyGroups to create in the new mesh groups the copied elements belongs to
+    #  @param toKeepIDs to preserve IDs of the copied elements or not
+    #  @return an instance of Mesh class
+    def CopyMesh( self, meshPart, meshName, toCopyGroups=False, toKeepIDs=False):
+        if (isinstance( meshPart, Mesh )):
+            meshPart = meshPart.GetMesh()
+        mesh = SMESH._objref_SMESH_Gen.CopyMesh( self,meshPart,meshName,toCopyGroups,toKeepIDs )
+        return Mesh(self, self.geompyD, mesh)
+
+    ## From SMESH_Gen interface
+    #  @return the list of integer values
+    #  @ingroup l1_auxiliary
+    def GetSubShapesId( self, theMainObject, theListOfSubObjects ):
+        return SMESH._objref_SMESH_Gen.GetSubShapesId(self,theMainObject, theListOfSubObjects)
+
+    ## From SMESH_Gen interface. Creates a pattern
+    #  @return an instance of SMESH_Pattern
+    #
+    #  <a href="../tui_modifying_meshes_page.html#tui_pattern_mapping">Example of Patterns usage</a>
+    #  @ingroup l2_modif_patterns
+    def GetPattern(self):
+        return SMESH._objref_SMESH_Gen.GetPattern(self)
+
+    ## Sets number of segments per diagonal of boundary box of geometry by which
+    #  default segment length of appropriate 1D hypotheses is defined.
+    #  Default value is 10
+    #  @ingroup l1_auxiliary
+    def SetBoundaryBoxSegmentation(self, nbSegments):
+        SMESH._objref_SMESH_Gen.SetBoundaryBoxSegmentation(self,nbSegments)
 
     # Filtering. Auxiliary functions:
     # ------------------------------
@@ -735,6 +749,8 @@ class smeshDC(SMESH._objref_SMESH_Gen):
     #  @param UnaryOp  FT_LogicalNOT or FT_Undefined
     #  @param BinaryOp a binary logical operation FT_LogicalAND, FT_LogicalOR or
     #                  FT_Undefined (must be for the last criterion of all criteria)
+    #  @param Tolerance the tolerance used by FT_BelongToGeom, FT_BelongToSurface,
+    #         FT_LyingOnGeom, FT_CoplanarFaces criteria
     #  @return SMESH.Filter.Criterion
     #  @ingroup l1_controls
     def GetCriterion(self,elementType,
@@ -742,10 +758,12 @@ class smeshDC(SMESH._objref_SMESH_Gen):
                      Compare = FT_EqualTo,
                      Treshold="",
                      UnaryOp=FT_Undefined,
-                     BinaryOp=FT_Undefined):
+                     BinaryOp=FT_Undefined,
+                     Tolerance=1e-07):
         aCriterion = self.GetEmptyCriterion()
         aCriterion.TypeOfElement = elementType
         aCriterion.Type = self.EnumToLong(CritType)
+        aCriterion.Tolerance = Tolerance
 
         aTreshold = Treshold
 
@@ -810,7 +828,9 @@ class smeshDC(SMESH._objref_SMESH_Gen):
                 return None
             pass
         elif CritType in [FT_FreeBorders, FT_FreeEdges, FT_BadOrientedVolume, FT_FreeNodes,
-                          FT_FreeFaces, FT_LinearOrQuadratic]:
+                          FT_FreeFaces, FT_LinearOrQuadratic,
+                          FT_BareBorderFace, FT_BareBorderVolume,
+                          FT_OverConstrainedFace, FT_OverConstrainedVolume]:
             # At this point the treshold is unnecessary
             if aTreshold ==  FT_LogicalNOT:
                 aCriterion.UnaryOp = self.EnumToLong(FT_LogicalNOT)
@@ -845,14 +865,17 @@ class smeshDC(SMESH._objref_SMESH_Gen):
     #  @param Compare  belongs to {FT_LessThan, FT_MoreThan, FT_EqualTo}
     #  @param Treshold the threshold value (range of id ids as string, shape, numeric)
     #  @param UnaryOp  FT_LogicalNOT or FT_Undefined
+    #  @param Tolerance the tolerance used by FT_BelongToGeom, FT_BelongToSurface,
+    #         FT_LyingOnGeom, FT_CoplanarFaces criteria
     #  @return SMESH_Filter
     #  @ingroup l1_controls
     def GetFilter(self,elementType,
                   CritType=FT_Undefined,
                   Compare=FT_EqualTo,
                   Treshold="",
-                  UnaryOp=FT_Undefined):
-        aCriterion = self.GetCriterion(elementType, CritType, Compare, Treshold, UnaryOp, FT_Undefined)
+                  UnaryOp=FT_Undefined,
+                  Tolerance=1e-07):
+        aCriterion = self.GetCriterion(elementType, CritType, Compare, Treshold, UnaryOp, FT_Undefined,Tolerance)
         aFilterMgr = self.CreateFilterManager()
         aFilter = aFilterMgr.CreateFilter()
         aCriteria = []
@@ -1744,6 +1767,8 @@ class Mesh:
     #  @param Compare belongs to {FT_LessThan, FT_MoreThan, FT_EqualTo}
     #  @param Treshold the threshold value (range of id ids as string, shape, numeric)
     #  @param UnaryOp FT_LogicalNOT or FT_Undefined
+    #  @param Tolerance the tolerance used by FT_BelongToGeom, FT_BelongToSurface,
+    #         FT_LyingOnGeom, FT_CoplanarFaces criteria
     #  @return SMESH_Group
     #  @ingroup l2_grps_create
     def MakeGroup(self,
@@ -1752,8 +1777,9 @@ class Mesh:
                   CritType=FT_Undefined,
                   Compare=FT_EqualTo,
                   Treshold="",
-                  UnaryOp=FT_Undefined):
-        aCriterion = self.smeshpyD.GetCriterion(elementType, CritType, Compare, Treshold, UnaryOp, FT_Undefined)
+                  UnaryOp=FT_Undefined,
+                  Tolerance=1e-07):
+        aCriterion = self.smeshpyD.GetCriterion(elementType, CritType, Compare, Treshold, UnaryOp, FT_Undefined,Tolerance)
         group = self.MakeGroupByCriterion(groupName, aCriterion)
         return group
 
@@ -1968,6 +1994,13 @@ class Mesh:
     #  @ingroup l1_modifying
     def GetMeshEditor(self):
         return self.mesh.GetMeshEditor()
+
+    ## Wrap a list of IDs of elements or nodes into SMESH_IDSource which
+    #  can be passed as argument to accepting mesh, group or sub-mesh
+    #  @return an instance of SMESH_IDSource
+    #  @ingroup l1_auxiliary
+    def GetIDSource(self, ids, elemType):
+        return self.GetMeshEditor().MakeIDSource(ids, elemType)
 
     ## Gets MED Mesh
     #  @return an instance of SALOME_MED::MESH
@@ -3213,7 +3246,7 @@ class Mesh:
 
     ## Generates new elements by extrusion of the elements with given ids
     #  @param IDsOfElements the list of elements ids for extrusion
-    #  @param StepVector vector, defining the direction and value of extrusion
+    #  @param StepVector vector or DirStruct, defining the direction and value of extrusion
     #  @param NbOfSteps the number of steps
     #  @param MakeGroups forces the generation of new groups from existing ones
     #  @return the list of created groups (SMESH_GroupBase) if MakeGroups=True, empty list otherwise
@@ -3700,7 +3733,7 @@ class Mesh:
         if ( isinstance( theObject, Mesh )):
             theObject = theObject.GetMesh()
         if ( isinstance( theObject, list )):
-            theObject = self.editor.MakeIDSource(theObject, SMESH.ALL)
+            theObject = self.GetIDSource(theObject, SMESH.ALL)
 
         thePoint, Parameters = ParsePointStruct(thePoint)
         self.mesh.SetParameters(Parameters)
@@ -3721,7 +3754,7 @@ class Mesh:
         if (isinstance(theObject, Mesh)):
             theObject = theObject.GetMesh()
         if ( isinstance( theObject, list )):
-            theObject = self.editor.MakeIDSource(theObject,SMESH.ALL)
+            theObject = self.GetIDSource(theObject,SMESH.ALL)
 
         mesh = self.editor.ScaleMakeMesh(theObject, thePoint, theScaleFact,
                                          MakeGroups, NewMeshName)
@@ -3855,7 +3888,7 @@ class Mesh:
         if not isinstance( exceptNodes, list):
             exceptNodes = [ exceptNodes ]
         if exceptNodes and isinstance( exceptNodes[0], int):
-            exceptNodes = [ self.editor.MakeIDSource( exceptNodes, SMESH.NODE)]
+            exceptNodes = [ self.GetIDSource( exceptNodes, SMESH.NODE)]
         return self.editor.FindCoincidentNodesOnPartBut(SubMeshOrGroup, Tolerance,exceptNodes)
 
     ## Merges nodes
@@ -4340,8 +4373,11 @@ class Mesh_Algorithm:
                 pass
             self.mesh.smeshpyD.SetName(hypo, hyp + a)
             pass
+        geomName=""
+        if self.geom:
+            geomName = GetName(self.geom)
         status = self.mesh.mesh.AddHypothesis(self.geom, hypo)
-        TreatHypoStatus( status, GetName(hypo), GetName(self.geom), 0 )
+        TreatHypoStatus( status, GetName(hypo), geomName, 0 )
         return hypo
 
     ## Returns entry of the shape to mesh in the study
@@ -4884,20 +4920,31 @@ class Mesh_Triangle(Mesh_Algorithm):
         self.Parameters().SetOptionValue(optionName,level)
 
     ## Sets QuadAllowed flag.
-    #  Only for algoType == NETGEN || NETGEN_2D || BLSURF
+    #  Only for algoType == NETGEN(NETGEN_1D2D) || NETGEN_2D || BLSURF
     #  @ingroup l3_hypos_netgen l3_hypos_blsurf
     def SetQuadAllowed(self, toAllow=True):
         if self.algoType == NETGEN_2D:
-            if toAllow: # add QuadranglePreference
-                self.Hypothesis("QuadranglePreference", UseExisting=1, CompareMethod=self.CompareEqualHyp)
-            else:       # remove QuadranglePreference
+            if not self.params:
+                # use simple hyps
+                hasSimpleHyps = False
+                simpleHyps = ["QuadranglePreference","LengthFromEdges","MaxElementArea"]
                 for hyp in self.mesh.GetHypothesisList( self.geom ):
-                    if hyp.GetName() == "QuadranglePreference":
-                        self.mesh.RemoveHypothesis( self.geom, hyp )
+                    if hyp.GetName() in simpleHyps:
+                        hasSimpleHyps = True
+                        if hyp.GetName() == "QuadranglePreference":
+                            if not toAllow: # remove QuadranglePreference
+                                self.mesh.RemoveHypothesis( self.geom, hyp )
+                                pass
+                            return
                         pass
                     pass
+                if hasSimpleHyps:
+                    if toAllow: # add QuadranglePreference
+                        self.Hypothesis("QuadranglePreference", UseExisting=1, CompareMethod=self.CompareEqualHyp)
+                        pass
+                    return
                 pass
-            return
+            pass
         if self.Parameters():
             self.params.SetQuadAllowed(toAllow)
             return
@@ -4906,30 +4953,25 @@ class Mesh_Triangle(Mesh_Algorithm):
     #
     #  @ingroup l3_hypos_netgen
     def Parameters(self, which=SOLE):
-        if self.params:
-            return self.params
-        if self.algoType == NETGEN:
-            if which == SIMPLE:
-                self.params = self.Hypothesis("NETGEN_SimpleParameters_2D", [],
+        if not self.params:
+            if self.algoType == NETGEN:
+                if which == SIMPLE:
+                    self.params = self.Hypothesis("NETGEN_SimpleParameters_2D", [],
+                                                  "libNETGENEngine.so", UseExisting=0)
+                else:
+                    self.params = self.Hypothesis("NETGEN_Parameters_2D", [],
+                                                  "libNETGENEngine.so", UseExisting=0)
+            elif self.algoType == MEFISTO:
+                print "Mefisto algo support no multi-parameter hypothesis"
+            elif self.algoType == NETGEN_2D:
+                self.params = self.Hypothesis("NETGEN_Parameters_2D_ONLY", [],
                                               "libNETGENEngine.so", UseExisting=0)
+            elif self.algoType == BLSURF:
+                self.params = self.Hypothesis("BLSURF_Parameters", [],
+                                              "libBLSURFEngine.so", UseExisting=0)
             else:
-                self.params = self.Hypothesis("NETGEN_Parameters_2D", [],
-                                              "libNETGENEngine.so", UseExisting=0)
-            return self.params
-        elif self.algoType == MEFISTO:
-            print "Mefisto algo support no multi-parameter hypothesis"
-            return None
-        elif self.algoType == NETGEN_2D:
-            print "NETGEN_2D_ONLY algo support no multi-parameter hypothesis"
-            print "NETGEN_2D_ONLY uses 'MaxElementArea' and 'LengthFromEdges' ones"
-            return None
-        elif self.algoType == BLSURF:
-            self.params = self.Hypothesis("BLSURF_Parameters", [],
-                                          "libBLSURFEngine.so", UseExisting=0)
-            return self.params
-        else:
-            print "Mesh_Triangle with algo type %s does not have such a parameter, check algo type"%self.algoType
-        return None
+                print "Mesh_Triangle with algo type %s does not have such a parameter, check algo type"%self.algoType
+        return self.params
 
     ## Sets MaxSize
     #
@@ -5166,33 +5208,34 @@ class Mesh_Tetrahedron(Mesh_Algorithm):
     #
     #  @ingroup l3_hypos_netgen
     def Parameters(self, which=SOLE):
-        if self.params:
-            return self.params
+        if not self.params:
 
-        if self.algoType == FULL_NETGEN:
-            if which == SIMPLE:
-                self.params = self.Hypothesis("NETGEN_SimpleParameters_3D", [],
+            if self.algoType == FULL_NETGEN:
+                if which == SIMPLE:
+                    self.params = self.Hypothesis("NETGEN_SimpleParameters_3D", [],
+                                                  "libNETGENEngine.so", UseExisting=0)
+                else:
+                    self.params = self.Hypothesis("NETGEN_Parameters", [],
+                                                  "libNETGENEngine.so", UseExisting=0)
+
+            if self.algoType == NETGEN:
+                self.params = self.Hypothesis("NETGEN_Parameters_3D", [],
                                               "libNETGENEngine.so", UseExisting=0)
+
+            elif self.algoType == GHS3D:
+                self.params = self.Hypothesis("GHS3D_Parameters", [],
+                                              "libGHS3DEngine.so", UseExisting=0)
+
+            elif self.algoType == GHS3DPRL:
+                self.params = self.Hypothesis("GHS3DPRL_Parameters", [],
+                                              "libGHS3DPRLEngine.so", UseExisting=0)
             else:
-                self.params = self.Hypothesis("NETGEN_Parameters", [],
-                                              "libNETGENEngine.so", UseExisting=0)
-            return self.params
+                print "Algo supports no multi-parameter hypothesis"
 
-        if self.algoType == GHS3D:
-            self.params = self.Hypothesis("GHS3D_Parameters", [],
-                                          "libGHS3DEngine.so", UseExisting=0)
-            return self.params
-
-        if self.algoType == GHS3DPRL:
-            self.params = self.Hypothesis("GHS3DPRL_Parameters", [],
-                                          "libGHS3DPRLEngine.so", UseExisting=0)
-            return self.params
-
-        print "Algo supports no multi-parameter hypothesis"
-        return None
+        return self.params
 
     ## Sets MaxSize
-    #  Parameter of FULL_NETGEN
+    #  Parameter of FULL_NETGEN and NETGEN
     #  @ingroup l3_hypos_netgen
     def SetMaxSize(self, theSize):
         self.Parameters().SetMaxSize(theSize)
@@ -5204,7 +5247,7 @@ class Mesh_Tetrahedron(Mesh_Algorithm):
         self.Parameters().SetSecondOrder(theVal)
 
     ## Sets Optimize flag
-    #  Parameter of FULL_NETGEN
+    #  Parameter of FULL_NETGEN and NETGEN
     #  @ingroup l3_hypos_netgen
     def SetOptimize(self, theVal):
         self.Parameters().SetOptimize(theVal)

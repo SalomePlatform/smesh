@@ -1082,6 +1082,7 @@ bool StdMeshers_ProjectionUtils::FindSubShapeAssociation(const TopoDS_Shape& the
   TopTools_IndexedMapOfShape vMap1, vMap2;
   TopExp::MapShapes( theShape1, TopAbs_VERTEX, vMap1 );
   TopExp::MapShapes( theShape2, TopAbs_VERTEX, vMap2 );
+  TopoDS_Vertex VV1[2], VV2[2];
 
   if ( vMap1.Extent() != vMap2.Extent() )
     RETURN_BAD_RESULT("Different nb of vertices");
@@ -1093,6 +1094,32 @@ bool StdMeshers_ProjectionUtils::FindSubShapeAssociation(const TopoDS_Shape& the
       return true;
     }
     return FindSubShapeAssociation( theShape1, theMesh1, theShape2, theMesh2, theMap);
+  }
+
+  // Try to associate by common vertices of an edge
+  for ( int i = 1; i <= vMap1.Extent(); ++i )
+  {
+    const TopoDS_Shape& v1 = vMap1(i);
+    if ( vMap2.Contains( v1 ))
+    {
+      // find an egde sharing v1 and sharing at the same time another common vertex
+      PShapeIteratorPtr edgeIt = SMESH_MesherHelper::GetAncestors( v1, *theMesh1, TopAbs_EDGE);
+      bool edgeFound = false;
+      while ( edgeIt->more() && !edgeFound )
+      {
+        TopoDS_Edge edge = TopoDS::Edge( edgeIt->next()->Oriented(TopAbs_FORWARD));
+        TopExp::Vertices(edge, VV1[0], VV1[1]);
+        if ( !VV1[0].IsSame( VV1[1] ))
+          edgeFound = ( vMap2.Contains( VV1[ v1.IsSame(VV1[0]) ? 1:0]));
+      }
+      if ( edgeFound )
+      {
+        InsertAssociation( VV1[0], VV1[0], theMap, bidirect );
+        InsertAssociation( VV1[1], VV1[1], theMap, bidirect );
+        if (FindSubShapeAssociation( theShape1, theMesh1, theShape2, theMesh2, theMap ))
+          return true;
+      }
+    }
   }
 
   // Find transformation to make the shapes be of similar size at same location
@@ -1116,7 +1143,6 @@ bool StdMeshers_ProjectionUtils::FindSubShapeAssociation(const TopoDS_Shape& the
 
   // Find 2 closest vertices
 
-  TopoDS_Vertex VV1[2], VV2[2];
   // get 2 linked vertices of shape 1 not belonging to an inner wire of a face
   TopoDS_Shape edge = theShape1;
   TopExp_Explorer expF( theShape1, TopAbs_FACE ), expE;

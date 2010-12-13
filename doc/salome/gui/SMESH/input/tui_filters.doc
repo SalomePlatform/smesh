@@ -90,7 +90,7 @@ Filter 2D mesh elements (faces) according to the minimum angle value:
 # create mesh
 from SMESH_mechanic import *
 # get faces with minimum angle > 75
-filter = smesh.GetFilter(smesh.FACE, smesh.FT_MinimumAngle, smesh.FT_MoreThan, 75)
+filter = smesh.GetFilter(smesh.FACE, smesh.FT_MinimumAngle,">", 75)
 ids = mesh.GetIdsFromFilter(filter)
 print "Number of faces with minimum angle > 75:", len(ids)
 \endcode
@@ -237,7 +237,7 @@ from SMESH_mechanic import *
 # add node
 mesh.AddNode(0,0,0)
 # get all free nodes
-filter = smesh.GetFilter(smesh.EDGE, smesh.FT_FreeNodes)
+filter = smesh.GetFilter(smesh.NODE, smesh.FT_FreeNodes)
 ids = mesh.GetIdsFromFilter(filter)
 print "Number of free nodes:", len(ids)
 \endcode
@@ -255,12 +255,68 @@ Filter free faces:
 # create mesh
 from SMESH_mechanic import *
 # get all free faces
-filter = smesh.GetFilter(smesh.EDGE, smesh.FT_FreeFaces)
+filter = smesh.GetFilter(smesh.FACE, smesh.FT_FreeFaces)
 ids = mesh.GetIdsFromFilter(filter)
 print "Number of free faces:", len(ids)
 \endcode
 
 \sa \ref tui_free_faces
+
+\section filter_bare_border_faces Bare border faces
+
+Filter faces with bare borders:
+- element type is \a smesh.FACE
+- functor type is \a smesh.FT_BareBorderFace
+- threshold value is not required
+
+\code
+# create mesh
+from SMESH_mechanic import *
+# remove some faces to have faces with bare borders
+mesh.RemoveElements( mesh.GetElementsByType(FACE)[0:5] )
+# get all faces bare borders
+filter = smesh.GetFilter(smesh.FACE, smesh.FT_BareBorderFace)
+ids = mesh.GetIdsFromFilter(filter)
+print "Faces with bare borders:", ids
+\endcode
+
+\sa \ref tui_bare_border_faces
+
+\section filter_coplanar_faces Coplanar faces
+
+Filter faces with bare borders:
+- element type is \a smesh.FACE
+- functor type is \a smesh.FT_CoplanarFaces
+- threshold value is the face ID
+- tolerance is in degrees
+
+\code
+# create mesh
+from SMESH_mechanic import *
+faceID = mesh.GetElementsByType(FACE)[0]
+# get all faces co-planar to the first face with tolerance 5 degrees
+filter = smesh.GetFilter(smesh.FACE, smesh.FT_CoplanarFaces,faceID,Tolerance=5.0)
+ids = mesh.GetIdsFromFilter(filter)
+print "Number of faces coplanar with the first one:", len(ids)
+\endcode
+
+\section filter_over_constrained_faces Over-constrained faces
+
+Filter over-constrained faces:
+- element type is \a smesh.FACE
+- functor type is \a smesh.FT_OverConstrainedFace
+- threshold value is not required
+
+\code
+# create mesh
+from SMESH_mechanic import *
+# get all over-constrained faces
+filter = smesh.GetFilter(smesh.FACE, smesh.FT_OverConstrainedFace)
+ids = mesh.GetIdsFromFilter(filter)
+print "Over-constrained faces:", ids
+\endcode
+
+\sa \ref tui_over_constrained_faces
 
 \section filter_borders_multiconnection Borders at multi-connection
 
@@ -376,6 +432,48 @@ print "Number of volumes with maximum element length > 10:", len(ids)
 \endcode
 
 \sa \ref tui_max_element_length_3d
+
+\section filter_bare_border_volumes Bare border volumes
+
+Filter 3D mesh elements with bare borders:
+- element type is \a smesh.VOLUME
+- functor type is \a smesh.FT_BareBorderVolume
+- threshold value is not required
+
+\code
+# create mesh
+from SMESH_mechanic import *
+mesh.Tetrahedron()
+mesh.Compute()
+# remove some volumes to have volumes with bare borders
+mesh.RemoveElements( mesh.GetElementsByType(VOLUME)[0:5] )
+# get all volumes with bare borders
+filter = smesh.GetFilter(smesh.VOLUME, smesh.FT_BareBorderVolume)
+ids = mesh.GetIdsFromFilter(filter)
+print "Volumes with bare borders:", ids
+\endcode
+
+\sa \ref tui_bare_border_volumes
+
+\section filter_over_constrained_volumes Over-constrained volumes
+
+Filter over-constrained volumes:
+- element type is \a smesh.VOLUME
+- functor type is \a smesh.FT_OverConstrainedVolume
+- threshold value is not required
+
+\code
+# create mesh
+from SMESH_mechanic import *
+mesh.Tetrahedron()
+mesh.Compute()
+# get all over-constrained volumes
+filter = smesh.GetFilter(smesh.VOLUME, smesh.FT_OverConstrainedVolume)
+ids = mesh.GetIdsFromFilter(filter)
+print "Over-constrained volumes:", ids
+\endcode
+
+\sa \ref tui_over_constrained_faces
 
 \section filter_belong_to_geom Belong to Geom
 

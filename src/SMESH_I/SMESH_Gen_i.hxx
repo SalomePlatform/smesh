@@ -236,6 +236,12 @@ public:
   SMESH::SMESH_Mesh_ptr CreateMeshesFromSTL( const char* theFileName )
     throw ( SALOME::SALOME_Exception );
 
+  // Copy a part of mesh
+  SMESH::SMESH_Mesh_ptr CopyMesh(SMESH::SMESH_IDSource_ptr meshPart,
+                                 const char*               meshName,
+                                 CORBA::Boolean            toCopyGroups,
+                                 CORBA::Boolean            toKeepIDs);
+
   // Compute mesh on a shape
   CORBA::Boolean Compute( SMESH::SMESH_Mesh_ptr theMesh,
                           GEOM::GEOM_Object_ptr theShapeObject )

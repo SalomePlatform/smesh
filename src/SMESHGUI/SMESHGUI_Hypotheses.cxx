@@ -309,7 +309,7 @@ void SMESHGUI_GenericHypothesisCreator::onDialogFinished( int result )
 
   disconnect( myDlg, SIGNAL( finished( int ) ), this, SLOT( onDialogFinished( int ) ) );
   myDlg->close();
-  //delete myDlg;
+  //delete myDlg; since WA_DeleteOnClose==true
   myDlg = 0;
   emit finished( result );
 }

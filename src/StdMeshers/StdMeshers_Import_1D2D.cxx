@@ -153,8 +153,8 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
   const bool toCheckOri = (helper.NbAncestors( geomFace, theMesh, TopAbs_SOLID ) == 1 );
 
   Handle(Geom_Surface) surface = BRep_Tool::Surface( geomFace );
-  if ( helper.GetSubShapeOri( tgtMesh->ShapeToMesh(), geomFace) == TopAbs_REVERSED )
-    surface->UReverse();
+  const bool reverse = 
+    ( helper.GetSubShapeOri( tgtMesh->ShapeToMesh(), geomFace) == TopAbs_REVERSED );
   gp_Pnt p; gp_Vec du, dv;
 
   set<int> subShapeIDs;
@@ -262,7 +262,7 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
         {
           uv = helper.GetNodeUV( geomFace, newNodes[++iNode] );
           surface->D1( uv.X(),uv.Y(), p, du,dv );
-          geomNorm = du ^ dv;
+          geomNorm = reverse ? dv^du : du^dv;
         }
         while ( geomNorm.SquareMagnitude() < 1e-6 && iNode+1 < face->NbCornerNodes());
 
@@ -341,7 +341,7 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
       int nbFaces = link2Nb->second;
       if ( nbFaces == 1 )
       {
-        // check if the link lie on face boundary
+        // check if a not shared link lie on face boundary
         bool nodesOnBoundary = true;
         list< TopoDS_Shape > bndShapes;
         for ( int is1stN = 0; is1stN < 2 && nodesOnBoundary; ++is1stN )
@@ -356,6 +356,7 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
                 if ( Abs(u-f) < 2 * faceTol || Abs(u-l) < 2 * faceTol )
                   // duplicated node on vertex
                   return error("Source elements overlap one another");
+                tgtSM->RemoveNode( n, /*isNodeDeleted=*/false );
                 tgtMesh->SetNodeOnEdge( (SMDS_MeshNode*)n, edges[iE], u );
                 break;
               }
@@ -371,10 +372,10 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
           }
         }
         if ( !nodesOnBoundary )
-          break; // free internal link
+          break; // error: free internal link
         if ( bndShapes.front().ShapeType() == TopAbs_EDGE &&
              bndShapes.front() != bndShapes.back() )
-          break; // link nodes on different geom edges
+          break; // error: link nodes on different geom edges
 
         // find geom edge the link is on
         if ( bndShapes.back().ShapeType() != TopAbs_EDGE )
@@ -389,7 +390,7 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
               geomEdge.Nullify();
           }
           if ( geomEdge.IsNull() )
-            break; // vertices belong to different edges -> free internal link
+            break; // vertices belong to different edges -> error: free internal link
           bndShapes.push_back( geomEdge );
         }
 
@@ -407,15 +408,13 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
 
           TopoDS_Edge geomEdge = TopoDS::Edge(bndShapes.back());
           helper.CheckNodeU( geomEdge, link._medium, u, 10*faceTol, /*force=*/true );
+          tgtSM->RemoveNode( link._medium, /*isNodeDeleted=*/false );
           tgtMesh->SetNodeOnEdge( (SMDS_MeshNode*)link._medium, geomEdge, u );
         }
         else
         {
           edge = tgtMesh->AddEdge( newNodes[0], newNodes[1]);
         }
-        // remove nodes from submesh of theShape
-        for ( unsigned i = 0; i < newNodes.size(); ++i )
-          tgtSM->RemoveNode( newNodes[i], /*isNodeDeleted=*/false );
         if ( !edge )
           return false;
 

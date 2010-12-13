@@ -309,6 +309,90 @@ aGroup.Add(aFaceIds)
 salome.sg.updateObjBrowser(1)
 \endcode
 
+\section tui_bare_border_faces Bare border faces
+
+\code
+from smesh import *
+SetCurrentStudy(salome.myStudy)
+
+box = geompy.MakeBoxDXDYDZ(100, 100, 100)
+geompy.addToStudy( box, "box" )
+
+mesh = smesh.Mesh(box)
+mesh.Segment().NumberOfSegments(3)
+mesh.Quadrangle()
+mesh.Compute()
+
+# remove 2 faces
+allFaces = mesh.GetElementsByType(FACE)
+mesh.RemoveElements( allFaces[0:2])
+
+bareGroup = mesh.MakeGroup("bare faces", FACE, FT_BareBorderFace)
+assert(bareGroup.Size() == 3)
+\endcode
+
+\section tui_bare_border_volumes Bare border volumes
+
+\code
+from smesh import *
+SetCurrentStudy(salome.myStudy)
+
+box = geompy.MakeBoxDXDYDZ(100, 30, 10)
+# the smallest face of the box
+face = geompy.SubShapeAllSorted( box, geompy.ShapeType["FACE"])[0]
+
+geompy.addToStudy( box, "box" )
+geompy.addToStudyInFather( box, face, "face" )
+
+mesh = Mesh(box)
+mesh.AutomaticHexahedralization();
+
+# remove half of mesh faces from the smallest face
+faceFaces = mesh.GetSubMeshElementsId(face)
+faceToRemove = faceFaces[: len(faceFaces)/2]
+mesh.RemoveElements( faceToRemove )
+
+# make a group of volumes missing the removed faces
+bareGroup = mesh.MakeGroup("bare volumes", VOLUME, FT_BareBorderVolume)
+assert(bareGroup.Size() == len( faceToRemove))
+\endcode
+
+\section tui_over_constrained_faces Over-constrained faces
+\code
+from smesh import *
+SetCurrentStudy(salome.myStudy)
+
+mesh = Mesh()
+faceFilter = GetFilter(FACE,FT_OverConstrainedFace)
+
+#make an edge
+n1 = mesh.AddNode(0,0,0)
+n2 = mesh.AddNode(10,0,0)
+edge = mesh.AddEdge([n1,n2])
+assert( not mesh.GetIdsFromFilter( faceFilter ))
+
+# make faces 
+mesh.ExtrusionSweep([edge], MakeDirStruct(0,7,0), 5)
+assert( 2 == len( mesh.GetIdsFromFilter( faceFilter )))
+\endcode
+
+\section tui_over_constrained_volumes Over-constrained volumes
+\code
+from smesh import *
+SetCurrentStudy(salome.myStudy)
+
+mesh = Mesh()
+volumeFilter = GetFilter(VOLUME,FT_OverConstrainedVolume)
+
+# make volumes by extrusion of one face
+n1 = mesh.AddNode(0,0,0)
+n2 = mesh.AddNode(10,0,0)
+edge = mesh.AddEdge([n1,n2])
+mesh.ExtrusionSweep([edge], MakeDirStruct(0,7,0), 1)
+mesh.ExtrusionSweep( mesh.GetElementsByType(FACE), MakeDirStruct(0,0,5), 7)
+assert( 2 == len( mesh.GetIdsFromFilter( volumeFilter )))
+\endcode
+
 \section tui_length_2d Length 2D
 
 \code

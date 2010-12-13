@@ -1,0 +1,56 @@
+/*!
+
+\page copy_mesh_page Copy Mesh
+
+\n A mesh can be created by copying a part of or the whole other mesh.
+
+<em>To make a copy of a mesh:</em>
+
+\par
+From the \b Mesh menu select <b>Copy Mesh</b> or click <em>"Copy Mesh"</em>
+button in the toolbar.
+
+\image html copy_mesh_icon.png
+<center><em>"Copy Mesh" button</em></center>
+
+\par
+The following dialog box will appear:
+
+\image html copy_mesh_dlg.png
+
+\par
+In the dialog:
+<ul>
+<li>specify the part of mesh to copy:
+
+<ul>
+<li><b>Select the whole mesh, submesh or group</b> by mouse activating
+this checkbox; or</li>
+<li>choose mesh elements with the mouse in the 3D Viewer. It is
+possible to select a whole area with a mouse frame; or</li> 
+<li>input the <b>Source Element IDs</b> directly in this field. The
+selected elements will be highlighted in the viewer; or</li>
+<li>apply Filters. <b>Set filter</b> button allows to apply a filter
+to the selection of elements. See more about filters in the \ref
+selection_filter_library_page "Selection filter library" page.</li>
+</ul>
+</li>
+
+<li>specify the <b>New Mesh Name</b>;</li>
+
+<li>specify the conditions of copying:
+<ul>
+<li>activate <b>Generate groups</b> checkbox to copy the groups of
+elements of the source mesh to the newly created mesh.</li>
+<li>activate <b>Preserve IDs of elements</b> checkbox to keep
+the IDs of new nodes and elements the same as the IDs of source nodes
+and elements.</li>
+</ul>
+</li>
+
+<li>Click \b Apply or <b>Apply and Close</b> button to confirm the operation.</li>
+</ul>
+
+<b>See Also</b> a sample 
+\ref tui_copy_mesh "TUI Example of mesh copying."
+*/

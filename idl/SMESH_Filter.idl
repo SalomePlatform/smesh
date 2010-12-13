@@ -64,6 +64,10 @@ module SMESH
     FT_LyingOnGeom,
     FT_RangeOfIds,
     FT_BadOrientedVolume,
+    FT_BareBorderVolume,
+    FT_BareBorderFace,
+    FT_OverConstrainedVolume,
+    FT_OverConstrainedFace,
     FT_LinearOrQuadratic,
     FT_GroupColor,
     FT_ElemGeomType,
@@ -88,6 +92,7 @@ module SMESH
   };
   typedef sequence<HistogramRectangle> Histogram;
 
+
   /*!
   * Base interface for all functors ( i.e. numerical functors and predicates )
   */
@@ -97,8 +102,6 @@ module SMESH
     FunctorType     GetFunctorType();
     ElementType     GetElementType();
   };
-
-
 
   /*!
   * Numerical functors are intended for calculating value by Id of mesh entity
@@ -150,6 +153,7 @@ module SMESH
     Values GetValues();
   };
   
+
   /*!
   * Predicates are intended for verification of criteria,
   *            must return bool value by mesh id
@@ -165,6 +169,29 @@ module SMESH
    * the point of view of MED convention
    */
   interface BadOrientedVolume: Predicate {};
+
+  /*!
+   * Logical functor (predicate) "Volumes with bare border".
+   * Verify whether a mesh volume has a free facet without a mesh face on it
+   */
+  interface BareBorderVolume: Predicate {};
+  /*!
+   * Logical functor (predicate) "Faces with bare border".
+   * Verify whether a mesh face has a side not shared with another face
+   * and without a mesh edge on it
+   */
+  interface BareBorderFace: Predicate {};
+
+  /*!
+   * Logical functor (predicate) "Over-constrained Volume"
+   * Verify whether a mesh volume has only one facet shared with other volumes
+   */
+  interface OverConstrainedVolume: Predicate {};
+  /*!
+   * Logical functor (predicate) "Over-constrained Face".
+   * Verify whether a mesh face has only one border shared with other faces
+   */
+  interface OverConstrainedFace: Predicate {};
 
   /*!
    * Logical functor (predicate) "Belong To Geometry".
@@ -503,6 +530,10 @@ module SMESH
     RangeOfIds        CreateRangeOfIds();
 
     BadOrientedVolume CreateBadOrientedVolume();
+    BareBorderVolume  CreateBareBorderVolume();
+    BareBorderFace    CreateBareBorderFace();
+    OverConstrainedVolume CreateOverConstrainedVolume();
+    OverConstrainedFace   CreateOverConstrainedFace();
     LinearOrQuadratic CreateLinearOrQuadratic();
 
     GroupColor        CreateGroupColor();

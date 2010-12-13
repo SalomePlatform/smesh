@@ -188,6 +188,10 @@
         <translation>Build Compound</translation>
     </message>
     <message>
+        <source>MEN_COPY_MESH</source>
+        <translation>Copy Mesh</translation>
+    </message>
+    <message>
         <source>MEN_CLIP</source>
         <translation>Clipping</translation>
     </message>
@@ -394,6 +398,22 @@
     <message>
         <source>STB_FIND_ELEM</source>
         <translation>Find Element by Point</translation>
+    </message>
+    <message>
+        <source>MEN_BARE_BORDER_VOLUME</source>
+        <translation>Volumes with bare border</translation>
+    </message>
+    <message>
+        <source>MEN_BARE_BORDER_FACE</source>
+        <translation>Faces with bare border</translation>
+    </message>
+    <message>
+        <source>MEN_OVER_CONSTRAINED_VOLUME</source>
+        <translation>Over-constrained volumes</translation>
+    </message>
+    <message>
+        <source>MEN_OVER_CONSTRAINED_FACE</source>
+        <translation>Over-constrained faces</translation>
     </message>
     <message>
         <source>MEN_FREE_BORDER</source>
@@ -1039,6 +1059,14 @@ Please enter correct values and try again</translation>
     <message>
         <source>SMESH_BUILD_COMPOUND_TITLE</source>
         <translation>Create a Compound</translation>
+    </message>
+    <message>
+        <source>SMESH_COPY_MESH_TITLE</source>
+        <translation>Copy Mesh</translation>
+    </message>
+    <message>
+        <source>SMESH_KEEP_IDS</source>
+        <translation>Preserve IDs of elements</translation>
     </message>
     <message>
         <source>SMESH_BUT_ADD</source>
@@ -2275,6 +2303,10 @@ Please check preferences of Mesh module.
         <translation>Build Compound Mesh</translation>
     </message>
     <message>
+        <source>STB_COPY_MESH</source>
+        <translation>Copy Mesh</translation>
+    </message>
+    <message>
         <source>STB_CLIP</source>
         <translation>Clipping</translation>
     </message>
@@ -2433,6 +2465,22 @@ Please check preferences of Mesh module.
     <message>
         <source>STB_FACES</source>
         <translation>Faces</translation>
+    </message>
+    <message>
+        <source>STB_BARE_BORDER_VOLUME</source>
+        <translation>Volumes with bare border</translation>
+    </message>
+    <message>
+        <source>STB_BARE_BORDER_FACE</source>
+        <translation>Faces with bare border</translation>
+    </message>
+    <message>
+        <source>STB_OVER_CONSTRAINED_VOLUME</source>
+        <translation>Over-constrained volumes</translation>
+    </message>
+    <message>
+        <source>STB_OVER_CONSTRAINED_FACE</source>
+        <translation>Over-constrained faces</translation>
     </message>
     <message>
         <source>STB_FREE_BORDER</source>
@@ -2811,6 +2859,10 @@ Please check preferences of Mesh module.
         <translation>Build Compound Mesh</translation>
     </message>
     <message>
+        <source>TOP_COPY_MESH</source>
+        <translation>Copy Mesh</translation>
+    </message>
+    <message>
         <source>TOP_CLIP</source>
         <translation>Clipping</translation>
     </message>
@@ -2969,6 +3021,22 @@ Please check preferences of Mesh module.
     <message>
         <source>TOP_FACES</source>
         <translation>Faces</translation>
+    </message>
+    <message>
+        <source>TOP_BARE_BORDER_VOLUME</source>
+        <translation>Volumes with bare border</translation>
+    </message>
+    <message>
+        <source>TOP_BARE_BORDER_FACE</source>
+        <translation>Faces with bare border</translation>
+    </message>
+    <message>
+        <source>TOP_OVER_CONSTRAINED_VOLUME</source>
+        <translation>Over-constrained volumes</translation>
+    </message>
+    <message>
+        <source>TOP_OVER_CONSTRAINED_FACE</source>
+        <translation>Over-constrained faces</translation>
     </message>
     <message>
         <source>TOP_FREE_BORDER</source>
@@ -4319,6 +4387,22 @@ Please check input data and try again</translation>
     <message>
         <source>BAD_ORIENTED_VOLUME</source>
         <translation>Bad oriented volume</translation>
+    </message>
+    <message>
+        <source>BARE_BORDER_VOLUME</source>
+        <translation>Volumes with bare border</translation>
+    </message>
+    <message>
+        <source>BARE_BORDER_FACE</source>
+        <translation>Faces with bare border</translation>
+    </message>
+    <message>
+        <source>OVER_CONSTRAINED_VOLUME</source>
+        <translation>Over-constrained volumes</translation>
+    </message>
+    <message>
+        <source>OVER_CONSTRAINED_FACE</source>
+        <translation>Over-constrained faces</translation>
     </message>
     <message>
         <source>BELONG_TO_CYLINDER</source>
@@ -5845,6 +5929,21 @@ It is impossible to read point coordinates from file</translation>
     <message>
         <source>DISTANCE</source>
         <translation>Distance</translation>
+    </message>
+</context>
+<context>
+    <name>SMESHGUI_CopyMeshDlg</name>
+    <message>
+        <source>OBJECT_NAME</source>
+        <translation>Source Object</translation>
+    </message>
+    <message>
+        <source>ELEM_IDS</source>
+        <translation>Source Element IDs</translation>
+    </message>
+    <message>
+        <source>NEW_NAME</source>
+        <translation>New Mesh Name</translation>
     </message>
 </context>
 <context>

@@ -310,12 +310,16 @@ double NumericalFunctor::GetValue( long theId )
  *  \param nbIntervals - number of intervals
  *  \param nbEvents - number of mesh elements having values within i-th interval
  *  \param funValues - boundaries of intervals
+ *  \param elements - elements to check vulue of; empty list means "of all"
+ *  \param minmax - boundaries of diapason of values to divide into intervals
  */
 //================================================================================
 
 void NumericalFunctor::GetHistogram(int                  nbIntervals,
                                     std::vector<int>&    nbEvents,
-                                    std::vector<double>& funValues)
+                                    std::vector<double>& funValues,
+                                    const vector<int>&   elements,
+                                    const double*        minmax)
 {
   if ( nbIntervals < 1 ||
        !myMesh ||
@@ -326,13 +330,30 @@ void NumericalFunctor::GetHistogram(int                  nbIntervals,
 
   // get all values sorted
   std::multiset< double > values;
-  SMDS_ElemIteratorPtr elemIt = myMesh->elementsIterator(GetType());
-  while ( elemIt->more() )
-    values.insert( GetValue( elemIt->next()->GetID() ));
+  if ( elements.empty() )
+  {
+    SMDS_ElemIteratorPtr elemIt = myMesh->elementsIterator(GetType());
+    while ( elemIt->more() )
+      values.insert( GetValue( elemIt->next()->GetID() ));
+  }
+  else
+  {
+    vector<int>::const_iterator id = elements.begin();
+    for ( ; id != elements.end(); ++id )
+      values.insert( GetValue( *id ));
+  }
 
+  if ( minmax )
+  {
+    funValues[0] = minmax[0];
+    funValues[nbIntervals] = minmax[1];
+  }
+  else
+  {
+    funValues[0] = *values.begin();
+    funValues[nbIntervals] = *values.rbegin();
+  }
   // case nbIntervals == 1
-  funValues[0] = *values.begin();
-  funValues[nbIntervals] = *values.rbegin();
   if ( nbIntervals == 1 )
   {
     nbEvents[0] = values.size();
@@ -350,15 +371,21 @@ void NumericalFunctor::GetHistogram(int                  nbIntervals,
   std::multiset< double >::iterator min = values.begin(), max;
   for ( int i = 0; i < nbIntervals; ++i )
   {
+    // find end value of i-th interval
     double r = (i+1) / double( nbIntervals );
     funValues[i+1] = funValues.front() * (1-r) + funValues.back() * r;
+
+    // count values in the i-th interval if there are any
     if ( min != values.end() && *min <= funValues[i+1] )
     {
-      max = values.upper_bound( funValues[i+1] ); // greater than funValues[i+1], or end()
+      // find the first value out of the interval
+      max = values.upper_bound( funValues[i+1] ); // max is greater than funValues[i+1], or end()
       nbEvents[i] = std::distance( min, max );
       min = max;
     }
   }
+  // add values larger than minmax[1]
+  nbEvents.back() += std::distance( min, values.end() );
 }
 
 //=======================================================================
@@ -1902,7 +1929,115 @@ SMDSAbs_ElementType BadOrientedVolume::GetType() const
   return SMDSAbs_Volume;
 }
 
+/*
+  Class       : BareBorderVolume
+*/
 
+bool BareBorderVolume::IsSatisfy(long theElementId )
+{
+  SMDS_VolumeTool  myTool;
+  if ( myTool.Set( myMesh->FindElement(theElementId)))
+  {
+    for ( int iF = 0; iF < myTool.NbFaces(); ++iF )
+      if ( myTool.IsFreeFace( iF ))
+      {
+        const SMDS_MeshNode** n = myTool.GetFaceNodes(iF);
+        vector< const SMDS_MeshNode*> nodes( n, n+myTool.NbFaceNodes(iF));
+        if ( !myMesh->FindElement( nodes, SMDSAbs_Face, /*Nomedium=*/false))
+          return true;
+      }
+  }
+  return false;
+}
+
+/*
+  Class       : BareBorderFace
+*/
+
+bool BareBorderFace::IsSatisfy(long theElementId )
+{
+  if ( const SMDS_MeshElement* face = myMesh->FindElement(theElementId))
+    if ( face->GetType() == SMDSAbs_Face )
+    {
+      int nbN = face->NbCornerNodes();
+      for ( int i = 0; i < nbN; ++i )
+      {
+        // check if a link is shared by another face
+        const SMDS_MeshNode* n1 = face->GetNode( i );
+        const SMDS_MeshNode* n2 = face->GetNode( (i+1)%nbN );
+        SMDS_ElemIteratorPtr fIt = n1->GetInverseElementIterator( SMDSAbs_Face );
+        bool isShared = false;
+        while ( !isShared && fIt->more() )
+        {
+          const SMDS_MeshElement* f = fIt->next();
+          isShared = ( f != face && f->GetNodeIndex(n2) != -1 );
+        }
+        if ( !isShared )
+        {
+          myLinkNodes.resize( 2 + face->IsQuadratic());
+          myLinkNodes[0] = n1;
+          myLinkNodes[1] = n2;
+          if ( face->IsQuadratic() )
+            myLinkNodes[2] = face->GetNode( i+nbN );
+          return !myMesh->FindElement( myLinkNodes, SMDSAbs_Edge, /*noMedium=*/false);
+        }
+      }
+    }
+  return false;
+}
+
+/*
+  Class       : OverConstrainedVolume
+*/
+
+bool OverConstrainedVolume::IsSatisfy(long theElementId )
+{
+  // An element is over-constrained if it has N-1 free borders where
+  // N is the number of edges/faces for a 2D/3D element.
+  SMDS_VolumeTool  myTool;
+  if ( myTool.Set( myMesh->FindElement(theElementId)))
+  {
+    int nbSharedFaces = 0;
+    for ( int iF = 0; iF < myTool.NbFaces(); ++iF )
+      if ( !myTool.IsFreeFace( iF ) && ++nbSharedFaces > 1 )
+        break;
+    return ( nbSharedFaces == 1 );
+  }
+  return false;
+}
+
+/*
+  Class       : OverConstrainedFace
+*/
+
+bool OverConstrainedFace::IsSatisfy(long theElementId )
+{
+  // An element is over-constrained if it has N-1 free borders where
+  // N is the number of edges/faces for a 2D/3D element.
+  if ( const SMDS_MeshElement* face = myMesh->FindElement(theElementId))
+    if ( face->GetType() == SMDSAbs_Face )
+    {
+      int nbSharedBorders = 0;
+      int nbN = face->NbCornerNodes();
+      for ( int i = 0; i < nbN; ++i )
+      {
+        // check if a link is shared by another face
+        const SMDS_MeshNode* n1 = face->GetNode( i );
+        const SMDS_MeshNode* n2 = face->GetNode( (i+1)%nbN );
+        SMDS_ElemIteratorPtr fIt = n1->GetInverseElementIterator( SMDSAbs_Face );
+        bool isShared = false;
+        while ( !isShared && fIt->more() )
+        {
+          const SMDS_MeshElement* f = fIt->next();
+          isShared = ( f != face && f->GetNodeIndex(n2) != -1 );
+        }
+        if ( isShared && ++nbSharedBorders > 1 )
+          break;
+      }
+      return ( nbSharedBorders == 1 );
+    }
+  return false;
+}
 
 /*
   Class       : FreeBorders

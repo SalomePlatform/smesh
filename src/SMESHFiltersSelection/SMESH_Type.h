@@ -25,7 +25,6 @@
 //  Author    : Nicolas REJNERI
 //  Project   : SALOME
 //  Module    : SMESH
-//  $Header$
 //
 #ifndef SMESH_TYPE_HEADER
 #define SMESH_TYPE_HEADER
@@ -57,7 +56,8 @@ enum MeshObjectType {
   GROUP_FACE,
   GROUP_VOLUME,
   GROUP_0D,
-  COMPONENT
+  COMPONENT,
+  IDSOURCE
 };
 
 #endif

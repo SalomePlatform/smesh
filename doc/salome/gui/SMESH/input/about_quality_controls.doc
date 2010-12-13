@@ -32,6 +32,8 @@ Edge quality controls:
 Face quality controls:
 <ul>
 <li>\subpage free_faces_page "Free faces"</li>
+<li>\subpage bare_border_faces_page "Bare border faces"</li>
+<li>\subpage over_constrained_faces_page "Over-constrained faces"</li>
 <li>\subpage length_2d_page "Length 2D"</li>
 <li>\subpage borders_at_multi_connection_2d_page "Borders at multi-connection 2D"</li>
 <li>\subpage area_page "Area"</li>
@@ -48,6 +50,23 @@ Volume quality controls:
 <li>\subpage aspect_ratio_3d_page "Aspect ratio 3D"</li>
 <li>\subpage volume_page "Volume"</li>
 <li>\subpage max_element_length_3d_page "Max element length 3D"</li>
+<li>\subpage bare_border_volumes_page "Bare border volumes"</li>
+<li>\subpage over_constrained_volumes_page "Over-constrained volumes"</li>
 </ul>
+
+To manage the quality controls call pop-up in the VTK viewer and select "Controls" sub-menu
+\image html controls_popup.png
+
+<ul>
+<li> <b>Reset</b> switches off quality controls;</li>
+<li> <b>Node Controls</b> provides access to the node quality controls;</li>
+<li> <b>Edge Controls</b> provides access to the edge quality controls;</li>
+<li> <b>Face Controls</b> provides access to the face quality controls;</li>
+<li> <b>Volume Controls</b> provides access to the volume quality controls;</li>
+<li> <b>Scalar Bar Properties</b> allows setting \subpage scalar_bar_dlg;</li>
+<li> <b>Export Distribution...</b> allows saving the distribution of quality control values in the text file;</li>
+<li> <b>Show Distribution</b> Shows/Hides the distribution histogram of the quality control values in the VTK Viewer.</li>
+</ul>
+
 
 */

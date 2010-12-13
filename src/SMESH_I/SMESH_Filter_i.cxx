@@ -34,6 +34,7 @@
 #include "SMDS_MeshNode.hxx"
 #include "SMDS_MeshElement.hxx"
 #include "SMDS_ElemIterator.hxx"
+#include "SMDS_VolumeTool.hxx"
 
 #include "SMESHDS_Mesh.hxx"
 
@@ -600,7 +601,8 @@ SMESH::Histogram* NumericalFunctor_i::GetHistogram(CORBA::Short nbIntervals)
 {
   std::vector<int> nbEvents;
   std::vector<double> funValues;
-  myNumericalFunctorPtr->GetHistogram(nbIntervals,nbEvents,funValues);
+  std::vector<int> elements;
+  myNumericalFunctorPtr->GetHistogram(nbIntervals,nbEvents,funValues,elements);
 
   nbIntervals = CORBA::Short( std::min( nbEvents.size(), funValues.size() - 1));
   SMESH::Histogram_var histogram = new SMESH::Histogram;
@@ -935,6 +937,66 @@ BadOrientedVolume_i::BadOrientedVolume_i()
 FunctorType BadOrientedVolume_i::GetFunctorType()
 {
   return SMESH::FT_BadOrientedVolume;
+}
+
+/*
+  Class       : BareBorderVolume_i
+  Description : Verify whether a mesh volume has a free facet without a face on it
+*/
+BareBorderVolume_i::BareBorderVolume_i()
+{
+  Controls::PredicatePtr control( new Controls::BareBorderVolume() );
+  myFunctorPtr = myPredicatePtr = control;
+};
+
+FunctorType BareBorderVolume_i::GetFunctorType()
+{
+  return SMESH::FT_BareBorderVolume;
+}
+
+/*
+  Class       : BareBorderFace_i
+  Description : Verify whether a mesh face has a free border without an edge on it
+*/
+BareBorderFace_i::BareBorderFace_i()
+{
+  Controls::PredicatePtr control( new Controls::BareBorderFace() );
+  myFunctorPtr = myPredicatePtr = control;
+};
+
+FunctorType BareBorderFace_i::GetFunctorType()
+{
+  return SMESH::FT_BareBorderFace;
+}
+
+/*
+  Class       : OverConstrainedVolume_i
+  Description : Verify whether a mesh volume has only one facet shared with other volumes
+*/
+OverConstrainedVolume_i::OverConstrainedVolume_i()
+{
+  Controls::PredicatePtr control( new Controls::OverConstrainedVolume() );
+  myFunctorPtr = myPredicatePtr = control;
+};
+
+FunctorType OverConstrainedVolume_i::GetFunctorType()
+{
+  return SMESH::FT_OverConstrainedVolume;
+}
+
+/*
+  Class       : OverConstrainedFace_i
+  Description : Verify whether a mesh face has only one border shared with other faces
+*/
+OverConstrainedFace_i::OverConstrainedFace_i()
+{
+  Controls::PredicatePtr control( new Controls::OverConstrainedFace() );
+  myFunctorPtr = myPredicatePtr = control;
+};
+
+FunctorType OverConstrainedFace_i::GetFunctorType()
+{
+  return SMESH::FT_OverConstrainedFace;
 }
 
 /*
@@ -2036,6 +2098,38 @@ BadOrientedVolume_ptr FilterManager_i::CreateBadOrientedVolume()
   return anObj._retn();
 }
 
+BareBorderVolume_ptr FilterManager_i::CreateBareBorderVolume()
+{
+  SMESH::BareBorderVolume_i* aServant = new SMESH::BareBorderVolume_i();
+  SMESH::BareBorderVolume_var anObj = aServant->_this();
+  TPythonDump()<<aServant<<" = "<<this<<".CreateBareBorderVolume()";
+  return anObj._retn();
+}
+
+BareBorderFace_ptr FilterManager_i::CreateBareBorderFace()
+{
+  SMESH::BareBorderFace_i* aServant = new SMESH::BareBorderFace_i();
+  SMESH::BareBorderFace_var anObj = aServant->_this();
+  TPythonDump()<<aServant<<" = "<<this<<".CreateBareBorderFace()";
+  return anObj._retn();
+}
+
+OverConstrainedVolume_ptr FilterManager_i::CreateOverConstrainedVolume()
+{
+  SMESH::OverConstrainedVolume_i* aServant = new SMESH::OverConstrainedVolume_i();
+  SMESH::OverConstrainedVolume_var anObj = aServant->_this();
+  TPythonDump()<<aServant<<" = "<<this<<".CreateOverConstrainedVolume()";
+  return anObj._retn();
+}
+
+OverConstrainedFace_ptr FilterManager_i::CreateOverConstrainedFace()
+{
+  SMESH::OverConstrainedFace_i* aServant = new SMESH::OverConstrainedFace_i();
+  SMESH::OverConstrainedFace_var anObj = aServant->_this();
+  TPythonDump()<<aServant<<" = "<<this<<".CreateOverConstrainedFace()";
+  return anObj._retn();
+}
+
 LessThan_ptr FilterManager_i::CreateLessThan()
 {
   SMESH::LessThan_i* aServant = new SMESH::LessThan_i();
@@ -2478,6 +2572,62 @@ static inline bool getCriteria( Predicate_i*                thePred,
 
       return true;
     }
+  case FT_BareBorderVolume:
+    {
+      BareBorderVolume_i* aPred = dynamic_cast<BareBorderVolume_i*>( thePred );
+
+      CORBA::ULong i = theCriteria->length();
+      theCriteria->length( i + 1 );
+
+      theCriteria[ i ] = createCriterion();
+
+      theCriteria[ i ].Type          = FT_BareBorderVolume;
+      theCriteria[ i ].TypeOfElement = aPred->GetElementType();
+
+      return true;
+    }
+  case FT_BareBorderFace:
+    {
+      BareBorderFace_i* aPred = dynamic_cast<BareBorderFace_i*>( thePred );
+
+      CORBA::ULong i = theCriteria->length();
+      theCriteria->length( i + 1 );
+
+      theCriteria[ i ] = createCriterion();
+
+      theCriteria[ i ].Type          = FT_BareBorderFace;
+      theCriteria[ i ].TypeOfElement = aPred->GetElementType();
+
+      return true;
+    }
+  case FT_OverConstrainedVolume:
+    {
+      OverConstrainedVolume_i* aPred = dynamic_cast<OverConstrainedVolume_i*>( thePred );
+
+      CORBA::ULong i = theCriteria->length();
+      theCriteria->length( i + 1 );
+
+      theCriteria[ i ] = createCriterion();
+
+      theCriteria[ i ].Type          = FT_OverConstrainedVolume;
+      theCriteria[ i ].TypeOfElement = aPred->GetElementType();
+
+      return true;
+    }
+  case FT_OverConstrainedFace:
+    {
+      OverConstrainedFace_i* aPred = dynamic_cast<OverConstrainedFace_i*>( thePred );
+
+      CORBA::ULong i = theCriteria->length();
+      theCriteria->length( i + 1 );
+
+      theCriteria[ i ] = createCriterion();
+
+      theCriteria[ i ].Type          = FT_OverConstrainedFace;
+      theCriteria[ i ].TypeOfElement = aPred->GetElementType();
+
+      return true;
+    }
   case FT_LessThan:
   case FT_MoreThan:
   case FT_EqualTo:
@@ -2723,6 +2873,26 @@ CORBA::Boolean Filter_i::SetCriteria( const SMESH::Filter::Criteria& theCriteria
           aPredicate = aFilterMgr->CreateBadOrientedVolume();
         }
         break;
+      case SMESH::FT_BareBorderVolume:
+        {
+          aPredicate = aFilterMgr->CreateBareBorderVolume();
+        }
+        break;
+      case SMESH::FT_BareBorderFace:
+        {
+          aPredicate = aFilterMgr->CreateBareBorderFace();
+        }
+        break;
+      case SMESH::FT_OverConstrainedVolume:
+        {
+          aPredicate = aFilterMgr->CreateOverConstrainedVolume();
+        }
+        break;
+      case SMESH::FT_OverConstrainedFace:
+        {
+          aPredicate = aFilterMgr->CreateOverConstrainedFace();
+        }
+        break;
       case SMESH::FT_LinearOrQuadratic:
         {
           SMESH::LinearOrQuadratic_ptr tmpPred = aFilterMgr->CreateLinearOrQuadratic();
@@ -2963,7 +3133,11 @@ static inline LDOMString toString( CORBA::Long theType )
     case FT_BelongToCylinder: return "Belong to Cylinder";
     case FT_BelongToGenSurface: return "Belong to Generic Surface";
     case FT_LyingOnGeom     : return "Lying on Geom";
-    case FT_BadOrientedVolume: return "Bad Oriented Volume";
+    case FT_BadOrientedVolume:return "Bad Oriented Volume";
+    case FT_BareBorderVolume: return "Volumes with bare border";
+    case FT_BareBorderFace  : return "Faces with bare border";
+    case FT_OverConstrainedVolume: return "Over-constrained Volumes";
+    case FT_OverConstrainedFace  : return "Over-constrained Faces";
     case FT_RangeOfIds      : return "Range of IDs";
     case FT_FreeBorders     : return "Free borders";
     case FT_FreeEdges       : return "Free edges";
@@ -3017,6 +3191,10 @@ static inline SMESH::FunctorType toFunctorType( const LDOMString& theStr )
   //  else if ( theStr.equals( "Length2D"                     ) ) return FT_Length2D;
   else if ( theStr.equals( "Range of IDs"                 ) ) return FT_RangeOfIds;
   else if ( theStr.equals( "Bad Oriented Volume"          ) ) return FT_BadOrientedVolume;
+  else if ( theStr.equals( "Volumes with bare border"     ) ) return FT_BareBorderVolume;
+  else if ( theStr.equals( "Faces with bare border"       ) ) return FT_BareBorderFace;
+  else if ( theStr.equals( "Over-constrained Volumes"     ) ) return FT_OverConstrainedVolume;
+  else if ( theStr.equals( "Over-constrained Faces"       ) ) return FT_OverConstrainedFace;
   else if ( theStr.equals( "Less than"                    ) ) return FT_LessThan;
   else if ( theStr.equals( "More than"                    ) ) return FT_MoreThan;
   else if ( theStr.equals( "Equal to"                     ) ) return FT_EqualTo;
