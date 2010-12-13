@@ -2026,7 +2026,23 @@ SMESH_Gen_i::ConcatenateCommon(const SMESH::mesh_array& theMeshesArray,
                 }
               } 
             }//elems loop
-            
+
+            // copy orphan nodes
+            SMDS_NodeIteratorPtr  itNodes = anInitMeshDS->nodesIterator();
+            while ( itNodes->more() )
+            {
+              const SMDS_MeshNode* aNode = itNodes->next();
+              if ( aNode->NbInverseElements() == 0 )
+              {
+                const SMDS_MeshNode* aNewNode =
+                  aNewMeshDS->AddNode(aNode->X(), aNode->Y(), aNode->Z());
+                nodesMap.insert( make_pair(aNode->GetID(), aNewNode->GetID()) );
+                if( theCommonGroups )
+                  anIDsNodes[anNbNodes++] = aNewNode->GetID();
+              }
+            }
+
+
             aListOfGroups = anInitImpl->GetGroups();
             SMESH::SMESH_GroupBase_ptr aGroup;
 
