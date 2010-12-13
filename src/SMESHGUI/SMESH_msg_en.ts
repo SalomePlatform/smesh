@@ -5891,6 +5891,10 @@ It is impossible to read point coordinates from file</translation>
         <source>VALUE</source>
         <translation>Value</translation>
     </message>
+    <message>
+        <source>X_FROM_Y_ITEMS_SHOWN</source>
+        <translation>%1-%2 from %3 items shown</translation>
+    </message>
 </context>
 <context>
     <name>SMESHGUI_MinDistance</name>
