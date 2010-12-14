@@ -3885,6 +3885,8 @@ void SMESH_MeshEditor::makeWalls (TNodeOfNodeListMap &     mapNewNodes,
     const SMDS_MeshElement* elem = itElem->first;
     vector<TNodeOfNodeListMapItr>& vecNewNodes = itElemNodes->second;
 
+    if(itElem->second.size()==0) continue;
+
     if ( elem->GetType() == SMDSAbs_Edge ) {
       // create a ceiling edge
       if (!elem->IsQuadratic()) {
@@ -3908,8 +3910,6 @@ void SMESH_MeshEditor::makeWalls (TNodeOfNodeListMap &     mapNewNodes,
     }
     if ( elem->GetType() != SMDSAbs_Face )
       continue;
-
-    if(itElem->second.size()==0) continue;
 
     bool hasFreeLinks = false;
 
