@@ -879,7 +879,7 @@ void SMDS_UnstructuredGrid::ModifyCellNodes(int vtkVolId, std::map<int, int> loc
  * @param localClonedNodeIds map old node id to new node id.
  * @return vtk id of the new volume.
  */
-int SMDS_UnstructuredGrid::getOrderedNodesOfFace(int vtkVolId, std::vector<int>& orderedNodes)
+int SMDS_UnstructuredGrid::getOrderedNodesOfFace(int vtkVolId, std::vector<vtkIdType>& orderedNodes)
 {
   int vtkType = this->GetCellType(vtkVolId);
   int cellDim = SMDS_Downward::getCellDimension(vtkType);

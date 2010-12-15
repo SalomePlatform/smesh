@@ -1100,7 +1100,7 @@ SMDS_DownTetra::~SMDS_DownTetra()
 {
 }
 
-void SMDS_DownTetra::getOrderedNodesOfFace(int cellId, std::vector<int>& orderedNodes)
+void SMDS_DownTetra::getOrderedNodesOfFace(int cellId, std::vector<vtkIdType>& orderedNodes)
 {
   set<int> setNodes;
   setNodes.clear();
@@ -1207,7 +1207,7 @@ SMDS_DownQuadTetra::~SMDS_DownQuadTetra()
 {
 }
 
-void SMDS_DownQuadTetra::getOrderedNodesOfFace(int cellId, std::vector<int>& orderedNodes)
+void SMDS_DownQuadTetra::getOrderedNodesOfFace(int cellId, std::vector<vtkIdType>& orderedNodes)
 {
   // TODO
 }
@@ -1303,7 +1303,7 @@ SMDS_DownPyramid::~SMDS_DownPyramid()
 {
 }
 
-void SMDS_DownPyramid::getOrderedNodesOfFace(int cellId, std::vector<int>& orderedNodes)
+void SMDS_DownPyramid::getOrderedNodesOfFace(int cellId, std::vector<vtkIdType>& orderedNodes)
 {
   // TODO
 }
@@ -1407,7 +1407,7 @@ SMDS_DownQuadPyramid::~SMDS_DownQuadPyramid()
 {
 }
 
-void SMDS_DownQuadPyramid::getOrderedNodesOfFace(int cellId, std::vector<int>& orderedNodes)
+void SMDS_DownQuadPyramid::getOrderedNodesOfFace(int cellId, std::vector<vtkIdType>& orderedNodes)
 {
   // TODO
 }
@@ -1528,7 +1528,7 @@ SMDS_DownPenta::~SMDS_DownPenta()
 {
 }
 
-void SMDS_DownPenta::getOrderedNodesOfFace(int cellId, std::vector<int>& orderedNodes)
+void SMDS_DownPenta::getOrderedNodesOfFace(int cellId, std::vector<vtkIdType>& orderedNodes)
 {
   // TODO
 }
@@ -1636,7 +1636,7 @@ SMDS_DownQuadPenta::~SMDS_DownQuadPenta()
 {
 }
 
-void SMDS_DownQuadPenta::getOrderedNodesOfFace(int cellId, std::vector<int>& orderedNodes)
+void SMDS_DownQuadPenta::getOrderedNodesOfFace(int cellId, std::vector<vtkIdType>& orderedNodes)
 {
   // TODO
 }
@@ -1764,7 +1764,7 @@ SMDS_DownHexa::~SMDS_DownHexa()
 {
 }
 
-void SMDS_DownHexa::getOrderedNodesOfFace(int cellId, std::vector<int>& orderedNodes)
+void SMDS_DownHexa::getOrderedNodesOfFace(int cellId, std::vector<vtkIdType>& orderedNodes)
 {
   // TODO
 }
@@ -1867,7 +1867,7 @@ SMDS_DownQuadHexa::~SMDS_DownQuadHexa()
 {
 }
 
-void SMDS_DownQuadHexa::getOrderedNodesOfFace(int cellId, std::vector<int>& orderedNodes)
+void SMDS_DownQuadHexa::getOrderedNodesOfFace(int cellId, std::vector<vtkIdType>& orderedNodes)
 {
   // TODO
 }

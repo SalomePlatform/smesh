@@ -1310,7 +1310,7 @@ SMDS_MeshVolume* SMDS_Mesh::AddPolyhedralVolume
   return v;
 }
 
-SMDS_MeshVolume* SMDS_Mesh::AddVolumeFromVtkIds(const std::vector<int>& vtkNodeIds)
+SMDS_MeshVolume* SMDS_Mesh::AddVolumeFromVtkIds(const std::vector<vtkIdType>& vtkNodeIds)
 {
   int ID = myElementIDFactory->GetFreeID();
   SMDS_MeshVolume * v = SMDS_Mesh::AddVolumeFromVtkIdsWithID(vtkNodeIds, ID);
@@ -1318,7 +1318,7 @@ SMDS_MeshVolume* SMDS_Mesh::AddVolumeFromVtkIds(const std::vector<int>& vtkNodeI
   return v;
 }
 
-SMDS_MeshVolume* SMDS_Mesh::AddVolumeFromVtkIdsWithID(const std::vector<int>& vtkNodeIds, const int ID)
+SMDS_MeshVolume* SMDS_Mesh::AddVolumeFromVtkIdsWithID(const std::vector<vtkIdType>& vtkNodeIds, const int ID)
 {
   SMDS_VtkVolume *volvtk = myVolumePool->getNew();
   volvtk->init(vtkNodeIds, this);

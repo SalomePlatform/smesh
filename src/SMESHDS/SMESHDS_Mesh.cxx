@@ -1997,7 +1997,7 @@ bool SMESHDS_Mesh::ModifyCellNodes(int vtkVolId, std::map<int,int> localClonedNo
 bool SMESHDS_Mesh::extrudeVolumeFromFace(int vtkVolId, std::map<int,int>& localClonedNodeIds)
 {
   //MESSAGE("extrudeVolumeFromFace " << vtkVolId);
-  vector<int> orderedNodes;
+  vector<vtkIdType> orderedNodes;
   orderedNodes.clear();
   map<int, int>::const_iterator it = localClonedNodeIds.begin();
   for (; it != localClonedNodeIds.end(); ++it)
