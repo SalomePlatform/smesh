@@ -47,7 +47,7 @@ htm:
 	mkdir -p html doctrees
 	PYTHONPATH=$(SPHINX_PYTHONPATH):${PYTHONPATH}; \
 	LD_LIBRARY_PATH=$(SPHINX_LD_LIBRARY_PATH):${LD_LIBRARY_PATH}; \
-	$(SPHINXBUILD) -c $(builddir) -W -b html $(ALLSPHINXOPTS) html
+	$(SPHINXBUILD) -c $(top_builddir)/doc/docutils -W -b html $(ALLSPHINXOPTS) html
 	@echo
 	@echo "Build finished. The HTML pages are in html."
 
@@ -55,7 +55,7 @@ latex:
 	mkdir -p latex doctrees
 	PYTHONPATH=$(SPHINX_PYTHONPATH):${PYTHONPATH}; \
 	LD_LIBRARY_PATH=$(SPHINX_LD_LIBRARY_PATH):${LD_LIBRARY_PATH}; \
-	$(SPHINXBUILD) -c $(builddir) -W -b latex $(ALLSPHINXOPTS) latex
+	$(SPHINXBUILD) -c $(top_builddir)/doc/docutils -W -b latex $(ALLSPHINXOPTS) latex
 	@echo
 	@echo "Build finished; the LaTeX files are in latex."
 	@echo "Run \`make all-pdf' or \`make all-ps' in that directory to" \
