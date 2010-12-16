@@ -42,14 +42,14 @@ Face quality controls:
 <li>\subpage minimum_angle_page "Minimum angle"</li>
 <li>\subpage warping_page "Warping"</li>
 <li>\subpage skew_page "Skew"</li>
-<li>\subpage max_element_length_2d_page "Max element length 2D"</li>
+<li>\subpage max_element_length_2d_page "Element Diameter 2D"</li>
 </ul>
 
 Volume quality controls:
 <ul>
 <li>\subpage aspect_ratio_3d_page "Aspect ratio 3D"</li>
 <li>\subpage volume_page "Volume"</li>
-<li>\subpage max_element_length_3d_page "Max element length 3D"</li>
+<li>\subpage max_element_length_3d_page "Element Diameter 3D"</li>
 <li>\subpage bare_border_volumes_page "Bare border volumes"</li>
 <li>\subpage over_constrained_volumes_page "Over-constrained volumes"</li>
 </ul>
