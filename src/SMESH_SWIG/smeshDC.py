@@ -570,7 +570,7 @@ class smeshDC(SMESH._objref_SMESH_Gen):
     #  @return SMESH.AxisStruct
     #  @ingroup l1_auxiliary
     def GetAxisStruct(self,theObj):
-        edges = self.geompyD.SubShapeAll( theObj, geompyDC.ShapeType["EDGE"] )
+        edges = self.geompyD.ExtractShapes( theObj, geompyDC.ShapeType["EDGE"] )
         if len(edges) > 1:
             vertex1, vertex2 = self.geompyD.SubShapeAll( edges[0], geompyDC.ShapeType["VERTEX"] )
             vertex3, vertex4 = self.geompyD.SubShapeAll( edges[1], geompyDC.ShapeType["VERTEX"] )
@@ -1353,8 +1353,8 @@ class Mesh:
         shape = geom
         if shape==0:
             shape = self.geom
-        nbSolids = len( self.geompyD.SubShapeAll( shape, geompyDC.ShapeType["SOLID"] ))
-        nbShells = len( self.geompyD.SubShapeAll( shape, geompyDC.ShapeType["SHELL"] ))
+        nbSolids = len( self.geompyD.ExtractShapes( shape, geompyDC.ShapeType["SOLID"] ))
+        nbShells = len( self.geompyD.ExtractShapes( shape, geompyDC.ShapeType["SHELL"] ))
         if nbSolids == 0 or nbSolids == nbShells:
             return Mesh_Prism3D(self,  geom)
         return Mesh_RadialPrism3D(self,  geom)
@@ -4661,7 +4661,7 @@ class Mesh_Segment(Mesh_Algorithm):
         store_geom = self.geom
         if type(vertex) is types.IntType:
             if vertex == 0 or vertex == 1:
-                vertex = self.mesh.geompyD.SubShapeAllSorted(self.geom, geompyDC.ShapeType["VERTEX"])[vertex]
+                vertex = self.mesh.geompyD.ExtractShapes(self.geom, geompyDC.ShapeType["VERTEX"],True)[vertex]
                 self.geom = vertex
                 pass
             pass
