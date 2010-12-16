@@ -1454,9 +1454,15 @@ void SMESHGUI_MeshInfoDlg::idChanged()
     TColStd_MapOfInteger ID;
     QSet<long> ids;
     QStringList idTxt = myID->text().split( " ", QString::SkipEmptyParts );
-    foreach ( QString id, idTxt ) {
-      ID.Add( id.trimmed().toLong() );
-      ids << id.trimmed().toLong();
+    foreach ( QString tid, idTxt ) {
+      long id = tid.trimmed().toLong();
+      const SMDS_MeshElement* e = myMode->checkedId() == ElemMode ? 
+	myActor->GetObject()->GetMesh()->FindElement( id ) :
+	myActor->GetObject()->GetMesh()->FindNode( id );
+      if ( e ) {
+	ID.Add( id );
+	ids << id;
+      }
     }
     selector->AddOrRemoveIndex( IO, ID, false );
     if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow() )
