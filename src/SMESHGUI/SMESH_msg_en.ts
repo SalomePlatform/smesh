@@ -1479,7 +1479,8 @@ add the exported data to its contents?</translation>
     </message>
     <message>
         <source>SMESH_HYP_12</source>
-        <translation>Geometry mismatches algorithm&apos;s expectation\nCheck algorithm documentation for supported geometry</translation>
+        <translation>Geometry mismatches algorithm&apos;s expectation
+Check algorithm documentation for supported geometry</translation>
     </message>
     <message>
         <source>SMESH_HYP_13</source>
@@ -2129,7 +2130,7 @@ add the exported data to its contents?</translation>
     <message>
         <source>SMESH_VERTICAL</source>
         <translation>Vertical</translation>
-    </message>    
+    </message>
     <message>
         <source>SMESH_DISTRIBUTION_COLORING_TYPE</source>
         <translation>Coloring Type</translation>
@@ -2662,7 +2663,7 @@ Please check preferences of Mesh module.
         <source>STB_SAVE_DISTRIBUTION</source>
         <translation>Save distribution to the file</translation>
     </message>
-        <message>
+    <message>
         <source>STB_SHOW_DISTRIBUTION</source>
         <translation>Show Distribution</translation>
     </message>
@@ -3467,7 +3468,7 @@ Input value precision can be adjusted using
     <message>
         <source>SMESH_PLUGINS_OTHER</source>
         <translation>SMESH plugins</translation>
-    </message>  
+    </message>
 </context>
 <context>
     <name>SMESHGUI</name>
@@ -3633,7 +3634,7 @@ Please, create VTK viewer and try again</translation>
         <translation>Mesh information</translation>
     </message>
     <message>
-      <source>PREF_HIGHLIGHT_COLOR</source>
+        <source>PREF_HIGHLIGHT_COLOR</source>
         <translation>Highlight color</translation>
     </message>
     <message>
@@ -5691,7 +5692,7 @@ It is impossible to read point coordinates from file</translation>
     </message>
     <message>
         <source>QUADRANGLES_LAB</source>
-        <translation>Quadrandgles:</translation>
+        <translation>Quadrangles:</translation>
     </message>
     <message>
         <source>POLYGONS_LAB</source>
@@ -5878,10 +5879,6 @@ It is impossible to read point coordinates from file</translation>
     <message>
         <source>NO</source>
         <translation>No</translation>
-    </message>
-    <message>
-        <source>GRAVITY_CENTER</source>
-        <translation>GRAVITY CENTER</translation>
     </message>
     <message>
         <source>PROPERTY</source>
