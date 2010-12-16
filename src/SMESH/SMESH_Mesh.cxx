@@ -105,6 +105,23 @@ SMESH_Mesh::SMESH_Mesh(int               theLocalId,
   _myMeshDS->ShapeToMesh( PseudoShape() );
 }
 
+//================================================================================
+/*!
+ * \brief Constructor of SMESH_Mesh being a base of some descendant class
+ */
+//================================================================================
+
+SMESH_Mesh::SMESH_Mesh():
+  _groupId( 0 ), _nbSubShapes( 0 )
+{
+  _myMeshDS      = 0;
+  _isShapeToMesh = false;
+  _isAutoColor   = false;
+  _isModified    = false;
+  _shapeDiagonal = 0.0;
+  _rmGroupCallUp = 0;
+}
+
 //=============================================================================
 /*!
  * 
