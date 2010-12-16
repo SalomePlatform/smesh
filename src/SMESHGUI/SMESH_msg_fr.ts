@@ -513,7 +513,7 @@
     </message>
     <message>
         <source>MEN_MEASURE</source>
-        <translation>Measurements</translation>
+        <translation>Outils de mesure</translation>
     </message>
     <message>
         <source>MEN_MEASURE_MIN_DIST</source>
