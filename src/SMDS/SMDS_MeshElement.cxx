@@ -35,13 +35,22 @@
 
 using namespace std;
 
-SMDS_MeshElement::SMDS_MeshElement(int ID):myID(ID), myMeshId(-1), myShapeId(0), myIdInShape(-1)
+SMDS_MeshElement::SMDS_MeshElement(int ID)
 {
+  init(ID);
 }
 
-SMDS_MeshElement::SMDS_MeshElement(int id, ShortType meshId, ShortType shapeId):
-  myID(id), myMeshId(meshId), myShapeId(shapeId), myIdInShape(-1)
+SMDS_MeshElement::SMDS_MeshElement(int id, ShortType meshId, ShortType shapeId)
 {
+  init(id, meshId, shapeId);
+}
+
+void SMDS_MeshElement::init(int id, ShortType meshId, ShortType shapeId )
+{
+  myID = id;
+  myMeshId = meshId;
+  myShapeId = shapeId;
+  myIdInShape = -1;
 }
 
 void SMDS_MeshElement::Print(ostream & OS) const

@@ -24,8 +24,8 @@ SMDS_VtkFace::~SMDS_VtkFace()
 
 void SMDS_VtkFace::init(std::vector<vtkIdType> nodeIds, SMDS_Mesh* mesh)
 {
+  SMDS_MeshFace::init();
   vtkUnstructuredGrid* grid = mesh->getGrid();
-  myIdInShape = -1;
   myMeshId = mesh->getMeshId();
   vtkIdType aType = VTK_TRIANGLE;
   switch (nodeIds.size())
@@ -53,8 +53,8 @@ void SMDS_VtkFace::init(std::vector<vtkIdType> nodeIds, SMDS_Mesh* mesh)
 
 void SMDS_VtkFace::initPoly(std::vector<vtkIdType> nodeIds, SMDS_Mesh* mesh)
 {
+  SMDS_MeshFace::init();
   vtkUnstructuredGrid* grid = mesh->getGrid();
-  myIdInShape = -1;
   myMeshId = mesh->getMeshId();
   myVtkID = grid->InsertNextLinkedCell(VTK_POLYGON, nodeIds.size(), &nodeIds[0]);
   mesh->setMyModified();

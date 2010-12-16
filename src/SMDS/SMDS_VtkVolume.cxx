@@ -21,8 +21,8 @@ SMDS_VtkVolume::SMDS_VtkVolume(std::vector<vtkIdType> nodeIds, SMDS_Mesh* mesh)
  */
 void SMDS_VtkVolume::init(std::vector<vtkIdType> nodeIds, SMDS_Mesh* mesh)
 {
+  SMDS_MeshVolume::init();
   vtkUnstructuredGrid* grid = mesh->getGrid();
-  myIdInShape = -1;
   myMeshId = mesh->getMeshId();
   vtkIdType aType = VTK_TETRA;
   switch (nodeIds.size())
@@ -63,6 +63,7 @@ void SMDS_VtkVolume::init(std::vector<vtkIdType> nodeIds, SMDS_Mesh* mesh)
 //#ifdef VTK_HAVE_POLYHEDRON
 void SMDS_VtkVolume::initPoly(std::vector<vtkIdType> nodeIds, std::vector<int> nbNodesPerFace, SMDS_Mesh* mesh)
 {
+  SMDS_MeshVolume::init();
   //MESSAGE("SMDS_VtkVolume::initPoly");
   SMDS_UnstructuredGrid* grid = mesh->getGrid();
   double center[3];
