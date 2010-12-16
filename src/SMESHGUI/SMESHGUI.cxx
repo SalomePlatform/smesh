@@ -5439,7 +5439,15 @@ void SMESHGUI::restoreVisualParameters (int savePoint)
                     aPlaneInfo.PlaneId = aPlaneId;
                     aPlaneInfo.ActorList.push_back( aSmeshActor );
                     aPlaneInfo.ViewManager = vman;
-                    aPlaneInfoList.push_back( aPlaneInfo );
+
+                    // to make the list sorted by plane id
+                    anIter = aPlaneInfoList.begin();
+                    for( ; anIter != aPlaneInfoList.end(); anIter++ ) {
+                      const TPlaneInfo& aPlaneInfoRef = *anIter;
+                      if( aPlaneInfoRef.PlaneId > aPlaneId )
+                        break;
+                    }
+                    aPlaneInfoList.insert( anIter, aPlaneInfo );
                   }
                 }
               }
@@ -5449,6 +5457,52 @@ void SMESHGUI::restoreVisualParameters (int savePoint)
       }
     } // for names/parameters iterator
   } // for entries iterator
+
+  // take into account planes with empty list of actors referred to them
+  QList<SUIT_ViewManager*> aVMList;
+  getApp()->viewManagers(SVTK_Viewer::Type(), aVMList);
+
+  TPlaneDataMap::const_iterator aPlaneDataIter = aPlaneDataMap.begin();
+  for( ; aPlaneDataIter != aPlaneDataMap.end(); aPlaneDataIter++ ) {
+    int aViewId = aPlaneDataIter->first;
+    if( aViewId >= 0 && aViewId < aVMList.count() ) {
+      SUIT_ViewManager* aViewManager = aVMList.at( aViewId );
+
+      const TPlaneDataList& aPlaneDataList = aPlaneDataIter->second;
+
+      TPlaneInfoList& aPlaneInfoList = aPlaneInfoMap[ aViewId ];
+      TPlaneDataList::const_iterator anIter2 = aPlaneDataList.begin();
+      for( ; anIter2 != aPlaneDataList.end(); anIter2++ ) {
+        const TPlaneData& aPlaneData = *anIter2;
+        int aPlaneId = aPlaneData.Id;
+
+        bool anIsFound = false;
+        TPlaneInfoList::const_iterator anIter3 = aPlaneInfoList.begin();
+        for( ; anIter3 != aPlaneInfoList.end(); anIter3++ ) {
+          const TPlaneInfo& aPlaneInfo = *anIter3;
+          if( aPlaneInfo.PlaneId == aPlaneId ) {
+            anIsFound = true;
+            break;
+          }
+        }
+
+        if( !anIsFound ) {
+          TPlaneInfo aPlaneInfo; // ActorList field is empty
+          aPlaneInfo.PlaneId = aPlaneId;
+          aPlaneInfo.ViewManager = aViewManager;
+
+          // to make the list sorted by plane id
+          TPlaneInfoList::iterator anIter4 = aPlaneInfoList.begin();
+          for( ; anIter4 != aPlaneInfoList.end(); anIter4++ ) {
+            const TPlaneInfo& aPlaneInfoRef = *anIter4;
+            if( aPlaneInfoRef.PlaneId > aPlaneId )
+              break;
+          }
+          aPlaneInfoList.insert( anIter4, aPlaneInfo );
+        }
+      }
+    }
+  }
 
   // add clipping planes to actors according to the restored parameters
   // and update the clipping plane map
