@@ -517,7 +517,7 @@
     </message>
     <message>
         <source>MEN_MEASURE_MIN_DIST</source>
-        <translation>Minimum Distance</translation>
+        <translation>Distance minimale</translation>
     </message>
     <message>
         <source>STB_MEASURE_MIN_DIST</source>
@@ -529,7 +529,7 @@
     </message>
     <message>
         <source>MEN_MEASURE_BND_BOX</source>
-        <translation>Bounding Box</translation>
+        <translation>Boîte englobante</translation>
     </message>
     <message>
         <source>STB_MEASURE_BND_BOX</source>
