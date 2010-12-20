@@ -1129,7 +1129,8 @@ void _pyMeshEditor::Process( const Handle(_pyCommand)& theCommand)
       "ConvertToQuadratic","ConvertFromQuadratic","RenumberNodes","RenumberElements",
       "RotationSweep","RotationSweepObject","RotationSweepObject1D","RotationSweepObject2D",
       "ExtrusionSweep","AdvancedExtrusion","ExtrusionSweepObject","ExtrusionSweepObject1D","ExtrusionSweepObject2D",
-      "ExtrusionAlongPath","ExtrusionAlongPathObject","ExtrusionAlongPathObject1D","ExtrusionAlongPathObject2D",
+      "ExtrusionAlongPath","ExtrusionAlongPathObject","ExtrusionAlongPathX",
+      "ExtrusionAlongPathObject1D","ExtrusionAlongPathObject2D",
       "Mirror","MirrorObject","Translate","TranslateObject","Rotate","RotateObject",
       "FindCoincidentNodes",/*"FindCoincidentNodesOnPart",*/"MergeNodes","FindEqualElements",
       "MergeElements","MergeEqualElements","SewFreeBorders","SewConformFreeBorders",
@@ -1175,6 +1176,13 @@ void _pyMeshEditor::Process( const Handle(_pyCommand)& theCommand)
       while(nbArgsToAdd--)
         theCommand->SetArg(theCommand->GetNbArgs()+1,"True");
     }
+  }
+
+  // set "ExtrusionAlongPathX()" instead of "ExtrusionAlongPathObjX()"
+  if ( !isPyMeshMethod && method == "ExtrusionAlongPathObjX")
+  {
+    isPyMeshMethod=true;
+    theCommand->SetMethod("ExtrusionAlongPathX");
   }
 
   // set "FindCoincidentNodesOnPart()" instead of "FindCoincidentNodesOnPartBut()"

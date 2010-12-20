@@ -2685,6 +2685,8 @@ ExtrusionAlongPathObjX(SMESH::SMESH_IDSource_ptr  Object,
                        SMESH::ElementType         ElemType,
                        SMESH::SMESH_MeshEditor::Extrusion_Error& Error)
 {
+  TPythonDump aPythonDump; // it is here to prevent dump of GetGroups()
+
   SMESH::long_array_var anElementsId = Object->GetIDs();
   SMESH::ListOfGroups * aGroups = extrusionAlongPathX(anElementsId,
                                                       Path,
@@ -2698,16 +2700,12 @@ ExtrusionAlongPathObjX(SMESH::SMESH_IDSource_ptr  Object,
                                                       (SMDSAbs_ElementType)ElemType,
                                                       Error);
 
-  if ( !myPreviewMode ) {
+  if (!myPreviewMode) {
     bool isDumpGroups = aGroups && aGroups->length() > 0;
-    TPythonDump aPythonDump;
-    if(isDumpGroups) {
-      aPythonDump << "("<<aGroups;
-    }
-    if(isDumpGroups)
-      aPythonDump << ", error)";
+    if (isDumpGroups)
+      aPythonDump << "(" << *aGroups << ", error)";
     else
-      aPythonDump <<"error";
+      aPythonDump << "error";
 
     aPythonDump << " = " << this << ".ExtrusionAlongPathObjX( "
                 << Object      << ", "
@@ -2745,6 +2743,8 @@ ExtrusionAlongPathX(const SMESH::long_array&   IDsOfElements,
                     SMESH::ElementType         ElemType,
                     SMESH::SMESH_MeshEditor::Extrusion_Error& Error)
 {
+  TPythonDump aPythonDump; // it is here to prevent dump of GetGroups()
+
   SMESH::ListOfGroups * aGroups = extrusionAlongPathX(IDsOfElements,
                                                       Path,
                                                       NodeStart,
@@ -2757,14 +2757,10 @@ ExtrusionAlongPathX(const SMESH::long_array&   IDsOfElements,
                                                       (SMDSAbs_ElementType)ElemType,
                                                       Error);
 
-  if ( !myPreviewMode ) {
+  if (!myPreviewMode) {
     bool isDumpGroups = aGroups && aGroups->length() > 0;
-    TPythonDump aPythonDump;
-    if(isDumpGroups) {
-      aPythonDump << "("<<aGroups;
-    }
-    if(isDumpGroups)
-      aPythonDump << ", error)";
+    if (isDumpGroups)
+      aPythonDump << "(" << *aGroups << ", error)";
     else
       aPythonDump <<"error";
 
@@ -2780,6 +2776,7 @@ ExtrusionAlongPathX(const SMESH::long_array&   IDsOfElements,
                 << ( HasRefPoint ? RefPoint.x : 0 ) << ", "
                 << ( HasRefPoint ? RefPoint.y : 0 ) << ", "
                 << ( HasRefPoint ? RefPoint.z : 0 ) << " ), "
+                << MakeGroups << ", "
                 << ElemType << " )";
   }
   return aGroups;
