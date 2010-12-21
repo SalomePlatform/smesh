@@ -249,7 +249,7 @@ SMDS_ElemIteratorPtr SMDS_VtkFace::interlacedNodesElemIterator() const
 }
 
 //! change only the first node, used for temporary triangles in quadrangle to triangle adaptor
-void SMDS_VtkFace::ChangeApex(const SMDS_MeshNode* node)
+void SMDS_VtkFace::ChangeApex(SMDS_MeshNode* node)
 {
   vtkUnstructuredGrid* grid = SMDS_Mesh::_meshList[myMeshId]->getGrid();
   vtkIdType npts = 0;
@@ -257,6 +257,6 @@ void SMDS_VtkFace::ChangeApex(const SMDS_MeshNode* node)
   grid->GetCellPoints(myVtkID, npts, pts);
   grid->RemoveReferenceToCell(pts[0], myVtkID);
   pts[0] = node->getVtkId();
-  grid->AddReferenceToCell(pts[0], myVtkID);
+  node->AddInverseElement(this),
   SMDS_Mesh::_meshList[myMeshId]->setMyModified();
 }

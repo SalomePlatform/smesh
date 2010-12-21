@@ -40,6 +40,7 @@ public:
   friend class SMESHDS_Mesh;
   friend class SMDS_Mesh;
   friend class ObjectPool<SMDS_MeshNode>;
+  friend class SMDS_VtkFace;
 
   void Print(std::ostream & OS) const;
   double X() const;

@@ -309,9 +309,12 @@ vtkIdType SMDS_MeshNode::GetVtkType() const
 //=======================================================================
 void SMDS_MeshNode::AddInverseElement(const SMDS_MeshElement* ME)
 {
-    const SMDS_MeshCell *cell = dynamic_cast<const SMDS_MeshCell*>(ME);
-    assert(cell);
-    SMDS_Mesh::_meshList[myMeshId]->getGrid()->AddReferenceToCell(myVtkID, cell->getVtkId());
+  const SMDS_MeshCell *cell = dynamic_cast<const SMDS_MeshCell*> (ME);
+  assert(cell);
+  SMDS_UnstructuredGrid* grid = SMDS_Mesh::_meshList[myMeshId]->getGrid();
+  vtkCellLinks *Links = grid->GetCellLinks();
+  Links->ResizeCellList(myVtkID, 1);
+  Links->AddCellReference(cell->getVtkId(), myVtkID);
 }
 
 //=======================================================================
