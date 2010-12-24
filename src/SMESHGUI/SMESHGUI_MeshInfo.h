@@ -32,6 +32,7 @@
 #include <QDialog>
 #include <QList>
 #include <QMap>
+#include <QSet>
 #include <QVector>
 
 #include <SALOMEconfig.h>
@@ -40,6 +41,7 @@
 class QButtonGroup;
 class QLabel;
 class QLineEdit;
+class QPushButton;
 class QTabWidget;
 class QTextBrowser;
 class QTreeWidget;
@@ -121,8 +123,9 @@ public:
   ~SMESHGUI_ElemInfo();
 
   void         setSource( SMESH_Actor* );
-  virtual void showInfo( long, bool );
-  virtual void clear() = 0;
+  void         showInfo( long, bool );
+  void         showInfo( QSet<long>, bool );
+  void         clear();
 
 protected:
   struct XYZ
@@ -137,14 +140,32 @@ protected:
   };
   typedef QMap< int, QList<int> > Connectivity;
 
+  QWidget*     frame() const;
+  SMESH_Actor* actor() const;
+  bool         isElements() const;
+
+  virtual void information( const QList<long>& ) = 0;
+  virtual void clearInternal();
+
   Connectivity nodeConnectivity( const SMDS_MeshNode* );
   QString      formatConnectivity( Connectivity, int );
   XYZ          gravityCenter( const SMDS_MeshElement* );
 
-protected:
-  SMESH_Actor* myActor;
-  long         myID;
-  int          myIsElement;
+private slots:
+  void         showPrevious();
+  void         showNext();
+  void         updateControls();
+
+private:
+  SMESH_Actor*     myActor;
+  QList<long>      myIDs;
+  int              myIsElement;
+  QWidget*         myFrame;
+  QWidget*         myExtra;
+  QLabel*          myCurrent;
+  QPushButton*     myPrev;
+  QPushButton*     myNext;
+  int              myIndex;
 };
 
 class SMESHGUI_EXPORT SMESHGUI_SimpleElemInfo : public SMESHGUI_ElemInfo
@@ -152,8 +173,9 @@ class SMESHGUI_EXPORT SMESHGUI_SimpleElemInfo : public SMESHGUI_ElemInfo
 public:
   SMESHGUI_SimpleElemInfo( QWidget* = 0 );
 
-  void          showInfo( long, bool );
-  void          clear();
+protected:
+  void          information( const QList<long>& );
+  void          clearInternal();
 
 private:
   QTextBrowser* myInfo;
@@ -166,8 +188,9 @@ class SMESHGUI_EXPORT SMESHGUI_TreeElemInfo : public SMESHGUI_ElemInfo
 public:
   SMESHGUI_TreeElemInfo( QWidget* = 0 );
 
-  void             showInfo( long, bool );
-  void             clear();
+protected:
+  void             information( const QList<long>& );
+  void             clearInternal();
 
 private:
   QTreeWidgetItem* createItem( QTreeWidgetItem* = 0, int = 100 );

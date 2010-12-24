@@ -203,6 +203,12 @@ bool SMESH_TypeFilter::isOk (const SUIT_DataOwner* theDataOwner) const
             Ok = true;
           break;
         }
+      case IDSOURCE:
+        {
+          Ok = ( SMESH_TypeFilter(MESHorSUBMESH).isOk( theDataOwner ) ||
+                 SMESH_TypeFilter(GROUP)        .isOk( theDataOwner ));
+          break;
+        }
     }
   }
   return Ok;

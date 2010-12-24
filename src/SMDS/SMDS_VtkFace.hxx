@@ -16,7 +16,7 @@ public:
   void init(std::vector<vtkIdType> nodeIds, SMDS_Mesh* mesh);
   void initPoly(std::vector<vtkIdType> nodeIds, SMDS_Mesh* mesh);
   bool ChangeNodes(const SMDS_MeshNode* nodes[], const int nbNodes);
-  void ChangeApex(const SMDS_MeshNode* node); // to use only for tmp triangles
+  void ChangeApex(SMDS_MeshNode* node); // to use only for tmp triangles
   void Print(std::ostream & OS) const;
   int NbEdges() const;
   int NbFaces() const;

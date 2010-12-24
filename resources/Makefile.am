@@ -107,6 +107,10 @@ dist_salomeres_DATA = \
 	mesh_vertex_n.png \
 	mesh_vertex.png \
 	mesh_volume_3d.png \
+	bare_border_volume.png \
+	bare_border_face.png \
+	over_constrained_volume.png \
+	over_constrained_face.png \
 	mesh_wireframe.png \
 	mesh_points.png \
 	mesh_wrap.png \
@@ -173,6 +177,7 @@ dist_salomeres_DATA = \
 	mesh_tree_hypo_projection_3d.png \
 	mesh_tree_hypo_projection_2d.png \
 	mesh_build_compound.png \
+	copy_mesh.png \
 	mesh_node_to_point.png \
 	mesh_tree_mesh_partial.png \
 	mesh_extractGroup.png \

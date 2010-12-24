@@ -61,12 +61,9 @@ SMDS_MeshNode::SMDS_MeshNode(int id, int meshId, int shapeId, double x, double y
 
 void SMDS_MeshNode::init(int id, int meshId, int shapeId, double x, double y, double z)
 {
+  SMDS_MeshElement::init(id, meshId, shapeId);
   myVtkID = id -1;
   assert(myVtkID >= 0);
-  myID = id;
-  myMeshId = meshId;
-  myShapeId = shapeId;
-  myIdInShape = -1;
   //MESSAGE("Node " << myID << " " << myVtkID << " (" << x << ", " << y << ", " << z << ")");
   SMDS_Mesh* mesh = SMDS_Mesh::_meshList[myMeshId];
   SMDS_UnstructuredGrid * grid = mesh->getGrid();
@@ -312,9 +309,12 @@ vtkIdType SMDS_MeshNode::GetVtkType() const
 //=======================================================================
 void SMDS_MeshNode::AddInverseElement(const SMDS_MeshElement* ME)
 {
-    const SMDS_MeshCell *cell = dynamic_cast<const SMDS_MeshCell*>(ME);
-    assert(cell);
-    SMDS_Mesh::_meshList[myMeshId]->getGrid()->AddReferenceToCell(myVtkID, cell->getVtkId());
+  const SMDS_MeshCell *cell = dynamic_cast<const SMDS_MeshCell*> (ME);
+  assert(cell);
+  SMDS_UnstructuredGrid* grid = SMDS_Mesh::_meshList[myMeshId]->getGrid();
+  vtkCellLinks *Links = grid->GetCellLinks();
+  Links->ResizeCellList(myVtkID, 1);
+  Links->AddCellReference(cell->getVtkId(), myVtkID);
 }
 
 //=======================================================================

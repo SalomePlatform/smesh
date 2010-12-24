@@ -214,7 +214,7 @@ namespace SMESH
       QString IOR = app->orb()->object_to_string( theObject );
       SalomeApp_Study* study = dynamic_cast<SalomeApp_Study*>( app->activeStudy() );
       if ( study && !IOR.isEmpty() )
-	res = study->studyDS()->FindObjectIOR( IOR.toLatin1().constData() );
+        res = study->studyDS()->FindObjectIOR( IOR.toLatin1().constData() );
     }
     return res;
   }

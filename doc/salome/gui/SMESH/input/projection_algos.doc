@@ -17,12 +17,13 @@ The following dialog box will appear:
 \image html projection_1d.png
 
 In this menu you can define the \b Name of the algorithm, the already
-meshed source \b Edge and the \b Mesh (optional, use it if there are several
-different meshes on the same edge). It could also be necessary to
-define the orientation of edges, which is done by indicating the
-<b>Source Vertex</b> being the first point of the Source Edge and the 
-<b>Target Vertex</b> being the first point of the created \b Edge. For
-a group of edges, <b>Source</b> and <b>Target</b> vertices should be
+meshed source \b Edge and the \b Mesh  (It can be omitted only when 
+projecting a submesh on another one from the same global Mesh). 
+It could also be necessary to define the orientation of edges, 
+which is done by indicating the <b>Source Vertex</b> being the first point 
+of the Source Edge and the <b>Target Vertex</b> being the first point of 
+the created \b Edge. 
+For a group of edges, <b>Source</b> and <b>Target</b> vertices should be
 shared by only one edge of the group. If <b>Source</b> and
 <b>Target</b> vertices are specified, the elements of the group must be ajacent.
 
@@ -42,17 +43,17 @@ following dialog box will appear:
 \image html projection_2d.png
 
 In this menu you can define the \b Name of the algorithm, the already
-meshed source \b Face and the \b Mesh (optional, use it if there are several
-different meshes on the same face). It could also be necessary to
-define the orientation of mesh on the face, which is done by
-indicating two <b>Source Vertices</b>, which belong to the same edge of the
-source face, and two <b>Target Vertices</b>, which belong to the same edge of
-the created \b Face.
+meshed source \b Face and the \b Mesh (It can be omitted only when 
+projecting a submesh on another one from the same global Mesh). 
+It could also be necessary to define the orientation of mesh on the face
+, which is done by indicating two <b>Source Vertices</b>, which belong 
+to the same edge of the source face, and two <b>Target Vertices</b>, which 
+belong to the same edge of the created \b Face.
 
 \n <b>Projection 3D</b> algorithm allows to define the mesh of a shape by
 the projection of another already meshed shape.  This algorithm works
-only if all faces and edges of the target face have been meshed as 1D
-Projections of the faces and edges of the source face. Another
+only if all faces and edges of the target shape have been meshed as 1D-2D
+Projections of the faces and edges of the source shape. Another
 limitation is that this algorithm currently works only on boxes.
 
 To apply this algorithm select the solid to be meshed (indicated in
@@ -63,9 +64,9 @@ following dialog box will appear:
 \image html projection_3d.png
 
 In this menu you can define the \b Name of the algorithm, the already
-meshed source <b>3D shape</b> and the \b Mesh (optional, use it if there are
-several different meshes on the same shape). It could also be
-necessary to define the orientation of mesh on the shape, which is
+meshed source <b>3D shape</b> and the \b Mesh (It can be omitted only when 
+projecting a submesh on another one from the same global Mesh). 
+It could also be necessary to define the orientation of mesh on the shape, which is
 done by indicating two <b>Source Vertices</b>, which belong to the same edge
 of the source <b>3D Shape</b>, and two <b>Target Vertices</b>, which belong to the
 same edge of the source <b>3D Shape</b>.

@@ -91,9 +91,10 @@
 
 #include "SMDS_EdgePosition.hxx"
 #include "SMDS_FacePosition.hxx"
-#include "SMDS_VertexPosition.hxx"
-#include "SMDS_SpacePosition.hxx"
 #include "SMDS_PolyhedralVolumeOfNodes.hxx"
+#include "SMDS_SetIterator.hxx"
+#include "SMDS_SpacePosition.hxx"
+#include "SMDS_VertexPosition.hxx"
 
 #include CORBA_SERVER_HEADER(SMESH_Group)
 #include CORBA_SERVER_HEADER(SMESH_Filter)
@@ -901,7 +902,7 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CreateMeshesFromUNV( const char* theFileName 
   aServant->ImportUNVFile( theFileName );
 
   // Dump creation of groups
-  aServant->GetGroups();
+  SMESH::ListOfGroups_var groups = aServant->GetGroups();
 
   aServant->GetImpl().GetMeshDS()->Modified();
   return aMesh._retn();
@@ -982,7 +983,7 @@ SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromMED( const char* theFileName,
   }
   // Dump creation of groups
   for ( int i = 0; i < aResult->length(); ++i )
-    aResult[ i ]->GetGroups();
+    SMESH::ListOfGroups_var groups = aResult[ i ]->GetGroups();
 
   return aResult._retn();
 }
@@ -2025,7 +2026,23 @@ SMESH_Gen_i::ConcatenateCommon(const SMESH::mesh_array& theMeshesArray,
                 }
               } 
             }//elems loop
-            
+
+            // copy orphan nodes
+            SMDS_NodeIteratorPtr  itNodes = anInitMeshDS->nodesIterator();
+            while ( itNodes->more() )
+            {
+              const SMDS_MeshNode* aNode = itNodes->next();
+              if ( aNode->NbInverseElements() == 0 )
+              {
+                const SMDS_MeshNode* aNewNode =
+                  aNewMeshDS->AddNode(aNode->X(), aNode->Y(), aNode->Z());
+                nodesMap.insert( make_pair(aNode->GetID(), aNewNode->GetID()) );
+                if( theCommonGroups )
+                  anIDsNodes[anNbNodes++] = aNewNode->GetID();
+              }
+            }
+
+
             aListOfGroups = anInitImpl->GetGroups();
             SMESH::SMESH_GroupBase_ptr aGroup;
 
@@ -2209,6 +2226,212 @@ SMESH_Gen_i::ConcatenateCommon(const SMESH::mesh_array& theMeshesArray,
   if (aNewMeshDS)
     aNewMeshDS->Modified();
   return aNewMesh._retn();
+}
+
+//================================================================================
+/*!
+ * \brief Create a mesh by copying a part of another mesh
+ *  \param meshPart - a part of mesh to copy
+ *  \param toCopyGroups - to create in the new mesh groups
+ *                        the copied elements belongs to
+ *  \param toKeepIDs - to preserve IDs of the copied elements or not
+ *  \retval SMESH::SMESH_Mesh_ptr - the new mesh
+ */
+//================================================================================
+
+SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CopyMesh(SMESH::SMESH_IDSource_ptr meshPart,
+                                            const char*               meshName,
+                                            CORBA::Boolean            toCopyGroups,
+                                            CORBA::Boolean            toKeepIDs)
+{
+  Unexpect aCatch(SALOME_SalomeException);
+
+  TPythonDump* pyDump = new TPythonDump; // prevent dump from CreateMesh()
+
+  // 1. Get source mesh
+
+  if ( CORBA::is_nil( meshPart ))
+    THROW_SALOME_CORBA_EXCEPTION( "bad IDSource", SALOME::BAD_PARAM );
+
+  SMESH::SMESH_Mesh_var srcMesh = meshPart->GetMesh();
+  SMESH_Mesh_i*       srcMesh_i = SMESH::DownCast<SMESH_Mesh_i*>( srcMesh );
+  if ( !srcMesh_i )
+    THROW_SALOME_CORBA_EXCEPTION( "bad mesh of IDSource", SALOME::BAD_PARAM );
+  
+  SMESHDS_Mesh* srcMeshDS = srcMesh_i->GetImpl().GetMeshDS();
+
+  // 2. Make a new mesh
+
+  SMESH::SMESH_Mesh_var newMesh = CreateMesh(GEOM::GEOM_Object::_nil());
+  SMESH_Mesh_i*       newMesh_i = SMESH::DownCast<SMESH_Mesh_i*>( newMesh );
+  if ( !newMesh_i )
+    THROW_SALOME_CORBA_EXCEPTION( "can't create a mesh", SALOME::INTERNAL_ERROR );
+  SALOMEDS::SObject_var meshSO = ObjectToSObject(myCurrentStudy, newMesh );
+  if ( !meshSO->_is_nil() )
+  {
+    SetName( meshSO, meshName, "Mesh" );
+    SetPixMap( meshSO, "ICON_SMESH_TREE_MESH_IMPORTED");
+  }
+  SMESHDS_Mesh* newMeshDS = newMesh_i->GetImpl().GetMeshDS();
+  ::SMESH_MeshEditor editor( &newMesh_i->GetImpl() );
+
+  // 3. Get elements to copy
+
+  SMDS_ElemIteratorPtr srcElemIt;
+  TIDSortedElemSet srcElems;
+  SMESH::array_of_ElementType_var srcElemTypes = meshPart->GetTypes();
+  if ( SMESH::DownCast<SMESH_Mesh_i*>( meshPart ))
+  {
+    srcElemIt = srcMeshDS->elementsIterator();
+  }
+  else
+  {
+    SMESH::long_array_var ids = meshPart->GetIDs();
+    if ( srcElemTypes->length() == 1 && srcElemTypes[0] == SMESH::NODE ) // group of nodes
+    {
+      for (int i=0; i < ids->length(); i++)
+        if ( const SMDS_MeshElement * elem = srcMeshDS->FindNode( ids[i] ))
+          srcElems.insert( elem );
+    }
+    else
+    {
+      for (int i=0; i < ids->length(); i++)
+        if ( const SMDS_MeshElement * elem = srcMeshDS->FindElement( ids[i] ))
+          srcElems.insert( elem );
+    }
+    if ( srcElems.empty() )
+      return newMesh._retn();
+
+    typedef SMDS_SetIterator< SMDS_pElement, TIDSortedElemSet::const_iterator > ElIter;
+    srcElemIt = SMDS_ElemIteratorPtr( new ElIter( srcElems.begin(), srcElems.end() ));
+  }
+
+  // 4. Copy elements
+
+  typedef map<SMDS_pElement, SMDS_pElement, TIDCompare> TE2EMap;
+  TE2EMap e2eMapByType[ SMDSAbs_NbElementTypes ];
+  TE2EMap& n2nMap = e2eMapByType[ SMDSAbs_Node ];
+  int iN;
+  const SMDS_MeshNode *nSrc, *nTgt;
+  vector< const SMDS_MeshNode* > nodes;
+  while ( srcElemIt->more() )
+  {
+    const SMDS_MeshElement * elem = srcElemIt->next();
+    nodes.resize( elem->NbNodes());
+    SMDS_ElemIteratorPtr nIt = elem->nodesIterator();
+    if ( toKeepIDs ) {
+      for ( iN = 0; nIt->more(); ++iN )
+      {
+        nSrc = static_cast<const SMDS_MeshNode*>( nIt->next() );
+        nTgt = newMeshDS->FindNode( nSrc->GetID());
+        if ( !nTgt )
+          nTgt = newMeshDS->AddNodeWithID( nSrc->X(), nSrc->Y(), nSrc->Z(), nSrc->GetID());
+        nodes[ iN ] = nTgt;
+      }
+    }
+    else {
+      for ( iN = 0; nIt->more(); ++iN )
+      {
+        nSrc = static_cast<const SMDS_MeshNode*>( nIt->next() );
+        TE2EMap::iterator n2n = n2nMap.insert( make_pair( nSrc, SMDS_pNode(0) )).first;
+        if ( !n2n->second )
+          n2n->second = newMeshDS->AddNode( nSrc->X(), nSrc->Y(), nSrc->Z() );
+        nodes[ iN ] = (const SMDS_MeshNode*) n2n->second;
+      }
+    }
+    if ( elem->GetType() != SMDSAbs_Node )
+    {
+      int ID = toKeepIDs ? elem->GetID() : 0;
+      const SMDS_MeshElement * newElem = editor.AddElement( nodes,
+                                                            elem->GetType(),
+                                                            elem->IsPoly(),
+                                                            ID);
+      if ( toCopyGroups && !toKeepIDs )
+        e2eMapByType[ elem->GetType() ].insert( make_pair( elem, newElem ));
+    }
+  }
+
+  // 5. Copy groups
+
+  int nbNewGroups = 0;
+  if ( toCopyGroups )
+  {
+    SMESH_Mesh::GroupIteratorPtr gIt = srcMesh_i->GetImpl().GetGroups();
+    while ( gIt->more() )
+    {
+      SMESH_Group* group = gIt->next();
+      const SMESHDS_GroupBase* groupDS = group->GetGroupDS();
+
+      // Check group type. We copy nodal groups containing nodes of copied element
+      SMDSAbs_ElementType groupType = groupDS->GetType();
+      if ( groupType != SMDSAbs_Node &&
+           newMeshDS->GetMeshInfo().NbElements( groupType ) == 0 )
+        continue; // group type differs from types of meshPart
+
+      // Find copied elements in the group
+      vector< const SMDS_MeshElement* > groupElems;
+      SMDS_ElemIteratorPtr eIt = groupDS->GetElements();
+      if ( toKeepIDs )
+      {
+        const SMDS_MeshElement* foundElem;
+        if ( groupType == SMDSAbs_Node )
+        {
+          while ( eIt->more() )
+            if (( foundElem = newMeshDS->FindNode( eIt->next()->GetID() )))
+              groupElems.push_back( foundElem );
+        }
+        else
+        {
+          while ( eIt->more() )
+            if (( foundElem = newMeshDS->FindElement( eIt->next()->GetID() )))
+              groupElems.push_back( foundElem );
+        }
+      }
+      else
+      {
+        TE2EMap & e2eMap = e2eMapByType[ groupDS->GetType() ];
+        if ( e2eMap.empty() ) continue;
+        int minID = e2eMap.begin()->first->GetID();
+        int maxID = e2eMap.rbegin()->first->GetID();
+        TE2EMap::iterator e2e;
+        while ( eIt->more() && groupElems.size() < e2eMap.size())
+        {
+          const SMDS_MeshElement* e = eIt->next();
+          if ( e->GetID() < minID || e->GetID() > maxID ) continue;
+          if ((e2e = e2eMap.find( e )) != e2eMap.end())
+            groupElems.push_back( e2e->second );
+        }
+      }
+      // Make a new group
+      if ( !groupElems.empty() )
+      {
+        SMESH::SMESH_Group_var newGroupObj =
+          newMesh->CreateGroup( SMESH::ElementType(groupType), group->GetName() );
+        if ( SMESH_GroupBase_i* newGroup_i = SMESH::DownCast<SMESH_GroupBase_i*>( newGroupObj))
+        {
+          SMESHDS_GroupBase * newGroupDS = newGroup_i->GetGroupDS();
+          SMDS_MeshGroup& smdsGroup = ((SMESHDS_Group*)newGroupDS)->SMDSGroup();
+          for ( unsigned i = 0; i < groupElems.size(); ++i )
+            smdsGroup.Add( groupElems[i] );
+
+          nbNewGroups++;
+        }
+      }
+    }
+  }
+
+  *pyDump << newMesh << " = " << this
+          << ".CopyMesh( " << meshPart << ", "
+          << "'" << meshName << "', "
+          << toCopyGroups << ", "
+          << toKeepIDs << ")";
+
+  delete pyDump; pyDump = 0; // allow dump in GetGroups()
+
+  if ( nbNewGroups > 0 ) // dump created groups
+    SMESH::ListOfGroups_var groups = newMesh->GetGroups();
+
+  return newMesh._retn();
 }
 
 //================================================================================

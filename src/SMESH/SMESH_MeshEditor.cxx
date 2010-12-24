@@ -132,114 +132,125 @@ SMESH_MeshEditor::AddElement(const vector<const SMDS_MeshNode*> & node,
   int nbnode = node.size();
   SMESHDS_Mesh* mesh = GetMeshDS();
   switch ( type ) {
-  case SMDSAbs_0DElement:
-    if ( nbnode == 1 ) {
-      if ( ID >= 0 ) e = mesh->Add0DElementWithID(node[0], ID);
-      else      e = mesh->Add0DElement      (node[0] );
-    }
-    break;
-  case SMDSAbs_Edge:
-    if ( nbnode == 2 ) {
-      if ( ID >= 0 ) e = mesh->AddEdgeWithID(node[0], node[1], ID);
-      else      e = mesh->AddEdge      (node[0], node[1] );
-    }
-    else if ( nbnode == 3 ) {
-      if ( ID >= 0 ) e = mesh->AddEdgeWithID(node[0], node[1], node[2], ID);
-      else      e = mesh->AddEdge      (node[0], node[1], node[2] );
-    }
-    break;
   case SMDSAbs_Face:
     if ( !isPoly ) {
       if      (nbnode == 3) {
         if ( ID >= 0 ) e = mesh->AddFaceWithID(node[0], node[1], node[2], ID);
-        else      e = mesh->AddFace      (node[0], node[1], node[2] );
+        else           e = mesh->AddFace      (node[0], node[1], node[2] );
       }
       else if (nbnode == 4) {
         if ( ID >= 0 ) e = mesh->AddFaceWithID(node[0], node[1], node[2], node[3], ID);
-        else      e = mesh->AddFace      (node[0], node[1], node[2], node[3] );
+        else           e = mesh->AddFace      (node[0], node[1], node[2], node[3] );
       }
       else if (nbnode == 6) {
         if ( ID >= 0 ) e = mesh->AddFaceWithID(node[0], node[1], node[2], node[3],
-                                          node[4], node[5], ID);
-        else      e = mesh->AddFace      (node[0], node[1], node[2], node[3],
-                                          node[4], node[5] );
+					       node[4], node[5], ID);
+        else           e = mesh->AddFace      (node[0], node[1], node[2], node[3],
+					       node[4], node[5] );
       }
       else if (nbnode == 8) {
         if ( ID >= 0 ) e = mesh->AddFaceWithID(node[0], node[1], node[2], node[3],
-                                          node[4], node[5], node[6], node[7], ID);
-        else      e = mesh->AddFace      (node[0], node[1], node[2], node[3],
-                                          node[4], node[5], node[6], node[7] );
+					       node[4], node[5], node[6], node[7], ID);
+        else           e = mesh->AddFace      (node[0], node[1], node[2], node[3],
+					       node[4], node[5], node[6], node[7] );
       }
     } else {
       if ( ID >= 0 ) e = mesh->AddPolygonalFaceWithID(node, ID);
-      else      e = mesh->AddPolygonalFace      (node    );
+      else           e = mesh->AddPolygonalFace      (node    );
     }
     break;
+
   case SMDSAbs_Volume:
     if ( !isPoly ) {
       if      (nbnode == 4) {
         if ( ID >= 0 ) e = mesh->AddVolumeWithID(node[0], node[1], node[2], node[3], ID);
-        else      e = mesh->AddVolume      (node[0], node[1], node[2], node[3] );
+        else           e = mesh->AddVolume      (node[0], node[1], node[2], node[3] );
       }
       else if (nbnode == 5) {
         if ( ID >= 0 ) e = mesh->AddVolumeWithID(node[0], node[1], node[2], node[3],
-                                            node[4], ID);
-        else      e = mesh->AddVolume      (node[0], node[1], node[2], node[3],
-                                            node[4] );
+						 node[4], ID);
+        else           e = mesh->AddVolume      (node[0], node[1], node[2], node[3],
+						 node[4] );
       }
       else if (nbnode == 6) {
         if ( ID >= 0 ) e = mesh->AddVolumeWithID(node[0], node[1], node[2], node[3],
-                                            node[4], node[5], ID);
-        else      e = mesh->AddVolume      (node[0], node[1], node[2], node[3],
-                                            node[4], node[5] );
+						 node[4], node[5], ID);
+        else           e = mesh->AddVolume      (node[0], node[1], node[2], node[3],
+						 node[4], node[5] );
       }
       else if (nbnode == 8) {
         if ( ID >= 0 ) e = mesh->AddVolumeWithID(node[0], node[1], node[2], node[3],
-                                            node[4], node[5], node[6], node[7], ID);
-        else      e = mesh->AddVolume      (node[0], node[1], node[2], node[3],
-                                            node[4], node[5], node[6], node[7] );
+						 node[4], node[5], node[6], node[7], ID);
+        else           e = mesh->AddVolume      (node[0], node[1], node[2], node[3],
+						 node[4], node[5], node[6], node[7] );
       }
       else if (nbnode == 10) {
         if ( ID >= 0 ) e = mesh->AddVolumeWithID(node[0], node[1], node[2], node[3],
-                                            node[4], node[5], node[6], node[7],
-                                            node[8], node[9], ID);
-        else      e = mesh->AddVolume      (node[0], node[1], node[2], node[3],
-                                            node[4], node[5], node[6], node[7],
-                                            node[8], node[9] );
+						 node[4], node[5], node[6], node[7],
+						 node[8], node[9], ID);
+        else           e = mesh->AddVolume      (node[0], node[1], node[2], node[3],
+						 node[4], node[5], node[6], node[7],
+						 node[8], node[9] );
       }
       else if (nbnode == 13) {
         if ( ID >= 0 ) e = mesh->AddVolumeWithID(node[0], node[1], node[2], node[3],
-                                            node[4], node[5], node[6], node[7],
-                                            node[8], node[9], node[10],node[11],
-                                            node[12],ID);
-        else      e = mesh->AddVolume      (node[0], node[1], node[2], node[3],
-                                            node[4], node[5], node[6], node[7],
-                                            node[8], node[9], node[10],node[11],
-                                            node[12] );
+						 node[4], node[5], node[6], node[7],
+						 node[8], node[9], node[10],node[11],
+						 node[12],ID);
+        else           e = mesh->AddVolume      (node[0], node[1], node[2], node[3],
+						 node[4], node[5], node[6], node[7],
+						 node[8], node[9], node[10],node[11],
+						 node[12] );
       }
       else if (nbnode == 15) {
         if ( ID >= 0 ) e = mesh->AddVolumeWithID(node[0], node[1], node[2], node[3],
-                                            node[4], node[5], node[6], node[7],
-                                            node[8], node[9], node[10],node[11],
-                                            node[12],node[13],node[14],ID);
-        else      e = mesh->AddVolume      (node[0], node[1], node[2], node[3],
-                                            node[4], node[5], node[6], node[7],
-                                            node[8], node[9], node[10],node[11],
-                                            node[12],node[13],node[14] );
+						 node[4], node[5], node[6], node[7],
+						 node[8], node[9], node[10],node[11],
+						 node[12],node[13],node[14],ID);
+        else           e = mesh->AddVolume      (node[0], node[1], node[2], node[3],
+						 node[4], node[5], node[6], node[7],
+						 node[8], node[9], node[10],node[11],
+						 node[12],node[13],node[14] );
       }
       else if (nbnode == 20) {
         if ( ID >= 0 ) e = mesh->AddVolumeWithID(node[0], node[1], node[2], node[3],
-                                            node[4], node[5], node[6], node[7],
-                                            node[8], node[9], node[10],node[11],
-                                            node[12],node[13],node[14],node[15],
-                                            node[16],node[17],node[18],node[19],ID);
-        else      e = mesh->AddVolume      (node[0], node[1], node[2], node[3],
-                                            node[4], node[5], node[6], node[7],
-                                            node[8], node[9], node[10],node[11],
-                                            node[12],node[13],node[14],node[15],
-                                            node[16],node[17],node[18],node[19] );
+						 node[4], node[5], node[6], node[7],
+						 node[8], node[9], node[10],node[11],
+						 node[12],node[13],node[14],node[15],
+						 node[16],node[17],node[18],node[19],ID);
+        else           e = mesh->AddVolume      (node[0], node[1], node[2], node[3],
+						 node[4], node[5], node[6], node[7],
+						 node[8], node[9], node[10],node[11],
+						 node[12],node[13],node[14],node[15],
+						 node[16],node[17],node[18],node[19] );
       }
     }
+    break;
+
+  case SMDSAbs_Edge:
+    if ( nbnode == 2 ) {
+      if ( ID >= 0 ) e = mesh->AddEdgeWithID(node[0], node[1], ID);
+      else           e = mesh->AddEdge      (node[0], node[1] );
+    }
+    else if ( nbnode == 3 ) {
+      if ( ID >= 0 ) e = mesh->AddEdgeWithID(node[0], node[1], node[2], ID);
+      else           e = mesh->AddEdge      (node[0], node[1], node[2] );
+    }
+    break;
+
+  case SMDSAbs_0DElement:
+    if ( nbnode == 1 ) {
+      if ( ID >= 0 ) e = mesh->Add0DElementWithID(node[0], ID);
+      else           e = mesh->Add0DElement      (node[0] );
+    }
+    break;
+
+  case SMDSAbs_Node:
+    if ( ID >= 0 ) e = mesh->AddNodeWithID(node[0]->X(), node[0]->Y(), node[0]->Z(), ID);
+    else           e = mesh->AddNode      (node[0]->X(), node[0]->Y(), node[0]->Z());
+    break;
+
+  default:;
   }
   if ( e ) myLastCreatedElems.Append( e );
   return e;
@@ -3874,6 +3885,8 @@ void SMESH_MeshEditor::makeWalls (TNodeOfNodeListMap &     mapNewNodes,
     const SMDS_MeshElement* elem = itElem->first;
     vector<TNodeOfNodeListMapItr>& vecNewNodes = itElemNodes->second;
 
+    if(itElem->second.size()==0) continue;
+
     if ( elem->GetType() == SMDSAbs_Edge ) {
       // create a ceiling edge
       if (!elem->IsQuadratic()) {
@@ -3897,8 +3910,6 @@ void SMESH_MeshEditor::makeWalls (TNodeOfNodeListMap &     mapNewNodes,
     }
     if ( elem->GetType() != SMDSAbs_Face )
       continue;
-
-    if(itElem->second.size()==0) continue;
 
     bool hasFreeLinks = false;
 

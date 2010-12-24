@@ -196,6 +196,7 @@ class SMESH_ActorDef : public SMESH_Actor
   virtual long GetControlsPrecision() const { return myControlsPrecision; }
 
   virtual void UpdateScalarBar();
+  virtual void UpdateDistribution();
 
 
   virtual void SetQuadratic2DRepresentation(EQuadratic2DRepresentation);
@@ -234,6 +235,7 @@ class SMESH_ActorDef : public SMESH_Actor
   SMESH_DeviceActor* my2DActor;
   SMESH_DeviceActor* my2DExtActor;
   SMESH_DeviceActor* my3DActor;
+  SMESH_DeviceActor* my3DExtActor;
   SMESH_DeviceActor* myControlActor;
 
   vtkProperty* myNodeExtProp;

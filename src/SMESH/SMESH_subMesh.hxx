@@ -193,6 +193,7 @@ public:
   void DumpAlgoState(bool isMain);
 
   bool ComputeStateEngine(int event);
+  void ComputeSubMeshStateEngine(int event);
 
   bool Evaluate(MapShapeNbElems& aResMap);
 
@@ -250,7 +251,6 @@ protected:
   void RemoveSubMeshElementsAndNodes();
   void UpdateDependantsState(const compute_event theEvent);
   void UpdateSubMeshState(const compute_state theState);
-  void ComputeSubMeshStateEngine(int event);
   void CleanDependants();
   void CleanDependsOn();
   void SetAlgoState(int state);

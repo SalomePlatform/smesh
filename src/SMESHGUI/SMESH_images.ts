@@ -54,6 +54,10 @@
             <translation>mesh_build_compound.png</translation>
         </message>
         <message>
+            <source>ICON_COPY_MESH</source>
+            <translation>copy_mesh.png</translation>
+        </message>
+        <message>
             <source>ICON_COMPUTE</source>
             <translation>mesh_compute.png</translation>
         </message>
@@ -108,6 +112,10 @@
         <message>
             <source>ICON_DLG_BUILD_COMPOUND_MESH</source>
             <translation>mesh_build_compound.png</translation>
+        </message>
+        <message>
+            <source>ICON_DLG_COPY_MESH</source>
+            <translation>copy_mesh.png</translation>
         </message>
         <message>
             <source>ICON_DLG_ELEM0D</source>
@@ -456,6 +464,22 @@
         <message>
             <source>ICON_VOLUME_3D</source>
             <translation>mesh_volume_3d.png</translation>
+        </message>
+        <message>
+            <source>ICON_BARE_BORDER_VOLUME</source>
+            <translation>bare_border_volume.png</translation>
+        </message>
+        <message>
+            <source>ICON_BARE_BORDER_FACE</source>
+            <translation>bare_border_face.png</translation>
+        </message>
+        <message>
+            <source>ICON_OVER_CONSTRAINED_VOLUME</source>
+            <translation>over_constrained_volume.png</translation>
+        </message>
+        <message>
+            <source>ICON_OVER_CONSTRAINED_FACE</source>
+            <translation>over_constrained_face.png</translation>
         </message>
         <message>
             <source>ICON_WARP</source>

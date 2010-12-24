@@ -76,6 +76,7 @@
 #include "SMESHGUI_TransparencyDlg.h"
 //#include "SMESHGUI_WhatIsDlg.h"
 #include "SMESHGUI_DuplicateNodesDlg.h"
+#include "SMESHGUI_CopyMeshDlg.h"
 
 #include "SMESHGUI_Utils.h"
 #include "SMESHGUI_MeshUtils.h"
@@ -141,6 +142,7 @@
 #include <vtkRenderer.h>
 #include <vtkPlane.h>
 #include <vtkCallbackCommand.h>
+#include <vtkLookupTable.h>
 
 // SALOME KERNEL includes
 #include <SALOMEDS_Study.hxx>
@@ -759,6 +761,14 @@
       type = QObject::tr( "FREE_BORDERS" );
     else if ( dynamic_cast< SMESH::Controls::FreeFaces* >( f.get() ) )
       type = QObject::tr( "FREE_FACES" );
+    else if ( dynamic_cast< SMESH::Controls::BareBorderVolume* >( f.get() ) )
+      type = QObject::tr( "BARE_BORDER_VOLUME" );
+    else if ( dynamic_cast< SMESH::Controls::BareBorderFace* >( f.get() ) )
+      type = QObject::tr( "BARE_BORDER_FACE" );
+    else if ( dynamic_cast< SMESH::Controls::OverConstrainedVolume* >( f.get() ) )
+      type = QObject::tr( "OVER_CONSTRAINED_VOLUME" );
+    else if ( dynamic_cast< SMESH::Controls::OverConstrainedFace* >( f.get() ) )
+      type = QObject::tr( "OVER_CONSTRAINED_FACE" );
     return type;
   }
 
@@ -779,10 +789,26 @@
           if ( aScalarBarActor && aFunctor ) {
             SMESH::Controls::NumericalFunctor* aNumFun = dynamic_cast<SMESH::Controls::NumericalFunctor*>( aFunctor.get() );
             if ( aNumFun ) {
-              int nbRanges = aScalarBarActor->GetMaximumNumberOfColors();
+              std::vector<int> elements;
+              SMESH::SMESH_Mesh_var mesh = SMESH::IObjectToInterface<SMESH::SMESH_Mesh>(anIO);
+              if ( mesh->_is_nil() ) {
+                SMESH::SMESH_IDSource_var idSource =
+                  SMESH::IObjectToInterface<SMESH::SMESH_IDSource>(anIO);
+                if ( !idSource->_is_nil() )
+                {
+                  SMESH::long_array_var ids = idSource->GetIDs();
+                  elements.resize( ids->length() );
+                  for ( unsigned i = 0; i < elements.size(); ++i )
+                    elements[i] = ids[i];
+                }
+              }
+              int nbIntervals = aScalarBarActor->GetMaximumNumberOfColors();
+              vtkLookupTable* lookupTable =
+                static_cast<vtkLookupTable*>(aScalarBarActor->GetLookupTable());
+              double * minmax = lookupTable->GetRange();
               std::vector<int>    nbEvents;
               std::vector<double> funValues;
-              aNumFun->GetHistogram( nbRanges, nbEvents, funValues );
+              aNumFun->GetHistogram( nbIntervals, nbEvents, funValues, elements, minmax );
               QString anInitialPath = "";
               if ( SUIT_FileDlg::getLastVisitedPath().isEmpty() )
                 anInitialPath = QDir::currentPath();
@@ -826,11 +852,11 @@
     if ( selected.Extent() == 1 ) {
       Handle(SALOME_InteractiveObject) anIO = selected.First();
       if ( anIO->hasEntry() ) {
-	SMESH_Actor* anActor = SMESH::FindActorByEntry( anIO->getEntry() );
-	if ( anActor && anActor->GetScalarBarActor() && anActor->GetControlMode() != SMESH_Actor::eNone ) {
-	  SMESH_ScalarBarActor *aScalarBarActor = anActor->GetScalarBarActor();
-	  aScalarBarActor->SetDistributionVisibility(!aScalarBarActor->GetDistributionVisibility());
-	}
+        SMESH_Actor* anActor = SMESH::FindActorByEntry( anIO->getEntry() );
+        if ( anActor && anActor->GetScalarBarActor() && anActor->GetControlMode() != SMESH_Actor::eNone ) {
+          SMESH_ScalarBarActor *aScalarBarActor = anActor->GetScalarBarActor();
+          aScalarBarActor->SetDistributionVisibility(!aScalarBarActor->GetDistributionVisibility());
+        }
       }
     }
   }
@@ -1177,6 +1203,18 @@
             break;
           case 6023:
             aControl = SMESH_Actor::eMaxElementLength3D;
+            break;
+          case 6024:
+            aControl = SMESH_Actor::eBareBorderVolume;
+            break;
+          case 6025:
+            aControl = SMESH_Actor::eBareBorderFace;
+            break;
+          case 6026:
+            aControl = SMESH_Actor::eOverConstrainedVolume;
+            break;
+          case 6027:
+            aControl = SMESH_Actor::eOverConstrainedFace;
             break;
           }
           anActor->SetControlMode(aControl);
@@ -2023,6 +2061,13 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
   case 703: // Create sub-mesh
   case 704: // Edit mesh/sub-mesh
     startOperation( theCommandID );
+    break;
+  case 705: // copy mesh
+    {
+      if (checkLock(aStudy)) break;
+      EmitSignalDeactivateDialog();
+      ( new SMESHGUI_CopyMeshDlg( this ) )->show();
+    }
     break;
   case 710: // Build compound mesh
     {
@@ -2973,6 +3018,10 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
   case 6021:
   case 6022:
   case 6023:
+  case 6024:
+  case 6025:
+  case 6026:
+  case 6027:
     if ( vtkwnd ) {
 
       LightApp_SelectionMgr* mgr = selectionMgr();
@@ -3189,6 +3238,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction(  702, "CREATE_MESH",     "ICON_DLG_INIT_MESH" );
   createSMESHAction(  703, "CREATE_SUBMESH",  "ICON_DLG_ADD_SUBMESH" );
   createSMESHAction(  704, "EDIT_MESHSUBMESH","ICON_DLG_EDIT_MESH" );
+  createSMESHAction(  705, "COPY_MESH",       "ICON_COPY_MESH" );
   createSMESHAction(  710, "BUILD_COMPOUND",  "ICON_BUILD_COMPOUND" );
   createSMESHAction(  711, "PRECOMPUTE",      "ICON_PRECOMPUTE" );
   createSMESHAction(  712, "EVALUATE",        "ICON_COMPUTE" );
@@ -3214,6 +3264,10 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction( 6021, "FREE_FACES",      "ICON_FREE_FACES",    0, true );
   createSMESHAction( 6022, "MAX_ELEMENT_LENGTH_2D", "ICON_MAX_ELEMENT_LENGTH_2D", 0, true );
   createSMESHAction( 6023, "MAX_ELEMENT_LENGTH_3D", "ICON_MAX_ELEMENT_LENGTH_3D", 0, true );
+  createSMESHAction( 6024, "BARE_BORDER_VOLUME","ICON_BARE_BORDER_VOLUME", 0, true );
+  createSMESHAction( 6025, "BARE_BORDER_FACE","ICON_BARE_BORDER_FACE", 0, true );
+  createSMESHAction( 6026, "OVER_CONSTRAINED_VOLUME","ICON_OVER_CONSTRAINED_VOLUME", 0, true );
+  createSMESHAction( 6027, "OVER_CONSTRAINED_FACE","ICON_OVER_CONSTRAINED_FACE", 0, true );
   createSMESHAction( 6003, "FREE_BORDER",     "ICON_FREE_EDGE_2D",  0, true );
   createSMESHAction( 6004, "CONNECTION",      "ICON_CONNECTION",    0, true );
   createSMESHAction( 6005, "FREE_NODE",       "ICON_FREE_NODE",     0, true );
@@ -3353,6 +3407,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createMenu( 703, meshId, -1 );
   createMenu( 704, meshId, -1 );
   createMenu( 710, meshId, -1 );
+  createMenu( 705, meshId, -1 );
   createMenu( separator(), meshId, -1 );
   createMenu( 701, meshId, -1 );
   createMenu( 711, meshId, -1 );
@@ -3371,8 +3426,6 @@ void SMESHGUI::initialize( CAM_Application* app )
   createMenu( separator(), meshId, -1 );
   createMenu( 814, meshId, -1 );
   createMenu( separator(), meshId, -1 );
-  createMenu( 813, meshId, -1 );
-  createMenu( separator(), meshId, -1 );
   createMenu( 900, meshId, -1 );
   //createMenu( 902, meshId, -1 );
   createMenu( 903, meshId, -1 );
@@ -3385,6 +3438,8 @@ void SMESHGUI::initialize( CAM_Application* app )
   createMenu( 6001, edgeId, -1 );
   createMenu( 6004, edgeId, -1 );
   createMenu( 6021, faceId, -1 );
+  createMenu( 6025, faceId, -1 );
+  createMenu( 6027, faceId, -1 );
   createMenu( 6018, faceId, -1 );
   createMenu( 6019, faceId, -1 );
   createMenu( 6011, faceId, -1 );
@@ -3397,6 +3452,8 @@ void SMESHGUI::initialize( CAM_Application* app )
   createMenu( 6017, volumeId, -1 );
   createMenu( 6009, volumeId, -1 );
   createMenu( 6023, volumeId, -1 );
+  createMenu( 6024, volumeId, -1 );
+  createMenu( 6026, volumeId, -1 );
 
   createMenu( 4000, addId, -1 );
   createMenu( 4009, addId, -1 );
@@ -3419,6 +3476,8 @@ void SMESHGUI::initialize( CAM_Application* app )
   createMenu( 4041, removeId, -1 );
   createMenu( 4042, removeId, -1 );
   createMenu( 4044, removeId, -1 );
+  createMenu( separator(), removeId, -1 );
+  createMenu( 813, removeId, -1 );
   createMenu( separator(), removeId, -1 );
   createMenu( 4043, removeId, -1 );
 
@@ -3464,6 +3523,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createTool( 703, meshTb );
   createTool( 704, meshTb );
   createTool( 710, meshTb );
+  createTool( 705, meshTb );
   createTool( separator(), meshTb );
   createTool( 701, meshTb );
   createTool( 711, meshTb );
@@ -3490,6 +3550,8 @@ void SMESHGUI::initialize( CAM_Application* app )
   createTool( 6004, ctrlTb );
   createTool( separator(), ctrlTb );
   createTool( 6021, ctrlTb );
+  createTool( 6025, ctrlTb );
+  createTool( 6027, ctrlTb );
   createTool( 6018, ctrlTb );
   createTool( 6019, ctrlTb );
   createTool( 6011, ctrlTb );
@@ -3503,6 +3565,8 @@ void SMESHGUI::initialize( CAM_Application* app )
   createTool( 6017, ctrlTb );
   createTool( 6009, ctrlTb );
   createTool( 6023, ctrlTb );
+  createTool( 6024, ctrlTb );
+  createTool( 6026, ctrlTb );
   createTool( separator(), ctrlTb );
 
   createTool( 4000, addRemTb );
@@ -3805,50 +3869,58 @@ void SMESHGUI::initialize( CAM_Application* app )
 
   aSubId = popupMgr()->insert( tr( "MEN_FACE_CTRL" ), anId, -1 ); // FACE CONTROLS
 
-  popupMgr()->insert( action( 6021 ), aSubId, -1 ); // FREE_FACE
+  popupMgr()->insert ( action( 6021 ), aSubId, -1 ); // FREE_FACE
   popupMgr()->setRule( action( 6021 ), aMeshInVtkHasFaces /*aMeshInVtkHasVolumes*/,
                                        QtxPopupMgr::VisibleRule );
   popupMgr()->setRule( action( 6021 ), "controlMode = 'eFreeFaces'", QtxPopupMgr::ToggleRule );
 
-  popupMgr()->insert( action( 6018 ), aSubId, -1 ); // LENGTH_2D
+  popupMgr()->insert ( action( 6018 ), aSubId, -1 ); // LENGTH_2D
   popupMgr()->setRule( action( 6018 ), aMeshInVtkHasFaces, QtxPopupMgr::VisibleRule );
   popupMgr()->setRule( action( 6018 ), "controlMode = 'eLength2D'", QtxPopupMgr::ToggleRule );
 
-  popupMgr()->insert( action( 6019 ), aSubId, -1 ); // CONNECTION_2D
+  popupMgr()->insert ( action( 6019 ), aSubId, -1 ); // CONNECTION_2D
   popupMgr()->setRule( action( 6019 ), aMeshInVtkHasFaces, QtxPopupMgr::VisibleRule );
   popupMgr()->setRule( action( 6019 ), "controlMode = 'eMultiConnection2D'", QtxPopupMgr::ToggleRule );
 
-  popupMgr()->insert( action( 6011 ), aSubId, -1 ); // AREA
+  popupMgr()->insert ( action( 6011 ), aSubId, -1 ); // AREA
   popupMgr()->setRule( action( 6011 ), aMeshInVtkHasFaces, QtxPopupMgr::VisibleRule );
   popupMgr()->setRule( action( 6011 ), "controlMode = 'eArea'", QtxPopupMgr::ToggleRule );
 
-  popupMgr()->insert( action( 6012 ), aSubId, -1 ); // TAPER
+  popupMgr()->insert ( action( 6012 ), aSubId, -1 ); // TAPER
   popupMgr()->setRule( action( 6012 ), aMeshInVtkHasFaces, QtxPopupMgr::VisibleRule );
   popupMgr()->setRule( action( 6012 ), "controlMode = 'eTaper'", QtxPopupMgr::ToggleRule );
 
-  popupMgr()->insert( action( 6013 ), aSubId, -1 ); // ASPECT
+  popupMgr()->insert ( action( 6013 ), aSubId, -1 ); // ASPECT
   popupMgr()->setRule( action( 6013 ), aMeshInVtkHasFaces, QtxPopupMgr::VisibleRule );
   popupMgr()->setRule( action( 6013 ), "controlMode = 'eAspectRatio'", QtxPopupMgr::ToggleRule );
 
-  popupMgr()->insert( action( 6014 ), aSubId, -1 ); // MIN_ANG
+  popupMgr()->insert ( action( 6014 ), aSubId, -1 ); // MIN_ANG
   popupMgr()->setRule( action( 6014 ), aMeshInVtkHasFaces, QtxPopupMgr::VisibleRule );
   popupMgr()->setRule( action( 6014 ), "controlMode = 'eMinimumAngle'", QtxPopupMgr::ToggleRule );
 
-  popupMgr()->insert( action( 6015 ), aSubId, -1 ); // WARP
+  popupMgr()->insert ( action( 6015 ), aSubId, -1 ); // WARP
   popupMgr()->setRule( action( 6015 ), aMeshInVtkHasFaces, QtxPopupMgr::VisibleRule );
   popupMgr()->setRule( action( 6015 ), "controlMode = 'eWarping'", QtxPopupMgr::ToggleRule );
 
-  popupMgr()->insert( action( 6016 ), aSubId, -1 ); // SKEW
+  popupMgr()->insert ( action( 6016 ), aSubId, -1 ); // SKEW
   popupMgr()->setRule( action( 6016 ), aMeshInVtkHasFaces, QtxPopupMgr::VisibleRule );
   popupMgr()->setRule( action( 6016 ), "controlMode = 'eSkew'", QtxPopupMgr::ToggleRule );
 
-  popupMgr()->insert( action( 6022 ), aSubId, -1 ); // MAX_ELEMENT_LENGTH_2D
+  popupMgr()->insert ( action( 6022 ), aSubId, -1 ); // MAX_ELEMENT_LENGTH_2D
   popupMgr()->setRule( action( 6022 ), aMeshInVtkHasFaces, QtxPopupMgr::VisibleRule );
   popupMgr()->setRule( action( 6022 ), "controlMode = 'eMaxElementLength2D'", QtxPopupMgr::ToggleRule );
 
+  popupMgr()->insert ( action( 6025 ), aSubId, -1 ); // BARE_BORDER_FACE
+  popupMgr()->setRule( action( 6025 ), aMeshInVtkHasFaces, QtxPopupMgr::VisibleRule );
+  popupMgr()->setRule( action( 6025 ), "controlMode = 'eBareBorderFace'", QtxPopupMgr::ToggleRule );
+
+  popupMgr()->insert ( action( 6027 ), aSubId, -1 ); // OVER_CONSTRAINED_FACE
+  popupMgr()->setRule( action( 6027 ), aMeshInVtkHasFaces, QtxPopupMgr::VisibleRule );
+  popupMgr()->setRule( action( 6027 ), "controlMode = 'eOverConstrainedFace'", QtxPopupMgr::ToggleRule );
+
   aSubId = popupMgr()->insert( tr( "MEN_VOLUME_CTRL" ), anId, -1 ); // VOLUME CONTROLS
 
-  popupMgr()->insert( action( 6017 ), aSubId, -1 ); // ASPECT_3D
+  popupMgr()->insert ( action( 6017 ), aSubId, -1 ); // ASPECT_3D
   popupMgr()->setRule( action( 6017 ), aMeshInVtkHasVolumes, QtxPopupMgr::VisibleRule );
   popupMgr()->setRule( action( 6017 ), "controlMode = 'eAspectRatio3D'", QtxPopupMgr::ToggleRule );
 
@@ -3856,9 +3928,17 @@ void SMESHGUI::initialize( CAM_Application* app )
   popupMgr()->setRule( action( 6009 ), aMeshInVtkHasVolumes, QtxPopupMgr::VisibleRule );
   popupMgr()->setRule( action( 6009 ), "controlMode = 'eVolume3D'", QtxPopupMgr::ToggleRule );
 
-  popupMgr()->insert( action( 6023 ), aSubId, -1 ); // MAX_ELEMENT_LENGTH_3D
+  popupMgr()->insert ( action( 6023 ), aSubId, -1 ); // MAX_ELEMENT_LENGTH_3D
   popupMgr()->setRule( action( 6023 ), aMeshInVtkHasVolumes, QtxPopupMgr::VisibleRule );
   popupMgr()->setRule( action( 6023 ), "controlMode = 'eMaxElementLength3D'", QtxPopupMgr::ToggleRule );
+
+  popupMgr()->insert ( action( 6024 ), aSubId, -1 ); // BARE_BORDER_VOLUME
+  popupMgr()->setRule( action( 6024 ), aMeshInVtkHasVolumes, QtxPopupMgr::VisibleRule );
+  popupMgr()->setRule( action( 6024 ), "controlMode = 'eBareBorderVolume'", QtxPopupMgr::ToggleRule );
+
+  popupMgr()->insert ( action( 6026 ), aSubId, -1 ); // OVER_CONSTRAINED_VOLUME
+  popupMgr()->setRule( action( 6026 ), aMeshInVtkHasVolumes, QtxPopupMgr::VisibleRule );
+  popupMgr()->setRule( action( 6026 ), "controlMode = 'eOverConstrainedVolume'", QtxPopupMgr::ToggleRule );
 
   popupMgr()->insert( separator(), anId, -1 );
 
@@ -5359,7 +5439,15 @@ void SMESHGUI::restoreVisualParameters (int savePoint)
                     aPlaneInfo.PlaneId = aPlaneId;
                     aPlaneInfo.ActorList.push_back( aSmeshActor );
                     aPlaneInfo.ViewManager = vman;
-                    aPlaneInfoList.push_back( aPlaneInfo );
+
+                    // to make the list sorted by plane id
+                    anIter = aPlaneInfoList.begin();
+                    for( ; anIter != aPlaneInfoList.end(); anIter++ ) {
+                      const TPlaneInfo& aPlaneInfoRef = *anIter;
+                      if( aPlaneInfoRef.PlaneId > aPlaneId )
+                        break;
+                    }
+                    aPlaneInfoList.insert( anIter, aPlaneInfo );
                   }
                 }
               }
@@ -5369,6 +5457,52 @@ void SMESHGUI::restoreVisualParameters (int savePoint)
       }
     } // for names/parameters iterator
   } // for entries iterator
+
+  // take into account planes with empty list of actors referred to them
+  QList<SUIT_ViewManager*> aVMList;
+  getApp()->viewManagers(SVTK_Viewer::Type(), aVMList);
+
+  TPlaneDataMap::const_iterator aPlaneDataIter = aPlaneDataMap.begin();
+  for( ; aPlaneDataIter != aPlaneDataMap.end(); aPlaneDataIter++ ) {
+    int aViewId = aPlaneDataIter->first;
+    if( aViewId >= 0 && aViewId < aVMList.count() ) {
+      SUIT_ViewManager* aViewManager = aVMList.at( aViewId );
+
+      const TPlaneDataList& aPlaneDataList = aPlaneDataIter->second;
+
+      TPlaneInfoList& aPlaneInfoList = aPlaneInfoMap[ aViewId ];
+      TPlaneDataList::const_iterator anIter2 = aPlaneDataList.begin();
+      for( ; anIter2 != aPlaneDataList.end(); anIter2++ ) {
+        const TPlaneData& aPlaneData = *anIter2;
+        int aPlaneId = aPlaneData.Id;
+
+        bool anIsFound = false;
+        TPlaneInfoList::const_iterator anIter3 = aPlaneInfoList.begin();
+        for( ; anIter3 != aPlaneInfoList.end(); anIter3++ ) {
+          const TPlaneInfo& aPlaneInfo = *anIter3;
+          if( aPlaneInfo.PlaneId == aPlaneId ) {
+            anIsFound = true;
+            break;
+          }
+        }
+
+        if( !anIsFound ) {
+          TPlaneInfo aPlaneInfo; // ActorList field is empty
+          aPlaneInfo.PlaneId = aPlaneId;
+          aPlaneInfo.ViewManager = aViewManager;
+
+          // to make the list sorted by plane id
+          TPlaneInfoList::iterator anIter4 = aPlaneInfoList.begin();
+          for( ; anIter4 != aPlaneInfoList.end(); anIter4++ ) {
+            const TPlaneInfo& aPlaneInfoRef = *anIter4;
+            if( aPlaneInfoRef.PlaneId > aPlaneId )
+              break;
+          }
+          aPlaneInfoList.insert( anIter4, aPlaneInfo );
+        }
+      }
+    }
+  }
 
   // add clipping planes to actors according to the restored parameters
   // and update the clipping plane map

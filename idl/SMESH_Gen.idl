@@ -221,10 +221,45 @@ module SMESH
       raises ( SALOME::SALOME_Exception );
 
     /*!
-     * Create a Mesh object, without a geometry shape reference
+     * Create a mesh by copying a part of another mesh
+     *  \param meshPart - a part of mesh to copy
+     *  \param meshName - a name of the new mesh
+     *  \param toCopyGroups - to create in the new mesh groups
+     *                        the copied elements belongs to
+     *  \param toKeepIDs - to preserve IDs of the copied elements or not
      */
-//      SMESH_Mesh NewEmpty()
-//        raises ( SALOME::SALOME_Exception );
+    SMESH_Mesh CopyMesh(in SMESH_IDSource meshPart,
+                        in string         meshName,
+                        in boolean        toCopyGroups,
+                        in boolean        toKeepIDs)
+      raises ( SALOME::SALOME_Exception );
+    
+    /*!
+     * Concatenate the given meshes into one mesh.
+     * Union groups with the same name and type if
+     * theUniteIdenticalGroups flag is true.
+     * Merge coincident nodes and elements if 
+     * theMergeNodesAndElements flag is true.
+     */
+    SMESH_Mesh Concatenate(in mesh_array theMeshesArray, 
+			   in boolean    theUniteIdenticalGroups, 
+			   in boolean    theMergeNodesAndElements, 
+			   in double     theMergeTolerance)
+      raises ( SALOME::SALOME_Exception );
+
+    /*!
+     * Concatenate the given meshes into one mesh.
+     * Union groups with the same name and type if
+     * theUniteIdenticalGroups flag is true.
+     * Merge coincident nodes and elements if 
+     * theMergeNodesAndElements flag is true.
+     * Create the groups of all elements from initial meshes.
+     */
+    SMESH_Mesh ConcatenateWithGroups(in mesh_array theMeshesArray, 
+				     in boolean    theUniteIdenticalGroups, 
+                                     in boolean    theMergeNodesAndElements, 
+                                     in double     theMergeTolerance)
+      raises ( SALOME::SALOME_Exception );
 
     /*!
      * Mesh a subShape. 
@@ -307,33 +342,6 @@ module SMESH
      */
     GEOM::GEOM_Object FindGeometryByMeshElement( in SMESH_Mesh  theMesh,
 						 in long        theElementID)
-      raises ( SALOME::SALOME_Exception );
-
-    /*!
-     * Concatenate the given meshes into one mesh.
-     * Union groups with the same name and type if
-     * theUniteIdenticalGroups flag is true.
-     * Merge coincident nodes and elements if 
-     * theMergeNodesAndElements flag is true.
-     */
-    SMESH_Mesh Concatenate(in mesh_array theMeshesArray, 
-			   in boolean    theUniteIdenticalGroups, 
-			   in boolean    theMergeNodesAndElements, 
-			   in double     theMergeTolerance)
-      raises ( SALOME::SALOME_Exception );
-
-    /*!
-     * Concatenate the given meshes into one mesh.
-     * Union groups with the same name and type if
-     * theUniteIdenticalGroups flag is true.
-     * Merge coincident nodes and elements if 
-     * theMergeNodesAndElements flag is true.
-     * Create the groups of all elements from initial meshes.
-     */
-    SMESH_Mesh ConcatenateWithGroups(in mesh_array theMeshesArray, 
-				     in boolean    theUniteIdenticalGroups, 
-                                     in boolean    theMergeNodesAndElements, 
-                                     in double     theMergeTolerance)
       raises ( SALOME::SALOME_Exception );
 
     /*!

@@ -105,6 +105,23 @@ SMESH_Mesh::SMESH_Mesh(int               theLocalId,
   _myMeshDS->ShapeToMesh( PseudoShape() );
 }
 
+//================================================================================
+/*!
+ * \brief Constructor of SMESH_Mesh being a base of some descendant class
+ */
+//================================================================================
+
+SMESH_Mesh::SMESH_Mesh():
+  _groupId( 0 ), _nbSubShapes( 0 )
+{
+  _myMeshDS      = 0;
+  _isShapeToMesh = false;
+  _isAutoColor   = false;
+  _isModified    = false;
+  _shapeDiagonal = 0.0;
+  _rmGroupCallUp = 0;
+}
+
 //=============================================================================
 /*!
  * 
@@ -265,14 +282,12 @@ void SMESH_Mesh::Clear()
   _myMeshDS->ClearMesh();
 
   // update compute state of submeshes
-  if ( SMESH_subMesh *sm = GetSubMeshContaining( GetShapeToMesh() ) ) {
-    SMESH_subMeshIteratorPtr smIt = sm->getDependsOnIterator(/*includeSelf=*/true,
-                                                             /*complexShapeFirst=*/false);
-    while ( smIt->more() ) {
-      sm = smIt->next();
-      sm->ComputeStateEngine( SMESH_subMesh::CHECK_COMPUTE_STATE );
-      sm->ComputeStateEngine( SMESH_subMesh::CLEAN ); // for event listeners (issue 0020918)
-    }
+  if ( SMESH_subMesh *sm = GetSubMeshContaining( GetShapeToMesh() ) )
+  {
+    sm->ComputeStateEngine( SMESH_subMesh::CHECK_COMPUTE_STATE );
+    sm->ComputeSubMeshStateEngine( SMESH_subMesh::CHECK_COMPUTE_STATE );
+    sm->ComputeStateEngine( SMESH_subMesh::CLEAN ); // for event listeners (issue 0020918)
+    sm->ComputeSubMeshStateEngine( SMESH_subMesh::CLEAN );
   }
   _isModified = false;
 }

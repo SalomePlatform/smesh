@@ -101,7 +101,7 @@ bool SMESH_PreviewActorsCollection::Init( const TopoDS_Shape& theShape, TopAbs_S
     int index = myMapOfShapes.FindIndex( exp.Current() );
     if ( index && !myMapOfActors.contains( index ) ) { 
       // create actor if the index is present
-      if ( GEOM_Actor* anActor = createActor( exp.Current() )) {
+      if ( GEOM_Actor* anActor = createActor( exp.Current().Oriented(TopAbs_FORWARD))) {
         // Create new entry for actor
         QString aString = theEntry;
         aString += QString("_%1").arg( index ); // add index to actor entry

@@ -60,6 +60,7 @@ salomeinclude_HEADERS = \
 lib_LTLIBRARIES = libSMESHimpl.la
 
 dist_libSMESHimpl_la_SOURCES = \
+	memoire.h \
 	SMESH_Gen.cxx \
 	SMESH_Mesh.cxx \
 	SMESH_subMesh.cxx \

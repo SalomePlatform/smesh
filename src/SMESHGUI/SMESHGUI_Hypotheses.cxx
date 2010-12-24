@@ -309,7 +309,7 @@ void SMESHGUI_GenericHypothesisCreator::onDialogFinished( int result )
 
   disconnect( myDlg, SIGNAL( finished( int ) ), this, SLOT( onDialogFinished( int ) ) );
   myDlg->close();
-  //delete myDlg;
+  //delete myDlg; since WA_DeleteOnClose==true
   myDlg = 0;
   emit finished( result );
 }
@@ -557,6 +557,8 @@ QString SMESHGUI_GenericHypothesisCreator::helpPage() const
     aHelpFileName = "segments_around_vertex_algo_page.html";
   else if ( aHypType == "QuadrangleParams")
     aHelpFileName = "a2d_meshing_hypo_page.html#hypo_quad_params_anchor";
+  else if ( aHypType == "ImportSource1D" || aHypType == "ImportSource2D")
+    aHelpFileName = "import_algos_page.html";
   return aHelpFileName;
 }
 

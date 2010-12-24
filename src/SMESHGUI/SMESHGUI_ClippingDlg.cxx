@@ -194,7 +194,8 @@ private:
 struct TSetVisibility {
   TSetVisibility(int theIsVisible): myIsVisible(theIsVisible){}
   void operator()(SMESH::TPlaneData& thePlaneData){
-    thePlaneData.Plane.GetPointer()->myActor->SetVisibility(myIsVisible);
+    bool anIsEmpty = thePlaneData.ActorList.empty();
+    thePlaneData.Plane.GetPointer()->myActor->SetVisibility(myIsVisible && !anIsEmpty);
   }
   int myIsVisible;
 };
@@ -261,11 +262,22 @@ SMESH::OrientedPlane* SMESHGUI_ClippingDlg::AddPlane (SMESH::TActorList         
 
   vtkFloatingPointType aBounds[6];
   vtkFloatingPointType anOrigin[3];
-  bool anIsOk = SMESH::ComputeClippingPlaneParameters( theActorList,
-                                                       aNormal,
-                                                       theDistance,
-                                                       aBounds,
-                                                       anOrigin );
+
+  bool anIsOk = false;
+  if( theActorList.empty() ) {
+    // to support planes with empty actor list we should create
+    // a nullified plane that will be initialized later 
+    anOrigin[0] = anOrigin[1] = anOrigin[2] = 0;
+    aBounds[0] = aBounds[2] = aBounds[4] = 0;
+    aBounds[1] = aBounds[3] = aBounds[5] = 0;
+    anIsOk = true;
+  }
+  else
+    anIsOk = SMESH::ComputeClippingPlaneParameters( theActorList,
+                                                    aNormal,
+                                                    theDistance,
+                                                    aBounds,
+                                                    anOrigin );
   if( !anIsOk )
     return NULL;
 
@@ -545,8 +557,10 @@ void SMESHGUI_ClippingDlg::ClickOnApply()
       SMESH::TPlaneData aPlaneData = *anIter2;
       SMESH::TPlane aPlane = aPlaneData.Plane;
       SMESH::TActorList anActorList = aPlaneData.ActorList;
-      if( anActorList.empty() )
-        continue;
+
+      // the check is disabled to support planes with empty actor list
+      //if( anActorList.empty() )
+      //  continue;
 
       SMESH::OrientedPlane* anOrientedPlane = SMESH::OrientedPlane::New(myViewWindow);
       anOrientedPlane->ShallowCopy(aPlane.GetPointer());

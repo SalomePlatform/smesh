@@ -44,6 +44,7 @@ class SMESHDS_Mesh;
 namespace SMESH
 {
 
+  // ================================================================================
   namespace Controls
   {
 
@@ -123,8 +124,10 @@ namespace SMESH
       Controls::ElementsOnShapePtr    myElementsOnShapePtr; // only if myIsSubshape == false
     };
     typedef boost::shared_ptr<LyingOnGeom> LyingOnGeomPtr;
-  }
-  
+
+  } // namespace Controls
+
+  // ================================================================================
   /*
     FUNCTORS
   */
@@ -384,6 +387,54 @@ namespace SMESH
   {
   public:
     BadOrientedVolume_i();
+    FunctorType                     GetFunctorType();
+  };
+  
+  /*
+    Class       : BareBorderVolume_i
+    Description : Verify whether a mesh volume has a free facet without a face on it
+  */
+  class SMESH_I_EXPORT BareBorderVolume_i: public virtual POA_SMESH::BareBorderVolume,
+                                           public virtual Predicate_i
+  {
+  public:
+    BareBorderVolume_i();
+    FunctorType                     GetFunctorType();
+  };
+  
+  /*
+    Class       : BareBorderFace_i
+    Description : Verify whether a mesh face has a free border without an edge on it
+  */
+  class SMESH_I_EXPORT BareBorderFace_i: public virtual POA_SMESH::BareBorderFace,
+                                           public virtual Predicate_i
+  {
+  public:
+    BareBorderFace_i();
+    FunctorType                     GetFunctorType();
+  };
+  
+  /*
+    Class       : OverConstrainedVolume_i
+    Description : Verify whether a mesh volume has only one facet shared with other volumes
+  */
+  class SMESH_I_EXPORT OverConstrainedVolume_i: public virtual POA_SMESH::OverConstrainedVolume,
+                                           public virtual Predicate_i
+  {
+  public:
+    OverConstrainedVolume_i();
+    FunctorType                     GetFunctorType();
+  };
+  
+  /*
+    Class       : OverConstrainedFace_i
+    Description : Verify whether a mesh face has only one border shared with other faces
+  */
+  class SMESH_I_EXPORT OverConstrainedFace_i: public virtual POA_SMESH::OverConstrainedFace,
+                                           public virtual Predicate_i
+  {
+  public:
+    OverConstrainedFace_i();
     FunctorType                     GetFunctorType();
   };
   
@@ -954,6 +1005,10 @@ namespace SMESH
     
     RangeOfIds_ptr            CreateRangeOfIds();
     BadOrientedVolume_ptr     CreateBadOrientedVolume();
+    BareBorderFace_ptr        CreateBareBorderFace();
+    BareBorderVolume_ptr      CreateBareBorderVolume();
+    OverConstrainedFace_ptr   CreateOverConstrainedFace();
+    OverConstrainedVolume_ptr CreateOverConstrainedVolume();
     LinearOrQuadratic_ptr     CreateLinearOrQuadratic();
     GroupColor_ptr            CreateGroupColor();
     ElemGeomType_ptr          CreateElemGeomType();

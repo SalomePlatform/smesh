@@ -151,6 +151,7 @@ protected:
   inline void setVtkId(int vtkId) { myVtkID = vtkId; };
   SMDS_MeshElement(int ID=-1);
   SMDS_MeshElement(int id, ShortType meshId, ShortType shapeId = 0);
+  virtual void init(int id = -1, ShortType meshId = -1, ShortType shapeId = 0);
   virtual void Print(std::ostream & OS) const;
 
   //! Element index in vector SMDS_Mesh::myNodes or SMDS_Mesh::myCells

@@ -232,7 +232,10 @@ namespace SMESH
     if(!aSObject->_is_nil() || CORBA::is_nil( theArg ))
       return *this << aSObject;
     SMESH::long_array_var anElementsId = theArg->GetIDs();
-    return *this << anElementsId;
+    SMESH::SMESH_Mesh_var mesh = theArg->GetMesh();
+    SMESH::array_of_ElementType_var types =  theArg->GetTypes();
+    SMESH::ElementType type = types->length() ? types[0] : SMESH::ALL;
+    return *this << mesh << ".GetIDSource(" << anElementsId << ", " << type << ")";
   }
 
   TPythonDump& 
@@ -266,43 +269,47 @@ namespace SMESH
     if ( theArg ) {
       FunctorType aFunctorType = theArg->GetFunctorType();
       switch(aFunctorType){
-      case FT_AspectRatio:      myStream<< "anAspectRatio";     break;
-      case FT_AspectRatio3D:    myStream<< "anAspectRatio3D";   break;
-      case FT_Warping:          myStream<< "aWarping";          break;
-      case FT_MinimumAngle:     myStream<< "aMinimumAngle";     break;
-      case FT_Taper:            myStream<< "aTaper";            break;
-      case FT_Skew:             myStream<< "aSkew";             break;
-      case FT_Area:             myStream<< "aArea";             break;
-      case FT_Volume3D:         myStream<< "aVolume3D";         break;
-      case FT_MaxElementLength2D:myStream<< "aMaxElementLength2D";break;
-      case FT_MaxElementLength3D:myStream<< "aMaxElementLength3D";break;
-      case FT_FreeBorders:      myStream<< "aFreeBorders";      break;
-      case FT_FreeEdges:        myStream<< "aFreeEdges";        break;
-      case FT_FreeNodes:        myStream<< "aFreeNodes";        break;
-      case FT_FreeFaces:        myStream<< "aFreeFaces";        break;
-      case FT_MultiConnection:  myStream<< "aMultiConnection";  break;
-      case FT_MultiConnection2D:myStream<< "aMultiConnection2D";break;
-      case FT_Length:           myStream<< "aLength";           break;
-      case FT_Length2D:         myStream<< "aLength";           break;
-      case FT_BelongToGeom:     myStream<< "aBelongToGeom";     break;
-      case FT_BelongToPlane:    myStream<< "aBelongToPlane";    break;
-      case FT_BelongToCylinder: myStream<< "aBelongToCylinder"; break;
-      case FT_BelongToGenSurface:myStream<<"aBelongToGenSurface";break;
-      case FT_LyingOnGeom:      myStream<< "aLyingOnGeom";      break;
-      case FT_CoplanarFaces:    myStream<< "aCoplanarFaces";    break;
-      case FT_RangeOfIds:       myStream<< "aRangeOfIds";       break;
-      case FT_BadOrientedVolume:myStream<< "aBadOrientedVolume";break;
-      case FT_LinearOrQuadratic:myStream<< "aLinearOrQuadratic";break;
-      case FT_GroupColor:       myStream<< "aGroupColor";       break;
-      case FT_ElemGeomType:     myStream<< "anElemGeomType";    break;
-      case FT_LessThan:         myStream<< "aLessThan";         break;
-      case FT_MoreThan:         myStream<< "aMoreThan";         break;
-      case FT_EqualTo:          myStream<< "anEqualTo";         break;
-      case FT_LogicalNOT:       myStream<< "aLogicalNOT";       break;
-      case FT_LogicalAND:       myStream<< "aLogicalAND";       break;
-      case FT_LogicalOR:        myStream<< "aLogicalOR";        break;
+      case FT_AspectRatio:           myStream<< "anAspectRatio";          break;
+      case FT_AspectRatio3D:         myStream<< "anAspectRatio3D";        break;
+      case FT_Warping:               myStream<< "aWarping";               break;
+      case FT_MinimumAngle:          myStream<< "aMinimumAngle";          break;
+      case FT_Taper:                 myStream<< "aTaper";                 break;
+      case FT_Skew:                  myStream<< "aSkew";                  break;
+      case FT_Area:                  myStream<< "aArea";                  break;
+      case FT_Volume3D:              myStream<< "aVolume3D";              break;
+      case FT_MaxElementLength2D:    myStream<< "aMaxElementLength2D";    break;
+      case FT_MaxElementLength3D:    myStream<< "aMaxElementLength3D";    break;
+      case FT_FreeBorders:           myStream<< "aFreeBorders";           break;
+      case FT_FreeEdges:             myStream<< "aFreeEdges";             break;
+      case FT_FreeNodes:             myStream<< "aFreeNodes";             break;
+      case FT_FreeFaces:             myStream<< "aFreeFaces";             break;
+      case FT_MultiConnection:       myStream<< "aMultiConnection";       break;
+      case FT_MultiConnection2D:     myStream<< "aMultiConnection2D";     break;
+      case FT_Length:                myStream<< "aLength";                break;
+      case FT_Length2D:              myStream<< "aLength2D";              break;
+      case FT_BelongToGeom:          myStream<< "aBelongToGeom";          break;
+      case FT_BelongToPlane:         myStream<< "aBelongToPlane";         break;
+      case FT_BelongToCylinder:      myStream<< "aBelongToCylinder";      break;
+      case FT_BelongToGenSurface:    myStream<< "aBelongToGenSurface";    break;
+      case FT_LyingOnGeom:           myStream<< "aLyingOnGeom";           break;
+      case FT_CoplanarFaces:         myStream<< "aCoplanarFaces";         break;
+      case FT_RangeOfIds:            myStream<< "aRangeOfIds";            break;
+      case FT_BadOrientedVolume:     myStream<< "aBadOrientedVolume";     break;
+      case FT_BareBorderVolume:      myStream<< "aBareBorderVolume";      break;
+      case FT_BareBorderFace:        myStream<< "aBareBorderFace";        break;
+      case FT_OverConstrainedVolume: myStream<< "aOverConstrainedVolume"; break;
+      case FT_OverConstrainedFace:   myStream<< "aOverConstrainedFace";   break;
+      case FT_LinearOrQuadratic:     myStream<< "aLinearOrQuadratic";     break;
+      case FT_GroupColor:            myStream<< "aGroupColor";            break;
+      case FT_ElemGeomType:          myStream<< "anElemGeomType";         break;
+      case FT_LessThan:              myStream<< "aLessThan";              break;
+      case FT_MoreThan:              myStream<< "aMoreThan";              break;
+      case FT_EqualTo:               myStream<< "anEqualTo";              break;
+      case FT_LogicalNOT:            myStream<< "aLogicalNOT";            break;
+      case FT_LogicalAND:            myStream<< "aLogicalAND";            break;
+      case FT_LogicalOR:             myStream<< "aLogicalOR";             break;
       case FT_Undefined:
-      default:                  myStream<< "anUndefined";       break;
+      default:                       myStream<< "anUndefined";            break;
       }
       myStream<<theArg;
     }

@@ -247,7 +247,8 @@ Handle(_pyCommand) _pyGen::AddCommand( const TCollection_AsciiString& theCommand
 
   // SMESH_Mesh method?
   map< _pyID, Handle(_pyMesh) >::iterator id_mesh = myMeshes.find( objID );
-  if ( id_mesh != myMeshes.end() ) {
+  if ( id_mesh != myMeshes.end() )
+  {
     // check for mesh editor object
     if ( aCommand->GetMethod() == "GetMeshEditor" ) { // MeshEditor creation
       _pyID editorID = aCommand->GetResultValue();
@@ -268,7 +269,8 @@ Handle(_pyCommand) _pyGen::AddCommand( const TCollection_AsciiString& theCommand
 
   // SMESH_MeshEditor method?
   map< _pyID, Handle(_pyMeshEditor) >::iterator id_editor = myMeshEditors.find( objID );
-  if ( id_editor != myMeshEditors.end() ) {
+  if ( id_editor != myMeshEditors.end() )
+  {
     id_editor->second->Process( aCommand );
     TCollection_AsciiString processedCommand = aCommand->GetString();
     // some commands of SMESH_MeshEditor create meshes
@@ -276,6 +278,15 @@ Handle(_pyCommand) _pyGen::AddCommand( const TCollection_AsciiString& theCommand
       Handle(_pyMesh) mesh = new _pyMesh( aCommand, aCommand->GetResultValue() );
       aCommand->GetString() = processedCommand; // discard changes made by _pyMesh
       myMeshes.insert( make_pair( mesh->GetID(), mesh ));
+    }
+    if ( aCommand->GetMethod() == "MakeBoundaryMesh") {
+      _pyID meshID = aCommand->GetResultValue(0);
+      if ( !myMeshes.count( meshID ) )
+      {
+        Handle(_pyMesh) mesh = new _pyMesh( aCommand, meshID );
+        aCommand->GetString() = processedCommand; // discard changes made by _pyMesh
+        myMeshes.insert( make_pair( meshID, mesh ));
+      }
     }
     return aCommand;
   }
@@ -352,7 +363,7 @@ void _pyGen::Process( const Handle(_pyCommand)& theCommand )
     myMeshes.insert( make_pair( mesh->GetID(), mesh ));
     return;
   }
-  if ( method == "CreateMeshesFromUNV" || method == "CreateMeshesFromSTL")
+  if ( method == "CreateMeshesFromUNV" || method == "CreateMeshesFromSTL" || method == "CopyMesh" )
   {
     Handle(_pyMesh) mesh = new _pyMesh( theCommand, theCommand->GetResultValue() );
     myMeshes.insert( make_pair( mesh->GetID(), mesh ));
@@ -1118,14 +1129,15 @@ void _pyMeshEditor::Process( const Handle(_pyCommand)& theCommand)
       "ConvertToQuadratic","ConvertFromQuadratic","RenumberNodes","RenumberElements",
       "RotationSweep","RotationSweepObject","RotationSweepObject1D","RotationSweepObject2D",
       "ExtrusionSweep","AdvancedExtrusion","ExtrusionSweepObject","ExtrusionSweepObject1D","ExtrusionSweepObject2D",
-      "ExtrusionAlongPath","ExtrusionAlongPathObject","ExtrusionAlongPathObject1D","ExtrusionAlongPathObject2D",
+      "ExtrusionAlongPath","ExtrusionAlongPathObject","ExtrusionAlongPathX",
+      "ExtrusionAlongPathObject1D","ExtrusionAlongPathObject2D",
       "Mirror","MirrorObject","Translate","TranslateObject","Rotate","RotateObject",
       "FindCoincidentNodes",/*"FindCoincidentNodesOnPart",*/"MergeNodes","FindEqualElements",
       "MergeElements","MergeEqualElements","SewFreeBorders","SewConformFreeBorders",
       "SewBorderToSide","SewSideElements","ChangeElemNodes","GetLastCreatedNodes",
       "GetLastCreatedElems",
       "MirrorMakeMesh","MirrorObjectMakeMesh","TranslateMakeMesh",
-      "TranslateObjectMakeMesh","RotateMakeMesh","RotateObjectMakeMesh"
+      "TranslateObjectMakeMesh","RotateMakeMesh","RotateObjectMakeMesh","MakeBoundaryMesh"
       ,"" }; // <- mark of the end
     sameMethods.Insert( names );
   }
@@ -1164,6 +1176,13 @@ void _pyMeshEditor::Process( const Handle(_pyCommand)& theCommand)
       while(nbArgsToAdd--)
         theCommand->SetArg(theCommand->GetNbArgs()+1,"True");
     }
+  }
+
+  // set "ExtrusionAlongPathX()" instead of "ExtrusionAlongPathObjX()"
+  if ( !isPyMeshMethod && method == "ExtrusionAlongPathObjX")
+  {
+    isPyMeshMethod=true;
+    theCommand->SetMethod("ExtrusionAlongPathX");
   }
 
   // set "FindCoincidentNodesOnPart()" instead of "FindCoincidentNodesOnPartBut()"

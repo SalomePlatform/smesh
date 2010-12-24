@@ -25,8 +25,8 @@ SMDS_VtkEdge::~SMDS_VtkEdge()
 
 void SMDS_VtkEdge::init(std::vector<vtkIdType> nodeIds, SMDS_Mesh* mesh)
 {
+  SMDS_MeshEdge::init();
   vtkUnstructuredGrid* grid = mesh->getGrid();
-  myIdInShape = -1;
   myMeshId = mesh->getMeshId();
   vtkIdType aType = VTK_LINE;
   if (nodeIds.size() == 3)

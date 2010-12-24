@@ -24,8 +24,8 @@ SMDS_VtkFace::~SMDS_VtkFace()
 
 void SMDS_VtkFace::init(std::vector<vtkIdType> nodeIds, SMDS_Mesh* mesh)
 {
+  SMDS_MeshFace::init();
   vtkUnstructuredGrid* grid = mesh->getGrid();
-  myIdInShape = -1;
   myMeshId = mesh->getMeshId();
   vtkIdType aType = VTK_TRIANGLE;
   switch (nodeIds.size())
@@ -53,8 +53,8 @@ void SMDS_VtkFace::init(std::vector<vtkIdType> nodeIds, SMDS_Mesh* mesh)
 
 void SMDS_VtkFace::initPoly(std::vector<vtkIdType> nodeIds, SMDS_Mesh* mesh)
 {
+  SMDS_MeshFace::init();
   vtkUnstructuredGrid* grid = mesh->getGrid();
-  myIdInShape = -1;
   myMeshId = mesh->getMeshId();
   myVtkID = grid->InsertNextLinkedCell(VTK_POLYGON, nodeIds.size(), &nodeIds[0]);
   mesh->setMyModified();
@@ -249,7 +249,7 @@ SMDS_ElemIteratorPtr SMDS_VtkFace::interlacedNodesElemIterator() const
 }
 
 //! change only the first node, used for temporary triangles in quadrangle to triangle adaptor
-void SMDS_VtkFace::ChangeApex(const SMDS_MeshNode* node)
+void SMDS_VtkFace::ChangeApex(SMDS_MeshNode* node)
 {
   vtkUnstructuredGrid* grid = SMDS_Mesh::_meshList[myMeshId]->getGrid();
   vtkIdType npts = 0;
@@ -257,6 +257,6 @@ void SMDS_VtkFace::ChangeApex(const SMDS_MeshNode* node)
   grid->GetCellPoints(myVtkID, npts, pts);
   grid->RemoveReferenceToCell(pts[0], myVtkID);
   pts[0] = node->getVtkId();
-  grid->AddReferenceToCell(pts[0], myVtkID);
+  node->AddInverseElement(this),
   SMDS_Mesh::_meshList[myMeshId]->setMyModified();
 }

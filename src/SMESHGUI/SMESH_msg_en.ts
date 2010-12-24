@@ -188,6 +188,10 @@
         <translation>Build Compound</translation>
     </message>
     <message>
+        <source>MEN_COPY_MESH</source>
+        <translation>Copy Mesh</translation>
+    </message>
+    <message>
         <source>MEN_CLIP</source>
         <translation>Clipping</translation>
     </message>
@@ -394,6 +398,22 @@
     <message>
         <source>STB_FIND_ELEM</source>
         <translation>Find Element by Point</translation>
+    </message>
+    <message>
+        <source>MEN_BARE_BORDER_VOLUME</source>
+        <translation>Volumes with bare border</translation>
+    </message>
+    <message>
+        <source>MEN_BARE_BORDER_FACE</source>
+        <translation>Faces with bare border</translation>
+    </message>
+    <message>
+        <source>MEN_OVER_CONSTRAINED_VOLUME</source>
+        <translation>Over-constrained volumes</translation>
+    </message>
+    <message>
+        <source>MEN_OVER_CONSTRAINED_FACE</source>
+        <translation>Over-constrained faces</translation>
     </message>
     <message>
         <source>MEN_FREE_BORDER</source>
@@ -1041,6 +1061,14 @@ Please enter correct values and try again</translation>
         <translation>Create a Compound</translation>
     </message>
     <message>
+        <source>SMESH_COPY_MESH_TITLE</source>
+        <translation>Copy Mesh</translation>
+    </message>
+    <message>
+        <source>SMESH_KEEP_IDS</source>
+        <translation>Preserve IDs of elements</translation>
+    </message>
+    <message>
         <source>SMESH_BUT_ADD</source>
         <translation>A&amp;dd</translation>
     </message>
@@ -1451,7 +1479,8 @@ add the exported data to its contents?</translation>
     </message>
     <message>
         <source>SMESH_HYP_12</source>
-        <translation>Geometry mismatches algorithm&apos;s expectation\nCheck algorithm documentation for supported geometry</translation>
+        <translation>Geometry mismatches algorithm&apos;s expectation
+Check algorithm documentation for supported geometry</translation>
     </message>
     <message>
         <source>SMESH_HYP_13</source>
@@ -2101,7 +2130,7 @@ add the exported data to its contents?</translation>
     <message>
         <source>SMESH_VERTICAL</source>
         <translation>Vertical</translation>
-    </message>    
+    </message>
     <message>
         <source>SMESH_DISTRIBUTION_COLORING_TYPE</source>
         <translation>Coloring Type</translation>
@@ -2275,6 +2304,10 @@ Please check preferences of Mesh module.
         <translation>Build Compound Mesh</translation>
     </message>
     <message>
+        <source>STB_COPY_MESH</source>
+        <translation>Copy Mesh</translation>
+    </message>
+    <message>
         <source>STB_CLIP</source>
         <translation>Clipping</translation>
     </message>
@@ -2433,6 +2466,22 @@ Please check preferences of Mesh module.
     <message>
         <source>STB_FACES</source>
         <translation>Faces</translation>
+    </message>
+    <message>
+        <source>STB_BARE_BORDER_VOLUME</source>
+        <translation>Volumes with bare border</translation>
+    </message>
+    <message>
+        <source>STB_BARE_BORDER_FACE</source>
+        <translation>Faces with bare border</translation>
+    </message>
+    <message>
+        <source>STB_OVER_CONSTRAINED_VOLUME</source>
+        <translation>Over-constrained volumes</translation>
+    </message>
+    <message>
+        <source>STB_OVER_CONSTRAINED_FACE</source>
+        <translation>Over-constrained faces</translation>
     </message>
     <message>
         <source>STB_FREE_BORDER</source>
@@ -2614,7 +2663,7 @@ Please check preferences of Mesh module.
         <source>STB_SAVE_DISTRIBUTION</source>
         <translation>Save distribution to the file</translation>
     </message>
-        <message>
+    <message>
         <source>STB_SHOW_DISTRIBUTION</source>
         <translation>Show Distribution</translation>
     </message>
@@ -2811,6 +2860,10 @@ Please check preferences of Mesh module.
         <translation>Build Compound Mesh</translation>
     </message>
     <message>
+        <source>TOP_COPY_MESH</source>
+        <translation>Copy Mesh</translation>
+    </message>
+    <message>
         <source>TOP_CLIP</source>
         <translation>Clipping</translation>
     </message>
@@ -2969,6 +3022,22 @@ Please check preferences of Mesh module.
     <message>
         <source>TOP_FACES</source>
         <translation>Faces</translation>
+    </message>
+    <message>
+        <source>TOP_BARE_BORDER_VOLUME</source>
+        <translation>Volumes with bare border</translation>
+    </message>
+    <message>
+        <source>TOP_BARE_BORDER_FACE</source>
+        <translation>Faces with bare border</translation>
+    </message>
+    <message>
+        <source>TOP_OVER_CONSTRAINED_VOLUME</source>
+        <translation>Over-constrained volumes</translation>
+    </message>
+    <message>
+        <source>TOP_OVER_CONSTRAINED_FACE</source>
+        <translation>Over-constrained faces</translation>
     </message>
     <message>
         <source>TOP_FREE_BORDER</source>
@@ -3399,7 +3468,7 @@ Input value precision can be adjusted using
     <message>
         <source>SMESH_PLUGINS_OTHER</source>
         <translation>SMESH plugins</translation>
-    </message>  
+    </message>
 </context>
 <context>
     <name>SMESHGUI</name>
@@ -3565,7 +3634,7 @@ Please, create VTK viewer and try again</translation>
         <translation>Mesh information</translation>
     </message>
     <message>
-      <source>PREF_HIGHLIGHT_COLOR</source>
+        <source>PREF_HIGHLIGHT_COLOR</source>
         <translation>Highlight color</translation>
     </message>
     <message>
@@ -4319,6 +4388,22 @@ Please check input data and try again</translation>
     <message>
         <source>BAD_ORIENTED_VOLUME</source>
         <translation>Bad oriented volume</translation>
+    </message>
+    <message>
+        <source>BARE_BORDER_VOLUME</source>
+        <translation>Volumes with bare border</translation>
+    </message>
+    <message>
+        <source>BARE_BORDER_FACE</source>
+        <translation>Faces with bare border</translation>
+    </message>
+    <message>
+        <source>OVER_CONSTRAINED_VOLUME</source>
+        <translation>Over-constrained volumes</translation>
+    </message>
+    <message>
+        <source>OVER_CONSTRAINED_FACE</source>
+        <translation>Over-constrained faces</translation>
     </message>
     <message>
         <source>BELONG_TO_CYLINDER</source>
@@ -5607,7 +5692,7 @@ It is impossible to read point coordinates from file</translation>
     </message>
     <message>
         <source>QUADRANGLES_LAB</source>
-        <translation>Quadrandgles:</translation>
+        <translation>Quadrangles:</translation>
     </message>
     <message>
         <source>POLYGONS_LAB</source>
@@ -5796,16 +5881,16 @@ It is impossible to read point coordinates from file</translation>
         <translation>No</translation>
     </message>
     <message>
-        <source>GRAVITY_CENTER</source>
-        <translation>GRAVITY CENTER</translation>
-    </message>
-    <message>
         <source>PROPERTY</source>
         <translation>Property</translation>
     </message>
     <message>
         <source>VALUE</source>
         <translation>Value</translation>
+    </message>
+    <message>
+        <source>X_FROM_Y_ITEMS_SHOWN</source>
+        <translation>%1-%2 from %3 items shown</translation>
     </message>
 </context>
 <context>
@@ -5845,6 +5930,21 @@ It is impossible to read point coordinates from file</translation>
     <message>
         <source>DISTANCE</source>
         <translation>Distance</translation>
+    </message>
+</context>
+<context>
+    <name>SMESHGUI_CopyMeshDlg</name>
+    <message>
+        <source>OBJECT_NAME</source>
+        <translation>Source Object</translation>
+    </message>
+    <message>
+        <source>ELEM_IDS</source>
+        <translation>Source Element IDs</translation>
+    </message>
+    <message>
+        <source>NEW_NAME</source>
+        <translation>New Mesh Name</translation>
     </message>
 </context>
 <context>
