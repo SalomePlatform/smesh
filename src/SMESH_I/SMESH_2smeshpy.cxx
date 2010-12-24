@@ -856,12 +856,14 @@ void _pyMesh::Process( const Handle(_pyCommand)& theCommand )
   // ----------------------------------------------------------------------
   else if ( method == "CreateGroupFromGEOM" ) {// (type, name, grp)
     _pyID grp = theCommand->GetArg( 3 );
-    if ( sameGroupType( grp, theCommand->GetArg( 1 )) ) { // --> Group(grp)
-      theCommand->SetMethod( "Group" );
-      theCommand->RemoveArgs();
-      theCommand->SetArg( 1, grp );
-    }
-    else {
+    // VSR 24/12/2010. PAL21106: always use GroupOnGeom() function on dump
+    // next if(){...} section is commented
+    //if ( sameGroupType( grp, theCommand->GetArg( 1 )) ) { // --> Group(grp)
+    //  theCommand->SetMethod( "Group" );
+    //  theCommand->RemoveArgs();
+    //  theCommand->SetArg( 1, grp );
+    //}
+    //else {
       _pyID type = theCommand->GetArg( 1 );
       _pyID name = theCommand->GetArg( 2 );
       theCommand->SetMethod( "GroupOnGeom" );
@@ -869,7 +871,7 @@ void _pyMesh::Process( const Handle(_pyCommand)& theCommand )
       theCommand->SetArg( 1, grp );
       theCommand->SetArg( 2, name );
       theCommand->SetArg( 3, type );
-    }
+    //}
   }
   // ----------------------------------------------------------------------
   else if ( method == "ExportToMED" ||   // ExportToMED() --> ExportMED()
