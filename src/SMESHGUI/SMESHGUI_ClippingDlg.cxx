@@ -113,7 +113,7 @@ SMESH::OrientedPlane::OrientedPlane(SVTK_ViewWindow* theViewWindow):
   myDistance(0.5)
 {
   Init();
-  myViewWindow->AddActor(myActor);
+  myViewWindow->AddActor(myActor, false, false); // don't adjust actors
 }
 
 SMESH::OrientedPlane::OrientedPlane():
