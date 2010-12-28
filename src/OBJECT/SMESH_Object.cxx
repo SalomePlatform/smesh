@@ -166,7 +166,12 @@ vtkIdType SMESH_VisualObjDef::GetNodeVTKId( int theObjID )
 		TMapOfIds::const_iterator i = mySMDS2VTKNodes.find(theObjID);
     return i == mySMDS2VTKNodes.end() ? -1 : i->second;
 	}
-  return this->GetMesh()->FindNode(theObjID)->getVtkId();
+
+	const SMDS_MeshNode* aNode = 0;
+	if( this->GetMesh() ) {
+	  aNode = this->GetMesh()->FindNode(theObjID);
+	}
+	return aNode ? aNode->getVtkId() : -1;
 }
 
 vtkIdType SMESH_VisualObjDef::GetElemObjId( int theVTKID )
