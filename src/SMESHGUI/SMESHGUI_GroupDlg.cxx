@@ -1187,11 +1187,10 @@ void SMESHGUI_GroupDlg::onObjectSelectionChanged()
       SALOME_ListIteratorOfListIO anIt (aList);
       for (; anIt.More(); anIt.Next())
       {
-        testResult = Standard_False;
-        aGeomGroup = GEOMBase::ConvertIOinGEOMObject(anIt.Value(), testResult);
+        aGeomGroup = GEOMBase::ConvertIOinGEOMObject(anIt.Value());
 
         // Check if the object is a geometry group
-        if (!testResult || CORBA::is_nil(aGeomGroup))
+        if (CORBA::is_nil(aGeomGroup))
           continue;
 
         // Check if group constructed on the same shape as a mesh or on its child
