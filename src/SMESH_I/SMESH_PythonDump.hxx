@@ -18,7 +18,6 @@
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
-//
 
 #ifndef _SMESH_PYTHONDUMP_HXX_
 #define _SMESH_PYTHONDUMP_HXX_
@@ -88,71 +87,71 @@ namespace SMESH
   public:
     TPythonDump();
     virtual ~TPythonDump();
-    
-    TPythonDump& 
+
+    TPythonDump&
     operator<<(long int theArg);
 
-    TPythonDump& 
+    TPythonDump&
     operator<<(int theArg);
 
-    TPythonDump& 
+    TPythonDump&
     operator<<(double theArg);
 
-    TPythonDump& 
+    TPythonDump&
     operator<<(float theArg);
 
-    TPythonDump& 
+    TPythonDump&
     operator<<(const void* theArg);
 
-    TPythonDump& 
+    TPythonDump&
     operator<<(const char* theArg);
 
-    TPythonDump& 
+    TPythonDump&
     operator<<(const SMESH::ElementType& theArg);
 
     TPythonDump&
     operator<<(const SMESH::GeometryType& theArg);
 
-    TPythonDump& 
+    TPythonDump&
     operator<<(const SMESH::long_array& theArg);
 
-    TPythonDump& 
+    TPythonDump&
     operator<<(const SMESH::double_array& theArg);
 
-    TPythonDump& 
+    TPythonDump&
     operator<<(SMESH::SMESH_Hypothesis_ptr theArg);
 
-    TPythonDump& 
+    TPythonDump&
     operator<<(SMESH::SMESH_IDSource_ptr theArg);
 
-    TPythonDump& 
+    TPythonDump&
     operator<<(SALOMEDS::SObject_ptr theArg);
 
-    TPythonDump& 
+    TPythonDump&
     operator<<(CORBA::Object_ptr theArg);
 
-    TPythonDump& 
+    TPythonDump&
     operator<<(SMESH::FilterLibrary_i* theArg);
 
-    TPythonDump& 
+    TPythonDump&
     operator<<(SMESH::FilterManager_i* theArg);
 
-    TPythonDump& 
+    TPythonDump&
     operator<<(SMESH::Filter_i* theArg);
 
-    TPythonDump& 
+    TPythonDump&
     operator<<(SMESH::Functor_i* theArg);
 
-    TPythonDump& 
+    TPythonDump&
     operator<<(SMESH::Measurements_i* theArg);
 
-    TPythonDump& 
+    TPythonDump&
     operator<<(SMESH_Gen_i* theArg);
 
-    TPythonDump& 
+    TPythonDump&
     operator<<(SMESH_MeshEditor_i* theArg);
 
-    TPythonDump& 
+    TPythonDump&
     operator<<(SMESH::MED_VERSION theArg);
 
     TPythonDump&
@@ -168,6 +167,9 @@ namespace SMESH
     operator<<(const SMESH::ListOfGroups& theList);
 
     TPythonDump&
+    operator<<(const SMESH::ListOfGroups * theList);
+
+    TPythonDump&
     operator<<(const SMESH::ListOfIDSources& theList);
 
     static const char* SMESHGenName() { return "smeshgen"; }
@@ -175,7 +177,7 @@ namespace SMESH
 
     /*!
      * \brief Return marker of long string literal beginning
-      * \param type - a name of functionality producing the string literal 
+      * \param type - a name of functionality producing the string literal
       * \retval TCollection_AsciiString - the marker string to be written into
       * a raw python script
      */
@@ -193,7 +195,7 @@ namespace SMESH
       * \param theLongString - the retrieved literal
       * \param theStringType - a name of functionality produced the literal
       * \retval bool - true if a string literal found
-     * 
+     *
      * The literal is removed from theText; theFrom points position right after
      * the removed literal
      */

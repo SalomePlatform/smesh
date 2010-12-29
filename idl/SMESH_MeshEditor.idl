@@ -19,9 +19,8 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
-
 //  File   : SMESH_MeshEditor.idl
-//
+
 #ifndef _SMESH_MESHEDITOR_IDL_
 #define _SMESH_MESHEDITOR_IDL_
 
@@ -30,7 +29,7 @@
 module SMESH
 {
   enum Bnd_Dimension { BND_2DFROM3D, BND_1DFROM3D, BND_1DFROM2D };
-  
+
   /*!
    * This interface makes modifications on the Mesh - removing elements and nodes etc.
    */
@@ -57,7 +56,7 @@ module SMESH
      * \return \c true if nodes are correctly removed or \c false otherwise
      */
     boolean RemoveNodes(in long_array IDsOfNodes);
-    
+
     /*!
      * \brief Remove all orphan nodes.
      * \return number of removed nodes
@@ -187,8 +186,8 @@ module SMESH
      * \return TRUE in case of success, FALSE otherwise.
      */
     boolean TriToQuad (in long_array       IDsOfElements,
-		       in NumericalFunctor Criterion,
-		       in double           MaxAngle);
+                       in NumericalFunctor Criterion,
+                       in double           MaxAngle);
 
     /*!
      * \brief Fuse neighbour triangles into quadrangles.
@@ -196,8 +195,8 @@ module SMESH
      * Behaves like the above method, taking list of elements from \a theObject
      */
     boolean TriToQuadObject (in SMESH_IDSource   theObject,
-			     in NumericalFunctor Criterion,
-			     in double           MaxAngle);
+                             in NumericalFunctor Criterion,
+                             in double           MaxAngle);
 
     /*!
      * \brief Split quadrangles into triangles.
@@ -206,7 +205,7 @@ module SMESH
      * \return TRUE in case of success, FALSE otherwise.
      */
     boolean QuadToTri (in long_array       IDsOfElements,
-		       in NumericalFunctor Criterion);
+                       in NumericalFunctor Criterion);
 
     /*!
      * \brief Split quadrangles into triangles.
@@ -214,7 +213,7 @@ module SMESH
      * Behaves like the above method, taking list of elements from \a theObject
      */
     boolean QuadToTriObject (in SMESH_IDSource   theObject,
-			     in NumericalFunctor Criterion);
+                             in NumericalFunctor Criterion);
 
     /*!
      * \brief Split quadrangles into triangles.
@@ -223,7 +222,7 @@ module SMESH
      * \return TRUE in case of success, FALSE otherwise.
      */
     boolean SplitQuad (in long_array IDsOfElements,
-		       in boolean    Diag13);
+                       in boolean    Diag13);
 
     /*!
      * \brief Split quadrangles into triangles.
@@ -231,7 +230,7 @@ module SMESH
      * Behaves like the above method, taking list of elements from \a theObject
      */
     boolean SplitQuadObject (in SMESH_IDSource theObject,
-			     in boolean        Diag13);
+                             in boolean        Diag13);
 
     /*!
      *  Find better splitting of the given quadrangle.
@@ -241,7 +240,7 @@ module SMESH
      *          diagonal is better, 0 if error occurs.
      */
     long BestSplit (in long             IDOfQuad,
-		    in NumericalFunctor Criterion);
+                    in NumericalFunctor Criterion);
 
     /*!
      * \brief Split volumic elements into tetrahedrons
@@ -264,10 +263,10 @@ module SMESH
                    in Smooth_Method Method);
 
     boolean SmoothObject(in SMESH_IDSource  theObject,
-			 in long_array      IDsOfFixedNodes,
-			 in long            MaxNbOfIterations,
-			 in double          MaxAspectRatio,
-			 in Smooth_Method   Method);
+                         in long_array      IDsOfFixedNodes,
+                         in long            MaxNbOfIterations,
+                         in double          MaxAspectRatio,
+                         in Smooth_Method   Method);
 
     boolean SmoothParametric(in long_array    IDsOfElements,
                              in long_array    IDsOfFixedNodes,
@@ -318,10 +317,10 @@ module SMESH
      * \param NbOfSteps - number of elements to generate from one element
      */
     void RotationSweepObject(in SMESH_IDSource  theObject,
-			     in AxisStruct      Axix,
-			     in double          AngleInRadians,
-			     in long            NbOfSteps,
-			     in double          Tolerance);
+                             in AxisStruct      Axix,
+                             in double          AngleInRadians,
+                             in long            NbOfSteps,
+                             in double          Tolerance);
     /*!
      * \brief Same as previous but additionally create groups of elements
      *  generated from elements belonging to preexisting groups
@@ -339,19 +338,19 @@ module SMESH
      * \param NbOfSteps - number of elements to generate from one element
      */
     void RotationSweepObject1D(in SMESH_IDSource  theObject,
-			       in AxisStruct      Axix,
-			       in double          AngleInRadians,
-			       in long            NbOfSteps,
-			       in double          Tolerance);
+                               in AxisStruct      Axix,
+                               in double          AngleInRadians,
+                               in long            NbOfSteps,
+                               in double          Tolerance);
     /*!
      * \brief Same as previous but additionally create groups of elements
      *  generated from elements belonging to preexisting groups
      */
     ListOfGroups RotationSweepObject1DMakeGroups(in SMESH_IDSource  theObject,
-						 in AxisStruct      Axix,
-						 in double          AngleInRadians,
-						 in long            NbOfSteps,
-						 in double          Tolerance);
+                                                 in AxisStruct      Axix,
+                                                 in double          AngleInRadians,
+                                                 in long            NbOfSteps,
+                                                 in double          Tolerance);
     /*!
      * \brief Genarate dim+1 elements by rotation of the object around axis
      * \param theObject - object containing elements to ratate
@@ -360,19 +359,19 @@ module SMESH
      * \param NbOfSteps - number of elements to generate from one element
      */
     void RotationSweepObject2D(in SMESH_IDSource  theObject,
-			       in AxisStruct      Axix,
-			       in double          AngleInRadians,
-			       in long            NbOfSteps,
-			       in double          Tolerance);
+                               in AxisStruct      Axix,
+                               in double          AngleInRadians,
+                               in long            NbOfSteps,
+                               in double          Tolerance);
     /*!
      * \brief Same as previous but additionally create groups of elements
      *  generated from elements belonging to preexisting groups
      */
     ListOfGroups RotationSweepObject2DMakeGroups(in SMESH_IDSource  theObject,
-						 in AxisStruct      Axix,
-						 in double          AngleInRadians,
-						 in long            NbOfSteps,
-						 in double          Tolerance);
+                                                 in AxisStruct      Axix,
+                                                 in double          AngleInRadians,
+                                                 in long            NbOfSteps,
+                                                 in double          Tolerance);
     /*!
      * \brief Genarate dim+1 elements by extrusion of elements along vector
      * \param IDsOfElements - elements to sweep
@@ -390,7 +389,7 @@ module SMESH
                                           in DirStruct       StepVector,
                                           in long            NbOfSteps);
    /*!
-    * Generate new elements by extrusion of theElements 
+    * Generate new elements by extrusion of theElements
     * by StepVector by NbOfSteps
     * param ExtrFlags set flags for performing extrusion
     * param SewTolerance - uses for comparing locations of nodes if flag
@@ -399,8 +398,8 @@ module SMESH
     void AdvancedExtrusion(in long_array      IDsOfElements,
                            in DirStruct       StepVector,
                            in long            NbOfSteps,
-			   in long            ExtrFlags,
-			   in double          SewTolerance);
+                           in long            ExtrFlags,
+                           in double          SewTolerance);
     /*!
      * \brief Same as previous but additionally create groups of elements
      *  generated from elements belonging to preexisting groups
@@ -412,22 +411,22 @@ module SMESH
                                              in double          SewTolerance);
 
     void ExtrusionSweepObject(in SMESH_IDSource  theObject,
-			      in DirStruct       StepVector,
-			      in long            NbOfSteps);
+                              in DirStruct       StepVector,
+                              in long            NbOfSteps);
     ListOfGroups ExtrusionSweepObjectMakeGroups(in SMESH_IDSource  theObject,
                                                 in DirStruct       StepVector,
                                                 in long            NbOfSteps);
 
     void ExtrusionSweepObject1D(in SMESH_IDSource theObject,
-				in DirStruct      StepVector,
-				in long           NbOfSteps);
+                                in DirStruct      StepVector,
+                                in long           NbOfSteps);
     ListOfGroups ExtrusionSweepObject1DMakeGroups(in SMESH_IDSource theObject,
                                                   in DirStruct      StepVector,
                                                   in long           NbOfSteps);
 
     void ExtrusionSweepObject2D(in SMESH_IDSource theObject,
-				in DirStruct      StepVector,
-				in long           NbOfSteps);
+                                in DirStruct      StepVector,
+                                in long           NbOfSteps);
     ListOfGroups ExtrusionSweepObject2DMakeGroups(in SMESH_IDSource theObject,
                                                   in DirStruct      StepVector,
                                                   in long           NbOfSteps);
@@ -443,37 +442,37 @@ module SMESH
       };
 
     ListOfGroups ExtrusionAlongPathX(in long_array        IDsOfElements,
-				     in SMESH_IDSource    Path,
-				     in long              NodeStart,
-				     in boolean           HasAngles,
-				     in double_array      Angles,
-				     in boolean           LinearVariation,
-				     in boolean           HasRefPoint,
-				     in PointStruct       RefPoint,
-				     in boolean           MakeGroups,
-				     in ElementType       ElemType,
-				     out Extrusion_Error  Error);
+                                     in SMESH_IDSource    Path,
+                                     in long              NodeStart,
+                                     in boolean           HasAngles,
+                                     in double_array      Angles,
+                                     in boolean           LinearVariation,
+                                     in boolean           HasRefPoint,
+                                     in PointStruct       RefPoint,
+                                     in boolean           MakeGroups,
+                                     in ElementType       ElemType,
+                                     out Extrusion_Error  Error);
 
     ListOfGroups ExtrusionAlongPathObjX(in SMESH_IDSource    theObject,
-					in SMESH_IDSource    Path,
-					in long              NodeStart,
-					in boolean           HasAngles,
-					in double_array      Angles,
-					in boolean           LinearVariation,
-					in boolean           HasRefPoint,
-					in PointStruct       RefPoint,
-					in boolean           MakeGroups,
-					in ElementType       ElemType,
-					out Extrusion_Error  Error);
+                                        in SMESH_IDSource    Path,
+                                        in long              NodeStart,
+                                        in boolean           HasAngles,
+                                        in double_array      Angles,
+                                        in boolean           LinearVariation,
+                                        in boolean           HasRefPoint,
+                                        in PointStruct       RefPoint,
+                                        in boolean           MakeGroups,
+                                        in ElementType       ElemType,
+                                        out Extrusion_Error  Error);
 
     Extrusion_Error ExtrusionAlongPath(in long_array        IDsOfElements,
-				       in SMESH_Mesh        PathMesh,
-				       in GEOM::GEOM_Object PathShape,
-				       in long              NodeStart,
-				       in boolean           HasAngles,
-				       in double_array      Angles,
-				       in boolean           HasRefPoint,
-				       in PointStruct       RefPoint);
+                                       in SMESH_Mesh        PathMesh,
+                                       in GEOM::GEOM_Object PathShape,
+                                       in long              NodeStart,
+                                       in boolean           HasAngles,
+                                       in double_array      Angles,
+                                       in boolean           HasRefPoint,
+                                       in PointStruct       RefPoint);
     ListOfGroups ExtrusionAlongPathMakeGroups(in long_array        IDsOfElements,
                                               in SMESH_Mesh        PathMesh,
                                               in GEOM::GEOM_Object PathShape,
@@ -485,13 +484,13 @@ module SMESH
                                               out Extrusion_Error  Error);
 
     Extrusion_Error ExtrusionAlongPathObject(in SMESH_IDSource    theObject,
-					     in SMESH_Mesh        PathMesh,
-					     in GEOM::GEOM_Object PathShape,
-					     in long              NodeStart,
-					     in boolean           HasAngles,
-					     in double_array      Angles,
-					     in boolean           HasRefPoint,
-					     in PointStruct       RefPoint);
+                                             in SMESH_Mesh        PathMesh,
+                                             in GEOM::GEOM_Object PathShape,
+                                             in long              NodeStart,
+                                             in boolean           HasAngles,
+                                             in double_array      Angles,
+                                             in boolean           HasRefPoint,
+                                             in PointStruct       RefPoint);
     ListOfGroups ExtrusionAlongPathObjectMakeGroups(in SMESH_IDSource    theObject,
                                                     in SMESH_Mesh        PathMesh,
                                                     in GEOM::GEOM_Object PathShape,
@@ -503,47 +502,47 @@ module SMESH
                                                     out Extrusion_Error  Error);
 
     Extrusion_Error ExtrusionAlongPathObject1D(in SMESH_IDSource    theObject,
-					       in SMESH_Mesh        PathMesh,
-					       in GEOM::GEOM_Object PathShape,
-					       in long              NodeStart,
-					       in boolean           HasAngles,
-					       in double_array      Angles,
-					       in boolean           HasRefPoint,
-					       in PointStruct       RefPoint);
+                                               in SMESH_Mesh        PathMesh,
+                                               in GEOM::GEOM_Object PathShape,
+                                               in long              NodeStart,
+                                               in boolean           HasAngles,
+                                               in double_array      Angles,
+                                               in boolean           HasRefPoint,
+                                               in PointStruct       RefPoint);
     ListOfGroups ExtrusionAlongPathObject1DMakeGroups(in SMESH_IDSource    theObject,
-						      in SMESH_Mesh        PathMesh,
-						      in GEOM::GEOM_Object PathShape,
-						      in long              NodeStart,
-						      in boolean           HasAngles,
-						      in double_array      Angles,
-						      in boolean           HasRefPoint,
-						      in PointStruct       RefPoint,
-						      out Extrusion_Error  Error);
+                                                      in SMESH_Mesh        PathMesh,
+                                                      in GEOM::GEOM_Object PathShape,
+                                                      in long              NodeStart,
+                                                      in boolean           HasAngles,
+                                                      in double_array      Angles,
+                                                      in boolean           HasRefPoint,
+                                                      in PointStruct       RefPoint,
+                                                      out Extrusion_Error  Error);
 
     Extrusion_Error ExtrusionAlongPathObject2D(in SMESH_IDSource    theObject,
-					       in SMESH_Mesh        PathMesh,
-					       in GEOM::GEOM_Object PathShape,
-					       in long              NodeStart,
-					       in boolean           HasAngles,
-					       in double_array      Angles,
-					       in boolean           HasRefPoint,
-					       in PointStruct       RefPoint);
+                                               in SMESH_Mesh        PathMesh,
+                                               in GEOM::GEOM_Object PathShape,
+                                               in long              NodeStart,
+                                               in boolean           HasAngles,
+                                               in double_array      Angles,
+                                               in boolean           HasRefPoint,
+                                               in PointStruct       RefPoint);
     ListOfGroups ExtrusionAlongPathObject2DMakeGroups(in SMESH_IDSource    theObject,
-						      in SMESH_Mesh        PathMesh,
-						      in GEOM::GEOM_Object PathShape,
-						      in long              NodeStart,
-						      in boolean           HasAngles,
-						      in double_array      Angles,
-						      in boolean           HasRefPoint,
-						      in PointStruct       RefPoint,
-						      out Extrusion_Error  Error);
+                                                      in SMESH_Mesh        PathMesh,
+                                                      in GEOM::GEOM_Object PathShape,
+                                                      in long              NodeStart,
+                                                      in boolean           HasAngles,
+                                                      in double_array      Angles,
+                                                      in boolean           HasRefPoint,
+                                                      in PointStruct       RefPoint,
+                                                      out Extrusion_Error  Error);
 
    /*!
     * Compute rotation angles for ExtrusionAlongPath as linear variation
     * of given angles along path steps
-    * param PathMesh mesh containing a 1D sub-mesh on the edge, along 
+    * param PathMesh mesh containing a 1D sub-mesh on the edge, along
     *                which proceeds the extrusion
-    * param PathShape is shape(edge); as the mesh can be complex, the edge 
+    * param PathShape is shape(edge); as the mesh can be complex, the edge
     *                 is used to define the sub-mesh for the path
     */
     double_array LinearAnglesVariation(in SMESH_Mesh        PathMesh,
@@ -566,9 +565,9 @@ module SMESH
                                in string     MeshName);
 
     void MirrorObject (in SMESH_IDSource theObject,
-		       in AxisStruct     Mirror,
-		       in MirrorType     Type,
-		       in boolean        Copy);
+                       in AxisStruct     Mirror,
+                       in MirrorType     Type,
+                       in boolean        Copy);
     ListOfGroups MirrorObjectMakeGroups (in SMESH_IDSource theObject,
                                          in AxisStruct     Mirror,
                                          in MirrorType     Type);
@@ -589,8 +588,8 @@ module SMESH
                                   in string     MeshName);
 
     void TranslateObject (in SMESH_IDSource theObject,
-			  in DirStruct      Vector,
-			  in boolean        Copy);
+                          in DirStruct      Vector,
+                          in boolean        Copy);
     ListOfGroups TranslateObjectMakeGroups (in SMESH_IDSource theObject,
                                             in DirStruct      Vector);
     SMESH_Mesh TranslateObjectMakeMesh (in SMESH_IDSource theObject,
@@ -625,9 +624,9 @@ module SMESH
                                in string     MeshName);
 
     void RotateObject (in SMESH_IDSource theObject,
-		       in AxisStruct     Axis,
-		       in double         AngleInRadians,
-		       in boolean        Copy);
+                       in AxisStruct     Axis,
+                       in double         AngleInRadians,
+                       in boolean        Copy);
     ListOfGroups RotateObjectMakeGroups (in SMESH_IDSource theObject,
                                          in AxisStruct     Axis,
                                          in double         AngleInRadians);
@@ -641,8 +640,8 @@ module SMESH
                               out array_of_long_array GroupsOfNodes);
 
     void FindCoincidentNodesOnPart (in  SMESH_IDSource      SubMeshOrGroup,
-				    in  double              Tolerance,
-				    out array_of_long_array GroupsOfNodes);
+                                    in  double              Tolerance,
+                                    out array_of_long_array GroupsOfNodes);
 
     void FindCoincidentNodesOnPartBut (in  SMESH_IDSource      SubMeshOrGroup,
                                        in  double              Tolerance,
@@ -657,7 +656,7 @@ module SMESH
      * \return List of groups of equal elements.
      */
     void FindEqualElements (in  SMESH_IDSource      MeshOrSubMeshOrGroup,
-			    out array_of_long_array GroupsOfElementsID);
+                            out array_of_long_array GroupsOfElementsID);
 
     /*!
      * \brief Merge elements in each given group.
@@ -669,7 +668,7 @@ module SMESH
      * \brief Merge equal elements in the whole mesh.
      */
     void MergeEqualElements();
-    
+
     /*!
      * If the given ID is a valid node ID (nodeID > 0), just move this node, else
      * move the node closest to the point to point's location and return ID of the node
@@ -714,8 +713,8 @@ module SMESH
                               in long FirstNodeID2,
                               in long SecondNodeID2,
                               in long LastNodeID2,
-			      in boolean CreatePolygons,
-			      in boolean CreatePolyedrs);
+                              in boolean CreatePolygons,
+                              in boolean CreatePolyedrs);
 
     Sew_Error SewConformFreeBorders (in long FirstNodeID1,
                                      in long SecondNodeID1,
@@ -728,8 +727,8 @@ module SMESH
                                in long LastNodeIDOnFreeBorder,
                                in long FirstNodeIDOnSide,
                                in long LastNodeIDOnSide,
-			       in boolean CreatePolygons,
-			       in boolean CreatePolyedrs);
+                               in boolean CreatePolygons,
+                               in boolean CreatePolyedrs);
 
     Sew_Error SewSideElements (in long_array IDsOfSide1Elements,
                                in long_array IDsOfSide2Elements,
@@ -746,7 +745,7 @@ module SMESH
     boolean ChangeElemNodes(in long ide, in long_array newIDs);
 
    /*!
-    * Return data of mesh edition preview which is computed provided 
+    * Return data of mesh edition preview which is computed provided
     * that the editor was obtained trough SMESH_Mesh::GetMeshEditPreviewer()
     */
     MeshPreviewStruct GetPreviewData();
@@ -768,13 +767,13 @@ module SMESH
     /*!
      * \brief Creates a hole in a mesh by doubling the nodes of some particular elements
      * \param theNodes - identifiers of nodes to be doubled
-     * \param theModifiedElems - identifiers of elements to be updated by the new (doubled) 
-     *        nodes. If list of element identifiers is empty then nodes are doubled but 
+     * \param theModifiedElems - identifiers of elements to be updated by the new (doubled)
+     *        nodes. If list of element identifiers is empty then nodes are doubled but
      *        they not assigned to elements
      *        \return TRUE if operation has been completed successfully, FALSE otherwise
      * \sa DoubleNode(), DoubleNodeGroup(), DoubleNodeGroups()
     */
-    boolean DoubleNodes( in long_array theNodes, in long_array theModifiedElems ); 
+    boolean DoubleNodes( in long_array theNodes, in long_array theModifiedElems );
 
     /*!
     * \brief Creates a hole in a mesh by doubling the nodes of some particular elements
@@ -784,7 +783,7 @@ module SMESH
     * \return TRUE if operation has been completed successfully, FALSE otherwise
     * \sa DoubleNodes(), DoubleNodeGroup(), DoubleNodeGroups()
     */
-    boolean DoubleNode( in long theNodeId, in long_array theModifiedElems ); 
+    boolean DoubleNode( in long theNodeId, in long_array theModifiedElems );
 
     /*!
     * \brief Creates a hole in a mesh by doubling the nodes of some particular elements
@@ -794,20 +793,20 @@ module SMESH
     * \return TRUE if operation has been completed successfully, FALSE otherwise
     * \sa DoubleNode(), DoubleNodes(), DoubleNodeGroups(), DoubleNodeGroupNew()
     */
-    boolean DoubleNodeGroup( in SMESH_GroupBase theNodes, 
+    boolean DoubleNodeGroup( in SMESH_GroupBase theNodes,
                              in SMESH_GroupBase theModifiedElems );
 
     /*!
      * \brief Creates a hole in a mesh by doubling the nodes of some particular elements.
-     * Works as DoubleNodeGroup() described above, but returns a new group with 
+     * Works as DoubleNodeGroup() described above, but returns a new group with
      * newly created nodes.
      * \param theNodes - group of nodes to be doubled.
      * \param theModifiedElems - group of elements to be updated.
      * \return a new group with newly created nodes
      * \sa DoubleNodeGroup()
      */
-    SMESH_Group DoubleNodeGroupNew( in SMESH_GroupBase theNodes, 
-				    in SMESH_GroupBase theModifiedElems );
+    SMESH_Group DoubleNodeGroupNew( in SMESH_GroupBase theNodes,
+                                    in SMESH_GroupBase theModifiedElems );
 
     /*!
     \brief Creates a hole in a mesh by doubling the nodes of some particular elements
@@ -817,22 +816,22 @@ module SMESH
     \return TRUE if operation has been completed successfully, FALSE otherwise
     \sa DoubleNode(), DoubleNodeGroup(), DoubleNodes()
     */
-    boolean DoubleNodeGroups( in ListOfGroups theNodes, 
+    boolean DoubleNodeGroups( in ListOfGroups theNodes,
                               in ListOfGroups theModifiedElems );
-    
+
     /*!
      * \brief Creates a hole in a mesh by doubling the nodes of some particular elements
      * \param theElems - the list of elements (edges or faces) to be replicated
      *        The nodes for duplication could be found from these elements
      * \param theNodesNot - list of nodes to NOT replicate
-     * \param theAffectedElems - the list of elements (cells and edges) to which the 
+     * \param theAffectedElems - the list of elements (cells and edges) to which the
      *        replicated nodes should be associated to.
      * \return TRUE if operation has been completed successfully, FALSE otherwise
      * \sa DoubleNodeGroup(), DoubleNodeGroups()
     */
     boolean DoubleNodeElem( in long_array theElems,
                             in long_array theNodesNot,
-                            in long_array theAffectedElems ); 
+                            in long_array theAffectedElems );
 
     /*!
      * \brief Creates a hole in a mesh by doubling the nodes of some particular elements
@@ -859,13 +858,13 @@ module SMESH
      * \return TRUE if operation has been completed successfully, FALSE otherwise
      * \sa DoubleNodes(), DoubleNodeGroups(), DoubleNodeElemGroupNew()
     */
-    boolean DoubleNodeElemGroup( in SMESH_GroupBase theElems, 
+    boolean DoubleNodeElemGroup( in SMESH_GroupBase theElems,
                                  in SMESH_GroupBase theNodesNot,
                                  in SMESH_GroupBase theAffectedElems );
 
     /*!
      * \brief Creates a hole in a mesh by doubling the nodes of some particular elements.
-     * Works as DoubleNodeElemGroup() described above, but returns a new group with 
+     * Works as DoubleNodeElemGroup() described above, but returns a new group with
      * newly created elements.
      * \param theElems - group of of elements (edges or faces) to be replicated
      * \param theNodesNot - group of nodes not to replicated
@@ -874,10 +873,10 @@ module SMESH
      * \return a new group with newly created elements
      * \sa DoubleNodeElemGroup()
     */
-    SMESH_Group DoubleNodeElemGroupNew( in SMESH_GroupBase theElems, 
-					in SMESH_GroupBase theNodesNot,
-					in SMESH_GroupBase theAffectedElems );
-    
+    SMESH_Group DoubleNodeElemGroupNew( in SMESH_GroupBase theElems,
+                                        in SMESH_GroupBase theNodesNot,
+                                        in SMESH_GroupBase theAffectedElems );
+
     /*!
      * \brief Creates a hole in a mesh by doubling the nodes of some particular elements
      * This method provided for convenience works as DoubleNodes() described above.
@@ -889,7 +888,7 @@ module SMESH
      * \return TRUE if operation has been completed successfully, FALSE otherwise
      * \sa DoubleNodesInRegion(), DoubleNodeGroupsInRegion()
     */
-    boolean DoubleNodeElemGroupInRegion( in SMESH_GroupBase theElems, 
+    boolean DoubleNodeElemGroupInRegion( in SMESH_GroupBase theElems,
                                      in SMESH_GroupBase theNodesNot,
                                      in GEOM::GEOM_Object theShape );
 
@@ -951,13 +950,13 @@ module SMESH
      *  \param meshName - a name of new mesh to store created boundary elements in,
      *                     "" means not to create the new mesh
      *  \param toCopyElements - if true, the checked elements will be copied into the new mesh
-     *  \param toCopyExistingBondary - if true, not only new but also pre-existing 
+     *  \param toCopyExistingBondary - if true, not only new but also pre-existing
      *                                boundary elements will be copied into the new mesh
      *  \param group - returns the create group, if any
      *  \retval SMESH::SMESH_Mesh - the mesh where elements were added to
      */
     SMESH::SMESH_Mesh MakeBoundaryMesh(in SMESH_IDSource elements,
-                                       in Bnd_Dimension  dimension, 
+                                       in Bnd_Dimension  dimension,
                                        in string         groupName,
                                        in string         meshName,
                                        in boolean        toCopyElements,

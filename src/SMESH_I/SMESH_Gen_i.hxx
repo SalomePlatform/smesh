@@ -19,12 +19,11 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
-
 //  SMESH SMESH_I : idl implementation based on 'SMESH' unit's calsses
 //  File   : SMESH_Gen_i.hxx
 //  Author : Paul RASCLE, EDF
 //  Module : SMESH
-//
+
 #ifndef _SMESH_GEN_I_HXX_
 #define _SMESH_GEN_I_HXX_
 
@@ -65,8 +64,8 @@ public:
   // constructor
   StudyContext() {}
   // destructor
-  ~StudyContext() 
-  { 
+  ~StudyContext()
+  {
     mapIdToIOR.clear();
     mapIdToId.clear();
   }
@@ -114,7 +113,7 @@ public:
     }
     return 0;
   }
-    
+
 private:
   // get next free object identifier
   int getNextId()
@@ -134,7 +133,7 @@ private:
 // ==========================================================
 class SMESH_I_EXPORT SMESH_Gen_i:
   public virtual POA_SMESH::SMESH_Gen,
-  public virtual Engines_Component_i 
+  public virtual Engines_Component_i
 {
 public:
   // Get last created instance of the class
@@ -160,14 +159,14 @@ public:
   GEOM::GEOM_Object_ptr ShapeToGeomObject (const TopoDS_Shape& theShape );
   // Get TopoDS_Shape correspoding to GEOM_Object
   TopoDS_Shape GeomObjectToShape(GEOM::GEOM_Object_ptr theGeomObject);
-  
+
   // Default constructor
   SMESH_Gen_i();
   // Standard constructor
   SMESH_Gen_i( CORBA::ORB_ptr            orb,
                PortableServer::POA_ptr   poa,
-               PortableServer::ObjectId* contId, 
-               const char*               instanceName, 
+               PortableServer::ObjectId* contId,
+               const char*               instanceName,
                const char*               interfaceName );
   // Destructor
   virtual ~SMESH_Gen_i();
@@ -196,7 +195,7 @@ public:
   SMESH::SMESH_Hypothesis_ptr CreateHypothesis (const char* theHypType,
                                                 const char* theLibName)
     throw ( SALOME::SALOME_Exception );
-  
+
   // Return hypothesis of given type holding parameter values of the existing mesh
   SMESH::SMESH_Hypothesis_ptr GetHypothesisParameterValues (const char*           theHypType,
                                                             const char*           theLibName,
@@ -204,7 +203,7 @@ public:
                                                             GEOM::GEOM_Object_ptr theGeom,
                                                             CORBA::Boolean        byMesh)
     throw ( SALOME::SALOME_Exception );
-  
+
   /*!
    * Sets number of segments per diagonal of boundary box of geometry by which
    * default segment length of appropriate 1D hypotheses is defined
@@ -266,7 +265,7 @@ public:
   CORBA::Boolean IsReadyToCompute( SMESH::SMESH_Mesh_ptr theMesh,
                                    GEOM::GEOM_Object_ptr theShapeObject )
     throw ( SALOME::SALOME_Exception );
-  
+
   /*!
    * Calculate Mesh as preview till indicated dimension on shape
    * First, verify list of hypothesis associated with the subShape.
@@ -279,7 +278,7 @@ public:
     throw ( SALOME::SALOME_Exception );
 
   // Returns errors of hypotheses definintion
-  SMESH::algo_error_array* GetAlgoState( SMESH::SMESH_Mesh_ptr theMesh, 
+  SMESH::algo_error_array* GetAlgoState( SMESH::SMESH_Mesh_ptr theMesh,
                                          GEOM::GEOM_Object_ptr theSubObject )
       throw ( SALOME::SALOME_Exception );
 
@@ -305,25 +304,25 @@ public:
     throw ( SALOME::SALOME_Exception );
 
   // Concatenate the given meshes into one mesh
-  SMESH::SMESH_Mesh_ptr ConcatenateCommon(const SMESH::mesh_array& theMeshesArray, 
-                                          CORBA::Boolean           theUniteIdenticalGroups, 
-                                          CORBA::Boolean           theMergeNodesAndElements, 
+  SMESH::SMESH_Mesh_ptr ConcatenateCommon(const SMESH::mesh_array& theMeshesArray,
+                                          CORBA::Boolean           theUniteIdenticalGroups,
+                                          CORBA::Boolean           theMergeNodesAndElements,
                                           CORBA::Double            theMergeTolerance,
                                           CORBA::Boolean           theCommonGroups)
     throw ( SALOME::SALOME_Exception );
 
   // Concatenate the given meshes into one mesh
-  SMESH::SMESH_Mesh_ptr Concatenate(const SMESH::mesh_array& theMeshesArray, 
-                                    CORBA::Boolean           theUniteIdenticalGroups, 
-                                    CORBA::Boolean           theMergeNodesAndElements, 
+  SMESH::SMESH_Mesh_ptr Concatenate(const SMESH::mesh_array& theMeshesArray,
+                                    CORBA::Boolean           theUniteIdenticalGroups,
+                                    CORBA::Boolean           theMergeNodesAndElements,
                                     CORBA::Double            theMergeTolerance)
     throw ( SALOME::SALOME_Exception );
 
   // Concatenate the given meshes into one mesh
   // Create the groups of all elements from initial meshes
-  SMESH::SMESH_Mesh_ptr ConcatenateWithGroups(const SMESH::mesh_array& theMeshesArray, 
-                                              CORBA::Boolean           theUniteIdenticalGroups, 
-                                              CORBA::Boolean           theMergeNodesAndElements, 
+  SMESH::SMESH_Mesh_ptr ConcatenateWithGroups(const SMESH::mesh_array& theMeshesArray,
+                                              CORBA::Boolean           theUniteIdenticalGroups,
+                                              CORBA::Boolean           theMergeNodesAndElements,
                                               CORBA::Double            theMergeTolerance)
     throw ( SALOME::SALOME_Exception );
 
@@ -368,10 +367,10 @@ public:
 
   // Clears study-connected data when it is closed
   void Close( SALOMEDS::SComponent_ptr theComponent );
-  
+
   // Get component data type
   char* ComponentDataType();
-    
+
   // Transform data from transient form to persistent
   char* IORToLocalPersistentID( SALOMEDS::SObject_ptr theSObject,
                                 const char*           IORString,
@@ -389,7 +388,7 @@ public:
   SALOMEDS::SObject_ptr PublishInStudy( SALOMEDS::Study_ptr   theStudy,
                                         SALOMEDS::SObject_ptr theSObject,
                                         CORBA::Object_ptr     theObject,
-                                        const char*           theName ) 
+                                        const char*           theName )
     throw ( SALOME::SALOME_Exception );
 
   // Copy-paste methods - returns true if object can be copied to the clipboard
@@ -410,8 +409,8 @@ public:
   // Dump python
   // ============
 
-  virtual Engines::TMPFile* DumpPython(CORBA::Object_ptr theStudy, 
-                                       CORBA::Boolean isPublished, 
+  virtual Engines::TMPFile* DumpPython(CORBA::Object_ptr theStudy,
+                                       CORBA::Boolean isPublished,
                                        CORBA::Boolean& isValidScript);
 
   void AddToPythonScript (int theStudyID, const TCollection_AsciiString& theString);
@@ -420,10 +419,10 @@ public:
 
   void SavePython (SALOMEDS::Study_ptr theStudy);
 
-  TCollection_AsciiString DumpPython_impl (SALOMEDS::Study_ptr theStudy, 
+  TCollection_AsciiString DumpPython_impl (SALOMEDS::Study_ptr theStudy,
                                            Resource_DataMapOfAsciiStringAsciiString& theObjectNames,
                                            Resource_DataMapOfAsciiStringAsciiString& theNames,
-                                           bool isPublished, 
+                                           bool isPublished,
                                            bool& aValidScript,
                                            const TCollection_AsciiString& theSavedTrace);
 
@@ -439,7 +438,7 @@ public:
   // Get shape reader
   GEOM_Client* GetShapeReader();
 
-  // Tags definition 
+  // Tags definition
   static long GetHypothesisRootTag();
   static long GetAlgorithmsRootTag();
   static long GetRefOnShapeTag();
@@ -503,7 +502,7 @@ public:
   CORBA::Long GetObjectId(CORBA::Object_ptr theObject);
 
   // Return an object that previously had an oldID
-  template<class TInterface> 
+  template<class TInterface>
   typename TInterface::_var_type GetObjectByOldId( const int oldID )
   {
     if ( StudyContext* myStudyContext = GetCurrentStudyContext() ) {
@@ -525,20 +524,20 @@ public:
   void UpdateParameters(CORBA::Object_ptr theObject, const char* theParameters);
   char* GetParameters(CORBA::Object_ptr theObject);
   char* ParseParameters(const char* theParameters);
-  
- 
+
+
 private:
   // Create hypothesis of given type
   SMESH::SMESH_Hypothesis_ptr createHypothesis( const char* theHypName,
                                                 const char* theLibName)
     throw ( SALOME::SALOME_Exception );
-  
+
   // Create empty mesh on shape
   SMESH::SMESH_Mesh_ptr createMesh()
     throw ( SALOME::SALOME_Exception );
 
   static void loadGeomData( SALOMEDS::SComponent_ptr theCompRoot );
-  
+
 private:
   static GEOM::GEOM_Gen_var      myGeomGen;
   static CORBA::ORB_var          myOrb;         // ORB reference

@@ -19,13 +19,11 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+//  File    : SMESH_DumpPython.cxx
+//  Created : Thu Mar 24 17:17:59 2005
+//  Author  : Julia DOROVSKIKH
+//  Module  : SMESH
 
-// File    : SMESH_Gen_i_DumpPython.cxx
-// Created : Thu Mar 24 17:17:59 2005
-// Author  : Julia DOROVSKIKH
-// Module  : SMESH
-// $Header : $
-//
 #include "SMESH_PythonDump.hxx"
 #include "SMESH_Gen_i.hxx"
 #include "SMESH_Filter_i.hxx"
@@ -73,42 +71,42 @@ namespace SMESH
     }
   }
 
-  TPythonDump& 
+  TPythonDump&
   TPythonDump::
   operator<<(long int theArg){
     myStream<<theArg;
     return *this;
   }
 
-  TPythonDump& 
+  TPythonDump&
   TPythonDump::
   operator<<(int theArg){
     myStream<<theArg;
     return *this;
   }
 
-  TPythonDump& 
+  TPythonDump&
   TPythonDump::
   operator<<(double theArg){
     myStream<<theArg;
     return *this;
   }
 
-  TPythonDump& 
+  TPythonDump&
   TPythonDump::
   operator<<(float theArg){
     myStream<<theArg;
     return *this;
   }
 
-  TPythonDump& 
+  TPythonDump&
   TPythonDump::
   operator<<(const void* theArg){
     myStream<<theArg;
     return *this;
   }
 
-  TPythonDump& 
+  TPythonDump&
   TPythonDump::
   operator<<(const char* theArg){
     if ( theArg )
@@ -116,7 +114,7 @@ namespace SMESH
     return *this;
   }
 
-  TPythonDump& 
+  TPythonDump&
   TPythonDump::
   operator<<(const SMESH::ElementType& theArg)
   {
@@ -163,21 +161,21 @@ namespace SMESH
     theStream << " ]";
   }
 
-  TPythonDump& 
+  TPythonDump&
   TPythonDump::operator<<(const SMESH::long_array& theArg)
   {
     DumpArray( theArg, *this );
     return *this;
   }
 
-  TPythonDump& 
+  TPythonDump&
   TPythonDump::operator<<(const SMESH::double_array& theArg)
   {
     DumpArray( theArg, *this );
     return *this;
   }
 
-  TPythonDump& 
+  TPythonDump&
   TPythonDump::
   operator<<(SALOMEDS::SObject_ptr aSObject)
   {
@@ -188,7 +186,7 @@ namespace SMESH
     return *this;
   }
 
-  TPythonDump& 
+  TPythonDump&
   TPythonDump::
   operator<<(CORBA::Object_ptr theArg)
   {
@@ -209,7 +207,7 @@ namespace SMESH
     return *this;
   }
 
-  TPythonDump& 
+  TPythonDump&
   TPythonDump::
   operator<<(SMESH::SMESH_Hypothesis_ptr theArg)
   {
@@ -222,7 +220,7 @@ namespace SMESH
     return *this;
   }
 
-  TPythonDump& 
+  TPythonDump&
   TPythonDump::
   operator<<(SMESH::SMESH_IDSource_ptr theArg)
   {
@@ -238,7 +236,7 @@ namespace SMESH
     return *this << mesh << ".GetIDSource(" << anElementsId << ", " << type << ")";
   }
 
-  TPythonDump& 
+  TPythonDump&
   TPythonDump::
   operator<<(SMESH::FilterLibrary_i* theArg)
   {
@@ -246,7 +244,7 @@ namespace SMESH
     return *this;
   }
 
-  TPythonDump& 
+  TPythonDump&
   TPythonDump::
   operator<<(SMESH::FilterManager_i* theArg)
   {
@@ -254,7 +252,7 @@ namespace SMESH
     return *this;
   }
 
-  TPythonDump& 
+  TPythonDump&
   TPythonDump::
   operator<<(SMESH::Filter_i* theArg)
   {
@@ -262,7 +260,7 @@ namespace SMESH
     return *this;
   }
 
-  TPythonDump& 
+  TPythonDump&
   TPythonDump::
   operator<<(SMESH::Functor_i* theArg)
   {
@@ -316,7 +314,7 @@ namespace SMESH
     return *this;
   }
 
-  TPythonDump& 
+  TPythonDump&
   TPythonDump::
   operator<<(SMESH::Measurements_i* theArg)
   {
@@ -378,6 +376,11 @@ namespace SMESH
     DumpArray( theList, *this );
     return *this;
   }
+  TPythonDump& TPythonDump::operator<<(const SMESH::ListOfGroups * theList)
+  {
+    DumpArray( *theList, *this );
+    return *this;
+  }
   TPythonDump& TPythonDump::operator<<(const SMESH::ListOfIDSources& theList)
   {
     DumpArray( theList, *this );
@@ -390,7 +393,7 @@ namespace SMESH
   //================================================================================
   /*!
    * \brief Return marker of long string literal beginning
-   * \param type - a name of functionality producing the string literal 
+   * \param type - a name of functionality producing the string literal
    * \retval TCollection_AsciiString - the marker string to be written into
    * a raw python script
    */
@@ -426,7 +429,7 @@ namespace SMESH
       * \param theLongString - the retrieved literal
       * \param theStringType - a name of functionality produced the literal
       * \retval bool - true if a string literal found
-     * 
+     *
      * The literal is removed from theText; theFrom points position right after
      * the removed literal
    */
@@ -481,7 +484,7 @@ namespace SMESH
 
 //=======================================================================
 //function : DumpPython
-//purpose  : 
+//purpose  :
 //=======================================================================
 Engines::TMPFile* SMESH_Gen_i::DumpPython (CORBA::Object_ptr theStudy,
                                            CORBA::Boolean isPublished,
@@ -527,17 +530,17 @@ Engines::TMPFile* SMESH_Gen_i::DumpPython (CORBA::Object_ptr theStudy,
   aScript += DumpPython_impl(aStudy, aMap, aMapNames,
                              isPublished, isValidScript, aSavedTrace);
 
-  int aLen = aScript.Length(); 
+  int aLen = aScript.Length();
   unsigned char* aBuffer = new unsigned char[aLen+1];
   strcpy((char*)aBuffer, aScript.ToCString());
 
   CORBA::Octet* anOctetBuf =  (CORBA::Octet*)aBuffer;
-  Engines::TMPFile_var aStreamFile = new Engines::TMPFile(aLen+1, aLen+1, anOctetBuf, 1); 
+  Engines::TMPFile_var aStreamFile = new Engines::TMPFile(aLen+1, aLen+1, anOctetBuf, 1);
 
   bool hasNotPublishedObjects = aScript.Location( NotPublishedObjectName(), 1, aLen);
   isValidScript = isValidScript && !hasNotPublishedObjects;
 
-  return aStreamFile._retn(); 
+  return aStreamFile._retn();
 }
 
 //=============================================================================
@@ -568,7 +571,7 @@ void SMESH_Gen_i::RemoveLastFromPythonScript (int theStudyID)
 
 //=======================================================================
 //function : SavePython
-//purpose  : 
+//purpose  :
 //=======================================================================
 void SMESH_Gen_i::SavePython (SALOMEDS::Study_ptr theStudy)
 {
@@ -621,10 +624,10 @@ Handle(TColStd_HSequenceOfInteger) FindEntries (TCollection_AsciiString& theStri
     int c = (int)arr[i];
     j = i+1;
     if ( isdigit( c )) { //Is digit?
- 
+
       isFound = Standard_False;
       while((j < aLen) && ( isdigit(c) || c == ':' )) { //Check if it is an entry
-        c = (int)arr[j++];  
+        c = (int)arr[j++];
         if(c == ':') isFound = Standard_True;
       }
 
@@ -685,10 +688,10 @@ namespace {
  */
 //=============================================================================
 TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
-                        (SALOMEDS::Study_ptr theStudy, 
+                        (SALOMEDS::Study_ptr theStudy,
                          Resource_DataMapOfAsciiStringAsciiString& theObjectNames,
                          Resource_DataMapOfAsciiStringAsciiString& theNames,
-                         bool isPublished, 
+                         bool isPublished,
                          bool& aValidScript,
                          const TCollection_AsciiString& theSavedTrace)
 {
