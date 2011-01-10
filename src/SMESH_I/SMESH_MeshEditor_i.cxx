@@ -473,10 +473,12 @@ CORBA::Long SMESH_MeshEditor_i::RemoveOrphanNodes()
   for ( int i = 0; i < seq.size(); i++ )
     IdList.push_back( seq[i] );
 
+  bool ret = anEditor.Remove( IdList, true );
+  myMesh->GetMeshDS()->Modified();
   if ( IdList.size() )
     myMesh->SetIsModified( true );
 
-  return anEditor.Remove( IdList, true );
+  return ret;
 }
 
 //=============================================================================
