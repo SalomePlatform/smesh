@@ -160,6 +160,9 @@ void SMDS_UnstructuredGrid::compactGrid(std::vector<int>& idNodesOldToNew, int n
     {
       MESSAGE("-------------- compactGrid, newNodeSize " << newNodeSize);
       newPoints = vtkPoints::New();
+      // rnv: to fix bug "21125: EDF 1233 SMESH: Degrardation of precision in a test case for quadratic conversion"
+      // using double type for storing coordinates of nodes instead float.
+      newPoints->SetDataType(VTK_DOUBLE);
       newPoints->Initialize();
       newPoints->Allocate(newNodeSize);
       newPoints->SetNumberOfPoints(newNodeSize);
@@ -371,7 +374,7 @@ void SMDS_UnstructuredGrid::copyNodes(vtkPoints *newPoints, std::vector<int>& id
   int nbPoints = end - start;
   if (nbPoints > 0)
     {
-      memcpy(target, source, 3 * sizeof(float) * nbPoints);
+      memcpy(target, source, 3 * sizeof(double) * nbPoints);
       for (int j = start; j < end; j++)
         idNodesOldToNew[j] = alreadyCopied++; // old vtkId --> new vtkId
         //idNodesOldToNew[alreadyCopied++] = idNodesOldToNew[j]; // new vtkId --> old SMDS id

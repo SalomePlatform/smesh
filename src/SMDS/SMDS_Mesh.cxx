@@ -154,6 +154,9 @@ SMDS_Mesh::SMDS_Mesh()
   myGrid->Initialize();
   myGrid->Allocate();
   vtkPoints* points = vtkPoints::New();
+  // rnv: to fix bug "21125: EDF 1233 SMESH: Degrardation of precision in a test case for quadratic conversion"
+  // using double type for storing coordinates of nodes instead float.
+  points->SetDataType(VTK_DOUBLE);
   points->SetNumberOfPoints(SMDS_Mesh::chunkSize);
   myGrid->SetPoints( points );
   points->Delete();
@@ -2503,6 +2506,9 @@ void SMDS_Mesh::Clear()
   myGrid->Initialize();
   myGrid->Allocate();
   vtkPoints* points = vtkPoints::New();
+  // rnv: to fix bug "21125: EDF 1233 SMESH: Degrardation of precision in a test case for quadratic conversion"
+  // using double type for storing coordinates of nodes instead float.
+  points->SetDataType(VTK_DOUBLE);
   points->SetNumberOfPoints(SMDS_Mesh::chunkSize);
   myGrid->SetPoints( points );
   points->Delete();
