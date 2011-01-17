@@ -277,7 +277,7 @@ Currently BLSURF plugin has the following limitations.
       following combinations of algorithms are impossible:
       <ul>
         <li> global MEFISTO or Quadrangle(mapping) + local BLSURF;</li>
-        <li> BLSUFR + Projection 2D from faces meshed by BLSURF;</li>
+        <li> BLSURF + Projection 2D from faces meshed by BLSURF;</li>
         <li> local BLSURF + Extrusion 3D;</li>
       </ul>
       </li>
