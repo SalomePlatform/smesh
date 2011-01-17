@@ -79,6 +79,8 @@ public:
   { return i < myObjects.size() && !CORBA::is_nil(myObjects[i]); }
 
   void AvoidSimultaneousSelection( StdMeshersGUI_ObjectReferenceParamWdg* other);
+  
+  void SetDefaultText(QString defaultText="", QString styleSheet="");
 
 public slots:
   /*!
@@ -98,6 +100,7 @@ signals:
     * one is activated
    */
   void selectionActivated();
+  void contentModified();
   
 private slots:
   void onSelectionDone(); 
@@ -119,6 +122,8 @@ private:
  QLineEdit*             myObjNameLineEdit;
  QPushButton*           mySelButton;
  QString                myParamValue;
+ QString                myEmptyText;
+ QString                myEmptyStyleSheet;
 };
 
 #endif // STDMESHERSGUI_OBJECTREFERENCEPARAMWDG_H

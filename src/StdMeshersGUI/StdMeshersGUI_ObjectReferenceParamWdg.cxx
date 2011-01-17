@@ -110,6 +110,8 @@ void StdMeshersGUI_ObjectReferenceParamWdg::init()
   mySelectionMgr = SMESH::GetSelectionMgr( mySMESHGUI );
   mySelectionActivated = false;
   myParamValue = "";
+  myEmptyText = "";
+  myEmptyStyleSheet ="";
 
   SUIT_ResourceMgr* mgr = SMESH::GetResourceMgr( mySMESHGUI );
   QPixmap iconSlct ( mgr->loadPixmap("SMESH", tr("ICON_SELECT")));
@@ -120,6 +122,7 @@ void StdMeshersGUI_ObjectReferenceParamWdg::init()
 
   myObjNameLineEdit = new QLineEdit(this);
   myObjNameLineEdit->setReadOnly(true);
+  myObjNameLineEdit->setStyleSheet(myEmptyStyleSheet);
 
   aHBox->addWidget( mySelButton );
   aHBox->addWidget( myObjNameLineEdit );
@@ -190,7 +193,8 @@ void StdMeshersGUI_ObjectReferenceParamWdg::AvoidSimultaneousSelection
 void StdMeshersGUI_ObjectReferenceParamWdg::SetObject(CORBA::Object_ptr obj)
 {
   myObjects.clear();
-  myObjNameLineEdit->setText( "" );
+  myObjNameLineEdit->setText( myEmptyText );
+  myObjNameLineEdit->setStyleSheet(myEmptyStyleSheet);
   myParamValue = "";
 
   _PTR(SObject) sobj;
@@ -199,8 +203,10 @@ void StdMeshersGUI_ObjectReferenceParamWdg::SetObject(CORBA::Object_ptr obj)
   if ( sobj ) {
     std::string name = sobj->GetName();
     myObjNameLineEdit->setText( name.c_str() );
+    myObjNameLineEdit->setStyleSheet("");
     myObjects.push_back( CORBA::Object::_duplicate( obj ));
     myParamValue = sobj->GetID().c_str();
+    emit contentModified();
   }
 }
 
@@ -214,9 +220,11 @@ void StdMeshersGUI_ObjectReferenceParamWdg::SetObject(CORBA::Object_ptr obj)
 void StdMeshersGUI_ObjectReferenceParamWdg::SetObjects(SMESH::string_array_var& objects)
 {
   myObjects.clear();
-  myObjNameLineEdit->setText( "" );
+  myObjNameLineEdit->setText( myEmptyText );
+  myObjNameLineEdit->setStyleSheet(myEmptyStyleSheet);
   myParamValue = "";
-
+  bool selChanged = false;
+  
   for ( unsigned i = 0; i < objects->length(); ++i )
   {
     _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
@@ -225,15 +233,21 @@ void StdMeshersGUI_ObjectReferenceParamWdg::SetObjects(SMESH::string_array_var& 
     if ( !CORBA::is_nil( anObj )) {
       std::string name = aSObj->GetName();
       QString text = myObjNameLineEdit->text();
-      if ( !text.isEmpty() )
+      if ( text != myEmptyText )
         text += " ";
+      else
+        text = "";
       text += name.c_str();
       myObjNameLineEdit->setText( text );
+      myObjNameLineEdit->setStyleSheet("");
       myObjects.push_back( anObj );
       myParamValue += " ";
       myParamValue += objects[i];
+      selChanged = true;
     }
   }
+  if (selChanged)
+    emit contentModified();
 }
 
 //================================================================================
@@ -271,4 +285,12 @@ void StdMeshersGUI_ObjectReferenceParamWdg::onSelectionDone()
       SetObjects( objIds );
     }
   }
+}
+
+void StdMeshersGUI_ObjectReferenceParamWdg::SetDefaultText(QString defaultText, QString styleSheet)
+{
+  myEmptyText = defaultText;
+  myEmptyStyleSheet = styleSheet;
+  myObjNameLineEdit->setText( myEmptyText );
+  myObjNameLineEdit->setStyleSheet( myEmptyStyleSheet);
 }
