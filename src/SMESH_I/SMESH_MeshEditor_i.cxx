@@ -5134,7 +5134,7 @@ CORBA::Boolean SMESH_MeshEditor_i::DoubleNodeElemGroupInRegion(SMESH::SMESH_Grou
   \param theAffectedElems - group of elements to which the replicated nodes
   should be associated to.
   \return TRUE if operation has been completed successfully, FALSE otherwise
-  \sa DoubleNodeGroup(), DoubleNodes()
+  \sa DoubleNodeGroup(), DoubleNodes(), DoubleNodeElemGroupsNew()
 */
 //================================================================================
 
@@ -5181,6 +5181,60 @@ CORBA::Boolean SMESH_MeshEditor_i::DoubleNodeElemGroups(const SMESH::ListOfGroup
   TPythonDump() << "isDone = " << this << ".DoubleNodeElemGroups( " << &theElems << ", "
                 << &theNodesNot << ", " << &theAffectedElems << " )";
   return aResult;
+}
+
+//================================================================================
+/*!
+ * \brief Creates a hole in a mesh by doubling the nodes of some particular elements
+ * Works as DoubleNodeElemGroups(), but returns a new group with newly created elements.
+  \param theElems - list of groups of elements (edges or faces) to be replicated
+  \param theNodesNot - list of groups of nodes not to replicated
+  \param theAffectedElems - group of elements to which the replicated nodes
+  should be associated to.
+ * \return a new group with newly created elements
+ * \sa DoubleNodeElemGroups()
+ */
+//================================================================================
+
+SMESH::SMESH_Group_ptr SMESH_MeshEditor_i::DoubleNodeElemGroupsNew(const SMESH::ListOfGroups& theElems,
+                                                                   const SMESH::ListOfGroups& theNodesNot,
+                                                                   const SMESH::ListOfGroups& theAffectedElems)
+{
+  SMESH::SMESH_Group_var aNewGroup;
+  
+  initData();
+
+  ::SMESH_MeshEditor aMeshEditor( myMesh );
+
+  SMESHDS_Mesh* aMeshDS = GetMeshDS();
+  TIDSortedElemSet anElems, aNodes, anAffected;
+  listOfGroupToSet(theElems, aMeshDS, anElems, false );
+  listOfGroupToSet(theNodesNot, aMeshDS, aNodes, true );
+  listOfGroupToSet(theAffectedElems, aMeshDS, anAffected, false );
+
+  bool aResult = aMeshEditor.DoubleNodes( anElems, aNodes, anAffected );
+
+  storeResult( aMeshEditor) ;
+
+  myMesh->GetMeshDS()->Modified();
+  if ( aResult ) {
+    myMesh->SetIsModified( true );
+
+    // Create group with newly created elements
+    SMESH::long_array_var anIds = GetLastCreatedElems();
+    if (anIds->length() > 0) {
+      SMESH::ElementType aGroupType = myMesh_i->GetElementType(anIds[0], true);
+      string anUnindexedName (theElems[0]->GetName());
+      string aNewName = generateGroupName(anUnindexedName + "_double");
+      aNewGroup = myMesh_i->CreateGroup(aGroupType, aNewName.c_str());
+      aNewGroup->Add(anIds);
+    }
+  }
+
+  // Update Python script
+  TPythonDump() << "createdElems = " << this << ".DoubleNodeElemGroupsNew( " << &theElems << ", "
+                << &theNodesNot << ", " << &theAffectedElems << " )";
+  return aNewGroup._retn();
 }
 
 //================================================================================

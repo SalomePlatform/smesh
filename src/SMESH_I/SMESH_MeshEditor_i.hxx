@@ -607,7 +607,7 @@ public:
    * \param theAffectedElems - group of elements to which the replicated nodes
    *        should be associated to.
    * \return TRUE if operation has been completed successfully, FALSE otherwise
-   * \sa DoubleNodes(), DoubleNodeGroups()
+   * \sa DoubleNodes(), DoubleNodeGroups(), DoubleNodeElemGroupNew()
    */
   CORBA::Boolean DoubleNodeElemGroup( SMESH::SMESH_GroupBase_ptr theElems,
                                       SMESH::SMESH_GroupBase_ptr theNodesNot,
@@ -649,11 +649,25 @@ public:
    * \param theAffectedElems - group of elements to which the replicated nodes
    *        should be associated to.
    * \return TRUE if operation has been completed successfully, FALSE otherwise
-   * \sa DoubleNodeGroup(), DoubleNodes()
+   * \sa DoubleNodeGroup(), DoubleNodes(), DoubleNodeElemGroupsNew()
    */
   CORBA::Boolean DoubleNodeElemGroups( const SMESH::ListOfGroups& theElems,
                                        const SMESH::ListOfGroups& theNodesNot,
                                        const SMESH::ListOfGroups& theAffectedElems );
+
+  /*!
+   * \brief Creates a hole in a mesh by doubling the nodes of some particular elements
+   * Works as DoubleNodeElemGroups(), but returns a new group with newly created elements.
+   * \param theElems - list of groups of elements (edges or faces) to be replicated
+   * \param theNodesNot - list of groups of nodes not to replicated
+   * \param theAffectedElems - group of elements to which the replicated nodes
+   *        should be associated to.
+   * \return a new group with newly created elements
+   * \sa DoubleNodeElemGroups()
+   */
+  SMESH::SMESH_Group_ptr DoubleNodeElemGroupsNew( const SMESH::ListOfGroups& theElems,
+                                                  const SMESH::ListOfGroups& theNodesNot,
+                                                  const SMESH::ListOfGroups& theAffectedElems );
 
 
   /*!

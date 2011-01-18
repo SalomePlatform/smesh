@@ -1194,7 +1194,9 @@ void _pyMeshEditor::Process( const Handle(_pyCommand)& theCommand)
     theCommand->SetMethod("FindCoincidentNodesOnPart");
   }
   // DoubleNodeElemGroupNew() -> DoubleNodeElemGroup()
-  if ( !isPyMeshMethod && ( method == "DoubleNodeElemGroupNew" || method == "DoubleNodeGroupNew"))
+  // DoubleNodeGroupNew() -> DoubleNodeGroup()
+  // DoubleNodeElemGroupsNew() -> DoubleNodeElemGroups()
+  if ( !isPyMeshMethod && ( method == "DoubleNodeElemGroupNew" || method == "DoubleNodeGroupNew" || method == "DoubleNodeElemGroupsNew"))
   {
     isPyMeshMethod=true;
     theCommand->SetMethod( method.SubString( 1, method.Length()-3));
