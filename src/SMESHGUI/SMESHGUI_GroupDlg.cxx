@@ -1181,7 +1181,6 @@ void SMESHGUI_GroupDlg::onObjectSelectionChanged()
       myGeomObjects->length(aNbSel);
 
       GEOM::GEOM_Object_var aGeomGroup;
-      Standard_Boolean testResult;
       int i = 0;
 
       SALOME_ListIteratorOfListIO anIt (aList);
