@@ -139,16 +139,16 @@ public:
    */
   int GetNodeIndex( const SMDS_MeshNode* node ) const;
 
-  inline ShortType getMeshId() const {return myMeshId; };
-  inline ShortType getshapeId() const {return myShapeId; };
-  inline int getIdInShape() const { return myIdInShape; };
-  inline int getVtkId() const { return myVtkID; };
+  inline ShortType getMeshId() const {return myMeshId; }
+  inline ShortType getshapeId() const {return myShapeId; }
+  inline int getIdInShape() const { return myIdInShape; }
+  inline int getVtkId() const { return myVtkID; }
 
 protected:
-  inline void setId(int id) {myID = id; };
-  inline void setShapeId(ShortType shapeId) {myShapeId = shapeId; };
-  inline void setIdInShape(int id) { myIdInShape = id; };
-  inline void setVtkId(int vtkId) { myVtkID = vtkId; };
+  inline void setId(int id) {myID = id; }
+  inline void setShapeId(ShortType shapeId) {myShapeId = shapeId; }
+  inline void setIdInShape(int id) { myIdInShape = id; }
+  inline void setVtkId(int vtkId) { myVtkID = vtkId; }
   SMDS_MeshElement(int ID=-1);
   SMDS_MeshElement(int id, ShortType meshId, ShortType shapeId = 0);
   virtual void init(int id = -1, ShortType meshId = -1, ShortType shapeId = 0);
