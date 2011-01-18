@@ -63,6 +63,7 @@
 #include <list>
 #include <string>
 #include <math.h>
+#include <limits>
 
 //#define __myDEBUG
 
