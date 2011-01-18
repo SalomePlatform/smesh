@@ -43,7 +43,7 @@ namespace SMESH
 {
   SMESHGUI_EXPORT GEOM::GEOM_Gen_var    GetGEOMGen();
 
-  SMESHGUI_EXPORT GEOM::GEOM_Object_var GetShapeOnMeshOrSubMesh( _PTR(SObject) );
+  SMESHGUI_EXPORT GEOM::GEOM_Object_var GetShapeOnMeshOrSubMesh( _PTR(SObject), bool* isMesh=0 );
 
   SMESHGUI_EXPORT GEOM::GEOM_Object_ptr GetGeom( _PTR(SObject) );
 

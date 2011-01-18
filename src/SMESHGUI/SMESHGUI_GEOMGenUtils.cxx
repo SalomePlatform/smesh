@@ -52,7 +52,8 @@ namespace SMESH
     return aGEOMGen;
   }
 
-  GEOM::GEOM_Object_var GetShapeOnMeshOrSubMesh(_PTR(SObject) theMeshOrSubmesh)
+  GEOM::GEOM_Object_var GetShapeOnMeshOrSubMesh(_PTR(SObject) theMeshOrSubmesh,
+                                                bool*         isMesh)
   {
     SALOMEDS_SObject* aMeshOrSubmesh = _CAST(SObject,theMeshOrSubmesh);
     if(aMeshOrSubmesh) {
@@ -61,11 +62,17 @@ namespace SMESH
         SMESH::SMESH_Mesh_var aMesh =
           SObjectToInterface<SMESH::SMESH_Mesh>( theMeshOrSubmesh );
         if ( !aMesh->_is_nil() )
+        {
+          if ( isMesh ) *isMesh = true;
           return aMesh->GetShapeToMesh();
+        }
         SMESH::SMESH_subMesh_var aSubmesh =
           SObjectToInterface<SMESH::SMESH_subMesh>( theMeshOrSubmesh );
         if ( !aSubmesh->_is_nil() )
+        {
+          if ( isMesh ) *isMesh = false;
           return aSubmesh->GetSubShape();
+        }
       }
     }
     return GEOM::GEOM_Object::_nil();
