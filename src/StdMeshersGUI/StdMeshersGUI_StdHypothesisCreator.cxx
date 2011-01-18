@@ -666,6 +666,25 @@ QString StdMeshersGUI_StdHypothesisCreator::storeParams() const
       QCheckBox* toCopyGroups = widget< QCheckBox >( 2 );
       h->SetCopySourceMesh( toCopyMesh->isChecked(), toCopyGroups->isChecked());
     }
+    else if( hypType()=="ViscousLayers" )
+    {
+      StdMeshers::StdMeshers_ViscousLayers_var h =
+        StdMeshers::StdMeshers_ViscousLayers::_narrow( hypothesis() );
+
+      h->SetTotalThickness( params[0].myValue.toDouble() );
+      /*  */ h->SetParameters(aVariablesList.join(":").toLatin1().constData());
+      h->SetNumberLayers  ( params[1].myValue.toInt() );
+      /*  */ h->SetParameters(aVariablesList.join(":").toLatin1().constData());
+      h->SetStretchFactor ( params[2].myValue.toDouble() );
+      /*  */ h->SetParameters(aVariablesList.join(":").toLatin1().constData());
+      
+      if ( StdMeshersGUI_SubShapeSelectorWdg* idsWg = 
+           widget< StdMeshersGUI_SubShapeSelectorWdg >( 3 ))
+      {
+        h->SetIgnoreFaces( idsWg->GetListOfIDs() );
+        //h->SetObjectEntry( idsWg->GetMainShapeEntry() );
+      }
+    }
     else if( hypType()=="QuadrangleParams" )
     {
       StdMeshers::StdMeshers_QuadrangleParams_var h =
@@ -1099,6 +1118,45 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
     aQCheckBox->setEnabled( toCopyMesh );
     customWidgets()->append( aQCheckBox );
   }
+  else if( hypType()=="ViscousLayers" )
+  {
+    StdMeshers::StdMeshers_ViscousLayers_var h =
+      StdMeshers::StdMeshers_ViscousLayers::_narrow( hyp );
+
+    item.myName = tr( "SMESH_TOTAL_THICKNESS" );
+    if(!initVariableName(aParameters,item,0))
+      item.myValue = h->GetTotalThickness();
+    p.append( item );
+    customWidgets()->append (0);
+
+    item.myName = tr( "SMESH_NUMBER_OF_LAYERS" );
+    if(!initVariableName(aParameters,item,1))
+      item.myValue = h->GetNumberLayers();
+    p.append( item );
+    customWidgets()->append (0);
+
+    item.myName = tr( "SMESH_STRETCH_FACTOR" );
+    if(!initVariableName(aParameters,item,2))
+      item.myValue = h->GetStretchFactor();
+    p.append( item );
+    customWidgets()->append (0);
+
+    QString aMainEntry = SMESHGUI_GenericHypothesisCreator::getMainShapeEntry();
+    if ( !aMainEntry.isEmpty() )
+    {
+      item.myName = tr( "SMESH_FACES_WO_LAYERS" );
+      p.append( item );
+
+      StdMeshersGUI_SubShapeSelectorWdg* idsWg =
+        new StdMeshersGUI_SubShapeSelectorWdg(0,TopAbs_FACE);
+
+      idsWg->SetGeomShapeEntry( aMainEntry );
+      idsWg->SetMainShapeEntry( aMainEntry );
+      idsWg->SetListOfIDs( h->GetIgnoreFaces() );
+      idsWg->showPreview( true );
+      customWidgets()->append ( idsWg );
+    }
+  }
   else if (hypType() == "QuadrangleParams")
   {
     StdMeshers::StdMeshers_QuadrangleParams_var h =
@@ -1108,9 +1166,8 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
     p.append(item);
 
     StdMeshersGUI_SubShapeSelectorWdg* aDirectionWidget =
-      new StdMeshersGUI_SubShapeSelectorWdg();
+      new StdMeshersGUI_SubShapeSelectorWdg(0, TopAbs_VERTEX);
     aDirectionWidget->SetMaxSize(1);
-    aDirectionWidget->SetSubShType(TopAbs_VERTEX);
     QString anEntry = SMESHGUI_GenericHypothesisCreator::getShapeEntry();
     QString aMainEntry = SMESHGUI_GenericHypothesisCreator::getMainShapeEntry();
     if (anEntry == "")
@@ -1148,50 +1205,66 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
 //================================================================================
 /*!
  * \brief tune "standard" control
-  * \param w - control widget
-  * \param int - parameter index
+ *  \param w - control widget
+ *  \param int - parameter index
  */
 //================================================================================
 
 void StdMeshersGUI_StdHypothesisCreator::attuneStdWidget (QWidget* w, const int) const
 {
   SMESHGUI_SpinBox* sb = w->inherits( "SMESHGUI_SpinBox" ) ? ( SMESHGUI_SpinBox* )w : 0;
-  if( hypType()=="LocalLength" &&  sb )
+  if ( sb )
   {
-    if (sb->objectName() == tr("SMESH_LOCAL_LENGTH_PARAM"))
+    if( hypType()=="LocalLength" )
+    {
+      if (sb->objectName() == tr("SMESH_LOCAL_LENGTH_PARAM"))
+        sb->RangeStepAndValidator( VALUE_SMALL, VALUE_MAX, 1.0, "length_precision" );
+      else if (sb->objectName() == tr("SMESH_LOCAL_LENGTH_PRECISION"))
+        sb->RangeStepAndValidator( 0.0, 1.0, 0.05, "len_tol_precision" );
+    }
+    else if( hypType()=="Arithmetic1D" )
+    {
+      sb->RangeStepAndValidator( VALUE_SMALL, VALUE_MAX, 1.0, "parametric_precision" );
+    }
+    else if( hypType()=="MaxLength" )
+    {
       sb->RangeStepAndValidator( VALUE_SMALL, VALUE_MAX, 1.0, "length_precision" );
-    else if (sb->objectName() == tr("SMESH_LOCAL_LENGTH_PRECISION"))
-      sb->RangeStepAndValidator( 0.0, 1.0, 0.05, "len_tol_precision" );
+      sb->setEnabled( !widget< QCheckBox >( 1 )->isChecked() );
+    }
+    else if( hypType()=="MaxElementArea" )
+    {
+      sb->RangeStepAndValidator( VALUE_SMALL_2, VALUE_MAX_2, 1.0, "area_precision" );
+    }
+    else if( hypType()=="MaxElementVolume" )
+    {
+      sb->RangeStepAndValidator( VALUE_SMALL_3, VALUE_MAX_3, 1.0, "vol_precision" );
+    }
+    else if( hypType()=="StartEndLength" )
+    {
+      sb->RangeStepAndValidator( VALUE_SMALL, VALUE_MAX, 1.0, "length_precision" );
+    }
+    else if( hypType()=="Deflection1D" )
+    {
+      sb->RangeStepAndValidator( VALUE_SMALL, VALUE_MAX, 1.0, "parametric_precision" );
+    }
+    else if( hypType()=="ViscousLayers" )
+    {
+      if (sb->objectName() == tr("SMESH_STRETCH_FACTOR"))
+        sb->RangeStepAndValidator( 1.0, VALUE_MAX, 0.1, "parametric_precision" );
+      else
+        sb->RangeStepAndValidator( VALUE_SMALL, VALUE_MAX, 1.0, "length_precision" );
+    }
+    else // default validator for possible ancestors
+    {
+      sb->RangeStepAndValidator( VALUE_SMALL, VALUE_MAX, 1.0, "length_precision" );
+    }
   }
-  else if( hypType()=="Arithmetic1D" && sb )
-  {
-    sb->RangeStepAndValidator( VALUE_SMALL, VALUE_MAX, 1.0, "parametric_precision" );
-  }
-  else if( hypType()=="MaxLength" && sb )
-  {
-    sb->RangeStepAndValidator( VALUE_SMALL, VALUE_MAX, 1.0, "length_precision" );
-    sb->setEnabled( !widget< QCheckBox >( 1 )->isChecked() );
-  }
-  else if( hypType()=="MaxElementArea" && sb )
-  {
-    sb->RangeStepAndValidator( VALUE_SMALL_2, VALUE_MAX_2, 1.0, "area_precision" );
-  }
-  else if( hypType()=="MaxElementVolume" && sb )
-  {
-    sb->RangeStepAndValidator( VALUE_SMALL_3, VALUE_MAX_3, 1.0, "vol_precision" );
-  }
-  else if( hypType()=="StartEndLength" && sb )
-  {
-    sb->RangeStepAndValidator( VALUE_SMALL, VALUE_MAX, 1.0, "length_precision" );
-  }
-  else if( hypType()=="Deflection1D" && sb )
-  {
-    sb->RangeStepAndValidator( VALUE_SMALL, VALUE_MAX, 1.0, "parametric_precision" );
-  }
-  else if ( sb ) // default validator for possible ancestors
-  {
-    sb->RangeStepAndValidator( VALUE_SMALL, VALUE_MAX, 1.0, "length_precision" );
-  }
+//   else if ( QtxIntSpinBox* ib = w->inherits( "QtxIntSpinBox" ) ? ( QtxIntSpinBox* )w : 0)
+//   {
+//     if( hypType()=="ViscousLayers" )
+//     {
+//     }
+//   }
 }
 
 //================================================================================
@@ -1265,6 +1338,7 @@ QString StdMeshersGUI_StdHypothesisCreator::hypTypeName( const QString& t ) cons
     types.insert( "LayerDistribution2D", "LAYER_DISTRIBUTION" );
     types.insert( "SegmentLengthAroundVertex", "SEGMENT_LENGTH_AROUND_VERTEX" );
     types.insert( "MaxLength", "MAX_LENGTH" );
+    types.insert( "ViscousLayers", "VISCOUS_LAYERS" );
     types.insert( "QuadrangleParams", "QUADRANGLE_PARAMS" );
   }
 
