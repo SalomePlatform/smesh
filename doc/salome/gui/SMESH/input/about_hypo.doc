@@ -55,6 +55,7 @@ with other hypotheses:
 <li>Quadratic mesh</li>
 <li>Quadrangle preference</li>
 <li>Triangle preference</li>
+<li>Viscous layers</li>
 </ul>
 
 The choice of a hypothesis depends on:

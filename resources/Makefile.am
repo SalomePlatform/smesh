@@ -190,6 +190,8 @@ dist_salomeres_DATA = \
 	mesh_duplicate_nodes.png \
 	mesh_duplicate_nodes_with_elem.png \
 	mesh_bounding_box.png \
+	mesh_hypo_viscous_layers.png \
+	mesh_tree_hypo_viscous_layers.png \
 	mesh_min_dist.png
 
 # VSR: little trick to avoid putting if SMESHCatalog.xml to the distribution archive

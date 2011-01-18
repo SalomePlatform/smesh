@@ -159,6 +159,12 @@
                 icon-id="mesh_hypo_length.png"
                 dim="3"/>
 
+    <hypothesis type="ViscousLayers"
+                label-id="Viscous Layers"
+                icon-id="mesh_algo_quad.png"
+                auxiliary="true"
+                dim="3"/>
+
     <hypothesis type="NumberOfLayers2D"
                 label-id="Number of Layers"
                 icon-id="mesh_hypo_length.png"
@@ -225,6 +231,7 @@
                icon-id="mesh_algo_hexa.png"
                input="QUAD"
 	       need-geom="false"
+               opt-hypos="ViscousLayers"
                dim="3"/>
 
     <algorithm type="Projection_1D"

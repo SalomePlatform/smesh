@@ -57,4 +57,34 @@ otherwise refinement area will contain some quadrangular elements.
 <i>This hypothesis is obsolete now. Use <b>Quadrangle Parameters</b>
 hypothesis with type <b>Triangle Preference</b> set instead.</i>
 
+\anchor viscous_layers_anchor
+<h2>Viscous Layers</h2>
+
+<b>Viscous Layers</b> additional hypotheses can be used together with
+several 3D algorithms: NETGEN 3D, GHS3D and Hexahedron(i,j,k). This
+hypothesis allows creation of layers of highly stretched prisms near
+mesh boundary, which is beneficial for high quality viscous
+computations. The prisms constructed on the quadrangular mesh faces are
+actually the hexahedrons.
+
+
+\image html viscous_layers_hyp.png
+
+<ul>
+<li><b>Name</b> - allows to define the name of the hypothesis.</li>
+<li><b>Total thicknes</b> - gives total thickness of layers of prisms.</li>
+<li><b>Number of layers</b> - defines number of layers of prisms.</li>
+<li><b>Stretch factor</b> - defines factor of growth of height of
+prisms from the mesh boundary towards inside of mesh.</li>
+<li><b>Faces without layers</b> - defines geometrical faces on which
+layers of prisms should not be constructed. By default the layers of
+prisms are not constructed on geometrical faces shared by solids.</li>
+</ul>
+
+\image html viscous_layers_mesh.png A group containing viscous layer prisms.
+
+<br><b>See also</b> a sample TUI script of a \ref tui_viscous_layers
+"Viscous layers construction".
+
+
 */
