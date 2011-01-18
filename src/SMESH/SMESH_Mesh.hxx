@@ -226,33 +226,33 @@ public:
   void ExportUNV(const char *file) throw(SALOME_Exception);
   void ExportSTL(const char *file, const bool isascii) throw(SALOME_Exception);
   
-  int NbNodes() throw(SALOME_Exception);
+  int NbNodes() const throw(SALOME_Exception);
   
-  int Nb0DElements() throw(SALOME_Exception);
+  int Nb0DElements() const throw(SALOME_Exception);
   
-  int NbEdges(SMDSAbs_ElementOrder order = ORDER_ANY) throw(SALOME_Exception);
+  int NbEdges(SMDSAbs_ElementOrder order = ORDER_ANY) const throw(SALOME_Exception);
   
-  int NbFaces(SMDSAbs_ElementOrder order = ORDER_ANY) throw(SALOME_Exception);
+  int NbFaces(SMDSAbs_ElementOrder order = ORDER_ANY) const throw(SALOME_Exception);
   
-  int NbTriangles(SMDSAbs_ElementOrder order = ORDER_ANY) throw(SALOME_Exception);
+  int NbTriangles(SMDSAbs_ElementOrder order = ORDER_ANY) const throw(SALOME_Exception);
   
-  int NbQuadrangles(SMDSAbs_ElementOrder order = ORDER_ANY) throw(SALOME_Exception);
+  int NbQuadrangles(SMDSAbs_ElementOrder order = ORDER_ANY) const throw(SALOME_Exception);
 
-  int NbPolygons() throw(SALOME_Exception);
+  int NbPolygons() const throw(SALOME_Exception);
   
-  int NbVolumes(SMDSAbs_ElementOrder order = ORDER_ANY) throw(SALOME_Exception);
+  int NbVolumes(SMDSAbs_ElementOrder order = ORDER_ANY) const throw(SALOME_Exception);
   
-  int NbTetras(SMDSAbs_ElementOrder order = ORDER_ANY) throw(SALOME_Exception);
+  int NbTetras(SMDSAbs_ElementOrder order = ORDER_ANY) const throw(SALOME_Exception);
   
-  int NbHexas(SMDSAbs_ElementOrder order = ORDER_ANY) throw(SALOME_Exception);
+  int NbHexas(SMDSAbs_ElementOrder order = ORDER_ANY) const throw(SALOME_Exception);
   
-  int NbPyramids(SMDSAbs_ElementOrder order = ORDER_ANY) throw(SALOME_Exception);
+  int NbPyramids(SMDSAbs_ElementOrder order = ORDER_ANY) const throw(SALOME_Exception);
 
-  int NbPrisms(SMDSAbs_ElementOrder order = ORDER_ANY) throw(SALOME_Exception);
+  int NbPrisms(SMDSAbs_ElementOrder order = ORDER_ANY) const throw(SALOME_Exception);
   
-  int NbPolyhedrons() throw(SALOME_Exception);
+  int NbPolyhedrons() const throw(SALOME_Exception);
   
-  int NbSubMesh() throw(SALOME_Exception);
+  int NbSubMesh() const throw(SALOME_Exception);
   
   int NbGroup() const { return _mapGroup.size(); }
   
