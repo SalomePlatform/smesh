@@ -73,7 +73,8 @@ salomeinclude_HEADERS = \
 	SMDS_MeshInfo.hxx \
 	SMDS_UnstructuredGrid.hxx \
 	SMDS_Downward.hxx \
-	SMDS_StdIterator.hxx
+	SMDS_StdIterator.hxx \
+	SMDS_IteratorOnIterators.hxx
 
 
 # Libraries targets

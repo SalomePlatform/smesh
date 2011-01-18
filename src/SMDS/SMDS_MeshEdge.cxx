@@ -2,7 +2,7 @@
 
 SMDSAbs_ElementType SMDS_MeshEdge::GetType() const
 {
-	return SMDSAbs_Edge;
+        return SMDSAbs_Edge;
 }
 
 vtkIdType SMDS_MeshEdge::GetVtkType() const

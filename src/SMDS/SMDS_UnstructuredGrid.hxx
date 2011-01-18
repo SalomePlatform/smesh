@@ -6,7 +6,7 @@
  */
 
 #ifndef _SMDS_UNSTRUCTUREDGRID_HXX
-#define	_SMDS_UNSTRUCTUREDGRID_HXX
+#define _SMDS_UNSTRUCTUREDGRID_HXX
 
 #include <vtkUnstructuredGrid.h>
 #include <vtkCellLinks.h>
@@ -89,5 +89,5 @@ protected:
   std::vector<SMDS_Downward*> _downArray;
 };
 
-#endif	/* _SMDS_UNSTRUCTUREDGRID_HXX */
+#endif  /* _SMDS_UNSTRUCTUREDGRID_HXX */
 

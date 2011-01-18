@@ -147,11 +147,11 @@ void SMDS_UnstructuredGrid::compactGrid(std::vector<int>& idNodesOldToNew, int n
   } enumState;
   enumState compactState = lookHoleStart;
 
-  //	if (this->Links)
-  //	{
-  //		this->Links->UnRegister(this);
-  //		this->Links = 0;
-  //	}
+  //    if (this->Links)
+  //    {
+  //            this->Links->UnRegister(this);
+  //            this->Links = 0;
+  //    }
 
   // --- if newNodeSize, create a new compacted vtkPoints
 

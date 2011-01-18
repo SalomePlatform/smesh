@@ -91,24 +91,24 @@ void SMDS_MeshIDFactory::ReleaseID(int ID, int vtkId)
 
 void SMDS_MeshIDFactory::Clear()
 {
-	myMaxID = 0;
-	myPoolOfID.clear();
+        myMaxID = 0;
+        myPoolOfID.clear();
 }
 
 void SMDS_MeshIDFactory::SetMesh(SMDS_Mesh *mesh)
 {
-	myMesh = mesh;
+        myMesh = mesh;
 }
 
 SMDS_Mesh* SMDS_MeshIDFactory::GetMesh()
 {
-	return myMesh;
+        return myMesh;
 }
 
 void SMDS_MeshIDFactory::emptyPool(int maxId)
 {
-	MESSAGE("SMDS_MeshIDFactory::emptyPool " << myMaxID << " --> " << maxId);
-	myMaxID = maxId;
-	myPoolOfID.clear();
+        MESSAGE("SMDS_MeshIDFactory::emptyPool " << myMaxID << " --> " << maxId);
+        myMaxID = maxId;
+        myPoolOfID.clear();
 }
 
