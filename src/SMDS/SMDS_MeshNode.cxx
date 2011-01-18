@@ -72,12 +72,14 @@ void SMDS_MeshNode::init(int id, int meshId, int shapeId, double x, double y, do
   SMDS_CellLinks *cellLinks = dynamic_cast<SMDS_CellLinks*>(grid->GetCellLinks());
   assert(cellLinks);
   if (myVtkID >= cellLinks->GetLinksSize())
-	  cellLinks->ResizeL(myVtkID+SMDS_Mesh::chunkSize);
+          cellLinks->ResizeL(myVtkID+SMDS_Mesh::chunkSize);
 }
 
 SMDS_MeshNode::~SMDS_MeshNode()
 {
   nbNodes--;
+  if ( myPosition && myPosition != SMDS_SpacePosition::originSpacePosition() )
+    delete myPosition, myPosition = 0;
 }
 
 //=======================================================================
@@ -111,7 +113,9 @@ void SMDS_MeshNode::Print(ostream & OS) const
 
 void SMDS_MeshNode::SetPosition(const SMDS_PositionPtr& aPos)
 {
-        myPosition = aPos;
+  if ( myPosition && myPosition != aPos )
+    delete myPosition;
+  myPosition = aPos;
 }
 
 //=======================================================================
@@ -214,7 +218,7 @@ private:
                            SMDSAbs_ElementType type):
     myMesh(mesh), myCells(cells), myNcells(ncells), myType(type), iter(0)
   {
-  	//MESSAGE("myNcells " << myNcells);
+        //MESSAGE("myNcells " << myNcells);
        for (; iter<ncells; iter++)
         {
            int vtkId = myCells[iter];
@@ -225,7 +229,7 @@ private:
                myFiltCells.push_back((SMDS_MeshElement*)elem);
         }
         myNcells = myFiltCells.size();
-       	//MESSAGE("myNcells " << myNcells);
+        //MESSAGE("myNcells " << myNcells);
        iter = 0;
         //MESSAGE("SMDS_MeshNode_MyIterator (filter) " << ncells << " " << myNcells);
   }

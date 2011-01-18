@@ -223,10 +223,6 @@ SMDS_MeshNode * SMDS_Mesh::AddNodeWithID(double x, double y, double z, int ID)
     SMDS_MeshNode * node = myNodePool->getNew();
     node->init(ID, myMeshId, 0, x, y, z);
 
-    //rnv: Set SMDS_SpacePosition for node if need
-    if( node->GetPosition()->GetTypeOfPosition() != SMDS_TOP_3DSPACE)
-      node->SetPosition(SMDS_SpacePosition::originSpacePosition());
-    
     if (ID >= myNodes.size())
     {
         myNodes.resize(ID+SMDS_Mesh::chunkSize, 0);
@@ -2317,9 +2313,9 @@ void SMDS_Mesh::DebugStats() const
 ///////////////////////////////////////////////////////////////////////////////
 int SMDS_Mesh::NbNodes() const
 {
-	//MESSAGE(myGrid->GetNumberOfPoints());
-	//MESSAGE(myInfo.NbNodes());
-	//MESSAGE(myNodeMax);
+        //MESSAGE(myGrid->GetNumberOfPoints());
+        //MESSAGE(myInfo.NbNodes());
+        //MESSAGE(myNodeMax);
     return myInfo.NbNodes();
 }
 
@@ -2395,6 +2391,7 @@ SMDS_Mesh::~SMDS_Mesh()
     while (itn->more())
       {
         const SMDS_MeshNode *node = itn->next();
+        ((SMDS_MeshNode*)node)->SetPosition(SMDS_SpacePosition::originSpacePosition());
         myNodeIDFactory->ReleaseID(node->GetID(), node->getVtkId());
       }
   }
@@ -2493,6 +2490,7 @@ void SMDS_Mesh::Clear()
   while (itn->more())
     {
       SMDS_MeshNode *node = (SMDS_MeshNode*)(itn->next());
+      node->SetPosition(SMDS_SpacePosition::originSpacePosition());
       myNodePool->destroy(node);
     }
   myNodes.clear();
@@ -3129,7 +3127,10 @@ void SMDS_Mesh::RemoveElement(const SMDS_MeshElement *        elem,
           myNodeIDFactory->ReleaseID((*it)->GetID(), (*it)->getVtkId());
           removedNodes.push_back((*it));
           if (const SMDS_MeshNode* vtkElem = dynamic_cast<const SMDS_MeshNode*>(*it))
+          {
+            ((SMDS_MeshNode*)vtkElem)->SetPosition(SMDS_SpacePosition::originSpacePosition());
             myNodePool->destroy((SMDS_MeshNode*) vtkElem);
+          }
           else
             delete (*it);
           it++;
@@ -3159,6 +3160,7 @@ void SMDS_Mesh::RemoveFreeElement(const SMDS_MeshElement * elem)
     if (!itFe->more()) { // free node
       myNodes[elemId] = 0;
       myInfo.myNbNodes--;
+      ((SMDS_MeshNode*) n)->SetPosition(SMDS_SpacePosition::originSpacePosition());
       myNodePool->destroy(static_cast<SMDS_MeshNode*>(todest));
       myNodeIDFactory->ReleaseID(elemId, vtkId);
     }
@@ -3408,8 +3410,8 @@ SMDS_MeshEdge* SMDS_Mesh::AddEdgeWithID(const SMDS_MeshNode * n1,
   myInfo.myNbQuadEdges++;
 
 //  if (!registerElement(ID, edge)) {
-//	  RemoveElement(edge, false);
-//	  edge = NULL;
+//        RemoveElement(edge, false);
+//        edge = NULL;
 //  }
   return edge;
 
@@ -3553,7 +3555,7 @@ SMDS_MeshFace* SMDS_Mesh::AddFaceWithID(const SMDS_MeshNode * n1,
   if ( !n1 || !n2 || !n3 || !n4 || !n12 || !n23 || !n34 || !n41) return 0;
   if(hasConstructionEdges()) {
     // creation quadratic edges - not implemented
-	return 0;
+        return 0;
   }
   else
   {
@@ -4090,8 +4092,8 @@ void SMDS_Mesh::updateNodeMinMax()
   myNodeMin = 0;
   if (myNodes.size() == 0)
   {
-	myNodeMax=0;
-	return;
+        myNodeMax=0;
+        return;
   }
   while (!myNodes[myNodeMin] && (myNodeMin<myNodes.size()))
     myNodeMin++;
@@ -4127,7 +4129,7 @@ void SMDS_Mesh::adjustStructure()
 
 void SMDS_Mesh::dumpGrid(string ficdump)
 {
-	MESSAGE("SMDS_Mesh::dumpGrid " << ficdump);
+        MESSAGE("SMDS_Mesh::dumpGrid " << ficdump);
 //  vtkUnstructuredGridWriter* aWriter = vtkUnstructuredGridWriter::New();
 //  aWriter->SetFileName(ficdump.c_str());
 //  aWriter->SetInput(myGrid);
@@ -4142,35 +4144,35 @@ void SMDS_Mesh::dumpGrid(string ficdump)
   ficcon << "-------------------------------- points " <<  nbPoints << endl;
   for (int i=0; i<nbPoints; i++)
   {
-  	ficcon << i << " " << *(myGrid->GetPoint(i)) << " " << *(myGrid->GetPoint(i)+1) << " " << " " << *(myGrid->GetPoint(i)+2) << endl;
+        ficcon << i << " " << *(myGrid->GetPoint(i)) << " " << *(myGrid->GetPoint(i)+1) << " " << " " << *(myGrid->GetPoint(i)+2) << endl;
   }
   int nbCells = myGrid->GetNumberOfCells();
   ficcon << "-------------------------------- cells " <<  nbCells << endl;
   for (int i=0; i<nbCells; i++)
   {
-//	MESSAGE(i << " " << myGrid->GetCell(i));
-//	MESSAGE("  " << myGrid->GetCell(i)->GetCellType());
-  	ficcon << i << " - " << myGrid->GetCell(i)->GetCellType() << " -";
-  	int nbptcell = myGrid->GetCell(i)->GetNumberOfPoints();
-  	vtkIdList *listid = myGrid->GetCell(i)->GetPointIds();
-  	for (int j=0; j<nbptcell; j++)
-  	{
-  		ficcon << " " <<  listid->GetId(j);
-  	}
-  	ficcon << endl;
+//      MESSAGE(i << " " << myGrid->GetCell(i));
+//      MESSAGE("  " << myGrid->GetCell(i)->GetCellType());
+        ficcon << i << " - " << myGrid->GetCell(i)->GetCellType() << " -";
+        int nbptcell = myGrid->GetCell(i)->GetNumberOfPoints();
+        vtkIdList *listid = myGrid->GetCell(i)->GetPointIds();
+        for (int j=0; j<nbptcell; j++)
+        {
+                ficcon << " " <<  listid->GetId(j);
+        }
+        ficcon << endl;
   }
   ficcon << "-------------------------------- connectivity " <<  nbPoints << endl;
-	vtkCellLinks *links = myGrid->GetCellLinks();
+        vtkCellLinks *links = myGrid->GetCellLinks();
   for (int i=0; i<nbPoints; i++)
   {
-  	int ncells = links->GetNcells(i);
-  	vtkIdType *cells = links->GetCells(i);
-  	ficcon << i << " - " << ncells << " -";
-  	for (int j=0; j<ncells; j++)
-  	{
-  		ficcon << " " << cells[j];
-  	}
-  	ficcon << endl;
+        int ncells = links->GetNcells(i);
+        vtkIdType *cells = links->GetCells(i);
+        ficcon << i << " - " << ncells << " -";
+        for (int j=0; j<ncells; j++)
+        {
+                ficcon << " " << cells[j];
+        }
+        ficcon << endl;
   }
   ficcon.close();
 
