@@ -407,6 +407,7 @@ public:
    * \brief Return SMESH_ElementSearcher. The caller is responsible for deleteing it
    */
   SMESH_ElementSearcher* GetElementSearcher();
+  SMESH_ElementSearcher* GetElementSearcher( SMDS_ElemIteratorPtr elemIt );
   /*!
    * \brief Return true if the point is IN or ON of the element
    */

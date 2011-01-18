@@ -144,15 +144,15 @@ SMESH_MeshEditor::AddElement(const vector<const SMDS_MeshNode*> & node,
       }
       else if (nbnode == 6) {
         if ( ID >= 0 ) e = mesh->AddFaceWithID(node[0], node[1], node[2], node[3],
-					       node[4], node[5], ID);
+                                               node[4], node[5], ID);
         else           e = mesh->AddFace      (node[0], node[1], node[2], node[3],
-					       node[4], node[5] );
+                                               node[4], node[5] );
       }
       else if (nbnode == 8) {
         if ( ID >= 0 ) e = mesh->AddFaceWithID(node[0], node[1], node[2], node[3],
-					       node[4], node[5], node[6], node[7], ID);
+                                               node[4], node[5], node[6], node[7], ID);
         else           e = mesh->AddFace      (node[0], node[1], node[2], node[3],
-					       node[4], node[5], node[6], node[7] );
+                                               node[4], node[5], node[6], node[7] );
       }
     } else {
       if ( ID >= 0 ) e = mesh->AddPolygonalFaceWithID(node, ID);
@@ -168,61 +168,61 @@ SMESH_MeshEditor::AddElement(const vector<const SMDS_MeshNode*> & node,
       }
       else if (nbnode == 5) {
         if ( ID >= 0 ) e = mesh->AddVolumeWithID(node[0], node[1], node[2], node[3],
-						 node[4], ID);
+                                                 node[4], ID);
         else           e = mesh->AddVolume      (node[0], node[1], node[2], node[3],
-						 node[4] );
+                                                 node[4] );
       }
       else if (nbnode == 6) {
         if ( ID >= 0 ) e = mesh->AddVolumeWithID(node[0], node[1], node[2], node[3],
-						 node[4], node[5], ID);
+                                                 node[4], node[5], ID);
         else           e = mesh->AddVolume      (node[0], node[1], node[2], node[3],
-						 node[4], node[5] );
+                                                 node[4], node[5] );
       }
       else if (nbnode == 8) {
         if ( ID >= 0 ) e = mesh->AddVolumeWithID(node[0], node[1], node[2], node[3],
-						 node[4], node[5], node[6], node[7], ID);
+                                                 node[4], node[5], node[6], node[7], ID);
         else           e = mesh->AddVolume      (node[0], node[1], node[2], node[3],
-						 node[4], node[5], node[6], node[7] );
+                                                 node[4], node[5], node[6], node[7] );
       }
       else if (nbnode == 10) {
         if ( ID >= 0 ) e = mesh->AddVolumeWithID(node[0], node[1], node[2], node[3],
-						 node[4], node[5], node[6], node[7],
-						 node[8], node[9], ID);
+                                                 node[4], node[5], node[6], node[7],
+                                                 node[8], node[9], ID);
         else           e = mesh->AddVolume      (node[0], node[1], node[2], node[3],
-						 node[4], node[5], node[6], node[7],
-						 node[8], node[9] );
+                                                 node[4], node[5], node[6], node[7],
+                                                 node[8], node[9] );
       }
       else if (nbnode == 13) {
         if ( ID >= 0 ) e = mesh->AddVolumeWithID(node[0], node[1], node[2], node[3],
-						 node[4], node[5], node[6], node[7],
-						 node[8], node[9], node[10],node[11],
-						 node[12],ID);
+                                                 node[4], node[5], node[6], node[7],
+                                                 node[8], node[9], node[10],node[11],
+                                                 node[12],ID);
         else           e = mesh->AddVolume      (node[0], node[1], node[2], node[3],
-						 node[4], node[5], node[6], node[7],
-						 node[8], node[9], node[10],node[11],
-						 node[12] );
+                                                 node[4], node[5], node[6], node[7],
+                                                 node[8], node[9], node[10],node[11],
+                                                 node[12] );
       }
       else if (nbnode == 15) {
         if ( ID >= 0 ) e = mesh->AddVolumeWithID(node[0], node[1], node[2], node[3],
-						 node[4], node[5], node[6], node[7],
-						 node[8], node[9], node[10],node[11],
-						 node[12],node[13],node[14],ID);
+                                                 node[4], node[5], node[6], node[7],
+                                                 node[8], node[9], node[10],node[11],
+                                                 node[12],node[13],node[14],ID);
         else           e = mesh->AddVolume      (node[0], node[1], node[2], node[3],
-						 node[4], node[5], node[6], node[7],
-						 node[8], node[9], node[10],node[11],
-						 node[12],node[13],node[14] );
+                                                 node[4], node[5], node[6], node[7],
+                                                 node[8], node[9], node[10],node[11],
+                                                 node[12],node[13],node[14] );
       }
       else if (nbnode == 20) {
         if ( ID >= 0 ) e = mesh->AddVolumeWithID(node[0], node[1], node[2], node[3],
-						 node[4], node[5], node[6], node[7],
-						 node[8], node[9], node[10],node[11],
-						 node[12],node[13],node[14],node[15],
-						 node[16],node[17],node[18],node[19],ID);
+                                                 node[4], node[5], node[6], node[7],
+                                                 node[8], node[9], node[10],node[11],
+                                                 node[12],node[13],node[14],node[15],
+                                                 node[16],node[17],node[18],node[19],ID);
         else           e = mesh->AddVolume      (node[0], node[1], node[2], node[3],
-						 node[4], node[5], node[6], node[7],
-						 node[8], node[9], node[10],node[11],
-						 node[12],node[13],node[14],node[15],
-						 node[16],node[17],node[18],node[19] );
+                                                 node[4], node[5], node[6], node[7],
+                                                 node[8], node[9], node[10],node[11],
+                                                 node[12],node[13],node[14],node[15],
+                                                 node[16],node[17],node[18],node[19] );
       }
     }
     break;
@@ -6296,7 +6296,7 @@ namespace // Utils used in SMESH_ElementSearcherImpl::FindElementsByPoint()
   {
   public:
 
-    ElementBndBoxTree(const SMDS_Mesh& mesh, SMDSAbs_ElementType elemType, double tolerance = NodeRadius );
+    ElementBndBoxTree(const SMDS_Mesh& mesh, SMDSAbs_ElementType elemType, SMDS_ElemIteratorPtr theElemIt = SMDS_ElemIteratorPtr(), double tolerance = NodeRadius );
     void getElementsNearPoint( const gp_Pnt& point, TIDSortedElemSet& foundElems);
     void getElementsNearLine ( const gp_Ax1& line, TIDSortedElemSet& foundElems);
     ~ElementBndBoxTree();
@@ -6323,13 +6323,13 @@ namespace // Utils used in SMESH_ElementSearcherImpl::FindElementsByPoint()
    */
   //================================================================================
 
-  ElementBndBoxTree::ElementBndBoxTree(const SMDS_Mesh& mesh, SMDSAbs_ElementType elemType, double tolerance)
+  ElementBndBoxTree::ElementBndBoxTree(const SMDS_Mesh& mesh, SMDSAbs_ElementType elemType, SMDS_ElemIteratorPtr theElemIt, double tolerance)
     :SMESH_Octree( new SMESH_Octree::Limit( MaxLevel, /*minSize=*/0. ))
   {
     int nbElems = mesh.GetMeshInfo().NbElements( elemType );
     _elements.reserve( nbElems );
 
-    SMDS_ElemIteratorPtr elemIt = mesh.elementsIterator( elemType );
+    SMDS_ElemIteratorPtr elemIt = theElemIt ? theElemIt : mesh.elementsIterator( elemType );
     while ( elemIt->more() )
       _elements.push_back( new ElementBox( elemIt->next(),tolerance  ));
 
@@ -6477,6 +6477,7 @@ namespace // Utils used in SMESH_ElementSearcherImpl::FindElementsByPoint()
 struct SMESH_ElementSearcherImpl: public SMESH_ElementSearcher
 {
   SMESHDS_Mesh*                _mesh;
+  SMDS_ElemIteratorPtr         _meshPartIt;
   ElementBndBoxTree*           _ebbTree;
   SMESH_NodeSearcherImpl*      _nodeSearcher;
   SMDSAbs_ElementType          _elementType;
@@ -6484,8 +6485,8 @@ struct SMESH_ElementSearcherImpl: public SMESH_ElementSearcher
   bool                         _outerFacesFound;
   set<const SMDS_MeshElement*> _outerFaces; // empty means "no internal faces at all"
 
-  SMESH_ElementSearcherImpl( SMESHDS_Mesh& mesh )
-    : _mesh(&mesh),_ebbTree(0),_nodeSearcher(0), _tolerance(-1), _outerFacesFound(false) {}
+  SMESH_ElementSearcherImpl( SMESHDS_Mesh& mesh, SMDS_ElemIteratorPtr elemIt=SMDS_ElemIteratorPtr())
+    : _mesh(&mesh),_meshPartIt(elemIt),_ebbTree(0),_nodeSearcher(0),_tolerance(-1),_outerFacesFound(false) {}
   ~SMESH_ElementSearcherImpl()
   {
     if ( _ebbTree )      delete _ebbTree;      _ebbTree      = 0;
@@ -6773,7 +6774,7 @@ FindElementsByPoint(const gp_Pnt&                      point,
     if ( !_ebbTree || _elementType != type )
     {
       if ( _ebbTree ) delete _ebbTree;
-      _ebbTree = new ElementBndBoxTree( *_mesh, _elementType = type, tolerance );
+      _ebbTree = new ElementBndBoxTree( *_mesh, _elementType = type, _meshPartIt, tolerance );
     }
     TIDSortedElemSet suspectElems;
     _ebbTree->getElementsNearPoint( point, suspectElems );
@@ -6797,7 +6798,7 @@ TopAbs_State SMESH_ElementSearcherImpl::GetPointState(const gp_Pnt& point)
   if ( !_ebbTree || _elementType != SMDSAbs_Face )
   {
     if ( _ebbTree ) delete _ebbTree;
-    _ebbTree = new ElementBndBoxTree( *_mesh, _elementType = SMDSAbs_Face );
+    _ebbTree = new ElementBndBoxTree( *_mesh, _elementType = SMDSAbs_Face, _meshPartIt );
   }
   // Algo: analyse transition of a line starting at the point through mesh boundary;
   // try three lines parallel to axis of the coordinate system and perform rough
@@ -7021,7 +7022,7 @@ void SMESH_ElementSearcherImpl::GetElementsNearLine( const gp_Ax1&              
   if ( !_ebbTree || _elementType != type )
   {
     if ( _ebbTree ) delete _ebbTree;
-    _ebbTree = new ElementBndBoxTree( *_mesh, _elementType = type );
+    _ebbTree = new ElementBndBoxTree( *_mesh, _elementType = type, _meshPartIt );
   }
   TIDSortedElemSet suspectFaces; // elements possibly intersecting the line
   _ebbTree->getElementsNearLine( line, suspectFaces );
@@ -7037,6 +7038,17 @@ void SMESH_ElementSearcherImpl::GetElementsNearLine( const gp_Ax1&              
 SMESH_ElementSearcher* SMESH_MeshEditor::GetElementSearcher()
 {
   return new SMESH_ElementSearcherImpl( *GetMeshDS() );
+}
+
+//=======================================================================
+/*!
+ * \brief Return SMESH_ElementSearcher
+ */
+//=======================================================================
+
+SMESH_ElementSearcher* SMESH_MeshEditor::GetElementSearcher(SMDS_ElemIteratorPtr elemIt)
+{
+  return new SMESH_ElementSearcherImpl( *GetMeshDS(), elemIt );
 }
 
 //=======================================================================
