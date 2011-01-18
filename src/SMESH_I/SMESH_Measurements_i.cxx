@@ -93,8 +93,8 @@ Measurements_i::~Measurements_i()
 }
 
 static bool getNodeNodeDistance (SMESH::Measure& theMeasure,
-				 const SMDS_MeshNode* theNode1,
-				 const SMDS_MeshNode* theNode2 = 0)
+                                 const SMDS_MeshNode* theNode1,
+                                 const SMDS_MeshNode* theNode2 = 0)
 {
   double dist = 0., dd = 0.;
 

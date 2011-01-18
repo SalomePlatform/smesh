@@ -1169,22 +1169,22 @@ void SMESHGUI_FilterTable::SetCriterion (const int                       theRow,
     aTable->item( theRow, 2 )->setText( QString( theCriterion.ThresholdID ) );
   }
   else if (theCriterion.Type != SMESH::FT_RangeOfIds &&
-	   theCriterion.Type != SMESH::FT_BelongToGeom &&
-	   theCriterion.Type != SMESH::FT_BelongToPlane &&
-	   theCriterion.Type != SMESH::FT_BelongToCylinder &&
-	   theCriterion.Type != SMESH::FT_BelongToGenSurface &&
-	   theCriterion.Type != SMESH::FT_LyingOnGeom &&
-	   theCriterion.Type != SMESH::FT_CoplanarFaces &&
-	   theCriterion.Type != SMESH::FT_FreeBorders &&
-	   theCriterion.Type != SMESH::FT_FreeEdges &&
-	   theCriterion.Type != SMESH::FT_FreeNodes &&
-	   theCriterion.Type != SMESH::FT_FreeFaces &&
-	   theCriterion.Type != SMESH::FT_BadOrientedVolume &&
-	   theCriterion.Type != SMESH::FT_BareBorderFace &&
-	   theCriterion.Type != SMESH::FT_BareBorderVolume &&
-	   theCriterion.Type != SMESH::FT_OverConstrainedFace &&
-	   theCriterion.Type != SMESH::FT_OverConstrainedVolume &&
-	   theCriterion.Type != SMESH::FT_LinearOrQuadratic)
+           theCriterion.Type != SMESH::FT_BelongToGeom &&
+           theCriterion.Type != SMESH::FT_BelongToPlane &&
+           theCriterion.Type != SMESH::FT_BelongToCylinder &&
+           theCriterion.Type != SMESH::FT_BelongToGenSurface &&
+           theCriterion.Type != SMESH::FT_LyingOnGeom &&
+           theCriterion.Type != SMESH::FT_CoplanarFaces &&
+           theCriterion.Type != SMESH::FT_FreeBorders &&
+           theCriterion.Type != SMESH::FT_FreeEdges &&
+           theCriterion.Type != SMESH::FT_FreeNodes &&
+           theCriterion.Type != SMESH::FT_FreeFaces &&
+           theCriterion.Type != SMESH::FT_BadOrientedVolume &&
+           theCriterion.Type != SMESH::FT_BareBorderFace &&
+           theCriterion.Type != SMESH::FT_BareBorderVolume &&
+           theCriterion.Type != SMESH::FT_OverConstrainedFace &&
+           theCriterion.Type != SMESH::FT_OverConstrainedVolume &&
+           theCriterion.Type != SMESH::FT_LinearOrQuadratic)
   {
     aTable->item( theRow, 2 )->setText(QString("%1").arg(theCriterion.Threshold, 0, 'g', 15));
   }
@@ -1529,12 +1529,12 @@ void SMESHGUI_FilterTable::onCriterionChanged (const int row, const int col, con
   if ((aType == SMESH::NODE && aCriterionType == SMESH::FT_FreeNodes ) ||
       (aType == SMESH::EDGE && aCriterionType == SMESH::FT_FreeBorders ) ||
       (aType == SMESH::FACE && (aCriterionType == SMESH::FT_BareBorderFace ||
-				aCriterionType == SMESH::FT_OverConstrainedFace ||
-				aCriterionType == SMESH::FT_FreeEdges ||
+                                aCriterionType == SMESH::FT_OverConstrainedFace ||
+                                aCriterionType == SMESH::FT_FreeEdges ||
                                 aCriterionType == SMESH::FT_FreeFaces)) ||
       (aType == SMESH::VOLUME && (aCriterionType == SMESH::FT_BadOrientedVolume ||
-				  aCriterionType == SMESH::FT_OverConstrainedVolume ||
-				  aCriterionType == SMESH::FT_BareBorderVolume)) ||
+                                  aCriterionType == SMESH::FT_OverConstrainedVolume ||
+                                  aCriterionType == SMESH::FT_BareBorderVolume)) ||
       aCriterionType == SMESH::FT_LinearOrQuadratic ||
       aCriterionType == SMESH::FT_GroupColor ||
       aCriterionType == SMESH::FT_ElemGeomType ||

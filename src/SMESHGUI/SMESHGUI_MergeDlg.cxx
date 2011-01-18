@@ -804,15 +804,15 @@ void SMESHGUI_MergeDlg::onDetect()
     switch (myAction) {
     case 0 :
       for ( int i = 0; GroupExclude->isChecked() && i < ListExclude->count(); i++ ) {
-	if ( ListExclude->item( i )->checkState() == Qt::Checked ) {
-	  aExcludeGroups->length( aExcludeGroups->length()+1 );
-	  aExcludeGroups[ aExcludeGroups->length()-1 ] = SMESH::SMESH_IDSource::_duplicate( myGroups[i] );
-	}
+        if ( ListExclude->item( i )->checkState() == Qt::Checked ) {
+          aExcludeGroups->length( aExcludeGroups->length()+1 );
+          aExcludeGroups[ aExcludeGroups->length()-1 ] = SMESH::SMESH_IDSource::_duplicate( myGroups[i] );
+        }
       }
       aMeshEditor->FindCoincidentNodesOnPartBut(src.in(),
-						SpinBoxTolerance->GetValue(), 
-						aGroupsArray.out(),
-						aExcludeGroups.in());
+                                                SpinBoxTolerance->GetValue(), 
+                                                aGroupsArray.out(),
+                                                aExcludeGroups.in());
       break;
     case 1 :
       aMeshEditor->FindEqualElements(src.in(), aGroupsArray.out());
@@ -1155,17 +1155,17 @@ void SMESHGUI_MergeDlg::SelectionIntoArgument()
       ListExclude->clear();
       SMESH::ListOfGroups_var aListOfGroups = myMesh->GetGroups();
       for( int i = 0, n = aListOfGroups->length(); i < n; i++ ) {
-	SMESH::SMESH_GroupBase_var aGroup = aListOfGroups[i];
-	if ( !aGroup->_is_nil() ) { // && aGroup->GetType() == SMESH::NODE
-	  QString aGroupName( aGroup->GetName() );
-	  if ( !aGroupName.isEmpty() ) {
-	    myGroups.append(SMESH::SMESH_GroupBase::_duplicate(aGroup));
-	    QListWidgetItem* item = new QListWidgetItem( aGroupName );
-	    item->setFlags( Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsUserCheckable );
-	    item->setCheckState( Qt::Unchecked );
-	    ListExclude->addItem( item );
-	  }
-	}
+        SMESH::SMESH_GroupBase_var aGroup = aListOfGroups[i];
+        if ( !aGroup->_is_nil() ) { // && aGroup->GetType() == SMESH::NODE
+          QString aGroupName( aGroup->GetName() );
+          if ( !aGroupName.isEmpty() ) {
+            myGroups.append(SMESH::SMESH_GroupBase::_duplicate(aGroup));
+            QListWidgetItem* item = new QListWidgetItem( aGroupName );
+            item->setFlags( Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsUserCheckable );
+            item->setCheckState( Qt::Unchecked );
+            ListExclude->addItem( item );
+          }
+        }
       }
     }
 

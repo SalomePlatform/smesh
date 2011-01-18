@@ -94,32 +94,32 @@ namespace SMESH
       _PTR(SObject) p = theParent;
       if ( !p ) p = aStudy->FindComponent( "SMESH" );
       if ( p ) {
-	_PTR(ChildIterator) iter = aStudy->NewChildIterator( p );
-	int idx = 0;
-	while( true ) {
-	  bool found = false;
-	  for ( ; iter->More(); iter->Next() ) {
-	    _PTR(SObject) so = iter->Value();
-	    if ( !so ) continue; // skip bad objects
-	    _PTR(SObject) ref;
-	    if ( so->ReferencedObject( ref ) ) continue; // skip references
-	    QString n = so->GetName().c_str();
-	    if ( !n.isEmpty() && n == name ) {
-	      QStringList names = name.split("_", QString::KeepEmptyParts);
-	      if ( names.count() > 0 ) {
-		bool ok;
-		names.last().toInt( &ok );
-		if ( ok )
-		  names.removeLast();
-	      }
-	      names.append( QString::number( ++idx ) );
-	      name = names.join( "_" );
-	      found = true;
-	      break;
-	    }
-	  }
-	  if ( !found ) break;
-	}
+        _PTR(ChildIterator) iter = aStudy->NewChildIterator( p );
+        int idx = 0;
+        while( true ) {
+          bool found = false;
+          for ( ; iter->More(); iter->Next() ) {
+            _PTR(SObject) so = iter->Value();
+            if ( !so ) continue; // skip bad objects
+            _PTR(SObject) ref;
+            if ( so->ReferencedObject( ref ) ) continue; // skip references
+            QString n = so->GetName().c_str();
+            if ( !n.isEmpty() && n == name ) {
+              QStringList names = name.split("_", QString::KeepEmptyParts);
+              if ( names.count() > 0 ) {
+                bool ok;
+                names.last().toInt( &ok );
+                if ( ok )
+                  names.removeLast();
+              }
+              names.append( QString::number( ++idx ) );
+              name = names.join( "_" );
+              found = true;
+              break;
+            }
+          }
+          if ( !found ) break;
+        }
       }
     }
     return name;

@@ -1029,8 +1029,8 @@ namespace
  */
 //================================================================================
 void SMESHGUI_MeshOp::createHypothesis(const int theDim,
-                                        const int theType,
-                                        const QString& theTypeName)
+                                       const int theType,
+                                       const QString& theTypeName)
 {
   HypothesisData* aData = SMESH::GetHypothesisData(theTypeName);
   if (!aData)
@@ -1089,20 +1089,29 @@ void SMESHGUI_MeshOp::createHypothesis(const int theDim,
       aMeshEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Mesh );
       anObjEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Obj );
 
-      if ( aMeshEntry != "" ) { // Get Geom object from Mesh
+      if ( myToCreate && myIsMesh )
+        aMeshEntry = aGeomEntry;
+
+      if ( aMeshEntry != aGeomEntry ) { // Get Geom object from Mesh of a sub-mesh being edited
         _PTR(SObject) pObj = studyDS()->FindObjectID( aMeshEntry.toLatin1().data() );
         GEOM::GEOM_Object_var aGeomVar = SMESH::GetShapeOnMeshOrSubMesh( pObj );
         aMeshEntry = ( aGeomVar->_is_nil() ) ? "" : aMeshEntry = aGeomVar->GetStudyEntry();
       }
 
-      if ( aMeshEntry == "" && aGeomEntry == "" ) {
+      if ( aMeshEntry == "" && aGeomEntry == "" ) { // get geom of an object being edited
         _PTR(SObject) pObj = studyDS()->FindObjectID( anObjEntry.toLatin1().data() );
-        GEOM::GEOM_Object_var aGeomVar = SMESH::GetShapeOnMeshOrSubMesh( pObj );
+        bool isMesh;
+        GEOM::GEOM_Object_var aGeomVar = SMESH::GetShapeOnMeshOrSubMesh( pObj, &isMesh );
         if ( !aGeomVar->_is_nil() )
+        {
           aGeomEntry = aGeomVar->GetStudyEntry();
+          if ( isMesh )
+            aMeshEntry = aGeomEntry;
+        }
       }
 
-      if ( anObjEntry != "" && aGeomEntry != "" && aMeshEntry == "" ) { // take geometry from submesh
+      if ( anObjEntry != "" && aGeomEntry != "" && aMeshEntry == "" ) {
+        // take geometry from submesh being created
         _PTR(SObject) pObj = studyDS()->FindObjectID( anObjEntry.toLatin1().data() );
         if ( pObj ) {
           // if current object is sub-mesh
@@ -1200,8 +1209,6 @@ void SMESHGUI_MeshOp::onEditHyp( const int theHypType, const int theIndex )
   if ( aHyp->_is_nil() )
     return;
 
-  // BUG 0020378
-  //SMESHGUI_GenericHypothesisCreator* aCreator = SMESH::GetHypothesisCreator(aHyp->GetName());
   SMESHGUI_GenericHypothesisCreator* aCreator = SMESH::GetHypothesisCreator(aHyp->GetName());
   if ( aCreator )
   {
@@ -1218,20 +1225,29 @@ void SMESHGUI_MeshOp::onEditHyp( const int theHypType, const int theIndex )
     aMeshEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Mesh );
     anObjEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Obj );
 
-    if ( aMeshEntry != "" ) { // Get Geom object from Mesh
+    if ( myToCreate && myIsMesh )
+      aMeshEntry = aGeomEntry;
+
+    if ( aMeshEntry != aGeomEntry ) { // Get Geom object from Mesh of a sub-mesh being edited
       _PTR(SObject) pObj = studyDS()->FindObjectID( aMeshEntry.toLatin1().data() );
       GEOM::GEOM_Object_var aGeomVar = SMESH::GetShapeOnMeshOrSubMesh( pObj );
       aMeshEntry = ( aGeomVar->_is_nil() ) ? "" : aMeshEntry = aGeomVar->GetStudyEntry();
     }
 
-    if ( aMeshEntry == "" && aGeomEntry == "" ) {
+    if ( aMeshEntry == "" && aGeomEntry == "" ) { // get geom of an object being edited
       _PTR(SObject) pObj = studyDS()->FindObjectID( anObjEntry.toLatin1().data() );
-      GEOM::GEOM_Object_var aGeomVar = SMESH::GetShapeOnMeshOrSubMesh( pObj );
+      bool isMesh;
+      GEOM::GEOM_Object_var aGeomVar = SMESH::GetShapeOnMeshOrSubMesh( pObj, &isMesh );
       if ( !aGeomVar->_is_nil() )
+      {
         aGeomEntry = aGeomVar->GetStudyEntry();
+        if ( isMesh )
+          aMeshEntry = aGeomEntry;
+      }
     }
 
-    if ( anObjEntry != "" && aGeomEntry != "" && aMeshEntry == "" ) { // take geometry from submesh
+    if ( anObjEntry != "" && aGeomEntry != "" && aMeshEntry == "" ) {
+      // take geometry from submesh being created
       _PTR(SObject) pObj = studyDS()->FindObjectID( anObjEntry.toLatin1().data() );
       if ( pObj ) {
         // if current object is sub-mesh

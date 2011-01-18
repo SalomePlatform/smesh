@@ -1967,7 +1967,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
 
       if( theCommandID==302 )
       {
-      	MESSAGE("anAction = SMESH::eDisplayOnly");
+        MESSAGE("anAction = SMESH::eDisplayOnly");
         startOperation( myEraseAll );
       }
 
@@ -1980,17 +1980,17 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
         if (vtkwnd) {
           SALOME_ListIteratorOfListIO It( to_process );
           for ( ; It.More(); It.Next()) {
-          	MESSAGE("---");
+                MESSAGE("---");
             Handle(SALOME_InteractiveObject) IOS = It.Value();
             if (IOS->hasEntry()) {
-            	MESSAGE("---");
+                MESSAGE("---");
               if (!SMESH::UpdateView(anAction, IOS->getEntry())) {
                 SMESHGUI::GetSMESHGUI()->EmitSignalVisibilityChanged();
                 break; // PAL16774 (Crash after display of many groups)
               }
               if (anAction == SMESH::eDisplayOnly)
               {
-              	MESSAGE("anAction = SMESH::eDisplayOnly");
+                MESSAGE("anAction = SMESH::eDisplayOnly");
                 anAction = SMESH::eDisplay;
               }
             }
@@ -1999,7 +1999,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
 
         // PAL13338 + PAL15161 -->
         if ( ( theCommandID==301 || theCommandID==302 ) && !checkLock(aStudy)) {
-        	MESSAGE("anAction = SMESH::eDisplayOnly");
+                MESSAGE("anAction = SMESH::eDisplayOnly");
           SMESH::UpdateView();
           SMESHGUI::GetSMESHGUI()->EmitSignalVisibilityChanged();
         }
@@ -2010,7 +2010,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       }
 
       if (anAction == SMESH::eErase) {
-      	MESSAGE("anAction == SMESH::eErase");
+        MESSAGE("anAction == SMESH::eErase");
         SALOME_ListIO l1;
         aSel->setSelectedObjects( l1 );
       }

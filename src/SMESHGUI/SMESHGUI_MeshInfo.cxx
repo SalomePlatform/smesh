@@ -290,23 +290,23 @@ void SMESHGUI_MeshInfo::showInfo( SMESH::SMESH_IDSource_ptr obj )
       QString objType;
       switch( aGroup->GetType() ) {
       case SMESH::NODE:
-	objType = tr( "OBJECT_GROUP_NODES" );
-	break;
+        objType = tr( "OBJECT_GROUP_NODES" );
+        break;
       case SMESH::EDGE:
-	objType = tr( "OBJECT_GROUP_EDGES" );
-	break;
+        objType = tr( "OBJECT_GROUP_EDGES" );
+        break;
       case SMESH::FACE:
-	objType = tr( "OBJECT_GROUP_FACES" );
-	break;
+        objType = tr( "OBJECT_GROUP_FACES" );
+        break;
       case SMESH::VOLUME:
-	objType = tr( "OBJECT_GROUP_VOLUMES" );
-	break;
+        objType = tr( "OBJECT_GROUP_VOLUMES" );
+        break;
       case SMESH::ELEM0D:
-	objType = tr( "OBJECT_GROUP_0DELEMS" );
-	break;
+        objType = tr( "OBJECT_GROUP_0DELEMS" );
+        break;
       default:
-	objType = tr( "OBJECT_GROUP" );
-	break;
+        objType = tr( "OBJECT_GROUP" );
+        break;
       }
       myWidgets[iObject][iSingle]->setProperty( "text", objType );
     }
@@ -712,152 +712,152 @@ void SMESHGUI_SimpleElemInfo::information( const QList<long>& ids )
     int precision = SMESHGUI::resourceMgr()->integerValue( "SMESH", "length_precision", 6 );
     foreach ( long id, ids ) {
       if ( !isElements() ) {
-	//
-	// show node info
-	//
-	const SMDS_MeshElement* e = actor()->GetObject()->GetMesh()->FindNode( id );
-	if ( !e ) return;
-	const SMDS_MeshNode* node = static_cast<const SMDS_MeshNode*>( e );
-	
-	// node ID
-	myInfo->append( QString( "<b>%1 #%2</b>" ).arg( tr( "NODE" ) ).arg( id ) );
-	// separator
-	myInfo->append( "" );
-	// coordinates
-	myInfo->append( QString( "<b>%1:</b> (%2, %3, %4)" ).arg( tr( "COORDINATES" ) ).
-			arg( node->X(), 0, precision > 0 ? 'f' : 'g', qAbs( precision ) ).
-			arg( node->Y(), 0, precision > 0 ? 'f' : 'g', qAbs( precision ) ).
-			arg( node->Z(), 0, precision > 0 ? 'f' : 'g', qAbs( precision ) ) );
-	// separator
-	myInfo->append( "" );
-	// connectivity
-	Connectivity connectivity = nodeConnectivity( node );
-	if ( !connectivity.isEmpty() ) {
-	  myInfo->append( QString( "<b>%1:</b>" ).arg( tr( "CONNECTIVITY" ) ) );
-	  QString con = formatConnectivity( connectivity, SMDSAbs_0DElement );
-	  if ( !con.isEmpty() )
-	    myInfo->append( QString( "- <b>%1:</b> %2" ).arg( tr( "0D_ELEMENTS" ) ).arg( con ) );
-	  con = formatConnectivity( connectivity, SMDSAbs_Edge );
-	  if ( !con.isEmpty() )
-	    myInfo->append( QString( "- <b>%1:</b> %2" ).arg( tr( "EDGES" ) ).arg( con ) );
-	  con = formatConnectivity( connectivity, SMDSAbs_Face );
-	  if ( !con.isEmpty() )
-	    myInfo->append( QString( "- <b>%1:</b> %2" ).arg( tr( "FACES" ) ).arg( con ) );
-	  con = formatConnectivity( connectivity, SMDSAbs_Volume );
-	  if ( !con.isEmpty() )
-	    myInfo->append( QString( "- <b>%1:</b> %2" ).arg( tr( "VOLUMES" ) ).arg( con ) );
-	}
-	else {
-	  myInfo->append( QString( "<b>%1</b>" ).arg( tr( "FREE_NODE" ) ).arg( id ) );
-	}
+        //
+        // show node info
+        //
+        const SMDS_MeshElement* e = actor()->GetObject()->GetMesh()->FindNode( id );
+        if ( !e ) return;
+        const SMDS_MeshNode* node = static_cast<const SMDS_MeshNode*>( e );
+        
+        // node ID
+        myInfo->append( QString( "<b>%1 #%2</b>" ).arg( tr( "NODE" ) ).arg( id ) );
+        // separator
+        myInfo->append( "" );
+        // coordinates
+        myInfo->append( QString( "<b>%1:</b> (%2, %3, %4)" ).arg( tr( "COORDINATES" ) ).
+                        arg( node->X(), 0, precision > 0 ? 'f' : 'g', qAbs( precision ) ).
+                        arg( node->Y(), 0, precision > 0 ? 'f' : 'g', qAbs( precision ) ).
+                        arg( node->Z(), 0, precision > 0 ? 'f' : 'g', qAbs( precision ) ) );
+        // separator
+        myInfo->append( "" );
+        // connectivity
+        Connectivity connectivity = nodeConnectivity( node );
+        if ( !connectivity.isEmpty() ) {
+          myInfo->append( QString( "<b>%1:</b>" ).arg( tr( "CONNECTIVITY" ) ) );
+          QString con = formatConnectivity( connectivity, SMDSAbs_0DElement );
+          if ( !con.isEmpty() )
+            myInfo->append( QString( "- <b>%1:</b> %2" ).arg( tr( "0D_ELEMENTS" ) ).arg( con ) );
+          con = formatConnectivity( connectivity, SMDSAbs_Edge );
+          if ( !con.isEmpty() )
+            myInfo->append( QString( "- <b>%1:</b> %2" ).arg( tr( "EDGES" ) ).arg( con ) );
+          con = formatConnectivity( connectivity, SMDSAbs_Face );
+          if ( !con.isEmpty() )
+            myInfo->append( QString( "- <b>%1:</b> %2" ).arg( tr( "FACES" ) ).arg( con ) );
+          con = formatConnectivity( connectivity, SMDSAbs_Volume );
+          if ( !con.isEmpty() )
+            myInfo->append( QString( "- <b>%1:</b> %2" ).arg( tr( "VOLUMES" ) ).arg( con ) );
+        }
+        else {
+          myInfo->append( QString( "<b>%1</b>" ).arg( tr( "FREE_NODE" ) ).arg( id ) );
+        }
       }
       else {
-	//
-	// show element info
-	// 
-	const SMDS_MeshElement* e = actor()->GetObject()->GetMesh()->FindElement( id );
-	if ( !e ) return;
-	
-	// element ID && type
-	QString stype;
-	switch( e->GetType() ) {
-	case SMDSAbs_0DElement:
-	  stype = tr( "0D ELEMENT" ); break;
-	case SMDSAbs_Edge:
-	  stype = tr( "EDGE" ); break;
-	case SMDSAbs_Face:
-	  stype = tr( "FACE" ); break;
-	case SMDSAbs_Volume:
-	  stype = tr( "VOLUME" ); break;
-	default: 
-	  break;
-	}
-	if ( stype.isEmpty() ) return;
-	myInfo->append( QString( "<b>%1 #%2</b>" ).arg( stype ).arg( id ) );
-	// separator
-	myInfo->append( "" );
-	// geometry type
-	QString gtype;
-	switch( e->GetEntityType() ) {
-	case SMDSEntity_Triangle:
-	case SMDSEntity_Quad_Triangle:
-	  gtype = tr( "TRIANGLE" ); break;
-	case SMDSEntity_Quadrangle:
-	case SMDSEntity_Quad_Quadrangle:
-	  gtype = tr( "QUADRANGLE" ); break;
-	case SMDSEntity_Polygon:
-	case SMDSEntity_Quad_Polygon:
-	  gtype = tr( "POLYGON" ); break;
-	case SMDSEntity_Tetra:
-	case SMDSEntity_Quad_Tetra:
-	  gtype = tr( "TETRAHEDRON" ); break;
-	case SMDSEntity_Pyramid:
-	case SMDSEntity_Quad_Pyramid:
-	  gtype = tr( "PYRAMID" ); break;
-	case SMDSEntity_Hexa:
-	case SMDSEntity_Quad_Hexa:
-	  gtype = tr( "HEXAHEDRON" ); break;
-	case SMDSEntity_Penta:
-	case SMDSEntity_Quad_Penta:
-	  gtype = tr( "PRISM" ); break;
-	case SMDSEntity_Polyhedra:
-	case SMDSEntity_Quad_Polyhedra:
-	  gtype = tr( "POLYHEDRON" ); break;
-	default: 
-	  break;
-	}
-	if ( !gtype.isEmpty() )
-	  myInfo->append( QString( "<b>%1:</b> %2" ).arg( tr( "TYPE" ) ).arg( gtype ) );
-	// quadratic flag and gravity center (any element except 0D)
-	if ( e->GetEntityType() > SMDSEntity_0D && e->GetEntityType() < SMDSEntity_Last ) {
-	  // quadratic flag
-	  myInfo->append( QString( "<b>%1?</b> %2" ).arg( tr( "QUADRATIC" ) ).arg( e->IsQuadratic() ? tr( "YES" ) : tr( "NO" ) ) );
-	  // separator
-	  myInfo->append( "" );
-	  // gravity center
-	  XYZ gc = gravityCenter( e );
-	  myInfo->append( QString( "<b>%1:</b> (%2, %3, %4)" ).arg( tr( "GRAVITY_CENTER" ) ).arg( gc.x() ).arg( gc.y() ).arg( gc.z() ) );
-	}
-	// separator
-	myInfo->append( "" );
-	// connectivity
-	SMDS_ElemIteratorPtr nodeIt = e->nodesIterator();
-	for ( int idx = 1; nodeIt->more(); idx++ ) {
-	  const SMDS_MeshNode* node = static_cast<const SMDS_MeshNode*>( nodeIt->next() );
-	  // node number and ID
-	  myInfo->append( QString( "<b>%1 %2/%3</b> - #%4" ).arg( tr( "NODE" ) ).arg( idx ).arg( e->NbNodes() ).arg( node->GetID() ) );
-	  // node coordinates
-	  myInfo->append( QString( "<b>%1:</b> (%2, %3, %4)" ).arg( tr( "COORDINATES" ) ).
-			  arg( node->X(), 0, precision > 0 ? 'f' : 'g', qAbs( precision ) ).
-			  arg( node->Y(), 0, precision > 0 ? 'f' : 'g', qAbs( precision ) ).
-			  arg( node->Z(), 0, precision > 0 ? 'f' : 'g', qAbs( precision ) ) );
-	  // node connectivity
-	  Connectivity connectivity = nodeConnectivity( node );
-	  if ( !connectivity.isEmpty() ) {
-	    myInfo->append( QString( "<b>%1:</b>" ).arg( tr( "CONNECTIVITY" ) ) );
-	    QString con = formatConnectivity( connectivity, SMDSAbs_0DElement );
-	    if ( !con.isEmpty() )
-	      myInfo->append( QString( "- <b>%1:</b> %2" ).arg( tr( "0D_ELEMENTS" ) ).arg( con ) );
-	    con = formatConnectivity( connectivity, SMDSAbs_Edge );
-	    if ( !con.isEmpty() )
-	      myInfo->append( QString( "- <b>%1:</b> %2" ).arg( tr( "EDGES" ) ).arg( con ) );
-	    con = formatConnectivity( connectivity, SMDSAbs_Face );
-	    if ( !con.isEmpty() )
-	      myInfo->append( QString( "- <b>%1:</b> %2" ).arg( tr( "FACES" ) ).arg( con ) );
-	    con = formatConnectivity( connectivity, SMDSAbs_Volume );
-	    if ( !con.isEmpty() )
-	      myInfo->append( QString( "- <b>%1:</b> %2" ).arg( tr( "VOLUMES" ) ).arg( con ) );
-	  }
-	  else {
-	    myInfo->append( QString( "<b>%1</b>" ).arg( tr( "FREE_NODE" ) ).arg( id ) );
-	  }
-	}
+        //
+        // show element info
+        // 
+        const SMDS_MeshElement* e = actor()->GetObject()->GetMesh()->FindElement( id );
+        if ( !e ) return;
+        
+        // element ID && type
+        QString stype;
+        switch( e->GetType() ) {
+        case SMDSAbs_0DElement:
+          stype = tr( "0D ELEMENT" ); break;
+        case SMDSAbs_Edge:
+          stype = tr( "EDGE" ); break;
+        case SMDSAbs_Face:
+          stype = tr( "FACE" ); break;
+        case SMDSAbs_Volume:
+          stype = tr( "VOLUME" ); break;
+        default: 
+          break;
+        }
+        if ( stype.isEmpty() ) return;
+        myInfo->append( QString( "<b>%1 #%2</b>" ).arg( stype ).arg( id ) );
+        // separator
+        myInfo->append( "" );
+        // geometry type
+        QString gtype;
+        switch( e->GetEntityType() ) {
+        case SMDSEntity_Triangle:
+        case SMDSEntity_Quad_Triangle:
+          gtype = tr( "TRIANGLE" ); break;
+        case SMDSEntity_Quadrangle:
+        case SMDSEntity_Quad_Quadrangle:
+          gtype = tr( "QUADRANGLE" ); break;
+        case SMDSEntity_Polygon:
+        case SMDSEntity_Quad_Polygon:
+          gtype = tr( "POLYGON" ); break;
+        case SMDSEntity_Tetra:
+        case SMDSEntity_Quad_Tetra:
+          gtype = tr( "TETRAHEDRON" ); break;
+        case SMDSEntity_Pyramid:
+        case SMDSEntity_Quad_Pyramid:
+          gtype = tr( "PYRAMID" ); break;
+        case SMDSEntity_Hexa:
+        case SMDSEntity_Quad_Hexa:
+          gtype = tr( "HEXAHEDRON" ); break;
+        case SMDSEntity_Penta:
+        case SMDSEntity_Quad_Penta:
+          gtype = tr( "PRISM" ); break;
+        case SMDSEntity_Polyhedra:
+        case SMDSEntity_Quad_Polyhedra:
+          gtype = tr( "POLYHEDRON" ); break;
+        default: 
+          break;
+        }
+        if ( !gtype.isEmpty() )
+          myInfo->append( QString( "<b>%1:</b> %2" ).arg( tr( "TYPE" ) ).arg( gtype ) );
+        // quadratic flag and gravity center (any element except 0D)
+        if ( e->GetEntityType() > SMDSEntity_0D && e->GetEntityType() < SMDSEntity_Last ) {
+          // quadratic flag
+          myInfo->append( QString( "<b>%1?</b> %2" ).arg( tr( "QUADRATIC" ) ).arg( e->IsQuadratic() ? tr( "YES" ) : tr( "NO" ) ) );
+          // separator
+          myInfo->append( "" );
+          // gravity center
+          XYZ gc = gravityCenter( e );
+          myInfo->append( QString( "<b>%1:</b> (%2, %3, %4)" ).arg( tr( "GRAVITY_CENTER" ) ).arg( gc.x() ).arg( gc.y() ).arg( gc.z() ) );
+        }
+        // separator
+        myInfo->append( "" );
+        // connectivity
+        SMDS_ElemIteratorPtr nodeIt = e->nodesIterator();
+        for ( int idx = 1; nodeIt->more(); idx++ ) {
+          const SMDS_MeshNode* node = static_cast<const SMDS_MeshNode*>( nodeIt->next() );
+          // node number and ID
+          myInfo->append( QString( "<b>%1 %2/%3</b> - #%4" ).arg( tr( "NODE" ) ).arg( idx ).arg( e->NbNodes() ).arg( node->GetID() ) );
+          // node coordinates
+          myInfo->append( QString( "<b>%1:</b> (%2, %3, %4)" ).arg( tr( "COORDINATES" ) ).
+                          arg( node->X(), 0, precision > 0 ? 'f' : 'g', qAbs( precision ) ).
+                          arg( node->Y(), 0, precision > 0 ? 'f' : 'g', qAbs( precision ) ).
+                          arg( node->Z(), 0, precision > 0 ? 'f' : 'g', qAbs( precision ) ) );
+          // node connectivity
+          Connectivity connectivity = nodeConnectivity( node );
+          if ( !connectivity.isEmpty() ) {
+            myInfo->append( QString( "<b>%1:</b>" ).arg( tr( "CONNECTIVITY" ) ) );
+            QString con = formatConnectivity( connectivity, SMDSAbs_0DElement );
+            if ( !con.isEmpty() )
+              myInfo->append( QString( "- <b>%1:</b> %2" ).arg( tr( "0D_ELEMENTS" ) ).arg( con ) );
+            con = formatConnectivity( connectivity, SMDSAbs_Edge );
+            if ( !con.isEmpty() )
+              myInfo->append( QString( "- <b>%1:</b> %2" ).arg( tr( "EDGES" ) ).arg( con ) );
+            con = formatConnectivity( connectivity, SMDSAbs_Face );
+            if ( !con.isEmpty() )
+              myInfo->append( QString( "- <b>%1:</b> %2" ).arg( tr( "FACES" ) ).arg( con ) );
+            con = formatConnectivity( connectivity, SMDSAbs_Volume );
+            if ( !con.isEmpty() )
+              myInfo->append( QString( "- <b>%1:</b> %2" ).arg( tr( "VOLUMES" ) ).arg( con ) );
+          }
+          else {
+            myInfo->append( QString( "<b>%1</b>" ).arg( tr( "FREE_NODE" ) ).arg( id ) );
+          }
+        }
       }
       // separator
       if ( ids.count() > 1 ) {
-	myInfo->append( "" );
-	myInfo->append( "------" );
-	myInfo->append( "" );
+        myInfo->append( "" );
+        myInfo->append( "------" );
+        myInfo->append( "" );
       }
     }
   }
@@ -937,205 +937,205 @@ void SMESHGUI_TreeElemInfo::information( const QList<long>& ids )
     int precision = SMESHGUI::resourceMgr()->integerValue( "SMESH", "length_precision", 6 );
     foreach ( long id, ids ) {
       if ( !isElements() ) {
-	//
-	// show node info
-	//
-	const SMDS_MeshElement* e = actor()->GetObject()->GetMesh()->FindNode( id );
-	if ( !e ) return;
-	const SMDS_MeshNode* node = static_cast<const SMDS_MeshNode*>( e );
+        //
+        // show node info
+        //
+        const SMDS_MeshElement* e = actor()->GetObject()->GetMesh()->FindNode( id );
+        if ( !e ) return;
+        const SMDS_MeshNode* node = static_cast<const SMDS_MeshNode*>( e );
       
-	// node ID
-	QTreeWidgetItem* nodeItem = createItem( 0, -1 );
-	nodeItem->setText( 0, tr( "NODE" ) );
-	nodeItem->setText( 1, QString( "#%1" ).arg( id ) );
-	nodeItem->setExpanded( true );
-	// coordinates
-	QTreeWidgetItem* coordItem = createItem( nodeItem, 0 );
-	coordItem->setText( 0, tr( "COORDINATES" ) );
-	coordItem->setExpanded( true );
-	QTreeWidgetItem* xItem = createItem( coordItem );
-	xItem->setText( 0, "X" );
-	xItem->setText( 1, QString::number( node->X(), precision > 0 ? 'f' : 'g', qAbs( precision ) ) );
-	QTreeWidgetItem* yItem = createItem( coordItem );
-	yItem->setText( 0, "Y" );
-	yItem->setText( 1, QString::number( node->Y(), precision > 0 ? 'f' : 'g', qAbs( precision ) ) );
-	QTreeWidgetItem* zItem = createItem( coordItem );
-	zItem->setText( 0, "Z" );
-	zItem->setText( 1, QString::number( node->Z(), precision > 0 ? 'f' : 'g', qAbs( precision ) ) );
-	// connectivity
-	QTreeWidgetItem* conItem = createItem( nodeItem, 0 );
-	conItem->setText( 0, tr( "CONNECTIVITY" ) );
-	conItem->setExpanded( true );
-	Connectivity connectivity = nodeConnectivity( node );
-	if ( !connectivity.isEmpty() ) {
-	  QString con = formatConnectivity( connectivity, SMDSAbs_0DElement );
-	  if ( !con.isEmpty() ) {
-	    QTreeWidgetItem* i = createItem( conItem );
-	    i->setText( 0, tr( "0D_ELEMENTS" ) );
-	    i->setText( 1, con );
-	  }
-	  con = formatConnectivity( connectivity, SMDSAbs_Edge );
-	  if ( !con.isEmpty() ) {
-	    QTreeWidgetItem* i = createItem( conItem );
-	    i->setText( 0, tr( "EDGES" ) );
-	    i->setText( 1, con );
-	  }
-	  con = formatConnectivity( connectivity, SMDSAbs_Face );
-	  if ( !con.isEmpty() ) {
-	    QTreeWidgetItem* i = createItem( conItem );
-	    i->setText( 0, tr( "FACES" ) );
-	    i->setText( 1, con );
-	  }
-	  con = formatConnectivity( connectivity, SMDSAbs_Volume );
-	  if ( !con.isEmpty() ) {
-	    QTreeWidgetItem* i = createItem( conItem );
-	    i->setText( 0, tr( "VOLUMES" ) );
-	    i->setText( 1, con );
-	  }
-	}
-	else {
-	  conItem->setText( 1, tr( "FREE_NODE" ) );
-	}
+        // node ID
+        QTreeWidgetItem* nodeItem = createItem( 0, -1 );
+        nodeItem->setText( 0, tr( "NODE" ) );
+        nodeItem->setText( 1, QString( "#%1" ).arg( id ) );
+        nodeItem->setExpanded( true );
+        // coordinates
+        QTreeWidgetItem* coordItem = createItem( nodeItem, 0 );
+        coordItem->setText( 0, tr( "COORDINATES" ) );
+        coordItem->setExpanded( true );
+        QTreeWidgetItem* xItem = createItem( coordItem );
+        xItem->setText( 0, "X" );
+        xItem->setText( 1, QString::number( node->X(), precision > 0 ? 'f' : 'g', qAbs( precision ) ) );
+        QTreeWidgetItem* yItem = createItem( coordItem );
+        yItem->setText( 0, "Y" );
+        yItem->setText( 1, QString::number( node->Y(), precision > 0 ? 'f' : 'g', qAbs( precision ) ) );
+        QTreeWidgetItem* zItem = createItem( coordItem );
+        zItem->setText( 0, "Z" );
+        zItem->setText( 1, QString::number( node->Z(), precision > 0 ? 'f' : 'g', qAbs( precision ) ) );
+        // connectivity
+        QTreeWidgetItem* conItem = createItem( nodeItem, 0 );
+        conItem->setText( 0, tr( "CONNECTIVITY" ) );
+        conItem->setExpanded( true );
+        Connectivity connectivity = nodeConnectivity( node );
+        if ( !connectivity.isEmpty() ) {
+          QString con = formatConnectivity( connectivity, SMDSAbs_0DElement );
+          if ( !con.isEmpty() ) {
+            QTreeWidgetItem* i = createItem( conItem );
+            i->setText( 0, tr( "0D_ELEMENTS" ) );
+            i->setText( 1, con );
+          }
+          con = formatConnectivity( connectivity, SMDSAbs_Edge );
+          if ( !con.isEmpty() ) {
+            QTreeWidgetItem* i = createItem( conItem );
+            i->setText( 0, tr( "EDGES" ) );
+            i->setText( 1, con );
+          }
+          con = formatConnectivity( connectivity, SMDSAbs_Face );
+          if ( !con.isEmpty() ) {
+            QTreeWidgetItem* i = createItem( conItem );
+            i->setText( 0, tr( "FACES" ) );
+            i->setText( 1, con );
+          }
+          con = formatConnectivity( connectivity, SMDSAbs_Volume );
+          if ( !con.isEmpty() ) {
+            QTreeWidgetItem* i = createItem( conItem );
+            i->setText( 0, tr( "VOLUMES" ) );
+            i->setText( 1, con );
+          }
+        }
+        else {
+          conItem->setText( 1, tr( "FREE_NODE" ) );
+        }
       }
       else {
-	//
-	// show element info
-	// 
-	const SMDS_MeshElement* e = actor()->GetObject()->GetMesh()->FindElement( id );
-	if ( !e ) return;
-	
-	// element ID && type
-	QString stype;
-	switch( e->GetType() ) {
-	case SMDSAbs_0DElement:
-	  stype = tr( "0D ELEMENT" ); break;
-	case SMDSAbs_Edge:
-	  stype = tr( "EDGE" ); break;
-	case SMDSAbs_Face:
-	  stype = tr( "FACE" ); break;
-	case SMDSAbs_Volume:
-	  stype = tr( "VOLUME" ); break;
-	default: 
-	  break;
-	}
-	if ( stype.isEmpty() ) return;
-	QTreeWidgetItem* elemItem = createItem( 0, -1 );
-	elemItem->setText( 0, stype );
-	elemItem->setText( 1, QString( "#%1" ).arg( id ) );
-	elemItem->setExpanded( true );
-	// geometry type
-	QString gtype;
-	switch( e->GetEntityType() ) {
-	case SMDSEntity_Triangle:
-	case SMDSEntity_Quad_Triangle:
-	  gtype = tr( "TRIANGLE" ); break;
-	case SMDSEntity_Quadrangle:
-	case SMDSEntity_Quad_Quadrangle:
-	  gtype = tr( "QUADRANGLE" ); break;
-	case SMDSEntity_Polygon:
-	case SMDSEntity_Quad_Polygon:
-	  gtype = tr( "POLYGON" ); break;
-	case SMDSEntity_Tetra:
-	case SMDSEntity_Quad_Tetra:
-	  gtype = tr( "TETRAHEDRON" ); break;
-	case SMDSEntity_Pyramid:
-	case SMDSEntity_Quad_Pyramid:
-	  gtype = tr( "PYRAMID" ); break;
-	case SMDSEntity_Hexa:
-	case SMDSEntity_Quad_Hexa:
-	  gtype = tr( "HEXAHEDRON" ); break;
-	case SMDSEntity_Penta:
-	case SMDSEntity_Quad_Penta:
-	  gtype = tr( "PRISM" ); break;
-	case SMDSEntity_Polyhedra:
-	case SMDSEntity_Quad_Polyhedra:
-	  gtype = tr( "POLYHEDRON" ); break;
-	default: 
-	  break;
-	}
-	if ( !gtype.isEmpty() ) {
-	  QTreeWidgetItem* typeItem = createItem( elemItem, 0 );
-	  typeItem->setText( 0, tr( "TYPE" ) );
-	  typeItem->setText( 1, gtype );
-	}
-	// quadratic flag and gravity center (any element except 0D)
-	if ( e->GetEntityType() > SMDSEntity_0D && e->GetEntityType() < SMDSEntity_Last ) {
-	  // quadratic flag
-	  QTreeWidgetItem* quadItem = createItem( elemItem, 0 );
-	  quadItem->setText( 0, tr( "QUADRATIC" ) );
-	  quadItem->setText( 1, e->IsQuadratic() ? tr( "YES" ) : tr( "NO" ) );
-	  // gravity center
-	  XYZ gc = gravityCenter( e );
-	  QTreeWidgetItem* gcItem = createItem( elemItem, 0 );
-	  gcItem->setText( 0, tr( "GRAVITY_CENTER" ) );
-	  gcItem->setExpanded( true );
-	  QTreeWidgetItem* xItem = createItem( gcItem );
-	  xItem->setText( 0, "X" );
-	  xItem->setText( 1, QString::number( gc.x(), precision > 0 ? 'f' : 'g', qAbs( precision ) ) );
-	  QTreeWidgetItem* yItem = createItem( gcItem );
-	  yItem->setText( 0, "Y" );
-	  yItem->setText( 1, QString::number( gc.y(), precision > 0 ? 'f' : 'g', qAbs( precision ) ) );
-	  QTreeWidgetItem* zItem = createItem( gcItem );
-	  zItem->setText( 0, "Z" );
-	  zItem->setText( 1, QString::number( gc.z(), precision > 0 ? 'f' : 'g', qAbs( precision ) ) );
-	}
-	// connectivity
-	QTreeWidgetItem* conItem = createItem( elemItem, 0 );
-	conItem->setText( 0, tr( "CONNECTIVITY" ) );
-	conItem->setExpanded( true );
-	SMDS_ElemIteratorPtr nodeIt = e->nodesIterator();
-	for ( int idx = 1; nodeIt->more(); idx++ ) {
-	  const SMDS_MeshNode* node = static_cast<const SMDS_MeshNode*>( nodeIt->next() );
-	  // node number and ID
-	  QTreeWidgetItem* nodeItem = createItem( conItem, 0 );
-	  nodeItem->setText( 0, QString( "%1 %2/%3" ).arg( tr( "NODE" ) ).arg( idx ).arg( e->NbNodes() ) );
-	  nodeItem->setText( 1, QString( "#%1" ).arg( node->GetID() ) );
-	  //nodeItem->setExpanded( true );
-	  // node coordinates
-	  QTreeWidgetItem* coordItem = createItem( nodeItem );
-	  coordItem->setText( 0, tr( "COORDINATES" ) );
-	  coordItem->setExpanded( true );
-	  QTreeWidgetItem* xItem = createItem( coordItem );
-	  xItem->setText( 0, "X" );
-	  xItem->setText( 1, QString::number( node->X(), precision > 0 ? 'f' : 'g', qAbs( precision ) ) );
-	  QTreeWidgetItem* yItem = createItem( coordItem );
-	  yItem->setText( 0, "Y" );
-	  yItem->setText( 1, QString::number( node->Y(), precision > 0 ? 'f' : 'g', qAbs( precision ) ) );
-	  QTreeWidgetItem* zItem = createItem( coordItem );
-	  zItem->setText( 0, "Z" );
-	  zItem->setText( 1, QString::number( node->Z(), precision > 0 ? 'f' : 'g', qAbs( precision ) ) );
-	  // node connectivity
-	  QTreeWidgetItem* nconItem = createItem( nodeItem );
-	  nconItem->setText( 0, tr( "CONNECTIVITY" ) );
-	  nconItem->setExpanded( true );
-	  Connectivity connectivity = nodeConnectivity( node );
-	  if ( !connectivity.isEmpty() ) {
-	    QString con = formatConnectivity( connectivity, SMDSAbs_0DElement );
-	    if ( !con.isEmpty() ) {
-	      QTreeWidgetItem* i = createItem( nconItem );
-	      i->setText( 0, tr( "0D_ELEMENTS" ) );
-	      i->setText( 1, con );
-	    }
-	    con = formatConnectivity( connectivity, SMDSAbs_Edge );
-	    if ( !con.isEmpty() ) {
-	      QTreeWidgetItem* i = createItem( nconItem );
-	      i->setText( 0, tr( "EDGES" ) );
-	      i->setText( 1, con );
-	    }
-	    con = formatConnectivity( connectivity, SMDSAbs_Face );
-	    if ( !con.isEmpty() ) {
-	      QTreeWidgetItem* i = createItem( nconItem );
-	      i->setText( 0, tr( "FACES" ) );
-	      i->setText( 1, con );
-	    }
-	    con = formatConnectivity( connectivity, SMDSAbs_Volume );
-	    if ( !con.isEmpty() ) {
-	      QTreeWidgetItem* i = createItem( nconItem );
-	      i->setText( 0, tr( "VOLUMES" ) );
-	      i->setText( 1, con );
-	    }
-	  }
-	}
+        //
+        // show element info
+        // 
+        const SMDS_MeshElement* e = actor()->GetObject()->GetMesh()->FindElement( id );
+        if ( !e ) return;
+        
+        // element ID && type
+        QString stype;
+        switch( e->GetType() ) {
+        case SMDSAbs_0DElement:
+          stype = tr( "0D ELEMENT" ); break;
+        case SMDSAbs_Edge:
+          stype = tr( "EDGE" ); break;
+        case SMDSAbs_Face:
+          stype = tr( "FACE" ); break;
+        case SMDSAbs_Volume:
+          stype = tr( "VOLUME" ); break;
+        default: 
+          break;
+        }
+        if ( stype.isEmpty() ) return;
+        QTreeWidgetItem* elemItem = createItem( 0, -1 );
+        elemItem->setText( 0, stype );
+        elemItem->setText( 1, QString( "#%1" ).arg( id ) );
+        elemItem->setExpanded( true );
+        // geometry type
+        QString gtype;
+        switch( e->GetEntityType() ) {
+        case SMDSEntity_Triangle:
+        case SMDSEntity_Quad_Triangle:
+          gtype = tr( "TRIANGLE" ); break;
+        case SMDSEntity_Quadrangle:
+        case SMDSEntity_Quad_Quadrangle:
+          gtype = tr( "QUADRANGLE" ); break;
+        case SMDSEntity_Polygon:
+        case SMDSEntity_Quad_Polygon:
+          gtype = tr( "POLYGON" ); break;
+        case SMDSEntity_Tetra:
+        case SMDSEntity_Quad_Tetra:
+          gtype = tr( "TETRAHEDRON" ); break;
+        case SMDSEntity_Pyramid:
+        case SMDSEntity_Quad_Pyramid:
+          gtype = tr( "PYRAMID" ); break;
+        case SMDSEntity_Hexa:
+        case SMDSEntity_Quad_Hexa:
+          gtype = tr( "HEXAHEDRON" ); break;
+        case SMDSEntity_Penta:
+        case SMDSEntity_Quad_Penta:
+          gtype = tr( "PRISM" ); break;
+        case SMDSEntity_Polyhedra:
+        case SMDSEntity_Quad_Polyhedra:
+          gtype = tr( "POLYHEDRON" ); break;
+        default: 
+          break;
+        }
+        if ( !gtype.isEmpty() ) {
+          QTreeWidgetItem* typeItem = createItem( elemItem, 0 );
+          typeItem->setText( 0, tr( "TYPE" ) );
+          typeItem->setText( 1, gtype );
+        }
+        // quadratic flag and gravity center (any element except 0D)
+        if ( e->GetEntityType() > SMDSEntity_0D && e->GetEntityType() < SMDSEntity_Last ) {
+          // quadratic flag
+          QTreeWidgetItem* quadItem = createItem( elemItem, 0 );
+          quadItem->setText( 0, tr( "QUADRATIC" ) );
+          quadItem->setText( 1, e->IsQuadratic() ? tr( "YES" ) : tr( "NO" ) );
+          // gravity center
+          XYZ gc = gravityCenter( e );
+          QTreeWidgetItem* gcItem = createItem( elemItem, 0 );
+          gcItem->setText( 0, tr( "GRAVITY_CENTER" ) );
+          gcItem->setExpanded( true );
+          QTreeWidgetItem* xItem = createItem( gcItem );
+          xItem->setText( 0, "X" );
+          xItem->setText( 1, QString::number( gc.x(), precision > 0 ? 'f' : 'g', qAbs( precision ) ) );
+          QTreeWidgetItem* yItem = createItem( gcItem );
+          yItem->setText( 0, "Y" );
+          yItem->setText( 1, QString::number( gc.y(), precision > 0 ? 'f' : 'g', qAbs( precision ) ) );
+          QTreeWidgetItem* zItem = createItem( gcItem );
+          zItem->setText( 0, "Z" );
+          zItem->setText( 1, QString::number( gc.z(), precision > 0 ? 'f' : 'g', qAbs( precision ) ) );
+        }
+        // connectivity
+        QTreeWidgetItem* conItem = createItem( elemItem, 0 );
+        conItem->setText( 0, tr( "CONNECTIVITY" ) );
+        conItem->setExpanded( true );
+        SMDS_ElemIteratorPtr nodeIt = e->nodesIterator();
+        for ( int idx = 1; nodeIt->more(); idx++ ) {
+          const SMDS_MeshNode* node = static_cast<const SMDS_MeshNode*>( nodeIt->next() );
+          // node number and ID
+          QTreeWidgetItem* nodeItem = createItem( conItem, 0 );
+          nodeItem->setText( 0, QString( "%1 %2/%3" ).arg( tr( "NODE" ) ).arg( idx ).arg( e->NbNodes() ) );
+          nodeItem->setText( 1, QString( "#%1" ).arg( node->GetID() ) );
+          //nodeItem->setExpanded( true );
+          // node coordinates
+          QTreeWidgetItem* coordItem = createItem( nodeItem );
+          coordItem->setText( 0, tr( "COORDINATES" ) );
+          coordItem->setExpanded( true );
+          QTreeWidgetItem* xItem = createItem( coordItem );
+          xItem->setText( 0, "X" );
+          xItem->setText( 1, QString::number( node->X(), precision > 0 ? 'f' : 'g', qAbs( precision ) ) );
+          QTreeWidgetItem* yItem = createItem( coordItem );
+          yItem->setText( 0, "Y" );
+          yItem->setText( 1, QString::number( node->Y(), precision > 0 ? 'f' : 'g', qAbs( precision ) ) );
+          QTreeWidgetItem* zItem = createItem( coordItem );
+          zItem->setText( 0, "Z" );
+          zItem->setText( 1, QString::number( node->Z(), precision > 0 ? 'f' : 'g', qAbs( precision ) ) );
+          // node connectivity
+          QTreeWidgetItem* nconItem = createItem( nodeItem );
+          nconItem->setText( 0, tr( "CONNECTIVITY" ) );
+          nconItem->setExpanded( true );
+          Connectivity connectivity = nodeConnectivity( node );
+          if ( !connectivity.isEmpty() ) {
+            QString con = formatConnectivity( connectivity, SMDSAbs_0DElement );
+            if ( !con.isEmpty() ) {
+              QTreeWidgetItem* i = createItem( nconItem );
+              i->setText( 0, tr( "0D_ELEMENTS" ) );
+              i->setText( 1, con );
+            }
+            con = formatConnectivity( connectivity, SMDSAbs_Edge );
+            if ( !con.isEmpty() ) {
+              QTreeWidgetItem* i = createItem( nconItem );
+              i->setText( 0, tr( "EDGES" ) );
+              i->setText( 1, con );
+            }
+            con = formatConnectivity( connectivity, SMDSAbs_Face );
+            if ( !con.isEmpty() ) {
+              QTreeWidgetItem* i = createItem( nconItem );
+              i->setText( 0, tr( "FACES" ) );
+              i->setText( 1, con );
+            }
+            con = formatConnectivity( connectivity, SMDSAbs_Volume );
+            if ( !con.isEmpty() ) {
+              QTreeWidgetItem* i = createItem( nconItem );
+              i->setText( 0, tr( "VOLUMES" ) );
+              i->setText( 1, con );
+            }
+          }
+        }
       }
     }
   }
@@ -1290,8 +1290,8 @@ void SMESHGUI_MeshInfoDlg::showInfo( const Handle(SALOME_InteractiveObject)& IO 
     int nb = 0;
     if ( myActor && selector ) {
       nb = myMode->checkedId() == NodeMode ? 
-	SMESH::GetNameOfSelectedElements( selector, IO, ID ) :
-	SMESH::GetNameOfSelectedNodes( selector, IO, ID );
+        SMESH::GetNameOfSelectedElements( selector, IO, ID ) :
+        SMESH::GetNameOfSelectedNodes( selector, IO, ID );
     }
     myElemInfo->setSource( myActor ) ;
     if ( nb > 0 ) {
@@ -1299,7 +1299,7 @@ void SMESHGUI_MeshInfoDlg::showInfo( const Handle(SALOME_InteractiveObject)& IO 
       QSet<long> ids;
       QStringList idTxt = ID.split( " ", QString::SkipEmptyParts );
       foreach ( ID, idTxt )
-	ids << ID.trimmed().toLong();
+        ids << ID.trimmed().toLong();
       myElemInfo->showInfo( ids, myMode->checkedId() == ElemMode );
     }
     else {
@@ -1362,12 +1362,12 @@ void SMESHGUI_MeshInfoDlg::updateSelection()
     if ( myMode->checkedId() == NodeMode ) {
       SMESH::SetPointRepresentation( true );
       if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow() )
-	aViewWindow->SetSelectionMode( NodeSelection );
+        aViewWindow->SetSelectionMode( NodeSelection );
     }
     else {
       SMESH::SetPointRepresentation( false );
       if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow() )
-	aViewWindow->SetSelectionMode( CellSelection );
+        aViewWindow->SetSelectionMode( CellSelection );
     }
   }
 
@@ -1390,8 +1390,8 @@ void SMESHGUI_MeshInfoDlg::updateSelection()
 void SMESHGUI_MeshInfoDlg::help()
 {
   SMESH::ShowHelpFile( myTabWidget->currentIndex() == BaseInfo ?
-		       "mesh_infos_page.html#advanced_mesh_infos_anchor" : 
-		       "mesh_infos_page.html#mesh_element_info_anchor" );
+                       "mesh_infos_page.html#advanced_mesh_infos_anchor" : 
+                       "mesh_infos_page.html#mesh_element_info_anchor" );
 }
 
 /*!
@@ -1457,11 +1457,11 @@ void SMESHGUI_MeshInfoDlg::idChanged()
     foreach ( QString tid, idTxt ) {
       long id = tid.trimmed().toLong();
       const SMDS_MeshElement* e = myMode->checkedId() == ElemMode ? 
-	myActor->GetObject()->GetMesh()->FindElement( id ) :
-	myActor->GetObject()->GetMesh()->FindNode( id );
+        myActor->GetObject()->GetMesh()->FindElement( id ) :
+        myActor->GetObject()->GetMesh()->FindNode( id );
       if ( e ) {
-	ID.Add( id );
-	ids << id;
+        ID.Add( id );
+        ids << id;
       }
     }
     selector->AddOrRemoveIndex( IO, ID, false );

@@ -333,7 +333,7 @@ namespace SMESH
 #endif
         //MESSAGE("GetVisualObj");
         if (nulData)
-        	objModified = aVisualObj->NulData();
+                objModified = aVisualObj->NulData();
         else
           objModified = aVisualObj->Update();
       }
@@ -640,7 +640,7 @@ namespace SMESH
 
   void RemoveActor( SUIT_ViewWindow *theWnd, SMESH_Actor* theActor){
     if(SVTK_ViewWindow* vtkWnd = GetVtkViewWindow(theWnd)){
-    	MESSAGE("RemoveActor " << theActor);
+        MESSAGE("RemoveActor " << theActor);
       vtkWnd->RemoveActor(theActor);
       if(theActor->hasIO()){
         Handle(SALOME_InteractiveObject) anIO = theActor->getIO();
@@ -679,7 +679,7 @@ namespace SMESH
 
   bool UpdateView(SUIT_ViewWindow *theWnd, EDisplaing theAction, const char* theEntry)
   {
-  	//MESSAGE("UpdateView");
+        //MESSAGE("UpdateView");
     bool OK = false;
     SVTK_ViewWindow* aViewWnd = GetVtkViewWindow(theWnd);
     if (!aViewWnd)
@@ -696,7 +696,7 @@ namespace SMESH
       case eDisplayAll: {
         while (vtkActor *anAct = aCollection->GetNextActor()) {
           if (SMESH_Actor *anActor = dynamic_cast<SMESH_Actor*>(anAct)) {
-          	MESSAGE("--- display " << anActor);
+                MESSAGE("--- display " << anActor);
             anActor->SetVisibility(true);
           }
         }
@@ -704,10 +704,10 @@ namespace SMESH
       }
       case eDisplayOnly:
       case eEraseAll: {
-      	//MESSAGE("---case eDisplayOnly");
+        //MESSAGE("---case eDisplayOnly");
         while (vtkActor *anAct = aCollection->GetNextActor()) {
           if (SMESH_Actor *anActor = dynamic_cast<SMESH_Actor*>(anAct)) {
-           	//MESSAGE("--- erase " << anActor);
+                //MESSAGE("--- erase " << anActor);
             anActor->SetVisibility(false);
           }
         }
@@ -717,12 +717,12 @@ namespace SMESH
           switch (theAction) {
             case eDisplay:
             case eDisplayOnly:
-            	//MESSAGE("--- display " << anActor);
+                //MESSAGE("--- display " << anActor);
               anActor->SetVisibility(true);
               if (theAction == eDisplayOnly) aRenderer->ResetCameraClippingRange();
               break;
             case eErase:
-             	//MESSAGE("--- erase " << anActor);
+                //MESSAGE("--- erase " << anActor);
               anActor->SetVisibility(false);
               break;
           }
@@ -731,7 +731,7 @@ namespace SMESH
           case eDisplay:
           case eDisplayOnly:
             {
-            	//MESSAGE("---");
+                //MESSAGE("---");
               SalomeApp_Study* aStudy = dynamic_cast<SalomeApp_Study*>(theWnd->getViewManager()->study());
               _PTR(Study) aDocument = aStudy->studyDS();
               // Pass non-visual objects (hypotheses, etc.), return true in this case
@@ -760,7 +760,7 @@ namespace SMESH
 
 
   bool UpdateView(EDisplaing theAction, const char* theEntry){
-  	//MESSAGE("UpdateView");
+        //MESSAGE("UpdateView");
     SalomeApp_Study* aStudy = dynamic_cast< SalomeApp_Study* >( GetActiveStudy() );
     SalomeApp_Application* app = dynamic_cast< SalomeApp_Application* >( aStudy->application() );
     SUIT_ViewWindow *aWnd = app->activeViewManager()->getActiveView();
@@ -799,7 +799,7 @@ namespace SMESH
 
   bool Update(const Handle(SALOME_InteractiveObject)& theIO, bool theDisplay)
   {
-  	MESSAGE("Update");
+        MESSAGE("Update");
     _PTR(Study) aStudy = GetActiveStudyDocument();
     CORBA::Long anId = aStudy->StudyId();
     if ( TVisualObjPtr aVisualObj = SMESH::GetVisualObj(anId,theIO->getEntry())) {
@@ -812,7 +812,7 @@ namespace SMESH
 
   bool UpdateNulData(const Handle(SALOME_InteractiveObject)& theIO, bool theDisplay)
   {
-  	MESSAGE("UpdateNulData");
+        MESSAGE("UpdateNulData");
     _PTR(Study) aStudy = GetActiveStudyDocument();
     CORBA::Long anId = aStudy->StudyId();
     if ( TVisualObjPtr aVisualObj = SMESH::GetVisualObj(anId,theIO->getEntry(), true)) {

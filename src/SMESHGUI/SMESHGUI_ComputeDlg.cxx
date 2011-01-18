@@ -743,32 +743,32 @@ void SMESHGUI_BaseComputeOp::computeMesh()
       bool limitExceeded;
       if ( !memoryLack )
       {
-	if ( getSMESHGUI()->automaticUpdate( newSize, &limitExceeded ) )
-	{
-	  try {
+        if ( getSMESHGUI()->automaticUpdate( newSize, &limitExceeded ) )
+        {
+          try {
 #if (OCC_VERSION_MAJOR << 16 | OCC_VERSION_MINOR << 8 | OCC_VERSION_MAINTENANCE) > 0x060100
-	    OCC_CATCH_SIGNALS;
+            OCC_CATCH_SIGNALS;
 #endif
-	    SMESH::Update(myIObject, true);
-	  }
-	  catch (...) {
+            SMESH::Update(myIObject, true);
+          }
+          catch (...) {
 #ifdef _DEBUG_
-	    MESSAGE ( "Exception thrown during mesh visualization" );
+            MESSAGE ( "Exception thrown during mesh visualization" );
 #endif
-	    if ( SMDS_Mesh::CheckMemory(true) ) { // has memory to show warning?
-	      SMESH::OnVisuException();
-	    }
-	    else {
-	      memoryLack = true;
-	    }
-	  }
+            if ( SMDS_Mesh::CheckMemory(true) ) { // has memory to show warning?
+              SMESH::OnVisuException();
+            }
+            else {
+              memoryLack = true;
+            }
+          }
         }
-	else if ( limitExceeded )
-	{
-	  SUIT_MessageBox::warning( desktop(),
-				    tr( "SMESH_WRN_WARNING" ),
-				    tr( "SMESH_WRN_SIZE_LIMIT_EXCEEDED" ).arg( newSize ).arg( limitSize ) );
-	}
+        else if ( limitExceeded )
+        {
+          SUIT_MessageBox::warning( desktop(),
+                                    tr( "SMESH_WRN_WARNING" ),
+                                    tr( "SMESH_WRN_SIZE_LIMIT_EXCEEDED" ).arg( newSize ).arg( limitSize ) );
+        }
       }
       LightApp_SelectionMgr *Sel = selectionMgr();
       if ( Sel )

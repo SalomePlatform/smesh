@@ -392,50 +392,50 @@ void SMESHGUI_MinDistance::selectionChanged()
     SMESH::SMESH_IDSource_var obj = SMESH::IObjectToInterface<SMESH::SMESH_IDSource>( IO );
     if ( !CORBA::is_nil( obj ) ) {
       if ( myCurrentTgt == FirstTgt ) {
-	myFirstSrc = obj;
-	myFirstActor = SMESH::FindActorByEntry( IO->getEntry() );
-	if ( myFirst->checkedId() == ObjectTgt ) {
-	  QString aName;
-	  SMESH::GetNameOfSelectedIObjects( SMESHGUI::selectionMgr(), aName );
-	  myFirstTgt->setText( aName );
-	}
-	else {
-	  SVTK_Selector* selector = SMESH::GetViewWindow()->GetSelector();
-	  QString ID;
-	  int nb = 0;
-	  if ( myFirstActor && selector ) {
-	    nb = myFirst->checkedId() == NodeTgt ? 
-	      SMESH::GetNameOfSelectedElements( selector, IO, ID ) :
-	      SMESH::GetNameOfSelectedNodes( selector, IO, ID );
-	  }
-	  if ( nb == 1 )
-	    myFirstTgt->setText( ID.trimmed() );
-	  else
-	    myFirstTgt->clear();
-	}
+        myFirstSrc = obj;
+        myFirstActor = SMESH::FindActorByEntry( IO->getEntry() );
+        if ( myFirst->checkedId() == ObjectTgt ) {
+          QString aName;
+          SMESH::GetNameOfSelectedIObjects( SMESHGUI::selectionMgr(), aName );
+          myFirstTgt->setText( aName );
+        }
+        else {
+          SVTK_Selector* selector = SMESH::GetViewWindow()->GetSelector();
+          QString ID;
+          int nb = 0;
+          if ( myFirstActor && selector ) {
+            nb = myFirst->checkedId() == NodeTgt ? 
+              SMESH::GetNameOfSelectedElements( selector, IO, ID ) :
+              SMESH::GetNameOfSelectedNodes( selector, IO, ID );
+          }
+          if ( nb == 1 )
+            myFirstTgt->setText( ID.trimmed() );
+          else
+            myFirstTgt->clear();
+        }
       }
       else if ( myCurrentTgt == SecondTgt ) {
-	mySecondSrc = obj;
-	mySecondActor = SMESH::FindActorByEntry( IO->getEntry() );
-	if ( mySecond->checkedId() == ObjectTgt ) {
-	  QString aName;
-	  SMESH::GetNameOfSelectedIObjects( SMESHGUI::selectionMgr(), aName );
-	  mySecondTgt->setText( aName );
-	}
-	else {
-	  SVTK_Selector* selector = SMESH::GetViewWindow()->GetSelector();
-	  QString ID;
-	  int nb = 0;
-	  if ( mySecondActor && selector ) {
-	    nb = mySecond->checkedId() == NodeTgt ? 
-	      SMESH::GetNameOfSelectedElements( selector, IO, ID ) :
-	      SMESH::GetNameOfSelectedNodes( selector, IO, ID );
-	  }
-	  if ( nb == 1 )
-	    mySecondTgt->setText( ID.trimmed() );
-	  else
-	    mySecondTgt->clear();
-	}
+        mySecondSrc = obj;
+        mySecondActor = SMESH::FindActorByEntry( IO->getEntry() );
+        if ( mySecond->checkedId() == ObjectTgt ) {
+          QString aName;
+          SMESH::GetNameOfSelectedIObjects( SMESHGUI::selectionMgr(), aName );
+          mySecondTgt->setText( aName );
+        }
+        else {
+          SVTK_Selector* selector = SMESH::GetViewWindow()->GetSelector();
+          QString ID;
+          int nb = 0;
+          if ( mySecondActor && selector ) {
+            nb = mySecond->checkedId() == NodeTgt ? 
+              SMESH::GetNameOfSelectedElements( selector, IO, ID ) :
+              SMESH::GetNameOfSelectedNodes( selector, IO, ID );
+          }
+          if ( nb == 1 )
+            mySecondTgt->setText( ID.trimmed() );
+          else
+            mySecondTgt->clear();
+        }
       }
     }
   }
@@ -529,11 +529,11 @@ void SMESHGUI_MinDistance::compute()
       SMESH::SMESH_Mesh_var m = myFirstSrc->GetMesh();
       long id = myFirstTgt->text().toLong();
       if ( !CORBA::is_nil( m ) && id ) {
-	SMESH::long_array_var ids = new SMESH::long_array();
-	ids->length( 1 );
-	ids[0] = id;
-	SMESH::SMESH_MeshEditor_var me = m->GetMeshEditor();
-	s1 = me->MakeIDSource( ids.in(), myFirst->checkedId() == NodeTgt ? SMESH::NODE : SMESH::FACE );
+        SMESH::long_array_var ids = new SMESH::long_array();
+        ids->length( 1 );
+        ids[0] = id;
+        SMESH::SMESH_MeshEditor_var me = m->GetMeshEditor();
+        s1 = me->MakeIDSource( ids.in(), myFirst->checkedId() == NodeTgt ? SMESH::NODE : SMESH::FACE );
       }
     }
     else {
@@ -547,11 +547,11 @@ void SMESHGUI_MinDistance::compute()
       SMESH::SMESH_Mesh_var m = mySecondSrc->GetMesh();
       long id = mySecondTgt->text().toLong();
       if ( !CORBA::is_nil( m ) && id ) {
-	SMESH::long_array_var ids = new SMESH::long_array();
-	ids->length( 1 );
-	ids[0] = id;
-	SMESH::SMESH_MeshEditor_var me = m->GetMeshEditor();
-	s2 = me->MakeIDSource( ids.in(), mySecond->checkedId() == NodeTgt ? SMESH::NODE : SMESH::FACE );
+        SMESH::long_array_var ids = new SMESH::long_array();
+        ids->length( 1 );
+        ids[0] = id;
+        SMESH::SMESH_MeshEditor_var me = m->GetMeshEditor();
+        s2 = me->MakeIDSource( ids.in(), mySecond->checkedId() == NodeTgt ? SMESH::NODE : SMESH::FACE );
       }
     }
     else {
@@ -912,40 +912,40 @@ void SMESHGUI_BoundingBox::selectionChanged()
       mySrc.append( obj );
       myActor = SMESH::FindActorByEntry( IO->getEntry() );
       if ( mySourceMode->checkedId() == ObjectsSrc ) {
-	QString aName;
-	SMESH::GetNameOfSelectedIObjects( SMESHGUI::selectionMgr(), aName );
-	mySource->setText( aName );
+        QString aName;
+        SMESH::GetNameOfSelectedIObjects( SMESHGUI::selectionMgr(), aName );
+        mySource->setText( aName );
       }
       else {
-	SVTK_Selector* selector = SMESH::GetViewWindow()->GetSelector();
-	QString ID;
-	int nb = 0;
-	if ( myActor && selector ) {
-	  nb = mySourceMode->checkedId() == NodesSrc ? 
-	    SMESH::GetNameOfSelectedElements( selector, IO, ID ) :
-	    SMESH::GetNameOfSelectedNodes( selector, IO, ID );
-	}
-	if ( nb > 0 ) {
-	  myIDs = ID.trimmed();
-	  if ( nb < MAX_NB_FOR_EDITOR ) {
-	    mySource->setReadOnly( false );
-	    if ( mySource->validator() != myValidator )
-	      mySource->setValidator( myValidator );
-	    mySource->setText( ID.trimmed() );
-	  }
-	  else {
-	    mySource->setReadOnly( true );
-	    mySource->setValidator( 0 );
-	    mySource->setText( tr( "SELECTED_NB_OBJ" ).arg( nb )
-			       .arg( mySourceMode->checkedId() == NodesSrc ? tr( "NB_NODES" ) : tr( "NB_ELEMENTS") ) );
-	  }
-	}
-	else {
-	  myIDs = "";
-	  mySource->clear();
-	  mySource->setReadOnly( false );
-	  mySource->setValidator( myValidator );
-	}
+        SVTK_Selector* selector = SMESH::GetViewWindow()->GetSelector();
+        QString ID;
+        int nb = 0;
+        if ( myActor && selector ) {
+          nb = mySourceMode->checkedId() == NodesSrc ? 
+            SMESH::GetNameOfSelectedElements( selector, IO, ID ) :
+            SMESH::GetNameOfSelectedNodes( selector, IO, ID );
+        }
+        if ( nb > 0 ) {
+          myIDs = ID.trimmed();
+          if ( nb < MAX_NB_FOR_EDITOR ) {
+            mySource->setReadOnly( false );
+            if ( mySource->validator() != myValidator )
+              mySource->setValidator( myValidator );
+            mySource->setText( ID.trimmed() );
+          }
+          else {
+            mySource->setReadOnly( true );
+            mySource->setValidator( 0 );
+            mySource->setText( tr( "SELECTED_NB_OBJ" ).arg( nb )
+                               .arg( mySourceMode->checkedId() == NodesSrc ? tr( "NB_NODES" ) : tr( "NB_ELEMENTS") ) );
+          }
+        }
+        else {
+          myIDs = "";
+          mySource->clear();
+          mySource->setReadOnly( false );
+          mySource->setValidator( myValidator );
+        }
       }
     }
   }
@@ -956,11 +956,11 @@ void SMESHGUI_BoundingBox::selectionChanged()
     myActor = 0;
     if ( mySourceMode->checkedId() == ObjectsSrc ) {
       for( ; It.More(); It.Next()){
-	Handle(SALOME_InteractiveObject) IO = It.Value();
-	SMESH::SMESH_IDSource_var obj = SMESH::IObjectToInterface<SMESH::SMESH_IDSource>( IO );
-	if ( !CORBA::is_nil( obj ) ) {
-	  mySrc.append( obj );
-	}
+        Handle(SALOME_InteractiveObject) IO = It.Value();
+        SMESH::SMESH_IDSource_var obj = SMESH::IObjectToInterface<SMESH::SMESH_IDSource>( IO );
+        if ( !CORBA::is_nil( obj ) ) {
+          mySrc.append( obj );
+        }
       }
       QString aName;
       SMESH::GetNameOfSelectedIObjects( SMESHGUI::selectionMgr(), aName );
@@ -999,10 +999,10 @@ void SMESHGUI_BoundingBox::sourceEdited()
     if ( mySourceMode->checkedId() == NodesSrc || mySourceMode->checkedId() == ElementsSrc ) {
       TColStd_MapOfInteger ID;
       if ( !mySource->isReadOnly() )
-	myIDs = mySource->text();
+        myIDs = mySource->text();
       QStringList ids = myIDs.split( " ", QString::SkipEmptyParts );
       foreach ( QString id, ids )
-	ID.Add( id.trimmed().toLong() );
+        ID.Add( id.trimmed().toLong() );
       selector->AddOrRemoveIndex( IO, ID, false );
     }
     if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow() )
@@ -1022,14 +1022,14 @@ void SMESHGUI_BoundingBox::compute()
       SMESH::SMESH_Mesh_var m = mySrc[0]->GetMesh();
       QStringList ids = myIDs.split( " ", QString::SkipEmptyParts );
       if ( !CORBA::is_nil( m ) && ids.count() > 0 ) {
-	SMESH::long_array_var ids_in = new SMESH::long_array();
-	ids_in->length( ids.count() );
-	for( int i = 0; i < ids.count(); i++ )
-	  ids_in[i] = ids[i].trimmed().toLong();
-	SMESH::SMESH_MeshEditor_var me = m->GetMeshEditor();
-	SMESH::SMESH_IDSource_var s = me->MakeIDSource( ids_in.in(), mySourceMode->checkedId() == NodesSrc ? SMESH::NODE : SMESH::FACE ); 
-	srcList->length( 1 );
-	srcList[0] = s;
+        SMESH::long_array_var ids_in = new SMESH::long_array();
+        ids_in->length( ids.count() );
+        for( int i = 0; i < ids.count(); i++ )
+          ids_in[i] = ids[i].trimmed().toLong();
+        SMESH::SMESH_MeshEditor_var me = m->GetMeshEditor();
+        SMESH::SMESH_IDSource_var s = me->MakeIDSource( ids_in.in(), mySourceMode->checkedId() == NodesSrc ? SMESH::NODE : SMESH::FACE ); 
+        srcList->length( 1 );
+        srcList[0] = s;
       }
     }
   }
@@ -1204,8 +1204,8 @@ void SMESHGUI_MeasureDlg::updateSelection()
 void SMESHGUI_MeasureDlg::help()
 {
   SMESH::ShowHelpFile( myTabWidget->currentIndex() == MinDistance ?
-		       "measurements_page.html#min_distance_anchor" : 
-		       "measurements_page.html#bounding_box_anchor" );
+                       "measurements_page.html#min_distance_anchor" : 
+                       "measurements_page.html#bounding_box_anchor" );
 }
 
 /*!
