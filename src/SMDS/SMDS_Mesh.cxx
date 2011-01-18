@@ -222,6 +222,11 @@ SMDS_MeshNode * SMDS_Mesh::AddNodeWithID(double x, double y, double z, int ID)
     myNodeIDFactory->adjustMaxId(ID);
     SMDS_MeshNode * node = myNodePool->getNew();
     node->init(ID, myMeshId, 0, x, y, z);
+
+    //rnv: Set SMDS_SpacePosition for node if need
+    if( node->GetPosition()->GetTypeOfPosition() != SMDS_TOP_3DSPACE)
+      node->SetPosition(SMDS_SpacePosition::originSpacePosition());
+    
     if (ID >= myNodes.size())
     {
         myNodes.resize(ID+SMDS_Mesh::chunkSize, 0);
