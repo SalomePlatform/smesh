@@ -50,7 +50,7 @@
 
 // GEOM Includes
 #include <GEOMBase.h>
-#include <GEOM_EdgeFilter.h>
+#include <GEOM_TypeFilter.h>
 #include <GEOM_CompoundFilter.h>
 
 // Qt includes
@@ -82,7 +82,7 @@
 //================================================================================
 
 StdMeshersGUI_SubShapeSelectorWdg
-::StdMeshersGUI_SubShapeSelectorWdg( QWidget * parent ): 
+::StdMeshersGUI_SubShapeSelectorWdg( QWidget * parent, TopAbs_ShapeEnum aSubShType ): 
   QWidget( parent ),
   myPreviewActor( 0 ),
   myMaxSize( -1 )
@@ -108,7 +108,7 @@ StdMeshersGUI_SubShapeSelectorWdg
   setLayout( edgesLayout );
   setMinimumWidth( 300 );
 
-  mySubShType = TopAbs_EDGE;
+  mySubShType = aSubShType;
 
   init();
 }
@@ -166,15 +166,8 @@ void StdMeshersGUI_SubShapeSelectorWdg::init()
   if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
     aViewWindow->SetSelectionMode( ActorSelection );
 
-
-  SalomeApp_Study* study = mySMESHGUI->activeStudy();
-  GEOM_EdgeFilter* edgeFilter = new GEOM_EdgeFilter(study,StdSelect_AnyEdge);
-  GEOM_CompoundFilter* gpoupFilter = new GEOM_CompoundFilter(study);
-  gpoupFilter->addSubType( TopAbs_EDGE );
-  myGeomFilters.append( edgeFilter );
-  myGeomFilters.append( gpoupFilter );
-  myFilter = new SMESH_LogicalFilter( myGeomFilters, SMESH_LogicalFilter::LO_OR );
-  mySelectionMgr->installFilter( myFilter );
+  myFilter=0;
+  //setFilter();
 
   connect( myAddButton,    SIGNAL(clicked()), SLOT(onAdd()));
   connect( myRemoveButton, SIGNAL(clicked()), SLOT(onRemove()));
@@ -183,6 +176,24 @@ void StdMeshersGUI_SubShapeSelectorWdg::init()
   connect( myListWidget,   SIGNAL(itemSelectionChanged()),    this, SLOT(onListSelectionChanged()));
 
   updateState();
+}
+
+//================================================================================
+/*!
+ * \brief Install filters to select sub-shapes of mySubShType or their groups
+ */
+//================================================================================
+
+void StdMeshersGUI_SubShapeSelectorWdg::setFilter()
+{
+  SalomeApp_Study* study = mySMESHGUI->activeStudy();
+  GEOM_TypeFilter* typeFilter = new GEOM_TypeFilter(study, mySubShType, /*isShapeType=*/true );
+  GEOM_CompoundFilter* gpoupFilter = new GEOM_CompoundFilter(study);
+  gpoupFilter->addSubType( mySubShType );
+  myGeomFilters.append( typeFilter );
+  myGeomFilters.append( gpoupFilter );
+  myFilter = new SMESH_LogicalFilter( myGeomFilters, SMESH_LogicalFilter::LO_OR );
+  mySelectionMgr->installFilter( myFilter );
 }
 
 //================================================================================
@@ -371,7 +382,7 @@ void StdMeshersGUI_SubShapeSelectorWdg::onListSelectionChanged()
 
 //=================================================================================
 // function : setGeomShape
-// purpose  : Called to set geometry
+// purpose  : Called to set geometry whose sub-shapes are selected
 //================================================================================
 void StdMeshersGUI_SubShapeSelectorWdg::SetGeomShapeEntry( const QString& theEntry )
 {
@@ -484,7 +495,7 @@ void StdMeshersGUI_SubShapeSelectorWdg::SetListOfIDs( SMESH::long_array_var theI
 
 //=================================================================================
 // function : SetMainShapeEntry
-// purpose  : Called to set the Main Object Entry
+// purpose  : Called to set the Entry of main shape of the mesh
 //=================================================================================
 void StdMeshersGUI_SubShapeSelectorWdg::SetMainShapeEntry( const QString& theEntry )
 {

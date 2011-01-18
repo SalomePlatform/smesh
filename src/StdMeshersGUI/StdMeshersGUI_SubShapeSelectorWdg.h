@@ -52,7 +52,8 @@ class STDMESHERSGUI_EXPORT StdMeshersGUI_SubShapeSelectorWdg : public QWidget
   Q_OBJECT
 
 public:
-  StdMeshersGUI_SubShapeSelectorWdg( QWidget* parent = 0 );
+  StdMeshersGUI_SubShapeSelectorWdg( QWidget* parent = 0,
+                                     TopAbs_ShapeEnum aSubShType = TopAbs_EDGE );
   ~StdMeshersGUI_SubShapeSelectorWdg();
 
   SMESH::long_array_var          GetListOfIDs();
@@ -79,10 +80,11 @@ public:
   int                            GetListSize() { return myListOfIDs.size(); }
 
   void SetMaxSize(int aMaxSize) { myMaxSize = aMaxSize; }
-  void SetSubShType(TopAbs_ShapeEnum aSubShType) { mySubShType = aSubShType; }
+  //void SetSubShType(TopAbs_ShapeEnum aSubShType) { mySubShType = aSubShType; }
 
 private:
   void                           updateState();
+  void                           setFilter();
 
 private slots:
   void                           onAdd(); 
@@ -98,8 +100,8 @@ private:
   LightApp_SelectionMgr*         mySelectionMgr;          /* User shape selection */
   SVTK_Selector*                 mySelector;
   SMESH::SMESH_Mesh_var          myMesh;
-  TopoDS_Shape                   myGeomShape;
-  TopoDS_Shape                   myMainShape;
+  TopoDS_Shape                   myGeomShape; // shape whose sub-shapes are selected
+  TopoDS_Shape                   myMainShape; // main shape of the mesh
   QString                        myEntry;
   QString                        myMainEntry;
   vtkRenderer*                   myRenderer;
