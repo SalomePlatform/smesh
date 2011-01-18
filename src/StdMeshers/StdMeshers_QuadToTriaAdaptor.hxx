@@ -26,6 +26,8 @@
 
 #include "SMESH_StdMeshers.hxx"
 
+#include "SMESH_ProxyMesh.hxx"
+
 class SMESH_Mesh;
 class SMESH_ElementSearcher;
 class SMDS_MeshElement;
@@ -37,36 +39,27 @@ class gp_Pnt;
 class gp_Vec;
 
 
-#include <map>
+#include <set>
 #include <list>
 #include <vector>
 
 #include <TopoDS_Shape.hxx>
 
-typedef std::map<const SMDS_MeshElement*, bool>               TRemTrias;
-
 /*!
  * \brief "Transforms" quadrilateral faces into triangular ones by creation of pyramids
  */
-class STDMESHERS_EXPORT StdMeshers_QuadToTriaAdaptor
+class STDMESHERS_EXPORT StdMeshers_QuadToTriaAdaptor : public SMESH_ProxyMesh
 {
 public:
   StdMeshers_QuadToTriaAdaptor();
 
   ~StdMeshers_QuadToTriaAdaptor();
 
-  bool Compute(SMESH_Mesh& aMesh, const TopoDS_Shape& aShape);
+  bool Compute(SMESH_Mesh&         aMesh,
+               const TopoDS_Shape& aShape,
+               SMESH_ProxyMesh*    aProxyMesh=0);
 
   bool Compute(SMESH_Mesh& aMesh);
-
-  const std::list<const SMDS_MeshFace*>* GetTriangles(const SMDS_MeshElement* aFace);
-
-  /*!
-   * \brief Return sum of generated and already present triangles
-   */
-  int TotalNbOfTriangles() const { return myNbTriangles; }
-
-  TopoDS_Shape GetShape() const { return myShape; }
 
 protected:
 
@@ -84,23 +77,27 @@ protected:
                          const TopoDS_Shape& aShape,
                          const SMDS_MeshElement* NotCheckedFace);
 
-  bool Compute2ndPart(SMESH_Mesh& aMesh);
+  bool Compute2ndPart(SMESH_Mesh&                                 aMesh,
+                      const std::vector<const SMDS_MeshElement*>& pyramids);
 
 
-  typedef std::list<const SMDS_MeshFace* >                   TTriaList;
-  typedef std::multimap<const SMDS_MeshElement*, TTriaList > TQuad2Trias;
-  TQuad2Trias  myResMap;
-  TRemTrias myTempTriangles;
+  void MergePiramids( const SMDS_MeshElement*     PrmI,
+                      const SMDS_MeshElement*     PrmJ,
+                      set<const SMDS_MeshNode*> & nodesToMove);
 
-  std::vector<const SMDS_MeshElement*> myPyramids;
+  void MergeAdjacent(const SMDS_MeshElement*    PrmI,
+                     set<const SMDS_MeshNode*>& nodesToMove);
+  //typedef std::list<const SMDS_MeshFace* >                   TTriaList;
+  //typedef std::multimap<const SMDS_MeshElement*, TTriaList > TQuad2Trias;
+
+  //TQuad2Trias  myResMap;
+  //std::vector<const SMDS_MeshElement*> myPyramids;
+
+  std::set<const SMDS_MeshElement*> myRemovedTrias;
 
   std::list< const SMDS_MeshNode* > myDegNodes;
 
   const SMESH_ElementSearcher* myElemSearcher;
-
-  int myNbTriangles;
-
-  TopoDS_Shape myShape;
 };
 
 #endif
