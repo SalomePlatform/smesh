@@ -707,12 +707,12 @@ SMESH_Client::Update(bool theIsClear)
 {
   bool anIsModified = true;
   if(mySMESHDSMesh){
-	MESSAGE("Update mySMESHDSMesh");
+        MESSAGE("Update mySMESHDSMesh");
     SMESHDS_Script* aScript = mySMESHDSMesh->GetScript();
     anIsModified = aScript->IsModified();
     aScript->SetModified(false);
   }else{
-	MESSAGE("Update CORBA");
+        MESSAGE("Update CORBA");
     SMESH::log_array_var aSeq = myMeshServer->GetLog( theIsClear );
     CORBA::Long aLength = aSeq->length();
     anIsModified = aLength > 0;

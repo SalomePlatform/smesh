@@ -330,10 +330,10 @@ int SMESH_ScalarBarActor::RenderOpaqueGeometry(vtkViewport *viewport)
 
     if (distrVisibility && GetDistributionVisibility()) {
       for( i=0 ;i<myNbValues.size();i++ ) {
-	if(myNbValues[i]) {
-	  numPositiveVal++;
-	  maxValue = std::max(maxValue,myNbValues[i]);
-	} 
+        if(myNbValues[i]) {
+          numPositiveVal++;
+          maxValue = std::max(maxValue,myNbValues[i]);
+        } 
       }
       numDistrPts = 4*(numPositiveVal);
       distrPts = vtkPoints::New();
@@ -346,13 +346,13 @@ int SMESH_ScalarBarActor::RenderOpaqueGeometry(vtkViewport *viewport)
       distrPts->Delete();
       distrPolys->Delete();
       if ( myDistributionColoringType == SMESH_MULTICOLOR_TYPE ) {
-	distColors = vtkUnsignedCharArray::New();
-	distColors->SetNumberOfComponents(3);
-	distColors->SetNumberOfTuples(numPositiveVal);
-	this->myDistribution->GetCellData()->SetScalars(distColors);
-	distColors->Delete();
+        distColors = vtkUnsignedCharArray::New();
+        distColors->SetNumberOfComponents(3);
+        distColors->SetNumberOfTuples(numPositiveVal);
+        this->myDistribution->GetCellData()->SetScalars(distColors);
+        distColors->Delete();
       } else if( myDistributionColoringType == SMESH_MONOCOLOR_TYPE ){
-	this->myDistribution->GetCellData()->SetScalars(NULL);
+        this->myDistribution->GetCellData()->SetScalars(NULL);
       }
     } else {
       myDistribution->Reset();
@@ -412,12 +412,12 @@ int SMESH_ScalarBarActor::RenderOpaqueGeometry(vtkViewport *viewport)
       // Customization of the vtkScalarBarActor to show distribution histogram.
       double delimeter=0.0;
       if(GetDistributionVisibility() && distrVisibility) {
-	delimeter=0.01*size[0]; //1 % from horizontal size of the full presentation size.
-	barWidth = size[0] - 4 - labelSize[0];
-	distrHeight = barWidth/2;
+        delimeter=0.01*size[0]; //1 % from horizontal size of the full presentation size.
+        barWidth = size[0] - 4 - labelSize[0];
+        distrHeight = barWidth/2;
       } else {
-	barWidth = size[0] - 4 - labelSize[0];
-	distrHeight = 0;
+        barWidth = size[0] - 4 - labelSize[0];
+        distrHeight = 0;
       }
 
       barHeight = (int)(0.86*size[1]);
@@ -432,45 +432,45 @@ int SMESH_ScalarBarActor::RenderOpaqueGeometry(vtkViewport *viewport)
       }
 
       if(GetDistributionVisibility() && distrVisibility) {
-	// Distribution points 
-	shrink = delta*SHRINK_COEF;
-	vtkIdType distPtsId=0;
-	vtkIdType distPtsIds[4];
-	for(i=0; i<numColors; i++) {
-	  if(myNbValues[i]) {
-	    itemH = distrHeight*((double)myNbValues[i]/maxValue);
-	    
-	    if(distrHeight == itemH) 
-	      itemH = itemH - delimeter/2;
+        // Distribution points 
+        shrink = delta*SHRINK_COEF;
+        vtkIdType distPtsId=0;
+        vtkIdType distPtsIds[4];
+        for(i=0; i<numColors; i++) {
+          if(myNbValues[i]) {
+            itemH = distrHeight*((double)myNbValues[i]/maxValue);
+            
+            if(distrHeight == itemH) 
+              itemH = itemH - delimeter/2;
 
-	    x[1] = i*delta+shrink;
+            x[1] = i*delta+shrink;
 
-	    // first point of polygon (quadrangle)
-	    x[0] = 0; 
-	    distPtsIds[0] = distPtsId;
-	    distrPts->SetPoint(distPtsId++,x);
+            // first point of polygon (quadrangle)
+            x[0] = 0; 
+            distPtsIds[0] = distPtsId;
+            distrPts->SetPoint(distPtsId++,x);
 
-	    // second point of polygon (quadrangle)
-	    x[0] = itemH;
-	    distPtsIds[1] = distPtsId;
-	    distrPts->SetPoint(distPtsId++,x);
+            // second point of polygon (quadrangle)
+            x[0] = itemH;
+            distPtsIds[1] = distPtsId;
+            distrPts->SetPoint(distPtsId++,x);
 
-	    x[1] = i*delta+delta-shrink;
+            x[1] = i*delta+delta-shrink;
 
- 	    // third point of polygon (quadrangle)
-	    x[0] = 0; 
-	    distPtsIds[3] = distPtsId;
-	    distrPts->SetPoint(distPtsId++,x);
+            // third point of polygon (quadrangle)
+            x[0] = 0; 
+            distPtsIds[3] = distPtsId;
+            distrPts->SetPoint(distPtsId++,x);
 
-	    // fourth point of polygon (quadrangle)
-	    x[0] = itemH;
-	    distPtsIds[2] = distPtsId;
-	    distrPts->SetPoint(distPtsId++,x);
+            // fourth point of polygon (quadrangle)
+            x[0] = itemH;
+            distPtsIds[2] = distPtsId;
+            distrPts->SetPoint(distPtsId++,x);
 
-	    //Inser Quadrangle
-	    distrPolys->InsertNextCell(4,distPtsIds);
-	  }
-	}
+            //Inser Quadrangle
+            distrPolys->InsertNextCell(4,distPtsIds);
+          }
+        }
       }    
     }
     // rnv end
@@ -481,15 +481,15 @@ int SMESH_ScalarBarActor::RenderOpaqueGeometry(vtkViewport *viewport)
       // Customization of the vtkScalarBarActor to show distribution histogram.
       double coef1, delimeter=0.0;
       if(GetDistributionVisibility() && distrVisibility) {
-	coef1=0.62;
-	distrHeight = (int)((coef1/2)*size[1]);
-	//delimeter between distribution diagram and scalar bar 
-	delimeter=0.02*size[1];
+        coef1=0.62;
+        distrHeight = (int)((coef1/2)*size[1]);
+        //delimeter between distribution diagram and scalar bar 
+        delimeter=0.02*size[1];
       }
       else {
-	coef1=0.4;
-	barHeight = (int)(coef1*size[1]);
-	distrHeight = 0;
+        coef1=0.4;
+        barHeight = (int)(coef1*size[1]);
+        distrHeight = 0;
       }
       
       barHeight = (int)(coef1*size[1]);
@@ -498,48 +498,48 @@ int SMESH_ScalarBarActor::RenderOpaqueGeometry(vtkViewport *viewport)
       for (i=0; i<numPts/2; i++) {
         x[0] = i*delta;
         x[1] = barHeight;
-        pts->SetPoint(2*i,x);	                     
+        pts->SetPoint(2*i,x);                        
         x[1] = distrHeight + delimeter;
         pts->SetPoint(2*i+1,x);
       }
       
       if(GetDistributionVisibility() && distrVisibility) {
-	// Distribution points 
-	shrink = delta*SHRINK_COEF;
-	vtkIdType distPtsId=0;
-	vtkIdType distPtsIds[4];
-	for(i=0; i<numColors; i++) {
-	  if(myNbValues[i]) {
-	    itemH = distrHeight*((double)myNbValues[i]/maxValue);
-	    
-	    // first point of polygon (quadrangle)
-	    x[0] = i*delta+shrink; 
-	    x[1] = 0;
-	    distPtsIds[0] = distPtsId;
-	    distrPts->SetPoint(distPtsId++,x);
-	    
-	    // second point of polygon (quadrangle)
-	    x[0] = i*delta+shrink; 
-	    x[1] = itemH;
-	    distPtsIds[3] = distPtsId;
-	    distrPts->SetPoint(distPtsId++,x);
-	    
-	    // third point of polygon (quadrangle)
-	    x[0] = i*delta+delta-shrink; 
-	    x[1] = 0;
-	    distPtsIds[1] = distPtsId;
-	    distrPts->SetPoint(distPtsId++,x);
-	    
-	    // fourth point of polygon (quadrangle)
-	    x[0] = i*delta+delta-shrink; 
-	    x[1] = itemH;
-	    distPtsIds[2] = distPtsId;
-	    distrPts->SetPoint(distPtsId++,x);
-	    
-	    // Add polygon into poly data
-	    distrPolys->InsertNextCell(4,distPtsIds);
-	  }
-	} 
+        // Distribution points 
+        shrink = delta*SHRINK_COEF;
+        vtkIdType distPtsId=0;
+        vtkIdType distPtsIds[4];
+        for(i=0; i<numColors; i++) {
+          if(myNbValues[i]) {
+            itemH = distrHeight*((double)myNbValues[i]/maxValue);
+            
+            // first point of polygon (quadrangle)
+            x[0] = i*delta+shrink; 
+            x[1] = 0;
+            distPtsIds[0] = distPtsId;
+            distrPts->SetPoint(distPtsId++,x);
+            
+            // second point of polygon (quadrangle)
+            x[0] = i*delta+shrink; 
+            x[1] = itemH;
+            distPtsIds[3] = distPtsId;
+            distrPts->SetPoint(distPtsId++,x);
+            
+            // third point of polygon (quadrangle)
+            x[0] = i*delta+delta-shrink; 
+            x[1] = 0;
+            distPtsIds[1] = distPtsId;
+            distrPts->SetPoint(distPtsId++,x);
+            
+            // fourth point of polygon (quadrangle)
+            x[0] = i*delta+delta-shrink; 
+            x[1] = itemH;
+            distPtsIds[2] = distPtsId;
+            distrPts->SetPoint(distPtsId++,x);
+            
+            // Add polygon into poly data
+            distrPolys->InsertNextCell(4,distPtsIds);
+          }
+        } 
       }
       // rnv end
     }
@@ -575,13 +575,13 @@ int SMESH_ScalarBarActor::RenderOpaqueGeometry(vtkViewport *viewport)
       // rnv begin
       // Customization of the vtkScalarBarActor to show distribution histogram.
       if(myNbValues[i] && myDistributionColoringType == SMESH_MULTICOLOR_TYPE && GetDistributionVisibility() && distrVisibility)
-	{
-	  rgb = distColors->GetPointer(3*dcCount); //write into array directly
-	  rgb[0] = rgba[0];
-	  rgb[1] = rgba[1];
-	  rgb[2] = rgba[2];
-	  dcCount++;
-	}
+        {
+          rgb = distColors->GetPointer(3*dcCount); //write into array directly
+          rgb[0] = rgba[0];
+          rgb[1] = rgba[1];
+          rgb[2] = rgba[2];
+          dcCount++;
+        }
       }
 
     // Now position everything properly
@@ -824,14 +824,14 @@ void SMESH_ScalarBarActor::AllocateAndSizeLabels(int *labelSize,
     double coef;
     if( GetDistributionVisibility() && distrVisibility )
       if(this->Orientation == VTK_ORIENT_VERTICAL)
-	coef = 0.4;
+        coef = 0.4;
       else 
-	coef = 0.18;
+        coef = 0.18;
     else 
       if(this->Orientation == VTK_ORIENT_VERTICAL)
-	coef = 0.6;
+        coef = 0.6;
       else 
-	coef=0.25;
+        coef=0.25;
 
 
     if ( this->Orientation == VTK_ORIENT_VERTICAL )

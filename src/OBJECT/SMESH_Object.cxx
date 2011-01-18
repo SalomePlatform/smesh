@@ -151,46 +151,46 @@ SMESH_VisualObjDef::~SMESH_VisualObjDef()
 //=================================================================================
 vtkIdType SMESH_VisualObjDef::GetNodeObjId( int theVTKID )
 {
-	if (myLocalGrid)
-	{
-		TMapOfIds::const_iterator i = myVTK2SMDSNodes.find(theVTKID);
-		return i == myVTK2SMDSNodes.end() ? -1 : i->second;
-	}
+        if (myLocalGrid)
+        {
+                TMapOfIds::const_iterator i = myVTK2SMDSNodes.find(theVTKID);
+                return i == myVTK2SMDSNodes.end() ? -1 : i->second;
+        }
   return this->GetMesh()->FindNodeVtk(theVTKID)->GetID();
 }
 
 vtkIdType SMESH_VisualObjDef::GetNodeVTKId( int theObjID )
 {
-	if (myLocalGrid)
-	{
-		TMapOfIds::const_iterator i = mySMDS2VTKNodes.find(theObjID);
+        if (myLocalGrid)
+        {
+                TMapOfIds::const_iterator i = mySMDS2VTKNodes.find(theObjID);
     return i == mySMDS2VTKNodes.end() ? -1 : i->second;
-	}
+        }
 
-	const SMDS_MeshNode* aNode = 0;
-	if( this->GetMesh() ) {
-	  aNode = this->GetMesh()->FindNode(theObjID);
-	}
-	return aNode ? aNode->getVtkId() : -1;
+        const SMDS_MeshNode* aNode = 0;
+        if( this->GetMesh() ) {
+          aNode = this->GetMesh()->FindNode(theObjID);
+        }
+        return aNode ? aNode->getVtkId() : -1;
 }
 
 vtkIdType SMESH_VisualObjDef::GetElemObjId( int theVTKID )
 {
-	if (myLocalGrid)
-	{
-		TMapOfIds::const_iterator i = myVTK2SMDSElems.find(theVTKID);
-		return i == myVTK2SMDSElems.end() ? -1 : i->second;
-	}
+        if (myLocalGrid)
+        {
+                TMapOfIds::const_iterator i = myVTK2SMDSElems.find(theVTKID);
+                return i == myVTK2SMDSElems.end() ? -1 : i->second;
+        }
   return this->GetMesh()->fromVtkToSmds(theVTKID);
 }
 
 vtkIdType SMESH_VisualObjDef::GetElemVTKId( int theObjID )
 {
-	if (myLocalGrid)
-	{
-		TMapOfIds::const_iterator i = mySMDS2VTKElems.find(theObjID);
-		return i == mySMDS2VTKElems.end() ? -1 : i->second;
-	}
+        if (myLocalGrid)
+        {
+                TMapOfIds::const_iterator i = mySMDS2VTKElems.find(theObjID);
+                return i == mySMDS2VTKElems.end() ? -1 : i->second;
+        }
   return this->GetMesh()->FindElement(theObjID)->getVtkId();
   //return this->GetMesh()->fromSmdsToVtk(theObjID);
 }
@@ -241,45 +241,45 @@ void SMESH_VisualObjDef::buildPrs(bool buildGrid)
   MESSAGE("----------------------------------------------------------SMESH_VisualObjDef::buildPrs " << buildGrid);
   if (buildGrid)
   {
-  	myLocalGrid = true;
-  	try
-  	{
-  		mySMDS2VTKNodes.clear();
-  		myVTK2SMDSNodes.clear();
-  		mySMDS2VTKElems.clear();
-  		myVTK2SMDSElems.clear();
+        myLocalGrid = true;
+        try
+        {
+                mySMDS2VTKNodes.clear();
+                myVTK2SMDSNodes.clear();
+                mySMDS2VTKElems.clear();
+                myVTK2SMDSElems.clear();
 
-  		if ( IsNodePrs() )
-  			buildNodePrs();
-  		else
-  			buildElemPrs();
-  	}
-  	catch(...)
-  	{
-  		mySMDS2VTKNodes.clear();
-  		myVTK2SMDSNodes.clear();
-  		mySMDS2VTKElems.clear();
-  		myVTK2SMDSElems.clear();
+                if ( IsNodePrs() )
+                        buildNodePrs();
+                else
+                        buildElemPrs();
+        }
+        catch(...)
+        {
+                mySMDS2VTKNodes.clear();
+                myVTK2SMDSNodes.clear();
+                mySMDS2VTKElems.clear();
+                myVTK2SMDSElems.clear();
 
-  		myGrid->SetPoints( 0 );
-  		myGrid->SetCells( 0, 0, 0, 0, 0 );
-  		throw;
-  	}
+                myGrid->SetPoints( 0 );
+                myGrid->SetCells( 0, 0, 0, 0, 0 );
+                throw;
+        }
   }
   else
   {
-  	myLocalGrid = false;
-  	if (!GetMesh()->isCompacted())
-  	  {
-  	    MESSAGE("*** buildPrs ==> compactMesh!");
-  	    GetMesh()->compactMesh();
-  	  }
-  	vtkUnstructuredGrid *theGrid = GetMesh()->getGrid();
-  	myGrid->ShallowCopy(theGrid);
-  	//MESSAGE(myGrid->GetReferenceCount());
-  	//MESSAGE( "Update - myGrid->GetNumberOfCells() = "<<myGrid->GetNumberOfCells() );
-  	//MESSAGE( "Update - myGrid->GetNumberOfPoints() = "<<myGrid->GetNumberOfPoints() );
-  	if( MYDEBUGWITHFILES ) SMESH::WriteUnstructuredGrid( myGrid,"buildPrs.vtu" );
+        myLocalGrid = false;
+        if (!GetMesh()->isCompacted())
+          {
+            MESSAGE("*** buildPrs ==> compactMesh!");
+            GetMesh()->compactMesh();
+          }
+        vtkUnstructuredGrid *theGrid = GetMesh()->getGrid();
+        myGrid->ShallowCopy(theGrid);
+        //MESSAGE(myGrid->GetReferenceCount());
+        //MESSAGE( "Update - myGrid->GetNumberOfCells() = "<<myGrid->GetNumberOfCells() );
+        //MESSAGE( "Update - myGrid->GetNumberOfPoints() = "<<myGrid->GetNumberOfPoints() );
+        if( MYDEBUGWITHFILES ) SMESH::WriteUnstructuredGrid( myGrid,"buildPrs.vtu" );
   }
 }
 
@@ -570,8 +570,8 @@ bool SMESH_VisualObjDef::GetEdgeNodes( const int theElemId,
 
 vtkUnstructuredGrid* SMESH_VisualObjDef::GetUnstructuredGrid()
 {
-	//MESSAGE("SMESH_VisualObjDef::GetUnstructuredGrid " << myGrid);
-	return myGrid;
+        //MESSAGE("SMESH_VisualObjDef::GetUnstructuredGrid " << myGrid);
+        return myGrid;
 }
 
 
@@ -581,7 +581,7 @@ vtkUnstructuredGrid* SMESH_VisualObjDef::GetUnstructuredGrid()
 //=================================================================================
 bool SMESH_VisualObjDef::IsValid() const
 {
-	//MESSAGE("SMESH_VisualObjDef::IsValid");
+        //MESSAGE("SMESH_VisualObjDef::IsValid");
   return GetNbEntities(SMDSAbs_Node) > 0      || 
          GetNbEntities(SMDSAbs_0DElement) > 0 || 
          GetNbEntities(SMDSAbs_Edge) > 0      || 
@@ -601,7 +601,7 @@ bool SMESH_VisualObjDef::IsValid() const
 SMESH_MeshObj::SMESH_MeshObj(SMESH::SMESH_Mesh_ptr theMesh):
   myClient(SalomeApp_Application::orb(),theMesh)
 {
-	myEmptyGrid = 0;
+        myEmptyGrid = 0;
   if ( MYDEBUG ) 
     MESSAGE("SMESH_MeshObj - this = "<<this<<"; theMesh->_is_nil() = "<<theMesh->_is_nil());
 }
@@ -634,20 +634,20 @@ bool SMESH_MeshObj::Update( int theIsClear )
 
 bool SMESH_MeshObj::NulData()
 {
-	MESSAGE ("SMESH_MeshObj::NulData() ==================================================================================");
-	if (!myEmptyGrid)
-	{
-	  myEmptyGrid = SMDS_UnstructuredGrid::New();
-	  myEmptyGrid->Initialize();
-	  myEmptyGrid->Allocate();
-	  vtkPoints* points = vtkPoints::New();
-	  points->SetNumberOfPoints(0);
-	  myEmptyGrid->SetPoints( points );
-	  points->Delete();
-	  myEmptyGrid->BuildLinks();
-	}
-	myGrid->ShallowCopy(myEmptyGrid);
-	return true;
+        MESSAGE ("SMESH_MeshObj::NulData() ==================================================================================");
+        if (!myEmptyGrid)
+        {
+          myEmptyGrid = SMDS_UnstructuredGrid::New();
+          myEmptyGrid->Initialize();
+          myEmptyGrid->Allocate();
+          vtkPoints* points = vtkPoints::New();
+          points->SetNumberOfPoints(0);
+          myEmptyGrid->SetPoints( points );
+          points->Delete();
+          myEmptyGrid->BuildLinks();
+        }
+        myGrid->ShallowCopy(myEmptyGrid);
+        return true;
 }
 //=================================================================================
 // function : GetElemDimension
@@ -815,7 +815,7 @@ void SMESH_SubMeshObj::UpdateFunctor( const SMESH::Controls::FunctorPtr& theFunc
 //=================================================================================
 bool SMESH_SubMeshObj::Update( int theIsClear )
 {
-	MESSAGE("SMESH_SubMeshObj::Update " << this)
+        MESSAGE("SMESH_SubMeshObj::Update " << this)
   bool changed = myMeshObj->Update( theIsClear );
   buildPrs(true);
   return changed;
