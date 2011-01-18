@@ -43,6 +43,7 @@
 
 class GeomAPI_ProjectPointOnSurf;
 class GeomAPI_ProjectPointOnCurve;
+class SMESH_ProxyMesh;
 
 typedef std::map<SMESH_TLink, const SMDS_MeshNode*>           TLinkNodeMap;
 typedef std::map<SMESH_TLink, const SMDS_MeshNode*>::iterator ItTLinkNode;
@@ -96,7 +97,8 @@ public:
   static bool LoadNodeColumns(TParam2ColumnMap & theParam2ColumnMap,
                               const TopoDS_Face& theFace,
                               const TopoDS_Edge& theBaseEdge,
-                              SMESHDS_Mesh*      theMesh);
+                              SMESHDS_Mesh*      theMesh,
+                              SMESH_ProxyMesh*   theProxyMesh=0);
   /*!
    * \brief Return support shape of a node
    * \param node - the node
@@ -104,7 +106,7 @@ public:
    * \retval TopoDS_Shape - found support shape
    */
   static TopoDS_Shape GetSubShapeByNode(const SMDS_MeshNode* node,
-                                        SMESHDS_Mesh*        meshDS);
+                                        const SMESHDS_Mesh*  meshDS);
 
   /*!
    * \brief Return a valid node index, fixing the given one if necessary
@@ -142,6 +144,8 @@ public:
   static bool IsSubShape( const TopoDS_Shape& shape, SMESH_Mesh* aMesh );
 
   static double MaxTolerance( const TopoDS_Shape& shape );
+
+  static bool IsClosedEdge( const TopoDS_Edge& anEdge );
 
 
 public:
@@ -301,16 +305,19 @@ public:
   /*!
    * \brief Check and fix node UV on a face
    *  \param force - check even if checks of other nodes on this face passed OK
+   *  \param distXYZ - returns result distance and point coordinates
    *  \retval bool - false if UV is bad and could not be fixed
    */
   bool CheckNodeUV(const TopoDS_Face&   F,
                    const SMDS_MeshNode* n,
                    gp_XY&               uv,
                    const double         tol,
-                   const bool           force=false) const;
+                   const bool           force=false,
+                   double               distXYZ[4]=0) const;
   /*!
    * \brief Check and fix node U on an edge
    *  \param force - check even if checks of other nodes on this edge passed OK
+   *  \param distXYZ - returns result distance and point coordinates
    *  \retval bool - false if U is bad and could not be fixed
    */
   bool CheckNodeU(const TopoDS_Edge&   E,
@@ -318,7 +325,7 @@ public:
                   double&              u,
                   const double         tol,
                   const bool           force=false,
-                  double*              distance=0) const;
+                  double               distXYZ[4]=0) const;
   /*!
    * \brief Return middle UV taking in account surface period
    */
