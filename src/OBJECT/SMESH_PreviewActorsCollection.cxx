@@ -111,7 +111,7 @@ bool SMESH_PreviewActorsCollection::Init( const TopoDS_Shape& theShape, TopAbs_S
         anIO->setEntry( aString.toLatin1().constData() );
 
         // Init Actor
-        anActor->SetVectorMode( true );
+        anActor->SetVectorMode( theType==TopAbs_EDGE );
         anActor->setIO( anIO );
         anActor->SetSelector( mySelector );
         anActor->SetPickable( true );
