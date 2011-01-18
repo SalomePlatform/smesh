@@ -936,7 +936,8 @@ bool StdMeshers_ProjectionUtils::FindSubShapeAssociation(const TopoDS_Shape& the
         return true; // done
       }
     }
-    if ( IsClosedEdge( edge1 ) && IsClosedEdge( edge2 ))
+    if ( SMESH_MesherHelper::IsClosedEdge( edge1 ) &&
+         SMESH_MesherHelper::IsClosedEdge( edge2 ))
     {
       // TODO: find out a proper orientation (is it possible?)
       InsertAssociation( edge1, edge2, theMap, bidirect); // insert with a proper orientation
@@ -1151,7 +1152,7 @@ bool StdMeshers_ProjectionUtils::FindSubShapeAssociation(const TopoDS_Shape& the
       edge.Nullify();
       TopoDS_Shape wire = OuterShape( TopoDS::Face( expF.Current() ), TopAbs_WIRE );
       for ( expE.Init( wire, TopAbs_EDGE ); edge.IsNull() && expE.More(); expE.Next() )
-        if ( !IsClosedEdge( TopoDS::Edge( expE.Current() )))
+        if ( !SMESH_MesherHelper::IsClosedEdge( TopoDS::Edge( expE.Current() )))
           edge = expE.Current();
       if ( !edge.IsNull() )
         break;
@@ -1159,7 +1160,7 @@ bool StdMeshers_ProjectionUtils::FindSubShapeAssociation(const TopoDS_Shape& the
   } else if (edge.ShapeType() != TopAbs_EDGE) { // no faces
     edge.Nullify();
     for ( expE.Init( theShape1, TopAbs_EDGE ); edge.IsNull() && expE.More(); expE.Next() )
-      if ( !IsClosedEdge( TopoDS::Edge( expE.Current() )))
+      if ( !SMESH_MesherHelper::IsClosedEdge( TopoDS::Edge( expE.Current() )))
         edge = expE.Current();
   }
   if ( edge.IsNull() || edge.ShapeType() != TopAbs_EDGE )
@@ -1691,7 +1692,7 @@ FindMatchingNodesOnFaces( const TopoDS_Face&     face1,
   if ( hasNodesOnEdge )
   {
     int nbNodeToGet = 1;
-    if ( IsClosedEdge( edge1 ) || IsClosedEdge( edge2 ) )
+    if ( helper1.IsClosedEdge( edge1 ) || helper2.IsClosedEdge( edge2 ) )
       nbNodeToGet = 2;
     for ( int is2 = 0; is2 < 2; ++is2 )
     {
@@ -1897,19 +1898,6 @@ FindMatchingNodesOnFaces( const TopoDS_Face&     face1,
 //             << node1To2Map.size() * quadFactor << " < " << SM1->NbNodes());
   
   return true;
-}
-
-//================================================================================
-/*!
- * \brief Check if the first and last vertices of an edge are the same
- * \param anEdge - the edge to check
- * \retval bool - true if same
- */
-//================================================================================
-
-bool StdMeshers_ProjectionUtils::IsClosedEdge( const TopoDS_Edge& anEdge )
-{
-  return TopExp::FirstVertex( anEdge ).IsSame( TopExp::LastVertex( anEdge ));
 }
 
 //================================================================================

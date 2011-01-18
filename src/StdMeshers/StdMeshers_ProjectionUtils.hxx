@@ -159,13 +159,6 @@ class StdMeshers_ProjectionUtils
                                         const TShapeShapeMap & assocMap,
                                         TNodeNodeMap &         nodeIn2OutMap);
   /*!
-   * \brief Check if the first and last vertices of an edge are the same
-    * \param anEdge - the edge to check
-    * \retval bool - true if same
-   */
-  static bool IsClosedEdge( const TopoDS_Edge& anEdge );
-
-  /*!
    * \brief Return any subshape of a face belonging to the outer wire
     * \param face - the face
     * \param type - type of subshape to return
