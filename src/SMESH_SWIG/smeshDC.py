@@ -4403,6 +4403,29 @@ class Mesh_Algorithm:
         if not entry: return ""
         return entry
 
+    ## Defines "ViscousLayers" hypothesis to give parameters of layers of prisms to build
+    #  near mesh boundary. This hypothesis can be used by several 3D algorithms:
+    #  NETGEN 3D, GHS3D, Hexahedron(i,j,k)
+    #  @param thickness total thickness of layers of prisms
+    #  @param numberOfLayers number of layers of prisms
+    #  @param stretchFactor factor (>1.0) of growth of layer thickness towards inside of mesh
+    #  @param ignoreFaces geometrical face (or their ids) not to generate layers on
+    #  @ingroup l3_hypos_additi
+    def ViscousLayers(self, thickness, numberOfLayers, stretchFactor, ignoreFaces=[]):
+        if not isinstance(self.algo, SMESH._objref_SMESH_3D_Algo):
+            raise TypeError, "ViscousLayers are supported by 3D algorithms only"
+        if not "ViscousLayers" in self.GetCompatibleHypothesis():
+            raise TypeError, "ViscousLayers are not supported by %s"%self.algo.GetName()
+        if ignoreFaces and isinstance( ignoreFaces[0], geompyDC.GEOM._objref_GEOM_Object ):
+            ignoreFaces = [ self.mesh.geompyD.GetSubShapeID(self.mesh.geom, f) for f in ignoreFaces ]
+        hyp = self.Hypothesis("ViscousLayers",
+                              [thickness, numberOfLayers, stretchFactor, ignoreFaces])
+        hyp.SetTotalThickness(thickness)
+        hyp.SetNumberLayers(numberOfLayers)
+        hyp.SetStretchFactor(stretchFactor)
+        hyp.SetIgnoreFaces(ignoreFaces)
+        return hyp
+
 # Public class: Mesh_Segment
 # --------------------------
 
