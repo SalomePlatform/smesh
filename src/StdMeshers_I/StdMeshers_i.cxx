@@ -71,7 +71,7 @@
 #include "StdMeshers_RadialQuadrangle_1D2D_i.hxx"
 #include "StdMeshers_Import_1D_i.hxx"
 #include "StdMeshers_Import_1D2D_i.hxx"
-
+#include "StdMeshers_ViscousLayers_i.hxx"
 
 template <class T> class StdHypothesisCreator_i:public HypothesisCreator_i<T>
 {
@@ -149,6 +149,8 @@ STDMESHERS_I_EXPORT
       aCreator = new StdHypothesisCreator_i<StdMeshers_ImportSource1D_i>;
     else if (strcmp(aHypName, "ImportSource2D") == 0)
       aCreator = new StdHypothesisCreator_i<StdMeshers_ImportSource2D_i>;
+    else if (strcmp(aHypName, "ViscousLayers") == 0)
+      aCreator = new StdHypothesisCreator_i<StdMeshers_ViscousLayers_i>;
 
     // Algorithms
     else if (strcmp(aHypName, "Regular_1D") == 0)
