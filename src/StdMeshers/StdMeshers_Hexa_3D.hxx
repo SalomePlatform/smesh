@@ -32,39 +32,13 @@
 #include "SMESH_StdMeshers.hxx"
 
 #include "SMESH_3D_Algo.hxx"
-#include "SMESH_Mesh.hxx"
-#include "StdMeshers_Quadrangle_2D.hxx"
 #include "Utils_SALOME_Exception.hxx"
 
-#include "SMESH_MesherHelper.hxx"
 
-class TopTools_IndexedMapOfShape;
+class StdMeshers_ViscousLayers;
+class SMESH_MesherHelper;
 
-typedef struct point3Dstruct
-{
-  const SMDS_MeshNode * node;
-} Point3DStruct;
-
-typedef double Pt3[3];
-
-typedef struct conv2dstruct
-{
-  double a1; // X = a1*x + b1*y + c1 
-  double b1; // Y = a2*x + b2*y + c2
-  double c1; // a1, b1 a2, b2 in {-1,0,1}
-  double a2; // c1, c2 in {0,1}
-  double b2;
-  double c2;
-  int ia;    // I = ia*i + ib*j + ic
-  int ib;
-  int ic;
-  int ja;    // J = ja*i + jb*j + jc
-  int jb;
-  int jc;
-} Conv2DStruct;
-
-class STDMESHERS_EXPORT StdMeshers_Hexa_3D:
-  public SMESH_3D_Algo
+class STDMESHERS_EXPORT StdMeshers_Hexa_3D : public SMESH_3D_Algo
 {
 public:
   StdMeshers_Hexa_3D(int hypId, int studyId, SMESH_Gen* gen);
@@ -81,41 +55,9 @@ public:
   virtual bool Evaluate(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape,
                         MapShapeNbElems& aResMap);
 
-  static TopoDS_Vertex OppositeVertex(const TopoDS_Vertex& aVertex,
-                                      const TopTools_IndexedMapOfShape& aQuads0Vertices,
-                                      FaceQuadStruct* aQuads[6]);
-
 protected:
-  TopoDS_Edge
-  EdgeNotInFace(SMESH_Mesh& aMesh,
-                const TopoDS_Shape& aShape,
-                const TopoDS_Face& aFace,
-                const TopoDS_Vertex& aVertex,
-                const TopTools_IndexedDataMapOfShapeListOfShape& MS);
 
-  int GetFaceIndex(SMESH_Mesh& aMesh,
-                   const TopoDS_Shape& aShape,
-                   const std::vector<SMESH_subMesh*>& meshFaces,
-                   const TopoDS_Vertex& V0,
-                   const TopoDS_Vertex& V1,
-                   const TopoDS_Vertex& V2,
-                   const TopoDS_Vertex& V3);
-
-  void GetConv2DCoefs(const faceQuadStruct& quad,
-                      const TopoDS_Shape& aShape,
-                      const TopoDS_Vertex& V0,
-                      const TopoDS_Vertex& V1,
-                      const TopoDS_Vertex& V2,
-                      const TopoDS_Vertex& V3,
-                      Conv2DStruct& conv);
-
-  void GetPoint(Pt3 p,
-                int i, int j, int k,
-                int nbx, int nby, int nbz,
-                Point3DStruct *np,
-                const SMESHDS_Mesh* meshDS);
-
-  bool ClearAndReturn(FaceQuadStruct* theQuads[6], const bool res);
+  const StdMeshers_ViscousLayers* _viscousLayersHyp;
 };
 
 #endif
