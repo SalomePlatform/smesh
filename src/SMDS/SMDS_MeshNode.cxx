@@ -113,7 +113,9 @@ void SMDS_MeshNode::Print(ostream & OS) const
 
 void SMDS_MeshNode::SetPosition(const SMDS_PositionPtr& aPos)
 {
-  if ( myPosition && myPosition != aPos )
+  if ( myPosition &&
+       myPosition != SMDS_SpacePosition::originSpacePosition() &&
+       myPosition != aPos )
     delete myPosition;
   myPosition = aPos;
 }
