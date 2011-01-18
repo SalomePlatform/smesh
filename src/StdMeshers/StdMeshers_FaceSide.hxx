@@ -20,7 +20,6 @@
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 
-//  SMESH SMESH : implementaion of SMESH idl descriptions
 // File      : StdMeshers_FaceSide.hxx
 // Created   : Wed Jan 31 18:41:25 2007
 // Author    : Edward AGAPOV (eap)
