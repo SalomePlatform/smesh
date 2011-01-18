@@ -15,6 +15,6 @@ void memostat(const char* f, int l)
   std::cerr << f << ":" << l << " --------------------------" << std::endl;
 }
 
-#define MEMOSTAT memostat( __FILE__, __LINE__ )
+#define MEMOSTAT //memostat( __FILE__, __LINE__ )
 
 #endif
