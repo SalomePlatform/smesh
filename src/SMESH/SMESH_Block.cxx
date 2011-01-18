@@ -383,8 +383,8 @@ bool SMESH_Block::ShellPoint(const gp_XYZ&         theParams,
   if ( thePointOnShape.size() < ID_F1yz )
     return false;
 
-  double x = theParams.X(), y = theParams.Y(), z = theParams.Z();
-  double x1 = 1. - x,       y1 = 1. - y,       z1 = 1. - z;
+  const double x = theParams.X(), y = theParams.Y(), z = theParams.Z();
+  const double x1 = 1. - x,       y1 = 1. - y,       z1 = 1. - z;
   const vector<gp_XYZ>& p = thePointOnShape;
 
   thePoint = 
