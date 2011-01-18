@@ -20,10 +20,9 @@
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 
-//  SMESH SMESH : implementaion of SMESH idl descriptions
-// File      : SMESH_subMeshEventListener.hxx
-// Created   : Mon Nov 13 10:45:49 2006
-// Author    : Edward AGAPOV (eap)
+// File    : SMESH_subMeshEventListener.hxx
+// Created : Mon Nov 13 10:45:49 2006
+// Author  : Edward AGAPOV (eap)
 //
 #ifndef SMESH_subMeshEventListener_HeaderFile
 #define SMESH_subMeshEventListener_HeaderFile
@@ -31,6 +30,7 @@
 #include "SMESH_SMESH.hxx"
 
 #include <list>
+#include <set>
 
 class  SMESH_subMesh;
 class  SMESH_Hypothesis;
@@ -42,8 +42,11 @@ struct SMESH_subMeshEventListenerData;
  */
 // ------------------------------------------------------------------
 
-class SMESH_EXPORT SMESH_subMeshEventListener {
+class SMESH_EXPORT SMESH_subMeshEventListener
+{
   bool myIsDeletable; //!< if true, it will be deleted by SMESH_subMesh
+  mutable std::set<SMESH_subMesh*> myBusySM; //!< to avoid infinite recursion via events
+  friend class SMESH_subMesh;
 public:
   SMESH_subMeshEventListener(bool isDeletable):myIsDeletable(isDeletable) {}
   bool IsDeletable() const { return myIsDeletable; }
@@ -55,9 +58,9 @@ public:
    * \param data - listener data stored in the subMesh
    * \param hyp - hypothesis, if eventType is algo_event
    * 
-   * The base implementation translates CLEAN event to the subMesh stored
-   * in the listener data. Also it sends SUBMESH_COMPUTED event in case of
-   * successful COMPUTE event.
+   * The base implementation (see SMESH_subMesh.cxx) translates CLEAN event
+   * to the subMesh stored in the listener data. Also it sends SUBMESH_COMPUTED
+   * event in case of successful COMPUTE event.
    */
   virtual void ProcessEvent(const int          event,
                             const int          eventType,
@@ -80,6 +83,7 @@ struct SMESH_subMeshEventListenerData
                                          // on the one storing this data
 public:
   SMESH_subMeshEventListenerData(bool isDeletable):myIsDeletable(isDeletable) {}
+  virtual ~SMESH_subMeshEventListenerData() {}
   bool IsDeletable() const { return myIsDeletable; }
 
   /*!
