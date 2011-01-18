@@ -414,10 +414,10 @@ public:
                              const TopoDS_Shape & S);
   void UnSetMeshElementOnShape(const SMDS_MeshElement * anElt,
                                const TopoDS_Shape & S);
-  bool HasMeshElements(const TopoDS_Shape & S);
+  bool HasMeshElements(const TopoDS_Shape & S) const;
   SMESHDS_SubMesh * MeshElements(const TopoDS_Shape & S) const;
-  SMESHDS_SubMesh * MeshElements(const int Index);
-  std::list<int> SubMeshIndices();
+  SMESHDS_SubMesh * MeshElements(const int Index) const;
+  std::list<int> SubMeshIndices() const;
   const std::map<int,SMESHDS_SubMesh*>& SubMeshes() const
   { return myShapeIndexToSubMesh; }
 

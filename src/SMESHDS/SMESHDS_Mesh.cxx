@@ -1117,7 +1117,7 @@ SMESHDS_SubMesh * SMESHDS_Mesh::MeshElements(const TopoDS_Shape & S) const
 ///////////////////////////////////////////////////////////////////////////////
 /// Return the sub mesh by Id of shape it is linked to
 ///////////////////////////////////////////////////////////////////////////////
-SMESHDS_SubMesh * SMESHDS_Mesh::MeshElements(const int Index)
+SMESHDS_SubMesh * SMESHDS_Mesh::MeshElements(const int Index) const
 {
   TShapeIndexToSubMesh::const_iterator anIter = myShapeIndexToSubMesh.find(Index);
   if (anIter != myShapeIndexToSubMesh.end())
@@ -1130,10 +1130,10 @@ SMESHDS_SubMesh * SMESHDS_Mesh::MeshElements(const int Index)
 //function : SubMeshIndices
 //purpose  : 
 //=======================================================================
-list<int> SMESHDS_Mesh::SubMeshIndices()
+list<int> SMESHDS_Mesh::SubMeshIndices() const
 {
   list<int> anIndices;
-  std::map<int,SMESHDS_SubMesh*>::iterator anIter = myShapeIndexToSubMesh.begin();
+  std::map<int,SMESHDS_SubMesh*>::const_iterator anIter = myShapeIndexToSubMesh.begin();
   for (; anIter != myShapeIndexToSubMesh.end(); anIter++) {
     anIndices.push_back((*anIter).first);
   }
@@ -1177,7 +1177,7 @@ void SMESHDS_Mesh::ClearScript()
 //function : HasMeshElements
 //purpose  : 
 //=======================================================================
-bool SMESHDS_Mesh::HasMeshElements(const TopoDS_Shape & S)
+bool SMESHDS_Mesh::HasMeshElements(const TopoDS_Shape & S) const
 {
         if (myShape.IsNull()) MESSAGE("myShape is NULL");
         int Index = myIndexToShape.FindIndex(S);
