@@ -22,7 +22,6 @@
 #  Author : Paul RASCLE, EDF
 #  Modified by : Alexander BORODIN (OCN) - autotools usage
 #  Module : SMESH
-#  $Header$
 #
 include $(top_srcdir)/adm_local/unix/make_common_starter.am
 
@@ -53,7 +52,8 @@ salomeinclude_HEADERS = \
 	SMESH_Comment.hxx \
 	SMESH_ComputeError.hxx \
 	SMESH_File.hxx \
-	SMESH_SMESH.hxx
+	SMESH_SMESH.hxx \
+	SMESH_ProxyMesh.hxx
 
 # Libraries targets
 
@@ -78,7 +78,8 @@ dist_libSMESHimpl_la_SOURCES = \
 	SMESH_MesherHelper.cxx \
 	SMESH_Octree.cxx \
 	SMESH_OctreeNode.cxx \
-	SMESH_File.cxx
+	SMESH_File.cxx \
+	SMESH_ProxyMesh.cxx
 
 # additionnal information to compile and link file
 libSMESHimpl_la_CPPFLAGS = \
