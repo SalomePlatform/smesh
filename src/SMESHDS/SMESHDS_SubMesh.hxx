@@ -43,31 +43,33 @@ class SMESHDS_EXPORT SMESHDS_SubMesh
 {
  public:
   SMESHDS_SubMesh(SMESHDS_Mesh *parent, int index);
+  virtual ~SMESHDS_SubMesh();
 
-  bool IsComplexSubmesh() const { return !mySubMeshes.empty(); }
+  virtual bool IsComplexSubmesh() const { return !mySubMeshes.empty(); }
 
   // if !IsComplexSubmesh()
-  void AddElement(const SMDS_MeshElement * ME);
-  bool RemoveElement(const SMDS_MeshElement * ME, bool isElemDeleted); // ret true if ME was in
-  void AddNode(const SMDS_MeshNode * ME);
-  bool RemoveNode(const SMDS_MeshNode * ME, bool isNodeDeleted);       // ret true if ME was in
+  virtual void AddElement(const SMDS_MeshElement * ME);
+  virtual bool RemoveElement(const SMDS_MeshElement * ME, bool isElemDeleted); // ret true if ME was in
+  virtual void AddNode(const SMDS_MeshNode * ME);
+  virtual bool RemoveNode(const SMDS_MeshNode * ME, bool isNodeDeleted);       // ret true if ME was in
 
   // if IsComplexSubmesh()
   void AddSubMesh( const SMESHDS_SubMesh* theSubMesh );
   bool RemoveSubMesh( const SMESHDS_SubMesh* theSubMesh );
+  void RemoveAllSubmeshes();
   bool ContainsSubMesh( const SMESHDS_SubMesh* theSubMesh ) const;
   int  NbSubMeshes() const { return mySubMeshes.size(); }
   SMESHDS_SubMeshIteratorPtr GetSubMeshIterator() const;
 
   // for both types
-  int NbElements() const;
-  SMDS_ElemIteratorPtr GetElements() const;
-  int NbNodes() const;
-  SMDS_NodeIteratorPtr GetNodes() const;
-  bool Contains(const SMDS_MeshElement * ME) const;      // check if elem or node is in
+  virtual int NbElements() const;
+  virtual SMDS_ElemIteratorPtr GetElements() const;
+  virtual int NbNodes() const;
+  virtual SMDS_NodeIteratorPtr GetNodes() const;
+  virtual bool Contains(const SMDS_MeshElement * ME) const;      // check if elem or node is in
 
   // clear the contents
-  void Clear();
+  virtual void Clear();
   int getSize();
   void compactList();
 

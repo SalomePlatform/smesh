@@ -36,6 +36,13 @@
 
 using namespace std;
 
+
+//================================================================================
+/*!
+ * \brief Constructor
+ */
+//================================================================================
+
 SMESHDS_SubMesh::SMESHDS_SubMesh(SMESHDS_Mesh *parent, int index)
 {
   myParent = parent;
@@ -44,6 +51,16 @@ SMESHDS_SubMesh::SMESHDS_SubMesh(SMESHDS_Mesh *parent, int index)
   myIndex = index;
   myUnusedIdNodes = 0;
   myUnusedIdElements = 0;
+}
+
+//================================================================================
+/*!
+ * \brief Destructor
+ */
+//================================================================================
+
+SMESHDS_SubMesh::~SMESHDS_SubMesh()
+{
 }
 
 //=======================================================================
@@ -403,6 +420,16 @@ void SMESHDS_SubMesh::AddSubMesh( const SMESHDS_SubMesh* theSubMesh )
 bool SMESHDS_SubMesh::RemoveSubMesh( const SMESHDS_SubMesh* theSubMesh )
 {
   return mySubMeshes.erase( theSubMesh );
+}
+
+//=======================================================================
+//function : RemoveAllSubmeshes
+//purpose  : 
+//=======================================================================
+
+void SMESHDS_SubMesh::RemoveAllSubmeshes()
+{
+  mySubMeshes.clear();
 }
 
 //=======================================================================
