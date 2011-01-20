@@ -655,13 +655,25 @@
         <source>MEN_RESET</source>
         <translation>Reset</translation>
     </message>
+        <message>
+        <source>MEN_DISTRIBUTION_CTRL</source>
+        <translation>Distribution</translation>
+    </message>
     <message>
         <source>MEN_SAVE_DISTRIBUTION</source>
-        <translation>Export Distribution...</translation>
+        <translation>Export ...</translation>
     </message>
     <message>
         <source>MEN_SHOW_DISTRIBUTION</source>
-        <translation>Show Distribution</translation>
+        <translation>Show</translation>
+    </message>
+    <message>
+        <source>MEN_PLOT_DISTRIBUTION</source>
+        <translation>Plot</translation>
+    </message>
+    <message>
+        <source>DISTRIBUTION_NB_ENT</source>
+        <translation>Number of entities</translation>
     </message>
     <message>
         <source>MEN_REVOLUTION</source>

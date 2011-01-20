@@ -40,6 +40,10 @@
 #include "SUIT_Session.h"
 #include "SUIT_ResourceMgr.h"
 
+#ifndef DISABLE_PLOT2DVIEWER
+#include <SPlot2d_Histogram.h>
+#endif
+
 #include <vtkProperty.h>
 #include <vtkTimeStamp.h>
 #include <vtkObjectFactory.h>
@@ -517,6 +521,11 @@ SMESH_ActorDef::SMESH_ActorDef()
   myNameActor->SetBackgroundColor(anRGB[0], anRGB[1], anRGB[2]);
   SMESH::GetColor( "SMESH", "group_name_color", anRGB[0], anRGB[1], anRGB[2], QColor( 255, 255, 255 ) );
   myNameActor->SetForegroundColor(anRGB[0], anRGB[1], anRGB[2]);
+
+#ifndef DISABLE_PLOT2DVIEWER
+  my2dHistogram = 0;
+#endif
+
 }
 
 
@@ -608,6 +617,10 @@ SMESH_ActorDef::~SMESH_ActorDef()
   myImplicitBoolean->Delete();
 
   myTimeStamp->Delete();
+#ifndef DISABLE_PLOT2DVIEWER
+  if(my2dHistogram)
+    delete my2dHistogram;
+#endif 
 }
 
 
@@ -2097,3 +2110,57 @@ void SMESH_ActorDef::SetMarkerTexture( int theMarkerId, VTK::MarkerTexture theMa
   myNodeExtActor->SetMarkerTexture( theMarkerId, theMarkerTexture );
   myMarkerTexture = theMarkerTexture; // for deferred update of myHighlightActor
 }
+
+#ifndef DISABLE_PLOT2DVIEWER
+SPlot2d_Histogram* SMESH_ActorDef::UpdatePlot2Histogram() {
+
+  if(my2dHistogram)
+    my2dHistogram->clearAllPoints();
+  
+  if(SMESH::Controls::NumericalFunctor* fun =
+     dynamic_cast<SMESH::Controls::NumericalFunctor*>(myFunctor.get()))
+  {
+    
+    if(!my2dHistogram) {
+      my2dHistogram = new SPlot2d_Histogram();
+      Handle(SALOME_InteractiveObject) anIO = new SALOME_InteractiveObject(getIO()->getEntry(),"SMESH",getName());
+      my2dHistogram->setIO(anIO);
+    }
+    
+    int nbIntervals = myScalarBarActor->GetMaximumNumberOfColors();
+    std::vector<int> nbEvents;
+    std::vector<double> funValues;
+    SMESH_VisualObjDef::TEntityList elems;
+    if ( ! dynamic_cast<SMESH_MeshObj*>(myVisualObj.get()))
+      dynamic_cast<SMESH_VisualObjDef*>(myVisualObj.get())->GetEntities( fun->GetType(), elems );
+    std::vector<int> elemIds;
+    
+    for ( SMESH_VisualObjDef::TEntityList::iterator e = elems.begin(); e != elems.end(); ++e)
+      elemIds.push_back( (*e)->GetID());
+
+    vtkLookupTable* lookupTable = static_cast<vtkLookupTable*>(myScalarBarActor->GetLookupTable());
+    double * range = lookupTable->GetRange();
+    fun->GetHistogram(nbIntervals, nbEvents, funValues, elemIds, range);
+
+    for ( int i = 0; i < std::min( nbEvents.size(), funValues.size() -1 ); i++ ) 
+      my2dHistogram->addPoint(funValues[i] + (funValues[i+1] - funValues[i])/2.0, static_cast<double>(nbEvents[i]));
+
+    if(funValues.size() >= 2)
+      my2dHistogram->setWidth((funValues[1] - funValues[0]) * 0.8) ;
+
+  }
+  
+  //Color of the histogram
+  if(myScalarBarActor->GetDistributionColoringType() == SMESH_MULTICOLOR_TYPE)
+    my2dHistogram->setAutoAssign(true);
+  else {
+    double rgb[3];
+    myScalarBarActor->GetDistributionColor(rgb);
+    QColor aColor = QColor( (int)( rgb[0]*255 ), (int)( rgb[1]*255 ), (int)( rgb[2]*255 ) );
+    my2dHistogram->setColor(aColor);
+
+  }
+      
+  return my2dHistogram;
+}
+#endif

@@ -74,6 +74,10 @@ class VTKViewer_CellCenters;
 class SMESH_DeviceActor;
 class SMESH_ScalarBarActor;
 
+#ifndef DISABLE_PLOT2DVIEWER
+class SPlot2d_Histogram;
+#endif
+
 
 class SMESH_ActorDef : public SMESH_Actor
 {
@@ -198,6 +202,11 @@ class SMESH_ActorDef : public SMESH_Actor
   virtual void UpdateScalarBar();
   virtual void UpdateDistribution();
 
+#ifndef DISABLE_PLOT2DVIEWER
+  virtual SPlot2d_Histogram* GetPlot2Histogram() { return my2dHistogram; }
+  virtual SPlot2d_Histogram* UpdatePlot2Histogram();
+#endif
+
 
   virtual void SetQuadratic2DRepresentation(EQuadratic2DRepresentation);
   virtual EQuadratic2DRepresentation GetQuadratic2DRepresentation();
@@ -278,6 +287,10 @@ class SMESH_ActorDef : public SMESH_Actor
   typedef std::vector<TPlanePtr> TCippingPlaneCont;
   TCippingPlaneCont myCippingPlaneCont;
   long myControlsPrecision;
+
+#ifndef DISABLE_PLOT2DVIEWER
+  SPlot2d_Histogram* my2dHistogram;
+#endif
 
   bool myIsFacesOriented;
 

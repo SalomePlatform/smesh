@@ -67,7 +67,7 @@
     <parameter name="scalar_bar_vertical_y"        value="0.1" />
     <parameter name="distribution_visibility"      value="false" />
     <parameter name="distribution_coloring_type"   value="0" />
-    <parameter name="distribution_color"           value="255, 255, 255" />
+    <parameter name="distribution_color"           value="0, 85, 0" />
     <parameter name="DisplayMode"                  value="true" />
     <parameter name="auto_update"                  value="true" />
     <parameter name="update_limit"                 value="500000" />

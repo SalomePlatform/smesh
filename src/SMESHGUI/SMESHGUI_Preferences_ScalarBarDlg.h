@@ -80,6 +80,7 @@ protected slots:
   void                     onXYChanged();
   void                     onOrientationChanged();
   void                     onDistributionChanged( int );
+  void                     onDistributionActivated( bool );
 
 private:
   SMESHGUI*                mySMESHGUI;

@@ -55,6 +55,7 @@ libSMESHObject_la_CPPFLAGS = \
         $(KERNEL_CXXFLAGS) \
         $(GUI_CXXFLAGS) \
 	$(MED_CXXFLAGS) \
+	$(QWT_INCLUDES) \
 	$(GEOM_CXXFLAGS) \
 	$(CAS_CPPFLAGS) \
         $(VTK_INCLUDES) \

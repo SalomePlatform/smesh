@@ -123,6 +123,11 @@
 #include <SALOME_ListIO.hxx>
 #include <SALOME_ListIteratorOfListIO.hxx>
 
+#ifndef DISABLE_PLOT2DVIEWER
+#include <SPlot2d_ViewModel.h>
+#include <SPlot2d_Histogram.h>
+#endif
+
 // IDL includes
 #include <SALOMEconfig.h>
 #include CORBA_CLIENT_HEADER(SALOMEDS_Attributes)
@@ -861,6 +866,52 @@
     }
   }
 
+#ifndef DISABLE_PLOT2DVIEWER
+ void PlotDistribution() {
+   SalomeApp_Application* app = dynamic_cast< SalomeApp_Application* >( SUIT_Session::session()->activeApplication() );
+   if( !app )
+     return;
+
+   LightApp_SelectionMgr* aSel = SMESHGUI::selectionMgr();
+   SALOME_ListIO selected;
+   if ( aSel )
+     aSel->selectedObjects( selected );
+    
+   if ( selected.Extent() == 1 ) {
+     Handle(SALOME_InteractiveObject) anIO = selected.First();
+     if ( anIO->hasEntry() ) {
+       //Find Actor by entry before getting Plot2d viewer,
+       //because after call getViewManager( Plot2d_Viewer::Type(), true ) active window is Plot2d Viewer
+       SMESH_Actor* anActor = SMESH::FindActorByEntry( anIO->getEntry() );
+
+       SUIT_ViewManager* aViewManager = app->getViewManager( Plot2d_Viewer::Type(), true ); // create if necessary
+
+       if( !aViewManager )
+	 return;
+       
+       SPlot2d_Viewer* aView = dynamic_cast<SPlot2d_Viewer*>(aViewManager->getViewModel());
+       if ( !aView )
+	 return;
+
+       Plot2d_ViewFrame* aPlot = aView->getActiveViewFrame();
+       if ( !aPlot )
+	 return;
+
+       if ( anActor && anActor->GetControlMode() != SMESH_Actor::eNone ) {
+	 SPlot2d_Histogram* aHistogram = anActor->UpdatePlot2Histogram();
+	 QString functorName = functorToString( anActor->GetFunctor());
+	 QString aHistogramName("%1 : %2");
+	 aHistogramName = aHistogramName.arg(anIO->getName()).arg(functorName);
+	 aHistogram->setName(aHistogramName);
+	 aHistogram->setHorTitle(functorName);
+	 aHistogram->setVerTitle(QObject::tr("DISTRIBUTION_NB_ENT"));
+	 aPlot->displayObject(aHistogram, true);
+       }
+     }
+   }
+ }
+#endif //DISABLE_PLOT2DVIEWER
+
   void DisableAutoColor(){
     LightApp_SelectionMgr *aSel = SMESHGUI::selectionMgr();
     SALOME_ListIO selected;
@@ -1220,6 +1271,17 @@
           anActor->SetControlMode(aControl);
           anActor->GetScalarBarActor()->SetTitle( functorToString( anActor->GetFunctor() ).toLatin1().constData() );
           SMESH::RepaintCurrentView();
+#ifndef DISABLE_PLOT2DVIEWER
+	  if(anActor->GetPlot2Histogram()) {
+	    SPlot2d_Histogram* aHistogram = anActor->UpdatePlot2Histogram();
+	    QString functorName = functorToString( anActor->GetFunctor());
+	    QString aHistogramName("%1 : %2");
+	    aHistogramName = aHistogramName.arg(anIO->getName()).arg(functorName);
+	    aHistogram->setName(aHistogramName);
+	    aHistogram->setHorTitle(functorName);
+	    SMESH::ProcessIn2DViewers(anActor);
+	  }
+#endif
         }
       }
     }
@@ -1849,6 +1911,9 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
         if( anIO->hasEntry() ) {
           if( SMESH_Actor* anActor = SMESH::FindActorByEntry( anIO->getEntry() ) ) {
             anActor->SetControlMode( SMESH_Actor::eNone );
+#ifndef DISABLE_PLOT2DVIEWER
+	    SMESH::ProcessIn2DViewers(anActor,SMESH::RemoveFrom2dViewer);
+#endif
           }
         }
       }
@@ -1859,19 +1924,28 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       SMESHGUI_Preferences_ScalarBarDlg::ScalarBarProperties( this );
       break;
     }
-  case 202:
+  case 2021:
     {
       // dump control distribution data to the text file
       ::SaveDistribution();
       break;
     }
 
-  case 203:
+  case 2022:
     {
       // show/ distribution
       ::ShowDistribution();
       break;
     }
+
+#ifndef DISABLE_PLOT2DVIEWER
+  case 2023:
+    {
+      // plot distribution
+      ::PlotDistribution();
+      break;
+    }
+#endif
 
     // Auto-color
   case 1136:
@@ -3319,8 +3393,11 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction(  419, "SPLIT_TO_TETRA",  "ICON_SPLIT_TO_TETRA" );
   createSMESHAction(  200, "RESET" );
   createSMESHAction(  201, "SCALAR_BAR_PROP" );
-  createSMESHAction(  202, "SAVE_DISTRIBUTION" );
-  createSMESHAction(  203, "SHOW_DISTRIBUTION","",0, true );
+  createSMESHAction(  2021, "SAVE_DISTRIBUTION" );
+  createSMESHAction(  2022, "SHOW_DISTRIBUTION","",0, true );
+#ifndef DISABLE_PLOT2DVIEWER
+  createSMESHAction(  2023, "PLOT_DISTRIBUTION" );
+#endif
   createSMESHAction(  211, "WIRE",           "ICON_WIRE", 0, true );
   createSMESHAction(  212, "SHADE",          "ICON_SHADE", 0, true );
   createSMESHAction(  213, "SHRINK",         "ICON_SHRINK", 0, true );
@@ -3947,19 +4024,24 @@ void SMESHGUI::initialize( CAM_Application* app )
 
   popupMgr()->insert( separator(), anId, -1 );
 
-  popupMgr()->insert( action( 202 ), anId, -1 ); // SAVE_DISTRIBUTION
-  popupMgr()->setRule( action( 202 ), aMeshInVTK + "&& isNumFunctor", QtxPopupMgr::VisibleRule );
+  aSubId = popupMgr()->insert( tr( "MEN_DISTRIBUTION_CTRL" ), anId, -1 ); // NODE CONTROLS
 
-  popupMgr()->insert( action( 203 ), anId, -1 ); // SHOW_DISTRIBUTION
-  popupMgr()->setRule( action( 203 ), aMeshInVTK + "&& isNumFunctor", QtxPopupMgr::VisibleRule );
-  popupMgr()->setRule( action( 203 ), aMeshInVTK + "&& isNumFunctor && isDistributionVisible", QtxPopupMgr::ToggleRule);
+  popupMgr()->insert( action( 2021 ), aSubId, -1 ); // SAVE_DISTRIBUTION
+  popupMgr()->setRule( action( 2021 ), aMeshInVTK + "&& isNumFunctor", QtxPopupMgr::VisibleRule );
 
+  popupMgr()->insert( action( 2022 ), aSubId, -1 ); // SHOW_DISTRIBUTION
+  popupMgr()->setRule( action( 2022 ), aMeshInVTK + "&& isNumFunctor", QtxPopupMgr::VisibleRule );
+  popupMgr()->setRule( action( 2022 ), aMeshInVTK + "&& isNumFunctor && isDistributionVisible", QtxPopupMgr::ToggleRule);
 
-  popupMgr()->insert( separator(), -1, -1 );
+#ifndef DISABLE_PLOT2DVIEWER
+  popupMgr()->insert( action( 2023 ), aSubId, -1 ); // PLOT_DISTRIBUTION
+  popupMgr()->setRule( action( 2023 ), aMeshInVTK + "&& isNumFunctor", QtxPopupMgr::VisibleRule );
+#endif
 
   //-------------------------------------------------
   // Display / Erase
   //-------------------------------------------------
+  popupMgr()->insert( separator(), -1, -1 );
   QString aRule = "$component={'SMESH'} and ( type='Component' or (" + aClient + " and " +
     aType + " and " + aSelCount + " and " + anActiveVTK + " and " + isNotEmpty + " %1 ) )";
   popupMgr()->insert( action( 301 ), -1, -1 ); // DISPLAY

@@ -410,11 +410,12 @@ SMESHGUI_Preferences_ScalarBarDlg::SMESHGUI_Preferences_ScalarBarDlg( SMESHGUI* 
 
   int coloringType = mgr->integerValue("SMESH", "distribution_coloring_type", 0);
   if( coloringType == SMESH_MONOCOLOR_TYPE ) {
+    myDMonoColor->setChecked(true);
+    onDistributionChanged(myDistribColorGrp->id(myDMonoColor));    
+  } else {
     myDMultiColor->setChecked(true);
     onDistributionChanged(myDistribColorGrp->id(myDMultiColor));
-  } else {
-    myDMonoColor->setChecked(true);
-    onDistributionChanged(myDistribColorGrp->id(myDMonoColor));
+
   }
   
   QColor distributionColor = mgr->colorValue("SMESH", "distribution_color",
@@ -435,6 +436,7 @@ SMESHGUI_Preferences_ScalarBarDlg::SMESHGUI_Preferences_ScalarBarDlg( SMESHGUI* 
   connect( myXSpin,             SIGNAL( valueChanged( double ) ), this, SLOT( onXYChanged() ) );
   connect( myYSpin,             SIGNAL( valueChanged( double ) ), this, SLOT( onXYChanged() ) );
   connect( aOrientationGrp,     SIGNAL( buttonClicked( int ) ),   this, SLOT( onOrientationChanged() ) );
+  connect( myDistributionGrp,   SIGNAL( toggled(bool) ), this, SLOT(onDistributionActivated(bool)) );
   connect( myDistribColorGrp,   SIGNAL( buttonClicked( int ) ),   this, SLOT( onDistributionChanged( int ) ) );
   connect( mySelectionMgr,      SIGNAL( currentSelectionChanged() ), this, SLOT( onSelectionChanged() ) );
   connect( mySMESHGUI,          SIGNAL( SignalCloseAllDialogs() ),   this, SLOT( onCancel() ) );
@@ -520,17 +522,24 @@ bool SMESHGUI_Preferences_ScalarBarDlg::onApply()
   myScalarBarActor->SetHeight( myHeightSpin->value() );
 
   // Distribution
+  bool distributionTypeChanged = false, colorChanged=false;
   myScalarBarActor->SetDistributionVisibility((int)myDistributionGrp->isChecked());
   if( myDistributionGrp->isChecked() ) {
     int ColoringType = myDMultiColor->isChecked() ? SMESH_MULTICOLOR_TYPE : SMESH_MONOCOLOR_TYPE;
-    myScalarBarActor->SetDistributionColoringType(ColoringType);
+    distributionTypeChanged = (ColoringType != myScalarBarActor->GetDistributionColoringType());
+    if(distributionTypeChanged)      
+      myScalarBarActor->SetDistributionColoringType(ColoringType);
+    
     if( !myDMultiColor->isChecked() ) {
       QColor aTColor = myMonoColorBtn->color();
-      double rgb[3];
+      double rgb[3], oldRgb[3];;
       rgb [0] = aTColor.red()/255.;
       rgb [1] = aTColor.green()/255.;
       rgb [2] = aTColor.blue()/255.;
-      myScalarBarActor->SetDistributionColor(rgb);
+      myScalarBarActor->GetDistributionColor(oldRgb);
+      colorChanged = (rgb[0] != oldRgb[0] || rgb[1] != oldRgb[1] || rgb[2] != oldRgb[2]);
+      if(colorChanged)
+	myScalarBarActor->SetDistributionColor(rgb);
     }
   }
 
@@ -553,6 +562,17 @@ bool SMESHGUI_Preferences_ScalarBarDlg::onApply()
 
   if( nbColorsChanged || rangeChanges)
     myActor->UpdateDistribution();
+  
+#ifndef DISABLE_PLOT2DVIEWER
+  if( myActor->GetPlot2Histogram() && 
+      (nbColorsChanged || 
+       rangeChanges ||
+       distributionTypeChanged || 
+       colorChanged ))
+    SMESH::ProcessIn2DViewers(myActor);
+#endif
+    
+    
 
   SMESH::RepaintCurrentView();
   return true;
@@ -656,17 +676,20 @@ void SMESHGUI_Preferences_ScalarBarDlg::onSelectionChanged()
         myIniH = myScalarBarActor->GetHeight();
         setOriginAndSize( myIniX, myIniY, myIniW, myIniH );
 
-        myDistributionGrp->setChecked((bool)myScalarBarActor->GetDistributionVisibility());
         int coloringType = myScalarBarActor->GetDistributionColoringType();
         myScalarBarActor->GetDistributionColor( aTColor );
         myMonoColorBtn->setColor( QColor( (int)( aTColor[0]*255 ), (int)( aTColor[1]*255 ), (int)( aTColor[2]*255 ) ) );
         if ( coloringType == SMESH_MONOCOLOR_TYPE ) {
           myDMonoColor->setChecked(true);
-          onDistributionChanged(myDistribColorGrp->id(myDMonoColor));    
+	  onDistributionChanged(myDistribColorGrp->id(myDMonoColor));    
         } else {
           myDMultiColor->setChecked(true);
           onDistributionChanged(myDistribColorGrp->id(myDMultiColor));
         }
+        myDistributionGrp->setChecked((bool)myScalarBarActor->GetDistributionVisibility());
+	onDistributionActivated(myScalarBarActor->GetDistributionVisibility());
+	
+	
         myRangeGrp->setEnabled( true );
         myFontGrp->setEnabled( true );
         myLabColorGrp->setEnabled( true );
@@ -674,6 +697,7 @@ void SMESHGUI_Preferences_ScalarBarDlg::onSelectionChanged()
         myOriginDimGrp->setEnabled( true );
         myOkBtn->setEnabled( true );
         myApplyBtn->setEnabled( true );
+	myDistributionGrp->setEnabled( true );
         return;
       }
     }
@@ -686,6 +710,7 @@ void SMESHGUI_Preferences_ScalarBarDlg::onSelectionChanged()
   myOriginDimGrp->setEnabled( false );
   myOkBtn->setEnabled( false );
   myApplyBtn->setEnabled( false );
+  myDistributionGrp->setEnabled( false );
 }
 
 //=================================================================================================
@@ -746,9 +771,32 @@ void SMESHGUI_Preferences_ScalarBarDlg::setOriginAndSize( const double x,
  */
 //=================================================================================================
 void SMESHGUI_Preferences_ScalarBarDlg::onDistributionChanged( int id ) {
-  myMonoColorBtn->setEnabled(myDistribColorGrp->id(myDMonoColor) == id);
-  myDistributionColorLbl->setEnabled(myDistribColorGrp->id(myDMonoColor) == id);
+
+  bool isActive = myDistribColorGrp->id(myDMonoColor) == id;
+
+  myMonoColorBtn->setEnabled(isActive);
+  myDistributionColorLbl->setEnabled(isActive);
 }
+//=================================================================================================
+/*!
+ *  SMESHGUI_Preferences_ScalarBarDlg::onDistributionActivated
+ *
+ *  Called when distribution group check box is changed
+ */
+//=================================================================================================
+void SMESHGUI_Preferences_ScalarBarDlg::onDistributionActivated(bool on) {
+  if(on) {
+    if(myDMonoColor->isChecked())
+      onDistributionChanged(myDistribColorGrp->id(myDMonoColor)  );
+    else if(myDMultiColor->isChecked())
+      onDistributionChanged(myDistribColorGrp->id(myDMultiColor) );
+  }
+  else {
+    myMonoColorBtn->setEnabled(false);
+    myDistributionColorLbl->setEnabled(false);
+  }
+}
+
 
 //=================================================================================================
 /*!

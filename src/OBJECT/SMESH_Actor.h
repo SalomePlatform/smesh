@@ -40,6 +40,10 @@ class SMESH_ScalarBarActor;
 class vtkPlane;
 class vtkImplicitBoolean;
 
+#ifndef DISABLE_PLOT2DVIEWER
+class SPlot2d_Histogram;
+#endif
+
 namespace SMESH
 {
   const vtkIdType DeleteActorEvent = vtkCommand::UserEvent + 100;
@@ -143,6 +147,11 @@ class SMESHOBJECT_EXPORT SMESH_Actor: public SALOME_Actor
 
   virtual void UpdateScalarBar() = 0;
   virtual void UpdateDistribution() = 0;
+
+#ifndef DISABLE_PLOT2DVIEWER
+  virtual SPlot2d_Histogram* GetPlot2Histogram() = 0;
+  virtual SPlot2d_Histogram* UpdatePlot2Histogram() = 0;
+#endif
 };
 
 

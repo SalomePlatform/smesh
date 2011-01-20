@@ -64,8 +64,9 @@ To manage the quality controls call pop-up in the VTK viewer and select "Control
 <li> <b>Face Controls</b> provides access to the face quality controls;</li>
 <li> <b>Volume Controls</b> provides access to the volume quality controls;</li>
 <li> <b>Scalar Bar Properties</b> allows setting \subpage scalar_bar_dlg;</li>
-<li> <b>Export Distribution...</b> allows saving the distribution of quality control values in the text file;</li>
-<li> <b>Show Distribution</b> Shows/Hides the distribution histogram of the quality control values in the VTK Viewer.</li>
+<li> <b>Distribution -> Export ...</b> allows saving the distribution of quality control values in the text file;</li>
+<li> <b>Distribution -> Show </b> Shows/Hides the distribution histogram of the quality control values in the VTK Viewer.</li>
+<li> <b>Distribution -> Plot </b> Plots the distribution histogram of the quality control values in the Plot 2D Viewer.</li>
 </ul>
 
 
