@@ -655,7 +655,7 @@
         <source>MEN_RESET</source>
         <translation>Reset</translation>
     </message>
-        <message>
+    <message>
         <source>MEN_DISTRIBUTION_CTRL</source>
         <translation>Distribution</translation>
     </message>

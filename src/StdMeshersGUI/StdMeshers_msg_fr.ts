@@ -144,6 +144,26 @@
         <translation>Utiliser la longueur pré-estimée</translation>
     </message>
     <message>
+        <source>SMESH_VISCOUS_LAYERS_HYPOTHESIS</source>
+        <translation>Couches limites</translation>
+    </message>
+    <message>
+        <source>SMESH_VISCOUS_LAYERS_TITLE</source>
+        <translation>Construction de l&apos;hypothèse</translation>
+    </message>
+    <message>
+        <source>SMESH_TOTAL_THICKNESS</source>
+        <translation>Epaisseur totale</translation>
+    </message>
+    <message>
+        <source>SMESH_STRETCH_FACTOR</source>
+        <translation>Facteur d'échelle</translation>
+    </message>
+    <message>
+        <source>SMESH_FACES_WO_LAYERS</source>
+        <translation>Faces sans couche limite</translation>
+    </message>
+    <message>
         <source>SMESH_MAX_LENGTH_TITLE</source>
         <translation>Construction de l&apos;hypothèse</translation>
     </message>
@@ -236,6 +256,22 @@
         <translation>Construction de l&apos;hypothèse</translation>
     </message>
     <message>
+        <source>SMESH_IMPORT_SOURCE_1D_HYPOTHESIS</source>
+        <translation>Arêtes source</translation>
+    </message>
+    <message>
+        <source>SMESH_IMPORT_SOURCE_1D_TITLE</source>
+        <translation>Construction de l&apos;hypothèse</translation>
+    </message>
+    <message>
+        <source>SMESH_IMPORT_SOURCE_2D_HYPOTHESIS</source>
+        <translation>Faces sources</translation>
+    </message>
+    <message>
+        <source>SMESH_IMPORT_SOURCE_2D_TITLE</source>
+        <translation>Construction de l&apos;hypothèse</translation>
+    </message>
+    <message>
         <source>SMESH_REMOVE_ROW</source>
         <translation>Supprimer une ligne</translation>
     </message>
@@ -284,12 +320,28 @@
         <translation>Arête</translation>
     </message>
     <message>
+        <source>SMESH_SOURCE_EDGES</source>
+        <translation>Groupes d&apos;arêtes</translation>
+    </message>
+    <message>
         <source>SMESH_SOURCE_FACE</source>
         <translation>Face</translation>
     </message>
     <message>
+        <source>SMESH_SOURCE_FACES</source>
+        <translation>Groupes de faces</translation>
+    </message>
+    <message>
         <source>SMESH_SOURCE_MESH</source>
         <translation>Maillage</translation>
+    </message>
+    <message>
+        <source>SMESH_COPY_MESH</source>
+        <translation>Copier le maillage</translation>
+    </message>
+    <message>
+        <source>SMESH_TO_COPY_GROUPS</source>
+        <translation>Copier les groupes</translation>
     </message>
     <message>
         <source>SMESH_SOURCE_VERTEX</source>

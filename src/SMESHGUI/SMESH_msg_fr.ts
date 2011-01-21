@@ -656,12 +656,24 @@
         <translation>Restaurer</translation>
     </message>
     <message>
+        <source>MEN_DISTRIBUTION_CTRL</source>
+        <translation>Distribution</translation>
+    </message>
+    <message>
         <source>MEN_SAVE_DISTRIBUTION</source>
         <translation>Exporter la distribution...</translation>
     </message>
     <message>
         <source>MEN_SHOW_DISTRIBUTION</source>
         <translation>Afficher la distribution</translation>
+    </message>
+    <message>
+        <source>MEN_PLOT_DISTRIBUTION</source>
+        <translation>Tracer</translation>
+    </message>
+    <message>
+        <source>DISTRIBUTION_NB_ENT</source>
+        <translation>TODO</translation>
     </message>
     <message>
         <source>MEN_REVOLUTION</source>
@@ -2468,6 +2480,22 @@ Vérifiez la limite dans les préférences du module Mesh.
         <translation>Faces</translation>
     </message>
     <message>
+        <source>STB_BARE_BORDER_VOLUME</source>
+        <translation>Volumes avec éléments de peau 2D manquants</translation>
+    </message>
+    <message>
+        <source>STB_BARE_BORDER_FACE</source>
+        <translation>Faces avec éléments de peau 1D manquants</translation>
+    </message>
+    <message>
+        <source>STB_OVER_CONSTRAINED_VOLUME</source>
+        <translation>Volumes sur-contraints</translation>
+    </message>
+    <message>
+        <source>STB_OVER_CONSTRAINED_FACE</source>
+        <translation>Faces sur-contraintes</translation>
+    </message>
+    <message>
         <source>STB_FREE_BORDER</source>
         <translation>Frontières libres</translation>
     </message>
@@ -2514,6 +2542,14 @@ Vérifiez la limite dans les préférences du module Mesh.
     <message>
         <source>STB_MAP</source>
         <translation>Projection de motif</translation>
+    </message>
+    <message>
+        <source>STB_MAX_ELEMENT_LENGTH_2D</source>
+        <translation>Diamètre de l&apos;élément 2D</translation>
+    </message>
+    <message>
+        <source>STB_MAX_ELEMENT_LENGTH_3D</source>
+        <translation>Diamètre de l&apos;élément 3D</translation>
     </message>
     <message>
         <source>STB_MED</source>
@@ -2634,6 +2670,14 @@ Vérifiez la limite dans les préférences du module Mesh.
     <message>
         <source>STB_RESET</source>
         <translation>Restaurer</translation>
+    </message>
+    <message>
+        <source>STB_SAVE_DISTRIBUTION</source>
+        <translation>Enregistrer la distribution dans un fichier</translation>
+    </message>
+    <message>
+        <source>STB_SHOW_DISTRIBUTION</source>
+        <translation>Afficher la distribution</translation>
     </message>
     <message>
         <source>STB_REVOLUTION</source>
@@ -2826,6 +2870,10 @@ Vérifiez la limite dans les préférences du module Mesh.
     <message>
         <source>TOP_BUILD_COMPOUND</source>
         <translation>Construire un maillage assemblé</translation>
+    </message>
+    <message>
+        <source>TOP_COPY_MESH</source>
+        <translation>Copier le maillage</translation>
     </message>
     <message>
         <source>TOP_CLIP</source>
@@ -4472,6 +4520,14 @@ Vérifiez la validité des informations données</translation>
     <message>
         <source>LYING_ON_GEOM</source>
         <translation>Repose sur la géométrie</translation>
+    </message>
+    <message>
+        <source>MAX_ELEMENT_LENGTH_2D</source>
+        <translation>Diamètre d&apos;éléments 2D</translation>
+    </message>
+    <message>
+        <source>MAX_ELEMENT_LENGTH_3D</source>
+        <translation>Diamètre d&apos;éléments 3D</translation>
     </message>
     <message>
         <source>MINIMUM_ANGLE</source>
