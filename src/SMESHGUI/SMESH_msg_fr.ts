@@ -401,11 +401,11 @@
     </message>
     <message>
         <source>MEN_BARE_BORDER_VOLUME</source>
-        <translation>Volumes avec frontière libre</translation>
+        <translation>Volumes avec éléments de peau 2D manquants</translation>
     </message>
     <message>
         <source>MEN_BARE_BORDER_FACE</source>
-        <translation>Faces avec frontière libre</translation>
+        <translation>Faces avec éléments de peau 1D manquants</translation>
     </message>
     <message>
         <source>MEN_OVER_CONSTRAINED_VOLUME</source>
@@ -3037,11 +3037,11 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>TOP_BARE_BORDER_VOLUME</source>
-        <translation>Volumes avec frontière libre</translation>
+        <translation>Volumes avec éléments de peau 2D manquants</translation>
     </message>
     <message>
         <source>TOP_BARE_BORDER_FACE</source>
-        <translation>Faces avec frontière libre</translation>
+        <translation>Faces avec éléments de peau 1D manquants</translation>
     </message>
     <message>
         <source>TOP_OVER_CONSTRAINED_VOLUME</source>
@@ -4403,11 +4403,11 @@ Vérifiez la validité des informations données</translation>
     </message>
     <message>
         <source>BARE_BORDER_VOLUME</source>
-        <translation>Volumes avec frontière libre</translation>
+        <translation>Volumes avec éléments de peau 2D manquants</translation>
     </message>
     <message>
         <source>BARE_BORDER_FACE</source>
-        <translation>Faces avec frontière libre</translation>
+        <translation>Faces avec éléments de peau 1D manquants</translation>
     </message>
     <message>
         <source>OVER_CONSTRAINED_VOLUME</source>
