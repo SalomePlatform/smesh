@@ -21,10 +21,19 @@
 //
 
 #include "SMESH_ActorUtils.h"
+#include "SMESH_Actor.h"
 
 #include "SUIT_Tools.h"
 #include "SUIT_Session.h"
 #include "SUIT_ResourceMgr.h"
+#include "SalomeApp_Application.h"
+
+#ifndef DISABLE_PLOT2DVIEWER
+#include <SPlot2d_ViewModel.h>
+#include <SPlot2d_Histogram.h>
+#include <Plot2d_ViewManager.h>
+#endif
+
 
 #include "utilities.h"
 
@@ -126,4 +135,49 @@ namespace SMESH
     g = ig / 255.;
     b = ib / 255.;
   }
+
+#ifndef DISABLE_PLOT2DVIEWER
+  //=======================================================================
+  /**
+     Get histogram from the input actor
+     Repaint/Remove the histogram in/from each opened Plot2D Viewer 
+  */
+  //=======================================================================
+  void ProcessIn2DViewers( SMESH_Actor *theActor, Viewer2dActionType aType ) {
+    SalomeApp_Application* anApp = dynamic_cast<SalomeApp_Application*>(SUIT_Session::session()->activeApplication());
+    
+    if(!anApp || !theActor)
+      return;
+    
+    SPlot2d_Histogram* aHistogram = 0;
+    
+    if(theActor->GetPlot2Histogram())
+      if(aType == UpdateIn2dViewer)
+	aHistogram = theActor->UpdatePlot2Histogram();
+      else
+	aHistogram = theActor->GetPlot2Histogram();
+    else 
+      return;
+    
+    ViewManagerList aViewManagerList;
+    anApp->viewManagers(SPlot2d_Viewer::Type(), aViewManagerList);
+    
+    aType = aHistogram->getPointList().empty() ? RemoveFrom2dViewer : aType;
+    
+    SUIT_ViewManager* aViewManager;
+    foreach( aViewManager, aViewManagerList ) {
+      if (Plot2d_ViewManager* aManager = dynamic_cast<Plot2d_ViewManager*>(aViewManager)) {
+	if (SPlot2d_Viewer* aViewer = dynamic_cast<SPlot2d_Viewer*>(aManager->getViewModel())) {
+	  if (Plot2d_ViewFrame* aViewFrame = aViewer->getActiveViewFrame()) {
+	    if(aType == UpdateIn2dViewer )
+	      aViewFrame->displayObject(aHistogram, true);
+	    else if (aType == RemoveFrom2dViewer)
+	      aViewFrame->eraseObject(aHistogram, true);
+	  }
+	}
+      }
+    }
+  }
+#endif //DISABLE_PLOT2DVIEWER
+  
 }

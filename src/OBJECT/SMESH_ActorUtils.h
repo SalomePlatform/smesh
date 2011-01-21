@@ -28,6 +28,7 @@
 #include <QColor>
 
 class vtkUnstructuredGrid;
+class SMESH_Actor;
 
 namespace SMESH
 {
@@ -70,6 +71,17 @@ SMESHOBJECT_EXPORT
   void 
   WriteUnstructuredGrid(vtkUnstructuredGrid* theGrid, 
                         const char* theFileName);
+
+
+#ifndef DISABLE_PLOT2DVIEWER
+ 
+ typedef enum {UpdateIn2dViewer = 0, RemoveFrom2dViewer } Viewer2dActionType;
+ 
+ SMESHOBJECT_EXPORT
+   void ProcessIn2DViewers( SMESH_Actor* theActor, Viewer2dActionType = UpdateIn2dViewer );
+ 
+#endif
+
 
 }
 

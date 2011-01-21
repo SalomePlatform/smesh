@@ -152,6 +152,8 @@ public slots:
   virtual bool                    deactivateModule( SUIT_Study* );
   virtual bool                    activateModule( SUIT_Study* );
   virtual void                    studyClosed( SUIT_Study* );
+  void                            onViewClosed( SUIT_ViewWindow* );
+
 
 private slots:
   void                            OnGUIEvent();
@@ -196,6 +198,9 @@ private:
   int                             addVtkFontPref( const QString& label, 
                                                   const int pId, 
                                                   const QString& param );
+
+  void                            connectView( const SUIT_ViewWindow* );
+ 
 
 private :
   static SMESH::SMESH_Gen_var     myComponentSMESH;

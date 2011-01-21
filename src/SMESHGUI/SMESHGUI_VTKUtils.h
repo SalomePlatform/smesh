@@ -40,11 +40,6 @@
 #include <SALOME_InteractiveObject.hxx>
 #include <VTKViewer_Filter.h>
 
-#ifndef DISABLE_PLOT2DVIEWER
-class SPlot2d_Histogram;
-#endif
-
-
 class TColStd_IndexedMapOfInteger;
 
 class SALOMEDSClient_Study;
@@ -196,6 +191,11 @@ SMESHGUI_EXPORT
 SMESHGUI_EXPORT
   void SetControlsPrecision( const long );
 
+#ifndef DISABLE_PLOT2DVIEWER
+SMESHGUI_EXPORT
+  void ClearPlot2Viewers( SUIT_ViewWindow* theWindow );
+#endif
+
   //----------------------------------------------------------------------------
 SMESHGUI_EXPORT
   bool ComputeClippingPlaneParameters( std::list<vtkActor*> theActorList,
@@ -203,16 +203,6 @@ SMESHGUI_EXPORT
                                        vtkFloatingPointType theDist,
                                        vtkFloatingPointType theBounds[6],
                                        vtkFloatingPointType theOrigin[3] );
-
-#ifndef DISABLE_PLOT2DVIEWER
- 
- typedef enum {UpdateIn2dViewer = 0, RemoveFrom2dViewer } Viewer2dActionType;
- 
- SMESHGUI_EXPORT
-   void ProcessIn2DViewers( SMESH_Actor* theActor, Viewer2dActionType = UpdateIn2dViewer );
- 
-#endif
-
 };
 
 #endif // SMESHGUI_VTKUTILS_H

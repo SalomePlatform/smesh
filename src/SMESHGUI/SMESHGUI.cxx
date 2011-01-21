@@ -89,6 +89,7 @@
 #include <SMESH_Client.hxx>
 #include <SMESH_Actor.h>
 #include <SMESH_ScalarBarActor.h>
+#include <SMESH_ActorUtils.h>
 #include <SMESH_TypeFilter.hxx>
 #include "SMESH_ControlsDef.hxx"
 
@@ -1407,93 +1408,100 @@
       return;
 
     SalomeApp_Application* anApp = dynamic_cast<SalomeApp_Application*>( SUIT_Session::session()->activeApplication() );
-    SUIT_ViewManager* vm = anApp->activeViewManager();
-    int nbSf = vm ? vm->getViewsCount() : 0;
 
-    SALOME_ListIteratorOfListIO It(selected);
+    ViewManagerList aViewMenegers = anApp->viewManagers();
+    ViewManagerList::const_iterator it = aViewMenegers.begin();
+    for( ; it != aViewMenegers.end(); it++) {
+      
+      SUIT_ViewManager* vm = *it;
+      int nbSf = vm ? vm->getViewsCount() : 0;
 
-    aStudyBuilder->NewCommand();  // There is a transaction
-    for( ; It.More(); It.Next()){ // loop on selected IO's
-      Handle(SALOME_InteractiveObject) IObject = It.Value();
-      if(IObject->hasEntry()) {
-        _PTR(SObject) aSO = aStudy->FindObjectID(IObject->getEntry());
-
-        // disable removal of "SMESH" component object
-        if(aSO->FindAttribute(anAttr, "AttributeIOR")){
-          anIOR = anAttr;
-          if ( engineIOR() == anIOR->Value().c_str() )
-            continue;
-        }
-        //Check the referenced object
-        _PTR(SObject) aRefSObject;
-        if ( aSO && aSO->ReferencedObject( aRefSObject ) )
-          aSO = aRefSObject; // Delete main Object instead of reference
-
-        // put the whole hierarchy of sub-objects of the selected SO into a list and
-        // then treat them all starting from the deepest objects (at list back)
-
-        std::list< _PTR(SObject) > listSO;
-        listSO.push_back( aSO );
-        std::list< _PTR(SObject) >::iterator itSO = listSO.begin();
-        for ( ; itSO != listSO.end(); ++itSO ) {
-          _PTR(ChildIterator) it = aStudy->NewChildIterator( *itSO );
-          for (it->InitEx(false); it->More(); it->Next())
-            listSO.push_back( it->Value() );
-        }
-
-        // treat SO's in the list starting from the back
-
-        std::list< _PTR(SObject) >::reverse_iterator ritSO = listSO.rbegin();
-        for ( ; ritSO != listSO.rend(); ++ritSO ) {
-          _PTR(SObject) SO = *ritSO;
-          if ( !SO ) continue;
-          std::string anEntry = SO->GetID();
-
-          /** Erase graphical object **/
-          if(SO->FindAttribute(anAttr, "AttributeIOR") && vm ){
-            QVector<SUIT_ViewWindow*> aViews = vm->getViews();
-            for(int i = 0; i < nbSf; i++){
-              SUIT_ViewWindow *sf = aViews[i];
-              if(SMESH_Actor* anActor = SMESH::FindActorByEntry(sf,anEntry.c_str())){
-                SMESH::RemoveActor(sf,anActor);
-              }
-            }
-          }
-
-          /** Remove an object from data structures **/
-          SMESH::SMESH_GroupBase_var aGroup = SMESH::SMESH_GroupBase::_narrow( SMESH::SObjectToObject( SO ));
-          SMESH::SMESH_subMesh_var   aSubMesh = SMESH::SMESH_subMesh::_narrow( SMESH::SObjectToObject( SO ));
-          if ( !aGroup->_is_nil() ) {                          // DELETE GROUP
-            SMESH::SMESH_Mesh_var aMesh = aGroup->GetMesh();
-            aMesh->RemoveGroup( aGroup );
-          }
-          else if ( !aSubMesh->_is_nil() ) {                   // DELETE SUBMESH
-            SMESH::SMESH_Mesh_var aMesh = aSubMesh->GetFather();
-            aMesh->RemoveSubMesh( aSubMesh );
-
-            _PTR(SObject) aMeshSO = SMESH::FindSObject(aMesh);
-            if (aMeshSO)
-              SMESH::ModifiedMesh(aMeshSO, false, aMesh->NbNodes()==0);
-          }
-          else {
-            IObject = new SALOME_InteractiveObject
-              ( anEntry.c_str(), engineIOR().toLatin1().data(), SO->GetName().c_str() );
-            QString objType = CheckTypeObject(IObject);
-            if ( objType == "Hypothesis" || objType == "Algorithm" ) {// DELETE HYPOTHESIS
-              SMESH::RemoveHypothesisOrAlgorithmOnMesh(IObject);
-              aStudyBuilder->RemoveObjectWithChildren( SO );
-            }
-            else {// default action: remove SObject from the study
-              // san - it's no use opening a transaction here until UNDO/REDO is provided in SMESH
-              //SUIT_Operation *op = new SALOMEGUI_ImportOperation(myActiveStudy);
-              //op->start();
-              aStudyBuilder->RemoveObjectWithChildren( SO );
-              //op->finish();
-            }
-          }
-        } /* listSO back loop */
-      } /* IObject->hasEntry() */
-    } /* more/next */
+      SALOME_ListIteratorOfListIO It(selected);
+      
+      aStudyBuilder->NewCommand();  // There is a transaction
+      for( ; It.More(); It.Next()){ // loop on selected IO's
+	Handle(SALOME_InteractiveObject) IObject = It.Value();
+	if(IObject->hasEntry()) {
+	  _PTR(SObject) aSO = aStudy->FindObjectID(IObject->getEntry());
+	  
+	  // disable removal of "SMESH" component object
+	  if(aSO->FindAttribute(anAttr, "AttributeIOR")){
+	    anIOR = anAttr;
+	    if ( engineIOR() == anIOR->Value().c_str() )
+	      continue;
+	  }
+	  //Check the referenced object
+	  _PTR(SObject) aRefSObject;
+	  if ( aSO && aSO->ReferencedObject( aRefSObject ) )
+	    aSO = aRefSObject; // Delete main Object instead of reference
+	  
+	  // put the whole hierarchy of sub-objects of the selected SO into a list and
+	  // then treat them all starting from the deepest objects (at list back)
+	  
+	  std::list< _PTR(SObject) > listSO;
+	  listSO.push_back( aSO );
+	  std::list< _PTR(SObject) >::iterator itSO = listSO.begin();
+	  for ( ; itSO != listSO.end(); ++itSO ) {
+	    _PTR(ChildIterator) it = aStudy->NewChildIterator( *itSO );
+	    for (it->InitEx(false); it->More(); it->Next())
+	      listSO.push_back( it->Value() );
+	  }
+	  
+	  // treat SO's in the list starting from the back
+	  
+	  std::list< _PTR(SObject) >::reverse_iterator ritSO = listSO.rbegin();
+	  for ( ; ritSO != listSO.rend(); ++ritSO ) {
+	    _PTR(SObject) SO = *ritSO;
+	    if ( !SO ) continue;
+	    std::string anEntry = SO->GetID();
+	    
+	    /** Erase graphical object **/
+	    if(SO->FindAttribute(anAttr, "AttributeIOR") && vm ){
+	      QVector<SUIT_ViewWindow*> aViews = vm->getViews();
+	      for(int i = 0; i < nbSf; i++){
+		SUIT_ViewWindow *sf = aViews[i];
+		if(SMESH_Actor* anActor = SMESH::FindActorByEntry(sf,anEntry.c_str())){
+		  SMESH::RemoveActor(sf,anActor);
+		}
+	      }
+	    }
+	    
+	    /** Remove an object from data structures **/
+	    SMESH::SMESH_GroupBase_var aGroup = SMESH::SMESH_GroupBase::_narrow( SMESH::SObjectToObject( SO ));
+	    SMESH::SMESH_subMesh_var   aSubMesh = SMESH::SMESH_subMesh::_narrow( SMESH::SObjectToObject( SO ));
+	    if ( !aGroup->_is_nil() ) {                          // DELETE GROUP
+	      SMESH::SMESH_Mesh_var aMesh = aGroup->GetMesh();
+	      aMesh->RemoveGroup( aGroup );
+	    }
+	    else if ( !aSubMesh->_is_nil() ) {                   // DELETE SUBMESH
+	      SMESH::SMESH_Mesh_var aMesh = aSubMesh->GetFather();
+	      aMesh->RemoveSubMesh( aSubMesh );
+	      
+	      _PTR(SObject) aMeshSO = SMESH::FindSObject(aMesh);
+	      if (aMeshSO)
+		SMESH::ModifiedMesh(aMeshSO, false, aMesh->NbNodes()==0);
+	    }
+	    else {
+	      IObject = new SALOME_InteractiveObject
+		( anEntry.c_str(), engineIOR().toLatin1().data(), SO->GetName().c_str() );
+	      QString objType = CheckTypeObject(IObject);
+	      if ( objType == "Hypothesis" || objType == "Algorithm" ) {// DELETE HYPOTHESIS
+		SMESH::RemoveHypothesisOrAlgorithmOnMesh(IObject);
+		aStudyBuilder->RemoveObjectWithChildren( SO );
+	      }
+	      else {// default action: remove SObject from the study
+		// san - it's no use opening a transaction here until UNDO/REDO is provided in SMESH
+		//SUIT_Operation *op = new SALOMEGUI_ImportOperation(myActiveStudy);
+		//op->start();
+		aStudyBuilder->RemoveObjectWithChildren( SO );
+		//op->finish();
+	      }
+	    }
+	  } /* listSO back loop */
+	} /* IObject->hasEntry() */
+      } /* more/next */
+    } /* aViewMenegers list loop */
+    
     aStudyBuilder->CommitCommand();
 
     /* Clear any previous selection */
@@ -4131,6 +4139,16 @@ bool SMESHGUI::activateModule( SUIT_Study* study )
       GetSMESHGen()->SetCurrentStudy( _CAST(Study,aStudy)->GetStudy() );
       updateObjBrowser(); // objects can be removed
     }
+  
+  // get all view currently opened in the study and connect their signals  to
+  // the corresponding slots of the class.
+  SUIT_Desktop* aDesk = study->application()->desktop();
+  if ( aDesk ) {
+    QList<SUIT_ViewWindow*> wndList = aDesk->windows();
+    SUIT_ViewWindow* wnd;
+    foreach ( wnd, wndList )
+      connectView( wnd );
+  }
 
   return res;
 }
@@ -4228,8 +4246,15 @@ void SMESHGUI::viewManagers( QStringList& list ) const
 
 void SMESHGUI::onViewManagerActivated( SUIT_ViewManager* mgr )
 {
-  if ( dynamic_cast<SVTK_ViewManager*>( mgr ) )
+  if ( dynamic_cast<SVTK_ViewManager*>( mgr ) ) {
     SMESH::UpdateSelectionProp( this );
+    
+    QVector<SUIT_ViewWindow*> aViews = mgr->getViews();
+    for(int i = 0; i < aViews.count() ; i++){
+      SUIT_ViewWindow *sf = aViews[i];
+      connectView( sf );
+    }
+  }
 }
 
 void SMESHGUI::onViewManagerRemoved( SUIT_ViewManager* theViewManager )
@@ -5677,3 +5702,34 @@ void SMESHGUI::onHypothesisEdit( int result )
     SMESHGUI::Modified();
   updateObjBrowser( true );
 }
+
+
+/*!
+  \brief Signal handler closing(SUIT_ViewWindow*) of a view
+  \param pview view being closed
+*/
+void SMESHGUI::onViewClosed( SUIT_ViewWindow* pview ) {
+#ifndef DISABLE_PLOT2DVIEWER
+  //Crear all Plot2d Viewers if need.
+  SMESH::ClearPlot2Viewers(pview);
+#endif  
+}
+
+/*!
+  \brief Connects or disconnects signals about activating and cloning view on the module slots
+  \param pview view which is connected/disconnected
+*/
+void SMESHGUI::connectView( const SUIT_ViewWindow* pview ) {
+  if(!pview)
+    return;
+  
+  SUIT_ViewManager* viewMgr = pview->getViewManager();
+  if ( viewMgr ) {
+    disconnect( viewMgr, SIGNAL( deleteView( SUIT_ViewWindow* ) ),
+                this, SLOT( onViewClosed( SUIT_ViewWindow* ) ) );
+    
+    connect( viewMgr, SIGNAL( deleteView( SUIT_ViewWindow* ) ),
+             this, SLOT( onViewClosed( SUIT_ViewWindow* ) ) );
+  }
+}
+ 

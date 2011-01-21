@@ -33,6 +33,7 @@
 #include "SMESHGUI_Utils.h"
 
 #include <SMESH_Actor.h>
+#include <SMESH_ActorUtils.h>
 #include <SMESH_ScalarBarActor.h>
 #include <SMESH_ControlsDef.hxx>
 

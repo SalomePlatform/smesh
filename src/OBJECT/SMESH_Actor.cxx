@@ -533,6 +533,13 @@ SMESH_ActorDef::~SMESH_ActorDef()
 {
   if(MYDEBUG) MESSAGE("~SMESH_ActorDef - "<<this);
 
+#ifndef DISABLE_PLOT2DVIEWER
+  if(my2dHistogram) {
+    SMESH::ProcessIn2DViewers(this,SMESH::RemoveFrom2dViewer);
+    delete my2dHistogram;
+  }
+#endif
+
   // caught by SMESHGUI::ProcessEvents() static method
   this->InvokeEvent( SMESH::DeleteActorEvent, NULL );
 
@@ -617,10 +624,6 @@ SMESH_ActorDef::~SMESH_ActorDef()
   myImplicitBoolean->Delete();
 
   myTimeStamp->Delete();
-#ifndef DISABLE_PLOT2DVIEWER
-  if(my2dHistogram)
-    delete my2dHistogram;
-#endif 
 }
 
 
@@ -1343,7 +1346,11 @@ void SMESH_ActorDef::SetVisibility(int theMode, bool theIsUpdateRepersentation){
 
     if(myIsCellsLabeled) 
       myCellsLabels->VisibilityOn();
-  }
+  } 
+#ifndef DISABLE_PLOT2DVIEWER
+  else
+    SMESH::ProcessIn2DViewers(this,SMESH::RemoveFrom2dViewer);
+#endif
   UpdateHighlight();
   Modified();
 }
