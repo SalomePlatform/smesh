@@ -2302,6 +2302,36 @@ CORBA::Boolean SMESH_Mesh_i::HasModificationsToDiscard() throw(SALOME::SALOME_Ex
   return _impl->HasModificationsToDiscard();
 }
 
+static SALOMEDS::Color getUniqueColor( const std::list<SALOMEDS::Color>& theReservedColors )
+{
+  const int MAX_ATTEMPTS = 100;
+  int cnt = 0;
+  double tolerance = 0.5;
+  SALOMEDS::Color col;
+
+  bool ok = false;
+  while ( !ok ) {
+    // generate random color
+    double red    = (double)rand() / RAND_MAX;
+    double green  = (double)rand() / RAND_MAX;
+    double blue   = (double)rand() / RAND_MAX;
+    // check existence in the list of the existing colors
+    bool matched = false;
+    std::list<SALOMEDS::Color>::const_iterator it;
+    for ( it = theReservedColors.begin(); it != theReservedColors.end() && !matched; ++it ) {
+      SALOMEDS::Color color = *it;
+      double tol = fabs( color.R - red ) + fabs( color.G - green ) + fabs( color.B  - blue  );
+      matched = tol < tolerance;
+    }
+    if ( (cnt+1) % 20 == 0 ) tolerance = tolerance/2;
+    ok = ( ++cnt == MAX_ATTEMPTS ) || !matched;
+    col.R = red;
+    col.G = green;
+    col.B = blue;
+  }
+  return col;
+}
+
 //=============================================================================
 /*!
  *
@@ -2311,6 +2341,15 @@ void SMESH_Mesh_i::SetAutoColor(CORBA::Boolean theAutoColor) throw(SALOME::SALOM
 {
   Unexpect aCatch(SALOME_SalomeException);
   _impl->SetAutoColor(theAutoColor);
+
+  std::list<SALOMEDS::Color> aReservedColors;
+  map<int, SMESH::SMESH_GroupBase_ptr>::iterator it = _mapGroups.begin();
+  for ( ; it != _mapGroups.end(); it++ ) {
+    if ( CORBA::is_nil( it->second )) continue;
+    SALOMEDS::Color aColor = getUniqueColor( aReservedColors );
+    it->second->SetColor( aColor );
+    aReservedColors.push_back( aColor );
+  }
 }
 
 //=============================================================================

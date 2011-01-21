@@ -695,20 +695,13 @@
     if( aMainObject->_is_nil() )
       return;
 
-    aMainObject->SetAutoColor( true );
-
-    QList<SALOMEDS::Color> aReservedColors;
+    aMainObject->SetAutoColor( true ); // mesh groups are re-colored here
 
     SMESH::ListOfGroups aListOfGroups = *aMainObject->GetGroups();
     for( int i = 0, n = aListOfGroups.length(); i < n; i++ )
     {
       SMESH::SMESH_GroupBase_var aGroupObject = aListOfGroups[i];
-      SALOMEDS::Color aCurrentColor = aGroupObject->GetColor();
-
-      SALOMEDS::Color aColor = SMESHGUI::getUniqueColor( aReservedColors );
-      aGroupObject->SetColor( aColor );
-      aReservedColors.append( aColor );
-
+      SALOMEDS::Color aColor = aGroupObject->GetColor();
       _PTR(SObject) aGroupSObject = SMESH::FindSObject(aGroupObject);
       if (aGroupSObject) {
         if(SMESH_Actor *anActor = SMESH::FindActorByEntry(aGroupSObject->GetID().c_str())) {
