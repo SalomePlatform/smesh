@@ -322,6 +322,14 @@ namespace VISCOUS
     void Copy( _LayerEdge& other, SMESH_MesherHelper& helper );
     void SetCosin( double cosin );
   };
+  struct _LayerEdgeCmp
+  {
+    bool operator () (const _LayerEdge* e1, const _LayerEdge* e2) const
+    {
+      const bool cmpNodes = ( e1 && e2 && e1->_nodes.size() && e2->_nodes.size() );
+      return cmpNodes ? ( e1->_nodes[0]->GetID() < e2->_nodes[0]->GetID()) : ( e1 < e2 );
+    }
+  };
   //--------------------------------------------------------------------------------
 
   typedef map< const SMDS_MeshNode*, _LayerEdge*, TIDCompare > TNode2Edge;
@@ -2178,7 +2186,8 @@ bool _ViscousBuilder::updateNormals( _SolidData&         data,
   // 1) Find intersections
   double dist;
   const SMDS_MeshElement* face;
-  map< _LayerEdge*, set< _LayerEdge* > > edge2CloseEdge;
+  typedef map< _LayerEdge*, set< _LayerEdge*, _LayerEdgeCmp >, _LayerEdgeCmp > TLEdge2LEdgeSet;
+  TLEdge2LEdgeSet edge2CloseEdge;
 
   const double eps = data._epsilon * data._epsilon;
   for ( unsigned i = 0; i < data._edges.size(); ++i )
@@ -2188,7 +2197,7 @@ bool _ViscousBuilder::updateNormals( _SolidData&         data,
     if ( edge->FindIntersection( *searcher, dist, eps, &face ))
     {
       const TmpMeshFaceOnEdge* f = (const TmpMeshFaceOnEdge*) face;
-      set< _LayerEdge* > & ee = edge2CloseEdge[ edge ];
+      set< _LayerEdge*, _LayerEdgeCmp > & ee = edge2CloseEdge[ edge ];
       ee.insert( f->_le1 );
       ee.insert( f->_le2 );
       if ( f->_le1->IsOnEdge() && f->_le1->_sWOL.IsNull() ) 
@@ -2204,12 +2213,12 @@ bool _ViscousBuilder::updateNormals( _SolidData&         data,
   {
     dumpFunction(SMESH_Comment("updateNormals")<<data._index);
 
-    map< _LayerEdge*, set< _LayerEdge* > >::iterator e2ee = edge2CloseEdge.begin();
+    TLEdge2LEdgeSet::iterator e2ee = edge2CloseEdge.begin();
     for ( ; e2ee != edge2CloseEdge.end(); ++e2ee )
     {
       _LayerEdge* edge1       = e2ee->first;
       _LayerEdge* edge2       = 0;
-      set< _LayerEdge* >& ee  = e2ee->second;
+      set< _LayerEdge*, _LayerEdgeCmp >& ee  = e2ee->second;
 
       // find EDGEs the edges reside
       TopoDS_Edge E1, E2;
