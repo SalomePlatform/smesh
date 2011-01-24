@@ -65,7 +65,7 @@ using namespace std;
 
 #ifdef _DEBUG_
 static int MYDEBUG = 1;
-static int MYDEBUGWITHFILES = 1;
+static int MYDEBUGWITHFILES = 0;//1;
 #else
 static int MYDEBUG = 0;
 static int MYDEBUGWITHFILES = 0;
