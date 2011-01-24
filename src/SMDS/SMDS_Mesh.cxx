@@ -213,8 +213,7 @@ SMDS_MeshNode * SMDS_Mesh::AddNodeWithID(double x, double y, double z, int ID)
   // find the MeshNode corresponding to ID
   const SMDS_MeshElement *node = myNodeIDFactory->MeshElement(ID);
   if(!node){
-    // TODO ID < 1
-    if (ID <= 0)
+    if (ID < 1)
       {
         MESSAGE("=============>  Bad Node Id: " << ID);
         ID = myNodeIDFactory->GetFreeID();
