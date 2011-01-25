@@ -91,6 +91,7 @@ StdMeshers_FaceSide::StdMeshers_FaceSide(const TopoDS_Face& theFace,
 {
   int nbEdges = theEdges.size();
   myEdge.resize( nbEdges );
+  myEdgeID.resize( nbEdges );
   myC2d.resize( nbEdges );
   myC3dAdaptor.resize( nbEdges );
   myFirst.resize( nbEdges );
@@ -118,6 +119,7 @@ StdMeshers_FaceSide::StdMeshers_FaceSide(const TopoDS_Face& theFace,
     if ( myEdgeLength[i] < DBL_MIN ) nbDegen++;
     myLength += myEdgeLength[i];
     myEdge[i] = *edge;
+    myEdgeID[i] = meshDS->ShapeToIndex( *edge );
     if ( !theIsForward ) myEdge[i].Reverse();
 
     if ( theFace.IsNull() )
@@ -326,7 +328,11 @@ const vector<UVPtStruct>& StdMeshers_FaceSide::GetUVPtStruct(bool   isXConst,
       uvPt.x = uvPt.y = uvPt.normParam = u_node->first;
       if ( isXConst ) uvPt.x = constValue;
       else            uvPt.y = constValue;
-      if ( myNormPar[ EdgeIndex ] < uvPt.normParam ) {
+      const SMDS_EdgePosition* epos =
+        dynamic_cast<const SMDS_EdgePosition*>(uvPt.node->GetPosition());
+      if (( myNormPar[ EdgeIndex ] < uvPt.normParam ) ||
+          ( epos && uvPt.node->getshapeId() != myEdgeID[ EdgeIndex ])) // for myMissingVertexNodes
+      {
         prevNormPar = myNormPar[ EdgeIndex ];
         ++EdgeIndex;
 #ifdef _DEBUG_
@@ -340,8 +346,6 @@ const vector<UVPtStruct>& StdMeshers_FaceSide::GetUVPtStruct(bool   isXConst,
 #endif
         paramSize = myNormPar[ EdgeIndex ] - prevNormPar;
       }
-      const SMDS_EdgePosition* epos =
-        dynamic_cast<const SMDS_EdgePosition*>(uvPt.node->GetPosition());
       if ( epos ) {
         uvPt.param = epos->GetUParameter();
       }
@@ -444,6 +448,7 @@ void StdMeshers_FaceSide::Reverse()
   }
   if ( nbEdges > 1 ) {
     reverse( myEdge );
+    reverse( myEdgeID );
     reverse( myC2d );
     reverse( myC3dAdaptor );
     reverse( myFirst );

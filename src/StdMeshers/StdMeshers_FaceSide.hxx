@@ -201,6 +201,7 @@ protected:
   // DON't FORGET tO update Reverse() when adding one more vector!
   std::vector<uvPtStruct>           myPoints, myFalsePoints;
   std::vector<TopoDS_Edge>          myEdge;
+  std::vector<int>                  myEdgeID;
   std::vector<Handle(Geom2d_Curve)> myC2d;
   std::vector<GeomAdaptor_Curve>    myC3dAdaptor;
   std::vector<double>               myFirst, myLast;
