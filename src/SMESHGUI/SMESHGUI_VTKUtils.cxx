@@ -1320,11 +1320,11 @@ namespace SMESH
       vtkActorCollection *aCollection = aCopy.GetActors();
       aCollection->InitTraversal();
       while(vtkActor *anAct = aCollection->GetNextActor()){
-	if(SMESH_Actor *anActor = dynamic_cast<SMESH_Actor*>(anAct)){
-	  if(anActor->hasIO() && anActor->GetPlot2Histogram() ){
-	    ProcessIn2DViewers(anActor,RemoveFrom2dViewer);
-	  }
-	}
+        if(SMESH_Actor *anActor = dynamic_cast<SMESH_Actor*>(anAct)){
+          if(anActor->hasIO() && anActor->GetPlot2Histogram() ){
+            ProcessIn2DViewers(anActor,RemoveFrom2dViewer);
+          }
+        }
       }
     }
   }

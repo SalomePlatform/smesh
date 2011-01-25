@@ -881,25 +881,25 @@
        SUIT_ViewManager* aViewManager = app->getViewManager( Plot2d_Viewer::Type(), true ); // create if necessary
 
        if( !aViewManager )
-	 return;
+         return;
        
        SPlot2d_Viewer* aView = dynamic_cast<SPlot2d_Viewer*>(aViewManager->getViewModel());
        if ( !aView )
-	 return;
+         return;
 
        Plot2d_ViewFrame* aPlot = aView->getActiveViewFrame();
        if ( !aPlot )
-	 return;
+         return;
 
        if ( anActor && anActor->GetControlMode() != SMESH_Actor::eNone ) {
-	 SPlot2d_Histogram* aHistogram = anActor->UpdatePlot2Histogram();
-	 QString functorName = functorToString( anActor->GetFunctor());
-	 QString aHistogramName("%1 : %2");
-	 aHistogramName = aHistogramName.arg(anIO->getName()).arg(functorName);
-	 aHistogram->setName(aHistogramName);
-	 aHistogram->setHorTitle(functorName);
-	 aHistogram->setVerTitle(QObject::tr("DISTRIBUTION_NB_ENT"));
-	 aPlot->displayObject(aHistogram, true);
+         SPlot2d_Histogram* aHistogram = anActor->UpdatePlot2Histogram();
+         QString functorName = functorToString( anActor->GetFunctor());
+         QString aHistogramName("%1 : %2");
+         aHistogramName = aHistogramName.arg(anIO->getName()).arg(functorName);
+         aHistogram->setName(aHistogramName);
+         aHistogram->setHorTitle(functorName);
+         aHistogram->setVerTitle(QObject::tr("DISTRIBUTION_NB_ENT"));
+         aPlot->displayObject(aHistogram, true);
        }
      }
    }
@@ -1266,15 +1266,15 @@
           anActor->GetScalarBarActor()->SetTitle( functorToString( anActor->GetFunctor() ).toLatin1().constData() );
           SMESH::RepaintCurrentView();
 #ifndef DISABLE_PLOT2DVIEWER
-	  if(anActor->GetPlot2Histogram()) {
-	    SPlot2d_Histogram* aHistogram = anActor->UpdatePlot2Histogram();
-	    QString functorName = functorToString( anActor->GetFunctor());
-	    QString aHistogramName("%1 : %2");
-	    aHistogramName = aHistogramName.arg(anIO->getName()).arg(functorName);
-	    aHistogram->setName(aHistogramName);
-	    aHistogram->setHorTitle(functorName);
-	    SMESH::ProcessIn2DViewers(anActor);
-	  }
+          if(anActor->GetPlot2Histogram()) {
+            SPlot2d_Histogram* aHistogram = anActor->UpdatePlot2Histogram();
+            QString functorName = functorToString( anActor->GetFunctor());
+            QString aHistogramName("%1 : %2");
+            aHistogramName = aHistogramName.arg(anIO->getName()).arg(functorName);
+            aHistogram->setName(aHistogramName);
+            aHistogram->setHorTitle(functorName);
+            SMESH::ProcessIn2DViewers(anActor);
+          }
 #endif
         }
       }
@@ -1420,85 +1420,85 @@
       
       aStudyBuilder->NewCommand();  // There is a transaction
       for( ; It.More(); It.Next()){ // loop on selected IO's
-	Handle(SALOME_InteractiveObject) IObject = It.Value();
-	if(IObject->hasEntry()) {
-	  _PTR(SObject) aSO = aStudy->FindObjectID(IObject->getEntry());
-	  
-	  // disable removal of "SMESH" component object
-	  if(aSO->FindAttribute(anAttr, "AttributeIOR")){
-	    anIOR = anAttr;
-	    if ( engineIOR() == anIOR->Value().c_str() )
-	      continue;
-	  }
-	  //Check the referenced object
-	  _PTR(SObject) aRefSObject;
-	  if ( aSO && aSO->ReferencedObject( aRefSObject ) )
-	    aSO = aRefSObject; // Delete main Object instead of reference
-	  
-	  // put the whole hierarchy of sub-objects of the selected SO into a list and
-	  // then treat them all starting from the deepest objects (at list back)
-	  
-	  std::list< _PTR(SObject) > listSO;
-	  listSO.push_back( aSO );
-	  std::list< _PTR(SObject) >::iterator itSO = listSO.begin();
-	  for ( ; itSO != listSO.end(); ++itSO ) {
-	    _PTR(ChildIterator) it = aStudy->NewChildIterator( *itSO );
-	    for (it->InitEx(false); it->More(); it->Next())
-	      listSO.push_back( it->Value() );
-	  }
-	  
-	  // treat SO's in the list starting from the back
-	  
-	  std::list< _PTR(SObject) >::reverse_iterator ritSO = listSO.rbegin();
-	  for ( ; ritSO != listSO.rend(); ++ritSO ) {
-	    _PTR(SObject) SO = *ritSO;
-	    if ( !SO ) continue;
-	    std::string anEntry = SO->GetID();
-	    
-	    /** Erase graphical object **/
-	    if(SO->FindAttribute(anAttr, "AttributeIOR") && vm ){
-	      QVector<SUIT_ViewWindow*> aViews = vm->getViews();
-	      for(int i = 0; i < nbSf; i++){
-		SUIT_ViewWindow *sf = aViews[i];
-		if(SMESH_Actor* anActor = SMESH::FindActorByEntry(sf,anEntry.c_str())){
-		  SMESH::RemoveActor(sf,anActor);
-		}
-	      }
-	    }
-	    
-	    /** Remove an object from data structures **/
-	    SMESH::SMESH_GroupBase_var aGroup = SMESH::SMESH_GroupBase::_narrow( SMESH::SObjectToObject( SO ));
-	    SMESH::SMESH_subMesh_var   aSubMesh = SMESH::SMESH_subMesh::_narrow( SMESH::SObjectToObject( SO ));
-	    if ( !aGroup->_is_nil() ) {                          // DELETE GROUP
-	      SMESH::SMESH_Mesh_var aMesh = aGroup->GetMesh();
-	      aMesh->RemoveGroup( aGroup );
-	    }
-	    else if ( !aSubMesh->_is_nil() ) {                   // DELETE SUBMESH
-	      SMESH::SMESH_Mesh_var aMesh = aSubMesh->GetFather();
-	      aMesh->RemoveSubMesh( aSubMesh );
-	      
-	      _PTR(SObject) aMeshSO = SMESH::FindSObject(aMesh);
-	      if (aMeshSO)
-		SMESH::ModifiedMesh(aMeshSO, false, aMesh->NbNodes()==0);
-	    }
-	    else {
-	      IObject = new SALOME_InteractiveObject
-		( anEntry.c_str(), engineIOR().toLatin1().data(), SO->GetName().c_str() );
-	      QString objType = CheckTypeObject(IObject);
-	      if ( objType == "Hypothesis" || objType == "Algorithm" ) {// DELETE HYPOTHESIS
-		SMESH::RemoveHypothesisOrAlgorithmOnMesh(IObject);
-		aStudyBuilder->RemoveObjectWithChildren( SO );
-	      }
-	      else {// default action: remove SObject from the study
-		// san - it's no use opening a transaction here until UNDO/REDO is provided in SMESH
-		//SUIT_Operation *op = new SALOMEGUI_ImportOperation(myActiveStudy);
-		//op->start();
-		aStudyBuilder->RemoveObjectWithChildren( SO );
-		//op->finish();
-	      }
-	    }
-	  } /* listSO back loop */
-	} /* IObject->hasEntry() */
+        Handle(SALOME_InteractiveObject) IObject = It.Value();
+        if(IObject->hasEntry()) {
+          _PTR(SObject) aSO = aStudy->FindObjectID(IObject->getEntry());
+          
+          // disable removal of "SMESH" component object
+          if(aSO->FindAttribute(anAttr, "AttributeIOR")){
+            anIOR = anAttr;
+            if ( engineIOR() == anIOR->Value().c_str() )
+              continue;
+          }
+          //Check the referenced object
+          _PTR(SObject) aRefSObject;
+          if ( aSO && aSO->ReferencedObject( aRefSObject ) )
+            aSO = aRefSObject; // Delete main Object instead of reference
+          
+          // put the whole hierarchy of sub-objects of the selected SO into a list and
+          // then treat them all starting from the deepest objects (at list back)
+          
+          std::list< _PTR(SObject) > listSO;
+          listSO.push_back( aSO );
+          std::list< _PTR(SObject) >::iterator itSO = listSO.begin();
+          for ( ; itSO != listSO.end(); ++itSO ) {
+            _PTR(ChildIterator) it = aStudy->NewChildIterator( *itSO );
+            for (it->InitEx(false); it->More(); it->Next())
+              listSO.push_back( it->Value() );
+          }
+          
+          // treat SO's in the list starting from the back
+          
+          std::list< _PTR(SObject) >::reverse_iterator ritSO = listSO.rbegin();
+          for ( ; ritSO != listSO.rend(); ++ritSO ) {
+            _PTR(SObject) SO = *ritSO;
+            if ( !SO ) continue;
+            std::string anEntry = SO->GetID();
+            
+            /** Erase graphical object **/
+            if(SO->FindAttribute(anAttr, "AttributeIOR") && vm ){
+              QVector<SUIT_ViewWindow*> aViews = vm->getViews();
+              for(int i = 0; i < nbSf; i++){
+                SUIT_ViewWindow *sf = aViews[i];
+                if(SMESH_Actor* anActor = SMESH::FindActorByEntry(sf,anEntry.c_str())){
+                  SMESH::RemoveActor(sf,anActor);
+                }
+              }
+            }
+            
+            /** Remove an object from data structures **/
+            SMESH::SMESH_GroupBase_var aGroup = SMESH::SMESH_GroupBase::_narrow( SMESH::SObjectToObject( SO ));
+            SMESH::SMESH_subMesh_var   aSubMesh = SMESH::SMESH_subMesh::_narrow( SMESH::SObjectToObject( SO ));
+            if ( !aGroup->_is_nil() ) {                          // DELETE GROUP
+              SMESH::SMESH_Mesh_var aMesh = aGroup->GetMesh();
+              aMesh->RemoveGroup( aGroup );
+            }
+            else if ( !aSubMesh->_is_nil() ) {                   // DELETE SUBMESH
+              SMESH::SMESH_Mesh_var aMesh = aSubMesh->GetFather();
+              aMesh->RemoveSubMesh( aSubMesh );
+              
+              _PTR(SObject) aMeshSO = SMESH::FindSObject(aMesh);
+              if (aMeshSO)
+                SMESH::ModifiedMesh(aMeshSO, false, aMesh->NbNodes()==0);
+            }
+            else {
+              IObject = new SALOME_InteractiveObject
+                ( anEntry.c_str(), engineIOR().toLatin1().data(), SO->GetName().c_str() );
+              QString objType = CheckTypeObject(IObject);
+              if ( objType == "Hypothesis" || objType == "Algorithm" ) {// DELETE HYPOTHESIS
+                SMESH::RemoveHypothesisOrAlgorithmOnMesh(IObject);
+                aStudyBuilder->RemoveObjectWithChildren( SO );
+              }
+              else {// default action: remove SObject from the study
+                // san - it's no use opening a transaction here until UNDO/REDO is provided in SMESH
+                //SUIT_Operation *op = new SALOMEGUI_ImportOperation(myActiveStudy);
+                //op->start();
+                aStudyBuilder->RemoveObjectWithChildren( SO );
+                //op->finish();
+              }
+            }
+          } /* listSO back loop */
+        } /* IObject->hasEntry() */
       } /* more/next */
     } /* aViewMenegers list loop */
     
@@ -1913,7 +1913,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
           if( SMESH_Actor* anActor = SMESH::FindActorByEntry( anIO->getEntry() ) ) {
             anActor->SetControlMode( SMESH_Actor::eNone );
 #ifndef DISABLE_PLOT2DVIEWER
-	    SMESH::ProcessIn2DViewers(anActor,SMESH::RemoveFrom2dViewer);
+            SMESH::ProcessIn2DViewers(anActor,SMESH::RemoveFrom2dViewer);
 #endif
           }
         }
