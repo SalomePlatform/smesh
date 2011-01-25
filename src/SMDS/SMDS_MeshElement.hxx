@@ -43,7 +43,7 @@
 
 //typedef unsigned short UShortType;
 typedef short ShortType;
-typedef long  LongType;
+typedef int   LongType;
 
 class SMDS_MeshNode;
 class SMDS_MeshEdge;
