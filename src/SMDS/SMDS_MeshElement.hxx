@@ -43,6 +43,7 @@
 
 //typedef unsigned short UShortType;
 typedef short ShortType;
+typedef long  LongType;
 
 class SMDS_MeshNode;
 class SMDS_MeshEdge;
@@ -140,18 +141,18 @@ public:
   int GetNodeIndex( const SMDS_MeshNode* node ) const;
 
   inline ShortType getMeshId() const {return myMeshId; }
-  inline ShortType getshapeId() const {return myShapeId; }
+  inline LongType  getshapeId() const {return myShapeId; }
   inline int getIdInShape() const { return myIdInShape; }
   inline int getVtkId() const { return myVtkID; }
 
 protected:
   inline void setId(int id) {myID = id; }
-  inline void setShapeId(ShortType shapeId) {myShapeId = shapeId; }
+  inline void setShapeId(LongType shapeId) {myShapeId = shapeId; }
   inline void setIdInShape(int id) { myIdInShape = id; }
   inline void setVtkId(int vtkId) { myVtkID = vtkId; }
   SMDS_MeshElement(int ID=-1);
-  SMDS_MeshElement(int id, ShortType meshId, ShortType shapeId = 0);
-  virtual void init(int id = -1, ShortType meshId = -1, ShortType shapeId = 0);
+  SMDS_MeshElement(int id, ShortType meshId, LongType shapeId = 0);
+  virtual void init(int id = -1, ShortType meshId = -1, LongType shapeId = 0);
   virtual void Print(std::ostream & OS) const;
 
   //! Element index in vector SMDS_Mesh::myNodes or SMDS_Mesh::myCells
@@ -161,7 +162,7 @@ protected:
   //! SMDS_Mesh identification in SMESH
   ShortType myMeshId;
   //! SubShape and SubMesh identification in SMESHDS
-  ShortType myShapeId;
+  LongType myShapeId;
   //! Element index in SMESHDS_SubMesh vector
   int myIdInShape;
 };

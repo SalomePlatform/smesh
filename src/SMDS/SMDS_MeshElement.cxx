@@ -40,12 +40,12 @@ SMDS_MeshElement::SMDS_MeshElement(int ID)
   init(ID);
 }
 
-SMDS_MeshElement::SMDS_MeshElement(int id, ShortType meshId, ShortType shapeId)
+SMDS_MeshElement::SMDS_MeshElement(int id, ShortType meshId, LongType shapeId)
 {
   init(id, meshId, shapeId);
 }
 
-void SMDS_MeshElement::init(int id, ShortType meshId, ShortType shapeId )
+void SMDS_MeshElement::init(int id, ShortType meshId, LongType shapeId )
 {
   myID = id;
   myMeshId = meshId;
