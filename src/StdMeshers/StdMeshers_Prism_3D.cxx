@@ -555,6 +555,10 @@ bool StdMeshers_Prism_3D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& theSh
     AddPrisms( columns, myHelper );
 
   } // loop on bottom mesh faces
+
+  // clear data
+  myBotToColumnMap.clear();
+  myBlock.Clear();
         
   return true;
 }
@@ -1045,9 +1049,19 @@ StdMeshers_PrismAsBlock::StdMeshers_PrismAsBlock()
 
 StdMeshers_PrismAsBlock::~StdMeshers_PrismAsBlock()
 {
+  Clear();
+}
+void StdMeshers_PrismAsBlock::Clear()
+{
+  myHelper = 0;
+  myShapeIDMap.Clear();
+  myError.reset();
+
   if ( mySide ) {
     delete mySide; mySide = 0;
   }
+  myParam2ColumnMaps.clear();
+  myShapeIndex2ColumnMap.clear();
 }
 
 //================================================================================

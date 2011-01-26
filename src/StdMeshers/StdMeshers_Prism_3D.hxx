@@ -125,6 +125,11 @@ public:
   SMESH_ComputeErrorPtr GetError() const { return myError; }
 
   /*!
+   * \brief Free allocated memory
+   */
+  void Clear();
+
+  /*!
    * \brief Return number of nodes on every vertical edge
     * \retval int - number of nodes including end nodes
    */
