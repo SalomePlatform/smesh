@@ -1569,8 +1569,8 @@ void SMESH_MeshEditor::SplitVolumesIntoTetra (const TIDSortedElemSet & theElems,
   SMDS_VolumeTool    volTool;
   SMESH_MesherHelper helper( *GetMesh());
 
-  SMESHDS_SubMesh* subMesh = GetMeshDS()->MeshElements(1);
-  SMESHDS_SubMesh* fSubMesh = subMesh;
+  SMESHDS_SubMesh* subMesh = 0;//GetMeshDS()->MeshElements(1);
+  SMESHDS_SubMesh* fSubMesh = 0;//subMesh;
   
   SMESH_SequenceOfElemPtr newNodes, newElems;
 
