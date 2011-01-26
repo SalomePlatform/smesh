@@ -54,12 +54,10 @@ namespace
     {
       B_BOTTOM=0, B_RIGHT, B_TOP, B_LEFT, B_FRONT, B_BACK, NB_BLOCK_SIDES
     };
-#ifdef _DEBUG_ // avoid unused variables in release mode
-  const char* SBoxSides[] = //!< names of block sides
-    {
-      "BOTTOM", "RIGHT", "TOP", "LEFT", "FRONT", "BACK", "UNDEFINED"
-    };
-#endif
+//   const char* SBoxSides[] = //!< names of block sides -- needed for DEBUG only
+//     {
+//       "BOTTOM", "RIGHT", "TOP", "LEFT", "FRONT", "BACK", "UNDEFINED"
+//     };
   enum EQuadEdge //!< edges of quadrangle side
     {
       Q_BOTTOM = 0, Q_RIGHT, Q_TOP, Q_LEFT, NB_QUAD_SIDES
