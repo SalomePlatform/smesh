@@ -51,6 +51,7 @@ typedef struct faceQuadStruct
   std::vector< StdMeshers_FaceSide*> side;
   bool isEdgeOut[4]; // true, if an edge has more nodes, than the opposite
   UVPtStruct* uv_grid;
+  TopoDS_Face face;
   ~faceQuadStruct();
 } FaceQuadStruct;
 
@@ -74,10 +75,10 @@ public:
                                     const TopoDS_Shape& aShape,
                                     const bool CreateQuadratic);
 
-protected:
-
   FaceQuadStruct* CheckNbEdges(SMESH_Mesh& aMesh,
                                const TopoDS_Shape& aShape);
+
+protected:
 
   bool CheckNbEdgesForEvaluate(SMESH_Mesh& aMesh,
                                const TopoDS_Shape & aShape,

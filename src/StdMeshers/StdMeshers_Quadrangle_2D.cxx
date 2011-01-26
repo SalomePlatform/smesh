@@ -792,6 +792,7 @@ FaceQuadStruct* StdMeshers_Quadrangle_2D::CheckNbEdges(SMESH_Mesh &         aMes
   FaceQuadStruct* quad = new FaceQuadStruct;
   quad->uv_grid = 0;
   quad->side.reserve(nbEdgesInWire.front());
+  quad->face = F;
 
   int nbSides = 0;
   list< TopoDS_Edge >::iterator edgeIt = edges.begin();
