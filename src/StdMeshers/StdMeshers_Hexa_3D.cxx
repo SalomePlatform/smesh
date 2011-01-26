@@ -157,24 +157,23 @@ namespace
 {
   //=============================================================================
 
+  typedef boost::shared_ptr< FaceQuadStruct > FaceQuadStructPtr;
+
   // symbolic names of box sides
   enum EBoxSides{ B_BOTTOM=0, B_RIGHT, B_TOP, B_LEFT, B_FRONT, B_BACK, B_NB_SIDES };
 
-  // indices of FACE's of box sides in terms of SMESH_Block::TShapeID enum
-  enum ESideIndex{ I_BOTTOM    = SMESH_Block::ID_Fxy0,
-                   I_RIGHT     = SMESH_Block::ID_F1yz,
-                   I_TOP       = SMESH_Block::ID_Fxy1,
-                   I_LEFT      = SMESH_Block::ID_F0yz,
-                   I_FRONT     = SMESH_Block::ID_Fx0z,
-                   I_BACK      = SMESH_Block::ID_Fx1z,
-                   I_UNDEFINED = SMESH_Block::ID_NONE
-  };
+  // symbolic names of sides of quadrangle
+  enum EQuadSides{ Q_BOTTOM=0, Q_RIGHT, Q_TOP, Q_LEFT, Q_NB_SIDES };
+
   //=============================================================================
   /*!
    * \brief Container of nodes of structured mesh on a qudrangular geom FACE
    */
   struct _FaceGrid
   {
+    // face sides
+    FaceQuadStructPtr _quad;
+
     // map of (node parameter on EDGE) to (column (vector) of nodes)
     TParam2ColumnMap _u2nodesMap;
 
@@ -183,7 +182,6 @@ namespace
 
     // geometry of a cube side
     TopoDS_Face _sideF;
-    TopoDS_Edge _baseE;
 
     const SMDS_MeshNode* GetNode(int iCol, int iRow) const
     {
@@ -206,6 +204,65 @@ namespace
     int size() const { return _xSize * _ySize; }
     int operator()(const int x, const int y) const { return y * _xSize + x; }
   };
+
+  //================================================================================
+  /*!
+   * \brief Appends a range of node columns from a map to another map
+   */
+  template< class TMapIterator >
+  void append( TParam2ColumnMap& toMap, TMapIterator from, TMapIterator to )
+  {
+    const SMDS_MeshNode* lastNode = toMap.rbegin()->second[0];
+    const SMDS_MeshNode* firstNode = from->second[0];
+    if ( lastNode == firstNode )
+      from++;
+    double u = toMap.rbegin()->first;
+    for (; from != to; ++from )
+    {
+      u += 1;
+      TParam2ColumnMap::iterator u2nn = toMap.insert( toMap.end(), make_pair ( u, TNodeColumn()));
+      u2nn->second.swap( from->second );
+    }
+  }
+
+  //================================================================================
+  /*!
+   * \brief Finds FaceQuadStruct having a side equal to a given one and rearranges
+   *  the found FaceQuadStruct::side to have the given side at a Q_BOTTOM place
+   */
+  FaceQuadStructPtr getQuadWithBottom( StdMeshers_FaceSide* side,
+                                       FaceQuadStructPtr    quad[ 6 ])
+  {
+    FaceQuadStructPtr foundQuad;
+    for ( int i = 1; i < 6; ++i )
+    {
+      if ( !quad[i] ) continue;
+      for ( unsigned iS = 0; iS < quad[i]->side.size(); ++iS )
+      {
+        const StdMeshers_FaceSide* side2 = quad[i]->side[iS];
+        if (( side->FirstVertex().IsSame( side2->FirstVertex() ) ||
+              side->FirstVertex().IsSame( side2->LastVertex() ))
+            &&
+            ( side->LastVertex().IsSame( side2->FirstVertex() ) ||
+              side->LastVertex().IsSame( side2->LastVertex() ))
+            )
+        {
+          if ( iS != Q_BOTTOM )
+          {
+            vector< StdMeshers_FaceSide*> newSides;
+            for ( unsigned j = iS; j < quad[i]->side.size(); ++j )
+              newSides.push_back( quad[i]->side[j] );
+            for ( unsigned j = 0; j < iS; ++j )
+              newSides.push_back( quad[i]->side[j] );
+            quad[i]->side.swap( newSides );
+          }
+          foundQuad.swap(quad[i]);
+          return foundQuad;
+        }
+      }
+    }
+    return foundQuad;
+  }
 }
 
 //=============================================================================
@@ -226,20 +283,18 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh &         aMesh,
   MESSAGE("StdMeshers_Hexa_3D::Compute");
   SMESHDS_Mesh * meshDS = aMesh.GetMeshDS();
 
-  // 1) Shape verification
+  // Shape verification
   // ----------------------
 
   // shape must be a solid (or a shell) with 6 faces
-  TopoDS_Shell shell;
   TopExp_Explorer exp(aShape,TopAbs_SHELL);
   if ( !exp.More() )
     return error(COMPERR_BAD_SHAPE, "No SHELL in the geometry");
-  shell = TopoDS::Shell( exp.Current());
   if ( exp.Next(), exp.More() )
     return error(COMPERR_BAD_SHAPE, "More than one SHELL in the geometry");
 
   TopTools_IndexedMapOfShape FF;
-  TopExp::MapShapes( shell, TopAbs_FACE, FF);
+  TopExp::MapShapes( aShape, TopAbs_FACE, FF);
   if ( FF.Extent() != 6)
   {
     static StdMeshers_CompositeHexa_3D compositeHexa(_gen->GetANewId(), 0, _gen);
@@ -248,13 +303,38 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh &         aMesh,
     return true;
   }
 
-  // Find sub-shapes of a cube
-  TopTools_IndexedMapOfOrientedShape cubeSubShapes;
-  TopoDS_Vertex V;
-  if ( !SMESH_Block::FindBlockShapes( shell, V,V, cubeSubShapes ))
-    return error(COMPERR_BAD_SHAPE, "Not a 6 sides cube");
+  // Find sides of a cube
+  // ---------------------
+  
+  FaceQuadStructPtr quad[ 6 ];
+  StdMeshers_Quadrangle_2D quadAlgo( _gen->GetANewId(), GetStudyId(), _gen);
+  for ( int i = 0; i < 6; ++i )
+  {
+    if ( !( quad[i] = FaceQuadStructPtr( quadAlgo.CheckNbEdges( aMesh, FF( i+1 )))))
+      return error( quadAlgo.GetComputeError() );
+    if ( quad[i]->side.size() != 4 )
+      return error( COMPERR_BAD_SHAPE, "Not a quadrangular box side" );
+  }
 
-  // 2) make viscous layers
+  _FaceGrid aCubeSide[ 6 ];
+
+  swap( aCubeSide[B_BOTTOM]._quad, quad[0] );
+  swap( aCubeSide[B_BOTTOM]._quad->side[ Q_RIGHT],// direct the normal of bottom quad inside cube
+        aCubeSide[B_BOTTOM]._quad->side[ Q_LEFT ] );
+
+  aCubeSide[B_FRONT]._quad = getQuadWithBottom( aCubeSide[B_BOTTOM]._quad->side[Q_BOTTOM], quad );
+  aCubeSide[B_RIGHT]._quad = getQuadWithBottom( aCubeSide[B_BOTTOM]._quad->side[Q_RIGHT ], quad );
+  aCubeSide[B_BACK ]._quad = getQuadWithBottom( aCubeSide[B_BOTTOM]._quad->side[Q_TOP   ], quad );
+  aCubeSide[B_LEFT ]._quad = getQuadWithBottom( aCubeSide[B_BOTTOM]._quad->side[Q_LEFT  ], quad );
+  if ( aCubeSide[B_FRONT ]._quad )
+    aCubeSide[B_TOP  ]._quad = getQuadWithBottom( aCubeSide[B_FRONT ]._quad->side[Q_TOP ], quad );
+
+  for ( int i = 1; i < 6; ++i )
+    if ( !aCubeSide[i]._quad )
+      return error( COMPERR_BAD_SHAPE );
+
+  // Make viscous layers
+  // --------------------
 
   SMESH_ProxyMesh::Ptr proxymesh;
   if ( _viscousLayersHyp )
@@ -264,61 +344,15 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh &         aMesh,
       return false;
   }
 
-  // 3) Check presence of regular grid mesh on FACEs of the cube
-  // ------------------------------------------------------------
+  // Check if there are triangles on cube sides
+  // -------------------------------------------
 
-  // indices of FACEs of cube sides within cubeSubShapes
-  const int sideIndex[6] = { I_BOTTOM, I_RIGHT, I_TOP, I_LEFT, I_FRONT, I_BACK };
-  // indices of base EDGEs of cube sides within cubeSubShapes, corresponding to sideIndex
-  const int baseEdgeIndex[6] = {
-    SMESH_Block::ID_Ex00, // bottom side
-    SMESH_Block::ID_E1y0, // right side
-    SMESH_Block::ID_Ex01, // top side
-    SMESH_Block::ID_E0y0, // left side
-    SMESH_Block::ID_Ex00, // front side
-    SMESH_Block::ID_Ex10  // back side
-  };
-
-  // Load mesh of cube sides
-
-  _FaceGrid aCubeSide[ 6 ] ;
-
-  // tool creating quadratic elements if needed
-  SMESH_MesherHelper helper (aMesh);
-  _quadraticMesh = helper.IsQuadraticSubMesh(aShape);
-
-  for ( int i = 0; i < 6; ++i )
+  if ( aMesh.NbTriangles() > 0 )
   {
-    aCubeSide[i]._sideF = TopoDS::Face( cubeSubShapes( sideIndex[i] ));
-    aCubeSide[i]._baseE = TopoDS::Edge( cubeSubShapes( baseEdgeIndex[i] ));
-
-    // assure correctness of node positions on _baseE
-    if ( SMESHDS_SubMesh* smDS = meshDS->MeshElements( aCubeSide[i]._baseE ))
+    for ( int i = 0; i < 6; ++i )
     {
-      bool ok;
-      helper.SetSubShape( aCubeSide[i]._baseE );
-      SMDS_ElemIteratorPtr eIt = smDS->GetElements();
-      while ( eIt->more() )
-      {
-        const SMDS_MeshElement* e = eIt->next();
-        helper.GetNodeU( aCubeSide[i]._baseE, e->GetNode(0), e->GetNode(1), &ok);
-        helper.GetNodeU( aCubeSide[i]._baseE, e->GetNode(1), e->GetNode(0), &ok);
-      }
-    }
-
-    // load grid
-    if ( !helper.LoadNodeColumns( aCubeSide[i]._u2nodesMap,
-                                  aCubeSide[i]._sideF,
-                                  aCubeSide[i]._baseE, meshDS, proxymesh.get() ))
-    {
-      SMESH_ComputeErrorPtr err = ComputePentahedralMesh(aMesh, aShape, proxymesh.get());
-      return error( err );
-    }
-
-    // check if there are triangles on aCubeSide[i]._sideF
-    if ( aMesh.NbTriangles() > 0 )
-    {
-      if ( SMESHDS_SubMesh* smDS = meshDS->MeshElements( aCubeSide[i]._sideF ))
+      const TopoDS_Face& sideF = aCubeSide[i]._quad->face;
+      if ( SMESHDS_SubMesh* smDS = meshDS->MeshElements( sideF ))
       {
         bool isAllQuad = true;
         SMDS_ElemIteratorPtr fIt = smDS->GetElements();
@@ -336,21 +370,75 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh &         aMesh,
     }
   }
 
+  // Check presence of regular grid mesh on FACEs of the cube
+  // ------------------------------------------------------------
+
+  // tool creating quadratic elements if needed
+  SMESH_MesherHelper helper (aMesh);
+  _quadraticMesh = helper.IsQuadraticSubMesh(aShape);
+
+  for ( int i = 0; i < 6; ++i )
+  {
+    const TopoDS_Face& F = aCubeSide[i]._quad->face;
+    StdMeshers_FaceSide* baseQuadSide = aCubeSide[i]._quad->side[ Q_BOTTOM ];
+    vector< TopAbs_Orientation > eOri( baseQuadSide->NbEdges() );
+
+    for ( int iE = 0; iE < baseQuadSide->NbEdges(); ++iE )
+    {
+      const TopoDS_Edge& baseE = baseQuadSide->Edge( iE );
+      eOri[ iE ] = baseE.Orientation();
+
+      // assure correctness of node positions on baseE
+      if ( SMESHDS_SubMesh* smDS = meshDS->MeshElements( baseE ))
+      {
+        bool ok;
+        helper.SetSubShape( baseE );
+        SMDS_ElemIteratorPtr eIt = smDS->GetElements();
+        while ( eIt->more() )
+        {
+          const SMDS_MeshElement* e = eIt->next();
+          helper.GetNodeU( baseE, e->GetNode(0), e->GetNode(1), &ok);
+          helper.GetNodeU( baseE, e->GetNode(1), e->GetNode(0), &ok);
+        }
+      }
+
+      // load grid
+      TParam2ColumnMap u2nodesMap;
+      if ( !helper.LoadNodeColumns( u2nodesMap, F, baseE, meshDS, proxymesh.get() ))
+      {
+        SMESH_ComputeErrorPtr err = ComputePentahedralMesh(aMesh, aShape, proxymesh.get());
+        return error( err );
+      }
+      // store u2nodesMap
+      if ( iE == 0 )
+      {
+        aCubeSide[i]._u2nodesMap.swap( u2nodesMap );
+      }
+      else // unite 2 maps
+      {
+        if ( eOri[0] == eOri[iE] )
+          append( aCubeSide[i]._u2nodesMap, u2nodesMap.begin(), u2nodesMap.end());
+        else
+          append( aCubeSide[i]._u2nodesMap, u2nodesMap.rbegin(), u2nodesMap.rend());
+      }
+    }
+  }
+
   // Orient loaded grids of cube sides along axis of the unitary cube coord system
   for ( int i = 0; i < 6; ++i )
   {
     bool reverse = false;
-    if ( helper.GetSubShapeOri( shell.Oriented( TopAbs_FORWARD ),
-                                aCubeSide[i]._sideF ) == TopAbs_REVERSED )
+    if ( helper.GetSubShapeOri( aShape.Oriented( TopAbs_FORWARD ),
+                                aCubeSide[i]._quad->face ) == TopAbs_REVERSED )
       reverse = !reverse;
 
-    if ( helper.GetSubShapeOri( aCubeSide[i]._sideF.Oriented( TopAbs_FORWARD ),
-                                aCubeSide[i]._baseE ) == TopAbs_REVERSED )
+    if ( helper.GetSubShapeOri( aCubeSide[i]._quad->face.Oriented( TopAbs_FORWARD ),
+                                aCubeSide[i]._quad->side[0]->Edge(0) ) == TopAbs_REVERSED )
       reverse = !reverse;
 
-    if ( sideIndex[i] == I_BOTTOM ||
-         sideIndex[i] == I_LEFT   ||
-         sideIndex[i] == I_BACK )
+    if ( i == B_BOTTOM ||
+         i == B_LEFT   ||
+         i == B_BACK )
       reverse = !reverse;
 
     aCubeSide[i]._columns.resize( aCubeSide[i]._u2nodesMap.size() );
