@@ -53,6 +53,7 @@ libMeshDriverSTL_la_CPPFLAGS = \
         $(VTK_INCLUDES) \
 	$(BOOST_CPPFLAGS) \
 	-I$(srcdir)/../Driver \
+	-I$(srcdir)/../SMESH \
 	-I$(srcdir)/../SMDS
 
 libMeshDriverSTL_la_LDFLAGS  = \

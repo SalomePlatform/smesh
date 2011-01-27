@@ -30,13 +30,16 @@
 #include "SMESH_DriverSTL.hxx"
 
 #include "Driver_SMDS_Mesh.h"
-#include <Standard_TypeDef.hxx>
+#include "SMDS_ElemIterator.hxx"
+
+#include <vector>
 
 class MESHDRIVERSTL_EXPORT DriverSTL_W_SMDS_Mesh: public Driver_SMDS_Mesh
 {
  public:
   
   DriverSTL_W_SMDS_Mesh();
+  ~DriverSTL_W_SMDS_Mesh();
   virtual Status Perform();
   void    SetIsAscii( const bool theIsAscii = false );
 
@@ -44,10 +47,14 @@ class MESHDRIVERSTL_EXPORT DriverSTL_W_SMDS_Mesh: public Driver_SMDS_Mesh
   // PRIVATE METHODS
   Status  writeAscii  () const;
   Status  writeBinary () const;
+  void    findVolumeTriangles();
+
+  SMDS_ElemIteratorPtr getFaces() const;
 
  private:
   // PRIVATE FIELDS
   bool myIsAscii;
+  std::vector<const SMDS_MeshElement*> myVolumeTrias; // tmp triangles
 };
 
 #endif
