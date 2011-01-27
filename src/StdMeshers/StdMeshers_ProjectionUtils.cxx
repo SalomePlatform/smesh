@@ -35,7 +35,6 @@
 #include "SMESH_Block.hxx"
 #include "SMESH_Gen.hxx"
 #include "SMESH_Hypothesis.hxx"
-#include "SMESH_IndexedDataMapOfShapeIndexedMapOfShape.hxx"
 #include "SMESH_Mesh.hxx"
 #include "SMESH_MesherHelper.hxx"
 #include "SMESH_subMesh.hxx"
@@ -56,6 +55,7 @@
 #include <TopTools_Array1OfShape.hxx>
 #include <TopTools_DataMapIteratorOfDataMapOfShapeListOfShape.hxx>
 #include <TopTools_DataMapIteratorOfDataMapOfShapeShape.hxx>
+#include <TopTools_IndexedMapOfShape.hxx>
 #include <TopTools_ListIteratorOfListOfShape.hxx>
 #include <TopTools_ListOfShape.hxx>
 #include <TopTools_MapOfShape.hxx>
@@ -1505,7 +1505,7 @@ StdMeshers_ProjectionUtils::GetPropagationEdge( SMESH_Mesh*        aMesh,
                                                 const TopoDS_Edge& theEdge,
                                                 const TopoDS_Edge& fromEdge)
 {
-  SMESH_IndexedMapOfShape aChain;
+  TopTools_IndexedMapOfShape aChain;
   int step = 0;
 
   // List of edges, added to chain on the previous cycle pass

@@ -247,7 +247,7 @@ namespace
     //!< True if all blocks this side belongs to have beem found
     bool isBound() const { return _nbBlocksExpected <= _nbBlocksFound; }
     //!< Return coordinates of node at XY
-    gp_XYZ getXYZ(int x, int y) const { return SMESH_MeshEditor::TNodeXYZ( getNode( x, y )); }
+    gp_XYZ getXYZ(int x, int y) const { return SMESH_TNodeXYZ( getNode( x, y )); }
     //!< Return gravity center of the four corners and the middle node
     gp_XYZ getGC() const
     {
@@ -276,7 +276,7 @@ namespace
     //!< return coordinates by XY
     gp_XYZ xyz(int x, int y) const
     {
-      return SMESH_MeshEditor::TNodeXYZ( _grid_access_(_side, _index( x, y )) );
+      return SMESH_TNodeXYZ( _grid_access_(_side, _index( x, y )) );
     }
     //!< safely return a node by XY
     const SMDS_MeshNode* node(int x, int y) const
@@ -745,7 +745,7 @@ namespace
         gp_Vec p1p2( p1, p2 );
 
         const SMDS_MeshElement* face1 = side1->getCornerFace( n1 );
-        gp_XYZ p1Op = SMESH_MeshEditor::TNodeXYZ( oppositeNode( face1, face1->GetNodeIndex(n1)));
+        gp_XYZ p1Op = SMESH_TNodeXYZ( oppositeNode( face1, face1->GetNodeIndex(n1)));
         gp_Vec side1Dir( p1, p1Op );
         gp_Ax2 pln( p1, p1p2, side1Dir ); // plane with normal p1p2 and X dir side1Dir
         _DUMP_("  Select adjacent for "<< side1._side << " - side dir ("
@@ -756,7 +756,7 @@ namespace
         {
           _BlockSide* sideI = *sideIt;
           const SMDS_MeshElement* faceI = sideI->getCornerFace( n1 );
-          gp_XYZ p1Op = SMESH_MeshEditor::TNodeXYZ( oppositeNode( faceI, faceI->GetNodeIndex(n1)));
+          gp_XYZ p1Op = SMESH_TNodeXYZ( oppositeNode( faceI, faceI->GetNodeIndex(n1)));
           gp_Vec sideIDir( p1, p1Op );
           // compute angle of (sideIDir projection to pln) and (X dir of pln)
           gp_Vec2d sideIDirProj( sideIDir * pln.XDirection(), sideIDir * pln.YDirection());

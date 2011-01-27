@@ -1288,7 +1288,7 @@ void _ViscousBuilder::limitStepSize( _SolidData&             data,
     if ( nextN->GetPosition()->GetTypeOfPosition() == SMDS_TOP_FACE ||
          curN->GetPosition()->GetTypeOfPosition() == SMDS_TOP_FACE )
     {
-      double dist = SMESH_MeshEditor::TNodeXYZ( face->GetNode(i)).Distance( nextN );
+      double dist = SMESH_TNodeXYZ( face->GetNode(i)).Distance( nextN );
       if ( dist < minSize )
         minSize = dist, iN = i;
     }
@@ -1317,7 +1317,7 @@ void _ViscousBuilder::limitStepSize( _SolidData& data, const double minSize)
     if ( data._stepSizeNodes[0] )
     {
       double dist =
-        SMESH_MeshEditor::TNodeXYZ(data._stepSizeNodes[0]).Distance(data._stepSizeNodes[1]);
+        SMESH_TNodeXYZ(data._stepSizeNodes[0]).Distance(data._stepSizeNodes[1]);
       data._stepSizeCoeff = data._stepSize / dist;
     }
   }
@@ -1604,7 +1604,7 @@ bool _ViscousBuilder::setEdgeData(_LayerEdge&         edge,
   }
   else
   {
-    edge._pos.push_back( SMESH_MeshEditor::TNodeXYZ( node ));
+    edge._pos.push_back( SMESH_TNodeXYZ( node ));
 
     if ( posType == SMDS_TOP_FACE )
     {
@@ -1612,7 +1612,7 @@ bool _ViscousBuilder::setEdgeData(_LayerEdge&         edge,
       double avgNormProj = 0, avgLen = 0;
       for ( unsigned i = 0; i < edge._simplices.size(); ++i )
       {
-        gp_XYZ vec = edge._pos.back() - SMESH_MeshEditor::TNodeXYZ( edge._simplices[i]._nPrev );
+        gp_XYZ vec = edge._pos.back() - SMESH_TNodeXYZ( edge._simplices[i]._nPrev );
         avgNormProj += edge._normal * vec;
         avgLen += vec.Modulus();
       }
@@ -1702,9 +1702,9 @@ void _LayerEdge::SetDataByNeighbors( const SMDS_MeshNode* n1,
   if ( _nodes[0]->GetPosition()->GetTypeOfPosition() != SMDS_TOP_EDGE )
     return;
 
-  gp_XYZ pos = SMESH_MeshEditor::TNodeXYZ( _nodes[0] );
-  gp_XYZ vec1 = pos - SMESH_MeshEditor::TNodeXYZ( n1 );
-  gp_XYZ vec2 = pos - SMESH_MeshEditor::TNodeXYZ( n2 );
+  gp_XYZ pos = SMESH_TNodeXYZ( _nodes[0] );
+  gp_XYZ vec1 = pos - SMESH_TNodeXYZ( n1 );
+  gp_XYZ vec2 = pos - SMESH_TNodeXYZ( n2 );
 
   // Set _curvature
 
@@ -1845,7 +1845,7 @@ void _ViscousBuilder::makeGroupOfLE()
     for ( unsigned j = 0 ; j < _sdVec[i]._edges.size(); ++j )
     {
       _LayerEdge& edge = *_sdVec[i]._edges[j];
-      SMESH_MeshEditor::TNodeXYZ nXYZ( edge._nodes[0] );
+      SMESH_TNodeXYZ nXYZ( edge._nodes[0] );
       nXYZ += edge._normal * _sdVec[i]._stepSize;
       dumpCmd(SMESH_Comment("mesh.AddEdge([ ") <<edge._nodes[0]->GetID()
               << ", mesh.AddNode( " << nXYZ.X()<<","<< nXYZ.Y()<<","<< nXYZ.Z()<<")])");
@@ -1978,7 +1978,7 @@ bool _ViscousBuilder::inflate(_SolidData& data)
     limitStepSize( data, 0.25 * distToIntersection );
     if ( data._stepSizeNodes[0] )
       data._stepSize = data._stepSizeCoeff *
-        SMESH_MeshEditor::TNodeXYZ(data._stepSizeNodes[0]).Distance(data._stepSizeNodes[1]);
+        SMESH_TNodeXYZ(data._stepSizeNodes[0]).Distance(data._stepSizeNodes[1]);
   }
 
   if (nbSteps == 0 )
@@ -2067,7 +2067,7 @@ bool _ViscousBuilder::smoothAndCheck(_SolidData& data,
         for ( int i = iBeg; i < iEnd; ++i )
         {
           _LayerEdge* edge = data._edges[i];
-          SMESH_MeshEditor::TNodeXYZ tgtXYZ( edge->_nodes.back() );
+          SMESH_TNodeXYZ tgtXYZ( edge->_nodes.back() );
           for ( unsigned j = 0; j < edge->_simplices.size(); ++j )
             if ( !edge->_simplices[j].IsForward( edge->_nodes[0], &tgtXYZ ))
             {
@@ -2473,7 +2473,7 @@ gp_Ax1 _LayerEdge::LastSegment(double& segLen) const
   gp_Ax1 segDir;
   if ( iPrev < 0 )
   {
-    segDir.SetLocation( SMESH_MeshEditor::TNodeXYZ( _nodes[0] ));
+    segDir.SetLocation( SMESH_TNodeXYZ( _nodes[0] ));
     segDir.SetDirection( _normal );
     segLen = 0;
   }
@@ -2494,7 +2494,7 @@ gp_Ax1 _LayerEdge::LastSegment(double& segLen) const
         Handle(Geom_Surface) surface = BRep_Tool::Surface( TopoDS::Face(_sWOL), loc );
         pPrev = surface->Value( pPrev.X(), pPrev.Y() ).Transformed( loc );
       }
-      dir = SMESH_MeshEditor::TNodeXYZ( _nodes.back() ) - pPrev.XYZ();
+      dir = SMESH_TNodeXYZ( _nodes.back() ) - pPrev.XYZ();
     }
     segDir.SetLocation( pPrev );
     segDir.SetDirection( dir );
@@ -2524,9 +2524,9 @@ bool _LayerEdge::SegTriaInter( const gp_Ax1&        lastSegment,
   gp_XYZ orig = lastSegment.Location().XYZ();
   gp_XYZ dir  = lastSegment.Direction().XYZ();
 
-  SMESH_MeshEditor::TNodeXYZ vert0( n0 );
-  SMESH_MeshEditor::TNodeXYZ vert1( n1 );
-  SMESH_MeshEditor::TNodeXYZ vert2( n2 );
+  SMESH_TNodeXYZ vert0( n0 );
+  SMESH_TNodeXYZ vert1( n1 );
+  SMESH_TNodeXYZ vert2( n2 );
 
   /* calculate distance from vert0 to ray origin */
   gp_XYZ tvec = orig - vert0;
@@ -2607,11 +2607,11 @@ bool _LayerEdge::SmoothOnEdge(Handle(Geom_Surface)& surface,
   ASSERT( IsOnEdge() );
 
   SMDS_MeshNode* tgtNode = const_cast<SMDS_MeshNode*>( _nodes.back() );
-  SMESH_MeshEditor::TNodeXYZ oldPos( tgtNode );
+  SMESH_TNodeXYZ oldPos( tgtNode );
   double dist01, distNewOld;
   
-  SMESH_MeshEditor::TNodeXYZ p0( _2neibors->_nodes[0]);
-  SMESH_MeshEditor::TNodeXYZ p1( _2neibors->_nodes[1]);
+  SMESH_TNodeXYZ p0( _2neibors->_nodes[0]);
+  SMESH_TNodeXYZ p1( _2neibors->_nodes[1]);
   dist01 = p0.Distance( _2neibors->_nodes[1] );
 
   gp_Pnt newPos = p0 * _2neibors->_wgt[0] + p1 * _2neibors->_wgt[1];
@@ -2629,7 +2629,7 @@ bool _LayerEdge::SmoothOnEdge(Handle(Geom_Surface)& surface,
     if ( _2neibors->_plnNorm )
     {
       // put newPos on the plane defined by source node and _plnNorm
-      gp_XYZ new2src = SMESH_MeshEditor::TNodeXYZ( _nodes[0] ) - newPos.XYZ();
+      gp_XYZ new2src = SMESH_TNodeXYZ( _nodes[0] ) - newPos.XYZ();
       double new2srcProj = (*_2neibors->_plnNorm) * new2src;
       newPos.ChangeCoord() += (*_2neibors->_plnNorm) * new2srcProj;
     }
@@ -2675,7 +2675,7 @@ bool _LayerEdge::Smooth(int& badNb)
   // compute new position for the last _pos
   gp_XYZ newPos (0,0,0);
   for ( unsigned i = 0; i < _simplices.size(); ++i )
-    newPos += SMESH_MeshEditor::TNodeXYZ( _simplices[i]._nPrev );
+    newPos += SMESH_TNodeXYZ( _simplices[i]._nPrev );
   newPos /= _simplices.size();
 
   if ( _curvature )
@@ -2696,7 +2696,7 @@ bool _LayerEdge::Smooth(int& badNb)
 //   }
   // count quality metrics (orientation) of tetras around _tgtNode
   int nbOkBefore = 0;
-  SMESH_MeshEditor::TNodeXYZ tgtXYZ( _nodes.back() );
+  SMESH_TNodeXYZ tgtXYZ( _nodes.back() );
   for ( unsigned i = 0; i < _simplices.size(); ++i )
     nbOkBefore += _simplices[i].IsForward( _nodes[0], &tgtXYZ );
 
@@ -2709,7 +2709,7 @@ bool _LayerEdge::Smooth(int& badNb)
 
   SMDS_MeshNode* n = const_cast< SMDS_MeshNode* >( _nodes.back() );
 
-  _len -= prevPos.Distance(SMESH_MeshEditor::TNodeXYZ( n ));
+  _len -= prevPos.Distance(SMESH_TNodeXYZ( n ));
   _len += prevPos.Distance(newPos);
 
   n->setXYZ( newPos.X(), newPos.Y(), newPos.Z());
@@ -2737,7 +2737,7 @@ void _LayerEdge::SetNewLength( double len, SMESH_MesherHelper& helper )
   }
 
   SMDS_MeshNode* n = const_cast< SMDS_MeshNode*>( _nodes.back() );
-  SMESH_MeshEditor::TNodeXYZ oldXYZ( n );
+  SMESH_TNodeXYZ oldXYZ( n );
   gp_XYZ nXYZ = oldXYZ + _normal * ( len - _len ) * _lenFactor;
   n->setXYZ( nXYZ.X(), nXYZ.Y(), nXYZ.Z() );
 

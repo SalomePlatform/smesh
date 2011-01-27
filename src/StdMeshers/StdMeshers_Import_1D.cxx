@@ -633,8 +633,8 @@ bool StdMeshers_Import_1D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & th
   subShapeIDs.insert( shapeID );
 
   // get nodes on vertices
-  list < SMESH_MeshEditor::TNodeXYZ > vertexNodes; 
- list < SMESH_MeshEditor::TNodeXYZ >::iterator vNIt;
+  list < SMESH_TNodeXYZ > vertexNodes; 
+ list < SMESH_TNodeXYZ >::iterator vNIt;
   TopExp_Explorer vExp( theShape, TopAbs_VERTEX );
   for ( ; vExp.More(); vExp.Next() )
   {
@@ -648,7 +648,7 @@ bool StdMeshers_Import_1D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & th
       n = SMESH_Algo::VertexNode( v, tgtMesh );
       if ( !n ) return false; // very strange
     }
-    vertexNodes.push_back( SMESH_MeshEditor::TNodeXYZ( n ));
+    vertexNodes.push_back( SMESH_TNodeXYZ( n ));
   }
 
   // import edges from groups
@@ -989,8 +989,8 @@ bool StdMeshers_Import_1D::Evaluate(SMESH_Mesh &         theMesh,
         const SMDS_MeshElement* edge = srcElems->next();
         // find out if edge is located on geomEdge by projecting
         // a middle of edge to geomEdge
-        SMESH_MeshEditor::TNodeXYZ p1( edge->GetNode(0));
-        SMESH_MeshEditor::TNodeXYZ p2( edge->GetNode(1));
+        SMESH_TNodeXYZ p1( edge->GetNode(0));
+        SMESH_TNodeXYZ p2( edge->GetNode(1));
         gp_XYZ middle = ( p1 + p2 ) / 2.;
         tmpNode->setXYZ( middle.X(), middle.Y(), middle.Z());
         double u = 0;

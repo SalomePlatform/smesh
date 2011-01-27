@@ -398,7 +398,7 @@ namespace {
         SMDS_NodeIteratorPtr nIt = srcSmds->GetNodes();
         while ( nIt->more() )
         {
-          SMESH_MeshEditor::TNodeXYZ p ( nIt->next());
+          SMESH_TNodeXYZ p ( nIt->next());
           bool pOK = false;
           switch ( srcPP.size() )
           {
@@ -438,7 +438,7 @@ namespace {
               while ( nItT->more() && !pOK )
               {
                 const SMDS_MeshNode* n = nItT->next();
-                tgtP = SMESH_MeshEditor::TNodeXYZ( n );
+                tgtP = SMESH_TNodeXYZ( n );
                 pOK = ( fabs( srcDist - tgtPP[0].Distance( tgtP )) < 2*eTol );
                 //cout << "E - nS " << p._node->GetID() << " - nT " << n->GetID()<< " OK - " << pOK<< " " << fabs( srcDist - tgtPP[0].Distance( tgtP ))<< " tol " << eTol<< endl;
               }
@@ -491,13 +491,13 @@ namespace {
       if ( !tgtEdge.IsPartner( srcEdge.Current() ))
       {
         // check that transformation is OK by three nodes
-        gp_Pnt p0S = SMESH_MeshEditor::TNodeXYZ( (srcNodes.begin())  ->second);
-        gp_Pnt p1S = SMESH_MeshEditor::TNodeXYZ( (srcNodes.rbegin()) ->second);
-        gp_Pnt p2S = SMESH_MeshEditor::TNodeXYZ( (++srcNodes.begin())->second);
+        gp_Pnt p0S = SMESH_TNodeXYZ( (srcNodes.begin())  ->second);
+        gp_Pnt p1S = SMESH_TNodeXYZ( (srcNodes.rbegin()) ->second);
+        gp_Pnt p2S = SMESH_TNodeXYZ( (++srcNodes.begin())->second);
 
-        gp_Pnt p0T = SMESH_MeshEditor::TNodeXYZ( (tgtNodes.begin())  ->second);
-        gp_Pnt p1T = SMESH_MeshEditor::TNodeXYZ( (tgtNodes.rbegin()) ->second);
-        gp_Pnt p2T = SMESH_MeshEditor::TNodeXYZ( (++tgtNodes.begin())->second);
+        gp_Pnt p0T = SMESH_TNodeXYZ( (tgtNodes.begin())  ->second);
+        gp_Pnt p1T = SMESH_TNodeXYZ( (tgtNodes.rbegin()) ->second);
+        gp_Pnt p2T = SMESH_TNodeXYZ( (++tgtNodes.begin())->second);
 
         // transform source points, they must coincide with target ones
         if ( p0T.SquareDistance( p0S.Transformed( trsf )) > tol ||

@@ -47,7 +47,7 @@ using namespace std;
 enum EQuadNature { NOT_QUAD, QUAD, DEGEN_QUAD, PYRAM_APEX = 4, TRIA_APEX = 0 };
 
 // std-like iterator used to get coordinates of nodes of mesh element
-typedef SMDS_StdIterator< SMESH_MeshEditor::TNodeXYZ, SMDS_ElemIteratorPtr > TXyzIterator;
+typedef SMDS_StdIterator< SMESH_TNodeXYZ, SMDS_ElemIteratorPtr > TXyzIterator;
 
 namespace
 {
@@ -99,10 +99,10 @@ namespace
     if ( !baseNodes[1] ) return false; // not adjacent
 
     // Get normals of triangles sharing baseNodes
-    gp_XYZ apexI = SMESH_MeshEditor::TNodeXYZ( nApexI );
-    gp_XYZ apexJ = SMESH_MeshEditor::TNodeXYZ( nApexJ );
-    gp_XYZ base1 = SMESH_MeshEditor::TNodeXYZ( baseNodes[0]);
-    gp_XYZ base2 = SMESH_MeshEditor::TNodeXYZ( baseNodes[1]);
+    gp_XYZ apexI = SMESH_TNodeXYZ( nApexI );
+    gp_XYZ apexJ = SMESH_TNodeXYZ( nApexJ );
+    gp_XYZ base1 = SMESH_TNodeXYZ( baseNodes[0]);
+    gp_XYZ base2 = SMESH_TNodeXYZ( baseNodes[1]);
     gp_Vec baseVec( base1, base2 );
     gp_Vec baI( base1, apexI );
     gp_Vec baJ( base1, apexJ );
@@ -160,7 +160,7 @@ namespace
           continue; // f is a base quadrangle
 
         // check projections of face direction (baOFN) to triange normals (nI and nJ)
-        gp_Vec baOFN( base1, SMESH_MeshEditor::TNodeXYZ( otherFaceNode ));
+        gp_Vec baOFN( base1, SMESH_TNodeXYZ( otherFaceNode ));
         ( isOutI ? nJ : nI ).Reverse();
         if ( nI * baOFN > 0 && nJ * baOFN > 0 )
         {
@@ -186,13 +186,13 @@ void StdMeshers_QuadToTriaAdaptor::MergePiramids( const SMDS_MeshElement*     Pr
 {
   const SMDS_MeshNode* Nrem = PrmJ->GetNode(4); // node to remove
   int nbJ = Nrem->NbInverseElements( SMDSAbs_Volume );
-  SMESH_MeshEditor::TNodeXYZ Pj( Nrem );
+  SMESH_TNodeXYZ Pj( Nrem );
 
   // an apex node to make common to all merged pyramids
   SMDS_MeshNode* CommonNode = const_cast<SMDS_MeshNode*>(PrmI->GetNode(4));
   if ( CommonNode == Nrem ) return; // already merged
   int nbI = CommonNode->NbInverseElements( SMDSAbs_Volume );
-  SMESH_MeshEditor::TNodeXYZ Pi( CommonNode );
+  SMESH_TNodeXYZ Pi( CommonNode );
   gp_XYZ Pnew = ( nbI*Pi + nbJ*Pj ) / (nbI+nbJ);
   CommonNode->setXYZ( Pnew.X(), Pnew.Y(), Pnew.Z() );
 
@@ -471,22 +471,13 @@ bool StdMeshers_QuadToTriaAdaptor::CheckIntersection (const gp_Pnt&       P,
   vector< const SMDS_MeshElement* > suspectElems;
   searcher->GetElementsNearLine( line, SMDSAbs_Face, suspectElems);
   
-//   for (TopExp_Explorer exp(aShape,TopAbs_FACE);exp.More();exp.Next()) {
-//     const TopoDS_Shape& aShapeFace = exp.Current();
-//     if(aShapeFace==NotCheckedFace)
-//       continue;
-//     const SMESHDS_SubMesh * aSubMeshDSFace = meshDS->MeshElements(aShapeFace);
-//     if ( aSubMeshDSFace ) {
-//       SMDS_ElemIteratorPtr iteratorElem = aSubMeshDSFace->GetElements();
-//       while ( iteratorElem->more() ) { // loop on elements on a face
-//         const SMDS_MeshElement* face = iteratorElem->next();
   for ( int i = 0; i < suspectElems.size(); ++i )
   {
     const SMDS_MeshElement* face = suspectElems[i];
     if ( face == NotCheckedFace ) continue;
     Handle(TColgp_HSequenceOfPnt) aContour = new TColgp_HSequenceOfPnt;
     for ( int i = 0; i < face->NbCornerNodes(); ++i ) 
-      aContour->Append( SMESH_MeshEditor::TNodeXYZ( face->GetNode(i) ));
+      aContour->Append( SMESH_TNodeXYZ( face->GetNode(i) ));
     if( HasIntersection(P, PC, Pres, aContour) ) {
       res = true;
       double tmp = PC.Distance(Pres);
@@ -524,7 +515,6 @@ int StdMeshers_QuadToTriaAdaptor::Preparation(const SMDS_MeshElement*       face
 {
   if( face->NbCornerNodes() != 4 )
   {
-    //myNbTriangles += int( face->NbCornerNodes() == 3 );
     return NOT_QUAD;
   }
 
@@ -532,12 +522,11 @@ int StdMeshers_QuadToTriaAdaptor::Preparation(const SMDS_MeshElement*       face
   gp_XYZ xyzC(0., 0., 0.);
   for ( i = 0; i < 4; ++i )
   {
-    gp_XYZ p = SMESH_MeshEditor::TNodeXYZ( FNodes[i] = face->GetNode(i) );
+    gp_XYZ p = SMESH_TNodeXYZ( FNodes[i] = face->GetNode(i) );
     PN->SetValue( i+1, p );
     xyzC += p;
   }
   PC = xyzC/4;
-  //cout<<"  PC("<<PC.X()<<","<<PC.Y()<<","<<PC.Z()<<")"<<endl;
 
   int nbp = 4;
 
@@ -885,7 +874,7 @@ bool StdMeshers_QuadToTriaAdaptor::Compute(SMESH_Mesh& aMesh)
         if(F==face) continue;
         Handle(TColgp_HSequenceOfPnt) aContour = new TColgp_HSequenceOfPnt;
         for ( int i = 0; i < 4; ++i )
-          aContour->Append( SMESH_MeshEditor::TNodeXYZ( F->GetNode(i) ));
+          aContour->Append( SMESH_TNodeXYZ( F->GetNode(i) ));
         gp_Pnt PPP;
         if( !volumes[0] && HasIntersection(Ptmp1, PC, PPP, aContour) ) {
           IsOK1 = true;
@@ -973,7 +962,7 @@ bool StdMeshers_QuadToTriaAdaptor::Compute(SMESH_Mesh& aMesh)
       Handle(TColgp_HSequenceOfPnt) aContour = new TColgp_HSequenceOfPnt;
       int nbN = F->NbNodes() / ( F->IsQuadratic() ? 2 : 1 );
       for ( i = 0; i < nbN; ++i )
-        aContour->Append( SMESH_MeshEditor::TNodeXYZ( F->GetNode(i) ));
+        aContour->Append( SMESH_TNodeXYZ( F->GetNode(i) ));
       gp_Pnt intP;
       for ( int isRev = 0; isRev < 2; ++isRev )
       {
@@ -1065,7 +1054,7 @@ bool StdMeshers_QuadToTriaAdaptor::Compute2ndPart(SMESH_Mesh&                   
     for(k=0; k<5; k++) // loop on 4 base nodes of PrmI
     {
       const SMDS_MeshNode* n = PrmI->GetNode(k);
-      PsI[k] = SMESH_MeshEditor::TNodeXYZ( n );
+      PsI[k] = SMESH_TNodeXYZ( n );
       SMDS_ElemIteratorPtr vIt = n->GetInverseElementIterator( SMDSAbs_Volume );
       while ( vIt->more() )
         checkedPyrams.insert( vIt->next() );

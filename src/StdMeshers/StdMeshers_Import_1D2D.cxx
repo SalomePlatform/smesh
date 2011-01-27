@@ -161,8 +161,8 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
   subShapeIDs.insert( shapeID );
 
   // get nodes on vertices
-  list < SMESH_MeshEditor::TNodeXYZ > vertexNodes;
-  list < SMESH_MeshEditor::TNodeXYZ >::iterator vNIt;
+  list < SMESH_TNodeXYZ > vertexNodes;
+  list < SMESH_TNodeXYZ >::iterator vNIt;
   TopExp_Explorer exp( theShape, TopAbs_VERTEX );
   for ( ; exp.More(); exp.Next() )
   {
@@ -176,7 +176,7 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
       n = SMESH_Algo::VertexNode( v, tgtMesh );
       if ( !n ) return false; // very strange
     }
-    vertexNodes.push_back( SMESH_MeshEditor::TNodeXYZ( n ));
+    vertexNodes.push_back( SMESH_TNodeXYZ( n ));
   }
 
   // to count now many times a link between nodes encounters
@@ -269,9 +269,9 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
         int iNext = helper.WrapIndex( iNode+1, face->NbCornerNodes() );
         int iPrev = helper.WrapIndex( iNode-1, face->NbCornerNodes() );
 
-        SMESH_MeshEditor::TNodeXYZ prevNode( newNodes[iPrev] );
-        SMESH_MeshEditor::TNodeXYZ curNode ( newNodes[iNode] );
-        SMESH_MeshEditor::TNodeXYZ nextNode( newNodes[iNext] );
+        SMESH_TNodeXYZ prevNode( newNodes[iPrev] );
+        SMESH_TNodeXYZ curNode ( newNodes[iNode] );
+        SMESH_TNodeXYZ nextNode( newNodes[iNext] );
         gp_Vec n1n0( prevNode - curNode);
         gp_Vec n1n2( nextNode - curNode );
         gp_Vec meshNorm = n1n2 ^ n1n0;
@@ -529,7 +529,7 @@ bool StdMeshers_Import_1D2D::Evaluate(SMESH_Mesh &         theMesh,
   else
   {
     // std-like iterator used to get coordinates of nodes of mesh element
-    typedef SMDS_StdIterator< SMESH_MeshEditor::TNodeXYZ, SMDS_ElemIteratorPtr > TXyzIterator;
+    typedef SMDS_StdIterator< SMESH_TNodeXYZ, SMDS_ElemIteratorPtr > TXyzIterator;
 
     SMESH_MesherHelper helper(theMesh);
     helper.SetSubShape(theShape);

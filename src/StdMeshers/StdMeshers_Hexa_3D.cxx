@@ -189,7 +189,7 @@ namespace
     }
     gp_XYZ GetXYZ(int iCol, int iRow) const
     {
-      return SMESH_MeshEditor::TNodeXYZ( GetNode( iCol, iRow ));
+      return SMESH_TNodeXYZ( GetNode( iCol, iRow ));
     }
   };
 
