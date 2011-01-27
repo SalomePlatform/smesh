@@ -719,6 +719,7 @@ namespace SMESH
             case eDisplay:
             case eDisplayOnly:
                 //MESSAGE("--- display " << anActor);
+	      anActor->Update();
               anActor->SetVisibility(true);
               if (theAction == eDisplayOnly) aRenderer->ResetCameraClippingRange();
               break;
