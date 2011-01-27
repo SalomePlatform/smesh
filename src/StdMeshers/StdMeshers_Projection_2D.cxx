@@ -30,18 +30,20 @@
 
 #include "StdMeshers_ProjectionSource2D.hxx"
 #include "StdMeshers_ProjectionUtils.hxx"
+#include "StdMeshers_FaceSide.hxx"
 
+#include "SMDS_EdgePosition.hxx"
+#include "SMDS_FacePosition.hxx"
 #include "SMESHDS_Hypothesis.hxx"
 #include "SMESHDS_SubMesh.hxx"
 #include "SMESH_Block.hxx"
+#include "SMESH_Comment.hxx"
 #include "SMESH_Gen.hxx"
 #include "SMESH_Mesh.hxx"
 #include "SMESH_MesherHelper.hxx"
 #include "SMESH_Pattern.hxx"
 #include "SMESH_subMesh.hxx"
 #include "SMESH_subMeshEventListener.hxx"
-#include "SMESH_Comment.hxx"
-#include "SMDS_EdgePosition.hxx"
 
 #include "utilities.h"
 
@@ -360,11 +362,6 @@ namespace {
   /*!
    * \brief Preform projection in case if tgtFace.IsPartner( srcFace ) and in case
    * if projection by transformation is possible
-   *  \param tgtFace - target face
-   *  \param srcFace - source face
-   *  \param tgtMesh - target mesh
-   *  \param srcMesh - source mesh
-   *  \retval bool - true if succeeded
    */
   //================================================================================
 
@@ -529,47 +526,188 @@ namespace {
     helper.IsQuadraticSubMesh( tgtFace );
     helper.SetElementsOnShape( true );
 
+    SMESH_MesherHelper srcHelper( *srcMesh );
+    srcHelper.SetSubShape( srcFace );
+
     const SMDS_MeshNode* nullNode = 0;
 
     SMESHDS_SubMesh* srcSubDS = srcMesh->GetMeshDS()->MeshElements( srcFace );
     SMDS_ElemIteratorPtr elemIt = srcSubDS->GetElements();
+    vector< const SMDS_MeshNode* > tgtNodes;
     while ( elemIt->more() ) // loop on all mesh faces on srcFace
     {
       const SMDS_MeshElement* elem = elemIt->next();
-      vector< const SMDS_MeshNode* > tgtFaceNodes;
-      tgtFaceNodes.reserve( elem->NbNodes() );
-      SMDS_ElemIteratorPtr nodeIt = elem->nodesIterator();
-      while ( nodeIt->more() ) // loop on nodes of the source element
+      const int nbN = elem->NbCornerNodes(); 
+      tgtNodes.resize( nbN );
+      for ( int i = 0; i < nbN; ++i ) // loop on nodes of the source element
       {
-        const SMDS_MeshNode* srcNode = (const SMDS_MeshNode*) nodeIt->next();
-        if (elem->IsMediumNode(srcNode))
-          continue;
+        const SMDS_MeshNode* srcNode = elem->GetNode(i);
         srcN_tgtN = src2tgtNodes.insert( make_pair( srcNode, nullNode )).first;
         if ( srcN_tgtN->second == nullNode )
         {
           // create a new node
           gp_Pnt tgtP = gp_Pnt(srcNode->X(),srcNode->Y(),srcNode->Z()).Transformed( trsf );
-          srcN_tgtN->second = helper.AddNode( tgtP.X(), tgtP.Y(), tgtP.Z() );
-          //MESSAGE(tgtP.X() << " " << tgtP.Y() << " " <<  tgtP.Z());
+          SMDS_MeshNode* n = helper.AddNode( tgtP.X(), tgtP.Y(), tgtP.Z() );
+          srcN_tgtN->second = n;
+
+          gp_Pnt2d srcUV = srcHelper.GetNodeUV( srcFace, srcNode,
+                                                elem->GetNode( helper.WrapIndex(i+1,nbN)));
+          n->SetPosition( new SMDS_FacePosition( srcUV.X(), srcUV.Y() ));
         }
-        tgtFaceNodes.push_back( srcN_tgtN->second );
+        tgtNodes[i] = srcN_tgtN->second;
       }
       // create a new face (with reversed orientation)
-      //MESSAGE("tgtFaceNodes.size() " << tgtFaceNodes.size());
-      switch (tgtFaceNodes.size())
-         {
-            case 3:
-            case 6:
-              helper.AddFace(tgtFaceNodes[0], tgtFaceNodes[2], tgtFaceNodes[1]);
-              break;
-            case 4:
-            case 8:
-              helper.AddFace(tgtFaceNodes[0], tgtFaceNodes[3], tgtFaceNodes[2], tgtFaceNodes[1]);
-              break;
-         }
+      switch ( nbN )
+      {
+      case 3: helper.AddFace(tgtNodes[0], tgtNodes[2], tgtNodes[1]); break;
+      case 4: helper.AddFace(tgtNodes[0], tgtNodes[3], tgtNodes[2], tgtNodes[1]); break;
+      }
     }
     return true;
-  }
+
+  } //   bool projectPartner()
+
+  //================================================================================
+  /*!
+   * \brief Preform projection in case if the faces are similar in 2D space
+   */
+  //================================================================================
+
+  bool projectBy2DSimilarity(const TopoDS_Face&                tgtFace,
+                             const TopoDS_Face&                srcFace,
+                             SMESH_Mesh *                      tgtMesh,
+                             SMESH_Mesh *                      srcMesh,
+                             const TAssocTool::TShapeShapeMap& shape2ShapeMap)
+  {
+    // 1) Preparation
+
+    // get ordered src EDGEs
+    TError err;
+    TSideVector srcWires =
+      StdMeshers_FaceSide::GetFaceWires( srcFace, *srcMesh,/*theIgnoreMediumNodes = */false, err);
+    if ( err && !err->IsOK() )
+      return false;
+
+    // make corresponding sequence of tgt EDGEs
+    TSideVector tgtWires( srcWires.size() );
+    for ( unsigned iW = 0; iW < srcWires.size(); ++iW )
+    {
+      list< TopoDS_Edge > tgtEdges;
+      StdMeshers_FaceSidePtr srcWire = srcWires[iW];
+      for ( int iE = 0; iE < srcWire->NbEdges(); ++iE )
+        tgtEdges.push_back( TopoDS::Edge( shape2ShapeMap( srcWire->Edge( iE ))));
+
+      tgtWires[ iW ].reset( new StdMeshers_FaceSide( tgtFace, tgtEdges, tgtMesh,
+                                                     /*theIsForward = */ true,
+                                                     /*theIgnoreMediumNodes = */false));
+      if ( srcWires[iW]->GetUVPtStruct().size() !=
+           tgtWires[iW]->GetUVPtStruct().size())
+        return false;
+    }
+
+    // 2) Find transformation
+
+    gp_Trsf2d trsf;
+    {
+      // get ordered nodes data
+      const vector<UVPtStruct>& srcUVs = srcWires[0]->GetUVPtStruct();
+      const vector<UVPtStruct>& tgtUVs = tgtWires[0]->GetUVPtStruct();
+
+      // get 2 pairs of corresponding UVs
+      gp_XY srcP0( srcUVs[0].u, srcUVs[0].v );
+      gp_XY srcP1( srcUVs[1].u, srcUVs[1].v );
+      gp_XY tgtP0( tgtUVs[0].u, tgtUVs[0].v );
+      gp_XY tgtP1( tgtUVs[1].u, tgtUVs[1].v );
+
+      // make transformation
+      gp_Trsf2d fromTgtCS, toSrcCS; // from/to global CS
+      gp_Ax2d srcCS( srcP0, gp_Vec2d( srcP0, srcP1 ));
+      gp_Ax2d tgtCS( tgtP0, gp_Vec2d( tgtP0, tgtP1 ));
+      toSrcCS  .SetTransformation( srcCS );
+      fromTgtCS.SetTransformation( tgtCS );
+      fromTgtCS.Invert();
+
+      trsf = fromTgtCS * toSrcCS;
+
+      // check transformation
+      const double tol = 1e-5 * gp_Vec2d( srcP0, srcP1 ).Magnitude();
+      const int nbCheckPnt = Min( 10, srcUVs.size()-2 );
+      const int dP = ( srcUVs.size()-2 ) / nbCheckPnt;
+      for ( unsigned iP = 2; iP < srcUVs.size(); iP += dP )
+      {
+        gp_Pnt2d srcUV( srcUVs[iP].u, srcUVs[iP].v );
+        gp_Pnt2d tgtUV( tgtUVs[iP].u, tgtUVs[iP].v );
+        gp_Pnt2d tgtUV2 = srcUV.Transformed( trsf );
+        if ( tgtUV.Distance( tgtUV2 ) > tol )
+          return false;
+      }
+    }
+
+    // 3) Projection
+
+    typedef map<const SMDS_MeshNode* , const SMDS_MeshNode*, TIDCompare> TN2NMap;
+    TN2NMap src2tgtNodes;
+    TN2NMap::iterator srcN_tgtN;
+
+    // fill src2tgtNodes in with nodes on EDGEs
+    for ( unsigned iW = 0; iW < srcWires.size(); ++iW )
+    {
+      const vector<UVPtStruct>& srcUVs = srcWires[iW]->GetUVPtStruct();
+      const vector<UVPtStruct>& tgtUVs = tgtWires[iW]->GetUVPtStruct();
+      for ( unsigned i = 0; i < srcUVs.size(); ++i )
+        src2tgtNodes.insert( make_pair( srcUVs[i].node, tgtUVs[i].node ));
+    }
+
+    // make elements
+    SMESH_MesherHelper helper( *tgtMesh );
+    helper.SetSubShape( tgtFace );
+    helper.IsQuadraticSubMesh( tgtFace );
+    helper.SetElementsOnShape( true );
+    Handle(Geom_Surface) tgtSurface = BRep_Tool::Surface( tgtFace );
+    
+    SMESH_MesherHelper srcHelper( *srcMesh );
+    srcHelper.SetSubShape( srcFace );
+
+    const SMDS_MeshNode* nullNode = 0;
+
+    SMESHDS_SubMesh* srcSubDS = srcMesh->GetMeshDS()->MeshElements( srcFace );
+    SMDS_ElemIteratorPtr elemIt = srcSubDS->GetElements();
+    vector< const SMDS_MeshNode* > tgtNodes;
+    bool uvOK;
+    while ( elemIt->more() ) // loop on all mesh faces on srcFace
+    {
+      const SMDS_MeshElement* elem = elemIt->next();
+      const int nbN = elem->NbCornerNodes(); 
+      tgtNodes.resize( nbN );
+      for ( int i = 0; i < nbN; ++i ) // loop on nodes of the source element
+      {
+        const SMDS_MeshNode* srcNode = elem->GetNode(i);
+        srcN_tgtN = src2tgtNodes.insert( make_pair( srcNode, nullNode )).first;
+        if ( srcN_tgtN->second == nullNode )
+        {
+          // create a new node
+          gp_Pnt2d srcUV = srcHelper.GetNodeUV( srcFace, srcNode,
+                                                elem->GetNode( helper.WrapIndex(i+1,nbN)), &uvOK);
+          
+          gp_Pnt2d tgtUV = srcUV.Transformed( trsf );
+          gp_Pnt   tgtP  = tgtSurface->Value( tgtUV.X(), tgtUV.Y() );
+          SMDS_MeshNode* n = helper.AddNode( tgtP.X(), tgtP.Y(), tgtP.Z() );
+          n->SetPosition( new SMDS_FacePosition( tgtUV.X(), tgtUV.Y() ));
+          srcN_tgtN->second = n;
+        }
+        tgtNodes[i] = srcN_tgtN->second;
+      }
+      // create a new face (with reversed orientation)
+      switch ( nbN )
+      {
+      case 3: helper.AddFace(tgtNodes[0], tgtNodes[2], tgtNodes[1]); break;
+      case 4: helper.AddFace(tgtNodes[0], tgtNodes[3], tgtNodes[2], tgtNodes[1]); break;
+      }
+    }
+    return true;
+
+  } // bool projectBy2DSimilarity()
+
 
 } // namespace
 
@@ -626,6 +764,9 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
 
   // try to project from same face with different location
   if ( projectPartner( tgtFace, srcFace, tgtMesh, srcMesh, shape2ShapeMap ))
+    return true;
+
+  if ( projectBy2DSimilarity( tgtFace, srcFace, tgtMesh, srcMesh, shape2ShapeMap ))
     return true;
 
   // --------------------
