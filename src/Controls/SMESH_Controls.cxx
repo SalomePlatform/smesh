@@ -1956,11 +1956,13 @@ bool BareBorderVolume::IsSatisfy(long theElementId )
 
 bool BareBorderFace::IsSatisfy(long theElementId )
 {
+  bool ok = false;
   if ( const SMDS_MeshElement* face = myMesh->FindElement(theElementId))
+  {
     if ( face->GetType() == SMDSAbs_Face )
     {
       int nbN = face->NbCornerNodes();
-      for ( int i = 0; i < nbN; ++i )
+      for ( int i = 0; i < nbN && !ok; ++i )
       {
         // check if a link is shared by another face
         const SMDS_MeshNode* n1 = face->GetNode( i );
@@ -1979,11 +1981,12 @@ bool BareBorderFace::IsSatisfy(long theElementId )
           myLinkNodes[1] = n2;
           if ( face->IsQuadratic() )
             myLinkNodes[2] = face->GetNode( i+nbN );
-          return !myMesh->FindElement( myLinkNodes, SMDSAbs_Edge, /*noMedium=*/false);
+          ok = !myMesh->FindElement( myLinkNodes, SMDSAbs_Edge, /*noMedium=*/false);
         }
       }
     }
-  return false;
+  }
+  return ok;
 }
 
 /*
