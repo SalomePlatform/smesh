@@ -2677,7 +2677,7 @@ void SMESH_MesherHelper::FixQuadraticElements(bool volumeOnly)
     }
     // fix nodes on geom faces
 #ifdef _DEBUG_
-    int nbfaces = faces.Extent();
+    //int nbfaces = faces.Extent();
 #endif
     for ( TopTools_MapIteratorOfMapOfShape fIt( faces ); fIt.More(); fIt.Next() ) {
       MSG("FIX FACE " << nbfaces-- << " #" << GetMeshDS()->ShapeToIndex(fIt.Key()));
