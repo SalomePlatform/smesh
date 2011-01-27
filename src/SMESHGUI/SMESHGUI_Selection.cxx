@@ -272,30 +272,35 @@ QList<QVariant> SMESHGUI_Selection::entityMode( int ind ) const
 QString SMESHGUI_Selection::controlMode( int ind ) const
 {
   SMESH_Actor* actor = getActor( ind );
+  QString mode = "eNone";
   if ( actor ) {
     switch( actor->GetControlMode() ) {
-    case SMESH_Actor::eLength:            return "eLength";
-    case SMESH_Actor::eLength2D:          return "eLength2D";
-    case SMESH_Actor::eFreeEdges:         return "eFreeEdges";
-    case SMESH_Actor::eFreeNodes:         return "eFreeNodes";
-    case SMESH_Actor::eFreeBorders:       return "eFreeBorders";
-    case SMESH_Actor::eFreeFaces:         return "eFreeFaces";
-    case SMESH_Actor::eMultiConnection:   return "eMultiConnection";
-    case SMESH_Actor::eMultiConnection2D: return "eMultiConnection2D";
-    case SMESH_Actor::eArea:              return "eArea";
-    case SMESH_Actor::eVolume3D:          return "eVolume3D";
-    case SMESH_Actor::eMaxElementLength2D: return "eMaxElementLength2D";
-    case SMESH_Actor::eMaxElementLength3D: return "eMaxElementLength3D";
-    case SMESH_Actor::eTaper:             return "eTaper";
-    case SMESH_Actor::eAspectRatio:       return "eAspectRatio";
-    case SMESH_Actor::eAspectRatio3D:     return "eAspectRatio3D";
-    case SMESH_Actor::eMinimumAngle:      return "eMinimumAngle";
-    case SMESH_Actor::eWarping:           return "eWarping";
-    case SMESH_Actor::eSkew:              return "eSkew";
-    default:;
+    case SMESH_Actor::eLength:                mode = "eLength";                break;
+    case SMESH_Actor::eLength2D:              mode = "eLength2D";              break;
+    case SMESH_Actor::eFreeEdges:             mode = "eFreeEdges";             break;
+    case SMESH_Actor::eFreeNodes:             mode = "eFreeNodes";             break;
+    case SMESH_Actor::eFreeBorders:           mode = "eFreeBorders";           break;
+    case SMESH_Actor::eFreeFaces:             mode = "eFreeFaces";             break;
+    case SMESH_Actor::eMultiConnection:       mode = "eMultiConnection";       break;
+    case SMESH_Actor::eMultiConnection2D:     mode = "eMultiConnection2D";     break;
+    case SMESH_Actor::eArea:                  mode = "eArea";                  break;
+    case SMESH_Actor::eVolume3D:              mode = "eVolume3D";              break;
+    case SMESH_Actor::eMaxElementLength2D:    mode = "eMaxElementLength2D";    break;
+    case SMESH_Actor::eMaxElementLength3D:    mode = "eMaxElementLength3D";    break;
+    case SMESH_Actor::eTaper:                 mode = "eTaper";                 break;
+    case SMESH_Actor::eAspectRatio:           mode = "eAspectRatio";           break;
+    case SMESH_Actor::eAspectRatio3D:         mode = "eAspectRatio3D";         break;
+    case SMESH_Actor::eMinimumAngle:          mode = "eMinimumAngle";          break;
+    case SMESH_Actor::eWarping:               mode = "eWarping";               break;
+    case SMESH_Actor::eSkew:                  mode = "eSkew";                  break;
+    case SMESH_Actor::eBareBorderFace:        mode = "eBareBorderFace";        break;
+    case SMESH_Actor::eBareBorderVolume:      mode = "eBareBorderVolume";      break;
+    case SMESH_Actor::eOverConstrainedFace:   mode = "eOverConstrainedFace";   break;
+    case SMESH_Actor::eOverConstrainedVolume: mode = "eOverConstrainedVolume"; break;
+    default:break;
     }
   }
-  return "eNone";
+  return mode;
 }
 
 bool SMESHGUI_Selection::isNumFunctor( int ind ) const
