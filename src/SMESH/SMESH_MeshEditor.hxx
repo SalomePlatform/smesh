@@ -34,8 +34,7 @@
 #include "SMDS_MeshElement.hxx"
 #include "SMESH_Controls.hxx"
 #include "SMESH_Mesh.hxx"
-#include "SMESH_SequenceOfElemPtr.hxx"
-#include "SMESH_SequenceOfNode.hxx"
+#include "SMESH_TypeDefs.hxx"
 
 #include <utilities.h>
 
@@ -52,17 +51,6 @@ class gp_Ax1;
 class gp_Vec;
 class gp_Pnt;
 class SMESH_MesherHelper;
-
-
-typedef std::map<const SMDS_MeshElement*,
-                 std::list<const SMDS_MeshElement*> >        TElemOfElemListMap;
-typedef std::map<const SMDS_MeshNode*, const SMDS_MeshNode*> TNodeNodeMap;
-
-//!< Set of elements sorted by ID, to be used to assure predictability of edition
-typedef std::set< const SMDS_MeshElement*, TIDCompare >      TIDSortedElemSet;
-typedef std::set< const SMDS_MeshNode*,    TIDCompare >      TIDSortedNodeSet;
-
-typedef pair< const SMDS_MeshNode*, const SMDS_MeshNode* >   NLink;
 
 
 //=======================================================================
@@ -102,35 +90,6 @@ struct SMESH_ElementSearcher
                                     std::vector< const SMDS_MeshElement* >& foundElems)=0;
 };
 
-//=======================================================================
-/*!
- * \brief A sorted pair of nodes
- */
-//=======================================================================
-
-struct SMESH_TLink: public NLink
-{
-  SMESH_TLink(const SMDS_MeshNode* n1, const SMDS_MeshNode* n2 ):NLink( n1, n2 )
-  { if ( n1->GetID() < n2->GetID() ) std::swap( first, second ); }
-  SMESH_TLink(const NLink& link ):NLink( link )
-  { if ( first->GetID() < second->GetID() ) std::swap( first, second ); }
-  const SMDS_MeshNode* node1() const { return first; }
-  const SMDS_MeshNode* node2() const { return second; }
-};
-
-//=======================================================================
-/*!
- * \brief SMESH_TLink knowing its orientation
- */
-//=======================================================================
-
-struct SMESH_OrientedLink: public SMESH_TLink
-{
-  bool _reversed;
-  SMESH_OrientedLink(const SMDS_MeshNode* n1, const SMDS_MeshNode* n2 )
-    : SMESH_TLink( n1, n2 ), _reversed( n1 != node1() ) {}
-};
-
 // ============================================================
 /*!
  * \brief Editor of a mesh
@@ -139,27 +98,6 @@ struct SMESH_OrientedLink: public SMESH_TLink
 
 class SMESH_EXPORT SMESH_MeshEditor
 {
-public:
-  //------------------------------------------
-  /*!
-   * \brief SMDS_MeshNode -> gp_XYZ convertor
-   */
-  //------------------------------------------
-  struct TNodeXYZ : public gp_XYZ
-  {
-    const SMDS_MeshNode* _node;
-    TNodeXYZ( const SMDS_MeshElement* e):gp_XYZ(0,0,0),_node(0) {
-      if (e) {
-        ASSERT( e->GetType() == SMDSAbs_Node );
-        _node = static_cast<const SMDS_MeshNode*>(e);
-        SetCoord( _node->X(), _node->Y(), _node->Z() );
-      }
-    }
-    double Distance(const SMDS_MeshNode* n)       const { return (TNodeXYZ( n )-*this).Modulus(); }
-    double SquareDistance(const SMDS_MeshNode* n) const { return (TNodeXYZ( n )-*this).SquareModulus(); }
-    bool operator==(const TNodeXYZ& other) const { return _node == other._node; }
-  };
-
 public:
 
   SMESH_MeshEditor( SMESH_Mesh* theMesh );

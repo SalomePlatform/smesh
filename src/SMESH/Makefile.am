@@ -42,10 +42,7 @@ salomeinclude_HEADERS = \
 	SMESH_MeshEditor.hxx \
 	SMESH_Block.hxx \
 	SMESH_Pattern.hxx \
-	SMESH_IndexedDataMapOfShapeIndexedMapOfShape.hxx \
-	SMESH_DataMapOfElemPtrSequenceOfElemPtr.hxx \
-	SMESH_SequenceOfElemPtr.hxx \
-	SMESH_SequenceOfNode.hxx \
+	SMESH_TypeDefs.hxx \
 	SMESH_MesherHelper.hxx \
 	SMESH_Octree.hxx \
 	SMESH_OctreeNode.hxx \

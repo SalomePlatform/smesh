@@ -725,7 +725,7 @@ bool SMESH_MesherHelper::CheckNodeU(const TopoDS_Edge&   E,
     }
     else
     {
-      gp_Pnt nodePnt = SMESH_MeshEditor::TNodeXYZ( n );
+      gp_Pnt nodePnt = SMESH_TNodeXYZ( n );
       if ( !loc.IsIdentity() ) nodePnt.Transform( loc.Transformation().Inverted() );
       gp_Pnt curvPnt = curve->Value( u );
       double dist = nodePnt.Distance( curvPnt );

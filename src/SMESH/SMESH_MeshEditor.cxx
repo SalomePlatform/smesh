@@ -1563,7 +1563,7 @@ void SMESH_MeshEditor::SplitVolumesIntoTetra (const TIDSortedElemSet & theElems,
                                               const int                theMethodFlags)
 {
   // std-like iterator on coordinates of nodes of mesh element
-  typedef SMDS_StdIterator< TNodeXYZ, SMDS_ElemIteratorPtr > NXyzIterator;
+  typedef SMDS_StdIterator< SMESH_TNodeXYZ, SMDS_ElemIteratorPtr > NXyzIterator;
   NXyzIterator xyzEnd;
 
   SMDS_VolumeTool    volTool;
@@ -6241,7 +6241,7 @@ struct SMESH_NodeSearcherImpl: public SMESH_NodeSearcher
     const SMDS_MeshNode* closestNode = 0;
     list<const SMDS_MeshNode*>::iterator nIt = nodes.begin();
     for ( ; nIt != nodes.end(); ++nIt ) {
-      double sqDist = thePnt.SquareDistance( SMESH_MeshEditor::TNodeXYZ( *nIt ) );
+      double sqDist = thePnt.SquareDistance( SMESH_TNodeXYZ( *nIt ) );
       if ( minSqDist > sqDist ) {
         closestNode = *nIt;
         minSqDist = sqDist;
@@ -6461,7 +6461,7 @@ namespace // Utils used in SMESH_ElementSearcherImpl::FindElementsByPoint()
     _refCount = 1;
     SMDS_ElemIteratorPtr nIt = elem->nodesIterator();
     while ( nIt->more() )
-      Add( SMESH_MeshEditor::TNodeXYZ( cast2Node( nIt->next() )));
+      Add( SMESH_TNodeXYZ( cast2Node( nIt->next() )));
     Enlarge( tolerance );
   }
 
@@ -6568,7 +6568,7 @@ double SMESH_ElementSearcherImpl::getTolerance()
         SMDS_NodeIteratorPtr nodeIt = _mesh->nodesIterator();
         elemSize = 1;
         if ( meshInfo.NbNodes() > 2 )
-          elemSize = SMESH_MeshEditor::TNodeXYZ( nodeIt->next() ).Distance( nodeIt->next() );
+          elemSize = SMESH_TNodeXYZ( nodeIt->next() ).Distance( nodeIt->next() );
       }
       else
       {
@@ -6576,7 +6576,7 @@ double SMESH_ElementSearcherImpl::getTolerance()
             _mesh->elementsIterator( SMDSAbs_ElementType( complexType ));
         const SMDS_MeshElement* elem = elemIt->next();
         SMDS_ElemIteratorPtr nodeIt = elem->nodesIterator();
-        SMESH_MeshEditor::TNodeXYZ n1( cast2Node( nodeIt->next() ));
+        SMESH_TNodeXYZ n1( cast2Node( nodeIt->next() ));
         elemSize = 0;
         while ( nodeIt->more() )
         {
@@ -6610,8 +6610,8 @@ bool SMESH_ElementSearcherImpl::getIntersParamOnLine(const gp_Lin&           lin
   int nbNodes = face->IsQuadratic() ? face->NbNodes()/2 : face->NbNodes();
   for ( int i = 0; i < nbNodes && nbInts < 2; ++i )
   {
-    GC_MakeSegment edge( SMESH_MeshEditor::TNodeXYZ( face->GetNode( i )),
-                         SMESH_MeshEditor::TNodeXYZ( face->GetNode( (i+1)%nbNodes) )); 
+    GC_MakeSegment edge( SMESH_TNodeXYZ( face->GetNode( i )),
+                         SMESH_TNodeXYZ( face->GetNode( (i+1)%nbNodes) )); 
     anExtCC.Init( lineCurve, edge);
     if ( anExtCC.NbExtrema() > 0 && anExtCC.LowerDistance() <= tol)
     {
@@ -6671,8 +6671,8 @@ void SMESH_ElementSearcherImpl::findOuterBoundary(const SMDS_MeshElement* outerF
       seamLinks.insert( link );
 
       // link direction within the outerFace
-      gp_Vec n1n2( SMESH_MeshEditor::TNodeXYZ( link.node1()),
-                   SMESH_MeshEditor::TNodeXYZ( link.node2()));
+      gp_Vec n1n2( SMESH_TNodeXYZ( link.node1()),
+                   SMESH_TNodeXYZ( link.node2()));
       int i1 = outerFace->GetNodeIndex( link.node1() );
       int i2 = outerFace->GetNodeIndex( link.node2() );
       bool rev = ( abs(i2-i1) == 1 ? i1 > i2 : i2 > i1 );
@@ -6755,7 +6755,7 @@ FindElementsByPoint(const gp_Pnt&                      point,
     const SMDS_MeshNode* closeNode = _nodeSearcher->FindClosestTo( point );
     if ( !closeNode ) return foundElements.size();
 
-    if ( point.Distance( SMESH_MeshEditor::TNodeXYZ( closeNode )) > tolerance )
+    if ( point.Distance( SMESH_TNodeXYZ( closeNode )) > tolerance )
       return foundElements.size(); // to far from any node
 
     if ( type == SMDSAbs_Node )
@@ -6827,7 +6827,7 @@ TopAbs_State SMESH_ElementSearcherImpl::GetPointState(const gp_Pnt& point)
       // get face plane
       gp_XYZ fNorm;
       if ( !SMESH_Algo::FaceNormal( *face, fNorm, /*normalized=*/false)) continue;
-      gp_Pln facePlane( SMESH_MeshEditor::TNodeXYZ( (*face)->GetNode(0)), fNorm );
+      gp_Pln facePlane( SMESH_TNodeXYZ( (*face)->GetNode(0)), fNorm );
 
       // perform intersection
       IntAna_IntConicQuad intersection( line, IntAna_Quadric( facePlane ));
@@ -7080,7 +7080,7 @@ bool SMESH_MeshEditor::isOut( const SMDS_MeshElement* element, const gp_Pnt& poi
   while ( nodeIt->more() )
     {
       const SMDS_MeshNode* node = cast2Node( nodeIt->next() );
-      xyz.push_back( TNodeXYZ(node) );
+      xyz.push_back( SMESH_TNodeXYZ(node) );
       nodeList.push_back(node);
     }
 
@@ -10494,7 +10494,7 @@ namespace {
     gp_XYZ centerXYZ (0, 0, 0);
     SMDS_ElemIteratorPtr aNodeItr = theElem->nodesIterator();
     while (aNodeItr->more())
-      centerXYZ += SMESH_MeshEditor::TNodeXYZ(cast2Node( aNodeItr->next()));
+      centerXYZ += SMESH_TNodeXYZ(cast2Node( aNodeItr->next()));
 
     gp_Pnt aPnt = centerXYZ / theElem->NbNodes();
     theClassifier.Perform(aPnt, theTol);
