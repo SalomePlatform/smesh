@@ -979,13 +979,14 @@ bool StdMeshers_ProjectionUtils::FindSubShapeAssociation(const TopoDS_Shape& the
         list< TopoDS_Edge > edges1, edges2;
         int nbE = FindFaceAssociation( face1, VV1, face2, VV2, edges1, edges2 );
         if ( !nbE ) RETURN_BAD_RESULT("FindFaceAssociation() failed");
-        if ( nbE == 2 ) // only 2 edges
+        // take care of proper association of propagated edges
+        bool same1 = edge1.IsSame( edges1.front() );
+        bool same2 = edge2.IsSame( edges2.front() );
+        if ( same1 != same2 )
         {
-          // take care of proper association of propagated edges
-          bool same1 = edge1.IsSame( edges1.front() );
-          bool same2 = edge2.IsSame( edges2.front() );
-          if ( same1 != same2 )
-            Reverse(edges2, nbE);
+          Reverse(edges2, nbE);
+          if ( nbE != 2 ) // 2 degen edges of 4 (issue 0021144)
+            edges2.splice( edges2.end(), edges2, edges2.begin());
         }
         // store association
         list< TopoDS_Edge >::iterator eIt1 = edges1.begin();

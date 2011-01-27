@@ -1318,15 +1318,15 @@ bool StdMeshers_PrismAsBlock::Init(SMESH_MesherHelper* helper,
 
   // Get ordered bottom edges
   list< TopoDS_Edge > orderedEdges;
-  list< int >         nbVertexInWires;
+  list< int >         nbEInW;
   SMESH_Block::GetOrderedEdges( TopoDS::Face( botSM->GetSubShape().Reversed() ),
-                                V000, orderedEdges, nbVertexInWires );
-//   if ( nbVertexInWires.size() != 1 )
+                                V000, orderedEdges, nbEInW );
+//   if ( nbEInW.size() != 1 )
 //     RETURN_BAD_RESULT("Wrong prism geometry");
 
   // Get Wall faces corresponding to the ordered bottom edges
   list< TopoDS_Face > wallFaces;
-  if ( !GetWallFaces( Mesh(), shape3D, botSM->GetSubShape(), orderedEdges, wallFaces))
+  if ( !GetWallFaces( Mesh(), shape3D, botSM->GetSubShape(), orderedEdges, nbEInW, wallFaces))
     return error(COMPERR_BAD_SHAPE, "Can't find side faces");
 
   // Find columns of wall nodes and calculate edges' lengths
@@ -1335,7 +1335,7 @@ bool StdMeshers_PrismAsBlock::Init(SMESH_MesherHelper* helper,
   myParam2ColumnMaps.clear();
   myParam2ColumnMaps.resize( orderedEdges.size() ); // total nb edges
 
-  int iE, nbEdges = nbVertexInWires.front(); // nb outer edges
+  int iE, nbEdges = nbEInW.front(); // nb outer edges
   vector< double > edgeLength( nbEdges );
   map< double, int > len2edgeMap;
 
@@ -1665,6 +1665,7 @@ bool StdMeshers_PrismAsBlock::GetLayersTransformation(vector<gp_Trsf> & trsf) co
     list< TopoDS_Edge >::iterator edgeIt = orderedEdges.begin();
     for ( int iE = 0; iE < nbEdgesInWires.front(); ++iE, ++edgeIt )
     {
+      if ( BRep_Tool::Degenerated( *edgeIt )) continue;
       const TParam2ColumnMap& u2colMap =
         GetParam2ColumnMap( myHelper->GetMeshDS()->ShapeToIndex( *edgeIt ), isReverse );
       isReverse = ( edgeIt->Orientation() == TopAbs_REVERSED );
@@ -1766,31 +1767,49 @@ bool StdMeshers_PrismAsBlock::IsForwardEdge(SMESHDS_Mesh*           meshDS,
  */
 //================================================================================
 
-bool StdMeshers_PrismAsBlock::GetWallFaces( SMESH_Mesh*                     mesh,
-                                            const TopoDS_Shape &            mainShape,
-                                            const TopoDS_Shape &            bottomFace,
-                                            const std::list< TopoDS_Edge >& bottomEdges,
-                                            std::list< TopoDS_Face >&       wallFaces)
+bool StdMeshers_PrismAsBlock::GetWallFaces( SMESH_Mesh*               mesh,
+                                            const TopoDS_Shape &      mainShape,
+                                            const TopoDS_Shape &      bottomFace,
+                                            std::list< TopoDS_Edge >& bottomEdges,
+                                            std::list< int > &        nbEInW,
+                                            std::list< TopoDS_Face >& wallFaces)
 {
   wallFaces.clear();
 
   TopTools_IndexedMapOfShape faceMap;
   TopExp::MapShapes( mainShape, TopAbs_FACE, faceMap );
 
-  list< TopoDS_Edge >::const_iterator edge = bottomEdges.begin();
-  for ( ; edge != bottomEdges.end(); ++edge )
+  list< TopoDS_Edge >::iterator edge = bottomEdges.begin();
+  std::list< int >::iterator nbE = nbEInW.begin();
+  int iE = 0;
+  while ( edge != bottomEdges.end() )
   {
-    TopTools_ListIteratorOfListOfShape ancestIt = mesh->GetAncestors( *edge );
-    for ( ; ancestIt.More(); ancestIt.Next() )
+    ++iE;
+    if ( BRep_Tool::Degenerated( *edge ))
     {
-      const TopoDS_Shape& ancestor = ancestIt.Value();
-      if ( ancestor.ShapeType() == TopAbs_FACE && // face
-           !bottomFace.IsSame( ancestor ) &&      // not bottom
-           faceMap.FindIndex( ancestor ))         // belongs to the prism
+      edge = bottomEdges.erase( edge );
+      --iE;
+      --(*nbE);
+    }
+    else
+    {
+      PShapeIteratorPtr fIt = myHelper->GetAncestors( *edge, *mesh, TopAbs_FACE );
+      while ( fIt->more() )
       {
-        wallFaces.push_back( TopoDS::Face( ancestor ));
-        break;
+        const TopoDS_Shape* face = fIt->next();
+        if ( !bottomFace.IsSame( *face ) &&      // not bottom
+             faceMap.FindIndex( *face ))         // belongs to the prism
+        {
+          wallFaces.push_back( TopoDS::Face( *face ));
+          break;
+        }
       }
+      ++edge;
+    }
+    if ( iE == *nbE )
+    {
+      iE = 0;
+      ++nbE;
     }
   }
   return ( wallFaces.size() == bottomEdges.size() );

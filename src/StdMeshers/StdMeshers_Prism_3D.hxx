@@ -230,11 +230,12 @@ public:
     * \param bottomEdges - edges bounding the bottom face
     * \param wallFaces - faces list to fill in
    */
-  static bool GetWallFaces( SMESH_Mesh*                     mesh,
-                            const TopoDS_Shape &            mainShape,
-                            const TopoDS_Shape &            bottomFace,
-                            const std::list< TopoDS_Edge >& bottomEdges,
-                            std::list< TopoDS_Face >&       wallFaces);
+  bool GetWallFaces( SMESH_Mesh*               mesh,
+                     const TopoDS_Shape &      mainShape,
+                     const TopoDS_Shape &      bottomFace,
+                     std::list< TopoDS_Edge >& bottomEdges,
+                     std::list< int > &        nbEInW,
+                     std::list< TopoDS_Face >& wallFaces);
 
 private:
 
