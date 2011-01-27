@@ -403,23 +403,23 @@
         /*
           there must be check on others mesh elements not equal triangles
         */
-        if (aMesh->NbTriangles() < 1) {
-          SUIT_MessageBox::warning
-            (SMESHGUI::desktop(),
-             QObject::tr("SMESH_WRN_WARNING"),
-             QObject::tr("SMESH_EXPORT_STL1").arg(aMeshName));
-          return;
-        }
-        if (!(aMesh->NbElements() - aMesh->NbTriangles())) {
-          int aRet = SUIT_MessageBox::warning
-            (SMESHGUI::desktop(),
-             QObject::tr("SMESH_WRN_WARNING"),
-             QObject::tr("SMESH_EXPORT_STL2").arg(aMeshName),
-             QObject::tr("SMESH_BUT_YES"),
-             QObject::tr("SMESH_BUT_NO"), 0, 1);
-          if (aRet != 0)
-            return;
-        }
+//         if (aMesh->NbTriangles() < 1) {
+//           SUIT_MessageBox::warning
+//             (SMESHGUI::desktop(),
+//              QObject::tr("SMESH_WRN_WARNING"),
+//              QObject::tr("SMESH_EXPORT_STL1").arg(aMeshName));
+//           return;
+//         }
+//         if (!(aMesh->NbElements() - aMesh->NbTriangles())) {
+//           int aRet = SUIT_MessageBox::warning
+//             (SMESHGUI::desktop(),
+//              QObject::tr("SMESH_WRN_WARNING"),
+//              QObject::tr("SMESH_EXPORT_STL2").arg(aMeshName),
+//              QObject::tr("SMESH_BUT_YES"),
+//              QObject::tr("SMESH_BUT_NO"), 0, 1);
+//           if (aRet != 0)
+//             return;
+//         }
 
         aFilterMapSTL.insert( QObject::tr( "STL_ASCII_FILES_FILTER" ) + " (*.stl)", 1 ); // 1 - ASCII mode
         aFilterMapSTL.insert( QObject::tr( "STL_BIN_FILES_FILTER" )   + " (*.stl)", 0 ); // 0 - Binary mode
