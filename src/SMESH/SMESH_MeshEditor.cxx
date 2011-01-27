@@ -6577,6 +6577,7 @@ double SMESH_ElementSearcherImpl::getTolerance()
         const SMDS_MeshElement* elem = elemIt->next();
         SMDS_ElemIteratorPtr nodeIt = elem->nodesIterator();
         SMESH_MeshEditor::TNodeXYZ n1( cast2Node( nodeIt->next() ));
+        elemSize = 0;
         while ( nodeIt->more() )
         {
           double dist = n1.Distance( cast2Node( nodeIt->next() ));

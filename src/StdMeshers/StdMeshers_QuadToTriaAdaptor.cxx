@@ -131,7 +131,10 @@ namespace
     if ( tooClose && !hasShape )
     {
       // check order of baseNodes within pyramids, it must be opposite
-      int dInd = baseNodesIndJ[1] - baseNodesIndJ[0];
+      int dInd;
+      dInd = baseNodesIndI[1] - baseNodesIndI[0];
+      isOutI = ( abs(dInd)==1 ) ? dInd < 0 : dInd > 0;
+      dInd = baseNodesIndJ[1] - baseNodesIndJ[0];
       isOutJ = ( abs(dInd)==1 ) ? dInd < 0 : dInd > 0;
       if ( isOutJ == isOutI )
         return false; // other domain
