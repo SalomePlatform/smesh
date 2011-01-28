@@ -198,6 +198,9 @@
     else if ( theCommandID == 111 ) {
       filter.append( QObject::tr( "DAT_FILES_FILTER" ) + " (*.dat)" );
     }
+    else if ( theCommandID == 140 ) {
+      filter.append( QObject::tr( "STL_ASCII_FILES_FILTER" ) + " (*.stl)" );
+    }
 
     QString anInitialPath = "";
     if ( SUIT_FileDlg::getLastVisitedPath().isEmpty() )
@@ -243,6 +246,17 @@
               if ( res != SMESH::DRS_OK ) {
                 errors.append( QString( "%1 :\n\t%2" ).arg( filename ).
                                arg( QObject::tr( QString( "SMESH_DRS_%1" ).arg( res ).toLatin1().data() ) ) );
+              }
+              break;
+            }
+          case 140:
+            {
+              // STL format
+              aMeshes->length( 1 );
+              aMeshes[0] = theComponentMesh->CreateMeshesFromSTL( filename.toLatin1().constData() );
+              if ( aMeshes[0]->_is_nil() ) {
+                errors.append( QString( "%1 :\n\t%2" ).arg( filename ).
+                               arg( QObject::tr( "SMESH_ERR_UNKNOWN_IMPORT_ERROR" ) ) );
               }
               break;
             }
@@ -396,7 +410,6 @@
         aFilter = QObject::tr( "IDEAS_FILES_FILTER" ) + " (*.unv)";
       }
       break;
-    case 140:
     case 141:
       {
         // export STL
@@ -443,12 +456,12 @@
     if ( SUIT_FileDlg::getLastVisitedPath().isEmpty() )
       anInitialPath = QDir::currentPath();
 
-    if ( theCommandID != 122 && theCommandID != 125 && theCommandID != 140 && theCommandID != 141) {
+    if ( theCommandID != 122 && theCommandID != 125 && theCommandID != 141) {
       if ( anInitialPath.isEmpty() ) anInitialPath = SUIT_FileDlg::getLastVisitedPath();
       aFilename = SUIT_FileDlg::getFileName(SMESHGUI::desktop(), anInitialPath + QString("/") + aMeshName,
                                             aFilter, aTitle, false);
     }
-    else if(theCommandID == 140 || theCommandID == 141) { // Export to STL
+    else if(theCommandID == 141) { // Export to STL
       QStringList filters;
       QMap<QString, int>::const_iterator it = aFilterMapSTL.begin();
       for ( ; it != aFilterMapSTL.end(); ++it )
@@ -607,7 +620,6 @@
         case 123:
           aMesh->ExportUNV( aFilename.toLatin1().data() );
           break;
-        case 140:
         case 141:
           aMesh->ExportSTL( aFilename.toLatin1().data(), aIsASCII_STL );
           break;
@@ -1862,6 +1874,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
   case 113:                                     // IMPORT
   case 112:
   case 111:
+  case 140:
     {
       if(checkLock(aStudy)) break;
       ::ImportMeshesFromFile(GetSMESHGen(),theCommandID);
@@ -1893,7 +1906,6 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
   case 124:
   case 125:
   case 126:
-  case 140:
   case 141:
     {
       ::ExportMeshToFile(theCommandID);
@@ -3469,11 +3481,12 @@ void SMESHGUI::initialize( CAM_Application* app )
   createMenu( 111, importId, -1 );
   createMenu( 112, importId, -1 );
   createMenu( 113, importId, -1 );
+  createMenu( 140, importId, -1 );
 
   createMenu( 121, exportId, -1 );
   createMenu( 122, exportId, -1 );
   createMenu( 123, exportId, -1 );
-  createMenu( 140, exportId, -1 ); // export to stl STL
+  createMenu( 141, exportId, -1 ); // export to stl STL
 
   createMenu( separator(), fileId, 10 );
 
