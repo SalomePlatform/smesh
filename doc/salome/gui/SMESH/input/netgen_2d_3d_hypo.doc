@@ -2,12 +2,21 @@
 
 \page netgen_2d_3d_hypo_page Netgen 2D and 3D hypotheses
 
-<b>Netgen 2D</b> and <b>Netgen 3D</b> hypotheses work only with <b>Netgen 1D-2D</b> and
-<b>Netgen 1D-2D-3D</b> algorithms. These algorithms do not require
-definition of lower-level  hypotheses and algorithms (2D and 1D for
-meshing 3D objects and 1D for meshing 2D objects).
+<b>Netgen 2D Parameters</b> and <b>Netgen 3D  Parameters</b> hypotheses work only with
+<b>Netgen 1D-2D</b>, <b>Netgen 2D</b>, <b>Netgen 1D-2D-3D</b> and
+<b>Netgen 3D</b> algorithms. <b>Netgen 1D-2D</b> and <b>Netgen
+1D-2D-3D</b>  algorithms do not require definition of lower-level
+hypotheses and algorithms (2D and 1D for meshing 3D objects and 1D for
+meshing 2D objects).
 
 \image html netgen2d3d.png
+<center><em>Dialog boxes of <b>Netgen 1D-2D</b> and <b>Netgen
+1D-2D-3D</b> algorithms </em></center>
+<br>
+
+\image html netgen2d3d_only.png
+<center><em>Dialog boxes of <b>Netgen 2D</b> and <b>Netgen 3D</b>
+algorithms </em></center>
 
 - <b>Name</b> - allows to define the name for the algorithm (Netgen
 2D (or 3D) Parameters by default).
