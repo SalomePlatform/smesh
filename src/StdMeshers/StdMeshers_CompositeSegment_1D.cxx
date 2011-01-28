@@ -21,11 +21,8 @@
 //
 
 //  SMESH SMESH : implementaion of SMESH idl descriptions
-//  File   : StdMeshers_Regular_1D.cxx
-//           Moved here from SMESH_Regular_1D.cxx
-//  Author : Paul RASCLE, EDF
+//  File   : StdMeshers_CompositeSegment_1D.cxx
 //  Module : SMESH
-//  $Header$
 //
 #include "StdMeshers_CompositeSegment_1D.hxx"
 #include "StdMeshers_FaceSide.hxx"
