@@ -268,7 +268,7 @@ namespace {
       for (; itA.More(); itA.Next())
       {
         // there are objects of different type among the ancestors of edge
-        if ( itA.Value().ShapeType() != TopAbs_WIRE || !checkedShapes.Add( itA.Value() ))
+        if ( itA.Value().ShapeType() != TopAbs_WIRE /*|| !checkedShapes.Add( itA.Value() )*/)
           continue;
 
         // Get ordered edges and find index of anE in a sequence
@@ -290,8 +290,7 @@ namespace {
           continue; // too few edges
         }
         else if ( edges.size() == 4 ) {
-          int oppIndex = edgeIndex + 2;
-          if ( oppIndex > 3 ) oppIndex -= 4;
+          int oppIndex = ( edgeIndex + 2 ) % 4;
           anOppE = edges[ oppIndex ];
         }
         else {
