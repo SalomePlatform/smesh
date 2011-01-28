@@ -323,6 +323,8 @@ StdMeshers_CompositeSegment_1D::GetFaceSide(SMESH_Mesh&        aMesh,
            string(theAlgo->GetName()) != algo->GetName() ||
            hypList != algo->GetUsedHypothesis(aMesh, eNext, false))
         break;
+      if ( std::find( edges.begin(), edges.end(), eNext ) != edges.end() )
+	break;
       if ( forward )
         edges.push_back( eNext );
       else
