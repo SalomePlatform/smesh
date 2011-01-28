@@ -20,7 +20,6 @@
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 
-//  SMESH SMESH : implementaion of SMESH idl descriptions
 // File      : StdMeshers_FaceSide.hxx
 // Created   : Wed Jan 31 18:41:25 2007
 // Author    : Edward AGAPOV (eap)
@@ -40,18 +39,16 @@
 
 #include <Adaptor2d_Curve2d.hxx>
 #include <BRepAdaptor_CompCurve.hxx>
-#include <BRepAdaptor_Curve.hxx>
 #include <BRep_Builder.hxx>
 #include <BRep_Tool.hxx>
+#include <GCPnts_AbscissaPoint.hxx>
+#include <Geom2dAdaptor_Curve.hxx>
 #include <TopExp.hxx>
 #include <TopExp_Explorer.hxx>
 #include <TopoDS.hxx>
 #include <TopoDS_Face.hxx>
 #include <TopoDS_Vertex.hxx>
 #include <TopoDS_Wire.hxx>
-
-#include <GCPnts_AbscissaPoint.hxx>
-#include <Geom2dAdaptor_Curve.hxx>
 
 #include <map>
 
@@ -536,14 +533,15 @@ BRepAdaptor_CompCurve* StdMeshers_FaceSide::GetCurve3d() const
   if ( myEdge.empty() )
     return 0;
 
-//   if ( myEdge.size() == 1 )
-//     return new BRepAdaptor_Curve( myEdge[0] );
-
   TopoDS_Wire aWire;
   BRep_Builder aBuilder;
   aBuilder.MakeWire(aWire);
   for ( int i=0; i<myEdge.size(); ++i )
     aBuilder.Add( aWire, myEdge[i] );
+
+  if ( myEdge.size() == 2 && FirstVertex().IsSame( LastVertex() ))
+    aWire.Closed(true); // issue 0021141
+
   return new BRepAdaptor_CompCurve( aWire );
 }
 
