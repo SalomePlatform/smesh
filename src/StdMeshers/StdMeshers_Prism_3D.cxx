@@ -1689,7 +1689,7 @@ bool StdMeshers_PrismAsBlock::GetLayersTransformation(vector<gp_Trsf> & trsf) co
     Bnd_B3d bndBox;
     for ( int i = 0; i < columns.size(); ++i )
       bndBox.Add( gpXYZ( columns[i]->front() ));
-    tol2 = bndBox.SquareExtent() * 4 * 1e-4;
+    tol2 = bndBox.SquareExtent() * 1e-5;
   }
 
   // Compute transformations
