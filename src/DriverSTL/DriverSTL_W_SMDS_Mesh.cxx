@@ -21,6 +21,7 @@
 //
 
 #include <stdio.h>
+#include <limits>
 
 #include "DriverSTL_W_SMDS_Mesh.h"
 
