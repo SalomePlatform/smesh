@@ -569,7 +569,10 @@ public:
                                              SMESH::SMESH_GroupBase_ptr theModifiedElems );
 
   CORBA::Boolean DoubleNodeGroups( const SMESH::ListOfGroups& theNodes,
-                                   const SMESH::ListOfGroups& theModifiedElems);
+                                   const SMESH::ListOfGroups& theModifiedElems );
+
+  SMESH::SMESH_Group_ptr DoubleNodeGroupsNew( const SMESH::ListOfGroups& theNodes,
+					      const SMESH::ListOfGroups& theModifiedElems );
 
   /*!
    * \brief Creates a hole in a mesh by doubling the nodes of some particular elements

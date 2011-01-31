@@ -4900,6 +4900,45 @@ CORBA::Boolean SMESH_MeshEditor_i::DoubleNodeGroups(const SMESH::ListOfGroups& t
 
 //================================================================================
 /*!
+ * \brief Creates a hole in a mesh by doubling the nodes of some particular elements.
+ * Works as DoubleNodeGroups(), but returns a new group with newly created nodes.
+ * \param theNodes - group of nodes to be doubled.
+ * \param theModifiedElems - group of elements to be updated.
+ * \return a new group with newly created nodes
+ * \sa DoubleNodeGroups()
+ */
+//================================================================================
+
+SMESH::SMESH_Group_ptr SMESH_MeshEditor_i::DoubleNodeGroupsNew( const SMESH::ListOfGroups& theNodes,
+								const SMESH::ListOfGroups& theModifiedElems )
+{
+  SMESH::SMESH_Group_var aNewGroup;
+
+  TPythonDump pyDump; // suppress dump by the next line
+
+  bool aResult = DoubleNodeGroups( theNodes, theModifiedElems );
+
+  if ( aResult )
+  {
+    // Create group with newly created nodes
+    SMESH::long_array_var anIds = GetLastCreatedNodes();
+    if (anIds->length() > 0) {
+      string anUnindexedName (theNodes[0]->GetName());
+      string aNewName = generateGroupName(anUnindexedName + "_double");
+      aNewGroup = myMesh_i->CreateGroup(SMESH::NODE, aNewName.c_str());
+      aNewGroup->Add(anIds);
+    }
+  }
+
+  pyDump << "createdNodes = " << this << ".DoubleNodeGroupsNew( " << theNodes << ", "
+    << theModifiedElems << " )";
+
+  return aNewGroup._retn();
+}
+
+
+//================================================================================
+/*!
   \brief Creates a hole in a mesh by doubling the nodes of some particular elements
   \param theElems - the list of elements (edges or faces) to be replicated
   The nodes for duplication could be found from these elements

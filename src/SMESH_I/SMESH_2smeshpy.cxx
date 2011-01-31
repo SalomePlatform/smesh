@@ -1195,8 +1195,10 @@ void _pyMeshEditor::Process( const Handle(_pyCommand)& theCommand)
   }
   // DoubleNodeElemGroupNew() -> DoubleNodeElemGroup()
   // DoubleNodeGroupNew() -> DoubleNodeGroup()
+  // DoubleNodeGroupsNew() -> DoubleNodeGroups()
   // DoubleNodeElemGroupsNew() -> DoubleNodeElemGroups()
-  if ( !isPyMeshMethod && ( method == "DoubleNodeElemGroupNew" || method == "DoubleNodeGroupNew" || method == "DoubleNodeElemGroupsNew"))
+  if ( !isPyMeshMethod && ( method == "DoubleNodeElemGroupNew" || method == "DoubleNodeElemGroupsNew" ||
+			    method == "DoubleNodeGroupNew"     || method == "DoubleNodeGroupsNew"))
   {
     isPyMeshMethod=true;
     theCommand->SetMethod( method.SubString( 1, method.Length()-3));

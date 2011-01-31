@@ -107,9 +107,9 @@ private:
   SMESHGUI*               mySMESHGUI;
   LightApp_SelectionMgr*  mySelectionMgr;
 
-  SMESH::SMESH_GroupBase_var myGroup1;
-  SMESH::SMESH_GroupBase_var myGroup2;
-  SMESH::SMESH_GroupBase_var myGroup3;
+  QList<SMESH::SMESH_GroupBase_var> myGroups1;
+  QList<SMESH::SMESH_GroupBase_var> myGroups2;
+  QList<SMESH::SMESH_GroupBase_var> myGroups3;
 
   bool                    myBusy;
   

@@ -47,6 +47,7 @@
 
 #include <SVTK_ViewWindow.h>
 #include <SALOME_ListIO.hxx>
+#include <SALOME_ListIteratorOfListIO.hxx>
 
 // Qt includes
 #include <QApplication>
@@ -70,6 +71,22 @@
 #define SPACING 6
 #define MARGIN  11
 
+/*!
+  \class BusyLocker
+  \brief Simple 'busy state' flag locker.
+  \internal
+*/
+
+class BusyLocker
+{
+public:
+  //! Constructor. Sets passed boolean flag to \c true.
+  BusyLocker( bool& busy ) : myBusy( busy ) { myBusy = true; }
+  //! Destructor. Clear external boolean flag passed as parameter to the constructor to \c false.
+  ~BusyLocker() { myBusy = false; }
+private:
+  bool& myBusy; //! External 'busy state' boolean flag
+};
 
 /*!
   \brief Constructor
@@ -218,14 +235,15 @@ SMESHGUI_DuplicateNodesDlg::~SMESHGUI_DuplicateNodesDlg()
 void SMESHGUI_DuplicateNodesDlg::Init()
 {
   mySMESHGUI->SetActiveDialogBox((QDialog*)this);
+  myCheckBoxNewGroup->setChecked(true);
 
   // Set initial parameters
   myBusy = false;
   myCurrentLineEdit = myLineEdit1;
 
-  myGroup1 =  SMESH::SMESH_GroupBase::_nil();
-  myGroup2 =  SMESH::SMESH_GroupBase::_nil();
-  myGroup3 =  SMESH::SMESH_GroupBase::_nil();
+  myGroups1.clear();
+  myGroups2.clear();
+  myGroups3.clear();
   
   // Set selection mode
   mySelectionMgr->installFilter(new SMESH_TypeFilter(GROUP));
@@ -253,8 +271,9 @@ void SMESHGUI_DuplicateNodesDlg::onConstructorsClicked (int constructorId)
   myLineEdit2->clear();
   myLineEdit3->clear();
 
-  // Checkbox should be checked by default
-  myCheckBoxNewGroup->setChecked(true);
+  myGroups1.clear();
+  myGroups2.clear();
+  myGroups3.clear();
 
   // Set the first field as current
   myCurrentLineEdit = myLineEdit1;
@@ -307,10 +326,10 @@ void SMESHGUI_DuplicateNodesDlg::onConstructorsClicked (int constructorId)
 */
 bool SMESHGUI_DuplicateNodesDlg::onApply()
 {
-  if (mySMESHGUI->isActiveStudyLocked() || !isValid())
+  if ( mySMESHGUI->isActiveStudyLocked() || !isValid() )
     return false;
 
-  myBusy = true;
+  BusyLocker lock( myBusy );
  
   bool toCreateGroup = myCheckBoxNewGroup->isChecked();
   int operationMode = myGroupConstructors->checkedId();
@@ -320,28 +339,50 @@ bool SMESHGUI_DuplicateNodesDlg::onApply()
   SUIT_OverrideCursor aWaitCursor;
 
   try {
-    SMESH::SMESH_Mesh_ptr aMesh =  myGroup1->GetMesh();
+    SMESH::SMESH_Mesh_var aMesh = myGroups1[0]->GetMesh();
     SMESH::SMESH_MeshEditor_var aMeshEditor = aMesh->GetMeshEditor();
 
-    if (operationMode == 0) {
-      if (toCreateGroup) {
-        SMESH::SMESH_GroupBase_ptr aNewGroup = 
-          aMeshEditor->DoubleNodeGroupNew(myGroup1, myGroup2);
-        if (!CORBA::is_nil(aNewGroup))
-      result = true;
+    if ( operationMode == 0 ) {
+      SMESH::ListOfGroups_var g1 = new SMESH::ListOfGroups();
+      g1->length( myGroups1.count() );
+      for ( int i = 0; i < myGroups1.count(); i++ )
+	g1[i] = myGroups1[i];
+      SMESH::ListOfGroups_var g2 = new SMESH::ListOfGroups();
+      g2->length( myGroups2.count() );
+      for ( int i = 0; i < myGroups2.count(); i++ )
+	g2[i] = myGroups2[i];
+
+      if ( toCreateGroup ) {
+        SMESH::SMESH_GroupBase_var aNewGroup = 
+          aMeshEditor->DoubleNodeGroupsNew( g1.in(), g2.in() );
+	result = !CORBA::is_nil( aNewGroup );
       }
-      else
-        result = aMeshEditor->DoubleNodeGroup(myGroup1, myGroup2);
+      else {
+        result = aMeshEditor->DoubleNodeGroups( g1.in(), g2.in() );
+      }
     }
     else {
-      if (toCreateGroup) {
+      SMESH::ListOfGroups_var g1 = new SMESH::ListOfGroups();
+      g1->length( myGroups1.count() );
+      for ( int i = 0; i < myGroups1.count(); i++ )
+	g1[i] = myGroups1[i];
+      SMESH::ListOfGroups_var g2 = new SMESH::ListOfGroups();
+      g2->length( myGroups2.count() );
+      for ( int i = 0; i < myGroups2.count(); i++ )
+	g2[i] = myGroups2[i];
+      SMESH::ListOfGroups_var g3 = new SMESH::ListOfGroups();
+      g3->length( myGroups3.count() );
+
+      for ( int i = 0; i < myGroups3.count(); i++ )
+	g3[i] = myGroups3[i];
+      if ( toCreateGroup ) {
         SMESH::SMESH_GroupBase_ptr aNewGroup = 
-          aMeshEditor->DoubleNodeElemGroupNew(myGroup1, myGroup2, myGroup3);
-        if (!CORBA::is_nil(aNewGroup))
-          result = true;
+          aMeshEditor->DoubleNodeElemGroupsNew( g1.in(), g2.in(), g3.in() );
+	result = !CORBA::is_nil( aNewGroup );
       }
-      else
-        result = aMeshEditor->DoubleNodeElemGroup(myGroup1, myGroup2, myGroup3);
+      else {
+        result = aMeshEditor->DoubleNodeElemGroups( g1.in(), g2.in(), g3.in() );
+      }
     }
   }
   catch (const SALOME::SALOME_Exception& S_ex) {
@@ -358,7 +399,6 @@ bool SMESHGUI_DuplicateNodesDlg::onApply()
     SUIT_MessageBox::warning(this,
                              tr("SMESH_WRN_WARNING"),
                              tr("SMESH_OPERATION_FAILED"));
-    myBusy = false;
     return false;
   }
 
@@ -400,64 +440,67 @@ void SMESHGUI_DuplicateNodesDlg::onClose()
 */
 void SMESHGUI_DuplicateNodesDlg::onSelectionChanged()
 {
-  if (myBusy || !isEnabled()) return;
+  if ( myBusy || !isEnabled() ) return;
   
-  // Try to get selected group
+  int operationMode = myGroupConstructors->checkedId();
+
   SALOME_ListIO aList;
   mySelectionMgr->selectedObjects( aList );
   int aNbSel = aList.Extent();
 
-  SMESH::SMESH_GroupBase_var aGroup = SMESH::SMESH_GroupBase::_nil();
-  if (aNbSel == 1) {
-    Handle(SALOME_InteractiveObject) IO = aList.First();
-    aGroup = SMESH::IObjectToInterface<SMESH::SMESH_GroupBase>(IO);
+  QList<SMESH::SMESH_GroupBase_var> aGroups;
 
-    // Check group type
-    if (!CORBA::is_nil(aGroup)) {
-      int operationMode = myGroupConstructors->checkedId();
-      SMESH::ElementType aGroupType = aGroup->GetType();
-      bool isTypeValid = true;
-      
-      if (operationMode == 0) {
-        if ( (myCurrentLineEdit == myLineEdit1 && aGroupType != SMESH::NODE) ||
-             (myCurrentLineEdit == myLineEdit2 && aGroupType == SMESH::NODE) )
-          isTypeValid = false;
-      }
-      else if (operationMode == 1) {
-        if ( (myCurrentLineEdit == myLineEdit1 && aGroupType != SMESH::EDGE &&
-              aGroupType != SMESH::FACE) ||
-             (myCurrentLineEdit == myLineEdit2 && aGroupType != SMESH::NODE) || 
-             (myCurrentLineEdit == myLineEdit3 && aGroupType == SMESH::NODE) )
-          isTypeValid = false;
-      }
-    
-      if (!isTypeValid)
-        aGroup = SMESH::SMESH_GroupBase::_nil();
+  SALOME_ListIteratorOfListIO anIter ( aList );
+  bool ok = true;
+  for ( ; anIter.More() && ok; anIter.Next()) {
+    SMESH::SMESH_GroupBase_var aGroup = SMESH::IObjectToInterface<SMESH::SMESH_GroupBase>( anIter.Value() );
+    // check group is selected
+    ok = !CORBA::is_nil( aGroup );
+    // check groups of the same mesh are selected
+    if ( ok ) {
+      SMESH::SMESH_Mesh_var aMesh1;
+      if ( !aGroups.isEmpty() ) aMesh1 = aGroups[0]->GetMesh();
+      SMESH::SMESH_Mesh_var aMesh2 = aGroup->GetMesh();
+      ok = CORBA::is_nil( aMesh1 ) || aMesh1->_is_equivalent( aMesh2 );
     }
+    // check group of proper type is selected
+    if ( ok ) {
+      SMESH::ElementType aGroupType = aGroup->GetType();
+      if ( operationMode == 0 ) {
+	ok = ( myCurrentLineEdit == myLineEdit1 && aGroupType == SMESH::NODE ) ||
+	     ( myCurrentLineEdit == myLineEdit2 && aGroupType != SMESH::NODE );
+      }
+      else {
+	ok = ( myCurrentLineEdit == myLineEdit1 && ( aGroupType == SMESH::EDGE ||
+						     aGroupType == SMESH::FACE ) ) ||
+	     ( myCurrentLineEdit == myLineEdit2 && aGroupType == SMESH::NODE )     ||
+	     ( myCurrentLineEdit == myLineEdit3 && aGroupType != SMESH::NODE );
+      }
+    }
+    if ( ok ) aGroups << aGroup;
   }
 
   // Clear current field
   myCurrentLineEdit->clear();
 
-  // Set corresponding SMESH group
-  if (myCurrentLineEdit == myLineEdit1) {
-    myGroup1 = SMESH::SMESH_Group::_narrow(aGroup);
+  if ( ok && !aGroups.isEmpty() ) {
+    if      ( myCurrentLineEdit == myLineEdit1 ) myGroups1 = aGroups;
+    else if ( myCurrentLineEdit == myLineEdit2 ) myGroups2 = aGroups;
+    else if ( myCurrentLineEdit == myLineEdit3 ) myGroups3 = aGroups;
+    myCurrentLineEdit->setText( aGroups.count() == 1 ? aGroups[0]->GetName() : 
+				QObject::tr( "SMESH_OBJECTS_SELECTED" ).arg( aGroups.count() ) );
   }
-  else if (myCurrentLineEdit == myLineEdit2) {
-    myGroup2 = SMESH::SMESH_Group::_narrow(aGroup);
+  else {
+    if      ( myCurrentLineEdit == myLineEdit1 ) myGroups1.clear();
+    else if ( myCurrentLineEdit == myLineEdit2 ) myGroups2.clear();
+    else if ( myCurrentLineEdit == myLineEdit3 ) myGroups3.clear();
+    myCurrentLineEdit->clear();
   }
-  else if (myCurrentLineEdit == myLineEdit3) {
-    myGroup3 = SMESH::SMESH_Group::_narrow(aGroup);
-  }
-  
-  // Set group name
-  if (!CORBA::is_nil(aGroup))
-    myCurrentLineEdit->setText(aGroup->GetName());
 
   // Enable/disable "Apply and Close" and "Apply" buttons
   bool isDataValid = isValid();
-  myButtonOk->setEnabled(isDataValid);
-  myButtonApply->setEnabled(isDataValid);
+  myButtonOk->setEnabled( isDataValid );
+  myButtonApply->setEnabled( isDataValid );
 }
 
 /*!
@@ -488,14 +531,9 @@ void SMESHGUI_DuplicateNodesDlg::onEditCurrentArgument()
 */
 bool SMESHGUI_DuplicateNodesDlg::isValid()
 {
-  // Only first group (nodes/elemets to duplicate) is mandatory
-  bool isValid = !CORBA::is_nil(myGroup1);
-  
-  // First (elements to duplicate) and last groups should be defined in the second operation mode
-  if (isValid && myGroupConstructors->checkedId() == 1)
-    isValid = !CORBA::is_nil(myGroup3);
-
-  return isValid;
+  return myGroupConstructors->checkedId() == 1 ?
+    ( !myGroups1.isEmpty() && !myGroups3.isEmpty()  ) :
+    ( !myGroups1.isEmpty() );
 }
 
 

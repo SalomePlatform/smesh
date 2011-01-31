@@ -772,27 +772,27 @@ module SMESH
      *        they not assigned to elements
      *        \return TRUE if operation has been completed successfully, FALSE otherwise
      * \sa DoubleNode(), DoubleNodeGroup(), DoubleNodeGroups()
-    */
+     */
     boolean DoubleNodes( in long_array theNodes, in long_array theModifiedElems );
 
     /*!
-    * \brief Creates a hole in a mesh by doubling the nodes of some particular elements
-    * This method provided for convenience works as DoubleNodes() described above.
-    * \param theNodeId - identifier of node to be doubled.
-    * \param theModifiedElems - identifiers of elements to be updated.
-    * \return TRUE if operation has been completed successfully, FALSE otherwise
-    * \sa DoubleNodes(), DoubleNodeGroup(), DoubleNodeGroups()
-    */
+     * \brief Creates a hole in a mesh by doubling the nodes of some particular elements
+     * This method provided for convenience works as DoubleNodes() described above.
+     * \param theNodeId - identifier of node to be doubled.
+     * \param theModifiedElems - identifiers of elements to be updated.
+     * \return TRUE if operation has been completed successfully, FALSE otherwise
+     * \sa DoubleNodes(), DoubleNodeGroup(), DoubleNodeGroups()
+     */
     boolean DoubleNode( in long theNodeId, in long_array theModifiedElems );
 
     /*!
-    * \brief Creates a hole in a mesh by doubling the nodes of some particular elements
-    * This method provided for convenience works as DoubleNodes() described above.
-    * \param theNodes - group of nodes to be doubled.
-    * \param theModifiedElems - group of elements to be updated.
-    * \return TRUE if operation has been completed successfully, FALSE otherwise
-    * \sa DoubleNode(), DoubleNodes(), DoubleNodeGroups(), DoubleNodeGroupNew()
-    */
+     * \brief Creates a hole in a mesh by doubling the nodes of some particular elements
+     * This method provided for convenience works as DoubleNodes() described above.
+     * \param theNodes - group of nodes to be doubled.
+     * \param theModifiedElems - group of elements to be updated.
+     * \return TRUE if operation has been completed successfully, FALSE otherwise
+     * \sa DoubleNode(), DoubleNodes(), DoubleNodeGroups(), DoubleNodeGroupNew()
+     */
     boolean DoubleNodeGroup( in SMESH_GroupBase theNodes,
                              in SMESH_GroupBase theModifiedElems );
 
@@ -809,15 +809,27 @@ module SMESH
                                     in SMESH_GroupBase theModifiedElems );
 
     /*!
-    \brief Creates a hole in a mesh by doubling the nodes of some particular elements
-    This method provided for convenience works as DoubleNodes() described above.
-    \param theNodes - list of groups of nodes to be doubled
-    \param theModifiedElems - list of groups of elements to be updated.
-    \return TRUE if operation has been completed successfully, FALSE otherwise
-    \sa DoubleNode(), DoubleNodeGroup(), DoubleNodes()
-    */
+     * \brief Creates a hole in a mesh by doubling the nodes of some particular elements
+     * This method provided for convenience works as DoubleNodes() described above.
+     * \param theNodes - list of groups of nodes to be doubled
+     * \param theModifiedElems - list of groups of elements to be updated.
+     * \return TRUE if operation has been completed successfully, FALSE otherwise
+     * \sa DoubleNode(), DoubleNodeGroup(), DoubleNodes()
+     */
     boolean DoubleNodeGroups( in ListOfGroups theNodes,
                               in ListOfGroups theModifiedElems );
+
+    /*!
+     * \brief Creates a hole in a mesh by doubling the nodes of some particular elements
+     * Works as DoubleNodeGroups() described above, but returns a new group with
+     * newly created nodes.
+     * \param theNodes - list of groups of nodes to be doubled
+     * \param theModifiedElems - list of groups of elements to be updated.
+     * \return a new group with newly created nodes
+     * \sa DoubleNodeGroups()
+     */
+    SMESH_Group DoubleNodeGroupsNew( in ListOfGroups theNodes,
+				     in ListOfGroups theModifiedElems );
 
     /*!
      * \brief Creates a hole in a mesh by doubling the nodes of some particular elements
@@ -828,7 +840,7 @@ module SMESH
      *        replicated nodes should be associated to.
      * \return TRUE if operation has been completed successfully, FALSE otherwise
      * \sa DoubleNodeGroup(), DoubleNodeGroups()
-    */
+     */
     boolean DoubleNodeElem( in long_array theElems,
                             in long_array theNodesNot,
                             in long_array theAffectedElems );
@@ -843,7 +855,7 @@ module SMESH
      *        The replicated nodes should be associated to affected elements.
      * \return TRUE if operation has been completed successfully, FALSE otherwise
      * \sa DoubleNodeGroupInRegion(), DoubleNodeGroupsInRegion()
-    */
+     */
     boolean DoubleNodeElemInRegion( in long_array theElems,
                                     in long_array theNodesNot,
                                     in GEOM::GEOM_Object theShape );
@@ -857,7 +869,7 @@ module SMESH
      *        should be associated to.
      * \return TRUE if operation has been completed successfully, FALSE otherwise
      * \sa DoubleNodes(), DoubleNodeGroups(), DoubleNodeElemGroupNew()
-    */
+     */
     boolean DoubleNodeElemGroup( in SMESH_GroupBase theElems,
                                  in SMESH_GroupBase theNodesNot,
                                  in SMESH_GroupBase theAffectedElems );
@@ -872,7 +884,7 @@ module SMESH
      *        should be associated to.
      * \return a new group with newly created elements
      * \sa DoubleNodeElemGroup()
-    */
+     */
     SMESH_Group DoubleNodeElemGroupNew( in SMESH_GroupBase theElems,
                                         in SMESH_GroupBase theNodesNot,
                                         in SMESH_GroupBase theAffectedElems );
@@ -887,7 +899,7 @@ module SMESH
      *        The replicated nodes should be associated to affected elements.
      * \return TRUE if operation has been completed successfully, FALSE otherwise
      * \sa DoubleNodesInRegion(), DoubleNodeGroupsInRegion()
-    */
+     */
     boolean DoubleNodeElemGroupInRegion( in SMESH_GroupBase theElems,
                                      in SMESH_GroupBase theNodesNot,
                                      in GEOM::GEOM_Object theShape );
@@ -901,7 +913,7 @@ module SMESH
      *        should be associated to.
      * \return TRUE if operation has been completed successfully, FALSE otherwise
      * \sa DoubleNodeGroup(), DoubleNodes(), DoubleNodeElemGroupsNew()
-    */
+     */
     boolean DoubleNodeElemGroups( in ListOfGroups theElems,
                                   in ListOfGroups theNodesNot,
                                   in ListOfGroups theAffectedElems );
@@ -916,7 +928,7 @@ module SMESH
      *        should be associated to.
      * \return a new group with newly created elements
      * \sa DoubleNodeElemGroups()
-    */
+     */
     SMESH_Group DoubleNodeElemGroupsNew( in ListOfGroups theElems,
                                          in ListOfGroups theNodesNot,
                                          in ListOfGroups theAffectedElems );
@@ -931,7 +943,7 @@ module SMESH
      *        The replicated nodes should be associated to affected elements.
      * \return TRUE if operation has been completed successfully, FALSE otherwise
      * \sa DoubleNodeGroupInRegion(), DoubleNodesInRegion()
-    */
+     */
     boolean DoubleNodeElemGroupsInRegion( in ListOfGroups theElems,
                                           in ListOfGroups theNodesNot,
                                           in GEOM::GEOM_Object theShape );

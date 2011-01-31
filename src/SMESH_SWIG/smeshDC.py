@@ -4031,7 +4031,9 @@ class Mesh:
     #  @param theModifiedElems list of groups of elements to be updated.
     #  @return TRUE if operation has been completed successfully, FALSE otherwise
     #  @ingroup l2_modif_edit
-    def DoubleNodeGroups(self, theNodes, theModifiedElems):
+    def DoubleNodeGroups(self, theNodes, theModifiedElems, theMakeGroup=False):
+        if theMakeGroup:
+            return self.editor.DoubleNodeGroupsNew(theNodes, theModifiedElems)
         return self.editor.DoubleNodeGroups(theNodes, theModifiedElems)
 
     ## Creates a hole in a mesh by doubling the nodes of some particular elements
