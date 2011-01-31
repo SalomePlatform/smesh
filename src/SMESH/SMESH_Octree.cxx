@@ -107,6 +107,14 @@ void SMESH_Octree::buildChildren()
   gp_XYZ mid = min + HSize;
   gp_XYZ childHsize = HSize/2.;
 
+  // get the whole model size
+  double rootSize = 0;
+  {
+    SMESH_Octree* root = this;
+    while ( root->myLevel > 0 )
+      root = root->myFather;
+    rootSize = root->maxSize();
+  }
   Standard_Real XminChild, YminChild, ZminChild;
   gp_XYZ minChild;
   for (int i = 0; i < 8; i++)
@@ -134,6 +142,7 @@ void SMESH_Octree::buildChildren()
     myChildren[i]->myLimit = myLimit;
     myChildren[i]->myLevel = myLevel + 1;
     myChildren[i]->myBox = new Bnd_B3d(minChild+childHsize,childHsize);
+    myChildren[i]->myBox->Enlarge( rootSize * 1e-10 );
     if ( myLimit->myMinBoxSize > 0. && myChildren[i]->maxSize() <= myLimit->myMinBoxSize )
       myChildren[i]->myIsLeaf = true;
   }
