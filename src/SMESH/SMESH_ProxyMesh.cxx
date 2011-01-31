@@ -447,8 +447,8 @@ void SMESH_ProxyMesh::storeTmpElement( const SMDS_MeshElement* face )
 //================================================================================
 
 void SMESH_ProxyMesh::setNode2Node(const SMDS_MeshNode* srcNode,
-                                        const SMDS_MeshNode* proxyNode,
-                                        const SubMesh*       subMesh)
+                                   const SMDS_MeshNode* proxyNode,
+                                   const SubMesh*       subMesh)
 {
   SubMesh* sm = const_cast<SubMesh*>( subMesh );
   if ( !subMesh->_n2n )
