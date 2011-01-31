@@ -204,7 +204,7 @@ void StdMeshers_QuadToTriaAdaptor::MergePiramids( const SMDS_MeshElement*     Pr
 
   // find and remove coincided faces of merged pyramids
   vector< const SMDS_MeshElement* > inverseElems
-    // copy inverse elements to avoid iteration on changing conainer 
+    // copy inverse elements to avoid iteration on changing container 
     ( TStdElemIterator( CommonNode->GetInverseElementIterator(SMDSAbs_Face)), itEnd);
   for ( unsigned i = 0; i < inverseElems.size(); ++i )
   {
