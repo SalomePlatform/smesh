@@ -710,7 +710,7 @@ void SMESHGUI_BaseComputeOp::computeMesh()
 #if (OCC_VERSION_MAJOR << 16 | OCC_VERSION_MINOR << 8 | OCC_VERSION_MAINTENANCE) > 0x060100
       OCC_CATCH_SIGNALS;
 #endif
-      SMESH::UpdateNulData(myIObject, true);
+      //SMESH::UpdateNulData(myIObject, true);
       if (gen->Compute(myMesh, myMainShape))
         computeFailed = false;
     }
