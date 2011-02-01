@@ -185,15 +185,15 @@ void StdMeshers_QuadToTriaAdaptor::MergePiramids( const SMDS_MeshElement*     Pr
                                                   set<const SMDS_MeshNode*> & nodesToMove)
 {
   const SMDS_MeshNode* Nrem = PrmJ->GetNode(4); // node to remove
-  int nbJ = Nrem->NbInverseElements( SMDSAbs_Volume );
+  //int nbJ = Nrem->NbInverseElements( SMDSAbs_Volume );
   SMESH_TNodeXYZ Pj( Nrem );
 
   // an apex node to make common to all merged pyramids
   SMDS_MeshNode* CommonNode = const_cast<SMDS_MeshNode*>(PrmI->GetNode(4));
   if ( CommonNode == Nrem ) return; // already merged
-  int nbI = CommonNode->NbInverseElements( SMDSAbs_Volume );
+  //int nbI = CommonNode->NbInverseElements( SMDSAbs_Volume );
   SMESH_TNodeXYZ Pi( CommonNode );
-  gp_XYZ Pnew = ( nbI*Pi + nbJ*Pj ) / (nbI+nbJ);
+  gp_XYZ Pnew = /*( nbI*Pi + nbJ*Pj ) / (nbI+nbJ);*/ 0.5 * ( Pi + Pj );
   CommonNode->setXYZ( Pnew.X(), Pnew.Y(), Pnew.Z() );
 
   nodesToMove.insert( CommonNode );
@@ -1068,8 +1068,6 @@ bool StdMeshers_QuadToTriaAdaptor::Compute2ndPart(SMESH_Mesh&                   
     for(k=0; k<4; k++) // loop on 4 base nodes of PrmI
     {
       gp_Vec Vtmp(PsI[k],PsI[4]);
-      gp_Pnt Pshift = PsI[k].XYZ() + Vtmp.XYZ() * 0.01; // base node moved a bit to apex
-
       gp_Ax1 line( PsI[k], Vtmp );
       vector< const SMDS_MeshElement* > suspectPyrams;
       searcher->GetElementsNearLine( line, SMDSAbs_Volume, suspectPyrams);
@@ -1090,12 +1088,16 @@ bool StdMeshers_QuadToTriaAdaptor::Compute2ndPart(SMESH_Mesh&                   
         vector<gp_Pnt> PsJ( xyzIt, TXyzIterator() );
 
         gp_Pnt Pint;
-        bool hasInt = 
+        bool hasInt;
+        for(k=0; k<4 && !hasInt; k++) {
+          gp_Vec Vtmp(PsI[k],PsI[4]);
+          gp_Pnt Pshift = PsI[k].XYZ() + Vtmp.XYZ() * 0.01; // base node moved a bit to apex
+          hasInt = 
           ( HasIntersection3( Pshift, PsI[4], Pint, PsJ[0], PsJ[1], PsJ[4]) ||
             HasIntersection3( Pshift, PsI[4], Pint, PsJ[1], PsJ[2], PsJ[4]) ||
             HasIntersection3( Pshift, PsI[4], Pint, PsJ[2], PsJ[3], PsJ[4]) ||
             HasIntersection3( Pshift, PsI[4], Pint, PsJ[3], PsJ[0], PsJ[4]) );
-
+        }
         for(k=0; k<4 && !hasInt; k++) {
           gp_Vec Vtmp(PsJ[k],PsJ[4]);
           gp_Pnt Pshift = PsJ[k].XYZ() + Vtmp.XYZ() * 0.01;
