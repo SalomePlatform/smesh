@@ -91,7 +91,7 @@ namespace
         int ind = baseNodes[0] ? 1:0;
         if ( baseNodes[ ind ])
           return false; // pyramids with a common base face
-        baseNodes   [ ind ] = PrmI->GetNode(i);
+        baseNodes    [ ind ] = PrmI->GetNode(i);
         baseNodesIndI[ ind ] = i;
         baseNodesIndJ[ ind ] = j;
       }
@@ -1057,7 +1057,11 @@ bool StdMeshers_QuadToTriaAdaptor::Compute2ndPart(SMESH_Mesh&                   
       PsI[k] = SMESH_TNodeXYZ( n );
       SMDS_ElemIteratorPtr vIt = n->GetInverseElementIterator( SMDSAbs_Volume );
       while ( vIt->more() )
-        checkedPyrams.insert( vIt->next() );
+      {
+        const SMDS_MeshElement* PrmJ = vIt->next();
+        if ( SMESH_Algo::GetCommonNodes( PrmI, PrmJ ).size() > 1 )
+          checkedPyrams.insert( PrmJ );
+      }
     }
 
     // check intersection with distant pyramids
