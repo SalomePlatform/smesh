@@ -134,18 +134,7 @@ void SMDS_UnstructuredGrid::compactGrid(std::vector<int>& idNodesOldToNew, int n
   // TODO utiliser mieux vtk pour faire plus simple (plus couteux ?)
 
   MESSAGE("------------------------- SMDS_UnstructuredGrid::compactGrid " << newNodeSize << " " << newCellSize);CHRONO(1);
-  int startHole = 0;
-  int endHole = 0;
-  int startBloc = 0;
-  int endBloc = 0;
   int alreadyCopied = 0;
-  int holes = 0;
-
-  typedef enum
-  {
-    lookHoleStart, lookHoleEnd, lookBlocEnd
-  } enumState;
-  enumState compactState = lookHoleStart;
 
   //    if (this->Links)
   //    {
@@ -155,69 +144,79 @@ void SMDS_UnstructuredGrid::compactGrid(std::vector<int>& idNodesOldToNew, int n
 
   // --- if newNodeSize, create a new compacted vtkPoints
 
-  vtkPoints *newPoints = 0;
+  vtkPoints *newPoints = vtkPoints::New();
+  newPoints->SetDataType(VTK_DOUBLE);
+  newPoints->SetNumberOfPoints(newNodeSize);
   if (newNodeSize)
     {
       MESSAGE("-------------- compactGrid, newNodeSize " << newNodeSize);
-      newPoints = vtkPoints::New();
       // rnv: to fix bug "21125: EDF 1233 SMESH: Degrardation of precision in a test case for quadratic conversion"
       // using double type for storing coordinates of nodes instead float.
-      newPoints->SetDataType(VTK_DOUBLE);
-      newPoints->Initialize();
-      newPoints->Allocate(newNodeSize);
-      newPoints->SetNumberOfPoints(newNodeSize);
       int oldNodeSize = idNodesOldToNew.size();
 
-      for (int i = 0; i < oldNodeSize; i++)
-        {
-          //MESSAGE("                                    " << i << " " << idNodesOldToNew[i]);
-          switch (compactState)
-          {
-            case lookHoleStart:
-              if (idNodesOldToNew[i] < 0)
-                {
-                  MESSAGE("-------------- newNodeSize, startHole " << i << " " << oldNodeSize);
-                  startHole = i;
-                  if (!alreadyCopied) // copy the first bloc
-                    {
-                      MESSAGE("--------- copy first nodes before hole " << i << " " << oldNodeSize);
-                      copyNodes(newPoints, idNodesOldToNew, alreadyCopied, 0, startHole);
-                    }
-                  compactState = lookHoleEnd;
-                }
-              break;
-            case lookHoleEnd:
-              if (idNodesOldToNew[i] >= 0)
-                {
-                  MESSAGE("-------------- newNodeSize, endHole " << i << " " << oldNodeSize);
-                  endHole = i;
-                  startBloc = i;
-                  compactState = lookBlocEnd;
-                }
-              break;
-            case lookBlocEnd:
-              if (idNodesOldToNew[i] < 0)
-                endBloc = i; // see nbPoints below
-              else if (i == (oldNodeSize - 1))
-                endBloc = i + 1;
-              if (endBloc)
-                {
-                  MESSAGE("-------------- newNodeSize, endbloc " << endBloc << " " << oldNodeSize);
-                  copyNodes(newPoints, idNodesOldToNew, alreadyCopied, startBloc, endBloc);
-                  compactState = lookHoleEnd;
-                  startHole = i;
-                  endHole = 0;
-                  startBloc = 0;
-                  endBloc = 0;
-                }
-              break;
-          }
-        }
-      if (!alreadyCopied) // no hole, but shorter, no need to modify idNodesOldToNew
-        {
-          MESSAGE("------------- newNodeSize, shorter " << oldNodeSize);
-          copyNodes(newPoints, idNodesOldToNew, alreadyCopied, 0, newNodeSize);
-        }
+      int i = 0;
+      while ( i < oldNodeSize )
+      {
+        // skip a hole if any
+        while ( i < oldNodeSize && idNodesOldToNew[i] < 0 )
+          ++i;
+        int startBloc = i;
+        // look for a block end
+        while ( i < oldNodeSize && idNodesOldToNew[i] >= 0 )
+          ++i;
+        int endBloc = i;
+        copyNodes(newPoints, idNodesOldToNew, alreadyCopied, startBloc, endBloc);
+      }
+//       for (int i = 0; i < oldNodeSize; i++)
+//         {
+//           //MESSAGE("                                    " << i << " " << idNodesOldToNew[i]);
+//           switch (compactState)
+//           {
+//             case lookHoleStart:
+//               if (idNodesOldToNew[i] < 0)
+//                 {
+//                   MESSAGE("-------------- newNodeSize, startHole " << i << " " << oldNodeSize);
+//                   startHole = i;
+//                   if (!alreadyCopied) // copy the first bloc
+//                     {
+//                       MESSAGE("--------- copy first nodes before hole " << i << " " << oldNodeSize);
+//                       copyNodes(newPoints, idNodesOldToNew, alreadyCopied, 0, startHole);
+//                     }
+//                   compactState = lookHoleEnd;
+//                 }
+//               break;
+//             case lookHoleEnd:
+//               if (idNodesOldToNew[i] >= 0)
+//                 {
+//                   MESSAGE("-------------- newNodeSize, endHole " << i << " " << oldNodeSize);
+//                   endHole = i;
+//                   startBloc = i;
+//                   compactState = lookBlocEnd;
+//                 }
+//               break;
+//             case lookBlocEnd:
+//               if (idNodesOldToNew[i] < 0)
+//                 endBloc = i; // see nbPoints below
+//               else if (i == (oldNodeSize - 1))
+//                 endBloc = i + 1;
+//               if (endBloc)
+//                 {
+//                   MESSAGE("-------------- newNodeSize, endbloc " << endBloc << " " << oldNodeSize);
+//                   copyNodes(newPoints, idNodesOldToNew, alreadyCopied, startBloc, endBloc);
+//                   compactState = lookHoleEnd;
+//                   startHole = i;
+//                   endHole = 0;
+//                   startBloc = 0;
+//                   endBloc = 0;
+//                 }
+//               break;
+//           }
+//         }
+//       if (!alreadyCopied) // no hole, but shorter, no need to modify idNodesOldToNew
+//         {
+//           MESSAGE("------------- newNodeSize, shorter " << oldNodeSize);
+//           copyNodes(newPoints, idNodesOldToNew, alreadyCopied, 0, newNodeSize);
+//         }
       newPoints->Squeeze();
     }
 
@@ -239,74 +238,82 @@ void SMDS_UnstructuredGrid::compactGrid(std::vector<int>& idNodesOldToNew, int n
   newLocations->Initialize();
   newLocations->SetNumberOfValues(newCellSize);
 
-  startHole = 0;
-  endHole = 0;
-  startBloc = 0;
-  endBloc = 0;
-  alreadyCopied = 0;
-  holes = 0;
-  compactState = lookHoleStart;
-
   // TODO some polyhedron may be huge (only in some tests)
   vtkIdType tmpid[NBMAXNODESINCELL];
   vtkIdType *pointsCell = &tmpid[0]; // --- points id to fill a new cell
 
-  for (int i = 0; i < oldCellSize; i++)
-    {
-      switch (compactState)
-      {
-        case lookHoleStart:
-          if (this->Types->GetValue(i) == VTK_EMPTY_CELL)
-            {
-              MESSAGE(" -------- newCellSize, startHole " << i << " " << oldCellSize);
-              startHole = i;
-              compactState = lookHoleEnd;
-              if (!alreadyCopied) // copy the first bloc
-                {
-                  MESSAGE("--------- copy first bloc before hole " << i << " " << oldCellSize);
-                  copyBloc(newTypes, idCellsOldToNew, idNodesOldToNew, newConnectivity, newLocations, pointsCell,
-                           alreadyCopied, 0, startHole);
-                }
-            }
-          break;
-        case lookHoleEnd:
-          if (this->Types->GetValue(i) != VTK_EMPTY_CELL)
-            {
-              MESSAGE(" -------- newCellSize, EndHole " << i << " " << oldCellSize);
-              endHole = i;
-              startBloc = i;
-              compactState = lookBlocEnd;
-              holes += endHole - startHole;
-            }
-          break;
-        case lookBlocEnd:
-          endBloc = 0;
-          if (this->Types->GetValue(i) == VTK_EMPTY_CELL)
-            endBloc = i;
-          else if (i == (oldCellSize - 1))
-            endBloc = i + 1;
-          if (endBloc)
-            {
-              MESSAGE(" -------- newCellSize, endBloc " << endBloc << " " << oldCellSize);
-              copyBloc(newTypes, idCellsOldToNew, idNodesOldToNew, newConnectivity, newLocations, pointsCell,
-                       alreadyCopied, startBloc, endBloc);
-              compactState = lookHoleEnd;
-            }
-          break;
-      }
-    }
-  if (!alreadyCopied) // no hole, but shorter
-    {
-      MESSAGE(" -------- newCellSize, shorter " << oldCellSize);
-      copyBloc(newTypes, idCellsOldToNew, idNodesOldToNew, newConnectivity, newLocations, pointsCell, alreadyCopied, 0,
-               oldCellSize);
-    }
+  alreadyCopied = 0;
+  int i = 0;
+  while ( i < oldCellSize )
+  {
+    // skip a hole if any
+    while ( i < oldCellSize && this->Types->GetValue(i) == VTK_EMPTY_CELL )
+      ++i;
+    int startBloc = i;
+    // look for a block end
+    while ( i < oldCellSize && this->Types->GetValue(i) != VTK_EMPTY_CELL )
+      ++i;
+    int endBloc = i;
+    if ( endBloc > startBloc )
+      copyBloc(newTypes, idCellsOldToNew, idNodesOldToNew, newConnectivity, newLocations, pointsCell,
+               alreadyCopied, startBloc, endBloc);
+  }
+//   for (int i = 0; i < oldCellSize; i++)
+//     {
+//       switch (compactState)
+//       {
+//         case lookHoleStart:
+//           if (this->Types->GetValue(i) == VTK_EMPTY_CELL)
+//             {
+//               MESSAGE(" -------- newCellSize, startHole " << i << " " << oldCellSize);
+//               startHole = i;
+//               compactState = lookHoleEnd;
+//               if (!alreadyCopied) // copy the first bloc
+//                 {
+//                   MESSAGE("--------- copy first bloc before hole " << i << " " << oldCellSize);
+//                   copyBloc(newTypes, idCellsOldToNew, idNodesOldToNew, newConnectivity, newLocations, pointsCell,
+//                            alreadyCopied, 0, startHole);
+//                 }
+//             }
+//           break;
+//         case lookHoleEnd:
+//           if (this->Types->GetValue(i) != VTK_EMPTY_CELL)
+//             {
+//               MESSAGE(" -------- newCellSize, EndHole " << i << " " << oldCellSize);
+//               endHole = i;
+//               startBloc = i;
+//               compactState = lookBlocEnd;
+//               holes += endHole - startHole;
+//             }
+//           break;
+//         case lookBlocEnd:
+//           endBloc = 0;
+//           if (this->Types->GetValue(i) == VTK_EMPTY_CELL)
+//             endBloc = i;
+//           else if (i == (oldCellSize - 1))
+//             endBloc = i + 1;
+//           if (endBloc)
+//             {
+//               MESSAGE(" -------- newCellSize, endBloc " << endBloc << " " << oldCellSize);
+//               copyBloc(newTypes, idCellsOldToNew, idNodesOldToNew, newConnectivity, newLocations, pointsCell,
+//                        alreadyCopied, startBloc, endBloc);
+//               compactState = lookHoleEnd;
+//             }
+//           break;
+//       }
+//     }
+//   if (!alreadyCopied) // no hole, but shorter
+//     {
+//       MESSAGE(" -------- newCellSize, shorter " << oldCellSize);
+//       copyBloc(newTypes, idCellsOldToNew, idNodesOldToNew, newConnectivity, newLocations, pointsCell, alreadyCopied, 0,
+//                oldCellSize);
+//     }
 
   newConnectivity->Squeeze();
   //newTypes->Squeeze();
   //newLocations->Squeeze();
 
-  if (newNodeSize)
+  if (1/*newNodeSize*/)
     {
       MESSAGE("------- newNodeSize, setPoints");
       this->SetPoints(newPoints);
@@ -359,6 +366,7 @@ void SMDS_UnstructuredGrid::compactGrid(std::vector<int>& idNodesOldToNew, int n
   else
     this->SetCells(newTypes, newLocations, newConnectivity, FaceLocations, Faces);
 
+  newPoints->Delete();
   newTypes->Delete();
   newLocations->Delete();
   newConnectivity->Delete();
@@ -403,7 +411,7 @@ void SMDS_UnstructuredGrid::copyBloc(vtkUnsignedCharArray *newTypes, std::vector
           pointsCell[l] = idNodesOldToNew[oldval];
           //MESSAGE("   " << oldval << " " << pointsCell[l]);
         }
-      int newcnt = newConnectivity->InsertNextCell(nbpts, pointsCell);
+      /*int newcnt = */newConnectivity->InsertNextCell(nbpts, pointsCell);
       int newLoc = newConnectivity->GetInsertLocation(nbpts);
       //MESSAGE(newcnt << " " << newLoc);
       newLocations->SetValue(alreadyCopied, newLoc);
@@ -574,7 +582,7 @@ void SMDS_UnstructuredGrid::BuildDownwardConnectivity(bool withEdges)
           int vtkVolId = i;
           // MESSAGE("vtk volume " << vtkVolId);
           //ASSERT(_downArray[vtkType]);
-          int connVolId = _downArray[vtkType]->addCell(vtkVolId);
+          /*int connVolId = */_downArray[vtkType]->addCell(vtkVolId);
 
           // --- find all the faces of the volume, describe the faces by their nodes
 
