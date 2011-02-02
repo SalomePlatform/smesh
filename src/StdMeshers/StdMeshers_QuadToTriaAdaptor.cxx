@@ -114,12 +114,11 @@ namespace
     bool tooClose = ( angle < 15 * PI180 );
 
     // Check if pyramids collide
-    bool isOutI, isOutJ;
     if ( !tooClose && baI * baJ > 0 )
     {
       // find out if nI points outside of PrmI or inside
       int dInd = baseNodesIndI[1] - baseNodesIndI[0];
-      isOutI = ( abs(dInd)==1 ) ? dInd < 0 : dInd > 0;
+      bool isOutI = ( abs(dInd)==1 ) ? dInd < 0 : dInd > 0;
 
       // find out sign of projection of nJ to baI
       double proj = baI * nJ;
@@ -133,11 +132,14 @@ namespace
       // check order of baseNodes within pyramids, it must be opposite
       int dInd;
       dInd = baseNodesIndI[1] - baseNodesIndI[0];
-      isOutI = ( abs(dInd)==1 ) ? dInd < 0 : dInd > 0;
+      bool isOutI = ( abs(dInd)==1 ) ? dInd < 0 : dInd > 0;
       dInd = baseNodesIndJ[1] - baseNodesIndJ[0];
-      isOutJ = ( abs(dInd)==1 ) ? dInd < 0 : dInd > 0;
+      bool isOutJ = ( abs(dInd)==1 ) ? dInd < 0 : dInd > 0;
       if ( isOutJ == isOutI )
         return false; // other domain
+
+      // direct both normals outside pyramid
+      ( isOutI ? nJ : nI ).Reverse();
 
       // check absence of a face separating domains between pyramids
       TIDSortedElemSet emptySet, avoidSet;
@@ -153,6 +155,9 @@ namespace
         while ( otherNodeInd == i1 || otherNodeInd == i2 ) otherNodeInd++;
         const SMDS_MeshNode* otherFaceNode = f->GetNode( otherNodeInd );
 
+        if ( otherFaceNode == nApexI || otherFaceNode == nApexJ )
+          continue; // f is a temporary triangle
+
         // check if f is a base face of either of pyramids
         if ( f->NbCornerNodes() == 4 &&
              ( PrmI->GetNodeIndex( otherFaceNode ) >= 0 ||
@@ -161,7 +166,6 @@ namespace
 
         // check projections of face direction (baOFN) to triange normals (nI and nJ)
         gp_Vec baOFN( base1, SMESH_TNodeXYZ( otherFaceNode ));
-        ( isOutI ? nJ : nI ).Reverse();
         if ( nI * baOFN > 0 && nJ * baOFN > 0 )
         {
           tooClose = false; // f is between pyramids
