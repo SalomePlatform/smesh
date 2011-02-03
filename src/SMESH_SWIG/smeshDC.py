@@ -4354,12 +4354,20 @@ class Mesh_Algorithm:
                 name = GetName(geom)
                 pass
             except:
+                pass
+            if not name and geom.GetShapeType() != geompyDC.GEOM.COMPOUND:
+                # for all groups SubShapeName() returns "Compound_-1"
                 name = mesh.geompyD.SubShapeName(geom, piece)
-                if not name:
-                    name = "%s_%s"%(geom.GetShapeType(), id(geom%1000))
+            if not name:
+                name = "%s_%s"%(geom.GetShapeType(), id(geom)%10000)
+            # publish geom of sub-mesh (issue 0021122)
+            if not self.geom.IsSame( self.mesh.geom ) and not self.geom.GetStudyEntry():
+                studyID = self.mesh.smeshpyD.GetCurrentStudy()._get_StudyId()
+                if studyID != self.mesh.geompyD.myStudyId:
+                    self.mesh.geompyD.init_geom( self.mesh.smeshpyD.GetCurrentStudy())
+                self.mesh.geompyD.addToStudyInFather( self.mesh.geom, self.geom, name )
                 pass
             self.subm = mesh.mesh.GetSubMesh(geom, algo.GetName())
-
         self.algo = algo
         status = mesh.mesh.AddHypothesis(self.geom, self.algo)
         TreatHypoStatus( status, algo.GetName(), name, True )
