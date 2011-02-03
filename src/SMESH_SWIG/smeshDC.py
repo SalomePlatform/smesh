@@ -1081,7 +1081,16 @@ class Mesh:
         if obj != 0:
             if isinstance(obj, geompyDC.GEOM._objref_GEOM_Object):
                 self.geom = obj
+                # publish geom of mesh (issue 0021122)
+                if not self.geom.GetStudyEntry():
+                    studyID = smeshpyD.GetCurrentStudy()._get_StudyId()
+                    if studyID != geompyD.myStudyId:
+                        geompyD.init_geom( smeshpyD.GetCurrentStudy())
+                        pass
+                    name = "%s_%s"%(self.geom.GetShapeType(), id(self.geom)%100)
+                    geompyD.addToStudy( self.geom, name )
                 self.mesh = self.smeshpyD.CreateMesh(self.geom)
+
             elif isinstance(obj, SMESH._objref_SMESH_Mesh):
                 self.SetMesh(obj)
         else:
