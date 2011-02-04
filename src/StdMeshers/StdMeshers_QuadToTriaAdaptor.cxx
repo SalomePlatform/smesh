@@ -17,7 +17,6 @@
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 
-//  SMESH SMESH : implementaion of SMESH idl descriptions
 // File      : StdMeshers_QuadToTriaAdaptor.cxx
 // Module    : SMESH
 // Created   : Wen May 07 16:37:07 2008
@@ -1092,7 +1091,7 @@ bool StdMeshers_QuadToTriaAdaptor::Compute2ndPart(SMESH_Mesh&                   
         vector<gp_Pnt> PsJ( xyzIt, TXyzIterator() );
 
         gp_Pnt Pint;
-        bool hasInt;
+        bool hasInt=false;
         for(k=0; k<4 && !hasInt; k++) {
           gp_Vec Vtmp(PsI[k],PsI[4]);
           gp_Pnt Pshift = PsI[k].XYZ() + Vtmp.XYZ() * 0.01; // base node moved a bit to apex
@@ -1204,14 +1203,3 @@ bool StdMeshers_QuadToTriaAdaptor::Compute2ndPart(SMESH_Mesh&                   
   return true;
 }
 
-//================================================================================
-/*!
- * \brief Return list of created triangles for given face
- */
-//================================================================================
-
-// const list<const SMDS_MeshFace* >* StdMeshers_QuadToTriaAdaptor::GetTriangles (const SMDS_MeshElement* aQuad)
-// {
-//   TQuad2Trias::iterator it = myResMap.find(aQuad);
-//   return ( it != myResMap.end() ?  & it->second : 0 );
-// }
