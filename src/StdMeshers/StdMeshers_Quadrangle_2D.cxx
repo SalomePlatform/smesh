@@ -2088,11 +2088,11 @@ bool StdMeshers_Quadrangle_2D::EvaluateQuadPref(SMESH_Mesh &        aMesh,
  */
 //=============================================================================
 void StdMeshers_Quadrangle_2D::SplitQuad(SMESHDS_Mesh *theMeshDS,
-                                    int theFaceID,
-                                    const SMDS_MeshNode* theNode1,
-                                    const SMDS_MeshNode* theNode2,
-                                    const SMDS_MeshNode* theNode3,
-                                    const SMDS_MeshNode* theNode4)
+                                         int theFaceID,
+                                         const SMDS_MeshNode* theNode1,
+                                         const SMDS_MeshNode* theNode2,
+                                         const SMDS_MeshNode* theNode3,
+                                         const SMDS_MeshNode* theNode4)
 {
   gp_Pnt a(theNode1->X(),theNode1->Y(),theNode1->Z());
   gp_Pnt b(theNode2->X(),theNode2->Y(),theNode2->Z());
@@ -2182,22 +2182,9 @@ bool StdMeshers_Quadrangle_2D::ComputeReduced (SMESH_Mesh &        aMesh,
     int nrows = nr1 - 1; // and also == nl1 - 1
     int ncol_top = nt1 - 1;
     int ncol_bot = nb1 - 1;
-    int npair_top = ncol_top / 2;
-    // maximum number of bottom elements for "linear" simple reduce
-    //int max_lin = ncol_top + npair_top * 2 * nrows;
-    // maximum number of bottom elements for "tree" simple reduce
-    int max_tree = npair_top * pow(2.0, nrows + 1);
-    if (ncol_top > npair_top * 2) {
-      int delta = ncol_bot - max_tree;
-      for (int irow = 1; irow < nrows; irow++) {
-        int nfour = delta / 4;
-        delta -= nfour*2;
-      }
-      if (delta <= (ncol_top - npair_top * 2))
-        max_tree = ncol_bot;
-    }
-
-    if (ncol_bot > max_tree)
+    // maximum number of bottom elements for "tree" simple reduce 3->1
+    int max_tree31 = ncol_top * pow(3.0, nrows);
+    if (ncol_bot > max_tree31)
       MultipleReduce = true;
   }
 
@@ -2512,13 +2499,54 @@ bool StdMeshers_Quadrangle_2D::ComputeReduced (SMESH_Mesh &        aMesh,
     int ncol_top = nt - 1;
     int ncol_bot = nb - 1;
     int npair_top = ncol_top / 2;
-    // maximum number of bottom elements for "linear" simple reduce
+    // maximum number of bottom elements for "linear" simple reduce 4->2
     int max_lin = ncol_top + npair_top * 2 * nrows;
-    // maximum number of bottom elements for "tree" simple reduce
-    //int max_tree = npair_top * pow(2, nrows + 1);
-
-    //if (ncol_bot > max_tree)
-    //  MultipleReduce = true;
+    // maximum number of bottom elements for "linear" simple reduce 4->2
+    int max_lin31 = ncol_top + ncol_top * 2 * nrows;
+    // maximum number of bottom elements for "tree" simple reduce 4->2
+    int max_tree42 = npair_top * pow(2.0, nrows + 1);
+    if (ncol_top > npair_top * 2) {
+      int delta = ncol_bot - max_tree42;
+      for (int irow = 1; irow < nrows; irow++) {
+        int nfour = delta / 4;
+        delta -= nfour * 2;
+      }
+      if (delta <= (ncol_top - npair_top * 2))
+        max_tree42 = ncol_bot;
+    }
+    // maximum number of bottom elements for "tree" simple reduce 3->1
+    //int max_tree31 = ncol_top * pow(3.0, nrows);
+    bool is_lin_31 = false;
+    bool is_lin_42 = false;
+    bool is_tree_31 = false;
+    bool is_tree_42 = false;
+    if (ncol_bot > max_lin) {
+      if (ncol_bot <= max_lin31) {
+        is_lin_31 = true;
+        max_lin = max_lin31;
+      }
+    }
+    else {
+      // if ncol_bot is a 3*n or not 2*n
+      if ((ncol_bot/3)*3 == ncol_bot || (ncol_bot/2)*2 != ncol_bot) {
+        is_lin_31 = true;
+        max_lin = max_lin31;
+      }
+      else {
+        is_lin_42 = true;
+      }
+    }
+    if (ncol_bot > max_lin) { // not "linear"
+      is_tree_31 = (ncol_bot > max_tree42);
+      if (ncol_bot <= max_tree42) {
+        if ((ncol_bot/3)*3 == ncol_bot || (ncol_bot/2)*2 != ncol_bot) {
+          is_tree_31 = true;
+        }
+        else {
+          is_tree_42 = true;
+        }
+      }
+    }
 
     const vector<UVPtStruct>& uv_eb = quad->side[0]->GetUVPtStruct(true,0);
     const vector<UVPtStruct>& uv_er = quad->side[1]->GetUVPtStruct(false,1);
@@ -2574,16 +2602,20 @@ bool StdMeshers_Quadrangle_2D::ComputeReduced (SMESH_Mesh &        aMesh,
     int curr_base_len = nb;
     int next_base_len = 0;
 
-    if (ncol_bot > max_lin) {
-      // "tree" simple reduce 2->4->8->16->32->...
+    if (is_tree_42) {
+      // "tree" simple reduce "42": 2->4->8->16->32->...
       //
-      //  .---------------.---------------.---------------.---------------. nr
+      //  .-------------------------------.-------------------------------. nr
+      //  |    \                          |                          /    |
+      //  |         \     .---------------.---------------.     /         |
+      //  |               |               |               |               |
+      //  .---------------.---------------.---------------.---------------.
       //  | \             |             / | \             |             / |
       //  |     \ .-------.-------. /     |     \ .-------.-------. /     |
       //  |       |       |       |       |       |       |       |       |
-      //  .-------.-------.-------.-------.-------.-------.-------.-------.
+      //  .-------.-------.-------.-------.-------.-------.-------.-------. i
       //  |\      |      /|\      |      /|\      |      /|\      |      /|
-      //  |  \.---.---./  |  \.---.---./  |  \.---.---./  |  \.---.---./  | i
+      //  |  \.---.---./  |  \.---.---./  |  \.---.---./  |  \.---.---./  |
       //  |   |   |   |   |   |   |   |   |   |   |   |   |   |   |   |   |
       //  .---.---.---.---.---.---.---.---.---.---.---.---.---.---.---.---.
       //  |\  |  /|\  |  /|\  |  /|\  |  /|\  |  /|\  |  /|\  |  /|\  |  /|
@@ -2820,9 +2852,198 @@ bool StdMeshers_Quadrangle_2D::ComputeReduced (SMESH_Mesh &        aMesh,
         curr_par_v = next_par_v;
         next_base_len = 0;
       }
-    } // end "tree" simple reduce
-    else {
-      // "linear" simple reduce 4->8->12->16 (3 steps)
+    } // end "tree" simple reduce "42"
+    else if (is_tree_31) {
+      // "tree" simple reduce "31": 1->3->9->27->...
+      //
+      //  .-----------------------------------------------------. nr
+      //  |        \                                   /        |
+      //  |                 .-----------------.                 |
+      //  |                 |                 |                 |
+      //  .-----------------.-----------------.-----------------.
+      //  |   \         /   |   \         /   |   \         /   |
+      //  |     .-----.     |     .-----.     |     .-----.     | i
+      //  |     |     |     |     |     |     |     |     |     |
+      //  .-----.-----.-----.-----.-----.-----.-----.-----.-----.
+      //  |\   /|\   /|\   /|\   /|\   /|\   /|\   /|\   /|\   /|
+      //  | .-. | .-. | .-. | .-. | .-. | .-. | .-. | .-. | .-. |
+      //  | | | | | | | | | | | | | | | | | | | | | | | | | | | |
+      //  .-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-. 1
+      //  1                          j                          nb
+
+      for (i = 1; i < nr; i++) { // layer by layer
+        // left
+        NodesBRD.SetValue(1, i+1, uv_el[i].node);
+        next_base.SetValue(++next_base_len, 1);
+        // right
+        NodesBRD.SetValue(nb, i+1, uv_er[i].node);
+
+        next_par_u.SetValue(next_base_len, uv_el[i].u);
+        next_par_v.SetValue(next_base_len, uv_el[i].v);
+
+        // to stop reducing, if number of nodes reaches nt
+        int delta = curr_base_len - nt;
+
+        // to calculate normalized parameter, we must know number of points in next layer
+        int nb_three = (curr_base_len - 1) / 3;
+        int nb_next = nb_three + (curr_base_len - nb_three*3);
+        if (nb_next < nt) nb_next = nt;
+
+        for (j = 1; j + 3 <= curr_base_len && delta > 0; j += 3, delta -= 2) {
+          // add one "H": nodes b,c,e and faces 1,2,4,5
+          //
+          //  .---------b i + 1
+          //  |\   5   /|
+          //  | \     / |
+          //  |  c---e  |
+          //  |1 |2  |4 |
+          //  |  |   |  |
+          //  .--.---.--. i
+          //
+          //  j j+1 j+2 j+3
+
+          double u,v;
+
+          // b (i + 1, j + 3)
+          const SMDS_MeshNode* Nb;
+          next_base_len++;
+          next_base.SetValue(next_base_len, curr_base.Value(j + 3));
+          if (i + 1 == nr) { // top
+            Nb = uv_et[next_base_len - 1].node;
+            NodesBRD.SetValue(next_base.Value(next_base_len), i + 1, Nb);
+            u = uv_et[next_base_len - 1].u;
+            v = uv_et[next_base_len - 1].v;
+          }
+          else if (j + 3 == curr_base_len) { // right
+            Nb = NodesBRD.Value(next_base.Value(next_base_len), i + 1);
+            u = uv_er[i].u;
+            v = uv_er[i].v;
+          }
+          else {
+            {
+              double rel = double(next_base_len - 1) * double(nt - 1) / double(nb_next - 1) + 1;
+              int nearest_node_j = (int)rel;
+              rel -= nearest_node_j;
+              int ij = (i + 1 - 1) * nt + (nearest_node_j - 1);
+              double u1 = quad->uv_grid[ij].u;
+              double v1 = quad->uv_grid[ij].v;
+              double u2 = quad->uv_grid[ij + 1].u;
+              double v2 = quad->uv_grid[ij + 1].v;
+              double duj = (u2 - u1) * rel;
+              double dvj = (v2 - v1) * rel;
+              u = u1 + duj;
+              v = v1 + dvj;
+            }
+            gp_Pnt P = S->Value(u,v);
+            SMDS_MeshNode* Nb1 = meshDS->AddNode(P.X(), P.Y(), P.Z());
+            meshDS->SetNodeOnFace(Nb1, geomFaceID, u, v);
+            NodesBRD.SetValue(next_base.Value(next_base_len), i + 1, Nb1);
+            Nb = Nb1;
+          }
+          next_par_u.SetValue(next_base_len, u);
+          next_par_v.SetValue(next_base_len, v);
+
+          // c and e
+          double u1 = (curr_par_u.Value(j) + next_par_u.Value(next_base_len - 1)) / 2.0;
+          double u2 = (curr_par_u.Value(j + 3) + next_par_u.Value(next_base_len)) / 2.0;
+          double u3 = (u2 - u1) / 3.0;
+
+          double v1 = (curr_par_v.Value(j) + next_par_v.Value(next_base_len - 1)) / 2.0;
+          double v2 = (curr_par_v.Value(j + 3) + next_par_v.Value(next_base_len)) / 2.0;
+          double v3 = (v2 - v1) / 3.0;
+
+          // c
+          u = u1 + u3;
+          v = v1 + v3;
+          gp_Pnt P = S->Value(u,v);
+          SMDS_MeshNode* Nc = meshDS->AddNode(P.X(), P.Y(), P.Z());
+          meshDS->SetNodeOnFace(Nc, geomFaceID, u, v);
+
+          // e
+          u = u1 + u3 + u3;
+          v = v1 + v3 + v3;
+          P = S->Value(u,v);
+          SMDS_MeshNode* Ne = meshDS->AddNode(P.X(), P.Y(), P.Z());
+          meshDS->SetNodeOnFace(Ne, geomFaceID, u, v);
+
+          // Faces
+          SMDS_MeshFace* F1 = myTool->AddFace(NodesBRD.Value(curr_base.Value(j + 0), i),
+                                              NodesBRD.Value(curr_base.Value(j + 1), i),
+                                              Nc,
+                                              NodesBRD.Value(next_base.Value(next_base_len - 1), i + 1));
+          if (F1) meshDS->SetMeshElementOnShape(F1, geomFaceID);
+
+          SMDS_MeshFace* F2 = myTool->AddFace(NodesBRD.Value(curr_base.Value(j + 1), i),
+                                              NodesBRD.Value(curr_base.Value(j + 2), i),
+                                              Ne, Nc);
+          if (F2) meshDS->SetMeshElementOnShape(F2, geomFaceID);
+
+          SMDS_MeshFace* F4 = myTool->AddFace(NodesBRD.Value(curr_base.Value(j + 2), i),
+                                              NodesBRD.Value(curr_base.Value(j + 3), i),
+                                              Nb, Ne);
+          if (F4) meshDS->SetMeshElementOnShape(F4, geomFaceID);
+
+          SMDS_MeshFace* F5 = myTool->AddFace(Nc, Ne, Nb,
+                                              NodesBRD.Value(next_base.Value(next_base_len - 1), i + 1));
+          if (F5) meshDS->SetMeshElementOnShape(F5, geomFaceID);
+        }
+
+        // not reduced side elements (if any)
+        for (; j < curr_base_len; j++) {
+          // f (i + 1, j + 1)
+          const SMDS_MeshNode* Nf;
+          double u,v;
+          next_base.SetValue(++next_base_len, curr_base.Value(j + 1));
+          if (i + 1 == nr) { // top
+            Nf = uv_et[next_base_len - 1].node;
+            NodesBRD.SetValue(next_base.Value(next_base_len), i + 1, Nf);
+            u = uv_et[next_base_len - 1].u;
+            v = uv_et[next_base_len - 1].v;
+          }
+          else if (j + 1 == curr_base_len) { // right
+            Nf = NodesBRD.Value(next_base.Value(next_base_len), i + 1);
+            u = uv_er[i].u;
+            v = uv_er[i].v;
+          }
+          else {
+            {
+              double rel = double(next_base_len - 1) * double(nt - 1) / double(nb_next - 1) + 1;
+              int nearest_node_j = (int)rel;
+              rel -= nearest_node_j;
+              int ij = (i + 1 - 1) * nt + (nearest_node_j - 1);
+              double u1 = quad->uv_grid[ij].u;
+              double v1 = quad->uv_grid[ij].v;
+              double u2 = quad->uv_grid[ij + 1].u;
+              double v2 = quad->uv_grid[ij + 1].v;
+              double duj = (u2 - u1) * rel;
+              double dvj = (v2 - v1) * rel;
+              u = u1 + duj;
+              v = v1 + dvj;
+            }
+            gp_Pnt P = S->Value(u,v);
+            SMDS_MeshNode* Nf1 = meshDS->AddNode(P.X(), P.Y(), P.Z());
+            meshDS->SetNodeOnFace(Nf1, geomFaceID, u, v);
+            NodesBRD.SetValue(next_base.Value(next_base_len), i + 1, Nf1);
+            Nf = Nf1;
+          }
+          next_par_u.SetValue(next_base_len, u);
+          next_par_v.SetValue(next_base_len, v);
+          SMDS_MeshFace* F1 = myTool->AddFace(NodesBRD.Value(curr_base.Value(j), i),
+                                              NodesBRD.Value(curr_base.Value(j + 1), i),
+                                              NodesBRD.Value(next_base.Value(next_base_len), i + 1),
+                                              NodesBRD.Value(next_base.Value(next_base_len - 1), i + 1));
+          if (F1) meshDS->SetMeshElementOnShape(F1, geomFaceID);
+        }
+
+        curr_base_len = next_base_len;
+        curr_base = next_base;
+        curr_par_u = next_par_u;
+        curr_par_v = next_par_v;
+        next_base_len = 0;
+      }
+    } // end "tree" simple reduce "31"
+    else if (is_lin_42) {
+      // "linear" simple reduce "42": 4->8->12->16
       //
       //  .---------------.---------------.---------------.---------------. nr
       //  | \             |             / | \             |             / |
@@ -3192,7 +3413,322 @@ bool StdMeshers_Quadrangle_2D::ComputeReduced (SMESH_Mesh &        aMesh,
         curr_par_v = next_par_v;
         next_base_len = 0;
       }
-    } // end "linear" simple reduce
+    } // end "linear" simple reduce "42"
+    else if (is_lin_31) {
+      // "linear" simple reduce "31": 2->6->10->14
+      //
+      //  .-----------------------------.-----------------------------. nr
+      //  |     \                 /     |     \                 /     |
+      //  |         .---------.         |         .---------.         |
+      //  |         |         |         |         |         |         |
+      //  .---------.---------.---------.---------.---------.---------.
+      //  |        / \       / \        |        / \       / \        |
+      //  |       /   .-----.   \       |       /   .-----.   \       | i
+      //  |      /    |     |    \      |      /    |     |    \      |
+      //  .-----.-----.-----.-----.-----.-----.-----.-----.-----.-----.
+      //  |    /     / \   / \     \    |    /     / \   / \     \    |
+      //  |   /     /   .-.   \     \   |   /     /   .-.   \     \   |
+      //  |  /     /   /   \   \     \  |  /     /   /   \   \     \  |
+      //  .--.----.---.-----.---.-----.-.--.----.---.-----.---.-----.-. 1
+      //  1                             j                             nb
+
+      int delta_all = nb - nt;
+      int delta_one_col = (nr - 1) * 2;
+      int nb_col = delta_all / delta_one_col;
+      int remainder = delta_all - nb_col * delta_one_col;
+      if (remainder > 0) {
+        nb_col++;
+      }
+      int free_left = ((nt - 1) - nb_col) / 2;
+      free_left += nr - 2;
+      int free_middle = (nr - 2) * 2;
+      if (remainder > 0 && nb_col == 1) {
+        int nb_rows_short_col = remainder / 2;
+        int nb_rows_thrown = (nr - 1) - nb_rows_short_col;
+        free_left -= nb_rows_thrown;
+      }
+
+      for (i = 1; i < nr; i++, free_middle -= 2, free_left -= 1) { // layer by layer
+        // left
+        NodesBRD.SetValue(1, i+1, uv_el[i].node);
+        next_base.SetValue(++next_base_len, 1);
+        // right
+        NodesBRD.SetValue(nb, i+1, uv_er[i].node);
+
+        // left
+        next_par_u.SetValue(next_base_len, uv_el[i].u);
+        next_par_v.SetValue(next_base_len, uv_el[i].v);
+
+        // to calculate normalized parameter, we must know number of points in next layer
+        int nb_next = curr_base_len - nb_col * 2;
+        if (remainder > 0 && i > remainder / 2)
+          // take into account short "column"
+          nb_next += 2;
+        if (nb_next < nt) nb_next = nt;
+
+        // not reduced left elements
+        for (j = 1; j <= free_left; j++) {
+          // f (i + 1, j + 1)
+          const SMDS_MeshNode* Nf;
+          double u,v;
+          next_base.SetValue(++next_base_len, curr_base.Value(j + 1));
+          if (i + 1 == nr) { // top
+            Nf = uv_et[next_base_len - 1].node;
+            NodesBRD.SetValue(next_base.Value(next_base_len), i + 1, Nf);
+            u = uv_et[next_base_len - 1].u;
+            v = uv_et[next_base_len - 1].v;
+          }
+          else {
+            {
+              double rel = double(next_base_len - 1) * double(nt - 1) / double(nb_next - 1) + 1;
+              int nearest_node_j = (int)rel;
+              rel -= nearest_node_j;
+              int ij = (i + 1 - 1) * nt + (nearest_node_j - 1);
+              double u1 = quad->uv_grid[ij].u;
+              double v1 = quad->uv_grid[ij].v;
+              double u2 = quad->uv_grid[ij + 1].u;
+              double v2 = quad->uv_grid[ij + 1].v;
+              double duj = (u2 - u1) * rel;
+              double dvj = (v2 - v1) * rel;
+              u = u1 + duj;
+              v = v1 + dvj;
+            }
+            gp_Pnt P = S->Value(u,v);
+            SMDS_MeshNode* Nf1 = meshDS->AddNode(P.X(), P.Y(), P.Z());
+            meshDS->SetNodeOnFace(Nf1, geomFaceID, u, v);
+            NodesBRD.SetValue(next_base.Value(next_base_len), i + 1, Nf1);
+            Nf = Nf1;
+          }
+          next_par_u.SetValue(next_base_len, u);
+          next_par_v.SetValue(next_base_len, v);
+          SMDS_MeshFace* F1 = myTool->AddFace(NodesBRD.Value(curr_base.Value(j), i),
+                                              NodesBRD.Value(curr_base.Value(j + 1), i),
+                                              NodesBRD.Value(next_base.Value(next_base_len), i + 1),
+                                              NodesBRD.Value(next_base.Value(next_base_len - 1), i + 1));
+          if (F1) meshDS->SetMeshElementOnShape(F1, geomFaceID);
+        }
+
+        for (int icol = 1; icol <= nb_col; icol++) {
+
+          if (remainder > 0 && icol == nb_col && i > remainder / 2)
+            // stop short "column"
+            break;
+
+          // add one "H": nodes b,c,e and faces 1,2,4,5
+          //
+          //  .---------b i + 1
+          //  |\   5   /|
+          //  | \     / |
+          //  |  c---e  |
+          //  |1 |2  |4 |
+          //  |  |   |  |
+          //  .--.---.--. i
+          //
+          //  j j+1 j+2 j+3
+
+          double u,v;
+
+          // b (i + 1, j + 3)
+          const SMDS_MeshNode* Nb;
+          next_base_len++;
+          next_base.SetValue(next_base_len, curr_base.Value(j + 3));
+          if (i + 1 == nr) { // top
+            Nb = uv_et[next_base_len - 1].node;
+            NodesBRD.SetValue(next_base.Value(next_base_len), i + 1, Nb);
+            u = uv_et[next_base_len - 1].u;
+            v = uv_et[next_base_len - 1].v;
+          }
+          else if (j + 3 == curr_base_len) { // right
+            Nb = NodesBRD.Value(next_base.Value(next_base_len), i + 1);
+            u = uv_er[i].u;
+            v = uv_er[i].v;
+          }
+          else {
+            {
+              double rel = double(next_base_len - 1) * double(nt - 1) / double(nb_next - 1) + 1;
+              int nearest_node_j = (int)rel;
+              rel -= nearest_node_j;
+              int ij = (i + 1 - 1) * nt + (nearest_node_j - 1);
+              double u1 = quad->uv_grid[ij].u;
+              double v1 = quad->uv_grid[ij].v;
+              double u2 = quad->uv_grid[ij + 1].u;
+              double v2 = quad->uv_grid[ij + 1].v;
+              double duj = (u2 - u1) * rel;
+              double dvj = (v2 - v1) * rel;
+              u = u1 + duj;
+              v = v1 + dvj;
+            }
+            gp_Pnt P = S->Value(u,v);
+            SMDS_MeshNode* Nb1 = meshDS->AddNode(P.X(), P.Y(), P.Z());
+            meshDS->SetNodeOnFace(Nb1, geomFaceID, u, v);
+            NodesBRD.SetValue(next_base.Value(next_base_len), i + 1, Nb1);
+            Nb = Nb1;
+          }
+          next_par_u.SetValue(next_base_len, u);
+          next_par_v.SetValue(next_base_len, v);
+
+          // c and d
+          double u1 = (curr_par_u.Value(j) + next_par_u.Value(next_base_len - 1)) / 2.0;
+          double u2 = (curr_par_u.Value(j + 3) + next_par_u.Value(next_base_len)) / 2.0;
+          double u3 = (u2 - u1) / 3.0;
+
+          double v1 = (curr_par_v.Value(j) + next_par_v.Value(next_base_len - 1)) / 2.0;
+          double v2 = (curr_par_v.Value(j + 3) + next_par_v.Value(next_base_len)) / 2.0;
+          double v3 = (v2 - v1) / 3.0;
+
+          // c
+          u = u1 + u3;
+          v = v1 + v3;
+          gp_Pnt P = S->Value(u,v);
+          SMDS_MeshNode* Nc = meshDS->AddNode(P.X(), P.Y(), P.Z());
+          meshDS->SetNodeOnFace(Nc, geomFaceID, u, v);
+
+          // e
+          u = u1 + u3 + u3;
+          v = v1 + v3 + v3;
+          P = S->Value(u,v);
+          SMDS_MeshNode* Ne = meshDS->AddNode(P.X(), P.Y(), P.Z());
+          meshDS->SetNodeOnFace(Ne, geomFaceID, u, v);
+
+          // Faces
+          SMDS_MeshFace* F1 = myTool->AddFace(NodesBRD.Value(curr_base.Value(j + 0), i),
+                                              NodesBRD.Value(curr_base.Value(j + 1), i),
+                                              Nc,
+                                              NodesBRD.Value(next_base.Value(next_base_len - 1), i + 1));
+          if (F1) meshDS->SetMeshElementOnShape(F1, geomFaceID);
+
+          SMDS_MeshFace* F2 = myTool->AddFace(NodesBRD.Value(curr_base.Value(j + 1), i),
+                                              NodesBRD.Value(curr_base.Value(j + 2), i),
+                                              Ne, Nc);
+          if (F2) meshDS->SetMeshElementOnShape(F2, geomFaceID);
+
+          SMDS_MeshFace* F4 = myTool->AddFace(NodesBRD.Value(curr_base.Value(j + 2), i),
+                                              NodesBRD.Value(curr_base.Value(j + 3), i),
+                                              Nb, Ne);
+          if (F4) meshDS->SetMeshElementOnShape(F4, geomFaceID);
+
+          SMDS_MeshFace* F5 = myTool->AddFace(Nc, Ne, Nb,
+                                              NodesBRD.Value(next_base.Value(next_base_len - 1), i + 1));
+          if (F5) meshDS->SetMeshElementOnShape(F5, geomFaceID);
+
+          j += 3;
+
+          // not reduced middle elements
+          if (icol < nb_col) {
+            if (remainder > 0 && icol == nb_col - 1 && i > remainder / 2)
+              // pass middle elements before stopped short "column"
+              break;
+
+            int free_add = free_middle;
+            if (remainder > 0 && icol == nb_col - 1)
+              // next "column" is short
+              free_add -= (nr - 1) - (remainder / 2);
+
+            for (int imiddle = 1; imiddle <= free_add; imiddle++) {
+              // f (i + 1, j + imiddle)
+              const SMDS_MeshNode* Nf;
+              double u,v;
+              next_base.SetValue(++next_base_len, curr_base.Value(j + imiddle));
+              if (i + 1 == nr) { // top
+                Nf = uv_et[next_base_len - 1].node;
+                NodesBRD.SetValue(next_base.Value(next_base_len), i + 1, Nf);
+                u = uv_et[next_base_len - 1].u;
+                v = uv_et[next_base_len - 1].v;
+              }
+              else if (j + imiddle == curr_base_len) { // right
+                Nf = NodesBRD.Value(next_base.Value(next_base_len), i + 1);
+                u = uv_er[i].u;
+                v = uv_er[i].v;
+              }
+              else {
+                {
+                  double rel = double(next_base_len - 1) * double(nt - 1) / double(nb_next - 1) + 1;
+                  int nearest_node_j = (int)rel;
+                  rel -= nearest_node_j;
+                  int ij = (i + 1 - 1) * nt + (nearest_node_j - 1);
+                  double u1 = quad->uv_grid[ij].u;
+                  double v1 = quad->uv_grid[ij].v;
+                  double u2 = quad->uv_grid[ij + 1].u;
+                  double v2 = quad->uv_grid[ij + 1].v;
+                  double duj = (u2 - u1) * rel;
+                  double dvj = (v2 - v1) * rel;
+                  u = u1 + duj;
+                  v = v1 + dvj;
+                }
+                gp_Pnt P = S->Value(u,v);
+                SMDS_MeshNode* Nf1 = meshDS->AddNode(P.X(), P.Y(), P.Z());
+                meshDS->SetNodeOnFace(Nf1, geomFaceID, u, v);
+                NodesBRD.SetValue(next_base.Value(next_base_len), i + 1, Nf1);
+                Nf = Nf1;
+              }
+              next_par_u.SetValue(next_base_len, u);
+              next_par_v.SetValue(next_base_len, v);
+              SMDS_MeshFace* F1 = myTool->AddFace(NodesBRD.Value(curr_base.Value(j - 1 + imiddle), i),
+                                                  NodesBRD.Value(curr_base.Value(j + imiddle), i),
+                                                  NodesBRD.Value(next_base.Value(next_base_len), i + 1),
+                                                  NodesBRD.Value(next_base.Value(next_base_len - 1), i + 1));
+              if (F1) meshDS->SetMeshElementOnShape(F1, geomFaceID);
+            }
+            j += free_add;
+          }
+        }
+
+        // not reduced right elements
+        for (; j < curr_base_len; j++) {
+          // f (i + 1, j + 1)
+          const SMDS_MeshNode* Nf;
+          double u,v;
+          next_base.SetValue(++next_base_len, curr_base.Value(j + 1));
+          if (i + 1 == nr) { // top
+            Nf = uv_et[next_base_len - 1].node;
+            NodesBRD.SetValue(next_base.Value(next_base_len), i + 1, Nf);
+            u = uv_et[next_base_len - 1].u;
+            v = uv_et[next_base_len - 1].v;
+          }
+          else if (j + 1 == curr_base_len) { // right
+            Nf = NodesBRD.Value(next_base.Value(next_base_len), i + 1);
+            u = uv_er[i].u;
+            v = uv_er[i].v;
+          }
+          else {
+            {
+              double rel = double(next_base_len - 1) * double(nt - 1) / double(nb_next - 1) + 1;
+              int nearest_node_j = (int)rel;
+              rel -= nearest_node_j;
+              int ij = (i + 1 - 1) * nt + (nearest_node_j - 1);
+              double u1 = quad->uv_grid[ij].u;
+              double v1 = quad->uv_grid[ij].v;
+              double u2 = quad->uv_grid[ij + 1].u;
+              double v2 = quad->uv_grid[ij + 1].v;
+              double duj = (u2 - u1) * rel;
+              double dvj = (v2 - v1) * rel;
+              u = u1 + duj;
+              v = v1 + dvj;
+            }
+            gp_Pnt P = S->Value(u,v);
+            SMDS_MeshNode* Nf1 = meshDS->AddNode(P.X(), P.Y(), P.Z());
+            meshDS->SetNodeOnFace(Nf1, geomFaceID, u, v);
+            NodesBRD.SetValue(next_base.Value(next_base_len), i + 1, Nf1);
+            Nf = Nf1;
+          }
+          next_par_u.SetValue(next_base_len, u);
+          next_par_v.SetValue(next_base_len, v);
+          SMDS_MeshFace* F1 = myTool->AddFace(NodesBRD.Value(curr_base.Value(j), i),
+                                              NodesBRD.Value(curr_base.Value(j + 1), i),
+                                              NodesBRD.Value(next_base.Value(next_base_len), i + 1),
+                                              NodesBRD.Value(next_base.Value(next_base_len - 1), i + 1));
+          if (F1) meshDS->SetMeshElementOnShape(F1, geomFaceID);
+        }
+
+        curr_base_len = next_base_len;
+        curr_base = next_base;
+        curr_par_u = next_par_u;
+        curr_par_v = next_par_v;
+        next_base_len = 0;
+      }
+    } // end "linear" simple reduce "31"
+    else {
+    }
   } // end Simple Reduce implementation
 
   bool isOk = true;
