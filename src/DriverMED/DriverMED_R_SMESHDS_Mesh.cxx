@@ -970,7 +970,7 @@ bool DriverMED_R_SMESHDS_Mesh::buildMeshGrille(const MED::PWrapper& theWrapper,
     MED::TNodeCoord aMEDNodeCoord = aGrilleInfo->GetCoord(iNode);
     for(MED::TInt iDim=0;iDim<aMeshDim;iDim++)
       aCoords[(int)iDim] = aMEDNodeCoord[(int)iDim];
-    aNode = myMesh->AddNodeWithID(aCoords[0],aCoords[1],aCoords[2],(int)iNode);
+    aNode = myMesh->AddNodeWithID(aCoords[0],aCoords[1],aCoords[2],iNode+1);
     if (!aNode) {
       EXCEPTION(runtime_error,"buildMeshGrille Error. Node not created! "<<(int)iNode);
     }
@@ -996,35 +996,35 @@ bool DriverMED_R_SMESHDS_Mesh::buildMeshGrille(const MED::PWrapper& theWrapper,
         res = false;
         EXCEPTION(runtime_error,"buildMeshGrille Error. Incorrect size of ids 2!="<<aNodeIds.size());
       }
-      anElement = myMesh->AddEdgeWithID(aNodeIds[0],
-                                        aNodeIds[1],
-                                        iCell);
+      anElement = myMesh->AddEdgeWithID(aNodeIds[0]+1,
+                                        aNodeIds[1]+1,
+                                        iCell+1);
       break;
     case MED::eQUAD4:
       if(aNodeIds.size() != 4){
         res = false;
         EXCEPTION(runtime_error,"buildMeshGrille Error. Incorrect size of ids 4!="<<aNodeIds.size());
       }
-      anElement = myMesh->AddFaceWithID(aNodeIds[0],
-                                        aNodeIds[2],
-                                        aNodeIds[3],
-                                        aNodeIds[1],
-                                        iCell);
+      anElement = myMesh->AddFaceWithID(aNodeIds[0]+1,
+                                        aNodeIds[2]+1,
+                                        aNodeIds[3]+1,
+                                        aNodeIds[1]+1,
+                                        iCell+1);
       break;
     case MED::eHEXA8:
       if(aNodeIds.size() != 8){
         res = false;
         EXCEPTION(runtime_error,"buildMeshGrille Error. Incorrect size of ids 8!="<<aNodeIds.size());
       }
-      anElement = myMesh->AddVolumeWithID(aNodeIds[0],
-                                          aNodeIds[2],
-                                          aNodeIds[3],
-                                          aNodeIds[1],
-                                          aNodeIds[4],
-                                          aNodeIds[6],
-                                          aNodeIds[7],
-                                          aNodeIds[5],
-                                          iCell);
+      anElement = myMesh->AddVolumeWithID(aNodeIds[0]+1,
+                                          aNodeIds[2]+1,
+                                          aNodeIds[3]+1,
+                                          aNodeIds[1]+1,
+                                          aNodeIds[4]+1,
+                                          aNodeIds[6]+1,
+                                          aNodeIds[7]+1,
+                                          aNodeIds[5]+1,
+                                          iCell+1);
       break;
     default:
       break;
