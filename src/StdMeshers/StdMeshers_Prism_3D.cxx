@@ -1329,6 +1329,17 @@ bool StdMeshers_PrismAsBlock::Init(SMESH_MesherHelper* helper,
   if ( !GetWallFaces( Mesh(), shape3D, botSM->GetSubShape(), orderedEdges, nbEInW, wallFaces))
     return error(COMPERR_BAD_SHAPE, "Can't find side faces");
 
+  // Protect from a distorted block (test 3D_mesh_HEXA3D/B7 on 32bit platform)
+  // check that all wall faces have an edge common with the top face
+  {
+    list< TopoDS_Face >::iterator faceIt = wallFaces.begin();
+    for ( ; faceIt != wallFaces.end(); ++faceIt )
+      for (TopExp_Explorer edge(*faceIt, TopAbs_EDGE); edge.More(); edge.Next()) {
+        if ( !helper->IsSubShape( edge.Current(), topSM->GetSubShape() ))
+          return error(COMPERR_BAD_SHAPE);
+      }
+  }
+
   // Find columns of wall nodes and calculate edges' lengths
   // --------------------------------------------------------
 
