@@ -388,7 +388,8 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh &         aMesh,
       const TopoDS_Edge& baseE = baseQuadSide->Edge( iE );
       eOri[ iE ] = baseE.Orientation();
 
-      // assure correctness of node positions on baseE
+      // assure correctness of node positions on baseE:
+      // helper.GetNodeU() will fix positions if they are wrong
       if ( SMESHDS_SubMesh* smDS = meshDS->MeshElements( baseE ))
       {
         bool ok;
@@ -421,6 +422,15 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh &         aMesh,
         else
           append( aCubeSide[i]._u2nodesMap, u2nodesMap.rbegin(), u2nodesMap.rend());
       }
+    }
+    // check if the loaded grid corresponds to nb of quadrangles
+    const int nbQuads = meshDS->MeshElements( F )->NbElements();
+    const int nbHor = aCubeSide[i]._u2nodesMap.size() - 1;
+    const int nbVer = aCubeSide[i]._u2nodesMap.begin()->second.size() - 1;
+    if ( nbQuads != nbHor * nbVer )
+    {
+      SMESH_ComputeErrorPtr err = ComputePentahedralMesh(aMesh, aShape, proxymesh.get());
+      return error( err );
     }
   }
 
