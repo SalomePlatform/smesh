@@ -58,7 +58,7 @@ SMESH_Gen::SMESH_Gen()
         MESSAGE("SMESH_Gen::SMESH_Gen");
         _localId = 0;
         _hypId = 0;
-        _segmentation = 10;
+        _segmentation = _nbSegments = 10;
         SMDS_Mesh::_meshList.clear();
         MESSAGE(SMDS_Mesh::_meshList.size());
         _counters = new counters(100);
