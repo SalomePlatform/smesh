@@ -1030,8 +1030,8 @@ bool StdMeshers_QuadToTriaAdaptor::Compute2ndPart(SMESH_Mesh&                   
   SMESHDS_Mesh * meshDS = aMesh.GetMeshDS();
   int i, j, k, myShapeID = myPyramids[0]->GetNode(4)->getshapeId();
 
-  if ( !myElemSearcher )
-    myElemSearcher = SMESH_MeshEditor(&aMesh).GetElementSearcher();
+  if ( myElemSearcher ) delete myElemSearcher;
+  myElemSearcher = SMESH_MeshEditor(&aMesh).GetElementSearcher();
   SMESH_ElementSearcher* searcher = const_cast<SMESH_ElementSearcher*>(myElemSearcher);
 
   set<const SMDS_MeshNode*> nodesToMove;
