@@ -1361,8 +1361,8 @@ class Mesh:
         shape = geom
         if shape==0:
             shape = self.geom
-        nbSolids = len( self.geompyD.ExtractShapes( shape, geompyDC.ShapeType["SOLID"] ))
-        nbShells = len( self.geompyD.ExtractShapes( shape, geompyDC.ShapeType["SHELL"] ))
+        nbSolids = len( self.geompyD.SubShapeAll( shape, geompyDC.ShapeType["SOLID"] ))
+        nbShells = len( self.geompyD.SubShapeAll( shape, geompyDC.ShapeType["SHELL"] ))
         if nbSolids == 0 or nbSolids == nbShells:
             return Mesh_Prism3D(self,  geom)
         return Mesh_RadialPrism3D(self,  geom)
