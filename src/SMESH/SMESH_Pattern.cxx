@@ -463,7 +463,7 @@ template <class TFaceIterator> bool areNodesBound( TFaceIterator & faceItr )
     while ( nIt->more() )
     {
       const SMDS_MeshNode* node = smdsNode( nIt->next() );
-      if (node->getshapeId() <0) {
+      if (node->getshapeId() <1) {
         return false;
       }
     }
@@ -3695,13 +3695,8 @@ bool SMESH_Pattern::
                      vector<int>&                          theQuantity)
 {
   bool makePoly = false;
-//   cout << "FROM FACE NODES: " <<endl;
-//   for ( int i = 0; i < theNbBndNodes; ++i )
-//     cout << theBndNodes[ i ];
 
-  set< const SMDS_MeshNode* > bndNodeSet;
-  for ( int i = 0; i < theNbBndNodes; ++i )
-    bndNodeSet.insert( theBndNodes[ i ]);
+  set< const SMDS_MeshNode* > bndNodeSet( theBndNodes, theBndNodes + theNbBndNodes);
 
   map< TNodeSet, list< list< int > > >::iterator nn_IdList;
 
@@ -3710,12 +3705,13 @@ bool SMESH_Pattern::
   if ( !myIs2D ) { // for 2D, merge only edges
     nn_IdList = myIdsOnBoundary.find( bndNodeSet );
     if ( nn_IdList != myIdsOnBoundary.end() ) {
-      makePoly = true;
       list< int > & faceIds = nn_IdList->second.front();
-      ids.insert( faceIds.begin(), faceIds.end() );
+      if ( !faceIds.empty() ) {
+        makePoly = true;
+        ids.insert( faceIds.begin(), faceIds.end() );
+      }
     }
   }
-  //bool hasIdsInFace = !ids.empty();
 
   // add ids on links and bnd nodes
   int lastFreeId = Max( myXYZIdToNodeMap.rbegin()->first, theNodes.size() );
@@ -3731,22 +3727,26 @@ bool SMESH_Pattern::
       bndId = nn_IdList->second.front().front();
       ids.insert( bndId );
     }
-    else
+    else {
       myXYZIdToNodeMap.insert( make_pair( bndId, theBndNodes[ iN ] ));
+    }
     faceDef.push_back( bndId );
     // add ids on a link
     TNodeSet linkNodes;
     linkNodes.insert( theBndNodes[ iN ]);
-    linkNodes.insert( theBndNodes[ iN + 1 == theNbBndNodes ? 0 : iN + 1 ]);
+    linkNodes.insert( theBndNodes[ (iN + 1) % theNbBndNodes] );
     nn_IdList = myIdsOnBoundary.find( linkNodes );
     if ( nn_IdList != myIdsOnBoundary.end() ) {
-      makePoly = true;
       list< int > & linkIds = nn_IdList->second.front();
-      ids.insert( linkIds.begin(), linkIds.end() );
-      if ( isReversed( theBndNodes[ iN ], linkIds ))
-        faceDef.insert( faceDef.end(), linkIds.begin(), linkIds.end() );
-      else
-        faceDef.insert( faceDef.end(), linkIds.rbegin(), linkIds.rend() );
+      if ( !linkIds.empty() )
+      {
+        makePoly = true;
+        ids.insert( linkIds.begin(), linkIds.end() );
+        if ( isReversed( theBndNodes[ iN ], linkIds ))
+          faceDef.insert( faceDef.end(), linkIds.begin(), linkIds.end() );
+        else
+          faceDef.insert( faceDef.end(), linkIds.rbegin(), linkIds.rend() );
+      }
     }
   }
 
@@ -3768,9 +3768,7 @@ bool SMESH_Pattern::
       {
         if ( !checkedVolDefs.insert( *pIdList ).second )
           continue; // skip already checked volume definition
-        vector< int > idVec;
-        idVec.reserve( (*pIdList)->size() );
-        idVec.insert( idVec.begin(), (*pIdList)->begin(), (*pIdList)->end() );
+        vector< int > idVec( (*pIdList)->begin(), (*pIdList)->end() );
         // loop on face defs of a volume
         SMDS_VolumeTool::VolumeType volType = vol.GetType( idVec.size() );
         if ( volType == SMDS_VolumeTool::UNKNOWN )
@@ -3800,7 +3798,7 @@ bool SMESH_Pattern::
   }
   if ( !defsAdded ) {
     theQuantity.push_back( faceDef.size() );
-    theFaceDefs.splice( theFaceDefs.end(), faceDef, faceDef.begin(), faceDef.end() );
+    theFaceDefs.splice( theFaceDefs.end(), faceDef );
   }
 
   return makePoly;
@@ -3970,6 +3968,8 @@ bool SMESH_Pattern::MakeMesh(SMESH_Mesh* theMesh,
   {
     createElements( theMesh, nodesVector, myElemPointIDs, myElements );
   }
+
+  aMeshDS->compactMesh();
 
 //   const map<int,SMESHDS_SubMesh*>& sm = aMeshDS->SubMeshes();
 //   map<int,SMESHDS_SubMesh*>::const_iterator i_sm = sm.begin();
@@ -4551,6 +4551,17 @@ void SMESH_Pattern::Clear()
   myShapeIDMap.Clear();
   myShape.Nullify();
   myNbKeyPntInBoundary.clear();
+
+  myXYZ.clear();
+  myElemXYZIDs.clear();
+  myXYZIdToNodeMap.clear();
+  myElements.clear();
+  myOrderedNodes.clear();
+  myPolyElems.clear();
+  myPolyElemXYZIDs.clear();
+  myPolyhedronQuantities.clear();
+  myIdsOnBoundary.clear();
+  myReverseConnectivity.clear();
 }
 
 //=======================================================================
