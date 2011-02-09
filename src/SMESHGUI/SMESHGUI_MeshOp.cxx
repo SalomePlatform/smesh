@@ -474,7 +474,7 @@ void SMESHGUI_MeshOp::selectionDone()
     {
       // Enable tabs according to shape dimension
 
-      int shapeDim = 3;
+      int shapeDim = -1;
 
       QStringList aGEOMs;
       myDlg->selectedObject(SMESHGUI_MeshDlg::Geom, aGEOMs);
@@ -504,7 +504,7 @@ void SMESHGUI_MeshOp::selectionDone()
       }
 
       if (aSeq->length() > 0) {
-        shapeDim = 0;
+        //shapeDim = 0;
         for (int iss = 0; iss < aSeq->length() && shapeDim < 3; iss++) {
           GEOM::GEOM_Object_var aGeomVar = aSeq[iss];
           switch ( aGeomVar->GetShapeType() ) {
@@ -512,18 +512,15 @@ void SMESHGUI_MeshOp::selectionDone()
           case GEOM::SHELL:
             {
               //shapeDim = 3; // Bug 0016155: EDF PAL 447: If the shape is a Shell, disable 3D tab
-              shapeDim = (shapeDim < 2) ? 2 : shapeDim;
               TopoDS_Shape aShape;
-              if (GEOMBase::GetShape(aGeomVar, aShape)) {
-                if (/*aShape.Closed()*/BRep_Tool::IsClosed(aShape))
-                  shapeDim = 3;
-              }
+	      bool isClosed = GEOMBase::GetShape(aGeomVar, aShape) && /*aShape.Closed()*/BRep_Tool::IsClosed(aShape);
+              shapeDim = qMax(isClosed ? 3 : 2, shapeDim);
             }
             break;
-          case GEOM::FACE:   shapeDim = (shapeDim < 2) ? 2 : shapeDim; break;
+          case GEOM::FACE:   shapeDim = qMax(2, shapeDim); break;
           case GEOM::WIRE:
-          case GEOM::EDGE:   shapeDim = (shapeDim < 1) ? 1 : shapeDim; break;
-          case GEOM::VERTEX: break;
+          case GEOM::EDGE:   shapeDim = qMax(1, shapeDim); break;
+          case GEOM::VERTEX: shapeDim = qMax(0, shapeDim); break;
           default:
             {
               TopoDS_Shape aShape;
@@ -531,18 +528,18 @@ void SMESHGUI_MeshOp::selectionDone()
                 TopExp_Explorer exp (aShape, TopAbs_SHELL);
                 if (exp.More()) {
                   //shapeDim = 3; // Bug 0016155: EDF PAL 447: If the shape is a Shell, disable 3D tab
-                  shapeDim = (shapeDim < 2) ? 2 : shapeDim;
+                  shapeDim = qMax(2, shapeDim);
                   for (; exp.More() && shapeDim == 2; exp.Next()) {
                     if (/*exp.Current().Closed()*/BRep_Tool::IsClosed(exp.Current()))
                       shapeDim = 3;
                   }
                 }
                 else if ( exp.Init( aShape, TopAbs_FACE ), exp.More() )
-                  shapeDim = (shapeDim < 2) ? 2 : shapeDim;
+                  shapeDim = qMax(2, shapeDim);
                 else if ( exp.Init( aShape, TopAbs_EDGE ), exp.More() )
-                  shapeDim = (shapeDim < 1) ? 1 : shapeDim;
-                else
-                  ;//shapeDim = 0;
+                  shapeDim = qMax(1, shapeDim);
+                else if ( exp.Init( aShape, TopAbs_VERTEX ), exp.More() )
+                  shapeDim = qMax(0, shapeDim);
               }
             }
           }

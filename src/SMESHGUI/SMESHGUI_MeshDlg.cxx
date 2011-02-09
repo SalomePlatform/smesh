@@ -479,9 +479,13 @@ void SMESHGUI_MeshDlg::setMaxHypoDim( const int maxDim )
   const int DIM = maxDim;
   for ( int dim = Dim0D; dim <= Dim3D; ++dim ) {
     bool enable = ( dim <= DIM );
-    if ( !enable )
+    if ( !enable ) {
       myTabs[ dim ]->reset();
-    myTabWg->setTabEnabled( myTabWg->indexOf( myTabs[ dim ] ), enable );
+      disableTab( dim );
+    }
+    else {
+      enableTab( dim );
+    }
   }
   // deselect desabled tab
   if ( !myTabWg->isTabEnabled( myTabWg->currentIndex() ) )
@@ -507,7 +511,7 @@ void SMESHGUI_MeshDlg::setHypoSets( const QStringList& theSets )
   for ( int i = 0, n = theSets.count(); i < n; i++ ) {
     aHypoSetPopup->addAction( theSets[ i ] );
   }
-  myHypoSetButton->setEnabled( !aHypoSetPopup->isEmpty() );
+  myHypoSetButton->setEnabled( !aHypoSetPopup->isEmpty() && isTabEnabled( Dim3D ) );
 }
 
 //================================================================================
@@ -565,6 +569,7 @@ void SMESHGUI_MeshDlg::setGeomPopupEnabled( const bool enable )
 //================================================================================
 void SMESHGUI_MeshDlg::disableTab(const int theTabId) {
   myTabWg->setTabEnabled( myTabWg->indexOf( myTabs[ theTabId ] ), false );
+  if ( theTabId == Dim3D ) myHypoSetButton->setEnabled( false );
 }
 
 //================================================================================
@@ -575,6 +580,10 @@ void SMESHGUI_MeshDlg::disableTab(const int theTabId) {
 //================================================================================
 void SMESHGUI_MeshDlg::enableTab(const int theTabId) {
   myTabWg->setTabEnabled( myTabWg->indexOf( myTabs[ theTabId ] ), true );
+  if ( theTabId == Dim3D ) {
+    QMenu* aHypoSetPopup = myHypoSetButton->menu();
+    myHypoSetButton->setEnabled( aHypoSetPopup && !aHypoSetPopup->actions().isEmpty() );
+  }
 }
 
 //================================================================================
