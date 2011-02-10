@@ -714,35 +714,23 @@ static void removeFromContainers (map<int,SMESHDS_SubMesh*>&     theSubMeshes,
 
   // Rm from sub-meshes
   // Element should belong to only one sub-mesh
-  map<int,SMESHDS_SubMesh*>::iterator SubIt = theSubMeshes.begin();
-  for ( ; SubIt != theSubMeshes.end(); SubIt++ )
+  if ( !theSubMeshes.empty() )
   {
-    int size = isNode ? (*SubIt).second->NbNodes() : (*SubIt).second->NbElements();
-    if ( size == 0 ) continue;
-
+    SMESHDS_Mesh* mesh = theSubMeshes.begin()->second->getParent();
     list<const SMDS_MeshElement *>::iterator elIt = theElems.begin();
-    while ( elIt != theElems.end() )
-    {
-      bool removed = false;
-      if ( isNode )
-        removed = (*SubIt).second->RemoveNode( static_cast<const SMDS_MeshNode*> (*elIt), deleted );
-      else
-        removed = (*SubIt).second->RemoveElement( *elIt, deleted );
-
-      if (removed)
-      {
-        elIt = theElems.erase( elIt );
-        if ( theElems.empty() )
-          return; // all elements are found and removed
-      }
-      else
-      {
-        elIt++ ;
-      }
+    if ( isNode ) {
+      for ( ; elIt != theElems.end(); ++elIt )
+        if ( SMESHDS_SubMesh* sm = mesh->MeshElements( (*elIt)->getshapeId() ))
+          sm->RemoveNode( static_cast<const SMDS_MeshNode*> (*elIt), deleted );
+    }
+    else {
+      for ( ; elIt != theElems.end(); ++elIt )
+        if ( SMESHDS_SubMesh* sm = mesh->MeshElements( (*elIt)->getshapeId() ))
+          sm->RemoveElement( *elIt, deleted );
     }
   }
 }
-  
+
 //=======================================================================
 //function : RemoveNode
 //purpose  : 
