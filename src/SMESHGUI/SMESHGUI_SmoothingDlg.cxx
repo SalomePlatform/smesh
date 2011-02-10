@@ -85,6 +85,24 @@
 #define SPACING 6
 #define MARGIN  11
 
+/*!
+  \class BusyLocker
+  \brief Simple 'busy state' flag locker.
+  \internal
+*/
+
+class BusyLocker
+{
+public:
+  //! Constructor. Sets passed boolean flag to \c true.
+  BusyLocker( bool& busy ) : myBusy( busy ) { myBusy = true; }
+  //! Destructor. Clear external boolean flag passed as parameter to the constructor to \c false.
+  ~BusyLocker() { myBusy = false; }
+private:
+  bool& myBusy; //! External 'busy state' boolean flag
+};
+
+
 //=================================================================================
 // function : SMESHGUI_SmoothingDlg()
 // purpose  : constructor
@@ -244,12 +262,8 @@ SMESHGUI_SmoothingDlg::SMESHGUI_SmoothingDlg( SMESHGUI* theModule )
   mySMESHGUI->SetActiveDialogBox(this);
 
   // Costruction of the logical filter for the elements: mesh/sub-mesh/group
-  SMESH_TypeFilter* aMeshOrSubMeshFilter = new SMESH_TypeFilter (MESHorSUBMESH);
-  SMESH_TypeFilter* aSmeshGroupFilter    = new SMESH_TypeFilter (GROUP);
-
   QList<SUIT_SelectionFilter*> aListOfFilters;
-  if (aMeshOrSubMeshFilter) aListOfFilters.append(aMeshOrSubMeshFilter);
-  if (aSmeshGroupFilter)    aListOfFilters.append(aSmeshGroupFilter);
+  aListOfFilters << new SMESH_TypeFilter(MESHorSUBMESH) << new SMESH_TypeFilter(GROUP);
 
   myMeshOrSubMeshOrGroupFilter =
     new SMESH_LogicalFilter (aListOfFilters, SMESH_LogicalFilter::LO_OR);
@@ -309,10 +323,10 @@ void SMESHGUI_SmoothingDlg::Init()
   LineEditElements->setFocus();
   LineEditElements->clear();
   LineEditNodes->clear();
-  myElementsId = "";
   myNbOkElements = 0;
   myNbOkNodes = 0;
   myActor     = 0;
+  myIO.Nullify();
   myMesh = SMESH::SMESH_Mesh::_nil();
 
   CheckBoxMesh->setChecked(false);
@@ -332,7 +346,7 @@ bool SMESHGUI_SmoothingDlg::ClickOnApply()
     return false;
 
   if (myNbOkElements && (myNbOkNodes || LineEditNodes->text().trimmed().isEmpty())) {
-    QStringList aListElementsId = myElementsId.split(" ", QString::SkipEmptyParts);
+    QStringList aListElementsId = LineEditElements->text().split(" ", QString::SkipEmptyParts);
     QStringList aListNodesId    = LineEditNodes->text().split(" ", QString::SkipEmptyParts);
 
     SMESH::long_array_var anElementsId = new SMESH::long_array;
@@ -389,14 +403,7 @@ bool SMESHGUI_SmoothingDlg::ClickOnApply()
     }
 
     if (aResult) {
-      if ( myActor ) {
-        Handle(SALOME_InteractiveObject) anIO = myActor->getIO();
-        SALOME_ListIO aList;
-        aList.Append(anIO);
-        mySelectionMgr->setSelectedObjects(aList, false);
-      }
-
-      SMESH::UpdateView();
+      SMESH::Update(myIO, SMESH::eDisplay);
       SMESHGUI::Modified();
       Init();
 
@@ -470,10 +477,10 @@ void SMESHGUI_SmoothingDlg::onTextChange (const QString& theNewText)
   QLineEdit* send = (QLineEdit*)sender();
 
   // return if busy
-  if (myBusy) return;
+  if (myBusy || myIO.IsNull()) return;
 
   // set busy flag
-  myBusy = true;
+  BusyLocker lock( myBusy );
 
   if (send == LineEditElements)
     myNbOkElements = 0;
@@ -484,40 +491,37 @@ void SMESHGUI_SmoothingDlg::onTextChange (const QString& theNewText)
   buttonApply->setEnabled(false);
 
   // hilight entered elements/nodes
-  SMDS_Mesh* aMesh = 0;
-  if (myActor)
-    aMesh = myActor->GetObject()->GetMesh();
+  SMDS_Mesh* aMesh = myActor ? myActor->GetObject()->GetMesh() : 0;
+  QStringList aListId = theNewText.split(" ", QString::SkipEmptyParts);
 
-  if (aMesh) {
-    
-    QStringList aListId = theNewText.split(" ", QString::SkipEmptyParts);
-
-    if (send == LineEditElements) {
-      const Handle(SALOME_InteractiveObject)& anIO = myActor->getIO();
-      TColStd_MapOfInteger newIndices;
-      for (int i = 0; i < aListId.count(); i++) {
-        const SMDS_MeshElement * e = aMesh->FindElement(aListId[ i ].toInt());
-        if (e)
-          newIndices.Add(e->GetID());
-        myNbOkElements++;
+  if (send == LineEditElements) {
+    TColStd_MapOfInteger newIndices;
+    for (int i = 0; i < aListId.count(); i++) {
+      int id = aListId[ i ].toInt();
+      if ( id > 0 ) {
+	bool validId = aMesh ? ( aMesh->FindElement( id ) != 0 ) : ( myMesh->GetElementType( id, true ) != SMESH::EDGE );
+        if ( validId ) 
+	  newIndices.Add( id );
       }
-      mySelector->AddOrRemoveIndex(anIO, newIndices, false);
+      myNbOkElements = newIndices.Extent();
+      mySelector->AddOrRemoveIndex(myIO, newIndices, false);
       if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
-        aViewWindow->highlight( anIO, true, true );
-      myElementsId = theNewText;
-
-    } else if (send == LineEditNodes) {
-      TColStd_MapOfInteger newIndices;
-      
-      for (int i = 0; i < aListId.count(); i++) {
-        const SMDS_MeshNode * n = aMesh->FindNode(aListId[ i ].toInt());
-        if (n)
-          newIndices.Add(n->GetID());
-        myNbOkNodes++;
+        aViewWindow->highlight( myIO, true, true );
+    }
+  }
+  else if (send == LineEditNodes) {
+    TColStd_MapOfInteger newIndices;
+    for (int i = 0; i < aListId.count(); i++) {
+      int id = aListId[ i ].toInt();
+      if ( id > 0 ) {
+	bool validId = aMesh ? ( aMesh->FindNode( id ) != 0 ) : ( myMesh->GetElementType( id, false ) != SMESH::EDGE );
+        if ( validId ) 
+	  newIndices.Add( id );
       }
-      mySelector->AddOrRemoveIndex(myActor->getIO(), newIndices, false);
+      myNbOkNodes = newIndices.Extent();
+      mySelector->AddOrRemoveIndex(myIO, newIndices, false);
       if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
-        aViewWindow->highlight( myActor->getIO(), true, true );
+        aViewWindow->highlight( myIO, true, true );
     }
   }
 
@@ -525,8 +529,6 @@ void SMESHGUI_SmoothingDlg::onTextChange (const QString& theNewText)
     buttonOk->setEnabled(true);
     buttonApply->setEnabled(true);
   }
-
-  myBusy = false;
 }
 
 //=================================================================================
@@ -540,19 +542,23 @@ void SMESHGUI_SmoothingDlg::SelectionIntoArgument()
   // clear
   QString aString = "";
 
-  myBusy = true;
+  // set busy flag
+  BusyLocker lock( myBusy );
+
   if (myEditCurrentArgument == LineEditElements ||
       myEditCurrentArgument == LineEditNodes) {
     myEditCurrentArgument->setText(aString);
-    if (myEditCurrentArgument == LineEditElements)
+    if (myEditCurrentArgument == LineEditElements) {
       myNbOkElements = 0;
-    else
+      myActor = 0;
+      myIO.Nullify();
+    }
+    else {
       myNbOkNodes = 0;
+    }
     buttonOk->setEnabled(false);
     buttonApply->setEnabled(false);
-    myActor = 0;
   }
-  myBusy = false;
 
   if (!GroupButtons->isEnabled()) // inactive
     return;
@@ -565,50 +571,45 @@ void SMESHGUI_SmoothingDlg::SelectionIntoArgument()
     return;
 
   Handle(SALOME_InteractiveObject) IO = aList.First();
-  myMesh = SMESH::GetMeshByIO(IO);
-  if (myMesh->_is_nil())
-    return;
-
-  myActor = SMESH::FindActorByObject(myMesh);
-  if (!myActor && !CheckBoxMesh->isChecked())
-    return;
-
-  int aNbUnits = 0;
 
   if (myEditCurrentArgument == LineEditElements) {
-    myElementsId = "";
+    myMesh = SMESH::GetMeshByIO(IO);
+    if (myMesh->_is_nil())
+      return;
+    myIO = IO;
+    myActor = SMESH::FindActorByObject(myMesh);
 
     if (CheckBoxMesh->isChecked()) {
       SMESH::GetNameOfSelectedIObjects(mySelectionMgr, aString);
 
-      if (!SMESH::IObjectToInterface<SMESH::SMESH_IDSource>(IO)->_is_nil())
-        mySelectedObject = SMESH::IObjectToInterface<SMESH::SMESH_IDSource>(IO);
+      SMESH::SMESH_IDSource_var obj = SMESH::IObjectToInterface<SMESH::SMESH_IDSource>( myIO );
+      if ( !CORBA::is_nil( obj ) )
+        mySelectedObject = obj;
       else
         return;
+      myNbOkElements = true;
     } else {
-      aNbUnits = SMESH::GetNameOfSelectedElements(mySelector, IO, aString);
-      myElementsId = aString;
-      if (aNbUnits < 1)
+      // get indices of selected elements
+      TColStd_IndexedMapOfInteger aMapIndex;
+      mySelector->GetIndex(IO,aMapIndex);
+      myNbOkElements = aMapIndex.Extent();
+
+      if (myNbOkElements < 1)
         return;
+      
+      QStringList elements;
+      for ( int i = 0; i < myNbOkElements; ++i )
+	elements << QString::number( aMapIndex( i+1 ) );
+      aString = elements.join(" ");
     }
-  } else if (myEditCurrentArgument == LineEditNodes && !myMesh->_is_nil() && myActor) {
-    myNbOkNodes = 0;
-    aNbUnits = SMESH::GetNameOfSelectedNodes(mySelector, IO, aString);
-  } else {
+  } else if (myEditCurrentArgument == LineEditNodes && !myMesh->_is_nil() && myIO == IO ) {
+    myNbOkNodes = SMESH::GetNameOfSelectedNodes(mySelector, IO, aString);
   }
 
-  myBusy = true;
   myEditCurrentArgument->setText(aString);
   myEditCurrentArgument->repaint();
   myEditCurrentArgument->setEnabled(false); // to update lineedit IPAL 19809
   myEditCurrentArgument->setEnabled(true); 
-  myBusy = false;
-
-  // OK
-  if (myEditCurrentArgument == LineEditElements)
-    myNbOkElements = true;
-  else if (myEditCurrentArgument == LineEditNodes)
-    myNbOkNodes = true;
 
   if (myNbOkElements && (myNbOkNodes || LineEditNodes->text().trimmed().isEmpty())) {
     buttonOk->setEnabled(true);

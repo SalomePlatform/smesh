@@ -33,6 +33,9 @@
 // Qt includes
 #include <QDialog>
 
+// SALOME GUI includes
+#include <SALOME_InteractiveObject.hxx>
+
 // IDL includes
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
@@ -79,7 +82,6 @@ private:
   SMESHGUI*              mySMESHGUI;              /* Current SMESHGUI object */
   SMESHGUI_IdValidator*  myIdValidator;
   LightApp_SelectionMgr* mySelectionMgr;          /* User shape selection */
-  QString                myElementsId;
   int                    myNbOkElements;          /* to check when elements are defined */
   int                    myNbOkNodes;             /* to check when fixed nodes are defined */
   int                    myConstructorId;         /* Current constructor id = radio button id */
@@ -91,6 +93,7 @@ private:
   bool                   myBusy;
   SMESH::SMESH_Mesh_var  myMesh;
   SMESH_Actor*           myActor;
+  Handle(SALOME_InteractiveObject) myIO;
   SMESH_LogicalFilter*   myMeshOrSubMeshOrGroupFilter;
 
   QGroupBox*             GroupConstructors;
