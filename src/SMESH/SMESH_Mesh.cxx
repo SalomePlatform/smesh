@@ -524,6 +524,8 @@ SMESH_Hypothesis::Hypothesis_Status
   }
   HasModificationsToDiscard(); // to reset _isModified flag if a mesh becomes empty
 
+  GetMeshDS()->Modified();
+
   if(MYDEBUG) subMesh->DumpAlgoState(true);
   if(MYDEBUG) SCRUTE(ret);
   return ret;
@@ -596,6 +598,8 @@ SMESH_Hypothesis::Hypothesis_Status
   }
 
   HasModificationsToDiscard(); // to reset _isModified flag if mesh become empty
+
+  GetMeshDS()->Modified();
 
   if(MYDEBUG) subMesh->DumpAlgoState(true);
   if(MYDEBUG) SCRUTE(ret);
