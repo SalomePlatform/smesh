@@ -998,6 +998,7 @@ void SMESH_Mesh::NotifySubMeshesHypothesisModification(const SMESH_Hypothesis* h
     }
   }
   HasModificationsToDiscard(); // to reset _isModified flag if mesh becomes empty
+  GetMeshDS()->Modified();
 }
 
 //=============================================================================
