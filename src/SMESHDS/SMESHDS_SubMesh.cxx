@@ -126,8 +126,8 @@ bool SMESHDS_SubMesh::RemoveElement(const SMDS_MeshElement * ME, bool isElemDele
   //MESSAGE("-----------------> RemoveElement "<< ME->GetID() << " " << isElemDeleted);
   if (!IsComplexSubmesh())
     {
-      //      if (!isElemDeleted) // alive element has valid ID and can be found
-      //  {
+      if ( ME->getshapeId() != myIndex )
+        return false;
       int idInSubShape = ME->getIdInShape();
       //MESSAGE("in "<< myIndex << " RemoveElement " << ME->GetID() << " " << idInSubShape << " " << myUnusedIdElements);
       SMDS_MeshElement* elem = (SMDS_MeshElement*) (ME);
@@ -182,6 +182,8 @@ bool SMESHDS_SubMesh::RemoveNode(const SMDS_MeshNode * N, bool isNodeDeleted)
     {
       // if (!isNodeDeleted) // alive node has valid ID and can be found
       // {
+      if ( N->getshapeId() != myIndex )
+        return false;
       int idInSubShape = N->getIdInShape();
       //int shapeId = N->getshapeId();
       //MESSAGE("in "<< myIndex << " RemoveNode " << shapeId << " " << idInSubShape << " " << N->GetID());
