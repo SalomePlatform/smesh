@@ -474,7 +474,7 @@ void SMESHGUI_MeshOp::selectionDone()
     {
       // Enable tabs according to shape dimension
 
-      int shapeDim = -1;
+      int shapeDim = 3;
 
       QStringList aGEOMs;
       myDlg->selectedObject(SMESHGUI_MeshDlg::Geom, aGEOMs);
@@ -504,7 +504,7 @@ void SMESHGUI_MeshOp::selectionDone()
       }
 
       if (aSeq->length() > 0) {
-        //shapeDim = 0;
+        shapeDim = -1;
         for (int iss = 0; iss < aSeq->length() && shapeDim < 3; iss++) {
           GEOM::GEOM_Object_var aGeomVar = aSeq[iss];
           switch ( aGeomVar->GetShapeType() ) {
