@@ -1421,13 +1421,6 @@
 
     SalomeApp_Application* anApp = dynamic_cast<SalomeApp_Application*>( SUIT_Session::session()->activeApplication() );
 
-    ViewManagerList aViewMenegers = anApp->viewManagers();
-    ViewManagerList::const_iterator it = aViewMenegers.begin();
-    for( ; it != aViewMenegers.end(); it++) {
-      
-      SUIT_ViewManager* vm = *it;
-      int nbSf = vm ? vm->getViewsCount() : 0;
-
       SALOME_ListIteratorOfListIO It(selected);
       
       aStudyBuilder->NewCommand();  // There is a transaction
@@ -1468,16 +1461,23 @@
             std::string anEntry = SO->GetID();
             
             /** Erase graphical object **/
-            if(SO->FindAttribute(anAttr, "AttributeIOR") && vm ){
-              QVector<SUIT_ViewWindow*> aViews = vm->getViews();
-              for(int i = 0; i < nbSf; i++){
-                SUIT_ViewWindow *sf = aViews[i];
-                if(SMESH_Actor* anActor = SMESH::FindActorByEntry(sf,anEntry.c_str())){
-                  SMESH::RemoveActor(sf,anActor);
+	  if(SO->FindAttribute(anAttr, "AttributeIOR")){
+	    ViewManagerList aViewMenegers = anApp->viewManagers();
+	    ViewManagerList::const_iterator it = aViewMenegers.begin();
+	    for( ; it != aViewMenegers.end(); it++) {	      
+	      SUIT_ViewManager* vm = *it;
+	      int nbSf = vm ? vm->getViewsCount() : 0;
+	      if(vm) {
+                QVector<SUIT_ViewWindow*> aViews = vm->getViews();
+                for(int i = 0; i < nbSf; i++){
+                  SUIT_ViewWindow *sf = aViews[i];
+                  if(SMESH_Actor* anActor = SMESH::FindActorByEntry(sf,anEntry.c_str())){
+                    SMESH::RemoveActor(sf,anActor);
+                  }
                 }
               }
-            }
-            
+	    }
+	  }
             /** Remove an object from data structures **/
             SMESH::SMESH_GroupBase_var aGroup = SMESH::SMESH_GroupBase::_narrow( SMESH::SObjectToObject( SO ));
             SMESH::SMESH_subMesh_var   aSubMesh = SMESH::SMESH_subMesh::_narrow( SMESH::SObjectToObject( SO ));
@@ -1512,7 +1512,6 @@
           } /* listSO back loop */
         } /* IObject->hasEntry() */
       } /* more/next */
-    } /* aViewMenegers list loop */
     
     aStudyBuilder->CommitCommand();
 
