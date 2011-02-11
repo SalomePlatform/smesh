@@ -226,6 +226,7 @@ SMESH_ActorDef::SMESH_ActorDef()
   aFilter->RegisterCellsWithType(VTK_QUADRATIC_WEDGE);
   aFilter->RegisterCellsWithType(VTK_QUADRATIC_PYRAMID);
   aFilter->RegisterCellsWithType(VTK_CONVEX_POINT_SET);
+  aFilter->RegisterCellsWithType(VTK_POLYHEDRON);
 
   //Definition 1D device of the actor
   //---------------------------------
