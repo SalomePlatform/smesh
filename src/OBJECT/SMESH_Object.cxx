@@ -104,7 +104,7 @@ static inline vtkIdType getCellType( const SMDSAbs_ElementType theType,
       else return VTK_EMPTY_CELL;
       
     case SMDSAbs_Volume:
-      if (thePoly && theNbNodes>3 ) return VTK_CONVEX_POINT_SET;
+      if (thePoly && theNbNodes>3 ) return VTK_POLYHEDRON; //VTK_CONVEX_POINT_SET;
       else if ( theNbNodes == 4 )   return VTK_TETRA;
       else if ( theNbNodes == 5 )   return VTK_PYRAMID;
       else if ( theNbNodes == 6 )   return VTK_WEDGE;
