@@ -153,9 +153,9 @@ namespace SMESH
     
     if(theActor->GetPlot2Histogram())
       if(aType == UpdateIn2dViewer)
-	aHistogram = theActor->UpdatePlot2Histogram();
+        aHistogram = theActor->UpdatePlot2Histogram();
       else
-	aHistogram = theActor->GetPlot2Histogram();
+        aHistogram = theActor->GetPlot2Histogram();
     else 
       return;
     
@@ -167,14 +167,14 @@ namespace SMESH
     SUIT_ViewManager* aViewManager;
     foreach( aViewManager, aViewManagerList ) {
       if (Plot2d_ViewManager* aManager = dynamic_cast<Plot2d_ViewManager*>(aViewManager)) {
-	if (SPlot2d_Viewer* aViewer = dynamic_cast<SPlot2d_Viewer*>(aManager->getViewModel())) {
-	  if (Plot2d_ViewFrame* aViewFrame = aViewer->getActiveViewFrame()) {
-	    if(aType == UpdateIn2dViewer )
-	      aViewFrame->displayObject(aHistogram, true);
-	    else if (aType == RemoveFrom2dViewer)
-	      aViewFrame->eraseObject(aHistogram, true);
-	  }
-	}
+        if (SPlot2d_Viewer* aViewer = dynamic_cast<SPlot2d_Viewer*>(aManager->getViewModel())) {
+          if (Plot2d_ViewFrame* aViewFrame = aViewer->getActiveViewFrame()) {
+            if(aType == UpdateIn2dViewer )
+              aViewFrame->displayObject(aHistogram, true);
+            else if (aType == RemoveFrom2dViewer)
+              aViewFrame->eraseObject(aHistogram, true);
+          }
+        }
       }
     }
   }
