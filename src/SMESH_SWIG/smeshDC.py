@@ -787,6 +787,10 @@ class smeshDC(SMESH._objref_SMESH_Gen):
             else:
                 print "Error: The treshold should be a shape."
                 return None
+            if isinstance(UnaryOp,float):
+                aCriterion.Tolerance = UnaryOp
+                UnaryOp = FT_Undefined
+                pass
         elif CritType == FT_RangeOfIds:
             # Checks the treshold
             if isinstance(aTreshold, str):
