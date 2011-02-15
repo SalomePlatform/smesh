@@ -35,7 +35,7 @@
 
 #include "utilities.h"
 
-#include <SMDS_UnstructuredGrid.hxx>
+#include "SMDS_UnstructuredGrid.hxx"
 #include <vtkCellType.h>
 
 using namespace std;

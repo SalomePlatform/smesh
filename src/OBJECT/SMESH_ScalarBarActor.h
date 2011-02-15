@@ -70,7 +70,7 @@
 
 #include <vtkActor2D.h>
 
-#include <SMESH_Object.h>
+#include "SMESH_Object.h"
 
 #include <vector>
 
