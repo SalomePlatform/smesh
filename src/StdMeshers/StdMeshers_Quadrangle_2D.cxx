@@ -86,7 +86,7 @@ StdMeshers_Quadrangle_2D::StdMeshers_Quadrangle_2D (int hypId, int studyId,
   _compatibleHypothesis.push_back("QuadrangleParams");
   _compatibleHypothesis.push_back("QuadranglePreference");
   _compatibleHypothesis.push_back("TrianglePreference");
-  myTool = 0;
+  myHelper = 0;
 }
 
 //=============================================================================
@@ -202,9 +202,10 @@ bool StdMeshers_Quadrangle_2D::Compute (SMESH_Mesh& aMesh,
   aMesh.GetSubMesh(aShape);
 
   SMESH_MesherHelper helper (aMesh);
-  myTool = &helper;
+  myHelper = &helper;
 
-  _quadraticMesh = myTool->IsQuadraticSubMesh(aShape);
+  _quadraticMesh = myHelper->IsQuadraticSubMesh(aShape);
+  myNeedSmooth = false;
 
   FaceQuadStruct *quad = CheckNbEdges(aMesh, aShape);
   std::auto_ptr<FaceQuadStruct> quadDeleter (quad); // to delete quad at exit from Compute()
@@ -222,6 +223,8 @@ bool StdMeshers_Quadrangle_2D::Compute (SMESH_Mesh& aMesh,
     if (nfull == ntmp && ((n1 != n3) || (n2 != n4))) {
       // special path for using only quandrangle faces
       bool ok = ComputeQuadPref(aMesh, aShape, quad);
+      if ( ok && myNeedSmooth )
+        Smooth( quad ); 
       return ok;
     }
   }
@@ -237,6 +240,8 @@ bool StdMeshers_Quadrangle_2D::Compute (SMESH_Mesh& aMesh,
     if ((n1 == n3 && n2 != n4 && n24tmp == n24) ||
         (n2 == n4 && n1 != n3 && n13tmp == n13)) {
       bool ok = ComputeReduced(aMesh, aShape, quad);
+      if ( ok && myNeedSmooth )
+        Smooth( quad ); 
       return ok;
     }
   }
@@ -305,7 +310,7 @@ bool StdMeshers_Quadrangle_2D::Compute (SMESH_Mesh& aMesh,
       b = quad->uv_grid[j * nbhoriz + i + 1].node;
       c = quad->uv_grid[(j + 1) * nbhoriz + i + 1].node;
       d = quad->uv_grid[(j + 1) * nbhoriz + i].node;
-      SMDS_MeshFace* face = myTool->AddFace(a, b, c, d);
+      SMDS_MeshFace* face = myHelper->AddFace(a, b, c, d);
       if (face) {
         meshDS->SetMeshElementOnShape(face, geomFaceID);
       }
@@ -382,7 +387,7 @@ bool StdMeshers_Quadrangle_2D::Compute (SMESH_Mesh& aMesh,
       }
 
       if (near == g) { // make triangle
-        SMDS_MeshFace* face = myTool->AddFace(a, b, c);
+        SMDS_MeshFace* face = myHelper->AddFace(a, b, c);
         if (face) meshDS->SetMeshElementOnShape(face, geomFaceID);
       }
       else { // make quadrangle
@@ -393,7 +398,7 @@ bool StdMeshers_Quadrangle_2D::Compute (SMESH_Mesh& aMesh,
         //SMDS_MeshFace* face = meshDS->AddFace(a, b, c, d);
         
         if (!myTrianglePreference){
-          SMDS_MeshFace* face = myTool->AddFace(a, b, c, d);
+          SMDS_MeshFace* face = myHelper->AddFace(a, b, c, d);
           if (face) meshDS->SetMeshElementOnShape(face, geomFaceID);
         }
         else {
@@ -408,7 +413,7 @@ bool StdMeshers_Quadrangle_2D::Compute (SMESH_Mesh& aMesh,
               d = uv_e3[1].node;
             else
               d = quad->uv_grid[nbhoriz + k - 1].node;
-            SMDS_MeshFace* face = myTool->AddFace(a, c, d);
+            SMDS_MeshFace* face = myHelper->AddFace(a, c, d);
             if (face) meshDS->SetMeshElementOnShape(face, geomFaceID);
           }
         }
@@ -470,7 +475,7 @@ bool StdMeshers_Quadrangle_2D::Compute (SMESH_Mesh& aMesh,
         }
 
         if (near == g) { // make triangle
-          SMDS_MeshFace* face = myTool->AddFace(a, b, c);
+          SMDS_MeshFace* face = myHelper->AddFace(a, b, c);
           if (face) meshDS->SetMeshElementOnShape(face, geomFaceID);
         }
         else { // make quadrangle
@@ -480,7 +485,7 @@ bool StdMeshers_Quadrangle_2D::Compute (SMESH_Mesh& aMesh,
             d = quad->uv_grid[nbhoriz*(nbvertic - 2) + near + 1].node;
           //SMDS_MeshFace* face = meshDS->AddFace(a, b, c, d);
           if (!myTrianglePreference){
-            SMDS_MeshFace* face = myTool->AddFace(a, b, c, d);
+            SMDS_MeshFace* face = myHelper->AddFace(a, b, c, d);
             if (face) meshDS->SetMeshElementOnShape(face, geomFaceID);
           }
           else {
@@ -494,7 +499,7 @@ bool StdMeshers_Quadrangle_2D::Compute (SMESH_Mesh& aMesh,
                 d = uv_e1[nbright - 2].node;
               else
                 d = quad->uv_grid[nbhoriz*(nbvertic - 2) + k + 1].node;
-              SMDS_MeshFace* face = myTool->AddFace(a, c, d);
+              SMDS_MeshFace* face = myHelper->AddFace(a, c, d);
               if (face) meshDS->SetMeshElementOnShape(face, geomFaceID);
             }
           }
@@ -542,7 +547,7 @@ bool StdMeshers_Quadrangle_2D::Compute (SMESH_Mesh& aMesh,
       }
 
       if (near == g) { // make triangle
-        SMDS_MeshFace* face = myTool->AddFace(a, b, c);
+        SMDS_MeshFace* face = myHelper->AddFace(a, b, c);
         if (face) meshDS->SetMeshElementOnShape(face, geomFaceID);
       }
       else { // make quadrangle
@@ -553,7 +558,7 @@ bool StdMeshers_Quadrangle_2D::Compute (SMESH_Mesh& aMesh,
         //SMDS_MeshFace* face = meshDS->AddFace(a, b, c, d);
 
         if (!myTrianglePreference){
-          SMDS_MeshFace* face = myTool->AddFace(a, b, c, d);
+          SMDS_MeshFace* face = myHelper->AddFace(a, b, c, d);
           if (face) meshDS->SetMeshElementOnShape(face, geomFaceID);
         }
         else {
@@ -567,7 +572,7 @@ bool StdMeshers_Quadrangle_2D::Compute (SMESH_Mesh& aMesh,
               d = uv_e0[nbdown - 2].node;
             else
               d = quad->uv_grid[nbhoriz*k - 2].node;
-            SMDS_MeshFace* face = myTool->AddFace(a, c, d);
+            SMDS_MeshFace* face = myHelper->AddFace(a, c, d);
             if (face) meshDS->SetMeshElementOnShape(face, geomFaceID);
           }
         }
@@ -612,7 +617,7 @@ bool StdMeshers_Quadrangle_2D::Compute (SMESH_Mesh& aMesh,
         }
 
         if (near == g) { // make triangle
-          SMDS_MeshFace* face = myTool->AddFace(a, b, c);
+          SMDS_MeshFace* face = myHelper->AddFace(a, b, c);
           if (face) meshDS->SetMeshElementOnShape(face, geomFaceID);
         }
         else { // make quadrangle
@@ -622,7 +627,7 @@ bool StdMeshers_Quadrangle_2D::Compute (SMESH_Mesh& aMesh,
             d = quad->uv_grid[nbhoriz*(near + 1) + 1].node;
           //SMDS_MeshFace* face = meshDS->AddFace(a, b, c, d);
           if (!myTrianglePreference){
-            SMDS_MeshFace* face = myTool->AddFace(a, b, c, d);
+            SMDS_MeshFace* face = myHelper->AddFace(a, b, c, d);
             if (face) meshDS->SetMeshElementOnShape(face, geomFaceID);
           }
           else {
@@ -636,7 +641,7 @@ bool StdMeshers_Quadrangle_2D::Compute (SMESH_Mesh& aMesh,
                 d = uv_e2[1].node;
               else
                 d = quad->uv_grid[nbhoriz*(k + 1) + 1].node;
-              SMDS_MeshFace* face = myTool->AddFace(a, c, d);
+              SMDS_MeshFace* face = myHelper->AddFace(a, c, d);
               if (face) meshDS->SetMeshElementOnShape(face, geomFaceID);
             }
           }
@@ -645,6 +650,9 @@ bool StdMeshers_Quadrangle_2D::Compute (SMESH_Mesh& aMesh,
       }
     }
   }
+
+  if ( myNeedSmooth )
+    Smooth( quad );
 
   bool isOk = true;
   return isOk;
@@ -844,13 +852,16 @@ FaceQuadStruct* StdMeshers_Quadrangle_2D::CheckNbEdges(SMESH_Mesh &         aMes
     delete quad;
     return quad = 0;
   }
-  else if (nbEdgesInWire.front() == 4) { // exactly 4 edges
+  else if (nbEdgesInWire.front() == 4) // exactly 4 edges
+  {
     for (; edgeIt != edges.end(); ++edgeIt, nbSides++)
       quad->side.push_back(new StdMeshers_FaceSide(F, *edgeIt, &aMesh,
                                                     nbSides<TOP_SIDE, ignoreMediumNodes));
   }
-  else if (nbEdgesInWire.front() > 4) { // more than 4 edges - try to unite some
+  else if (nbEdgesInWire.front() > 4) // more than 4 edges - try to unite some
+  {
     list< TopoDS_Edge > sideEdges;
+    vector< int > degenSides;
     while (!edges.empty()) {
       sideEdges.clear();
       sideEdges.splice(sideEdges.end(), edges, edges.begin()); // edges.front() -> sideEdges.end()
@@ -868,9 +879,29 @@ FaceQuadStruct* StdMeshers_Quadrangle_2D::CheckNbEdges(SMESH_Mesh &         aMes
             sideEdges.splice(sideEdges.begin(), edges, --edges.end());
         }
       }
+      if ( sideEdges.size() == 1 && BRep_Tool::Degenerated( sideEdges.front() ))
+        degenSides.push_back( nbSides );
+
       quad->side.push_back(new StdMeshers_FaceSide(F, sideEdges, &aMesh,
                                                     nbSides<TOP_SIDE, ignoreMediumNodes));
       ++nbSides;
+    }
+    if ( !degenSides.empty() && nbSides - degenSides.size() == 4 )
+    {
+      myNeedSmooth = true;
+      for ( unsigned i = TOP_SIDE; i < quad->side.size(); ++i )
+        quad->side[i]->Reverse();
+
+      for ( int i = degenSides.size()-1; i > -1; --i )
+      {
+        StdMeshers_FaceSide * & degenSide = quad->side[ degenSides[ i ]];
+        delete degenSide;
+        quad->side.erase( vector<StdMeshers_FaceSide*>::iterator( & degenSide ));
+      }
+      for ( unsigned i = TOP_SIDE; i < quad->side.size(); ++i )
+        quad->side[i]->Reverse();
+
+      nbSides -= degenSides.size();
     }
     // issue 20222. Try to unite only edges shared by two same faces
     if (nbSides < 4) {
@@ -914,7 +945,7 @@ FaceQuadStruct* StdMeshers_Quadrangle_2D::CheckNbEdges(SMESH_Mesh &         aMes
     for (int i = 0; i < nbSides; ++i) {
       MESSAGE (" (");
       for (int e = 0; e < quad->side[i]->NbEdges(); ++e)
-        MESSAGE (myTool->GetMeshDS()->ShapeToIndex(quad->side[i]->Edge(e)) << " ");
+        MESSAGE (myHelper->GetMeshDS()->ShapeToIndex(quad->side[i]->Edge(e)) << " ");
       MESSAGE (")\n");
     }
     //cout << endl;
@@ -1230,6 +1261,9 @@ bool StdMeshers_Quadrangle_2D::SetNormalizedGrid (SMESH_Mesh & aMesh,
     //return error("Can't find nodes on sides");
     return error(COMPERR_BAD_INPUT_MESH);
 
+  if ( myNeedSmooth )
+    UpdateDegenUV( quad );
+
   // nodes Id on "in" edges
   if (! quad->isEdgeOut[0]) {
     int j = 0;
@@ -1490,6 +1524,9 @@ bool StdMeshers_Quadrangle_2D::ComputeQuadPref (SMESH_Mesh &        aMesh,
   if (uv_eb.size() != nb || uv_er.size() != nr || uv_et.size() != nt || uv_el.size() != nl)
     return error(COMPERR_BAD_INPUT_MESH);
 
+  if ( myNeedSmooth )
+    UpdateDegenUV( quad );
+
   // arrays for normalized params
   //cout<<"Dump B:"<<endl;
   TColStd_SequenceOfReal npb, npr, npt, npl;
@@ -1596,13 +1633,13 @@ bool StdMeshers_Quadrangle_2D::ComputeQuadPref (SMESH_Mesh &        aMesh,
         for (j=1; j<nl; j++) {
           if (WisF) {
             SMDS_MeshFace* F =
-              myTool->AddFace(NodesL.Value(i,j), NodesL.Value(i+1,j),
+              myHelper->AddFace(NodesL.Value(i,j), NodesL.Value(i+1,j),
                               NodesL.Value(i+1,j+1), NodesL.Value(i,j+1));
             if (F) meshDS->SetMeshElementOnShape(F, geomFaceID);
           }
           else {
             SMDS_MeshFace* F =
-              myTool->AddFace(NodesL.Value(i,j), NodesL.Value(i,j+1),
+              myHelper->AddFace(NodesL.Value(i,j), NodesL.Value(i,j+1),
                               NodesL.Value(i+1,j+1), NodesL.Value(i+1,j));
             if (F) meshDS->SetMeshElementOnShape(F, geomFaceID);
           }
@@ -1659,13 +1696,13 @@ bool StdMeshers_Quadrangle_2D::ComputeQuadPref (SMESH_Mesh &        aMesh,
         for (j=1; j<nr; j++) {
           if (WisF) {
             SMDS_MeshFace* F =
-              myTool->AddFace(NodesR.Value(i,j), NodesR.Value(i+1,j),
+              myHelper->AddFace(NodesR.Value(i,j), NodesR.Value(i+1,j),
                               NodesR.Value(i+1,j+1), NodesR.Value(i,j+1));
             if (F) meshDS->SetMeshElementOnShape(F, geomFaceID);
           }
           else {
             SMDS_MeshFace* F =
-              myTool->AddFace(NodesR.Value(i,j), NodesR.Value(i,j+1),
+              myHelper->AddFace(NodesR.Value(i,j), NodesR.Value(i,j+1),
                               NodesR.Value(i+1,j+1), NodesR.Value(i+1,j));
             if (F) meshDS->SetMeshElementOnShape(F, geomFaceID);
           }
@@ -1744,13 +1781,13 @@ bool StdMeshers_Quadrangle_2D::ComputeQuadPref (SMESH_Mesh &        aMesh,
       for (j=1; j<nbv; j++) {
         if (WisF) {
           SMDS_MeshFace* F =
-            myTool->AddFace(NodesC.Value(i,j), NodesC.Value(i+1,j),
+            myHelper->AddFace(NodesC.Value(i,j), NodesC.Value(i+1,j),
                             NodesC.Value(i+1,j+1), NodesC.Value(i,j+1));
           if (F) meshDS->SetMeshElementOnShape(F, geomFaceID);
         }
         else {
           SMDS_MeshFace* F =
-            myTool->AddFace(NodesC.Value(i,j), NodesC.Value(i,j+1),
+            myHelper->AddFace(NodesC.Value(i,j), NodesC.Value(i,j+1),
                             NodesC.Value(i+1,j+1), NodesC.Value(i+1,j));
           if (F) meshDS->SetMeshElementOnShape(F, geomFaceID);
         }
@@ -1782,13 +1819,13 @@ bool StdMeshers_Quadrangle_2D::ComputeQuadPref (SMESH_Mesh &        aMesh,
       for (i=1; i<nb; i++) {
         if (WisF) {
           SMDS_MeshFace* F =
-            myTool->AddFace(NodesBRD.Value(i,j), NodesBRD.Value(i+1,j),
+            myHelper->AddFace(NodesBRD.Value(i,j), NodesBRD.Value(i+1,j),
                             NodesBRD.Value(i+1,j+1), NodesBRD.Value(i,j+1));
           if (F) meshDS->SetMeshElementOnShape(F, geomFaceID);
         }
         else {
           SMDS_MeshFace* F =
-            myTool->AddFace(NodesBRD.Value(i,j), NodesBRD.Value(i,j+1),
+            myHelper->AddFace(NodesBRD.Value(i,j), NodesBRD.Value(i,j+1),
                             NodesBRD.Value(i+1,j+1), NodesBRD.Value(i+1,j));
           if (F) meshDS->SetMeshElementOnShape(F, geomFaceID);
         }
@@ -1894,13 +1931,13 @@ bool StdMeshers_Quadrangle_2D::ComputeQuadPref (SMESH_Mesh &        aMesh,
         for (i=1; i<nb; i++) {
           if (WisF) {
             SMDS_MeshFace* F =
-              myTool->AddFace(NodesC.Value(i,j), NodesC.Value(i+1,j),
+              myHelper->AddFace(NodesC.Value(i,j), NodesC.Value(i+1,j),
                               NodesC.Value(i+1,j+1), NodesC.Value(i,j+1));
             if (F) meshDS->SetMeshElementOnShape(F, geomFaceID);
           }
           else {
             SMDS_MeshFace* F =
-              myTool->AddFace(NodesC.Value(i,j), NodesC.Value(i,j+1),
+              myHelper->AddFace(NodesC.Value(i,j), NodesC.Value(i,j+1),
                               NodesC.Value(i+1,j+1), NodesC.Value(i+1,j));
             if (F) meshDS->SetMeshElementOnShape(F, geomFaceID);
           }
@@ -1927,13 +1964,13 @@ bool StdMeshers_Quadrangle_2D::ComputeQuadPref (SMESH_Mesh &        aMesh,
       for (i=1; i<nt; i++) {
         if (WisF) {
           SMDS_MeshFace* F =
-            myTool->AddFace(NodesLast.Value(i,1), NodesLast.Value(i+1,1),
+            myHelper->AddFace(NodesLast.Value(i,1), NodesLast.Value(i+1,1),
                             NodesLast.Value(i+1,2), NodesLast.Value(i,2));
           if (F) meshDS->SetMeshElementOnShape(F, geomFaceID);
         }
         else {
           SMDS_MeshFace* F =
-            myTool->AddFace(NodesLast.Value(i,1), NodesLast.Value(i,2),
+            myHelper->AddFace(NodesLast.Value(i,1), NodesLast.Value(i,2),
                             NodesLast.Value(i+1,2), NodesLast.Value(i+1,2));
           if (F) meshDS->SetMeshElementOnShape(F, geomFaceID);
         }
@@ -2100,16 +2137,16 @@ void StdMeshers_Quadrangle_2D::SplitQuad(SMESHDS_Mesh *theMeshDS,
   gp_Pnt d(theNode4->X(),theNode4->Y(),theNode4->Z());
   SMDS_MeshFace* face;
   if (a.Distance(c) > b.Distance(d)){
-    face = myTool->AddFace(theNode2, theNode4 , theNode1);
+    face = myHelper->AddFace(theNode2, theNode4 , theNode1);
     if (face) theMeshDS->SetMeshElementOnShape(face, theFaceID);
-    face = myTool->AddFace(theNode2, theNode3, theNode4);
+    face = myHelper->AddFace(theNode2, theNode3, theNode4);
     if (face) theMeshDS->SetMeshElementOnShape(face, theFaceID);
 
   }
   else{
-    face = myTool->AddFace(theNode1, theNode2 ,theNode3);
+    face = myHelper->AddFace(theNode1, theNode2 ,theNode3);
     if (face) theMeshDS->SetMeshElementOnShape(face, theFaceID);
-    face = myTool->AddFace(theNode1, theNode3, theNode4);
+    face = myHelper->AddFace(theNode1, theNode3, theNode4);
     if (face) theMeshDS->SetMeshElementOnShape(face, theFaceID);
   }
 }
@@ -2242,6 +2279,9 @@ bool StdMeshers_Quadrangle_2D::ComputeReduced (SMESH_Mesh &        aMesh,
     if (uv_eb.size() != nb || uv_er.size() != nr || uv_et.size() != nt || uv_el.size() != nl)
       return error(COMPERR_BAD_INPUT_MESH);
 
+    if ( myNeedSmooth )
+      UpdateDegenUV( quad );
+
     // arrays for normalized params
     TColStd_SequenceOfReal npb, npr, npt, npl;
     for (j = 0; j < nb; j++) {
@@ -2340,7 +2380,7 @@ bool StdMeshers_Quadrangle_2D::ComputeReduced (SMESH_Mesh &        aMesh,
       for (i=1; i<=dl; i++) {
         for (j=1; j<nl; j++) {
             SMDS_MeshFace* F =
-              myTool->AddFace(NodesL.Value(i,j), NodesL.Value(i+1,j),
+              myHelper->AddFace(NodesL.Value(i,j), NodesL.Value(i+1,j),
                               NodesL.Value(i+1,j+1), NodesL.Value(i,j+1));
             if (F) meshDS->SetMeshElementOnShape(F, geomFaceID);
         }
@@ -2395,7 +2435,7 @@ bool StdMeshers_Quadrangle_2D::ComputeReduced (SMESH_Mesh &        aMesh,
       for (i=1; i<=dr; i++) {
         for (j=1; j<nr; j++) {
             SMDS_MeshFace* F =
-              myTool->AddFace(NodesR.Value(i,j), NodesR.Value(i+1,j),
+              myHelper->AddFace(NodesR.Value(i,j), NodesR.Value(i+1,j),
                               NodesR.Value(i+1,j+1), NodesR.Value(i,j+1));
             if (F) meshDS->SetMeshElementOnShape(F, geomFaceID);
         }
@@ -2459,7 +2499,7 @@ bool StdMeshers_Quadrangle_2D::ComputeReduced (SMESH_Mesh &        aMesh,
     for (i=1; i<nb; i++) {
       for (j=1; j<nbv; j++) {
           SMDS_MeshFace* F =
-            myTool->AddFace(NodesC.Value(i,j), NodesC.Value(i+1,j),
+            myHelper->AddFace(NodesC.Value(i,j), NodesC.Value(i+1,j),
                             NodesC.Value(i+1,j+1), NodesC.Value(i,j+1));
           if (F) meshDS->SetMeshElementOnShape(F, geomFaceID);
       }
@@ -2765,32 +2805,32 @@ bool StdMeshers_Quadrangle_2D::ComputeReduced (SMESH_Mesh &        aMesh,
           meshDS->SetNodeOnFace(Ne, geomFaceID, u, v);
 
           // Faces
-          SMDS_MeshFace* F1 = myTool->AddFace(NodesBRD.Value(curr_base.Value(j + 0), i),
+          SMDS_MeshFace* F1 = myHelper->AddFace(NodesBRD.Value(curr_base.Value(j + 0), i),
                                               NodesBRD.Value(curr_base.Value(j + 1), i),
                                               Nc,
                                               NodesBRD.Value(next_base.Value(next_base_len - 2), i + 1));
           if (F1) meshDS->SetMeshElementOnShape(F1, geomFaceID);
 
-          SMDS_MeshFace* F2 = myTool->AddFace(NodesBRD.Value(curr_base.Value(j + 1), i),
+          SMDS_MeshFace* F2 = myHelper->AddFace(NodesBRD.Value(curr_base.Value(j + 1), i),
                                               NodesBRD.Value(curr_base.Value(j + 2), i),
                                               Nd, Nc);
           if (F2) meshDS->SetMeshElementOnShape(F2, geomFaceID);
 
-          SMDS_MeshFace* F3 = myTool->AddFace(NodesBRD.Value(curr_base.Value(j + 2), i),
+          SMDS_MeshFace* F3 = myHelper->AddFace(NodesBRD.Value(curr_base.Value(j + 2), i),
                                               NodesBRD.Value(curr_base.Value(j + 3), i),
                                               Ne, Nd);
           if (F3) meshDS->SetMeshElementOnShape(F3, geomFaceID);
 
-          SMDS_MeshFace* F4 = myTool->AddFace(NodesBRD.Value(curr_base.Value(j + 3), i),
+          SMDS_MeshFace* F4 = myHelper->AddFace(NodesBRD.Value(curr_base.Value(j + 3), i),
                                               NodesBRD.Value(curr_base.Value(j + 4), i),
                                               Nb, Ne);
           if (F4) meshDS->SetMeshElementOnShape(F4, geomFaceID);
 
-          SMDS_MeshFace* F5 = myTool->AddFace(Nc, Nd, Na,
+          SMDS_MeshFace* F5 = myHelper->AddFace(Nc, Nd, Na,
                                               NodesBRD.Value(next_base.Value(next_base_len - 2), i + 1));
           if (F5) meshDS->SetMeshElementOnShape(F5, geomFaceID);
 
-          SMDS_MeshFace* F6 = myTool->AddFace(Nd, Ne, Nb, Na);
+          SMDS_MeshFace* F6 = myHelper->AddFace(Nd, Ne, Nb, Na);
           if (F6) meshDS->SetMeshElementOnShape(F6, geomFaceID);
         }
 
@@ -2839,7 +2879,7 @@ bool StdMeshers_Quadrangle_2D::ComputeReduced (SMESH_Mesh &        aMesh,
           }
           next_par_u.SetValue(next_base_len, u);
           next_par_v.SetValue(next_base_len, v);
-          SMDS_MeshFace* F1 = myTool->AddFace(NodesBRD.Value(curr_base.Value(j), i),
+          SMDS_MeshFace* F1 = myHelper->AddFace(NodesBRD.Value(curr_base.Value(j), i),
                                               NodesBRD.Value(curr_base.Value(j + 1), i),
                                               NodesBRD.Value(next_base.Value(next_base_len), i + 1),
                                               NodesBRD.Value(next_base.Value(next_base_len - 1), i + 1));
@@ -2967,23 +3007,23 @@ bool StdMeshers_Quadrangle_2D::ComputeReduced (SMESH_Mesh &        aMesh,
           meshDS->SetNodeOnFace(Ne, geomFaceID, u, v);
 
           // Faces
-          SMDS_MeshFace* F1 = myTool->AddFace(NodesBRD.Value(curr_base.Value(j + 0), i),
+          SMDS_MeshFace* F1 = myHelper->AddFace(NodesBRD.Value(curr_base.Value(j + 0), i),
                                               NodesBRD.Value(curr_base.Value(j + 1), i),
                                               Nc,
                                               NodesBRD.Value(next_base.Value(next_base_len - 1), i + 1));
           if (F1) meshDS->SetMeshElementOnShape(F1, geomFaceID);
 
-          SMDS_MeshFace* F2 = myTool->AddFace(NodesBRD.Value(curr_base.Value(j + 1), i),
+          SMDS_MeshFace* F2 = myHelper->AddFace(NodesBRD.Value(curr_base.Value(j + 1), i),
                                               NodesBRD.Value(curr_base.Value(j + 2), i),
                                               Ne, Nc);
           if (F2) meshDS->SetMeshElementOnShape(F2, geomFaceID);
 
-          SMDS_MeshFace* F4 = myTool->AddFace(NodesBRD.Value(curr_base.Value(j + 2), i),
+          SMDS_MeshFace* F4 = myHelper->AddFace(NodesBRD.Value(curr_base.Value(j + 2), i),
                                               NodesBRD.Value(curr_base.Value(j + 3), i),
                                               Nb, Ne);
           if (F4) meshDS->SetMeshElementOnShape(F4, geomFaceID);
 
-          SMDS_MeshFace* F5 = myTool->AddFace(Nc, Ne, Nb,
+          SMDS_MeshFace* F5 = myHelper->AddFace(Nc, Ne, Nb,
                                               NodesBRD.Value(next_base.Value(next_base_len - 1), i + 1));
           if (F5) meshDS->SetMeshElementOnShape(F5, geomFaceID);
         }
@@ -3028,7 +3068,7 @@ bool StdMeshers_Quadrangle_2D::ComputeReduced (SMESH_Mesh &        aMesh,
           }
           next_par_u.SetValue(next_base_len, u);
           next_par_v.SetValue(next_base_len, v);
-          SMDS_MeshFace* F1 = myTool->AddFace(NodesBRD.Value(curr_base.Value(j), i),
+          SMDS_MeshFace* F1 = myHelper->AddFace(NodesBRD.Value(curr_base.Value(j), i),
                                               NodesBRD.Value(curr_base.Value(j + 1), i),
                                               NodesBRD.Value(next_base.Value(next_base_len), i + 1),
                                               NodesBRD.Value(next_base.Value(next_base_len - 1), i + 1));
@@ -3148,7 +3188,7 @@ bool StdMeshers_Quadrangle_2D::ComputeReduced (SMESH_Mesh &        aMesh,
           }
           next_par_u.SetValue(next_base_len, u);
           next_par_v.SetValue(next_base_len, v);
-          SMDS_MeshFace* F1 = myTool->AddFace(NodesBRD.Value(curr_base.Value(j), i),
+          SMDS_MeshFace* F1 = myHelper->AddFace(NodesBRD.Value(curr_base.Value(j), i),
                                               NodesBRD.Value(curr_base.Value(j + 1), i),
                                               NodesBRD.Value(next_base.Value(next_base_len), i + 1),
                                               NodesBRD.Value(next_base.Value(next_base_len - 1), i + 1));
@@ -3270,32 +3310,32 @@ bool StdMeshers_Quadrangle_2D::ComputeReduced (SMESH_Mesh &        aMesh,
           meshDS->SetNodeOnFace(Ne, geomFaceID, u, v);
 
           // Faces
-          SMDS_MeshFace* F1 = myTool->AddFace(NodesBRD.Value(curr_base.Value(j + 0), i),
+          SMDS_MeshFace* F1 = myHelper->AddFace(NodesBRD.Value(curr_base.Value(j + 0), i),
                                               NodesBRD.Value(curr_base.Value(j + 1), i),
                                               Nc,
                                               NodesBRD.Value(next_base.Value(next_base_len - 2), i + 1));
           if (F1) meshDS->SetMeshElementOnShape(F1, geomFaceID);
 
-          SMDS_MeshFace* F2 = myTool->AddFace(NodesBRD.Value(curr_base.Value(j + 1), i),
+          SMDS_MeshFace* F2 = myHelper->AddFace(NodesBRD.Value(curr_base.Value(j + 1), i),
                                               NodesBRD.Value(curr_base.Value(j + 2), i),
                                               Nd, Nc);
           if (F2) meshDS->SetMeshElementOnShape(F2, geomFaceID);
 
-          SMDS_MeshFace* F3 = myTool->AddFace(NodesBRD.Value(curr_base.Value(j + 2), i),
+          SMDS_MeshFace* F3 = myHelper->AddFace(NodesBRD.Value(curr_base.Value(j + 2), i),
                                               NodesBRD.Value(curr_base.Value(j + 3), i),
                                               Ne, Nd);
           if (F3) meshDS->SetMeshElementOnShape(F3, geomFaceID);
 
-          SMDS_MeshFace* F4 = myTool->AddFace(NodesBRD.Value(curr_base.Value(j + 3), i),
+          SMDS_MeshFace* F4 = myHelper->AddFace(NodesBRD.Value(curr_base.Value(j + 3), i),
                                               NodesBRD.Value(curr_base.Value(j + 4), i),
                                               Nb, Ne);
           if (F4) meshDS->SetMeshElementOnShape(F4, geomFaceID);
 
-          SMDS_MeshFace* F5 = myTool->AddFace(Nc, Nd, Na,
+          SMDS_MeshFace* F5 = myHelper->AddFace(Nc, Nd, Na,
                                               NodesBRD.Value(next_base.Value(next_base_len - 2), i + 1));
           if (F5) meshDS->SetMeshElementOnShape(F5, geomFaceID);
 
-          SMDS_MeshFace* F6 = myTool->AddFace(Nd, Ne, Nb, Na);
+          SMDS_MeshFace* F6 = myHelper->AddFace(Nd, Ne, Nb, Na);
           if (F6) meshDS->SetMeshElementOnShape(F6, geomFaceID);
 
           j += 4;
@@ -3350,7 +3390,7 @@ bool StdMeshers_Quadrangle_2D::ComputeReduced (SMESH_Mesh &        aMesh,
               }
               next_par_u.SetValue(next_base_len, u);
               next_par_v.SetValue(next_base_len, v);
-              SMDS_MeshFace* F1 = myTool->AddFace(NodesBRD.Value(curr_base.Value(j - 1 + imiddle), i),
+              SMDS_MeshFace* F1 = myHelper->AddFace(NodesBRD.Value(curr_base.Value(j - 1 + imiddle), i),
                                                   NodesBRD.Value(curr_base.Value(j + imiddle), i),
                                                   NodesBRD.Value(next_base.Value(next_base_len), i + 1),
                                                   NodesBRD.Value(next_base.Value(next_base_len - 1), i + 1));
@@ -3400,7 +3440,7 @@ bool StdMeshers_Quadrangle_2D::ComputeReduced (SMESH_Mesh &        aMesh,
           }
           next_par_u.SetValue(next_base_len, u);
           next_par_v.SetValue(next_base_len, v);
-          SMDS_MeshFace* F1 = myTool->AddFace(NodesBRD.Value(curr_base.Value(j), i),
+          SMDS_MeshFace* F1 = myHelper->AddFace(NodesBRD.Value(curr_base.Value(j), i),
                                               NodesBRD.Value(curr_base.Value(j + 1), i),
                                               NodesBRD.Value(next_base.Value(next_base_len), i + 1),
                                               NodesBRD.Value(next_base.Value(next_base_len - 1), i + 1));
@@ -3501,7 +3541,7 @@ bool StdMeshers_Quadrangle_2D::ComputeReduced (SMESH_Mesh &        aMesh,
           }
           next_par_u.SetValue(next_base_len, u);
           next_par_v.SetValue(next_base_len, v);
-          SMDS_MeshFace* F1 = myTool->AddFace(NodesBRD.Value(curr_base.Value(j), i),
+          SMDS_MeshFace* F1 = myHelper->AddFace(NodesBRD.Value(curr_base.Value(j), i),
                                               NodesBRD.Value(curr_base.Value(j + 1), i),
                                               NodesBRD.Value(next_base.Value(next_base_len), i + 1),
                                               NodesBRD.Value(next_base.Value(next_base_len - 1), i + 1));
@@ -3591,23 +3631,23 @@ bool StdMeshers_Quadrangle_2D::ComputeReduced (SMESH_Mesh &        aMesh,
           meshDS->SetNodeOnFace(Ne, geomFaceID, u, v);
 
           // Faces
-          SMDS_MeshFace* F1 = myTool->AddFace(NodesBRD.Value(curr_base.Value(j + 0), i),
+          SMDS_MeshFace* F1 = myHelper->AddFace(NodesBRD.Value(curr_base.Value(j + 0), i),
                                               NodesBRD.Value(curr_base.Value(j + 1), i),
                                               Nc,
                                               NodesBRD.Value(next_base.Value(next_base_len - 1), i + 1));
           if (F1) meshDS->SetMeshElementOnShape(F1, geomFaceID);
 
-          SMDS_MeshFace* F2 = myTool->AddFace(NodesBRD.Value(curr_base.Value(j + 1), i),
+          SMDS_MeshFace* F2 = myHelper->AddFace(NodesBRD.Value(curr_base.Value(j + 1), i),
                                               NodesBRD.Value(curr_base.Value(j + 2), i),
                                               Ne, Nc);
           if (F2) meshDS->SetMeshElementOnShape(F2, geomFaceID);
 
-          SMDS_MeshFace* F4 = myTool->AddFace(NodesBRD.Value(curr_base.Value(j + 2), i),
+          SMDS_MeshFace* F4 = myHelper->AddFace(NodesBRD.Value(curr_base.Value(j + 2), i),
                                               NodesBRD.Value(curr_base.Value(j + 3), i),
                                               Nb, Ne);
           if (F4) meshDS->SetMeshElementOnShape(F4, geomFaceID);
 
-          SMDS_MeshFace* F5 = myTool->AddFace(Nc, Ne, Nb,
+          SMDS_MeshFace* F5 = myHelper->AddFace(Nc, Ne, Nb,
                                               NodesBRD.Value(next_base.Value(next_base_len - 1), i + 1));
           if (F5) meshDS->SetMeshElementOnShape(F5, geomFaceID);
 
@@ -3663,7 +3703,7 @@ bool StdMeshers_Quadrangle_2D::ComputeReduced (SMESH_Mesh &        aMesh,
               }
               next_par_u.SetValue(next_base_len, u);
               next_par_v.SetValue(next_base_len, v);
-              SMDS_MeshFace* F1 = myTool->AddFace(NodesBRD.Value(curr_base.Value(j - 1 + imiddle), i),
+              SMDS_MeshFace* F1 = myHelper->AddFace(NodesBRD.Value(curr_base.Value(j - 1 + imiddle), i),
                                                   NodesBRD.Value(curr_base.Value(j + imiddle), i),
                                                   NodesBRD.Value(next_base.Value(next_base_len), i + 1),
                                                   NodesBRD.Value(next_base.Value(next_base_len - 1), i + 1));
@@ -3713,10 +3753,10 @@ bool StdMeshers_Quadrangle_2D::ComputeReduced (SMESH_Mesh &        aMesh,
           }
           next_par_u.SetValue(next_base_len, u);
           next_par_v.SetValue(next_base_len, v);
-          SMDS_MeshFace* F1 = myTool->AddFace(NodesBRD.Value(curr_base.Value(j), i),
-                                              NodesBRD.Value(curr_base.Value(j + 1), i),
-                                              NodesBRD.Value(next_base.Value(next_base_len), i + 1),
-                                              NodesBRD.Value(next_base.Value(next_base_len - 1), i + 1));
+          SMDS_MeshFace* F1 = myHelper->AddFace(NodesBRD.Value(curr_base.Value(j), i),
+                                                NodesBRD.Value(curr_base.Value(j + 1), i),
+                                                NodesBRD.Value(next_base.Value(next_base_len), i + 1),
+                                                NodesBRD.Value(next_base.Value(next_base_len - 1), i + 1));
           if (F1) meshDS->SetMeshElementOnShape(F1, geomFaceID);
         }
 
@@ -3733,4 +3773,209 @@ bool StdMeshers_Quadrangle_2D::ComputeReduced (SMESH_Mesh &        aMesh,
 
   bool isOk = true;
   return isOk;
+}
+
+//================================================================================
+namespace // data for smoothing
+{
+  struct TSmoothNode;
+  // --------------------------------------------------------------------------------
+  /*!
+   * \brief Structure used to check validity of node position after smoothing.
+   *        It holds two nodes connected to a smoothed node and belonging to
+   *        one mesh face
+   */
+  struct TTriangle
+  {
+    TSmoothNode* _n1;
+    TSmoothNode* _n2;
+    TTriangle( TSmoothNode* n1=0, TSmoothNode* n2=0 ): _n1(n1), _n2(n2) {}
+
+    inline bool IsForward( gp_UV uv );
+  };
+  // --------------------------------------------------------------------------------
+  /*!
+   * \brief Data of a smoothed node
+   */
+  struct TSmoothNode
+  {
+    gp_XY _uv;
+    vector< TTriangle > _triangles; // if empty, then node is not movable
+  };
+  // --------------------------------------------------------------------------------
+  inline bool TTriangle::IsForward( gp_UV uv )
+  {
+    gp_Vec2d v1( uv, _n1->_uv ), v2( uv, _n2->_uv );
+    double d = v1 ^ v2;
+    return d > 1e-100;
+  }
+}
+
+//================================================================================
+/*!
+ * \brief Set UV of nodes on degenerated VERTEXes in the middle of degenerated EDGE
+ *
+ * WARNING: this method must be called AFTER retrieving UVPtStruct's from quad
+ */
+//================================================================================
+
+void StdMeshers_Quadrangle_2D::UpdateDegenUV(FaceQuadStruct* quad)
+{
+  for ( unsigned i = 0; i < quad->side.size(); ++i )
+  {
+    StdMeshers_FaceSide* side = quad->side[i];
+    const vector<UVPtStruct>& uvVec = side->GetUVPtStruct();
+
+    // find which end of the side is on degenerated shape
+    int degenInd = -1;
+    if ( myHelper->IsDegenShape( uvVec[0].node->getshapeId() ))
+      degenInd = 0;
+    else if ( myHelper->IsDegenShape( uvVec.back().node->getshapeId() ))
+      degenInd = uvVec.size() - 1;
+    else
+      continue;
+
+    // find another side sharing the degenerated shape
+    bool isPrev = ( degenInd == 0 );
+    if ( i >= TOP_SIDE )
+      isPrev = !isPrev;
+    int i2 = ( isPrev ? ( i + 3 ) : ( i + 1 )) % 4;
+    StdMeshers_FaceSide* side2 = quad->side[ i2 ];
+    const vector<UVPtStruct>& uvVec2 = side2->GetUVPtStruct();
+    int degenInd2 = -1;
+    if ( uvVec[ degenInd ].node == uvVec2[0].node )
+      degenInd2 = 0;
+    else if ( uvVec[ degenInd ].node == uvVec2.back().node )
+      degenInd2 = uvVec2.size() - 1;
+    else
+      throw SALOME_Exception( LOCALIZED( "Logical error" ));
+
+    // move UV in the middle
+    uvPtStruct& uv1 = const_cast<uvPtStruct&>( uvVec [ degenInd  ]);
+    uvPtStruct& uv2 = const_cast<uvPtStruct&>( uvVec2[ degenInd2 ]);
+    uv1.u = uv2.u = 0.5 * ( uv1.u + uv2.u );
+    uv1.v = uv2.v = 0.5 * ( uv1.v + uv2.v );
+  }
+}
+
+//================================================================================
+/*!
+ * \brief Perform smoothing of 2D elements on a FACE with ignored degenerated EDGE
+ */
+//================================================================================
+
+void StdMeshers_Quadrangle_2D::Smooth (FaceQuadStruct* quad)
+{
+  if ( !myNeedSmooth ) return;
+
+  // Get nodes to smooth
+
+  typedef map< const SMDS_MeshNode*, TSmoothNode, TIDCompare > TNo2SmooNoMap;
+  TNo2SmooNoMap smooNoMap;
+
+  const TopoDS_Face& geomFace = TopoDS::Face( myHelper->GetSubShape() );
+  SMESHDS_Mesh* meshDS = myHelper->GetMeshDS();
+  SMESHDS_SubMesh* fSubMesh = meshDS->MeshElements( geomFace );
+  SMDS_NodeIteratorPtr nIt = fSubMesh->GetNodes();
+  while ( nIt->more() ) // loop on nodes bound to a FACE
+  {
+    const SMDS_MeshNode* node = nIt->next();
+    TSmoothNode & sNode = smooNoMap[ node ];
+    sNode._uv = myHelper->GetNodeUV( geomFace, node );
+
+    // set sNode._triangles
+    SMDS_ElemIteratorPtr fIt = node->GetInverseElementIterator( SMDSAbs_Face );
+    while ( fIt->more() )
+    {
+      const SMDS_MeshElement* face = fIt->next();
+      const int nbN = face->NbCornerNodes();
+      const int nInd = face->GetNodeIndex( node );
+      const int prevInd = myHelper->WrapIndex( nInd - 1, nbN );
+      const int nextInd = myHelper->WrapIndex( nInd + 1, nbN );
+      const SMDS_MeshNode* prevNode = face->GetNode( prevInd );
+      const SMDS_MeshNode* nextNode = face->GetNode( nextInd );
+      sNode._triangles.push_back( TTriangle( & smooNoMap[ prevNode ],
+                                             & smooNoMap[ nextNode ]));
+    }
+  }
+  // set _uv of smooth nodes on FACE boundary
+  for ( unsigned i = 0; i < quad->side.size(); ++i )
+  {
+    const vector<UVPtStruct>& uvVec = quad->side[i]->GetUVPtStruct();
+    for ( unsigned j = 0; j < uvVec.size(); ++j )
+    {
+      TSmoothNode & sNode = smooNoMap[ uvVec[j].node ];
+      sNode._uv.SetCoord( uvVec[j].u, uvVec[j].v );
+    }
+  }
+
+  // Smoothing
+
+  for ( int iLoop = 0; iLoop < 5; ++iLoop )
+  {
+    TNo2SmooNoMap::iterator n2sn = smooNoMap.begin();
+    for ( ; n2sn != smooNoMap.end(); ++n2sn )
+    {
+      TSmoothNode& sNode = n2sn->second;
+      if ( sNode._triangles.empty() )
+        continue; // not movable node
+
+      // compute a new UV
+      gp_XY newUV (0,0);
+      for ( unsigned i = 0; i < sNode._triangles.size(); ++i )
+        newUV += sNode._triangles[i]._n1->_uv;
+      newUV /= sNode._triangles.size();
+
+      // check validity of the newUV
+      bool isValid = true;
+      for ( unsigned i = 0; i < sNode._triangles.size() && isValid; ++i )
+        isValid = sNode._triangles[i].IsForward( newUV );
+
+      if ( isValid )
+        sNode._uv = newUV;
+    }
+  }
+
+  // Set new XYZ to the smoothed nodes
+
+  Handle(Geom_Surface) surface = BRep_Tool::Surface( geomFace );
+
+  TNo2SmooNoMap::iterator n2sn = smooNoMap.begin();
+  for ( ; n2sn != smooNoMap.end(); ++n2sn )
+  {
+    TSmoothNode& sNode = n2sn->second;
+    if ( sNode._triangles.empty() )
+      continue; // not movable node
+
+    SMDS_MeshNode* node = const_cast< SMDS_MeshNode*>( n2sn->first );
+    gp_Pnt xyz = surface->Value( sNode._uv.X(), sNode._uv.Y() );
+    meshDS->MoveNode( node, xyz.X(), xyz.Y(), xyz.Z() );
+
+    // store the new UV
+    node->SetPosition( SMDS_PositionPtr( new SMDS_FacePosition( sNode._uv.X(), sNode._uv.Y() )));
+  }
+
+  // Move medium nodes in quadratic mesh
+  if ( _quadraticMesh )
+  {
+    const TLinkNodeMap& links = myHelper->GetTLinkNodeMap();
+    TLinkNodeMap::const_iterator linkIt = links.begin();
+    for ( ; linkIt != links.end(); ++linkIt )
+    {
+      const SMESH_TLink& link = linkIt->first;
+      SMDS_MeshNode*     node = const_cast< SMDS_MeshNode*>( linkIt->second );
+
+      if ( node->getshapeId() != myHelper->GetSubShapeID() )
+        continue; // medium node is on EDGE or VERTEX
+
+      gp_XY uv1 = myHelper->GetNodeUV( geomFace, link.node1(), node );
+      gp_XY uv2 = myHelper->GetNodeUV( geomFace, link.node2(), node );
+
+      gp_XY uv  = myHelper->GetMiddleUV( surface, uv1, uv2 );
+      node->SetPosition( SMDS_PositionPtr( new SMDS_FacePosition( uv.X(), uv.Y() )));
+      
+      gp_Pnt xyz = surface->Value( uv.X(), uv.Y() );
+      meshDS->MoveNode( node, xyz.X(), xyz.Y(), xyz.Z() );
+    }
+  }
 }

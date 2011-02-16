@@ -40,6 +40,7 @@ class SMESH_Mesh;
 class SMESH_MesherHelper;
 class StdMeshers_FaceSide;
 class SMDS_MeshNode;
+class TopoDS_Face;
 struct uvPtStruct;
 
 
@@ -97,9 +98,6 @@ protected:
                  const SMDS_MeshNode* theNode3,
                  const SMDS_MeshNode* theNode4);
 
-  /**
-   * Special function for creation only quandrangle faces
-   */
   bool ComputeQuadPref(SMESH_Mesh& aMesh,
                        const TopoDS_Shape& aShape,
                        FaceQuadStruct* quad);
@@ -110,21 +108,14 @@ protected:
                         MapShapeNbElems& aResMap,
                         bool IsQuadratic);
 
-  UVPtStruct* LoadEdgePoints2(SMESH_Mesh& aMesh,
-                              const TopoDS_Face& F, const TopoDS_Edge& E,
-                              bool IsReverse);
-
-  UVPtStruct* LoadEdgePoints(SMESH_Mesh& aMesh,
-                             const TopoDS_Face& F, const TopoDS_Edge& E,
-                             double first, double last);
-
-  UVPtStruct* MakeEdgePoints(SMESH_Mesh& aMesh,
-                             const TopoDS_Face& F, const TopoDS_Edge& E,
-                             double first, double last, int nb_segm);
-
   bool ComputeReduced (SMESH_Mesh& aMesh,
                        const TopoDS_Shape& aShape,
                        FaceQuadStruct* quad);
+
+  void UpdateDegenUV(FaceQuadStruct* quad);
+
+  void Smooth (FaceQuadStruct* quad);
+
 
   // true if QuadranglePreference hypothesis is assigned that forces
   // construction of quadrangles if the number of nodes on opposite edges
@@ -138,7 +129,9 @@ protected:
 
   StdMeshers_QuadType myQuadType;
 
-  SMESH_MesherHelper* myTool; // tool for working with quadratic elements
+  SMESH_MesherHelper* myHelper; // tool for working with quadratic elements
+
+  bool myNeedSmooth;
 };
 
 #endif
