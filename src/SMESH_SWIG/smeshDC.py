@@ -1934,10 +1934,10 @@ class Mesh:
     def CutListOfGroups(self, main_groups, tool_groups, name):
       return self.mesh.CutListOfGroups(main_groups, tool_groups, name)
 
-    ## Produces a group of elements with specified element type using list of existing groups
+    ## Produces a group of elements of specified type using list of existing groups
     #  A new group is created. System
-    #  1) extract all nodes on which groups elements are built
-    #  2) combine all elements of specified dimension laying on these nodes
+    #  1) extracts all nodes on which groups elements are built
+    #  2) combines all elements of specified dimension laying on these nodes
     #  @return an instance of SMESH_Group
     #  @ingroup l2_grps_operon
     def CreateDimGroup(self, groups, elem_type, name):
