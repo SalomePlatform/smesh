@@ -4910,7 +4910,7 @@ CORBA::Boolean SMESH_MeshEditor_i::DoubleNodeGroups(const SMESH::ListOfGroups& t
 //================================================================================
 
 SMESH::SMESH_Group_ptr SMESH_MeshEditor_i::DoubleNodeGroupsNew( const SMESH::ListOfGroups& theNodes,
-								const SMESH::ListOfGroups& theModifiedElems )
+                                                                const SMESH::ListOfGroups& theModifiedElems )
 {
   SMESH::SMESH_Group_var aNewGroup;
 
