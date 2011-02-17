@@ -69,8 +69,8 @@ public:
   static std::vector<SMDS_Mesh*> _meshList;
 
   //! actual nodes coordinates, cells definition and reverse connectivity are stored in a vtkUnstructuredGrid
-  inline SMDS_UnstructuredGrid* getGrid() {return myGrid; };
-  inline int getMeshId() {return myMeshId; };
+  inline SMDS_UnstructuredGrid* getGrid() {return myGrid; }
+  inline int getMeshId() {return myMeshId; }
 
   SMDS_NodeIteratorPtr nodesIterator          (bool idInceasingOrder=false) const;
   SMDS_0DElementIteratorPtr elements0dIterator(bool idInceasingOrder=false) const;
@@ -587,7 +587,7 @@ public:
   static int chunkSize;
 
   //! low level modification: add, change or remove node or element
-  inline void setMyModified() { this->myModified = true; };
+  inline void setMyModified() { this->myModified = true; }
 
   void Modified();
   unsigned long GetMTime();
@@ -628,7 +628,7 @@ protected:
     myElementIDFactory->adjustMaxId(ID);
     if (ID >= myCells.size())
       myCells.resize(ID+SMDS_Mesh::chunkSize,0);
-  };
+  }
 
   inline void adjustBoundingBox(double x, double y, double z)
   {
@@ -638,7 +638,7 @@ protected:
     else if (y < ymin) ymin = y;
     if (z > zmax) zmax = z;
     else if (z < zmin) zmin = z;
-  };
+  }
 
   // Fields PRIVATE
 
