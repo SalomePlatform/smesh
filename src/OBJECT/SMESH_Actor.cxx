@@ -103,13 +103,16 @@ SMESH_Actor* SMESH_Actor::New(TVisualObjPtr theVisualObj,
                               const char* theName,
                               int theIsClear)
 {
-  SMESH_ActorDef* anActor = SMESH_ActorDef::New();
-  if(!anActor->Init(theVisualObj,theEntry,theName,theIsClear)){
-    anActor->Delete();
-    anActor = NULL;
+  SMESH_ActorDef* anActor = NULL;
+  if(theVisualObj->GetNbEntities(SMDSAbs_Node) > 0 ) {
+    anActor = SMESH_ActorDef::New();
+    if(!anActor->Init(theVisualObj,theEntry,theName,theIsClear)){
+      anActor->Delete();
+      anActor = NULL;
+    }
+    if( anActor )
+      anActor->UpdateScalarBar();
   }
-  if( anActor )
-    anActor->UpdateScalarBar();
   return anActor;
 }
 

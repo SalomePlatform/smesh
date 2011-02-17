@@ -203,6 +203,8 @@ SMESHGUI_EXPORT
                                        vtkFloatingPointType theDist,
                                        vtkFloatingPointType theBounds[6],
                                        vtkFloatingPointType theOrigin[3] );
+ SMESHGUI_EXPORT
+   void RemoveVisualObjectWithActors( const char* theEntry, bool fromAllViews = false );
 };
 
 #endif // SMESHGUI_VTKUTILS_H

@@ -25,9 +25,10 @@
 // Author : Alexander SOLOVYOV, Open CASCADE S.A.S.
 // SMESH includes
 //
-#include "SMESHGUI_Displayer.h"
 
+#include "SMESHGUI_Displayer.h"
 #include "SMESHGUI_VTKUtils.h"
+#include "SMESHGUI_Utils.h"
 
 // SALOME GUI includes
 #include <SalomeApp_Study.h>
@@ -35,6 +36,13 @@
 #include <SUIT_ViewManager.h>
 #include <SVTK_ViewModel.h>
 #include <SVTK_ViewWindow.h>
+
+
+// IDL includes
+#include <SALOMEconfig.h>
+#include CORBA_SERVER_HEADER(SMESH_Group)
+#include CORBA_SERVER_HEADER(SMESH_Mesh)
+
 
 SMESHGUI_Displayer::SMESHGUI_Displayer( SalomeApp_Application* app )
 : LightApp_Displayer(),
@@ -81,7 +89,38 @@ SalomeApp_Study* SMESHGUI_Displayer::study() const
   return dynamic_cast<SalomeApp_Study*>( myApp->activeStudy() );
 }
 
-bool SMESHGUI_Displayer::canBeDisplayed( const QString& /*entry*/, const QString& viewer_type ) const
-{
-  return viewer_type==SVTK_Viewer::Type();
+bool SMESHGUI_Displayer::canBeDisplayed( const QString& entry, const QString& viewer_type ) const {
+  bool res = false;
+  if(viewer_type != SVTK_Viewer::Type())
+    return res;
+  
+  SalomeApp_Study* study = dynamic_cast<SalomeApp_Study*>( myApp->activeStudy() );
+  if( !study )
+    return res;
+  
+  
+  _PTR(SObject) obj = study->studyDS()->FindObjectID( (const char*)entry.toLatin1() );
+  CORBA::Object_var anObj = SMESH::SObjectToObject( obj );
+  
+    /*
+    if( !CORBA::is_nil( anObj ) ) {
+    SMESH::SMESH_Mesh_var mesh = SMESH::SMESH_Mesh::_narrow( anObj );
+    if ( ! mesh->_is_nil() )
+    res = (mesh->NbNodes() > 0);
+    
+    SMESH::SMESH_subMesh_var aSubMeshObj = SMESH::SMESH_subMesh::_narrow( anObj );
+    if ( !aSubMeshObj->_is_nil() )
+    res = (aSubMeshObj->GetNumberOfNodes(true) > 0);
+    
+    SMESH::SMESH_GroupBase_var aGroupObj = SMESH::SMESH_GroupBase::_narrow( anObj );
+    if ( !aGroupObj->_is_nil() )
+    res = !aGroupObj->IsEmpty();
+    }*/
+  if( !CORBA::is_nil( anObj ) ) {
+    if(!SMESH::SMESH_Mesh::_narrow( anObj )->_is_nil() ||
+       !SMESH::SMESH_subMesh::_narrow( anObj )->_is_nil() ||
+       !SMESH::SMESH_GroupBase::_narrow( anObj )->_is_nil())
+    res = true;
+  }
+  return res;
 }

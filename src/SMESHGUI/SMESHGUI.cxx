@@ -2869,7 +2869,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
         SMESH::IObjectToInterface<SMESH::SMESH_Mesh>(IOS);
       if ( aMesh->_is_nil()) continue;
       try {
-        SMESH::UpdateView(SMESH::eErase, IOS->getEntry());
+        SMESH::RemoveVisualObjectWithActors(IOS->getEntry(), true);
         aMesh->Clear();
         _PTR(SObject) aMeshSObj = SMESH::FindSObject(aMesh);
         SMESH::ModifiedMesh( aMeshSObj, false, true);
@@ -2879,7 +2879,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
         for ( anIter->InitEx(true); anIter->More(); anIter->Next() )
         {
           _PTR(SObject) so = anIter->Value();
-          SMESH::UpdateView(SMESH::eErase, so->GetID().c_str());
+	  SMESH::RemoveVisualObjectWithActors(so->GetID().c_str(), true);
         }
       }
       catch (const SALOME::SALOME_Exception& S_ex){
