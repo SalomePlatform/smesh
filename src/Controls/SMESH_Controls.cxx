@@ -66,6 +66,8 @@
 #include "SMESHDS_Mesh.hxx"
 #include "SMESHDS_GroupBase.hxx"
 
+#include <vtkMeshQuality.h>
+
 /*
                             AUXILIARY METHODS
 */
@@ -284,24 +286,25 @@ long  NumericalFunctor::GetPrecision() const
 void  NumericalFunctor::SetPrecision( const long thePrecision )
 {
   myPrecision = thePrecision;
+  myPrecisionValue = pow( 10., (double)( myPrecision ) );
 }
 
 double NumericalFunctor::GetValue( long theId )
 {
+  double aVal = 0;
+
   myCurrElement = myMesh->FindElement( theId );
+
   TSequenceOfXYZ P;
   if ( GetPoints( theId, P ))
-  {
-    double aVal = GetValue( P );
-    if ( myPrecision >= 0 )
-    {
-      double prec = pow( 10., (double)( myPrecision ) );
-      aVal = floor( aVal * prec + 0.5 ) / prec;
-    }
-    return aVal;
-  }
+    aVal = Round( GetValue( P ));
 
-  return 0.;
+  return aVal;
+}
+
+double NumericalFunctor::Round( const double & aVal )
+{
+  return ( myPrecision >= 0 ) ? floor( aVal * myPrecisionValue + 0.5 ) / myPrecisionValue : aVal;
 }
 
 //================================================================================
@@ -927,6 +930,28 @@ namespace{
     return aHeight;
   }
 
+}
+
+double AspectRatio3D::GetValue( long theId )
+{
+  double aVal = 0;
+  myCurrElement = myMesh->FindElement( theId );
+  if ( myCurrElement && myCurrElement->GetVtkType() == VTK_TETRA )
+  {
+    // Action from CoTech | ACTION 31.3:
+    // EURIWARE BO: Homogenize the formulas used to calculate the Controls in SMESH to fit with
+    // those of ParaView. The library used by ParaView for those calculations can be reused in SMESH.
+    vtkUnstructuredGrid* grid = SMDS_Mesh::_meshList[myCurrElement->getMeshId()]->getGrid();
+    if ( vtkCell* avtkCell = grid->GetCell( myCurrElement->getVtkId() ))
+      aVal = Round( vtkMeshQuality::TetAspectRatio( avtkCell ));
+  }
+  else
+  {
+    TSequenceOfXYZ P;
+    if ( GetPoints( myCurrElement, P ))
+      aVal = Round( GetValue( P ));
+  }
+  return aVal;
 }
 
 double AspectRatio3D::GetValue( const TSequenceOfXYZ& P )

@@ -136,15 +136,17 @@ namespace SMESH{
       virtual double GetBadRate( double Value, int nbNodes ) const = 0;
       long  GetPrecision() const;
       void  SetPrecision( const long thePrecision );
+      double Round( const double & value );
       
       bool GetPoints(const int theId,
                      TSequenceOfXYZ& theRes) const;
       static bool GetPoints(const SMDS_MeshElement* theElem,
                             TSequenceOfXYZ& theRes);
     protected:
-      const SMDS_Mesh* myMesh;
+      const SMDS_Mesh*        myMesh;
       const SMDS_MeshElement* myCurrElement;
-      long       myPrecision;
+      long                    myPrecision;
+      double                  myPrecisionValue;
     };
 
 
@@ -215,6 +217,7 @@ namespace SMESH{
     */
     class SMESHCONTROLS_EXPORT AspectRatio3D: public virtual NumericalFunctor{
     public:
+      virtual double GetValue( long theElementId );
       virtual double GetValue( const TSequenceOfXYZ& thePoints );
       virtual double GetBadRate( double Value, int nbNodes ) const;
       virtual SMDSAbs_ElementType GetType() const;
