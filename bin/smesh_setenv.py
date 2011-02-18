@@ -56,6 +56,7 @@ def set_env(args):
                     
                     if sys.platform == "win32":
                         add_path(os.path.join(plugin_root,get_lib_dir(),salome_subdir), "PATH")
+                        add_path(os.path.join(plugin_root,"bin",salome_subdir), "PYTHONPATH")
                     else:
                         add_path(os.path.join(plugin_root,get_lib_dir(),salome_subdir), "LD_LIBRARY_PATH")
                         add_path(os.path.join(plugin_root,"bin",salome_subdir), "PYTHONPATH")
