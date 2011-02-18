@@ -28,6 +28,7 @@
 #ifndef SMESH_ACTOR_H
 #define SMESH_ACTOR_H
 
+#include <SALOMEconfig.h> // To fix some redefinition
 #include <SALOME_Actor.h>
 #include "SMESH_Object.h"
 

@@ -26,6 +26,7 @@
 #include "SUIT_Tools.h"
 #include "SUIT_Session.h"
 #include "SUIT_ResourceMgr.h"
+#include <SALOMEconfig.h> // To fix some redefinition
 #include "SalomeApp_Application.h"
 
 #ifndef DISABLE_PLOT2DVIEWER
