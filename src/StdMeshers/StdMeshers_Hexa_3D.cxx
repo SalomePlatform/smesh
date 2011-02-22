@@ -424,7 +424,9 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh &         aMesh,
       }
     }
     // check if the loaded grid corresponds to nb of quadrangles
-    const int nbQuads = meshDS->MeshElements( F )->NbElements();
+    const SMESHDS_SubMesh* faceSubMesh =
+      proxymesh ? proxymesh->GetSubMesh( F ) : meshDS->MeshElements( F );
+    const int nbQuads = faceSubMesh->NbElements();
     const int nbHor = aCubeSide[i]._u2nodesMap.size() - 1;
     const int nbVer = aCubeSide[i]._u2nodesMap.begin()->second.size() - 1;
     if ( nbQuads != nbHor * nbVer )
