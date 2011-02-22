@@ -3816,7 +3816,7 @@ bool _ViscousBuilder::addBoundaryElements()
       map< TGeomID, TopoDS_Shape >::iterator e2f =
         data._shrinkShape2Shape.find( getMeshDS()->ShapeToIndex( E ));
       TopoDS_Shape F;
-      if ( isOnFace = ( e2f != data._shrinkShape2Shape.end() ))
+      if (( isOnFace = ( e2f != data._shrinkShape2Shape.end() )))
       {
         F = e2f->second.Oriented( TopAbs_FORWARD );
         reverse = ( helper.GetSubShapeOri( F, E ) == TopAbs_REVERSED );
@@ -3849,8 +3849,6 @@ bool _ViscousBuilder::addBoundaryElements()
       // Make faces
       const int dj1 = reverse ? 0 : 1;
       const int dj2 = reverse ? 1 : 0;
-      vector<SMDS_MeshElement*> newFaces;
-      newFaces.reserve(( ledges.size() - 1 ) * (ledges[0]->_nodes.size() - 1 ));
       for ( unsigned j = 1; j < ledges.size(); ++j )
       {
         vector< const SMDS_MeshNode*>&  nn1 = ledges[j-dj1]->_nodes;
