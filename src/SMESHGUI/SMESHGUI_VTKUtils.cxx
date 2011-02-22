@@ -611,7 +611,7 @@ namespace SMESH
         }
 
         SMESH::SMESH_GroupBase_var aGroup = SMESH::SMESH_GroupBase::_narrow( SMESH::SObjectToObject( aSObj ));
-        if(!CORBA::is_nil(aGroup))
+        if(!CORBA::is_nil(aGroup) && anActor)
         {
           SALOMEDS::Color aColor = aGroup->GetColor();
           if( !( aColor.R > 0 || aColor.G > 0 || aColor.B > 0 ) )

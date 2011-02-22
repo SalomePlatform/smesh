@@ -104,7 +104,7 @@ SMESH_Actor* SMESH_Actor::New(TVisualObjPtr theVisualObj,
                               int theIsClear)
 {
   SMESH_ActorDef* anActor = NULL;
-  if(theVisualObj->GetNbEntities(SMDSAbs_Node) > 0 ) {
+  if(theVisualObj->IsValid() ) {
     anActor = SMESH_ActorDef::New();
     if(!anActor->Init(theVisualObj,theEntry,theName,theIsClear)){
       anActor->Delete();
