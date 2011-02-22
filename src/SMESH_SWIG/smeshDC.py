@@ -569,7 +569,7 @@ class smeshDC(SMESH._objref_SMESH_Gen):
     #  @return SMESH.AxisStruct
     #  @ingroup l1_auxiliary
     def GetAxisStruct(self,theObj):
-        edges = self.geompyD.ExtractShapes( theObj, geompyDC.ShapeType["EDGE"] )
+        edges = self.geompyD.SubShapeAll( theObj, geompyDC.ShapeType["EDGE"] )
         if len(edges) > 1:
             vertex1, vertex2 = self.geompyD.SubShapeAll( edges[0], geompyDC.ShapeType["VERTEX"] )
             vertex3, vertex4 = self.geompyD.SubShapeAll( edges[1], geompyDC.ShapeType["VERTEX"] )
