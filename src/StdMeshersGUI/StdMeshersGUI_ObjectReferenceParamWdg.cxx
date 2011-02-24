@@ -56,10 +56,11 @@
 //================================================================================
 
 StdMeshersGUI_ObjectReferenceParamWdg::StdMeshersGUI_ObjectReferenceParamWdg
-( SUIT_SelectionFilter* f, QWidget* parent, bool multiSelection)
+( SUIT_SelectionFilter* f, QWidget* parent, bool multiSelection, bool stretch )
   : QWidget( parent ), myMultiSelection( multiSelection )
 {
   myFilter = f;
+  myStretchActivated = stretch;
   init();
 }
 
@@ -126,7 +127,9 @@ void StdMeshersGUI_ObjectReferenceParamWdg::init()
 
   aHBox->addWidget( mySelButton );
   aHBox->addWidget( myObjNameLineEdit );
-  aHBox->addStretch();
+  if (myStretchActivated){
+    aHBox->addStretch();
+  }
 
   connect( mySelButton, SIGNAL(clicked()), SLOT(activateSelection()));
 }

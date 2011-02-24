@@ -55,7 +55,8 @@ class STDMESHERSGUI_EXPORT StdMeshersGUI_ObjectReferenceParamWdg : public QWidge
 public:
   StdMeshersGUI_ObjectReferenceParamWdg( SUIT_SelectionFilter* filter, 
                                          QWidget*              parent,
-                                         bool                  multiSelection=false);
+                                         bool                  multiSelection=false,
+                                         bool                  stretch=true);
   StdMeshersGUI_ObjectReferenceParamWdg( MeshObjectType objType,
                                          QWidget*       parent,
                                          bool           multiSelection=false);
@@ -115,6 +116,7 @@ private:
 
  SUIT_SelectionFilter*  myFilter;
  bool                   mySelectionActivated;
+ bool                   myStretchActivated;
 
  SMESHGUI*              mySMESHGUI;
  LightApp_SelectionMgr* mySelectionMgr;
@@ -124,6 +126,7 @@ private:
  QString                myParamValue;
  QString                myEmptyText;
  QString                myEmptyStyleSheet;
+ //int                    spacing;
 };
 
 #endif // STDMESHERSGUI_OBJECTREFERENCEPARAMWDG_H
