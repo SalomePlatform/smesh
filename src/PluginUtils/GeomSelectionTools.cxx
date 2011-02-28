@@ -15,7 +15,6 @@
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
-//
 
 // ---
 // File    : GeomSelectionTools.cxx
@@ -219,17 +218,17 @@ TopAbs_ShapeEnum GeomSelectionTools::entryToShapeType(std::string entry){
       SalomeApp_Application* anApp = GetSalomeApplication();
       if (anApp) {
 //         MESSAGE("Got Application");
-        Engines::Component_var component = anApp->lcc()->FindOrLoad_Component( "FactoryServer","GEOM" );
+        Engines::EngineComponent_var component = anApp->lcc()->FindOrLoad_Component( "FactoryServer","GEOM" );
         GEOM::GEOM_Gen_var _geomEngine = GEOM::GEOM_Gen::_narrow(component);
 //         MESSAGE("Got GEOM engine");
         // if the Geom Object is a group
         if (aShape->GetType() == GEOM_GROUP){
-//           MESSAGE("It's a group");  
+//           MESSAGE("It's a group");
           GEOM::GEOM_IGroupOperations_var aGroupOp = _geomEngine->GetIGroupOperations(myStudy->StudyId());
           ShapeType= (TopAbs_ShapeEnum)aGroupOp->GetType(aShape);
-        } 
+        }
         // if not
-        else { 
+        else {
           GEOM_Client* aClient = new GEOM_Client();
           if ( aClient && !_geomEngine->_is_nil() ) {
 //             MESSAGE("GEOM client is OK and GEOM engine is not null");
@@ -306,7 +305,7 @@ GeomAbs_SurfaceType GeomSelectionTools::getFaceInformation(TopoDS_Shape S)
 QString PluginUtils::PrintDoubleValue( double theValue, int thePrecision )
 {
   const double prec = 1e-12;
-  
+
   if ( qAbs(theValue) < prec )
     return "0";
 
@@ -325,7 +324,7 @@ QString PluginUtils::PrintDoubleValue( double theValue, int thePrecision )
 
   // remove trailing zeroes
 
-  QRegExp expre( QString( "(%1|%2)[+-]?[0-9]+$" ).arg( QLocale().exponential().toLower(), 
+  QRegExp expre( QString( "(%1|%2)[+-]?[0-9]+$" ).arg( QLocale().exponential().toLower(),
                                QLocale().exponential().toUpper() ) );
 
   int idx = aRes.indexOf( expre );
@@ -340,4 +339,3 @@ QString PluginUtils::PrintDoubleValue( double theValue, int thePrecision )
 
   return aRes == "-0" ? QString( "0" ) : aRes + aResExp;
 }
-

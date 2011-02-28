@@ -19,12 +19,11 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
-
 //  SMESH SMESHClient : tool to update client mesh structure by mesh from server
 //  File   : SMESH_Client.cxx
 //  Author : Pavel TELKOV
 //  Module : SMESH
-//
+
 #include "SMESH_Client.hxx"
 #include "SMESH_Mesh.hxx"
 
@@ -84,7 +83,7 @@ namespace
   //=======================================================================
   //function : AddNodesWithID
   //=======================================================================
-  inline void AddNodesWithID(SMDS_Mesh* theMesh, 
+  inline void AddNodesWithID(SMDS_Mesh* theMesh,
                              SMESH::log_array_var& theSeq,
                              CORBA::Long theId)
   {
@@ -107,7 +106,7 @@ namespace
   //=======================================================================
   //function : Add0DElementsWithID
   //=======================================================================
-  inline void Add0DElementsWithID(SMDS_Mesh* theMesh, 
+  inline void Add0DElementsWithID(SMDS_Mesh* theMesh,
                                   SMESH::log_array_var& theSeq,
                                   CORBA::Long theId)
   {
@@ -129,7 +128,7 @@ namespace
   //=======================================================================
   //function : AddEdgesWithID
   //=======================================================================
-  inline void AddEdgesWithID(SMDS_Mesh* theMesh, 
+  inline void AddEdgesWithID(SMDS_Mesh* theMesh,
                              SMESH::log_array_var& theSeq,
                              CORBA::Long theId)
   {
@@ -150,7 +149,7 @@ namespace
   //=======================================================================
   //function : AddTriasWithID
   //=======================================================================
-  inline void AddTriasWithID(SMDS_Mesh* theMesh, 
+  inline void AddTriasWithID(SMDS_Mesh* theMesh,
                              SMESH::log_array_var& theSeq,
                              CORBA::Long theId)
   {
@@ -172,7 +171,7 @@ namespace
   //=======================================================================
   //function : AddQuadsWithID
   //=======================================================================
-  inline void AddQuadsWithID(SMDS_Mesh* theMesh, 
+  inline void AddQuadsWithID(SMDS_Mesh* theMesh,
                              SMESH::log_array_var theSeq,
                              CORBA::Long theId)
   {
@@ -195,7 +194,7 @@ namespace
   //=======================================================================
   //function : AddPolygonsWithID
   //=======================================================================
-  inline void AddPolygonsWithID(SMDS_Mesh* theMesh, 
+  inline void AddPolygonsWithID(SMDS_Mesh* theMesh,
                                 SMESH::log_array_var& theSeq,
                                 CORBA::Long theId)
   {
@@ -222,7 +221,7 @@ namespace
   //=======================================================================
   //function : AddTetrasWithID
   //=======================================================================
-  inline void AddTetrasWithID(SMDS_Mesh* theMesh, 
+  inline void AddTetrasWithID(SMDS_Mesh* theMesh,
                               SMESH::log_array_var& theSeq,
                               CORBA::Long theId)
   {
@@ -245,7 +244,7 @@ namespace
   //=======================================================================
   //function : AddPiramidsWithID
   //=======================================================================
-  inline void AddPiramidsWithID(SMDS_Mesh* theMesh, 
+  inline void AddPiramidsWithID(SMDS_Mesh* theMesh,
                                 SMESH::log_array_var& theSeq,
                                 CORBA::Long theId)
   {
@@ -269,7 +268,7 @@ namespace
   //=======================================================================
   //function : AddPrismsWithID
   //=======================================================================
-  inline void AddPrismsWithID(SMDS_Mesh* theMesh, 
+  inline void AddPrismsWithID(SMDS_Mesh* theMesh,
                               SMESH::log_array_var& theSeq,
                               CORBA::Long theId)
   {
@@ -294,7 +293,7 @@ namespace
   //=======================================================================
   //function : AddHexasWithID
   //=======================================================================
-  inline void AddHexasWithID(SMDS_Mesh* theMesh, 
+  inline void AddHexasWithID(SMDS_Mesh* theMesh,
                              SMESH::log_array_var& theSeq,
                              CORBA::Long theId)
   {
@@ -321,7 +320,7 @@ namespace
   //=======================================================================
   //function : AddPolyhedronsWithID
   //=======================================================================
-  inline void AddPolyhedronsWithID (SMDS_Mesh* theMesh, 
+  inline void AddPolyhedronsWithID (SMDS_Mesh* theMesh,
                                     SMESH::log_array_var& theSeq,
                                     CORBA::Long theId)
   {
@@ -355,7 +354,7 @@ namespace
   //=======================================================================
   //function : AddQuadEdgesWithID
   //=======================================================================
-  inline void AddQuadEdgesWithID(SMDS_Mesh* theMesh, 
+  inline void AddQuadEdgesWithID(SMDS_Mesh* theMesh,
                                  SMESH::log_array_var& theSeq,
                                  CORBA::Long theId)
   {
@@ -377,7 +376,7 @@ namespace
   //=======================================================================
   //function : AddQuadTriasWithID
   //=======================================================================
-  inline void AddQuadTriasWithID(SMDS_Mesh* theMesh, 
+  inline void AddQuadTriasWithID(SMDS_Mesh* theMesh,
                                  SMESH::log_array_var& theSeq,
                                  CORBA::Long theId)
   {
@@ -402,7 +401,7 @@ namespace
   //=======================================================================
   //function : AddQuadQuadsWithID
   //=======================================================================
-  inline void AddQuadQuadsWithID(SMDS_Mesh* theMesh, 
+  inline void AddQuadQuadsWithID(SMDS_Mesh* theMesh,
                                  SMESH::log_array_var theSeq,
                                  CORBA::Long theId)
   {
@@ -429,7 +428,7 @@ namespace
   //=======================================================================
   //function : AddQuadTetrasWithID
   //=======================================================================
-  inline void AddQuadTetrasWithID(SMDS_Mesh* theMesh, 
+  inline void AddQuadTetrasWithID(SMDS_Mesh* theMesh,
                                   SMESH::log_array_var& theSeq,
                                   CORBA::Long theId)
   {
@@ -458,7 +457,7 @@ namespace
   //=======================================================================
   //function : AddQuadPiramidsWithID
   //=======================================================================
-  inline void AddQuadPiramidsWithID(SMDS_Mesh* theMesh, 
+  inline void AddQuadPiramidsWithID(SMDS_Mesh* theMesh,
                                     SMESH::log_array_var& theSeq,
                                     CORBA::Long theId)
   {
@@ -490,7 +489,7 @@ namespace
   //=======================================================================
   //function : AddQuadPentasWithID
   //=======================================================================
-  inline void AddQuadPentasWithID(SMDS_Mesh* theMesh, 
+  inline void AddQuadPentasWithID(SMDS_Mesh* theMesh,
                                   SMESH::log_array_var& theSeq,
                                   CORBA::Long theId)
   {
@@ -524,7 +523,7 @@ namespace
   //=======================================================================
   //function : AddQuadHexasWithID
   //=======================================================================
-  inline void AddQuadHexasWithID(SMDS_Mesh* theMesh, 
+  inline void AddQuadHexasWithID(SMDS_Mesh* theMesh,
                                  SMESH::log_array_var& theSeq,
                                  CORBA::Long theId)
   {
@@ -563,7 +562,7 @@ namespace
   //=======================================================================
   //function : ChangePolyhedronNodes
   //=======================================================================
-  inline void ChangePolyhedronNodes (SMDS_Mesh* theMesh, 
+  inline void ChangePolyhedronNodes (SMDS_Mesh* theMesh,
                                      SMESH::log_array_var& theSeq,
                                      CORBA::Long theId)
   {
@@ -595,13 +594,13 @@ namespace
 }
 
 //=======================================================================
-SMESH::SMESH_Gen_var 
+SMESH::SMESH_Gen_var
 SMESH_Client::GetSMESHGen(CORBA::ORB_ptr theORB,
                           CORBA::Boolean& theIsEmbeddedMode)
 {
   static SMESH::SMESH_Gen_var aMeshGen;
 
-  if(CORBA::is_nil(aMeshGen.in())){    
+  if(CORBA::is_nil(aMeshGen.in())){
 #ifdef WNT
     long aClientPID = (long)_getpid();
 #else
@@ -610,9 +609,9 @@ SMESH_Client::GetSMESHGen(CORBA::ORB_ptr theORB,
 
     SALOME_NamingService aNamingService(theORB);
     SALOME_LifeCycleCORBA aLifeCycleCORBA(&aNamingService);
-    Engines::Component_var aComponent = aLifeCycleCORBA.FindOrLoad_Component("FactoryServer","SMESH");
+    Engines::EngineComponent_var aComponent = aLifeCycleCORBA.FindOrLoad_Component("FactoryServer","SMESH");
     aMeshGen = SMESH::SMESH_Gen::_narrow(aComponent);
-    
+
     std::string aClientHostName = Kernel_Utils::GetHostname();
     Engines::Container_var aServerContainer = aMeshGen->GetContainerRef();
     CORBA::String_var aServerHostName = aServerContainer->getHostName();
@@ -627,7 +626,7 @@ SMESH_Client::GetSMESHGen(CORBA::ORB_ptr theORB,
 
 //=======================================================================
 // function : Create()
-// purpose  : 
+// purpose  :
 //=======================================================================
 SMESH_Client::SMESH_Client(CORBA::ORB_ptr theORB,
                            SMESH::SMESH_Mesh_ptr theMesh):
@@ -675,10 +674,10 @@ SMESH_Client::~SMESH_Client()
 
 
 //=================================================================================
-SMDS_Mesh* 
-SMESH_Client::GetMesh() const 
+SMDS_Mesh*
+SMESH_Client::GetMesh() const
 {
-  return mySMDSMesh; 
+  return mySMDSMesh;
 }
 
 
@@ -694,7 +693,7 @@ SMESH_Client::operator->() const
 SMESH::SMESH_Mesh_ptr
 SMESH_Client::GetMeshServer()
 {
-  return myMeshServer.in(); 
+  return myMeshServer.in();
 }
 
 
@@ -718,7 +717,7 @@ SMESH_Client::Update(bool theIsClear)
     anIsModified = aLength > 0;
     if( MYDEBUG )
       MESSAGE( "Update: length of the script is "<<aLength );
-  
+
     if(!anIsModified)
       return false;
 
@@ -762,7 +761,7 @@ SMESH_Client::Update(bool theIsClear)
           for( ; anElemId < aNbElems; anElemId++ )
             mySMDSMesh->RemoveNode( FindNode( mySMDSMesh, anIndexes[anElemId] ) );
         break;
-        
+
         case SMESH::REMOVE_ELEMENT:
           for( ; anElemId < aNbElems; anElemId++ )
             mySMDSMesh->RemoveElement( FindElement( mySMDSMesh, anIndexes[anElemId] ) );
@@ -803,7 +802,7 @@ SMESH_Client::Update(bool theIsClear)
             mySMDSMesh->Renumber( anIndexes[i], anIndexes[i+1], anIndexes[i+2] );
           }
           break;
-          
+
         default:;
         }
       }
@@ -830,6 +829,6 @@ SMESH_Client::Update(bool theIsClear)
       MESSAGE("Update - mySMDSMesh->NbVolumes() = "<<mySMDSMesh->NbVolumes());
     }
   } // end of update mesh by log script
-  
+
   return anIsModified;
 }

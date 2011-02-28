@@ -19,10 +19,9 @@
 //
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
-
 //  File   : SMESH_Gen.idl
 //  Author : Paul RASCLE, EDF
-//
+
 #ifndef _SMESH_GEN_IDL_
 #define _SMESH_GEN_IDL_
 
@@ -76,7 +75,7 @@ module SMESH
   /*!
    * Hypothesis definintion error
    */
-  struct AlgoStateError 
+  struct AlgoStateError
   {
     Hypothesis_Status  state;
     string             algoName;
@@ -111,7 +110,7 @@ module SMESH
   typedef sequence<ComputeError> compute_error_array;
 
 
-  interface SMESH_Gen : Engines::Component, SALOMEDS::Driver
+  interface SMESH_Gen : Engines::EngineComponent, SALOMEDS::Driver
   {
     //GEOM::GEOM_Gen SetGeomEngine( in string containerLoc );
     void SetGeomEngine( in GEOM::GEOM_Gen geomcompo );
@@ -150,7 +149,7 @@ module SMESH
      * Algorithms are 1D, 2D or 3D.
      */
     SMESH_Hypothesis CreateHypothesis( in string theHypName,
-				       in string theLibName )
+                                       in string theLibName )
       raises ( SALOME::SALOME_Exception );
 
     /*!
@@ -181,7 +180,7 @@ module SMESH
      * Set the object name
      */
     void SetName( in string theObjectIOR,
-		  in string theObjectName )
+                  in string theObjectName )
       raises ( SALOME::SALOME_Exception );
 
     /*!
@@ -193,13 +192,13 @@ module SMESH
      */
     SMESH_Mesh CreateMesh( in GEOM::GEOM_Object theObject )
       raises ( SALOME::SALOME_Exception );
-    
+
     /*!
      * Create an empty mesh object
      */
     SMESH_Mesh CreateEmptyMesh()
       raises ( SALOME::SALOME_Exception );
-    
+
     /*!
      * Create Mesh object importing data from given UNV file
      * (UNV supported version is I-DEAS 10)
@@ -211,7 +210,7 @@ module SMESH
      * Create Mesh object(s) importing data from given MED file
      */
      mesh_array CreateMeshesFromMED( in string theFileName,
-				     out SMESH::DriverMED_ReadStatus theStatus )
+                                     out SMESH::DriverMED_ReadStatus theStatus )
        raises ( SALOME::SALOME_Exception );
 
     /*!
@@ -233,55 +232,55 @@ module SMESH
                         in boolean        toCopyGroups,
                         in boolean        toKeepIDs)
       raises ( SALOME::SALOME_Exception );
-    
+
     /*!
      * Concatenate the given meshes into one mesh.
      * Union groups with the same name and type if
      * theUniteIdenticalGroups flag is true.
-     * Merge coincident nodes and elements if 
+     * Merge coincident nodes and elements if
      * theMergeNodesAndElements flag is true.
      */
-    SMESH_Mesh Concatenate(in mesh_array theMeshesArray, 
-			   in boolean    theUniteIdenticalGroups, 
-			   in boolean    theMergeNodesAndElements, 
-			   in double     theMergeTolerance)
+    SMESH_Mesh Concatenate(in mesh_array theMeshesArray,
+                           in boolean    theUniteIdenticalGroups,
+                           in boolean    theMergeNodesAndElements,
+                           in double     theMergeTolerance)
       raises ( SALOME::SALOME_Exception );
 
     /*!
      * Concatenate the given meshes into one mesh.
      * Union groups with the same name and type if
      * theUniteIdenticalGroups flag is true.
-     * Merge coincident nodes and elements if 
+     * Merge coincident nodes and elements if
      * theMergeNodesAndElements flag is true.
      * Create the groups of all elements from initial meshes.
      */
-    SMESH_Mesh ConcatenateWithGroups(in mesh_array theMeshesArray, 
-				     in boolean    theUniteIdenticalGroups, 
-                                     in boolean    theMergeNodesAndElements, 
+    SMESH_Mesh ConcatenateWithGroups(in mesh_array theMeshesArray,
+                                     in boolean    theUniteIdenticalGroups,
+                                     in boolean    theMergeNodesAndElements,
                                      in double     theMergeTolerance)
       raises ( SALOME::SALOME_Exception );
 
     /*!
-     * Mesh a subShape. 
+     * Mesh a subShape.
      * First, verify list of hypothesis associated with the subShape,
      * return NOK if hypothesis are not sufficient
      */
-    boolean Compute( in SMESH_Mesh        theMesh, 
-		     in GEOM::GEOM_Object theSubObject )
+    boolean Compute( in SMESH_Mesh        theMesh,
+                     in GEOM::GEOM_Object theSubObject )
       raises ( SALOME::SALOME_Exception );
 
     /*!
      * Return true if hypotheses are defined well
      */
-    boolean IsReadyToCompute( in SMESH_Mesh        theMesh, 
-			      in GEOM::GEOM_Object theSubObject )
+    boolean IsReadyToCompute( in SMESH_Mesh        theMesh,
+                              in GEOM::GEOM_Object theSubObject )
       raises ( SALOME::SALOME_Exception );
 
     /*!
      * Evaluates size of prospective mesh on a shape
      */
-    long_array  Evaluate(in SMESH_Mesh        theMesh, 
-			 in GEOM::GEOM_Object theSubObject)
+    long_array  Evaluate(in SMESH_Mesh        theMesh,
+                         in GEOM::GEOM_Object theSubObject)
       raises ( SALOME::SALOME_Exception );
 
     /*!
@@ -289,17 +288,17 @@ module SMESH
      * First, verify list of hypothesis associated with the subShape.
      * Return mesh preview structure
      */
-    MeshPreviewStruct Precompute( in SMESH_Mesh        theMesh, 
-				  in GEOM::GEOM_Object theSubObject,
-				  in Dimension         theDimension,
-				  inout long_array    theShapesId )
+    MeshPreviewStruct Precompute( in SMESH_Mesh        theMesh,
+                                  in GEOM::GEOM_Object theSubObject,
+                                  in Dimension         theDimension,
+                                  inout long_array    theShapesId )
       raises ( SALOME::SALOME_Exception );
 
     /*!
      * Return errors of hypotheses definintion
      * algo_error_array is empty if everything is OK
      */
-    algo_error_array GetAlgoState( in SMESH_Mesh        theMesh, 
+    algo_error_array GetAlgoState( in SMESH_Mesh        theMesh,
                                    in GEOM::GEOM_Object theSubObject )
       raises ( SALOME::SALOME_Exception );
 
@@ -307,7 +306,7 @@ module SMESH
      * Return errors of mesh computation
      * compute_error_array is empty if everything is OK
      */
-    compute_error_array GetComputeErrors( in SMESH_Mesh        theMesh, 
+    compute_error_array GetComputeErrors( in SMESH_Mesh        theMesh,
                                           in GEOM::GEOM_Object theSubObject )
       raises ( SALOME::SALOME_Exception );
 
@@ -328,7 +327,7 @@ module SMESH
 
     /*!
      * Return geometrical object the given element is built on.
-     * The returned geometrical object, if not nil, is either found in the 
+     * The returned geometrical object, if not nil, is either found in the
      * study or is published by this method with the given name
      */
     GEOM::GEOM_Object GetGeometryByMeshElement( in SMESH_Mesh  theMesh,
@@ -341,7 +340,7 @@ module SMESH
      * The returned geometrical object not published in study by this method.
      */
     GEOM::GEOM_Object FindGeometryByMeshElement( in SMESH_Mesh  theMesh,
-						 in long        theElementID)
+                                                 in long        theElementID)
       raises ( SALOME::SALOME_Exception );
 
     /*!
