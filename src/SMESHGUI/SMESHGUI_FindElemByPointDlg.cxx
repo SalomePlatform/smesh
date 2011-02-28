@@ -213,6 +213,7 @@ SMESHGUI_FindElemByPointOp::SMESHGUI_FindElemByPointOp()
   connect(myDlg->myZ,            SIGNAL(valueChanged(double)),    this, SLOT(redisplayPreview()));
   connect(myDlg->myFoundList,    SIGNAL(itemSelectionChanged()),  this, SLOT(onElemSelected()));
   connect(myDlg->myElemTypeCombo,SIGNAL(currentIndexChanged(int)),this, SLOT(onElemTypeChange(int)));
+  connect(myDlg,                 SIGNAL(rejectedDlg()),           this, SLOT(onRejectedDlg()));
 }
 
 //=======================================================================
@@ -307,6 +308,29 @@ void SMESHGUI_FindElemByPointOp::onElemTypeChange(int index)
 
 //================================================================================
 /*!
+ * \brief Method needed for internal cuisine
+ */
+//================================================================================
+
+void SMESHGUI_FindElemByPointDlg::reject()
+{
+  emit rejectedDlg();
+  QtxDialog::reject();
+}
+
+//================================================================================
+/*!
+ * \brief Method needed for internal cuisine
+ */
+//================================================================================
+
+void SMESHGUI_FindElemByPointOp::onRejectedDlg()
+{
+  myMeshIO.Nullify(); 
+}
+
+//================================================================================
+/*!
  * \brief perform it's intention action: find elements
  */
 //================================================================================
@@ -351,6 +375,7 @@ void SMESHGUI_FindElemByPointOp::onFind()
 
 bool SMESHGUI_FindElemByPointOp::onApply()
 {
+  onRejectedDlg();
   return true;
 }
 

@@ -3766,7 +3766,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createPopupItem( 900, OB, mesh_group );                  // ADV_INFO
   //createPopupItem( 902, OB, mesh );                        // STD_INFO
   createPopupItem( 903, OB, mesh_group );                  // WHAT_IS
-  createPopupItem( 904, OB, mesh_group );                  // FIND_ELEM
+  createPopupItem( 904, OB, mesh );                        // FIND_ELEM
   popupMgr()->insert( separator(), -1, 0 );
   createPopupItem( 801, OB, mesh );                        // CREATE_GROUP
   createPopupItem( 806, OB, mesh );                        // CREATE_GEO_GROUP
@@ -3802,7 +3802,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createPopupItem( 900, View, mesh_group ); // ADV_INFO
   //createPopupItem( 902, View, mesh );       // STD_INFO
   createPopupItem( 903, View, mesh_group ); // WHAT_IS
-  createPopupItem( 904, View, mesh_group ); // FIND_ELEM
+  createPopupItem( 904, View, mesh );       // FIND_ELEM
   popupMgr()->insert( separator(), -1, 0 );
 
   createPopupItem( 1136, OB + " " + View, mesh, "&& (not isAutoColor)" ); // AUTO_COLOR

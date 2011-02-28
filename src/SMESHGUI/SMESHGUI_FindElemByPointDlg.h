@@ -62,6 +62,8 @@ protected slots:
   virtual bool                   onApply();
 
 private slots:
+
+  void                           onRejectedDlg();
   void                           onSelectionDone();
   void                           onElemSelected();
   void                           onElemTypeChange(int);
@@ -103,6 +105,12 @@ private:
   QString                       myHelpFileName;
 
   friend class SMESHGUI_FindElemByPointOp;
+
+signals:
+  void                           rejectedDlg();
+
+protected slots:
+  virtual void                   reject();
 
 private slots:
 //void                          ButtonToggled( bool );
