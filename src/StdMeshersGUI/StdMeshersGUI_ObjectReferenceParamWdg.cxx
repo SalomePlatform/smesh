@@ -153,6 +153,7 @@ void StdMeshersGUI_ObjectReferenceParamWdg::activateSelection()
     connect(mySelectionMgr, SIGNAL(currentSelectionChanged()), SLOT(onSelectionDone()));
   }
   emit selectionActivated();
+  onSelectionDone();
 
   mySelButton->setChecked( mySelectionActivated );
 }

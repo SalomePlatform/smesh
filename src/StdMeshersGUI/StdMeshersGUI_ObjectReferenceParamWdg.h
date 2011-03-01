@@ -126,7 +126,6 @@ private:
  QString                myParamValue;
  QString                myEmptyText;
  QString                myEmptyStyleSheet;
- //int                    spacing;
 };
 
 #endif // STDMESHERSGUI_OBJECTREFERENCEPARAMWDG_H
