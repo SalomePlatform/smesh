@@ -5281,7 +5281,7 @@ class Mesh_Tetrahedron(Mesh_Algorithm):
                     self.params = self.Hypothesis("NETGEN_Parameters", [],
                                                   "libNETGENEngine.so", UseExisting=0)
 
-            if self.algoType == NETGEN:
+            elif self.algoType == NETGEN:
                 self.params = self.Hypothesis("NETGEN_Parameters_3D", [],
                                               "libNETGENEngine.so", UseExisting=0)
 
@@ -5293,7 +5293,7 @@ class Mesh_Tetrahedron(Mesh_Algorithm):
                 self.params = self.Hypothesis("GHS3DPRL_Parameters", [],
                                               "libGHS3DPRLEngine.so", UseExisting=0)
             else:
-                print "Algo supports no multi-parameter hypothesis"
+                print "Warning: %s supports no multi-parameter hypothesis"%self.algo.GetName()
 
         return self.params
 
