@@ -2681,6 +2681,9 @@ void SMESH_MeshEditor::GetLinkedNodes( const SMDS_MeshNode* theNode,
   while ( elemIt->more() )
   {
     const SMDS_MeshElement* elem = elemIt->next();
+    if(elem->GetType() == SMDSAbs_0DElement)
+      continue;
+    
     SMDS_ElemIteratorPtr nodeIt = elem->nodesIterator();
     if ( elem->GetType() == SMDSAbs_Volume )
     {
