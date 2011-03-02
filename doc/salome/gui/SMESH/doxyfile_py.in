@@ -98,7 +98,7 @@ EXAMPLE_RECURSIVE      = NO
 #---------------------------------------------------------------------------
 #Input related options
 #---------------------------------------------------------------------------
-INPUT             = @top_builddir@/src/SMESH_SWIG
+INPUT             = .
 FILE_PATTERNS     = smesh.py
 IMAGE_PATH        = @srcdir@/images
 RECURSIVE         = NO
