@@ -34,9 +34,8 @@ usr_docs: doxyfile_py doxyfile
 	echo "===========================================" ;			\
 	echo "Replacing smeshDC by smesh" ;					\
 	echo "===========================================" ;			\
-	sed -e "/class smeshDC/d" -e "s/^ *#/#/g" -e "s/^ *def /def /g" 	\
-	  -e "s/smeshDC/smesh/g" $(top_srcdir)/src/SMESH_SWIG/smeshDC.py > 	\
-	  $(top_builddir)/src/SMESH_SWIG/smesh.py ; 				\
+	awk '/^class Mesh:/ { mesh_found=1 } // { if (mesh_found) {print $$0; next} } /^ +(def|#)/ { match( $$0, /^ +/); print substr( $$0, 1+RLENGTH ); next } /^class smeshDC/ { next } //' \
+	  $(top_srcdir)/src/SMESH_SWIG/smeshDC.py > ./smesh.py ;		\
 	echo "===========================================" ;			\
 	echo "Generating Python interface documentation";			\
 	echo "===========================================" ;			\
@@ -45,7 +44,7 @@ usr_docs: doxyfile_py doxyfile
 	echo "Generating GUI documentation" ;					\
 	echo "===========================================" ;			\
 	$(DOXYGEN) doxyfile ;                        				\
-	rm -f $(top_builddir)/src/SMESH_SWIG/smesh.py
+	rm -f ./smesh.py
 
 docs: usr_docs
 
