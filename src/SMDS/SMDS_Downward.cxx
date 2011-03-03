@@ -1766,7 +1766,34 @@ SMDS_DownHexa::~SMDS_DownHexa()
 
 void SMDS_DownHexa::getOrderedNodesOfFace(int cellId, std::vector<vtkIdType>& orderedNodes)
 {
-  // TODO
+  set<int> setNodes;
+  setNodes.clear();
+  for (int i = 0; i < orderedNodes.size(); i++)
+    setNodes.insert(orderedNodes[i]);
+  //MESSAGE("cellId = " << cellId);
+
+  vtkIdType npts = 0;
+  vtkIdType *nodes; // will refer to the point id's of the volume
+  _grid->GetCellPoints(this->_vtkCellIds[cellId], npts, nodes);
+
+  set<int> tofind;
+  int ids[24] = { 0, 1, 2, 3,  4, 5, 6, 7,  0, 1, 5, 4,  3, 2, 6, 7,  0, 3, 7, 4,  1, 2, 6, 5};
+  for (int k = 0; k < 6; k++) // loop on the 6 faces
+    {
+      tofind.clear();
+      for (int i = 0; i < 4; i++)
+        tofind.insert(nodes[ids[4 * k + i]]); // node ids of the face i
+      if (setNodes == tofind)
+        {
+          for (int i = 0; i < 4; i++)
+            orderedNodes[i] = nodes[ids[4 * k + i]];
+          return;
+        }
+    }
+  MESSAGE("=== Problem volume " << _vtkCellIds[cellId] << " " << _grid->_mesh->fromVtkToSmds(_vtkCellIds[cellId]));
+  MESSAGE(orderedNodes[0] << " " << orderedNodes[1] << " " << orderedNodes[2] << " " << orderedNodes[3]);
+  MESSAGE(nodes[0] << " " << nodes[1] << " " << nodes[2] << " " << nodes[3]);
+  MESSAGE(nodes[4] << " " << nodes[5] << " " << nodes[6] << " " << nodes[7]);
 }
 
 void SMDS_DownHexa::addDownCell(int cellId, int lowCellId, unsigned char aType)
