@@ -884,7 +884,7 @@ class smeshDC(SMESH._objref_SMESH_Gen):
         aCriteria = []
         aCriteria.append(aCriterion)
         aFilter.SetCriteria(aCriteria)
-        aFilterMgr.Destroy()
+        aFilterMgr.UnRegister()
         return aFilter
 
     ## Creates a numerical functor by its type
@@ -1009,7 +1009,7 @@ class smeshDC(SMESH._objref_SMESH_Gen):
             pass
         aMeasurements = self.CreateMeasurements()
         result = aMeasurements.MinDistance(src1, src2)
-        aMeasurements.Destroy()
+        aMeasurements.UnRegister()
         return result
 
     ## Get bounding box of the specified object(s)
@@ -1046,7 +1046,7 @@ class smeshDC(SMESH._objref_SMESH_Gen):
             pass
         aMeasurements = self.CreateMeasurements()
         result = aMeasurements.BoundingBox(srclist)
-        aMeasurements.Destroy()
+        aMeasurements.UnRegister()
         return result
 
 import omniORB
@@ -1807,7 +1807,7 @@ class Mesh:
         aCriteria.append(Criterion)
         aFilter.SetCriteria(aCriteria)
         group = self.MakeGroupByFilter(groupName, aFilter)
-        aFilterMgr.Destroy()
+        aFilterMgr.UnRegister()
         return group
 
     ## Creates a mesh group by the given criteria (list of criteria)
@@ -1820,7 +1820,7 @@ class Mesh:
         aFilter = aFilterMgr.CreateFilter()
         aFilter.SetCriteria(theCriteria)
         group = self.MakeGroupByFilter(groupName, aFilter)
-        aFilterMgr.Destroy()
+        aFilterMgr.UnRegister()
         return group
 
     ## Creates a mesh group by the given filter
@@ -1851,7 +1851,7 @@ class Mesh:
         aPredicate = aFilterMgr.CreateFreeEdges()
         aPredicate.SetMesh(self.mesh)
         aBorders = aPredicate.GetBorders()
-        aFilterMgr.Destroy()
+        aFilterMgr.UnRegister()
         return aBorders
 
     ## Removes a group
@@ -2415,7 +2415,7 @@ class Mesh:
 
         aMeasurements = self.smeshpyD.CreateMeasurements()
         aMeasure = aMeasurements.MinDistance(id1, id2)
-        aMeasurements.Destroy()
+        aMeasurements.UnRegister()
         return aMeasure
 
     ## Get bounding box of the specified object(s)
@@ -2464,7 +2464,7 @@ class Mesh:
             pass
         aMeasurements = self.smeshpyD.CreateMeasurements()
         aMeasure = aMeasurements.BoundingBox(srclist)
-        aMeasurements.Destroy()
+        aMeasurements.UnRegister()
         return aMeasure
 
     # Mesh edition (SMESH_MeshEditor functionality):

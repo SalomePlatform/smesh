@@ -341,7 +341,7 @@ bool SMESHGUI_BuildCompoundDlg::ClickOnApply()
     // It is safe to decrement its refcount
     // so that it will be destroyed when the entry in study will be removed
     if (!CORBA::is_nil(aCompoundMesh))
-      aCompoundMesh->Destroy();
+      aCompoundMesh->UnRegister();
 #endif
 
     return true;

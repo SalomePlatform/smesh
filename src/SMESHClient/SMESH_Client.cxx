@@ -667,7 +667,7 @@ SMESH_Client::SMESH_Client(CORBA::ORB_ptr theORB,
 //=================================================================================
 SMESH_Client::~SMESH_Client()
 {
-  myMeshServer->Destroy();
+  myMeshServer->UnRegister();
   if(!mySMESHDSMesh)
     delete mySMDSMesh;
 }

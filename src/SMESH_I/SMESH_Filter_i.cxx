@@ -573,7 +573,7 @@ Functor_i::Functor_i():
 
 Functor_i::~Functor_i()
 {
-  //TPythonDump()<<this<<".Destroy()";
+  //TPythonDump()<<this<<".UnRegister()";
 }
 
 void Functor_i::SetMesh( SMESH_Mesh_ptr theMesh )
@@ -1619,7 +1619,7 @@ Comparator_i::Comparator_i():
 Comparator_i::~Comparator_i()
 {
   if ( myNumericalFunctor )
-    myNumericalFunctor->Destroy();
+    myNumericalFunctor->UnRegister();
 }
 
 void Comparator_i::SetMargin( CORBA::Double theValue )
@@ -1636,7 +1636,7 @@ CORBA::Double Comparator_i::GetMargin()
 void Comparator_i::SetNumFunctor( NumericalFunctor_ptr theFunct )
 {
   if ( myNumericalFunctor )
-    myNumericalFunctor->Destroy();
+    myNumericalFunctor->UnRegister();
 
   myNumericalFunctor = DownCast<NumericalFunctor_i*>(theFunct);
 
@@ -1731,13 +1731,13 @@ LogicalNOT_i::LogicalNOT_i()
 LogicalNOT_i::~LogicalNOT_i()
 {
   if ( myPredicate )
-    myPredicate->Destroy();
+    myPredicate->UnRegister();
 }
 
 void LogicalNOT_i::SetPredicate( Predicate_ptr thePredicate )
 {
   if ( myPredicate )
-    myPredicate->Destroy();
+    myPredicate->UnRegister();
 
   myPredicate = SMESH::GetPredicate(thePredicate);
 
@@ -1771,10 +1771,10 @@ LogicalBinary_i::LogicalBinary_i()
 LogicalBinary_i::~LogicalBinary_i()
 {
   if ( myPredicate1 )
-    myPredicate1->Destroy();
+    myPredicate1->UnRegister();
 
   if ( myPredicate2 )
-    myPredicate2->Destroy();
+    myPredicate2->UnRegister();
 }
 
 void LogicalBinary_i::SetMesh( SMESH_Mesh_ptr theMesh )
@@ -1789,7 +1789,7 @@ void LogicalBinary_i::SetMesh( SMESH_Mesh_ptr theMesh )
 void LogicalBinary_i::SetPredicate1( Predicate_ptr thePredicate )
 {
   if ( myPredicate1 )
-    myPredicate1->Destroy();
+    myPredicate1->UnRegister();
 
   myPredicate1 = SMESH::GetPredicate(thePredicate);
 
@@ -1803,7 +1803,7 @@ void LogicalBinary_i::SetPredicate1( Predicate_ptr thePredicate )
 void LogicalBinary_i::SetPredicate2( Predicate_ptr thePredicate )
 {
   if ( myPredicate2 )
-    myPredicate2->Destroy();
+    myPredicate2->UnRegister();
 
   myPredicate2 = SMESH::GetPredicate(thePredicate);
 
@@ -1876,7 +1876,7 @@ FilterManager_i::FilterManager_i()
 
 FilterManager_i::~FilterManager_i()
 {
-  //TPythonDump()<<this<<".Destroy()";
+  //TPythonDump()<<this<<".UnRegister()";
 }
 
 
@@ -2267,12 +2267,12 @@ Filter_i::Filter_i()
 Filter_i::~Filter_i()
 {
   if ( myPredicate )
-    myPredicate->Destroy();
+    myPredicate->UnRegister();
 
   if(!CORBA::is_nil(myMesh))
-    myMesh->Destroy();
+    myMesh->UnRegister();
 
-  //TPythonDump()<<this<<".Destroy()";
+  //TPythonDump()<<this<<".UnRegister()";
 }
 
 //=======================================================================
@@ -2282,7 +2282,7 @@ Filter_i::~Filter_i()
 void Filter_i::SetPredicate( Predicate_ptr thePredicate )
 {
   if ( myPredicate )
-    myPredicate->Destroy();
+    myPredicate->UnRegister();
 
   myPredicate = SMESH::GetPredicate(thePredicate);
 
@@ -2315,7 +2315,7 @@ SetMesh( SMESH_Mesh_ptr theMesh )
     theMesh->Register();
 
   if(!CORBA::is_nil(myMesh))
-    myMesh->Destroy();
+    myMesh->UnRegister();
 
   myMesh = SMESH_Mesh::_duplicate( theMesh );
   TPythonDump()<<this<<".SetMesh("<<theMesh<<")";
@@ -2722,7 +2722,7 @@ CORBA::Boolean Filter_i::GetCriteria( SMESH::Filter::Criteria_out theCriteria )
 CORBA::Boolean Filter_i::SetCriteria( const SMESH::Filter::Criteria& theCriteria )
 {
   if ( myPredicate != 0 )
-    myPredicate->Destroy();
+    myPredicate->UnRegister();
 
   SMESH::FilterManager_i* aFilter = new SMESH::FilterManager_i();
   FilterManager_ptr aFilterMgr = aFilter->_this();
@@ -3421,7 +3421,7 @@ FilterLibrary_i::FilterLibrary_i()
 FilterLibrary_i::~FilterLibrary_i()
 {
   delete myFileName;
-  //TPythonDump()<<this<<".Destroy()";
+  //TPythonDump()<<this<<".UnRegister()";
 }
 
 //=======================================================================

@@ -540,7 +540,7 @@ bool SMESHGUI_SymmetryDlg::ClickOnApply()
           // obj has been published in study. Its refcount has been incremented.
           // It is safe to decrement its refcount
           // so that it will be destroyed when the entry in study will be removed
-          mesh->Destroy();
+          mesh->UnRegister();
 #endif
         }
         break;

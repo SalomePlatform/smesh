@@ -89,7 +89,7 @@ Measurements_i::Measurements_i()
 //=======================================================================
 Measurements_i::~Measurements_i()
 {
-  //TPythonDump()<<this<<".Destroy()";
+  //TPythonDump()<<this<<".UnRegister()";
 }
 
 static bool getNodeNodeDistance (SMESH::Measure& theMeasure,

@@ -351,12 +351,12 @@ bool SMESHGUI_Make2DFrom3DOp::compute2DMesh()
                                                                   newGrp.out() );
       if ( !mesh->_is_nil() ) {
 #ifdef WITHGENERICOBJ
-        mesh->Destroy();
+        mesh->UnRegister();
 #endif
       }
       if ( !newGrp->_is_nil() ) {
 #ifdef WITHGENERICOBJ
-        newGrp->Destroy();
+        newGrp->UnRegister();
 #endif
       }
       ok = true;

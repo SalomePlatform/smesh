@@ -1062,7 +1062,7 @@ void SMESHGUI_MeshOp::createHypothesis(const int theDim,
       SMESH::CreateHypothesis(theTypeName, aHypName, false);
 #ifdef WITHGENERICOBJ
     if (!CORBA::is_nil(aHyp))
-      aHyp->Destroy();
+      aHyp->UnRegister();
 #endif
   } else {
     // Get hypotheses creator client (GUI)
@@ -1138,7 +1138,7 @@ void SMESHGUI_MeshOp::createHypothesis(const int theDim,
        SMESH::CreateHypothesis(theTypeName, aHypName, false);
 #ifdef WITHGENERICOBJ
      if (!CORBA::is_nil(aHyp))
-       aHyp->Destroy();
+       aHyp->UnRegister();
 #endif
     }
   }
@@ -1612,7 +1612,7 @@ bool SMESHGUI_MeshOp::createMesh( QString& theMess )
     // It is safe to decrement its refcount
     // so that it will be destroyed when the entry in study will be removed
     if (aMeshSO)
-      aMeshVar->Destroy();
+      aMeshVar->UnRegister();
 #endif
   }
   return true;
@@ -1875,7 +1875,7 @@ SMESH::SMESH_Hypothesis_var SMESHGUI_MeshOp::getAlgo( const int theDim )
           SMESH::CreateHypothesis(aHypName, aHypName, true);
 #ifdef WITHGENERICOBJ
         if (!CORBA::is_nil(aHyp))
-          aHyp->Destroy();
+          aHyp->UnRegister();
 #endif
       }
       else
@@ -1893,7 +1893,7 @@ SMESH::SMESH_Hypothesis_var SMESHGUI_MeshOp::getAlgo( const int theDim )
             SMESH::CreateHypothesis(aHypName, aHypName, true);
 #ifdef WITHGENERICOBJ
           if (!CORBA::is_nil(aHyp))
-            aHyp->Destroy();
+            aHyp->UnRegister();
 #endif
         }
       }

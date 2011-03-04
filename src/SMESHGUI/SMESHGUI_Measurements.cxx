@@ -564,7 +564,7 @@ void SMESHGUI_MinDistance::compute()
     int precision = SMESHGUI::resourceMgr()->integerValue( "SMESH", "length_precision", 6 );
     SMESH::Measurements_var measure = SMESHGUI::GetSMESHGen()->CreateMeasurements();
     SMESH::Measure result = measure->MinDistance( s1.in(), s2.in() );
-    measure->Destroy();
+    measure->UnRegister();
     myDX->setText( QString::number( result.minX, precision > 0 ? 'f' : 'g', qAbs( precision ) ) );
     myDY->setText( QString::number( result.minY, precision > 0 ? 'f' : 'g', qAbs( precision ) ) );
     myDZ->setText( QString::number( result.minZ, precision > 0 ? 'f' : 'g', qAbs( precision ) ) );
@@ -1043,7 +1043,7 @@ void SMESHGUI_BoundingBox::compute()
     int precision = SMESHGUI::resourceMgr()->integerValue( "SMESH", "length_precision", 6 );
     SMESH::Measurements_var measure = SMESHGUI::GetSMESHGen()->CreateMeasurements();
     SMESH::Measure result = measure->BoundingBox( srcList.in() );
-    measure->Destroy();
+    measure->UnRegister();
     myXmin->setText( QString::number( result.minX, precision > 0 ? 'f' : 'g', qAbs( precision ) ) );
     myXmax->setText( QString::number( result.maxX, precision > 0 ? 'f' : 'g', qAbs( precision ) ) );
     myDX->setText( QString::number( result.maxX-result.minX, precision > 0 ? 'f' : 'g', qAbs( precision ) ) );

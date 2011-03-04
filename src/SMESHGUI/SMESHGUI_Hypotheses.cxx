@@ -94,7 +94,7 @@ void SMESHGUI_GenericHypothesisCreator::create( bool isAlgo,
       SMESH::CreateHypothesis( hypType(), theHypName, isAlgo );
 #ifdef WITHGENERICOBJ
     if (!CORBA::is_nil(anAlgo))
-      anAlgo->Destroy();
+      anAlgo->UnRegister();
 #endif
   }
   else {
@@ -103,7 +103,7 @@ void SMESHGUI_GenericHypothesisCreator::create( bool isAlgo,
     editHypothesis( aHypothesis.in(), theHypName, theParent, obj, slot );
 #ifdef WITHGENERICOBJ
     if (!CORBA::is_nil(aHypothesis))
-      aHypothesis->Destroy();
+      aHypothesis->UnRegister();
 #endif
   }
 }
@@ -302,7 +302,7 @@ void SMESHGUI_GenericHypothesisCreator::onDialogFinished( int result )
   }
   SMESHGUI::GetSMESHGUI()->updateObjBrowser( true, 0 );
 #ifdef WITHGENERICOBJ
-  myHypo->Destroy();
+  myHypo->UnRegister();
 #endif
   myHypo = SMESH::SMESH_Hypothesis::_nil();
   myInitParamsHypo = SMESH::SMESH_Hypothesis::_nil();

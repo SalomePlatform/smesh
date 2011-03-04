@@ -40,7 +40,7 @@ def CheckBelongToGeomFilterOld(theMeshGen, theMesh, theShape, theSubShape, theEl
     aBelongToGeom.SetElementType(theElemType)
     
     aFilter.SetPredicate(aBelongToGeom)
-    aFilterMgr.Destroy()
+    aFilterMgr.UnRegister()
     return aFilter.GetElementsId(theMesh)
 
 ## Current style

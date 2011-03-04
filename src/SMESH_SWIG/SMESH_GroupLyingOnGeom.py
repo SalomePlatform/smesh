@@ -36,7 +36,7 @@ def BuildGroupLyingOn(theMesh, theElemType, theName, theShape):
     
     aFilter.SetPredicate(aLyingOnGeom)
     anIds = aFilter.GetElementsId(theMesh)
-    aFilterMgr.Destroy()
+    aFilterMgr.UnRegister()
 
     aGroup = theMesh.CreateGroup(theElemType, theName)
     aGroup.Add(anIds)

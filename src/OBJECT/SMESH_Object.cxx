@@ -843,7 +843,7 @@ SMESH_GroupObj::SMESH_GroupObj( SMESH::SMESH_GroupBase_ptr theGroup,
 SMESH_GroupObj::~SMESH_GroupObj()
 {
   if ( MYDEBUG ) MESSAGE("~SMESH_GroupObj");
-  myGroupServer->Destroy();
+  myGroupServer->UnRegister();
 }
 
 //=================================================================================
@@ -973,7 +973,7 @@ SMESH_subMeshObj::SMESH_subMeshObj( SMESH::SMESH_subMesh_ptr theSubMesh,
 SMESH_subMeshObj::~SMESH_subMeshObj()
 {
   if ( MYDEBUG ) MESSAGE( "~SMESH_subMeshObj" );
-  mySubMeshServer->Destroy();
+  mySubMeshServer->UnRegister();
 }
 
 //=================================================================================

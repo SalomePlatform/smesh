@@ -280,7 +280,7 @@
             // obj has been published in study. Its refcount has been incremented.
             // It is safe to decrement its refcount
             // so that it will be destroyed when the entry in study will be removed
-            aMeshes[i]->Destroy();
+            aMeshes[i]->UnRegister();
 #endif
           }
           else {
@@ -1582,8 +1582,8 @@ LightApp_Module( "SMESH" )
 SMESHGUI::~SMESHGUI()
 {
 #ifdef WITHGENERICOBJ
-  SMESH::GetFilterManager()->Destroy();
-  SMESH::GetMeasurements()->Destroy();
+  SMESH::GetFilterManager()->UnRegister();
+  SMESH::GetMeasurements()->UnRegister();
 #endif
   SMESH::GetFilterManager() = SMESH::FilterManager::_nil();
   SMESH::GetMeasurements() = SMESH::Measurements::_nil();

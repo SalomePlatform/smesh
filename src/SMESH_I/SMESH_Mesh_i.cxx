@@ -132,7 +132,7 @@ SMESH_Mesh_i::~SMESH_Mesh_i()
       // this method is called from destructor of group (PAL6331)
       //_impl->RemoveGroup( aGroup->GetLocalID() );
       aGroup->myMeshServant = 0;
-      aGroup->Destroy();
+      aGroup->UnRegister();
     }
   }
   _mapGroups.clear();
@@ -144,7 +144,7 @@ SMESH_Mesh_i::~SMESH_Mesh_i()
       continue;
     SMESH_subMesh_i* aSubMesh = dynamic_cast<SMESH_subMesh_i*>(SMESH_Gen_i::GetServant(itSM->second).in());
     if (aSubMesh) {
-      aSubMesh->Destroy();
+      aSubMesh->UnRegister();
     }
   }
   _mapSubMeshIor.clear();
@@ -156,7 +156,7 @@ SMESH_Mesh_i::~SMESH_Mesh_i()
       continue;
     SMESH_Hypothesis_i* aHypo = dynamic_cast<SMESH_Hypothesis_i*>(SMESH_Gen_i::GetServant(itH->second).in());
     if (aHypo) {
-      aHypo->Destroy();
+      aHypo->UnRegister();
     }
   }
   _mapHypo.clear();
