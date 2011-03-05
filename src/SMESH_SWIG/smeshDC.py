@@ -3082,15 +3082,18 @@ class Mesh:
     ## Creates missing boundary elements
     #  @param elements - elements whose boundary is to be checked:
     #                    mesh, group, sub-mesh or list of elements
+    #   if elements is mesh, it must be the mesh whose MakeBoundaryMesh() is called
     #  @param dimension - defines type of boundary elements to create:
     #                     SMESH.BND_2DFROM3D, SMESH.BND_1DFROM3D, SMESH.BND_1DFROM2D
+    #    SMESH.BND_1DFROM3D creates mesh edges on all borders of free facets of 3D cells
     #  @param groupName - a name of group to store created boundary elements in,
     #                     "" means not to create the group
     #  @param meshName - a name of new mesh to store created boundary elements in,
     #                     "" means not to create the new mesh
-    #  @param toCopyElements - if true, the checked elements will be copied into the new mesh
+    #  @param toCopyElements - if true, the checked elements will be copied into
+    #     the new mesh else only boundary elements will be copied into the new mesh
     #  @param toCopyExistingBondary - if true, not only new but also pre-existing
-    #                                boundary elements will be copied into the new mesh
+    #     boundary elements will be copied into the new mesh
     #  @return tuple (mesh, group) where bondary elements were added to
     #  @ingroup l2_modif_edit
     def MakeBoundaryMesh(self, elements, dimension=SMESH.BND_2DFROM3D, groupName="", meshName="",
