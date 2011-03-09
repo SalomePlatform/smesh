@@ -131,16 +131,8 @@ void SMDS_UnstructuredGrid::setSMDS_mesh(SMDS_Mesh *mesh)
 void SMDS_UnstructuredGrid::compactGrid(std::vector<int>& idNodesOldToNew, int newNodeSize,
                                         std::vector<int>& idCellsOldToNew, int newCellSize)
 {
-  // TODO utiliser mieux vtk pour faire plus simple (plus couteux ?)
-
   MESSAGE("------------------------- SMDS_UnstructuredGrid::compactGrid " << newNodeSize << " " << newCellSize);CHRONO(1);
   int alreadyCopied = 0;
-
-  //    if (this->Links)
-  //    {
-  //            this->Links->UnRegister(this);
-  //            this->Links = 0;
-  //    }
 
   // --- if newNodeSize, create a new compacted vtkPoints
 
@@ -150,7 +142,7 @@ void SMDS_UnstructuredGrid::compactGrid(std::vector<int>& idNodesOldToNew, int n
   if (newNodeSize)
     {
       MESSAGE("-------------- compactGrid, newNodeSize " << newNodeSize);
-      // rnv: to fix bug "21125: EDF 1233 SMESH: Degrardation of precision in a test case for quadratic conversion"
+      // rnv: to fix bug "21125: EDF 1233 SMESH: Degradation of precision in a test case for quadratic conversion"
       // using double type for storing coordinates of nodes instead float.
       int oldNodeSize = idNodesOldToNew.size();
 
@@ -167,56 +159,6 @@ void SMDS_UnstructuredGrid::compactGrid(std::vector<int>& idNodesOldToNew, int n
         int endBloc = i;
         copyNodes(newPoints, idNodesOldToNew, alreadyCopied, startBloc, endBloc);
       }
-//       for (int i = 0; i < oldNodeSize; i++)
-//         {
-//           //MESSAGE("                                    " << i << " " << idNodesOldToNew[i]);
-//           switch (compactState)
-//           {
-//             case lookHoleStart:
-//               if (idNodesOldToNew[i] < 0)
-//                 {
-//                   MESSAGE("-------------- newNodeSize, startHole " << i << " " << oldNodeSize);
-//                   startHole = i;
-//                   if (!alreadyCopied) // copy the first bloc
-//                     {
-//                       MESSAGE("--------- copy first nodes before hole " << i << " " << oldNodeSize);
-//                       copyNodes(newPoints, idNodesOldToNew, alreadyCopied, 0, startHole);
-//                     }
-//                   compactState = lookHoleEnd;
-//                 }
-//               break;
-//             case lookHoleEnd:
-//               if (idNodesOldToNew[i] >= 0)
-//                 {
-//                   MESSAGE("-------------- newNodeSize, endHole " << i << " " << oldNodeSize);
-//                   endHole = i;
-//                   startBloc = i;
-//                   compactState = lookBlocEnd;
-//                 }
-//               break;
-//             case lookBlocEnd:
-//               if (idNodesOldToNew[i] < 0)
-//                 endBloc = i; // see nbPoints below
-//               else if (i == (oldNodeSize - 1))
-//                 endBloc = i + 1;
-//               if (endBloc)
-//                 {
-//                   MESSAGE("-------------- newNodeSize, endbloc " << endBloc << " " << oldNodeSize);
-//                   copyNodes(newPoints, idNodesOldToNew, alreadyCopied, startBloc, endBloc);
-//                   compactState = lookHoleEnd;
-//                   startHole = i;
-//                   endHole = 0;
-//                   startBloc = 0;
-//                   endBloc = 0;
-//                 }
-//               break;
-//           }
-//         }
-//       if (!alreadyCopied) // no hole, but shorter, no need to modify idNodesOldToNew
-//         {
-//           MESSAGE("------------- newNodeSize, shorter " << oldNodeSize);
-//           copyNodes(newPoints, idNodesOldToNew, alreadyCopied, 0, newNodeSize);
-//         }
       newPoints->Squeeze();
     }
 
@@ -258,60 +200,8 @@ void SMDS_UnstructuredGrid::compactGrid(std::vector<int>& idNodesOldToNew, int n
       copyBloc(newTypes, idCellsOldToNew, idNodesOldToNew, newConnectivity, newLocations, pointsCell,
                alreadyCopied, startBloc, endBloc);
   }
-//   for (int i = 0; i < oldCellSize; i++)
-//     {
-//       switch (compactState)
-//       {
-//         case lookHoleStart:
-//           if (this->Types->GetValue(i) == VTK_EMPTY_CELL)
-//             {
-//               MESSAGE(" -------- newCellSize, startHole " << i << " " << oldCellSize);
-//               startHole = i;
-//               compactState = lookHoleEnd;
-//               if (!alreadyCopied) // copy the first bloc
-//                 {
-//                   MESSAGE("--------- copy first bloc before hole " << i << " " << oldCellSize);
-//                   copyBloc(newTypes, idCellsOldToNew, idNodesOldToNew, newConnectivity, newLocations, pointsCell,
-//                            alreadyCopied, 0, startHole);
-//                 }
-//             }
-//           break;
-//         case lookHoleEnd:
-//           if (this->Types->GetValue(i) != VTK_EMPTY_CELL)
-//             {
-//               MESSAGE(" -------- newCellSize, EndHole " << i << " " << oldCellSize);
-//               endHole = i;
-//               startBloc = i;
-//               compactState = lookBlocEnd;
-//               holes += endHole - startHole;
-//             }
-//           break;
-//         case lookBlocEnd:
-//           endBloc = 0;
-//           if (this->Types->GetValue(i) == VTK_EMPTY_CELL)
-//             endBloc = i;
-//           else if (i == (oldCellSize - 1))
-//             endBloc = i + 1;
-//           if (endBloc)
-//             {
-//               MESSAGE(" -------- newCellSize, endBloc " << endBloc << " " << oldCellSize);
-//               copyBloc(newTypes, idCellsOldToNew, idNodesOldToNew, newConnectivity, newLocations, pointsCell,
-//                        alreadyCopied, startBloc, endBloc);
-//               compactState = lookHoleEnd;
-//             }
-//           break;
-//       }
-//     }
-//   if (!alreadyCopied) // no hole, but shorter
-//     {
-//       MESSAGE(" -------- newCellSize, shorter " << oldCellSize);
-//       copyBloc(newTypes, idCellsOldToNew, idNodesOldToNew, newConnectivity, newLocations, pointsCell, alreadyCopied, 0,
-//                oldCellSize);
-//     }
 
   newConnectivity->Squeeze();
-  //newTypes->Squeeze();
-  //newLocations->Squeeze();
 
   if (1/*newNodeSize*/)
     {
@@ -385,7 +275,6 @@ void SMDS_UnstructuredGrid::copyNodes(vtkPoints *newPoints, std::vector<int>& id
       memcpy(target, source, 3 * sizeof(double) * nbPoints);
       for (int j = start; j < end; j++)
         idNodesOldToNew[j] = alreadyCopied++; // old vtkId --> new vtkId
-        //idNodesOldToNew[alreadyCopied++] = idNodesOldToNew[j]; // new vtkId --> old SMDS id
     }
 }
 
