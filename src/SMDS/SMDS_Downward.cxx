@@ -1131,7 +1131,8 @@ void SMDS_DownTetra::getOrderedNodesOfFace(int cellId, std::vector<vtkIdType>& o
   _grid->GetCellPoints(this->_vtkCellIds[cellId], npts, nodes);
 
   set<int> tofind;
-  int ids[12] = { 0, 1, 2, 0, 1, 3, 0, 2, 3, 1, 2, 3 };
+  int ids[12] = { 0, 1, 2,  0, 3, 1,  2, 3, 0,   1, 3, 2 };
+//int ids[12] = { 2, 1, 0,  1, 3, 0,  0, 3, 2,   2, 3, 1 };
   for (int k = 0; k < 4; k++)
     {
       tofind.clear();
@@ -1795,7 +1796,8 @@ void SMDS_DownHexa::getOrderedNodesOfFace(int cellId, std::vector<vtkIdType>& or
   _grid->GetCellPoints(this->_vtkCellIds[cellId], npts, nodes);
 
   set<int> tofind;
-  int ids[24] = { 0, 1, 2, 3,  4, 5, 6, 7,  0, 1, 5, 4,  3, 2, 6, 7,  0, 3, 7, 4,  1, 2, 6, 5};
+//int ids[24] = { 0, 1, 2, 3,  7, 6, 5, 4,  4, 0, 3, 7,  5, 1, 0, 4,  6, 2, 1, 5,  7, 3, 2, 6};
+  int ids[24] = { 3, 2, 1, 0,  4, 5, 6, 7,  7, 3, 0, 4,  4, 0, 1, 5,  5, 1, 2, 6,  6, 2, 3, 7};
   for (int k = 0; k < 6; k++) // loop on the 6 faces
     {
       tofind.clear();

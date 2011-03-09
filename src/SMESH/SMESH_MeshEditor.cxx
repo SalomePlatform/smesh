@@ -10616,9 +10616,9 @@ bool SMESH_MeshEditor::DoubleNodesInRegion( const TIDSortedElemSet& theElems,
 bool SMESH_MeshEditor::DoubleNodesOnGroupBoundaries( const std::vector<TIDSortedElemSet>& theElems,
                                                      bool createJointElems)
 {
-  MESSAGE("------------------------------------------------------");
-  MESSAGE("SMESH_MeshEditor::CreateJointElementsOnGroupBoundaries");
-  MESSAGE("------------------------------------------------------");
+  MESSAGE("----------------------------------------------");
+  MESSAGE("SMESH_MeshEditor::doubleNodesOnGroupBoundaries");
+  MESSAGE("----------------------------------------------");
 
   SMESHDS_Mesh *meshDS = this->myMesh->GetMeshDS();
   meshDS->BuildDownWardConnectivity(false);
