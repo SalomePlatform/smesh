@@ -813,15 +813,15 @@ int SMDS_UnstructuredGrid::GetNeighbors(int* neighborsVtkIds, int* downIds, unsi
 {
   int vtkType = this->GetCellType(vtkId);
   int cellDim = SMDS_Downward::getCellDimension(vtkType);
-  if (cellDim != 3)
-    return 0; // TODO voisins des faces ou edges
+  if (cellDim <2)
+    return 0; // TODO voisins des edges = edges connectees
   int cellId = this->_cellIdToDownId[vtkId];
 
   int nbCells = _downArray[vtkType]->getNumberOfDownCells(cellId);
   const int *downCells = _downArray[vtkType]->getDownCells(cellId);
   const unsigned char* downTyp = _downArray[vtkType]->getDownTypes(cellId);
 
-  // --- iteration on faces of the 3D cell.
+  // --- iteration on faces of the 3D cell (or edges on the 2D cell).
 
   int nb = 0;
   for (int i = 0; i < nbCells; i++)
@@ -832,7 +832,8 @@ int SMDS_UnstructuredGrid::GetNeighbors(int* neighborsVtkIds, int* downIds, unsi
       const int *upCells = _downArray[cellType]->getUpCells(downId);
       const unsigned char* upTypes = _downArray[cellType]->getUpTypes(downId);
 
-      // --- max 2 upCells, one is this cell, the other is a neighbor
+      // ---for a volume, max 2 upCells, one is this cell, the other is a neighbor
+      //    for a face, number of neighbors (connected faces) not known
 
       for (int j = 0; j < nbUp; j++)
         {
@@ -884,11 +885,10 @@ void SMDS_UnstructuredGrid::ModifyCellNodes(int vtkVolId, std::map<int, int> loc
     }
 }
 
-/*! Create a volume (prism or hexahedron) by duplication of a face.
- * the nodes of the new face are already created.
+/*! reorder the nodes of a face
  * @param vtkVolId vtk id of a volume containing the face, to get an orientation for the face.
- * @param localClonedNodeIds map old node id to new node id.
- * @return vtk id of the new volume.
+ * @param orderedNodes list of nodes to reorder (in out)
+ * @return size of the list
  */
 int SMDS_UnstructuredGrid::getOrderedNodesOfFace(int vtkVolId, std::vector<vtkIdType>& orderedNodes)
 {

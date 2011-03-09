@@ -1977,23 +1977,38 @@ bool SMESHDS_Mesh::ModifyCellNodes(int vtkVolId, std::map<int,int> localClonedNo
 }
 
 /*! Create a volume (prism or hexahedron) by duplication of a face.
- * the nodes of the new face are already created.
- * @param vtkVolId vtk id of a volume containing the face, to get an orientation for the face.
- * @param localClonedNodeIds map old node id to new node id. The old nodes define the face in the volume.
+ * Designed for use in creation of flat elements separating volume domains.
+ * A face separating two domains is shared by two volume cells.
+ * All the nodes are already created (for the two faces).
+ * Each original Node is associated to corresponding nodes in the domains.
+ * Some nodes may be duplicated for more than two domains, when domain separations intersect.
+ * In that case, even some of the nodes to use for the original face may be changed.
+ * @param vtkVolId: vtk id of a volume containing the face, to get an orientation for the face.
+ * @param domain1: domain of the original face
+ * @param domain2: domain of the duplicated face
+ * @param originalNodes: the vtk node ids of the original face
+ * @param nodeDomains: map(original id --> map(domain --> duplicated node id))
  * @return ok if success.
  */
-bool SMESHDS_Mesh::extrudeVolumeFromFace(int vtkVolId, std::map<int,int>& localClonedNodeIds)
+bool SMESHDS_Mesh::extrudeVolumeFromFace(int vtkVolId,
+                                         int domain1,
+                                         int domain2,
+                                         std::set<int>& originalNodes,
+                                         std::map<int,std::map<int,int> >& nodeDomains)
 {
   //MESSAGE("extrudeVolumeFromFace " << vtkVolId);
-  vector<vtkIdType> orderedNodes;
-  orderedNodes.clear();
-  map<int, int>::const_iterator it = localClonedNodeIds.begin();
-  for (; it != localClonedNodeIds.end(); ++it)
-    orderedNodes.push_back(it->first);
+  vector<vtkIdType> orderedOriginals;
+  orderedOriginals.clear();
+  set<int>::const_iterator it = originalNodes.begin();
+  for (; it != originalNodes.end(); ++it)
+    orderedOriginals.push_back(*it);
 
-  int nbNodes = myGrid->getOrderedNodesOfFace(vtkVolId, orderedNodes);
+  int nbNodes = myGrid->getOrderedNodesOfFace(vtkVolId, orderedOriginals);
+  vector<vtkIdType> orderedNodes;
   for (int i=0; i<nbNodes; i++)
-    orderedNodes.push_back(localClonedNodeIds[orderedNodes[i]]);
+    orderedNodes.push_back(nodeDomains[orderedOriginals[i]][domain1]);
+  for (int i=0; i<nbNodes; i++)
+    orderedNodes.push_back(nodeDomains[orderedOriginals[i]][domain2]);
   SMDS_MeshVolume *vol = this->AddVolumeFromVtkIds(orderedNodes);
 
   // TODO update subshape list of elements and nodes

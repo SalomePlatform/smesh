@@ -27,6 +27,24 @@ vector<int> SMDS_Downward::_cellDimension;
  */
 int SMDS_Downward::getCellDimension(unsigned char cellType)
 {
+  if (_cellDimension.empty())
+    {
+      _cellDimension.resize(VTK_MAXTYPE + 1, 0);
+      _cellDimension[VTK_LINE] = 1;
+      _cellDimension[VTK_QUADRATIC_EDGE] = 1;
+      _cellDimension[VTK_TRIANGLE] = 2;
+      _cellDimension[VTK_QUADRATIC_TRIANGLE] = 2;
+      _cellDimension[VTK_QUAD] = 2;
+      _cellDimension[VTK_QUADRATIC_QUAD] = 2;
+      _cellDimension[VTK_TETRA] = 3;
+      _cellDimension[VTK_QUADRATIC_TETRA] = 3;
+      _cellDimension[VTK_HEXAHEDRON] = 3;
+      _cellDimension[VTK_QUADRATIC_HEXAHEDRON] = 3;
+      _cellDimension[VTK_WEDGE] = 3;
+      _cellDimension[VTK_QUADRATIC_WEDGE] = 3;
+      _cellDimension[VTK_PYRAMID] = 3;
+      _cellDimension[VTK_QUADRATIC_PYRAMID] = 3;
+    }
   return _cellDimension[cellType];
 }
 

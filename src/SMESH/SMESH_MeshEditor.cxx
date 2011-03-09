@@ -10626,11 +10626,16 @@ bool SMESH_MeshEditor::DoubleNodesOnGroupBoundaries( const std::vector<TIDSorted
   SMDS_UnstructuredGrid *grid = meshDS->getGrid();
 
   // --- build the list of faces shared by 2 domains (group of elements), with their domain and volume indexes
+  //     build the list of cells with only a node or an edge on the border, with their domain and volume indexes
   //     build the list of nodes shared by 2 or more domains, with their domain indexes
 
-  std::map<DownIdType, std::map<int,int>, DownIdCompare> faceDomains; // 2x(id domain --> id volume)
-  std::map<int, std::map<int,int> > nodeDomains; //oldId ->  (domainId -> newId)
+  std::map<DownIdType, std::map<int,int>, DownIdCompare> faceDomains; // face --> (id domain --> id volume)
+  std::map<int,int>celldom; // cell vtkId --> domain
+  std::map<DownIdType, std::map<int,int>, DownIdCompare> cellDomains;  // oldNode --> (id domain --> id cell)
+  std::map<int, std::map<int,int> > nodeDomains; // oldId -->  (domainId --> newId)
   faceDomains.clear();
+  celldom.clear();
+  cellDomains.clear();
   nodeDomains.clear();
   std::map<int,int> emptyMap;
   emptyMap.clear();
@@ -10667,6 +10672,7 @@ bool SMESH_MeshEditor::DoubleNodesOnGroupBoundaries( const std::vector<TIDSorted
                   if (!faceDomains[face].count(idom))
                     {
                       faceDomains[face][idom] = vtkId; // volume associated to face in this domain
+                      celldom[vtkId] = idom;
                     }
                 }
             }
@@ -10674,36 +10680,91 @@ bool SMESH_MeshEditor::DoubleNodesOnGroupBoundaries( const std::vector<TIDSorted
     }
 
   MESSAGE("Number of shared faces " << faceDomains.size());
+  std::map<DownIdType, std::map<int, int>, DownIdCompare>::iterator itface;
 
-  // --- for each shared face, get the nodes
+  // --- explore the shared faces domain by domain,
+  //     explore the nodes of the face and see if they belong to a cell in the domain,
+  //     which has only a node or an edge on the border (not a shared face)
+
+  for (int idomain = 0; idomain < theElems.size(); idomain++)
+    {
+      const TIDSortedElemSet& domain = theElems[idomain];
+      itface = faceDomains.begin();
+      for (; itface != faceDomains.end(); ++itface)
+        {
+          std::map<int, int> domvol = itface->second;
+          if (!domvol.count(idomain))
+            continue;
+          DownIdType face = itface->first;
+          //MESSAGE(" --- face " << face.cellId);
+          std::set<int> oldNodes;
+          oldNodes.clear();
+          grid->GetNodeIds(oldNodes, face.cellId, face.cellType);
+          std::set<int>::iterator itn = oldNodes.begin();
+          for (; itn != oldNodes.end(); ++itn)
+            {
+              int oldId = *itn;
+              //MESSAGE("     node " << oldId);
+              std::set<int> cells;
+              cells.clear();
+              vtkCellLinks::Link l = grid->GetCellLinks()->GetLink(oldId);
+              for (int i=0; i<l.ncells; i++)
+                {
+                  int vtkId = l.cells[i];
+                  const SMDS_MeshElement* anElem = GetMeshDS()->FindElement(GetMeshDS()->fromVtkToSmds(vtkId));
+                  if (!domain.count(anElem))
+                    continue;
+                  int vtkType = grid->GetCellType(vtkId);
+                  int downId = grid->CellIdToDownId(vtkId);
+                  DownIdType aCell(downId, vtkType);
+                  if (celldom.count(vtkId))
+                    continue;
+                  cellDomains[aCell][idomain] = vtkId;
+                  celldom[vtkId] = idomain;
+                }
+            }
+        }
+    }
+
+  // --- explore the shared faces domain by domain, to duplicate the nodes in a coherent way
+  //     for each shared face, get the nodes
   //     for each node, for each domain of the face, create a clone of the node
 
-  std::map<DownIdType, std::map<int,int>, DownIdCompare>::iterator itface = faceDomains.begin();
-  for( ; itface != faceDomains.end();++itface )
+  for (int idomain = 0; idomain < theElems.size(); idomain++)
     {
-      DownIdType face = itface->first;
-      std::map<int,int> domvol = itface->second;
-      std::set<int> oldNodes;
-      oldNodes.clear();
-      grid->GetNodeIds(oldNodes, face.cellId, face.cellType);
-      std::set<int>::iterator itn = oldNodes.begin();
-      for (;itn != oldNodes.end(); ++itn)
+      itface = faceDomains.begin();
+      for (; itface != faceDomains.end(); ++itface)
         {
-          int oldId = *itn;
-          if (!nodeDomains.count(oldId))
-            nodeDomains[oldId] = emptyMap; // create an empty entry for node
-          std::map<int,int>::iterator itdom = domvol.begin();
-          for(; itdom != domvol.end(); ++itdom)
+          std::map<int, int> domvol = itface->second;
+          if (!domvol.count(idomain))
+            continue;
+          DownIdType face = itface->first;
+          //MESSAGE(" --- face " << face.cellId);
+          std::set<int> oldNodes;
+          oldNodes.clear();
+          grid->GetNodeIds(oldNodes, face.cellId, face.cellType);
+          std::set<int>::iterator itn = oldNodes.begin();
+          for (; itn != oldNodes.end(); ++itn)
             {
-              int idom = itdom->first;
-              if ( nodeDomains[oldId].empty() )
-                nodeDomains[oldId][idom] = oldId; // keep the old node in the first domain
-              else
+              int oldId = *itn;
+              //MESSAGE("     node " << oldId);
+              if (!nodeDomains.count(oldId))
+                nodeDomains[oldId] = emptyMap; // create an empty entry for node
+              if (nodeDomains[oldId].empty())
+                nodeDomains[oldId][idomain] = oldId; // keep the old node in the first domain
+              std::map<int, int>::iterator itdom = domvol.begin();
+              for (; itdom != domvol.end(); ++itdom)
                 {
-                  double *coords = grid->GetPoint(oldId);
-                  SMDS_MeshNode *newNode = meshDS->AddNode(coords[0], coords[1], coords[2]);
-                  int newId = newNode->getVtkId();
-                  nodeDomains[oldId][idom] = newId; // cloned node for other domains
+                  int idom = itdom->first;
+                  //MESSAGE("         domain " << idom);
+                  if (!nodeDomains[oldId].count(idom))
+                    {
+                      double *coords = grid->GetPoint(oldId);
+                      SMDS_MeshNode *newNode = meshDS->AddNode(coords[0], coords[1], coords[2]);
+                      int newId = newNode->getVtkId();
+                      nodeDomains[oldId][idom] = newId; // cloned node for other domains
+                      //MESSAGE("         newNode " << newId);
+                    }
                 }
             }
         }
@@ -10723,7 +10784,6 @@ bool SMESH_MeshEditor::DoubleNodesOnGroupBoundaries( const std::vector<TIDSorted
           std::set<int>::iterator itn;
           oldNodes.clear();
           grid->GetNodeIds(oldNodes, face.cellId, face.cellType);
-          std::map<int,int> localClonedNodeIds;
 
           std::map<int,int> domvol = itface->second;
           std::map<int,int>::iterator itdom = domvol.begin();
@@ -10731,24 +10791,7 @@ bool SMESH_MeshEditor::DoubleNodesOnGroupBoundaries( const std::vector<TIDSorted
           int vtkVolId = itdom->second;
           itdom++;
           int dom2 = itdom->first;
-
-          localClonedNodeIds.clear();
-          for (itn = oldNodes.begin(); itn != oldNodes.end(); ++itn)
-            {
-              int oldId = *itn;
-              int refid = oldId;
-              if (nodeDomains[oldId].count(dom1))
-                refid = nodeDomains[oldId][dom1];
-              else
-                MESSAGE("--- problem domain node " << dom1 << " " << oldId);
-              int newid = oldId;
-              if (nodeDomains[oldId].count(dom2))
-                newid = nodeDomains[oldId][dom2];
-              else
-                MESSAGE("--- problem domain node " << dom2 << " " << oldId);
-              localClonedNodeIds[oldId] = newid;
-            }
-          meshDS->extrudeVolumeFromFace(vtkVolId, localClonedNodeIds);
+          meshDS->extrudeVolumeFromFace(vtkVolId, dom1, dom2, oldNodes, nodeDomains);
         }
     }
 
@@ -10756,6 +10799,8 @@ bool SMESH_MeshEditor::DoubleNodesOnGroupBoundaries( const std::vector<TIDSorted
   //     get node id's of the face
   //     replace old nodes by new nodes in volumes, and update inverse connectivity
 
+  MESSAGE("cellDomains " << cellDomains.size());
+  faceDomains.insert(cellDomains.begin(), cellDomains.end());
   itface = faceDomains.begin();
   for( ; itface != faceDomains.end();++itface )
     {
