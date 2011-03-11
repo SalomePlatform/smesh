@@ -29,10 +29,12 @@
 
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_MeshEditor)
+#include CORBA_SERVER_HEADER(SMESH_Mesh)
 
 class QCheckBox;
 class QLineEdit;
 class QRadioButton;
+class SMESHGUI_Make2DFrom3DOp;
 
 /*!
  * \brief Dialog to show result mesh statistic
@@ -43,7 +45,7 @@ class SMESHGUI_EXPORT SMESHGUI_Make2DFrom3DDlg :  public SMESHGUI_Dialog
   Q_OBJECT
 
 public:
-  enum { Mesh };
+  enum { Mesh, Groups };
 
   SMESHGUI_Make2DFrom3DDlg( QWidget* );
   virtual ~SMESHGUI_Make2DFrom3DDlg();
@@ -59,7 +61,6 @@ public:
   void                 setGroupName( const QString& );
 
   bool                 copySource() const;
-  bool                 copyMissingOnly() const;
 
 private slots:
   void                 onTargetChanged();
@@ -73,9 +74,10 @@ private:
   QRadioButton* myNewMeshRB;
   QLineEdit*    myMeshName;
   QCheckBox*    myCopyCheck;
-  QCheckBox*    myMissingCheck;
   QCheckBox*    myGroupCheck;
   QLineEdit*    myGroupName;
+
+  friend class SMESHGUI_Make2DFrom3DOp;
 };
 
 /*!
@@ -100,12 +102,13 @@ protected:
 
 protected slots:
   virtual bool                       onApply();
+  void                               onModeChanged();
 
 private:
   bool                               compute2DMesh();
 
 private:
-  SMESH::SMESH_IDSource_var          mySrc;
+  SMESH::SMESH_Mesh_var              mySrcMesh;
   QPointer<SMESHGUI_Make2DFrom3DDlg> myDlg;
 };
 

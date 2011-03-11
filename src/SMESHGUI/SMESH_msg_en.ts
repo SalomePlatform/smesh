@@ -5589,8 +5589,8 @@ It is impossible to read point coordinates from file</translation>
         <translation>Create boundary elements</translation>
     </message>
     <message>
-        <source>MESH</source>
-        <translation>Mesh, submesh or group</translation>
+        <source>Groups</source>
+        <translation>2D groups</translation>
     </message>
     <message>
         <source>MODE</source>
@@ -5602,7 +5602,7 @@ It is impossible to read point coordinates from file</translation>
     </message>
     <message>
         <source>1D_FROM_3D</source>
-        <translation>1D from 3D</translation>
+        <translation>1D from 2D groups</translation>
     </message>
     <message>
         <source>1D_FROM_2D</source>
@@ -5636,8 +5636,16 @@ It is impossible to read point coordinates from file</translation>
 <context>
     <name>SMESHGUI_Make2DFrom3DOp</name>
     <message>
+        <source>NB_ADDED</source>
+        <translation>%1 boundary elements have been added</translation>
+    </message>
+    <message>
         <source>SMESH_ERR_NO_INPUT_MESH</source>
-        <translation>Source mesh, sub-mesh or group is not specified</translation>
+        <translation>Source mesh is not specified</translation>
+    </message>
+    <message>
+        <source>SMESH_ERR_NO_INPUT_GROUP</source>
+        <translation>2D group is not specified</translation>
     </message>
     <message>
         <source>SMESH_ERR_NO_3D_ELEMENTS</source>

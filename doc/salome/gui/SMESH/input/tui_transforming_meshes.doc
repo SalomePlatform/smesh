@@ -426,162 +426,111 @@ if salome.sg.hasDesktop():
 <h3>Create boundary elements</h3>
 
 \code
-# The objective of these samples is to illustrate the following use cases:
-# 1) The mesh MESH1 with 3D cells has no or only a part of its skin (2D cells):
-#    1.1) Add the 2D skin (missing 2D cells) to MESH1 (what is done now by the algorithm).
-#    1.2) Create a new 3D Mesh MESH2 that consists of MESH1 and added 2D skin cells.
-#    1.3) Create a new 2D Mesh MESH3 that consists only of 2D skin cells.
-# 2) The mesh MESH1 with 3D cells has all its skin (2D cells):
-#    Create a new 2D Mesh MESH3 that consists only of 2D skin cells.
-#
-# In all cases an option to create a group containing these 2D skin cells is available.
-
 from smesh import *
+SetCurrentStudy(salome.myStudy)
 
-box = geompy.MakeBoxDXDYDZ(1,1,1)
+box = geompy.MakeBoxDXDYDZ(100, 100, 100)
+gFaces = geompy.SubShapeAllSorted(box, geompy.ShapeType["FACE"])
+f1,f2 = gFaces[0],gFaces[1]
 geompy.addToStudy(box,"box")
-boxFace = geompy.SubShapeAll(box, geompy.ShapeType["FACE"])[0]
-geompy.addToStudyInFather(box,boxFace,"boxFace")
+geompy.addToStudyInFather(box,f1,"face1")
+geompy.addToStudyInFather(box,f2,"face2")
 
-MESH1 = Mesh(box,"MESH1")
-MESH1.AutomaticHexahedralization()
+twoFaces = geompy.MakeCompound([f1,f2])
 
-init_nb_edges = MESH1.NbEdges()
-init_nb_faces = MESH1.NbFaces()
-init_nb_volumes = MESH1.NbVolumes()
+## -----------
+##
+## 2D from 3D
+##
+## -----------
+dim = SMESH.BND_2DFROM3D
 
-# =========================================================================================
-# 1) The mesh MESH1 with 3D cells has no or only a part of its skin (2D cells)
-# =========================================================================================
+init_mesh = Mesh(box, "box")
+init_mesh.AutomaticHexahedralization() # it makes 3 x 3 x 3 hexahedrons
+
 # remove some faces
-all_faces = MESH1.GetElementsByType(SMESH.FACE)
-rm_faces = all_faces[:init_nb_faces/5] + all_faces[4*init_nb_faces/5:]
-MESH1.RemoveElements(rm_faces)
-assert(MESH1.NbFaces() == init_nb_faces-len(rm_faces))
+faces = init_mesh.GetElementsByType( SMESH.FACE )
+nb_faces = len( faces )
+rm_face = faces[ : nb_faces/2]
+init_mesh.RemoveElements( rm_face )
 
-# 1.1) Add the 2D skin (missing 2D cells) to MESH1
-# -------------------------------------------------
-# add missing faces
-# 1.1.1) to the whole mesh
-m,g = MESH1.MakeBoundaryMesh(MESH1)
-assert(init_nb_faces == MESH1.NbFaces())
-assert(init_nb_edges == MESH1.NbEdges())
-assert(m)
-assert(not g)
+# restore boundary in this mesh
+mesh = CopyMesh( init_mesh, "2D from 3D")
+groupName = "bnd 2D"
+nb, new_mesh, new_group = mesh.MakeBoundaryElements(dim, groupName)
 
-# 1.1.2) to some elements
-MESH1.RemoveElements(rm_faces)
-MESH1.MakeBoundaryMesh([])
-assert(init_nb_faces != MESH1.NbFaces())
-volumes = MESH1.GetElementsByType(SMESH.VOLUME)
-for v in volumes:
-    MESH1.MakeBoundaryMesh([v])
-assert(init_nb_faces == MESH1.NbFaces())
-assert(init_nb_edges == MESH1.NbEdges())
+# restore boundary (only) in other mesh
+meshName = "2D boundary of " + init_mesh.GetName()
+nb, new_mesh, new_group = init_mesh.MakeBoundaryElements(dim, groupName, meshName)
 
-# 1.1.3) to a group of elements
-volGroup1 = MESH1.CreateEmptyGroup(SMESH.VOLUME, "volGroup1")
-volGroup1.Add( volumes[: init_nb_volumes/2])
-volGroup2 = MESH1.CreateEmptyGroup(SMESH.VOLUME, "volGroup2")
-volGroup1.Add( volumes[init_nb_volumes/2:])
-MESH1.RemoveElements(rm_faces)
-MESH1.MakeBoundaryMesh(volGroup1)
-MESH1.MakeBoundaryMesh(volGroup2)
-assert(init_nb_faces == MESH1.NbFaces())
-assert(init_nb_edges == MESH1.NbEdges())
-
-# 1.1.4) to a submesh.
-# The submesh has no volumes, so it is required to check if it passes without crash and does not create
-# missing faces
-faceSubmesh = MESH1.GetSubMesh( boxFace, "boxFace" )
-MESH1.RemoveElements(rm_faces)
-MESH1.MakeBoundaryMesh(faceSubmesh)
-assert(init_nb_faces != MESH1.NbFaces())
-
-# check group creation
-MESH1.RemoveElements(rm_faces)
-groupName = "added to mesh"
-m,group = MESH1.MakeBoundaryMesh(MESH1,groupName=groupName)
-assert(group)
-assert(group.GetName() == groupName)
-assert(group.Size() == len(rm_faces))
+# restore boundary in mesh copy
+meshName = init_mesh.GetName() + " + boundary"
+nb, new_mesh, new_group = init_mesh.MakeBoundaryElements(dim, groupName, meshName, toCopyAll=True)
 
 
-# 1.2) Create a new 3D Mesh MESH2 that consists of MESH1 and added 2D skin cells.
-# ------------------------------------------------------------------------------
-MESH1.RemoveElements(rm_faces)
-meshName = "MESH2"
-MESH2,group = MESH1.MakeBoundaryMesh(MESH1,meshName=meshName,toCopyElements=True)
-assert(MESH2)
-assert(MESH2.GetName() == meshName)
-assert(MESH2.NbVolumes() == MESH1.NbVolumes())
-assert(MESH2.NbFaces() == len(rm_faces))
+## -----------
+##
+## 1D from 2D
+##
+## -----------
+dim = SMESH.BND_1DFROM2D
 
-# check group creation
-MESH1.RemoveElements(rm_faces)
-MESH2,group = MESH1.MakeBoundaryMesh(MESH1,meshName="MESH2_0",
-                                     groupName=groupName,toCopyElements=True)
-assert(group)
-assert(group.GetName() == groupName)
-assert(group.Size() == len(rm_faces))
-assert(group.GetMesh()._is_equivalent(MESH2.GetMesh()))
+init_mesh = Mesh(f1, "2D mesh")
+init_mesh.AutomaticHexahedralization()
 
-# 1.3) Create a new 2D Mesh MESH3 that consists only of 2D skin cells.
-# -----------------------------------------------------------------------
-MESH1.RemoveElements(rm_faces)
-meshName = "MESH3"
-MESH3,group = MESH1.MakeBoundaryMesh(MESH1,meshName=meshName,toCopyExistingBondary=True)
-assert(MESH3)
-assert(not group)
-assert(MESH3.GetName() == meshName)
-assert(MESH3.NbVolumes() == 0)
-assert(MESH3.NbFaces() == init_nb_faces)
+# remove some edges
+edges = init_mesh.GetElementsByType( SMESH.EDGE )
+nb_edges = len( edges )
+rm_edge = edges[ : nb_edges/2]
+init_mesh.RemoveElements( rm_edge )
 
-# check group creation
-MESH1.RemoveElements(rm_faces)
-MESH3,group = MESH1.MakeBoundaryMesh(MESH1,meshName=meshName,
-                                     groupName=groupName, toCopyExistingBondary=True)
-assert(group)
-assert(group.GetName() == groupName)
-assert(group.Size() == len(rm_faces))
-assert(group.GetMesh()._is_equivalent(MESH3.GetMesh()))
-assert(MESH3.NbFaces() == init_nb_faces)
 
-# ==================================================================
-# 2) The mesh MESH1 with 3D cells has all its skin (2D cells)
-# Create a new 2D Mesh MESH3 that consists only of 2D skin cells.
-# ==================================================================
-MESH1.MakeBoundaryMesh(MESH1)
-MESH3,group = MESH1.MakeBoundaryMesh(MESH1,meshName=meshName,toCopyExistingBondary=True)
-assert(MESH3)
-assert(not group)
-assert(MESH3.NbVolumes() == 0)
-assert(MESH3.NbFaces() == init_nb_faces)
+# restore boundary edges in this mesh
+mesh = CopyMesh( init_mesh, "1D from 2D")
+groupName = "bnd 1D"
+nb, new_mesh, new_group = mesh.MakeBoundaryElements(dim, groupName)
 
-# check group creation
-MESH3,group = MESH1.MakeBoundaryMesh(MESH1,meshName=meshName,
-                                     groupName=groupName, toCopyExistingBondary=True)
-assert(group)
-assert(group.GetName() == groupName)
-assert(group.Size() == 0)
-assert(group.GetMesh()._is_equivalent(MESH3.GetMesh()))
-assert(MESH3.NbFaces() == init_nb_faces)
+# restore boundary edges (only) in other mesh
+meshName = "1D boundary of " + init_mesh.GetName()
+nb, new_mesh, new_group = init_mesh.MakeBoundaryElements(dim, groupName, meshName)
 
-# ================
-# Make 1D from 2D
-# ================
+# restore boundary edges in mesh copy
+meshName = init_mesh.GetName() + " + boundary"
+nb, new_mesh, new_group = init_mesh.MakeBoundaryElements(dim, groupName, meshName, toCopyAll=True)
 
-MESH1.Clear()
-MESH1.Compute()
-MESH1.RemoveElements( MESH1.GetElementsByType(SMESH.EDGE))
 
-rm_faces = faceSubmesh.GetIDs()[:2] # to remove few adjacent faces
-nb_missing_edges = 2 + 2*len(rm_faces)
 
-MESH1.RemoveElements(rm_faces)
-mesh,group = MESH1.MakeBoundaryMesh(MESH1, BND_1DFROM2D)
-assert( MESH1.NbEdges() == nb_missing_edges )
+## ------------------
+##
+## 1D from 2D GROUPS
+##
+## ------------------
+dim = SMESH.BND_1DFROM3D
 
+init_mesh = Mesh(box, "box")
+init_mesh.AutomaticHexahedralization() # it makes 3 x 3 x 3 hexahedrons
+# remove all edges
+rm_edges = init_mesh.GetElementsByType( SMESH.EDGE )
+init_mesh.RemoveElements( rm_edges )
+
+# make groups of faces
+fGroup1 = init_mesh.Group( f1, "f1" )
+fGroup2 = init_mesh.Group( f2, "f2" )
+
+# make 1D boundary around groups in this mesh
+mesh = CopyMesh( init_mesh, "1D from 2D groups", toCopyGroups=True)
+groups = mesh.GetGroups()
+nb, new_mesh, new_group = mesh.MakeBoundaryElements(dim, groupName,groups=groups)
+
+# make 1D boundary (only) in other mesh
+meshName =  "boundary from groups of " + init_mesh.GetName()
+groups = init_mesh.GetGroups()
+nb, new_mesh, new_group = init_mesh.MakeBoundaryElements(dim, groupName, meshName,groups=groups)
+
+# make 1D boundary in mesh copy
+meshName = init_mesh.GetName() + " + boundary from groups"
+nb, new_mesh, new_group = init_mesh.MakeBoundaryElements(dim, groupName, meshName,
+                                                         groups=groups, toCopyAll=True)
 
 \endcode
 */
