@@ -110,6 +110,7 @@ libSMESHEngine_la_LDFLAGS  = \
 	../../idl/libSalomeIDLSMESH.la \
 	../SMESH/libSMESHimpl.la \
 	../SMDS/libSMDS.la \
+	../SMESHDS/libSMESHDS.la \
 	../Controls/libSMESHControls.la \
 	$(KERNEL_LDFLAGS) \
 	-lSalomeContainer \
