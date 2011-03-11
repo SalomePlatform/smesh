@@ -4645,18 +4645,22 @@ void SMESH_MeshEditor_i::storeResult(::SMESH_MeshEditor& anEditor)
   }
 
   {
-    // add new nodes into myLastCreatedNodes
+    // append new nodes into myLastCreatedNodes
     const SMESH_SequenceOfElemPtr& aSeq = anEditor.GetLastCreatedNodes();
-    myLastCreatedNodes->length(aSeq.Length());
-    for(int i=0; i<aSeq.Length(); i++)
-      myLastCreatedNodes[i] = aSeq.Value(i+1)->GetID();
+    int j = myLastCreatedNodes->length();
+    int newLen = j + aSeq.Length();
+    myLastCreatedNodes->length( newLen );
+    for(int i=0; j<newLen; i++,j++)
+      myLastCreatedNodes[j] = aSeq.Value(i+1)->GetID();
   }
   {
-    // add new elements into myLastCreatedElems
+    // append new elements into myLastCreatedElems
     const SMESH_SequenceOfElemPtr& aSeq = anEditor.GetLastCreatedElems();
-    myLastCreatedElems->length(aSeq.Length());
-    for(int i=0; i<aSeq.Length(); i++)
-      myLastCreatedElems[i] = aSeq.Value(i+1)->GetID();
+    int j = myLastCreatedElems->length();
+    int newLen = j + aSeq.Length();
+    myLastCreatedElems->length( newLen );
+    for(int i=0; j<newLen; i++,j++)
+      myLastCreatedElems[j] = aSeq.Value(i+1)->GetID();
   }
 }
 
@@ -5524,7 +5528,6 @@ SMESH_MeshEditor_i::MakeBoundaryMesh(SMESH::SMESH_IDSource_ptr idSource,
   if ( dim > SMESH::BND_1DFROM2D )
     THROW_SALOME_CORBA_EXCEPTION("Invalid boundary dimension", SALOME::BAD_PARAM);
 
-
   SMESHDS_Mesh* aMeshDS = GetMeshDS();
 
   SMESH::SMESH_Mesh_var mesh_var;
@@ -5561,6 +5564,9 @@ SMESH_MeshEditor_i::MakeBoundaryMesh(SMESH::SMESH_IDSource_ptr idSource,
                                   toCopyElements,
                                   toCopyExistingBondary);
     storeResult( aMeshEditor );
+
+    if ( smesh_mesh )
+      smesh_mesh->GetMeshDS()->Modified();
   }
 
   const char* dimName[] = { "BND_2DFROM3D", "BND_1DFROM3D", "BND_1DFROM2D" };
@@ -5584,4 +5590,147 @@ SMESH_MeshEditor_i::MakeBoundaryMesh(SMESH::SMESH_IDSource_ptr idSource,
 
   group = group_var._retn();
   return mesh_var._retn();
+}
+
+//================================================================================
+/*!
+ * \brief Creates missing boundary elements
+ *  \param dimension - defines type of boundary elements to create
+ *  \param groupName - a name of group to store all boundary elements in,
+ *    "" means not to create the group
+ *  \param meshName - a name of a new mesh, which is a copy of the initial 
+ *    mesh + created boundary elements; "" means not to create the new mesh
+ *  \param toCopyAll - if true, the whole initial mesh will be copied into
+ *    the new mesh else only boundary elements will be copied into the new mesh
+ *  \param groups - optional groups of elements to make boundary around
+ *  \param mesh - returns the mesh where elements were added to
+ *  \param group - returns the created group, if any
+ *  \retval long - number of added boundary elements
+ */
+//================================================================================
+
+CORBA::Long SMESH_MeshEditor_i::MakeBoundaryElements(SMESH::Bnd_Dimension dim,
+                                                     const char* groupName,
+                                                     const char* meshName,
+                                                     CORBA::Boolean toCopyAll,
+                                                     const SMESH::ListOfIDSources& groups,
+                                                     SMESH::SMESH_Mesh_out mesh,
+                                                     SMESH::SMESH_Group_out group)
+  throw (SALOME::SALOME_Exception)
+{
+  Unexpect aCatch(SALOME_SalomeException);
+
+  initData();
+
+  if ( dim > SMESH::BND_1DFROM2D )
+    THROW_SALOME_CORBA_EXCEPTION("Invalid boundary dimension", SALOME::BAD_PARAM);
+
+  // check that groups belongs to to this mesh and is not this mesh
+  const int nbGroups = groups.length();
+  for ( int i = 0; i < nbGroups; ++i )
+  {
+    SMESH::SMESH_Mesh_var m = groups[i]->GetMesh();
+    if ( myMesh_i != SMESH::DownCast<SMESH_Mesh_i*>( m ))
+      THROW_SALOME_CORBA_EXCEPTION("group does not belong to this mesh", SALOME::BAD_PARAM);
+    if ( SMESH::DownCast<SMESH_Mesh_i*>( groups[i] ))
+      THROW_SALOME_CORBA_EXCEPTION("expect a group but recieve a mesh", SALOME::BAD_PARAM);
+  }
+
+  TPythonDump pyDump;
+
+  int nbAdded = 0;
+  SMESH::SMESH_Mesh_var mesh_var;
+  SMESH::SMESH_Group_var group_var;
+
+  // get mesh to fill
+  mesh_var = SMESH::SMESH_Mesh::_duplicate( myMesh_i->_this() );
+  const bool toCopyMesh = ( strlen( meshName ) > 0 );
+  if ( toCopyMesh )
+  {
+    if ( toCopyAll )
+      mesh_var = SMESH_Gen_i::GetSMESHGen()->CopyMesh(mesh_var,
+                                                      meshName,
+                                                      /*toCopyGroups=*/false,
+                                                      /*toKeepIDs=*/true);
+    else
+      mesh_var = makeMesh(meshName);
+  }
+  SMESH_Mesh_i* mesh_i = SMESH::DownCast<SMESH_Mesh_i*>( mesh_var );
+  SMESH_Mesh*  tgtMesh = &mesh_i->GetImpl();
+
+  // source mesh
+  SMESH_Mesh*     srcMesh = ( toCopyMesh && !toCopyAll ) ? myMesh : tgtMesh;
+  SMESHDS_Mesh* srcMeshDS = srcMesh->GetMeshDS();
+
+  // group of new boundary elements
+  SMESH_Group* smesh_group = 0;
+  SMDSAbs_ElementType elemType = (dim == SMESH::BND_2DFROM3D) ? SMDSAbs_Volume : SMDSAbs_Face;
+  if ( strlen(groupName) )
+  {
+    SMESH::ElementType groupType = SMESH::ElementType( int(elemType)-1 );
+    group_var = mesh_i->CreateGroup( groupType, groupName );
+    if ( SMESH_GroupBase_i* group_i = SMESH::DownCast<SMESH_GroupBase_i*>( group_var ))
+      smesh_group = group_i->GetSmeshGroup();
+  }
+
+  TIDSortedElemSet elements;
+
+  if ( nbGroups > 0 )
+  {
+    for ( int i = 0; i < nbGroups; ++i )
+    {
+      elements.clear();
+      if ( idSourceToSet( groups[i], srcMeshDS, elements, elemType,/*emptyIfIsMesh=*/false ))
+      {
+        SMESH::Bnd_Dimension bdim = 
+          ( elemType == SMDSAbs_Volume ) ? SMESH::BND_2DFROM3D : SMESH::BND_1DFROM2D;
+        ::SMESH_MeshEditor aMeshEditor( srcMesh );
+        nbAdded += aMeshEditor.MakeBoundaryMesh( elements,
+                                                 ::SMESH_MeshEditor::Bnd_Dimension(bdim),
+                                                 smesh_group,
+                                                 tgtMesh,
+                                                 /*toCopyElements=*/false,
+                                                 /*toCopyExistingBondary=*/srcMesh != tgtMesh,
+                                                 /*toAddExistingBondary=*/true,
+                                                 /*aroundElements=*/true);
+        storeResult( aMeshEditor );
+      }
+    }
+  }
+  else
+  {
+    ::SMESH_MeshEditor aMeshEditor( srcMesh );
+    nbAdded += aMeshEditor.MakeBoundaryMesh( elements,
+                                             ::SMESH_MeshEditor::Bnd_Dimension(dim),
+                                             smesh_group,
+                                             tgtMesh,
+                                             /*toCopyElements=*/false,
+                                             /*toCopyExistingBondary=*/srcMesh != tgtMesh,
+                                             /*toAddExistingBondary=*/true);
+    storeResult( aMeshEditor );
+  }
+  tgtMesh->GetMeshDS()->Modified();
+
+  const char* dimName[] = { "BND_2DFROM3D", "BND_1DFROM3D", "BND_1DFROM2D" };
+
+  // result of MakeBoundaryElements() is a tuple (nb, mesh, group)
+  pyDump << nbAdded << ", ";
+  if ( mesh_var->_is_nil() )
+    pyDump << myMesh_i->_this() << ", ";
+  else
+    pyDump << mesh_var << ", ";
+  if ( group_var->_is_nil() )
+    pyDump << "_NoneGroup = "; // assignment to None is forbiden
+  else
+    pyDump << group_var << " = ";
+  pyDump << this << ".MakeBoundaryElements( "
+         << "SMESH." << dimName[int(dim)] << ", "
+         << "'" << groupName << "', "
+         << "'" << meshName<< "', "
+         << toCopyAll << ", "
+         << groups << ")";
+
+  mesh  = mesh_var._retn();
+  group = group_var._retn();
+  return nbAdded;
 }

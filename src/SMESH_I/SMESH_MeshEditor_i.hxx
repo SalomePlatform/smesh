@@ -572,7 +572,7 @@ public:
                                    const SMESH::ListOfGroups& theModifiedElems );
 
   SMESH::SMESH_Group_ptr DoubleNodeGroupsNew( const SMESH::ListOfGroups& theNodes,
-					      const SMESH::ListOfGroups& theModifiedElems );
+                                              const SMESH::ListOfGroups& theModifiedElems );
 
   /*!
    * \brief Creates a hole in a mesh by doubling the nodes of some particular elements
@@ -687,6 +687,18 @@ public:
   CORBA::Boolean DoubleNodeElemGroupsInRegion( const SMESH::ListOfGroups& theElems,
                                                const SMESH::ListOfGroups& theNodesNot,
                                                GEOM::GEOM_Object_ptr      theShape );
+  /*!
+   * \brief Double nodes on shared faces between groups of volumes and create flat elements on demand.
+   * The list of groups must describe a partition of the mesh volumes.
+   * The nodes of the internal faces at the boundaries of the groups are doubled.
+   * In option, the internal faces are replaced by flat elements.
+   * Triangles are transformed in prisms, and quadrangles in hexahedrons.
+   * @param theDomains - list of groups of volumes
+   * @param createJointElems - if TRUE, create the elements
+   * @return TRUE if operation has been completed successfully, FALSE otherwise
+   */
+  CORBA::Boolean DoubleNodesOnGroupBoundaries( const SMESH::ListOfGroups& theDomains,
+                                               CORBA::Boolean createJointElems );
 
   /*!
    * \brief Generated skin mesh (containing 2D cells) from 3D mesh
@@ -703,19 +715,14 @@ public:
                                          CORBA::Boolean            toCopyMissingBondary,
                                          SMESH::SMESH_Group_out    group);
 
-    /*!
-     * \brief Double nodes on shared faces between groups of volumes and create flat elements on demand.
-     * The list of groups must describe a partition of the mesh volumes.
-     * The nodes of the internal faces at the boundaries of the groups are doubled.
-     * In option, the internal faces are replaced by flat elements.
-     * Triangles are transformed in prisms, and quadrangles in hexahedrons.
-     * @param theDomains - list of groups of volumes
-     * @param createJointElems - if TRUE, create the elements
-     * @return TRUE if operation has been completed successfully, FALSE otherwise
-     */
-  CORBA::Boolean DoubleNodesOnGroupBoundaries( const SMESH::ListOfGroups& theDomains,
-                                               CORBA::Boolean createJointElems );
-
+  CORBA::Long MakeBoundaryElements(SMESH::Bnd_Dimension dimension,
+                                   const char* groupName,
+                                   const char* meshName,
+                                   CORBA::Boolean toCopyAll,
+                                   const SMESH::ListOfIDSources& groups,
+                                   SMESH::SMESH_Mesh_out mesh,
+                                   SMESH::SMESH_Group_out group)
+    throw (SALOME::SALOME_Exception);
 
 private: //!< private methods
 
