@@ -25,7 +25,8 @@ The following dialog box will appear:
 <li>For example, you need to mesh a 3d object.
 \n First, type the name for your mesh in the "Name" box, by default,
 it is "Mesh_1". Then select the object you wish to mesh in the Object
-Browser and click the "Add" button.
+Browser and click the "Add" button (if name of the object not yet
+appeared in \b Geometry field).
 
 \image html image120.png
 <center><em>"Add" button</em></center>
@@ -33,7 +34,8 @@ Browser and click the "Add" button.
 Now you can define 1d Algorithm and 1d Hypotheses, which will be
 applied to the edges of your object. (Note that any object has edges,
 even if their existence is not apparent, for example, a sphere has 4
-edges). Click the <em>"Add Hypothesis"</em>  button to add a hypothesis.
+edges). Click the <em>"Add Hypothesis"</em>  button to add a
+hypothesis.
 
 \image html image121.png
 <center><em>"Add Hypothesis" button</em></center>
@@ -49,8 +51,10 @@ The use of additional hypotheses is optional (i.e. you may leave
 
 Proceed in the same way with 2d and 3d Algorithms and Hypotheses, note
 that the choice of hypotheses depends on the algorithm. There must be
-one Algorithm and one or several Hypotheses for each dimension of your
-object, otherwise you will not get any mesh at all. Of course, if you
+one Algorithm and zero or several Hypotheses for each dimension of your
+object (most of the standard 2D and 3D algorithms can work without
+hypotheses using some default parameters), 
+otherwise you will not get any mesh at all. Of course, if you
 wish to mesh a face, which is a 2d object, you don't need to define 3d
 Algorithm and Hypotheses.
 \n In the <b>Object Browser</b> the structure of the new mesh will be
@@ -66,13 +70,20 @@ hypotheses applied to the construction of the mesh;</li>
 <li><b>Applied algorithms</b> folder containing the references to the
 algorithms applied to the construction of the mesh.</li>
 </ul>
-
+<br>
 There is an alternative way to create a mesh on an object simply by
-clicking <b>Assign a set of hypotheses</b> button and selecting between
-Automatic Tetrahedralization or Hexahedralization.  The program will
-automatically generate a 3D mesh with the most appropriate
-settings. In the same way you can apply this functionality for meshing
-2D objects, in which case 3D algorithms are not applied.</li>
+clicking <b>Assign a set of hypotheses</b> button and selecting among
+pre-defined sets of hypotheses. In addition to the standard
+sets of hypotheses, one can create his own sets by creating
+CustomMeshers.xml file located in the home directory. CustomMeshers.xml
+file must describe sets of hypotheses the
+same way as ${SMESH_ROOT_DIR}/share/salome/resources/smesh/StdMeshers.xml 
+file does (hypotheses sets are enclosed between <hypotheses-set-group>
+tags).
+\image html hypo_sets.png
+<center>List of sets of hypotheses: <em>[custom]</em> is automatically added to the sets defined
+by the user</center>
+</li>
 
 \anchor preview_mesh_anchor
 
