@@ -697,7 +697,8 @@ HypothesisData::HypothesisData( const QString& theTypeName,
 
 HypothesesSet::HypothesesSet( const QString& theSetName )
   : myHypoSetName( theSetName ),
-    myIsAlgo( false )
+    myIsAlgo( false ),
+    myIsCustom( false )
 {
 }
 
@@ -707,7 +708,8 @@ HypothesesSet::HypothesesSet( const QString&     theSetName,
   : myHypoSetName( theSetName ),
     myHypoList( theHypoList ),
     myAlgoList( theAlgoList ),
-    myIsAlgo( false )
+    myIsAlgo( false ),
+    myIsCustom( false )
 {
 }
 
@@ -760,4 +762,29 @@ void HypothesesSet::next()
 QString HypothesesSet::current() const
 {
   return list()->at(myIndex);
+}
+
+void HypothesesSet::setIsCustom( bool isCustom )
+{
+  myIsCustom = isCustom;
+}
+
+bool HypothesesSet::getIsCustom() const
+{
+  return myIsCustom;
+}
+
+int HypothesesSet::maxDim() const
+{
+  HypothesesSet * thisSet = (HypothesesSet*) this;
+  int dim = -1;
+  for ( int isAlgo = 0; isAlgo < 2; ++isAlgo )
+  {
+    thisSet->init( isAlgo );
+    while ( thisSet->next(), thisSet->more() )
+      if ( HypothesisData* hypData = SMESH::GetHypothesisData( thisSet->current() ))
+        for ( int i = 0; i < hypData->Dim.count(); ++i )
+          dim = qMax( dim, hypData->Dim[i] );
+  }
+  return dim;
 }

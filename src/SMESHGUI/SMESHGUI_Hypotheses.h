@@ -202,6 +202,10 @@ public:
   void set( bool, const QStringList& );
   int count( bool ) const;
 
+  void setIsCustom( bool );
+  bool getIsCustom() const;
+  int maxDim() const;
+
   bool isAlgo() const;
 
   //this method sets internal index to -1, thus before any data access it is necessary to call next()
@@ -216,9 +220,9 @@ private:
   QStringList* list() const;
 
 private:
-  bool myIsAlgo;
   QString     myHypoSetName;
   QStringList myHypoList, myAlgoList;
+  bool myIsAlgo, myIsCustom;
   int myIndex;
 };
 
