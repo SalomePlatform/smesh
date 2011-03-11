@@ -240,8 +240,6 @@ void SMESHGUI_MeshOp::startOperation()
   else
     myDlg->activateObject( SMESHGUI_MeshDlg::Obj );
 
-  myDlg->setHypoSets( SMESH::GetHypothesesSets() );
-
   myDlg->setCurrentTab( SMESH::DIM_3D );
   myDlg->show();
 
@@ -513,7 +511,7 @@ void SMESHGUI_MeshOp::selectionDone()
             {
               //shapeDim = 3; // Bug 0016155: EDF PAL 447: If the shape is a Shell, disable 3D tab
               TopoDS_Shape aShape;
-	      bool isClosed = GEOMBase::GetShape(aGeomVar, aShape) && /*aShape.Closed()*/BRep_Tool::IsClosed(aShape);
+              bool isClosed = GEOMBase::GetShape(aGeomVar, aShape) && /*aShape.Closed()*/BRep_Tool::IsClosed(aShape);
               shapeDim = qMax(isClosed ? 3 : 2, shapeDim);
             }
             break;
@@ -550,7 +548,7 @@ void SMESHGUI_MeshOp::selectionDone()
         onAlgoSelected(-1, i);
       }
       myDlg->setMaxHypoDim( shapeDim );
-
+      myDlg->setHypoSets( SMESH::GetHypothesesSets( shapeDim ));
 
       if (!myToCreate) // edition: read hypotheses
       {
@@ -620,7 +618,7 @@ void SMESHGUI_MeshOp::selectionDone()
         myDlg->setGeomPopupEnabled( enable );
       }
     }
-    else {
+    else { // no geometry defined
       myDlg->enableTab( SMESH::DIM_3D );
       QStringList hypList;
       availableHyps( SMESH::DIM_3D, Algo, hypList,
@@ -1882,7 +1880,6 @@ SMESH::SMESH_Hypothesis_var SMESHGUI_MeshOp::getAlgo( const int theDim )
       {
         // Get hypotheses creator client (GUI)
         // BUG 0020378
-        //SMESHGUI_GenericHypothesisCreator* aCreator = SMESH::GetHypothesisCreator(aHypName);
         SMESHGUI_GenericHypothesisCreator* aCreator = SMESH::GetHypothesisCreator(aHypName);
 
         // Create algorithm
