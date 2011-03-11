@@ -3120,7 +3120,6 @@ class Mesh:
     #  @param toCopyAll - if true, the whole initial mesh will be copied into
     #    the new mesh else only boundary elements will be copied into the new mesh
     #  @param groups - groups of 2D elements to make boundary around
-    #    the new mesh else only boundary elements will be copied into the new mesh
     #  @retval tuple( long, mesh, groups )
     #                 long - number of added boundary elements
     #                 mesh - the mesh where elements were added to
