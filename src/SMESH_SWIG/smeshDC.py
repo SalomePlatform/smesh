@@ -1091,8 +1091,8 @@ class Mesh:
                     if studyID != geompyD.myStudyId:
                         geompyD.init_geom( smeshpyD.GetCurrentStudy())
                         pass
-                    name = "%s_%s"%(self.geom.GetShapeType(), id(self.geom)%100)
-                    geompyD.addToStudy( self.geom, name )
+                    geo_name = "%s_%s"%(self.geom.GetShapeType(), id(self.geom)%100)
+                    geompyD.addToStudy( self.geom, geo_name )
                 self.mesh = self.smeshpyD.CreateMesh(self.geom)
 
             elif isinstance(obj, SMESH._objref_SMESH_Mesh):
@@ -3108,6 +3108,30 @@ class Mesh:
                                                    toCopyElements,toCopyExistingBondary)
         if mesh: mesh = self.smeshpyD.Mesh(mesh)
         return mesh, group
+
+    ##
+    # @brief Creates missing boundary elements around either the whole mesh or 
+    #    groups of 2D elements
+    #  @param dimension - defines type of boundary elements to create
+    #  @param groupName - a name of group to store all boundary elements in,
+    #    "" means not to create the group
+    #  @param meshName - a name of a new mesh, which is a copy of the initial 
+    #    mesh + created boundary elements; "" means not to create the new mesh
+    #  @param toCopyAll - if true, the whole initial mesh will be copied into
+    #    the new mesh else only boundary elements will be copied into the new mesh
+    #  @param groups - groups of 2D elements to make boundary around
+    #    the new mesh else only boundary elements will be copied into the new mesh
+    #  @retval tuple( long, mesh, groups )
+    #                 long - number of added boundary elements
+    #                 mesh - the mesh where elements were added to
+    #                 group - the group of boundary elements or None
+    #
+    def MakeBoundaryElements(self, dimension=SMESH.BND_2DFROM3D, groupName="", meshName="",
+                             toCopyAll=False, groups=[]):
+        nb, mesh, group = self.editor.MakeBoundaryElements(dimension,groupName,meshName,
+                                                           toCopyAll,groups)
+        if mesh: mesh = self.smeshpyD.Mesh(mesh)
+        return nb, mesh, group
 
     ## Renumber mesh nodes
     #  @ingroup l2_modif_renumber
