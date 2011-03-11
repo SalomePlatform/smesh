@@ -956,39 +956,50 @@ module SMESH
     boolean Make2DMeshFrom3D();
 
     /*!
-     * \brief Double nodes on shared faces between groups of volumes and create flat elements on demand.
-     * The list of groups must describe a partition of the mesh volumes.
-     * The nodes of the internal faces at the boundaries of the groups are doubled.
-     * In option, the internal faces are replaced by flat elements.
-     * Triangles are transformed in prisms, and quadrangles in hexahedrons.
-     * \param theDomains - list of groups of volumes
-     * \param createJointElems - if TRUE, create the elements
-     * \return TRUE if operation has been completed successfully, FALSE otherwise
-     */
-    boolean DoubleNodesOnGroupBoundaries( in ListOfGroups theDomains,
-                                          in boolean createJointElems );
-
-    /*!
      * \brief Creates missing boundary elements
      *  \param elements - elements whose boundary is to be checked
      *  \param dimension - defines type of boundary elements to create
+     *    BND_1DFROM3D creates mesh edges on all borders of free facets of 3D elements.
      *  \param groupName - a name of group to store created boundary elements in,
      *                     "" means not to create the group
      *  \param meshName - a name of new mesh to store created boundary elements in,
      *                     "" means not to create the new mesh
      *  \param toCopyElements - if true, the checked elements will be copied into the new mesh
+     *                          else only boundary elements will be copied into the new mesh
      *  \param toCopyExistingBondary - if true, not only new but also pre-existing
      *                                boundary elements will be copied into the new mesh
      *  \param group - returns the create group, if any
      *  \retval SMESH::SMESH_Mesh - the mesh where elements were added to
      */
-    SMESH::SMESH_Mesh MakeBoundaryMesh(in SMESH_IDSource elements,
-                                       in Bnd_Dimension  dimension,
-                                       in string         groupName,
-                                       in string         meshName,
-                                       in boolean        toCopyElements,
-                                       in boolean        toCopyExistingBondary,
-                                       out SMESH_Group   group);
+    SMESH_Mesh MakeBoundaryMesh(in SMESH_IDSource elements,
+                                in Bnd_Dimension  dimension,
+                                in string         groupName,
+                                in string         meshName,
+                                in boolean        toCopyElements,
+                                in boolean        toCopyExistingBondary,
+                                out SMESH_Group   group);
+    /*!
+     * \brief Creates missing boundary elements around either the whole mesh or 
+     *    groups of 2D elements
+     *  \param dimension - defines type of boundary elements to create
+     *  \param groupName - a name of group to store all boundary elements in,
+     *    "" means not to create the group
+     *  \param meshName - a name of a new mesh, which is a copy of the initial 
+     *    mesh + created boundary elements; "" means not to create the new mesh
+     *  \param toCopyAll - if true, the whole initial mesh will be copied into
+     *    the new mesh else only boundary elements will be copied into the new mesh
+     *  \param groups - optional groups of 2D elements to make boundary around
+     *  \param mesh - returns the mesh where elements were added to
+     *  \param group - returns the created group, if any
+     *  \retval long - number of added boundary elements
+     */
+    long MakeBoundaryElements(in Bnd_Dimension   dimension,
+                              in string          groupName,
+                              in string          meshName,
+                              in boolean         toCopyAll,
+                              in ListOfIDSources groups,
+                              out SMESH_Mesh     mesh,
+                              out SMESH_Group    group) raises (SALOME::SALOME_Exception);
 
   };
 };
