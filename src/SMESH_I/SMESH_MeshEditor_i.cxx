@@ -5714,7 +5714,7 @@ CORBA::Long SMESH_MeshEditor_i::MakeBoundaryElements(SMESH::Bnd_Dimension dim,
   const char* dimName[] = { "BND_2DFROM3D", "BND_1DFROM3D", "BND_1DFROM2D" };
 
   // result of MakeBoundaryElements() is a tuple (nb, mesh, group)
-  pyDump << nbAdded << ", ";
+  pyDump << "nbAdded, ";
   if ( mesh_var->_is_nil() )
     pyDump << myMesh_i->_this() << ", ";
   else
