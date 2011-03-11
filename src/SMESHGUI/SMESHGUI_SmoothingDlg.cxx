@@ -499,9 +499,9 @@ void SMESHGUI_SmoothingDlg::onTextChange (const QString& theNewText)
     for (int i = 0; i < aListId.count(); i++) {
       int id = aListId[ i ].toInt();
       if ( id > 0 ) {
-	bool validId = aMesh ? ( aMesh->FindElement( id ) != 0 ) : ( myMesh->GetElementType( id, true ) != SMESH::EDGE );
+        bool validId = aMesh ? ( aMesh->FindElement( id ) != 0 ) : ( myMesh->GetElementType( id, true ) != SMESH::EDGE );
         if ( validId ) 
-	  newIndices.Add( id );
+          newIndices.Add( id );
       }
       myNbOkElements = newIndices.Extent();
       mySelector->AddOrRemoveIndex(myIO, newIndices, false);
@@ -514,9 +514,9 @@ void SMESHGUI_SmoothingDlg::onTextChange (const QString& theNewText)
     for (int i = 0; i < aListId.count(); i++) {
       int id = aListId[ i ].toInt();
       if ( id > 0 ) {
-	bool validId = aMesh ? ( aMesh->FindNode( id ) != 0 ) : ( myMesh->GetElementType( id, false ) != SMESH::EDGE );
+        bool validId = aMesh ? ( aMesh->FindNode( id ) != 0 ) : ( myMesh->GetElementType( id, false ) != SMESH::EDGE );
         if ( validId ) 
-	  newIndices.Add( id );
+          newIndices.Add( id );
       }
       myNbOkNodes = newIndices.Extent();
       mySelector->AddOrRemoveIndex(myIO, newIndices, false);
@@ -599,7 +599,7 @@ void SMESHGUI_SmoothingDlg::SelectionIntoArgument()
       
       QStringList elements;
       for ( int i = 0; i < myNbOkElements; ++i )
-	elements << QString::number( aMapIndex( i+1 ) );
+        elements << QString::number( aMapIndex( i+1 ) );
       aString = elements.join(" ");
     }
   } else if (myEditCurrentArgument == LineEditNodes && !myMesh->_is_nil() && myIO == IO ) {

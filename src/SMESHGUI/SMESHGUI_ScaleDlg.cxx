@@ -1076,28 +1076,28 @@ void SMESHGUI_ScaleDlg::onDisplaySimulation( bool toDisplayPreview ) {
       
       anElementsId->length(aListElementsId.count());
       for (int i = 0; i < aListElementsId.count(); i++)
-	anElementsId[i] = aListElementsId[i].toInt();
+        anElementsId[i] = aListElementsId[i].toInt();
       
       SMESH::PointStruct aPoint;
       SMESH::double_array_var aScaleFact = new SMESH::double_array;
       getScale(aPoint, aScaleFact);
       
       try {
-	bool copy = ActionGroup->checkedId() == COPY_ELEMS_BUTTON;
-	SUIT_OverrideCursor aWaitCursor;
-	SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditPreviewer();
-	SMESH::SMESH_IDSource_var obj;
-	if ( CheckBoxMesh->isChecked() )
-	  obj = mySelectedObject;
-	else
-	  obj = aMeshEditor->MakeIDSource(anElementsId, SMESH::ALL);
-	aMeshEditor->Scale(obj, aPoint, aScaleFact, copy);
+        bool copy = ActionGroup->checkedId() == COPY_ELEMS_BUTTON;
+        SUIT_OverrideCursor aWaitCursor;
+        SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditPreviewer();
+        SMESH::SMESH_IDSource_var obj;
+        if ( CheckBoxMesh->isChecked() )
+          obj = mySelectedObject;
+        else
+          obj = aMeshEditor->MakeIDSource(anElementsId, SMESH::ALL);
+        aMeshEditor->Scale(obj, aPoint, aScaleFact, copy);
 
         SMESH::MeshPreviewStruct_var aMeshPreviewStruct = aMeshEditor->GetPreviewData();
-        mySimulation->SetData(aMeshPreviewStruct._retn());	
+        mySimulation->SetData(aMeshPreviewStruct._retn());      
 
       } catch (...) {
-	hidePreview();
+        hidePreview();
       }
     } else {
       hidePreview();

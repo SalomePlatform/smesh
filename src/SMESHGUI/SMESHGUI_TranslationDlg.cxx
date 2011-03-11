@@ -1118,32 +1118,32 @@ void SMESHGUI_TranslationDlg::onDisplaySimulation( bool toDisplayPreview ) {
 
       anElementsId->length(aListElementsId.count());
       for (int i = 0; i < aListElementsId.count(); i++)
-	anElementsId[i] = aListElementsId[i].toInt();
+        anElementsId[i] = aListElementsId[i].toInt();
 
       SMESH::DirStruct aVector;
       if (GetConstructorId() == 0) {
-	aVector.PS.x = SpinBox2_1->GetValue() - SpinBox1_1->GetValue();
-	aVector.PS.y = SpinBox2_2->GetValue() - SpinBox1_2->GetValue();
-	aVector.PS.z = SpinBox2_3->GetValue() - SpinBox1_3->GetValue();
+        aVector.PS.x = SpinBox2_1->GetValue() - SpinBox1_1->GetValue();
+        aVector.PS.y = SpinBox2_2->GetValue() - SpinBox1_2->GetValue();
+        aVector.PS.z = SpinBox2_3->GetValue() - SpinBox1_3->GetValue();
       } else if (GetConstructorId() == 1) {
-	aVector.PS.x = SpinBox1_1->GetValue();
-	aVector.PS.y = SpinBox1_2->GetValue();
-	aVector.PS.z = SpinBox1_3->GetValue();
+        aVector.PS.x = SpinBox1_1->GetValue();
+        aVector.PS.y = SpinBox1_2->GetValue();
+        aVector.PS.z = SpinBox1_3->GetValue();
       }
 
       try {
-	bool copy = ActionGroup->checkedId() == COPY_ELEMS_BUTTON;
-	SUIT_OverrideCursor aWaitCursor;
-	SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditPreviewer();
-	if(CheckBoxMesh->isChecked())
-	  aMeshEditor->TranslateObject(mySelectedObject, aVector, copy);
-	else
-	  aMeshEditor->Translate(anElementsId, aVector, copy);
-	
+        bool copy = ActionGroup->checkedId() == COPY_ELEMS_BUTTON;
+        SUIT_OverrideCursor aWaitCursor;
+        SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditPreviewer();
+        if(CheckBoxMesh->isChecked())
+          aMeshEditor->TranslateObject(mySelectedObject, aVector, copy);
+        else
+          aMeshEditor->Translate(anElementsId, aVector, copy);
+        
         SMESH::MeshPreviewStruct_var aMeshPreviewStruct = aMeshEditor->GetPreviewData();
-        mySimulation->SetData(aMeshPreviewStruct._retn());	
+        mySimulation->SetData(aMeshPreviewStruct._retn());      
       } catch (...) {
-	
+        
       }
     }
     else {

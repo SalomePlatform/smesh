@@ -71,7 +71,7 @@ private:
 
   bool                   isValid();
   void                   getScale( SMESH::PointStruct& thePoint,
-				   SMESH::double_array_var& theScaleFact);
+                                   SMESH::double_array_var& theScaleFact);
 
   SMESHGUI_IdValidator*  myIdValidator;
   LightApp_SelectionMgr* mySelectionMgr;          /* User shape selection */

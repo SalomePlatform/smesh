@@ -1146,7 +1146,7 @@ void SMESHGUI_SymmetryDlg::onDisplaySimulation( bool toDisplayPreview ) {
 
       anElementsId->length(aListElementsId.count());
       for (int i = 0; i < aListElementsId.count(); i++)
-	anElementsId[i] = aListElementsId[i].toInt();
+        anElementsId[i] = aListElementsId[i].toInt();
 
       SMESH::AxisStruct aMirror;
       SMESH::SMESH_MeshEditor::MirrorType aMirrorType;
@@ -1154,18 +1154,18 @@ void SMESHGUI_SymmetryDlg::onDisplaySimulation( bool toDisplayPreview ) {
       getMirror(aMirror,aMirrorType);
 
       try {
-	bool copy = ActionGroup->checkedId() == COPY_ELEMS_BUTTON;
-	SUIT_OverrideCursor aWaitCursor;
-	SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditPreviewer();
+        bool copy = ActionGroup->checkedId() == COPY_ELEMS_BUTTON;
+        SUIT_OverrideCursor aWaitCursor;
+        SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditPreviewer();
         if(CheckBoxMesh->isChecked())
           aMeshEditor->MirrorObject(mySelectedObject, aMirror, aMirrorType, copy );
         else
           aMeshEditor->Mirror(anElementsId, aMirror, aMirrorType, copy );
-	
+        
         SMESH::MeshPreviewStruct_var aMeshPreviewStruct = aMeshEditor->GetPreviewData();
         mySimulation->SetData(aMeshPreviewStruct._retn());
       } catch (...) {
-	hidePreview();
+        hidePreview();
       }
     } else {
       hidePreview();

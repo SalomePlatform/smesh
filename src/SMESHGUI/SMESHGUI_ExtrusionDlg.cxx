@@ -1069,8 +1069,8 @@ void SMESHGUI_ExtrusionDlg::onDisplaySimulation( bool toDisplayPreview ) {
       long aNbSteps = (long)SpinBox_NbSteps->value();
       
       try {
-	SUIT_OverrideCursor aWaitCursor;
-	SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditPreviewer();
+        SUIT_OverrideCursor aWaitCursor;
+        SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditPreviewer();
         if( CheckBoxMesh->isChecked() ) {
           if( GetConstructorId() == 0 )
             aMeshEditor->ExtrusionSweepObject1D(mySelectedObject, aVector, aNbSteps);
@@ -1079,11 +1079,11 @@ void SMESHGUI_ExtrusionDlg::onDisplaySimulation( bool toDisplayPreview ) {
         }
         else
           aMeshEditor->ExtrusionSweep(myElementsId.inout(), aVector, aNbSteps);
-	
+        
         SMESH::MeshPreviewStruct_var aMeshPreviewStruct = aMeshEditor->GetPreviewData();
         mySimulation->SetData(aMeshPreviewStruct._retn());
       } catch (...) {
-	hidePreview();
+        hidePreview();
       }
     } else {
       hidePreview();
@@ -1101,11 +1101,11 @@ void SMESHGUI_ExtrusionDlg::getExtrusionVector(SMESH::DirStruct& aVector) {
   if ( RadioButton3->isChecked() ) {
     aVector.PS.x = SpinBox_Dx->GetValue();
     aVector.PS.y = SpinBox_Dy->GetValue();
-    aVector.PS.z = SpinBox_Dz->GetValue();	
+    aVector.PS.z = SpinBox_Dz->GetValue();      
   } else if ( RadioButton4->isChecked() ) {
     gp_XYZ aNormale(SpinBox_Vx->GetValue(),
-		    SpinBox_Vy->GetValue(),
-		    SpinBox_Vz->GetValue());
+                    SpinBox_Vy->GetValue(),
+                    SpinBox_Vz->GetValue());
     
     
     aNormale /= aNormale.Modulus();

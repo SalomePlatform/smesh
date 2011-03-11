@@ -118,7 +118,7 @@ namespace SMESH
     } else {
       SUIT_ViewManager* aVM = app->getViewManager(SVTK_Viewer::Type(), true);
       if(aVM)
-	aList.append(aVM);
+        aList.append(aVM);
     }    
     bool actorRemoved = false;
     ViewManagerList::ConstIterator it = aList.begin();
@@ -127,13 +127,13 @@ namespace SMESH
       aViewManager = *it;
       QVector<SUIT_ViewWindow*> views = aViewManager->getViews();
       for ( int iV = 0; iV < views.count(); ++iV ) {
-	if ( SMESH_Actor* actor = FindActorByEntry( views[iV], theEntry)) {
-	  if(SVTK_ViewWindow* vtkWnd = GetVtkViewWindow(views[iV])) {
-	    vtkWnd->RemoveActor(actor);
-	    actorRemoved = true;
-	  }
-	  actor->Delete();
-	}
+        if ( SMESH_Actor* actor = FindActorByEntry( views[iV], theEntry)) {
+          if(SVTK_ViewWindow* vtkWnd = GetVtkViewWindow(views[iV])) {
+            vtkWnd->RemoveActor(actor);
+            actorRemoved = true;
+          }
+          actor->Delete();
+        }
       }
     }
     
@@ -142,9 +142,9 @@ namespace SMESH
       TVisualObjCont::key_type aKey(aStudyId,theEntry);
       TVisualObjCont::iterator anIter = VISUAL_OBJ_CONT.find(aKey);
       if(anIter != VISUAL_OBJ_CONT.end()) {
-	// for unknown reason, object destructor is not called, so clear object manually
-	anIter->second->GetUnstructuredGrid()->SetCells(0,0,0,0,0);
-	anIter->second->GetUnstructuredGrid()->SetPoints(0);
+        // for unknown reason, object destructor is not called, so clear object manually
+        anIter->second->GetUnstructuredGrid()->SetCells(0,0,0,0,0);
+        anIter->second->GetUnstructuredGrid()->SetPoints(0);
       }
       VISUAL_OBJ_CONT.erase(aKey);
     }
@@ -732,12 +732,12 @@ namespace SMESH
                 MESSAGE("--- display " << anActor);
             anActor->SetVisibility(true);
 
-	    if(anActor->hasIO()){
-	      Handle(SALOME_InteractiveObject) anIO = anActor->getIO();
-	      if(anIO->hasEntry()){
-		aStudy->setVisibilityState(anIO->getEntry(), Qtx::ShownState);
-	      }
-	    }
+            if(anActor->hasIO()){
+              Handle(SALOME_InteractiveObject) anIO = anActor->getIO();
+              if(anIO->hasEntry()){
+                aStudy->setVisibilityState(anIO->getEntry(), Qtx::ShownState);
+              }
+            }
           }
         }
         break;
@@ -751,7 +751,7 @@ namespace SMESH
             anActor->SetVisibility(false);
           }
         }
-	aStudy->setVisibilityStateForAll(Qtx::HiddenState);
+        aStudy->setVisibilityStateForAll(Qtx::HiddenState);
       }
       default: {
         if (SMESH_Actor *anActor = FindActorByEntry(theWnd,theEntry)) {
@@ -759,15 +759,15 @@ namespace SMESH
             case eDisplay:
             case eDisplayOnly:
                 //MESSAGE("--- display " << anActor);
-	      anActor->Update();
+              anActor->Update();
               anActor->SetVisibility(true);
               if (theAction == eDisplayOnly) aRenderer->ResetCameraClippingRange();
-	      aStudy->setVisibilityState(theEntry, Qtx::ShownState);
+              aStudy->setVisibilityState(theEntry, Qtx::ShownState);
               break;
             case eErase:
                 //MESSAGE("--- erase " << anActor);
               anActor->SetVisibility(false);
-	      aStudy->setVisibilityState(theEntry, Qtx::HiddenState);
+              aStudy->setVisibilityState(theEntry, Qtx::HiddenState);
               break;
           }
         } else {
@@ -786,7 +786,7 @@ namespace SMESH
                 if ((anActor = CreateActor(aDocument,theEntry,true))) {
                   bool needFitAll = noSmeshActors(theWnd); // fit for the first object only
                   DisplayActor(theWnd,anActor);
-		  aStudy->setVisibilityState(theEntry, Qtx::ShownState);
+                  aStudy->setVisibilityState(theEntry, Qtx::ShownState);
                   // FitAll(); - PAL16770(Display of a group performs an automatic fit all)
                   if (needFitAll) FitAll();
                 } else {

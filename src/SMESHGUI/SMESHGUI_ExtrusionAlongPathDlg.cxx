@@ -1311,50 +1311,50 @@ void SMESHGUI_ExtrusionAlongPathDlg::onDisplaySimulation( bool toDisplayPreview 
       // get base point
       SMESH::PointStruct aBasePoint;
       if (BasePointGrp->isChecked()) {
-	aBasePoint.x = XSpin->GetValue();
-	aBasePoint.y = YSpin->GetValue();
-	aBasePoint.z = ZSpin->GetValue();
+        aBasePoint.x = XSpin->GetValue();
+        aBasePoint.y = YSpin->GetValue();
+        aBasePoint.z = ZSpin->GetValue();
       }
       bool bOk;
       long aNodeStart = StartPointLineEdit->text().toLong(&bOk);
       if (bOk) {
-	
-	try {
-	  SUIT_OverrideCursor wc;
-	  
-	  SMESH::SMESH_MeshEditor::Extrusion_Error retVal;
-	  SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditPreviewer();
-	  bool NeedGroups = false;
-	  SMESH::ElementType ElemType = SMESH::FACE;
-	  if( GetConstructorId() == 0 )
-	    ElemType = SMESH::EDGE;
-	  if( !MeshCheck->isChecked() ) {
-	    aMeshEditor->ExtrusionAlongPathX(anElementsId, myPath, aNodeStart, AnglesGrp->isChecked(),
-					     anAngles, LinearAnglesCheck->isChecked(),
-					     BasePointGrp->isChecked(), aBasePoint,
-					     NeedGroups, ElemType, retVal);
-	  }
-	  else {
-	    SMESH::ListOfGroups_var groups = 
-	      aMeshEditor->ExtrusionAlongPathObjX(myIDSource, myPath, aNodeStart, AnglesGrp->isChecked(),
-						  anAngles, LinearAnglesCheck->isChecked(),
-						  BasePointGrp->isChecked(), aBasePoint,
-						  NeedGroups, ElemType, retVal);
-	  }
-	  
-	  wc.suspend();
-	  if( retVal == SMESH::SMESH_MeshEditor::EXTR_OK ) {
-	    SMESH::MeshPreviewStruct_var aMeshPreviewStruct = aMeshEditor->GetPreviewData();
-	    mySimulation->SetData(aMeshPreviewStruct._retn());
-	  } else {
-	    hidePreview();
-	  }
-	  
-	} catch (...) {
-	  hidePreview();
-	}
+        
+        try {
+          SUIT_OverrideCursor wc;
+          
+          SMESH::SMESH_MeshEditor::Extrusion_Error retVal;
+          SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditPreviewer();
+          bool NeedGroups = false;
+          SMESH::ElementType ElemType = SMESH::FACE;
+          if( GetConstructorId() == 0 )
+            ElemType = SMESH::EDGE;
+          if( !MeshCheck->isChecked() ) {
+            aMeshEditor->ExtrusionAlongPathX(anElementsId, myPath, aNodeStart, AnglesGrp->isChecked(),
+                                             anAngles, LinearAnglesCheck->isChecked(),
+                                             BasePointGrp->isChecked(), aBasePoint,
+                                             NeedGroups, ElemType, retVal);
+          }
+          else {
+            SMESH::ListOfGroups_var groups = 
+              aMeshEditor->ExtrusionAlongPathObjX(myIDSource, myPath, aNodeStart, AnglesGrp->isChecked(),
+                                                  anAngles, LinearAnglesCheck->isChecked(),
+                                                  BasePointGrp->isChecked(), aBasePoint,
+                                                  NeedGroups, ElemType, retVal);
+          }
+          
+          wc.suspend();
+          if( retVal == SMESH::SMESH_MeshEditor::EXTR_OK ) {
+            SMESH::MeshPreviewStruct_var aMeshPreviewStruct = aMeshEditor->GetPreviewData();
+            mySimulation->SetData(aMeshPreviewStruct._retn());
+          } else {
+            hidePreview();
+          }
+          
+        } catch (...) {
+          hidePreview();
+        }
       } else {
-	hidePreview();
+        hidePreview();
       }
       
     } else {
@@ -1388,16 +1388,16 @@ SMESH::long_array_var SMESHGUI_ExtrusionAlongPathDlg::getSelectedElements() {
       bool bOk;
       int j = 0;
       for (int i = 0; i < aListElementsId.count(); i++) {
-	long ind = aListElementsId[ i ].toLong(&bOk);
-	if  (bOk) {
-	  const SMDS_MeshElement* e = aMesh->FindElement(ind);
-	  if (e) {
-	    bool typeMatch = Elements1dRB->isChecked() && e->GetType() == SMDSAbs_Edge ||
-	      Elements2dRB->isChecked() && e->GetType() == SMDSAbs_Face;
-	    if (typeMatch)
-		  anElementsId[ j++ ] = ind;
-	  }
-	}
+        long ind = aListElementsId[ i ].toLong(&bOk);
+        if  (bOk) {
+          const SMDS_MeshElement* e = aMesh->FindElement(ind);
+          if (e) {
+            bool typeMatch = Elements1dRB->isChecked() && e->GetType() == SMDSAbs_Edge ||
+              Elements2dRB->isChecked() && e->GetType() == SMDSAbs_Face;
+            if (typeMatch)
+                  anElementsId[ j++ ] = ind;
+          }
+        }
       }
       anElementsId->length(j);
     }

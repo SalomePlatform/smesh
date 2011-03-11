@@ -1461,13 +1461,13 @@
             std::string anEntry = SO->GetID();
             
             /** Erase graphical object **/
-	  if(SO->FindAttribute(anAttr, "AttributeIOR")){
-	    ViewManagerList aViewMenegers = anApp->viewManagers();
-	    ViewManagerList::const_iterator it = aViewMenegers.begin();
-	    for( ; it != aViewMenegers.end(); it++) {	      
-	      SUIT_ViewManager* vm = *it;
-	      int nbSf = vm ? vm->getViewsCount() : 0;
-	      if(vm) {
+          if(SO->FindAttribute(anAttr, "AttributeIOR")){
+            ViewManagerList aViewMenegers = anApp->viewManagers();
+            ViewManagerList::const_iterator it = aViewMenegers.begin();
+            for( ; it != aViewMenegers.end(); it++) {         
+              SUIT_ViewManager* vm = *it;
+              int nbSf = vm ? vm->getViewsCount() : 0;
+              if(vm) {
                 QVector<SUIT_ViewWindow*> aViews = vm->getViews();
                 for(int i = 0; i < nbSf; i++){
                   SUIT_ViewWindow *sf = aViews[i];
@@ -1476,8 +1476,8 @@
                   }
                 }
               }
-	    }
-	  }
+            }
+          }
             /** Remove an object from data structures **/
             SMESH::SMESH_GroupBase_var aGroup = SMESH::SMESH_GroupBase::_narrow( SMESH::SObjectToObject( SO ));
             SMESH::SMESH_subMesh_var   aSubMesh = SMESH::SMESH_subMesh::_narrow( SMESH::SObjectToObject( SO ));
@@ -2879,7 +2879,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
         for ( anIter->InitEx(true); anIter->More(); anIter->Next() )
         {
           _PTR(SObject) so = anIter->Value();
-	  SMESH::RemoveVisualObjectWithActors(so->GetID().c_str(), true);
+          SMESH::RemoveVisualObjectWithActors(so->GetID().c_str(), true);
         }
       }
       catch (const SALOME::SALOME_Exception& S_ex){

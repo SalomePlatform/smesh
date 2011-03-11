@@ -540,7 +540,7 @@ bool SMESHGUI_Preferences_ScalarBarDlg::onApply()
       myScalarBarActor->GetDistributionColor(oldRgb);
       colorChanged = (rgb[0] != oldRgb[0] || rgb[1] != oldRgb[1] || rgb[2] != oldRgb[2]);
       if(colorChanged)
-	myScalarBarActor->SetDistributionColor(rgb);
+        myScalarBarActor->SetDistributionColor(rgb);
     }
   }
 
@@ -682,15 +682,15 @@ void SMESHGUI_Preferences_ScalarBarDlg::onSelectionChanged()
         myMonoColorBtn->setColor( QColor( (int)( aTColor[0]*255 ), (int)( aTColor[1]*255 ), (int)( aTColor[2]*255 ) ) );
         if ( coloringType == SMESH_MONOCOLOR_TYPE ) {
           myDMonoColor->setChecked(true);
-	  onDistributionChanged(myDistribColorGrp->id(myDMonoColor));    
+          onDistributionChanged(myDistribColorGrp->id(myDMonoColor));    
         } else {
           myDMultiColor->setChecked(true);
           onDistributionChanged(myDistribColorGrp->id(myDMultiColor));
         }
         myDistributionGrp->setChecked((bool)myScalarBarActor->GetDistributionVisibility());
-	onDistributionActivated(myScalarBarActor->GetDistributionVisibility());
-	
-	
+        onDistributionActivated(myScalarBarActor->GetDistributionVisibility());
+        
+        
         myRangeGrp->setEnabled( true );
         myFontGrp->setEnabled( true );
         myLabColorGrp->setEnabled( true );
@@ -698,7 +698,7 @@ void SMESHGUI_Preferences_ScalarBarDlg::onSelectionChanged()
         myOriginDimGrp->setEnabled( true );
         myOkBtn->setEnabled( true );
         myApplyBtn->setEnabled( true );
-	myDistributionGrp->setEnabled( true );
+        myDistributionGrp->setEnabled( true );
         return;
       }
     }

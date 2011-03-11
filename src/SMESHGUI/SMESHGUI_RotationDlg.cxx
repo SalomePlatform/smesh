@@ -1069,7 +1069,7 @@ void SMESHGUI_RotationDlg::onDisplaySimulation( bool toDisplayPreview ) {
       
       anElementsId->length(aListElementsId.count());
       for (int i = 0; i < aListElementsId.count(); i++)
-	anElementsId[i] = aListElementsId[i].toInt();
+        anElementsId[i] = aListElementsId[i].toInt();
       
       SMESH::AxisStruct anAxis;
       
@@ -1082,18 +1082,18 @@ void SMESHGUI_RotationDlg::onDisplaySimulation( bool toDisplayPreview ) {
       double anAngle = (SpinBox_Angle->GetValue())*PI/180;
       
       try {
-	SUIT_OverrideCursor aWaitCursor;
-	bool copy = ActionGroup->checkedId() == COPY_ELEMS_BUTTON;
-	SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditPreviewer();
-	if(CheckBoxMesh->isChecked())
-	  aMeshEditor->RotateObject(mySelectedObject, anAxis, anAngle, copy);
-	else
-	  aMeshEditor->Rotate(anElementsId, anAxis, anAngle, copy);
+        SUIT_OverrideCursor aWaitCursor;
+        bool copy = ActionGroup->checkedId() == COPY_ELEMS_BUTTON;
+        SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditPreviewer();
+        if(CheckBoxMesh->isChecked())
+          aMeshEditor->RotateObject(mySelectedObject, anAxis, anAngle, copy);
+        else
+          aMeshEditor->Rotate(anElementsId, anAxis, anAngle, copy);
 
         SMESH::MeshPreviewStruct_var aMeshPreviewStruct = aMeshEditor->GetPreviewData();
-        mySimulation->SetData(aMeshPreviewStruct._retn());	
+        mySimulation->SetData(aMeshPreviewStruct._retn());      
       } catch (...) {
-	hidePreview();
+        hidePreview();
       }
     }
     else {
