@@ -1044,6 +1044,7 @@ void SMESHGUI_SymmetryDlg::onActionClicked(int button)
     break;
   }
   setNewMeshName();
+  toDisplaySimulation();
 }
 
 //=======================================================================

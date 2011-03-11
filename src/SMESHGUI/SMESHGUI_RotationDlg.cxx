@@ -967,6 +967,7 @@ void SMESHGUI_RotationDlg::onActionClicked(int button)
     break;
   }
   setNewMeshName();
+  toDisplaySimulation();
 }
 
 //=======================================================================

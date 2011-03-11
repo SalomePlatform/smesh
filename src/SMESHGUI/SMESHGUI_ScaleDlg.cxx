@@ -964,6 +964,7 @@ void SMESHGUI_ScaleDlg::onActionClicked(int button)
     break;
   }
   setNewMeshName();
+  toDisplaySimulation();
 }
 
 //=======================================================================

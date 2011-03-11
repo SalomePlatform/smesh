@@ -1005,6 +1005,7 @@ void SMESHGUI_TranslationDlg::onActionClicked(int button)
     break;
   }
   setNewMeshName();
+  toDisplaySimulation();
 }
 
 //=======================================================================
