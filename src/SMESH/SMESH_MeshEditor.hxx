@@ -575,14 +575,17 @@ public:
 
   enum Bnd_Dimension { BND_2DFROM3D, BND_1DFROM3D, BND_1DFROM2D };
 
-  void MakeBoundaryMesh(const TIDSortedElemSet& elements,
-                        Bnd_Dimension           dimension,
-                        SMESH_Group*            group = 0,
-                        SMESH_Mesh*             targetMesh = 0,
-                        bool                    toCopyElements = false,
-                        bool                    toCopyExistingBondary = false);
+  int MakeBoundaryMesh(const TIDSortedElemSet& elements,
+                       Bnd_Dimension           dimension,
+                       SMESH_Group*            group = 0,
+                       SMESH_Mesh*             targetMesh = 0,
+                       bool                    toCopyElements = false,
+                       bool                    toCopyExistingBondary = false,
+                       bool                    toAddExistingBondary = false,
+                       bool                    aroundElements = false);
 
-private:
+
+ private:
 
   /*!
    * \brief Convert elements contained in a submesh to quadratic

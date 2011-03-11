@@ -10905,15 +10905,23 @@ namespace
  *  \param toCopyElements - if true, the checked elements will be copied into the targetMesh
  *  \param toCopyExistingBondary - if true, not only new but also pre-existing
  *                                boundary elements will be copied into the targetMesh
+ *  \param toAddExistingBondary - if true, not only new but also pre-existing
+ *                                boundary elements will be added into the new group
+ *  \param aroundElements - if true, elements will be created on boundary of given
+ *                          elements else, on boundary of the whole mesh. This
+ *                          option works for 2D elements only.
+ * \return nb of added boundary elements
  */
 //================================================================================
 
-void SMESH_MeshEditor::MakeBoundaryMesh(const TIDSortedElemSet& elements,
-                                        Bnd_Dimension           dimension,
-                                        SMESH_Group*            group/*=0*/,
-                                        SMESH_Mesh*             targetMesh/*=0*/,
-                                        bool                    toCopyElements/*=false*/,
-                                        bool                    toCopyExistingBondary/*=false*/)
+int SMESH_MeshEditor::MakeBoundaryMesh(const TIDSortedElemSet& elements,
+                                       Bnd_Dimension           dimension,
+                                       SMESH_Group*            group/*=0*/,
+                                       SMESH_Mesh*             targetMesh/*=0*/,
+                                       bool                    toCopyElements/*=false*/,
+                                       bool                    toCopyExistingBondary/*=false*/,
+                                       bool                    toAddExistingBondary/*= false*/,
+                                       bool                    aroundElements/*= false*/)
 {
   SMDSAbs_ElementType missType = (dimension == BND_2DFROM3D) ? SMDSAbs_Face : SMDSAbs_Edge;
   SMDSAbs_ElementType elemType = (dimension == BND_1DFROM2D) ? SMDSAbs_Face : SMDSAbs_Volume;
@@ -10921,14 +10929,24 @@ void SMESH_MeshEditor::MakeBoundaryMesh(const TIDSortedElemSet& elements,
   if ( !elements.empty() && (*elements.begin())->GetType() != elemType )
     throw SALOME_Exception(LOCALIZED("wrong element type"));
 
+  if ( aroundElements && elemType == SMDSAbs_Volume )
+    throw SALOME_Exception(LOCALIZED("wrong element type for aroundElements==true"));
+
   if ( !targetMesh )
     toCopyElements = toCopyExistingBondary = false;
 
   SMESH_MeshEditor tgtEditor( targetMesh ? targetMesh : myMesh );
   SMESHDS_Mesh* aMesh = GetMeshDS(), *tgtMeshDS = tgtEditor.GetMeshDS();
+  int nbAddedBnd = 0;
+
+  // editor adding present bnd elements and optionally holding elements to add to the group
+  SMESH_MeshEditor* presentEditor;
+  SMESH_MeshEditor tgtEditor2( tgtEditor.GetMesh() );
+  presentEditor = toAddExistingBondary ? &tgtEditor : &tgtEditor2;
 
   SMDS_VolumeTool vTool;
-  TIDSortedElemSet emptySet, avoidSet;
+  TIDSortedElemSet avoidSet;
+  const TIDSortedElemSet emptySet, *elemSet = aroundElements ? &elements : &emptySet;
   int inode;
 
   typedef vector<const SMDS_MeshNode*> TConnectivity;
@@ -10944,7 +10962,9 @@ void SMESH_MeshEditor::MakeBoundaryMesh(const TIDSortedElemSet& elements,
     const SMDS_MeshElement* elem = eIt->next();
     const int iQuad = elem->IsQuadratic();
 
+    // ------------------------------------------------------------------------------------
     // 1. For an elem, get present bnd elements and connectivities of missing bnd elements
+    // ------------------------------------------------------------------------------------
     vector<const SMDS_MeshElement*> presentBndElems;
     vector<TConnectivity>           missingBndElems;
     TConnectivity nodes;
@@ -10996,7 +11016,7 @@ void SMESH_MeshEditor::MakeBoundaryMesh(const TIDSortedElemSet& elements,
       {
         nodes[0] = elem->GetNode(i);
         nodes[1] = elem->GetNode((i+1)%nbNodes);
-        if ( FindFaceInSet( nodes[0], nodes[1], emptySet, avoidSet))
+        if ( FindFaceInSet( nodes[0], nodes[1], *elemSet, avoidSet))
           continue; // not free link
 
         //if ( iQuad )
@@ -11009,7 +11029,9 @@ void SMESH_MeshEditor::MakeBoundaryMesh(const TIDSortedElemSet& elements,
       }
     }
 
+    // ---------------------------------
     // 2. Add missing boundary elements
+    // ---------------------------------
     if ( targetMesh != myMesh )
       // instead of making a map of nodes in this mesh and targetMesh,
       // we create nodes with same IDs. We can renumber them later, if needed
@@ -11019,16 +11041,28 @@ void SMESH_MeshEditor::MakeBoundaryMesh(const TIDSortedElemSet& elements,
         TConnectivity  nodes( srcNodes.size() );
         for ( inode = 0; inode < nodes.size(); ++inode )
           nodes[inode] = getNodeWithSameID( tgtMeshDS, srcNodes[inode] );
+        if ( aroundElements && tgtEditor.GetMeshDS()->FindElement( nodes,
+                                                                   missType,
+                                                                   /*noMedium=*/true))
+          continue;
         tgtEditor.AddElement(nodes, missType, elem->IsPoly() && nodes.size()/(iQuad+1)>4);
+        ++nbAddedBnd;
       }
     else
       for ( int i = 0; i < missingBndElems.size(); ++i )
       {
-        TConnectivity&  nodes = missingBndElems[i];
+        TConnectivity& nodes = missingBndElems[i];
+        if ( aroundElements && tgtEditor.GetMeshDS()->FindElement( nodes,
+                                                                   missType,
+                                                                   /*noMedium=*/true))
+          continue;
         tgtEditor.AddElement(nodes, missType, elem->IsPoly() && nodes.size()/(iQuad+1)>4);
+        ++nbAddedBnd;
       }
 
+    // ----------------------------------
     // 3. Copy present boundary elements
+    // ----------------------------------
     if ( toCopyExistingBondary )
       for ( int i = 0 ; i < presentBndElems.size(); ++i )
       {
@@ -11036,13 +11070,19 @@ void SMESH_MeshEditor::MakeBoundaryMesh(const TIDSortedElemSet& elements,
         TConnectivity nodes( e->NbNodes() );
         for ( inode = 0; inode < nodes.size(); ++inode )
           nodes[inode] = getNodeWithSameID( tgtMeshDS, e->GetNode(inode) );
-        tgtEditor.AddElement(nodes, missType, e->IsPoly());
-        // leave only missing elements in tgtEditor.myLastCreatedElems
-        tgtEditor.myLastCreatedElems.Remove( tgtEditor.myLastCreatedElems.Size() );
+        presentEditor->AddElement(nodes, missType, e->IsPoly());
       }
+    else // store present elements to add them to a group
+      for ( int i = 0 ; i < presentBndElems.size(); ++i )
+      {
+        presentEditor->myLastCreatedElems.Append(presentBndElems[i]);
+      }
+      
   } // loop on given elements
 
-  // 4. Fill group with missing boundary elements
+  // ---------------------------------------------
+  // 4. Fill group with boundary elements
+  // ---------------------------------------------
   if ( group )
   {
     if ( SMESHDS_Group* g = dynamic_cast<SMESHDS_Group*>( group->GetGroupDS() ))
@@ -11050,9 +11090,12 @@ void SMESH_MeshEditor::MakeBoundaryMesh(const TIDSortedElemSet& elements,
         g->SMDSGroup().Add( tgtEditor.myLastCreatedElems( i+1 ));
   }
   tgtEditor.myLastCreatedElems.Clear();
+  tgtEditor2.myLastCreatedElems.Clear();
 
+  // -----------------------
   // 5. Copy given elements
-  if ( toCopyElements )
+  // -----------------------
+  if ( toCopyElements && targetMesh != myMesh )
   {
     if (elements.empty())
       eIt = aMesh->elementsIterator(elemType);
@@ -11069,5 +11112,5 @@ void SMESH_MeshEditor::MakeBoundaryMesh(const TIDSortedElemSet& elements,
       tgtEditor.myLastCreatedElems.Clear();
     }
   }
-  return;
+  return nbAddedBnd;
 }
