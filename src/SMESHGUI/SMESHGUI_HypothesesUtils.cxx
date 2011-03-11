@@ -50,6 +50,7 @@
 
 // Qt includes
 #include <QMap>
+#include <QDir>
 //#include <QList>
 
 // Other includes
@@ -126,6 +127,40 @@ namespace SMESH
     }
   }
 
+  //================================================================================
+  /*!
+   * \brief Prepends dimension and appends '[custom]' to the name of hypothesis set
+   */
+  //================================================================================
+
+  static QString mangledHypoSetName(HypothesesSet* hypSet)
+  {
+    QString name = hypSet->name();
+
+    // prepend 'xD: '
+    int dim = hypSet->maxDim();
+    if ( dim > -1 )
+      name = QString("%1D: %2").arg(dim).arg(name);
+
+    // custom
+    if ( hypSet->getIsCustom() )
+      name = QString("%1 [custom]").arg(name);
+
+    return name;
+  }
+
+  //================================================================================
+  /*!
+   * \brief Removes dimension and '[custom]' from the name of hypothesis set
+   */
+  //================================================================================
+
+  static QString demangledHypoSetName(QString name)
+  {
+    name.remove(QRegExp("[0-3]D: "));
+    name.remove(" [custom]");
+    return name;
+  }
 
   void InitAvailableHypotheses()
   {
@@ -148,9 +183,9 @@ namespace SMESH
                                   QObject::tr("MESHERS_FILE_NO_VARIABLE"));
         return;
       }
-
-      // loop on files in HypsXml
-      QString aNoAccessFiles;
+      // get full names of xml files from HypsXmlList
+      QStringList xmlFiles;
+      xmlFiles.append( QDir::home().filePath("CustomMeshers.xml")); // may be inexistent
       for (int i = 0; i < HypsXmlList.count(); i++) {
         QString HypsXml = HypsXmlList[ i ];
 
@@ -158,9 +193,18 @@ namespace SMESH
         QString xmlFile = resMgr->path("resources", "SMESH", HypsXml + ".xml");
         if ( xmlFile.isEmpty() ) // try PLUGIN resources
           xmlFile = resMgr->path("resources", HypsXml, HypsXml + ".xml");
-        
+        if ( !xmlFile.isEmpty() )
+          xmlFiles.append( xmlFile );
+      }
+
+      // loop on xmlFiles
+      QString aNoAccessFiles;
+      for (int i = 0; i < xmlFiles.count(); i++)
+      {
+        QString xmlFile = xmlFiles[ i ];
         QFile file (xmlFile);
-        if (file.exists() && file.open(QIODevice::ReadOnly)) {
+        if (file.exists() && file.open(QIODevice::ReadOnly))
+        {
           file.close();
 
           SMESHGUI_XmlHandler* aXmlHandler = new SMESHGUI_XmlHandler();
@@ -178,7 +222,9 @@ namespace SMESH
             QList<HypothesesSet*>::iterator it, pos = myListOfHypothesesSets.begin();
             for ( it = aXmlHandler->myListOfHypothesesSets.begin(); 
                   it != aXmlHandler->myListOfHypothesesSets.end();
-                  ++it ) {
+                  ++it )
+            {
+              (*it)->setIsCustom( i == 0 );
               myListOfHypothesesSets.insert( pos, *it );
             }
           }
@@ -187,15 +233,15 @@ namespace SMESH
                                       QObject::tr("INF_PARSE_ERROR"),
                                       QObject::tr(aXmlHandler->errorProtocol().toLatin1().data()));
           }
-    delete aXmlHandler;
+          delete aXmlHandler;
         }
-        else {
+        else if ( i > 0 ) { // 1st is ~/CustomMeshers.xml
           if (aNoAccessFiles.isEmpty())
             aNoAccessFiles = xmlFile;
           else
             aNoAccessFiles += ", " + xmlFile;
         }
-      } // end loop
+      } // end loop on xmlFiles
 
 
       if (!aNoAccessFiles.isEmpty()) {
@@ -240,7 +286,7 @@ namespace SMESH
   }
 
 
-  QStringList GetHypothesesSets()
+  QStringList GetHypothesesSets(int maxDim)
   {
     QStringList aSetNameList;
 
@@ -252,22 +298,32 @@ namespace SMESH
           hypoSet != myListOfHypothesesSets.end();
           ++hypoSet ) {
       HypothesesSet* aSet = *hypoSet;
-      if ( aSet && aSet->count( true ) ) {
-        aSetNameList.append( aSet->name() );
+      if ( aSet &&
+           ( aSet->count( true ) || aSet->count( false )) &&
+           aSet->maxDim() <= maxDim)
+      {
+        aSetNameList.append( mangledHypoSetName( aSet ));
       }
     }
+    aSetNameList.sort();
+
+    //  reverse order of aSetNameList
+    QStringList reversedNames;
+    for ( int i = 0; i < aSetNameList.count(); ++i )
+      reversedNames.prepend( aSetNameList[i] );
     
-    return aSetNameList;
+    return reversedNames;
   }
 
   HypothesesSet* GetHypothesesSet(const QString& theSetName)
   {
+    QString name = demangledHypoSetName( theSetName );
     QList<HypothesesSet*>::iterator hypoSet;
     for ( hypoSet  = myListOfHypothesesSets.begin(); 
           hypoSet != myListOfHypothesesSets.end();
           ++hypoSet ) {
       HypothesesSet* aSet = *hypoSet;
-      if ( aSet && aSet->name() == theSetName )
+      if ( aSet && aSet->name() == name )
         return aSet;
     }
     return 0;
