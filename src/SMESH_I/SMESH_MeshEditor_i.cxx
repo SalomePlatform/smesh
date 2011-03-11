@@ -234,7 +234,7 @@ namespace {
   }
   //================================================================================
   /*!
-   * \brief function for conversion long_array to TIDSortedElemSet
+   * \brief function for conversion of long_array to TIDSortedElemSet
    * \param IDs - array of IDs
    * \param aMesh - mesh
    * \param aMap - collection to fill
@@ -315,6 +315,50 @@ namespace {
       for(int i = 0; i < aElementsId->length(); i++)
         if( const SMDS_MeshElement * elem = theMeshDS->FindElement( aElementsId[i] ))
           theNodeSet.insert( elem->begin_nodes(), elem->end_nodes());
+    }
+  }
+
+  //================================================================================
+  /*!
+   * \brief Returns elements connected to the given elements
+   */
+  //================================================================================
+
+  void getElementsAround(const TIDSortedElemSet& theElements,
+                         const SMESHDS_Mesh*     theMeshDS,
+                         TIDSortedElemSet&       theElementsAround)
+  {
+    if ( theElements.empty() ) return;
+
+    SMDSAbs_ElementType elemType    = (*theElements.begin())->GetType();
+    bool sameElemType = ( elemType == (*theElements.rbegin())->GetType() );
+    if ( sameElemType &&
+         theMeshDS->GetMeshInfo().NbElements( elemType ) == theElements.size() )
+      return; // all the elements are in theElements
+
+    if ( !sameElemType )
+      elemType = SMDSAbs_All;
+
+    TIDSortedElemSet visitedNodes;
+    TIDSortedElemSet::const_iterator elemIt = theElements.begin();
+    for ( ; elemIt != theElements.end(); ++elemIt )
+    {
+      const SMDS_MeshElement* e = *elemIt;
+      int i = e->NbCornerNodes();
+      while ( --i != -1 )
+      {
+        const SMDS_MeshNode* n = e->GetNode( i );
+        if ( visitedNodes.insert( n ).second )
+        {
+          SMDS_ElemIteratorPtr invIt = n->GetInverseElementIterator(elemType);
+          while ( invIt->more() )
+          {
+            const SMDS_MeshElement* elemAround = invIt->next();
+            if ( !theElements.count( elemAround ))
+              theElementsAround.insert( elemAround );
+          }
+        }
+      }
     }
   }
 }
@@ -1799,7 +1843,7 @@ SMESH::ListOfGroups*
 SMESH_MeshEditor_i::extrusionSweep(const SMESH::long_array & theIDsOfElements,
                                    const SMESH::DirStruct &  theStepVector,
                                    CORBA::Long               theNbOfSteps,
-                                   const bool                theMakeGroups,
+                                   bool                      theMakeGroups,
                                    const SMDSAbs_ElementType theElementType)
 {
   initData();
@@ -1816,16 +1860,14 @@ SMESH_MeshEditor_i::extrusionSweep(const SMESH::long_array & theIDsOfElements,
 
     TIDSortedElemSet* workElements = & elements;
     TPreviewMesh      tmpMesh( SMDSAbs_Face );
-    SMESH_Mesh*       mesh = 0;
+    SMESH_Mesh*       mesh = myMesh;
     
     if ( myPreviewMode ) {
       SMDSAbs_ElementType select = SMDSAbs_All, avoid = SMDSAbs_Volume;
       tmpMesh.Copy( elements, copyElements, select, avoid );
       mesh = &tmpMesh;
       workElements = & copyElements;
-    }
-    else {
-	mesh = myMesh;
+      theMakeGroups = false;
     }
 
     TElemOfElemListMap aHystory;
@@ -2208,7 +2250,7 @@ SMESH_MeshEditor_i::extrusionAlongPathX(const SMESH::long_array &  IDsOfElements
                                         CORBA::Boolean             LinearVariation,
                                         CORBA::Boolean             HasRefPoint,
                                         const SMESH::PointStruct&  RefPoint,
-                                        const bool                 MakeGroups,
+                                        bool                       MakeGroups,
                                         const SMDSAbs_ElementType  ElementType,
                                         SMESH::SMESH_MeshEditor::Extrusion_Error & Error)
 {
@@ -2233,7 +2275,7 @@ SMESH_MeshEditor_i::extrusionAlongPathX(const SMESH::long_array &  IDsOfElements
 
   TIDSortedElemSet* workElements = &elements;
   TPreviewMesh      tmpMesh( SMDSAbs_Face );
-  SMESH_Mesh*       mesh = 0;
+  SMESH_Mesh*       mesh = myMesh;
 
   if ( myPreviewMode )
   {
@@ -2241,17 +2283,14 @@ SMESH_MeshEditor_i::extrusionAlongPathX(const SMESH::long_array &  IDsOfElements
     tmpMesh.Copy( elements, copyElements, select, avoid );
     mesh = &tmpMesh;
     workElements = & copyElements;
-  }
-  else
-  {
-    mesh = myMesh;
+    MakeGroups = false;
   }
 
   ::SMESH_MeshEditor anEditor( mesh );
   ::SMESH_MeshEditor::Extrusion_Error error;
 
-  SMESH_Mesh_i* aMeshImp = SMESH::DownCast<SMESH_Mesh_i*>( Path );
-  if(aMeshImp) {
+  if ( SMESH_Mesh_i* aMeshImp = SMESH::DownCast<SMESH_Mesh_i*>( Path ))
+  {
     // path as mesh
     SMDS_MeshNode* aNodeStart =
       (SMDS_MeshNode*)aMeshImp->GetImpl().GetMeshDS()->FindNode(NodeStart);
@@ -2264,36 +2303,34 @@ SMESH_MeshEditor_i::extrusionAlongPathX(const SMESH::long_array &  IDsOfElements
                                           HasRefPoint, refPnt, MakeGroups );
     myMesh->GetMeshDS()->Modified();
   }
-  else {
-    SMESH_subMesh_i* aSubMeshImp = SMESH::DownCast<SMESH_subMesh_i*>( Path );
-    if(aSubMeshImp) {
-      // path as submesh
-      SMESH::SMESH_Mesh_ptr aPathMesh = aSubMeshImp->GetFather();
-      aMeshImp = SMESH::DownCast<SMESH_Mesh_i*>( aPathMesh );
-      SMDS_MeshNode* aNodeStart =
-        (SMDS_MeshNode*)aMeshImp->GetImpl().GetMeshDS()->FindNode(NodeStart);
-      if ( !aNodeStart ) {
-        Error = SMESH::SMESH_MeshEditor::EXTR_BAD_STARTING_NODE;
-        return EmptyGr;
-      }
-      SMESH_subMesh* aSubMesh =
-        aMeshImp->GetImpl().GetSubMeshContaining(aSubMeshImp->GetId());
-      error = anEditor.ExtrusionAlongTrack( *workElements, aSubMesh, aNodeStart,
-                                            HasAngles, angles, LinearVariation,
-                                            HasRefPoint, refPnt, MakeGroups );
-      myMesh->GetMeshDS()->Modified();
+  else if ( SMESH_subMesh_i* aSubMeshImp = SMESH::DownCast<SMESH_subMesh_i*>( Path ))
+  {
+    // path as submesh
+    SMESH::SMESH_Mesh_ptr aPathMesh = aSubMeshImp->GetFather();
+    aMeshImp = SMESH::DownCast<SMESH_Mesh_i*>( aPathMesh );
+    SMDS_MeshNode* aNodeStart =
+      (SMDS_MeshNode*)aMeshImp->GetImpl().GetMeshDS()->FindNode(NodeStart);
+    if ( !aNodeStart ) {
+      Error = SMESH::SMESH_MeshEditor::EXTR_BAD_STARTING_NODE;
+      return EmptyGr;
     }
-    else {
-      SMESH_Group_i* aGroupImp = SMESH::DownCast<SMESH_Group_i*>( Path );
-      if(aGroupImp) {
-        // path as group of 1D elements
-      }
-      else {
-        // invalid path
-        Error = SMESH::SMESH_MeshEditor::EXTR_BAD_PATH_SHAPE;
-        return EmptyGr;
-      }
-    }
+    SMESH_subMesh* aSubMesh =
+      aMeshImp->GetImpl().GetSubMeshContaining(aSubMeshImp->GetId());
+    error = anEditor.ExtrusionAlongTrack( *workElements, aSubMesh, aNodeStart,
+                                          HasAngles, angles, LinearVariation,
+                                          HasRefPoint, refPnt, MakeGroups );
+    myMesh->GetMeshDS()->Modified();
+  }
+  else if ( SMESH::DownCast<SMESH_Group_i*>( Path ))
+  {
+    // path as group of 1D elements
+    // ????????
+  }
+  else
+  {
+    // invalid path
+    Error = SMESH::SMESH_MeshEditor::EXTR_BAD_PATH_SHAPE;
+    return EmptyGr;
   }
 
   storeResult(anEditor);
@@ -2891,7 +2928,7 @@ SMESH_MeshEditor_i::mirror(TIDSortedElemSet &                  theElements,
                            const SMESH::AxisStruct &           theAxis,
                            SMESH::SMESH_MeshEditor::MirrorType theMirrorType,
                            CORBA::Boolean                      theCopy,
-                           const bool                          theMakeGroups,
+                           bool                                theMakeGroups,
                            ::SMESH_Mesh*                       theTargetMesh)
 {
   initData();
@@ -2911,21 +2948,23 @@ SMESH_MeshEditor_i::mirror(TIDSortedElemSet &                  theElements,
     aTrsf.SetMirror( gp_Ax2( P, V ));
   }
 
-  TIDSortedElemSet copyElements;
+  TIDSortedElemSet  copyElements;
   TPreviewMesh      tmpMesh;
-  TIDSortedElemSet* workElements = 0;
-  SMESH_Mesh*       mesh = 0;
+  TIDSortedElemSet* workElements = & theElements;
+  SMESH_Mesh*       mesh = myMesh;
 
   if ( myPreviewMode )
   {
     tmpMesh.Copy( theElements, copyElements);
+    if ( !theCopy )
+    {
+      TIDSortedElemSet elemsAround, elemsAroundCopy;
+      getElementsAround( theElements, GetMeshDS(), elemsAround );
+      tmpMesh.Copy( elemsAround, elemsAroundCopy);
+    }
     mesh = &tmpMesh;
     workElements = & copyElements;
-  }
-  else
-  {
-    mesh = myMesh;
-    workElements = & theElements;
+    theMakeGroups = false;
   }
 
   ::SMESH_MeshEditor anEditor( mesh );
@@ -2935,11 +2974,10 @@ SMESH_MeshEditor_i::mirror(TIDSortedElemSet &                  theElements,
   if(theCopy || myPreviewMode)
     storeResult(anEditor);
   else
-    {
-      myMesh->GetMeshDS()->Modified();
-      myMesh->SetIsModified( true );
-    }
-
+  {
+    myMesh->SetIsModified( true );
+    myMesh->GetMeshDS()->Modified();
+  }
   return theMakeGroups ? getGroups(groupIds.get()) : 0;
 }
 
@@ -3153,7 +3191,7 @@ SMESH::ListOfGroups*
 SMESH_MeshEditor_i::translate(TIDSortedElemSet        & theElements,
                               const SMESH::DirStruct &  theVector,
                               CORBA::Boolean            theCopy,
-                              const bool                theMakeGroups,
+                              bool                      theMakeGroups,
                               ::SMESH_Mesh*             theTargetMesh)
 {
   initData();
@@ -3162,21 +3200,23 @@ SMESH_MeshEditor_i::translate(TIDSortedElemSet        & theElements,
   const SMESH::PointStruct * P = &theVector.PS;
   aTrsf.SetTranslation( gp_Vec( P->x, P->y, P->z ));
 
-  TIDSortedElemSet copyElements;
+  TIDSortedElemSet  copyElements;
+  TIDSortedElemSet* workElements = &theElements;
   TPreviewMesh      tmpMesh;
-  TIDSortedElemSet* workElements = 0;
-  SMESH_Mesh*       mesh = 0;
+  SMESH_Mesh*       mesh = myMesh;
 
   if ( myPreviewMode )
   {
     tmpMesh.Copy( theElements, copyElements);
+    if ( !theCopy )
+    {
+      TIDSortedElemSet elemsAround, elemsAroundCopy;
+      getElementsAround( theElements, GetMeshDS(), elemsAround );
+      tmpMesh.Copy( elemsAround, elemsAroundCopy);
+    }
     mesh = &tmpMesh;
     workElements = & copyElements;
-  }
-  else
-  {
-    mesh = myMesh;
-    workElements = & theElements;
+    theMakeGroups = false;
   }
 
   ::SMESH_MeshEditor anEditor( mesh );
@@ -3186,10 +3226,10 @@ SMESH_MeshEditor_i::translate(TIDSortedElemSet        & theElements,
   if(theCopy || myPreviewMode)
     storeResult(anEditor);
   else
-    {
-      myMesh->GetMeshDS()->Modified();
-      myMesh->SetIsModified( true );
-    }
+  {
+    myMesh->GetMeshDS()->Modified();
+    myMesh->SetIsModified( true );
+  }
 
   return theMakeGroups ? getGroups(groupIds.get()) : 0;
 }
@@ -3389,7 +3429,7 @@ SMESH_MeshEditor_i::rotate(TIDSortedElemSet &        theElements,
                            const SMESH::AxisStruct & theAxis,
                            CORBA::Double             theAngle,
                            CORBA::Boolean            theCopy,
-                           const bool                theMakeGroups,
+                           bool                      theMakeGroups,
                            ::SMESH_Mesh*             theTargetMesh)
 {
   initData();
@@ -3400,20 +3440,22 @@ SMESH_MeshEditor_i::rotate(TIDSortedElemSet &        theElements,
   gp_Trsf aTrsf;
   aTrsf.SetRotation( gp_Ax1( P, V ), theAngle);
 
-  TIDSortedElemSet copyElements;
+  TIDSortedElemSet  copyElements;
+  TIDSortedElemSet* workElements = &theElements;
   TPreviewMesh      tmpMesh;
-  TIDSortedElemSet* workElements = 0;
-  SMESH_Mesh*       mesh = 0;
+  SMESH_Mesh*       mesh = myMesh;
 
   if ( myPreviewMode ) {
     tmpMesh.Copy( theElements, copyElements );
+    if ( !theCopy )
+    {
+      TIDSortedElemSet elemsAround, elemsAroundCopy;
+      getElementsAround( theElements, GetMeshDS(), elemsAround );
+      tmpMesh.Copy( elemsAround, elemsAroundCopy);
+    }
     mesh = &tmpMesh;
     workElements = &copyElements;
-  }
-  else
-  {
-    mesh = myMesh;
-    workElements=&theElements;
+    theMakeGroups = false;
   }
 
   ::SMESH_MeshEditor anEditor( mesh );
@@ -3423,10 +3465,10 @@ SMESH_MeshEditor_i::rotate(TIDSortedElemSet &        theElements,
   if(theCopy || myPreviewMode)
     storeResult(anEditor);
   else
-    {
-      myMesh->GetMeshDS()->Modified();
-      myMesh->SetIsModified( true );
-    }
+  {
+    myMesh->GetMeshDS()->Modified();
+    myMesh->SetIsModified( true );
+  }
 
   return theMakeGroups ? getGroups(groupIds.get()) : 0;
 }
@@ -3640,7 +3682,7 @@ SMESH_MeshEditor_i::scale(SMESH::SMESH_IDSource_ptr  theObject,
                           const SMESH::PointStruct&  thePoint,
                           const SMESH::double_array& theScaleFact,
                           CORBA::Boolean             theCopy,
-                          const bool                 theMakeGroups,
+                          bool                       theMakeGroups,
                           ::SMESH_Mesh*              theTargetMesh)
 {
   initData();
@@ -3654,31 +3696,34 @@ SMESH_MeshEditor_i::scale(SMESH::SMESH_IDSource_ptr  theObject,
   if ( !idSourceToSet(theObject, GetMeshDS(), elements, SMDSAbs_All, emptyIfIsMesh))
     return 0;
 
-  vector<double> S(3);
-  S[0] = theScaleFact[0];
-  S[1] = (theScaleFact.length() == 1) ? theScaleFact[0] : theScaleFact[1];
-  S[2] = (theScaleFact.length() == 1) ? theScaleFact[0] : theScaleFact[2];
+  double S[3] = {
+    theScaleFact[0],
+    (theScaleFact.length() == 1) ? theScaleFact[0] : theScaleFact[1],
+    (theScaleFact.length() == 1) ? theScaleFact[0] : theScaleFact[2],
+  };
   double tol = std::numeric_limits<double>::max();
   gp_Trsf aTrsf;
   aTrsf.SetValues( S[0], 0,    0,    thePoint.x * (1-S[0]),
                    0,    S[1], 0,    thePoint.y * (1-S[1]),
                    0,    0,    S[2], thePoint.z * (1-S[2]),   tol, tol);
 
-  TIDSortedElemSet copyElements;
+  TIDSortedElemSet  copyElements;
   TPreviewMesh      tmpMesh;
-  TIDSortedElemSet* workElements = 0;
-  SMESH_Mesh*       mesh = 0;
+  TIDSortedElemSet* workElements = &elements;
+  SMESH_Mesh*       mesh = myMesh;
   
   if ( myPreviewMode )
   {
     tmpMesh.Copy( elements, copyElements);
+    if ( !theCopy )
+    {
+      TIDSortedElemSet elemsAround, elemsAroundCopy;
+      getElementsAround( elements, GetMeshDS(), elemsAround );
+      tmpMesh.Copy( elemsAround, elemsAroundCopy);
+    }
     mesh = &tmpMesh;
     workElements = & copyElements;
-  }
-  else
-  {
-    mesh = myMesh;
-    workElements = & elements;
+    theMakeGroups = false;
   }
 
   ::SMESH_MeshEditor anEditor( mesh );
@@ -3688,10 +3733,10 @@ SMESH_MeshEditor_i::scale(SMESH::SMESH_IDSource_ptr  theObject,
   if(theCopy || myPreviewMode )
     storeResult(anEditor);
   else
-    {
-      myMesh->GetMeshDS()->Modified();
-      myMesh->SetIsModified( true );
-    }
+  {
+    myMesh->GetMeshDS()->Modified();
+    myMesh->SetIsModified( true );
+  }
   return theMakeGroups ? getGroups(groupIds.get()) : 0;
 }
 
@@ -5662,7 +5707,7 @@ CORBA::Long SMESH_MeshEditor_i::MakeBoundaryElements(SMESH::Bnd_Dimension dim,
   SMESH_Mesh*     srcMesh = ( toCopyMesh && !toCopyAll ) ? myMesh : tgtMesh;
   SMESHDS_Mesh* srcMeshDS = srcMesh->GetMeshDS();
 
-  // group of new boundary elements
+  // group of boundary elements
   SMESH_Group* smesh_group = 0;
   SMDSAbs_ElementType elemType = (dim == SMESH::BND_2DFROM3D) ? SMDSAbs_Volume : SMDSAbs_Face;
   if ( strlen(groupName) )

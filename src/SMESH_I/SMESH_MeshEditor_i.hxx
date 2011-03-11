@@ -753,7 +753,7 @@ private: //!< private methods
   SMESH::ListOfGroups* extrusionSweep(const SMESH::long_array & IDsOfElements,
                                       const SMESH::DirStruct &  StepVector,
                                       CORBA::Long               NbOfSteps,
-                                      const bool                MakeGroups,
+                                      bool                      MakeGroups,
                                       const SMDSAbs_ElementType ElementType=SMDSAbs_All);
   SMESH::ListOfGroups* advancedExtrusion(const SMESH::long_array & theIDsOfElements,
                                          const SMESH::DirStruct &  theStepVector,
@@ -780,32 +780,32 @@ private: //!< private methods
                                            CORBA::Boolean             LinearVariation,
                                            CORBA::Boolean             HasRefPoint,
                                            const SMESH::PointStruct&  RefPoint,
-                                           const bool                 MakeGroups,
+                                           bool                       MakeGroups,
                                            const SMDSAbs_ElementType  ElementType,
                                            SMESH::SMESH_MeshEditor::Extrusion_Error & theError);
   SMESH::ListOfGroups* mirror(TIDSortedElemSet &                  IDsOfElements,
                               const SMESH::AxisStruct &           Axis,
                               SMESH::SMESH_MeshEditor::MirrorType MirrorType,
                               CORBA::Boolean                      Copy,
-                              const bool                          MakeGroups,
+                              bool                                MakeGroups,
                               ::SMESH_Mesh*                       TargetMesh=0);
   SMESH::ListOfGroups* translate(TIDSortedElemSet        & IDsOfElements,
                                  const SMESH::DirStruct &  Vector,
                                  CORBA::Boolean            Copy,
-                                 const bool                MakeGroups,
+                                 bool                      MakeGroups,
                                  ::SMESH_Mesh*             TargetMesh=0);
   SMESH::ListOfGroups* rotate(TIDSortedElemSet &           IDsOfElements,
                               const SMESH::AxisStruct &  Axis,
                               CORBA::Double             Angle,
                               CORBA::Boolean            Copy,
-                              const bool                MakeGroups,
+                              bool                      MakeGroups,
                               ::SMESH_Mesh*             TargetMesh=0);
 
   SMESH::ListOfGroups* scale(SMESH::SMESH_IDSource_ptr   theObject,
                              const SMESH::PointStruct&   thePoint,
                              const SMESH::double_array&  theScaleFact,
                              CORBA::Boolean              theCopy,
-                             const bool                  theMakeGroups,
+                             bool                        theMakeGroups,
                              ::SMESH_Mesh*               theTargetMesh=0);
 
   SMESH::SMESH_Mesh_ptr makeMesh(const char* theMeshName);
