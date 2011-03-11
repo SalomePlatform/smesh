@@ -30,6 +30,7 @@
 #include "SMESHGUI_MeshUtils.h"
 #include "SMESHGUI_IdValidator.h"
 #include "SMESHGUI_FilterDlg.h"
+#include "SMESHGUI_MeshEditPreview.h"
 
 #include <SMESH_Actor.h>
 #include <SMESH_TypeFilter.hxx>
@@ -106,9 +107,8 @@ private:
 // class    : SMESHGUI_ScaleDlg()
 // purpose  :
 //=================================================================================
-SMESHGUI_ScaleDlg::SMESHGUI_ScaleDlg( SMESHGUI* theModule )
-  : QDialog( SMESH::GetDesktop( theModule ) ),
-    mySMESHGUI( theModule ),
+SMESHGUI_ScaleDlg::SMESHGUI_ScaleDlg( SMESHGUI* theModule ) : 
+    SMESHGUI_PreviewDlg( theModule ),
     mySelectionMgr( SMESH::GetSelectionMgr( theModule ) ),
     myFilterDlg(0),
     mySelectedObject(SMESH::SMESH_IDSource::_nil())
@@ -211,6 +211,9 @@ SMESHGUI_ScaleDlg::SMESHGUI_ScaleDlg( SMESHGUI* theModule )
   // Name of a mesh to create
   LineEditNewMesh = new QLineEdit(GroupArguments);
 
+  //Preview check box
+  myPreviewCheckBox = new QCheckBox(tr("PREVIEW"), GroupArguments);
+
   // layout
   GroupArgumentsLayout->addWidget(TextLabelElements,    0, 0);
   GroupArgumentsLayout->addWidget(SelectElementsButton, 0, 1);
@@ -234,6 +237,7 @@ SMESHGUI_ScaleDlg::SMESHGUI_ScaleDlg( SMESHGUI* theModule )
   GroupArgumentsLayout->addWidget(ActionBox,            7, 0, 3, 4);
   GroupArgumentsLayout->addWidget(MakeGroupsCheck,      7, 5, 1, 4);
   GroupArgumentsLayout->addWidget(LineEditNewMesh,      8, 5, 1, 4);
+  GroupArgumentsLayout->addWidget(myPreviewCheckBox,    10, 0);
 
   /***************************************************************/
   GroupButtons = new QGroupBox(this);
@@ -314,6 +318,17 @@ SMESHGUI_ScaleDlg::SMESHGUI_ScaleDlg( SMESHGUI* theModule )
   connect(CheckBoxMesh,     SIGNAL(toggled(bool)),                  SLOT(onSelectMesh(bool)));
   connect(ActionGroup,      SIGNAL(buttonClicked(int)),             SLOT(onActionClicked(int)));
 
+  connect(SpinBox1_1,  SIGNAL(valueChanged(double)), this, SLOT(toDisplaySimulation()));
+  connect(SpinBox1_2,  SIGNAL(valueChanged(double)), this, SLOT(toDisplaySimulation()));
+  connect(SpinBox1_3,  SIGNAL(valueChanged(double)), this, SLOT(toDisplaySimulation()));
+
+  connect(SpinBox_FX,  SIGNAL(valueChanged(double)), this, SLOT(toDisplaySimulation()));
+  connect(SpinBox_FY,  SIGNAL(valueChanged(double)), this, SLOT(toDisplaySimulation()));
+  connect(SpinBox_FZ,  SIGNAL(valueChanged(double)), this, SLOT(toDisplaySimulation()));
+
+  //To Connect preview check box
+  connectPreviewControl();
+
   ConstructorsClicked(0);
   SelectionIntoArgument();
   onActionClicked(MOVE_ELEMS_BUTTON);
@@ -358,6 +373,8 @@ void SMESHGUI_ScaleDlg::Init (bool ResetControls)
     SpinBox_FX->SetValue(1.0);
     SpinBox_FY->SetValue(1.0);
     SpinBox_FZ->SetValue(1.0);
+    myPreviewCheckBox->setChecked(false);
+    onDisplaySimulation(false);
 
     ActionGroup->button( MOVE_ELEMS_BUTTON )->setChecked(true);
     CheckBoxMesh->setChecked(false);
@@ -436,20 +453,8 @@ bool SMESHGUI_ScaleDlg::ClickOnApply()
       anElementsId[i] = aListElementsId[i].toInt();
 
     SMESH::PointStruct aPoint;
-    aPoint.x = SpinBox1_1->GetValue();
-    aPoint.y = SpinBox1_2->GetValue();
-    aPoint.z = SpinBox1_3->GetValue();
     SMESH::double_array_var aScaleFact = new SMESH::double_array;
-    aScaleFact->length(3);
-    aScaleFact[0] = SpinBox_FX->GetValue();
-    if (GetConstructorId() == 0) {
-      aScaleFact[1] = SpinBox_FX->GetValue();
-      aScaleFact[2] = SpinBox_FX->GetValue();
-    }
-    else {
-      aScaleFact[1] = SpinBox_FY->GetValue();
-      aScaleFact[2] = SpinBox_FZ->GetValue();
-    }
+    getScale(aPoint, aScaleFact);
 
     QStringList aParameters;
     aParameters << SpinBox1_1->text();
@@ -785,6 +790,8 @@ void SMESHGUI_ScaleDlg::SelectionIntoArgument()
     buttonOk->setEnabled(true);
     buttonApply->setEnabled(true);
   }
+  
+  onDisplaySimulation(true);
 }
 
 //=================================================================================
@@ -921,6 +928,7 @@ void SMESHGUI_ScaleDlg::onSelectMesh (bool toSelectMesh)
     LineEditElements->setReadOnly(false);
     LineEditElements->setValidator(myIdValidator);
     onTextChange(LineEditElements->text());
+    hidePreview();
   }
 
   SelectionIntoArgument();
@@ -1053,4 +1061,69 @@ bool SMESHGUI_ScaleDlg::isValid()
     return false;
   }
   return true;
+}
+
+//=================================================================================
+// function : onDisplaySimulation
+// purpose  : Show/Hide preview
+//=================================================================================
+void SMESHGUI_ScaleDlg::onDisplaySimulation( bool toDisplayPreview ) {
+  if (myPreviewCheckBox->isChecked() && toDisplayPreview) {    
+    if ( myNbOkElements && isValid() ) {
+      QStringList aListElementsId = myElementsId.split(" ", QString::SkipEmptyParts);
+
+      SMESH::long_array_var anElementsId = new SMESH::long_array;
+      
+      anElementsId->length(aListElementsId.count());
+      for (int i = 0; i < aListElementsId.count(); i++)
+	anElementsId[i] = aListElementsId[i].toInt();
+      
+      SMESH::PointStruct aPoint;
+      SMESH::double_array_var aScaleFact = new SMESH::double_array;
+      getScale(aPoint, aScaleFact);
+      
+      try {
+	bool copy = ActionGroup->checkedId() == COPY_ELEMS_BUTTON;
+	SUIT_OverrideCursor aWaitCursor;
+	SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditPreviewer();
+	SMESH::SMESH_IDSource_var obj;
+	if ( CheckBoxMesh->isChecked() )
+	  obj = mySelectedObject;
+	else
+	  obj = aMeshEditor->MakeIDSource(anElementsId, SMESH::ALL);
+	aMeshEditor->Scale(obj, aPoint, aScaleFact, copy);
+
+        SMESH::MeshPreviewStruct_var aMeshPreviewStruct = aMeshEditor->GetPreviewData();
+        mySimulation->SetData(aMeshPreviewStruct._retn());	
+
+      } catch (...) {
+	hidePreview();
+      }
+    } else {
+      hidePreview();
+    } 
+  } else {
+    hidePreview();
+  }
+}
+
+//=================================================================================
+// function : getScale
+// purpose  : get scale parameters
+//=================================================================================
+void SMESHGUI_ScaleDlg::getScale( SMESH::PointStruct& thePoint ,  SMESH::double_array_var& theScaleFact) {
+  thePoint.x = SpinBox1_1->GetValue();
+  thePoint.y = SpinBox1_2->GetValue();
+  thePoint.z = SpinBox1_3->GetValue();
+  
+  theScaleFact->length(3);
+  theScaleFact[0] = SpinBox_FX->GetValue();
+  if (GetConstructorId() == 0) {
+    theScaleFact[1] = SpinBox_FX->GetValue();
+    theScaleFact[2] = SpinBox_FX->GetValue();
+  }
+  else {
+    theScaleFact[1] = SpinBox_FY->GetValue();
+    theScaleFact[2] = SpinBox_FZ->GetValue();
+  } 
 }

@@ -29,12 +29,12 @@
 
 // SMESH includes
 #include "SMESH_SMESHGUI.hxx"
+#include "SMESHGUI_PreviewDlg.h"
 
 // SALOME GUI includes
 #include <SALOME_InteractiveObject.hxx>
 
 // Qt includes
-#include <QDialog>
 #include <QMap>
 
 // IDL includes
@@ -66,7 +66,7 @@ class QAction;
 // class    : SMESHGUI_RevolutionDlg
 // purpose  :
 //=================================================================================
-class SMESHGUI_EXPORT SMESHGUI_RevolutionDlg : public QDialog
+class SMESHGUI_EXPORT SMESHGUI_RevolutionDlg : public SMESHGUI_PreviewDlg
 { 
   Q_OBJECT
 
@@ -88,7 +88,6 @@ private:
   
   bool                      isValid();
   
-  SMESHGUI*                 mySMESHGUI;              /* Current SMESHGUI object */
   SMESHGUI_IdValidator*     myIdValidator;
   LightApp_SelectionMgr*    mySelectionMgr;          /* User shape selection */
   int                       myNbOkElements;          /* to check when elements are defined */
@@ -126,7 +125,6 @@ private:
   QButtonGroup*             GroupAngle;
   QRadioButton*             RadioButton3;
   QRadioButton*             RadioButton4;
-  QCheckBox*                CheckBoxPreview;
   
   QLabel*                   TextLabelPoint;
   QPushButton*              SelectPointButton;
@@ -162,6 +160,9 @@ private:
   
   QPushButton*              myFilterBtn;
   SMESHGUI_FilterDlg*       myFilterDlg;
+
+protected slots:
+  virtual void              onDisplaySimulation( bool );
    
 private slots:
   void                      ConstructorsClicked( int );
@@ -177,8 +178,6 @@ private slots:
   void                      onAngleTextChange( const QString& );
   void                      onSelectMesh( bool );
   void                      onVectorChanged();
-  void                      toDisplaySimulation();
-  void                      onDisplaySimulation( bool );
   void                      onSelectVectorMenu( QAction* );
   void                      onSelectVectorButton();
   void                      setFilters();

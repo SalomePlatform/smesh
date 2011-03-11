@@ -33,6 +33,7 @@
 #include "SMESHGUI_MeshUtils.h"
 #include "SMESHGUI_IdValidator.h"
 #include "SMESHGUI_FilterDlg.h"
+#include "SMESHGUI_MeshEditPreview.h"
 
 #include <SMESH_Actor.h>
 #include <SMESH_TypeFilter.hxx>
@@ -91,9 +92,8 @@ enum { MOVE_ELEMS_BUTTON = 0, COPY_ELEMS_BUTTON, MAKE_MESH_BUTTON }; //!< action
 // class    : SMESHGUI_RotationDlg()
 // purpose  :
 //=================================================================================
-SMESHGUI_RotationDlg::SMESHGUI_RotationDlg( SMESHGUI* theModule )
-  : QDialog( SMESH::GetDesktop( theModule ) ),
-    mySMESHGUI( theModule ),
+SMESHGUI_RotationDlg::SMESHGUI_RotationDlg( SMESHGUI* theModule ) :
+    SMESHGUI_PreviewDlg( theModule ),
     mySelectionMgr( SMESH::GetSelectionMgr( theModule ) ),
     myFilterDlg(0),
     mySelectedObject(SMESH::SMESH_IDSource::_nil())
@@ -217,6 +217,10 @@ SMESHGUI_RotationDlg::SMESHGUI_RotationDlg( SMESHGUI* theModule )
   // Name of a mesh to create
   LineEditNewMesh = new QLineEdit(GroupArguments);
 
+
+  //Preview check box
+  myPreviewCheckBox = new QCheckBox(tr("PREVIEW"), GroupArguments);
+
   GroupArgumentsLayout->addWidget(TextLabelElements,    0, 0);
   GroupArgumentsLayout->addWidget(SelectElementsButton, 0, 1);
   GroupArgumentsLayout->addWidget(LineEditElements,     0, 2, 1, 1);
@@ -228,6 +232,8 @@ SMESHGUI_RotationDlg::SMESHGUI_RotationDlg( SMESHGUI* theModule )
   GroupArgumentsLayout->addWidget(ActionBox,            4, 0, 3, 3);
   GroupArgumentsLayout->addWidget(MakeGroupsCheck,      5, 3);
   GroupArgumentsLayout->addWidget(LineEditNewMesh,      6, 3);
+  GroupArgumentsLayout->addWidget(myPreviewCheckBox,    7, 0);
+
 
   /***************************************************************/
   GroupButtons = new QGroupBox(this);
@@ -312,6 +318,17 @@ SMESHGUI_RotationDlg::SMESHGUI_RotationDlg( SMESHGUI* theModule )
   connect(CheckBoxMesh,     SIGNAL(toggled(bool)),                  SLOT(onSelectMesh(bool)));
   connect(ActionGroup,      SIGNAL(buttonClicked(int)),             SLOT(onActionClicked(int)));
 
+  connect(SpinBox_X,  SIGNAL(valueChanged(double)), this, SLOT(toDisplaySimulation()));
+  connect(SpinBox_Y,  SIGNAL(valueChanged(double)), this, SLOT(toDisplaySimulation()));
+  connect(SpinBox_Z,  SIGNAL(valueChanged(double)), this, SLOT(toDisplaySimulation()));
+  connect(SpinBox_DX,  SIGNAL(valueChanged(double)), this, SLOT(toDisplaySimulation()));
+  connect(SpinBox_DY,  SIGNAL(valueChanged(double)), this, SLOT(toDisplaySimulation()));
+  connect(SpinBox_DZ,  SIGNAL(valueChanged(double)), this, SLOT(toDisplaySimulation()));
+  connect(SpinBox_Angle,  SIGNAL(valueChanged(double)), this, SLOT(toDisplaySimulation()));
+
+  //To Connect preview check box
+  connectPreviewControl();
+
   onActionClicked(MOVE_ELEMS_BUTTON);
 }
 
@@ -359,6 +376,9 @@ void SMESHGUI_RotationDlg::Init (bool ResetControls)
 
     ActionGroup->button( MOVE_ELEMS_BUTTON )->setChecked(true);
     CheckBoxMesh->setChecked(false);
+    myPreviewCheckBox->setChecked(false);
+    onDisplaySimulation(false);
+
 //     MakeGroupsCheck->setChecked(false);
 //     MakeGroupsCheck->setEnabled(false);
 //    onSelectMesh(false);
@@ -737,6 +757,7 @@ void SMESHGUI_RotationDlg::SelectionIntoArgument()
     buttonOk->setEnabled(true);
     buttonApply->setEnabled(true);
   }
+  onDisplaySimulation(true);
 }
 
 //=================================================================================
@@ -883,6 +904,7 @@ void SMESHGUI_RotationDlg::onSelectMesh (bool toSelectMesh)
     LineEditElements->setReadOnly(false);
     LineEditElements->setValidator(myIdValidator);
     onTextChange(LineEditElements->text());
+    hidePreview();
   }
 
   SelectionIntoArgument();
@@ -1032,4 +1054,52 @@ bool SMESHGUI_RotationDlg::isValid()
     return false;
   }
   return true;
+}
+
+
+//=================================================================================
+// function : onDisplaySimulation
+// purpose  : Show/Hide preview
+//=================================================================================
+void SMESHGUI_RotationDlg::onDisplaySimulation( bool toDisplayPreview ) {
+  if (myPreviewCheckBox->isChecked() && toDisplayPreview) {
+    if(myNbOkElements && isValid() && IsAxisOk()) {
+      QStringList aListElementsId = myElementsId.split(" ", QString::SkipEmptyParts);
+      SMESH::long_array_var anElementsId = new SMESH::long_array;
+      
+      anElementsId->length(aListElementsId.count());
+      for (int i = 0; i < aListElementsId.count(); i++)
+	anElementsId[i] = aListElementsId[i].toInt();
+      
+      SMESH::AxisStruct anAxis;
+      
+      anAxis.x =  SpinBox_X->GetValue();
+      anAxis.y =  SpinBox_Y->GetValue();
+      anAxis.z =  SpinBox_Z->GetValue();;
+      anAxis.vx = SpinBox_DX->GetValue();
+      anAxis.vy = SpinBox_DY->GetValue();
+      anAxis.vz = SpinBox_DZ->GetValue();
+      double anAngle = (SpinBox_Angle->GetValue())*PI/180;
+      
+      try {
+	SUIT_OverrideCursor aWaitCursor;
+	bool copy = ActionGroup->checkedId() == COPY_ELEMS_BUTTON;
+	SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditPreviewer();
+	if(CheckBoxMesh->isChecked())
+	  aMeshEditor->RotateObject(mySelectedObject, anAxis, anAngle, copy);
+	else
+	  aMeshEditor->Rotate(anElementsId, anAxis, anAngle, copy);
+
+        SMESH::MeshPreviewStruct_var aMeshPreviewStruct = aMeshEditor->GetPreviewData();
+        mySimulation->SetData(aMeshPreviewStruct._retn());	
+      } catch (...) {
+	hidePreview();
+      }
+    }
+    else {
+      hidePreview();
+    }
+  } else {
+    hidePreview();
+  }
 }

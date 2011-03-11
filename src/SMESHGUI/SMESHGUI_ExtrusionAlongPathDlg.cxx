@@ -34,6 +34,7 @@
 #include "SMESHGUI_SpinBox.h"
 #include "SMESHGUI_IdValidator.h"
 #include "SMESHGUI_FilterDlg.h"
+#include "SMESHGUI_MeshEditPreview.h"
 
 #include <SMESH_Actor.h>
 #include <SMESH_TypeFilter.hxx>
@@ -109,8 +110,7 @@ private:
 // purpose  : constructor
 //=================================================================================
 SMESHGUI_ExtrusionAlongPathDlg::SMESHGUI_ExtrusionAlongPathDlg( SMESHGUI* theModule )
-  : QDialog( SMESH::GetDesktop( theModule ) ),
-    mySMESHGUI( theModule ),
+  : SMESHGUI_PreviewDlg( theModule ),
     mySelectionMgr( SMESH::GetSelectionMgr( theModule ) ),
     myFilterDlg( 0 )
 {
@@ -262,6 +262,9 @@ SMESHGUI_ExtrusionAlongPathDlg::SMESHGUI_ExtrusionAlongPathDlg( SMESHGUI* theMod
   MakeGroupsCheck = new QCheckBox(tr("SMESH_MAKE_GROUPS"), GroupArguments);
   MakeGroupsCheck->setChecked(true);
 
+  //Preview check box
+  myPreviewCheckBox = new QCheckBox(tr("PREVIEW"), GroupArguments);
+
   // layouting
   GroupArgumentsLayout->addWidget(ElementsLab,          0, 0);
   GroupArgumentsLayout->addWidget(SelectElementsButton, 0, 1);
@@ -271,7 +274,8 @@ SMESHGUI_ExtrusionAlongPathDlg::SMESHGUI_ExtrusionAlongPathDlg( SMESHGUI* theMod
   GroupArgumentsLayout->addWidget(PathGrp,              2, 0, 1, 4);
   GroupArgumentsLayout->addWidget(BasePointGrp,         3, 0, 1, 4);
   GroupArgumentsLayout->addWidget(AnglesGrp,            4, 0, 1, 4);
-  GroupArgumentsLayout->addWidget(MakeGroupsCheck,      5, 0, 1, 4);
+  GroupArgumentsLayout->addWidget(myPreviewCheckBox,    5, 0, 1, 4);
+  GroupArgumentsLayout->addWidget(MakeGroupsCheck,      6, 0, 1, 4);
 
   /***************************************************************/
   // common buttons group box
@@ -362,6 +366,17 @@ SMESHGUI_ExtrusionAlongPathDlg::SMESHGUI_ExtrusionAlongPathDlg( SMESHGUI* theMod
 
   connect(MeshCheck,      SIGNAL(toggled(bool)), SLOT(onSelectMesh()));
 
+  connect(XSpin,  SIGNAL(valueChanged(double)), this, SLOT(toDisplaySimulation()));
+  connect(YSpin,  SIGNAL(valueChanged(double)), this, SLOT(toDisplaySimulation()));
+  connect(ZSpin,  SIGNAL(valueChanged(double)), this, SLOT(toDisplaySimulation()));
+  connect(AddAngleButton,  SIGNAL(clicked()), this, SLOT(toDisplaySimulation()));
+  connect(RemoveAngleButton, SIGNAL(clicked()), this, SLOT(toDisplaySimulation()));
+  connect(LinearAnglesCheck, SIGNAL(toggled(bool)), SLOT(onSelectMesh()));
+
+
+  //To Connect preview check box
+  connectPreviewControl();
+
   AnglesList->installEventFilter(this);
   ElementsLineEdit->installEventFilter(this);
   StartPointLineEdit->installEventFilter(this);
@@ -410,6 +425,8 @@ void SMESHGUI_ExtrusionAlongPathDlg::Init (bool ResetControls)
     MeshCheck->setChecked(false);
     ConstructorsClicked(0);
     onSelectMesh();
+    myPreviewCheckBox->setChecked(false);
+    onDisplaySimulation(false);
   }
   SetEditCurrentArgument(0);
 }
@@ -423,6 +440,8 @@ void SMESHGUI_ExtrusionAlongPathDlg::ConstructorsClicked (int type)
   if (myType == type) return;
 
   disconnect(mySelectionMgr, 0, this, 0);
+
+  hidePreview();
 
   if (type == 0)
     GroupArguments->setTitle(tr("EXTRUSION_1D"));
@@ -480,46 +499,12 @@ bool SMESHGUI_ExtrusionAlongPathDlg::ClickOnApply()
   if (!isValid())
     return false;
 
-  SMESH::long_array_var anElementsId = new SMESH::long_array;
-
-  if (!MeshCheck->isChecked()) {
-    // If "Select whole mesh, submesh or group" check box is off ->
-    // use only elements of given type selected by user
-
-    SMDS_Mesh* aMesh;
-    if ( myMeshActor )
-      aMesh = myMeshActor->GetObject()->GetMesh();
-
-    if (aMesh) {
-      QStringList aListElementsId = ElementsLineEdit->text().split(" ", QString::SkipEmptyParts);
-      anElementsId = new SMESH::long_array;
-      anElementsId->length(aListElementsId.count());
-      bool bOk;
-      int j = 0;
-      for (int i = 0; i < aListElementsId.count(); i++) {
-        long ind = aListElementsId[ i ].toLong(&bOk);
-        if  (bOk) {
-          const SMDS_MeshElement* e = aMesh->FindElement(ind);
-          if (e) {
-            bool typeMatch = Elements1dRB->isChecked() && e->GetType() == SMDSAbs_Edge ||
-                             Elements2dRB->isChecked() && e->GetType() == SMDSAbs_Face;
-            if (typeMatch)
-              anElementsId[ j++ ] = ind;
-          }
-        }
-      }
-      anElementsId->length(j);
-    }
-
-    if (anElementsId->length() <= 0) {
-      return false;
-    }
-  }
+  SMESH::long_array_var anElementsId = getSelectedElements();
 
   if (StartPointLineEdit->text().trimmed().isEmpty()) {
     return false;
   }
-
+  
   bool bOk;
   long aNodeStart = StartPointLineEdit->text().toLong(&bOk);
   if (!bOk) {
@@ -527,19 +512,13 @@ bool SMESHGUI_ExtrusionAlongPathDlg::ClickOnApply()
   }
 
   QStringList aParameters;
+  
+  //get angles
+  SMESH::double_array_var anAngles = getAngles();
+  
+  for (int i = 0; i < myAnglesList.count(); i++) 
+    aParameters << AnglesList->item(i)->text();
 
-  // get angles
-  SMESH::double_array_var anAngles = new SMESH::double_array;
-  if (AnglesGrp->isChecked()) {
-    anAngles->length(myAnglesList.count());
-    int j = 0;
-    for (int i = 0; i < myAnglesList.count(); i++) {
-      double angle = myAnglesList[i];
-      anAngles[ j++ ] = angle*PI/180;
-      aParameters << AnglesList->item(i)->text();
-    }
-    anAngles->length(j);
-  }
 
   // get base point
   SMESH::PointStruct aBasePoint;
@@ -973,6 +952,7 @@ void SMESHGUI_ExtrusionAlongPathDlg::SelectionIntoArgument()
     YSpin->SetValue(n->Y());
     ZSpin->SetValue(n->Z());
   }
+  onDisplaySimulation(true);
 }
 
 //=================================================================================
@@ -1285,4 +1265,156 @@ void SMESHGUI_ExtrusionAlongPathDlg::updateLinearAngles()
   if( !enableLinear )
     LinearAnglesCheck->setChecked( false );
   LinearAnglesCheck->setEnabled( enableLinear );
+}
+
+//=================================================================================
+// function : isValuesValid()
+// purpose  : Return true in case if values entered into dialog are valid
+//=================================================================================
+bool SMESHGUI_ExtrusionAlongPathDlg::isValuesValid() {
+  
+  if ( MeshCheck->isChecked() && myIDSource->_is_nil() ||
+       myMesh->_is_nil() ||
+       myPath->_is_nil() )
+    return false;
+  
+  if(!MeshCheck->isChecked()) {
+    QStringList aListElementsId = ElementsLineEdit->text().split(" ", QString::SkipEmptyParts);
+    if(aListElementsId.count() <= 0)
+      return false;
+  }
+
+  bool bOk;
+  StartPointLineEdit->text().toLong(&bOk);
+  if (!bOk) {
+    return false;
+  }
+
+  return true;
+}
+
+
+//=================================================================================
+// function : onDisplaySimulation
+// purpose  : Show/Hide preview
+//=================================================================================
+void SMESHGUI_ExtrusionAlongPathDlg::onDisplaySimulation( bool toDisplayPreview ) {
+  if (myPreviewCheckBox->isChecked() && toDisplayPreview) {
+    if(isValid() && isValuesValid()) {
+      
+      //Get selected elements:
+      SMESH::long_array_var anElementsId = getSelectedElements();
+
+      // get angles
+      SMESH::double_array_var anAngles = getAngles();
+      
+      // get base point
+      SMESH::PointStruct aBasePoint;
+      if (BasePointGrp->isChecked()) {
+	aBasePoint.x = XSpin->GetValue();
+	aBasePoint.y = YSpin->GetValue();
+	aBasePoint.z = ZSpin->GetValue();
+      }
+      bool bOk;
+      long aNodeStart = StartPointLineEdit->text().toLong(&bOk);
+      if (bOk) {
+	
+	try {
+	  SUIT_OverrideCursor wc;
+	  
+	  SMESH::SMESH_MeshEditor::Extrusion_Error retVal;
+	  SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditPreviewer();
+	  bool NeedGroups = false;
+	  SMESH::ElementType ElemType = SMESH::FACE;
+	  if( GetConstructorId() == 0 )
+	    ElemType = SMESH::EDGE;
+	  if( !MeshCheck->isChecked() ) {
+	    aMeshEditor->ExtrusionAlongPathX(anElementsId, myPath, aNodeStart, AnglesGrp->isChecked(),
+					     anAngles, LinearAnglesCheck->isChecked(),
+					     BasePointGrp->isChecked(), aBasePoint,
+					     NeedGroups, ElemType, retVal);
+	  }
+	  else {
+	    SMESH::ListOfGroups_var groups = 
+	      aMeshEditor->ExtrusionAlongPathObjX(myIDSource, myPath, aNodeStart, AnglesGrp->isChecked(),
+						  anAngles, LinearAnglesCheck->isChecked(),
+						  BasePointGrp->isChecked(), aBasePoint,
+						  NeedGroups, ElemType, retVal);
+	  }
+	  
+	  wc.suspend();
+	  if( retVal == SMESH::SMESH_MeshEditor::EXTR_OK ) {
+	    SMESH::MeshPreviewStruct_var aMeshPreviewStruct = aMeshEditor->GetPreviewData();
+	    mySimulation->SetData(aMeshPreviewStruct._retn());
+	  } else {
+	    hidePreview();
+	  }
+	  
+	} catch (...) {
+	  hidePreview();
+	}
+      } else {
+	hidePreview();
+      }
+      
+    } else {
+      hidePreview();
+    }
+  } else {
+    hidePreview();
+  }
+}
+
+
+//=================================================================================
+// function : getSelectedElements
+// purpose  : return list of the selected elements
+//=================================================================================
+SMESH::long_array_var SMESHGUI_ExtrusionAlongPathDlg::getSelectedElements() {
+
+  // If "Select whole mesh, submesh or group" check box is off ->
+  // use only elements of given type selected by user
+  SMESH::long_array_var anElementsId = new SMESH::long_array;
+  if (!MeshCheck->isChecked()) {
+    
+    SMDS_Mesh* aMesh;
+    if ( myMeshActor )
+      aMesh = myMeshActor->GetObject()->GetMesh();
+    
+    if (aMesh) {
+      QStringList aListElementsId = ElementsLineEdit->text().split(" ", QString::SkipEmptyParts);
+      anElementsId = new SMESH::long_array;
+      anElementsId->length(aListElementsId.count());
+      bool bOk;
+      int j = 0;
+      for (int i = 0; i < aListElementsId.count(); i++) {
+	long ind = aListElementsId[ i ].toLong(&bOk);
+	if  (bOk) {
+	  const SMDS_MeshElement* e = aMesh->FindElement(ind);
+	  if (e) {
+	    bool typeMatch = Elements1dRB->isChecked() && e->GetType() == SMDSAbs_Edge ||
+	      Elements2dRB->isChecked() && e->GetType() == SMDSAbs_Face;
+	    if (typeMatch)
+		  anElementsId[ j++ ] = ind;
+	  }
+	}
+      }
+      anElementsId->length(j);
+    }
+  }
+  return anElementsId;
+}
+
+SMESH::double_array_var SMESHGUI_ExtrusionAlongPathDlg::getAngles() {
+  SMESH::double_array_var anAngles = new SMESH::double_array;
+  if (AnglesGrp->isChecked()) {
+    anAngles->length(myAnglesList.count());
+    int j = 0;
+    for (int i = 0; i < myAnglesList.count(); i++) {
+      double angle = myAnglesList[i];
+      anAngles[ j++ ] = angle*PI/180;
+    }
+    anAngles->length(j);
+  }
+  return anAngles;
 }

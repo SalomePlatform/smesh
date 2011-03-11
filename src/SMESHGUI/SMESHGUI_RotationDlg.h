@@ -29,9 +29,8 @@
 
 // SMESH includes
 #include "SMESH_SMESHGUI.hxx"
+#include "SMESHGUI_PreviewDlg.h"
 
-// Qt includes
-#include <QDialog>
 
 // IDL includes
 #include <SALOMEconfig.h>
@@ -57,7 +56,7 @@ class SMESH_LogicalFilter;
 // class    : SMESHGUI_RotationDlg
 // purpose  :
 //=================================================================================
-class SMESHGUI_EXPORT SMESHGUI_RotationDlg : public QDialog
+class SMESHGUI_EXPORT SMESHGUI_RotationDlg : public SMESHGUI_PreviewDlg
 { 
   Q_OBJECT
 
@@ -76,7 +75,6 @@ private:
   
   bool                   isValid();
 
-  SMESHGUI*              mySMESHGUI;              /* Current SMESHGUI object */
   SMESHGUI_IdValidator*  myIdValidator;
   LightApp_SelectionMgr* mySelectionMgr;          /* User shape selection */
   int                    myNbOkElements;          /* to check when elements are defined */
@@ -135,6 +133,9 @@ private:
   QPushButton*           myFilterBtn;
   SMESHGUI_FilterDlg*    myFilterDlg;
 
+protected slots:
+  virtual void              onDisplaySimulation( bool );
+ 
 private slots:
   void                   ClickOnOk();
   void                   ClickOnCancel();

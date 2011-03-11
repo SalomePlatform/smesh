@@ -26,9 +26,7 @@
 
 // SMESH includes
 #include "SMESH_SMESHGUI.hxx"
-
-// Qt includes
-#include <QDialog>
+#include "SMESHGUI_PreviewDlg.h"
 
 // IDL includes
 #include <SALOMEconfig.h>
@@ -54,7 +52,7 @@ class SMESH_LogicalFilter;
 // class    : SMESHGUI_ScaleDlg
 // purpose  :
 //=================================================================================
-class SMESHGUI_EXPORT SMESHGUI_ScaleDlg : public QDialog
+class SMESHGUI_EXPORT SMESHGUI_ScaleDlg : public SMESHGUI_PreviewDlg
 { 
   Q_OBJECT
 
@@ -72,8 +70,9 @@ private:
   void                   setNewMeshName();
 
   bool                   isValid();
+  void                   getScale( SMESH::PointStruct& thePoint,
+				   SMESH::double_array_var& theScaleFact);
 
-  SMESHGUI*              mySMESHGUI;              /* Current SMESHGUI object */
   SMESHGUI_IdValidator*  myIdValidator;
   LightApp_SelectionMgr* mySelectionMgr;          /* User shape selection */
   QString                myElementsId;
@@ -127,6 +126,10 @@ private:
 
   QPushButton*           myFilterBtn;
   SMESHGUI_FilterDlg*    myFilterDlg;
+
+
+protected slots:
+  virtual void              onDisplaySimulation( bool );
    
 private slots:
   void                   ConstructorsClicked( int );

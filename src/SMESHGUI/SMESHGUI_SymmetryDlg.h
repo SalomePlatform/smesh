@@ -29,13 +29,12 @@
 
 // SMESH includes
 #include "SMESH_SMESHGUI.hxx"
-
-// Qt includes
-#include <QDialog>
+#include "SMESHGUI_PreviewDlg.h"
 
 // IDL includes
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
+#include CORBA_SERVER_HEADER(SMESH_MeshEditor)
 
 class QButtonGroup;
 class QGroupBox;
@@ -57,7 +56,7 @@ class SMESH_LogicalFilter;
 // class    : SMESHGUI_SymmetryDlg
 // purpose  :
 //=================================================================================
-class SMESHGUI_EXPORT SMESHGUI_SymmetryDlg : public QDialog
+class SMESHGUI_EXPORT SMESHGUI_SymmetryDlg : public SMESHGUI_PreviewDlg
 { 
   Q_OBJECT
 
@@ -75,9 +74,10 @@ private:
   bool                   IsMirrorOk();
   void                   setNewMeshName();
 
+  void                   getMirror(SMESH::AxisStruct& theMirror, SMESH::SMESH_MeshEditor::MirrorType& aMirrorType);
+
   bool                   isValid();
 
-  SMESHGUI*              mySMESHGUI;              /* Current SMESHGUI object */
   SMESHGUI_IdValidator*  myIdValidator;
   LightApp_SelectionMgr* mySelectionMgr;          /* User shape selection */
   int                    myNbOkElements;          /* to check when elements are defined */
@@ -136,6 +136,9 @@ private:
    
   QPushButton*           myFilterBtn;
   SMESHGUI_FilterDlg*    myFilterDlg;
+
+protected slots:
+  virtual void           onDisplaySimulation( bool );
    
 private slots:
   void                   ConstructorsClicked( int );

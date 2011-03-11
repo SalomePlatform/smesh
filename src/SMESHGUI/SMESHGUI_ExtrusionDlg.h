@@ -29,12 +29,10 @@
 
 // SMESH includes
 #include "SMESH_SMESHGUI.hxx"
+#include "SMESHGUI_PreviewDlg.h"
 
 // SALOME GUI includes
 #include <SALOME_InteractiveObject.hxx>
-
-// Qt includes
-#include <QDialog>
 
 // IDL includes
 #include <SALOMEconfig.h>
@@ -62,7 +60,7 @@ class SalomeApp_IntSpinBox;
 // class    : SMESHGUI_ExtrusionDlg
 // purpose  :
 //=================================================================================
-class SMESHGUI_EXPORT SMESHGUI_ExtrusionDlg : public QDialog
+class SMESHGUI_EXPORT SMESHGUI_ExtrusionDlg : public SMESHGUI_PreviewDlg
 {
   Q_OBJECT
 
@@ -78,10 +76,11 @@ private:
   void                             closeEvent( QCloseEvent* );
   void                             keyPressEvent( QKeyEvent* );
   int                              GetConstructorId();
-
-  bool                             isValid();
+  void                             getExtrusionVector(SMESH::DirStruct& aVector);
   
-  SMESHGUI*                        mySMESHGUI;            /* Current SMESHGUI object */
+  bool                             isValid();
+  bool                             isValuesValid();
+  
   SMESHGUI_IdValidator*            myIdValidator;
   LightApp_SelectionMgr*           mySelectionMgr;        /* User shape selection */
   QWidget*                         myEditCurrentArgument; /* Current  argument editor */
@@ -143,6 +142,9 @@ private:
 
   QPushButton*                     myFilterBtn;
   SMESHGUI_FilterDlg*              myFilterDlg;
+
+protected slots:
+  virtual void              onDisplaySimulation( bool );
    
 private slots:
   void                            ConstructorsClicked( int );

@@ -29,9 +29,7 @@
 
 // SMESH includes
 #include "SMESH_SMESHGUI.hxx"
-
-// Qt includes
-#include <QDialog>
+#include "SMESHGUI_PreviewDlg.h"
 
 // IDL includes
 #include <SALOMEconfig.h>
@@ -60,7 +58,7 @@ class SUIT_SelectionFilter;
 // class    : SMESHGUI_ExtrusionAlongPathDlg
 // purpose  :
 //=================================================================================
-class SMESHGUI_EXPORT SMESHGUI_ExtrusionAlongPathDlg : public QDialog
+class SMESHGUI_EXPORT SMESHGUI_ExtrusionAlongPathDlg : public SMESHGUI_PreviewDlg
 {
   Q_OBJECT
 
@@ -81,10 +79,13 @@ private:
   void                      SetEditCurrentArgument( QToolButton* );
 
   bool                      isValid();
+  bool                      isValuesValid();
+  
+  SMESH::long_array_var     getSelectedElements();
+  SMESH::double_array_var   getAngles();
 
   void                      updateLinearAngles();
   
-  SMESHGUI*                 mySMESHGUI;            /* Current SMESHGUI object */
   SMESHGUI_IdValidator*     myIdValidator;
   LightApp_SelectionMgr*    mySelectionMgr;        /* User shape selection */
   SVTK_Selector*            mySelector;
@@ -147,6 +148,7 @@ private:
    
 protected slots:
   void                      reject();
+  virtual void              onDisplaySimulation( bool );
 
 private slots:
   void                      ConstructorsClicked( int );

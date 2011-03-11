@@ -89,8 +89,7 @@
 // purpose  :
 //=================================================================================
 SMESHGUI_RevolutionDlg::SMESHGUI_RevolutionDlg( SMESHGUI* theModule )
-  : QDialog( SMESH::GetDesktop( theModule ) ),
-    mySMESHGUI( theModule ),
+  : SMESHGUI_PreviewDlg( theModule ),
     mySelectionMgr( SMESH::GetSelectionMgr( theModule ) ),
     myVectorDefinition(NONE_SELECT),
     myFilterDlg( 0 ),
@@ -232,7 +231,7 @@ SMESHGUI_RevolutionDlg::SMESHGUI_RevolutionDlg( SMESHGUI* theModule )
   SpinBox_Tolerance = new SMESHGUI_SpinBox(GroupArguments);
 
   // Control for mesh preview
-  CheckBoxPreview = new QCheckBox(tr("PREVIEW"), GroupArguments);
+  myPreviewCheckBox = new QCheckBox(tr("PREVIEW"), GroupArguments);
 
   // CheckBox for groups generation
   MakeGroupsCheck = new QCheckBox(tr("SMESH_MAKE_GROUPS"), GroupArguments);
@@ -247,7 +246,7 @@ SMESHGUI_RevolutionDlg::SMESHGUI_RevolutionDlg( SMESHGUI* theModule )
   GroupArgumentsLayout->addWidget(GroupAngleBox,        3, 0, 1, 4);
   GroupArgumentsLayout->addWidget(TextLabelTolerance,   4, 0, 1, 2);
   GroupArgumentsLayout->addWidget(SpinBox_Tolerance,    4, 2, 1, 2);
-  GroupArgumentsLayout->addWidget(CheckBoxPreview,      5, 0, 1, 4);
+  GroupArgumentsLayout->addWidget(myPreviewCheckBox,    5, 0, 1, 4);
   GroupArgumentsLayout->addWidget(MakeGroupsCheck,      6, 0, 1, 4);
 
   /***************************************************************/
@@ -352,7 +351,9 @@ SMESHGUI_RevolutionDlg::SMESHGUI_RevolutionDlg( SMESHGUI* theModule )
   connect(SpinBox_Angle,     SIGNAL(valueChanged(double)), this, SLOT(toDisplaySimulation()));
   connect(SpinBox_NbSteps,   SIGNAL(valueChanged(int)),    this, SLOT(toDisplaySimulation()));
   connect(SpinBox_Tolerance, SIGNAL(valueChanged(double)), this, SLOT(toDisplaySimulation()));
-  connect(CheckBoxPreview,   SIGNAL(toggled(bool)),        this, SLOT(onDisplaySimulation(bool)));
+
+  //To Connect preview check box
+  connectPreviewControl();
 
   connect(SpinBox_Angle, SIGNAL(textChanged(const QString&)), this, SLOT(onAngleTextChange(const QString&)));
 
@@ -405,7 +406,7 @@ void SMESHGUI_RevolutionDlg::Init (bool ResetControls)
 
     CheckBoxMesh->setChecked(false);
     onSelectMesh(false);
-    CheckBoxPreview->setChecked(false);
+    myPreviewCheckBox->setChecked(false);
     onDisplaySimulation(false);
   }
 }
@@ -707,7 +708,7 @@ void SMESHGUI_RevolutionDlg::SelectionIntoArgument()
   const SALOME_ListIO& aList = mySelector->StoredIObjects();
 
   int nbSel = aList.Extent();
-  if (nbSel != 1)
+  if (nbSel != 1) 
     return;
 
   Handle(SALOME_InteractiveObject) IO = aList.First();
@@ -1034,21 +1035,12 @@ void SMESHGUI_RevolutionDlg::keyPressEvent( QKeyEvent* e )
 }
 
 //=================================================================================
-// function : toDisplaySimulation()
-// purpose  :
-//=================================================================================
-void SMESHGUI_RevolutionDlg::toDisplaySimulation()
-{
-  onDisplaySimulation(true);
-}
-
-//=================================================================================
 // function : onDisplaySimulation()
-// purpose  :
+// purpose  : Show/Hide preview
 //=================================================================================
 void SMESHGUI_RevolutionDlg::onDisplaySimulation(bool toDisplayPreview)
 {
-  if (CheckBoxPreview->isChecked() && toDisplayPreview)
+  if (myPreviewCheckBox->isChecked() && toDisplayPreview)
   {
     //display preview
     if (myNbOkElements && IsAxisOk())

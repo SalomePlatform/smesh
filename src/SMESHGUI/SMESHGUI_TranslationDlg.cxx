@@ -33,6 +33,7 @@
 #include "SMESHGUI_MeshUtils.h"
 #include "SMESHGUI_IdValidator.h"
 #include "SMESHGUI_FilterDlg.h"
+#include "SMESHGUI_MeshEditPreview.h"
 
 #include <SMESH_Actor.h>
 #include <SMESH_TypeFilter.hxx>
@@ -109,12 +110,11 @@ private:
 // class    : SMESHGUI_TranslationDlg()
 // purpose  :
 //=================================================================================
-SMESHGUI_TranslationDlg::SMESHGUI_TranslationDlg( SMESHGUI* theModule )
-  : QDialog( SMESH::GetDesktop( theModule ) ),
-    mySMESHGUI( theModule ),
-    mySelectionMgr( SMESH::GetSelectionMgr( theModule ) ),
-    myFilterDlg(0),
-    mySelectedObject(SMESH::SMESH_IDSource::_nil())
+SMESHGUI_TranslationDlg::SMESHGUI_TranslationDlg( SMESHGUI* theModule ) : 
+  SMESHGUI_PreviewDlg( theModule ),
+  mySelectionMgr( SMESH::GetSelectionMgr( theModule ) ),
+  myFilterDlg(0),
+  mySelectedObject(SMESH::SMESH_IDSource::_nil())
 {
   QPixmap image0 (SMESH::GetResourceMgr( mySMESHGUI )->loadPixmap("SMESH", tr("ICON_SMESH_TRANSLATION_POINTS")));
   QPixmap image1 (SMESH::GetResourceMgr( mySMESHGUI )->loadPixmap("SMESH", tr("ICON_SMESH_TRANSLATION_VECTOR")));
@@ -215,6 +215,9 @@ SMESHGUI_TranslationDlg::SMESHGUI_TranslationDlg( SMESHGUI* theModule )
   // Name of a mesh to create
   LineEditNewMesh = new QLineEdit(GroupArguments);
 
+  //Preview check box
+  myPreviewCheckBox = new QCheckBox(tr("PREVIEW"), GroupArguments);
+
   // layout
   GroupArgumentsLayout->addWidget(TextLabelElements,    0, 0);
   GroupArgumentsLayout->addWidget(SelectElementsButton, 0, 1);
@@ -240,6 +243,7 @@ SMESHGUI_TranslationDlg::SMESHGUI_TranslationDlg( SMESHGUI* theModule )
   GroupArgumentsLayout->addWidget(ActionBox,            4, 0, 3, 4);
   GroupArgumentsLayout->addWidget(MakeGroupsCheck,      5, 5, 1, 4);
   GroupArgumentsLayout->addWidget(LineEditNewMesh,      6, 5, 1, 4);
+  GroupArgumentsLayout->addWidget(myPreviewCheckBox,    7, 0);
 
   /***************************************************************/
   GroupButtons = new QGroupBox(this);
@@ -318,6 +322,19 @@ SMESHGUI_TranslationDlg::SMESHGUI_TranslationDlg( SMESHGUI* theModule )
   connect(CheckBoxMesh,     SIGNAL(toggled(bool)),                  SLOT(onSelectMesh(bool)));
   connect(ActionGroup,      SIGNAL(buttonClicked(int)),             SLOT(onActionClicked(int)));
 
+  connect(SpinBox1_1,  SIGNAL(valueChanged(double)), this, SLOT(toDisplaySimulation()));
+  connect(SpinBox1_2,  SIGNAL(valueChanged(double)), this, SLOT(toDisplaySimulation()));
+  connect(SpinBox1_3,  SIGNAL(valueChanged(double)), this, SLOT(toDisplaySimulation()));
+
+  connect(SpinBox2_1,  SIGNAL(valueChanged(double)), this, SLOT(toDisplaySimulation()));
+  connect(SpinBox2_2,  SIGNAL(valueChanged(double)), this, SLOT(toDisplaySimulation()));
+  connect(SpinBox2_3,  SIGNAL(valueChanged(double)), this, SLOT(toDisplaySimulation()));
+  connect(SpinBox2_3,  SIGNAL(valueChanged(double)), this, SLOT(toDisplaySimulation()));
+
+  
+  //To Connect preview check box
+  connectPreviewControl();
+
   ConstructorsClicked(0);
   SelectionIntoArgument();
   onActionClicked(MOVE_ELEMS_BUTTON);
@@ -367,6 +384,8 @@ void SMESHGUI_TranslationDlg::Init (bool ResetControls)
     CheckBoxMesh->setChecked(false);
 //     MakeGroupsCheck->setChecked(false);
 //     MakeGroupsCheck->setEnabled(false);
+    myPreviewCheckBox->setChecked(false);
+    onDisplaySimulation(false);
     onSelectMesh(false);
   }
 }
@@ -432,6 +451,8 @@ void SMESHGUI_TranslationDlg::ConstructorsClicked (int constructorId)
     onSelectMesh(true);
 
   connect(mySelectionMgr, SIGNAL(currentSelectionChanged()), this, SLOT(SelectionIntoArgument()));
+
+  onDisplaySimulation(true);
 
   QApplication::instance()->processEvents();
   updateGeometry();
@@ -805,6 +826,7 @@ void SMESHGUI_TranslationDlg::SelectionIntoArgument()
     buttonOk->setEnabled(true);
     buttonApply->setEnabled(true);
   }
+  onDisplaySimulation(true);
 }
 
 //=================================================================================
@@ -818,7 +840,7 @@ void SMESHGUI_TranslationDlg::SetEditCurrentArgument()
   disconnect(mySelectionMgr, 0, this, 0);
   mySelectionMgr->clearSelected();
   mySelectionMgr->clearFilters();
-
+  
   if (send == SelectElementsButton) {
     myEditCurrentArgument = (QWidget*)LineEditElements;
     SMESH::SetPointRepresentation(false);
@@ -947,6 +969,7 @@ void SMESHGUI_TranslationDlg::onSelectMesh (bool toSelectMesh)
     LineEditElements->setReadOnly(false);
     LineEditElements->setValidator(myIdValidator);
     onTextChange(LineEditElements->text());
+    hidePreview();
   }
 
   SelectionIntoArgument();
@@ -1079,4 +1102,54 @@ bool SMESHGUI_TranslationDlg::isValid()
     return false;
   }
   return true;
+}
+
+//=================================================================================
+// function : onDisplaySimulation
+// purpose  : Show/Hide preview
+//=================================================================================
+void SMESHGUI_TranslationDlg::onDisplaySimulation( bool toDisplayPreview ) {
+  if (myPreviewCheckBox->isChecked() && toDisplayPreview) {
+    
+    if (isValid() && myNbOkElements) {
+      QStringList aListElementsId = myElementsId.split(" ", QString::SkipEmptyParts);
+      
+      SMESH::long_array_var anElementsId = new SMESH::long_array;
+
+      anElementsId->length(aListElementsId.count());
+      for (int i = 0; i < aListElementsId.count(); i++)
+	anElementsId[i] = aListElementsId[i].toInt();
+
+      SMESH::DirStruct aVector;
+      if (GetConstructorId() == 0) {
+	aVector.PS.x = SpinBox2_1->GetValue() - SpinBox1_1->GetValue();
+	aVector.PS.y = SpinBox2_2->GetValue() - SpinBox1_2->GetValue();
+	aVector.PS.z = SpinBox2_3->GetValue() - SpinBox1_3->GetValue();
+      } else if (GetConstructorId() == 1) {
+	aVector.PS.x = SpinBox1_1->GetValue();
+	aVector.PS.y = SpinBox1_2->GetValue();
+	aVector.PS.z = SpinBox1_3->GetValue();
+      }
+
+      try {
+	bool copy = ActionGroup->checkedId() == COPY_ELEMS_BUTTON;
+	SUIT_OverrideCursor aWaitCursor;
+	SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditPreviewer();
+	if(CheckBoxMesh->isChecked())
+	  aMeshEditor->TranslateObject(mySelectedObject, aVector, copy);
+	else
+	  aMeshEditor->Translate(anElementsId, aVector, copy);
+	
+        SMESH::MeshPreviewStruct_var aMeshPreviewStruct = aMeshEditor->GetPreviewData();
+        mySimulation->SetData(aMeshPreviewStruct._retn());	
+      } catch (...) {
+	
+      }
+    }
+    else {
+      hidePreview();
+    }
+  } else {
+    hidePreview();
+  }
 }
