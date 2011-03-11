@@ -346,16 +346,16 @@ bool SMESHGUI_DuplicateNodesDlg::onApply()
       SMESH::ListOfGroups_var g1 = new SMESH::ListOfGroups();
       g1->length( myGroups1.count() );
       for ( int i = 0; i < myGroups1.count(); i++ )
-	g1[i] = myGroups1[i];
+        g1[i] = myGroups1[i];
       SMESH::ListOfGroups_var g2 = new SMESH::ListOfGroups();
       g2->length( myGroups2.count() );
       for ( int i = 0; i < myGroups2.count(); i++ )
-	g2[i] = myGroups2[i];
+        g2[i] = myGroups2[i];
 
       if ( toCreateGroup ) {
         SMESH::SMESH_GroupBase_var aNewGroup = 
           aMeshEditor->DoubleNodeGroupsNew( g1.in(), g2.in() );
-	result = !CORBA::is_nil( aNewGroup );
+        result = !CORBA::is_nil( aNewGroup );
       }
       else {
         result = aMeshEditor->DoubleNodeGroups( g1.in(), g2.in() );
@@ -365,20 +365,20 @@ bool SMESHGUI_DuplicateNodesDlg::onApply()
       SMESH::ListOfGroups_var g1 = new SMESH::ListOfGroups();
       g1->length( myGroups1.count() );
       for ( int i = 0; i < myGroups1.count(); i++ )
-	g1[i] = myGroups1[i];
+        g1[i] = myGroups1[i];
       SMESH::ListOfGroups_var g2 = new SMESH::ListOfGroups();
       g2->length( myGroups2.count() );
       for ( int i = 0; i < myGroups2.count(); i++ )
-	g2[i] = myGroups2[i];
+        g2[i] = myGroups2[i];
       SMESH::ListOfGroups_var g3 = new SMESH::ListOfGroups();
       g3->length( myGroups3.count() );
 
       for ( int i = 0; i < myGroups3.count(); i++ )
-	g3[i] = myGroups3[i];
+        g3[i] = myGroups3[i];
       if ( toCreateGroup ) {
         SMESH::SMESH_GroupBase_ptr aNewGroup = 
           aMeshEditor->DoubleNodeElemGroupsNew( g1.in(), g2.in(), g3.in() );
-	result = !CORBA::is_nil( aNewGroup );
+        result = !CORBA::is_nil( aNewGroup );
       }
       else {
         result = aMeshEditor->DoubleNodeElemGroups( g1.in(), g2.in(), g3.in() );
@@ -446,7 +446,7 @@ void SMESHGUI_DuplicateNodesDlg::onSelectionChanged()
 
   SALOME_ListIO aList;
   mySelectionMgr->selectedObjects( aList );
-  int aNbSel = aList.Extent();
+  //int aNbSel = aList.Extent();
 
   QList<SMESH::SMESH_GroupBase_var> aGroups;
 
@@ -467,14 +467,14 @@ void SMESHGUI_DuplicateNodesDlg::onSelectionChanged()
     if ( ok ) {
       SMESH::ElementType aGroupType = aGroup->GetType();
       if ( operationMode == 0 ) {
-	ok = ( myCurrentLineEdit == myLineEdit1 && aGroupType == SMESH::NODE ) ||
-	     ( myCurrentLineEdit == myLineEdit2 && aGroupType != SMESH::NODE );
+        ok = ( myCurrentLineEdit == myLineEdit1 && aGroupType == SMESH::NODE ) ||
+             ( myCurrentLineEdit == myLineEdit2 && aGroupType != SMESH::NODE );
       }
       else {
-	ok = ( myCurrentLineEdit == myLineEdit1 && ( aGroupType == SMESH::EDGE ||
-						     aGroupType == SMESH::FACE ) ) ||
-	     ( myCurrentLineEdit == myLineEdit2 && aGroupType == SMESH::NODE )     ||
-	     ( myCurrentLineEdit == myLineEdit3 && aGroupType != SMESH::NODE );
+        ok = ( myCurrentLineEdit == myLineEdit1 && ( aGroupType == SMESH::EDGE ||
+                                                     aGroupType == SMESH::FACE ) ) ||
+             ( myCurrentLineEdit == myLineEdit2 && aGroupType == SMESH::NODE )     ||
+             ( myCurrentLineEdit == myLineEdit3 && aGroupType != SMESH::NODE );
       }
     }
     if ( ok ) aGroups << aGroup;
@@ -488,7 +488,7 @@ void SMESHGUI_DuplicateNodesDlg::onSelectionChanged()
     else if ( myCurrentLineEdit == myLineEdit2 ) myGroups2 = aGroups;
     else if ( myCurrentLineEdit == myLineEdit3 ) myGroups3 = aGroups;
     myCurrentLineEdit->setText( aGroups.count() == 1 ? aGroups[0]->GetName() : 
-				QObject::tr( "SMESH_OBJECTS_SELECTED" ).arg( aGroups.count() ) );
+                                QObject::tr( "SMESH_OBJECTS_SELECTED" ).arg( aGroups.count() ) );
   }
   else {
     if      ( myCurrentLineEdit == myLineEdit1 ) myGroups1.clear();
