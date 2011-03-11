@@ -339,6 +339,14 @@
                     hypos="NumberOfSegments"
                     algos="Regular_1D, Quadrangle_2D, Hexa_3D"/>
 
+    <hypotheses-set name="Automatic Triangulation"
+                    hypos="MaxLength"
+                    algos="Regular_1D, MEFISTO_2D"/>
+
+    <hypotheses-set name="Automatic Quadrangulation"
+                    hypos="NumberOfSegments"
+                    algos="Regular_1D, Quadrangle_2D"/>
+
 </hypotheses-set-group>
 
 </meshers>
