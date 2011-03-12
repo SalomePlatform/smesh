@@ -12,6 +12,7 @@
 #include <vtkUnsignedCharArray.h>
 
 #include <list>
+#include <climits>
 
 using namespace std;
 
@@ -804,4 +805,95 @@ void SMDS_UnstructuredGrid::BuildLinks()
   this->Links->Register(this);
   this->Links->BuildLinks(this, this->Connectivity);
   this->Links->Delete();
+}
+
+/*! Create a volume (prism or hexahedron) by duplication of a face.
+ * Designed for use in creation of flat elements separating volume domains.
+ * A face separating two domains is shared by two volume cells.
+ * All the nodes are already created (for the two faces).
+ * Each original Node is associated to corresponding nodes in the domains.
+ * Some nodes may be duplicated for more than two domains, when domain separations intersect.
+ * In that case, even some of the nodes to use for the original face may be changed.
+ * @param vtkVolId: vtk id of a volume containing the face, to get an orientation for the face.
+ * @param domain1: domain of the original face
+ * @param domain2: domain of the duplicated face
+ * @param originalNodes: the vtk node ids of the original face
+ * @param nodeDomains: map(original id --> map(domain --> duplicated node id))
+ * @return ok if success.
+ */
+bool SMDS_UnstructuredGrid::extrudeVolumeFromFace(int vtkVolId,
+                                                  int domain1,
+                                                  int domain2,
+                                                  std::set<int>& originalNodes,
+                                                  std::map<int, std::map<int, int> >& nodeDomains,
+                                                  std::map<int, std::map<long, int> >& nodeQuadDomains)
+{
+  //MESSAGE("extrudeVolumeFromFace " << vtkVolId);
+  vector<vtkIdType> orderedOriginals;
+  orderedOriginals.clear();
+  set<int>::const_iterator it = originalNodes.begin();
+  for (; it != originalNodes.end(); ++it)
+    orderedOriginals.push_back(*it);
+
+  int nbNodes = this->getOrderedNodesOfFace(vtkVolId, orderedOriginals);
+  vector<vtkIdType> orderedNodes;
+
+  switch (orderedOriginals.size())
+  {
+    case 3:
+    case 4:
+      for (int i = 0; i < nbNodes; i++)
+        orderedNodes.push_back(nodeDomains[orderedOriginals[i]][domain1]);
+      for (int i = 0; i < nbNodes; i++)
+        orderedNodes.push_back(nodeDomains[orderedOriginals[i]][domain2]);
+      break;
+    case 6:
+    case 8:
+      {
+        long dom1 = domain1;
+        long dom2 = domain2;
+        long dom1_2; // for nodeQuadDomains
+        if (domain1 < domain2)
+          dom1_2 = dom1 + INT_MAX * dom2;
+        else
+          dom1_2 = dom2 + INT_MAX * dom1;
+        //cerr << "dom1=" << dom1 << " dom2=" << dom2 << " dom1_2=" << dom1_2 << endl;
+        int ima = orderedOriginals.size();
+        int mid = orderedOriginals.size() / 2;
+        //cerr << "ima=" << ima << " mid=" << mid << endl;
+        for (int i = 0; i < mid; i++)
+          orderedNodes.push_back(nodeDomains[orderedOriginals[i]][domain1]);
+        for (int i = 0; i < mid; i++)
+          orderedNodes.push_back(nodeDomains[orderedOriginals[i]][domain2]);
+        for (int i = mid; i < ima; i++)
+          orderedNodes.push_back(nodeDomains[orderedOriginals[i]][domain1]);
+        for (int i = mid; i < ima; i++)
+          orderedNodes.push_back(nodeDomains[orderedOriginals[i]][domain2]);
+        for (int i = 0; i < mid; i++)
+          {
+            int oldId = orderedOriginals[i];
+            int newId;
+            if (nodeQuadDomains.count(oldId) && nodeQuadDomains[oldId].count(dom1_2))
+              newId = nodeQuadDomains[oldId][dom1_2];
+            else
+              {
+                double *coords = this->GetPoint(oldId);
+                SMDS_MeshNode *newNode = _mesh->AddNode(coords[0], coords[1], coords[2]);
+                newId = newNode->getVtkId();
+                std::map<long, int> emptyMap;
+                nodeQuadDomains[oldId] = emptyMap;
+                nodeQuadDomains[oldId][dom1_2] = newId;
+              }
+            orderedNodes.push_back(newId);
+          }
+      }
+      break;
+    default:
+      ASSERT(0);
+  }
+
+  SMDS_MeshVolume *vol = _mesh->AddVolumeFromVtkIds(orderedNodes);
+
+  // TODO update subshape list of elements and nodes
+  return vol;
 }

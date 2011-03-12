@@ -66,6 +66,12 @@ public:
   void ModifyCellNodes(int vtkVolId, std::map<int, int> localClonedNodeIds);
   int getOrderedNodesOfFace(int vtkVolId, std::vector<vtkIdType>& orderedNodes);
   void BuildLinks();
+  bool extrudeVolumeFromFace(int vtkVolId,
+                             int domain1,
+                             int domain2,
+                             std::set<int>& originalNodes,
+                             std::map<int,std::map<int,int> >& nodeDomains,
+                             std::map<int,std::map<long,int> >& nodeQuadDomains);
   vtkCellLinks* GetLinks()
   {
     return Links;

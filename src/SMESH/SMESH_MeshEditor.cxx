@@ -10774,6 +10774,10 @@ bool SMESH_MeshEditor::DoubleNodesOnGroupBoundaries( const std::vector<TIDSorted
   //     get node id's of the face (id SMDS = id VTK)
   //     create flat element with old and new nodes if requested
 
+  // --- new quad nodes on flat quad elements: oldId --> ((domain1 X domain2) --> newId)
+  //     (domain1 X domain2) = domain1 + MAXINT*domain2
+  std::map<int, std::map<long,int> > nodeQuadDomains;
+
   if (createJointElems)
     {
       itface = faceDomains.begin();
@@ -10791,7 +10795,7 @@ bool SMESH_MeshEditor::DoubleNodesOnGroupBoundaries( const std::vector<TIDSorted
           int vtkVolId = itdom->second;
           itdom++;
           int dom2 = itdom->first;
-          meshDS->extrudeVolumeFromFace(vtkVolId, dom1, dom2, oldNodes, nodeDomains);
+          grid->extrudeVolumeFromFace(vtkVolId, dom1, dom2, oldNodes, nodeDomains, nodeQuadDomains);
         }
     }
 
