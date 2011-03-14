@@ -1084,7 +1084,8 @@ void SMESHGUI_ScaleDlg::onDisplaySimulation( bool toDisplayPreview ) {
       getScale(aPoint, aScaleFact);
       
       try {
-        bool copy = ActionGroup->checkedId() == COPY_ELEMS_BUTTON;
+        bool copy = ( ActionGroup->checkedId() == COPY_ELEMS_BUTTON ||
+                      ActionGroup->checkedId() == MAKE_MESH_BUTTON );
         SUIT_OverrideCursor aWaitCursor;
         SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditPreviewer();
         SMESH::SMESH_IDSource_var obj;

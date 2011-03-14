@@ -1133,7 +1133,8 @@ void SMESHGUI_TranslationDlg::onDisplaySimulation( bool toDisplayPreview ) {
       }
 
       try {
-        bool copy = ActionGroup->checkedId() == COPY_ELEMS_BUTTON;
+        bool copy = ( ActionGroup->checkedId() == COPY_ELEMS_BUTTON ||
+                      ActionGroup->checkedId() == MAKE_MESH_BUTTON );
         SUIT_OverrideCursor aWaitCursor;
         SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditPreviewer();
         if(CheckBoxMesh->isChecked())

@@ -2936,6 +2936,9 @@ SMESH_MeshEditor_i::mirror(TIDSortedElemSet &                  theElements,
   gp_Pnt P ( theAxis.x, theAxis.y, theAxis.z );
   gp_Vec V ( theAxis.vx, theAxis.vy, theAxis.vz );
 
+  if ( theTargetMesh )
+    theCopy = false;
+
   gp_Trsf aTrsf;
   switch ( theMirrorType ) {
   case  SMESH::SMESH_MeshEditor::POINT:
@@ -2956,7 +2959,7 @@ SMESH_MeshEditor_i::mirror(TIDSortedElemSet &                  theElements,
   if ( myPreviewMode )
   {
     tmpMesh.Copy( theElements, copyElements);
-    if ( !theCopy )
+    if ( !theCopy && !theTargetMesh )
     {
       TIDSortedElemSet elemsAround, elemsAroundCopy;
       getElementsAround( theElements, GetMeshDS(), elemsAround );
@@ -3196,6 +3199,9 @@ SMESH_MeshEditor_i::translate(TIDSortedElemSet        & theElements,
 {
   initData();
 
+  if ( theTargetMesh )
+    theCopy = false;
+
   gp_Trsf aTrsf;
   const SMESH::PointStruct * P = &theVector.PS;
   aTrsf.SetTranslation( gp_Vec( P->x, P->y, P->z ));
@@ -3208,7 +3214,7 @@ SMESH_MeshEditor_i::translate(TIDSortedElemSet        & theElements,
   if ( myPreviewMode )
   {
     tmpMesh.Copy( theElements, copyElements);
-    if ( !theCopy )
+    if ( !theCopy && !theTargetMesh )
     {
       TIDSortedElemSet elemsAround, elemsAroundCopy;
       getElementsAround( theElements, GetMeshDS(), elemsAround );
@@ -3434,6 +3440,9 @@ SMESH_MeshEditor_i::rotate(TIDSortedElemSet &        theElements,
 {
   initData();
 
+  if ( theTargetMesh )
+    theCopy = false;
+
   gp_Pnt P ( theAxis.x, theAxis.y, theAxis.z );
   gp_Vec V ( theAxis.vx, theAxis.vy, theAxis.vz );
 
@@ -3447,7 +3456,7 @@ SMESH_MeshEditor_i::rotate(TIDSortedElemSet &        theElements,
 
   if ( myPreviewMode ) {
     tmpMesh.Copy( theElements, copyElements );
-    if ( !theCopy )
+    if ( !theCopy && !theTargetMesh )
     {
       TIDSortedElemSet elemsAround, elemsAroundCopy;
       getElementsAround( theElements, GetMeshDS(), elemsAround );
@@ -3691,6 +3700,9 @@ SMESH_MeshEditor_i::scale(SMESH::SMESH_IDSource_ptr  theObject,
   if ( theScaleFact.length() == 2 )
     THROW_SALOME_CORBA_EXCEPTION("Invalid nb of scale factors : 2", SALOME::BAD_PARAM);
 
+  if ( theTargetMesh )
+    theCopy = false;
+
   TIDSortedElemSet elements;
   bool emptyIfIsMesh = myPreviewMode ? false : true;
   if ( !idSourceToSet(theObject, GetMeshDS(), elements, SMDSAbs_All, emptyIfIsMesh))
@@ -3715,7 +3727,7 @@ SMESH_MeshEditor_i::scale(SMESH::SMESH_IDSource_ptr  theObject,
   if ( myPreviewMode )
   {
     tmpMesh.Copy( elements, copyElements);
-    if ( !theCopy )
+    if ( !theCopy && !theTargetMesh )
     {
       TIDSortedElemSet elemsAround, elemsAroundCopy;
       getElementsAround( elements, GetMeshDS(), elemsAround );

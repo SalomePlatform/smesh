@@ -1084,7 +1084,8 @@ void SMESHGUI_RotationDlg::onDisplaySimulation( bool toDisplayPreview ) {
       
       try {
         SUIT_OverrideCursor aWaitCursor;
-        bool copy = ActionGroup->checkedId() == COPY_ELEMS_BUTTON;
+        bool copy = ( ActionGroup->checkedId() == COPY_ELEMS_BUTTON  ||
+                      ActionGroup->checkedId() == MAKE_MESH_BUTTON );
         SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditPreviewer();
         if(CheckBoxMesh->isChecked())
           aMeshEditor->RotateObject(mySelectedObject, anAxis, anAngle, copy);
