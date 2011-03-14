@@ -2070,6 +2070,18 @@ SMESH::SMESH_GroupBase_ptr SMESH_Mesh_i::createGroup (SMESH::ElementType theElem
                                                       const char*         theName,
                                                       const TopoDS_Shape& theShape )
 {
+  std::string newName;
+  if ( !theName || strlen( theName ) == 0 )
+  {
+    std::set< std::string > presentNames;
+    std::map<int, SMESH::SMESH_GroupBase_ptr>::const_iterator i_gr = _mapGroups.begin();
+    for ( ; i_gr != _mapGroups.end(); ++i_gr )
+      presentNames.insert( i_gr->second->GetName() );
+    do {
+      newName = "noname_Group_" + SMESH_Comment( presentNames.size() + 1 );
+    } while ( !presentNames.insert( newName ).second );
+    theName = newName.c_str();
+  }
   int anId;
   SMESH::SMESH_GroupBase_var aGroup;
   if ( _impl->AddGroup( (SMDSAbs_ElementType)theElemType, theName, anId, theShape )) {
