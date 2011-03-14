@@ -3577,10 +3577,10 @@ void SMESHGUI::initialize( CAM_Application* app )
   createMenu( 4061, transfId, -1 );
   createMenu( 4062, transfId, -1 );
   createMenu( 4063, transfId, -1 );
+  createMenu( 4068, transfId, -1 );
   createMenu( 4064, transfId, -1 );
   createMenu( 4065, transfId, -1 );
   createMenu( 4066, transfId, -1 );
-  createMenu( 4068, transfId, -1 );
   createMenu( 4069, transfId, -1 );
 
   createMenu( 4067,modifyId, -1 );
@@ -3688,10 +3688,10 @@ void SMESHGUI::initialize( CAM_Application* app )
   createTool( 4061, addRemTb );
   createTool( 4062, addRemTb );
   createTool( 4063, addRemTb );
+  createTool( 4068, addRemTb );
   createTool( 4064, addRemTb );
   createTool( 4065, addRemTb );
   createTool( 4066, addRemTb );
-  createTool( 4068, addRemTb );
   createTool( 4069, addRemTb );
   createTool( separator(), addRemTb );
 
