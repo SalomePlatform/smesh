@@ -235,8 +235,8 @@ SMESHGUI_ScaleDlg::SMESHGUI_ScaleDlg( SMESHGUI* theModule ) :
   GroupArgumentsLayout->addWidget(TextLabel4,           5, 0);
   GroupArgumentsLayout->addWidget(SpinBox_FZ,           5, 3);
   GroupArgumentsLayout->addWidget(ActionBox,            7, 0, 3, 4);
-  GroupArgumentsLayout->addWidget(MakeGroupsCheck,      7, 5, 1, 4);
-  GroupArgumentsLayout->addWidget(LineEditNewMesh,      8, 5, 1, 4);
+  GroupArgumentsLayout->addWidget(MakeGroupsCheck,      8, 5, 1, 4);
+  GroupArgumentsLayout->addWidget(LineEditNewMesh,      9, 5, 1, 4);
   GroupArgumentsLayout->addWidget(myPreviewCheckBox,    10, 0);
 
   /***************************************************************/
