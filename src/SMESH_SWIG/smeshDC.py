@@ -3059,19 +3059,26 @@ class Mesh:
     ## Converts the mesh to quadratic, deletes old elements, replacing
     #  them with quadratic with the same id.
     #  @param theForce3d new node creation method:
-    #         0 - the medium node lies at the geometrical edge from which the mesh element is built
+    #         0 - the medium node lies at the geometrical entity from which the mesh element is built
     #         1 - the medium node lies at the middle of the line segments connecting start and end node of a mesh element
+    #  @param theSubMesh a group or a sub-mesh to convert; WARNING: in this case the mesh can become not conformal
     #  @ingroup l2_modif_tofromqu
-    def ConvertToQuadratic(self, theForce3d):
-        self.editor.ConvertToQuadratic(theForce3d)
+    def ConvertToQuadratic(self, theForce3d, theSubMesh=None):
+        if theSubMesh:
+            self.editor.ConvertToQuadraticObject(theForce3d,theSubMesh)
+        else:
+            self.editor.ConvertToQuadratic(theForce3d)
 
     ## Converts the mesh from quadratic to ordinary,
     #  deletes old quadratic elements, \n replacing
     #  them with ordinary mesh elements with the same id.
-    #  @return TRUE in case of success, FALSE otherwise.
+    #  @param theSubMesh a group or a sub-mesh to convert; WARNING: in this case the mesh can become not conformal
     #  @ingroup l2_modif_tofromqu
-    def ConvertFromQuadratic(self):
-        return self.editor.ConvertFromQuadratic()
+    def ConvertFromQuadratic(self, theSubMesh=None):
+        if theSubMesh:
+            self.editor.ConvertFromQuadraticObject(theSubMesh)
+        else:
+            return self.editor.ConvertFromQuadratic()
 
     ## Creates 2D mesh as skin on boundary faces of a 3D mesh
     #  @return TRUE if operation has been completed successfully, FALSE otherwise
