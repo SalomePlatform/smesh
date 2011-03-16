@@ -569,7 +569,7 @@ SMESHGUI_HypothesisDlg::SMESHGUI_HypothesisDlg( SMESHGUI_GenericHypothesisCreato
   myCreator( creator )
 {
   setAttribute(Qt::WA_DeleteOnClose, true);
-  setMinimumSize( 300, height() );
+ // setMinimumSize( 300, height() );
 //  setFixedSize( 300, height() );
   QVBoxLayout* topLayout = new QVBoxLayout( mainFrame() );
   topLayout->setMargin( 0 );
