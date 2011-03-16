@@ -455,6 +455,10 @@ public:
   void AddTLinkNodeMap(const TLinkNodeMap& aMap)
     { myTLinkNodeMap.insert(aMap.begin(), aMap.end()); }
 
+  void AddTLinks(const SMDS_MeshEdge*   edge);
+  void AddTLinks(const SMDS_MeshFace*   face);
+  void AddTLinks(const SMDS_MeshVolume* vol);
+
   /**
    * Returns myTLinkNodeMap
    */

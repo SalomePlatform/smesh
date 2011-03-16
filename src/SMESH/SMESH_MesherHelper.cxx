@@ -318,6 +318,73 @@ void SMESH_MesherHelper::AddTLinkNode(const SMDS_MeshNode* n1,
 
 //================================================================================
 /*!
+ * \brief Add quadratic links of edge to own data structure
+ */
+//================================================================================
+
+void SMESH_MesherHelper::AddTLinks(const SMDS_MeshEdge* edge)
+{
+  if ( edge->IsQuadratic() )
+    AddTLinkNode(edge->GetNode(0), edge->GetNode(1), edge->GetNode(2));
+}
+
+//================================================================================
+/*!
+ * \brief Add quadratic links of face to own data structure
+ */
+//================================================================================
+
+void SMESH_MesherHelper::AddTLinks(const SMDS_MeshFace* face)
+{
+  if ( face->IsQuadratic() )
+  {
+    const int nbLinks = face->NbCornerNodes();
+    for ( int i = 0; i < nbLinks; ++i )
+    {
+      const SMDS_MeshNode* n1  = face->GetNode( i );
+      const SMDS_MeshNode* n2  = face->GetNode(( i + 1 ) % nbLinks );
+      const SMDS_MeshNode* n12 = face->GetNode( i + nbLinks );
+      AddTLinkNode( n1, n2, n12 );
+    }
+  }
+}
+
+//================================================================================
+/*!
+ * \brief Add quadratic links of volume to own data structure
+ */
+//================================================================================
+
+void SMESH_MesherHelper::AddTLinks(const SMDS_MeshVolume* volume)
+{
+  if ( volume->IsQuadratic() )
+  {
+    SMDS_VolumeTool vTool( volume );
+    const SMDS_MeshNode** nodes = vTool.GetNodes();
+    set<int> addedLinks;
+    for ( int iF = 1; iF < vTool.NbFaces(); ++iF )
+    {
+      const int nbN = vTool.NbFaceNodes( iF );
+      const int* iNodes = vTool.GetFaceNodesIndices( iF );
+      for ( int i = 0; i < nbN; )
+      {
+        int iN1  = iNodes[i++];
+        int iN12 = iNodes[i++];
+        int iN2  = iNodes[i++];
+        if ( iN1 > iN2 ) std::swap( iN1, iN2 );
+        int linkID = iN1 * vTool.NbNodes() + iN2;
+        pair< set<int>::iterator, bool > it_isNew = addedLinks.insert( linkID );
+        if ( it_isNew.second )
+          AddTLinkNode( nodes[iN1], nodes[iN2], nodes[iN12] );
+        else
+          addedLinks.erase( it_isNew.first ); // each link encounters only twice
+      }
+    }
+  }
+}
+
+//================================================================================
+/*!
  * \brief Return true if position of nodes on the shape hasn't yet been checked or
  * the positions proved to be invalid
  */
