@@ -3903,7 +3903,7 @@ Do you want to restore original submesh priority?</translation>
     </message>
     <message>
         <source>MESH</source>
-        <translation>Mesh</translation>
+        <translation>Mesh or Sub-mesh</translation>
     </message>
     <message>
         <source>RADIOBTN_1</source>
@@ -3912,6 +3912,10 @@ Do you want to restore original submesh priority?</translation>
     <message>
         <source>RADIOBTN_2</source>
         <translation>Convert from quadratic</translation>
+    </message>
+    <message>
+        <source>NON_CONFORM_WARNING</source>
+        <translation>Warning: mesh can become non-conformal</translation>
     </message>
 </context>
 <context>

@@ -36,6 +36,7 @@
 #include <QFrame>
 #include <QHBoxLayout>
 #include <QGridLayout>
+#include <QLabel>
 
 #define SPACING 6
 #define MARGIN  11
@@ -70,6 +71,8 @@ SMESHGUI_ConvToQuadDlg::SMESHGUI_ConvToQuadDlg()
   myBG->addButton(myRB2, 1);
   myRB1->setChecked( true );
 
+  myWarning = new QLabel(QString("<b>%1</b>").arg(tr("NON_CONFORM_WARNING")), mainFrame());
+
   // Fill layout
   QGridLayout* aLay = new QGridLayout( mainFrame() );
   aLay->setMargin( 5 );
@@ -80,6 +83,7 @@ SMESHGUI_ConvToQuadDlg::SMESHGUI_ConvToQuadDlg()
   aLay->addWidget( objectWg( 0,  Control ), 0, 2 );
   aLay->addWidget( myMedNdsOnGeom,          1, 0, 1, 3 );
   aLay->addWidget( myBGBox,                 2, 0, 1, 3 );
+  aLay->addWidget( myWarning,               3, 0, 1, 3 );
   
   connect(myBG, SIGNAL( buttonClicked( int ) ), this, SIGNAL( onClicked( int ) ) );
 }
@@ -113,11 +117,26 @@ int SMESHGUI_ConvToQuadDlg::CurrentRB( )
   return myBG->checkedId();
 }
 
+void SMESHGUI_ConvToQuadDlg::ShowWarning(bool toShow)
+{
+  if ( toShow )
+    myWarning->show();
+  else
+    myWarning->hide();
+}
+
+bool SMESHGUI_ConvToQuadDlg::isWarningShown()
+{
+  return myWarning->isVisible();
+}
+
 void SMESHGUI_ConvToQuadDlg::SetEnabledControls( const bool theCheck )
 {
-  myBGBox->setEnabled( theCheck );
+  //myBGBox->setEnabled( theCheck );
+  myRB1->setEnabled( theCheck );
+  myRB2->setEnabled( theCheck );
   myMedNdsOnGeom->setEnabled( theCheck );
-  setButtonEnabled( theCheck, QtxDialog::OK | QtxDialog::Apply );
+  //setButtonEnabled( theCheck, QtxDialog::OK | QtxDialog::Apply );
 }
 
 void SMESHGUI_ConvToQuadDlg::SetEnabledRB( const int idx, const bool theCheck ) 

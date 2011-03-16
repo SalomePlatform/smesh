@@ -36,6 +36,7 @@ class QCheckBox;
 class QRadioButton;
 class QButtonGroup;
 class QGroupBox;
+class QLabel;
 
 class SMESHGUI_EXPORT SMESHGUI_ConvToQuadDlg : public SMESHGUI_Dialog
 { 
@@ -53,6 +54,8 @@ public:
   void          SetEnabledControls( const bool );
   void          SetEnabledRB( const int, const bool );
   int           CurrentRB(); //returns the ID of the selected toggle button
+  void          ShowWarning(bool);
+  bool          isWarningShown();
 
 signals:
   void          onClicked( int );
@@ -63,6 +66,7 @@ private:
   QButtonGroup* myBG;
   QRadioButton* myRB1;
   QRadioButton* myRB2;
+  QLabel* myWarning;
 };
 
 #endif // SMESHGUI_CONVTOQUADDLG_H

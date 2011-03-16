@@ -3778,8 +3778,8 @@ void SMESHGUI::initialize( CAM_Application* app )
   popupMgr()->insert( separator(), -1, 0 );
   createPopupItem( 4043, OB, mesh );                       // CLEAR_MESH
   popupMgr()->insert( separator(), -1, 0 );
-  createPopupItem( 417, OB, mesh/*, "&& " + hasElems*/);       // convert to quadratic
-  createPopupItem( 418, OB, mesh/*, "&& " + hasVolumes*/);     // create 2D mesh on 3D
+  createPopupItem( 417, OB, mesh + " " + subMesh );         // convert to quadratic
+  createPopupItem( 418, OB, mesh/*, "&& " + hasVolumes*/);  // create 2D mesh on 3D
   popupMgr()->insert( separator(), -1, 0 );
 
   QString only_one_non_empty = QString( " && %1=1 && numberOfNodes>0" ).arg( dc );

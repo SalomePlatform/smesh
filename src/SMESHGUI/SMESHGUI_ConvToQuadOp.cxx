@@ -30,8 +30,9 @@
 #include "SMESHGUI.h"
 #include "SMESHGUI_ConvToQuadDlg.h"
 #include "SMESHGUI_Utils.h"
+#include "SMDSAbs_ElementType.hxx"
 
-#include <SMESH_TypeFilter.hxx>
+#include "SMESH_TypeFilter.hxx"
 
 // SALOME GUI includes
 #include <LightApp_UpdateFlags.h>
@@ -100,6 +101,7 @@ void SMESHGUI_ConvToQuadOp::startOperation()
 
   myDlg->SetMediumNdsOnGeom( false );
   myDlg->activateObject( 0 );
+  myDlg->ShowWarning( false );
   myDlg->show();
 
   selectionDone();
@@ -120,28 +122,48 @@ void SMESHGUI_ConvToQuadOp::selectionDone()
   SMESHGUI_SelectionOp::selectionDone();
   try
   {
-    QString anMeshEntry = myDlg->selectedObject( 0 );
-    _PTR(SObject) pMesh = studyDS()->FindObjectID( anMeshEntry.toLatin1().data() );
-    if ( !pMesh ) return;
+    QString anObjEntry = myDlg->selectedObject( 0 );
+    _PTR(SObject) pObj = studyDS()->FindObjectID( anObjEntry.toLatin1().data() );
+    if ( !pObj ) return;
 
-    SMESH::SMESH_Mesh_var mesh =
-    SMESH::SObjectToInterface<SMESH::SMESH_Mesh>( pMesh );  
+    SMESH::SMESH_IDSource_var idSource = 
+      SMESH::SObjectToInterface<SMESH::SMESH_IDSource>( pObj );  
 
-    if( mesh->_is_nil() )
+    myDlg->setButtonEnabled( true, QtxDialog::OK | QtxDialog::Apply );
+    if( idSource->_is_nil() )
     {
       myDlg->SetEnabledControls( false );
+      myDlg->setButtonEnabled( false, QtxDialog::OK | QtxDialog::Apply );
+      return;
     }
-    else if( ConsistMesh( mesh ) == SMESHGUI_ConvToQuadOp::Quadratic )
+    MeshType meshType = ConsistMesh( idSource );
+    if( meshType == SMESHGUI_ConvToQuadOp::Quadratic )
     {
       myDlg->SetEnabledRB( 0, false );
     }
-    else if( ConsistMesh( mesh ) == SMESHGUI_ConvToQuadOp::Linear )
+    else if( meshType == SMESHGUI_ConvToQuadOp::Linear )
     {
       myDlg->SetEnabledRB( 1, false );
     }
     else 
     {
       myDlg->SetEnabledControls( true );
+    }
+
+    // show warning on non-conformal result mesh
+    if ( ! idSource->_is_nil() )
+    {
+      SMESH::SMESH_subMesh_var subMesh = 
+        SMESH::SObjectToInterface<SMESH::SMESH_subMesh>( pObj );
+      bool toShow = false;
+      if ( !subMesh->_is_nil() )
+      {
+        SMESH::SMESH_Mesh_var mesh = idSource->GetMesh();
+        idSource = SMESH::SMESH_IDSource::_narrow( mesh );
+        MeshType fullMeshType = ConsistMesh( idSource );
+        toShow = ( fullMeshType != Comp );
+      }
+      myDlg->ShowWarning( toShow );
     }
   }
   catch ( const SALOME::SALOME_Exception& S_ex )
@@ -165,7 +187,7 @@ void SMESHGUI_ConvToQuadOp::selectionDone()
 SUIT_SelectionFilter* SMESHGUI_ConvToQuadOp::createFilter( const int theId ) const
 {
   if ( theId == 0 )
-    return new SMESH_TypeFilter( MESH );
+    return new SMESH_TypeFilter( MESHorSUBMESH );
   else
     return 0;
 }
@@ -183,45 +205,52 @@ bool SMESHGUI_ConvToQuadOp::onApply()
 
   QString aMess;
 
-  QString anMeshEntry = myDlg->selectedObject( 0 );
-  _PTR(SObject) pMesh = studyDS()->FindObjectID( anMeshEntry.toLatin1().data() );
-  if ( !pMesh )
+  QString anObjEntry = myDlg->selectedObject( 0 );
+  _PTR(SObject) pObj = studyDS()->FindObjectID( anObjEntry.toLatin1().data() );
+  if ( !pObj )
   {
     dlg()->show();
     SUIT_MessageBox::warning( myDlg,
                               tr( "SMESH_WRN_WARNING" ), tr("MESH_IS_NOT_SELECTED") );
-   
     return false;
   }
 
-  SMESH::SMESH_Mesh_var mesh =
-  SMESH::SObjectToInterface<SMESH::SMESH_Mesh>( pMesh );  
+  SMESH::SMESH_Mesh_var mesh;
+  SMESH::SMESH_IDSource_var idSource = 
+    SMESH::SObjectToInterface<SMESH::SMESH_IDSource>( pObj );  
+  if( !CORBA::is_nil(idSource) )
+    mesh = idSource->GetMesh();
 
   if( CORBA::is_nil(mesh) )
   {
     SUIT_MessageBox::warning( myDlg,
                               tr( "SMESH_WRN_WARNING" ), tr("REF_IS_NULL") );
-
     return false;
-  } 
+  }
 
   bool aResult = false;
 
   try
   {
     SMESH::SMESH_MeshEditor_var aEditor = mesh->GetMeshEditor();
+    aResult = true; 
     if( !myDlg->CurrentRB() )
     {
       bool aParam = true;
       if( myDlg->IsEnabledCheck() )
         aParam = myDlg->IsMediumNdsOnGeom();
 
-      aEditor->ConvertToQuadratic( aParam );
-      aResult = true; 
+      if ( myDlg->isWarningShown() )
+        aEditor->ConvertToQuadraticObject( aParam, idSource );
+      else
+        aEditor->ConvertToQuadratic( aParam );
     }
     else
     {
-      aResult = aEditor->ConvertFromQuadratic();
+      if ( myDlg->isWarningShown() )
+        aEditor->ConvertFromQuadraticObject( idSource );
+      else
+        aEditor->ConvertFromQuadratic();
     }
   }
   catch ( const SALOME::SALOME_Exception& S_ex )
@@ -247,42 +276,43 @@ bool SMESHGUI_ConvToQuadOp::onApply()
  *  Determines, what elements this mesh contains. 
  */
 //================================================================================
-SMESHGUI_ConvToQuadOp::MeshType SMESHGUI_ConvToQuadOp::ConsistMesh( const SMESH::SMESH_Mesh_var& mesh) const
+SMESHGUI_ConvToQuadOp::MeshType SMESHGUI_ConvToQuadOp::ConsistMesh( const SMESH::SMESH_IDSource_var& idSource) const
 {
-  int nbAllElem = 0, nbQEdges =0, nbQFaces =0, nbQVolum = 0;
-  int nbEdges = 0, nbFaces = 0, nbVolum = 0;
+  SMESH::long_array_var nbElemOfType = idSource->GetMeshInfo();
+  bool hasQuad = ( nbElemOfType[SMDSEntity_Quad_Edge      ] ||
+                   nbElemOfType[SMDSEntity_Quad_Triangle  ] ||
+                   nbElemOfType[SMDSEntity_Quad_Quadrangle] ||
+                   nbElemOfType[SMDSEntity_Quad_Tetra     ] ||
+                   nbElemOfType[SMDSEntity_Quad_Hexa      ] ||
+                   nbElemOfType[SMDSEntity_Quad_Pyramid   ] ||
+                   nbElemOfType[SMDSEntity_Quad_Penta     ] );
 
-  nbAllElem = (int)mesh->NbElements();
-  nbQEdges = (int)mesh->NbEdgesOfOrder(SMESH::ORDER_QUADRATIC);
-  nbQFaces = (int)mesh->NbFacesOfOrder(SMESH::ORDER_QUADRATIC);
-  nbQVolum = (int)mesh->NbVolumesOfOrder(SMESH::ORDER_QUADRATIC);
+  bool hasLin  = ( nbElemOfType[SMDSEntity_Edge      ] ||
+                   nbElemOfType[SMDSEntity_Triangle  ] ||
+                   nbElemOfType[SMDSEntity_Quadrangle] ||
+                   nbElemOfType[SMDSEntity_Tetra     ] ||
+                   nbElemOfType[SMDSEntity_Hexa      ] ||
+                   nbElemOfType[SMDSEntity_Pyramid   ] ||
+                   nbElemOfType[SMDSEntity_Penta     ] );
 
-  nbEdges = (int)mesh->NbEdgesOfOrder(SMESH::ORDER_LINEAR);
-  nbFaces = (int)mesh->NbFacesOfOrder(SMESH::ORDER_LINEAR);
-  nbVolum = (int)mesh->NbVolumesOfOrder(SMESH::ORDER_LINEAR);
-
-  if( nbAllElem == (nbQEdges+nbQFaces+nbQVolum) )
-    return SMESHGUI_ConvToQuadOp::Quadratic;
-  else if ( nbAllElem == (nbEdges+nbFaces+nbVolum) )
-    return SMESHGUI_ConvToQuadOp::Linear;
-  else 
-    return SMESHGUI_ConvToQuadOp::Comp;
+  if ( hasQuad && hasLin )
+    return Comp;
+  return hasQuad ? Quadratic : Linear;
 }
-
 
 void SMESHGUI_ConvToQuadOp::ConnectRadioButtons( int id )
 {
-  QString anMeshEntry = myDlg->selectedObject( 0 );
-  _PTR(SObject) pMesh = studyDS()->FindObjectID( anMeshEntry.toLatin1().data() );
-  if ( !pMesh ) return;
+  QString anObjEntry = myDlg->selectedObject( 0 );
+  _PTR(SObject) pObj = studyDS()->FindObjectID( anObjEntry.toLatin1().data() );
+  if ( !pObj ) return;
 
-  SMESH::SMESH_Mesh_var mesh =
-    SMESH::SObjectToInterface<SMESH::SMESH_Mesh>( pMesh );  
+  SMESH::SMESH_IDSource_var idSource = 
+    SMESH::SObjectToInterface<SMESH::SMESH_IDSource>( pObj );  
+  SMESH::SMESH_Mesh_var mesh = idSource->GetMesh();
 
-  GEOM::GEOM_Object_var mainGeom;
-  mainGeom = mesh->GetShapeToMesh();
+  bool hasGeom = mesh->HasShapeToMesh();
 
-  if( id || mainGeom->_is_nil() )
+  if( id || !hasGeom )
     myDlg->SetEnabledCheck( false );
   else
     myDlg->SetEnabledCheck( true );

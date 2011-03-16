@@ -55,7 +55,7 @@ protected:
   virtual void                   startOperation();
   virtual void                   selectionDone();
   virtual SUIT_SelectionFilter*  createFilter( const int ) const;
-  MeshType                       ConsistMesh( const SMESH::SMESH_Mesh_var& ) const;
+  MeshType                       ConsistMesh( const SMESH::SMESH_IDSource_var& ) const;
 
 protected slots:
   virtual bool                   onApply();

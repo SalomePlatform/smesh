@@ -2,12 +2,18 @@
 
 \page convert_to_from_quadratic_mesh_page Convert to/from Quadratic Mesh
 
-\n This functionality allows you to transtorm standard meshes to
-quadratic and vice versa. See \ref adding_quadratic_elements_page "Adding quadratic elements" 
+\n This functionality allows you to transtorm standard meshes (or
+sum-mesh) to quadratic and vice versa. 
+See \ref adding_quadratic_elements_page "Adding quadratic elements" 
 for more information about quadratic meshes.
+Note that conversion of the sub-mesh most probably will
+produce a non-conformal mesh. Elements on the boundary between
+quadratic and linear sub-meshes become (or remain) quadratic.
 
 <em>To produce a conversion:</em>
 <ol>
+<li>Select a mesh or a sub-mesh in the Object Browser or in the
+Viewer.</li>
 <li>From the Modification menu choose the Convert to/from Quadratic
 Mesh item, or click <em>"Convert to/from quadratic"</em> button in the
 toolbar.
@@ -20,11 +26,18 @@ The following dialog box will appear:
 \image html convert.png
 
 </li>
-<li>In this dialog box you should select:
+<li>In this dialog box you should specify:
 
 <ul>
-<li>if you wish to convert standard mesh to quadratic or quadratic to standard;</li>
-<li>if you wish to place medium nodes of the quadratic mesh on the geometry (meshed object).</li>
+<li>if you wish to convert a standard mesh to quadratic or a quadratic
+mesh to standard. Note that the choice is available only if the selected mesh
+(or sub-mesh) contains both quadratic and linear elements, else the
+sole direction of convertion is automatically selected.</li>
+
+<li>if you wish to place medium nodes of the quadratic mesh on the
+geometry (meshed object). This option is active at convertion to
+qudratic mesh only and provided that the mesh is based on some
+geometry (not imported from the file).</li>
 </ul>
 
 \image html image156.gif

@@ -959,6 +959,13 @@ Mesh.ConvertFromQuadratic()
 
 Mesh.ConvertToQuadratic( theForce3d=0 )
 
+# to convert not the whole mesh but a sub-mesh, provide it as 
+# an additional argument to the functions:
+# Mesh.ConvertToQuadratic( 0, subMesh )
+# Mesh.ConvertFromQuadratic( subMesh )
+#
+# Note that the mesh becomes non-conformal at conversion of sub-mesh.
+
 \endcode
 
 */
