@@ -9203,14 +9203,14 @@ int SMESH_MeshEditor::convertElemToQuadratic(SMESHDS_SubMesh *   theSm,
     if( !elem || elem->IsQuadratic() ) continue;
 
     int id = elem->GetID();
-    //MESSAGE("elem " << id);
-    id = 0; // get a free number for new elements
     int nbNodes = elem->NbNodes();
     SMDSAbs_ElementType aType = elem->GetType();
 
     vector<const SMDS_MeshNode *> nodes (elem->begin_nodes(), elem->end_nodes());
     if ( elem->GetEntityType() == SMDSEntity_Polyhedra )
       nbNodeInFaces = static_cast<const SMDS_VtkVolume* >( elem )->GetQuantities();
+
+    GetMeshDS()->RemoveFreeElement(elem, theSm, /*fromGroups=*/false);
 
     const SMDS_MeshElement* NewElem = 0;
 
@@ -9265,8 +9265,6 @@ int SMESH_MeshEditor::convertElemToQuadratic(SMESHDS_SubMesh *   theSm,
     ReplaceElemInGroups( elem, NewElem, GetMeshDS());
     if( NewElem )
       theSm->AddElement( NewElem );
-
-    GetMeshDS()->RemoveFreeElement(elem, theSm, /*fromGroups=*/false);
   }
 //  if (!GetMeshDS()->isCompacted())
 //    GetMeshDS()->compactMesh();
@@ -9392,8 +9390,146 @@ void SMESH_MeshEditor::ConvertToQuadratic(const bool theForce3d)
     aHelper.SetSubShape(0); // apply FixQuadraticElements() to the whole mesh
     aHelper.FixQuadraticElements();
   }
-  if (!GetMeshDS()->isCompacted())
-    GetMeshDS()->compactMesh();
+}
+
+//================================================================================
+/*!
+ * \brief Makes given elements quadratic
+ *  \param theForce3d - if true, the medium nodes will be placed in the middle of link
+ *  \param theElements - elements to make quadratic 
+ */
+//================================================================================
+
+void SMESH_MeshEditor::ConvertToQuadratic(const bool        theForce3d,
+                                          TIDSortedElemSet& theElements)
+{
+  if ( theElements.empty() ) return;
+
+  // we believe that all theElements are of the same type
+  SMDSAbs_ElementType elemType = (*theElements.begin())->GetType();
+  
+  // get all nodes shared by theElements
+  TIDSortedNodeSet allNodes;
+  TIDSortedElemSet::iterator eIt = theElements.begin();
+  for ( ; eIt != theElements.end(); ++eIt )
+    allNodes.insert( (*eIt)->begin_nodes(), (*eIt)->end_nodes() );
+
+  // complete theElements with elements of lower dim whose all nodes are in allNodes
+
+  TIDSortedElemSet quadAdjacentElems    [ SMDSAbs_NbElementTypes ]; // quadratic adjacent elements
+  TIDSortedElemSet checkedAdjacentElems [ SMDSAbs_NbElementTypes ];
+  TIDSortedNodeSet::iterator nIt = allNodes.begin();
+  for ( ; nIt != allNodes.end(); ++nIt )
+  {
+    const SMDS_MeshNode* n = *nIt;
+    SMDS_ElemIteratorPtr invIt = n->GetInverseElementIterator();
+    while ( invIt->more() )
+    {
+      const SMDS_MeshElement* e = invIt->next();
+      if ( e->IsQuadratic() )
+      {
+        quadAdjacentElems[ e->GetType() ].insert( e );
+        continue;
+      }
+      if ( e->GetType() >= elemType )
+      {
+        continue; // same type of more complex linear element
+      }
+
+      if ( !checkedAdjacentElems[ e->GetType() ].insert( e ).second )
+        continue; // e is already checked
+
+      // check nodes
+      bool allIn = true;
+      SMDS_ElemIteratorPtr nodeIt = e->nodesIterator();
+      while ( nodeIt->more() && allIn )
+        allIn = allNodes.count( cast2Node( nodeIt->next() ));
+      if ( allIn )
+        theElements.insert(e );
+    }
+  }
+
+  SMESH_MesherHelper helper(*myMesh);
+  helper.SetIsQuadratic( true );
+
+  // add links of quadratic adjacent elements to the helper
+
+  if ( !quadAdjacentElems[SMDSAbs_Edge].empty() )
+    for ( eIt  = quadAdjacentElems[SMDSAbs_Edge].begin();
+          eIt != quadAdjacentElems[SMDSAbs_Edge].end(); ++eIt )
+    {
+      helper.AddTLinks( static_cast< const SMDS_MeshEdge*> (*eIt) );
+    }
+  if ( !quadAdjacentElems[SMDSAbs_Face].empty() )
+    for ( eIt  = quadAdjacentElems[SMDSAbs_Face].begin();
+          eIt != quadAdjacentElems[SMDSAbs_Face].end(); ++eIt )
+    {
+      helper.AddTLinks( static_cast< const SMDS_MeshFace*> (*eIt) );
+    }
+  if ( !quadAdjacentElems[SMDSAbs_Volume].empty() )
+    for ( eIt  = quadAdjacentElems[SMDSAbs_Volume].begin();
+          eIt != quadAdjacentElems[SMDSAbs_Volume].end(); ++eIt )
+    {
+      helper.AddTLinks( static_cast< const SMDS_MeshVolume*> (*eIt) );
+    }
+
+  // make quadratic elements instead of linear ones
+
+  SMESHDS_Mesh* meshDS = GetMeshDS();
+  SMESHDS_SubMesh* smDS = 0;
+  for ( eIt = theElements.begin(); eIt != theElements.end(); ++eIt )
+  {
+    const SMDS_MeshElement* elem = *eIt;
+    if( elem->IsQuadratic() || elem->NbNodes() < 2 || elem->IsPoly() )
+      continue;
+
+    int id = elem->GetID();
+    SMDSAbs_ElementType type = elem->GetType();
+    vector<const SMDS_MeshNode *> nodes ( elem->begin_nodes(), elem->end_nodes());
+
+    if ( !smDS || !smDS->Contains( elem ))
+      smDS = meshDS->MeshElements( elem->getshapeId() );
+    meshDS->RemoveFreeElement(elem, smDS, /*fromGroups=*/false);
+
+    SMDS_MeshElement * newElem = 0;
+    switch( nodes.size() )
+    {
+    case 4: // cases for most multiple element types go first (for optimization)
+      if ( type == SMDSAbs_Volume )
+        newElem = helper.AddVolume(nodes[0], nodes[1], nodes[2], nodes[3], id, theForce3d);
+      else
+        newElem = helper.AddFace  (nodes[0], nodes[1], nodes[2], nodes[3], id, theForce3d);
+      break;
+    case 8:
+      newElem = helper.AddVolume(nodes[0], nodes[1], nodes[2], nodes[3],
+                                 nodes[4], nodes[5], nodes[6], nodes[7], id, theForce3d);
+      break;
+    case 3:
+      newElem = helper.AddFace  (nodes[0], nodes[1], nodes[2], id, theForce3d);
+      break;
+    case 2:
+      newElem = helper.AddEdge(nodes[0], nodes[1], id, theForce3d);
+      break;
+    case 5:
+      newElem = helper.AddVolume(nodes[0], nodes[1], nodes[2], nodes[3],
+                                 nodes[4], id, theForce3d);
+      break;
+    case 6:
+      newElem = helper.AddVolume(nodes[0], nodes[1], nodes[2], nodes[3],
+                                 nodes[4], nodes[5], id, theForce3d);
+      break;
+    default:;
+    }
+    ReplaceElemInGroups( elem, newElem, meshDS);
+    if( newElem && smDS )
+      smDS->AddElement( newElem );
+  }
+
+  if ( !theForce3d  && !getenv("NO_FixQuadraticElements"))
+  { // setenv NO_FixQuadraticElements to know if FixQuadraticElements() is guilty of bad conversion
+    helper.SetSubShape(0); // apply FixQuadraticElements() to the whole mesh
+    helper.FixQuadraticElements();
+  }
 }
 
 //=======================================================================
@@ -9409,7 +9545,6 @@ int SMESH_MeshEditor::removeQuadElem(SMESHDS_SubMesh *    theSm,
 {
   int nbElem = 0;
   SMESHDS_Mesh* meshDS = GetMeshDS();
-  const bool notFromGroups = false;
 
   while( theItr->more() )
   {
@@ -9417,44 +9552,28 @@ int SMESH_MeshEditor::removeQuadElem(SMESHDS_SubMesh *    theSm,
     nbElem++;
     if( elem && elem->IsQuadratic())
     {
-      int id = elem->GetID();
-      int nbNodes = elem->NbNodes();
-      vector<const SMDS_MeshNode *> nodes, mediumNodes;
-      nodes.reserve( nbNodes );
-      mediumNodes.reserve( nbNodes );
-
-      for(int i = 0; i < nbNodes; i++)
-      {
-        const SMDS_MeshNode* n = elem->GetNode(i);
-
-        if( elem->IsMediumNode( n ) )
-          mediumNodes.push_back( n );
-        else
-          nodes.push_back( n );
-      }
-      if( nodes.empty() ) continue;
+      int id                    = elem->GetID();
+      int nbCornerNodes         = elem->NbCornerNodes();
       SMDSAbs_ElementType aType = elem->GetType();
 
-      //remove old quadratic element
-      meshDS->RemoveFreeElement( elem, theSm, notFromGroups );
+      vector<const SMDS_MeshNode *> nodes( elem->begin_nodes(), elem->end_nodes() );
 
-      SMDS_MeshElement * NewElem = AddElement( nodes, aType, false, id );
-      ReplaceElemInGroups(elem, NewElem, meshDS);
-      if( theSm && NewElem )
-        theSm->AddElement( NewElem );
+      //remove a quadratic element
+      if ( !theSm || !theSm->Contains( elem ))
+        theSm = meshDS->MeshElements( elem->getshapeId() );
+      meshDS->RemoveFreeElement( elem, theSm, /*fromGroups=*/false );
 
       // remove medium nodes
-      vector<const SMDS_MeshNode*>::iterator nIt = mediumNodes.begin();
-      for ( ; nIt != mediumNodes.end(); ++nIt ) {
-        const SMDS_MeshNode* n = *nIt;
-        if ( n->NbInverseElements() == 0 ) {
-          if ( n->getshapeId() != theShapeID )
-            meshDS->RemoveFreeNode( n, meshDS->MeshElements
-                                    ( n->getshapeId() ));
-          else
-            meshDS->RemoveFreeNode( n, theSm );
-        }
-      }
+      for ( unsigned i = nbCornerNodes; i < nodes.size(); ++i )
+        if ( nodes[i]->NbInverseElements() == 0 )
+          meshDS->RemoveFreeNode( nodes[i], theSm );
+
+      // add a linear element
+      nodes.resize( nbCornerNodes );
+      SMDS_MeshElement * newElem = AddElement( nodes, aType, false, id );
+      ReplaceElemInGroups(elem, newElem, meshDS);
+      if( theSm && newElem )
+        theSm->AddElement( newElem );
     }
   }
   return nbElem;
@@ -9464,7 +9583,8 @@ int SMESH_MeshEditor::removeQuadElem(SMESHDS_SubMesh *    theSm,
 //function : ConvertFromQuadratic
 //purpose  :
 //=======================================================================
-bool  SMESH_MeshEditor::ConvertFromQuadratic()
+
+bool SMESH_MeshEditor::ConvertFromQuadratic()
 {
   int nbCheckedElems = 0;
   if ( myMesh->HasShapeToMesh() )
@@ -9489,6 +9609,102 @@ bool  SMESH_MeshEditor::ConvertFromQuadratic()
   }
 
   return true;
+}
+
+namespace
+{
+  //================================================================================
+  /*!
+   * \brief Return true if all medium nodes of the element are in the node set
+   */
+  //================================================================================
+
+  bool allMediumNodesIn(const SMDS_MeshElement* elem, TIDSortedNodeSet& nodeSet )
+  {
+    for ( int i = elem->NbCornerNodes(); i < elem->NbNodes(); ++i )
+      if ( !nodeSet.count( elem->GetNode(i) ))
+        return false;
+    return true;
+  }
+}
+
+//================================================================================
+/*!
+ * \brief Makes given elements linear
+ */
+//================================================================================
+
+void SMESH_MeshEditor::ConvertFromQuadratic(TIDSortedElemSet& theElements)
+{
+  if ( theElements.empty() ) return;
+
+  // collect IDs of medium nodes of theElements; some of these nodes will be removed
+  set<int> mediumNodeIDs;
+  TIDSortedElemSet::iterator eIt = theElements.begin();
+  for ( ; eIt != theElements.end(); ++eIt )
+  {
+    const SMDS_MeshElement* e = *eIt;
+    for ( int i = e->NbCornerNodes(); i < e->NbNodes(); ++i )
+      mediumNodeIDs.insert( e->GetNode(i)->GetID() );
+  }
+
+  // replace given elements by linear ones
+  typedef SMDS_SetIterator<const SMDS_MeshElement*, TIDSortedElemSet::iterator> TSetIterator;
+  SMDS_ElemIteratorPtr elemIt( new TSetIterator( theElements.begin(), theElements.end() ));
+  removeQuadElem( /*theSm=*/0, elemIt, /*theShapeID=*/0 );
+
+  // we need to convert remaining elements whose all medium nodes are in mediumNodeIDs
+  // except those elements sharing medium nodes of quadratic element whose medium nodes
+  // are not all in mediumNodeIDs
+
+  // get remaining medium nodes
+  TIDSortedNodeSet mediumNodes;
+  set<int>::iterator nIdsIt = mediumNodeIDs.begin();
+  for ( ; nIdsIt != mediumNodeIDs.end(); ++nIdsIt )
+    if ( const SMDS_MeshNode* n = GetMeshDS()->FindNode( *nIdsIt ))
+      mediumNodes.insert( mediumNodes.end(), n );
+
+  // find more quadratic elements to convert
+  TIDSortedElemSet moreElemsToConvert;
+  TIDSortedNodeSet::iterator nIt = mediumNodes.begin();
+  for ( ; nIt != mediumNodes.end(); ++nIt )
+  {
+    SMDS_ElemIteratorPtr invIt = (*nIt)->GetInverseElementIterator();
+    while ( invIt->more() )
+    {
+      const SMDS_MeshElement* e = invIt->next();
+      if ( e->IsQuadratic() && allMediumNodesIn( e, mediumNodes ))
+      {
+        // find a more complex element including e and
+        // whose medium nodes are not in mediumNodes
+        bool complexFound = false;
+        for ( int type = e->GetType() + 1; type < SMDSAbs_0DElement; ++type )
+        {
+          SMDS_ElemIteratorPtr invIt2 =
+            (*nIt)->GetInverseElementIterator( SMDSAbs_ElementType( type ));
+          while ( invIt2->more() )
+          {
+            const SMDS_MeshElement* eComplex = invIt2->next();
+            if ( eComplex->IsQuadratic() && !allMediumNodesIn( eComplex, mediumNodes))
+            {
+              int nbCommonNodes = SMESH_Algo::GetCommonNodes( e, eComplex ).size();
+              if ( nbCommonNodes == e->NbNodes())
+              {
+                complexFound = true;
+                type = SMDSAbs_NbElementTypes; // to quit from the outer loop
+                break;
+              }
+            }
+          }
+        }
+        if ( !complexFound )
+          moreElemsToConvert.insert( e );
+      }
+    }
+  }
+  elemIt = SMDS_ElemIteratorPtr
+    (new TSetIterator( moreElemsToConvert.begin(), moreElemsToConvert.end() ));
+  removeQuadElem( /*theSm=*/0, elemIt, /*theShapeID=*/0 );
 }
 
 //=======================================================================
