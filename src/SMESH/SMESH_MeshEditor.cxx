@@ -10776,6 +10776,7 @@ bool SMESH_MeshEditor::DoubleNodesOnGroupBoundaries( const std::vector<TIDSorted
 
   // --- new quad nodes on flat quad elements: oldId --> ((domain1 X domain2) --> newId)
   //     (domain1 X domain2) = domain1 + MAXINT*domain2
+
   std::map<int, std::map<long,int> > nodeQuadDomains;
 
   if (createJointElems)
@@ -10799,41 +10800,89 @@ bool SMESH_MeshEditor::DoubleNodesOnGroupBoundaries( const std::vector<TIDSorted
         }
     }
 
+  // --- list the explicit faces and edges of the mesh that need to be modified,
+  //     i.e. faces and edges built with one or more duplicated nodes.
+  //     associate these faces or edges to their corresponding domain.
+  //     only the first domain found is kept when a face or edge is shared
+
+  std::map<DownIdType, std::map<int,int>, DownIdCompare> faceOrEdgeDom; // cellToModify --> (id domain --> id cell)
+  std::map<int,int> feDom; // vtk id of cell to modify --> id domain
+  faceOrEdgeDom.clear();
+  feDom.clear();
+
+  for (int idomain = 0; idomain < theElems.size(); idomain++)
+    {
+      std::map<int, std::map<int, int> >::const_iterator itnod = nodeDomains.begin();
+      for (; itnod != nodeDomains.end(); ++itnod)
+        {
+          int oldId = itnod->first;
+          //MESSAGE("     node " << oldId);
+          vtkCellLinks::Link l = grid->GetCellLinks()->GetLink(oldId);
+          for (int i = 0; i < l.ncells; i++)
+            {
+              int vtkId = l.cells[i];
+              int vtkType = grid->GetCellType(vtkId);
+              int downId = grid->CellIdToDownId(vtkId);
+              DownIdType aCell(downId, vtkType);
+              int volParents[1000];
+              int nbvol = grid->GetParentVolumes(volParents, vtkId);
+              for (int j = 0; j < nbvol; j++)
+                if (celldom.count(volParents[j]) && (celldom[volParents[j]] == idomain))
+                  if (!feDom.count(vtkId))
+                    {
+                      feDom[vtkId] = idomain;
+                      faceOrEdgeDom[aCell] = emptyMap;
+                      faceOrEdgeDom[aCell][idomain] = vtkId; // affect face or edge to the first domain only
+                      //MESSAGE("affect cell " << this->GetMeshDS()->fromVtkToSmds(vtkId) << " domain " << idomain
+                      //        << " type " << vtkType << " downId " << downId);
+                    }
+            }
+        }
+    }
+
   // --- iterate on shared faces (volumes to modify, face to extrude)
   //     get node id's of the face
   //     replace old nodes by new nodes in volumes, and update inverse connectivity
 
-  MESSAGE("cellDomains " << cellDomains.size());
-  faceDomains.insert(cellDomains.begin(), cellDomains.end());
-  itface = faceDomains.begin();
-  for( ; itface != faceDomains.end();++itface )
+  std::map<DownIdType, std::map<int,int>, DownIdCompare>* maps[3] = {&faceDomains, &cellDomains, &faceOrEdgeDom};
+  for (int m=0; m<3; m++)
     {
-      DownIdType face = itface->first;
-      std::set<int> oldNodes;
-      std::set<int>::iterator itn;
-      oldNodes.clear();
-      grid->GetNodeIds(oldNodes, face.cellId, face.cellType);
-      std::map<int,int> localClonedNodeIds;
-
-      std::map<int,int> domvol = itface->second;
-      std::map<int,int>::iterator itdom = domvol.begin();
-      for(; itdom != domvol.end(); ++itdom)
+      std::map<DownIdType, std::map<int,int>, DownIdCompare>* amap = maps[m];
+      itface = (*amap).begin();
+      for (; itface != (*amap).end(); ++itface)
         {
-          int idom = itdom->first;
-          int vtkVolId = itdom->second;
-          localClonedNodeIds.clear();
-          for (itn = oldNodes.begin(); itn != oldNodes.end(); ++itn)
+          DownIdType face = itface->first;
+          std::set<int> oldNodes;
+          std::set<int>::iterator itn;
+          oldNodes.clear();
+          grid->GetNodeIds(oldNodes, face.cellId, face.cellType);
+          //MESSAGE("examine cell, downId " << face.cellId << " type " << int(face.cellType));
+          std::map<int, int> localClonedNodeIds;
+
+          std::map<int, int> domvol = itface->second;
+          std::map<int, int>::iterator itdom = domvol.begin();
+          for (; itdom != domvol.end(); ++itdom)
             {
-              int oldId = *itn;
-              if (nodeDomains[oldId].count(idom))
-                localClonedNodeIds[oldId] = nodeDomains[oldId][idom];
+              int idom = itdom->first;
+              int vtkVolId = itdom->second;
+              //MESSAGE("modify nodes of cell " << this->GetMeshDS()->fromVtkToSmds(vtkVolId) << " domain " << idom);
+              localClonedNodeIds.clear();
+              for (itn = oldNodes.begin(); itn != oldNodes.end(); ++itn)
+                {
+                  int oldId = *itn;
+                  if (nodeDomains[oldId].count(idom))
+                    {
+                      localClonedNodeIds[oldId] = nodeDomains[oldId][idom];
+                      //MESSAGE("     node " << oldId << " --> " << localClonedNodeIds[oldId]);
+                    }
+                }
+              meshDS->ModifyCellNodes(vtkVolId, localClonedNodeIds);
             }
-          meshDS->ModifyCellNodes(vtkVolId, localClonedNodeIds);
         }
     }
+
   grid->BuildLinks();
 
-  // TODO replace also old nodes by new nodes in faces and edges
   CHRONOSTOP(50);
   counters::stats();
   return true;
