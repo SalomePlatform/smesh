@@ -62,10 +62,24 @@ bool SMDS_MeshNodeIDFactory::BindID(int ID, SMDS_MeshElement * elem)
 //=======================================================================
 SMDS_MeshElement* SMDS_MeshNodeIDFactory::MeshElement(int ID)
 {
-  if ((ID < 1) || (ID > myMax))
-    return NULL;
+  // commented since myMax can be 0 after ReleaseID()
+//   if ((ID < 1) || (ID > myMax))
+//     return NULL;
   const SMDS_MeshElement* elem = GetMesh()->FindNode(ID);
   return (SMDS_MeshElement*) (elem);
+}
+
+//=======================================================================
+//function : GetFreeID
+//purpose  : 
+//=======================================================================
+int SMDS_MeshNodeIDFactory::GetFreeID()
+{
+  int ID;
+  do {
+    ID = SMDS_MeshIDFactory::GetFreeID();
+  } while ( MeshElement( ID ));
+  return ID;
 }
 
 //=======================================================================

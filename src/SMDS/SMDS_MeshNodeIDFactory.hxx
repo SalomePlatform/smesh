@@ -41,6 +41,7 @@ public:
   SMDS_MeshNodeIDFactory();
   bool BindID(int ID, SMDS_MeshElement * elem);
   SMDS_MeshElement * MeshElement(int ID);
+  virtual int GetFreeID();
   virtual void ReleaseID(int ID, int vtkId = -1);
   int GetMaxID() const;
   int GetMinID() const;

@@ -45,6 +45,7 @@ public:
   bool BindID(int ID, SMDS_MeshElement * elem);
   int SetInVtkGrid(SMDS_MeshElement * elem);
   SMDS_MeshElement * MeshElement(int ID);
+  virtual int GetFreeID();
   virtual void ReleaseID(int ID, int vtkId = -1);
   SMDS_ElemIteratorPtr elementsIterator() const;
   virtual void Clear();

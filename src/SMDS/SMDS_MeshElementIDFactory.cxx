@@ -127,6 +127,20 @@ SMDS_MeshElement* SMDS_MeshElementIDFactory::MeshElement(int ID)
 }
 
 //=======================================================================
+//function : GetFreeID
+//purpose  : 
+//=======================================================================
+
+int SMDS_MeshElementIDFactory::GetFreeID()
+{
+  int ID;
+  do {
+    ID = SMDS_MeshIDFactory::GetFreeID();
+  } while ( MeshElement( ID ));
+  return ID;
+}
+
+//=======================================================================
 //function : ReleaseID
 //purpose  : 
 //=======================================================================
