@@ -179,6 +179,11 @@ public:
 
   void ConvertToQuadratic(CORBA::Boolean Force3d);
   CORBA::Boolean ConvertFromQuadratic();
+  void ConvertToQuadraticObject(CORBA::Boolean            theForce3d,
+                                SMESH::SMESH_IDSource_ptr theObject)
+    throw (SALOME::SALOME_Exception);
+  void ConvertFromQuadraticObject(SMESH::SMESH_IDSource_ptr theObject)
+    throw (SALOME::SALOME_Exception);
 
   void RenumberNodes();
   void RenumberElements();

@@ -4785,6 +4785,74 @@ CORBA::Boolean SMESH_MeshEditor_i::ConvertFromQuadratic()
     myMesh->SetIsModified( true );
   return isDone;
 }
+//================================================================================
+/*!
+ * \brief Makes a part of the mesh quadratic
+ */
+//================================================================================
+
+void SMESH_MeshEditor_i::ConvertToQuadraticObject(CORBA::Boolean            theForce3d,
+                                                  SMESH::SMESH_IDSource_ptr theObject)
+  throw (SALOME::SALOME_Exception)
+{
+  Unexpect aCatch(SALOME_SalomeException);
+  TPythonDump pyDump;
+  TIDSortedElemSet elems;
+  if ( idSourceToSet( theObject, GetMeshDS(), elems, SMDSAbs_All, /*emptyIfIsMesh=*/true ))
+  {
+    if ( elems.empty() )
+    {
+      ConvertToQuadratic( theForce3d );
+    }
+    else if ( (*elems.begin())->GetType() == SMDSAbs_Node )
+    {
+      THROW_SALOME_CORBA_EXCEPTION("Group of nodes is not allowed", SALOME::BAD_PARAM);
+    }
+    else
+    {
+      ::SMESH_MeshEditor anEditor( myMesh );
+      anEditor.ConvertToQuadratic(theForce3d, elems);
+    }
+  }
+  myMesh->GetMeshDS()->Modified();
+  myMesh->SetIsModified( true );
+
+  pyDump << this << ".ConvertToQuadraticObject( "<<theForce3d<<", "<<theObject<<" )";
+}
+
+//================================================================================
+/*!
+ * \brief Makes a part of the mesh linear
+ */
+//================================================================================
+
+void SMESH_MeshEditor_i::ConvertFromQuadraticObject(SMESH::SMESH_IDSource_ptr theObject)
+  throw (SALOME::SALOME_Exception)
+{
+  Unexpect aCatch(SALOME_SalomeException);
+  TPythonDump pyDump;
+  TIDSortedElemSet elems;
+  if ( idSourceToSet( theObject, GetMeshDS(), elems, SMDSAbs_All, /*emptyIfIsMesh=*/true ))
+  {
+    if ( elems.empty() )
+    {
+      ConvertFromQuadratic();
+    }
+    else if ( (*elems.begin())->GetType() == SMDSAbs_Node )
+    {
+      THROW_SALOME_CORBA_EXCEPTION("Group of nodes is not allowed", SALOME::BAD_PARAM);
+    }
+    else
+    {
+      ::SMESH_MeshEditor anEditor( myMesh );
+      anEditor.ConvertFromQuadratic(elems);
+    }
+  }
+  myMesh->GetMeshDS()->Modified();
+  myMesh->SetIsModified( true );
+
+  pyDump << this << ".ConvertFromQuadraticObject( "<<theObject<<" )";
+}
 
 //=======================================================================
 //function : makeMesh

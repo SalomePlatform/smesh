@@ -1160,7 +1160,7 @@ void _pyMeshEditor::Process( const Handle(_pyCommand)& theCommand)
   bool isPyMeshMethod = sameMethods.Contains( method );
   if ( !isPyMeshMethod )
   {
-    //Replace SMESH_MeshEditor "MakeGroups" functions on the Mesh 
+    //Replace SMESH_MeshEditor "MakeGroups" functions by the Mesh 
     //functions with the flag "theMakeGroups = True" like:
     //SMESH_MeshEditor.CmdMakeGroups => Mesh.Cmd(...,True)
     int pos = method.Search("MakeGroups");
@@ -1197,12 +1197,27 @@ void _pyMeshEditor::Process( const Handle(_pyCommand)& theCommand)
   // DoubleNodeGroupNew() -> DoubleNodeGroup()
   // DoubleNodeGroupsNew() -> DoubleNodeGroups()
   // DoubleNodeElemGroupsNew() -> DoubleNodeElemGroups()
-  if ( !isPyMeshMethod && ( method == "DoubleNodeElemGroupNew" || method == "DoubleNodeElemGroupsNew" ||
-                            method == "DoubleNodeGroupNew"     || method == "DoubleNodeGroupsNew"))
+  if ( !isPyMeshMethod && ( method == "DoubleNodeElemGroupNew"  ||
+                            method == "DoubleNodeElemGroupsNew" ||
+                            method == "DoubleNodeGroupNew"      ||
+                            method == "DoubleNodeGroupsNew"))
   {
     isPyMeshMethod=true;
     theCommand->SetMethod( method.SubString( 1, method.Length()-3));
     theCommand->SetArg(theCommand->GetNbArgs()+1,"True");
+  }
+  // ConvertToQuadraticObject(bool,obj) -> ConvertToQuadratic(bool,obj)
+  // ConvertFromQuadraticObject(obj) -> ConvertFromQuadratic(obj)
+  if ( !isPyMeshMethod && ( method == "ConvertToQuadraticObject" ||
+                            method == "ConvertFromQuadraticObject" ))
+  {
+    isPyMeshMethod=true;
+    theCommand->SetMethod( method.SubString( 1, method.Length()-6));
+    // prevent moving creation of the converted sub-mesh to the end of the script
+    bool isFromQua = ( method.Value( 8 ) == 'F' );
+    Handle(_pySubMesh) sm = theGen->FindSubMesh( theCommand->GetArg( isFromQua ? 1 : 2 ));
+    if ( !sm.IsNull() )
+      sm->Process( theCommand );
   }
 
   // meshes made by *MakeMesh() methods are not wrapped by _pyMesh,
@@ -2510,7 +2525,7 @@ void _pySubMesh::Process( const Handle(_pyCommand)& theCommand )
 
 //================================================================================
 /*!
- * \brief Clear creatin command if no commands invoked
+ * \brief Clear creation command if no commands invoked
  */
 //================================================================================
 
