@@ -284,6 +284,13 @@ module SMESH
 
     boolean ConvertFromQuadratic();
 
+    void ConvertToQuadraticObject(in boolean        theForce3d, 
+                                  in SMESH_IDSource theObject) 
+      raises (SALOME::SALOME_Exception);
+
+    void ConvertFromQuadraticObject(in SMESH_IDSource theObject)
+      raises (SALOME::SALOME_Exception);
+
     void RenumberNodes();
 
     void RenumberElements();
