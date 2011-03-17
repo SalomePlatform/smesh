@@ -1433,6 +1433,9 @@ CORBA::Boolean SMESH_Gen_i::Compute( SMESH::SMESH_Mesh_ptr theMesh,
         myLocShape = SMESH_Mesh::PseudoShape();
       // call implementation compute
       ::SMESH_Mesh& myLocMesh = meshServant->GetImpl();
+#ifdef WITH_SMESH_CANCEL_COMPUTE
+      myGen.PrepareCompute( myLocMesh, myLocShape);
+#endif
       bool ok = myGen.Compute( myLocMesh, myLocShape);
       meshServant->CreateGroupServants(); // algos can create groups (issue 0020918)
       myLocMesh.GetMeshDS()->Modified();
@@ -1449,6 +1452,29 @@ CORBA::Boolean SMESH_Gen_i::Compute( SMESH::SMESH_Mesh_ptr theMesh,
     INFOS( "Compute(): unknown exception " );
   }
   return false;
+}
+
+//=============================================================================
+/*!
+ *  SMESH_Gen_i::CancelCompute
+ *
+ *  Cancel Compute mesh on a shape
+ */
+//=============================================================================
+
+void SMESH_Gen_i::CancelCompute( SMESH::SMESH_Mesh_ptr theMesh,
+                                 GEOM::GEOM_Object_ptr theShapeObject )
+{
+#ifdef WITH_SMESH_CANCEL_COMPUTE
+  SMESH_Mesh_i* meshServant = dynamic_cast<SMESH_Mesh_i*>( GetServant( theMesh ).in() );
+  ::SMESH_Mesh& myLocMesh = meshServant->GetImpl();
+  TopoDS_Shape myLocShape;
+  if(theMesh->HasShapeToMesh())
+    myLocShape = GeomObjectToShape( theShapeObject );
+  else
+    myLocShape = SMESH_Mesh::PseudoShape();
+  myGen.CancelCompute( myLocMesh, myLocShape);
+#endif
 }
 
 //=============================================================================

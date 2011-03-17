@@ -270,6 +270,12 @@ module SMESH
       raises ( SALOME::SALOME_Exception );
 
     /*!
+     * Cancel a computation.
+     */
+    void CancelCompute( in SMESH_Mesh        theMesh,
+			in GEOM::GEOM_Object theSubObject );
+
+    /*!
      * Return true if hypotheses are defined well
      */
     boolean IsReadyToCompute( in SMESH_Mesh        theMesh,

@@ -245,6 +245,11 @@ public:
   CORBA::Boolean Compute( SMESH::SMESH_Mesh_ptr theMesh,
                           GEOM::GEOM_Object_ptr theShapeObject )
     throw ( SALOME::SALOME_Exception );
+
+  // Cancel Compute mesh on a shape
+  void CancelCompute( SMESH::SMESH_Mesh_ptr theMesh,
+                      GEOM::GEOM_Object_ptr theShapeObject );
+
   /*!
    * \brief Return errors of mesh computation
    */
