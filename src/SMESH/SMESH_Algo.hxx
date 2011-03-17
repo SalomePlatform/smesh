@@ -134,6 +134,10 @@ public:
    */
   virtual bool Compute(SMESH_Mesh & aMesh, SMESH_MesherHelper* aHelper);
 
+#ifdef WITH_SMESH_CANCEL_COMPUTE
+  virtual void CancelCompute();
+#endif
+
   /*!
    * \brief evaluates size of prospective mesh on a shape
     * \param aMesh - the mesh

@@ -83,6 +83,13 @@ public:
                const ::MeshDimension aDim=::MeshDim_3D,
                TSetOfInt*            aShapesId=0);
 
+#ifdef WITH_SMESH_CANCEL_COMPUTE
+  void PrepareCompute(::SMESH_Mesh &        aMesh,
+                      const TopoDS_Shape &  aShape);
+  void CancelCompute(::SMESH_Mesh &        aMesh,
+                     const TopoDS_Shape &  aShape);
+#endif
+
   /*!
    * \brief evaluates size of prospective mesh on a shape 
    * \param aMesh - the mesh
@@ -162,6 +169,11 @@ private:
   // default of segments
   int _nbSegments;
   counters *_counters;
+
+#ifdef WITH_SMESH_CANCEL_COMPUTE
+  volatile bool _compute_canceled;
+  SMESH_subMesh* _sm_current;
+#endif
 };
 
 #endif

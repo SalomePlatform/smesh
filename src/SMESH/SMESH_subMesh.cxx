@@ -1288,6 +1288,10 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
       break;
     case COMPUTE:               // nothing to do
       break;
+#ifdef WITH_SMESH_CANCEL_COMPUTE
+    case COMPUTE_CANCELED:               // nothing to do
+      break;
+#endif
     case CLEAN:
       CleanDependants();
       RemoveSubMeshElementsAndNodes();
@@ -1459,6 +1463,10 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
         UpdateDependantsState( SUBMESH_COMPUTED ); // send event SUBMESH_COMPUTED
       }
       break;
+#ifdef WITH_SMESH_CANCEL_COMPUTE
+    case COMPUTE_CANCELED:               // nothing to do
+      break;
+#endif
     case CLEAN:
       CleanDependants();
       RemoveSubMeshElementsAndNodes();
@@ -1508,6 +1516,10 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
       break;
     case COMPUTE:               // nothing to do
       break;
+#ifdef WITH_SMESH_CANCEL_COMPUTE
+    case COMPUTE_CANCELED:               // nothing to do
+      break;
+#endif
     case CLEAN:
       CleanDependants();  // clean sub-meshes, dependant on this one, with event CLEAN
       RemoveSubMeshElementsAndNodes();
@@ -1560,6 +1572,14 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
       break;
     case COMPUTE:      // nothing to do
       break;
+#ifdef WITH_SMESH_CANCEL_COMPUTE
+    case COMPUTE_CANCELED:
+      {
+        algo = gen->GetAlgo((*_father), _subShape);
+        algo->CancelCompute();
+      }
+      break;
+#endif
     case CLEAN:
       CleanDependants(); // submeshes dependent on me should be cleaned as well
       RemoveSubMeshElementsAndNodes();

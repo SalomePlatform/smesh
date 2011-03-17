@@ -595,6 +595,12 @@ bool SMESH_Algo::Compute(SMESH_Mesh & /*aMesh*/, SMESH_MesherHelper* /*aHelper*/
   return error( COMPERR_BAD_INPUT_MESH, "Mesh built on shape expected");
 }
 
+#ifdef WITH_SMESH_CANCEL_COMPUTE
+void SMESH_Algo::CancelCompute()
+{
+}
+#endif
+
 //================================================================================
 /*!
  * \brief store error and comment and then return ( error == COMPERR_OK )

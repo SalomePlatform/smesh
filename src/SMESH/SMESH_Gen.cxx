@@ -62,6 +62,10 @@ SMESH_Gen::SMESH_Gen()
         SMDS_Mesh::_meshList.clear();
         MESSAGE(SMDS_Mesh::_meshList.size());
         _counters = new counters(100);
+#ifdef WITH_SMESH_CANCEL_COMPUTE
+        _compute_canceled = false;
+        _sm_current = NULL;
+#endif
 }
 
 //=============================================================================
@@ -151,7 +155,17 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
       }
 
       if (smToCompute->GetComputeState() == SMESH_subMesh::READY_TO_COMPUTE)
+      {
+#ifdef WITH_SMESH_CANCEL_COMPUTE
+        if (_compute_canceled)
+          return false;
+        _sm_current = smToCompute;
+#endif
         smToCompute->ComputeStateEngine( SMESH_subMesh::COMPUTE );
+#ifdef WITH_SMESH_CANCEL_COMPUTE
+        _sm_current = NULL;
+#endif
+      }
 
       // we check all the submeshes here and detect if any of them failed to compute
       if (smToCompute->GetComputeState() == SMESH_subMesh::FAILED_TO_COMPUTE)
@@ -192,7 +206,15 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
           smWithAlgoSupportingSubmeshes.push_front( smToCompute );
         else
         {
+#ifdef WITH_SMESH_CANCEL_COMPUTE
+          if (_compute_canceled)
+            return false;
+          _sm_current = smToCompute;
+#endif
           smToCompute->ComputeStateEngine( SMESH_subMesh::COMPUTE );
+#ifdef WITH_SMESH_CANCEL_COMPUTE
+          _sm_current = NULL;
+#endif
           if ( aShapesId )
             aShapesId->insert( smToCompute->GetId() );
         }
@@ -262,7 +284,15 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
         if ( aShapesId && GetShapeDim( aShType ) > (int)aDim )
           continue;
 
+#ifdef WITH_SMESH_CANCEL_COMPUTE
+        if (_compute_canceled)
+          return false;
+        _sm_current = sm;
+#endif
         sm->ComputeStateEngine( SMESH_subMesh::COMPUTE );
+#ifdef WITH_SMESH_CANCEL_COMPUTE
+        _sm_current = NULL;
+#endif
         if ( aShapesId )
           aShapesId->insert( sm->GetId() );
       }
@@ -297,6 +327,34 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
   return ret;
 }
 
+
+#ifdef WITH_SMESH_CANCEL_COMPUTE
+//=============================================================================
+/*!
+ * Prepare Compute a mesh
+ */
+//=============================================================================
+void SMESH_Gen::PrepareCompute(SMESH_Mesh &          aMesh,
+                               const TopoDS_Shape &  aShape)
+{
+  _compute_canceled = false;
+  _sm_current = NULL;
+}
+//=============================================================================
+/*!
+ * Cancel Compute a mesh
+ */
+//=============================================================================
+void SMESH_Gen::CancelCompute(SMESH_Mesh &          aMesh,
+                              const TopoDS_Shape &  aShape)
+{
+  _compute_canceled = true;
+  if(_sm_current)
+    {
+      _sm_current->ComputeStateEngine( SMESH_subMesh::COMPUTE_CANCELED );
+    }
+}
+#endif
 
 //=============================================================================
 /*!
