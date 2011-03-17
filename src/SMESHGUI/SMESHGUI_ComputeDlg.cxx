@@ -85,6 +85,8 @@
 #include <QHBoxLayout>
 #include <QVBoxLayout>
 #include <QButtonGroup>
+#include <QCloseEvent>
+#include <QTimerEvent>
 
 // VTK includes
 #include <vtkProperty.h>
@@ -671,6 +673,87 @@ void SMESHGUI_BaseComputeOp::startOperation()
 }
 
 //================================================================================
+//================================================================================
+
+SMESHGUI_ComputeDlg_QThread::SMESHGUI_ComputeDlg_QThread(SMESH::SMESH_Gen_var gen,
+                                                         SMESH::SMESH_Mesh_var mesh,
+                                                         GEOM::GEOM_Object_var mainShape)
+{
+  myResult = false;
+  myGen = gen;
+  myMesh = mesh;
+  myMainShape = mainShape;
+}
+
+void SMESHGUI_ComputeDlg_QThread::run()
+{
+  myResult = myGen->Compute(myMesh, myMainShape);
+}
+
+bool SMESHGUI_ComputeDlg_QThread::result()
+{
+  return myResult;
+}
+
+void SMESHGUI_ComputeDlg_QThread::cancel()
+{
+  myGen->CancelCompute(myMesh, myMainShape);
+}
+
+//================================================================================
+//================================================================================
+
+SMESHGUI_ComputeDlg_QThreadQDialog::SMESHGUI_ComputeDlg_QThreadQDialog(QWidget *parent,
+                                                                       SMESH::SMESH_Gen_var gen,
+                                                                       SMESH::SMESH_Mesh_var mesh,
+                                                                       GEOM::GEOM_Object_var mainShape)
+  : QDialog(parent),
+    qthread(gen, mesh, mainShape)
+{
+  // --
+  setWindowTitle(tr("Compute"));
+  cancelButton = new QPushButton(tr("Cancel"));
+  cancelButton->setDefault(true);
+  connect(cancelButton, SIGNAL(clicked()), this, SLOT(onCancel()));
+  QHBoxLayout *layout = new QHBoxLayout;
+  layout->addWidget(cancelButton);
+  setLayout(layout);
+  resize(200, 50);
+  // --
+  startTimer(30); // 30 millisecs
+  qthread.start();
+}
+
+bool SMESHGUI_ComputeDlg_QThreadQDialog::result()
+{
+  return qthread.result();
+}
+
+void SMESHGUI_ComputeDlg_QThreadQDialog::onCancel()
+{
+  qthread.cancel();
+}  
+
+void SMESHGUI_ComputeDlg_QThreadQDialog::timerEvent(QTimerEvent *event)
+{
+  if(qthread.isFinished())
+    {
+      close();
+    }
+  event->accept();
+}
+
+void SMESHGUI_ComputeDlg_QThreadQDialog::closeEvent(QCloseEvent *event)
+{
+  if(qthread.isRunning())
+    {
+      event->ignore();
+      return;
+    }
+  event->accept();
+}
+
+//================================================================================
 /*!
  * \brief computeMesh()
 */
@@ -711,7 +794,15 @@ void SMESHGUI_BaseComputeOp::computeMesh()
       OCC_CATCH_SIGNALS;
 #endif
       //SMESH::UpdateNulData(myIObject, true);
-      if (gen->Compute(myMesh, myMainShape))
+      bool res;
+#ifdef WITH_SMESH_CANCEL_COMPUTE
+      SMESHGUI_ComputeDlg_QThreadQDialog qthreaddialog(desktop(), gen, myMesh, myMainShape);
+      qthreaddialog.exec();
+      res = qthreaddialog.result();
+#else
+      res = gen->Compute(myMesh, myMainShape);
+#endif
+      if (res)
         computeFailed = false;
     }
     catch(const SALOME::SALOME_Exception & S_ex){

@@ -37,6 +37,7 @@
 #include <QList>
 #include <QPointer>
 #include <QGroupBox>
+#include <QThread>
 
 // IDL includes
 #include <SALOMEconfig.h>
@@ -258,6 +259,59 @@ private:
   SMESHGUI_MeshOrderBox*       myOrderBox;
   QPushButton*                 myPreviewBtn;
   QtxComboBox*                 myPreviewMode;
+};
+
+/*!
+ * \brief Thread to launch computation
+ */
+
+class SMESHGUI_EXPORT SMESHGUI_ComputeDlg_QThread : public QThread
+{
+  Q_OBJECT
+    
+public:
+  SMESHGUI_ComputeDlg_QThread(SMESH::SMESH_Gen_var gen,
+                              SMESH::SMESH_Mesh_var mesh,
+                              GEOM::GEOM_Object_var mainShape);
+  bool result();
+  void cancel();
+  
+protected:
+  void run();
+  
+private:
+  SMESH::SMESH_Gen_var myGen;
+  SMESH::SMESH_Mesh_var myMesh;
+  GEOM::GEOM_Object_var myMainShape;
+  bool myResult;
+};
+
+/*!
+ * \brief Dialog to display Cancel button
+ */
+
+class SMESHGUI_EXPORT SMESHGUI_ComputeDlg_QThreadQDialog : public QDialog
+{
+  Q_OBJECT
+    
+public:
+  SMESHGUI_ComputeDlg_QThreadQDialog(QWidget *parent,
+                                     SMESH::SMESH_Gen_var gen,
+                                     SMESH::SMESH_Mesh_var mesh,
+                                     GEOM::GEOM_Object_var mainShape);
+  bool result();
+  
+protected:
+  void timerEvent(QTimerEvent *timer);
+  void closeEvent(QCloseEvent *event);
+  
+private slots:
+  void onCancel();
+  
+private:
+  SMESHGUI_ComputeDlg_QThread qthread;
+  QPushButton *cancelButton;
+  
 };
 
 #endif // SMESHGUI_COMPUTEDLG_H
