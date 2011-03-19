@@ -793,6 +793,57 @@ int SMDS_UnstructuredGrid::GetParentVolumes(int* volVtkIds, int vtkId)
   return nbvol;
 }
 
+/*! get the volumes containing a face or an edge of the downward structure
+ * The edge or face does not necessary belong to the vtkUnstructuredGrid
+ * @param volVtkIds vector of parent volume ids to fill (reserve enough space!)
+ * @param downId id in the downward structure
+ * @param downType type of cell
+ */
+int SMDS_UnstructuredGrid::GetParentVolumes(int* volVtkIds, int downId, unsigned char downType)
+{
+  int vtkType = downType;
+  int dim = SMDS_Downward::getCellDimension(vtkType);
+  int nbFaces = 0;
+  int faces[1000];
+  unsigned char cellTypes[1000];
+  int downCellId[1000];
+  if (dim == 1)
+    {
+      nbFaces = _downArray[vtkType]->getNumberOfUpCells(downId);
+      const int *upCells = _downArray[vtkType]->getUpCells(downId);
+      const unsigned char* upTypes = _downArray[vtkType]->getUpTypes(downId);
+      for (int i=0; i< nbFaces; i++)
+        {
+          faces[i] = _downArray[upTypes[i]]->getVtkCellId(upCells[i]);
+          cellTypes[i] = upTypes[i];
+          downCellId[i] = upCells[i];
+        }
+    }
+  else if (dim == 2)
+    {
+      nbFaces = 1;
+      cellTypes[0] = vtkType;
+      downCellId[0] = downId;
+    }
+
+  int nbvol =0;
+  for (int i=0; i<nbFaces; i++)
+    {
+      int vtkTypeFace = cellTypes[i];
+      int downId = downCellId[i];
+      int nv = _downArray[vtkTypeFace]->getNumberOfUpCells(downId);
+      const int *upCells = _downArray[vtkTypeFace]->getUpCells(downId);
+      const unsigned char* upTypes = _downArray[vtkTypeFace]->getUpTypes(downId);
+       for (int j=0; j<nv; j++)
+        {
+          int vtkVolId = _downArray[upTypes[j]]->getVtkCellId(upCells[j]);
+          if (vtkVolId >= 0)
+            volVtkIds[nbvol++] = vtkVolId;
+        }
+    }
+  return nbvol;
+}
+
 /*! get the node id's of a cell.
  * The cell is defined by it's downward connectivity id and type.
  * @param nodeSet set of of vtk node id's to fill.

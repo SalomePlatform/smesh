@@ -63,6 +63,7 @@ public:
   void BuildDownwardConnectivity(bool withEdges);
   int GetNeighbors(int* neighborsVtkIds, int* downIds, unsigned char* downTypes, int vtkId);
   int GetParentVolumes(int* volVtkIds, int vtkId);
+  int GetParentVolumes(int* volVtkIds, int downId, unsigned char downType);
   void GetNodeIds(std::set<int>& nodeSet, int downId, unsigned char downType);
   void ModifyCellNodes(int vtkVolId, std::map<int, int> localClonedNodeIds);
   int getOrderedNodesOfFace(int vtkVolId, std::vector<vtkIdType>& orderedNodes);

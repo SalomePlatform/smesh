@@ -61,6 +61,7 @@ public:
   virtual const int* getUpCells(int cellId) = 0;
   virtual const unsigned char* getUpTypes(int cellId) = 0;
   virtual void getNodeIds(int cellId, std::set<int>& nodeSet) = 0;
+  virtual int getNodes(int cellId, int* nodevec) {return 0; }
   int getVtkCellId(int cellId)
   {
     return _vtkCellIds[cellId];
@@ -99,6 +100,7 @@ public:
   virtual const int* getUpCells(int cellId);
   virtual const unsigned char* getUpTypes(int cellId);
   virtual void getNodeIds(int cellId, std::set<int>& nodeSet);
+  virtual int getNodes(int cellId, int* nodevec) { return getNodeSet(cellId, nodevec); }
 protected:
   SMDS_Down1D(SMDS_UnstructuredGrid *grid, int nbDownCells);
   ~SMDS_Down1D();

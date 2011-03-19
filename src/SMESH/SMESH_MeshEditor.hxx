@@ -565,6 +565,8 @@ public:
                             const TIDSortedElemSet& theNodesNot,
                             const TopoDS_Shape&     theShape );
   
+  double OrientedAngle(const gp_Pnt& p0, const gp_Pnt& p1, const gp_Pnt& g1, const gp_Pnt& g2);
+
   bool DoubleNodesOnGroupBoundaries( const std::vector<TIDSortedElemSet>& theElems,
                                      bool createJointElems);
 

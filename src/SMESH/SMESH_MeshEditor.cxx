@@ -94,6 +94,7 @@
 #include <set>
 #include <numeric>
 #include <limits>
+#include <algorithm>
 
 #define cast2Node(elem) static_cast<const SMDS_MeshNode*>( elem )
 
@@ -10819,6 +10820,28 @@ bool SMESH_MeshEditor::DoubleNodesInRegion( const TIDSortedElemSet& theElems,
 }
 
 /*!
+ *  \brief compute an oriented angle between two planes defined by four points.
+ *  The vector (p0,p1) defines the intersection of the 2 planes (p0,p1,g1) and (p0,p1,g2)
+ *  @param p0 base of the rotation axe
+ *  @param p1 extremity of the rotation axe
+ *  @param g1 belongs to the first plane
+ *  @param g2 belongs to the second plane
+ */
+double SMESH_MeshEditor::OrientedAngle(const gp_Pnt& p0, const gp_Pnt& p1, const gp_Pnt& g1, const gp_Pnt& g2)
+{
+//  MESSAGE("    p0: " << p0.X() << " " << p0.Y() << " " << p0.Z());
+//  MESSAGE("    p1: " << p1.X() << " " << p1.Y() << " " << p1.Z());
+//  MESSAGE("    g1: " << g1.X() << " " << g1.Y() << " " << g1.Z());
+//  MESSAGE("    g2: " << g2.X() << " " << g2.Y() << " " << g2.Z());
+  gp_Vec vref(p0, p1);
+  gp_Vec v1(p0, g1);
+  gp_Vec v2(p0, g2);
+  gp_Vec n1 = vref.Crossed(v1);
+  gp_Vec n2 = vref.Crossed(v2);
+  return n2.AngleWithRef(n1, vref);
+}
+
+/*!
  * \brief Double nodes on shared faces between groups of volumes and create flat elements on demand.
  * The list of groups must describe a partition of the mesh volumes.
  * The nodes of the internal faces at the boundaries of the groups are doubled.
@@ -10854,6 +10877,7 @@ bool SMESH_MeshEditor::DoubleNodesOnGroupBoundaries( const std::vector<TIDSorted
   cellDomains.clear();
   nodeDomains.clear();
   std::map<int,int> emptyMap;
+  std::set<int> emptySet;
   emptyMap.clear();
 
   for (int idom = 0; idom < theElems.size(); idom++)
@@ -10895,7 +10919,7 @@ bool SMESH_MeshEditor::DoubleNodesOnGroupBoundaries( const std::vector<TIDSorted
         }
     }
 
-  MESSAGE("Number of shared faces " << faceDomains.size());
+  //MESSAGE("Number of shared faces " << faceDomains.size());
   std::map<DownIdType, std::map<int, int>, DownIdCompare>::iterator itface;
 
   // --- explore the shared faces domain by domain,
@@ -10946,6 +10970,13 @@ bool SMESH_MeshEditor::DoubleNodesOnGroupBoundaries( const std::vector<TIDSorted
   //     for each shared face, get the nodes
   //     for each node, for each domain of the face, create a clone of the node
 
+  // --- edges at the intersection of 3 or 4 domains, with the order of domains to build
+  //     junction elements of type prism or hexa. the key is the pair of nodesId (lower first)
+  //     the value is the ordered domain ids. (more than 4 domains not taken into account)
+
+  std::map<std::vector<int>, std::vector<int> > edgesMultiDomains; // nodes of edge --> ordered domains
+  std::map<int, std::vector<int> > mutipleNodes; // nodes muti domains with domain order
+
   for (int idomain = 0; idomain < theElems.size(); idomain++)
     {
       itface = faceDomains.begin();
@@ -10959,6 +10990,7 @@ bool SMESH_MeshEditor::DoubleNodesOnGroupBoundaries( const std::vector<TIDSorted
           std::set<int> oldNodes;
           oldNodes.clear();
           grid->GetNodeIds(oldNodes, face.cellId, face.cellType);
+          bool isMultipleDetected = false;
           std::set<int>::iterator itn = oldNodes.begin();
           for (; itn != oldNodes.end(); ++itn)
             {
@@ -10973,13 +11005,112 @@ bool SMESH_MeshEditor::DoubleNodesOnGroupBoundaries( const std::vector<TIDSorted
                 {
                   int idom = itdom->first;
                   //MESSAGE("         domain " << idom);
-                  if (!nodeDomains[oldId].count(idom))
+                  if (!nodeDomains[oldId].count(idom)) // --- node to clone
                     {
+                      if (nodeDomains[oldId].size() >= 2) // a multiple node
+                        {
+                          vector<int> orderedDoms;
+                          //MESSAGE("multiple node " << oldId);
+                          isMultipleDetected =true;
+                          if (mutipleNodes.count(oldId))
+                            orderedDoms = mutipleNodes[oldId];
+                          else
+                            {
+                              map<int,int>::iterator it = nodeDomains[oldId].begin();
+                              for (; it != nodeDomains[oldId].end(); ++it)
+                                orderedDoms.push_back(it->first);
+                            }
+                          orderedDoms.push_back(idom); // TODO order ==> push_front or back
+                          //stringstream txt;
+                          //for (int i=0; i<orderedDoms.size(); i++)
+                          //  txt << orderedDoms[i] << " ";
+                          //MESSAGE("orderedDoms " << txt.str());
+                          mutipleNodes[oldId] = orderedDoms;
+                        }
                       double *coords = grid->GetPoint(oldId);
                       SMDS_MeshNode *newNode = meshDS->AddNode(coords[0], coords[1], coords[2]);
                       int newId = newNode->getVtkId();
                       nodeDomains[oldId][idom] = newId; // cloned node for other domains
-                      //MESSAGE("         newNode " << newId);
+                      //MESSAGE("   newNode " << newId << " oldNode " << oldId << " size=" <<nodeDomains[oldId].size());
+                    }
+                }
+            }
+          if (isMultipleDetected) // check if an edge of the face is shared between 3 or more domains
+            {
+              //MESSAGE("multiple Nodes detected on a shared face");
+              int downId = itface->first.cellId;
+              unsigned char cellType = itface->first.cellType;
+              int nbEdges = grid->getDownArray(cellType)->getNumberOfDownCells(downId);
+              const int *downEdgeIds = grid->getDownArray(cellType)->getDownCells(downId);
+              const unsigned char* edgeType = grid->getDownArray(cellType)->getDownTypes(downId);
+              for (int ie =0; ie < nbEdges; ie++)
+                {
+                  int nodes[3];
+                  int nbNodes = grid->getDownArray(edgeType[ie])->getNodes(downEdgeIds[ie], nodes);
+                  if (mutipleNodes.count(nodes[0]) && mutipleNodes.count(nodes[nbNodes-1]))
+                    {
+                      vector<int> vn0 = mutipleNodes[nodes[0]];
+                      vector<int> vn1 = mutipleNodes[nodes[nbNodes - 1]];
+                      sort( vn0.begin(), vn0.end() );
+                      sort( vn1.begin(), vn1.end() );
+                      if (vn0 == vn1)
+                        {
+                          //MESSAGE(" detect edgesMultiDomains " << nodes[0] << " " << nodes[nbNodes - 1]);
+                          double *coords = grid->GetPoint(nodes[0]);
+                          gp_Pnt p0(coords[0], coords[1], coords[2]);
+                          coords = grid->GetPoint(nodes[nbNodes - 1]);
+                          gp_Pnt p1(coords[0], coords[1], coords[2]);
+                          gp_Pnt gref;
+                          int vtkVolIds[1000];  // an edge can belong to a lot of volumes
+                          map<int, SMDS_VtkVolume*> domvol; // domain --> a volume with the edge
+                          map<int, double> angleDom; // oriented angles between planes defined by edge and volume centers
+                          int nbvol = grid->GetParentVolumes(vtkVolIds, downEdgeIds[ie], edgeType[ie]);
+                          for (int id=0; id < vn0.size(); id++)
+                            {
+                              int idom = vn0[id];
+                              for (int ivol=0; ivol<nbvol; ivol++)
+                                {
+                                  int smdsId = meshDS->fromVtkToSmds(vtkVolIds[ivol]);
+                                  SMDS_MeshElement* elem = (SMDS_MeshElement*)meshDS->FindElement(smdsId);
+                                  if (theElems[idom].count(elem))
+                                    {
+                                      SMDS_VtkVolume* svol = dynamic_cast<SMDS_VtkVolume*>(elem);
+                                      domvol[idom] = svol;
+                                      //MESSAGE("  domain " << idom << " volume " << elem->GetID());
+                                      double values[3];
+                                      vtkIdType npts = 0;
+                                      vtkIdType* pts = 0;
+                                      grid->GetCellPoints(vtkVolIds[ivol], npts, pts);
+                                      SMDS_VtkVolume::gravityCenter(grid, pts, npts, values);
+                                      if (id ==0)
+                                        {
+                                          gref.SetXYZ(gp_XYZ(values[0], values[1], values[2]));
+                                          angleDom[idom] = 0;
+                                        }
+                                      else
+                                        {
+                                          gp_Pnt g(values[0], values[1], values[2]);
+                                          angleDom[idom] = OrientedAngle(p0, p1, gref, g); // -pi<angle<+pi
+                                          //MESSAGE("  angle=" << angleDom[idom]);
+                                        }
+                                      break;
+                                    }
+                                }
+                            }
+                          map<double, int> sortedDom; // sort domains by angle
+                          for (map<int, double>::iterator ia = angleDom.begin(); ia != angleDom.end(); ++ia)
+                            sortedDom[ia->second] = ia->first;
+                          vector<int> vnodes;
+                          vector<int> vdom;
+                          for (map<double, int>::iterator ib = sortedDom.begin(); ib != sortedDom.end(); ++ib)
+                            {
+                              vdom.push_back(ib->second);
+                              //MESSAGE("  ordered domain " << ib->second << "  angle " << ib->first);
+                            }
+                          for (int ino = 0; ino < nbNodes; ino++)
+                            vnodes.push_back(nodes[ino]);
+                          edgesMultiDomains[vnodes] = vdom; // nodes vector --> ordered domains
+                        }
                     }
                 }
             }
@@ -11013,6 +11144,36 @@ bool SMESH_MeshEditor::DoubleNodesOnGroupBoundaries( const std::vector<TIDSorted
           itdom++;
           int dom2 = itdom->first;
           grid->extrudeVolumeFromFace(vtkVolId, dom1, dom2, oldNodes, nodeDomains, nodeQuadDomains);
+        }
+    }
+
+  // --- create volumes on multiple domain intersection if requested
+  //     iterate on edgesMultiDomains
+
+  if (createJointElems)
+    {
+      std::map<std::vector<int>, std::vector<int> >::iterator ite = edgesMultiDomains.begin();
+      for (; ite != edgesMultiDomains.end(); ++ite)
+        {
+          vector<int> nodes = ite->first;
+          vector<int> orderDom = ite->second;
+          vector<int> orderedNodes;
+          if (nodes.size() == 2)
+            {
+              //MESSAGE(" use edgesMultiDomains " << nodes[0] << " " << nodes[1]);
+              for (int ino=0; ino < nodes.size(); ino++)
+                if (orderDom.size() == 3)
+                  for (int idom = 0; idom <orderDom.size(); idom++)
+                    orderedNodes.push_back( nodeDomains[nodes[ino]][orderDom[idom]] );
+                else
+                  for (int idom = orderDom.size()-1; idom >=0; idom--)
+                    orderedNodes.push_back( nodeDomains[nodes[ino]][orderDom[idom]] );
+              this->GetMeshDS()->AddVolumeFromVtkIds(orderedNodes);
+            }
+          else
+            {
+              // TODO quadratic nodes
+            }
         }
     }
 
