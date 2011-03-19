@@ -427,6 +427,9 @@ dnl AM_CONDITIONAL(ENABLE_OCCVIEWER, [test "$DISABLE_OCCVIEWER" = no])
 dnl AM_CONDITIONAL(ENABLE_VTKVIEWER, [test "$DISABLE_VTKVIEWER" = no])
 dnl AM_CONDITIONAL(ENABLE_SALOMEOBJECT, [test "$DISABLE_SALOMEOBJECT" = no])
 
+dnl Build with SMESH cancel compute feature
+AC_DEFINE(WITH_SMESH_CANCEL_COMPUTE)
+
 echo
 echo ---------------------------------------------
 echo generating Makefiles and configure files
