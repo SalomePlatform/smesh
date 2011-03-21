@@ -612,8 +612,14 @@ void SMESHGUI_MeshOp::selectionDone()
         QString aMeshEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Mesh );
         if ( _PTR(SObject) pMesh = studyDS()->FindObjectID( aMeshEntry.toLatin1().data() )) {
           SMESH::SMESH_Mesh_var mesh = SMESH::SObjectToInterface<SMESH::SMESH_Mesh>( pMesh );
-          if ( !mesh->_is_nil() )
+          if ( !mesh->_is_nil() ) {
+            //rnv: issue 21056: EDF 1608 SMESH: Dialog Box "Create Sub Mesh": focus should automatically switch to geometry
+            QString aGeomEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Geom );
+            _PTR(SObject) pGeom = studyDS()->FindObjectID( aGeomEntry.toLatin1().data() );
+            if ( !pGeom || GEOM::GEOM_Object::_narrow( _CAST( SObject,pGeom )->GetObject() )->_is_nil() )
+              myDlg->activateObject(SMESHGUI_MeshDlg::Geom);
             enable = ( shapeDim > 1 ) && ( mesh->NbEdges() > 0 );
+          }
         }
         myDlg->setGeomPopupEnabled( enable );
       }
