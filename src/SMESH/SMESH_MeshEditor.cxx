@@ -11157,7 +11157,7 @@ bool SMESH_MeshEditor::DoubleNodesOnGroupBoundaries( const std::vector<TIDSorted
         {
           vector<int> nodes = ite->first;
           vector<int> orderDom = ite->second;
-          vector<long long int> orderedNodes;
+          vector<vtkIdType> orderedNodes;
           if (nodes.size() == 2)
             {
               //MESSAGE(" use edgesMultiDomains " << nodes[0] << " " << nodes[1]);
