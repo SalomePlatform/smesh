@@ -242,7 +242,7 @@ void SMESHGUI_MeshOp::startOperation()
 
   myDlg->setCurrentTab( SMESH::DIM_3D );
   myDlg->show();
-
+  myDlg->setGeomPopupEnabled(false);
   selectionDone();
 
   myIgnoreAlgoSelection = false;
