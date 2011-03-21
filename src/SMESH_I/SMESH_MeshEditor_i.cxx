@@ -311,7 +311,15 @@ namespace {
         if ( const SMDS_MeshNode * n = theMeshDS->FindNode( aElementsId[i] ))
           theNodeSet.insert( theNodeSet.end(), n);
     }
-    else {
+    else if ( SMESH::DownCast<SMESH_Mesh_i*>( theObject ))
+    {
+      SMDS_NodeIteratorPtr nIt = theMeshDS->nodesIterator();
+      while ( nIt->more( ))
+        if( const SMDS_MeshElement * elem = nIt->next() )
+          theNodeSet.insert( elem->begin_nodes(), elem->end_nodes());
+    }
+    else
+    {
       for(int i = 0; i < aElementsId->length(); i++)
         if( const SMDS_MeshElement * elem = theMeshDS->FindElement( aElementsId[i] ))
           theNodeSet.insert( elem->begin_nodes(), elem->end_nodes());
