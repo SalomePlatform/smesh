@@ -257,7 +257,6 @@ QWidget* SMESHGUI_FilterLibraryDlg::createButtonFrame (QWidget* theParent)
   myButtons[ BTN_OK    ] = new QPushButton(tr("SMESH_BUT_APPLY_AND_CLOSE"), aGrp);
   myButtons[ BTN_Apply ] = new QPushButton(tr("SMESH_BUT_APPLY"), aGrp);
 
-  myButtons[ BTN_Cancel ] = new QPushButton(tr("SMESH_BUT_CANCEL"), aGrp);
   myButtons[ BTN_Close  ] = new QPushButton(tr("SMESH_BUT_CLOSE"),  aGrp);
   myButtons[ BTN_Help   ] = new QPushButton(tr("SMESH_BUT_HELP"),   aGrp);
 
@@ -266,12 +265,10 @@ QWidget* SMESHGUI_FilterLibraryDlg::createButtonFrame (QWidget* theParent)
   aLay->addWidget(myButtons[ BTN_Apply  ]);
   aLay->addSpacing(10);
   aLay->addStretch();
-  aLay->addWidget(myButtons[ BTN_Cancel ]);
   aLay->addWidget(myButtons[ BTN_Close  ]);
   aLay->addWidget(myButtons[ BTN_Help   ]);
 
   connect(myButtons[ BTN_OK     ], SIGNAL(clicked()), SLOT(onOk()));
-  connect(myButtons[ BTN_Cancel ], SIGNAL(clicked()), SLOT(onClose()));
   connect(myButtons[ BTN_Close  ], SIGNAL(clicked()), SLOT(onClose()));
   connect(myButtons[ BTN_Apply  ], SIGNAL(clicked()), SLOT(onApply()));
   connect(myButtons[ BTN_Help   ], SIGNAL(clicked()), SLOT(onHelp()));
@@ -291,14 +288,11 @@ QWidget* SMESHGUI_FilterLibraryDlg::createButtonFrame (QWidget* theParent)
 //=======================================================================
 void SMESHGUI_FilterLibraryDlg::updateMainButtons()
 {
+  myButtons[ BTN_Close  ]->show();
   if (myTypes.count() == 1) {
-    myButtons[ BTN_Cancel ]->show();
     myButtons[ BTN_Apply  ]->hide();
-    myButtons[ BTN_Close  ]->hide();
   } else {
-    myButtons[ BTN_Cancel ]->hide();
     myButtons[ BTN_Apply  ]->show();
-    myButtons[ BTN_Close  ]->show();
   }
 }
 

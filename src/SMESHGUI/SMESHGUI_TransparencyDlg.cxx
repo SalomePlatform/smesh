@@ -87,7 +87,7 @@ SMESHGUI_TransparencyDlg::SMESHGUI_TransparencyDlg( SMESHGUI* theModule )
   GroupC1Layout->setMargin( MARGIN );
 
   TextLabelTransparent = new QLabel( tr( "SMESH_TRANSPARENCY_TRANSPARENT" ), GroupC1 );
-  TextLabelTransparent->setAlignment( Qt::AlignLeft );
+  TextLabelTransparent->setAlignment( Qt::AlignRight );
 
   ValueLab = new QLabel( GroupC1 );
   ValueLab->setAlignment( Qt::AlignCenter );
@@ -95,7 +95,7 @@ SMESHGUI_TransparencyDlg::SMESHGUI_TransparencyDlg( SMESHGUI* theModule )
   QFont fnt = ValueLab->font(); fnt.setBold( true ); ValueLab->setFont( fnt );
 
   TextLabelOpaque = new QLabel( tr( "SMESH_TRANSPARENCY_OPAQUE" ), GroupC1 );
-  TextLabelOpaque->setAlignment( Qt::AlignRight );
+  TextLabelOpaque->setAlignment( Qt::AlignLeft );
 
   Slider1 = new QSlider( Qt::Horizontal, GroupC1 );
   Slider1->setRange( 0, 100 );
@@ -107,9 +107,9 @@ SMESHGUI_TransparencyDlg::SMESHGUI_TransparencyDlg( SMESHGUI* theModule )
   Slider1->setFocusPolicy( Qt::NoFocus );
   Slider1->setMinimumWidth( 300 );
 
-  GroupC1Layout->addWidget( TextLabelTransparent, 0, 0 );
+  GroupC1Layout->addWidget( TextLabelOpaque, 0, 0 );
   GroupC1Layout->addWidget( ValueLab, 0, 1 );
-  GroupC1Layout->addWidget( TextLabelOpaque, 0, 2 );
+  GroupC1Layout->addWidget( TextLabelTransparent, 0, 2 );
   GroupC1Layout->addWidget( Slider1, 1, 0, 1, 3 );
 
   /*************************************************************************/
@@ -198,7 +198,7 @@ void SMESHGUI_TransparencyDlg::SetTransparency()
 {
   if ( myViewWindow ) {
     SUIT_OverrideCursor wc;
-    float opacity = Slider1->value() / 100.;
+    float opacity = ( 100 - Slider1->value() ) / 100.;
 
     SALOME_ListIO aList;
     mySelectionMgr->selectedObjects( aList );
@@ -267,7 +267,7 @@ void SMESHGUI_TransparencyDlg::onSelectionChanged()
     } 
     else {
     }
-    Slider1->setValue( opacity );
+    Slider1->setValue( 100 - opacity );
   }
   ValueHasChanged();
 }

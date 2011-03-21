@@ -56,7 +56,7 @@ class SMESHGUI_EXPORT SMESHGUI_FilterLibraryDlg : public QDialog
   Q_OBJECT
   
   // Buttons
-  enum { BTN_OK, BTN_Cancel, BTN_Apply, BTN_Close, BTN_Help };
+  enum { BTN_OK, BTN_Apply, BTN_Close, BTN_Help };
 
   class Dialog;
   

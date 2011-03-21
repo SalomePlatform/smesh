@@ -1547,6 +1547,7 @@ void SMESHGUI_FilterTable::onCriterionChanged (const int row, const int col, con
     if (aCompareItem->count() > 0)
       aCompareItem->clear();
     aTable->setEditable(false, row, 1);
+    aTable->item(row, 2)->setText( QString("") );
     aTable->setEditable(aCriterionType == SMESH::FT_GroupColor ||
                         aCriterionType == SMESH::FT_ElemGeomType ||
                         aCriterionType == SMESH::FT_CoplanarFaces, row, 2);
@@ -2332,19 +2333,15 @@ QWidget* SMESHGUI_FilterDlg::createSourceGroup (QWidget* theParent)
 //=======================================================================
 void SMESHGUI_FilterDlg::updateMainButtons()
 {
+  myButtons[ BTN_Close  ]->show();
   if (myTypes.count() == 1)
   {
-    myButtons[ BTN_Cancel ]->show();
     myButtons[ BTN_Apply  ]->hide();
-    myButtons[ BTN_Close  ]->hide();
   }
   else
   {
-    myButtons[ BTN_Cancel ]->hide();
     myButtons[ BTN_Apply  ]->show();
-    myButtons[ BTN_Close  ]->show();
   }
-
 //  updateGeometry();
 }
 
@@ -2361,7 +2358,6 @@ QWidget* SMESHGUI_FilterDlg::createButtonFrame (QWidget* theParent)
 
   myButtons[ BTN_OK     ] = new QPushButton(tr("SMESH_BUT_APPLY_AND_CLOSE"), aGrp);
   myButtons[ BTN_Apply  ] = new QPushButton(tr("SMESH_BUT_APPLY"),           aGrp);
-  myButtons[ BTN_Cancel ] = new QPushButton(tr("SMESH_BUT_CANCEL"),          aGrp);
   myButtons[ BTN_Close  ] = new QPushButton(tr("SMESH_BUT_CLOSE"),           aGrp);
   myButtons[ BTN_Help   ] = new QPushButton(tr("SMESH_BUT_HELP"),            aGrp);
 
@@ -2370,12 +2366,10 @@ QWidget* SMESHGUI_FilterDlg::createButtonFrame (QWidget* theParent)
   aLay->addWidget(myButtons[ BTN_Apply  ]);
   aLay->addSpacing(10);
   aLay->addStretch();
-  aLay->addWidget(myButtons[ BTN_Cancel ]);
   aLay->addWidget(myButtons[ BTN_Close  ]);
   aLay->addWidget(myButtons[ BTN_Help   ]);
 
   connect(myButtons[ BTN_OK     ], SIGNAL(clicked()), SLOT(onOk()));
-  connect(myButtons[ BTN_Cancel ], SIGNAL(clicked()), SLOT(onClose()));
   connect(myButtons[ BTN_Close  ], SIGNAL(clicked()), SLOT(onClose()));
   connect(myButtons[ BTN_Apply  ], SIGNAL(clicked()), SLOT(onApply()));
   connect(myButtons[ BTN_Help   ], SIGNAL(clicked()), SLOT(onHelp()));
@@ -3196,9 +3190,10 @@ void SMESHGUI_FilterDlg::updateSelection()
   mySelectionMgr->clearFilters();
 
   int aRow, aCol;
-
+  
+  bool isCurrentCell = myTable->CurrentCell(aRow, aCol);
   int aCriterionType = myTable->GetCriterionType(aRow);
-  if (myTable->CurrentCell(aRow, aCol) &&
+  if ( isCurrentCell &&
       (aCriterionType == SMESH::FT_BelongToGeom ||
        aCriterionType == SMESH::FT_BelongToPlane ||
        aCriterionType == SMESH::FT_BelongToCylinder ||

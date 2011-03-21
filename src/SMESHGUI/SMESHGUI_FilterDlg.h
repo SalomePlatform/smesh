@@ -213,7 +213,7 @@ class SMESHGUI_FilterDlg : public QDialog
   enum { Mesh, Selection, Dialog, None };
 
   // Buttons
-  enum { BTN_OK, BTN_Cancel, BTN_Apply, BTN_Close, BTN_Help };
+  enum { BTN_OK, BTN_Apply, BTN_Close, BTN_Help };
 
 public:
   SMESHGUI_FilterDlg( SMESHGUI*, const QList<int>& );

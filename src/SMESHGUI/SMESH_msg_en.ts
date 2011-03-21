@@ -2113,7 +2113,7 @@ Check algorithm documentation for supported geometry</translation>
     </message>
     <message>
         <source>SMESH_TRANSPARENCY_OPAQUE</source>
-        <translation>---&gt; Opaque</translation>
+        <translation>Opaque</translation>
     </message>
     <message>
         <source>SMESH_TRANSPARENCY_TITLE</source>
@@ -2121,7 +2121,7 @@ Check algorithm documentation for supported geometry</translation>
     </message>
     <message>
         <source>SMESH_TRANSPARENCY_TRANSPARENT</source>
-        <translation>Transparent &lt;---</translation>
+        <translation>Transparent</translation>
     </message>
     <message>
         <source>SMESH_TRIANGLE</source>

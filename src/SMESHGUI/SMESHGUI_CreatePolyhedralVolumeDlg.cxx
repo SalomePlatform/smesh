@@ -342,7 +342,7 @@ void SMESHGUI_CreatePolyhedralVolumeDlg::Init()
   connect(SelectElementsButton, SIGNAL( clicked() ), SLOT( SetEditCurrentArgument() ) );
   connect(LineEditElements, SIGNAL( textChanged(const QString&) ), SLOT(onTextChange(const QString&)));
 
-  connect(myFacesByNodes, SIGNAL(selectionChanged()), this, SLOT(onListSelectionChanged()));
+  connect(myFacesByNodes, SIGNAL(itemSelectionChanged()), this, SLOT(onListSelectionChanged()));
   connect(AddButton, SIGNAL(clicked()), this, SLOT(onAdd()));
   connect(RemoveButton, SIGNAL(clicked()), this, SLOT(onRemove()));
   
@@ -577,6 +577,7 @@ void SMESHGUI_CreatePolyhedralVolumeDlg::ClickOnApply()
 
       SMESHGUI::Modified();
     }
+    myFacesByNodes->clear();
 }
 
 //=================================================================================
@@ -1089,8 +1090,8 @@ void SMESHGUI_CreatePolyhedralVolumeDlg::onAdd()
       myNbOkElements = 1;
       myEditCurrentArgument->clear();
       AddButton->setEnabled(false);
-      buttonOk->setEnabled( true );
-      if(myFacesByNodes->count()>1) buttonApply->setEnabled( true );
+      buttonApply->setEnabled( myFacesByNodes->count() > 1 );
+      buttonOk->setEnabled( myFacesByNodes->count() > 1 );
     }
   busy = false;
   onListSelectionChanged();
