@@ -67,8 +67,9 @@ libSMESHClient_la_LDFLAGS  = \
 	../SMESHDS/libSMESHDS.la \
 	../Controls/libSMESHControls.la \
 	$(KERNEL_LDFLAGS) -lSalomeLifeCycleCORBA -lSalomeNS -lOpUtil -lSALOMEBasics \
-	$(GEOM_LDFLAGS) -lNMTDS \
-	$(MED_LDFLAGS) -lMEDWrapper_V2_2 -lMEDWrapper_V2_1 \
+	-lSalomeIDLKernel -lSALOMELocalTrace \
+	$(GEOM_LDFLAGS) -lNMTDS -lSalomeIDLGEOM \
+	$(MED_LDFLAGS) -lMEDWrapper_V2_2 -lMEDWrapper_V2_1 -lSalomeIDLMED -lMEDWrapper \
 	$(CAS_KERNEL)
 
 SMESHClientBin_CPPFLAGS = \

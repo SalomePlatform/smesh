@@ -120,7 +120,10 @@ libSMESHEngine_la_LDFLAGS  = \
 	-lSalomeLifeCycleCORBA \
 	-lTOOLSDS \
 	-lSalomeGenericObj \
+	-lSalomeIDLKernel \
+	-lSALOMELocalTrace \
 	$(MED_LDFLAGS) \
+	-lMEDWrapper \
 	-lMEDWrapper_V2_2 \
         -lSalomeIDLMED \
 	$(CAS_LDPATH) \
@@ -128,7 +131,8 @@ libSMESHEngine_la_LDFLAGS  = \
 	-lTKBO \
 	-lTKShHealing \
 	$(GEOM_LDFLAGS) \
-	-lGEOMClient
+	-lGEOMClient \
+	-lSalomeIDLGEOM
 
 SMESHEngine_CPPFLAGS = \
 	$(libSMESHEngine_la_CPPFLAGS)
