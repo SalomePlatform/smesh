@@ -3,8 +3,8 @@
 General presentation of the SMESH python package
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-The SMESH python package contains (today) helpser functions to
-manipulate mesh elements and interact with this elements.
+The SMESH python package contains (today) helper functions to
+manipulate mesh elements and interact with these elements.
 
 Note that these functions either encapsulate the python programming
 interface of SMESH core (the CORBA or SWIG interface for example) or

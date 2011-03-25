@@ -1,14 +1,10 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
- Documentation of the SMESH python packages
+ Documentation of the SMESH python package
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-Main documentation
-==================
 
 .. toctree::
    :maxdepth: 3
 
    overview.rst
    docapi.rst
-
