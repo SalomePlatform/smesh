@@ -45,6 +45,9 @@
 #include <SVTK_ViewWindow.h>
 #include <SALOME_ListIO.hxx>
 
+// SALOME KERNEL includes
+#include <SALOMEDSClient_SObject.hxx>
+
 // Qt includes
 #include <QHBoxLayout>
 #include <QVBoxLayout>
@@ -75,7 +78,8 @@
 SMESHGUI_GroupOpDlg::SMESHGUI_GroupOpDlg( SMESHGUI* theModule )
   : QDialog( SMESH::GetDesktop( theModule ) ),
     mySMESHGUI( theModule ),
-    mySelectionMgr( SMESH::GetSelectionMgr( theModule ) )
+    mySelectionMgr( SMESH::GetSelectionMgr( theModule ) ),
+    myIsApplyAndClose( false )
 {
   setModal(false);
 
@@ -309,8 +313,10 @@ bool SMESHGUI_GroupOpDlg::isValid( const QList<SMESH::SMESH_GroupBase_var>& theL
 */
 void SMESHGUI_GroupOpDlg::onOk()
 {
+  setIsApplyAndClose( true );
   if ( onApply() )
     onClose();
+  setIsApplyAndClose( false );
 }
 
 /*!
@@ -525,6 +531,28 @@ bool SMESHGUI_GroupOpDlg::onApply()
   return false;
 }
 
+/*!
+  \brief Set value of the flag indicating that the dialog is
+  accepted by Apply & Close button
+  \param theFlag value of the flag
+  \sa isApplyAndClose()
+*/
+void SMESHGUI_GroupOpDlg::setIsApplyAndClose( const bool theFlag )
+{
+  myIsApplyAndClose = theFlag;
+}
+
+/*!
+  \brief Get value of the flag indicating that the dialog is
+  accepted by Apply & Close button
+  \return value of the flag
+  \sa setApplyAndClose()
+*/
+bool SMESHGUI_GroupOpDlg::isApplyAndClose() const
+{
+  return myIsApplyAndClose;
+}
+
 // === === === === === === === === === === === === === === === === === === === === === 
 
 /*!
@@ -586,6 +614,7 @@ bool SMESHGUI_UnionGroupsDlg::onApply()
   QString aName = getName();
   
   bool aRes = false;
+  QStringList anEntryList;
   try
   {
     SMESH::ListOfGroups_var aList = convert( myGroups );
@@ -594,6 +623,8 @@ bool SMESHGUI_UnionGroupsDlg::onApply()
     if ( !CORBA::is_nil( aNewGrp ) )
     {
       aNewGrp->SetColor(  getColor() );
+      if( _PTR(SObject) aSObject = SMESH::ObjectToSObject( aNewGrp ) )
+        anEntryList.append( aSObject->GetID().c_str() );
       aRes = true;
     }
   }
@@ -607,6 +638,9 @@ bool SMESHGUI_UnionGroupsDlg::onApply()
     SMESHGUI::Modified();
     getSMESHGUI()->updateObjBrowser(true);
     reset();
+    if( LightApp_Application* anApp =
+        dynamic_cast<LightApp_Application*>( SUIT_Session::session()->activeApplication() ) )
+      anApp->browseObjects( anEntryList, isApplyAndClose() );
     return true;
   } 
   else 
@@ -689,6 +723,7 @@ bool SMESHGUI_IntersectGroupsDlg::onApply()
   QString aName = getName();
   
   bool aRes = false;
+  QStringList anEntryList;
   try
   {
     SMESH::ListOfGroups_var aList = convert( myGroups );
@@ -697,6 +732,8 @@ bool SMESHGUI_IntersectGroupsDlg::onApply()
     if ( !CORBA::is_nil( aNewGrp ) )
     {
       aNewGrp->SetColor(  getColor() );
+      if( _PTR(SObject) aSObject = SMESH::ObjectToSObject( aNewGrp ) )
+        anEntryList.append( aSObject->GetID().c_str() );
       aRes = true;
     }
   }
@@ -710,6 +747,9 @@ bool SMESHGUI_IntersectGroupsDlg::onApply()
     SMESHGUI::Modified();
     getSMESHGUI()->updateObjBrowser(true);
     reset();
+    if( LightApp_Application* anApp =
+        dynamic_cast<LightApp_Application*>( SUIT_Session::session()->activeApplication() ) )
+      anApp->browseObjects( anEntryList, isApplyAndClose() );
     return true;
   } 
   else 
@@ -855,6 +895,7 @@ bool SMESHGUI_CutGroupsDlg::onApply()
   QString aName = getName();
   
   bool aRes = false;
+  QStringList anEntryList;
   try
   {
     SMESH::ListOfGroups_var aList1 = convert( myGroups1 );
@@ -864,6 +905,8 @@ bool SMESHGUI_CutGroupsDlg::onApply()
     if ( !CORBA::is_nil( aNewGrp ) )
     {
       aNewGrp->SetColor(  getColor() );
+      if( _PTR(SObject) aSObject = SMESH::ObjectToSObject( aNewGrp ) )
+        anEntryList.append( aSObject->GetID().c_str() );
       aRes = true;
     }
   }
@@ -877,6 +920,9 @@ bool SMESHGUI_CutGroupsDlg::onApply()
     SMESHGUI::Modified();
     getSMESHGUI()->updateObjBrowser(true);
     reset();
+    if( LightApp_Application* anApp =
+        dynamic_cast<LightApp_Application*>( SUIT_Session::session()->activeApplication() ) )
+      anApp->browseObjects( anEntryList, isApplyAndClose() );
     return true;
   } 
   else 
@@ -1007,6 +1053,7 @@ bool SMESHGUI_DimGroupDlg::onApply()
   QString aName = getName();
   
   bool aRes = false;
+  QStringList anEntryList;
   try
   {
     SMESH::ListOfGroups_var aList = convert( myGroups );
@@ -1016,6 +1063,8 @@ bool SMESHGUI_DimGroupDlg::onApply()
     if ( !CORBA::is_nil( aNewGrp ) )
     {
       aNewGrp->SetColor(  getColor() );
+      if( _PTR(SObject) aSObject = SMESH::ObjectToSObject( aNewGrp ) )
+        anEntryList.append( aSObject->GetID().c_str() );
       aRes = true;
     }
   }
@@ -1029,6 +1078,9 @@ bool SMESHGUI_DimGroupDlg::onApply()
     SMESHGUI::Modified();
     getSMESHGUI()->updateObjBrowser(true);
     reset();
+    if( LightApp_Application* anApp =
+        dynamic_cast<LightApp_Application*>( SUIT_Session::session()->activeApplication() ) )
+      anApp->browseObjects( anEntryList, isApplyAndClose() );
     return true;
   } 
   else 

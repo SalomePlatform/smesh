@@ -50,7 +50,8 @@
 // Purpose : Constructor
 //=======================================================================
 SMESHGUI_Operation::SMESHGUI_Operation()
-: LightApp_Operation()
+: LightApp_Operation(),
+  myIsApplyAndClose( false )
 {
   myHelpFileName = "";
 }
@@ -158,8 +159,10 @@ _PTR(Study) SMESHGUI_Operation::studyDS() const
 //=======================================================================
 void SMESHGUI_Operation::onOk()
 {
+  setIsApplyAndClose( true );
   if( onApply() )
     commit();
+  setIsApplyAndClose( false );
   //else
   //  abort();
 }
@@ -212,6 +215,26 @@ void SMESHGUI_Operation::onHelp()
 //=======================================================================
 void SMESHGUI_Operation::initDialog()
 {
+}
+
+//================================================================
+// name    : setIsApplyAndClose
+// Purpose : Set value of the flag indicating that the dialog is
+//           accepted by Apply & Close button
+//================================================================
+void SMESHGUI_Operation::setIsApplyAndClose( const bool theFlag )
+{
+  myIsApplyAndClose = theFlag;
+}
+
+//================================================================
+// name    : isApplyAndClose
+// Purpose : Get value of the flag indicating that the dialog is
+//           accepted by Apply & Close button
+//================================================================
+bool SMESHGUI_Operation::isApplyAndClose() const
+{
+  return myIsApplyAndClose;
 }
 
 /*!

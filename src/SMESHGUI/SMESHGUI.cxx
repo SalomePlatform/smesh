@@ -215,6 +215,7 @@
       _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
 
       QStringList errors;
+      QStringList anEntryList;
       bool isEmpty = false;
       for ( QStringList::ConstIterator it = filenames.begin(); it != filenames.end(); ++it ) {
         QString filename = *it;
@@ -276,6 +277,8 @@
             if ( theCommandID == 112 ) // mesh names aren't taken from the file for UNV import
               SMESH::SetName( aMeshSO, QFileInfo(filename).fileName() );
 
+            anEntryList.append( aMeshSO->GetID().c_str() );
+
 #ifdef WITHGENERICOBJ
             // obj has been published in study. Its refcount has been incremented.
             // It is safe to decrement its refcount
@@ -291,6 +294,11 @@
 
       // update Object browser
       SMESHGUI::GetSMESHGUI()->updateObjBrowser();
+
+      // browse to the published meshes
+      if( LightApp_Application* anApp =
+          dynamic_cast<LightApp_Application*>( SUIT_Session::session()->activeApplication() ) )
+        anApp->browseObjects( anEntryList );
 
       // show Error message box if there were errors
       if ( errors.count() > 0 ) {
@@ -2372,24 +2380,33 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
                 SMESH::long_array_var aVolumes = aSubMesh->GetElementsByType(SMESH::VOLUME);
                 // create group for each type o elements
                 QString aName = IObject->getName();
+                QStringList anEntryList;
                 if (aNodes->length() > 0) {
                   SMESH::SMESH_Group_var aGroup = SMESH::AddGroup(aMesh, SMESH::NODE, aName + "_Nodes");
                   aGroup->Add(aNodes.inout());
+                  if( _PTR(SObject) aSObject = SMESH::ObjectToSObject( aGroup ) )
+                    anEntryList.append( aSObject->GetID().c_str() );
                 }
                 if (aEdges->length() > 0) {
                   SMESH::SMESH_Group_var aGroup = SMESH::AddGroup(aMesh, SMESH::EDGE, aName + "_Edges");
                   aGroup->Add(aEdges.inout());
+                  if( _PTR(SObject) aSObject = SMESH::ObjectToSObject( aGroup ) )
+                    anEntryList.append( aSObject->GetID().c_str() );
                 }
                 if (aFaces->length() > 0) {
                   SMESH::SMESH_Group_var aGroup = SMESH::AddGroup(aMesh, SMESH::FACE, aName + "_Faces");
                   aGroup->Add(aFaces.inout());
+                  if( _PTR(SObject) aSObject = SMESH::ObjectToSObject( aGroup ) )
+                    anEntryList.append( aSObject->GetID().c_str() );
                 }
                 if (aVolumes->length() > 0) {
                   SMESH::SMESH_Group_var aGroup = SMESH::AddGroup(aMesh, SMESH::VOLUME, aName + "_Volumes");
                   aGroup->Add(aVolumes.inout());
+                  if( _PTR(SObject) aSObject = SMESH::ObjectToSObject( aGroup ) )
+                    anEntryList.append( aSObject->GetID().c_str() );
                 }
                 updateObjBrowser();
-
+                anApp->browseObjects( anEntryList );
               }
               catch(const SALOME::SALOME_Exception & S_ex){
                 SalomeApp_Tools::QtCatchCorbaException(S_ex);

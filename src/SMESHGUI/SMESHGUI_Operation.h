@@ -58,6 +58,9 @@ protected:
   virtual void      startOperation();
   virtual bool      isReadyToStart() const;
   
+  virtual void      setIsApplyAndClose( const bool theFlag );
+  virtual bool      isApplyAndClose() const;
+
   //! Set according dialog active or inactive
   virtual void      setDialogActive( const bool );
 
@@ -69,6 +72,7 @@ protected:
   virtual bool      isValid( SUIT_Operation* ) const;
 
   QString           myHelpFileName;
+  bool              myIsApplyAndClose;
 
 protected slots:
   virtual void      onOk();

@@ -472,6 +472,7 @@ bool SMESHGUI_ScaleDlg::ClickOnApply()
 
     int actionButton = ActionGroup->checkedId();
     bool makeGroups = ( MakeGroupsCheck->isEnabled() && MakeGroupsCheck->isChecked() );
+    QStringList anEntryList;
     try {
       SUIT_OverrideCursor aWaitCursor;
       SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditor();
@@ -505,6 +506,8 @@ bool SMESHGUI_ScaleDlg::ClickOnApply()
                                      LineEditNewMesh->text().toLatin1().data());
         if (!mesh->_is_nil()) {
           mesh->SetParameters(aParameters.join(":").toLatin1().constData());
+          if( _PTR(SObject) aSObject = SMESH::ObjectToSObject( mesh ) )
+            anEntryList.append( aSObject->GetID().c_str() );
 #ifdef WITHGENERICOBJ
           // obj has been published in study. Its refcount has been incremented.
           // It is safe to decrement its refcount
@@ -520,8 +523,12 @@ bool SMESHGUI_ScaleDlg::ClickOnApply()
 
     SMESH::UpdateView();
     if ( MakeGroupsCheck->isEnabled() && MakeGroupsCheck->isChecked() ||
-         actionButton == MAKE_MESH_BUTTON )
+         actionButton == MAKE_MESH_BUTTON ) {
       mySMESHGUI->updateObjBrowser(true); // new groups may appear
+      if( LightApp_Application* anApp =
+          dynamic_cast<LightApp_Application*>( SUIT_Session::session()->activeApplication() ) )
+        anApp->browseObjects( anEntryList, isApplyAndClose() );
+    }
     Init(false);
     ConstructorsClicked(GetConstructorId());
     mySelectedObject = SMESH::SMESH_IDSource::_nil();
@@ -539,6 +546,7 @@ bool SMESHGUI_ScaleDlg::ClickOnApply()
 //=================================================================================
 void SMESHGUI_ScaleDlg::ClickOnOk()
 {
+  setIsApplyAndClose( true );
   if( ClickOnApply() )
     ClickOnCancel();
 }

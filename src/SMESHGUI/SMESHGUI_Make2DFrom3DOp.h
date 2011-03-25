@@ -105,7 +105,7 @@ protected slots:
   void                               onModeChanged();
 
 private:
-  bool                               compute2DMesh();
+  bool                               compute2DMesh( QStringList& );
 
 private:
   SMESH::SMESH_Mesh_var              mySrcMesh;

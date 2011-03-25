@@ -74,6 +74,9 @@ private:
   void                    keyPressEvent( QKeyEvent* );
 
   bool                    isValid();
+
+  void                    setIsApplyAndClose( const bool theFlag );
+  bool                    isApplyAndClose() const;
   
 private:
   SMESHGUI*               mySMESHGUI;     /* Current SMESHGUI object */
@@ -109,6 +112,8 @@ private:
   SMESHGUI_SpinBox*       SpinBoxTol;
 
   QString                 myHelpFileName;
+
+  bool                    myIsApplyAndClose;
 
 private slots:
   void                    ClickOnOk();

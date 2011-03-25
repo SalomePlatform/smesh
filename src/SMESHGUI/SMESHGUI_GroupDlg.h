@@ -141,6 +141,9 @@ private:
   QColor                        getGroupQColor() const;
   
   void                          setDefaultGroupColor();
+
+  void                          setIsApplyAndClose( const bool theFlag );
+  bool                          isApplyAndClose() const;
   
   SMESHGUI*                     mySMESHGUI;              /* Current SMESHGUI object */
   LightApp_SelectionMgr*        mySelectionMgr;          /* User shape selection */
@@ -215,6 +218,9 @@ private:
   QMap<QAction*, int>           myActions;
 
   bool                          myNameChanged; //added by skl for IPAL19574
+
+  QString                       myObjectToSelect;
+  bool                          myIsApplyAndClose;
 };
 
 #endif // SMESHGUI_GROUPDLG_H

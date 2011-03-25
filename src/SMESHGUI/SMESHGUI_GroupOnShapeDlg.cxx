@@ -36,6 +36,7 @@
 
 #include <SUIT_Session.h>
 #include <SUIT_OverrideCursor.h>
+#include <LightApp_Application.h>
 #include <LightApp_UpdateFlags.h>
 #include <SUIT_ResourceMgr.h>
 
@@ -318,6 +319,7 @@ bool SMESHGUI_GroupOnShapeOp::onApply()
 
   // create groups
   SMESH::SMESH_GroupOnGeom_var group;
+  QStringList anEntryList;
   for ( int isNode = 0; isNode < 2; ++isNode ) // elems and then nodes
   {
     QStringList::iterator geomID = isNode ? myNodeGeoIDs.begin() : myElemGeoIDs.begin();
@@ -346,6 +348,9 @@ bool SMESHGUI_GroupOnShapeOp::onApply()
 
       //printf( "apply() %s %s\n", (*geomID).latin1(), name.latin1() );
       group = mesh->CreateGroupFromGEOM( elemType, name.toLatin1().data(), geom );
+      if( !group->_is_nil() )
+        if( _PTR(SObject) aSObject = SMESH::ObjectToSObject( group ) )
+          anEntryList.append( aSObject->GetID().c_str() );
     }
   }
   SMESHGUI::Modified();
@@ -361,6 +366,10 @@ bool SMESHGUI_GroupOnShapeOp::onApply()
   myDlg->myElemGeomBtn->setChecked(false); 
   myDlg->myNodeGeomBtn->setChecked(false);
   myDlg->updateButtons();
+
+  if( LightApp_Application* anApp =
+      dynamic_cast<LightApp_Application*>( SUIT_Session::session()->activeApplication() ) )
+    anApp->browseObjects( anEntryList, isApplyAndClose() );
 
   return !group->_is_nil();
 }

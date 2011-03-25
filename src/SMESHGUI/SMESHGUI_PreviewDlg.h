@@ -49,6 +49,9 @@ public:
 protected:
   void connectPreviewControl();
 
+  virtual void setIsApplyAndClose( const bool theFlag );
+  virtual bool isApplyAndClose() const;
+
 protected slots:
  void                      toDisplaySimulation();
  virtual void              onDisplaySimulation( bool );
@@ -58,6 +61,7 @@ protected:
   SMESHGUI*                 mySMESHGUI;              /* Current SMESHGUI object */  
   SMESHGUI_MeshEditPreview* mySimulation;
   QCheckBox*                myPreviewCheckBox;
+  bool                      myIsApplyAndClose;
 };
 
 #endif

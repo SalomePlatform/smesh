@@ -88,6 +88,9 @@ protected:
 
   SALOMEDS::Color           getColor() const;
 
+  void                      setIsApplyAndClose( const bool theFlag );
+  bool                      isApplyAndClose() const;
+
 private:
   void                      closeEvent( QCloseEvent* );
   void                      enterEvent( QEvent* );            
@@ -119,6 +122,8 @@ private:
   SVTK_Selector*            mySelector;
   
   QString                   myHelpFileName;
+
+  bool                      myIsApplyAndClose;
 };
 
 /*

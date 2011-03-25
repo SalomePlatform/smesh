@@ -77,7 +77,8 @@
 SMESHGUI_BuildCompoundDlg::SMESHGUI_BuildCompoundDlg( SMESHGUI* theModule )
   : QDialog(SMESH::GetDesktop(theModule)),
     mySMESHGUI(theModule),
-    mySelectionMgr(SMESH::GetSelectionMgr(theModule))
+    mySelectionMgr(SMESH::GetSelectionMgr(theModule)),
+    myIsApplyAndClose( false )
 {
   setModal(false);
   setAttribute(Qt::WA_DeleteOnClose, true);
@@ -298,6 +299,7 @@ bool SMESHGUI_BuildCompoundDlg::ClickOnApply()
   if (!myMesh->_is_nil()) {
     QStringList aParameters;
     aParameters << (CheckBoxMerge->isChecked() ? SpinBoxTol->text() : QString(" "));
+    QStringList anEntryList;
     try {
       SUIT_OverrideCursor aWaitCursor;
 
@@ -316,7 +318,11 @@ bool SMESHGUI_BuildCompoundDlg::ClickOnApply()
 
       aCompoundMesh->SetParameters( aParameters.join(":").toLatin1().constData() );
 
-      SMESH::SetName( SMESH::FindSObject( aCompoundMesh ), LineEditName->text() );
+      _PTR(SObject) aSO = SMESH::FindSObject( aCompoundMesh );
+      if( aSO ) {
+        SMESH::SetName( aSO, LineEditName->text() );
+        anEntryList.append( aSO->GetID().c_str() );
+      }
       mySMESHGUI->updateObjBrowser();
     } catch(...) {
       return false;
@@ -333,6 +339,10 @@ bool SMESHGUI_BuildCompoundDlg::ClickOnApply()
       if ( SMESH_Actor* anActor = SMESH::CreateActor(aSO->GetStudy(), aSO->GetID().c_str()) )
         SMESH::DisplayActor(SMESH::GetActiveWindow(), anActor);
     }// end IPAL21468
+
+    if( LightApp_Application* anApp =
+        dynamic_cast<LightApp_Application*>( SUIT_Session::session()->activeApplication() ) )
+      anApp->browseObjects( anEntryList, isApplyAndClose() );
 
     SMESHGUI::Modified();
 
@@ -355,6 +365,7 @@ bool SMESHGUI_BuildCompoundDlg::ClickOnApply()
 //=================================================================================
 void SMESHGUI_BuildCompoundDlg::ClickOnOk()
 {
+  setIsApplyAndClose( true );
   if (ClickOnApply())
     ClickOnCancel();
 }
@@ -539,4 +550,24 @@ bool SMESHGUI_BuildCompoundDlg::isValid()
     return false;
   }
   return true;
+}
+
+//================================================================
+// function : setIsApplyAndClose
+// Purpose  : Set value of the flag indicating that the dialog is
+//            accepted by Apply & Close button
+//================================================================
+void SMESHGUI_BuildCompoundDlg::setIsApplyAndClose( const bool theFlag )
+{
+  myIsApplyAndClose = theFlag;
+}
+
+//================================================================
+// function : isApplyAndClose
+// Purpose  : Get value of the flag indicating that the dialog is
+//            accepted by Apply & Close button
+//================================================================
+bool SMESHGUI_BuildCompoundDlg::isApplyAndClose() const
+{
+  return myIsApplyAndClose;
 }

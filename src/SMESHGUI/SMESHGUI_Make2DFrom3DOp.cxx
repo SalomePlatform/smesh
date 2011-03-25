@@ -28,12 +28,14 @@
 #include "SMESH_LogicalFilter.hxx"
 
 // SALOME GUI includes
+#include <LightApp_Application.h>
 #include <LightApp_SelectionMgr.h>
 #include <LightApp_UpdateFlags.h>
 #include <SALOME_ListIO.hxx>
 #include <SUIT_Desktop.h>
 #include <SUIT_MessageBox.h>
 #include <SUIT_OverrideCursor.h>
+#include <SUIT_Session.h>
 #include <SVTK_ViewModel.h>
 #include <SalomeApp_Study.h>
 #include <SalomeApp_Tools.h>
@@ -337,7 +339,7 @@ bool SMESHGUI_Make2DFrom3DOp::isValid( QString& msg ) const
   return true;
 }
 
-bool SMESHGUI_Make2DFrom3DOp::compute2DMesh()
+bool SMESHGUI_Make2DFrom3DOp::compute2DMesh( QStringList& theEntryList )
 {
   SUIT_OverrideCursor wc;
 
@@ -373,6 +375,8 @@ bool SMESHGUI_Make2DFrom3DOp::compute2DMesh()
                                     tr("SMESH_INFORMATION"),
                                     tr("NB_ADDED").arg( nbAdded ));
       if ( !newMesh->_is_nil() ) {
+        if( _PTR(SObject) aSObject = SMESH::ObjectToSObject( newMesh ) )
+          theEntryList.append( aSObject->GetID().c_str() );
 #ifdef WITHGENERICOBJ
         newMesh->UnRegister();
 #endif
@@ -403,9 +407,10 @@ bool SMESHGUI_Make2DFrom3DOp::onApply()
     return false;
   }
 
+  QStringList anEntryList;
   bool res = false;
   try {
-    res = compute2DMesh();
+    res = compute2DMesh( anEntryList );
   }
   catch ( const SALOME::SALOME_Exception& S_ex ) {
     SalomeApp_Tools::QtCatchCorbaException( S_ex );
@@ -416,6 +421,9 @@ bool SMESHGUI_Make2DFrom3DOp::onApply()
   if ( res ) {
     SMESHGUI::Modified();
     update( UF_ObjBrowser | UF_Model );
+    if( LightApp_Application* anApp =
+        dynamic_cast<LightApp_Application*>( SUIT_Session::session()->activeApplication() ) )
+      anApp->browseObjects( anEntryList, isApplyAndClose() );
     myDlg->setNewMeshName( SMESH::UniqueName( "Mesh_1" ) );
     myDlg->setGroupName( SMESH::UniqueName( "Group" ) );
   }

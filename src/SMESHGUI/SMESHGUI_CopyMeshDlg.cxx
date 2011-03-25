@@ -115,7 +115,8 @@ SMESHGUI_CopyMeshDlg::SMESHGUI_CopyMeshDlg( SMESHGUI* theModule )
     mySMESHGUI( theModule ),
     mySelectionMgr( SMESH::GetSelectionMgr( theModule ) ),
     myFilterDlg(0),
-    mySelectedObject(SMESH::SMESH_IDSource::_nil())
+    mySelectedObject(SMESH::SMESH_IDSource::_nil()),
+    myIsApplyAndClose( false )
 {
   QPixmap image (SMESH::GetResourceMgr( mySMESHGUI )->loadPixmap("SMESH", tr("ICON_COPY_MESH")));
 
@@ -308,6 +309,7 @@ bool SMESHGUI_CopyMeshDlg::ClickOnApply()
   if( !isValid() )
     return false;
 
+  QStringList anEntryList;
   try
   {
     SUIT_OverrideCursor aWaitCursor;
@@ -334,6 +336,9 @@ bool SMESHGUI_CopyMeshDlg::ClickOnApply()
     SMESH::SMESH_Gen_var gen = SMESHGUI::GetSMESHGen();
     SMESH::SMESH_Mesh_var newMesh =
       gen->CopyMesh(aPartToCopy, meshName.constData(), toCopyGroups, toKeepIDs);
+    if( !newMesh->_is_nil() )
+      if( _PTR(SObject) aSObject = SMESH::ObjectToSObject( newMesh ) )
+        anEntryList.append( aSObject->GetID().c_str() );
 #ifdef WITHGENERICOBJ
     // obj has been published in study. Its refcount has been incremented.
     // It is safe to decrement its refcount
@@ -345,6 +350,10 @@ bool SMESHGUI_CopyMeshDlg::ClickOnApply()
 
   mySMESHGUI->updateObjBrowser(true);
   SMESHGUI::Modified();
+
+  if( LightApp_Application* anApp =
+      dynamic_cast<LightApp_Application*>( SUIT_Session::session()->activeApplication() ) )
+    anApp->browseObjects( anEntryList, isApplyAndClose() );
 
   Init(false);
   mySelectedObject = SMESH::SMESH_IDSource::_nil();
@@ -359,6 +368,7 @@ bool SMESHGUI_CopyMeshDlg::ClickOnApply()
 //=================================================================================
 void SMESHGUI_CopyMeshDlg::ClickOnOk()
 {
+  setIsApplyAndClose( true );
   if( ClickOnApply() )
     ClickOnCancel();
 }
@@ -664,4 +674,24 @@ void SMESHGUI_CopyMeshDlg::setFilters()
   myFilterDlg->SetSourceWg( myLineEditElements );
 
   myFilterDlg->show();
+}
+
+//================================================================
+// function : setIsApplyAndClose
+// Purpose  : Set value of the flag indicating that the dialog is
+//            accepted by Apply & Close button
+//================================================================
+void SMESHGUI_CopyMeshDlg::setIsApplyAndClose( const bool theFlag )
+{
+  myIsApplyAndClose = theFlag;
+}
+
+//================================================================
+// function : isApplyAndClose
+// Purpose  : Get value of the flag indicating that the dialog is
+//            accepted by Apply & Close button
+//================================================================
+bool SMESHGUI_CopyMeshDlg::isApplyAndClose() const
+{
+  return myIsApplyAndClose;
 }

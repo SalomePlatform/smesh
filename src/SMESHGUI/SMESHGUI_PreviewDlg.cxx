@@ -46,7 +46,9 @@
 //=================================================================================
 SMESHGUI_PreviewDlg::SMESHGUI_PreviewDlg(SMESHGUI* theModule) :
   mySMESHGUI(theModule),
-  QDialog(SMESH::GetDesktop( theModule )) {
+  QDialog(SMESH::GetDesktop( theModule )),
+  myIsApplyAndClose( false )
+{
   mySimulation = new SMESHGUI_MeshEditPreview(SMESH::GetViewWindow( mySMESHGUI ));
 }
 
@@ -100,4 +102,24 @@ void SMESHGUI_PreviewDlg::toDisplaySimulation() {
 //=================================================================================
 void SMESHGUI_PreviewDlg::onDisplaySimulation(bool toDisplayPreview) {
   //Empty implementation here
+}
+
+//================================================================
+// Function : setIsApplyAndClose
+// Purpose  : Set value of the flag indicating that the dialog is
+//            accepted by Apply & Close button
+//================================================================
+void SMESHGUI_PreviewDlg::setIsApplyAndClose( const bool theFlag )
+{
+  myIsApplyAndClose = theFlag;
+}
+
+//================================================================
+// Function : isApplyAndClose
+// Purpose  : Get value of the flag indicating that the dialog is
+//            accepted by Apply & Close button
+//================================================================
+bool SMESHGUI_PreviewDlg::isApplyAndClose() const
+{
+  return myIsApplyAndClose;
 }

@@ -66,6 +66,7 @@ public:
 
 protected:
   virtual void                   startOperation();
+  virtual void                   commitOperation();
   virtual void                   selectionDone();
   virtual SUIT_SelectionFilter*  createFilter( const int ) const;
   virtual bool                   isValid( SUIT_Operation* ) const;
@@ -105,8 +106,8 @@ private:
   void                           createHypothesis( const int, const int,
                                                    const QString& );
 
-  bool                           createMesh( QString& );
-  bool                           createSubMesh( QString& );
+  bool                           createMesh( QString&, QStringList& );
+  bool                           createSubMesh( QString&, QStringList& );
   bool                           editMeshOrSubMesh( QString& );
 
   int                            currentHyp( const int, const int ) const;
@@ -142,6 +143,8 @@ private:
   bool                           myIgnoreAlgoSelection;
   HypothesesSet* myHypoSet;
   int myDim, myType;
+
+  QString                        myObjectToSelect;
 };
 
 #endif // SMESHGUI_MESHOP_H

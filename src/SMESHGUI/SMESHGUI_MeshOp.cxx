@@ -45,10 +45,12 @@
 // SALOME GUI includes
 #include <SalomeApp_Tools.h>
 #include <SalomeApp_Application.h>
+#include <LightApp_Application.h>
 #include <LightApp_SelectionMgr.h>
 #include <LightApp_UpdateFlags.h>
 #include <SUIT_MessageBox.h>
 #include <SUIT_OverrideCursor.h>
+#include <SUIT_Session.h>
 #include <SALOME_InteractiveObject.hxx>
 #include <SALOME_ListIO.hxx>
 
@@ -146,16 +148,20 @@ bool SMESHGUI_MeshOp::onApply()
   aMess = "";
   try
   {
+    QStringList anEntryList;
     if ( myToCreate && myIsMesh )
-      aResult = createMesh( aMess );
+      aResult = createMesh( aMess, anEntryList );
     if ( myToCreate && !myIsMesh )
-      aResult = createSubMesh( aMess );
+      aResult = createSubMesh( aMess, anEntryList );
     else if ( !myToCreate )
       aResult = editMeshOrSubMesh( aMess );
     if ( aResult )
     {
       SMESHGUI::Modified();
       update( UF_ObjBrowser | UF_Model );
+      if( LightApp_Application* anApp =
+          dynamic_cast<LightApp_Application*>( SUIT_Session::session()->activeApplication() ) )
+        myObjectToSelect = anApp->browseObjects( anEntryList, isApplyAndClose() );
     }
   }
   catch ( const SALOME::SALOME_Exception& S_ex )
@@ -246,6 +252,30 @@ void SMESHGUI_MeshOp::startOperation()
   selectionDone();
 
   myIgnoreAlgoSelection = false;
+
+  myObjectToSelect.clear();
+}
+
+//=================================================================================
+/*!
+ * \brief Selects a recently created mesh or sub-mesh if necessary
+ *
+ * Virtual method redefined from base class called when operation is commited
+ * selects a recently created mesh or sub-mesh if necessary. Allows to perform
+ * selection when the custom selection filters are removed.
+ */
+//=================================================================================
+void SMESHGUI_MeshOp::commitOperation()
+{
+  SMESHGUI_SelectionOp::commitOperation();
+
+  if ( !myObjectToSelect.isEmpty() ) {
+    if ( LightApp_SelectionMgr* aSelectionMgr = selectionMgr() ) {
+      SUIT_DataOwnerPtrList aList;
+      aList.append( new LightApp_DataOwner( myObjectToSelect ) );
+      aSelectionMgr->setSelected( aList );
+    }
+  }
 }
 
 //================================================================================
@@ -1558,12 +1588,13 @@ void SMESHGUI_MeshOp::processSet()
 /*!
  * \brief Creates mesh
   * \param theMess - Output parameter intended for returning error message
+  * \param theEntryList - List of entries of published objects
   * \retval bool  - TRUE if mesh is created, FALSE otherwise
  *
  * Creates mesh
  */
 //================================================================================
-bool SMESHGUI_MeshOp::createMesh( QString& theMess )
+bool SMESHGUI_MeshOp::createMesh( QString& theMess, QStringList& theEntryList )
 {
   theMess = "";
 
@@ -1591,8 +1622,10 @@ bool SMESHGUI_MeshOp::createMesh( QString& theMess )
     if ( aMeshVar->_is_nil() )
       return false;
     _PTR(SObject) aMeshSO = SMESH::FindSObject( aMeshVar.in() );
-    if ( aMeshSO )
+    if ( aMeshSO ) {
       SMESH::SetName( aMeshSO, myDlg->objectText( SMESHGUI_MeshDlg::Obj ) );
+      theEntryList.append( aMeshSO->GetID().c_str() );
+    }
 
     for ( int aDim = SMESH::DIM_0D; aDim <= SMESH::DIM_3D; aDim++ ) {
       if ( !isAccessibleDim( aDim )) continue;
@@ -1626,12 +1659,13 @@ bool SMESHGUI_MeshOp::createMesh( QString& theMess )
 /*!
  * \brief Creates sub-mesh
   * \param theMess - Output parameter intended for returning error message
+  * \param theEntryList - List of entries of published objects
   * \retval bool  - TRUE if sub-mesh is created, FALSE otherwise
  *
  * Creates sub-mesh
  */
 //================================================================================
-bool SMESHGUI_MeshOp::createSubMesh( QString& theMess )
+bool SMESHGUI_MeshOp::createSubMesh( QString& theMess, QStringList& theEntryList )
 {
   theMess = "";
 
@@ -1721,8 +1755,10 @@ bool SMESHGUI_MeshOp::createSubMesh( QString& theMess )
   // create sub-mesh
   SMESH::SMESH_subMesh_var aSubMeshVar = aMeshVar->GetSubMesh( aGeomVar, aName.toLatin1().data() );
   _PTR(SObject) aSubMeshSO = SMESH::FindSObject( aSubMeshVar.in() );
-  if ( aSubMeshSO )
+  if ( aSubMeshSO ) {
     SMESH::SetName( aSubMeshSO, aName.toLatin1().data() );
+    theEntryList.append( aSubMeshSO->GetID().c_str() );
+  }
 
   for ( int aDim = SMESH::DIM_0D; aDim <= SMESH::DIM_3D; aDim++ )
   {

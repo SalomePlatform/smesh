@@ -123,7 +123,8 @@ SMESHGUI_GroupDlg::SMESHGUI_GroupDlg( SMESHGUI* theModule,
     mySelectionMgr( SMESH::GetSelectionMgr( theModule ) ),
     mySelector( SMESH::GetViewWindow( theModule )->GetSelector() ),
     myIsBusy( false ),
-    myNameChanged( false )
+    myNameChanged( false ),
+    myIsApplyAndClose( false )
 {
   initDialog( true );
   if ( !theMesh->_is_nil() )
@@ -773,6 +774,8 @@ bool SMESHGUI_GroupDlg::onApply()
   if (myName->text().trimmed().isEmpty())
     return false;
 
+  bool anIsOk = false;
+  QStringList anEntryList;
   if (myGrpTypeId == 0) { // on mesh elements
     if (!mySelectAll->isChecked() && !myElements->count())
       return false;
@@ -824,6 +827,8 @@ bool SMESHGUI_GroupDlg::onApply()
       myGroup->SetColor(aColor);
 
       _PTR(SObject) aMeshGroupSO = SMESH::FindSObject(myGroup);
+      if( aMeshGroupSO )
+        anEntryList.append( aMeshGroupSO->GetID().c_str() );
 
       //SMESH::setFileName ( aMeshGroupSO, QString::number(myColorSpinBox->value()) );
       SMESH::setFileType ( aMeshGroupSO, "COULEURGROUP" );
@@ -895,7 +900,7 @@ bool SMESHGUI_GroupDlg::onApply()
     mySMESHGUI->updateObjBrowser(true);
     SMESH::UpdateView(); // asv: fix of BUG PAL5515
     mySelectionMgr->clearSelected();
-    return true;
+    anIsOk = true;
   }
   else if (myGrpTypeId == 1) { // on geom object
     if (CORBA::is_nil(myGroupOnGeom)) { // creation
@@ -971,6 +976,8 @@ bool SMESHGUI_GroupDlg::onApply()
       myGroupOnGeom->SetColor(aColor);
 
       _PTR(SObject) aMeshGroupSO = SMESH::FindSObject(myGroupOnGeom);
+      if( aMeshGroupSO )
+        anEntryList.append( aMeshGroupSO->GetID().c_str() );
 
       //SMESH::setFileName ( aMeshGroupSO, QString::number(myColorSpinBox->value()) );
       SMESH::setFileType ( aMeshGroupSO,"COULEURGROUP" );
@@ -1000,10 +1007,15 @@ bool SMESHGUI_GroupDlg::onApply()
     SMESHGUI::Modified();
     mySMESHGUI->updateObjBrowser(true);
     mySelectionMgr->clearSelected();
-    return true;
+    anIsOk = true;
   }
 
-  return false;
+  if( anIsOk )
+    if( LightApp_Application* anApp =
+        dynamic_cast<LightApp_Application*>( SUIT_Session::session()->activeApplication() ) )
+      myObjectToSelect = anApp->browseObjects( anEntryList, isApplyAndClose() );
+
+  return anIsOk;
 }
 
 //=================================================================================
@@ -1012,8 +1024,10 @@ bool SMESHGUI_GroupDlg::onApply()
 //=================================================================================
 void SMESHGUI_GroupDlg::onOK()
 {
+  setIsApplyAndClose( true );
   if ( onApply() )
     onClose();
+  setIsApplyAndClose( false );
 }
 
 //=================================================================================
@@ -1963,7 +1977,13 @@ void SMESHGUI_GroupDlg::onClose()
     restoreShowEntityMode();
   }
 
-  mySelectionMgr->clearSelected();
+  if( isApplyAndClose() && !myObjectToSelect.isEmpty() ) {
+    SUIT_DataOwnerPtrList aList;
+    aList.append( new LightApp_DataOwner( myObjectToSelect ) );
+    mySelectionMgr->setSelected( aList );
+  }
+  else
+    mySelectionMgr->clearSelected();
   if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
     aViewWindow->SetSelectionMode(ActorSelection);
   mySelectionMgr->clearFilters();
@@ -2394,4 +2414,24 @@ bool SMESHGUI_GroupDlg::IsActorVisible( SMESH_Actor* theActor )
   if (theActor && aViewWindow)
     return aViewWindow->isVisible(theActor->getIO());
   return false;
+}
+
+//================================================================
+//function : setIsApplyAndClose
+//purpose  : Set value of the flag indicating that the dialog is
+//           accepted by Apply & Close button
+//================================================================
+void SMESHGUI_GroupDlg::setIsApplyAndClose( const bool theFlag )
+{
+  myIsApplyAndClose = theFlag;
+}
+
+//================================================================
+//function : isApplyAndClose
+//purpose  : Get value of the flag indicating that the dialog is
+//           accepted by Apply & Close button
+//================================================================
+bool SMESHGUI_GroupDlg::isApplyAndClose() const
+{
+  return myIsApplyAndClose;
 }

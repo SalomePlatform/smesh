@@ -74,6 +74,9 @@ private:
 
   bool                   isValid();
 
+  void                   setIsApplyAndClose( const bool theFlag );
+  bool                   isApplyAndClose() const;
+
   SMESHGUI*              mySMESHGUI;              /* Current SMESHGUI object */
   SMESHGUI_IdValidator*  myIdValidator;
   LightApp_SelectionMgr* mySelectionMgr;          /* User shape selection */
@@ -108,6 +111,8 @@ private:
   SMESHGUI_FilterDlg*    myFilterDlg;
    
   QString                myHelpFileName;
+
+  bool                   myIsApplyAndClose;
 
 private slots:
   void                   ClickOnOk();
