@@ -95,6 +95,7 @@
 #include <numeric>
 #include <limits>
 #include <algorithm>
+#include <sstream>
 
 #define cast2Node(elem) static_cast<const SMDS_MeshNode*>( elem )
 
@@ -5307,7 +5308,7 @@ void SMESH_MeshEditor::LinearAngleVariation(const int nbSteps,
  *  \param theCopy - if true, create translated copies of theElems
  *  \param theMakeGroups - if true and theCopy, create translated groups
  *  \param theTargetMesh - mesh to copy translated elements into
- *  \retval SMESH_MeshEditor::PGroupIDs - list of ids of created groups
+ *  \return SMESH_MeshEditor::PGroupIDs - list of ids of created groups
  */
 //================================================================================
 
@@ -9184,7 +9185,7 @@ void SMESH_MeshEditor::UpdateVolumes (const SMDS_MeshNode*        theBetweenNode
 //=======================================================================
 /*!
  * \brief Convert elements contained in a submesh to quadratic
- * \retval int - nb of checked elements
+ * \return int - nb of checked elements
  */
 //=======================================================================
 
@@ -9536,7 +9537,7 @@ void SMESH_MeshEditor::ConvertToQuadratic(const bool        theForce3d,
 //=======================================================================
 /*!
  * \brief Convert quadratic elements to linear ones and remove quadratic nodes
- * \retval int - nb of checked elements
+ * \return int - nb of checked elements
  */
 //=======================================================================
 
@@ -10337,7 +10338,7 @@ SMESH_MeshEditor::SewSideElements (TIDSortedElemSet&    theSide1,
  * \param theSecondNode1 - a boundary node of set 1 linked with theFirstNode1
  * \param theSecondNode2 - a node of set 2 corresponding to theSecondNode1
  * \param nReplaceMap - output map of corresponding nodes
- * \retval bool  - is a success or not
+ * \return bool  - is a success or not
  */
 //================================================================================
 
@@ -10847,6 +10848,7 @@ double SMESH_MeshEditor::OrientedAngle(const gp_Pnt& p0, const gp_Pnt& p1, const
  * The nodes of the internal faces at the boundaries of the groups are doubled.
  * In option, the internal faces are replaced by flat elements.
  * Triangles are transformed in prisms, and quadrangles in hexahedrons.
+ * The flat elements are stored in groups of volumes.
  * @param theElems - list of groups of volumes, where a group of volume is a set of
  * SMDS_MeshElements sorted by Id.
  * @param createJointElems - if TRUE, create the elements
@@ -11125,11 +11127,12 @@ bool SMESH_MeshEditor::DoubleNodesOnGroupBoundaries( const std::vector<TIDSorted
   //     (domain1 X domain2) = domain1 + MAXINT*domain2
 
   std::map<int, std::map<long,int> > nodeQuadDomains;
+  std::map<std::string, SMESH_Group*> mapOfJunctionGroups;
 
   if (createJointElems)
     {
       itface = faceDomains.begin();
-      for( ; itface != faceDomains.end();++itface )
+      for (; itface != faceDomains.end(); ++itface)
         {
           DownIdType face = itface->first;
           std::set<int> oldNodes;
@@ -11137,13 +11140,27 @@ bool SMESH_MeshEditor::DoubleNodesOnGroupBoundaries( const std::vector<TIDSorted
           oldNodes.clear();
           grid->GetNodeIds(oldNodes, face.cellId, face.cellType);
 
-          std::map<int,int> domvol = itface->second;
-          std::map<int,int>::iterator itdom = domvol.begin();
+          std::map<int, int> domvol = itface->second;
+          std::map<int, int>::iterator itdom = domvol.begin();
           int dom1 = itdom->first;
           int vtkVolId = itdom->second;
           itdom++;
           int dom2 = itdom->first;
-          grid->extrudeVolumeFromFace(vtkVolId, dom1, dom2, oldNodes, nodeDomains, nodeQuadDomains);
+          SMDS_MeshVolume *vol = grid->extrudeVolumeFromFace(vtkVolId, dom1, dom2, oldNodes, nodeDomains,
+                                                             nodeQuadDomains);
+          stringstream grpname;
+          grpname << "junction_";
+          if (dom1 < dom2)
+            grpname << dom1 << "_" << dom2;
+          else
+            grpname << dom2 << "_" << dom1;
+          int idg;
+          string namegrp = grpname.str();
+          if (!mapOfJunctionGroups.count(namegrp))
+            mapOfJunctionGroups[namegrp] = this->myMesh->AddGroup(SMDSAbs_Volume, namegrp.c_str(), idg);
+          SMESHDS_Group *sgrp = dynamic_cast<SMESHDS_Group*>(mapOfJunctionGroups[namegrp]->GetGroupDS());
+          if (sgrp)
+            sgrp->Add(vol->GetID());
         }
     }
 
@@ -11168,7 +11185,18 @@ bool SMESH_MeshEditor::DoubleNodesOnGroupBoundaries( const std::vector<TIDSorted
                 else
                   for (int idom = orderDom.size()-1; idom >=0; idom--)
                     orderedNodes.push_back( nodeDomains[nodes[ino]][orderDom[idom]] );
-              this->GetMeshDS()->AddVolumeFromVtkIds(orderedNodes);
+              SMDS_MeshVolume* vol = this->GetMeshDS()->AddVolumeFromVtkIds(orderedNodes);
+
+              stringstream grpname;
+              grpname << "junction_";
+              grpname << 0 << "_" << 0;
+              int idg;
+              string namegrp = grpname.str();
+              if (!mapOfJunctionGroups.count(namegrp))
+                mapOfJunctionGroups[namegrp] = this->myMesh->AddGroup(SMDSAbs_Volume, namegrp.c_str(), idg);
+              SMESHDS_Group *sgrp = dynamic_cast<SMESHDS_Group*>(mapOfJunctionGroups[namegrp]->GetGroupDS());
+              if (sgrp)
+                sgrp->Add(vol->GetID());
             }
           else
             {

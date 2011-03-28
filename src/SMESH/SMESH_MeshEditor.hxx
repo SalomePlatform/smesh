@@ -20,7 +20,7 @@
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 
-//  SMESH SMESH_I : idl implementation based on 'SMESH' unit's calsses
+//  SMESH SMESH_I : idl implementation based on 'SMESH' unit's classes
 // File      : SMESH_MeshEditor.hxx
 // Created   : Mon Apr 12 14:56:19 2004
 // Author    : Edward AGAPOV (eap)
@@ -149,7 +149,7 @@ public:
    * \param theCriterion - Is used to choose a neighbour to fuse with.
    * \param theMaxAngle  - Is a max angle between element normals at which fusion
    *                       is still performed; theMaxAngle is mesured in radians.
-   * \retval bool - Success or not.
+   * \return bool - Success or not.
    */
   bool TriToQuad (TIDSortedElemSet &                   theElems,
                   SMESH::Controls::NumericalFunctorPtr theCriterion,
@@ -159,7 +159,7 @@ public:
    * \brief Split quadrangles into triangles.
    * \param theElems     - The faces to be splitted.
    * \param theCriterion - Is used to choose a diagonal for splitting.
-   * \retval bool - Success or not.
+   * \return bool - Success or not.
    */
   bool QuadToTri (TIDSortedElemSet &                   theElems,
                   SMESH::Controls::NumericalFunctorPtr theCriterion);
@@ -168,7 +168,7 @@ public:
    * \brief Split quadrangles into triangles.
    * \param theElems  - The faces to be splitted.
    * \param the13Diag - Is used to choose a diagonal for splitting.
-   * \retval bool - Success or not.
+   * \return bool - Success or not.
    */
   bool QuadToTri (TIDSortedElemSet & theElems,
                   const bool         the13Diag);
@@ -177,7 +177,7 @@ public:
    * \brief Find better diagonal for splitting.
    * \param theQuad      - The face to find better splitting of.
    * \param theCriterion - Is used to choose a diagonal for splitting.
-   * \retval int - 1 for 1-3 diagonal, 2 for 2-4, -1 - for errors.
+   * \return int - 1 for 1-3 diagonal, 2 for 2-4, -1 - for errors.
    */
   int BestSplit (const SMDS_MeshElement*              theQuad,
                  SMESH::Controls::NumericalFunctorPtr theCriterion);
@@ -230,7 +230,7 @@ public:
   };
   
   /*!
-   * special structire for control of extrusion functionality
+   * special structure for control of extrusion functionality
    */
   struct ExtrusParam {
     gp_Dir myDir; // direction of extrusion
@@ -240,7 +240,7 @@ public:
 
   /*!
    * Create new node in the mesh with given coordinates
-   * (auxilary for advanced extrusion)
+   * (auxiliary for advanced extrusion)
    */
   const SMDS_MeshNode* CreateNode(const double x,
                                   const double y,
@@ -252,12 +252,12 @@ public:
    * Generate new elements by extrusion of theElements
    * It is a method used in .idl file. All functionality
    * is implemented in the next method (see below) which
-   * is used in the cuurent method.
-   * param theElems - list of elements for extrusion
-   * param newElemsMap returns history of extrusion
-   * param theFlags set flags for performing extrusion (see description
+   * is used in the current method.
+   * @param theElems - list of elements for extrusion
+   * @param newElemsMap returns history of extrusion
+   * @param theFlags set flags for performing extrusion (see description
    *   of enum ExtrusionFlags for additional information)
-   * param theTolerance - uses for comparing locations of nodes if flag
+   * @param theTolerance - uses for comparing locations of nodes if flag
    *   EXTRUSION_FLAG_SEW is set
    */
   PGroupIDs ExtrusionSweep (TIDSortedElemSet &  theElems,
@@ -270,13 +270,13 @@ public:
   
   /*!
    * Generate new elements by extrusion of theElements
-   * param theElems - list of elements for extrusion
-   * param newElemsMap returns history of extrusion
-   * param theFlags set flags for performing extrusion (see description
+   * @param theElems - list of elements for extrusion
+   * @param newElemsMap returns history of extrusion
+   * @param theFlags set flags for performing extrusion (see description
    *   of enum ExtrusionFlags for additional information)
-   * param theTolerance - uses for comparing locations of nodes if flag
+   * @param theTolerance - uses for comparing locations of nodes if flag
    *   EXTRUSION_FLAG_SEW is set
-   * param theParams - special structure for manage of extrusion
+   * @param theParams - special structure for manage of extrusion
    */
   PGroupIDs ExtrusionSweep (TIDSortedElemSet &  theElems,
                             ExtrusParam&        theParams,
@@ -342,7 +342,7 @@ public:
   SMESH_NodeSearcher* GetNodeSearcher();
 
   /*!
-   * \brief Return SMESH_ElementSearcher. The caller is responsible for deleteing it
+   * \brief Return SMESH_ElementSearcher. The caller is responsible for deleting it
    */
   SMESH_ElementSearcher* GetElementSearcher();
   SMESH_ElementSearcher* GetElementSearcher( SMDS_ElemIteratorPtr elemIt );
@@ -523,7 +523,7 @@ public:
     * \param theSecondNode1 - a boundary node of set 1 linked with theFirstNode1
     * \param theSecondNode2 - a node of set 2 corresponding to theSecondNode1
     * \param nReplaceMap - output map of corresponding nodes
-    * \retval Sew_Error  - is a success or not
+    * \return Sew_Error  - is a success or not
    */
   static Sew_Error FindMatchingNodes(std::set<const SMDS_MeshElement*>& theSide1,
                                      std::set<const SMDS_MeshElement*>& theSide2,
@@ -537,7 +537,7 @@ public:
    * \brief Returns true if given node is medium
     * \param n - node to check
     * \param typeToCheck - type of elements containing the node to ask about node status
-    * \retval bool - check result
+    * \return bool - check result
    */
   static bool IsMedium(const SMDS_MeshNode*      node,
                        const SMDSAbs_ElementType typeToCheck = SMDSAbs_All);
@@ -593,7 +593,7 @@ public:
 
   /*!
    * \brief Convert elements contained in a submesh to quadratic
-    * \retval int - nb of checked elements
+   * \return int - nb of checked elements
    */
   int convertElemToQuadratic(SMESHDS_SubMesh *   theSm,
                              SMESH_MesherHelper& theHelper,
@@ -601,7 +601,7 @@ public:
 
   /*!
    * \brief Convert quadratic elements to linear ones and remove quadratic nodes
-    * \retval int - nb of checked elements
+   * \return nb of checked elements
    */
   int removeQuadElem( SMESHDS_SubMesh *    theSm,
                       SMDS_ElemIteratorPtr theItr,
@@ -625,11 +625,11 @@ public:
 
   /*!
    * \brief Create elements by sweeping an element
-    * \param elem - element to sweep
-    * \param newNodesItVec - nodes generated from each node of the element
-    * \param newElems - generated elements
-    * \param nbSteps - number of sweeping steps
-    * \param srcElements - to append elem for each generated element
+   * \param elem - element to sweep
+   * \param newNodesItVec - nodes generated from each node of the element
+   * \param newElems - generated elements
+   * \param nbSteps - number of sweeping steps
+   * \param srcElements - to append elem for each generated element
    */
   void sweepElement(const SMDS_MeshElement*                    elem,
                     const std::vector<TNodeOfNodeListMapItr> & newNodesItVec,
@@ -639,12 +639,12 @@ public:
 
   /*!
    * \brief Create 1D and 2D elements around swept elements
-    * \param mapNewNodes - source nodes and ones generated from them
-    * \param newElemsMap - source elements and ones generated from them
-    * \param elemNewNodesMap - nodes generated from each node of each element
-    * \param elemSet - all swept elements
-    * \param nbSteps - number of sweeping steps
-    * \param srcElements - to append elem for each generated element
+   * \param mapNewNodes - source nodes and ones generated from them
+   * \param newElemsMap - source elements and ones generated from them
+   * \param elemNewNodesMap - nodes generated from each node of each element
+   * \param elemSet - all swept elements
+   * \param nbSteps - number of sweeping steps
+   * \param srcElements - to append elem for each generated element
    */
   void makeWalls (TNodeOfNodeListMap &     mapNewNodes,
                   TElemOfElemListMap &     newElemsMap,

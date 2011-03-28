@@ -18,7 +18,7 @@
 
 //#define VTK_HAVE_POLYHEDRON
 //#ifdef VTK_HAVE_POLYHEDRON
-  #define VTK_MAXTYPE VTK_POLYHEDRON
+#define VTK_MAXTYPE VTK_POLYHEDRON
 //#else
 //  #define VTK_MAXTYPE VTK_QUADRATIC_PYRAMID
 //#endif
@@ -30,6 +30,7 @@
 
 class SMDS_Downward;
 class SMDS_Mesh;
+class SMDS_MeshVolume;
 
 class SMDS_CellLinks: public vtkCellLinks
 {
@@ -54,9 +55,9 @@ public:
   virtual void UpdateInformation();
   virtual vtkPoints *GetPoints();
 
-//#ifdef VTK_HAVE_POLYHEDRON
+  //#ifdef VTK_HAVE_POLYHEDRON
   int InsertNextLinkedCell(int type, int npts, vtkIdType *pts);
-//#endif
+  //#endif
 
   int CellIdToDownId(int vtkCellId);
   void setCellIdToDownId(int vtkCellId, int downId);
@@ -68,12 +69,9 @@ public:
   void ModifyCellNodes(int vtkVolId, std::map<int, int> localClonedNodeIds);
   int getOrderedNodesOfFace(int vtkVolId, std::vector<vtkIdType>& orderedNodes);
   void BuildLinks();
-  bool extrudeVolumeFromFace(int vtkVolId,
-                             int domain1,
-                             int domain2,
-                             std::set<int>& originalNodes,
-                             std::map<int,std::map<int,int> >& nodeDomains,
-                             std::map<int,std::map<long,int> >& nodeQuadDomains);
+  SMDS_MeshVolume* extrudeVolumeFromFace(int vtkVolId, int domain1, int domain2, std::set<int>& originalNodes,
+                                         std::map<int, std::map<int, int> >& nodeDomains,
+                                         std::map<int, std::map<long,int> >& nodeQuadDomains);
   vtkCellLinks* GetLinks()
   {
     return Links;

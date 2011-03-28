@@ -5588,6 +5588,7 @@ CORBA::Boolean SMESH_MeshEditor_i::Make2DMeshFrom3D()
  * The nodes of the internal faces at the boundaries of the groups are doubled.
  * In option, the internal faces are replaced by flat elements.
  * Triangles are transformed in prisms, and quadrangles in hexahedrons.
+ * The flat elements are stored in groups of volumes.
  * @param theDomains - list of groups of volumes
  * @param createJointElems - if TRUE, create the elements
  * @return TRUE if operation has been completed successfully, FALSE otherwise
@@ -5620,6 +5621,7 @@ CORBA::Boolean SMESH_MeshEditor_i::DoubleNodesOnGroupBoundaries( const SMESH::Li
   }
 
   bool aResult = aMeshEditor.DoubleNodesOnGroupBoundaries( domains, createJointElems );
+  // TODO publish the groups of flat elements in study
 
   storeResult( aMeshEditor) ;
   myMesh->GetMeshDS()->Modified();

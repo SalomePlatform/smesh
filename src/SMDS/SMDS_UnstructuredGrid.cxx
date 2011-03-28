@@ -3,6 +3,7 @@
 #include "SMDS_Mesh.hxx"
 #include "SMDS_MeshInfo.hxx"
 #include "SMDS_Downward.hxx"
+#include "SMDS_MeshVolume.hxx"
 
 #include "utilities.h"
 
@@ -924,7 +925,7 @@ void SMDS_UnstructuredGrid::BuildLinks()
  * @param nodeDomains: map(original id --> map(domain --> duplicated node id))
  * @return ok if success.
  */
-bool SMDS_UnstructuredGrid::extrudeVolumeFromFace(int vtkVolId,
+SMDS_MeshVolume* SMDS_UnstructuredGrid::extrudeVolumeFromFace(int vtkVolId,
                                                   int domain1,
                                                   int domain2,
                                                   std::set<int>& originalNodes,
