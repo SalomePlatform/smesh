@@ -234,20 +234,21 @@ bool SMESHGUI_ConvToQuadOp::onApply()
   {
     SMESH::SMESH_MeshEditor_var aEditor = mesh->GetMeshEditor();
     aResult = true; 
+    SMESH::SMESH_Mesh_var sourceMesh = SMESH::SObjectToInterface<SMESH::SMESH_Mesh>( pObj );  
     if( !myDlg->CurrentRB() )
     {
       bool aParam = true;
       if( myDlg->IsEnabledCheck() )
         aParam = myDlg->IsMediumNdsOnGeom();
 
-      if ( myDlg->isWarningShown() )
+      if ( sourceMesh->_is_nil() )
         aEditor->ConvertToQuadraticObject( aParam, idSource );
       else
         aEditor->ConvertToQuadratic( aParam );
     }
     else
     {
-      if ( myDlg->isWarningShown() )
+      if ( sourceMesh->_is_nil() )
         aEditor->ConvertFromQuadraticObject( idSource );
       else
         aEditor->ConvertFromQuadratic();
