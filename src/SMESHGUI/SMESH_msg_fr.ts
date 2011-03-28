@@ -3913,6 +3913,10 @@ Voulez-vous restaurer la priorité initiale ?</translation>
         <source>RADIOBTN_2</source>
         <translation>Convertir à partir d&apos;éléments quadratiques</translation>
     </message>
+    <message>
+        <source>NON_CONFORM_WARNING</source>
+        <translation>Attention: le maillage généré sera a priori non-conforme</translation>
+    </message>
 </context>
 <context>
     <name>SMESHGUI_ConvToQuadOp</name>
