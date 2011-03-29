@@ -416,6 +416,7 @@ public:
 
   virtual Engines::TMPFile* DumpPython(CORBA::Object_ptr theStudy,
                                        CORBA::Boolean isPublished,
+                                       CORBA::Boolean isMultiFile,
                                        CORBA::Boolean& isValidScript);
 
   void AddToPythonScript (int theStudyID, const TCollection_AsciiString& theString);
@@ -428,6 +429,7 @@ public:
                                            Resource_DataMapOfAsciiStringAsciiString& theObjectNames,
                                            Resource_DataMapOfAsciiStringAsciiString& theNames,
                                            bool isPublished,
+                                           bool isMultiFile,
                                            bool& aValidScript,
                                            const TCollection_AsciiString& theSavedTrace);
 

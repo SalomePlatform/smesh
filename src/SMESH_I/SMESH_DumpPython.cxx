@@ -483,11 +483,31 @@ namespace SMESH
 }
 
 //=======================================================================
+//function : RemoveTabulation
+//purpose  : 
+//=======================================================================
+void RemoveTabulation( TCollection_AsciiString& theScript )
+{
+  std::string aString( theScript.ToCString() );
+  std::string::size_type aPos = 0;
+  while( aPos < aString.length() )
+  {
+    aPos = aString.find( "\n\t", aPos );
+    if( aPos == std::string::npos )
+      break;
+    aString.replace( aPos, 2, "\n" );
+    aPos++;
+  }
+  theScript = aString.c_str();
+}
+
+//=======================================================================
 //function : DumpPython
 //purpose  :
 //=======================================================================
 Engines::TMPFile* SMESH_Gen_i::DumpPython (CORBA::Object_ptr theStudy,
                                            CORBA::Boolean isPublished,
+                                           CORBA::Boolean isMultiFile,
                                            CORBA::Boolean& isValidScript)
 {
   SALOMEDS::Study_var aStudy = SALOMEDS::Study::_narrow(theStudy);
@@ -528,7 +548,10 @@ Engines::TMPFile* SMESH_Gen_i::DumpPython (CORBA::Object_ptr theStudy,
   // Add trace of API methods calls and replace study entries by names
   TCollection_AsciiString aScript;
   aScript += DumpPython_impl(aStudy, aMap, aMapNames,
-                             isPublished, isValidScript, aSavedTrace);
+                             isPublished, isMultiFile, isValidScript, aSavedTrace);
+
+  if( !isMultiFile ) // remove unnecessary tabulation
+    RemoveTabulation( aScript );
 
   int aLen = aScript.Length();
   unsigned char* aBuffer = new unsigned char[aLen+1];
@@ -692,6 +715,7 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
                          Resource_DataMapOfAsciiStringAsciiString& theObjectNames,
                          Resource_DataMapOfAsciiStringAsciiString& theNames,
                          bool isPublished,
+                         bool isMultiFile,
                          bool& aValidScript,
                          const TCollection_AsciiString& theSavedTrace)
 {
@@ -703,7 +727,11 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
   TCollection_AsciiString anOldGen( SMESH::TPythonDump::SMESHGenName() );
 
   TCollection_AsciiString aScript;
-  aScript = "def RebuildData(theStudy):\n\t";
+  if( isMultiFile )
+    aScript += "def RebuildData(theStudy):";
+  else
+    aScript += "theStudy = salome.myStudy";
+  aScript += "\n\t";
   aScript += helper + "aFilterManager = " + aSMESHGen + ".CreateFilterManager()\n\t";
   aScript += helper + "aMeasurements = " + aSMESHGen + ".CreateMeasurements()\n\t";
   if ( isPublished )
@@ -828,13 +856,13 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
 
   // set initial part of aSript
   TCollection_AsciiString initPart = "import salome, SMESH, SALOMEDS\n";
-  initPart += helper + "import " + aSmeshpy + "\n\n";
-  if ( importGeom )
+  initPart += helper + "import " + aSmeshpy + "\n";
+  if ( importGeom && isMultiFile )
   {
-    initPart += ("## import GEOM dump file ## \n"
+    initPart += ("\n## import GEOM dump file ## \n"
                  "import string, os, sys, re\n"
                  "sys.path.insert( 0, os.path.dirname(__file__) )\n"
-                 "exec(\"from \"+re.sub(\"SMESH$\",\"GEOM\",__name__)+\" import *\")\n\n");
+                 "exec(\"from \"+re.sub(\"SMESH$\",\"GEOM\",__name__)+\" import *\")\n");
   }
   anUpdatedScript.Insert ( 1, initPart );
 
@@ -931,7 +959,10 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
       CORBA::string_free(script);
     }
   }
-  anUpdatedScript += "\n\n\tpass\n";
+
+  if( isMultiFile )
+    anUpdatedScript += "\n\tpass";
+  anUpdatedScript += "\n";
 
   // -----------------------------------------------------------------
   // put string literals describing patterns into separate functions
