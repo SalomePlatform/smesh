@@ -5632,6 +5632,53 @@ CORBA::Boolean SMESH_MeshEditor_i::DoubleNodesOnGroupBoundaries( const SMESH::Li
   return aResult;
 }
 
+//================================================================================
+/*!
+ * \brief Double nodes on some external faces and create flat elements.
+ * Flat elements are mainly used by some types of mechanic calculations.
+ *
+ * Each group of the list must be constituted of faces.
+ * Triangles are transformed in prisms, and quadrangles in hexahedrons.
+ * @param theGroupsOfFaces - list of groups of faces
+ * @return TRUE if operation has been completed successfully, FALSE otherwise
+ */
+//================================================================================
+
+CORBA::Boolean SMESH_MeshEditor_i::CreateFlatElementsOnFacesGroups( const SMESH::ListOfGroups& theGroupsOfFaces )
+{
+  initData();
+
+  ::SMESH_MeshEditor aMeshEditor( myMesh );
+
+  SMESHDS_Mesh* aMeshDS = GetMeshDS();
+
+  vector<TIDSortedElemSet> faceGroups;
+  faceGroups.clear();
+
+  for ( int i = 0, n = theGroupsOfFaces.length(); i < n; i++ )
+  {
+    SMESH::SMESH_GroupBase_var aGrp = theGroupsOfFaces[ i ];
+    if ( !CORBA::is_nil( aGrp ) && ( aGrp->GetType() != SMESH::NODE ) )
+    {
+      TIDSortedElemSet faceGroup;
+      faceGroup.clear();
+      faceGroups.push_back(faceGroup);
+      SMESH::long_array_var anIDs = aGrp->GetIDs();
+      arrayToSet( anIDs, aMeshDS, faceGroups[ i ], SMDSAbs_All );
+    }
+  }
+
+  bool aResult = aMeshEditor.CreateFlatElementsOnFacesGroups( faceGroups );
+  // TODO publish the groups of flat elements in study
+
+  storeResult( aMeshEditor) ;
+  myMesh->GetMeshDS()->Modified();
+
+  // Update Python script
+  TPythonDump() << "isDone = " << this << ".CreateFlatElementsOnFacesGroups( " << &theGroupsOfFaces << " )";
+  return aResult;
+}
+
 // issue 20749 ===================================================================
 /*!
  * \brief Creates missing boundary elements

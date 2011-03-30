@@ -322,6 +322,17 @@ void SMDS_UnstructuredGrid::setCellIdToDownId(int vtkCellId, int downId)
   _cellIdToDownId[vtkCellId] = downId;
 }
 
+void SMDS_UnstructuredGrid::CleanDownwardConnectivity()
+{
+  for (int i = 0; i < _downArray.size(); i++)
+    {
+      if (_downArray[i])
+        delete _downArray[i];
+      _downArray[i] = 0;
+    }
+  _cellIdToDownId.clear();
+}
+
 /*! Build downward connectivity: to do only when needed because heavy memory load.
  *  Downward connectivity is no more valid if vtkUnstructuredGrid is modified.
  *
@@ -333,13 +344,7 @@ void SMDS_UnstructuredGrid::BuildDownwardConnectivity(bool withEdges)
 
   // --- erase previous data if any
 
-  for (int i = 0; i < _downArray.size(); i++)
-    {
-      if (_downArray[i])
-        delete _downArray[i];
-      _downArray[i] = 0;
-    }
-  _cellIdToDownId.clear();
+  this->CleanDownwardConnectivity();
 
   // --- create SMDS_Downward structures (in _downArray vector[vtkCellType])
 

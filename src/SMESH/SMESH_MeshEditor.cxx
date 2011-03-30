@@ -10862,7 +10862,7 @@ bool SMESH_MeshEditor::DoubleNodesOnGroupBoundaries( const std::vector<TIDSorted
   MESSAGE("----------------------------------------------");
 
   SMESHDS_Mesh *meshDS = this->myMesh->GetMeshDS();
-  meshDS->BuildDownWardConnectivity(false);
+  meshDS->BuildDownWardConnectivity(true);
   CHRONO(50);
   SMDS_UnstructuredGrid *grid = meshDS->getGrid();
 
@@ -11286,10 +11286,156 @@ bool SMESH_MeshEditor::DoubleNodesOnGroupBoundaries( const std::vector<TIDSorted
         }
     }
 
+  meshDS->CleanDownWardConnectivity(); // Mesh has been modified, downward connectivity is no more usable, free memory
   grid->BuildLinks();
 
   CHRONOSTOP(50);
   counters::stats();
+  return true;
+}
+
+/*!
+ * \brief Double nodes on some external faces and create flat elements.
+ * Flat elements are mainly used by some types of mechanic calculations.
+ *
+ * Each group of the list must be constituted of faces.
+ * Triangles are transformed in prisms, and quadrangles in hexahedrons.
+ * @param theElems - list of groups of faces, where a group of faces is a set of
+ * SMDS_MeshElements sorted by Id.
+ * @return TRUE if operation has been completed successfully, FALSE otherwise
+ */
+bool SMESH_MeshEditor::CreateFlatElementsOnFacesGroups(const std::vector<TIDSortedElemSet>& theElems)
+{
+  MESSAGE("-------------------------------------------------");
+  MESSAGE("SMESH_MeshEditor::CreateFlatElementsOnFacesGroups");
+  MESSAGE("-------------------------------------------------");
+
+  SMESHDS_Mesh *meshDS = this->myMesh->GetMeshDS();
+
+  // --- For each group of faces
+  //     duplicate the nodes, create a flat element based on the face
+  //     replace the nodes of the faces by their clones
+
+  std::map<const SMDS_MeshNode*, const SMDS_MeshNode*> clonedNodes;
+  std::map<const SMDS_MeshNode*, const SMDS_MeshNode*> intermediateNodes;
+  clonedNodes.clear();
+  intermediateNodes.clear();
+
+  for (int idom = 0; idom < theElems.size(); idom++)
+    {
+      const TIDSortedElemSet& domain = theElems[idom];
+      TIDSortedElemSet::const_iterator elemItr = domain.begin();
+      for (; elemItr != domain.end(); ++elemItr)
+        {
+          SMDS_MeshElement* anElem = (SMDS_MeshElement*) *elemItr;
+          SMDS_MeshFace* aFace = dynamic_cast<SMDS_MeshFace*> (anElem);
+          if (!aFace)
+            continue;
+          // MESSAGE("aFace=" << aFace->GetID());
+          bool isQuad = aFace->IsQuadratic();
+          vector<const SMDS_MeshNode*> ln0, ln1, ln2, ln3, ln4;
+
+          // --- clone the nodes, create intermediate nodes for non medium nodes of a quad face
+
+          SMDS_ElemIteratorPtr nodeIt = aFace->nodesIterator();
+          while (nodeIt->more())
+            {
+              const SMDS_MeshNode* node = static_cast<const SMDS_MeshNode*> (nodeIt->next());
+              bool isMedium = isQuad && (aFace->IsMediumNode(node));
+              if (isMedium)
+                ln2.push_back(node);
+              else
+                ln0.push_back(node);
+
+              const SMDS_MeshNode* clone = 0;
+              if (!clonedNodes.count(node))
+                {
+                  clone = meshDS->AddNode(node->X(), node->Y(), node->Z());
+                  clonedNodes[node] = clone;
+                }
+              else
+                clone = clonedNodes[node];
+
+              if (isMedium)
+                ln3.push_back(clone);
+              else
+                ln1.push_back(clone);
+
+              const SMDS_MeshNode* inter = 0;
+              if (isQuad && (!isMedium))
+                {
+                  if (!intermediateNodes.count(node))
+                    {
+                      inter = meshDS->AddNode(node->X(), node->Y(), node->Z());
+                      intermediateNodes[node] = inter;
+                    }
+                  else
+                    inter = intermediateNodes[node];
+                  ln4.push_back(inter);
+                }
+            }
+
+          // --- extrude the face
+
+          vector<const SMDS_MeshNode*> ln;
+          SMDS_MeshVolume* vol = 0;
+          vtkIdType aType = aFace->GetVtkType();
+          switch (aType)
+          {
+            case VTK_TRIANGLE:
+              vol = meshDS->AddVolume(ln0[2], ln0[1], ln0[0], ln1[2], ln1[1], ln1[0]);
+              // MESSAGE("vol prism " << vol->GetID());
+              ln.push_back(ln1[0]);
+              ln.push_back(ln1[1]);
+              ln.push_back(ln1[2]);
+              break;
+            case VTK_QUAD:
+              vol = meshDS->AddVolume(ln0[3], ln0[2], ln0[1], ln0[0], ln1[3], ln1[2], ln1[1], ln1[0]);
+              // MESSAGE("vol hexa " << vol->GetID());
+              ln.push_back(ln1[0]);
+              ln.push_back(ln1[1]);
+              ln.push_back(ln1[2]);
+              ln.push_back(ln1[3]);
+              break;
+            case VTK_QUADRATIC_TRIANGLE:
+              vol = meshDS->AddVolume(ln1[0], ln1[1], ln1[2], ln0[0], ln0[1], ln0[2], ln3[0], ln3[1], ln3[2],
+                                      ln2[0], ln2[1], ln2[2], ln4[0], ln4[1], ln4[2]);
+              // MESSAGE("vol quad prism " << vol->GetID());
+              ln.push_back(ln1[0]);
+              ln.push_back(ln1[1]);
+              ln.push_back(ln1[2]);
+              ln.push_back(ln3[0]);
+              ln.push_back(ln3[1]);
+              ln.push_back(ln3[2]);
+              break;
+            case VTK_QUADRATIC_QUAD:
+//              vol = meshDS->AddVolume(ln0[0], ln0[1], ln0[2], ln0[3], ln1[0], ln1[1], ln1[2], ln1[3],
+//                                      ln2[0], ln2[1], ln2[2], ln2[3], ln3[0], ln3[1], ln3[2], ln3[3],
+//                                      ln4[0], ln4[1], ln4[2], ln4[3]);
+              vol = meshDS->AddVolume(ln1[0], ln1[1], ln1[2], ln1[3], ln0[0], ln0[1], ln0[2], ln0[3],
+                                      ln3[0], ln3[1], ln3[2], ln3[3], ln2[0], ln2[1], ln2[2], ln2[3],
+                                      ln4[0], ln4[1], ln4[2], ln4[3]);
+              // MESSAGE("vol quad hexa " << vol->GetID());
+              ln.push_back(ln1[0]);
+              ln.push_back(ln1[1]);
+              ln.push_back(ln1[2]);
+              ln.push_back(ln1[3]);
+              ln.push_back(ln3[0]);
+              ln.push_back(ln3[1]);
+              ln.push_back(ln3[2]);
+              ln.push_back(ln3[3]);
+              break;
+            case VTK_POLYGON:
+              break;
+            default:
+              break;
+          }
+
+          // --- modify the face
+
+          aFace->ChangeNodes(&ln[0], ln.size());
+        }
+    }
   return true;
 }
 

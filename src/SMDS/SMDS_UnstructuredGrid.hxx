@@ -61,6 +61,7 @@ public:
 
   int CellIdToDownId(int vtkCellId);
   void setCellIdToDownId(int vtkCellId, int downId);
+  void CleanDownwardConnectivity();
   void BuildDownwardConnectivity(bool withEdges);
   int GetNeighbors(int* neighborsVtkIds, int* downIds, unsigned char* downTypes, int vtkId);
   int GetParentVolumes(int* volVtkIds, int vtkId);

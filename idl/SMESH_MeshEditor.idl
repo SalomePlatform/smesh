@@ -1010,6 +1010,8 @@ module SMESH
 
     /*!
      * \brief Double nodes on shared faces between groups of volumes and create flat elements on demand.
+     * Flat elements are mainly used by some types of mechanic calculations.
+     *
      * The list of groups must describe a partition of the mesh volumes.
      * The nodes of the internal faces at the boundaries of the groups are doubled.
      * In option, the internal faces are replaced by flat elements.
@@ -1021,6 +1023,16 @@ module SMESH
     boolean DoubleNodesOnGroupBoundaries( in ListOfGroups theDomains,
                                           in boolean createJointElems );
 
+    /*!
+     * \brief Double nodes on some external faces and create flat elements.
+     * Flat elements are mainly used by some types of mechanic calculations.
+     *
+     * Each group of the list must be constituted of faces.
+     * Triangles are transformed in prisms, and quadrangles in hexahedrons.
+     * \param theGroupsOfFaces - list of groups of faces
+     * \return TRUE if operation has been completed successfully, FALSE otherwise
+     */
+    boolean CreateFlatElementsOnFacesGroups( in ListOfGroups theGroupsOfFaces ); 
   };
 };
 

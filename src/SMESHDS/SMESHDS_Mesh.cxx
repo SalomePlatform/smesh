@@ -1959,6 +1959,11 @@ void SMESHDS_Mesh::compactMesh()
 
 }
 
+void SMESHDS_Mesh::CleanDownWardConnectivity()
+{
+  myGrid->CleanDownwardConnectivity();
+}
+
 void SMESHDS_Mesh::BuildDownWardConnectivity(bool withEdges)
 {
   myGrid->BuildDownwardConnectivity(withEdges);

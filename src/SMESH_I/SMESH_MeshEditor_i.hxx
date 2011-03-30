@@ -704,6 +704,16 @@ public:
    */
   CORBA::Boolean DoubleNodesOnGroupBoundaries( const SMESH::ListOfGroups& theDomains,
                                                CORBA::Boolean createJointElems );
+  /*!
+   * \brief Double nodes on some external faces and create flat elements.
+   * Flat elements are mainly used by some types of mechanic calculations.
+   *
+   * Each group of the list must be constituted of faces.
+   * Triangles are transformed in prisms, and quadrangles in hexahedrons.
+   * @param theGroupsOfFaces - list of groups of faces
+   * @return TRUE if operation has been completed successfully, FALSE otherwise
+   */
+  CORBA::Boolean CreateFlatElementsOnFacesGroups( const SMESH::ListOfGroups& theGroupsOfFaces );
 
   /*!
    * \brief Generated skin mesh (containing 2D cells) from 3D mesh
