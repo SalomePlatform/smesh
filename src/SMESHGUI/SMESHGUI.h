@@ -145,6 +145,10 @@ public :
   virtual void                    restoreVisualParameters(int savePoint);
 
   virtual void                    addActorAsObserver( SMESH_Actor* theActor );
+  
+  virtual bool                    renameAllowed( const QString& ) const;
+  virtual bool                    renameObject( const QString&, const QString& );
+
 
   SMESHGUI_ClippingPlaneInfoMap&  getClippingPlaneInfoMap() { return myClippingPlaneInfoMap; }
 

@@ -2666,71 +2666,6 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       }
       break;
     }
-
-  case 1101:                                    // RENAME
-    {
-      if ( checkLock( aStudy ) )
-        break;
-
-      LightApp_SelectionMgr *aSel = SMESHGUI::selectionMgr();
-      SALOME_ListIO selected;
-      if( aSel )
-        aSel->selectedObjects( selected );
-
-      bool isAny = false; // is there any appropriate object selected
-
-      SALOME_ListIteratorOfListIO It( selected );
-      for ( ; It.More(); It.Next() )
-      {
-        Handle(SALOME_InteractiveObject) IObject = It.Value();
-        _PTR(SObject) obj = aStudy->FindObjectID( IObject->getEntry() );
-        _PTR(GenericAttribute) anAttr;
-        _PTR(AttributeName) aName;
-        if ( obj )
-        {
-          if ( obj->FindAttribute(anAttr, "AttributeName") )
-          {
-            aName = anAttr;
-            QString newName = QString(aName->Value().c_str());
-
-            // check type to prevent renaming of inappropriate objects
-            int aType = SMESHGUI_Selection::type(IObject->getEntry(), aStudy);
-            if (aType == MESH || aType == GROUP ||
-                aType == SUBMESH || aType == SUBMESH_COMPOUND ||
-                aType == SUBMESH_SOLID || aType == SUBMESH_FACE ||
-                aType == SUBMESH_EDGE || aType == SUBMESH_VERTEX ||
-                aType == HYPOTHESIS || aType == ALGORITHM)
-            {
-              isAny = true;
-              newName = LightApp_NameDlg::getName(desktop(), newName);
-              if ( !newName.isEmpty() )
-              {
-                SMESHGUI::GetSMESHGen()->SetName(obj->GetIOR().c_str(), newName.toLatin1().data());
-
-                // update name of group object and its actor
-                SMESH::SMESH_GroupBase_var aGroupObject = SMESH::IObjectToInterface<SMESH::SMESH_GroupBase>(IObject);
-                if( !aGroupObject->_is_nil() )
-                {
-                  aGroupObject->SetName( newName.toLatin1().data() );
-                  if ( SMESH_Actor *anActor = SMESH::FindActorByEntry( IObject->getEntry() ) )
-                    anActor->setName( newName.toLatin1().data() );
-                }
-
-                updateObjBrowser();
-              }
-            }
-          }
-        }
-      } // for
-
-      if (!isAny) {
-        SUIT_MessageBox::warning(desktop(),
-                                 QObject::tr("SMESH_WRN_WARNING"),
-                                 QObject::tr("SMESH_WRN_NO_APPROPRIATE_SELECTION"));
-      }
-      break;
-    }
-
   case 1102:                                    // REMOVE HYPOTHESIS / ALGORITHMS
     {
       if(checkLock(aStudy)) break;
@@ -3443,7 +3378,6 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction(  232, "ARC_REPRESENTATION", "", 0, true );
 
   createSMESHAction( 1100, "EDIT_HYPO" );
-  createSMESHAction( 1101, "RENAME", "", Qt::Key_F2 );
   createSMESHAction( 1102, "UNASSIGN" );
   createSMESHAction( 9010, "NUM_NODES", "", 0, true );
   createSMESHAction( 9011, "NUM_ELEMENTS", "", 0, true );
@@ -3791,7 +3725,6 @@ void SMESHGUI::initialize( CAM_Application* app )
   popupMgr()->insert( separator(), -1, 0 );
   createPopupItem( 1100, OB, hypo);                        // EDIT HYPOTHESIS
   createPopupItem( 1102, OB, hyp_alg ); // REMOVE HYPOTHESIS / ALGORITHMS
-  createPopupItem( 1101, OB, mesh_group + " " + hyp_alg ); // RENAME
   popupMgr()->insert( separator(), -1, 0 );
   createPopupItem( 4043, OB, mesh );                       // CLEAR_MESH
   popupMgr()->insert( separator(), -1, 0 );
@@ -4159,7 +4092,6 @@ bool SMESHGUI::activateModule( SUIT_Study* study )
   action(113)->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_M)); // Import MED
 
   action(  33)->setEnabled(true); // Delete: Key_Delete
-  action(1101)->setEnabled(true); // Rename: Key_F2
 
   //  0020210. Make SMESH_Gen update meshes at switching GEOM->SMESH
   GetSMESHGen()->SetCurrentStudy(SALOMEDS::Study::_nil());
@@ -4195,7 +4127,6 @@ bool SMESHGUI::deactivateModule( SUIT_Study* study )
   action(113)->setShortcut(QKeySequence()); // Import MED
 
   action(  33)->setEnabled(false); // Delete: Key_Delete
-  action(1101)->setEnabled(false); // Rename: Key_F2
 
   return SalomeApp_Module::deactivateModule( study );
 }
@@ -5762,3 +5693,84 @@ void SMESHGUI::connectView( const SUIT_ViewWindow* pview ) {
   }
 }
  
+/*!
+  \brief Return \c true if object can be renamed
+*/
+bool SMESHGUI::renameAllowed( const QString& entry) const {
+  SalomeApp_Application* anApp = dynamic_cast<SalomeApp_Application*>( application() );
+  if( !anApp )
+    return false;
+
+  _PTR(Study) aStudy = SMESH::GetActiveStudyDocument(); //Document OCAF de l'etude active
+  if( !aStudy )
+    return false;
+
+  bool appRes = SalomeApp_Module::renameAllowed(entry);
+  if( !appRes )
+    return false;
+  
+  // check type to prevent renaming of inappropriate objects
+  int aType = SMESHGUI_Selection::type(qPrintable(entry), aStudy);
+  if (aType == MESH || aType == GROUP ||
+      aType == SUBMESH || aType == SUBMESH_COMPOUND ||
+      aType == SUBMESH_SOLID || aType == SUBMESH_FACE ||
+      aType == SUBMESH_EDGE || aType == SUBMESH_VERTEX ||
+      aType == HYPOTHESIS || aType == ALGORITHM)
+    return true;
+
+  return false;
+}
+
+/*!
+  Rename object by entry.
+  \param entry entry of the object
+  \param name new name of the object
+  \brief Return \c true if rename operation finished successfully, \c false otherwise.
+*/
+bool SMESHGUI::renameObject( const QString& entry, const QString& name) {
+  
+  SalomeApp_Application* anApp = dynamic_cast<SalomeApp_Application*>( application() );
+  if( !anApp )
+    return false;
+  
+  _PTR(Study) aStudy = SMESH::GetActiveStudyDocument(); //Document OCAF de l'etude active
+  if( !aStudy )
+    return false;
+
+  bool appRes = SalomeApp_Module::renameObject(entry,name);
+  if( !appRes )
+    return false;
+  
+  _PTR(SObject) obj = aStudy->FindObjectID( qPrintable(entry) );
+  _PTR(GenericAttribute) anAttr;
+  _PTR(AttributeName) aName;
+  if ( obj ) {
+    if ( obj->FindAttribute(anAttr, "AttributeName") ) {
+      aName = anAttr;
+      // check type to prevent renaming of inappropriate objects
+      int aType = SMESHGUI_Selection::type( qPrintable(entry), aStudy );
+      if (aType == MESH || aType == GROUP ||
+	  aType == SUBMESH || aType == SUBMESH_COMPOUND ||
+	  aType == SUBMESH_SOLID || aType == SUBMESH_FACE ||
+	  aType == SUBMESH_EDGE || aType == SUBMESH_VERTEX ||
+	  aType == HYPOTHESIS || aType == ALGORITHM) {
+	if ( !name.isEmpty() ) {
+	  SMESHGUI::GetSMESHGen()->SetName(obj->GetIOR().c_str(), qPrintable(name) );
+	  
+	  // update name of group object and its actor
+	  Handle(SALOME_InteractiveObject) IObject = 
+	    new SALOME_InteractiveObject ( qPrintable(entry), "SMESH", qPrintable(name) );
+	  
+	  SMESH::SMESH_GroupBase_var aGroupObject = SMESH::IObjectToInterface<SMESH::SMESH_GroupBase>(IObject);
+	  if( !aGroupObject->_is_nil() ) {
+	    aGroupObject->SetName( qPrintable(name) );
+	    if ( SMESH_Actor *anActor = SMESH::FindActorByEntry( qPrintable(entry) ) )
+	      anActor->setName( qPrintable(name) );
+	  }
+	  return true;
+	}
+      }  
+    }
+  }
+  return false;
+}
