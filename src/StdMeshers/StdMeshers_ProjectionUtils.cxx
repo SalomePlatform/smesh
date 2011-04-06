@@ -1302,9 +1302,10 @@ int StdMeshers_ProjectionUtils::FindFaceAssociation(const TopoDS_Face&    face1,
     gp_Pnt2d v1f2UV = BRep_Tool::Parameters( VV2[1], face2 );
     gp_Vec2d v01f1Vec( v0f1UV, v1f1UV );
     gp_Vec2d v01f2Vec( v0f2UV, v1f2UV );
-    if ( Abs( v01f1Vec.X()-v01f2Vec.X()) < vTolUV && Abs( v01f1Vec.Y()-v01f2Vec.Y()) < vTolUV )
+    if ( Abs( v01f1Vec.X()-v01f2Vec.X()) < vTolUV &&
+         Abs( v01f1Vec.Y()-v01f2Vec.Y()) < vTolUV )
     {
-      if ( i_ok_wire_algo != 1 )
+      if ( !OK /*i_ok_wire_algo != 1*/ )
       {
         edges1.clear();
         edges2.clear();
