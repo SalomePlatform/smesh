@@ -113,7 +113,7 @@ HTML_HEADER       = @builddir@/static/header.html
 HTML_FOOTER       = @srcdir@/static/footer.html
 HTML_STYLESHEET   = @srcdir@/static/doxygen.css
 TOC_EXPAND        = YES
-DISABLE_INDEX     = YES
+DISABLE_INDEX     = NO
 GENERATE_TREEVIEW = NO
 
 #---------------------------------------------------------------------------
