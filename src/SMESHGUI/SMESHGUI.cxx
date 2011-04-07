@@ -4662,7 +4662,7 @@ void SMESHGUI::preferencesChanged( const QString& sect, const QString& name )
 //================================================================================
 void SMESHGUI::update( const int flags )
 {
-  if ( flags & UF_Viewer | flags & UF_Forced )
+  if ( (flags & UF_Viewer) | (flags & UF_Forced) )
     SMESH::UpdateView();
   else
     SalomeApp_Module::update( flags );

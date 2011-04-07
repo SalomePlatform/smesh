@@ -1726,7 +1726,7 @@ SMESH::long_array* SMESH_Gen_i::Evaluate(SMESH::SMESH_Mesh_ptr theMesh,
             SMESH_subMesh* sm = anIt->first;
             SMESH_ComputeErrorPtr& error = sm->GetComputeError();
             const SMESH_Algo* algo = myGen.GetAlgo( myLocMesh, sm->GetSubShape());
-            if ( algo && !error.get() || error->IsOK() )
+            if ( (algo && !error.get()) || error->IsOK() )
               error.reset( new SMESH_ComputeError( COMPERR_ALGO_FAILED,"Failed to evaluate",algo));
           }
           else

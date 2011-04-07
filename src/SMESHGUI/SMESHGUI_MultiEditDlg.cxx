@@ -758,9 +758,8 @@ void SMESHGUI_MultiEditDlg::onAddBtn()
     for ( ; anIter.More(); anIter.Next()) {
       SMESH::SMESH_GroupBase_var aGroup =
         SMESH::IObjectToInterface<SMESH::SMESH_GroupBase>(anIter.Value());
-      if (!aGroup->_is_nil() && (aGroup->GetType() == SMESH::FACE &&
-                                 entityType() == 0 || aGroup->GetType() == SMESH::VOLUME &&
-                                 entityType() == 1)) {
+      if (!aGroup->_is_nil() && ((aGroup->GetType() == SMESH::FACE && entityType() == 0) || 
+                                 (aGroup->GetType() == SMESH::VOLUME && entityType() == 1))) {
         if (aGroup->GetMesh()->GetId() == myMesh->GetId()) {
           SMESH::long_array_var anIds = aGroup->GetListOfID();
           for (int i = 0, n = anIds->length(); i < n; i++) {

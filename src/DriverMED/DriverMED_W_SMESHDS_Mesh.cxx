@@ -419,7 +419,7 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
     }
 
     
-    PMeshInfo aMeshInfo = myMed->CrMeshInfo(aMeshDimension,aMeshName);
+    PMeshInfo aMeshInfo = myMed->CrMeshInfo(aMeshDimension,aMeshDimension,aMeshName);
     MESSAGE("Add - aMeshName : "<<aMeshName<<"; "<<aMeshInfo->GetName());
     myMed->SetMeshInfo(aMeshInfo);
 

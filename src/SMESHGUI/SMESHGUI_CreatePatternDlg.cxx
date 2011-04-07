@@ -533,7 +533,7 @@ bool SMESHGUI_CreatePatternDlg::loadFromObject( const bool theMess )
     if ( myPattern->_is_nil() )
       myPattern = SMESH::GetPattern();
 
-    if ( myMesh->_is_nil() && mySubMesh->_is_nil() || myGeomObj->_is_nil() )
+    if ( (myMesh->_is_nil() && mySubMesh->_is_nil()) || myGeomObj->_is_nil() )
       return false;
 
     SMESH::SMESH_Mesh_ptr aMesh = mySubMesh->_is_nil() ? myMesh.in() : mySubMesh->GetFather();

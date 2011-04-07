@@ -2822,7 +2822,7 @@ SMESH::long_array* SMESH_Mesh_i::GetElementsByType( SMESH::ElementType theElemTy
   // No sense in returning ids of elements along with ids of nodes:
   // when theElemType == SMESH::ALL, return node ids only if
   // there are no elements
-  if ( theElemType == SMESH::NODE || theElemType == SMESH::ALL && nbElements == 0 )
+  if ( theElemType == SMESH::NODE || (theElemType == SMESH::ALL && nbElements == 0) )
     return GetNodesId();
 
   aResult->length( nbElements );

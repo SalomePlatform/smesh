@@ -79,7 +79,7 @@ SMESH_MEDSupport_i::SMESH_MEDSupport_i(SMESH_subMesh_i * sm, string name,
         {
                 _numberOfGeometricType = 1;
                 _geometricType = new SALOME_MED::medGeometryElement[1];
-                _geometricType[0] = SALOME_MED::MED_NONE;
+                _geometricType[0] = SALOME_MED::MEDMEM_NONE;
         }
         else
         {
@@ -178,7 +178,7 @@ char *SMESH_MEDSupport_i::getDescription() throw(SALOME::SALOME_Exception)
  */
 //=============================================================================
 
-SALOME_MED::MESH_ptr SMESH_MEDSupport_i::getMesh()throw(SALOME::
+SALOME_MED::GMESH_ptr SMESH_MEDSupport_i::getMesh()throw(SALOME::
         SALOME_Exception)
 {
         if (_subMeshDS==NULL)
@@ -202,7 +202,7 @@ CORBA::Boolean SMESH_MEDSupport_i::isOnAllElements()throw(SALOME::
                         SALOME::INTERNAL_ERROR);
         if (_seqNumber == false)
         {
-                if (_entity != SALOME_MED::MED_NONE)
+                if (_entity != SALOME_MED::MEDMEM_NONE)
                 {
                         _seqLength = _subMeshDS->NbNodes();
                         _seqNumber = true;
@@ -305,7 +305,7 @@ SALOME_TYPES::ListOfLong * SMESH_MEDSupport_i::getNumber(
                         SALOME::INTERNAL_ERROR);
 
         // A changer s'il ne s agit plus seulement de famille de noeuds
-        if (geomElement != SALOME_MED::MED_NONE)
+        if (geomElement != SALOME_MED::MEDMEM_NONE)
                 THROW_SALOME_CORBA_EXCEPTION("Not implemented", SALOME::BAD_PARAM);
 
         SALOME_TYPES::ListOfLong_var myseq = new SALOME_TYPES::ListOfLong;

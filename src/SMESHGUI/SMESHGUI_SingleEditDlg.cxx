@@ -313,12 +313,14 @@ static bool findTriangles (const SMDS_MeshNode *    theNode1,
     const SMDS_MeshElement* elem = it->next();
     if (elem->GetType() == SMDSAbs_Face &&
          emap.find(elem) != emap.end())
+    {
       if (theTria1) {
         theTria2 = elem;
         break;
       } else {
         theTria1 = elem;
       }
+    }
   }
   return (theTria1 && theTria2);
 }
@@ -370,8 +372,8 @@ void SMESHGUI_SingleEditDlg::onTextChange (const QString& theNewText)
         int edgeInd = 2, i;
         for (i = 0, it = tria1->nodesIterator(); it->more(); i++) {
           a3Nodes[ i ] = static_cast<const SMDS_MeshNode*>(it->next());
-          if (i > 0 && ( a3Nodes[ i ] == aNode1 && a3Nodes[ i - 1] == aNode2 ||
-                         a3Nodes[ i ] == aNode2 && a3Nodes[ i - 1] == aNode1 ) ) {
+          if (i > 0 && ( (a3Nodes[ i ] == aNode1 && a3Nodes[ i - 1] == aNode2) ||
+                         (a3Nodes[ i ] == aNode2 && a3Nodes[ i - 1] == aNode1) ) ) {
             edgeInd = i - 1;
             break;
           }

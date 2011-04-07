@@ -492,7 +492,7 @@ bool SMESHGUI_ExtrusionAlongPathDlg::ClickOnApply()
 
   //if (myMesh->_is_nil() || MeshCheck->isChecked() && myIDSource->_is_nil() ||
   //    !myMeshActor || myPathMesh->_is_nil() || myPathShape->_is_nil())
-  if ( myMesh->_is_nil() || MeshCheck->isChecked() && myIDSource->_is_nil() ||
+  if ( myMesh->_is_nil() || (MeshCheck->isChecked() && myIDSource->_is_nil()) ||
        /*!myMeshActor ||*/ myPath->_is_nil() )
     return false;
 
@@ -755,8 +755,8 @@ void SMESHGUI_ExtrusionAlongPathDlg::onTextChange (const QString& theNewText)
           const SMDS_MeshElement* e = aMesh->FindElement(ind);
           if (e) {
             // check also type of element
-            bool typeMatch = Elements1dRB->isChecked() && e->GetType() == SMDSAbs_Edge ||
-                             Elements2dRB->isChecked() && e->GetType() == SMDSAbs_Face;
+            bool typeMatch = (Elements1dRB->isChecked() && e->GetType() == SMDSAbs_Edge) ||
+                             (Elements2dRB->isChecked() && e->GetType() == SMDSAbs_Face);
             if (typeMatch)
               newIndices.Add(e->GetID());
           }
@@ -1273,7 +1273,7 @@ void SMESHGUI_ExtrusionAlongPathDlg::updateLinearAngles()
 //=================================================================================
 bool SMESHGUI_ExtrusionAlongPathDlg::isValuesValid() {
   
-  if ( MeshCheck->isChecked() && myIDSource->_is_nil() ||
+  if ( (MeshCheck->isChecked() && myIDSource->_is_nil()) ||
        myMesh->_is_nil() ||
        myPath->_is_nil() )
     return false;
@@ -1392,8 +1392,8 @@ SMESH::long_array_var SMESHGUI_ExtrusionAlongPathDlg::getSelectedElements() {
         if  (bOk) {
           const SMDS_MeshElement* e = aMesh->FindElement(ind);
           if (e) {
-            bool typeMatch = Elements1dRB->isChecked() && e->GetType() == SMDSAbs_Edge ||
-              Elements2dRB->isChecked() && e->GetType() == SMDSAbs_Face;
+            bool typeMatch = (Elements1dRB->isChecked() && e->GetType() == SMDSAbs_Edge) ||
+                             (Elements2dRB->isChecked() && e->GetType() == SMDSAbs_Face);
             if (typeMatch)
                   anElementsId[ j++ ] = ind;
           }

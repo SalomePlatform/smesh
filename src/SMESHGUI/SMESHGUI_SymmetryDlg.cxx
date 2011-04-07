@@ -554,7 +554,7 @@ bool SMESHGUI_SymmetryDlg::ClickOnApply()
     }
 
     SMESH::UpdateView();
-    if ( MakeGroupsCheck->isEnabled() && MakeGroupsCheck->isChecked() ||
+    if ( ( MakeGroupsCheck->isEnabled() && MakeGroupsCheck->isChecked() ) ||
          actionButton == MAKE_MESH_BUTTON ) {
       mySMESHGUI->updateObjBrowser(true); // new groups may appear
       if( LightApp_Application* anApp =

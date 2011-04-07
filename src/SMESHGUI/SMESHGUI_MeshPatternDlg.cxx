@@ -433,11 +433,11 @@ bool SMESHGUI_MeshPatternDlg::isValid (const bool theMess)
   QList<int> ids;
   if ((isRefine() &&
        (myMesh->_is_nil() || !getIds(ids) || getNode(false) < 0 ||
-        myType == Type_3d && (getNode(true) < 0 || getNode(false) == getNode(true))))
+        (myType == Type_3d && (getNode(true) < 0 || getNode(false) == getNode(true)))))
       ||
       (!isRefine() &&
        (myMesh->_is_nil() || myMeshShape->_is_nil() || myGeomObj[ Object ]->_is_nil() ||
-        myGeomObj[ Vertex1 ]->_is_nil() || myType == Type_3d && myGeomObj[ Vertex2 ]->_is_nil())))
+        myGeomObj[ Vertex1 ]->_is_nil() || (myType == Type_3d && myGeomObj[ Vertex2 ]->_is_nil()))))
   {
     if (theMess)
       SUIT_MessageBox::information(this, tr("SMESH_INSUFFICIENT_DATA"),
@@ -1125,7 +1125,7 @@ bool SMESHGUI_MeshPatternDlg::loadFromFile (const QString& theName)
     SMESH::SMESH_Pattern_var aPattern = SMESH::GetPattern();
 
     if (!aPattern->LoadFromFile(theName.toLatin1().data()) ||
-        myType == Type_2d && !aPattern->Is2D()) {
+        (myType == Type_2d && !aPattern->Is2D())) {
       SMESH::SMESH_Pattern::ErrorCode aCode = aPattern->GetErrorCode();
       QString aMess;
       if      (aCode == SMESH::SMESH_Pattern::ERR_READ_NB_POINTS     ) aMess = tr("ERR_READ_NB_POINTS");

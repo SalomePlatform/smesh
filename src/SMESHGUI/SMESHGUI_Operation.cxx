@@ -281,10 +281,8 @@ bool SMESHGUI_Operation::isValid( SUIT_Operation* theOtherOp ) const
   }
 
   return ( theOtherOp &&
-           ( theOtherOp->inherits("SMESHGUI_Operation") &&
-             ( !anOps.contains(theOtherOp->metaObject()->className() ) ||
-               anOps.contains(metaObject()->className()) ) ) ||
-           ( theOtherOp->inherits("LightApp_ShowHideOp") ) );
+         ( ( theOtherOp->inherits("SMESHGUI_Operation") && ( !anOps.contains(theOtherOp->metaObject()->className() ) || anOps.contains(metaObject()->className()) ) ) ||
+           ( theOtherOp->inherits("LightApp_ShowHideOp") ) ) );
 
   return true;
 }
