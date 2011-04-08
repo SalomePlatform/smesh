@@ -291,14 +291,6 @@ without creating any vertices by CAD algorithms.
 
 Currently BLSURF plugin has the following limitations.
 <ul>
-  <li>The created mesh will contain inverted elements if it is based on a shape,
-      consisting of more than one face (box, cone, torus...) and if
-      the option "Allow Quadrangles (Test)" has been checked before
-      computation.</li>
-
-  <li>SIGFPE exception is raised at the attempt to compute the mesh
-      based on a box when the option "Patch independent" is checked.</li>
-
   <li>BLSURF algorithm cannot be used as a local algorithm (on
       sub-meshes) or as a provider of a low-level
       mesh for some 3D algorithms, because the BLSURF mesher (and
@@ -310,7 +302,7 @@ Currently BLSURF plugin has the following limitations.
         <li> BLSURF + Projection 2D from faces meshed by BLSURF;</li>
         <li> local BLSURF + Extrusion 3D;</li>
       </ul>
-      </li>
+  </li>
 </ul>
 
 */
