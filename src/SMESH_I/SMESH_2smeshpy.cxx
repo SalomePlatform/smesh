@@ -720,58 +720,58 @@ _pyID _pyGen::GenerateNewID( const _pyID& theID )
  */
 //================================================================================
 
-static bool sameGroupType( const _pyID&                   grpID,
-                           const TCollection_AsciiString& theType)
-{
-  // define group type as smesh.Mesh.Group() does
-  int type = -1;
-  SALOMEDS::Study_var study = SMESH_Gen_i::GetSMESHGen()->GetCurrentStudy();
-  SALOMEDS::SObject_var aSObj = study->FindObjectID( grpID.ToCString() );
-  if ( !aSObj->_is_nil() ) {
-    GEOM::GEOM_Object_var aGeomObj = GEOM::GEOM_Object::_narrow( aSObj->GetObject() );
-    if ( !aGeomObj->_is_nil() ) {
-      switch ( aGeomObj->GetShapeType() ) {
-      case GEOM::VERTEX: type = SMESH::NODE; break;
-      case GEOM::EDGE:   type = SMESH::EDGE; break;
-      case GEOM::FACE:   type = SMESH::FACE; break;
-      case GEOM::SOLID:
-      case GEOM::SHELL:  type = SMESH::VOLUME; break;
-      case GEOM::COMPOUND: {
-        GEOM::GEOM_Gen_ptr aGeomGen = SMESH_Gen_i::GetSMESHGen()->GetGeomEngine();
-        if ( !aGeomGen->_is_nil() ) {
-          GEOM::GEOM_IGroupOperations_var aGrpOp =
-            aGeomGen->GetIGroupOperations( study->StudyId() );
-          if ( !aGrpOp->_is_nil() ) {
-            switch ( aGrpOp->GetType( aGeomObj )) {
-            case TopAbs_VERTEX: type = SMESH::NODE; break;
-            case TopAbs_EDGE:   type = SMESH::EDGE; break;
-            case TopAbs_FACE:   type = SMESH::FACE; break;
-            case TopAbs_SOLID:  type = SMESH::VOLUME; break;
-            default:;
-            }
-          }
-        }
-      }
-      default:;
-      }
-    }
-  }
-  if ( type < 0 ) {
-    MESSAGE("Type of the group " << grpID << " not found");
-    return false;
-  }
-  if ( theType.IsIntegerValue() )
-    return type == theType.IntegerValue();
+// static bool sameGroupType( const _pyID&                   grpID,
+//                            const TCollection_AsciiString& theType)
+// {
+//   // define group type as smesh.Mesh.Group() does
+//   int type = -1;
+//   SALOMEDS::Study_var study = SMESH_Gen_i::GetSMESHGen()->GetCurrentStudy();
+//   SALOMEDS::SObject_var aSObj = study->FindObjectID( grpID.ToCString() );
+//   if ( !aSObj->_is_nil() ) {
+//     GEOM::GEOM_Object_var aGeomObj = GEOM::GEOM_Object::_narrow( aSObj->GetObject() );
+//     if ( !aGeomObj->_is_nil() ) {
+//       switch ( aGeomObj->GetShapeType() ) {
+//       case GEOM::VERTEX: type = SMESH::NODE; break;
+//       case GEOM::EDGE:   type = SMESH::EDGE; break;
+//       case GEOM::FACE:   type = SMESH::FACE; break;
+//       case GEOM::SOLID:
+//       case GEOM::SHELL:  type = SMESH::VOLUME; break;
+//       case GEOM::COMPOUND: {
+//         GEOM::GEOM_Gen_ptr aGeomGen = SMESH_Gen_i::GetSMESHGen()->GetGeomEngine();
+//         if ( !aGeomGen->_is_nil() ) {
+//           GEOM::GEOM_IGroupOperations_var aGrpOp =
+//             aGeomGen->GetIGroupOperations( study->StudyId() );
+//           if ( !aGrpOp->_is_nil() ) {
+//             switch ( aGrpOp->GetType( aGeomObj )) {
+//             case TopAbs_VERTEX: type = SMESH::NODE; break;
+//             case TopAbs_EDGE:   type = SMESH::EDGE; break;
+//             case TopAbs_FACE:   type = SMESH::FACE; break;
+//             case TopAbs_SOLID:  type = SMESH::VOLUME; break;
+//             default:;
+//             }
+//           }
+//         }
+//       }
+//       default:;
+//       }
+//     }
+//   }
+//   if ( type < 0 ) {
+//     MESSAGE("Type of the group " << grpID << " not found");
+//     return false;
+//   }
+//   if ( theType.IsIntegerValue() )
+//     return type == theType.IntegerValue();
 
-  switch ( type ) {
-  case SMESH::NODE:   return theType.Location( "NODE", 1, theType.Length() );
-  case SMESH::EDGE:   return theType.Location( "EDGE", 1, theType.Length() );
-  case SMESH::FACE:   return theType.Location( "FACE", 1, theType.Length() );
-  case SMESH::VOLUME: return theType.Location( "VOLUME", 1, theType.Length() );
-  default:;
-  }
-  return false;
-}
+//   switch ( type ) {
+//   case SMESH::NODE:   return theType.Location( "NODE", 1, theType.Length() );
+//   case SMESH::EDGE:   return theType.Location( "EDGE", 1, theType.Length() );
+//   case SMESH::FACE:   return theType.Location( "FACE", 1, theType.Length() );
+//   case SMESH::VOLUME: return theType.Location( "VOLUME", 1, theType.Length() );
+//   default:;
+//   }
+//   return false;
+// }
 
 //================================================================================
 /*!
