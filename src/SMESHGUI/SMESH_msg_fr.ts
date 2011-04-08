@@ -5592,8 +5592,8 @@ Il y a trop peu de points dans le fichier </translation>
         <translation>Créer les éléments de frontière</translation>
     </message>
     <message>
-        <source>MESH</source>
-        <translation>Maillage, sous-maillage ou groupe</translation>
+        <source>Groups</source>
+        <translation>Groupes 2D</translation>
     </message>
     <message>
         <source>MODE</source>
@@ -5639,8 +5639,16 @@ Il y a trop peu de points dans le fichier </translation>
 <context>
     <name>SMESHGUI_Make2DFrom3DOp</name>
     <message>
+        <source>NB_ADDED</source>
+        <translation>%1 éléments de bord ont été ajoutés</translation>
+    </message>
+    <message>
         <source>SMESH_ERR_NO_INPUT_MESH</source>
         <translation>Aucun maillage, sous-maillage ou groupe source n&apos;est indiqué</translation>
+    </message>
+    <message>
+        <source>SMESH_ERR_NO_INPUT_GROUP</source>
+        <translation>Aucun groupe 2D n&apos;est indiqué</translation>
     </message>
     <message>
         <source>SMESH_ERR_NO_3D_ELEMENTS</source>
