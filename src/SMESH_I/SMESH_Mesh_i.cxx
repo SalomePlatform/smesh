@@ -2489,7 +2489,7 @@ void SMESH_Mesh_i::ExportMED (const char* file,
                               CORBA::Boolean auto_groups)
   throw(SALOME::SALOME_Exception)
 {
-  ExportToMEDX(file,auto_groups,SMESH::MED_V2_1,true);
+  ExportToMEDX(file,auto_groups,SMESH::MED_V2_2,true);
 }
 
 void SMESH_Mesh_i::ExportDAT (const char *file)
