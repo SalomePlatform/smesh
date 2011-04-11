@@ -66,8 +66,9 @@ install-data-local: usr_docs
 	    . | .. | ./static ) ;;								\
 	    *) echo "Installing $${filen}" ; cp -rp $${filen} $(DESTDIR)$(docdir)/gui/SMESH ;;	\
 	  esac ;										\
+	cp -rp $(srcdir)/images/head.png $(DESTDIR)$(docdir)/gui/SMESH/smeshpy_doc ;            \
 	done ;
-	cp -rp $(srcdir)/images/head.png $(DESTDIR)$(docdir)/gui/SMESH/smeshpy_doc
+
 
 uninstall-local:
 	rm -rf $(DESTDIR)$(docdir)/gui/SMESH
