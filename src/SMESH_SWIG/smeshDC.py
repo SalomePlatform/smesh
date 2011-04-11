@@ -1,4 +1,3 @@
-#  -*- coding: iso-8859-1 -*-
 #  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
 #
 #  This library is free software; you can redistribute it and/or
@@ -3294,7 +3293,7 @@ class Mesh:
 
     ## Generates new elements by extrusion of the elements with given ids
     #  @param IDsOfElements the list of elements ids for extrusion
-    #  @param StepVector vector or DirStruct, defining the direction and value of extrusion
+    #  @param StepVector vector or DirStruct, defining the direction and value of extrusion for one step (the total extrusion length will be NbOfSteps * ||StepVector||)
     #  @param NbOfSteps the number of steps
     #  @param MakeGroups forces the generation of new groups from existing ones
     #  @return the list of created groups (SMESH_GroupBase) if MakeGroups=True, empty list otherwise
@@ -3337,7 +3336,7 @@ class Mesh:
     ## Generates new elements by extrusion of the elements which belong to the object
     #  @param theObject the object which elements should be processed.
     #                   It can be a mesh, a sub mesh or a group.
-    #  @param StepVector vector, defining the direction and value of extrusion
+    #  @param StepVector vector, defining the direction and value of extrusion for one step (the total extrusion length will be NbOfSteps * ||StepVector||)
     #  @param NbOfSteps the number of steps
     #  @param MakeGroups forces the generation of new groups from existing ones
     #  @return list of created groups (SMESH_GroupBase) if MakeGroups=True, empty list otherwise
@@ -3359,7 +3358,7 @@ class Mesh:
     ## Generates new elements by extrusion of the elements which belong to the object
     #  @param theObject object which elements should be processed.
     #                   It can be a mesh, a sub mesh or a group.
-    #  @param StepVector vector, defining the direction and value of extrusion
+    #  @param StepVector vector, defining the direction and value of extrusion for one step (the total extrusion length will be NbOfSteps * ||StepVector||)
     #  @param NbOfSteps the number of steps
     #  @param MakeGroups to generate new groups from existing ones
     #  @return list of created groups (SMESH_GroupBase) if MakeGroups=True, empty list otherwise
@@ -3381,7 +3380,7 @@ class Mesh:
     ## Generates new elements by extrusion of the elements which belong to the object
     #  @param theObject object which elements should be processed.
     #                   It can be a mesh, a sub mesh or a group.
-    #  @param StepVector vector, defining the direction and value of extrusion
+    #  @param StepVector vector, defining the direction and value of extrusion for one step (the total extrusion length will be NbOfSteps * ||StepVector||)
     #  @param NbOfSteps the number of steps
     #  @param MakeGroups forces the generation of new groups from existing ones
     #  @return list of created groups (SMESH_GroupBase) if MakeGroups=True, empty list otherwise
