@@ -392,9 +392,9 @@
           }
         }
         // PAL18696
-        QString v21 (aMesh->GetVersionString(SMESH::MED_V2_1, 2));
+        //QString v21 (aMesh->GetVersionString(SMESH::MED_V2_1, 2));
         QString v22 (aMesh->GetVersionString(SMESH::MED_V2_2, 2));
-        aFilterMap.insert( QObject::tr( "MED_VX_FILES_FILTER" ).arg( v21 ) + " (*.med)", SMESH::MED_V2_1 );
+        //aFilterMap.insert( QObject::tr( "MED_VX_FILES_FILTER" ).arg( v21 ) + " (*.med)", SMESH::MED_V2_1 );
         aFilterMap.insert( QObject::tr( "MED_VX_FILES_FILTER" ).arg( v22 ) + " (*.med)", SMESH::MED_V2_2 );
       }
       break;

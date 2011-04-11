@@ -70,9 +70,9 @@ string DriverMED_W_SMESHDS_Mesh::GetVersionString(const MED::EVersion theVersion
 {
   TInt majeur, mineur, release;
   majeur =  mineur = release = 0;
-  if ( theVersion == eV2_1 )
-    MED::GetVersionRelease<eV2_1>(majeur, mineur, release);
-  else
+//   if ( theVersion == eV2_1 )
+//     MED::GetVersionRelease<eV2_1>(majeur, mineur, release);
+//   else
     MED::GetVersionRelease<eV2_2>(majeur, mineur, release);
   ostringstream name;
   if ( theNbDigits > 0 )

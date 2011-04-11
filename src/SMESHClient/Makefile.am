@@ -69,7 +69,7 @@ libSMESHClient_la_LDFLAGS  = \
 	$(KERNEL_LDFLAGS) -lSalomeLifeCycleCORBA -lSalomeNS -lOpUtil -lSALOMEBasics \
 	-lSalomeIDLKernel -lSALOMELocalTrace \
 	$(GEOM_LDFLAGS) -lNMTDS -lSalomeIDLGEOM \
-	$(MED_LDFLAGS) -lMEDWrapper_V2_2 -lMEDWrapper_V2_1 -lSalomeIDLMED -lMEDWrapper \
+	$(MED_LDFLAGS) -lMEDWrapper_V2_2 -lSalomeIDLMED -lMEDWrapper \
 	$(CAS_KERNEL)
 
 SMESHClientBin_CPPFLAGS = \
