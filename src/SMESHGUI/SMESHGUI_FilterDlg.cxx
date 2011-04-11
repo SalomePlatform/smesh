@@ -1605,7 +1605,8 @@ void SMESHGUI_FilterTable::onCriterionChanged (const int row, const int col, con
 //=======================================================================
 void SMESHGUI_FilterTable::onCriterionChanged (int row, int col)
 {
-  onCriterionChanged(row, col, -1);
+  if( col == 0 )
+    onCriterionChanged(row, col, -1);
 }
 
 //=======================================================================
