@@ -499,6 +499,8 @@ AC_OUTPUT([ \
   src/StdMeshersGUI/Makefile \
   src/StdMeshers_I/Makefile \
   src/SMESH_PY/Makefile \
+  src/Tools/Makefile \
+  src/Tools/MeshCut/Makefile \
   resources/Makefile \
   resources/SMESHCatalog.xml \
   idl/Makefile \

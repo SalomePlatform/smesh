@@ -25,35 +25,6 @@
 #
 include $(top_srcdir)/adm_local/unix/make_common_starter.am
 
-SUBDIRS = \
-	SMDS \
-	SMESHDS \
-	Controls \
-	Driver \
-	DriverMED \
-	DriverDAT \
-	DriverUNV \
-	DriverSTL \
-	SMESH \
-	SMESH_I \
-	SMESHClient \
-	SMESH_SWIG \
-	MEFISTO2 \
-	StdMeshers \
-	StdMeshers_I \
-	SMESH_PY \
-	Tools
+SUBDIRS = MeshCut
 
-if SMESH_ENABLE_GUI
-  SUBDIRS += \
-	OBJECT \
-	SMESHFiltersSelection \
-	SMESHGUI \
-	PluginUtils \
-	SMESH_SWIG_WITHIHM \
-	StdMeshersGUI
-endif
-
-DIST_SUBDIRS = 	SMDS SMESHDS Controls Driver DriverMED DriverDAT DriverUNV DriverSTL SMESH	\
-		SMESH_I SMESHClient SMESH_SWIG MEFISTO2 StdMeshers StdMeshers_I OBJECT		\
-		SMESHFiltersSelection SMESHGUI PluginUtils SMESH_SWIG_WITHIHM StdMeshersGUI SMESH_PY Tools
+DIST_SUBDIRS = 	MeshCut
