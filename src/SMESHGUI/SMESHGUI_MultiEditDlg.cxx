@@ -776,12 +776,13 @@ void SMESHGUI_MultiEditDlg::onAddBtn()
   bool isGroupOrSubmesh = (mySubmeshChk->isChecked() || myGroupChk->isChecked());
   mySubmeshChk->setChecked(false);
   myGroupChk->setChecked(false);
+  QStringList items;
   for(int i = 1; i <= toBeAdded.Extent(); i++)
     if (myIds.Add(toBeAdded(i))) {
-      QListWidgetItem* item = new QListWidgetItem(QString("%1").arg(toBeAdded(i)));
-      myListBox->addItem(item);
-      item->setSelected(true);
+      items.append(QString("%1").arg(toBeAdded(i)));
     }
+  myListBox->addItems(items);
+  myListBox->selectAll();
   myBusy = false;
 
   emit ListContensChanged();
@@ -1480,7 +1481,7 @@ SMESHGUI_CuttingIntoTetraDlg::SMESHGUI_CuttingIntoTetraDlg(SMESHGUI* theModule)
 {
   setWindowTitle(tr("CAPTION"));
   myHelpFileName = "split_to_tetra_page.html";
-  myEntityType = SMESH::VolumeFilter;
+  myEntityType = 1;
 
   myToAllChk->setChecked( true ); //aplly to the whole mesh by default
 
