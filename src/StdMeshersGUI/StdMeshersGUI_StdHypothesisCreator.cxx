@@ -342,8 +342,9 @@ namespace {
   {
     StdMeshersGUI_ObjectReferenceParamWdg* w =
       new StdMeshersGUI_ObjectReferenceParamWdg( filter, 0, /*multiSel=*/true);
-    w->SetObjects( objEntries );
+    //RNV: Firstly, activate selection, then set objects
     w->activateSelection();
+    w->SetObjects( objEntries );
     return w;
   }
 
