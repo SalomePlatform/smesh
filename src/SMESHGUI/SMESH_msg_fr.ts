@@ -157,7 +157,7 @@
     </message>
     <message>
         <source>MEN_ADV_INFO</source>
-        <translation>Informations avancées du maillage</translation>
+        <translation>Informations sur le maillage</translation>
     </message>
     <message>
         <source>MEN_ALL</source>
@@ -2841,7 +2841,7 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>TOP_ADV_INFO</source>
-        <translation>Informations avancées du maillage</translation>
+        <translation>Informations sur le maillage</translation>
     </message>
     <message>
         <source>TOP_ALL</source>
