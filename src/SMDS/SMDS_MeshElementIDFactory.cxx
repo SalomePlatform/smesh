@@ -95,7 +95,8 @@ int SMDS_MeshElementIDFactory::SetInVtkGrid(SMDS_MeshElement * elem)
   // --- insert cell in vtkUnstructuredGrid
 
   vtkUnstructuredGrid * grid = myMesh->getGrid();
-  int typ = GetVtkCellType(elem->GetType());
+  //int locType = elem->GetType();
+  int typ = VTK_VERTEX;//GetVtkCellType(locType);
   int cellId = grid->InsertNextLinkedCell(typ, nodeIds.size(), &nodeIds[0]);
   cell->setVtkId(cellId); 
   //MESSAGE("SMDS_MeshElementIDFactory::SetInVtkGrid " << cellId);
