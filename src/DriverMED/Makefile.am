@@ -70,7 +70,7 @@ libMeshDriverMED_la_CPPFLAGS = \
 libMeshDriverMED_la_LDFLAGS  = \
 	$(BOOST_LIBS) \
 	../Driver/libMeshDriver.la \
-	$(MED_LDFLAGS) -lMEDWrapper -lMEDWrapperBase -lMEDWrapper_V2_2
+	$(MED_LDFLAGS) -lMEDWrapper -lMEDWrapperBase -lMEDWrapper_V2_2 -lMEDWrapper_V2_1
 
 
 MED_Test_CPPFLAGS = \
@@ -88,5 +88,6 @@ MED_Test_LDADD = \
 	$(MED_LDFLAGS) \
 	-lMEDWrapper \
 	-lMEDWrapperBase \
-	-lMEDWrapper_V2_2
+	-lMEDWrapper_V2_2 \
+	-lMEDWrapper_V2_1 
 
