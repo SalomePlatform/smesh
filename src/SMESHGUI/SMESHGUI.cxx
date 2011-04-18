@@ -3295,7 +3295,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction(  813, "DEL_GROUP",       "ICON_DEL_GROUP" );
   createSMESHAction(  900, "ADV_INFO",        "ICON_ADV_INFO" );
   //createSMESHAction(  902, "STD_INFO",        "ICON_STD_INFO" );
-  createSMESHAction(  903, "WHAT_IS",         "ICON_WHAT_IS" );
+  //createSMESHAction(  903, "WHAT_IS",         "ICON_WHAT_IS" ); // VSR: issue #0021242 (eliminate "Mesh Element Information" command)
   createSMESHAction(  904, "FIND_ELEM",       "ICON_FIND_ELEM" );
   createSMESHAction( 6001, "LENGTH",          "ICON_LENGTH",        0, true );
   createSMESHAction( 6002, "FREE_EDGE",       "ICON_FREE_EDGE",     0, true );
@@ -3469,7 +3469,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createMenu( separator(), meshId, -1 );
   createMenu( 900, meshId, -1 );
   //createMenu( 902, meshId, -1 );
-  createMenu( 903, meshId, -1 );
+  //createMenu( 903, meshId, -1 ); // VSR: issue #0021242 (eliminate "Mesh Element Information" command)
   createMenu( 904, meshId, -1 );
   createMenu( separator(), meshId, -1 );
 
@@ -3579,7 +3579,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createTool( separator(), meshTb );
   createTool( 900, meshTb );
   //createTool( 902, meshTb );
-  createTool( 903, meshTb );
+  //createTool( 903, meshTb ); // VSR: issue #0021242 (eliminate "Mesh Element Information" command)
   createTool( 904, meshTb );
   createTool( separator(), meshTb );
 
@@ -3716,7 +3716,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createPopupItem( 214, OB, mesh_group );                  // UPDATE
   createPopupItem( 900, OB, mesh_group );                  // ADV_INFO
   //createPopupItem( 902, OB, mesh );                        // STD_INFO
-  createPopupItem( 903, OB, mesh_group );                  // WHAT_IS
+  //createPopupItem( 903, OB, mesh_group );                  // WHAT_IS  // VSR: issue #0021242 (eliminate "Mesh Element Information" command)
   createPopupItem( 904, OB, mesh );                        // FIND_ELEM
   popupMgr()->insert( separator(), -1, 0 );
   createPopupItem( 801, OB, mesh );                        // CREATE_GROUP
@@ -3751,7 +3751,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createPopupItem( 214, View, mesh_group ); // UPDATE
   createPopupItem( 900, View, mesh_group ); // ADV_INFO
   //createPopupItem( 902, View, mesh );       // STD_INFO
-  createPopupItem( 903, View, mesh_group ); // WHAT_IS
+  //createPopupItem( 903, View, mesh_group ); // WHAT_IS // VSR: issue #0021242 (eliminate "Mesh Element Information" command)
   createPopupItem( 904, View, mesh );       // FIND_ELEM
   popupMgr()->insert( separator(), -1, 0 );
 
