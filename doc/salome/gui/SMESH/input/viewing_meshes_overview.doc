@@ -17,16 +17,16 @@ right-clicking on the selected mesh.
 \image html dialog.png
 
 <ul>
+<li><b>Rename</b> - allows to rename the object in the Object browser.</li>
 <li><b>Hide all</b> - allows to hide all objects in the viewer.</li>
 <li><b>Update</b> - refreshes the presentation of your mesh in the
 Object Browser, applying all recent changes. </li>
-<li>\subpage mesh_infos_page "Mesh Infos" -  provides
+<li>\subpage mesh_infos_page "Mesh Information" -  provides
 information about the mesh.</li>
-<li>\ref mesh_element_info_anchor "Mesh Element Info" - provides basic
-information about the selected element of the mesh. </li>
 <li>\subpage find_element_by_point_page "Find Element by Point" -
 allows to find all mesh elements, to which belongs a point with the
 given coordinates.</li>
+<li><b>Auto Color</b> - switch on / off auto-assigning colors for the groups.</li>
 <li>\subpage numbering_page "Numbering"  - allows to display the ID
 numbers of all meshing elements or nodes composing your mesh in the
 viewer.</li>
@@ -44,11 +44,11 @@ the first three nodes of the face produced by vectors n1-n2 and n1-n3.</li>
 meshes.</li>
 <li>\subpage transparency_page "Transparency" - allows to change the
 transparency of mesh elements.</li>
-<li>\subpage clipping_page "Clipping" - allows to create cross-sections of the selected objects.</li>
 <li>\ref quality_page "Controls" - graphically
 presents various information about meshes.</li>
 <li><b>Hide</b> - allows to hide the selected mesh from the viewer.</li>
 <li><b>Show Only</b> -allows to display only the selected mesh, hiding all other from the viewer.</li>
+<li>\subpage clipping_page "Clipping" - allows to create cross-sections of the selected objects.</li>
 <li><b>Dump view</b> - exports an object from the viewer in bmp, png, jpg or jpeg image format.</li>
 <li><b>Change background</b> - allows to redefine the background
 color. By default it is black.</li>
