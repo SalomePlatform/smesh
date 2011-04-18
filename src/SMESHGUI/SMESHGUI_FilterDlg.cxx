@@ -645,7 +645,7 @@ QWidget* SMESHGUI_FilterTable::ComboDelegate::createEditor( QWidget* parent,
     if ( ok ) {
       int aPrecision = index.data( Qt::UserRole + 1 ).toInt( &ok );
       if ( !ok )
-	aPrecision = 0;
+        aPrecision = 0;
 
       SalomeApp_DoubleSpinBox* dblSpin = new SalomeApp_DoubleSpinBox( -1.e20, 1.e20, 1, aPrecision, 20, parent, false, true );
       dblSpin->setFrame( false );
@@ -673,7 +673,7 @@ void SMESHGUI_FilterTable::ComboDelegate::setEditorData( QWidget* editor,
     if( data.type() == QVariant::Double ) {
       double valueDouble = data.toDouble( &bOk );
       if( bOk )
-	dblSpin->setValue( valueDouble );
+        dblSpin->setValue( valueDouble );
     }
   }
   if ( !bOk ) QItemDelegate::setEditorData( editor, index );
