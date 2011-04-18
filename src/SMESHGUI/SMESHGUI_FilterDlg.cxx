@@ -55,6 +55,8 @@
 #include <LightApp_SelectionMgr.h>
 #include <SalomeApp_Tools.h>
 #include <SalomeApp_Study.h>
+#include <SalomeApp_IntSpinBox.h>
+#include <SalomeApp_DoubleSpinBox.h>
 
 #include <SALOME_ListIO.hxx>
 #include <SALOME_ListIteratorOfListIO.hxx>
@@ -471,6 +473,115 @@ bool SMESHGUI_FilterTable::CheckItem::checked() const
 }
 
 /*
+  Class       : SMESHGUI_FilterTable::IntSpinItem
+  Description : Integer spin table item.
+*/
+
+class SMESHGUI_FilterTable::IntSpinItem : public QTableWidgetItem
+{
+public:
+  static int     Type();
+
+  IntSpinItem( const int theValue );
+
+  int            value() const;
+  void           setValue( const int theValue );
+
+  void           clear();
+};
+
+int SMESHGUI_FilterTable::IntSpinItem::Type()
+{
+  return QTableWidgetItem::UserType + 3;
+}
+
+SMESHGUI_FilterTable::IntSpinItem::IntSpinItem( const int theValue )
+ : QTableWidgetItem( Type() )
+{
+  setValue( theValue );
+}
+
+int SMESHGUI_FilterTable::IntSpinItem::value() const
+{
+  bool ok = false;
+  int value = data( Qt::UserRole ).toInt( &ok );
+  return ok ? value : 0; 
+}
+
+void SMESHGUI_FilterTable::IntSpinItem::setValue( const int theValue )
+{
+  setData( Qt::UserRole, theValue );
+  setText( QString::number( theValue ) ); 
+}
+
+void SMESHGUI_FilterTable::IntSpinItem::clear()
+{
+  setText( "" );
+}
+
+/*
+  Class       : SMESHGUI_FilterTable::DoubleSpinItem
+  Description : Double spin table item.
+*/
+
+class SMESHGUI_FilterTable::DoubleSpinItem : public QTableWidgetItem
+{
+public:
+  static int     Type();
+
+  DoubleSpinItem( const double theValue );
+
+  double         value() const;
+  void           setValue( const double theValue );
+
+  int            precision() const;
+  void           setPrecision( const int thePrecision );
+
+  void           clear();
+};
+
+int SMESHGUI_FilterTable::DoubleSpinItem::Type()
+{
+  return QTableWidgetItem::UserType + 4;
+}
+
+SMESHGUI_FilterTable::DoubleSpinItem::DoubleSpinItem( const double theValue )
+ : QTableWidgetItem( Type() )
+{
+  setValue( theValue );
+}
+
+double SMESHGUI_FilterTable::DoubleSpinItem::value() const
+{
+  bool ok = false;
+  double value = data( Qt::UserRole ).toDouble( &ok );
+  return ok ? value : 0; 
+}
+
+void SMESHGUI_FilterTable::DoubleSpinItem::setValue( const double theValue )
+{
+  setData( Qt::UserRole, theValue );
+  setText( QString::number( theValue ) ); 
+}
+
+int SMESHGUI_FilterTable::DoubleSpinItem::precision() const
+{
+  bool ok = false;
+  int precision = data( Qt::UserRole + 1 ).toInt( &ok );
+  return ok ? precision : 0; 
+}
+
+void SMESHGUI_FilterTable::DoubleSpinItem::setPrecision( const int thePrecision )
+{
+  setData( Qt::UserRole + 1, thePrecision );
+}
+
+void SMESHGUI_FilterTable::DoubleSpinItem::clear()
+{
+  setText( "" );
+}
+
+/*
   Class       : SMESHGUI_FilterTable::ComboDelegate
   Description : Table used by this widget
 */
@@ -507,12 +618,40 @@ QWidget* SMESHGUI_FilterTable::ComboDelegate::createEditor( QWidget* parent,
                                                             const QStyleOptionViewItem& option,
                                                             const QModelIndex& index ) const
 {
-  QStringList l = index.data( Qt::UserRole ).toStringList();
-  if ( !l.isEmpty() ) {
-    QComboBox* cb = new QComboBox( parent );
-    cb->setFrame( false );
-    cb->addItems( l );
-    return cb;
+  QVariant aData = index.data( Qt::UserRole );
+  QVariant::Type aDataType = aData.type();
+  if( aDataType == QVariant::StringList ) {
+    QStringList l = aData.toStringList();
+    if ( !l.isEmpty() ) {
+      QComboBox* cb = new QComboBox( parent );
+      cb->setFrame( false );
+      cb->addItems( l );
+      return cb;
+    }
+  }
+  else if( aDataType == QVariant::Int ) {
+    bool ok = false;
+    int aValue = aData.toInt( &ok );
+    if ( ok ) {
+      SalomeApp_IntSpinBox* intSpin = new SalomeApp_IntSpinBox( 0, 1000, 1, parent, false, true );
+      intSpin->setFrame( false );
+      intSpin->setValue( aValue );
+      return intSpin;
+    }
+  }
+  else if( aDataType == QVariant::Double ) {
+    bool ok = false;
+    double aValue = aData.toDouble( &ok );
+    if ( ok ) {
+      int aPrecision = index.data( Qt::UserRole + 1 ).toInt( &ok );
+      if ( !ok )
+	aPrecision = 0;
+
+      SalomeApp_DoubleSpinBox* dblSpin = new SalomeApp_DoubleSpinBox( -1.e20, 1.e20, 1, aPrecision, 20, parent, false, true );
+      dblSpin->setFrame( false );
+      dblSpin->setValue( aValue );
+      return dblSpin;
+    }
   }
   return QItemDelegate::createEditor( parent, option, index );
 }
@@ -520,14 +659,21 @@ QWidget* SMESHGUI_FilterTable::ComboDelegate::createEditor( QWidget* parent,
 void SMESHGUI_FilterTable::ComboDelegate::setEditorData( QWidget* editor, 
                                                          const QModelIndex& index ) const
 {
-  QString value = index.model()->data( index, Qt::DisplayRole ).toString();
-  QComboBox* cb = dynamic_cast<QComboBox*>( editor );
+  QVariant data = index.model()->data( index, Qt::DisplayRole );
+  QString value = data.toString();
   bool bOk = false;
-  if ( cb ) {
+  if ( QComboBox* cb = dynamic_cast<QComboBox*>( editor ) ) {
     int i = cb->findText( value );
     if ( i >= 0 ) {
       cb->setCurrentIndex( i );
       bOk = true;
+    }
+  }
+  else if ( SalomeApp_DoubleSpinBox* dblSpin = dynamic_cast<SalomeApp_DoubleSpinBox*>( editor ) ) {
+    if( data.type() == QVariant::Double ) {
+      double valueDouble = data.toDouble( &bOk );
+      if( bOk )
+	dblSpin->setValue( valueDouble );
     }
   }
   if ( !bOk ) QItemDelegate::setEditorData( editor, index );
@@ -537,8 +683,12 @@ void SMESHGUI_FilterTable::ComboDelegate::setModelData( QWidget* editor,
                                                         QAbstractItemModel* model,
                                                         const QModelIndex& index) const
 {
-  QComboBox* cb = dynamic_cast<QComboBox*>( editor );
-  if ( cb ) model->setData( index, cb->currentText(), Qt::DisplayRole );
+  if( QComboBox* cb = dynamic_cast<QComboBox*>( editor ) )
+    model->setData( index, cb->currentText(), Qt::DisplayRole );
+  else if( SalomeApp_IntSpinBox* intSpin = dynamic_cast<SalomeApp_IntSpinBox*>( editor ) )
+    model->setData( index, intSpin->value(), Qt::DisplayRole );
+  else if( SalomeApp_DoubleSpinBox* dblSpin = dynamic_cast<SalomeApp_DoubleSpinBox*>( editor ) )
+    model->setData( index, dblSpin->value(), Qt::DisplayRole );
   else QItemDelegate::setModelData( editor, model, index );
 }
 
@@ -1488,15 +1638,55 @@ void SMESHGUI_FilterTable::onCriterionChanged (const int row, const int col, con
   int aCriterionType = GetCriterionType(row);
   QtxColorButton* clrBtn = qobject_cast<QtxColorButton*>(aTable->cellWidget(row, 2));
   int aComboType = ComboItem::Type();
+  int aIntSpinType = IntSpinItem::Type();
+  int aDoubleSpinType = DoubleSpinItem::Type();
   QTableWidgetItem* aTableItem = aTable->item(row, 2);
   bool isComboItem = false;
+  bool isIntSpinItem = false;
+  bool isDoubleSpinItem = false;
   if (aTableItem) {
     int aTableType = aTable->item(row, 2)->type();
     isComboItem = ( aTableType == aComboType );
+    isIntSpinItem = ( aTableType == aIntSpinType );
+    isDoubleSpinItem = ( aTableType == aDoubleSpinType );
   }
   
+  bool anIsDoubleCriterion =
+    aCriterionType == SMESH::FT_AspectRatio ||
+    aCriterionType == SMESH::FT_AspectRatio3D ||
+    aCriterionType == SMESH::FT_Taper ||
+    aCriterionType == SMESH::FT_Warping ||
+    aCriterionType == SMESH::FT_MinimumAngle ||
+    aCriterionType == SMESH::FT_Skew ||
+    aCriterionType == SMESH::FT_Area ||
+    aCriterionType == SMESH::FT_Length ||
+    aCriterionType == SMESH::FT_Length2D ||
+    aCriterionType == SMESH::FT_MaxElementLength2D ||
+    aCriterionType == SMESH::FT_MaxElementLength3D ||
+    aCriterionType == SMESH::FT_Volume3D;
+
+  int aPrecision = 0;
+  if ( anIsDoubleCriterion ) {
+    const char* aPrecisionType = getPrecision( aCriterionType );
+    SUIT_ResourceMgr* aResourceMgr = SMESH::GetResourceMgr( mySMESHGUI );
+    if( aPrecisionType && aResourceMgr )
+      aPrecision = aResourceMgr->integerValue( "SMESH", aPrecisionType, aPrecision );
+  }
+
+  // if the precision is to be changed we should remove the existing
+  // spin item and create another one with new precision
+  bool anIsPrecisionChanged = false;
+  if ( anIsDoubleCriterion && isDoubleSpinItem ) {
+    if ( DoubleSpinItem* aDoubleSpinItem = dynamic_cast<DoubleSpinItem*>( aTable->item( row, 2 ) ) ) {
+      anIsPrecisionChanged = aDoubleSpinItem->precision() != aPrecision;
+    }
+  }
+
   if ( (aCriterionType != SMESH::FT_GroupColor && clrBtn) ||
-       (aCriterionType != SMESH::FT_ElemGeomType && isComboItem) )
+       (aCriterionType != SMESH::FT_ElemGeomType && isComboItem) ||
+       (aCriterionType != SMESH::FT_MultiConnection && isIntSpinItem) ||
+       (!anIsDoubleCriterion && isDoubleSpinItem) ||
+       anIsPrecisionChanged )
   {
     bool isSignalsBlocked = aTable->signalsBlocked();
     aTable->blockSignals( true );
@@ -1505,13 +1695,16 @@ void SMESHGUI_FilterTable::onCriterionChanged (const int row, const int col, con
     aTable->blockSignals( isSignalsBlocked );
   }
   if ( (aCriterionType == SMESH::FT_GroupColor && !clrBtn) ||
-       (aCriterionType == SMESH::FT_ElemGeomType && !isComboItem) )
+       (aCriterionType == SMESH::FT_ElemGeomType && !isComboItem) ||
+       (aCriterionType == SMESH::FT_MultiConnection && !isIntSpinItem) ||
+       (anIsDoubleCriterion && !isDoubleSpinItem) ||
+       anIsPrecisionChanged )
   {
     bool isSignalsBlocked = aTable->signalsBlocked();
     aTable->blockSignals( true );
     if ( aCriterionType == SMESH::FT_GroupColor )
       aTable->setCellWidget( row, 2, new QtxColorButton( aTable ) );
-    else {
+    else if ( aCriterionType == SMESH::FT_ElemGeomType ) {
       QList<int> typeIds = geomTypes( aType );
       QMap<int, QString> typeNames;
       QList<int>::const_iterator anIter = typeIds.begin();
@@ -1522,6 +1715,15 @@ void SMESHGUI_FilterTable::onCriterionChanged (const int row, const int col, con
       }
       ComboItem* typeBox = new ComboItem( typeNames );
       aTable->setItem( row, 2, typeBox );
+    }
+    else if ( aCriterionType == SMESH::FT_MultiConnection ) {
+      IntSpinItem* intSpin = new IntSpinItem( 0 );
+      aTable->setItem( row, 2, intSpin );
+    }
+    else if ( anIsDoubleCriterion ) {
+      DoubleSpinItem* dblSpin = new DoubleSpinItem( 0 );
+      dblSpin->setPrecision( aPrecision );
+      aTable->setItem( row, 2, dblSpin );
     }
     aTable->blockSignals( isSignalsBlocked );
   }
