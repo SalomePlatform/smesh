@@ -72,6 +72,8 @@ class SMESHGUI_EXPORT SMESHGUI_FilterTable : public QWidget
 
   class Table;
   class ComboItem;
+  class IntSpinItem;
+  class DoubleSpinItem;
   class CheckItem;
   class AdditionalWidget;
   class ComboDelegate;
