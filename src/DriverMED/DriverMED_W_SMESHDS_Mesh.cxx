@@ -346,7 +346,7 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
     }
 
     // Mesh dimension definition
-    TInt aMeshDimension;
+    TInt aSpaceDimension;
     TCoordHelperPtr aCoordHelperPtr;
     {  
       bool anIsXDimension = false;
@@ -377,25 +377,25 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
         anIsXDimension = (aBounds[1] - aBounds[0]) + abs(aBounds[1]) + abs(aBounds[0]) > EPS;
         anIsYDimension = (aBounds[3] - aBounds[2]) + abs(aBounds[3]) + abs(aBounds[2]) > EPS;
         anIsZDimension = (aBounds[5] - aBounds[4]) + abs(aBounds[5]) + abs(aBounds[4]) > EPS;
-        aMeshDimension = anIsXDimension + anIsYDimension + anIsZDimension;
-        if(!aMeshDimension)
-          aMeshDimension = 3;
+        aSpaceDimension = anIsXDimension + anIsYDimension + anIsZDimension;
+        if(!aSpaceDimension)
+          aSpaceDimension = 3;
         // PAL16857(SMESH not conform to the MED convention):
-        if ( aMeshDimension == 2 && anIsZDimension ) // 2D only if mesh is in XOY plane
-          aMeshDimension = 3;
+        if ( aSpaceDimension == 2 && anIsZDimension ) // 2D only if mesh is in XOY plane
+          aSpaceDimension = 3;
         // PAL18941(a saved study with a mesh belong Z is opened and the mesh is belong X)
-        if ( aMeshDimension == 1 && !anIsXDimension ) {// 1D only if mesh is along OX
+        if ( aSpaceDimension == 1 && !anIsXDimension ) {// 1D only if mesh is along OX
           if ( anIsYDimension ) {
-            aMeshDimension = 2;
+            aSpaceDimension = 2;
             anIsXDimension = true;
           } else {
-            aMeshDimension = 3;
+            aSpaceDimension = 3;
           }
         }
       }
 
       SMDS_NodeIteratorPtr aNodesIter = myMesh->nodesIterator(/*idInceasingOrder=*/true);
-      switch(aMeshDimension){
+      switch(aSpaceDimension){
       case 3:
         aCoordHelperPtr.reset(new TCoordHelper(aNodesIter,aXYZGetCoord,aXYZName));
         break;
@@ -417,9 +417,15 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
         break;
       }
     }
-
+    TInt aMeshDimension = 0;
+    if ( myMesh->NbEdges() > 0 )
+      aMeshDimension = 1;
+    if ( myMesh->NbFaces() > 0 )
+      aMeshDimension = 2;
+    if ( myMesh->NbVolumes() > 0 )
+      aMeshDimension = 3;
     
-    PMeshInfo aMeshInfo = myMed->CrMeshInfo(aMeshDimension,aMeshDimension,aMeshName);
+    PMeshInfo aMeshInfo = myMed->CrMeshInfo(aMeshDimension,aSpaceDimension,aMeshName);
     MESSAGE("Add - aMeshName : "<<aMeshName<<"; "<<aMeshInfo->GetName());
     myMed->SetMeshInfo(aMeshInfo);
 
@@ -496,7 +502,7 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
     {
       // coordinates
       TCoordSlice aTCoordSlice = aNodeInfo->GetCoordSlice( iNode );
-      for(TInt iCoord = 0; iCoord < aMeshDimension; iCoord++){
+      for(TInt iCoord = 0; iCoord < aSpaceDimension; iCoord++){
         aTCoordSlice[iCoord] = aCoordHelperPtr->GetCoord(iCoord);
       }
       // node number
@@ -513,7 +519,7 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
     anElemFamMap.Clear();
 
     // coordinate names and units
-    for (TInt iCoord = 0; iCoord < aMeshDimension; iCoord++) {
+    for (TInt iCoord = 0; iCoord < aSpaceDimension; iCoord++) {
       aNodeInfo->SetCoordName( iCoord, aCoordHelperPtr->GetName(iCoord));
       aNodeInfo->SetCoordUnit( iCoord, aCoordHelperPtr->GetUnit(iCoord));
     }
