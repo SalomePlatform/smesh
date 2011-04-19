@@ -496,6 +496,11 @@ def CheckPlugin(plugin):
 # All methods of this class are accessible directly from the smesh.py package.
 class smeshDC(SMESH._objref_SMESH_Gen):
 
+    ## Dump component to the Python script
+    #  This method overrides IDL function to allow default values for the parameters.
+    def DumpPython(self, theStudy, theIsPublished=True, theIsMultiFile=True):
+        return SMESH._objref_SMESH_Gen.DumpPython(self, theStudy, theIsPublished, theIsMultiFile)
+
     ## Sets the current study and Geometry component
     #  @ingroup l1_auxiliary
     def init_smesh(self,theStudy,geompyD):
