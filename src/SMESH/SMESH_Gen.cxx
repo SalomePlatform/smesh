@@ -184,6 +184,14 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
     // and collect submeshes with algos that DO support submeshes
     // -----------------------------------------------------------------
     list< SMESH_subMesh* > smWithAlgoSupportingSubmeshes;
+
+    // map to sort sm with same dim algos according to dim of
+    // the shape the algo assigned to (issue 0021217)
+    multimap< int, SMESH_subMesh* > shDim2sm;
+    multimap< int, SMESH_subMesh* >::reverse_iterator shDim2smIt;
+    TopoDS_Shape algoShape;
+    int prevShapeDim = -1;
+
     smIt = sm->getDependsOnIterator(includeSelf, complexShapeFirst);
     while ( smIt->more() )
     {
@@ -192,18 +200,30 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
         continue;
 
       const TopoDS_Shape& aSubShape = smToCompute->GetSubShape();
-      const int aShapeDim = GetShapeDim( aSubShape );
+      int aShapeDim = GetShapeDim( aSubShape );
       if ( aShapeDim < 1 ) break;
       
       // check for preview dimension limitations
       if ( aShapesId && aShapeDim > (int)aDim )
         continue;
 
-      SMESH_Algo* algo = GetAlgo( aMesh, aSubShape );
+      SMESH_Algo* algo = GetAlgo( aMesh, aSubShape, &algoShape );
       if ( algo && !algo->NeedDescretBoundary() )
       {
         if ( algo->SupportSubmeshes() )
-          smWithAlgoSupportingSubmeshes.push_front( smToCompute );
+        {
+          // reload sub-meshes from shDim2sm into smWithAlgoSupportingSubmeshes
+          if ( prevShapeDim != aShapeDim )
+          {
+            prevShapeDim = aShapeDim;
+            for ( shDim2smIt = shDim2sm.rbegin(); shDim2smIt != shDim2sm.rend(); ++shDim2smIt )
+              smWithAlgoSupportingSubmeshes.push_front( shDim2smIt->second );
+            shDim2sm.clear();
+          }
+          // add smToCompute to shDim2sm map
+          aShapeDim = GetShapeDim( algoShape );
+          shDim2sm.insert( make_pair( aShapeDim, smToCompute ));
+        }
         else
         {
 #ifdef WITH_SMESH_CANCEL_COMPUTE
@@ -220,7 +240,10 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
         }
       }
     }
-    
+    // reload sub-meshes from shDim2sm into smWithAlgoSupportingSubmeshes
+    for ( shDim2smIt = shDim2sm.rbegin(); shDim2smIt != shDim2sm.rend(); ++shDim2smIt )
+      smWithAlgoSupportingSubmeshes.push_front( shDim2smIt->second );
+
     // ------------------------------------------------------------
     // sort list of submeshes according to mesh order
     // ------------------------------------------------------------
@@ -239,7 +262,6 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
       sm = *subIt;
 
       // get a shape the algo is assigned to
-      TopoDS_Shape algoShape;
       if ( !GetAlgo( aMesh, sm->GetSubShape(), & algoShape ))
         continue; // strange...
 
