@@ -5029,6 +5029,18 @@ class Mesh_Triangle(Mesh_Algorithm):
         #  Parameter of BLSURF algo
         self.Parameters().SetOptionValue(optionName,level)
 
+    ## Sets an attractor on the chosen face. The mesh size will decrease exponentially with the distance from theAttractor, following the rule h(d) = theEndSize - (theEndSize - theStartSize) * exp [ - ( d / theInfluenceDistance ) ^ 2 ] 
+    #  @param theFace      : face on which the attractor will be defined
+    #  @param theAttractor : geometrical object frome which the mesh size "h" decrease exponentially   
+    #  @param theStartSize : mesh size on theAttractor      
+    #  @param theEndSize   : maximum size that will be reached on theFace                                                     
+    #  @param theInfluenceDistance : influence of the attractor ( the size grow slower on theFace if it's high)                                                      
+    #  @param theConstantSizeDistance : distance until which the mesh size will be kept constant on theFace                                                      
+    #  @ingroup l3_hypos_blsurf
+    def SetAttractorGeom(self, theFace, theAttractor, theStartSize, theEndSize, theInfluenceDistance, theConstantSizeDistance):
+        #  Parameter of BLSURF algo
+        self.Parameters().SetAttractorGeom(otheFace, theAttractor, theStartSize, theEndSize, theInfluenceDistance, theConstantSizeDistance)
+
     ## Sets QuadAllowed flag.
     #  Only for algoType == NETGEN(NETGEN_1D2D) || NETGEN_2D || BLSURF
     #  @ingroup l3_hypos_netgen l3_hypos_blsurf
