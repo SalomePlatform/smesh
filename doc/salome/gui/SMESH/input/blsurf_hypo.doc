@@ -230,7 +230,7 @@ object or to its sub-shapes (created using <b>Explode</b> command).</li>
 \image html blsurf_parameters_sizemap2.png 
 \n
 Specific size maps, called attractors can be defined on faces. They allow to define the size of the mesh elements on a face so that the mesh is the finest on the attractor shape and becomes coarser when getting far from this shape.
-The selected attractor can be either a Vertex or an Edge. The attractor doesn't have to be a sub-shape of the shape to mesh. 
+The selected attractor can be a Vertex, an Edge, a Wire or a Compound mixing several entities of those types. The attractor doesn't have to be a sub-shape of the shape to mesh. 
 \n
 Furthermore you can choose to keep the size constant until a certain distance from a shape. This option can be combined or not with the "attractor" size map described above. 
 \n
