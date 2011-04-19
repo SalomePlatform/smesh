@@ -5031,7 +5031,7 @@ class Mesh_Triangle(Mesh_Algorithm):
 
     ## Sets an attractor on the chosen face. The mesh size will decrease exponentially with the distance from theAttractor, following the rule h(d) = theEndSize - (theEndSize - theStartSize) * exp [ - ( d / theInfluenceDistance ) ^ 2 ] 
     #  @param theFace      : face on which the attractor will be defined
-    #  @param theAttractor : geometrical object frome which the mesh size "h" decrease exponentially   
+    #  @param theAttractor : geometrical object frome which the mesh size "h" decreases exponentially   
     #  @param theStartSize : mesh size on theAttractor      
     #  @param theEndSize   : maximum size that will be reached on theFace                                                     
     #  @param theInfluenceDistance : influence of the attractor ( the size grow slower on theFace if it's high)                                                      
