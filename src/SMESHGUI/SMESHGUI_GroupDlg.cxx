@@ -1403,6 +1403,7 @@ void SMESHGUI_GroupDlg::onSelectAll()
   int selMode = mySelectionMode;
   mySelectionMode = grpNoSelection;
   setSelectionMode( selMode );
+  updateButtons();
 }
 
 //=================================================================================
