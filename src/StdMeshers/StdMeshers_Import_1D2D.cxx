@@ -51,6 +51,7 @@
 #include <TopoDS_Compound.hxx>
 #include <TopoDS_Edge.hxx>
 #include <TopoDS_Vertex.hxx>
+#include <Precision.hxx>
 
 #include <numeric>
 
@@ -201,7 +202,7 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
 
     SMDS_ElemIteratorPtr srcElems = srcGroup->GetElements();
     SMDS_MeshNode *tmpNode = helper.AddNode(0,0,0);
-    gp_XY uv;
+    gp_XY uv( Precision::Infinite(), Precision::Infinite() );
     while ( srcElems->more() ) // loop on group contents
     {
       const SMDS_MeshElement* face = srcElems->next();
@@ -350,7 +351,7 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
           if ( !subShapeIDs.count( n->getshapeId() ))
           {
             for ( unsigned iE = 0; iE < edges.size(); ++iE )
-              if ( helper.CheckNodeU( edges[iE], n, u, 10 * faceTol, /*force=*/true ))
+              if ( helper.CheckNodeU( edges[iE], n, u=0, 10 * faceTol, /*force=*/true ))
               {
                 BRep_Tool::Range(edges[iE],f,l);
                 if ( Abs(u-f) < 2 * faceTol || Abs(u-l) < 2 * faceTol )
