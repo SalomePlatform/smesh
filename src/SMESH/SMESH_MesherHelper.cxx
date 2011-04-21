@@ -473,7 +473,7 @@ gp_XY SMESH_MesherHelper::GetNodeUV(const TopoDS_Face&   F,
     if ( validU )
       uv = C2d->Value( u );
     else
-      uv.SetCoord(0.,0.);
+      uv.SetCoord( Precision::Infinite(),0.);
     if ( check || !validU )
       uvOK = CheckNodeUV( F, n, uv.ChangeCoord(), 10*MaxTolerance( F ),/*force=*/ !validU );
 
@@ -552,6 +552,10 @@ gp_XY SMESH_MesherHelper::GetNodeUV(const TopoDS_Face&   F,
         uv = GetUVOnSeam( uv, GetNodeUV( F, n2, 0 ));
     }
   }
+  else
+  {
+    uvOK = CheckNodeUV( F, n, uv.ChangeCoord(), 10*MaxTolerance( F ));
+  }
 
   if ( check )
     *check = uvOK;
@@ -572,18 +576,15 @@ bool SMESH_MesherHelper::CheckNodeUV(const TopoDS_Face&   F,
                                      double               distXYZ[4]) const
 {
   int shapeID = n->getshapeId();
-  if ( force || toCheckPosOnShape( shapeID ))
+  bool infinit = ( Precision::IsInfinite( uv.X() ) || Precision::IsInfinite( uv.Y() ));
+  if ( force || toCheckPosOnShape( shapeID ) || infinit )
   {
-    double toldis = tol;
-    double tolmin = 1.e-7*myMesh->GetMeshDS()->getMaxDim(); // nodes coordinates are stored in float format
-    if (toldis < tolmin) toldis = tolmin;
     // check that uv is correct
     TopLoc_Location loc;
     Handle(Geom_Surface) surface = BRep_Tool::Surface( F,loc );
     gp_Pnt nodePnt = XYZ( n ), surfPnt(0,0,0);
     double dist = 0;
     if ( !loc.IsIdentity() ) nodePnt.Transform( loc.Transformation().Inverted() );
-    bool infinit = ( Precision::IsInfinite( uv.X() ) || Precision::IsInfinite( uv.Y() ));
     if ( infinit ||
          (dist = nodePnt.Distance( surfPnt = surface->Value( uv.X(), uv.Y() ))) > tol )
     {
@@ -776,10 +777,6 @@ bool SMESH_MesherHelper::CheckNodeU(const TopoDS_Edge&   E,
   int shapeID = n->getshapeId();
   if ( force || toCheckPosOnShape( shapeID ))
   {
-    //double toldis = tol;
-    //double tolmin = 1.e-7*myMesh->GetMeshDS()->getMaxDim(); // nodes coordinates are stored in float format
-    //if (toldis < tolmin) toldis = tolmin;
-    // check that u is correct
     TopLoc_Location loc; double f,l;
     Handle(Geom_Curve) curve = BRep_Tool::Curve( E,loc,f,l );
     if ( curve.IsNull() ) // degenerated edge
@@ -801,7 +798,7 @@ bool SMESH_MesherHelper::CheckNodeU(const TopoDS_Edge&   E,
         distXYZ[0] = dist;
         distXYZ[1] = curvPnt.X(); distXYZ[2] = curvPnt.Y(); distXYZ[3]=curvPnt.Z();
       }
-      if ( dist > tol /*toldis*/ )
+      if ( dist > tol )
       {
         setPosOnShapeValidity( shapeID, false );
         // u incorrect, project the node to the curve
@@ -830,10 +827,10 @@ bool SMESH_MesherHelper::CheckNodeU(const TopoDS_Edge&   E,
           distXYZ[0] = dist;
           distXYZ[1] = curvPnt.X(); distXYZ[2] = curvPnt.Y(); distXYZ[3]=curvPnt.Z();
         }
-        if ( dist > tol /*toldis*/)
+        if ( dist > tol )
         {
           MESSAGE( "SMESH_MesherHelper::CheckNodeU(), invalid projection" );
-          MESSAGE("distance " << dist << " " << tol/*dis*/);
+          MESSAGE("distance " << dist << " " << tol );
           return false;
         }
         // store the fixed U on the edge

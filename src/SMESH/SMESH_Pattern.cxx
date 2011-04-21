@@ -40,6 +40,7 @@
 #include <GeomAdaptor_Surface.hxx>
 #include <Geom_Curve.hxx>
 #include <Geom_Surface.hxx>
+#include <Precision.hxx>
 #include <TopAbs_ShapeEnum.hxx>
 #include <TopExp.hxx>
 #include <TopExp_Explorer.hxx>
@@ -4121,7 +4122,9 @@ void SMESH_Pattern::createElements(SMESH_Mesh*                            theMes
           if (!node->getshapeId() &&
               shellNodes.find( node ) == shellNodes.end() ) {
             if ( S.ShapeType() == TopAbs_FACE )
-              aMeshDS->SetNodeOnFace( node, shapeID );
+              aMeshDS->SetNodeOnFace( node, shapeID,
+                                      Precision::Infinite(),// <- it's a sign that UV is not set
+                                      Precision::Infinite());
             else {
               aMeshDS->SetNodeInVolume( node, shapeID );
               shellNodes.insert( node );
