@@ -183,6 +183,7 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
   // to count now many times a link between nodes encounters
   map<TLink, int> linkCount;
   map<TLink, int>::iterator link2Nb;
+  double minLinkLen2 = Precision::Infinite();
 
   // =========================
   // Import faces from groups
@@ -314,6 +315,13 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
           medium = newNodes[i+nbNodes];
         link2Nb = linkCount.insert( make_pair( TLink( n1, n2, medium ), 0)).first;
         ++link2Nb->second;
+        if ( link2Nb->second == 1 )
+        {
+          // measure link length
+          double len2 = SMESH_TNodeXYZ( n1 ).SquareDistance( n2 );
+          if ( len2 < minLinkLen2 )
+            minLinkLen2 = len2;
+        }
       }
     }
     helper.GetMeshDS()->RemoveNode(tmpNode);
@@ -328,6 +336,10 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
   for ( exp.Init( theShape, TopAbs_EDGE ); exp.More(); exp.Next() )
     if ( subShapeIDs.insert( tgtMesh->ShapeToIndex( exp.Current() )).second )
       edges.push_back( TopoDS::Edge( exp.Current() ));
+
+  // use large tolerance for projection of nodes to edges because of
+  // BLSURF mesher specifics (issue 0020918, Study2.hdf)
+  const double projTol = 1e-3 * sqrt( minLinkLen2 );
 
   bool isFaceMeshed = false;
   if ( SMESHDS_SubMesh* tgtSM = tgtMesh->MeshElements( theShape ))
@@ -351,7 +363,7 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
           if ( !subShapeIDs.count( n->getshapeId() ))
           {
             for ( unsigned iE = 0; iE < edges.size(); ++iE )
-              if ( helper.CheckNodeU( edges[iE], n, u=0, 10 * faceTol, /*force=*/true ))
+              if ( helper.CheckNodeU( edges[iE], n, u=0, projTol, /*force=*/true ))
               {
                 BRep_Tool::Range(edges[iE],f,l);
                 if ( Abs(u-f) < 2 * faceTol || Abs(u-l) < 2 * faceTol )
