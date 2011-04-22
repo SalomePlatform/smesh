@@ -123,34 +123,49 @@ bool SMESH_MesherHelper::IsQuadraticSubMesh(const TopoDS_Shape& aSh)
 
   int nbOldLinks = myTLinkNodeMap.size();
 
-  TopExp_Explorer exp( aSh, subType );
-  for (; exp.More() && myCreateQuadratic; exp.Next()) {
-    if ( SMESHDS_SubMesh * subMesh = meshDS->MeshElements( exp.Current() )) {
-      if ( SMDS_ElemIteratorPtr it = subMesh->GetElements() ) {
-        while(it->more()) {
-          const SMDS_MeshElement* e = it->next();
-          if ( e->GetType() != elemType || !e->IsQuadratic() ) {
-            myCreateQuadratic = false;
-            break;
-          }
-          else {
-            // fill TLinkNodeMap
-            switch ( e->NbNodes() ) {
-            case 3:
-              AddTLinkNode(e->GetNode(0),e->GetNode(1),e->GetNode(2)); break;
-            case 6:
-              AddTLinkNode(e->GetNode(0),e->GetNode(1),e->GetNode(3));
-              AddTLinkNode(e->GetNode(1),e->GetNode(2),e->GetNode(4));
-              AddTLinkNode(e->GetNode(2),e->GetNode(0),e->GetNode(5)); break;
-            case 8:
-              AddTLinkNode(e->GetNode(0),e->GetNode(1),e->GetNode(4));
-              AddTLinkNode(e->GetNode(1),e->GetNode(2),e->GetNode(5));
-              AddTLinkNode(e->GetNode(2),e->GetNode(3),e->GetNode(6));
-              AddTLinkNode(e->GetNode(3),e->GetNode(0),e->GetNode(7));
-              break;
-            default:
+  if ( !myMesh->HasShapeToMesh() )
+  {
+    if (( myCreateQuadratic = myMesh->NbFaces( ORDER_QUADRATIC )))
+    {
+      SMDS_FaceIteratorPtr fIt = meshDS->facesIterator();
+      while ( fIt->more() )
+        AddTLinks( static_cast< const SMDS_MeshFace* >( fIt->next() ));
+    }
+  }
+  else
+  {
+    TopExp_Explorer exp( aSh, subType );
+    TopTools_MapOfShape checkedSubShapes;
+    for (; exp.More() && myCreateQuadratic; exp.Next()) {
+      if ( !checkedSubShapes.Add( exp.Current() ))
+        continue; // needed if aSh is compound of solids
+      if ( SMESHDS_SubMesh * subMesh = meshDS->MeshElements( exp.Current() )) {
+        if ( SMDS_ElemIteratorPtr it = subMesh->GetElements() ) {
+          while(it->more()) {
+            const SMDS_MeshElement* e = it->next();
+            if ( e->GetType() != elemType || !e->IsQuadratic() ) {
               myCreateQuadratic = false;
               break;
+            }
+            else {
+              // fill TLinkNodeMap
+              switch ( e->NbNodes() ) {
+              case 3:
+                AddTLinkNode(e->GetNode(0),e->GetNode(1),e->GetNode(2)); break;
+              case 6:
+                AddTLinkNode(e->GetNode(0),e->GetNode(1),e->GetNode(3));
+                AddTLinkNode(e->GetNode(1),e->GetNode(2),e->GetNode(4));
+                AddTLinkNode(e->GetNode(2),e->GetNode(0),e->GetNode(5)); break;
+              case 8:
+                AddTLinkNode(e->GetNode(0),e->GetNode(1),e->GetNode(4));
+                AddTLinkNode(e->GetNode(1),e->GetNode(2),e->GetNode(5));
+                AddTLinkNode(e->GetNode(2),e->GetNode(3),e->GetNode(6));
+                AddTLinkNode(e->GetNode(3),e->GetNode(0),e->GetNode(7));
+                break;
+              default:
+                myCreateQuadratic = false;
+                break;
+              }
             }
           }
         }
@@ -334,19 +349,21 @@ void SMESH_MesherHelper::AddTLinks(const SMDS_MeshEdge* edge)
  */
 //================================================================================
 
-void SMESH_MesherHelper::AddTLinks(const SMDS_MeshFace* face)
+void SMESH_MesherHelper::AddTLinks(const SMDS_MeshFace* f)
 {
-  if ( face->IsQuadratic() )
-  {
-    const int nbLinks = face->NbCornerNodes();
-    for ( int i = 0; i < nbLinks; ++i )
-    {
-      const SMDS_MeshNode* n1  = face->GetNode( i );
-      const SMDS_MeshNode* n2  = face->GetNode(( i + 1 ) % nbLinks );
-      const SMDS_MeshNode* n12 = face->GetNode( i + nbLinks );
-      AddTLinkNode( n1, n2, n12 );
+  if ( !f->IsPoly() )
+    switch ( f->NbNodes() ) {
+    case 6:
+      AddTLinkNode(f->GetNode(0),f->GetNode(1),f->GetNode(3));
+      AddTLinkNode(f->GetNode(1),f->GetNode(2),f->GetNode(4));
+      AddTLinkNode(f->GetNode(2),f->GetNode(0),f->GetNode(5)); break;
+    case 8:
+      AddTLinkNode(f->GetNode(0),f->GetNode(1),f->GetNode(4));
+      AddTLinkNode(f->GetNode(1),f->GetNode(2),f->GetNode(5));
+      AddTLinkNode(f->GetNode(2),f->GetNode(3),f->GetNode(6));
+      AddTLinkNode(f->GetNode(3),f->GetNode(0),f->GetNode(7));
+    default:;
     }
-  }
 }
 
 //================================================================================
