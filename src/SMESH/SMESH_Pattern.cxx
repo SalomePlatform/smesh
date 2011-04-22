@@ -515,6 +515,7 @@ bool SMESH_Pattern::Load (SMESH_Mesh*        theMesh,
 
   SMESHDS_Mesh * aMeshDS = theMesh->GetMeshDS();
   SMESHDS_SubMesh * fSubMesh = aMeshDS->MeshElements( theFace );
+  const bool isQuadMesh = aMeshDS->GetMeshInfo().NbFaces( ORDER_QUADRATIC );
   SMESH_MesherHelper helper( *theMesh );
   helper.SetSubShape( theFace );
 
@@ -583,15 +584,15 @@ bool SMESH_Pattern::Load (SMESH_Mesh*        theMesh,
     {
       myElemPointIDs.push_back( TElemDef() );
       TElemDef& elemPoints = myElemPointIDs.back();
-      SMDS_ElemIteratorPtr nIt = (*fIt)->nodesIterator();
-      while ( nIt->more() )
+      int nbNodes = (*fIt)->NbCornerNodes();
+      for ( int i = 0;i < nbNodes; ++i )
       {
-        const SMDS_MeshElement* node = nIt->next();
-        TNodePointIDMap::iterator nIdIt = nodePointIDMap.find( node );
-        if ( nIdIt == nodePointIDMap.end() )
+        const SMDS_MeshElement* node = (*fIt)->GetNode( i );
+        TNodePointIDMap::iterator nIdIt = nodePointIDMap.insert( make_pair( node, -1 )).first;
+        if ( nIdIt->second == -1 )
         {
           elemPoints.push_back( iPoint );
-          nodePointIDMap.insert( make_pair( node, iPoint++ ));
+          nIdIt->second = iPoint++;
         }
         else
           elemPoints.push_back( (*nIdIt).second );
@@ -735,10 +736,15 @@ bool SMESH_Pattern::Load (SMESH_Mesh*        theMesh,
         // loop on nodes of an edge: sort them by param on edge
         typedef map < double, const SMDS_MeshNode* > TParamNodeMap;
         TParamNodeMap paramNodeMap;
+        int nbMeduimNodes = 0;
         SMDS_NodeIteratorPtr nIt = eSubMesh->GetNodes();
         while ( nIt->more() )
         {
-          const SMDS_MeshNode* node = smdsNode( nIt->next() );
+          const SMDS_MeshNode* node = nIt->next();
+          if ( isQuadMesh && helper.IsMedium( node, SMDSAbs_Face )) {
+            ++nbMeduimNodes;
+            continue;
+          }
           const SMDS_EdgePosition* epos =
             static_cast<const SMDS_EdgePosition*>(node->GetPosition());
           double u = epos->GetUParameter();
@@ -752,7 +758,9 @@ bool SMESH_Pattern::Load (SMESH_Mesh*        theMesh,
           paramNodeMap.clear();
           nIt = eSubMesh->GetNodes();
           for ( int iNode = 0; nIt->more(); ++iNode ) {
-            const SMDS_MeshNode* node = smdsNode( nIt->next() );
+            const SMDS_MeshNode* node = nIt->next();
+            if ( isQuadMesh && helper.IsMedium( node, SMDSAbs_Face ))
+              continue;
             proj.Perform( gp_Pnt( node->X(), node->Y(), node->Z()));
             double u = 0;
             if ( proj.IsDone() ) {
@@ -768,9 +776,9 @@ bool SMESH_Pattern::Load (SMESH_Mesh*        theMesh,
           }
 
           //rnv : To fix the bug IPAL21999 Pattern Mapping - New - collapse of pattern mesh
-          if ( paramNodeMap.size() != eSubMesh->NbNodes() )
-              return setErrorCode(ERR_UNEXPECTED);
-          }
+          if ( paramNodeMap.size() != eSubMesh->NbNodes() - nbMeduimNodes )
+            return setErrorCode(ERR_UNEXPECTED);
+        }
 
         // put U in [0,1] so that the first key-point has U==0
         bool isSeam = helper.IsRealSeam( edge );
@@ -854,7 +862,9 @@ bool SMESH_Pattern::Load (SMESH_Mesh*        theMesh,
       SMDS_NodeIteratorPtr nIt = fSubMesh->GetNodes();
       while ( nIt->more() )
       {
-        const SMDS_MeshNode* node = smdsNode( nIt->next() );
+        const SMDS_MeshNode* node = nIt->next();
+        if ( isQuadMesh && helper.IsMedium( node, SMDSAbs_Face ))
+          continue;
         nodePointIDMap.insert( make_pair( node, iPoint ));
         TPoint* p = &myPoints[ iPoint++ ];
         fPoints.push_back( p );
@@ -880,7 +890,10 @@ bool SMESH_Pattern::Load (SMESH_Mesh*        theMesh,
         while ( nIt->more() )
         {
           const SMDS_MeshNode* node = smdsNode( nIt->next() );
-          iPoint = nodePointIDMap[ node ]; // point index of interest
+          n_id = nodePointIDMap.find( node );
+          if ( n_id == nodePointIDMap.end() )
+            continue; // medium node
+          iPoint = n_id->second; // point index of interest
           // for a node on a seam edge there are two points
           if ( helper.IsRealSeam( node->getshapeId() ) &&
                ( n_id = closeNodePointIDMap.find( node )) != not_found )
@@ -906,6 +919,7 @@ bool SMESH_Pattern::Load (SMESH_Mesh*        theMesh,
         }
       }
     }
+    myPoints.resize( nodePointIDMap.size() + closeNodePointIDMap.size() );
 
     myIsBoundaryPointsFound = true;
   }
@@ -3152,6 +3166,8 @@ bool SMESH_Pattern::Load (SMESH_Mesh*         theMesh,
   myIs2D = false;
   SMESHDS_SubMesh * aSubMesh;
 
+  const bool isQuadMesh = theMesh->NbVolumes( ORDER_QUADRATIC );
+
   // load shapes in myShapeIDMap
   SMESH_Block block;
   TopoDS_Vertex v1, v2;
@@ -3184,6 +3200,8 @@ bool SMESH_Pattern::Load (SMESH_Mesh*         theMesh,
       // store a node and a point
     while ( nIt->more() ) {
       const SMDS_MeshNode* node = smdsNode( nIt->next() );
+      if ( isQuadMesh && SMESH_MeshEditor::IsMedium( node, SMDSAbs_Volume ))
+        continue;
       nodePointIDMap.insert( make_pair( node, iPoint ));
       if ( block.IsVertexID( shapeID ))
         myKeyPointIDs.push_back( iPoint );
@@ -3218,7 +3236,9 @@ bool SMESH_Pattern::Load (SMESH_Mesh*         theMesh,
       nIt = aSubMesh->GetNodes();
       for ( ; nIt->more(); pIt++ )
       {
-        const SMDS_MeshNode* node = smdsNode( nIt->next() );
+        const SMDS_MeshNode* node = nIt->next();
+        if ( isQuadMesh && SMESH_MeshEditor::IsMedium( node, SMDSAbs_Edge ))
+          continue;
         const SMDS_EdgePosition* epos =
           static_cast<const SMDS_EdgePosition*>(node->GetPosition());
         double u = ( epos->GetUParameter() - f ) / ( l - f );
@@ -3244,11 +3264,12 @@ bool SMESH_Pattern::Load (SMESH_Mesh*         theMesh,
   {
     SMDS_ElemIteratorPtr elemIt = aSubMesh->GetElements();
     while ( elemIt->more() ) {
-      SMDS_ElemIteratorPtr nIt = elemIt->next()->nodesIterator();
+      const SMDS_MeshElement* elem = elemIt->next();
       myElemPointIDs.push_back( TElemDef() );
       TElemDef& elemPoints = myElemPointIDs.back();
-      while ( nIt->more() )
-        elemPoints.push_back( nodePointIDMap[ nIt->next() ]);
+      int nbNodes = elem->NbCornerNodes();
+      for ( int i = 0;i < nbNodes; ++i )
+        elemPoints.push_back( nodePointIDMap[ elem->GetNode( i )]);
     }
   }
 
@@ -4565,6 +4586,18 @@ void SMESH_Pattern::Clear()
   myPolyhedronQuantities.clear();
   myIdsOnBoundary.clear();
   myReverseConnectivity.clear();
+}
+
+//================================================================================
+/*!
+ * \brief set ErrorCode and return true if it is Ok
+ */
+//================================================================================
+
+bool SMESH_Pattern::setErrorCode( const ErrorCode theErrorCode )
+{
+  myErrorCode = theErrorCode;
+  return myErrorCode == ERR_OK;
 }
 
 //=======================================================================

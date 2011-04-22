@@ -244,8 +244,7 @@ private:
   };
   friend std::ostream & operator <<(std::ostream & OS, const TPoint& p);
 
-  bool setErrorCode( const ErrorCode theErrorCode )
-  { myErrorCode = theErrorCode; return myErrorCode == ERR_OK; }
+  bool setErrorCode( const ErrorCode theErrorCode );
   // set ErrorCode and return true if it is Ok
 
   bool setShapeToMesh(const TopoDS_Shape& theShape);
