@@ -942,8 +942,10 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
       anUpdatedScript += helper + ", '" + aGUIName + "')";
     }
   }
-  anUpdatedScript += "\n\tif salome.sg.hasDesktop():";
-  anUpdatedScript += "\n\t\tsalome.sg.updateObjBrowser(0)";
+
+  // Issue 0021249: removed (a similar block is dumped by SALOMEDSImpl_Study)
+  //anUpdatedScript += "\n\tif salome.sg.hasDesktop():";
+  //anUpdatedScript += "\n\t\tsalome.sg.updateObjBrowser(0)";
 
   // -----------------------------------------------------------------
   // store visual properties of displayed objects
