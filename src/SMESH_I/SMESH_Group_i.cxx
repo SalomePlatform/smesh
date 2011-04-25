@@ -478,10 +478,9 @@ void SMESH_GroupBase_i::SetColor(const SALOMEDS::Color& color)
   if (aGroupDS)
   {
     Quantity_Color aQColor( color.R, color.G, color.B, Quantity_TOC_RGB );
-    return aGroupDS->SetColor(aQColor);
+    aGroupDS->SetColor(aQColor);
+    TPythonDump()<<_this()<<".SetColor( "<<color.R<<", "<<color.G<<", "<<color.B<<" )";
   }
-  MESSAGE("set color of a group");
-  return ;
 }
 
 //=============================================================================
@@ -507,7 +506,10 @@ void SMESH_GroupBase_i::SetColorNumber(CORBA::Long color)
 {
   SMESHDS_GroupBase* aGroupDS = GetGroupDS();
   if (aGroupDS)
-    return aGroupDS->SetColorGroup(color);
+  {
+    aGroupDS->SetColorGroup(color);
+    TPythonDump()<<_this()<<".SetColorGroup( "<<color<<" )";
+  }
   MESSAGE("set color number of a group");
   return ;
 }
