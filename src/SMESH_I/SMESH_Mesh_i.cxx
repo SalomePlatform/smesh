@@ -652,6 +652,14 @@ SMESH::SMESH_subMesh_ptr SMESH_Mesh_i::GetSubMesh(GEOM::GEOM_Object_ptr aSubShap
     THROW_SALOME_CORBA_EXCEPTION("bad subShape reference",
                                  SALOME::BAD_PARAM);
 
+  if ( aSubShapeObject->GetType() == GEOM_GROUP )
+  {
+    GEOM::GEOM_Object_var mainGeom = aSubShapeObject->GetMainShape() ;
+    TopoDS_Shape mainShape = _gen_i->GeomObjectToShape(mainGeom);
+    if ( mainShape.IsNull() || !mainShape.IsSame( _impl->GetShapeToMesh() ))
+      THROW_SALOME_CORBA_EXCEPTION("not sub-shape of the main shape", SALOME::BAD_PARAM);
+  }
+
   SMESH::SMESH_subMesh_var subMesh;
   SMESH::SMESH_Mesh_var    aMesh = SMESH::SMESH_Mesh::_narrow(_this());
   try {
@@ -660,8 +668,6 @@ SMESH::SMESH_subMesh_ptr SMESH_Mesh_i::GetSubMesh(GEOM::GEOM_Object_ptr aSubShap
     //Get or Create the SMESH_subMesh object implementation
 
     int subMeshId = _impl->GetMeshDS()->ShapeToIndex( myLocSubShape );
-    if ( !subMeshId && ! _impl->GetMeshDS()->IsGroupOfSubShapes( myLocSubShape ))
-      THROW_SALOME_CORBA_EXCEPTION("not sub-shape of the main shape", SALOME::BAD_PARAM);
 
     subMesh = getSubMesh( subMeshId );
 
