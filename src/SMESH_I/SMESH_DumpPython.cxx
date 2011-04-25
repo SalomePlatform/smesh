@@ -870,37 +870,6 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
   if (aSeq->Value(aLen) < aScriptLength)
     anUpdatedScript += aScript.SubString(aSeq->Value(aLen) + 1, aScriptLength);
 
-  // Set colors
-  SALOMEDS::SObject_var aComp = theStudy->FindComponent(ComponentDataType());
-  if( !CORBA::is_nil(aComp) )
-  {
-    SALOMEDS::ChildIterator_var Itr = theStudy->NewChildIterator(aComp);
-    for( Itr->InitEx(true); Itr->More(); Itr->Next() )
-    {
-      SALOMEDS::SObject_var aSObj = Itr->Value();
-      SMESH::SMESH_Mesh_var aMesh = SMESH::SMESH_Mesh::_narrow( SObjectToObject( aSObj ) );
-      // mesh auto color
-      if( !CORBA::is_nil(aMesh) && aMesh->GetAutoColor() )
-      {
-        CORBA::String_var anEntry = aSObj->GetID();
-        anUpdatedScript +=
-          SMESH_Comment("\n\t") << theObjectNames(anEntry.inout()) << ".SetAutoColor(1)";
-      }
-      SMESH::SMESH_GroupBase_var aGroup = SMESH::SMESH_GroupBase::_narrow( SObjectToObject(aSObj));
-      if( !CORBA::is_nil(aGroup) )
-      {
-        SALOMEDS::Color aColor = aGroup->GetColor();
-        if ( aColor.R >= 0 || aColor.G >= 0 || aColor.B >= 0 )
-        {
-          CORBA::String_var anEntry = aSObj->GetID();
-          anUpdatedScript += SMESH_Comment("\n\t")
-            << theObjectNames(anEntry.inout()) << ".SetColor(SALOMEDS.Color("
-            << aColor.R <<", "<< aColor.G <<", "<< aColor.B <<" ))";
-        }
-      }
-    }
-  }
-
   // Remove removed objects
   if ( seqRemoved.Length() > 0 ) {
     anUpdatedScript += "\n\t## some objects were removed";
