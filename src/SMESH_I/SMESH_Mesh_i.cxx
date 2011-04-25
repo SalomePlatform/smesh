@@ -652,14 +652,6 @@ SMESH::SMESH_subMesh_ptr SMESH_Mesh_i::GetSubMesh(GEOM::GEOM_Object_ptr aSubShap
     THROW_SALOME_CORBA_EXCEPTION("bad subShape reference",
                                  SALOME::BAD_PARAM);
 
-  if ( aSubShapeObject->GetType() == GEOM_GROUP )
-  {
-    GEOM::GEOM_Object_var mainGeom = aSubShapeObject->GetMainShape() ;
-    TopoDS_Shape mainShape = _gen_i->GeomObjectToShape(mainGeom);
-    if ( mainShape.IsNull() || !mainShape.IsSame( _impl->GetShapeToMesh() ))
-      THROW_SALOME_CORBA_EXCEPTION("not sub-shape of the main shape", SALOME::BAD_PARAM);
-  }
-
   SMESH::SMESH_subMesh_var subMesh;
   SMESH::SMESH_Mesh_var    aMesh = SMESH::SMESH_Mesh::_narrow(_this());
   try {
@@ -669,6 +661,12 @@ SMESH::SMESH_subMesh_ptr SMESH_Mesh_i::GetSubMesh(GEOM::GEOM_Object_ptr aSubShap
 
     int subMeshId = _impl->GetMeshDS()->ShapeToIndex( myLocSubShape );
 
+    if ( !subMeshId && ! _impl->GetMeshDS()->IsGroupOfSubShapes( myLocSubShape ))
+    {
+      TopoDS_Iterator it( myLocSubShape );
+      if ( it.More() )
+        THROW_SALOME_CORBA_EXCEPTION("not sub-shape of the main shape", SALOME::BAD_PARAM);
+    }
     subMesh = getSubMesh( subMeshId );
 
     // create a new subMesh object servant if there is none for the shape
@@ -2359,6 +2357,9 @@ void SMESH_Mesh_i::SetAutoColor(CORBA::Boolean theAutoColor) throw(SALOME::SALOM
 {
   Unexpect aCatch(SALOME_SalomeException);
   _impl->SetAutoColor(theAutoColor);
+
+  TPythonDump pyDump; // not to dump group->SetColor() from below code
+  pyDump<<_this()<<".SetAutoColor( "<<theAutoColor<<" )";
 
   std::list<SALOMEDS::Color> aReservedColors;
   map<int, SMESH::SMESH_GroupBase_ptr>::iterator it = _mapGroups.begin();
