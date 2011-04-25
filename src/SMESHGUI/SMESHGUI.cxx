@@ -4073,7 +4073,7 @@ bool SMESHGUI::activateModule( SUIT_Study* study )
 
   // import Python module that manages SMESH plugins (need to be here because SalomePyQt API uses active module)
   PyGILState_STATE gstate = PyGILState_Ensure();
-  PyObject* pluginsmanager=PyImport_ImportModule((char*)"salome_pluginsmanager");
+  PyObject* pluginsmanager=PyImport_ImportModuleNoBlock((char*)"salome_pluginsmanager");
   if(pluginsmanager==NULL)
     PyErr_Print();
   else
