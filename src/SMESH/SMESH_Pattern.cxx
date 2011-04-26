@@ -2615,8 +2615,9 @@ bool SMESH_Pattern::Apply (const SMDS_MeshFace* theFace,
   }
 
   // check nb of nodes
-  if (theFace->NbNodes() != myNbKeyPntInBoundary.front() ) {
-    MESSAGE( myKeyPointIDs.size() << " != " << theFace->NbNodes() );
+  const int nbFaceNodes = theFace->NbCornerNodes();
+  if ( nbFaceNodes != myNbKeyPntInBoundary.front() ) {
+    MESSAGE( myKeyPointIDs.size() << " != " << nbFaceNodes );
     return setErrorCode( ERR_APPL_BAD_NB_VERTICES );
   }
 
@@ -2635,7 +2636,7 @@ bool SMESH_Pattern::Apply (const SMDS_MeshFace* theFace,
   list< const SMDS_MeshNode* >::iterator n = nodes.end();
   SMDS_ElemIteratorPtr noIt = theFace->nodesIterator();
   int iSub = 0;
-  while ( noIt->more() ) {
+  while ( noIt->more() && iSub < nbFaceNodes ) {
     const SMDS_MeshNode* node = smdsNode( noIt->next() );
     nodes.push_back( node );
     if ( iSub++ == theNodeIndexOnKeyPoint1 )
@@ -2651,7 +2652,7 @@ bool SMESH_Pattern::Apply (const SMDS_MeshFace* theFace,
       nodes.splice( nodes.end(), nodes, nodes.begin(), n );
   }
   list< gp_XYZ > xyzList;
-  myOrderedNodes.resize( theFace->NbNodes() );
+  myOrderedNodes.resize( nbFaceNodes );
   for ( iSub = 0, n = nodes.begin(); n != nodes.end(); ++n ) {
     xyzList.push_back( gp_XYZ( (*n)->X(), (*n)->Y(), (*n)->Z() ));
     myOrderedNodes[ iSub++] = *n;
@@ -3006,7 +3007,7 @@ bool SMESH_Pattern::Apply (SMESH_Mesh*                     theMesh,
     }
     // put points on links to myIdsOnBoundary,
     // they will be used to sew new elements on adjacent refined elements
-    int nbNodes = (*face)->NbNodes(), eID = nbNodes + 1;
+    int nbNodes = (*face)->NbCornerNodes(), eID = nbNodes + 1;
     for ( int i = 0; i < nbNodes; i++ )
     {
       list< TPoint* > & linkPoints = getShapePoints( eID++ );
