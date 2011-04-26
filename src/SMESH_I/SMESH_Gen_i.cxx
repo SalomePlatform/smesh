@@ -3878,7 +3878,7 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
             int* anAutoColor = new int[ size ];
             aDataset->ReadFromDisk( anAutoColor );
             aDataset->CloseOnDisk();
-            myNewMeshImpl->SetAutoColor( (bool)anAutoColor[0] );
+            myNewMeshImpl->GetImpl().SetAutoColor( (bool)anAutoColor[0] );
           }
 
           // try to read and set reference to shape
