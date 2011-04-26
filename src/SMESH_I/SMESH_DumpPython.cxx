@@ -229,11 +229,15 @@ namespace SMESH
     SALOMEDS::SObject_var aSObject = SMESH_Gen_i::ObjectToSObject(aStudy,theArg);
     if(!aSObject->_is_nil() || CORBA::is_nil( theArg ))
       return *this << aSObject;
-    SMESH::long_array_var anElementsId = theArg->GetIDs();
     SMESH::SMESH_Mesh_var mesh = theArg->GetMesh();
-    SMESH::array_of_ElementType_var types =  theArg->GetTypes();
-    SMESH::ElementType type = types->length() ? types[0] : SMESH::ALL;
-    return *this << mesh << ".GetIDSource(" << anElementsId << ", " << type << ")";
+    if ( !theArg->_is_equivalent( mesh) )
+    {
+      SMESH::long_array_var anElementsId = theArg->GetIDs();
+      SMESH::array_of_ElementType_var types =  theArg->GetTypes();
+      SMESH::ElementType type = types->length() ? types[0] : SMESH::ALL;
+      return *this << mesh << ".GetIDSource(" << anElementsId << ", " << type << ")";
+    }
+    return *this;
   }
 
   TPythonDump&
@@ -549,9 +553,6 @@ Engines::TMPFile* SMESH_Gen_i::DumpPython (CORBA::Object_ptr theStudy,
   TCollection_AsciiString aScript;
   aScript += DumpPython_impl(aStudy, aMap, aMapNames,
                              isPublished, isMultiFile, isValidScript, aSavedTrace);
-
-  if( !isMultiFile ) // remove unnecessary tabulation
-    RemoveTabulation( aScript );
 
   int aLen = aScript.Length();
   unsigned char* aBuffer = new unsigned char[aLen+1];
@@ -935,6 +936,9 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
     anUpdatedScript += "\n\tpass";
   anUpdatedScript += "\n";
 
+  if( !isMultiFile ) // remove unnecessary tabulation
+    RemoveTabulation( anUpdatedScript );
+
   // -----------------------------------------------------------------
   // put string literals describing patterns into separate functions
   // -----------------------------------------------------------------
@@ -973,7 +977,18 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
       do functionName = aFunctionType + "_" + ( nb++ ) + "()";
       while ( !functionNameSet.insert( functionName.ToCString() ).second );
 
-      anUpdatedScript += helper + "\n\ndef " + functionName + aLongString; // define function
+      // define function
+      TCollection_AsciiString funDef = helper + "def " + functionName + aLongString;
+      if ( isMultiFile )
+      {
+        anUpdatedScript += helper + "\n\n" + funDef;
+      }
+      else
+      {
+        funDef += "\n\n";
+        anUpdatedScript.Insert( 1, funDef);
+        where += funDef.Length();
+      }
     }
     anUpdatedScript.InsertBefore( where, functionName ); // call function
   }
