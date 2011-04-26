@@ -24,11 +24,18 @@ include $(top_srcdir)/adm_local/unix/make_common_starter.am
 bin_PROGRAMS = MeshCut
 
 MeshCut_SOURCES = \
+  MeshCut_Globals.hxx \
+  MeshCut_Carre.hxx \
   MeshCut_Carre.cxx \
+  MeshCut_Cube.hxx \
   MeshCut_Cube.cxx \
+  MeshCut_Maillage.hxx \
   MeshCut_Maillage.cxx \
+  MeshCut_Fonctions.hxx \
   MeshCut_Fonctions.cxx \
+  MeshCut_Utils.hxx \
   MeshCut_Utils.cxx \
+  MeshCut_Cas.hxx \
   MeshCut_Cas.cxx \
   MeshCut_DC.cxx
 
