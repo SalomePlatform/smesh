@@ -278,12 +278,14 @@ SMESHGUI_NodesDlg::SMESHGUI_NodesDlg( SMESHGUI* theModule ):
   SpinBox_Z = new SMESHGUI_SpinBox( GroupCoordinates );
 
   GroupCoordinatesLayout->addWidget( TextLabel_X );
-  GroupCoordinatesLayout->addWidget( SpinBox_X );
+  GroupCoordinatesLayout->addWidget( SpinBox_X ); 
   GroupCoordinatesLayout->addWidget( TextLabel_Y);
   GroupCoordinatesLayout->addWidget( SpinBox_Y );
   GroupCoordinatesLayout->addWidget( TextLabel_Z );
   GroupCoordinatesLayout->addWidget( SpinBox_Z );
-
+  GroupCoordinatesLayout->setStretch(1, 1);
+  GroupCoordinatesLayout->setStretch(3, 1);
+  GroupCoordinatesLayout->setStretch(5, 1);
 
   /***************************************************************/
   GroupGroups = new QGroupBox( tr( "SMESH_ADD_TO_GROUP" ), this );

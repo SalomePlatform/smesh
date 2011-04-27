@@ -159,6 +159,9 @@ QWidget* SMESHGUI_MakeNodeAtPointDlg::createMainFrame (QWidget* theParent)
   aCoordGrpLayout->addWidget(myY);
   aCoordGrpLayout->addWidget(aZLabel);
   aCoordGrpLayout->addWidget(myZ);
+  aCoordGrpLayout->setStretchFactor(myX, 1);
+  aCoordGrpLayout->setStretchFactor(myY, 1);
+  aCoordGrpLayout->setStretchFactor(myZ, 1);
 
   // node ID
 
@@ -225,6 +228,9 @@ QWidget* SMESHGUI_MakeNodeAtPointDlg::createMainFrame (QWidget* theParent)
   aCoordLayout->addWidget(myDY,           1, 3);
   aCoordLayout->addWidget(aDZLabel,       1, 4);
   aCoordLayout->addWidget(myDZ,           1, 5);
+  aCoordLayout->setColumnStretch(1, 1);
+  aCoordLayout->setColumnStretch(3, 1);
+  aCoordLayout->setColumnStretch(5, 1);
 
   myAutoSearchChkBox = new QCheckBox( tr("AUTO_SEARCH"), myNodeToMoveGrp);
   myPreviewChkBox = new QCheckBox( tr("PREVIEW"), myNodeToMoveGrp);
