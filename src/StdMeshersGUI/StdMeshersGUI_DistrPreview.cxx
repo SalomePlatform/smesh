@@ -78,7 +78,7 @@ StdMeshersGUI_DistrPreview::StdMeshersGUI_DistrPreview( QWidget* p, StdMeshers::
   QwtText mt = myMsg->label();
   mt.setBackgroundPen( QPen( Qt::red, 1 ) );
   QFont f = mt.font();
-  f.setPointSize( 14 ); f.setBold( true );
+  f.setPointSize( 14 ); //f.setBold( true );
   mt.setFont( f );
   myMsg->setLabel( mt );
   myDensity->setPen( QPen( Qt::red, 1 ) );
@@ -94,6 +94,17 @@ StdMeshersGUI_DistrPreview::StdMeshersGUI_DistrPreview( QWidget* p, StdMeshers::
   }
   insertLegend( l, QwtPlot::BottomLegend );
 
+  enableAxis(QwtPlot::yLeft, false);
+  enableAxis(QwtPlot::yRight, true);
+  
+  QFont axisFont;
+  axisFont.setPointSize( 8 );
+  setAxisFont(QwtPlot::yRight, axisFont); 
+  setAxisFont(QwtPlot::xBottom, axisFont); 
+  
+  myDensity->setYAxis(QwtPlot::yRight);
+  myDistr->setYAxis(QwtPlot::yRight);
+  myMsg->setYAxis(QwtPlot::yRight);
   myDensity->setTitle( tr( "SMESH_DENSITY_FUNC" ) );
   myDistr->setTitle( tr( "SMESH_DISTR" ) );
   

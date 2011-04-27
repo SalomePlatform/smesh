@@ -31,6 +31,7 @@
 // Qt incldues
 #include <QItemDelegate>
 #include <QTableWidget>
+#include <QHeaderView>
 #include <QPushButton>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -244,6 +245,8 @@ Table( QWidget* parent, int rows )
   QStringList labs;
   labs << "t" << "f(t)";
   setHorizontalHeaderLabels( labs );
+  this->horizontalHeader()->setStretchLastSection(true);
+  this->horizontalHeader()->setDefaultSectionSize(60);
 
   while( rows-- )
     addRow();
@@ -412,14 +415,14 @@ sizeHint() const
   if( cachedSizeHint().isValid() )
     return cachedSizeHint();
 
-  QSize sh = QTableWidget::sizeHint();
-  if( sh.width() < 400 )
-    sh.setWidth( 400 );
-  if( sh.height() < 200 )
-    sh.setHeight( 200 );
-
-  setCachedSizeHint( sh );
-  return sh;
+//   QSize sh = QTableWidget::sizeHint();
+//   if( sh.width() < 400 )
+//     sh.setWidth( 400 );
+//   if( sh.height() < 200 )
+//     sh.setHeight( 200 );
+// 
+//   setCachedSizeHint( sh );
+//   return sh;
 }
 
 void
@@ -507,30 +510,24 @@ StdMeshersGUI_DistrTableFrame::
 StdMeshersGUI_DistrTableFrame( QWidget* parent )
   : QWidget( parent )
 {
-  QVBoxLayout* main = new QVBoxLayout( this );
+  QGridLayout* main = new QGridLayout( this );
   main->setMargin( 0 );
   main->setSpacing( 0 );
 
   // ---
   myTable = new Table( this );
   connect( myTable, SIGNAL( valueChanged( int, int ) ), this, SIGNAL( valueChanged( int, int ) ) );
-  
-  // ---
-  QWidget* aButFrame = new QWidget( this );
-  QHBoxLayout* butLay = new QHBoxLayout( aButFrame );
-  butLay->setContentsMargins( 0, SPACING, 0, SPACING );
-  butLay->setSpacing( SPACING );
 
-  myButtons[ InsertRowBtn ] = new QPushButton( tr( "SMESH_INSERT_ROW" ), aButFrame );
-  myButtons[ RemoveRowBtn ] = new QPushButton( tr( "SMESH_REMOVE_ROW" ), aButFrame );
+  myButtons[ InsertRowBtn ] = new QPushButton( tr( "SMESH_INSERT_ROW" ), this );
+  myButtons[ RemoveRowBtn ] = new QPushButton( tr( "SMESH_REMOVE_ROW" ), this );
 
-  butLay->addWidget( myButtons[ InsertRowBtn ] );
-  butLay->addWidget( myButtons[ RemoveRowBtn ] );
-  butLay->addStretch();
 
   // ---
-  main->addWidget( myTable );
-  main->addWidget( aButFrame );
+  main->addWidget( myTable , 0, 0, 1, 3);
+  main->addWidget( myButtons[ InsertRowBtn ] , 1, 0);
+  main->addWidget( myButtons[ RemoveRowBtn ] , 1, 1);
+  main->setColumnStretch(2, 1);
+  main->setSpacing( SPACING );
   
   // ---
   connect( myButtons[ InsertRowBtn ], SIGNAL( clicked() ), this, SLOT( onInsert() ) );

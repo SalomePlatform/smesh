@@ -102,7 +102,7 @@ StdMeshersGUI_SubShapeSelectorWdg
   edgesLayout->addWidget(myAddButton,    0, 4);
   edgesLayout->addWidget(myRemoveButton, 1, 4);
 
-  edgesLayout->setRowStretch(2, 5);
+  //edgesLayout->setRowStretch(2, 5);
   edgesLayout->setColumnStretch(2, 5);
 
   setLayout( edgesLayout );
