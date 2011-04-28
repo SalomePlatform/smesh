@@ -365,45 +365,55 @@ int SMESH_MeshEditor::FindShape (const SMDS_MeshElement * theElem)
   if ( aMesh->ShapeToMesh().IsNull() )
     return 0;
 
-  if ( theElem->GetType() == SMDSAbs_Node )
-    {
-      int aShapeID = theElem->getshapeId();
-      if (aShapeID <= 0)
-        return 0;
-      else
-        return aShapeID;
-    }
+  int aShapeID = theElem->getshapeId();
+  if ( aShapeID < 1 )
+    return 0;
 
-  TopoDS_Shape aShape; // the shape a node is on
-  SMDS_ElemIteratorPtr nodeIt = theElem->nodesIterator();
-  while ( nodeIt->more() ) {
-    const SMDS_MeshNode* node = static_cast<const SMDS_MeshNode*>( nodeIt->next() );
-    int aShapeID = node->getshapeId();
-    if (aShapeID > 0) {
-      SMESHDS_SubMesh * sm = aMesh->MeshElements( aShapeID );
-      if ( sm ) {
-        if ( sm->Contains( theElem ))
-          return aShapeID;
-        if ( aShape.IsNull() )
-          aShape = aMesh->IndexToShape( aShapeID );
-      }
-      else {
-        //MESSAGE ( "::FindShape() No SubShape for aShapeID " << aShapeID );
+  if ( SMESHDS_SubMesh * sm = aMesh->MeshElements( aShapeID ))
+    if ( sm->Contains( theElem ))
+      return aShapeID;
+
+  if ( theElem->GetType() == SMDSAbs_Node ) {
+    MESSAGE( ":( Error: invalid myShapeId of node " << theElem->GetID() );
+  }
+  else {
+    MESSAGE( ":( Error: invalid myShapeId of element " << theElem->GetID() );
+  }
+
+  TopoDS_Shape aShape; // the shape a node of theElem is on
+  if ( theElem->GetType() != SMDSAbs_Node )
+  {
+    SMDS_ElemIteratorPtr nodeIt = theElem->nodesIterator();
+    while ( nodeIt->more() ) {
+      const SMDS_MeshNode* node = static_cast<const SMDS_MeshNode*>( nodeIt->next() );
+      if ((aShapeID = node->getshapeId()) > 0) {
+        if ( SMESHDS_SubMesh * sm = aMesh->MeshElements( aShapeID ) ) {
+          if ( sm->Contains( theElem ))
+            return aShapeID;
+          if ( aShape.IsNull() )
+            aShape = aMesh->IndexToShape( aShapeID );
+        }
       }
     }
   }
 
   // None of nodes is on a proper shape,
   // find the shape among ancestors of aShape on which a node is
-  if ( aShape.IsNull() ) {
-    //MESSAGE ("::FindShape() - NONE node is on shape")
-    return 0;
+  if ( !aShape.IsNull() ) {
+    TopTools_ListIteratorOfListOfShape ancIt( GetMesh()->GetAncestors( aShape ));
+    for ( ; ancIt.More(); ancIt.Next() ) {
+      SMESHDS_SubMesh * sm = aMesh->MeshElements( ancIt.Value() );
+      if ( sm && sm->Contains( theElem ))
+        return aMesh->ShapeToIndex( ancIt.Value() );
+    }
   }
-  TopTools_ListIteratorOfListOfShape ancIt( GetMesh()->GetAncestors( aShape ));
-  for ( ; ancIt.More(); ancIt.Next() ) {
-    SMESHDS_SubMesh * sm = aMesh->MeshElements( ancIt.Value() );
-    if ( sm && sm->Contains( theElem ))
-      return aMesh->ShapeToIndex( ancIt.Value() );
+  else
+  {
+    const map<int,SMESHDS_SubMesh*>& id2sm = GetMeshDS()->SubMeshes();
+    map<int,SMESHDS_SubMesh*>::const_iterator id_sm = id2sm.begin();
+    for ( ; id_sm != id2sm.end(); ++id_sm )
+      if ( id_sm->second->Contains( theElem ))
+        return id_sm->first;
   }
 
   //MESSAGE ("::FindShape() - SHAPE NOT FOUND")
