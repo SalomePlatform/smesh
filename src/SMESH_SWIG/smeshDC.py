@@ -745,6 +745,7 @@ class smeshDC(SMESH._objref_SMESH_Gen):
                                 UnaryOp, BinaryOp, Tolerance, TypeOfElement, Precision)
 
     ## Creates a criterion by the given parameters
+    #  \n Criterion structures allow to define complex filters by combining them with logical operations (AND / OR) (see example below)
     #  @param elementType the type of elements(NODE, EDGE, FACE, VOLUME)
     #  @param CritType the type of criterion (FT_Taper, FT_Area, FT_RangeOfIds, FT_LyingOnGeom etc.)
     #  @param Compare  belongs to {FT_LessThan, FT_MoreThan, FT_EqualTo}
@@ -755,6 +756,8 @@ class smeshDC(SMESH._objref_SMESH_Gen):
     #  @param Tolerance the tolerance used by FT_BelongToGeom, FT_BelongToSurface,
     #         FT_LyingOnGeom, FT_CoplanarFaces criteria
     #  @return SMESH.Filter.Criterion
+    #
+    #  <a href="../tui_filters_page.html#combining_filters">Example of Criteria usage</a>
     #  @ingroup l1_controls
     def GetCriterion(self,elementType,
                      CritType,
@@ -875,6 +878,8 @@ class smeshDC(SMESH._objref_SMESH_Gen):
     #  @param Tolerance the tolerance used by FT_BelongToGeom, FT_BelongToSurface,
     #         FT_LyingOnGeom, FT_CoplanarFaces criteria
     #  @return SMESH_Filter
+    #
+    #  <a href="../tui_filters_page.html#tui_filters">Example of Filters usage</a>
     #  @ingroup l1_controls
     def GetFilter(self,elementType,
                   CritType=FT_Undefined,
