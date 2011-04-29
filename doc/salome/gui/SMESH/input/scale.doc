@@ -53,7 +53,8 @@ selected mesh (or elements) at its previous location and create a new
 mesh of the scaled copy of the selected elements; the new mesh appears in the Object Browser
 with the default name MeshName_scaled (it is possible to change this
 name in the adjacent box);</li>
-<li>activate <b> Copy groups </b> checkbox to copy the groups of elements of the source mesh to the newly created mesh.</li>
+<li>activate <b> Copy groups </b> checkbox to copy the groups of
+elements existing in the source mesh to the newly created mesh.</li>
 </ul>
 </li>
 
