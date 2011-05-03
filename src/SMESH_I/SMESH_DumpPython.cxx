@@ -854,8 +854,10 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
   }
 
   // set initial part of aSript
-  TCollection_AsciiString initPart;
-  initPart += helper + "import " + aSmeshpy + ", SMESH, SALOMEDS\n";
+  TCollection_AsciiString initPart = "import ";
+  if ( isMultiFile )
+    initPart += helper + "salome, ";
+  initPart += aSmeshpy + ", SMESH, SALOMEDS\n";
   if ( importGeom && isMultiFile )
   {
     initPart += ("\n## import GEOM dump file ## \n"
