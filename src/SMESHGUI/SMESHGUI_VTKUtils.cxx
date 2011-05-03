@@ -373,34 +373,31 @@ namespace SMESH
 
     if ( objModified ) {
       // PAL16631. Mesurements showed that to show aVisualObj in SHADING(default) mode,
-      // ~10 times more memory is used than it occupies.
+      // ~5 times more memory is used than it occupies.
       // Warn the user if there is less free memory than 30 sizes of a grid
       // TODO: estimate memory usage in other modes and take current mode into account
       int freeMB = SMDS_Mesh::CheckMemory(true);
       int usedMB = aVisualObj->GetUnstructuredGrid()->GetActualMemorySize() / 1024;
-      if ( freeMB > 0 && usedMB * 30 > freeMB ) {
-#ifdef _DEBUG_
-        MESSAGE ( "SMESHGUI_VTKUtils::GetVisualObj(), freeMB=" << freeMB
-               << ", usedMB=" << usedMB );
-#endif
-//        bool continu = false;
-//        if ( usedMB * 10 > freeMB )
-//          // even dont try to show
-//          SUIT_MessageBox::warning(SMESHGUI::desktop(), QObject::tr("SMESH_WRN_WARNING"),
-//                                   QObject::tr("SMESH_NO_MESH_VISUALIZATION"));
-//        else
-//          // there is a chance to succeed
-//          continu = SUIT_MessageBox::warning
-//            (SMESHGUI::desktop(),
-//             QObject::tr("SMESH_WRN_WARNING"),
-//             QObject::tr("SMESH_CONTINUE_MESH_VISUALIZATION"),
-//             SUIT_MessageBox::Yes | SUIT_MessageBox::No,
-//             SUIT_MessageBox::Yes ) == SUIT_MessageBox::Yes;
-//        if ( !continu ) {
-//          // remove the corresponding actors from all views
-//          RemoveVisualObjectWithActors( theEntry );
-//          aVisualObj.reset();
-//        }
+      cout << "SMESHGUI_VTKUtils::GetVisualObj(), freeMB=" << freeMB << ", usedMB=" <<usedMB<<endl;
+      if ( freeMB > 0 && usedMB * 5 > freeMB ) {
+       bool continu = false;
+       if ( usedMB * 3 > freeMB )
+         // even dont try to show
+         SUIT_MessageBox::warning(SMESHGUI::desktop(), QObject::tr("SMESH_WRN_WARNING"),
+                                  QObject::tr("SMESH_NO_MESH_VISUALIZATION"));
+       else
+         // there is a chance to succeed
+         continu = SUIT_MessageBox::warning
+           (SMESHGUI::desktop(),
+            QObject::tr("SMESH_WRN_WARNING"),
+            QObject::tr("SMESH_CONTINUE_MESH_VISUALIZATION"),
+            SUIT_MessageBox::Yes | SUIT_MessageBox::No,
+            SUIT_MessageBox::Yes ) == SUIT_MessageBox::Yes;
+       if ( !continu ) {
+         // remove the corresponding actors from all views
+         RemoveVisualObjectWithActors( theEntry );
+         aVisualObj.reset();
+       }
       }
     }
 
