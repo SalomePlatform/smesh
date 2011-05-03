@@ -730,8 +730,6 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
   TCollection_AsciiString aScript;
   if( isMultiFile )
     aScript += "def RebuildData(theStudy):";
-  else
-    aScript += "theStudy = salome.myStudy";
   aScript += "\n\t";
   aScript += helper + "aFilterManager = " + aSMESHGen + ".CreateFilterManager()\n\t";
   aScript += helper + "aMeasurements = " + aSMESHGen + ".CreateMeasurements()\n\t";
@@ -856,8 +854,8 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
   }
 
   // set initial part of aSript
-  TCollection_AsciiString initPart = "import salome, SMESH, SALOMEDS\n";
-  initPart += helper + "import " + aSmeshpy + "\n";
+  TCollection_AsciiString initPart;
+  initPart += helper + "import " + aSmeshpy + ", SMESH, SALOMEDS\n";
   if ( importGeom && isMultiFile )
   {
     initPart += ("\n## import GEOM dump file ## \n"
