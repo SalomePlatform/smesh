@@ -43,3 +43,14 @@ MeshCut_CPPFLAGS =  $(MED2_INCLUDES)
 
 MeshCut_LDFLAGS =  $(MED2_LIBS) $(HDF5_LIBS)
 
+
+
+UIPY_FILES =  MeshCutDialog.py
+BUILT_SOURCES = $(UIPY_FILES)
+bin_SCRIPTS = $(UIPY_FILES) meshcut_plugin.py
+clean-local:
+	rm -f $(UIPY_FILES)
+EXTRA_DIST += MeshCutDialog.ui meshcut_plugin.py
+
+%.py : %.ui
+	pyuic4 $< -o $@
