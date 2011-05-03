@@ -3492,7 +3492,7 @@ SALOMEDS::TMPFile* SMESH_Gen_i::SaveASCII( SALOMEDS::SComponent_ptr theComponent
   int size = aStreamFile.in().length();
   _CORBA_Octet* buffer = new _CORBA_Octet[size*3+1];
   for ( int i = 0; i < size; i++ )
-    sprintf( (char*)&(buffer[i*3]), "|%02x", (char*)(aStreamFile[i]) );
+    sprintf( (char*)&(buffer[i*3]), "|%02x", aStreamFile[i] );
 
   buffer[size * 3] = '\0';
 
