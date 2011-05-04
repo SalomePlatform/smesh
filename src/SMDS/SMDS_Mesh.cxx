@@ -58,7 +58,7 @@ using namespace std;
 #endif
 
 // number of added entities to check memory after
-#define CHECKMEMORY_INTERVAL 1000
+#define CHECKMEMORY_INTERVAL 100000
 
 vector<SMDS_Mesh*> SMDS_Mesh::_meshList = vector<SMDS_Mesh*>();
 int SMDS_Mesh::chunkSize = 1024;
@@ -80,35 +80,38 @@ int SMDS_Mesh::CheckMemory(const bool doNotRaise) throw (std::bad_alloc)
   if ( err )
     return -1;
 
+  const unsigned long Mbyte = 1024 * 1024;
+
   static int limit = -1;
   if ( limit < 0 ) {
     int status = system("SMDS_MemoryLimit"); // it returns lower limit of free RAM
     if (status >= 0 ) {
       limit = WEXITSTATUS(status);
     }
+    else {
+      double factor = ( si.totalswap == 0 ) ? 0.1 : 0.2;
+      limit = int(( factor * si.totalram * si.mem_unit ) / Mbyte );
+    }
     if ( limit < 20 )
       limit = 20;
     else
-      limit = int( limit * 1.5 );
-#ifdef _DEBUG_
+      limit = limit * 2;
     MESSAGE ( "SMDS_Mesh::CheckMemory() memory limit = " << limit << " MB" );
-#endif
   }
 
-  const unsigned long Mbyte = 1024 * 1024;
   // compute separately to avoid overflow
   int freeMb =
     ( si.freeram  * si.mem_unit ) / Mbyte +
     ( si.freeswap * si.mem_unit ) / Mbyte;
+  //cout << "freeMb = " << freeMb << " limit = " << limit << endl;
 
   if ( freeMb > limit )
     return freeMb - limit;
 
   if ( doNotRaise )
     return 0;
-#ifdef _DEBUG_
+
   MESSAGE ("SMDS_Mesh::CheckMemory() throws as free memory too low: " << freeMb <<" MB" );
-#endif
   throw std::bad_alloc();
 #else
   return -1;
@@ -268,7 +271,7 @@ SMDS_Mesh0DElement* SMDS_Mesh::Add0DElementWithID(const SMDS_MeshNode * n, int I
 {
   if (!n) return 0;
 
-  //if (my0DElements.Extent() % CHECKMEMORY_INTERVAL == 0) CheckMemory();
+  if (Nb0DElements() % CHECKMEMORY_INTERVAL == 0) CheckMemory();
   //MESSAGE("Add0DElementWithID" << ID)
   SMDS_Mesh0DElement * el0d = new SMDS_Mesh0DElement(n);
   if (myElementIDFactory->BindID(ID, el0d)) {
@@ -475,7 +478,7 @@ SMDS_MeshFace* SMDS_Mesh::AddFaceWithID(const SMDS_MeshEdge * e1,
     return NULL;
   if ( !e1 || !e2 || !e3 ) return 0;
 
-  //if ( myFaces.Extent() % CHECKMEMORY_INTERVAL == 0 ) CheckMemory();
+  if ( NbFaces() % CHECKMEMORY_INTERVAL == 0 ) CheckMemory();
   MESSAGE("AddFaceWithID" << ID);
 
   SMDS_MeshFace * face = new SMDS_FaceOfEdges(e1,e2,e3);
@@ -521,7 +524,7 @@ SMDS_MeshFace* SMDS_Mesh::AddFaceWithID(const SMDS_MeshEdge * e1,
     return NULL;
   MESSAGE("AddFaceWithID" << ID);
   if ( !e1 || !e2 || !e3 || !e4 ) return 0;
-  //if ( myFaces.Extent() % CHECKMEMORY_INTERVAL == 0 ) CheckMemory();
+  if ( NbFaces() % CHECKMEMORY_INTERVAL == 0 ) CheckMemory();
   SMDS_MeshFace * face = new SMDS_FaceOfEdges(e1,e2,e3,e4);
   adjustmyCellsCapacity(ID);
   myCells[ID] = face;
@@ -591,7 +594,7 @@ SMDS_MeshVolume* SMDS_Mesh::AddVolumeWithID(const SMDS_MeshNode * n1,
     //MESSAGE("AddVolumeWithID " << ID);
   SMDS_MeshVolume* volume = 0;
   if ( !n1 || !n2 || !n3 || !n4) return volume;
-  //if ( myVolumes.Extent() % CHECKMEMORY_INTERVAL == 0 ) CheckMemory();
+  if ( NbVolumes() % CHECKMEMORY_INTERVAL == 0 ) CheckMemory();
   if(hasConstructionFaces()) {
     SMDS_MeshFace * f1=FindFaceOrCreate(n1,n2,n3);
     SMDS_MeshFace * f2=FindFaceOrCreate(n1,n2,n4);
@@ -698,7 +701,7 @@ SMDS_MeshVolume* SMDS_Mesh::AddVolumeWithID(const SMDS_MeshNode * n1,
     //MESSAGE("AddVolumeWithID " << ID);
   SMDS_MeshVolume* volume = 0;
   if ( !n1 || !n2 || !n3 || !n4 || !n5) return volume;
-  //if ( myVolumes.Extent() % CHECKMEMORY_INTERVAL == 0 ) CheckMemory();
+  if ( NbVolumes() % CHECKMEMORY_INTERVAL == 0 ) CheckMemory();
   if(hasConstructionFaces()) {
     SMDS_MeshFace * f1=FindFaceOrCreate(n1,n2,n3,n4);
     SMDS_MeshFace * f2=FindFaceOrCreate(n1,n2,n5);
@@ -810,7 +813,7 @@ SMDS_MeshVolume* SMDS_Mesh::AddVolumeWithID(const SMDS_MeshNode * n1,
     //MESSAGE("AddVolumeWithID " << ID);
   SMDS_MeshVolume* volume = 0;
   if ( !n1 || !n2 || !n3 || !n4 || !n5 || !n6) return volume;
-  //if ( myVolumes.Extent() % CHECKMEMORY_INTERVAL == 0 ) CheckMemory();
+  if ( NbVolumes() % CHECKMEMORY_INTERVAL == 0 ) CheckMemory();
   if(hasConstructionFaces()) {
     SMDS_MeshFace * f1=FindFaceOrCreate(n1,n2,n3);
     SMDS_MeshFace * f2=FindFaceOrCreate(n4,n5,n6);
@@ -935,7 +938,7 @@ SMDS_MeshVolume* SMDS_Mesh::AddVolumeWithID(const SMDS_MeshNode * n1,
     //MESSAGE("AddVolumeWithID " << ID);
   SMDS_MeshVolume* volume = 0;
   if ( !n1 || !n2 || !n3 || !n4 || !n5 || !n6 || !n7 || !n8) return volume;
-  //if ( myVolumes.Extent() % CHECKMEMORY_INTERVAL == 0 ) CheckMemory();
+  if ( NbVolumes() % CHECKMEMORY_INTERVAL == 0 ) CheckMemory();
   if(hasConstructionFaces()) {
     SMDS_MeshFace * f1=FindFaceOrCreate(n1,n2,n3,n4);
     SMDS_MeshFace * f2=FindFaceOrCreate(n5,n6,n7,n8);
@@ -1018,7 +1021,7 @@ SMDS_MeshVolume* SMDS_Mesh::AddVolumeWithID(const SMDS_MeshFace * f1,
   if (!hasConstructionFaces())
     return NULL;
   if ( !f1 || !f2 || !f3 || !f4) return 0;
-  //if ( myVolumes.Extent() % CHECKMEMORY_INTERVAL == 0 ) CheckMemory();
+  if ( NbVolumes() % CHECKMEMORY_INTERVAL == 0 ) CheckMemory();
   SMDS_MeshVolume * volume = new SMDS_VolumeOfFaces(f1,f2,f3,f4);
   adjustmyCellsCapacity(ID);
   myCells[ID] = volume;
@@ -1066,7 +1069,7 @@ SMDS_MeshVolume* SMDS_Mesh::AddVolumeWithID(const SMDS_MeshFace * f1,
   if (!hasConstructionFaces())
     return NULL;
   if ( !f1 || !f2 || !f3 || !f4 || !f5) return 0;
-  //if ( myVolumes.Extent() % CHECKMEMORY_INTERVAL == 0 ) CheckMemory();
+  if ( NbVolumes() % CHECKMEMORY_INTERVAL == 0 ) CheckMemory();
   SMDS_MeshVolume * volume = new SMDS_VolumeOfFaces(f1,f2,f3,f4,f5);
   adjustmyCellsCapacity(ID);
   myCells[ID] = volume;
@@ -1116,7 +1119,7 @@ SMDS_MeshVolume* SMDS_Mesh::AddVolumeWithID(const SMDS_MeshFace * f1,
   if (!hasConstructionFaces())
     return NULL;
   if ( !f1 || !f2 || !f3 || !f4 || !f5 || !f6) return 0;
-  //if ( myVolumes.Extent() % CHECKMEMORY_INTERVAL == 0 ) CheckMemory();
+  if ( NbVolumes() % CHECKMEMORY_INTERVAL == 0 ) CheckMemory();
   SMDS_MeshVolume * volume = new SMDS_VolumeOfFaces(f1,f2,f3,f4,f5,f6);
   adjustmyCellsCapacity(ID);
   myCells[ID] = volume;
@@ -1156,7 +1159,7 @@ SMDS_MeshFace* SMDS_Mesh::AddPolygonalFaceWithID
 {
   SMDS_MeshFace * face;
 
-  //if ( myFaces.Extent() % CHECKMEMORY_INTERVAL == 0 ) CheckMemory();
+  if ( NbFaces() % CHECKMEMORY_INTERVAL == 0 ) CheckMemory();
   if (hasConstructionEdges())
     {
       MESSAGE("Error : Not implemented");
@@ -1246,7 +1249,7 @@ SMDS_MeshVolume* SMDS_Mesh::AddPolyhedralVolumeWithID
                              const int                    ID)
 {
   SMDS_MeshVolume* volume;
-  //if ( myVolumes.Extent() % CHECKMEMORY_INTERVAL == 0 ) CheckMemory();
+  if ( NbVolumes() % CHECKMEMORY_INTERVAL == 0 ) CheckMemory();
   if (hasConstructionFaces())
     {
       MESSAGE("Error : Not implemented");
@@ -1445,7 +1448,7 @@ SMDS_MeshFace * SMDS_Mesh::createTriangle(const SMDS_MeshNode * node1,
                                           int ID)
 {
   if ( !node1 || !node2 || !node3) return 0;
-//  if ( myFaces.Extent() % CHECKMEMORY_INTERVAL == 0 ) CheckMemory();
+  if ( NbFaces() % CHECKMEMORY_INTERVAL == 0 ) CheckMemory();
   if(hasConstructionEdges())
   {
     SMDS_MeshEdge *edge1, *edge2, *edge3;
@@ -1498,7 +1501,7 @@ SMDS_MeshFace * SMDS_Mesh::createQuadrangle(const SMDS_MeshNode * node1,
                                             int ID)
 {
   if ( !node1 || !node2 || !node3 || !node4 ) return 0;
-//  if ( myFaces.Extent() % CHECKMEMORY_INTERVAL == 0 ) CheckMemory();
+  if ( NbFaces() % CHECKMEMORY_INTERVAL == 0 ) CheckMemory();
   if(hasConstructionEdges())
   {
       //MESSAGE("createQuadrangle hasConstructionEdges "<< ID);
@@ -1828,7 +1831,7 @@ SMDS_MeshEdge* SMDS_Mesh::FindEdgeOrCreate(const SMDS_MeshNode * node1,
   SMDS_MeshEdge * toReturn=NULL;
   toReturn=const_cast<SMDS_MeshEdge*>(FindEdge(node1,node2));
   if(toReturn==NULL) {
-    //if ( myEdges.Extent() % CHECKMEMORY_INTERVAL == 0 ) CheckMemory();
+    if ( NbEdges() % CHECKMEMORY_INTERVAL == 0 ) CheckMemory();
     int ID = myElementIDFactory->GetFreeID(); // -PR- voir si on range cet element
     adjustmyCellsCapacity(ID);
     vector<vtkIdType> nodeIds;
