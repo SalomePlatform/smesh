@@ -1,5 +1,5 @@
 # if you already have plugins defined in a salome_plugins.py file, add this file at the end.
-# if not, copy this file as ${HOME}/Plugins/salome_plugins.py or ${APPLI}/Plugins/salome_plugins.py
+# if not, copy this file as ${HOME}/Plugins/smesh_plugins.py or ${APPLI}/Plugins/smesh_plugins.py
 
 import salome_pluginsmanager
 

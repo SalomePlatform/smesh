@@ -102,7 +102,7 @@ int MESHCUT::intersectionSegmentPlan(int it4, int na)
       ngB = *(offset + 3);
     }
   else
-    ERREUR("Numéro d'arête supérieur à 6");
+    ERREUR("Edge number superior to 6");
 
   string cle1 = int2string(ngA) + (string) "_" + int2string(ngB);
   string cle2 = int2string(ngB) + (string) "_" + int2string(ngA);
@@ -142,7 +142,7 @@ int MESHCUT::intersectionSegmentPlan(int it4, int na)
         }
 
       if (fabs(ps) == 0.0)
-        ERREUR("Erreur sur ps nul");
+        ERREUR("Error on null scalar product");
 
       // PS non nul: l'intersection AB/plan existe
 
