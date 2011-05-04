@@ -292,10 +292,10 @@ void SMESH_VisualObjDef::buildNodePrs()
 {
   // PAL16631: without swap, bad_alloc is not thrown but hung up and crash instead,
   // so check remaining memory size for safety
-  // SMDS_Mesh::CheckMemory(); // PAL16631
+  SMDS_Mesh::CheckMemory(); // PAL16631
   vtkPoints* aPoints = vtkPoints::New();
   createPoints( aPoints );
-  // SMDS_Mesh::CheckMemory();
+  SMDS_Mesh::CheckMemory();
   myGrid->SetPoints( aPoints );
   aPoints->Delete();
 
@@ -358,7 +358,7 @@ void SMESH_VisualObjDef::buildElemPrs()
 
   // PAL16631: without swap, bad_alloc is not thrown but hung up and crash instead,
   // so check remaining memory size for safety
-  // SMDS_Mesh::CheckMemory(); // PAL16631
+  SMDS_Mesh::CheckMemory(); // PAL16631
 
   vtkIdType aCellsSize =  2 * nbEnts[ SMDSAbs_0DElement ] + 3 * nbEnts[ SMDSAbs_Edge ];
 
@@ -384,13 +384,13 @@ void SMESH_VisualObjDef::buildElemPrs()
   vtkCellArray* aConnectivity = vtkCellArray::New();
   aConnectivity->Allocate( aCellsSize, 0 );
 
-  // SMDS_Mesh::CheckMemory(); // PAL16631
+  SMDS_Mesh::CheckMemory(); // PAL16631
 
   vtkUnsignedCharArray* aCellTypesArray = vtkUnsignedCharArray::New();
   aCellTypesArray->SetNumberOfComponents( 1 );
   aCellTypesArray->Allocate( aNbCells * aCellTypesArray->GetNumberOfComponents() );
 
-  // SMDS_Mesh::CheckMemory(); // PAL16631
+  SMDS_Mesh::CheckMemory(); // PAL16631
 
   vtkIdList *anIdList = vtkIdList::New();
   vtkIdType iElem = 0;
@@ -398,7 +398,7 @@ void SMESH_VisualObjDef::buildElemPrs()
   TConnect aConnect;
   aConnect.reserve(VTK_CELL_SIZE);
 
-  // SMDS_Mesh::CheckMemory(); // PAL16631
+  SMDS_Mesh::CheckMemory(); // PAL16631
 
   for ( int i = 0; i <= 3; i++ ) // iterate through 0d elements, edges, faces and volumes
   {
@@ -501,7 +501,7 @@ void SMESH_VisualObjDef::buildElemPrs()
         iElem++;
       }
     }
-    // SMDS_Mesh::CheckMemory(); // PAL16631
+    SMDS_Mesh::CheckMemory(); // PAL16631
   }
 
   // Insert cells in grid
@@ -510,7 +510,7 @@ void SMESH_VisualObjDef::buildElemPrs()
   aCellLocationsArray->SetNumberOfComponents( 1 );
   aCellLocationsArray->SetNumberOfTuples( aNbCells );
 
-  // SMDS_Mesh::CheckMemory(); // PAL16631
+  SMDS_Mesh::CheckMemory(); // PAL16631
 
   aConnectivity->InitTraversal();
   for( vtkIdType idType = 0, *pts, npts; aConnectivity->GetNextCell( npts, pts ); idType++ )
@@ -523,7 +523,7 @@ void SMESH_VisualObjDef::buildElemPrs()
   aConnectivity->Delete();
   anIdList->Delete();
 
-  // SMDS_Mesh::CheckMemory(); // PAL16631
+  SMDS_Mesh::CheckMemory(); // PAL16631
 }
 
 //=================================================================================

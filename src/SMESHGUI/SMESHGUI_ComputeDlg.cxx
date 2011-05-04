@@ -821,6 +821,10 @@ void SMESHGUI_BaseComputeOp::computeMesh()
       memoryLack = true;
     }
 
+    if ( !memoryLack && !SMDS_Mesh::CheckMemory(true) ) { // has memory to show dialog boxes?
+      memoryLack = true;
+    }
+
     // NPAL16631: if ( !memoryLack )
     {
       SMESH::ModifiedMesh(aMeshSObj, !computeFailed, myMesh->NbNodes() == 0);
@@ -830,7 +834,6 @@ void SMESHGUI_BaseComputeOp::computeMesh()
       // NPAL16631: if ( getSMESHGUI()->automaticUpdate() )
       SUIT_ResourceMgr* resMgr = SMESH::GetResourceMgr( SMESHGUI::GetSMESHGUI() );
       long newSize = myMesh->NbElements();
-      long limitSize = resMgr->integerValue( "SMESH", "update_limit", 500000 );
       bool limitExceeded;
       if ( !memoryLack )
       {
@@ -856,6 +859,7 @@ void SMESHGUI_BaseComputeOp::computeMesh()
         }
         else if ( limitExceeded )
         {
+          long limitSize = resMgr->integerValue( "SMESH", "update_limit", 500000 );
           SUIT_MessageBox::warning( desktop(),
                                     tr( "SMESH_WRN_WARNING" ),
                                     tr( "SMESH_WRN_SIZE_LIMIT_EXCEEDED" ).arg( newSize ).arg( limitSize ) );
