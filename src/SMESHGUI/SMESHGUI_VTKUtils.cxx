@@ -378,7 +378,7 @@ namespace SMESH
       // TODO: estimate memory usage in other modes and take current mode into account
       int freeMB = SMDS_Mesh::CheckMemory(true);
       int usedMB = aVisualObj->GetUnstructuredGrid()->GetActualMemorySize() / 1024;
-      cout << "SMESHGUI_VTKUtils::GetVisualObj(), freeMB=" << freeMB << ", usedMB=" <<usedMB<<endl;
+      MESSAGE("SMESHGUI_VTKUtils::GetVisualObj(), freeMB=" << freeMB << ", usedMB=" <<usedMB);
       if ( freeMB > 0 && usedMB * 5 > freeMB ) {
        bool continu = false;
        if ( usedMB * 3 > freeMB )
