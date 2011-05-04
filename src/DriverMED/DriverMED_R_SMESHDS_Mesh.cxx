@@ -145,7 +145,7 @@ DriverMED_R_SMESHDS_Mesh
           aResult = DRS_FAIL;
           continue;
         }
-	aMeshInfo->myDim=aMeshInfo->mySpaceDim;//Bug correction to ignore meshdim in MEDFile because can be false.
+        aMeshInfo->myDim=aMeshInfo->mySpaceDim;//Bug correction to ignore meshdim in MEDFile because can be false.
         PCoordHelper aCoordHelper = GetCoordHelper(aNodeInfo);
 
         EBooleen anIsNodeNum = aNodeInfo->IsElemNum();
