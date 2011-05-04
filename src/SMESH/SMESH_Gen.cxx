@@ -38,10 +38,7 @@
 #include "OpUtil.hxx"
 #include "Utils_ExceptHandlers.hxx"
 
-#include <gp_Pnt.hxx>
-#include <BRep_Tool.hxx>
-#include <TopTools_ListOfShape.hxx>
-#include <TopTools_ListIteratorOfListOfShape.hxx>
+#include <TopoDS_Iterator.hxx>
 
 #include "memoire.h"
 
@@ -222,6 +219,11 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
           }
           // add smToCompute to shDim2sm map
           aShapeDim = GetShapeDim( algoShape );
+          if ( algoShape.ShapeType() == TopAbs_COMPOUND )
+          {
+            TopoDS_Iterator it( algoShape );
+            aShapeDim += GetShapeDim( it.Value() );
+          }
           shDim2sm.insert( make_pair( aShapeDim, smToCompute ));
         }
         else
