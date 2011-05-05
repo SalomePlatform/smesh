@@ -119,7 +119,7 @@ SMESH_Mesh_i::SMESH_Mesh_i( PortableServer::POA_ptr thePOA,
 
 SMESH_Mesh_i::~SMESH_Mesh_i()
 {
-  INFOS("~SMESH_Mesh_i");
+  MESSAGE("~SMESH_Mesh_i");
 
 #ifdef WITHGENERICOBJ
   // destroy groups

@@ -318,7 +318,7 @@ SMESH_Gen_i::SMESH_Gen_i( CORBA::ORB_ptr            orb,
 
 SMESH_Gen_i::~SMESH_Gen_i()
 {
-  INFOS( "SMESH_Gen_i::~SMESH_Gen_i" );
+  MESSAGE( "SMESH_Gen_i::~SMESH_Gen_i" );
 
   // delete hypothesis creators
   map<string, GenericHypothesisCreator_i*>::iterator itHyp;

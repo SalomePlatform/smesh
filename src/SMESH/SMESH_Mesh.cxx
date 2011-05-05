@@ -130,7 +130,7 @@ SMESH_Mesh::SMESH_Mesh():
 
 SMESH_Mesh::~SMESH_Mesh()
 {
-  INFOS("SMESH_Mesh::~SMESH_Mesh");
+  MESSAGE("SMESH_Mesh::~SMESH_Mesh");
 
   // issue 0020340: EDF 1022 SMESH : Crash with FindNodeClosestTo in a second new study
   //   Notify event listeners at least that something happens
