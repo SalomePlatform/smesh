@@ -224,13 +224,15 @@ namespace SMESH
   TPythonDump::
   operator<<(SMESH::SMESH_IDSource_ptr theArg)
   {
+    if ( CORBA::is_nil( theArg ) )
+      return *this << "None";
     SMESH_Gen_i* aSMESHGen = SMESH_Gen_i::GetSMESHGen();
     SALOMEDS::Study_var aStudy = aSMESHGen->GetCurrentStudy();
     SALOMEDS::SObject_var aSObject = SMESH_Gen_i::ObjectToSObject(aStudy,theArg);
-    if(!aSObject->_is_nil() || CORBA::is_nil( theArg ))
+    if(!aSObject->_is_nil())
       return *this << aSObject;
     SMESH::SMESH_Mesh_var mesh = theArg->GetMesh();
-    if ( !theArg->_is_equivalent( mesh) )
+    if ( !theArg->_is_equivalent( mesh ))
     {
       SMESH::long_array_var anElementsId = theArg->GetIDs();
       SMESH::array_of_ElementType_var types =  theArg->GetTypes();
