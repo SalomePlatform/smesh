@@ -25,6 +25,7 @@ namespace MESHCUT
     extern std::map<TYPE_MAILLE, std::vector<int> > newCNX;
     extern std::map<TYPE_MAILLE, int> cptNouvellesMailles;
     extern std::map<TYPE_MAILLE, std::vector<int> > GMplus, GMmoins;
+    extern std::vector<int> cutTetras;
 
     extern float *DNP; //!< Distance Noeud Plan
     extern int *POSN; //!<  Version -1/0/+1 du précédent, selon epsilon

@@ -31,6 +31,7 @@ std::vector<float> MESHCUT::newXX, MESHCUT::newYY, MESHCUT::newZZ;
 std::map<TYPE_MAILLE, std::vector<int> > MESHCUT::newCNX;
 std::map<TYPE_MAILLE, int> MESHCUT::cptNouvellesMailles;
 std::map<TYPE_MAILLE, std::vector<int> > MESHCUT::GMplus, MESHCUT::GMmoins;
+std::vector<int> MESHCUT::cutTetras;
 
 float *MESHCUT::DNP;
 int *MESHCUT::POSN;
@@ -254,7 +255,7 @@ int main(int argc, char *argv[])
       else
         POSN[k] = 0;
     }
-  cout << chrono() << " - End of nodes classement above or below the cut plane" << endl;
+  cout << chrono() << " - End of nodes qualification above or below the cut plane" << endl;
   cout << "Start of iteration on tetra4" << endl;
 
   for (int it4 = 0; it4 < MAILLAGE1->EFFECTIFS_TYPES[TETRA4]; it4++)
@@ -1028,8 +1029,8 @@ int main(int argc, char *argv[])
       // cout << "Nouveaux noeuds, indice " << i << " : " << newXX[i] << " " << newYY[i] << " " << newZZ[i] << " " << endl;
     }
 
-  // Legacy mailles maillage 1 +
-  for (int itm = (int) POI1; itm <= (int) HEXA20; itm++)
+  // Legacy mailles maillage 1 (volumes seulement)
+  for (int itm = (int) TETRA4; itm <= (int) HEXA20; itm++)
     {
       TYPE_MAILLE tm = (TYPE_MAILLE) itm;
       if (tm != TETRA4 && tm != PYRAM5 && tm != PENTA6)
@@ -1089,6 +1090,8 @@ int main(int argc, char *argv[])
   MAILLAGE2->GM[str_id_GMmoins] = GMmoins;
 
   MAILLAGE2->GN = MAILLAGE1->GN;
+
+  MAILLAGE2->eliminationMailles(TETRA4, cutTetras);
 
   cout << chrono() << " - MED file writing" << endl;
 

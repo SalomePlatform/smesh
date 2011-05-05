@@ -308,17 +308,17 @@ void Maillage::inputMED(std::string fichierMED)
     ERREUR("Error while reading mesh informations ");
   //cout << chrono() << " --- inputMED: MEDmeshInfo: OK" << endl;
 
-  cerr << "maa=" << maa << endl;
-  cerr << "spacedim=" << spacedim << endl;
-  cerr << "mdim=" << mdim << endl;
-  cerr << "type=" << type << endl;
-  cerr << "desc=" << desc << endl;
-  cerr << "dtunit=" << dtunit << endl;
-  cerr << "sortingtype=" << sortingtype << endl;
-  cerr << "nPasTemps=" << nPasTemps << endl;
-  cerr << "axistype=" << axistype << endl;
-  cerr << "axisname=" << axisname << endl;
-  cerr << "unitname=" << unitname << endl;
+//  cerr << "maa=" << maa << endl;
+//  cerr << "spacedim=" << spacedim << endl;
+//  cerr << "mdim=" << mdim << endl;
+//  cerr << "type=" << type << endl;
+//  cerr << "desc=" << desc << endl;
+//  cerr << "dtunit=" << dtunit << endl;
+//  cerr << "sortingtype=" << sortingtype << endl;
+//  cerr << "nPasTemps=" << nPasTemps << endl;
+//  cerr << "axistype=" << axistype << endl;
+//  cerr << "axisname=" << axisname << endl;
+//  cerr << "unitname=" << unitname << endl;
 
   dimensionMaillage = mdim;
   dimensionEspace = spacedim;
@@ -959,12 +959,12 @@ void Maillage::outputMED(std::string fichierMED)
   char desc[MED_COMMENT_SIZE + 1]; // Description du maillage
   strcpy(desc, string2char(ID));
   med_mesh_type type = MED_UNSTRUCTURED_MESH;
-  cerr << "maa=" << maa << endl;
-  cerr << "spacedim=" << spacedim << endl;
-  cerr << "mdim=" << mdim << endl;
-  cerr << "type=" << type << endl;
-  cerr << "axisname=" << axisname << endl;
-  cerr << "unitname=" << unitname << endl;
+//  cerr << "maa=" << maa << endl;
+//  cerr << "spacedim=" << spacedim << endl;
+//  cerr << "mdim=" << mdim << endl;
+//  cerr << "type=" << type << endl;
+//  cerr << "axisname=" << axisname << endl;
+//  cerr << "unitname=" << unitname << endl;
   if (MEDmeshCr(fid, maa, spacedim, mdim, type, desc, "s", MED_SORT_DTIT, MED_CARTESIAN, axisname, unitname) < 0)
     {
       ERREUR("Error MEDmeshCr");
@@ -1499,13 +1499,13 @@ void Maillage::outputMED(std::string fichierMED)
 
           // Chargement numTYPE
           //for (int nl=0; nl<nTYPE; nl++)    *(numTYPE+nl) = (med_int) ( NUM_MAILLES[tm][nl] );
-          cerr << "maa=" << maa << endl;
-          cerr << "MGE=" << MGE << endl;
-          cerr << "nTYPE=" << nTYPE << endl;
-          cerr << "inomTYPE=" << inomTYPE << endl;
-          //cerr << "nomTYPE=" << nomTYPE << endl;
-          cerr << "inumTYPE=" << inumTYPE << endl;
-          this->afficheMailles(tm);
+//          cerr << "maa=" << maa << endl;
+//          cerr << "MGE=" << MGE << endl;
+//          cerr << "nTYPE=" << nTYPE << endl;
+//          cerr << "inomTYPE=" << inomTYPE << endl;
+//          //cerr << "nomTYPE=" << nomTYPE << endl;
+//          cerr << "inumTYPE=" << inumTYPE << endl;
+//          this->afficheMailles(tm);
           if (MEDmeshElementWr(fid, maa, MED_NO_DT, MED_NO_IT, MED_UNDEF_DT, MED_CELL, MGE, MED_NODAL,
                                MED_FULL_INTERLACE, nTYPE, CNX[tm], inomTYPE, nomTYPE, inumTYPE, numTYPE, MED_FALSE,
                                famTYPE) < 0)
@@ -1678,7 +1678,7 @@ void Maillage::eliminationMailles(TYPE_MAILLE tm, vector<int> listeMaillesSuppr)
 {
   map<int, int> TABLE_NL; // Table des num. locaux dans le type tm
 
-  // cout << "Fonction eliminationMailles, listeMaillesSuppr.size()=" << listeMaillesSuppr.size() << endl;
+  cout << "Method eliminationMailles, listeMaillesSuppr.size()=" << listeMaillesSuppr.size() << endl;
 
   // ************* Modification de la connectivité du type concerné
 
@@ -1735,7 +1735,7 @@ void Maillage::eliminationMailles(TYPE_MAILLE tm, vector<int> listeMaillesSuppr)
 
       if (GM[nomGM][tm].size())
         {
-
+          //cout << "GM[" << nomGM <<"][" << tm << "].size()=" << GM[nomGM][tm].size() << endl;
           vector<int> mailles = GM[nomGM][tm];
           vector<int> mailles2; //mailles2.resize(mailles.size()-listeMaillesSuppr.size());
           unsigned int cptMailles = 0;
@@ -1748,16 +1748,6 @@ void Maillage::eliminationMailles(TYPE_MAILLE tm, vector<int> listeMaillesSuppr)
                   cptMailles++;
                 }
             }
-          // Vérification
-          if (cptMailles != mailles.size() - listeMaillesSuppr.size())
-            {
-              int delta = mailles.size() - listeMaillesSuppr.size();
-              cout << "mailles.size() = " << mailles.size() << endl;
-              cout << "cptMailles = " << cptMailles << endl;
-              cout << "delta = " << delta << endl;
-              ERREUR("Incoherent number of kept elements, method eliminationMailles");
-              exit(0);
-            }
 
           GM[nomGM][tm].clear();
           mailles2.resize(cptMailles);
@@ -1767,6 +1757,7 @@ void Maillage::eliminationMailles(TYPE_MAILLE tm, vector<int> listeMaillesSuppr)
     }
 
   // ************* Mise à jour des effectifs
+
   EFFECTIFS_TYPES[tm] = EFFECTIFS_TYPES[tm] - listeMaillesSuppr.size();
   nombreMaillesMaillage = nombreMaillesMaillage - listeMaillesSuppr.size();
 

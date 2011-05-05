@@ -13,7 +13,7 @@ using namespace std;
  */
 void MESHCUT::cas1(int VN[6], int it4)
 {
-
+  cutTetras.push_back(it4);
   //  cout << "Cas 1 - it4=" << it4 << ", VN = " << VN[0] << " " << VN[1] << " " << VN[2] << " " << VN[3] << " " << VN[4]
   //      << " " << VN[5] << " " << endl;
 
@@ -230,7 +230,7 @@ void MESHCUT::cas1(int VN[6], int it4)
  */
 void MESHCUT::cas2(int VN[6], int it4)
 {
-
+  cutTetras.push_back(it4);
   //  cout << "Cas 2 - it4=" << it4 << ", VN = " << VN[0] << " " << VN[1] << " " << VN[2] << " " << VN[3] << " " << VN[4]
   //      << " " << VN[5] << " " << endl;
 
@@ -624,7 +624,7 @@ void MESHCUT::cas2(int VN[6], int it4)
  */
 void MESHCUT::cas3(int VN[6], int it4)
 {
-
+  cutTetras.push_back(it4);
   // cout << "Cas 3 - it4="<<it4<<", VN = " << VN[0] << " " << VN[1] << " " << VN[2] << " " << VN[3] << " " << VN[4] << " " << VN[5] << " " << endl;
 
   // Numéros des noeuds du TETRA4
@@ -803,7 +803,7 @@ void MESHCUT::cas3(int VN[6], int it4)
  */
 void MESHCUT::cas4(int VN[6], int it4)
 {
-
+  cutTetras.push_back(it4);
   //  cout << "Cas 4 - it4=" << it4 << ", VN = " << VN[0] << " " << VN[1] << " " << VN[2] << " " << VN[3] << " " << VN[4]
   //      << " " << VN[5] << " " << endl;
 
