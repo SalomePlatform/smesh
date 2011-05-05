@@ -4409,33 +4409,41 @@ class Mesh_Algorithm:
         if geom is None:
             raise RuntimeError, "Attemp to create " + algo + " algoritm on None shape"
         self.mesh = mesh
-        piece = mesh.geom
         name = ""
         if not geom:
-            self.geom = piece
+            self.geom = mesh.geom
         else:
             self.geom = geom
+            self.AssureGeomPublished( geom )
             try:
                 name = GetName(geom)
                 pass
             except:
                 pass
-            if not name and geom.GetShapeType() != geompyDC.GEOM.COMPOUND:
-                # for all groups SubShapeName() returns "Compound_-1"
-                name = mesh.geompyD.SubShapeName(geom, piece)
-            if not name:
-                name = "%s_%s"%(geom.GetShapeType(), id(geom)%10000)
-            # publish geom of sub-mesh (issue 0021122)
-            if not self.geom.IsSame( self.mesh.geom ) and not self.geom.GetStudyEntry():
-                studyID = self.mesh.smeshpyD.GetCurrentStudy()._get_StudyId()
-                if studyID != self.mesh.geompyD.myStudyId:
-                    self.mesh.geompyD.init_geom( self.mesh.smeshpyD.GetCurrentStudy())
-                self.mesh.geompyD.addToStudyInFather( self.mesh.geom, self.geom, name )
-                pass
             self.subm = mesh.mesh.GetSubMesh(geom, algo.GetName())
         self.algo = algo
         status = mesh.mesh.AddHypothesis(self.geom, self.algo)
         TreatHypoStatus( status, algo.GetName(), name, True )
+        return
+
+    ## Private method. Add geom into the study if not yet there
+    def AssureGeomPublished(self, geom, name=''):
+        if not isinstance( geom, geompyDC.GEOM._objref_GEOM_Object ):
+            return
+        if not geom.IsSame( self.mesh.geom ) and not geom.GetStudyEntry():
+            ## set the study
+            studyID = self.mesh.smeshpyD.GetCurrentStudy()._get_StudyId()
+            if studyID != self.mesh.geompyD.myStudyId:
+                self.mesh.geompyD.init_geom( self.mesh.smeshpyD.GetCurrentStudy())
+            ## get a name
+            if not name and geom.GetShapeType() != geompyDC.GEOM.COMPOUND:
+                # for all groups SubShapeName() returns "Compound_-1"
+                name = self.mesh.geompyD.SubShapeName(geom, self.mesh.geom)
+            if not name:
+                name = "%s_%s"%(geom.GetShapeType(), id(geom)%10000)
+            ## publish
+            self.mesh.geompyD.addToStudyInFather( self.mesh.geom, geom, name )
+        return
 
     def CompareHyp (self, hyp, args):
         print "CompareHyp is not implemented for ", self.__class__.__name__, ":", hyp.GetName()
@@ -4490,7 +4498,7 @@ class Mesh_Algorithm:
     #  @param thickness total thickness of layers of prisms
     #  @param numberOfLayers number of layers of prisms
     #  @param stretchFactor factor (>1.0) of growth of layer thickness towards inside of mesh
-    #  @param ignoreFaces geometrical face (or their ids) not to generate layers on
+    #  @param ignoreFaces list of geometrical faces (or their ids) not to generate layers on
     #  @ingroup l3_hypos_additi
     def ViscousLayers(self, thickness, numberOfLayers, stretchFactor, ignoreFaces=[]):
         if not isinstance(self.algo, SMESH._objref_SMESH_3D_Algo):
@@ -4786,14 +4794,9 @@ class Mesh_Segment(Mesh_Algorithm):
         ### 0D algorithm
         if self.geom is None:
             raise RuntimeError, "Attemp to create SegmentAroundVertex_0D algoritm on None shape"
-        try:
-            name = GetName(self.geom)
-            pass
-        except:
-            piece = self.mesh.geom
-            name = self.mesh.geompyD.SubShapeName(self.geom, piece)
-            self.mesh.geompyD.addToStudyInFather(piece, self.geom, name)
-            pass
+        self.AssureGeomPublished( self.geom )
+        name = GetName(self.geom)
+
         algo = self.FindAlgorithm("SegmentAroundVertex_0D", self.mesh.smeshpyD)
         if algo is None:
             algo = self.mesh.smeshpyD.CreateHypothesis("SegmentAroundVertex_0D", "libStdMeshersEngine.so")
@@ -5036,13 +5039,15 @@ class Mesh_Triangle(Mesh_Algorithm):
 
     ## Sets an attractor on the chosen face. The mesh size will decrease exponentially with the distance from theAttractor, following the rule h(d) = theEndSize - (theEndSize - theStartSize) * exp [ - ( d / theInfluenceDistance ) ^ 2 ] 
     #  @param theFace      : face on which the attractor will be defined
-    #  @param theAttractor : geometrical object frome which the mesh size "h" decreases exponentially   
+    #  @param theAttractor : geometrical object from which the mesh size "h" decreases exponentially   
     #  @param theStartSize : mesh size on theAttractor      
     #  @param theEndSize   : maximum size that will be reached on theFace                                                     
     #  @param theInfluenceDistance : influence of the attractor ( the size grow slower on theFace if it's high)                                                      
     #  @param theConstantSizeDistance : distance until which the mesh size will be kept constant on theFace                                                      
     #  @ingroup l3_hypos_blsurf
     def SetAttractorGeom(self, theFace, theAttractor, theStartSize, theEndSize, theInfluenceDistance, theConstantSizeDistance):
+        self.AssureGeomPublished( theFace )
+        self.AssureGeomPublished( theAttractor )
         #  Parameter of BLSURF algo
         self.Parameters().SetAttractorGeom(otheFace, theAttractor, theStartSize, theEndSize, theInfluenceDistance, theConstantSizeDistance)
 
@@ -5622,6 +5627,9 @@ class Mesh_Projection1D(Mesh_Algorithm):
     #  @param UseExisting if ==true - searches for the existing hypothesis created with
     #                     the same parameters, else (default) - creates a new one
     def SourceEdge(self, edge, mesh=None, srcV=None, tgtV=None, UseExisting=0):
+        self.AssureGeomPublished( edge )
+        self.AssureGeomPublished( srcV )
+        self.AssureGeomPublished( tgtV )
         hyp = self.Hypothesis("ProjectionSource1D", [edge,mesh,srcV,tgtV],
                               UseExisting=0)
                               #UseExisting=UseExisting, CompareMethod=self.CompareSourceEdge)
@@ -5668,11 +5676,13 @@ class Mesh_Projection2D(Mesh_Algorithm):
     #  Note: all association vertices must belong to one edge of a face
     def SourceFace(self, face, mesh=None, srcV1=None, tgtV1=None,
                    srcV2=None, tgtV2=None, UseExisting=0):
+        for geom in [ face, srcV1, tgtV1, srcV2, tgtV2 ]:
+            self.AssureGeomPublished( geom )
         hyp = self.Hypothesis("ProjectionSource2D", [face,mesh,srcV1,tgtV1,srcV2,tgtV2],
                               UseExisting=0)
                               #UseExisting=UseExisting, CompareMethod=self.CompareSourceFace)
         hyp.SetSourceFace( face )
-        if not mesh is None and isinstance(mesh, Mesh):
+        if isinstance(mesh, Mesh):
             mesh = mesh.GetMesh()
         hyp.SetSourceMesh( mesh )
         hyp.SetVertexAssociation( srcV1, srcV2, tgtV1, tgtV2 )
@@ -5713,6 +5723,8 @@ class Mesh_Projection3D(Mesh_Algorithm):
     #  Note: association vertices must belong to one edge of a solid
     def SourceShape3D(self, solid, mesh=0, srcV1=0, tgtV1=0,
                       srcV2=0, tgtV2=0, UseExisting=0):
+        for geom in [ solid, srcV1, tgtV1, srcV2, tgtV2 ]:
+            self.AssureGeomPublished( geom )
         hyp = self.Hypothesis("ProjectionSource3D",
                               [solid,mesh,srcV1,tgtV1,srcV2,tgtV2],
                               UseExisting=0)
@@ -5973,6 +5985,8 @@ class Mesh_UseExistingElements(Mesh_Algorithm):
     def SourceEdges(self, groups, toCopyMesh=False, toCopyGroups=False, UseExisting=False):
         if self.algo.GetName() == "Import_2D":
             raise ValueError, "algoritm dimension mismatch"
+        for group in groups:
+            self.AssureGeomPublished( group )
         hyp = self.Hypothesis("ImportSource1D", [groups, toCopyMesh, toCopyGroups],
                               UseExisting=UseExisting, CompareMethod=self._compareHyp)
         hyp.SetSourceEdges(groups)
@@ -5988,6 +6002,8 @@ class Mesh_UseExistingElements(Mesh_Algorithm):
     def SourceFaces(self, groups, toCopyMesh=False, toCopyGroups=False, UseExisting=False):
         if self.algo.GetName() == "Import_1D":
             raise ValueError, "algoritm dimension mismatch"
+        for group in groups:
+            self.AssureGeomPublished( group )
         hyp = self.Hypothesis("ImportSource2D", [groups, toCopyMesh, toCopyGroups],
                               UseExisting=UseExisting, CompareMethod=self._compareHyp)
         hyp.SetSourceFaces(groups)
