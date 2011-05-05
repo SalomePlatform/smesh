@@ -5750,25 +5750,25 @@ bool SMESHGUI::renameObject( const QString& entry, const QString& name) {
       // check type to prevent renaming of inappropriate objects
       int aType = SMESHGUI_Selection::type( qPrintable(entry), aStudy );
       if (aType == MESH || aType == GROUP ||
-	  aType == SUBMESH || aType == SUBMESH_COMPOUND ||
-	  aType == SUBMESH_SOLID || aType == SUBMESH_FACE ||
-	  aType == SUBMESH_EDGE || aType == SUBMESH_VERTEX ||
-	  aType == HYPOTHESIS || aType == ALGORITHM) {
-	if ( !name.isEmpty() ) {
-	  SMESHGUI::GetSMESHGen()->SetName(obj->GetIOR().c_str(), qPrintable(name) );
-	  
-	  // update name of group object and its actor
-	  Handle(SALOME_InteractiveObject) IObject = 
-	    new SALOME_InteractiveObject ( qPrintable(entry), "SMESH", qPrintable(name) );
-	  
-	  SMESH::SMESH_GroupBase_var aGroupObject = SMESH::IObjectToInterface<SMESH::SMESH_GroupBase>(IObject);
-	  if( !aGroupObject->_is_nil() ) {
-	    aGroupObject->SetName( qPrintable(name) );
-	    if ( SMESH_Actor *anActor = SMESH::FindActorByEntry( qPrintable(entry) ) )
-	      anActor->setName( qPrintable(name) );
-	  }
-	  return true;
-	}
+          aType == SUBMESH || aType == SUBMESH_COMPOUND ||
+          aType == SUBMESH_SOLID || aType == SUBMESH_FACE ||
+          aType == SUBMESH_EDGE || aType == SUBMESH_VERTEX ||
+          aType == HYPOTHESIS || aType == ALGORITHM) {
+        if ( !name.isEmpty() ) {
+          SMESHGUI::GetSMESHGen()->SetName(obj->GetIOR().c_str(), qPrintable(name) );
+          
+          // update name of group object and its actor
+          Handle(SALOME_InteractiveObject) IObject = 
+            new SALOME_InteractiveObject ( qPrintable(entry), "SMESH", qPrintable(name) );
+          
+          SMESH::SMESH_GroupBase_var aGroupObject = SMESH::IObjectToInterface<SMESH::SMESH_GroupBase>(IObject);
+          if( !aGroupObject->_is_nil() ) {
+            aGroupObject->SetName( qPrintable(name) );
+            if ( SMESH_Actor *anActor = SMESH::FindActorByEntry( qPrintable(entry) ) )
+              anActor->setName( qPrintable(name) );
+          }
+          return true;
+        }
       }  
     }
   }
