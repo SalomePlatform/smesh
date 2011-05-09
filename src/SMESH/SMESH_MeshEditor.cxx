@@ -11159,7 +11159,7 @@ bool SMESH_MeshEditor::DoubleNodesOnGroupBoundaries( const std::vector<TIDSorted
           SMDS_MeshVolume *vol = grid->extrudeVolumeFromFace(vtkVolId, dom1, dom2, oldNodes, nodeDomains,
                                                              nodeQuadDomains);
           stringstream grpname;
-          grpname << "junction_";
+          grpname << "j_";
           if (dom1 < dom2)
             grpname << dom1 << "_" << dom2;
           else
@@ -11198,7 +11198,7 @@ bool SMESH_MeshEditor::DoubleNodesOnGroupBoundaries( const std::vector<TIDSorted
               SMDS_MeshVolume* vol = this->GetMeshDS()->AddVolumeFromVtkIds(orderedNodes);
 
               stringstream grpname;
-              grpname << "junction_";
+              grpname << "mj_";
               grpname << 0 << "_" << 0;
               int idg;
               string namegrp = grpname.str();
@@ -11330,6 +11330,8 @@ bool SMESH_MeshEditor::CreateFlatElementsOnFacesGroups(const std::vector<TIDSort
   std::map<const SMDS_MeshNode*, const SMDS_MeshNode*> intermediateNodes;
   clonedNodes.clear();
   intermediateNodes.clear();
+  std::map<std::string, SMESH_Group*> mapOfJunctionGroups;
+  mapOfJunctionGroups.clear();
 
   for (int idom = 0; idom < theElems.size(); idom++)
     {
@@ -11440,6 +11442,20 @@ bool SMESH_MeshEditor::CreateFlatElementsOnFacesGroups(const std::vector<TIDSort
             default:
               break;
           }
+
+          if (vol)
+            {
+              stringstream grpname;
+              grpname << "jf_";
+              grpname << idom;
+              int idg;
+              string namegrp = grpname.str();
+              if (!mapOfJunctionGroups.count(namegrp))
+                mapOfJunctionGroups[namegrp] = this->myMesh->AddGroup(SMDSAbs_Volume, namegrp.c_str(), idg);
+              SMESHDS_Group *sgrp = dynamic_cast<SMESHDS_Group*>(mapOfJunctionGroups[namegrp]->GetGroupDS());
+              if (sgrp)
+                sgrp->Add(vol->GetID());
+            }
 
           // --- modify the face
 
