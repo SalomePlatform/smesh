@@ -737,7 +737,7 @@
     </message>
     <message>
         <source>MEN_STD_INFO</source>
-        <translation>Informations du maillage</translation>
+        <translation>Informations sur le maillage</translation>
     </message>
     <message>
         <source>MEN_STL</source>
@@ -2729,7 +2729,7 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>STB_STD_INFO</source>
-        <translation>Informations du maillage</translation>
+        <translation>Informations sur le maillage</translation>
     </message>
     <message>
         <source>STB_SYM</source>
@@ -3285,7 +3285,7 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>TOP_STD_INFO</source>
-        <translation>Informations du maillage</translation>
+        <translation>Informations sur le maillage</translation>
     </message>
     <message>
         <source>TOP_SYM</source>
@@ -5727,11 +5727,11 @@ Il y a trop peu de points dans le fichier </translation>
     </message>
     <message>
         <source>TETRAHEDRONS_LAB</source>
-        <translation>Tétrahédrons:</translation>
+        <translation>Tétrahèdres:</translation>
     </message>
     <message>
         <source>HEXAHEDONRS_LAB</source>
-        <translation>Hexahédrons:</translation>
+        <translation>Hexahèdres:</translation>
     </message>
     <message>
         <source>PYRAMIDS_LAB</source>
@@ -5743,7 +5743,7 @@ Il y a trop peu de points dans le fichier </translation>
     </message>
     <message>
         <source>POLYHEDRONS_LAB</source>
-        <translation>Polyhédrons:</translation>
+        <translation>Polyhèdres:</translation>
     </message>
     <message>
         <source>OBJECT_MESH</source>
