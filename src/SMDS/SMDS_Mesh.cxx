@@ -95,7 +95,7 @@ int SMDS_Mesh::CheckMemory(const bool doNotRaise) throw (std::bad_alloc)
     if ( limit < 20 )
       limit = 20;
     else
-      limit = limit * 2;
+      limit = int ( limit * 1.5 );
     MESSAGE ( "SMDS_Mesh::CheckMemory() memory limit = " << limit << " MB" );
   }
 
