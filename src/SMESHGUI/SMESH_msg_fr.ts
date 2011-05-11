@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="iso-8859-1"?>
+<?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
 <TS version="2.0" language="fr_FR">
 <context>
@@ -69,11 +69,11 @@
     </message>
     <message>
         <source>COMPERR_BAD_INPUT_MESH</source>
-        <translation>Le maillage d&apos;entrée est invalide</translation>
+        <translation>Le maillage d&apos;entrÃ©e est invalide</translation>
     </message>
     <message>
         <source>COMPERR_BAD_SHAPE</source>
-        <translation>Géométrie inattendue</translation>
+        <translation>GÃ©omÃ©trie inattendue</translation>
     </message>
     <message>
         <source>COMPERR_EXCEPTION</source>
@@ -81,7 +81,7 @@
     </message>
     <message>
         <source>COMPERR_MEMORY_PB</source>
-        <translation>Problème d&apos;affectation de la mémoire</translation>
+        <translation>ProblÃ¨me d&apos;affectation de la mÃ©moire</translation>
     </message>
     <message>
         <source>COMPERR_OCC_EXCEPTION</source>
@@ -101,27 +101,27 @@
     </message>
     <message>
         <source>SMESH_GEOM</source>
-        <translation>Géométrie</translation>
+        <translation>GÃ©omÃ©trie</translation>
     </message>
     <message>
         <source>DIRECT_GEOM_SELECTION</source>
-        <translation>Sélection directe de la géométrie</translation>
+        <translation>SÃ©lection directe de la gÃ©omÃ©trie</translation>
     </message>
     <message>
         <source>ELEMENT_ID</source>
-        <translation>ID de l&apos;élément</translation>
+        <translation>ID de l&apos;Ã©lÃ©ment</translation>
     </message>
     <message>
         <source>FREE_BORDERS</source>
-        <translation>Frontières libres</translation>
+        <translation>FrontiÃ¨res libres</translation>
     </message>
     <message>
         <source>GEOMETRY_NAME</source>
-        <translation>Nom de la géométrie</translation>
+        <translation>Nom de la gÃ©omÃ©trie</translation>
     </message>
     <message>
         <source>GEOM_BY_MESH_ELEM_SELECTION</source>
-        <translation>Trouver la géométrie en choisissant l&apos;élément de maillage</translation>
+        <translation>Trouver la gÃ©omÃ©trie en choisissant l&apos;Ã©lÃ©ment de maillage</translation>
     </message>
     <message>
         <source>GLOBAL_ALGO</source>
@@ -145,11 +145,11 @@
     </message>
     <message>
         <source>MAX_ELEMENT_LENGTH_2D</source>
-        <translation>Diamètre d&apos;éléments 2D</translation>
+        <translation>DiamÃ¨tre d&apos;Ã©lÃ©ments 2D</translation>
     </message>
     <message>
         <source>MAX_ELEMENT_LENGTH_3D</source>
-        <translation>Diamètre d&apos;éléments 3D</translation>
+        <translation>DiamÃ¨tre d&apos;Ã©lÃ©ments 3D</translation>
     </message>
     <message>
         <source>MEN_ADD</source>
@@ -181,7 +181,7 @@
     </message>
     <message>
         <source>MEN_AUTO_UPD</source>
-        <translation>Mise à jour automatique</translation>
+        <translation>Mise Ã  jour automatique</translation>
     </message>
     <message>
         <source>MEN_BUILD_COMPOUND</source>
@@ -205,7 +205,7 @@
     </message>
     <message>
         <source>MEN_PRECOMPUTE</source>
-        <translation>Prévisualiser</translation>
+        <translation>PrÃ©visualiser</translation>
     </message>
     <message>
         <source>MEN_EVALUATE</source>
@@ -213,11 +213,11 @@
     </message>
     <message>
         <source>MEN_CONNECTION</source>
-        <translation>Frontières sur connections multiples</translation>
+        <translation>FrontiÃ¨res sur connections multiples</translation>
     </message>
     <message>
         <source>MEN_CONNECTION_2D</source>
-        <translation>Frontières sur connections multiples 2D</translation>
+        <translation>FrontiÃ¨res sur connections multiples 2D</translation>
     </message>
     <message>
         <source>MEN_CONSTRUCT_GROUP</source>
@@ -229,55 +229,55 @@
     </message>
     <message>
         <source>MEN_2D_FROM_3D</source>
-        <translation>Créer les éléments de frontière</translation>
+        <translation>CrÃ©er les Ã©lÃ©ments de frontiÃ¨re</translation>
     </message>
     <message>
         <source>MEN_MESH_ORDER</source>
-        <translation>Changer la priorité des sous-maillages</translation>
+        <translation>Changer la prioritÃ© des sous-maillages</translation>
     </message>
     <message>
         <source>MEN_CREATE_GROUP</source>
-        <translation>Créer un groupe</translation>
+        <translation>CrÃ©er un groupe</translation>
     </message>
     <message>
         <source>MEN_CREATE_GEO_GROUP</source>
-        <translation>Créer les groupes à partir de la géométrie</translation>
+        <translation>CrÃ©er les groupes Ã  partir de la gÃ©omÃ©trie</translation>
     </message>
     <message>
         <source>MEN_CREATE_MESH</source>
-        <translation>Créer un maillage</translation>
+        <translation>CrÃ©er un maillage</translation>
     </message>
     <message>
         <source>MEN_CREATE_SUBMESH</source>
-        <translation>Créer un sous-maillage</translation>
+        <translation>CrÃ©er un sous-maillage</translation>
     </message>
     <message>
         <source>MEN_CTRL</source>
-        <translation>Contrôles</translation>
+        <translation>ContrÃ´les</translation>
     </message>
     <message>
         <source>MEN_NODE_CTRL</source>
-        <translation>Contrôles des nÅ“uds</translation>
+        <translation>ContrÃ´les des noeuds</translation>
     </message>
     <message>
         <source>MEN_EDGE_CTRL</source>
-        <translation>Contrôles des arêtes</translation>
+        <translation>ContrÃ´les des arÃªtes</translation>
     </message>
     <message>
         <source>MEN_FACE_CTRL</source>
-        <translation>Contrôles des faces</translation>
+        <translation>ContrÃ´les des faces</translation>
     </message>
     <message>
         <source>MEN_VOLUME_CTRL</source>
-        <translation>Contrôles des volumes</translation>
+        <translation>ContrÃ´les des volumes</translation>
     </message>
     <message>
         <source>MEN_CUT</source>
-        <translation>Découpe des quadrangles</translation>
+        <translation>DÃ©coupe des quadrangles</translation>
     </message>
     <message>
         <source>MEN_CUT_GROUP</source>
-        <translation>Découpe des groupes</translation>
+        <translation>DÃ©coupe des groupes</translation>
     </message>
     <message>
         <source>MEN_DAT</source>
@@ -297,7 +297,7 @@
     </message>
     <message>
         <source>MEN_DISABLE_AUTO_COLOR</source>
-        <translation>Désactiver la couleur automatique</translation>
+        <translation>DÃ©sactiver la couleur automatique</translation>
     </message>
     <message>
         <source>MEN_DISPLAY_ONLY</source>
@@ -309,23 +309,23 @@
     </message>
     <message>
         <source>MEN_DISP_ENT</source>
-        <translation>Montrer l&apos;entité</translation>
+        <translation>Montrer l&apos;entitÃ©</translation>
     </message>
     <message>
         <source>MEN_ELEM0D</source>
-        <translation>Elément 0D</translation>
+        <translation>ElÃ©ment 0D</translation>
     </message>
     <message>
         <source>MEN_ELEMS0D</source>
-        <translation>Eléments 0D </translation>
+        <translation>ElÃ©ments 0D </translation>
     </message>
     <message>
         <source>MEN_EDGE</source>
-        <translation>Arête</translation>
+        <translation>ArÃªte</translation>
     </message>
     <message>
         <source>MEN_EDGES</source>
-        <translation>Arêtes</translation>
+        <translation>ArÃªtes</translation>
     </message>
     <message>
         <source>MEN_EDIT</source>
@@ -341,7 +341,7 @@
     </message>
     <message>
         <source>MEN_EDIT_HYPO</source>
-        <translation>Editer une hypothèse</translation>
+        <translation>Editer une hypothÃ¨se</translation>
     </message>
     <message>
         <source>MEN_EDIT_MESHSUBMESH</source>
@@ -389,23 +389,23 @@
     </message>
     <message>
         <source>MEN_FIND_ELEM</source>
-        <translation>Trouver un élément par un point</translation>
+        <translation>Trouver un Ã©lÃ©ment par un point</translation>
     </message>
     <message>
         <source>TOP_FIND_ELEM</source>
-        <translation>Trouver un élément par un point</translation>
+        <translation>Trouver un Ã©lÃ©ment par un point</translation>
     </message>
     <message>
         <source>STB_FIND_ELEM</source>
-        <translation>Trouver un élément par un point</translation>
+        <translation>Trouver un Ã©lÃ©ment par un point</translation>
     </message>
     <message>
         <source>MEN_BARE_BORDER_VOLUME</source>
-        <translation>Volumes avec éléments de peau 2D manquants</translation>
+        <translation>Volumes avec Ã©lÃ©ments de peau 2D manquants</translation>
     </message>
     <message>
         <source>MEN_BARE_BORDER_FACE</source>
-        <translation>Faces avec éléments de peau 1D manquants</translation>
+        <translation>Faces avec Ã©lÃ©ments de peau 1D manquants</translation>
     </message>
     <message>
         <source>MEN_OVER_CONSTRAINED_VOLUME</source>
@@ -417,15 +417,15 @@
     </message>
     <message>
         <source>MEN_FREE_BORDER</source>
-        <translation>Frontières libres</translation>
+        <translation>FrontiÃ¨res libres</translation>
     </message>
     <message>
         <source>MEN_FREE_EDGE</source>
-        <translation>Arêtes libres</translation>
+        <translation>ArÃªtes libres</translation>
     </message>
     <message>
         <source>MEN_FREE_NODE</source>
-        <translation>NÅ“uds libres</translation>
+        <translation>Noeuds libres</translation>
     </message>
     <message>
         <source>MEN_FREE_FACES</source>
@@ -433,11 +433,11 @@
     </message>
     <message>
         <source>MEN_GLOBAL_HYPO</source>
-        <translation>Hypothèse globale</translation>
+        <translation>HypothÃ¨se globale</translation>
     </message>
     <message>
         <source>MEN_HEXA</source>
-        <translation>Hexaèdre</translation>
+        <translation>HexaÃ¨dre</translation>
     </message>
     <message>
         <source>MEN_HIDE</source>
@@ -445,7 +445,7 @@
     </message>
     <message>
         <source>MEN_HYPO</source>
-        <translation>Hypothèses</translation>
+        <translation>HypothÃ¨ses</translation>
     </message>
     <message>
         <source>MEN_IMPORT</source>
@@ -473,11 +473,11 @@
     </message>
     <message>
         <source>MEN_MAX_ELEMENT_LENGTH_2D</source>
-        <translation>Diamètre des éléments 2D</translation>
+        <translation>DiamÃ¨tre des Ã©lÃ©ments 2D</translation>
     </message>
     <message>
         <source>MEN_MAX_ELEMENT_LENGTH_3D</source>
-        <translation>Diamètre des éléments 3D</translation>
+        <translation>DiamÃ¨tre des Ã©lÃ©ments 3D</translation>
     </message>
     <message>
         <source>MEN_MED</source>
@@ -489,11 +489,11 @@
     </message>
     <message>
         <source>MEN_MERGE</source>
-        <translation>Fusionner les nÅ“uds</translation>
+        <translation>Fusionner les noeuds</translation>
     </message>
     <message>
         <source>MEN_MERGE_ELEMENTS</source>
-        <translation>Fusionner les éléments</translation>
+        <translation>Fusionner les Ã©lÃ©ments</translation>
     </message>
     <message>
         <source>MEN_MESH</source>
@@ -501,7 +501,7 @@
     </message>
     <message>
         <source>MEN_MESH_THROU_POINT</source>
-        <translation>Déplacer un nÅ“ud</translation>
+        <translation>DÃ©placer un noeud</translation>
     </message>
     <message>
         <source>MEN_MIN_ANG</source>
@@ -529,7 +529,7 @@
     </message>
     <message>
         <source>MEN_MEASURE_BND_BOX</source>
-        <translation>Boîte englobante</translation>
+        <translation>BoÃ®te englobante</translation>
     </message>
     <message>
         <source>STB_MEASURE_BND_BOX</source>
@@ -541,27 +541,27 @@
     </message>
     <message>
         <source>MEN_MOVE</source>
-        <translation>Déplacer un nÅ“ud</translation>
+        <translation>DÃ©placer un noeud</translation>
     </message>
     <message>
         <source>MEN_NODE</source>
-        <translation>NÅ“ud</translation>
+        <translation>Noeud</translation>
     </message>
     <message>
         <source>MEN_NODES</source>
-        <translation>NÅ“uds</translation>
+        <translation>Noeuds</translation>
     </message>
     <message>
         <source>MEN_NUM</source>
-        <translation>Numérotation</translation>
+        <translation>NumÃ©rotation</translation>
     </message>
     <message>
         <source>MEN_NUM_ELEMENTS</source>
-        <translation>Montrer les n° des éléments</translation>
+        <translation>Montrer les nÃ‚Â° des Ã©lÃ©ments</translation>
     </message>
     <message>
         <source>MEN_NUM_NODES</source>
-        <translation>Montrer les n° des nÅ“uds</translation>
+        <translation>Montrer les nÃ‚Â° des noeuds</translation>
     </message>
     <message>
         <source>MEN_ORIENT</source>
@@ -573,15 +573,15 @@
     </message>
     <message>
         <source>MEN_POLYHEDRON</source>
-        <translation>Polyèdre</translation>
+        <translation>PolyÃ¨dre</translation>
     </message>
     <message>
         <source>MEN_PRECISION</source>
-        <translation>Précision</translation>
+        <translation>PrÃ©cision</translation>
     </message>
     <message>
         <source>MEN_PREF</source>
-        <translation>Préférences</translation>
+        <translation>PrÃ©fÃ©rences</translation>
     </message>
     <message>
         <source>MEN_QUAD</source>
@@ -589,15 +589,15 @@
     </message>
     <message>
         <source>MEN_QUADRATIC_EDGE</source>
-        <translation>Arête quadratique</translation>
+        <translation>ArÃªte quadratique</translation>
     </message>
     <message>
         <source>MEN_QUADRATIC_HEXAHEDRON</source>
-        <translation>Hexaèdre quadratique</translation>
+        <translation>HexaÃ¨dre quadratique</translation>
     </message>
     <message>
         <source>MEN_QUADRATIC_PENTAHEDRON</source>
-        <translation>Pentaèdre quadratique</translation>
+        <translation>PentaÃ¨dre quadratique</translation>
     </message>
     <message>
         <source>MEN_QUADRATIC_PYRAMID</source>
@@ -609,7 +609,7 @@
     </message>
     <message>
         <source>MEN_QUADRATIC_TETRAHEDRON</source>
-        <translation>Tetraèdre quadratique</translation>
+        <translation>TetraÃ¨dre quadratique</translation>
     </message>
     <message>
         <source>MEN_QUADRATIC_TRIANGLE</source>
@@ -617,7 +617,7 @@
     </message>
     <message>
         <source>MEN_QUALITY</source>
-        <translation>Contrôles de qualité</translation>
+        <translation>ContrÃ´les de qualitÃ©</translation>
     </message>
     <message>
         <source>MEN_REMOVE</source>
@@ -625,15 +625,15 @@
     </message>
     <message>
         <source>MEN_REMOVE_ELEMENTS</source>
-        <translation>Eléments</translation>
+        <translation>ElÃ©ments</translation>
     </message>
     <message>
         <source>MEN_REMOVE_NODES</source>
-        <translation>NÅ“uds</translation>
+        <translation>Noeuds</translation>
     </message>
     <message>
         <source>MEN_REMOVE_ORPHAN_NODES</source>
-        <translation>NÅ“uds orphelins</translation>
+        <translation>Noeuds orphelins</translation>
     </message>
     <message>
         <source>MEN_RENAME</source>
@@ -641,15 +641,15 @@
     </message>
     <message>
         <source>MEN_RENUM</source>
-        <translation>Renuméroter</translation>
+        <translation>RenumÃ©roter</translation>
     </message>
     <message>
         <source>MEN_RENUM_ELEMENTS</source>
-        <translation>Eléments</translation>
+        <translation>ElÃ©ments</translation>
     </message>
     <message>
         <source>MEN_RENUM_NODES</source>
-        <translation>NÅ“uds</translation>
+        <translation>Noeuds</translation>
     </message>
     <message>
         <source>MEN_RESET</source>
@@ -677,7 +677,7 @@
     </message>
     <message>
         <source>MEN_REVOLUTION</source>
-        <translation>Révolution</translation>
+        <translation>RÃ©volution</translation>
     </message>
     <message>
         <source>MEN_ROT</source>
@@ -689,15 +689,15 @@
     </message>
     <message>
         <source>MEN_SCALAR_BAR_PROP</source>
-        <translation>Propriétés de la barre scalaire</translation>
+        <translation>PropriÃ©tÃ©s de la barre scalaire</translation>
     </message>
     <message>
         <source>MEN_SELECTION</source>
-        <translation>Sélection</translation>
+        <translation>SÃ©lection</translation>
     </message>
     <message>
         <source>MEN_SEL_FILTER_LIB</source>
-        <translation>Librairie des filtres de sélection</translation>
+        <translation>Librairie des filtres de sÃ©lection</translation>
     </message>
     <message>
         <source>MEN_SEW</source>
@@ -745,15 +745,15 @@
     </message>
     <message>
         <source>MEN_SYM</source>
-        <translation>Symétrie</translation>
+        <translation>SymÃ©trie</translation>
     </message>
     <message>
         <source>MEN_TAPER</source>
-        <translation>Cône</translation>
+        <translation>CÃ´ne</translation>
     </message>
     <message>
         <source>MEN_TETRA</source>
-        <translation>Tétraèdre</translation>
+        <translation>TÃ©traÃ¨dre</translation>
     </message>
     <message>
         <source>MEN_TOOLS</source>
@@ -765,11 +765,11 @@
     </message>
     <message>
         <source>MEN_SCALE</source>
-        <translation>Transformation d&apos;échelle</translation>
+        <translation>Transformation d&apos;Ã©chelle</translation>
     </message>
     <message>
         <source>MEN_DUPLICATE_NODES</source>
-        <translation>Dupliquer les nÅ“uds</translation>
+        <translation>Dupliquer les noeuds</translation>
     </message>
     <message>
         <source>MEN_TRANSF</source>
@@ -785,7 +785,7 @@
     </message>
     <message>
         <source>MEN_UNASSIGN</source>
-        <translation>Désassocier</translation>
+        <translation>DÃ©sassocier</translation>
     </message>
     <message>
         <source>MEN_UNION</source>
@@ -805,11 +805,11 @@
     </message>
     <message>
         <source>MEN_UNDERLYING_ELEMS</source>
-        <translation>Groupe des entités sous-jacentes</translation>
+        <translation>Groupe des entitÃ©s sous-jacentes</translation>
     </message>
     <message>
         <source>MEN_UPDATE</source>
-        <translation>Mettre à jour</translation>
+        <translation>Mettre Ã  jour</translation>
     </message>
     <message>
         <source>MEN_VIEW</source>
@@ -825,11 +825,11 @@
     </message>
     <message>
         <source>MEN_WARP</source>
-        <translation>Angle de déformation</translation>
+        <translation>Angle de dÃ©formation</translation>
     </message>
     <message>
         <source>MEN_WHAT_IS</source>
-        <translation>Information sur un élément de maillage</translation>
+        <translation>Information sur un Ã©lÃ©ment de maillage</translation>
     </message>
     <message>
         <source>MEN_WIRE</source>
@@ -837,15 +837,15 @@
     </message>
     <message>
         <source>MEN_SPLIT_TO_TETRA</source>
-        <translation>Explosion en tétraèdres</translation>
+        <translation>Explosion en tÃ©traÃ¨dres</translation>
     </message>
     <message>
         <source>TOP_SPLIT_TO_TETRA</source>
-        <translation>Eclater en tétraèdres</translation>
+        <translation>Eclater en tÃ©traÃ¨dres</translation>
     </message>
     <message>
         <source>STB_SPLIT_TO_TETRA</source>
-        <translation>Eclater en tétraèdres</translation>
+        <translation>Eclater en tÃ©traÃ¨dres</translation>
     </message>
     <message>
         <source>MESHERS_FILE_CANT_OPEN</source>
@@ -853,24 +853,24 @@
     </message>
     <message>
         <source>MESHERS_FILE_CHECK_VARIABLE</source>
-        <translation>Vérifier la variable d&apos;environnement SMESH_MeshersList</translation>
+        <translation>VÃ©rifier la variable d&apos;environnement SMESH_MeshersList</translation>
     </message>
     <message>
         <source>MESHERS_FILE_NO_VARIABLE</source>
-        <translation>La variable d&apos;environnement  SMESH_MeshersList n&apos;est pas définie</translation>
+        <translation>La variable d&apos;environnement  SMESH_MeshersList n&apos;est pas dÃ©finie</translation>
     </message>
     <message>
         <source>MESH_IS_NOT_SELECTED</source>
-        <translation>Il n&apos;y a pas de maillage sélectionné.
+        <translation>Il n&apos;y a pas de maillage sÃ©lectionnÃ©.
 Choisissez un maillage et essayez de nouveau</translation>
     </message>
     <message>
         <source>MESH_NODE</source>
-        <translation>NÅ“ud</translation>
+        <translation>Noeud</translation>
     </message>
     <message>
         <source>MESH_NODE_TITLE</source>
-        <translation>Ajouter un nÅ“ud</translation>
+        <translation>Ajouter un noeud</translation>
     </message>
     <message>
         <source>MINIMUMANGLE_ELEMENTS</source>
@@ -878,33 +878,33 @@ Choisissez un maillage et essayez de nouveau</translation>
     </message>
     <message>
         <source>MULTI2D_BORDERS</source>
-        <translation>Frontières sur multi-connections 2D</translation>
+        <translation>FrontiÃ¨res sur multi-connections 2D</translation>
     </message>
     <message>
         <source>MULTI_BORDERS</source>
-        <translation>Frontières sur multi-connections</translation>
+        <translation>FrontiÃ¨res sur multi-connections</translation>
     </message>
     <message>
         <source>GROUP_NAME_IS_EMPTY</source>
-        <translation>Le nom du groupe n&apos;est pas indiqué.
-Indiquez le nom d&apos;un nouveau groupe à créer ou choisissez un groupe existant.</translation>
+        <translation>Le nom du groupe n&apos;est pas indiquÃ©.
+Indiquez le nom d&apos;un nouveau groupe Ã  crÃ©er ou choisissez un groupe existant.</translation>
     </message>
     <message>
         <source>MESH_STANDALONE_GRP_CHOSEN</source>
-        <translation>Un groupe lié à la géométrie est choisi: %1.
+        <translation>Un groupe liÃ© Ã  la gÃ©omÃ©trie est choisi: %1.
 Voulez-vous le convertir en un groupe autonome ?</translation>
     </message>
     <message>
         <source>NODE_ID</source>
-        <translation>ID du nÅ“ud</translation>
+        <translation>ID du noeud</translation>
     </message>
     <message>
         <source>NON_SMESH_OBJECTS_SELECTED</source>
-        <translation>Certains objets sélectionnés n&apos;appartiennent pas au composant %1.</translation>
+        <translation>Certains objets sÃ©lectionnÃ©s n&apos;appartiennent pas au composant %1.</translation>
     </message>
     <message>
         <source>PREVIEW</source>
-        <translation>Prévisualiser</translation>
+        <translation>PrÃ©visualiser</translation>
     </message>
     <message>
         <source>SKEW_ELEMENTS</source>
@@ -912,7 +912,7 @@ Voulez-vous le convertir en un groupe autonome ?</translation>
     </message>
     <message>
         <source>SMESHGUI_INVALID_PARAMETERS</source>
-        <translation>Les paramètres spécifiés ne sont pas corrects.
+        <translation>Les paramÃ¨tres spÃ©cifiÃ©s ne sont pas corrects.
 Merci de les corriger, puis essayez de nouveau</translation>
     </message>
     <message>
@@ -925,39 +925,39 @@ Merci de les corriger, puis essayez de nouveau</translation>
     </message>
     <message>
         <source>SMESH_ADD_ELEM0D</source>
-        <translation>Ajouter un élément 0D</translation>
+        <translation>Ajouter un Ã©lÃ©ment 0D</translation>
     </message>
     <message>
         <source>SMESH_ADD_ELEM0D_TITLE</source>
-        <translation>Ajouter un élément 0D</translation>
+        <translation>Ajouter un Ã©lÃ©ment 0D</translation>
     </message>
     <message>
         <source>SMESH_ADD_EDGE</source>
-        <translation>Ajouter une arête</translation>
+        <translation>Ajouter une arÃªte</translation>
     </message>
     <message>
         <source>SMESH_ADD_EDGE_TITLE</source>
-        <translation>Ajouter une arête</translation>
+        <translation>Ajouter une arÃªte</translation>
     </message>
     <message>
         <source>SMESH_ADD_HEXAS</source>
-        <translation>Ajouter un hexaèdre</translation>
+        <translation>Ajouter un hexaÃ¨dre</translation>
     </message>
     <message>
         <source>SMESH_ADD_HEXAS_TITLE</source>
-        <translation>Ajouter un hexahèdre</translation>
+        <translation>Ajouter un hexahÃ¨dre</translation>
     </message>
     <message>
         <source>SMESH_ADD_HYPOTHESIS</source>
-        <translation>Hypothèse</translation>
+        <translation>HypothÃ¨se</translation>
     </message>
     <message>
         <source>SMESH_ADD_HYPOTHESIS_TITLE</source>
-        <translation>Attrbution d&apos;une hypothèse</translation>
+        <translation>Attrbution d&apos;une hypothÃ¨se</translation>
     </message>
     <message>
         <source>SMESH_ADD_HYP_WRN</source>
-        <translation>&quot;%1&quot; est attribué, mais:
+        <translation>&quot;%1&quot; est attribuÃ©, mais:
         </translation>
     </message>
     <message>
@@ -978,15 +978,15 @@ Merci de les corriger, puis essayez de nouveau</translation>
     </message>
     <message>
         <source>SMESH_ADD_QUADRATIC_EDGE_TITLE</source>
-        <translation>Ajouter une arête quadratique</translation>
+        <translation>Ajouter une arÃªte quadratique</translation>
     </message>
     <message>
         <source>SMESH_ADD_QUADRATIC_HEXAHEDRON_TITLE</source>
-        <translation>Ajouter un hexaèdre quadratique</translation>
+        <translation>Ajouter un hexaÃ¨dre quadratique</translation>
     </message>
     <message>
         <source>SMESH_ADD_QUADRATIC_PENTAHEDRON_TITLE</source>
-        <translation>Ajouter un pentaèdre quadratique</translation>
+        <translation>Ajouter un pentaÃ¨dre quadratique</translation>
     </message>
     <message>
         <source>SMESH_ADD_QUADRATIC_PYRAMID_TITLE</source>
@@ -998,7 +998,7 @@ Merci de les corriger, puis essayez de nouveau</translation>
     </message>
     <message>
         <source>SMESH_ADD_QUADRATIC_TETRAHEDRON_TITLE</source>
-        <translation>Ajouter un tétraèdre quadratique</translation>
+        <translation>Ajouter un tÃ©traÃ¨dre quadratique</translation>
     </message>
     <message>
         <source>SMESH_ADD_QUADRATIC_TRIANGLE_TITLE</source>
@@ -1010,15 +1010,15 @@ Merci de les corriger, puis essayez de nouveau</translation>
     </message>
     <message>
         <source>SMESH_ADD_TETRAS</source>
-        <translation>Ajouter un tétraèdre</translation>
+        <translation>Ajouter un tÃ©traÃ¨dre</translation>
     </message>
     <message>
         <source>SMESH_ADD_TETRAS_TITLE</source>
-        <translation>Ajouter un tétraèdre</translation>
+        <translation>Ajouter un tÃ©traÃ¨dre</translation>
     </message>
     <message>
         <source>SMESH_ADD_TO_GROUP</source>
-        <translation>Ajouter à un groupe</translation>
+        <translation>Ajouter Ã  un groupe</translation>
     </message>
     <message>
         <source>SMESH_ADD_TRIANGLE</source>
@@ -1038,7 +1038,7 @@ Merci de les corriger, puis essayez de nouveau</translation>
     </message>
     <message>
         <source>SMESH_AUTO_GROUPS</source>
-        <translation>Créer les groupes automatiquement</translation>
+        <translation>CrÃ©er les groupes automatiquement</translation>
     </message>
     <message>
         <source>SMESH_AVAILABLE</source>
@@ -1050,7 +1050,7 @@ Merci de les corriger, puis essayez de nouveau</translation>
     </message>
     <message>
         <source>SMESH_AVAILABLE_HYPOTHESES</source>
-        <translation>Hypothèses disponibles</translation>
+        <translation>HypothÃ¨ses disponibles</translation>
     </message>
     <message>
         <source>SMESH_AXIS</source>
@@ -1058,19 +1058,19 @@ Merci de les corriger, puis essayez de nouveau</translation>
     </message>
     <message>
         <source>SMESH_BAD_SELECTION</source>
-        <translation>Pas de sélection valide</translation>
+        <translation>Pas de sÃ©lection valide</translation>
     </message>
     <message>
         <source>SMESH_BAD_MESH_SELECTION</source>
-        <translation>La sélection du maillage n&apos;est pas valide</translation>
+        <translation>La sÃ©lection du maillage n&apos;est pas valide</translation>
     </message>
     <message>
         <source>SMESH_BOUNDARYEDGES</source>
-        <translation>Arêtes frontières</translation>
+        <translation>ArÃªtes frontiÃ¨res</translation>
     </message>
     <message>
         <source>SMESH_BUILD_COMPOUND_TITLE</source>
-        <translation>Créer un assemblage</translation>
+        <translation>CrÃ©er un assemblage</translation>
     </message>
     <message>
         <source>SMESH_COPY_MESH_TITLE</source>
@@ -1078,7 +1078,7 @@ Merci de les corriger, puis essayez de nouveau</translation>
     </message>
     <message>
         <source>SMESH_KEEP_IDS</source>
-        <translation>Conserver les IDs des éléments</translation>
+        <translation>Conserver les IDs des Ã©lÃ©ments</translation>
     </message>
     <message>
         <source>SMESH_BUT_ADD</source>
@@ -1098,7 +1098,7 @@ Merci de les corriger, puis essayez de nouveau</translation>
     </message>
     <message>
         <source>SMESH_BUT_CREATE</source>
-        <translation>&amp;Créer</translation>
+        <translation>&amp;CrÃ©er</translation>
     </message>
     <message>
         <source>SMESH_BUT_DELETE</source>
@@ -1106,7 +1106,7 @@ Merci de les corriger, puis essayez de nouveau</translation>
     </message>
     <message>
         <source>SMESH_BUT_FILTER</source>
-        <translation>Définir les fil&amp;tres</translation>
+        <translation>DÃ©finir les fil&amp;tres</translation>
     </message>
     <message>
         <source>SMESH_BUT_HELP</source>
@@ -1126,7 +1126,7 @@ Merci de les corriger, puis essayez de nouveau</translation>
     </message>
     <message>
         <source>SMESH_BUT_OVERWRITE</source>
-        <translation>Réécr&amp;ire</translation>
+        <translation>RÃ©Ã©cr&amp;ire</translation>
     </message>
     <message>
         <source>SMESH_BUT_APPLY_AND_CLOSE</source>
@@ -1151,7 +1151,7 @@ Merci de les corriger, puis essayez de nouveau</translation>
     </message>
     <message>
         <source>SMESH_CANT_RM_HYP</source>
-        <translation>Impossible de désassigner &quot;%1&quot;:
+        <translation>Impossible de dÃ©sassigner &quot;%1&quot;:
 </translation>
     </message>
     <message>
@@ -1172,11 +1172,11 @@ Merci de les corriger, puis essayez de nouveau</translation>
     </message>
     <message>
         <source>SMESH_COMPUTE_SUCCEED</source>
-        <translation>Le calcul du maillage a réussi</translation>
+        <translation>Le calcul du maillage a rÃ©ussi</translation>
     </message>
     <message>
         <source>SMESH_EVALUATE_SUCCEED</source>
-        <translation>L&apos;évaluation du maillage a réussi</translation>
+        <translation>L&apos;Ã©valuation du maillage a rÃ©ussi</translation>
     </message>
     <message>
         <source>SMESH_CONTENT</source>
@@ -1184,16 +1184,16 @@ Merci de les corriger, puis essayez de nouveau</translation>
     </message>
     <message>
         <source>SMESH_CONTINUE_MESH_VISUALIZATION</source>
-        <translation>La système semble manquer de mémoire pour visualiser le maillage,
+        <translation>La systÃ¨me semble manquer de mÃ©moire pour visualiser le maillage,
 ce qui peut faire planter l&apos;application. Voulez-vous continuer la visualisation ?</translation>
     </message>
     <message>
         <source>SMESH_COORDINATES</source>
-        <translation>Coordonnées</translation>
+        <translation>CoordonnÃ©es</translation>
     </message>
     <message>
         <source>SMESH_COPY_ELEMENTS</source>
-        <translation>Copier les éléments</translation>
+        <translation>Copier les Ã©lÃ©ments</translation>
     </message>
     <message>
         <source>SMESH_COPY_GROUPS</source>
@@ -1201,31 +1201,31 @@ ce qui peut faire planter l&apos;application. Voulez-vous continuer la visualisa
     </message>
     <message>
         <source>SMESH_CREATE_ALGORITHMS</source>
-        <translation>Créer les algorithmes</translation>
+        <translation>CrÃ©er les algorithmes</translation>
     </message>
     <message>
         <source>SMESH_CREATE_COPY</source>
-        <translation>Créer une copie</translation>
+        <translation>CrÃ©er une copie</translation>
     </message>
     <message>
         <source>SMESH_CREATE_GROUP_TITLE</source>
-        <translation>Créer un groupe</translation>
+        <translation>CrÃ©er un groupe</translation>
     </message>
     <message>
         <source>SMESH_CREATE_GEO_GROUP</source>
-        <translation>Créer les groupes liés à la géométrie</translation>
+        <translation>CrÃ©er les groupes liÃ©s Ã  la gÃ©omÃ©trie</translation>
     </message>
     <message>
         <source>SMESH_CREATE_HYPOTHESES</source>
-        <translation>Créer une hypothèse</translation>
+        <translation>CrÃ©er une hypothÃ¨se</translation>
     </message>
     <message>
         <source>SMESH_CREATE_MESH</source>
-        <translation>Créer un nouveau maillage</translation>
+        <translation>CrÃ©er un nouveau maillage</translation>
     </message>
     <message>
         <source>SMESH_CREATE_POLYHEDRAL_VOLUME_TITLE</source>
-        <translation>Créer un volume polyèdrique</translation>
+        <translation>CrÃ©er un volume polyÃ¨drique</translation>
     </message>
     <message>
         <source>SMESH_DIAGONAL</source>
@@ -1245,19 +1245,19 @@ ce qui peut faire planter l&apos;application. Voulez-vous continuer la visualisa
     </message>
     <message>
         <source>SMESH_DRS_2</source>
-        <translation>Le fichier MED contient des rangées de nombre d&apos;éléments superposées, donc les nombres de ce fichier ne sont pas pris en compte</translation>
+        <translation>Le fichier MED contient des rangÃ©es de nombre d&apos;Ã©lÃ©ments superposÃ©es, donc les nombres de ce fichier ne sont pas pris en compte</translation>
     </message>
     <message>
         <source>SMESH_DRS_3</source>
-        <translation>Quelques éléments ont été omis à cause du fichier de données incorrect</translation>
+        <translation>Quelques Ã©lÃ©ments ont Ã©tÃ© omis Ã  cause du fichier de donnÃ©es incorrect</translation>
     </message>
     <message>
         <source>SMESH_DRS_4</source>
-        <translation>Le fichier n&apos;est pas correct, des données sont manquantes</translation>
+        <translation>Le fichier n&apos;est pas correct, des donnÃ©es sont manquantes</translation>
     </message>
     <message>
         <source>SMESH_DRS_EMPTY</source>
-        <translation>Le fichier est vide, il n&apos;y a rien à publier</translation>
+        <translation>Le fichier est vide, il n&apos;y a rien Ã  publier</translation>
     </message>
     <message>
         <source>SMESH_DX</source>
@@ -1273,15 +1273,15 @@ ce qui peut faire planter l&apos;application. Voulez-vous continuer la visualisa
     </message>
     <message>
         <source>SMESH_ELEM0D</source>
-        <translation>Elément 0D</translation>
+        <translation>ElÃ©ment 0D</translation>
     </message>
     <message>
         <source>SMESH_EDGE</source>
-        <translation>Arête</translation>
+        <translation>ArÃªte</translation>
     </message>
     <message>
         <source>SMESH_EDGES_CONNECTIVITY_TITLE</source>
-        <translation>Connectivité des arêtes</translation>
+        <translation>ConnectivitÃ© des arÃªtes</translation>
     </message>
     <message>
         <source>SMESH_EDIT_GROUP_TITLE</source>
@@ -1293,27 +1293,27 @@ ce qui peut faire planter l&apos;application. Voulez-vous continuer la visualisa
     </message>
     <message>
         <source>SMESH_EDIT_HYPOTHESES</source>
-        <translation>Attribuer les hypothèses</translation>
+        <translation>Attribuer les hypothÃ¨ses</translation>
     </message>
     <message>
         <source>SMESH_EDIT_USED</source>
-        <translation>Utilisé</translation>
+        <translation>UtilisÃ©</translation>
     </message>
     <message>
         <source>SMESH_ELEMENTS</source>
-        <translation>Eléments</translation>
+        <translation>ElÃ©ments</translation>
     </message>
     <message>
         <source>SMESH_ELEMENTS_COLOR</source>
-        <translation>Couleur des éléments du maillage</translation>
+        <translation>Couleur des Ã©lÃ©ments du maillage</translation>
     </message>
     <message>
         <source>SMESH_ELEMENTS_TYPE</source>
-        <translation>Type des éléments</translation>
+        <translation>Type des Ã©lÃ©ments</translation>
     </message>
     <message>
         <source>SMESH_ELEMENT_TYPE</source>
-        <translation>Type de l&apos;élément</translation>
+        <translation>Type de l&apos;Ã©lÃ©ment</translation>
     </message>
     <message>
         <source>SMESH_ERROR</source>
@@ -1321,46 +1321,46 @@ ce qui peut faire planter l&apos;application. Voulez-vous continuer la visualisa
     </message>
     <message>
         <source>SMESH_ERR_SCALARBAR_PARAMS</source>
-        <translation>Avertissement! Les paramètres ne sont pas corrects</translation>
+        <translation>Avertissement! Les paramÃ¨tres ne sont pas corrects</translation>
     </message>
     <message>
         <source>SMESH_EXPORT_FAILED</source>
         <translation>Impossible d&apos;exporter le maillage.
-Vérifiez l&apos;espace disponible sur le disque.</translation>
+VÃ©rifiez l&apos;espace disponible sur le disque.</translation>
     </message>
     <message>
         <source>SMESH_EXPORT_MED_DUPLICATED_GRP</source>
-        <translation>Il y a des noms de groupes dupliqués dans le maillage &quot;%1&quot;.
+        <translation>Il y a des noms de groupes dupliquÃ©s dans le maillage &quot;%1&quot;.
 Vous pouvez annuler l&apos;exportation et les renommer,
-si non des noms de groupes au fichier MED résultant
-ne correspondront pas aux noms de l&apos;étude.
+si non des noms de groupes au fichier MED rÃ©sultant
+ne correspondront pas aux noms de l&apos;Ã©tude.
 Voulez-vous continuer ?</translation>
     </message>
     <message>
         <source>SMESH_EXPORT_MED_DUPLICATED_MESH_NAMES</source>
-        <translation>Il y a des maillages avec les mêmes noms dans la sélection.
-Il est possible que le fichier résultant soit incorrect.
+        <translation>Il y a des maillages avec les mÃªmes noms dans la sÃ©lection.
+Il est possible que le fichier rÃ©sultant soit incorrect.
 Voulez-vous continuer ?</translation>
     </message>
     <message>
         <source>SMESH_EXPORT_MED_V2_1</source>
-        <translation>Les éléments polygonaux et polyèdriques seront omis 
-dans le cas d&apos;exportation du maillage &quot;%1&quot; à MED 2.1
+        <translation>Les Ã©lÃ©ments polygonaux et polyÃ¨driques seront omis 
+dans le cas d&apos;exportation du maillage &quot;%1&quot; Ã  MED 2.1
 Utilisez MED 2.2 pour l&apos;exportation correcte.
-Voulez-vous effectuer l&apos;exportation à MED 2.1 ?</translation>
+Voulez-vous effectuer l&apos;exportation Ã  MED 2.1 ?</translation>
     </message>
     <message>
         <source>SMESH_EXPORT_MED_VERSION_COLLISION</source>
         <translation>La version MED du fichier &quot;%1&quot; n&apos;est pas connue 
-ou ne correspond pas à la version choisie.
-Réécrire le fichier ?</translation>
+ou ne correspond pas Ã  la version choisie.
+RÃ©Ã©crire le fichier ?</translation>
     </message>
     <message>
         <source>SMESH_EXPORT_MED_MESH_NAMES_COLLISION</source>
-        <translation>Le fichier choisi contient déjà
+        <translation>Le fichier choisi contient dÃ©jÃ 
 les maillages avec les noms suivants: %1
-Il est possible que le fichier résultant ne soit pas correct.
-Réécrire le fichier ?</translation>
+Il est possible que le fichier rÃ©sultant ne soit pas correct.
+RÃ©Ã©crire le fichier ?</translation>
     </message>
     <message>
         <source>SMESH_EXPORT_STL1</source>
@@ -1368,11 +1368,11 @@ Réécrire le fichier ?</translation>
     </message>
     <message>
         <source>SMESH_EXPORT_STL2</source>
-        <translation>Le maillage - &quot;%1&quot; contient d&apos;autres éléments que les triangles, ils ne seront donc pas enregistrés dans le fichier STL</translation>
+        <translation>Le maillage - &quot;%1&quot; contient d&apos;autres Ã©lÃ©ments que les triangles, ils ne seront donc pas enregistrÃ©s dans le fichier STL</translation>
     </message>
     <message>
         <source>SMESH_EXPORT_UNV</source>
-        <translation>Les éléments pyramides seront omis au cours de l&apos;exportation 
+        <translation>Les Ã©lÃ©ments pyramides seront omis au cours de l&apos;exportation 
 du maillage &quot;%1&quot; dans le fichier UNV</translation>
     </message>
     <message>
@@ -1397,13 +1397,13 @@ du maillage &quot;%1&quot; dans le fichier UNV</translation>
     </message>
     <message>
         <source>SMESH_FEATUREEDGES</source>
-        <translation>Montrer les arêtes</translation>
+        <translation>Montrer les arÃªtes</translation>
     </message>
     <message>
         <source>SMESH_FILE_EXISTS</source>
-        <translation>Le fichier &quot;%1&quot; existe déjà.
-Voulez-vous le réécrire ou y ajouter 
-les données exportées ?</translation>
+        <translation>Le fichier &quot;%1&quot; existe dÃ©jÃ .
+Voulez-vous le rÃ©Ã©crire ou y ajouter 
+les donnÃ©es exportÃ©es ?</translation>
     </message>
     <message>
         <source>SMESH_FONT_ARIAL</source>
@@ -1435,7 +1435,7 @@ les données exportées ?</translation>
     </message>
     <message>
         <source>SMESH_GEOM_GROUP</source>
-        <translation>Groupe géométrique</translation>
+        <translation>Groupe gÃ©omÃ©trique</translation>
     </message>
     <message>
         <source>SMESH_GROUP</source>
@@ -1443,7 +1443,7 @@ les données exportées ?</translation>
     </message>
     <message>
         <source>SMESH_GROUP_GEOMETRY</source>
-        <translation>Groupe lié à la géométrie</translation>
+        <translation>Groupe liÃ© Ã  la gÃ©omÃ©trie</translation>
     </message>
     <message>
         <source>SMESH_GROUP_SELECTED</source>
@@ -1463,11 +1463,11 @@ les données exportées ?</translation>
     </message>
     <message>
         <source>SMESH_HEXAS</source>
-        <translation>Hexaèdre</translation>
+        <translation>HexaÃ¨dre</translation>
     </message>
     <message>
         <source>SMESH_HILIGHT_COLOR</source>
-        <translation>Couleur de sélection</translation>
+        <translation>Couleur de sÃ©lection</translation>
     </message>
     <message>
         <source>SMESH_HORIZONTAL</source>
@@ -1475,68 +1475,68 @@ les données exportées ?</translation>
     </message>
     <message>
         <source>SMESH_HYPOTHESES</source>
-        <translation>Hypothèses</translation>
+        <translation>HypothÃ¨ses</translation>
     </message>
     <message>
         <source>SMESH_HYP_1</source>
-        <translation>Il manque une hypothèse à l&apos;algorithme</translation>
+        <translation>Il manque une hypothÃ¨se Ã  l&apos;algorithme</translation>
     </message>
     <message>
         <source>SMESH_HYP_10</source>
-        <translation>L&apos;hypothèse ne correspond pas aux dimensions du sous-maillage</translation>
+        <translation>L&apos;hypothÃ¨se ne correspond pas aux dimensions du sous-maillage</translation>
     </message>
     <message>
         <source>SMESH_HYP_11</source>
-        <translation>La géométrie n&apos;est ni la géométrie principale, ni un de ses sous-objets, ni un groupe valide</translation>
+        <translation>La gÃ©omÃ©trie n&apos;est ni la gÃ©omÃ©trie principale, ni un de ses sous-objets, ni un groupe valide</translation>
     </message>
     <message>
         <source>SMESH_HYP_12</source>
-        <translation>La géométrie ne correspond pas à l&apos;algorithme
-Référez-vous à la documentation sur l&apos;algorithme et la géométrie supportée</translation>
+        <translation>La gÃ©omÃ©trie ne correspond pas Ã  l&apos;algorithme
+RÃ©fÃ©rez-vous Ã  la documentation sur l&apos;algorithme et la gÃ©omÃ©trie supportÃ©e</translation>
     </message>
     <message>
         <source>SMESH_HYP_13</source>
-        <translation>L&apos;algorithme ne peut pas opérer sans géométrie</translation>
+        <translation>L&apos;algorithme ne peut pas opÃ©rer sans gÃ©omÃ©trie</translation>
     </message>
     <message>
         <source>SMESH_HYP_2</source>
-        <translation>Il y a des hypothèses concurrentes sur la géométrie</translation>
+        <translation>Il y a des hypothÃ¨ses concurrentes sur la gÃ©omÃ©trie</translation>
     </message>
     <message>
         <source>SMESH_HYP_3</source>
-        <translation>L&apos;hypothèse contient une valeur de paramètre incorrecte</translation>
+        <translation>L&apos;hypothÃ¨se contient une valeur de paramÃ¨tre incorrecte</translation>
     </message>
     <message>
         <source>SMESH_HYP_4</source>
-        <translation>Le sous-maillage n&apos;est pas pris en compte parce qu&apos;il y a un algorithme de dimension supérieure pour générer les éléments %1D</translation>
+        <translation>Le sous-maillage n&apos;est pas pris en compte parce qu&apos;il y a un algorithme de dimension supÃ©rieure pour gÃ©nÃ©rer les Ã©lÃ©ments %1D</translation>
     </message>
     <message>
         <source>SMESH_HYP_5</source>
-        <translation>L&apos;algorithme l&apos;emporte sur les algorithme(s) de dimensions inférieures en générant les éléments de toutes les dimensions</translation>
+        <translation>L&apos;algorithme l&apos;emporte sur les algorithme(s) de dimensions infÃ©rieures en gÃ©nÃ©rant les Ã©lÃ©ments de toutes les dimensions</translation>
     </message>
     <message>
         <source>SMESH_HYP_6</source>
-        <translation>Erreur critique inconnue lors de la définition de l&apos;hypothèse</translation>
+        <translation>Erreur critique inconnue lors de la dÃ©finition de l&apos;hypothÃ¨se</translation>
     </message>
     <message>
         <source>SMESH_HYP_7</source>
-        <translation>L&apos;hypothèse ne correspond pas à la situation actuelle</translation>
+        <translation>L&apos;hypothÃ¨se ne correspond pas Ã  la situation actuelle</translation>
     </message>
     <message>
         <source>SMESH_HYP_8</source>
-        <translation>Un maillage non-conforme a été produit avec les hypothèses appliquées</translation>
+        <translation>Un maillage non-conforme a Ã©tÃ© produit avec les hypothÃ¨ses appliquÃ©es</translation>
     </message>
     <message>
         <source>SMESH_HYP_9</source>
-        <translation>L&apos;hypothèse d&apos;une telle dimension est déjà attribuée à la géométrie</translation>
+        <translation>L&apos;hypothÃ¨se d&apos;une telle dimension est dÃ©jÃ  attribuÃ©e Ã  la gÃ©omÃ©trie</translation>
     </message>
     <message>
         <source>SMESH_ID_DIAGONAL</source>
-        <translation>IDs des arêtes</translation>
+        <translation>IDs des arÃªtes</translation>
     </message>
     <message>
         <source>SMESH_ID_ELEMENTS</source>
-        <translation>IDs des éléments</translation>
+        <translation>IDs des Ã©lÃ©ments</translation>
     </message>
     <message>
         <source>SMESH_ID_FACES</source>
@@ -1544,11 +1544,11 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie supportée<
     </message>
     <message>
         <source>SMESH_ID_NODES</source>
-        <translation>IDs des nÅ“uds</translation>
+        <translation>IDs des noeuds</translation>
     </message>
     <message>
         <source>SMESH_INCORRECT_INPUT</source>
-        <translation>Les données d&apos;entrée ne sont pas correctes</translation>
+        <translation>Les donnÃ©es d&apos;entrÃ©e ne sont pas correctes</translation>
     </message>
     <message>
         <source>SMESH_INFORMATION</source>
@@ -1564,7 +1564,7 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie supportée<
     </message>
     <message>
         <source>SMESH_INSUFFICIENT_DATA</source>
-        <translation>La valeur d&apos;entrée n&apos;est pas suffisante</translation>
+        <translation>La valeur d&apos;entrÃ©e n&apos;est pas suffisante</translation>
     </message>
     <message>
         <source>SMESH_LABELS</source>
@@ -1572,7 +1572,7 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie supportée<
     </message>
     <message>
         <source>SMESH_LABELS_COLORS_SCALARBAR</source>
-        <translation>Couleurs &amp;&amp; étiquettes</translation>
+        <translation>Couleurs &amp;&amp; Ã©tiquettes</translation>
     </message>
     <message>
         <source>SMESH_LENGTH</source>
@@ -1580,11 +1580,11 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie supportée<
     </message>
     <message>
         <source>SMESH_MAKE_GROUPS</source>
-        <translation>Générer les groupes</translation>
+        <translation>GÃ©nÃ©rer les groupes</translation>
     </message>
     <message>
         <source>SMESH_MANIFOLDEDGES</source>
-        <translation>Arêtes partagées</translation>
+        <translation>ArÃªtes partagÃ©es</translation>
     </message>
     <message>
         <source>SMESH_MAX</source>
@@ -1596,11 +1596,11 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie supportée<
     </message>
     <message>
         <source>SMESH_MEN_APPLIED_ALGORIHTMS</source>
-        <translation>Algorithmes appliqués</translation>
+        <translation>Algorithmes appliquÃ©s</translation>
     </message>
     <message>
         <source>SMESH_MEN_APPLIED_HYPOTHESIS</source>
-        <translation>Hypothèses appliquées</translation>
+        <translation>HypothÃ¨ses appliquÃ©es</translation>
     </message>
     <message>
         <source>SMESH_MEN_COMPONENT</source>
@@ -1608,7 +1608,7 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie supportée<
     </message>
     <message>
         <source>SMESH_MEN_HYPOTHESIS</source>
-        <translation>Hypothèses</translation>
+        <translation>HypothÃ¨ses</translation>
     </message>
     <message>
         <source>SMESH_MEN_SubMeshesOnCompound</source>
@@ -1616,7 +1616,7 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie supportée<
     </message>
     <message>
         <source>SMESH_MEN_SubMeshesOnEdge</source>
-        <translation>Sous-maillages sur une arête</translation>
+        <translation>Sous-maillages sur une arÃªte</translation>
     </message>
     <message>
         <source>SMESH_MEN_SubMeshesOnFace</source>
@@ -1640,7 +1640,7 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie supportée<
     </message>
     <message>
         <source>SMESH_MERGE_ELEMENTS</source>
-        <translation>Fusionner les éléments</translation>
+        <translation>Fusionner les Ã©lÃ©ments</translation>
     </message>
     <message>
         <source>SMESH_MODE</source>
@@ -1648,23 +1648,23 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie supportée<
     </message>
     <message>
         <source>SMESH_MERGED_ELEMENTS</source>
-        <translation>%1 éléments fusionnés avec succès</translation>
+        <translation>%1 Ã©lÃ©ments fusionnÃ©s avec succÃ¨s</translation>
     </message>
     <message>
         <source>SMESH_MERGED_NODES</source>
-        <translation>%1 nÅ“uds fusionnés avec succès</translation>
+        <translation>%1 noeuds fusionnÃ©s avec succÃ¨s</translation>
     </message>
     <message>
         <source>SMESH_NO_ELEMENTS_DETECTED</source>
-        <translation>Il n&apos;y a aucun élément à fusionner.</translation>
+        <translation>Il n&apos;y a aucun Ã©lÃ©ment Ã  fusionner.</translation>
     </message>
     <message>
         <source>SMESH_NO_NODES_DETECTED</source>
-        <translation>Il n&apos;y a aucun nÅ“ud à fusionner</translation>
+        <translation>Il n&apos;y a aucun noeud Ã  fusionner</translation>
     </message>
     <message>
         <source>SMESH_MERGE_NODES</source>
-        <translation>Fusionner les nÅ“uds</translation>
+        <translation>Fusionner les noeuds</translation>
     </message>
     <message>
         <source>SMESH_MESH</source>
@@ -1672,23 +1672,23 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie supportée<
     </message>
     <message>
         <source>SMESH_MESHINFO_0DELEMS</source>
-        <translation>Eléments 0D</translation>
+        <translation>ElÃ©ments 0D</translation>
     </message>
     <message>
         <source>SMESH_MESHINFO_ALL_TYPES</source>
-        <translation>Hétérogène</translation>
+        <translation>HÃ©tÃ©rogÃ¨ne</translation>
     </message>
     <message>
         <source>SMESH_MESHINFO_EDGES</source>
-        <translation>Arêtes</translation>
+        <translation>ArÃªtes</translation>
     </message>
     <message>
         <source>SMESH_MESHINFO_ELEMENTS</source>
-        <translation>Eléments</translation>
+        <translation>ElÃ©ments</translation>
     </message>
     <message>
         <source>SMESH_MESHINFO_ENTITIES</source>
-        <translation>Entités</translation>
+        <translation>EntitÃ©s</translation>
     </message>
     <message>
         <source>SMESH_MESHINFO_FACES</source>
@@ -1696,7 +1696,7 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie supportée<
     </message>
     <message>
         <source>SMESH_MESHINFO_HEXAS</source>
-        <translation>Hexaèdres</translation>
+        <translation>HexaÃ¨dres</translation>
     </message>
     <message>
         <source>SMESH_MESHINFO_NAME</source>
@@ -1704,7 +1704,7 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie supportée<
     </message>
     <message>
         <source>SMESH_MESHINFO_NODES</source>
-        <translation>NÅ“uds</translation>
+        <translation>Noeuds</translation>
     </message>
     <message>
         <source>SMESH_MESHINFO_ORDER0</source>
@@ -1712,7 +1712,7 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie supportée<
     </message>
     <message>
         <source>SMESH_MESHINFO_ORDER1</source>
-        <translation>Linéaire</translation>
+        <translation>LinÃ©aire</translation>
     </message>
     <message>
         <source>SMESH_MESHINFO_ORDER2</source>
@@ -1720,7 +1720,7 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie supportée<
     </message>
     <message>
         <source>SMESH_MESHINFO_POLYEDRES</source>
-        <translation>Polyèdres</translation>
+        <translation>PolyÃ¨dres</translation>
     </message>
     <message>
         <source>SMESH_MESHINFO_POLYGONES</source>
@@ -1740,7 +1740,7 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie supportée<
     </message>
     <message>
         <source>SMESH_MESHINFO_TETRAS</source>
-        <translation>Tetraèdres</translation>
+        <translation>TetraÃ¨dres</translation>
     </message>
     <message>
         <source>SMESH_MESHINFO_TITLE</source>
@@ -1768,15 +1768,15 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie supportée<
     </message>
     <message>
         <source>SMESH_MOVE</source>
-        <translation>Déplacer</translation>
+        <translation>DÃ©placer</translation>
     </message>
     <message>
         <source>SMESH_MOVE_ELEMENTS</source>
-        <translation>Déplacer les éléments</translation>
+        <translation>DÃ©placer les Ã©lÃ©ments</translation>
     </message>
     <message>
         <source>SMESH_MOVE_NODES_TITLE</source>
-        <translation>Déplacer un nÅ“ud</translation>
+        <translation>DÃ©placer un noeud</translation>
     </message>
     <message>
         <source>SMESH_NAME</source>
@@ -1784,11 +1784,11 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie supportée<
     </message>
     <message>
         <source>SMESH_NODES</source>
-        <translation>NÅ“uds</translation>
+        <translation>Noeuds</translation>
     </message>
     <message>
         <source>SMESH_NONMANIFOLDEDGES</source>
-        <translation>Arêtes non-partagées</translation>
+        <translation>ArÃªtes non-partagÃ©es</translation>
     </message>
     <message>
         <source>SMESH_NORMAL</source>
@@ -1796,7 +1796,7 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie supportée<
     </message>
     <message>
         <source>SMESH_NO_MESH_VISUALIZATION</source>
-        <translation>Il n&apos;y a pas assez de mémoire pour visualiser le maillage</translation>
+        <translation>Il n&apos;y a pas assez de mÃ©moire pour visualiser le maillage</translation>
     </message>
     <message>
         <source>SMESH_NUMBEROFCOLORS</source>
@@ -1804,7 +1804,7 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie supportée<
     </message>
     <message>
         <source>SMESH_NUMBEROFLABELS</source>
-        <translation>Nombre d&apos;étiquettes :</translation>
+        <translation>Nombre d&apos;Ã©tiquettes :</translation>
     </message>
     <message>
         <source>SMESH_NUMBEROFSTEPS</source>
@@ -1820,11 +1820,11 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie supportée<
     </message>
     <message>
         <source>SMESH_OBJECT_GEOM</source>
-        <translation>Objet géométrique</translation>
+        <translation>Objet gÃ©omÃ©trique</translation>
     </message>
     <message>
         <source>SMESH_OBJECT_HYPOTHESIS</source>
-        <translation>Hypothèse</translation>
+        <translation>HypothÃ¨se</translation>
     </message>
     <message>
         <source>SMESH_OBJECT_MESH</source>
@@ -1836,7 +1836,7 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie supportée<
     </message>
     <message>
         <source>SMESH_OPERATION_FAILED</source>
-        <translation>L&apos;opération n&apos;a pas abouti</translation>
+        <translation>L&apos;opÃ©ration n&apos;a pas abouti</translation>
     </message>
     <message>
         <source>SMESH_ORIENTATION</source>
@@ -1852,7 +1852,7 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie supportée<
     </message>
     <message>
         <source>SMESH_PARAMETERS</source>
-        <translation>Paramètres</translation>
+        <translation>ParamÃ¨tres</translation>
     </message>
     <message>
         <source>SMESH_PLANE</source>
@@ -1876,11 +1876,11 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie supportée<
     </message>
     <message>
         <source>SMESH_POLYEDRE_CREATE_ERROR</source>
-        <translation>Erreur de création du polyèdre</translation>
+        <translation>Erreur de crÃ©ation du polyÃ¨dre</translation>
     </message>
     <message>
         <source>SMESH_POLYEDRON</source>
-        <translation>Polyèdre</translation>
+        <translation>PolyÃ¨dre</translation>
     </message>
     <message>
         <source>SMESH_POLYGON</source>
@@ -1900,19 +1900,19 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie supportée<
     </message>
     <message>
         <source>SMESH_PRECISION</source>
-        <translation>Précision</translation>
+        <translation>PrÃ©cision</translation>
     </message>
     <message>
         <source>SMESH_PREFERENCES_SCALARBAR</source>
-        <translation>Préférences de la barre d&apos;échelle</translation>
+        <translation>PrÃ©fÃ©rences de la barre d&apos;Ã©chelle</translation>
     </message>
     <message>
         <source>SMESH_PREF_SELECTION</source>
-        <translation>Préférences - Sélection</translation>
+        <translation>PrÃ©fÃ©rences - SÃ©lection</translation>
     </message>
     <message>
         <source>SMESH_PRESELECTION</source>
-        <translation>Présélection</translation>
+        <translation>PrÃ©sÃ©lection</translation>
     </message>
     <message>
         <source>SMESH_PRISM</source>
@@ -1920,7 +1920,7 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie supportée<
     </message>
     <message>
         <source>SMESH_PROPERTIES_SCALARBAR</source>
-        <translation>Proprétés de la barre d&apos;échelle</translation>
+        <translation>ProprÃ©tÃ©s de la barre d&apos;Ã©chelle</translation>
     </message>
     <message>
         <source>SMESH_PYRAMID</source>
@@ -1932,15 +1932,15 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie supportée<
     </message>
     <message>
         <source>SMESH_QUADRATIC_EDGE</source>
-        <translation>Arête quadratique</translation>
+        <translation>ArÃªte quadratique</translation>
     </message>
     <message>
         <source>SMESH_QUADRATIC_HEXAHEDRON</source>
-        <translation>Hexaèdre quadratique</translation>
+        <translation>HexaÃ¨dre quadratique</translation>
     </message>
     <message>
         <source>SMESH_QUADRATIC_PENTAHEDRON</source>
-        <translation>Pentaèdre quadratique</translation>
+        <translation>PentaÃ¨dre quadratique</translation>
     </message>
     <message>
         <source>SMESH_QUADRATIC_PYRAMID</source>
@@ -1952,7 +1952,7 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie supportée<
     </message>
     <message>
         <source>SMESH_QUADRATIC_TETRAHEDRON</source>
-        <translation>Tetraèdre quadratique</translation>
+        <translation>TetraÃ¨dre quadratique</translation>
     </message>
     <message>
         <source>SMESH_QUADRATIC_TRIANGLE</source>
@@ -1980,23 +1980,23 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie supportée<
     </message>
     <message>
         <source>SMESH_REMOVE_ELEMENTS_TITLE</source>
-        <translation>Supprimer les éléments</translation>
+        <translation>Supprimer les Ã©lÃ©ments</translation>
     </message>
     <message>
         <source>SMESH_REMOVE_NODES_TITLE</source>
-        <translation>Supprimer les nÅ“uds</translation>
+        <translation>Supprimer les noeuds</translation>
     </message>
     <message>
         <source>SMESH_RENUMBERING</source>
-        <translation>Renuméroter</translation>
+        <translation>RenumÃ©roter</translation>
     </message>
     <message>
         <source>SMESH_RENUMBERING_ELEMENTS_TITLE</source>
-        <translation>Renuméroter les éléments</translation>
+        <translation>RenumÃ©roter les Ã©lÃ©ments</translation>
     </message>
     <message>
         <source>SMESH_RENUMBERING_NODES_TITLE</source>
-        <translation>Renuméroter les nÅ“uds</translation>
+        <translation>RenumÃ©roter les noeuds</translation>
     </message>
     <message>
         <source>SMESH_REVERSE</source>
@@ -2004,11 +2004,11 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie supportée<
     </message>
     <message>
         <source>SMESH_REVOLUTION</source>
-        <translation>Révolution</translation>
+        <translation>RÃ©volution</translation>
     </message>
     <message>
         <source>SMESH_RM_HYP_WRN</source>
-        <translation>&quot;%1&quot; n&apos;est pas attribué, mais:
+        <translation>&quot;%1&quot; n&apos;est pas attribuÃ©, mais:
 </translation>
     </message>
     <message>
@@ -2021,7 +2021,7 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie supportée<
     </message>
     <message>
         <source>SMESH_SCALARBAR</source>
-        <translation>Barre d&apos;échelle</translation>
+        <translation>Barre d&apos;Ã©chelle</translation>
     </message>
     <message>
         <source>SMESH_SEGMENTS</source>
@@ -2029,11 +2029,11 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie supportée<
     </message>
     <message>
         <source>SMESH_SELECTION</source>
-        <translation>Sélection</translation>
+        <translation>SÃ©lection</translation>
     </message>
     <message>
         <source>SMESH_SELECT_FROM</source>
-        <translation>Sélectionner à partir de</translation>
+        <translation>SÃ©lectionner Ã  partir de</translation>
     </message>
     <message>
         <source>SMESH_SELECT_WHOLE_MESH</source>
@@ -2065,11 +2065,11 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie supportée<
     </message>
     <message>
         <source>SMESH_SYMMETRY</source>
-        <translation>Symétrie</translation>
+        <translation>SymÃ©trie</translation>
     </message>
     <message>
         <source>SMESH_TETRAS</source>
-        <translation>Tétraèdre</translation>
+        <translation>TÃ©traÃ¨dre</translation>
     </message>
     <message>
         <source>SMESH_TITLE</source>
@@ -2077,7 +2077,7 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie supportée<
     </message>
     <message>
         <source>SMESH_TOLERANCE</source>
-        <translation>Tolérance</translation>
+        <translation>TolÃ©rance</translation>
     </message>
     <message>
         <source>SMESH_TRANSLATION</source>
@@ -2085,11 +2085,11 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie supportée<
     </message>
     <message>
         <source>SMESH_SCALE_TITLE</source>
-        <translation>Transformation d&apos;échelle</translation>
+        <translation>Transformation d&apos;Ã©chelle</translation>
     </message>
     <message>
         <source>SMESH_DUPLICATE_TITLE</source>
-        <translation>Dupliquer les nÅ“uds</translation>
+        <translation>Dupliquer les noeuds</translation>
     </message>
     <message>
         <source>SMESH_SCALE</source>
@@ -2097,23 +2097,23 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie supportée<
     </message>
     <message>
         <source>SMESH_SCALE_FACTOR</source>
-        <translation>Facteur d&apos;échelle :</translation>
+        <translation>Facteur d&apos;Ã©chelle :</translation>
     </message>
     <message>
         <source>SMESH_SCALE_FACTOR_X</source>
-        <translation>Facteur d&apos;échelle X :</translation>
+        <translation>Facteur d&apos;Ã©chelle X :</translation>
     </message>
     <message>
         <source>SMESH_SCALE_FACTOR_Y</source>
-        <translation>Facteur d&apos;échelle Y :</translation>
+        <translation>Facteur d&apos;Ã©chelle Y :</translation>
     </message>
     <message>
         <source>SMESH_SCALE_FACTOR_Z</source>
-        <translation>Facteur d&apos;échelle Z :</translation>
+        <translation>Facteur d&apos;Ã©chelle Z :</translation>
     </message>
     <message>
         <source>SMESH_TRANSPARENCY_OPAQUE</source>
-        <translation>â†’ Opaque</translation>
+        <translation>Opaque</translation>
     </message>
     <message>
         <source>SMESH_TRANSPARENCY_TITLE</source>
@@ -2121,7 +2121,7 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie supportée<
     </message>
     <message>
         <source>SMESH_TRANSPARENCY_TRANSPARENT</source>
-        <translation>Transparent â†</translation>
+        <translation>Transparent</translation>
     </message>
     <message>
         <source>SMESH_TRIANGLE</source>
@@ -2129,7 +2129,7 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie supportée<
     </message>
     <message>
         <source>SMESH_UPDATEVIEW</source>
-        <translation>Mettre à jour la vue</translation>
+        <translation>Mettre Ã  jour la vue</translation>
     </message>
     <message>
         <source>SMESH_VALUE</source>
@@ -2161,12 +2161,12 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie supportée<
     </message>
     <message>
         <source>SMESH_VISU_PROBLEM</source>
-        <translation>Impossible de visualiser le maillage, probablement à cause d&apos;un manque de mémoire</translation>
+        <translation>Impossible de visualiser le maillage, probablement Ã  cause d&apos;un manque de mÃ©moire</translation>
     </message>
     <message>
         <source>SMESH_VISU_PROBLEM_CLEAR</source>
-        <translation>Impossible de visualiser le maillage, pas assez de la mémoire pour montrer le message,
-donc toutes les données visuelles ont été supprimées pour ne pas planter l&apos;application.
+        <translation>Impossible de visualiser le maillage, pas assez de la mÃ©moire pour montrer le message,
+donc toutes les donnÃ©es visuelles ont Ã©tÃ© supprimÃ©es pour ne pas planter l&apos;application.
 Enregistrez votre travail avant que l&apos;application se plante</translation>
     </message>
     <message>
@@ -2179,7 +2179,7 @@ Enregistrez votre travail avant que l&apos;application se plante</translation>
     </message>
     <message>
         <source>SMESH_WHAT_IS_TITLE</source>
-        <translation>Information sur un élément de maillage</translation>
+        <translation>Information sur un Ã©lÃ©ment de maillage</translation>
     </message>
     <message>
         <source>SMESH_WIDTH</source>
@@ -2187,7 +2187,7 @@ Enregistrez votre travail avant que l&apos;application se plante</translation>
     </message>
     <message>
         <source>SMESH_WRN_ALGORITHM_ALREADYEXIST</source>
-        <translation>L&apos;algorithme existe déjà</translation>
+        <translation>L&apos;algorithme existe dÃ©jÃ </translation>
     </message>
     <message>
         <source>SMESH_WRN_COMPUTE_FAILED</source>
@@ -2195,7 +2195,7 @@ Enregistrez votre travail avant que l&apos;application se plante</translation>
     </message>
     <message>
         <source>SMESH_WRN_EVALUATE_FAILED</source>
-        <translation>Impossible d&apos;évaluer le maillage</translation>
+        <translation>Impossible d&apos;Ã©valuer le maillage</translation>
     </message>
     <message>
         <source>SMESH_WRN_EMPTY_NAME</source>
@@ -2203,40 +2203,40 @@ Enregistrez votre travail avant que l&apos;application se plante</translation>
     </message>
     <message>
         <source>SMESH_WRN_HYPOTHESIS_ALREADYEXIST</source>
-        <translation>L&apos;hypothèse existe déjà</translation>
+        <translation>L&apos;hypothÃ¨se existe dÃ©jÃ </translation>
     </message>
     <message>
         <source>SMESH_WRN_HYPOTHESIS_NOTEXIST</source>
-        <translation>L&apos;hypothèse ou l&apos;algorithme n&apos;existent pas</translation>
+        <translation>L&apos;hypothÃ¨se ou l&apos;algorithme n&apos;existent pas</translation>
     </message>
     <message>
         <source>SMESH_WRN_MISSING_PARAMETERS</source>
-        <translation>Paramètres manquants</translation>
+        <translation>ParamÃ¨tres manquants</translation>
     </message>
     <message>
         <source>SMESH_WRN_NO_AVAILABLE_DATA</source>
-        <translation>Pas de données disponibles dans la sélection</translation>
+        <translation>Pas de donnÃ©es disponibles dans la sÃ©lection</translation>
     </message>
     <message>
         <source>SMESH_WRN_SELECTIONMODE_DIAGONAL</source>
-        <translation>Activer le mode de sélection des références</translation>
+        <translation>Activer le mode de sÃ©lection des rÃ©fÃ©rences</translation>
     </message>
     <message>
         <source>SMESH_WRN_SELECTIONMODE_ELEMENTS</source>
-        <translation>Activer le mode de sélection des éléments</translation>
+        <translation>Activer le mode de sÃ©lection des Ã©lÃ©ments</translation>
     </message>
     <message>
         <source>SMESH_WRN_SELECTIONMODE_NODES</source>
-        <translation>Activer le mode de sélection des nÅ“uds</translation>
+        <translation>Activer le mode de sÃ©lection des noeuds</translation>
     </message>
     <message>
         <source>SMESH_WRN_VIEWER_VTK</source>
-        <translation>Il faut ouvrir la scène dans le visualisateur VTK</translation>
+        <translation>Il faut ouvrir la scÃ¨ne dans le visualisateur VTK</translation>
     </message>
     <message>
         <source>SMESH_WRN_SIZE_LIMIT_EXCEEDED</source>
-        <translation>La présentation n&apos;a pas été mise à jour automatiquement: la nouvelle taille du maillage (%1 éléments) dépasse la limite de taille actuelle (%2 éléments).
-Vérifiez la limite dans les préférences du module Mesh.
+        <translation>La prÃ©sentation n&apos;a pas Ã©tÃ© mise Ã  jour automatiquement: la nouvelle taille du maillage (%1 Ã©lÃ©ments) dÃ©passe la limite de taille actuelle (%2 Ã©lÃ©ments).
+VÃ©rifiez la limite dans les prÃ©fÃ©rences du module Mesh.
 </translation>
     </message>
     <message>
@@ -2269,19 +2269,19 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>STATE_HYP_BAD_GEOMETRY</source>
-        <translation>L&apos;algorithme %3 %2D  &quot;%1&quot; est attribué à une géométrie qui ne convient pas</translation>
+        <translation>L&apos;algorithme %3 %2D  &quot;%1&quot; est attribuÃ© Ã  une gÃ©omÃ©trie qui ne convient pas</translation>
     </message>
     <message>
         <source>STATE_HYP_BAD_PARAMETER</source>
-        <translation>Il y a un paramètre incorrect dans l&apos;hypothèse %3 %2D de l&apos;algorithme &quot;%1&quot; </translation>
+        <translation>Il y a un paramÃ¨tre incorrect dans l&apos;hypothÃ¨se %3 %2D de l&apos;algorithme &quot;%1&quot; </translation>
     </message>
     <message>
         <source>STATE_HYP_MISSING</source>
-        <translation>L&apos;hypothèse %4D manque à l&apos;algorithme %3 %2D &quot;%1&quot;</translation>
+        <translation>L&apos;hypothÃ¨se %4D manque Ã  l&apos;algorithme %3 %2D &quot;%1&quot;</translation>
     </message>
     <message>
         <source>STATE_HYP_NOTCONFORM</source>
-        <translation>L&apos;algorithme %3 %2D &quot;%1&quot; produit un maillage non-conforme: l&apos;hypothèse globale &quot;Maillage non conforme autorisé&quot; doit être cochée</translation>
+        <translation>L&apos;algorithme %3 %2D &quot;%1&quot; produit un maillage non-conforme: l&apos;hypothÃ¨se globale &quot;Maillage non conforme autorisÃ©&quot; doit Ãªtre cochÃ©e</translation>
     </message>
     <message>
         <source>STB_ADV_INFO</source>
@@ -2309,11 +2309,11 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>STB_AUTO_UPD</source>
-        <translation>Mise à jour automatique</translation>
+        <translation>Mise Ã  jour automatique</translation>
     </message>
     <message>
         <source>STB_BUILD_COMPOUND</source>
-        <translation>Construire un maillage assemblé</translation>
+        <translation>Construire un maillage assemblÃ©</translation>
     </message>
     <message>
         <source>STB_COPY_MESH</source>
@@ -2333,7 +2333,7 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>STB_PRECOMPUTE</source>
-        <translation>Prévisualiser</translation>
+        <translation>PrÃ©visualiser</translation>
     </message>
     <message>
         <source>STB_EVALUATE</source>
@@ -2341,11 +2341,11 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>STB_CONNECTION</source>
-        <translation>Frontières sur connection multiples</translation>
+        <translation>FrontiÃ¨res sur connection multiples</translation>
     </message>
     <message>
         <source>STB_CONNECTION_2D</source>
-        <translation>Frontières sur connection multiples 2D</translation>
+        <translation>FrontiÃ¨res sur connection multiples 2D</translation>
     </message>
     <message>
         <source>STB_CONSTRUCT_GROUP</source>
@@ -2357,35 +2357,35 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>STB_2D_FROM_3D</source>
-        <translation>Créer les éléments de frontière</translation>
+        <translation>CrÃ©er les Ã©lÃ©ments de frontiÃ¨re</translation>
     </message>
     <message>
         <source>STB_MESH_ORDER</source>
-        <translation>Changer la priorité des sous-maillages</translation>
+        <translation>Changer la prioritÃ© des sous-maillages</translation>
     </message>
     <message>
         <source>STB_CREATE_GROUP</source>
-        <translation>Créer un groupe</translation>
+        <translation>CrÃ©er un groupe</translation>
     </message>
     <message>
         <source>STB_CREATE_GEO_GROUP</source>
-        <translation>Créer les groupes à partir de la géométrie</translation>
+        <translation>CrÃ©er les groupes Ã  partir de la gÃ©omÃ©trie</translation>
     </message>
     <message>
         <source>STB_CREATE_MESH</source>
-        <translation>Créer un maillage</translation>
+        <translation>CrÃ©er un maillage</translation>
     </message>
     <message>
         <source>STB_CREATE_SUBMESH</source>
-        <translation>Créer un sous-maillage</translation>
+        <translation>CrÃ©er un sous-maillage</translation>
     </message>
     <message>
         <source>STB_CUT</source>
-        <translation>Découpe des quadrangles</translation>
+        <translation>DÃ©coupe des quadrangles</translation>
     </message>
     <message>
         <source>STB_CUT_GROUP</source>
-        <translation>Découper les groupes</translation>
+        <translation>DÃ©couper les groupes</translation>
     </message>
     <message>
         <source>STB_DAT</source>
@@ -2405,7 +2405,7 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>STB_DISABLE_AUTO_COLOR</source>
-        <translation>Désactiver la couleur automatique</translation>
+        <translation>DÃ©sactiver la couleur automatique</translation>
     </message>
     <message>
         <source>STB_DISPLAY_ONLY</source>
@@ -2413,23 +2413,23 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>STB_DISP_ENT</source>
-        <translation>Visualiser une entité</translation>
+        <translation>Visualiser une entitÃ©</translation>
     </message>
     <message>
         <source>STB_ELEM0D</source>
-        <translation>Elément 0D</translation>
+        <translation>ElÃ©ment 0D</translation>
     </message>
     <message>
         <source>STB_ELEMS0D</source>
-        <translation>Eléments 0D</translation>
+        <translation>ElÃ©ments 0D</translation>
     </message>
     <message>
         <source>STB_EDGE</source>
-        <translation>Arête</translation>
+        <translation>ArÃªte</translation>
     </message>
     <message>
         <source>STB_EDGES</source>
-        <translation>Arêtes</translation>
+        <translation>ArÃªtes</translation>
     </message>
     <message>
         <source>STB_EDIT_GROUP</source>
@@ -2441,7 +2441,7 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>STB_EDIT_HYPO</source>
-        <translation>Editer une hypothèse</translation>
+        <translation>Editer une hypothÃ¨se</translation>
     </message>
     <message>
         <source>STB_EDIT_MESHSUBMESH</source>
@@ -2481,11 +2481,11 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>STB_BARE_BORDER_VOLUME</source>
-        <translation>Volumes avec éléments de peau 2D manquants</translation>
+        <translation>Volumes avec Ã©lÃ©ments de peau 2D manquants</translation>
     </message>
     <message>
         <source>STB_BARE_BORDER_FACE</source>
-        <translation>Faces avec éléments de peau 1D manquants</translation>
+        <translation>Faces avec Ã©lÃ©ments de peau 1D manquants</translation>
     </message>
     <message>
         <source>STB_OVER_CONSTRAINED_VOLUME</source>
@@ -2497,15 +2497,15 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>STB_FREE_BORDER</source>
-        <translation>Frontières libres</translation>
+        <translation>FrontiÃ¨res libres</translation>
     </message>
     <message>
         <source>STB_FREE_EDGE</source>
-        <translation>Arêtes libres</translation>
+        <translation>ArÃªtes libres</translation>
     </message>
     <message>
         <source>STB_FREE_NODE</source>
-        <translation>NÅ“uds libres</translation>
+        <translation>Noeuds libres</translation>
     </message>
     <message>
         <source>STB_FREE_FACES</source>
@@ -2513,11 +2513,11 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>STB_GLOBAL_HYPO</source>
-        <translation>Hypothèse globale</translation>
+        <translation>HypothÃ¨se globale</translation>
     </message>
     <message>
         <source>STB_HEXA</source>
-        <translation>Hexaèdre</translation>
+        <translation>HexaÃ¨dre</translation>
     </message>
     <message>
         <source>STB_HIDE</source>
@@ -2545,11 +2545,11 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>STB_MAX_ELEMENT_LENGTH_2D</source>
-        <translation>Diamètre de l&apos;élément 2D</translation>
+        <translation>DiamÃ¨tre de l&apos;Ã©lÃ©ment 2D</translation>
     </message>
     <message>
         <source>STB_MAX_ELEMENT_LENGTH_3D</source>
-        <translation>Diamètre de l&apos;élément 3D</translation>
+        <translation>DiamÃ¨tre de l&apos;Ã©lÃ©ment 3D</translation>
     </message>
     <message>
         <source>STB_MED</source>
@@ -2561,15 +2561,15 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>STB_MERGE</source>
-        <translation>Fusionner les nÅ“uds</translation>
+        <translation>Fusionner les noeuds</translation>
     </message>
     <message>
         <source>STB_MERGE_ELEMENTS</source>
-        <translation>Fusionner les éléments</translation>
+        <translation>Fusionner les Ã©lÃ©ments</translation>
     </message>
     <message>
         <source>STB_MESH_THROU_POINT</source>
-        <translation>Déplacer un nÅ“ud</translation>
+        <translation>DÃ©placer un noeud</translation>
     </message>
     <message>
         <source>STB_MIN_ANG</source>
@@ -2577,23 +2577,23 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>STB_MOVE</source>
-        <translation>Déplacer un nÅ“ud</translation>
+        <translation>DÃ©placer un noeud</translation>
     </message>
     <message>
         <source>STB_NODE</source>
-        <translation>NÅ“ud</translation>
+        <translation>Noeud</translation>
     </message>
     <message>
         <source>STB_NODES</source>
-        <translation>NÅ“uds</translation>
+        <translation>Noeuds</translation>
     </message>
     <message>
         <source>STB_NUM_ELEMENTS</source>
-        <translation>Visualiser les éléments</translation>
+        <translation>Visualiser les Ã©lÃ©ments</translation>
     </message>
     <message>
         <source>STB_NUM_NODES</source>
-        <translation>Visualiser les nÅ“uds</translation>
+        <translation>Visualiser les noeuds</translation>
     </message>
     <message>
         <source>STB_ORIENT</source>
@@ -2605,11 +2605,11 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>STB_POLYHEDRON</source>
-        <translation>Polyèdre</translation>
+        <translation>PolyÃ¨dre</translation>
     </message>
     <message>
         <source>STB_PRECISION</source>
-        <translation>Précision</translation>
+        <translation>PrÃ©cision</translation>
     </message>
     <message>
         <source>STB_QUAD</source>
@@ -2617,15 +2617,15 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>STB_QUADRATIC_EDGE</source>
-        <translation>Arête quadratique</translation>
+        <translation>ArÃªte quadratique</translation>
     </message>
     <message>
         <source>STB_QUADRATIC_HEXAHEDRON</source>
-        <translation>Hexaèdre quadratique</translation>
+        <translation>HexaÃ¨dre quadratique</translation>
     </message>
     <message>
         <source>STB_QUADRATIC_PENTAHEDRON</source>
-        <translation>Pentaèdre quadratique</translation>
+        <translation>PentaÃ¨dre quadratique</translation>
     </message>
     <message>
         <source>STB_QUADRATIC_PYRAMID</source>
@@ -2637,7 +2637,7 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>STB_QUADRATIC_TETRAHEDRON</source>
-        <translation>Tétraèdre quadratique</translation>
+        <translation>TÃ©traÃ¨dre quadratique</translation>
     </message>
     <message>
         <source>STB_QUADRATIC_TRIANGLE</source>
@@ -2645,15 +2645,15 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>STB_REMOVE_ELEMENTS</source>
-        <translation>Supprimer les éléments</translation>
+        <translation>Supprimer les Ã©lÃ©ments</translation>
     </message>
     <message>
         <source>STB_REMOVE_NODES</source>
-        <translation>Supprimer les nÅ“uds</translation>
+        <translation>Supprimer les noeuds</translation>
     </message>
     <message>
         <source>STB_REMOVE_ORPHAN_NODES</source>
-        <translation>Supprimer les nÅ“uds orphelins</translation>
+        <translation>Supprimer les noeuds orphelins</translation>
     </message>
     <message>
         <source>STB_RENAME</source>
@@ -2661,11 +2661,11 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>STB_RENUM_ELEMENTS</source>
-        <translation>Renuméroter les éléments</translation>
+        <translation>RenumÃ©roter les Ã©lÃ©ments</translation>
     </message>
     <message>
         <source>STB_RENUM_NODES</source>
-        <translation>Renuméroter les nÅ“uds</translation>
+        <translation>RenumÃ©roter les noeuds</translation>
     </message>
     <message>
         <source>STB_RESET</source>
@@ -2681,7 +2681,7 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>STB_REVOLUTION</source>
-        <translation>Révolution</translation>
+        <translation>RÃ©volution</translation>
     </message>
     <message>
         <source>STB_ROT</source>
@@ -2689,19 +2689,19 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>STB_SCALAR_BAR</source>
-        <translation>Barre d&apos;échelle</translation>
+        <translation>Barre d&apos;Ã©chelle</translation>
     </message>
     <message>
         <source>STB_SCALAR_BAR_PROP</source>
-        <translation>Propriétés de la barre d&apos;échelle</translation>
+        <translation>PropriÃ©tÃ©s de la barre d&apos;Ã©chelle</translation>
     </message>
     <message>
         <source>STB_SELECTION</source>
-        <translation>Sélection</translation>
+        <translation>SÃ©lection</translation>
     </message>
     <message>
         <source>STB_SEL_FILTER_LIB</source>
-        <translation>Librairie des filtres de sélection</translation>
+        <translation>Librairie des filtres de sÃ©lection</translation>
     </message>
     <message>
         <source>STB_SEW</source>
@@ -2733,15 +2733,15 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>STB_SYM</source>
-        <translation>Symétrie</translation>
+        <translation>SymÃ©trie</translation>
     </message>
     <message>
         <source>STB_TAPER</source>
-        <translation>Cône</translation>
+        <translation>CÃ´ne</translation>
     </message>
     <message>
         <source>STB_TETRA</source>
-        <translation>Tétraèdre</translation>
+        <translation>TÃ©traÃ¨dre</translation>
     </message>
     <message>
         <source>STB_TRANS</source>
@@ -2749,11 +2749,11 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>STB_SCALE</source>
-        <translation>Mise à l&apos;échelle</translation>
+        <translation>Mise Ã  l&apos;Ã©chelle</translation>
     </message>
     <message>
         <source>STB_DUPLICATE_NODES</source>
-        <translation>Dupliquer les nÅ“uds</translation>
+        <translation>Dupliquer les noeuds</translation>
     </message>
     <message>
         <source>STB_TRANSP</source>
@@ -2765,7 +2765,7 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>STB_UNASSIGN</source>
-        <translation>Désassocier</translation>
+        <translation>DÃ©sassocier</translation>
     </message>
     <message>
         <source>STB_UNION</source>
@@ -2785,11 +2785,11 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>STB_UNDERLYING_ELEMS</source>
-        <translation>Créer les groupes d&apos;entités à partir des groupes existants de dimensions supérieures</translation>
+        <translation>CrÃ©er les groupes d&apos;entitÃ©s Ã  partir des groupes existants de dimensions supÃ©rieures</translation>
     </message>
     <message>
         <source>STB_UPDATE</source>
-        <translation>Mettre à jour</translation>
+        <translation>Mettre Ã  jour</translation>
     </message>
     <message>
         <source>STB_VOLUMES</source>
@@ -2801,11 +2801,11 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>STB_WARP</source>
-        <translation>Angle de déformation</translation>
+        <translation>Angle de dÃ©formation</translation>
     </message>
     <message>
         <source>STB_WHAT_IS</source>
-        <translation>Information sur un élément ou un noeud de maillage</translation>
+        <translation>Information sur un Ã©lÃ©ment ou un noeud de maillage</translation>
     </message>
     <message>
         <source>STB_WIRE</source>
@@ -2813,7 +2813,7 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>TAPER_ELEMENTS</source>
-        <translation>Cône</translation>
+        <translation>CÃ´ne</translation>
     </message>
     <message>
         <source>TB_ADD_REMOVE</source>
@@ -2821,7 +2821,7 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>TB_CTRL</source>
-        <translation>Barre d&apos;outils des contrôles</translation>
+        <translation>Barre d&apos;outils des contrÃ´les</translation>
     </message>
     <message>
         <source>TB_DISP_MODE</source>
@@ -2829,7 +2829,7 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>TB_HYPO</source>
-        <translation>Barre d&apos;hypothèses</translation>
+        <translation>Barre d&apos;hypothÃ¨ses</translation>
     </message>
     <message>
         <source>TB_MESH</source>
@@ -2865,11 +2865,11 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>TOP_AUTO_UPD</source>
-        <translation>Mise à jour automatique</translation>
+        <translation>Mise Ã  jour automatique</translation>
     </message>
     <message>
         <source>TOP_BUILD_COMPOUND</source>
-        <translation>Construire un maillage assemblé</translation>
+        <translation>Construire un maillage assemblÃ©</translation>
     </message>
     <message>
         <source>TOP_COPY_MESH</source>
@@ -2889,7 +2889,7 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>TOP_PRECOMPUTE</source>
-        <translation>Prévisualiser</translation>
+        <translation>PrÃ©visualiser</translation>
     </message>
     <message>
         <source>TOP_EVALUATE</source>
@@ -2897,11 +2897,11 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>TOP_CONNECTION</source>
-        <translation>Frontières sur connections multiples</translation>
+        <translation>FrontiÃ¨res sur connections multiples</translation>
     </message>
     <message>
         <source>TOP_CONNECTION_2D</source>
-        <translation>Frontières sur connections multiples 2D</translation>
+        <translation>FrontiÃ¨res sur connections multiples 2D</translation>
     </message>
     <message>
         <source>TOP_CONSTRUCT_GROUP</source>
@@ -2913,35 +2913,35 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>TOP_2D_FROM_3D</source>
-        <translation>Créer les éléments de frontière</translation>
+        <translation>CrÃ©er les Ã©lÃ©ments de frontiÃ¨re</translation>
     </message>
     <message>
         <source>TOP_MESH_ORDER</source>
-        <translation>Changer la priorité des sous-maillages</translation>
+        <translation>Changer la prioritÃ© des sous-maillages</translation>
     </message>
     <message>
         <source>TOP_CREATE_GROUP</source>
-        <translation>Créer un groupe</translation>
+        <translation>CrÃ©er un groupe</translation>
     </message>
     <message>
         <source>TOP_CREATE_GEO_GROUP</source>
-        <translation>Créer les groupes liés à la géométrie</translation>
+        <translation>CrÃ©er les groupes liÃ©s Ã  la gÃ©omÃ©trie</translation>
     </message>
     <message>
         <source>TOP_CREATE_MESH</source>
-        <translation>Créer un maillage</translation>
+        <translation>CrÃ©er un maillage</translation>
     </message>
     <message>
         <source>TOP_CREATE_SUBMESH</source>
-        <translation>Créer un sous-maillage</translation>
+        <translation>CrÃ©er un sous-maillage</translation>
     </message>
     <message>
         <source>TOP_CUT</source>
-        <translation>Découpe des quadrangles</translation>
+        <translation>DÃ©coupe des quadrangles</translation>
     </message>
     <message>
         <source>TOP_CUT_GROUP</source>
-        <translation>Découper les groupes</translation>
+        <translation>DÃ©couper les groupes</translation>
     </message>
     <message>
         <source>TOP_DAT</source>
@@ -2961,7 +2961,7 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>TOP_DISABLE_AUTO_COLOR</source>
-        <translation>Désactiver la couleur automatique</translation>
+        <translation>DÃ©sactiver la couleur automatique</translation>
     </message>
     <message>
         <source>TOP_DISPLAY_ONLY</source>
@@ -2969,23 +2969,23 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>TOP_DISP_ENT</source>
-        <translation>Visualiser une entité</translation>
+        <translation>Visualiser une entitÃ©</translation>
     </message>
     <message>
         <source>TOP_ELEM0D</source>
-        <translation>Elément 0D</translation>
+        <translation>ElÃ©ment 0D</translation>
     </message>
     <message>
         <source>TOP_ELEMS0D</source>
-        <translation>Eléments 0D</translation>
+        <translation>ElÃ©ments 0D</translation>
     </message>
     <message>
         <source>TOP_EDGE</source>
-        <translation>Arête</translation>
+        <translation>ArÃªte</translation>
     </message>
     <message>
         <source>TOP_EDGES</source>
-        <translation>Arêtes</translation>
+        <translation>ArÃªtes</translation>
     </message>
     <message>
         <source>TOP_EDIT_GROUP</source>
@@ -2997,7 +2997,7 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>TOP_EDIT_HYPO</source>
-        <translation>Editer l&apos;hypothèse</translation>
+        <translation>Editer l&apos;hypothÃ¨se</translation>
     </message>
     <message>
         <source>TOP_EDIT_MESHSUBMESH</source>
@@ -3037,11 +3037,11 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>TOP_BARE_BORDER_VOLUME</source>
-        <translation>Volumes avec éléments de peau 2D manquants</translation>
+        <translation>Volumes avec Ã©lÃ©ments de peau 2D manquants</translation>
     </message>
     <message>
         <source>TOP_BARE_BORDER_FACE</source>
-        <translation>Faces avec éléments de peau 1D manquants</translation>
+        <translation>Faces avec Ã©lÃ©ments de peau 1D manquants</translation>
     </message>
     <message>
         <source>TOP_OVER_CONSTRAINED_VOLUME</source>
@@ -3053,15 +3053,15 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>TOP_FREE_BORDER</source>
-        <translation>Frontières libres</translation>
+        <translation>FrontiÃ¨res libres</translation>
     </message>
     <message>
         <source>TOP_FREE_EDGE</source>
-        <translation>Arêtes libres</translation>
+        <translation>ArÃªtes libres</translation>
     </message>
     <message>
         <source>TOP_FREE_NODE</source>
-        <translation>NÅ“uds libres</translation>
+        <translation>Noeuds libres</translation>
     </message>
     <message>
         <source>TOP_FREE_FACES</source>
@@ -3069,11 +3069,11 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>TOP_GLOBAL_HYPO</source>
-        <translation>Hypothèse globale</translation>
+        <translation>HypothÃ¨se globale</translation>
     </message>
     <message>
         <source>TOP_HEXA</source>
-        <translation>Hexaèdre</translation>
+        <translation>HexaÃ¨dre</translation>
     </message>
     <message>
         <source>TOP_HIDE</source>
@@ -3101,11 +3101,11 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>TOP_MAX_ELEMENT_LENGTH_2D</source>
-        <translation>Diamètre des éléments 2D</translation>
+        <translation>DiamÃ¨tre des Ã©lÃ©ments 2D</translation>
     </message>
     <message>
         <source>TOP_MAX_ELEMENT_LENGTH_3D</source>
-        <translation>Diamètre des éléments 3D</translation>
+        <translation>DiamÃ¨tre des Ã©lÃ©ments 3D</translation>
     </message>
     <message>
         <source>TOP_MED</source>
@@ -3117,15 +3117,15 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>TOP_MERGE</source>
-        <translation>Fusionner les nÅ“uds</translation>
+        <translation>Fusionner les noeuds</translation>
     </message>
     <message>
         <source>TOP_MERGE_ELEMENTS</source>
-        <translation>Fusionner les éléments</translation>
+        <translation>Fusionner les Ã©lÃ©ments</translation>
     </message>
     <message>
         <source>TOP_MESH_THROU_POINT</source>
-        <translation>Déplacer un nÅ“ud</translation>
+        <translation>DÃ©placer un noeud</translation>
     </message>
     <message>
         <source>TOP_MIN_ANG</source>
@@ -3133,23 +3133,23 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>TOP_MOVE</source>
-        <translation>Déplacer un nÅ“ud</translation>
+        <translation>DÃ©placer un noeud</translation>
     </message>
     <message>
         <source>TOP_NODE</source>
-        <translation>NÅ“ud</translation>
+        <translation>Noeud</translation>
     </message>
     <message>
         <source>TOP_NODES</source>
-        <translation>NÅ“uds</translation>
+        <translation>Noeuds</translation>
     </message>
     <message>
         <source>TOP_NUM_ELEMENTS</source>
-        <translation>Visualiser les éléments</translation>
+        <translation>Visualiser les Ã©lÃ©ments</translation>
     </message>
     <message>
         <source>TOP_NUM_NODES</source>
-        <translation>Visualiser les nÅ“uds</translation>
+        <translation>Visualiser les noeuds</translation>
     </message>
     <message>
         <source>TOP_ORIENT</source>
@@ -3161,11 +3161,11 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>TOP_POLYHEDRON</source>
-        <translation>Polyèdre</translation>
+        <translation>PolyÃ¨dre</translation>
     </message>
     <message>
         <source>TOP_PRECISION</source>
-        <translation>Précision</translation>
+        <translation>PrÃ©cision</translation>
     </message>
     <message>
         <source>TOP_QUAD</source>
@@ -3173,15 +3173,15 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>TOP_QUADRATIC_EDGE</source>
-        <translation>Arête quadratique</translation>
+        <translation>ArÃªte quadratique</translation>
     </message>
     <message>
         <source>TOP_QUADRATIC_HEXAHEDRON</source>
-        <translation>Hexaèdre quadratique</translation>
+        <translation>HexaÃ¨dre quadratique</translation>
     </message>
     <message>
         <source>TOP_QUADRATIC_PENTAHEDRON</source>
-        <translation>Pentaèdre quadratique</translation>
+        <translation>PentaÃ¨dre quadratique</translation>
     </message>
     <message>
         <source>TOP_QUADRATIC_PYRAMID</source>
@@ -3193,7 +3193,7 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>TOP_QUADRATIC_TETRAHEDRON</source>
-        <translation>Tétraèdre quadratique</translation>
+        <translation>TÃ©traÃ¨dre quadratique</translation>
     </message>
     <message>
         <source>TOP_QUADRATIC_TRIANGLE</source>
@@ -3201,15 +3201,15 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>TOP_REMOVE_ELEMENTS</source>
-        <translation>Supprimer les éléments</translation>
+        <translation>Supprimer les Ã©lÃ©ments</translation>
     </message>
     <message>
         <source>TOP_REMOVE_NODES</source>
-        <translation>Supprimer les nÅ“uds</translation>
+        <translation>Supprimer les noeuds</translation>
     </message>
     <message>
         <source>TOP_REMOVE_ORPHAN_NODES</source>
-        <translation>Supprimer les nÅ“uds ophelins</translation>
+        <translation>Supprimer les noeuds ophelins</translation>
     </message>
     <message>
         <source>TOP_RENAME</source>
@@ -3217,11 +3217,11 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>TOP_RENUM_ELEMENTS</source>
-        <translation>Renuméroter les éléments</translation>
+        <translation>RenumÃ©roter les Ã©lÃ©ments</translation>
     </message>
     <message>
         <source>TOP_RENUM_NODES</source>
-        <translation>Renuméroter les nÅ“uds</translation>
+        <translation>RenumÃ©roter les noeuds</translation>
     </message>
     <message>
         <source>TOP_RESET</source>
@@ -3237,7 +3237,7 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>TOP_REVOLUTION</source>
-        <translation>Révolution</translation>
+        <translation>RÃ©volution</translation>
     </message>
     <message>
         <source>TOP_ROT</source>
@@ -3245,19 +3245,19 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>TOP_SCALAR_BAR</source>
-        <translation>Barre d&apos;échelle</translation>
+        <translation>Barre d&apos;Ã©chelle</translation>
     </message>
     <message>
         <source>TOP_SCALAR_BAR_PROP</source>
-        <translation>Propriétés de la barre d&apos;échelle</translation>
+        <translation>PropriÃ©tÃ©s de la barre d&apos;Ã©chelle</translation>
     </message>
     <message>
         <source>TOP_SELECTION</source>
-        <translation>Sélection</translation>
+        <translation>SÃ©lection</translation>
     </message>
     <message>
         <source>TOP_SEL_FILTER_LIB</source>
-        <translation>Librairie des filtres de sélection</translation>
+        <translation>Librairie des filtres de sÃ©lection</translation>
     </message>
     <message>
         <source>TOP_SEW</source>
@@ -3289,15 +3289,15 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>TOP_SYM</source>
-        <translation>Symétrie</translation>
+        <translation>SymÃ©trie</translation>
     </message>
     <message>
         <source>TOP_TAPER</source>
-        <translation>Cône</translation>
+        <translation>CÃ´ne</translation>
     </message>
     <message>
         <source>TOP_TETRA</source>
-        <translation>Tétraèdre</translation>
+        <translation>TÃ©traÃ¨dre</translation>
     </message>
     <message>
         <source>TOP_TRANS</source>
@@ -3305,11 +3305,11 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>TOP_SCALE</source>
-        <translation>Mise à l&apos;échelle</translation>
+        <translation>Mise Ã  l&apos;Ã©chelle</translation>
     </message>
     <message>
         <source>TOP_DUPLICATE_NODES</source>
-        <translation>Dupliquer les nÅ“uds</translation>
+        <translation>Dupliquer les noeuds</translation>
     </message>
     <message>
         <source>TOP_TRANSP</source>
@@ -3321,7 +3321,7 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>TOP_UNASSIGN</source>
-        <translation>Désassocier</translation>
+        <translation>DÃ©sassocier</translation>
     </message>
     <message>
         <source>TOP_UNION</source>
@@ -3341,11 +3341,11 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>TOP_UNDERLYING_ELEMS</source>
-        <translation>Créer les groupes d&apos;entités à partir des groupes existants de dimensions supérieures</translation>
+        <translation>CrÃ©er les groupes d&apos;entitÃ©s Ã  partir des groupes existants de dimensions supÃ©rieures</translation>
     </message>
     <message>
         <source>TOP_UPDATE</source>
-        <translation>Mettre à jour</translation>
+        <translation>Mettre Ã  jour</translation>
     </message>
     <message>
         <source>TOP_VOLUMES</source>
@@ -3357,11 +3357,11 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>TOP_WARP</source>
-        <translation>Angle de déformation</translation>
+        <translation>Angle de dÃ©formation</translation>
     </message>
     <message>
         <source>TOP_WHAT_IS</source>
-        <translation>Information sur l&apos;élément de maillage</translation>
+        <translation>Information sur l&apos;Ã©lÃ©ment de maillage</translation>
     </message>
     <message>
         <source>TOP_WIRE</source>
@@ -3377,7 +3377,7 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>WARP_ELEMENTS</source>
-        <translation>Déformation</translation>
+        <translation>DÃ©formation</translation>
     </message>
     <message>
         <source>MEN_FILE_INFO</source>
@@ -3385,27 +3385,27 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>SMESH_WRN_NO_APPROPRIATE_SELECTION</source>
-        <translation>Aucun objet sélectionné ne convient</translation>
+        <translation>Aucun objet sÃ©lectionnÃ© ne convient</translation>
     </message>
     <message>
         <source>MEN_CLEAR_MESH</source>
-        <translation>Effacer les données du maillage</translation>
+        <translation>Effacer les donnÃ©es du maillage</translation>
     </message>
     <message>
         <source>TOP_CLEAR_MESH</source>
-        <translation>Effacer les données du maillage</translation>
+        <translation>Effacer les donnÃ©es du maillage</translation>
     </message>
     <message>
         <source>STB_CLEAR_MESH</source>
-        <translation>Effacer les données du maillage</translation>
+        <translation>Effacer les donnÃ©es du maillage</translation>
     </message>
     <message>
         <source>SMESH_IMPORT_MESH</source>
-        <translation>Importer les donnés du maillage à partir des fichiers</translation>
+        <translation>Importer les donnÃ©s du maillage Ã  partir des fichiers</translation>
     </message>
     <message>
         <source>SMESH_ERR_NOT_SUPPORTED_FORMAT</source>
-        <translation>Le format de fichier n&apos;est pas supporté</translation>
+        <translation>Le format de fichier n&apos;est pas supportÃ©</translation>
     </message>
     <message>
         <source>SMESH_ERR_UNKNOWN_IMPORT_ERROR</source>
@@ -3413,65 +3413,65 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>SMESH_IMPORT_ERRORS</source>
-        <translation>L&apos;importation s&apos;est terminée avec des erreurs</translation>
+        <translation>L&apos;importation s&apos;est terminÃ©e avec des erreurs</translation>
     </message>
     <message>
         <source>SMESH_DRS_SOME_EMPTY</source>
-        <translation>Un ou plusieurs fichiers de maillage sont vides, les données n&apos;ont pas été publiées</translation>
+        <translation>Un ou plusieurs fichiers de maillage sont vides, les donnÃ©es n&apos;ont pas Ã©tÃ© publiÃ©es</translation>
     </message>
     <message>
         <source>NO_MESH_SELECTED</source>
-        <translation>Aucun maillage sélectionné</translation>
+        <translation>Aucun maillage sÃ©lectionnÃ©</translation>
     </message>
     <message>
         <source>SMESH_PREF_def_precision</source>
-        <translation>Précision par défaut</translation>
+        <translation>PrÃ©cision par dÃ©faut</translation>
     </message>
     <message>
         <source>SMESH_PREF_length_precision</source>
-        <translation>Précision de la longueur</translation>
+        <translation>PrÃ©cision de la longueur</translation>
     </message>
     <message>
         <source>SMESH_PREF_angle_precision</source>
-        <translation>Précision angulaire</translation>
+        <translation>PrÃ©cision angulaire</translation>
     </message>
     <message>
         <source>SMESH_PREF_len_tol_precision</source>
-        <translation>Précision de tolérance de la longueur</translation>
+        <translation>PrÃ©cision de tolÃ©rance de la longueur</translation>
     </message>
     <message>
         <source>SMESH_PREF_parametric_precision</source>
-        <translation>Précision paramétrique</translation>
+        <translation>PrÃ©cision paramÃ©trique</translation>
     </message>
     <message>
         <source>SMESH_PREF_area_precision</source>
-        <translation>Précision de l&apos;aire</translation>
+        <translation>PrÃ©cision de l&apos;aire</translation>
     </message>
     <message>
         <source>FULL_RECOMPUTE_QUESTION</source>
         <translation>
-Le maillage a été édité après le dernier calcul complet,
-ceci peut empêcher un calcul correct.
+Le maillage a Ã©tÃ© Ã©ditÃ© aprÃ¨s le dernier calcul complet,
+ceci peut empÃªcher un calcul correct.
 Voulez-vous recalculer le maillage entier pour rejeter les modifications ?
 </translation>
     </message>
     <message>
         <source>SMESH_PREF_vol_precision</source>
-        <translation>Précision du volume</translation>
+        <translation>PrÃ©cision du volume</translation>
     </message>
     <message>
         <source>SMESH_PRECISION_HINT</source>
         <translation>
-Il est possible de modifier la précision de la valeur d&apos;entrée
-avec le paramètre &apos;%1&apos; des préférences du module Mesh.</translation>
+Il est possible de modifier la prÃ©cision de la valeur d&apos;entrÃ©e
+avec le paramÃ¨tre &apos;%1&apos; des prÃ©fÃ©rences du module Mesh.</translation>
     </message>
     <message>
         <source>REMOVE_ORPHAN_NODES_QUESTION</source>
-        <translation>Voulez-vous supprimer tous les nÅ“uds orphelins ?</translation>
+        <translation>Voulez-vous supprimer tous les noeuds orphelins ?</translation>
     </message>
     <message>
         <source>NB_NODES_REMOVED</source>
-        <translation>%1 nÅ“ud(s) supprimés.</translation>
+        <translation>%1 noeud(s) supprimÃ©s.</translation>
     </message>
     <message>
         <source>SMESH_SAVE_DISTRIBUTION</source>
@@ -3486,32 +3486,32 @@ avec le paramètre &apos;%1&apos; des préférences du module Mesh.</translation>
     <name>SMESHGUI</name>
     <message>
         <source>NOT_A_VTK_VIEWER</source>
-        <translation>Cette commande n&apos;est disponible qu&apos;à partir d&apos;une fenêtre VTK.
-Ouvrez une fenêtre VTK et essayez de nouveau</translation>
+        <translation>Cette commande n&apos;est disponible qu&apos;Ã  partir d&apos;une fenÃªtre VTK.
+Ouvrez une fenÃªtre VTK et essayez de nouveau</translation>
     </message>
     <message>
         <source>PREF_AUTO_GROUPS</source>
-        <translation>Créer les groupes automatiquement pour l&apos;export MED</translation>
+        <translation>CrÃ©er les groupes automatiquement pour l&apos;export MED</translation>
     </message>
     <message>
         <source>PREF_GROUP_SEGMENT_LENGTH</source>
-        <translation>Paramètres automatiques</translation>
+        <translation>ParamÃ¨tres automatiques</translation>
     </message>
     <message>
         <source>PREF_SEGMENT_LENGTH</source>
-        <translation>Ratio de la diagonale de la boîte englobante / taille maximale</translation>
+        <translation>Ratio de la diagonale de la boÃ®te englobante / taille maximale</translation>
     </message>
     <message>
         <source>PREF_NB_SEGMENTS</source>
-        <translation>Nombre de segments par défaut</translation>
+        <translation>Nombre de segments par dÃ©faut</translation>
     </message>
     <message>
         <source>PREF_AUTO_UPDATE</source>
-        <translation>Mettre à jour automatiquement</translation>
+        <translation>Mettre Ã  jour automatiquement</translation>
     </message>
     <message>
         <source>PREF_UPDATE_LIMIT</source>
-        <translation>Limite de taille (nombre d&apos;éléments)</translation>
+        <translation>Limite de taille (nombre d&apos;Ã©lÃ©ments)</translation>
     </message>
     <message>
         <source>PREF_UPDATE_LIMIT_NOLIMIT</source>
@@ -3519,7 +3519,7 @@ Ouvrez une fenêtre VTK et essayez de nouveau</translation>
     </message>
     <message>
         <source>PREF_BACKFACE</source>
-        <translation>Face arrière</translation>
+        <translation>Face arriÃ¨re</translation>
     </message>
     <message>
         <source>PREF_COLOR</source>
@@ -3539,11 +3539,11 @@ Ouvrez une fenêtre VTK et essayez de nouveau</translation>
     </message>
     <message>
         <source>PREF_DISPLAY_ENTITY</source>
-        <translation>Eléments à visualiser</translation>
+        <translation>ElÃ©ments Ã  visualiser</translation>
     </message>
     <message>
         <source>QUADRATIC_REPRESENT_MODE</source>
-        <translation>Représentation des éléments quadratiques 2D</translation>
+        <translation>ReprÃ©sentation des Ã©lÃ©ments quadratiques 2D</translation>
     </message>
     <message>
         <source>MAX_ARC_ANGLE</source>
@@ -3555,11 +3555,11 @@ Ouvrez une fenêtre VTK et essayez de nouveau</translation>
     </message>
     <message>
         <source>PREF_ELEMENTS</source>
-        <translation>Eléments</translation>
+        <translation>ElÃ©ments</translation>
     </message>
     <message>
         <source>PREF_ELEMENT_COLOR</source>
-        <translation>Couleur d&apos;élément</translation>
+        <translation>Couleur d&apos;Ã©lÃ©ment</translation>
     </message>
     <message>
         <source>PREF_FILL</source>
@@ -3567,7 +3567,7 @@ Ouvrez une fenêtre VTK et essayez de nouveau</translation>
     </message>
     <message>
         <source>PREF_NOTIFY_MODE</source>
-        <translation>Montrer la notification sur le résultat de calcul</translation>
+        <translation>Montrer la notification sur le rÃ©sultat de calcul</translation>
     </message>
     <message>
         <source>PREF_NOTIFY_NEVER</source>
@@ -3583,7 +3583,7 @@ Ouvrez une fenêtre VTK et essayez de nouveau</translation>
     </message>
     <message>
         <source>PREF_ELEM_INFO</source>
-        <translation>Information des éléments du maillage</translation>
+        <translation>Information des Ã©lÃ©ments du maillage</translation>
     </message>
     <message>
         <source>PREF_ELEM_INFO_SIMPLE</source>
@@ -3595,11 +3595,11 @@ Ouvrez une fenêtre VTK et essayez de nouveau</translation>
     </message>
     <message>
         <source>SMESH_PREF_GROUP_PRECISION</source>
-        <translation>Précision des champs d&apos;entrée</translation>
+        <translation>PrÃ©cision des champs d&apos;entrÃ©e</translation>
     </message>
     <message>
         <source>PREF_GROUP_ELEMENTS</source>
-        <translation>Eléments</translation>
+        <translation>ElÃ©ments</translation>
     </message>
     <message>
         <source>PREF_GROUP_EXPORT</source>
@@ -3615,7 +3615,7 @@ Ouvrez une fenêtre VTK et essayez de nouveau</translation>
     </message>
     <message>
         <source>PREF_GROUP_NODES</source>
-        <translation>NÅ“uds</translation>
+        <translation>Noeuds</translation>
     </message>
     <message>
         <source>PREF_GROUP_GROUPS</source>
@@ -3627,19 +3627,19 @@ Ouvrez une fenêtre VTK et essayez de nouveau</translation>
     </message>
     <message>
         <source>PREF_GROUP_PRECISION</source>
-        <translation>Précision</translation>
+        <translation>PrÃ©cision</translation>
     </message>
     <message>
         <source>PREF_GROUP_PRESELECTION</source>
-        <translation>Présélection</translation>
+        <translation>PrÃ©sÃ©lection</translation>
     </message>
     <message>
         <source>PREF_GROUP_QUALITY</source>
-        <translation>Contrôles de qualité</translation>
+        <translation>ContrÃ´les de qualitÃ©</translation>
     </message>
     <message>
         <source>PREF_GROUP_SELECTION</source>
-        <translation>Sélection</translation>
+        <translation>SÃ©lection</translation>
     </message>
     <message>
         <source>PREF_GROUP_INFO</source>
@@ -3647,11 +3647,11 @@ Ouvrez une fenêtre VTK et essayez de nouveau</translation>
     </message>
     <message>
         <source>PREF_HIGHLIGHT_COLOR</source>
-        <translation>Couleur de sélection</translation>
+        <translation>Couleur de sÃ©lection</translation>
     </message>
     <message>
         <source>PREF_LABELS_COLOR</source>
-        <translation>Couleur des étiquettes</translation>
+        <translation>Couleur des Ã©tiquettes</translation>
     </message>
     <message>
         <source>PREF_MARKER_SCALE</source>
@@ -3659,7 +3659,7 @@ Ouvrez une fenêtre VTK et essayez de nouveau</translation>
     </message>
     <message>
         <source>PREF_NODES</source>
-        <translation>NÅ“uds</translation>
+        <translation>Noeuds</translation>
     </message>
     <message>
         <source>PREF_OBJECTS</source>
@@ -3675,15 +3675,15 @@ Ouvrez une fenêtre VTK et essayez de nouveau</translation>
     </message>
     <message>
         <source>PREF_PRECISION_USE</source>
-        <translation>Utiliser la précision</translation>
+        <translation>Utiliser la prÃ©cision</translation>
     </message>
     <message>
         <source>PREF_PRECISION_VALUE</source>
-        <translation>Nombre de chiffres après la virgule</translation>
+        <translation>Nombre de chiffres aprÃ¨s la virgule</translation>
     </message>
     <message>
         <source>PREF_RENUMBER</source>
-        <translation>Renuméroter automatiquement</translation>
+        <translation>RenumÃ©roter automatiquement</translation>
     </message>
     <message>
         <source>PREF_SHRINK_COEFF</source>
@@ -3691,7 +3691,7 @@ Ouvrez une fenêtre VTK et essayez de nouveau</translation>
     </message>
     <message>
         <source>PREF_TAB_GENERAL</source>
-        <translation>Général</translation>
+        <translation>GÃ©nÃ©ral</translation>
     </message>
     <message>
         <source>PREF_TAB_MESH</source>
@@ -3699,7 +3699,7 @@ Ouvrez une fenêtre VTK et essayez de nouveau</translation>
     </message>
     <message>
         <source>PREF_TAB_SELECTION</source>
-        <translation>Sélection</translation>
+        <translation>SÃ©lection</translation>
     </message>
     <message>
         <source>PREF_TITLE_COLOR</source>
@@ -3711,11 +3711,11 @@ Ouvrez une fenêtre VTK et essayez de nouveau</translation>
     </message>
     <message>
         <source>PREF_COLOR_0D</source>
-        <translation>Eléments 0D</translation>
+        <translation>ElÃ©ments 0D</translation>
     </message>
     <message>
         <source>PREF_SIZE_0D</source>
-        <translation>Taille des éléments 0D</translation>
+        <translation>Taille des Ã©lÃ©ments 0D</translation>
     </message>
     <message>
         <source>PREF_WIDTH</source>
@@ -3726,15 +3726,15 @@ Ouvrez une fenêtre VTK et essayez de nouveau</translation>
     <name>SMESHGUI_AddQuadraticElementDlg</name>
     <message>
         <source>SMESH_ADD_QUADRATIC_EDGE</source>
-        <translation>Ajouter une arête quadratique</translation>
+        <translation>Ajouter une arÃªte quadratique</translation>
     </message>
     <message>
         <source>SMESH_ADD_QUADRATIC_HEXAHEDRON</source>
-        <translation>Ajouter un hexaèdre quadratique</translation>
+        <translation>Ajouter un hexaÃ¨dre quadratique</translation>
     </message>
     <message>
         <source>SMESH_ADD_QUADRATIC_PENTAHEDRON</source>
-        <translation>Ajouter un pentaèdre quadratique</translation>
+        <translation>Ajouter un pentaÃ¨dre quadratique</translation>
     </message>
     <message>
         <source>SMESH_ADD_QUADRATIC_PYRAMID</source>
@@ -3746,7 +3746,7 @@ Ouvrez une fenêtre VTK et essayez de nouveau</translation>
     </message>
     <message>
         <source>SMESH_ADD_QUADRATIC_TETRAHEDRON</source>
-        <translation>Ajouter un tétraèdre quadratique</translation>
+        <translation>Ajouter un tÃ©traÃ¨dre quadratique</translation>
     </message>
     <message>
         <source>SMESH_ADD_QUADRATIC_TRIANGLE</source>
@@ -3754,7 +3754,7 @@ Ouvrez une fenêtre VTK et essayez de nouveau</translation>
     </message>
     <message>
         <source>SMESH_CORNER_NODES</source>
-        <translation>NÅ“uds angulaires:</translation>
+        <translation>Noeuds angulaires:</translation>
     </message>
     <message>
         <source>SMESH_FIRST</source>
@@ -3781,11 +3781,11 @@ Ouvrez une fenêtre VTK et essayez de nouveau</translation>
     </message>
     <message>
         <source>CREATE_COMMON_GROUPS</source>
-        <translation>Créer des groupes communs pour les maillages initiaux</translation>
+        <translation>CrÃ©er des groupes communs pour les maillages initiaux</translation>
     </message>
     <message>
         <source>MERGE_NODES_AND_ELEMENTS</source>
-        <translation>Fusionner les nÅ“uds et les éléments coïncidents</translation>
+        <translation>Fusionner les noeuds et les Ã©lÃ©ments coÃ¯ncidents</translation>
     </message>
     <message>
         <source>MESHES</source>
@@ -3801,11 +3801,11 @@ Ouvrez une fenêtre VTK et essayez de nouveau</translation>
     </message>
     <message>
         <source>RESULT_NAME</source>
-        <translation>Nom du résultat</translation>
+        <translation>Nom du rÃ©sultat</translation>
     </message>
     <message>
         <source>UNITE</source>
-        <translation>Réunir</translation>
+        <translation>RÃ©unir</translation>
     </message>
 </context>
 <context>
@@ -3819,7 +3819,7 @@ Ouvrez une fenêtre VTK et essayez de nouveau</translation>
     <name>SMESHGUI_ComputeDlg</name>
     <message>
         <source>CAPTION</source>
-        <translation>Le calcul du maillage a échoué</translation>
+        <translation>Le calcul du maillage a Ã©chouÃ©</translation>
     </message>
     <message>
         <source>CONSTRUCTOR</source>
@@ -3835,7 +3835,7 @@ Ouvrez une fenêtre VTK et essayez de nouveau</translation>
     </message>
     <message>
         <source>MEMORY_LACK</source>
-        <translation>Problème d&apos;allocation de mémoire</translation>
+        <translation>ProblÃ¨me d&apos;allocation de mÃ©moire</translation>
     </message>
     <message>
         <source>PUBLISH_SHAPE</source>
@@ -3854,11 +3854,11 @@ Ouvrez une fenêtre VTK et essayez de nouveau</translation>
     <name>SMESHGUI_PrecomputeDlg</name>
     <message>
         <source>CAPTION</source>
-        <translation>Prévisualiser et calculer le maillage</translation>
+        <translation>PrÃ©visualiser et calculer le maillage</translation>
     </message>
     <message>
         <source>PREVIEW</source>
-        <translation>Prévisualiser</translation>
+        <translation>PrÃ©visualiser</translation>
     </message>
     <message>
         <source>PREVIEW_1</source>
@@ -3877,18 +3877,18 @@ Ouvrez une fenêtre VTK et essayez de nouveau</translation>
     <name>SMESHGUI_PrecomputeOp</name>
     <message>
         <source>CLEAR_SUBMESH_QUESTION</source>
-        <translation>Des sous-maillages temporaires ont été créés sur la géométrie sélectionnée
-au cours de l&apos;opération de prévisualisation.
+        <translation>Des sous-maillages temporaires ont Ã©tÃ© crÃ©Ã©s sur la gÃ©omÃ©trie sÃ©lectionnÃ©e
+au cours de l&apos;opÃ©ration de prÃ©visualisation.
 Voulez-vous supprimer toutes ces sous-maillages ?</translation>
     </message>
     <message>
         <source>SMESH_WRN_NOTHING_PREVIEW</source>
-        <translation>La prévisualisation du maillage n&apos;est pas disponible</translation>
+        <translation>La prÃ©visualisation du maillage n&apos;est pas disponible</translation>
     </message>
     <message>
         <source>SMESH_REJECT_MESH_ORDER</source>
-        <translation>La priorité des sous-maillages a été changée au cours de la prévisualisation.
-Voulez-vous restaurer la priorité initiale ?</translation>
+        <translation>La prioritÃ© des sous-maillages a Ã©tÃ© changÃ©e au cours de la prÃ©visualisation.
+Voulez-vous restaurer la prioritÃ© initiale ?</translation>
     </message>
 </context>
 <context>
@@ -3899,7 +3899,7 @@ Voulez-vous restaurer la priorité initiale ?</translation>
     </message>
     <message>
         <source>MEDIUMNDS</source>
-        <translation>NÅ“uds milieux sur la géométrie</translation>
+        <translation>Noeuds milieux sur la gÃ©omÃ©trie</translation>
     </message>
     <message>
         <source>MESH</source>
@@ -3907,27 +3907,27 @@ Voulez-vous restaurer la priorité initiale ?</translation>
     </message>
     <message>
         <source>RADIOBTN_1</source>
-        <translation>Convertir en éléments quadratiques</translation>
+        <translation>Convertir en Ã©lÃ©ments quadratiques</translation>
     </message>
     <message>
         <source>RADIOBTN_2</source>
-        <translation>Convertir à partir d&apos;éléments quadratiques</translation>
+        <translation>Convertir Ã  partir d&apos;Ã©lÃ©ments quadratiques</translation>
     </message>
     <message>
         <source>NON_CONFORM_WARNING</source>
-        <translation>Attention: le maillage généré sera a priori non-conforme</translation>
+        <translation>Attention: le maillage gÃ©nÃ©rÃ© sera a priori non-conforme</translation>
     </message>
 </context>
 <context>
     <name>SMESHGUI_ConvToQuadOp</name>
     <message>
         <source>MESH_IS_NOT_SELECTED</source>
-        <translation>Le maillage n&apos;est pas sélectionné
+        <translation>Le maillage n&apos;est pas sÃ©lectionnÃ©
 Indiquez-le et essayez de nouveau</translation>
     </message>
     <message>
         <source>REF_IS_NULL</source>
-        <translation>Aucun maillage valide n&apos;est sélecionné</translation>
+        <translation>Aucun maillage valide n&apos;est sÃ©lecionnÃ©</translation>
     </message>
 </context>
 <context>
@@ -3946,37 +3946,37 @@ Indiquez-le et essayez de nouveau</translation>
     </message>
     <message>
         <source>ERROR_OF_CREATION</source>
-        <translation>Une erreur interne s&apos;est produite au cours de la création du motif
-Vérifiez la validité des informations données</translation>
+        <translation>Une erreur interne s&apos;est produite au cours de la crÃ©ation du motif
+VÃ©rifiez la validitÃ© des informations donnÃ©es</translation>
     </message>
     <message>
         <source>ERROR_OF_SAVING</source>
         <translation>Une erreur interne s&apos;est produite au cours de l&apos;enregistrement du motif.
-Vérifiez l&apos;espace de disque disponible et vos droits d&apos;écriture dans ce fichier</translation>
+VÃ©rifiez l&apos;espace de disque disponible et vos droits d&apos;Ã©criture dans ce fichier</translation>
     </message>
     <message>
         <source>ERR_LOADF_CANT_PROJECT</source>
-        <translation>Impossible d&apos;appliquer la projection des nÅ“uds vers la face</translation>
+        <translation>Impossible d&apos;appliquer la projection des noeuds vers la face</translation>
     </message>
     <message>
         <source>ERR_LOADF_CLOSED_FACE</source>
-        <translation>Impossible de créer un motif à partir d&apos;une face avec une arête de couture</translation>
+        <translation>Impossible de crÃ©er un motif Ã  partir d&apos;une face avec une arÃªte de couture</translation>
     </message>
     <message>
         <source>ERR_LOADF_NARROW_FACE</source>
-        <translation>Impossible de créer un motif à partir d&apos;une face étroite</translation>
+        <translation>Impossible de crÃ©er un motif Ã  partir d&apos;une face Ã©troite</translation>
     </message>
     <message>
         <source>ERR_LOADV_BAD_SHAPE</source>
-        <translation>Il n&apos;est possible de créer un motif que d&apos;une coque fermée ou d&apos;un solide avec 6 faces</translation>
+        <translation>Il n&apos;est possible de crÃ©er un motif que d&apos;une coque fermÃ©e ou d&apos;un solide avec 6 faces</translation>
     </message>
     <message>
         <source>ERR_LOADV_COMPUTE_PARAMS</source>
-        <translation>Il est impossible de calculer les paramètres du point</translation>
+        <translation>Il est impossible de calculer les paramÃ¨tres du point</translation>
     </message>
     <message>
         <source>ERR_LOAD_EMPTY_SUBMESH</source>
-        <translation>Il n&apos;y a pas d&apos;éléments pour créer de motif</translation>
+        <translation>Il n&apos;y a pas d&apos;Ã©lÃ©ments pour crÃ©er de motif</translation>
     </message>
     <message>
         <source>MESH_OR_SUBMESH</source>
@@ -4000,7 +4000,7 @@ Vérifiez l&apos;espace de disque disponible et vos droits d&apos;écriture dans c
     </message>
     <message>
         <source>PROJECT</source>
-        <translation>Projeter les nÅ“uds sur la face</translation>
+        <translation>Projeter les noeuds sur la face</translation>
     </message>
     <message>
         <source>SAVE</source>
@@ -4015,22 +4015,22 @@ Vérifiez l&apos;espace de disque disponible et vos droits d&apos;écriture dans c
     <name>SMESHGUI_CreatePolyhedralVolumeDlg</name>
     <message>
         <source>FACES_BY_NODES</source>
-        <translation>Faces par nÅ“uds</translation>
+        <translation>Faces par noeuds</translation>
     </message>
     <message>
         <source>SMESH_POLYEDRE_CREATE_ERROR</source>
-        <translation>Erreur de création du polyèdre.</translation>
+        <translation>Erreur de crÃ©ation du polyÃ¨dre.</translation>
     </message>
     <message>
         <source>SMESH_POLYEDRE_PREVIEW</source>
-        <translation>Prévisualiser le polyèdre</translation>
+        <translation>PrÃ©visualiser le polyÃ¨dre</translation>
     </message>
 </context>
 <context>
     <name>SMESHGUI_CuttingOfQuadsDlg</name>
     <message>
         <source>CAPTION</source>
-        <translation>Découpe des quadrangles</translation>
+        <translation>DÃ©coupe des quadrangles</translation>
     </message>
 </context>
 <context>
@@ -4041,35 +4041,35 @@ Vérifiez l&apos;espace de disque disponible et vos droits d&apos;écriture dans c
     </message>
     <message>
         <source>NO_SELECTED_GROUPS</source>
-        <translation>Il n&apos;y a aucun groupe sélectionné
+        <translation>Il n&apos;y a aucun groupe sÃ©lectionnÃ©
 Choisissez un groupe et essayez de nouveau</translation>
     </message>
     <message>
         <source>SELECTED_GROUPS</source>
-        <translation>Groupes sélectionnés</translation>
+        <translation>Groupes sÃ©lectionnÃ©s</translation>
     </message>
 </context>
 <context>
     <name>SMESHGUI_MergeDlg</name>
     <message>
         <source>COINCIDENT_ELEMENTS</source>
-        <translation>Eléments coïncidents</translation>
+        <translation>ElÃ©ments coÃ¯ncidents</translation>
     </message>
     <message>
         <source>COINCIDENT_NODES</source>
-        <translation>NÅ“uds coïncidents</translation>
+        <translation>Noeuds coÃ¯ncidents</translation>
     </message>
     <message>
         <source>DETECT</source>
-        <translation>Détecter</translation>
+        <translation>DÃ©tecter</translation>
     </message>
     <message>
         <source>EDIT_SELECTED_GROUP</source>
-        <translation>Editer le groupe sélectionné</translation>
+        <translation>Editer le groupe sÃ©lectionnÃ©</translation>
     </message>
     <message>
         <source>SELECT_ALL</source>
-        <translation>Tout sélectionner</translation>
+        <translation>Tout sÃ©lectionner</translation>
     </message>
     <message>
         <source>EXCLUDE_GROUPS</source>
@@ -4080,19 +4080,19 @@ Choisissez un groupe et essayez de nouveau</translation>
     <name>SMESHGUI_ExtrusionAlongPathDlg</name>
     <message>
         <source>BAD_SHAPE_TYPE</source>
-        <translation>La géométrie choisie en tant que chemin n&apos;est pas une arête</translation>
+        <translation>La gÃ©omÃ©trie choisie en tant que chemin n&apos;est pas une arÃªte</translation>
     </message>
     <message>
         <source>CANT_GET_TANGENT</source>
-        <translation>Impossible d&apos;obtenir la tangente pour un des nÅ“uds du chemin</translation>
+        <translation>Impossible d&apos;obtenir la tangente pour un des noeuds du chemin</translation>
     </message>
     <message>
         <source>EXTRUSION_1D</source>
-        <translation>Extrusion des éléments 1D</translation>
+        <translation>Extrusion des Ã©lÃ©ments 1D</translation>
     </message>
     <message>
         <source>EXTRUSION_2D</source>
-        <translation>Extrusion des éléments 2D</translation>
+        <translation>Extrusion des Ã©lÃ©ments 2D</translation>
     </message>
     <message>
         <source>EXTRUSION_ALONG_PATH</source>
@@ -4100,19 +4100,19 @@ Choisissez un groupe et essayez de nouveau</translation>
     </message>
     <message>
         <source>EXTR_BAD_STARTING_NODE</source>
-        <translation>NÅ“ud de départ du chemin incorrect</translation>
+        <translation>Noeud de dÃ©part du chemin incorrect</translation>
     </message>
     <message>
         <source>LINEAR_ANGLES</source>
-        <translation>Variation linéaire des angles</translation>
+        <translation>Variation linÃ©aire des angles</translation>
     </message>
     <message>
         <source>NO_ELEMENTS_SELECTED</source>
-        <translation>Aucun élément de maillage n&apos;est sélectionné pour l&apos;extrusion</translation>
+        <translation>Aucun Ã©lÃ©ment de maillage n&apos;est sÃ©lectionnÃ© pour l&apos;extrusion</translation>
     </message>
     <message>
         <source>SELECTED_PATH_IS_NOT_EDGE</source>
-        <translation>Le maillage du chemin doît être du type arête</translation>
+        <translation>Le maillage du chemin doÃ®t Ãªtre du type arÃªte</translation>
     </message>
     <message>
         <source>SMESH_ANGLES</source>
@@ -4132,11 +4132,11 @@ Choisissez un groupe et essayez de nouveau</translation>
     </message>
     <message>
         <source>SMESH_PATH_SHAPE</source>
-        <translation>Géométrie (arête)</translation>
+        <translation>GÃ©omÃ©trie (arÃªte)</translation>
     </message>
     <message>
         <source>SMESH_PATH_START</source>
-        <translation>NÅ“ud de début</translation>
+        <translation>Noeud de dÃ©but</translation>
     </message>
     <message>
         <source>SMESH_USE_ANGLES</source>
@@ -4148,18 +4148,18 @@ Choisissez un groupe et essayez de nouveau</translation>
     </message>
     <message>
         <source>WRONG_ANGLES_NUMBER</source>
-        <translation>Le nombre d&apos;angles doit correspondre au nombre des nÅ“uds du chemin</translation>
+        <translation>Le nombre d&apos;angles doit correspondre au nombre des noeuds du chemin</translation>
     </message>
 </context>
 <context>
     <name>SMESHGUI_ExtrusionDlg</name>
     <message>
         <source>EXTRUSION_1D</source>
-        <translation>Extrusion des éléments 1D</translation>
+        <translation>Extrusion des Ã©lÃ©ments 1D</translation>
     </message>
     <message>
         <source>EXTRUSION_2D</source>
-        <translation>Extrusion des éléments 2D</translation>
+        <translation>Extrusion des Ã©lÃ©ments 2D</translation>
     </message>
     <message>
         <source>EXTRUSION_ALONG_LINE</source>
@@ -4170,8 +4170,8 @@ Choisissez un groupe et essayez de nouveau</translation>
     <name>SMESHGUI_FilterDlg</name>
     <message>
         <source>BAD_SHAPE_NAME</source>
-        <translation>Il n&apos;y a pas d&apos;objet géométrique &quot;%1&quot; dans l&apos;étude actuelle
-Sélectionnez un objet valide et essayez de nouveau</translation>
+        <translation>Il n&apos;y a pas d&apos;objet gÃ©omÃ©trique &quot;%1&quot; dans l&apos;Ã©tude actuelle
+SÃ©lectionnez un objet valide et essayez de nouveau</translation>
     </message>
     <message>
         <source>CURRENT_DIALOG</source>
@@ -4179,7 +4179,7 @@ Sélectionnez un objet valide et essayez de nouveau</translation>
     </message>
     <message>
         <source>EDGES_TLT</source>
-        <translation>Filtre d&apos;arêtes</translation>
+        <translation>Filtre d&apos;arÃªtes</translation>
     </message>
     <message>
         <source>FACES_TLT</source>
@@ -4191,40 +4191,40 @@ Sélectionnez un objet valide et essayez de nouveau</translation>
     </message>
     <message>
         <source>NODES_TLT</source>
-        <translation>Filtre de nÅ“uds</translation>
+        <translation>Filtre de noeuds</translation>
     </message>
     <message>
         <source>SELECTION</source>
-        <translation>Sélection initiale</translation>
+        <translation>SÃ©lection initiale</translation>
     </message>
     <message>
         <source>SET_IN_VIEWER</source>
-        <translation>Insérer le filtre dans la fenêtre 3D</translation>
+        <translation>InsÃ©rer le filtre dans la fenÃªtre 3D</translation>
     </message>
     <message>
         <source>SHAPE_IS_NOT_A_CYLINDER</source>
         <translation>&quot;%1&quot; n&apos;est pas une face cylindrique
-Sélectionnez une face cylindrique et essayez de nouveau</translation>
+SÃ©lectionnez une face cylindrique et essayez de nouveau</translation>
     </message>
     <message>
         <source>SHAPE_IS_NOT_A_FACE</source>
         <translation>&quot;%1&quot; n&apos;est pas une face
-Sélectionnez une face et essayez de nouveau</translation>
+SÃ©lectionnez une face et essayez de nouveau</translation>
     </message>
     <message>
         <source>SHAPE_IS_NOT_A_PLANE</source>
         <translation>&quot;%1&quot; n&apos;est pas un plan
-Sélectionnez un plan et essayez de nouveau</translation>
+SÃ©lectionnez un plan et essayez de nouveau</translation>
     </message>
     <message>
         <source>FACE_ID_NOT_SELECTED</source>
-        <translation>Aucune face de maillage n&apos;est sélectionnée.
+        <translation>Aucune face de maillage n&apos;est sÃ©lectionnÃ©e.
 Indiquez-la et essayez de nouveau</translation>
     </message>
     <message>
         <source>NOT_FACE_ID</source>
-        <translation>&quot;%1&quot; ne correspond à aucun ID valide d&apos;une face du maillage.
-Sélectionnez une face et essayez de nouveau</translation>
+        <translation>&quot;%1&quot; ne correspond Ã  aucun ID valide d&apos;une face du maillage.
+SÃ©lectionnez une face et essayez de nouveau</translation>
     </message>
     <message>
         <source>SOURCE</source>
@@ -4232,7 +4232,7 @@ Sélectionnez une face et essayez de nouveau</translation>
     </message>
     <message>
         <source>TLT</source>
-        <translation>Filtre de sélection</translation>
+        <translation>Filtre de sÃ©lection</translation>
     </message>
     <message>
         <source>VOLUMES_TLT</source>
@@ -4247,7 +4247,7 @@ Sélectionnez une face et essayez de nouveau</translation>
     </message>
     <message>
         <source>ADD_TO_TLT</source>
-        <translation>Ajouter le filtre de sélection à la librairie</translation>
+        <translation>Ajouter le filtre de sÃ©lection Ã  la librairie</translation>
     </message>
     <message>
         <source>ALL_FILES_FILTER</source>
@@ -4255,12 +4255,12 @@ Sélectionnez une face et essayez de nouveau</translation>
     </message>
     <message>
         <source>ASSIGN_NEW_NAME</source>
-        <translation>La librairie déjà contient un filtre avec le nom &quot;%1&quot;
-Le nouveau nom &quot;%2&quot; est attribué au filtre ajouté</translation>
+        <translation>La librairie dÃ©jÃ  contient un filtre avec le nom &quot;%1&quot;
+Le nouveau nom &quot;%2&quot; est attribuÃ© au filtre ajoutÃ©</translation>
     </message>
     <message>
         <source>COPY_FROM_TLT</source>
-        <translation>Copier le filtre de la sélection de la librairie</translation>
+        <translation>Copier le filtre de la sÃ©lection de la librairie</translation>
     </message>
     <message>
         <source>DELETE</source>
@@ -4268,15 +4268,15 @@ Le nouveau nom &quot;%2&quot; est attribué au filtre ajouté</translation>
     </message>
     <message>
         <source>EDGE</source>
-        <translation>Arête</translation>
+        <translation>ArÃªte</translation>
     </message>
     <message>
         <source>EDIT_LIB_TLT</source>
-        <translation>Librairie des filtres de sélection</translation>
+        <translation>Librairie des filtres de sÃ©lection</translation>
     </message>
     <message>
         <source>ELEMENT</source>
-        <translation>Elément</translation>
+        <translation>ElÃ©ment</translation>
     </message>
     <message>
         <source>EMPTY_FILTER_NAME</source>
@@ -4291,32 +4291,32 @@ Indiquez un autre nom</translation>
     <message>
         <source>ERROR_LOAD</source>
         <translation>Il est impossible de charger la librairie
-Vérifiez le nom du fichier de la librairie et ses propriétés</translation>
+VÃ©rifiez le nom du fichier de la librairie et ses propriÃ©tÃ©s</translation>
     </message>
     <message>
         <source>ERROR_OF_ADDING</source>
-        <translation>Une erreur interne s&apos;est produite à l&apos;addition d&apos;un nouveau filtre dans la librairie.
-Vérifiez la validité des informations données</translation>
+        <translation>Une erreur interne s&apos;est produite Ã  l&apos;addition d&apos;un nouveau filtre dans la librairie.
+VÃ©rifiez la validitÃ© des informations donnÃ©es</translation>
     </message>
     <message>
         <source>ERROR_OF_COPYING</source>
-        <translation>Une erreur interne s&apos;est produite à la copie d&apos;un filtre depuis la librairie.
-Vérifiez la validité des informations données</translation>
+        <translation>Une erreur interne s&apos;est produite Ã  la copie d&apos;un filtre depuis la librairie.
+VÃ©rifiez la validitÃ© des informations donnÃ©es</translation>
     </message>
     <message>
         <source>ERROR_OF_DELETING</source>
         <translation>Une erreur interne s&apos;est produite lors de la suppression d&apos;un filtre depuis la librairie.
-Vérifiez la validité des informations données</translation>
+VÃ©rifiez la validitÃ© des informations donnÃ©es</translation>
     </message>
     <message>
         <source>ERROR_OF_EDITING</source>
-        <translation>Une erreur interne s&apos;est produite à l&apos;édition d&apos;un filtre dans la librairie.
-Vérifiez la validité des informations données</translation>
+        <translation>Une erreur interne s&apos;est produite Ã  l&apos;Ã©dition d&apos;un filtre dans la librairie.
+VÃ©rifiez la validitÃ© des informations donnÃ©es</translation>
     </message>
     <message>
         <source>ERROR_OF_SAVING</source>
-        <translation>Une erreur s&apos;est produite à la sauvegarde de la librairie des filtres.
-Vérifiez la validité des informations données</translation>
+        <translation>Une erreur s&apos;est produite Ã  la sauvegarde de la librairie des filtres.
+VÃ©rifiez la validitÃ© des informations donnÃ©es</translation>
     </message>
     <message>
         <source>FACE</source>
@@ -4352,7 +4352,7 @@ Vérifiez la validité des informations données</translation>
     </message>
     <message>
         <source>NO_PERMISSION</source>
-        <translation>Vous n&apos;avez pas la permission d&apos;écrire dans ce fichier</translation>
+        <translation>Vous n&apos;avez pas la permission d&apos;Ã©crire dans ce fichier</translation>
     </message>
     <message>
         <source>OPEN_LIBRARY</source>
@@ -4360,7 +4360,7 @@ Vérifiez la validité des informations données</translation>
     </message>
     <message>
         <source>SELECTION</source>
-        <translation>Sélection</translation>
+        <translation>SÃ©lection</translation>
     </message>
     <message>
         <source>VOLUME</source>
@@ -4379,11 +4379,11 @@ Vérifiez la validité des informations données</translation>
     </message>
     <message>
         <source>ADDITIONAL_PARAMETERS</source>
-        <translation>Paramètres supplémentaires</translation>
+        <translation>ParamÃ¨tres supplÃ©mentaires</translation>
     </message>
     <message>
         <source>ADD_TO</source>
-        <translation>Ajouter à...</translation>
+        <translation>Ajouter Ã ...</translation>
     </message>
     <message>
         <source>AND</source>
@@ -4403,15 +4403,15 @@ Vérifiez la validité des informations données</translation>
     </message>
     <message>
         <source>BAD_ORIENTED_VOLUME</source>
-        <translation>Volume mal orienté</translation>
+        <translation>Volume mal orientÃ©</translation>
     </message>
     <message>
         <source>BARE_BORDER_VOLUME</source>
-        <translation>Volumes avec éléments de peau 2D manquants</translation>
+        <translation>Volumes avec Ã©lÃ©ments de peau 2D manquants</translation>
     </message>
     <message>
         <source>BARE_BORDER_FACE</source>
-        <translation>Faces avec éléments de peau 1D manquants</translation>
+        <translation>Faces avec Ã©lÃ©ments de peau 1D manquants</translation>
     </message>
     <message>
         <source>OVER_CONSTRAINED_VOLUME</source>
@@ -4427,11 +4427,11 @@ Vérifiez la validité des informations données</translation>
     </message>
     <message>
         <source>BELONG_TO_GENSURFACE</source>
-        <translation>Appartient à la surface</translation>
+        <translation>Appartient Ã  la surface</translation>
     </message>
     <message>
         <source>BELONG_TO_GEOM</source>
-        <translation>Appartient à la géométrie</translation>
+        <translation>Appartient Ã  la gÃ©omÃ©trie</translation>
     </message>
     <message>
         <source>BELONG_TO_PLANE</source>
@@ -4439,7 +4439,7 @@ Vérifiez la validité des informations données</translation>
     </message>
     <message>
         <source>BINARY</source>
-        <translation>Opérateur logique</translation>
+        <translation>OpÃ©rateur logique</translation>
     </message>
     <message>
         <source>CLEAR</source>
@@ -4459,19 +4459,19 @@ Vérifiez la validité des informations données</translation>
     </message>
     <message>
         <source>CRITERION</source>
-        <translation>Critère</translation>
+        <translation>CritÃ¨re</translation>
     </message>
     <message>
         <source>EDGES</source>
-        <translation>Arêtes</translation>
+        <translation>ArÃªtes</translation>
     </message>
     <message>
         <source>ENTITY_TYPE</source>
-        <translation>Type de l&apos;entité</translation>
+        <translation>Type de l&apos;entitÃ©</translation>
     </message>
     <message>
         <source>EQUAL_TO</source>
-        <translation>Egal à</translation>
+        <translation>Egal Ã </translation>
     </message>
     <message>
         <source>ERROR</source>
@@ -4491,11 +4491,11 @@ Vérifiez la validité des informations données</translation>
     </message>
     <message>
         <source>FREE_EDGES</source>
-        <translation>Arêtes libres</translation>
+        <translation>ArÃªtes libres</translation>
     </message>
     <message>
         <source>FREE_NODES</source>
-        <translation>NÅ“uds isolés</translation>
+        <translation>Noeuds isolÃ©s</translation>
     </message>
     <message>
         <source>FREE_FACES</source>
@@ -4507,7 +4507,7 @@ Vérifiez la validité des informations données</translation>
     </message>
     <message>
         <source>INSERT</source>
-        <translation>Insérer</translation>
+        <translation>InsÃ©rer</translation>
     </message>
     <message>
         <source>LENGTH</source>
@@ -4519,19 +4519,19 @@ Vérifiez la validité des informations données</translation>
     </message>
     <message>
         <source>LESS_THAN</source>
-        <translation>Inférieur à ...</translation>
+        <translation>InfÃ©rieur Ã  ...</translation>
     </message>
     <message>
         <source>LYING_ON_GEOM</source>
-        <translation>Repose sur la géométrie</translation>
+        <translation>Repose sur la gÃ©omÃ©trie</translation>
     </message>
     <message>
         <source>MAX_ELEMENT_LENGTH_2D</source>
-        <translation>Diamètre d&apos;éléments 2D</translation>
+        <translation>DiamÃ¨tre d&apos;Ã©lÃ©ments 2D</translation>
     </message>
     <message>
         <source>MAX_ELEMENT_LENGTH_3D</source>
-        <translation>Diamètre d&apos;éléments 3D</translation>
+        <translation>DiamÃ¨tre d&apos;Ã©lÃ©ments 3D</translation>
     </message>
     <message>
         <source>MINIMUM_ANGLE</source>
@@ -4539,11 +4539,11 @@ Vérifiez la validité des informations données</translation>
     </message>
     <message>
         <source>MORE_THAN</source>
-        <translation>Supérieur à ...</translation>
+        <translation>SupÃ©rieur Ã  ...</translation>
     </message>
     <message>
         <source>MULTIEDGES_ERROR</source>
-        <translation>La valeur de seuil des bords multi-connectés ne peut pas être égal à 1
+        <translation>La valeur de seuil des bords multi-connectÃ©s ne peut pas Ãªtre Ã©gal Ã  1
 Entrez une valeur correcte et essayez de nouveau</translation>
     </message>
     <message>
@@ -4553,11 +4553,11 @@ Entrez une valeur correcte et essayez de nouveau</translation>
     </message>
     <message>
         <source>MULTI_BORDERS</source>
-        <translation>Bords multi-connectés</translation>
+        <translation>Bords multi-connectÃ©s</translation>
     </message>
     <message>
         <source>NODES</source>
-        <translation>NÅ“uds</translation>
+        <translation>Noeuds</translation>
     </message>
     <message>
         <source>NOT</source>
@@ -4581,7 +4581,7 @@ Entrez une valeur correcte et essayez de nouveau</translation>
     </message>
     <message>
         <source>TAPER</source>
-        <translation>Cône</translation>
+        <translation>CÃ´ne</translation>
     </message>
     <message>
         <source>THRESHOLD_VALUE</source>
@@ -4589,7 +4589,7 @@ Entrez une valeur correcte et essayez de nouveau</translation>
     </message>
     <message>
         <source>UNARY</source>
-        <translation>Négation</translation>
+        <translation>NÃ©gation</translation>
     </message>
     <message>
         <source>VOLUMES</source>
@@ -4601,11 +4601,11 @@ Entrez une valeur correcte et essayez de nouveau</translation>
     </message>
     <message>
         <source>WARPING</source>
-        <translation>Déformation</translation>
+        <translation>DÃ©formation</translation>
     </message>
     <message>
         <source>LINEAR</source>
-        <translation>Linéaire</translation>
+        <translation>LinÃ©aire</translation>
     </message>
     <message>
         <source>GROUP_COLOR</source>
@@ -4613,11 +4613,11 @@ Entrez une valeur correcte et essayez de nouveau</translation>
     </message>
     <message>
         <source>ELEMENTS</source>
-        <translation>Eléments</translation>
+        <translation>ElÃ©ments</translation>
     </message>
     <message>
         <source>GEOM_TYPE</source>
-        <translation>Type de géométrie</translation>
+        <translation>Type de gÃ©omÃ©trie</translation>
     </message>
     <message>
         <source>GEOM_TYPE_0</source>
@@ -4625,7 +4625,7 @@ Entrez une valeur correcte et essayez de nouveau</translation>
     </message>
     <message>
         <source>GEOM_TYPE_1</source>
-        <translation>Arête</translation>
+        <translation>ArÃªte</translation>
     </message>
     <message>
         <source>GEOM_TYPE_2</source>
@@ -4641,7 +4641,7 @@ Entrez une valeur correcte et essayez de nouveau</translation>
     </message>
     <message>
         <source>GEOM_TYPE_5</source>
-        <translation>Tétraèdre</translation>
+        <translation>TÃ©traÃ¨dre</translation>
     </message>
     <message>
         <source>GEOM_TYPE_6</source>
@@ -4649,15 +4649,15 @@ Entrez une valeur correcte et essayez de nouveau</translation>
     </message>
     <message>
         <source>GEOM_TYPE_7</source>
-        <translation>Hexaèdre</translation>
+        <translation>HexaÃ¨dre</translation>
     </message>
     <message>
         <source>GEOM_TYPE_8</source>
-        <translation>Pentaèdre</translation>
+        <translation>PentaÃ¨dre</translation>
     </message>
     <message>
         <source>GEOM_TYPE_9</source>
-        <translation>Polyèdres</translation>
+        <translation>PolyÃ¨dres</translation>
     </message>
 </context>
 <context>
@@ -4668,14 +4668,14 @@ Entrez une valeur correcte et essayez de nouveau</translation>
     </message>
     <message>
         <source>DIFF_MESHES</source>
-        <translation>Les arguments de l&apos;opération ne sont pas indiqués correctement
-Les groupes correspondent à des maillages différents
+        <translation>Les arguments de l&apos;opÃ©ration ne sont pas indiquÃ©s correctement
+Les groupes correspondent Ã  des maillages diffÃ©rents
 Donnez des arguments valides et essayez de nouveau</translation>
     </message>
     <message>
         <source>DIFF_TYPES</source>
-        <translation>Les arguments de l&apos;opération ne sont pas indiqués correctement
-Les groupes contiennent des éléments de types différents
+        <translation>Les arguments de l&apos;opÃ©ration ne sont pas indiquÃ©s correctement
+Les groupes contiennent des Ã©lÃ©ments de types diffÃ©rents
 Donnez des arguments valides et essayez de nouveau</translation>
     </message>
     <message>
@@ -4685,7 +4685,7 @@ Indiquez un nom non-vide et essayez de nouveau</translation>
     </message>
     <message>
         <source>INCORRECT_ARGUMENTS</source>
-        <translation>Les arguments de l&apos;opération ne sont pas indiqués
+        <translation>Les arguments de l&apos;opÃ©ration ne sont pas indiquÃ©s
 Indiquez-les et essayez de nouveau</translation>
     </message>
     <message>
@@ -4702,7 +4702,7 @@ Indiquez-les et essayez de nouveau</translation>
     </message>
     <message>
         <source>RESULT_NAME</source>
-        <translation>Nom du résultat</translation>
+        <translation>Nom du rÃ©sultat</translation>
     </message>
     <message>
         <source>TOOL_OBJECT</source>
@@ -4717,7 +4717,7 @@ Indiquez-les et essayez de nouveau</translation>
     <name>SMESHGUI_GroupDlg</name>
     <message>
         <source>SELECT_ALL</source>
-        <translation>Sélectionner tout</translation>
+        <translation>SÃ©lectionner tout</translation>
     </message>
 </context>
 <context>
@@ -4731,11 +4731,11 @@ Indiquez-les et essayez de nouveau</translation>
     <name>SMESHGUI_DimGroupDlg</name>
     <message>
         <source>CREATE_GROUP_OF_UNDERLYING_ELEMS</source>
-        <translation>Créer un groupe d&apos;entités sous-jacentes</translation>
+        <translation>CrÃ©er un groupe d&apos;entitÃ©s sous-jacentes</translation>
     </message>
     <message>
         <source>ELEMENTS_TYPE</source>
-        <translation>Type d&apos;éléments </translation>
+        <translation>Type d&apos;Ã©lÃ©ments </translation>
     </message>
     <message>
         <source>NODE</source>
@@ -4743,7 +4743,7 @@ Indiquez-les et essayez de nouveau</translation>
     </message>
     <message>
         <source>EDGE</source>
-        <translation>Arête</translation>
+        <translation>ArÃªte</translation>
     </message>
     <message>
         <source>FACE</source>
@@ -4765,7 +4765,7 @@ Indiquez-les et essayez de nouveau</translation>
     <name>SMESHGUI_CutGroupsDlg</name>
     <message>
         <source>CUT_OF_GROUPS</source>
-        <translation>Différence de groupes</translation>
+        <translation>DiffÃ©rence de groupes</translation>
     </message>
     <message>
         <source>MAIN_OBJECT</source>
@@ -4784,7 +4784,7 @@ Indiquez-les et essayez de nouveau</translation>
     </message>
     <message>
         <source>CAPTION</source>
-        <translation>Déplacer un noeud</translation>
+        <translation>DÃ©placer un noeud</translation>
     </message>
     <message>
         <source>DESTINATION</source>
@@ -4792,15 +4792,15 @@ Indiquez-les et essayez de nouveau</translation>
     </message>
     <message>
         <source>MOVE_NODE</source>
-        <translation>Déplacer un noeud</translation>
+        <translation>DÃ©placer un noeud</translation>
     </message>
     <message>
         <source>METHOD</source>
-        <translation>Méthode</translation>
+        <translation>MÃ©thode</translation>
     </message>
     <message>
         <source>NODE_2MOVE</source>
-        <translation>Noeud à déplacer</translation>
+        <translation>Noeud Ã  dÃ©placer</translation>
     </message>
     <message>
         <source>NODE_2MOVE_ID</source>
@@ -4815,34 +4815,34 @@ Indiquez-les et essayez de nouveau</translation>
     </message>
     <message>
         <source>INVALID_MESH</source>
-        <translation>Le maillage à modifier n&apos;est pas sélectionné</translation>
+        <translation>Le maillage Ã  modifier n&apos;est pas sÃ©lectionnÃ©</translation>
     </message>
 </context>
 <context>
     <name>SMESHGUI_FindElemByPointDlg</name>
     <message>
         <source>CAPTION</source>
-        <translation>Trouver un élément par un point</translation>
+        <translation>Trouver un Ã©lÃ©ment par un point</translation>
     </message>
     <message>
         <source>CREATE_NEW_METHOD</source>
-        <translation>Créer un noeud</translation>
+        <translation>CrÃ©er un noeud</translation>
     </message>
     <message>
         <source>MESH_PASS_THROUGH_POINT</source>
-        <translation>Créer un noeud au point</translation>
+        <translation>CrÃ©er un noeud au point</translation>
     </message>
     <message>
         <source>METHOD</source>
-        <translation>Méthode</translation>
+        <translation>MÃ©thode</translation>
     </message>
     <message>
         <source>MOVE_EXISTING_METHOD</source>
-        <translation>Déplacer un noeud</translation>
+        <translation>DÃ©placer un noeud</translation>
     </message>
     <message>
         <source>NODE_2MOVE</source>
-        <translation>Noeud à déplacer</translation>
+        <translation>Noeud Ã  dÃ©placer</translation>
     </message>
     <message>
         <source>NODE_2MOVE_ID</source>
@@ -4853,11 +4853,11 @@ Indiquez-les et essayez de nouveau</translation>
     <name>SMESHGUI_MeshDlg</name>
     <message>
         <source>CREATE_MESH</source>
-        <translation>Créer un maillage</translation>
+        <translation>CrÃ©er un maillage</translation>
     </message>
     <message>
         <source>CREATE_SUBMESH</source>
-        <translation>Créer un sous-maillage</translation>
+        <translation>CrÃ©er un sous-maillage</translation>
     </message>
     <message>
         <source>DIM_0D</source>
@@ -4881,11 +4881,11 @@ Indiquez-les et essayez de nouveau</translation>
     </message>
     <message>
         <source>GEOMETRY</source>
-        <translation>Géométrie</translation>
+        <translation>GÃ©omÃ©trie</translation>
     </message>
     <message>
         <source>HYPOTHESES_SETS</source>
-        <translation>Attribuer un jeu d&apos;hypothèses</translation>
+        <translation>Attribuer un jeu d&apos;hypothÃ¨ses</translation>
     </message>
     <message>
         <source>MESH</source>
@@ -4900,46 +4900,46 @@ Indiquez-les et essayez de nouveau</translation>
     <name>SMESHGUI_MeshOp</name>
     <message>
         <source>ALGORITHM_WITHOUT_HYPOTHESIS</source>
-        <translation>L&apos;algorithm pour la dimension %1 est défini mais l&apos;hypothèse ne l&apos;est pas</translation>
+        <translation>L&apos;algorithm pour la dimension %1 est dÃ©fini mais l&apos;hypothÃ¨se ne l&apos;est pas</translation>
     </message>
     <message>
         <source>EDIT_SUBMESH_QUESTION</source>
-        <translation>Un sous-maillage existe déjà sur la géométrie choisie
-Voulez-vous éditer ce sous-maillage?</translation>
+        <translation>Un sous-maillage existe dÃ©jÃ  sur la gÃ©omÃ©trie choisie
+Voulez-vous Ã©diter ce sous-maillage?</translation>
     </message>
     <message>
         <source>SUBMESH_NOT_ALLOWED</source>
-        <translation>Créer un sous-maillage ignoré par l&apos;algorithme global n&apos;a pas de sens &quot;%1&quot;</translation>
+        <translation>CrÃ©er un sous-maillage ignorÃ© par l&apos;algorithme global n&apos;a pas de sens &quot;%1&quot;</translation>
     </message>
     <message>
         <source>GEOMETRY_OBJECT_IS_NOT_DEFINED</source>
-        <translation>L&apos;objet géométrique n&apos;est pas défini
+        <translation>L&apos;objet gÃ©omÃ©trique n&apos;est pas dÃ©fini
 Indiquez-le et essayez de nouveau</translation>
     </message>
     <message>
         <source>GEOMETRY_OBJECT_IS_NULL</source>
-        <translation>L&apos;objet géométrique est nul</translation>
+        <translation>L&apos;objet gÃ©omÃ©trique est nul</translation>
     </message>
     <message>
         <source>HYPOTHESES_AND_ALGORITHMS_ARE_NOT_DEFINED</source>
-        <translation>Les hypothèses et les algorithmes ne sont pas définis</translation>
+        <translation>Les hypothÃ¨ses et les algorithmes ne sont pas dÃ©finis</translation>
     </message>
     <message>
         <source>HYPOTHESIS_WITHOUT_ALGORITHM</source>
-        <translation>L&apos;hypothèse est définie pour la dimension %1 mais l&apos;algorithme n&apos;est pas défini</translation>
+        <translation>L&apos;hypothÃ¨se est dÃ©finie pour la dimension %1 mais l&apos;algorithme n&apos;est pas dÃ©fini</translation>
     </message>
     <message>
         <source>IMPORTED_MESH</source>
-        <translation>Le maillage n&apos;est pas construit sur une géométrie</translation>
+        <translation>Le maillage n&apos;est pas construit sur une gÃ©omÃ©trie</translation>
     </message>
     <message>
         <source>INVALID_SUBSHAPE</source>
-        <translation>L&apos;objet géométrique n&apos;est pas un sous-objet de l&apos;objet maillé</translation>
+        <translation>L&apos;objet gÃ©omÃ©trique n&apos;est pas un sous-objet de l&apos;objet maillÃ©</translation>
     </message>
     <message>
         <source>MESH_IS_NOT_DEFINED</source>
-        <translation>Le maillage n&apos;est pas défini
-Spécifiez-le et essayez de nouveau</translation>
+        <translation>Le maillage n&apos;est pas dÃ©fini
+SpÃ©cifiez-le et essayez de nouveau</translation>
     </message>
     <message>
         <source>MESH_IS_NULL</source>
@@ -4957,8 +4957,8 @@ Indiquez un nom valide et essayez de nouveau</translation>
     </message>
     <message>
         <source>THERE_IS_NO_OBJECT_FOR_EDITING</source>
-        <translation>Il n&apos;y a pas d&apos;objet à éditer.
-Sélectionnez un maillage ou un sous-maillage et essayez de nouveau</translation>
+        <translation>Il n&apos;y a pas d&apos;objet Ã  Ã©diter.
+SÃ©lectionnez un maillage ou un sous-maillage et essayez de nouveau</translation>
     </message>
 </context>
 <context>
@@ -4973,11 +4973,11 @@ Sélectionnez un maillage ou un sous-maillage et essayez de nouveau</translation>
     </message>
     <message>
         <source>CREATE_POLYEDRS_NEAR_BOUNDARY</source>
-        <translation>Créer des polyèdres près de la frontière</translation>
+        <translation>CrÃ©er des polyÃ¨dres prÃ¨s de la frontiÃ¨re</translation>
     </message>
     <message>
         <source>CREATE_POLYGONS_NEAR_BOUNDARY</source>
-        <translation>Créer des polygones près de la frontière</translation>
+        <translation>CrÃ©er des polygones prÃ¨s de la frontiÃ¨re</translation>
     </message>
     <message>
         <source>ERROR_OF_LOADING</source>
@@ -4987,32 +4987,32 @@ Il est probable que le fichier est corrompu ou contient un autre type de motif</
     <message>
         <source>ERROR_OF_OPENING</source>
         <translation>Il est impossible d&apos;ouvrir le fichier. 
-Vérifiez s&apos;il existe et si vous avez l&apos;autorisation</translation>
+VÃ©rifiez s&apos;il existe et si vous avez l&apos;autorisation</translation>
     </message>
     <message>
         <source>ERROR_OF_READING</source>
         <translation>Il est impossible de charger le motif
-Vérifiez le contenu du fichier</translation>
+VÃ©rifiez le contenu du fichier</translation>
     </message>
     <message>
         <source>ERR_READ_3D_COORD</source>
         <translation>Il est impossible de charger le motif
-Les coordonnées des points 3D sont en dehors de l&apos;intervalle [0,1]</translation>
+Les coordonnÃ©es des points 3D sont en dehors de l&apos;intervalle [0,1]</translation>
     </message>
     <message>
         <source>ERR_READ_BAD_INDEX</source>
         <translation>Il est impossible de charger le motif
-Un index de point invalide a été detecté</translation>
+Un index de point invalide a Ã©tÃ© detectÃ©</translation>
     </message>
     <message>
         <source>ERR_READ_BAD_KEY_POINT</source>
         <translation>Il est impossible de charger le motif
-Le point-clef n&apos;est pas situé sur la frontière</translation>
+Le point-clef n&apos;est pas situÃ© sur la frontiÃ¨re</translation>
     </message>
     <message>
         <source>ERR_READ_ELEM_POINTS</source>
         <translation>Il est impossible de charger le motif
-Le nombre de points de l&apos;élément est invalide</translation>
+Le nombre de points de l&apos;Ã©lÃ©ment est invalide</translation>
     </message>
     <message>
         <source>ERR_READ_NB_POINTS</source>
@@ -5022,7 +5022,7 @@ Il est impossible de lire le nombre de points dans le fichier</translation>
     <message>
         <source>ERR_READ_NO_ELEMS</source>
         <translation>Il est impossible de charger le motif
-Il ne contient pas d&apos;éléments</translation>
+Il ne contient pas d&apos;Ã©lÃ©ments</translation>
     </message>
     <message>
         <source>ERR_READ_NO_KEYPOINT</source>
@@ -5032,7 +5032,7 @@ Le motif 2D n&apos;a pas de point-clef</translation>
     <message>
         <source>ERR_READ_POINT_COORDS</source>
         <translation>Il est impossible de charger le motif
-Il est impossible de lire les coordonnées des points dans le fichier</translation>
+Il est impossible de lire les coordonnÃ©es des points dans le fichier</translation>
     </message>
     <message>
         <source>ERR_READ_TOO_FEW_POINTS</source>
@@ -5081,11 +5081,11 @@ Il y a trop peu de points dans le fichier </translation>
     </message>
     <message>
         <source>PREVIEW</source>
-        <translation>Prévisualiser</translation>
+        <translation>PrÃ©visualiser</translation>
     </message>
     <message>
         <source>REFINE</source>
-        <translation>Raffiner les éléments de maillage sélectionnés</translation>
+        <translation>Raffiner les Ã©lÃ©ments de maillage sÃ©lectionnÃ©s</translation>
     </message>
     <message>
         <source>REVERSE</source>
@@ -5108,7 +5108,7 @@ Il y a trop peu de points dans le fichier </translation>
     <name>SMESHGUI_MeshTab</name>
     <message>
         <source>ADD_HYPOTHESIS</source>
-        <translation>Ajouter l&apos;hypothèse</translation>
+        <translation>Ajouter l&apos;hypothÃ¨se</translation>
     </message>
     <message>
         <source>ALGORITHM</source>
@@ -5116,7 +5116,7 @@ Il y a trop peu de points dans le fichier </translation>
     </message>
     <message>
         <source>HYPOTHESIS</source>
-        <translation>Hypothèse</translation>
+        <translation>HypothÃ¨se</translation>
     </message>
     <message>
         <source>NONE</source>
@@ -5139,7 +5139,7 @@ Il y a trop peu de points dans le fichier </translation>
     </message>
     <message>
         <source>SELECT_FROM</source>
-        <translation>Sélectionner à partir de</translation>
+        <translation>SÃ©lectionner Ã  partir de</translation>
     </message>
     <message>
         <source>SORT_LIST</source>
@@ -5147,11 +5147,11 @@ Il y a trop peu de points dans le fichier </translation>
     </message>
     <message>
         <source>SPLIT_JOIN_CRITERION</source>
-        <translation>Critère</translation>
+        <translation>CritÃ¨re</translation>
     </message>
     <message>
         <source>TO_ALL</source>
-        <translation>Appliquer à tous</translation>
+        <translation>Appliquer Ã  tous</translation>
     </message>
     <message>
         <source>USE_DIAGONAL_1_3</source>
@@ -5163,37 +5163,37 @@ Il y a trop peu de points dans le fichier </translation>
     </message>
     <message>
         <source>USE_NUMERIC_FUNC</source>
-        <translation>Utiliser le facteur numérique</translation>
+        <translation>Utiliser le facteur numÃ©rique</translation>
     </message>
 </context>
 <context>
     <name>SMESHGUI_CuttingIntoTetraDlg</name>
     <message>
         <source>CAPTION</source>
-        <translation>Diviser les volumes en tétraèdres</translation>
+        <translation>Diviser les volumes en tÃ©traÃ¨dres</translation>
     </message>
     <message>
         <source>SPLIT_METHOD</source>
-        <translation>Diviser l&apos;héxaèdre</translation>
+        <translation>Diviser l&apos;hÃ©xaÃ¨dre</translation>
     </message>
     <message>
         <source>SPLIT_HEX_TO_5_TETRA</source>
-        <translation>En 5 tétraèdres</translation>
+        <translation>En 5 tÃ©traÃ¨dres</translation>
     </message>
     <message>
         <source>SPLIT_HEX_TO_6_TETRA</source>
-        <translation>En 6 tétraèdres</translation>
+        <translation>En 6 tÃ©traÃ¨dres</translation>
     </message>
     <message>
         <source>SPLIT_HEX_TO_24_TETRA</source>
-        <translation>En 24 tétraèdres</translation>
+        <translation>En 24 tÃ©traÃ¨dres</translation>
     </message>
 </context>
 <context>
     <name>SMESHGUI_PrecisionDlg</name>
     <message>
         <source>CAPTION</source>
-        <translation>Précision pour les contrôles de qualité du maillage</translation>
+        <translation>PrÃ©cision pour les contrÃ´les de qualitÃ© du maillage</translation>
     </message>
     <message>
         <source>NOT_USE</source>
@@ -5201,7 +5201,7 @@ Il y a trop peu de points dans le fichier </translation>
     </message>
     <message>
         <source>PRECISION</source>
-        <translation>Nombre de chiffres après la virgule</translation>
+        <translation>Nombre de chiffres aprÃ¨s la virgule</translation>
     </message>
 </context>
 <context>
@@ -5212,19 +5212,19 @@ Il y a trop peu de points dans le fichier </translation>
     </message>
     <message>
         <source>PREVIEW</source>
-        <translation>Prévisualiser</translation>
+        <translation>PrÃ©visualiser</translation>
     </message>
     <message>
         <source>REVOLUTION_1D</source>
-        <translation>Révolution des éléments 1D</translation>
+        <translation>RÃ©volution des Ã©lÃ©ments 1D</translation>
     </message>
     <message>
         <source>REVOLUTION_2D</source>
-        <translation>Révolution des éléments 2D</translation>
+        <translation>RÃ©volution des Ã©lÃ©ments 2D</translation>
     </message>
     <message>
         <source>REVOLUTION_AROUND_AXIS</source>
-        <translation>Révolution autour d&apos;un axe</translation>
+        <translation>RÃ©volution autour d&apos;un axe</translation>
     </message>
     <message>
         <source>TOTAL_ANGLE</source>
@@ -5232,70 +5232,70 @@ Il y a trop peu de points dans le fichier </translation>
     </message>
     <message>
         <source>MEN_POINT_SELECT</source>
-        <translation>De l&apos;origine au point sélectionner</translation>
+        <translation>De l&apos;origine au point sÃ©lectionner</translation>
     </message>
     <message>
         <source>MEN_FACE_SELECT</source>
-        <translation>Normale de la face sélectionnée</translation>
+        <translation>Normale de la face sÃ©lectionnÃ©e</translation>
     </message>
 </context>
 <context>
     <name>SMESHGUI_SewingDlg</name>
     <message>
         <source>BORDER</source>
-        <translation>Frontière</translation>
+        <translation>FrontiÃ¨re</translation>
     </message>
     <message>
         <source>BORDER_1</source>
-        <translation>Frontière 1</translation>
+        <translation>FrontiÃ¨re 1</translation>
     </message>
     <message>
         <source>BORDER_2</source>
-        <translation>Frontière 2</translation>
+        <translation>FrontiÃ¨re 2</translation>
     </message>
     <message>
         <source>CREATE_POLYEDRS_NEAR_BOUNDARY</source>
-        <translation>Remplacer les volumes concernés par des polyèdres</translation>
+        <translation>Remplacer les volumes concernÃ©s par des polyÃ¨dres</translation>
     </message>
     <message>
         <source>CREATE_POLYGONS_INSTEAD_SPLITTING</source>
-        <translation>Créer des polygones au lieu de redécouper</translation>
+        <translation>CrÃ©er des polygones au lieu de redÃ©couper</translation>
     </message>
     <message>
         <source>ERROR_1</source>
-        <translation>La frontière Libre1 n&apos;est pas trouvée avec les nÅ“uds sélectionnés</translation>
+        <translation>La frontiÃ¨re Libre1 n&apos;est pas trouvÃ©e avec les noeuds sÃ©lectionnÃ©s</translation>
     </message>
     <message>
         <source>ERROR_2</source>
-        <translation>La frontière Libre2 n&apos;est pas trouvée avec les nÅ“uds sélectionnés</translation>
+        <translation>La frontiÃ¨re Libre2 n&apos;est pas trouvÃ©e avec les noeuds sÃ©lectionnÃ©s</translation>
     </message>
     <message>
         <source>ERROR_3</source>
-        <translation>Les frontières Libres 1 et 2 n&apos;ont pas été trouvées avec les nÅ“uds sélectionnés</translation>
+        <translation>Les frontiÃ¨res Libres 1 et 2 n&apos;ont pas Ã©tÃ© trouvÃ©es avec les noeuds sÃ©lectionnÃ©s</translation>
     </message>
     <message>
         <source>ERROR_4</source>
-        <translation>Aucun chemin du premier au dernier noeud de la frontière n&apos;est trouvé</translation>
+        <translation>Aucun chemin du premier au dernier noeud de la frontiÃ¨re n&apos;est trouvÃ©</translation>
     </message>
     <message>
         <source>ERROR_5</source>
-        <translation>Il n&apos;est pas permis de découper les volumes de bord!</translation>
+        <translation>Il n&apos;est pas permis de dÃ©couper les volumes de bord!</translation>
     </message>
     <message>
         <source>ERROR_6</source>
-        <translation>Le nombre d&apos;éléments sélectionnés est différent de chaque côté</translation>
+        <translation>Le nombre d&apos;Ã©lÃ©ments sÃ©lectionnÃ©s est diffÃ©rent de chaque cÃ´tÃ©</translation>
     </message>
     <message>
         <source>ERROR_7</source>
-        <translation>Les jeux d&apos;éléments sont topologiquement différents ou les nÅ“uds ne conviennent pas</translation>
+        <translation>Les jeux d&apos;Ã©lÃ©ments sont topologiquement diffÃ©rents ou les noeuds ne conviennent pas</translation>
     </message>
     <message>
         <source>ERROR_8</source>
-        <translation>Les nÅ“uds du côté 1 soit ne sont pas connectés soit ne sont pas situés à la frontière du jeu d&apos;éléments</translation>
+        <translation>Les noeuds du cÃ´tÃ© 1 soit ne sont pas connectÃ©s soit ne sont pas situÃ©s Ã  la frontiÃ¨re du jeu d&apos;Ã©lÃ©ments</translation>
     </message>
     <message>
         <source>ERROR_9</source>
-        <translation>Les nÅ“uds du côté 2 soit ne sont pas connectés soit ne sont pas situés à la frontière de l&apos;élément</translation>
+        <translation>Les noeuds du cÃ´tÃ© 2 soit ne sont pas connectÃ©s soit ne sont pas situÃ©s Ã  la frontiÃ¨re de l&apos;Ã©lÃ©ment</translation>
     </message>
     <message>
         <source>FIRST_NODE_ID</source>
@@ -5307,35 +5307,35 @@ Il y a trop peu de points dans le fichier </translation>
     </message>
     <message>
         <source>MERGE_EQUAL_ELEMENTS</source>
-        <translation>Fusionner les éléments égaux</translation>
+        <translation>Fusionner les Ã©lÃ©ments Ã©gaux</translation>
     </message>
     <message>
         <source>NODE1_TO_MERGE</source>
-        <translation>Noeud 1 à fusionner</translation>
+        <translation>Noeud 1 Ã  fusionner</translation>
     </message>
     <message>
         <source>NODE2_TO_MERGE</source>
-        <translation>Noeud 2 à fusionner</translation>
+        <translation>Noeud 2 Ã  fusionner</translation>
     </message>
     <message>
         <source>SECOND_NODE_ID</source>
-        <translation>ID du deuxième noeud</translation>
+        <translation>ID du deuxiÃ¨me noeud</translation>
     </message>
     <message>
         <source>SEW_BORDER_TO_SIDE</source>
-        <translation>Coudre la frontière au côté</translation>
+        <translation>Coudre la frontiÃ¨re au cÃ´tÃ©</translation>
     </message>
     <message>
         <source>SEW_CONFORM_FREE_BORDERS</source>
-        <translation>Coudre les frontières libres conformes</translation>
+        <translation>Coudre les frontiÃ¨res libres conformes</translation>
     </message>
     <message>
         <source>SEW_FREE_BORDERS</source>
-        <translation>Coudre les frontières libres</translation>
+        <translation>Coudre les frontiÃ¨res libres</translation>
     </message>
     <message>
         <source>SEW_SIDE_ELEMENTS</source>
-        <translation>Coudre les éléments de bord</translation>
+        <translation>Coudre les Ã©lÃ©ments de bord</translation>
     </message>
     <message>
         <source>SIDE</source>
@@ -5354,33 +5354,33 @@ Il y a trop peu de points dans le fichier </translation>
     <name>SMESHGUI_ShapeByMeshDlg</name>
     <message>
         <source>CAPTION</source>
-        <translation>Trouver la géométrie par le maillage</translation>
+        <translation>Trouver la gÃ©omÃ©trie par le maillage</translation>
     </message>
 </context>
 <context>
     <name>SMESHGUI_SingleEditDlg</name>
     <message>
         <source>EDGE_BETWEEN</source>
-        <translation>Arête entre des triangles voisins</translation>
+        <translation>ArÃªte entre des triangles voisins</translation>
     </message>
 </context>
 <context>
     <name>SMESHGUI_SmoothingDlg</name>
     <message>
         <source>CENTROIDAL</source>
-        <translation>Centroïdal</translation>
+        <translation>CentroÃ¯dal</translation>
     </message>
     <message>
         <source>FIXED_NODES_IDS</source>
-        <translation>IDs des nÅ“uds fixes</translation>
+        <translation>IDs des noeuds fixes</translation>
     </message>
     <message>
         <source>IS_PARAMETRIC</source>
-        <translation>dans l&apos;espace paramétrique</translation>
+        <translation>dans l&apos;espace paramÃ©trique</translation>
     </message>
     <message>
         <source>ITERATION_LIMIT</source>
-        <translation>Limite d&apos;Itération </translation>
+        <translation>Limite d&apos;ItÃ©ration </translation>
     </message>
     <message>
         <source>LAPLACIAN</source>
@@ -5392,7 +5392,7 @@ Il y a trop peu de points dans le fichier </translation>
     </message>
     <message>
         <source>METHOD</source>
-        <translation>Méthode</translation>
+        <translation>MÃ©thode</translation>
     </message>
 </context>
 <context>
@@ -5424,15 +5424,15 @@ Il y a trop peu de points dans le fichier </translation>
     <name>SMESHGUI_WhatIsDlg</name>
     <message>
         <source>ENTITY_TYPE</source>
-        <translation>Type d&apos;élément </translation>
+        <translation>Type d&apos;Ã©lÃ©ment </translation>
     </message>
     <message>
         <source>GRAVITY_CENTER</source>
-        <translation>Centre de Gravité</translation>
+        <translation>Centre de GravitÃ©</translation>
     </message>
     <message>
         <source>CONNECTED_ELEMENTS</source>
-        <translation>Connecté avec d&apos;Eléments </translation>
+        <translation>ConnectÃ© avec d&apos;ElÃ©ments </translation>
     </message>
 </context>
 <context>
@@ -5458,28 +5458,28 @@ Il y a trop peu de points dans le fichier </translation>
     <name>SMESHGUI_GroupOnShapeDlg</name>
     <message>
         <source>SMESH_CREATE_GROUP_FROM_GEOM</source>
-        <translation>Créer des groupes à partir de la géométrie</translation>
+        <translation>CrÃ©er des groupes Ã  partir de la gÃ©omÃ©trie</translation>
     </message>
 </context>
 <context>
     <name>SMESHGUI_MeshOrderDlg</name>
     <message>
         <source>SMESH_MESHORDER_TITLE</source>
-        <translation>Ordre des sous-maillages dans la procédure de maillage</translation>
+        <translation>Ordre des sous-maillages dans la procÃ©dure de maillage</translation>
     </message>
 </context>
 <context>
     <name>SMESHGUI_MeshOrderOp</name>
     <message>
         <source>SMESH_NO_CONCURENT_MESH</source>
-        <translation>Pas de sous-maillages concurrents détectés</translation>
+        <translation>Pas de sous-maillages concurrents dÃ©tectÃ©s</translation>
     </message>
 </context>
 <context>
     <name>SMESHGUI_ClippingDlg</name>
     <message>
         <source>CLIP_PLANES</source>
-        <translation>Plans de découpe</translation>
+        <translation>Plans de dÃ©coupe</translation>
     </message>
     <message>
         <source>MESHES_SUBMESHES_GROUPS</source>
@@ -5487,35 +5487,35 @@ Il y a trop peu de points dans le fichier </translation>
     </message>
     <message>
         <source>SELECT_ALL</source>
-        <translation>Tout sélectionner</translation>
+        <translation>Tout sÃ©lectionner</translation>
     </message>
     <message>
         <source>ROTATION_AROUND_X_Y2Z</source>
-        <translation>Rotation autour de X (Y à Z):</translation>
+        <translation>Rotation autour de X (Y Ã  Z):</translation>
     </message>
     <message>
         <source>ROTATION_AROUND_Y_X2Z</source>
-        <translation>Rotation autour de Y (X à Z):</translation>
+        <translation>Rotation autour de Y (X Ã  Z):</translation>
     </message>
     <message>
         <source>ROTATION_AROUND_Z_Y2X</source>
-        <translation>Rotation autour de Z (Y à X):</translation>
+        <translation>Rotation autour de Z (Y Ã  X):</translation>
     </message>
     <message>
         <source>ROTATION_AROUND_X_Z2Y</source>
-        <translation>Rotation autour de X (Z à Y):</translation>
+        <translation>Rotation autour de X (Z Ã  Y):</translation>
     </message>
     <message>
         <source>ROTATION_AROUND_Y_Z2X</source>
-        <translation>Rotation autour de Y (Z à X):</translation>
+        <translation>Rotation autour de Y (Z Ã  X):</translation>
     </message>
     <message>
         <source>ROTATION_AROUND_Z_X2Y</source>
-        <translation>Rotation autour de Z (X à Y):</translation>
+        <translation>Rotation autour de Z (X Ã  Y):</translation>
     </message>
     <message>
         <source>SHOW_PREVIEW</source>
-        <translation>Prévisualiser</translation>
+        <translation>PrÃ©visualiser</translation>
     </message>
     <message>
         <source>AUTO_APPLY</source>
@@ -5550,46 +5550,46 @@ Il y a trop peu de points dans le fichier </translation>
     </message>
     <message>
         <source>DUPLICATION_WITHOUT_ELEMS</source>
-        <translation>Sans duplication des éléments de frontière</translation>
+        <translation>Sans duplication des Ã©lÃ©ments de frontiÃ¨re</translation>
     </message>
     <message>
         <source>GROUP_NODES_TO_DUPLICATE</source>
-        <translation>Groupe des nÅ“uds à dupliquer</translation>
+        <translation>Groupe des noeuds Ã  dupliquer</translation>
     </message>
     <message>
         <source>GROUP_NODES_TO_REPLACE</source>
-        <translation>Groupe des éléments dont les nÅ“uds sont à remplacer</translation>
+        <translation>Groupe des Ã©lÃ©ments dont les noeuds sont Ã  remplacer</translation>
     </message>
     <message>
         <source>DUPLICATION_WITH_ELEMS</source>
-        <translation>Avec duplication des éléments de frontière</translation>
+        <translation>Avec duplication des Ã©lÃ©ments de frontiÃ¨re</translation>
     </message>
     <message>
         <source>GROUP_ELEMS_TO_DUPLICATE</source>
-        <translation>Groupe des éléments à dupliquer</translation>
+        <translation>Groupe des Ã©lÃ©ments Ã  dupliquer</translation>
     </message>
     <message>
         <source>GROUP_NODES_NOT_DUPLICATE</source>
-        <translation>Groupe des nÅ“uds à ne pas dupliquer</translation>
+        <translation>Groupe des noeuds Ã  ne pas dupliquer</translation>
     </message>
     <message>
         <source>GROUP_ELEMS_TO_REPLACE</source>
-        <translation>Groupe des éléments dont les nÅ“uds sont à remplacer</translation>
+        <translation>Groupe des Ã©lÃ©ments dont les noeuds sont Ã  remplacer</translation>
     </message>
     <message>
         <source>CONSTRUCT_NEW_GROUP_NODES</source>
-        <translation>Construire un groupe avec les nÅ“uds nouvellement créés</translation>
+        <translation>Construire un groupe avec les noeuds nouvellement crÃ©Ã©s</translation>
     </message>
     <message>
         <source>CONSTRUCT_NEW_GROUP_ELEMENTS</source>
-        <translation>Construire un groupe avec les éléments nouvellement créés</translation>
+        <translation>Construire un groupe avec les Ã©lÃ©ments nouvellement crÃ©Ã©s</translation>
     </message>
 </context>
 <context>
     <name>SMESHGUI_Make2DFrom3DDlg</name>
     <message>
         <source>CAPTION</source>
-        <translation>Créer les éléments de frontière</translation>
+        <translation>CrÃ©er les Ã©lÃ©ments de frontiÃ¨re</translation>
     </message>
     <message>
         <source>Groups</source>
@@ -5601,15 +5601,15 @@ Il y a trop peu de points dans le fichier </translation>
     </message>
     <message>
         <source>2D_FROM_3D</source>
-        <translation>2D à partir de 3D</translation>
+        <translation>2D Ã  partir de 3D</translation>
     </message>
     <message>
         <source>1D_FROM_3D</source>
-        <translation>1D à partir de groupes 2D</translation>
+        <translation>1D Ã  partir de groupes 2D</translation>
     </message>
     <message>
         <source>1D_FROM_2D</source>
-        <translation>1D à partir de 2D</translation>
+        <translation>1D Ã  partir de 2D</translation>
     </message>
     <message>
         <source>TARGET</source>
@@ -5629,42 +5629,42 @@ Il y a trop peu de points dans le fichier </translation>
     </message>
     <message>
         <source>MISSING_ONLY</source>
-        <translation>Copier seulement les éléments manquants</translation>
+        <translation>Copier seulement les Ã©lÃ©ments manquants</translation>
     </message>
     <message>
         <source>CREATE_GROUP</source>
-        <translation>Créer un groupe</translation>
+        <translation>CrÃ©er un groupe</translation>
     </message>
 </context>
 <context>
     <name>SMESHGUI_Make2DFrom3DOp</name>
     <message>
         <source>NB_ADDED</source>
-        <translation>%1 éléments de bord ont été ajoutés</translation>
+        <translation>%1 Ã©lÃ©ments de bord ont Ã©tÃ© ajoutÃ©s</translation>
     </message>
     <message>
         <source>SMESH_ERR_NO_INPUT_MESH</source>
-        <translation>Aucun maillage, sous-maillage ou groupe source n&apos;est indiqué</translation>
+        <translation>Aucun maillage, sous-maillage ou groupe source n&apos;est indiquÃ©</translation>
     </message>
     <message>
         <source>SMESH_ERR_NO_INPUT_GROUP</source>
-        <translation>Aucun groupe 2D n&apos;est indiqué</translation>
+        <translation>Aucun groupe 2D n&apos;est indiquÃ©</translation>
     </message>
     <message>
         <source>SMESH_ERR_NO_3D_ELEMENTS</source>
-        <translation>L&apos;objet source ne contient pas d&apos;éléments 3D</translation>
+        <translation>L&apos;objet source ne contient pas d&apos;Ã©lÃ©ments 3D</translation>
     </message>
     <message>
         <source>SMESH_ERR_NO_2D_ELEMENTS</source>
-        <translation>L&apos;objet source ne contient pas d&apos;éléments 2D</translation>
+        <translation>L&apos;objet source ne contient pas d&apos;Ã©lÃ©ments 2D</translation>
     </message>
     <message>
         <source>SMESH_ERR_MESH_NAME_NOT_SPECIFIED</source>
-        <translation>Le nom du nouveau maillage n&apos;est pas indiqué</translation>
+        <translation>Le nom du nouveau maillage n&apos;est pas indiquÃ©</translation>
     </message>
     <message>
         <source>SMESH_ERR_GRP_NAME_NOT_SPECIFIED</source>
-        <translation>Le nom du groupe n&apos;est pas indiqué</translation>
+        <translation>Le nom du groupe n&apos;est pas indiquÃ©</translation>
     </message>
 </context>
 <context>
@@ -5679,11 +5679,11 @@ Il y a trop peu de points dans le fichier </translation>
     </message>
     <message>
         <source>NODES_LAB</source>
-        <translation>NÅ“uds:</translation>
+        <translation>Noeuds:</translation>
     </message>
     <message>
         <source>ELEMENTS_LAB</source>
-        <translation>Eléments:</translation>
+        <translation>ElÃ©ments:</translation>
     </message>
     <message>
         <source>TOTAL_LAB</source>
@@ -5691,7 +5691,7 @@ Il y a trop peu de points dans le fichier </translation>
     </message>
     <message>
         <source>LINEAR_LAB</source>
-        <translation>Linéaire</translation>
+        <translation>LinÃ©aire</translation>
     </message>
     <message>
         <source>QUADRATIC_LAB</source>
@@ -5703,7 +5703,7 @@ Il y a trop peu de points dans le fichier </translation>
     </message>
     <message>
         <source>1D_LAB</source>
-        <translation>1D (arêtes):</translation>
+        <translation>1D (arÃªtes):</translation>
     </message>
     <message>
         <source>2D_LAB</source>
@@ -5727,11 +5727,11 @@ Il y a trop peu de points dans le fichier </translation>
     </message>
     <message>
         <source>TETRAHEDRONS_LAB</source>
-        <translation>Tétrahédrons:</translation>
+        <translation>TÃ©trahÃ©drons:</translation>
     </message>
     <message>
         <source>HEXAHEDONRS_LAB</source>
-        <translation>Hexahédrons:</translation>
+        <translation>HexahÃ©drons:</translation>
     </message>
     <message>
         <source>PYRAMIDS_LAB</source>
@@ -5743,7 +5743,7 @@ Il y a trop peu de points dans le fichier </translation>
     </message>
     <message>
         <source>POLYHEDRONS_LAB</source>
-        <translation>Polyhédrons:</translation>
+        <translation>PolyhÃ©drons:</translation>
     </message>
     <message>
         <source>OBJECT_MESH</source>
@@ -5759,11 +5759,11 @@ Il y a trop peu de points dans le fichier </translation>
     </message>
     <message>
         <source>OBJECT_GROUP_NODES</source>
-        <translation>Groupe de nÅ“uds</translation>
+        <translation>Groupe de noeuds</translation>
     </message>
     <message>
         <source>OBJECT_GROUP_EDGES</source>
-        <translation>Groupe d&apos;arêtes</translation>
+        <translation>Groupe d&apos;arÃªtes</translation>
     </message>
     <message>
         <source>OBJECT_GROUP_FACES</source>
@@ -5775,7 +5775,7 @@ Il y a trop peu de points dans le fichier </translation>
     </message>
     <message>
         <source>OBJECT_GROUP_0DELEMS</source>
-        <translation>Groupe d&apos;éléments 0D</translation>
+        <translation>Groupe d&apos;Ã©lÃ©ments 0D</translation>
     </message>
 </context>
 <context>
@@ -5790,50 +5790,50 @@ Il y a trop peu de points dans le fichier </translation>
     </message>
     <message>
         <source>ELEM_INFO</source>
-        <translation>Informations des éléments</translation>
+        <translation>Informations des Ã©lÃ©ments</translation>
     </message>
     <message>
         <source>NODE_MODE</source>
-        <translation>NÅ“ud</translation>
+        <translation>Noeud</translation>
     </message>
     <message>
         <source>ELEM_MODE</source>
-        <translation>Elément</translation>
+        <translation>ElÃ©ment</translation>
     </message>
 </context>
 <context>
     <name>SMESHGUI_ElemInfo</name>
     <message>
         <source>COORDINATES</source>
-        <translation>COORDONNÉES</translation>
+        <translation>COORDONNÃ‰ES</translation>
     </message>
     <message>
         <source>CONNECTIVITY</source>
-        <translation>CONNECTIVITÉ</translation>
+        <translation>CONNECTIVITÃ‰</translation>
     </message>
     <message>
         <source>GRAVITY_CENTER</source>
-        <translation>CENTRE DE GRAVITÉ</translation>
+        <translation>CENTRE DE GRAVITÃ‰</translation>
     </message>
     <message>
         <source>NODE</source>
-        <translation>NÅ“ud</translation>
+        <translation>Noeud</translation>
     </message>
     <message>
         <source>0D_ELEMENT</source>
-        <translation>ELÉMENTS 0D</translation>
+        <translation>ELÃ‰MENTS 0D</translation>
     </message>
     <message>
         <source>0D_ELEMENTS</source>
-        <translation>ELÉMENTS 0D</translation>
+        <translation>ELÃ‰MENTS 0D</translation>
     </message>
     <message>
         <source>EDGE</source>
-        <translation>ARÊTE</translation>
+        <translation>ARÃŠTE</translation>
     </message>
     <message>
         <source>EDGES</source>
-        <translation>ARÊTES</translation>
+        <translation>ARÃŠTES</translation>
     </message>
     <message>
         <source>FACE</source>
@@ -5853,7 +5853,7 @@ Il y a trop peu de points dans le fichier </translation>
     </message>
     <message>
         <source>FREE_NODE</source>
-        <translation>NÅ“ud libre (pas de connectivité)</translation>
+        <translation>Noeud libre (pas de connectivitÃ©)</translation>
     </message>
     <message>
         <source>TYPE</source>
@@ -5869,15 +5869,15 @@ Il y a trop peu de points dans le fichier </translation>
     </message>
     <message>
         <source>POLYGON</source>
-        <translation>Polygône</translation>
+        <translation>PolygÃ´ne</translation>
     </message>
     <message>
         <source>TETRAHEDRON</source>
-        <translation>Tétrahédron</translation>
+        <translation>TÃ©trahÃ©dron</translation>
     </message>
     <message>
         <source>HEXAHEDRON</source>
-        <translation>Hexahédron</translation>
+        <translation>HexahÃ©dron</translation>
     </message>
     <message>
         <source>PYRAMID</source>
@@ -5889,7 +5889,7 @@ Il y a trop peu de points dans le fichier </translation>
     </message>
     <message>
         <source>POLYHEDRON</source>
-        <translation>Polyhédron</translation>
+        <translation>PolyhÃ©dron</translation>
     </message>
     <message>
         <source>QUADRATIC</source>
@@ -5905,7 +5905,7 @@ Il y a trop peu de points dans le fichier </translation>
     </message>
     <message>
         <source>PROPERTY</source>
-        <translation>Propriété</translation>
+        <translation>PropriÃ©tÃ©</translation>
     </message>
     <message>
         <source>VALUE</source>
@@ -5913,26 +5913,26 @@ Il y a trop peu de points dans le fichier </translation>
     </message>
     <message>
         <source>X_FROM_Y_ITEMS_SHOWN</source>
-        <translation>%1-%2 sur %3 éléments affichés</translation>
+        <translation>%1-%2 sur %3 Ã©lÃ©ments affichÃ©s</translation>
     </message>
 </context>
 <context>
     <name>SMESHGUI_MinDistance</name>
     <message>
         <source>FIRST_TARGET</source>
-        <translation>Premier élément</translation>
+        <translation>Premier Ã©lÃ©ment</translation>
     </message>
     <message>
         <source>SECOND_TARGET</source>
-        <translation>Deuxième élément</translation>
+        <translation>DeuxiÃ¨me Ã©lÃ©ment</translation>
     </message>
     <message>
         <source>NODE</source>
-        <translation>NÅ“ud</translation>
+        <translation>Noeud</translation>
     </message>
     <message>
         <source>ELEMENT</source>
-        <translation>Elément</translation>
+        <translation>ElÃ©ment</translation>
     </message>
     <message>
         <source>OBJECT</source>
@@ -5948,7 +5948,7 @@ Il y a trop peu de points dans le fichier </translation>
     </message>
     <message>
         <source>RESULT</source>
-        <translation>Distance entre les éléments</translation>
+        <translation>Distance entre les Ã©lÃ©ments</translation>
     </message>
     <message>
         <source>DISTANCE</source>
@@ -5963,7 +5963,7 @@ Il y a trop peu de points dans le fichier </translation>
     </message>
     <message>
         <source>ELEM_IDS</source>
-        <translation>IDs des éléments sources</translation>
+        <translation>IDs des Ã©lÃ©ments sources</translation>
     </message>
     <message>
         <source>NEW_NAME</source>
@@ -5982,7 +5982,7 @@ Il y a trop peu de points dans le fichier </translation>
     </message>
     <message>
         <source>BND_BOX</source>
-        <translation>Boîte englobante</translation>
+        <translation>BoÃ®te englobante</translation>
     </message>
 </context>
 <context>
@@ -5997,11 +5997,11 @@ Il y a trop peu de points dans le fichier </translation>
     </message>
     <message>
         <source>NODES</source>
-        <translation>NÅ“uds</translation>
+        <translation>Noeuds</translation>
     </message>
     <message>
         <source>ELEMENTS</source>
-        <translation>Eléments</translation>
+        <translation>ElÃ©ments</translation>
     </message>
     <message>
         <source>COMPUTE</source>
@@ -6009,19 +6009,19 @@ Il y a trop peu de points dans le fichier </translation>
     </message>
     <message>
         <source>RESULT</source>
-        <translation>Boîte englobante</translation>
+        <translation>BoÃ®te englobante</translation>
     </message>
     <message>
         <source>SELECTED_NB_OBJ</source>
-        <translation>%1 %2 sélectionnés</translation>
+        <translation>%1 %2 sÃ©lectionnÃ©s</translation>
     </message>
     <message>
         <source>NB_NODES</source>
-        <translation>nÅ“uds</translation>
+        <translation>noeuds</translation>
     </message>
     <message>
         <source>NB_ELEMENTS</source>
-        <translation>éléments</translation>
+        <translation>Ã©lÃ©ments</translation>
     </message>
 </context>
 </TS>
