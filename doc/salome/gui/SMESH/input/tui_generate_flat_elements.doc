@@ -1,0 +1,75 @@
+/*!
+
+\page tui_generate_flat_elements_page Generate flat elements
+
+<br>
+\anchor tui_double_nodes_on_group_boundaries
+<h2>Double nodes on groups boundaries</h2>
+
+\n Double nodes on shared faces between groups of volumes and create flat elements on demand.
+\n The list of groups must describe a partition of the mesh volumes.The nodes of the internal
+faces at the boundaries of the groups are doubled. In option, the internal faces are replaced
+by flat elements.
+\n Triangles are transformed in prisms, and quadrangles in hexahedrons.
+\n The flat elements are stored in groups of volumes.
+
+\n
+\n This example represents an iron cable (a thin cylinder) in a concrete bloc (a big cylinder).
+The big cylinder is defined by two geometric volumes.
+
+\code
+# geometry 
+
+O = geompy.MakeVertex(0, 0, 0)
+OX = geompy.MakeVectorDXDYDZ(1, 0, 0)
+OY = geompy.MakeVectorDXDYDZ(0, 1, 0)
+OZ = geompy.MakeVectorDXDYDZ(0, 0, 1)
+Vertex_1 = geompy.MakeVertex(50, 0, 0)
+Cylinder_1 = geompy.MakeCylinder(O, OX, 10, 500)
+Cylinder_2 = geompy.MakeCylinder(Vertex_1, OX, 100, 400)
+Vertex_2 = geompy.MakeVertex(-200, -200, -200)
+Vertex_3 = geompy.MakeVertex(250, 200, 200)
+Box_1 = geompy.MakeBoxTwoPnt(Vertex_2, Vertex_3)
+Cut_1 = geompy.MakeCut(Cylinder_2, Cylinder_1)
+Partition_2 = geompy.MakePartition([Cut_1], [Box_1], [], [], geompy.ShapeType["SOLID"], 0, [], 0)
+Fuse_1 = geompy.MakeFuse(Partition_2, Cylinder_1)
+Partition_1 = geompy.MakePartition([Fuse_1], [Cylinder_1], [], [], geompy.ShapeType["SOLID"], 0, [], 0)
+[Solid_1,Solid_2,Solid_3] = geompy.SubShapes(Partition_1, [53, 2, 30])
+[Face_1,Face_2] = geompy.SubShapes(Partition_1, [37, 20])
+
+# meshing (linear tetrahedrons here, but other elements are OK)
+
+Mesh_1 = smesh.Mesh(Partition_1)
+BLSURF = Mesh_1.Triangle(algo=smesh.BLSURF)
+BLSURF_Parameters = BLSURF.Parameters()
+BLSURF_Parameters.SetPhysicalMesh( 0 )
+BLSURF_Parameters.SetGeometricMesh( 1 )
+BLSURF_Parameters.SetAngleMeshS( 16 )
+BLSURF_Parameters.SetAngleMeshC( 16 )
+GHS3D_3D = Mesh_1.Tetrahedron(algo=smesh.GHS3D)
+isDone = Mesh_1.Compute()
+
+# relevant groups of volumes and faces
+
+Solid_1_1 = Mesh_1.GroupOnGeom(Solid_1,'Solid_1',SMESH.VOLUME)
+Solid_2_1 = Mesh_1.GroupOnGeom(Solid_2,'Solid_2',SMESH.VOLUME)
+Solid_3_1 = Mesh_1.GroupOnGeom(Solid_3,'Solid_3',SMESH.VOLUME)
+Face_1_1 = Mesh_1.GroupOnGeom(Face_1,'Face_1',SMESH.FACE)
+Face_2_1 = Mesh_1.GroupOnGeom(Face_2,'Face_2',SMESH.FACE)
+
+\endcode
+
+\n Here, the 3 groups of volumes [Solid_1_1, Solid_2_1, Solid_3_1] constitute a partition of the mesh.
+The flat elements on group boundaries and on faces are built with the following code.
+\n If the last argument (boolean) in DoubleNodesOnGroupBoundaries is set to 1,
+the flat elements are built, otherwise, there is only a duplication of the nodes.
+
+\code
+Mesh_1.DoubleNodesOnGroupBoundaries([Solid_1_1, Solid_2_1, Solid_3_1], 1)
+
+Mesh_1.CreateFlatElementsOnFacesGroups([Face_1_1, Face_2_1])
+\endcode
+
+\n To observe the flat element groups, save the resulting mesh on a Med file and reload it.
+
+*/
