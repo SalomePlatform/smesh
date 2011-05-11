@@ -4348,7 +4348,7 @@ Vérifiez la validité des informations données</translation>
     </message>
     <message>
         <source>NODE</source>
-        <translation>Noeud</translation>
+        <translation>Nœud</translation>
     </message>
     <message>
         <source>NO_PERMISSION</source>
@@ -4739,7 +4739,7 @@ Indiquez-les et essayez de nouveau</translation>
     </message>
     <message>
         <source>NODE</source>
-        <translation>Noeud</translation>
+        <translation>Nœud</translation>
     </message>
     <message>
         <source>EDGE</source>
@@ -4780,11 +4780,11 @@ Indiquez-les et essayez de nouveau</translation>
     <name>SMESHGUI_MakeNodeAtPointDlg</name>
     <message>
         <source>AUTO_SEARCH</source>
-        <translation>Trouver le noeud le plus proche de la destination</translation>
+        <translation>Trouver le nœud le plus proche de la destination</translation>
     </message>
     <message>
         <source>CAPTION</source>
-        <translation>Déplacer un noeud</translation>
+        <translation>Déplacer un nœud</translation>
     </message>
     <message>
         <source>DESTINATION</source>
@@ -4792,7 +4792,7 @@ Indiquez-les et essayez de nouveau</translation>
     </message>
     <message>
         <source>MOVE_NODE</source>
-        <translation>Déplacer un noeud</translation>
+        <translation>Déplacer un  nœud</translation>
     </message>
     <message>
         <source>METHOD</source>
@@ -4800,7 +4800,7 @@ Indiquez-les et essayez de nouveau</translation>
     </message>
     <message>
         <source>NODE_2MOVE</source>
-        <translation>Noeud à déplacer</translation>
+        <translation>Nœud à déplacer</translation>
     </message>
     <message>
         <source>NODE_2MOVE_ID</source>
@@ -4811,7 +4811,7 @@ Indiquez-les et essayez de nouveau</translation>
     <name>SMESHGUI_MakeNodeAtPointOp</name>
     <message>
         <source>INVALID_ID</source>
-        <translation>L&apos;ID du noeud est invalide</translation>
+        <translation>L&apos;ID du nœud est invalide</translation>
     </message>
     <message>
         <source>INVALID_MESH</source>
@@ -4826,11 +4826,11 @@ Indiquez-les et essayez de nouveau</translation>
     </message>
     <message>
         <source>CREATE_NEW_METHOD</source>
-        <translation>Créer un noeud</translation>
+        <translation>Créer un nœud</translation>
     </message>
     <message>
         <source>MESH_PASS_THROUGH_POINT</source>
-        <translation>Créer un noeud au point</translation>
+        <translation>Créer un nœud au point</translation>
     </message>
     <message>
         <source>METHOD</source>
@@ -4838,11 +4838,11 @@ Indiquez-les et essayez de nouveau</translation>
     </message>
     <message>
         <source>MOVE_EXISTING_METHOD</source>
-        <translation>Déplacer un noeud</translation>
+        <translation>Déplacer un nœud</translation>
     </message>
     <message>
         <source>NODE_2MOVE</source>
-        <translation>Noeud à déplacer</translation>
+        <translation>Nœud à déplacer</translation>
     </message>
     <message>
         <source>NODE_2MOVE_ID</source>
@@ -5061,11 +5061,11 @@ Il y a trop peu de points dans le fichier </translation>
     </message>
     <message>
         <source>NODE_1</source>
-        <translation>Noeud 1</translation>
+        <translation>Nœud 1</translation>
     </message>
     <message>
         <source>NODE_2</source>
-        <translation>Noeud 2</translation>
+        <translation>Nœud 2</translation>
     </message>
     <message>
         <source>PATTERN</source>
@@ -5275,7 +5275,7 @@ Il y a trop peu de points dans le fichier </translation>
     </message>
     <message>
         <source>ERROR_4</source>
-        <translation>Aucun chemin du premier au dernier noeud de la frontière n&apos;est trouvé</translation>
+        <translation>Aucun chemin du premier au dernier nœud de la frontière n&apos;est trouvé</translation>
     </message>
     <message>
         <source>ERROR_5</source>
@@ -5299,11 +5299,11 @@ Il y a trop peu de points dans le fichier </translation>
     </message>
     <message>
         <source>FIRST_NODE_ID</source>
-        <translation>ID du premier noeud </translation>
+        <translation>ID du premier nœud </translation>
     </message>
     <message>
         <source>LAST_NODE_ID</source>
-        <translation>ID du dernier noeud</translation>
+        <translation>ID du dernier nœud</translation>
     </message>
     <message>
         <source>MERGE_EQUAL_ELEMENTS</source>
@@ -5311,15 +5311,15 @@ Il y a trop peu de points dans le fichier </translation>
     </message>
     <message>
         <source>NODE1_TO_MERGE</source>
-        <translation>Noeud 1 à fusionner</translation>
+        <translation>Nœud 1 à fusionner</translation>
     </message>
     <message>
         <source>NODE2_TO_MERGE</source>
-        <translation>Noeud 2 à fusionner</translation>
+        <translation>Nœud 2 à fusionner</translation>
     </message>
     <message>
         <source>SECOND_NODE_ID</source>
-        <translation>ID du deuxième noeud</translation>
+        <translation>ID du deuxième nœud</translation>
     </message>
     <message>
         <source>SEW_BORDER_TO_SIDE</source>
