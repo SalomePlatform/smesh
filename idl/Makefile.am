@@ -53,6 +53,9 @@ nodist_libSalomeIDLSMESH_la_SOURCES = \
 	SMESH_MeshEditorSK.cc \
 	SMESH_MeasurementsSK.cc
 
+# to be done at first, to avoid parallel compilation problems
+BUILT_SOURCES = $(nodist_libSalomeIDLSMESH_la_SOURCES)
+
 # header files must be exported: other modules have to use this library
 nodist_salomeinclude_HEADERS = $(BASEIDL_FILES:%.idl=%.hh)
 
