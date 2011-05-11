@@ -113,9 +113,9 @@ SMESHGUI_MeshTab::SMESHGUI_MeshTab( QWidget* theParent )
   // Connect signals and slots
   for ( int i = MainHyp; i <= AddHyp; i++ )
   {
-    connect( myCreateHyp[ i ], SIGNAL( clicked() ), SLOT( onCreateHyp() ) );
-    connect( myEditHyp[ i ], SIGNAL( clicked() ), SLOT( onEditHyp() ) );
-    connect( myHyp[ i ], SIGNAL( activated( int ) ), SLOT( onHyp( int ) ) );
+    connect( myCreateHyp[ i ], SIGNAL( clicked() )       ,  SLOT( onCreateHyp() ) );
+    connect( myEditHyp[ i ]  , SIGNAL( clicked() )       ,  SLOT( onEditHyp() ) );
+    connect( myHyp[ i ]      , SIGNAL( activated( int ) ),  SLOT( onHyp( int ) ) );
   }
   connect( myHyp[ Algo ], SIGNAL( activated( int ) ), SLOT( onHyp( int ) ) );
   
