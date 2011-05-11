@@ -257,7 +257,7 @@
     </message>
     <message>
         <source>MEN_NODE_CTRL</source>
-        <translation>Contrôles des noeuds</translation>
+        <translation>Contrôles des nœuds</translation>
     </message>
     <message>
         <source>MEN_EDGE_CTRL</source>
@@ -425,7 +425,7 @@
     </message>
     <message>
         <source>MEN_FREE_NODE</source>
-        <translation>Noeuds libres</translation>
+        <translation>Nœuds libres</translation>
     </message>
     <message>
         <source>MEN_FREE_FACES</source>
@@ -489,7 +489,7 @@
     </message>
     <message>
         <source>MEN_MERGE</source>
-        <translation>Fusionner les noeuds</translation>
+        <translation>Fusionner les nœuds</translation>
     </message>
     <message>
         <source>MEN_MERGE_ELEMENTS</source>
@@ -501,7 +501,7 @@
     </message>
     <message>
         <source>MEN_MESH_THROU_POINT</source>
-        <translation>Déplacer un noeud</translation>
+        <translation>Déplacer un nœud</translation>
     </message>
     <message>
         <source>MEN_MIN_ANG</source>
@@ -541,15 +541,15 @@
     </message>
     <message>
         <source>MEN_MOVE</source>
-        <translation>Déplacer un noeud</translation>
+        <translation>Déplacer un nœud</translation>
     </message>
     <message>
         <source>MEN_NODE</source>
-        <translation>Noeud</translation>
+        <translation>Nœud</translation>
     </message>
     <message>
         <source>MEN_NODES</source>
-        <translation>Noeuds</translation>
+        <translation>Nœuds</translation>
     </message>
     <message>
         <source>MEN_NUM</source>
@@ -561,7 +561,7 @@
     </message>
     <message>
         <source>MEN_NUM_NODES</source>
-        <translation>Montrer les nÂ° des noeuds</translation>
+        <translation>Montrer les nÂ° des nœuds</translation>
     </message>
     <message>
         <source>MEN_ORIENT</source>
@@ -629,11 +629,11 @@
     </message>
     <message>
         <source>MEN_REMOVE_NODES</source>
-        <translation>Noeuds</translation>
+        <translation>Nœuds</translation>
     </message>
     <message>
         <source>MEN_REMOVE_ORPHAN_NODES</source>
-        <translation>Noeuds orphelins</translation>
+        <translation>Nœuds orphelins</translation>
     </message>
     <message>
         <source>MEN_RENAME</source>
@@ -649,7 +649,7 @@
     </message>
     <message>
         <source>MEN_RENUM_NODES</source>
-        <translation>Noeuds</translation>
+        <translation>Nœuds</translation>
     </message>
     <message>
         <source>MEN_RESET</source>
@@ -769,7 +769,7 @@
     </message>
     <message>
         <source>MEN_DUPLICATE_NODES</source>
-        <translation>Dupliquer les noeuds</translation>
+        <translation>Dupliquer les nœuds</translation>
     </message>
     <message>
         <source>MEN_TRANSF</source>
@@ -866,11 +866,11 @@ Choisissez un maillage et essayez de nouveau</translation>
     </message>
     <message>
         <source>MESH_NODE</source>
-        <translation>Noeud</translation>
+        <translation>Nœud</translation>
     </message>
     <message>
         <source>MESH_NODE_TITLE</source>
-        <translation>Ajouter un noeud</translation>
+        <translation>Ajouter un nœud</translation>
     </message>
     <message>
         <source>MINIMUMANGLE_ELEMENTS</source>
@@ -896,7 +896,7 @@ Voulez-vous le convertir en un groupe autonome ?</translation>
     </message>
     <message>
         <source>NODE_ID</source>
-        <translation>ID du noeud</translation>
+        <translation>ID du nœud</translation>
     </message>
     <message>
         <source>NON_SMESH_OBJECTS_SELECTED</source>
@@ -1544,7 +1544,7 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie suppo
     </message>
     <message>
         <source>SMESH_ID_NODES</source>
-        <translation>IDs des noeuds</translation>
+        <translation>IDs des nœuds</translation>
     </message>
     <message>
         <source>SMESH_INCORRECT_INPUT</source>
@@ -1652,7 +1652,7 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie suppo
     </message>
     <message>
         <source>SMESH_MERGED_NODES</source>
-        <translation>%1 noeuds fusionnés avec succès</translation>
+        <translation>%1 nœuds fusionnés avec succès</translation>
     </message>
     <message>
         <source>SMESH_NO_ELEMENTS_DETECTED</source>
@@ -1660,11 +1660,11 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie suppo
     </message>
     <message>
         <source>SMESH_NO_NODES_DETECTED</source>
-        <translation>Il n&apos;y a aucun noeud à fusionner</translation>
+        <translation>Il n&apos;y a aucun nœud à fusionner</translation>
     </message>
     <message>
         <source>SMESH_MERGE_NODES</source>
-        <translation>Fusionner les noeuds</translation>
+        <translation>Fusionner les nœuds</translation>
     </message>
     <message>
         <source>SMESH_MESH</source>
@@ -1704,7 +1704,7 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie suppo
     </message>
     <message>
         <source>SMESH_MESHINFO_NODES</source>
-        <translation>Noeuds</translation>
+        <translation>Nœuds</translation>
     </message>
     <message>
         <source>SMESH_MESHINFO_ORDER0</source>
@@ -1776,7 +1776,7 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie suppo
     </message>
     <message>
         <source>SMESH_MOVE_NODES_TITLE</source>
-        <translation>Déplacer un noeud</translation>
+        <translation>Déplacer un nœud</translation>
     </message>
     <message>
         <source>SMESH_NAME</source>
@@ -1784,7 +1784,7 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie suppo
     </message>
     <message>
         <source>SMESH_NODES</source>
-        <translation>Noeuds</translation>
+        <translation>Nœuds</translation>
     </message>
     <message>
         <source>SMESH_NONMANIFOLDEDGES</source>
@@ -1984,7 +1984,7 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie suppo
     </message>
     <message>
         <source>SMESH_REMOVE_NODES_TITLE</source>
-        <translation>Supprimer les noeuds</translation>
+        <translation>Supprimer les nœuds</translation>
     </message>
     <message>
         <source>SMESH_RENUMBERING</source>
@@ -1996,7 +1996,7 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie suppo
     </message>
     <message>
         <source>SMESH_RENUMBERING_NODES_TITLE</source>
-        <translation>Renuméroter les noeuds</translation>
+        <translation>Renuméroter les nœuds</translation>
     </message>
     <message>
         <source>SMESH_REVERSE</source>
@@ -2089,7 +2089,7 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie suppo
     </message>
     <message>
         <source>SMESH_DUPLICATE_TITLE</source>
-        <translation>Dupliquer les noeuds</translation>
+        <translation>Dupliquer les nœuds</translation>
     </message>
     <message>
         <source>SMESH_SCALE</source>
@@ -2227,7 +2227,7 @@ Enregistrez votre travail avant que l&apos;application se plante</translation>
     </message>
     <message>
         <source>SMESH_WRN_SELECTIONMODE_NODES</source>
-        <translation>Activer le mode de sélection des noeuds</translation>
+        <translation>Activer le mode de sélection des nœuds</translation>
     </message>
     <message>
         <source>SMESH_WRN_VIEWER_VTK</source>
@@ -2505,7 +2505,7 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>STB_FREE_NODE</source>
-        <translation>Noeuds libres</translation>
+        <translation>Nœuds libres</translation>
     </message>
     <message>
         <source>STB_FREE_FACES</source>
@@ -2561,7 +2561,7 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>STB_MERGE</source>
-        <translation>Fusionner les noeuds</translation>
+        <translation>Fusionner les nœuds</translation>
     </message>
     <message>
         <source>STB_MERGE_ELEMENTS</source>
@@ -2569,7 +2569,7 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>STB_MESH_THROU_POINT</source>
-        <translation>Déplacer un noeud</translation>
+        <translation>Déplacer un nœud</translation>
     </message>
     <message>
         <source>STB_MIN_ANG</source>
@@ -2577,15 +2577,15 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>STB_MOVE</source>
-        <translation>Déplacer un noeud</translation>
+        <translation>Déplacer un nœud</translation>
     </message>
     <message>
         <source>STB_NODE</source>
-        <translation>Noeud</translation>
+        <translation>Nœud</translation>
     </message>
     <message>
         <source>STB_NODES</source>
-        <translation>Noeuds</translation>
+        <translation>Nœuds</translation>
     </message>
     <message>
         <source>STB_NUM_ELEMENTS</source>
@@ -2593,7 +2593,7 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>STB_NUM_NODES</source>
-        <translation>Visualiser les noeuds</translation>
+        <translation>Visualiser les nœuds</translation>
     </message>
     <message>
         <source>STB_ORIENT</source>
@@ -2649,11 +2649,11 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>STB_REMOVE_NODES</source>
-        <translation>Supprimer les noeuds</translation>
+        <translation>Supprimer les nœuds</translation>
     </message>
     <message>
         <source>STB_REMOVE_ORPHAN_NODES</source>
-        <translation>Supprimer les noeuds orphelins</translation>
+        <translation>Supprimer les nœuds orphelins</translation>
     </message>
     <message>
         <source>STB_RENAME</source>
@@ -2665,7 +2665,7 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>STB_RENUM_NODES</source>
-        <translation>Renuméroter les noeuds</translation>
+        <translation>Renuméroter les nœuds</translation>
     </message>
     <message>
         <source>STB_RESET</source>
@@ -2753,7 +2753,7 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>STB_DUPLICATE_NODES</source>
-        <translation>Dupliquer les noeuds</translation>
+        <translation>Dupliquer les nœuds</translation>
     </message>
     <message>
         <source>STB_TRANSP</source>
@@ -2805,7 +2805,7 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>STB_WHAT_IS</source>
-        <translation>Information sur un élément ou un noeud de maillage</translation>
+        <translation>Information sur un élément ou un nœud de maillage</translation>
     </message>
     <message>
         <source>STB_WIRE</source>
@@ -3061,7 +3061,7 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>TOP_FREE_NODE</source>
-        <translation>Noeuds libres</translation>
+        <translation>Nœuds libres</translation>
     </message>
     <message>
         <source>TOP_FREE_FACES</source>
@@ -3117,7 +3117,7 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>TOP_MERGE</source>
-        <translation>Fusionner les noeuds</translation>
+        <translation>Fusionner les nœuds</translation>
     </message>
     <message>
         <source>TOP_MERGE_ELEMENTS</source>
@@ -3125,7 +3125,7 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>TOP_MESH_THROU_POINT</source>
-        <translation>Déplacer un noeud</translation>
+        <translation>Déplacer un nœud</translation>
     </message>
     <message>
         <source>TOP_MIN_ANG</source>
@@ -3133,15 +3133,15 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>TOP_MOVE</source>
-        <translation>Déplacer un noeud</translation>
+        <translation>Déplacer un nœud</translation>
     </message>
     <message>
         <source>TOP_NODE</source>
-        <translation>Noeud</translation>
+        <translation>Nœud</translation>
     </message>
     <message>
         <source>TOP_NODES</source>
-        <translation>Noeuds</translation>
+        <translation>Nœuds</translation>
     </message>
     <message>
         <source>TOP_NUM_ELEMENTS</source>
@@ -3149,7 +3149,7 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>TOP_NUM_NODES</source>
-        <translation>Visualiser les noeuds</translation>
+        <translation>Visualiser les nœuds</translation>
     </message>
     <message>
         <source>TOP_ORIENT</source>
@@ -3205,11 +3205,11 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>TOP_REMOVE_NODES</source>
-        <translation>Supprimer les noeuds</translation>
+        <translation>Supprimer les nœuds</translation>
     </message>
     <message>
         <source>TOP_REMOVE_ORPHAN_NODES</source>
-        <translation>Supprimer les noeuds ophelins</translation>
+        <translation>Supprimer les nœuds ophelins</translation>
     </message>
     <message>
         <source>TOP_RENAME</source>
@@ -3221,7 +3221,7 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>TOP_RENUM_NODES</source>
-        <translation>Renuméroter les noeuds</translation>
+        <translation>Renuméroter les nœuds</translation>
     </message>
     <message>
         <source>TOP_RESET</source>
@@ -3309,7 +3309,7 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>TOP_DUPLICATE_NODES</source>
-        <translation>Dupliquer les noeuds</translation>
+        <translation>Dupliquer les nœuds</translation>
     </message>
     <message>
         <source>TOP_TRANSP</source>
@@ -3467,11 +3467,11 @@ avec le paramètre &apos;%1&apos; des préférences du module Mesh.</translation
     </message>
     <message>
         <source>REMOVE_ORPHAN_NODES_QUESTION</source>
-        <translation>Voulez-vous supprimer tous les noeuds orphelins ?</translation>
+        <translation>Voulez-vous supprimer tous les nœuds orphelins ?</translation>
     </message>
     <message>
         <source>NB_NODES_REMOVED</source>
-        <translation>%1 noeud(s) supprimés.</translation>
+        <translation>%1 nœud(s) supprimés.</translation>
     </message>
     <message>
         <source>SMESH_SAVE_DISTRIBUTION</source>
@@ -3615,7 +3615,7 @@ Ouvrez une fenêtre VTK et essayez de nouveau</translation>
     </message>
     <message>
         <source>PREF_GROUP_NODES</source>
-        <translation>Noeuds</translation>
+        <translation>Nœuds</translation>
     </message>
     <message>
         <source>PREF_GROUP_GROUPS</source>
@@ -3659,7 +3659,7 @@ Ouvrez une fenêtre VTK et essayez de nouveau</translation>
     </message>
     <message>
         <source>PREF_NODES</source>
-        <translation>Noeuds</translation>
+        <translation>Nœuds</translation>
     </message>
     <message>
         <source>PREF_OBJECTS</source>
@@ -3754,7 +3754,7 @@ Ouvrez une fenêtre VTK et essayez de nouveau</translation>
     </message>
     <message>
         <source>SMESH_CORNER_NODES</source>
-        <translation>Noeuds angulaires:</translation>
+        <translation>Nœuds angulaires:</translation>
     </message>
     <message>
         <source>SMESH_FIRST</source>
@@ -3785,7 +3785,7 @@ Ouvrez une fenêtre VTK et essayez de nouveau</translation>
     </message>
     <message>
         <source>MERGE_NODES_AND_ELEMENTS</source>
-        <translation>Fusionner les noeuds et les éléments coïncidents</translation>
+        <translation>Fusionner les nœuds et les éléments coïncidents</translation>
     </message>
     <message>
         <source>MESHES</source>
@@ -3899,7 +3899,7 @@ Voulez-vous restaurer la priorité initiale ?</translation>
     </message>
     <message>
         <source>MEDIUMNDS</source>
-        <translation>Noeuds milieux sur la géométrie</translation>
+        <translation>Nœuds milieux sur la géométrie</translation>
     </message>
     <message>
         <source>MESH</source>
@@ -3956,7 +3956,7 @@ Vérifiez l&apos;espace de disque disponible et vos droits d&apos;écriture dans
     </message>
     <message>
         <source>ERR_LOADF_CANT_PROJECT</source>
-        <translation>Impossible d&apos;appliquer la projection des noeuds vers la face</translation>
+        <translation>Impossible d&apos;appliquer la projection des nœuds vers la face</translation>
     </message>
     <message>
         <source>ERR_LOADF_CLOSED_FACE</source>
@@ -4000,7 +4000,7 @@ Vérifiez l&apos;espace de disque disponible et vos droits d&apos;écriture dans
     </message>
     <message>
         <source>PROJECT</source>
-        <translation>Projeter les noeuds sur la face</translation>
+        <translation>Projeter les nœuds sur la face</translation>
     </message>
     <message>
         <source>SAVE</source>
@@ -4015,7 +4015,7 @@ Vérifiez l&apos;espace de disque disponible et vos droits d&apos;écriture dans
     <name>SMESHGUI_CreatePolyhedralVolumeDlg</name>
     <message>
         <source>FACES_BY_NODES</source>
-        <translation>Faces par noeuds</translation>
+        <translation>Faces par nœuds</translation>
     </message>
     <message>
         <source>SMESH_POLYEDRE_CREATE_ERROR</source>
@@ -4057,7 +4057,7 @@ Choisissez un groupe et essayez de nouveau</translation>
     </message>
     <message>
         <source>COINCIDENT_NODES</source>
-        <translation>Noeuds coïncidents</translation>
+        <translation>Nœuds coïncidents</translation>
     </message>
     <message>
         <source>DETECT</source>
@@ -4084,7 +4084,7 @@ Choisissez un groupe et essayez de nouveau</translation>
     </message>
     <message>
         <source>CANT_GET_TANGENT</source>
-        <translation>Impossible d&apos;obtenir la tangente pour un des noeuds du chemin</translation>
+        <translation>Impossible d&apos;obtenir la tangente pour un des nœuds du chemin</translation>
     </message>
     <message>
         <source>EXTRUSION_1D</source>
@@ -4100,7 +4100,7 @@ Choisissez un groupe et essayez de nouveau</translation>
     </message>
     <message>
         <source>EXTR_BAD_STARTING_NODE</source>
-        <translation>Noeud de départ du chemin incorrect</translation>
+        <translation>Nœud de départ du chemin incorrect</translation>
     </message>
     <message>
         <source>LINEAR_ANGLES</source>
@@ -4136,7 +4136,7 @@ Choisissez un groupe et essayez de nouveau</translation>
     </message>
     <message>
         <source>SMESH_PATH_START</source>
-        <translation>Noeud de début</translation>
+        <translation>Nœud de début</translation>
     </message>
     <message>
         <source>SMESH_USE_ANGLES</source>
@@ -4148,7 +4148,7 @@ Choisissez un groupe et essayez de nouveau</translation>
     </message>
     <message>
         <source>WRONG_ANGLES_NUMBER</source>
-        <translation>Le nombre d&apos;angles doit correspondre au nombre des noeuds du chemin</translation>
+        <translation>Le nombre d&apos;angles doit correspondre au nombre des nœuds du chemin</translation>
     </message>
 </context>
 <context>
@@ -4191,7 +4191,7 @@ Sélectionnez un objet valide et essayez de nouveau</translation>
     </message>
     <message>
         <source>NODES_TLT</source>
-        <translation>Filtre de noeuds</translation>
+        <translation>Filtre de nœuds</translation>
     </message>
     <message>
         <source>SELECTION</source>
@@ -4348,7 +4348,7 @@ Vérifiez la validité des informations données</translation>
     </message>
     <message>
         <source>NODE</source>
-        <translation>Noeud</translation>
+        <translation>Nœud</translation>
     </message>
     <message>
         <source>NO_PERMISSION</source>
@@ -4495,7 +4495,7 @@ Vérifiez la validité des informations données</translation>
     </message>
     <message>
         <source>FREE_NODES</source>
-        <translation>Noeuds isolés</translation>
+        <translation>Nœuds isolés</translation>
     </message>
     <message>
         <source>FREE_FACES</source>
@@ -4557,7 +4557,7 @@ Entrez une valeur correcte et essayez de nouveau</translation>
     </message>
     <message>
         <source>NODES</source>
-        <translation>Noeuds</translation>
+        <translation>Nœuds</translation>
     </message>
     <message>
         <source>NOT</source>
@@ -4739,7 +4739,7 @@ Indiquez-les et essayez de nouveau</translation>
     </message>
     <message>
         <source>NODE</source>
-        <translation>Noeud</translation>
+        <translation>Nœud</translation>
     </message>
     <message>
         <source>EDGE</source>
@@ -4780,11 +4780,11 @@ Indiquez-les et essayez de nouveau</translation>
     <name>SMESHGUI_MakeNodeAtPointDlg</name>
     <message>
         <source>AUTO_SEARCH</source>
-        <translation>Trouver le noeud le plus proche de la destination</translation>
+        <translation>Trouver le nœud le plus proche de la destination</translation>
     </message>
     <message>
         <source>CAPTION</source>
-        <translation>Déplacer un noeud</translation>
+        <translation>Déplacer un nœud</translation>
     </message>
     <message>
         <source>DESTINATION</source>
@@ -4792,7 +4792,7 @@ Indiquez-les et essayez de nouveau</translation>
     </message>
     <message>
         <source>MOVE_NODE</source>
-        <translation>Déplacer un noeud</translation>
+        <translation>Déplacer un nœud</translation>
     </message>
     <message>
         <source>METHOD</source>
@@ -4800,7 +4800,7 @@ Indiquez-les et essayez de nouveau</translation>
     </message>
     <message>
         <source>NODE_2MOVE</source>
-        <translation>Noeud à déplacer</translation>
+        <translation>Nœud à déplacer</translation>
     </message>
     <message>
         <source>NODE_2MOVE_ID</source>
@@ -4811,7 +4811,7 @@ Indiquez-les et essayez de nouveau</translation>
     <name>SMESHGUI_MakeNodeAtPointOp</name>
     <message>
         <source>INVALID_ID</source>
-        <translation>L&apos;ID du noeud est invalide</translation>
+        <translation>L&apos;ID du nœud est invalide</translation>
     </message>
     <message>
         <source>INVALID_MESH</source>
@@ -4826,11 +4826,11 @@ Indiquez-les et essayez de nouveau</translation>
     </message>
     <message>
         <source>CREATE_NEW_METHOD</source>
-        <translation>Créer un noeud</translation>
+        <translation>Créer un nœud</translation>
     </message>
     <message>
         <source>MESH_PASS_THROUGH_POINT</source>
-        <translation>Créer un noeud au point</translation>
+        <translation>Créer un nœud au point</translation>
     </message>
     <message>
         <source>METHOD</source>
@@ -4838,11 +4838,11 @@ Indiquez-les et essayez de nouveau</translation>
     </message>
     <message>
         <source>MOVE_EXISTING_METHOD</source>
-        <translation>Déplacer un noeud</translation>
+        <translation>Déplacer un nœud</translation>
     </message>
     <message>
         <source>NODE_2MOVE</source>
-        <translation>Noeud à déplacer</translation>
+        <translation>Nœud à déplacer</translation>
     </message>
     <message>
         <source>NODE_2MOVE_ID</source>
@@ -5061,11 +5061,11 @@ Il y a trop peu de points dans le fichier </translation>
     </message>
     <message>
         <source>NODE_1</source>
-        <translation>Noeud 1</translation>
+        <translation>Nœud 1</translation>
     </message>
     <message>
         <source>NODE_2</source>
-        <translation>Noeud 2</translation>
+        <translation>Nœud 2</translation>
     </message>
     <message>
         <source>PATTERN</source>
@@ -5263,19 +5263,19 @@ Il y a trop peu de points dans le fichier </translation>
     </message>
     <message>
         <source>ERROR_1</source>
-        <translation>La frontière Libre1 n&apos;est pas trouvée avec les noeuds sélectionnés</translation>
+        <translation>La frontière Libre1 n&apos;est pas trouvée avec les nœuds sélectionnés</translation>
     </message>
     <message>
         <source>ERROR_2</source>
-        <translation>La frontière Libre2 n&apos;est pas trouvée avec les noeuds sélectionnés</translation>
+        <translation>La frontière Libre2 n&apos;est pas trouvée avec les nœuds sélectionnés</translation>
     </message>
     <message>
         <source>ERROR_3</source>
-        <translation>Les frontières Libres 1 et 2 n&apos;ont pas été trouvées avec les noeuds sélectionnés</translation>
+        <translation>Les frontières Libres 1 et 2 n&apos;ont pas été trouvées avec les nœuds sélectionnés</translation>
     </message>
     <message>
         <source>ERROR_4</source>
-        <translation>Aucun chemin du premier au dernier noeud de la frontière n&apos;est trouvé</translation>
+        <translation>Aucun chemin du premier au dernier nœud de la frontière n&apos;est trouvé</translation>
     </message>
     <message>
         <source>ERROR_5</source>
@@ -5287,23 +5287,23 @@ Il y a trop peu de points dans le fichier </translation>
     </message>
     <message>
         <source>ERROR_7</source>
-        <translation>Les jeux d&apos;éléments sont topologiquement différents ou les noeuds ne conviennent pas</translation>
+        <translation>Les jeux d&apos;éléments sont topologiquement différents ou les nœuds ne conviennent pas</translation>
     </message>
     <message>
         <source>ERROR_8</source>
-        <translation>Les noeuds du côté 1 soit ne sont pas connectés soit ne sont pas situés à la frontière du jeu d&apos;éléments</translation>
+        <translation>Les nœuds du côté 1 soit ne sont pas connectés soit ne sont pas situés à la frontière du jeu d&apos;éléments</translation>
     </message>
     <message>
         <source>ERROR_9</source>
-        <translation>Les noeuds du côté 2 soit ne sont pas connectés soit ne sont pas situés à la frontière de l&apos;élément</translation>
+        <translation>Les nœuds du côté 2 soit ne sont pas connectés soit ne sont pas situés à la frontière de l&apos;élément</translation>
     </message>
     <message>
         <source>FIRST_NODE_ID</source>
-        <translation>ID du premier noeud </translation>
+        <translation>ID du premier nœud </translation>
     </message>
     <message>
         <source>LAST_NODE_ID</source>
-        <translation>ID du dernier noeud</translation>
+        <translation>ID du dernier nœud</translation>
     </message>
     <message>
         <source>MERGE_EQUAL_ELEMENTS</source>
@@ -5311,15 +5311,15 @@ Il y a trop peu de points dans le fichier </translation>
     </message>
     <message>
         <source>NODE1_TO_MERGE</source>
-        <translation>Noeud 1 à fusionner</translation>
+        <translation>Nœud 1 à fusionner</translation>
     </message>
     <message>
         <source>NODE2_TO_MERGE</source>
-        <translation>Noeud 2 à fusionner</translation>
+        <translation>Nœud 2 à fusionner</translation>
     </message>
     <message>
         <source>SECOND_NODE_ID</source>
-        <translation>ID du deuxième noeud</translation>
+        <translation>ID du deuxième nœud</translation>
     </message>
     <message>
         <source>SEW_BORDER_TO_SIDE</source>
@@ -5372,7 +5372,7 @@ Il y a trop peu de points dans le fichier </translation>
     </message>
     <message>
         <source>FIXED_NODES_IDS</source>
-        <translation>IDs des noeuds fixes</translation>
+        <translation>IDs des nœuds fixes</translation>
     </message>
     <message>
         <source>IS_PARAMETRIC</source>
@@ -5554,11 +5554,11 @@ Il y a trop peu de points dans le fichier </translation>
     </message>
     <message>
         <source>GROUP_NODES_TO_DUPLICATE</source>
-        <translation>Groupe des noeuds à dupliquer</translation>
+        <translation>Groupe des nœuds à dupliquer</translation>
     </message>
     <message>
         <source>GROUP_NODES_TO_REPLACE</source>
-        <translation>Groupe des éléments dont les noeuds sont à remplacer</translation>
+        <translation>Groupe des éléments dont les nœuds sont à remplacer</translation>
     </message>
     <message>
         <source>DUPLICATION_WITH_ELEMS</source>
@@ -5570,15 +5570,15 @@ Il y a trop peu de points dans le fichier </translation>
     </message>
     <message>
         <source>GROUP_NODES_NOT_DUPLICATE</source>
-        <translation>Groupe des noeuds à ne pas dupliquer</translation>
+        <translation>Groupe des nœuds à ne pas dupliquer</translation>
     </message>
     <message>
         <source>GROUP_ELEMS_TO_REPLACE</source>
-        <translation>Groupe des éléments dont les noeuds sont à remplacer</translation>
+        <translation>Groupe des éléments dont les nœuds sont à remplacer</translation>
     </message>
     <message>
         <source>CONSTRUCT_NEW_GROUP_NODES</source>
-        <translation>Construire un groupe avec les noeuds nouvellement créés</translation>
+        <translation>Construire un groupe avec les nœuds nouvellement créés</translation>
     </message>
     <message>
         <source>CONSTRUCT_NEW_GROUP_ELEMENTS</source>
@@ -5679,7 +5679,7 @@ Il y a trop peu de points dans le fichier </translation>
     </message>
     <message>
         <source>NODES_LAB</source>
-        <translation>Noeuds:</translation>
+        <translation>Nœuds:</translation>
     </message>
     <message>
         <source>ELEMENTS_LAB</source>
@@ -5759,7 +5759,7 @@ Il y a trop peu de points dans le fichier </translation>
     </message>
     <message>
         <source>OBJECT_GROUP_NODES</source>
-        <translation>Groupe de noeuds</translation>
+        <translation>Groupe de nœuds</translation>
     </message>
     <message>
         <source>OBJECT_GROUP_EDGES</source>
@@ -5794,7 +5794,7 @@ Il y a trop peu de points dans le fichier </translation>
     </message>
     <message>
         <source>NODE_MODE</source>
-        <translation>Noeud</translation>
+        <translation>Nœud</translation>
     </message>
     <message>
         <source>ELEM_MODE</source>
@@ -5817,7 +5817,7 @@ Il y a trop peu de points dans le fichier </translation>
     </message>
     <message>
         <source>NODE</source>
-        <translation>Noeud</translation>
+        <translation>Nœud</translation>
     </message>
     <message>
         <source>0D_ELEMENT</source>
@@ -5853,7 +5853,7 @@ Il y a trop peu de points dans le fichier </translation>
     </message>
     <message>
         <source>FREE_NODE</source>
-        <translation>Noeud libre (pas de connectivité)</translation>
+        <translation>Nœud libre (pas de connectivité)</translation>
     </message>
     <message>
         <source>TYPE</source>
@@ -5928,7 +5928,7 @@ Il y a trop peu de points dans le fichier </translation>
     </message>
     <message>
         <source>NODE</source>
-        <translation>Noeud</translation>
+        <translation>Nœud</translation>
     </message>
     <message>
         <source>ELEMENT</source>
@@ -5997,7 +5997,7 @@ Il y a trop peu de points dans le fichier </translation>
     </message>
     <message>
         <source>NODES</source>
-        <translation>Noeuds</translation>
+        <translation>Nœuds</translation>
     </message>
     <message>
         <source>ELEMENTS</source>
@@ -6017,7 +6017,7 @@ Il y a trop peu de points dans le fichier </translation>
     </message>
     <message>
         <source>NB_NODES</source>
-        <translation>noeuds</translation>
+        <translation>nœuds</translation>
     </message>
     <message>
         <source>NB_ELEMENTS</source>
