@@ -1146,12 +1146,25 @@ class Mesh:
 
     ## Gets the subMesh object associated to a \a theSubObject geometrical object.
     #  The subMesh object gives access to the IDs of nodes and elements.
-    #  @param theSubObject a geometrical object (shape)
-    #  @param theName a name for the submesh
+    #  @param geom a geometrical object (shape)
+    #  @param name a name for the submesh
     #  @return an object of type SMESH_SubMesh, representing a part of mesh, which lies on the given shape
     #  @ingroup l2_submeshes
-    def GetSubMesh(self, theSubObject, theName):
-        submesh = self.mesh.GetSubMesh(theSubObject, theName)
+    def GetSubMesh(self, geom, name):
+        if not geom.IsSame( self.geom ) and not geom.GetStudyEntry():
+            ## set the study
+            studyID = self.smeshpyD.GetCurrentStudy()._get_StudyId()
+            if studyID != self.geompyD.myStudyId:
+                self.geompyD.init_geom( self.smeshpyD.GetCurrentStudy())
+            ## get a name
+            if not name and geom.GetShapeType() != geompyDC.GEOM.COMPOUND:
+                # for all groups SubShapeName() returns "Compound_-1"
+                name = self.geompyD.SubShapeName(geom, self.geom)
+            if not name:
+                name = "%s_%s"%(geom.GetShapeType(), id(geom)%10000)
+            ## publish
+            self.geompyD.addToStudyInFather( self.geom, geom, name )
+        submesh = self.mesh.GetSubMesh( geom, name )
         return submesh
 
     ## Returns the shape associated to the mesh
