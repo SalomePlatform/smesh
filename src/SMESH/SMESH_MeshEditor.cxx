@@ -10968,6 +10968,8 @@ bool SMESH_MeshEditor::DoubleNodesOnGroupBoundaries( const std::vector<TIDSorted
                     continue;
                   int vtkType = grid->GetCellType(vtkId);
                   int downId = grid->CellIdToDownId(vtkId);
+                  if (downId < 0)
+                    continue;
                   DownIdType aCell(downId, vtkType);
                   if (celldom.count(vtkId))
                     continue;
@@ -11238,6 +11240,8 @@ bool SMESH_MeshEditor::DoubleNodesOnGroupBoundaries( const std::vector<TIDSorted
               int vtkId = l.cells[i];
               int vtkType = grid->GetCellType(vtkId);
               int downId = grid->CellIdToDownId(vtkId);
+              if (downId < 0)
+                continue;
               DownIdType aCell(downId, vtkType);
               int volParents[1000];
               int nbvol = grid->GetParentVolumes(volParents, vtkId);

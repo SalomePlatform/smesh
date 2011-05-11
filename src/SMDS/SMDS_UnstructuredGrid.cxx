@@ -312,7 +312,12 @@ void SMDS_UnstructuredGrid::copyBloc(vtkUnsignedCharArray *newTypes, std::vector
 
 int SMDS_UnstructuredGrid::CellIdToDownId(int vtkCellId)
 {
-  // ASSERT((vtkCellId >= 0) && (vtkCellId < _cellIdToDownId.size()));
+  if((vtkCellId < 0) || (vtkCellId >= _cellIdToDownId.size()))
+    {
+      std::cerr << "SMDS_UnstructuredGrid::CellIdToDownId problem vtkCellId="
+          << vtkCellId << " max="<< _cellIdToDownId.size() << std::endl;
+      return -1;
+    }
   return _cellIdToDownId[vtkCellId];
 }
 
