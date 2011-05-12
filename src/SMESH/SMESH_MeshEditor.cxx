@@ -7858,8 +7858,9 @@ void SMESH_MeshEditor::MergeNodes (TListOfListOfNodes & theGroupsOfNodes)
 
     } // if ( nbNodes != nbUniqueNodes ) // some nodes stick
 
-    if ( isOk ) {
-      if (elem->IsPoly() && elem->GetType() == SMDSAbs_Volume) {
+    if ( isOk ) { // the elem remains valid after sticking nodes
+      if (elem->IsPoly() && elem->GetType() == SMDSAbs_Volume)
+      {
         // Change nodes of polyedre
         const SMDS_VtkVolume* aPolyedre =
           dynamic_cast<const SMDS_VtkVolume*>( elem );
@@ -7886,28 +7887,25 @@ void SMESH_MeshEditor::MergeNodes (TListOfListOfNodes & theGroupsOfNodes)
           aMesh->ChangePolyhedronNodes( elem, poly_nodes, quantities );
         }
       }
-      else {
-        //int elemId = elem->GetID();
-        //MESSAGE("Change regular element or polygon " << elemId);
-        SMDSAbs_ElementType etyp = elem->GetType();
+      else // replace non-polyhedron elements
+      {
+        const SMDSAbs_ElementType etyp = elem->GetType();
+        const int elemId               = elem->GetID();
+        const bool isPoly              = (elem->GetEntityType() == SMDSEntity_Polygon);
         uniqueNodes.resize(nbUniqueNodes);
-        SMDS_MeshElement* newElem = 0;
-        if (elem->GetEntityType() == SMDSEntity_Polygon)
-          newElem = this->AddElement(uniqueNodes, etyp, true);
-        else
-          newElem = this->AddElement(uniqueNodes, etyp, false);
-        if (newElem)
-          {
-            myLastCreatedElems.Append(newElem);
-            if ( aShapeId )
-              aMesh->SetMeshElementOnShape( newElem, aShapeId );
-          }
-        aMesh->RemoveElement(elem);
+
+        SMESHDS_SubMesh * sm = aShapeId > 0 ? aMesh->MeshElements(aShapeId) : 0;
+
+        aMesh->RemoveFreeElement(elem, sm, /*fromGroups=*/false);
+        SMDS_MeshElement* newElem = this->AddElement(uniqueNodes, etyp, isPoly, elemId);
+        if ( sm && newElem )
+          sm->AddElement( newElem );
+        if ( elem != newElem )
+          ReplaceElemInGroups( elem, newElem, aMesh );
       }
     }
     else {
       // Remove invalid regular element or invalid polygon
-      //MESSAGE("Remove invalid " << elem->GetID());
       rmElemIds.push_back( elem->GetID() );
     }
 
