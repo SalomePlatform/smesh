@@ -800,7 +800,6 @@ void SMDS_Down3D::getNodeIds(int cellId, std::set<int>& nodeSet)
 int SMDS_Down3D::FindFaceByNodes(int cellId, ElemByNodesType& faceByNodes)
 {
   int *faces = &_cellIds[_nbDownCells * cellId];
-  int faceNodeSet[10];
   int npoints = 0;
 
   for (int i = 0; i < _nbDownCells; i++)
@@ -808,11 +807,7 @@ int SMDS_Down3D::FindFaceByNodes(int cellId, ElemByNodesType& faceByNodes)
       if ((faces[i] >= 0) && (faceByNodes.vtkType == _cellTypes[i]))
         {
           if (npoints == 0)
-            {
-              for (int j = 0; j < faceByNodes.nbNodes; j++)
-                faceNodeSet[j] = faceByNodes.nodeIds[j];
-              npoints = faceByNodes.nbNodes;
-            }
+            npoints = faceByNodes.nbNodes;
 
           int nodeSet[10];
           int npts = this->_grid->getDownArray(faceByNodes.vtkType)->getNodeSet(faces[i], nodeSet);

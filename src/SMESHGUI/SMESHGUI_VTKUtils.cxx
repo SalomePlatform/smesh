@@ -1267,7 +1267,7 @@ namespace SMESH
                                                 {theBounds[0],theBounds[3],theBounds[5]}, 
                                                 {theBounds[1],theBounds[3],theBounds[5]}};
 
-    int aMaxId = 0, aMinId = aMaxId;
+    int aMaxId = 0;
     theMaxBoundPrj = vtkMath::Dot(theDirection,aBoundPoints[aMaxId]);
     theMinBoundPrj = theMaxBoundPrj;
     for(int i = 1; i < 8; i++){
@@ -1278,7 +1278,6 @@ namespace SMESH
       }
       if(theMinBoundPrj > aTmp){
         theMinBoundPrj = aTmp;
-        aMinId = i;
       }
     }
     vtkFloatingPointType *aMinPnt = aBoundPoints[aMaxId];

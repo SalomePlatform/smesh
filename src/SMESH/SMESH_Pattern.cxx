@@ -1899,7 +1899,7 @@ bool SMESH_Pattern::
 
   for ( nIt = startNodes.begin(); nIt != startNodes.end(); nIt++ )
   {
-    TIsoNode* prevN[2], *node = *nIt;
+    TIsoNode *node = *nIt;
     if ( node->IsUVComputed() || !node->IsMovable() )
       continue;
     gp_XY newUV( 0, 0 ), sumDir( 0, 0 );
@@ -1960,7 +1960,6 @@ bool SMESH_Pattern::
           newUV += prevNode1->myUV + dir * step[ iDir ];
         }
         sumDir += dir;
-        prevN[ iDir ] = prevNode1;
         nbComp++;
       }
     }
@@ -2022,7 +2021,7 @@ bool SMESH_Pattern::
       }
       // define ratio
       bool ok = true; // <- stupid fix TO AVOID PB OF NODES WITH NULL BND NODES
-      double locR[2] = { 0, 0 };
+//      double locR[2] = { 0, 0 };
       for ( iDir = 0; iDir < 2; iDir++ )
       {
         const int iCoord = 2 - iDir; // coord changing along an isoline
@@ -2036,7 +2035,7 @@ bool SMESH_Pattern::
         double par3 = bndNode2->myInitUV.Coord( iCoord );
         double r = ( par2 - par1 ) / ( par3 - par1 );
         r = Abs ( r - 0.5 ) * 2.0;  // [0,1] - distance from the middle
-        locR[ iDir ] = ( 1 - r * r ) * 0.25;
+//        locR[ iDir ] = ( 1 - r * r ) * 0.25;
       }
       //locR[0] = locR[1] = 0.25;
       // intersect the 2 lines and move a node

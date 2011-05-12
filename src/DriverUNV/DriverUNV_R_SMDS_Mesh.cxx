@@ -280,8 +280,8 @@ Driver_Mesh::Status DriverUNV_R_SMDS_Mesh::Perform()
 
           }
         }
-        //      if(!anElement)
-        //        MESSAGE("DriverUNV_R_SMDS_Mesh::Perform - can not add element with ID = "<<aLabel<<" and type = "<<aRec.fe_descriptor_id);
+        if(!anElement)
+          MESSAGE("DriverUNV_R_SMDS_Mesh::Perform - can not add element with ID = "<<aLabel<<" and type = "<<aRec.fe_descriptor_id);
       }
     }
     {

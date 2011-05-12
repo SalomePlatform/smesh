@@ -299,10 +299,12 @@ QString StdMeshersGUI_NbSegmentsCreator::storeParams() const
     break;
   }
   if ( hasConv )
+  {
     if ( data.myConv )
       valStr += "; " + tr("SMESH_CUT_NEG_MODE");
     else
       valStr += "; " + tr("SMESH_EXP_MODE");
+  }
 
   return valStr;
 }

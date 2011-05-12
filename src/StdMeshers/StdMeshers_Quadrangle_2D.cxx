@@ -2191,7 +2191,6 @@ bool StdMeshers_Quadrangle_2D::ComputeReduced (SMESH_Mesh &        aMesh,
     int nb1 = nb;
     int nr1 = nr;
     int nt1 = nt;
-    int nl1 = nl;
 
     if (nr == nl) {
       if (nb < nt) {
@@ -2200,7 +2199,6 @@ bool StdMeshers_Quadrangle_2D::ComputeReduced (SMESH_Mesh &        aMesh,
       }
     }
     else if (nb == nt) {
-      nl1 = nb; // and == nt
       nr1 = nb; // and == nt
       if (nl < nr) {
         nt1 = nl;
@@ -2216,7 +2214,7 @@ bool StdMeshers_Quadrangle_2D::ComputeReduced (SMESH_Mesh &        aMesh,
     }
 
     // number of rows and columns
-    int nrows = nr1 - 1; // and also == nl1 - 1
+    int nrows = nr1 - 1;
     int ncol_top = nt1 - 1;
     int ncol_bot = nb1 - 1;
     // maximum number of bottom elements for "tree" simple reduce 3->1

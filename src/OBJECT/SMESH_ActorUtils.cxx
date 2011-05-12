@@ -42,11 +42,11 @@
 #include <vtkXMLUnstructuredGridWriter.h>
 #include <vtkUnstructuredGridWriter.h>
 
-#ifdef _DEBUG_
-static int MYDEBUG = 1;
-#else
-static int MYDEBUG = 0;
-#endif
+//#ifdef _DEBUG_
+//static int MYDEBUG = 1;
+//#else
+//static int MYDEBUG = 0;
+//#endif
 
 namespace SMESH
 {

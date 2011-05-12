@@ -2750,7 +2750,9 @@ void SMESH_MesherHelper::FixQuadraticElements(bool volumeOnly)
           faces.Add( f.Current() ); // in not meshed solid
       }
       else { // fix nodes in the solid and its faces
+#ifdef _DEBUG_
         MSG("FIX SOLID " << nbSolids-- << " #" << GetMeshDS()->ShapeToIndex(s.Current()));
+#endif
         SMESH_MesherHelper h(*myMesh);
         h.SetSubShape( s.Current() );
         h.FixQuadraticElements(false);

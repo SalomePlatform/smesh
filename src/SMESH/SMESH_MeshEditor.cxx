@@ -1132,26 +1132,13 @@ bool SMESH_MeshEditor::QuadToTri (TIDSortedElemSet &                   theElems,
       myLastCreatedNodes.Append(newN);
 
       // create a new element
-      const SMDS_MeshNode* N[6];
       if ( aBadRate1 <= aBadRate2 ) {
-        N[0] = aNodes[0];
-        N[1] = aNodes[1];
-        N[2] = aNodes[2];
-        N[3] = aNodes[4];
-        N[4] = aNodes[5];
-        N[5] = newN;
         newElem1 = aMesh->AddFace(aNodes[2], aNodes[3], aNodes[0],
                                   aNodes[6], aNodes[7], newN );
         newElem2 = aMesh->AddFace(aNodes[2], aNodes[0], aNodes[1],
                                   newN,      aNodes[4], aNodes[5] );
       }
       else {
-        N[0] = aNodes[1];
-        N[1] = aNodes[2];
-        N[2] = aNodes[3];
-        N[3] = aNodes[5];
-        N[4] = aNodes[6];
-        N[5] = newN;
         newElem1 = aMesh->AddFace(aNodes[3], aNodes[0], aNodes[1],
                                   aNodes[7], aNodes[4], newN );
         newElem2 = aMesh->AddFace(aNodes[3], aNodes[1], aNodes[2],
@@ -1958,26 +1945,13 @@ bool SMESH_MeshEditor::QuadToTri (TIDSortedElemSet & theElems,
       // create a new element
       const SMDS_MeshElement* newElem1 = 0;
       const SMDS_MeshElement* newElem2 = 0;
-      const SMDS_MeshNode* N[6];
       if ( the13Diag ) {
-        N[0] = aNodes[0];
-        N[1] = aNodes[1];
-        N[2] = aNodes[2];
-        N[3] = aNodes[4];
-        N[4] = aNodes[5];
-        N[5] = newN;
         newElem1 = aMesh->AddFace(aNodes[2], aNodes[3], aNodes[0],
                                   aNodes[6], aNodes[7], newN );
         newElem2 = aMesh->AddFace(aNodes[2], aNodes[0], aNodes[1],
                                   newN,      aNodes[4], aNodes[5] );
       }
       else {
-        N[0] = aNodes[1];
-        N[1] = aNodes[2];
-        N[2] = aNodes[3];
-        N[3] = aNodes[5];
-        N[4] = aNodes[6];
-        N[5] = newN;
         newElem1 = aMesh->AddFace(aNodes[3], aNodes[0], aNodes[1],
                                   aNodes[7], aNodes[4], newN );
         newElem2 = aMesh->AddFace(aNodes[3], aNodes[1], aNodes[2],
@@ -2928,7 +2902,7 @@ void SMESH_MeshEditor::Smooth (TIDSortedElemSet &          theElems,
     Handle(Geom_Surface) surface;
     SMESHDS_SubMesh* faceSubMesh = 0;
     TopoDS_Face face;
-    double fToler2 = 0, vPeriod = 0., uPeriod = 0., f,l;
+    double fToler2 = 0, f,l;
     double u1 = 0, u2 = 0, v1 = 0, v2 = 0;
     bool isUPeriodic = false, isVPeriodic = false;
     if ( *fId ) {
@@ -2939,10 +2913,10 @@ void SMESH_MeshEditor::Smooth (TIDSortedElemSet &          theElems,
       fToler2 *= fToler2 * 10.;
       isUPeriodic = surface->IsUPeriodic();
       if ( isUPeriodic )
-        vPeriod = surface->UPeriod();
+        surface->UPeriod();
       isVPeriodic = surface->IsVPeriodic();
       if ( isVPeriodic )
-        uPeriod = surface->VPeriod();
+        surface->VPeriod();
       surface->Bounds( u1, u2, v1, v2 );
     }
     // ---------------------------------------------------------
@@ -4934,9 +4908,6 @@ SMESH_MeshEditor::ExtrusionAlongTrack (TIDSortedElemSet &   theElements,
       list<SMESH_MeshEditor_PathPoint> currList = *itLLPP;
       itPP = currList.begin();
       SMESH_MeshEditor_PathPoint PP2 = currList.front();
-      gp_Pnt P1 = PP1.Pnt();
-      //cout<<"    PP1: Pnt("<<P1.X()<<","<<P1.Y()<<","<<P1.Z()<<")"<<endl;
-      gp_Pnt P2 = PP2.Pnt();
       gp_Dir D1 = PP1.Tangent();
       gp_Dir D2 = PP2.Tangent();
       gp_Dir Dnew( gp_Vec( (D1.X()+D2.X())/2, (D1.Y()+D2.Y())/2,
@@ -5660,8 +5631,8 @@ SMESH_MeshEditor::Transform (TIDSortedElemSet & theElems,
 
   PGroupIDs newGroupIDs;
 
-  if ( theMakeGroups && theCopy ||
-       theMakeGroups && theTargetMesh )
+  if ( ( theMakeGroups && theCopy ) ||
+       ( theMakeGroups && theTargetMesh ) )
     newGroupIDs = generateGroups( srcNodes, srcElems, groupPostfix, theTargetMesh );
 
   return newGroupIDs;
@@ -10175,7 +10146,7 @@ SMESH_MeshEditor::SewSideElements (TIDSortedElemSet&    theSide1,
     }
 
     // check similarity of elements of the sides
-    if (aResult == SEW_OK && ( face[0] && !face[1] ) || ( !face[0] && face[1] )) {
+    if (aResult == SEW_OK && (( face[0] && !face[1] ) || ( !face[0] && face[1] ))) {
       MESSAGE("Correspondent face not found on side " << ( face[0] ? 1 : 0 ));
       if ( nReplaceMap.size() == 2 ) { // faces on input nodes not found
         aResult = ( face[0] ? SEW_BAD_SIDE2_NODES : SEW_BAD_SIDE1_NODES );

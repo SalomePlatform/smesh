@@ -414,7 +414,7 @@ sizeHint() const
 {
   if( cachedSizeHint().isValid() )
     return cachedSizeHint();
-
+  return QTableWidget::sizeHint();
 //   QSize sh = QTableWidget::sizeHint();
 //   if( sh.width() < 400 )
 //     sh.setWidth( 400 );

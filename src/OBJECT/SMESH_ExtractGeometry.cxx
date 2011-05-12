@@ -35,11 +35,11 @@
 
 using namespace std;
 
-#ifdef _DEBUG_
-static int MYDEBUG = 0;
-#else
-static int MYDEBUG = 0;
-#endif
+//#ifdef _DEBUG_
+//static int MYDEBUG = 0;
+//#else
+//static int MYDEBUG = 0;
+//#endif
 
 #if defined __GNUC__
   #if __GNUC__ == 2

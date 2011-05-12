@@ -141,7 +141,7 @@ void  aptrte( Z   nutysu, R      aretmx,
                  //no st1, st2, st3, 0 (non quadrangle)
 
   R  d, tcpu=0;
-  R3 direction=R3(0,0,0);  //direction pour areteideale() inactive ici!
+//  R3 direction=R3(0,0,0);  //direction pour areteideale() inactive ici!
   Z  nbarfr=nudslf[nblf];  //nombre total d'aretes des lignes fermees
   Z  mxtrou = Max( 1024, nblf );  //nombre maximal de trous dans la surface
 

@@ -1188,10 +1188,12 @@ bool SMDS_VolumeTool::IsLinked (const int theNode1Index,
     if ( minInd >= firstMediumInd )
       return false; // medium nodes are not linked
     if ( maxInd < firstMediumInd ) // both nodes are corners
+    {
       if ( theIgnoreMediumNodes )
         type = SMDSAbs_EntityType( int(type)-1 ); // check linkage of corner nodes
       else
         return false; // corner nodes are not linked directly in a quadratic cell
+    }
   }
 
   switch ( type ) {

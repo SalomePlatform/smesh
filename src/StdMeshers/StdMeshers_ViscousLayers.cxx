@@ -2093,13 +2093,22 @@ bool _ViscousBuilder::smoothAndCheck(_SolidData& data,
   distToIntersection = Precision::Infinite();
   double dist;
   const SMDS_MeshElement* intFace = 0, *closestFace = 0;
+#ifdef __myDEBUG
+  const SMDS_MeshElement* *closestFace = 0;
   int iLE = 0;
+#endif
   for ( unsigned i = 0; i < data._edges.size(); ++i )
   {
     if ( data._edges[i]->FindIntersection( *searcher, dist, data._epsilon, &intFace ))
       return false;
     if ( distToIntersection > dist )
-      distToIntersection = dist, closestFace = intFace, iLE = i;
+    {
+      distToIntersection = dist;
+#ifdef __myDEBUG
+      iLE = i;
+      closestFace = intFace;
+#endif
+    }
   }
 #ifdef __myDEBUG
   if ( closestFace )
@@ -3811,7 +3820,7 @@ bool _ViscousBuilder::addBoundaryElements()
 
       // Find out orientation and type of face to create
 
-      bool reverse = false, tria = false, isOnFace;
+      bool reverse = false, isOnFace;
       
       map< TGeomID, TopoDS_Shape >::iterator e2f =
         data._shrinkShape2Shape.find( getMeshDS()->ShapeToIndex( E ));
@@ -3834,8 +3843,6 @@ bool _ViscousBuilder::addBoundaryElements()
                !_ignoreShapeIds.count( e2f->first ))
             F = *pF;
         }
-        
-        tria = true;
       }
       // Find the sub-mesh to add new faces
       SMESHDS_SubMesh* sm = 0;

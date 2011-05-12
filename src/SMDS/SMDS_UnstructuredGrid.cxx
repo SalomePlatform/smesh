@@ -762,7 +762,6 @@ int SMDS_UnstructuredGrid::GetParentVolumes(int* volVtkIds, int vtkId)
   int vtkType = this->GetCellType(vtkId);
   int dim = SMDS_Downward::getCellDimension(vtkType);
   int nbFaces = 0;
-  int faces[1000];
   unsigned char cellTypes[1000];
   int downCellId[1000];
   if (dim == 1)
@@ -778,7 +777,6 @@ int SMDS_UnstructuredGrid::GetParentVolumes(int* volVtkIds, int vtkId)
       const unsigned char* upTypes = _downArray[vtkType]->getUpTypes(downId);
       for (int i=0; i< nbFaces; i++)
         {
-          faces[i] = _downArray[upTypes[i]]->getVtkCellId(upCells[i]);
           cellTypes[i] = upTypes[i];
           downCellId[i] = upCells[i];
         }
@@ -786,7 +784,6 @@ int SMDS_UnstructuredGrid::GetParentVolumes(int* volVtkIds, int vtkId)
   else if (dim == 2)
     {
       nbFaces = 1;
-      faces[0] = vtkId;
       cellTypes[0] = this->GetCellType(vtkId);
       int downId = this->CellIdToDownId(vtkId);
       if (downId < 0)
@@ -826,7 +823,6 @@ int SMDS_UnstructuredGrid::GetParentVolumes(int* volVtkIds, int downId, unsigned
   int vtkType = downType;
   int dim = SMDS_Downward::getCellDimension(vtkType);
   int nbFaces = 0;
-  int faces[1000];
   unsigned char cellTypes[1000];
   int downCellId[1000];
   if (dim == 1)
@@ -836,7 +832,6 @@ int SMDS_UnstructuredGrid::GetParentVolumes(int* volVtkIds, int downId, unsigned
       const unsigned char* upTypes = _downArray[vtkType]->getUpTypes(downId);
       for (int i=0; i< nbFaces; i++)
         {
-          faces[i] = _downArray[upTypes[i]]->getVtkCellId(upCells[i]);
           cellTypes[i] = upTypes[i];
           downCellId[i] = upCells[i];
         }

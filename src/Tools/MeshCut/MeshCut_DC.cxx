@@ -158,7 +158,7 @@ int main(int argc, char *argv[])
 
   int V[6];
   int S[4]; // Signature du T4 courant
-  int NG[4]; // Num. globaux des sommets
+  //int NG[4]; // Num. globaux des sommets
 
   // Acquisition maillage initial
   //cout << chrono() << " - Acquisition du maillage initial" << endl;
@@ -264,7 +264,7 @@ int main(int argc, char *argv[])
       for (int is = 0; is < 4; is++)
         {
           int ng = *(MAILLAGE1->CNX[TETRA4] + 4 * it4 + is);
-          NG[is] = ng;
+          //NG[is] = ng;
           S[is] = *(POSN + ng - 1);
         }
 
