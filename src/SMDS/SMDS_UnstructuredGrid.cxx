@@ -314,8 +314,8 @@ int SMDS_UnstructuredGrid::CellIdToDownId(int vtkCellId)
 {
   if((vtkCellId < 0) || (vtkCellId >= _cellIdToDownId.size()))
     {
-      std::cerr << "SMDS_UnstructuredGrid::CellIdToDownId problem vtkCellId="
-          << vtkCellId << " max="<< _cellIdToDownId.size() << std::endl;
+      //MESSAGE("SMDS_UnstructuredGrid::CellIdToDownId structure not up to date: vtkCellId="
+      //    << vtkCellId << " max="<< _cellIdToDownId.size());
       return -1;
     }
   return _cellIdToDownId[vtkCellId];
@@ -768,6 +768,11 @@ int SMDS_UnstructuredGrid::GetParentVolumes(int* volVtkIds, int vtkId)
   if (dim == 1)
     {
       int downId = this->CellIdToDownId(vtkId);
+      if (downId < 0)
+        {
+          MESSAGE("Downward structure not up to date: new edge not taken into account");
+          return 0;
+        }
       nbFaces = _downArray[vtkType]->getNumberOfUpCells(downId);
       const int *upCells = _downArray[vtkType]->getUpCells(downId);
       const unsigned char* upTypes = _downArray[vtkType]->getUpTypes(downId);
@@ -783,7 +788,13 @@ int SMDS_UnstructuredGrid::GetParentVolumes(int* volVtkIds, int vtkId)
       nbFaces = 1;
       faces[0] = vtkId;
       cellTypes[0] = this->GetCellType(vtkId);
-      downCellId[0] = this->CellIdToDownId(vtkId);
+      int downId = this->CellIdToDownId(vtkId);
+      if (downId < 0)
+        {
+          MESSAGE("Downward structure not up to date: new face not taken into account");
+          return 0;
+        }
+      downCellId[0] = downId;
     }
 
   int nbvol =0;

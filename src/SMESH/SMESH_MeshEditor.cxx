@@ -10969,7 +10969,11 @@ bool SMESH_MeshEditor::DoubleNodesOnGroupBoundaries( const std::vector<TIDSorted
                   int vtkType = grid->GetCellType(vtkId);
                   int downId = grid->CellIdToDownId(vtkId);
                   if (downId < 0)
-                    continue;
+                    {
+                      MESSAGE("doubleNodesOnGroupBoundaries: internal algorithm problem");
+                      continue; // not OK at this stage of the algorithm:
+                                //no cells created after BuildDownWardConnectivity
+                    }
                   DownIdType aCell(downId, vtkType);
                   if (celldom.count(vtkId))
                     continue;
@@ -11046,6 +11050,11 @@ bool SMESH_MeshEditor::DoubleNodesOnGroupBoundaries( const std::vector<TIDSorted
                       int newId = newNode->getVtkId();
                       nodeDomains[oldId][idom] = newId; // cloned node for other domains
                       //MESSAGE("   newNode " << newId << " oldNode " << oldId << " size=" <<nodeDomains[oldId].size());
+                    }
+                  if (nodeDomains[oldId].size() >= 3)
+                    {
+                      //MESSAGE("confirm multiple node " << oldId);
+                      isMultipleDetected =true;
                     }
                 }
             }
@@ -11212,6 +11221,7 @@ bool SMESH_MeshEditor::DoubleNodesOnGroupBoundaries( const std::vector<TIDSorted
             }
           else
             {
+              //MESSAGE("Quadratic multiple joints not implemented");
               // TODO quadratic nodes
             }
         }
@@ -11241,7 +11251,7 @@ bool SMESH_MeshEditor::DoubleNodesOnGroupBoundaries( const std::vector<TIDSorted
               int vtkType = grid->GetCellType(vtkId);
               int downId = grid->CellIdToDownId(vtkId);
               if (downId < 0)
-                continue;
+                continue; // new cells: not to be modified
               DownIdType aCell(downId, vtkType);
               int volParents[1000];
               int nbvol = grid->GetParentVolumes(volParents, vtkId);
