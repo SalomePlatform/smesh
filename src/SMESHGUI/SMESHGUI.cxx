@@ -5635,7 +5635,7 @@ void SMESHGUI::restoreVisualParameters (int savePoint)
 */
 int SMESHGUI::addVtkFontPref( const QString& label, const int pId, const QString& param )
 {
-  int tfont = addPreference( label, pId, LightApp_Preferences::Font, "VISU", param );
+  int tfont = addPreference( label, pId, LightApp_Preferences::Font, "SMESH", param );
 
   setPreferenceProperty( tfont, "mode", QtxFontEdit::Custom );
 
