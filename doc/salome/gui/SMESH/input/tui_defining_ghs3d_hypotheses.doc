@@ -43,7 +43,6 @@ ghs3dMesh.Compute()
 
 # Ex1: Add 1 enforced vertices by coords at (50,50,100) 
 #      with a physical size of 2
-# and GEOM vertex and add them to a group called "My special nodes"
 
 import geompy
 import smesh
