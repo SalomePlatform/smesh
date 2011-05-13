@@ -5522,6 +5522,87 @@ class Mesh_Tetrahedron(Mesh_Algorithm):
         #  Advanced parameter of GHS3D
         self.Parameters().SetToUseBoundaryRecoveryVersion(toUse)
 
+    ## Applies finite-element correction by replacing overconstrained elements where
+    #  it is possible. The process is cutting first the overconstrained edges and
+    #  second the overconstrained facets. This insure that no edges have two boundary
+    #  vertices and that no facets have three boundary vertices.
+    #  @ingroup l3_hypos_ghs3dh
+    def SetFEMCorrection(self, toUseFem):
+        #  Advanced parameter of GHS3D
+        self.Parameters().SetFEMCorrection(toUseFem)
+
+    ## To removes initial central point.
+    #  @ingroup l3_hypos_ghs3dh
+    def SetToRemoveCentralPoint(self, toRemove):
+        #  Advanced parameter of GHS3D
+        self.Parameters().SetToRemoveCentralPoint(toRemove)
+
+    ## To set an enforced vertex.
+    #  @ingroup l3_hypos_ghs3dh
+    def SetEnforcedVertex(self, x, y, z, size):
+        #  Advanced parameter of GHS3D
+        return self.Parameters().SetEnforcedVertex(x, y, z, size)
+
+    ## To set an enforced vertex and add it in the group "groupName".
+    #  Only on meshes w/o geometry
+    #  @ingroup l3_hypos_ghs3dh
+    def SetEnforcedVertexWithGroup(self, x, y, z, size, groupName):
+        #  Advanced parameter of GHS3D
+        return self.Parameters().SetEnforcedVertex(x, y, z, size,groupName)
+
+    ## To remove an enforced vertex.
+    #  @ingroup l3_hypos_ghs3dh
+    def RemoveEnforcedVertex(self, x, y, z):
+        #  Advanced parameter of GHS3D
+        return self.Parameters().RemoveEnforcedVertex(x, y, z)
+
+    ## To set an enforced vertex given a GEOM vertex, group or compound.
+    #  @ingroup l3_hypos_ghs3dh
+    def SetEnforcedVertexGeom(self, theVertex, size):
+        self.AssureGeomPublished( theVertex )
+        #  Advanced parameter of GHS3D
+        return self.Parameters().SetEnforcedVertexGeom(theVertex, size)
+
+    ## To set an enforced vertex given a GEOM vertex, group or compound
+    #  and add it in the group "groupName".
+    #  Only on meshes w/o geometry
+    #  @ingroup l3_hypos_ghs3dh
+    def SetEnforcedVertexGeomWithGroup(self, theVertex, size, groupName):
+        self.AssureGeomPublished( theVertex )
+        #  Advanced parameter of GHS3D
+        return self.Parameters().SetEnforcedVertexGeomWithGroup(theVertex, size,groupName)
+
+    ## To remove an enforced vertex given a GEOM vertex, group or compound.
+    #  @ingroup l3_hypos_ghs3dh
+    def RemoveEnforcedVertexGeom(self, theVertex):
+        self.AssureGeomPublished( theVertex )
+        #  Advanced parameter of GHS3D
+        return self.Parameters().RemoveEnforcedVertexGeom(theVertex)
+
+    ## To set an enforced mesh.
+    #  @ingroup l3_hypos_ghs3dh
+    def SetEnforcedMesh(self, theSource, elementType):
+        #  Advanced parameter of GHS3D
+        return self.Parameters().SetEnforcedMesh(theSource, elementType)
+
+    ## To set an enforced mesh and add the enforced elements in the group "groupName".
+    #  @ingroup l3_hypos_ghs3dh
+    def SetEnforcedMeshWithGroup(self, theSource, elementType, groupName):
+        #  Advanced parameter of GHS3D
+        return self.Parameters().SetEnforcedMeshWithGroup(theSource, elementType, groupName)
+
+    ## To set an enforced mesh with given size.
+    #  @ingroup l3_hypos_ghs3dh
+    def SetEnforcedMeshSize(self, theSource, elementType, size):
+        #  Advanced parameter of GHS3D
+        return self.Parameters().SetEnforcedMeshSize(theSource, elementType, size)
+
+    ## To set an enforced mesh with given size and add the enforced elements in the group "groupName".
+    #  @ingroup l3_hypos_ghs3dh
+    def SetEnforcedMeshSizeWithGroup(self, theSource, elementType, size, groupName):
+        #  Advanced parameter of GHS3D
+        return self.Parameters().SetEnforcedMeshSizeWithGroup(theSource, elementType, size, groupName)
+
     ## Sets command line option as text.
     #  @ingroup l3_hypos_ghs3dh
     def SetTextOption(self, option):
