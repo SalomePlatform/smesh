@@ -5062,7 +5062,15 @@ class Mesh_Triangle(Mesh_Algorithm):
         self.AssureGeomPublished( theFace )
         self.AssureGeomPublished( theAttractor )
         #  Parameter of BLSURF algo
-        self.Parameters().SetAttractorGeom(otheFace, theAttractor, theStartSize, theEndSize, theInfluenceDistance, theConstantSizeDistance)
+        self.Parameters().SetAttractorGeom(theFace, theAttractor, theStartSize, theEndSize, theInfluenceDistance, theConstantSizeDistance)
+        
+    ## Unsets an attractor on the chosen face. 
+    #  @param theFace      : face on which the attractor has to be removed                               
+    #  @ingroup l3_hypos_blsurf
+    def UnsetAttractorGeom(self, theFace):
+        self.AssureGeomPublished( theFace )
+        #  Parameter of BLSURF algo
+        self.Parameters().SetAttractorGeom(theFace)
 
     ## Sets QuadAllowed flag.
     #  Only for algoType == NETGEN(NETGEN_1D2D) || NETGEN_2D || BLSURF
