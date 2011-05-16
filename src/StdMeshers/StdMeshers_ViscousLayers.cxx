@@ -2092,7 +2092,7 @@ bool _ViscousBuilder::smoothAndCheck(_SolidData& data,
 
   distToIntersection = Precision::Infinite();
   double dist;
-  const SMDS_MeshElement* intFace = 0, *closestFace = 0;
+  const SMDS_MeshElement* intFace = 0;
 #ifdef __myDEBUG
   const SMDS_MeshElement* *closestFace = 0;
   int iLE = 0;
