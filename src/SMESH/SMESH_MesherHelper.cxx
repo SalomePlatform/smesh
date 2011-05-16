@@ -1756,6 +1756,28 @@ bool SMESH_MesherHelper::IsClosedEdge( const TopoDS_Edge& anEdge )
   return TopExp::FirstVertex( anEdge ).IsSame( TopExp::LastVertex( anEdge ));
 }
 
+//================================================================================
+/*!
+ * \brief Wrapper over TopExp::FirstVertex() and TopExp::LastVertex() fixing them
+ *  in the case of INTERNAL edge
+ */
+//================================================================================
+
+TopoDS_Vertex SMESH_MesherHelper::IthVertex( const bool  is2nd,
+                                             TopoDS_Edge anEdge,
+                                             const bool  CumOri )
+{
+  if ( anEdge.Orientation() >= TopAbs_INTERNAL )
+    anEdge.Orientation( TopAbs_FORWARD );
+
+  const TopAbs_Orientation tgtOri = is2nd ? TopAbs_REVERSED : TopAbs_FORWARD;
+  TopoDS_Iterator vIt( anEdge, CumOri );
+  while ( vIt.More() && vIt.Value().Orientation() != tgtOri )
+    vIt.Next();
+
+  return ( vIt.More() ? TopoDS::Vertex(vIt.Value()) : TopoDS_Vertex() );
+}
+
 //=======================================================================
 //function : IsQuadraticMesh
 //purpose  : Check mesh without geometry for: if all elements on this shape are quadratic,

@@ -147,6 +147,8 @@ public:
 
   static bool IsClosedEdge( const TopoDS_Edge& anEdge );
 
+  static TopoDS_Vertex IthVertex( const bool is2nd, TopoDS_Edge anEdge, const bool CumOri=true );
+
 
 public:
   // ---------- PUBLIC INSTANCE METHODS ----------
