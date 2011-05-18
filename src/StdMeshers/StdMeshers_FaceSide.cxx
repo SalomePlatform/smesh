@@ -242,9 +242,8 @@ const vector<UVPtStruct>& StdMeshers_FaceSide::GetUVPtStruct(bool   isXConst,
     {
       // Put 1st vertex node of a current edge
       TopoDS_Vertex VV[2]; // TopExp::FirstVertex() returns NULL for INTERNAL edge
-      for ( TopoDS_Iterator vIt(myEdge[i]); vIt.More(); vIt.Next() )
-        VV[ VV[0].IsNull() ? 0 : 1 ] = TopoDS::Vertex(vIt.Value());
-      if ( VV[0].Orientation() == TopAbs_REVERSED ) std::swap ( VV[0], VV[1] );
+      VV[0] = SMESH_MesherHelper::IthVertex( 0, myEdge[i]);
+      VV[1] = SMESH_MesherHelper::IthVertex( 1, myEdge[i]);
       const SMDS_MeshNode* node = SMESH_Algo::VertexNode( VV[0], meshDS );
       double prevNormPar = ( i == 0 ? 0 : myNormPar[ i-1 ]); // normalized param
       if ( node ) { // internal nodes may be missing
