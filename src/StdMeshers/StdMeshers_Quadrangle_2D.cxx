@@ -42,12 +42,11 @@
 #include "SMDS_FacePosition.hxx"
 
 #include <BRep_Tool.hxx>
-#include <GeomAPI_ProjectPointOnSurf.hxx>
 #include <Geom_Surface.hxx>
 #include <NCollection_DefineArray2.hxx>
 #include <Precision.hxx>
-#include <TColStd_SequenceOfInteger.hxx>
 #include <TColStd_SequenceOfReal.hxx>
+#include <TColStd_SequenceOfInteger.hxx>
 #include <TColgp_SequenceOfXY.hxx>
 #include <TopExp.hxx>
 #include <TopExp_Explorer.hxx>
@@ -3790,7 +3789,7 @@ namespace // data for smoothing
     TSmoothNode* _n2;
     TTriangle( TSmoothNode* n1=0, TSmoothNode* n2=0 ): _n1(n1), _n2(n2) {}
 
-    inline bool IsForward( gp_UV uv );
+    inline bool IsForward( gp_UV uv ) const;
   };
   // --------------------------------------------------------------------------------
   /*!
@@ -3798,12 +3797,11 @@ namespace // data for smoothing
    */
   struct TSmoothNode
   {
-    gp_XY  _uv;
-    gp_XYZ _xyz;
+    gp_XY _uv;
     vector< TTriangle > _triangles; // if empty, then node is not movable
   };
   // --------------------------------------------------------------------------------
-  inline bool TTriangle::IsForward( gp_UV uv )
+  inline bool TTriangle::IsForward( gp_UV uv ) const
   {
     gp_Vec2d v1( uv, _n1->_uv ), v2( uv, _n2->_uv );
     double d = v1 ^ v2;
@@ -3882,7 +3880,6 @@ void StdMeshers_Quadrangle_2D::Smooth (FaceQuadStruct* quad)
     const SMDS_MeshNode* node = nIt->next();
     TSmoothNode & sNode = smooNoMap[ node ];
     sNode._uv = myHelper->GetNodeUV( geomFace, node );
-    sNode._xyz = SMESH_TNodeXYZ( node );
 
     // set sNode._triangles
     SMDS_ElemIteratorPtr fIt = node->GetInverseElementIterator( SMDSAbs_Face );
@@ -3907,81 +3904,57 @@ void StdMeshers_Quadrangle_2D::Smooth (FaceQuadStruct* quad)
     {
       TSmoothNode & sNode = smooNoMap[ uvVec[j].node ];
       sNode._uv.SetCoord( uvVec[j].u, uvVec[j].v );
-      sNode._xyz = SMESH_TNodeXYZ( uvVec[j].node );
     }
   }
 
-  // Smoothing
+  // define refernce orientation in 2D
+  TNo2SmooNoMap::iterator n2sn = smooNoMap.begin();
+  for ( ; n2sn != smooNoMap.end(); ++n2sn )
+    if ( !n2sn->second._triangles.empty() )
+      break;
+  if ( n2sn == smooNoMap.end() ) return;
+  const TSmoothNode & sampleNode = n2sn->second;
+  const bool refForward = ( sampleNode._triangles[0].IsForward( sampleNode._uv ));
 
-  Handle(Geom_Surface) surface = BRep_Tool::Surface( geomFace );
-  GeomAPI_ProjectPointOnSurf surfProjection( gp_Pnt(0,0,0), surface );
+  // Smoothing
 
   for ( int iLoop = 0; iLoop < 5; ++iLoop )
   {
-    TNo2SmooNoMap::iterator n2sn = smooNoMap.begin();
-    for ( ; n2sn != smooNoMap.end(); ++n2sn )
+    for ( n2sn = smooNoMap.begin(); n2sn != smooNoMap.end(); ++n2sn )
     {
       TSmoothNode& sNode = n2sn->second;
       if ( sNode._triangles.empty() )
         continue; // not movable node
 
-      // compute a new XYZ as avarage of surrounding XYZs
-      gp_XYZ newXYZ(0,0,0);
+      // compute a new UV
+      gp_XY newUV (0,0);
       for ( unsigned i = 0; i < sNode._triangles.size(); ++i )
-        newXYZ += sNode._triangles[i]._n1->_xyz;
-      newXYZ /= sNode._triangles.size();
+        newUV += sNode._triangles[i]._n1->_uv;
+      newUV /= sNode._triangles.size();
 
-      // compute a new UV by the new XYZ
-      gp_XY newUV;
-      surfProjection.Perform( newXYZ );
-      bool isValid = ( surfProjection.IsDone() && surfProjection.NbPoints() > 0 );
+      // check validity of the newUV
+      bool isValid = true;
+      for ( unsigned i = 0; i < sNode._triangles.size() && isValid; ++i )
+        isValid = ( sNode._triangles[i].IsForward( newUV ) == refForward );
+
       if ( isValid )
-      {
-        double u,v;
-        surfProjection.LowerDistanceParameters( u,v );
-        newUV.SetCoord( u,v );
-        
-        // check validity of the newUV
-        for ( unsigned i = 0; i < sNode._triangles.size() && isValid; ++i )
-          isValid = sNode._triangles[i].IsForward( newUV );
-      }
-
-      if ( !isValid ) // smoothing in 3D fails, try in 2D
-      {
-        // compute the new UV as avarage of surrounding UVs
-        newUV.SetCoord (0.0, 0.0);
-        for ( unsigned i = 0; i < sNode._triangles.size(); ++i )
-          newUV += sNode._triangles[i]._n1->_uv;
-        newUV /= sNode._triangles.size();
-
-        // check validity of the newUV
-        isValid = true;
-        for ( unsigned i = 0; i < sNode._triangles.size() && isValid; ++i )
-          isValid = sNode._triangles[i].IsForward( newUV );
-
-        if ( isValid )
-          newXYZ = surface->Value( newUV.X(), newUV.Y() ).XYZ();
-      }
-
-      if ( isValid ) // store new node position
-      {
-        sNode._uv  = newUV;
-        sNode._xyz = newXYZ;
-      }
+        sNode._uv = newUV;
     }
   }
 
   // Set new XYZ to the smoothed nodes
 
-  TNo2SmooNoMap::iterator n2sn = smooNoMap.begin();
-  for ( ; n2sn != smooNoMap.end(); ++n2sn )
+  Handle(Geom_Surface) surface = BRep_Tool::Surface( geomFace );
+
+  for ( n2sn = smooNoMap.begin(); n2sn != smooNoMap.end(); ++n2sn )
   {
     TSmoothNode& sNode = n2sn->second;
     if ( sNode._triangles.empty() )
       continue; // not movable node
 
     SMDS_MeshNode* node = const_cast< SMDS_MeshNode*>( n2sn->first );
-    meshDS->MoveNode( node, sNode._xyz.X(), sNode._xyz.Y(), sNode._xyz.Z() );
+    gp_Pnt xyz = surface->Value( sNode._uv.X(), sNode._uv.Y() );
+    meshDS->MoveNode( node, xyz.X(), xyz.Y(), xyz.Z() );
 
     // store the new UV
     node->SetPosition( SMDS_PositionPtr( new SMDS_FacePosition( sNode._uv.X(), sNode._uv.Y() )));
