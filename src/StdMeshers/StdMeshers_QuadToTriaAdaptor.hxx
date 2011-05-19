@@ -63,8 +63,6 @@ public:
 
 protected:
 
-  //bool CheckDegenerate(const SMDS_MeshElement* aFace);
-
   int Preparation(const SMDS_MeshElement* face,
                   Handle_TColgp_HArray1OfPnt& PN,
                   Handle_TColgp_HArray1OfVec& VN,
@@ -81,17 +79,13 @@ protected:
                       const std::vector<const SMDS_MeshElement*>& pyramids);
 
 
-  void MergePiramids( const SMDS_MeshElement*     PrmI,
-                      const SMDS_MeshElement*     PrmJ,
-                      set<const SMDS_MeshNode*> & nodesToMove);
+  void MergePiramids( const SMDS_MeshElement*          PrmI,
+                      const SMDS_MeshElement*          PrmJ,
+                      std::set<const SMDS_MeshNode*> & nodesToMove);
 
-  void MergeAdjacent(const SMDS_MeshElement*    PrmI,
-                     set<const SMDS_MeshNode*>& nodesToMove);
-  //typedef std::list<const SMDS_MeshFace* >                   TTriaList;
-  //typedef std::multimap<const SMDS_MeshElement*, TTriaList > TQuad2Trias;
+  void MergeAdjacent(const SMDS_MeshElement*         PrmI,
+                     std::set<const SMDS_MeshNode*>& nodesToMove);
 
-  //TQuad2Trias  myResMap;
-  //std::vector<const SMDS_MeshElement*> myPyramids;
 
   std::set<const SMDS_MeshElement*> myRemovedTrias;
 
