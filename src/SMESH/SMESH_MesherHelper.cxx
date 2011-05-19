@@ -40,6 +40,7 @@
 #include <GeomAPI_ProjectPointOnCurve.hxx>
 #include <GeomAPI_ProjectPointOnSurf.hxx>
 #include <Geom_Curve.hxx>
+//#include <Geom_RectangularTrimmedSurface.hxx>
 #include <Geom_Surface.hxx>
 #include <ShapeAnalysis.hxx>
 #include <TopExp.hxx>
@@ -225,9 +226,15 @@ void SMESH_MesherHelper::SetSubShape(const TopoDS_Shape& aSh)
   for ( TopExp_Explorer eF( aSh, TopAbs_FACE ); eF.More(); eF.Next() )
   {
     const TopoDS_Face& face = TopoDS::Face( eF.Current() );
-    BRepAdaptor_Surface surface( face );
-    if ( surface.IsUPeriodic() || surface.IsVPeriodic() )
+    TopLoc_Location loc;
+    Handle(Geom_Surface) surface = BRep_Tool::Surface( face, loc );
+
+    if ( surface->IsUPeriodic() || surface->IsVPeriodic() )
     {
+      //while ( surface->IsKind(STANDARD_TYPE(Geom_RectangularTrimmedSurface )))
+      //surface = Handle(Geom_RectangularTrimmedSurface)::DownCast( surface )->BasisSurface();
+      GeomAdaptor_Surface surf( surface );
+
       for (TopExp_Explorer exp( face, TopAbs_EDGE ); exp.More(); exp.Next())
       {
         // look for a seam edge
@@ -239,13 +246,13 @@ void SMESH_MesherHelper::SetSubShape(const TopoDS_Shape& aSh)
           if ( Abs( uv1.Coord(1) - uv2.Coord(1) ) < Abs( uv1.Coord(2) - uv2.Coord(2) ))
           {
             myParIndex |= U_periodic;
-            myPar1[0] = surface.FirstUParameter();
-            myPar2[0] = surface.LastUParameter();
+            myPar1[0] = surf.FirstUParameter();
+            myPar2[0] = surf.LastUParameter();
           }
           else {
             myParIndex |= V_periodic;
-            myPar1[1] = surface.FirstVParameter();
-            myPar2[1] = surface.LastVParameter();
+            myPar1[1] = surf.FirstVParameter();
+            myPar2[1] = surf.LastVParameter();
           }
           // store seam shape indices, negative if shape encounters twice
           int edgeID = meshDS->ShapeToIndex( edge );
