@@ -188,7 +188,7 @@ namespace
     typedef SMDS_StdIterator< const SMDS_MeshElement*, SMDS_ElemIteratorPtr > TStdElemIterator;
     TStdElemIterator itEnd;
 
-    // shift of node index to get medium nodes corresponding to the 4 base nodes
+    // shift of node index to get medium nodes between the 4 base nodes and the apex
     const int base2MediumShift = 9;
 
     set<const SMDS_MeshNode*>::const_iterator nIt = commonApex.begin();

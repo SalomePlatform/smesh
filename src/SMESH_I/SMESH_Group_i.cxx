@@ -508,7 +508,7 @@ void SMESH_GroupBase_i::SetColorNumber(CORBA::Long color)
   if (aGroupDS)
   {
     aGroupDS->SetColorGroup(color);
-    TPythonDump()<<_this()<<".SetColorGroup( "<<color<<" )";
+    TPythonDump()<<_this()<<".SetColorNumber( "<<color<<" )";
   }
   MESSAGE("set color number of a group");
   return ;
@@ -535,6 +535,21 @@ SMESH::long_array* SMESH_GroupBase_i::GetMeshInfo()
     aRes[ SMESH::Entity_Node ] = aGrpDS->Extent();
   else
     SMESH_Mesh_i::CollectMeshInfo( aGrpDS->GetElements(), aRes);
+
+//   SMDS_ElemIteratorPtr it = aGrpDS->GetElements();
+//   if ( it->more() )
+//   {
+//     cout << "START" << endl;
+//     set< const SMDS_MeshElement* > nodes;
+//     const SMDS_MeshElement* e = it->next();
+//     for ( int i = 0; i < 1000000; ++i)
+//     {
+//       SMDS_ElemIteratorPtr it = e->nodesIterator();
+//       nodes.insert( e + i );
+//     }
+//     cout << "END "<< nodes.size() << endl;
+//   }
+ 
   return aRes._retn();
 }
 

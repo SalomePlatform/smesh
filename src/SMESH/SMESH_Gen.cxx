@@ -25,14 +25,18 @@
 //  Author : Paul RASCLE, EDF
 //  Module : SMESH
 //
-#define CHRONODEF
+
+//#define CHRONODEF
+
 #include "SMESH_Gen.hxx"
-#include "SMESH_subMesh.hxx"
-#include "SMESH_HypoFilter.hxx"
-#include "SMESHDS_Document.hxx"
+
+#include "SMDS_Mesh.hxx"
 #include "SMDS_MeshElement.hxx"
 #include "SMDS_MeshNode.hxx"
-#include "SMDS_Mesh.hxx"
+#include "SMESHDS_Document.hxx"
+#include "SMESH_HypoFilter.hxx"
+#include "SMESH_MesherHelper.hxx"
+#include "SMESH_subMesh.hxx"
 
 #include "utilities.h"
 #include "OpUtil.hxx"
@@ -348,6 +352,15 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
   MESSAGE("Number of cell objects " << SMDS_MeshCell::nbCells);
   //myMesh->dumpGrid();
   //aMesh.GetMeshDS()->Modified();
+
+  // fix quadratic mesh by bending iternal links near concave boundary
+  if ( aShape.IsSame( aMesh.GetShapeToMesh() ) &&
+       !aShapesId ) // not preview
+  {
+    SMESH_MesherHelper aHelper( aMesh );
+    if ( aHelper.IsQuadraticMesh() != SMESH_MesherHelper::LINEAR )
+      aHelper.FixQuadraticElements();
+  }
   return ret;
 }
 

@@ -70,7 +70,8 @@ module SMESH
   const long Tag_EdgeGroups             = 12;
   const long Tag_FaceGroups             = 13;
   const long Tag_VolumeGroups           = 14;
-  const long Tag_LastGroup              = 14;
+  const long Tag_0DElementsGroups       = 15;
+  const long Tag_LastGroup              = 15;
 
   /*!
    * Hypothesis definintion error

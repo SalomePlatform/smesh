@@ -531,6 +531,11 @@ namespace {
 
     const SMDS_MeshNode* nullNode = 0;
 
+    // indices of nodes to create properly oriented faces
+    int tri1 = 1, tri2 = 2, quad1 = 1, quad3 = 3;
+    if ( trsf.Form() != gp_Identity )
+      std::swap( tri1, tri2 ), std::swap( quad1, quad3 );
+
     SMESHDS_SubMesh* srcSubDS = srcMesh->GetMeshDS()->MeshElements( srcFace );
     SMDS_ElemIteratorPtr elemIt = srcSubDS->GetElements();
     vector< const SMDS_MeshNode* > tgtNodes;
@@ -556,11 +561,11 @@ namespace {
         }
         tgtNodes[i] = srcN_tgtN->second;
       }
-      // create a new face (with reversed orientation)
+      // create a new face
       switch ( nbN )
       {
-      case 3: helper.AddFace(tgtNodes[0], tgtNodes[2], tgtNodes[1]); break;
-      case 4: helper.AddFace(tgtNodes[0], tgtNodes[3], tgtNodes[2], tgtNodes[1]); break;
+      case 3: helper.AddFace(tgtNodes[0], tgtNodes[tri1], tgtNodes[tri2]); break;
+      case 4: helper.AddFace(tgtNodes[0], tgtNodes[quad1], tgtNodes[2], tgtNodes[quad3]); break;
       }
     }
     return true;

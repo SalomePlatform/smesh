@@ -136,6 +136,11 @@ long SMESH_Gen_i::GetVolumeGroupsTag()
   return SMESH::Tag_VolumeGroups;
 }
 
+long SMESH_Gen_i::Get0DElementsGroupsTag()
+{
+  return SMESH::Tag_0DElementsGroups;
+}
+
 //=============================================================================
 /*!
  *  SMESH_Gen_i::CanPublishInStudy

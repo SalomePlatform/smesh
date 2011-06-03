@@ -139,12 +139,16 @@ class SMDS_EXPORT SMDS_VolumeTool
   // To comfort link iteration, the array
   // length == NbFaceNodes( faceIndex ) + 1 and
   // the last node index == the first one.
+  // NOTE: for the quadratic volume, node indoces are in the order the nodes encounter
+  // in face boundary and not the order they are in the mesh face
 
   const SMDS_MeshNode** GetFaceNodes( int faceIndex );
   // Return the array of face nodes.
   // To comfort link iteration, the array
   // length == NbFaceNodes( faceIndex ) + 1 and
   // the last node == the first one.
+  // NOTE: for the quadratic volume, nodes are in the order they encounter in face boundary
+  // and not the order they are in the mesh face
   // WARNING: do not modify the array, some methods
   //          work basing on its contents
 
