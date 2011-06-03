@@ -30,7 +30,7 @@ RSTFILES = \
 	overview.rst \
 	docapi.rst
 
-EXTRA_DIST = $(RSTFILES)
+EXTRA_DIST += $(RSTFILES)
 
 SPHINXOPTS      =
 SOURCEDIR       = $(srcdir)
