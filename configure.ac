@@ -1,20 +1,20 @@
-#  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
+# Copyright (C) 2007-2011  CEA/DEN, EDF R&D, OPEN CASCADE
 #
-#  This library is free software; you can redistribute it and/or
-#  modify it under the terms of the GNU Lesser General Public
-#  License as published by the Free Software Foundation; either
-#  version 2.1 of the License.
+# This library is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 2.1 of the License.
 #
-#  This library is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-#  Lesser General Public License for more details.
+# This library is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
 #
-#  You should have received a copy of the GNU Lesser General Public
-#  License along with this library; if not, write to the Free Software
-#  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+# You should have received a copy of the GNU Lesser General Public
+# License along with this library; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 #
-#  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+# See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
 # Author : Marc Tajchman (CEA)
@@ -24,7 +24,7 @@
 # Modified by : Alexander BORODIN (OCN) - autotools usage
 # Created from configure.in.base
 #
-AC_INIT([Salome2 Project SMESH module], [6.2.0], [webmaster.salome@opencascade.com], [SalomeSMESH])
+AC_INIT([Salome2 Project SMESH module], [6.3.0], [webmaster.salome@opencascade.com], [SalomeSMESH])
 AC_CONFIG_AUX_DIR(adm_local/unix/config_files)
 AC_CANONICAL_HOST
 AC_CANONICAL_TARGET
@@ -329,6 +329,14 @@ CHECK_HDF5
 
 echo
 echo ---------------------------------------------
+echo testing MED2
+echo ---------------------------------------------
+echo
+
+CHECK_MED2
+
+echo
+echo ---------------------------------------------
 echo BOOST Library
 echo ---------------------------------------------
 echo
@@ -395,9 +403,9 @@ echo Configure
 if test "${gui_ok}" = "yes"; then
   variables="cc_ok fortran_ok boost_ok lex_yacc_ok python_ok swig_ok threads_ok OpenGL_ok qt_ok vtk_ok hdf5_ok omniORB_ok occ_ok doxygen_ok graphviz_ok sphinx_ok qwt_ok Kernel_ok Geom_ok Med_ok gui_ok"
 elif test "${SalomeGUI_need}" != "no"; then
-  variables="cc_ok fortran_ok boost_ok lex_yacc_ok python_ok swig_ok threads_ok vtk_ok hdf5_ok omniORB_ok occ_ok doxygen_ok graphviz_ok sphinx_ok Kernel_ok Geom_ok Med_ok gui_ok"
+  variables="cc_ok fortran_ok boost_ok lex_yacc_ok python_ok swig_ok threads_ok vtk_ok hdf5_ok med2_ok omniORB_ok occ_ok doxygen_ok graphviz_ok sphinx_ok Kernel_ok Geom_ok Med_ok gui_ok"
 else
-  variables="cc_ok fortran_ok boost_ok lex_yacc_ok python_ok swig_ok threads_ok vtk_ok hdf5_ok omniORB_ok occ_ok doxygen_ok graphviz_ok sphinx_ok Kernel_ok Geom_ok Med_ok"
+  variables="cc_ok fortran_ok boost_ok lex_yacc_ok python_ok swig_ok threads_ok vtk_ok hdf5_ok med2_ok omniORB_ok occ_ok doxygen_ok graphviz_ok sphinx_ok Kernel_ok Geom_ok Med_ok"
 fi
 
 for var in $variables

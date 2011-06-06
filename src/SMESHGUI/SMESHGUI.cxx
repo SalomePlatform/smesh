@@ -1,25 +1,24 @@
-//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2011  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
-//  SMESH SMESHGUI : GUI for SMESH component
 //  File   : SMESHGUI.cxx
 //  Author : Nicolas REJNERI, Open CASCADE S.A.S.
 
@@ -3295,7 +3294,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction(  813, "DEL_GROUP",       "ICON_DEL_GROUP" );
   createSMESHAction(  900, "ADV_INFO",        "ICON_ADV_INFO" );
   //createSMESHAction(  902, "STD_INFO",        "ICON_STD_INFO" );
-  createSMESHAction(  903, "WHAT_IS",         "ICON_WHAT_IS" );
+  //createSMESHAction(  903, "WHAT_IS",         "ICON_WHAT_IS" ); // VSR: issue #0021242 (eliminate "Mesh Element Information" command)
   createSMESHAction(  904, "FIND_ELEM",       "ICON_FIND_ELEM" );
   createSMESHAction( 6001, "LENGTH",          "ICON_LENGTH",        0, true );
   createSMESHAction( 6002, "FREE_EDGE",       "ICON_FREE_EDGE",     0, true );
@@ -3469,7 +3468,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createMenu( separator(), meshId, -1 );
   createMenu( 900, meshId, -1 );
   //createMenu( 902, meshId, -1 );
-  createMenu( 903, meshId, -1 );
+  //createMenu( 903, meshId, -1 ); // VSR: issue #0021242 (eliminate "Mesh Element Information" command)
   createMenu( 904, meshId, -1 );
   createMenu( separator(), meshId, -1 );
 
@@ -3579,7 +3578,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createTool( separator(), meshTb );
   createTool( 900, meshTb );
   //createTool( 902, meshTb );
-  createTool( 903, meshTb );
+  //createTool( 903, meshTb ); // VSR: issue #0021242 (eliminate "Mesh Element Information" command)
   createTool( 904, meshTb );
   createTool( separator(), meshTb );
 
@@ -3716,7 +3715,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createPopupItem( 214, OB, mesh_group );                  // UPDATE
   createPopupItem( 900, OB, mesh_group );                  // ADV_INFO
   //createPopupItem( 902, OB, mesh );                        // STD_INFO
-  createPopupItem( 903, OB, mesh_group );                  // WHAT_IS
+  //createPopupItem( 903, OB, mesh_group );                  // WHAT_IS  // VSR: issue #0021242 (eliminate "Mesh Element Information" command)
   createPopupItem( 904, OB, mesh );                        // FIND_ELEM
   popupMgr()->insert( separator(), -1, 0 );
   createPopupItem( 801, OB, mesh );                        // CREATE_GROUP
@@ -3751,7 +3750,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createPopupItem( 214, View, mesh_group ); // UPDATE
   createPopupItem( 900, View, mesh_group ); // ADV_INFO
   //createPopupItem( 902, View, mesh );       // STD_INFO
-  createPopupItem( 903, View, mesh_group ); // WHAT_IS
+  //createPopupItem( 903, View, mesh_group ); // WHAT_IS // VSR: issue #0021242 (eliminate "Mesh Element Information" command)
   createPopupItem( 904, View, mesh );       // FIND_ELEM
   popupMgr()->insert( separator(), -1, 0 );
 
@@ -4073,7 +4072,7 @@ bool SMESHGUI::activateModule( SUIT_Study* study )
 
   // import Python module that manages SMESH plugins (need to be here because SalomePyQt API uses active module)
   PyGILState_STATE gstate = PyGILState_Ensure();
-  PyObject* pluginsmanager=PyImport_ImportModule((char*)"salome_pluginsmanager");
+  PyObject* pluginsmanager=PyImport_ImportModuleNoBlock((char*)"salome_pluginsmanager");
   if(pluginsmanager==NULL)
     PyErr_Print();
   else
@@ -5635,7 +5634,7 @@ void SMESHGUI::restoreVisualParameters (int savePoint)
 */
 int SMESHGUI::addVtkFontPref( const QString& label, const int pId, const QString& param )
 {
-  int tfont = addPreference( label, pId, LightApp_Preferences::Font, "VISU", param );
+  int tfont = addPreference( label, pId, LightApp_Preferences::Font, "SMESH", param );
 
   setPreferenceProperty( tfont, "mode", QtxFontEdit::Custom );
 
@@ -5750,25 +5749,25 @@ bool SMESHGUI::renameObject( const QString& entry, const QString& name) {
       // check type to prevent renaming of inappropriate objects
       int aType = SMESHGUI_Selection::type( qPrintable(entry), aStudy );
       if (aType == MESH || aType == GROUP ||
-	  aType == SUBMESH || aType == SUBMESH_COMPOUND ||
-	  aType == SUBMESH_SOLID || aType == SUBMESH_FACE ||
-	  aType == SUBMESH_EDGE || aType == SUBMESH_VERTEX ||
-	  aType == HYPOTHESIS || aType == ALGORITHM) {
-	if ( !name.isEmpty() ) {
-	  SMESHGUI::GetSMESHGen()->SetName(obj->GetIOR().c_str(), qPrintable(name) );
-	  
-	  // update name of group object and its actor
-	  Handle(SALOME_InteractiveObject) IObject = 
-	    new SALOME_InteractiveObject ( qPrintable(entry), "SMESH", qPrintable(name) );
-	  
-	  SMESH::SMESH_GroupBase_var aGroupObject = SMESH::IObjectToInterface<SMESH::SMESH_GroupBase>(IObject);
-	  if( !aGroupObject->_is_nil() ) {
-	    aGroupObject->SetName( qPrintable(name) );
-	    if ( SMESH_Actor *anActor = SMESH::FindActorByEntry( qPrintable(entry) ) )
-	      anActor->setName( qPrintable(name) );
-	  }
-	  return true;
-	}
+          aType == SUBMESH || aType == SUBMESH_COMPOUND ||
+          aType == SUBMESH_SOLID || aType == SUBMESH_FACE ||
+          aType == SUBMESH_EDGE || aType == SUBMESH_VERTEX ||
+          aType == HYPOTHESIS || aType == ALGORITHM) {
+        if ( !name.isEmpty() ) {
+          SMESHGUI::GetSMESHGen()->SetName(obj->GetIOR().c_str(), qPrintable(name) );
+          
+          // update name of group object and its actor
+          Handle(SALOME_InteractiveObject) IObject = 
+            new SALOME_InteractiveObject ( qPrintable(entry), "SMESH", qPrintable(name) );
+          
+          SMESH::SMESH_GroupBase_var aGroupObject = SMESH::IObjectToInterface<SMESH::SMESH_GroupBase>(IObject);
+          if( !aGroupObject->_is_nil() ) {
+            aGroupObject->SetName( qPrintable(name) );
+            if ( SMESH_Actor *anActor = SMESH::FindActorByEntry( qPrintable(entry) ) )
+              anActor->setName( qPrintable(name) );
+          }
+          return true;
+        }
       }  
     }
   }

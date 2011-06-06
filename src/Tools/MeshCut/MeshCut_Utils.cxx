@@ -1,3 +1,22 @@
+// Copyright (C) 2006-2011  EDF R&D
+//
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
+//
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
+
 #include "MeshCut_Utils.hxx"
 
 #include <iostream>
@@ -25,7 +44,7 @@ bool MESHCUT::estUnTypeMaille(std::string S)
 
 void MESHCUT::ERREUR(const char* msg)
 {
-  cout << endl << "====== ERREUR ====== " << msg << endl << endl;
+  cout << endl << "====== ERROR ====== " << msg << endl << endl;
   exit(-1);
 }
 
@@ -111,7 +130,7 @@ std::string MESHCUT::strip(std::string S)
 std::string MESHCUT::entierSur10_g(int i)
 {
   if (i > 999999999)
-    ERREUR("Tentative d'ecriture sur 10 caracteres d'un entier plus grand que 999999999");
+    ERREUR("trying to write a number superior to 999999999 on more than 10 chars");
   if (i < 10)
     return int2string(i) + (string) "         ";
   else if (i < 100)
@@ -137,7 +156,7 @@ std::string MESHCUT::entierSur10_g(int i)
 std::string MESHCUT::entierSur10_d(int i)
 {
   if (i > 999999999)
-    ERREUR("Tentative d'ecriture sur 10 caracteres d'un entier plus grand que 999999999");
+    ERREUR("trying to write a number superior to 999999999 on more than 10 chars");
   if (i < 10)
     return (string) "         " + int2string(i);
   else if (i < 100)
@@ -177,7 +196,7 @@ std::string MESHCUT::typeEnsight(std::string type)
   else if (type == (string) "QUAD8")
     return (string) "quad4"; // ATTENTION, triche!
   else if (type == (string) "QUAD9")
-    ERREUR("Type QUAD9 non supporte par Ensight");
+    ERREUR("Type QUAD9 not supported by Ensight");
   else if (type == (string) "TETRA4")
     return (string) "tetra4";
   else if (type == (string) "TETRA10")
@@ -195,9 +214,9 @@ std::string MESHCUT::typeEnsight(std::string type)
   else if (type == (string) "HEXA20")
     return (string) "hexa8"; // ATTENTION, triche!
   else if (type == (string) "HEXA27")
-    ERREUR("Type HEXA27 non supporte par Ensight");
+    ERREUR("Type HEXA27 not supported by Ensight");
   else
-    ERREUR("Type maille non reconnu (routine \"typeEnsight\"");
+    ERREUR("Type of element not accepted (method \"typeEnsight\"");
   return (string) "";
 }
 
@@ -283,7 +302,7 @@ int MESHCUT::Nnoeuds(TYPE_MAILLE type)
       }
       //case HEXA27:                      { return 27;    break; }
     default:
-      ERREUR("Type maille non reconnu (routine Nnoeuds)");
+      ERREUR("Type of elem not accepted (method Nnoeuds)");
   }
   return 0;
 }
@@ -370,7 +389,7 @@ int MESHCUT::NnoeudsGeom(TYPE_MAILLE type)
       }
       //case HEXA27:                      { return 27;    break; }
     default:
-      ERREUR("Type maille non reconnu (routine NnoeudsGeom)");
+      ERREUR("Type of elem not accepted (method NnoeudsGeom)");
   }
   return 0;
 }
@@ -378,7 +397,7 @@ int MESHCUT::NnoeudsGeom(TYPE_MAILLE type)
 int MESHCUT::codeGMSH(std::string type)
 {
   if (type == (string) "POI1")
-    ERREUR("POI1 non pris en charge par GMSH");
+    ERREUR("POI1 not taken into account by GMSH");
   else if (type == (string) "SEG2")
     return 1;
   else if (type == (string) "SEG3")
@@ -410,7 +429,7 @@ int MESHCUT::codeGMSH(std::string type)
   else if (type == (string) "HEXA27")
     return 12;
   else
-    ERREUR("Type maille non reconnu (routine codeGMSH)");
+    ERREUR("Type of elem not accepted (method codeGMSH)");
   return 0;
 }
 
@@ -472,7 +491,7 @@ std::string MESHCUT::ASTER8(std::string s)
   else if (s.size() == 8)
     return (s);
   else
-    ERREUR("Depassement de la longueur max 8 pour une chaine ASTER");
+    ERREUR("More than 8 char for an ASTER string");
   return (s);
 }
 
@@ -564,7 +583,7 @@ med_geometry_type MESHCUT::InstanceMGE(TYPE_MAILLE TYPE)
       typeBanaliseMED = MED_HEXA20;
       break;
     default:
-      ERREUR("Routine InstanceMGE, type inconnu ");
+      ERREUR("Method InstanceMGE, unknown type ");
   }
   return typeBanaliseMED;
 }
@@ -607,7 +626,7 @@ TYPE_MAILLE MESHCUT::typeMaille(std::string type)
   else if (type == (string) "HEXA20")
     return HEXA20;
   else
-    ERREUR("ERREUR procédure typeMaille, type non reconnu");
+    ERREUR("ERROR method typeMaille, unknown type");
   return POI1;
 }
 
@@ -646,7 +665,7 @@ std::string MESHCUT::MGE2string(med_geometry_type MGE)
   else if (MGE == MED_HEXA20)
     return (string) "HEXA20";
   else
-    ERREUR("ERREUR procédure MGE2string, type non reconnu");
+    ERREUR("ERROR method MGE2string, unknown type");
   return (string) "NOEUD";
 }
 
@@ -683,7 +702,7 @@ std::string MESHCUT::TM2string(TYPE_MAILLE MGE)
   else if (MGE == HEXA20)
     return (string) "HEXA20";
   else
-    ERREUR("ERREUR procédure TM2string, type non reconnu");
+    ERREUR("ERROR method TM2string, unknown type");
   return (string) "POI1";
 }
 
@@ -720,7 +739,7 @@ TYPE_MAILLE MESHCUT::string2TM(std::string stm)
   else if (stm == (string) "HEXA20")
     return HEXA20;
   else
-    ERREUR("ERREUR procédure string2TM, type non reconnu");
+    ERREUR("ERROR method string2TM, unknown type");
   return POI1;
 }
 
@@ -822,8 +841,8 @@ void MESHCUT::champType(std::string type, med_entity_type MEM, med_geometry_type
   med_field_type fieldType;
 
   if (MEDfieldInfo(fid, ichamp, nomChamp, maa, &local, &fieldType, compChamp, unitChamp, dtunit, &nPasTemps) < 0)
-    ERREUR("Erreur MEDfieldInfo");
-  cout << type << " : " << (int) nPasTemps << " pas de temps  " << endl;
+    ERREUR("Error MEDfieldInfo");
+  cout << type << " : " << (int) nPasTemps << " timestep  " << endl;
 
   for (ipt = 1; ipt <= nPasTemps; ipt++)
     {
@@ -833,11 +852,11 @@ void MESHCUT::champType(std::string type, med_entity_type MEM, med_geometry_type
       if (debug)
         cout << "************************************************************" << endl;
       if (debug)
-        cout << "                    CHAMP " << ichamp << endl;
+        cout << "                    FIELD " << ichamp << endl;
       if (debug)
         cout << "          " << nomChamp << endl;
       if (debug)
-        cout << "          " << type << "   ---   Pas de temps " << ipt << endl;
+        cout << "          " << type << "   ---   Timestep " << ipt << endl;
       if (debug)
         cout << "************************************************************" << endl;
       if (debug)
@@ -847,11 +866,11 @@ void MESHCUT::champType(std::string type, med_entity_type MEM, med_geometry_type
         {
           cout << endl;
           cout << endl << "####################################################################" << endl;
-          cout << "                   ERREUR MEDpasdetempsInfo                         " << endl;
+          cout << "                   ERROR MEDpasdetempsInfo                         " << endl;
           cout << endl << "####################################################################" << endl;
-          cout << "                  Champ: " << (string) nomChamp << endl;
-          cout << "                  Géométrie: " << MGE2string(MGE) << endl;
-          cout << "                  Pas de temps " << ipt << " ignoré" << endl;
+          cout << "                  Field: " << (string) nomChamp << endl;
+          cout << "                  Geometrie: " << MGE2string(MGE) << endl;
+          cout << "                  Timestep " << ipt << " ignored" << endl;
 
           continue;
         }
@@ -860,30 +879,30 @@ void MESHCUT::champType(std::string type, med_entity_type MEM, med_geometry_type
       nval = MEDfieldnValueWithProfile(fid, nomChamp, numdt, numo, MEM, MGE, ipt, MED_COMPACT_PFLMODE, nomprofil,
                                        &profilesize, locname, &nintegrationpoint);
       if (debug)
-        cout << "     Nombre de valeurs dans ce pas de temps : " << (int) nval << endl;
+        cout << "     Number of values in this timestep: " << (int) nval << endl;
 
       if (typeChamp == MED_FLOAT64)
         valr = (med_float*) calloc(nCompChamp * nval, sizeof(med_float));
       else
-        ERREUR("Type de champ non pris en compte");
+        ERREUR("Type of field not taken into account");
 
       if (MEDfieldValueWithProfileRd(fid, maa, numdt, numo, MEM, MGE, MED_COMPACT_PFLMODE, nomprofil,
                                      MED_FULL_INTERLACE, MED_ALL_CONSTITUENT, (unsigned char*) valr) < 0)
         {
           cout << endl;
           cout << endl << "####################################################################" << endl;
-          cout << "                         ERREUR MEDchampLire                        " << endl;
+          cout << "                         ERROR MEDchampLire                        " << endl;
           cout << endl << "####################################################################" << endl;
           cout << endl;
-          cout << "   Champ: " << (string) nomChamp << endl;
-          cout << "   Géométrie: " << MGE2string(MGE) << endl;
-          cout << "   Pas de temps " << ipt << " ignoré" << endl;
+          cout << "   Field: " << (string) nomChamp << endl;
+          cout << "   Geometry: " << MGE2string(MGE) << endl;
+          cout << "   Timestep " << ipt << " ignored" << endl;
           cout << endl << endl;
           continue;
         }
 
       if (debug)
-        cout << "       profil  = " << (string) nomprofil << endl;
+        cout << "       profile  = " << (string) nomprofil << endl;
       // Localisation du champ aux points de Gauss
       if (debug)
         cout << "       locname = " << (string) locname << endl;
@@ -892,7 +911,7 @@ void MESHCUT::champType(std::string type, med_entity_type MEM, med_geometry_type
         {
           ngauss = REFGAUSS[(string) locname];
           if (debug)
-            cout << "       " << ngauss << " points de Gauss par élément)" << endl;
+            cout << "       " << ngauss << " Gauss points by element)" << endl;
         }
       else
         ngauss = 1;
@@ -951,7 +970,7 @@ void MESHCUT::champType(std::string type, med_entity_type MEM, med_geometry_type
               cout << endl;
               cout << endl << "********************************************************************" << endl;
               cout << "********************                         ***********************" << endl;
-              cout << "********************   ERREUR MEDchampEcr    ***********************" << endl;
+              cout << "********************   ERROR MEDchampEcr     ***********************" << endl;
               cout << "********************                         ***********************" << endl;
               cout << "********************************************************************" << endl;
               cout << endl;
@@ -963,7 +982,7 @@ void MESHCUT::champType(std::string type, med_entity_type MEM, med_geometry_type
             }
 
           if (debug)
-            cout << "    Ecriture des valeurs moyennées dans le nouveau champ: OK " << endl;
+            cout << "    Writing mean values in new field: OK " << endl;
 
           // Restitution du champ moyenné
           if (debug)

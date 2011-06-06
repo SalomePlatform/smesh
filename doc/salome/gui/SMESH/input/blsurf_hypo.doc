@@ -224,26 +224,6 @@ object or to its sub-shapes (created using <b>Explode</b> command).</li>
 </ul></li>
 </ul>
 
-\anchor blsurf_attractor
-<h2>Advanced maps</h2>
-\n
-\image html blsurf_parameters_sizemap2.png 
-\n
-Specific size maps, called attractors can be defined on faces. They allow to define the size of the mesh elements on a face so that the mesh is the finest on the attractor shape and becomes coarser when getting far from this shape.
-The selected attractor can be either a Vertex or an Edge. The attractor doesn't have to be a sub-shape of the shape to mesh. 
-\n
-Furthermore you can choose to keep the size constant until a certain distance from a shape. This option can be combined or not with the "attractor" size map described above. 
-\n
-If the two options are combined the size will remain constant until the distant specified in "constant over" and grow then as prescribed by the attractor function. Else the growing is only controled by the standard arguments of BLSURF (gradation ...).
-
-\image html blsurf_attractors2.png "Example of mesh created using attractors, the attractors here are the side edges and the size grow from the side of the surface towards the apex"
-\n
-\image html blsurf_const_size_near_shape2.png "Example of size map with constant size option, the size is kept constant on the left side of the surface until a certain distance"
-\n
-Remark : The validation of the hypothesis might take a few seconds if attractors are defined or the "constant size" option is used because a map of distances has to be built on the whole surface for each face where such an hypothesis has been defined.
-
-<br><b>See Also</b> a sample TUI Script of the \ref tui_blsurf "creation of a BLSurf hypothesis", including size map.
-
 \anchor blsurf_sizemap_computation
 <h2>Computation of the physical size</h2>
 \n
@@ -259,6 +239,37 @@ specification of the sizes. The computation depends on whether point P is intern
 </ul>
 In order to compute the mean of several values, the arithmetic mean is used by default, but this can be modified by the parameter \ref blsurf_hmean_flag "hmean flag". In the same way, in order to interpolate two values, a linear interpolation is used by default, but this can be modified by \ref blsurf_hinterpol_flag "hinterpol flag".
 
+\anchor blsurf_attractor
+<h2>Advanced maps</h2>
+\n
+\image html blsurf_parameters_sizemap2.png 
+\n
+More specific size maps can be defined on faces. 
+
+<ul>
+<li> <i> Attractors </i> allow to define the size of the mesh elements on a face so that the mesh is the finest on the attractor shape and becomes coarser when getting far from this shape.
+<ul> 
+<li> The selected attractor can be a Vertex, an Edge, a Wire or a Compound mixing several entities of those types.</li>
+<li> The attractor doesn't have to be a sub-shape of the shape to mesh.</li>
+<li> The size will grow exponentially (see formula below) but is bounded by gradation, \n so if you want the formula to be strictly respected, you should set the <i>gradation</i> 
+to its maximum (2.5) in the <i>arguments</i> tab. 
+</ul>
+\n
+<li> Furthermore you can choose to <i> keep the size constant </i> until a certain distance from a shape. This option can be combined or not with an <i>attractor</i> size map described above. 
+<ul>
+<li> If the two options are combined the size will remain constant until the distant specified in "constant over" and grow then as prescribed by the attractor function.</li>
+<li> Else the growing is only controled by the standard arguments of BLSURF (gradation ...).</li>
+</ul>
+</ul>
+
+\image html blsurf_attractors2.png "Example of mesh created using attractors, the attractors here are the side edges and the size grow from the side of the surface towards the apex"
+\n
+\image html blsurf_const_size_near_shape2.png "Example of size map with constant size option, the size is kept constant on the left side of the surface until a certain distance"
+\n
+Remark : The validation of the hypothesis might take a few seconds if attractors are defined or the "constant size" option is used because a map of distances has to be built on the whole surface for each face where such an hypothesis has been defined.
+
+<br><b>See Also</b> a sample TUI Script of the \ref tui_blsurf "creation of a BLSurf hypothesis", including size map.
+
 \anchor blsurf_attractor_computation
 <h2>Computation of attractors</h2>
 \n
@@ -270,7 +281,6 @@ Where :
 <li>d is the distance of the current point from the attractor shape. The distance is the geodesic distance (i.e. calculated by following the surface to be meshed) </li>
 <li>R is called the distance of influence and allows controlling the growth rate of the mesh </li>
 </ul>
-Warning : The formula is respected only if it doesn't imply a gradation bigger than the one set in the "Arguments" tab. So it's better to set it to its maximum value : 2.5.
 
 <h1>Custom enforced vertices</h1>
 

@@ -1,25 +1,24 @@
-//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2011  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
-//  SMESH SMESH_I : idl implementation based on 'SMESH' unit's calsses
 //  File   : SMESH_Gen_i.cxx
 //  Author : Paul RASCLE, EDF
 //  Module : SMESH
@@ -318,7 +317,7 @@ SMESH_Gen_i::SMESH_Gen_i( CORBA::ORB_ptr            orb,
 
 SMESH_Gen_i::~SMESH_Gen_i()
 {
-  INFOS( "SMESH_Gen_i::~SMESH_Gen_i" );
+  MESSAGE( "SMESH_Gen_i::~SMESH_Gen_i" );
 
   // delete hypothesis creators
   map<string, GenericHypothesisCreator_i*>::iterator itHyp;
@@ -2445,6 +2444,8 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CopyMesh(SMESH::SMESH_IDSource_ptr meshPart,
     }
   }
 
+  newMeshDS->Modified();
+
   *pyDump << newMesh << " = " << this
           << ".CopyMesh( " << meshPart << ", "
           << "'" << meshName << "', "
@@ -3139,7 +3140,7 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
 
             // groups root sub-branch
             SALOMEDS::SObject_var myGroupsBranch;
-            for ( int i = GetNodeGroupsTag(); i <= GetVolumeGroupsTag(); i++ ) {
+            for ( int i = GetNodeGroupsTag(); i <= Get0DElementsGroupsTag(); i++ ) {
               found = gotBranch->FindSubObject( i, myGroupsBranch );
               if ( found ) {
                 char name_group[ 30 ];
@@ -3151,6 +3152,8 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
                   strcpy( name_group, "Groups of Faces" );
                 else if ( i == GetVolumeGroupsTag() )
                   strcpy( name_group, "Groups of Volumes" );
+                else if ( i == Get0DElementsGroupsTag() )
+                  strcpy( name_group, "Groups of 0D Elements" );
 
                 aGroup = new HDFgroup( name_group, aTopGroup );
                 aGroup->CreateOnDisk();
@@ -3492,7 +3495,7 @@ SALOMEDS::TMPFile* SMESH_Gen_i::SaveASCII( SALOMEDS::SComponent_ptr theComponent
   int size = aStreamFile.in().length();
   _CORBA_Octet* buffer = new _CORBA_Octet[size*3+1];
   for ( int i = 0; i < size; i++ )
-    sprintf( (char*)&(buffer[i*3]), "|%02x", (char*)(aStreamFile[i]) );
+    sprintf( (char*)&(buffer[i*3]), "|%02x", aStreamFile[i] );
 
   buffer[size * 3] = '\0';
 
@@ -3878,7 +3881,7 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
             int* anAutoColor = new int[ size ];
             aDataset->ReadFromDisk( anAutoColor );
             aDataset->CloseOnDisk();
-            myNewMeshImpl->SetAutoColor( (bool)anAutoColor[0] );
+            myNewMeshImpl->GetImpl().SetAutoColor( (bool)anAutoColor[0] );
           }
 
           // try to read and set reference to shape
@@ -3980,7 +3983,8 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
         }
       }
 
-      // try to get applied algorithms
+      // Try to get applied ALGORITHMS (mesh is not cleared by algo addition because
+      // nodes and elements are not yet put into sub-meshes)
       if ( aTopGroup->ExistInternalObject( "Applied Algorithms" ) ) {
         aGroup = new HDFgroup( "Applied Algorithms", aTopGroup );
         aGroup->OpenOnDisk();
@@ -4128,21 +4132,6 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
               if ( aSubMesh->_is_nil() )
                 continue;
 
-              // VSR: Get submesh data from MED convertor
-              //                  int anInternalSubmeshId = aSubMesh->GetId(); // this is not a persistent ID, it's an internal one computed from sub-shape
-              //                  if (myNewMeshImpl->_mapSubMesh.find(anInternalSubmeshId) != myNewMeshImpl->_mapSubMesh.end()) {
-              //                    if(MYDEBUG) MESSAGE("VSR - SMESH_Gen_i::Load(): loading from MED file submesh with ID = " <<
-              //                            subid << " for subshape # " << anInternalSubmeshId);
-              //                    SMESHDS_SubMesh* aSubMeshDS =
-              //                      myNewMeshImpl->_mapSubMesh[anInternalSubmeshId]->CreateSubMeshDS();
-              //                    if ( !aSubMeshDS ) {
-              //                      if(MYDEBUG) MESSAGE("VSR - SMESH_Gen_i::Load(): FAILED to create a submesh for subshape # " <<
-              //                              anInternalSubmeshId << " in current mesh!");
-              //                    }
-              //                    else
-              //                      myReader.GetSubMesh( aSubMeshDS, subid );
-              //                  }
-
               // try to get applied algorithms
               if ( aSubGroup->ExistInternalObject( "Applied Algorithms" ) ) {
                 // open "applied algorithms" HDF group
@@ -4162,8 +4151,6 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
                     aDataset->ReadFromDisk( refFromFile );
                     aDataset->CloseOnDisk();
 
-                    //SALOMEDS::SObject_var hypSO = myCurrentStudy->FindObjectID( refFromFile );
-                    //CORBA::Object_var hypObject = SObjectToObject( hypSO );
                     int id = atoi( refFromFile );
                     string anIOR = myStudyContext->getIORbyOldId( id );
                     if ( !anIOR.empty() ) {
@@ -4199,8 +4186,6 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
                     aDataset->ReadFromDisk( refFromFile );
                     aDataset->CloseOnDisk();
 
-                    //SALOMEDS::SObject_var hypSO = myCurrentStudy->FindObjectID( refFromFile );
-                    //CORBA::Object_var hypObject = SObjectToObject( hypSO );
                     int id = atoi( refFromFile );
                     string anIOR = myStudyContext->getIORbyOldId( id );
                     if ( !anIOR.empty() ) {
@@ -4228,11 +4213,11 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
 
       if(hasData) {
 
-        // Read sub-meshes from MED
-        // -------------------------
+        // Read sub-meshes
+        // ----------------
         if(MYDEBUG) MESSAGE("Create all sub-meshes");
         bool submeshesInFamilies = ( ! aTopGroup->ExistInternalObject( "Submeshes" ));
-        if ( submeshesInFamilies )
+        if ( submeshesInFamilies ) // from MED
         {
           // old way working before fix of PAL 12992
           myReader.CreateAllSubMeshes();
@@ -4431,7 +4416,7 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
       } // if ( hasData )
 
       // try to get groups
-      for ( int ii = GetNodeGroupsTag(); ii <= GetVolumeGroupsTag(); ii++ ) {
+      for ( int ii = GetNodeGroupsTag(); ii <= Get0DElementsGroupsTag(); ii++ ) {
         char name_group[ 30 ];
         if ( ii == GetNodeGroupsTag() )
           strcpy( name_group, "Groups of Nodes" );
@@ -4441,6 +4426,8 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
           strcpy( name_group, "Groups of Faces" );
         else if ( ii == GetVolumeGroupsTag() )
           strcpy( name_group, "Groups of Volumes" );
+        else if ( ii == Get0DElementsGroupsTag() )
+          strcpy( name_group, "Groups of 0D Elements" );
 
         if ( aTopGroup->ExistInternalObject( name_group ) ) {
           aGroup = new HDFgroup( name_group, aTopGroup );

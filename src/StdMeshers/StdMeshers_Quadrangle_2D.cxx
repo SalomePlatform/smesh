@@ -1,23 +1,24 @@
-//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2011  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
 
 //  File   : StdMeshers_Quadrangle_2D.cxx
 //  Author : Paul RASCLE, EDF
@@ -2191,7 +2192,6 @@ bool StdMeshers_Quadrangle_2D::ComputeReduced (SMESH_Mesh &        aMesh,
     int nb1 = nb;
     int nr1 = nr;
     int nt1 = nt;
-    int nl1 = nl;
 
     if (nr == nl) {
       if (nb < nt) {
@@ -2200,7 +2200,6 @@ bool StdMeshers_Quadrangle_2D::ComputeReduced (SMESH_Mesh &        aMesh,
       }
     }
     else if (nb == nt) {
-      nl1 = nb; // and == nt
       nr1 = nb; // and == nt
       if (nl < nr) {
         nt1 = nl;
@@ -2216,7 +2215,7 @@ bool StdMeshers_Quadrangle_2D::ComputeReduced (SMESH_Mesh &        aMesh,
     }
 
     // number of rows and columns
-    int nrows = nr1 - 1; // and also == nl1 - 1
+    int nrows = nr1 - 1;
     int ncol_top = nt1 - 1;
     int ncol_bot = nb1 - 1;
     // maximum number of bottom elements for "tree" simple reduce 3->1
@@ -3791,7 +3790,7 @@ namespace // data for smoothing
     TSmoothNode* _n2;
     TTriangle( TSmoothNode* n1=0, TSmoothNode* n2=0 ): _n1(n1), _n2(n2) {}
 
-    inline bool IsForward( gp_UV uv );
+    inline bool IsForward( gp_UV uv ) const;
   };
   // --------------------------------------------------------------------------------
   /*!
@@ -3803,7 +3802,7 @@ namespace // data for smoothing
     vector< TTriangle > _triangles; // if empty, then node is not movable
   };
   // --------------------------------------------------------------------------------
-  inline bool TTriangle::IsForward( gp_UV uv )
+  inline bool TTriangle::IsForward( gp_UV uv ) const
   {
     gp_Vec2d v1( uv, _n1->_uv ), v2( uv, _n2->_uv );
     double d = v1 ^ v2;
@@ -3909,12 +3908,20 @@ void StdMeshers_Quadrangle_2D::Smooth (FaceQuadStruct* quad)
     }
   }
 
+  // define refernce orientation in 2D
+  TNo2SmooNoMap::iterator n2sn = smooNoMap.begin();
+  for ( ; n2sn != smooNoMap.end(); ++n2sn )
+    if ( !n2sn->second._triangles.empty() )
+      break;
+  if ( n2sn == smooNoMap.end() ) return;
+  const TSmoothNode & sampleNode = n2sn->second;
+  const bool refForward = ( sampleNode._triangles[0].IsForward( sampleNode._uv ));
+
   // Smoothing
 
   for ( int iLoop = 0; iLoop < 5; ++iLoop )
   {
-    TNo2SmooNoMap::iterator n2sn = smooNoMap.begin();
-    for ( ; n2sn != smooNoMap.end(); ++n2sn )
+    for ( n2sn = smooNoMap.begin(); n2sn != smooNoMap.end(); ++n2sn )
     {
       TSmoothNode& sNode = n2sn->second;
       if ( sNode._triangles.empty() )
@@ -3929,7 +3936,7 @@ void StdMeshers_Quadrangle_2D::Smooth (FaceQuadStruct* quad)
       // check validity of the newUV
       bool isValid = true;
       for ( unsigned i = 0; i < sNode._triangles.size() && isValid; ++i )
-        isValid = sNode._triangles[i].IsForward( newUV );
+        isValid = ( sNode._triangles[i].IsForward( newUV ) == refForward );
 
       if ( isValid )
         sNode._uv = newUV;
@@ -3940,8 +3947,7 @@ void StdMeshers_Quadrangle_2D::Smooth (FaceQuadStruct* quad)
 
   Handle(Geom_Surface) surface = BRep_Tool::Surface( geomFace );
 
-  TNo2SmooNoMap::iterator n2sn = smooNoMap.begin();
-  for ( ; n2sn != smooNoMap.end(); ++n2sn )
+  for ( n2sn = smooNoMap.begin(); n2sn != smooNoMap.end(); ++n2sn )
   {
     TSmoothNode& sNode = n2sn->second;
     if ( sNode._triangles.empty() )

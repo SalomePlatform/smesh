@@ -1,23 +1,23 @@
-//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2011  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 
 //  SMESH SMESH_I : idl implementation based on 'SMESH' unit's classes
@@ -478,10 +478,9 @@ void SMESH_GroupBase_i::SetColor(const SALOMEDS::Color& color)
   if (aGroupDS)
   {
     Quantity_Color aQColor( color.R, color.G, color.B, Quantity_TOC_RGB );
-    return aGroupDS->SetColor(aQColor);
+    aGroupDS->SetColor(aQColor);
+    TPythonDump()<<_this()<<".SetColor( SALOMEDS.Color( "<<color.R<<", "<<color.G<<", "<<color.B<<" ))";
   }
-  MESSAGE("set color of a group");
-  return ;
 }
 
 //=============================================================================
@@ -507,7 +506,10 @@ void SMESH_GroupBase_i::SetColorNumber(CORBA::Long color)
 {
   SMESHDS_GroupBase* aGroupDS = GetGroupDS();
   if (aGroupDS)
-    return aGroupDS->SetColorGroup(color);
+  {
+    aGroupDS->SetColorGroup(color);
+    TPythonDump()<<_this()<<".SetColorNumber( "<<color<<" )";
+  }
   MESSAGE("set color number of a group");
   return ;
 }
@@ -533,6 +535,21 @@ SMESH::long_array* SMESH_GroupBase_i::GetMeshInfo()
     aRes[ SMESH::Entity_Node ] = aGrpDS->Extent();
   else
     SMESH_Mesh_i::CollectMeshInfo( aGrpDS->GetElements(), aRes);
+
+//   SMDS_ElemIteratorPtr it = aGrpDS->GetElements();
+//   if ( it->more() )
+//   {
+//     cout << "START" << endl;
+//     set< const SMDS_MeshElement* > nodes;
+//     const SMDS_MeshElement* e = it->next();
+//     for ( int i = 0; i < 1000000; ++i)
+//     {
+//       SMDS_ElemIteratorPtr it = e->nodesIterator();
+//       nodes.insert( e + i );
+//     }
+//     cout << "END "<< nodes.size() << endl;
+//   }
+ 
   return aRes._retn();
 }
 

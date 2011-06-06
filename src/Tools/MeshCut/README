@@ -21,6 +21,6 @@ where:
   belowGroups  = name of the group of volumes below the cut plane
   nx ny nz     = vector normal to the cut plane
   px py pz     = a point of the cut plane
-  T            = 0 < T < 1 : vertices of a tetrahedron are considered as belonging
+  T            = 0 < T < 1 : vertices of a tetrahedron are considered as belonging to
                  the cut plane if their distance to the plane is inferior to L*T
                  where L is the mean edge size of the tetrahedron

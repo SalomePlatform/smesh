@@ -1,23 +1,23 @@
-//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2011  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 
 // File:      SMESH_MesherHelper.cxx
@@ -40,6 +40,7 @@
 #include <GeomAPI_ProjectPointOnCurve.hxx>
 #include <GeomAPI_ProjectPointOnSurf.hxx>
 #include <Geom_Curve.hxx>
+#include <Geom_RectangularTrimmedSurface.hxx>
 #include <Geom_Surface.hxx>
 #include <ShapeAnalysis.hxx>
 #include <TopExp.hxx>
@@ -123,34 +124,49 @@ bool SMESH_MesherHelper::IsQuadraticSubMesh(const TopoDS_Shape& aSh)
 
   int nbOldLinks = myTLinkNodeMap.size();
 
-  TopExp_Explorer exp( aSh, subType );
-  for (; exp.More() && myCreateQuadratic; exp.Next()) {
-    if ( SMESHDS_SubMesh * subMesh = meshDS->MeshElements( exp.Current() )) {
-      if ( SMDS_ElemIteratorPtr it = subMesh->GetElements() ) {
-        while(it->more()) {
-          const SMDS_MeshElement* e = it->next();
-          if ( e->GetType() != elemType || !e->IsQuadratic() ) {
-            myCreateQuadratic = false;
-            break;
-          }
-          else {
-            // fill TLinkNodeMap
-            switch ( e->NbNodes() ) {
-            case 3:
-              AddTLinkNode(e->GetNode(0),e->GetNode(1),e->GetNode(2)); break;
-            case 6:
-              AddTLinkNode(e->GetNode(0),e->GetNode(1),e->GetNode(3));
-              AddTLinkNode(e->GetNode(1),e->GetNode(2),e->GetNode(4));
-              AddTLinkNode(e->GetNode(2),e->GetNode(0),e->GetNode(5)); break;
-            case 8:
-              AddTLinkNode(e->GetNode(0),e->GetNode(1),e->GetNode(4));
-              AddTLinkNode(e->GetNode(1),e->GetNode(2),e->GetNode(5));
-              AddTLinkNode(e->GetNode(2),e->GetNode(3),e->GetNode(6));
-              AddTLinkNode(e->GetNode(3),e->GetNode(0),e->GetNode(7));
-              break;
-            default:
+  if ( !myMesh->HasShapeToMesh() )
+  {
+    if (( myCreateQuadratic = myMesh->NbFaces( ORDER_QUADRATIC )))
+    {
+      SMDS_FaceIteratorPtr fIt = meshDS->facesIterator();
+      while ( fIt->more() )
+        AddTLinks( static_cast< const SMDS_MeshFace* >( fIt->next() ));
+    }
+  }
+  else
+  {
+    TopExp_Explorer exp( aSh, subType );
+    TopTools_MapOfShape checkedSubShapes;
+    for (; exp.More() && myCreateQuadratic; exp.Next()) {
+      if ( !checkedSubShapes.Add( exp.Current() ))
+        continue; // needed if aSh is compound of solids
+      if ( SMESHDS_SubMesh * subMesh = meshDS->MeshElements( exp.Current() )) {
+        if ( SMDS_ElemIteratorPtr it = subMesh->GetElements() ) {
+          while(it->more()) {
+            const SMDS_MeshElement* e = it->next();
+            if ( e->GetType() != elemType || !e->IsQuadratic() ) {
               myCreateQuadratic = false;
               break;
+            }
+            else {
+              // fill TLinkNodeMap
+              switch ( e->NbNodes() ) {
+              case 3:
+                AddTLinkNode(e->GetNode(0),e->GetNode(1),e->GetNode(2)); break;
+              case 6:
+                AddTLinkNode(e->GetNode(0),e->GetNode(1),e->GetNode(3));
+                AddTLinkNode(e->GetNode(1),e->GetNode(2),e->GetNode(4));
+                AddTLinkNode(e->GetNode(2),e->GetNode(0),e->GetNode(5)); break;
+              case 8:
+                AddTLinkNode(e->GetNode(0),e->GetNode(1),e->GetNode(4));
+                AddTLinkNode(e->GetNode(1),e->GetNode(2),e->GetNode(5));
+                AddTLinkNode(e->GetNode(2),e->GetNode(3),e->GetNode(6));
+                AddTLinkNode(e->GetNode(3),e->GetNode(0),e->GetNode(7));
+                break;
+              default:
+                myCreateQuadratic = false;
+                break;
+              }
             }
           }
         }
@@ -210,9 +226,15 @@ void SMESH_MesherHelper::SetSubShape(const TopoDS_Shape& aSh)
   for ( TopExp_Explorer eF( aSh, TopAbs_FACE ); eF.More(); eF.Next() )
   {
     const TopoDS_Face& face = TopoDS::Face( eF.Current() );
-    BRepAdaptor_Surface surface( face );
-    if ( surface.IsUPeriodic() || surface.IsVPeriodic() )
+    TopLoc_Location loc;
+    Handle(Geom_Surface) surface = BRep_Tool::Surface( face, loc );
+
+    if ( surface->IsUPeriodic() || surface->IsVPeriodic() )
     {
+      //while ( surface->IsKind(STANDARD_TYPE(Geom_RectangularTrimmedSurface )))
+      //surface = Handle(Geom_RectangularTrimmedSurface)::DownCast( surface )->BasisSurface();
+      GeomAdaptor_Surface surf( surface );
+
       for (TopExp_Explorer exp( face, TopAbs_EDGE ); exp.More(); exp.Next())
       {
         // look for a seam edge
@@ -224,13 +246,13 @@ void SMESH_MesherHelper::SetSubShape(const TopoDS_Shape& aSh)
           if ( Abs( uv1.Coord(1) - uv2.Coord(1) ) < Abs( uv1.Coord(2) - uv2.Coord(2) ))
           {
             myParIndex |= U_periodic;
-            myPar1[0] = surface.FirstUParameter();
-            myPar2[0] = surface.LastUParameter();
+            myPar1[0] = surf.FirstUParameter();
+            myPar2[0] = surf.LastUParameter();
           }
           else {
             myParIndex |= V_periodic;
-            myPar1[1] = surface.FirstVParameter();
-            myPar2[1] = surface.LastVParameter();
+            myPar1[1] = surf.FirstVParameter();
+            myPar2[1] = surf.LastVParameter();
           }
           // store seam shape indices, negative if shape encounters twice
           int edgeID = meshDS->ShapeToIndex( edge );
@@ -334,19 +356,21 @@ void SMESH_MesherHelper::AddTLinks(const SMDS_MeshEdge* edge)
  */
 //================================================================================
 
-void SMESH_MesherHelper::AddTLinks(const SMDS_MeshFace* face)
+void SMESH_MesherHelper::AddTLinks(const SMDS_MeshFace* f)
 {
-  if ( face->IsQuadratic() )
-  {
-    const int nbLinks = face->NbCornerNodes();
-    for ( int i = 0; i < nbLinks; ++i )
-    {
-      const SMDS_MeshNode* n1  = face->GetNode( i );
-      const SMDS_MeshNode* n2  = face->GetNode(( i + 1 ) % nbLinks );
-      const SMDS_MeshNode* n12 = face->GetNode( i + nbLinks );
-      AddTLinkNode( n1, n2, n12 );
+  if ( !f->IsPoly() )
+    switch ( f->NbNodes() ) {
+    case 6:
+      AddTLinkNode(f->GetNode(0),f->GetNode(1),f->GetNode(3));
+      AddTLinkNode(f->GetNode(1),f->GetNode(2),f->GetNode(4));
+      AddTLinkNode(f->GetNode(2),f->GetNode(0),f->GetNode(5)); break;
+    case 8:
+      AddTLinkNode(f->GetNode(0),f->GetNode(1),f->GetNode(4));
+      AddTLinkNode(f->GetNode(1),f->GetNode(2),f->GetNode(5));
+      AddTLinkNode(f->GetNode(2),f->GetNode(3),f->GetNode(6));
+      AddTLinkNode(f->GetNode(3),f->GetNode(0),f->GetNode(7));
+    default:;
     }
-  }
 }
 
 //================================================================================
@@ -473,7 +497,7 @@ gp_XY SMESH_MesherHelper::GetNodeUV(const TopoDS_Face&   F,
     if ( validU )
       uv = C2d->Value( u );
     else
-      uv.SetCoord(0.,0.);
+      uv.SetCoord( Precision::Infinite(),0.);
     if ( check || !validU )
       uvOK = CheckNodeUV( F, n, uv.ChangeCoord(), 10*MaxTolerance( F ),/*force=*/ !validU );
 
@@ -552,6 +576,10 @@ gp_XY SMESH_MesherHelper::GetNodeUV(const TopoDS_Face&   F,
         uv = GetUVOnSeam( uv, GetNodeUV( F, n2, 0 ));
     }
   }
+  else
+  {
+    uvOK = CheckNodeUV( F, n, uv.ChangeCoord(), 10*MaxTolerance( F ));
+  }
 
   if ( check )
     *check = uvOK;
@@ -572,18 +600,15 @@ bool SMESH_MesherHelper::CheckNodeUV(const TopoDS_Face&   F,
                                      double               distXYZ[4]) const
 {
   int shapeID = n->getshapeId();
-  if ( force || toCheckPosOnShape( shapeID ))
+  bool infinit = ( Precision::IsInfinite( uv.X() ) || Precision::IsInfinite( uv.Y() ));
+  if ( force || toCheckPosOnShape( shapeID ) || infinit )
   {
-    double toldis = tol;
-    double tolmin = 1.e-7*myMesh->GetMeshDS()->getMaxDim(); // nodes coordinates are stored in float format
-    if (toldis < tolmin) toldis = tolmin;
     // check that uv is correct
     TopLoc_Location loc;
     Handle(Geom_Surface) surface = BRep_Tool::Surface( F,loc );
     gp_Pnt nodePnt = XYZ( n ), surfPnt(0,0,0);
     double dist = 0;
     if ( !loc.IsIdentity() ) nodePnt.Transform( loc.Transformation().Inverted() );
-    bool infinit = ( Precision::IsInfinite( uv.X() ) || Precision::IsInfinite( uv.Y() ));
     if ( infinit ||
          (dist = nodePnt.Distance( surfPnt = surface->Value( uv.X(), uv.Y() ))) > tol )
     {
@@ -710,7 +735,14 @@ gp_XY SMESH_MesherHelper::GetMiddleUV(const Handle(Geom_Surface)& surface,
                                       const gp_XY&                p1,
                                       const gp_XY&                p2)
 {
-  return applyIn2D( surface, p1, p2, & AverageUV );
+  // NOTE:
+  // the proper place of getting basic surface seems to be in applyIn2D()
+  // but we put it here to decrease a risk of regressions just before releasing a version
+  Handle(Geom_Surface) surf = surface;
+  while ( !surf.IsNull() && surf->IsKind(STANDARD_TYPE(Geom_RectangularTrimmedSurface )))
+    surf = Handle(Geom_RectangularTrimmedSurface)::DownCast( surf )->BasisSurface();
+
+  return applyIn2D( surf, p1, p2, & AverageUV );
 }
 
 //=======================================================================
@@ -776,10 +808,6 @@ bool SMESH_MesherHelper::CheckNodeU(const TopoDS_Edge&   E,
   int shapeID = n->getshapeId();
   if ( force || toCheckPosOnShape( shapeID ))
   {
-    //double toldis = tol;
-    //double tolmin = 1.e-7*myMesh->GetMeshDS()->getMaxDim(); // nodes coordinates are stored in float format
-    //if (toldis < tolmin) toldis = tolmin;
-    // check that u is correct
     TopLoc_Location loc; double f,l;
     Handle(Geom_Curve) curve = BRep_Tool::Curve( E,loc,f,l );
     if ( curve.IsNull() ) // degenerated edge
@@ -801,7 +829,7 @@ bool SMESH_MesherHelper::CheckNodeU(const TopoDS_Edge&   E,
         distXYZ[0] = dist;
         distXYZ[1] = curvPnt.X(); distXYZ[2] = curvPnt.Y(); distXYZ[3]=curvPnt.Z();
       }
-      if ( dist > tol /*toldis*/ )
+      if ( dist > tol )
       {
         setPosOnShapeValidity( shapeID, false );
         // u incorrect, project the node to the curve
@@ -830,10 +858,10 @@ bool SMESH_MesherHelper::CheckNodeU(const TopoDS_Edge&   E,
           distXYZ[0] = dist;
           distXYZ[1] = curvPnt.X(); distXYZ[2] = curvPnt.Y(); distXYZ[3]=curvPnt.Z();
         }
-        if ( dist > tol /*toldis*/)
+        if ( dist > tol )
         {
           MESSAGE( "SMESH_MesherHelper::CheckNodeU(), invalid projection" );
-          MESSAGE("distance " << dist << " " << tol/*dis*/);
+          MESSAGE("distance " << dist << " " << tol );
           return false;
         }
         // store the fixed U on the edge
@@ -1742,6 +1770,28 @@ bool SMESH_MesherHelper::IsClosedEdge( const TopoDS_Edge& anEdge )
   return TopExp::FirstVertex( anEdge ).IsSame( TopExp::LastVertex( anEdge ));
 }
 
+//================================================================================
+/*!
+ * \brief Wrapper over TopExp::FirstVertex() and TopExp::LastVertex() fixing them
+ *  in the case of INTERNAL edge
+ */
+//================================================================================
+
+TopoDS_Vertex SMESH_MesherHelper::IthVertex( const bool  is2nd,
+                                             TopoDS_Edge anEdge,
+                                             const bool  CumOri )
+{
+  if ( anEdge.Orientation() >= TopAbs_INTERNAL )
+    anEdge.Orientation( TopAbs_FORWARD );
+
+  const TopAbs_Orientation tgtOri = is2nd ? TopAbs_REVERSED : TopAbs_FORWARD;
+  TopoDS_Iterator vIt( anEdge, CumOri );
+  while ( vIt.More() && vIt.Value().Orientation() != tgtOri )
+    vIt.Next();
+
+  return ( vIt.More() ? TopoDS::Vertex(vIt.Value()) : TopoDS_Vertex() );
+}
+
 //=======================================================================
 //function : IsQuadraticMesh
 //purpose  : Check mesh without geometry for: if all elements on this shape are quadratic,
@@ -1785,6 +1835,57 @@ double SMESH_MesherHelper::GetOtherParam(const double param) const
 {
   int i = myParIndex & U_periodic ? 0 : 1;
   return fabs(param-myPar1[i]) < fabs(param-myPar2[i]) ? myPar2[i] : myPar1[i];
+}
+
+namespace {
+
+  //=======================================================================
+  /*!
+   * \brief Iterator on ancestors of the given type
+   */
+  //=======================================================================
+
+  struct TAncestorsIterator : public SMDS_Iterator<const TopoDS_Shape*>
+  {
+    TopTools_ListIteratorOfListOfShape _ancIter;
+    TopAbs_ShapeEnum                   _type;
+    TopTools_MapOfShape                _encountered;
+    TAncestorsIterator( const TopTools_ListOfShape& ancestors, TopAbs_ShapeEnum type)
+      : _ancIter( ancestors ), _type( type )
+    {
+      if ( _ancIter.More() ) {
+        if ( _ancIter.Value().ShapeType() != _type ) next();
+        else _encountered.Add( _ancIter.Value() );
+      }
+    }
+    virtual bool more()
+    {
+      return _ancIter.More();
+    }
+    virtual const TopoDS_Shape* next()
+    {
+      const TopoDS_Shape* s = _ancIter.More() ? & _ancIter.Value() : 0;
+      if ( _ancIter.More() )
+        for ( _ancIter.Next();  _ancIter.More(); _ancIter.Next())
+          if ( _ancIter.Value().ShapeType() == _type && _encountered.Add( _ancIter.Value() ))
+            break;
+      return s;
+    }
+  };
+
+} // namespace
+
+//=======================================================================
+/*!
+ * \brief Return iterator on ancestors of the given type
+ */
+//=======================================================================
+
+PShapeIteratorPtr SMESH_MesherHelper::GetAncestors(const TopoDS_Shape& shape,
+                                                   const SMESH_Mesh&   mesh,
+                                                   TopAbs_ShapeEnum    ancestorType)
+{
+  return PShapeIteratorPtr( new TAncestorsIterator( mesh.GetAncestors(shape), ancestorType));
 }
 
 //#include <Perf_Meter.hxx>
@@ -1839,7 +1940,7 @@ namespace { // Structures used by FixQuadraticElements()
     void Move(const gp_Vec& move, bool sum=false) const
     { _nodeMove += move; _nbMoves += sum ? (_nbMoves==0) : 1; }
     gp_XYZ Move() const { return _nodeMove.XYZ() / _nbMoves; }
-    bool IsMoved() const { return (_nbMoves > 0 && !IsStraight()); }
+    bool IsMoved() const { return (_nbMoves > 0 /*&& !IsStraight()*/); }
     bool IsStraight() const
     { return isStraightLink( (XYZ(node1())-XYZ(node2())).SquareModulus(),
                              _nodeMove.SquareMagnitude());
@@ -1885,6 +1986,8 @@ namespace { // Structures used by FixQuadraticElements()
     const QLink* operator->() const { return _qlink; }
 
     gp_Vec Normal() const;
+
+    bool IsStraight() const;
   };
   // --------------------------------------------------------------------
   typedef list< TChainLink > TChain;
@@ -2062,9 +2165,10 @@ namespace { // Structures used by FixQuadraticElements()
 //               chLink = chain.insert( chain.begin(), TChainLink(face->_sides[i]));
             // add a face to a chained link and put a continues face in the queue
             chLink->SetFace( face );
-            if ( face->_sides[i]->MediumPos() >= pos )
+            if ( face->_sides[i]->MediumPos() == pos )
               if ( const QFace* contFace = face->_sides[i]->GetContinuesFace( face ))
-                faces.push_back( contFace );
+                if ( contFace->_sides.size() == 3 )
+                  faces.push_back( contFace );
           }
         }
         faces.pop_front();
@@ -2087,10 +2191,11 @@ namespace { // Structures used by FixQuadraticElements()
     // propagate from quadrangle to neighbour faces
     if ( link->MediumPos() >= pos ) {
       int nbLinkFaces = link->_faces.size();
-      if ( nbLinkFaces == 4 || (nbLinkFaces < 4 && link->OnBoundary())) {
+      if ( nbLinkFaces == 4 || (/*nbLinkFaces < 4 && */link->OnBoundary())) {
         // hexahedral mesh or boundary quadrangles - goto a continous face
         if ( const QFace* f = link->GetContinuesFace( this ))
-          return f->GetLinkChain( *chLink, chain, pos, error );
+          if ( f->_sides.size() == 4 )
+            return f->GetLinkChain( *chLink, chain, pos, error );
       }
       else {
         TChainLink chLink(link); // side face of prismatic mesh - visit all faces of iSide
@@ -2284,7 +2389,7 @@ namespace { // Structures used by FixQuadraticElements()
     gp_Vec linkDir2(0,0,0);
     try {
       OCC_CATCH_SIGNALS;
-      if ( f1 )
+      if ( f1 && theLink->MediumPos() <= (*link1)->MediumPos() )
         len1 = f1->MoveByBoundary
           ( *link1, theRefVec, theLinks, theFaceHelper, len1, theStep-1, &linkDir1, theSign);
       else
@@ -2295,7 +2400,7 @@ namespace { // Structures used by FixQuadraticElements()
     }
     try {
       OCC_CATCH_SIGNALS;
-      if ( f2 )
+      if ( f2 && theLink->MediumPos() <= (*link2)->MediumPos() )
         len2 = f2->MoveByBoundary
           ( *link2, theRefVec, theLinks, theFaceHelper, len2, theStep-1, &linkDir2, theSign);
       else
@@ -2374,7 +2479,9 @@ namespace { // Structures used by FixQuadraticElements()
 
     if ( _faces.empty() )
       return;
-    int iFaceCont = -1;
+    int iFaceCont = -1, nbBoundary = 0, iBoundary[2]={-1,-1};
+    if ( _faces[0]->IsBoundary() )
+      iBoundary[ nbBoundary++ ] = 0;
     for ( int iF = 1; iFaceCont < 0 && iF < _faces.size(); ++iF )
     {
       // look for a face bounding none of volumes bound by _faces[0]
@@ -2385,8 +2492,21 @@ namespace { // Structures used by FixQuadraticElements()
                     _faces[iF]->_volumes[iV] == _faces[0]->_volumes[1]);
       if ( !sameVol )
         iFaceCont = iF;
+      if ( _faces[iF]->IsBoundary() )
+        iBoundary[ nbBoundary++ ] = iF;
     }
-    if ( iFaceCont > 0 ) // continues faces found, set one by the other
+    // Set continues faces: arrange _faces to have
+    // _faces[0] continues to _faces[1]
+    // _faces[2] continues to _faces[3]
+    if ( nbBoundary == 2 ) // bnd faces are continues
+    {
+      if (( iBoundary[0] < 2 ) != ( iBoundary[1] < 2 ))
+      {
+        int iNear0 = iBoundary[0] < 2 ? 1-iBoundary[0] : 5-iBoundary[0];
+        std::swap( _faces[ iBoundary[1] ], _faces[iNear0] );
+      }
+    }
+    else if ( iFaceCont > 0 ) // continues faces found
     {
       if ( iFaceCont != 1 )
         std::swap( _faces[1], _faces[iFaceCont] );
@@ -2438,6 +2558,27 @@ namespace { // Structures used by FixQuadraticElements()
   }
   //================================================================================
   /*!
+   * \brief Test link curvature taking into account size of faces
+   */
+  //================================================================================
+
+  bool TChainLink::IsStraight() const
+  {
+    bool isStraight = _qlink->IsStraight();
+    if ( isStraight && _qfaces[0] && !_qfaces[1] )
+    {
+      int i = _qfaces[0]->LinkIndex( _qlink );
+      int iOpp = ( i + 2 ) % _qfaces[0]->_sides.size();
+      gp_XYZ mid1 = _qlink->MiddlePnt();
+      gp_XYZ mid2 = _qfaces[0]->_sides[ iOpp ]->MiddlePnt();
+      double faceSize2 = (mid1-mid2).SquareModulus();
+      isStraight = _qlink->_nodeMove.SquareMagnitude() < 1/3./3. * faceSize2;
+    }
+    return isStraight;
+  }
+  
+  //================================================================================
+  /*!
    * \brief Move medium nodes of vertical links of pentahedrons adjacent by side faces
    */
   //================================================================================
@@ -2454,7 +2595,7 @@ namespace { // Structures used by FixQuadraticElements()
         bndLinks1.insert( lnk->_qlink );
       else
         interLinks.insert( lnk->_qlink );
-      isCurved = isCurved || !(*lnk)->IsStraight();
+      isCurved = isCurved || !lnk->IsStraight();
     }
     if ( !isCurved )
       return; // no need to move
@@ -2503,7 +2644,7 @@ namespace { // Structures used by FixQuadraticElements()
 
     for ( linkIt = linkSet.begin(); linkIt != linksEnd; ++linkIt)
     {
-      if ( linkIt->IsBoundary() && !(*linkIt)->IsStraight() && linkIt->_qfaces[0])
+      if ( linkIt->IsBoundary() && !linkIt->IsStraight() && linkIt->_qfaces[0])
       {
         // move iff a boundary link is bent towards inside of a face (issue 0021084)
         const QFace* face = linkIt->_qfaces[0];
@@ -2714,6 +2855,10 @@ namespace { // Structures used by FixQuadraticElements()
 
 void SMESH_MesherHelper::FixQuadraticElements(bool volumeOnly)
 {
+  // setenv NO_FixQuadraticElements to know if FixQuadraticElements() is guilty of bad conversion
+  if ( getenv("NO_FixQuadraticElements") )
+    return;
+
   // 0. Apply algorithm to solids or geom faces
   // ----------------------------------------------
   if ( myShape.IsNull() ) {
@@ -2736,7 +2881,9 @@ void SMESH_MesherHelper::FixQuadraticElements(bool volumeOnly)
           faces.Add( f.Current() ); // in not meshed solid
       }
       else { // fix nodes in the solid and its faces
+#ifdef _DEBUG_
         MSG("FIX SOLID " << nbSolids-- << " #" << GetMeshDS()->ShapeToIndex(s.Current()));
+#endif
         SMESH_MesherHelper h(*myMesh);
         h.SetSubShape( s.Current() );
         h.FixQuadraticElements(false);
@@ -2744,7 +2891,7 @@ void SMESH_MesherHelper::FixQuadraticElements(bool volumeOnly)
     }
     // fix nodes on geom faces
 #ifdef _DEBUG_
-    //int nbfaces = faces.Extent();
+    int nbfaces = faces.Extent(); /*avoid "unused varianbles": */ nbfaces++, nbfaces--; 
 #endif
     for ( TopTools_MapIteratorOfMapOfShape fIt( faces ); fIt.More(); fIt.Next() ) {
       MSG("FIX FACE " << nbfaces-- << " #" << GetMeshDS()->ShapeToIndex(fIt.Key()));
@@ -2786,15 +2933,18 @@ void SMESH_MesherHelper::FixQuadraticElements(bool volumeOnly)
   bool isCurved = false;
   //bool hasRectFaces = false;
   //set<int> nbElemNodeSet;
+  SMDS_VolumeTool volTool;
+
+  TIDSortedNodeSet apexOfPyramid;
+  const int apexIndex = 4;
 
   if ( elemType == SMDSAbs_Volume )
   {
-    SMDS_VolumeTool volTool;
     while ( elemIt->more() ) // loop on volumes
     {
       const SMDS_MeshElement* vol = elemIt->next();
       if ( !vol->IsQuadratic() || !volTool.Set( vol ))
-        return; //continue;
+        return;
       for ( int iF = 0; iF < volTool.NbFaces(); ++iF ) // loop on faces of volume
       {
         int nbN = volTool.NbFaceNodes( iF );
@@ -2828,6 +2978,9 @@ void SMESH_MesherHelper::FixQuadraticElements(bool volumeOnly)
                                                faceNodes[4],faceNodes[6] );
 #endif
       }
+      // collect pyramid apexes for further correction
+      if ( vol->NbCornerNodes() == 5 )
+        apexOfPyramid.insert( vol->GetNode( apexIndex ));
     }
     set< QLink >::iterator pLink = links.begin();
     for ( ; pLink != links.end(); ++pLink )
@@ -2862,9 +3015,9 @@ void SMESH_MesherHelper::FixQuadraticElements(bool volumeOnly)
     return; // no curved edges of faces
 
   // 3. Compute displacement of medium nodes
-  // -------------------------------------
+  // ---------------------------------------
 
-  // two loops on faces: the first is to treat boundary links, the second is for internal ones
+  // two loops on QFaces: the first is to treat boundary links, the second is for internal ones
   TopLoc_Location loc;
   // not treat boundary of volumic submesh
   int isInside = ( elemType == SMDSAbs_Volume && volumeOnly ) ? 1 : 0;
@@ -2876,7 +3029,7 @@ void SMESH_MesherHelper::FixQuadraticElements(bool volumeOnly)
     for ( pFace = faces.begin(); pFace != faces.end(); ++pFace ) {
       if ( bool(isInside) == pFace->IsBoundary() )
         continue;
-      for ( int dir = 0; dir < 2; ++dir ) // 2 directions of propagation from quadrangle
+      for ( int dir = 0; dir < 2; ++dir ) // 2 directions of propagation from the quadrangle
       {
         MSG( "CHAIN");
         // make chain of links connected via continues faces
@@ -2909,12 +3062,12 @@ void SMESH_MesherHelper::FixQuadraticElements(bool volumeOnly)
         {
           TChain& chain = chains[iC];
           if ( chain.empty() ) continue;
-          if ( chain.front()->IsStraight() && chain.back()->IsStraight() ) {
+          if ( chain.front().IsStraight() && chain.back().IsStraight() ) {
             MSG("3D straight - ignore");
             continue;
           }
           if ( chain.front()->MediumPos() > bndPos ||
-               chain.back()->MediumPos() > bndPos ) {
+               chain.back() ->MediumPos() > bndPos ) {
             MSG("Internal chain - ignore");
             continue;
           }
@@ -2944,9 +3097,11 @@ void SMESH_MesherHelper::FixQuadraticElements(bool volumeOnly)
 
           TopoDS_Face face;
           bool checkUV = true;
-          if ( !isInside ) {
-            // compute node displacement of end links in parametric space of face
-            const SMDS_MeshNode* nodeOnFace = (*(++chain.begin()))->_mediumNode;
+          if ( !isInside )
+          {
+            // compute node displacement of end links of chain in parametric space of face
+            TChainLink& linkOnFace = *(++chain.begin());
+            const SMDS_MeshNode* nodeOnFace = linkOnFace->_mediumNode;
             TopoDS_Shape f = GetSubShapeByNode( nodeOnFace, GetMeshDS() );
             if ( !f.IsNull() && f.ShapeType() == TopAbs_FACE )
             {
@@ -2965,13 +3120,23 @@ void SMESH_MesherHelper::FixQuadraticElements(bool volumeOnly)
                 ( is1 ? move1 : move0 ).SetCoord( uvMove.X(), uvMove.Y(), 0 );
                 if ( !is1 ) // correct nodeOnFace for move1 (issue 0020919)
                   nodeOnFace = (*(++chain.rbegin()))->_mediumNode;
-                isStraight[is1] = isStraightLink( (uv2-uv1).SquareModulus(),uvMove.SquareModulus());
+                isStraight[is1] = isStraightLink( (uv2-uv1).SquareModulus(),
+                                                  10 * uvMove.SquareModulus());
               }
-//               if ( move0.SquareMagnitude() < straightTol2 &&
-//                    move1.SquareMagnitude() < straightTol2 ) {
               if ( isStraight[0] && isStraight[1] ) {
                 MSG("2D straight - ignore");
                 continue; // straight - no need to move nodes of internal links
+              }
+
+              // check if a chain is already fixed
+              gp_XY uvm = GetNodeUV( face, linkOnFace->_mediumNode, 0, &checkUV);
+              gp_XY uv1 = GetNodeUV( face, linkOnFace->node1(), nodeOnFace, &checkUV);
+              gp_XY uv2 = GetNodeUV( face, linkOnFace->node2(), nodeOnFace, &checkUV);
+              gp_XY uv12 = GetMiddleUV( surf, uv1, uv2);
+              if (( uvm - uv12 ).SquareModulus() > 1e-10 )
+              {
+                MSG("Already fixed - ignore");
+                continue;
               }
             }
           }
@@ -3042,60 +3207,106 @@ void SMESH_MesherHelper::FixQuadraticElements(bool volumeOnly)
   }
 
   // 4. Move nodes
-  // -----------
+  // -------------
 
+//   vector<const SMDS_MeshElement*> vols( 100 );
+//   vector<double>                  volSize( 100 );
+//   int nbVols;
+//   bool ok;
   for ( pLink = links.begin(); pLink != links.end(); ++pLink ) {
     if ( pLink->IsMoved() ) {
-      //gp_Pnt p = pLink->MediumPnt() + pLink->Move();
       gp_Pnt p = pLink->MiddlePnt() + pLink->Move();
       GetMeshDS()->MoveNode( pLink->_mediumNode, p.X(), p.Y(), p.Z());
+      //
+//       gp_Pnt pNew = pLink->MiddlePnt() + pLink->Move();
+//       if ( pLink->MediumPos() != SMDS_TOP_3DSPACE )
+//       {
+//         // avoid making distorted volumes near boundary
+//         SMDS_ElemIteratorPtr volIt =
+//           (*pLink)._mediumNode->GetInverseElementIterator( SMDSAbs_Volume );
+//         for ( nbVols = 0; volIt->more() && volTool.Set( volIt->next() ); ++nbVols )
+//         {
+//           vols   [ nbVols ] = volTool.Element();
+//           volSize[ nbVols ] = volTool.GetSize();
+//         }
+//         gp_Pnt pOld = pLink->MediumPnt();
+//         const_cast<SMDS_MeshNode*>( pLink->_mediumNode )->setXYZ( pNew.X(), pNew.Y(), pNew.Z() );
+//         ok = true;
+//         while ( nbVols-- && ok )
+//         {
+//           volTool.Set( vols[ nbVols ]);
+//           ok = ( volSize[ nbVols ] * volTool.GetSize() > 1e-20 ); 
+//         }
+//         if ( !ok )
+//         {
+//           const_cast<SMDS_MeshNode*>( pLink->_mediumNode )->setXYZ( pOld.X(), pOld.Y(), pOld.Z() );
+//           MSG( "Do NOT move \t" << pLink->_mediumNode->GetID()
+//                << " because of distortion of volume " << vols[ nbVols+1 ]->GetID());
+//           continue;
+//         }
+//       }
+//       GetMeshDS()->MoveNode( pLink->_mediumNode, pNew.X(), pNew.Y(), pNew.Z() );
+    }
+  }
+
+  //return;
+
+  // issue 0020982
+  // Move the apex of pyramid together with the most curved link
+
+  TIDSortedNodeSet::iterator apexIt = apexOfPyramid.begin();
+  for ( ; apexIt != apexOfPyramid.end(); ++apexIt )
+  {
+    SMESH_TNodeXYZ apex = *apexIt;
+
+    gp_Vec maxMove( 0,0,0 );
+    double maxMoveSize2 = 0;
+
+    // shift of node index to get medium nodes between the base nodes
+    const int base2MediumShift = 5;
+
+    // find maximal movement of medium node
+    SMDS_ElemIteratorPtr volIt = apex._node->GetInverseElementIterator( SMDSAbs_Volume );
+    vector< const SMDS_MeshElement* > pyramids;
+    while ( volIt->more() )
+    {
+      const SMDS_MeshElement* pyram = volIt->next();
+      if ( pyram->GetEntityType() != SMDSEntity_Quad_Pyramid ) continue;
+      pyramids.push_back( pyram );
+
+      for ( int iBase = 0; iBase < apexIndex; ++iBase )
+      {
+        SMESH_TNodeXYZ medium = pyram->GetNode( iBase + base2MediumShift );
+        if ( medium._node->GetPosition()->GetTypeOfPosition() != SMDS_TOP_3DSPACE )
+        {
+          SMESH_TNodeXYZ n1 = pyram->GetNode( iBase );
+          SMESH_TNodeXYZ n2 = pyram->GetNode( ( iBase+1 ) % 4 );
+          gp_Pnt middle = 0.5 * ( n1 + n2 );
+          gp_Vec move( middle, medium );
+          double moveSize2 = move.SquareMagnitude();
+          if ( moveSize2 > maxMoveSize2 )
+            maxMove = move, maxMoveSize2 = moveSize2;
+        }
+      }
+    }
+
+    // move the apex
+    if ( maxMoveSize2 > 1e-20 )
+    {
+      apex += maxMove.XYZ();
+      GetMeshDS()->MoveNode( apex._node, apex.X(), apex.Y(), apex.Z());
+
+      // move medium nodes neighboring the apex to the middle
+      const int base2MediumShift_2 = 9;
+      for ( unsigned i = 0; i < pyramids.size(); ++i )
+        for ( int iBase = 0; iBase < apexIndex; ++iBase )
+        {
+          SMESH_TNodeXYZ         base = pyramids[i]->GetNode( iBase );
+          const SMDS_MeshNode* medium = pyramids[i]->GetNode( iBase + base2MediumShift_2 );
+          gp_XYZ middle = 0.5 * ( apex + base );
+          GetMeshDS()->MoveNode( medium, middle.X(), middle.Y(), middle.Z());
+        }
     }
   }
 }
 
-//=======================================================================
-/*!
- * \brief Iterator on ancestors of the given type
- */
-//=======================================================================
-
-struct TAncestorsIterator : public SMDS_Iterator<const TopoDS_Shape*>
-{
-  TopTools_ListIteratorOfListOfShape _ancIter;
-  TopAbs_ShapeEnum                   _type;
-  TopTools_MapOfShape                _encountered;
-  TAncestorsIterator( const TopTools_ListOfShape& ancestors, TopAbs_ShapeEnum type)
-    : _ancIter( ancestors ), _type( type )
-  {
-    if ( _ancIter.More() ) {
-      if ( _ancIter.Value().ShapeType() != _type ) next();
-      else _encountered.Add( _ancIter.Value() );
-    }
-  }
-  virtual bool more()
-  {
-    return _ancIter.More();
-  }
-  virtual const TopoDS_Shape* next()
-  {
-    const TopoDS_Shape* s = _ancIter.More() ? & _ancIter.Value() : 0;
-    if ( _ancIter.More() )
-      for ( _ancIter.Next();  _ancIter.More(); _ancIter.Next())
-        if ( _ancIter.Value().ShapeType() == _type && _encountered.Add( _ancIter.Value() ))
-          break;
-    return s;
-  }
-};
-
-//=======================================================================
-/*!
- * \brief Return iterator on ancestors of the given type
- */
-//=======================================================================
-
-PShapeIteratorPtr SMESH_MesherHelper::GetAncestors(const TopoDS_Shape& shape,
-                                                   const SMESH_Mesh&   mesh,
-                                                   TopAbs_ShapeEnum    ancestorType)
-{
-  return PShapeIteratorPtr( new TAncestorsIterator( mesh.GetAncestors(shape), ancestorType));
-}

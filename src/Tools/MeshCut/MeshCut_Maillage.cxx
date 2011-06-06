@@ -1,3 +1,22 @@
+// Copyright (C) 2006-2011  EDF R&D
+//
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
+//
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
+
 #include "MeshCut_Maillage.hxx"
 #include "MeshCut_Cube.hxx"
 
@@ -298,27 +317,27 @@ void Maillage::inputMED(std::string fichierMED)
   fid = MEDfileOpen(string2char(fichierMED), MED_ACC_RDONLY);
   if (fid < 0)
     {
-      ERREUR("Erreur a l'ouverture du fichier\n");
+      ERREUR("Error file open\n");
     }
   //cout << chrono() << " --- inputMED: MEDfileOpen: ouverture du maillage en lecture seule, OK" << endl;
 
   // Lecture des infos concernant le premier maillage
   if (MEDmeshInfo(fid, 1, maa, &spacedim, &mdim, &type, desc, dtunit, &sortingtype, &nPasTemps, &axistype, axisname,
                   unitname) < 0)
-    ERREUR("Erreur a la lecture des informations sur le maillage ");
+    ERREUR("Error while reading mesh informations ");
   //cout << chrono() << " --- inputMED: MEDmeshInfo: OK" << endl;
 
-  cerr << "maa=" << maa << endl;
-  cerr << "spacedim=" << spacedim << endl;
-  cerr << "mdim=" << mdim << endl;
-  cerr << "type=" << type << endl;
-  cerr << "desc=" << desc << endl;
-  cerr << "dtunit=" << dtunit << endl;
-  cerr << "sortingtype=" << sortingtype << endl;
-  cerr << "nPasTemps=" << nPasTemps << endl;
-  cerr << "axistype=" << axistype << endl;
-  cerr << "axisname=" << axisname << endl;
-  cerr << "unitname=" << unitname << endl;
+//  cerr << "maa=" << maa << endl;
+//  cerr << "spacedim=" << spacedim << endl;
+//  cerr << "mdim=" << mdim << endl;
+//  cerr << "type=" << type << endl;
+//  cerr << "desc=" << desc << endl;
+//  cerr << "dtunit=" << dtunit << endl;
+//  cerr << "sortingtype=" << sortingtype << endl;
+//  cerr << "nPasTemps=" << nPasTemps << endl;
+//  cerr << "axistype=" << axistype << endl;
+//  cerr << "axisname=" << axisname << endl;
+//  cerr << "unitname=" << unitname << endl;
 
   dimensionMaillage = mdim;
   dimensionEspace = spacedim;
@@ -452,7 +471,7 @@ void Maillage::inputMED(std::string fichierMED)
   med_int nFamilles;
   char nomGroupeChar[MED_LNAME_SIZE + 1];
   if ((nFamilles = MEDnFamily(fid, maa)) < 0)
-    ERREUR("ERREUR MEDnFamily");
+    ERREUR("ERROR MEDnFamily");
 
   // Initialisation des tailles:   tailleFAMILLES  et  tailleGROUPES
 
@@ -488,9 +507,9 @@ void Maillage::inputMED(std::string fichierMED)
       med_int numfam, *attide, *attval, natt, ngro;
 
       if ((ngro = MEDnFamilyGroup(fid, maa, i + 1)) < 0)
-        ERREUR("ERREUR MEDnFamilyGroup");
+        ERREUR("ERROR MEDnFamilyGroup");
       if ((natt = MEDnFamily23Attribute(fid, maa, i + 1)) < 0)
-        ERREUR("ERREUR MEDnFamily23Attribute");
+        ERREUR("ERROR MEDnFamily23Attribute");
 
       attide = (med_int *) malloc(sizeof(med_int) * natt);
       attval = (med_int *) malloc(sizeof(med_int) * natt);
@@ -498,7 +517,7 @@ void Maillage::inputMED(std::string fichierMED)
       gro = (char *) malloc(MED_LNAME_SIZE * ngro + 1);
 
       if (MEDfamilyInfo(fid, maa, (med_int) (i + 1), nomfam, &numfam, gro) < 0)
-        ERREUR("ERREUR MEDfamilyInfo");
+        ERREUR("ERROR MEDfamilyInfo");
 
       for (int ig = 1; ig <= ngro; ig++)
         {
@@ -556,7 +575,7 @@ void Maillage::inputMED(std::string fichierMED)
                         &coordinatechangement, &geotransformation);
 
   if (nnoe < 0)
-    ERREUR("Erreur a la lecture du nombre de noeuds");
+    ERREUR("Error while reading number of nodes");
 
   nombreNoeudsMaillage = nnoe;
 
@@ -565,7 +584,7 @@ void Maillage::inputMED(std::string fichierMED)
   if (nnoe > 0)
     {
       if (MEDmeshEntityFamilyNumberRd(fid, maa, MED_NO_DT, MED_NO_IT, MED_NODE, MED_NONE, famNoeuds) < 0)
-        ERREUR("Erreur a la lecture des familles de noeuds (MEDmeshEntityFamilyNumberRd)");
+        ERREUR("Error while reading family node number (MEDmeshEntityFamilyNumberRd)");
     }
 
   /* Allocations memoires */
@@ -583,7 +602,7 @@ void Maillage::inputMED(std::string fichierMED)
   // Lecture des composantes des coordonnees des noeuds
   if (nnoe > 0)
     if (MEDmeshNodeCoordinateRd(fid, maa, MED_NO_DT, MED_NO_IT, MED_FULL_INTERLACE, coo1) < 0)
-      ERREUR("Erreur a la lecture des coordonnees des noeuds");
+      ERREUR("Error while reading nodes coordinates");
 
   //   // Les noeuds ont-ils un nom? un numéro?
   //  if (nnoe > 0)
@@ -856,7 +875,7 @@ void Maillage::acquisitionTYPE_inputMED(TYPE_MAILLE TYPE, int nTYPE, med_idt fid
 
   if (MEDmeshElementRd(fid, maa, MED_NO_DT, MED_NO_IT, MED_CELL, typeBanaliseMED, MED_NODAL, MED_FULL_INTERLACE,
                        CNX[TYPE], &inomTYPE, nomTYPE, &inumTYPE, numTYPE, &ifamTYPE, famTYPE) < 0)
-    ERREUR("Erreur a la lecture des coordonnees des noeuds");
+    ERREUR("Error while reading elements");
 
   // Conversion HL
   conversionCNX(CNX[TYPE], TYPE, nTYPE);
@@ -924,7 +943,7 @@ void Maillage::outputMED(std::string fichierMED)
   // Sortie sur erreur en cas de maillage sans noeuds
   if (nombreNoeudsMaillage <= 0)
     {
-      ERREUR("Ce maillage ne contient aucun noeud\n"); /* cout << "Maillage sans noeuds" << endl; */
+      ERREUR("This mesh does not contain any node\n"); /* cout << "Maillage sans noeuds" << endl; */
     }
 
   // ########################################################################
@@ -935,8 +954,8 @@ void Maillage::outputMED(std::string fichierMED)
   med_idt fid = MEDfileOpen(string2char(fichierMED), MED_ACC_CREAT);
   if (fid < 0)
     {
-      ERREUR("Erreur MEDfileOpen\n");
-      cout << "Erreur MEDfileOpen" << endl;
+      ERREUR("Error MEDfileOpen\n");
+      cout << "Error MEDfileOpen" << endl;
     }
 
   // Création du maillage
@@ -959,16 +978,16 @@ void Maillage::outputMED(std::string fichierMED)
   char desc[MED_COMMENT_SIZE + 1]; // Description du maillage
   strcpy(desc, string2char(ID));
   med_mesh_type type = MED_UNSTRUCTURED_MESH;
-  cerr << "maa=" << maa << endl;
-  cerr << "spacedim=" << spacedim << endl;
-  cerr << "mdim=" << mdim << endl;
-  cerr << "type=" << type << endl;
-  cerr << "axisname=" << axisname << endl;
-  cerr << "unitname=" << unitname << endl;
+//  cerr << "maa=" << maa << endl;
+//  cerr << "spacedim=" << spacedim << endl;
+//  cerr << "mdim=" << mdim << endl;
+//  cerr << "type=" << type << endl;
+//  cerr << "axisname=" << axisname << endl;
+//  cerr << "unitname=" << unitname << endl;
   if (MEDmeshCr(fid, maa, spacedim, mdim, type, desc, "s", MED_SORT_DTIT, MED_CARTESIAN, axisname, unitname) < 0)
     {
-      ERREUR("Erreur MEDmeshCr");
-      cout << "Erreur MEDmeshCr" << endl;
+      ERREUR("Error MEDmeshCr");
+      cout << "Error MEDmeshCr" << endl;
     }
 
   // =============================  CREATION FAMILLE ZERO
@@ -982,7 +1001,7 @@ void Maillage::outputMED(std::string fichierMED)
   strcpy(nomfam, "FAMILLE_0");
   numfam = 0;
   if (MEDfamilyCr(fid, maa, nomfam, numfam, 0, MED_NO_GROUP) < 0)
-    ERREUR("Erreur MEDfamilyCr (creation famille 0)");
+    ERREUR("Error MEDfamilyCr (create family 0)");
 
   // ########################################################################
   //          GROUPES DE NOEUDS
@@ -1101,7 +1120,7 @@ void Maillage::outputMED(std::string fichierMED)
 
           // Création de la famille
           if (MEDfamilyCr(fid, maa, nomfam, numfam, 0, MED_NO_GROUP) < 0)
-            ERREUR("Erreur MEDfamilyCr");
+            ERREUR("Error MEDfamilyCr");
 
         }
 
@@ -1259,8 +1278,8 @@ void Maillage::outputMED(std::string fichierMED)
   if (MEDmeshNodeWr(fid, maa, MED_NO_DT, MED_NO_IT, MED_UNDEF_DT, MED_FULL_INTERLACE, nnoe, coo, inonoe, nomnoe,
                     inunoe, numnoe, MED_TRUE, nufano) < 0)
     {
-      ERREUR("Erreur MEDmeshNodeWr");
-      cout << "Erreur MEDmeshNodeWr" << endl;
+      ERREUR("Error MEDmeshNodeWr");
+      cout << "Error MEDmeshNodeWr" << endl;
     }
 
   // ########################################################################
@@ -1416,7 +1435,7 @@ void Maillage::outputMED(std::string fichierMED)
 
           // Création de la famille
           if (MEDfamilyCr(fid, maa, nomfam, numfam, 1, gro) < 0)
-            ERREUR("Erreur MEDfamilyCr");
+            ERREUR("Error MEDfamilyCr");
         }
 
     }
@@ -1499,25 +1518,25 @@ void Maillage::outputMED(std::string fichierMED)
 
           // Chargement numTYPE
           //for (int nl=0; nl<nTYPE; nl++)    *(numTYPE+nl) = (med_int) ( NUM_MAILLES[tm][nl] );
-          cerr << "maa=" << maa << endl;
-          cerr << "MGE=" << MGE << endl;
-          cerr << "nTYPE=" << nTYPE << endl;
-          cerr << "inomTYPE=" << inomTYPE << endl;
-          //cerr << "nomTYPE=" << nomTYPE << endl;
-          cerr << "inumTYPE=" << inumTYPE << endl;
-          this->afficheMailles(tm);
+//          cerr << "maa=" << maa << endl;
+//          cerr << "MGE=" << MGE << endl;
+//          cerr << "nTYPE=" << nTYPE << endl;
+//          cerr << "inomTYPE=" << inomTYPE << endl;
+//          //cerr << "nomTYPE=" << nomTYPE << endl;
+//          cerr << "inumTYPE=" << inumTYPE << endl;
+//          this->afficheMailles(tm);
           if (MEDmeshElementWr(fid, maa, MED_NO_DT, MED_NO_IT, MED_UNDEF_DT, MED_CELL, MGE, MED_NODAL,
                                MED_FULL_INTERLACE, nTYPE, CNX[tm], inomTYPE, nomTYPE, inumTYPE, numTYPE, MED_FALSE,
                                famTYPE) < 0)
             {
-              ERREUR("Erreur MEDmeshElementWr");
-              cout << "Erreur MEDmeshElementWr, type " << stype << endl;
+              ERREUR("Error MEDmeshElementWr");
+              cout << "Error MEDmeshElementWr, type " << stype << endl;
             }
           if (MEDmeshEntityFamilyNumberWr(fid, maa, MED_NO_DT, MED_NO_IT,
                                           MED_CELL, MGE, nTYPE, famTYPE) < 0)
             {
-              ERREUR("Erreur MEDmeshEntityFamilyNumberWr");
-              cout << "Erreur MEDmeshEntityFamilyNumberWr, type " << stype << endl;
+              ERREUR("Error MEDmeshEntityFamilyNumberWr");
+              cout << "Error MEDmeshEntityFamilyNumberWr, type " << stype << endl;
             }
 
           // free(nomTYPE);
@@ -1534,8 +1553,8 @@ void Maillage::outputMED(std::string fichierMED)
 
   if (MEDfileClose(fid) < 0)
     {
-      ERREUR("Erreur a la fermeture du fichier MED\n");
-      cout << "Erreur a la fermeture du fichier MED" << endl;
+      ERREUR("Error on close MED file\n");
+      cout << "Error on close MED file" << endl;
     }
 
   // cout << endl << endl << "Fin procédure outputMED" << endl;
@@ -1661,7 +1680,7 @@ int Maillage::NLOCAL(int nglobal, TYPE_MAILLE tm)
           - nPYRAM13 - nPENTA6 - nPENTA15 - nHEXA8 - 1;
     }
   else
-    ERREUR("Routine NLOCAL: type non reconnu");
+    ERREUR("method NLOCAL: unknown type");
   return 0;
 }
 
@@ -1678,7 +1697,7 @@ void Maillage::eliminationMailles(TYPE_MAILLE tm, vector<int> listeMaillesSuppr)
 {
   map<int, int> TABLE_NL; // Table des num. locaux dans le type tm
 
-  // cout << "Fonction eliminationMailles, listeMaillesSuppr.size()=" << listeMaillesSuppr.size() << endl;
+  cout << "Method eliminationMailles, listeMaillesSuppr.size()=" << listeMaillesSuppr.size() << endl;
 
   // ************* Modification de la connectivité du type concerné
 
@@ -1724,7 +1743,7 @@ void Maillage::eliminationMailles(TYPE_MAILLE tm, vector<int> listeMaillesSuppr)
   // Contrôle
   if (offset != listeMaillesSuppr.size())
     {
-      ERREUR("Incohérence offset, fonction eliminationMailles");
+      ERREUR("Incoherent offset, method eliminationMailles");
       exit(0);
     }
 
@@ -1735,7 +1754,7 @@ void Maillage::eliminationMailles(TYPE_MAILLE tm, vector<int> listeMaillesSuppr)
 
       if (GM[nomGM][tm].size())
         {
-
+          //cout << "GM[" << nomGM <<"][" << tm << "].size()=" << GM[nomGM][tm].size() << endl;
           vector<int> mailles = GM[nomGM][tm];
           vector<int> mailles2; //mailles2.resize(mailles.size()-listeMaillesSuppr.size());
           unsigned int cptMailles = 0;
@@ -1748,16 +1767,6 @@ void Maillage::eliminationMailles(TYPE_MAILLE tm, vector<int> listeMaillesSuppr)
                   cptMailles++;
                 }
             }
-          // Vérification
-          if (cptMailles != mailles.size() - listeMaillesSuppr.size())
-            {
-              int delta = mailles.size() - listeMaillesSuppr.size();
-              cout << "mailles.size() = " << mailles.size() << endl;
-              cout << "cptMailles = " << cptMailles << endl;
-              cout << "delta = " << delta << endl;
-              ERREUR("Incohérence sur le nombre de mailles conservées, fonction eliminationMailles");
-              exit(0);
-            }
 
           GM[nomGM][tm].clear();
           mailles2.resize(cptMailles);
@@ -1767,6 +1776,7 @@ void Maillage::eliminationMailles(TYPE_MAILLE tm, vector<int> listeMaillesSuppr)
     }
 
   // ************* Mise à jour des effectifs
+
   EFFECTIFS_TYPES[tm] = EFFECTIFS_TYPES[tm] - listeMaillesSuppr.size();
   nombreMaillesMaillage = nombreMaillesMaillage - listeMaillesSuppr.size();
 

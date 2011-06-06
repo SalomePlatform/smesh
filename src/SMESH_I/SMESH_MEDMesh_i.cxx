@@ -1,23 +1,23 @@
-//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2011  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 
 //  SMESH SMESH_I : idl implementation based on 'SMESH' unit's calsses
@@ -465,7 +465,7 @@ SMESH_MEDMesh_i::getTypes(SALOME_MED::medEntityMesh entity) throw(SALOME::
 //=============================================================================
 /*!
  * CORBA: Returns number of elements of type medGeometryElement
- *        Not implemented for MEDMEM_ALL_ELEMENTS 
+ *        Not implemented for MED_ALL_ELEMENTS 
  *        implemented for MED_ALL_ENTITIES
  *
  * Dans cette implementation, il n est pas prevu de tenir compte du entity
@@ -479,8 +479,8 @@ CORBA::Long SMESH_MEDMesh_i::getNumberOfElements(SALOME_MED::
   if (_mesh_i == 0)
     THROW_SALOME_CORBA_EXCEPTION("No associated Mesh",
                                  SALOME::INTERNAL_ERROR);
-  if (geomElement == SALOME_MED::MEDMEM_ALL_ELEMENTS)
-    THROW_SALOME_CORBA_EXCEPTION("Not implemented for MEDMEM_ALL_ELEMENTS",
+  if (geomElement == SALOME_MED::MED_ALL_ELEMENTS)
+    THROW_SALOME_CORBA_EXCEPTION("Not implemented for MED_ALL_ELEMENTS",
                                  SALOME::BAD_PARAM);
   if (!_compte)
     calculeNbElts();
@@ -962,11 +962,11 @@ void SMESH_MEDMesh_i::calculeNbElts() throw(SALOME::SALOME_Exception)
     _compte = true;
 
     _mapNbTypes[SALOME_MED::MED_NODE] = 1;
-    // On compte les aretes MEDMEM_SEG2 ou MEDMEM_SEG3
+    // On compte les aretes MED_SEG2 ou MED_SEG3
     // On range les elements dans  les vecteurs correspondants 
 
-    _mapIndToSeqElts[SALOME_MED::MEDMEM_SEG2] = _indexElts++;
-    _mapIndToSeqElts[SALOME_MED::MEDMEM_SEG3] = _indexElts++;
+    _mapIndToSeqElts[SALOME_MED::MED_SEG2] = _indexElts++;
+    _mapIndToSeqElts[SALOME_MED::MED_SEG3] = _indexElts++;
     _mapIndToVectTypes[SALOME_MED::MED_EDGE] = _indexEnts++;
 
     int trouveSeg2 = 0;
@@ -983,23 +983,23 @@ void SMESH_MEDMesh_i::calculeNbElts() throw(SALOME::SALOME_Exception)
       {
       case 2:
         {
-          medElement = SALOME_MED::MEDMEM_SEG2;
+          medElement = SALOME_MED::MED_SEG2;
           if (trouveSeg2 == 0)
           {
             trouveSeg2 = 1;
             _TypesId[SALOME_MED::MED_EDGE].
-              push_back(SALOME_MED::MEDMEM_SEG2);
+              push_back(SALOME_MED::MED_SEG2);
           }
           break;
         }
       case 3:
         {
-          medElement = SALOME_MED::MEDMEM_SEG3;
+          medElement = SALOME_MED::MED_SEG3;
           if (trouveSeg3 == 0)
           {
             trouveSeg3 = 1;
             _TypesId[SALOME_MED::MED_EDGE].
-              push_back(SALOME_MED::MEDMEM_SEG3);
+              push_back(SALOME_MED::MED_SEG3);
           }
           break;
         }
@@ -1019,15 +1019,15 @@ void SMESH_MEDMesh_i::calculeNbElts() throw(SALOME::SALOME_Exception)
 
     _mapNbTypes[SALOME_MED::MED_EDGE] = trouveSeg2 + trouveSeg3;
 
-    // On compte les faces MEDMEM_TRIA3, MEDMEM_HEXA8, MEDMEM_TRIA6
+    // On compte les faces MED_TRIA3, MED_HEXA8, MED_TRIA6
     // On range les elements dans  les vecteurs correspondants 
     int trouveTria3 = 0;
     int trouveTria6 = 0;
     int trouveQuad4 = 0;
 
-    _mapIndToSeqElts[SALOME_MED::MEDMEM_TRIA3] = _indexElts++;
-    _mapIndToSeqElts[SALOME_MED::MEDMEM_TRIA6] = _indexElts++;
-    _mapIndToSeqElts[SALOME_MED::MEDMEM_QUAD4] = _indexElts++;
+    _mapIndToSeqElts[SALOME_MED::MED_TRIA3] = _indexElts++;
+    _mapIndToSeqElts[SALOME_MED::MED_TRIA6] = _indexElts++;
+    _mapIndToSeqElts[SALOME_MED::MED_QUAD4] = _indexElts++;
     _mapIndToVectTypes[SALOME_MED::MED_FACE] = _indexEnts++;
 
     SMDS_FaceIteratorPtr itFaces=_meshDS->facesIterator();
@@ -1040,34 +1040,34 @@ void SMESH_MEDMesh_i::calculeNbElts() throw(SALOME::SALOME_Exception)
       {
       case 3:
         {
-          medElement = SALOME_MED::MEDMEM_TRIA3;
+          medElement = SALOME_MED::MED_TRIA3;
           if (trouveTria3 == 0)
           {
             trouveTria3 = 1;
             _TypesId[SALOME_MED::MED_FACE].
-              push_back(SALOME_MED::MEDMEM_TRIA3);
+              push_back(SALOME_MED::MED_TRIA3);
           }
           break;
         }
       case 4:
         {
-          medElement = SALOME_MED::MEDMEM_QUAD4;
+          medElement = SALOME_MED::MED_QUAD4;
           if (trouveQuad4 == 0)
           {
             trouveQuad4 = 1;
             _TypesId[SALOME_MED::MED_FACE].
-              push_back(SALOME_MED::MEDMEM_QUAD4);
+              push_back(SALOME_MED::MED_QUAD4);
           }
           break;
         }
       case 6:
         {
-          medElement = SALOME_MED::MEDMEM_TRIA6;
+          medElement = SALOME_MED::MED_TRIA6;
           if (trouveTria6 == 0)
           {
             trouveTria6 = 1;
             _TypesId[SALOME_MED::MED_FACE].
-              push_back(SALOME_MED::MEDMEM_TRIA6);
+              push_back(SALOME_MED::MED_TRIA6);
           }
           break;
         }
@@ -1090,7 +1090,7 @@ void SMESH_MEDMesh_i::calculeNbElts() throw(SALOME::SALOME_Exception)
     _mapNbTypes[SALOME_MED::MED_FACE] =
       trouveTria3 + trouveTria6 + trouveQuad4;
 
-    _mapIndToSeqElts[SALOME_MED::MEDMEM_HEXA8] = _indexElts++;
+    _mapIndToSeqElts[SALOME_MED::MED_HEXA8] = _indexElts++;
     _mapIndToVectTypes[SALOME_MED::MED_CELL] = _indexEnts++;
     int index = _mapIndToSeqElts[medElement];
 
@@ -1102,13 +1102,13 @@ void SMESH_MEDMesh_i::calculeNbElts() throw(SALOME::SALOME_Exception)
       const SMDS_MeshVolume * elem = itVolumes->next();
 
       int nb_of_nodes = elem->NbNodes();
-      medElement = SALOME_MED::MEDMEM_HEXA8;
+      medElement = SALOME_MED::MED_HEXA8;
       ASSERT(nb_of_nodes == 8);
 
       if (trouveHexa8 == 0)
       {
         trouveHexa8 = 1;
-        _TypesId[SALOME_MED::MED_CELL].push_back(SALOME_MED::MEDMEM_HEXA8);
+        _TypesId[SALOME_MED::MED_CELL].push_back(SALOME_MED::MED_HEXA8);
       };
       // Traitement de la maille
       int longueur = _seq_elemId[index]->length();

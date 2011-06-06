@@ -1,23 +1,23 @@
-//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2011  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 //  File    : SMESH_DumpPython.cxx
 //  Created : Thu Mar 24 17:17:59 2005
@@ -224,16 +224,22 @@ namespace SMESH
   TPythonDump::
   operator<<(SMESH::SMESH_IDSource_ptr theArg)
   {
+    if ( CORBA::is_nil( theArg ) )
+      return *this << "None";
     SMESH_Gen_i* aSMESHGen = SMESH_Gen_i::GetSMESHGen();
     SALOMEDS::Study_var aStudy = aSMESHGen->GetCurrentStudy();
     SALOMEDS::SObject_var aSObject = SMESH_Gen_i::ObjectToSObject(aStudy,theArg);
-    if(!aSObject->_is_nil() || CORBA::is_nil( theArg ))
+    if(!aSObject->_is_nil())
       return *this << aSObject;
-    SMESH::long_array_var anElementsId = theArg->GetIDs();
     SMESH::SMESH_Mesh_var mesh = theArg->GetMesh();
-    SMESH::array_of_ElementType_var types =  theArg->GetTypes();
-    SMESH::ElementType type = types->length() ? types[0] : SMESH::ALL;
-    return *this << mesh << ".GetIDSource(" << anElementsId << ", " << type << ")";
+    if ( !theArg->_is_equivalent( mesh ))
+    {
+      SMESH::long_array_var anElementsId = theArg->GetIDs();
+      SMESH::array_of_ElementType_var types =  theArg->GetTypes();
+      SMESH::ElementType type = types->length() ? types[0] : SMESH::ALL;
+      return *this << mesh << ".GetIDSource(" << anElementsId << ", " << type << ")";
+    }
+    return *this;
   }
 
   TPythonDump&
@@ -550,9 +556,6 @@ Engines::TMPFile* SMESH_Gen_i::DumpPython (CORBA::Object_ptr theStudy,
   aScript += DumpPython_impl(aStudy, aMap, aMapNames,
                              isPublished, isMultiFile, isValidScript, aSavedTrace);
 
-  if( !isMultiFile ) // remove unnecessary tabulation
-    RemoveTabulation( aScript );
-
   int aLen = aScript.Length();
   unsigned char* aBuffer = new unsigned char[aLen+1];
   strcpy((char*)aBuffer, aScript.ToCString());
@@ -729,8 +732,6 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
   TCollection_AsciiString aScript;
   if( isMultiFile )
     aScript += "def RebuildData(theStudy):";
-  else
-    aScript += "theStudy = salome.myStudy";
   aScript += "\n\t";
   aScript += helper + "aFilterManager = " + aSMESHGen + ".CreateFilterManager()\n\t";
   aScript += helper + "aMeasurements = " + aSMESHGen + ".CreateMeasurements()\n\t";
@@ -855,8 +856,10 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
   }
 
   // set initial part of aSript
-  TCollection_AsciiString initPart = "import salome, SMESH, SALOMEDS\n";
-  initPart += helper + "import " + aSmeshpy + "\n";
+  TCollection_AsciiString initPart = "import ";
+  if ( isMultiFile )
+    initPart += helper + "salome, ";
+  initPart += aSmeshpy + ", SMESH, SALOMEDS\n";
   if ( importGeom && isMultiFile )
   {
     initPart += ("\n## import GEOM dump file ## \n"
@@ -869,37 +872,6 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
   // add final part of aScript
   if (aSeq->Value(aLen) < aScriptLength)
     anUpdatedScript += aScript.SubString(aSeq->Value(aLen) + 1, aScriptLength);
-
-  // Set colors
-  SALOMEDS::SObject_var aComp = theStudy->FindComponent(ComponentDataType());
-  if( !CORBA::is_nil(aComp) )
-  {
-    SALOMEDS::ChildIterator_var Itr = theStudy->NewChildIterator(aComp);
-    for( Itr->InitEx(true); Itr->More(); Itr->Next() )
-    {
-      SALOMEDS::SObject_var aSObj = Itr->Value();
-      SMESH::SMESH_Mesh_var aMesh = SMESH::SMESH_Mesh::_narrow( SObjectToObject( aSObj ) );
-      // mesh auto color
-      if( !CORBA::is_nil(aMesh) && aMesh->GetAutoColor() )
-      {
-        CORBA::String_var anEntry = aSObj->GetID();
-        anUpdatedScript +=
-          SMESH_Comment("\n\t") << theObjectNames(anEntry.inout()) << ".SetAutoColor(1)";
-      }
-      SMESH::SMESH_GroupBase_var aGroup = SMESH::SMESH_GroupBase::_narrow( SObjectToObject(aSObj));
-      if( !CORBA::is_nil(aGroup) )
-      {
-        SALOMEDS::Color aColor = aGroup->GetColor();
-        if ( aColor.R >= 0 || aColor.G >= 0 || aColor.B >= 0 )
-        {
-          CORBA::String_var anEntry = aSObj->GetID();
-          anUpdatedScript += SMESH_Comment("\n\t")
-            << theObjectNames(anEntry.inout()) << ".SetColor(SALOMEDS.Color("
-            << aColor.R <<", "<< aColor.G <<", "<< aColor.B <<" ))";
-        }
-      }
-    }
-  }
 
   // Remove removed objects
   if ( seqRemoved.Length() > 0 ) {
@@ -942,8 +914,10 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
       anUpdatedScript += helper + ", '" + aGUIName + "')";
     }
   }
-  anUpdatedScript += "\n\tif salome.sg.hasDesktop():";
-  anUpdatedScript += "\n\t\tsalome.sg.updateObjBrowser(0)";
+
+  // Issue 0021249: removed (a similar block is dumped by SALOMEDSImpl_Study)
+  //anUpdatedScript += "\n\tif salome.sg.hasDesktop():";
+  //anUpdatedScript += "\n\t\tsalome.sg.updateObjBrowser(0)";
 
   // -----------------------------------------------------------------
   // store visual properties of displayed objects
@@ -963,6 +937,9 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
   if( isMultiFile )
     anUpdatedScript += "\n\tpass";
   anUpdatedScript += "\n";
+
+  if( !isMultiFile ) // remove unnecessary tabulation
+    RemoveTabulation( anUpdatedScript );
 
   // -----------------------------------------------------------------
   // put string literals describing patterns into separate functions
@@ -1002,7 +979,18 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
       do functionName = aFunctionType + "_" + ( nb++ ) + "()";
       while ( !functionNameSet.insert( functionName.ToCString() ).second );
 
-      anUpdatedScript += helper + "\n\ndef " + functionName + aLongString; // define function
+      // define function
+      TCollection_AsciiString funDef = helper + "def " + functionName + aLongString;
+      if ( isMultiFile )
+      {
+        anUpdatedScript += helper + "\n\n" + funDef;
+      }
+      else
+      {
+        funDef += "\n\n";
+        anUpdatedScript.Insert( 1, funDef);
+        where += funDef.Length();
+      }
     }
     anUpdatedScript.InsertBefore( where, functionName ); // call function
   }

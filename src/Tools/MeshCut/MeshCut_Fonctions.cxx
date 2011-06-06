@@ -1,3 +1,22 @@
+// Copyright (C) 2006-2011  EDF R&D
+//
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
+//
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
+
 #include "MeshCut_Fonctions.hxx"
 #include "MeshCut_Globals.hxx"
 
@@ -102,7 +121,7 @@ int MESHCUT::intersectionSegmentPlan(int it4, int na)
       ngB = *(offset + 3);
     }
   else
-    ERREUR("Numéro d'arête supérieur à 6");
+    ERREUR("Edge number superior to 6");
 
   string cle1 = int2string(ngA) + (string) "_" + int2string(ngB);
   string cle2 = int2string(ngB) + (string) "_" + int2string(ngA);
@@ -142,7 +161,7 @@ int MESHCUT::intersectionSegmentPlan(int it4, int na)
         }
 
       if (fabs(ps) == 0.0)
-        ERREUR("Erreur sur ps nul");
+        ERREUR("Error on null scalar product");
 
       // PS non nul: l'intersection AB/plan existe
 

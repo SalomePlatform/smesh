@@ -1,20 +1,20 @@
-//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2011  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 
 //  SMESH SMESH : implementaion of SMESH idl descriptions
@@ -63,8 +63,6 @@ public:
 
 protected:
 
-  //bool CheckDegenerate(const SMDS_MeshElement* aFace);
-
   int Preparation(const SMDS_MeshElement* face,
                   Handle_TColgp_HArray1OfPnt& PN,
                   Handle_TColgp_HArray1OfVec& VN,
@@ -81,17 +79,13 @@ protected:
                       const std::vector<const SMDS_MeshElement*>& pyramids);
 
 
-  void MergePiramids( const SMDS_MeshElement*     PrmI,
-                      const SMDS_MeshElement*     PrmJ,
-                      set<const SMDS_MeshNode*> & nodesToMove);
+  void MergePiramids( const SMDS_MeshElement*          PrmI,
+                      const SMDS_MeshElement*          PrmJ,
+                      std::set<const SMDS_MeshNode*> & nodesToMove);
 
-  void MergeAdjacent(const SMDS_MeshElement*    PrmI,
-                     set<const SMDS_MeshNode*>& nodesToMove);
-  //typedef std::list<const SMDS_MeshFace* >                   TTriaList;
-  //typedef std::multimap<const SMDS_MeshElement*, TTriaList > TQuad2Trias;
+  void MergeAdjacent(const SMDS_MeshElement*         PrmI,
+                     std::set<const SMDS_MeshNode*>& nodesToMove);
 
-  //TQuad2Trias  myResMap;
-  //std::vector<const SMDS_MeshElement*> myPyramids;
 
   std::set<const SMDS_MeshElement*> myRemovedTrias;
 

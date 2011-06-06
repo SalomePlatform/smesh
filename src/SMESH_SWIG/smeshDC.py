@@ -1,20 +1,20 @@
-#  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
+# Copyright (C) 2007-2011  CEA/DEN, EDF R&D, OPEN CASCADE
 #
-#  This library is free software; you can redistribute it and/or
-#  modify it under the terms of the GNU Lesser General Public
-#  License as published by the Free Software Foundation; either
-#  version 2.1 of the License.
+# This library is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 2.1 of the License.
 #
-#  This library is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-#  Lesser General Public License for more details.
+# This library is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
 #
-#  You should have received a copy of the GNU Lesser General Public
-#  License along with this library; if not, write to the Free Software
-#  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+# You should have received a copy of the GNU Lesser General Public
+# License along with this library; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 #
-#  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+# See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 #  File   : smesh.py
 #  Author : Francis KLOSS, OCC
@@ -496,6 +496,11 @@ def CheckPlugin(plugin):
 # All methods of this class are accessible directly from the smesh.py package.
 class smeshDC(SMESH._objref_SMESH_Gen):
 
+    ## Dump component to the Python script
+    #  This method overrides IDL function to allow default values for the parameters.
+    def DumpPython(self, theStudy, theIsPublished=True, theIsMultiFile=True):
+        return SMESH._objref_SMESH_Gen.DumpPython(self, theStudy, theIsPublished, theIsMultiFile)
+
     ## Sets the current study and Geometry component
     #  @ingroup l1_auxiliary
     def init_smesh(self,theStudy,geompyD):
@@ -740,6 +745,7 @@ class smeshDC(SMESH._objref_SMESH_Gen):
                                 UnaryOp, BinaryOp, Tolerance, TypeOfElement, Precision)
 
     ## Creates a criterion by the given parameters
+    #  \n Criterion structures allow to define complex filters by combining them with logical operations (AND / OR) (see example below)
     #  @param elementType the type of elements(NODE, EDGE, FACE, VOLUME)
     #  @param CritType the type of criterion (FT_Taper, FT_Area, FT_RangeOfIds, FT_LyingOnGeom etc.)
     #  @param Compare  belongs to {FT_LessThan, FT_MoreThan, FT_EqualTo}
@@ -750,6 +756,8 @@ class smeshDC(SMESH._objref_SMESH_Gen):
     #  @param Tolerance the tolerance used by FT_BelongToGeom, FT_BelongToSurface,
     #         FT_LyingOnGeom, FT_CoplanarFaces criteria
     #  @return SMESH.Filter.Criterion
+    #
+    #  <a href="../tui_filters_page.html#combining_filters">Example of Criteria usage</a>
     #  @ingroup l1_controls
     def GetCriterion(self,elementType,
                      CritType,
@@ -870,6 +878,8 @@ class smeshDC(SMESH._objref_SMESH_Gen):
     #  @param Tolerance the tolerance used by FT_BelongToGeom, FT_BelongToSurface,
     #         FT_LyingOnGeom, FT_CoplanarFaces criteria
     #  @return SMESH_Filter
+    #
+    #  <a href="../tui_filters_page.html#tui_filters">Example of Filters usage</a>
     #  @ingroup l1_controls
     def GetFilter(self,elementType,
                   CritType=FT_Undefined,
@@ -1136,12 +1146,25 @@ class Mesh:
 
     ## Gets the subMesh object associated to a \a theSubObject geometrical object.
     #  The subMesh object gives access to the IDs of nodes and elements.
-    #  @param theSubObject a geometrical object (shape)
-    #  @param theName a name for the submesh
+    #  @param geom a geometrical object (shape)
+    #  @param name a name for the submesh
     #  @return an object of type SMESH_SubMesh, representing a part of mesh, which lies on the given shape
     #  @ingroup l2_submeshes
-    def GetSubMesh(self, theSubObject, theName):
-        submesh = self.mesh.GetSubMesh(theSubObject, theName)
+    def GetSubMesh(self, geom, name):
+        if not geom.IsSame( self.geom ) and not geom.GetStudyEntry():
+            ## set the study
+            studyID = self.smeshpyD.GetCurrentStudy()._get_StudyId()
+            if studyID != self.geompyD.myStudyId:
+                self.geompyD.init_geom( self.smeshpyD.GetCurrentStudy())
+            ## get a name
+            if not name and geom.GetShapeType() != geompyDC.GEOM.COMPOUND:
+                # for all groups SubShapeName() returns "Compound_-1"
+                name = self.geompyD.SubShapeName(geom, self.geom)
+            if not name:
+                name = "%s_%s"%(geom.GetShapeType(), id(geom)%10000)
+            ## publish
+            self.geompyD.addToStudyInFather( self.geom, geom, name )
+        submesh = self.mesh.GetSubMesh( geom, name )
         return submesh
 
     ## Returns the shape associated to the mesh
@@ -4399,33 +4422,41 @@ class Mesh_Algorithm:
         if geom is None:
             raise RuntimeError, "Attemp to create " + algo + " algoritm on None shape"
         self.mesh = mesh
-        piece = mesh.geom
         name = ""
         if not geom:
-            self.geom = piece
+            self.geom = mesh.geom
         else:
             self.geom = geom
+            self.AssureGeomPublished( geom )
             try:
                 name = GetName(geom)
                 pass
             except:
                 pass
-            if not name and geom.GetShapeType() != geompyDC.GEOM.COMPOUND:
-                # for all groups SubShapeName() returns "Compound_-1"
-                name = mesh.geompyD.SubShapeName(geom, piece)
-            if not name:
-                name = "%s_%s"%(geom.GetShapeType(), id(geom)%10000)
-            # publish geom of sub-mesh (issue 0021122)
-            if not self.geom.IsSame( self.mesh.geom ) and not self.geom.GetStudyEntry():
-                studyID = self.mesh.smeshpyD.GetCurrentStudy()._get_StudyId()
-                if studyID != self.mesh.geompyD.myStudyId:
-                    self.mesh.geompyD.init_geom( self.mesh.smeshpyD.GetCurrentStudy())
-                self.mesh.geompyD.addToStudyInFather( self.mesh.geom, self.geom, name )
-                pass
             self.subm = mesh.mesh.GetSubMesh(geom, algo.GetName())
         self.algo = algo
         status = mesh.mesh.AddHypothesis(self.geom, self.algo)
         TreatHypoStatus( status, algo.GetName(), name, True )
+        return
+
+    ## Private method. Add geom into the study if not yet there
+    def AssureGeomPublished(self, geom, name=''):
+        if not isinstance( geom, geompyDC.GEOM._objref_GEOM_Object ):
+            return
+        if not geom.IsSame( self.mesh.geom ) and not geom.GetStudyEntry():
+            ## set the study
+            studyID = self.mesh.smeshpyD.GetCurrentStudy()._get_StudyId()
+            if studyID != self.mesh.geompyD.myStudyId:
+                self.mesh.geompyD.init_geom( self.mesh.smeshpyD.GetCurrentStudy())
+            ## get a name
+            if not name and geom.GetShapeType() != geompyDC.GEOM.COMPOUND:
+                # for all groups SubShapeName() returns "Compound_-1"
+                name = self.mesh.geompyD.SubShapeName(geom, self.mesh.geom)
+            if not name:
+                name = "%s_%s"%(geom.GetShapeType(), id(geom)%10000)
+            ## publish
+            self.mesh.geompyD.addToStudyInFather( self.mesh.geom, geom, name )
+        return
 
     def CompareHyp (self, hyp, args):
         print "CompareHyp is not implemented for ", self.__class__.__name__, ":", hyp.GetName()
@@ -4480,7 +4511,7 @@ class Mesh_Algorithm:
     #  @param thickness total thickness of layers of prisms
     #  @param numberOfLayers number of layers of prisms
     #  @param stretchFactor factor (>1.0) of growth of layer thickness towards inside of mesh
-    #  @param ignoreFaces geometrical face (or their ids) not to generate layers on
+    #  @param ignoreFaces list of geometrical faces (or their ids) not to generate layers on
     #  @ingroup l3_hypos_additi
     def ViscousLayers(self, thickness, numberOfLayers, stretchFactor, ignoreFaces=[]):
         if not isinstance(self.algo, SMESH._objref_SMESH_3D_Algo):
@@ -4776,14 +4807,9 @@ class Mesh_Segment(Mesh_Algorithm):
         ### 0D algorithm
         if self.geom is None:
             raise RuntimeError, "Attemp to create SegmentAroundVertex_0D algoritm on None shape"
-        try:
-            name = GetName(self.geom)
-            pass
-        except:
-            piece = self.mesh.geom
-            name = self.mesh.geompyD.SubShapeName(self.geom, piece)
-            self.mesh.geompyD.addToStudyInFather(piece, self.geom, name)
-            pass
+        self.AssureGeomPublished( self.geom )
+        name = GetName(self.geom)
+
         algo = self.FindAlgorithm("SegmentAroundVertex_0D", self.mesh.smeshpyD)
         if algo is None:
             algo = self.mesh.smeshpyD.CreateHypothesis("SegmentAroundVertex_0D", "libStdMeshersEngine.so")
@@ -5023,6 +5049,28 @@ class Mesh_Triangle(Mesh_Algorithm):
     def SetOptionValue(self, optionName, level):
         #  Parameter of BLSURF algo
         self.Parameters().SetOptionValue(optionName,level)
+
+    ## Sets an attractor on the chosen face. The mesh size will decrease exponentially with the distance from theAttractor, following the rule h(d) = theEndSize - (theEndSize - theStartSize) * exp [ - ( d / theInfluenceDistance ) ^ 2 ] 
+    #  @param theFace      : face on which the attractor will be defined
+    #  @param theAttractor : geometrical object from which the mesh size "h" decreases exponentially   
+    #  @param theStartSize : mesh size on theAttractor      
+    #  @param theEndSize   : maximum size that will be reached on theFace                                                     
+    #  @param theInfluenceDistance : influence of the attractor ( the size grow slower on theFace if it's high)                                                      
+    #  @param theConstantSizeDistance : distance until which the mesh size will be kept constant on theFace                                                      
+    #  @ingroup l3_hypos_blsurf
+    def SetAttractorGeom(self, theFace, theAttractor, theStartSize, theEndSize, theInfluenceDistance, theConstantSizeDistance):
+        self.AssureGeomPublished( theFace )
+        self.AssureGeomPublished( theAttractor )
+        #  Parameter of BLSURF algo
+        self.Parameters().SetAttractorGeom(theFace, theAttractor, theStartSize, theEndSize, theInfluenceDistance, theConstantSizeDistance)
+        
+    ## Unsets an attractor on the chosen face. 
+    #  @param theFace      : face on which the attractor has to be removed                               
+    #  @ingroup l3_hypos_blsurf
+    def UnsetAttractorGeom(self, theFace):
+        self.AssureGeomPublished( theFace )
+        #  Parameter of BLSURF algo
+        self.Parameters().SetAttractorGeom(theFace)
 
     ## Sets QuadAllowed flag.
     #  Only for algoType == NETGEN(NETGEN_1D2D) || NETGEN_2D || BLSURF
@@ -5482,6 +5530,87 @@ class Mesh_Tetrahedron(Mesh_Algorithm):
         #  Advanced parameter of GHS3D
         self.Parameters().SetToUseBoundaryRecoveryVersion(toUse)
 
+    ## Applies finite-element correction by replacing overconstrained elements where
+    #  it is possible. The process is cutting first the overconstrained edges and
+    #  second the overconstrained facets. This insure that no edges have two boundary
+    #  vertices and that no facets have three boundary vertices.
+    #  @ingroup l3_hypos_ghs3dh
+    def SetFEMCorrection(self, toUseFem):
+        #  Advanced parameter of GHS3D
+        self.Parameters().SetFEMCorrection(toUseFem)
+
+    ## To removes initial central point.
+    #  @ingroup l3_hypos_ghs3dh
+    def SetToRemoveCentralPoint(self, toRemove):
+        #  Advanced parameter of GHS3D
+        self.Parameters().SetToRemoveCentralPoint(toRemove)
+
+    ## To set an enforced vertex.
+    #  @ingroup l3_hypos_ghs3dh
+    def SetEnforcedVertex(self, x, y, z, size):
+        #  Advanced parameter of GHS3D
+        return self.Parameters().SetEnforcedVertex(x, y, z, size)
+
+    ## To set an enforced vertex and add it in the group "groupName".
+    #  Only on meshes w/o geometry
+    #  @ingroup l3_hypos_ghs3dh
+    def SetEnforcedVertexWithGroup(self, x, y, z, size, groupName):
+        #  Advanced parameter of GHS3D
+        return self.Parameters().SetEnforcedVertex(x, y, z, size,groupName)
+
+    ## To remove an enforced vertex.
+    #  @ingroup l3_hypos_ghs3dh
+    def RemoveEnforcedVertex(self, x, y, z):
+        #  Advanced parameter of GHS3D
+        return self.Parameters().RemoveEnforcedVertex(x, y, z)
+
+    ## To set an enforced vertex given a GEOM vertex, group or compound.
+    #  @ingroup l3_hypos_ghs3dh
+    def SetEnforcedVertexGeom(self, theVertex, size):
+        self.AssureGeomPublished( theVertex )
+        #  Advanced parameter of GHS3D
+        return self.Parameters().SetEnforcedVertexGeom(theVertex, size)
+
+    ## To set an enforced vertex given a GEOM vertex, group or compound
+    #  and add it in the group "groupName".
+    #  Only on meshes w/o geometry
+    #  @ingroup l3_hypos_ghs3dh
+    def SetEnforcedVertexGeomWithGroup(self, theVertex, size, groupName):
+        self.AssureGeomPublished( theVertex )
+        #  Advanced parameter of GHS3D
+        return self.Parameters().SetEnforcedVertexGeomWithGroup(theVertex, size,groupName)
+
+    ## To remove an enforced vertex given a GEOM vertex, group or compound.
+    #  @ingroup l3_hypos_ghs3dh
+    def RemoveEnforcedVertexGeom(self, theVertex):
+        self.AssureGeomPublished( theVertex )
+        #  Advanced parameter of GHS3D
+        return self.Parameters().RemoveEnforcedVertexGeom(theVertex)
+
+    ## To set an enforced mesh.
+    #  @ingroup l3_hypos_ghs3dh
+    def SetEnforcedMesh(self, theSource, elementType):
+        #  Advanced parameter of GHS3D
+        return self.Parameters().SetEnforcedMesh(theSource, elementType)
+
+    ## To set an enforced mesh and add the enforced elements in the group "groupName".
+    #  @ingroup l3_hypos_ghs3dh
+    def SetEnforcedMeshWithGroup(self, theSource, elementType, groupName):
+        #  Advanced parameter of GHS3D
+        return self.Parameters().SetEnforcedMeshWithGroup(theSource, elementType, groupName)
+
+    ## To set an enforced mesh with given size.
+    #  @ingroup l3_hypos_ghs3dh
+    def SetEnforcedMeshSize(self, theSource, elementType, size):
+        #  Advanced parameter of GHS3D
+        return self.Parameters().SetEnforcedMeshSize(theSource, elementType, size)
+
+    ## To set an enforced mesh with given size and add the enforced elements in the group "groupName".
+    #  @ingroup l3_hypos_ghs3dh
+    def SetEnforcedMeshSizeWithGroup(self, theSource, elementType, size, groupName):
+        #  Advanced parameter of GHS3D
+        return self.Parameters().SetEnforcedMeshSizeWithGroup(theSource, elementType, size, groupName)
+
     ## Sets command line option as text.
     #  @ingroup l3_hypos_ghs3dh
     def SetTextOption(self, option):
@@ -5600,6 +5729,9 @@ class Mesh_Projection1D(Mesh_Algorithm):
     #  @param UseExisting if ==true - searches for the existing hypothesis created with
     #                     the same parameters, else (default) - creates a new one
     def SourceEdge(self, edge, mesh=None, srcV=None, tgtV=None, UseExisting=0):
+        self.AssureGeomPublished( edge )
+        self.AssureGeomPublished( srcV )
+        self.AssureGeomPublished( tgtV )
         hyp = self.Hypothesis("ProjectionSource1D", [edge,mesh,srcV,tgtV],
                               UseExisting=0)
                               #UseExisting=UseExisting, CompareMethod=self.CompareSourceEdge)
@@ -5646,11 +5778,13 @@ class Mesh_Projection2D(Mesh_Algorithm):
     #  Note: all association vertices must belong to one edge of a face
     def SourceFace(self, face, mesh=None, srcV1=None, tgtV1=None,
                    srcV2=None, tgtV2=None, UseExisting=0):
+        for geom in [ face, srcV1, tgtV1, srcV2, tgtV2 ]:
+            self.AssureGeomPublished( geom )
         hyp = self.Hypothesis("ProjectionSource2D", [face,mesh,srcV1,tgtV1,srcV2,tgtV2],
                               UseExisting=0)
                               #UseExisting=UseExisting, CompareMethod=self.CompareSourceFace)
         hyp.SetSourceFace( face )
-        if not mesh is None and isinstance(mesh, Mesh):
+        if isinstance(mesh, Mesh):
             mesh = mesh.GetMesh()
         hyp.SetSourceMesh( mesh )
         hyp.SetVertexAssociation( srcV1, srcV2, tgtV1, tgtV2 )
@@ -5691,6 +5825,8 @@ class Mesh_Projection3D(Mesh_Algorithm):
     #  Note: association vertices must belong to one edge of a solid
     def SourceShape3D(self, solid, mesh=0, srcV1=0, tgtV1=0,
                       srcV2=0, tgtV2=0, UseExisting=0):
+        for geom in [ solid, srcV1, tgtV1, srcV2, tgtV2 ]:
+            self.AssureGeomPublished( geom )
         hyp = self.Hypothesis("ProjectionSource3D",
                               [solid,mesh,srcV1,tgtV1,srcV2,tgtV2],
                               UseExisting=0)
@@ -5951,6 +6087,8 @@ class Mesh_UseExistingElements(Mesh_Algorithm):
     def SourceEdges(self, groups, toCopyMesh=False, toCopyGroups=False, UseExisting=False):
         if self.algo.GetName() == "Import_2D":
             raise ValueError, "algoritm dimension mismatch"
+        for group in groups:
+            self.AssureGeomPublished( group )
         hyp = self.Hypothesis("ImportSource1D", [groups, toCopyMesh, toCopyGroups],
                               UseExisting=UseExisting, CompareMethod=self._compareHyp)
         hyp.SetSourceEdges(groups)
@@ -5966,6 +6104,8 @@ class Mesh_UseExistingElements(Mesh_Algorithm):
     def SourceFaces(self, groups, toCopyMesh=False, toCopyGroups=False, UseExisting=False):
         if self.algo.GetName() == "Import_1D":
             raise ValueError, "algoritm dimension mismatch"
+        for group in groups:
+            self.AssureGeomPublished( group )
         hyp = self.Hypothesis("ImportSource2D", [groups, toCopyMesh, toCopyGroups],
                               UseExisting=UseExisting, CompareMethod=self._compareHyp)
         hyp.SetSourceFaces(groups)

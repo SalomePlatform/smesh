@@ -1,3 +1,22 @@
+// Copyright (C) 2006-2011  EDF R&D
+//
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
+//
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
+
 #include "MeshCut_Cas.hxx"
 
 #include "MeshCut_Globals.hxx"
@@ -13,7 +32,7 @@ using namespace std;
  */
 void MESHCUT::cas1(int VN[6], int it4)
 {
-
+  cutTetras.push_back(it4);
   //  cout << "Cas 1 - it4=" << it4 << ", VN = " << VN[0] << " " << VN[1] << " " << VN[2] << " " << VN[3] << " " << VN[4]
   //      << " " << VN[5] << " " << endl;
 
@@ -212,7 +231,7 @@ void MESHCUT::cas1(int VN[6], int it4)
     }
 
   else
-    ERREUR(" Configuration intersections non reconnue (cas cptPI=1) ");
+    ERREUR(" Intersections configuration not taken into account (case cptPI=1) ");
 
   //int nl1 = MAILLAGE1->EFFECTIFS_TYPES[TETRA4] + i1;
   //int nl2 = MAILLAGE1->EFFECTIFS_TYPES[TETRA4] + i2;
@@ -230,7 +249,7 @@ void MESHCUT::cas1(int VN[6], int it4)
  */
 void MESHCUT::cas2(int VN[6], int it4)
 {
-
+  cutTetras.push_back(it4);
   //  cout << "Cas 2 - it4=" << it4 << ", VN = " << VN[0] << " " << VN[1] << " " << VN[2] << " " << VN[3] << " " << VN[4]
   //      << " " << VN[5] << " " << endl;
 
@@ -358,7 +377,7 @@ void MESHCUT::cas2(int VN[6], int it4)
     }
 
   else if (VN[0] != -1 && VN[5] != -1)
-    ERREUR("Cas 2/05 interdit");
+    ERREUR("Case 2/05 forbidden");
 
   else if (VN[1] != -1 && VN[2] != -1)
     {
@@ -420,7 +439,7 @@ void MESHCUT::cas2(int VN[6], int it4)
     }
 
   else if (VN[1] != -1 && VN[4] != -1)
-    ERREUR("Cas 2/14 exclu");
+    ERREUR("Case 2/14 excluded");
 
   else if (VN[1] != -1 && VN[5] != -1)
     {
@@ -453,7 +472,7 @@ void MESHCUT::cas2(int VN[6], int it4)
     }
 
   else if (VN[2] != -1 && VN[3] != -1)
-    ERREUR("Cas 2/23 exclu");
+    ERREUR("Case 2/23 excluded");
 
   else if (VN[2] != -1 && VN[4] != -1)
     {
@@ -606,7 +625,7 @@ void MESHCUT::cas2(int VN[6], int it4)
     }
 
   else
-    ERREUR(" Configuration intersections non reconnue (cas cptPI=2) ");
+    ERREUR(" Intersections configuration not taken into account (case cptPI=2) ");
 
   // int ngT4 = MAILLAGE1->EFFECTIFS_TYPES[TETRA4] + cptNouvellesMailles[TETRA4] - 1;
   // int ngP5 = MAILLAGE1->EFFECTIFS_TYPES[PYRAM5] + cptNouvellesMailles[PYRAM5] - 1;
@@ -624,7 +643,7 @@ void MESHCUT::cas2(int VN[6], int it4)
  */
 void MESHCUT::cas3(int VN[6], int it4)
 {
-
+  cutTetras.push_back(it4);
   // cout << "Cas 3 - it4="<<it4<<", VN = " << VN[0] << " " << VN[1] << " " << VN[2] << " " << VN[3] << " " << VN[4] << " " << VN[5] << " " << endl;
 
   // Numéros des noeuds du TETRA4
@@ -784,7 +803,7 @@ void MESHCUT::cas3(int VN[6], int it4)
       //      cout << x2 << " " << y2 << " " << z2 << " " << endl;
       //      cout << x3 << " " << y3 << " " << z3 << " " << endl;
 
-      ERREUR(" Configuration intersections non reconnue (cas cptPI=3) ");
+      ERREUR(" Intersections configuration not taken into account (case cptPI=3) ");
     }
 
   // int ngT4 = MAILLAGE1->EFFECTIFS_TYPES[TETRA4] + cptNouvellesMailles[TETRA4] - 1;
@@ -803,7 +822,7 @@ void MESHCUT::cas3(int VN[6], int it4)
  */
 void MESHCUT::cas4(int VN[6], int it4)
 {
-
+  cutTetras.push_back(it4);
   //  cout << "Cas 4 - it4=" << it4 << ", VN = " << VN[0] << " " << VN[1] << " " << VN[2] << " " << VN[3] << " " << VN[4]
   //      << " " << VN[5] << " " << endl;
 
@@ -918,7 +937,7 @@ void MESHCUT::cas4(int VN[6], int it4)
         }
     }
   else
-    ERREUR(" Configuration intersections non reconnue (cas cptPI=4) ");
+    ERREUR(" Intersection configuration not taken into account (case cptPI=4) ");
 
   // int nl1 = MAILLAGE1->EFFECTIFS_TYPES[PENTA6] + i1;
   // int nl2 = MAILLAGE1->EFFECTIFS_TYPES[PENTA6] + i2;

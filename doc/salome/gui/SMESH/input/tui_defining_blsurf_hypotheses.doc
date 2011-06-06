@@ -19,10 +19,16 @@ Face_1   = geompy.SubShapeAllSorted(box, geompy.ShapeType["FACE"])[0]
 Edge_1   = geompy.SubShapeAllSorted(box, geompy.ShapeType["EDGE"])[0]
 Vertex_1 = geompy.SubShapeAllSorted(box, geompy.ShapeType["VERTEX"])[0]
 
+Face_2   = geompy.SubShapeAllSorted(box,    geompy.ShapeType["FACE"])[5]
+Wire_1   = geompy.SubShapeAllSorted(Face_2, geompy.ShapeType["WIRE"])[0]
+
 # /!\ Geom object with sizemaps on them must be published in study
 geompy.addToStudyInFather(box,Face_1, "Face_1")
 geompy.addToStudyInFather(box,Edge_1, "Edge_1")
 geompy.addToStudyInFather(box,Vertex_1, "Vertex_1")
+
+geompy.addToStudyInFather(box   ,Face_2, "Face_2")
+geompy.addToStudyInFather(Face_2,Wire_1, "Wire_1")
 
 # create a mesh on the box
 blsurfMesh = smesh.Mesh(box,"box: BLSurf mesh")
@@ -75,6 +81,21 @@ blsurfMesh.Compute()
 
 # Remove all enforced vertices defined on Face_1
 BLSURF_Parameters.UnsetEnforcedVertices(Face_1)
+
+# compute the mesh
+blsurfMesh.Compute()
+
+
+# Add an attractor on Face_2, which shape is Wire_1
+
+# The size on Wire_1 is 1 and will grow until a maximum of 36.641 (physical size set above) 
+# The influence distance of the attractor is 20
+# The size is kept constant until a distance of 10
+BLSURF_Parameters.SetAttractorGeom(Face_2, Wire_1, 1, 36.641, 20, 10)
+
+# In order to let the attractor control the growing of the mesh let set
+# the gradation to its maximum
+BLSURF_Parameters.SetGradation( 2.5 )
 
 # compute the mesh
 blsurfMesh.Compute()

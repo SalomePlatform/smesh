@@ -1,20 +1,20 @@
-//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2011  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 
 // File      : StdMeshers_QuadToTriaAdaptor.cxx
@@ -175,6 +175,79 @@ namespace
 
     return tooClose;
   }
+
+  //================================================================================
+  /*!
+   * \brief Move medium nodes of merged quadratic pyramids
+   */
+  //================================================================================
+
+  void UpdateQuadraticPyramids(const set<const SMDS_MeshNode*>& commonApex,
+                               SMESHDS_Mesh*                    meshDS)
+  {
+    typedef SMDS_StdIterator< const SMDS_MeshElement*, SMDS_ElemIteratorPtr > TStdElemIterator;
+    TStdElemIterator itEnd;
+
+    // shift of node index to get medium nodes between the 4 base nodes and the apex
+    const int base2MediumShift = 9;
+
+    set<const SMDS_MeshNode*>::const_iterator nIt = commonApex.begin();
+    for ( ; nIt != commonApex.end(); ++nIt )
+    {
+      SMESH_TNodeXYZ apex( *nIt );
+
+      vector< const SMDS_MeshElement* > pyrams // pyramids sharing the apex node
+        ( TStdElemIterator( apex._node->GetInverseElementIterator( SMDSAbs_Volume )), itEnd );
+
+      // Select medium nodes to keep and medium nodes to remove
+
+      typedef map < const SMDS_MeshNode*, const SMDS_MeshNode*, TIDCompare > TN2NMap;
+      TN2NMap base2medium; // to keep
+      vector< const SMDS_MeshNode* > nodesToRemove;
+
+      for ( unsigned i = 0; i < pyrams.size(); ++i )
+        for ( int baseIndex = 0; baseIndex < PYRAM_APEX; ++baseIndex )
+        {
+          SMESH_TNodeXYZ         base = pyrams[i]->GetNode( baseIndex );
+          const SMDS_MeshNode* medium = pyrams[i]->GetNode( baseIndex + base2MediumShift );
+          TN2NMap::iterator b2m = base2medium.insert( make_pair( base._node, medium )).first;
+          if ( b2m->second != medium )
+          {
+            nodesToRemove.push_back( medium );
+          }
+          else
+          {
+            // move the kept medium node
+            gp_XYZ newXYZ = 0.5 * ( apex + base );
+            meshDS->MoveNode( medium, newXYZ.X(), newXYZ.Y(), newXYZ.Z() );
+          }
+        }
+
+      // Within pyramids, replace nodes to remove by nodes to keep  
+
+      for ( unsigned i = 0; i < pyrams.size(); ++i )
+      {
+        vector< const SMDS_MeshNode* > nodes( pyrams[i]->begin_nodes(),
+                                              pyrams[i]->end_nodes() );
+        for ( int baseIndex = 0; baseIndex < PYRAM_APEX; ++baseIndex )
+        {
+          const SMDS_MeshNode* base = pyrams[i]->GetNode( baseIndex );
+          nodes[ baseIndex + base2MediumShift ] = base2medium[ base ];
+        }
+        meshDS->ChangeElementNodes( pyrams[i], &nodes[0], nodes.size());
+      }
+
+      // Remove the replaced nodes
+
+      if ( !nodesToRemove.empty() )
+      {
+        SMESHDS_SubMesh * sm = meshDS->MeshElements( nodesToRemove[0]->getshapeId() );
+        for ( unsigned i = 0; i < nodesToRemove.size(); ++i )
+          meshDS->RemoveFreeNode( nodesToRemove[i], sm, /*fromGroups=*/false);
+      }
+    }
+  }
+
 }
 
 //================================================================================
@@ -1172,6 +1245,10 @@ bool StdMeshers_QuadToTriaAdaptor::Compute2ndPart(SMESH_Mesh&                   
     for ( ; n != nodesToMove.end(); ++n )
       meshDS->MoveNode( *n, (*n)->X(), (*n)->Y(), (*n)->Z() );
   }
+
+  // move medium nodes of merged quadratic pyramids
+  if ( myPyramids[0]->IsQuadratic() )
+    UpdateQuadraticPyramids( nodesToMove, GetMeshDS() );
 
   // erase removed triangles from the proxy mesh
   if ( !myRemovedTrias.empty() )

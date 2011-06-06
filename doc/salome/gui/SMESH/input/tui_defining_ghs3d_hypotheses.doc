@@ -20,26 +20,197 @@ ghs3dMesh = smesh.Mesh(box,"box: Ghs3D and BLSurf mesh")
 
 # create a BLSurf algorithm for faces
 BLSURF = ghs3dMesh.Triangle(algo=smesh.BLSURF)
-
-# create a Ghs3D algorithm for volume
 GHS3D = ghs3dMesh.Tetrahedron(algo=smesh.GHS3D)
-
-# get Ghs3D algorithm hypothesis
-GHS3D_Parameters = GHS3D.Parameters()
-
-# define an enforced vertex at (50,50,100) with a physical size of 2
-GHS3D_Parameters.SetEnforcedVertex( 50, 50, 100, 2 )
-
-# define an enforced vertex at (150,150,100) with a physical size of 5
-GHS3D_Parameters.SetEnforcedVertex( 150, 150, 100, 5 )
 
 # compute the mesh
 ghs3dMesh.Compute()
 
 # End of script
+\endcode
+
+\image html ghs3d_screenshot.png Ghs3d mesh withtout hypothesis
+
+<h2>Adding enforced vertices</h2>
+
+\code
+
+# An enforced vertex can be added via:
+# - the coordinates x,y,z
+# - a GEOM vertex or compound (No geometry, TUI only)
+#
+# The enforced nodes created can also be stored in
+# a group (No geometry, TUI only).
+
+# Ex1: Add 1 enforced vertices by coords at (50,50,100) 
+#      with a physical size of 2
+
+import geompy
+import smesh
+import BLSURFPlugin
+import GHS3DPlugin
+
+# create a box
+box = geompy.MakeBoxDXDYDZ(200., 200., 200.)
+geompy.addToStudy(box, "box")
+# create a mesh on the box
+ghs3dMesh = smesh.Mesh(box,"box: Ghs3D and BLSurf mesh")
+# create a BLSurf algorithm for faces
+ghs3dMesh.Triangle(algo=smesh.BLSURF)
+# compute the mesh
+ghs3dMesh.Compute()
+
+# Make a copy of the 2D mesh
+ghs3dMesh_wo_geometry = smesh.CopyMesh( ghs3dMesh, 'Ghs3D wo geometry', 0, 0)
+
+# create a Ghs3D algorithm and hypothesis and assign them to the mesh
+GHS3D = smesh.CreateHypothesis('GHS3D_3D', 'GHS3DEngine')
+GHS3D_Parameters = smesh.CreateHypothesis('GHS3D_Parameters', 'GHS3DEngine')
+ghs3dMesh.AddHypothesis( GHS3D )
+ghs3dMesh.AddHypothesis( GHS3D_Parameters )
+# Create the enforced vertex
+GHS3D_Parameters.SetEnforcedVertex( 50, 50, 100, 2) # no group
+# Compute the mesh
+ghs3dMesh.Compute()
+
+
+# Ex2: Add 1 enforced vertices by GEOM vertex at (50,50,100) 
+#      with a physical size of 5 and add it to a group called "My special nodes"
+
+# Create another GHS3D hypothesis and assign it to the mesh wo geometry
+GHS3D_Parameters_wo_geometry = smesh.CreateHypothesis('GHS3D_Parameters', 'GHS3DEngine')
+ghs3dMesh_wo_geometry.AddHypothesis( GHS3D )
+ghs3dMesh_wo_geometry.AddHypothesis( GHS3D_Parameters_wo_geometry )
+
+# Create the enforced vertex
+p1 = geompy.MakeVertex(150, 150, 100)
+geompy.addToStudy(p1, "p1")
+GHS3D_Parameters_wo_geometry.SetEnforcedVertexGeomWithGroup( p1, 5 , "My special nodes")
+#GHS3D_Parameters.SetEnforcedVertexGeom( p1, 5 ) # no group
+
+# compute the mesh
+ghs3dMesh_wo_geometry.Compute()
+
+# Erase all enforced vertices
+GHS3D_Parameters.ClearEnforcedVertices()
+
+# End of script
 
 \endcode
 
-\image html ghs3d_enforced_vertices_screenshot.png
+\image html ghs3d_screenshot_enf1.png Ghs3d mesh with enforced vertex
+\image html ghs3d_screenshot_enf2.png Ghs3d mesh with enforced vertex from GEOM vertex
+
+<h2>Adding enforced mesh</h2>
+
+\code
+
+# It is possible to constraint GHS3D with another mesh or group.
+# The constraint can be the nodes, edges or faces.
+# This feature is available only in TUI, on meshes without geometry.
+# The constraining elements are called enforced elements for the mesh.
+# They can be recovered using groups if necessary.
+
+# In the following examples, a box and a cylinder are meshed.
+# The mesh of the cylinder will be used as a constraint for the 
+# 3D mesh of the box.
+
+import geompy
+import smesh
+import BLSURFPlugin
+import GHS3DPlugin
+
+box = geompy.MakeBoxDXDYDZ(200, 200, 200)
+geompy.addToStudy( box, "box" )
+cylindre = geompy.MakeCylinderRH(50, 50)
+geompy.TranslateDXDYDZ(cylindre, 100, 100, 30)
+face_cyl = geompy.ExtractShapes(cylindre, geompy.ShapeType["FACE"], True)[1]
+geompy.addToStudy( cylindre, 'cylindre' )
+geompy.addToStudyInFather( cylindre, face_cyl, 'face_cyl' )
+p1 = geompy.MakeVertex(20, 20, 20)
+p2 = geompy.MakeVertex(180, 180, 20)
+c = geompy.MakeCompound([p1,p2])
+geompy.addToStudy( p1, "p1" )
+geompy.addToStudy( p2, "p2" )
+geompy.addToStudy( c, "c" )
+
+# Create the 2D algo and hypothesis
+BLSURF = smesh.CreateHypothesis('BLSURF', 'BLSURFEngine')
+# For the box
+BLSURF_Parameters = smesh.CreateHypothesis('BLSURF_Parameters', 'BLSURFEngine')
+BLSURF_Parameters.SetPhysicalMesh( 1 )
+BLSURF_Parameters.SetPhySize( 200 )
+# For the cylinder
+BLSURF_Parameters2 = smesh.CreateHypothesis('BLSURF_Parameters', 'BLSURFEngine')
+BLSURF_Parameters2.SetGeometricMesh( 1 )
+
+# Create the 3D algo and hypothesis
+GHS3D = smesh.CreateHypothesis('GHS3D_3D', 'GHS3DEngine')
+GHS3D_Parameters_node = smesh.CreateHypothesis('GHS3D_Parameters', 'GHS3DEngine')
+#GHS3D_Parameters_node.SetToMeshHoles( 1 )
+GHS3D_Parameters_edge = smesh.CreateHypothesis('GHS3D_Parameters', 'GHS3DEngine')
+#GHS3D_Parameters_edge.SetToMeshHoles( 1 )
+GHS3D_Parameters_face = smesh.CreateHypothesis('GHS3D_Parameters', 'GHS3DEngine')
+GHS3D_Parameters_face.SetToMeshHoles( 1 ) # to mesh inside the cylinder
+GHS3D_Parameters_mesh = smesh.CreateHypothesis('GHS3D_Parameters', 'GHS3DEngine')
+GHS3D_Parameters_mesh.SetToMeshHoles( 1 ) # to mesh inside the cylinder
+
+# Create the mesh on the cylinder
+Mesh_cylindre = smesh.Mesh(cylindre)
+SetName(Mesh_cylindre,"Mesh_cylindre")
+Mesh_cylindre.AddHypothesis( BLSURF )
+Mesh_cylindre.AddHypothesis( BLSURF_Parameters2 )
+# Create some groups
+face_cyl_faces = Mesh_cylindre.GroupOnGeom(face_cyl,'group_face_cyl', smesh.FACE)
+face_cyl_edges = Mesh_cylindre.GroupOnGeom(face_cyl,'group_edge_cyl', smesh.EDGE)
+face_cyl_nodes = Mesh_cylindre.GroupOnGeom(face_cyl,'group_node_cyl', smesh.NODE)
+Mesh_cyl_tri.Compute()
+
+# Create the mesh on the cylinder
+Mesh_box_tri = smesh.Mesh(box)
+SetName(Mesh_box_tri,"Mesh_box_tri")
+Mesh_box_tri.AddHypothesis( BLSURF )
+Mesh_box_tri.AddHypothesis( BLSURF_Parameters )
+Mesh_box_tri.Compute()
+
+# Create 4 copies of the 2D mesh to test the 3 types of contraints (NODE, EDGE, FACE)
+# from a whole mesh and from groups of elements.
+# Then the 3D algo and hypothesis are assigned to them.
+
+mesh_mesh = smesh.CopyMesh( Mesh_box_tri, 'Enforced by faces of mesh', 0, 0)
+mesh_mesh.AddHypothesis( GHS3D_3D )
+mesh_mesh.AddHypothesis( GHS3D_Parameters_mesh)
+
+mesh_node = smesh.CopyMesh( Mesh_box_tri, 'Enforced by group of nodes', 0, 0)
+mesh_node.AddHypothesis( GHS3D_3D )
+mesh_node.AddHypothesis( GHS3D_Parameters_node)
+
+mesh_edge = smesh.CopyMesh( Mesh_box_tri, 'Enforced by group of edges', 0, 0)
+mesh_edge.AddHypothesis( GHS3D_3D )
+mesh_edge.AddHypothesis( GHS3D_Parameters_edge)
+
+mesh_face = smesh.CopyMesh( Mesh_box_tri, 'Enforced by group of faces', 0, 0)
+mesh_face.AddHypothesis( GHS3D_3D )
+mesh_face.AddHypothesis( GHS3D_Parameters_face)
+
+# Add the enforced elements
+GHS3D_Parameters_mesh.SetEnforcedMeshWithGroup(Mesh_cylindre.GetMesh(),smesh.FACE,"faces from cylinder")
+GHS3D_Parameters_node.SetEnforcedMeshWithGroup(face_cyl_nodes,smesh.NODE,"nodes from face_cyl_nodes")
+GHS3D_Parameters_edge.SetEnforcedMeshWithGroup(face_cyl_edges,smesh.EDGE,"edges from face_cyl_edges")
+GHS3D_Parameters_face.SetEnforcedMeshWithGroup(face_cyl_faces,smesh.FACE,"faces from face_cyl_faces")
+
+#Compute the meshes
+mesh_node.Compute()
+mesh_edge.Compute()
+mesh_face.Compute()
+mesh_mesh.Compute()
+
+# End of script
+
+\endcode
+
+\image html ghs3d_screenshot_enf3.png
+\image html ghs3d_screenshot_enf4.png
+\image html ghs3d_screenshot_enf5.png
+\image html ghs3d_screenshot_enf6.png
 
 */

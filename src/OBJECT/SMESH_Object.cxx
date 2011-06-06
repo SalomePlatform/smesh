@@ -1,23 +1,23 @@
-//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2011  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 
 //  SMESH OBJECT : interactive object for SMESH visualization
@@ -292,10 +292,10 @@ void SMESH_VisualObjDef::buildNodePrs()
 {
   // PAL16631: without swap, bad_alloc is not thrown but hung up and crash instead,
   // so check remaining memory size for safety
-  // SMDS_Mesh::CheckMemory(); // PAL16631
+  SMDS_Mesh::CheckMemory(); // PAL16631
   vtkPoints* aPoints = vtkPoints::New();
   createPoints( aPoints );
-  // SMDS_Mesh::CheckMemory();
+  SMDS_Mesh::CheckMemory();
   myGrid->SetPoints( aPoints );
   aPoints->Delete();
 
@@ -358,7 +358,7 @@ void SMESH_VisualObjDef::buildElemPrs()
 
   // PAL16631: without swap, bad_alloc is not thrown but hung up and crash instead,
   // so check remaining memory size for safety
-  // SMDS_Mesh::CheckMemory(); // PAL16631
+  SMDS_Mesh::CheckMemory(); // PAL16631
 
   vtkIdType aCellsSize =  2 * nbEnts[ SMDSAbs_0DElement ] + 3 * nbEnts[ SMDSAbs_Edge ];
 
@@ -384,13 +384,13 @@ void SMESH_VisualObjDef::buildElemPrs()
   vtkCellArray* aConnectivity = vtkCellArray::New();
   aConnectivity->Allocate( aCellsSize, 0 );
 
-  // SMDS_Mesh::CheckMemory(); // PAL16631
+  SMDS_Mesh::CheckMemory(); // PAL16631
 
   vtkUnsignedCharArray* aCellTypesArray = vtkUnsignedCharArray::New();
   aCellTypesArray->SetNumberOfComponents( 1 );
   aCellTypesArray->Allocate( aNbCells * aCellTypesArray->GetNumberOfComponents() );
 
-  // SMDS_Mesh::CheckMemory(); // PAL16631
+  SMDS_Mesh::CheckMemory(); // PAL16631
 
   vtkIdList *anIdList = vtkIdList::New();
   vtkIdType iElem = 0;
@@ -398,7 +398,7 @@ void SMESH_VisualObjDef::buildElemPrs()
   TConnect aConnect;
   aConnect.reserve(VTK_CELL_SIZE);
 
-  // SMDS_Mesh::CheckMemory(); // PAL16631
+  SMDS_Mesh::CheckMemory(); // PAL16631
 
   for ( int i = 0; i <= 3; i++ ) // iterate through 0d elements, edges, faces and volumes
   {
@@ -501,7 +501,7 @@ void SMESH_VisualObjDef::buildElemPrs()
         iElem++;
       }
     }
-    // SMDS_Mesh::CheckMemory(); // PAL16631
+    SMDS_Mesh::CheckMemory(); // PAL16631
   }
 
   // Insert cells in grid
@@ -510,7 +510,7 @@ void SMESH_VisualObjDef::buildElemPrs()
   aCellLocationsArray->SetNumberOfComponents( 1 );
   aCellLocationsArray->SetNumberOfTuples( aNbCells );
 
-  // SMDS_Mesh::CheckMemory(); // PAL16631
+  SMDS_Mesh::CheckMemory(); // PAL16631
 
   aConnectivity->InitTraversal();
   for( vtkIdType idType = 0, *pts, npts; aConnectivity->GetNextCell( npts, pts ); idType++ )
@@ -523,7 +523,7 @@ void SMESH_VisualObjDef::buildElemPrs()
   aConnectivity->Delete();
   anIdList->Delete();
 
-  // SMDS_Mesh::CheckMemory(); // PAL16631
+  SMDS_Mesh::CheckMemory(); // PAL16631
 }
 
 //=================================================================================

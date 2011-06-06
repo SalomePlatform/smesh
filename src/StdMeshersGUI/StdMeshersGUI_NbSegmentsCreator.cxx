@@ -1,23 +1,23 @@
-//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2011  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 
 // File   : StdMeshersGUI_NbSegmentsCreator.cxx
@@ -98,6 +98,7 @@ bool StdMeshersGUI_NbSegmentsCreator::checkParams( QString& msg ) const
 QFrame* StdMeshersGUI_NbSegmentsCreator::buildFrame()
 {
   QFrame* fr = new QFrame();
+  fr->setMinimumWidth(460);
 
   QVBoxLayout* lay = new QVBoxLayout( fr );
   lay->setMargin( 0 );
@@ -108,7 +109,6 @@ QFrame* StdMeshersGUI_NbSegmentsCreator::buildFrame()
 
   StdMeshers::StdMeshers_NumberOfSegments_var h =
     StdMeshers::StdMeshers_NumberOfSegments::_narrow( hypothesis() );
-  myPreview = new StdMeshersGUI_DistrPreview( GroupC1, h.in() );
 
   myGroupLayout = new QGridLayout( GroupC1 );
   myGroupLayout->setSpacing( SPACING );
@@ -127,6 +127,7 @@ QFrame* StdMeshersGUI_NbSegmentsCreator::buildFrame()
     row++;
   }
 
+
   // 1)  number of segments
   myGroupLayout->addWidget( new QLabel( tr( "SMESH_NB_SEGMENTS_PARAM" ), GroupC1 ), row, 0 );
   myNbSeg = new SalomeApp_IntSpinBox( GroupC1 );
@@ -135,6 +136,7 @@ QFrame* StdMeshersGUI_NbSegmentsCreator::buildFrame()
   myGroupLayout->addWidget( myNbSeg, row, 1 );
   row++;
 
+  
   // 2)  type of distribution
   myGroupLayout->addWidget( new QLabel( tr( "SMESH_DISTR_TYPE" ), GroupC1 ), row, 0 );
   myDistr = new QtxComboBox( GroupC1 );
@@ -147,6 +149,7 @@ QFrame* StdMeshersGUI_NbSegmentsCreator::buildFrame()
   myGroupLayout->addWidget( myDistr, row, 1 );
   row++;
 
+  
   // 3)  scale
   myGroupLayout->addWidget( myLScale = new QLabel( tr( "SMESH_NB_SEGMENTS_SCALE_PARAM" ), GroupC1 ), row, 0 );
   myScale = new SMESHGUI_SpinBox( GroupC1 );
@@ -154,25 +157,35 @@ QFrame* StdMeshersGUI_NbSegmentsCreator::buildFrame()
   myGroupLayout->addWidget( myScale, row, 1 );
   row++;
 
-  myInfo = new QLabel( tr( "SMESH_FUNC_DOMAIN" ), GroupC1 );
-  myGroupLayout->addWidget( myInfo, row, 0, 1, 2 );
-  row++;
   
-  // 4)  table
-  myGroupLayout->addWidget( myLTable = new QLabel( tr( "SMESH_TAB_FUNC" ), GroupC1 ), row, 0 );
-  myTable = new StdMeshersGUI_DistrTableFrame( GroupC1 );
-  myGroupLayout->addWidget( myTable, row, 1 );
+  // 4) Distribution definition
+  QGridLayout* myDistLayout = new QGridLayout(GroupC1);
+  myGroupLayout->addLayout( myDistLayout, row, 0, 1, 2 );
   myGroupLayout->setRowStretch( row, 1 );
-  myTableRow = row;
-  row++;
+  row ++;
 
-  // 5)  expression
-  myGroupLayout->addWidget( myLExpr = new QLabel( tr( "SMESH_EXPR_FUNC" ), GroupC1 ), row, 0 );
+       // a)  expression
+  QHBoxLayout* myExprLayout = new QHBoxLayout(GroupC1);
+  myExprLayout->addWidget( myLExpr = new QLabel( "f(t)=", GroupC1 ), 0);
   myExpr = new QLineEdit( GroupC1 );
-  myGroupLayout->addWidget( myExpr, row, 1 );
-  row++;
+  myExprLayout->addWidget( myExpr,1);
+  myDistLayout->addLayout(myExprLayout,1 ,0);
+  myDistLayout->setRowStretch(2, 1);
 
-  // 6)  conversion (radiogroup)
+       // b)  warning
+  myInfo = new QLabel( tr( "SMESH_FUNC_DOMAIN" ), GroupC1 );
+  myDistLayout->addWidget( myInfo, 0, 0, 1, 2);
+  
+       // c)  table
+  myTable = new StdMeshersGUI_DistrTableFrame( GroupC1 );
+  myDistLayout->addWidget( myTable, 1, 0, 2, 1 );
+
+       // d) preview
+  myPreview = new StdMeshersGUI_DistrPreview( GroupC1, h.in() );  
+  myPreview->setMinimumHeight(220);
+  myDistLayout->addWidget( myPreview, 1, 1, 2, 1 );
+  
+  // 5)  conversion (radiogroup)
   myConvBox = new QGroupBox( tr( "SMESH_CONV_MODE" ), GroupC1 );
   myConv = new QButtonGroup( GroupC1 );
 
@@ -191,17 +204,12 @@ QFrame* StdMeshersGUI_NbSegmentsCreator::buildFrame()
   myGroupLayout->addWidget( myConvBox, row, 0, 1, 2 );
   row++;
 
-  // 7) distribution preview
-  myGroupLayout->addWidget( myPreview, row, 0, 1, 2 );
-  myGroupLayout->setRowStretch( row, 1 );
-  myPreviewRow = row;
-  row++;
 
-  // 8) reverce edge parameters
+  // 6) reverse edge parameters
   myReversedEdgesBox = new QGroupBox(tr( "SMESH_REVERSED_EDGES" ), fr);
   QHBoxLayout* edgeLay = new QHBoxLayout( myReversedEdgesBox );
 
-  myDirectionWidget = new StdMeshersGUI_SubShapeSelectorWdg();
+  myDirectionWidget = new StdMeshersGUI_SubShapeSelectorWdg( myReversedEdgesBox );
   QString aGeomEntry = getShapeEntry();
   QString aMainEntry = getMainShapeEntry();
   if ( aGeomEntry == "" )
@@ -212,7 +220,9 @@ QFrame* StdMeshersGUI_NbSegmentsCreator::buildFrame()
   edgeLay->addWidget( myDirectionWidget );
 
   lay->addWidget( myReversedEdgesBox );
-
+  lay->setStretchFactor( GroupC1, 2);
+  lay->setStretchFactor( myReversedEdgesBox, 1);
+  
   connect( myNbSeg, SIGNAL( valueChanged( const QString& ) ), this, SLOT( onValueChanged() ) );
   connect( myDistr, SIGNAL( activated( int ) ), this, SLOT( onValueChanged() ) );
   connect( myTable, SIGNAL( valueChanged( int, int ) ), this, SLOT( onValueChanged() ) );
@@ -289,10 +299,12 @@ QString StdMeshersGUI_NbSegmentsCreator::storeParams() const
     break;
   }
   if ( hasConv )
+  {
     if ( data.myConv )
       valStr += "; " + tr("SMESH_CUT_NEG_MODE");
     else
       valStr += "; " + tr("SMESH_EXP_MODE");
+  }
 
   return valStr;
 }
@@ -428,20 +440,12 @@ void StdMeshersGUI_NbSegmentsCreator::onValueChanged()
 
   bool isFunc = distr==2 || distr==3;
   myPreview->setShown( isFunc );
-  myGroupLayout->setRowStretch( myPreviewRow, isFunc ? 1 : 0 );
-
   myConvBox->setShown( isFunc );
-
-  if( distr==2 )
-    myTable->show();
-  else
-    myTable->hide();
-  myLTable->setShown( distr==2 );
-  myGroupLayout->setRowStretch( myTableRow, distr==2 ? 1 : 0 );
-
+  
+  myTable->setShown( distr==2 );
   myExpr->setShown( distr==3 );
   myLExpr->setShown( distr==3 );
-  myInfo->setShown( isFunc );
+  myInfo->setShown( distr==3);
 
   //change of preview
   int nbSeg = myNbSeg->value();

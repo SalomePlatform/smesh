@@ -1,20 +1,20 @@
-//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2011  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 
 // File   : SMESHGUI_ComputeDlg.cxx
@@ -821,6 +821,10 @@ void SMESHGUI_BaseComputeOp::computeMesh()
       memoryLack = true;
     }
 
+    if ( !memoryLack && !SMDS_Mesh::CheckMemory(true) ) { // has memory to show dialog boxes?
+      memoryLack = true;
+    }
+
     // NPAL16631: if ( !memoryLack )
     {
       SMESH::ModifiedMesh(aMeshSObj, !computeFailed, myMesh->NbNodes() == 0);
@@ -830,7 +834,6 @@ void SMESHGUI_BaseComputeOp::computeMesh()
       // NPAL16631: if ( getSMESHGUI()->automaticUpdate() )
       SUIT_ResourceMgr* resMgr = SMESH::GetResourceMgr( SMESHGUI::GetSMESHGUI() );
       long newSize = myMesh->NbElements();
-      long limitSize = resMgr->integerValue( "SMESH", "update_limit", 500000 );
       bool limitExceeded;
       if ( !memoryLack )
       {
@@ -856,6 +859,7 @@ void SMESHGUI_BaseComputeOp::computeMesh()
         }
         else if ( limitExceeded )
         {
+          long limitSize = resMgr->integerValue( "SMESH", "update_limit", 500000 );
           SUIT_MessageBox::warning( desktop(),
                                     tr( "SMESH_WRN_WARNING" ),
                                     tr( "SMESH_WRN_SIZE_LIMIT_EXCEEDED" ).arg( newSize ).arg( limitSize ) );

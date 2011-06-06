@@ -77,7 +77,7 @@
     </message>
     <message>
         <source>SMESH_EXPR_FUNC</source>
-        <translation>Density function f(t) = </translation>
+        <translation>Density function</translation>
     </message>
     <message>
         <source>SMESH_EXP_MODE</source>

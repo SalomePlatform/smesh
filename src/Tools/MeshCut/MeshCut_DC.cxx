@@ -1,3 +1,22 @@
+//  Copyright (C) 2006-2011  EDF R&D
+//
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
+//
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
+
 // Classes et fonctions XMeshLab
 
 #include "MeshCut_Utils.hxx"
@@ -31,6 +50,7 @@ std::vector<float> MESHCUT::newXX, MESHCUT::newYY, MESHCUT::newZZ;
 std::map<TYPE_MAILLE, std::vector<int> > MESHCUT::newCNX;
 std::map<TYPE_MAILLE, int> MESHCUT::cptNouvellesMailles;
 std::map<TYPE_MAILLE, std::vector<int> > MESHCUT::GMplus, MESHCUT::GMmoins;
+std::vector<int> MESHCUT::cutTetras;
 
 float *MESHCUT::DNP;
 int *MESHCUT::POSN;
@@ -117,24 +137,24 @@ int main(int argc, char *argv[])
       ERREUR("--> check arguments!");
     }
 
-  cout << "Découpe plane :" << endl;
-  cout << "\t" << "Maillage source: " << ficMEDin << endl;
-  cout << "\t" << "Maillage cible:  " << ficMEDout << endl;
-  cout << "\t" << "ID nouveau maillage:  " << str_id_maillagenew << endl;
-  cout << "\t" << "Nom GMplus:  " << str_id_GMplus << endl;
-  cout << "\t" << "Nom GMmoins: " << str_id_GMmoins << endl;
-  cout << "\t" << "Vecteur normal du plan de coupe: xn=" << xNormal << " yn=" << yNormal << " zn=" << zNormal << endl;
-  cout << "\t" << "Point du plan de coupe: xm=" << xm << " ym=" << ym << " zm=" << zm << endl;
-  cout << "\t" << "Tolérance: " << tolerance << endl;
+  cout << "Cut by a plane :" << endl;
+  cout << "  source mesh: " << ficMEDin << endl;
+  cout << "  result mesh:  " << ficMEDout << endl;
+  cout << "  mesh name:  " << str_id_maillagenew << endl;
+  cout << "  group above plane:  " << str_id_GMplus << endl;
+  cout << "  group below plane: " << str_id_GMmoins << endl;
+  cout << "  vector normal to the cut plane: xn=" << xNormal << " yn=" << yNormal << " zn=" << zNormal << endl;
+  cout << "  point in the cut plane: xm=" << xm << " ym=" << ym << " zm=" << zm << endl;
+  cout << "  tolerance: " << tolerance << endl;
   cout << endl;
 
   if (tolerance <= 0.0)
-    ERREUR("L'argument tolérance doit être strictement positif");
+    ERREUR("Tolerance must not be negative or null");
 
   // Il faut normer la normale
   float normeNormal = sqrt(xNormal * xNormal + yNormal * yNormal + zNormal * zNormal);
   if (normeNormal == 0.0)
-    ERREUR("Vecteur normal nul");
+    ERREUR("null normal vector");
   normale[0] = xNormal / normeNormal;
   normale[1] = yNormal / normeNormal;
   normale[2] = zNormal / normeNormal;
@@ -157,22 +177,22 @@ int main(int argc, char *argv[])
 
   int V[6];
   int S[4]; // Signature du T4 courant
-  int NG[4]; // Num. globaux des sommets
+  //int NG[4]; // Num. globaux des sommets
 
   // Acquisition maillage initial
   //cout << chrono() << " - Acquisition du maillage initial" << endl;
   MAILLAGE1 = new Maillage((string) "TEMP");
   MAILLAGE1->inputMED(ficMEDin);
-  cout << chrono() << " - Fin d'acquisition maillage" << endl;
+  cout << chrono() << " - End of mesh read" << endl;
   indexNouveauxNoeuds = MAILLAGE1->nombreNoeudsMaillage;
 
   // Le maillage ne contient aucun TETRA4 : on rend le maillage initial sans modification
   if (!MAILLAGE1->EFFECTIFS_TYPES[TETRA4])
     {
-      cout << "WARNING : le maillage ne contient aucun élément TETRA4, il ne sera donc pas modifié" << endl;
+      cout << "WARNING: mesh does not contain tetra4 elements, it will not be modified" << endl;
       MAILLAGE1->ID = str_id_maillagenew;
       MAILLAGE1->outputMED(ficMEDout);
-      cout << chrono() << " - Terminé" << endl << endl;
+      cout << chrono() << " - Finished!" << endl << endl;
       exit(0);
     }
   // A partir de cet instant le maillage contient forcément des TETRA4
@@ -182,7 +202,7 @@ int main(int argc, char *argv[])
   DNP = (float*) malloc(sizeof(float) * MAILLAGE1->nombreNoeudsMaillage);
   for (int k = 0; k < MAILLAGE1->nombreNoeudsMaillage; k++)
     DNP[k] = distanceNoeudPlan(k + 1);
-  cout << chrono() << " - Fin de chargement des distances noeud-plan" << endl;
+  cout << chrono() << " - End of computation of distances between nodes and plane" << endl;
 
   // Longueur d'arête moyenne des T4 intersectant le plan de coupe
   float LONGUEURS = 0.0;
@@ -222,11 +242,11 @@ int main(int argc, char *argv[])
   if (cptLONGUEURS == 0)
     {
       cout
-          << "WARNING : le plan de coupe n'intersecte aucun élément TETRA4, le maillage initial ne sera donc pas modifié"
+          << "WARNING: the cut plane does not cut any tetra4 element, initial mesh will not be modified"
           << endl;
       MAILLAGE1->ID = str_id_maillagenew;
       MAILLAGE1->outputMED(ficMEDout);
-      cout << chrono() << " - Terminé" << endl << endl;
+      cout << chrono() << " - Finished!" << endl << endl;
       exit(0);
     }
   // A partir de cet instant le maillage contient forcément des TETRA4 intersectant le plan de coupe
@@ -236,11 +256,11 @@ int main(int argc, char *argv[])
   epsilon = tolerance * longueurMoyenne;
 
   int nT4coupe = cptLONGUEURS / 6;
-  cout << chrono() << " - Fin du calcul de la longueur moyenne des arêtes TETRA4 au voisinage du plan de coupe" << endl;
+  cout << chrono() << " - End of computation of mean length of tetra4 edges near the cut plane" << endl;
 
-  cout << "Nombre de TETRA4 impliqués dans la coupe = " << nT4coupe << endl;
-  cout << "Longueur moyenne = " << longueurMoyenne << endl;
-  cout << "Tolérance = " << tolerance << endl;
+  cout << "Number of tetra4 to be cut = " << nT4coupe << endl;
+  cout << "Mean length = " << longueurMoyenne << endl;
+  cout << "Tolerance = " << tolerance << endl;
   cout << "Epsilon = " << epsilon << endl;
 
   // Détermination des positions de noeuds par rapport au plan de coupe - POSN
@@ -254,8 +274,8 @@ int main(int argc, char *argv[])
       else
         POSN[k] = 0;
     }
-  cout << chrono() << " - Fin du positionnement des points par rapport au plan de coupe" << endl;
-  cout << "Début de la boucle sur les TETRA4" << endl;
+  cout << chrono() << " - End of nodes qualification above or below the cut plane" << endl;
+  cout << "Start of iteration on tetra4" << endl;
 
   for (int it4 = 0; it4 < MAILLAGE1->EFFECTIFS_TYPES[TETRA4]; it4++)
     {
@@ -263,7 +283,7 @@ int main(int argc, char *argv[])
       for (int is = 0; is < 4; is++)
         {
           int ng = *(MAILLAGE1->CNX[TETRA4] + 4 * it4 + is);
-          NG[is] = ng;
+          //NG[is] = ng;
           S[is] = *(POSN + ng - 1);
         }
 
@@ -617,9 +637,9 @@ int main(int argc, char *argv[])
 
       else if (S[0] == 0 && S[1] == 0 && S[2] == 0 && S[3] == 0)
         {
-          cout << "WARNING : TETRA4 numéro " << it4
-              << " entièrement inclus dans la zone de tolérance autour du plan de coupe" << endl;
-          cout << "   --> affecté au groupe " << str_id_GMmoins << endl;
+          cout << "WARNING: TETRA4 number " << it4
+              << " entirely in the tolerance zone near the cut plane" << endl;
+          cout << " --> affected to group " << str_id_GMmoins << endl;
           GMmoins[TETRA4].push_back(it4);
         }
 
@@ -970,10 +990,10 @@ int main(int argc, char *argv[])
         GMplus[TETRA4].push_back(it4);
 
       else
-        ERREUR("Cas non prévu");
+        ERREUR("Case not taken into account");
 
     }
-  cout << chrono() << " - Fin de la boucle sur les TETRA4" << endl;
+  cout << chrono() << " - End of iteration on tetra4" << endl;
 
   // cout << "indexNouveauxNoeuds = " << indexNouveauxNoeuds << endl;
   newXX.resize(indexNouveauxNoeuds - MAILLAGE1->nombreNoeudsMaillage);
@@ -991,7 +1011,7 @@ int main(int argc, char *argv[])
   //                          2. Constitution du maillage final
   // =========================================================================================
 
-  cout << chrono() << " - Constitution du maillage final" << endl;
+  cout << chrono() << " - Constitution of final mesh" << endl;
 
   MAILLAGE2 = new Maillage(str_id_maillagenew);
   MAILLAGE2->dimensionMaillage = MAILLAGE1->dimensionMaillage;
@@ -1028,8 +1048,8 @@ int main(int argc, char *argv[])
       // cout << "Nouveaux noeuds, indice " << i << " : " << newXX[i] << " " << newYY[i] << " " << newZZ[i] << " " << endl;
     }
 
-  // Legacy mailles maillage 1 +
-  for (int itm = (int) POI1; itm <= (int) HEXA20; itm++)
+  // Legacy mailles maillage 1 (volumes seulement)
+  for (int itm = (int) TETRA4; itm <= (int) HEXA20; itm++)
     {
       TYPE_MAILLE tm = (TYPE_MAILLE) itm;
       if (tm != TETRA4 && tm != PYRAM5 && tm != PENTA6)
@@ -1090,10 +1110,12 @@ int main(int argc, char *argv[])
 
   MAILLAGE2->GN = MAILLAGE1->GN;
 
-  cout << chrono() << " - Ecriture du fichier MED" << endl;
+  MAILLAGE2->eliminationMailles(TETRA4, cutTetras);
+
+  cout << chrono() << " - MED file writing" << endl;
 
   MAILLAGE2->outputMED(ficMEDout);
-  cout << chrono() << " - Terminé" << endl << endl;
+  cout << chrono() << " - Finished!" << endl << endl;
 
   return 0;
 

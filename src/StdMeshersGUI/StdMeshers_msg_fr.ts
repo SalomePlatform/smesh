@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="iso-8859-1"?>
 <!DOCTYPE TS>
 <TS version="2.0" language="fr_FR">
 <context>
@@ -77,7 +77,7 @@
     </message>
     <message>
         <source>SMESH_EXPR_FUNC</source>
-        <translation>Expression de la densité f(t) = </translation>
+        <translation>Expression de la densité</translation>
     </message>
     <message>
         <source>SMESH_EXP_MODE</source>
@@ -89,7 +89,7 @@
     </message>
     <message>
         <source>SMESH_FUNC_DOMAIN</source>
-        <translation>Avertissement: il faut définir la fonction sur le segment [0..1]</translation>
+        <translation>Avertissement: La fonction doit ếtre définie sur le segment [0..1]</translation>
     </message>
     <message>
         <source>SMESH_INSERT_ROW</source>

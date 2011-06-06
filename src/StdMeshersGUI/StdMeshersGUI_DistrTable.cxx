@@ -1,23 +1,23 @@
-//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2011  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 
 // File   : StdMeshersGUI_DistrTable.cxx
@@ -31,6 +31,7 @@
 // Qt incldues
 #include <QItemDelegate>
 #include <QTableWidget>
+#include <QHeaderView>
 #include <QPushButton>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -244,6 +245,8 @@ Table( QWidget* parent, int rows )
   QStringList labs;
   labs << "t" << "f(t)";
   setHorizontalHeaderLabels( labs );
+  this->horizontalHeader()->setStretchLastSection(true);
+  this->horizontalHeader()->setDefaultSectionSize(60);
 
   while( rows-- )
     addRow();
@@ -411,15 +414,15 @@ sizeHint() const
 {
   if( cachedSizeHint().isValid() )
     return cachedSizeHint();
-
-  QSize sh = QTableWidget::sizeHint();
-  if( sh.width() < 400 )
-    sh.setWidth( 400 );
-  if( sh.height() < 200 )
-    sh.setHeight( 200 );
-
-  setCachedSizeHint( sh );
-  return sh;
+  return QTableWidget::sizeHint();
+//   QSize sh = QTableWidget::sizeHint();
+//   if( sh.width() < 400 )
+//     sh.setWidth( 400 );
+//   if( sh.height() < 200 )
+//     sh.setHeight( 200 );
+// 
+//   setCachedSizeHint( sh );
+//   return sh;
 }
 
 void
@@ -507,30 +510,24 @@ StdMeshersGUI_DistrTableFrame::
 StdMeshersGUI_DistrTableFrame( QWidget* parent )
   : QWidget( parent )
 {
-  QVBoxLayout* main = new QVBoxLayout( this );
+  QGridLayout* main = new QGridLayout( this );
   main->setMargin( 0 );
   main->setSpacing( 0 );
 
   // ---
   myTable = new Table( this );
   connect( myTable, SIGNAL( valueChanged( int, int ) ), this, SIGNAL( valueChanged( int, int ) ) );
-  
-  // ---
-  QWidget* aButFrame = new QWidget( this );
-  QHBoxLayout* butLay = new QHBoxLayout( aButFrame );
-  butLay->setContentsMargins( 0, SPACING, 0, SPACING );
-  butLay->setSpacing( SPACING );
 
-  myButtons[ InsertRowBtn ] = new QPushButton( tr( "SMESH_INSERT_ROW" ), aButFrame );
-  myButtons[ RemoveRowBtn ] = new QPushButton( tr( "SMESH_REMOVE_ROW" ), aButFrame );
+  myButtons[ InsertRowBtn ] = new QPushButton( tr( "SMESH_INSERT_ROW" ), this );
+  myButtons[ RemoveRowBtn ] = new QPushButton( tr( "SMESH_REMOVE_ROW" ), this );
 
-  butLay->addWidget( myButtons[ InsertRowBtn ] );
-  butLay->addWidget( myButtons[ RemoveRowBtn ] );
-  butLay->addStretch();
 
   // ---
-  main->addWidget( myTable );
-  main->addWidget( aButFrame );
+  main->addWidget( myTable , 0, 0, 1, 3);
+  main->addWidget( myButtons[ InsertRowBtn ] , 1, 0);
+  main->addWidget( myButtons[ RemoveRowBtn ] , 1, 1);
+  main->setColumnStretch(2, 1);
+  main->setSpacing( SPACING );
   
   // ---
   connect( myButtons[ InsertRowBtn ], SIGNAL( clicked() ), this, SLOT( onInsert() ) );

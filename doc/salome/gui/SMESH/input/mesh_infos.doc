@@ -5,6 +5,14 @@
 The user can obtain an information about the selected mesh object
 (mesh, sub-mesh or group) using <b>Mesh Information</b> dialog box.
 
+To view the <b>Mesh Information</b>, select your mesh, sub-mesh or
+group in the <b>Object Browser</b> and invoke <b>Mesh Information</b>
+item from the \b Mesh menu or click <em>"Mesh Information"</em> button
+in the toolbar. 
+
+\image html image49.png
+<center><em>"Mesh Information" button</em></center>
+
 The <b>Mesh Information</b> dialog box provides two tab pages:
 - <b>Base Info</b> - to show base information about selected mesh
 object
@@ -19,16 +27,6 @@ information on the selected object - mesh, sub-mesh or mesh group:
 name, type, total number of nodes and elements separately for each
 type: 0D elements, edges, faces and volumes.
 
-To view the <b>Mesh Information</b>, select your mesh, sub-mesh or
-group in the <b>Object Browser</b> and invoke <b>Mesh Information</b>
-item from the \b Mesh menu or click <em>"Mesh Information"</em> button
-in the toolbar. 
-
-\image html image49.png
-<center><em>"Mesh Information" button</em></center>
-
-The following information will be displayed:
-
 \image html advanced_mesh_infos.png
 <center><em>"Base Info" page</em></center>
 
@@ -39,21 +37,11 @@ The <b>Element Info</b> tab page of the dialog box gives basic
 information about the type, coordinates and connectivity of the
 selected mesh node or element.
 
-To view the <b>Mesh Element Information</b>, select your mesh, sub-mesh or
-group in the <b>Object Browser</b> and invoke <b>Mesh Element Information</b>
-item from the \b Mesh menu or click <em>"Mesh Element Information"</em> button
-in the toolbar. 
-
-\image html elem_info.png
-<center><em>"Mesh Element Information" button</em></center>
-
-The following information will be displayed:
-
 \image html eleminfo1.png
-<center><em>"Element Info" page, node</em></center>
+<center><em>"Element Info" page, node information</em></center>
 <br>
 \image html eleminfo2.png 
-<center><em>"Element Info" page, element</em></center>
+<center><em>"Element Info" page, element information</em></center>
 
 The use can either input the ID of a node or element he wants to
 analyze directly in the dialog box or select the node or element in

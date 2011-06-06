@@ -1,23 +1,23 @@
-//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2011  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 
 // SMESH SMESHGUI : GUI for SMESH component
@@ -373,34 +373,31 @@ namespace SMESH
 
     if ( objModified ) {
       // PAL16631. Mesurements showed that to show aVisualObj in SHADING(default) mode,
-      // ~10 times more memory is used than it occupies.
+      // ~5 times more memory is used than it occupies.
       // Warn the user if there is less free memory than 30 sizes of a grid
       // TODO: estimate memory usage in other modes and take current mode into account
       int freeMB = SMDS_Mesh::CheckMemory(true);
       int usedMB = aVisualObj->GetUnstructuredGrid()->GetActualMemorySize() / 1024;
-      if ( freeMB > 0 && usedMB * 30 > freeMB ) {
-#ifdef _DEBUG_
-        MESSAGE ( "SMESHGUI_VTKUtils::GetVisualObj(), freeMB=" << freeMB
-               << ", usedMB=" << usedMB );
-#endif
-//        bool continu = false;
-//        if ( usedMB * 10 > freeMB )
-//          // even dont try to show
-//          SUIT_MessageBox::warning(SMESHGUI::desktop(), QObject::tr("SMESH_WRN_WARNING"),
-//                                   QObject::tr("SMESH_NO_MESH_VISUALIZATION"));
-//        else
-//          // there is a chance to succeed
-//          continu = SUIT_MessageBox::warning
-//            (SMESHGUI::desktop(),
-//             QObject::tr("SMESH_WRN_WARNING"),
-//             QObject::tr("SMESH_CONTINUE_MESH_VISUALIZATION"),
-//             SUIT_MessageBox::Yes | SUIT_MessageBox::No,
-//             SUIT_MessageBox::Yes ) == SUIT_MessageBox::Yes;
-//        if ( !continu ) {
-//          // remove the corresponding actors from all views
-//          RemoveVisualObjectWithActors( theEntry );
-//          aVisualObj.reset();
-//        }
+      MESSAGE("SMESHGUI_VTKUtils::GetVisualObj(), freeMB=" << freeMB << ", usedMB=" <<usedMB);
+      if ( freeMB > 0 && usedMB * 5 > freeMB ) {
+       bool continu = false;
+       if ( usedMB * 3 > freeMB )
+         // even dont try to show
+         SUIT_MessageBox::warning(SMESHGUI::desktop(), QObject::tr("SMESH_WRN_WARNING"),
+                                  QObject::tr("SMESH_NO_MESH_VISUALIZATION"));
+       else
+         // there is a chance to succeed
+         continu = SUIT_MessageBox::warning
+           (SMESHGUI::desktop(),
+            QObject::tr("SMESH_WRN_WARNING"),
+            QObject::tr("SMESH_CONTINUE_MESH_VISUALIZATION"),
+            SUIT_MessageBox::Yes | SUIT_MessageBox::No,
+            SUIT_MessageBox::Yes ) == SUIT_MessageBox::Yes;
+       if ( !continu ) {
+         // remove the corresponding actors from all views
+         RemoveVisualObjectWithActors( theEntry );
+         aVisualObj.reset();
+       }
       }
     }
 
@@ -1270,7 +1267,7 @@ namespace SMESH
                                                 {theBounds[0],theBounds[3],theBounds[5]}, 
                                                 {theBounds[1],theBounds[3],theBounds[5]}};
 
-    int aMaxId = 0, aMinId = aMaxId;
+    int aMaxId = 0;
     theMaxBoundPrj = vtkMath::Dot(theDirection,aBoundPoints[aMaxId]);
     theMinBoundPrj = theMaxBoundPrj;
     for(int i = 1; i < 8; i++){
@@ -1281,7 +1278,6 @@ namespace SMESH
       }
       if(theMinBoundPrj > aTmp){
         theMinBoundPrj = aTmp;
-        aMinId = i;
       }
     }
     vtkFloatingPointType *aMinPnt = aBoundPoints[aMaxId];

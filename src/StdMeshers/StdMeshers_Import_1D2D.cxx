@@ -1,23 +1,23 @@
-//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2011  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 
 //  SMESH SMESH : implementaion of SMESH idl descriptions
@@ -51,6 +51,7 @@
 #include <TopoDS_Compound.hxx>
 #include <TopoDS_Edge.hxx>
 #include <TopoDS_Vertex.hxx>
+#include <Precision.hxx>
 
 #include <numeric>
 
@@ -182,6 +183,7 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
   // to count now many times a link between nodes encounters
   map<TLink, int> linkCount;
   map<TLink, int>::iterator link2Nb;
+  double minLinkLen2 = Precision::Infinite();
 
   // =========================
   // Import faces from groups
@@ -201,7 +203,7 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
 
     SMDS_ElemIteratorPtr srcElems = srcGroup->GetElements();
     SMDS_MeshNode *tmpNode = helper.AddNode(0,0,0);
-    gp_XY uv;
+    gp_XY uv( Precision::Infinite(), Precision::Infinite() );
     while ( srcElems->more() ) // loop on group contents
     {
       const SMDS_MeshElement* face = srcElems->next();
@@ -313,6 +315,13 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
           medium = newNodes[i+nbNodes];
         link2Nb = linkCount.insert( make_pair( TLink( n1, n2, medium ), 0)).first;
         ++link2Nb->second;
+        if ( link2Nb->second == 1 )
+        {
+          // measure link length
+          double len2 = SMESH_TNodeXYZ( n1 ).SquareDistance( n2 );
+          if ( len2 < minLinkLen2 )
+            minLinkLen2 = len2;
+        }
       }
     }
     helper.GetMeshDS()->RemoveNode(tmpNode);
@@ -327,6 +336,10 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
   for ( exp.Init( theShape, TopAbs_EDGE ); exp.More(); exp.Next() )
     if ( subShapeIDs.insert( tgtMesh->ShapeToIndex( exp.Current() )).second )
       edges.push_back( TopoDS::Edge( exp.Current() ));
+
+  // use large tolerance for projection of nodes to edges because of
+  // BLSURF mesher specifics (issue 0020918, Study2.hdf)
+  const double projTol = 1e-3 * sqrt( minLinkLen2 );
 
   bool isFaceMeshed = false;
   if ( SMESHDS_SubMesh* tgtSM = tgtMesh->MeshElements( theShape ))
@@ -350,7 +363,7 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
           if ( !subShapeIDs.count( n->getshapeId() ))
           {
             for ( unsigned iE = 0; iE < edges.size(); ++iE )
-              if ( helper.CheckNodeU( edges[iE], n, u, 10 * faceTol, /*force=*/true ))
+              if ( helper.CheckNodeU( edges[iE], n, u=0, projTol, /*force=*/true ))
               {
                 BRep_Tool::Range(edges[iE],f,l);
                 if ( Abs(u-f) < 2 * faceTol || Abs(u-l) < 2 * faceTol )

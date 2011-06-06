@@ -1,20 +1,20 @@
-//  Copyright (C) 2007-2011  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2011  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 
 // File      : StdMeshers_ViscousLayers.cxx
@@ -2092,14 +2092,23 @@ bool _ViscousBuilder::smoothAndCheck(_SolidData& data,
 
   distToIntersection = Precision::Infinite();
   double dist;
-  const SMDS_MeshElement* intFace = 0, *closestFace = 0;
+  const SMDS_MeshElement* intFace = 0;
+#ifdef __myDEBUG
+  const SMDS_MeshElement* *closestFace = 0;
   int iLE = 0;
+#endif
   for ( unsigned i = 0; i < data._edges.size(); ++i )
   {
     if ( data._edges[i]->FindIntersection( *searcher, dist, data._epsilon, &intFace ))
       return false;
     if ( distToIntersection > dist )
-      distToIntersection = dist, closestFace = intFace, iLE = i;
+    {
+      distToIntersection = dist;
+#ifdef __myDEBUG
+      iLE = i;
+      closestFace = intFace;
+#endif
+    }
   }
 #ifdef __myDEBUG
   if ( closestFace )
@@ -3811,7 +3820,7 @@ bool _ViscousBuilder::addBoundaryElements()
 
       // Find out orientation and type of face to create
 
-      bool reverse = false, tria = false, isOnFace;
+      bool reverse = false, isOnFace;
       
       map< TGeomID, TopoDS_Shape >::iterator e2f =
         data._shrinkShape2Shape.find( getMeshDS()->ShapeToIndex( E ));
@@ -3834,8 +3843,6 @@ bool _ViscousBuilder::addBoundaryElements()
                !_ignoreShapeIds.count( e2f->first ))
             F = *pF;
         }
-        
-        tria = true;
       }
       // Find the sub-mesh to add new faces
       SMESHDS_SubMesh* sm = 0;

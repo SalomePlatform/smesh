@@ -557,11 +557,11 @@
     </message>
     <message>
         <source>MEN_NUM_ELEMENTS</source>
-        <translation>Montrer les n° des éléments</translation>
+        <translation>Montrer les nÂ° des éléments</translation>
     </message>
     <message>
         <source>MEN_NUM_NODES</source>
-        <translation>Montrer les n° des nœuds</translation>
+        <translation>Montrer les nÂ° des nœuds</translation>
     </message>
     <message>
         <source>MEN_ORIENT</source>
@@ -737,7 +737,7 @@
     </message>
     <message>
         <source>MEN_STD_INFO</source>
-        <translation>Informations du maillage</translation>
+        <translation>Informations sur le maillage</translation>
     </message>
     <message>
         <source>MEN_STL</source>
@@ -2113,7 +2113,7 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie suppo
     </message>
     <message>
         <source>SMESH_TRANSPARENCY_OPAQUE</source>
-        <translation>→ Opaque</translation>
+        <translation>Opaque</translation>
     </message>
     <message>
         <source>SMESH_TRANSPARENCY_TITLE</source>
@@ -2121,7 +2121,7 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie suppo
     </message>
     <message>
         <source>SMESH_TRANSPARENCY_TRANSPARENT</source>
-        <translation>Transparent ←</translation>
+        <translation>Transparent</translation>
     </message>
     <message>
         <source>SMESH_TRIANGLE</source>
@@ -2285,7 +2285,7 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>STB_ADV_INFO</source>
-        <translation>Information avancée sur le maillage</translation>
+        <translation>Monter l&apos;Information de base sur le maillage</translation>
     </message>
     <message>
         <source>STB_ALL</source>
@@ -2729,7 +2729,7 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>STB_STD_INFO</source>
-        <translation>Informations du maillage</translation>
+        <translation>Informations sur le maillage</translation>
     </message>
     <message>
         <source>STB_SYM</source>
@@ -2805,7 +2805,7 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>STB_WHAT_IS</source>
-        <translation>Information sur l&apos;élément de maillage</translation>
+        <translation>Information sur un élément ou un nœud de maillage</translation>
     </message>
     <message>
         <source>STB_WIRE</source>
@@ -3285,7 +3285,7 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>TOP_STD_INFO</source>
-        <translation>Informations du maillage</translation>
+        <translation>Informations sur le maillage</translation>
     </message>
     <message>
         <source>TOP_SYM</source>
@@ -3373,7 +3373,7 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>VOLUME_3D_ELEMENTS</source>
-        <translation>Aire</translation>
+        <translation>Volume</translation>
     </message>
     <message>
         <source>WARP_ELEMENTS</source>
@@ -3903,7 +3903,7 @@ Voulez-vous restaurer la priorité initiale ?</translation>
     </message>
     <message>
         <source>MESH</source>
-        <translation>Maillage</translation>
+        <translation>Maillage ou sous-maillage</translation>
     </message>
     <message>
         <source>RADIOBTN_1</source>
@@ -4792,7 +4792,7 @@ Indiquez-les et essayez de nouveau</translation>
     </message>
     <message>
         <source>MOVE_NODE</source>
-        <translation>Déplacer un  nœud</translation>
+        <translation>Déplacer un nœud</translation>
     </message>
     <message>
         <source>METHOD</source>
@@ -5605,7 +5605,7 @@ Il y a trop peu de points dans le fichier </translation>
     </message>
     <message>
         <source>1D_FROM_3D</source>
-        <translation>1D à partir de 3D</translation>
+        <translation>1D à partir de groupes 2D</translation>
     </message>
     <message>
         <source>1D_FROM_2D</source>

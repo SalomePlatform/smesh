@@ -1,23 +1,23 @@
-//  Copyright (C) 2007-2010  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2011  CEA/DEN, EDF R&D, OPEN CASCADE
 //
-//  Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 
 //  SMESH SMESH : implementaion of SMESH idl descriptions
@@ -25,23 +25,24 @@
 //  Author : Paul RASCLE, EDF
 //  Module : SMESH
 //
-#define CHRONODEF
+
+//#define CHRONODEF
+
 #include "SMESH_Gen.hxx"
-#include "SMESH_subMesh.hxx"
-#include "SMESH_HypoFilter.hxx"
-#include "SMESHDS_Document.hxx"
+
+#include "SMDS_Mesh.hxx"
 #include "SMDS_MeshElement.hxx"
 #include "SMDS_MeshNode.hxx"
-#include "SMDS_Mesh.hxx"
+#include "SMESHDS_Document.hxx"
+#include "SMESH_HypoFilter.hxx"
+#include "SMESH_MesherHelper.hxx"
+#include "SMESH_subMesh.hxx"
 
 #include "utilities.h"
 #include "OpUtil.hxx"
 #include "Utils_ExceptHandlers.hxx"
 
-#include <gp_Pnt.hxx>
-#include <BRep_Tool.hxx>
-#include <TopTools_ListOfShape.hxx>
-#include <TopTools_ListIteratorOfListOfShape.hxx>
+#include <TopoDS_Iterator.hxx>
 
 #include "memoire.h"
 
@@ -184,6 +185,14 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
     // and collect submeshes with algos that DO support submeshes
     // -----------------------------------------------------------------
     list< SMESH_subMesh* > smWithAlgoSupportingSubmeshes;
+
+    // map to sort sm with same dim algos according to dim of
+    // the shape the algo assigned to (issue 0021217)
+    multimap< int, SMESH_subMesh* > shDim2sm;
+    multimap< int, SMESH_subMesh* >::reverse_iterator shDim2smIt;
+    TopoDS_Shape algoShape;
+    int prevShapeDim = -1;
+
     smIt = sm->getDependsOnIterator(includeSelf, complexShapeFirst);
     while ( smIt->more() )
     {
@@ -192,18 +201,35 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
         continue;
 
       const TopoDS_Shape& aSubShape = smToCompute->GetSubShape();
-      const int aShapeDim = GetShapeDim( aSubShape );
+      int aShapeDim = GetShapeDim( aSubShape );
       if ( aShapeDim < 1 ) break;
       
       // check for preview dimension limitations
       if ( aShapesId && aShapeDim > (int)aDim )
         continue;
 
-      SMESH_Algo* algo = GetAlgo( aMesh, aSubShape );
+      SMESH_Algo* algo = GetAlgo( aMesh, aSubShape, &algoShape );
       if ( algo && !algo->NeedDescretBoundary() )
       {
         if ( algo->SupportSubmeshes() )
-          smWithAlgoSupportingSubmeshes.push_front( smToCompute );
+        {
+          // reload sub-meshes from shDim2sm into smWithAlgoSupportingSubmeshes
+          if ( prevShapeDim != aShapeDim )
+          {
+            prevShapeDim = aShapeDim;
+            for ( shDim2smIt = shDim2sm.rbegin(); shDim2smIt != shDim2sm.rend(); ++shDim2smIt )
+              smWithAlgoSupportingSubmeshes.push_front( shDim2smIt->second );
+            shDim2sm.clear();
+          }
+          // add smToCompute to shDim2sm map
+          aShapeDim = GetShapeDim( algoShape );
+          if ( algoShape.ShapeType() == TopAbs_COMPOUND )
+          {
+            TopoDS_Iterator it( algoShape );
+            aShapeDim += GetShapeDim( it.Value() );
+          }
+          shDim2sm.insert( make_pair( aShapeDim, smToCompute ));
+        }
         else
         {
 #ifdef WITH_SMESH_CANCEL_COMPUTE
@@ -220,7 +246,10 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
         }
       }
     }
-    
+    // reload sub-meshes from shDim2sm into smWithAlgoSupportingSubmeshes
+    for ( shDim2smIt = shDim2sm.rbegin(); shDim2smIt != shDim2sm.rend(); ++shDim2smIt )
+      smWithAlgoSupportingSubmeshes.push_front( shDim2smIt->second );
+
     // ------------------------------------------------------------
     // sort list of submeshes according to mesh order
     // ------------------------------------------------------------
@@ -239,7 +268,6 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
       sm = *subIt;
 
       // get a shape the algo is assigned to
-      TopoDS_Shape algoShape;
       if ( !GetAlgo( aMesh, sm->GetSubShape(), & algoShape ))
         continue; // strange...
 
@@ -324,6 +352,15 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
   MESSAGE("Number of cell objects " << SMDS_MeshCell::nbCells);
   //myMesh->dumpGrid();
   //aMesh.GetMeshDS()->Modified();
+
+  // fix quadratic mesh by bending iternal links near concave boundary
+  if ( aShape.IsSame( aMesh.GetShapeToMesh() ) &&
+       !aShapesId ) // not preview
+  {
+    SMESH_MesherHelper aHelper( aMesh );
+    if ( aHelper.IsQuadraticMesh() != SMESH_MesherHelper::LINEAR )
+      aHelper.FixQuadraticElements();
+  }
   return ret;
 }
 

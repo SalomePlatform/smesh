@@ -48,6 +48,8 @@ of the selected node or edge.</li>
 <li>\subpage convert_to_from_quadratic_mesh_page "Convert regular mesh to quadratic", 
 or vice versa.</li>
 <li>\subpage make_2dmesh_from_3d_page "Generate boundary elements".</li>
+<li>\subpage generate_flat_elements_page "Generate flat elements on group boundaries or on faces".</li>
+<li>\subpage cut_mesh_by_plane_page "Cut a tetrahedron mesh by a plane".</li>
 </ul>
 
 \note It is possible to use the variables defined in the SALOME \b NoteBook
