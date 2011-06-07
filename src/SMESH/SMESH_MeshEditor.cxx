@@ -1615,6 +1615,7 @@ void SMESH_MeshEditor::SplitVolumesIntoTetra (const TIDSortedElemSet & theElems,
       helper.SetIsQuadratic( false );
     }
     vector<const SMDS_MeshNode*> nodes( (*elem)->begin_nodes(), (*elem)->end_nodes() );
+    helper.SetElementsOnShape( true );
     if ( splitMethod._baryNode )
     {
       // make a node at barycenter
@@ -1642,7 +1643,6 @@ void SMESH_MeshEditor::SplitVolumesIntoTetra (const TIDSortedElemSet & theElems,
     }
 
     // make tetras
-    helper.SetElementsOnShape( true );
     vector<const SMDS_MeshElement* > tetras( splitMethod._nbTetra ); // splits of a volume
     const int* tetConn = splitMethod._connectivity;
     for ( int i = 0; i < splitMethod._nbTetra; ++i, tetConn += 4 )
@@ -1670,6 +1670,12 @@ void SMESH_MeshEditor::SplitVolumesIntoTetra (const TIDSortedElemSet & theElems,
         helper.SetElementsOnShape( false );
         vector< const SMDS_MeshElement* > triangles;
 
+        // find submesh to add new triangles in
+        if ( !fSubMesh || !fSubMesh->Contains( face ))
+        {
+          int shapeID = FindShape( face );
+          fSubMesh = GetMeshDS()->MeshElements( shapeID );
+        }
         map<int, const SMDS_MeshNode*>::iterator iF_n = splitMethod._faceBaryNode.find(iF);
         if ( iF_n != splitMethod._faceBaryNode.end() )
         {
@@ -1681,6 +1687,9 @@ void SMESH_MeshEditor::SplitVolumesIntoTetra (const TIDSortedElemSet & theElems,
             if ( !volTool.IsFaceExternal( iF ))
               swap( n2, n3 );
             triangles.push_back( helper.AddFace( n1,n2,n3 ));
+
+            if ( n3->getshapeId() < 1 )
+              fSubMesh->AddNode( n3 );
           }
         }
         else
@@ -1718,12 +1727,6 @@ void SMESH_MeshEditor::SplitVolumesIntoTetra (const TIDSortedElemSet & theElems,
                                                  volNodes[ facet->_n2 ],
                                                  volNodes[ facet->_n3 ]));
           }
-        }
-        // find submesh to add new triangles in
-        if ( !fSubMesh || !fSubMesh->Contains( face ))
-        {
-          int shapeID = FindShape( face );
-          fSubMesh = GetMeshDS()->MeshElements( shapeID );
         }
         for ( int i = 0; i < triangles.size(); ++i )
         {
