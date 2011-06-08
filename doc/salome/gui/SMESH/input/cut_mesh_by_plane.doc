@@ -2,8 +2,8 @@
 
 \page cut_mesh_by_plane_page Cut a tetrahedron mesh by a plane
 
-\n MeshCut works only on Med files and produces Med files, and is a standalone program.
-It can be used either directly on a shell command outside SALOME, or with a GUI interface in SMESH,
+\n MeshCut works only with MED files and produces MED files, and is a standalone program.
+It can be used either directly from a command shell outside SALOME, or with a GUI interface in SMESH,
 provided in a python plugin that needs to be installed in your SALOME application.
 
 \n MeshCut allows to cut a mesh constituted of linear tetrahedrons by a plane.
@@ -31,20 +31,21 @@ MeshCut input.med output.med resuMeshName aboveGroup belowGroup nx ny nz px py p
 \n  nx ny nz     = vector normal to the cut plane
 \n  px py pz     = a point of the cut plane
 \n  T            = 0 < T < 1 : vertices of a tetrahedron are considered as belonging to
-\n                 the cut plane if their distance to the plane is inferior to L*T
+\n                 the cut plane if their distance from the plane is inferior to L*T,
 \n                 where L is the mean edge size of the tetrahedron
 
 <br>
 \anchor meshcut_plugin
 <h2>Using MeshCut inside SALOME</h2>
 
-When the MeshCut plugin is installed, you will find it in the Mesh menu, sub-menu SMESH_plugins.
-\n If the plugin is not installed, look for a file named meshcut_plugin.py in your SMESH installation.
-The file is normally in the subdirectory bin/salome/meshcut_plugin.py.
+When the MeshCut plugin is installed, it can be found in the Mesh menu, sub-menu SMESH_plugins.
+\n If the plugin is not installed, the file meshcut_plugin.py is in
+SMESH installation in  subdirectory bin/salome/meshcut_plugin.py.
 
-\n If you already have plugins defined in a smesh_plugins.py file, add this file at the end.
- if not, copy this file as ${HOME}/Plugins/smesh_plugins.py or ${APPLI}/Plugins/smesh_plugins.py
- or in your ${PLUGINPATH} Directory.
+\n If there are already plugins defined in a smesh_plugins.py file,
+ this file should be added at the end.
+ if not, copied as ${HOME}/Plugins/smesh_plugins.py or ${APPLI}/Plugins/smesh_plugins.py
+ or in ${PLUGINPATH} Directory.
  
 <li>From the Mesh menu, sub-menu SMESH_plugins, choose "MeshCut" item
 The following dialog box will appear:

@@ -52,7 +52,7 @@ The use of additional hypotheses is optional (i.e. you may leave
 Proceed in the same way with 2d and 3d Algorithms and Hypotheses, note
 that the choice of hypotheses depends on the algorithm. There must be
 one Algorithm and zero or several Hypotheses for each dimension of your
-object (most of the standard 2D and 3D algorithms can work without
+object (most standard 2D and 3D algorithms can work without
 hypotheses using some default parameters), 
 otherwise you will not get any mesh at all. Of course, if you
 wish to mesh a face, which is a 2d object, you don't need to define 3d
@@ -74,11 +74,11 @@ algorithms applied to the construction of the mesh.</li>
 There is an alternative way to create a mesh on an object simply by
 clicking <b>Assign a set of hypotheses</b> button and selecting among
 pre-defined sets of hypotheses. In addition to the standard
-sets of hypotheses, one can create his own sets by creating
+sets of hypotheses, it is possible to create custom sets by editing
 CustomMeshers.xml file located in the home directory. CustomMeshers.xml
-file must describe sets of hypotheses the
+file must describe sets of hypotheses in the
 same way as ${SMESH_ROOT_DIR}/share/salome/resources/smesh/StdMeshers.xml 
-file does (hypotheses sets are enclosed between <hypotheses-set-group>
+file does (sets of hypotheses are enclosed between <hypotheses-set-group>
 tags).
 \image html hypo_sets.png
 <center>List of sets of hypotheses: <em>[custom]</em> is automatically added to the sets defined

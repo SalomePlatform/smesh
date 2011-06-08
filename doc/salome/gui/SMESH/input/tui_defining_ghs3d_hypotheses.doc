@@ -38,11 +38,11 @@ ghs3dMesh.Compute()
 # - the coordinates x,y,z
 # - a GEOM vertex or compound (No geometry, TUI only)
 #
-# The enforced nodes created can also be stored in
+# The created enforced nodes can also be stored in
 # a group (No geometry, TUI only).
 
-# Ex1: Add 1 enforced vertices by coords at (50,50,100) 
-#      with a physical size of 2
+# Ex1: Add one enforced vertex with coordinates (50,50,100) 
+#      and physical size 2.
 
 import geompy
 import smesh
@@ -73,10 +73,10 @@ GHS3D_Parameters.SetEnforcedVertex( 50, 50, 100, 2) # no group
 ghs3dMesh.Compute()
 
 
-# Ex2: Add 1 enforced vertices by GEOM vertex at (50,50,100) 
-#      with a physical size of 5 and add it to a group called "My special nodes"
+# Ex2: Add one vertex enforced by a GEOM vertex at (50,50,100) 
+#      with physical size 5 and add it to a group called "My special nodes"
 
-# Create another GHS3D hypothesis and assign it to the mesh wo geometry
+# Create another GHS3D hypothesis and assign it to the mesh without geometry
 GHS3D_Parameters_wo_geometry = smesh.CreateHypothesis('GHS3D_Parameters', 'GHS3DEngine')
 ghs3dMesh_wo_geometry.AddHypothesis( GHS3D )
 ghs3dMesh_wo_geometry.AddHypothesis( GHS3D_Parameters_wo_geometry )
@@ -104,8 +104,8 @@ GHS3D_Parameters.ClearEnforcedVertices()
 
 \code
 
-# It is possible to constraint GHS3D with another mesh or group.
-# The constraint can be the nodes, edges or faces.
+# It is possible to constrain GHS3D with another mesh or group.
+# The constraint can refer to the nodes, edges or faces.
 # This feature is available only in TUI, on meshes without geometry.
 # The constraining elements are called enforced elements for the mesh.
 # They can be recovered using groups if necessary.
@@ -133,7 +133,7 @@ geompy.addToStudy( p1, "p1" )
 geompy.addToStudy( p2, "p2" )
 geompy.addToStudy( c, "c" )
 
-# Create the 2D algo and hypothesis
+# Create the 2D algorithm and hypothesis
 BLSURF = smesh.CreateHypothesis('BLSURF', 'BLSURFEngine')
 # For the box
 BLSURF_Parameters = smesh.CreateHypothesis('BLSURF_Parameters', 'BLSURFEngine')
@@ -143,7 +143,7 @@ BLSURF_Parameters.SetPhySize( 200 )
 BLSURF_Parameters2 = smesh.CreateHypothesis('BLSURF_Parameters', 'BLSURFEngine')
 BLSURF_Parameters2.SetGeometricMesh( 1 )
 
-# Create the 3D algo and hypothesis
+# Create the 3D algorithm and hypothesis
 GHS3D = smesh.CreateHypothesis('GHS3D_3D', 'GHS3DEngine')
 GHS3D_Parameters_node = smesh.CreateHypothesis('GHS3D_Parameters', 'GHS3DEngine')
 #GHS3D_Parameters_node.SetToMeshHoles( 1 )
@@ -173,7 +173,7 @@ Mesh_box_tri.AddHypothesis( BLSURF_Parameters )
 Mesh_box_tri.Compute()
 
 # Create 4 copies of the 2D mesh to test the 3 types of contraints (NODE, EDGE, FACE)
-# from a whole mesh and from groups of elements.
+# from the whole mesh and from groups of elements.
 # Then the 3D algo and hypothesis are assigned to them.
 
 mesh_mesh = smesh.CopyMesh( Mesh_box_tri, 'Enforced by faces of mesh', 0, 0)
