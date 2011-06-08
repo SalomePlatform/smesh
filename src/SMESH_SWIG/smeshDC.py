@@ -490,6 +490,25 @@ def CheckPlugin(plugin):
         return False
     return True
 
+## Private method. Add geom (sub-shape of the main shape) into the study if not yet there
+def AssureGeomPublished(mesh, geom, name=''):
+    if not isinstance( geom, geompyDC.GEOM._objref_GEOM_Object ):
+        return
+    if not geom.IsSame( mesh.geom ) and not geom.GetStudyEntry():
+        ## set the study
+        studyID = mesh.smeshpyD.GetCurrentStudy()._get_StudyId()
+        if studyID != mesh.geompyD.myStudyId:
+            mesh.geompyD.init_geom( mesh.smeshpyD.GetCurrentStudy())
+        ## get a name
+        if not name and geom.GetShapeType() != geompyDC.GEOM.COMPOUND:
+            # for all groups SubShapeName() returns "Compound_-1"
+            name = mesh.geompyD.SubShapeName(geom, mesh.geom)
+        if not name:
+            name = "%s_%s"%(geom.GetShapeType(), id(geom)%10000)
+        ## publish
+        mesh.geompyD.addToStudyInFather( mesh.geom, geom, name )
+    return
+
 # end of l1_auxiliary
 ## @}
 
@@ -1151,19 +1170,7 @@ class Mesh:
     #  @return an object of type SMESH_SubMesh, representing a part of mesh, which lies on the given shape
     #  @ingroup l2_submeshes
     def GetSubMesh(self, geom, name):
-        if not geom.IsSame( self.geom ) and not geom.GetStudyEntry():
-            ## set the study
-            studyID = self.smeshpyD.GetCurrentStudy()._get_StudyId()
-            if studyID != self.geompyD.myStudyId:
-                self.geompyD.init_geom( self.smeshpyD.GetCurrentStudy())
-            ## get a name
-            if not name and geom.GetShapeType() != geompyDC.GEOM.COMPOUND:
-                # for all groups SubShapeName() returns "Compound_-1"
-                name = self.geompyD.SubShapeName(geom, self.geom)
-            if not name:
-                name = "%s_%s"%(geom.GetShapeType(), id(geom)%10000)
-            ## publish
-            self.geompyD.addToStudyInFather( self.geom, geom, name )
+        AssureGeomPublished( self, geom, name )
         submesh = self.mesh.GetSubMesh( geom, name )
         return submesh
 
@@ -1567,7 +1574,7 @@ class Mesh:
             salome.sg.updateObjBrowser(1)
 
     ## Computes a tetrahedral mesh using AutomaticLength + MEFISTO + NETGEN
-    #  @param fineness [0,-1] defines mesh fineness
+    #  @param fineness [0.0,1.0] defines mesh fineness
     #  @return True or False
     #  @ingroup l3_algos_basic
     def AutomaticTetrahedralization(self, fineness=0):
@@ -1584,7 +1591,7 @@ class Mesh:
         return self.Compute()
 
     ## Computes an hexahedral mesh using AutomaticLength + Quadrangle + Hexahedron
-    #  @param fineness [0,-1] defines mesh fineness
+    #  @param fineness [0.0, 1.0] defines mesh fineness
     #  @return True or False
     #  @ingroup l3_algos_basic
     def AutomaticHexahedralization(self, fineness=0):
@@ -1654,17 +1661,6 @@ class Mesh:
             pass
         pass
 
-    ## Creates a mesh group based on the geometric object \a grp
-    #  and gives a \a name, \n if this parameter is not defined
-    #  the name is the same as the geometric group name \n
-    #  Note: Works like GroupOnGeom().
-    #  @param grp  a geometric group, a vertex, an edge, a face or a solid
-    #  @param name the name of the mesh group
-    #  @return SMESH_GroupOnGeom
-    #  @ingroup l2_grps_create
-    def Group(self, grp, name=""):
-        return self.GroupOnGeom(grp, name)
-
     ## Deprecated, used only for compatibility! Please, use ExportToMEDX() method instead.
     #  Exports the mesh in a file in MED format and chooses the \a version of MED format
     ## allowing to overwrite the file if it exists or add the exported data to its contents
@@ -1720,6 +1716,17 @@ class Mesh:
     def CreateEmptyGroup(self, elementType, name):
         return self.mesh.CreateGroup(elementType, name)
 
+    ## Creates a mesh group based on the geometric object \a grp
+    #  and gives a \a name, \n if this parameter is not defined
+    #  the name is the same as the geometric group name \n
+    #  Note: Works like GroupOnGeom().
+    #  @param grp  a geometric group, a vertex, an edge, a face or a solid
+    #  @param name the name of the mesh group
+    #  @return SMESH_GroupOnGeom
+    #  @ingroup l2_grps_create
+    def Group(self, grp, name=""):
+        return self.GroupOnGeom(grp, name)
+
     ## Creates a mesh group based on the geometrical object \a grp
     #  and gives a \a name, \n if this parameter is not defined
     #  the name is the same as the geometrical group name
@@ -1730,58 +1737,33 @@ class Mesh:
     #  @return SMESH_GroupOnGeom
     #  @ingroup l2_grps_create
     def GroupOnGeom(self, grp, name="", typ=None):
+        AssureGeomPublished( self, grp, name )
         if name == "":
             name = grp.GetName()
+        if not typ:
+            typ = self._groupTypeFromShape( grp )
+        return self.mesh.CreateGroupFromGEOM(typ, name, grp)
 
-        if typ == None:
-            tgeo = str(grp.GetShapeType())
-            if tgeo == "VERTEX":
-                typ = NODE
-            elif tgeo == "EDGE":
-                typ = EDGE
-            elif tgeo == "FACE":
-                typ = FACE
-            elif tgeo == "SOLID":
-                typ = VOLUME
-            elif tgeo == "SHELL":
-                typ = VOLUME
-            elif tgeo == "COMPOUND":
-                try: # it raises on a compound of compounds
-                    if len( self.geompyD.GetObjectIDs( grp )) == 0:
-                        print "Mesh.Group: empty geometric group", GetName( grp )
-                        return 0
-                    pass
-                except:
-                    pass
-                if grp.GetType() == 37: # GEOMImpl_Types.hxx: #define GEOM_GROUP 37
-                    # group
-                    tgeo = self.geompyD.GetType(grp)
-                    if tgeo == geompyDC.ShapeType["VERTEX"]:
-                        typ = NODE
-                    elif tgeo == geompyDC.ShapeType["EDGE"]:
-                        typ = EDGE
-                    elif tgeo == geompyDC.ShapeType["FACE"]:
-                        typ = FACE
-                    elif tgeo == geompyDC.ShapeType["SOLID"]:
-                        typ = VOLUME
-                        pass
-                    pass
-                else:
-                    # just a compound
-                    for elemType, shapeType in [[VOLUME,"SOLID"],[FACE,"FACE"],
-                                                [EDGE,"EDGE"],[NODE,"VERTEX"]]:
-                        if self.geompyD.SubShapeAll(grp,geompyDC.ShapeType[shapeType]):
-                            typ = elemType
-                            break
-                        pass
-                    pass
-                pass
-            pass
-        if typ == None:
-            print "Mesh.Group: bad first argument: expected a group, a vertex, an edge, a face or a solid"
-            return 0
+    ## Pivate method to get a type of group on geometry
+    def _groupTypeFromShape( self, shape ):
+        tgeo = str(shape.GetShapeType())
+        if tgeo == "VERTEX":
+            typ = NODE
+        elif tgeo == "EDGE":
+            typ = EDGE
+        elif tgeo == "FACE" or tgeo == "SHELL":
+            typ = FACE
+        elif tgeo == "SOLID" or tgeo == "COMPSOLID":
+            typ = VOLUME
+        elif tgeo == "COMPOUND":
+            sub = self.geompyD.SubShapeAll( shape, geompyDC.ShapeType["SHAPE"])
+            if not sub:
+                raise ValueError,"_groupTypeFromShape(): empty geometric group or compound '%s'" % GetName(shape)
+            return self._groupTypeFromShape( sub[0] )
         else:
-            return self.mesh.CreateGroupFromGEOM(typ, name, grp)
+            raise ValueError, \
+                  "_groupTypeFromShape(): invalid geometry '%s'" % GetName(shape)
+        return typ
 
     ## Creates a mesh group by the given ids of elements
     #  @param groupName the name of the mesh group
@@ -4427,7 +4409,7 @@ class Mesh_Algorithm:
             self.geom = mesh.geom
         else:
             self.geom = geom
-            self.AssureGeomPublished( geom )
+            AssureGeomPublished( mesh, geom )
             try:
                 name = GetName(geom)
                 pass
@@ -4437,25 +4419,6 @@ class Mesh_Algorithm:
         self.algo = algo
         status = mesh.mesh.AddHypothesis(self.geom, self.algo)
         TreatHypoStatus( status, algo.GetName(), name, True )
-        return
-
-    ## Private method. Add geom into the study if not yet there
-    def AssureGeomPublished(self, geom, name=''):
-        if not isinstance( geom, geompyDC.GEOM._objref_GEOM_Object ):
-            return
-        if not geom.IsSame( self.mesh.geom ) and not geom.GetStudyEntry():
-            ## set the study
-            studyID = self.mesh.smeshpyD.GetCurrentStudy()._get_StudyId()
-            if studyID != self.mesh.geompyD.myStudyId:
-                self.mesh.geompyD.init_geom( self.mesh.smeshpyD.GetCurrentStudy())
-            ## get a name
-            if not name and geom.GetShapeType() != geompyDC.GEOM.COMPOUND:
-                # for all groups SubShapeName() returns "Compound_-1"
-                name = self.mesh.geompyD.SubShapeName(geom, self.mesh.geom)
-            if not name:
-                name = "%s_%s"%(geom.GetShapeType(), id(geom)%10000)
-            ## publish
-            self.mesh.geompyD.addToStudyInFather( self.mesh.geom, geom, name )
         return
 
     def CompareHyp (self, hyp, args):
@@ -4807,7 +4770,7 @@ class Mesh_Segment(Mesh_Algorithm):
         ### 0D algorithm
         if self.geom is None:
             raise RuntimeError, "Attemp to create SegmentAroundVertex_0D algoritm on None shape"
-        self.AssureGeomPublished( self.geom )
+        AssureGeomPublished( self.mesh, self.geom )
         name = GetName(self.geom)
 
         algo = self.FindAlgorithm("SegmentAroundVertex_0D", self.mesh.smeshpyD)
@@ -5059,8 +5022,8 @@ class Mesh_Triangle(Mesh_Algorithm):
     #  @param theConstantSizeDistance : distance until which the mesh size will be kept constant on theFace                                                      
     #  @ingroup l3_hypos_blsurf
     def SetAttractorGeom(self, theFace, theAttractor, theStartSize, theEndSize, theInfluenceDistance, theConstantSizeDistance):
-        self.AssureGeomPublished( theFace )
-        self.AssureGeomPublished( theAttractor )
+        AssureGeomPublished( self.mesh, theFace )
+        AssureGeomPublished( self.mesh, theAttractor )
         #  Parameter of BLSURF algo
         self.Parameters().SetAttractorGeom(theFace, theAttractor, theStartSize, theEndSize, theInfluenceDistance, theConstantSizeDistance)
         
@@ -5068,7 +5031,7 @@ class Mesh_Triangle(Mesh_Algorithm):
     #  @param theFace      : face on which the attractor has to be removed                               
     #  @ingroup l3_hypos_blsurf
     def UnsetAttractorGeom(self, theFace):
-        self.AssureGeomPublished( theFace )
+        AssureGeomPublished( self.mesh, theFace )
         #  Parameter of BLSURF algo
         self.Parameters().SetAttractorGeom(theFace)
 
@@ -5567,7 +5530,7 @@ class Mesh_Tetrahedron(Mesh_Algorithm):
     ## To set an enforced vertex given a GEOM vertex, group or compound.
     #  @ingroup l3_hypos_ghs3dh
     def SetEnforcedVertexGeom(self, theVertex, size):
-        self.AssureGeomPublished( theVertex )
+        AssureGeomPublished( self.mesh, theVertex )
         #  Advanced parameter of GHS3D
         return self.Parameters().SetEnforcedVertexGeom(theVertex, size)
 
@@ -5576,14 +5539,14 @@ class Mesh_Tetrahedron(Mesh_Algorithm):
     #  Only on meshes w/o geometry
     #  @ingroup l3_hypos_ghs3dh
     def SetEnforcedVertexGeomWithGroup(self, theVertex, size, groupName):
-        self.AssureGeomPublished( theVertex )
+        AssureGeomPublished( self.mesh, theVertex )
         #  Advanced parameter of GHS3D
         return self.Parameters().SetEnforcedVertexGeomWithGroup(theVertex, size,groupName)
 
     ## To remove an enforced vertex given a GEOM vertex, group or compound.
     #  @ingroup l3_hypos_ghs3dh
     def RemoveEnforcedVertexGeom(self, theVertex):
-        self.AssureGeomPublished( theVertex )
+        AssureGeomPublished( self.mesh, theVertex )
         #  Advanced parameter of GHS3D
         return self.Parameters().RemoveEnforcedVertexGeom(theVertex)
 
@@ -5729,9 +5692,9 @@ class Mesh_Projection1D(Mesh_Algorithm):
     #  @param UseExisting if ==true - searches for the existing hypothesis created with
     #                     the same parameters, else (default) - creates a new one
     def SourceEdge(self, edge, mesh=None, srcV=None, tgtV=None, UseExisting=0):
-        self.AssureGeomPublished( edge )
-        self.AssureGeomPublished( srcV )
-        self.AssureGeomPublished( tgtV )
+        AssureGeomPublished( self.mesh, edge )
+        AssureGeomPublished( self.mesh, srcV )
+        AssureGeomPublished( self.mesh, tgtV )
         hyp = self.Hypothesis("ProjectionSource1D", [edge,mesh,srcV,tgtV],
                               UseExisting=0)
                               #UseExisting=UseExisting, CompareMethod=self.CompareSourceEdge)
@@ -5779,7 +5742,7 @@ class Mesh_Projection2D(Mesh_Algorithm):
     def SourceFace(self, face, mesh=None, srcV1=None, tgtV1=None,
                    srcV2=None, tgtV2=None, UseExisting=0):
         for geom in [ face, srcV1, tgtV1, srcV2, tgtV2 ]:
-            self.AssureGeomPublished( geom )
+            AssureGeomPublished( self.mesh, geom )
         hyp = self.Hypothesis("ProjectionSource2D", [face,mesh,srcV1,tgtV1,srcV2,tgtV2],
                               UseExisting=0)
                               #UseExisting=UseExisting, CompareMethod=self.CompareSourceFace)
@@ -5826,7 +5789,7 @@ class Mesh_Projection3D(Mesh_Algorithm):
     def SourceShape3D(self, solid, mesh=0, srcV1=0, tgtV1=0,
                       srcV2=0, tgtV2=0, UseExisting=0):
         for geom in [ solid, srcV1, tgtV1, srcV2, tgtV2 ]:
-            self.AssureGeomPublished( geom )
+            AssureGeomPublished( self.mesh, geom )
         hyp = self.Hypothesis("ProjectionSource3D",
                               [solid,mesh,srcV1,tgtV1,srcV2,tgtV2],
                               UseExisting=0)
@@ -6088,7 +6051,7 @@ class Mesh_UseExistingElements(Mesh_Algorithm):
         if self.algo.GetName() == "Import_2D":
             raise ValueError, "algoritm dimension mismatch"
         for group in groups:
-            self.AssureGeomPublished( group )
+            AssureGeomPublished( self.mesh, group )
         hyp = self.Hypothesis("ImportSource1D", [groups, toCopyMesh, toCopyGroups],
                               UseExisting=UseExisting, CompareMethod=self._compareHyp)
         hyp.SetSourceEdges(groups)
@@ -6105,7 +6068,7 @@ class Mesh_UseExistingElements(Mesh_Algorithm):
         if self.algo.GetName() == "Import_1D":
             raise ValueError, "algoritm dimension mismatch"
         for group in groups:
-            self.AssureGeomPublished( group )
+            AssureGeomPublished( self.mesh, group )
         hyp = self.Hypothesis("ImportSource2D", [groups, toCopyMesh, toCopyGroups],
                               UseExisting=UseExisting, CompareMethod=self._compareHyp)
         hyp.SetSourceFaces(groups)
