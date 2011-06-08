@@ -43,9 +43,18 @@
 #include "utilities.h"
 
 #include <BRep_Tool.hxx>
+#include <Bnd_B2d.hxx>
+#include <Bnd_B3d.hxx>
+#include <ElCLib.hxx>
 #include <GCPnts_AbscissaPoint.hxx>
+#include <Geom2d_Circle.hxx>
+#include <Geom2d_Line.hxx>
+#include <Geom2d_TrimmedCurve.hxx>
 #include <GeomAdaptor_Curve.hxx>
+#include <Geom_Circle.hxx>
 #include <Geom_Curve.hxx>
+#include <Geom_Line.hxx>
+#include <Geom_TrimmedCurve.hxx>
 #include <Precision.hxx>
 #include <TopExp.hxx>
 #include <TopExp_Explorer.hxx>
@@ -268,6 +277,10 @@ namespace VISCOUS
     gp_XYZ*              _plnNorm;
 
     _2NearEdges() { _nodes[0]=_nodes[1]=0; _plnNorm = 0; }
+    void reverse() {
+      std::swap( _nodes[0], _nodes[1] );
+      std::swap( _wgt[0], _wgt[1] );
+    }
   };
   //--------------------------------------------------------------------------------
   /*!
@@ -362,9 +375,8 @@ namespace VISCOUS
     // FACE's WOL, srink on which is forbiden due to algo on the adjacent SOLID
     set< TGeomID >                   _noShrinkFaces;
 
-    // end index in _edges of _LayerEdge's based on EDGE (map key) to
-    // FACE (maybe NULL) they are inflated along
-    //map< int, TopoDS_Face >          _endEdge2Face;
+    // <EDGE to smooth on> to <it's curve>
+    map< TGeomID,Handle(Geom_Curve)> _edge2curve;
 
     // end indices in _edges of _LayerEdge on one shape to smooth
     vector< int >                    _endEdgeToSmooth;
@@ -377,6 +389,13 @@ namespace VISCOUS
                const StdMeshers_ViscousLayers* h=0,
                _MeshOfSolid*                   m=0) :_solid(s), _hyp(h), _proxyMesh(m) {}
     ~_SolidData();
+
+    Handle(Geom_Curve) CurveForSmooth( const TopoDS_Edge&    E,
+                                       const int             iFrom,
+                                       const int             iTo,
+                                       Handle(Geom_Surface)& surface,
+                                       const TopoDS_Face&    F,
+                                       SMESH_MesherHelper&   helper);
   };
   //--------------------------------------------------------------------------------
   /*!
@@ -433,7 +452,13 @@ namespace VISCOUS
                         const double            cosin);
     void limitStepSize( _SolidData& data, const double minSize);
     bool inflate(_SolidData& data);
-    bool smoothAndCheck(_SolidData& data, int nbSteps, double & distToIntersection);
+    bool smoothAndCheck(_SolidData& data, const int nbSteps, double & distToIntersection);
+    bool smoothAnalyticEdge( _SolidData&           data,
+                             const int             iFrom,
+                             const int             iTo,
+                             Handle(Geom_Surface)& surface,
+                             const TopoDS_Face&    F,
+                             SMESH_MesherHelper&   helper);
     bool updateNormals( _SolidData& data, SMESH_MesherHelper& helper );
     bool refine(_SolidData& data);
     bool shrink();
@@ -1994,7 +2019,7 @@ bool _ViscousBuilder::inflate(_SolidData& data)
 //================================================================================
 
 bool _ViscousBuilder::smoothAndCheck(_SolidData& data,
-                                     int         nbSteps,
+                                     const int   nbSteps,
                                      double &    distToIntersection)
 {
   if ( data._endEdgeToSmooth.empty() )
@@ -2028,21 +2053,25 @@ bool _ViscousBuilder::smoothAndCheck(_SolidData& data,
     TGeomID sInd = data._edges[ iBeg ]->_nodes[0]->getshapeId();
 
     if ( data._edges[ iBeg ]->IsOnEdge() )
-    {
-      dumpFunction(SMESH_Comment("smooth")<<data._index << "_Ed"<<sInd <<"_InfStep"<<nbSteps);
-      // smooth on EDGE's
-      int step = 0;
-      do {
-        moved = false;
-        for ( int i = iBeg; i < iEnd; ++i )
-        {
-          moved |= data._edges[i]->SmoothOnEdge(surface, F, helper);
+    { // try a simple solution on an analytic EDGE
+      if ( !smoothAnalyticEdge( data, iBeg, iEnd, surface, F, helper ))
+      {
+        dumpFunction(SMESH_Comment("smooth")<<data._index << "_Ed"<<sInd <<"_InfStep"<<nbSteps);
+        // smooth on EDGE's
+        int step = 0;
+        do {
+          moved = false;
+          for ( int i = iBeg; i < iEnd; ++i )
+          {
+            moved |= data._edges[i]->SmoothOnEdge(surface, F, helper);
+          }
+          dumpCmd( SMESH_Comment("# end step ")<<step);
         }
-        dumpCmd( SMESH_Comment("# end step ")<<step);
-      }
-      while ( moved && step++ < 5 );
+        while ( moved && step++ < 5 );
+        //cout << " NB STEPS: " << step << endl;
 
-      dumpFunctionEnd();
+        dumpFunctionEnd();
+      }
     }
     else
     {
@@ -2094,7 +2123,7 @@ bool _ViscousBuilder::smoothAndCheck(_SolidData& data,
   double dist;
   const SMDS_MeshElement* intFace = 0;
 #ifdef __myDEBUG
-  const SMDS_MeshElement* *closestFace = 0;
+  const SMDS_MeshElement* closestFace = 0;
   int iLE = 0;
 #endif
   for ( unsigned i = 0; i < data._edges.size(); ++i )
@@ -2122,6 +2151,253 @@ bool _ViscousBuilder::smoothAndCheck(_SolidData& data,
 #endif
 
   return true;
+}
+
+//================================================================================
+/*!
+ * \brief Return a curve of the EDGE to be used for smoothing and arrange
+ *        _LayerEdge's to be in a consequent order
+ */
+//================================================================================
+
+Handle(Geom_Curve) _SolidData::CurveForSmooth( const TopoDS_Edge&    E,
+                                               const int             iFrom,
+                                               const int             iTo,
+                                               Handle(Geom_Surface)& surface,
+                                               const TopoDS_Face&    F,
+                                               SMESH_MesherHelper&   helper)
+{
+  TGeomID eIndex = helper.GetMeshDS()->ShapeToIndex( E );
+
+  map< TGeomID, Handle(Geom_Curve)>::iterator i2curve = _edge2curve.find( eIndex );
+
+  if ( i2curve == _edge2curve.end() )
+  {
+    // sort _LayerEdge's by position on the EDGE
+    {
+      map< double, _LayerEdge* > u2edge;
+      for ( int i = iFrom; i < iTo; ++i )
+        u2edge.insert( make_pair( helper.GetNodeU( E, _edges[i]->_nodes[0] ), _edges[i] ));
+
+      ASSERT( u2edge.size() == iTo - iFrom );
+      map< double, _LayerEdge* >::iterator u2e = u2edge.begin();
+      for ( int i = iFrom; i < iTo; ++i, ++u2e )
+        _edges[i] = u2e->second;
+
+      // set _2neibors according to the new order
+      for ( int i = iFrom; i < iTo-1; ++i )
+        if ( _edges[i]->_2neibors->_nodes[1] != _edges[i+1]->_nodes.back() )
+          _edges[i]->_2neibors->reverse();
+      if ( u2edge.size() > 1 &&
+           _edges[iTo-1]->_2neibors->_nodes[0] != _edges[iTo-2]->_nodes.back() )
+        _edges[iTo-1]->_2neibors->reverse();
+    }
+
+    SMESHDS_SubMesh* smDS = helper.GetMeshDS()->MeshElements( eIndex );
+
+    TopLoc_Location loc; double f,l;
+
+    Handle(Geom_Line)   line;
+    Handle(Geom_Circle) circle;
+    bool isLine, isCirc;
+    if ( F.IsNull() ) // 3D case
+    {
+      // check if the EDGE is a line
+      Handle(Geom_Curve) curve = BRep_Tool::Curve( E, loc, f, l);
+      if ( curve->IsKind( STANDARD_TYPE( Geom_TrimmedCurve )))
+        curve = Handle(Geom_TrimmedCurve)::DownCast( curve )->BasisCurve();
+
+      line   = Handle(Geom_Line)::DownCast( curve );
+      circle = Handle(Geom_Circle)::DownCast( curve );
+      isLine = (!line.IsNull());
+      isCirc = (!circle.IsNull());
+
+      if ( !isLine && !isCirc ) // Check if the EDGE is close to a line
+      {
+        Bnd_B3d bndBox;
+        SMDS_NodeIteratorPtr nIt = smDS->GetNodes();
+        while ( nIt->more() )
+          bndBox.Add( SMESH_TNodeXYZ( nIt->next() ));
+        gp_XYZ size = bndBox.CornerMax() - bndBox.CornerMin();
+
+        SMESH_TNodeXYZ p0( _edges[iFrom]->_2neibors->_nodes[0] );
+        SMESH_TNodeXYZ p1( _edges[iFrom]->_2neibors->_nodes[1] );
+        const double lineTol = 1e-2 * ( p0 - p1 ).Modulus();
+        for ( int i = 0; i < 3 && !isLine; ++i )
+          isLine = ( size.Coord( i+1 ) <= lineTol );
+      }
+      if ( !isLine && !isCirc && iTo-iFrom > 2) // Check if the EDGE is close to a circle
+      {
+        // TODO
+      }
+    }
+    else // 2D case
+    {
+      // check if the EDGE is a line
+      Handle(Geom2d_Curve) curve = BRep_Tool::CurveOnSurface( E, F, f, l);
+      if ( curve->IsKind( STANDARD_TYPE( Geom2d_TrimmedCurve )))
+        curve = Handle(Geom2d_TrimmedCurve)::DownCast( curve )->BasisCurve();
+
+      Handle(Geom2d_Line)   line2d   = Handle(Geom2d_Line)::DownCast( curve );
+      Handle(Geom2d_Circle) circle2d = Handle(Geom2d_Circle)::DownCast( curve );
+      isLine = (!line2d.IsNull());
+      isCirc = (!circle2d.IsNull());
+
+      if ( !isLine && !isCirc) // Check if the EDGE is close to a line
+      {
+        Bnd_B2d bndBox;
+        SMDS_NodeIteratorPtr nIt = smDS->GetNodes();
+        while ( nIt->more() )
+          bndBox.Add( helper.GetNodeUV( F, nIt->next() ));
+        gp_XY size = bndBox.CornerMax() - bndBox.CornerMin();
+
+        const double lineTol = 1e-2 * sqrt( bndBox.SquareExtent() );
+        for ( int i = 0; i < 2 && !isLine; ++i )
+          isLine = ( size.Coord( i+1 ) <= lineTol );
+      }
+      if ( !isLine && !isCirc && iTo-iFrom > 2) // Check if the EDGE is close to a circle
+      {
+        // TODO
+      }
+      if ( isLine )
+      {
+        line = new Geom_Line( gp::OX() ); // only type does matter
+      }
+      else if ( isCirc )
+      {
+        gp_Pnt2d p = circle2d->Location();
+        gp_Ax2 ax( gp_Pnt( p.X(), p.Y(), 0), gp::DX());
+        circle = new Geom_Circle( ax, 1.); // only center position does matter
+      }
+    }
+
+    Handle(Geom_Curve)& res = _edge2curve[ eIndex ];
+    if ( isLine )
+      res = line;
+    else if ( isCirc )
+      res = circle;
+
+    return res;
+  }
+  return i2curve->second;
+}
+
+//================================================================================
+/*!
+ * \brief smooth _LayerEdge's on a staight EDGE or circular EDGE
+ */
+//================================================================================
+
+bool _ViscousBuilder::smoothAnalyticEdge( _SolidData&           data,
+                                          const int             iFrom,
+                                          const int             iTo,
+                                          Handle(Geom_Surface)& surface,
+                                          const TopoDS_Face&    F,
+                                          SMESH_MesherHelper&   helper)
+{
+  TopoDS_Shape S = helper.GetSubShapeByNode( data._edges[ iFrom ]->_nodes[0],
+                                             helper.GetMeshDS());
+  TopoDS_Edge E = TopoDS::Edge( S );
+
+  Handle(Geom_Curve) curve = data.CurveForSmooth( E, iFrom, iTo, surface, F, helper );
+  if ( curve.IsNull() ) return false;
+
+  // compute a relative length of segments
+  vector< double > len( iTo-iFrom+1 );
+  {
+    double curLen, prevLen = len[0] = 1.0;
+    for ( int i = iFrom; i < iTo; ++i )
+    {
+      curLen = prevLen * data._edges[i]->_2neibors->_wgt[0] / data._edges[i]->_2neibors->_wgt[1];
+      len[i-iFrom+1] = len[i-iFrom] + curLen;
+      prevLen = curLen;
+    }
+  }
+
+  if ( curve->IsKind( STANDARD_TYPE( Geom_Line )))
+  {
+    if ( F.IsNull() ) // 3D
+    {
+      SMESH_TNodeXYZ p0( data._edges[iFrom]->_2neibors->_nodes[0]);
+      SMESH_TNodeXYZ p1( data._edges[iTo-1]->_2neibors->_nodes[1]);
+      for ( int i = iFrom; i < iTo; ++i )
+      {
+        double r = len[i-iFrom] / len.back();
+        gp_XYZ newPos = p0 * ( 1. - r ) + p1 * r;
+        data._edges[i]->_pos.back() = newPos;
+        SMDS_MeshNode* tgtNode = const_cast<SMDS_MeshNode*>( data._edges[i]->_nodes.back() );
+        tgtNode->setXYZ( newPos.X(), newPos.Y(), newPos.Z() );
+      }
+    }
+    else
+    {
+      gp_XY uv0 = helper.GetNodeUV( F, data._edges[iFrom]->_2neibors->_nodes[0]);
+      gp_XY uv1 = helper.GetNodeUV( F, data._edges[iTo-1]->_2neibors->_nodes[1]);
+      for ( int i = iFrom; i < iTo; ++i )
+      {
+        double r = len[i-iFrom] / len.back();
+        gp_XY  newUV = uv0 * ( 1. - r ) + uv1 * r;
+        data._edges[i]->_pos.back().SetCoord( newUV.X(), newUV.Y(), 0 );
+
+        gp_Pnt newPos = surface->Value( newUV.X(), newUV.Y() );
+        SMDS_MeshNode* tgtNode = const_cast<SMDS_MeshNode*>( data._edges[i]->_nodes.back() );
+        tgtNode->setXYZ( newPos.X(), newPos.Y(), newPos.Z() );
+
+        SMDS_FacePosition* pos = static_cast<SMDS_FacePosition*>( tgtNode->GetPosition() );
+        pos->SetUParameter( newUV.X() );
+        pos->SetVParameter( newUV.Y() );
+      }
+    }
+    return true;
+  }
+
+  if ( curve->IsKind( STANDARD_TYPE( Geom_Circle )))
+  {
+    Handle(Geom_Circle) circle = Handle(Geom_Circle)::DownCast( curve );
+    gp_Pnt center3D = circle->Location();
+
+    if ( F.IsNull() ) // 3D
+    {
+      return false; // TODO ???
+    }
+    else // 2D
+    {
+      const gp_XY center( center3D.X(), center3D.Y() );
+      
+      gp_XY uv0 = helper.GetNodeUV( F, data._edges[iFrom]->_2neibors->_nodes[0]);
+      gp_XY uvM = helper.GetNodeUV( F, data._edges[iFrom]->_nodes.back());
+      gp_XY uv1 = helper.GetNodeUV( F, data._edges[iTo-1]->_2neibors->_nodes[1]);
+      gp_Vec2d vec0( center, uv0 );
+      gp_Vec2d vecM( center, uvM);
+      gp_Vec2d vec1( center, uv1 );
+      double uLast = vec0.Angle( vec1 ); // -PI - +PI
+      double uMidl = vec0.Angle( vecM );
+      if ( uLast < 0 ) uLast += 2*PI; // 0.0 - 2*PI
+      if ( uMidl < 0 ) uMidl += 2*PI;
+      const bool sense = ( uMidl < uLast );
+      const double radius = 0.5 * ( vec0.Magnitude() + vec1.Magnitude() );
+
+      gp_Ax2d axis( center, vec0 );
+      gp_Circ2d circ ( axis, radius, sense );
+      for ( int i = iFrom; i < iTo; ++i )
+      {
+        double    newU = uLast * len[i-iFrom] / len.back();
+        gp_Pnt2d newUV = ElCLib::Value( newU, circ );
+        data._edges[i]->_pos.back().SetCoord( newUV.X(), newUV.Y(), 0 );
+
+        gp_Pnt newPos = surface->Value( newUV.X(), newUV.Y() );
+        SMDS_MeshNode* tgtNode = const_cast<SMDS_MeshNode*>( data._edges[i]->_nodes.back() );
+        tgtNode->setXYZ( newPos.X(), newPos.Y(), newPos.Z() );
+
+        SMDS_FacePosition* pos = static_cast<SMDS_FacePosition*>( tgtNode->GetPosition() );
+        pos->SetUParameter( newUV.X() );
+        pos->SetVParameter( newUV.Y() );
+      }
+    }
+    return true;
+  }
+
+  return false;
 }
 
 //================================================================================
@@ -3219,15 +3495,32 @@ bool _ViscousBuilder::shrink()
       if ( badNb > 0 )
         return error(SMESH_Comment("Can't shrink 2D mesh on face ") << f2sd->first );
     }
-    // No wrongly shaped faces remain; final smooth. Set node XYZ
-    for ( int st = 3; st; --st )
+    // No wrongly shaped faces remain; final smooth. Set node XYZ.
+    // First, find out a needed quality of smoothing (high for quadrangles only)
+    bool highQuality;
+    {
+      const bool hasTria = _mesh->NbTriangles(), hasQuad = _mesh->NbQuadrangles();
+      if ( hasTria != hasQuad )
+      {
+        highQuality = hasQuad;
+      }
+      else
+      {
+        set<int> nbNodesSet;
+        SMDS_ElemIteratorPtr fIt = smDS->GetElements();
+        while ( fIt->more() && nbNodesSet.size() < 2 )
+          nbNodesSet.insert( fIt->next()->NbCornerNodes() );
+        highQuality = ( *nbNodesSet.begin() == 4 );
+      }
+    }
+    for ( int st = highQuality ? 8 : 3; st; --st )
     {
       dumpFunction(SMESH_Comment("shrinkFace")<<f2sd->first<<"_st"<<++smooStep); // debug
       for ( unsigned i = 0; i < nodesToSmooth.size(); ++i )
         nodesToSmooth[i].Smooth( badNb,surface,helper,refSign,/*set3D=*/st==1 );
       dumpFunctionEnd();
     }
-    // Set event listener to clear FACE sub-mesh together with SOLID sub-mesh
+    // Set an event listener to clear FACE sub-mesh together with SOLID sub-mesh
     _SrinkShapeListener::ToClearSubMeshWithSolid( sm, data._solid );
 
   }// loop on FACES to srink mesh on
