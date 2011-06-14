@@ -29,9 +29,10 @@
 #include "SMESHGUI_SpinBox.h"
 #include "SMESHGUI_MeshEditPreview.h"
 
-#include <SMESH_Actor.h>
-#include <SMESH_ActorUtils.h>
-#include <SMESH_TypeFilter.hxx>
+#include "SMESH_Actor.h"
+#include "SMESH_ActorUtils.h"
+#include "SMESH_TypeFilter.hxx"
+#include "SMESH_LogicalFilter.hxx"
 
 // SALOME GUI includes
 #include <LightApp_SelectionMgr.h>
@@ -88,6 +89,57 @@ SMESHGUI_FindElemByPointDlg::SMESHGUI_FindElemByPointDlg()
   aDlgLay->setStretchFactor(aMainFrame, 1);
 }
 
+//================================================================================
+/*!
+ * \brief Set types of elements available for search
+ */
+//================================================================================
+
+void SMESHGUI_FindElemByPointDlg::setTypes(SMESH::array_of_ElementType_var & types)
+{
+  myElemTypeCombo->blockSignals(true);
+  myElemTypeCombo->clear();
+  int nbTypes = 0, hasNodes = 0;
+  for ( int i = 0; i < types->length(); ++i )
+  {
+    switch ( types[i] ) {
+    case SMESH::NODE:
+      myElemTypeCombo->addItem( tr( "MEN_NODE" ));
+      myElemTypeCombo->setId( nbTypes++, int( SMESH::NODE  ));
+      hasNodes = 1;
+      break;
+    case SMESH::EDGE:
+      myElemTypeCombo->addItem( tr( "MEN_EDGE" ));
+      myElemTypeCombo->setId( nbTypes++, int( SMESH::EDGE  ));
+      break;
+    case SMESH::FACE:
+      myElemTypeCombo->addItem( tr( "MEN_FACE" ));
+      myElemTypeCombo->setId( nbTypes++, int( SMESH::FACE  ));
+      break;
+    case SMESH::VOLUME:
+      myElemTypeCombo->addItem( tr( "MEN_VOLUME_3D" ));
+      myElemTypeCombo->setId( nbTypes++, int( SMESH::VOLUME  ));
+      break;
+    case SMESH::ELEM0D:
+      myElemTypeCombo->addItem( tr( "MEN_ELEM0D" ));
+      myElemTypeCombo->setId( nbTypes++, int( SMESH::ELEM0D  ));
+      break;
+    default:;
+    }
+  }
+  if ( nbTypes - hasNodes > 1 )
+  {
+    myElemTypeCombo->addItem( tr( "MEN_ALL" ));
+    myElemTypeCombo->setId( nbTypes++, int( SMESH::ALL   ));
+  }
+  if ( !hasNodes && nbTypes > 0 )
+  {
+    myElemTypeCombo->addItem( tr( "MEN_NODE" ));
+    myElemTypeCombo->setId( nbTypes++, int( SMESH::NODE  ));
+  }
+  myElemTypeCombo->blockSignals(false);
+}
+
 //=======================================================================
 // function : createMainFrame()
 // purpose  : Create frame containing dialog's input fields
@@ -98,7 +150,7 @@ QWidget* SMESHGUI_FindElemByPointDlg::createMainFrame (QWidget* theParent)
 
   //mesh name
 
-  QGroupBox* aMeshGrp = new QGroupBox(tr("SMESH_MESH"), aFrame);
+  QGroupBox* aMeshGrp = new QGroupBox(tr("MESH_GROUP"), aFrame);
   QHBoxLayout* aMeshGrpLayout = new QHBoxLayout(aMeshGrp);
   aMeshGrpLayout->setMargin(MARGIN);
   aMeshGrpLayout->setSpacing(SPACING);
@@ -149,12 +201,6 @@ QWidget* SMESHGUI_FindElemByPointDlg::createMainFrame (QWidget* theParent)
   //myFindBtn->setCheckable(false);
 
   myElemTypeCombo = new QtxComboBox(elementGrp);
-  myElemTypeCombo->addItem( tr( "MEN_ALL" ));    myElemTypeCombo->setId( 0, int( SMESH::ALL   ));
-  myElemTypeCombo->addItem( tr( "MEN_NODE" ));   myElemTypeCombo->setId( 1, int( SMESH::NODE  ));
-  myElemTypeCombo->addItem( tr( "MEN_EDGE" ));   myElemTypeCombo->setId( 2, int( SMESH::EDGE  ));
-  myElemTypeCombo->addItem( tr( "MEN_FACE" ));   myElemTypeCombo->setId( 3, int( SMESH::FACE  ));
-  myElemTypeCombo->addItem( tr("MEN_VOLUME_3D"));myElemTypeCombo->setId( 4, int( SMESH::VOLUME));
-  myElemTypeCombo->addItem( tr( "MEN_ELEM0D" )); myElemTypeCombo->setId( 5, int( SMESH::ELEM0D));
 
   myFoundList = new QListWidget(elementGrp);
 
@@ -189,7 +235,11 @@ SMESHGUI_FindElemByPointOp::SMESHGUI_FindElemByPointOp()
   mySimulation = 0;
   myDlg = new SMESHGUI_FindElemByPointDlg;
   myHelpFileName = "find_element_by_point_page.html";
-  myFilter = new SMESH_TypeFilter( MESH );
+
+  QList<SUIT_SelectionFilter*> filters;
+  filters.append( new SMESH_TypeFilter( MESH ) );
+  filters.append( new SMESH_TypeFilter( GROUP ) );
+  myFilter = new SMESH_LogicalFilter( filters, SMESH_LogicalFilter::LO_OR );
 
   myPreview = new SMESH::MeshPreviewStruct();
 
@@ -233,13 +283,11 @@ void SMESHGUI_FindElemByPointOp::startOperation()
   mySimulation->GetActor()->SetProperty(aProp);
   aProp->Delete();
 
-  myDlg->myElemTypeCombo->setCurrentId( int(SMESH::ALL));
-
   SMESHGUI_SelectionOp::startOperation();
   myDlg->show();
   redisplayPreview();
 
-  onSelectionDone(); // init myMesh
+  onSelectionDone(); // init myMeshOrPart
 }
 
 //================================================================================
@@ -337,22 +385,33 @@ void SMESHGUI_FindElemByPointOp::onRejectedDlg()
 
 void SMESHGUI_FindElemByPointOp::onFind()
 {
-  if ( myMesh->_is_nil() ) {
+  if ( myMeshOrPart->_is_nil() )
     return;
-  }
 
   try {
     SUIT_OverrideCursor wc;
 
-    SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditor();
+    SMESH::SMESH_Mesh_var aMesh = myMeshOrPart->GetMesh();
+    if ( aMesh->_is_nil() )
+      return;
+    SMESH::SMESH_MeshEditor_var aMeshEditor = aMesh->GetMeshEditor();
     if (aMeshEditor->_is_nil())
       return;
 
-    SMESH::long_array_var foundIds =
-      aMeshEditor->FindElementsByPoint( myDlg->myX->GetValue(),
-                                        myDlg->myY->GetValue(),
-                                        myDlg->myZ->GetValue(),
-                                        SMESH::ElementType( myDlg->myElemTypeCombo->currentId() ));
+    SMESH::long_array_var foundIds;
+    if ( aMesh->_is_equivalent( myMeshOrPart ) )
+      foundIds =
+        aMeshEditor->FindElementsByPoint( myDlg->myX->GetValue(),
+                                          myDlg->myY->GetValue(),
+                                          myDlg->myZ->GetValue(),
+                                          SMESH::ElementType( myDlg->myElemTypeCombo->currentId()));
+    else
+      foundIds =
+        aMeshEditor->FindAmongElementsByPoint( myMeshOrPart,
+                                               myDlg->myX->GetValue(),
+                                               myDlg->myY->GetValue(),
+                                               myDlg->myZ->GetValue(),
+                                               SMESH::ElementType( myDlg->myElemTypeCombo->currentId()));
     myDlg->myFoundList->clear();
     for ( int i = 0; i < foundIds->length(); ++i )
       myDlg->myFoundList->addItem( QString::number( foundIds[i] ));
@@ -404,12 +463,15 @@ void SMESHGUI_FindElemByPointOp::onSelectionDone()
     {
       Handle(SALOME_InteractiveObject) anIO = aList.First();
       _PTR(SObject) pObj = studyDS()->FindObjectID(anIO->getEntry());
-      myMesh = SMESH::GetMeshByIO( anIO );
-      if ( pObj && !myMesh->_is_nil() )
+      CORBA::Object_var anObj = SMESH::IObjectToObject( anIO );
+      myMeshOrPart = SMESH::SMESH_IDSource::_narrow(anObj);
+      if ( pObj && !myMeshOrPart->_is_nil() )
       {
         myMeshIO = anIO;
         myDlg->myMeshName->setText( pObj->GetName().c_str() );
         newMeshEntry = anIO->getEntry();
+        SMESH::array_of_ElementType_var  types = myMeshOrPart->GetTypes();
+        myDlg->setTypes( types );
       }
     }
   }
@@ -461,7 +523,14 @@ SMESHGUI_FindElemByPointOp::~SMESHGUI_FindElemByPointOp()
 {
   if ( myDlg )         { delete myDlg;        myDlg = 0; }
   if ( mySimulation )  { delete mySimulation; mySimulation = 0; }
-  if ( myFilter )      { delete myFilter;     myFilter = 0; }
+  if ( myFilter )
+  {
+    QList<SUIT_SelectionFilter*> sub =  ((SMESH_LogicalFilter*)myFilter)->getFilters();
+    delete sub.front();
+    delete sub.back();
+    delete myFilter;
+    myFilter = 0;
+  }
 }
 
 //================================================================================

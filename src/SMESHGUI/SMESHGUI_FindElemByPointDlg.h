@@ -74,8 +74,7 @@ private:
 
   SUIT_SelectionFilter*            myFilter;
   SMESHGUI_MeshEditPreview*        mySimulation; // to show point coordinates
-  //SMESH_Actor*                   myMeshActor;  // to show found elements
-  SMESH::SMESH_Mesh_var            myMesh;
+  SMESH::SMESH_IDSource_var        myMeshOrPart;
   SMESH::MeshPreviewStruct_var     myPreview;
   Handle(SALOME_InteractiveObject) myMeshIO;
 };
@@ -90,6 +89,8 @@ class SMESHGUI_EXPORT SMESHGUI_FindElemByPointDlg : public SMESHGUI_Dialog
 
 public:
   SMESHGUI_FindElemByPointDlg();
+
+  void setTypes(SMESH::array_of_ElementType_var & types);
 
 private:
   QWidget*                      createMainFrame( QWidget* );
