@@ -1045,7 +1045,7 @@ bool SMESH_Mesh::HasModificationsToDiscard() const
   if ( ! _isModified )
     return false;
 
-  // return true if there the next Compute() will be partial and
+  // return true if the next Compute() will be partial and
   // existing but changed elements may prevent successful re-compute
   bool hasComputed = false, hasNotComputed = false;
   map <int, SMESH_subMesh*>::const_iterator i_sm = _mapSubMesh.begin();
@@ -1069,11 +1069,11 @@ bool SMESH_Mesh::HasModificationsToDiscard() const
   return false;
 }
 
-//=============================================================================
-/*! Export* methods.
- *  To store mesh contents on disk in different formats.
+//================================================================================
+/*!
+ * \brief Check if any groups of the same type have equal names
  */
-//=============================================================================
+//================================================================================
 
 bool SMESH_Mesh::HasDuplicatedGroupNamesMED()
 {
@@ -1092,17 +1092,24 @@ bool SMESH_Mesh::HasDuplicatedGroupNamesMED()
   return false;
 }
 
-void SMESH_Mesh::ExportMED(const char *file, 
-                           const char* theMeshName, 
-                           bool theAutoGroups,
-                           int theVersion) 
+//================================================================================
+/*!
+ * \brief Export the mesh to a med file
+ */
+//================================================================================
+
+void SMESH_Mesh::ExportMED(const char *        file, 
+                           const char*         theMeshName, 
+                           bool                theAutoGroups,
+                           int                 theVersion,
+                           const SMESHDS_Mesh* meshPart) 
   throw(SALOME_Exception)
 {
   Unexpect aCatch(SalomeException);
 
   DriverMED_W_SMESHDS_Mesh myWriter;
   myWriter.SetFile    ( file, MED::EVersion(theVersion) );
-  myWriter.SetMesh    ( _myMeshDS   );
+  myWriter.SetMesh    ( meshPart ? (SMESHDS_Mesh*) meshPart : _myMeshDS   );
   if ( !theMeshName ) 
     myWriter.SetMeshId  ( _idDoc      );
   else {
@@ -1119,69 +1126,96 @@ void SMESH_Mesh::ExportMED(const char *file,
 
   // Pass groups to writer. Provide unique group names.
   //set<string> aGroupNames; // Corrected for Mantis issue 0020028
-  map< SMDSAbs_ElementType, set<string> > aGroupNames;
-  char aString [256];
-  int maxNbIter = 10000; // to guarantee cycle finish
-  for ( map<int, SMESH_Group*>::iterator it = _mapGroup.begin(); it != _mapGroup.end(); it++ ) {
-    SMESH_Group*       aGroup   = it->second;
-    SMESHDS_GroupBase* aGroupDS = aGroup->GetGroupDS();
-    if ( aGroupDS ) {
-      SMDSAbs_ElementType aType = aGroupDS->GetType();
-      string aGroupName0 = aGroup->GetName();
-      aGroupName0.resize(MAX_MED_GROUP_NAME_LENGTH);
-      string aGroupName = aGroupName0;
-      for (int i = 1; !aGroupNames[aType].insert(aGroupName).second && i < maxNbIter; i++) {
-        sprintf(&aString[0], "GR_%d_%s", i, aGroupName0.c_str());
-        aGroupName = aString;
-        aGroupName.resize(MAX_MED_GROUP_NAME_LENGTH);
+  if ( !meshPart )
+  {
+    map< SMDSAbs_ElementType, set<string> > aGroupNames;
+    char aString [256];
+    int maxNbIter = 10000; // to guarantee cycle finish
+    for ( map<int, SMESH_Group*>::iterator it = _mapGroup.begin(); it != _mapGroup.end(); it++ ) {
+      SMESH_Group*       aGroup   = it->second;
+      SMESHDS_GroupBase* aGroupDS = aGroup->GetGroupDS();
+      if ( aGroupDS ) {
+        SMDSAbs_ElementType aType = aGroupDS->GetType();
+        string aGroupName0 = aGroup->GetName();
+        aGroupName0.resize(MAX_MED_GROUP_NAME_LENGTH);
+        string aGroupName = aGroupName0;
+        for (int i = 1; !aGroupNames[aType].insert(aGroupName).second && i < maxNbIter; i++) {
+          sprintf(&aString[0], "GR_%d_%s", i, aGroupName0.c_str());
+          aGroupName = aString;
+          aGroupName.resize(MAX_MED_GROUP_NAME_LENGTH);
+        }
+        aGroupDS->SetStoreName( aGroupName.c_str() );
+        myWriter.AddGroup( aGroupDS );
       }
-      aGroupDS->SetStoreName( aGroupName.c_str() );
-      myWriter.AddGroup( aGroupDS );
     }
   }
-
   // Perform export
   myWriter.Perform();
 }
 
-void SMESH_Mesh::ExportDAT(const char *file) throw(SALOME_Exception)
+//================================================================================
+/*!
+ * \brief Export the mesh to a DAT file
+ */
+//================================================================================
+
+void SMESH_Mesh::ExportDAT(const char *        file,
+                           const SMESHDS_Mesh* meshPart) throw(SALOME_Exception)
 {
   Unexpect aCatch(SalomeException);
   DriverDAT_W_SMDS_Mesh myWriter;
-  myWriter.SetFile(string(file));
-  myWriter.SetMesh(_myMeshDS);
+  myWriter.SetFile( file );
+  myWriter.SetMesh( meshPart ? (SMESHDS_Mesh*) meshPart : _myMeshDS );
   myWriter.SetMeshId(_idDoc);
   myWriter.Perform();
 }
 
-void SMESH_Mesh::ExportUNV(const char *file) throw(SALOME_Exception)
+//================================================================================
+/*!
+ * \brief Export the mesh to an UNV file
+ */
+//================================================================================
+
+void SMESH_Mesh::ExportUNV(const char *        file,
+                           const SMESHDS_Mesh* meshPart) throw(SALOME_Exception)
 {
   Unexpect aCatch(SalomeException);
   DriverUNV_W_SMDS_Mesh myWriter;
-  myWriter.SetFile(string(file));
-  myWriter.SetMesh(_myMeshDS);
+  myWriter.SetFile( file );
+  myWriter.SetMesh( meshPart ? (SMESHDS_Mesh*) meshPart : _myMeshDS );
   myWriter.SetMeshId(_idDoc);
   //  myWriter.SetGroups(_mapGroup);
 
-  for ( map<int, SMESH_Group*>::iterator it = _mapGroup.begin(); it != _mapGroup.end(); it++ ) {
-    SMESH_Group*       aGroup   = it->second;
-    SMESHDS_GroupBase* aGroupDS = aGroup->GetGroupDS();
-    if ( aGroupDS ) {
-      string aGroupName = aGroup->GetName();
-      aGroupDS->SetStoreName( aGroupName.c_str() );
-      myWriter.AddGroup( aGroupDS );
+  if ( !meshPart )
+  {
+    for ( map<int, SMESH_Group*>::iterator it = _mapGroup.begin(); it != _mapGroup.end(); it++ ) {
+      SMESH_Group*       aGroup   = it->second;
+      SMESHDS_GroupBase* aGroupDS = aGroup->GetGroupDS();
+      if ( aGroupDS ) {
+        string aGroupName = aGroup->GetName();
+        aGroupDS->SetStoreName( aGroupName.c_str() );
+        myWriter.AddGroup( aGroupDS );
+      }
     }
   }
   myWriter.Perform();
 }
 
-void SMESH_Mesh::ExportSTL(const char *file, const bool isascii) throw(SALOME_Exception)
+//================================================================================
+/*!
+ * \brief Export the mesh to an STL file
+ */
+//================================================================================
+
+void SMESH_Mesh::ExportSTL(const char *        file,
+                           const bool          isascii,
+                           const SMESHDS_Mesh* meshPart) throw(SALOME_Exception)
 {
   Unexpect aCatch(SalomeException);
   DriverSTL_W_SMDS_Mesh myWriter;
-  myWriter.SetFile(string(file));
+  myWriter.SetFile( file );
   myWriter.SetIsAscii( isascii );
-  myWriter.SetMesh(_myMeshDS);
+  myWriter.SetMesh( meshPart ? (SMESHDS_Mesh*) meshPart : _myMeshDS);
   myWriter.SetMeshId(_idDoc);
   myWriter.Perform();
 }

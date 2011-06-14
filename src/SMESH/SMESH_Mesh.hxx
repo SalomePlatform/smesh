@@ -219,12 +219,17 @@ public:
   void ExportMED(const char *file, 
                  const char* theMeshName = NULL, 
                  bool theAutoGroups = true, 
-                 int theVersion = 0) 
+                 int theVersion = 0,
+                 const SMESHDS_Mesh* meshPart = 0) 
     throw(SALOME_Exception);
 
-  void ExportDAT(const char *file) throw(SALOME_Exception);
-  void ExportUNV(const char *file) throw(SALOME_Exception);
-  void ExportSTL(const char *file, const bool isascii) throw(SALOME_Exception);
+  void ExportDAT(const char *        file,
+                 const SMESHDS_Mesh* meshPart = 0) throw(SALOME_Exception);
+  void ExportUNV(const char *        file,
+                 const SMESHDS_Mesh* meshPart = 0) throw(SALOME_Exception);
+  void ExportSTL(const char *        file,
+                 const bool          isascii,
+                 const SMESHDS_Mesh* meshPart = 0) throw(SALOME_Exception);
   
   int NbNodes() const throw(SALOME_Exception);
   
