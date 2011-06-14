@@ -50,6 +50,7 @@ class SMDS_EXPORT SMDS_MeshGroup:public SMDS_MeshObject
         bool Remove(const SMDS_MeshElement * theElem);
         bool IsEmpty() const { return myElements.empty(); }
         int Extent() const { return myElements.size(); }
+        int Tic() const { return myTic; }
 
         int SubGroupsNb() const { return myChildren.size(); }
 
@@ -87,5 +88,6 @@ class SMDS_EXPORT SMDS_MeshGroup:public SMDS_MeshObject
         std::list<const SMDS_MeshGroup*>        myChildren;
         TIterator                               myIterator;
         TGroupIterator                          myGroupIterator;
+        int                                     myTic; // to track changes
 };
 #endif

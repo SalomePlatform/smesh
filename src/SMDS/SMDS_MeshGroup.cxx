@@ -41,7 +41,7 @@ using namespace std;
 
 SMDS_MeshGroup::SMDS_MeshGroup(const SMDS_Mesh * theMesh,
                                const SMDSAbs_ElementType theType)
-        :myMesh(theMesh),myType(theType), myParent(NULL)
+  :myMesh(theMesh),myType(theType), myParent(NULL), myTic(0)
 {
 }
 
@@ -112,8 +112,9 @@ bool SMDS_MeshGroup::RemoveFromParent()
 
 void SMDS_MeshGroup::Clear()
 {
-        myElements.clear();
-        myType = SMDSAbs_All;
+  myElements.clear();
+  myType = SMDSAbs_All;
+  ++myTic;
 }
 
 //=======================================================================
@@ -123,14 +124,15 @@ void SMDS_MeshGroup::Clear()
 
 void SMDS_MeshGroup::Add(const SMDS_MeshElement * theElem)
 {
-        // the type of the group is determined by the first element added
-        if (myElements.empty()) myType = theElem->GetType();
-        else if (theElem->GetType() != myType) {
-          MESSAGE("SMDS_MeshGroup::Add : Type Mismatch "<<theElem->GetType()<<"!="<<myType);
-          return;
-        }
+  // the type of the group is determined by the first element added
+  if (myElements.empty()) myType = theElem->GetType();
+  else if (theElem->GetType() != myType) {
+    MESSAGE("SMDS_MeshGroup::Add : Type Mismatch "<<theElem->GetType()<<"!="<<myType);
+    return;
+  }
         
-        myElements.insert(theElem);
+  myElements.insert(theElem);
+  ++myTic;
 }
 
 //=======================================================================
@@ -140,11 +142,11 @@ void SMDS_MeshGroup::Add(const SMDS_MeshElement * theElem)
 
 bool SMDS_MeshGroup::Remove(const SMDS_MeshElement * theElem)
 {
-  std::set<const SMDS_MeshElement *>::iterator found
-    = myElements.find(theElem);
+  set<const SMDS_MeshElement *>::iterator found = myElements.find(theElem);
   if ( found != myElements.end() ) {
     myElements.erase(found);
     if (myElements.empty()) myType = SMDSAbs_All;
+    ++myTic;
     return true;
   }
   return false;
