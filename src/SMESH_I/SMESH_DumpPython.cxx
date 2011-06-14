@@ -125,6 +125,7 @@ namespace SMESH
     case EDGE:  myStream<<"EDGE";break;
     case FACE:  myStream<<"FACE";break;
     case VOLUME:myStream<<"VOLUME";break;
+    case ELEM0D:myStream<<"ELEM0D";break;
     }
     return *this;
   }
