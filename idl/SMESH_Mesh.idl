@@ -148,8 +148,8 @@ module SMESH
 
 
   /*!
-   * Enumeration of entity type uses in mesh info array,
-   *  and should be synchronised with enum in SMDS  
+   * Enumeration of entity type used in mesh info array,
+   * it should be synchronised with enum SMDSAbs_EntityType
    */
   enum EntityType
   {
@@ -259,7 +259,7 @@ module SMESH
 
     /*!
      * Returns statistic of mesh elements
-     * Result array of number enityties
+     * @return array of number enityties by index of EntityType
      */
     long_array GetMeshInfo();
 
@@ -550,14 +550,31 @@ module SMESH
     /*!
      * Export Mesh to different MED Formats
      * @params
+     * - file : name of the MED file
      * - auto_groups : boolean parameter for creating/not creating
      *   the groups Group_On_All_Nodes, Group_On_All_Faces, ... ;
      *   the typical use is auto_groups=false.
-     * - theVersion : define the version of format of MED file, that will be created
+     * - version : define the version of format of MED file, that will be created
      * - overwrite : boolean parameter for overwriting/not overwriting the file, if it exists
      */
-    void ExportToMEDX( in string file, in boolean auto_groups, in MED_VERSION theVersion, in boolean overwrite )
-      raises (SALOME::SALOME_Exception);
+    void ExportToMEDX( in string      file, 
+                       in boolean     auto_groups, 
+                       in MED_VERSION version, 
+                       in boolean     overwrite ) raises (SALOME::SALOME_Exception);
+
+    /*!
+     * Export a part of Mesh into a MED file
+     * @params
+     * - meshPart : a part of mesh to store
+     * - file : name of the MED file
+     * - version : define the version of format of MED file, that will be created
+     * - overwrite : boolean parameter for overwriting/not overwriting the file, if it exists
+     */
+    void ExportPartToMED( in SMESH_IDSource meshPart, 
+                          in string         file, 
+                          in boolean        auto_groups,
+                          in MED_VERSION    version,
+                          in boolean        overwrite ) raises (SALOME::SALOME_Exception);
 
     /*!
      * Export Mesh to different MED Formats
@@ -585,12 +602,17 @@ module SMESH
      * Export Mesh to DAT, UNV and STL Formats
      * (UNV supported version is I-DEAS 10)
      */
-    void ExportDAT( in string file )
-      raises (SALOME::SALOME_Exception);
-    void ExportUNV( in string file )
-      raises (SALOME::SALOME_Exception);
-    void ExportSTL( in string file, in boolean isascii )
-      raises (SALOME::SALOME_Exception);
+    void ExportDAT( in string file ) raises (SALOME::SALOME_Exception);
+    void ExportUNV( in string file ) raises (SALOME::SALOME_Exception);
+    void ExportSTL( in string  file,
+                    in boolean isascii ) raises (SALOME::SALOME_Exception);
+    void ExportPartToDAT( in SMESH_IDSource meshPart, 
+                          in string         file ) raises (SALOME::SALOME_Exception);
+    void ExportPartToUNV( in SMESH_IDSource meshPart, 
+                          in string         file ) raises (SALOME::SALOME_Exception);
+    void ExportPartToSTL( in SMESH_IDSource meshPart,
+                          in string         file,
+                          in boolean        isascii ) raises (SALOME::SALOME_Exception);
 
     /*!
      * Get MED Mesh
