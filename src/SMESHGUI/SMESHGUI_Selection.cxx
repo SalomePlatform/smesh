@@ -111,6 +111,7 @@ QVariant SMESHGUI_Selection::parameter( const int ind, const QString& p ) const
   else if ( p=="elemTypes" )     val = QVariant( elemTypes( ind ) );
   else if ( p=="isAutoColor" )   val = QVariant( isAutoColor( ind ) );
   else if ( p=="numberOfNodes" ) val = QVariant( numberOfNodes( ind ) );
+  else if ( p=="dim" )           val = QVariant( dim( ind ) );
   else if ( p=="labeledTypes" )  val = QVariant( labeledTypes( ind ) );
   else if ( p=="shrinkMode" )    val = QVariant( shrinkMode( ind ) );
   else if ( p=="entityMode" )    val = QVariant( entityMode( ind ) );
@@ -394,6 +395,41 @@ int SMESHGUI_Selection::numberOfNodes( int ind ) const
     }
   }
   return 0;
+}
+
+//================================================================================
+/*!
+ * \brief return dimension of elements of the selected object
+ *
+ *  \retval int - 0 for 0D elements, -1 for an empty object (the rest as usual)
+ */
+//================================================================================
+
+int SMESHGUI_Selection::dim( int ind ) const
+{
+  int dim = -1;
+  if ( ind >= 0 && ind < myTypes.count() && myTypes[ind] != "Unknown" )
+  {
+    _PTR(SObject) sobj = SMESH::GetActiveStudyDocument()->FindObjectID( entry( ind ).toLatin1().data() );
+    CORBA::Object_var obj = SMESH::SObjectToObject( sobj, SMESH::GetActiveStudyDocument() );
+
+    if ( ! CORBA::is_nil( obj )) {
+      SMESH::SMESH_IDSource_var idSrc = SMESH::SMESH_IDSource::_narrow( obj );
+      if ( ! idSrc->_is_nil() )
+      {
+        SMESH::array_of_ElementType_var types = idSrc->GetTypes();
+        for ( int i = 0; i < types->length(); ++ i)
+          switch ( types[i] ) {
+          case SMESH::EDGE  : dim = std::max( dim, 1 ); break;
+          case SMESH::FACE  : dim = std::max( dim, 2 ); break;
+          case SMESH::VOLUME: dim = std::max( dim, 3 ); break;
+          case SMESH::ELEM0D: dim = std::max( dim, 0 ); break;
+          default:;
+          }
+      }
+    }
+  }
+  return dim;
 }
 
 //=======================================================================
