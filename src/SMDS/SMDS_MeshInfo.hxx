@@ -55,6 +55,9 @@ public:
   inline int NbPrisms  (SMDSAbs_ElementOrder order = ORDER_ANY) const;
   int NbPolyhedrons() const { return myNbPolyhedrons; }
 
+protected:
+  inline void addWithPoly(const SMDS_MeshElement* el);
+
 private:
   friend class SMDS_Mesh;
 
@@ -176,6 +179,14 @@ inline void // add
 SMDS_MeshInfo::add(const SMDS_MeshElement* el)
 { ++(*myNb[ index(el->GetType(), el->NbNodes()) ]); }
 
+inline void // addWithPoly
+SMDS_MeshInfo::addWithPoly(const SMDS_MeshElement* el)
+{
+  if ( el->IsPoly() )
+    ++( el->GetType()==SMDSAbs_Face ? myNbPolygons : myNbPolyhedrons );
+  else
+    add(el);
+}
 inline void // RemoveEdge
 SMDS_MeshInfo::RemoveEdge(const SMDS_MeshElement* el)
 { if ( el->IsQuadratic() ) --myNbQuadEdges; else --myNbEdges; }
