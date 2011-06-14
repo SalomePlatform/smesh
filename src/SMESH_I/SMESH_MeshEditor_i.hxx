@@ -483,6 +483,16 @@ public:
                                          CORBA::Double      y,
                                          CORBA::Double      z,
                                          SMESH::ElementType type);
+  /*!
+   * Searching among the given elements, return elements of given type 
+   * where the given point is IN or ON.
+   * 'ALL' type means elements of any type excluding nodes
+   */
+  SMESH::long_array* FindAmongElementsByPoint(SMESH::SMESH_IDSource_ptr elements,
+                                              CORBA::Double             x,
+                                              CORBA::Double             y,
+                                              CORBA::Double             z,
+                                              SMESH::ElementType        type);
 
   /*!
    * Return point state in a closed 2D mesh in terms of TopAbs_State enumeration.

@@ -29,18 +29,20 @@
 
 #include "SMESH_MeshEditor_i.hxx"
 
-#include "SMDS_Mesh0DElement.hxx"
 #include "SMDS_LinearEdge.hxx"
+#include "SMDS_Mesh0DElement.hxx"
 #include "SMDS_MeshFace.hxx"
 #include "SMDS_MeshVolume.hxx"
 #include "SMDS_PolyhedralVolumeOfNodes.hxx"
-#include "SMESH_subMeshEventListener.hxx"
-#include "SMESH_Gen_i.hxx"
+#include "SMDS_SetIterator.hxx"
+#include "SMESHDS_Group.hxx"
+#include "SMESH_ControlsDef.hxx"
 #include "SMESH_Filter_i.hxx"
-#include "SMESH_subMesh_i.hxx"
+#include "SMESH_Gen_i.hxx"
 #include "SMESH_Group_i.hxx"
 #include "SMESH_PythonDump.hxx"
-#include "SMESH_ControlsDef.hxx"
+#include "SMESH_subMeshEventListener.hxx"
+#include "SMESH_subMesh_i.hxx"
 
 #include "utilities.h"
 #include "Utils_ExceptHandlers.hxx"
@@ -165,6 +167,7 @@ namespace {
   struct TSearchersDeleter : public SMESH_subMeshEventListener
   {
     SMESH_Mesh* myMesh;
+    string      myMeshPartIOR;
     //!< Constructor
     TSearchersDeleter(): SMESH_subMeshEventListener( false ), // won't be deleted by submesh
                          myMesh(0) {}
@@ -185,15 +188,16 @@ namespace {
       }
     }
     //!< set self on all submeshes and delete theNodeSearcher if other mesh is set
-    void Set(SMESH_Mesh* mesh)
+    void Set(SMESH_Mesh* mesh, const string& meshPartIOR = string())
     {
-      if ( myMesh != mesh )
+      if ( myMesh != mesh || myMeshPartIOR != meshPartIOR)
       {
         if ( myMesh ) {
           Delete();
           Unset( myMesh );
         }
         myMesh = mesh;
+        myMeshPartIOR = meshPartIOR;
         if ( SMESH_subMesh* myMainSubMesh = mesh->GetSubMeshContaining(1) ) {
           const TDependsOnMap & subMeshes = myMainSubMesh->DependsOn();
           TDependsOnMap::const_iterator sm;
@@ -4288,7 +4292,7 @@ SMESH::long_array* SMESH_MeshEditor_i::FindElementsByPoint(CORBA::Double      x,
     res[i] = foundElems[i]->GetID();
 
   if ( !myPreviewMode ) // call from tui
-    TPythonDump() << res << " = " << this << ".FindElementsByPoint( "
+    TPythonDump() << "res = " << this << ".FindElementsByPoint( "
                   << x << ", "
                   << y << ", "
                   << z << ", "
@@ -4297,6 +4301,77 @@ SMESH::long_array* SMESH_MeshEditor_i::FindElementsByPoint(CORBA::Double      x,
   return res._retn();
 }
 
+//=======================================================================
+//function : FindAmongElementsByPoint
+//purpose  : Searching among the given elements, return elements of given type 
+//           where the given point is IN or ON.
+//           'ALL' type means elements of any type excluding nodes
+//=======================================================================
+
+SMESH::long_array*
+SMESH_MeshEditor_i::FindAmongElementsByPoint(SMESH::SMESH_IDSource_ptr elementIDs,
+                                             CORBA::Double             x,
+                                             CORBA::Double             y,
+                                             CORBA::Double             z,
+                                             SMESH::ElementType        type)
+{
+  SMESH::long_array_var res = new SMESH::long_array;
+  
+  SMESH::array_of_ElementType_var types = elementIDs->GetTypes();
+  if ( types->length() == 1 && // a part contains only nodes or 0D elements
+       ( types[0] == SMESH::NODE || types[0] == SMESH::ELEM0D ) &&
+       type != types[0] ) // but search of elements of dim > 0
+    return res._retn();
+
+  if ( SMESH::DownCast<SMESH_Mesh_i*>( elementIDs )) // elementIDs is the whole mesh 
+    return FindElementsByPoint( x,y,z, type );
+
+  string partIOR = SMESH_Gen_i::GetORB()->object_to_string( elementIDs );
+  if ( SMESH_Group_i* group_i = SMESH::DownCast<SMESH_Group_i*>( elementIDs ))
+    // take into account passible group modification
+    partIOR += SMESH_Comment( ((SMESHDS_Group*)group_i->GetGroupDS())->SMDSGroup().Tic() );
+  partIOR += SMESH_Comment( type );
+
+  TIDSortedElemSet elements; // elems should live until FindElementsByPoint() finishes
+
+  theSearchersDeleter.Set( myMesh, partIOR );
+  if ( !theElementSearcher )
+  {
+    // create a searcher from elementIDs
+    SMESH::SMESH_Mesh_var mesh = elementIDs->GetMesh();
+    SMESHDS_Mesh* meshDS = SMESH::DownCast<SMESH_Mesh_i*>( mesh )->GetImpl().GetMeshDS();
+
+    if ( !idSourceToSet( elementIDs, meshDS, elements,
+                         SMDSAbs_ElementType(type), /*emptyIfIsMesh=*/true))
+      return res._retn();
+
+    typedef SMDS_SetIterator<const SMDS_MeshElement*, TIDSortedElemSet::const_iterator > TIter;
+    SMDS_ElemIteratorPtr elemsIt( new TIter( elements.begin(), elements.end() ));
+
+    ::SMESH_MeshEditor anEditor( myMesh );
+    theElementSearcher = anEditor.GetElementSearcher(elemsIt);
+  }
+
+  vector< const SMDS_MeshElement* > foundElems;
+
+  theElementSearcher->FindElementsByPoint( gp_Pnt( x,y,z ),
+                                           SMDSAbs_ElementType( type ),
+                                           foundElems);
+  res->length( foundElems.size() );
+  for ( int i = 0; i < foundElems.size(); ++i )
+    res[i] = foundElems[i]->GetID();
+
+  if ( !myPreviewMode ) // call from tui
+    TPythonDump() << "res = " << this << ".FindAmongElementsByPoint( "
+                  << elementIDs << ", "
+                  << x << ", "
+                  << y << ", "
+                  << z << ", "
+                  << type << " )";
+
+  return res._retn();
+  
+}
 //=======================================================================
 //function : GetPointState
 //purpose  : Return point state in a closed 2D mesh in terms of TopAbs_State enumeration.
