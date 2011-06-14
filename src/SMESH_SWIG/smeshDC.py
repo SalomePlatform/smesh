@@ -1665,13 +1665,13 @@ class Mesh:
     def Group(self, grp, name=""):
         return self.GroupOnGeom(grp, name)
 
-    ## Deprecated, used only for compatibility! Please, use ExportToMEDX() method instead.
-    #  Exports the mesh in a file in MED format and chooses the \a version of MED format
+    ## Deprecated, used only for compatibility! Please, use ExportMED() method instead.
+    ## Exports the mesh in a file in MED format and chooses the \a version of MED format
     ## allowing to overwrite the file if it exists or add the exported data to its contents
     #  @param f the file name
     #  @param version values are SMESH.MED_V2_1, SMESH.MED_V2_2
     #  @param opt boolean parameter for creating/not creating
-    #  the groups Group_On_All_Nodes, Group_On_All_Faces, ...
+    #         the groups Group_On_All_Nodes, Group_On_All_Faces, ...
     #  @param overwrite boolean parameter for overwriting/not overwriting the file
     #  @ingroup l2_impexp
     def ExportToMED(self, f, version, opt=0, overwrite=1):
@@ -1685,28 +1685,52 @@ class Mesh:
     #  the typical use is auto_groups=false.
     #  @param version MED format version(MED_V2_1 or MED_V2_2)
     #  @param overwrite boolean parameter for overwriting/not overwriting the file
+    #  @param meshPart a part of mesh (group, sub-mesh) to export instead of the mesh
     #  @ingroup l2_impexp
-    def ExportMED(self, f, auto_groups=0, version=MED_V2_2, overwrite=1):
-        self.mesh.ExportToMEDX(f, auto_groups, version, overwrite)
+    def ExportMED(self, f, auto_groups=0, version=MED_V2_2, overwrite=1, meshPart=None):
+        if meshPart:
+            if isinstance( meshPart, list ):
+                meshPart = self.GetIDSource( meshPart, SMESH.ALL )
+            self.mesh.ExportPartToMED( meshPart, f, auto_groups, version, overwrite )
+        else:
+            self.mesh.ExportToMEDX(f, auto_groups, version, overwrite)
 
     ## Exports the mesh in a file in DAT format
     #  @param f the file name
+    #  @param meshPart a part of mesh (group, sub-mesh) to export instead of the mesh
     #  @ingroup l2_impexp
-    def ExportDAT(self, f):
-        self.mesh.ExportDAT(f)
+    def ExportDAT(self, f, meshPart=None):
+        if meshPart:
+            if isinstance( meshPart, list ):
+                meshPart = self.GetIDSource( meshPart, SMESH.ALL )
+            self.mesh.ExportPartToDAT( meshPart, f )
+        else:
+            self.mesh.ExportDAT(f)
 
     ## Exports the mesh in a file in UNV format
     #  @param f the file name
+    #  @param meshPart a part of mesh (group, sub-mesh) to export instead of the mesh
     #  @ingroup l2_impexp
-    def ExportUNV(self, f):
-        self.mesh.ExportUNV(f)
+    def ExportUNV(self, f, meshPart=None):
+        if meshPart:
+            if isinstance( meshPart, list ):
+                meshPart = self.GetIDSource( meshPart, SMESH.ALL )
+            self.mesh.ExportPartToUNV( meshPart, f )
+        else:
+            self.mesh.ExportUNV(f)
 
     ## Export the mesh in a file in STL format
     #  @param f the file name
     #  @param ascii defines the file encoding
+    #  @param meshPart a part of mesh (group, sub-mesh) to export instead of the mesh
     #  @ingroup l2_impexp
-    def ExportSTL(self, f, ascii=1):
-        self.mesh.ExportSTL(f, ascii)
+    def ExportSTL(self, f, ascii=1, meshPart=None):
+        if meshPart:
+            if isinstance( meshPart, list ):
+                meshPart = self.GetIDSource( meshPart, SMESH.ALL )
+            self.mesh.ExportPartToSTL( meshPart, f, ascii )
+        else:
+            self.mesh.ExportSTL(f, ascii)
 
 
     # Operations with groups:
@@ -2714,10 +2738,14 @@ class Mesh:
     #  @param z  the Z coordinate of a point
     #  @param elementType type of elements to find (SMESH.ALL type
     #         means elements of any type excluding nodes and 0D elements)
+    #  @param meshPart a part of mesh (group, sub-mesh) to search within
     #  @return list of IDs of found elements
     #  @ingroup l2_modif_throughp
-    def FindElementsByPoint(self, x, y, z, elementType = SMESH.ALL):
-        return self.editor.FindElementsByPoint(x, y, z, elementType)
+    def FindElementsByPoint(self, x, y, z, elementType = SMESH.ALL, meshPart=None):
+        if meshPart:
+            return self.editor.FindAmongElementsByPoint( meshPart, x, y, z, elementType );
+        else:
+            return self.editor.FindElementsByPoint(x, y, z, elementType)
 
     # Return point state in a closed 2D mesh in terms of TopAbs_State enumeration.
     # TopAbs_UNKNOWN state means that either mesh is wrong or the analysis fails.
