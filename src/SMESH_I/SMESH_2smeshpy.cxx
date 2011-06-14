@@ -812,7 +812,7 @@ _pyMesh::_pyMesh(const Handle(_pyCommand) theCreationCmd, const TCollection_Asci
 
 //================================================================================
 /*!
- * \brief Convert a IDL API command of SMESH::Mesh to a method call of python Mesh
+ * \brief Convert an IDL API command of SMESH::SMESH_Mesh to a method call of python Mesh
   * \param theCommand - Engine method called for this mesh
  */
 //================================================================================
@@ -877,6 +877,21 @@ void _pyMesh::Process( const Handle(_pyCommand)& theCommand )
   else if ( method == "ExportToMED" ||   // ExportToMED() --> ExportMED()
             method == "ExportToMEDX" ) { // ExportToMEDX() --> ExportMED()
     theCommand->SetMethod( "ExportMED" );
+  }
+  // ----------------------------------------------------------------------
+  else if ( method.Location( "ExportPartTo", 1, method.Length() ) == 1 )
+  { // ExportPartTo*(part, ...) -> Export*(..., part)
+    //
+    // remove "PartTo" from the method
+    TCollection_AsciiString newMethod = method;
+    newMethod.Remove( 7, 6 );
+    theCommand->SetMethod( newMethod );
+    // make the 1st arg be the last one
+    _pyID partID = theCommand->GetArg( 1 );
+    int nbArgs = theCommand->GetNbArgs();
+    for ( int i = 2; i <= nbArgs; ++i )
+      theCommand->SetArg( i-1, theCommand->GetArg( i ));
+    theCommand->SetArg( nbArgs, partID );
   }
   // ----------------------------------------------------------------------
   else if ( method == "CreateGroup" ) { // CreateGroup() --> CreateEmptyGroup()
@@ -1218,6 +1233,19 @@ void _pyMeshEditor::Process( const Handle(_pyCommand)& theCommand)
     Handle(_pySubMesh) sm = theGen->FindSubMesh( theCommand->GetArg( isFromQua ? 1 : 2 ));
     if ( !sm.IsNull() )
       sm->Process( theCommand );
+  }
+  // FindAmongElementsByPoint(meshPart, x, y, z, elementType) ->
+  // FindElementsByPoint(x, y, z, elementType, meshPart)
+  if ( !isPyMeshMethod && method == "FindAmongElementsByPoint" )
+  {
+    isPyMeshMethod=true;
+    theCommand->SetMethod( "FindElementsByPoint" );
+    // make the 1st arg be the last one
+    _pyID partID = theCommand->GetArg( 1 );
+    int nbArgs = theCommand->GetNbArgs();
+    for ( int i = 2; i <= nbArgs; ++i )
+      theCommand->SetArg( i-1, theCommand->GetArg( i ));
+    theCommand->SetArg( nbArgs, partID );
   }
 
   // meshes made by *MakeMesh() methods are not wrapped by _pyMesh,
@@ -2174,32 +2202,67 @@ const TCollection_AsciiString & _pyCommand::GetArg( int index )
 {
   if ( GetBegPos( ARG1_IND ) == UNKNOWN )
   {
-    // find all args
-    int begPos = GetBegPos( METHOD_IND ) + myMeth.Length();
-    if ( begPos < 1 )
-      begPos = myString.Location( "(", 1, Length() ) + 1;
+    // Find all args
 
-    int i = 0, prevLen = 0, nbNestings = 0;
-    while ( begPos != EMPTY ) {
-      begPos += prevLen;
-      if( myString.Value( begPos ) == '(' )
-        nbNestings++;
-      // check if we are looking at the closing parenthesis
-      while ( begPos <= Length() && isspace( myString.Value( begPos )))
-        ++begPos;
-      if ( begPos > Length() )
-        break;
-      if ( myString.Value( begPos ) == ')' ) {
-        nbNestings--;
-        if( nbNestings == 0 )
-          break;
+    int pos = GetBegPos( METHOD_IND ) + myMeth.Length();
+    if ( pos < 1 )
+      pos = myString.Location( "(", 1, Length() );
+    else
+      --pos;
+
+    // we are at or before '(', skip it if present
+    if ( pos > 0 ) {
+      while ( pos <= Length() && myString.Value( pos ) != '(' ) ++pos;
+      if ( myString.Value( pos ) != '(' )
+        pos = 0;
+    }
+    if ( pos < 1 ) {
+      SetBegPos( ARG1_IND, 0 ); // even no '('
+      return theEmptyString;
+    }
+    ++pos;
+
+    list< TCollection_AsciiString > separatorStack( 1, ",)");
+    bool ignoreNesting = false;
+    int prevPos = pos;
+    while ( pos <= Length() )
+    {
+      const char chr = myString.Value( pos );
+
+      if ( separatorStack.back().Location( chr, 1, separatorStack.back().Length()))
+      {
+        if ( separatorStack.size() == 1 ) // ',' dividing args or a terminal ')' found
+        {
+          while ( pos-1 >= prevPos && isspace( myString.Value( prevPos )))
+            ++prevPos;
+          if ( pos-1 >= prevPos ) {
+            TCollection_AsciiString arg = myString.SubString( prevPos, pos-1 );
+            arg.RightAdjust(); // remove spaces
+            arg.LeftAdjust();
+            SetBegPos( ARG1_IND + myArgs.Length(), prevPos );
+            myArgs.Append( arg );
+          }
+          if ( chr == ')' )
+            break;
+          prevPos = pos+1;
+        }
+        else // end of nesting args found
+        {
+          separatorStack.pop_back();
+          ignoreNesting = false;
+        }
       }
-      myArgs.Append( GetWord( myString, begPos, true, true ));
-      SetBegPos( ARG1_IND + i, begPos );
-      prevLen = myArgs.Last().Length();
-      if ( prevLen == 0 )
-        myArgs.Remove( myArgs.Length() ); // no more args
-      i++;
+      else if ( !ignoreNesting )
+      {
+        switch ( chr ) {
+        case '(' : separatorStack.push_back(")"); break;
+        case '[' : separatorStack.push_back("]"); break;
+        case '\'': separatorStack.push_back("'");  ignoreNesting=true; break;
+        case '"' : separatorStack.push_back("\""); ignoreNesting=true; break;
+        default:;
+        }
+      }
+      ++pos;
     }
   }
   if ( myArgs.Length() < index )
