@@ -3,8 +3,8 @@
 \page importing_exporting_meshes_page Importing and exporting meshes
 
 \n In MESH there is a functionality allowing importation/exportation
-of meshes from \b MED, \b UNV (I-DEAS 10), \b DAT (Nastran) and STL
-format files.
+of meshes from/to \b MED, \b UNV (I-DEAS 10), \b DAT (Nastran) and STL
+format files. You can also export a group as a whole mesh.
 
 
 <em>To import a mesh:</em>
@@ -21,7 +21,7 @@ importation. It is possible to select multiple files to be imported all at once.
 
 \image html meshimportmesh.png
 
-<em>To export a mesh:</em>
+<em>To export a mesh or a group:</em>
 
 <ol>
 <li>Select the object you wish to export.</li>

@@ -231,6 +231,11 @@ tetra.Compute()
 
 # export the mesh in a MED file
 tetra.ExportMED("/tmp/meshMED.med", 0)
+
+# export a group in a MED file
+face = geompy.SubShapeAll( box, geompy.ShapeType["FACE"])[0] # a box side
+group = tetra.GroupOnGeom( face, "face group" ) # group of 2D elements on the <face>
+tetra.ExportMED("/tmp/groupMED.med", meshPart=group)
 \endcode
 
 <br>
@@ -270,7 +275,7 @@ fGroup = mesh.GroupOnGeom( face, "2D on face")
 nGroup = mesh.GroupOnGeom( face, "nodes on face", NODE)
 subMesh = localAlgo.GetSubMesh()
 
-# make a new mesh by copying different part of the mesh
+# make a new mesh by copying different parts of the mesh
 
 # 1. copy the whole mesh
 newMesh = CopyMesh( mesh, "whole mesh copy")

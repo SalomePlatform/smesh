@@ -127,8 +127,12 @@ vols = mesh.FindElementsByPoint(x,y,z, SMESH.VOLUME )
 assert( len(vols) == 1)
 
 # Find 0D elements at the point
-edges = mesh.FindElementsByPoint(x,y,z, SMESH.ELEM0D )
-assert( len(edges) == 0)
+elems0d = mesh.FindElementsByPoint(x,y,z, SMESH.ELEM0D )
+assert( len(elems0d) == 0)
+
+# Find edges within a group
+group1D = mesh.MakeGroupByIds("1D", SMESH.EDGE, [1,2] )
+edges = mesh.FindElementsByPoint(x,y,z, SMESH.EDGE, group1D )
 
 \endcode
 
