@@ -35,16 +35,17 @@
 
 #include "DriverMED_R_SMESHDS_Mesh.h"
 #include "DriverMED_W_SMESHDS_Mesh.h"
-#include "SMDS_VolumeTool.hxx"
+#include "SMDS_EdgePosition.hxx"
 #include "SMDS_ElemIterator.hxx"
+#include "SMDS_FacePosition.hxx"
+#include "SMDS_SetIterator.hxx"
+#include "SMDS_VolumeTool.hxx"
 #include "SMESHDS_Command.hxx"
 #include "SMESHDS_CommandType.hxx"
 #include "SMESHDS_GroupOnGeom.hxx"
 #include "SMESH_Group.hxx"
 #include "SMESH_MeshEditor.hxx"
 #include "SMESH_MesherHelper.hxx"
-#include "SMDS_EdgePosition.hxx"
-#include "SMDS_FacePosition.hxx"
 
 #include "OpUtil.hxx"
 #include "SALOME_NamingService.hxx"
@@ -2446,15 +2447,16 @@ void SMESH_Mesh_i::ExportToMEDX (const char* file,
 
   // Perform Export
   PrepareForWriting(file, overwrite);
-  const char* aMeshName = "Mesh";
+  string aMeshName = "Mesh";
   SALOMEDS::Study_ptr aStudy = _gen_i->GetCurrentStudy();
   if ( !aStudy->_is_nil() ) {
     SALOMEDS::SObject_var aMeshSO = _gen_i->ObjectToSObject( aStudy, _this() );
     if ( !aMeshSO->_is_nil() ) {
-      aMeshName = aMeshSO->GetName();
+      CORBA::String_var name = aMeshSO->GetName();
+      aMeshName = name;
       // asv : 27.10.04 : fix of 6903: check for StudyLocked before adding attributes
       if ( !aStudy->GetProperties()->IsLocked() )
-        {
+      {
         SALOMEDS::GenericAttribute_var anAttr;
         SALOMEDS::StudyBuilder_var aStudyBuilder = aStudy->NewBuilder();
         SALOMEDS::AttributeExternalFileDef_var aFileName;
@@ -2467,21 +2469,27 @@ void SMESH_Mesh_i::ExportToMEDX (const char* file,
         aFileType = SALOMEDS::AttributeFileType::_narrow(anAttr);
         ASSERT(!aFileType->_is_nil());
         aFileType->SetValue("FICHIERMED");
-        }
+      }
     }
   }
   // Update Python script
   // set name of mesh before export
-  TPythonDump() << _gen_i << ".SetName(" << _this() << ", '" << aMeshName << "')";
-  
+  TPythonDump() << _gen_i << ".SetName(" << _this() << ", '" << aMeshName.c_str() << "')";
+
   // check names of groups
   checkGroupNames();
 
   TPythonDump() << _this() << ".ExportToMEDX( r'"
                 << file << "', " << auto_groups << ", " << theVersion << ", " << overwrite << " )";
 
-  _impl->ExportMED( file, aMeshName, auto_groups, theVersion );
+  _impl->ExportMED( file, aMeshName.c_str(), auto_groups, theVersion );
 }
+
+//================================================================================
+/*!
+ * \brief Export a mesh to a med file
+ */
+//================================================================================
 
 void SMESH_Mesh_i::ExportToMED (const char* file,
                                 CORBA::Boolean auto_groups,
@@ -2491,12 +2499,24 @@ void SMESH_Mesh_i::ExportToMED (const char* file,
   ExportToMEDX(file,auto_groups,theVersion,true);
 }
 
+//================================================================================
+/*!
+ * \brief Export a mesh to a med file
+ */
+//================================================================================
+
 void SMESH_Mesh_i::ExportMED (const char* file,
                               CORBA::Boolean auto_groups)
   throw(SALOME::SALOME_Exception)
 {
   ExportToMEDX(file,auto_groups,SMESH::MED_V2_2,true);
 }
+
+//================================================================================
+/*!
+ * \brief Export a mesh to a DAT file
+ */
+//================================================================================
 
 void SMESH_Mesh_i::ExportDAT (const char *file)
   throw(SALOME::SALOME_Exception)
@@ -2513,6 +2533,12 @@ void SMESH_Mesh_i::ExportDAT (const char *file)
   _impl->ExportDAT(file);
 }
 
+//================================================================================
+/*!
+ * \brief Export a mesh to an UNV file
+ */
+//================================================================================
+
 void SMESH_Mesh_i::ExportUNV (const char *file)
   throw(SALOME::SALOME_Exception)
 {
@@ -2528,6 +2554,12 @@ void SMESH_Mesh_i::ExportUNV (const char *file)
   _impl->ExportUNV(file);
 }
 
+//================================================================================
+/*!
+ * \brief Export a mesh to an STL file
+ */
+//================================================================================
+
 void SMESH_Mesh_i::ExportSTL (const char *file, const bool isascii)
   throw(SALOME::SALOME_Exception)
 {
@@ -2541,6 +2573,129 @@ void SMESH_Mesh_i::ExportSTL (const char *file, const bool isascii)
   // Perform Export
   PrepareForWriting(file);
   _impl->ExportSTL(file, isascii);
+}
+
+//=============================================================================
+/*!
+ * \brief Class providing SMESHDS_Mesh API to SMESH_IDSource. 
+ *        It is used to export a part of mesh as a whole mesh.
+ */
+class SMESH_MeshPartDS : public SMESHDS_Mesh
+{
+public:
+  SMESH_MeshPartDS(SMESH::SMESH_IDSource_ptr meshPart);
+
+  virtual SMDS_NodeIteratorPtr      nodesIterator     (bool idInceasingOrder=false) const;
+  virtual SMDS_0DElementIteratorPtr elements0dIterator(bool idInceasingOrder=false) const;
+  virtual SMDS_EdgeIteratorPtr      edgesIterator     (bool idInceasingOrder=false) const;
+  virtual SMDS_FaceIteratorPtr      facesIterator     (bool idInceasingOrder=false) const;
+  virtual SMDS_VolumeIteratorPtr    volumesIterator   (bool idInceasingOrder=false) const;
+
+  virtual SMDS_ElemIteratorPtr elementsIterator(SMDSAbs_ElementType type=SMDSAbs_All) const;
+
+private:
+  TIDSortedElemSet _elements[ SMDSAbs_NbElementTypes ];
+  SMESHDS_Mesh*    _meshDS;
+  /*!
+   * \brief Class used to access to protected data of SMDS_MeshInfo
+   */
+  struct TMeshInfo : public SMDS_MeshInfo
+  {
+    void Add(const SMDS_MeshElement* e) { SMDS_MeshInfo::addWithPoly( e ); }
+  };
+};
+
+//================================================================================
+/*!
+ * \brief Export a part of mesh to a med file
+ */
+//================================================================================
+
+void SMESH_Mesh_i::ExportPartToMED(::SMESH::SMESH_IDSource_ptr meshPart,
+                                   const char*                 file,
+                                   CORBA::Boolean              auto_groups,
+                                   ::SMESH::MED_VERSION        version,
+                                   ::CORBA::Boolean            overwrite)
+  throw (SALOME::SALOME_Exception)
+{
+  Unexpect aCatch(SALOME_SalomeException);
+
+  PrepareForWriting(file, overwrite);
+
+  string aMeshName = "Mesh";
+  SALOMEDS::Study_ptr aStudy = _gen_i->GetCurrentStudy();
+  if ( !aStudy->_is_nil() ) {
+    SALOMEDS::SObject_var SO = _gen_i->ObjectToSObject( aStudy, meshPart );
+    if ( !SO->_is_nil() ) {
+      CORBA::String_var name = SO->GetName();
+      aMeshName = name;
+    }
+  }
+  SMESH_MeshPartDS partDS( meshPart );
+  _impl->ExportMED( file, aMeshName.c_str(), auto_groups, version, &partDS );
+
+  TPythonDump() << _this() << ".ExportPartToMED( " << meshPart << ", r'" << file << "', "
+                << auto_groups << ", " << version << ", " << overwrite << " )";
+}
+
+//================================================================================
+/*!
+ * \brief Export a part of mesh to a DAT file
+ */
+//================================================================================
+
+void SMESH_Mesh_i::ExportPartToDAT(::SMESH::SMESH_IDSource_ptr meshPart,
+                                   const char*                 file)
+  throw (SALOME::SALOME_Exception)
+{
+  Unexpect aCatch(SALOME_SalomeException);
+
+  PrepareForWriting(file);
+
+  SMESH_MeshPartDS partDS( meshPart );
+  _impl->ExportDAT(file,&partDS);
+
+  TPythonDump() << _this() << ".ExportPartToDAT( " << meshPart << ", r'" << file << "' )";
+}
+//================================================================================
+/*!
+ * \brief Export a part of mesh to an UNV file
+ */
+//================================================================================
+
+void SMESH_Mesh_i::ExportPartToUNV(::SMESH::SMESH_IDSource_ptr meshPart,
+                                   const char*                 file)
+  throw (SALOME::SALOME_Exception)
+{
+  Unexpect aCatch(SALOME_SalomeException);
+
+  PrepareForWriting(file);
+
+  SMESH_MeshPartDS partDS( meshPart );
+  _impl->ExportUNV(file, &partDS);
+
+  TPythonDump() << _this() << ".ExportPartToUNV( " << meshPart<< ", r'" << file << "' )";
+}
+//================================================================================
+/*!
+ * \brief Export a part of mesh to an STL file
+ */
+//================================================================================
+
+void SMESH_Mesh_i::ExportPartToSTL(::SMESH::SMESH_IDSource_ptr meshPart,
+                                   const char*                 file,
+                                   ::CORBA::Boolean            isascii)
+  throw (SALOME::SALOME_Exception)
+{
+  Unexpect aCatch(SALOME_SalomeException);
+
+  PrepareForWriting(file);
+
+  SMESH_MeshPartDS partDS( meshPart );
+  _impl->ExportSTL(file, isascii, &partDS);
+
+  TPythonDump() << _this() << ".ExportPartToSTL( "
+                << meshPart<< ", r'" << file << "', " << isascii << ")";
 }
 
 //=============================================================================
@@ -4098,10 +4253,9 @@ static void findCommonSubMesh (list<const SMESH_subMesh*>& theSubMeshList,
  */
 //=============================================================================
 
-void SMESH_Mesh_i::convertMeshOrder
-(const TListOfListOfInt& theIdsOrder,
- SMESH::submesh_array_array& theResOrder,
- const bool theIsDump)
+void SMESH_Mesh_i::convertMeshOrder (const TListOfListOfInt&     theIdsOrder,
+                                     SMESH::submesh_array_array& theResOrder,
+                                     const bool                  theIsDump)
 {
   int nbSet = theIdsOrder.size();
   TPythonDump aPythonDump; // prevent dump of called methods
@@ -4147,3 +4301,77 @@ void SMESH_Mesh_i::convertMeshOrder
     aPythonDump << " = " << _this() << ".GetMeshOrder()";
   }
 }
+
+//================================================================================
+//
+// Implementation of SMESH_MeshPartDS
+//
+SMESH_MeshPartDS::SMESH_MeshPartDS(SMESH::SMESH_IDSource_ptr meshPart):
+  SMESHDS_Mesh( /*theMeshID=*/-1, /*theIsEmbeddedMode=*/true)
+{
+  SMESH::SMESH_Mesh_var mesh = meshPart->GetMesh();
+  SMESH_Mesh_i*       mesh_i = SMESH::DownCast<SMESH_Mesh_i*>( mesh );
+
+  _meshDS = mesh_i->GetImpl().GetMeshDS();
+
+  if ( mesh_i == SMESH::DownCast<SMESH_Mesh_i*>( meshPart ))
+  {
+    // <meshPart> is the whole mesh
+    myInfo = _meshDS->GetMeshInfo(); // copy mesh info;
+  }
+  else
+  {
+    TMeshInfo tmpInfo;
+    SMESH::long_array_var           anIDs = meshPart->GetIDs();
+    SMESH::array_of_ElementType_var types = meshPart->GetTypes();
+    if ( types->length() == 1 && types[0] == SMESH::NODE ) // group of nodes
+    {
+      for (int i=0; i < anIDs->length(); i++)
+        if ( const SMDS_MeshNode * n = _meshDS->FindNode(anIDs[i]))
+          if ( _elements[ SMDSAbs_Node ].insert( n ).second )
+            tmpInfo.Add( n );
+    }
+    else
+    {
+      for (int i=0; i < anIDs->length(); i++)
+        if ( const SMDS_MeshElement * e = _meshDS->FindElement(anIDs[i]))
+          if ( _elements[ e->GetType() ].insert( e ).second )
+          {
+            tmpInfo.Add( e );
+            SMDS_ElemIteratorPtr nIt = e->nodesIterator();
+            while ( nIt->more() )
+            {
+              const SMDS_MeshNode * n = (const SMDS_MeshNode*) nIt->next();
+              if ( _elements[ SMDSAbs_Node ].insert( n ).second )
+                tmpInfo.Add( n );
+            }
+          }
+    }
+    myInfo = tmpInfo;
+
+    _meshDS = 0; // to enforce iteration on _elements and _nodes
+  }
+}
+SMDS_ElemIteratorPtr SMESH_MeshPartDS::elementsIterator(SMDSAbs_ElementType type) const
+{
+  typedef SMDS_SetIterator<const SMDS_MeshElement*, TIDSortedElemSet::const_iterator > TIter;
+  return _meshDS ? _meshDS->elementsIterator(type) : SMDS_ElemIteratorPtr
+    ( new TIter( _elements[type].begin(), _elements[type].end() ));
+}
+#define _GET_ITER_DEFINE( iterType, methName, elem, elemType)                       \
+  iterType SMESH_MeshPartDS::methName( bool idInceasingOrder) const                 \
+  {                                                                                 \
+    typedef SMDS_SetIterator<const elem*, TIDSortedElemSet::const_iterator > TIter; \
+    return _meshDS ? _meshDS->methName(idInceasingOrder) : iterType                 \
+      ( new TIter( _elements[elemType].begin(), _elements[elemType].end() ));       \
+  }
+_GET_ITER_DEFINE( SMDS_NodeIteratorPtr, nodesIterator, SMDS_MeshNode, SMDSAbs_Node )
+_GET_ITER_DEFINE( SMDS_0DElementIteratorPtr, elements0dIterator, SMDS_Mesh0DElement, SMDSAbs_0DElement)
+_GET_ITER_DEFINE( SMDS_EdgeIteratorPtr, edgesIterator, SMDS_MeshEdge, SMDSAbs_Edge )
+_GET_ITER_DEFINE( SMDS_FaceIteratorPtr, facesIterator, SMDS_MeshFace, SMDSAbs_Face )
+_GET_ITER_DEFINE( SMDS_VolumeIteratorPtr, volumesIterator, SMDS_MeshVolume, SMDSAbs_Volume)
+#undef _GET_ITER_DEFINE
+//
+// END Implementation of SMESH_MeshPartDS
+//
+//================================================================================

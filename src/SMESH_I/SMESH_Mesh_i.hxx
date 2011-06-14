@@ -207,19 +207,32 @@ public:
    */
   char* GetVersionString(SMESH::MED_VERSION version, CORBA::Short nbDigits);
 
-  void ExportToMEDX( const char* file, CORBA::Boolean auto_groups, SMESH::MED_VERSION theVersion, CORBA::Boolean overwrite )
-    throw (SALOME::SALOME_Exception);
-  void ExportToMED( const char* file, CORBA::Boolean auto_groups, SMESH::MED_VERSION theVersion )
-    throw (SALOME::SALOME_Exception);
-  void ExportMED( const char* file, CORBA::Boolean auto_groups )
-    throw (SALOME::SALOME_Exception);
+  void ExportToMEDX( const char*        file,
+                     CORBA::Boolean     auto_groups,
+                     SMESH::MED_VERSION version,
+                     CORBA::Boolean     overwrite ) throw (SALOME::SALOME_Exception);
+  void ExportToMED ( const char*        file,
+                     CORBA::Boolean     auto_groups,
+                     SMESH::MED_VERSION version ) throw (SALOME::SALOME_Exception);
+  void ExportMED   ( const char*        file,
+                     CORBA::Boolean     auto_groups ) throw (SALOME::SALOME_Exception);
 
-  void ExportDAT( const char* file )
-    throw (SALOME::SALOME_Exception);
-  void ExportUNV( const char* file )
-    throw (SALOME::SALOME_Exception);
-  void ExportSTL( const char* file, bool isascii )
-    throw (SALOME::SALOME_Exception);
+  void ExportDAT( const char* file ) throw (SALOME::SALOME_Exception);
+  void ExportUNV( const char* file ) throw (SALOME::SALOME_Exception);
+  void ExportSTL( const char* file, bool isascii ) throw (SALOME::SALOME_Exception);
+
+  void ExportPartToMED(SMESH::SMESH_IDSource_ptr meshPart,
+                       const char*               file,
+                       CORBA::Boolean            auto_groups,
+                       SMESH::MED_VERSION        version,
+                       CORBA::Boolean            overwrite) throw (SALOME::SALOME_Exception);
+  void ExportPartToDAT(SMESH::SMESH_IDSource_ptr meshPart,
+                       const char*               file) throw (SALOME::SALOME_Exception);
+  void ExportPartToUNV(SMESH::SMESH_IDSource_ptr meshPart,
+                       const char*               file) throw (SALOME::SALOME_Exception);
+  void ExportPartToSTL(SMESH::SMESH_IDSource_ptr meshPart,
+                       const char*               file,
+                       CORBA::Boolean            isascii) throw (SALOME::SALOME_Exception);
 
   SALOME_MED::MESH_ptr GetMEDMesh()
     throw (SALOME::SALOME_Exception);
