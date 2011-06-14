@@ -72,12 +72,13 @@ public:
   inline SMDS_UnstructuredGrid* getGrid() {return myGrid; }
   inline int getMeshId() {return myMeshId; }
 
-  SMDS_NodeIteratorPtr nodesIterator          (bool idInceasingOrder=false) const;
-  SMDS_0DElementIteratorPtr elements0dIterator(bool idInceasingOrder=false) const;
-  SMDS_EdgeIteratorPtr edgesIterator          (bool idInceasingOrder=false) const;
-  SMDS_FaceIteratorPtr facesIterator          (bool idInceasingOrder=false) const;
-  SMDS_VolumeIteratorPtr volumesIterator      (bool idInceasingOrder=false) const;
-  SMDS_ElemIteratorPtr elementsIterator(SMDSAbs_ElementType type=SMDSAbs_All) const;
+  virtual SMDS_NodeIteratorPtr      nodesIterator     (bool idInceasingOrder=false) const;
+  virtual SMDS_0DElementIteratorPtr elements0dIterator(bool idInceasingOrder=false) const;
+  virtual SMDS_EdgeIteratorPtr      edgesIterator     (bool idInceasingOrder=false) const;
+  virtual SMDS_FaceIteratorPtr      facesIterator     (bool idInceasingOrder=false) const;
+  virtual SMDS_VolumeIteratorPtr    volumesIterator   (bool idInceasingOrder=false) const;
+
+  virtual SMDS_ElemIteratorPtr elementsIterator(SMDSAbs_ElementType type=SMDSAbs_All) const;
 
   SMDSAbs_ElementType GetElementType( const int id, const bool iselem ) const;
 
@@ -542,21 +543,22 @@ public:
 
   const SMDS_MeshInfo& GetMeshInfo() const { return myInfo; }
 
-  int NbNodes() const;
-  int Nb0DElements() const;
-  int NbEdges() const;
-  int NbFaces() const;
-  int NbVolumes() const;
-  int NbSubMesh() const;
+  virtual int NbNodes() const;
+  virtual int Nb0DElements() const;
+  virtual int NbEdges() const;
+  virtual int NbFaces() const;
+  virtual int NbVolumes() const;
+  virtual int NbSubMesh() const;
+
   void DumpNodes() const;
   void Dump0DElements() const;
   void DumpEdges() const;
   void DumpFaces() const;
   void DumpVolumes() const;
   void DebugStats() const;
-  SMDS_Mesh *boundaryFaces();
-  SMDS_Mesh *boundaryEdges();
+
   virtual ~SMDS_Mesh();
+
   bool hasConstructionEdges();
   bool hasConstructionFaces();
   bool hasInverseElements();
