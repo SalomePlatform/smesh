@@ -7048,7 +7048,7 @@ SMESH_ElementSearcher* SMESH_MeshEditor::GetElementSearcher()
 
 //=======================================================================
 /*!
- * \brief Return SMESH_ElementSearcher
+ * \brief Return SMESH_ElementSearcher acting on a sub-set of elements
  */
 //=======================================================================
 
