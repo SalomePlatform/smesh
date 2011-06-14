@@ -1338,7 +1338,7 @@ Do you want to continue ?</translation>
     </message>
     <message>
         <source>SMESH_EXPORT_MED_DUPLICATED_MESH_NAMES</source>
-        <translation>There are some meshes with the same names in the selection.
+        <translation>There are some mesh objects with the same names in the selection.
 The result file may be incorrect.
 Do you want to continue ?</translation>
     </message>
@@ -4821,6 +4821,10 @@ Please specify them and try again</translation>
 </context>
 <context>
     <name>SMESHGUI_FindElemByPointDlg</name>
+    <message>
+        <source>MESH_GROUP</source>
+        <translation>Mesh or group</translation>
+    </message>
     <message>
         <source>CAPTION</source>
         <translation>Find Element by Point</translation>
