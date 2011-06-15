@@ -26,6 +26,8 @@
 #include "SMESHGUI_MeshUtils.h"
 #include "SMESH_TypeFilter.hxx"
 #include "SMESH_LogicalFilter.hxx"
+#include "SMESHGUI_VTKUtils.h"
+#include "SMESH_Actor.h"
 
 // SALOME GUI includes
 #include <LightApp_Application.h>
@@ -37,6 +39,7 @@
 #include <SUIT_OverrideCursor.h>
 #include <SUIT_Session.h>
 #include <SVTK_ViewModel.h>
+//#include <SVTK_ViewWindow.h>
 #include <SalomeApp_Study.h>
 #include <SalomeApp_Tools.h>
 
@@ -52,6 +55,8 @@
 #include <QHBoxLayout>
 #include <QGridLayout>
 #include <QToolButton>
+
+#include <Standard_ErrorHandler.hxx>
 
 #define SPACING 6
 #define MARGIN  11
@@ -74,16 +79,22 @@ SMESHGUI_Make2DFrom3DDlg::SMESHGUI_Make2DFrom3DDlg( QWidget* parent )
   aModeGrpLayout->setSpacing( SPACING );
   my2dFrom3dRB = new QRadioButton( tr( "2D_FROM_3D" ), aModeGrp );
   my1dFrom2dRB = new QRadioButton( tr( "1D_FROM_2D" ), aModeGrp );
-  my1dFrom3dRB = new QRadioButton( tr( "1D_FROM_3D" ), aModeGrp );
+  //my1dFrom3dRB = new QRadioButton( tr( "1D_FROM_3D" ), aModeGrp );
   aModeGrpLayout->addWidget( my2dFrom3dRB );
   aModeGrpLayout->addWidget( my1dFrom2dRB );
-  aModeGrpLayout->addWidget( my1dFrom3dRB );
+  //aModeGrpLayout->addWidget( my1dFrom3dRB );
 
-  // Groups of mesh faces
-  setObjectPixmap( "SMESH", tr( "ICON_SELECT" ) );
-  createObject( tr( "Groups" ), mainFrame(), Groups );
-  setNameIndication( Groups, ListOfNames );
-  objectWg( Groups, Btn )->hide();
+//   // Groups of mesh faces
+//   setObjectPixmap( "SMESH", tr( "ICON_SELECT" ) );
+//   createObject( tr( "Groups" ), mainFrame(), Groups );
+//   setNameIndication( Groups, ListOfNames );
+//   objectWg( Groups, Btn )->hide();
+
+  // Mesh or Groups
+  //setObjectPixmap( "SMESH", tr( "ICON_SELECT" ) );
+  createObject( tr( "Groups" ), mainFrame(), MeshOrGroups );
+  setNameIndication( MeshOrGroups, ListOfNames );
+  objectWg( MeshOrGroups, Btn )->hide();
 
   // target
   QGroupBox* aTargetGrp = new QGroupBox( tr( "TARGET" ), mainFrame() );
@@ -106,8 +117,8 @@ SMESHGUI_Make2DFrom3DDlg::SMESHGUI_Make2DFrom3DDlg( QWidget* parent )
   aDlgLay->setMargin( 0 );
   aDlgLay->setSpacing( SPACING );
   aDlgLay->addWidget( aModeGrp,     0, 0, 1, 3 );
-  aDlgLay->addWidget( objectWg( Groups,  Label ),   1, 0 );
-  aDlgLay->addWidget( objectWg( Groups,  Control ), 1, 1 );
+  aDlgLay->addWidget( objectWg( MeshOrGroups,  Label ),   1, 0 );
+  aDlgLay->addWidget( objectWg( MeshOrGroups,  Control ), 1, 1 );
   aDlgLay->addWidget( aTargetGrp,   2, 0, 1, 3 );
   aDlgLay->addWidget( myGroupCheck, 3, 0 );
   aDlgLay->addWidget( myGroupName,  3, 1, 1, 2 );
@@ -153,6 +164,21 @@ void SMESHGUI_Make2DFrom3DDlg::setNewMeshName( const QString& name )
   myMeshName->setText( name );
 }
 
+void SMESHGUI_Make2DFrom3DDlg::setNewMeshEnabled( bool enable )
+{
+  if ( !enable )
+    myThisMeshRB->setChecked( true );
+
+  myNewMeshRB->setEnabled( enable );
+
+  onTargetChanged();
+}
+
+bool SMESHGUI_Make2DFrom3DDlg::getNewMeshEnabled() const
+{
+  return myNewMeshRB->isEnabled();
+}
+
 bool SMESHGUI_Make2DFrom3DDlg::needGroup() const
 {
   return myGroupCheck->isChecked();
@@ -190,7 +216,9 @@ void SMESHGUI_Make2DFrom3DDlg::onGroupChecked()
 */
 
 SMESHGUI_Make2DFrom3DOp::SMESHGUI_Make2DFrom3DOp()
- : SMESHGUI_SelectionOp()
+  : SMESHGUI_SelectionOp(),
+    myMeshFilter(MESH),
+    myGroupFilter(GROUP)
 {
 }
 
@@ -220,33 +248,43 @@ void SMESHGUI_Make2DFrom3DOp::startOperation()
 
   connect( myDlg->my2dFrom3dRB, SIGNAL( toggled(bool) ), this, SLOT( onModeChanged() ) );
   connect( myDlg->my1dFrom2dRB, SIGNAL( toggled(bool) ), this, SLOT( onModeChanged() ) );
-  connect( myDlg->my1dFrom3dRB, SIGNAL( toggled(bool) ), this, SLOT( onModeChanged() ) );
+  //connect( myDlg->my1dFrom3dRB, SIGNAL( toggled(bool) ), this, SLOT( onModeChanged() ) );
 
-  onModeChanged();
+  //onModeChanged();
+
+  myDlg->activateObject( SMESHGUI_Make2DFrom3DDlg::MeshOrGroups );
+  selectionDone();
 }
+
+//================================================================================
+/*!
+ * \brief Set filter corresponding to dimension
+ */
+//================================================================================
 
 void SMESHGUI_Make2DFrom3DOp::onModeChanged()
 {
-  QRadioButton* b = dynamic_cast<QRadioButton*>( sender());
-  if ( b && !b->isChecked() )
-    return;
+//   QRadioButton* b = dynamic_cast<QRadioButton*>( sender());
+//   if ( b && !b->isChecked() )
+//     return;
 
-  // enable "2D groups" field
-  bool enableGroups = ( myDlg->mode() == SMESH::BND_1DFROM3D );
-  myDlg->setObjectEnabled( SMESHGUI_Make2DFrom3DDlg::Groups, enableGroups );
-  ((QToolButton*) myDlg->objectWg( SMESHGUI_Make2DFrom3DDlg::Groups,
-                                   SMESHGUI_Make2DFrom3DDlg::Btn ))->setChecked( enableGroups );
+//   // enable "2D groups" field
+//   bool enableGroups = ( myDlg->mode() == SMESH::BND_1DFROM3D );
+//   myDlg->setObjectEnabled( SMESHGUI_Make2DFrom3DDlg::Groups, enableGroups );
+//   ((QToolButton*) myDlg->objectWg( SMESHGUI_Make2DFrom3DDlg::Groups,
+//                                    SMESHGUI_Make2DFrom3DDlg::Btn ))->setChecked( enableGroups );
   
-  // install filter
-  int id =  enableGroups ? SMESHGUI_Make2DFrom3DDlg::Groups : SMESHGUI_Make2DFrom3DDlg::Mesh;
-  onDeactivateObject( id );
-  onActivateObject( id );
+//   // install filter
+//   int id =  enableGroups ? SMESHGUI_Make2DFrom3DDlg::Groups : SMESHGUI_Make2DFrom3DDlg::Mesh;
+//   onDeactivateObject( SMESHGUI_Make2DFrom3DDlg::MeshOrGroups );
+//   onActivateObject  ( SMESHGUI_Make2DFrom3DDlg::MeshOrGroups );
+//   selectionDone();
 }
 
 void SMESHGUI_Make2DFrom3DOp::selectionDone()
 {
+  myDlg->clearSelection( SMESHGUI_Make2DFrom3DDlg::MeshOrGroups );
   mySrcMesh = SMESH::SMESH_Mesh::_nil();
-  myDlg->clearSelection( SMESHGUI_Make2DFrom3DDlg::Groups );
 
   if ( !dlg() ) return;
 
@@ -258,13 +296,16 @@ void SMESHGUI_Make2DFrom3DOp::selectionDone()
       selected( names, types, ids );
       myDlg->selectObject( names, types, ids );
 
-      SALOME_ListIO sel; selectionMgr()->selectedObjects( sel, SVTK_Viewer::Type() );
-      if ( !sel.IsEmpty() )
+      // enable/desable "new mesh" button
+      bool isMesh = true;
+      for ( int i = 0; i < ids.count() && isMesh; ++i )
       {
-        SMESH::SMESH_IDSource_var IS = SMESH::IObjectToInterface<SMESH::SMESH_IDSource>(sel.First());
-        if(!CORBA::is_nil(IS))
-          mySrcMesh = IS->GetMesh();
+        _PTR(SObject) sobj =
+          SMESHGUI::activeStudy()->studyDS()->FindObjectID( ids[i].toLatin1().constData() );
+        mySrcMesh = SMESH::SObjectToInterface<SMESH::SMESH_Mesh>( sobj );  
+        isMesh = !mySrcMesh->_is_nil();
       }
+      myDlg->setNewMeshEnabled( isMesh );
     }
     catch ( const SALOME::SALOME_Exception& S_ex ) {
       SalomeApp_Tools::QtCatchCorbaException( S_ex );
@@ -276,8 +317,13 @@ void SMESHGUI_Make2DFrom3DOp::selectionDone()
 
 SUIT_SelectionFilter* SMESHGUI_Make2DFrom3DOp::createFilter( const int theId ) const
 {
-  MeshObjectType type = ( theId == SMESHGUI_Make2DFrom3DDlg::Groups ? GROUP_FACE : MESH );
-  SUIT_SelectionFilter* f = new SMESH_TypeFilter( type );
+  SMESHGUI_Make2DFrom3DOp* me = (SMESHGUI_Make2DFrom3DOp*) this;
+
+  QList<SUIT_SelectionFilter*> subFilters;
+  subFilters.append( & me->myMeshFilter );
+  subFilters.append( & me->myGroupFilter );
+
+  SUIT_SelectionFilter* f = new SMESH_LogicalFilter( subFilters, SMESH_LogicalFilter::LO_OR );
   return f;
 }
 
@@ -286,42 +332,60 @@ bool SMESHGUI_Make2DFrom3DOp::isValid( QString& msg ) const
   if ( !dlg() ) return false;
 
   // check if a mesh is selected
-  if ( mySrcMesh->_is_nil() )
+  if ( !myDlg->hasSelection( SMESHGUI_Make2DFrom3DDlg::MeshOrGroups ))
   {
     msg = tr( "SMESH_ERR_NO_INPUT_MESH" );
     return false;
   }
-  // check if groups are selected
-  SMESH::Bnd_Dimension mode = myDlg->mode();
-  if ( mode == SMESH::BND_1DFROM3D )
+  QStringList entries;
+  dlg()->selectedObject( SMESHGUI_Make2DFrom3DDlg::MeshOrGroups, entries );
+  const bool isMeshSelected = ( !mySrcMesh->_is_nil() );
+  if ( isMeshSelected )
   {
-    SMESH::SMESH_GroupBase_var grp;
-    QStringList entries;
-    dlg()->selectedObject( SMESHGUI_Make2DFrom3DDlg::Groups, entries );
-    if ( !entries.isEmpty() )
-    {
-      _PTR(SObject) sobj = SMESHGUI::activeStudy()->studyDS()->FindObjectID( entries[0].toLatin1().constData() );
-      if ( sobj )
-        grp = SMESH::SObjectToInterface<SMESH::SMESH_GroupBase>( sobj );
-    }
-    if ( grp->_is_nil() ) {
-      msg = tr( "SMESH_ERR_NO_INPUT_GROUP" );
+    // only one mesh is allowed
+    if ( entries.size() > 1 ) {
+      msg = tr( "SMESH_TOO_MANY_MESHES" );
       return false;
     }
   }
   else
   {
-    // check if mesh contains elements of required type
-    SMESH::Bnd_Dimension mode = myDlg->mode();
-
-    if ( mode == SMESH::BND_2DFROM3D && mySrcMesh->NbVolumes() == 0 ) {
-      msg = tr( "SMESH_ERR_NO_3D_ELEMENTS" );
-      return false;
+    // check if only groups are selected
+    for ( int i = 0; i < entries.count(); ++i )
+    {
+      SMESH::SMESH_GroupBase_var grp;
+      if ( _PTR(SObject) sobj = SMESHGUI::activeStudy()->studyDS()->FindObjectID( entries[i].toLatin1().constData() ))
+        grp = SMESH::SObjectToInterface<SMESH::SMESH_GroupBase>( sobj );
+      if ( grp->_is_nil() ) {
+        msg = tr( "SMESH_NOT_ONLY_GROUPS" );
+        return false;
+      }
     }
-    else if ( mode == SMESH::BND_1DFROM2D && mySrcMesh->NbFaces() == 0  ) {
-      msg = tr( "SMESH_ERR_NO_2D_ELEMENTS" );
-      return false;
+  }
+  // check if the selected objects contains elements of required type
+  bool hasFaces = false, hasVolumes = false;
+  SMESH::Bnd_Dimension mode = myDlg->mode();
+  for ( int i = 0; i < entries.count(); ++i )
+  {
+    SMESH::SMESH_IDSource_var idSource;
+    if ( _PTR(SObject) sobj = SMESHGUI::activeStudy()->studyDS()->FindObjectID( entries[i].toLatin1().constData() ))
+      idSource = SMESH::SObjectToInterface<SMESH::SMESH_IDSource>( sobj );
+    if ( !idSource->_is_nil() ) {
+      SMESH::array_of_ElementType_var types = idSource->GetTypes();
+      for ( int j = 0; j < types->length(); ++j )
+        if ( types[j] == SMESH::VOLUME )
+          hasVolumes = true;
+        else if ( types[j] == SMESH::FACE )
+          hasFaces = true;
     }
+  }
+  if ( mode == SMESH::BND_2DFROM3D && !hasVolumes ) {
+    msg = tr( "SMESH_ERR_NO_3D_ELEMENTS" );
+    return false;
+  }
+  else if ( mode == SMESH::BND_1DFROM2D && !hasFaces  ) {
+    msg = tr( "SMESH_ERR_NO_2D_ELEMENTS" );
+    return false;
   }
 
   // check if new mesh name is specified
@@ -335,7 +399,7 @@ bool SMESHGUI_Make2DFrom3DOp::isValid( QString& msg ) const
     msg = tr( "SMESH_ERR_GRP_NAME_NOT_SPECIFIED" );
     return false;
   }
-    
+
   return true;
 }
 
@@ -345,20 +409,41 @@ bool SMESHGUI_Make2DFrom3DOp::compute2DMesh( QStringList& theEntryList )
 
   bool ok = false;
   try {
-    QStringList entries;
-    dlg()->selectedObject( SMESHGUI_Make2DFrom3DDlg::Groups, entries );
-    SMESH::ListOfIDSources_var groups = new SMESH::ListOfIDSources;
-    groups->length( entries.count() );
-    for ( int i = 0; i < entries.count(); ++i )
-    {
-      _PTR(SObject) sobj = SMESHGUI::activeStudy()->studyDS()->FindObjectID( entries[i].toLatin1().constData() );
-      SMESH::SMESH_IDSource_var grp = SMESH::SObjectToInterface<SMESH::SMESH_IDSource>( sobj );  
-      groups[i] = grp;
-    }
     SMESH::Bnd_Dimension mode = myDlg->mode();
-    QString meshName  = myDlg->needNewMesh() ? myDlg->getNewMeshName() : QString();
-    QString groupName = myDlg->needGroup()   ? myDlg->getGroupName()   : QString();
-    bool copyAll = myDlg->copySource();
+    QString meshName          = myDlg->needNewMesh() ? myDlg->getNewMeshName() : QString();
+    QString groupName         = myDlg->needGroup()   ? myDlg->getGroupName()   : QString();
+    bool copyAll              = myDlg->copySource();
+
+    QStringList entries;
+    dlg()->selectedObject( SMESHGUI_Make2DFrom3DDlg::MeshOrGroups, entries );
+    SMESH::ListOfIDSources_var groups = new SMESH::ListOfIDSources;
+    QString wrongGroups = "";
+
+    if ( mySrcMesh->_is_nil() ) // get selected groups, find groups of wrong type
+    {
+      int nbGroups = 0;
+      int goodType = ( mode == SMESH::BND_2DFROM3D ? SMESH::VOLUME : SMESH::FACE );
+      groups->length( entries.count() );
+      for ( int i = 0; i < entries.count(); ++i )
+      {
+        _PTR(SObject) sobj =
+          SMESHGUI::activeStudy()->studyDS()->FindObjectID( entries[i].toLatin1().constData() );
+        SMESH::SMESH_IDSource_var grp = SMESH::SObjectToInterface<SMESH::SMESH_IDSource>( sobj );  
+        SMESH::array_of_ElementType_var types = grp->GetTypes();
+        if ( types->length() < 1 || types[0] != goodType )
+        {
+          if ( !wrongGroups.isEmpty() )
+            wrongGroups += ", ";
+          wrongGroups += sobj->GetName().c_str();
+        }
+        else
+        {
+          groups[ nbGroups++ ] = grp;
+        }
+      }
+      groups->length( nbGroups );
+      mySrcMesh = groups[0]->GetMesh();
+    }
 
     if ( !CORBA::is_nil( mySrcMesh ) ) {
       SMESH::SMESH_MeshEditor_var aMeshEditor = mySrcMesh->GetMeshEditor();
@@ -371,9 +456,11 @@ bool SMESHGUI_Make2DFrom3DOp::compute2DMesh( QStringList& theEntryList )
                                                                groups,
                                                                newMesh.out(),
                                                                newGrp.out() );
-      SUIT_MessageBox::information( myDlg,
-                                    tr("SMESH_INFORMATION"),
-                                    tr("NB_ADDED").arg( nbAdded ));
+      QString msg = tr("NB_ADDED").arg( nbAdded );
+      if ( !wrongGroups.isEmpty() )
+        msg += ".\n" + tr("WRONG_GROUPS").arg( wrongGroups );
+      SUIT_MessageBox::information( myDlg, tr("SMESH_INFORMATION"), msg);
+
       if ( !newMesh->_is_nil() ) {
         if( _PTR(SObject) aSObject = SMESH::ObjectToSObject( newMesh ) )
           theEntryList.append( aSObject->GetID().c_str() );
@@ -387,6 +474,11 @@ bool SMESHGUI_Make2DFrom3DOp::compute2DMesh( QStringList& theEntryList )
 #endif
       }
       ok = true;
+
+      for ( int i = 0; i < entries.count(); ++i )
+        if ( SMESH_Actor* actor = SMESH::FindActorByEntry( entries[i].toLatin1().constData() ))
+          SMESH::Update(actor->getIO(),actor->GetVisibility());
+      SMESH::RepaintCurrentView();
     }
   }
   catch ( ... ) {

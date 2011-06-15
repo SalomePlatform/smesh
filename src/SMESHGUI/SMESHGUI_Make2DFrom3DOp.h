@@ -26,6 +26,7 @@
 #include "SMESH_SMESHGUI.hxx"
 #include "SMESHGUI_Dialog.h"
 #include "SMESHGUI_SelectionOp.h"
+#include "SMESH_TypeFilter.hxx"
 
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_MeshEditor)
@@ -45,7 +46,7 @@ class SMESHGUI_EXPORT SMESHGUI_Make2DFrom3DDlg :  public SMESHGUI_Dialog
   Q_OBJECT
 
 public:
-  enum { Mesh, Groups };
+  enum { MeshOrGroups };
 
   SMESHGUI_Make2DFrom3DDlg( QWidget* );
   virtual ~SMESHGUI_Make2DFrom3DDlg();
@@ -55,6 +56,8 @@ public:
   bool                 needNewMesh() const;
   QString              getNewMeshName() const;
   void                 setNewMeshName( const QString& );
+  void                 setNewMeshEnabled( bool );
+  bool                 getNewMeshEnabled() const;
 
   bool                 needGroup() const;
   QString              getGroupName() const;
@@ -110,6 +113,9 @@ private:
 private:
   SMESH::SMESH_Mesh_var              mySrcMesh;
   QPointer<SMESHGUI_Make2DFrom3DDlg> myDlg;
+
+  SMESH_TypeFilter                   myMeshFilter;
+  SMESH_TypeFilter                   myGroupFilter;
 };
 
 #endif // SMESHGUI_Make2DFrom3DOp_H

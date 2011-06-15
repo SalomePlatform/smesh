@@ -5594,7 +5594,7 @@ It is impossible to read point coordinates from file</translation>
     </message>
     <message>
         <source>Groups</source>
-        <translation>2D groups</translation>
+        <translation>Mesh or groups</translation>
     </message>
     <message>
         <source>MODE</source>
@@ -5644,20 +5644,30 @@ It is impossible to read point coordinates from file</translation>
         <translation>%1 boundary elements have been added</translation>
     </message>
     <message>
+        <source>WRONG_GROUPS</source>
+        <translation>The following groups have not been processed
+as they are of improper type:
+%1</translation>
+    </message>
+    <message>
         <source>SMESH_ERR_NO_INPUT_MESH</source>
         <translation>Source mesh is not specified</translation>
     </message>
     <message>
-        <source>SMESH_ERR_NO_INPUT_GROUP</source>
-        <translation>2D group is not specified</translation>
+        <source>SMESH_TOO_MANY_MESHES</source>
+        <translation>Only one mesh can be processed at once</translation>
+    </message>
+    <message>
+        <source>SMESH_NOT_ONLY_GROUPS</source>
+        <translation>Can't process meshes and groups at once</translation>
     </message>
     <message>
         <source>SMESH_ERR_NO_3D_ELEMENTS</source>
-        <translation>The source object does not contain 3D elements</translation>
+        <translation>The source objects do not contain 3D elements</translation>
     </message>
     <message>
         <source>SMESH_ERR_NO_2D_ELEMENTS</source>
-        <translation>The source object does not contain 2D elements</translation>
+        <translation>The source objects do not contain 2D elements</translation>
     </message>
     <message>
         <source>SMESH_ERR_MESH_NAME_NOT_SPECIFIED</source>
