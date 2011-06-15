@@ -54,6 +54,7 @@ public:
   // got from object, not from actor
   virtual bool            isAutoColor( int ) const;
   virtual int             numberOfNodes( int ) const;
+  virtual int             dim( int ) const;
   virtual QVariant        isComputable( int ) const;
   virtual QVariant        isPreComputable( int ) const;
   virtual QVariant        hasReference( int ) const;
