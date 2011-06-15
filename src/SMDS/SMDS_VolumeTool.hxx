@@ -160,8 +160,9 @@ class SMDS_EXPORT SMDS_VolumeTool
   // Check normal orientation of a face.
   // SetExternalNormal() is taken into account.
 
-  bool IsFreeFace(  int faceIndex );
+  bool IsFreeFace(  int faceIndex, const SMDS_MeshElement** otherVol=0 );
   // Check that all volumes built on the face nodes lays on one side
+  // otherVol returns another volume sharing the given facet
 
   bool GetFaceNormal (int faceIndex, double & X, double & Y, double & Z);
   // Return a normal to a face
