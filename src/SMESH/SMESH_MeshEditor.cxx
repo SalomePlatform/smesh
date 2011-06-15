@@ -11581,13 +11581,12 @@ namespace
  *  \param group - a group to store created boundary elements in
  *  \param targetMesh - a mesh to store created boundary elements in
  *  \param toCopyElements - if true, the checked elements will be copied into the targetMesh
- *  \param toCopyExistingBondary - if true, not only new but also pre-existing
+ *  \param toCopyExistingBoundary - if true, not only new but also pre-existing
  *                                boundary elements will be copied into the targetMesh
  *  \param toAddExistingBondary - if true, not only new but also pre-existing
  *                                boundary elements will be added into the new group
  *  \param aroundElements - if true, elements will be created on boundary of given
- *                          elements else, on boundary of the whole mesh. This
- *                          option works for 2D elements only.
+ *                          elements else, on boundary of the whole mesh.
  * \return nb of added boundary elements
  */
 //================================================================================
@@ -11597,7 +11596,7 @@ int SMESH_MeshEditor::MakeBoundaryMesh(const TIDSortedElemSet& elements,
                                        SMESH_Group*            group/*=0*/,
                                        SMESH_Mesh*             targetMesh/*=0*/,
                                        bool                    toCopyElements/*=false*/,
-                                       bool                    toCopyExistingBondary/*=false*/,
+                                       bool                    toCopyExistingBoundary/*=false*/,
                                        bool                    toAddExistingBondary/*= false*/,
                                        bool                    aroundElements/*= false*/)
 {
@@ -11607,11 +11606,8 @@ int SMESH_MeshEditor::MakeBoundaryMesh(const TIDSortedElemSet& elements,
   if ( !elements.empty() && (*elements.begin())->GetType() != elemType )
     throw SALOME_Exception(LOCALIZED("wrong element type"));
 
-  if ( aroundElements && elemType == SMDSAbs_Volume )
-    throw SALOME_Exception(LOCALIZED("wrong element type for aroundElements==true"));
-
   if ( !targetMesh )
-    toCopyElements = toCopyExistingBondary = false;
+    toCopyElements = toCopyExistingBoundary = false;
 
   SMESH_MeshEditor tgtEditor( targetMesh ? targetMesh : myMesh );
   SMESHDS_Mesh* aMesh = GetMeshDS(), *tgtMeshDS = tgtEditor.GetMeshDS();
@@ -11649,11 +11645,13 @@ int SMESH_MeshEditor::MakeBoundaryMesh(const TIDSortedElemSet& elements,
     if ( vTool.Set(elem) ) // elem is a volume ------------------------------------------
     {
       vTool.SetExternalNormal();
+      const SMDS_MeshElement* otherVol = 0;
       for ( int iface = 0, n = vTool.NbFaces(); iface < n; iface++ )
       {
-        if (!vTool.IsFreeFace(iface))
+        if ( !vTool.IsFreeFace(iface, &otherVol) &&
+             ( !aroundElements || elements.count( otherVol )))
           continue;
-        int nbFaceNodes = vTool.NbFaceNodes(iface);
+        const int nbFaceNodes = vTool.NbFaceNodes(iface);
         const SMDS_MeshNode** nn = vTool.GetFaceNodes(iface);
         if ( missType == SMDSAbs_Edge ) // boundary edges
         {
@@ -11682,6 +11680,21 @@ int SMESH_MeshEditor::MakeBoundaryMesh(const TIDSortedElemSet& elements,
             presentBndElems.push_back( f );
           else
             missingBndElems.push_back( nodes );
+
+          if ( targetMesh != myMesh )
+          {
+            // add 1D elements on face boundary to be added to a new mesh
+            const SMDS_MeshElement* edge;
+            for ( inode = 0; inode < nbFaceNodes; inode += 1+iQuad)
+            {
+              if ( iQuad )
+                edge = aMesh->FindEdge( nn[inode], nn[inode+1], nn[inode+2]);
+              else
+                edge = aMesh->FindEdge( nn[inode], nn[inode+1]);
+              if ( edge && avoidSet.insert( edge ).second )
+                presentBndElems.push_back( edge );
+            }
+          }
         }
       }
     }
@@ -11712,7 +11725,7 @@ int SMESH_MeshEditor::MakeBoundaryMesh(const TIDSortedElemSet& elements,
     // ---------------------------------
     if ( targetMesh != myMesh )
       // instead of making a map of nodes in this mesh and targetMesh,
-      // we create nodes with same IDs. We can renumber them later, if needed
+      // we create nodes with same IDs.
       for ( int i = 0; i < missingBndElems.size(); ++i )
       {
         TConnectivity& srcNodes = missingBndElems[i];
@@ -11741,14 +11754,14 @@ int SMESH_MeshEditor::MakeBoundaryMesh(const TIDSortedElemSet& elements,
     // ----------------------------------
     // 3. Copy present boundary elements
     // ----------------------------------
-    if ( toCopyExistingBondary )
+    if ( toCopyExistingBoundary )
       for ( int i = 0 ; i < presentBndElems.size(); ++i )
       {
         const SMDS_MeshElement* e = presentBndElems[i];
         TConnectivity nodes( e->NbNodes() );
         for ( inode = 0; inode < nodes.size(); ++inode )
           nodes[inode] = getNodeWithSameID( tgtMeshDS, e->GetNode(inode) );
-        presentEditor->AddElement(nodes, missType, e->IsPoly());
+        presentEditor->AddElement(nodes, e->GetType(), e->IsPoly());
       }
     else // store present elements to add them to a group
       for ( int i = 0 ; i < presentBndElems.size(); ++i )
