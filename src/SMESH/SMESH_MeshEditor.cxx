@@ -1688,7 +1688,7 @@ void SMESH_MeshEditor::SplitVolumesIntoTetra (const TIDSortedElemSet & theElems,
               swap( n2, n3 );
             triangles.push_back( helper.AddFace( n1,n2,n3 ));
 
-            if ( n3->getshapeId() < 1 )
+            if ( fSubMesh && n3->getshapeId() < 1 )
               fSubMesh->AddNode( n3 );
           }
         }
