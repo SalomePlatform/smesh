@@ -4115,7 +4115,7 @@ void SMESH_MeshEditor::makeWalls (TNodeOfNodeListMap &     mapNewNodes,
                 if ( f )
                   aMesh->ChangeElementNodes( f, &polygon_nodes[0], nbn );
                 else
-                  myLastCreatedElems.Append(aMesh->AddPolygonalFace(polygon_nodes));
+                  AddElement(polygon_nodes, SMDSAbs_Face, polygon_nodes.size()>4);
               }
             }
 
