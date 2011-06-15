@@ -3091,35 +3091,27 @@ void SMESH_MeshEditor::Smooth (TIDSortedElemSet &          theElems,
     // fix nodes on mesh boundary
 
     if ( checkBoundaryNodes ) {
-      map< NLink, int > linkNbMap; // how many times a link encounters in elemsOnFace
-      map< NLink, int >::iterator link_nb;
+      map< SMESH_TLink, int > linkNbMap; // how many times a link encounters in elemsOnFace
+      map< SMESH_TLink, int >::iterator link_nb;
       // put all elements links to linkNbMap
       list< const SMDS_MeshElement* >::iterator elemIt = elemsOnFace.begin();
       for ( ; elemIt != elemsOnFace.end(); ++elemIt ) {
         const SMDS_MeshElement* elem = (*elemIt);
-        int nbn =  elem->NbNodes();
-        if(elem->IsQuadratic())
-          nbn = nbn/2;
+        int nbn =  elem->NbCornerNodes();
         // loop on elem links: insert them in linkNbMap
-        const SMDS_MeshNode* curNode, *prevNode = elem->GetNodeWrap( nbn );
         for ( int iN = 0; iN < nbn; ++iN ) {
-          curNode = elem->GetNode( iN );
-          NLink link;
-          if ( curNode < prevNode ) link = make_pair( curNode , prevNode );
-          else                      link = make_pair( prevNode , curNode );
-          prevNode = curNode;
-          link_nb = linkNbMap.find( link );
-          if ( link_nb == linkNbMap.end() )
-            linkNbMap.insert( make_pair ( link, 1 ));
-          else
-            link_nb->second++;
+          const SMDS_MeshNode* n1 = elem->GetNode( iN );
+          const SMDS_MeshNode* n2 = elem->GetNode(( iN+1 ) % nbn);
+          SMESH_TLink link( n1, n2 );
+          link_nb = linkNbMap.insert( make_pair( link, 0 )).first;
+          link_nb->second++;
         }
       }
       // remove nodes that are in links encountered only once from setMovableNodes
       for ( link_nb = linkNbMap.begin(); link_nb != linkNbMap.end(); ++link_nb ) {
         if ( link_nb->second == 1 ) {
-          setMovableNodes.erase( link_nb->first.first );
-          setMovableNodes.erase( link_nb->first.second );
+          setMovableNodes.erase( link_nb->first.node1() );
+          setMovableNodes.erase( link_nb->first.node2() );
         }
       }
     }
