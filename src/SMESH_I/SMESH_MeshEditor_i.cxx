@@ -5806,20 +5806,37 @@ CORBA::Long SMESH_MeshEditor_i::MakeBoundaryElements(SMESH::Bnd_Dimension dim,
   if ( dim > SMESH::BND_1DFROM2D )
     THROW_SALOME_CORBA_EXCEPTION("Invalid boundary dimension", SALOME::BAD_PARAM);
 
-  // check that groups belongs to to this mesh and is not this mesh
-  const int nbGroups = groups.length();
-  for ( int i = 0; i < nbGroups; ++i )
+  // separate groups belonging to this and other mesh
+  SMESH::ListOfIDSources_var groupsOfThisMesh = new SMESH::ListOfIDSources;
+  SMESH::ListOfIDSources_var groupsOfOtherMesh = new SMESH::ListOfIDSources;
+  groupsOfThisMesh->length( groups.length() );
+  groupsOfOtherMesh->length( groups.length() );
+  int nbGroups = 0, nbGroupsOfOtherMesh = 0;
+  for ( int i = 0; i < groups.length(); ++i )
   {
     SMESH::SMESH_Mesh_var m = groups[i]->GetMesh();
     if ( myMesh_i != SMESH::DownCast<SMESH_Mesh_i*>( m ))
-      THROW_SALOME_CORBA_EXCEPTION("group does not belong to this mesh", SALOME::BAD_PARAM);
+      groupsOfOtherMesh[ nbGroupsOfOtherMesh++ ] = groups[i];
+    else
+      groupsOfThisMesh[ nbGroups++ ] = groups[i];
     if ( SMESH::DownCast<SMESH_Mesh_i*>( groups[i] ))
       THROW_SALOME_CORBA_EXCEPTION("expect a group but recieve a mesh", SALOME::BAD_PARAM);
   }
-
-  TPythonDump pyDump;
+  groupsOfThisMesh->length( nbGroups );
+  groupsOfOtherMesh->length( nbGroupsOfOtherMesh );
 
   int nbAdded = 0;
+  TPythonDump pyDump;
+
+  if ( nbGroupsOfOtherMesh > 0 )
+  {
+    // process groups belonging to another mesh
+    SMESH::SMESH_Mesh_var    otherMesh = groupsOfOtherMesh[0]->GetMesh();
+    SMESH::SMESH_MeshEditor_var editor = otherMesh->GetMeshEditor();
+    nbAdded += editor->MakeBoundaryElements( dim, groupName, meshName, toCopyAll,
+                                             groupsOfOtherMesh, mesh, group );
+  }
+
   SMESH::SMESH_Mesh_var mesh_var;
   SMESH::SMESH_Group_var group_var;
 
@@ -5856,12 +5873,12 @@ CORBA::Long SMESH_MeshEditor_i::MakeBoundaryElements(SMESH::Bnd_Dimension dim,
 
   TIDSortedElemSet elements;
 
-  if ( nbGroups > 0 )
+  if ( groups.length() > 0 )
   {
     for ( int i = 0; i < nbGroups; ++i )
     {
       elements.clear();
-      if ( idSourceToSet( groups[i], srcMeshDS, elements, elemType,/*emptyIfIsMesh=*/false ))
+      if ( idSourceToSet( groupsOfThisMesh[i], srcMeshDS, elements, elemType,/*emptyIfIsMesh=*/0 ))
       {
         SMESH::Bnd_Dimension bdim = 
           ( elemType == SMDSAbs_Volume ) ? SMESH::BND_2DFROM3D : SMESH::BND_1DFROM2D;
