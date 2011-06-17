@@ -32,7 +32,6 @@
 #include "SMDS_MeshElement.hxx"
 #include "SMDS_Position.hxx"
 #include "ObjectPool.hxx"
-#include <NCollection_List.hxx>
 
 class SMDS_EXPORT SMDS_MeshNode:public SMDS_MeshElement
 {

@@ -122,21 +122,16 @@ dist_libSMDS_la_SOURCES = \
 # additionnal information to compil and link file
 libSMDS_la_CPPFLAGS = \
 	$(KERNEL_CXXFLAGS) \
-	$(CAS_CPPFLAGS) \
         $(VTK_INCLUDES) \
 	$(BOOST_CPPFLAGS)
 
 libSMDS_la_LDFLAGS  = \
 	$(VTK_LIBS) \
-	$(KERNEL_LDFLAGS) -lSALOMELocalTrace \
-	$(CAS_KERNEL)
+	$(KERNEL_LDFLAGS) -lSALOMELocalTrace
 
 # Executables targets
 bin_PROGRAMS = SMDS_MemoryLimit
 dist_SMDS_MemoryLimit_SOURCES = \
 	SMDS_MemoryLimit.cxx
-
-SMDS_MemoryLimit_LDADD = \
-	$(KERNEL_LDFLAGS) -lSALOMELocalTrace
 
 #libSMDS_la_LDFLAGS += -L/data/eap/S5_MV/INSTALL/SMESH/lib/salome -lPerfmeter
