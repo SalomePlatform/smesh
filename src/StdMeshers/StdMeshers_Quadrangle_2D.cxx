@@ -2218,9 +2218,9 @@ bool StdMeshers_Quadrangle_2D::ComputeReduced (SMESH_Mesh &        aMesh,
     int nrows = nr1 - 1;
     int ncol_top = nt1 - 1;
     int ncol_bot = nb1 - 1;
-    // maximum number of bottom elements for "tree" simple reduce 3->1
-    int max_tree31 = ncol_top * pow(3.0, nrows);
-    if (ncol_bot > max_tree31)
+    // number of rows needed to reduce ncol_bot to ncol_top using simple 3->1 "tree" (see below)
+    int nrows_tree31 = int( log( ncol_bot / ncol_top ) / log( 3 )); // = log x base 3
+    if ( nrows < nrows_tree31 )
       MultipleReduce = true;
   }
 
@@ -2543,9 +2543,12 @@ bool StdMeshers_Quadrangle_2D::ComputeReduced (SMESH_Mesh &        aMesh,
     // maximum number of bottom elements for "linear" simple reduce 4->2
     int max_lin31 = ncol_top + ncol_top * 2 * nrows;
     // maximum number of bottom elements for "tree" simple reduce 4->2
-    int max_tree42 = npair_top * pow(2.0, nrows + 1);
-    if (ncol_top > npair_top * 2) {
-      int delta = ncol_bot - max_tree42;
+    int max_tree42 = 0;
+    // number of rows needed to reduce ncol_bot to ncol_top using simple 4->2 "tree"
+    int nrows_tree42 = int( log2( ncol_bot / ncol_top )); // needed to avoid overflow at pow(2)
+    if (ncol_top > npair_top * 2 && nrows_tree42 < nrows) {
+      max_tree42 = npair_top * pow(2.0, nrows + 1);
+      int delta = ncol_bot - int( max_tree42 );
       for (int irow = 1; irow < nrows; irow++) {
         int nfour = delta / 4;
         delta -= nfour * 2;
