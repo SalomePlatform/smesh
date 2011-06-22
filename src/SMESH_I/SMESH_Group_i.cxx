@@ -572,8 +572,12 @@ SMESH::long_array* SMESH_GroupBase_i::GetIDs()
 SMESH::array_of_ElementType* SMESH_GroupBase_i::GetTypes()
 {
   SMESH::array_of_ElementType_var types = new SMESH::array_of_ElementType;
-  types->length( 1 );
-  types[0] = GetType();
+  if ( SMESHDS_GroupBase* ds = GetGroupDS() )
+    if ( !ds->IsEmpty() )
+    {
+      types->length( 1 );
+      types[0] = GetType();
+    }
   return types._retn();
 }
 

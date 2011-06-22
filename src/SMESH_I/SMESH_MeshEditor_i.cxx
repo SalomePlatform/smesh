@@ -428,8 +428,10 @@ struct _IDSource : public POA_SMESH::SMESH_IDSource
   SMESH::array_of_ElementType* GetTypes()
   {
     SMESH::array_of_ElementType_var types = new SMESH::array_of_ElementType;
-    types->length( 1 );
-    types[0] = _type;
+    if ( _ids.length() > 0 ) {
+      types->length( 1 );
+      types[0] = _type;
+    }
     return types._retn();
   }
 };
