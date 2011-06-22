@@ -33,6 +33,7 @@
 #include "SMDS_UnstructuredGrid.hxx"
 #include "SMESH_ScalarBarActor.h"
 #include "VTKViewer_CellCenters.h"
+#include "VTKViewer_DataSetMapper.h"
 #include "VTKViewer_ExtractUnstructuredGrid.h"
 #include "VTKViewer_FramedTextActor.h"
 #include "SALOME_InteractiveObject.hxx"
@@ -365,6 +366,9 @@ SMESH_ActorDef::SMESH_ActorDef()
 
   myPickableActor = myBaseActor;
 
+  myMapper = VTKViewer_DataSetMapper::New();
+  myMapper->SetInput( myPickableActor->GetUnstructuredGrid() );
+
   myHighlightProp = vtkProperty::New();
   myHighlightProp->SetAmbient(1.0);
   myHighlightProp->SetDiffuse(0.0);
@@ -626,6 +630,8 @@ SMESH_ActorDef::~SMESH_ActorDef()
   myCellsLabels->Delete();
 
   myImplicitBoolean->Delete();
+
+  myMapper->Delete();
 
   myTimeStamp->Delete();
 }
@@ -1165,7 +1171,7 @@ void SMESH_ActorDef::ShallowCopy(vtkProp *prop){
 
 
 vtkMapper* SMESH_ActorDef::GetMapper(){
-  return myPickableActor->GetMapper();
+  return myMapper;
 }
 
 

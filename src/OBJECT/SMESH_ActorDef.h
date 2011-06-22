@@ -70,6 +70,7 @@ class vtkImplicitBoolean;
 class vtkTimeStamp;
 
 class VTKViewer_CellCenters;
+class VTKViewer_DataSetMapper;
 
 class SMESH_DeviceActor;
 class SMESH_ScalarBarActor;
@@ -229,6 +230,8 @@ class SMESH_ActorDef : public SMESH_Actor
   vtkProperty* myBackSurfaceProp;
   vtkProperty* myEdgeProp;
   vtkProperty* myNodeProp;
+
+  VTKViewer_DataSetMapper* myMapper;
 
   SMESH_DeviceActor* myBaseActor;
   SMESH_DeviceActor* myNodeActor;
