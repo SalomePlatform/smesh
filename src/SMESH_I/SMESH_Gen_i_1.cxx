@@ -694,7 +694,10 @@ SALOMEDS::SObject_ptr SMESH_Gen_i::PublishGroup (SALOMEDS::Study_ptr    theStudy
         SetName( aRootSO, aRootNames[aType] );
 
       // Add new group to corresponding sub-tree
-      aGroupSO = publish (theStudy, theGroup, aRootSO, 0, "ICON_SMESH_TREE_GROUP" );
+      SMESH::array_of_ElementType_var elemTypes = theGroup->GetTypes();
+      const int isEmpty = ( elemTypes->length() == 0 );
+      const char* pm[2] = { "ICON_SMESH_TREE_GROUP", "ICON_SMESH_TREE_MESH_WARN" };
+      aGroupSO = publish (theStudy, theGroup, aRootSO, 0, pm[ isEmpty ] );
     }
     if ( aGroupSO->_is_nil() )
       return aGroupSO._retn();
