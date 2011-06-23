@@ -661,17 +661,19 @@ QString SMESHGUI_Selection::groupType( int ind ) const
 {
   QString e = entry( ind );
   _PTR(SObject) SO = SMESH::GetActiveStudyDocument()->FindObjectID( e.toLatin1().constData() );
-  QString type;
   if( SO )
   {
-    CORBA::Object_var obj = SMESH::SObjectToObject( SO );
-  
-    SMESH::SMESH_Group_var aGroup = SMESH::SMESH_Group::_narrow( obj );
-    SMESH::SMESH_GroupOnGeom_var aGroupOnGeom = SMESH::SMESH_GroupOnGeom::_narrow( obj );
-    if( !aGroup->_is_nil() )
-      type = QString( "Group" );
-    else if ( !aGroupOnGeom->_is_nil() )
-      type = QString( "GroupOnGeom" );
+    SMESH::SMESH_Group_var g = SMESH::SObjectToInterface<SMESH::SMESH_Group>( SO );
+    if( !g->_is_nil() )
+      return "Group";
+
+    SMESH::SMESH_GroupOnGeom_var gog = SMESH::SObjectToInterface<SMESH::SMESH_GroupOnGeom>( SO );
+    if( !gog->_is_nil() )
+      return "GroupOnGeom";
+
+    SMESH::SMESH_GroupOnFilter_var gof = SMESH::SObjectToInterface<SMESH::SMESH_GroupOnFilter>(SO);
+    if ( !gof->_is_nil() )
+      return "GroupOnFilter";
   }
-  return type;
+  return "";
 }
