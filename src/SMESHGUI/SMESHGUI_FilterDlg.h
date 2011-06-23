@@ -231,6 +231,9 @@ public:
 
   static SMESH::Filter::Criterion createCriterion();
 
+  SMESH::Filter_var         GetFilter() const;
+  void                      SetFilter(SMESH::Filter_var filter, int type);
+
 signals:
 
   void                      Accepted();
