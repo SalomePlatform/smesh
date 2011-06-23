@@ -2525,7 +2525,7 @@ QWidget* SMESHGUI_FilterDlg::createSourceGroup (QWidget* theParent)
   mySourceGrp->addButton(aSelBtn,  Selection);
   mySourceGrp->addButton(aDlgBtn,  Dialog);
 
-  aSelBtn->setChecked(true);
+  aMeshBtn->setChecked(true);
 
   return aBox;
 }
@@ -2664,7 +2664,7 @@ void SMESHGUI_FilterDlg::Init (const QList<int>& theTypes)
 
   mySourceGrp->button(myApplyToState.contains(theTypes.first()) ? 
                       myApplyToState[ theTypes.first() ] :
-                      Selection)->setChecked(true);
+                      Mesh)->setChecked(true);
 }
 
 //=======================================================================
@@ -3082,6 +3082,36 @@ bool SMESHGUI_FilterDlg::createFilter (const int theType)
   myFilter[ theType ]->SetCriteria(aCriteria.inout());
 
   return true;
+}
+
+//================================================================================
+/*!
+ * \brief Return the current filter
+ */
+//================================================================================
+
+SMESH::Filter_var SMESHGUI_FilterDlg::GetFilter() const
+{
+  SMESH::Filter_var filter;
+  try {
+    int aCurrType = myTable->GetType();
+    filter = myFilter[ aCurrType ];
+  }
+  catch(...)
+  {
+  }
+  return filter._retn();
+}
+
+//================================================================================
+/*!
+ * \brief Sets a filter to the table
+ */
+//================================================================================
+
+void SMESHGUI_FilterDlg::SetFilter(SMESH::Filter_var filter, int type)
+{
+  myFilter[ type ] = filter;
 }
 
 //=======================================================================
