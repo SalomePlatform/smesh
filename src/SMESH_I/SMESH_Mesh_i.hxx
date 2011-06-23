@@ -102,6 +102,11 @@ public:
                                                    GEOM::GEOM_Object_ptr theGeomObj )
     throw (SALOME::SALOME_Exception);
 
+  SMESH::SMESH_GroupOnFilter_ptr CreateGroupFromFilter(SMESH::ElementType theElemType,
+                                                       const char*        theName,
+                                                       SMESH::Filter_ptr  theFilter )
+    throw (SALOME::SALOME_Exception);
+
   void RemoveGroup( SMESH::SMESH_GroupBase_ptr theGroup )
     throw (SALOME::SALOME_Exception);
 
@@ -148,7 +153,7 @@ public:
   throw (SALOME::SALOME_Exception);
 
 
-  SMESH::SMESH_Group_ptr ConvertToStandalone( SMESH::SMESH_GroupOnGeom_ptr theGeomGroup );
+  SMESH::SMESH_Group_ptr ConvertToStandalone( SMESH::SMESH_GroupBase_ptr theGroupOn );
 
 //    SMESH::string_array* GetLog(CORBA::Boolean clearAfterGet)
 //      throw (SALOME::SALOME_Exception);
@@ -366,9 +371,10 @@ public:
   void removeSubMesh(SMESH::SMESH_subMesh_ptr theSubMesh,
                      GEOM::GEOM_Object_ptr theSubShapeObject );
 
-  SMESH::SMESH_GroupBase_ptr createGroup(SMESH::ElementType  theElemType,
-                                         const char*         theName,
-                                         const TopoDS_Shape& theShape = TopoDS_Shape());
+  SMESH::SMESH_GroupBase_ptr createGroup(SMESH::ElementType        theElemType,
+                                         const char*               theName,
+                                         const TopoDS_Shape&       theShape = TopoDS_Shape(),
+                                         const SMESH_PredicatePtr& thePred = SMESH_PredicatePtr());
 
   void removeGroup( const int theId );
 

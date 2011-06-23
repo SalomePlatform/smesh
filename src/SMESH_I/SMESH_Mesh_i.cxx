@@ -728,26 +728,6 @@ void SMESH_Mesh_i::RemoveSubMesh( SMESH::SMESH_subMesh_ptr theSubMesh )
 
 //=============================================================================
 /*!
- *  ElementTypeString
- */
-//=============================================================================
-#define CASE2STRING(enum) case SMESH::enum: return "SMESH."#enum;
-inline TCollection_AsciiString ElementTypeString (SMESH::ElementType theElemType)
-{
-  switch (theElemType) {
-    CASE2STRING( ALL );
-    CASE2STRING( NODE );
-    CASE2STRING( EDGE );
-    CASE2STRING( FACE );
-    CASE2STRING( VOLUME );
-    CASE2STRING( ELEM0D );
-  default:;
-  }
-  return "";
-}
-
-//=============================================================================
-/*!
  *
  */
 //=============================================================================
@@ -767,7 +747,7 @@ SMESH::SMESH_Group_ptr SMESH_Mesh_i::CreateGroup( SMESH::ElementType theElemType
     if ( !aSO->_is_nil()) {
       // Update Python script
       TPythonDump() << aSO << " = " << _this() << ".CreateGroup( "
-                    << ElementTypeString(theElemType) << ", '" << theName << "' )";
+                    << theElemType << ", '" << theName << "' )";
     }
   }
   return aNewGroup._retn();
@@ -779,9 +759,10 @@ SMESH::SMESH_Group_ptr SMESH_Mesh_i::CreateGroup( SMESH::ElementType theElemType
  *
  */
 //=============================================================================
-SMESH::SMESH_GroupOnGeom_ptr SMESH_Mesh_i::CreateGroupFromGEOM (SMESH::ElementType    theElemType,
-                                                                const char*           theName,
-                                                                GEOM::GEOM_Object_ptr theGeomObj)
+SMESH::SMESH_GroupOnGeom_ptr
+SMESH_Mesh_i::CreateGroupFromGEOM (SMESH::ElementType    theElemType,
+                                   const char*           theName,
+                                   GEOM::GEOM_Object_ptr theGeomObj)
      throw(SALOME::SALOME_Exception)
 {
   Unexpect aCatch(SALOME_SalomeException);
@@ -800,9 +781,55 @@ SMESH::SMESH_GroupOnGeom_ptr SMESH_Mesh_i::CreateGroupFromGEOM (SMESH::ElementTy
       if ( !aSO->_is_nil()) {
         // Update Python script
         TPythonDump() << aSO << " = " << _this() << ".CreateGroupFromGEOM("
-                      << ElementTypeString(theElemType) << ", '" << theName << "', "
-                      << theGeomObj << " )";
+                      << theElemType << ", '" << theName << "', " << theGeomObj << " )";
       }
+    }
+  }
+
+  return aNewGroup._retn();
+}
+
+//================================================================================
+/*!
+ * \brief Creates a group whose contents is defined by filter
+ *  \param theElemType - group type
+ *  \param theName - group name
+ *  \param theFilter - the filter
+ *  \retval SMESH::SMESH_GroupOnFilter_ptr - group defined by filter
+ */
+//================================================================================
+
+SMESH::SMESH_GroupOnFilter_ptr
+SMESH_Mesh_i::CreateGroupFromFilter(SMESH::ElementType theElemType,
+                                    const char*        theName,
+                                    SMESH::Filter_ptr  theFilter )
+    throw (SALOME::SALOME_Exception)
+{
+  Unexpect aCatch(SALOME_SalomeException);
+
+  if ( CORBA::is_nil( theFilter ))
+    THROW_SALOME_CORBA_EXCEPTION("NULL filter", SALOME::BAD_PARAM);
+
+  SMESH_PredicatePtr predicate = SMESH_GroupOnFilter_i::GetPredicate( theFilter );
+  if ( !predicate )
+    THROW_SALOME_CORBA_EXCEPTION("Invalid filter", SALOME::BAD_PARAM);
+
+  SMESH::SMESH_GroupOnFilter_var aNewGroup = SMESH::SMESH_GroupOnFilter::_narrow
+    ( createGroup( theElemType, theName, TopoDS_Shape(), predicate ));
+
+  TPythonDump pd;
+  if ( !aNewGroup->_is_nil() )
+    aNewGroup->SetFilter( theFilter );
+
+  if ( _gen_i->CanPublishInStudy( aNewGroup ) )
+  {
+    SALOMEDS::SObject_var aSO =
+      _gen_i->PublishGroup(_gen_i->GetCurrentStudy(), _this(), aNewGroup,
+                           GEOM::GEOM_Object::_nil(), theName);
+    if ( !aSO->_is_nil()) {
+      // Update Python script
+      pd << aSO << " = " << _this() << ".CreateGroupFromFilter("
+         << theElemType << ", '" << theName << "', " << theFilter << " )";
     }
   }
 
@@ -1905,11 +1932,11 @@ void SMESH_Mesh_i::CheckGeomGroupModif()
 
 //=============================================================================
 /*!
- * \brief Create standalone group instead if group on geometry
+ * \brief Create standalone group from a group on geometry or filter
  */
 //=============================================================================
 
-SMESH::SMESH_Group_ptr SMESH_Mesh_i::ConvertToStandalone( SMESH::SMESH_GroupOnGeom_ptr theGroup )
+SMESH::SMESH_Group_ptr SMESH_Mesh_i::ConvertToStandalone( SMESH::SMESH_GroupBase_ptr theGroup )
 {
   SMESH::SMESH_Group_var aGroup;
   if ( theGroup->_is_nil() )
@@ -2070,9 +2097,10 @@ void SMESH_Mesh_i::removeSubMesh (SMESH::SMESH_subMesh_ptr theSubMesh,
  */
 //=============================================================================
 
-SMESH::SMESH_GroupBase_ptr SMESH_Mesh_i::createGroup (SMESH::ElementType theElemType,
-                                                      const char*         theName,
-                                                      const TopoDS_Shape& theShape )
+SMESH::SMESH_GroupBase_ptr SMESH_Mesh_i::createGroup (SMESH::ElementType        theElemType,
+                                                      const char*               theName,
+                                                      const TopoDS_Shape&       theShape,
+                                                      const SMESH_PredicatePtr& thePredicate )
 {
   std::string newName;
   if ( !theName || strlen( theName ) == 0 )
@@ -2088,10 +2116,13 @@ SMESH::SMESH_GroupBase_ptr SMESH_Mesh_i::createGroup (SMESH::ElementType theElem
   }
   int anId;
   SMESH::SMESH_GroupBase_var aGroup;
-  if ( _impl->AddGroup( (SMDSAbs_ElementType)theElemType, theName, anId, theShape )) {
+  if ( _impl->AddGroup( (SMDSAbs_ElementType)theElemType, theName, anId, theShape, thePredicate ))
+  {
     SMESH_GroupBase_i* aGroupImpl;
     if ( !theShape.IsNull() )
       aGroupImpl = new SMESH_GroupOnGeom_i( SMESH_Gen_i::GetPOA(), this, anId );
+    else if ( thePredicate )
+      aGroupImpl = new SMESH_GroupOnFilter_i( SMESH_Gen_i::GetPOA(), this, anId );
     else
       aGroupImpl = new SMESH_Group_i( SMESH_Gen_i::GetPOA(), this, anId );
 
