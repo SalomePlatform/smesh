@@ -68,7 +68,7 @@ class SMESHDS_EXPORT SMESHDS_GroupBase
 
   virtual SMDS_ElemIteratorPtr GetElements() const = 0;
 
-  int GetID (const int theIndex);
+  virtual int GetID (const int theIndex);
   // use it for iterations 1..Extent()
 
   virtual ~SMESHDS_GroupBase() {}
