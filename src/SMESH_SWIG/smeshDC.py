@@ -781,7 +781,7 @@ class smeshDC(SMESH._objref_SMESH_Gen):
             aCriterion.Compare = self.EnumToLong(FT_LessThan)
         elif Compare == ">":
             aCriterion.Compare = self.EnumToLong(FT_MoreThan)
-        else:
+        elif Compare != FT_Undefined:
             aCriterion.Compare = self.EnumToLong(FT_EqualTo)
             aTreshold = Compare
 
@@ -896,6 +896,19 @@ class smeshDC(SMESH._objref_SMESH_Gen):
         aFilterMgr.UnRegister()
         return aFilter
 
+    ## Creates a filter from criteria
+    #  @param criteria a list of criteria
+    #  @return SMESH_Filter
+    #
+    #  <a href="../tui_filters_page.html#tui_filters">Example of Filters usage</a>
+    #  @ingroup l1_controls
+    def GetFilterFromCriteria(self,criteria):
+        aFilterMgr = self.CreateFilterManager()
+        aFilter = aFilterMgr.CreateFilter()
+        aFilter.SetCriteria(criteria)
+        aFilterMgr.UnRegister()
+        return aFilter
+
     ## Creates a numerical functor by its type
     #  @param theCriterion FT_...; functor type
     #  @return SMESH_NumericalFunctor
@@ -940,14 +953,14 @@ class smeshDC(SMESH._objref_SMESH_Gen):
     def CreateHypothesis(self, theHType, theLibName="libStdMeshersEngine.so"):
         return SMESH._objref_SMESH_Gen.CreateHypothesis(self, theHType, theLibName )
 
-    ## Gets the mesh stattistic
-    #  @return dictionary type element - count of elements
+    ## Gets the mesh statistic
+    #  @return dictionary <element type> - <count of elements>
     #  @ingroup l1_meshinfo
     def GetMeshInfo(self, obj):
         if isinstance( obj, Mesh ):
             obj = obj.GetMesh()
         d = {}
-        if hasattr(obj, "_narrow") and obj._narrow(SMESH.SMESH_IDSource):
+        if hasattr(obj, "GetMeshInfo"):
             values = obj.GetMeshInfo()
             for i in range(SMESH.Entity_Last._v):
                 if i < len(values): d[SMESH.EntityType._item(i)]=values[i]
@@ -1654,17 +1667,6 @@ class Mesh:
             pass
         pass
 
-    ## Creates a mesh group based on the geometric object \a grp
-    #  and gives a \a name, \n if this parameter is not defined
-    #  the name is the same as the geometric group name \n
-    #  Note: Works like GroupOnGeom().
-    #  @param grp  a geometric group, a vertex, an edge, a face or a solid
-    #  @param name the name of the mesh group
-    #  @return SMESH_GroupOnGeom
-    #  @ingroup l2_grps_create
-    def Group(self, grp, name=""):
-        return self.GroupOnGeom(grp, name)
-
     ## Deprecated, used only for compatibility! Please, use ExportMED() method instead.
     ## Exports the mesh in a file in MED format and chooses the \a version of MED format
     ## allowing to overwrite the file if it exists or add the exported data to its contents
@@ -1744,6 +1746,17 @@ class Mesh:
     def CreateEmptyGroup(self, elementType, name):
         return self.mesh.CreateGroup(elementType, name)
 
+    ## Creates a mesh group based on the geometric object \a grp
+    #  and gives a \a name, \n if this parameter is not defined
+    #  the name is the same as the geometric group name \n
+    #  Note: Works like GroupOnGeom().
+    #  @param grp  a geometric group, a vertex, an edge, a face or a solid
+    #  @param name the name of the mesh group
+    #  @return SMESH_GroupOnGeom
+    #  @ingroup l2_grps_create
+    def Group(self, grp, name=""):
+        return self.GroupOnGeom(grp, name)
+
     ## Creates a mesh group based on the geometrical object \a grp
     #  and gives a \a name, \n if this parameter is not defined
     #  the name is the same as the geometrical group name
@@ -1806,6 +1819,17 @@ class Mesh:
             return 0
         else:
             return self.mesh.CreateGroupFromGEOM(typ, name, grp)
+
+    ## Creates a mesh group with given \a name based on the \a filter which
+    ## is a special type of group dynamically updating it's contents during
+    ## mesh modification
+    #  @param typ  the type of elements in the group
+    #  @param name the name of the mesh group
+    #  @param filter the filter defining group contents
+    #  @return SMESH_GroupOnFilter
+    #  @ingroup l2_grps_create
+    def GroupOnFilter(self, typ, name, filter):
+        return self.mesh.CreateGroupFromFilter(typ, name, filter)
 
     ## Creates a mesh group by the given ids of elements
     #  @param groupName the name of the mesh group
