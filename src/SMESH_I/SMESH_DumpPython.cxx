@@ -126,6 +126,7 @@ namespace SMESH
     case FACE:  myStream<<"FACE";break;
     case VOLUME:myStream<<"VOLUME";break;
     case ELEM0D:myStream<<"ELEM0D";break;
+    default:    myStream<<"__UNKNOWN__ElementType: " << theArg;
     }
     return *this;
   }
@@ -146,7 +147,8 @@ namespace SMESH
     case Geom_HEXA:       myStream<<"Geom_HEXA";       break;
     case Geom_PENTA:      myStream<<"Geom_PENTA";      break;
     case Geom_POLYHEDRA:  myStream<<"Geom_POLYHEDRA";  break;
-   }
+    default:    myStream<<"__UNKNOWN__GeometryType: " << theArg;
+    }
     return *this;
   }
 
@@ -232,6 +234,8 @@ namespace SMESH
     SALOMEDS::SObject_var aSObject = SMESH_Gen_i::ObjectToSObject(aStudy,theArg);
     if(!aSObject->_is_nil())
       return *this << aSObject;
+    if ( SMESH::Filter_i* filter = SMESH::DownCast<SMESH::Filter_i*>( theArg ))
+      return *this << filter;
     SMESH::SMESH_Mesh_var mesh = theArg->GetMesh();
     if ( !theArg->_is_equivalent( mesh ))
     {
