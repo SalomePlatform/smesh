@@ -46,16 +46,6 @@
 
 #include "SMESH_Controls.hxx"
 
-#ifdef WNT
- #if defined SMESHCONTROLS_EXPORTS || defined SMESHControls_EXPORTS
-  #define SMESHCONTROLS_EXPORT __declspec( dllexport )
- #else
-  #define SMESHCONTROLS_EXPORT __declspec( dllimport )
- #endif
-#else
- #define SMESHCONTROLS_EXPORT
-#endif
-
 class SMDS_MeshElement;
 class SMDS_MeshFace;
 class SMDS_MeshNode;
@@ -103,18 +93,6 @@ namespace SMESH{
 
     private:
       std::vector<gp_XYZ> myArray;
-    };
-
-    /*
-      Class       : Functor
-      Description : Root of all Functors
-    */
-    class SMESHCONTROLS_EXPORT Functor
-    {
-    public:
-      ~Functor(){}
-      virtual void SetMesh( const SMDS_Mesh* theMesh ) = 0;
-      virtual SMDSAbs_ElementType GetType() const = 0;
     };
 
     /*
@@ -341,17 +319,6 @@ namespace SMESH{
     /*
       PREDICATES
     */
-    /*
-      Class       : Predicate
-      Description : Base class for all predicates
-    */
-    class SMESHCONTROLS_EXPORT Predicate: public virtual Functor{
-    public:
-      virtual bool IsSatisfy( long theElementId ) = 0;
-      virtual SMDSAbs_ElementType GetType() const = 0;
-    };
-  
-  
     /*
       Class       : FreeBorders
       Description : Predicate for free borders

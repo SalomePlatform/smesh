@@ -23,24 +23,57 @@
 #ifndef _SMESH_CONTROLS_HXX_
 #define _SMESH_CONTROLS_HXX_
 
+#include "SMDSAbs_ElementType.hxx"
+
 #include <boost/shared_ptr.hpp>
+
+#ifdef WNT
+ #if defined SMESHCONTROLS_EXPORTS || defined SMESHControls_EXPORTS
+  #define SMESHCONTROLS_EXPORT __declspec( dllexport )
+ #else
+  #define SMESHCONTROLS_EXPORT __declspec( dllimport )
+ #endif
+#else
+ #define SMESHCONTROLS_EXPORT
+#endif
+
+class SMDS_Mesh;
 
 namespace SMESH{
   namespace Controls{
 
-    class Functor;
+    /*
+      Class       : Functor
+      Description : Root of all Functors
+    */
+    class SMESHCONTROLS_EXPORT Functor
+    {
+    public:
+      ~Functor(){}
+      virtual void SetMesh( const SMDS_Mesh* theMesh ) = 0;
+      virtual SMDSAbs_ElementType GetType() const = 0;
+    };
     typedef boost::shared_ptr<Functor> FunctorPtr;
 
 
     class NumericalFunctor;
     typedef boost::shared_ptr<NumericalFunctor> NumericalFunctorPtr;
   
-  
-    class Predicate;
+    /*
+      Class       : Predicate
+      Description : Base class for all predicates
+    */
+    class SMESHCONTROLS_EXPORT Predicate: public virtual Functor{
+    public:
+      virtual bool IsSatisfy( long theElementId ) = 0;
+      virtual SMDSAbs_ElementType GetType() const = 0;
+    };
     typedef boost::shared_ptr<Predicate> PredicatePtr;
 
   }
 }
+
+typedef SMESH::Controls::PredicatePtr SMESH_PredicatePtr;
 
 
 #endif
