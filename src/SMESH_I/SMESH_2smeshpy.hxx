@@ -69,7 +69,6 @@ class _pyMesh;
 class _pySubMesh;
 class _pyHypothesis;
 class _pyAlgorithm;
-class _pyFilterManager;
 
 DEFINE_STANDARD_HANDLE (_pyCommand   ,Standard_Transient);
 DEFINE_STANDARD_HANDLE (_pyObject    ,Standard_Transient);
@@ -78,7 +77,6 @@ DEFINE_STANDARD_HANDLE (_pyMesh      ,_pyObject);
 DEFINE_STANDARD_HANDLE (_pySubMesh   ,_pyObject);
 DEFINE_STANDARD_HANDLE (_pyMeshEditor,_pyObject);
 DEFINE_STANDARD_HANDLE (_pyHypothesis,_pyObject);
-DEFINE_STANDARD_HANDLE (_pyFilterManager,_pyObject);
 DEFINE_STANDARD_HANDLE (_pyAlgorithm ,_pyHypothesis);
 
 typedef TCollection_AsciiString _pyID;
@@ -183,7 +181,6 @@ class _pyGen: public _pyObject
 public:
   _pyGen(Resource_DataMapOfAsciiStringAsciiString& theEntry2AccessorMethod,
          Resource_DataMapOfAsciiStringAsciiString& theObjectNames);
-  //~_pyGen();
   Handle(_pyCommand) AddCommand( const TCollection_AsciiString& theCommand );
   void Process( const Handle(_pyCommand)& theCommand );
   void Flush();
@@ -201,6 +198,7 @@ public:
   bool AddAlgoAccessorMethod( Handle(_pyCommand) theCmd ) const;
   const char* AccessorMethod() const;
   _pyID GenerateNewID( const _pyID& theID );
+  void AddObject( Handle(_pyObject)& theObj );
 
 private:
   void setNeighbourCommand( Handle(_pyCommand)& theCmd,
@@ -209,7 +207,6 @@ private:
   
 private:
   std::map< _pyID, Handle(_pyMesh) >       myMeshes;
-  //std::map< _pyID, Handle(_pySubMesh) >    mySubMeshes;
   std::map< _pyID, Handle(_pyMeshEditor) > myMeshEditors;
   std::map< _pyID, Handle(_pyObject) >     myObjects;
   std::list< Handle(_pyHypothesis) >       myHypos;
@@ -246,7 +243,6 @@ private:
   static void AddMeshAccess( const Handle(_pyCommand)& theCommand )
   { theCommand->SetObject( theCommand->GetObject() + "." _pyMesh_ACCESS_METHOD ); }
 
-  //friend class _pyMeshEditor;
   DEFINE_STANDARD_RTTI (_pyMesh)
 };
 #undef _pyMesh_ACCESS_METHOD 
@@ -451,5 +447,36 @@ public:
 private:
   Handle(_pyObject) myCreator;
 };
+// -------------------------------------------------------------------------------------
+/*!
+ * \brief To convert creation of a group by filter
+ */
+// -------------------------------------------------------------------------------------
+class _pyGroup:  public _pyObject
+{
+public:
+  _pyGroup(const Handle(_pyCommand)& theCreationCmd):_pyObject(theCreationCmd) {}
+  void Process( const Handle(_pyCommand)& theCommand);
+  virtual void Flush() {}
+
+  DEFINE_STANDARD_RTTI (_pyGroup)
+};
+DEFINE_STANDARD_HANDLE (_pyGroup, _pyObject);
+
+// -------------------------------------------------------------------------------------
+/*!
+ * \brief A filter
+ */
+// -------------------------------------------------------------------------------------
+class _pyFilter:  public _pyObject
+{
+public:
+  _pyFilter(const Handle(_pyCommand)& theCreationCmd):_pyObject(theCreationCmd) {}
+  void Process( const Handle(_pyCommand)& theCommand);
+  virtual void Flush() {}
+
+  DEFINE_STANDARD_RTTI (_pyFilter)
+};
+DEFINE_STANDARD_HANDLE (_pyFilter, _pyObject);
 
 #endif
