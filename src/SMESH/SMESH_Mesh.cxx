@@ -1420,12 +1420,13 @@ bool SMESH_Mesh::IsMainShape(const TopoDS_Shape& theShape) const
 SMESH_Group* SMESH_Mesh::AddGroup (const SMDSAbs_ElementType theType,
                                    const char*               theName,
                                    int&                      theId,
-                                   const TopoDS_Shape&       theShape)
+                                   const TopoDS_Shape&       theShape,
+                                   const SMESH_PredicatePtr& thePredicate)
 {
-  if (_mapGroup.find(_groupId) != _mapGroup.end())
+  if (_mapGroup.count(_groupId))
     return NULL;
   theId = _groupId;
-  SMESH_Group* aGroup = new SMESH_Group (theId, this, theType, theName, theShape);
+  SMESH_Group* aGroup = new SMESH_Group (theId, this, theType, theName, theShape, thePredicate);
   GetMeshDS()->AddGroup( aGroup->GetGroupDS() );
   _mapGroup[_groupId++] = aGroup;
   return aGroup;

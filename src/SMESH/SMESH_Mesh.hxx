@@ -31,6 +31,7 @@
 #include "SMESH_SMESH.hxx"
 
 #include "SMESH_Hypothesis.hxx"
+#include "SMESH_Controls.hxx"
 
 #include "SMESHDS_Mesh.hxx"
 #include "SMESHDS_Command.hxx"
@@ -260,11 +261,12 @@ public:
   int NbSubMesh() const throw(SALOME_Exception);
   
   int NbGroup() const { return _mapGroup.size(); }
-  
+
   SMESH_Group* AddGroup (const SMDSAbs_ElementType theType,
                          const char*               theName,
                          int&                      theId,
-                         const TopoDS_Shape&       theShape=TopoDS_Shape());
+                         const TopoDS_Shape&       theShape=TopoDS_Shape(),
+                         const SMESH_PredicatePtr& thePredicate=SMESH_PredicatePtr());
   
   typedef boost::shared_ptr< SMDS_Iterator<SMESH_Group*> > GroupIteratorPtr;
   GroupIteratorPtr GetGroups() const;
