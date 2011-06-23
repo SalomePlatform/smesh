@@ -3,24 +3,29 @@
 \page grouping_elements_page Grouping elements
 
 In Mesh module it is possible to create groups of mesh elements:
-nodes, edges, faces or volumes:
+nodes, edges, faces or volumes. One group contains elements of only
+one type. The following ways of creation are possible:
+
 <ul>
-<li> by selecting the elements of the specified kind by their IDs or
-directly on the presentation in the VTK viewer - <b>Standalone
-group</b> tab of \subpage creating_groups_page "Create group"
-dialog.</li>
-<li> by creating a group of elements of the selected type from all
-such elements of the chosen geometrical object - <b>Group on
-geometry</b> tab of  \ref creating_groups_page "Create group" dialog.</li>
-<li> by creating a group including all types of elements from an
-existing geometrical object - using \subpage create_groups_from_geometry_page "Create Groups from Geometry" dialog.</li>
-<li> by creating several groups of elements (nodes,
-edges, faces and volumes) from the chosen submesh - using <b>Mesh -> Construct
-Group</b> Menu item. In this case groups of elements are created
-automatically.</li>
+<li> by selecting the elements using filters and/or
+  directly on the presentation in the VTK viewer, and/or by using
+  elements of other mesh objects - <b>Standalone group</b> tab of 
+  \ref standalone_group "Create group" dialog.</li>
+<li> by creating a group of elements generated on the chosen
+  geometrical object - <b>Group on geometry</b> tab of \ref
+  creating_groups_page "Create group" dialog and \ref
+  create_groups_from_geometry_page "Create Groups from Geometry"
+  dialog.</li>
+<li> by creating a group of elements satisfying to certain critaria -
+  <b>Group on filter</b> tab of \ref creating_groups_page 
+  "Create group" dialog.</li>
+<li> by creating groups of nodes and elements from the chosen submesh
+  (type of elements depends on dimension of submesh geometry) -
+  using <b>Mesh -> Construct Group</b> menu item (available in contextual
+  menu as well).</li>
 <li> by creating groups of entities from existing groups of superior
-dimensions - using \subpage group_of_underlying_elements_page "Create Group of Underlying Elements"
-dialog.</li>
+  dimensions - using \subpage group_of_underlying_elements_page
+  "Create Group of Underlying Elements" dialog.</li>
 </ul>
 
 

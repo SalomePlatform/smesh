@@ -39,6 +39,7 @@
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
 #include CORBA_SERVER_HEADER(SMESH_Group)
+#include CORBA_SERVER_HEADER(SMESH_Filter)
 
 class QGroupBox;
 class QLabel;
@@ -60,6 +61,7 @@ class SUIT_Operation;
 class SVTK_Selector;
 class SUIT_SelectionFilter;
 class LightApp_SelectionMgr;
+class SMESH_LogicalFilter;
 
 //=================================================================================
 // class    : SMESHGUI_GroupDlg
@@ -144,7 +146,9 @@ private:
 
   void                          setIsApplyAndClose( const bool theFlag );
   bool                          isApplyAndClose() const;
-  
+
+ private:
+
   SMESHGUI*                     mySMESHGUI;              /* Current SMESHGUI object */
   LightApp_SelectionMgr*        mySelectionMgr;          /* User shape selection */
   int                           myGrpTypeId;             /* Current group type id : standalone or group on geometry */
@@ -164,9 +168,10 @@ private:
   
   QStackedWidget*               myWGStack;
   QCheckBox*                    mySelectAll;
+  QCheckBox*                    myAllowElemsModif;
   QLabel*                       myElementsLab;
   QListWidget*                  myElements;
-  QPushButton*                  myFilter;
+  QPushButton*                  myFilterBtn;
   QPushButton*                  myAddBtn;
   QPushButton*                  myRemoveBtn;
   QPushButton*                  mySortBtn;
@@ -197,6 +202,8 @@ private:
   QList<SMESH_Actor*>           myActorsList;
   SMESH::SMESH_Group_var        myGroup;
   SMESH::SMESH_GroupOnGeom_var  myGroupOnGeom;
+  SMESH::SMESH_GroupOnFilter_var myGroupOnFilter;
+  SMESH::Filter_var             myFilter;
   QList<int>                    myIdList;
   GEOM::ListOfGO_var            myGeomObjects;
   
@@ -205,8 +212,8 @@ private:
   //Handle(SMESH_TypeFilter)      mySubMeshFilter;
   //Handle(SMESH_TypeFilter)      myGroupFilter;
   SUIT_SelectionFilter*         myMeshFilter;
-  SUIT_SelectionFilter*         mySubMeshFilter;
-  SUIT_SelectionFilter*         myGroupFilter;
+  SMESH_LogicalFilter*          mySubMeshFilter;
+  SMESH_LogicalFilter*          myGroupFilter;
   SUIT_SelectionFilter*         myGeomFilter;
   
   SMESHGUI_FilterDlg*           myFilterDlg;
@@ -218,6 +225,7 @@ private:
   QMap<QAction*, int>           myActions;
 
   bool                          myNameChanged; //added by skl for IPAL19574
+  int                           myNbChangesOfContents; // nb add's and remove's
 
   QString                       myObjectToSelect;
   bool                          myIsApplyAndClose;

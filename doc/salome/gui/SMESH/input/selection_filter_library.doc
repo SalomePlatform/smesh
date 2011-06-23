@@ -9,8 +9,8 @@ via <b>Tools / Selection filter library</b>.
 \image html selectionfilterlibrary.png
 
 <b>Library file name</b> shows the path and the file name where your
-filters will be stored. By clicking the <em>Browse</em> button you can load an
-existing filter library.
+filters will be stored. By clicking the <em>Browse</em> button you can
+load an existing filter library.
 \n <b>Names of filters</b> lists the filters created or uploaded for
 the current study. You can \b Add or \b Delete filters.
 \n In <b>Filter name</b> box you can specify the name for your
@@ -31,18 +31,28 @@ specify logical relations between criteria using \b Binary operators
 Or and And.
 \n Some criteria should have the additional parameter of \b Tolerance.
 
-When we create a <b>Standalone Group</b> using filters (for this click
-<b>Set Filters</b> button in the <b>Create Group</b> menu), the menu
-for setting filters looks a bit differently. Toggling <b>Insert filter
-in viewer</b> checkbox enables to preview the group selected with your
-current filter in the viewer.
-\n In the \b Source field you choose if the filter will be applied to
-the whole \b Mesh, the <b>Initial Selection</b> or the <b>Current Group</b>. 
-\n <b>Copy from...</b> button gives you a possibility to load an
+When we create a group using filters (for this click
+<b>Set Filters</b> button in the <b>Create Group</b> dialog), the menu
+for setting filters looks a bit differently (see below). Switching
+on <b>Insert filter in viewer</b> checkbox limits selection of elements
+in the Viewer using your current filter.
+<br>
+In the \b Source field you choose if the filter will be applied to
+the whole \b Mesh, the <b>Initial Selection</b> or the <b>Current
+Group</b>. If \b Mesh is chosen, the elements satisfying the filter
+will be selected in the 3D Viewer. If <b> Initial Selection</b> is
+chosen, the filter will be applied to the selected elements and the
+elements rejected by the filter will be deseleced. If <b>Current
+Group</b> is chosen, the filter will be applied to the list of
+elements in the <em>Greate Croup</em> dialog and the elements rejected
+by the filter will be removed from the list.
+<br>
+<b>Copy from...</b> button gives you a possibility to load an
 existing filter from <b>Selection filter library</b> and <b>Add
 to...</b> button gives you a possibility to save your current filter
 in the Library.
-\n <b>Note:</b> If the button <b>Apply and Close</b> is disabled, there
+<br>
+<b>Note:</b> If the button <b>Apply and Close</b> is disabled, there
 is no selected mesh in the Object Browser and the filter can not be
 created. You have to select the mesh and the button will be enabled.
 

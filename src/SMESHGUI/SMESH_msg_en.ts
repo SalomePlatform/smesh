@@ -1106,7 +1106,7 @@ Please enter correct values and try again</translation>
     </message>
     <message>
         <source>SMESH_BUT_FILTER</source>
-        <translation>Set &amp;Filters</translation>
+        <translation>Set &amp;Filter</translation>
     </message>
     <message>
         <source>SMESH_BUT_HELP</source>
@@ -1444,6 +1444,10 @@ add the exported data to its contents?</translation>
     <message>
         <source>SMESH_GROUP_GEOMETRY</source>
         <translation>Group on geometry</translation>
+    </message>
+    <message>
+        <source>SMESH_GROUP_FILTER</source>
+        <translation>Group on filter</translation>
     </message>
     <message>
         <source>SMESH_GROUP_SELECTED</source>
@@ -3480,6 +3484,13 @@ Input value precision can be adjusted using
     <message>
         <source>SMESH_PLUGINS_OTHER</source>
         <translation>SMESH plugins</translation>
+    </message>
+</context>
+<context>
+    <name>SMESHGUI_GroupDlg</name>
+    <message>
+        <source>ALLOW_ELEM_LIST_MODIF</source>
+        <translation>Enable manual edition</translation>
     </message>
 </context>
 <context>
