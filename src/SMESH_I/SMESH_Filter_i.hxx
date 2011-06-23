@@ -39,6 +39,8 @@
 #include "SALOME_GenericObj_i.hh"
 #include "SMESH_ControlsDef.hxx"
 
+#include <list>
+
 class SMESHDS_Mesh;
 
 namespace SMESH
@@ -866,7 +868,7 @@ namespace SMESH
     FILTER
   */
   class SMESH_I_EXPORT Filter_i: public virtual POA_SMESH::Filter,
-                  public virtual SALOME::GenericObj_i
+                                 public virtual SALOME::GenericObj_i
   {
   public:
     Filter_i();
@@ -921,10 +923,22 @@ namespace SMESH
     virtual SMESH::array_of_ElementType* GetTypes();
     virtual SMESH::SMESH_Mesh_ptr        GetMesh();
 
+    /*!
+     * \brief Object notified on change of predicate
+     */
+    struct TPredicateChangeWaiter
+    {
+      virtual void PredicateChanged() = 0;
+    };
+    void AddWaiter( TPredicateChangeWaiter* waiter );
+    void RemoveWaiter( TPredicateChangeWaiter* waiter );
+
   private:
     Controls::Filter myFilter;
     Predicate_i*     myPredicate;
     SMESH_Mesh_var   myMesh;
+
+    std::list<TPredicateChangeWaiter*> myWaiters;
   };
   
   
@@ -932,7 +946,7 @@ namespace SMESH
     FILTER LIBRARY
   */
   class SMESH_I_EXPORT FilterLibrary_i: public virtual POA_SMESH::FilterLibrary,
-                         public virtual SALOME::GenericObj_i
+                                        public virtual SALOME::GenericObj_i
   {
   public:
     FilterLibrary_i( const char* theFileName );
@@ -1032,6 +1046,9 @@ namespace SMESH
   
   Predicate_i* 
   GetPredicate( SMESH::Predicate_ptr thePredicate );
+
+  const char*        FunctorTypeToString(SMESH::FunctorType ft);
+  SMESH::FunctorType StringToFunctorType(const char*       str);
 }
 
 
