@@ -31,6 +31,7 @@
 #include "SMESH_SMESH.hxx"
 
 #include "SMDSAbs_ElementType.hxx"
+#include "SMESH_Controls.hxx"
 
 #include <string>
 #include <TopoDS_Shape.hxx>
@@ -46,7 +47,8 @@ class SMESH_EXPORT  SMESH_Group
                const SMESH_Mesh*         theMesh,
                const SMDSAbs_ElementType theType,
                const char*               theName,
-               const TopoDS_Shape&       theShape = TopoDS_Shape());
+               const TopoDS_Shape&       theShape = TopoDS_Shape(),
+               const SMESH_PredicatePtr& thePredicate = SMESH_PredicatePtr());
   ~SMESH_Group ();
 
   void SetName (const char* theName) { myName = theName; }

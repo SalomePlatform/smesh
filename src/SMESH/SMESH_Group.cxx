@@ -30,6 +30,7 @@
 #include "SMESH_Mesh.hxx"
 #include "SMESHDS_Group.hxx"
 #include "SMESHDS_GroupOnGeom.hxx"
+#include "SMESHDS_GroupOnFilter.hxx"
 
 //=============================================================================
 /*!
@@ -41,18 +42,24 @@ SMESH_Group::SMESH_Group (int                       theID,
                           const SMESH_Mesh*         theMesh,
                           const SMDSAbs_ElementType theType,
                           const char*               theName,
-                          const TopoDS_Shape&       theShape)
+                          const TopoDS_Shape&       theShape,
+                          const SMESH_PredicatePtr& thePredicate)
      : myName(theName)
 {
-  if ( theShape.IsNull() )
-    myGroupDS = new SMESHDS_Group (theID,
-                                   const_cast<SMESH_Mesh*>(theMesh)->GetMeshDS(),
-                                   theType);
-  else
+  if ( !theShape.IsNull() )
     myGroupDS = new SMESHDS_GroupOnGeom (theID,
                                          const_cast<SMESH_Mesh*>(theMesh)->GetMeshDS(),
                                          theType,
                                          theShape);
+  else if ( thePredicate )
+    myGroupDS = new SMESHDS_GroupOnFilter (theID,
+                                           const_cast<SMESH_Mesh*>(theMesh)->GetMeshDS(),
+                                           theType,
+                                           thePredicate);
+  else
+    myGroupDS = new SMESHDS_Group (theID,
+                                   const_cast<SMESH_Mesh*>(theMesh)->GetMeshDS(),
+                                   theType);
 }
 
 //=============================================================================
