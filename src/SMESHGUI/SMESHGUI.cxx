@@ -2513,6 +2513,15 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
           SMESHGUI_GroupDlg *aDlg = new SMESHGUI_GroupDlg( this, aGroup, true );
           aDlg->show();
         }
+        else
+        {
+          SMESH::SMESH_GroupOnFilter_var aGroup =
+            SMESH::IObjectToInterface<SMESH::SMESH_GroupOnFilter>(It.Value());
+          if (!aGroup->_is_nil()) {
+            SMESHGUI_GroupDlg *aDlg = new SMESHGUI_GroupDlg( this, aGroup, true );
+            aDlg->show();
+          }
+        }
       }
       break;
     }
@@ -3713,7 +3722,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createPopupItem( 704, OB, mesh, "&& isComputable");      // EDIT_MESHSUBMESH
   createPopupItem( 704, OB, subMesh, "&& isComputable" );  // EDIT_MESHSUBMESH
   createPopupItem( 803, OB, group );                       // EDIT_GROUP
-  createPopupItem( 815, OB, group, "&& groupType = 'GroupOnGeom'" ); // EDIT_GROUP
+  createPopupItem( 815, OB, group, "&& groupType != 'Group'" ); // EDIT AS STANDALONE
 
   popupMgr()->insert( separator(), -1, 0 );
   createPopupItem( 701, OB, mesh, "&& isComputable" );     // COMPUTE
