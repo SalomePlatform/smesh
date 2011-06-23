@@ -26,14 +26,16 @@
 //  Module : SMESH
 //
 #include "SMESH_Group_i.hxx"
-#include "SMESH_Mesh_i.hxx"
+
+#include "SMDSAbs_ElementType.hxx"
+#include "SMESHDS_Group.hxx"
+#include "SMESHDS_GroupOnFilter.hxx"
+#include "SMESHDS_GroupOnGeom.hxx"
+#include "SMESH_Comment.hxx"
+#include "SMESH_Filter_i.hxx"
 #include "SMESH_Gen_i.hxx"
 #include "SMESH_Group.hxx"
-#include "SMESHDS_Group.hxx"
-#include "SMESHDS_GroupOnGeom.hxx"
-#include "SMDSAbs_ElementType.hxx"
-
-#include "SMESH_Filter_i.hxx"
+#include "SMESH_Mesh_i.hxx"
 #include "SMESH_PythonDump.hxx"
 
 #include CORBA_SERVER_HEADER(SMESH_Filter)
@@ -48,7 +50,9 @@ using namespace SMESH;
  */
 //=============================================================================
 
-SMESH_GroupBase_i::SMESH_GroupBase_i( PortableServer::POA_ptr thePOA, SMESH_Mesh_i* theMeshServant, const int theLocalID )
+SMESH_GroupBase_i::SMESH_GroupBase_i( PortableServer::POA_ptr thePOA,
+                                      SMESH_Mesh_i*           theMeshServant,
+                                      const int               theLocalID )
 : SALOME::GenericObj_i( thePOA ),
   myMeshServant( theMeshServant ), 
   myLocalID( theLocalID )
@@ -58,16 +62,29 @@ SMESH_GroupBase_i::SMESH_GroupBase_i( PortableServer::POA_ptr thePOA, SMESH_Mesh
   // thePOA->activate_object( this );
 }
 
-SMESH_Group_i::SMESH_Group_i( PortableServer::POA_ptr thePOA, SMESH_Mesh_i* theMeshServant, const int theLocalID )
+SMESH_Group_i::SMESH_Group_i( PortableServer::POA_ptr thePOA,
+                              SMESH_Mesh_i*           theMeshServant,
+                              const int               theLocalID )
      : SALOME::GenericObj_i( thePOA ),
        SMESH_GroupBase_i( thePOA, theMeshServant, theLocalID )
 {
   //MESSAGE("SMESH_Group_i; this = "<<this );
 }
 
-SMESH_GroupOnGeom_i::SMESH_GroupOnGeom_i( PortableServer::POA_ptr thePOA, SMESH_Mesh_i* theMeshServant, const int theLocalID )
+SMESH_GroupOnGeom_i::SMESH_GroupOnGeom_i( PortableServer::POA_ptr thePOA,
+                                          SMESH_Mesh_i*           theMeshServant,
+                                          const int               theLocalID )
      : SALOME::GenericObj_i( thePOA ),
        SMESH_GroupBase_i( thePOA, theMeshServant, theLocalID )
+{
+  //MESSAGE("SMESH_GroupOnGeom_i; this = "<<this );
+}
+
+SMESH_GroupOnFilter_i::SMESH_GroupOnFilter_i( PortableServer::POA_ptr thePOA,
+                                              SMESH_Mesh_i*           theMeshServant,
+                                              const int               theLocalID )
+  : SALOME::GenericObj_i( thePOA ),
+    SMESH_GroupBase_i( thePOA, theMeshServant, theLocalID )
 {
   //MESSAGE("SMESH_GroupOnGeom_i; this = "<<this );
 }
@@ -351,6 +368,7 @@ RemoveByPredicate( SMESH::Predicate_ptr thePredicate )
 
 CORBA::Long SMESH_Group_i::AddFrom( SMESH::SMESH_IDSource_ptr theSource )
 {
+  TPythonDump pd;
   long nbAdd = 0;
   SMESHDS_Group* aGroupDS = dynamic_cast<SMESHDS_Group*>( GetGroupDS() );
   if (aGroupDS) {
@@ -365,8 +383,10 @@ CORBA::Long SMESH_Group_i::AddFrom( SMESH::SMESH_IDSource_ptr theSource )
       anIds = mesh->GetElementsByType( GetType() );
     else if ( !submesh->_is_nil())
       anIds = submesh->GetElementsByType( GetType() );
-    else if ( !filter->_is_nil() )
+    else if ( !filter->_is_nil() ) {
+      filter->SetMesh( GetMeshServant()->_this() );
       anIds = filter->GetElementType()==GetType() ? theSource->GetIDs() : new SMESH::long_array();
+    }
     else 
       anIds = theSource->GetIDs();
     for ( int i = 0, total = anIds->length(); i < total; i++ ) {
@@ -375,7 +395,7 @@ CORBA::Long SMESH_Group_i::AddFrom( SMESH::SMESH_IDSource_ptr theSource )
   }
 
   // Update Python script
-  TPythonDump() << "nbAdd = " << _this() << ".AddFrom( " << theSource << " )";
+  pd << "nbAdd = " << _this() << ".AddFrom( " << theSource << " )";
 
   return nbAdd;
 }
@@ -577,3 +597,166 @@ SMESH::array_of_ElementType* SMESH_GroupBase_i::GetTypes()
   return types._retn();
 }
 
+//================================================================================
+/*!
+ * \brief Retrieves the predicate from the filter
+ */
+//================================================================================
+
+SMESH_PredicatePtr SMESH_GroupOnFilter_i::GetPredicate( SMESH::Filter_ptr filter )
+{
+  SMESH_PredicatePtr predicate;
+
+  if ( SMESH::Filter_i* filt_i = SMESH::DownCast< SMESH::Filter_i* >( filter ))
+    if ( SMESH::Predicate_i* predic_i= filt_i->GetPredicate_i() )
+      predicate = predic_i->GetPredicate();
+
+  return predicate;
+}
+
+//================================================================================
+/*!
+ * \brief Sets the filter defining group contents
+ */
+//================================================================================
+
+void SMESH_GroupOnFilter_i::SetFilter(SMESH::Filter_ptr theFilter)
+{
+  if ( ! myFilter->_is_nil() )
+    myFilter->UnRegister();
+
+  myFilter = SMESH::Filter::_duplicate( theFilter );
+
+  if ( SMESHDS_GroupOnFilter* grDS = dynamic_cast< SMESHDS_GroupOnFilter*>( GetGroupDS() ))
+    grDS->SetPredicate( GetPredicate( myFilter ));
+
+  TPythonDump()<< _this() <<".SetFilter( "<<theFilter<<" )";
+
+  if ( myFilter )
+  {
+    myFilter->Register();
+    SMESH::DownCast< SMESH::Filter_i* >( myFilter )->AddWaiter( this );
+  }
+}
+
+//================================================================================
+/*!
+ * \brief Returns the filter defining group contents
+ */
+//================================================================================
+
+SMESH::Filter_ptr SMESH_GroupOnFilter_i::GetFilter()
+{
+  SMESH::Filter_var f = myFilter;
+  TPythonDump() << f << " = " << _this() << ".GetFilter()";
+  return f._retn();
+}
+
+#define SEPAR '^'
+
+//================================================================================
+/*!
+ * \brief Return a string to be used to store group definition in the study
+ */
+//================================================================================
+
+std::string SMESH_GroupOnFilter_i::FilterToString() const
+{
+  SMESH_Comment result;
+  SMESH::Filter::Criteria_var criteria;
+  if ( !myFilter->_is_nil() && myFilter->GetCriteria( criteria.out() ))
+  {
+    result << criteria->length() << SEPAR;
+    for ( unsigned i = 0; i < criteria->length(); ++i )
+    {
+      // write FunctorType as string but not as number to assure correct
+      // persistence if enum FunctorType is modified by insertion in the middle
+      SMESH::Filter::Criterion& crit = criteria[ i ];
+      result << SMESH::FunctorTypeToString( SMESH::FunctorType( crit.Type ))    << SEPAR;
+      result << SMESH::FunctorTypeToString( SMESH::FunctorType( crit.Compare )) << SEPAR;
+      result << crit.Threshold                                                  << SEPAR;
+      result << crit.ThresholdStr                                               << SEPAR;
+      result << crit.ThresholdID                                                << SEPAR;
+      result << SMESH::FunctorTypeToString( SMESH::FunctorType( crit.UnaryOp )) << SEPAR;
+      result << SMESH::FunctorTypeToString( SMESH::FunctorType( crit.BinaryOp ))<< SEPAR;
+      result << crit.Tolerance                                                  << SEPAR;
+      result << crit.TypeOfElement                                              << SEPAR;
+      result << crit.Precision                                                  << SEPAR;
+    }
+  }
+  return result;
+}
+
+//================================================================================
+/*!
+ * \brief Restore the filter by the persistent string
+ */
+//================================================================================
+
+SMESH::Filter_ptr SMESH_GroupOnFilter_i::StringToFilter(const std::string& thePersistStr )
+{
+  SMESH::Filter_var filter;
+
+  // divide thePersistStr into sub-strings
+  std::vector< std::string > strVec;
+  std::string::size_type from = 0, to;
+  while ( from < thePersistStr.size() )
+  {
+    to = thePersistStr.find( SEPAR, from );
+    if ( to == std::string::npos )
+      break;
+    strVec.push_back( thePersistStr.substr( from, to-from ));
+    from = to+1;
+  }
+  if ( strVec.empty() || strVec[0] == "0" )
+    return filter._retn();
+#undef SEPAR
+
+  // create Criteria
+  int nbCrit = atoi( strVec[0].c_str() );
+  SMESH::Filter::Criteria_var criteria = new SMESH::Filter::Criteria;
+  criteria->length( nbCrit );
+  int nbStrPerCrit = ( strVec.size() - 1 ) / nbCrit;
+  for ( int i = 0; i < nbCrit; ++i )
+  {
+    SMESH::Filter::Criterion& crit = criteria[ i ];
+    int iStr = 1 + i * nbStrPerCrit;
+    crit.Type         = SMESH::StringToFunctorType( strVec[ iStr++ ].c_str() );
+    crit.Compare      = SMESH::StringToFunctorType( strVec[ iStr++ ].c_str() );
+    crit.Threshold    = atof(                       strVec[ iStr++ ].c_str() );
+    crit.ThresholdStr =                             strVec[ iStr++ ].c_str();
+    crit.ThresholdID  =                             strVec[ iStr++ ].c_str();
+    crit.UnaryOp      = SMESH::StringToFunctorType( strVec[ iStr++ ].c_str() );
+    crit.BinaryOp     = SMESH::StringToFunctorType( strVec[ iStr++ ].c_str() );
+    crit.Tolerance    = atof(                       strVec[ iStr++ ].c_str() );
+    crit.TypeOfElement= SMESH::ElementType( atoi(   strVec[ iStr++ ].c_str() ));
+    crit.Precision    = atoi(                       strVec[ iStr++ ].c_str() );
+  }
+
+  // create a filter
+  TPythonDump pd;
+  SMESH::FilterManager_i* aFilterMgr = new SMESH::FilterManager_i();
+  filter = aFilterMgr->CreateFilter();
+  filter->SetCriteria( criteria.inout() );
+  
+  aFilterMgr->UnRegister();
+
+  pd << ""; // to avoid optimizing pd out
+
+  return filter._retn();
+}
+
+SMESH_GroupOnFilter_i::~SMESH_GroupOnFilter_i()
+{
+  if ( ! myFilter->_is_nil() )
+  {
+    SMESH::DownCast< SMESH::Filter_i* >( myFilter )->RemoveWaiter( this );
+    myFilter->UnRegister();
+  }
+}
+
+void SMESH_GroupOnFilter_i::PredicateChanged()
+{
+  if ( SMESHDS_GroupOnFilter* grDS = dynamic_cast< SMESHDS_GroupOnFilter*>( GetGroupDS() ))
+    grDS->SetPredicate( GetPredicate( myFilter ));
+}

@@ -30,6 +30,7 @@
 
 #include "SMESH.hxx"
 #include "SMESH_Mesh_i.hxx"
+#include "SMESH_Filter_i.hxx"
 
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_Group)
@@ -50,8 +51,8 @@ class SMESH_I_EXPORT SMESH_GroupBase_i:
 {
  public:
   SMESH_GroupBase_i(PortableServer::POA_ptr thePOA,
-                    SMESH_Mesh_i* theMeshServant,
-                    const int theLocalID );
+                    SMESH_Mesh_i*           theMeshServant,
+                    const int               theLocalID );
   virtual ~SMESH_GroupBase_i();
 
   // CORBA interface implementation
@@ -110,8 +111,9 @@ class SMESH_I_EXPORT SMESH_Group_i:
   public SMESH_GroupBase_i
 {
  public:
-  SMESH_Group_i( PortableServer::POA_ptr thePOA, SMESH_Mesh_i* theMeshServant, const int theLocalID );
-
+  SMESH_Group_i( PortableServer::POA_ptr thePOA,
+                 SMESH_Mesh_i*           theMeshServant,
+                 const int               theLocalID );
   // CORBA interface implementation
   void Clear();
   CORBA::Long Add( const SMESH::long_array& theIDs );
@@ -132,9 +134,42 @@ class SMESH_I_EXPORT SMESH_GroupOnGeom_i:
   public SMESH_GroupBase_i
 {
  public:
-  SMESH_GroupOnGeom_i( PortableServer::POA_ptr thePOA, SMESH_Mesh_i* theMeshServant, const int theLocalID );
-
+  SMESH_GroupOnGeom_i( PortableServer::POA_ptr thePOA,
+                       SMESH_Mesh_i*           theMeshServant,
+                       const int               theLocalID );
   // CORBA interface implementation
   GEOM::GEOM_Object_ptr GetShape();
+};
+
+// =========================
+// Group deined by filter
+// =========================
+
+class SMESH_I_EXPORT SMESH_GroupOnFilter_i:
+  public virtual POA_SMESH::SMESH_GroupOnFilter,
+  public SMESH_GroupBase_i,
+  public SMESH::Filter_i::TPredicateChangeWaiter
+{
+ public:
+  SMESH_GroupOnFilter_i( PortableServer::POA_ptr thePOA,
+                         SMESH_Mesh_i*           theMeshServant,
+                         const int               theLocalID );
+  ~SMESH_GroupOnFilter_i();
+
+  // Persistence
+  static SMESH::Filter_ptr StringToFilter(const std::string& thePersistentString );
+  std::string FilterToString() const;
+
+  static SMESH_PredicatePtr GetPredicate( SMESH::Filter_ptr );
+
+  // CORBA interface implementation
+  void SetFilter(SMESH::Filter_ptr theFilter);
+  SMESH::Filter_ptr GetFilter();
+
+  // method of SMESH::Filter_i::TPredicateChangeWaiter
+  virtual void PredicateChanged();
+
+ private:
+  SMESH::Filter_var myFilter;
 };
 #endif
