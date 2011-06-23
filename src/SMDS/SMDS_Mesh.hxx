@@ -592,7 +592,7 @@ public:
   inline void setMyModified() { this->myModified = true; }
 
   void Modified();
-  unsigned long GetMTime();
+  unsigned long GetMTime() const;
   bool isCompacted();
 
 protected:
