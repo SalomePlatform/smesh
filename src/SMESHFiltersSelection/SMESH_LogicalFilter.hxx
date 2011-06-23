@@ -38,7 +38,7 @@ class SMESHFILTERSSELECTION_EXPORT SMESH_LogicalFilter : public SUIT_SelectionFi
   enum { LO_OR, LO_AND, LO_NOT, LO_UNDEFINED };
 
  public:
-  SMESH_LogicalFilter( const QList<SUIT_SelectionFilter*>&, const int );
+  SMESH_LogicalFilter( const QList<SUIT_SelectionFilter*>&, const int, bool takeOwnership=false );
   virtual ~SMESH_LogicalFilter();
 
   virtual bool isOk (const SUIT_DataOwner*) const;
@@ -49,8 +49,12 @@ class SMESHFILTERSSELECTION_EXPORT SMESH_LogicalFilter : public SUIT_SelectionFi
   int                                  getOperation() const;
 
 private:
+  void                          deleteFilters();
+
+private:
   QList<SUIT_SelectionFilter*>  myFilters;
   int                           myOperation;
+  bool                          myOwnership;
 };
 
 #endif

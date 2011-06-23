@@ -30,7 +30,9 @@
 // Purpose : Constructor
 //=======================================================================
 SMESH_LogicalFilter::SMESH_LogicalFilter (const QList<SUIT_SelectionFilter*>& theFilters,
-                                          const int                           theLogOp)
+                                          const int                           theLogOp,
+                                          bool                                takeOwnership)
+  : myOwnership( takeOwnership )
 {
   setFilters(theFilters);
   setOperation(theLogOp);
@@ -42,6 +44,7 @@ SMESH_LogicalFilter::SMESH_LogicalFilter (const QList<SUIT_SelectionFilter*>& th
 //=======================================================================
 SMESH_LogicalFilter::~SMESH_LogicalFilter()
 {
+  deleteFilters();
 }
 
 //=======================================================================
@@ -70,6 +73,7 @@ bool SMESH_LogicalFilter::isOk (const SUIT_DataOwner* owner) const
 //=======================================================================
 void SMESH_LogicalFilter::setFilters (const QList<SUIT_SelectionFilter*>& theFilters)
 {
+  deleteFilters();
   myFilters = theFilters;
 }
 
@@ -98,4 +102,19 @@ const QList<SUIT_SelectionFilter*> SMESH_LogicalFilter::getFilters() const
 int SMESH_LogicalFilter::getOperation() const
 {
   return myOperation;
+}
+//================================================================================
+/*!
+ * \brief Deletes filters if has an ownership
+ */
+//================================================================================
+
+void SMESH_LogicalFilter::deleteFilters()
+{
+  if ( myOwnership )
+  {
+    SUIT_SelectionFilter* filter;
+    foreach( filter, myFilters )
+      delete filter;
+  }
 }
