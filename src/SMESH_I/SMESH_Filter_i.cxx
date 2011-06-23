@@ -2292,6 +2292,9 @@ void Filter_i::SetPredicate( Predicate_ptr thePredicate )
     myPredicate->Register();
     TPythonDump()<<this<<".SetPredicate("<<myPredicate<<")";
   }
+  std::list<TPredicateChangeWaiter*>::iterator i = myWaiters.begin();
+  for ( ; i != myWaiters.end(); ++i )
+    (*i)->PredicateChanged();
 }
 
 //=======================================================================
@@ -2400,25 +2403,24 @@ SMESH::long_array* ::Filter_i::GetMeshInfo()
     SMDS_ElemIteratorPtr it;
     switch( GetElementType() )
     {
-  case SMDSAbs_Node:
-    collectMeshInfo<const SMDS_MeshNode*>(aMesh->nodesIterator(),myPredicate,aRes);
-    break;
-  case SMDSAbs_Edge:
-    collectMeshInfo<const SMDS_MeshElement*>(aMesh->edgesIterator(),myPredicate,aRes);
-    break;
-  case SMDSAbs_Face:
-    collectMeshInfo<const SMDS_MeshElement*>(aMesh->facesIterator(),myPredicate,aRes);
-    break;
-  case SMDSAbs_Volume:
-    collectMeshInfo<const SMDS_MeshElement*>(aMesh->volumesIterator(),myPredicate,aRes);
-    break;
-  case SMDSAbs_All:
-  default:
-    collectMeshInfo<const SMDS_MeshElement*>(aMesh->elementsIterator(),myPredicate,aRes);
-    break;
+    case SMDSAbs_Node:
+      collectMeshInfo<const SMDS_MeshNode*>(aMesh->nodesIterator(),myPredicate,aRes);
+      break;
+    case SMDSAbs_Edge:
+      collectMeshInfo<const SMDS_MeshElement*>(aMesh->edgesIterator(),myPredicate,aRes);
+      break;
+    case SMDSAbs_Face:
+      collectMeshInfo<const SMDS_MeshElement*>(aMesh->facesIterator(),myPredicate,aRes);
+      break;
+    case SMDSAbs_Volume:
+      collectMeshInfo<const SMDS_MeshElement*>(aMesh->volumesIterator(),myPredicate,aRes);
+      break;
+    case SMDSAbs_All:
+    default:
+      collectMeshInfo<const SMDS_MeshElement*>(aMesh->elementsIterator(),myPredicate,aRes);
+      break;
     }
   }
-
 
   return aRes._retn();  
 }
@@ -2433,8 +2435,20 @@ SMESH::long_array* ::Filter_i::GetMeshInfo()
 SMESH::array_of_ElementType* Filter_i::GetTypes()
 {
   SMESH::array_of_ElementType_var types = new SMESH::array_of_ElementType;
-  types->length( 1 );
-  types[0] = GetElementType();
+
+  // check if any element passes through the filter
+  if ( !CORBA::is_nil(myMesh) && myPredicate )
+  {
+    const SMDS_Mesh* aMesh = MeshPtr2SMDSMesh(myMesh);
+    SMDS_ElemIteratorPtr it = aMesh->elementsIterator( SMDSAbs_ElementType( GetElementType() ));
+    bool satisfies = false;
+    while ( !satisfies && it->more() )
+      satisfies = myPredicate->IsSatisfy( it->next()->GetID() );
+    if ( satisfies ) {
+      types->length( 1 );
+      types[0] = GetElementType();
+    }
+  }
   return types._retn();
 }
 
@@ -2446,6 +2460,29 @@ SMESH::array_of_ElementType* Filter_i::GetTypes()
 SMESH::SMESH_Mesh_ptr Filter_i::GetMesh()
 {
   return SMESH_Mesh::_duplicate( myMesh );
+}
+
+//================================================================================
+/*!
+ * \brief Stores an object to be notified on change of predicate
+ */
+//================================================================================
+
+void Filter_i::AddWaiter( TPredicateChangeWaiter* waiter )
+{
+  if ( waiter )
+    myWaiters.push_back( waiter );
+}
+
+//================================================================================
+/*!
+ * \brief Removes an object to be notified on change of predicate
+ */
+//================================================================================
+
+void Filter_i::RemoveWaiter( TPredicateChangeWaiter* waiter )
+{
+  myWaiters.remove( waiter );
 }
 
 //=======================================================================
@@ -2748,17 +2785,20 @@ CORBA::Boolean Filter_i::SetCriteria( const SMESH::Filter::Criteria& theCriteria
 
     {
       TPythonDump pd;
-      pd << "aCriterion = SMESH.Filter.Criterion(" << aCriterion << "," << aCompare
-         << "," << aThreshold << ",'" << aThresholdStr;
-      if (aThresholdID && strlen(aThresholdID))
-        //pd << "',salome.ObjectToID(" << aThresholdID
-        pd << "','" << aThresholdID
-           << "'," << aUnary << "," << aBinary << "," << aTolerance
-           << "," << aTypeOfElem << "," << aPrecision << ")";
-      else
-        pd << "',''," << aUnary << "," << aBinary << "," << aTolerance
-           << "," << aTypeOfElem << "," << aPrecision << ")";
+      pd << "aCriterion = SMESH.Filter.Criterion("
+         << aCriterion    << ", "
+         << aCompare      << ", "
+         << aThreshold    << ", '"
+         << aThresholdStr << "', '";
+      if (aThresholdID) pd << aThresholdID;
+      pd                  << "', "
+         << aUnary        << ", "
+         << aBinary       << ", "
+         << aTolerance    << ", "
+         << aTypeOfElem   << ", "
+         << aPrecision    << ")";
     }
+    TPythonDump pd;
 
     SMESH::Predicate_ptr aPredicate = SMESH::Predicate::_nil();
     SMESH::NumericalFunctor_ptr aFunctor = SMESH::NumericalFunctor::_nil();
@@ -2968,10 +3008,10 @@ CORBA::Boolean Filter_i::SetCriteria( const SMESH::Filter::Criteria& theCriteria
     // logical op
     aPredicates.push_back( aPredicate );
     aBinaries.push_back( aBinary );
-    TPythonDump()<<"aCriteria.append(aCriterion)";
+    pd <<"aCriteria.append(aCriterion)";
 
   } // end of for
-  TPythonDump()<<this<<".SetCriteria(aCriteria)";
+  TPythonDump pd; pd<<this<<".SetCriteria(aCriteria)";
 
   // CREATE ONE PREDICATE FROM PREVIOUSLY CREATED MAP
 
@@ -3613,7 +3653,7 @@ CORBA::Boolean FilterLibrary_i::Replace( const char* theFilterName,
   {
     aFilterItem.ReplaceElement( aNewItem );
     if(Filter_i* aFilter = DownCast<Filter_i*>(theFilter))
-      TPythonDump()<<this<<".Replace('"<<theFilterName<<"',"<<theNewName<<"',"<<aFilter<<")";
+      TPythonDump()<<this<<".Replace('"<<theFilterName<<"','"<<theNewName<<"',"<<aFilter<<")";
     return true;
   }
 }
@@ -3717,4 +3757,61 @@ string_array* FilterLibrary_i::GetAllNames()
   }
 
   return aResArray._retn();
+}
+
+//================================================================================
+/*!
+ * \brief Return an array of strings corresponding to items of enum FunctorType
+ */
+//================================================================================
+
+static const char** getFunctNames()
+{
+  static const char* functName[ SMESH::FT_Undefined + 1 ] = {
+    // If this line doesn't compile, this means that enum FunctorType has changed and
+    // it's necessary to update this array accordingly (refer to SMESH_Filter.idl)
+    "FT_AspectRatio", "FT_AspectRatio3D", "FT_Warping", "FT_MinimumAngle",
+    "FT_Taper", "FT_Skew", "FT_Area", "FT_Volume3D", "FT_MaxElementLength2D",
+    "FT_MaxElementLength3D", "FT_FreeBorders", "FT_FreeEdges", "FT_FreeNodes",
+    "FT_FreeFaces", "FT_MultiConnection", "FT_MultiConnection2D", "FT_Length",
+    "FT_Length2D", "FT_BelongToGeom", "FT_BelongToPlane", "FT_BelongToCylinder",
+    "FT_BelongToGenSurface", "FT_LyingOnGeom", "FT_RangeOfIds", "FT_BadOrientedVolume",
+    "FT_BareBorderVolume", "FT_BareBorderFace", "FT_OverConstrainedVolume",
+    "FT_OverConstrainedFace", "FT_LinearOrQuadratic", "FT_GroupColor", "FT_ElemGeomType",
+    "FT_CoplanarFaces", "FT_LessThan", "FT_MoreThan", "FT_EqualTo", "FT_LogicalNOT",
+    "FT_LogicalAND", "FT_LogicalOR", "FT_Undefined" };
+  return functName;
+}
+
+//================================================================================
+/*!
+ * \brief Return a string corresponding to an item of enum FunctorType
+ */
+//================================================================================
+
+const char* SMESH::FunctorTypeToString(SMESH::FunctorType ft)
+{
+  if ( ft < 0 || ft > SMESH::FT_Undefined )
+    return 0;
+  return getFunctNames()[ ft ];
+}
+
+//================================================================================
+/*!
+ * \brief Converts a string to FunctorType. This is reverse of FunctorTypeToString()
+ */
+//================================================================================
+
+SMESH::FunctorType SMESH::StringToFunctorType(const char* str)
+{
+  std::string name( str + 3 ); // skip "FT_"
+  const char** functNames = getFunctNames();
+  int ft = SMESH::FT_Undefined;
+  for ( ; ft >= 0; --ft )
+    if ( name == ( functNames[ft] + 3 ))
+      break;
+
+  //ASSERT( strcmp( str, FunctorTypeToString( SMESH::FunctorType( ft ))) == 0 );
+
+  return SMESH::FunctorType( ft );
 }
