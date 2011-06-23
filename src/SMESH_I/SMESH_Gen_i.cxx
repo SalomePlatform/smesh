@@ -2591,7 +2591,9 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
         if ( !CORBA::is_nil( anObject ) ) {
           SMESH::SMESH_Mesh_var myMesh = SMESH::SMESH_Mesh::_narrow( anObject ) ;
           if ( !myMesh->_is_nil() ) {
+            TPythonDump pd; // not to dump GetGroups()
             SMESH::ListOfGroups_var groups = myMesh->GetGroups();
+            pd << ""; // to avoid optimizing pd out
             for ( int i = 0; i < groups->length(); ++i )
             {
               SMESH_GroupBase_i* grImpl = SMESH::DownCast<SMESH_GroupBase_i*>( groups[i]);
@@ -3231,6 +3233,17 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
                         // save a group on geometry as ordinary group
                         myWriter.AddGroup( aGeomGrp );
                       }
+                    }
+                    else if ( SMESH_GroupOnFilter_i* aFilterGrp_i = 
+                              dynamic_cast<SMESH_GroupOnFilter_i*>( myGroupImpl ))
+                    {
+                      std::string str = aFilterGrp_i->FilterToString();
+                      std::string hdfGrpName = "Filter " + SMESH_Comment(anId);
+                      aSize[ 0 ] = str.length() + 1;
+                      aDataset = new HDFdataset( hdfGrpName.c_str(), aGroup, HDF_STRING, aSize, 1);
+                      aDataset->CreateOnDisk();
+                      aDataset->WriteOnDisk( ( char* )( str.c_str() ) );
+                      aDataset->CloseOnDisk();
                     }
                   }
                 }
@@ -4474,10 +4487,28 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
                   }
                 }
               }
+              // Try to read a filter of SMESH_GroupOnFilter
+              SMESH::Filter_var filter;
+              SMESH_PredicatePtr predicate;
+              std::string hdfGrpName = "Filter " + SMESH_Comment(subid);
+              if ( aGroup->ExistInternalObject( hdfGrpName.c_str() ))
+              {
+                aDataset = new HDFdataset( hdfGrpName.c_str(), aGroup );
+                aDataset->OpenOnDisk();
+                size = aDataset->GetSize();
+                char* persistStr = new char[ size ];
+                aDataset->ReadFromDisk( persistStr );
+                aDataset->CloseOnDisk();
+                if ( strlen( persistStr ) > 0 ) {
+                  filter = SMESH_GroupOnFilter_i::StringToFilter( persistStr );
+                  predicate = SMESH_GroupOnFilter_i::GetPredicate( filter );
+                }
+              }
+
               // Create group servant
               SMESH::ElementType type = (SMESH::ElementType)(ii - GetNodeGroupsTag() + 1);
               SMESH::SMESH_GroupBase_var aNewGroup = SMESH::SMESH_GroupBase::_duplicate
-                ( myNewMeshImpl->createGroup( type, nameFromFile, aShape ) );
+                ( myNewMeshImpl->createGroup( type, nameFromFile, aShape, predicate ) );
               // Obtain a SMESHDS_Group object
               if ( aNewGroup->_is_nil() )
                 continue;
@@ -4486,16 +4517,18 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
               int newSubId = myStudyContext->findId( iorSubString );
               myStudyContext->mapOldToNew( subid, newSubId );
 
-              SMESH_GroupBase_i* aGroupImpl =
-                dynamic_cast<SMESH_GroupBase_i*>( GetServant( aNewGroup ).in() );
+              SMESH_GroupBase_i* aGroupImpl = SMESH::DownCast< SMESH_GroupBase_i*>( aNewGroup );
               if ( !aGroupImpl )
                 continue;
 
-              SMESH_Group* aLocalGroup  = myLocMesh.GetGroup( aGroupImpl->GetLocalID() );
-              if ( !aLocalGroup )
+              if ( SMESH_GroupOnFilter_i* aFilterGroup =
+                   dynamic_cast< SMESH_GroupOnFilter_i*>( aGroupImpl ))
+                aFilterGroup->SetFilter( filter );
+
+              SMESHDS_GroupBase* aGroupBaseDS = aGroupImpl->GetGroupDS();
+              if ( !aGroupBaseDS )
                 continue;
 
-              SMESHDS_GroupBase* aGroupBaseDS = aLocalGroup->GetGroupDS();
               aGroupBaseDS->SetStoreName( name_dataset );
 
               // ouv : NPAL12872
