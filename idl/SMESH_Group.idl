@@ -36,6 +36,7 @@
 module SMESH
 {
   interface Predicate;
+  interface Filter;
 
   /*!
    * SMESH_Group: base interface of group object
@@ -138,12 +139,22 @@ module SMESH
     long RemoveByPredicate( in Predicate thePredicate );
 
   };
+
   /*!
-   * SMESH_Group: interface of group object linked to geometry
+   * SMESH_GroupOnGeom: interface of group object linked to geometry
    */
   interface SMESH_GroupOnGeom : SMESH_GroupBase
   {
     GEOM::GEOM_Object GetShape();
+  };
+
+  /*!
+   * SMESH_GroupOnFilter: interface of group object defined by filter
+   */
+  interface SMESH_GroupOnFilter : SMESH_GroupBase
+  {
+    void   SetFilter( in Filter theFilter); 
+    Filter GetFilter();
   };
 
 };
