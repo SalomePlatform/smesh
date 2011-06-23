@@ -276,6 +276,8 @@ module SMESH
 
   interface SMESH_Group;
   interface SMESH_GroupOnGeom;
+  interface Filter;
+  interface SMESH_GroupOnFilter;
   interface SMESH_subMesh;
   interface SMESH_MeshEditor;
 
@@ -329,15 +331,23 @@ module SMESH
      * Create a group
      */
     SMESH_Group CreateGroup( in ElementType elem_type,
-			     in string name )
+			     in string      name )
       raises (SALOME::SALOME_Exception);
 
     /*!
-     * Create a group from geometry group
+     * Create a group from geometry
      */
-    SMESH_GroupOnGeom CreateGroupFromGEOM( in ElementType elem_type,
-                                          in string name,
-                                          in GEOM::GEOM_Object theGeomObject )
+    SMESH_GroupOnGeom CreateGroupFromGEOM( in ElementType       elemType,
+                                           in string            name,
+                                           in GEOM::GEOM_Object geomObject )
+      raises (SALOME::SALOME_Exception);
+
+    /*!
+     * Create a group from filter
+     */
+    SMESH_GroupOnFilter CreateGroupFromFilter( in ElementType   elemType,
+                                               in string        name,
+                                               in SMESH::Filter filter )
       raises (SALOME::SALOME_Exception);
 
     /*!
@@ -434,9 +444,9 @@ module SMESH
       raises (SALOME::SALOME_Exception);
 
     /*!
-     * Convert group on geometry into standalone group
+     * Convert group on geometry or on filter into standalone group
      */
-    SMESH_Group ConvertToStandalone( in SMESH_GroupOnGeom theGeomGroup )
+    SMESH_Group ConvertToStandalone( in SMESH_GroupBase theGroupOn )
       raises (SALOME::SALOME_Exception);
 
     /*!
