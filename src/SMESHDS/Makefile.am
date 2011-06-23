@@ -37,6 +37,7 @@ salomeinclude_HEADERS = \
 	SMESHDS_GroupBase.hxx \
 	SMESHDS_Group.hxx \
 	SMESHDS_GroupOnGeom.hxx \
+	SMESHDS_GroupOnFilter.hxx \
 	SMESH_SMESHDS.hxx \
 	SMESHDS_DataMapOfShape.hxx
 
@@ -52,7 +53,8 @@ dist_libSMESHDS_la_SOURCES = \
 	SMESHDS_Mesh.cxx \
 	SMESHDS_GroupBase.cxx \
 	SMESHDS_Group.cxx \
-	SMESHDS_GroupOnGeom.cxx
+	SMESHDS_GroupOnGeom.cxx \
+	SMESHDS_GroupOnFilter.cxx
 
 # additionnal information to compil and link file
 libSMESHDS_la_CPPFLAGS = \
@@ -60,7 +62,8 @@ libSMESHDS_la_CPPFLAGS = \
 	$(CAS_CPPFLAGS) \
         $(VTK_INCLUDES) \
 	$(BOOST_CPPFLAGS) \
-	-I$(srcdir)/../SMDS
+	-I$(srcdir)/../SMDS \
+	-I$(srcdir)/../Controls
 
 libSMESHDS_la_LDFLAGS  = \
 	../SMDS/libSMDS.la \
