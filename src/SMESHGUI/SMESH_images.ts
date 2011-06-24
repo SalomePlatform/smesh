@@ -396,6 +396,10 @@
             <translation>mesh_tree_group.png</translation>
         </message>
         <message>
+            <source>ICON_SMESH_TREE_GROUP_ON_FILTER</source>
+            <translation>mesh_tree_group_on_filter.png</translation>
+        </message>
+        <message>
             <source>ICON_SMESH_TREE_HYPO</source>
             <translation>mesh_tree_hypo.png</translation>
         </message>

@@ -116,6 +116,7 @@ dist_salomeres_DATA = \
 	mesh_wrap.png \
 	mesh_group.png \
 	mesh_tree_group.png \
+	mesh_tree_group_on_filter.png \
 	mesh_edit_group.png \
 	mesh_make_group.png \
 	mesh_groups_from_gemetry.png \
