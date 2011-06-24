@@ -345,14 +345,14 @@ void  aptrte( Z   nutysu, R      aretmx,
   // devenu un commentaire aretmx = Min( aretmx, aremax ); //pour homogeneiser
 
   // protection contre une arete max desiree trop grande ou trop petite
-  if( aretmx > aremax*2.05 ) aretmx = aremax;
+//   if( aretmx > aremax*2.05 ) aretmx = aremax;
 
-  // protection contre une arete max desiree trop petite
-  if( (aremax-aremin) > (aremin+aremax)*0.05 && aretmx < aremin*0.5 )
-    aretmx =(aremin+aremax*2)/3.0;
+//   // protection contre une arete max desiree trop petite
+//   if( (aremax-aremin) > (aremin+aremax)*0.05 && aretmx < aremin*0.5 )
+//     aretmx =(aremin+aremax*2)/3.0;
 
-  if( aretmx < aremin  && aremin > 0 )
-    aretmx = aremin;
+//   if( aretmx < aremin  && aremin > 0 )
+//     aretmx = aremin;
 
   //sauvegarde pour la fonction areteideale_
   aretemaxface_ = aretmx;
