@@ -27,6 +27,8 @@
 //
 #include "SMESHGUI_Utils.h"
 #include "SMESHGUI.h"
+#include "SMESHGUI_Selection.h"
+#include "SMESH_Type.h"
 
 #include <SMDS_MeshNode.hxx>
 #include <SMDS_MeshFace.hxx>
@@ -47,6 +49,8 @@
 // OCC includes
 #include <gp_XYZ.hxx>
 #include <TColgp_Array1OfXYZ.hxx>
+
+#include CORBA_SERVER_HEADER(SMESH_Group)
 
 namespace SMESH
 {
@@ -279,29 +283,58 @@ namespace SMESH
     _PTR(GenericAttribute) anAttr =
       aBuilder->FindOrCreateAttribute(theSObject,"AttributePixMap");
     _PTR(AttributePixMap) aPixmap = anAttr;
-    if (theIsNotModif) {
-      aPixmap->SetPixMap("ICON_SMESH_TREE_MESH");
-    } else if ( isEmptyMesh ) {
-      aPixmap->SetPixMap("ICON_SMESH_TREE_MESH_WARN");
-    } else {
-      aPixmap->SetPixMap("ICON_SMESH_TREE_MESH_PARTIAL");
-    }
+
+    std::string pmName;
+    if (theIsNotModif)
+      pmName = "ICON_SMESH_TREE_MESH";
+    else if ( isEmptyMesh )
+      pmName = "ICON_SMESH_TREE_MESH_WARN";
+    else
+      pmName = "ICON_SMESH_TREE_MESH_PARTIAL";
+    aPixmap->SetPixMap( pmName );
 
     _PTR(ChildIterator) anIter = aStudy->NewChildIterator(theSObject);
     for (int i = 1; anIter->More(); anIter->Next(), i++) {
       _PTR(SObject) aSObj = anIter->Value();
       if (i >= 4) {
         _PTR(ChildIterator) anIter1 = aStudy->NewChildIterator(aSObj);
-        for ( ; anIter1->More(); anIter1->Next()) {
+        for ( ; anIter1->More(); anIter1->Next())
+        {
           _PTR(SObject) aSObj1 = anIter1->Value();
+
           anAttr = aBuilder->FindOrCreateAttribute(aSObj1, "AttributePixMap");
           aPixmap = anAttr;
-          if (theIsNotModif) {
-            aPixmap->SetPixMap("ICON_SMESH_TREE_MESH");
-          } else if ( isEmptyMesh ) {
-            aPixmap->SetPixMap("ICON_SMESH_TREE_MESH_WARN");
-          } else {
-            aPixmap->SetPixMap("ICON_SMESH_TREE_MESH_PARTIAL");
+
+          std::string entry = aSObj1->GetID();
+          int objType = SMESHGUI_Selection::type( entry.c_str(), aStudy );
+
+          SMESH::SMESH_IDSource_var idSrc = SObjectToInterface<SMESH::SMESH_IDSource>( aSObj1 );
+          if ( !idSrc->_is_nil() )
+          {
+            SMESH::SMESH_GroupOnFilter_var gof =
+              SObjectToInterface<SMESH::SMESH_GroupOnFilter>( aSObj1 );
+            const bool isGroupOnFilter = !gof->_is_nil();
+
+            SMESH::array_of_ElementType_var elemTypes = idSrc->GetTypes();
+            const bool isEmpty = ( elemTypes->length() == 0 );
+
+            if ( isEmpty )
+              aPixmap->SetPixMap("ICON_SMESH_TREE_MESH_WARN");
+            else if ( objType != GROUP )
+              aPixmap->SetPixMap( "ICON_SMESH_TREE_MESH" );
+            else if ( isGroupOnFilter )
+              aPixmap->SetPixMap( "ICON_SMESH_TREE_GROUP_ON_FILTER" );
+            else
+              aPixmap->SetPixMap( "ICON_SMESH_TREE_GROUP" );
+          }
+          else
+          {
+            if ( !theIsNotModif )
+              aPixmap->SetPixMap( pmName );
+            else if ( objType == GROUP )
+              aPixmap->SetPixMap( "ICON_SMESH_TREE_GROUP" );
+            else
+              aPixmap->SetPixMap( "ICON_SMESH_TREE_MESH" );
           }
         }
       }

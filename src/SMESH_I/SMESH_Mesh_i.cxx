@@ -1949,6 +1949,8 @@ SMESH::SMESH_Group_ptr SMESH_Mesh_i::ConvertToStandalone( SMESH::SMESH_GroupBase
   if ( !aGroupToRem )
     return aGroup._retn();
 
+  const bool isOnFilter = ( SMESH::DownCast< SMESH_GroupOnFilter_i* > ( theGroup ));
+
   int anId = aGroupToRem->GetLocalID();
   if ( !_impl->ConvertToStandalone( anId ) )
     return aGroup._retn();
@@ -1967,15 +1969,29 @@ SMESH::SMESH_Group_ptr SMESH_Mesh_i::ConvertToStandalone( SMESH::SMESH_GroupBase
     aGroupSO = _gen_i->ObjectToSObject( aStudy, theGroup );
     if ( !aGroupSO->_is_nil() ) {
 
-    // remove reference to geometry
-    SALOMEDS::ChildIterator_var chItr = aStudy->NewChildIterator(aGroupSO);
-    for ( ; chItr->More(); chItr->Next() )
-      // Remove group's child SObject
-      builder->RemoveObject( chItr->Value() );
+      // remove reference to geometry
+      SALOMEDS::ChildIterator_var chItr = aStudy->NewChildIterator(aGroupSO);
+      for ( ; chItr->More(); chItr->Next() )
+        // Remove group's child SObject
+        builder->RemoveObject( chItr->Value() );
 
       // Update Python script
       TPythonDump() << aGroupSO << " = " << _this() << ".ConvertToStandalone( "
                     << aGroupSO << " )";
+
+      // change icon of Group on Filter
+      if ( isOnFilter )
+      {
+        SMESH::array_of_ElementType_var elemTypes = aGroupImpl->GetTypes();
+        const int isEmpty = ( elemTypes->length() == 0 );
+        if ( !isEmpty )
+        {
+          SALOMEDS::GenericAttribute_var anAttr =
+            builder->FindOrCreateAttribute( aGroupSO, "AttributePixMap" );
+          SALOMEDS::AttributePixMap_var pm = SALOMEDS::AttributePixMap::_narrow( anAttr );
+          pm->SetPixMap( "ICON_SMESH_TREE_GROUP" );
+        }
+      }
     }
   }
 
