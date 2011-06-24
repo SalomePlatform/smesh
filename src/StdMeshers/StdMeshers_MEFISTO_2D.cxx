@@ -237,6 +237,8 @@ bool StdMeshers_MEFISTO_2D::Compute(SMESH_Mesh & aMesh, const TopoDS_Shape & aSh
   Z nutysu = 1;           // 1: il existe un fonction areteideale_()
   // Z  nutysu=0;         // 0: on utilise aretmx
   R aretmx = _edgeLength; // longueur max aretes future triangulation
+  if ( _hypMaxElementArea )
+    aretmx *= 1.5;
   
   nblf = nbWires;
   
