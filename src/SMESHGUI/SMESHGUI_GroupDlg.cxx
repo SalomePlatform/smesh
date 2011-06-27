@@ -1113,7 +1113,7 @@ bool SMESHGUI_GroupDlg::onApply()
     }
     else
     {
-      myGroup->SetName(myName->text().toLatin1().data());
+      resultGroup->SetName(myName->text().toLatin1().data());
 
       if ( aMeshGroupSO )
         if(SMESH_Actor *anActor = SMESH::FindActorByEntry(aMeshGroupSO->GetID().c_str())) {
