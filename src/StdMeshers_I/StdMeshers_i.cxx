@@ -40,8 +40,8 @@
 #include "StdMeshers_Deflection1D_i.hxx"
 #include "StdMeshers_Propagation_i.hxx"
 #include "StdMeshers_LengthFromEdges_i.hxx"
-#include "StdMeshers_QuadranglePreference_i.hxx"
-#include "StdMeshers_TrianglePreference_i.hxx"
+//#include "StdMeshers_QuadranglePreference_i.hxx"
+//#include "StdMeshers_TrianglePreference_i.hxx"
 #include "StdMeshers_QuadraticMesh_i.hxx"
 #include "StdMeshers_MaxElementArea_i.hxx"
 #include "StdMeshers_MaxElementVolume_i.hxx"
@@ -75,8 +75,31 @@
 
 template <class T> class StdHypothesisCreator_i:public HypothesisCreator_i<T>
 {
+public:
   // as we have 'module StdMeshers' in SMESH_BasicHypothesis.idl
   virtual std::string GetModuleName() { return "StdMeshers"; }
+};
+
+//=============================================================================
+/*!
+ * \brief Creates StdMeshers_QuadrangleParams_i instead of
+ * StdMeshers_TrianglePreference_i and StdMeshers_QuadranglePreference_i
+ */
+//=============================================================================
+
+template <StdMeshers::QuadType TYPE>
+class QuadrangleParamsCreator : public StdHypothesisCreator_i<StdMeshers_QuadrangleParams_i>
+{
+public:
+  virtual SMESH_Hypothesis_i* Create (PortableServer::POA_ptr thePOA,
+                                      int                     theStudyId,
+                                      ::SMESH_Gen*            theGenImpl)
+  {
+    StdMeshers_QuadrangleParams_i* h =
+      new StdMeshers_QuadrangleParams_i( thePOA, theStudyId, theGenImpl);
+    h->SetQuadType( TYPE );
+    return h;
+  }
 };
 
 //=============================================================================
@@ -122,9 +145,11 @@ STDMESHERS_I_EXPORT
     else if (strcmp(aHypName, "AutomaticLength") == 0)
       aCreator = new StdHypothesisCreator_i<StdMeshers_AutomaticLength_i>;
     else if (strcmp(aHypName, "QuadranglePreference") == 0)
-      aCreator = new StdHypothesisCreator_i<StdMeshers_QuadranglePreference_i>;
+      //aCreator = new StdHypothesisCreator_i<StdMeshers_QuadranglePreference_i>;
+      aCreator = new QuadrangleParamsCreator< StdMeshers::QUAD_QUADRANGLE_PREF >();
     else if (strcmp(aHypName, "TrianglePreference") == 0)
-      aCreator = new StdHypothesisCreator_i<StdMeshers_TrianglePreference_i>;
+      //aCreator = new StdHypothesisCreator_i<StdMeshers_TrianglePreference_i>;
+      aCreator = new QuadrangleParamsCreator< StdMeshers::QUAD_TRIANGLE_PREF >();
     else if (strcmp(aHypName, "QuadraticMesh") == 0)
       aCreator = new StdHypothesisCreator_i<StdMeshers_QuadraticMesh_i>;
     else if (strcmp(aHypName, "ProjectionSource3D") == 0)
