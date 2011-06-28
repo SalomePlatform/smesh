@@ -1456,7 +1456,7 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
             }
           }
         }
-        if (ret)
+        if (ret && _computeError && _computeError->myName != COMPERR_WARNING )
         {
           _computeError.reset();
         }
@@ -1720,6 +1720,7 @@ bool SMESH_subMesh::CheckComputeError(SMESH_Algo* theAlgo, const TopoDS_Shape& t
     // Check my state
     if ( !_computeError || _computeError->IsOK() )
     {
+      // no error description is set to this sub-mesh, check if any mesh is computed
       _computeState = IsMeshComputed() ? COMPUTE_OK : FAILED_TO_COMPUTE;
     }
     else
@@ -1739,52 +1740,13 @@ bool SMESH_subMesh::CheckComputeError(SMESH_Algo* theAlgo, const TopoDS_Shape& t
 
       INFOS( text );
 
-      _computeState = FAILED_TO_COMPUTE;
+      _computeState = _computeError->IsKO() ? FAILED_TO_COMPUTE : COMPUTE_OK;
+
       noErrors = false;
     }
   }
   return noErrors;
 }
-
-//=======================================================================
-//function : ApplyToCollection
-//purpose  : Apply theAlgo to all subshapes in theCollection
-//=======================================================================
-
-bool SMESH_subMesh::ApplyToCollection (SMESH_Algo*         theAlgo,
-                                       const TopoDS_Shape& theCollection)
-{
-  MESSAGE("SMESH_subMesh::ApplyToCollection");
-  ASSERT ( !theAlgo->NeedDescretBoundary() );
-
-  if ( _computeError )
-    _computeError->myName = COMPERR_OK;
-
-  bool ok = theAlgo->Compute( *_father, theCollection );
-
-  // set _computeState of subshapes
-  TopExp_Explorer anExplorer( theCollection, _subShape.ShapeType() );
-  for ( ; anExplorer.More(); anExplorer.Next() )
-  {
-    if ( SMESH_subMesh* subMesh = _father->GetSubMeshContaining( anExplorer.Current() ))
-    {
-      bool localOK = subMesh->CheckComputeError( theAlgo );
-      if ( !ok && localOK && !subMesh->IsMeshComputed() )
-      {
-        subMesh->_computeError = theAlgo->GetComputeError();
-        if ( subMesh->_computeError->IsOK() )
-          _computeError = SMESH_ComputeError::New(COMPERR_ALGO_FAILED);
-        localOK = CheckComputeError( theAlgo );
-      }
-      if ( localOK )
-        subMesh->UpdateDependantsState( SUBMESH_COMPUTED );
-      subMesh->UpdateSubMeshState( localOK ? COMPUTE_OK : FAILED_TO_COMPUTE );
-    }
-  }
-
-  return true;
-}
-
 
 //=======================================================================
 //function : UpdateSubMeshState

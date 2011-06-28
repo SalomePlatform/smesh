@@ -267,12 +267,6 @@ protected:
                              bool &      theSubComputed);
 
   /*!
-   * \brief Apply theAlgo to all subshapes in theCollection
-   */
-  bool ApplyToCollection (SMESH_Algo*         theAlgo,
-                          const TopoDS_Shape& theCollection);
-
-  /*!
    * \brief Update compute_state by _computeError
     * \retval bool - false if there are errors
    */
