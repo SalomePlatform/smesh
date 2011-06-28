@@ -100,6 +100,10 @@
         <translation>std::exception</translation>
     </message>
     <message>
+        <source>COMPERR_UNKNOWN</source>
+        <translation>Unknown error</translation>
+    </message>
+    <message>
         <source>SMESH_GEOM</source>
         <translation>Geometry</translation>
     </message>
@@ -3847,6 +3851,10 @@ Please, create VTK viewer and try again</translation>
     <message>
         <source>MEMORY_LACK</source>
         <translation>Memory allocation problem</translation>
+    </message>
+    <message>
+        <source>COMPUTE_WARNING</source>
+        <translation>The mesh seems to be OK but there are some errors reported</translation>
     </message>
     <message>
         <source>PUBLISH_SHAPE</source>

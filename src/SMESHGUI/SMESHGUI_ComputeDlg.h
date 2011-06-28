@@ -221,6 +221,7 @@ protected:
   QGroupBox*                   myCompErrorGroup;
   QGroupBox*                   myHypErrorGroup;
   QLabel*                      myHypErrorLabel;
+  QLabel*                      myWarningLabel;
   QTableWidget*                myTable;
   QPushButton*                 myShowBtn;
   QPushButton*                 myPublishBtn;

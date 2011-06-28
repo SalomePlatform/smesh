@@ -349,6 +349,8 @@ namespace SMESH
       if ( strlen(comment) == 0 )
         text = QObject::tr("COMPERR_ALGO_FAILED");
       break;
+    case SMESH::COMPERR_WARNING:
+      return comment ? QString(comment) : QObject::tr("COMPERR_UNKNOWN");
     default:
       text = QString("#%1").arg( -errCode );
     }
@@ -535,10 +537,11 @@ QFrame* SMESHGUI_ComputeDlg::createMainFrame (QWidget* theParent, bool ForEval)
   // Computation errors
 
   myCompErrorGroup = new QGroupBox(tr("ERRORS"), aFrame);
-  myTable      = new QTableWidget( 1, NB_COLUMNS, myCompErrorGroup);
-  myShowBtn    = new QPushButton(tr("SHOW_SHAPE"), myCompErrorGroup);
-  myPublishBtn = new QPushButton(tr("PUBLISH_SHAPE"), myCompErrorGroup);
-  myBadMeshBtn = new QPushButton(tr("SHOW_BAD_MESH"), myCompErrorGroup);
+  myWarningLabel = new QLabel(QString("<b>%1</b>").arg(tr("COMPUTE_WARNING")), myCompErrorGroup);
+  myTable        = new QTableWidget( 1, NB_COLUMNS, myCompErrorGroup);
+  myShowBtn      = new QPushButton(tr("SHOW_SHAPE"), myCompErrorGroup);
+  myPublishBtn   = new QPushButton(tr("PUBLISH_SHAPE"), myCompErrorGroup);
+  myBadMeshBtn   = new QPushButton(tr("SHOW_BAD_MESH"), myCompErrorGroup);
 
   //myTable->setReadOnly( true ); // VSR: check
   myTable->setEditTriggers( QAbstractItemView::NoEditTriggers );
@@ -560,11 +563,12 @@ QFrame* SMESHGUI_ComputeDlg::createMainFrame (QWidget* theParent, bool ForEval)
   QGridLayout* grpLayout = new QGridLayout(myCompErrorGroup);
   grpLayout->setSpacing(SPACING);
   grpLayout->setMargin(MARGIN);
-  grpLayout->addWidget( myTable,      0, 0, 4, 1 );
-  grpLayout->addWidget( myShowBtn,    0, 1 );
-  grpLayout->addWidget( myPublishBtn, 1, 1 );
-  grpLayout->addWidget( myBadMeshBtn, 2, 1 );
-  grpLayout->setRowStretch( 3, 1 );
+  grpLayout->addWidget( myWarningLabel, 0, 0 );
+  grpLayout->addWidget( myTable,        1, 0, 4, 1 );
+  grpLayout->addWidget( myShowBtn,      1, 1 );
+  grpLayout->addWidget( myPublishBtn,   2, 1 );
+  grpLayout->addWidget( myBadMeshBtn,   3, 1 );
+  grpLayout->setRowStretch( 4, 1 );
 
   // Hypothesis definition errors
 
@@ -941,25 +945,43 @@ void SMESHGUI_BaseComputeOp::showComputeResult( const bool theMemoryLack,
   }
   else
   {
-    QTableWidget* tbl = aCompDlg->myTable;
-    SMESH::long_array_var aRes = myMesh->GetMeshInfo();
-    aCompDlg->myBriefInfo->SetMeshInfo( aRes );
-    aCompDlg->myBriefInfo->show();
-    aCompDlg->myFullInfo->hide();
+    bool onlyWarnings = !theNoCompError; // == valid mesh computed but there are errors reported
+    for ( int i = 0; i < theCompErrors->length() && onlyWarnings; ++i )
+      onlyWarnings = ( theCompErrors[ i ].code == SMESH::COMPERR_WARNING );
 
+    // full or brief mesh info
+    SMESH::long_array_var aRes = myMesh->GetMeshInfo();
+    if ( onlyWarnings ) {
+      aCompDlg->myFullInfo->SetMeshInfo( aRes );
+      aCompDlg->myFullInfo->show();
+      aCompDlg->myBriefInfo->hide();
+    } else {
+      aCompDlg->myBriefInfo->SetMeshInfo( aRes );
+      aCompDlg->myBriefInfo->show();
+      aCompDlg->myFullInfo->hide();
+    }
+
+    // pbs of hypo dfinitions
     if ( theNoHypoError ) {
       aCompDlg->myHypErrorGroup->hide();
-    }
-    else {
+    } else {
       aCompDlg->myHypErrorGroup->show();
       aCompDlg->myHypErrorLabel->setText( theHypErrors );
     }
 
-    if ( theNoCompError ) {
+    // table of errors
+    if ( theNoCompError )
+    {
       aCompDlg->myCompErrorGroup->hide();
     }
-    else {
+    else
+    {
       aCompDlg->myCompErrorGroup->show();
+
+      if ( onlyWarnings )
+        aCompDlg->myWarningLabel->show();
+      else
+        aCompDlg->myWarningLabel->hide();
 
       if ( !hasShape ) {
         aCompDlg->myPublishBtn->hide();
@@ -971,6 +993,7 @@ void SMESHGUI_BaseComputeOp::showComputeResult( const bool theMemoryLack,
       }
 
       // fill table of errors
+      QTableWidget* tbl = aCompDlg->myTable;
       tbl->setRowCount( theCompErrors->length() );
       if ( !hasShape ) tbl->hideColumn( COL_SHAPE );
       else             tbl->showColumn( COL_SHAPE );
