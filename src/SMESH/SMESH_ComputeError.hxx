@@ -17,11 +17,9 @@
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 
-//  SMESH SMESH : implementaion of SMESH idl descriptions
 //  File   : SMESH_Hypothesis.hxx
 //  Author : Edward AGAPOV (eap)
 //  Module : SMESH
-//  $Header: 
 //
 #ifndef SMESH_ComputeError_HeaderFile
 #define SMESH_ComputeError_HeaderFile
@@ -50,12 +48,13 @@ enum SMESH_ComputeErrorName
   COMPERR_EXCEPTION      = -6,  //!< other exception raised
   COMPERR_MEMORY_PB      = -7,  //!< std::bad_alloc exception
   COMPERR_ALGO_FAILED    = -8,  //!< algo failed for some reason
-  COMPERR_BAD_SHAPE      = -9   //!< bad geometry
+  COMPERR_BAD_SHAPE      = -9,  //!< bad geometry
+  COMPERR_WARNING        = -10  //!< algo reports error but sub-mesh is computed anyway
 };
 
 // =============================================================
 /*!
- * \brief Contains algorithm and description of occured error
+ * \brief Contains an algorithm and description of an occured error
  */
 // =============================================================
 
@@ -78,6 +77,7 @@ struct SMESH_ComputeError
     :myName(error),myComment(comment),myAlgo(algo) {}
 
   bool IsOK()     { return myName == COMPERR_OK; }
+  bool IsKO()     { return myName != COMPERR_OK && myName != COMPERR_WARNING; }
   bool IsCommon() { return myName < 0; }
   inline std::string CommonName() const;
 
@@ -97,6 +97,7 @@ std::string SMESH_ComputeError::CommonName() const
   _case2char(COMPERR_MEMORY_PB     );
   _case2char(COMPERR_ALGO_FAILED   );
   _case2char(COMPERR_BAD_SHAPE     );
+  _case2char(COMPERR_WARNING       );
   default:;
   }
   return "";
