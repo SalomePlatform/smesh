@@ -481,6 +481,7 @@ AC_OUTPUT([ \
   doc/salome/gui/SMESH/doxyfile \
   doc/salome/gui/SMESH/doxyfile_py \
   doc/salome/gui/SMESH/static/header.html \
+  doc/salome/gui/SMESH/static/header_py.html \
   doc/salome/tui/Makefile \
   doc/salome/tui/doxyfile \
   doc/salome/tui/static/header.html \

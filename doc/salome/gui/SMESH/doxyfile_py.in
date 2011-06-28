@@ -110,7 +110,7 @@ EXAMPLE_PATH      = @top_srcdir@/src/SMESH_SWIG
 #---------------------------------------------------------------------------
 GENERATE_HTML     = YES
 HTML_OUTPUT       = smeshpy_doc
-HTML_HEADER       = @builddir@/static/header.html
+HTML_HEADER       = @builddir@/static/header_py.html
 HTML_FOOTER       = @srcdir@/static/footer.html
 HTML_STYLESHEET   = @srcdir@/static/doxygen.css
 TOC_EXPAND        = YES
