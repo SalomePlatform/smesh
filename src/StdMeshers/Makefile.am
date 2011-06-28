@@ -45,7 +45,6 @@ salomeinclude_HEADERS = \
 	StdMeshers_Penta_3D.hxx \
 	StdMeshers_AutomaticLength.hxx \
 	StdMeshers_Distribution.hxx \
-	StdMeshers_QuadranglePreference.hxx \
 	StdMeshers_QuadraticMesh.hxx \
 	StdMeshers_NumberOfLayers.hxx \
 	StdMeshers_NumberOfLayers2D.hxx \
@@ -67,7 +66,6 @@ salomeinclude_HEADERS = \
 	StdMeshers_UseExisting_1D2D.hxx \
 	StdMeshers_QuadToTriaAdaptor.hxx \
 	SMESH_StdMeshers.hxx \
-	StdMeshers_TrianglePreference.hxx \
 	StdMeshers_CompositeHexa_3D.hxx \
 	StdMeshers_MaxLength.hxx \
 	StdMeshers_QuadrangleParams.hxx \
@@ -101,7 +99,6 @@ dist_libStdMeshers_la_SOURCES = \
 	StdMeshers_Hexa_3D.cxx \
 	StdMeshers_AutomaticLength.cxx \
 	StdMeshers_Distribution.cxx \
-	StdMeshers_QuadranglePreference.cxx \
 	StdMeshers_QuadraticMesh.cxx \
 	StdMeshers_NumberOfLayers.cxx \
 	StdMeshers_NumberOfLayers2D.cxx \
@@ -122,7 +119,6 @@ dist_libStdMeshers_la_SOURCES = \
 	StdMeshers_CompositeSegment_1D.cxx \
 	StdMeshers_UseExisting_1D2D.cxx \
 	StdMeshers_QuadToTriaAdaptor.cxx \
-	StdMeshers_TrianglePreference.cxx \
 	StdMeshers_CompositeHexa_3D.cxx \
 	StdMeshers_MaxLength.cxx \
 	StdMeshers_QuadrangleParams.cxx \

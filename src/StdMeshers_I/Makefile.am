@@ -43,7 +43,6 @@ salomeinclude_HEADERS = \
 	StdMeshers_MEFISTO_2D_i.hxx \
 	StdMeshers_Hexa_3D_i.hxx \
 	StdMeshers_AutomaticLength_i.hxx \
-	StdMeshers_QuadranglePreference_i.hxx \
 	StdMeshers_QuadraticMesh_i.hxx \
 	StdMeshers_NumberOfLayers_i.hxx \
 	StdMeshers_NumberOfLayers2D_i.hxx \
@@ -59,7 +58,6 @@ salomeinclude_HEADERS = \
 	StdMeshers_SegmentAroundVertex_0D_i.hxx \
 	StdMeshers_SegmentLengthAroundVertex_i.hxx \
 	StdMeshers_UseExisting_1D2D_i.hxx \
-	StdMeshers_TrianglePreference_i.hxx \
 	StdMeshers_MaxLength_i.hxx \
 	StdMeshers_QuadrangleParams_i.hxx \
 	StdMeshers_RadialQuadrangle_1D2D_i.hxx \
@@ -91,7 +89,6 @@ dist_libStdMeshersEngine_la_SOURCES = \
         StdMeshers_MEFISTO_2D_i.cxx \
 	StdMeshers_Hexa_3D_i.cxx \
 	StdMeshers_AutomaticLength_i.cxx \
-	StdMeshers_QuadranglePreference_i.cxx \
 	StdMeshers_QuadraticMesh_i.cxx \
 	StdMeshers_NumberOfLayers_i.cxx \
 	StdMeshers_NumberOfLayers2D_i.cxx \
@@ -107,7 +104,6 @@ dist_libStdMeshersEngine_la_SOURCES = \
 	StdMeshers_SegmentAroundVertex_0D_i.cxx \
 	StdMeshers_SegmentLengthAroundVertex_i.cxx \
 	StdMeshers_UseExisting_1D2D_i.cxx \
-	StdMeshers_TrianglePreference_i.cxx \
 	StdMeshers_MaxLength_i.cxx \
 	StdMeshers_QuadrangleParams_i.cxx \
 	StdMeshers_RadialQuadrangle_1D2D_i.cxx \
