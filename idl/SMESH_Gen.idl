@@ -98,7 +98,8 @@ module SMESH
     COMPERR_EXCEPTION     ,  // other exception raised
     COMPERR_MEMORY_PB     ,  // memory allocation problem
     COMPERR_ALGO_FAILED   ,  // computation failed
-    COMPERR_BAD_SHAPE        // bad geometry
+    COMPERR_BAD_SHAPE     ,  // bad geometry
+    COMPERR_WARNING          // algo reports error but sub-mesh is computed anyway
   };
   struct ComputeError
   {
