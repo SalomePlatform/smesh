@@ -954,7 +954,7 @@ class smeshDC(SMESH._objref_SMESH_Gen):
         return SMESH._objref_SMESH_Gen.CreateHypothesis(self, theHType, theLibName )
 
     ## Gets the mesh statistic
-    #  @return dictionary <element type> - <count of elements>
+    #  @return dictionary "element type" - "count of elements"
     #  @ingroup l1_meshinfo
     def GetMeshInfo(self, obj):
         if isinstance( obj, Mesh ):
@@ -2503,7 +2503,7 @@ class Mesh:
         return result
 
     ## Get measure structure specifying bounding box data of the specified object(s)
-    #  @param objects single source object or list of source objects or list of nodes/elements IDs
+    #  @param IDs single source object or list of source objects or list of nodes/elements IDs
     #  @param isElem if @a objects is a list of IDs, @c True value in this parameters specifies that @a objects are elements,
     #  @c False specifies that @a objects are nodes
     #  @return Measure structure
@@ -4149,6 +4149,7 @@ class Mesh:
     #  This method provided for convenience works as DoubleNodes() described above.
     #  @param theNodes list of groups of nodes to be doubled
     #  @param theModifiedElems list of groups of elements to be updated.
+    #  @param theMakeGroup forces the generation of a group containing new nodes.
     #  @return TRUE if operation has been completed successfully, FALSE otherwise
     #  @ingroup l2_modif_edit
     def DoubleNodeGroups(self, theNodes, theModifiedElems, theMakeGroup=False):
