@@ -328,6 +328,13 @@ public:
   static std::vector< const SMDS_MeshNode*> GetCommonNodes(const SMDS_MeshElement* e1,
                                                            const SMDS_MeshElement* e2);
 
+  enum EMeshError { MEr_OK = 0, MEr_HOLES, MEr_BAD_ORI, MEr_EMPTY };
+
+  /*!
+   * \brief Finds topological errors of a sub-mesh 
+   */
+  static EMeshError GetMeshError(SMESH_subMesh* subMesh);
+
  protected:
 
   /*!

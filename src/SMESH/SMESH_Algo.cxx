@@ -26,16 +26,19 @@
 //  Module : SMESH
 //
 #include "SMESH_Algo.hxx"
-#include "SMESH_Comment.hxx"
-#include "SMESH_Gen.hxx"
-#include "SMESH_Mesh.hxx"
-#include "SMESH_HypoFilter.hxx"
-#include "SMDS_FacePosition.hxx"
+
 #include "SMDS_EdgePosition.hxx"
+#include "SMDS_FacePosition.hxx"
 #include "SMDS_MeshElement.hxx"
 #include "SMDS_MeshNode.hxx"
+#include "SMDS_VolumeTool.hxx"
 #include "SMESHDS_Mesh.hxx"
 #include "SMESHDS_SubMesh.hxx"
+#include "SMESH_Comment.hxx"
+#include "SMESH_Gen.hxx"
+#include "SMESH_HypoFilter.hxx"
+#include "SMESH_Mesh.hxx"
+#include "SMESH_TypeDefs.hxx"
 
 #include <BRepAdaptor_Curve.hxx>
 #include <BRepLProp.hxx>
@@ -552,6 +555,88 @@ vector< const SMDS_MeshNode*> SMESH_Algo::GetCommonNodes(const SMDS_MeshElement*
     if ( e2->GetNodeIndex( e1->GetNode( i )) >= 0 )
       common.push_back( e1->GetNode( i ));
   return common;
+}
+
+//=======================================================================
+//function : GetMeshError
+//purpose  : Finds topological errors of a sub-mesh
+//WARNING  : 1D check is NOT implemented so far
+//=======================================================================
+
+SMESH_Algo::EMeshError SMESH_Algo::GetMeshError(SMESH_subMesh* subMesh)
+{
+  EMeshError err = MEr_OK;
+
+  SMESHDS_SubMesh* smDS = subMesh->GetSubMeshDS();
+  if ( !smDS )
+    return MEr_EMPTY;
+
+  switch ( subMesh->GetSubShape().ShapeType() )
+  {
+  case TopAbs_FACE: { // ====================== 2D =====================
+
+    SMDS_ElemIteratorPtr fIt = smDS->GetElements();
+    if ( !fIt->more() )
+      return MEr_EMPTY;
+
+    // We check that olny links on EDGEs encouter once, the rest links, twice
+    set< SMESH_TLink > links;
+    while ( fIt->more() )
+    {
+      const SMDS_MeshElement* f = fIt->next();
+      int nbNodes = f->NbCornerNodes(); // ignore medium nodes
+      for ( int i = 0; i < nbNodes; ++i )
+      {
+        const SMDS_MeshNode* n1 = f->GetNode( i );
+        const SMDS_MeshNode* n2 = f->GetNode(( i+1 ) % nbNodes);
+        std::pair< set< SMESH_TLink >::iterator, bool > it_added =
+          links.insert( SMESH_TLink( n1, n2 ));
+        if ( !it_added.second )
+          // As we do NOT(!) check if mesh is manifold, we believe that a link can
+          // encounter once or twice only (not three times), we erase a link as soon
+          // as it encounters twice to speed up search in the <links> map.
+          links.erase( it_added.first );
+      }
+    }
+    // the links remaining in the <links> should all be on EDGE
+    set< SMESH_TLink >::iterator linkIt = links.begin();
+    for ( ; linkIt != links.end(); ++linkIt )
+    {
+      const SMESH_TLink& link = *linkIt;
+      if ( link.node1()->GetPosition()->GetTypeOfPosition() > SMDS_TOP_EDGE ||
+           link.node2()->GetPosition()->GetTypeOfPosition() > SMDS_TOP_EDGE )
+        return MEr_HOLES;
+    }
+    // TODO: to check orientation
+    break;
+  }
+  case TopAbs_SOLID: { // ====================== 3D =====================
+
+    SMDS_ElemIteratorPtr vIt = smDS->GetElements();
+    if ( !vIt->more() )
+      return MEr_EMPTY;
+
+    SMDS_VolumeTool vTool;
+    while ( !vIt->more() )
+    {
+      if (!vTool.Set( vIt->next() ))
+        continue; // strange
+
+      for ( int iF = 0; iF < vTool.NbFaces(); ++iF )
+        if ( vTool.IsFreeFace( iF ))
+        {
+          int nbN = vTool.NbFaceNodes( iF );
+          const SMDS_MeshNode** nodes =  vTool.GetFaceNodes( iF );
+          for ( int i = 0; i < nbN; ++i )
+            if ( nodes[i]->GetPosition()->GetTypeOfPosition() > SMDS_TOP_FACE )
+              return MEr_HOLES;
+        }
+    }
+    break;
+  }
+  default:;
+  }
+  return err;
 }
 
 //================================================================================
