@@ -203,7 +203,7 @@
     <algorithm type="CompositeSegment_1D"
 	       label-id="Composite side discretisation"
 	       icon-id="mesh_algo_regular.png"
-               hypos="LocalLength,MaxLength,Arithmetic1D,StartEndLength,NumberOfSegments,Deflection1D,AutomaticLength"
+               hypos="LocalLength,MaxLength,Arithmetic1D,StartEndLength,NumberOfSegments,Deflection1D,AutomaticLength,FixedPoints1D"
                opt-hypos="Propagation,QuadraticMesh"
                input="VERTEX"
                output="EDGE"
