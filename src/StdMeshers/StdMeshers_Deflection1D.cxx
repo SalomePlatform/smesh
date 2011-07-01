@@ -204,7 +204,7 @@ bool StdMeshers_Deflection1D::SetParametersByMesh(const SMESH_Mesh*   theMesh,
   {
     const TopoDS_Edge& edge = TopoDS::Edge( edgeMap( iE ));
     Handle(Geom_Curve) C = BRep_Tool::Curve( edge, L, UMin, UMax );
-    GeomAdaptor_Curve AdaptCurve(C);
+    GeomAdaptor_Curve AdaptCurve(C, UMin, UMax);
     if ( AdaptCurve.GetType() != GeomAbs_Line )
     {
       vector< double > params;

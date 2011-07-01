@@ -3616,7 +3616,7 @@ void _Shrinker1D::AddEdge( const _LayerEdge* e, SMESH_MesherHelper& helper )
       return;
     TopLoc_Location loc;
     Handle(Geom_Curve) C = BRep_Tool::Curve(E, loc, f,l);
-    GeomAdaptor_Curve aCurve(C);
+    GeomAdaptor_Curve aCurve(C, f,l);
     const double totLen = GCPnts_AbscissaPoint::Length(aCurve, f, l);
 
     int nbExpectNodes = eSubMesh->NbNodes() - e->_nodes.size();
@@ -3670,7 +3670,7 @@ void _Shrinker1D::Compute(bool set3D, SMESH_MesherHelper& helper)
   if ( set3D || _done )
   {
     Handle(Geom_Curve) C = BRep_Tool::Curve(E, f,l);
-    GeomAdaptor_Curve aCurve(C);
+    GeomAdaptor_Curve aCurve(C, f,l);
 
     if ( _edges[0] )
       f = helper.GetNodeU( E, _edges[0]->_nodes.back(), _nodes[0] );

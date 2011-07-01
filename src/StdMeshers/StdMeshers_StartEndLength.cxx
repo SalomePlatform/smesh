@@ -216,7 +216,7 @@ bool StdMeshers_StartEndLength::SetParametersByMesh(const SMESH_Mesh*   theMesh,
   {
     const TopoDS_Edge& edge = TopoDS::Edge( edgeMap( i ));
     Handle(Geom_Curve) C = BRep_Tool::Curve(edge, L, UMin, UMax);
-    GeomAdaptor_Curve AdaptCurve(C);
+    GeomAdaptor_Curve AdaptCurve(C, UMin, UMax);
 
     vector< double > params;
     SMESHDS_Mesh* aMeshDS = const_cast< SMESH_Mesh* >( theMesh )->GetMeshDS();

@@ -147,7 +147,9 @@ StdMeshers_FaceSide::StdMeshers_FaceSide(const TopoDS_Face& theFace,
     // check if edge has non-uniform parametrization (issue 0020705)
     if ( !myC2d[i].IsNull() && myEdgeLength[i] > DBL_MIN)
     {
-      Geom2dAdaptor_Curve A2dC( myC2d[i] );
+      Geom2dAdaptor_Curve A2dC( myC2d[i],
+                                std::min( myFirst[i], myLast[i] ),
+                                std::max( myFirst[i], myLast[i] ));
       double p2 = myFirst[i]+(myLast[i]-myFirst[i])/2., p4 = myFirst[i]+(myLast[i]-myFirst[i])/4.;
       double d2 = GCPnts_AbscissaPoint::Length( A2dC, myFirst[i], p2 );
       double d4 = GCPnts_AbscissaPoint::Length( A2dC, myFirst[i], p4 );
