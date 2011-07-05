@@ -751,7 +751,7 @@ SMESH_Gen_i::GetHypothesisParameterValues (const char*           theHypType,
       }
     }
 
-    // let the temporary hypothesis find out some how parameter values by mesh
+    // let the temporary hypothesis find out somehow parameter values by mesh
     if ( hyp->SetParametersByMesh( mesh, shape ))
       return SMESH::SMESH_Hypothesis::_duplicate( tmpHyp );
   }
@@ -764,6 +764,7 @@ SMESH_Gen_i::GetHypothesisParameterValues (const char*           theHypType,
     ::SMESH_Hypothesis::TDefaults dflts;
     dflts._elemLength = diagonal / myGen.GetBoundaryBoxSegmentation();
     dflts._nbSegments = myGen.GetDefaultNbSegments();
+    dflts._shape      = &shape;
     // let the temporary hypothesis initialize it's values
     if ( hyp->SetParametersByDefaults( dflts, mesh ))
       return SMESH::SMESH_Hypothesis::_duplicate( tmpHyp );
