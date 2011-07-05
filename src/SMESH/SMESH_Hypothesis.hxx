@@ -94,8 +94,9 @@ public:
 
   struct TDefaults
   {
-    double _elemLength;
-    int    _nbSegments;
+    double        _elemLength;
+    int           _nbSegments;
+    TopoDS_Shape* _shape; // future shape of the mesh being created
   };
   /*!
    * \brief Initialize my parameter values by default parameters.
