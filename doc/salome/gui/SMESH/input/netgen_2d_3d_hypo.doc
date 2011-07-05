@@ -21,6 +21,8 @@ algorithms </em></center>
 - <b>Name</b> - allows to define the name for the algorithm (Netgen
 2D (or 3D) Parameters by default).
 - <b>Max Size</b> - maximum linear dimensions for mesh cells.
+- <b>Max Size</b> - minimum linear dimensions for mesh cells. It is
+ignored if it is more than <b>Max Size</b>.
 - <b>Second Order</b> - if this box is checked in, the algorithm will
 create second order nodes on the mesh, which actually will become
 \ref adding_quadratic_elements_page "Quadratic".
@@ -68,6 +70,10 @@ average_length_anchor "Local Length" hypothesis.
 length_from_edges_anchor "Length from Edges" hypothesis, else
 - <b>Max. Element Area</b> defines the maximum element area like \ref
 max_element_area_anchor "Max Element Area" hypothesis.
+- <b>Allow Quadrangles</b> - allows to use quadrangle elements in a
+triangle 2D mesh. This checkbox is not present in Netgen 3D simple parameters
+because currently building a tetrahedral mesh with quadrangle faces is
+not possible.
 
 \b 3D groups allows defining the size of 3D elements.
 - <b>Length from faces</b> if checked in, the area of sides of
