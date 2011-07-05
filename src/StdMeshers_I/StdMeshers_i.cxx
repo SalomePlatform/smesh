@@ -40,7 +40,7 @@
 #include "StdMeshers_Deflection1D_i.hxx"
 #include "StdMeshers_Propagation_i.hxx"
 #include "StdMeshers_LengthFromEdges_i.hxx"
-//#include "StdMeshers_QuadranglePreference_i.hxx"
+#include "StdMeshers_QuadranglePreference_i.hxx"
 //#include "StdMeshers_TrianglePreference_i.hxx"
 #include "StdMeshers_QuadraticMesh_i.hxx"
 #include "StdMeshers_MaxElementArea_i.hxx"
@@ -145,8 +145,9 @@ STDMESHERS_I_EXPORT
     else if (strcmp(aHypName, "AutomaticLength") == 0)
       aCreator = new StdHypothesisCreator_i<StdMeshers_AutomaticLength_i>;
     else if (strcmp(aHypName, "QuadranglePreference") == 0)
-      //aCreator = new StdHypothesisCreator_i<StdMeshers_QuadranglePreference_i>;
-      aCreator = new QuadrangleParamsCreator< StdMeshers::QUAD_QUADRANGLE_PREF >();
+      // do not convert to StdMeshers_QuadrangleParams_i as it is used by NETGEN 2D
+      aCreator = new StdHypothesisCreator_i<StdMeshers_QuadranglePreference_i>;
+      //aCreator = new QuadrangleParamsCreator< StdMeshers::QUAD_QUADRANGLE_PREF >();
     else if (strcmp(aHypName, "TrianglePreference") == 0)
       //aCreator = new StdHypothesisCreator_i<StdMeshers_TrianglePreference_i>;
       aCreator = new QuadrangleParamsCreator< StdMeshers::QUAD_TRIANGLE_PREF >();

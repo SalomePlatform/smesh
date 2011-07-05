@@ -32,6 +32,15 @@ has been locally defined on the opposite edge.
 <br><b>See Also</b> a sample TUI Script of a 
 \ref tui_propagation "Propagation hypothesis" operation
 
+<h2>Quadrangle Preference</h2>
+
+This additional hypothesis can be used together with Netgen 2D algorithm.
+It allows Netgen 2D to build quadrangular meshes.
+
+<br>
+This hypothesis has one restriction on its work: the total quantity of
+segments on all four sides of the face must be even (divisible by 2).
+
 \anchor viscous_layers_anchor
 <h2>Viscous Layers</h2>
 

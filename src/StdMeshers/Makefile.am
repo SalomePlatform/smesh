@@ -45,6 +45,7 @@ salomeinclude_HEADERS = \
 	StdMeshers_Penta_3D.hxx \
 	StdMeshers_AutomaticLength.hxx \
 	StdMeshers_Distribution.hxx \
+	StdMeshers_QuadranglePreference.hxx \
 	StdMeshers_QuadraticMesh.hxx \
 	StdMeshers_NumberOfLayers.hxx \
 	StdMeshers_NumberOfLayers2D.hxx \
@@ -99,6 +100,7 @@ dist_libStdMeshers_la_SOURCES = \
 	StdMeshers_Hexa_3D.cxx \
 	StdMeshers_AutomaticLength.cxx \
 	StdMeshers_Distribution.cxx \
+	StdMeshers_QuadranglePreference.cxx \
 	StdMeshers_QuadraticMesh.cxx \
 	StdMeshers_NumberOfLayers.cxx \
 	StdMeshers_NumberOfLayers2D.cxx \

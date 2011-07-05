@@ -43,6 +43,7 @@ salomeinclude_HEADERS = \
 	StdMeshers_MEFISTO_2D_i.hxx \
 	StdMeshers_Hexa_3D_i.hxx \
 	StdMeshers_AutomaticLength_i.hxx \
+	StdMeshers_QuadranglePreference_i.hxx \
 	StdMeshers_QuadraticMesh_i.hxx \
 	StdMeshers_NumberOfLayers_i.hxx \
 	StdMeshers_NumberOfLayers2D_i.hxx \
@@ -89,6 +90,7 @@ dist_libStdMeshersEngine_la_SOURCES = \
         StdMeshers_MEFISTO_2D_i.cxx \
 	StdMeshers_Hexa_3D_i.cxx \
 	StdMeshers_AutomaticLength_i.cxx \
+	StdMeshers_QuadranglePreference_i.cxx \
 	StdMeshers_QuadraticMesh_i.cxx \
 	StdMeshers_NumberOfLayers_i.cxx \
 	StdMeshers_NumberOfLayers2D_i.cxx \
