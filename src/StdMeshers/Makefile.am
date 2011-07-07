@@ -139,7 +139,6 @@ libStdMeshers_la_CPPFLAGS = \
         $(VTK_INCLUDES) \
 	$(KERNEL_CXXFLAGS) \
 	$(GUI_CXXFLAGS) \
-	-I$(srcdir)/../SMESHImpl \
 	-I$(srcdir)/../MEFISTO2 \
 	-I$(srcdir)/../SMESH \
 	-I$(srcdir)/../SMESHDS \
@@ -149,7 +148,6 @@ libStdMeshers_la_CPPFLAGS = \
 
 libStdMeshers_la_LDFLAGS  = \
 	../SMESH/libSMESHimpl.la \
-	../SMESH_I/libSMESHEngine.la \
 	../SMESHDS/libSMESHDS.la \
 	../MEFISTO2/libMEFISTO2D.la \
 	$(KERNEL_LDFLAGS) -lSALOMELocalTrace -lOpUtil \
