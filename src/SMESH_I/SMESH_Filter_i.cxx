@@ -3792,7 +3792,7 @@ static const char** getFunctNames()
 const char* SMESH::FunctorTypeToString(SMESH::FunctorType ft)
 {
   if ( ft < 0 || ft > SMESH::FT_Undefined )
-    return 0;
+    return "FT_Undefined";
   return getFunctNames()[ ft ];
 }
 
