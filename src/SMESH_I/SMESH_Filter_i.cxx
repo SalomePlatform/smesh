@@ -3770,6 +3770,7 @@ static const char** getFunctNames()
   static const char* functName[ SMESH::FT_Undefined + 1 ] = {
     // If this line doesn't compile, this means that enum FunctorType has changed and
     // it's necessary to update this array accordingly (refer to SMESH_Filter.idl)
+    // The order is IMPORTANT !!!
     "FT_AspectRatio", "FT_AspectRatio3D", "FT_Warping", "FT_MinimumAngle",
     "FT_Taper", "FT_Skew", "FT_Area", "FT_Volume3D", "FT_MaxElementLength2D",
     "FT_MaxElementLength3D", "FT_FreeBorders", "FT_FreeEdges", "FT_FreeNodes",
