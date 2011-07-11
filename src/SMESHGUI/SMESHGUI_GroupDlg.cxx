@@ -728,12 +728,12 @@ void SMESHGUI_GroupDlg::onTypeChanged (int id)
   if (myTypeId != id) {
     myElements->clear();
     myTypeId = id;
+    if ( myGrpTypeId == 0 && myCurrentLineEdit == 0)
+      setSelectionMode(id);
+    else
+      setSelectionMode( mySelectionMode++ ); // update according to mySelectionMode
 
-    int curSelMode = mySelectionMode;
-    mySelectionMode = grpNoSelection;
-    setSelectionMode( curSelMode );
     onObjectSelectionChanged();
-
     setShowEntityMode();
   }
 }
@@ -745,13 +745,13 @@ void SMESHGUI_GroupDlg::onTypeChanged (int id)
 void SMESHGUI_GroupDlg::onGrpTypeChanged (int id)
 {
   if (myGrpTypeId != id) {
+    myGrpTypeId = id;
     myWGStack->setCurrentIndex( id );
     myName->blockSignals(true);
     myName->setText(myOldName);
     myName->blockSignals(false);
-    onSelectGeomGroup(id == 1);
+    onSelectGeomGroup(id != 0);
   }
-  myGrpTypeId = id;
   updateButtons();
 }
 
@@ -774,27 +774,26 @@ void SMESHGUI_GroupDlg::setSelectionMode (int theMode)
   if (myMesh->_is_nil())
     return;
   SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI );
-  bool isSelectAll = mySelectAll->isChecked() || !myAllowElemsModif->isChecked();
+  bool isSelectAll = mySelectAll->isChecked() || !myAllowElemsModif->isChecked() || myGrpTypeId != 0;
   if (mySelectionMode != theMode) {
     // [PAL10408] mySelectionMgr->clearSelected();
     mySelectionMgr->clearFilters();
-    if (myActorsList.count() > 0) {
-      QListIterator<SMESH_Actor*> it( myActorsList );
-      while ( it.hasNext() )
+
+    if (myActorsList.count() > 0)
+      for (QListIterator<SMESH_Actor*> it( myActorsList ); it.hasNext(); )
         it.next()->SetPointRepresentation(false);
-    }
-    else {
+    else
       SMESH::SetPointRepresentation(false);
-    }
+
     switch (theMode) {
     case grpNodeSelection:
-      if (myActorsList.count() > 0) {
-        QListIterator<SMESH_Actor*> it( myActorsList );
-        while ( it.hasNext() )
-          it.next()->SetPointRepresentation(true);
-      }
-      else {
-        SMESH::SetPointRepresentation(true);
+      if ( myGrpTypeId == 0 ) // standalone
+      {
+        if (myActorsList.count() > 0)
+          for (QListIterator<SMESH_Actor*> it( myActorsList ); it.hasNext(); )
+            it.next()->SetPointRepresentation(true);
+        else
+          SMESH::SetPointRepresentation(true);
       }
       if ( aViewWindow ) aViewWindow->SetSelectionMode(isSelectAll ? ActorSelection : NodeSelection);
       break;
@@ -1583,7 +1582,7 @@ void SMESHGUI_GroupDlg::onSelectGroup(bool on)
 
 //=================================================================================
 // function : (onSelectGeomGroup)
-// purpose  : Called when selection in 3D view or ObjectBrowser is changed
+// purpose  : Called when group type changed. on == "on group" or "on filter"
 //=================================================================================
 void SMESHGUI_GroupDlg::onSelectGeomGroup(bool on)
 {
@@ -1594,8 +1593,13 @@ void SMESHGUI_GroupDlg::onSelectGeomGroup(bool on)
     else if (mySelectGroup->isChecked()) {
       mySelectGroup->setChecked(false);
     }
-    myCurrentLineEdit = myGeomGroupLine;
-    updateGeomPopup();
+    if ( myGrpTypeId == 1 ) { // on group
+      myCurrentLineEdit = myGeomGroupLine;
+      updateGeomPopup();
+    }
+    else { // on filter
+      myCurrentLineEdit = 0;
+    }
     setSelectionMode(grpAllSelection);
   }
   else {
@@ -1604,7 +1608,7 @@ void SMESHGUI_GroupDlg::onSelectGeomGroup(bool on)
     myGeomGroupLine->setText( "" );
     myCurrentLineEdit = 0;
     if (myTypeId != -1)
-      setSelectionMode(myTypeId);
+      setSelectionMode( myTypeId );
   }
 }
 
