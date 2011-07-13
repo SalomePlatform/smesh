@@ -366,8 +366,10 @@ SMESH_ActorDef::SMESH_ActorDef()
 
   myPickableActor = myBaseActor;
 
-  myMapper = VTKViewer_DataSetMapper::New();
-  myMapper->SetInput( myPickableActor->GetUnstructuredGrid() );
+  // VSR 13/07/2011: Revert back previous fix for issue 0020749 since it causes regressions, see issues 0021322, 0021323
+  // To be removed later or fix to be improved
+  //myMapper = VTKViewer_DataSetMapper::New();
+  //myMapper->SetInput( myPickableActor->GetUnstructuredGrid() );
 
   myHighlightProp = vtkProperty::New();
   myHighlightProp->SetAmbient(1.0);
@@ -631,7 +633,9 @@ SMESH_ActorDef::~SMESH_ActorDef()
 
   myImplicitBoolean->Delete();
 
-  myMapper->Delete();
+  // VSR 13/07/2011: Revert back previous fix for issue 0020749 since it causes regressions, see issues 0021322, 0021323
+  // To be removed later or fix to be improved
+  //myMapper->Delete();
 
   myTimeStamp->Delete();
 }
@@ -1171,7 +1175,10 @@ void SMESH_ActorDef::ShallowCopy(vtkProp *prop){
 
 
 vtkMapper* SMESH_ActorDef::GetMapper(){
-  return myMapper;
+  // VSR 13/07/2011: Revert back previous fix for issue 0020749 since it causes regressions, see issues 0021322, 0021323
+  // To be removed later or fix to be improved
+  //return myMapper;
+  return myPickableActor->GetMapper();
 }
 
 
