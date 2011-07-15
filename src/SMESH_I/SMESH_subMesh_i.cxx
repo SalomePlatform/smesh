@@ -557,23 +557,27 @@ SMESH::array_of_ElementType* SMESH_subMesh_i::GetTypes()
   SMESH::array_of_ElementType_var types = new SMESH::array_of_ElementType;
 
   ::SMESH_subMesh* aSubMesh = _mesh_i->_mapSubMesh[_localId];
-  TopoDS_Shape shape = aSubMesh->GetSubShape();
-  while ( !shape.IsNull() && shape.ShapeType() == TopAbs_COMPOUND )
+  if ( SMESHDS_SubMesh* smDS = aSubMesh->GetSubMeshDS() )
   {
-    TopoDS_Iterator it( shape );
-    shape = it.More() ? it.Value() : TopoDS_Shape();
-  }
-  if ( !shape.IsNull() )
-  {
-    types->length( 1 );
-    switch ( ::SMESH_Gen::GetShapeDim( shape ))
+    SMDS_ElemIteratorPtr eIt = smDS->GetElements();
+    if ( eIt->more() )
     {
-    case 0: types[0] = SMESH::ELEM0D; break;
-    case 1: types[0] = SMESH::EDGE; break;
-    case 2: types[0] = SMESH::FACE; break;
-    case 3: types[0] = SMESH::VOLUME; break;
-    default:
-      types->length(0);
+      types->length( 1 );
+      types[0] = SMESH::ElementType( eIt->next()->GetType());
+    }
+    else if ( smDS->GetNodes()->more() )
+    {
+      TopoDS_Shape shape = aSubMesh->GetSubShape();
+      while ( !shape.IsNull() && shape.ShapeType() == TopAbs_COMPOUND )
+      {
+        TopoDS_Iterator it( shape );
+        shape = it.More() ? it.Value() : TopoDS_Shape();
+      }
+      if ( !shape.IsNull() && shape.ShapeType() == TopAbs_VERTEX )
+      {
+        types->length( 1 );
+        types[0] = SMESH::NODE;
+      }
     }
   }
   return types._retn();

@@ -1355,20 +1355,23 @@ int SMDS_VolumeTool::GetAllExistingEdges(vector<const SMDS_MeshElement*> & edges
   return edges.size();
 }
 
-//=======================================================================
-//function : IsFreeFace
-//purpose  : check that only one volume is build on the face nodes
-//=======================================================================
+//================================================================================
+/*!
+ * \brief check that only one volume is build on the face nodes
+ *
+ * If a face is shared by one of <ignoreVolumes>, it is considered free
+ */
+//================================================================================
 
-bool SMDS_VolumeTool::IsFreeFace( int faceIndex )
+bool SMDS_VolumeTool::IsFreeFace( int faceIndex, const SMDS_MeshElement** otherVol/*=0*/ )
 {
-  const int free = true;
+  const bool isFree = true;
 
   if (!setFace( faceIndex ))
-    return !free;
+    return !isFree;
 
   const SMDS_MeshNode** nodes = GetFaceNodes( faceIndex );
-  int nbFaceNodes = myFaceNbNodes;
+  const int nbFaceNodes = myFaceNbNodes;
 
   // evaluate nb of face nodes shared by other volume
   int maxNbShared = -1;
@@ -1377,25 +1380,19 @@ bool SMDS_VolumeTool::IsFreeFace( int faceIndex )
   TElemIntMap::iterator vNbIt;
   for ( int iNode = 0; iNode < nbFaceNodes; iNode++ ) {
     const SMDS_MeshNode* n = nodes[ iNode ];
-    SMDS_ElemIteratorPtr eIt = n->GetInverseElementIterator();
+    SMDS_ElemIteratorPtr eIt = n->GetInverseElementIterator( SMDSAbs_Volume );
     while ( eIt->more() ) {
       const SMDS_MeshElement* elem = eIt->next();
-      if ( elem != myVolume && elem->GetType() == SMDSAbs_Volume ) {
-        int nbShared = 1;
-        vNbIt = volNbShared.find( elem );
-        if ( vNbIt == volNbShared.end() ) {
-          volNbShared.insert ( TElemIntMap::value_type( elem, nbShared ));
-        }
-        else {
-          nbShared = ++(*vNbIt).second;
-        }
-        if ( nbShared > maxNbShared )
-          maxNbShared = nbShared;
+      if ( elem != myVolume ) {
+        vNbIt = volNbShared.insert( make_pair( elem, 0 )).first;
+        (*vNbIt).second++;
+        if ( vNbIt->second > maxNbShared )
+          maxNbShared = vNbIt->second;
       }
     }
   }
   if ( maxNbShared < 3 )
-    return free; // is free
+    return isFree; // is free
 
   // find volumes laying on the opposite side of the face
   // and sharing all nodes
@@ -1404,55 +1401,81 @@ bool SMDS_VolumeTool::IsFreeFace( int faceIndex )
   if ( IsFaceExternal( faceIndex ))
     intNormal = XYZ( -intNormal.x, -intNormal.y, -intNormal.z );
   XYZ p0 ( nodes[0] ), baryCenter;
-  for ( vNbIt = volNbShared.begin(); vNbIt != volNbShared.end(); vNbIt++ ) {
-    int nbShared = (*vNbIt).second;
+  for ( vNbIt = volNbShared.begin(); vNbIt != volNbShared.end();  ) {
+    const int& nbShared = (*vNbIt).second;
     if ( nbShared >= 3 ) {
       SMDS_VolumeTool volume( (*vNbIt).first );
       volume.GetBaryCenter( baryCenter.x, baryCenter.y, baryCenter.z );
       XYZ intNormal2( baryCenter - p0 );
-      if ( intNormal.Dot( intNormal2 ) < 0 )
-        continue; // opposite side
+      if ( intNormal.Dot( intNormal2 ) < 0 ) {
+        // opposite side
+        if ( nbShared >= nbFaceNodes )
+        {
+          // a volume shares the whole facet
+          if ( otherVol ) *otherVol = vNbIt->first;
+          return !isFree; 
+        }
+        ++vNbIt;
+        continue;
+      }
     }
     // remove a volume from volNbShared map
-    volNbShared.erase( vNbIt-- );
+    volNbShared.erase( vNbIt++ );
   }
 
-  // here volNbShared contains only volumes laying on the
-  // opposite side of the face
-  if ( volNbShared.empty() ) {
-    return free; // is free
+  // here volNbShared contains only volumes laying on the opposite side of
+  // the face and sharing 3 or more but not all face nodes with myVolume
+  if ( volNbShared.size() < 2 ) {
+    return isFree; // is free
   }
 
   // check if the whole area of a face is shared
-  bool isShared[] = { false, false, false, false }; // 4 triangle parts of a quadrangle
-  for ( vNbIt = volNbShared.begin(); vNbIt != volNbShared.end(); vNbIt++ ) {
-    SMDS_VolumeTool volume( (*vNbIt).first );
-    bool prevLinkShared = false;
-    int nbSharedLinks = 0;
-    for ( int iNode = 0; iNode < nbFaceNodes; iNode++ ) {
-      bool linkShared = volume.IsLinked( nodes[ iNode ], nodes[ iNode + 1] );
-      if ( linkShared )
-        nbSharedLinks++;
-      if ( linkShared && prevLinkShared &&
-          volume.IsLinked( nodes[ iNode - 1 ], nodes[ iNode + 1] ))
-        isShared[ iNode ] = true;
-      prevLinkShared = linkShared;
-    }
-    if ( nbSharedLinks == nbFaceNodes )
-      return !free; // is not free
-    if ( nbFaceNodes == 4 ) {
-      // check traingle parts 1 & 3
-      if ( isShared[1] && isShared[3] )
-        return !free; // is not free
-      // check triangle parts 0 & 2;
-      // 0 part could not be checked in the loop; check it here
-      if ( isShared[2] && prevLinkShared &&
-          volume.IsLinked( nodes[ 0 ], nodes[ 1 ] ) &&
-          volume.IsLinked( nodes[ 1 ], nodes[ 3 ] ) )
-        return !free; // is not free
-    }
+  for ( int iNode = 0; iNode < nbFaceNodes; iNode++ )
+  {
+    const SMDS_MeshNode* n = nodes[ iNode ];
+    // check if n is shared by one of volumes of volNbShared
+    bool isShared = false;
+    SMDS_ElemIteratorPtr eIt = n->GetInverseElementIterator( SMDSAbs_Volume );
+    while ( eIt->more() && !isShared )
+      isShared = volNbShared.count( eIt->next() );
+    if ( !isShared )
+      return isFree;
   }
-  return free;
+  if ( otherVol ) *otherVol = volNbShared.begin()->first;
+  return !isFree;
+
+//   if ( !myVolume->IsPoly() )
+//   {
+//     bool isShared[] = { false, false, false, false }; // 4 triangle parts of a quadrangle
+//     for ( vNbIt = volNbShared.begin(); vNbIt != volNbShared.end(); vNbIt++ ) {
+//       SMDS_VolumeTool volume( (*vNbIt).first );
+//       bool prevLinkShared = false;
+//       int nbSharedLinks = 0;
+//       for ( int iNode = 0; iNode < nbFaceNodes; iNode++ ) {
+//         bool linkShared = volume.IsLinked( nodes[ iNode ], nodes[ iNode + 1] );
+//         if ( linkShared )
+//           nbSharedLinks++;
+//         if ( linkShared && prevLinkShared &&
+//              volume.IsLinked( nodes[ iNode - 1 ], nodes[ iNode + 1] ))
+//           isShared[ iNode ] = true;
+//         prevLinkShared = linkShared;
+//       }
+//       if ( nbSharedLinks == nbFaceNodes )
+//         return !free; // is not free
+//       if ( nbFaceNodes == 4 ) {
+//         // check traingle parts 1 & 3
+//         if ( isShared[1] && isShared[3] )
+//           return !free; // is not free
+//         // check triangle parts 0 & 2;
+//         // 0 part could not be checked in the loop; check it here
+//         if ( isShared[2] && prevLinkShared &&
+//              volume.IsLinked( nodes[ 0 ], nodes[ 1 ] ) &&
+//              volume.IsLinked( nodes[ 1 ], nodes[ 3 ] ) )
+//           return !free; // is not free
+//       }
+//     }
+//   }
+//  return free;
 }
 
 //=======================================================================

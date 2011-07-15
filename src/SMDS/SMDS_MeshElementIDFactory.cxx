@@ -38,6 +38,8 @@
 #include "SMDS_UnstructuredGrid.hxx"
 #include <vtkCellType.h>
 
+#include <climits>
+
 using namespace std;
 
 //=======================================================================
@@ -173,7 +175,7 @@ void SMDS_MeshElementIDFactory::ReleaseID(int ID, int vtkId)
 
 void SMDS_MeshElementIDFactory::updateMinMax() const
 {
-  myMin = IntegerLast();
+  myMin = INT_MAX;
   myMax = 0;
   for (int i = 0; i < myMesh->myCells.size(); i++)
     {
@@ -186,7 +188,7 @@ void SMDS_MeshElementIDFactory::updateMinMax() const
             myMin = id;
         }
     }
-  if (myMin == IntegerLast())
+  if (myMin == INT_MAX)
     myMin = 0;
 }
 

@@ -415,6 +415,8 @@ void  aptrte( Z   nutysu, R      aretmx,
   if( mntree==NULL ) goto ERREUR;
 
   //initialisation du tableau letree et ajout dans letree des sommets 1 a nbsomm
+  comxmi[0].x = comxmi[1].x = uvslf[0].x;
+  comxmi[0].y = comxmi[1].y = uvslf[0].y;
   teajte( mxsomm, nbsomm, mnpxyd, comxmi, aretmx, mxtree, mntree, ierr );
   comxmi[0].z=0;
   comxmi[1].z=0;

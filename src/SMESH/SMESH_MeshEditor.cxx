@@ -1615,6 +1615,7 @@ void SMESH_MeshEditor::SplitVolumesIntoTetra (const TIDSortedElemSet & theElems,
       helper.SetIsQuadratic( false );
     }
     vector<const SMDS_MeshNode*> nodes( (*elem)->begin_nodes(), (*elem)->end_nodes() );
+    helper.SetElementsOnShape( true );
     if ( splitMethod._baryNode )
     {
       // make a node at barycenter
@@ -1642,7 +1643,6 @@ void SMESH_MeshEditor::SplitVolumesIntoTetra (const TIDSortedElemSet & theElems,
     }
 
     // make tetras
-    helper.SetElementsOnShape( true );
     vector<const SMDS_MeshElement* > tetras( splitMethod._nbTetra ); // splits of a volume
     const int* tetConn = splitMethod._connectivity;
     for ( int i = 0; i < splitMethod._nbTetra; ++i, tetConn += 4 )
@@ -1670,6 +1670,12 @@ void SMESH_MeshEditor::SplitVolumesIntoTetra (const TIDSortedElemSet & theElems,
         helper.SetElementsOnShape( false );
         vector< const SMDS_MeshElement* > triangles;
 
+        // find submesh to add new triangles in
+        if ( !fSubMesh || !fSubMesh->Contains( face ))
+        {
+          int shapeID = FindShape( face );
+          fSubMesh = GetMeshDS()->MeshElements( shapeID );
+        }
         map<int, const SMDS_MeshNode*>::iterator iF_n = splitMethod._faceBaryNode.find(iF);
         if ( iF_n != splitMethod._faceBaryNode.end() )
         {
@@ -1681,6 +1687,9 @@ void SMESH_MeshEditor::SplitVolumesIntoTetra (const TIDSortedElemSet & theElems,
             if ( !volTool.IsFaceExternal( iF ))
               swap( n2, n3 );
             triangles.push_back( helper.AddFace( n1,n2,n3 ));
+
+            if ( fSubMesh && n3->getshapeId() < 1 )
+              fSubMesh->AddNode( n3 );
           }
         }
         else
@@ -1718,12 +1727,6 @@ void SMESH_MeshEditor::SplitVolumesIntoTetra (const TIDSortedElemSet & theElems,
                                                  volNodes[ facet->_n2 ],
                                                  volNodes[ facet->_n3 ]));
           }
-        }
-        // find submesh to add new triangles in
-        if ( !fSubMesh || !fSubMesh->Contains( face ))
-        {
-          int shapeID = FindShape( face );
-          fSubMesh = GetMeshDS()->MeshElements( shapeID );
         }
         for ( int i = 0; i < triangles.size(); ++i )
         {
@@ -3088,35 +3091,27 @@ void SMESH_MeshEditor::Smooth (TIDSortedElemSet &          theElems,
     // fix nodes on mesh boundary
 
     if ( checkBoundaryNodes ) {
-      map< NLink, int > linkNbMap; // how many times a link encounters in elemsOnFace
-      map< NLink, int >::iterator link_nb;
+      map< SMESH_TLink, int > linkNbMap; // how many times a link encounters in elemsOnFace
+      map< SMESH_TLink, int >::iterator link_nb;
       // put all elements links to linkNbMap
       list< const SMDS_MeshElement* >::iterator elemIt = elemsOnFace.begin();
       for ( ; elemIt != elemsOnFace.end(); ++elemIt ) {
         const SMDS_MeshElement* elem = (*elemIt);
-        int nbn =  elem->NbNodes();
-        if(elem->IsQuadratic())
-          nbn = nbn/2;
+        int nbn =  elem->NbCornerNodes();
         // loop on elem links: insert them in linkNbMap
-        const SMDS_MeshNode* curNode, *prevNode = elem->GetNodeWrap( nbn );
         for ( int iN = 0; iN < nbn; ++iN ) {
-          curNode = elem->GetNode( iN );
-          NLink link;
-          if ( curNode < prevNode ) link = make_pair( curNode , prevNode );
-          else                      link = make_pair( prevNode , curNode );
-          prevNode = curNode;
-          link_nb = linkNbMap.find( link );
-          if ( link_nb == linkNbMap.end() )
-            linkNbMap.insert( make_pair ( link, 1 ));
-          else
-            link_nb->second++;
+          const SMDS_MeshNode* n1 = elem->GetNode( iN );
+          const SMDS_MeshNode* n2 = elem->GetNode(( iN+1 ) % nbn);
+          SMESH_TLink link( n1, n2 );
+          link_nb = linkNbMap.insert( make_pair( link, 0 )).first;
+          link_nb->second++;
         }
       }
       // remove nodes that are in links encountered only once from setMovableNodes
       for ( link_nb = linkNbMap.begin(); link_nb != linkNbMap.end(); ++link_nb ) {
         if ( link_nb->second == 1 ) {
-          setMovableNodes.erase( link_nb->first.first );
-          setMovableNodes.erase( link_nb->first.second );
+          setMovableNodes.erase( link_nb->first.node1() );
+          setMovableNodes.erase( link_nb->first.node2() );
         }
       }
     }
@@ -4120,7 +4115,7 @@ void SMESH_MeshEditor::makeWalls (TNodeOfNodeListMap &     mapNewNodes,
                 if ( f )
                   aMesh->ChangeElementNodes( f, &polygon_nodes[0], nbn );
                 else
-                  myLastCreatedElems.Append(aMesh->AddPolygonalFace(polygon_nodes));
+                  AddElement(polygon_nodes, SMDSAbs_Face, polygon_nodes.size()>4);
               }
             }
 
@@ -11578,13 +11573,12 @@ namespace
  *  \param group - a group to store created boundary elements in
  *  \param targetMesh - a mesh to store created boundary elements in
  *  \param toCopyElements - if true, the checked elements will be copied into the targetMesh
- *  \param toCopyExistingBondary - if true, not only new but also pre-existing
+ *  \param toCopyExistingBoundary - if true, not only new but also pre-existing
  *                                boundary elements will be copied into the targetMesh
  *  \param toAddExistingBondary - if true, not only new but also pre-existing
  *                                boundary elements will be added into the new group
  *  \param aroundElements - if true, elements will be created on boundary of given
- *                          elements else, on boundary of the whole mesh. This
- *                          option works for 2D elements only.
+ *                          elements else, on boundary of the whole mesh.
  * \return nb of added boundary elements
  */
 //================================================================================
@@ -11594,7 +11588,7 @@ int SMESH_MeshEditor::MakeBoundaryMesh(const TIDSortedElemSet& elements,
                                        SMESH_Group*            group/*=0*/,
                                        SMESH_Mesh*             targetMesh/*=0*/,
                                        bool                    toCopyElements/*=false*/,
-                                       bool                    toCopyExistingBondary/*=false*/,
+                                       bool                    toCopyExistingBoundary/*=false*/,
                                        bool                    toAddExistingBondary/*= false*/,
                                        bool                    aroundElements/*= false*/)
 {
@@ -11604,11 +11598,8 @@ int SMESH_MeshEditor::MakeBoundaryMesh(const TIDSortedElemSet& elements,
   if ( !elements.empty() && (*elements.begin())->GetType() != elemType )
     throw SALOME_Exception(LOCALIZED("wrong element type"));
 
-  if ( aroundElements && elemType == SMDSAbs_Volume )
-    throw SALOME_Exception(LOCALIZED("wrong element type for aroundElements==true"));
-
   if ( !targetMesh )
-    toCopyElements = toCopyExistingBondary = false;
+    toCopyElements = toCopyExistingBoundary = false;
 
   SMESH_MeshEditor tgtEditor( targetMesh ? targetMesh : myMesh );
   SMESHDS_Mesh* aMesh = GetMeshDS(), *tgtMeshDS = tgtEditor.GetMeshDS();
@@ -11646,11 +11637,13 @@ int SMESH_MeshEditor::MakeBoundaryMesh(const TIDSortedElemSet& elements,
     if ( vTool.Set(elem) ) // elem is a volume ------------------------------------------
     {
       vTool.SetExternalNormal();
+      const SMDS_MeshElement* otherVol = 0;
       for ( int iface = 0, n = vTool.NbFaces(); iface < n; iface++ )
       {
-        if (!vTool.IsFreeFace(iface))
+        if ( !vTool.IsFreeFace(iface, &otherVol) &&
+             ( !aroundElements || elements.count( otherVol )))
           continue;
-        int nbFaceNodes = vTool.NbFaceNodes(iface);
+        const int nbFaceNodes = vTool.NbFaceNodes(iface);
         const SMDS_MeshNode** nn = vTool.GetFaceNodes(iface);
         if ( missType == SMDSAbs_Edge ) // boundary edges
         {
@@ -11679,6 +11672,21 @@ int SMESH_MeshEditor::MakeBoundaryMesh(const TIDSortedElemSet& elements,
             presentBndElems.push_back( f );
           else
             missingBndElems.push_back( nodes );
+
+          if ( targetMesh != myMesh )
+          {
+            // add 1D elements on face boundary to be added to a new mesh
+            const SMDS_MeshElement* edge;
+            for ( inode = 0; inode < nbFaceNodes; inode += 1+iQuad)
+            {
+              if ( iQuad )
+                edge = aMesh->FindEdge( nn[inode], nn[inode+1], nn[inode+2]);
+              else
+                edge = aMesh->FindEdge( nn[inode], nn[inode+1]);
+              if ( edge && avoidSet.insert( edge ).second )
+                presentBndElems.push_back( edge );
+            }
+          }
         }
       }
     }
@@ -11709,7 +11717,7 @@ int SMESH_MeshEditor::MakeBoundaryMesh(const TIDSortedElemSet& elements,
     // ---------------------------------
     if ( targetMesh != myMesh )
       // instead of making a map of nodes in this mesh and targetMesh,
-      // we create nodes with same IDs. We can renumber them later, if needed
+      // we create nodes with same IDs.
       for ( int i = 0; i < missingBndElems.size(); ++i )
       {
         TConnectivity& srcNodes = missingBndElems[i];
@@ -11738,14 +11746,14 @@ int SMESH_MeshEditor::MakeBoundaryMesh(const TIDSortedElemSet& elements,
     // ----------------------------------
     // 3. Copy present boundary elements
     // ----------------------------------
-    if ( toCopyExistingBondary )
+    if ( toCopyExistingBoundary )
       for ( int i = 0 ; i < presentBndElems.size(); ++i )
       {
         const SMDS_MeshElement* e = presentBndElems[i];
         TConnectivity nodes( e->NbNodes() );
         for ( inode = 0; inode < nodes.size(); ++inode )
           nodes[inode] = getNodeWithSameID( tgtMeshDS, e->GetNode(inode) );
-        presentEditor->AddElement(nodes, missType, e->IsPoly());
+        presentEditor->AddElement(nodes, e->GetType(), e->IsPoly());
       }
     else // store present elements to add them to a group
       for ( int i = 0 ; i < presentBndElems.size(); ++i )

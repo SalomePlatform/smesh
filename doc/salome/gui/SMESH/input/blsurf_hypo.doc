@@ -247,38 +247,56 @@ In order to compute the mean of several values, the arithmetic mean is used by d
 More specific size maps can be defined on faces. 
 
 <ul>
-<li> <i> Attractors </i> allow to define the size of the mesh elements on a face so that the mesh is the finest on the attractor shape and becomes coarser when getting far from this shape.
+<li> <i> Attractors </i> allow to define the size of the mesh elements
+on a face so that the mesh is the finest on the attractor shape and
+becomes coarser when getting far from this shape.
 <ul> 
-<li> The selected attractor can be a Vertex, an Edge, a Wire or a Compound mixing several entities of those types.</li>
+<li> The selected attractor can be a Vertex, an Edge, a Wire or a
+Compound mixing several entities of those types.</li>
 <li> The attractor doesn't have to be a sub-shape of the shape to mesh.</li>
-<li> The size will grow exponentially (see formula below) but is bounded by gradation, \n so if you want the formula to be strictly respected, you should set the <i>gradation</i> 
+<li> The size will grow exponentially (see the formula below) but is
+bounded by gradation, \n so if you want the formula to be strictly
+respected, you should set the <i>gradation</i> 
 to its maximum (2.5) in the <i>arguments</i> tab. 
 </ul>
 \n
-<li> Furthermore you can choose to <i> keep the size constant </i> until a certain distance from a shape. This option can be combined or not with an <i>attractor</i> size map described above. 
+<li> Furthermore you can choose to <i> keep the size constant </i>
+until a certain distance from a shape. This option can be combined or
+not with an <i>attractor</i> size map described above. 
 <ul>
-<li> If the two options are combined the size will remain constant until the distant specified in "constant over" and grow then as prescribed by the attractor function.</li>
-<li> Else the growing is only controled by the standard arguments of BLSURF (gradation ...).</li>
+<li> If the two options are combined the size will remain constant
+until the distance specified in "constant over" and grow then as
+prescribed by the attractor function.</li>
+<li> Else the growing is only controled by the standard arguments of
+BLSURF (gradation ...).</li>
 </ul>
 </ul>
 
-\image html blsurf_attractors2.png "Example of mesh created using attractors, the attractors here are the side edges and the size grow from the side of the surface towards the apex"
+\image html blsurf_attractors2.png "Example of mesh created using
+attractors, the attractors here are the side edges and the size grows
+from the side of the surface towards the apex"
 \n
-\image html blsurf_const_size_near_shape2.png "Example of size map with constant size option, the size is kept constant on the left side of the surface until a certain distance"
+\image html blsurf_const_size_near_shape2.png "Example of size map
+with constant size option, the size is kept constant on the left side
+of the surface until a certain distance"
 \n
-Remark : The validation of the hypothesis might take a few seconds if attractors are defined or the "constant size" option is used because a map of distances has to be built on the whole surface for each face where such an hypothesis has been defined.
+Remark : The validation of the hypothesis might take a few seconds if
+attractors are defined or the "constant size" option is used because a
+map of distances has to be built on the whole surface for each face
+where such a hypothesis has been defined.
 
 <br><b>See Also</b> a sample TUI Script of the \ref tui_blsurf "creation of a BLSurf hypothesis", including size map.
 
 \anchor blsurf_attractor_computation
 <h2>Computation of attractors</h2>
 \n
-The size grow exponentially following the equation : h(d) = User size + (h_start - User Size) * exp( -(d / R)^2  ).
+The size grows exponentially following the equation : h(d) = User size + (h_start - User Size) * exp( -(d / R)^2  ).
 \n
 Where :
 <ul>
 <li>h_start is the desired size on the given attractor shape</li>
-<li>d is the distance of the current point from the attractor shape. The distance is the geodesic distance (i.e. calculated by following the surface to be meshed) </li>
+<li>d is the distance of the current point from the attractor
+shape. The distance is the geodesic distance (i.e. calculated by following the surface to be meshed) </li>
 <li>R is called the distance of influence and allows controlling the growth rate of the mesh </li>
 </ul>
 

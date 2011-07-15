@@ -264,7 +264,8 @@ module SMESH
     long_array GetMeshInfo();
 
     /*!
-     * Returns types of elements it contains
+     * Returns types of elements it contains.
+     * It's empty if the SMESH_IDSource contains no IDs
      */
     array_of_ElementType GetTypes();
 

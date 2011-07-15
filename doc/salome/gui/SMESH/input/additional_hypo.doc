@@ -44,7 +44,7 @@ segments on all four sides of the face must be even (divisible by 2).
 \anchor viscous_layers_anchor
 <h2>Viscous Layers</h2>
 
-<b>Viscous Layers</b> additional hypotheses can be used together with
+<b>Viscous Layers</b> additional hypothesis can be used together with
 several 3D algorithms: NETGEN 3D, GHS3D and Hexahedron(i,j,k). This
 hypothesis allows creation of layers of highly stretched prisms near
 mesh boundary, which is beneficial for high quality viscous
@@ -56,13 +56,13 @@ actually the hexahedrons.
 
 <ul>
 <li><b>Name</b> - allows to define the name of the hypothesis.</li>
-<li><b>Total thicknes</b> - gives total thickness of layers of prisms.</li>
-<li><b>Number of layers</b> - defines number of layers of prisms.</li>
-<li><b>Stretch factor</b> - defines factor of growth of height of
-prisms from the mesh boundary towards inside of mesh.</li>
+<li><b>Total thicknes</b> - gives the total thickness of prism layers.</li>
+<li><b>Number of layers</b> - defines the number of prism layers.</li>
+<li><b>Stretch factor</b> - defines the growth factor of prism height
+from the mesh boundary inwards.</li>
 <li><b>Faces without layers</b> - defines geometrical faces on which
-layers of prisms should not be constructed. By default the layers of
-prisms are not constructed on geometrical faces shared by solids.</li>
+prism layers should not be constructed. By default the prism layers
+are not constructed on geometrical faces shared by solids.</li>
 </ul>
 
 \image html viscous_layers_mesh.png A group containing viscous layer prisms.

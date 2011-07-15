@@ -24,7 +24,7 @@
 # Modified by : Alexander BORODIN (OCN) - autotools usage
 # Created from configure.in.base
 #
-AC_INIT([Salome2 Project SMESH module], [6.3.0], [webmaster.salome@opencascade.com], [SalomeSMESH])
+AC_INIT([Salome2 Project SMESH module], [6.3.1], [webmaster.salome@opencascade.com], [SalomeSMESH])
 AC_CONFIG_AUX_DIR(adm_local/unix/config_files)
 AC_CANONICAL_HOST
 AC_CANONICAL_TARGET
@@ -481,6 +481,7 @@ AC_OUTPUT([ \
   doc/salome/gui/SMESH/doxyfile \
   doc/salome/gui/SMESH/doxyfile_py \
   doc/salome/gui/SMESH/static/header.html \
+  doc/salome/gui/SMESH/static/header_py.html \
   doc/salome/tui/Makefile \
   doc/salome/tui/doxyfile \
   doc/salome/tui/static/header.html \

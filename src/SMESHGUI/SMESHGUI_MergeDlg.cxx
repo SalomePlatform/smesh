@@ -682,6 +682,8 @@ bool SMESHGUI_MergeDlg::ClickOnApply()
   } catch(...) {
   }
   
+  ListCoincident->clear();
+  
   SMESH::UpdateView();
   SMESHGUI::Modified();
   

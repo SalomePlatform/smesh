@@ -7,10 +7,10 @@
 <h2>Double nodes on groups boundaries</h2>
 
 \n Double nodes on shared faces between groups of volumes and create flat elements on demand.
-\n The list of groups must describe a partition of the mesh volumes.The nodes of the internal
-faces at the boundaries of the groups are doubled. In option, the internal faces are replaced
+\n The list of groups must describe a partition of the mesh volumes. The nodes of the internal
+faces at the boundaries of the groups are doubled. Optionally, the internal faces are replaced
 by flat elements.
-\n Triangles are transformed in prisms, and quadrangles in hexahedrons.
+\n Triangles are transformed into prisms, and quadrangles into hexahedrons.
 \n The flat elements are stored in groups of volumes.
 
 \n
@@ -37,7 +37,7 @@ Partition_1 = geompy.MakePartition([Fuse_1], [Cylinder_1], [], [], geompy.ShapeT
 [Solid_1,Solid_2,Solid_3] = geompy.SubShapes(Partition_1, [53, 2, 30])
 [Face_1,Face_2] = geompy.SubShapes(Partition_1, [37, 20])
 
-# meshing (linear tetrahedrons here, but other elements are OK)
+# meshing (linear tetrahedrons are here, but other elements are OK)
 
 Mesh_1 = smesh.Mesh(Partition_1)
 BLSURF = Mesh_1.Triangle(algo=smesh.BLSURF)
@@ -61,7 +61,7 @@ Face_2_1 = Mesh_1.GroupOnGeom(Face_2,'Face_2',SMESH.FACE)
 
 \n Here, the 3 groups of volumes [Solid_1_1, Solid_2_1, Solid_3_1] constitute a partition of the mesh.
 The flat elements on group boundaries and on faces are built with the following code.
-\n If the last argument (boolean) in DoubleNodesOnGroupBoundaries is set to 1,
+\n If the last argument (Boolean) in DoubleNodesOnGroupBoundaries is set to 1,
 the flat elements are built, otherwise, there is only a duplication of the nodes.
 
 \code
@@ -70,6 +70,6 @@ Mesh_1.DoubleNodesOnGroupBoundaries([Solid_1_1, Solid_2_1, Solid_3_1], 1)
 Mesh_1.CreateFlatElementsOnFacesGroups([Face_1_1, Face_2_1])
 \endcode
 
-\n To observe the flat element groups, save the resulting mesh on a Med file and reload it.
+\n To observe flat element groups, save the resulting mesh on a MED file and reload it.
 
 */

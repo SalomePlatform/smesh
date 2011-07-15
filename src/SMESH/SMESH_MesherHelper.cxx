@@ -194,7 +194,7 @@ void SMESH_MesherHelper::SetSubShape(const int aShID)
 {
   if ( aShID == myShapeID )
     return;
-  if ( aShID > 1 )
+  if ( aShID > 0 )
     SetSubShape( GetMeshDS()->IndexToShape( aShID ));
   else
     SetSubShape( TopoDS_Shape() );

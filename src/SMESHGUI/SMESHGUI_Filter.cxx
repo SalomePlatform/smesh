@@ -107,8 +107,8 @@ bool SMESHGUI_PredicateFilter::IsObjValid( const int theObjId ) const
   if ( myActor == 0 || myPred->_is_nil() )
     return false;
 
-  SMESH_Actor* anActor = ( SMESH_Actor* )myActor;
-  if ( anActor->GetObject() == 0 )
+  SMESH_Actor* anActor = dynamic_cast< SMESH_Actor* >( myActor );
+  if ( !anActor || anActor->GetObject() == 0 )
     return false;
 
   SMDS_Mesh* aMesh = anActor->GetObject()->GetMesh();
@@ -211,8 +211,8 @@ bool SMESHGUI_QuadrangleFilter::IsValid( const int theCellId ) const
   if ( myActor == 0 )
     return false;
 
-  SMESH_Actor* anActor = ( SMESH_Actor* )myActor;
-  if ( anActor->GetObject() == 0 )
+  SMESH_Actor* anActor = dynamic_cast< SMESH_Actor* >( myActor );
+  if ( !anActor || anActor->GetObject() == 0 )
     return false;
 
   SMDS_Mesh* aMesh = anActor->GetObject()->GetMesh();
@@ -231,8 +231,8 @@ bool SMESHGUI_QuadrangleFilter::IsObjValid( const int theObjId ) const
   if ( myActor == 0 )
     return false;
 
-  SMESH_Actor* anActor = ( SMESH_Actor* )myActor;
-  if ( anActor->GetObject() == 0 )
+  SMESH_Actor* anActor = dynamic_cast< SMESH_Actor* >( myActor );
+  if ( !anActor || anActor->GetObject() == 0 )
     return false;
 
   SMDS_Mesh* aMesh = anActor->GetObject()->GetMesh();
@@ -290,8 +290,8 @@ bool SMESHGUI_TriangleFilter::IsValid( const int theCellId ) const
   if ( myActor == 0 )
     return false;
 
-  SMESH_Actor* anActor = ( SMESH_Actor* )myActor;
-  if ( anActor->GetObject() == 0 )
+  SMESH_Actor* anActor = dynamic_cast< SMESH_Actor* >( myActor );
+  if ( !anActor || anActor->GetObject() == 0 )
     return false;
 
   SMDS_Mesh* aMesh = anActor->GetObject()->GetMesh();
@@ -310,8 +310,8 @@ bool SMESHGUI_TriangleFilter::IsObjValid( const int theObjId ) const
   if ( myActor == 0 )
     return false;
 
-  SMESH_Actor* anActor = ( SMESH_Actor* )myActor;
-  if ( anActor->GetObject() == 0 )
+  SMESH_Actor* anActor = dynamic_cast< SMESH_Actor* >( myActor );
+  if ( !anActor || anActor->GetObject() == 0 )
     return false;
 
   SMDS_Mesh* aMesh = anActor->GetObject()->GetMesh();
@@ -368,8 +368,8 @@ bool SMESHGUI_FacesFilter::IsValid( const int theCellId ) const
   if ( myActor == 0 )
     return false;
 
-  SMESH_Actor* anActor = ( SMESH_Actor* )myActor;
-  if ( anActor->GetObject() == 0 )
+  SMESH_Actor* anActor = dynamic_cast< SMESH_Actor* >( myActor );
+  if ( !anActor || anActor->GetObject() == 0 )
     return false;
 
   SMDS_Mesh* aMesh = anActor->GetObject()->GetMesh();
@@ -387,8 +387,8 @@ bool SMESHGUI_FacesFilter::IsObjValid( const int theObjId ) const
   if ( myActor == 0 )
     return false;
 
-  SMESH_Actor* anActor = ( SMESH_Actor* )myActor;
-  if ( anActor->GetObject() == 0 )
+  SMESH_Actor* anActor = dynamic_cast< SMESH_Actor* >( myActor );
+  if ( !anActor || anActor->GetObject() == 0 )
     return false;
 
   SMDS_Mesh* aMesh = anActor->GetObject()->GetMesh();
@@ -442,11 +442,11 @@ SMESHGUI_VolumesFilter::~SMESHGUI_VolumesFilter()
 //=======================================================================
 bool SMESHGUI_VolumesFilter::IsValid( const int theCellId ) const
 {
-  if ( myActor == 0 )
+  if ( myActor == 0 || theCellId < 1 )
     return false;
 
-  SMESH_Actor* anActor = ( SMESH_Actor* )myActor;
-  if ( anActor->GetObject() == 0 )
+  SMESH_Actor* anActor = dynamic_cast< SMESH_Actor* >( myActor );
+  if ( !anActor || anActor->GetObject() == 0 )
     return false;
 
   SMDS_Mesh* aMesh = anActor->GetObject()->GetMesh();
@@ -464,8 +464,8 @@ bool SMESHGUI_VolumesFilter::IsObjValid( const int theObjId ) const
   if ( myActor == 0 )
     return false;
 
-  SMESH_Actor* anActor = ( SMESH_Actor* )myActor;
-  if ( anActor->GetObject() == 0 )
+  SMESH_Actor* anActor = dynamic_cast< SMESH_Actor* >( myActor );
+  if ( !anActor || anActor->GetObject() == 0 )
     return false;
 
   SMDS_Mesh* aMesh = anActor->GetObject()->GetMesh();

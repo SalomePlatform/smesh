@@ -174,7 +174,7 @@ double SMESH_Algo::EdgeLength(const TopoDS_Edge & E)
     return 0;
   TopLoc_Location L;
   Handle(Geom_Curve) C = BRep_Tool::Curve(E, L, UMin, UMax);
-  GeomAdaptor_Curve AdaptCurve(C);
+  GeomAdaptor_Curve AdaptCurve(C, UMin, UMax); //range is important for periodic curves
   double length = GCPnts_AbscissaPoint::Length(AdaptCurve, UMin, UMax);
   return length;
 }

@@ -632,7 +632,10 @@ SALOMEDS::SObject_ptr SMESH_Gen_i::PublishSubMesh (SALOMEDS::Study_ptr      theS
     SetName( aRootSO, aRootName );
 
     // Add new submesh to corresponding sub-tree
-    aSubMeshSO = publish (theStudy, theSubMesh, aRootSO, 0, "ICON_SMESH_TREE_MESH_WARN");
+    SMESH::array_of_ElementType_var elemTypes = theSubMesh->GetTypes();
+    const int isEmpty = ( elemTypes->length() == 0 );
+    const char* pm[2] = { "ICON_SMESH_TREE_MESH", "ICON_SMESH_TREE_MESH_WARN" };
+    aSubMeshSO = publish (theStudy, theSubMesh, aRootSO, 0, pm[isEmpty] );
     if ( aSubMeshSO->_is_nil() )
       return aSubMeshSO._retn();
   }
