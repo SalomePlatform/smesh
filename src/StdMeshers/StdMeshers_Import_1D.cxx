@@ -486,7 +486,7 @@ namespace // INTERNAL STUFF
         for ( ; d != dList.end(); ++d )
           if ( d->_subM.count( subMesh ))
           {
-            set<SMESH_subMesh*>::iterator smIt = d->_subM.begin();
+            set<SMESH_subMesh*,_SubLess>::iterator smIt = d->_subM.begin();
             for( ; smIt != d->_subM.end(); ++smIt )
               if ( (*smIt)->IsMeshComputed() )
                 d->_computedSubM.insert( *smIt);

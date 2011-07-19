@@ -24,6 +24,7 @@
 #include <sstream>
 #include <cstdlib>
 #include <cstring>
+#include <ctime>
 
 using namespace std;
 using namespace MESHCUT;
@@ -92,9 +93,9 @@ bool MESHCUT::appartient(std::string e, std::string tableau[], int taille)
 
 float MESHCUT::arrondi(float x)
 {
-  if (x > 0 and x < 1.0e-5)
+  if (x > 0 && x < 1.0e-5)
     return 0;
-  else if (x < 0 and x > -1.0e-5)
+  else if (x < 0 && x > -1.0e-5)
     return 0;
   else
     return x;

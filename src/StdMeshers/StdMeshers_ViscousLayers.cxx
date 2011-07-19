@@ -2511,7 +2511,7 @@ bool _ViscousBuilder::updateNormals( _SolidData&         data,
       if ( S.ShapeType() != TopAbs_EDGE )
         continue; // TODO: find EDGE by VERTEX
       E1 = TopoDS::Edge( S );
-      set< _LayerEdge* >::iterator eIt = ee.begin();
+      set< _LayerEdge*, _LayerEdgeCmp >::iterator eIt = ee.begin();
       while ( E2.IsNull() && eIt != ee.end())
       {
         _LayerEdge* e2 = *eIt++;

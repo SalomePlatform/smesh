@@ -51,6 +51,7 @@
 #include <list>
 #include <vector>
 #include <vtkSystemIncludes.h>
+#include <cassert>
 
 #include "Utils_SALOME_Exception.hxx"
 #define MYASSERT(val) if (!(val)) throw SALOME_Exception(LOCALIZED("assertion not verified"));

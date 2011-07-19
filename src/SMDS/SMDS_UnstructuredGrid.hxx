@@ -24,6 +24,8 @@
 #ifndef _SMDS_UNSTRUCTUREDGRID_HXX
 #define _SMDS_UNSTRUCTUREDGRID_HXX
 
+#include "SMESH_SMDS.hxx"
+
 #include <vtkUnstructuredGrid.h>
 #include <vtkCellLinks.h>
 #include "chrono.hxx"
@@ -48,7 +50,7 @@ class SMDS_Downward;
 class SMDS_Mesh;
 class SMDS_MeshVolume;
 
-class SMDS_CellLinks: public vtkCellLinks
+class SMDS_EXPORT SMDS_CellLinks: public vtkCellLinks
 {
 public:
   vtkCellLinks::Link* ResizeL(vtkIdType sz);
@@ -59,7 +61,7 @@ protected:
   ~SMDS_CellLinks();
 };
 
-class SMDS_UnstructuredGrid: public vtkUnstructuredGrid
+class SMDS_EXPORT SMDS_UnstructuredGrid: public vtkUnstructuredGrid
 {
 public:
   void setSMDS_mesh(SMDS_Mesh *mesh);

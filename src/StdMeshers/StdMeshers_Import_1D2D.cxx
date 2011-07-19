@@ -214,7 +214,7 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
       SMDS_MeshElement::iterator node = face->begin_nodes();
       for ( unsigned i = 0; i < newNodes.size(); ++i, ++node )
       {
-        TNodeNodeMap::iterator n2nIt = n2n->insert( make_pair( *node, (SMDS_MeshNode*)0 )).first;
+        StdMeshers_Import_1D::TNodeNodeMap::iterator n2nIt = n2n->insert( make_pair( *node, (SMDS_MeshNode*)0 )).first;
         if ( n2nIt->second )
         {
           if ( !subShapeIDs.count( n2nIt->second->getshapeId() ))

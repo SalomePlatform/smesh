@@ -604,7 +604,11 @@ SMESH::Histogram* NumericalFunctor_i::GetHistogram(CORBA::Short nbIntervals)
   std::vector<int> elements;
   myNumericalFunctorPtr->GetHistogram(nbIntervals,nbEvents,funValues,elements);
 
+#ifdef WIN32
+  nbIntervals = CORBA::Short( min( nbEvents.size(), funValues.size() - 1));
+#else
   nbIntervals = CORBA::Short( std::min( nbEvents.size(), funValues.size() - 1));
+#endif
   SMESH::Histogram_var histogram = new SMESH::Histogram;
   if ( nbIntervals > 0 )
   {

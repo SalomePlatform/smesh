@@ -20,6 +20,8 @@
 #ifndef _CHRONO_HXX_
 #define _CHRONO_HXX_
 
+#include "SMESH_SMDS.hxx"
+
 #include <vector>
 #include <string>
 #include <iostream>
@@ -33,7 +35,7 @@ typedef struct acnt
   double _ctrCumul;
 } cntStruct;
 
-class counters
+class SMDS_EXPORT counters
 {
 public:
   static cntStruct *_ctrs;
@@ -44,7 +46,7 @@ protected:
   static int _nbChrono;
 };
 
-class chrono
+class SMDS_EXPORT chrono
 {
 public:
   chrono(int i);

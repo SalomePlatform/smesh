@@ -1093,7 +1093,7 @@ void Maillage::outputMED(std::string fichierMED)
           ngro = ETIQFAM[ifam].size();
 
           // Noms des groupes de la famille: variable nomsGN
-          char gro[ngro * MED_LNAME_SIZE + 1];
+          char *gro = new char[ngro * MED_LNAME_SIZE + 1];
           int cptGN = 0;
           for (unsigned int ign = 0; ign < ETIQFAM[ifam].size(); ign++)
             {
@@ -1121,8 +1121,8 @@ void Maillage::outputMED(std::string fichierMED)
           // Création de la famille
           if (MEDfamilyCr(fid, maa, nomfam, numfam, 0, MED_NO_GROUP) < 0)
             ERREUR("Error MEDfamilyCr");
-
-        }
+	  delete gro;
+	}
 
     }
 
@@ -1136,7 +1136,7 @@ void Maillage::outputMED(std::string fichierMED)
   med_float *coo; // Table des coordonnées
 
   // Noms des coordonnées (variable nomcoo)
-  char nomcoo[mdim * MED_SNAME_SIZE + 1];
+  char* nomcoo = new char[mdim * MED_SNAME_SIZE + 1];
   string strX = (string) "X";
   while (strX.size() < MED_SNAME_SIZE)
     strX += (string) " ";
@@ -1155,7 +1155,7 @@ void Maillage::outputMED(std::string fichierMED)
   nomcoo[mdim * MED_SNAME_SIZE] = '\0';
 
   // Unités des coordonnées (variable unicoo)
-  char unicoo[mdim * MED_SNAME_SIZE + 1];
+  char* unicoo = new char[mdim * MED_SNAME_SIZE + 1];
   string strmesure = (string) "SI";
   while (strmesure.size() < MED_SNAME_SIZE)
     strmesure += (string) " ";
@@ -1408,7 +1408,7 @@ void Maillage::outputMED(std::string fichierMED)
           ngro = ETIQFAM[ifam].size();
 
           // Noms des groupes de la famille
-          char gro[ngro * MED_LNAME_SIZE + 1];
+          char* gro = new char[ngro * MED_LNAME_SIZE + 1];
           int cptGM = 0;
           for (unsigned int ign = 0; ign < ETIQFAM[ifam].size(); ign++)
             {
@@ -1436,8 +1436,9 @@ void Maillage::outputMED(std::string fichierMED)
           // Création de la famille
           if (MEDfamilyCr(fid, maa, nomfam, numfam, 1, gro) < 0)
             ERREUR("Error MEDfamilyCr");
-        }
 
+	  delete gro;
+        }
     }
 
   // ########################################################################
@@ -1556,6 +1557,9 @@ void Maillage::outputMED(std::string fichierMED)
       ERREUR("Error on close MED file\n");
       cout << "Error on close MED file" << endl;
     }
+
+  delete unicoo;
+  delete nomcoo;
 
   // cout << endl << endl << "Fin procédure outputMED" << endl;
 } // outputMED

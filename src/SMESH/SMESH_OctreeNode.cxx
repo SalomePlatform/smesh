@@ -214,7 +214,7 @@ bool SMESH_OctreeNode::NodesAround(const gp_XYZ &node,
     {
       double minDist = precision * precision;
       gp_Pnt p1 ( node.X(), node.Y(), node.Z() );
-      set<const SMDS_MeshNode*>::iterator nIt = myNodes.begin();
+      TIDSortedNodeSet::iterator nIt = myNodes.begin();
       for ( ; nIt != myNodes.end(); ++nIt )
       {
         gp_Pnt p2 ( (*nIt)->X(), (*nIt)->Y(), (*nIt)->Z() );

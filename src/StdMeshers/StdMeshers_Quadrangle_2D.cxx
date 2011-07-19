@@ -895,9 +895,9 @@ FaceQuadStruct* StdMeshers_Quadrangle_2D::CheckNbEdges(SMESH_Mesh &         aMes
 
       for ( int i = degenSides.size()-1; i > -1; --i )
       {
-        StdMeshers_FaceSide * & degenSide = quad->side[ degenSides[ i ]];
-        delete degenSide;
-        quad->side.erase( vector<StdMeshers_FaceSide*>::iterator( & degenSide ));
+	StdMeshers_FaceSide* degenSide = quad->side[ degenSides[ i ]];
+	delete degenSide;
+	quad->side.erase( quad->side.begin() + degenSides[ i ] );
       }
       for ( unsigned i = TOP_SIDE; i < quad->side.size(); ++i )
         quad->side[i]->Reverse();
@@ -2219,7 +2219,7 @@ bool StdMeshers_Quadrangle_2D::ComputeReduced (SMESH_Mesh &        aMesh,
     int ncol_top = nt1 - 1;
     int ncol_bot = nb1 - 1;
     // number of rows needed to reduce ncol_bot to ncol_top using simple 3->1 "tree" (see below)
-    int nrows_tree31 = int( log( ncol_bot / ncol_top ) / log( 3 )); // = log x base 3
+    int nrows_tree31 = int( log( (double)(ncol_bot / ncol_top) ) / log((double) 3 )); // = log x base 3
     if ( nrows < nrows_tree31 )
       MultipleReduce = true;
   }
@@ -2545,7 +2545,13 @@ bool StdMeshers_Quadrangle_2D::ComputeReduced (SMESH_Mesh &        aMesh,
     // maximum number of bottom elements for "tree" simple reduce 4->2
     int max_tree42 = 0;
     // number of rows needed to reduce ncol_bot to ncol_top using simple 4->2 "tree"
+#ifdef WIN32
+    //<cmath> of the MSVC doesn't contain log2
+    int nrows_tree42 = int( log( (double)(ncol_bot / ncol_top) )/log((double)2)  ); // needed to avoid overflow at pow(2)
+#else
     int nrows_tree42 = int( log2( ncol_bot / ncol_top )); // needed to avoid overflow at pow(2)
+#endif
+
     if (ncol_top > npair_top * 2 && nrows_tree42 < nrows) {
       max_tree42 = npair_top * pow(2.0, nrows + 1);
       int delta = ncol_bot - int( max_tree42 );

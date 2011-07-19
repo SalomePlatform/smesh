@@ -127,7 +127,7 @@ libSMDS_la_CPPFLAGS = \
 
 libSMDS_la_LDFLAGS  = \
 	$(VTK_LIBS) \
-	$(KERNEL_LDFLAGS) -lSALOMELocalTrace
+	$(KERNEL_LDFLAGS) -lSALOMELocalTrace -lOpUtil
 
 # Executables targets
 bin_PROGRAMS = SMDS_MemoryLimit

@@ -76,7 +76,9 @@ libSMESHObject_la_LDFLAGS  = \
         ../SMESHClient/libSMESHClient.la \
         ../SMDS/libSMDS.la \
         ../Controls/libSMESHControls.la \
-        $(GUI_LDFLAGS) -lSalomeApp -lSalomeObject -lSVTK -lVTKViewer -lqtx -lsuit \
+        $(GUI_LDFLAGS) -lSalomeApp -lSalomeObject -lSVTK -lVTKViewer -lqtx -lsuit -lstd \
+	-lPlot2d \
+	-lSPlot2d \
 	$(GEOM_LDFLAGS) -lGEOMObject \
 	$(CAS_KERNEL) \
         $(VTK_LIBS) $(QT_MT_LIBS)
