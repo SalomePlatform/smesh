@@ -1612,7 +1612,6 @@ void SMESHGUI_GroupDlg::onSelectGeomGroup(bool on)
   }
 }
 
-
 //=================================================================================
 // function : setCurrentSelection()
 // purpose  :

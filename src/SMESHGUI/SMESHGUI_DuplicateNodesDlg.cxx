@@ -487,7 +487,8 @@ void SMESHGUI_DuplicateNodesDlg::onSelectionChanged()
     if      ( myCurrentLineEdit == myLineEdit1 ) myGroups1 = aGroups;
     else if ( myCurrentLineEdit == myLineEdit2 ) myGroups2 = aGroups;
     else if ( myCurrentLineEdit == myLineEdit3 ) myGroups3 = aGroups;
-    myCurrentLineEdit->setText( aGroups.count() == 1 ? aGroups[0]->GetName() : 
+    CORBA::String_var name = aGroups[0]->GetName();
+    myCurrentLineEdit->setText( aGroups.count() == 1 ? QString(name).trimmed() : 
                                 QObject::tr( "SMESH_OBJECTS_SELECTED" ).arg( aGroups.count() ) );
   }
   else {

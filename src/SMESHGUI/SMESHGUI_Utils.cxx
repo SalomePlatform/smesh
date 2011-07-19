@@ -252,7 +252,7 @@ namespace SMESH
     int aNbSel = selected.Extent();
     if (aNbSel == 1) {
       Handle(SALOME_InteractiveObject) anIObject = selected.First();
-      theName = anIObject->getName();
+      theName = QString( anIObject->getName() ).trimmed();
     } else {
       theName = QObject::tr("SMESH_OBJECTS_SELECTED").arg(aNbSel);
     }

@@ -468,7 +468,8 @@ void SMESHGUI_FindElemByPointOp::onSelectionDone()
       if ( pObj && !myMeshOrPart->_is_nil() )
       {
         myMeshIO = anIO;
-        myDlg->myMeshName->setText( pObj->GetName().c_str() );
+        std::string name = pObj->GetName();
+        myDlg->myMeshName->setText( QString( name.c_str() ).trimmed() );
         newMeshEntry = anIO->getEntry();
         SMESH::array_of_ElementType_var  types = myMeshOrPart->GetTypes();
         myDlg->setTypes( types );

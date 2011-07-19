@@ -294,6 +294,8 @@ void SMESHGUI_Make2DFrom3DOp::selectionDone()
       QStringList names, ids;
       LightApp_Dialog::TypesList types;
       selected( names, types, ids );
+      for ( int i = 0; i < names.count(); ++i )
+        names[i] = names[i].trimmed();
       myDlg->selectObject( names, types, ids );
 
       // enable/desable "new mesh" button
