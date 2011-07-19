@@ -507,6 +507,7 @@ void SMESHGUI_CopyMeshDlg::SelectionIntoArgument()
   {
     SMESH::GetNameOfSelectedIObjects( mySelectionMgr, aString );
     if ( aString.isEmpty() ) aString = " ";
+    else                     aString = aString.trimmed(); // issue 0021327
   }
   else
   {
