@@ -144,6 +144,7 @@ CALL_GRAPH             = NO
 GRAPHICAL_HIERARCHY    = NO
 DIRECTORY_GRAPH        = NO
 DOT_IMAGE_FORMAT       = jpg
+DOT_FONTNAME           = Arial
 DOT_PATH               = 
 DOTFILE_DIRS           = 
 MAX_DOT_GRAPH_WIDTH    = 1024
