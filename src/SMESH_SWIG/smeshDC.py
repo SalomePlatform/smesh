@@ -191,7 +191,7 @@ None_Optimization, Light_Optimization, Standard_Optimization, StandardPlus_Optim
 FromCAD, PreProcess, PreProcessPlus = 0,1,2
 
 # Element size flag of BLSURF
-DefaultSize, DefaultGeom, Custom = 0,0,1
+DefaultSize, DefaultGeom, BLSURF_Custom, SizeMap = 0,0,1,2
 
 PrecisionConfusion = 1e-07
 
@@ -4921,7 +4921,6 @@ class Mesh_Triangle(Mesh_Algorithm):
     def __init__(self, mesh, algoType, geom=0):
         Mesh_Algorithm.__init__(self)
 
-        self.algoType = algoType
         if algoType == MEFISTO:
             self.Create(mesh, geom, "MEFISTO_2D")
             pass
@@ -4937,6 +4936,8 @@ class Mesh_Triangle(Mesh_Algorithm):
             CheckPlugin(NETGEN)
             self.Create(mesh, geom, "NETGEN_2D_ONLY", "libNETGENEngine.so")
             pass
+
+        self.algoType = algoType
 
     ## Defines "MaxElementArea" hypothesis basing on the definition of the maximum area of each triangle
     #  @param area for the maximum area of each triangle
@@ -4973,71 +4974,80 @@ class Mesh_Triangle(Mesh_Algorithm):
             return hyp
 
     ## Sets a way to define size of mesh elements to generate.
-    #  @param thePhysicalMesh is: DefaultSize or Custom.
+    #  @param thePhysicalMesh is: DefaultSize, BLSURF_Custom or SizeMap.
     #  @ingroup l3_hypos_blsurf
     def SetPhysicalMesh(self, thePhysicalMesh=DefaultSize):
-        # Parameter of BLSURF algo
-        self.Parameters().SetPhysicalMesh(thePhysicalMesh)
+        if self.Parameters():
+            # Parameter of BLSURF algo
+            self.params.SetPhysicalMesh(thePhysicalMesh)
 
     ## Sets size of mesh elements to generate.
     #  @ingroup l3_hypos_blsurf
     def SetPhySize(self, theVal):
-        # Parameter of BLSURF algo
-        self.SetPhysicalMesh(1) #Custom - else why to set the size?
-        self.Parameters().SetPhySize(theVal)
+        if self.Parameters():
+            # Parameter of BLSURF algo
+            self.params.SetPhySize(theVal)
 
     ## Sets lower boundary of mesh element size (PhySize).
     #  @ingroup l3_hypos_blsurf
     def SetPhyMin(self, theVal=-1):
-        #  Parameter of BLSURF algo
-        self.Parameters().SetPhyMin(theVal)
+        if self.Parameters():
+            #  Parameter of BLSURF algo
+            self.params.SetPhyMin(theVal)
 
     ## Sets upper boundary of mesh element size (PhySize).
     #  @ingroup l3_hypos_blsurf
     def SetPhyMax(self, theVal=-1):
-        #  Parameter of BLSURF algo
-        self.Parameters().SetPhyMax(theVal)
+        if self.Parameters():
+            #  Parameter of BLSURF algo
+            self.params.SetPhyMax(theVal)
 
     ## Sets a way to define maximum angular deflection of mesh from CAD model.
     #  @param theGeometricMesh is: 0 (None) or 1 (Custom)
     #  @ingroup l3_hypos_blsurf
     def SetGeometricMesh(self, theGeometricMesh=0):
-        #  Parameter of BLSURF algo
-        if self.Parameters().GetPhysicalMesh() == 0: theGeometricMesh = 1
-        self.params.SetGeometricMesh(theGeometricMesh)
+        if self.Parameters():
+            #  Parameter of BLSURF algo
+            if self.params.GetPhysicalMesh() == 0: theGeometricMesh = 1
+            self.params.SetGeometricMesh(theGeometricMesh)
 
     ## Sets angular deflection (in degrees) of a mesh face from CAD surface.
     #  @ingroup l3_hypos_blsurf
     def SetAngleMeshS(self, theVal=_angleMeshS):
-        #  Parameter of BLSURF algo
-        if self.Parameters().GetGeometricMesh() == 0: theVal = self._angleMeshS
-        self.params.SetAngleMeshS(theVal)
+        if self.Parameters():
+            #  Parameter of BLSURF algo
+            if self.params.GetGeometricMesh() == 0: theVal = self._angleMeshS
+            self.params.SetAngleMeshS(theVal)
 
     ## Sets angular deflection (in degrees) of a mesh edge from CAD curve.
     #  @ingroup l3_hypos_blsurf
     def SetAngleMeshC(self, theVal=_angleMeshS):
-        #  Parameter of BLSURF algo
-        if self.Parameters().GetGeometricMesh() == 0: theVal = self._angleMeshS
-        self.params.SetAngleMeshC(theVal)
+        if self.Parameters():
+            #  Parameter of BLSURF algo
+            if self.params.GetGeometricMesh() == 0: theVal = self._angleMeshS
+            self.params.SetAngleMeshC(theVal)
 
     ## Sets lower boundary of mesh element size computed to respect angular deflection.
     #  @ingroup l3_hypos_blsurf
     def SetGeoMin(self, theVal=-1):
-        #  Parameter of BLSURF algo
-        self.Parameters().SetGeoMin(theVal)
+        if self.Parameters():
+            #  Parameter of BLSURF algo
+            self.params.SetGeoMin(theVal)
 
     ## Sets upper boundary of mesh element size computed to respect angular deflection.
     #  @ingroup l3_hypos_blsurf
     def SetGeoMax(self, theVal=-1):
-        #  Parameter of BLSURF algo
-        self.Parameters().SetGeoMax(theVal)
+        if self.Parameters():
+            #  Parameter of BLSURF algo
+            self.params.SetGeoMax(theVal)
 
     ## Sets maximal allowed ratio between the lengths of two adjacent edges.
     #  @ingroup l3_hypos_blsurf
     def SetGradation(self, theVal=_gradation):
-        #  Parameter of BLSURF algo
-        if self.Parameters().GetGeometricMesh() == 0: theVal = self._gradation
-        self.params.SetGradation(theVal)
+        if self.Parameters():
+            #  Parameter of BLSURF algo
+            if self.params.GetGeometricMesh() == 0: theVal = self._gradation
+            self.params.SetGradation(theVal)
 
     ## Sets topology usage way.
     # @param way defines how mesh conformity is assured <ul>
@@ -5045,26 +5055,143 @@ class Mesh_Triangle(Mesh_Algorithm):
     # <li>PreProcess or PreProcessPlus - by pre-processing a CAD model</li></ul>
     #  @ingroup l3_hypos_blsurf
     def SetTopology(self, way):
-        #  Parameter of BLSURF algo
-        self.Parameters().SetTopology(way)
+        if self.Parameters():
+            #  Parameter of BLSURF algo
+            self.params.SetTopology(way)
 
     ## To respect geometrical edges or not.
     #  @ingroup l3_hypos_blsurf
     def SetDecimesh(self, toIgnoreEdges=False):
-        #  Parameter of BLSURF algo
-        self.Parameters().SetDecimesh(toIgnoreEdges)
+        if self.Parameters():
+            #  Parameter of BLSURF algo
+            self.params.SetDecimesh(toIgnoreEdges)
 
     ## Sets verbosity level in the range 0 to 100.
     #  @ingroup l3_hypos_blsurf
     def SetVerbosity(self, level):
-        #  Parameter of BLSURF algo
-        self.Parameters().SetVerbosity(level)
+        if self.Parameters():
+            #  Parameter of BLSURF algo
+            self.params.SetVerbosity(level)
 
     ## Sets advanced option value.
     #  @ingroup l3_hypos_blsurf
     def SetOptionValue(self, optionName, level):
-        #  Parameter of BLSURF algo
-        self.Parameters().SetOptionValue(optionName,level)
+        if self.Parameters():
+            #  Parameter of BLSURF algo
+            self.params.SetOptionValue(optionName,level)
+
+    ## To set an enforced vertex on a face (or group, compound) given the coordinates of a point. If the point is not on the face, it will projected on it. If there is no projection, no enforced vertex is created.
+    #  @param theFace      : GEOM face (or group, compound) on which to define an enforced vertex
+    #  @param x            : x coordinate
+    #  @param y            : y coordinate
+    #  @param z            : z coordinate
+    #  @ingroup l3_hypos_blsurf
+    def SetEnforcedVertex(self, theFace, x, y, z):
+        if self.Parameters():
+            #  Parameter of BLSURF algo
+#            self.SetPhysicalMesh(2)
+            AssureGeomPublished( self.mesh, theFace )
+            return self.params.SetEnforcedVertex(theFace, x, y, z)
+
+    ## To set an enforced vertex as SetEnforcedVertex. The created enforced vertex is identified by a name.
+    #  @param theFace      : GEOM face (or group, compound) on which to define an enforced vertex
+    #  @param x            : x coordinate
+    #  @param y            : y coordinate
+    #  @param z            : z coordinate
+    #  @param vertexName   : name of the enforced vertex
+    #  @ingroup l3_hypos_blsurf
+    def SetEnforcedVertexNamed(self, theFace, x, y, z, vertexName):
+        if self.Parameters():
+            #  Parameter of BLSURF algo
+#            self.SetPhysicalMesh(2)
+            AssureGeomPublished( self.mesh, theFace )
+            return self.params.SetEnforcedVertexNamed(theFace, x, y, z, vertexName)
+
+    ## To set an enforced vertex on a face (or group, compound) given a GEOM vertex, group or compound.
+    #  @param theFace      : GEOM face (or group, compound) on which to define an enforced vertex
+    #  @param theVertex    : GEOM vertex (or group, compound) to be projected on theFace.
+    #  @ingroup l3_hypos_blsurf
+    def SetEnforcedVertexGeom(self, theFace, theVertex):
+        if self.Parameters():
+            #  Parameter of BLSURF algo
+#            self.SetPhysicalMesh(2)
+            AssureGeomPublished( self.mesh, theFace )
+            AssureGeomPublished( self.mesh, theVertex )
+            return self.params.SetEnforcedVertexGeom(theFace, theVertex)
+
+    ## To set an enforced vertex as SetEnforcedVertex and add it in the group "groupName".
+    #  @param theFace      : GEOM face (or group, compound) on which to define an enforced vertex
+    #  @param x            : x coordinate
+    #  @param y            : y coordinate
+    #  @param z            : z coordinate
+    #  @param groupName    : name of the group
+    #  @ingroup l3_hypos_blsurf
+    def SetEnforcedVertexWithGroup(self, theFace, x, y, z, groupName):
+        if self.Parameters():
+            #  Parameter of BLSURF algo
+#            self.SetPhysicalMesh(2)
+            AssureGeomPublished( self.mesh, theFace )
+            return self.params.SetEnforcedVertexWithGroup(theFace, x, y, z, groupName)
+
+    ## To set an enforced vertex as SetEnforcedVertexNamed and add it in the group "groupName".
+    #  @param theFace      : GEOM face (or group, compound) on which to define an enforced vertex
+    #  @param x            : x coordinate
+    #  @param y            : y coordinate
+    #  @param z            : z coordinate
+    #  @param vertexName   : name of the enforced vertex
+    #  @param groupName    : name of the group
+    #  @ingroup l3_hypos_blsurf
+    def SetEnforcedVertexNamedWithGroup(self, theFace, x, y, z, vertexName, groupName):
+        if self.Parameters():
+            #  Parameter of BLSURF algo
+#            self.SetPhysicalMesh(2)
+            AssureGeomPublished( self.mesh, theFace )
+            return self.params.SetEnforcedVertexNamedWithGroup(theFace, x, y, z, vertexName, groupName)
+
+    ## To set an enforced vertex as SetEnforcedVertexGeom and add it in the group "groupName".
+    #  @param theFace      : GEOM face (or group, compound) on which to define an enforced vertex
+    #  @param theVertex    : GEOM vertex (or group, compound) to be projected on theFace.
+    #  @param groupName    : name of the group
+    #  @ingroup l3_hypos_blsurf
+    def SetEnforcedVertexGeomWithGroup(self, theFace, theVertex, groupName):
+        if self.Parameters():
+            #  Parameter of BLSURF algo
+#            self.SetPhysicalMesh(2)
+            AssureGeomPublished( self.mesh, theFace )
+            AssureGeomPublished( self.mesh, theVertex )
+            return self.params.SetEnforcedVertexGeomWithGroup(theFace, theVertex,groupName)
+
+    ## To remove an enforced vertex on a given GEOM face (or group, compound) given the coordinates.
+    #  @param theFace      : GEOM face (or group, compound) on which to remove the enforced vertex
+    #  @param x            : x coordinate
+    #  @param y            : y coordinate
+    #  @param z            : z coordinate
+    #  @ingroup l3_hypos_blsurf
+    def UnsetEnforcedVertex(self, theFace, x, y, z):
+        if self.Parameters():
+            #  Parameter of BLSURF algo
+            AssureGeomPublished( self.mesh, theFace )
+            return self.params.UnsetEnforcedVertex(theFace, x, y, z)
+
+    ## To remove an enforced vertex on a given GEOM face (or group, compound) given a GEOM vertex, group or compound.
+    #  @param theFace      : GEOM face (or group, compound) on which to remove the enforced vertex
+    #  @param theVertex    : GEOM vertex (or group, compound) to remove.
+    #  @ingroup l3_hypos_blsurf
+    def UnsetEnforcedVertexGeom(self, theFace, theVertex):
+        if self.Parameters():
+            #  Parameter of BLSURF algo
+            AssureGeomPublished( self.mesh, theFace )
+            AssureGeomPublished( self.mesh, theVertex )
+            return self.params.UnsetEnforcedVertexGeom(theFace, theVertex)
+
+    ## To remove all enforced vertices on a given face.
+    #  @param theFace      : face (or group/compound of faces) on which to remove all enforced vertices
+    #  @ingroup l3_hypos_blsurf
+    def UnsetEnforcedVertices(self, theFace):
+        if self.Parameters():
+            #  Parameter of BLSURF algo
+            AssureGeomPublished( self.mesh, theFace )
+            return self.params.UnsetEnforcedVertices(theFace)
 
     ## Sets an attractor on the chosen face. The mesh size will decrease exponentially with the distance from theAttractor, following the rule h(d) = theEndSize - (theEndSize - theStartSize) * exp [ - ( d / theInfluenceDistance ) ^ 2 ] 
     #  @param theFace      : face on which the attractor will be defined
@@ -5075,18 +5202,20 @@ class Mesh_Triangle(Mesh_Algorithm):
     #  @param theConstantSizeDistance : distance until which the mesh size will be kept constant on theFace                                                      
     #  @ingroup l3_hypos_blsurf
     def SetAttractorGeom(self, theFace, theAttractor, theStartSize, theEndSize, theInfluenceDistance, theConstantSizeDistance):
-        AssureGeomPublished( self.mesh, theFace )
-        AssureGeomPublished( self.mesh, theAttractor )
-        #  Parameter of BLSURF algo
-        self.Parameters().SetAttractorGeom(theFace, theAttractor, theStartSize, theEndSize, theInfluenceDistance, theConstantSizeDistance)
-        
+        if self.Parameters():
+            #  Parameter of BLSURF algo
+            AssureGeomPublished( self.mesh, theFace )
+            AssureGeomPublished( self.mesh, theAttractor )
+            self.params.SetAttractorGeom(theFace, theAttractor, theStartSize, theEndSize, theInfluenceDistance, theConstantSizeDistance)
+
     ## Unsets an attractor on the chosen face. 
     #  @param theFace      : face on which the attractor has to be removed                               
     #  @ingroup l3_hypos_blsurf
     def UnsetAttractorGeom(self, theFace):
-        AssureGeomPublished( self.mesh, theFace )
-        #  Parameter of BLSURF algo
-        self.Parameters().SetAttractorGeom(theFace)
+        if self.Parameters():
+            #  Parameter of BLSURF algo
+            AssureGeomPublished( self.mesh, theFace )
+            self.params.SetAttractorGeom(theFace)
 
     ## Sets QuadAllowed flag.
     #  Only for algoType == NETGEN(NETGEN_1D2D) || NETGEN_2D || BLSURF
@@ -5484,7 +5613,8 @@ class Mesh_Tetrahedron(Mesh_Algorithm):
     #  @ingroup l3_hypos_ghs3dh
     def SetToMeshHoles(self, toMesh):
         #  Parameter of GHS3D
-        self.Parameters().SetToMeshHoles(toMesh)
+        if self.Parameters():
+            self.params.SetToMeshHoles(toMesh)
 
     ## Set Optimization level:
     #   None_Optimization, Light_Optimization, Standard_Optimization, StandardPlus_Optimization,
@@ -5493,32 +5623,37 @@ class Mesh_Tetrahedron(Mesh_Algorithm):
     #  @ingroup l3_hypos_ghs3dh
     def SetOptimizationLevel(self, level):
         #  Parameter of GHS3D
-        self.Parameters().SetOptimizationLevel(level)
+        if self.Parameters():
+            self.params.SetOptimizationLevel(level)
 
     ## Maximal size of memory to be used by the algorithm (in Megabytes).
     #  @ingroup l3_hypos_ghs3dh
     def SetMaximumMemory(self, MB):
         #  Advanced parameter of GHS3D
-        self.Parameters().SetMaximumMemory(MB)
+        if self.Parameters():
+            self.params.SetMaximumMemory(MB)
 
     ## Initial size of memory to be used by the algorithm (in Megabytes) in
     #  automatic memory adjustment mode.
     #  @ingroup l3_hypos_ghs3dh
     def SetInitialMemory(self, MB):
         #  Advanced parameter of GHS3D
-        self.Parameters().SetInitialMemory(MB)
+        if self.Parameters():
+            self.params.SetInitialMemory(MB)
 
     ## Path to working directory.
     #  @ingroup l3_hypos_ghs3dh
     def SetWorkingDirectory(self, path):
         #  Advanced parameter of GHS3D
-        self.Parameters().SetWorkingDirectory(path)
+        if self.Parameters():
+            self.params.SetWorkingDirectory(path)
 
     ## To keep working files or remove them. Log file remains in case of errors anyway.
     #  @ingroup l3_hypos_ghs3dh
     def SetKeepFiles(self, toKeep):
         #  Advanced parameter of GHS3D and GHS3DPRL
-        self.Parameters().SetKeepFiles(toKeep)
+        if self.Parameters():
+            self.params.SetKeepFiles(toKeep)
 
     ## To set verbose level [0-10]. <ul>
     #<li> 0 - no standard output,
@@ -5531,20 +5666,23 @@ class Mesh_Tetrahedron(Mesh_Algorithm):
     #  @ingroup l3_hypos_ghs3dh
     def SetVerboseLevel(self, level):
         #  Advanced parameter of GHS3D
-        self.Parameters().SetVerboseLevel(level)
+        if self.Parameters():
+            self.params.SetVerboseLevel(level)
 
     ## To create new nodes.
     #  @ingroup l3_hypos_ghs3dh
     def SetToCreateNewNodes(self, toCreate):
         #  Advanced parameter of GHS3D
-        self.Parameters().SetToCreateNewNodes(toCreate)
+        if self.Parameters():
+            self.params.SetToCreateNewNodes(toCreate)
 
     ## To use boundary recovery version which tries to create mesh on a very poor
     #  quality surface mesh.
     #  @ingroup l3_hypos_ghs3dh
     def SetToUseBoundaryRecoveryVersion(self, toUse):
         #  Advanced parameter of GHS3D
-        self.Parameters().SetToUseBoundaryRecoveryVersion(toUse)
+        if self.Parameters():
+            self.params.SetToUseBoundaryRecoveryVersion(toUse)
 
     ## Applies finite-element correction by replacing overconstrained elements where
     #  it is possible. The process is cutting first the overconstrained edges and
@@ -5553,39 +5691,45 @@ class Mesh_Tetrahedron(Mesh_Algorithm):
     #  @ingroup l3_hypos_ghs3dh
     def SetFEMCorrection(self, toUseFem):
         #  Advanced parameter of GHS3D
-        self.Parameters().SetFEMCorrection(toUseFem)
+        if self.Parameters():
+            self.params.SetFEMCorrection(toUseFem)
 
     ## To removes initial central point.
     #  @ingroup l3_hypos_ghs3dh
     def SetToRemoveCentralPoint(self, toRemove):
         #  Advanced parameter of GHS3D
-        self.Parameters().SetToRemoveCentralPoint(toRemove)
+        if self.Parameters():
+            self.params.SetToRemoveCentralPoint(toRemove)
 
     ## To set an enforced vertex.
     #  @ingroup l3_hypos_ghs3dh
     def SetEnforcedVertex(self, x, y, z, size):
         #  Advanced parameter of GHS3D
-        return self.Parameters().SetEnforcedVertex(x, y, z, size)
+        if self.Parameters():
+            return self.params.SetEnforcedVertex(x, y, z, size)
 
     ## To set an enforced vertex and add it in the group "groupName".
     #  Only on meshes w/o geometry
     #  @ingroup l3_hypos_ghs3dh
     def SetEnforcedVertexWithGroup(self, x, y, z, size, groupName):
         #  Advanced parameter of GHS3D
-        return self.Parameters().SetEnforcedVertex(x, y, z, size,groupName)
+        if self.Parameters():
+            return self.params.SetEnforcedVertexWithGroup(x, y, z, size,groupName)
 
     ## To remove an enforced vertex.
     #  @ingroup l3_hypos_ghs3dh
     def RemoveEnforcedVertex(self, x, y, z):
         #  Advanced parameter of GHS3D
-        return self.Parameters().RemoveEnforcedVertex(x, y, z)
+        if self.Parameters():
+            return self.params.RemoveEnforcedVertex(x, y, z)
 
     ## To set an enforced vertex given a GEOM vertex, group or compound.
     #  @ingroup l3_hypos_ghs3dh
     def SetEnforcedVertexGeom(self, theVertex, size):
         AssureGeomPublished( self.mesh, theVertex )
         #  Advanced parameter of GHS3D
-        return self.Parameters().SetEnforcedVertexGeom(theVertex, size)
+        if self.Parameters():
+            return self.params.SetEnforcedVertexGeom(theVertex, size)
 
     ## To set an enforced vertex given a GEOM vertex, group or compound
     #  and add it in the group "groupName".
@@ -5594,56 +5738,66 @@ class Mesh_Tetrahedron(Mesh_Algorithm):
     def SetEnforcedVertexGeomWithGroup(self, theVertex, size, groupName):
         AssureGeomPublished( self.mesh, theVertex )
         #  Advanced parameter of GHS3D
-        return self.Parameters().SetEnforcedVertexGeomWithGroup(theVertex, size,groupName)
+        if self.Parameters():
+            return self.params.SetEnforcedVertexGeomWithGroup(theVertex, size,groupName)
 
     ## To remove an enforced vertex given a GEOM vertex, group or compound.
     #  @ingroup l3_hypos_ghs3dh
     def RemoveEnforcedVertexGeom(self, theVertex):
         AssureGeomPublished( self.mesh, theVertex )
         #  Advanced parameter of GHS3D
-        return self.Parameters().RemoveEnforcedVertexGeom(theVertex)
+        if self.Parameters():
+            return self.params.RemoveEnforcedVertexGeom(theVertex)
 
     ## To set an enforced mesh.
     #  @ingroup l3_hypos_ghs3dh
     def SetEnforcedMesh(self, theSource, elementType):
         #  Advanced parameter of GHS3D
-        return self.Parameters().SetEnforcedMesh(theSource, elementType)
+        if self.Parameters():
+            return self.params.SetEnforcedMesh(theSource, elementType)
 
     ## To set an enforced mesh and add the enforced elements in the group "groupName".
     #  @ingroup l3_hypos_ghs3dh
     def SetEnforcedMeshWithGroup(self, theSource, elementType, groupName):
         #  Advanced parameter of GHS3D
-        return self.Parameters().SetEnforcedMeshWithGroup(theSource, elementType, groupName)
+        if self.Parameters():
+            return self.params.SetEnforcedMeshWithGroup(theSource, elementType, groupName)
 
     ## To set an enforced mesh with given size.
     #  @ingroup l3_hypos_ghs3dh
     def SetEnforcedMeshSize(self, theSource, elementType, size):
         #  Advanced parameter of GHS3D
-        return self.Parameters().SetEnforcedMeshSize(theSource, elementType, size)
+        if self.Parameters():
+            return self.params.SetEnforcedMeshSize(theSource, elementType, size)
 
     ## To set an enforced mesh with given size and add the enforced elements in the group "groupName".
     #  @ingroup l3_hypos_ghs3dh
     def SetEnforcedMeshSizeWithGroup(self, theSource, elementType, size, groupName):
         #  Advanced parameter of GHS3D
-        return self.Parameters().SetEnforcedMeshSizeWithGroup(theSource, elementType, size, groupName)
+        if self.Parameters():
+            return self.params.SetEnforcedMeshSizeWithGroup(theSource, elementType, size, groupName)
 
     ## Sets command line option as text.
     #  @ingroup l3_hypos_ghs3dh
     def SetTextOption(self, option):
         #  Advanced parameter of GHS3D
-        self.Parameters().SetTextOption(option)
+        if self.Parameters():
+            self.params.SetTextOption(option)
 
     ## Sets MED files name and path.
     def SetMEDName(self, value):
-        self.Parameters().SetMEDName(value)
+        if self.Parameters():
+            self.params.SetMEDName(value)
 
     ## Sets the number of partition of the initial mesh
     def SetNbPart(self, value):
-        self.Parameters().SetNbPart(value)
+        if self.Parameters():
+            self.params.SetNbPart(value)
 
     ## When big mesh, start tepal in background
     def SetBackground(self, value):
-        self.Parameters().SetBackground(value)
+        if self.Parameters():
+            self.params.SetBackground(value)
 
 # Public class: Mesh_Hexahedron
 # ------------------------------
