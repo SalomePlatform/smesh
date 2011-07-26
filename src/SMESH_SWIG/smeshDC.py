@@ -5074,6 +5074,36 @@ class Mesh_Triangle(Mesh_Algorithm):
             #  Parameter of BLSURF algo
             self.params.SetVerbosity(level)
 
+    ## To optimize the CAD (merges edges and removes nano edges).
+    #  @ingroup l3_hypos_blsurf
+    def SetPreCADOptimCAD(self, toOptimizeCAD=False):
+        if self.Parameters():
+            #  Parameter of BLSURF algo
+            self.params.SetPreCADOptimCAD(toOptimizeCAD)
+
+    ## To compute topology from scratch
+    #  @ingroup l3_hypos_blsurf
+    def SetPreCADDiscardInput(self, toDiscardInput=False):
+        if self.Parameters():
+            #  Parameter of BLSURF algo
+            self.params.SetPreCADDiscardInput(toDiscardInput)
+
+    ## To help PreCAD treat some very dirty cases.
+    #  If the treated object is manifold.
+    #  @ingroup l3_hypos_blsurf
+    def SetPreCADManifoldGeom(self, manifold=False):
+        if self.Parameters():
+            #  Parameter of BLSURF algo
+            self.params.SetPreCADManifoldGeom(manifold)
+
+    ## To help PreCAD treat some very dirty cases.
+    #  If the object is also closed (imagine a shell).
+    #  @ingroup l3_hypos_blsurf
+    def SetPreCADClosedGeom(self, closed=False):
+        if self.Parameters():
+            #  Parameter of BLSURF algo
+            self.params.SetPreCADClosedGeom(closed)
+
     ## Sets advanced option value.
     #  @ingroup l3_hypos_blsurf
     def SetOptionValue(self, optionName, level):
