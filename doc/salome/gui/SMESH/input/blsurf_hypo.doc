@@ -4,6 +4,7 @@
 
 \n BLSURF Parameters hypothesis works only with <b>BLSURF</b> 2d
 algorithm. This algorithm is a commercial software.
+\n To get a licence, visit http://www.distene.com/corp/eval-distene.html
 
 <h1>General parameters</h1>
 
@@ -67,6 +68,15 @@ not sewed faces.
   <li>"Pre-process" and "Pre-process++" allow the BLSURF software to
   pre-process the geometrical model to eventually produce a conform
   mesh. </li>
+  <li>"PreCAD" is an auxiliary CAD pre-processing module which has 
+  two main goals:
+  <ul>
+    <li> Complete missing or inadequate CAD-description.</li>
+    <li>Perform topology reconstruction and speciﬁc geometry 
+    enhancement for mesh generation.</li>
+  </ul>
+  This module requires a specific licence.
+  </li>
 </ul>
 
 <li><b>Verbosity level</b> - Defines the percentage of "verbosity" of

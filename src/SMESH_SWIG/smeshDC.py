@@ -188,7 +188,7 @@ None_Optimization, Light_Optimization, Medium_Optimization, Strong_Optimization 
 None_Optimization, Light_Optimization, Standard_Optimization, StandardPlus_Optimization, Strong_Optimization = 0,1,2,3,4
 
 # Topology treatment way of BLSURF
-FromCAD, PreProcess, PreProcessPlus = 0,1,2
+FromCAD, PreProcess, PreProcessPlus, PreCAD = 0,1,2,3
 
 # Element size flag of BLSURF
 DefaultSize, DefaultGeom, BLSURF_Custom, SizeMap = 0,0,1,2
@@ -5053,6 +5053,7 @@ class Mesh_Triangle(Mesh_Algorithm):
     # @param way defines how mesh conformity is assured <ul>
     # <li>FromCAD - mesh conformity is assured by conformity of a shape</li>
     # <li>PreProcess or PreProcessPlus - by pre-processing a CAD model</li></ul>
+    # <li>PreCAD - by pre-processing with PreCAD a CAD model</li></ul>
     #  @ingroup l3_hypos_blsurf
     def SetTopology(self, way):
         if self.Parameters():
@@ -5080,6 +5081,52 @@ class Mesh_Triangle(Mesh_Algorithm):
             #  Parameter of BLSURF algo
             self.params.SetOptionValue(optionName,level)
 
+    ## Enforced vertices (BLSURF)
+
+    ## To get all the enforced vertices
+    #  @ingroup l3_hypos_blsurf
+    def GetAllEnforcedVertices(self):
+        if self.Parameters():
+            #  Parameter of BLSURF algo
+            return self.params.GetAllEnforcedVertices()
+
+    ## To get all the enforced vertices sorted by face (or group, compound)
+    #  @ingroup l3_hypos_blsurf
+    def GetAllEnforcedVerticesByFace(self):
+        if self.Parameters():
+            #  Parameter of BLSURF algo
+            return self.params.GetAllEnforcedVerticesByFace()
+
+    ## To get all the enforced vertices sorted by coords of input vertices
+    #  @ingroup l3_hypos_blsurf
+    def GetAllEnforcedVerticesByCoords(self):
+        if self.Parameters():
+            #  Parameter of BLSURF algo
+            return self.params.GetAllEnforcedVerticesByCoords()
+
+    ## To get all the coords of input vertices sorted by face (or group, compound)
+    #  @ingroup l3_hypos_blsurf
+    def GetAllCoordsByFace(self):
+        if self.Parameters():
+            #  Parameter of BLSURF algo
+            return self.params.GetAllCoordsByFace()
+
+    ## To get all the enforced vertices on a face (or group, compound)
+    #  @param theFace : GEOM face (or group, compound) on which to define an enforced vertex
+    #  @ingroup l3_hypos_blsurf
+    def GetEnforcedVertices(self, theFace):
+        if self.Parameters():
+            #  Parameter of BLSURF algo
+            AssureGeomPublished( self.mesh, theFace )
+            return self.params.GetEnforcedVertices(theFace)
+
+    ## To clear all the enforced vertices
+    #  @ingroup l3_hypos_blsurf
+    def ClearAllEnforcedVertices(self):
+        if self.Parameters():
+            #  Parameter of BLSURF algo
+            return self.params.ClearAllEnforcedVertices()
+
     ## To set an enforced vertex on a face (or group, compound) given the coordinates of a point. If the point is not on the face, it will projected on it. If there is no projection, no enforced vertex is created.
     #  @param theFace      : GEOM face (or group, compound) on which to define an enforced vertex
     #  @param x            : x coordinate
@@ -5089,7 +5136,6 @@ class Mesh_Triangle(Mesh_Algorithm):
     def SetEnforcedVertex(self, theFace, x, y, z):
         if self.Parameters():
             #  Parameter of BLSURF algo
-#            self.SetPhysicalMesh(2)
             AssureGeomPublished( self.mesh, theFace )
             return self.params.SetEnforcedVertex(theFace, x, y, z)
 
@@ -5103,7 +5149,6 @@ class Mesh_Triangle(Mesh_Algorithm):
     def SetEnforcedVertexNamed(self, theFace, x, y, z, vertexName):
         if self.Parameters():
             #  Parameter of BLSURF algo
-#            self.SetPhysicalMesh(2)
             AssureGeomPublished( self.mesh, theFace )
             return self.params.SetEnforcedVertexNamed(theFace, x, y, z, vertexName)
 
@@ -5114,7 +5159,6 @@ class Mesh_Triangle(Mesh_Algorithm):
     def SetEnforcedVertexGeom(self, theFace, theVertex):
         if self.Parameters():
             #  Parameter of BLSURF algo
-#            self.SetPhysicalMesh(2)
             AssureGeomPublished( self.mesh, theFace )
             AssureGeomPublished( self.mesh, theVertex )
             return self.params.SetEnforcedVertexGeom(theFace, theVertex)
@@ -5129,7 +5173,6 @@ class Mesh_Triangle(Mesh_Algorithm):
     def SetEnforcedVertexWithGroup(self, theFace, x, y, z, groupName):
         if self.Parameters():
             #  Parameter of BLSURF algo
-#            self.SetPhysicalMesh(2)
             AssureGeomPublished( self.mesh, theFace )
             return self.params.SetEnforcedVertexWithGroup(theFace, x, y, z, groupName)
 
@@ -5144,7 +5187,6 @@ class Mesh_Triangle(Mesh_Algorithm):
     def SetEnforcedVertexNamedWithGroup(self, theFace, x, y, z, vertexName, groupName):
         if self.Parameters():
             #  Parameter of BLSURF algo
-#            self.SetPhysicalMesh(2)
             AssureGeomPublished( self.mesh, theFace )
             return self.params.SetEnforcedVertexNamedWithGroup(theFace, x, y, z, vertexName, groupName)
 
@@ -5156,7 +5198,6 @@ class Mesh_Triangle(Mesh_Algorithm):
     def SetEnforcedVertexGeomWithGroup(self, theFace, theVertex, groupName):
         if self.Parameters():
             #  Parameter of BLSURF algo
-#            self.SetPhysicalMesh(2)
             AssureGeomPublished( self.mesh, theFace )
             AssureGeomPublished( self.mesh, theVertex )
             return self.params.SetEnforcedVertexGeomWithGroup(theFace, theVertex,groupName)
@@ -5193,6 +5234,8 @@ class Mesh_Triangle(Mesh_Algorithm):
             AssureGeomPublished( self.mesh, theFace )
             return self.params.UnsetEnforcedVertices(theFace)
 
+    ## Attractors (BLSURF)
+
     ## Sets an attractor on the chosen face. The mesh size will decrease exponentially with the distance from theAttractor, following the rule h(d) = theEndSize - (theEndSize - theStartSize) * exp [ - ( d / theInfluenceDistance ) ^ 2 ] 
     #  @param theFace      : face on which the attractor will be defined
     #  @param theAttractor : geometrical object from which the mesh size "h" decreases exponentially   
@@ -5216,6 +5259,38 @@ class Mesh_Triangle(Mesh_Algorithm):
             #  Parameter of BLSURF algo
             AssureGeomPublished( self.mesh, theFace )
             self.params.SetAttractorGeom(theFace)
+
+    ## Size maps (BLSURF)
+
+    ## To set a size map on a face, edge or vertex (or group, compound) given Python function.
+    #  If theObject is a face, the function can be: def f(u,v): return u+v
+    #  If theObject is an edge, the function can be: def f(t): return t/2
+    #  If theObject is a vertex, the function can be: def f(): return 10
+    #  @param theObject   : GEOM face, edge or vertex (or group, compound) on which to define a size map
+    #  @param theSizeMap  : Size map defined as a string
+    #  @ingroup l3_hypos_blsurf
+    def SetSizeMap(self, theObject, theSizeMap):
+        if self.Parameters():
+            #  Parameter of BLSURF algo
+            AssureGeomPublished( self.mesh, theObject )
+            return self.params.SetSizeMap(theObject, theSizeMap)
+
+    ## To remove a size map defined on a face, edge or vertex (or group, compound)
+    #  @param theObject   : GEOM face, edge or vertex (or group, compound) on which to define a size map
+    #  @ingroup l3_hypos_blsurf
+    def UnsetSizeMap(self, theObject):
+        if self.Parameters():
+            #  Parameter of BLSURF algo
+            AssureGeomPublished( self.mesh, theObject )
+            return self.params.UnsetSizeMap(theObject)
+
+    ## To remove all the size maps
+    #  @ingroup l3_hypos_blsurf
+    def ClearSizeMaps(self):
+        if self.Parameters():
+            #  Parameter of BLSURF algo
+            return self.params.ClearSizeMaps()
+
 
     ## Sets QuadAllowed flag.
     #  Only for algoType == NETGEN(NETGEN_1D2D) || NETGEN_2D || BLSURF

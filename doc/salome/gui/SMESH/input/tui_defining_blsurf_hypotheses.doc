@@ -34,36 +34,33 @@ geompy.addToStudyInFather(Face_2,Wire_1, "Wire_1")
 blsurfMesh = smesh.Mesh(box,"box: BLSurf mesh")
 
 # create a BLSurf algorithm for faces
-BLSURF = blsurfMesh.Triangle(algo=smesh.BLSURF)
+algo2d = blsurfMesh.Triangle(algo=smesh.BLSURF)
 
-# get BLSurf algorithm hypothesis
-BLSURF_Parameters = BLSURF.Parameters()
+# optional - set physical mesh to 2 = Size Map
+algo2d.SetPhysicalMesh( 2 )
 
-# set physical mesh to 2 = Size Map
-BLSURF_Parameters.SetPhysicalMesh( 2 )
-
-# set global mesh size
-BLSURF_Parameters.SetPhySize( 34.641 )
+# optional - set global mesh size
+algo2d.SetPhySize( 34.641 )
 
 # set size on Face_1
-BLSURF_Parameters.SetSizeMap(Face_1, 'def f(u,v): return 10' )
+algo2d.SetSizeMap(Face_1, 'def f(u,v): return 10' )
 # set size on Edge_1
-BLSURF_Parameters.SetSizeMap(Edge_1, 'def f(t): return 5' )
+algo2d.SetSizeMap(Edge_1, 'def f(t): return 5' )
 # set size on Vertex_1
-BLSURF_Parameters.SetSizeMap(Vertex_1, 'def f(): return 2' )
+algo2d.SetSizeMap(Vertex_1, 'def f(): return 2' )
 
 # compute the mesh
 blsurfMesh.Compute()
 
 # Add enforced vertex for Face_1 on (50, 50, 50)
 # The projection coordinates will be (50, 50, 0)
-BLSURF_Parameters.SetEnforcedVertex(Face_1, 50, 50, 50)
+algo2d.SetEnforcedVertex(Face_1, 50, 50, 50)
 
 # Add another enforced vertex on (150, 150, 150)
-BLSURF_Parameters.SetEnforcedVertex(Face_1, 150, 150, 150)
+algo2d.SetEnforcedVertex(Face_1, 150, 150, 150)
 
 # Retrieve and print the list of enforced vertices defines on Face_1
-enfList = BLSURF_Parameters.GetEnforcedVertices(Face_1)
+enfList = algo2d.GetEnforcedVertices(Face_1)
 print "List of enforced vertices for Face_1: "
 print enfList
 
@@ -71,8 +68,8 @@ print enfList
 blsurfMesh.Compute()
 
 # Remove an enforced vertex and print the list
-BLSURF_Parameters.UnsetEnforcedVertex(Face_1, 50, 50, 50)
-enfList = BLSURF_Parameters.GetEnforcedVertices(Face_1)
+algo2d.UnsetEnforcedVertex(Face_1, 50, 50, 50)
+enfList = algo2d.GetEnforcedVertices(Face_1)
 print "List of enforced vertices for Face_1: "
 print enfList
 
@@ -80,7 +77,7 @@ print enfList
 blsurfMesh.Compute()
 
 # Remove all enforced vertices defined on Face_1
-BLSURF_Parameters.UnsetEnforcedVertices(Face_1)
+algo2d.UnsetEnforcedVertices(Face_1)
 
 # compute the mesh
 blsurfMesh.Compute()
@@ -91,11 +88,11 @@ blsurfMesh.Compute()
 # The size on Wire_1 is 1 and will grow until a maximum of 36.641 (physical size set above) 
 # The influence distance of the attractor is 20
 # The size is kept constant until a distance of 10
-BLSURF_Parameters.SetAttractorGeom(Face_2, Wire_1, 1, 36.641, 20, 10)
+algo2d.SetAttractorGeom(Face_2, Wire_1, 1, 36.641, 20, 10)
 
 # In order to let the attractor control the growing of the mesh let set
 # the gradation to its maximum
-BLSURF_Parameters.SetGradation( 2.5 )
+algo2d.SetGradation( 2.5 )
 
 # compute the mesh
 blsurfMesh.Compute()
