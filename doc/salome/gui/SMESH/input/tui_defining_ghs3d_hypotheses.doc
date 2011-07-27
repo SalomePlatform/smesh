@@ -163,11 +163,11 @@ Mesh_cylindre.AddHypothesis( BLSURF_Parameters2 )
 face_cyl_faces = Mesh_cylindre.GroupOnGeom(face_cyl,'group_face_cyl', smesh.FACE)
 face_cyl_edges = Mesh_cylindre.GroupOnGeom(face_cyl,'group_edge_cyl', smesh.EDGE)
 face_cyl_nodes = Mesh_cylindre.GroupOnGeom(face_cyl,'group_node_cyl', smesh.NODE)
-Mesh_cyl_tri.Compute()
+Mesh_cylindre.Compute()
 
 # Create the mesh on the cylinder
 Mesh_box_tri = smesh.Mesh(box)
-SetName(Mesh_box_tri,"Mesh_box_tri")
+smesh.SetName(Mesh_box_tri,"Mesh_box_tri")
 Mesh_box_tri.AddHypothesis( BLSURF )
 Mesh_box_tri.AddHypothesis( BLSURF_Parameters )
 Mesh_box_tri.Compute()
@@ -177,19 +177,19 @@ Mesh_box_tri.Compute()
 # Then the 3D algo and hypothesis are assigned to them.
 
 mesh_mesh = smesh.CopyMesh( Mesh_box_tri, 'Enforced by faces of mesh', 0, 0)
-mesh_mesh.AddHypothesis( GHS3D_3D )
+mesh_mesh.AddHypothesis( GHS3D )
 mesh_mesh.AddHypothesis( GHS3D_Parameters_mesh)
 
 mesh_node = smesh.CopyMesh( Mesh_box_tri, 'Enforced by group of nodes', 0, 0)
-mesh_node.AddHypothesis( GHS3D_3D )
+mesh_node.AddHypothesis( GHS3D )
 mesh_node.AddHypothesis( GHS3D_Parameters_node)
 
 mesh_edge = smesh.CopyMesh( Mesh_box_tri, 'Enforced by group of edges', 0, 0)
-mesh_edge.AddHypothesis( GHS3D_3D )
+mesh_edge.AddHypothesis( GHS3D )
 mesh_edge.AddHypothesis( GHS3D_Parameters_edge)
 
 mesh_face = smesh.CopyMesh( Mesh_box_tri, 'Enforced by group of faces', 0, 0)
-mesh_face.AddHypothesis( GHS3D_3D )
+mesh_face.AddHypothesis( GHS3D )
 mesh_face.AddHypothesis( GHS3D_Parameters_face)
 
 # Add the enforced elements
