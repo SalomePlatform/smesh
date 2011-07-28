@@ -5111,6 +5111,13 @@ class Mesh_Triangle(Mesh_Algorithm):
             #  Parameter of BLSURF algo
             self.params.SetOptionValue(optionName,level)
 
+    ## Sets GMF file for export at computation
+    #  @ingroup l3_hypos_blsurf
+    def SetGMFFile(self, fileName):
+        if self.Parameters():
+            #  Parameter of BLSURF algo
+            self.params.SetGMFFile(fileName)
+
     ## Enforced vertices (BLSURF)
 
     ## To get all the enforced vertices
