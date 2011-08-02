@@ -229,7 +229,8 @@ void SMESH_MesherHelper::SetSubShape(const TopoDS_Shape& aSh)
     TopLoc_Location loc;
     Handle(Geom_Surface) surface = BRep_Tool::Surface( face, loc );
 
-    if ( surface->IsUPeriodic() || surface->IsVPeriodic() )
+    if ( surface->IsUPeriodic() || surface->IsVPeriodic() ||
+         surface->IsUClosed()   || surface->IsVClosed() )
     {
       //while ( surface->IsKind(STANDARD_TYPE(Geom_RectangularTrimmedSurface )))
       //surface = Handle(Geom_RectangularTrimmedSurface)::DownCast( surface )->BasisSurface();
