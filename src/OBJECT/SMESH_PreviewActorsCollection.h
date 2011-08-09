@@ -26,22 +26,22 @@
 #ifndef SMESH_PREVIEW_ACTOR_COLLECTION_H
 #define SMESH_PREVIEW_ACTOR_COLLECTION_H
 
-#include "SMESH_Actor.h"
-#include <GEOM_Actor.h>
 #include "SMESH_Object.h"
+
 #include <TopoDS_Shape.hxx>
-#include <SMDS_SetIterator.hxx>
 #include <TopAbs_ShapeEnum.hxx>
 #include <TopTools_IndexedMapOfShape.hxx>
-#include <QString>
+#include <QList>
 #include <QMap>
+#include <QString>
 
 class vtkRenderer;
 class GEOM_Actor;
+class SVTK_Selector;
 
 class SMESHOBJECT_EXPORT SMESH_PreviewActorsCollection
 {
- public:
+public:
   SMESH_PreviewActorsCollection();
   ~SMESH_PreviewActorsCollection();
 
@@ -61,15 +61,31 @@ class SMESHOBJECT_EXPORT SMESH_PreviewActorsCollection
 
   void            SetShown( bool );
 
- protected:
-   GEOM_Actor*    createActor( const TopoDS_Shape& );
-
- protected:
+  int             count() const;
+  int             chunkSize() const;
+  int             currentChunk() const;
+  bool            hasPrevious() const;
+  bool            hasNext() const;
+  void            previous();
+  void            next();
+  
+protected:
+  GEOM_Actor*    createActor( const TopoDS_Shape& );
+  void           showCurrentChunk();
+  void           clearActors();
+   
+protected:
+  TopAbs_ShapeEnum             myType;
+  QString                      myEntry;
   TopoDS_Shape                 myMainShape;
   SVTK_Selector*               mySelector;
   vtkRenderer*                 myRenderer;
   TopTools_IndexedMapOfShape   myMapOfShapes;
   QMap<int, GEOM_Actor*>       myMapOfActors;
+  QList<int>                   myIndices;
+  int                          myCurrentChunk;
+  int                          myChunkSize;
+  bool                         myIsShown;
 };
 
 
