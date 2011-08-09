@@ -4396,6 +4396,13 @@ void SMESHGUI::createPreferences()
     setPreferenceProperty( precs[ii], "precision", 2 );
   }
 
+  int previewGroup = addPreference( tr( "SMESH_PREF_GROUP_PREVIEW" ), genTab );
+  setPreferenceProperty( previewGroup, "columns", 2 );
+  int chunkSize = addPreference( tr( "PREF_PREVIEW_CHUNK_SIZE" ), previewGroup, LightApp_Preferences::IntSpin, "SMESH", "preview_actor_chunk_size" );
+  setPreferenceProperty( chunkSize, "min",  0 );
+  setPreferenceProperty( chunkSize, "max",  1000 );
+  setPreferenceProperty( chunkSize, "step", 50 );
+  
   // Mesh tab ------------------------------------------------------------------------
   int meshTab = addPreference( tr( "PREF_TAB_MESH" ) );
   int nodeGroup = addPreference( tr( "PREF_GROUP_NODES" ), meshTab );

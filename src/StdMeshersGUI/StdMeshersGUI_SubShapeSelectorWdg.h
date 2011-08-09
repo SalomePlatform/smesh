@@ -39,6 +39,7 @@ class SMESHGUI;
 class LightApp_SelectionMgr;
 class SVTK_Selector;
 class QPushButton;
+class QLabel;
 class QLineEdit;
 class QCheckBox;
 class QListWidget;
@@ -85,10 +86,13 @@ public:
 private:
   void                           updateState();
   void                           setFilter();
+  void                           updateButtons();
 
 private slots:
   void                           onAdd(); 
   void                           onRemove(); 
+  void                           onPrevious(); 
+  void                           onNext(); 
   void                           SelectionIntoArgument();
   void                           onListSelectionChanged();
 
@@ -109,6 +113,9 @@ private:
   QListWidget*                   myListWidget;
   QPushButton*                   myAddButton;
   QPushButton*                   myRemoveButton;
+  QLabel*                        myInfoLabel;
+  QPushButton*                   myPrevButton;
+  QPushButton*                   myNextButton;
   QList<int>                     mySelectedIDs;
   QList<int>                     myListOfIDs;
   

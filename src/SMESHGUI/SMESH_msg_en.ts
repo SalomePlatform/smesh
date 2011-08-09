@@ -3613,6 +3613,10 @@ Please, create VTK viewer and try again</translation>
         <translation>Input fields precision</translation>
     </message>
     <message>
+        <source>SMESH_PREF_GROUP_PREVIEW</source>
+        <translation>Preview</translation>
+    </message>
+    <message>
         <source>PREF_GROUP_ELEMENTS</source>
         <translation>Elements</translation>
     </message>
@@ -3735,6 +3739,10 @@ Please, create VTK viewer and try again</translation>
     <message>
         <source>PREF_WIDTH</source>
         <translation>Width</translation>
+    </message>
+    <message>
+        <source>PREF_PREVIEW_CHUNK_SIZE</source>
+        <translation>Sub-shapes preview chunk size</translation>
     </message>
 </context>
 <context>
@@ -6056,6 +6064,13 @@ as they are of improper type:
     <message>
         <source>NB_ELEMENTS</source>
         <translation>elements</translation>
+    </message>
+</context>
+<context>
+    <name>StdMeshersGUI_SubShapeSelectorWdg</name>
+    <message>
+        <source>X_FROM_Y_ITEMS_SHOWN</source>
+        <translation>%1-%2 from %3 items shown</translation>
     </message>
 </context>
 </TS>

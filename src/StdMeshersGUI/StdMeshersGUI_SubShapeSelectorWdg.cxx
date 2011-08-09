@@ -93,20 +93,28 @@ StdMeshersGUI_SubShapeSelectorWdg
   edgesLayout->setMargin( MARGIN );
   edgesLayout->setSpacing( SPACING );
   
-  myListWidget    = new QListWidget( this );
+  myListWidget   = new QListWidget( this );
   myAddButton    = new QPushButton( tr( "SMESH_BUT_ADD" ),    this );
   myRemoveButton = new QPushButton( tr( "SMESH_BUT_REMOVE" ), this );      
+  myInfoLabel    = new QLabel( this );
+  myPrevButton   = new QPushButton( "<<", this );
+  myNextButton   = new QPushButton( ">>", this );
   myListWidget->setSelectionMode( QListWidget::ExtendedSelection );
 
   edgesLayout->addWidget(myListWidget,   0, 0, 3, 3);
-  edgesLayout->addWidget(myAddButton,    0, 4);
-  edgesLayout->addWidget(myRemoveButton, 1, 4);
+  edgesLayout->addWidget(myAddButton,    0, 3);
+  edgesLayout->addWidget(myRemoveButton, 1, 3);
+  edgesLayout->addWidget(myInfoLabel,    3, 0, 1, 3);
+  edgesLayout->addWidget(myPrevButton,   4, 0);
+  edgesLayout->addWidget(myNextButton,   4, 2);
 
-  //edgesLayout->setRowStretch(2, 5);
-  edgesLayout->setColumnStretch(2, 5);
+  edgesLayout->setRowStretch(2, 5);
+  edgesLayout->setColumnStretch(1, 5);
 
-  setLayout( edgesLayout );
-  setMinimumWidth( 300 );
+  myListWidget->setMinimumWidth(300);
+  myInfoLabel->setMinimumWidth(300);
+  myInfoLabel->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
+  myInfoLabel->setAlignment(Qt::AlignCenter);
 
   mySubShType = aSubShType;
 
@@ -171,6 +179,8 @@ void StdMeshersGUI_SubShapeSelectorWdg::init()
 
   connect( myAddButton,    SIGNAL(clicked()), SLOT(onAdd()));
   connect( myRemoveButton, SIGNAL(clicked()), SLOT(onRemove()));
+  connect( myPrevButton,   SIGNAL(clicked()), SLOT(onPrevious()));
+  connect( myNextButton,   SIGNAL(clicked()), SLOT(onNext()));
   
   connect( mySelectionMgr, SIGNAL(currentSelectionChanged()), this, SLOT(SelectionIntoArgument()));
   connect( myListWidget,   SIGNAL(itemSelectionChanged()),    this, SLOT(onListSelectionChanged()));
@@ -296,6 +306,7 @@ void StdMeshersGUI_SubShapeSelectorWdg::SelectionIntoArgument()
   myAddButton->setEnabled( ( myListWidget->count() < myMaxSize || myMaxSize == -1 ) && mySelectedIDs.size() > 0 && ( mySelectedIDs.size() <= myMaxSize || myMaxSize == -1 ) );
 
   //Connect Selected Ids in viewer and dialog's Ids list
+  bool signalsBlocked = myListWidget->blockSignals( true );
   myListWidget->clearSelection();
   if ( mySelectedIDs.size() > 0 ) {
     for (int i = 0; i < mySelectedIDs.size(); i++) {
@@ -306,6 +317,7 @@ void StdMeshersGUI_SubShapeSelectorWdg::SelectionIntoArgument()
         item->setSelected(true);
     }
   }
+  myListWidget->blockSignals( signalsBlocked );
 }
 
 //=================================================================================
@@ -360,6 +372,28 @@ void StdMeshersGUI_SubShapeSelectorWdg::onRemove()
   myAddButton->setEnabled( true );
 }
 
+void StdMeshersGUI_SubShapeSelectorWdg::onPrevious()
+{
+  if ( myPreviewActor ) {
+    myPreviewActor->previous();
+    myListWidget->clearSelection();
+    updateButtons();
+    if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+      aViewWindow->Repaint();
+  }
+}
+
+void StdMeshersGUI_SubShapeSelectorWdg::onNext()
+{
+  if ( myPreviewActor ) {
+    myPreviewActor->next();
+    myListWidget->clearSelection();
+    updateButtons();
+    if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+      aViewWindow->Repaint();
+  }
+}
+
 //=================================================================================
 // function : onListSelectionChanged()
 // purpose  : Called when selection in element list is changed
@@ -404,6 +438,9 @@ void StdMeshersGUI_SubShapeSelectorWdg::updateState()
   bool state = false;
   if ( !myGeomShape.IsNull() )
     state = true;
+  myInfoLabel->setVisible( false );
+  myPrevButton->setVisible( false );
+  myNextButton->setVisible( false );
   
   myListWidget->setEnabled( state );
   myAddButton->setEnabled( mySelectedIDs.size() > 0 );
@@ -419,6 +456,7 @@ void StdMeshersGUI_SubShapeSelectorWdg::updateState()
       myPreviewActor->AddToRender( myRenderer );
       aViewWindow->Repaint();
     }
+    updateButtons();
   }
 }
 
@@ -551,4 +589,22 @@ QList<int> StdMeshersGUI_SubShapeSelectorWdg::GetCorrectedListOfIDs( bool fromSu
   }
 
   return aList;
+}
+
+void StdMeshersGUI_SubShapeSelectorWdg::updateButtons()
+{
+  if ( myPreviewActor ) {
+    int total = myPreviewActor->count();
+    int chunk = myPreviewActor->currentChunk();
+    int chunkSize = myPreviewActor->chunkSize();
+    int imin = chunk*chunkSize+1;
+    int imax = std::min((chunk+1)*chunkSize, total);
+    bool vis = imax > 0 && total > chunkSize;
+    myInfoLabel->setVisible( vis );
+    myPrevButton->setVisible( vis );
+    myNextButton->setVisible( vis );
+    myInfoLabel->setText( tr( "X_FROM_Y_ITEMS_SHOWN" ).arg(imin).arg(imax).arg(total) );
+    myPrevButton->setEnabled( myPreviewActor->hasPrevious() );
+    myNextButton->setEnabled( myPreviewActor->hasNext() );
+  }
 }
