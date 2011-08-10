@@ -27,7 +27,7 @@
 #ifndef __SMESH_TypeDefs_HXX__
 #define __SMESH_TypeDefs_HXX__
 
-#include "SMESH_SMESH.hxx"
+#include "SMESH_Utils.hxx"
 
 #include <SMDS_MeshNode.hxx>
 
@@ -47,6 +47,19 @@ typedef std::set< const SMDS_MeshNode*,    TIDCompare >      TIDSortedNodeSet;
 
 typedef pair< const SMDS_MeshNode*, const SMDS_MeshNode* >   NLink;
 
+
+namespace SMESHUtils
+{
+  /*!
+   * \brief Enforce freeing memory allocated by std::vector
+   */
+  template <class TVECTOR>
+  void FreeVector(TVECTOR& vec)
+  {
+    TVECTOR v2;
+    vec.swap( v2 );
+  }
+}
 
 //=======================================================================
 /*!
@@ -139,7 +152,7 @@ DEFINE_SEQUENCE(SMESH_SequenceOfNode,
 // --------------------------------------------------------------------------------
 // class SMESH_DataMapOfElemPtrSequenceOfElemPtr
 
-// SMESH_EXPORT 
+// SMESHUtils_EXPORT 
 // inline Standard_Integer HashCode(SMDS_MeshElementPtr theElem,
 //                                  const Standard_Integer theUpper)
 // {
@@ -147,7 +160,7 @@ DEFINE_SEQUENCE(SMESH_SequenceOfNode,
 //   return HashCode(anElem,theUpper);
 // }
 
-// SMESH_EXPORT 
+// SMESHUtils_EXPORT 
 // inline Standard_Boolean IsEqual(SMDS_MeshElementPtr theOne,
 //                                 SMDS_MeshElementPtr theTwo)
 // {

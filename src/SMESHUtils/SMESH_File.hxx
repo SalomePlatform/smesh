@@ -24,7 +24,7 @@
 #ifndef __SMESH_File_HXX__
 #define __SMESH_File_HXX__
 
-#include "SMESH_SMESH.hxx"
+#include "SMESH_Utils.hxx"
 
 #include <string>
 #include <vector>
@@ -38,7 +38,7 @@
 /*!
  * \brief High level util for effective file reading and other file operations
  */
-class SMESH_EXPORT SMESH_File
+class SMESHUtils_EXPORT SMESH_File
 {
 public:
 

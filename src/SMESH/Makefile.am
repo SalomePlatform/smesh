@@ -40,17 +40,10 @@ salomeinclude_HEADERS = \
 	SMESH_3D_Algo.hxx \
 	SMESH_Group.hxx \
 	SMESH_MeshEditor.hxx \
-	SMESH_Block.hxx \
 	SMESH_Pattern.hxx \
-	SMESH_TypeDefs.hxx \
 	SMESH_MesherHelper.hxx \
-	SMESH_Octree.hxx \
-	SMESH_OctreeNode.hxx \
-	SMESH_Comment.hxx \
-	SMESH_ComputeError.hxx \
-	SMESH_File.hxx \
-	SMESH_SMESH.hxx \
-	SMESH_ProxyMesh.hxx
+	SMESH_ProxyMesh.hxx \
+	SMESH_SMESH.hxx
 
 # Libraries targets
 
@@ -69,14 +62,10 @@ dist_libSMESHimpl_la_SOURCES = \
 	SMESH_3D_Algo.cxx \
 	SMESH_Group.cxx \
 	SMESH_MeshEditor.cxx \
-	SMESH_Block.cxx \
 	SMESH_Pattern.cxx \
 	SMESH_HypoFilter.cxx \
-	SMESH_MesherHelper.cxx \
-	SMESH_Octree.cxx \
-	SMESH_OctreeNode.cxx \
-	SMESH_File.cxx \
-	SMESH_ProxyMesh.cxx
+	SMESH_ProxyMesh.cxx \
+	SMESH_MesherHelper.cxx
 
 # additionnal information to compile and link file
 libSMESHimpl_la_CPPFLAGS = \
@@ -93,8 +82,10 @@ libSMESHimpl_la_CPPFLAGS = \
 	-I$(srcdir)/../DriverMED \
 	-I$(srcdir)/../DriverUNV \
 	-I$(srcdir)/../DriverSTL \
+	-I$(srcdir)/../DriverCGNS \
 	-I$(srcdir)/../SMDS \
-	-I$(srcdir)/../SMESHDS
+	-I$(srcdir)/../SMESHDS \
+	-I$(srcdir)/../SMESHUtils
 
 libSMESHimpl_la_LDFLAGS = \
 	../SMESHDS/libSMESHDS.la \
@@ -103,5 +94,7 @@ libSMESHimpl_la_LDFLAGS = \
 	../DriverSTL/libMeshDriverSTL.la \
 	../DriverMED/libMeshDriverMED.la \
 	../DriverUNV/libMeshDriverUNV.la \
+	../DriverCGNS/libMeshDriverCGNS.la \
+	../SMESHUtils/libSMESHUtils.la \
 	$(GEOM_LDFLAGS) -lNMTTools \
 	$(CAS_LDPATH) -lTKShHealing -lTKPrim -lTKG2d
