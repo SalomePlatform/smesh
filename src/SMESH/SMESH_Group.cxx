@@ -62,6 +62,18 @@ SMESH_Group::SMESH_Group (int                       theID,
                                    theType);
 }
 
+//================================================================================
+/*!
+ * \brief Constructor accesible to SMESH_Mesh only
+ */
+//================================================================================
+
+SMESH_Group::SMESH_Group (SMESHDS_GroupBase* groupDS): myGroupDS( groupDS )
+{
+  if ( myGroupDS )
+    myName = myGroupDS->GetStoreName();
+}
+
 //=============================================================================
 /*!
  *  

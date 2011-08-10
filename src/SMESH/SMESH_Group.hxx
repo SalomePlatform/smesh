@@ -49,6 +49,7 @@ class SMESH_EXPORT  SMESH_Group
                const char*               theName,
                const TopoDS_Shape&       theShape = TopoDS_Shape(),
                const SMESH_PredicatePtr& thePredicate = SMESH_PredicatePtr());
+  SMESH_Group (SMESHDS_GroupBase* groupDS);
   ~SMESH_Group ();
 
   void SetName (const char* theName) { myName = theName; }
