@@ -74,6 +74,8 @@ bool SMESHDS_Mesh::IsEmbeddedMode()
 //================================================================================
 /*!
  * \brief Store ID persistent during lifecycle
+ *
+ * Initially it was used to have a persistent reference to the mesh from the hypothesis
  */
 //================================================================================
 
