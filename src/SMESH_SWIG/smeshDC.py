@@ -1760,6 +1760,8 @@ class Mesh:
     def ExportCGNS(self, f, overwrite=1, meshPart=None):
         if isinstance( meshPart, list ):
             meshPart = self.GetIDSource( meshPart, SMESH.ALL )
+        if isinstance( meshPart, Mesh ):
+            meshPart = meshPart.mesh
         elif not meshPart:
             meshPart = self.mesh
         self.mesh.ExportCGNS(meshPart, f, overwrite)
