@@ -952,7 +952,7 @@ bool SMDS_VolumeTool::GetFaceNodes (int                        faceIndex,
 
 //=======================================================================
 //function : IsFaceExternal
-//purpose  : Check normal orientation of a returned face
+//purpose  : Check normal orientation of a given face
 //=======================================================================
 
 bool SMDS_VolumeTool::IsFaceExternal( int faceIndex )
@@ -1545,24 +1545,24 @@ bool SMDS_VolumeTool::setFace( int faceIndex )
       return false;
     }
 
-    // check orientation
-    bool isGoodOri = true;
-    if (myExternalFaces)
-      isGoodOri = IsFaceExternal( faceIndex );
-
     // set face nodes
     int iNode;
     myFaceNbNodes = myPolyedre->NbFaceNodes(faceIndex + 1);
     myFaceNodes = new const SMDS_MeshNode* [myFaceNbNodes + 1];
-    if (isGoodOri) {
-      for ( iNode = 0; iNode < myFaceNbNodes; iNode++ )
-        myFaceNodes[ iNode ] = myPolyedre->GetFaceNode(faceIndex + 1, iNode + 1);
-    } else {
-      for ( iNode = 0; iNode < myFaceNbNodes; iNode++ )
-        myFaceNodes[ iNode ] = myPolyedre->GetFaceNode(faceIndex + 1, myFaceNbNodes - iNode);
-    }
+    for ( iNode = 0; iNode < myFaceNbNodes; iNode++ )
+      myFaceNodes[ iNode ] = myPolyedre->GetFaceNode(faceIndex + 1, iNode + 1);
     myFaceNodes[ myFaceNbNodes ] = myFaceNodes[ 0 ]; // last = first
 
+    // check orientation
+    if (myExternalFaces)
+    {
+      myCurFace = faceIndex; // avoid infinite recursion in IsFaceExternal()
+      myExternalFaces = false; // force normal computation by IsFaceExternal()
+      if ( !IsFaceExternal( faceIndex ))
+        for ( int i = 0, j = myFaceNbNodes; i < j; ++i, --j )
+          std::swap( myFaceNodes[i], myFaceNodes[j] );
+      myExternalFaces = true;
+    }
   }
   else {
     // choose face node indices
