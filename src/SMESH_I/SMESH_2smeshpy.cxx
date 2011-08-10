@@ -429,7 +429,10 @@ void _pyGen::Process( const Handle(_pyCommand)& theCommand )
     myMeshes.insert( make_pair( mesh->GetID(), mesh ));
     return;
   }
-  if ( method == "CreateMeshesFromUNV" || method == "CreateMeshesFromSTL" || method == "CopyMesh" )
+  if ( method == "CreateMeshesFromUNV" ||
+       method == "CreateMeshesFromSTL" ||
+       method == "CreateMeshesFromCGNS" ||
+       method == "CopyMesh" )
   {
     Handle(_pyMesh) mesh = new _pyMesh( theCommand, theCommand->GetResultValue() );
     myMeshes.insert( make_pair( mesh->GetID(), mesh ));
@@ -969,6 +972,15 @@ void _pyMesh::Process( const Handle(_pyCommand)& theCommand )
   else if ( method == "ExportToMED" ||   // ExportToMED()  --> ExportMED()
             method == "ExportToMEDX" ) { // ExportToMEDX() --> ExportMED()
     theCommand->SetMethod( "ExportMED" );
+  }
+  // ----------------------------------------------------------------------
+  else if ( method == "ExportCGNS" )
+  { // ExportCGNS(part, ...) -> ExportCGNS(..., part)
+    _pyID partID = theCommand->GetArg( 1 );
+    int nbArgs = theCommand->GetNbArgs();
+    for ( int i = 2; i <= nbArgs; ++i )
+      theCommand->SetArg( i-1, theCommand->GetArg( i ));
+    theCommand->SetArg( nbArgs, partID );
   }
   // ----------------------------------------------------------------------
   else if ( method.Location( "ExportPartTo", 1, method.Length() ) == 1 )
