@@ -108,14 +108,17 @@ public:
    */
   void ClearSubMesh(const int theShapeId);
 
-  int UNVToMesh(const char* theFileName);
   /*!
    * consult DriverMED_R_SMESHDS_Mesh::ReadStatus for returned value
    */
+  int UNVToMesh(const char* theFileName);
+
   int MEDToMesh(const char* theFileName, const char* theMeshName);
   
   int STLToMesh(const char* theFileName);
 
+  int CGNSToMesh(const char* theFileName, const int theMeshIndex, std::string& theMeshName);
+  
   SMESH_Hypothesis::Hypothesis_Status
   AddHypothesis(const TopoDS_Shape & aSubShape, int anHypId)
     throw(SALOME_Exception);
@@ -231,6 +234,8 @@ public:
   void ExportSTL(const char *        file,
                  const bool          isascii,
                  const SMESHDS_Mesh* meshPart = 0) throw(SALOME_Exception);
+  void ExportCGNS(const char *        file,
+                  const SMESHDS_Mesh* mesh);
   
   int NbNodes() const throw(SALOME_Exception);
   
@@ -285,6 +290,8 @@ public:
     virtual ~TRmGroupCallUp() {}
   };
   void SetRemoveGroupCallUp( TRmGroupCallUp * upCaller );
+
+  bool SynchronizeGroups();
 
 
   SMDSAbs_ElementType GetElementType( const int id, const bool iselem );

@@ -48,6 +48,8 @@
 #include "DriverMED_R_SMESHDS_Mesh.h"
 #include "DriverUNV_R_SMDS_Mesh.h"
 #include "DriverSTL_R_SMDS_Mesh.h"
+#include "DriverCGNS_Read.hxx"
+#include "DriverCGNS_Write.hxx"
 
 #undef _Precision_HeaderFile
 #include <BRepBndLib.hxx>
@@ -439,6 +441,31 @@ int SMESH_Mesh::STLToMesh(const char* theFileName)
     MESSAGE("STLToMesh - _myMeshDS->NbVolumes() = "<<_myMeshDS->NbVolumes());
   }
   return 1;
+}
+
+//================================================================================
+/*!
+ * \brief Reads the given mesh from the CGNS file
+ *  \param theFileName - name of the file
+ *  \retval int - Driver_Mesh::Status
+ */
+//================================================================================
+
+int SMESH_Mesh::CGNSToMesh(const char*  theFileName,
+                           const int    theMeshIndex,
+                           std::string& theMeshName)
+{
+  DriverCGNS_Read myReader;
+  myReader.SetMesh(_myMeshDS);
+  myReader.SetFile(theFileName);
+  myReader.SetMeshId(theMeshIndex);
+  int res = myReader.Perform();
+  theMeshName = myReader.GetMeshName();
+
+  // create groups
+  SynchronizeGroups();
+
+  return res;
 }
 
 //=============================================================================
@@ -1222,6 +1249,23 @@ void SMESH_Mesh::ExportSTL(const char *        file,
 
 //================================================================================
 /*!
+ * \brief Export the mesh to the CGNS file
+ */
+//================================================================================
+
+void SMESH_Mesh::ExportCGNS(const char *        file,
+                            const SMESHDS_Mesh* meshDS)
+{
+  DriverCGNS_Write myWriter;
+  myWriter.SetFile( file );
+  myWriter.SetMesh( const_cast<SMESHDS_Mesh*>( meshDS ));
+  myWriter.SetMeshName( SMESH_Comment("Mesh_") << meshDS->GetPersistentId());
+  if ( myWriter.Perform() != Driver_Mesh::DRS_OK )
+    throw SALOME_Exception("Export failed");
+}
+
+//================================================================================
+/*!
  * \brief Return number of nodes in the mesh
  */
 //================================================================================
@@ -1430,6 +1474,32 @@ SMESH_Group* SMESH_Mesh::AddGroup (const SMDSAbs_ElementType theType,
   GetMeshDS()->AddGroup( aGroup->GetGroupDS() );
   _mapGroup[_groupId++] = aGroup;
   return aGroup;
+}
+
+//================================================================================
+/*!
+ * \brief Creates SMESH_Groups for not wrapped SMESHDS_Groups
+ *  \retval bool - true if new SMESH_Groups have been created
+ * 
+ */
+//================================================================================
+
+bool SMESH_Mesh::SynchronizeGroups()
+{
+  int nbGroups = _mapGroup.size();
+  const set<SMESHDS_GroupBase*>& groups = _myMeshDS->GetGroups();
+  set<SMESHDS_GroupBase*>::const_iterator gIt = groups.begin();
+  for ( ; gIt != groups.end(); ++gIt )
+  {
+    SMESHDS_GroupBase* groupDS = (SMESHDS_GroupBase*) *gIt;
+    _groupId = groupDS->GetID();
+    if ( !_mapGroup.count( _groupId ))
+      _mapGroup[_groupId] = new SMESH_Group( groupDS );
+  }
+  if ( !_mapGroup.empty() )
+    _groupId = _mapGroup.rbegin()->first + 1;
+
+  return nbGroups < _mapGroup.size();
 }
 
 //================================================================================
