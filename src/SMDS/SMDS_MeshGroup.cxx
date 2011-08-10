@@ -131,7 +131,7 @@ void SMDS_MeshGroup::Add(const SMDS_MeshElement * theElem)
     return;
   }
         
-  myElements.insert(theElem);
+  myElements.insert(myElements.end(), theElem);
   ++myTic;
 }
 
