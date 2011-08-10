@@ -129,6 +129,7 @@ libStdMeshersEngine_la_CPPFLAGS = \
 	-I$(srcdir)/../SMESHImpl \
 	-I$(srcdir)/../MEFISTO2 \
 	-I$(srcdir)/../SMESH \
+	-I$(srcdir)/../SMESHUtils \
 	-I$(srcdir)/../SMESH_I \
 	-I$(srcdir)/../SMESHDS \
 	-I$(srcdir)/../SMDS \

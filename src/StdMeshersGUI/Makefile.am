@@ -80,6 +80,7 @@ libStdMeshersGUI_la_CPPFLAGS = \
 	$(CORBA_CXXFLAGS) \
 	$(CORBA_INCLUDES) \
 	-I$(srcdir)/../SMESH \
+	-I$(srcdir)/../SMESHUtils \
 	-I$(srcdir)/../SMESH_I \
 	-I$(srcdir)/../SMESHDS \
 	-I$(srcdir)/../SMDS \

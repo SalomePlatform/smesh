@@ -140,6 +140,7 @@ libStdMeshers_la_CPPFLAGS = \
 	$(KERNEL_CXXFLAGS) \
 	$(GUI_CXXFLAGS) \
 	-I$(srcdir)/../MEFISTO2 \
+	-I$(srcdir)/../SMESHUtils \
 	-I$(srcdir)/../SMESH \
 	-I$(srcdir)/../SMESHDS \
 	-I$(srcdir)/../SMDS \
