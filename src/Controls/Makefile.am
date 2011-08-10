@@ -26,7 +26,6 @@ include $(top_srcdir)/adm_local/unix/make_common_starter.am
 
 # header files 
 salomeinclude_HEADERS = \
-	SMESH_Controls.hxx \
 	SMESH_ControlsDef.hxx
 
 # Libraries targets
