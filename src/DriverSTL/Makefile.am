@@ -54,6 +54,7 @@ libMeshDriverSTL_la_CPPFLAGS = \
 	$(BOOST_CPPFLAGS) \
 	-I$(srcdir)/../Driver \
 	-I$(srcdir)/../SMESH \
+	-I$(srcdir)/../SMESHUtils \
 	-I$(srcdir)/../SMDS
 
 libMeshDriverSTL_la_LDFLAGS  = \
