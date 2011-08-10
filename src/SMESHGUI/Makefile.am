@@ -255,6 +255,7 @@ libSMESH_la_CPPFLAGS = \
 	-I$(srcdir)/../OBJECT \
 	-I$(srcdir)/../SMESHFiltersSelection \
 	-I$(srcdir)/../SMDS \
+	-I$(srcdir)/../SMESHDS \
 	-I$(srcdir)/../SMESH \
 	-I$(srcdir)/../SMESH_I \
 	-I$(srcdir)/../Controls \
