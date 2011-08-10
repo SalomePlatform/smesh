@@ -3811,8 +3811,8 @@ SMESH::FunctorType SMESH::StringToFunctorType(const char* str)
 {
   std::string name( str + 3 ); // skip "FT_"
   const char** functNames = getFunctNames();
-  int ft = SMESH::FT_Undefined;
-  for ( ; ft >= 0; --ft )
+  int ft = 0;
+  for ( ; ft < SMESH::FT_Undefined; ++ft )
     if ( name == ( functNames[ft] + 3 ))
       break;
 
