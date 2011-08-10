@@ -394,6 +394,14 @@ CHECK_PLATFORM
 
 echo
 echo ---------------------------------------------
+echo Testing CGNS library
+echo ---------------------------------------------
+echo
+
+CHECK_CGNS
+
+echo
+echo ---------------------------------------------
 echo Summary
 echo ---------------------------------------------
 echo
@@ -401,11 +409,11 @@ echo
 echo Configure
 
 if test "${gui_ok}" = "yes"; then
-  variables="cc_ok fortran_ok boost_ok lex_yacc_ok python_ok swig_ok threads_ok OpenGL_ok qt_ok vtk_ok hdf5_ok omniORB_ok occ_ok doxygen_ok graphviz_ok sphinx_ok qwt_ok Kernel_ok Geom_ok Med_ok gui_ok"
+  variables="cc_ok fortran_ok boost_ok lex_yacc_ok python_ok swig_ok threads_ok OpenGL_ok qt_ok vtk_ok hdf5_ok cgns_ok omniORB_ok occ_ok doxygen_ok graphviz_ok sphinx_ok qwt_ok Kernel_ok Geom_ok Med_ok gui_ok"
 elif test "${SalomeGUI_need}" != "no"; then
-  variables="cc_ok fortran_ok boost_ok lex_yacc_ok python_ok swig_ok threads_ok vtk_ok hdf5_ok med2_ok omniORB_ok occ_ok doxygen_ok graphviz_ok sphinx_ok Kernel_ok Geom_ok Med_ok gui_ok"
+  variables="cc_ok fortran_ok boost_ok lex_yacc_ok python_ok swig_ok threads_ok vtk_ok hdf5_ok cgns_ok med2_ok omniORB_ok occ_ok doxygen_ok graphviz_ok sphinx_ok Kernel_ok Geom_ok Med_ok gui_ok"
 else
-  variables="cc_ok fortran_ok boost_ok lex_yacc_ok python_ok swig_ok threads_ok vtk_ok hdf5_ok med2_ok omniORB_ok occ_ok doxygen_ok graphviz_ok sphinx_ok Kernel_ok Geom_ok Med_ok"
+  variables="cc_ok fortran_ok boost_ok lex_yacc_ok python_ok swig_ok threads_ok vtk_ok hdf5_ok cgns_ok med2_ok omniORB_ok occ_ok doxygen_ok graphviz_ok sphinx_ok Kernel_ok Geom_ok Med_ok"
 fi
 
 for var in $variables
@@ -492,11 +500,13 @@ AC_OUTPUT([ \
   src/DriverMED/Makefile \
   src/DriverSTL/Makefile \
   src/DriverUNV/Makefile \
+  src/DriverCGNS/Makefile \
   src/MEFISTO2/Makefile \
   src/OBJECT/Makefile \
   src/PluginUtils/Makefile \
   src/SMDS/Makefile \
   src/SMESH/Makefile \
+  src/SMESHUtils/Makefile \
   src/SMESHClient/Makefile \
   src/SMESHDS/Makefile \
   src/SMESHFiltersSelection/Makefile \

@@ -222,6 +222,13 @@ module SMESH
       raises ( SALOME::SALOME_Exception );
 
     /*!
+     * Create Mesh object(s) importing data from given CGNS file
+     */
+    mesh_array CreateMeshesFromCGNS( in string theFileName,
+                                     out SMESH::DriverMED_ReadStatus theStatus )
+      raises ( SALOME::SALOME_Exception );
+
+    /*!
      * Create a mesh by copying a part of another mesh
      *  \param meshPart - a part of mesh to copy
      *  \param meshName - a name of the new mesh

@@ -25,35 +25,35 @@
 
 #include "SMESH_Mesh_i.hxx"
 
-#include "SMESH_Filter_i.hxx"
-#include "SMESH_Gen_i.hxx"
-#include "SMESH_Group_i.hxx"
-#include "SMESH_MEDMesh_i.hxx"
-#include "SMESH_MeshEditor_i.hxx"
-#include "SMESH_PythonDump.hxx"
-#include "SMESH_subMesh_i.hxx"
-
 #include "DriverMED_R_SMESHDS_Mesh.h"
 #include "DriverMED_W_SMESHDS_Mesh.h"
 #include "SMDS_EdgePosition.hxx"
 #include "SMDS_ElemIterator.hxx"
 #include "SMDS_FacePosition.hxx"
+#include "SMDS_IteratorOnIterators.hxx"
 #include "SMDS_SetIterator.hxx"
 #include "SMDS_VolumeTool.hxx"
 #include "SMESHDS_Command.hxx"
 #include "SMESHDS_CommandType.hxx"
 #include "SMESHDS_GroupOnGeom.hxx"
+#include "SMESH_Filter_i.hxx"
+#include "SMESH_Gen_i.hxx"
 #include "SMESH_Group.hxx"
+#include "SMESH_Group_i.hxx"
+#include "SMESH_MEDMesh_i.hxx"
 #include "SMESH_MeshEditor.hxx"
+#include "SMESH_MeshEditor_i.hxx"
 #include "SMESH_MesherHelper.hxx"
+#include "SMESH_PythonDump.hxx"
+#include "SMESH_subMesh_i.hxx"
 
-#include "OpUtil.hxx"
-#include "SALOME_NamingService.hxx"
-#include "Utils_CorbaException.hxx"
-#include "Utils_ExceptHandlers.hxx"
-#include "Utils_SINGLETON.hxx"
-#include "utilities.h"
-#include "GEOMImpl_Types.hxx"
+#include <OpUtil.hxx>
+#include <SALOME_NamingService.hxx>
+#include <Utils_CorbaException.hxx>
+#include <Utils_ExceptHandlers.hxx>
+#include <Utils_SINGLETON.hxx>
+#include <utilities.h>
+#include <GEOMImpl_Types.hxx>
 
 // OCCT Includes
 #include <BRep_Builder.hxx>
@@ -336,6 +336,34 @@ SMESH_Mesh_i::ImportMEDFile( const char* theFileName, const char* theMeshName )
   myFileInfo->major    = major;
   myFileInfo->minor    = minor;
   myFileInfo->release  = release;
+
+  return ConvertDriverMEDReadStatus(status);
+}
+
+//================================================================================
+/*!
+ * \brief Imports mesh data from the CGNS file
+ */
+//================================================================================
+
+SMESH::DriverMED_ReadStatus SMESH_Mesh_i::ImportCGNSFile( const char*  theFileName,
+                                                          const int    theMeshIndex,
+                                                          std::string& theMeshName )
+  throw ( SALOME::SALOME_Exception )
+{
+  Unexpect aCatch(SALOME_SalomeException);
+  int status;
+  try {
+    status = _impl->CGNSToMesh( theFileName, theMeshIndex, theMeshName );
+  }
+  catch( SALOME_Exception& S_ex ) {
+    THROW_SALOME_CORBA_EXCEPTION(S_ex.what(), SALOME::BAD_PARAM);
+  }
+  catch ( ... ) {
+    THROW_SALOME_CORBA_EXCEPTION("ImportCGNSFile(): unknown exception", SALOME::BAD_PARAM);
+  }
+
+  CreateGroupServants();
 
   return ConvertDriverMEDReadStatus(status);
 }
@@ -2745,6 +2773,28 @@ void SMESH_Mesh_i::ExportPartToSTL(::SMESH::SMESH_IDSource_ptr meshPart,
                 << meshPart<< ", r'" << file << "', " << isascii << ")";
 }
 
+//================================================================================
+/*!
+ * \brief Export a part of mesh to an STL file
+ */
+//================================================================================
+
+void SMESH_Mesh_i::ExportCGNS(::SMESH::SMESH_IDSource_ptr meshPart,
+                              const char*                 file,
+                              CORBA::Boolean              overwrite)
+  throw (SALOME::SALOME_Exception)
+{
+  Unexpect aCatch(SALOME_SalomeException);
+
+  PrepareForWriting(file,overwrite);
+
+  SMESH_MeshPartDS partDS( meshPart );
+  _impl->ExportCGNS(file, &partDS);
+
+  TPythonDump() << _this() << ".ExportCGNS( "
+                << meshPart<< ", r'" << file << "', " << overwrite << ")";
+}
+
 //=============================================================================
 /*!
  *
@@ -4361,10 +4411,15 @@ SMESH_MeshPartDS::SMESH_MeshPartDS(SMESH::SMESH_IDSource_ptr meshPart):
 
   _meshDS = mesh_i->GetImpl().GetMeshDS();
 
+  SetPersistentId( _meshDS->GetPersistentId() );
+
   if ( mesh_i == SMESH::DownCast<SMESH_Mesh_i*>( meshPart ))
   {
     // <meshPart> is the whole mesh
     myInfo = _meshDS->GetMeshInfo(); // copy mesh info;
+    // copy groups
+    set<SMESHDS_GroupBase*>& myGroupSet = const_cast<set<SMESHDS_GroupBase*>&>( GetGroups() );
+    myGroupSet = _meshDS->GetGroups();
   }
   else
   {
@@ -4402,8 +4457,20 @@ SMESH_MeshPartDS::SMESH_MeshPartDS(SMESH::SMESH_IDSource_ptr meshPart):
 SMDS_ElemIteratorPtr SMESH_MeshPartDS::elementsIterator(SMDSAbs_ElementType type) const
 {
   typedef SMDS_SetIterator<const SMDS_MeshElement*, TIDSortedElemSet::const_iterator > TIter;
+  if ( type == SMDSAbs_All && !_meshDS )
+  {
+    typedef vector< SMDS_ElemIteratorPtr > TIterVec;
+    TIterVec iterVec;
+    for ( int i = 0; i < SMDSAbs_NbElementTypes; ++i )
+      if ( !_elements[i].empty() && i != SMDSAbs_Node )
+        iterVec.push_back
+          ( SMDS_ElemIteratorPtr( new TIter( _elements[i].begin(), _elements[i].end() )));
+
+    typedef SMDS_IteratorOnIterators<const SMDS_MeshElement*, TIterVec > TIterOnIters;
+    return SMDS_ElemIteratorPtr( new TIterOnIters( iterVec ));
+  }
   return _meshDS ? _meshDS->elementsIterator(type) : SMDS_ElemIteratorPtr
-    ( new TIter( _elements[type].begin(), _elements[type].end() ));
+      ( new TIter( _elements[type].begin(), _elements[type].end() ));
 }
 #define _GET_ITER_DEFINE( iterType, methName, elem, elemType)                       \
   iterType SMESH_MeshPartDS::methName( bool idInceasingOrder) const                 \

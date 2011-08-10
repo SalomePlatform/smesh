@@ -685,6 +685,17 @@ class smeshDC(SMESH._objref_SMESH_Gen):
         aMesh = Mesh(self, self.geompyD, aSmeshMesh)
         return aMesh
 
+    ## Creates Mesh objects importing data from the given CGNS file
+    #  @return an instance of Mesh class
+    #  @ingroup l2_impexp
+    def CreateMeshesFromCGNS( self, theFileName ):
+        aSmeshMeshes, aStatus = SMESH._objref_SMESH_Gen.CreateMeshesFromCGNS(self,theFileName)
+        aMeshes = []
+        for iMesh in range(len(aSmeshMeshes)) :
+            aMesh = Mesh(self, self.geompyD, aSmeshMeshes[iMesh])
+            aMeshes.append(aMesh)
+        return aMeshes, aStatus
+
     ## Concatenate the given meshes into one mesh.
     #  @return an instance of Mesh class
     #  @param meshes the meshes to combine into one mesh
@@ -1741,6 +1752,17 @@ class Mesh:
         else:
             self.mesh.ExportSTL(f, ascii)
 
+    ## Exports the mesh in a file in CGNS format
+    #  @param f is the file name
+    #  @param overwrite boolean parameter for overwriting/not overwriting the file
+    #  @param meshPart a part of mesh (group, sub-mesh) to export instead of the mesh
+    #  @ingroup l2_impexp
+    def ExportCGNS(self, f, overwrite=1, meshPart=None):
+        if isinstance( meshPart, list ):
+            meshPart = self.GetIDSource( meshPart, SMESH.ALL )
+        elif not meshPart:
+            meshPart = self.mesh
+        self.mesh.ExportCGNS(meshPart, f, overwrite)
 
     # Operations with groups:
     # ----------------------

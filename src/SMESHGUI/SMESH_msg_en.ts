@@ -32,6 +32,10 @@
         <translation>STL ASCII files</translation>
     </message>
     <message>
+        <source>CGNS_FILES_FILTER</source>
+        <translation>CGNS files</translation>
+    </message>
+    <message>
         <source>STL_BIN_FILES_FILTER</source>
         <translation>STL binary files</translation>
     </message>
@@ -364,6 +368,10 @@
         <translation>Export to MED File</translation>
     </message>
     <message>
+        <source>MEN_EXPORT_CGNS</source>
+        <translation>Export to CGNS File</translation>
+    </message>
+    <message>
         <source>MEN_EXPORT_SAUV</source>
         <translation>Export to SAUV (ASCII) file</translation>
     </message>
@@ -486,6 +494,10 @@
     <message>
         <source>MEN_MED</source>
         <translation>MED file</translation>
+    </message>
+    <message>
+        <source>MEN_CGNS</source>
+        <translation>CGNS file</translation>
     </message>
     <message>
         <source>MEN_SAUV</source>
@@ -1336,7 +1348,7 @@ Probably, there is not enough space on disk.</translation>
         <source>SMESH_EXPORT_MED_DUPLICATED_GRP</source>
         <translation>There are duplicated group names in mesh &quot;%1&quot;.
 You can cancel exporting and rename them,
-otherwise some group names in the resulting MED file
+otherwise some group names in the resulting file
 will not match ones in the study.
 Do you want to continue ?</translation>
     </message>

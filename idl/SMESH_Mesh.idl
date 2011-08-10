@@ -617,6 +617,9 @@ module SMESH
     void ExportUNV( in string file ) raises (SALOME::SALOME_Exception);
     void ExportSTL( in string  file,
                     in boolean isascii ) raises (SALOME::SALOME_Exception);
+    void ExportCGNS( in SMESH_IDSource meshPart, 
+                     in string         file,
+                     in boolean        overwrite ) raises (SALOME::SALOME_Exception);
     void ExportPartToDAT( in SMESH_IDSource meshPart, 
                           in string         file ) raises (SALOME::SALOME_Exception);
     void ExportPartToUNV( in SMESH_IDSource meshPart, 
