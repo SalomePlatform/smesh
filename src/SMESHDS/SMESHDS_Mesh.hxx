@@ -437,6 +437,7 @@ public:
   void SetNodeOnVertex(SMDS_MeshNode * aNode, int Index);
   void SetMeshElementOnShape(const SMDS_MeshElement * anElt, int Index);
 
+  // Groups. SMESHDS_Mesh is not an owner of groups
   void AddGroup (SMESHDS_GroupBase* theGroup)      { myGroups.insert(theGroup); }
   void RemoveGroup (SMESHDS_GroupBase* theGroup)   { myGroups.erase(theGroup); }
   int GetNbGroups() const                      { return myGroups.size(); }
