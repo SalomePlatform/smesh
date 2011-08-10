@@ -26,6 +26,8 @@
 //
 #include "Driver_Mesh.h"
 
+#include <utilities.h>
+
 using namespace std;
 
 Driver_Mesh::Driver_Mesh():
@@ -39,8 +41,41 @@ void Driver_Mesh::SetMeshId(int theMeshId)
   myMeshId = theMeshId;
 }
 
+void Driver_Mesh::SetMeshName(const std::string& theMeshName)
+{
+  myMeshName = theMeshName;
+}
+
+std::string Driver_Mesh::GetMeshName() const
+{
+  return myMeshName;
+}
+
 
 void Driver_Mesh::SetFile(const std::string& theFileName)
 {
   myFile = theFileName;
+}
+
+
+//================================================================================
+/*!
+ * \brief Stores an error message
+ *
+ * We consider an error fatal if none mesh can be read
+ */
+//================================================================================
+
+Driver_Mesh::Status Driver_Mesh::addMessage(const std::string& msg,
+                                            const bool         isFatal/*=false*/)
+{
+  if ( isFatal )
+    myErrorMessages.clear(); // warnings are useless if a fatal error encounters
+
+  myErrorMessages.push_back( msg );
+
+  MESSAGE(msg);
+  cout << msg << endl;
+
+  return isFatal ? DRS_FAIL : DRS_WARN_SKIP_ELEM;
 }

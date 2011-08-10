@@ -28,6 +28,7 @@
 #define _INCLUDE_DRIVER_MESH
 
 #include <string>
+#include <vector>
 
 #ifdef WNT
  #if defined MESHDRIVER_EXPORTS || defined MeshDriver_EXPORTS
@@ -57,11 +58,16 @@ class MESHDRIVER_EXPORT Driver_Mesh
   virtual Status Perform() = 0;
   void SetMeshId(int theMeshId);
   void SetFile(const std::string& theFileName);
+  virtual void SetMeshName(const std::string& theMeshName);
+  virtual std::string GetMeshName() const;
 
  protected:
   std::string myFile;
+  std::string myMeshName;
   int myMeshId;
 
+  Status addMessage(const std::string& msg, const bool isFatal=false);
+  std::vector< std::string > myErrorMessages;
 };
 
 #endif
