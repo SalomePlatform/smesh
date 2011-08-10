@@ -39,7 +39,8 @@ salomeinclude_HEADERS = \
 	SMESHDS_GroupOnGeom.hxx \
 	SMESHDS_GroupOnFilter.hxx \
 	SMESH_SMESHDS.hxx \
-	SMESHDS_DataMapOfShape.hxx
+	SMESHDS_DataMapOfShape.hxx \
+	SMESH_Controls.hxx
 
 # Libraries targets
 lib_LTLIBRARIES = libSMESHDS.la
@@ -62,8 +63,7 @@ libSMESHDS_la_CPPFLAGS = \
 	$(CAS_CPPFLAGS) \
         $(VTK_INCLUDES) \
 	$(BOOST_CPPFLAGS) \
-	-I$(srcdir)/../SMDS \
-	-I$(srcdir)/../Controls
+	-I$(srcdir)/../SMDS
 
 libSMESHDS_la_LDFLAGS  = \
 	../SMDS/libSMDS.la \
