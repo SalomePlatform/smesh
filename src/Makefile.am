@@ -29,11 +29,13 @@ SUBDIRS = \
 	SMDS \
 	SMESHDS \
 	Controls \
+	SMESHUtils \
 	Driver \
 	DriverMED \
 	DriverDAT \
 	DriverUNV \
 	DriverSTL \
+	DriverCGNS \
 	SMESH \
 	SMESH_I \
 	SMESHClient \
