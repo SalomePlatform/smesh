@@ -49,7 +49,7 @@ SMESHDS_Group::SMESHDS_Group (const int                 theID,
 //purpose  : 
 //=======================================================================
 
-int SMESHDS_Group::Extent()
+int SMESHDS_Group::Extent() const
 {
   return myGroup.Extent();
 }

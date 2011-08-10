@@ -105,7 +105,7 @@ void SMESHDS_GroupBase::resetIterator()
 //purpose  : 
 //=======================================================================
 
-int SMESHDS_GroupBase::Extent()
+int SMESHDS_GroupBase::Extent() const
 {
   SMDS_ElemIteratorPtr it = GetElements();
   int nb = 0;

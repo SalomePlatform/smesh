@@ -46,7 +46,7 @@ class SMESHDS_EXPORT SMESHDS_GroupOnFilter: public SMESHDS_GroupBase
 
   SMESH_PredicatePtr GetPredicate() const { return myPredicate; }
 
-  virtual int Extent();
+  virtual int Extent() const;
 
   virtual bool Contains (const int theID);
 

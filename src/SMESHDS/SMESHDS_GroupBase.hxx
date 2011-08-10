@@ -58,7 +58,7 @@ class SMESHDS_EXPORT SMESHDS_GroupBase
 
   const char* GetStoreName () const { return myStoreName.c_str(); }
 
-  virtual int Extent();
+  virtual int Extent() const;
 
   virtual bool IsEmpty();
 
@@ -97,11 +97,12 @@ class SMESHDS_EXPORT SMESHDS_GroupBase
   const SMESHDS_Mesh*  myMesh;
   SMDSAbs_ElementType  myType;
   std::string          myStoreName;
+  Quantity_Color       myColor;
+
   // for GetID()
   int                  myCurIndex;
   int                  myCurID;
   SMDS_ElemIteratorPtr myIterator;
-  Quantity_Color       myColor;
 };
 
 #endif

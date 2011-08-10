@@ -66,7 +66,7 @@ void SMESHDS_GroupOnFilter::SetPredicate( const SMESH_PredicatePtr& thePredicate
  */
 //================================================================================
 
-int SMESHDS_GroupOnFilter::Extent()
+int SMESHDS_GroupOnFilter::Extent() const
 {
   update();
   return myElements.size();

@@ -46,7 +46,7 @@ class SMESHDS_EXPORT SMESHDS_Group : public SMESHDS_GroupBase
 
   virtual void SetType(SMDSAbs_ElementType theType);
 
-  virtual int Extent();
+  virtual int Extent() const;
 
   virtual bool IsEmpty();
 
