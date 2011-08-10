@@ -59,7 +59,6 @@ class MESHDRIVERMED_EXPORT DriverMED_W_SMESHDS_Mesh: public Driver_SMESHDS_Mesh
 
   /*! functions to prepare adding one mesh
    */
-  void SetMeshName(const std::string& theMeshName);
   void AddGroup(SMESHDS_GroupBase * theGroup);
   void AddAllSubMeshes();
   void AddSubMesh(SMESHDS_SubMesh* theSubMesh, int theID);
@@ -71,7 +70,6 @@ class MESHDRIVERMED_EXPORT DriverMED_W_SMESHDS_Mesh: public Driver_SMESHDS_Mesh
  private:
 
   MED::PWrapper myMed;
-  std::string myMeshName;
   std::list<SMESHDS_GroupBase*> myGroups;
   bool myAllSubMeshes;
   std::map<int,SMESHDS_SubMesh*> mySubMeshes;

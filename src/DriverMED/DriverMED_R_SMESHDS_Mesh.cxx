@@ -25,7 +25,6 @@
 //  Module : SMESH
 //
 #include "DriverMED_R_SMESHDS_Mesh.h"
-#include "DriverMED_R_SMDS_Mesh.h"
 #include "SMESHDS_Mesh.hxx"
 #include "utilities.h"
 

@@ -28,23 +28,15 @@ include $(top_srcdir)/adm_local/unix/make_common_starter.am
 
 # header files 
 salomeinclude_HEADERS = \
-	DriverMED_R_SMDS_Mesh.h \
 	DriverMED_R_SMESHDS_Mesh.h \
-	DriverMED_R_SMESHDS_Document.h \
-	DriverMED_W_SMDS_Mesh.h \
 	DriverMED_W_SMESHDS_Mesh.h \
-	DriverMED_W_SMESHDS_Document.h \
 	DriverMED_Family.h \
 	SMESH_DriverMED.hxx
 
 # Libraries targets
 lib_LTLIBRARIES = libMeshDriverMED.la
 dist_libMeshDriverMED_la_SOURCES = \
-	DriverMED_R_SMDS_Mesh.cxx \
 	DriverMED_R_SMESHDS_Mesh.cxx \
-	DriverMED_R_SMESHDS_Document.cxx \
-	DriverMED_W_SMDS_Mesh.cxx \
-	DriverMED_W_SMESHDS_Document.cxx \
 	DriverMED_W_SMESHDS_Mesh.cxx \
 	DriverMED_Family.cxx
 

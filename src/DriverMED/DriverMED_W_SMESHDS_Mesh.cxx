@@ -27,7 +27,6 @@
 #include <sstream>
 
 #include "DriverMED_W_SMESHDS_Mesh.h"
-#include "DriverMED_W_SMDS_Mesh.h"
 #include "DriverMED_Family.h"
 
 #include "SMESHDS_Mesh.hxx"
@@ -82,11 +81,6 @@ string DriverMED_W_SMESHDS_Mesh::GetVersionString(const MED::EVersion theVersion
   if ( theNbDigits > 2 )
     name << "." << release;
   return name.str();
-}
-
-void DriverMED_W_SMESHDS_Mesh::SetMeshName(const std::string& theMeshName)
-{
-  myMeshName = theMeshName;
 }
 
 void DriverMED_W_SMESHDS_Mesh::AddGroup(SMESHDS_GroupBase* theGroup)
