@@ -35,6 +35,7 @@ class SMDS_EXPORT SMDS_MeshInfo
 public:
 
   inline SMDS_MeshInfo();
+  inline SMDS_MeshInfo& operator=(const SMDS_MeshInfo& other);
   inline void Clear();
 
   int NbNodes() const { return myNbNodes; }
@@ -159,6 +160,14 @@ inline SMDS_MeshInfo::SMDS_MeshInfo():
   myNb[ index( SMDSAbs_Volume, 13)] = & myNbQuadPyramids;
   myNb[ index( SMDSAbs_Volume, 15)] = & myNbQuadPrisms;  
   myNb[ index( SMDSAbs_Volume, 20)] = & myNbQuadHexas;   
+}
+
+inline SMDS_MeshInfo& // operator=
+SMDS_MeshInfo::operator=(const SMDS_MeshInfo& other)
+{ for ( int i=0; i<myNb.size(); ++i ) if ( myNb[i] ) (*myNb[i])=(*other.myNb[i]);
+  myNbPolygons = other.myNbPolygons;
+  myNbPolyhedrons = other.myNbPolyhedrons;
+  return *this;
 }
 
 inline void // Clear
