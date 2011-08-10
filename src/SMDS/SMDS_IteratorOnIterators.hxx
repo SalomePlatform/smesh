@@ -30,7 +30,7 @@
 #include "SMDS_Iterator.hxx"
 
 ///////////////////////////////////////////////////////////////////////////////
-/// SMDS_Iterator iterating over all elements provides by other iterators
+/// SMDS_Iterator iterating over all elements provided by other iterators
 ///
 /// Other iterators must implement SMDS_Iterator iterface and
 /// must be provided within a stl-like container
