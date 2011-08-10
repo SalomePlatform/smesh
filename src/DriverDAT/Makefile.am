@@ -29,11 +29,7 @@ include $(top_srcdir)/adm_local/unix/make_common_starter.am
 # header files 
 salomeinclude_HEADERS = \
 	DriverDAT_R_SMDS_Mesh.h \
-	DriverDAT_R_SMESHDS_Mesh.h \
-	DriverDAT_R_SMESHDS_Document.h \
 	DriverDAT_W_SMDS_Mesh.h \
-	DriverDAT_W_SMESHDS_Mesh.h \
-	DriverDAT_W_SMESHDS_Document.h \
 	SMESH_DriverDAT.hxx
 
 # Libraries targets
@@ -41,11 +37,7 @@ lib_LTLIBRARIES = libMeshDriverDAT.la
 
 dist_libMeshDriverDAT_la_SOURCES = \
 	DriverDAT_R_SMDS_Mesh.cxx \
-	DriverDAT_R_SMESHDS_Mesh.cxx \
-	DriverDAT_R_SMESHDS_Document.cxx \
-	DriverDAT_W_SMDS_Mesh.cxx \
-	DriverDAT_W_SMESHDS_Mesh.cxx \
-	DriverDAT_W_SMESHDS_Document.cxx
+	DriverDAT_W_SMDS_Mesh.cxx
 
 # Executables targets
 bin_PROGRAMS = DAT_Test
