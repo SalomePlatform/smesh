@@ -103,7 +103,9 @@ libSMESHEngine_la_CPPFLAGS = \
 	-I$(srcdir)/../SMESHDS \
 	-I$(srcdir)/../Driver \
 	-I$(srcdir)/../DriverMED \
+	-I$(srcdir)/../DriverCGNS \
 	-I$(srcdir)/../SMESH \
+	-I$(srcdir)/../SMESHUtils \
 	-I$(top_builddir)/idl
 
 libSMESHEngine_la_LDFLAGS  = \
