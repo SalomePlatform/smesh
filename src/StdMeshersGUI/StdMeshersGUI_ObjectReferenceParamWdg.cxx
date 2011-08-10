@@ -206,7 +206,7 @@ void StdMeshersGUI_ObjectReferenceParamWdg::SetObject(CORBA::Object_ptr obj)
     sobj = SMESH::FindSObject (obj);
   if ( sobj ) {
     std::string name = sobj->GetName();
-    myObjNameLineEdit->setText( name.c_str() );
+    myObjNameLineEdit->setText( QString( name.c_str() ).trimmed() );
     myObjNameLineEdit->setStyleSheet("");
     myObjects.push_back( CORBA::Object::_duplicate( obj ));
     myParamValue = sobj->GetID().c_str();
@@ -241,7 +241,7 @@ void StdMeshersGUI_ObjectReferenceParamWdg::SetObjects(SMESH::string_array_var& 
         text += " ";
       else
         text = "";
-      text += name.c_str();
+      text += QString( name.c_str() ).trimmed();
       myObjNameLineEdit->setText( text );
       myObjNameLineEdit->setStyleSheet("");
       myObjects.push_back( anObj );
