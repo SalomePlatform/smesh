@@ -29,11 +29,7 @@ include $(top_srcdir)/adm_local/unix/make_common_starter.am
 # header files 
 salomeinclude_HEADERS = \
 	DriverUNV_R_SMDS_Mesh.h \
-	DriverUNV_R_SMESHDS_Mesh.h \
-	DriverUNV_R_SMESHDS_Document.h \
 	DriverUNV_W_SMDS_Mesh.h \
-	DriverUNV_W_SMESHDS_Mesh.h \
-	DriverUNV_W_SMESHDS_Document.h \
 	SMESH_DriverUNV.hxx
 
 # not-exported (internal) files
@@ -47,11 +43,7 @@ EXTRA_DIST += \
 lib_LTLIBRARIES = libMeshDriverUNV.la
 dist_libMeshDriverUNV_la_SOURCES = \
 	DriverUNV_R_SMDS_Mesh.cxx \
-	DriverUNV_R_SMESHDS_Mesh.cxx \
-	DriverUNV_R_SMESHDS_Document.cxx \
-	DriverUNV_W_SMESHDS_Document.cxx \
 	DriverUNV_W_SMDS_Mesh.cxx \
-	DriverUNV_W_SMESHDS_Mesh.cxx \
 	UNV_Utilities.cxx \
 	UNV2411_Structure.cxx \
 	UNV2412_Structure.cxx \
