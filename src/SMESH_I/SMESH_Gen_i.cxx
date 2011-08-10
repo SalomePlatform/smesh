@@ -100,6 +100,7 @@
 
 #include "DriverMED_W_SMESHDS_Mesh.h"
 #include "DriverMED_R_SMESHDS_Mesh.h"
+#include "DriverCGNS_Read.hxx"
 
 #include "SALOMEDS_Tool.hxx"
 #include "SALOME_NamingService.hxx"
@@ -1021,6 +1022,84 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CreateMeshesFromSTL( const char* theFileName 
   aServant->ImportSTLFile( theFileName );
   aServant->GetImpl().GetMeshDS()->Modified();
   return aMesh._retn();
+}
+
+//================================================================================
+/*!
+ * \brief Create meshes and import data from the CGSN file
+ */
+//================================================================================
+
+SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromCGNS( const char* theFileName,
+                                                      SMESH::DriverMED_ReadStatus& theStatus)
+  throw ( SALOME::SALOME_Exception )
+{
+  Unexpect aCatch(SALOME_SalomeException);
+
+  // Retrieve nb meshes from the file
+  DriverCGNS_Read myReader;
+  myReader.SetFile( theFileName );
+  Driver_Mesh::Status aStatus;
+  int nbMeshes = myReader.GetNbMeshes(aStatus);
+  theStatus = (SMESH::DriverMED_ReadStatus)aStatus;
+
+  SMESH::mesh_array_var aResult = new SMESH::mesh_array();
+  aResult->length( nbMeshes );
+
+  { // open a new scope to make aPythonDump die before PythonDump in SMESH_Mesh::GetGroups()
+
+    // Python Dump
+    TPythonDump aPythonDump;
+    aPythonDump << "([";
+
+    if (theStatus == SMESH::DRS_OK)
+    {
+      SALOMEDS::StudyBuilder_var aStudyBuilder = myCurrentStudy->NewBuilder();
+      aStudyBuilder->NewCommand();  // There is a transaction
+
+      int i = 0;
+
+      // Iterate through all meshes and create mesh objects
+      for ( ; i < nbMeshes; ++i )
+      {
+        // Python Dump
+        if (i > 0) aPythonDump << ", ";
+
+        // create mesh
+        SMESH::SMESH_Mesh_var mesh = createMesh();
+        aResult[i] = SMESH::SMESH_Mesh::_duplicate( mesh );
+
+        // Read mesh data (groups are published automatically by ImportMEDFile())
+        SMESH_Mesh_i* meshServant = dynamic_cast<SMESH_Mesh_i*>( GetServant( mesh ).in() );
+        ASSERT( meshServant );
+        string meshName;
+        SMESH::DriverMED_ReadStatus status1 =
+          meshServant->ImportCGNSFile( theFileName, i, meshName );
+        if (status1 > theStatus)
+          theStatus = status1;
+
+        meshServant->GetImpl().GetMeshDS()->Modified();
+        // publish mesh in the study
+        SALOMEDS::SObject_var aSO;
+        if ( CanPublishInStudy( mesh ) )
+          aSO = PublishMesh( myCurrentStudy, mesh.in(), meshName.c_str() );
+
+        // Python Dump
+        if ( !aSO->_is_nil() )
+          aPythonDump << aSO;
+        else
+          aPythonDump << "mesh_" << i;
+      }
+      aStudyBuilder->CommitCommand();
+    }
+
+    aPythonDump << "], status) = " << this << ".CreateMeshesFromCGNS(r'" << theFileName << "')";
+  }
+  // Dump creation of groups
+  for ( int i = 0; i < aResult->length(); ++i )
+    SMESH::ListOfGroups_var groups = aResult[ i ]->GetGroups();
+
+  return aResult._retn();
 }
 
 //=============================================================================
@@ -2367,10 +2446,15 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CopyMesh(SMESH::SMESH_IDSource_ptr meshPart,
     if ( elem->GetType() != SMDSAbs_Node )
     {
       int ID = toKeepIDs ? elem->GetID() : 0;
-      const SMDS_MeshElement * newElem = editor.AddElement( nodes,
-                                                            elem->GetType(),
-                                                            elem->IsPoly(),
-                                                            ID);
+      const SMDS_MeshElement * newElem;
+      if ( elem->GetEntityType() == SMDSEntity_Polyhedra )
+        newElem = editor.GetMeshDS()->
+          AddPolyhedralVolumeWithID( nodes,
+                                     static_cast<const SMDS_VtkVolume*>(elem)->GetQuantities(),
+                                     elem->GetID());
+      else
+        newElem = editor.AddElement( nodes,elem->GetType(),elem->IsPoly(),ID);
+
       if ( toCopyGroups && !toKeepIDs )
         e2eMapByType[ elem->GetType() ].insert( make_pair( elem, newElem ));
     }

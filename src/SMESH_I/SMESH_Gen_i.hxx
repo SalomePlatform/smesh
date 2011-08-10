@@ -234,6 +234,11 @@ public:
   SMESH::SMESH_Mesh_ptr CreateMeshesFromSTL( const char* theFileName )
     throw ( SALOME::SALOME_Exception );
 
+  //  Create mesh(es) and import data from CGNS file
+  SMESH::mesh_array* CreateMeshesFromCGNS( const char* theFileName,
+                                           SMESH::DriverMED_ReadStatus& theStatus )
+    throw ( SALOME::SALOME_Exception );
+
   // Copy a part of mesh
   SMESH::SMESH_Mesh_ptr CopyMesh(SMESH::SMESH_IDSource_ptr meshPart,
                                  const char*               meshName,
