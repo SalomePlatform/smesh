@@ -6,7 +6,7 @@
 
 \n \b MESH module of SALOME is destined for:
 <ul>
-<li>\ref importing_exporting_meshes_page "import and export of meshes in MED format";</li>
+<li>\ref importing_exporting_meshes_page "import and export of meshes in different formats";</li>
 <li>\subpage about_meshes_page "meshing geometrical models"
 previously created or imported by the Geometry component; </li>
 <li>\subpage viewing_meshes_overview_page "viewing created meshes" in
