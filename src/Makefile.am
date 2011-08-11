@@ -25,6 +25,10 @@
 #
 include $(top_srcdir)/adm_local/unix/make_common_starter.am
 
+if WITH_CGNS
+  DriverCGNS_SUDIR = DriverCGNS
+endif
+
 SUBDIRS = \
 	SMDS \
 	SMESHDS \
@@ -35,7 +39,7 @@ SUBDIRS = \
 	DriverDAT \
 	DriverUNV \
 	DriverSTL \
-	DriverCGNS \
+	$(DriverCGNS_SUDIR) \
 	SMESH \
 	SMESH_I \
 	SMESHClient \
@@ -56,6 +60,6 @@ if SMESH_ENABLE_GUI
 	StdMeshersGUI
 endif
 
-DIST_SUBDIRS = 	SMDS SMESHDS Controls Driver DriverMED DriverDAT DriverUNV DriverSTL SMESH	\
-		SMESH_I SMESHClient SMESH_SWIG MEFISTO2 StdMeshers StdMeshers_I OBJECT		\
+DIST_SUBDIRS = 	SMDS SMESHDS Controls Driver DriverMED DriverDAT DriverUNV DriverSTL DriverCGNS	\
+		SMESH SMESH_I SMESHClient SMESH_SWIG MEFISTO2 StdMeshers StdMeshers_I OBJECT 	\
 		SMESHFiltersSelection SMESHGUI PluginUtils SMESH_SWIG_WITHIHM StdMeshersGUI SMESH_PY Tools

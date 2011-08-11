@@ -44,32 +44,37 @@ cgns_ok=no
 LOCAL_INCLUDES=""
 LOCAL_LIBS="-lcgns $HDF5_LIBS"
 
-if test -z $CGNSHOME
-then
-   AC_MSG_WARN(undefined CGNSHOME variable which specify CGNS library installation directory)
-   AC_PATH_PROG(BINDIR, cgnsversion)
-   if test "x$BINDIR" != "x" ; then
-      CGNSHOME=$BINDIR
-      CGNSHOME=`echo ${CGNSHOME} | sed -e "s,[[^/]]*$,,;s,/$,,;s,^$,.,"`
-      CGNSHOME=`echo ${CGNSHOME} | sed -e "s,[[^/]]*$,,;s,/$,,;s,^$,.,"`
-   fi
-fi
-if test ! -z $CGNSHOME
-then
-   LOCAL_INCLUDES="-I$CGNSHOME/include"
-   if test "x$CGNSHOME" != "x/usr"; then
-     LOCAL_LIBS="-L$CGNSHOME/lib $LOCAL_LIBS"
-   fi
-fi
+if test "x$CGNSHOME" != "xno"; then
+    if test "x$CGNSHOME" == "xyes"; then
+        CGNSHOME=""
+    fi
+    if test -z $CGNSHOME
+    then
+        AC_MSG_WARN(undefined CGNSHOME variable which specify CGNS library installation directory)
+        AC_PATH_PROG(BINDIR, cgnsversion)
+        if test "x$BINDIR" != "x" ; then
+            CGNSHOME=$BINDIR
+            CGNSHOME=`echo ${CGNSHOME} | sed -e "s,[[^/]]*$,,;s,/$,,;s,^$,.,"`
+            CGNSHOME=`echo ${CGNSHOME} | sed -e "s,[[^/]]*$,,;s,/$,,;s,^$,.,"`
+        fi
+    fi
+    if test ! -z $CGNSHOME
+    then
+        LOCAL_INCLUDES="-I$CGNSHOME/include"
+        if test "x$CGNSHOME" != "x/usr"; then
+            LOCAL_LIBS="-L$CGNSHOME/lib $LOCAL_LIBS"
+        fi
+    fi
 
 dnl check cgnslib header
 
-CPPFLAGS_old=$CPPFLAGS
-CPPFLAGS="$CPPFLAGS $LOCAL_INCLUDES"
+    CPPFLAGS_old=$CPPFLAGS
+    CPPFLAGS="$CPPFLAGS $LOCAL_INCLUDES"
 
-AC_CHECK_HEADER(cgnslib.h,cgns_ok=yes ,cgns_ok=no)
+    AC_CHECK_HEADER(cgnslib.h,cgns_ok=yes ,cgns_ok=no)
 
-CPPFLAGS=$CPPFLAGS_old
+    CPPFLAGS=$CPPFLAGS_old
+fi
 
 if  test "x$cgns_ok" = "xyes"
 then
@@ -88,11 +93,11 @@ if  test "x$cgns_ok" = "xyes"
 then
   CGNS_LIBS="$LOCAL_LIBS"
   CGNS_INCLUDES="$LOCAL_INCLUDES"
-  #CPPFLAGS="-DWITH_CGNS $CPPFLAGS"
+  CPPFLAGS="-DWITH_CGNS $CPPFLAGS"
 fi
 
 AC_MSG_RESULT(for CGNS: $cgns_ok)
 
-#AM_CONDITIONAL(WITH_CGNS, [test x"$cgns_ok" = xyes])
+AM_CONDITIONAL(WITH_CGNS, [test x"$cgns_ok" = xyes])
 
 ])dnl

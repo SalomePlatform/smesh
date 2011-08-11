@@ -3502,14 +3502,16 @@ void SMESHGUI::initialize( CAM_Application* app )
   createMenu( 112, importId, -1 );
   createMenu( 113, importId, -1 );
   createMenu( 115, importId, -1 );
+#ifdef WITH_CGNS
   createMenu( 116, importId, -1 );
-
+#endif
   createMenu( 121, exportId, -1 );
   createMenu( 122, exportId, -1 );
   createMenu( 123, exportId, -1 );
   createMenu( 140, exportId, -1 ); // export to STL
+#ifdef WITH_CGNS
   createMenu( 142, exportId, -1 ); // export to CGNS
-
+#endif
   createMenu( separator(), fileId, 10 );
 
   createMenu( 33, editId, -1 );
@@ -3810,7 +3812,9 @@ void SMESHGUI::initialize( CAM_Application* app )
   createPopupItem( 125, OB, mesh_group, multiple_non_empty );   // EXPORT_MED
   createPopupItem( 126, OB, mesh_group, only_one_non_empty );   // EXPORT_UNV
   createPopupItem( 141, OB, mesh_group, only_one_2D );          // EXPORT_STL
+#ifdef WITH_CGNS
   createPopupItem( 143, OB, mesh_group, multiple_non_empty );   // EXPORT_CGNS
+#endif
   createPopupItem(  33, OB, mesh_part + " " + hyp_alg );        // DELETE
   popupMgr()->insert( separator(), -1, 0 );
 

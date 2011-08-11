@@ -2784,6 +2784,7 @@ void SMESH_Mesh_i::ExportCGNS(::SMESH::SMESH_IDSource_ptr meshPart,
                               CORBA::Boolean              overwrite)
   throw (SALOME::SALOME_Exception)
 {
+#ifdef WITH_CGNS
   Unexpect aCatch(SALOME_SalomeException);
 
   PrepareForWriting(file,overwrite);
@@ -2793,6 +2794,9 @@ void SMESH_Mesh_i::ExportCGNS(::SMESH::SMESH_IDSource_ptr meshPart,
 
   TPythonDump() << _this() << ".ExportCGNS( "
                 << meshPart<< ", r'" << file << "', " << overwrite << ")";
+#else
+  THROW_SALOME_CORBA_EXCEPTION("CGNS library is unavailable", SALOME::INTERNAL_ERROR);
+#endif
 }
 
 //=============================================================================

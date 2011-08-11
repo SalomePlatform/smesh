@@ -100,7 +100,9 @@
 
 #include "DriverMED_W_SMESHDS_Mesh.h"
 #include "DriverMED_R_SMESHDS_Mesh.h"
+#ifdef WITH_CGNS
 #include "DriverCGNS_Read.hxx"
+#endif
 
 #include "SALOMEDS_Tool.hxx"
 #include "SALOME_NamingService.hxx"
@@ -1036,6 +1038,9 @@ SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromCGNS( const char* theFileName,
 {
   Unexpect aCatch(SALOME_SalomeException);
 
+  SMESH::mesh_array_var aResult = new SMESH::mesh_array();
+
+#ifdef WITH_CGNS
   // Retrieve nb meshes from the file
   DriverCGNS_Read myReader;
   myReader.SetFile( theFileName );
@@ -1043,7 +1048,6 @@ SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromCGNS( const char* theFileName,
   int nbMeshes = myReader.GetNbMeshes(aStatus);
   theStatus = (SMESH::DriverMED_ReadStatus)aStatus;
 
-  SMESH::mesh_array_var aResult = new SMESH::mesh_array();
   aResult->length( nbMeshes );
 
   { // open a new scope to make aPythonDump die before PythonDump in SMESH_Mesh::GetGroups()
@@ -1098,6 +1102,9 @@ SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromCGNS( const char* theFileName,
   // Dump creation of groups
   for ( int i = 0; i < aResult->length(); ++i )
     SMESH::ListOfGroups_var groups = aResult[ i ]->GetGroups();
+#else
+  THROW_SALOME_CORBA_EXCEPTION("CGNS library is unavailable", SALOME::INTERNAL_ERROR);
+#endif
 
   return aResult._retn();
 }

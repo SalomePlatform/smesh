@@ -48,8 +48,10 @@
 #include "DriverMED_R_SMESHDS_Mesh.h"
 #include "DriverUNV_R_SMDS_Mesh.h"
 #include "DriverSTL_R_SMDS_Mesh.h"
+#ifdef WITH_CGNS
 #include "DriverCGNS_Read.hxx"
 #include "DriverCGNS_Write.hxx"
+#endif
 
 #undef _Precision_HeaderFile
 #include <BRepBndLib.hxx>
@@ -455,16 +457,20 @@ int SMESH_Mesh::CGNSToMesh(const char*  theFileName,
                            const int    theMeshIndex,
                            std::string& theMeshName)
 {
+  int res = Driver_Mesh::DRS_FAIL;
+#ifdef WITH_CGNS
+
   DriverCGNS_Read myReader;
   myReader.SetMesh(_myMeshDS);
   myReader.SetFile(theFileName);
   myReader.SetMeshId(theMeshIndex);
-  int res = myReader.Perform();
+  res = myReader.Perform();
   theMeshName = myReader.GetMeshName();
 
   // create groups
   SynchronizeGroups();
 
+#endif
   return res;
 }
 
@@ -1256,11 +1262,15 @@ void SMESH_Mesh::ExportSTL(const char *        file,
 void SMESH_Mesh::ExportCGNS(const char *        file,
                             const SMESHDS_Mesh* meshDS)
 {
+  int res = Driver_Mesh::DRS_FAIL;
+#ifdef WITH_CGNS
   DriverCGNS_Write myWriter;
   myWriter.SetFile( file );
   myWriter.SetMesh( const_cast<SMESHDS_Mesh*>( meshDS ));
   myWriter.SetMeshName( SMESH_Comment("Mesh_") << meshDS->GetPersistentId());
-  if ( myWriter.Perform() != Driver_Mesh::DRS_OK )
+  res = myWriter.Perform();
+#endif
+  if ( res != Driver_Mesh::DRS_OK )
     throw SALOME_Exception("Export failed");
 }
 

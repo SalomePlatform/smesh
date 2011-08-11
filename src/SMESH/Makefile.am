@@ -87,6 +87,10 @@ libSMESHimpl_la_CPPFLAGS = \
 	-I$(srcdir)/../SMESHDS \
 	-I$(srcdir)/../SMESHUtils
 
+if WITH_CGNS
+  DriverCGNS_LIB = ../DriverCGNS/libMeshDriverCGNS.la
+endif
+
 libSMESHimpl_la_LDFLAGS = \
 	../SMESHDS/libSMESHDS.la \
 	../Controls/libSMESHControls.la \
@@ -94,7 +98,7 @@ libSMESHimpl_la_LDFLAGS = \
 	../DriverSTL/libMeshDriverSTL.la \
 	../DriverMED/libMeshDriverMED.la \
 	../DriverUNV/libMeshDriverUNV.la \
-	../DriverCGNS/libMeshDriverCGNS.la \
+	$(DriverCGNS_LIB) \
 	../SMESHUtils/libSMESHUtils.la \
 	$(GEOM_LDFLAGS) -lNMTTools \
 	$(CAS_LDPATH) -lTKShHealing -lTKPrim -lTKG2d
