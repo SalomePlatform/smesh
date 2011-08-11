@@ -18,13 +18,12 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
-//
 
-//  SMESH SMESH : idl implementation based on 'SMESH' unit's classes
+// SMESH SMESH : idl implementation based on 'SMESH' unit's classes
 // File      : SMESH_MeshEditor.cxx
 // Created   : Mon Apr 12 16:10:22 2004
 // Author    : Edward AGAPOV (eap)
-//
+
 #define CHRONODEF
 #include "SMESH_MeshEditor.hxx"
 
@@ -49,6 +48,8 @@
 #include "SMESH_MesherHelper.hxx"
 #include "SMESH_OctreeNode.hxx"
 #include "SMESH_subMesh.hxx"
+
+#include <CASCatch_OCCTVersion.hxx>
 
 #include "utilities.h"
 
@@ -2829,8 +2830,13 @@ static bool getClosestUV (Extrema_GenExtPS& projector,
   if ( projector.IsDone() ) {
     double u, v, minVal = DBL_MAX;
     for ( int i = projector.NbExt(); i > 0; i-- )
+#if OCC_VERSION_LARGE > 0x06040000 // Porting to OCCT6.5.1
+      if ( projector.SquareDistance( i ) < minVal ) {
+        minVal = projector.SquareDistance( i );
+#else
       if ( projector.Value( i ) < minVal ) {
         minVal = projector.Value( i );
+#endif
         projector.Point( i ).Parameter( u, v );
       }
     result.SetCoord( u, v );
@@ -10785,7 +10791,11 @@ namespace {
       _extremum.Perform(aPnt);
       if ( _extremum.IsDone() )
         for ( int iSol = 1; iSol <= _extremum.NbExt() && _state == TopAbs_OUT; ++iSol)
+#if OCC_VERSION_LARGE > 0x06040000 // Porting to OCCT6.5.1
+          _state = ( _extremum.SquareDistance(iSol) <= theTol ? TopAbs_IN : TopAbs_OUT );
+#else
           _state = ( _extremum.Value(iSol) <= theTol ? TopAbs_IN : TopAbs_OUT );
+#endif
     }
     TopAbs_State State() const
     {

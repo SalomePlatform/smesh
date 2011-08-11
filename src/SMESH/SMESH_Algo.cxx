@@ -18,13 +18,12 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
-//
 
 //  SMESH SMESH : implementaion of SMESH idl descriptions
 //  File   : SMESH_Algo.cxx
 //  Author : Paul RASCLE, EDF
 //  Module : SMESH
-//
+
 #include "SMESH_Algo.hxx"
 
 #include "SMDS_EdgePosition.hxx"
@@ -39,6 +38,8 @@
 #include "SMESH_HypoFilter.hxx"
 #include "SMESH_Mesh.hxx"
 #include "SMESH_TypeDefs.hxx"
+
+#include <CASCatch_OCCTVersion.hxx>
 
 #include <BRepAdaptor_Curve.hxx>
 #include <BRepLProp.hxx>
@@ -512,7 +513,7 @@ GeomAbs_Shape SMESH_Algo::Continuity(TopoDS_Edge E1,
   Standard_Real tol = BRep_Tool::Tolerance( V );
   Standard_Real angTol = 2e-3;
   try {
-#if (OCC_VERSION_MAJOR << 16 | OCC_VERSION_MINOR << 8 | OCC_VERSION_MAINTENANCE) > 0x060100
+#if OCC_VERSION_LARGE > 0x06010000
     OCC_CATCH_SIGNALS;
 #endif
     return BRepLProp::Continuity(C1, C2, u1, u2, tol, angTol);

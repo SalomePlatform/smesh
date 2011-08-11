@@ -18,13 +18,12 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
-//
 
 //  SMESH SMESH : implementaion of SMESH idl descriptions
 //  File   : SMESH_subMesh.cxx
 //  Author : Paul RASCLE, EDF
 //  Module : SMESH
-//
+
 #include "SMESH_subMesh.hxx"
 
 #include "SMESH_Algo.hxx"
@@ -37,6 +36,8 @@
 #include "SMESH_Comment.hxx"
 #include "SMDS_SetIterator.hxx"
 #include "SMDSAbs_ElementType.hxx"
+
+#include <CASCatch_OCCTVersion.hxx>
 
 #include "utilities.h"
 #include "OpUtil.hxx"
@@ -1368,7 +1369,7 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
         _computeState = FAILED_TO_COMPUTE;
         _computeError = SMESH_ComputeError::New(COMPERR_OK,"",algo);
         try {
-#if (OCC_VERSION_MAJOR << 16 | OCC_VERSION_MINOR << 8 | OCC_VERSION_MAINTENANCE) > 0x060100
+#if OCC_VERSION_LARGE > 0x06010000
           OCC_CATCH_SIGNALS;
 #endif
           algo->InitComputeError();

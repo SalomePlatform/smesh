@@ -18,12 +18,11 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
-//
 
 // File      : SMESH_Pattern.hxx
 // Created   : Mon Aug  2 10:30:00 2004
 // Author    : Edward AGAPOV (eap)
-//
+
 #include "SMESH_Pattern.hxx"
 
 #include <BRepAdaptor_Curve.hxx>
@@ -73,6 +72,8 @@
 #include "SMESH_Mesh.hxx"
 #include "SMESH_MesherHelper.hxx"
 #include "SMESH_subMesh.hxx"
+
+#include <CASCatch_OCCTVersion.hxx>
 
 #include <Basics_Utils.hxx>
 #include "utilities.h"
@@ -444,8 +445,13 @@ static gp_XY project (const SMDS_MeshNode* theNode,
   }
   double u, v, minVal = DBL_MAX;
   for ( int i = theProjectorPS.NbExt(); i > 0; i-- )
+#if OCC_VERSION_LARGE > 0x06040000 // Porting to OCCT6.5.1
+    if ( theProjectorPS.SquareDistance( i ) < minVal ) {
+      minVal = theProjectorPS.SquareDistance( i );
+#else
     if ( theProjectorPS.Value( i ) < minVal ) {
       minVal = theProjectorPS.Value( i );
+#endif
       theProjectorPS.Point( i ).Parameter( u, v );
     }
   return gp_XY( u, v );

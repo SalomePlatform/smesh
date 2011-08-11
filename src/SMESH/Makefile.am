@@ -15,14 +15,13 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
-#
 
 #  SMESH SMESH : implementaion of SMESH idl descriptions
 #  File   : Makefile.in
 #  Author : Paul RASCLE, EDF
 #  Modified by : Alexander BORODIN (OCN) - autotools usage
 #  Module : SMESH
-#
+
 include $(top_srcdir)/adm_local/unix/make_common_starter.am
 
 # header files 
@@ -70,6 +69,7 @@ dist_libSMESHimpl_la_SOURCES = \
 # additionnal information to compile and link file
 libSMESHimpl_la_CPPFLAGS = \
 	$(KERNEL_CXXFLAGS) \
+	$(GUI_CXXFLAGS) \
 	$(CAS_CPPFLAGS) \
 	$(MED_CXXFLAGS) \
 	$(GEOM_CXX_FLAGS) \
