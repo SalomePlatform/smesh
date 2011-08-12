@@ -39,7 +39,7 @@
 #include "SMESH_Mesh.hxx"
 #include "SMESH_TypeDefs.hxx"
 
-#include <CASCatch_OCCTVersion.hxx>
+#include <Basics_OCCTVersion.hxx>
 
 #include <BRepAdaptor_Curve.hxx>
 #include <BRepLProp.hxx>

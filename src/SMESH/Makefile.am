@@ -69,7 +69,6 @@ dist_libSMESHimpl_la_SOURCES = \
 # additionnal information to compile and link file
 libSMESHimpl_la_CPPFLAGS = \
 	$(KERNEL_CXXFLAGS) \
-	$(GUI_CXXFLAGS) \
 	$(CAS_CPPFLAGS) \
 	$(MED_CXXFLAGS) \
 	$(GEOM_CXX_FLAGS) \

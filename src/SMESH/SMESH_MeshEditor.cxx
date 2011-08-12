@@ -49,7 +49,7 @@
 #include "SMESH_OctreeNode.hxx"
 #include "SMESH_subMesh.hxx"
 
-#include <CASCatch_OCCTVersion.hxx>
+#include <Basics_OCCTVersion.hxx>
 
 #include "utilities.h"
 
