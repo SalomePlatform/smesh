@@ -150,8 +150,10 @@ void SMESHGUI_GenericHypothesisCreator::editHypothesis( SMESH::SMESH_Hypothesis_
     Dlg->show();
     Dlg->resize( Dlg->minimumSizeHint() );
   }
-  else
+  else {
     emit finished( QDialog::Accepted );
+	delete myDlg;
+  }
 }
 
 QFrame* SMESHGUI_GenericHypothesisCreator::buildStdFrame()
