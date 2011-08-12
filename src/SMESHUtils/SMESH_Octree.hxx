@@ -29,9 +29,10 @@
 #ifndef _SMESH_OCTREE_HXX_
 #define _SMESH_OCTREE_HXX_
 
+#include "SMESH_Utils.hxx"
 #include <Bnd_B3d.hxx>
 
-class SMESH_Octree {
+class SMESHUtils_EXPORT SMESH_Octree {
 
 public:
 

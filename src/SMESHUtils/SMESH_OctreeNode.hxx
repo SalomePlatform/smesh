@@ -30,6 +30,7 @@
 #ifndef _SMESH_OCTREENODE_HXX_
 #define _SMESH_OCTREENODE_HXX_
 
+#include "SMESH_Utils.hxx"
 #include "SMESH_Octree.hxx"
 #include <gp_Pnt.hxx>
 #include "SMDS_MeshNode.hxx"
@@ -48,7 +49,7 @@ typedef SMDS_Iterator<SMESH_OctreeNode*>              SMESH_OctreeNodeIterator;
 typedef boost::shared_ptr<SMESH_OctreeNodeIterator>   SMESH_OctreeNodeIteratorPtr;
 typedef std::set< const SMDS_MeshNode*, TIDCompare >  TIDSortedNodeSet;
 
-class SMESH_OctreeNode : public SMESH_Octree {
+class SMESHUtils_EXPORT SMESH_OctreeNode : public SMESH_Octree {
 
 public:
 

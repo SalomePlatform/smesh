@@ -54,4 +54,4 @@ libSMESHUtils_la_CPPFLAGS = \
 
 libSMESHUtils_la_LDFLAGS = \
 	../SMESHDS/libSMESHDS.la \
-	$(CAS_LDPATH) -lTKShHealing -lTKPrim -lTKG2d
+	$(CAS_LDPATH) -lTKShHealing -lTKPrim -lTKG2d -lTKG3d -lTKGeomBase
