@@ -46,5 +46,5 @@ libMeshDriverCGNS_la_CPPFLAGS = \
 libMeshDriverCGNS_la_LDFLAGS  = \
 	$(BOOST_LIBS) \
 	$(CGNS_LIBS) \
-	../Driver/libMeshDriver.la
-	../Driver/libSMESHUtils.la
+	../Driver/libMeshDriver.la \
+	../SMESHUtils/libSMESHUtils.la
