@@ -77,7 +77,7 @@ namespace
     bool IsStructured() const { return ( _type == CGNS_ENUMV( Structured )); }
     int IndexSize() const { return IsStructured() ? _meshDim : 1; }
     string ReadZonesConnection(int file, int base, const map< string, TZoneData >& zonesByName);
-    void ReplaceNodes( int* ids, int nbIds, int idShift = 0 ) const;
+    void ReplaceNodes( cgsize_t* ids, int nbIds, int idShift = 0 ) const;
 
     // Methods for a structured zone
 
@@ -331,16 +331,16 @@ namespace
             continue; // donor zone not yet read
           const TZoneData& zone2 = n_z->second;
 
-          vector< int > ids( nb * IndexSize() );
-          vector< int > donorIds( donorNb * zone2.IndexSize() );
+          vector< cgsize_t > ids( nb * IndexSize() );
+          vector< cgsize_t > donorIds( donorNb * zone2.IndexSize() );
           if (cg_conn_read ( file, base, _id, I,
                              &ids[0], CGNS_ENUMV(Integer), &donorIds[0]) == CG_OK )
           {
             for ( int isThisZone = 0; isThisZone < 2; ++isThisZone )
             {
-              const TZoneData&           zone = isThisZone ? *this : zone2;
+              const TZoneData&            zone = isThisZone ? *this : zone2;
               CGNS_ENUMT(PointSetType_t) type = isThisZone ? ptype : donorPtype;
-              vector< int >&           points = isThisZone ? ids : donorIds;
+              vector< cgsize_t >&      points = isThisZone ? ids : donorIds;
               if ( type == CGNS_ENUMV( PointRange ))
               {
                 TPointRangeIterator rangeIt( &points[0], zone._meshDim );
@@ -350,7 +350,7 @@ namespace
               }
               else if ( zone.IsStructured() )
               {
-                vector< int > resIDs; resIDs.reserve( points.size() / IndexSize() );
+                vector< cgsize_t > resIDs; resIDs.reserve( points.size() / IndexSize() );
                 for ( size_t i = 0; i < points.size(); i += IndexSize() )
                   resIDs.push_back( zone.NodeID( points[i+0], points[i+1], points[i+2] ));
                 resIDs.swap( points );
@@ -656,8 +656,8 @@ Driver_Mesh::Status DriverCGNS_Read::Perform()
     }
     // read coordinates
 
-    int rmin[3] = {1,1,1}; // range of nodes to read
-    int rmax[3] = {1,1,1};
+    cgsize_t rmin[3] = {1,1,1}; // range of nodes to read
+    cgsize_t rmax[3] = {1,1,1};
     int nbNodes = rmax[0] = zone._sizes[0];
     if ( zone.IsStructured())
       for ( int i = 1; i < meshDim; ++i )
@@ -760,7 +760,8 @@ Driver_Mesh::Status DriverCGNS_Read::Perform()
 
       CGNS_ENUMT( ElementType_t ) elemType;
       cgsize_t start, end; // range of ids of elements of a zone
-      int nbBnd, parent_flag, eDataSize = 0;
+      cgsize_t eDataSize = 0;
+      int nbBnd, parent_flag;
       for ( int iSec = 1; iSec <= nbSections; ++iSec )
       {
         if ( cg_section_read( _fn, cgnsBase, iZone, iSec, name, &elemType,
@@ -810,7 +811,7 @@ Driver_Mesh::Status DriverCGNS_Read::Perform()
               nodes.reserve( nbFaces * 4 );
               for ( int iF = 0; iF < nbFaces; ++iF )
               {
-                const int faceID = Abs( elemData[ pos++ ]) + zone._elemIdShift; 
+                const int faceID = std::abs( elemData[ pos++ ]) + zone._elemIdShift; 
                 if (( face = myMesh->FindElement( faceID )) && face->GetType() == SMDSAbs_Face )
                 {
                   const bool reverse = ( elemData[ pos-1 ] < 0 );
@@ -843,11 +844,10 @@ Driver_Mesh::Status DriverCGNS_Read::Perform()
               //                       Nnodes2, Node12, Node22, ... NodeN2,
               //                       ...
               //                       NnodesM, Node1M, Node2M, ... NodeNM
-              cgnsNbNodes = elemData[ pos ];
-              zone.ReplaceNodes( &elemData[pos+1], cgnsNbNodes, zone._nodeIdShift );
+              const int nbNodes = elemData[ pos ];
+              zone.ReplaceNodes( &elemData[pos+1], nbNodes, zone._nodeIdShift );
               newElem = add_NGON( &elemData[pos  ], myMesh, elemID );
-              pos += cgnsNbNodes + 1;
-              cgnsNbNodes = 0; // as mark of poly elements
+              pos += nbNodes + 1;
             }
           }
           else // standard elements
