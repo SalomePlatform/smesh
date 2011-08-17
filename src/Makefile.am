@@ -61,5 +61,5 @@ if SMESH_ENABLE_GUI
 endif
 
 DIST_SUBDIRS = 	SMDS SMESHDS Controls Driver DriverMED DriverDAT DriverUNV DriverSTL DriverCGNS	\
-		SMESH SMESH_I SMESHClient SMESH_SWIG MEFISTO2 StdMeshers StdMeshers_I OBJECT 	\
+		SMESHUtils SMESH SMESH_I SMESHClient SMESH_SWIG MEFISTO2 StdMeshers StdMeshers_I OBJECT 	\
 		SMESHFiltersSelection SMESHGUI PluginUtils SMESH_SWIG_WITHIHM StdMeshersGUI SMESH_PY Tools
