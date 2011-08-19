@@ -1096,7 +1096,7 @@ bool SMESH_Mesh::HasModificationsToDiscard() const
         return true;
     }
 
-  if ( !hasComputed )
+  if ( NbNodes() < 1 )
     const_cast<SMESH_Mesh*>(this)->_isModified = false;
 
   return false;
