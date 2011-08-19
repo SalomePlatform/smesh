@@ -166,17 +166,24 @@ namespace {
                       EventListenerData* data,
                       const SMESH_Hypothesis*  /*hyp*/)
     {
-      bool hypRemoved = ( eventType == SMESH_subMesh::ALGO_EVENT &&
-                          subMesh->GetAlgoState() != SMESH_subMesh::HYP_OK );
-      if ( hypRemoved && data )
+      if ( data && eventType == SMESH_subMesh::ALGO_EVENT )
       {
-        list<SMESH_subMesh*>::iterator smIt = data->mySubMeshes.begin();
-        for ( ; smIt != data->mySubMeshes.end(); ++smIt )
+        bool hypRemoved;
+        if ( subMesh->GetAlgoState() != SMESH_subMesh::HYP_OK )
+          hypRemoved = true;
+        else {
+          SMESH_Gen * gen = subMesh->GetFather()->GetGen();
+          SMESH_Algo* algo = gen->GetAlgo( *subMesh->GetFather(), subMesh->GetSubShape() );
+          hypRemoved = ( string( algo->GetName() ) != StdMeshers_CompositeSegment_1D::AlgoName());
+        }
+        if ( hypRemoved )
         {
-          if ( SMESH_subMesh* sm = *smIt ) {
-            sm->SetIsAlwaysComputed( false );
-            sm->ComputeStateEngine( SMESH_subMesh::CHECK_COMPUTE_STATE );
-          }
+          list<SMESH_subMesh*>::iterator smIt = data->mySubMeshes.begin();
+          for ( ; smIt != data->mySubMeshes.end(); ++smIt )
+            if ( SMESH_subMesh* sm = *smIt ) {
+              sm->SetIsAlwaysComputed( false );
+              sm->ComputeStateEngine( SMESH_subMesh::CHECK_COMPUTE_STATE );
+            }
         }
       }
       // at study restoration:
@@ -223,10 +230,19 @@ StdMeshers_CompositeSegment_1D::StdMeshers_CompositeSegment_1D(int         hypId
   :StdMeshers_Regular_1D(hypId, studyId, gen)
 {
   MESSAGE("StdMeshers_CompositeSegment_1D::StdMeshers_CompositeSegment_1D");
-  _name = "CompositeSegment_1D";
+  _name = AlgoName();
   _EventListener = new VertexNodesRestoringListener();
 }
 
+//=======================================================================
+//function : AlgoName
+//purpose  : Returns algo type name
+//=======================================================================
+
+std::string StdMeshers_CompositeSegment_1D::AlgoName()
+{
+  return "CompositeSegment_1D";
+}
 //=============================================================================
 /*!
  *  
