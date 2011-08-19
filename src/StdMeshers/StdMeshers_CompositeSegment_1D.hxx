@@ -61,6 +61,11 @@ public:
                                            const TopoDS_Face& aFace,
                                            const bool         ignoreMeshed);
 
+  /*!
+   * \brief Returns algo type name
+   */
+  static std::string AlgoName();
+
 protected:
   SMESH_subMeshEventListener* _EventListener;
 };
