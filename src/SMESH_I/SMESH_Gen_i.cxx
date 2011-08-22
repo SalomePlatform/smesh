@@ -4671,6 +4671,13 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
       }
     } // loop on meshes
 
+    // update hyps needing full mesh data restored (issue 20918)
+    for ( hyp_data = hypDataList.begin(); hyp_data != hypDataList.end(); ++hyp_data )
+    {
+      SMESH_Hypothesis_i* hyp  = hyp_data->first;
+      hyp->UpdateAsMeshesRestored();
+    }
+
     // notify algos on completed restoration
     for ( meshi_group = meshGroupList.begin(); meshi_group != meshGroupList.end(); ++meshi_group )
     {
@@ -4685,12 +4692,6 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
 
       myLocMesh.GetSubMesh(myLocShape)->
         ComputeStateEngine (SMESH_subMesh::SUBMESH_RESTORED);
-    }
-
-    for ( hyp_data = hypDataList.begin(); hyp_data != hypDataList.end(); ++hyp_data )
-    {
-      SMESH_Hypothesis_i* hyp  = hyp_data->first;
-      hyp->UpdateAsMeshesRestored(); // for hyps needing full mesh data restored (issue 20918)
     }
 
     // close mesh group
