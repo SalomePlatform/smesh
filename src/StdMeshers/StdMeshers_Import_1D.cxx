@@ -889,8 +889,8 @@ void StdMeshers_Import_1D::importMesh(const SMESH_Mesh*          srcMesh,
   e2e->clear();
 
   // Remember created groups in order to remove them as soon as the srcHyp is
-  // modified or something other similar happens. Store them in a hypothesis
-  // as it stores its values anyway
+  // modified or something other similar happens. This imformation must be persistent,
+  // for that store them in a hypothesis as it stores its values in the file anyway
   srcHyp->StoreResultGroups( resultGroups, *srcMeshDS, *tgtMeshDS );
 }
 
