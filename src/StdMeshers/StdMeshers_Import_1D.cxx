@@ -168,7 +168,7 @@ namespace // INTERNAL STUFF
 
     set< SMESH_subMesh*, _SubLess > _subM; // submeshes relating to this srcMesh
     set< SMESH_subMesh*, _SubLess > _copyMeshSubM; // submeshes requesting mesh copying
-    set< SMESH_subMesh*, _SubLess > _copyGroupSubM; // submeshes requesting mesh copying
+    set< SMESH_subMesh*, _SubLess > _copyGroupSubM; // submeshes requesting group copying
     set< SMESH_subMesh*, _SubLess > _computedSubM;
 
     SMESHDS_SubMesh*     _importMeshSubDS; // submesh storing a copy of _srcMesh
