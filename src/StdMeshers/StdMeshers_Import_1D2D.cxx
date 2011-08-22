@@ -144,6 +144,12 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
   if ( srcGroups.empty() )
     return error("Invalid source groups");
 
+  bool allGroupsEmpty = true;
+  for ( size_t iG = 0; iG < srcGroups.size() && allGroupsEmpty; ++iG )
+    allGroupsEmpty = srcGroups[iG]->GetGroupDS()->IsEmpty();
+  if ( allGroupsEmpty )
+    return error("No faces in source groups");
+
   SMESH_MesherHelper helper(theMesh);
   helper.SetSubShape(theShape);
   SMESHDS_Mesh* tgtMesh = theMesh.GetMeshDS();
@@ -192,7 +198,7 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
   StdMeshers_Import_1D::TNodeNodeMap* n2n;
   StdMeshers_Import_1D::TElemElemMap* e2e;
   vector<const SMDS_MeshNode*> newNodes;
-  for ( int iG = 0; iG < srcGroups.size(); ++iG )
+  for ( size_t iG = 0; iG < srcGroups.size(); ++iG )
   {
     const SMESHDS_GroupBase* srcGroup = srcGroups[iG]->GetGroupDS();
 
@@ -212,7 +218,7 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
       newNodes.back() = 0;
       int nbCreatedNodes = 0;
       SMDS_MeshElement::iterator node = face->begin_nodes();
-      for ( unsigned i = 0; i < newNodes.size(); ++i, ++node )
+      for ( size_t i = 0; i < newNodes.size(); ++i, ++node )
       {
         StdMeshers_Import_1D::TNodeNodeMap::iterator n2nIt = n2n->insert( make_pair( *node, (SMDS_MeshNode*)0 )).first;
         if ( n2nIt->second )
@@ -342,7 +348,8 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
   const double projTol = 1e-3 * sqrt( minLinkLen2 );
 
   bool isFaceMeshed = false;
-  if ( SMESHDS_SubMesh* tgtSM = tgtMesh->MeshElements( theShape ))
+  SMESHDS_SubMesh* tgtFaceSM = tgtMesh->MeshElements( theShape );
+  if ( tgtFaceSM )
   {
     // the imported mesh is valid if all external links (encountered once)
     // lie on geom edges
@@ -354,7 +361,7 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
       int nbFaces = link2Nb->second;
       if ( nbFaces == 1 )
       {
-        // check if a not shared link lie on face boundary
+        // check if a not shared link lies on face boundary
         bool nodesOnBoundary = true;
         list< TopoDS_Shape > bndShapes;
         for ( int is1stN = 0; is1stN < 2 && nodesOnBoundary; ++is1stN )
@@ -362,14 +369,14 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
           const SMDS_MeshNode* n = is1stN ? link.node1() : link.node2();
           if ( !subShapeIDs.count( n->getshapeId() ))
           {
-            for ( unsigned iE = 0; iE < edges.size(); ++iE )
+            for ( size_t iE = 0; iE < edges.size(); ++iE )
               if ( helper.CheckNodeU( edges[iE], n, u=0, projTol, /*force=*/true ))
               {
                 BRep_Tool::Range(edges[iE],f,l);
                 if ( Abs(u-f) < 2 * faceTol || Abs(u-l) < 2 * faceTol )
                   // duplicated node on vertex
                   return error("Source elements overlap one another");
-                tgtSM->RemoveNode( n, /*isNodeDeleted=*/false );
+                tgtFaceSM->RemoveNode( n, /*isNodeDeleted=*/false );
                 tgtMesh->SetNodeOnEdge( (SMDS_MeshNode*)n, edges[iE], u );
                 break;
               }
@@ -421,7 +428,7 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
 
           TopoDS_Edge geomEdge = TopoDS::Edge(bndShapes.back());
           helper.CheckNodeU( geomEdge, link._medium, u, 10*faceTol, /*force=*/true );
-          tgtSM->RemoveNode( link._medium, /*isNodeDeleted=*/false );
+          tgtFaceSM->RemoveNode( link._medium, /*isNodeDeleted=*/false );
           tgtMesh->SetNodeOnEdge( (SMDS_MeshNode*)link._medium, geomEdge, u );
         }
         else
@@ -468,16 +475,97 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
   if ( !isFaceMeshed )
     return error( "Source elements don't cover totally the geometrical face" );
 
+  if ( helper.HasSeam() )
+  {
+    // links on seam edges are shared by two faces, so no edges were created on them
+    // by the previous detection of 2D mesh boundary
+    for ( size_t iE = 0; iE < edges.size(); ++iE )
+    {
+      if ( !helper.IsRealSeam( edges[iE] )) continue;
+      const TopoDS_Edge& seamEdge = edges[iE];
+      // to find nodes lying on the seamEdge we check nodes of mesh faces sharing a node on one
+      // of its vertices; after finding another node on seamEdge we continue the same way
+      // until finding all nodes.
+      TopoDS_Vertex      seamVertex = helper.IthVertex( 0, seamEdge );
+      const SMDS_MeshNode* vertNode = SMESH_Algo::VertexNode( seamVertex, tgtMesh );
+      set< const SMDS_MeshNode* > checkedNodes; checkedNodes.insert( vertNode );
+      set< const SMDS_MeshElement* > checkedFaces;
+      // as a face can have more than one node on the seamEdge, there is a difficulty in selecting
+      // one of those nodes to treat next; so we simply find all nodes on the seamEdge and
+      // then sort them by U on edge
+      typedef list< pair< double, const SMDS_MeshNode* > > TUNodeList;
+      TUNodeList nodesOnSeam;
+      double u = helper.GetNodeU( seamEdge, vertNode );
+      nodesOnSeam.push_back( make_pair( u, vertNode ));
+      TUNodeList::iterator u2nIt = nodesOnSeam.begin();
+      for ( ; u2nIt != nodesOnSeam.end(); ++u2nIt )
+      {
+        const SMDS_MeshNode* startNode = (*u2nIt).second;
+        SMDS_ElemIteratorPtr faceIt = startNode->GetInverseElementIterator( SMDSAbs_Face );
+        while ( faceIt->more() )
+        {
+          const SMDS_MeshElement* face = faceIt->next();
+          if ( !checkedFaces.insert( face ).second ) continue;
+          for ( int i = 0, nbNodes = face->NbCornerNodes(); i < nbNodes; ++i )
+          {
+            const SMDS_MeshNode* n = face->GetNode( i );
+            if ( n == startNode || !checkedNodes.insert( n ).second ) continue;
+            if ( helper.CheckNodeU( seamEdge, n, u=0, projTol, /*force=*/true ))
+              nodesOnSeam.push_back( make_pair( u, n ));
+          }
+        }
+      }
+      // sort the found nodes by U on the seamEdge; most probably they are in a good order,
+      // so we can use the hint to spead-up map filling
+      map< double, const SMDS_MeshNode* > u2nodeMap;
+      for ( u2nIt = nodesOnSeam.begin(); u2nIt != nodesOnSeam.end(); ++u2nIt )
+        u2nodeMap.insert( u2nodeMap.end(), *u2nIt );
+
+      // create edges
+      {
+        SMESH_MesherHelper seamHelper( theMesh );
+        seamHelper.SetSubShape( edges[ iE ]);
+        seamHelper.SetElementsOnShape( true );
+
+        if ( (*checkedFaces.begin())->IsQuadratic() )
+          for ( set< const SMDS_MeshElement* >::iterator fIt = checkedFaces.begin();
+                fIt != checkedFaces.end(); ++fIt )
+            seamHelper.AddTLinks( static_cast<const SMDS_MeshFace*>( *fIt ));
+
+        map< double, const SMDS_MeshNode* >::iterator n1, n2, u2nEnd = u2nodeMap.end();
+        for ( n2 = u2nodeMap.begin(), n1 = n2++; n2 != u2nEnd; ++n1, ++n2 )
+        {
+          const SMDS_MeshNode* node1 = n1->second;
+          const SMDS_MeshNode* node2 = n2->second;
+          seamHelper.AddEdge( node1, node2 );
+          if ( node2->getshapeId() == helper.GetSubShapeID() )
+          {
+            tgtFaceSM->RemoveNode( node2, /*isNodeDeleted=*/false );
+            tgtMesh->SetNodeOnEdge( const_cast<SMDS_MeshNode*>( node2 ), seamEdge, n2->first );
+          }
+        }
+      }
+    } // loop on edges to find seam ones
+  } // if ( helper.HasSeam() )
+
   // notify sub-meshes of edges on computation
-  for ( unsigned iE = 0; iE < edges.size(); ++iE )
-    theMesh.GetSubMesh( edges[iE] )->ComputeStateEngine(SMESH_subMesh::CHECK_COMPUTE_STATE);
+  for ( size_t iE = 0; iE < edges.size(); ++iE )
+  {
+    SMESH_subMesh * sm = theMesh.GetSubMesh( edges[iE] );
+    if ( BRep_Tool::Degenerated( edges[iE] ))
+      sm->SetIsAlwaysComputed( true );
+    sm->ComputeStateEngine(SMESH_subMesh::CHECK_COMPUTE_STATE);
+    if ( sm->GetComputeState() != SMESH_subMesh::COMPUTE_OK )
+      return error(SMESH_Comment("Failed to create segments on the edge ")
+                   << tgtMesh->ShapeToIndex( edges[iE ]));
+  }
 
   // ============
   // Copy meshes
   // ============
 
   vector<SMESH_Mesh*> srcMeshes = _sourceHyp->GetSourceMeshes();
-  for ( unsigned i = 0; i < srcMeshes.size(); ++i )
+  for ( size_t i = 0; i < srcMeshes.size(); ++i )
     StdMeshers_Import_1D::importMesh( srcMeshes[i], theMesh, _sourceHyp, theShape );
 
   return true;
