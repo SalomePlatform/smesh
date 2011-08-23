@@ -103,8 +103,7 @@ not sewed faces.
 
 <li><b>Add option</b> - provides the choice of multiple PreCAD and BLSURF 
 advanced options, which appear, if selected, in a table where it is 
-possible to input the value of the option and to edit it later. The PreCAD 
-options are prefixed with "PRECAD_".</li>
+possible to input the value of the option and to edit it later.</li>
 
 <li><b>Clear option</b> - removes the option selected in the table.</li>
 
