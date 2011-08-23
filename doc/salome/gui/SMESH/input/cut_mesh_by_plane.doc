@@ -47,10 +47,9 @@ SMESH installation in  subdirectory bin/salome/meshcut_plugin.py.
  if not, copied as ${HOME}/Plugins/smesh_plugins.py or ${APPLI}/Plugins/smesh_plugins.py
  or in ${PLUGINPATH} Directory.
  
-<li>From the Mesh menu, sub-menu SMESH_plugins, choose "MeshCut" item
+From the Mesh menu, sub-menu SMESH_plugins, choose "MeshCut" item
 The following dialog box will appear:
 \image html meshcut_plugin.png "MeshCut Plugin dialog box"
-</li>
 
 See above for the meaning of the parameters. 
 */

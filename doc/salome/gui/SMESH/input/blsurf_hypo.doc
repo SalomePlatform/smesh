@@ -58,7 +58,13 @@ hyper-face.</li>
 
 <h1>Advanced parameters</h1>
 
+The notion of <i>diag</i> used in the descriptions means the diagonal of the bounding box of the 
+geometrical object to mesh.
+
 \image html blsurf_parameters_advanced.png
+
+<li><b>Verbosity level</b> - Defines the percentage of "verbosity" of
+BLSURF [0-100].</li>
 
 <li><b>Topology</b> - allows creation of a conform mesh on a shell of
 not sewed faces. 
@@ -76,38 +82,50 @@ not sewed faces.
     enhancement for mesh generation.</li>
   </ul>
   This module requires a specific licence.
+  \n
+  The following PreCAD options are the most significant and important ones:
+  <ul>
+  <li><b>Merge Edges</b> - allows PreCAD to optimize the geometry by merging some
+  edges. Default is 0.</li>
+  <li><b>Remove nano edges</b> - allows PreCAD to optimize the geometry by removing 
+  the nano edges whenever possible. Default is 0.</li>
+  <li><b>Nano edge length</b> - gives the length below which an edge is considered as nano 
+  for the topology processing. See also the \b remove_nano_edges option. If unset, PreCAD
+  default value is \f$\mathrm{diag} \times 10^{-5}\f$.</li>
+  <li><b>Discard input topology</b> - computes the CAD topology from scratch, 
+  without considering the toplogical information contained in the original CAD
+  (Useful for iges files). Default is 0.</li>
+  </ul>
   </li>
 </ul>
 
-<li><b>Verbosity level</b> - Defines the percentage of "verbosity" of
-BLSURF [0-100].</li>
+<li><b>ExportGMF</b> - saves the computed mesh into a GMF file (.mesh or .meshb).</li>
 
-<li><b>Add option</b> - provides the choice of multiple advanced
-options, which appear, if selected, in a table where it is possible to
-input the value of the option and to edit it later.</li>
+<li><b>Add option</b> - provides the choice of multiple PreCAD and BLSURF 
+advanced options, which appear, if selected, in a table where it is 
+possible to input the value of the option and to edit it later. The PreCAD 
+options are prefixed with "PRECAD_".</li>
 
-<li><b>Clear option</b> - removes the option selected in the table.
+<li><b>Clear option</b> - removes the option selected in the table.</li>
 
 </ul>
 
 \n
-The following options are commonly usable. The notion of <i>diag</i>
-used in the descriptions means
-the diagonal of the bounding box of the geometrical object to mesh.
+The following BLSURF options are commonly usable.
 
 <ul>
-<li><b>topo_eps1</b> (real) - is the tolerance level inside a CAD
-patch. By default is equal to <i>diag</i> � 10-4. This tolerance is used to
+<li>\b topo_eps1 (real) - is the tolerance level inside a CAD
+patch. By default is equal to \f$\mathrm{diag} \times 10^{-4}\f$. This tolerance is used to
 identify nodes to merge within one geometrical face when \b Topology
-option is to pre-process. Default is <i>diag</i>/10.0.</li>
+option is to pre-process.</li>
 
-<li><b>topo_eps2</b> (real) - is the tolerance level between two CAD
-patches. By default is equal to <i>diag</i> � 10-4. This tolerance is used to
+<li>\b topo_eps2 (real) - is the tolerance level between two CAD
+patches. By default is equal to \f$\mathrm{diag} \times 10^{-4}\f$. This tolerance is used to
 identify nodes to merge over different geometrical faces when
-\b Topology option is to pre-process. Default is <i>diag</i>/10.0.</li>
+\b Topology option is to pre-process.</li>
 
 <li>\b LSS (real) - is an abbreviation for "length of sub-segment". It is
-a maximal allowed length of a mesh edge. Default is 0.5.</li>
+a maximal allowed length of a mesh edge. Default is \f$0.5\f$.</li>
 
 <li>\b frontal (integer)
 <ul>
@@ -122,12 +140,11 @@ Default is 0.</li>
 interpolated value <i>v</i> between two points <i>P1</i> and <i>P2</i> on a
 curve. Let <i>h1</i> be the value at point <i>P1,</i> <i>h2</i> be the value at point
 <i>P2,</i> and <i>t</i> be a parameter varying from 0 to 1 when moving from <i>P1
-to</i> <i>P2</i> . 
+to</i> <i>P2</i>.
 <ul>
-<li>0 - the interpolation is linear: <i>v = h1 + t (h2 - h1 )</i></li>
-<li>1 - the interpolation is geometric: <i>v = h1 * pow( h2/h1, t)</i></li>
-<li>2 - the interpolation is sinusoidal: <i>v = (h1+h2)/2 +
-(h1-h2)/2*cos(PI*t)</i></li>
+<li>0 - the interpolation is linear: \f$v = h1 + t (h2 - h1 )\f$</li>
+<li>1 - the interpolation is geometric: \f$v = h1 \times \left( \frac{h1}{h2} \right)^{t}\f$</li>
+<li>2 - the interpolation is sinusoidal: \f$v = \frac{h1+h2}{2} + \frac{h1-h2}{2 \cdot \cos(\pi \cdot t)}\f$</li>
 </ul>
 Default is 0.</li>
 
@@ -135,7 +152,7 @@ Default is 0.</li>
 <li>\b hmean_flag (integer) - determines the computation of the average of several
 values:<ul>
 <li>-1 - the minimum is computed.</li>
-<li>0 or 2 - the arithmetic average computed.
+<li>0 or 2 - the arithmetic average is computed.
 <li>1 - the geometric average is computed.</li>
 </ul>
 Default is 0.</li>
@@ -159,14 +176,43 @@ split into 20 edges. Default is 0.0.</li>
 
 <li>\b eps_ends (real) - is used to detect the curves whose lengths are very
 small, which sometimes constitutes an error. A message is printed
-if<i> fabs(P2-P1) < eps_ends</i>, where <i>P1</i> and <i>P2</i> are the
-extremities of a curve. Default is <i>diag</i>/500.0.</li>
+if \f$\left|P2-P1\right| < eps\_ends\f$, where <i>P1</i> and <i>P2</i> are the
+extremities of a curve. Default is \f$\frac{\mathrm{diag}}{500.0}\f$.</li>
 
 <li>\b prefix (char) - is a prefix of the files generated by
 BLSURF. Default is "x".</li>
 
 <li>\b refs (integer) - reference of a surface, used when exporting
 files. Default is 1.</li>
+</ul>
+
+\n
+The following PreCAD options are commonly usable. 
+<ul>
+<li>\b closed_geometry (int) - describes whether the working geometry 
+should be closed or not. When activated, this option helps PreCAD to treat 
+the most dirtiest geometries. Default is 0.</li>
+<li>\b debug (int) - If debug = 1 PreCAD will be very verbose and will output 
+some intermediate ﬁles in the working directory. Default is 0.</li>
+<li>\b eps_nano_relative (real) -  Same as \b eps_nano but given in relatively to 
+the diagonal of the box bounding the geometry. Default is \f$10^{-5}\f$.</li>
+<li>\b eps_sewing (real) - tolerance of the assembly. It rarely requires to be tuned. 
+Default is \f$\mathrm{diag} \times 5 \cdot 10^{-4}\f$.</li>
+<li>\b eps_sewing_relative (real) -  Same as \b eps_nano but given in relatively to 
+the diagonal of the box bounding the geometry. Default is \f$5 \cdot 10^{-4}\f$.</li>
+<li>\b manifold_geometry (int) - describes whether the working geometry should be manifold or not.
+When activated, this option helps PreCAD to treat the most dirtiest geometries. Default is 0.</li>
+<li>\b create_tag_collision (int) - creates some new tags from original ones in case 
+of collision (entity merge or association for example). Default is 0.</li>
+<li>\b periodic_tolerance (real) - deﬁnes the maximum distance error accepted between 
+two sets of periodic entities. Default is \f$\mathrm{diag} \times 10^{-5}\f$.</li>
+<li>\b periodic_tolerance_relative (real) -  Same as \b periodic_tolerance but in relative
+unit. Default is \f$10^{-5}\f$.</li>
+<li>\b periodic_split_tolerance (real) - This periodicity processing related option deﬁnes 
+the minimum distance between a CAD point and an imprinted point. It allows to indirectly 
+control the number of points and small edges created. Default is \f$\mathrm{diag} \times 10^{-4}\f$.</li>
+<li>\b periodic_split_tolerance_relative (real -  Same as \b periodic_split_tolerance but in
+relative unit. Default is \f$10^{-4}\f$.</li>
 </ul>
 
 \n
@@ -300,7 +346,8 @@ where such a hypothesis has been defined.
 \anchor blsurf_attractor_computation
 <h2>Computation of attractors</h2>
 \n
-The size grows exponentially following the equation : h(d) = User size + (h_start - User Size) * exp( -(d / R)^2  ).
+The size grows exponentially following the equation : 
+\f$h(d) = \mathrm{User Size} + (\mathrm{h\_start} - \mathrm{User Size}) \times e ^ { - \left( \frac{d}{R} \right) ^ {2} }\f$
 \n
 Where :
 <ul>

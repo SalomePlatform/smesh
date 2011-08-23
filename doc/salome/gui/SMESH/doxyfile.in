@@ -67,6 +67,7 @@ SORT_GROUP_NAMES = NO
 #LaTeX related option
 #---------------------------------------------------------------------------
 GENERATE_LATEX    = NO
+EXTRA_PACKAGES    = amsmath
 
 #---------------------------------------------------------------------------
 #RTF related options
