@@ -5098,12 +5098,19 @@ class Mesh_Triangle(Mesh_Algorithm):
             #  Parameter of BLSURF algo
             self.params.SetVerbosity(level)
 
-    ## To optimize the CAD (merges edges and removes nano edges).
+    ## To optimize merges edges.
     #  @ingroup l3_hypos_blsurf
-    def SetPreCADOptimCAD(self, toOptimizeCAD=False):
+    def SetPreCADMergeEdges(self, toMergeEdges=False):
         if self.Parameters():
             #  Parameter of BLSURF algo
-            self.params.SetPreCADOptimCAD(toOptimizeCAD)
+            self.params.SetPreCADMergeEdges(toMergeEdges)
+
+    ## To remove nano edges.
+    #  @ingroup l3_hypos_blsurf
+    def SetPreCADRemoveNanoEdges(self, toRemoveNanoEdges=False):
+        if self.Parameters():
+            #  Parameter of BLSURF algo
+            self.params.SetPreCADRemoveNanoEdges(toRemoveNanoEdges)
 
     ## To compute topology from scratch
     #  @ingroup l3_hypos_blsurf
@@ -5112,21 +5119,13 @@ class Mesh_Triangle(Mesh_Algorithm):
             #  Parameter of BLSURF algo
             self.params.SetPreCADDiscardInput(toDiscardInput)
 
-    ## To help PreCAD treat some very dirty cases.
-    #  If the treated object is manifold.
+    ## Sets the length below which an edge is considered as nano 
+    #  for the topology processing.
     #  @ingroup l3_hypos_blsurf
-    def SetPreCADManifoldGeom(self, manifold=False):
+    def SetPreCADEpsNano(self, epsNano):
         if self.Parameters():
             #  Parameter of BLSURF algo
-            self.params.SetPreCADManifoldGeom(manifold)
-
-    ## To help PreCAD treat some very dirty cases.
-    #  If the object is also closed (imagine a shell).
-    #  @ingroup l3_hypos_blsurf
-    def SetPreCADClosedGeom(self, closed=False):
-        if self.Parameters():
-            #  Parameter of BLSURF algo
-            self.params.SetPreCADClosedGeom(closed)
+            self.params.SetPreCADEpsNano(epsNano)
 
     ## Sets advanced option value.
     #  @ingroup l3_hypos_blsurf
