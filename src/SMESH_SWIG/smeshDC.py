@@ -5134,6 +5134,13 @@ class Mesh_Triangle(Mesh_Algorithm):
             #  Parameter of BLSURF algo
             self.params.SetOptionValue(optionName,level)
 
+    ## Sets advanced PreCAD option value.
+    #  @ingroup l3_hypos_blsurf
+    def SetPreCADOptionValue(self, optionName, level):
+        if self.Parameters():
+            #  Parameter of BLSURF algo
+            self.params.SetPreCADOptionValue(optionName,level)
+
     ## Sets GMF file for export at computation
     #  @ingroup l3_hypos_blsurf
     def SetGMFFile(self, fileName):
