@@ -102,23 +102,23 @@ inline SMDS_MeshInfo::SMDS_MeshInfo():
   myNbPrisms  (0), myNbQuadPrisms  (0),
   myNbPolyhedrons(0)
 {
-  // Number of nodes in standard element types
+  // Number of nodes in standard element types (. - actual nb, * - after the shift)
   // n   v  f  e  0  n
   // o   o  a  d  d  o
   // d   l  c  g     d
   // e      e  e     e
   // s
   // -----------------
-  // 0         *
+  // 0                  - DON't USE 0!!!
   // 1            .  *
-  // 2         *
+  // 2         .
   // 3      .     *
   // 4   *  .  .
   // 5   *
   // 6   *  .
-  // 7
+  // 7         *
   // 8   *  .
-  // 9
+  // 9         *
   // 10  *
   // 11     *
   // 12     *
@@ -135,7 +135,7 @@ inline SMDS_MeshInfo::SMDS_MeshInfo():
   myShift.resize(SMDSAbs_NbElementTypes, 0);
 
   myShift[ SMDSAbs_Face      ] = +8; // 3->11, 4->12, 6->14, 8->16
-  myShift[ SMDSAbs_Edge      ] = -2; // 2->0, 4->2
+  myShift[ SMDSAbs_Edge      ] = +5; // 2->7, 4->9
   myShift[ SMDSAbs_0DElement ] = +2; // 1->3
 
   myNb.resize( index( SMDSAbs_Volume,20 ) + 1, NULL);
