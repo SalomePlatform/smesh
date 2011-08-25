@@ -537,13 +537,13 @@ void SMESHGUI_MeshOp::selectionDone()
           switch ( aGeomVar->GetShapeType() ) {
           case GEOM::SOLID:  shapeDim = 3; break;
           case GEOM::SHELL:
-            {
-              //shapeDim = 3; // Bug 0016155: EDF PAL 447: If the shape is a Shell, disable 3D tab
-              TopoDS_Shape aShape;
-              bool isClosed = GEOMBase::GetShape(aGeomVar, aShape) && /*aShape.Closed()*/BRep_Tool::IsClosed(aShape);
-              shapeDim = qMax(isClosed ? 3 : 2, shapeDim);
-            }
-            break;
+            // Bug 0016155: EDF PAL 447: If the shape is a Shell, disable 3D tab
+            // {
+            //   TopoDS_Shape aShape;
+            //   bool isClosed = GEOMBase::GetShape(aGeomVar, aShape) && /*aShape.Closed()*/BRep_Tool::IsClosed(aShape);
+            //   shapeDim = qMax(isClosed ? 3 : 2, shapeDim);
+            // }
+            // break;
           case GEOM::FACE:   shapeDim = qMax(2, shapeDim); break;
           case GEOM::WIRE:
           case GEOM::EDGE:   shapeDim = qMax(1, shapeDim); break;
@@ -551,16 +551,21 @@ void SMESHGUI_MeshOp::selectionDone()
           default:
             {
               TopoDS_Shape aShape;
-              if (GEOMBase::GetShape(aGeomVar, aShape)) {
-                TopExp_Explorer exp (aShape, TopAbs_SHELL);
+              if (GEOMBase::GetShape(aGeomVar, aShape))
+              {
+                TopExp_Explorer exp (aShape, TopAbs_SOLID);
                 if (exp.More()) {
-                  //shapeDim = 3; // Bug 0016155: EDF PAL 447: If the shape is a Shell, disable 3D tab
-                  shapeDim = qMax(2, shapeDim);
-                  for (; exp.More() && shapeDim == 2; exp.Next()) {
-                    if (/*exp.Current().Closed()*/BRep_Tool::IsClosed(exp.Current()))
-                      shapeDim = 3;
-                  }
+                  shapeDim = 3;
                 }
+                // Bug 0016155: EDF PAL 447: If the shape is a Shell, disable 3D tab
+                // else if ( exp.Init( aShape, TopAbs_SHELL ), exp.More() )
+                // {
+                //   shapeDim = 2;
+                //   for (; exp.More() && shapeDim == 2; exp.Next()) {
+                //     if (/*exp.Current().Closed()*/BRep_Tool::IsClosed(exp.Current()))
+                //       shapeDim = 3;
+                //   }
+                // }
                 else if ( exp.Init( aShape, TopAbs_FACE ), exp.More() )
                   shapeDim = qMax(2, shapeDim);
                 else if ( exp.Init( aShape, TopAbs_EDGE ), exp.More() )
@@ -570,6 +575,8 @@ void SMESHGUI_MeshOp::selectionDone()
               }
             }
           }
+          if ( shapeDim == 3 )
+            break;
         }
       }
       for (int i = SMESH::DIM_3D; i > shapeDim; i--) {
