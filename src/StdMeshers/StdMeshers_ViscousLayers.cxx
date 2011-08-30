@@ -1363,7 +1363,7 @@ bool _ViscousBuilder::sortEdges( _SolidData&                    data,
   list< TGeomID > shapesToSmooth;
   
   SMESH_MesherHelper helper( *_mesh );
-  bool ok;
+  bool ok = true;
 
   for ( unsigned iS = 0; iS < edgesByGeom.size(); ++iS )
   {
