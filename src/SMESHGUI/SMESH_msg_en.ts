@@ -2476,6 +2476,10 @@ Please check preferences of Mesh module.
         <translation>Export to MED file</translation>
     </message>
     <message>
+        <source>STB_EXPORT_CGNS</source>
+        <translation>Export to CGNS file</translation>
+    </message>
+    <message>
         <source>STB_EXPORT_SAUV</source>
         <translation>Export to SAUV (ASCII) file</translation>
     </message>

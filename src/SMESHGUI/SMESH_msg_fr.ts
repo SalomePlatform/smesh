@@ -32,6 +32,10 @@
         <translation>Fichiers STL ASCII</translation>
     </message>
     <message>
+        <source>CGNS_FILES_FILTER</source>
+        <translation>Fichiers CGNS</translation>
+    </message>
+    <message>
         <source>STL_BIN_FILES_FILTER</source>
         <translation>Fichiers STL binaires</translation>
     </message>
@@ -98,6 +102,10 @@
     <message>
         <source>COMPERR_STD_EXCEPTION</source>
         <translation>std::exception</translation>
+    </message>
+    <message>
+        <source>COMPERR_UNKNOWN</source>
+        <translation>Erreur inconnue</translation>
     </message>
     <message>
         <source>SMESH_GEOM</source>
@@ -360,6 +368,10 @@
         <translation>Exporter au format MED</translation>
     </message>
     <message>
+        <source>MEN_EXPORT_CGNS</source>
+        <translation>Exporter au format CGNS</translation>
+    </message>
+    <message>
         <source>MEN_EXPORT_SAUV</source>
         <translation>Exporter au format SAUV (ASCII)</translation>
     </message>
@@ -482,6 +494,10 @@
     <message>
         <source>MEN_MED</source>
         <translation>Fichier MED</translation>
+    </message>
+    <message>
+        <source>MEN_CGNS</source>
+        <translation>Fichier CGNS</translation>
     </message>
     <message>
         <source>MEN_SAUV</source>
@@ -1443,7 +1459,11 @@ les données exportées ?</translation>
     </message>
     <message>
         <source>SMESH_GROUP_GEOMETRY</source>
-        <translation>Groupe lié à la géométrie</translation>
+        <translation>Groupe lié à une géométrie</translation>
+    </message>
+    <message>
+        <source>SMESH_GROUP_FILTER</source>
+        <translation>Groupe lié à un filtre</translation>
     </message>
     <message>
         <source>SMESH_GROUP_SELECTED</source>
@@ -2454,6 +2474,10 @@ Vérifiez la limite dans les préférences du module Mesh.
     <message>
         <source>STB_EXPORT_MED</source>
         <translation>Exporter au format MED</translation>
+    </message>
+    <message>
+        <source>STB_EXPORT_CGNS</source>
+        <translation>Exporter au format CGNS</translation>
     </message>
     <message>
         <source>STB_EXPORT_SAUV</source>
@@ -3483,6 +3507,13 @@ avec le paramètre &apos;%1&apos; des préférences du module Mesh.</translation
     </message>
 </context>
 <context>
+    <name>SMESHGUI_GroupDlg</name>
+    <message>
+        <source>ALLOW_ELEM_LIST_MODIF</source>
+        <translation>Edition manuelle</translation>
+    </message>
+</context>
+<context>
     <name>SMESHGUI</name>
     <message>
         <source>NOT_A_VTK_VIEWER</source>
@@ -3596,6 +3627,10 @@ Ouvrez une fenêtre VTK et essayez de nouveau</translation>
     <message>
         <source>SMESH_PREF_GROUP_PRECISION</source>
         <translation>Précision des champs d&apos;entrée</translation>
+    </message>
+    <message>
+        <source>SMESH_PREF_GROUP_PREVIEW</source>
+        <translation>Prévisualisation</translation>
     </message>
     <message>
         <source>PREF_GROUP_ELEMENTS</source>
@@ -3720,6 +3755,10 @@ Ouvrez une fenêtre VTK et essayez de nouveau</translation>
     <message>
         <source>PREF_WIDTH</source>
         <translation>Epaisseur</translation>
+    </message>
+    <message>
+        <source>PREF_PREVIEW_CHUNK_SIZE</source>
+        <translation>Taille des blocs pour la prévisualisation des sous-shapes</translation>
     </message>
 </context>
 <context>
@@ -5643,12 +5682,22 @@ Il y a trop peu de points dans le fichier </translation>
         <translation>%1 éléments de bord ont été ajoutés</translation>
     </message>
     <message>
+        <source>WRONG_GROUPS</source>
+        <translation>Les groupes suivants n&apos;ont pas été traités
+en raison de leurs types incompatibles:
+%1</translation>
+    </message>
+    <message>
         <source>SMESH_ERR_NO_INPUT_MESH</source>
         <translation>Aucun maillage, sous-maillage ou groupe source n&apos;est indiqué</translation>
     </message>
     <message>
-        <source>SMESH_ERR_NO_INPUT_GROUP</source>
-        <translation>Aucun groupe 2D n&apos;est indiqué</translation>
+        <source>SMESH_TOO_MANY_MESHES</source>
+        <translation>Un seul maillage à la fois peut être traité</translation>
+    </message>
+    <message>
+        <source>SMESH_NOT_ONLY_GROUPS</source>
+        <translation>Impossible de traiter à la fois des maillages et des groupes</translation>
     </message>
     <message>
         <source>SMESH_ERR_NO_3D_ELEMENTS</source>
@@ -6022,6 +6071,13 @@ Il y a trop peu de points dans le fichier </translation>
     <message>
         <source>NB_ELEMENTS</source>
         <translation>éléments</translation>
+    </message>
+</context>
+<context>
+    <name>StdMeshersGUI_SubShapeSelectorWdg</name>
+    <message>
+        <source>X_FROM_Y_ITEMS_SHOWN</source>
+        <translation>%1-%2 sur %3 éléments affichés</translation>
     </message>
 </context>
 </TS>
