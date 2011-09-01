@@ -687,6 +687,14 @@ bool StdMeshers_Regular_1D::computeInternalParameters(SMESH_Mesh &     theMesh,
               theParams.push_back( param );
             }
           }
+          const double lenFactor = theLength/(l-f);
+          list<double>::iterator u = theParams.begin(), uEnd = theParams.end();
+          for ( ; u != uEnd; ++u )
+          {
+            GCPnts_AbscissaPoint Discret( theC3d, (*u) * lenFactor, f );
+            if ( Discret.IsDone() )
+              *u = Discret.Parameter();
+          }
           return true;
         }
         break;
