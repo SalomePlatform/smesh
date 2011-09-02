@@ -5202,75 +5202,38 @@ class Mesh_Triangle(Mesh_Algorithm):
     #  @param x            : x coordinate
     #  @param y            : y coordinate
     #  @param z            : z coordinate
-    #  @ingroup l3_hypos_blsurf
-    def SetEnforcedVertex(self, theFace, x, y, z):
-        if self.Parameters():
-            #  Parameter of BLSURF algo
-            AssureGeomPublished( self.mesh, theFace )
-            return self.params.SetEnforcedVertex(theFace, x, y, z)
-
-    ## To set an enforced vertex as SetEnforcedVertex. The created enforced vertex is identified by a name.
-    #  @param theFace      : GEOM face (or group, compound) on which to define an enforced vertex
-    #  @param x            : x coordinate
-    #  @param y            : y coordinate
-    #  @param z            : z coordinate
     #  @param vertexName   : name of the enforced vertex
+    #  @param groupName    : name of the group
     #  @ingroup l3_hypos_blsurf
-    def SetEnforcedVertexNamed(self, theFace, x, y, z, vertexName):
+    def SetEnforcedVertex(self, theFace, x, y, z, vertexName = "", groupName = ""):
         if self.Parameters():
             #  Parameter of BLSURF algo
             AssureGeomPublished( self.mesh, theFace )
-            return self.params.SetEnforcedVertexNamed(theFace, x, y, z, vertexName)
+            if vertexName == "":
+              if groupName == "":
+                return self.params.SetEnforcedVertex(theFace, x, y, z)
+              else:
+                return self.params.SetEnforcedVertexWithGroup(theFace, x, y, z, groupName)
+            else:
+              if groupName == "":
+                return self.params.SetEnforcedVertexNamed(theFace, x, y, z, vertexName)
+              else:
+                return self.params.SetEnforcedVertexNamedWithGroup(theFace, x, y, z, vertexName, groupName)
 
     ## To set an enforced vertex on a face (or group, compound) given a GEOM vertex, group or compound.
     #  @param theFace      : GEOM face (or group, compound) on which to define an enforced vertex
     #  @param theVertex    : GEOM vertex (or group, compound) to be projected on theFace.
+    #  @param groupName    : name of the group
     #  @ingroup l3_hypos_blsurf
-    def SetEnforcedVertexGeom(self, theFace, theVertex):
+    def SetEnforcedVertexGeom(self, theFace, theVertex, groupName = ""):
         if self.Parameters():
             #  Parameter of BLSURF algo
             AssureGeomPublished( self.mesh, theFace )
             AssureGeomPublished( self.mesh, theVertex )
-            return self.params.SetEnforcedVertexGeom(theFace, theVertex)
-
-    ## To set an enforced vertex as SetEnforcedVertex and add it in the group "groupName".
-    #  @param theFace      : GEOM face (or group, compound) on which to define an enforced vertex
-    #  @param x            : x coordinate
-    #  @param y            : y coordinate
-    #  @param z            : z coordinate
-    #  @param groupName    : name of the group
-    #  @ingroup l3_hypos_blsurf
-    def SetEnforcedVertexWithGroup(self, theFace, x, y, z, groupName):
-        if self.Parameters():
-            #  Parameter of BLSURF algo
-            AssureGeomPublished( self.mesh, theFace )
-            return self.params.SetEnforcedVertexWithGroup(theFace, x, y, z, groupName)
-
-    ## To set an enforced vertex as SetEnforcedVertexNamed and add it in the group "groupName".
-    #  @param theFace      : GEOM face (or group, compound) on which to define an enforced vertex
-    #  @param x            : x coordinate
-    #  @param y            : y coordinate
-    #  @param z            : z coordinate
-    #  @param vertexName   : name of the enforced vertex
-    #  @param groupName    : name of the group
-    #  @ingroup l3_hypos_blsurf
-    def SetEnforcedVertexNamedWithGroup(self, theFace, x, y, z, vertexName, groupName):
-        if self.Parameters():
-            #  Parameter of BLSURF algo
-            AssureGeomPublished( self.mesh, theFace )
-            return self.params.SetEnforcedVertexNamedWithGroup(theFace, x, y, z, vertexName, groupName)
-
-    ## To set an enforced vertex as SetEnforcedVertexGeom and add it in the group "groupName".
-    #  @param theFace      : GEOM face (or group, compound) on which to define an enforced vertex
-    #  @param theVertex    : GEOM vertex (or group, compound) to be projected on theFace.
-    #  @param groupName    : name of the group
-    #  @ingroup l3_hypos_blsurf
-    def SetEnforcedVertexGeomWithGroup(self, theFace, theVertex, groupName):
-        if self.Parameters():
-            #  Parameter of BLSURF algo
-            AssureGeomPublished( self.mesh, theFace )
-            AssureGeomPublished( self.mesh, theVertex )
-            return self.params.SetEnforcedVertexGeomWithGroup(theFace, theVertex,groupName)
+            if groupName == "":
+              return self.params.SetEnforcedVertexGeom(theFace, theVertex)
+            else:
+              return self.params.SetEnforcedVertexGeomWithGroup(theFace, theVertex,groupName)
 
     ## To remove an enforced vertex on a given GEOM face (or group, compound) given the coordinates.
     #  @param theFace      : GEOM face (or group, compound) on which to remove the enforced vertex
@@ -5847,80 +5810,79 @@ class Mesh_Tetrahedron(Mesh_Algorithm):
             self.params.SetToRemoveCentralPoint(toRemove)
 
     ## To set an enforced vertex.
+    #  @param x            : x coordinate
+    #  @param y            : y coordinate
+    #  @param z            : z coordinate
+    #  @param size         : size of 1D element around enforced vertex
+    #  @param vertexName   : name of the enforced vertex
+    #  @param groupName    : name of the group
     #  @ingroup l3_hypos_ghs3dh
-    def SetEnforcedVertex(self, x, y, z, size):
+    def SetEnforcedVertex(self, x, y, z, size, vertexName = "", groupName = ""):
         #  Advanced parameter of GHS3D
         if self.Parameters():
-            return self.params.SetEnforcedVertex(x, y, z, size)
+          if vertexName == "":
+            if groupName == "":
+              return self.params.SetEnforcedVertex(x, y, z, size)
+            else:
+              return self.params.SetEnforcedVertexWithGroup(x, y, z, size, groupName)
+          else:
+            if groupName == "":
+              return self.params.SetEnforcedVertexNamed(x, y, z, size, vertexName)
+            else:
+              return self.params.SetEnforcedVertexNamedWithGroup(x, y, z, size, vertexName, groupName)
 
-    ## To set an enforced vertex and add it in the group "groupName".
-    #  Only on meshes w/o geometry
+    ## To set an enforced vertex given a GEOM vertex, group or compound.
+    #  @param theVertex    : GEOM vertex (or group, compound) to be projected on theFace.
+    #  @param size         : size of 1D element around enforced vertex
+    #  @param groupName    : name of the group
     #  @ingroup l3_hypos_ghs3dh
-    def SetEnforcedVertexWithGroup(self, x, y, z, size, groupName):
+    def SetEnforcedVertexGeom(self, theVertex, size, groupName = ""):
+        AssureGeomPublished( self.mesh, theVertex )
         #  Advanced parameter of GHS3D
         if self.Parameters():
-            return self.params.SetEnforcedVertexWithGroup(x, y, z, size,groupName)
+          if groupName == "":
+            return self.params.SetEnforcedVertexGeom(theVertex, size)
+          else:
+            return self.params.SetEnforcedVertexGeomWithGroup(theVertex, size, groupName)
 
     ## To remove an enforced vertex.
+    #  @param x            : x coordinate
+    #  @param y            : y coordinate
+    #  @param z            : z coordinate
     #  @ingroup l3_hypos_ghs3dh
     def RemoveEnforcedVertex(self, x, y, z):
         #  Advanced parameter of GHS3D
         if self.Parameters():
-            return self.params.RemoveEnforcedVertex(x, y, z)
-
-    ## To set an enforced vertex given a GEOM vertex, group or compound.
-    #  @ingroup l3_hypos_ghs3dh
-    def SetEnforcedVertexGeom(self, theVertex, size):
-        AssureGeomPublished( self.mesh, theVertex )
-        #  Advanced parameter of GHS3D
-        if self.Parameters():
-            return self.params.SetEnforcedVertexGeom(theVertex, size)
-
-    ## To set an enforced vertex given a GEOM vertex, group or compound
-    #  and add it in the group "groupName".
-    #  Only on meshes w/o geometry
-    #  @ingroup l3_hypos_ghs3dh
-    def SetEnforcedVertexGeomWithGroup(self, theVertex, size, groupName):
-        AssureGeomPublished( self.mesh, theVertex )
-        #  Advanced parameter of GHS3D
-        if self.Parameters():
-            return self.params.SetEnforcedVertexGeomWithGroup(theVertex, size,groupName)
+          return self.params.RemoveEnforcedVertex(x, y, z)
 
     ## To remove an enforced vertex given a GEOM vertex, group or compound.
+    #  @param theVertex    : GEOM vertex (or group, compound) to be projected on theFace.
     #  @ingroup l3_hypos_ghs3dh
     def RemoveEnforcedVertexGeom(self, theVertex):
         AssureGeomPublished( self.mesh, theVertex )
         #  Advanced parameter of GHS3D
         if self.Parameters():
-            return self.params.RemoveEnforcedVertexGeom(theVertex)
-
-    ## To set an enforced mesh.
-    #  @ingroup l3_hypos_ghs3dh
-    def SetEnforcedMesh(self, theSource, elementType):
-        #  Advanced parameter of GHS3D
-        if self.Parameters():
-            return self.params.SetEnforcedMesh(theSource, elementType)
-
-    ## To set an enforced mesh and add the enforced elements in the group "groupName".
-    #  @ingroup l3_hypos_ghs3dh
-    def SetEnforcedMeshWithGroup(self, theSource, elementType, groupName):
-        #  Advanced parameter of GHS3D
-        if self.Parameters():
-            return self.params.SetEnforcedMeshWithGroup(theSource, elementType, groupName)
-
-    ## To set an enforced mesh with given size.
-    #  @ingroup l3_hypos_ghs3dh
-    def SetEnforcedMeshSize(self, theSource, elementType, size):
-        #  Advanced parameter of GHS3D
-        if self.Parameters():
-            return self.params.SetEnforcedMeshSize(theSource, elementType, size)
+          return self.params.RemoveEnforcedVertexGeom(theVertex)
 
     ## To set an enforced mesh with given size and add the enforced elements in the group "groupName".
+    #  @param theSource    : source mesh which provides constraint elements/nodes
+    #  @param elementType  : SMESH.ElementType (NODE, EDGE or FACE)
+    #  @param size         : size of elements around enforced elements. Unused if -1.
+    #  @param groupName    : group in which enforced elements will be added. Unused if "".
     #  @ingroup l3_hypos_ghs3dh
-    def SetEnforcedMeshSizeWithGroup(self, theSource, elementType, size, groupName):
+    def SetEnforcedMesh(self, theSource, elementType, size = -1, groupName = ""):
         #  Advanced parameter of GHS3D
         if self.Parameters():
-            return self.params.SetEnforcedMeshSizeWithGroup(theSource, elementType, size, groupName)
+          if size >= 0:
+            if groupName != "":
+              return self.params.SetEnforcedMesh(theSource, elementType)
+            else:
+              return self.params.SetEnforcedMeshWithGroup(theSource, elementType, groupName)
+          else:
+            if groupName != "":
+              return self.params.SetEnforcedMeshSize(theSource, elementType, size)
+            else:
+              return self.params.SetEnforcedMeshSizeWithGroup(theSource, elementType, size, groupName)
 
     ## Sets command line option as text.
     #  @ingroup l3_hypos_ghs3dh
