@@ -158,7 +158,7 @@ void SMESHDS_SubMesh::AddNode(const SMDS_MeshNode * N)
       int shapeId = N->getshapeId();
       if ((shapeId > 0) && (idInSubShape >= 0))
         {
-          MESSAGE("========== AddNode already belonging to other subShape " << N->GetID());
+//           MESSAGE("========== AddNode already belonging to other subShape " << N->GetID());
           // OK for vertex nodes
           //this->getParent()->UnSetNodeOnShape(N);
         }
