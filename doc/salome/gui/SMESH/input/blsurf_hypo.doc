@@ -2,10 +2,25 @@
 
 \page blsurf_hypo_page BLSURF Parameters hypothesis
 
+\anchor blsurf_top
 \n BLSURF Parameters hypothesis works only with <b>BLSURF</b> 2d
 algorithm. This algorithm is a commercial software.
 \n To get a licence, visit http://www.distene.com/corp/eval-distene.html
 
+<ol>
+<li>\ref blsurf_general_parameters "General parameters"</li>
+<li>\ref blsurf_advanced_parameters "Advanced parameters"</li>
+<li>\ref blsurf_local_size "Local size"</li>
+<ol>
+<li type="a">\ref blsurf_sizemap_computation "Computation of the physical size"</li>
+<li type="a">\ref blsurf_attractor "Advanced maps"</li>
+<li type="a">\ref blsurf_attractor_computation "Computation of attractors"</li>
+</ol>
+<li>\ref blsurf_enforced_elements "Enforced vertices"</li>
+<li>\ref blsurf_limitations "Limitations"</li>
+</ol>
+
+\anchor blsurf_general_parameters
 <h1>General parameters</h1>
 
 \image html blsurf_parameters.png
@@ -55,7 +70,11 @@ two adjacent edges. </li>
 <li><b>Patch independent</b> - if checked, geometrical
 edges are not respected and all geometrical faces are meshed as one
 hyper-face.</li>
+</ul>
 
+\ref blsurf_top "Back to top"
+
+\anchor blsurf_advanced_parameters
 <h1>Advanced parameters</h1>
 
 The notion of <i>diag</i> used in the descriptions means the diagonal of the bounding box of the 
@@ -258,11 +277,14 @@ String variables:
 <li>    import_option  </li>  
 </ul>
 
-<h1>Custom size map</h1>
+\ref blsurf_top "Back to top"
+
+\anchor blsurf_local_size
+<h1>Local size</h1>
 
 \image html blsurf_parameters_sizemap1.png 
 
-User sizes can be defined on faces, edges or vertices.
+Local sizes can be defined on faces, edges or vertices.
 <ul>
 <li>The faces, edges and vertices can belong to the meshed geometrical
 object or to its sub-shapes (created using <b>Explode</b> command).</li>
@@ -279,6 +301,8 @@ object or to its sub-shapes (created using <b>Explode</b> command).</li>
 </ul></li>
 </ul>
 
+\ref blsurf_top "Back to top"
+
 \anchor blsurf_sizemap_computation
 <h2>Computation of the physical size</h2>
 \n
@@ -293,6 +317,8 @@ specification of the sizes. The computation depends on whether point P is intern
 <li> If point P is at the extremity of several curves, the CAD point size function is queried first. If no answer is returned, the curve size function is queried for every adjacent curve and the mean value of the returned values is computed. If no answer is returned, the surface size function is queried for every adjacent surface and the mean value of the returned values is computed. If there is still no answer returned, the default value hphydef is kept.</li>
 </ul>
 In order to compute the mean of several values, the arithmetic mean is used by default, but this can be modified by the parameter \ref blsurf_hmean_flag "hmean flag". In the same way, in order to interpolate two values, a linear interpolation is used by default, but this can be modified by \ref blsurf_hinterpol_flag "hinterpol flag".
+
+\ref blsurf_top "Back to top"
 
 \anchor blsurf_attractor
 <h2>Advanced maps</h2>
@@ -342,6 +368,8 @@ where such a hypothesis has been defined.
 
 <br><b>See Also</b> a sample TUI Script of the \ref tui_blsurf "creation of a BLSurf hypothesis", including size map.
 
+\ref blsurf_top "Back to top"
+
 \anchor blsurf_attractor_computation
 <h2>Computation of attractors</h2>
 \n
@@ -356,21 +384,32 @@ shape. The distance is the geodesic distance (i.e. calculated by following the s
 <li>R is called the distance of influence and allows controlling the growth rate of the mesh </li>
 </ul>
 
-<h1>Custom enforced vertices</h1>
+\ref blsurf_top "Back to top"
+
+\anchor blsurf_enforced_elements
+<h1>Enforced vertices</h1>
 
 \image html blsurf_parameters_enforced_vertices.png
 
-It is possible to define some enforced vertices to BLSurf algorithm
-without creating any vertices by CAD algorithms.
+It is possible to define some enforced vertices to BLSurf algorithm.
+An enforced vertex is defined on a Face or a Compound by
 <ul>
-<li>The enforced vertex is the projection of a point defined by its
-(x,y,z) coordinates on the selected face.</li>
+<li> selecting an existing Vertex or Compound,</li>
+<li> or creating a new vertex given its coordinates.</li>
+</ul>
+The enforced vertex is the projection of a point defined by its
+(x,y,z) coordinates on the selected face.
+<ul>
 <li>It is possible to define several enforced vertices on a face or a group of faces.</li>
 <li>If the projected point is on the boundary or outside of the face, it will be ignored.</li>
+<li>If a group name is specified, the enforced nodes will be added in the group. If the group does not exist it will be created.
 </ul>
 
 <br><b>See Also</b> a sample TUI Script of the \ref tui_blsurf "creation of a BLSurf hypothesis", including enforced vertices.
 
+\ref blsurf_top "Back to top"
+
+\anchor blsurf_limitations
 <h1>Limitations</h1>
 
 Currently BLSURF plugin has the following limitations.
@@ -388,5 +427,7 @@ Currently BLSURF plugin has the following limitations.
       </ul>
   </li>
 </ul>
+
+\ref blsurf_top "Back to top"
 
 */

@@ -3,6 +3,14 @@
 \page tui_defining_ghs3d_hypotheses_page Defining Hypotheses for Ghs3D Algorithm
 
 \anchor tui_ghs3d
+
+<ol>
+<li>\ref tui_ghs3d_basic "Construction of Mesh using Ghs3D algorithm"</li>
+<li>\ref tui_ghs3d_enforced_vertices "Adding enforced vertices"</li>
+<li>\ref tui_ghs3d_enforced_meshes "Adding enforced mesh"</li>
+</ol>
+
+\anchor tui_ghs3d_basic
 <h2>Construction of Mesh using Ghs3D algorithm</h2>
 
 \code
@@ -30,6 +38,9 @@ ghs3dMesh.Compute()
 
 \image html ghs3d_screenshot.png Ghs3d mesh withtout hypothesis
 
+\ref tui_ghs3d "Back to top"
+
+\anchor tui_ghs3d_enforced_vertices
 <h2>Adding enforced vertices</h2>
 
 \code
@@ -100,6 +111,9 @@ GHS3D_Parameters.ClearEnforcedVertices()
 \image html ghs3d_screenshot_enf1.png Ghs3d mesh with enforced vertex
 \image html ghs3d_screenshot_enf2.png Ghs3d mesh with enforced vertex from GEOM vertex
 
+\ref tui_ghs3d "Back to top"
+
+\anchor tui_ghs3d_enforced_meshes
 <h2>Adding enforced mesh</h2>
 
 \code
@@ -156,7 +170,7 @@ GHS3D_Parameters_mesh.SetToMeshHoles( 1 ) # to mesh inside the cylinder
 
 # Create the mesh on the cylinder
 Mesh_cylindre = smesh.Mesh(cylindre)
-SetName(Mesh_cylindre,"Mesh_cylindre")
+smesh.SetName(Mesh_cylindre,"Mesh_cylindre")
 Mesh_cylindre.AddHypothesis( BLSURF )
 Mesh_cylindre.AddHypothesis( BLSURF_Parameters2 )
 # Create some groups
@@ -212,5 +226,7 @@ mesh_mesh.Compute()
 \image html ghs3d_screenshot_enf4.png
 \image html ghs3d_screenshot_enf5.png
 \image html ghs3d_screenshot_enf6.png
+
+\ref tui_ghs3d "Back to top"
 
 */
