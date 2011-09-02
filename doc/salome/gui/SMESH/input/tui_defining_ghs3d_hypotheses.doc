@@ -50,7 +50,9 @@ ghs3dMesh.Compute()
 # - a GEOM vertex or compound (No geometry, TUI only)
 #
 # The created enforced nodes can also be stored in
-# a group (No geometry, TUI only).
+# a group.
+#
+# This feature is available only on meshes without geometry.
 
 # Ex1: Add one enforced vertex with coordinates (50,50,100) 
 #      and physical size 2.
@@ -120,7 +122,7 @@ GHS3D_Parameters.ClearEnforcedVertices()
 
 # It is possible to constrain GHS3D with another mesh or group.
 # The constraint can refer to the nodes, edges or faces.
-# This feature is available only in TUI, on meshes without geometry.
+# This feature is available only on meshes without geometry.
 # The constraining elements are called enforced elements for the mesh.
 # They can be recovered using groups if necessary.
 
