@@ -1398,7 +1398,7 @@ bool SMDS_Mesh::registerElement(int ID, SMDS_MeshElement* element)
 
   if (vtkId >= myCellIdVtkToSmds.size()) // --- resize local vector
   {
-    MESSAGE(" --------------------- resize myCellIdVtkToSmds " << vtkId << " --> " << vtkId + SMDS_Mesh::chunkSize);
+//     MESSAGE(" --------------------- resize myCellIdVtkToSmds " << vtkId << " --> " << vtkId + SMDS_Mesh::chunkSize);
     myCellIdVtkToSmds.resize(vtkId + SMDS_Mesh::chunkSize, -1);
   }
   myCellIdVtkToSmds[vtkId] = ID;
