@@ -1329,6 +1329,14 @@ bool StdMeshers_PrismAsBlock::Init(SMESH_MesherHelper* helper,
   if ( !GetWallFaces( Mesh(), shape3D, botSM->GetSubShape(), orderedEdges, nbEInW, wallFaces))
     return error(COMPERR_BAD_SHAPE, "Can't find side faces");
 
+  // check that the found top and bottom faces are opposite
+  {
+    for (TopExp_Explorer edge(botSM->GetSubShape(), TopAbs_EDGE); edge.More(); edge.Next())
+      if ( helper->IsSubShape( edge.Current(), topSM->GetSubShape() ))
+        return error(notQuadGeomSubMesh.empty() ? COMPERR_BAD_INPUT_MESH : COMPERR_BAD_SHAPE,
+                     "Non-quadrilateral faces are not opposite");
+  }
+
   // Protect from a distorted block (test 3D_mesh_HEXA3D/B7 on 32bit platform)
   // check that all wall faces have an edge common with the top face
   {
