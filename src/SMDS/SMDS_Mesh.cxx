@@ -228,7 +228,7 @@ SMDS_MeshNode * SMDS_Mesh::AddNodeWithID(double x, double y, double z, int ID)
     if (ID >= myNodes.size())
     {
         myNodes.resize(ID+SMDS_Mesh::chunkSize, 0);
-        MESSAGE(" ------------------ myNodes resize " << ID << " --> " << ID+SMDS_Mesh::chunkSize);
+//         MESSAGE(" ------------------ myNodes resize " << ID << " --> " << ID+SMDS_Mesh::chunkSize);
     }
     myNodes[ID] = node;
     myNodeIDFactory->BindID(ID,node);
@@ -1414,9 +1414,9 @@ const SMDS_MeshNode * SMDS_Mesh::FindNode(int ID) const
 {
   if (ID < 1 || ID >= myNodes.size())
   {
-    MESSAGE("------------------------------------------------------------------------- ");
-    MESSAGE("----------------------------------- bad ID " << ID << " " << myNodes.size());
-    MESSAGE("------------------------------------------------------------------------- ");
+//     MESSAGE("------------------------------------------------------------------------- ");
+//     MESSAGE("----------------------------------- bad ID " << ID << " " << myNodes.size());
+//     MESSAGE("------------------------------------------------------------------------- ");
     return 0;
   }
   return (const SMDS_MeshNode *)myNodes[ID];
@@ -2872,7 +2872,7 @@ static set<const SMDS_MeshElement*> * getFinitElements(const SMDS_MeshElement * 
                 i++;
         }
         set<const SMDS_MeshElement*> *retSet=intersectionOfSets(initSet, numberOfSets);
-        MESSAGE("nb elems " << i << " intersection " << retSet->size());
+//         MESSAGE("nb elems " << i << " intersection " << retSet->size());
         delete [] initSet;
         return retSet;
 }

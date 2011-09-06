@@ -26,6 +26,14 @@ Parameters by default).</li>
 
 <li><b>Sharp angle threshold in degrees</b> - specifies the angle between two triangles above which the hex mesher will consider the edge common to these two triangles as being a "ridge". A ridge is a geometrical entity (a sharp edge) which has to be kept as it is in the final hex mesh.The default value is 60 (degrees).<br>If you raise this value, the hex mesher will detect less ridges, and the final solid mesh will therefore be smoother. On the other hand, if you reduce this value, more ridges will be detected and the algorithm will face harder situations to conform to.
 </li>
+
+<li><b>Number of threads</b> - specifies the number of threads to be used (this should be the number of cores or processors of a shared memory parallel architecture).
+</li>
+
+<li><b>Working directory</b> - specifies the directory where the input/output files will be created.
+</li>
 </ul>
 
+\note If BLSURF is used as 2D algo, and if a GMF file is defined as output file (using SetGMFFile(my2Dmesh.mesh)), then Hexotic will use this file as input.
+This allows to avoid the reconstruction of the GMF file from the SMESH structure and can improve the global computation time.
 */
