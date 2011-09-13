@@ -148,7 +148,7 @@ dist_salomeres_DATA = \
 	mesh_merge_elements.png \
 	select1.png \
 	StdMeshers.xml \
-	SalomeApp.xml \
+	$(top_builddir)/resources/SalomeApp.xml \
 	mesh_pattern.png \
 	pattern_sample_2d.png \
 	pattern_sample_3D.png \

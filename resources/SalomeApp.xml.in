@@ -26,6 +26,7 @@
     <!-- Major module parameters -->
     <parameter name="name" value="Mesh"/>
     <parameter name="icon" value="ModuleMesh.png"/>
+    <parameter name="SMESH_VERSION" value="@VERSION@"/>
     <!-- Other module preferences -->
     <parameter name="node_color"                   value="255, 0,   0"/>
     <parameter name="fill_color"                   value="0, 170, 255"/>

@@ -522,6 +522,7 @@ AC_OUTPUT([ \
   src/Tools/MeshCut/Makefile \
   resources/Makefile \
   resources/SMESHCatalog.xml \
+  resources/SalomeApp.xml \
   idl/Makefile \
   Makefile
 ])

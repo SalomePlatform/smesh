@@ -260,6 +260,7 @@ libSMESH_la_CPPFLAGS = \
 	-I$(srcdir)/../SMESH_I \
 	-I$(srcdir)/../Controls \
 	-I$(srcdir)/../SMESHClient \
+	-I$(top_builddir) \
 	-I$(top_builddir)/idl
 
 libSMESH_la_LDFLAGS  = \

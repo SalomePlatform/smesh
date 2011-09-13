@@ -85,6 +85,8 @@
 #include "SMESHGUI_VTKUtils.h"
 #include "SMESHGUI_HypothesesUtils.h"
 
+#include <SMESH_version.h>
+
 #include <SMESH_Client.hxx>
 #include <SMESH_Actor.h>
 #include <SMESH_ScalarBarActor.h>
@@ -1588,6 +1590,10 @@ extern "C" {
   SMESHGUI_EXPORT CAM_Module* createModule()
   {
     return new SMESHGUI();
+  }
+
+  SMESHGUI_EXPORT  char* getModuleVersion() {
+    return SMESH_VERSION_STR;
   }
 }
 
