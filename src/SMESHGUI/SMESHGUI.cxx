@@ -4364,10 +4364,10 @@ void SMESHGUI::createPreferences()
   setPreferenceProperty( dispgroup, "columns", 2 );
   int dispmode = addPreference( tr( "PREF_DISPLAY_MODE" ), dispgroup, LightApp_Preferences::Selector, "SMESH", "display_mode" );
   QStringList modes;
-  modes.append( "Wireframe" );
-  modes.append( "Shading" );
-  modes.append( "Nodes" );
-  modes.append( "Shrink" );
+  modes.append( tr("MEN_WIRE") );
+  modes.append( tr("MEN_SHADE") );
+  modes.append( tr("MEN_NODES") );
+  modes.append( tr("MEN_SHRINK") );
   QList<QVariant> indices;
   indices.append( 0 );
   indices.append( 1 );
@@ -4380,8 +4380,8 @@ void SMESHGUI::createPreferences()
   setPreferenceProperty( arcgroup, "columns", 2 );
   int quadraticmode = addPreference( tr( "QUADRATIC_REPRESENT_MODE" ), arcgroup, LightApp_Preferences::Selector, "SMESH", "quadratic_mode" );
   QStringList quadraticModes;
-  quadraticModes.append("Lines");
-  quadraticModes.append("Arcs");
+  quadraticModes.append(tr("MEN_LINE_REPRESENTATION"));
+  quadraticModes.append(tr("MEN_ARC_REPRESENTATION"));
   indices.clear();
   indices.append( 0 );
   indices.append( 1 );
