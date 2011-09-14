@@ -33,19 +33,24 @@
 //#include "utilities.h"
 #include <limits>
 
-// Define error message
+// Define error message and _MYDEBUG_ if needed
 #ifdef _DEBUG_
 #define BAD_MESH_ERR \
   error(SMESH_Comment("Can't detect block-wise structure of the input 2D mesh.\n" \
                       __FILE__ ":" )<<__LINE__)
+//#define _MYDEBUG_
 #else
 #define BAD_MESH_ERR \
   error(SMESH_Comment("Can't detect block-wise structure of the input 2D mesh"))
 #endif
 
-// Debug output
-#define _DUMP_(msg) //cout << msg << endl
 
+// Debug output
+#ifdef _MYDEBUG_
+#define _DUMP_(msg) cout << msg << endl
+#else
+#define _DUMP_(msg)
+#endif
 
 
 namespace
@@ -54,10 +59,12 @@ namespace
     {
       B_BOTTOM=0, B_RIGHT, B_TOP, B_LEFT, B_FRONT, B_BACK, NB_BLOCK_SIDES
     };
-//   const char* SBoxSides[] = //!< names of block sides -- needed for DEBUG only
-//     {
-//       "BOTTOM", "RIGHT", "TOP", "LEFT", "FRONT", "BACK", "UNDEFINED"
-//     };
+#ifdef _MYDEBUG_
+  const char* SBoxSides[] = //!< names of block sides -- needed for DEBUG only
+    {
+      "BOTTOM", "RIGHT", "TOP", "LEFT", "FRONT", "BACK", "UNDEFINED"
+    };
+#endif
   enum EQuadEdge //!< edges of quadrangle side
     {
       Q_BOTTOM = 0, Q_RIGHT, Q_TOP, Q_LEFT, NB_QUAD_SIDES
@@ -87,37 +94,6 @@ namespace
 
   //================================================================================
   /*!
-   * \brief Description of node used to detect corner nodes
-   */
-  struct _NodeDescriptor
-  {
-    int nbInverseFaces, nbNodesInInverseFaces;
-
-    _NodeDescriptor(const SMDS_MeshNode* n): nbInverseFaces(0), nbNodesInInverseFaces(0)
-    {
-      if ( n )
-      {
-        set<const SMDS_MeshNode*> nodes;
-        SMDS_ElemIteratorPtr fIt = n->GetInverseElementIterator(SMDSAbs_Face );
-        while ( fIt->more() )
-        {
-          const SMDS_MeshElement* face = fIt->next();
-          nodes.insert( face->begin_nodes(), face->end_nodes() );
-          nbInverseFaces++;
-        }
-        nbNodesInInverseFaces = nodes.size();
-      }
-    }
-    bool operator==(const _NodeDescriptor& other) const
-    {
-      return
-        nbInverseFaces == other.nbInverseFaces &&
-        nbNodesInInverseFaces == other.nbNodesInInverseFaces;
-    }
-  };
-
-  //================================================================================
-  /*!
    * \brief return true if a node is at block corner
    *
    * This check is valid for simple cases only
@@ -126,7 +102,19 @@ namespace
 
   bool isCornerNode( const SMDS_MeshNode* n )
   {
-    return n && n->NbInverseElements( SMDSAbs_Face ) % 2;
+    int nbF = n ? n->NbInverseElements( SMDSAbs_Face ) : 1;
+    if ( nbF % 2 )
+      return true;
+
+    set<const SMDS_MeshNode*> nodesInInverseFaces;
+    SMDS_ElemIteratorPtr fIt = n->GetInverseElementIterator(SMDSAbs_Face );
+    while ( fIt->more() )
+    {
+      const SMDS_MeshElement* face = fIt->next();
+      nodesInInverseFaces.insert( face->begin_nodes(), face->end_nodes() );
+    }
+
+    return nodesInInverseFaces.size() != ( 6 + (nbF/2-1)*3 );
   }
 
   //================================================================================
@@ -849,14 +837,12 @@ namespace
       row2.push_back( n1 = oppositeNode( quad, i1 ));
     }
 
-    _NodeDescriptor nDesc( row1[1] );
-    if ( nDesc == _NodeDescriptor( row1[0] ))
-      return true; // row of 2 nodes
+    if ( isCornerNode( row1[1] ))
+      return true;
 
     // Find the rest nodes
     TIDSortedElemSet emptySet, avoidSet;
-    //while ( !isCornerNode( n2 ))
-    while ( nDesc == _NodeDescriptor( n2 ))
+    while ( !isCornerNode( n2 ) )
     {
       avoidSet.clear(); avoidSet.insert( quad );
       quad = SMESH_MeshEditor::FindFaceInSet( n1, n2, emptySet, avoidSet, &i1, &i2 );
