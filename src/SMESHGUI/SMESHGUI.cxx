@@ -1593,7 +1593,7 @@ extern "C" {
   }
 
   SMESHGUI_EXPORT  char* getModuleVersion() {
-    return SMESH_VERSION_STR;
+    return (char*)SMESH_VERSION_STR;
   }
 }
 

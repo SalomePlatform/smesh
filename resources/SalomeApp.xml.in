@@ -26,7 +26,7 @@
     <!-- Major module parameters -->
     <parameter name="name" value="Mesh"/>
     <parameter name="icon" value="ModuleMesh.png"/>
-    <parameter name="SMESH_VERSION" value="@VERSION@"/>
+    <parameter name="version" value="@VERSION@"/>
     <!-- Other module preferences -->
     <parameter name="node_color"                   value="255, 0,   0"/>
     <parameter name="fill_color"                   value="0, 170, 255"/>
@@ -93,21 +93,21 @@
   </section>
   <section name="smesh_help" >
     <parameter name="sub_menu"          value="%1 module"/>
-    <parameter name="User's Guide"      value="${SMESH_ROOT_DIR}/share/doc/salome/gui/SMESH/index.html"/>
-    <parameter name="Developer's Guide" value="${SMESH_ROOT_DIR}/share/doc/salome/tui/SMESH/index.html"/>
+    <parameter name="User's Guide"      value="%SMESH_ROOT_DIR%/share/doc/salome/gui/SMESH/index.html"/>
+    <parameter name="Developer's Guide" value="%SMESH_ROOT_DIR%/share/doc/salome/tui/SMESH/index.html"/>
   </section>
   <section name="resources">
     <!-- Module resources -->
-    <parameter name="SMESH"        value="${SMESH_ROOT_DIR}/share/salome/resources/smesh"/>
-    <parameter name="StdMeshers"   value="${SMESH_ROOT_DIR}/share/salome/resources/smesh"/>
+    <parameter name="SMESH"        value="%SMESH_ROOT_DIR%/share/salome/resources/smesh"/>
+    <parameter name="StdMeshers"   value="%SMESH_ROOT_DIR%/share/salome/resources/smesh"/>
     <!-- NETGENPlugin and GHS3DPlugin -->
     <!-- Here the environment variables are used as case-sensitive, -->
     <!-- In GUI/src/SalomeApp/resources/SalomeApp.xml upper-case notation is used. -->
     <!-- As a result, both variants are acceptable. -->
-    <parameter name="NETGENPlugin" value="${NETGENPlugin_ROOT_DIR}/share/salome/resources/netgenplugin"/>
-    <parameter name="GHS3DPlugin"  value="${GHS3DPlugin_ROOT_DIR}/share/salome/resources/ghs3dplugin"/>
-    <parameter name="BLSURFPlugin" value="${BLSURFPlugin_ROOT_DIR}/share/salome/resources"/>
-    <parameter name="HexoticPlugin" value="${HexoticPLUGIN_ROOT_DIR}/share/salome/resources/hexoticplugin"/>
-    <parameter name="GHS3DPRLPlugin" value="${GHS3DPRLPLUGIN_ROOT_DIR}/share/salome/resources"/>
+    <parameter name="NETGENPlugin" value="%NETGENPlugin_ROOT_DIR%/share/salome/resources/netgenplugin"/>
+    <parameter name="GHS3DPlugin"  value="%GHS3DPlugin_ROOT_DIR%/share/salome/resources/ghs3dplugin"/>
+    <parameter name="BLSURFPlugin" value="%BLSURFPlugin_ROOT_DIR%/share/salome/resources"/>
+    <parameter name="HexoticPlugin" value="%HexoticPLUGIN_ROOT_DIR%/share/salome/resources/hexoticplugin"/>
+    <parameter name="GHS3DPRLPlugin" value="%GHS3DPRLPLUGIN_ROOT_DIR%/share/salome/resources"/>
   </section>
 </document>
