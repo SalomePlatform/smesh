@@ -71,7 +71,7 @@
 
 #include <list>
 #include <string>
-#include <math.h>
+#include <cmath>
 #include <limits>
 
 //#define __myDEBUG
@@ -116,7 +116,7 @@ namespace VISCOUS
   //--------------------------------------------------------------------------------
   /*!
    * \brief Listener of events of 3D sub-meshes computed with viscous layers.
-   * It is used to clear an inferior dim sub-mesh modified by viscous layers
+   * It is used to clear an inferior dim sub-meshes modified by viscous layers
    */
   class _SrinkShapeListener : SMESH_subMeshEventListener
   {
@@ -903,7 +903,7 @@ SMESH_ComputeErrorPtr _ViscousBuilder::Compute(SMESH_Mesh&         theMesh,
     return _error;
 
   addBoundaryElements();
-  
+
   makeGroupOfLE(); // debug
 
   return _error;
@@ -911,7 +911,7 @@ SMESH_ComputeErrorPtr _ViscousBuilder::Compute(SMESH_Mesh&         theMesh,
 
 //================================================================================
 /*!
- * \brief Finds SOLIDs to compute using viscous layers. Fill _sdVec
+ * \brief Finds SOLIDs to compute using viscous layers. Fills _sdVec
  */
 //================================================================================
 
@@ -3312,6 +3312,7 @@ bool _ViscousBuilder::shrink()
             SMDS_ElemIteratorPtr fIt = smDS->GetElements();
             while ( fIt->more() )
               proxySub->AddElement( fIt->next() );
+            // as a result 3D algo will use elements from proxySub and not from smDS
           }
       }
   }
@@ -3341,8 +3342,8 @@ bool _ViscousBuilder::shrink()
     // Prepare data for shrinking
     // ===========================
 
-    // Collect nodes to smooth as src nodes are not yet replaced by tgt ones
-    // and thus all nodes on FACE connected to 2d elements are to be smoothed
+    // Collect nodes to smooth, as src nodes are not yet replaced by tgt ones
+    // and thus all nodes on a FACE connected to 2d elements are to be smoothed
     vector < const SMDS_MeshNode* > smoothNodes;
     {
       SMDS_NodeIteratorPtr nIt = smDS->GetNodes();
@@ -3410,6 +3411,7 @@ bool _ViscousBuilder::shrink()
     }
 
     // Create _SmoothNode's on face F
+    bool isOkUV;
     vector< _SmoothNode > nodesToSmooth( smoothNodes.size() );
     {
       dumpFunction(SMESH_Comment("beforeShrinkFace")<<f2sd->first); // debug
@@ -3419,6 +3421,8 @@ bool _ViscousBuilder::shrink()
         nodesToSmooth[ i ]._node = n;
         // src nodes must be replaced by tgt nodes to have tgt nodes in _simplices
         getSimplices( n, nodesToSmooth[ i ]._simplices, ignoreShapes );
+        // fix up incorrect uv of nodes on the FACE
+        helper.GetNodeUV( F, n, 0, &isOkUV);
         dumpMove( n );
       }
       dumpFunctionEnd();
@@ -4020,6 +4024,7 @@ void _Shrinker1D::RestoreParams()
     }
   _done = false;
 }
+
 //================================================================================
 /*!
  * \brief Replace source nodes by target nodes in shrinked mesh edges
