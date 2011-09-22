@@ -165,11 +165,11 @@ bool SMESHGUI_XmlHandler::startElement (const QString&, const QString&,
 
       if (qName == "algorithm")
       {
-        myAlgorithmsMap[aHypAlType] = aHypData;
+        myAlgorithmsMap.insert(aHypAlType,aHypData);
       }
       else
       {
-        myHypothesesMap[aHypAlType] = aHypData;
+        myHypothesesMap.insert(aHypAlType,aHypData);
       }
     }
   }

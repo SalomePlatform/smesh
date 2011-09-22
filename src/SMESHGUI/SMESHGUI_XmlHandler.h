@@ -35,6 +35,9 @@
 #include <QMap>
 #include <QList>
 
+//GUI includes
+#include <QtxMap.h>
+
 class HypothesisData;
 class HypothesesSet;
 
@@ -55,8 +58,8 @@ public:
   bool     fatalError( const QXmlParseException& );
 
 public:
-  QMap<QString, HypothesisData*>         myHypothesesMap;
-  QMap<QString, HypothesisData*>         myAlgorithmsMap;
+  IMap<QString, HypothesisData*>         myHypothesesMap;
+  IMap<QString, HypothesisData*>         myAlgorithmsMap;
 
   QList<HypothesesSet*>                  myListOfHypothesesSets;
 

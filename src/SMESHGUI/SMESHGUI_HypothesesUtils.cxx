@@ -53,6 +53,7 @@
 #include <QDir>
 //#include <QList>
 
+
 // Other includes
 #ifdef WNT
 #include <windows.h>
@@ -80,10 +81,10 @@ static int MYDEBUG = 0;
 
 namespace SMESH
 {
-  typedef QMap<QString,HypothesisData*> THypothesisDataMap;
+  typedef IMap<QString,HypothesisData*> THypothesisDataMap;
   THypothesisDataMap myHypothesesMap;
   THypothesisDataMap myAlgorithmsMap;
-
+  
   // BUG 0020378
   //typedef QMap<QString,SMESHGUI_GenericHypothesisCreator*> THypCreatorMap;
   //THypCreatorMap myHypCreatorMap;
@@ -217,8 +218,17 @@ namespace SMESH
           bool ok = reader.parse(source);
           file.close();
           if (ok) {
-            myHypothesesMap.unite( aXmlHandler->myHypothesesMap );
-            myAlgorithmsMap.unite( aXmlHandler->myAlgorithmsMap );
+
+	    THypothesisDataMap::ConstIterator it1 = aXmlHandler->myHypothesesMap.begin();
+	    
+	    for( ;it1 != aXmlHandler->myHypothesesMap.end(); it1++)
+	      myHypothesesMap.insert( it1.key(), it1.value() );
+	    
+	    
+	    it1 = aXmlHandler->myAlgorithmsMap.begin();
+	    for( ;it1 != aXmlHandler->myAlgorithmsMap.end(); it1++)
+	      myAlgorithmsMap.insert( it1.key(), it1.value() );
+	    
             QList<HypothesesSet*>::iterator it, pos = myListOfHypothesesSets.begin();
             for ( it = aXmlHandler->myListOfHypothesesSets.begin(); 
                   it != aXmlHandler->myListOfHypothesesSets.end();
@@ -269,7 +279,7 @@ namespace SMESH
     bool checkGeometry = ( !isNeedGeometry && isAlgo );
     // fill list of hypotheses/algorithms
     THypothesisDataMap& pMap = isAlgo ? myAlgorithmsMap : myHypothesesMap;
-    THypothesisDataMap::iterator anIter;
+    THypothesisDataMap::ConstIterator anIter;
     for ( anIter = pMap.begin(); anIter != pMap.end(); anIter++ ) {
       HypothesisData* aData = anIter.value();
       if ( ( theDim < 0 || aData->Dim.contains( theDim ) ) && aData->IsAux == isAux) {
@@ -336,10 +346,10 @@ namespace SMESH
     // Init list of available hypotheses, if needed
     InitAvailableHypotheses();
 
-    if (myHypothesesMap.find(aHypType) != myHypothesesMap.end()) {
+    if (myHypothesesMap.contains(aHypType)) {
       aHypData = myHypothesesMap[aHypType];
     }
-    else if (myAlgorithmsMap.find(aHypType) != myAlgorithmsMap.end()) {
+    else if (myAlgorithmsMap.contains(aHypType)) {
       aHypData = myAlgorithmsMap[aHypType];
     }
     return aHypData;

@@ -29,12 +29,13 @@ def set_env(args):
 
     python_version="python%d.%d" % sys.version_info[0:2]
 
-    os.environ["SMESH_MeshersList"]="StdMeshers"
+
     if not os.environ.has_key("SALOME_StdMeshersResources"):
         os.environ["SALOME_StdMeshersResources"] \
         = os.environ["SMESH_ROOT_DIR"]+"/share/"+salome_subdir+"/resources/smesh"
         pass
     if args.has_key("SMESH_plugins"):
+	plugin_list = []
         for plugin in args["SMESH_plugins"]:
             plugin_root = ""
             if os.environ.has_key(plugin+"_ROOT_DIR"):
@@ -46,8 +47,7 @@ def set_env(args):
                     pass
                 pass
             if plugin_root != "":
-                os.environ["SMESH_MeshersList"] \
-                = os.environ["SMESH_MeshersList"]+":"+plugin
+		plugin_list.append(plugin)
                 if not os.environ.has_key("SALOME_"+plugin+"Resources"):
                     os.environ["SALOME_"+plugin+"Resources"] \
                     = plugin_root+"/share/"+salome_subdir+"/resources/"+plugin.lower()
@@ -65,3 +65,5 @@ def set_env(args):
                     pass
                 pass
             pass
+	plugin_list.append("StdMeshers")
+	os.environ["SMESH_MeshersList"] = ":".join(plugin_list)
