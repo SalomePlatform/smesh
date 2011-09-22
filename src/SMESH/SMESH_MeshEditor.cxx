@@ -54,6 +54,7 @@
 #include "utilities.h"
 
 #include <BRepAdaptor_Surface.hxx>
+#include <BRepBuilderAPI_MakeEdge.hxx>
 #include <BRepClass3d_SolidClassifier.hxx>
 #include <BRep_Tool.hxx>
 #include <ElCLib.hxx>
@@ -455,6 +456,25 @@ static void ShiftNodesQuadTria(const SMDS_MeshNode* aNodes[])
   aNodes[4] = aNodes[5];
   aNodes[5] = nd2;
 }
+
+//=======================================================================
+//function : edgeConnectivity
+//purpose  : auxilary 
+//           return number of the edges connected with the theNode.
+//           if theEdges has connections with the other type of the
+//           elements, return -1 
+//=======================================================================
+static int nbEdgeConnectivity(const SMDS_MeshNode* theNode)
+{
+  SMDS_ElemIteratorPtr elemIt = theNode->GetInverseElementIterator();
+  int nb=0;
+  while(elemIt->more()) {
+    elemIt->next();
+    nb++;
+  }
+  return nb;
+}
+
 
 //=======================================================================
 //function : GetNodesFromTwoTria
@@ -4687,8 +4707,7 @@ SMESH_MeshEditor::ExtrusionAlongTrack (TIDSortedElemSet &   theElements,
     }
     //Extrusion_Error err =
     MakeEdgePathPoints(aPrms, aTrackEdge, (aN1==theN1), fullList);
-  }
-  else if( aS.ShapeType() == TopAbs_WIRE ) {
+  } else if( aS.ShapeType() == TopAbs_WIRE ) {
     list< SMESH_subMesh* > LSM;
     TopTools_SequenceOfShape Edges;
     SMESH_subMeshIteratorPtr itSM = theTrack->getDependsOnIterator(false,true);
@@ -4701,6 +4720,7 @@ SMESH_MeshEditor::ExtrusionAlongTrack (TIDSortedElemSet &   theElements,
     list< list<SMESH_MeshEditor_PathPoint> > LLPPs;
     int startNid = theN1->GetID();
     TColStd_MapOfInteger UsedNums;
+    
     int NbEdges = Edges.Length();
     int i = 1;
     for(; i<=NbEdges; i++) {
@@ -4834,8 +4854,127 @@ SMESH_MeshEditor::ExtrusionAlongTrack (TIDSortedElemSet &   theElements,
   list<SMESH_MeshEditor_PathPoint> fullList;
 
   const TopoDS_Shape& aS = theTrack->GetShapeToMesh();
-  // Sub shape for the Pattern must be an Edge or Wire
-  if( aS.ShapeType() == TopAbs_EDGE ) {
+
+  if( aS == SMESH_Mesh::PseudoShape() ) {
+    //Mesh without shape
+    const SMDS_MeshNode* currentNode = NULL;
+    const SMDS_MeshNode* prevNode = theN1;
+    std::vector<const SMDS_MeshNode*> aNodesList;
+    aNodesList.push_back(theN1);
+    int nbEdges = 0, conn=0;
+    const SMDS_MeshElement* prevElem = NULL;
+    const SMDS_MeshElement* currentElem = NULL;
+    int totalNbEdges = theTrack->NbEdges();
+    SMDS_ElemIteratorPtr nIt;
+    bool isClosed = false;
+
+    //check start node
+    if( !theTrack->GetMeshDS()->Contains(theN1) ) {
+      return EXTR_BAD_STARTING_NODE;
+    }
+    
+    conn = nbEdgeConnectivity(theN1);
+    if(conn > 2)
+      return EXTR_PATH_NOT_EDGE;
+
+    aItE = theN1->GetInverseElementIterator();
+    prevElem = aItE->next();
+    currentElem = prevElem;
+    //Get all nodes
+    if(totalNbEdges == 1 ) {
+      nIt = currentElem->nodesIterator();
+      currentNode = static_cast<const SMDS_MeshNode*>(nIt->next());
+      if(currentNode == prevNode)
+	currentNode = static_cast<const SMDS_MeshNode*>(nIt->next());
+      aNodesList.push_back(currentNode);
+    } else { 
+      nIt = currentElem->nodesIterator();
+      while( nIt->more() ) {
+	currentNode = static_cast<const SMDS_MeshNode*>(nIt->next());
+	if(currentNode == prevNode)
+	  currentNode = static_cast<const SMDS_MeshNode*>(nIt->next());
+	aNodesList.push_back(currentNode);
+	
+	//case of the closed mesh
+	if(currentNode == theN1) {
+	  nbEdges++;
+	  isClosed = true;
+	  break;
+	}
+
+	conn = nbEdgeConnectivity(currentNode);
+	if(conn > 2) {
+	  return EXTR_PATH_NOT_EDGE;	
+	}else if( conn == 1 && nbEdges > 0 ) {
+	  //End of the path
+	  nbEdges++;
+	  break;
+	}else {
+	  prevNode = currentNode;
+	  aItE = currentNode->GetInverseElementIterator();
+	  currentElem = aItE->next();
+	  if( currentElem  == prevElem)
+	    currentElem = aItE->next();
+	  nIt = currentElem->nodesIterator();
+	  prevElem = currentElem;
+	  nbEdges++;
+	}
+      }
+    } 
+    
+    if(nbEdges != totalNbEdges)
+      return EXTR_PATH_NOT_EDGE;
+
+    TopTools_SequenceOfShape Edges;
+    double x1,x2,y1,y2,z1,z2;
+    list< list<SMESH_MeshEditor_PathPoint> > LLPPs;
+    int startNid = theN1->GetID();
+    for(int i = 1; i < aNodesList.size(); i++) {
+      x1 = aNodesList[i-1]->X();x2 = aNodesList[i]->X();
+      y1 = aNodesList[i-1]->Y();y2 = aNodesList[i]->Y();
+      z1 = aNodesList[i-1]->Z();z2 = aNodesList[i]->Z();
+      TopoDS_Edge e = BRepBuilderAPI_MakeEdge(gp_Pnt(x1,y1,z1),gp_Pnt(x2,y2,z2));  
+      list<SMESH_MeshEditor_PathPoint> LPP;
+      aPrms.clear();
+      MakeEdgePathPoints(aPrms, e, (aNodesList[i-1]->GetID()==startNid), LPP);
+      LLPPs.push_back(LPP);
+      if( aNodesList[i-1]->GetID() == startNid ) startNid = aNodesList[i]->GetID();
+      else startNid = aNodesList[i-1]->GetID();
+
+    }
+
+    list< list<SMESH_MeshEditor_PathPoint> >::iterator itLLPP = LLPPs.begin();
+    list<SMESH_MeshEditor_PathPoint> firstList = *itLLPP;
+    list<SMESH_MeshEditor_PathPoint>::iterator itPP = firstList.begin();
+    for(; itPP!=firstList.end(); itPP++) {
+      fullList.push_back( *itPP );
+    }
+
+    SMESH_MeshEditor_PathPoint PP1 = fullList.back();
+    SMESH_MeshEditor_PathPoint PP2;
+    fullList.pop_back();
+    itLLPP++;
+    for(; itLLPP!=LLPPs.end(); itLLPP++) {
+      list<SMESH_MeshEditor_PathPoint> currList = *itLLPP;
+      itPP = currList.begin();
+      PP2 = currList.front();
+      gp_Dir D1 = PP1.Tangent();
+      gp_Dir D2 = PP2.Tangent();
+      gp_Dir Dnew( gp_Vec( (D1.X()+D2.X())/2, (D1.Y()+D2.Y())/2,
+                           (D1.Z()+D2.Z())/2 ) );
+      PP1.SetTangent(Dnew);
+      fullList.push_back(PP1);
+      itPP++;
+      for(; itPP!=currList.end(); itPP++) {
+        fullList.push_back( *itPP );
+      }
+      PP1 = fullList.back();
+      fullList.pop_back();
+    }
+    fullList.push_back(PP1);
+    
+  } // Sub shape for the Pattern must be an Edge or Wire
+  else if( aS.ShapeType() == TopAbs_EDGE ) {
     aTrackEdge = TopoDS::Edge( aS );
     // the Edge must not be degenerated
     if ( BRep_Tool::Degenerated( aTrackEdge ) )
