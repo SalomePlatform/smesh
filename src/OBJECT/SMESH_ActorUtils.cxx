@@ -35,6 +35,8 @@
 #include <Plot2d_ViewManager.h>
 #endif
 
+#include <Qtx.h>
+
 
 #include "utilities.h"
 
@@ -136,6 +138,23 @@ namespace SMESH
     g = ig / 255.;
     b = ib / 255.;
   }
+
+
+  void
+  GetColor(  const QString& theSect, 
+	     const QString& theName, 
+	     QColor& color,
+	     int& delta,
+	     QString def) 
+  {
+    
+    SUIT_ResourceMgr* mgr = SUIT_Session::session()->resourceMgr();
+    if ( mgr ) {
+      QString str = mgr->stringValue( theSect, theName, def );
+      Qtx::stringToBiColor(str,color,delta);
+    }
+  }
+
 
 #ifndef DISABLE_PLOT2DVIEWER
   //=======================================================================

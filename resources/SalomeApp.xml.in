@@ -29,9 +29,8 @@
     <parameter name="version" value="@VERSION@"/>
     <!-- Other module preferences -->
     <parameter name="node_color"                   value="255, 0,   0"/>
-    <parameter name="fill_color"                   value="0, 170, 255"/>
+    <parameter name="fill_color"                   value="0, 170, 255|-100"/>
     <parameter name="outline_color"                value="0, 170, 255"/>
-    <parameter name="backface_color"               value="0, 0,   255"/>
     <parameter name="elem0d_color"                 value="0, 255,   0"/>
     <parameter name="highlight_color"              value="0, 255, 255"/>
     <parameter name="group_name_color"             value="255, 255, 255"/>

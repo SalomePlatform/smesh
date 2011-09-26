@@ -80,11 +80,10 @@ SMESHGUI_Preferences_ColorDlg::SMESHGUI_Preferences_ColorDlg( SMESHGUI* theModul
   ButtonGroup1Layout->setSpacing( SPACING );
   ButtonGroup1Layout->setMargin( MARGIN );
 
-  QLabel* TextLabel_Fill = new QLabel( tr( "Fill" ), ButtonGroup1 );
-  btnFillColor = new QtxColorButton( ButtonGroup1 );
+  QLabel* TextLabel_Fill = new QLabel( tr( "Surface color" ), ButtonGroup1 );
 
-  QLabel* TextLabel_BackFace = new QLabel( tr( "Back Face" ), ButtonGroup1 );
-  btnBackFaceColor = new QtxColorButton( ButtonGroup1 );
+  toolSurfColor = new QtxBiColorTool(ButtonGroup1);
+  toolSurfColor->setText("Back surface color");
 
   QLabel* TextLabel_Outine = new QLabel( tr( "Outline" ), ButtonGroup1 );
   btnOutlineColor = new QtxColorButton( ButtonGroup1 );
@@ -117,9 +116,7 @@ SMESHGUI_Preferences_ColorDlg::SMESHGUI_Preferences_ColorDlg( SMESHGUI* theModul
   SpinBox_Shrink->setButtonSymbols( QSpinBox::PlusMinus );
 
   ButtonGroup1Layout->addWidget( TextLabel_Fill,             0, 0 );
-  ButtonGroup1Layout->addWidget( btnFillColor,               0, 1 );
-  ButtonGroup1Layout->addWidget( TextLabel_BackFace,         0, 2 );
-  ButtonGroup1Layout->addWidget( btnBackFaceColor,           0, 3 );
+  ButtonGroup1Layout->addWidget( toolSurfColor,              0, 1, 1, 3 );
   ButtonGroup1Layout->addWidget( TextLabel_Outine,           1, 0 );
   ButtonGroup1Layout->addWidget( btnOutlineColor,            1, 1 );
   ButtonGroup1Layout->addWidget( TextLabel_0DElements_Color, 1, 2 );
@@ -309,10 +306,9 @@ void SMESHGUI_Preferences_ColorDlg::ActivateThisDialog()
 void SMESHGUI_Preferences_ColorDlg::SetColor( int type, const QColor& color )
 {
   switch ( type ) {
-  case 1 : btnFillColor->setColor( color );        break; // fill
+  case 1 : toolSurfColor->setMainColor( color );        break; // fill
   case 2 : btnOutlineColor->setColor( color );     break; // outline
   case 3 : btnNodeColor->setColor( color );        break; // node
-  case 4 : btnBackFaceColor->setColor( color );    break; // back face
   case 5 : btn0DElementsColor->setColor( color );  break; // 0d elements
   case 6 : btnOrientationColor->setColor( color ); break; // orientation of faces
   default: break;
@@ -327,10 +323,9 @@ QColor SMESHGUI_Preferences_ColorDlg::GetColor( int type )
 {
   QColor color;
   switch ( type ) {
-  case 1 : color = btnFillColor->color();        break; // fill
+  case 1 : color = toolSurfColor->mainColor();        break; // fill
   case 2 : color = btnOutlineColor->color();     break; // outline
   case 3 : color = btnNodeColor->color();        break; // node
-  case 4 : color = btnBackFaceColor->color();    break; // back face
   case 5 : color = btn0DElementsColor->color();  break; // 0d elements
   case 6 : color = btnOrientationColor->color(); break; // orientation of faces
   default: break;
@@ -482,6 +477,23 @@ VTK::MarkerScale SMESHGUI_Preferences_ColorDlg::getStandardMarkerScale() const
 int SMESHGUI_Preferences_ColorDlg::getCustomMarkerID() const
 {
   return MarkerWidget->getCustomMarkerID();
+}
+
+//=================================================================================
+// function : SetDeltaBrightness(int)
+// purpose  :
+//=================================================================================
+void SMESHGUI_Preferences_ColorDlg::SetDeltaBrightness(int delta) 
+{
+  toolSurfColor->setDelta(delta);
+}
+//=================================================================================
+// function : GetDeltaBrightness()
+// purpose  :
+//=================================================================================
+int SMESHGUI_Preferences_ColorDlg::GetDeltaBrightness() 
+{
+  return toolSurfColor->delta();
 }
 
 //=================================================================================

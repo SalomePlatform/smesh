@@ -32,6 +32,7 @@
 
 // SALOME GUI includes
 #include <VTKViewer_MarkerDef.h>
+#include <QtxBiColorTool.h>
 
 // Qt includes
 #include <QDialog>
@@ -63,6 +64,9 @@ public:
   void                  setCustomMarkerMap( VTK::MarkerMap );
   VTK::MarkerMap        getCustomMarkerMap();
 
+  void                  SetDeltaBrightness(int);
+  int                   GetDeltaBrightness();
+
   void                  setStandardMarker( VTK::MarkerType, VTK::MarkerScale );
   void                  setCustomMarker( int );
   VTK::MarkerType       getMarkerType() const;
@@ -82,9 +86,8 @@ private slots:
   
 private:
   SMESHGUI*             mySMESHGUI;            
-  
-  QtxColorButton*       btnFillColor;
-  QtxColorButton*       btnBackFaceColor;
+
+  QtxBiColorTool*       toolSurfColor; 
   QtxColorButton*       btnOutlineColor;
   QtxColorButton*       btn0DElementsColor;
   SalomeApp_IntSpinBox* SpinBox_0DElements_Size;

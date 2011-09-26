@@ -3550,7 +3550,7 @@ Please, create VTK viewer and try again</translation>
     </message>
     <message>
         <source>PREF_BACKFACE</source>
-        <translation>Back face</translation>
+        <translation>Back surface color</translation>
     </message>
     <message>
         <source>PREF_COLOR</source>
@@ -3594,7 +3594,7 @@ Please, create VTK viewer and try again</translation>
     </message>
     <message>
         <source>PREF_FILL</source>
-        <translation>Fill</translation>
+        <translation>Surface color</translation>
     </message>
     <message>
         <source>PREF_NOTIFY_MODE</source>

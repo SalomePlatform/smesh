@@ -104,11 +104,8 @@ class SMESH_ActorDef : public SMESH_Actor
   virtual void SetOpacity(vtkFloatingPointType theValue);
   virtual vtkFloatingPointType GetOpacity();
 
-  virtual void SetSufaceColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b);
-  virtual void GetSufaceColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b);
-
-  virtual void SetBackSufaceColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b);
-  virtual void GetBackSufaceColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b);
+  virtual void SetSufaceColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b, int delta );
+  virtual void GetSufaceColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b, int& delta);
 
   virtual void SetEdgeColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b);
   virtual void GetEdgeColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b);
@@ -293,6 +290,8 @@ class SMESH_ActorDef : public SMESH_Actor
 #endif
 
   bool myIsFacesOriented;
+  
+  int myDeltaBrightness;
 
   VTK::MarkerTexture myMarkerTexture;
 

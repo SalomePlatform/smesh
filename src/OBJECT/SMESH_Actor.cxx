@@ -40,6 +40,8 @@
 #include "SUIT_Session.h"
 #include "SUIT_ResourceMgr.h"
 
+#include <Qtx.h>
+
 #ifndef DISABLE_PLOT2DVIEWER
 #include <SPlot2d_Histogram.h>
 #endif
@@ -146,12 +148,15 @@ SMESH_ActorDef::SMESH_ActorDef()
   //-----------------------------------------
   vtkFloatingPointType anRGB[3] = {1,1,1};
   mySurfaceProp = vtkProperty::New();
-  SMESH::GetColor( "SMESH", "fill_color", anRGB[0], anRGB[1], anRGB[2], QColor( 0, 170, 255 ) );
-  mySurfaceProp->SetColor( anRGB[0], anRGB[1], anRGB[2] );
+  QColor ffc, bfc;
+  int delta;
+  SMESH::GetColor( "SMESH", "fill_color", ffc, delta, "0,170,255|-100" ) ;
+  mySurfaceProp->SetColor( ffc.red() / 255. , ffc.green() / 255. , ffc.blue() / 255. );
+  myDeltaBrightness = delta;
 
   myBackSurfaceProp = vtkProperty::New();
-  SMESH::GetColor( "SMESH", "backface_color", anRGB[0], anRGB[1], anRGB[2], QColor( 0, 0, 255 ) );
-  myBackSurfaceProp->SetColor( anRGB[0], anRGB[1], anRGB[2] );
+  bfc = Qtx::mainColorToSecondary(ffc, delta);
+  myBackSurfaceProp->SetColor( bfc.red() / 255. , bfc.green() / 255. , bfc.blue() / 255. );
 
   my2DActor = SMESH_DeviceActor::New();
   my2DActor->SetUserMatrix(aMatrix);
@@ -1749,27 +1754,23 @@ vtkFloatingPointType SMESH_ActorDef::GetOpacity(){
 }
 
 
-void SMESH_ActorDef::SetSufaceColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b){
+void SMESH_ActorDef::SetSufaceColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b, int delta){
   mySurfaceProp->SetColor(r,g,b);
   if( SMESH_GroupObj* aGroupObj = dynamic_cast<SMESH_GroupObj*>( myVisualObj.get() ) )
     if( aGroupObj->GetElementType() == SMDSAbs_Face ||
         aGroupObj->GetElementType() == SMDSAbs_Volume )
       myNameActor->SetBackgroundColor(r,g,b);
+  
+  myDeltaBrightness = delta;
+  QColor bfc = Qtx::mainColorToSecondary(QColor(int(r*255),int(g*255),int(b*255)), delta);
+  myBackSurfaceProp->SetColor( bfc.red() / 255. , bfc.green() / 255. , bfc.blue() / 255. );
   Modified();
 }
 
-void SMESH_ActorDef::GetSufaceColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b){
+void SMESH_ActorDef::GetSufaceColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b, int& delta){
   ::GetColor(mySurfaceProp,r,g,b);
   my2DExtProp->SetColor(1.0-r,1.0-g,1.0-b);
-}
-
-void SMESH_ActorDef::SetBackSufaceColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b){
-  myBackSurfaceProp->SetColor(r,g,b);
-  Modified();
-}
-
-void SMESH_ActorDef::GetBackSufaceColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b){
-  ::GetColor(myBackSurfaceProp,r,g,b);
+  delta = myDeltaBrightness;
 }
 
 void SMESH_ActorDef::SetEdgeColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b){

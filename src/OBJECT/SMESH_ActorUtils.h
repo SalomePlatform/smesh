@@ -67,6 +67,14 @@ SMESHOBJECT_EXPORT
             vtkFloatingPointType&, 
             const QColor& = QColor() );
 
+ SMESHOBJECT_EXPORT
+   void
+   GetColor(  const QString& theSect, 
+	      const QString& theName, 
+	      QColor& color,
+	      int& delta,
+	      QString def);
+   
 SMESHOBJECT_EXPORT
   void 
   WriteUnstructuredGrid(vtkUnstructuredGrid* theGrid, 

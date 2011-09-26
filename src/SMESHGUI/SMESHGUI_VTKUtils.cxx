@@ -610,14 +610,14 @@ namespace SMESH
         SMESH::SMESH_GroupBase_var aGroup = SMESH::SMESH_GroupBase::_narrow( SMESH::SObjectToObject( aSObj ));
         if(!CORBA::is_nil(aGroup) && anActor)
         {
+	  QColor c;int delta;
+	  SMESH::GetColor( "SMESH", "fill_color", c, delta, "0,170,255|-100"  );
           SALOMEDS::Color aColor = aGroup->GetColor();
-          if( !( aColor.R > 0 || aColor.G > 0 || aColor.B > 0 ) )
+          if( !( aColor.R > 0 || aColor.G > 0 || aColor.B > 0 ))
           {
-            int r = 0, g = 0, b = 0;
-            SMESH::GetColor( "SMESH", "fill_color", r, g, b, QColor( 0, 170, 255 ) );
-            aColor.R = (float)r / 255.0;
-            aColor.G = (float)g / 255.0;
-            aColor.B = (float)b / 255.0;
+	    aColor.R = (float)c.red() / 255.0;
+	    aColor.G = (float)c.green() / 255.0;
+            aColor.B = (float)c.blue() / 255.0;
             aGroup->SetColor( aColor );
           }
           if( aGroup->GetType() == SMESH::NODE )
@@ -627,7 +627,7 @@ namespace SMESH
           else if( aGroup->GetType() == SMESH::ELEM0D )
             anActor->Set0DColor( aColor.R, aColor.G, aColor.B );
           else
-            anActor->SetSufaceColor( aColor.R, aColor.G, aColor.B );
+            anActor->SetSufaceColor( aColor.R, aColor.G, aColor.B, delta );
         }
       }
     }
