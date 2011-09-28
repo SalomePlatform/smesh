@@ -566,6 +566,7 @@ SMESH_ActorDef::~SMESH_ActorDef()
 
   mySurfaceProp->Delete();
   myBackSurfaceProp->Delete();
+  myOutLineProp->Delete();
 
   myEdgeProp->Delete();
   myHighlightProp->Delete();

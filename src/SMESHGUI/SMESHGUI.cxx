@@ -5140,14 +5140,14 @@ void SMESHGUI::storeVisualParameters (int savePoint)
                   colorStr += gDigitsSep; colorStr += QString::number(g);
                   colorStr += gDigitsSep; colorStr += QString::number(b);
 
-                  aSmeshActor->GetOutlineColor(r, g, b);
-                  colorStr += gDigitsSep; colorStr += "outline";
+                  aSmeshActor->GetNodeColor(r, g, b);
+                  colorStr += gDigitsSep; colorStr += "node";
                   colorStr += gDigitsSep; colorStr += QString::number(r);
                   colorStr += gDigitsSep; colorStr += QString::number(g);
                   colorStr += gDigitsSep; colorStr += QString::number(b);
 
-                  aSmeshActor->GetNodeColor(r, g, b);
-                  colorStr += gDigitsSep; colorStr += "node";
+                  aSmeshActor->GetOutlineColor(r, g, b);
+                  colorStr += gDigitsSep; colorStr += "outline";
                   colorStr += gDigitsSep; colorStr += QString::number(r);
                   colorStr += gDigitsSep; colorStr += QString::number(g);
                   colorStr += gDigitsSep; colorStr += QString::number(b);
@@ -5503,9 +5503,10 @@ void SMESHGUI::restoreVisualParameters (int savePoint)
             // Colors
             else if (paramNameStr == "Colors") {
               QStringList colors = val.split(gDigitsSep, QString::SkipEmptyParts);
-              if (colors.count() == 16 || colors.count() == 17 ) {
+              if (colors.count() == 16 || colors.count() == 18 ) {
                 if (colors[0] != "surface" || colors[4]  != "backsurface" ||
-                    (colors[8] != "edge" && colors[6] != "edge" )     || (colors[12] != "node" && colors[10] != "node")) {
+                    (colors[8] != "edge" && colors[6] != "edge" ) || (colors[12] != "node" && colors[10] != "node") ||
+		    (colors.count() == 18 && colors[14] != "outline")) {
                   MESSAGE("Invalid order of data in Colors, must be: "
                           "surface:r:g:b:backsurface:r:g:b:edge:r:g:b:node:r:g:b or surface:r:g:b:backsurface:delta:edge:r:g:b:node:r:g:b:outline:r:g:b");
                 }
@@ -5538,9 +5539,9 @@ void SMESHGUI::restoreVisualParameters (int savePoint)
 		    ng = colors[12].toFloat();
 		    nb = colors[13].toFloat();
 
-		    otr = colors[14].toFloat();
-		    otg = colors[15].toFloat();
-		    otb = colors[16].toFloat();
+		    otr = colors[15].toFloat();
+		    otg = colors[16].toFloat();
+		    otb = colors[17].toFloat();
 		  }
                   aSmeshActor->SetSufaceColor(colors[1].toFloat(), colors[2].toFloat(), colors[3].toFloat(), delta);
                   aSmeshActor->SetEdgeColor(er,eg,eb);
