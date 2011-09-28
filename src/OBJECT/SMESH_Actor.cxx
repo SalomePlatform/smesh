@@ -242,7 +242,7 @@ SMESH_ActorDef::SMESH_ActorDef()
   myEdgeProp->SetAmbient(1.0);
   myEdgeProp->SetDiffuse(0.0);
   myEdgeProp->SetSpecular(0.0);
-  SMESH::GetColor( "SMESH", "outline_color", anRGB[0], anRGB[1], anRGB[2], QColor( 0, 170, 255 ) );
+  SMESH::GetColor( "SMESH", "wireframe_color", anRGB[0], anRGB[1], anRGB[2], QColor( 0, 170, 255 ) );
   myEdgeProp->SetColor(anRGB[0],anRGB[1],anRGB[2]);
   myEdgeProp->SetLineWidth(aLineWidth);
 
@@ -378,6 +378,15 @@ SMESH_ActorDef::SMESH_ActorDef()
   myHighlightProp->SetColor(anRGB[0],anRGB[1],anRGB[2]);
   myHighlightProp->SetPointSize(aElem0DSize); // ??
   myHighlightProp->SetRepresentation(1);
+
+  myOutLineProp = vtkProperty::New();
+  myOutLineProp->SetAmbient(1.0);
+  myOutLineProp->SetDiffuse(0.0);
+  myOutLineProp->SetSpecular(0.0);
+  SMESH::GetColor( "SMESH", "outline_color", anRGB[0], anRGB[1], anRGB[2], QColor( 0, 70, 0 ) );
+  myOutLineProp->SetColor(anRGB[0],anRGB[1],anRGB[2]);
+  myOutLineProp->SetPointSize(aElem0DSize); // ??
+  myOutLineProp->SetRepresentation(1);
 
   myPreselectProp = vtkProperty::New();
   myPreselectProp->SetAmbient(1.0);
@@ -1210,6 +1219,8 @@ void SMESH_ActorDef::SetShrinkFactor(vtkFloatingPointType theValue){
   my2DExtActor->SetShrinkFactor(theValue);
   my3DActor->SetShrinkFactor(theValue);
   my3DExtActor->SetShrinkFactor(theValue);
+  my3DExtActor->SetShrinkFactor(theValue);
+  myHighlitableActor->SetShrinkFactor(theValue);
 
   Modified();
 }
@@ -1226,6 +1237,7 @@ void SMESH_ActorDef::SetShrink(){
   my2DExtActor->SetShrink();
   my3DActor->SetShrink();
   my3DExtActor->SetShrink();
+  myHighlitableActor->SetShrink();
 
   myIsShrunk = true;
   Modified();
@@ -1243,6 +1255,7 @@ void SMESH_ActorDef::UnShrink(){
   my2DExtActor->UnShrink();
   my3DActor->UnShrink();
   my3DExtActor->UnShrink();
+  myHighlitableActor->UnShrink();
 
   myIsShrunk = false;
   Modified();
@@ -1613,36 +1626,44 @@ bool SMESH_ActorDef::GetPointRepresentation(){
 
 
 void SMESH_ActorDef::UpdateHighlight(){
-  myHighlitableActor->SetVisibility(false);
   myHighlitableActor->SetHighlited(false);
-
-  if(myIsHighlighted){
-    myHighlitableActor->SetProperty(myHighlightProp);
-  }else if(myIsPreselected){
-    myHighlitableActor->SetProperty(myPreselectProp);
-  }
+  myHighlitableActor->SetVisibility(false);
 
   bool anIsVisible = GetVisibility();
 
-  if(myIsHighlighted || myIsPreselected){
-    if(GetUnstructuredGrid()->GetNumberOfCells()){
-      myHighlitableActor->SetHighlited(anIsVisible);
+  switch(myRepresentation){
+  case SMESH_DeviceActor::eSurface:
+  case SMESH_DeviceActor::eWireframe:
+    {
+      if(myIsHighlighted) {
+	myHighlitableActor->SetProperty(myHighlightProp);
+      }else if(myIsPreselected){
+	myHighlitableActor->SetProperty(myPreselectProp);
+      } else if(anIsVisible){
+	(myRepresentation == eSurface) ? 
+	  myHighlitableActor->SetProperty(myOutLineProp) : myHighlitableActor->SetProperty(myEdgeProp);
+      }
+      if(GetUnstructuredGrid()->GetNumberOfCells()) {
+	myHighlitableActor->SetHighlited(anIsVisible);
+	myHighlitableActor->GetExtractUnstructuredGrid()->
+	  SetModeOfExtraction(VTKViewer_ExtractUnstructuredGrid::eCells);
+	myHighlitableActor->SetRepresentation(SMESH_DeviceActor::eWireframe);
+      }
       myHighlitableActor->SetVisibility(anIsVisible);
-      myHighlitableActor->GetExtractUnstructuredGrid()->
-        SetModeOfExtraction(VTKViewer_ExtractUnstructuredGrid::eCells);
-      myHighlitableActor->SetRepresentation(SMESH_DeviceActor::eWireframe);
-    }else if(myRepresentation == ePoint || GetPointRepresentation()){
-      myHighlitableActor->SetHighlited(anIsVisible);
-      myHighlitableActor->GetExtractUnstructuredGrid()->
-        SetModeOfExtraction(VTKViewer_ExtractUnstructuredGrid::ePoints);
-      myHighlitableActor->SetVisibility(anIsVisible);
-      myHighlitableActor->SetRepresentation(SMESH_DeviceActor::ePoint);
-
-      VTK::MarkerType aMarkerType = GetMarkerType();
-      if(aMarkerType != VTK::MT_USER)
-        myHighlitableActor->SetMarkerStd(aMarkerType, GetMarkerScale());
-      else
-        myHighlitableActor->SetMarkerTexture(GetMarkerTexture(), myMarkerTexture);
+      break;
+    }
+  case SMESH_DeviceActor::ePoint:
+    {
+      if(myIsHighlighted) {
+	myNodeActor->SetProperty(myHighlightProp);
+      }else if(myIsPreselected) {
+	myNodeActor->SetProperty(myPreselectProp);
+      } else if(anIsVisible) {
+	myNodeActor->SetProperty(myNodeProp);
+      }
+      myNodeActor->SetRepresentation(SMESH_DeviceActor::ePoint);
+      myNodeActor->GetExtractUnstructuredGrid()->SetModeOfExtraction(VTKViewer_ExtractUnstructuredGrid::ePoints);
+      break;
     }
   }
 }
@@ -1786,6 +1807,16 @@ void SMESH_ActorDef::SetEdgeColor(vtkFloatingPointType r,vtkFloatingPointType g,
 void SMESH_ActorDef::GetEdgeColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b){
   ::GetColor(myEdgeProp,r,g,b);
 }
+
+void SMESH_ActorDef::SetOutlineColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b){
+  myOutLineProp->SetColor(r,g,b);
+  Modified();
+}
+
+void SMESH_ActorDef::GetOutlineColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b){
+  ::GetColor(myOutLineProp,r,g,b);
+}
+
 
 void SMESH_ActorDef::SetNodeColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b){ 
   myNodeProp->SetColor(r,g,b);

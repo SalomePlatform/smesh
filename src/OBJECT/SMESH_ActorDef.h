@@ -110,6 +110,10 @@ class SMESH_ActorDef : public SMESH_Actor
   virtual void SetEdgeColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b);
   virtual void GetEdgeColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b);
 
+  virtual void SetOutlineColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b);
+  virtual void GetOutlineColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b);
+
+
   virtual void SetNodeColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b);
   virtual void GetNodeColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b);
 
@@ -232,7 +236,9 @@ class SMESH_ActorDef : public SMESH_Actor
   SMESH_DeviceActor* myPickableActor;
 
   vtkProperty* myHighlightProp;
+  vtkProperty* myOutLineProp;
   vtkProperty* myPreselectProp;
+          
   SMESH_DeviceActor* myHighlitableActor;
 
   eControl myControlMode;

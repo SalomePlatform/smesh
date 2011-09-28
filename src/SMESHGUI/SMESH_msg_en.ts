@@ -3553,6 +3553,22 @@ Please, create VTK viewer and try again</translation>
         <translation>Back surface color</translation>
     </message>
     <message>
+        <source>PREF_WIREFRAME</source>
+        <translation>Wireframe color</translation>
+    </message>
+    <message>
+        <source>PREF_GROUP_SELECTION</source>
+        <translation>Selection</translation>
+    </message>            
+    <message>
+        <source>PREF_SELECTION</source>
+        <translation>Selection color</translation>
+    </message>
+    <message>
+        <source>PREF_PRE_SELECTION</source>
+        <translation>Pre-selection color</translation>
+    </message>    
+    <message>
         <source>PREF_COLOR</source>
         <translation>Color</translation>
     </message>
@@ -3706,7 +3722,7 @@ Please, create VTK viewer and try again</translation>
     </message>
     <message>
         <source>PREF_OUTLINE</source>
-        <translation>Outline</translation>
+        <translation>Outline color</translation>
     </message>
     <message>
         <source>PREF_PRECISION_USE</source>

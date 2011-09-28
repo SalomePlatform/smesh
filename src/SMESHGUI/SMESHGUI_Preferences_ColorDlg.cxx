@@ -85,8 +85,11 @@ SMESHGUI_Preferences_ColorDlg::SMESHGUI_Preferences_ColorDlg( SMESHGUI* theModul
   toolSurfColor = new QtxBiColorTool(ButtonGroup1);
   toolSurfColor->setText("Back surface color");
 
-  QLabel* TextLabel_Outine = new QLabel( tr( "Outline" ), ButtonGroup1 );
+  QLabel* TextLabel_Outline = new QLabel( tr( "Outline color" ), ButtonGroup1 );
   btnOutlineColor = new QtxColorButton( ButtonGroup1 );
+
+  QLabel* TextLabel_Wireframe = new QLabel( tr( "Wireframe color" ), ButtonGroup1 );
+  btnWireframeColor = new QtxColorButton( ButtonGroup1 );
 
   QLabel* TextLabel_0DElements_Color = new QLabel( tr( "0D elements" ), ButtonGroup1 );
   btn0DElementsColor = new QtxColorButton( ButtonGroup1 );
@@ -117,12 +120,18 @@ SMESHGUI_Preferences_ColorDlg::SMESHGUI_Preferences_ColorDlg( SMESHGUI* theModul
 
   ButtonGroup1Layout->addWidget( TextLabel_Fill,             0, 0 );
   ButtonGroup1Layout->addWidget( toolSurfColor,              0, 1, 1, 3 );
-  ButtonGroup1Layout->addWidget( TextLabel_Outine,           1, 0 );
+
+  ButtonGroup1Layout->addWidget( TextLabel_Outline,          1, 0 );
   ButtonGroup1Layout->addWidget( btnOutlineColor,            1, 1 );
-  ButtonGroup1Layout->addWidget( TextLabel_0DElements_Color, 1, 2 );
-  ButtonGroup1Layout->addWidget( btn0DElementsColor,         1, 3 );
-  ButtonGroup1Layout->addWidget( TextLabel_0DElements_Size,  2, 0 );
-  ButtonGroup1Layout->addWidget( SpinBox_0DElements_Size,    2, 1 );
+  ButtonGroup1Layout->addWidget( TextLabel_Wireframe,        1, 2 );
+  ButtonGroup1Layout->addWidget( btnWireframeColor,         1, 3 );
+
+  ButtonGroup1Layout->addWidget( TextLabel_0DElements_Color, 2, 0 );
+  ButtonGroup1Layout->addWidget( btn0DElementsColor,         2, 1 );
+
+  ButtonGroup1Layout->addWidget( TextLabel_0DElements_Size,  2, 2 );
+  ButtonGroup1Layout->addWidget( SpinBox_0DElements_Size,    2, 3 );
+
   ButtonGroup1Layout->addWidget( TextLabel_Width,            3, 0 );
   ButtonGroup1Layout->addWidget( SpinBox_Width,              3, 1 );
   ButtonGroup1Layout->addWidget( TextLabel_ShrinkCoeff,      3, 2 );
@@ -176,6 +185,23 @@ SMESHGUI_Preferences_ColorDlg::SMESHGUI_Preferences_ColorDlg( SMESHGUI* theModul
   ButtonGroup3Layout->addWidget( CheckBox_Orientation_3DVectors, 1, 0, 1, 4 );
 
   // -------------------------------
+  QGroupBox* ButtonGroup4 = new QGroupBox( tr( "Selection" ), this );
+  QGridLayout* ButtonGroup4Layout = new QGridLayout( ButtonGroup4 );
+  ButtonGroup3Layout->setSpacing( SPACING );
+  ButtonGroup3Layout->setMargin( MARGIN );
+  
+  QLabel* TextLabel_Selection_Color = new QLabel( tr( "Selection color" ), ButtonGroup4 );
+  btnSelectionColor = new QtxColorButton( ButtonGroup4 );
+  
+  QLabel* TextLabel_Preselection_Color = new QLabel( tr( "Pre-selection color" ), ButtonGroup4 );
+  btnPreselectionColor = new QtxColorButton( ButtonGroup4 );
+  
+  ButtonGroup4Layout->addWidget( TextLabel_Selection_Color,      0, 0 );
+  ButtonGroup4Layout->addWidget( btnSelectionColor,              0, 1 );
+  ButtonGroup4Layout->addWidget( TextLabel_Preselection_Color,   0, 2 );
+  ButtonGroup4Layout->addWidget( btnPreselectionColor,           0, 3 );
+
+  // -------------------------------
   QGroupBox* GroupButtons = new QGroupBox( this );
   QHBoxLayout* GroupButtonsLayout = new QHBoxLayout( GroupButtons );
   GroupButtonsLayout->setSpacing( SPACING );
@@ -201,6 +227,9 @@ SMESHGUI_Preferences_ColorDlg::SMESHGUI_Preferences_ColorDlg( SMESHGUI* theModul
   topLayout->addWidget( ButtonGroup1 );
   topLayout->addWidget( ButtonGroup2 );
   topLayout->addWidget( ButtonGroup3 );
+  //  rnv: Selection and preselection colors are defined only in the Preferences 
+  //  topLayout->addWidget( ButtonGroup4 );
+  ButtonGroup4->hide();
   topLayout->addWidget( GroupButtons );
 
   // -------------------------------
@@ -306,11 +335,14 @@ void SMESHGUI_Preferences_ColorDlg::ActivateThisDialog()
 void SMESHGUI_Preferences_ColorDlg::SetColor( int type, const QColor& color )
 {
   switch ( type ) {
-  case 1 : toolSurfColor->setMainColor( color );        break; // fill
-  case 2 : btnOutlineColor->setColor( color );     break; // outline
-  case 3 : btnNodeColor->setColor( color );        break; // node
-  case 5 : btn0DElementsColor->setColor( color );  break; // 0d elements
-  case 6 : btnOrientationColor->setColor( color ); break; // orientation of faces
+  case 1 : toolSurfColor->setMainColor( color );     break; // fill
+  case 2 : btnWireframeColor->setColor( color );     break; // wireframe
+  case 3 : btnNodeColor->setColor( color );          break; // node
+  case 4 : btnOutlineColor->setColor( color );       break; // outline
+  case 5 : btn0DElementsColor->setColor( color );    break; // 0d elements
+  case 6 : btnOrientationColor->setColor( color );   break; // orientation of faces
+  case 7 : btnSelectionColor->setColor( color );     break; // selection color
+  case 8 : btnPreselectionColor->setColor( color );  break; // pre-selection color
   default: break;
   }
 }
@@ -323,11 +355,15 @@ QColor SMESHGUI_Preferences_ColorDlg::GetColor( int type )
 {
   QColor color;
   switch ( type ) {
-  case 1 : color = toolSurfColor->mainColor();        break; // fill
-  case 2 : color = btnOutlineColor->color();     break; // outline
-  case 3 : color = btnNodeColor->color();        break; // node
-  case 5 : color = btn0DElementsColor->color();  break; // 0d elements
-  case 6 : color = btnOrientationColor->color(); break; // orientation of faces
+  case 1 : color = toolSurfColor->mainColor();    break; // fill
+  case 2 : color = btnWireframeColor->color();    break; // outline
+  case 3 : color = btnNodeColor->color();         break; // node
+  case 4 : color = btnOutlineColor->color();      break; // node
+  case 5 : color = btn0DElementsColor->color();   break; // 0d elements
+  case 6 : color = btnOrientationColor->color();  break; // orientation of faces
+  case 7 : color = btnSelectionColor->color();    break; // selection color
+  case 8 : color = btnPreselectionColor->color(); break; // pre-selection color
+
   default: break;
   }
   return color;

@@ -69,6 +69,9 @@ class SMESHOBJECT_EXPORT SMESH_Actor: public SALOME_Actor
 
   virtual void SetNodeColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b) = 0;
   virtual void GetNodeColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b) = 0;
+  
+  virtual void SetOutlineColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b) = 0;
+  virtual void GetOutlineColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b) = 0;  
 
   virtual void Set0DColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b) = 0;
   virtual void Get0DColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b) = 0;

@@ -1032,7 +1032,7 @@
         return;
       }
       case 1132:{
-        QColor c, e, b, n, c0D, o;
+        QColor c, e, b, n, c0D, o, outl, selection, preselection;
 	int delta;
         int size0D = 0;
         int Edgewidth = 0;
@@ -1077,6 +1077,27 @@
               c2 = int (color0D[2] * 255);
               c0D.setRgb(c0, c1, c2);
 
+              vtkFloatingPointType outlineColor[3];
+              anActor->GetOutlineColor(outlineColor[0], outlineColor[1], outlineColor[2]);
+              c0 = int (outlineColor[0] * 255);
+              c1 = int (outlineColor[1] * 255);
+              c2 = int (outlineColor[2] * 255);
+              outl.setRgb(c0, c1, c2);
+
+              vtkFloatingPointType hColor[3];
+              anActor->GetHighlightColor(hColor[0], hColor[1], hColor[2]);
+              c0 = int (hColor[0] * 255);
+              c1 = int (hColor[1] * 255);
+              c2 = int (hColor[2] * 255);
+              selection.setRgb(c0, c1, c2);
+
+              vtkFloatingPointType phColor[3];
+              anActor->GetPreHighlightColor(phColor[0], phColor[1], phColor[2]);
+              c0 = int (phColor[0] * 255);
+              c1 = int (phColor[1] * 255);
+              c2 = int (phColor[2] * 255);
+              preselection.setRgb(c0, c1, c2);
+
               size0D = (int)anActor->Get0DSize();
               if(size0D == 0)
                 size0D = 1;
@@ -1111,6 +1132,7 @@
         aDlg->SetColor(1, c);
         aDlg->SetColor(2, e);
         aDlg->SetColor(3, n);
+        aDlg->SetColor(4, outl);
 	aDlg->SetDeltaBrightness(delta);
         aDlg->SetColor(5, c0D);
         aDlg->SetColor(6, o);
@@ -1119,6 +1141,8 @@
         aDlg->SetIntValue(3, size0D);
         aDlg->SetDoubleValue(1, faces_orientation_scale);
         aDlg->SetBooleanValue(1, faces_orientation_3dvectors);
+        aDlg->SetColor(7, selection);
+        aDlg->SetColor(8, preselection);
  
         aDlg->setCustomMarkerMap( theMarkerMap[ aStudy->StudyId() ] );
 
@@ -1131,9 +1155,11 @@
           QColor color = aDlg->GetColor(1);
           QColor edgecolor = aDlg->GetColor(2);
           QColor nodecolor = aDlg->GetColor(3);
-          QColor backfacecolor = aDlg->GetColor(4);
+          QColor outlinecolor = aDlg->GetColor(4);
           QColor color0D = aDlg->GetColor(5);
           QColor faces_orientation_color = aDlg->GetColor(6);
+	  QColor selectioncolor = aDlg->GetColor(7);
+	  QColor preSelectioncolor = aDlg->GetColor(8);
 	  int delta = aDlg->GetDeltaBrightness();
 
           /* Point marker */
@@ -1153,6 +1179,20 @@
                 anActor->SetEdgeColor(vtkFloatingPointType (edgecolor.red()) / 255.,
                                       vtkFloatingPointType (edgecolor.green()) / 255.,
                                       vtkFloatingPointType (edgecolor.blue()) / 255.);
+		/* edge outline */
+                anActor->SetOutlineColor(vtkFloatingPointType (outlinecolor.red()) / 255.,
+					 vtkFloatingPointType (outlinecolor.green()) / 255.,
+					 vtkFloatingPointType (outlinecolor.blue()) / 255.);
+
+		/* selection */
+                anActor->SetHighlightColor(vtkFloatingPointType (selectioncolor.red()) / 255.,
+					   vtkFloatingPointType (selectioncolor.green()) / 255.,
+					   vtkFloatingPointType (selectioncolor.blue()) / 255.);
+		/* pre-selection */
+                anActor->SetPreHighlightColor(vtkFloatingPointType (preSelectioncolor.red()) / 255.,
+					      vtkFloatingPointType (preSelectioncolor.green()) / 255.,
+					      vtkFloatingPointType (preSelectioncolor.blue()) / 255.);
+		
 
                 /* Shrink factor and size edges */
                 anActor->SetShrinkFactor(aDlg->GetIntValue(2) / 100.);
@@ -4502,24 +4542,25 @@ void SMESHGUI::createPreferences()
   setPreferenceProperty( elemGroup, "columns", 2 );
 
   int ColorId = addPreference( tr( "PREF_FILL"     ), elemGroup, LightApp_Preferences::BiColor, "SMESH", "fill_color" );
-  addPreference( tr( "PREF_OUTLINE"  ), elemGroup, LightApp_Preferences::Color, "SMESH", "outline_color" );
   addPreference( tr( "PREF_COLOR_0D" ), elemGroup, LightApp_Preferences::Color, "SMESH", "elem0d_color" );
-
+  
+  addPreference( tr( "PREF_OUTLINE"  ), elemGroup, LightApp_Preferences::Color, "SMESH", "outline_color" );
+  addPreference( tr( "PREF_WIREFRAME"  ), elemGroup, LightApp_Preferences::Color, "SMESH", "wireframe_color" );
   
   setPreferenceProperty( ColorId, "text", tr("PREF_BACKFACE") );
+
+  int grpSelection = addPreference( tr( "PREF_GROUP_SELECTION" ), meshTab );
+  setPreferenceProperty( grpSelection, "columns", 2 );
+  addPreference( tr( "PREF_SELECTION"  ), grpSelection, LightApp_Preferences::Color, "SMESH", "selection_object_color" );
+  addPreference( tr( "PREF_PRE_SELECTION"  ), grpSelection, LightApp_Preferences::Color, "SMESH", "highlight_color" );
 
   int grpGroup = addPreference( tr( "PREF_GROUP_GROUPS" ), meshTab );
   setPreferenceProperty( grpGroup, "columns", 2 );
 
   addPreference( tr( "PREF_GRP_NAMES" ), grpGroup, LightApp_Preferences::Color, "SMESH", "group_name_color" );
 
-  //int sp = addPreference( "", elemGroup, LightApp_Preferences::Space );
-  //setPreferenceProperty( sp, "hstretch", 0 );
-  //setPreferenceProperty( sp, "vstretch", 0 );
-
   int size0d = addPreference(tr("PREF_SIZE_0D"), elemGroup,
                              LightApp_Preferences::IntSpin, "SMESH", "elem0d_size");
-  int sp = addPreference( "", elemGroup, LightApp_Preferences::Space );
   int elemW  = addPreference(tr("PREF_WIDTH"), elemGroup,
                              LightApp_Preferences::IntSpin, "SMESH", "element_width");
   int shrink = addPreference(tr("PREF_SHRINK_COEFF"), elemGroup,
@@ -4527,9 +4568,6 @@ void SMESHGUI::createPreferences()
 
   setPreferenceProperty( size0d, "min", 1 );
   setPreferenceProperty( size0d, "max", 10 );
-
-  setPreferenceProperty( sp, "hstretch", 0 );
-  setPreferenceProperty( sp, "vstretch", 0 );
 
   setPreferenceProperty( elemW, "min", 1 );
   setPreferenceProperty( elemW, "max", 5 );
@@ -5102,6 +5140,12 @@ void SMESHGUI::storeVisualParameters (int savePoint)
                   colorStr += gDigitsSep; colorStr += QString::number(g);
                   colorStr += gDigitsSep; colorStr += QString::number(b);
 
+                  aSmeshActor->GetOutlineColor(r, g, b);
+                  colorStr += gDigitsSep; colorStr += "outline";
+                  colorStr += gDigitsSep; colorStr += QString::number(r);
+                  colorStr += gDigitsSep; colorStr += QString::number(g);
+                  colorStr += gDigitsSep; colorStr += QString::number(b);
+
                   aSmeshActor->GetNodeColor(r, g, b);
                   colorStr += gDigitsSep; colorStr += "node";
                   colorStr += gDigitsSep; colorStr += QString::number(r);
@@ -5459,16 +5503,17 @@ void SMESHGUI::restoreVisualParameters (int savePoint)
             // Colors
             else if (paramNameStr == "Colors") {
               QStringList colors = val.split(gDigitsSep, QString::SkipEmptyParts);
-              if (colors.count() == 16 || colors.count() == 14 ) {
+              if (colors.count() == 16 || colors.count() == 17 ) {
                 if (colors[0] != "surface" || colors[4]  != "backsurface" ||
                     (colors[8] != "edge" && colors[6] != "edge" )     || (colors[12] != "node" && colors[10] != "node")) {
                   MESSAGE("Invalid order of data in Colors, must be: "
-                          "surface:r:g:b:backsurface:r:g:b:edge:r:g:b:node:r:g:b or surface:r:g:b:backsurface:delta:edge:r:g:b:node:r:g:b");
+                          "surface:r:g:b:backsurface:r:g:b:edge:r:g:b:node:r:g:b or surface:r:g:b:backsurface:delta:edge:r:g:b:node:r:g:b:outline:r:g:b");
                 }
                 else {
 		  int delta = 0; 
 		  float er,eg,eb;
 		  float nr,ng,nb;
+		  vtkFloatingPointType otr,otg,otb;
 		  //Old case backsurface color is independent
 		  if( colors.count() == 16 ) {
 		    QColor ffc;
@@ -5480,6 +5525,7 @@ void SMESHGUI::restoreVisualParameters (int savePoint)
 		    nr = colors[13].toFloat();
 		    ng = colors[14].toFloat();
 		    nb = colors[15].toFloat();
+		    SMESH::GetColor("SMESH", "outline_color", otr, otg, otb, QColor( 0, 70, 0 ) );
 		  } else {
 		    //New case backsurface color depends on surface color
 		    delta = colors[5].toInt();
@@ -5491,10 +5537,15 @@ void SMESHGUI::restoreVisualParameters (int savePoint)
 		    nr = colors[11].toFloat();
 		    ng = colors[12].toFloat();
 		    nb = colors[13].toFloat();
+
+		    otr = colors[14].toFloat();
+		    otg = colors[15].toFloat();
+		    otb = colors[16].toFloat();
 		  }
                   aSmeshActor->SetSufaceColor(colors[1].toFloat(), colors[2].toFloat(), colors[3].toFloat(), delta);
                   aSmeshActor->SetEdgeColor(er,eg,eb);
                   aSmeshActor->SetNodeColor(nr,ng,nb);
+                  aSmeshActor->SetOutlineColor(otr,otg,otb);
                 }
               }
             }

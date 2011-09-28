@@ -88,6 +88,7 @@ private:
   SMESHGUI*             mySMESHGUI;            
 
   QtxBiColorTool*       toolSurfColor; 
+  QtxColorButton*       btnWireframeColor;
   QtxColorButton*       btnOutlineColor;
   QtxColorButton*       btn0DElementsColor;
   SalomeApp_IntSpinBox* SpinBox_0DElements_Size;
@@ -98,6 +99,8 @@ private:
   QtxColorButton*       btnOrientationColor;
   SMESHGUI_SpinBox*     SpinBox_Orientation_Scale;
   QCheckBox*            CheckBox_Orientation_3DVectors;
+  QtxColorButton*       btnPreselectionColor;
+  QtxColorButton*       btnSelectionColor;
 
   QString               myHelpFileName;
 };
