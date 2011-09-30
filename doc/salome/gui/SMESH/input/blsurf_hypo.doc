@@ -282,8 +282,6 @@ String variables:
 \anchor blsurf_local_size
 <h1>Local size</h1>
 
-\image html blsurf_parameters_sizemap1.png 
-
 Local sizes can be defined on faces, edges or vertices.
 <ul>
 <li>The faces, edges and vertices can belong to the meshed geometrical
@@ -301,11 +299,19 @@ object or to its sub-shapes (created using <b>Explode</b> command).</li>
 </ul></li>
 </ul>
 
+3 different types of size maps can be defined:
+<ol>
+<li type="a">\ref blsurf_sizemap_computation "Computation of the physical size"</li>
+<li type="a">\ref blsurf_attractor "Advanced maps"</li>
+<li type="a">\ref blsurf_attractor_computation "Computation of attractors"</li>
+</ol>
+
 \ref blsurf_top "Back to top"
 
 \anchor blsurf_sizemap_computation
 <h2>Computation of the physical size</h2>
-\n
+\image html blsurf_parameters_sizemap1.png 
+
 The physical size is obtained by querying sizemap functions associated to the input CAD object for surfaces, curves and points.
 Each function can either return a value h (which is then trimmed
 between the two bounds hphymin and hphymax), or "no answer" (by not
@@ -318,6 +324,7 @@ specification of the sizes. The computation depends on whether point P is intern
 </ul>
 In order to compute the mean of several values, the arithmetic mean is used by default, but this can be modified by the parameter \ref blsurf_hmean_flag "hmean flag". In the same way, in order to interpolate two values, a linear interpolation is used by default, but this can be modified by \ref blsurf_hinterpol_flag "hinterpol flag".
 
+\ref blsurf_local_size "Back to \"Local size\"" \n
 \ref blsurf_top "Back to top"
 
 \anchor blsurf_attractor
@@ -353,14 +360,8 @@ BLSURF (gradation ...).</li>
 </ul>
 </ul>
 
-\image html blsurf_attractors2.png "Example of mesh created using
-attractors, the attractors here are the side edges and the size grows
-from the side of the surface towards the apex"
-\n
-\image html blsurf_const_size_near_shape2.png "Example of size map
-with constant size option, the size is kept constant on the left side
-of the surface until a certain distance"
-\n
+\image html blsurf_const_size_near_shape2.png "Example of size map with constant size option, the size is kept constant on the left side of the surface until a certain distance"
+
 Remark : The validation of the hypothesis might take a few seconds if
 attractors are defined or the "constant size" option is used because a
 map of distances has to be built on the whole surface for each face
@@ -368,6 +369,7 @@ where such a hypothesis has been defined.
 
 <br><b>See Also</b> a sample TUI Script of the \ref tui_blsurf "creation of a BLSurf hypothesis", including size map.
 
+\ref blsurf_local_size "Back to \"Local size\"" \n
 \ref blsurf_top "Back to top"
 
 \anchor blsurf_attractor_computation
@@ -384,6 +386,9 @@ shape. The distance is the geodesic distance (i.e. calculated by following the s
 <li>R is called the distance of influence and allows controlling the growth rate of the mesh </li>
 </ul>
 
+\image html blsurf_attractors2.png "Example of mesh created using attractors, the attractors here are the side edges and the size grows from the side of the surface towards the apex"
+
+\ref blsurf_local_size "Back to \"Local size\"" \n
 \ref blsurf_top "Back to top"
 
 \anchor blsurf_enforced_elements
