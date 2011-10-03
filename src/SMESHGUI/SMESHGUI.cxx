@@ -4549,11 +4549,6 @@ void SMESHGUI::createPreferences()
   
   setPreferenceProperty( ColorId, "text", tr("PREF_BACKFACE") );
 
-  int grpSelection = addPreference( tr( "PREF_GROUP_SELECTION" ), meshTab );
-  setPreferenceProperty( grpSelection, "columns", 2 );
-  addPreference( tr( "PREF_SELECTION"  ), grpSelection, LightApp_Preferences::Color, "SMESH", "selection_object_color" );
-  addPreference( tr( "PREF_PRE_SELECTION"  ), grpSelection, LightApp_Preferences::Color, "SMESH", "highlight_color" );
-
   int grpGroup = addPreference( tr( "PREF_GROUP_GROUPS" ), meshTab );
   setPreferenceProperty( grpGroup, "columns", 2 );
 
