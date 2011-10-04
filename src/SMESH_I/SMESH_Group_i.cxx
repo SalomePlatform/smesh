@@ -489,7 +489,7 @@ CORBA::Long SMESH_GroupBase_i::GetNumberOfNodes()
 
 CORBA::Boolean SMESH_GroupBase_i::IsNodeInfoAvailable()
 {
-  if ( GetType() == SMESH::NODE || Size() < 100000 )
+  if ( GetType() == SMESH::NODE/* || Size() < 100000 */)
     return true;
   if ( SMESHDS_GroupBase* g = GetGroupDS())
     return ( myNbNodes > -1 && g->GetTic() == myGroupDSTic);
