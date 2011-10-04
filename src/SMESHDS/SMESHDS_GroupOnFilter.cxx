@@ -40,7 +40,7 @@ SMESHDS_GroupOnFilter::SMESHDS_GroupOnFilter (const int                 theID,
                                               const SMESHDS_Mesh*       theMesh,
                                               const SMDSAbs_ElementType theType,
                                               const SMESH_PredicatePtr& thePredicate)
-  : SMESHDS_GroupBase(theID,theMesh,theType), myMeshModifTime(0)
+  : SMESHDS_GroupBase(theID,theMesh,theType), myMeshModifTime(0), myPredicateTic(0)
 {
   setChanged();
   SetPredicate( thePredicate );
@@ -55,6 +55,7 @@ SMESHDS_GroupOnFilter::SMESHDS_GroupOnFilter (const int                 theID,
 void SMESHDS_GroupOnFilter::SetPredicate( const SMESH_PredicatePtr& thePredicate)
 {
   myPredicate = thePredicate;
+  ++myPredicateTic;
   setChanged();
   if ( myPredicate )
     myPredicate->SetMesh( GetMesh() );
@@ -121,6 +122,17 @@ int SMESHDS_GroupOnFilter::GetID (const int theIndex)
   if ( theIndex < 1 || theIndex > myElements.size() )
     return -1;
   return myElements[ theIndex-1 ]->GetID();
+}
+
+//================================================================================
+/*!
+ * \brief Return a value allowing to find out if a group has changed or not
+ */
+//================================================================================
+
+int SMESHDS_GroupOnFilter::GetTic() const
+{
+  return myMeshModifTime * myPredicateTic;
 }
 
 //================================================================================

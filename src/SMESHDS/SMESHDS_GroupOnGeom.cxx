@@ -128,3 +128,14 @@ bool SMESHDS_GroupOnGeom::Contains (const SMDS_MeshElement* elem)
   return mySubMesh->Contains( elem );
 }
 
+//================================================================================
+/*!
+ * \brief Return a value allowing to find out if a group has changed or not
+ */
+//================================================================================
+
+int SMESHDS_GroupOnGeom::GetTic() const
+{
+  return GetMesh()->GetMTime();
+}
+

@@ -71,6 +71,8 @@ class SMESHDS_EXPORT SMESHDS_GroupBase
   virtual int GetID (const int theIndex);
   // use it for iterations 1..Extent()
 
+  virtual int GetTic() const = 0;
+
   virtual ~SMESHDS_GroupBase() {}
 
   void SetColor (const Quantity_Color& theColor)

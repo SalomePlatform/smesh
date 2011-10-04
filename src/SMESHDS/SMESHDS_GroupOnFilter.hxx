@@ -56,6 +56,8 @@ class SMESHDS_EXPORT SMESHDS_GroupOnFilter: public SMESHDS_GroupBase
 
   virtual int GetID (const int theIndex);
 
+  virtual int GetTic() const;
+
  private:
 
   void update() const;
@@ -64,6 +66,7 @@ class SMESHDS_EXPORT SMESHDS_GroupOnFilter: public SMESHDS_GroupBase
   SMESH_PredicatePtr                    myPredicate;
   std::vector< const SMDS_MeshElement*> myElements;
   unsigned long                         myMeshModifTime; // when myElements was filled
+  int                                   myPredicateTic;
 };
 
 #endif

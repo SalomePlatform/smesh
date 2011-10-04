@@ -161,6 +161,17 @@ SMDS_ElemIteratorPtr SMESHDS_Group::GetElements() const
   return SMDS_ElemIteratorPtr( new MyGroupIterator ( myGroup ));
 }
 
+//================================================================================
+/*!
+ * \brief Return a value allowing to find out if a group has changed or not
+ */
+//================================================================================
+
+int SMESHDS_Group::GetTic() const
+{
+  return myGroup.Tic();
+}
+
 //=======================================================================
 //function : SetType
 //purpose  : 
