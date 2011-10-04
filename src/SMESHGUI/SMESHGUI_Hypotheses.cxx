@@ -152,7 +152,7 @@ void SMESHGUI_GenericHypothesisCreator::editHypothesis( SMESH::SMESH_Hypothesis_
   }
   else {
     emit finished( QDialog::Accepted );
-	delete myDlg;
+        delete myDlg;
   }
 }
 
