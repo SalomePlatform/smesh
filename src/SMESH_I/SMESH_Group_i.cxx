@@ -55,7 +55,9 @@ SMESH_GroupBase_i::SMESH_GroupBase_i( PortableServer::POA_ptr thePOA,
                                       const int               theLocalID )
 : SALOME::GenericObj_i( thePOA ),
   myMeshServant( theMeshServant ), 
-  myLocalID( theLocalID )
+  myLocalID( theLocalID ),
+  myNbNodes(-1),
+  myGroupDSTic(0)
 {
   // PAL7962: san -- To ensure correct mapping of servant and correct reference counting in GenericObj_i,
   // servant activation is performed by SMESH_Mesh_i::createGroup()
@@ -433,6 +435,88 @@ SMESH::long_array* SMESH_GroupBase_i::GetListOfID()
     return aRes._retn();
   }
   MESSAGE("get list of IDs of a vague group");
+  return aRes._retn();
+}
+
+namespace
+{
+  //================================================================================
+  /*!
+   * \brief return nodes of elements pointered by iterator
+   */
+  //================================================================================
+
+  void getNodesOfElements(SMDS_ElemIteratorPtr        elemIt,
+                          set<const SMDS_MeshNode* >& nodes)
+  {
+    while ( elemIt->more() )
+    {
+      const SMDS_MeshElement* e = elemIt->next();
+      nodes.insert( e->begin_nodes(), e->end_nodes() );
+    }
+  }
+}
+  
+//================================================================================
+/*!
+ * \brief return the number of nodes of cells included to the group
+ */
+//================================================================================
+
+CORBA::Long SMESH_GroupBase_i::GetNumberOfNodes()
+{
+  if ( GetType() == SMESH::NODE )
+    return Size();
+
+  if ( SMESHDS_GroupBase* g = GetGroupDS())
+  {
+    if ( myNbNodes < 0 || g->GetTic() != myGroupDSTic )
+    {      
+      set<const SMDS_MeshNode* > nodes;
+      getNodesOfElements( g->GetElements(), nodes );
+      myNbNodes = nodes.size();
+      myGroupDSTic = g->GetTic();
+    }
+  }
+  return myNbNodes;
+}
+
+//================================================================================
+/*!
+ * \brief Return true if GetNumberOfNodes() won't take a long time for computation
+ */
+//================================================================================
+
+CORBA::Boolean SMESH_GroupBase_i::IsNodeInfoAvailable()
+{
+  if ( GetType() == SMESH::NODE || Size() < 100000 )
+    return true;
+  if ( SMESHDS_GroupBase* g = GetGroupDS())
+    return ( myNbNodes > -1 && g->GetTic() == myGroupDSTic);
+  return false;
+}
+
+//================================================================================
+/*!
+ * \brief Return IDs of nodes of cells included to the group
+ */
+//================================================================================
+
+SMESH::long_array* SMESH_GroupBase_i::GetNodeIDs()
+{
+  if ( GetType() == SMESH::NODE )
+    return GetListOfID();
+
+  SMESH::long_array_var aRes = new SMESH::long_array();
+  if ( SMESHDS_GroupBase* g = GetGroupDS())
+  {
+    set<const SMDS_MeshNode* > nodes;
+    getNodesOfElements( g->GetElements(), nodes );
+    aRes->length( nodes.size() );
+    set<const SMDS_MeshNode*>::iterator nIt = nodes.begin(), nEnd = nodes.end();
+    for ( int i = 0; nIt != nEnd; ++nIt, ++i )
+      aRes[i] = (*nIt)->GetID();
+  }
   return aRes._retn();
 }
 

@@ -84,6 +84,23 @@ module SMESH
     long_array GetListOfID();
 
     /*!
+     * Get the number of nodes of cells included to the group
+     * For a nodal group returns the same value as Size() function
+     */
+    long GetNumberOfNodes();
+
+    /*!
+     * Get IDs of nodes of cells included to the group
+     * For a nodal group returns result of GetListOfID() function
+     */
+    long_array GetNodeIDs();
+
+    /*!
+     * Return true if GetNumberOfNodes() won't take a long time for computation
+     */
+    boolean IsNodeInfoAvailable();
+
+    /*!
      * Sets group color
      */
     void SetColor(in SALOMEDS::Color theColor);
@@ -107,7 +124,7 @@ module SMESH
   }; 
 
   /*!
-   * SMESH_Group: interface of group object
+   * SMESH_Group: interface of a standalone group object
    */
   interface SMESH_Group : SMESH_GroupBase
   {
@@ -141,7 +158,7 @@ module SMESH
   };
 
   /*!
-   * SMESH_GroupOnGeom: interface of group object linked to geometry
+   * SMESH_GroupOnGeom: interface of a group object linked to geometry
    */
   interface SMESH_GroupOnGeom : SMESH_GroupBase
   {
@@ -149,7 +166,7 @@ module SMESH
   };
 
   /*!
-   * SMESH_GroupOnFilter: interface of group object defined by filter
+   * SMESH_GroupOnFilter: interface of a group object defined by filter
    */
   interface SMESH_GroupOnFilter : SMESH_GroupBase
   {

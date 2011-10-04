@@ -64,6 +64,9 @@ class SMESH_I_EXPORT SMESH_GroupBase_i:
   CORBA::Boolean Contains(CORBA::Long elem_id);
   CORBA::Long GetID(CORBA::Long elem_index);
   SMESH::long_array* GetListOfID();
+  SMESH::long_array* GetNodeIDs();
+  CORBA::Long GetNumberOfNodes();
+  CORBA::Boolean IsNodeInfoAvailable(); // for gui
   SMESH::SMESH_Mesh_ptr GetMesh();
 
   /*!
@@ -100,6 +103,8 @@ private:
 
   void changeLocalId(int localId) { myLocalID = localId; }
   friend class SMESH_Mesh_i;
+
+  int myNbNodes, myGroupDSTic;
 };
 
 // ======
