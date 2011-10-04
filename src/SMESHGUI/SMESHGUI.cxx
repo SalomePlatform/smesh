@@ -4451,7 +4451,7 @@ void SMESHGUI::createPreferences()
   setPreferenceProperty( notifyMode, "indexes", indices );
 
   int infoGroup = addPreference( tr( "PREF_GROUP_INFO" ), genTab );
-  setPreferenceProperty( computeGroup, "columns", 4 );
+  setPreferenceProperty( infoGroup, "columns", 4 );
   int elemInfo = addPreference( tr( "PREF_ELEM_INFO" ), infoGroup, LightApp_Preferences::Selector, "SMESH", "mesh_elem_info" );
   modes.clear();
   modes.append( tr( "PREF_ELEM_INFO_SIMPLE" ) );
