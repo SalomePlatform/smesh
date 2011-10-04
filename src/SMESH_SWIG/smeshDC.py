@@ -796,6 +796,8 @@ class smeshDC(SMESH._objref_SMESH_Gen):
                      UnaryOp=FT_Undefined,
                      BinaryOp=FT_Undefined,
                      Tolerance=1e-07):
+        if not CritType in SMESH.FunctorType._items:
+            raise TypeError, "CritType should be of SMESH.FunctorType"
         aCriterion = self.GetEmptyCriterion()
         aCriterion.TypeOfElement = elementType
         aCriterion.Type = self.EnumToLong(CritType)
@@ -851,6 +853,7 @@ class smeshDC(SMESH._objref_SMESH_Gen):
             # Checks the treshold
             try:
                 aCriterion.Threshold = self.EnumToLong(aTreshold)
+                assert( aTreshold in SMESH.GeometryType._items )
             except:
                 if isinstance(aTreshold, int):
                     aCriterion.Threshold = aTreshold
