@@ -4451,7 +4451,7 @@ void SMESHGUI::createPreferences()
   setPreferenceProperty( notifyMode, "indexes", indices );
 
   int infoGroup = addPreference( tr( "PREF_GROUP_INFO" ), genTab );
-  setPreferenceProperty( computeGroup, "columns", 2 );
+  setPreferenceProperty( computeGroup, "columns", 4 );
   int elemInfo = addPreference( tr( "PREF_ELEM_INFO" ), infoGroup, LightApp_Preferences::Selector, "SMESH", "mesh_elem_info" );
   modes.clear();
   modes.append( tr( "PREF_ELEM_INFO_SIMPLE" ) );
@@ -4461,6 +4461,11 @@ void SMESHGUI::createPreferences()
   indices.append( 1 );
   setPreferenceProperty( elemInfo, "strings", modes );
   setPreferenceProperty( elemInfo, "indexes", indices );
+  int nodesLim = addPreference( tr( "PREF_GPP_NODES_LIMIT" ), infoGroup, LightApp_Preferences::IntSpin, "SMESH", "info_groups_nodes_limit" );
+  setPreferenceProperty( nodesLim, "min", 0 );
+  setPreferenceProperty( nodesLim, "max", 10000000 );
+  setPreferenceProperty( nodesLim, "step", 10000 );
+  setPreferenceProperty( nodesLim, "special", tr( "PREF_UPDATE_LIMIT_NOLIMIT" ) );
 
   int segGroup = addPreference( tr( "PREF_GROUP_SEGMENT_LENGTH" ), genTab );
   setPreferenceProperty( segGroup, "columns", 2 );

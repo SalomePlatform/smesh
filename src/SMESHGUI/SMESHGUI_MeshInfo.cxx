@@ -52,13 +52,12 @@
 #include <QRadioButton>
 #include <QTabWidget>
 #include <QTextBrowser>
-#include <QTreeWidget>
 #include <QVBoxLayout>
 
 #include "utilities.h"
 
 #include <SALOMEconfig.h>
-#include CORBA_SERVER_HEADER(SMESH_Group)
+#include CORBA_SERVER_HEADER(GEOM_Gen)
 
 const int SPACING  = 6;
 const int MARGIN   = 9;
@@ -274,7 +273,7 @@ void SMESHGUI_MeshInfo::showInfo( SMESH::SMESH_IDSource_ptr obj )
 {
   clear();
   if ( !CORBA::is_nil( obj ) ) {
-    _PTR(SObject) sobj = ObjectToSObject( obj );
+    _PTR(SObject) sobj = SMESH::ObjectToSObject( obj );
     if ( sobj ) 
       myWidgets[iName][iSingle]->setProperty( "text", sobj->GetName().c_str() );
     SMESH::SMESH_Mesh_var      aMesh    = SMESH::SMESH_Mesh::_narrow( obj );
@@ -945,14 +944,12 @@ void SMESHGUI_TreeElemInfo::information( const QList<long>& ids )
         const SMDS_MeshNode* node = static_cast<const SMDS_MeshNode*>( e );
       
         // node ID
-        QTreeWidgetItem* nodeItem = createItem( 0, -1 );
+        QTreeWidgetItem* nodeItem = createItem( 0, Bold | All );
         nodeItem->setText( 0, tr( "NODE" ) );
         nodeItem->setText( 1, QString( "#%1" ).arg( id ) );
-        nodeItem->setExpanded( true );
         // coordinates
-        QTreeWidgetItem* coordItem = createItem( nodeItem, 0 );
+        QTreeWidgetItem* coordItem = createItem( nodeItem, Bold );
         coordItem->setText( 0, tr( "COORDINATES" ) );
-        coordItem->setExpanded( true );
         QTreeWidgetItem* xItem = createItem( coordItem );
         xItem->setText( 0, "X" );
         xItem->setText( 1, QString::number( node->X(), precision > 0 ? 'f' : 'g', qAbs( precision ) ) );
@@ -963,9 +960,8 @@ void SMESHGUI_TreeElemInfo::information( const QList<long>& ids )
         zItem->setText( 0, "Z" );
         zItem->setText( 1, QString::number( node->Z(), precision > 0 ? 'f' : 'g', qAbs( precision ) ) );
         // connectivity
-        QTreeWidgetItem* conItem = createItem( nodeItem, 0 );
+        QTreeWidgetItem* conItem = createItem( nodeItem, Bold );
         conItem->setText( 0, tr( "CONNECTIVITY" ) );
-        conItem->setExpanded( true );
         Connectivity connectivity = nodeConnectivity( node );
         if ( !connectivity.isEmpty() ) {
           QString con = formatConnectivity( connectivity, SMDSAbs_0DElement );
@@ -1019,10 +1015,9 @@ void SMESHGUI_TreeElemInfo::information( const QList<long>& ids )
           break;
         }
         if ( stype.isEmpty() ) return;
-        QTreeWidgetItem* elemItem = createItem( 0, -1 );
+        QTreeWidgetItem* elemItem = createItem( 0, Bold | All );
         elemItem->setText( 0, stype );
         elemItem->setText( 1, QString( "#%1" ).arg( id ) );
-        elemItem->setExpanded( true );
         // geometry type
         QString gtype;
         switch( e->GetEntityType() ) {
@@ -1054,21 +1049,20 @@ void SMESHGUI_TreeElemInfo::information( const QList<long>& ids )
           break;
         }
         if ( !gtype.isEmpty() ) {
-          QTreeWidgetItem* typeItem = createItem( elemItem, 0 );
+          QTreeWidgetItem* typeItem = createItem( elemItem, Bold );
           typeItem->setText( 0, tr( "TYPE" ) );
           typeItem->setText( 1, gtype );
         }
         // quadratic flag and gravity center (any element except 0D)
         if ( e->GetEntityType() > SMDSEntity_0D && e->GetEntityType() < SMDSEntity_Last ) {
           // quadratic flag
-          QTreeWidgetItem* quadItem = createItem( elemItem, 0 );
+          QTreeWidgetItem* quadItem = createItem( elemItem, Bold );
           quadItem->setText( 0, tr( "QUADRATIC" ) );
           quadItem->setText( 1, e->IsQuadratic() ? tr( "YES" ) : tr( "NO" ) );
           // gravity center
           XYZ gc = gravityCenter( e );
-          QTreeWidgetItem* gcItem = createItem( elemItem, 0 );
+          QTreeWidgetItem* gcItem = createItem( elemItem, Bold );
           gcItem->setText( 0, tr( "GRAVITY_CENTER" ) );
-          gcItem->setExpanded( true );
           QTreeWidgetItem* xItem = createItem( gcItem );
           xItem->setText( 0, "X" );
           xItem->setText( 1, QString::number( gc.x(), precision > 0 ? 'f' : 'g', qAbs( precision ) ) );
@@ -1080,21 +1074,19 @@ void SMESHGUI_TreeElemInfo::information( const QList<long>& ids )
           zItem->setText( 1, QString::number( gc.z(), precision > 0 ? 'f' : 'g', qAbs( precision ) ) );
         }
         // connectivity
-        QTreeWidgetItem* conItem = createItem( elemItem, 0 );
+        QTreeWidgetItem* conItem = createItem( elemItem, Bold );
         conItem->setText( 0, tr( "CONNECTIVITY" ) );
-        conItem->setExpanded( true );
         SMDS_ElemIteratorPtr nodeIt = e->nodesIterator();
         for ( int idx = 1; nodeIt->more(); idx++ ) {
           const SMDS_MeshNode* node = static_cast<const SMDS_MeshNode*>( nodeIt->next() );
           // node number and ID
-          QTreeWidgetItem* nodeItem = createItem( conItem, 0 );
-          nodeItem->setText( 0, QString( "%1 %2/%3" ).arg( tr( "NODE" ) ).arg( idx ).arg( e->NbNodes() ) );
+          QTreeWidgetItem* nodeItem = createItem( conItem, Bold );
+          nodeItem->setText( 0, QString( "%1 %2 / %3" ).arg( tr( "NODE" ) ).arg( idx ).arg( e->NbNodes() ) );
           nodeItem->setText( 1, QString( "#%1" ).arg( node->GetID() ) );
-          //nodeItem->setExpanded( true );
+          nodeItem->setExpanded( false );
           // node coordinates
           QTreeWidgetItem* coordItem = createItem( nodeItem );
           coordItem->setText( 0, tr( "COORDINATES" ) );
-          coordItem->setExpanded( true );
           QTreeWidgetItem* xItem = createItem( coordItem );
           xItem->setText( 0, "X" );
           xItem->setText( 1, QString::number( node->X(), precision > 0 ? 'f' : 'g', qAbs( precision ) ) );
@@ -1107,7 +1099,6 @@ void SMESHGUI_TreeElemInfo::information( const QList<long>& ids )
           // node connectivity
           QTreeWidgetItem* nconItem = createItem( nodeItem );
           nconItem->setText( 0, tr( "CONNECTIVITY" ) );
-          nconItem->setExpanded( true );
           Connectivity connectivity = nodeConnectivity( node );
           if ( !connectivity.isEmpty() ) {
             QString con = formatConnectivity( connectivity, SMDSAbs_0DElement );
@@ -1152,11 +1143,11 @@ void SMESHGUI_TreeElemInfo::clearInternal()
 
 /*!
   \brief Create new tree item.
-  \param parnt parent tree widget item
-  \param column item column to be set bold, if it is -1, bold font will be set for all columns
+  \param parent parent tree widget item
+  \param flags item flag
   \return new tree widget item
 */
-QTreeWidgetItem* SMESHGUI_TreeElemInfo::createItem( QTreeWidgetItem* parent, int column )
+QTreeWidgetItem* SMESHGUI_TreeElemInfo::createItem( QTreeWidgetItem* parent, int flags )
 {
   QTreeWidgetItem* item;
   if ( parent )
@@ -1168,14 +1159,356 @@ QTreeWidgetItem* SMESHGUI_TreeElemInfo::createItem( QTreeWidgetItem* parent, int
 
   QFont f = item->font( 0 );
   f.setBold( true );
-  if ( column >= 0 && column < myInfo->columnCount() ) {
-    item->setFont( column, f );
-  }
-  else if ( column == -1 ) {
-    for ( int i = 0; i < myInfo->columnCount(); i++ )
+  for ( int i = 0; i < myInfo->columnCount(); i++ ) {
+    if ( ( flags & Bold ) && ( i == 0 || flags & All ) )
       item->setFont( i, f );
   }
+
+  item->setExpanded( true );
   return item;
+}
+
+/*!
+  \class GrpComputor
+  \brief Mesh information computer
+  \internal
+  
+  The class is created for different computation operation. Currently it is used
+  to compute number of underlying nodes for the groups.
+*/
+
+/*!
+  \brief Contructor
+*/
+GrpComputor::GrpComputor( SMESH::SMESH_GroupBase_ptr grp, QTreeWidgetItem* item, QObject* parent )
+  : QObject( parent ), myItem( item )
+{
+  myGroup = SMESH::SMESH_GroupBase::_narrow( grp );
+}
+
+/*!
+  \brief Compute function
+*/
+void GrpComputor::compute()
+{
+  if ( !CORBA::is_nil( myGroup ) && myItem ) {
+    int nbNodes = myGroup->GetNumberOfNodes();
+    myItem->treeWidget()->removeItemWidget( myItem, 1 );
+    myItem->setText( 1, QString::number( nbNodes ) );
+  }
+}
+
+/*!
+  \class SMESHGUI_AddInfo
+  \brief The wigdet shows additional information on the mesh object.
+*/
+
+/*!
+  \brief Constructor
+  \param parent parent widget
+*/
+SMESHGUI_AddInfo::SMESHGUI_AddInfo( QWidget* parent )
+: QTreeWidget( parent )
+{
+  setColumnCount( 2 );
+  header()->setStretchLastSection( true );
+  header()->setResizeMode( 0, QHeaderView::ResizeToContents );
+  header()->hide();
+}
+
+/*!
+  \brief Destructor
+*/
+SMESHGUI_AddInfo::~SMESHGUI_AddInfo()
+{
+}
+
+/*!
+  \brief Show additional information on the selected object
+  \param obj object being processed (mesh, sub-mesh, group, ID source)
+*/
+void SMESHGUI_AddInfo::showInfo( SMESH::SMESH_IDSource_ptr obj )
+{
+  myComputors.clear();
+
+  clear();
+
+  if ( CORBA::is_nil( obj ) ) return;
+
+  _PTR(SObject) sobj = SMESH::ObjectToSObject( obj );
+  if ( !sobj ) return;
+
+  // name
+  QTreeWidgetItem* nameItem = createItem( 0, Bold | All );
+  nameItem->setText( 0, tr( "NAME" ) );
+  nameItem->setText( 1, sobj->GetName().c_str() );
+  
+  SMESH::SMESH_Mesh_var      aMesh    = SMESH::SMESH_Mesh::_narrow( obj );
+  SMESH::SMESH_subMesh_var   aSubMesh = SMESH::SMESH_subMesh::_narrow( obj );
+  SMESH::SMESH_GroupBase_var aGroup   = SMESH::SMESH_GroupBase::_narrow( obj );
+  
+  if ( !aMesh->_is_nil() )
+    meshInfo( aMesh, nameItem );
+  else if ( !aSubMesh->_is_nil() )
+    subMeshInfo( aSubMesh, nameItem );
+  else if ( !aGroup->_is_nil() )
+    groupInfo( aGroup.in(), nameItem );
+}
+
+/*!
+  \brief Create new tree item.
+  \param parent parent tree widget item
+  \param flags item flag
+  \return new tree widget item
+*/
+QTreeWidgetItem* SMESHGUI_AddInfo::createItem( QTreeWidgetItem* parent, int flags )
+{
+  QTreeWidgetItem* item;
+
+  if ( parent )
+    item = new QTreeWidgetItem( parent );
+  else
+    item = new QTreeWidgetItem( this );
+
+  //item->setFlags( item->flags() | Qt::ItemIsEditable );
+
+  QFont f = item->font( 0 );
+  f.setBold( true );
+  for ( int i = 0; i < columnCount(); i++ ) {
+    if ( ( flags & Bold ) && ( i == 0 || flags & All ) )
+      item->setFont( i, f );
+  }
+
+  item->setExpanded( true );
+  return item;
+}
+
+/*!
+  \brief Show mesh info
+  \param mesh mesh object
+  \param parent parent tree item
+*/
+void SMESHGUI_AddInfo::meshInfo( SMESH::SMESH_Mesh_ptr mesh, QTreeWidgetItem* parent )
+{
+  // type
+  GEOM::GEOM_Object_var shape = mesh->GetShapeToMesh();
+  SALOME_MED::MedFileInfo* inf = mesh->GetMEDFileInfo();
+  QTreeWidgetItem* typeItem = createItem( parent, Bold );
+  typeItem->setText( 0, tr( "TYPE" ) );
+  if ( !CORBA::is_nil( shape ) ) {
+    typeItem->setText( 1, tr( "MESH_ON_GEOMETRY" ) );
+    _PTR(SObject) sobj = SMESH::ObjectToSObject( shape );
+    if ( sobj ) {
+      QTreeWidgetItem* gobjItem = createItem( typeItem );
+      gobjItem->setText( 0, tr( "GEOM_OBJECT" ) );
+      gobjItem->setText( 1, sobj->GetName().c_str() );
+    }
+  }
+  else if ( strlen( (char*)inf->fileName ) > 0 ) {
+    typeItem->setText( 1, tr( "MESH_FROM_FILE" ) );
+    QTreeWidgetItem* fileItem = createItem( typeItem );
+    fileItem->setText( 0, tr( "FILE_NAME" ) );
+    fileItem->setText( 1, (char*)inf->fileName );
+  }
+  else {
+    typeItem->setText( 1, tr( "STANDALONE_MESH" ) );
+  }
+  
+  // groups
+  SMESH::ListOfGroups_var groups = mesh->GetGroups();
+  QTreeWidgetItem* itemGroups  = 0;
+  QMap<int, QTreeWidgetItem*> grpItems;
+  for ( int i = 0; i < groups->length(); i++ ) {
+    SMESH::SMESH_GroupBase_var grp = groups[i];
+    if ( CORBA::is_nil( grp ) ) continue;
+    _PTR(SObject) grpSObj = SMESH::ObjectToSObject( grp );
+    if ( !grpSObj ) continue;
+
+    int grpType = grp->GetType();
+
+    if ( !itemGroups ) {
+      itemGroups = createItem( parent, Bold | All );
+      itemGroups->setText( 0, tr( "GROUPS" ) );
+    }
+
+    if ( grpItems.find( grpType ) == grpItems.end() ) {
+      grpItems[ grpType ] = createItem( itemGroups, Bold | All );
+      grpItems[ grpType ]->setText( 0, tr( QString( "GROUPS_%1" ).arg( grpType ).toLatin1().constData() ) );
+      itemGroups->insertChild( grpType-1, grpItems[ grpType ] );
+    }
+  
+    // group name
+    QTreeWidgetItem* grpNameItem = createItem( grpItems[ grpType ] );
+    grpNameItem->setText( 0, grpSObj->GetName().c_str() );
+
+    // group info
+    groupInfo( grp.in(), grpNameItem );
+  }
+
+  // sub-meshes
+  SMESH::submesh_array_var subMeshes = mesh->GetSubMeshes();
+  QTreeWidgetItem* itemSubMeshes = 0;
+  QMap<int, QTreeWidgetItem*> smItems;
+  for ( int i = 0; i < subMeshes->length(); i++ ) {
+    SMESH::SMESH_subMesh_var sm = subMeshes[i];
+    if ( CORBA::is_nil( sm ) ) continue;
+    _PTR(SObject) smSObj = SMESH::ObjectToSObject( sm );
+    if ( !smSObj ) continue;
+    
+    GEOM::GEOM_Object_var gobj = sm->GetSubShape();
+    if ( CORBA::is_nil(gobj ) ) continue;
+    
+    int smType = gobj->GetShapeType();
+    if ( smType == GEOM::COMPSOLID ) smType == GEOM::COMPOUND;
+
+    if ( !itemSubMeshes ) {
+      itemSubMeshes = createItem( parent, Bold | All );
+      itemSubMeshes->setText( 0, tr( "SUBMESHES" ) );
+    }
+	 
+    if ( smItems.find( smType ) == smItems.end() ) {
+      smItems[ smType ] = createItem( itemSubMeshes, Bold | All );
+      smItems[ smType ]->setText( 0, tr( QString( "SUBMESHES_%1" ).arg( smType ).toLatin1().constData() ) );
+      itemSubMeshes->insertChild( smType, smItems[ smType ] );
+    }
+    
+    // submesh name
+    QTreeWidgetItem* smNameItem = createItem( smItems[ smType ] );
+    smNameItem->setText( 0, smSObj->GetName().c_str() );
+    
+    // submesh info
+    subMeshInfo( sm.in(), smNameItem );
+  }
+}
+
+/*!
+  \brief Show sub-mesh info
+  \param subMesh sub-mesh object
+  \param parent parent tree item
+*/
+void SMESHGUI_AddInfo::subMeshInfo( SMESH::SMESH_subMesh_ptr subMesh, QTreeWidgetItem* parent )
+{
+  bool isShort = parent->parent() != 0;
+
+  if ( !isShort ) {
+    // parent mesh
+    _PTR(SObject) sobj = SMESH::ObjectToSObject( subMesh->GetFather() );
+    if ( sobj ) {
+      QTreeWidgetItem* nameItem = createItem( parent, Bold );
+      nameItem->setText( 0, tr( "PARENT_MESH" ) );
+      nameItem->setText( 1, sobj->GetName().c_str() );
+    }
+  }
+  
+  // shape
+  GEOM::GEOM_Object_var gobj = subMesh->GetSubShape();
+  _PTR(SObject) sobj = SMESH::ObjectToSObject( gobj );
+  if ( sobj ) {
+    QTreeWidgetItem* gobjItem = createItem( parent, Bold );
+    gobjItem->setText( 0, tr( "GEOM_OBJECT" ) );
+    gobjItem->setText( 1, sobj->GetName().c_str() );
+  }
+}
+
+/*!
+  \brief Show group info
+  \param grp mesh group object
+  \param parent parent tree item
+*/
+void SMESHGUI_AddInfo::groupInfo( SMESH::SMESH_GroupBase_ptr grp, QTreeWidgetItem* parent )
+{
+  bool isShort = parent->parent() != 0;
+
+  SMESH::SMESH_Group_var         aStdGroup  = SMESH::SMESH_Group::_narrow( grp );
+  SMESH::SMESH_GroupOnGeom_var   aGeomGroup = SMESH::SMESH_GroupOnGeom::_narrow( grp );
+  SMESH::SMESH_GroupOnFilter_var aFltGroup  = SMESH::SMESH_GroupOnFilter::_narrow( grp );
+
+  if ( !isShort ) {
+    // parent mesh
+    _PTR(SObject) sobj = SMESH::ObjectToSObject( grp->GetMesh() );
+    if ( sobj ) {
+      QTreeWidgetItem* nameItem = createItem( parent, Bold );
+      nameItem->setText( 0, tr( "PARENT_MESH" ) );
+      nameItem->setText( 1, sobj->GetName().c_str() );
+    }
+  }
+
+  // type : group on geometry, standalone group, group on filter
+  QTreeWidgetItem* typeItem = createItem( parent, Bold );
+  typeItem->setText( 0, tr( "TYPE" ) );
+  if ( !CORBA::is_nil( aStdGroup ) ) {
+    typeItem->setText( 1, tr( "STANDALONE_GROUP" ) );
+  }
+  else if ( !CORBA::is_nil( aGeomGroup ) ) {
+    typeItem->setText( 1, tr( "GROUP_ON_GEOMETRY" ) );
+    GEOM::GEOM_Object_var gobj = aGeomGroup->GetShape();
+    _PTR(SObject) sobj = SMESH::ObjectToSObject( gobj );
+    if ( sobj ) {
+      QTreeWidgetItem* gobjItem = createItem( typeItem );
+      gobjItem->setText( 0, tr( "GEOM_OBJECT" ) );
+      gobjItem->setText( 1, sobj->GetName().c_str() );
+    }
+  }
+  else if ( !CORBA::is_nil( aFltGroup ) ) {
+    typeItem->setText( 1, tr( "GROUP_ON_FILTER" ) );
+  }
+
+  if ( !isShort ) {
+    // entity type
+    QString etype = tr( "UNKNOWN" );
+    switch( grp->GetType() ) {
+    case SMESH::NODE:
+      etype = tr( "NODE" );
+      break;
+    case SMESH::EDGE:
+      etype = tr( "EDGE" );
+      break;
+    case SMESH::FACE:
+      etype = tr( "FACE" );
+      break;
+    case SMESH::VOLUME:
+      etype = tr( "VOLUME" );
+      break;
+    case SMESH::ELEM0D:
+      etype = tr( "0DELEM" );
+      break;
+    default:
+      break;
+    }
+    QTreeWidgetItem* etypeItem = createItem( parent, Bold );
+    etypeItem->setText( 0, tr( "ENTITY_TYPE" ) );
+    etypeItem->setText( 1, etype );
+  }
+
+  // size
+  QTreeWidgetItem* sizeItem = createItem( parent, Bold );
+  sizeItem->setText( 0, tr( "SIZE" ) );
+  sizeItem->setText( 1, QString::number( grp->Size() ) );
+
+  // color
+  SALOMEDS::Color color = grp->GetColor();
+  QTreeWidgetItem* colorItem = createItem( parent, Bold );
+  colorItem->setText( 0, tr( "COLOR" ) );
+  colorItem->setBackground( 1, QBrush( QColor( color.R*255., color.G*255., color.B*255.) ) );
+
+  // nb of underlying nodes
+  if ( grp->GetType() != SMESH::NODE) {
+    QTreeWidgetItem* nodesItem = createItem( parent, Bold );
+    nodesItem->setText( 0, tr( "NB_NODES" ) );
+    int nbNodesLimit = SMESHGUI::resourceMgr()->integerValue( "SMESH", "info_groups_nodes_limit", 100000 );
+    bool hasNodes = grp->IsNodeInfoAvailable();
+    if ( hasNodes || nbNodesLimit <= 0 || grp->Size() <= nbNodesLimit ) {
+      // already calculated and up-to-date
+      nodesItem->setText( 1, QString::number( grp->GetNumberOfNodes() ) );
+    }
+    else {
+      QPushButton* btn = new QPushButton( tr( "COMPUTE" ), this );
+      setItemWidget( nodesItem, 1, btn );
+      GrpComputor* comp = new GrpComputor( grp, nodesItem, this ); 
+      connect( btn, SIGNAL( clicked() ), comp, SLOT( compute() ) );
+      myComputors.append( comp );
+    }
+  }
 }
 
 /*!
@@ -1232,6 +1565,13 @@ SMESHGUI_MeshInfoDlg::SMESHGUI_MeshInfoDlg( QWidget* parent, int page )
   
   myTabWidget->addTab( w, tr( "ELEM_INFO" ) );
 
+  // additional info
+
+  myAddInfo = new SMESHGUI_AddInfo( myTabWidget );
+  myTabWidget->addTab( myAddInfo, tr( "ADDITIONAL_INFO" ) );
+
+  // buttons
+
   QPushButton* okBtn = new QPushButton( tr( "SMESH_BUT_OK" ), this );
   okBtn->setAutoDefault( true );
   okBtn->setDefault( true );
@@ -1283,6 +1623,7 @@ void SMESHGUI_MeshInfoDlg::showInfo( const Handle(SALOME_InteractiveObject)& IO 
   SMESH::SMESH_IDSource_var obj = SMESH::IObjectToInterface<SMESH::SMESH_IDSource>( IO );
   if ( !CORBA::is_nil( obj ) ) {
     myBaseInfo->showInfo( obj );
+    myAddInfo->showInfo( obj );
     
     myActor = SMESH::FindActorByEntry( IO->getEntry() );
     SVTK_Selector* selector = SMESH::GetViewWindow()->GetSelector();
@@ -1353,7 +1694,7 @@ void SMESHGUI_MeshInfoDlg::updateSelection()
   disconnect( selMgr, 0, this, 0 );
   selMgr->clearFilters();
 
-  if ( myTabWidget->currentIndex() == BaseInfo ) {
+  if ( myTabWidget->currentIndex() == BaseInfo || myTabWidget->currentIndex() == AddInfo ) {
     SMESH::SetPointRepresentation( false );
     if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow() )
       aViewWindow->SetSelectionMode( ActorSelection );
@@ -1389,7 +1730,7 @@ void SMESHGUI_MeshInfoDlg::updateSelection()
 */
 void SMESHGUI_MeshInfoDlg::help()
 {
-  SMESH::ShowHelpFile( myTabWidget->currentIndex() == BaseInfo ?
+  SMESH::ShowHelpFile( ( myTabWidget->currentIndex() == BaseInfo || myTabWidget->currentIndex() == AddInfo ) ?
                        "mesh_infos_page.html#advanced_mesh_infos_anchor" : 
                        "mesh_infos_page.html#mesh_element_info_anchor" );
 }
@@ -1411,6 +1752,7 @@ void SMESHGUI_MeshInfoDlg::updateInfo()
 //   else {
 //     myBaseInfo->clear();
 //     myElemInfo->clear();
+//     myAddInfo->clear();
 //   }
 }
 

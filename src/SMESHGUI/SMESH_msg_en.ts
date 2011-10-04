@@ -3641,6 +3641,10 @@ Please, create VTK viewer and try again</translation>
         <translation>Tree</translation>
     </message>
     <message>
+        <source>PREF_GPP_NODES_LIMIT</source>
+        <translation>Automatic nodes compute limit</translation>
+    </message>
+    <message>
         <source>SMESH_PREF_GROUP_PRECISION</source>
         <translation>Input fields precision</translation>
     </message>
@@ -5867,6 +5871,10 @@ as they are of improper type:
         <translation>Element Info</translation>
     </message>
     <message>
+        <source>ADDITIONAL_INFO</source>
+        <translation>Additional Info</translation>
+    </message>
+    <message>
         <source>NODE_MODE</source>
         <translation>Node</translation>
     </message>
@@ -5988,6 +5996,153 @@ as they are of improper type:
     <message>
         <source>X_FROM_Y_ITEMS_SHOWN</source>
         <translation>%1-%2 from %3 items shown</translation>
+    </message>
+</context>
+<context>
+    <name>SMESHGUI_AddInfo</name>
+    <message>
+        <source>NAME</source>
+        <translation>Name</translation>
+    </message>
+    <message>
+        <source>GROUPS</source>
+        <translation>Groups</translation>
+    </message>
+    <message>
+        <source>GROUPS_1</source>
+        <translation>Nodes</translation>
+    </message>
+    <message>
+        <source>GROUPS_2</source>
+        <translation>Edges</translation>
+    </message>
+    <message>
+        <source>GROUPS_3</source>
+        <translation>Faces</translation>
+    </message>
+    <message>
+        <source>GROUPS_4</source>
+        <translation>Volumes</translation>
+    </message>
+    <message>
+        <source>GROUPS_5</source>
+        <translation>0D elements</translation>
+    </message>
+    <message>
+        <source>PARENT_MESH</source>
+        <translation>Parent mesh</translation>
+    </message>
+    <message>
+        <source>TYPE</source>
+        <translation>Type</translation>
+    </message>
+    <message>
+        <source>STANDALONE_GROUP</source>
+        <translation>Standalone group</translation>
+    </message>
+    <message>
+        <source>GROUP_ON_GEOMETRY</source>
+        <translation>Group on geometry</translation>
+    </message>
+    <message>
+        <source>GROUP_ON_FILTER</source>
+        <translation>Group on filter</translation>
+    </message>
+    <message>
+        <source>GEOM_OBJECT</source>
+        <translation>Shape</translation>
+    </message>
+    <message>
+        <source>NODE</source>
+        <translation>Node</translation>
+    </message>
+    <message>
+        <source>EDGE</source>
+        <translation>Edge</translation>
+    </message>
+    <message>
+        <source>FACE</source>
+        <translation>Face</translation>
+    </message>
+    <message>
+        <source>VOLUME</source>
+        <translation>Volume</translation>
+    </message>
+    <message>
+        <source>0DELEM</source>
+        <translation>0D element</translation>
+    </message>
+    <message>
+        <source>UNKNOWN</source>
+        <translation>Unknown</translation>
+    </message>
+    <message>
+        <source>ENTITY_TYPE</source>
+        <translation>Entity type</translation>
+    </message>
+    <message>
+        <source>SIZE</source>
+        <translation>Size</translation>
+    </message>
+    <message>
+        <source>COLOR</source>
+        <translation>Color</translation>
+    </message>
+    <message>
+        <source>NB_NODES</source>
+        <translation>Number of nodes</translation>
+    </message>
+    <message>
+        <source>COMPUTE</source>
+        <translation>Compute</translation>
+    </message>
+    <message>
+        <source>MESH_ON_GEOMETRY</source>
+        <translation>Based on geometry</translation>
+    </message>
+    <message>
+        <source>MESH_FROM_FILE</source>
+        <translation>Imported</translation>
+    </message>
+    <message>
+        <source>FILE_NAME</source>
+        <translation>File name</translation>
+    </message>
+    <message>
+        <source>STANDALONE_MESH</source>
+        <translation>Standalone</translation>
+    </message>
+    <message>
+        <source>SUBMESHES</source>
+        <translation>Sub-meshes</translation>
+    </message>
+    <message>
+        <source>SUBMESHES_0</source>
+        <translation>Compound</translation>
+    </message>
+    <message>
+        <source>SUBMESHES_2</source>
+        <translation>Solid</translation>
+    </message>
+    <message>
+        <source>SUBMESHES_3</source>
+        <translation>Shell</translation>
+    </message>
+    <message>
+        <source>SUBMESHES_4</source>
+        <translation>Face</translation>
+    </message>
+    <message>
+        <source>SUBMESHES_5</source>
+        <translation>Wire</translation>
+    </message>
+    <message>
+        <source>SUBMESHES_6</source>
+        <translation>Edge</translation>
+    </message>
+    <message>
+        <source>SUBMESHES_7</source>
+        <translation>Vertex</translation>
     </message>
 </context>
 <context>

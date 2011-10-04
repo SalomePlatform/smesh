@@ -33,10 +33,12 @@
 #include <QList>
 #include <QMap>
 #include <QSet>
+#include <QTreeWidget>
 #include <QVector>
 
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
+#include CORBA_SERVER_HEADER(SMESH_Group)
 
 class QButtonGroup;
 class QLabel;
@@ -44,8 +46,6 @@ class QLineEdit;
 class QPushButton;
 class QTabWidget;
 class QTextBrowser;
-class QTreeWidget;
-class QTreeWidgetItem;
 class SMESH_Actor;
 class SMDS_MeshNode;
 class SMDS_MeshElement;
@@ -185,6 +185,8 @@ class SMESHGUI_EXPORT SMESHGUI_TreeElemInfo : public SMESHGUI_ElemInfo
 {
   class ItemDelegate;
 
+  enum { Bold = 0x01, All = 0x80 };
+
 public:
   SMESHGUI_TreeElemInfo( QWidget* = 0 );
 
@@ -193,10 +195,48 @@ protected:
   void             clearInternal();
 
 private:
-  QTreeWidgetItem* createItem( QTreeWidgetItem* = 0, int = 100 );
+  QTreeWidgetItem* createItem( QTreeWidgetItem* = 0, int = 0 );
   
 private:
   QTreeWidget*     myInfo;
+};
+
+class GrpComputor: public QObject
+{
+  Q_OBJECT;
+
+public:
+  GrpComputor( SMESH::SMESH_GroupBase_ptr, QTreeWidgetItem*, QObject* );
+
+public slots:
+  void compute();
+
+private:
+  SMESH::SMESH_GroupBase_var myGroup;
+  QTreeWidgetItem*           myItem;
+};
+
+class SMESHGUI_EXPORT SMESHGUI_AddInfo : public QTreeWidget
+{
+  Q_OBJECT;
+
+  enum { Bold = 0x01, All = 0x80 };
+
+public:
+  SMESHGUI_AddInfo( QWidget* = 0 );
+  ~SMESHGUI_AddInfo();
+
+  void             showInfo( SMESH::SMESH_IDSource_ptr );
+  //  void             clear();
+
+private:
+  QTreeWidgetItem* createItem( QTreeWidgetItem* = 0, int = 0 );
+  void             meshInfo( SMESH::SMESH_Mesh_ptr, QTreeWidgetItem* );
+  void             subMeshInfo( SMESH::SMESH_subMesh_ptr, QTreeWidgetItem* );
+  void             groupInfo( SMESH::SMESH_GroupBase_ptr, QTreeWidgetItem* );
+
+private:
+  QList<GrpComputor*> myComputors;
 };
 
 class SMESHGUI_EXPORT SMESHGUI_MeshInfoDlg : public QDialog
@@ -209,7 +249,8 @@ public:
   //! Information type
   enum { 
     BaseInfo,  //!< base mesh information
-    ElemInfo   //!< mesh element information
+    ElemInfo,  //!< mesh element information
+    AddInfo    //!< additional information
   };
 
   SMESHGUI_MeshInfoDlg( QWidget* = 0, int = BaseInfo );
@@ -237,6 +278,7 @@ private:
   QButtonGroup*      myMode;
   QLineEdit*         myID;
   SMESHGUI_ElemInfo* myElemInfo;   
+  SMESHGUI_AddInfo*  myAddInfo;
   SMESH_Actor*       myActor;
 };
 
