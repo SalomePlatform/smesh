@@ -132,7 +132,7 @@ int SMESHDS_GroupOnFilter::GetID (const int theIndex)
 
 int SMESHDS_GroupOnFilter::GetTic() const
 {
-  return myMeshModifTime * myPredicateTic;
+  return GetMesh()->GetMTime() * myPredicateTic;
 }
 
 //================================================================================
