@@ -307,6 +307,12 @@ module SMESH
       raises (SALOME::SALOME_Exception);
 
     /*!
+     *  Get the list of sub-meshes existing in the mesh
+     */
+    submesh_array GetSubMeshes()
+      raises (SALOME::SALOME_Exception);
+
+    /*!
      * Remove all nodes and elements of submesh
      */
     void ClearSubMesh(in long ShapeID)

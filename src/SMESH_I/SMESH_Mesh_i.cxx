@@ -665,6 +665,42 @@ throw(SALOME::SALOME_Exception)
   return aList._retn();
 }
 
+SMESH::submesh_array* SMESH_Mesh_i::GetSubMeshes() throw (SALOME::SALOME_Exception)
+{
+  Unexpect aCatch(SALOME_SalomeException);
+  if (MYDEBUG) MESSAGE("GetSubMeshes");
+
+  SMESH::submesh_array_var aList = new SMESH::submesh_array();
+
+  // Python Dump
+  TPythonDump aPythonDump;
+  if ( !_mapSubMeshIor.empty() )
+    aPythonDump << "[ ";
+
+  try {
+    aList->length( _mapSubMeshIor.size() );
+    int i = 0;
+    map<int, SMESH::SMESH_subMesh_ptr>::iterator it = _mapSubMeshIor.begin();
+    for ( ; it != _mapSubMeshIor.end(); it++ ) {
+      if ( CORBA::is_nil( it->second )) continue;
+      aList[i++] = SMESH::SMESH_subMesh::_duplicate( it->second );
+      // Python Dump
+      if (i > 1) aPythonDump << ", ";
+      aPythonDump << it->second;
+    }
+    aList->length( i );
+  }
+  catch(SALOME_Exception & S_ex) {
+    THROW_SALOME_CORBA_EXCEPTION(S_ex.what(), SALOME::BAD_PARAM);
+  }
+
+  // Update Python script
+  if ( !_mapSubMeshIor.empty() )
+    aPythonDump << " ] = " << _this() << ".GetSubMeshes()";
+
+  return aList._retn();
+}
+
 //=============================================================================
 /*!
  *

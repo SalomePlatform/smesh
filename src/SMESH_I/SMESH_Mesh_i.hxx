@@ -88,6 +88,9 @@ public:
   SMESH::ListOfHypothesis* GetHypothesisList(GEOM::GEOM_Object_ptr aSubShapeObject)
     throw (SALOME::SALOME_Exception);
 
+  SMESH::submesh_array* GetSubMeshes()
+    throw (SALOME::SALOME_Exception);
+
   SMESH::SMESH_subMesh_ptr GetSubMesh(GEOM::GEOM_Object_ptr aSubShapeObject, const char* theName)
     throw (SALOME::SALOME_Exception);
 
