@@ -1359,7 +1359,7 @@ void SMESHGUI_AddInfo::meshInfo( SMESH::SMESH_Mesh_ptr mesh, QTreeWidgetItem* pa
     if ( CORBA::is_nil(gobj ) ) continue;
     
     int smType = gobj->GetShapeType();
-    if ( smType == GEOM::COMPSOLID ) smType == GEOM::COMPOUND;
+    if ( smType == GEOM::COMPSOLID ) smType = GEOM::COMPOUND;
 
     if ( !itemSubMeshes ) {
       itemSubMeshes = createItem( parent, Bold | All );
@@ -1591,7 +1591,6 @@ SMESHGUI_MeshInfoDlg::SMESHGUI_MeshInfoDlg( QWidget* parent, int page )
   l->setMargin( MARGIN );
   l->setSpacing( SPACING );
   l->addWidget( myTabWidget );
-  l->addStretch();
   l->addLayout( btnLayout );
 
   myTabWidget->setCurrentIndex( qMax( (int)BaseInfo, qMin( (int)ElemInfo, page ) ) );
