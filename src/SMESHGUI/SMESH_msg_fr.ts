@@ -3553,6 +3553,22 @@ Ouvrez une fenêtre VTK et essayez de nouveau</translation>
         <translation>Face arrière</translation>
     </message>
     <message>
+        <source>PREF_WIREFRAME</source>
+        <translation>Couleur de contour</translation>
+    </message>
+    <message>
+        <source>PREF_GROUP_SELECTION</source>
+        <translation>Sélection</translation>
+    </message>            
+    <message>
+        <source>PREF_SELECTION</source>
+        <translation>Couleur de sélection</translation>
+    </message>
+    <message>
+        <source>PREF_PRE_SELECTION</source>
+        <translation>Couleur de pré-sélection</translation>
+    </message>    
+    <message>
         <source>PREF_COLOR</source>
         <translation>Couleur</translation>
     </message>
@@ -3623,6 +3639,10 @@ Ouvrez une fenêtre VTK et essayez de nouveau</translation>
     <message>
         <source>PREF_ELEM_INFO_TREE</source>
         <translation>Arbre</translation>
+    </message>
+    <message>
+        <source>PREF_GPP_NODES_LIMIT</source>
+        <translation>Calcul automatique du nombre de nœuds: limite</translation>
     </message>
     <message>
         <source>SMESH_PREF_GROUP_PRECISION</source>
@@ -3875,6 +3895,10 @@ Ouvrez une fenêtre VTK et essayez de nouveau</translation>
     <message>
         <source>MEMORY_LACK</source>
         <translation>Problème d&apos;allocation de mémoire</translation>
+    </message>
+    <message>
+        <source>COMPUTE_WARNING</source>
+        <translation>Le maillage semble correct mais des erreurs sont apparues</translation>
     </message>
     <message>
         <source>PUBLISH_SHAPE</source>
@@ -4514,7 +4538,8 @@ Vérifiez la validité des informations données</translation>
     </message>
     <message>
         <source>ERROR</source>
-        <translation>La valeur du seuil n&apos;est pas valide. Entrez une valeur correcte et essayez de nouveau</translation>
+        <translation>La valeur du seuil n&apos;est pas valide.
+Entrez une valeur correcte et essayez de nouveau</translation>
     </message>
     <message>
         <source>FACES</source>
@@ -4859,6 +4884,10 @@ Indiquez-les et essayez de nouveau</translation>
 </context>
 <context>
     <name>SMESHGUI_FindElemByPointDlg</name>
+    <message>
+        <source>MESH_GROUP</source>
+        <translation>Maillage ou groupe</translation>
+    </message>
     <message>
         <source>CAPTION</source>
         <translation>Trouver un élément par un point</translation>
@@ -5839,7 +5868,11 @@ en raison de leurs types incompatibles:
     </message>
     <message>
         <source>ELEM_INFO</source>
-        <translation>Informations des éléments</translation>
+        <translation>Infos sur les éléments</translation>
+    </message>
+    <message>
+        <source>ADDITIONAL_INFO</source>
+        <translation>Infos détaillées</translation>
     </message>
     <message>
         <source>NODE_MODE</source>
@@ -5963,6 +5996,153 @@ en raison de leurs types incompatibles:
     <message>
         <source>X_FROM_Y_ITEMS_SHOWN</source>
         <translation>%1-%2 sur %3 éléments affichés</translation>
+    </message>
+</context>
+<context>
+    <name>SMESHGUI_AddInfo</name>
+    <message>
+        <source>NAME</source>
+        <translation>Nom</translation>
+    </message>
+    <message>
+        <source>GROUPS</source>
+        <translation>Groupes</translation>
+    </message>
+    <message>
+        <source>GROUPS_1</source>
+        <translation>Nœuds</translation>
+    </message>
+    <message>
+        <source>GROUPS_2</source>
+        <translation>Arêtes</translation>
+    </message>
+    <message>
+        <source>GROUPS_3</source>
+        <translation>Faces</translation>
+    </message>
+    <message>
+        <source>GROUPS_4</source>
+        <translation>Volumes</translation>
+    </message>
+    <message>
+        <source>GROUPS_5</source>
+        <translation>Eléments 0D</translation>
+    </message>
+    <message>
+        <source>PARENT_MESH</source>
+        <translation>Maillage parent</translation>
+    </message>
+    <message>
+        <source>TYPE</source>
+        <translation>Type</translation>
+    </message>
+    <message>
+        <source>STANDALONE_GROUP</source>
+        <translation>Groupe autonome</translation>
+    </message>
+    <message>
+        <source>GROUP_ON_GEOMETRY</source>
+        <translation>Groupe lié à une géometrie</translation>
+    </message>
+    <message>
+        <source>GROUP_ON_FILTER</source>
+        <translation>Groupe lié à un filtre</translation>
+    </message>
+    <message>
+        <source>GEOM_OBJECT</source>
+        <translation>Shape</translation>
+    </message>
+    <message>
+        <source>NODE</source>
+        <translation>Nœud</translation>
+    </message>
+    <message>
+        <source>EDGE</source>
+        <translation>Arête</translation>
+    </message>
+    <message>
+        <source>FACE</source>
+        <translation>Face</translation>
+    </message>
+    <message>
+        <source>VOLUME</source>
+        <translation>Volume</translation>
+    </message>
+    <message>
+        <source>0DELEM</source>
+        <translation>Elément 0D</translation>
+    </message>
+    <message>
+        <source>UNKNOWN</source>
+        <translation>Inconnu</translation>
+    </message>
+    <message>
+        <source>ENTITY_TYPE</source>
+        <translation>Type de maille</translation>
+    </message>
+    <message>
+        <source>SIZE</source>
+        <translation>Taille</translation>
+    </message>
+    <message>
+        <source>COLOR</source>
+        <translation>Couleur</translation>
+    </message>
+    <message>
+        <source>NB_NODES</source>
+        <translation>Nombre de Nœuds</translation>
+    </message>
+    <message>
+        <source>COMPUTE</source>
+        <translation>Calculer</translation>
+    </message>
+    <message>
+        <source>MESH_ON_GEOMETRY</source>
+        <translation>Lié à une géometrie</translation>
+    </message>
+    <message>
+        <source>MESH_FROM_FILE</source>
+        <translation>Importé</translation>
+    </message>
+    <message>
+        <source>FILE_NAME</source>
+        <translation>Nom du fichier</translation>
+    </message>
+    <message>
+        <source>STANDALONE_MESH</source>
+        <translation>Autonome</translation>
+    </message>
+    <message>
+        <source>SUBMESHES</source>
+        <translation>Sous-maillages</translation>
+    </message>
+    <message>
+        <source>SUBMESHES_0</source>
+        <translation>Assemblage</translation>
+    </message>
+    <message>
+        <source>SUBMESHES_2</source>
+        <translation>Solide</translation>
+    </message>
+    <message>
+        <source>SUBMESHES_3</source>
+        <translation>Coque</translation>
+    </message>
+    <message>
+        <source>SUBMESHES_4</source>
+        <translation>Face</translation>
+    </message>
+    <message>
+        <source>SUBMESHES_5</source>
+        <translation>Contour</translation>
+    </message>
+    <message>
+        <source>SUBMESHES_6</source>
+        <translation>Arêtes</translation>
+    </message>
+    <message>
+        <source>SUBMESHES_7</source>
+        <translation>Point</translation>
     </message>
 </context>
 <context>
