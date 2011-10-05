@@ -509,6 +509,26 @@ def AssureGeomPublished(mesh, geom, name=''):
         mesh.geompyD.addToStudyInFather( mesh.geom, geom, name )
     return
 
+## Return the first vertex of a geomertical edge by ignoring orienation
+def FirstVertexOnCurve(edge):
+    from geompy import SubShapeAll, ShapeType, KindOfShape, PointCoordinates
+    vv = SubShapeAll( edge, ShapeType["VERTEX"])
+    if not vv:
+        raise TypeError, "Given object has no vertices"
+    if len( vv ) == 1: return vv[0]
+    info = KindOfShape(edge)
+    xyz = info[1:4] # coords of the first vertex
+    xyz1  = PointCoordinates( vv[0] )
+    xyz2  = PointCoordinates( vv[1] )
+    dist1, dist2 = 0,0
+    for i in range(3):
+        dist1 += abs( xyz[i] - xyz1[i] )
+        dist2 += abs( xyz[i] - xyz2[i] )
+    if dist1 < dist2:
+        return vv[0]
+    else:
+        return vv[1]
+
 # end of l1_auxiliary
 ## @}
 
@@ -4571,6 +4591,42 @@ class Mesh_Algorithm:
         hyp.SetIgnoreFaces(ignoreFaces)
         return hyp
 
+    ## Transform a list of ether edges or tuples (edge 1st_vertex_of_edge)
+    #  into a list acceptable to SetReversedEdges() of some 1D hypotheses
+    #  @ingroupl3_hypos_1dhyps
+    def ReversedEdgeIndices(self, reverseList):
+        resList = []
+        geompy = self.mesh.geompyD
+        for i in reverseList:
+            if isinstance( i, int ):
+                s = geompy.SubShapes(self.mesh.geom, [i])[0]
+                if s.GetShapeType() != geompyDC.GEOM.EDGE:
+                    raise TypeError, "Not EDGE index given"
+                resList.append( i )
+            elif isinstance( i, geompyDC.GEOM._objref_GEOM_Object ):
+                if i.GetShapeType() != geompyDC.GEOM.EDGE:
+                    raise TypeError, "Not an EDGE given"
+                resList.append( geompy.GetSubShapeID(self.mesh.geom, i ))
+            elif len( i ) > 1:
+                e = i[0]
+                v = i[1]
+                if not isinstance( e, geompyDC.GEOM._objref_GEOM_Object ) or \
+                   not isinstance( v, geompyDC.GEOM._objref_GEOM_Object ):
+                    raise TypeError, "A list item must be a tuple (edge 1st_vertex_of_edge)"
+                if v.GetShapeType() == geompyDC.GEOM.EDGE and \
+                   e.GetShapeType() == geompyDC.GEOM.VERTEX:
+                    v,e = e,v
+                if e.GetShapeType() != geompyDC.GEOM.EDGE or \
+                   v.GetShapeType() != geompyDC.GEOM.VERTEX:
+                    raise TypeError, "A list item must be a tuple (edge 1st_vertex_of_edge)"
+                vFirst = FirstVertexOnCurve( e )
+                tol    = geompy.Tolerance( vFirst )[-1]
+                if geompy.MinDistance( v, vFirst ) > 1.5*tol:
+                    resList.append( geompy.GetSubShapeID(self.mesh.geom, e ))
+            else:
+                raise TypeError, "Item must be either an edge or tuple (edge 1st_vertex_of_edge)"
+        return resList
+
 # Public class: Mesh_Segment
 # --------------------------
 
@@ -4643,7 +4699,8 @@ class Mesh_Segment(Mesh_Algorithm):
     ## Defines "NumberOfSegments" hypothesis to cut an edge in a fixed number of segments
     #  @param n for the number of segments that cut an edge
     #  @param s for the scale factor (optional)
-    #  @param reversedEdges is a list of edges to mesh using reversed orientation
+    #  @param reversedEdges is a list of edges to mesh using reversed orientation.
+    #                       A list item can also be a tuple (edge 1st_vertex_of_edge)
     #  @param UseExisting if ==true - searches for an existing hypothesis created with
     #                     the same parameters, else (default) - create a new one
     #  @return an instance of StdMeshers_NumberOfSegments hypothesis
@@ -4652,20 +4709,19 @@ class Mesh_Segment(Mesh_Algorithm):
         if not isinstance(reversedEdges,list): #old version script, before adding reversedEdges
             reversedEdges, UseExisting = [], reversedEdges
         entry = self.MainShapeEntry()
-        if reversedEdges and isinstance(reversedEdges[0],geompyDC.GEOM._objref_GEOM_Object):
-            reversedEdges = [ self.mesh.geompyD.GetSubShapeID(self.mesh.geom, e) for e in reversedEdges ]
+        reversedEdgeInd = self.ReversedEdgeIndices(reversedEdges)
         if s == []:
-            hyp = self.Hypothesis("NumberOfSegments", [n, reversedEdges, entry],
+            hyp = self.Hypothesis("NumberOfSegments", [n, reversedEdgeInd, entry],
                                   UseExisting=UseExisting,
                                   CompareMethod=self.CompareNumberOfSegments)
         else:
-            hyp = self.Hypothesis("NumberOfSegments", [n,s, reversedEdges, entry],
+            hyp = self.Hypothesis("NumberOfSegments", [n,s, reversedEdgeInd, entry],
                                   UseExisting=UseExisting,
                                   CompareMethod=self.CompareNumberOfSegments)
             hyp.SetDistrType( 1 )
             hyp.SetScaleFactor(s)
         hyp.SetNumberOfSegments(n)
-        hyp.SetReversedEdges( reversedEdges )
+        hyp.SetReversedEdges( reversedEdgeInd )
         hyp.SetObjectEntry( entry )
         return hyp
 
@@ -4688,7 +4744,8 @@ class Mesh_Segment(Mesh_Algorithm):
     ## Defines "Arithmetic1D" hypothesis to cut an edge in several segments with increasing arithmetic length
     #  @param start defines the length of the first segment
     #  @param end   defines the length of the last  segment
-    #  @param reversedEdges is a list of edges to mesh using reversed orientation
+    #  @param reversedEdges is a list of edges to mesh using reversed orientation.
+    #                       A list item can also be a tuple (edge 1st_vertex_of_edge)
     #  @param UseExisting if ==true - searches for an existing hypothesis created with
     #                     the same parameters, else (default) - creates a new one
     #  @return an instance of StdMeshers_Arithmetic1D hypothesis
@@ -4696,15 +4753,14 @@ class Mesh_Segment(Mesh_Algorithm):
     def Arithmetic1D(self, start, end, reversedEdges=[], UseExisting=0):
         if not isinstance(reversedEdges,list): #old version script, before adding reversedEdges
             reversedEdges, UseExisting = [], reversedEdges
-        if reversedEdges and isinstance(reversedEdges[0],geompyDC.GEOM._objref_GEOM_Object):
-            reversedEdges = [ self.mesh.geompyD.GetSubShapeID(self.mesh.geom, e) for e in reversedEdges ]
+        reversedEdgeInd = self.ReversedEdgeIndices(reversedEdges)
         entry = self.MainShapeEntry()
-        hyp = self.Hypothesis("Arithmetic1D", [start, end, reversedEdges, entry],
+        hyp = self.Hypothesis("Arithmetic1D", [start, end, reversedEdgeInd, entry],
                               UseExisting=UseExisting,
                               CompareMethod=self.CompareArithmetic1D)
         hyp.SetStartLength(start)
         hyp.SetEndLength(end)
-        hyp.SetReversedEdges( reversedEdges )
+        hyp.SetReversedEdges( reversedEdgeInd )
         hyp.SetObjectEntry( entry )
         return hyp
 
@@ -4726,7 +4782,8 @@ class Mesh_Segment(Mesh_Algorithm):
     # values are equals 1
     #  @param points defines the list of parameters on curve
     #  @param nbSegs defines the list of numbers of segments
-    #  @param reversedEdges is a list of edges to mesh using reversed orientation
+    #  @param reversedEdges is a list of edges to mesh using reversed orientation.
+    #                       A list item can also be a tuple (edge 1st_vertex_of_edge)
     #  @param UseExisting if ==true - searches for an existing hypothesis created with
     #                     the same parameters, else (default) - creates a new one
     #  @return an instance of StdMeshers_Arithmetic1D hypothesis
@@ -4734,15 +4791,14 @@ class Mesh_Segment(Mesh_Algorithm):
     def FixedPoints1D(self, points, nbSegs=[1], reversedEdges=[], UseExisting=0):
         if not isinstance(reversedEdges,list): #old version script, before adding reversedEdges
             reversedEdges, UseExisting = [], reversedEdges
-        if reversedEdges and isinstance(reversedEdges[0],geompyDC.GEOM._objref_GEOM_Object):
-            reversedEdges = [ self.mesh.geompyD.GetSubShapeID(self.mesh.geom, e) for e in reversedEdges ]
+        reversedEdgeInd = self.ReversedEdgeIndices(reversedEdges)
         entry = self.MainShapeEntry()
-        hyp = self.Hypothesis("FixedPoints1D", [points, nbSegs, reversedEdges, entry],
+        hyp = self.Hypothesis("FixedPoints1D", [points, nbSegs, reversedEdgeInd, entry],
                               UseExisting=UseExisting,
                               CompareMethod=self.CompareFixedPoints1D)
         hyp.SetPoints(points)
         hyp.SetNbSegments(nbSegs)
-        hyp.SetReversedEdges(reversedEdges)
+        hyp.SetReversedEdges(reversedEdgeInd)
         hyp.SetObjectEntry(entry)
         return hyp
 
@@ -4762,7 +4818,8 @@ class Mesh_Segment(Mesh_Algorithm):
     ## Defines "StartEndLength" hypothesis to cut an edge in several segments with increasing geometric length
     #  @param start defines the length of the first segment
     #  @param end   defines the length of the last  segment
-    #  @param reversedEdges is a list of edges to mesh using reversed orientation
+    #  @param reversedEdges is a list of edges to mesh using reversed orientation.
+    #                       A list item can also be a tuple (edge 1st_vertex_of_edge)
     #  @param UseExisting if ==true - searches for an existing hypothesis created with
     #                     the same parameters, else (default) - creates a new one
     #  @return an instance of StdMeshers_StartEndLength hypothesis
@@ -4770,15 +4827,14 @@ class Mesh_Segment(Mesh_Algorithm):
     def StartEndLength(self, start, end, reversedEdges=[], UseExisting=0):
         if not isinstance(reversedEdges,list): #old version script, before adding reversedEdges
             reversedEdges, UseExisting = [], reversedEdges
-        if reversedEdges and isinstance(reversedEdges[0],geompyDC.GEOM._objref_GEOM_Object):
-            reversedEdges = [ self.mesh.geompyD.GetSubShapeID(self.mesh.geom, e) for e in reversedEdges ]
+        reversedEdgeInd = self.ReversedEdgeIndices(reversedEdges)
         entry = self.MainShapeEntry()
-        hyp = self.Hypothesis("StartEndLength", [start, end, reversedEdges, entry],
+        hyp = self.Hypothesis("StartEndLength", [start, end, reversedEdgeInd, entry],
                               UseExisting=UseExisting,
                               CompareMethod=self.CompareStartEndLength)
         hyp.SetStartLength(start)
         hyp.SetEndLength(end)
-        hyp.SetReversedEdges( reversedEdges )
+        hyp.SetReversedEdges( reversedEdgeInd )
         hyp.SetObjectEntry( entry )
         return hyp
 
