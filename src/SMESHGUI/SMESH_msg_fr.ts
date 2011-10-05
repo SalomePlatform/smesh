@@ -6090,7 +6090,7 @@ en raison de leurs types incompatibles:
     </message>
     <message>
         <source>NB_NODES</source>
-        <translation>Nombre de Nœuds</translation>
+        <translation>Nombre de nœuds sous-jacents</translation>
     </message>
     <message>
         <source>COMPUTE</source>

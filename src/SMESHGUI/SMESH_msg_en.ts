@@ -6090,7 +6090,7 @@ as they are of improper type:
     </message>
     <message>
         <source>NB_NODES</source>
-        <translation>Number of nodes</translation>
+        <translation>Number of underlying nodes</translation>
     </message>
     <message>
         <source>COMPUTE</source>
