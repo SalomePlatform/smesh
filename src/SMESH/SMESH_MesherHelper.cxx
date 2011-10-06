@@ -2617,7 +2617,7 @@ namespace { // Structures used by FixQuadraticElements()
       gp_XYZ mid1 = _qlink->MiddlePnt();
       gp_XYZ mid2 = _qfaces[0]->_sides[ iOpp ]->MiddlePnt();
       double faceSize2 = (mid1-mid2).SquareModulus();
-      isStraight = _qlink->_nodeMove.SquareMagnitude() < 1/3./3. * faceSize2;
+      isStraight = _qlink->_nodeMove.SquareMagnitude() < 1/10./10. * faceSize2;
     }
     return isStraight;
   }
@@ -2990,6 +2990,7 @@ void SMESH_MesherHelper::FixQuadraticElements(bool volumeOnly)
       const SMDS_MeshElement* vol = elemIt->next();
       if ( !vol->IsQuadratic() || !volTool.Set( vol ))
         return;
+      double volMinSize2 = -1.;
       for ( int iF = 0; iF < volTool.NbFaces(); ++iF ) // loop on faces of volume
       {
         int nbN = volTool.NbFaceNodes( iF );
@@ -3002,10 +3003,17 @@ void SMESH_MesherHelper::FixQuadraticElements(bool volumeOnly)
           QLink link( faceNodes[iN], faceNodes[iN+2], faceNodes[iN+1] );
           pLink = links.insert( link ).first;
           faceLinks[ iN/2 ] = & *pLink;
-          if ( !isCurved )
-            isCurved = !link.IsStraight();
-          if ( link.MediumPos() == SMDS_TOP_3DSPACE && !link.IsStraight() )
-            return; // already fixed
+
+          if ( link.MediumPos() == SMDS_TOP_3DSPACE )
+          {
+            if ( !link.IsStraight() )
+              return; // already fixed
+          }
+          else if ( !isCurved )
+          {
+            if ( volMinSize2 < 0 ) volMinSize2 = volTool.MinLinearSize2();
+            isCurved = !isStraightLink( volMinSize2, link._nodeMove.SquareMagnitude() );
+          }
         }
         // store QFace
         pFace = faces.insert( QFace( faceLinks )).first;
