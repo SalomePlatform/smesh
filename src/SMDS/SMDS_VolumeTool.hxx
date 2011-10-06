@@ -94,7 +94,7 @@ class SMDS_EXPORT SMDS_VolumeTool
 
   bool GetBaryCenter (double & X, double & Y, double & Z) const;
 
-  bool IsOut(double X, double Y, double Z, double tol);
+  bool IsOut(double X, double Y, double Z, double tol) const;
   // Classify a point
 
   // -----------------------
@@ -120,6 +120,9 @@ class SMDS_EXPORT SMDS_VolumeTool
   int GetAllExistingEdges(std::vector<const SMDS_MeshElement*> & edges) const;
   // Fill vector with boundary edges existing in the mesh
 
+  double MinLinearSize2() const;
+  // Return minimal square distance between connected corner nodes
+
   // -------------
   // info on faces
   // -------------
@@ -131,10 +134,10 @@ class SMDS_EXPORT SMDS_VolumeTool
   // Return number of faces of the volume. In the following
   // methods 0 <= faceIndex < NbFaces()
 
-  int NbFaceNodes( int faceIndex );
+  int NbFaceNodes( int faceIndex ) const;
   // Return number of nodes in the array of face nodes
 
-  const int* GetFaceNodesIndices( int faceIndex );
+  const int* GetFaceNodesIndices( int faceIndex ) const;
   // Return the array of face nodes indices
   // To comfort link iteration, the array
   // length == NbFaceNodes( faceIndex ) + 1 and
@@ -142,7 +145,7 @@ class SMDS_EXPORT SMDS_VolumeTool
   // NOTE: for the quadratic volume, node indoces are in the order the nodes encounter
   // in face boundary and not the order they are in the mesh face
 
-  const SMDS_MeshNode** GetFaceNodes( int faceIndex );
+  const SMDS_MeshNode** GetFaceNodes( int faceIndex ) const;
   // Return the array of face nodes.
   // To comfort link iteration, the array
   // length == NbFaceNodes( faceIndex ) + 1 and
@@ -153,30 +156,30 @@ class SMDS_EXPORT SMDS_VolumeTool
   //          work basing on its contents
 
   bool GetFaceNodes (int faceIndex,
-                     std::set<const SMDS_MeshNode*>& theFaceNodes );
+                     std::set<const SMDS_MeshNode*>& theFaceNodes ) const;
   // Return a set of face nodes.
 
-  bool IsFaceExternal( int faceIndex );
+  bool IsFaceExternal( int faceIndex ) const;
   // Check normal orientation of a face.
   // SetExternalNormal() is taken into account.
 
-  bool IsFreeFace(  int faceIndex, const SMDS_MeshElement** otherVol=0 );
+  bool IsFreeFace(  int faceIndex, const SMDS_MeshElement** otherVol=0 ) const;
   // Check that all volumes built on the face nodes lays on one side
   // otherVol returns another volume sharing the given facet
 
-  bool GetFaceNormal (int faceIndex, double & X, double & Y, double & Z);
+  bool GetFaceNormal (int faceIndex, double & X, double & Y, double & Z) const;
   // Return a normal to a face
 
-  bool GetFaceBaryCenter (int faceIndex, double & X, double & Y, double & Z);
+  bool GetFaceBaryCenter (int faceIndex, double & X, double & Y, double & Z) const;
   // Return barycenter of a face
 
-  double GetFaceArea( int faceIndex );
+  double GetFaceArea( int faceIndex ) const;
   // Return face area
 
   int GetOppFaceIndex( int faceIndex ) const;
   // Return index of the opposite face if it exists, else -1.
 
-  int GetFaceIndex( const std::set<const SMDS_MeshNode*>& theFaceNodes );
+  int GetFaceIndex( const std::set<const SMDS_MeshNode*>& theFaceNodes ) const;
   // Return index of a face formed by theFaceNodes.
   // Return -1 if a face not found
 
@@ -184,7 +187,7 @@ class SMDS_EXPORT SMDS_VolumeTool
   // Return index of a face formed by theFaceNodesIndices
   // Return -1 if a face not found
 
-  int GetAllExistingFaces(std::vector<const SMDS_MeshElement*> & faces);
+  int GetAllExistingFaces(std::vector<const SMDS_MeshElement*> & faces) const;
   // Fill vector with boundary faces existing in the mesh
 
   // ------------------------
@@ -214,7 +217,7 @@ class SMDS_EXPORT SMDS_VolumeTool
 
 private:
 
-  bool setFace( int faceIndex );
+  bool setFace( int faceIndex ) const;
 
   const SMDS_MeshElement* myVolume;
   const SMDS_VtkVolume*   myPolyedre;
@@ -225,12 +228,12 @@ private:
   const SMDS_MeshNode**   myVolumeNodes;
   std::vector< int >      myPolyIndices;
 
-  bool                    myExternalFaces;
+  mutable bool                    myExternalFaces;
 
-  int                     myCurFace;
-  int                     myFaceNbNodes;
-  int*                    myFaceNodeIndices;
-  const SMDS_MeshNode**   myFaceNodes;
+  mutable int                     myCurFace;
+  mutable int                     myFaceNbNodes;
+  mutable int*                    myFaceNodeIndices;
+  mutable const SMDS_MeshNode**   myFaceNodes;
 
 };
 #endif

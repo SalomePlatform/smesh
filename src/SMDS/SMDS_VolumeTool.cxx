@@ -38,8 +38,8 @@
 #include "utilities.h"
 
 #include <map>
-#include <float.h>
-#include <math.h>
+#include <limits>
+#include <cmath>
 
 using namespace std;
 
@@ -383,6 +383,7 @@ struct XYZ {
   inline XYZ Crossed( const XYZ& other );
   inline double Dot( const XYZ& other );
   inline double Magnitude();
+  inline double SquareMagnitude();
 };
 inline XYZ XYZ::operator-( const XYZ& Right ) {
   return XYZ(x - Right.x, y - Right.y, z - Right.z);
@@ -397,6 +398,9 @@ inline double XYZ::Dot( const XYZ& Other ) {
 }
 inline double XYZ::Magnitude() {
   return sqrt (x * x + y * y + z * z);
+}
+inline double XYZ::SquareMagnitude() {
+  return (x * x + y * y + z * z);
 }
 }
 
@@ -851,7 +855,7 @@ bool SMDS_VolumeTool::GetBaryCenter(double & X, double & Y, double & Z) const
  */
 //================================================================================
 
-bool SMDS_VolumeTool::IsOut(double X, double Y, double Z, double tol)
+bool SMDS_VolumeTool::IsOut(double X, double Y, double Z, double tol) const
 {
   // LIMITATION: for convex volumes only
   XYZ p( X,Y,Z );
@@ -886,7 +890,7 @@ void SMDS_VolumeTool::SetExternalNormal ()
 //purpose  : Return number of nodes in the array of face nodes
 //=======================================================================
 
-int SMDS_VolumeTool::NbFaceNodes( int faceIndex )
+int SMDS_VolumeTool::NbFaceNodes( int faceIndex ) const
 {
     if ( !setFace( faceIndex ))
       return 0;
@@ -901,7 +905,7 @@ int SMDS_VolumeTool::NbFaceNodes( int faceIndex )
 //           the last node == the first one.
 //=======================================================================
 
-const SMDS_MeshNode** SMDS_VolumeTool::GetFaceNodes( int faceIndex )
+const SMDS_MeshNode** SMDS_VolumeTool::GetFaceNodes( int faceIndex ) const
 {
   if ( !setFace( faceIndex ))
     return 0;
@@ -916,17 +920,18 @@ const SMDS_MeshNode** SMDS_VolumeTool::GetFaceNodes( int faceIndex )
 //           the last node index == the first one.
 //=======================================================================
 
-const int* SMDS_VolumeTool::GetFaceNodesIndices( int faceIndex )
+const int* SMDS_VolumeTool::GetFaceNodesIndices( int faceIndex ) const
 {
   if ( !setFace( faceIndex ))
     return 0;
 
   if (myVolume->IsPoly())
   {
-    myPolyIndices.resize( myFaceNbNodes + 1 );
-    myFaceNodeIndices = & myPolyIndices[0];
+    SMDS_VolumeTool* me = const_cast< SMDS_VolumeTool* > ( this );
+    me->myPolyIndices.resize( myFaceNbNodes + 1 );
+    me->myFaceNodeIndices = & me->myPolyIndices[0];
     for ( int i = 0; i <= myFaceNbNodes; ++i )
-      myFaceNodeIndices[i] = myVolume->GetNodeIndex( myFaceNodes[i] );
+      me->myFaceNodeIndices[i] = myVolume->GetNodeIndex( myFaceNodes[i] );
   }
   return myFaceNodeIndices;
 }
@@ -937,7 +942,7 @@ const int* SMDS_VolumeTool::GetFaceNodesIndices( int faceIndex )
 //=======================================================================
 
 bool SMDS_VolumeTool::GetFaceNodes (int                        faceIndex,
-                                    set<const SMDS_MeshNode*>& theFaceNodes )
+                                    set<const SMDS_MeshNode*>& theFaceNodes ) const
 {
   if ( !setFace( faceIndex ))
     return false;
@@ -955,7 +960,7 @@ bool SMDS_VolumeTool::GetFaceNodes (int                        faceIndex,
 //purpose  : Check normal orientation of a given face
 //=======================================================================
 
-bool SMDS_VolumeTool::IsFaceExternal( int faceIndex )
+bool SMDS_VolumeTool::IsFaceExternal( int faceIndex ) const
 {
   if ( myExternalFaces || !myVolume )
     return true;
@@ -997,7 +1002,7 @@ bool SMDS_VolumeTool::IsFaceExternal( int faceIndex )
 //purpose  : Return a normal to a face
 //=======================================================================
 
-bool SMDS_VolumeTool::GetFaceNormal (int faceIndex, double & X, double & Y, double & Z)
+bool SMDS_VolumeTool::GetFaceNormal (int faceIndex, double & X, double & Y, double & Z) const
 {
   if ( !setFace( faceIndex ))
     return false;
@@ -1020,7 +1025,7 @@ bool SMDS_VolumeTool::GetFaceNormal (int faceIndex, double & X, double & Y, doub
   }
 
   double size = cross.Magnitude();
-  if ( size <= DBL_MIN )
+  if ( size <= numeric_limits<double>::min() )
     return false;
 
   X = cross.x / size;
@@ -1036,7 +1041,7 @@ bool SMDS_VolumeTool::GetFaceNormal (int faceIndex, double & X, double & Y, doub
  */
 //================================================================================
 
-bool SMDS_VolumeTool::GetFaceBaryCenter (int faceIndex, double & X, double & Y, double & Z)
+bool SMDS_VolumeTool::GetFaceBaryCenter (int faceIndex, double & X, double & Y, double & Z) const
 {
   if ( !setFace( faceIndex ))
     return false;
@@ -1056,7 +1061,7 @@ bool SMDS_VolumeTool::GetFaceBaryCenter (int faceIndex, double & X, double & Y, 
 //purpose  : Return face area
 //=======================================================================
 
-double SMDS_VolumeTool::GetFaceArea( int faceIndex )
+double SMDS_VolumeTool::GetFaceArea( int faceIndex ) const
 {
   if (myVolume->IsPoly()) {
     MESSAGE("Warning: attempt to obtain area of a face of polyhedral volume");
@@ -1304,7 +1309,7 @@ int SMDS_VolumeTool::GetNodeIndex(const SMDS_MeshNode* theNode) const
  */
 //================================================================================
 
-int SMDS_VolumeTool::GetAllExistingFaces(vector<const SMDS_MeshElement*> & faces)
+int SMDS_VolumeTool::GetAllExistingFaces(vector<const SMDS_MeshElement*> & faces) const
 {
   faces.clear();
   faces.reserve( NbFaces() );
@@ -1357,13 +1362,52 @@ int SMDS_VolumeTool::GetAllExistingEdges(vector<const SMDS_MeshElement*> & edges
 
 //================================================================================
 /*!
+ * \brief Return minimal square distance between connected corner nodes
+ */
+//================================================================================
+
+double SMDS_VolumeTool::MinLinearSize2() const
+{
+  double minSize = 1e+100;
+  int iQ = myVolume->IsQuadratic() ? 2 : 1;
+
+  // store current face data
+  int curFace = myCurFace, nbN = myFaceNbNodes;
+  int* ind = myFaceNodeIndices;
+  myFaceNodeIndices = NULL;
+  const SMDS_MeshNode** nodes = myFaceNodes;
+  myFaceNodes = NULL;
+  
+  // it seems that compute distance twice is faster than organization of a sole computing
+  myCurFace = -1;
+  for ( int iF = 0; iF < myNbFaces; ++iF )
+  {
+    setFace( iF );
+    for ( int iN = 0; iN < myFaceNbNodes; iN += iQ )
+    {
+      XYZ n1( myFaceNodes[ iN ]);
+      XYZ n2( myFaceNodes[(iN + iQ) % myFaceNbNodes]);
+      minSize = std::min( minSize, (n1 - n2).SquareMagnitude());
+    }
+  }
+  // restore current face data
+  myCurFace = curFace;
+  myFaceNbNodes = nbN;
+  myFaceNodeIndices = ind;
+  delete [] myFaceNodes; myFaceNodes = nodes;
+
+  return minSize;
+}
+
+//================================================================================
+/*!
  * \brief check that only one volume is build on the face nodes
  *
  * If a face is shared by one of <ignoreVolumes>, it is considered free
  */
 //================================================================================
 
-bool SMDS_VolumeTool::IsFreeFace( int faceIndex, const SMDS_MeshElement** otherVol/*=0*/ )
+bool SMDS_VolumeTool::IsFreeFace( int faceIndex, const SMDS_MeshElement** otherVol/*=0*/ ) const
 {
   const bool isFree = true;
 
@@ -1483,7 +1527,7 @@ bool SMDS_VolumeTool::IsFreeFace( int faceIndex, const SMDS_MeshElement** otherV
 //purpose  : Return index of a face formed by theFaceNodes
 //=======================================================================
 
-int SMDS_VolumeTool::GetFaceIndex( const set<const SMDS_MeshNode*>& theFaceNodes )
+int SMDS_VolumeTool::GetFaceIndex( const set<const SMDS_MeshNode*>& theFaceNodes ) const
 {
   for ( int iFace = 0; iFace < myNbFaces; iFace++ ) {
     const SMDS_MeshNode** nodes = GetFaceNodes( iFace );
@@ -1521,7 +1565,7 @@ int SMDS_VolumeTool::GetFaceIndex( const set<const SMDS_MeshNode*>& theFaceNodes
 //purpose  : 
 //=======================================================================
 
-bool SMDS_VolumeTool::setFace( int faceIndex )
+bool SMDS_VolumeTool::setFace( int faceIndex ) const
 {
   if ( !myVolume )
     return false;
