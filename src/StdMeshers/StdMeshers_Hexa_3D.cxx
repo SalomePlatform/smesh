@@ -263,6 +263,20 @@ namespace
     }
     return foundQuad;
   }
+  //================================================================================
+  /*!
+   * \brief Returns true if the 1st base node of sideGrid1 belongs to sideGrid2
+   */
+  //================================================================================
+
+  bool beginsAtSide( const _FaceGrid& sideGrid1, const _FaceGrid& sideGrid2 )
+  {
+    const SMDS_MeshNode* n00 = (sideGrid1._u2nodesMap.begin()->second)[0];
+    const TNodeColumn& col0  = sideGrid2._u2nodesMap.begin()->second;
+    const TNodeColumn& col1  = sideGrid2._u2nodesMap.rbegin()->second;
+    return ( n00 == col0.front() || n00 == col0.back() ||
+             n00 == col1.front() || n00 == col1.back() );
+  }
 }
 
 //=============================================================================
@@ -327,7 +341,7 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh &         aMesh,
   aCubeSide[B_BACK ]._quad = getQuadWithBottom( aCubeSide[B_BOTTOM]._quad->side[Q_TOP   ], quad );
   aCubeSide[B_LEFT ]._quad = getQuadWithBottom( aCubeSide[B_BOTTOM]._quad->side[Q_LEFT  ], quad );
   if ( aCubeSide[B_FRONT ]._quad )
-    aCubeSide[B_TOP  ]._quad = getQuadWithBottom( aCubeSide[B_FRONT ]._quad->side[Q_TOP ], quad );
+    aCubeSide[B_TOP]._quad = getQuadWithBottom( aCubeSide[B_FRONT ]._quad->side[Q_TOP ], quad );
 
   for ( int i = 1; i < 6; ++i )
     if ( !aCubeSide[i]._quad )
@@ -381,15 +395,13 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh &         aMesh,
   {
     const TopoDS_Face& F = aCubeSide[i]._quad->face;
     StdMeshers_FaceSide* baseQuadSide = aCubeSide[i]._quad->side[ Q_BOTTOM ];
-    vector< TopAbs_Orientation > eOri( baseQuadSide->NbEdges() );
+    list<TopoDS_Edge> baseEdges( baseQuadSide->Edges().begin(), baseQuadSide->Edges().end() );
 
+    // assure correctness of node positions on baseE:
+    // helper.GetNodeU() will fix positions if they are wrong
     for ( int iE = 0; iE < baseQuadSide->NbEdges(); ++iE )
     {
       const TopoDS_Edge& baseE = baseQuadSide->Edge( iE );
-      eOri[ iE ] = baseE.Orientation();
-
-      // assure correctness of node positions on baseE:
-      // helper.GetNodeU() will fix positions if they are wrong
       if ( SMESHDS_SubMesh* smDS = meshDS->MeshElements( baseE ))
       {
         bool ok;
@@ -398,38 +410,29 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh &         aMesh,
         while ( eIt->more() )
         {
           const SMDS_MeshElement* e = eIt->next();
-          helper.GetNodeU( baseE, e->GetNode(0), e->GetNode(1), &ok);
-          helper.GetNodeU( baseE, e->GetNode(1), e->GetNode(0), &ok);
+          // expect problems on a composite side
+          try { helper.GetNodeU( baseE, e->GetNode(0), e->GetNode(1), &ok); }
+          catch (...) {}
+          try { helper.GetNodeU( baseE, e->GetNode(1), e->GetNode(0), &ok); }
+          catch (...) {}
         }
       }
-
-      // load grid
-      TParam2ColumnMap u2nodesMap;
-      if ( !helper.LoadNodeColumns( u2nodesMap, F, baseE, meshDS, proxymesh.get() ))
-      {
-        SMESH_ComputeErrorPtr err = ComputePentahedralMesh(aMesh, aShape, proxymesh.get());
-        return error( err );
-      }
-      // store u2nodesMap
-      if ( iE == 0 )
-      {
-        aCubeSide[i]._u2nodesMap.swap( u2nodesMap );
-      }
-      else // unite 2 maps
-      {
-        if ( eOri[0] == eOri[iE] )
-          append( aCubeSide[i]._u2nodesMap, u2nodesMap.begin(), u2nodesMap.end());
-        else
-          append( aCubeSide[i]._u2nodesMap, u2nodesMap.rbegin(), u2nodesMap.rend());
-      }
     }
-    // check if the loaded grid corresponds to nb of quadrangles
-    const SMESHDS_SubMesh* faceSubMesh =
-      proxymesh ? proxymesh->GetSubMesh( F ) : meshDS->MeshElements( F );
-    const int nbQuads = faceSubMesh->NbElements();
-    const int nbHor = aCubeSide[i]._u2nodesMap.size() - 1;
-    const int nbVer = aCubeSide[i]._u2nodesMap.begin()->second.size() - 1;
-    if ( nbQuads != nbHor * nbVer )
+
+    // load grid
+    bool ok =
+      helper.LoadNodeColumns( aCubeSide[i]._u2nodesMap, F, baseEdges, meshDS, proxymesh.get());
+    if ( ok )
+    {
+      // check if the loaded grid corresponds to nb of quadrangles on the FACE
+      const SMESHDS_SubMesh* faceSubMesh =
+        proxymesh ? proxymesh->GetSubMesh( F ) : meshDS->MeshElements( F );
+      const int nbQuads = faceSubMesh->NbElements();
+      const int nbHor = aCubeSide[i]._u2nodesMap.size() - 1;
+      const int nbVer = aCubeSide[i]._u2nodesMap.begin()->second.size() - 1;
+      ok = ( nbQuads == nbHor * nbVer );
+    }
+    if ( !ok )
     {
       SMESH_ComputeErrorPtr err = ComputePentahedralMesh(aMesh, aShape, proxymesh.get());
       return error( err );
@@ -437,26 +440,19 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh &         aMesh,
   }
 
   // Orient loaded grids of cube sides along axis of the unitary cube coord system
+  bool isReverse[6];
+  isReverse[B_BOTTOM] = beginsAtSide( aCubeSide[B_BOTTOM], aCubeSide[B_RIGHT ] );
+  isReverse[B_TOP   ] = beginsAtSide( aCubeSide[B_TOP   ], aCubeSide[B_RIGHT ] );
+  isReverse[B_FRONT ] = beginsAtSide( aCubeSide[B_FRONT ], aCubeSide[B_RIGHT ] );
+  isReverse[B_BACK  ] = beginsAtSide( aCubeSide[B_BACK  ], aCubeSide[B_RIGHT ] );
+  isReverse[B_LEFT  ] = beginsAtSide( aCubeSide[B_LEFT  ], aCubeSide[B_BACK  ] );
+  isReverse[B_RIGHT ] = beginsAtSide( aCubeSide[B_RIGHT ], aCubeSide[B_BACK  ] );
   for ( int i = 0; i < 6; ++i )
   {
-    bool reverse = false;
-    if ( helper.GetSubShapeOri( aShape.Oriented( TopAbs_FORWARD ),
-                                aCubeSide[i]._quad->face ) == TopAbs_REVERSED )
-      reverse = !reverse;
-
-    if ( helper.GetSubShapeOri( aCubeSide[i]._quad->face.Oriented( TopAbs_FORWARD ),
-                                aCubeSide[i]._quad->side[0]->Edge(0) ) == TopAbs_REVERSED )
-      reverse = !reverse;
-
-    if ( i == B_BOTTOM ||
-         i == B_LEFT   ||
-         i == B_BACK )
-      reverse = !reverse;
-
     aCubeSide[i]._columns.resize( aCubeSide[i]._u2nodesMap.size() );
 
     int iFwd = 0, iRev = aCubeSide[i]._columns.size()-1;
-    int* pi = reverse ? &iRev : &iFwd;
+    int* pi = isReverse[i] ? &iRev : &iFwd;
     TParam2ColumnMap::iterator u2nn = aCubeSide[i]._u2nodesMap.begin();
     for ( ; iFwd < aCubeSide[i]._columns.size(); --iRev, ++iFwd, ++u2nn )
       aCubeSide[i]._columns[ *pi ].swap( u2nn->second );
