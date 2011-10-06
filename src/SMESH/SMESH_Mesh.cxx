@@ -1830,7 +1830,7 @@ bool SMESH_Mesh::SortByMeshOrder(list<SMESH_subMesh*>& theListToSort) const
   list<SMESH_subMesh*>::iterator onlyBIt = onlyOrderedList.begin();
   list<SMESH_subMesh*>::iterator onlyEIt = onlyOrderedList.end();
 
-  // iterates on ordered submeshes and insert them in detected positions
+  // iterate on ordered submeshes and insert them in detected positions
   map< int, TPosInList >::iterator i_pos = sortedPos.begin();
   for ( ; onlyBIt != onlyEIt; ++onlyBIt, ++i_pos )
     *(i_pos->second) = *onlyBIt;
