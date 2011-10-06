@@ -4885,40 +4885,40 @@ SMESH_MeshEditor::ExtrusionAlongTrack (TIDSortedElemSet &   theElements,
       nIt = currentElem->nodesIterator();
       currentNode = static_cast<const SMDS_MeshNode*>(nIt->next());
       if(currentNode == prevNode)
-	currentNode = static_cast<const SMDS_MeshNode*>(nIt->next());
+        currentNode = static_cast<const SMDS_MeshNode*>(nIt->next());
       aNodesList.push_back(currentNode);
     } else { 
       nIt = currentElem->nodesIterator();
       while( nIt->more() ) {
-	currentNode = static_cast<const SMDS_MeshNode*>(nIt->next());
-	if(currentNode == prevNode)
-	  currentNode = static_cast<const SMDS_MeshNode*>(nIt->next());
-	aNodesList.push_back(currentNode);
-	
-	//case of the closed mesh
-	if(currentNode == theN1) {
-	  nbEdges++;
-	  isClosed = true;
-	  break;
-	}
+        currentNode = static_cast<const SMDS_MeshNode*>(nIt->next());
+        if(currentNode == prevNode)
+          currentNode = static_cast<const SMDS_MeshNode*>(nIt->next());
+        aNodesList.push_back(currentNode);
+        
+        //case of the closed mesh
+        if(currentNode == theN1) {
+          nbEdges++;
+          isClosed = true;
+          break;
+        }
 
-	conn = nbEdgeConnectivity(currentNode);
-	if(conn > 2) {
-	  return EXTR_PATH_NOT_EDGE;	
-	}else if( conn == 1 && nbEdges > 0 ) {
-	  //End of the path
-	  nbEdges++;
-	  break;
-	}else {
-	  prevNode = currentNode;
-	  aItE = currentNode->GetInverseElementIterator();
-	  currentElem = aItE->next();
-	  if( currentElem  == prevElem)
-	    currentElem = aItE->next();
-	  nIt = currentElem->nodesIterator();
-	  prevElem = currentElem;
-	  nbEdges++;
-	}
+        conn = nbEdgeConnectivity(currentNode);
+        if(conn > 2) {
+          return EXTR_PATH_NOT_EDGE;    
+        }else if( conn == 1 && nbEdges > 0 ) {
+          //End of the path
+          nbEdges++;
+          break;
+        }else {
+          prevNode = currentNode;
+          aItE = currentNode->GetInverseElementIterator();
+          currentElem = aItE->next();
+          if( currentElem  == prevElem)
+            currentElem = aItE->next();
+          nIt = currentElem->nodesIterator();
+          prevElem = currentElem;
+          nbEdges++;
+        }
       }
     } 
     
