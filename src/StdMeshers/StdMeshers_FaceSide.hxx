@@ -28,13 +28,13 @@
 #ifndef StdMeshers_FaceSide_HeaderFile
 #define StdMeshers_FaceSide_HeaderFile
 
+#include "SMESH_StdMeshers.hxx"
+
 #include <Geom2d_Curve.hxx>
 #include <GeomAdaptor_Curve.hxx>
 #include <TopoDS_Edge.hxx>
 #include <TopoDS_Vertex.hxx>
 #include <gp_Pnt2d.hxx>
-
-#include "SMESH_StdMeshers.hxx"
 
 #include <vector>
 #include <list>
@@ -62,9 +62,8 @@ typedef struct uvPtStruct
 
 class StdMeshers_FaceSide;
 typedef boost::shared_ptr< StdMeshers_FaceSide > StdMeshers_FaceSidePtr;
-typedef boost::shared_ptr< uvPtStruct > UVPtStructPtr;
-typedef std::vector< StdMeshers_FaceSidePtr > TSideVector;
-typedef boost::shared_ptr< SMESH_ComputeError > TError;
+typedef std::vector< StdMeshers_FaceSidePtr >    TSideVector;
+typedef boost::shared_ptr< SMESH_ComputeError >  TError;
 
 //================================================================================
 /*!
@@ -140,8 +139,8 @@ public:
     * \param constValue - constant parameter value
    */
   const std::vector<UVPtStruct>& SimulateUVPtStruct(int    nbSeg,
-                                               bool   isXConst   = 0,
-                                               double constValue = 0) const;
+                                                    bool   isXConst   = 0,
+                                                    double constValue = 0) const;
   /*!
    * \brief Return edge and parameter on edge by normalized parameter
    */
@@ -166,6 +165,10 @@ public:
    * \brief Return i-th wrapped edge (count starts from zero)
    */
   const TopoDS_Edge& Edge(int i) const { return myEdge[i]; }
+  /*!
+   * \brief Return all edges
+   */
+  const std::vector<TopoDS_Edge>& Edges() const { return myEdge; }
   /*!
    * \brief Return 1st vertex of the i-the edge (count starts from zero)
    */
