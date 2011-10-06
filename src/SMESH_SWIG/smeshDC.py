@@ -6421,7 +6421,7 @@ class Mesh_UseExistingElements(Mesh_Algorithm):
     #  @param UseExisting if ==true - searches for the existing hypothesis created with
     #                     the same parameters, else (default) - creates a new one
     def SourceEdges(self, groups, toCopyMesh=False, toCopyGroups=False, UseExisting=False):
-        if self.algo.GetName() == "Import_2D":
+        if self.algo.GetName() != "Import_1D":
             raise ValueError, "algoritm dimension mismatch"
         for group in groups:
             AssureGeomPublished( self.mesh, group )
