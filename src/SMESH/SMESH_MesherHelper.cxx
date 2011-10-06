@@ -1576,6 +1576,26 @@ bool SMESH_MesherHelper::LoadNodeColumns(TParam2ColumnMap & theParam2ColumnMap,
                                          SMESHDS_Mesh*      theMesh,
                                          SMESH_ProxyMesh*   theProxyMesh)
 {
+  return LoadNodeColumns(theParam2ColumnMap,
+                         theFace,
+                         std::list<TopoDS_Edge>(1,theBaseEdge),
+                         theMesh,
+                         theProxyMesh);
+}
+
+//=======================================================================
+//function : LoadNodeColumns
+//purpose  : Load nodes bound to face into a map of node columns
+//=======================================================================
+
+bool SMESH_MesherHelper::LoadNodeColumns(TParam2ColumnMap &            theParam2ColumnMap,
+                                         const TopoDS_Face&            theFace,
+                                         const std::list<TopoDS_Edge>& theBaseSide,
+                                         SMESHDS_Mesh*                 theMesh,
+                                         SMESH_ProxyMesh*              theProxyMesh)
+{
+  // get a right submesh of theFace
+
   const SMESHDS_SubMesh* faceSubMesh = 0;
   if ( theProxyMesh )
   {
@@ -1594,22 +1614,41 @@ bool SMESH_MesherHelper::LoadNodeColumns(TParam2ColumnMap & theParam2ColumnMap,
   if ( !faceSubMesh || faceSubMesh->NbElements() == 0 )
     return false;
 
-  // get nodes on theBaseEdge sorted by param on edge and initialize theParam2ColumnMap with them
+  // get data of edges for normalization of params
 
-  map< double, const SMDS_MeshNode*> sortedBaseNodes;
-  if ( !SMESH_Algo::GetSortedNodesOnEdge( theMesh, theBaseEdge,/*noMedium=*/true, sortedBaseNodes)
-       || sortedBaseNodes.size() < 2 )
-    return false;
-
-  int nbRows = faceSubMesh->NbElements() / ( sortedBaseNodes.size()-1 ) + 1;
-  map< double, const SMDS_MeshNode*>::iterator u_n = sortedBaseNodes.begin();
-  double f = u_n->first, range = sortedBaseNodes.rbegin()->first - f;
-  for ( ; u_n != sortedBaseNodes.end(); u_n++ )
+  vector< double > length;
+  double fullLen = 0;
+  list<TopoDS_Edge>::const_iterator edge;
   {
-    double par = ( u_n->first - f ) / range;
-    vector<const SMDS_MeshNode*>& nCol = theParam2ColumnMap[ par ];
-    nCol.resize( nbRows );
-    nCol[0] = u_n->second;
+    for ( edge = theBaseSide.begin(); edge != theBaseSide.end(); ++edge )
+    {
+      double len = std::max( 1e-10, SMESH_Algo::EdgeLength( *edge ));
+      fullLen += len;
+      length.push_back( len );
+    }
+  }
+
+  // get nodes on theBaseEdge sorted by param on edge and initialize theParam2ColumnMap with them
+  edge = theBaseSide.begin();
+  for ( int iE = 0; edge != theBaseSide.end(); ++edge, ++iE )
+  {
+    map< double, const SMDS_MeshNode*> sortedBaseNodes;
+    SMESH_Algo::GetSortedNodesOnEdge( theMesh, *edge,/*noMedium=*/true, sortedBaseNodes);
+    if ( sortedBaseNodes.empty() ) continue;
+
+    double f, l;
+    BRep_Tool::Range( *edge, f, l );
+    if ( edge->Orientation() == TopAbs_REVERSED ) std::swap( f, l );
+    const double coeff = 1. / ( l - f ) / length[iE] / fullLen;
+    const double prevPar = theParam2ColumnMap.empty() ? 0 : theParam2ColumnMap.rbegin()->first;
+    map< double, const SMDS_MeshNode*>::iterator u_n = sortedBaseNodes.begin();
+    for ( ; u_n != sortedBaseNodes.end(); u_n++ )
+    {
+      double par = prevPar + coeff * ( u_n->first - f );
+      TParam2ColumnMap::iterator u2nn =
+        theParam2ColumnMap.insert( theParam2ColumnMap.end(), make_pair( par, TNodeColumn()));
+      u2nn->second.push_back( u_n->second );
+    }
   }
   TParam2ColumnMap::iterator par_nVec_2, par_nVec_1 = theParam2ColumnMap.begin();
   if ( theProxyMesh )
@@ -1621,6 +1660,8 @@ bool SMESH_MesherHelper::LoadNodeColumns(TParam2ColumnMap & theParam2ColumnMap,
     }
   }
 
+  int nbRows = 1 + faceSubMesh->NbElements() / ( theParam2ColumnMap.size()-1 );
+
   // fill theParam2ColumnMap column by column by passing from nodes on
   // theBaseEdge up via mesh faces on theFace
 
@@ -1631,6 +1672,8 @@ bool SMESH_MesherHelper::LoadNodeColumns(TParam2ColumnMap & theParam2ColumnMap,
   {
     vector<const SMDS_MeshNode*>& nCol1 = par_nVec_1->second;
     vector<const SMDS_MeshNode*>& nCol2 = par_nVec_2->second;
+    nCol1.resize( nbRows );
+    nCol2.resize( nbRows );
 
     int i1, i2, iRow = 0;
     const SMDS_MeshNode *n1 = nCol1[0], *n2 = nCol2[0];
@@ -1653,8 +1696,9 @@ bool SMESH_MesherHelper::LoadNodeColumns(TParam2ColumnMap & theParam2ColumnMap,
       }
       avoidSet.insert( face );
     }
-    if ( iRow + 1 < nbRows ) // compact if necessary
-      nCol1.resize( iRow + 1 ), nCol2.resize( iRow + 1 );
+    // set a real height
+    nCol1.resize( iRow + 1 );
+    nCol2.resize( iRow + 1 );
   }
   return theParam2ColumnMap.size() > 1 && theParam2ColumnMap.begin()->second.size() > 1;
 }

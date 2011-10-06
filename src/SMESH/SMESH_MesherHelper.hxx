@@ -85,14 +85,22 @@ public:
    * \brief Load nodes bound to face into a map of node columns
     * \param theParam2ColumnMap - map of node columns to fill
     * \param theFace - the face on which nodes are searched for
-    * \param theBaseEdge - the edge nodes of which are columns' bases
+    * \param theBaseSide - the edges holding nodes on which columns' bases
     * \param theMesh - the mesh containing nodes
     * \retval bool - false if something is wrong
    * 
    * The key of the map is a normalized parameter of each
-   * base node on theBaseEdge.
+   * base node on theBaseSide. Edges in theBaseSide must be sequenced.
    * This method works in supposition that nodes on the face
    * forms a rectangular grid and elements can be quardrangles or triangles
+   */
+  static bool LoadNodeColumns(TParam2ColumnMap &            theParam2ColumnMap,
+                              const TopoDS_Face&            theFace,
+                              const std::list<TopoDS_Edge>& theBaseSide,
+                              SMESHDS_Mesh*                 theMesh,
+                              SMESH_ProxyMesh*              theProxyMesh=0);
+  /*!
+   * \brief Variant of LoadNodeColumns() above with theBaseSide given by one edge
    */
   static bool LoadNodeColumns(TParam2ColumnMap & theParam2ColumnMap,
                               const TopoDS_Face& theFace,
