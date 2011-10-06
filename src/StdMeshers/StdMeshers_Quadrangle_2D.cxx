@@ -895,9 +895,9 @@ FaceQuadStruct* StdMeshers_Quadrangle_2D::CheckNbEdges(SMESH_Mesh &         aMes
 
       for ( int i = degenSides.size()-1; i > -1; --i )
       {
-	StdMeshers_FaceSide* degenSide = quad->side[ degenSides[ i ]];
-	delete degenSide;
-	quad->side.erase( quad->side.begin() + degenSides[ i ] );
+        StdMeshers_FaceSide* degenSide = quad->side[ degenSides[ i ]];
+        delete degenSide;
+        quad->side.erase( quad->side.begin() + degenSides[ i ] );
       }
       for ( unsigned i = TOP_SIDE; i < quad->side.size(); ++i )
         quad->side[i]->Reverse();
