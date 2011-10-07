@@ -457,8 +457,9 @@ namespace // INTERNAL STUFF
       {
         removeImport = true;
       }
-      else if ( SMESH_subMesh::REMOVE_ALGO == event ||
-                SMESH_subMesh::REMOVE_FATHER_ALGO == event )
+      else if (( SMESH_subMesh::REMOVE_ALGO == event ||
+                 SMESH_subMesh::REMOVE_FATHER_ALGO == event ) &&
+               SMESH_subMesh::ALGO_EVENT == eventType )
       {
         SMESH_Gen* gen = subMesh->GetFather()->GetGen();
         SMESH_Algo* algo = gen->GetAlgo(*subMesh->GetFather(),subMesh->GetSubShape() );
@@ -470,7 +471,9 @@ namespace // INTERNAL STUFF
         // treate removal of Import algo from subMesh
         removeSubmesh( subMesh, (_ListenerData*) data );
       }
-      else if ( modifHyp )
+      else if ( modifHyp ||
+                ( SMESH_subMesh::CLEAN         == event &&
+                  SMESH_subMesh::COMPUTE_EVENT == eventType))
       {
         // treate modification of ImportSource hypothesis
         clearSubmesh( subMesh, (_ListenerData*) data, /*all=*/false );
