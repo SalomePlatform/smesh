@@ -57,6 +57,30 @@
 
 using namespace std;
 
+namespace
+{
+  double getMinElemSize2( const SMESHDS_GroupBase* srcGroup )
+  {
+    double minSize2 = 1e100;
+    SMDS_ElemIteratorPtr srcElems = srcGroup->GetElements();
+    while ( srcElems->more() ) // loop on group contents
+    {
+      const SMDS_MeshElement* face = srcElems->next();
+      int nbN = face->NbCornerNodes();
+
+      SMESH_TNodeXYZ prevN( face->GetNode( nbN-1 ));
+      for ( int i = 0; i < nbN; ++i )
+      {
+        SMESH_TNodeXYZ n( face->GetNode( i ) );
+        double size2 = ( n - prevN ).SquareModulus();
+        minSize2 = std::min( minSize2, size2 );
+        prevN = n;
+      }
+    }
+    return minSize2;
+  }
+}
+
 //=============================================================================
 /*!
  * Creates StdMeshers_Import_1D2D
@@ -189,7 +213,7 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
   // to count now many times a link between nodes encounters
   map<TLink, int> linkCount;
   map<TLink, int>::iterator link2Nb;
-  double minLinkLen2 = Precision::Infinite();
+  double minGroupTol = Precision::Infinite();
 
   // =========================
   // Import faces from groups
@@ -206,6 +230,9 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
     const SMESH_Mesh* srcMesh = GetMeshByPersistentID( meshID );
     if ( !srcMesh ) continue;
     StdMeshers_Import_1D::getMaps( srcMesh, &theMesh, n2n, e2e );
+
+    const double groupTol = 0.5 * sqrt( getMinElemSize2( srcGroup ));
+    minGroupTol = std::min( groupTol, minGroupTol );
 
     SMDS_ElemIteratorPtr srcElems = srcGroup->GetElements();
     SMDS_MeshNode *tmpNode = helper.AddNode(0,0,0);
@@ -230,7 +257,7 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
         {
           // find an existing vertex node
           for ( vNIt = vertexNodes.begin(); vNIt != vertexNodes.end(); ++vNIt)
-            if ( vNIt->SquareDistance( *node ) < 10 * faceTol * faceTol)
+            if ( vNIt->SquareDistance( *node ) < groupTol * groupTol)
             {
               (*n2nIt).second = vNIt->_node;
               vertexNodes.erase( vNIt );
@@ -241,7 +268,8 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
         {
           // find out if node lies on theShape
           tmpNode->setXYZ( (*node)->X(), (*node)->Y(), (*node)->Z());
-          if ( helper.CheckNodeUV( geomFace, tmpNode, uv, 10 * faceTol, /*force=*/true ))
+          uv.SetCoord( Precision::Infinite(), Precision::Infinite() );
+          if ( helper.CheckNodeUV( geomFace, tmpNode, uv, groupTol, /*force=*/true ))
           {
             SMDS_MeshNode* newNode = tgtMesh->AddNode( (*node)->X(), (*node)->Y(), (*node)->Z());
             n2nIt->second = newNode;
@@ -321,13 +349,13 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
           medium = newNodes[i+nbNodes];
         link2Nb = linkCount.insert( make_pair( TLink( n1, n2, medium ), 0)).first;
         ++link2Nb->second;
-        if ( link2Nb->second == 1 )
-        {
-          // measure link length
-          double len2 = SMESH_TNodeXYZ( n1 ).SquareDistance( n2 );
-          if ( len2 < minLinkLen2 )
-            minLinkLen2 = len2;
-        }
+        // if ( link2Nb->second == 1 )
+        // {
+        //   // measure link length
+        //   double len2 = SMESH_TNodeXYZ( n1 ).SquareDistance( n2 );
+        //   if ( len2 < minGroupTol )
+        //     minGroupTol = len2;
+        // }
       }
     }
     helper.GetMeshDS()->RemoveNode(tmpNode);
@@ -345,7 +373,7 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
 
   // use large tolerance for projection of nodes to edges because of
   // BLSURF mesher specifics (issue 0020918, Study2.hdf)
-  const double projTol = 1e-3 * sqrt( minLinkLen2 );
+  const double projTol = minGroupTol;
 
   bool isFaceMeshed = false;
   SMESHDS_SubMesh* tgtFaceSM = tgtMesh->MeshElements( theShape );
@@ -427,7 +455,7 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
           edge = tgtMesh->AddEdge( newNodes[0], newNodes[1], newNodes[2] );
 
           TopoDS_Edge geomEdge = TopoDS::Edge(bndShapes.back());
-          helper.CheckNodeU( geomEdge, link._medium, u, 10*faceTol, /*force=*/true );
+          helper.CheckNodeU( geomEdge, link._medium, u, projTol, /*force=*/true );
           tgtFaceSM->RemoveNode( link._medium, /*isNodeDeleted=*/false );
           tgtMesh->SetNodeOnEdge( (SMDS_MeshNode*)link._medium, geomEdge, u );
         }
@@ -636,7 +664,6 @@ bool StdMeshers_Import_1D2D::Evaluate(SMESH_Mesh &         theMesh,
     helper.SetSubShape(theShape);
 
     const TopoDS_Face& geomFace = TopoDS::Face( theShape );
-    const double faceTol = helper.MaxTolerance( geomFace );
 
     // take into account nodes on vertices
     TopExp_Explorer exp( theShape, TopAbs_VERTEX );
@@ -651,9 +678,12 @@ bool StdMeshers_Import_1D2D::Evaluate(SMESH_Mesh &         theMesh,
     // count faces and nodes imported from groups
     set<const SMDS_MeshNode* > allNodes;
     gp_XY uv;
+    double minGroupTol = 1e100;
     for ( int iG = 0; iG < srcGroups.size(); ++iG )
     {
       const SMESHDS_GroupBase* srcGroup = srcGroups[iG]->GetGroupDS();
+      const double groupTol = 0.5 * sqrt( getMinElemSize2( srcGroup ));
+      minGroupTol = std::min( groupTol, minGroupTol );
       SMDS_ElemIteratorPtr srcElems = srcGroup->GetElements();
       SMDS_MeshNode *tmpNode =helper.AddNode(0,0,0);
       while ( srcElems->more() ) // loop on group contents
@@ -664,7 +694,7 @@ bool StdMeshers_Import_1D2D::Evaluate(SMESH_Mesh &         theMesh,
         gp_XYZ gc(0,0,0);
         gc = accumulate( TXyzIterator(face->nodesIterator()), TXyzIterator(), gc)/face->NbNodes();
         tmpNode->setXYZ( gc.X(), gc.Y(), gc.Z());
-        if ( helper.CheckNodeUV( geomFace, tmpNode, uv, 10 * faceTol, /*force=*/true ))
+        if ( helper.CheckNodeUV( geomFace, tmpNode, uv, groupTol, /*force=*/true ))
         {
           ++aVec[ face->GetEntityType() ];
 
@@ -710,8 +740,8 @@ bool StdMeshers_Import_1D2D::Evaluate(SMESH_Mesh &         theMesh,
           bool eraseLink = ( nbFacesOfLink != 1 );
           if ( nbFacesOfLink == 1 )
           {
-            if ( helper.CheckNodeU( geomEdge, link.node1(), u, 10*faceTol, /*force=*/true )&&
-                 helper.CheckNodeU( geomEdge, link.node2(), u, 10*faceTol, /*force=*/true ))
+            if ( helper.CheckNodeU( geomEdge, link.node1(), u, minGroupTol, /*force=*/true )&&
+                 helper.CheckNodeU( geomEdge, link.node2(), u, minGroupTol, /*force=*/true ))
             {
               bool isQuadratic = ( link2Nb->second < 0 );
               ++edgeVec[ isQuadratic ? SMDSEntity_Quad_Edge : SMDSEntity_Edge ];
