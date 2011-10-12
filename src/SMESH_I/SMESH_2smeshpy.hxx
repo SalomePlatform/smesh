@@ -215,6 +215,7 @@ private:
   Resource_DataMapOfAsciiStringAsciiString& myID2AccessorMethod;
   Resource_DataMapOfAsciiStringAsciiString& myObjectNames;
   Handle(_pyCommand)                       myLastCommand;
+  int                                      myNbFilters;
 
   DEFINE_STANDARD_RTTI (_pyGen)
 };
@@ -470,10 +471,11 @@ DEFINE_STANDARD_HANDLE (_pyGroup, _pyObject);
 // -------------------------------------------------------------------------------------
 class _pyFilter:  public _pyObject
 {
+  _pyID myNewID;
 public:
-  _pyFilter(const Handle(_pyCommand)& theCreationCmd):_pyObject(theCreationCmd) {}
+  _pyFilter(const Handle(_pyCommand)& theCreationCmd, const _pyID& newID="");
   void Process( const Handle(_pyCommand)& theCommand);
-  virtual void Flush() {}
+  virtual void Flush();
 
   DEFINE_STANDARD_RTTI (_pyFilter)
 };

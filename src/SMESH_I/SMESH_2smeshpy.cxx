@@ -204,10 +204,11 @@ SMESH_2smeshpy::ConvertScript(const TCollection_AsciiString& theScript,
 _pyGen::_pyGen(Resource_DataMapOfAsciiStringAsciiString& theEntry2AccessorMethod,
                Resource_DataMapOfAsciiStringAsciiString& theObjectNames)
   : _pyObject( new _pyCommand( TPythonDump::SMESHGenName(), 0 )),
+    myNbCommands( 0 ),
     myID2AccessorMethod( theEntry2AccessorMethod ),
-    myObjectNames( theObjectNames )
+    myObjectNames( theObjectNames ),
+    myNbFilters( 0 )
 {
-  myNbCommands = 0;
   // make that GetID() to return TPythonDump::SMESHGenName()
   GetCreationCmd()->GetString() += "=";
 }
@@ -309,7 +310,14 @@ Handle(_pyCommand) _pyGen::AddCommand( const TCollection_AsciiString& theCommand
   // aFilterManager.CreateFilter() ?
   if ( aCommand->GetMethod() == "CreateFilter" )
   {
-    Handle(_pyObject) filter( new _pyFilter( aCommand ));
+    // Set a more human readable name to a filter
+    // aFilter0x7fbf6c71cfb0 -> aFilter_nb
+    _pyID newID, filterID = aCommand->GetResultValue();
+    int pos = filterID.Search( "0x" );
+    if ( pos > 1 )
+      newID = (filterID.SubString(1,pos-1) + "_") + _pyID( ++myNbFilters );
+
+    Handle(_pyObject) filter( new _pyFilter( aCommand, newID ));
     AddObject( filter );
   }
 
@@ -1585,6 +1593,9 @@ Handle(_pyHypothesis) _pyHypothesis::NewHypothesis( const Handle(_pyCommand)& th
   else if ( hypType == "Projection_2D" ) {
     algo->SetConvMethodAndType( "Projection2D", hypType.ToCString());
   }
+  else if ( hypType == "Projection_1D2D" ) {
+    algo->SetConvMethodAndType( "Projection1D2D", hypType.ToCString());
+  }
   else if ( hypType == "ProjectionSource2D" ) {
     hyp->SetConvMethodAndType( "SourceFace", "Projection_2D");
     hyp->AddArgMethod( "SetSourceFace");
@@ -2747,12 +2758,26 @@ void _pyGroup::Process( const Handle(_pyCommand)& theCommand)
 
 //================================================================================
 /*!
+ * \brief Constructor of _pyFilter
+ */
+//================================================================================
+
+_pyFilter::_pyFilter(const Handle(_pyCommand)& theCreationCmd, const _pyID& newID/*=""*/)
+  :_pyObject(theCreationCmd), myNewID( newID )
+{
+}
+
+//================================================================================
+/*!
  * \brief To convert creation of a filter by criteria
  */
 //================================================================================
 
 void _pyFilter::Process( const Handle(_pyCommand)& theCommand)
 {
+  if ( !myNewID.IsEmpty() )
+    theCommand->SetObject( myNewID );
+
   // Convert the following set of commands into smesh.GetFilterFromCriteria(criteria)
   // aFilter0x2aaab0487080 = aFilterManager.CreateFilter()
   // aFilter0x2aaab0487080.SetCriteria(aCriteria)
@@ -2761,7 +2786,10 @@ void _pyFilter::Process( const Handle(_pyCommand)& theCommand)
   {
     // aFilter.SetCriteria(aCriteria) ->
     // aFilter = smesh.GetFilterFromCriteria(criteria)
-    theCommand->SetResultValue( GetID() );
+    if ( myNewID.IsEmpty() )
+      theCommand->SetResultValue( GetID() );
+    else
+      theCommand->SetResultValue( myNewID );
     theCommand->SetObject( SMESH_2smeshpy::GenName() );
     theCommand->SetMethod( "GetFilterFromCriteria" );
 
@@ -2772,4 +2800,16 @@ void _pyFilter::Process( const Handle(_pyCommand)& theCommand)
   {
     theGen->AddMeshAccessorMethod( theCommand );
   }
+}
+
+//================================================================================
+/*!
+ * \brief Set new filter name to the creation command
+ */
+//================================================================================
+
+void _pyFilter::Flush()
+{
+  if ( !myNewID.IsEmpty() && GetCreationCmd()->IsEmpty() )
+    GetCreationCmd()->SetResultValue( myNewID );
 }
