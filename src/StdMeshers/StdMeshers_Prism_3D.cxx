@@ -2201,16 +2201,9 @@ TopoDS_Edge StdMeshers_PrismAsBlock::TSideFace::GetEdge(const int iEdge) const
   TopoDS_Shape V2 = myHelper->GetSubShapeByNode( node, meshDS );
   if ( V2.ShapeType() == TopAbs_VERTEX && !V2.IsSame( V1 ))
   {
-    TopTools_ListIteratorOfListOfShape ancestIt =
-      myHelper->GetMesh()->GetAncestors( V1 );
-    for ( ; ancestIt.More(); ancestIt.Next() )
-    {
-      const TopoDS_Shape & ancestor = ancestIt.Value();
-      if ( ancestor.ShapeType() == TopAbs_EDGE )
-        for ( TopExp_Explorer e( ancestor, TopAbs_VERTEX ); e.More(); e.Next() )
-          if ( V2.IsSame( e.Current() ))
-            return TopoDS::Edge( ancestor );
-    }
+    TopoDS_Shape ancestor = myHelper->GetCommonAncestor( V1, V2, *myHelper->GetMesh(), TopAbs_EDGE);
+    if ( !ancestor.IsNull() )
+      return TopoDS::Edge( ancestor );
   }
   return TopoDS_Edge();
 }

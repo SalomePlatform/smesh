@@ -429,14 +429,9 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
         if ( bndShapes.back().ShapeType() != TopAbs_EDGE )
         {
           // find geom edge by two vertices
-          TopoDS_Shape geomEdge;
-          PShapeIteratorPtr edgeIt = helper.GetAncestors( bndShapes.back(), theMesh, TopAbs_EDGE );
-          while ( edgeIt->more() )
-          {
-            geomEdge = *(edgeIt->next());
-            if ( !helper.IsSubShape( bndShapes.front(), geomEdge ))
-              geomEdge.Nullify();
-          }
+          TopoDS_Shape geomEdge = helper.GetCommonAncestor( bndShapes.back(),
+                                                            bndShapes.front(),
+                                                            theMesh, TopAbs_EDGE );
           if ( geomEdge.IsNull() )
             break; // vertices belong to different edges -> error: free internal link
           bndShapes.push_back( geomEdge );
