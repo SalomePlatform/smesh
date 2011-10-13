@@ -55,6 +55,14 @@ Vertices</b>, which belong to the same edge of the created \b Face.
 For groups of face, they must contain equal number of faces
 and they must form topologically equal structures.
 
+\n <b>Projection 1D-2D</b> algorithm differs from <b>Projection 2D</b>
+algorithm in one point, namely it generates mesh segments on edges of
+the face according to the projected 2D elements; thus it does not
+require that edges to be meshed by any other 1D algorithm; moreover it
+does not allow to mesh edges of the face using another algorithm via
+definition of sub-meshes.
+
+
 \n <b>Projection 3D</b> algorithm allows to define the mesh of a shape by
 the projection of another already meshed shape.  This algorithm works
 only if all faces and edges of the target shape have been meshed as 1D-2D

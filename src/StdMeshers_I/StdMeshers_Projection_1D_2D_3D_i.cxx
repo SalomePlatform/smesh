@@ -19,13 +19,8 @@
 //
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
-
-//  SMESH SMESH_I : idl implementation based on 'SMESH' unit's calsses
-//  File   : StdMeshers_Projection_3D_i.cxx
-//           Moved here from SMESH_Projection_3D_i.cxx
-//  Author : Paul RASCLE, EDF
+//  File   : StdMeshers_Projection_1D_2D_3D_i.cxx
 //  Module : SMESH
-//  $Header$
 //
 #include "StdMeshers_Projection_1D_2D_3D_i.hxx"
 
@@ -103,6 +98,40 @@ StdMeshers_Projection_2D_i::~StdMeshers_Projection_2D_i()
 {
   MESSAGE( "StdMeshers_Projection_2D_i::GetImpl" );
   return ( ::StdMeshers_Projection_2D* )myBaseImpl;
+}
+
+
+//=============================================================================
+/*!
+ *  StdMeshers_Projection_1D2D_i::StdMeshers_Projection_1D2D_i
+ */
+//=============================================================================
+
+StdMeshers_Projection_1D2D_i::StdMeshers_Projection_1D2D_i( PortableServer::POA_ptr thePOA,
+                                                            int                     theStudyId,
+                                                            ::SMESH_Gen*            theGenImpl )
+     : SALOME::GenericObj_i( thePOA ),
+       SMESH_Hypothesis_i( thePOA ),
+       SMESH_Algo_i( thePOA ),
+       SMESH_2D_Algo_i( thePOA )
+{
+  MESSAGE( "StdMeshers_Projection_1D2D_i::StdMeshers_Projection_1D2D_i" );
+  myBaseImpl = new ::StdMeshers_Projection_1D2D( theGenImpl->GetANewId(),
+                                                 theStudyId,
+                                                 theGenImpl );
+}
+//-----------------------------------------------------------------------------
+
+StdMeshers_Projection_1D2D_i::~StdMeshers_Projection_1D2D_i()
+{
+  MESSAGE( "StdMeshers_Projection_1D2D_i::~StdMeshers_Projection_1D2D_i" );
+}
+//-----------------------------------------------------------------------------
+
+::StdMeshers_Projection_1D2D* StdMeshers_Projection_1D2D_i::GetImpl()
+{
+  MESSAGE( "StdMeshers_Projection_1D2D_i::GetImpl" );
+  return ( ::StdMeshers_Projection_1D2D* )myBaseImpl;
 }
 
 

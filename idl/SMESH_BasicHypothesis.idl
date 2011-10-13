@@ -932,6 +932,13 @@ module StdMeshers
   };
 
   /*!
+   * StdMeshers_Projection_1D2D: interface of "Projection 1D-2D" algorithm
+   */
+  interface StdMeshers_Projection_1D2D : SMESH::SMESH_2D_Algo
+  {
+  };
+
+  /*!
    * StdMeshers_Projection_1D: interface of "Projection 1D" algorithm
    */
   interface StdMeshers_Projection_1D : SMESH::SMESH_1D_Algo

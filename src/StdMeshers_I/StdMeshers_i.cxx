@@ -189,6 +189,8 @@ STDMESHERS_I_EXPORT
       aCreator = new StdHypothesisCreator_i<StdMeshers_Hexa_3D_i>;
     else if (strcmp(aHypName, "Projection_1D") == 0)
       aCreator = new StdHypothesisCreator_i<StdMeshers_Projection_1D_i>;
+    else if (strcmp(aHypName, "Projection_1D2D") == 0)
+      aCreator = new StdHypothesisCreator_i<StdMeshers_Projection_1D2D_i>;
     else if (strcmp(aHypName, "Projection_2D") == 0)
       aCreator = new StdHypothesisCreator_i<StdMeshers_Projection_2D_i>;
     else if (strcmp(aHypName, "Projection_3D") == 0)

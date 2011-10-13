@@ -242,6 +242,14 @@
                output="QUAD,TRIA"
                dim="2"/>
 
+    <algorithm type="Projection_1D2D"
+               label-id="Projection 1D-2D"
+               icon-id="mesh_algo_quad.png"
+               input=""
+               hypos="ProjectionSource2D"
+               output="QUAD,TRIA"
+               dim="2"/>
+
     <algorithm type="Projection_3D"
                label-id="Projection 3D"
                icon-id="mesh_algo_hexa.png"

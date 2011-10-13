@@ -19,16 +19,11 @@
 //
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
-
-//  SMESH SMESH_I : idl implementation based on 'SMESH' unit's calsses
-//  File   : StdMeshers_Hexa_3D_i.hxx
-//           Moved here from SMESH_Hexa_3D_i.hxx
-//  Author : Paul RASCLE, EDF
+//  File   : StdMeshers_Projection_1D_2D_3D_i.hxx
 //  Module : SMESH
-//  $Header$
 //
-#ifndef _SMESH_Projection_3D_I_HXX_
-#define _SMESH_Projection_3D_I_HXX_
+#ifndef _SMESH_Projection_1D2D3D_I_HXX_
+#define _SMESH_Projection_1D2D3D_I_HXX_
 
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_BasicHypothesis)
@@ -37,6 +32,7 @@
 #include "SMESH_2D_Algo_i.hxx"
 #include "SMESH_3D_Algo_i.hxx"
 #include "StdMeshers_Projection_1D.hxx"
+#include "StdMeshers_Projection_1D2D.hxx"
 #include "StdMeshers_Projection_2D.hxx"
 #include "StdMeshers_Projection_3D.hxx"
 
@@ -64,7 +60,7 @@ public:
 };
 
 // ======================================================
-// Projection 3D algorithm
+// Projection 2D algorithm
 // ======================================================
 
 class StdMeshers_Projection_2D_i:
@@ -85,7 +81,28 @@ public:
 };
 
 // ======================================================
-// Projection 3D algorithm
+// Projection 1D-2D algorithm
+// ======================================================
+
+class StdMeshers_Projection_1D2D_i:
+  public virtual POA_StdMeshers::StdMeshers_Projection_1D2D,
+  public virtual SMESH_2D_Algo_i
+{
+public:
+  // Constructor
+  StdMeshers_Projection_1D2D_i( PortableServer::POA_ptr thePOA,
+                                int                     theStudyId,
+                                ::SMESH_Gen*            theGenImpl );
+
+  // Destructor
+  virtual ~StdMeshers_Projection_1D2D_i();
+
+  // Get implementation
+  ::StdMeshers_Projection_1D2D* GetImpl();
+};
+
+// ======================================================
+// Projection 1D algorithm
 // ======================================================
 
 class StdMeshers_Projection_1D_i:
