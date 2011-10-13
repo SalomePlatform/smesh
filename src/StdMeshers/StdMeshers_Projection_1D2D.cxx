@@ -100,8 +100,8 @@ bool StdMeshers_Projection_1D2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape
       int edgeID = meshDS->ShapeToIndex( wires[ iWire ]->Edge(0) );
       for ( size_t i = 1; i < nodes.size(); ++i )
       {
-        if ( checkExisting && meshDS->FindEdge( nodes[i-1], nodes[i])
-             continue;
+        if ( checkExisting && meshDS->FindEdge( nodes[i-1], nodes[i]))
+          continue;
         SMDS_MeshElement* e = meshDS->AddEdge( nodes[i-1], nodes[i] );
         if ( nodes[i-1]->getshapeId() != edgeID &&
              nodes[i  ]->getshapeId() != edgeID )
