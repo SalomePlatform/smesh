@@ -86,16 +86,16 @@ public:
   /*!
    * \brief Wrap several edges. Edges must be properly ordered and oriented.
    */
-  StdMeshers_FaceSide(const TopoDS_Face& theFace,
+  StdMeshers_FaceSide(const TopoDS_Face&      theFace,
                       std::list<TopoDS_Edge>& theEdges,
-                      SMESH_Mesh*        theMesh,
-                      const bool         theIsForward,
-                      const bool         theIgnoreMediumNodes);
+                      SMESH_Mesh*             theMesh,
+                      const bool              theIsForward,
+                      const bool              theIgnoreMediumNodes);
   /*!
-   * \brief Wrap for vertex using data from other FaceSide
+   * \brief Simulate a side from a vertex using data from other FaceSide
    */
-  StdMeshers_FaceSide(const SMDS_MeshNode* theNode,
-                      const gp_Pnt2d thePnt2d,
+  StdMeshers_FaceSide(const SMDS_MeshNode*       theNode,
+                      const gp_Pnt2d             thePnt2d,
                       const StdMeshers_FaceSide* theSide);
   /*!
    * \brief Return wires of a face as StdMeshers_FaceSide's
@@ -130,7 +130,8 @@ public:
     * \param isXConst - true if normalized parameter X is constant
     * \param constValue - constant parameter value
     *
-    * Missing nodes are allowed only on internal vertices
+    * Missing nodes are allowed only on internal vertices.
+    * For a closed side, the 1st point repeats at end
    */
   const std::vector<UVPtStruct>& GetUVPtStruct(bool isXConst =0, double constValue =0) const;
   /*!
@@ -141,6 +142,11 @@ public:
   const std::vector<UVPtStruct>& SimulateUVPtStruct(int    nbSeg,
                                                     bool   isXConst   = 0,
                                                     double constValue = 0) const;
+  /*!
+   * \brief Return nodes in the order they encounter while walking along the side.
+    * For a closed side, the 1st point repeats at end
+   */
+  std::vector<const SMDS_MeshNode*> GetOrderedNodes() const;
   /*!
    * \brief Return edge and parameter on edge by normalized parameter
    */
@@ -201,7 +207,7 @@ public:
 
 protected:
 
-  // DON't FORGET tO update Reverse() when adding one more vector!
+  // DON't FORGET to update Reverse() when adding one more vector!
   std::vector<uvPtStruct>           myPoints, myFalsePoints;
   std::vector<TopoDS_Edge>          myEdge;
   std::vector<int>                  myEdgeID;

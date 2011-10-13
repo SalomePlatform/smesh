@@ -248,8 +248,8 @@ const vector<UVPtStruct>& StdMeshers_FaceSide::GetUVPtStruct(bool   isXConst,
       VV[1] = SMESH_MesherHelper::IthVertex( 1, myEdge[i]);
       const SMDS_MeshNode* node = SMESH_Algo::VertexNode( VV[0], meshDS );
       double prevNormPar = ( i == 0 ? 0 : myNormPar[ i-1 ]); // normalized param
-      if ( node ) { // internal nodes may be missing
-        u2node.insert( make_pair( prevNormPar, node ));
+      if ( node ) { // nodes on internal vertices may be missing
+        u2node.insert( u2node.end(), make_pair( prevNormPar, node ));
       }
       else if ( i == 0 ) {
         MESSAGE(" NO NODE on VERTEX" );
@@ -294,7 +294,8 @@ const vector<UVPtStruct>& StdMeshers_FaceSide::GetUVPtStruct(bool   isXConst,
           double normPar = prevNormPar + r * ( u - myFirst[i] ) / paramSize;
           u2nodeVec.push_back( make_pair( normPar, node ));
         }
-      u2node.insert( u2nodeVec.begin(), u2nodeVec.end() );
+      for ( size_t j = 0; j < u2nodeVec.size(); ++j )
+        u2node.insert( u2node.end(), u2nodeVec[j] );
 
       // Put 2nd vertex node for a last edge
       if ( i+1 == myEdge.size() ) {
@@ -303,7 +304,7 @@ const vector<UVPtStruct>& StdMeshers_FaceSide::GetUVPtStruct(bool   isXConst,
           MESSAGE(" NO NODE on VERTEX" );
           return myPoints;
         }
-        u2node.insert( make_pair( 1., node ));
+        u2node.insert( u2node.end(), make_pair( 1., node ));
       }
     }
     if ( u2node.size() != myNbPonits ) {
@@ -412,9 +413,89 @@ const vector<UVPtStruct>& StdMeshers_FaceSide::SimulateUVPtStruct(int    nbSeg,
   }
   return myFalsePoints;
 }
-// gp_Pnt StdMeshers_FaceSide::Value(double U) const
-// {
-// }
+
+//=======================================================================
+//function : GetOrderedNodes
+//purpose  : Return nodes in the order they encounter while walking along the side
+//=======================================================================
+
+std::vector<const SMDS_MeshNode*> StdMeshers_FaceSide::GetOrderedNodes() const
+{
+  vector<const SMDS_MeshNode*> resultNodes;
+  if ( myPoints.empty() )
+  {
+    if ( NbEdges() == 0 ) return resultNodes;
+
+    SMESHDS_Mesh* meshDS = myMesh->GetMeshDS();
+    SMESH_MesherHelper helper(*myMesh);
+    bool paramOK;
+
+    // Sort nodes of all edges putting them into a map
+
+    map< double, const SMDS_MeshNode*> u2node;
+    for ( int i = 0; i < myEdge.size(); ++i )
+    {
+      // Put 1st vertex node of a current edge
+      TopoDS_Vertex VV[2]; // TopExp::FirstVertex() returns NULL for INTERNAL edge
+      VV[0] = SMESH_MesherHelper::IthVertex( 0, myEdge[i]);
+      VV[1] = SMESH_MesherHelper::IthVertex( 1, myEdge[i]);
+      const SMDS_MeshNode* node = SMESH_Algo::VertexNode( VV[0], meshDS );
+      double prevNormPar = ( i == 0 ? 0 : myNormPar[ i-1 ]); // normalized param
+      if ( node ) { // nodes on internal vertices may be missing
+        u2node.insert( make_pair( prevNormPar, node ));
+      }
+      else if ( i == 0 ) {
+        MESSAGE(" NO NODE on VERTEX" );
+        return resultNodes;
+      }
+
+      // Put internal nodes
+      SMESHDS_SubMesh* sm = meshDS->MeshElements( myEdge[i] );
+      if ( !sm ) continue;
+      SMDS_NodeIteratorPtr nItr = sm->GetNodes();
+      double paramSize = myLast[i] - myFirst[i];
+      double r = myNormPar[i] - prevNormPar;
+      while ( nItr->more() )
+      {
+        const SMDS_MeshNode* node = nItr->next();
+        if ( myIgnoreMediumNodes && SMESH_MeshEditor::IsMedium( node, SMDSAbs_Edge ))
+            continue;
+        double u = helper.GetNodeU( myEdge[i], node, 0, &paramOK );
+
+        // paramSize is signed so orientation is taken into account
+        double normPar = prevNormPar + r * ( u - myFirst[i] ) / paramSize;
+        u2node.insert( u2node.end(), make_pair( normPar, node ));
+      }
+
+      // Put 2nd vertex node for a last edge
+      if ( i+1 == myEdge.size() ) {
+        node = SMESH_Algo::VertexNode( VV[1], meshDS );
+        if ( !node ) {
+          return resultNodes;
+        }
+        u2node.insert( u2node.end(), make_pair( 1., node ));
+      }
+    }
+
+    // Fill the result vector
+
+    if ( u2node.size() == myNbPonits )
+    {
+      resultNodes.reserve( u2node.size() );
+      map< double, const SMDS_MeshNode*>::iterator u2n = u2node.begin();
+      for ( ; u2n != u2node.end(); ++u2n )
+        resultNodes.push_back( u2n->second );
+    }
+  }
+  else
+  {
+    resultNodes.resize( myPoints.size() );
+    for ( size_t i = 0; i < myPoints.size(); ++i )
+      resultNodes[i] = myPoints[i].node;
+  }
+
+  return resultNodes;
+}
 
 //================================================================================
 /*!
