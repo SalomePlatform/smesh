@@ -140,6 +140,13 @@ public:
   static PShapeIteratorPtr GetAncestors(const TopoDS_Shape& shape,
                                         const SMESH_Mesh&   mesh,
                                         TopAbs_ShapeEnum    ancestorType);
+  /*!
+   * \brief Find a common ancestors of two shapes of the given type
+   */
+  static TopoDS_Shape GetCommonAncestor(const TopoDS_Shape& shape1,
+                                        const TopoDS_Shape& shape2,
+                                        const SMESH_Mesh&   mesh,
+                                        TopAbs_ShapeEnum    ancestorType);
 
   /*!
    * \brief Return orientation of sub-shape in the main shape
@@ -453,6 +460,11 @@ public:
   const SMDS_MeshNode* GetMediumNode(const SMDS_MeshNode* n1,
                                      const SMDS_MeshNode* n2,
                                      const bool force3d);
+  /*!
+   * \brief Return index and type of the shape to set a medium node on
+   */
+  std::pair<int, TopAbs_ShapeEnum> GetMediumPos(const SMDS_MeshNode* n1,
+                                                const SMDS_MeshNode* n2);
   /*!
    * \brief Add a link in my data structure
    */

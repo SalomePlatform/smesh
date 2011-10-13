@@ -894,6 +894,84 @@ bool SMESH_MesherHelper::CheckNodeU(const TopoDS_Edge&   E,
 }
 
 //=======================================================================
+//function : GetMediumPos
+//purpose  : Return index and type of the shape to set a medium node on
+//=======================================================================
+
+std::pair<int, TopAbs_ShapeEnum> SMESH_MesherHelper::GetMediumPos(const SMDS_MeshNode* n1,
+                                                                  const SMDS_MeshNode* n2)
+{
+  TopAbs_ShapeEnum shapeType = TopAbs_SHAPE;
+  int              shapeID = -1;
+  TopoDS_Shape     shape;
+
+  if (( myShapeID == n1->getshapeId() || myShapeID == n2->getshapeId() ) && myShapeID > 0 )
+  {
+    shapeType = myShape.ShapeType();
+    shapeID   = myShapeID;
+  }
+  else
+  {
+    const SMDS_PositionPtr Pos1 = n1->GetPosition();
+    const SMDS_PositionPtr Pos2 = n2->GetPosition();
+
+    if( Pos1->GetTypeOfPosition()==SMDS_TOP_FACE )
+    {
+      shapeType = TopAbs_FACE;
+      shapeID   = n1->getshapeId();
+    }
+    else if( Pos2->GetTypeOfPosition()==SMDS_TOP_FACE )
+    {
+      shapeType = TopAbs_FACE;
+      shapeID   = n2->getshapeId();
+    }
+    else if (Pos1->GetTypeOfPosition()==SMDS_TOP_3DSPACE ||
+             Pos2->GetTypeOfPosition()==SMDS_TOP_3DSPACE )
+    {
+    }
+    else if ( Pos1->GetTypeOfPosition()==SMDS_TOP_EDGE &&
+              Pos2->GetTypeOfPosition()==SMDS_TOP_EDGE )
+    {
+      if ( n1->getshapeId() == n2->getshapeId() )
+      {
+        shapeType = TopAbs_EDGE;
+        shapeID   = n1->getshapeId();
+      }
+      else
+      {
+        TopoDS_Shape E1 = GetSubShapeByNode( n1, GetMeshDS() );
+        TopoDS_Shape E2 = GetSubShapeByNode( n2, GetMeshDS() );
+        shape = GetCommonAncestor( E1, E2, *myMesh, TopAbs_FACE );
+      }
+    }
+    else if ( Pos1->GetTypeOfPosition()==SMDS_TOP_VERTEX &&
+              Pos2->GetTypeOfPosition()==SMDS_TOP_VERTEX )
+    {
+      TopoDS_Shape V1 = GetSubShapeByNode( n1, GetMeshDS() );
+      TopoDS_Shape V2 = GetSubShapeByNode( n2, GetMeshDS() );
+      shape = GetCommonAncestor( V1, V2, *myMesh, TopAbs_FACE );
+      if ( shape.IsNull() ) shape = GetCommonAncestor( V1, V2, *myMesh, TopAbs_EDGE );
+    }
+    else // VERTEX and EDGE
+    {
+      if ( Pos1->GetTypeOfPosition()!=SMDS_TOP_VERTEX ) std::swap( n1,n2 );
+      TopoDS_Shape V = GetSubShapeByNode( n1, GetMeshDS() );
+      TopoDS_Shape E = GetSubShapeByNode( n2, GetMeshDS() );
+      if ( IsSubShape( V, E ))
+        shape = E;
+      else
+        shape = GetCommonAncestor( V, E, *myMesh, TopAbs_FACE );
+    }
+  }
+  if ( !shape.IsNull() )
+  {
+    shapeID = GetMeshDS()->ShapeToIndex( shape );
+    shapeType = shape.ShapeType();
+  }
+  return make_pair( shapeID, shapeType );
+}
+
+//=======================================================================
 //function : GetMediumNode
 //purpose  : Return existing or create new medium nodes between given ones
 //=======================================================================
@@ -928,51 +1006,27 @@ const SMDS_MeshNode* SMESH_MesherHelper::GetMediumNode(const SMDS_MeshNode* n1,
   TopoDS_Face F; gp_XY  uv[2];
   bool uvOK[2] = { false, false };
 
-  if( myShape.IsNull() )
-  {
-    if( Pos1->GetTypeOfPosition()==SMDS_TOP_FACE ) {
-      faceID = n1->getshapeId();
-    }
-    else if( Pos2->GetTypeOfPosition()==SMDS_TOP_FACE ) {
-      faceID = n2->getshapeId();
-    }
+  pair<int, TopAbs_ShapeEnum> pos = GetMediumPos( n1, n2 );
 
-    if( Pos1->GetTypeOfPosition()==SMDS_TOP_EDGE ) {
-      edgeID = n1->getshapeId();
-    }
-    if( Pos2->GetTypeOfPosition()==SMDS_TOP_EDGE ) {
-      edgeID = n2->getshapeId();
-    }
-  }
   // get positions of the given nodes on shapes
-  TopAbs_ShapeEnum shapeType = myShape.IsNull() ? TopAbs_SHAPE : myShape.ShapeType();
-  if ( faceID>0 || shapeType == TopAbs_FACE)
+  if ( pos.second == TopAbs_FACE )
   {
-    if( myShape.IsNull() )
-      F = TopoDS::Face(meshDS->IndexToShape(faceID));
-    else {
-      F = TopoDS::Face(myShape);
-      faceID = myShapeID;
-    }
+    F = TopoDS::Face(meshDS->IndexToShape( faceID = pos.first ));
     uv[0] = GetNodeUV(F,n1,n2, force3d ? 0 : &uvOK[0]);
     uv[1] = GetNodeUV(F,n2,n1, force3d ? 0 : &uvOK[1]);
   }
-  else if (edgeID>0 || shapeType == TopAbs_EDGE)
+  else if ( pos.second == TopAbs_EDGE )
   {
     if ( Pos1->GetTypeOfPosition()==SMDS_TOP_EDGE &&
          Pos2->GetTypeOfPosition()==SMDS_TOP_EDGE &&
          n1->getshapeId() != n2->getshapeId() ) // issue 0021006
     return getMediumNodeOnComposedWire(n1,n2,force3d);
-
-    if( myShape.IsNull() )
-      E = TopoDS::Edge(meshDS->IndexToShape(edgeID));
-    else {
-      E = TopoDS::Edge(myShape);
-      edgeID = myShapeID;
-    }
+    
+    E = TopoDS::Edge(meshDS->IndexToShape( edgeID = pos.first ));
     u[0] = GetNodeU(E,n1,n2, force3d ? 0 : &uvOK[0]);
     u[1] = GetNodeU(E,n2,n1, force3d ? 0 : &uvOK[1]);
   }
+
   if(!force3d)
   {
     // we try to create medium node using UV parameters of
@@ -1931,6 +1985,30 @@ PShapeIteratorPtr SMESH_MesherHelper::GetAncestors(const TopoDS_Shape& shape,
                                                    TopAbs_ShapeEnum    ancestorType)
 {
   return PShapeIteratorPtr( new TAncestorsIterator( mesh.GetAncestors(shape), ancestorType));
+}
+
+//=======================================================================
+//function : GetCommonAncestor
+//purpose  : Find a common ancestors of two shapes of the given type
+//=======================================================================
+
+TopoDS_Shape SMESH_MesherHelper::GetCommonAncestor(const TopoDS_Shape& shape1,
+                                                   const TopoDS_Shape& shape2,
+                                                   const SMESH_Mesh&   mesh,
+                                                   TopAbs_ShapeEnum    ancestorType)
+{
+  TopoDS_Shape commonAnc;
+  if ( !shape1.IsNull() && !shape2.IsNull() )
+  {
+    PShapeIteratorPtr ancIt = GetAncestors( shape1, mesh, ancestorType );
+    while ( const TopoDS_Shape* anc = ancIt->next() )
+      if ( IsSubShape( shape2, *anc ))
+      {
+        commonAnc = *anc;
+        break;
+      }
+  }
+  return commonAnc;
 }
 
 //#include <Perf_Meter.hxx>
