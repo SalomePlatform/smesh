@@ -42,21 +42,13 @@
 #include "SMESH_MesherHelper.hxx"
 #include "SMESH_subMesh.hxx"
 
-#include "SMDS_MeshElement.hxx"
 #include "SMDS_MeshNode.hxx"
-#include "SMDS_FacePosition.hxx"
-#include "SMDS_VolumeTool.hxx"
-#include "SMDS_VolumeOfNodes.hxx"
 
 #include <TopExp.hxx>
 #include <TopExp_Explorer.hxx>
-#include <TopTools_IndexedDataMapOfShapeListOfShape.hxx>
-#include <TopTools_ListIteratorOfListOfShape.hxx>
-#include <TopTools_ListOfShape.hxx>
 #include <TopTools_SequenceOfShape.hxx>
 #include <TopTools_MapOfShape.hxx>
 #include <TopoDS.hxx>
-#include <gp_Pnt2d.hxx>
 
 #include "utilities.h"
 #include "Utils_ExceptHandlers.hxx"

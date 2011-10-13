@@ -32,7 +32,6 @@
 #include "SMESH_StdMeshers.hxx"
 
 #include "SMESH_3D_Algo.hxx"
-#include "Utils_SALOME_Exception.hxx"
 
 
 class StdMeshers_ViscousLayers;
