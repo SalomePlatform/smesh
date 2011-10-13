@@ -59,7 +59,7 @@ public:
    * \param hyp - hypothesis, if eventType is algo_event
    * 
    * The base implementation (see SMESH_subMesh.cxx) translates CLEAN event
-   * to the subMesh stored in the listener data. Also it sends SUBMESH_COMPUTED
+   * to the subMeshes stored in the listener data. Also it sends SUBMESH_COMPUTED
    * event in case of successful COMPUTE event.
    */
   virtual void ProcessEvent(const int          event,

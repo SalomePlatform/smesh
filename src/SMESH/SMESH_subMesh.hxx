@@ -128,7 +128,7 @@ class SMESH_EXPORT SMESH_subMesh
     * \param where - the submesh to store the listener and it's data
    * 
    * The method remembers the submesh \awhere it puts the listener in order to delete
-   * them when HYP_OK algo_state is lost
+   * it when HYP_OK algo_state is lost
    * After being set, event listener is notified on each event of \awhere submesh.
    */
   void SetEventListener(EventListener*     listener,

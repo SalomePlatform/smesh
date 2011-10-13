@@ -365,7 +365,7 @@ protected:
 
   // Algo features influencing which Compute() and how is called:
   // in what turn and with what input shape.
-  // This fields must be redefined if necessary by each descendant at constructor.
+  // These fields must be redefined if necessary by each descendant at constructor.
   bool _onlyUnaryInput;         // mesh one shape of GetDim() at once. Default TRUE
   bool _requireDescretBoundary; // GetDim()-1 mesh must be present. Default TRUE
   bool _requireShape;           // work with GetDim()-1 mesh bound to geom only. Default TRUE
