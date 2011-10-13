@@ -1413,6 +1413,15 @@ class Mesh:
     def Projection1D(self, geom=0):
         return Mesh_Projection1D(self,  geom)
 
+    ## Creates a projection 1D-2D algorithm for faces.
+    #  If the optional \a geom parameter is not set, this algorithm is global.
+    #  Otherwise, this algorithm defines a submesh based on \a geom subshape.
+    #  @param geom If defined, the subshape to be meshed
+    #  @return an instance of Mesh_Projection2D algorithm
+    #  @ingroup l3_algos_proj
+    def Projection1D2D(self, geom=0):
+        return Mesh_Projection2D(self,  geom, "Projection_1D2D")
+
     ## Creates a projection 2D algorithm for faces.
     #  If the optional \a geom parameter is not set, this algorithm is global.
     #  Otherwise, this algorithm defines a submesh based on \a geom subshape.
@@ -1420,7 +1429,7 @@ class Mesh:
     #  @return an instance of Mesh_Projection2D algorithm
     #  @ingroup l3_algos_proj
     def Projection2D(self, geom=0):
-        return Mesh_Projection2D(self,  geom)
+        return Mesh_Projection2D(self,  geom, "Projection_2D")
 
     ## Creates a projection 3D algorithm for solids.
     #  If the optional \a geom parameter is not set, this algorithm is global.
@@ -6093,9 +6102,9 @@ class Mesh_Projection1D(Mesh_Algorithm):
 class Mesh_Projection2D(Mesh_Algorithm):
 
     ## Private constructor.
-    def __init__(self, mesh, geom=0):
+    def __init__(self, mesh, geom=0, algoName="Projection_2D"):
         Mesh_Algorithm.__init__(self)
-        self.Create(mesh, geom, "Projection_2D")
+        self.Create(mesh, geom, algoName)
 
     ## Defines "Source Face" hypothesis, specifying a meshed face, from where
     #  a mesh pattern is taken, and, optionally, the association of vertices
