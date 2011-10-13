@@ -694,7 +694,7 @@ namespace
     while ( eIt->more())
     {
       const TopoDS_Edge* e = static_cast<const TopoDS_Edge*>( eIt->next() );
-      if ( helper.IsSubShape( *e, F ) && BRep_Tool::Curve( *e, loc,f,l))
+      if ( helper.IsSubShape( *e, F ) && !BRep_Tool::Curve( *e, loc,f,l).IsNull() )
         edges.push_back( *e );
     }
     gp_XYZ dir(0,0,0);
