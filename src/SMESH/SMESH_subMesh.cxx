@@ -510,12 +510,13 @@ bool SMESH_subMesh::CanAddHypothesis(const SMESH_Hypothesis* theHypothesis) cons
 {
   int aHypDim   = theHypothesis->GetDim();
   int aShapeDim = SMESH_Gen::GetShapeDim(_subShape);
-  if (aHypDim == 3 && aShapeDim == 3) {
-    // check case of open shell
-    //if (_subShape.ShapeType() == TopAbs_SHELL && !_subShape.Closed())
-    if (_subShape.ShapeType() == TopAbs_SHELL && !BRep_Tool::IsClosed(_subShape))
-      return false;
-  }
+  // issue 21106. Forbid 3D mesh on the SHELL
+  // if (aHypDim == 3 && aShapeDim == 3) {
+  //   // check case of open shell
+  //   //if (_subShape.ShapeType() == TopAbs_SHELL && !_subShape.Closed())
+  //   if (_subShape.ShapeType() == TopAbs_SHELL && !BRep_Tool::IsClosed(_subShape))
+  //     return false;
+  // }
   if ( aHypDim <= aShapeDim )
     return true;
 
@@ -531,8 +532,14 @@ bool SMESH_subMesh::IsApplicableHypotesis(const SMESH_Hypothesis* theHypothesis,
                                           const TopAbs_ShapeEnum  theShapeType)
 {
   if ( theHypothesis->GetType() > SMESHDS_Hypothesis::PARAM_ALGO)
+  {
     // algorithm
-    return ( theHypothesis->GetShapeType() & (1<< theShapeType));
+    if ( theHypothesis->GetShapeType() & (1<< theShapeType))
+      // issue 21106. Forbid 3D mesh on the SHELL
+      return !( theHypothesis->GetDim() == 3 && theShapeType == TopAbs_SHELL );
+    else
+      return false;
+  }
 
   // hypothesis
   switch ( theShapeType ) {

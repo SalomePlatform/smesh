@@ -931,7 +931,7 @@ int SMESH_Gen::GetShapeDim(const TopAbs_ShapeEnum & aShapeType)
     dim[ TopAbs_COMPOUND ]  = MeshDim_3D;
     dim[ TopAbs_COMPSOLID ] = MeshDim_3D;
     dim[ TopAbs_SOLID ]     = MeshDim_3D;
-    dim[ TopAbs_SHELL ]     = MeshDim_3D;
+    dim[ TopAbs_SHELL ]     = MeshDim_2D;
     dim[ TopAbs_FACE  ]     = MeshDim_2D;
     dim[ TopAbs_WIRE ]      = MeshDim_1D;
     dim[ TopAbs_EDGE ]      = MeshDim_1D;
