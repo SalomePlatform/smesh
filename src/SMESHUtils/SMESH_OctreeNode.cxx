@@ -249,7 +249,9 @@ void SMESH_OctreeNode::FindCoincidentNodes (TIDSortedNodeSet& theSetOfNodes,
                                             const int maxLevel,
                                             const int maxNbNodes)
 {
-  SMESH_OctreeNode theOctreeNode(theSetOfNodes, maxLevel, maxNbNodes, theTolerance);
+  // VSR 14/10/2011: limit max number of the levels in order to avoid endless recursing
+  const int MAX_LEVEL = 10;
+  SMESH_OctreeNode theOctreeNode(theSetOfNodes, maxLevel < 0 ? MAX_LEVEL : maxLevel, maxNbNodes, theTolerance);
   theOctreeNode.FindCoincidentNodes (&theSetOfNodes, theTolerance, theGroupsOfNodes);
 }
 
