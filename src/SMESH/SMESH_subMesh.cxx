@@ -1818,7 +1818,8 @@ void SMESH_subMesh::CleanDependants()
       // will erase mesh on other shapes in a compound
       if ( ancestor.ShapeType() >= TopAbs_SOLID ) {
         SMESH_subMesh *aSubMesh = _father->GetSubMeshContaining(ancestor);
-        if (aSubMesh)
+        if (aSubMesh &&
+            !aSubMesh->IsEmpty() ) // prevent infinite CLEAN via event lesteners
           aSubMesh->ComputeStateEngine(CLEAN);
       }
     }
