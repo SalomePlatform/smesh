@@ -2973,10 +2973,8 @@ void SMESHGUI_FilterDlg::SetMesh (SMESH::SMESH_Mesh_var theMesh)
 {
   if ( !theMesh->_is_nil() ) {
     myMesh = theMesh;
-    if ( !myFilter[ myTable->GetType() ]->_is_nil() && !myFilter[ myTable->GetType() ]->GetPredicate()->_is_nil() ) {
-      SMESH::Predicate_ptr aPred = myFilter[ myTable->GetType() ]->GetPredicate();
-      aPred->SetMesh(myMesh);
-    }
+    if ( !myFilter[ myTable->GetType() ]->_is_nil())
+      myFilter[ myTable->GetType() ]->SetMesh( theMesh );
   }
   const bool isEnable = !(myMesh->_is_nil());
   myButtons[BTN_OK]->setEnabled(isEnable);
@@ -3176,7 +3174,6 @@ void SMESHGUI_FilterDlg::filterSource (const int theType,
 
     // filter ids
     SMESH::Predicate_ptr aPred = myFilter[ theType ]->GetPredicate();
-    aPred->SetMesh(myMesh);
     QList<int>::const_iterator anIter;
     for (anIter = aDialogIds.begin(); anIter != aDialogIds.end(); ++ anIter)
       if (aPred->IsSatisfy(*anIter))
@@ -3249,7 +3246,6 @@ void SMESHGUI_FilterDlg::filterSelectionSource (const int theType,
 
   // Filter entities
   SMESH::Predicate_ptr aPred = myFilter[ theType ]->GetPredicate();
-  aPred->SetMesh(myMesh);
   TColStd_MapIteratorOfMapOfInteger aResIter(aToBeFiltered);
   for ( ; aResIter.More(); aResIter.Next())
     if (aPred->IsSatisfy(aResIter.Key()))
