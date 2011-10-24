@@ -698,10 +698,18 @@ SALOMEDS::SObject_ptr SMESH_Gen_i::PublishGroup (SALOMEDS::Study_ptr    theStudy
 
       // Add new group to corresponding sub-tree
       SMESH::array_of_ElementType_var elemTypes = theGroup->GetTypes();
-      const int isEmpty = ( elemTypes->length() == 0 );
+      int isEmpty = ( elemTypes->length() == 0 );
       std::string pm[2] = { "ICON_SMESH_TREE_GROUP", "ICON_SMESH_TREE_MESH_WARN" };
       if ( SMESH::DownCast< SMESH_GroupOnFilter_i* > ( theGroup ))
+      {
         pm[0] = "ICON_SMESH_TREE_GROUP_ON_FILTER";
+      }
+      else if ( SMESH::DownCast< SMESH_Group_i* > ( theGroup ))
+      {
+        SMESH::array_of_ElementType_var allElemTypes = theMesh->GetTypes();
+        for ( size_t i =0; i < allElemTypes->length() && isEmpty; ++i )
+          isEmpty = ( allElemTypes[i] != theGroup->GetType() );
+      }
       aGroupSO = publish (theStudy, theGroup, aRootSO, 0, pm[isEmpty].c_str() );
     }
     if ( aGroupSO->_is_nil() )
