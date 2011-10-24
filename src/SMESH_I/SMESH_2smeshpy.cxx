@@ -801,6 +801,18 @@ void _pyGen::AddObject( Handle(_pyObject)& theObj )
 {
   myObjects.insert( make_pair( theObj->GetID(), theObj ));
 }
+
+//================================================================================
+/*!
+ * \brief Finds a _pyObject by ID
+ */
+//================================================================================
+
+Handle(_pyObject) _pyGen::FindObject( const _pyID& theObjID )  const
+{
+  std::map< _pyID, Handle(_pyObject) >::const_iterator id_obj = myObjects.find( theObjID );
+  return ( id_obj == myObjects.end() ) ? Handle(_pyObject)() : id_obj->second;
+}
   
 //================================================================================
 /*!
@@ -968,6 +980,15 @@ void _pyMesh::Process( const Handle(_pyCommand)& theCommand )
   else if ( method == "CreateGroupFromFilter" ) // --> GroupOnFilter()
   {
     theCommand->SetMethod( "GroupOnFilter" );
+  }
+  // ----------------------------------------------------------------------
+  else if ( method == "GetIdsFromFilter" )
+  {
+    // GetIdsFromFilter( aFilter0x4743dc0) -> GetIdsFromFilter( aFilter_1)
+    _pyID filterID = theCommand->GetArg(1);
+    Handle(_pyObject) filter = theGen->FindObject( filterID );
+    if ( !filter.IsNull() && filter->IsKind(STANDARD_TYPE(_pyFilter)))
+      filter->Process( theCommand );
   }
   // ----------------------------------------------------------------------
   else if ( method == "CreateGroup" ) // CreateGroup() --> CreateEmptyGroup()
@@ -2706,6 +2727,7 @@ void _pySubMesh::Flush()
     // move to be just after creator
     myCreator->GetCreationCmd()->AddDependantCmd( GetCreationCmd() );
 }
+
 //================================================================================
 /*!
  * \brief To convert creation of a group by filter
@@ -2721,31 +2743,25 @@ void _pyGroup::Process( const Handle(_pyCommand)& theCommand)
   if ( theCommand->GetMethod() == "AddFrom" )
   {
     _pyID idSource = theCommand->GetArg(1);
-    // check if idSource is a filter: find a command creating idSource,
-    // it should be "idSource = aFilterManager.CreateFilter()" or
-    // "idSource = smesh.GetFilterFromCriteria(aCriteria)
-    const list< Handle(_pyCommand) >& commands = theGen->GetCommands();
-    list< Handle(_pyCommand) >::const_reverse_iterator cmdIt = commands.rbegin();
-    bool isFilter = false;
-    for ( ; cmdIt != commands.rend(); ++cmdIt )
-      if ( (*cmdIt)->GetResultValue() == idSource )
-      {
-        isFilter = ( (*cmdIt)->GetMethod() == "CreateFilter" ||
-                     (*cmdIt)->GetMethod() == "GetFilterFromCriteria" );
-        break;
-      }
-    if ( !isFilter ) return;
-
+    // check if idSource is a filter
+    Handle(_pyObject) filter = theGen->FindObject( idSource );
+    if ( filter.IsNull() || !filter->IsKind(STANDARD_TYPE(_pyFilter)))
+      return;
     // find aFilter.SetMesh(mesh) to clear it, it should be just before theCommand
-    for ( cmdIt = commands.rbegin(); cmdIt != commands.rend(); ++cmdIt )
-      if ( *cmdIt == theCommand && (*cmdIt)->GetOrderNb() != 1 )
+    list< Handle(_pyCommand) >::reverse_iterator cmdIt = theGen->GetCommands().rbegin();
+    while ( *cmdIt != theCommand ) ++cmdIt;
+    while ( (*cmdIt)->GetOrderNb() != 1 )
+    {
+      const Handle(_pyCommand)& setMeshCmd = *(++cmdIt);
+      if ((setMeshCmd->GetObject() == idSource ||
+           setMeshCmd->GetObject() == Handle(_pyFilter)::DownCast(filter)->GetNewID() )
+          &&
+          setMeshCmd->GetMethod() == "SetMesh")
       {
-        const Handle(_pyCommand)& setMeshCmd = *(++cmdIt);
-        if ( setMeshCmd->GetObject() == idSource &&
-             setMeshCmd->GetMethod() == "SetMesh")
-          setMeshCmd->Clear();
+        setMeshCmd->Clear();
         break;
       }
+    }
     // replace 3 commands by one
     theCommand->Clear();
     const Handle(_pyCommand)& makeGroupCmd = GetCreationCmd();
@@ -2753,6 +2769,8 @@ void _pyGroup::Process( const Handle(_pyCommand)& theCommand)
     makeGroupCmd->SetMethod( "MakeGroupByFilter" );
     makeGroupCmd->SetArg( 1, name );
     makeGroupCmd->SetArg( 2, idSource );
+    // set new name of a filter
+    filter->Process( makeGroupCmd );
   }
 }
 
@@ -2769,14 +2787,30 @@ _pyFilter::_pyFilter(const Handle(_pyCommand)& theCreationCmd, const _pyID& newI
 
 //================================================================================
 /*!
- * \brief To convert creation of a filter by criteria
+ * \brief To convert creation of a filter by criteria and
+ * to replace an old name by a new one
  */
 //================================================================================
 
 void _pyFilter::Process( const Handle(_pyCommand)& theCommand)
 {
+  if ( theCommand->GetObject() == GetID() )
+    _pyObject::Process(theCommand); // count commands
+
   if ( !myNewID.IsEmpty() )
-    theCommand->SetObject( myNewID );
+  {
+    if ( theCommand->GetObject() == GetID() )
+      theCommand->SetObject( myNewID );
+    else if ( theCommand->GetResultValue() == GetID() )
+      theCommand->SetResultValue( myNewID );
+    else
+      for ( int i = 1, nb = theCommand->GetNbArgs(); i <= nb; ++i )
+        if ( theCommand->GetArg( i ) == GetID() )
+        {
+          theCommand->SetArg( i, myNewID );
+          break;
+        }
+  }
 
   // Convert the following set of commands into smesh.GetFilterFromCriteria(criteria)
   // aFilter0x2aaab0487080 = aFilterManager.CreateFilter()
@@ -2810,6 +2844,6 @@ void _pyFilter::Process( const Handle(_pyCommand)& theCommand)
 
 void _pyFilter::Flush()
 {
-  if ( !myNewID.IsEmpty() && GetCreationCmd()->IsEmpty() )
+  if ( !myNewID.IsEmpty() && !GetCreationCmd()->IsEmpty() )
     GetCreationCmd()->SetResultValue( myNewID );
 }
