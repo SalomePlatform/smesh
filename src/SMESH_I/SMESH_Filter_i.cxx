@@ -2294,6 +2294,8 @@ void Filter_i::SetPredicate( Predicate_ptr thePredicate )
   {
     myFilter.SetPredicate( myPredicate->GetPredicate() );
     myPredicate->Register();
+    if ( const SMDS_Mesh* aMesh = MeshPtr2SMDSMesh(myMesh))
+      myPredicate->GetPredicate()->SetMesh( aMesh );
     TPythonDump()<<this<<".SetPredicate("<<myPredicate<<")";
   }
   std::list<TPredicateChangeWaiter*>::iterator i = myWaiters.begin();
@@ -2326,6 +2328,10 @@ SetMesh( SMESH_Mesh_ptr theMesh )
 
   myMesh = SMESH_Mesh::_duplicate( theMesh );
   TPythonDump()<<this<<".SetMesh("<<theMesh<<")";
+
+  if ( myPredicate )
+    if ( const SMDS_Mesh* aMesh = MeshPtr2SMDSMesh(theMesh))
+      myPredicate->GetPredicate()->SetMesh( aMesh );
 }
 
 SMESH::long_array*
@@ -3100,6 +3106,8 @@ Predicate_ptr Filter_i::GetPredicate()
   else
   {
     SMESH::Predicate_var anObj = myPredicate->_this();
+    // if ( SMESH::Functor_i* fun = SMESH::DownCast<SMESH::Functor_i*>( anObj ))
+    //   TPythonDump() << fun << " = " << this << ".GetPredicate()";
     return anObj._retn();
   }
 }
