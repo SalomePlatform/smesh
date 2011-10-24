@@ -477,6 +477,7 @@ public:
   _pyFilter(const Handle(_pyCommand)& theCreationCmd, const _pyID& newID="");
   void Process( const Handle(_pyCommand)& theCommand);
   virtual void Flush();
+  const _pyID& GetNewID() const { return myNewID; }
 
   DEFINE_STANDARD_RTTI (_pyFilter)
 };
