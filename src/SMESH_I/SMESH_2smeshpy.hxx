@@ -199,6 +199,7 @@ public:
   const char* AccessorMethod() const;
   _pyID GenerateNewID( const _pyID& theID );
   void AddObject( Handle(_pyObject)& theObj );
+  Handle(_pyObject) FindObject( const _pyID& theObjID ) const;
 
 private:
   void setNeighbourCommand( Handle(_pyCommand)& theCmd,
