@@ -7,8 +7,8 @@ parameter as the \ref aspect_ratio_page "Aspect ratio" criterion, but
 it is applied to 3D mesh elements: tetrahedrons, pentahedrons,
 hexahedrons, etc.
 
-- The <b>Aspect Ratio</b> of a \b tetrahedron 3D element is calculated
-by the formula:
+- The <b>Aspect Ratio</b> of a \b tetrahedron 3D element defined by
+vertices {a,b,c,d } is calculated by the formula:
 
 \image html formula1.png
 
