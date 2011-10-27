@@ -611,6 +611,13 @@ module SMESH
       raises (SALOME::SALOME_Exception);
 
     /*!
+     * Export Mesh to SAUV formatted file
+     * Write a temporary med file and use med2sauv
+     */
+    void ExportSAUV( in string file, in boolean auto_groups )
+      raises (SALOME::SALOME_Exception);
+
+    /*!
      * Return string representation of a MED file version comprising nbDigits
      */
     string GetVersionString(in MED_VERSION version, in short nbDigits);

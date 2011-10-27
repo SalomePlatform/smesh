@@ -236,6 +236,9 @@ public:
                  const SMESHDS_Mesh* meshPart = 0) throw(SALOME_Exception);
   void ExportCGNS(const char *        file,
                   const SMESHDS_Mesh* mesh);
+  void ExportSAUV(const char *file, 
+                  const char* theMeshName = NULL, 
+                  bool theAutoGroups = true) throw(SALOME_Exception);
   
   int NbNodes() const throw(SALOME_Exception);
   

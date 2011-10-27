@@ -373,7 +373,7 @@
     </message>
     <message>
         <source>MEN_EXPORT_SAUV</source>
-        <translation>Export to SAUV (ASCII) file</translation>
+        <translation>Export to SAUV file</translation>
     </message>
     <message>
         <source>MEN_EXPORT_STL</source>
@@ -501,7 +501,7 @@
     </message>
     <message>
         <source>MEN_SAUV</source>
-        <translation>SAUV (ASCII) file</translation>
+        <translation>SAUV file</translation>
     </message>
     <message>
         <source>MEN_MERGE</source>
@@ -2481,7 +2481,7 @@ Please check preferences of Mesh module.
     </message>
     <message>
         <source>STB_EXPORT_SAUV</source>
-        <translation>Export to SAUV (ASCII) file</translation>
+        <translation>Export to SAUV file</translation>
     </message>
     <message>
         <source>STB_EXPORT_STL</source>
@@ -2581,7 +2581,7 @@ Please check preferences of Mesh module.
     </message>
     <message>
         <source>STB_SAUV</source>
-        <translation>Import SAUV (ASCII) file</translation>
+        <translation>Import SAUV file</translation>
     </message>
     <message>
         <source>STB_MERGE</source>
@@ -3037,7 +3037,7 @@ Please check preferences of Mesh module.
     </message>
     <message>
         <source>TOP_EXPORT_SAUV</source>
-        <translation>Export to SAUV (ASCII) file</translation>
+        <translation>Export to SAUV file</translation>
     </message>
     <message>
         <source>TOP_EXPORT_STL</source>
@@ -3137,7 +3137,7 @@ Please check preferences of Mesh module.
     </message>
     <message>
         <source>TOP_SAUV</source>
-        <translation>Import SAUV (ASCII) file</translation>
+        <translation>Import SAUV file</translation>
     </message>
     <message>
         <source>TOP_MERGE</source>

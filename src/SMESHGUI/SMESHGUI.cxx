@@ -205,6 +205,10 @@
     else if ( theCommandID == 116 ) {
       filter.append( QObject::tr( "CGNS_FILES_FILTER" ) + " (*.cgns)" );
     }
+    else if ( theCommandID == 117 ) {
+      filter.append( QObject::tr( "SAUV files (*.sauv*)" ) );
+      filter.append( QObject::tr( "All files (*)" ) );
+    }
 
     QString anInitialPath = "";
     if ( SUIT_FileDlg::getLastVisitedPath().isEmpty() )
@@ -270,6 +274,17 @@
               // CGNS format
               SMESH::DriverMED_ReadStatus res;
               aMeshes = theComponentMesh->CreateMeshesFromCGNS( filename.toLatin1().constData(), res );
+              if ( res != SMESH::DRS_OK ) {
+                errors.append( QString( "%1 :\n\t%2" ).arg( filename ).
+                               arg( QObject::tr( QString( "SMESH_DRS_%1" ).arg( res ).toLatin1().data() ) ) );
+              }
+              break;
+            }
+          case 117:
+            {
+              // SAUV format
+              SMESH::DriverMED_ReadStatus res;
+              aMeshes = theComponentMesh->CreateMeshesFromSAUV( filename.toLatin1().constData(), res );
               if ( res != SMESH::DRS_OK ) {
                 errors.append( QString( "%1 :\n\t%2" ).arg( filename ).
                                arg( QObject::tr( QString( "SMESH_DRS_%1" ).arg( res ).toLatin1().data() ) ) );
@@ -349,6 +364,7 @@
     const bool isUNV = ( theCommandID == 123 || theCommandID == 126 );
     const bool isSTL = ( theCommandID == 140 || theCommandID == 141 );
     const bool isCGNS= ( theCommandID == 142 || theCommandID == 143 );
+    const bool isSAUV= ( theCommandID == 144 || theCommandID == 145 );
 
     // actually, the following condition can't be met (added for insurance)
     if( selected.Extent() == 0 ||
@@ -400,7 +416,7 @@
     SMESH::SMESH_Mesh_var aMesh = aMeshOrGroup->GetMesh();
     QString aMeshName = (*aMeshIter).second;
 
-    if ( isMED || isCGNS )
+    if ( isMED || isCGNS || isSAUV )
     {
       // check for equal group names within each mesh
       for( aMeshIter = aMeshList.begin(); aMeshIter != aMeshList.end(); aMeshIter++ ) {
@@ -506,13 +522,20 @@
       }
       delete fd;
     }
-    else if ( isMED ) // Export to MED
+    else if ( isMED || isSAUV ) // Export to MED or SAUV
     {
       QMap<QString, SMESH::MED_VERSION> aFilterMap;
       //QString v21 (aMesh->GetVersionString(SMESH::MED_V2_1, 2));
-      QString v22 (aMesh->GetVersionString(SMESH::MED_V2_2, 2));
-      //aFilterMap.insert( QObject::tr( "MED_VX_FILES_FILTER" ).arg( v21 ) + " (*.med)", SMESH::MED_V2_1 );
-      aFilterMap.insert( QObject::tr( "MED_VX_FILES_FILTER" ).arg( v22 ) + " (*.med)", SMESH::MED_V2_2 );
+      if ( isMED ) {
+	QString v22 (aMesh->GetVersionString(SMESH::MED_V2_2, 2));
+	//aFilterMap.insert( QObject::tr( "MED_VX_FILES_FILTER" ).arg( v21 ) + " (*.med)", SMESH::MED_V2_1 );
+	aFilterMap.insert( QObject::tr( "MED_VX_FILES_FILTER" ).arg( v22 ) + " (*.med)", SMESH::MED_V2_2 );
+      }
+      else { // isSAUV
+	aFilterMap.insert("All files (*)", SMESH::MED_V2_1 );
+	aFilterMap.insert("SAUV files (*.sauv)", SMESH::MED_V2_2 );
+	aFilterMap.insert("SAUV files (*.sauve)", SMESH::MED_V2_1 );
+      }
 
       QStringList filters;
       QString aDefaultFilter;
@@ -656,6 +679,15 @@
                                           aFormat, toOverwrite && aMeshIndex == 0 );
           }
         }
+        else if ( isSAUV )
+	{
+	  for( aMeshIter = aMeshList.begin(); aMeshIter != aMeshList.end(); aMeshIter++ )
+	  {
+	    SMESH::SMESH_Mesh_var aMeshItem = SMESH::SMESH_Mesh::_narrow( (*aMeshIter).first );
+	    if( !aMeshItem->_is_nil() )
+	      aMeshItem->ExportSAUV( aFilename.toLatin1().data(), toCreateGroups );
+	  }
+	}
         else if ( isDAT )
         {
           if ( aMeshOrGroup->_is_equivalent( aMesh ))
@@ -1975,6 +2007,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
 
   case 116:
   case 115:
+  case 117:
   case 113:
   case 112:
   case 111:                                     // IMPORT
@@ -2013,6 +2046,8 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
   case 141:
   case 142:
   case 143:
+  case 144:
+  case 145:
     {
       ::ExportMeshToFile(theCommandID);
       break;
@@ -3371,16 +3406,19 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction(  114, "NUM" );
   createSMESHAction(  115, "STL" );
   createSMESHAction(  116, "CGNS" );
+  createSMESHAction(  117, "SAUV" );
   createSMESHAction(  121, "DAT" );
   createSMESHAction(  122, "MED" );
   createSMESHAction(  123, "UNV" );
   createSMESHAction(  140, "STL" );
   createSMESHAction(  142, "CGNS" );
+  createSMESHAction(  144, "SAUV" );
   createSMESHAction(  124, "EXPORT_DAT" );
   createSMESHAction(  125, "EXPORT_MED" );
   createSMESHAction(  126, "EXPORT_UNV" );
   createSMESHAction(  141, "EXPORT_STL" );
   createSMESHAction(  143, "EXPORT_CGNS" );
+  createSMESHAction(  145, "EXPORT_SAUV" );
   createSMESHAction(  150, "FILE_INFO" );
   createSMESHAction(   33, "DELETE",          "ICON_DELETE", Qt::Key_Delete );
   createSMESHAction( 5105, "SEL_FILTER_LIB" );
@@ -3547,6 +3585,7 @@ void SMESHGUI::initialize( CAM_Application* app )
 #ifdef WITH_CGNS
   createMenu( 116, importId, -1 );
 #endif
+  createMenu( 117, importId, -1 );
   createMenu( 121, exportId, -1 );
   createMenu( 122, exportId, -1 );
   createMenu( 123, exportId, -1 );
@@ -3554,6 +3593,7 @@ void SMESHGUI::initialize( CAM_Application* app )
 #ifdef WITH_CGNS
   createMenu( 142, exportId, -1 ); // export to CGNS
 #endif
+  createMenu( 144, exportId, -1 ); // export to SAUV
   createMenu( separator(), fileId, 10 );
 
   createMenu( 33, editId, -1 );
@@ -3857,6 +3897,7 @@ void SMESHGUI::initialize( CAM_Application* app )
 #ifdef WITH_CGNS
   createPopupItem( 143, OB, mesh_group, multiple_non_empty );   // EXPORT_CGNS
 #endif
+  createPopupItem( 145, OB, mesh_group, multiple_non_empty );   // EXPORT_SAUV
   createPopupItem(  33, OB, mesh_part + " " + hyp_alg );        // DELETE
   popupMgr()->insert( separator(), -1, 0 );
 

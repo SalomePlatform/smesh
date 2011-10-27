@@ -230,6 +230,8 @@ public:
   void ExportMED   ( const char*        file,
                      CORBA::Boolean     auto_groups ) throw (SALOME::SALOME_Exception);
 
+  void ExportSAUV( const char* file, CORBA::Boolean auto_groups ) throw (SALOME::SALOME_Exception);
+
   void ExportDAT( const char* file ) throw (SALOME::SALOME_Exception);
   void ExportUNV( const char* file ) throw (SALOME::SALOME_Exception);
   void ExportSTL( const char* file, bool isascii ) throw (SALOME::SALOME_Exception);
@@ -570,6 +572,8 @@ public:
   std::map<int, ::SMESH_subMesh*> _mapSubMesh;   //NRI
 
 private:
+  std::string PrepareMeshNameAndGroups( const char* file, CORBA::Boolean overwrite );
+
   /*!
    * Check and correct names of mesh groups
    */

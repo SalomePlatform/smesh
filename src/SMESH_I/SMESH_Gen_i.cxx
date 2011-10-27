@@ -918,13 +918,11 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CreateMeshesFromUNV( const char* theFileName 
  */
 //=============================================================================
 
-SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromMED( const char* theFileName,
-                                                     SMESH::DriverMED_ReadStatus& theStatus)
-     throw ( SALOME::SALOME_Exception )
+SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromMEDorSAUV( const char* theFileName,
+                                                           SMESH::DriverMED_ReadStatus& theStatus,
+                                                           const char* theCommandNameForPython,
+                                                           const char* theFileNameForPython)
 {
-  Unexpect aCatch(SALOME_SalomeException);
-  if(MYDEBUG) MESSAGE( "SMESH_Gen_i::CreateMeshFromMED" );
-
   // Retrieve mesh names from the file
   DriverMED_R_SMESHDS_Mesh myReader;
   myReader.SetFile( theFileName );
@@ -981,13 +979,63 @@ SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromMED( const char* theFileName,
   }
 
   // Update Python script
-  aPythonDump << "], status) = " << this << ".CreateMeshesFromMED(r'" << theFileName << "')";
+  aPythonDump << "], status) = " << this << "." << theCommandNameForPython << "(r'" << theFileNameForPython << "')";
   }
   // Dump creation of groups
   for ( int i = 0; i < aResult->length(); ++i )
     SMESH::ListOfGroups_var groups = aResult[ i ]->GetGroups();
 
   return aResult._retn();
+}
+
+SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromMED( const char* theFileName,
+                                                     SMESH::DriverMED_ReadStatus& theStatus)
+     throw ( SALOME::SALOME_Exception )
+{
+  Unexpect aCatch(SALOME_SalomeException);
+  if(MYDEBUG) MESSAGE( "SMESH_Gen_i::CreateMeshFromMED" );
+  SMESH::mesh_array* result = CreateMeshesFromMEDorSAUV(theFileName, theStatus, "CreateMeshesFromMED", theFileName);
+  return result;
+}
+
+//=============================================================================
+/*!
+ *  SMESH_Gen_i::CreateMeshFromSAUV
+ *
+ *  Create mesh and import data from SAUV file
+ */
+//=============================================================================
+
+SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromSAUV( const char* theFileName,
+                                                      SMESH::DriverMED_ReadStatus& theStatus)
+     throw ( SALOME::SALOME_Exception )
+{
+  Unexpect aCatch(SALOME_SalomeException);
+  if(MYDEBUG) MESSAGE( "SMESH_Gen_i::CreateMeshFromSAUV" );
+  std::string sauvfilename(theFileName);
+  std::string medfilename(theFileName);
+  medfilename += ".med";
+  std::string cmd;
+#ifdef WNT
+  cmd = "%PYTHONBIN% ";
+#else
+  cmd = "python ";
+#endif
+  cmd += "-c \"";
+  cmd += "from medutilities import convert ; convert(r'" + sauvfilename + "', 'GIBI', 'MED', 1, r'" + medfilename + "')";
+  cmd += "\"";
+  system(cmd.c_str());
+  SMESH::mesh_array* result = CreateMeshesFromMEDorSAUV(medfilename.c_str(), theStatus, "CreateMeshesFromSAUV", sauvfilename.c_str());
+#ifdef WNT
+  cmd = "%PYTHONBIN% ";
+#else
+  cmd = "python ";
+#endif
+  cmd += "-c \"";
+  cmd += "from medutilities import my_remove ; my_remove(r'" + medfilename + "')";
+  cmd += "\"";
+  system(cmd.c_str());
+  return result;
 }
 
 //=============================================================================

@@ -2548,14 +2548,9 @@ void SMESH_Mesh_i::PrepareForWriting (const char* file, bool overwrite)
   }
 }
 
-void SMESH_Mesh_i::ExportToMEDX (const char* file,
-                                 CORBA::Boolean auto_groups,
-                                 SMESH::MED_VERSION theVersion,
-                                 CORBA::Boolean overwrite)
-  throw(SALOME::SALOME_Exception)
+string SMESH_Mesh_i::PrepareMeshNameAndGroups(const char* file,
+					      CORBA::Boolean overwrite)
 {
-  Unexpect aCatch(SALOME_SalomeException);
-
   // Perform Export
   PrepareForWriting(file, overwrite);
   string aMeshName = "Mesh";
@@ -2590,6 +2585,17 @@ void SMESH_Mesh_i::ExportToMEDX (const char* file,
   // check names of groups
   checkGroupNames();
 
+  return aMeshName;
+}
+
+void SMESH_Mesh_i::ExportToMEDX (const char* file,
+                                 CORBA::Boolean auto_groups,
+                                 SMESH::MED_VERSION theVersion,
+                                 CORBA::Boolean overwrite)
+  throw(SALOME::SALOME_Exception)
+{
+  Unexpect aCatch(SALOME_SalomeException);
+  string aMeshName = PrepareMeshNameAndGroups(file, true);
   TPythonDump() << _this() << ".ExportToMEDX( r'"
                 << file << "', " << auto_groups << ", " << theVersion << ", " << overwrite << " )";
 
@@ -2622,6 +2628,23 @@ void SMESH_Mesh_i::ExportMED (const char* file,
 {
   ExportToMEDX(file,auto_groups,SMESH::MED_V2_2,true);
 }
+
+//================================================================================
+/*!
+ * \brief Export a mesh to a SAUV file
+ */
+//================================================================================
+
+void SMESH_Mesh_i::ExportSAUV (const char* file,
+                               CORBA::Boolean auto_groups)
+  throw(SALOME::SALOME_Exception)
+{
+  Unexpect aCatch(SALOME_SalomeException);
+  string aMeshName = PrepareMeshNameAndGroups(file, true);
+  TPythonDump() << _this() << ".ExportSAUV( r'" << file << "', " << auto_groups << " )";
+  _impl->ExportSAUV(file, aMeshName.c_str(), auto_groups);
+}
+
 
 //================================================================================
 /*!
