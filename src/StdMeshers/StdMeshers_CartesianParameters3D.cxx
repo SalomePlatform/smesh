@@ -443,9 +443,9 @@ bool StdMeshers_CartesianParameters3D::SetParametersByDefaults(const TDefaults& 
   {
     vector<string> spacing( 1, SMESH_Comment(dflts._elemLength));
     vector<double> intPnts;
-    GetGridSpacing( spacing, intPnts, 0 );
-    GetGridSpacing( spacing, intPnts, 1 );
-    GetGridSpacing( spacing, intPnts, 2 );
+    SetGridSpacing( spacing, intPnts, 0 );
+    SetGridSpacing( spacing, intPnts, 1 );
+    SetGridSpacing( spacing, intPnts, 2 );
     return true;
   }
   return false;
