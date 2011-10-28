@@ -862,6 +862,68 @@ module StdMeshers
   };
 
   /*!
+   * interface of "Body fitting Parameters" hypothesis.
+   * This hypothesis specifies 
+   * - Definition of the Cartesian grid
+   * - Size threshold
+   */
+  interface StdMeshers_CartesianParameters3D : SMESH::SMESH_Hypothesis
+  {
+    /*!
+     * Set size threshold. A polyhedral cell got by cutting an initial
+     * hexahedron by geometry boundary is considered small and is removed if
+     * it's size is \athreshold times less than the size of the initial hexahedron. 
+     * threshold must be > 1.0
+     */
+    void SetSizeThreshold(in double threshold) raises (SALOME::SALOME_Exception);
+    double GetSizeThreshold();
+
+    /*!
+     * \brief Return true if the grid is defined by spacing functions and 
+     *        not by node coordinates in given direction (X==0,...)
+     */
+    boolean IsGridBySpacing(in short axis);
+
+    /*!
+     * Set coordinates of nodes along an axis (counterd from zero)
+     */
+    void SetGrid(in SMESH::double_array coords,
+                 in short               axis) raises (SALOME::SALOME_Exception);
+    SMESH::double_array GetGrid(in short axis) raises (SALOME::SALOME_Exception);
+
+    /*!
+     * \brief Set grid spacing along an axis
+     *  \param spaceFunctions - functions defining spacing values at given point on axis
+     *  \param internalPoints - points dividing a grid into parts along an axis
+     *  \param axis - index of an axis counterd from zero, i.e. 0==X, 1==Y, 2==Z
+     *
+     * Parameter t of spaceFunction f(t) is a position [0,1] withing bounding box of
+     * the shape to mesh or withing an interval defined by internal points
+     */
+    void SetGridSpacing(in SMESH::string_array spaceFunctions,
+                        in SMESH::double_array internalPoints,
+                        in short               axis) raises (SALOME::SALOME_Exception);
+
+    void GetGridSpacing(out SMESH::string_array spaceFunctions,
+                        out SMESH::double_array internalPoints,
+                        in short                axis) raises (SALOME::SALOME_Exception);
+
+    /*!
+     * \brief Computes node coordinates by spacing functions
+     *  \param x0 - lower coordinate
+     *  \param x1 - upper coordinate
+     *  \param spaceFuns - space functions
+     *  \param points - internal points
+     *  \param coords - the computed coordinates
+     */
+    SMESH::double_array ComputeCoordinates(in double              x0,
+                                           in double              x1,
+                                           in SMESH::string_array spaceFuns,
+                                           in SMESH::double_array points,
+                                           in string              axisName ) raises (SALOME::SALOME_Exception);
+  };
+
+  /*!
    * StdMeshers_SegmentAroundVertex_0D: interface of "SegmentAroundVertex" algorithm
    */
   interface StdMeshers_SegmentAroundVertex_0D : SMESH::SMESH_0D_Algo
@@ -978,6 +1040,12 @@ module StdMeshers
    * StdMeshers_Import_1D: interface of "Use existing 1D elements" algorithm
    */
   interface StdMeshers_Import_1D : SMESH::SMESH_1D_Algo
+  {
+  };
+  /*!
+   * StdMeshers_Cartesian_3D: interface of "Body fitting" algorithm
+   */
+  interface StdMeshers_Cartesian_3D : SMESH::SMESH_3D_Algo
   {
   };
 
