@@ -1467,6 +1467,21 @@ class Mesh:
             return Mesh_Prism3D(self,  geom)
         return Mesh_RadialPrism3D(self,  geom)
 
+    ## Creates a "Body Fitted" 3D algorithm for solids, which generates
+    #  3D structured Cartesian mesh in the internal part of a solid shape
+    #  and polyhedral volumes near the shape boundary.
+    #  If the optional \a geom parameter is not set, this algorithm is global.
+    #  Otherwise, this algorithm defines a submesh based on \a geom subshape.
+    #  The algorithm does not support submeshes.
+    #  Generally usage of this algorithm as a local one is useless since
+    #  it does not discretize 1D and 2D subshapes in a usual way acceptable
+    #  for other algorithms.
+    #  @param geom If defined, the subshape to be meshed
+    #  @return an instance of Mesh_Cartesian_3D algorithm
+    #  @ingroup l3_algos_basic
+    def BodyFitted(self, geom=0):
+        return Mesh_Cartesian_3D(self,  geom)
+
     ## Evaluates size of prospective mesh on a shape
     #  @return a list where i-th element is a number of elements of i-th SMESH.EntityType
     #  To know predicted number of e.g. edges, inquire it this way
@@ -4569,12 +4584,13 @@ class Mesh_Algorithm:
             hypo = self.mesh.smeshpyD.CreateHypothesis(hyp, so)
             a = ""
             s = "="
-            i = 0
-            n = len(args)
-            while i<n:
-                a = a + s + str(args[i])
+            for arg in args:
+                argStr = str(arg)
+                if isinstance( arg, geompyDC.GEOM._objref_GEOM_Object ):
+                    argStr = arg.GetStudyEntry()
+                    if not argStr: argStr = "GEOM_Obj_%s", arg.GetEntry()
+                a = a + s + argStr
                 s = ","
-                i = i + 1
                 pass
             self.mesh.smeshpyD.SetName(hypo, hyp + a)
             pass
@@ -6499,8 +6515,67 @@ class Mesh_UseExistingElements(Mesh_Algorithm):
             return entries == entries2
         return False
 
+# Public class: Mesh_Cartesian_3D
+# --------------------------------------
+## Defines a Body Fitting 3D algorithm
+#  @ingroup l3_algos_basic
+#
+class Mesh_Cartesian_3D(Mesh_Algorithm):
 
-# Private class: Mesh_UseExisting
+    def __init__(self, mesh, geom=0):
+        self.Create(mesh, geom, "Cartesian_3D")
+        return
+
+    ## Defines "Body Fitting parameters" hypothesis
+    #  @param xCoords coordinates of grid nodes along the X asix
+    #  @param yCoords coordinates of grid nodes along the Y asix
+    #  @param zCoords coordinates of grid nodes along the Z asix
+    #  @param sizeThreshold size (> 1.0) defines a minimal size of a polyhedron so that
+    #         a polyhedron of size less than hexSize/sizeThreshold is not created
+    #  @param UseExisting if ==true - searches for the existing hypothesis created with
+    #                     the same parameters, else (default) - creates a new one
+    def SetGrid(self, xCoords, yCoords, zCoords, sizeThreshold, UseExisting=False):
+        hyp = self.Hypothesis("CartesianParameters3D", [xCoords, yCoords, zCoords, sizeThreshold],
+                              UseExisting=UseExisting, CompareMethod=self._compareHyp)
+        hyp.SetGrid(xCoords, 0 )
+        hyp.SetGrid(yCoords, 1 )
+        hyp.SetGrid(zCoords, 2 )
+        hyp.SetSizeThreshold( sizeThreshold )
+        return hyp
+
+    ## Defines "Body Fitting parameters" hypothesis
+    #  @param xSpaceFuns functions f(t) defining spacing value at given point on X axis.
+    #         Parameter t of \axSpaceFuns is a position [0.,1.] withing bounding box of
+    #         the shape to mesh or withing an interval defined by internal points
+    #  @param ySpaceFuns functions f(t) defining spacing value at given point on Y axis.
+    #  @param zSpaceFuns functions f(t) defining spacing value at given point on Z axis.
+    #  @param xInternalPoints points (0.,1.) dividing a grid into parts along X direction.
+    #         Number of \axInternalPoints must be one less than number of \axSpaceFuns
+    #  @param yInternalPoints points (0.,1.) dividing a grid into parts along Y direction.
+    #  @param zInternalPoints points (0.,1.) dividing a grid into parts along Z direction.
+    #  @param sizeThreshold size (> 1.0) defines a minimal size of a polyhedron so that
+    #         a polyhedron of size less than hexSize/sizeThreshold is not created
+    #  @param UseExisting if ==true - searches for the existing hypothesis created with
+    #                     the same parameters, else (default) - creates a new one
+    def SetSpacing(self,
+                   xSpaceFuns, ySpaceFuns, zSpaceFuns,
+                   xInternalPoints, yInternalPoints, zInternalPoints,
+                   sizeThreshold, UseExisting=False):
+        hyp = self.Hypothesis("CartesianParameters3D",
+                              [xSpaceFuns, ySpaceFuns, zSpaceFuns, \
+                               xInternalPoints, yInternalPoints, zInternalPoints],
+                              UseExisting=UseExisting, CompareMethod=self._compareHyp)
+        hyp.SetGridSpacing(xSpaceFuns, xInternalPoints, 0)
+        hyp.SetGridSpacing(ySpaceFuns, yInternalPoints, 1)
+        hyp.SetGridSpacing(zSpaceFuns, zInternalPoints, 2)
+        hyp.SetSizeThreshold( sizeThreshold )
+        return hyp
+
+    def _compareHyp(self,hyp,args):
+        # not implemented yet
+        return False
+
+# Public class: Mesh_UseExisting
 # -------------------------------
 class Mesh_UseExisting(Mesh_Algorithm):
 
