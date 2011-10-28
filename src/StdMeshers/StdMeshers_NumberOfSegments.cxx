@@ -31,6 +31,7 @@
 #include "StdMeshers_Distribution.hxx"
 #include "SMESHDS_SubMesh.hxx"
 #include "SMESH_Mesh.hxx"
+#include "SMESH_Comment.hxx"
 
 #include <ExprIntrp_GenExp.hxx>
 #include <Expr_Array1OfNamedUnknown.hxx>
@@ -394,8 +395,27 @@ void StdMeshers_NumberOfSegments::SetExpressionFunction(const char* expr)
     _distrType = DT_ExprFunc;
     //throw SALOME_Exception(LOCALIZED("not an expression function distribution"));
 
+  string func = CheckExpressionFunction( expr, _convMode );
+  if( _func != func )
+  {
+    _func = func;
+    NotifySubMeshesHypothesisModification();
+  }
+}
+
+//=======================================================================
+//function : CheckExpressionFunction
+//purpose  : Checks validity of  the expression of the function f(t), e.g. "sin(t)".
+//           In case of validity returns a cleaned expression
+//=======================================================================
+
+std::string
+StdMeshers_NumberOfSegments::CheckExpressionFunction( const std::string& expr,
+                                                      const int          convMode)
+    throw (SALOME_Exception)
+{
   // remove white spaces
-  TCollection_AsciiString str((Standard_CString)expr);
+  TCollection_AsciiString str((Standard_CString)expr.c_str());
   str.RemoveAll(' ');
   str.RemoveAll('\t');
   str.RemoveAll('\r');
@@ -403,15 +423,15 @@ void StdMeshers_NumberOfSegments::SetExpressionFunction(const char* expr)
 
   bool syntax, args, non_neg, singulars, non_zero;
   double sing_point;
-  bool res = process( str, _convMode, syntax, args, non_neg, non_zero, singulars, sing_point );
+  bool res = process( str, convMode, syntax, args, non_neg, non_zero, singulars, sing_point );
   if( !res )
   {
     if( !syntax )
-      throw SALOME_Exception(LOCALIZED("invalid expression syntax"));
+      throw SALOME_Exception(SMESH_Comment("invalid expression syntax: ") << str );
     if( !args )
       throw SALOME_Exception(LOCALIZED("only 't' may be used as function argument"));
     if( !non_neg )
-      throw SALOME_Exception(LOCALIZED("only non-negative function can be used as density"));
+      throw SALOME_Exception(LOCALIZED("only non-negative function can be used"));
     if( singulars )
     {
       char buf[1024];
@@ -419,17 +439,10 @@ void StdMeshers_NumberOfSegments::SetExpressionFunction(const char* expr)
       throw SALOME_Exception( buf );
     }
     if( !non_zero )
-      throw SALOME_Exception(LOCALIZED("f(t)=0 cannot be used as density"));
-
-    return;
+      throw SALOME_Exception(LOCALIZED("f(t)=0 cannot be used"));
   }
-  
-  string func = expr;
-  if( _func != func )
-  {
-    _func = func;
-    NotifySubMeshesHypothesisModification();
-  }
+ 
+  return str.ToCString();
 }
 
 //================================================================================

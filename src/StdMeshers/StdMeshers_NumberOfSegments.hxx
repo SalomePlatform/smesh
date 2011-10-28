@@ -143,6 +143,15 @@ public:
     throw (SALOME_Exception);
 
   /*!
+   * \brief Checks validity of  the expression of the function f(t), e.g. "sin(t)".
+   *        In case of validity returns a cleaned expression
+   *  \param convMode - 0 for "Exponent mode", 1 for "Cut negative mode"
+   */
+  static std::string CheckExpressionFunction( const std::string& expr,
+                                              const int          convMode)
+    throw (SALOME_Exception);
+
+  /*!
    * \brief Set conversion mode. When it is 0, it means "exponent mode":
    * the function of distribution of density is used as an exponent of 10, i,e, 10^f(t).
    * When it is 1, it means "cut negative mode". The function of distribution is used as
