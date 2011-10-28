@@ -422,6 +422,7 @@ public:
 
   bool HasHypothesis(const TopoDS_Shape & S);
   const std::list<const SMESHDS_Hypothesis*>& GetHypothesis(const TopoDS_Shape & S) const;
+  bool IsUsedHypothesis(const SMESHDS_Hypothesis * H) const;
   SMESHDS_Script * GetScript();
   void ClearScript();
   int ShapeToIndex(const TopoDS_Shape & aShape) const;

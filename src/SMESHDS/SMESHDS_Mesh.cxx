@@ -1145,6 +1145,21 @@ SMESHDS_Mesh::GetHypothesis(const TopoDS_Shape & S) const
   return empty;
 }
 
+//================================================================================
+/*!
+ * \brief returns true if the hypothesis is assigned to any sub-shape
+ */
+//================================================================================
+
+bool SMESHDS_Mesh::IsUsedHypothesis(const SMESHDS_Hypothesis * H) const
+{
+  ShapeToHypothesis::Iterator s2h( myShapeToHypothesis );
+  for ( ; s2h.More(); s2h.Next() )
+    if ( std::find( s2h.Value().begin(), s2h.Value().end(), H ) != s2h.Value().end() )
+      return true;
+  return false;
+}
+
 //=======================================================================
 //function : GetScript
 //purpose  : 
