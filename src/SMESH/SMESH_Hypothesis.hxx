@@ -124,7 +124,7 @@ protected:
   SMESH_Gen* _gen;
   int _studyId;
   int _shapeType;
-  int _param_algo_dim;
+  int _param_algo_dim; // to be set at descendant hypothesis constructor
 
 private:
   std::string _libName;
