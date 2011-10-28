@@ -176,6 +176,17 @@ SMESH_subMesh *SMESH_subMesh::GetFirstToCompute()
 
 //================================================================================
 /*!
+ * \brief Returns a current algorithm
+ */
+//================================================================================
+
+SMESH_Algo* SMESH_subMesh::GetAlgo() const
+{
+  return _father->GetGen()->GetAlgo(*_father, _subShape);
+}
+
+//================================================================================
+/*!
  * \brief Allow algo->Compute() if a subshape of lower dim is meshed but
  *        none mesh entity is bound to it (PAL13615, 2nd part)
  */
@@ -586,7 +597,7 @@ SMESH_Hypothesis::Hypothesis_Status
   SMESH_Hypothesis::Hypothesis_Status aux_ret, ret = SMESH_Hypothesis::HYP_OK;
 
   SMESHDS_Mesh* meshDS =_father->GetMeshDS();
-  SMESH_Gen*    gen    =_father->GetGen();
+  //SMESH_Gen*    gen    =_father->GetGen();
   SMESH_Algo*   algo   = 0;
 
   if (_subShape.ShapeType() == TopAbs_VERTEX )
@@ -603,7 +614,7 @@ SMESH_Hypothesis::Hypothesis_Status
       if ( event != REMOVE_FATHER_ALGO )
       {
         _algoState = NO_ALGO;
-        algo = gen->GetAlgo(*_father, _subShape);
+        algo = GetAlgo();
         if ( algo ) {
           _algoState = MISSING_HYP;
           if ( event == REMOVE_FATHER_HYP ||
@@ -696,7 +707,7 @@ SMESH_Hypothesis::Hypothesis_Status
     case ADD_HYP:
       break;
     case ADD_ALGO: {
-      algo = gen->GetAlgo((*_father), _subShape);
+      algo = GetAlgo();
       ASSERT(algo);
       if (algo->CheckHypothesis((*_father),_subShape, aux_ret))
         SetAlgoState(HYP_OK);
@@ -713,7 +724,7 @@ SMESH_Hypothesis::Hypothesis_Status
     case ADD_FATHER_HYP:
       break;
     case ADD_FATHER_ALGO: {    // Algo just added in father
-      algo = gen->GetAlgo((*_father), _subShape);
+      algo = GetAlgo();
       ASSERT(algo);
       if ( algo == anHyp ) {
         if ( algo->CheckHypothesis((*_father),_subShape, aux_ret))
@@ -726,7 +737,7 @@ SMESH_Hypothesis::Hypothesis_Status
     case REMOVE_FATHER_HYP:
       break;
     case REMOVE_FATHER_ALGO: {
-      algo = gen->GetAlgo((*_father), _subShape);
+      algo = GetAlgo();
       if (algo)
       {
         if ( algo->CheckHypothesis((*_father),_subShape, aux_ret ))
@@ -749,7 +760,7 @@ SMESH_Hypothesis::Hypothesis_Status
     switch (event)
     {
     case ADD_HYP: {
-      algo = gen->GetAlgo((*_father), _subShape);
+      algo = GetAlgo();
       ASSERT(algo);
       if ( algo->CheckHypothesis((*_father),_subShape, ret ))
         SetAlgoState(HYP_OK);
@@ -763,7 +774,7 @@ SMESH_Hypothesis::Hypothesis_Status
       break;
     }
     case ADD_ALGO: {           //already existing algo : on father ?
-      algo = gen->GetAlgo((*_father), _subShape);
+      algo = GetAlgo();
       ASSERT(algo);
       if ( algo->CheckHypothesis((*_father),_subShape, aux_ret ))// ignore hyp status
         SetAlgoState(HYP_OK);
@@ -778,7 +789,7 @@ SMESH_Hypothesis::Hypothesis_Status
     case REMOVE_HYP:
       break;
     case REMOVE_ALGO: {        // perhaps a father algo applies ?
-      algo = gen->GetAlgo((*_father), _subShape);
+      algo = GetAlgo();
       if (algo == NULL)  // no more algo applying on subShape...
       {
         SetAlgoState(NO_ALGO);
@@ -794,7 +805,7 @@ SMESH_Hypothesis::Hypothesis_Status
     }
     case MODIF_HYP: // assigned hypothesis value may become good
     case ADD_FATHER_HYP: {
-      algo = gen->GetAlgo((*_father), _subShape);
+      algo = GetAlgo();
       ASSERT(algo);
       if ( algo->CheckHypothesis((*_father),_subShape, aux_ret ))
         SetAlgoState(HYP_OK);
@@ -803,7 +814,7 @@ SMESH_Hypothesis::Hypothesis_Status
       break;
     }
     case ADD_FATHER_ALGO: { // new father algo
-      algo = gen->GetAlgo((*_father), _subShape);
+      algo = GetAlgo();
       ASSERT( algo );
       if ( algo == anHyp ) {
         if ( algo->CheckHypothesis((*_father),_subShape, aux_ret ))
@@ -816,7 +827,7 @@ SMESH_Hypothesis::Hypothesis_Status
     case REMOVE_FATHER_HYP:    // nothing to do
       break;
     case REMOVE_FATHER_ALGO: {
-      algo = gen->GetAlgo((*_father), _subShape);
+      algo = GetAlgo();
       if (algo == NULL)  // no more applying algo on father
       {
         SetAlgoState(NO_ALGO);
@@ -842,7 +853,7 @@ SMESH_Hypothesis::Hypothesis_Status
     switch (event)
     {
     case ADD_HYP: {
-      algo = gen->GetAlgo((*_father), _subShape);
+      algo = GetAlgo();
       ASSERT(algo);
       if (!algo->CheckHypothesis((*_father),_subShape, ret ))
       {
@@ -865,7 +876,7 @@ SMESH_Hypothesis::Hypothesis_Status
       break;
     }
     case ADD_ALGO: {           //already existing algo : on father ?
-      algo = gen->GetAlgo((*_father), _subShape);
+      algo = GetAlgo();
       if ( algo->CheckHypothesis((*_father),_subShape, aux_ret )) {
         // check if algo changes
         SMESH_HypoFilter f;
@@ -882,7 +893,7 @@ SMESH_Hypothesis::Hypothesis_Status
       break;
     }
     case REMOVE_HYP: {
-      algo = gen->GetAlgo((*_father), _subShape);
+      algo = GetAlgo();
       ASSERT(algo);
       if ( algo->CheckHypothesis((*_father),_subShape, aux_ret ))
         SetAlgoState(HYP_OK);
@@ -892,7 +903,7 @@ SMESH_Hypothesis::Hypothesis_Status
       break;
     }
     case REMOVE_ALGO: {         // perhaps a father algo applies ?
-      algo = gen->GetAlgo((*_father), _subShape);
+      algo = GetAlgo();
       if (algo == NULL)   // no more algo applying on subShape...
       {
         SetAlgoState(NO_ALGO);
@@ -911,7 +922,7 @@ SMESH_Hypothesis::Hypothesis_Status
     }
     case MODIF_HYP: // hypothesis value may become bad
     case ADD_FATHER_HYP: {  // new father hypothesis ?
-      algo = gen->GetAlgo((*_father), _subShape);
+      algo = GetAlgo();
       ASSERT(algo);
       if ( algo->CheckHypothesis((*_father),_subShape, aux_ret ))
       {
@@ -923,7 +934,7 @@ SMESH_Hypothesis::Hypothesis_Status
       break;
     }
     case ADD_FATHER_ALGO: {
-      algo = gen->GetAlgo((*_father), _subShape);
+      algo = GetAlgo();
       if ( algo == anHyp ) { // a new algo on father
         if ( algo->CheckHypothesis((*_father),_subShape, aux_ret )) {
           // check if algo changes
@@ -942,7 +953,7 @@ SMESH_Hypothesis::Hypothesis_Status
       break;
     }
     case REMOVE_FATHER_HYP: {
-      algo = gen->GetAlgo((*_father), _subShape);
+      algo = GetAlgo();
       ASSERT(algo);
       if ( algo->CheckHypothesis((*_father),_subShape, aux_ret )) {
         // is there the same local hyp or maybe a new father algo applied?
@@ -960,7 +971,7 @@ SMESH_Hypothesis::Hypothesis_Status
       if (!algo->NeedDescretBoundary())
         needFullClean = true;
 
-      algo = gen->GetAlgo((*_father), _subShape);
+      algo = GetAlgo();
       if (algo == NULL)  // no more applying algo on father
       {
         SetAlgoState(NO_ALGO);
@@ -1288,7 +1299,7 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
     switch (event)
     {
     case MODIF_ALGO_STATE:
-      algo = gen->GetAlgo((*_father), _subShape);
+      algo = GetAlgo();
       if (algo && !algo->NeedDescretBoundary())
         CleanDependsOn(); // clean sub-meshes with event CLEAN
       if ( _algoState == HYP_OK )
@@ -1328,7 +1339,7 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
     {
     case MODIF_ALGO_STATE:
       _computeState = NOT_READY;
-      algo = gen->GetAlgo((*_father), _subShape);
+      algo = GetAlgo();
       if (algo)
       {
         if (!algo->NeedDescretBoundary())
@@ -1339,7 +1350,7 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
       break;
     case COMPUTE:
       {
-        algo = gen->GetAlgo((*_father), _subShape);
+        algo = GetAlgo();
         ASSERT(algo);
         ret = algo->CheckHypothesis((*_father), _subShape, hyp_status);
         if (!ret)
@@ -1396,6 +1407,11 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
           }
           if ( !_computeError || ( !ret && _computeError->IsOK() ) ) // algo can set _computeError of submesh
             _computeError = algo->GetComputeError();
+        }
+        catch ( ::SMESH_ComputeError& comperr ) {
+          cout << " SMESH_ComputeError caught" << endl;
+          if ( !_computeError ) _computeError = SMESH_ComputeError::New();
+          *_computeError = comperr;
         }
         catch ( std::bad_alloc& exc ) {
           MESSAGE("std::bad_alloc thrown inside algo->Compute()");
@@ -1479,7 +1495,7 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
       CleanDependants();
       RemoveSubMeshElementsAndNodes();
       _computeState = NOT_READY;
-      algo = gen->GetAlgo((*_father), _subShape);
+      algo = GetAlgo();
       if (algo)
       {
         ret = algo->CheckHypothesis((*_father), _subShape, hyp_status);
@@ -1496,7 +1512,7 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
       // happen after retrieval from a file
       ComputeStateEngine( CHECK_COMPUTE_STATE );
       ComputeSubMeshStateEngine( SUBMESH_RESTORED );
-      algo = gen->GetAlgo(*_father, _subShape);
+      algo = GetAlgo();
       if (algo) algo->SubmeshRestored( this );
       break;
     case MESH_ENTITY_REMOVED:
@@ -1518,7 +1534,7 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
     {
     case MODIF_ALGO_STATE:
       ComputeStateEngine( CLEAN );
-      algo = gen->GetAlgo((*_father), _subShape);
+      algo = GetAlgo();
       if (algo && !algo->NeedDescretBoundary())
         CleanDependsOn(); // clean sub-meshes with event CLEAN
       break;
@@ -1540,7 +1556,7 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
     case SUBMESH_RESTORED:
       ComputeStateEngine( CHECK_COMPUTE_STATE );
       ComputeSubMeshStateEngine( SUBMESH_RESTORED );
-      algo = gen->GetAlgo(*_father, _subShape);
+      algo = GetAlgo();
       if (algo) algo->SubmeshRestored( this );
       break;
     case MESH_ENTITY_REMOVED:
@@ -1570,7 +1586,7 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
     case MODIF_ALGO_STATE:
       if ( !IsEmpty() )
         ComputeStateEngine( CLEAN );
-      algo = gen->GetAlgo((*_father), _subShape);
+      algo = GetAlgo();
       if (algo && !algo->NeedDescretBoundary())
         CleanDependsOn(); // clean sub-meshes with event CLEAN
       if (_algoState == HYP_OK)
@@ -1583,7 +1599,7 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
 #ifdef WITH_SMESH_CANCEL_COMPUTE
     case COMPUTE_CANCELED:
       {
-        algo = gen->GetAlgo((*_father), _subShape);
+        algo = GetAlgo();
         algo->CancelCompute();
       }
       break;
@@ -1649,11 +1665,11 @@ bool SMESH_subMesh::Evaluate(MapShapeNbElems& aResMap)
     return ret;
   }
 
-  SMESH_Gen *gen = _father->GetGen();
+  //SMESH_Gen *gen = _father->GetGen();
   SMESH_Algo *algo = 0;
   SMESH_Hypothesis::Hypothesis_Status hyp_status;
 
-  algo = gen->GetAlgo((*_father), _subShape);
+  algo = GetAlgo();
   if(algo && !aResMap.count(this) )
   {
     ret = algo->CheckHypothesis((*_father), _subShape, hyp_status);

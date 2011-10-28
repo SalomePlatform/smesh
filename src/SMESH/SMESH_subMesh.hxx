@@ -20,11 +20,9 @@
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 
-//  SMESH SMESH : implementaion of SMESH idl descriptions
 //  File   : SMESH_subMesh.hxx
 //  Author : Paul RASCLE, EDF
 //  Module : SMESH
-//  $Header$
 //
 #ifndef _SMESH_SUBMESH_HXX_
 #define _SMESH_SUBMESH_HXX_
@@ -75,6 +73,8 @@ class SMESH_EXPORT SMESH_subMesh
   // Explicit SMESHDS_SubMesh creation method, required for persistence mechanism
 
   SMESH_subMesh *GetFirstToCompute();
+
+  SMESH_Algo* GetAlgo() const;
 
   const std::map < int, SMESH_subMesh * >& DependsOn();
   //const map < int, SMESH_subMesh * >&Dependants();
