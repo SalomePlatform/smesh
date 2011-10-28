@@ -94,7 +94,7 @@ def displaySmeshObject(entry):
     Display the SMESH object associated to the specified entry
     (the entry is the identifier of an item in the objects browser).    
     '''
-    if not SalomeGUI.hasDesktop():
+    if not helper.SalomeGUI.hasDesktop():
         print "displayGeomObjects: no desktop available"
         return
     SmeshGUI.CreateAndDisplayActor(entry)
@@ -158,6 +158,11 @@ def TEST_selectAndExport_02():
     exportFileName = "/tmp/"+myName+".unv"
     myMesh.ExportUNV(exportFileName)
 
+def TEST_display():
+    mySObject, myEntry = helper.getSObjectSelected()
+    displaySmeshObject(myEntry)
+
 if __name__ == "__main__":
     TEST_selectAndExport_01()
     TEST_selectAndExport_02()
+    TEST_display()
