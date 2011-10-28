@@ -179,6 +179,19 @@ namespace SMESH
   }
 
   TPythonDump&
+  TPythonDump::operator<<(const SMESH::string_array& theArray)
+  {
+    myStream << "[ ";
+    for (int i = 1; i <= theArray.length(); i++) {
+      myStream << "'" << theArray[i-1] << "'";
+      if ( i < theArray.length() )
+        myStream << ", ";
+    }
+    myStream << " ]";
+    return *this;
+  }
+
+  TPythonDump&
   TPythonDump::
   operator<<(SALOMEDS::SObject_ptr aSObject)
   {

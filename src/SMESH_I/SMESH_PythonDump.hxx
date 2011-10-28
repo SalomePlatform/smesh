@@ -38,7 +38,7 @@ class Resource_DataMapOfAsciiStringAsciiString;
 
 // ===========================================================================================
 /*!
- * \brief Tool converting SMESH engine calls into commands defined in smesh.py
+ * \brief Tool converting SMESH engine calls into commands defined in smeshDC.py
  *
  * Implementation is in SMESH_2smeshpy.cxx
  */
@@ -118,6 +118,9 @@ namespace SMESH
 
     TPythonDump&
     operator<<(const SMESH::double_array& theArg);
+
+    TPythonDump&
+    operator<<(const SMESH::string_array& theArg);
 
     TPythonDump&
     operator<<(SMESH::SMESH_Hypothesis_ptr theArg);
