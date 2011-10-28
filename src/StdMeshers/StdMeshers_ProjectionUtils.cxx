@@ -1940,7 +1940,7 @@ bool StdMeshers_ProjectionUtils::MakeComputed(SMESH_subMesh * sm, const int iter
 
   SMESH_Mesh* mesh = sm->GetFather();
   SMESH_Gen* gen   = mesh->GetGen();
-  SMESH_Algo* algo = gen->GetAlgo( *mesh, sm->GetSubShape() );
+  SMESH_Algo* algo = sm->GetAlgo();
   if ( !algo )
   {
     if ( sm->GetSubShape().ShapeType() != TopAbs_COMPOUND )
@@ -2080,9 +2080,7 @@ namespace {
         // delete current source listener
         subMesh->DeleteEventListener( GetSrcSubMeshListener() );
         // let algo set a new one
-        SMESH_Gen* gen = subMesh->GetFather()->GetGen();
-        if ( SMESH_Algo* algo = gen->GetAlgo( *subMesh->GetFather(),
-                                              subMesh->GetSubShape() ))
+        if ( SMESH_Algo* algo = subMesh->GetAlgo() )
           algo->SetEventListener( subMesh );
       }
     }

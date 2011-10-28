@@ -172,8 +172,7 @@ namespace {
         if ( subMesh->GetAlgoState() != SMESH_subMesh::HYP_OK )
           hypRemoved = true;
         else {
-          SMESH_Gen * gen = subMesh->GetFather()->GetGen();
-          SMESH_Algo* algo = gen->GetAlgo( *subMesh->GetFather(), subMesh->GetSubShape() );
+          SMESH_Algo* algo = subMesh->GetAlgo();
           hypRemoved = ( string( algo->GetName() ) != StdMeshers_CompositeSegment_1D::AlgoName());
         }
         if ( hypRemoved )

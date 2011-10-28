@@ -413,8 +413,7 @@ namespace // INTERNAL STUFF
       {
         // re-call SetEventListener() to take into account valid parameters
         // of ImportSource hypothesis
-        SMESH_Gen* gen = subMesh->GetFather()->GetGen();
-        if ( SMESH_Algo* algo = gen->GetAlgo(*subMesh->GetFather(), subMesh->GetSubShape()))
+        if ( SMESH_Algo* algo = subMesh->GetAlgo() )
           algo->SetEventListener( subMesh );
       }
     }
@@ -461,8 +460,7 @@ namespace // INTERNAL STUFF
                  SMESH_subMesh::REMOVE_FATHER_ALGO == event ) &&
                SMESH_subMesh::ALGO_EVENT == eventType )
       {
-        SMESH_Gen* gen = subMesh->GetFather()->GetGen();
-        SMESH_Algo* algo = gen->GetAlgo(*subMesh->GetFather(),subMesh->GetSubShape() );
+        SMESH_Algo* algo = subMesh->GetAlgo();
         removeImport = ( strncmp( "Import", algo->GetName(), 6 ) != 0 );
       }
 
