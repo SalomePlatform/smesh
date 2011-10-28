@@ -988,6 +988,9 @@ void SMESH_Mesh::NotifySubMeshesHypothesisModification(const SMESH_Hypothesis* h
 {
   Unexpect aCatch(SalomeException);
 
+  if ( !GetMeshDS()->IsUsedHypothesis( hyp ))
+    return;
+
   const SMESH_Algo *foundAlgo = 0;
   SMESH_HypoFilter algoKind, compatibleHypoKind;
   list <const SMESHDS_Hypothesis * > usedHyps;
