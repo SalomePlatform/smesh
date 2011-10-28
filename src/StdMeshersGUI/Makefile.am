@@ -34,7 +34,8 @@ salomeinclude_HEADERS = \
 	StdMeshersGUI_QuadrangleParamWdg.h \
 	StdMeshersGUI_LayerDistributionParamWdg.h \
 	StdMeshersGUI_FixedPointsParamWdg.h \
-	StdMeshersGUI_SubShapeSelectorWdg.h
+	StdMeshersGUI_SubShapeSelectorWdg.h \
+	StdMeshersGUI_CartesianParamCreator.h
 
 # Libraries targets
 lib_LTLIBRARIES = libStdMeshersGUI.la
@@ -49,7 +50,8 @@ dist_libStdMeshersGUI_la_SOURCES = \
 	StdMeshersGUI_QuadrangleParamWdg.cxx \
 	StdMeshersGUI_LayerDistributionParamWdg.cxx \
 	StdMeshersGUI_FixedPointsParamWdg.cxx \
-	StdMeshersGUI_SubShapeSelectorWdg.cxx
+	StdMeshersGUI_SubShapeSelectorWdg.cxx \
+	StdMeshersGUI_CartesianParamCreator.cxx
 
 MOC_FILES = \
 	StdMeshersGUI_StdHypothesisCreator_moc.cxx \
@@ -60,7 +62,8 @@ MOC_FILES = \
 	StdMeshersGUI_QuadrangleParamWdg_moc.cxx \
 	StdMeshersGUI_LayerDistributionParamWdg_moc.cxx \
 	StdMeshersGUI_FixedPointsParamWdg_moc.cxx \
-	StdMeshersGUI_SubShapeSelectorWdg_moc.cxx
+	StdMeshersGUI_SubShapeSelectorWdg_moc.cxx \
+	StdMeshersGUI_CartesianParamCreator_moc.cxx
 
 nodist_libStdMeshersGUI_la_SOURCES= \
 	$(MOC_FILES)

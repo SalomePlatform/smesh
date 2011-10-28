@@ -58,6 +58,7 @@
 #include "StdMeshers_QuadrangleParams_i.hxx"
 #include "StdMeshers_ImportSource1D_i.hxx"
 #include "StdMeshers_ImportSource2D_i.hxx"
+#include "StdMeshers_Cartesian_3D_i.hxx"
 
 #include "StdMeshers_Regular_1D_i.hxx"
 #include "StdMeshers_MEFISTO_2D_i.hxx"
@@ -72,6 +73,7 @@
 #include "StdMeshers_Import_1D_i.hxx"
 #include "StdMeshers_Import_1D2D_i.hxx"
 #include "StdMeshers_ViscousLayers_i.hxx"
+#include "StdMeshers_CartesianParameters3D_i.hxx"
 
 template <class T> class StdHypothesisCreator_i:public HypothesisCreator_i<T>
 {
@@ -177,6 +179,8 @@ STDMESHERS_I_EXPORT
       aCreator = new StdHypothesisCreator_i<StdMeshers_ImportSource2D_i>;
     else if (strcmp(aHypName, "ViscousLayers") == 0)
       aCreator = new StdHypothesisCreator_i<StdMeshers_ViscousLayers_i>;
+    else if (strcmp(aHypName, "CartesianParameters3D") == 0)
+      aCreator = new StdHypothesisCreator_i<StdMeshers_CartesianParameters3D_i>;
 
     // Algorithms
     else if (strcmp(aHypName, "Regular_1D") == 0)
@@ -213,6 +217,8 @@ STDMESHERS_I_EXPORT
       aCreator = new StdHypothesisCreator_i<StdMeshers_Import_1D_i>;
     else if (strcmp(aHypName, "Import_1D2D") == 0)
       aCreator = new StdHypothesisCreator_i<StdMeshers_Import_1D2D_i>;
+    else if (strcmp(aHypName, "Cartesian_3D") == 0)
+      aCreator = new StdHypothesisCreator_i<StdMeshers_Cartesian_3D_i>;
     else ;
 
     return aCreator;

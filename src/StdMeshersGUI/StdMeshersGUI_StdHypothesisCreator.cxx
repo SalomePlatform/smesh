@@ -1341,6 +1341,7 @@ QString StdMeshersGUI_StdHypothesisCreator::hypTypeName( const QString& t ) cons
     types.insert( "MaxLength", "MAX_LENGTH" );
     types.insert( "ViscousLayers", "VISCOUS_LAYERS" );
     types.insert( "QuadrangleParams", "QUADRANGLE_PARAMS" );
+    types.insert( "CartesianParameters3D", "CARTESIAN_PARAMS" );
   }
 
   QString res;

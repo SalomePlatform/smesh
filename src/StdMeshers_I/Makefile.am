@@ -67,7 +67,9 @@ salomeinclude_HEADERS = \
 	StdMeshers_ImportSource2D_i.hxx \
 	StdMeshers_Import_1D_i.hxx \
 	StdMeshers_Import_1D2D_i.hxx \
-	StdMeshers_ViscousLayers_i.hxx
+	StdMeshers_ViscousLayers_i.hxx \
+	StdMeshers_CartesianParameters3D_i.hxx \
+	StdMeshers_Cartesian_3D_i.hxx
 
 # Libraries targets
 lib_LTLIBRARIES = libStdMeshersEngine.la
@@ -113,7 +115,9 @@ dist_libStdMeshersEngine_la_SOURCES = \
 	StdMeshers_ImportSource2D_i.cxx \
 	StdMeshers_Import_1D_i.cxx \
 	StdMeshers_Import_1D2D_i.cxx \
-	StdMeshers_ViscousLayers_i.cxx
+	StdMeshers_ViscousLayers_i.cxx \
+	StdMeshers_CartesianParameters3D_i.cxx \
+	StdMeshers_Cartesian_3D_i.cxx
 
 # additionnal information to compil and link file
 libStdMeshersEngine_la_CPPFLAGS = \

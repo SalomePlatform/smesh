@@ -26,6 +26,7 @@
 //
 #include "StdMeshersGUI_StdHypothesisCreator.h"
 #include "StdMeshersGUI_NbSegmentsCreator.h"
+#include "StdMeshersGUI_CartesianParamCreator.h"
 
 //=============================================================================
 /*! GetHypothesisCreator
@@ -39,6 +40,8 @@ extern "C"
   {
     if( aHypType=="NumberOfSegments" )
       return new StdMeshersGUI_NbSegmentsCreator();
+    else if ( aHypType=="CartesianParameters3D" )
+      return new StdMeshersGUI_CartesianParamCreator( aHypType );
     else
       return new StdMeshersGUI_StdHypothesisCreator( aHypType );
   }
