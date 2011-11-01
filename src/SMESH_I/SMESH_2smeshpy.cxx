@@ -384,6 +384,17 @@ Handle(_pyCommand) _pyGen::AddCommand( const TCollection_AsciiString& theCommand
     aCommand->SetArg( 2, Type );
     aCommand->SetArg( 3, Compare );
 
+    if ( Type == "SMESH.FT_ElemGeomType" && Threshold.IsIntegerValue() )
+    {
+      // set SMESH.GeometryType instead of a numerical Threshold
+      const char* types[SMESH::Geom_POLYHEDRA+1] = {
+        "Geom_POINT", "Geom_EDGE", "Geom_TRIANGLE", "Geom_QUADRANGLE", "Geom_POLYGON",
+        "Geom_TETRA", "Geom_PYRAMID", "Geom_HEXA", "Geom_PENTA", "Geom_POLYHEDRA"
+      };
+      int iGeom = Threshold.IntegerValue();
+      if ( -1 < iGeom && iGeom < SMESH::Geom_POLYHEDRA+1 )
+        Threshold = SMESH + types[ iGeom ];
+    }
     if ( ThresholdStr.Length() != 2 ) // not '' or ""
       aCommand->SetArg( 4, ThresholdStr );
     else if ( ThresholdID.Length() != 2 )
@@ -980,6 +991,11 @@ void _pyMesh::Process( const Handle(_pyCommand)& theCommand )
   else if ( method == "CreateGroupFromFilter" ) // --> GroupOnFilter()
   {
     theCommand->SetMethod( "GroupOnFilter" );
+    // GroupOnFilter(typ, name, aFilter0x4743dc0 -> aFilter_1)
+    _pyID filterID = theCommand->GetArg(3);
+    Handle(_pyObject) filter = theGen->FindObject( filterID );
+    if ( !filter.IsNull() && filter->IsKind(STANDARD_TYPE(_pyFilter)))
+      filter->Process( theCommand );
   }
   // ----------------------------------------------------------------------
   else if ( method == "GetIdsFromFilter" )
