@@ -713,7 +713,8 @@ public:
    * @return TRUE if operation has been completed successfully, FALSE otherwise
    */
   CORBA::Boolean DoubleNodesOnGroupBoundaries( const SMESH::ListOfGroups& theDomains,
-                                               CORBA::Boolean createJointElems );
+                                               CORBA::Boolean createJointElems )
+    throw (SALOME::SALOME_Exception);
   /*!
    * \brief Double nodes on some external faces and create flat elements.
    * Flat elements are mainly used by some types of mechanic calculations.
