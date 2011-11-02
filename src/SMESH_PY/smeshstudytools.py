@@ -27,7 +27,10 @@ import salome
 SMESH = None    # SMESH module is loaded only when needed
 
 from salome.kernel.studyedit import getStudyEditor
-from salome.gui import helper
+try:
+    from salome.gui import helper
+except ImportError:
+    pass
 
 class SMeshStudyTools:
     """

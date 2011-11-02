@@ -38,9 +38,17 @@ SPHINXBUILD     = sphinx-build
 PAPEROPT_a4     = -D latex_paper_size=a4
 ALLSPHINXOPTS   = -d doctrees $(PAPEROPT_a4) $(SPHINXOPTS) $(SOURCEDIR)
 
+if SMESH_ENABLE_GUI
+SPHINX_PYTHONPATH = $(prefix)/lib/python$(PYTHON_VERSION)/site-packages/salome:$(prefix)/lib64/python$(PYTHON_VERSION)/site-packages/salome:$(GUI_ROOT_DIR)/lib/salome:$(GUI_ROOT_DIR)/lib/python$(PYTHON_VERSION)/site-packages/salome:$(GUI_ROOT_DIR)/lib64/python$(PYTHON_VERSION)/site-packages/salome:$(KERNEL_ROOT_DIR)/bin/salome:$(KERNEL_ROOT_DIR)/lib/python$(PYTHON_VERSION)/site-packages/salome:$(KERNEL_ROOT_DIR)/lib64/python$(PYTHON_VERSION)/site-packages/salome:$(OMNIORB_ROOT)/lib/python$(PYTHON_VERSION)/site-packages:$(OMNIORB_ROOT)/lib64/python$(PYTHON_VERSION)/site-packages
+else !SMESH_ENABLE_GUI
 SPHINX_PYTHONPATH = $(prefix)/lib/python$(PYTHON_VERSION)/site-packages/salome:$(prefix)/lib64/python$(PYTHON_VERSION)/site-packages/salome:$(KERNEL_ROOT_DIR)/bin/salome:$(KERNEL_ROOT_DIR)/lib/python$(PYTHON_VERSION)/site-packages/salome:$(KERNEL_ROOT_DIR)/lib64/python$(PYTHON_VERSION)/site-packages/salome:$(OMNIORB_ROOT)/lib/python$(PYTHON_VERSION)/site-packages:$(OMNIORB_ROOT)/lib64/python$(PYTHON_VERSION)/site-packages
+endif
 
+if SMESH_ENABLE_GUI
+SPHINX_LD_LIBRARY_PATH = $(GUI_ROOT_DIR)/lib/salome:$(KERNEL_ROOT_DIR)/lib/salome:$(OMNIORB_ROOT)/lib
+else !SMESH_ENABLE_GUI
 SPHINX_LD_LIBRARY_PATH = $(KERNEL_ROOT_DIR)/lib/salome:$(OMNIORB_ROOT)/lib
+endif
 
 
 .PHONY: latex
