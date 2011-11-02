@@ -22,5 +22,4 @@ include $(top_srcdir)/adm_local/unix/make_common_starter.am
 salomepypkgdir = $(salomepythondir)/salome/smesh
 salomepypkg_PYTHON = \
 	__init__.py        \
-	smeshstudytools.py \
-	guihelper.py
+	smeshstudytools.py
