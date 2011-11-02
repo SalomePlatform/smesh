@@ -3557,10 +3557,6 @@ Please, create VTK viewer and try again</translation>
         <translation>Wireframe color</translation>
     </message>
     <message>
-        <source>PREF_GROUP_SELECTION</source>
-        <translation>Selection</translation>
-    </message>            
-    <message>
         <source>PREF_SELECTION</source>
         <translation>Selection color</translation>
     </message>

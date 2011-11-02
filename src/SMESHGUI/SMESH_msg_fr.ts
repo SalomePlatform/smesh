@@ -3557,10 +3557,6 @@ Ouvrez une fenêtre VTK et essayez de nouveau</translation>
         <translation>Couleur de contour</translation>
     </message>
     <message>
-        <source>PREF_GROUP_SELECTION</source>
-        <translation>Sélection</translation>
-    </message>            
-    <message>
         <source>PREF_SELECTION</source>
         <translation>Couleur de sélection</translation>
     </message>
