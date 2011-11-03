@@ -582,8 +582,12 @@ void SMESH_GroupBase_i::SetColor(const SALOMEDS::Color& color)
   if (aGroupDS)
   {
     Quantity_Color aQColor( color.R, color.G, color.B, Quantity_TOC_RGB );
-    aGroupDS->SetColor(aQColor);
-    TPythonDump()<<_this()<<".SetColor( SALOMEDS.Color( "<<color.R<<", "<<color.G<<", "<<color.B<<" ))";
+    Quantity_Color oldColor = aGroupDS->GetColor();
+    if ( oldColor != aQColor )
+    {
+      aGroupDS->SetColor(aQColor);
+      TPythonDump()<<_this()<<".SetColor( SALOMEDS.Color( "<<color.R<<", "<<color.G<<", "<<color.B<<" ))";
+    }
   }
 }
 
