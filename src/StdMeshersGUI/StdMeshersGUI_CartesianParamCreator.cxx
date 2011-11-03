@@ -688,3 +688,7 @@ QString StdMeshersGUI_CartesianParamCreator::storeParams() const
   return "";
 }
 
+QString StdMeshersGUI_CartesianParamCreator::helpPage() const
+{
+  return "cartesian_algo_page.html#cartesian_hyp_anchor";
+}
