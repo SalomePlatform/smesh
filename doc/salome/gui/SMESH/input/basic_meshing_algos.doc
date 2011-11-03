@@ -23,10 +23,8 @@ shape of a mesh.</li>
 <ul>
 <li>Triangle meshing algorithms (Mefisto, Netgen 1D-2D and BLSUFR ) - Faces
 are split into triangular elements.</li>
-<li>Quadrangle meshing algorithm (Mapping) - Faces are split into
+<li>Quadrangle meshing algorithm (Mapping) - quadrilateral Faces are split into
 quadrangular elements.</li>
-<li>Radial quadrangle 1D2D algorithm - Faces (circles or part of circles)
-are split into triangular and quadrangle elements.</li>
 </ul>
 
 \image html image123.gif "Example of a triangular 2D mesh"
@@ -36,10 +34,14 @@ are split into triangular and quadrangle elements.</li>
 <li>For meshing of 3D entities (<b>volume objects</b>):</li>
 
 <ul>
-<li>Hexahedron meshing algorithm (i,j,k) - Volumes are split into
+<li>Hexahedron meshing algorithm (i,j,k) - 6-sided Volumes are split into
 hexahedral (cubic) elements.</li>
 <li>Tetrahedron (Netgen and GHS3D) meshing algorithms - Volumes are split into
 tetrahedral (pyramidal) elements.</li>
+<li>\subpage cartesian_algo_page</li>
+internal part of Volumes are split into hexahedral elements forming a
+Cartesian grid; polyhedra and other types of elements are gerenated
+where the geometrical boundary intersects Cartesian cells.</li>
 </ul>
 
 \image html image125.gif "Example of a tetrahedral 3D mesh"

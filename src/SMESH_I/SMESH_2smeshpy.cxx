@@ -1665,6 +1665,16 @@ Handle(_pyHypothesis) _pyHypothesis::NewHypothesis( const Handle(_pyCommand)& th
     hyp = new _pyLayerDistributionHypo( theCreationCmd, "Get3DHypothesis" );
     hyp->SetConvMethodAndType( "LayerDistribution", "RadialPrism_3D");
   }
+  // Cartesian 3D ---------
+  else if ( hypType == "Cartesian_3D" ) {
+    algo->SetConvMethodAndType( "BodyFitted", hypType.ToCString());
+  }
+  else if ( hypType == "CartesianParameters3D" ) {
+    hyp = new _pyComplexParamHypo( theCreationCmd );
+    hyp->SetConvMethodAndType( "SetGrid", "Cartesian_3D");
+    for ( int iArg = 0; iArg < 4; ++iArg )
+      hyp->myArgs.Append("[]");
+  }
 
   return algo->IsValid() ? algo : hyp;
 }
@@ -1835,12 +1845,44 @@ void _pyHypothesis::Assign( const Handle(_pyHypothesis)& theOther,
 //================================================================================
 /*!
  * \brief Remember hypothesis parameter values
-  * \param theCommand - The called hypothesis method
+ * \param theCommand - The called hypothesis method
  */
 //================================================================================
 
 void _pyComplexParamHypo::Process( const Handle(_pyCommand)& theCommand)
 {
+  if ( GetAlgoType() == "Cartesian_3D" )
+  {
+    // CartesianParameters3D hyp
+
+    if ( theCommand->GetMethod() == "SetSizeThreshold" )
+    {
+      myArgs( 4 ) = theCommand->GetArg( 1 );
+      myArgCommands.push_back( theCommand );
+      return;
+    }
+    if ( theCommand->GetMethod() == "SetGrid" ||
+         theCommand->GetMethod() == "SetGridSpacing" )
+    {
+      TCollection_AsciiString axis = theCommand->GetArg( theCommand->GetNbArgs() );
+      int iArg = 1 + ( axis.Value(1) - '0' );
+      if ( theCommand->GetMethod() == "SetGrid" )
+      {
+        myArgs( iArg ) = theCommand->GetArg( 1 );
+      }
+      else
+      {
+        myArgs( iArg ) = "[ ";
+        myArgs( iArg ) += theCommand->GetArg( 1 );
+        myArgs( iArg ) += ", ";
+        myArgs( iArg ) += theCommand->GetArg( 2 );
+        myArgs( iArg ) += "]";
+      }
+      myArgCommands.push_back( theCommand );
+      return;
+    }
+  }
+
   if( theCommand->GetMethod() == "SetLength" )
   {
     // NOW it becomes OBSOLETE
