@@ -1712,6 +1712,23 @@ class Mesh:
         TreatHypoStatus( status, hyp_name, geom_name, isAlgo )
         return status
 
+    ## Return True if an algorithm of hypothesis is assigned to a given shape
+    #  @param hyp a hypothesis to check
+    #  @param geom a subhape of mesh geometry
+    #  @return True of False
+    #  @ingroup l2_hypotheses
+    def IsUsedHypothesis(self, hyp, geom):
+        if not hyp or not geom:
+            return False
+        if isinstance( hyp, Mesh_Algorithm ):
+            hyp = hyp.GetAlgorithm()
+            pass
+        hyps = self.GetHypothesisList(geom)
+        for h in hyps:
+            if h.GetId() == hyp.GetId():
+                return True
+        return False
+
     ## Unassigns a hypothesis
     #  @param hyp a hypothesis to unassign
     #  @param geom a subshape of mesh geometry
@@ -4589,9 +4606,14 @@ class Mesh_Algorithm:
                 if isinstance( arg, geompyDC.GEOM._objref_GEOM_Object ):
                     argStr = arg.GetStudyEntry()
                     if not argStr: argStr = "GEOM_Obj_%s", arg.GetEntry()
+                if len( argStr ) > 10:
+                    argStr = argStr[:7]+"..."
+                    if argStr[0] == '[': argStr += ']'
                 a = a + s + argStr
                 s = ","
                 pass
+            if len(a) > 50:
+                a = a[:47]+"..."
             self.mesh.smeshpyD.SetName(hypo, hyp + a)
             pass
         geomName=""
@@ -6524,52 +6546,48 @@ class Mesh_Cartesian_3D(Mesh_Algorithm):
 
     def __init__(self, mesh, geom=0):
         self.Create(mesh, geom, "Cartesian_3D")
+        self.hyp = None
         return
 
     ## Defines "Body Fitting parameters" hypothesis
-    #  @param xCoords coordinates of grid nodes along the X asix
-    #  @param yCoords coordinates of grid nodes along the Y asix
-    #  @param zCoords coordinates of grid nodes along the Z asix
-    #  @param sizeThreshold size (> 1.0) defines a minimal size of a polyhedron so that
+    #  @param xGridDef is definition of the grid along the X asix.
+    #  It can be in either of two following forms:
+    #  - Explicit coordinates of nodes, e.g. [-1.5, 0.0, 3.1] or range( -100,200,10)
+    #  - Functions f(t) defining grid spacing at each point on grid axis. If there are
+    #    several functions, they must be accompanied by relative coordinates of
+    #    points dividing the whole shape into ranges where the functions apply; points
+    #    coodrinates should vary within (0.0, 1.0) range. Parameter \a t of the spacing
+    #    function f(t) varies from 0.0 to 1.0 witin a shape range. 
+    #    Examples:
+    #    - "10.5" - defines a grid with a constant spacing
+    #    - [["1", "1+10*t", "11"] [0.1, 0.6]] - defines different spacing in 3 ranges.
+    #  @param yGridDef defines the grid along the Y asix the same way as \axGridDef does
+    #  @param zGridDef defines the grid along the Z asix the same way as \axGridDef does
+    #  @param sizeThreshold (> 1.0) defines a minimal size of a polyhedron so that
     #         a polyhedron of size less than hexSize/sizeThreshold is not created
     #  @param UseExisting if ==true - searches for the existing hypothesis created with
     #                     the same parameters, else (default) - creates a new one
-    def SetGrid(self, xCoords, yCoords, zCoords, sizeThreshold, UseExisting=False):
-        hyp = self.Hypothesis("CartesianParameters3D", [xCoords, yCoords, zCoords, sizeThreshold],
-                              UseExisting=UseExisting, CompareMethod=self._compareHyp)
-        hyp.SetGrid(xCoords, 0 )
-        hyp.SetGrid(yCoords, 1 )
-        hyp.SetGrid(zCoords, 2 )
-        hyp.SetSizeThreshold( sizeThreshold )
-        return hyp
+    def SetGrid(self, xGridDef, yGridDef, zGridDef, sizeThreshold=4.0, UseExisting=False):
+        if not self.hyp:
+            self.hyp = self.Hypothesis("CartesianParameters3D",
+                                       [xGridDef, yGridDef, zGridDef, sizeThreshold],
+                                       UseExisting=UseExisting, CompareMethod=self._compareHyp)
+        if not self.mesh.IsUsedHypothesis( self.hyp, self.geom ):
+            self.mesh.AddHypothesis( self.hyp, self.geom )
 
-    ## Defines "Body Fitting parameters" hypothesis
-    #  @param xSpaceFuns functions f(t) defining spacing value at given point on X axis.
-    #         Parameter t of \axSpaceFuns is a position [0.,1.] withing bounding box of
-    #         the shape to mesh or withing an interval defined by internal points
-    #  @param ySpaceFuns functions f(t) defining spacing value at given point on Y axis.
-    #  @param zSpaceFuns functions f(t) defining spacing value at given point on Z axis.
-    #  @param xInternalPoints points (0.,1.) dividing a grid into parts along X direction.
-    #         Number of \axInternalPoints must be one less than number of \axSpaceFuns
-    #  @param yInternalPoints points (0.,1.) dividing a grid into parts along Y direction.
-    #  @param zInternalPoints points (0.,1.) dividing a grid into parts along Z direction.
-    #  @param sizeThreshold size (> 1.0) defines a minimal size of a polyhedron so that
-    #         a polyhedron of size less than hexSize/sizeThreshold is not created
-    #  @param UseExisting if ==true - searches for the existing hypothesis created with
-    #                     the same parameters, else (default) - creates a new one
-    def SetSpacing(self,
-                   xSpaceFuns, ySpaceFuns, zSpaceFuns,
-                   xInternalPoints, yInternalPoints, zInternalPoints,
-                   sizeThreshold, UseExisting=False):
-        hyp = self.Hypothesis("CartesianParameters3D",
-                              [xSpaceFuns, ySpaceFuns, zSpaceFuns, \
-                               xInternalPoints, yInternalPoints, zInternalPoints],
-                              UseExisting=UseExisting, CompareMethod=self._compareHyp)
-        hyp.SetGridSpacing(xSpaceFuns, xInternalPoints, 0)
-        hyp.SetGridSpacing(ySpaceFuns, yInternalPoints, 1)
-        hyp.SetGridSpacing(zSpaceFuns, zInternalPoints, 2)
-        hyp.SetSizeThreshold( sizeThreshold )
-        return hyp
+        for axis, gridDef in enumerate( [xGridDef, yGridDef, zGridDef]):
+            if not gridDef: raise ValueError, "Empty grid definition"
+            if isinstance( gridDef, str ):
+                self.hyp.SetGridSpacing( [gridDef], [], axis )
+            elif isinstance( gridDef[0], str ):
+                self.hyp.SetGridSpacing( gridDef, [], axis )
+            elif isinstance( gridDef[0], int ) or \
+                 isinstance( gridDef[0], float ):
+                self.hyp.SetGrid(gridDef, axis )
+            else:
+                self.hyp.SetGridSpacing( gridDef[0], gridDef[1], axis )
+        self.hyp.SetSizeThreshold( sizeThreshold )
+        return self.hyp
 
     def _compareHyp(self,hyp,args):
         # not implemented yet
