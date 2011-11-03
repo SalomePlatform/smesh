@@ -991,6 +991,9 @@ void _pyMesh::Process( const Handle(_pyCommand)& theCommand )
   else if ( method == "CreateGroupFromFilter" ) // --> GroupOnFilter()
   {
     theCommand->SetMethod( "GroupOnFilter" );
+    Handle(_pyGroup) group = new _pyGroup( theCommand );
+    theGen->AddObject( group );
+
     // GroupOnFilter(typ, name, aFilter0x4743dc0 -> aFilter_1)
     _pyID filterID = theCommand->GetArg(3);
     Handle(_pyObject) filter = theGen->FindObject( filterID );
@@ -1294,7 +1297,8 @@ void _pyMeshEditor::Process( const Handle(_pyCommand)& theCommand)
       "SewBorderToSide","SewSideElements","ChangeElemNodes","GetLastCreatedNodes",
       "GetLastCreatedElems",
       "MirrorMakeMesh","MirrorObjectMakeMesh","TranslateMakeMesh",
-      "TranslateObjectMakeMesh","RotateMakeMesh","RotateObjectMakeMesh","MakeBoundaryMesh"
+      "TranslateObjectMakeMesh","RotateMakeMesh","RotateObjectMakeMesh","MakeBoundaryMesh",
+      "MakeBoundaryElements"
       ,"" }; // <- mark of the end
     sameMethods.Insert( names );
   }
@@ -2829,6 +2833,14 @@ void _pyGroup::Process( const Handle(_pyCommand)& theCommand)
     makeGroupCmd->SetArg( 2, idSource );
     // set new name of a filter
     filter->Process( makeGroupCmd );
+  }
+  else if ( theCommand->GetMethod() == "SetFilter" )
+  {
+    // set new name of a filter
+    _pyID filterID = theCommand->GetArg(1);
+    Handle(_pyObject) filter = theGen->FindObject( filterID );
+    if ( !filter.IsNull() )
+      filter->Process( theCommand );
   }
 }
 
