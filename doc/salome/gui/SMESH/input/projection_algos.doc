@@ -26,7 +26,7 @@ the created \b Edge.
 <br>
 For a group of edges, <b>Source</b> and <b>Target</b> vertices should be
 shared by one edge of the group. If <b>Source</b> and <b>Target</b>
-vertices are specified, the elements of the group must be ajacent.
+vertices are specified, the elements of the group must be adjacent.
 The source and target groups must contain equal number of edges
 and they must form topologically equal structures.
 
