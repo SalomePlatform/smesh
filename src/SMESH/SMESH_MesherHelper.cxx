@@ -895,7 +895,8 @@ bool SMESH_MesherHelper::CheckNodeU(const TopoDS_Edge&   E,
 
 //=======================================================================
 //function : GetMediumPos
-//purpose  : Return index and type of the shape to set a medium node on
+//purpose  : Return index and type of the shape  (EDGE or FACE only) to
+//          set a medium node on
 //=======================================================================
 
 std::pair<int, TopAbs_ShapeEnum> SMESH_MesherHelper::GetMediumPos(const SMDS_MeshNode* n1,
@@ -910,42 +911,40 @@ std::pair<int, TopAbs_ShapeEnum> SMESH_MesherHelper::GetMediumPos(const SMDS_Mes
     shapeType = myShape.ShapeType();
     shapeID   = myShapeID;
   }
+  else if ( n1->getshapeId() == n2->getshapeId() )
+  {
+    shapeID = n2->getshapeId();
+    shape = GetSubShapeByNode( n1, GetMeshDS() );
+  }
   else
   {
-    const SMDS_PositionPtr Pos1 = n1->GetPosition();
-    const SMDS_PositionPtr Pos2 = n2->GetPosition();
+    const SMDS_TypeOfPosition Pos1 = n1->GetPosition()->GetTypeOfPosition();
+    const SMDS_TypeOfPosition Pos2 = n2->GetPosition()->GetTypeOfPosition();
 
-    if( Pos1->GetTypeOfPosition()==SMDS_TOP_FACE )
-    {
-      shapeType = TopAbs_FACE;
-      shapeID   = n1->getshapeId();
-    }
-    else if( Pos2->GetTypeOfPosition()==SMDS_TOP_FACE )
-    {
-      shapeType = TopAbs_FACE;
-      shapeID   = n2->getshapeId();
-    }
-    else if (Pos1->GetTypeOfPosition()==SMDS_TOP_3DSPACE ||
-             Pos2->GetTypeOfPosition()==SMDS_TOP_3DSPACE )
+    if ( Pos1 == SMDS_TOP_3DSPACE || Pos2 == SMDS_TOP_3DSPACE )
     {
     }
-    else if ( Pos1->GetTypeOfPosition()==SMDS_TOP_EDGE &&
-              Pos2->GetTypeOfPosition()==SMDS_TOP_EDGE )
+    else if ( Pos1 == SMDS_TOP_FACE || Pos2 == SMDS_TOP_FACE )
     {
-      if ( n1->getshapeId() == n2->getshapeId() )
+      if ( Pos1 != SMDS_TOP_FACE || Pos2 != SMDS_TOP_FACE )
       {
-        shapeType = TopAbs_EDGE;
-        shapeID   = n1->getshapeId();
-      }
-      else
-      {
-        TopoDS_Shape E1 = GetSubShapeByNode( n1, GetMeshDS() );
-        TopoDS_Shape E2 = GetSubShapeByNode( n2, GetMeshDS() );
-        shape = GetCommonAncestor( E1, E2, *myMesh, TopAbs_FACE );
+        if ( Pos1 != SMDS_TOP_FACE ) std::swap( n1,n2 );
+        TopoDS_Shape F = GetSubShapeByNode( n1, GetMeshDS() );
+        TopoDS_Shape S = GetSubShapeByNode( n2, GetMeshDS() );
+        if ( IsSubShape( S, F ))
+        {
+          shapeType = TopAbs_FACE;
+          shapeID   = n1->getshapeId();
+        }
       }
     }
-    else if ( Pos1->GetTypeOfPosition()==SMDS_TOP_VERTEX &&
-              Pos2->GetTypeOfPosition()==SMDS_TOP_VERTEX )
+    else if ( Pos1 == SMDS_TOP_EDGE && Pos2 == SMDS_TOP_EDGE )
+    {
+      TopoDS_Shape E1 = GetSubShapeByNode( n1, GetMeshDS() );
+      TopoDS_Shape E2 = GetSubShapeByNode( n2, GetMeshDS() );
+      shape = GetCommonAncestor( E1, E2, *myMesh, TopAbs_FACE );
+    }
+    else if ( Pos1 == SMDS_TOP_VERTEX && Pos2 == SMDS_TOP_VERTEX )
     {
       TopoDS_Shape V1 = GetSubShapeByNode( n1, GetMeshDS() );
       TopoDS_Shape V2 = GetSubShapeByNode( n2, GetMeshDS() );
@@ -954,7 +953,7 @@ std::pair<int, TopAbs_ShapeEnum> SMESH_MesherHelper::GetMediumPos(const SMDS_Mes
     }
     else // VERTEX and EDGE
     {
-      if ( Pos1->GetTypeOfPosition()!=SMDS_TOP_VERTEX ) std::swap( n1,n2 );
+      if ( Pos1 != SMDS_TOP_VERTEX ) std::swap( n1,n2 );
       TopoDS_Shape V = GetSubShapeByNode( n1, GetMeshDS() );
       TopoDS_Shape E = GetSubShapeByNode( n2, GetMeshDS() );
       if ( IsSubShape( V, E ))
@@ -963,9 +962,11 @@ std::pair<int, TopAbs_ShapeEnum> SMESH_MesherHelper::GetMediumPos(const SMDS_Mes
         shape = GetCommonAncestor( V, E, *myMesh, TopAbs_FACE );
     }
   }
+
   if ( !shape.IsNull() )
   {
-    shapeID = GetMeshDS()->ShapeToIndex( shape );
+    if ( shapeID < 1 )
+      shapeID = GetMeshDS()->ShapeToIndex( shape );
     shapeType = shape.ShapeType();
   }
   return make_pair( shapeID, shapeType );
@@ -999,9 +1000,6 @@ const SMDS_MeshNode* SMESH_MesherHelper::GetMediumNode(const SMDS_MeshNode* n1,
 
   // get type of shape for the new medium node
   int faceID = -1, edgeID = -1;
-  const SMDS_PositionPtr Pos1 = n1->GetPosition();
-  const SMDS_PositionPtr Pos2 = n2->GetPosition();
-
   TopoDS_Edge E; double u [2];
   TopoDS_Face F; gp_XY  uv[2];
   bool uvOK[2] = { false, false };
@@ -1017,10 +1015,11 @@ const SMDS_MeshNode* SMESH_MesherHelper::GetMediumNode(const SMDS_MeshNode* n1,
   }
   else if ( pos.second == TopAbs_EDGE )
   {
-    if ( Pos1->GetTypeOfPosition()==SMDS_TOP_EDGE &&
-         Pos2->GetTypeOfPosition()==SMDS_TOP_EDGE &&
-         n1->getshapeId() != n2->getshapeId() ) // issue 0021006
-    return getMediumNodeOnComposedWire(n1,n2,force3d);
+    if ( n1->GetPosition()->GetTypeOfPosition()==SMDS_TOP_EDGE &&
+         n2->GetPosition()->GetTypeOfPosition()==SMDS_TOP_EDGE &&
+         n1->getshapeId() != n2->getshapeId() )
+      // issue 0021006
+      return getMediumNodeOnComposedWire(n1,n2,force3d);
     
     E = TopoDS::Edge(meshDS->IndexToShape( edgeID = pos.first ));
     u[0] = GetNodeU(E,n1,n2, force3d ? 0 : &uvOK[0]);
