@@ -1754,6 +1754,9 @@ SMESH_Group* SMESH_Mesh::ConvertToStandalone ( int theGroupID )
   while ( anItr->more() )
     aNewGrpDS->Add( (anItr->next())->GetID() );
 
+  // set color
+  aNewGrpDS->SetColor( anOldGrpDS->GetColor() );
+
   // remove old group
   delete anOldGrp;
 
