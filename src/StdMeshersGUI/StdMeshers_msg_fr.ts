@@ -157,11 +157,12 @@
     </message>
     <message>
         <source>SMESH_STRETCH_FACTOR</source>
-        <translation>Facteur d'échelle</translation>
+        <translation>Facteur d&apos;échelle</translation>
     </message>
     <message>
         <source>SMESH_FACES_WO_LAYERS</source>
-        <translation>Faces sans couche limite</translation>
+        <translation>Faces sans couche limite
+(entrées et sorties)</translation>
     </message>
     <message>
         <source>SMESH_MAX_LENGTH_TITLE</source>
