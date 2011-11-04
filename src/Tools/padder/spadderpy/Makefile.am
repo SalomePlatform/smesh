@@ -1,0 +1,11 @@
+include $(top_srcdir)/adm_local/unix/make_common_starter.am
+
+SUBDIRS = gui plugin
+
+spadderpydir=$(smeshpypkgdir)/spadder
+spadderpy_PYTHON = \
+	__init__.py \
+	configreader.py
+
+salomeplugins_DATA = \
+	padder.cfg

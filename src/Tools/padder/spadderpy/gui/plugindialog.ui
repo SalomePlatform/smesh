@@ -1,0 +1,159 @@
+<ui version="4.0" >
+ <class>PluginDialog</class>
+ <widget class="QDialog" name="PluginDialog" >
+  <property name="geometry" >
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>417</width>
+    <height>367</height>
+   </rect>
+  </property>
+  <property name="windowTitle" >
+   <string>Create a mesh with PADDER</string>
+  </property>
+  <layout class="QHBoxLayout" >
+   <property name="margin" >
+    <number>9</number>
+   </property>
+   <property name="spacing" >
+    <number>6</number>
+   </property>
+   <item>
+    <layout class="QVBoxLayout" >
+     <property name="margin" >
+      <number>0</number>
+     </property>
+     <property name="spacing" >
+      <number>6</number>
+     </property>
+     <item>
+      <widget class="QFrame" name="frameInput" >
+       <property name="frameShadow" >
+        <enum>QFrame::Raised</enum>
+       </property>
+       <property name="lineWidth" >
+        <number>1</number>
+       </property>
+       <property name="midLineWidth" >
+        <number>0</number>
+       </property>
+       <layout class="QHBoxLayout" >
+        <property name="margin" >
+         <number>9</number>
+        </property>
+        <property name="spacing" >
+         <number>6</number>
+        </property>
+       </layout>
+      </widget>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" >
+       <property name="margin" >
+        <number>0</number>
+       </property>
+       <property name="spacing" >
+        <number>6</number>
+       </property>
+       <item>
+        <widget class="QTextEdit" name="txtLog" />
+       </item>
+       <item>
+        <layout class="QVBoxLayout" >
+         <property name="margin" >
+          <number>0</number>
+         </property>
+         <property name="spacing" >
+          <number>6</number>
+         </property>
+         <item>
+          <widget class="QPushButton" name="btnInput" >
+           <property name="text" >
+            <string>Input</string>
+           </property>
+           <property name="icon" >
+            <iconset>parameters.png</iconset>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="btnCompute" >
+           <property name="text" >
+            <string>Compute</string>
+           </property>
+           <property name="icon" >
+            <iconset>compute.png</iconset>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="btnRefresh" >
+           <property name="text" >
+            <string>Refresh</string>
+           </property>
+           <property name="icon" >
+            <iconset>refresh.png</iconset>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="btnPublish" >
+           <property name="text" >
+            <string>Publish</string>
+           </property>
+           <property name="icon" >
+            <iconset>publish.png</iconset>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer>
+           <property name="orientation" >
+            <enum>Qt::Vertical</enum>
+           </property>
+           <property name="sizeHint" >
+            <size>
+             <width>75</width>
+             <height>101</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QPushButton" name="btnClear" >
+           <property name="text" >
+            <string>Clear</string>
+           </property>
+           <property name="icon" >
+            <iconset>clear.png</iconset>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <widget class="QLabel" name="lblStatusBar" >
+       <property name="enabled" >
+        <bool>true</bool>
+       </property>
+       <property name="frameShape" >
+        <enum>QFrame::StyledPanel</enum>
+       </property>
+       <property name="frameShadow" >
+        <enum>QFrame::Sunken</enum>
+       </property>
+       <property name="text" >
+        <string/>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

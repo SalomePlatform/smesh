@@ -1,0 +1,21 @@
+<!DOCTYPE ResourcesCatalog>
+<resources>
+
+   <!-- Generic configuration that should works on every workstation -->
+   <machine name="localhost" hostname="localhost"
+            protocol="ssh" batch="ssh_batch"
+            memInMB="500" CPUFreqMHz="0" nbOfNodes="1" nbOfProcPerNode="1"/>
+
+   <!-- Specific configuration that only works on my workstation (needs ssh authentification) -->
+   <machine name="boulant@claui2p1" 
+            hostname="claui2p1" userName="boulant"
+            protocol="ssh" batch="ssh_batch"
+            memInMB="500" CPUFreqMHz="0" nbOfNodes="1" nbOfProcPerNode="1"/>
+
+   <!-- Specific configuration that only works for nepal team (needs ssh authentification) -->
+   <machine name="nepal@nepal" 
+            hostname="nepal" userName="nepal"
+            protocol="ssh" batch="ssh_batch"
+            memInMB="500" CPUFreqMHz="0" nbOfNodes="1" nbOfProcPerNode="1"/>
+
+</resources>

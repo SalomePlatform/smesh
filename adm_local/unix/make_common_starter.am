@@ -39,6 +39,12 @@ salomescriptdir    = $(bindir)
 salomepythondir    = $(pythondir)/salome
 salomepyexecdir    = $(pyexecdir)/salome
 
+# Root directory of the python packages of SMESH
+smeshpypkgdir      = $(salomepythondir)/salome/smesh
+
+# Directory for installing SALOME plugins files
+salomepluginsdir    = $(prefix)/plugins
+
 # Directory for installing idl files
 salomeidldir       = $(prefix)/idl/salome
 

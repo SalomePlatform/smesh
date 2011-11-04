@@ -301,6 +301,10 @@ if test "${gui_ok}" = "yes"; then
     echo
 
     CHECK_QT
+    AC_PATH_PROG(PYUIC, pyuic4)
+    AC_SUBST(PYUIC)
+    AC_PATH_PROG(PYRCC, pyrcc4)
+    AC_SUBST(PYRCC)
 
     echo
     echo ---------------------------------------------
@@ -365,6 +369,14 @@ echo testing sphinx
 echo ---------------------------------------------
 echo
 CHECK_SPHINX
+
+echo
+echo ---------------------------------------------
+echo testing libxm
+echo ---------------------------------------------
+echo
+dnl Check the libxml that will be required to use the SALOME launcher
+CHECK_LIBXML
 
 echo
 echo ---------------------------------------------
@@ -520,6 +532,23 @@ AC_OUTPUT([ \
   src/SMESH_PY/Makefile \
   src/Tools/Makefile \
   src/Tools/MeshCut/Makefile \
+  src/Tools/padder/Makefile \
+  src/Tools/padder/meshjob/Makefile \
+  src/Tools/padder/meshjob/idl/Makefile \
+  src/Tools/padder/meshjob/impl/Makefile \
+  src/Tools/padder/spadderpy/Makefile \
+  src/Tools/padder/spadderpy/padder.cfg \
+  src/Tools/padder/spadderpy/gui/Makefile \
+  src/Tools/padder/spadderpy/plugin/Makefile \
+  src/Tools/padder/spadderpy/plugin/envPlugins.sh \
+  src/Tools/padder/resources/Makefile \
+  src/Tools/padder/resources/appligen/Makefile \
+  src/Tools/padder/resources/appligen/appligen.sh \
+  src/Tools/padder/resources/appligen/config_appli.xml \
+  src/Tools/padder/resources/padderexe/Makefile \
+  src/Tools/padder/resources/padderexe/envPadder.sh \
+  src/Tools/padder/unittests/Makefile \
+  src/Tools/padder/unittests/autotest.sh \
   resources/Makefile \
   resources/SMESHCatalog.xml \
   resources/SalomeApp.xml \

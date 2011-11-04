@@ -1,0 +1,204 @@
+<ui version="4.0" >
+ <class>InputFrame</class>
+ <widget class="QDialog" name="InputFrame" >
+  <property name="geometry" >
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>509</width>
+    <height>307</height>
+   </rect>
+  </property>
+  <property name="windowTitle" >
+   <string>Input parameters</string>
+  </property>
+  <layout class="QHBoxLayout" >
+   <property name="margin" >
+    <number>9</number>
+   </property>
+   <property name="spacing" >
+    <number>6</number>
+   </property>
+   <item>
+    <layout class="QVBoxLayout" >
+     <property name="margin" >
+      <number>0</number>
+     </property>
+     <property name="spacing" >
+      <number>6</number>
+     </property>
+     <item>
+      <widget class="QLabel" name="lblSmeshObject" >
+       <property name="text" >
+        <string>Input MESH / Output group name / Type :</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" >
+       <property name="margin" >
+        <number>0</number>
+       </property>
+       <property name="spacing" >
+        <number>6</number>
+       </property>
+       <item>
+        <layout class="QVBoxLayout" >
+         <property name="margin" >
+          <number>0</number>
+         </property>
+         <property name="spacing" >
+          <number>6</number>
+         </property>
+         <item>
+          <layout class="QHBoxLayout" >
+           <property name="margin" >
+            <number>0</number>
+           </property>
+           <property name="spacing" >
+            <number>6</number>
+           </property>
+           <item>
+            <layout class="QHBoxLayout" >
+             <property name="margin" >
+              <number>0</number>
+             </property>
+             <property name="spacing" >
+              <number>6</number>
+             </property>
+             <item>
+              <widget class="QPushButton" name="btnSmeshObject" >
+               <property name="sizePolicy" >
+                <sizepolicy>
+                 <hsizetype>0</hsizetype>
+                 <vsizetype>0</vsizetype>
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="maximumSize" >
+                <size>
+                 <width>31</width>
+                 <height>16777215</height>
+                </size>
+               </property>
+               <property name="text" >
+                <string/>
+               </property>
+               <property name="icon" >
+                <iconset>select.png</iconset>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLineEdit" name="txtSmeshObject" >
+               <property name="toolTip" >
+                <string comment="Select the input mesh in the object browser" />
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <widget class="Line" name="line" >
+             <property name="orientation" >
+              <enum>Qt::Vertical</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLineEdit" name="txtGroupName" >
+             <property name="toolTip" >
+              <string comment="Specify the name of the associated group in the output mesh" />
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="Line" name="line_2" >
+             <property name="orientation" >
+              <enum>Qt::Vertical</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QComboBox" name="cmbMeshType" >
+             <property name="toolTip" >
+              <string comment="Select the type of the mesh" />
+             </property>
+             <item>
+              <property name="text" >
+               <string>Béton</string>
+              </property>
+              <property name="icon" >
+               <iconset>concrete.png</iconset>
+              </property>
+             </item>
+             <item>
+              <property name="text" >
+               <string>Acier</string>
+              </property>
+              <property name="icon" >
+               <iconset>steelbar.png</iconset>
+              </property>
+             </item>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="QTableView" name="tblListInput" />
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QVBoxLayout" >
+         <property name="margin" >
+          <number>0</number>
+         </property>
+         <property name="spacing" >
+          <number>6</number>
+         </property>
+         <item>
+          <widget class="QPushButton" name="btnAddInput" >
+           <property name="text" >
+            <string/>
+           </property>
+           <property name="icon" >
+            <iconset>addinput.png</iconset>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="btnDeleteInput" >
+           <property name="text" >
+            <string/>
+           </property>
+           <property name="icon" >
+            <iconset>deleteinput.png</iconset>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer>
+           <property name="orientation" >
+            <enum>Qt::Vertical</enum>
+           </property>
+           <property name="sizeHint" >
+            <size>
+             <width>20</width>
+             <height>40</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
