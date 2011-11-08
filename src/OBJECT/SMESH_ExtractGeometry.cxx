@@ -239,9 +239,14 @@ int SMESH_ExtractGeometry::RequestData(
       
     if ( npts >= numCellPts || (this->ExtractBoundaryCells && npts > 0) )
       {
-      newCellId = output->InsertNextCell(cell->GetCellType(),newCellPts);
-      myElemVTK2ObjIds.push_back(cellId);
-      outputCD->CopyData(cd,cellId,newCellId);
+	if(cell->GetCellType() == VTK_POLYHEDRON) {
+	  newCellPts->Reset();
+	  vtkUnstructuredGrid::SafeDownCast(input)->GetFaceStream( cellId ,newCellPts );	
+	  vtkUnstructuredGrid::ConvertFaceStreamPointIds(newCellPts, pointMap);
+	}
+	  newCellId = output->InsertNextCell(cell->GetCellType(),newCellPts);
+	  myElemVTK2ObjIds.push_back(cellId);
+	  outputCD->CopyData(cd,cellId,newCellId);
       }
     }//for all cells
 
