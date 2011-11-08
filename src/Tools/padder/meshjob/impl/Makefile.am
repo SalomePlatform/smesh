@@ -59,7 +59,7 @@ libSPADDERPluginTesterEngine_la_CXXFLAGS += \
 	-I$(top_srcdir)/src/SMESHDS \
 	-I$(top_srcdir)/src/SMDS \
 	-I$(top_srcdir)/src/SMESHUtils \
-	$(VTK_INCLUDES) $(CAS_CPPFLAGS)
+	$(VTK_INCLUDES) $(CAS_CPPFLAGS) $(BOOST_CPPFLAGS)
 
 libSPADDERPluginTesterEngine_la_LIBADD += \
 	$(top_builddir)/src/SMESH/libSMESHimpl.la \
