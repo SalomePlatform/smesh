@@ -1,1 +1,1 @@
-SUBDIRS = meshjob spadderpy unittests resources
+SUBDIRS = meshjob spadderpy unittests resources doc

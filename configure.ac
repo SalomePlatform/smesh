@@ -549,6 +549,8 @@ AC_OUTPUT([ \
   src/Tools/padder/resources/padderexe/envPadder.sh \
   src/Tools/padder/unittests/Makefile \
   src/Tools/padder/unittests/autotest.sh \
+  src/Tools/padder/doc/Makefile \
+  src/Tools/padder/doc/doxyfile \
   resources/Makefile \
   resources/SMESHCatalog.xml \
   resources/SalomeApp.xml \

@@ -44,6 +44,8 @@ import MESHJOB
 #
 from salome.smesh import spadder
 spadder.loadSpadderCatalog()
+
+salome.salome_init()
 component = salome.lcc.FindOrLoadComponent("FactoryServer","MeshJobManager")
 config = MESHJOB.ConfigParameter(resname="localhost",
                                  binpath=pathpadderexe,

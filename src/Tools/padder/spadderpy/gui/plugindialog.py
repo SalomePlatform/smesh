@@ -22,7 +22,7 @@
 # Author : Guillaume Boulant (EDF)
 #
 
-from PyQt4.QtGui import QDialog, QMessageBox, QIcon
+from PyQt4.QtGui import QDialog, QIcon
 from PyQt4.QtCore import QObject, SIGNAL, SLOT, Qt
 
 from plugindialog_ui import Ui_PluginDialog
@@ -35,6 +35,7 @@ from inputdata import InputData
 import os
 import salome
 from salome.kernel import studyedit
+from salome.kernel.uiexception import AdminException
 
 from omniORB import CORBA
 import SMESH
@@ -106,6 +107,8 @@ class PluginDialog(QDialog):
         the initialize step, by specifing the name of the resource to
         be used.
         '''
+        # We first 
+        
         configReader = ConfigReader()
         config = configReader.getLocalConfig()
         configId = config.resname
@@ -173,12 +176,28 @@ class PluginDialog(QDialog):
 
     def __getJobManager(self):
         """
-        This function requests a pointer to the MeshJobManager servant.
+        This function requests a pointer to the MeshJobManager
+        servant. Note that the component is loaded on first demand,
+        and then the reference is recycled.
         """
+        if self.__dict__.has_key("__jobManager") and self.__jobManager is not None:
+            return self.__jobManager
+
+        # WARN: we first have to update the SALOME components catalog
+        # with the SPADDER components (because they are not defined in
+        # the SMESH catalog, and then they are not in the default
+        # catalog)
+        from salome.smesh import spadder
+        spadder.loadSpadderCatalog()
+        # Then we can load the MeshJobManager component
         component=salome.lcc.FindOrLoadComponent("FactoryServer","MeshJobManager")
         if component is None:
-            self.__log("ERR: the SALOME component MeshJobManager can't be reached")
-        return component
+            msg="ERR: the SALOME component MeshJobManager can't be reached"
+            self.__log(msg)
+            raise AdminException(msg)
+
+        self.__jobManager = component
+        return self.__jobManager
 
     def __log(self, message):
         """
@@ -237,9 +256,9 @@ class PluginDialog(QDialog):
         # from the dialog window.
         self.__listInputData = self.__inputDialog.getData()
         self.__ui.lblStatusBar.setText("Input data OK")
+        self.__log("INF: Press \"Compute\" to start the job")
         self.__setGuiState(["CAN_SELECT", "CAN_COMPUTE"])
         
-
     def onCompute(self):
         '''
         This function is the slot connected to the Compute button. It

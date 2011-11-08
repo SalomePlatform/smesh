@@ -87,3 +87,7 @@ def loadSpadderCatalog():
 
     filename = getSpadderCatalogFilename()
     catalog.ImportXmlCatalogFile(filename)
+
+    from salome.kernel import services
+    print "The list of SALOME components is now:" 
+    print services.getComponentList()

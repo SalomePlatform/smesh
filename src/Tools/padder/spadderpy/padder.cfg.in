@@ -21,8 +21,8 @@ defaultres = local
 # - envpath : the path to the environment file on this resource
 [localhost]
 resname = localhost
-binpath = @prefix@/share/salome/resources/spadder/padderexe/padder.exe
-envpath = @prefix@/share/salome/resources/spadder/padderexe/envPadder.sh
+binpath = @prefix@/share/salome/resources/smesh/padderexe/padder.exe
+envpath = @prefix@/share/salome/resources/smesh/padderexe/envPadder.sh
 
 [venus]
 resname = gboulant@venus

@@ -9,5 +9,8 @@
         <component>
             <component-name>MeshJobManager</component-name>
         </component>
+        <component>
+            <component-name>SPADDERPluginTester</component-name>
+        </component>
     </component-list>
 </begin-catalog>

@@ -24,11 +24,12 @@
 #
 include $(top_srcdir)/adm_local/unix/make_common_starter.am
 
-BUILT_SOURCES = \
-	MESHJOBSK.cc
+BUILT_SOURCES = MESHJOBSK.cc
+IDL_FILES = MESHJOB.idl
 
-IDL_FILES = \
-	MESHJOB.idl
+# For test purpose, we add a little component:
+BUILT_SOURCES += SPADDERPluginTestSK.cc
+IDL_FILES += SPADDERPluginTest.idl
 
 salomeidl_DATA = $(IDL_FILES) 
 

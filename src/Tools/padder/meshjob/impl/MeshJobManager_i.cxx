@@ -28,8 +28,6 @@
 #undef LOG
 #define LOG STDLOG
 
-#include "testhelper.hxx"
-
 //
 // ====================================================================
 // General purpose helper functions (to put elsewhere at least)
