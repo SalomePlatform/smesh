@@ -74,7 +74,6 @@
 #include "SMESHGUI_TranslationDlg.h"
 #include "SMESHGUI_ScaleDlg.h"
 #include "SMESHGUI_TransparencyDlg.h"
-//#include "SMESHGUI_WhatIsDlg.h"
 #include "SMESHGUI_DuplicateNodesDlg.h"
 #include "SMESHGUI_CopyMeshDlg.h"
 

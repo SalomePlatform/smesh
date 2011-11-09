@@ -5485,21 +5485,6 @@ Il y a trop peu de points dans le fichier </translation>
     </message>
 </context>
 <context>
-    <name>SMESHGUI_WhatIsDlg</name>
-    <message>
-        <source>ENTITY_TYPE</source>
-        <translation>Type d&apos;élément </translation>
-    </message>
-    <message>
-        <source>GRAVITY_CENTER</source>
-        <translation>Centre de Gravité</translation>
-    </message>
-    <message>
-        <source>CONNECTED_ELEMENTS</source>
-        <translation>Connecté avec d&apos;Eléments </translation>
-    </message>
-</context>
-<context>
     <name>SMESHGUI_FileInfoDlg</name>
     <message>
         <source>CAPTION</source>
