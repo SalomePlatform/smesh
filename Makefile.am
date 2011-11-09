@@ -48,6 +48,8 @@ salomeinclude_DATA = SMESH_version.h
 EXTRA_DIST +=		\
 	build_configure	\
 	clean_configure	\
+	build_cmake     \
+	build_cmake.bat \
 	LICENCE
 
 dist-hook:
