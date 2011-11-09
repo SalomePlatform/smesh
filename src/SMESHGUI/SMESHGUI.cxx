@@ -52,7 +52,6 @@
 #include "SMESHGUI_Hypotheses.h"
 #include "SMESHGUI_Make2DFrom3DOp.h"
 #include "SMESHGUI_MakeNodeAtPointDlg.h"
-//#include "SMESHGUI_MeshInfosDlg.h"
 #include "SMESHGUI_Measurements.h"
 #include "SMESHGUI_MeshInfo.h"
 #include "SMESHGUI_MeshOp.h"
@@ -71,7 +70,6 @@
 #include "SMESHGUI_SewingDlg.h"
 #include "SMESHGUI_SingleEditDlg.h"
 #include "SMESHGUI_SmoothingDlg.h"
-//#include "SMESHGUI_StandardMeshInfosDlg.h"
 #include "SMESHGUI_SymmetryDlg.h"
 #include "SMESHGUI_TranslationDlg.h"
 #include "SMESHGUI_ScaleDlg.h"
@@ -2739,38 +2737,6 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       }
       break;
     }
-    /*
-  case 902:                                     // STANDARD MESH INFOS
-    {
-      EmitSignalDeactivateDialog();
-      LightApp_SelectionMgr *aSel = SMESHGUI::selectionMgr();
-      SALOME_ListIO selected;
-      if( aSel )
-        aSel->selectedObjects( selected );
-
-      if ( selected.Extent() > 1 ) { // a dlg for each IO
-        SALOME_ListIO IOs;
-        SALOME_ListIteratorOfListIO It (selected);
-        for ( ; It.More(); It.Next() ) {
-          IOs.Clear();
-          IOs.Append( It.Value() );
-          aSel->setSelectedObjects( IOs );
-          ( new SMESHGUI_StandardMeshInfosDlg( this ) )->show();
-        }
-        // restore selection
-        aSel->setSelectedObjects( selected );
-      }
-      else
-        ( new SMESHGUI_StandardMeshInfosDlg( this ) )->show();
-      break;
-    }
-  case 903:                                     // WHAT IS
-    {
-      EmitSignalDeactivateDialog();
-      ( new SMESHGUI_WhatIsDlg( this ) )->show();
-      break;
-    }
-    */
 
   case 904:                                     // FIND ELEM
     {
