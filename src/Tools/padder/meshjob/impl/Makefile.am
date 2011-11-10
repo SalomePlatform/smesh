@@ -19,12 +19,12 @@ LIBXML_LIBS=@LIBXML_LIBS@
 KERNEL_CXXFLAGS=@KERNEL_CXXFLAGS@
 
 libMeshJobManagerEngine_la_CXXFLAGS = \
-	-I$(builddir)/../idl $(KERNEL_CXXFLAGS) \
+	-I$(top_builddir)/src/Tools/padder/meshjob/idl $(KERNEL_CXXFLAGS) \
 	@CORBA_CXXFLAGS@ @CORBA_INCLUDES@ @LIBXML_INCLUDES@
 
 libMeshJobManagerEngine_la_FFLAGS = -fexceptions
 libMeshJobManagerEngine_la_LDFLAGS   = \
-	$(builddir)/../idl/libSalomeIDLSPADDER.la \
+	$(top_builddir)/src/Tools/padder/meshjob/idl/libSalomeIDLSPADDER.la \
 	@KERNEL_LDFLAGS@ -lSalomeContainer -lSalomeKernelHelpers \
 	@LIBXML_LIBS@
 
@@ -40,12 +40,12 @@ libSPADDERPluginTesterEngine_la_SOURCES  = \
 nodist_libSPADDERPluginTesterEngine_la_SOURCES =
 
 libSPADDERPluginTesterEngine_la_CXXFLAGS = \
-	-I$(builddir)/../idl $(KERNEL_CXXFLAGS) \
+	-I$(top_builddir)/src/Tools/padder/meshjob/idl $(KERNEL_CXXFLAGS) \
 	@CORBA_CXXFLAGS@ @CORBA_INCLUDES@ @LIBXML_INCLUDES@
 
 libSPADDERPluginTesterEngine_la_FFLAGS = -fexceptions
 libSPADDERPluginTesterEngine_la_LIBADD = \
-	$(builddir)/../idl/libSalomeIDLSPADDER.la \
+	$(top_builddir)/src/Tools/padder/meshjob/idl/libSalomeIDLSPADDER.la \
 	@KERNEL_LDFLAGS@ -lSalomeContainer -lSalomeKernelHelpers \
 	@LIBXML_LIBS@
 
