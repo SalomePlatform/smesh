@@ -38,10 +38,10 @@ WARNINGS          = YES
 #---------------------------------------------------------------------------
 #Input related options
 #---------------------------------------------------------------------------
-INPUT             = @srcdir@/input		  
+INPUT             = @srcdir@/input @top_srcdir@/src/Tools/padder/doc/input
 FILE_PATTERNS     = *.doc
 EXCLUDE           = 
-IMAGE_PATH        = @srcdir@/images
+IMAGE_PATH        = @srcdir@/images @top_srcdir@/src/Tools/padder/doc/images
 EXAMPLE_PATH      = @top_srcdir@/src/SMESH_SWIG
 
 #---------------------------------------------------------------------------

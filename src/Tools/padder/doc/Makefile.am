@@ -24,64 +24,11 @@ include $(top_srcdir)/adm_local/unix/make_common_starter.am
 EXTRA_DIST += images input
 
 #
-# The simplest way to extends the documentation of SMESH with the
-# documentation for PADDER is to copy the local source files (*.doc
-# and *.png) in the source directory of SMESH documentation. Theses
-# pages will be automagically included in the SMESH documentation
-# generating process (make usr_docs executed at installation step) and
-# will be inserted in the page pages.html that lists the "Related
-# pages". 
+# The simplest way to extend the documentation of SMESH with the
+# documentation for PADDER is to add path to the padder documentation
+# in the SMESH gui documentation
 #
 
-DOC_FILES = \
-	padder_userguide.doc
-
-DOCDIR=$(top_srcdir)/doc/salome/gui/SMESH/input
-
-IMG_FILES = \
-	SMESH_spadder_end.png                            \
-	SMESH_spadder_inputdialog_concrete.png           \
-	SMESH_spadder_inputdialog_start.png              \
-	SMESH_spadder_inputdialog_steelbar.png           \
-	SMESH_spadder_menu.png                           \
-	SMESH_spadder_plugindialog_compute_finished.png  \
-	SMESH_spadder_plugindialog_compute_ready.png     \
-	SMESH_spadder_plugindialog_compute_running.png   \
-	SMESH_spadder_plugindialog_published.png         \
-	SMESH_spadder_plugindialog_start.png             \
-	SMESH_spadder_start.png
-
-
-IMGDIR=$(top_srcdir)/doc/salome/gui/SMESH/images
-
-
-all:
-	@mkdir -p $(DOCDIR); \
-	for docfile in $(DOC_FILES); do  \
-	    if [ ! -h $(DOCDIR)/$${docfile} ]; then \
-	        echo "Linking file $${docfile} to $(DOCDIR)/$${docfile}"; \
-	        ln -s ../$(srcdir)/input/$${docfile} $(DOCDIR)/$${docfile}; \
-	    fi; \
-	done; \
-	for imgfile in $(IMG_FILES); do  \
-	    if [ ! -h $(IMGDIR)/$${imgfile} ]; then \
-	        echo "Linking file $${imgfile} to $(IMGDIR)/$${imgfile}"; \
-	        ln -s ../$(srcdir)/images/$${imgfile} $(IMGDIR)/$${imgfile}; \
-	    fi; \
-	done;
-
-clean-local:
-	@ls | grep -v -e Makefile -e doxyfile | xargs rm -rf; \
-	for docfile in $(DOC_FILES); do  \
-	    echo "Removing file $${docfile} from $(DOCDIR)"; \
-	    rm $(DOCDIR)/$${docfile}; \
-	done; \
-	for imgfile in $(IMG_FILES); do  \
-	    echo "Removing file $${imgfile} from $(IMGDIR)"; \
-	    rm $(IMGDIR)/$${imgfile}; \
-	done;
-
-#
 # For test purpose, we let the user generate a local dosygen
 # documentation including only the local pages  
 #

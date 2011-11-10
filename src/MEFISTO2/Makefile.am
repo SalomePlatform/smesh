@@ -51,3 +51,6 @@ libMEFISTO2D_la_LDFLAGS = \
 #libMEFISTO2D_la_LDFLAGS += -lg2c
 #endif
 
+OBSOLETE_FILES = areteideale.f
+
+EXTRA_DIST += $(OBSOLETE_FILES)

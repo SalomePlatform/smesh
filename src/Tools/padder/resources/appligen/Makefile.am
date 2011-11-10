@@ -20,18 +20,20 @@ include $(top_srcdir)/adm_local/unix/make_common_starter.am
 
 appligendir = $(salomeresdir)/appligen
 
-appligen_DATA=                 \
-	envappli.sh            \
-	config_appli.xml       \
+dist_appligen_DATA=            \
 	appli-splashscreen.jpg \
 	SalomeApp.xml          \
 	CatalogResources.xml
 
-appligen_SCRIPTS= \
+nodist_appligen_DATA=          \
+	envappli.sh            \
+	config_appli.xml
+
+nodist_appligen_SCRIPTS= \
 	appligen.sh
-
-EXTRA_DIST += $(appligen_DATA) $(appligen_SCRIPTS)
-
 
 envappli.sh:
 	$(srcdir)/genenv.sh envappli.sh
+
+EXTRA_DIST += README.txt genenv.sh
+CLEANFILES  = envappli.sh

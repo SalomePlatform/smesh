@@ -34,6 +34,7 @@ libMeshJobManagerEngine_la_LDFLAGS   = \
 lib_LTLIBRARIES += libSPADDERPluginTesterEngine.la
 
 libSPADDERPluginTesterEngine_la_SOURCES  = \
+	SPADDERPluginTester_i.hxx \
         SPADDERPluginTester_i.cxx
 
 nodist_libSPADDERPluginTesterEngine_la_SOURCES =

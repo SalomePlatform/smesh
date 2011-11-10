@@ -6,15 +6,20 @@ include $(top_srcdir)/adm_local/unix/make_common_starter.am
 # sub-package plugins.
 #
 spadderpydir=$(smeshpypkgdir)/spadder/gui
-spadderpy_PYTHON = \
+dist_spadderpy_PYTHON = \
 	__init__.py \
-	plugindialog_ui.py \
 	plugindialog.py \
-	inputframe_ui.py \
 	inputdialog.py \
 	inputdata.py
 
-spadderpy_DATA= \
+PYUIC_FILES = \
+	plugindialog_ui.py \
+	inputframe_ui.py
+
+nodist_spadderpy_PYTHON = $(PYUIC_FILES)
+CLEANFILES = $(PYUIC_FILES)
+
+dist_spadderpy_DATA= \
 	parameters.png \
 	input.png \
 	select.png \
@@ -34,3 +39,5 @@ PYUIC = @PYUIC@
 PYRCC = @PYRCC@
 %_rc.py:%.qrc
 	$(PYRCC) $< -o $@
+
+EXTRA_DIST += $(PYUIC_FILES:%_ui.py=%.ui)
