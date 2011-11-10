@@ -8,5 +8,7 @@ include $(top_srcdir)/adm_local/unix/make_common_starter.am
 salomeplugins_PYTHON = \
 	smesh_plugins.py
 
-salomeplugins_DATA = \
-	envPlugins.sh
+#salomeplugins_DATA = \
+#	envPlugins.sh
+
+

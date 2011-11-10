@@ -43,7 +43,7 @@ salomepyexecdir    = $(pyexecdir)/salome
 smeshpypkgdir      = $(salomepythondir)/salome/smesh
 
 # Directory for installing SALOME plugins files
-salomepluginsdir    = $(prefix)/plugins
+salomepluginsdir    = $(prefix)/share/salome/plugins/@MODULE_NAME@
 
 # Directory for installing idl files
 salomeidldir       = $(prefix)/idl/salome

@@ -25,6 +25,8 @@ import ConfigParser
 from MESHJOB import ConfigParameter
 from salome.kernel.uiexception import AdminException, UiException
 
+from salome_pluginsmanager import PLUGIN_PATH_PATTERN
+CONFIG_RELPATH  = os.path.join(PLUGIN_PATH_PATTERN,'smesh')
 CONFIG_FILENAME = "padder.cfg"
 TYPE_LOCAL   = 'local'
 TYPE_REMOTE  = 'remote'
@@ -37,19 +39,25 @@ class ConfigReader:
         # padder plugin. Then, we have to scan the directories
         # specified in the SALOME plugins path.
         self.__configFilename = None
-        pluginspath=os.environ["SALOME_PLUGINS_PATH"]
-        for path in pluginspath.split(":"):
-            filename = os.path.join(path,CONFIG_FILENAME)
-            if os.path.exists(filename):
-                self.__configFilename = filename
-                break
-        if self.__configFilename is None:
-            msg = "The configuration file %s can't be found in SALOME_PLUGINS_PATH"
-            raise AdminException(msg%CONFIG_FILENAME)
+        try:
+            smeshpath=os.environ["SMESH_ROOT_DIR"]
+        except KeyError, ex:
+            raise AdminException("You should define the variable SALOME_PLUGINS_PATH")
+
+        pluginspath = os.path.join(smeshpath,CONFIG_RELPATH)
+        filename    = os.path.join(pluginspath,CONFIG_FILENAME)
+        if os.path.exists(filename):
+            self.__configFilename = filename
+        else:
+            msg = "The configuration file %s can't be found in the SMESH plugins path %s"
+            raise AdminException(msg%(CONFIG_FILENAME,pluginspath))
 
         print "The configuration file is : %s"%self.__configFilename
         self.__configparser = ConfigParser.RawConfigParser()
-        self.__configparser.read(self.__configFilename)
+        try:
+            self.__configparser.read(self.__configFilename)
+        except ConfigParser.ParsingError, ex:
+            raise AdminException(ex.message)
 
     def getLocalConfig(self):
         return self.__getConfig(TYPE_LOCAL)

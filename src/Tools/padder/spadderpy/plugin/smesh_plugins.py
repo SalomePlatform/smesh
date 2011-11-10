@@ -31,8 +31,7 @@ def runSpadderPlugin(context):
         dialog=plugindialog.getDialog()
     except UiException, err:
         from PyQt4.QtGui import QMessageBox
-        QMessageBox.critical(None,
-                             "An error occurs during PADDER configuration",
+        QMessageBox.critical(None,"An error occurs during PADDER configuration",
                              err.getUIMessage())
         return
     

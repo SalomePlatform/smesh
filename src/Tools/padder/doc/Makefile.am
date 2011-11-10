@@ -26,7 +26,7 @@ EXTRA_DIST += images input
 #
 # The simplest way to extend the documentation of SMESH with the
 # documentation for PADDER is to add path to the padder documentation
-# in the SMESH gui documentation
+# in the SMESH gui documentation (see the doxyfile).
 #
 
 # For test purpose, we let the user generate a local dosygen
