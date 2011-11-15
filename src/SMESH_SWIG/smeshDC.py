@@ -4660,7 +4660,7 @@ class Mesh_Algorithm:
 
     ## Transform a list of ether edges or tuples (edge 1st_vertex_of_edge)
     #  into a list acceptable to SetReversedEdges() of some 1D hypotheses
-    #  @ingroupl3_hypos_1dhyps
+    #  @ingroup l3_hypos_1dhyps
     def ReversedEdgeIndices(self, reverseList):
         resList = []
         geompy = self.mesh.geompyD
@@ -5202,7 +5202,7 @@ class Mesh_Triangle(Mesh_Algorithm):
     ## Sets topology usage way.
     # @param way defines how mesh conformity is assured <ul>
     # <li>FromCAD - mesh conformity is assured by conformity of a shape</li>
-    # <li>PreProcess or PreProcessPlus - by pre-processing a CAD model</li></ul>
+    # <li>PreProcess or PreProcessPlus - by pre-processing a CAD model</li>
     # <li>PreCAD - by pre-processing with PreCAD a CAD model</li></ul>
     #  @ingroup l3_hypos_blsurf
     def SetTopology(self, way):
@@ -6561,8 +6561,8 @@ class Mesh_Cartesian_3D(Mesh_Algorithm):
     #    Examples:
     #    - "10.5" - defines a grid with a constant spacing
     #    - [["1", "1+10*t", "11"] [0.1, 0.6]] - defines different spacing in 3 ranges.
-    #  @param yGridDef defines the grid along the Y asix the same way as \axGridDef does
-    #  @param zGridDef defines the grid along the Z asix the same way as \axGridDef does
+    #  @param yGridDef defines the grid along the Y asix the same way as \a xGridDef does
+    #  @param zGridDef defines the grid along the Z asix the same way as \a xGridDef does
     #  @param sizeThreshold (> 1.0) defines a minimal size of a polyhedron so that
     #         a polyhedron of size less than hexSize/sizeThreshold is not created
     #  @param UseExisting if ==true - searches for the existing hypothesis created with
