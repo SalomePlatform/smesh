@@ -15,7 +15,7 @@ The following dialog box will appear:
 \image html editgroup.png
 
 In this dialog box you can modify the name and the color of your group
-despite of it's type. You can add or remove the elements forming the
+despite of its type. You can add or remove the elements forming a
 <em>standalone group</em>. You can change criteria of the filter of
 the <em>group on filter</em>. For more information see
 \ref creating_groups_page "Creating Groups" page.
@@ -35,8 +35,8 @@ Standalone</b> item.</li>
 \image html image74.gif
 <center><em>"Edit Group as Standalone" button</em></center>
 
-The selected group will be converted into a standalone group and can
-it's contents can be modified.
+The selected group will be converted into a standalone group and 
+its contents can be modified.
 
 <li>Click the \b Apply or <b>Apply and Close</b> button to confirm modification of the
 group.</li>

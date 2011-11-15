@@ -39,8 +39,8 @@ hexahedral (cubic) elements.</li>
 <li>Tetrahedron (Netgen and GHS3D) meshing algorithms - Volumes are split into
 tetrahedral (pyramidal) elements.</li>
 <li>\subpage cartesian_algo_page</li>
-internal part of Volumes are split into hexahedral elements forming a
-Cartesian grid; polyhedra and other types of elements are gerenated
+internal parts of Volumes are split into hexahedral elements forming a
+Cartesian grid; polyhedra and other types of elements are generated
 where the geometrical boundary intersects Cartesian cells.</li>
 </ul>
 

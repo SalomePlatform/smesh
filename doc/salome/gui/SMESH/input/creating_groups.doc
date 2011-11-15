@@ -2,10 +2,10 @@
 
 \page creating_groups_page Creating groups
 
-\n In MESH you can create groups of elements of a certain type whose
-contents is defined in different ways. To create a group, in the \b
+\n In MESH you can create a group of elements of a certain type. The
+contents of the group can be defined in different ways. To create a group, in the \b
 Mesh menu select <b>Create Group</b> item (also available in the
-contextual menu of the mesh).<br> 
+context menu of the mesh).<br> 
 To create a group of any type you should define the following: 
 <ul>
 <li><b>Mesh</b> - the mesh whose elements will form your
@@ -36,18 +36,18 @@ the following ways:
 <ul>
 <li>By adding all entities of the chosen type existing in the
   mesh. For this, turn on the <b>Select All</b> check box. In this mode
-  all controls, which allow selecting the entities in other ways are
+  all controls, which allow selecting the entities in other ways, are
   disabled.</li>
 <li>By applying the Filter. The <b>Set filter</b> button allows to
   define the filter for selection of the elements for your group. See more
   about filters on the 
   \ref selection_filter_library_page "Selection filter library" page.<br>
-  If the <b>Enable manual edition</b> check box is turned off, the defined
-  filter defines contents of the group. In this mode, the filter is
-  applied to all elements of the mesh. If none entity satisfies the
-  filter, the \b Apply button is disabled.<br>
+  If the <b>Enable manual edition</b> check box is turned off, the 
+  filter entirely defines the group contents. In this mode, the filter is
+  applied to all elements of the mesh. If there are no entities
+  corresponding to the filter, the \b Apply button is disabled.<br>
   If the <b>Enable manual edition</b> check box is turned on, the defined
-  filter can be used to for selection of entities composing the group.</li>
+  filter can be used to for selection of entities for the group.</li>
 <li>By choosing entities manually with the mouse in the 3D Viewer. For
   this, turn on the <b>Enable manual edition</b> check box. You can
   click on an element in the 3D viewer and it will be highlighted. After
@@ -56,11 +56,11 @@ the following ways:
 <li>By adding entities from either a submesh or an existing
   group.  For this, turn on the <b>Enable manual edition</b> check
   box. <b>Select from</b> set of fields allows to select a submesh or
-  a group of an appropriate type.</li>
+  a group of the appropriate type.</li>
 </ul>
 In the <b>manual edition</b> mode you can
 <ul>
-<li>click the \b Remove button to remove selected elements from the list</li>
+<li>click the \b Remove button to remove the selected elements from the list</li>
 <li>click the <b>Sort List</b> button to sort the list of IDs of 
 mesh elements.</li>
 </ul>
@@ -104,7 +104,7 @@ operation.
 To create a group on geometry check <b>Group on geometry</b> in the \b
 Group \b type field. The group on geometry contains the elements
 of a certain type generated on the selected geometrical object. Group
-contents is dynamically updated if the mesh is modified.<br>
+contents are dynamically updated if the mesh is modified.<br>
 To define a group, select in the Objet Browser or in the 3D viewer a
 geometrical object from which the elements will be taken. After
 confirmation of the operation a new group of mesh elements will be
@@ -121,12 +121,11 @@ created.
 operation.
 
 
-
 \anchor group_on_filter <br><h2>"Group on Filter"</h2>
 
 To create a group on filter check <b>Group on filter</b> in the <b>
 Group type</b> field. The group on filter contains the elements
-of a certain type satisfying the defined filter. Group contents is
+of a certain type satisfying the defined filter. Group contents are
 dynamically updated if the mesh is modified.<br> To define a group,
 click the <b>Set filter</b> button and define criteria of the
 filter in the opened dialog. After confirmation of the operation a

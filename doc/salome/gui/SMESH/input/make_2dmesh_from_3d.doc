@@ -7,7 +7,7 @@ elements of a higher dimension.
 
 <em>To generate border elements:</em>
 <ol>
-<li>Select a mesh or groups in the Object Browser or in the 3D Viewer</li>
+<li>Select a mesh or group in the Object Browser or in the 3D Viewer</li>
 <li>From the Modification menu choose "Create boundary elements"
 item, or click "Create boundary elements" button in the toolbar
 

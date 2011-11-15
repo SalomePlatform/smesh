@@ -122,7 +122,8 @@ for ghs3d, for example, advanced options. </li>
 \anchor ghs3d_enforced_vertices
 <h1>Enforced vertices</h1>
 
-\note This feature is currently only available on meshes with no geometry attached. Such meshes can be obtained by
+\note This feature is currently available only on meshes with no
+geometry attached. Such meshes can be obtained by
 <ul>
 <li>Copying an existing mesh</li>
 <li>Importing a mesh from file</li>
@@ -131,7 +132,8 @@ for ghs3d, for example, advanced options. </li>
 
 \image html ghs3d_enforced_vertices.png
 
-GHS3D algorithm can locally make the mesh finer. It is possible to define enforced vertices in the volume where the mesh will be detailed.
+GHS3D algorithm can locally make the mesh finer. It is possible to
+define enforced vertices in the volume where the mesh will be detailed.
 A node will be created at the enforced vertex coordinates.
 
 An enforced vertex is defined by:
@@ -142,14 +144,16 @@ An enforced vertex is defined by:
 <li>or from (x,y,z) cartesian coordinates</li>
 </ul>
 <li>A constant physical size</li>
-<li>If a group name is given, the created node will be added to the group. If the group does not exist, it is created.</li>
+<li>If a group name is given, the created node will be added to the
+group. If the group does not exist, it is created.</li>
 </ul>
 \ref ghs3d_top "Back to top"
 
 \anchor ghs3d_enforced_meshes
 <h1>Enforced Meshes</h1>
 
-\note This feature is currently only available on meshes with no geometry attached. Such meshes can be obtained by
+\note This feature is currently only available on meshes with no
+geometry attached. Such meshes can be obtained by
 <ul>
 <li>Copying an existing mesh</li>
 <li>Importing a mesh from file</li>
@@ -158,8 +162,9 @@ An enforced vertex is defined by:
 
 \image html ghs3d_enforced_meshes.png
 
-GHS3D algorithm can be forced by other meshes, sub-meshes or groups. The constraint elements should be contained
-entirely into the solid meshed.
+GHS3D algorithm can be forced by other meshes, sub-meshes or
+groups. The constraint elements should be contained
+entirely into the solid mesh.
 <ul>
 <li>The constraint element types are:
 <ul>
@@ -167,8 +172,10 @@ entirely into the solid meshed.
 <li>EDGE</li>
 <li>FACE</li>
 </ul></li>
-<li>If a size is given, the meshe will be refined around the enforced elements given the size</li>
-<li>If a group name is given, the enforced elements will be added to the group. If the group does not exist, it is created.</li>
+<li>If a size is given, the mesh will be refined around the enforced
+elements given the size</li>
+<li>If a group name is given, the enforced elements will be added to
+the group. If the group does not exist, it is created.</li>
 </ul>
 
 <br><b>See Also</b> a sample TUI Script of the \ref tui_ghs3d "creation of a Ghs3D hypothesis", including enforced vertices.

@@ -20,7 +20,7 @@ one type. The following ways of creation are possible:
   \subpage creating_groups_page "Create group" dialog.
 - by creating groups of nodes and elements from the chosen submesh
   (type of elements depends on dimension of submesh geometry) -
-  using <b>Mesh -> Construct Group</b> menu item (available in contextual
+  using <b>Mesh -> Construct Group</b> menu item (available in context
   menu as well).
 - by creating groups of entities from existing groups of superior
   dimensions - using \subpage group_of_underlying_elements_page
