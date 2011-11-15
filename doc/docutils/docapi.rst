@@ -10,8 +10,11 @@ code documentation included in source python files.
 :mod:`salome.smesh` -- Package containing the SMESH python utilities
 ====================================================================
 
-:mod:`smeshstudytools` -- Tools to access SMESH objects in the study
---------------------------------------------------------------------
+.. text below is (temporary?) commented since importing smeshstudytools
+.. requires SALOME to be running
 
-.. automodule:: salome.smesh.smeshstudytools
-   :members:
+.. %%%:mod:`smeshstudytools` -- Tools to access SMESH objects in the study
+.. %%%--------------------------------------------------------------------
+
+.. %%%automodule:: salome.smesh.smeshstudytools
+.. %%%   :members:
