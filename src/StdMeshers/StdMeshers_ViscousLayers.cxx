@@ -224,13 +224,14 @@ namespace VISCOUS
                              - M[0][2]*M[1][1]*M[2][0]);
       return determinant > 1e-100;
     }
-    bool IsForward(const gp_XY&        tgtUV,
-                   const TopoDS_Face&  face,
-                   SMESH_MesherHelper& helper,
-                   const double        refSign) const
+    bool IsForward(const gp_XY&         tgtUV,
+                   const SMDS_MeshNode* smoothedNode,
+                   const TopoDS_Face&   face,
+                   SMESH_MesherHelper&  helper,
+                   const double         refSign) const
     {
-      gp_XY prevUV = helper.GetNodeUV( face, _nPrev );
-      gp_XY nextUV = helper.GetNodeUV( face, _nNext );
+      gp_XY prevUV = helper.GetNodeUV( face, _nPrev, smoothedNode );
+      gp_XY nextUV = helper.GetNodeUV( face, _nNext, smoothedNode );
       gp_Vec2d v1( tgtUV, prevUV ), v2( tgtUV, nextUV );
       double d = v1 ^ v2;
       return d*refSign > 1e-100;
@@ -1104,7 +1105,25 @@ bool _ViscousBuilder::findFacesWithLayers()
       {
       case 1:
         {
-          _sdVec[i]._shrinkShape2Shape.insert( make_pair( vInd, facesWOL[0] )); break;
+          helper.SetSubShape( facesWOL[0] );
+          if ( helper.IsRealSeam( vInd )) // inflate along a seam edge?
+          {
+            TopoDS_Shape seamEdge;
+            PShapeIteratorPtr eIt = helper.GetAncestors(vertex, *_mesh, TopAbs_EDGE);
+            while ( eIt->more() && seamEdge.IsNull() )
+            {
+              const TopoDS_Shape* e = eIt->next();
+              if ( helper.IsRealSeam( *e ) )
+                seamEdge = *e;
+            }
+            if ( !seamEdge.IsNull() )
+            {
+              _sdVec[i]._shrinkShape2Shape.insert( make_pair( vInd, seamEdge ));
+              break;
+            }
+          }
+          _sdVec[i]._shrinkShape2Shape.insert( make_pair( vInd, facesWOL[0] ));
+          break;
         }
       case 2:
         {
@@ -2053,10 +2072,12 @@ bool _ViscousBuilder::smoothAndCheck(_SolidData& data,
     TGeomID sInd = data._edges[ iBeg ]->_nodes[0]->getshapeId();
 
     if ( data._edges[ iBeg ]->IsOnEdge() )
-    { // try a simple solution on an analytic EDGE
+    { 
+      dumpFunction(SMESH_Comment("smooth")<<data._index << "_Ed"<<sInd <<"_InfStep"<<nbSteps);
+
+      // try a simple solution on an analytic EDGE
       if ( !smoothAnalyticEdge( data, iBeg, iEnd, surface, F, helper ))
       {
-        dumpFunction(SMESH_Comment("smooth")<<data._index << "_Ed"<<sInd <<"_InfStep"<<nbSteps);
         // smooth on EDGE's
         int step = 0;
         do {
@@ -2069,9 +2090,8 @@ bool _ViscousBuilder::smoothAndCheck(_SolidData& data,
         }
         while ( moved && step++ < 5 );
         //cout << " NB STEPS: " << step << endl;
-
-        dumpFunctionEnd();
       }
+      dumpFunctionEnd();
     }
     else
     {
@@ -2327,21 +2347,35 @@ bool _ViscousBuilder::smoothAnalyticEdge( _SolidData&           data,
         data._edges[i]->_pos.back() = newPos;
         SMDS_MeshNode* tgtNode = const_cast<SMDS_MeshNode*>( data._edges[i]->_nodes.back() );
         tgtNode->setXYZ( newPos.X(), newPos.Y(), newPos.Z() );
+        dumpMove( tgtNode );
       }
     }
     else
     {
       gp_XY uv0 = helper.GetNodeUV( F, data._edges[iFrom]->_2neibors->_nodes[0]);
       gp_XY uv1 = helper.GetNodeUV( F, data._edges[iTo-1]->_2neibors->_nodes[1]);
+      if ( data._edges[iFrom]->_2neibors->_nodes[0] ==
+           data._edges[iTo-1]->_2neibors->_nodes[1] ) // closed edge
+      {
+        int iPeriodic = helper.GetPeriodicIndex();
+        if ( iPeriodic == 1 || iPeriodic == 2 )
+        {
+          uv1.SetCoord( iPeriodic, helper.GetOtherParam( uv1.Coord( iPeriodic )));
+          if ( uv0.Coord( iPeriodic ) > uv1.Coord( iPeriodic ))
+            std::swap( uv0, uv1 );
+        }
+      }
+      const gp_XY rangeUV = uv1 - uv0;
       for ( int i = iFrom; i < iTo; ++i )
       {
         double r = len[i-iFrom] / len.back();
-        gp_XY  newUV = uv0 * ( 1. - r ) + uv1 * r;
+        gp_XY newUV = uv0 + r * rangeUV;
         data._edges[i]->_pos.back().SetCoord( newUV.X(), newUV.Y(), 0 );
 
         gp_Pnt newPos = surface->Value( newUV.X(), newUV.Y() );
         SMDS_MeshNode* tgtNode = const_cast<SMDS_MeshNode*>( data._edges[i]->_nodes.back() );
         tgtNode->setXYZ( newPos.X(), newPos.Y(), newPos.Z() );
+        dumpMove( tgtNode );
 
         SMDS_FacePosition* pos = static_cast<SMDS_FacePosition*>( tgtNode->GetPosition() );
         pos->SetUParameter( newUV.X() );
@@ -2388,6 +2422,7 @@ bool _ViscousBuilder::smoothAnalyticEdge( _SolidData&           data,
         gp_Pnt newPos = surface->Value( newUV.X(), newUV.Y() );
         SMDS_MeshNode* tgtNode = const_cast<SMDS_MeshNode*>( data._edges[i]->_nodes.back() );
         tgtNode->setXYZ( newPos.X(), newPos.Y(), newPos.Z() );
+        dumpMove( tgtNode );
 
         SMDS_FacePosition* pos = static_cast<SMDS_FacePosition*>( tgtNode->GetPosition() );
         pos->SetUParameter( newUV.X() );
@@ -3329,7 +3364,6 @@ bool _ViscousBuilder::shrink()
     _SolidData&     data = *f2sd->second;
     TNode2Edge&   n2eMap = data._n2eMap;
     const TopoDS_Face& F = TopoDS::Face( getMeshDS()->IndexToShape( f2sd->first ));
-    const bool   reverse = ( data._reversedFaceIds.count( f2sd->first ));
 
     Handle(Geom_Surface) surface = BRep_Tool::Surface(F);
 
@@ -3357,12 +3391,15 @@ bool _ViscousBuilder::shrink()
     // Find out face orientation
     double refSign = 1;
     const set<TGeomID> ignoreShapes;
+    bool isOkUV;
     if ( !smoothNodes.empty() )
     {
-      gp_XY uv = helper.GetNodeUV( F, smoothNodes[0] );
       vector<_Simplex> simplices;
       getSimplices( smoothNodes[0], simplices, ignoreShapes );
-      if ( simplices[0].IsForward(uv, F, helper,refSign) != (!reverse))
+      helper.GetNodeUV( F, simplices[0]._nPrev, 0, &isOkUV ); // fix UV of silpmex nodes
+      helper.GetNodeUV( F, simplices[0]._nNext, 0, &isOkUV );
+      gp_XY uv = helper.GetNodeUV( F, smoothNodes[0], 0, &isOkUV );
+      if ( !simplices[0].IsForward(uv, smoothNodes[0], F, helper,refSign) )
         refSign = -1;
     }
 
@@ -3411,7 +3448,6 @@ bool _ViscousBuilder::shrink()
     }
 
     // Create _SmoothNode's on face F
-    bool isOkUV;
     vector< _SmoothNode > nodesToSmooth( smoothNodes.size() );
     {
       dumpFunction(SMESH_Comment("beforeShrinkFace")<<f2sd->first); // debug
@@ -3465,8 +3501,6 @@ bool _ViscousBuilder::shrink()
         shrinked |= lEdges[i]->SetNewLength2d( surface,F,helper );
       }
       dumpFunctionEnd();
-      if ( !shrinked )
-        break;
 
       // Move nodes on EDGE's
       set< _Shrinker1D* >::iterator shr = eShri1D.begin();
@@ -3498,6 +3532,9 @@ bool _ViscousBuilder::shrink()
       }
       if ( badNb > 0 )
         return error(SMESH_Comment("Can't shrink 2D mesh on face ") << f2sd->first );
+
+      if ( !shrinked )
+        break;
     }
     // No wrongly shaped faces remain; final smooth. Set node XYZ.
     // First, find out a needed quality of smoothing (high for quadrangles only)
@@ -3517,7 +3554,7 @@ bool _ViscousBuilder::shrink()
         highQuality = ( *nbNodesSet.begin() == 4 );
       }
     }
-    for ( int st = highQuality ? 8 : 3; st; --st )
+    for ( int st = highQuality ? 10 : 3; st; --st )
     {
       dumpFunction(SMESH_Comment("shrinkFace")<<f2sd->first<<"_st"<<++smooStep); // debug
       for ( unsigned i = 0; i < nodesToSmooth.size(); ++i )
@@ -3527,7 +3564,7 @@ bool _ViscousBuilder::shrink()
     // Set an event listener to clear FACE sub-mesh together with SOLID sub-mesh
     _SrinkShapeListener::ToClearSubMeshWithSolid( sm, data._solid );
 
-  }// loop on FACES to srink mesh on
+  } // loop on FACES to srink mesh on
 
 
   // Replace source nodes by target nodes in shrinked mesh edges
@@ -3822,18 +3859,18 @@ bool _SmoothNode::Smooth(int&                  badNb,
   // compute new UV for the node
   gp_XY newPos (0,0);
   for ( unsigned i = 0; i < _simplices.size(); ++i )
-    newPos += helper.GetNodeUV( face, _simplices[i]._nPrev );
+    newPos += helper.GetNodeUV( face, _simplices[i]._nPrev, _node );
   newPos /= _simplices.size();
 
   // count quality metrics (orientation) of triangles around the node
   int nbOkBefore = 0;
   gp_XY tgtUV = helper.GetNodeUV( face, _node );
   for ( unsigned i = 0; i < _simplices.size(); ++i )
-    nbOkBefore += _simplices[i].IsForward( tgtUV, face, helper, refSign );
+    nbOkBefore += _simplices[i].IsForward( tgtUV, _node, face, helper, refSign );
 
   int nbOkAfter = 0;
   for ( unsigned i = 0; i < _simplices.size(); ++i )
-    nbOkAfter += _simplices[i].IsForward( newPos, face, helper, refSign );
+    nbOkAfter += _simplices[i].IsForward( newPos, _node, face, helper, refSign );
 
   if ( nbOkAfter < nbOkBefore )
     return false;
