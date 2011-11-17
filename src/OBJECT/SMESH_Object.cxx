@@ -595,8 +595,13 @@ bool SMESH_VisualObjDef::GetEdgeNodes( const int theElemId,
 
 vtkUnstructuredGrid* SMESH_VisualObjDef::GetUnstructuredGrid()
 {
-        //MESSAGE("SMESH_VisualObjDef::GetUnstructuredGrid " << myGrid);
-        return myGrid;
+  if ( !myLocalGrid && !GetMesh()->isCompacted() )
+  {
+    GetMesh()->compactMesh();
+    vtkUnstructuredGrid *theGrid = GetMesh()->getGrid();
+    myGrid->ShallowCopy(theGrid);
+  }
+  return myGrid;
 }
 
 
