@@ -1637,18 +1637,18 @@ void SMESH_ActorDef::UpdateHighlight(){
   case SMESH_DeviceActor::eWireframe:
     {
       if(myIsHighlighted) {
-	myHighlitableActor->SetProperty(myHighlightProp);
+        myHighlitableActor->SetProperty(myHighlightProp);
       }else if(myIsPreselected){
-	myHighlitableActor->SetProperty(myPreselectProp);
+        myHighlitableActor->SetProperty(myPreselectProp);
       } else if(anIsVisible){
-	(myRepresentation == eSurface) ? 
-	  myHighlitableActor->SetProperty(myOutLineProp) : myHighlitableActor->SetProperty(myEdgeProp);
+        (myRepresentation == eSurface) ? 
+          myHighlitableActor->SetProperty(myOutLineProp) : myHighlitableActor->SetProperty(myEdgeProp);
       }
       if(GetUnstructuredGrid()->GetNumberOfCells()) {
-	myHighlitableActor->SetHighlited(anIsVisible);
-	myHighlitableActor->GetExtractUnstructuredGrid()->
-	  SetModeOfExtraction(VTKViewer_ExtractUnstructuredGrid::eCells);
-	myHighlitableActor->SetRepresentation(SMESH_DeviceActor::eWireframe);
+        myHighlitableActor->SetHighlited(anIsVisible);
+        myHighlitableActor->GetExtractUnstructuredGrid()->
+          SetModeOfExtraction(VTKViewer_ExtractUnstructuredGrid::eCells);
+        myHighlitableActor->SetRepresentation(SMESH_DeviceActor::eWireframe);
       }
       myHighlitableActor->SetVisibility(anIsVisible);
       break;
@@ -1656,11 +1656,11 @@ void SMESH_ActorDef::UpdateHighlight(){
   case SMESH_DeviceActor::ePoint:
     {
       if(myIsHighlighted) {
-	myNodeActor->SetProperty(myHighlightProp);
+        myNodeActor->SetProperty(myHighlightProp);
       }else if(myIsPreselected) {
-	myNodeActor->SetProperty(myPreselectProp);
+        myNodeActor->SetProperty(myPreselectProp);
       } else if(anIsVisible) {
-	myNodeActor->SetProperty(myNodeProp);
+        myNodeActor->SetProperty(myNodeProp);
       }
       myNodeActor->SetRepresentation(SMESH_DeviceActor::ePoint);
       myNodeActor->GetExtractUnstructuredGrid()->SetModeOfExtraction(VTKViewer_ExtractUnstructuredGrid::ePoints);
