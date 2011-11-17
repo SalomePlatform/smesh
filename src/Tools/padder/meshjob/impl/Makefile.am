@@ -25,7 +25,7 @@ libMeshJobManagerEngine_la_CXXFLAGS = \
 libMeshJobManagerEngine_la_FFLAGS = -fexceptions
 libMeshJobManagerEngine_la_LDFLAGS   = \
 	$(top_builddir)/src/Tools/padder/meshjob/idl/libSalomeIDLSPADDER.la \
-	@KERNEL_LDFLAGS@ -lSalomeContainer -lSalomeKernelHelpers \
+	@KERNEL_LDFLAGS@ -lSalomeContainer -lSalomeKernelHelpers -lSalomeLifeCycleCORBA \
 	@LIBXML_LIBS@
 
 # =============================================================

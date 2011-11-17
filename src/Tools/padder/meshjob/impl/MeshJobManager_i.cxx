@@ -18,6 +18,13 @@
 //
 // Authors : Guillaume Boulant (EDF) - 01/03/2011
 
+#ifdef WIN32
+#include <winsock2.h>
+#include <windows.h> 
+#else
+#include <sys/time.h>
+#endif
+
 #include "MeshJobManager_i.hxx"
 
 #include <SALOMEconfig.h>
@@ -33,16 +40,19 @@
 // General purpose helper functions (to put elsewhere at least)
 // ====================================================================
 //
-#include <sys/time.h>
+
 /*!
  * This function must be used to associate a datetime tag to a job
  */
+
+#ifndef WIN32
 static long timetag() {
   timeval tv;
   gettimeofday(&tv,0);
   long tag = tv.tv_usec + tv.tv_sec*1000000;
   return tag;
 }
+#endif
 
 /*!
  * This function returns true if the string text starts with the string
@@ -93,9 +103,15 @@ MeshJobManager_i::~MeshJobManager_i() {
 // ====================================================================
 //
 #include <fstream>     // to get the file streams
+#ifdef WNT             
+#include <stdlib.h>    // to get _splitpath
+#include <direct.h>    // to get _mkdir
+#else
+#include <unistd.h>    // to get basename
 #include <sys/stat.h>  // to get mkdir
 #include <sys/types.h> // to get mkdir options
-#include <unistd.h>    // to get basename
+#endif
+
 #include <stdlib.h>    // to get system and getenv
 
 static std::string OUTPUTFILE("output.med");
@@ -117,8 +133,11 @@ static std::string REMOTE_WORKDIR("/tmp/spadder.remote.workdir."+USER);
  */
 const char * MeshJobManager_i::_writeDataFile(std::vector<MESHJOB::MeshJobParameter> listConcreteMesh,
                                               std::vector<MESHJOB::MeshJobParameter> listSteelBarMesh) {
-
+#ifdef WIN32
+  _mkdir(LOCAL_INPUTDIR.c_str());
+#else
   mkdir(LOCAL_INPUTDIR.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+#endif
 
   // Make it static so that it's allocated once (constant name)
   static std::string * dataFilename = new std::string(LOCAL_INPUTDIR+"/"+DATAFILE);
@@ -126,7 +145,14 @@ const char * MeshJobManager_i::_writeDataFile(std::vector<MESHJOB::MeshJobParame
   
   // We first specify the concrete mesh data (filename and groupname)
   std::string line;
-  line = std::string(basename(listConcreteMesh[0].file_name)) + " " + std::string(listConcreteMesh[0].group_name);
+#ifdef WIN32
+  char fname[ _MAX_FNAME ];
+  _splitpath( listConcreteMesh[0].file_name, NULL, NULL, fname, NULL );
+  char* bname = &fname[0];
+#else
+  char* bname = basename(listConcreteMesh[0].file_name);
+#endif
+  line = std::string(bname) + " " + std::string(listConcreteMesh[0].group_name);
   dataFile << line.c_str() << std::endl;
   // Note that we use here the basename because the files are supposed
   // to be copied in the REMOTE_WORKDIR for execution.
@@ -137,7 +163,14 @@ const char * MeshJobManager_i::_writeDataFile(std::vector<MESHJOB::MeshJobParame
   line = std::string("nbSteelbarMesh") + SEPARATOR + ToString(nbSteelBarMesh);
   dataFile << line.c_str() << std::endl;
   for (int i=0; i<nbSteelBarMesh; i++) {
-    line = std::string(basename(listSteelBarMesh[i].file_name)) + " " + std::string(listSteelBarMesh[i].group_name);
+#ifdef WIN32
+	char fname[ _MAX_FNAME ];
+	_splitpath( listSteelBarMesh[i].file_name, NULL, NULL, fname, NULL );
+	char* bname = &fname[0];
+#else
+	char* bname = basename(listSteelBarMesh[i].file_name);
+#endif
+    line = std::string(bname) + " " + std::string(listSteelBarMesh[i].group_name);
     dataFile << line.c_str() << std::endl;
   }
   
@@ -155,7 +188,11 @@ const char * MeshJobManager_i::_writeDataFile(std::vector<MESHJOB::MeshJobParame
  * and other required files.
  */
 const char* MeshJobManager_i::_writeScriptFile(const char * dataFileName, const char * configId) {
+#ifdef WIN32
+  _mkdir(LOCAL_INPUTDIR.c_str());
+#else
   mkdir(LOCAL_INPUTDIR.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+#endif
 
   // Make it static so that it's allocated once (constant name)
   static std::string * scriptFilename = new std::string(LOCAL_INPUTDIR+"/"+SCRIPTFILE);
@@ -163,11 +200,20 @@ const char* MeshJobManager_i::_writeScriptFile(const char * dataFileName, const 
   char * binpath = _configMap[configId].binpath;
   char * envpath = _configMap[configId].envpath;
 
+#ifdef WIN32
+	char fname[ _MAX_FNAME ];
+	_splitpath( dataFileName, NULL, NULL, fname, NULL );
+	char* bname = &fname[0];
+#else
+	char* bname = basename(dataFileName);
+#endif
+
+
   std::ofstream script(scriptFilename->c_str());
   script << "#!/bin/sh"                                   << std::endl;
   script << "here=$(dirname $0)"                          << std::endl;
   script << ". " << envpath                               << std::endl;
-  script << binpath << " $here/" << basename(dataFileName) << std::endl;
+  script << binpath << " $here/" << bname                 << std::endl;
   // Note that we use the basename of the datafile because all data
   // files are supposed to have been copied in the REMOTE_WORKDIR.
   script.close();
@@ -233,7 +279,11 @@ CORBA::Long MeshJobManager_i::initialize(const MESHJOB::MeshJobParameterList & m
 
   // We initiate here a datetime to tag the files and folder
   // associated to this job.
+#ifdef WIN32
+  DWORD jobDatetimeTag = timeGetTime();
+#else
   long jobDatetimeTag = timetag();
+#endif
   // And a MESHJOB::MeshJobPaths structure to hold the directories
   // where to find data
   MESHJOB::MeshJobPaths * jobPaths = new MESHJOB::MeshJobPaths();
