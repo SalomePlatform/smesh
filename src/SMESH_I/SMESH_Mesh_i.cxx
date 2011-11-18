@@ -2595,7 +2595,7 @@ void SMESH_Mesh_i::ExportToMEDX (const char* file,
   throw(SALOME::SALOME_Exception)
 {
   Unexpect aCatch(SALOME_SalomeException);
-  string aMeshName = PrepareMeshNameAndGroups(file, true);
+  string aMeshName = PrepareMeshNameAndGroups(file, overwrite);
   TPythonDump() << _this() << ".ExportToMEDX( r'"
                 << file << "', " << auto_groups << ", " << theVersion << ", " << overwrite << " )";
 
