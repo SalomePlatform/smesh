@@ -17,7 +17,6 @@
 //  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 // Authors : Guillaume Boulant (EDF) - 01/03/2011
-
 #ifdef WIN32
 #include <winsock2.h>
 #include <windows.h> 
@@ -612,7 +611,7 @@ extern "C"
                                                            const char *instanceName,
                                                            const char *interfaceName)
   {
-    MESSAGE("PortableServer::ObjectId * MeshJobManagerEngine_factory()");
+    LOG("PortableServer::ObjectId * MeshJobManagerEngine_factory()");
     MeshJobManager_i * myEngine = new MeshJobManager_i(orb, poa, contId, instanceName, interfaceName);
     return myEngine->getId() ;
   }
