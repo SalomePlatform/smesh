@@ -58,7 +58,7 @@ static long timetag() {
  * This function returns true if the string text starts with the string
  * token.
  */
-static bool myStartsWith(const std::string& text,const std::string& token){	
+static bool myStartsWith(const std::string& text,const std::string& token){     
   if(text.length() < token.length())
     return false;
   return (text.compare(0, token.length(), token) == 0);
@@ -164,11 +164,11 @@ const char * MeshJobManager_i::_writeDataFile(std::vector<MESHJOB::MeshJobParame
   dataFile << line.c_str() << std::endl;
   for (int i=0; i<nbSteelBarMesh; i++) {
 #ifdef WIN32
-	char fname[ _MAX_FNAME ];
-	_splitpath( listSteelBarMesh[i].file_name, NULL, NULL, fname, NULL );
-	char* bname = &fname[0];
+        char fname[ _MAX_FNAME ];
+        _splitpath( listSteelBarMesh[i].file_name, NULL, NULL, fname, NULL );
+        char* bname = &fname[0];
 #else
-	char* bname = basename(listSteelBarMesh[i].file_name);
+        char* bname = basename(listSteelBarMesh[i].file_name);
 #endif
     line = std::string(bname) + " " + std::string(listSteelBarMesh[i].group_name);
     dataFile << line.c_str() << std::endl;
@@ -201,11 +201,11 @@ const char* MeshJobManager_i::_writeScriptFile(const char * dataFileName, const 
   char * envpath = _configMap[configId].envpath;
 
 #ifdef WIN32
-	char fname[ _MAX_FNAME ];
-	_splitpath( dataFileName, NULL, NULL, fname, NULL );
-	char* bname = &fname[0];
+        char fname[ _MAX_FNAME ];
+        _splitpath( dataFileName, NULL, NULL, fname, NULL );
+        const char* bname = &fname[0];
 #else
-	char* bname = basename(dataFileName);
+        const char* bname = basename(dataFileName);
 #endif
 
 
@@ -226,7 +226,7 @@ const char* MeshJobManager_i::_writeScriptFile(const char * dataFileName, const 
 // ====================================================================
 //
 bool MeshJobManager_i::configure(const char *configId,
-				 const MESHJOB::ConfigParameter & configParameter)
+                                 const MESHJOB::ConfigParameter & configParameter)
 {
   beginService("MeshJobManager_i::configure");
   
@@ -244,7 +244,7 @@ long MeshJobManager_i::JOBID_UNDEFINED = -1;
 
 /*! Initialize a smesh computation job and return the job identifier */
 CORBA::Long MeshJobManager_i::initialize(const MESHJOB::MeshJobParameterList & meshJobParameterList,
-					 const char * configId)
+                                         const char * configId)
 {
   beginService("MeshJobManager_i::initialize");
 
