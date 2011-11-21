@@ -315,7 +315,7 @@ namespace
       bool IsCorner() const { return _node; }
     };
     // --------------------------------------------------------------------------------
-    struct _Link // link connection two _Node's
+    struct _Link // link connecting two _Node's
     {
       _Node* _nodes[2];
       vector< _Node>  _intNodes; // _Node's at GridLine intersections
