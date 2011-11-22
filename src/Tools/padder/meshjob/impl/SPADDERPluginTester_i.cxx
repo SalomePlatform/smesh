@@ -86,6 +86,10 @@ void SPADDERPluginTester_i::demo(CORBA::Double a,CORBA::Double b,CORBA::Double& 
   endService("SPADDERPluginTester_i::demo");
 }
 
+#ifdef LOG
+#undef LOG
+#endif
+
 #include <SALOME_KernelServices.hxx>
 #include "SALOME_Launcher.hxx"
 bool SPADDERPluginTester_i::testkernel()

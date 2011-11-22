@@ -29,9 +29,12 @@
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SALOME_Exception)
 
+
 #include "Basics_Utils.hxx"         // For standard logging
+#undef LOG
 #include "SALOME_KernelServices.hxx"   // For CORBA logging
 #undef LOG
+
 #define LOG STDLOG
 
 //
