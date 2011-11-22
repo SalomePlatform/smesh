@@ -527,14 +527,14 @@
       QMap<QString, SMESH::MED_VERSION> aFilterMap;
       //QString v21 (aMesh->GetVersionString(SMESH::MED_V2_1, 2));
       if ( isMED ) {
-	QString v22 (aMesh->GetVersionString(SMESH::MED_V2_2, 2));
-	//aFilterMap.insert( QObject::tr( "MED_VX_FILES_FILTER" ).arg( v21 ) + " (*.med)", SMESH::MED_V2_1 );
-	aFilterMap.insert( QObject::tr( "MED_VX_FILES_FILTER" ).arg( v22 ) + " (*.med)", SMESH::MED_V2_2 );
+        QString v22 (aMesh->GetVersionString(SMESH::MED_V2_2, 2));
+        //aFilterMap.insert( QObject::tr( "MED_VX_FILES_FILTER" ).arg( v21 ) + " (*.med)", SMESH::MED_V2_1 );
+        aFilterMap.insert( QObject::tr( "MED_VX_FILES_FILTER" ).arg( v22 ) + " (*.med)", SMESH::MED_V2_2 );
       }
       else { // isSAUV
-	aFilterMap.insert("All files (*)", SMESH::MED_V2_1 );
-	aFilterMap.insert("SAUV files (*.sauv)", SMESH::MED_V2_2 );
-	aFilterMap.insert("SAUV files (*.sauve)", SMESH::MED_V2_1 );
+        aFilterMap.insert("All files (*)", SMESH::MED_V2_1 );
+        aFilterMap.insert("SAUV files (*.sauv)", SMESH::MED_V2_2 );
+        aFilterMap.insert("SAUV files (*.sauve)", SMESH::MED_V2_1 );
       }
 
       QStringList filters;
@@ -680,14 +680,14 @@
           }
         }
         else if ( isSAUV )
-	{
-	  for( aMeshIter = aMeshList.begin(); aMeshIter != aMeshList.end(); aMeshIter++ )
-	  {
-	    SMESH::SMESH_Mesh_var aMeshItem = SMESH::SMESH_Mesh::_narrow( (*aMeshIter).first );
-	    if( !aMeshItem->_is_nil() )
-	      aMeshItem->ExportSAUV( aFilename.toLatin1().data(), toCreateGroups );
-	  }
-	}
+        {
+          for( aMeshIter = aMeshList.begin(); aMeshIter != aMeshList.end(); aMeshIter++ )
+          {
+            SMESH::SMESH_Mesh_var aMeshItem = SMESH::SMESH_Mesh::_narrow( (*aMeshIter).first );
+            if( !aMeshItem->_is_nil() )
+              aMeshItem->ExportSAUV( aFilename.toLatin1().data(), toCreateGroups );
+          }
+        }
         else if ( isDAT )
         {
           if ( aMeshOrGroup->_is_equivalent( aMesh ))
