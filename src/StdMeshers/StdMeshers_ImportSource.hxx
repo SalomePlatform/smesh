@@ -37,6 +37,7 @@
 
 class SMESH_Group;
 class SMESHDS_Mesh;
+class SMESH_subMesh;
 
 //==============================================================================
 /*!
@@ -69,6 +70,7 @@ class STDMESHERS_EXPORT StdMeshers_ImportSource1D : public SMESH_Hypothesis
                                              const SMESHDS_Mesh& tgtMesh);
 
   std::vector<SMESH_Mesh*> GetSourceMeshes() const;
+  std::vector<SMESH_subMesh*> GetSourceSubMeshes(const SMESH_Mesh* srcMesh) const;
 
 private:
 
