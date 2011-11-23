@@ -301,10 +301,22 @@ if test "${gui_ok}" = "yes"; then
     echo
 
     CHECK_QT
-    AC_PATH_PROG(PYUIC, pyuic4)
-    AC_SUBST(PYUIC)
-    AC_PATH_PROG(PYRCC, pyrcc4)
-    AC_SUBST(PYRCC)
+
+    echo
+    echo ---------------------------------------------
+    echo testing sip
+    echo ---------------------------------------------
+    echo
+
+    CHECK_SIP
+
+    echo
+    echo ---------------------------------------------
+    echo testing pyqt
+    echo ---------------------------------------------
+    echo
+
+    CHECK_PYQT
 
     echo
     echo ---------------------------------------------

@@ -1,6 +1,12 @@
 include $(top_srcdir)/adm_local/unix/make_common_starter.am
 
-SUBDIRS = gui plugin
+SUBDIRS = 
+
+if SMESH_ENABLE_GUI
+SUBDIRS += gui plugin
+endif
+
+DIST_SUBDIRS = gui plugin
 
 spadderpydir=$(smeshpypkgdir)/spadder
 spadderpy_PYTHON = \

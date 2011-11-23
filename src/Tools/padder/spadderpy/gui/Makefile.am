@@ -32,11 +32,9 @@ dist_spadderpy_DATA= \
 	concrete.png \
 	steelbar.png
 
-PYUIC = @PYUIC@
 %_ui.py:%.ui
 	$(PYUIC) -x $< -o $@
 
-PYRCC = @PYRCC@
 %_rc.py:%.qrc
 	$(PYRCC) $< -o $@
 

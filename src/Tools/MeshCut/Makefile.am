@@ -45,11 +45,15 @@ MeshCut_LDFLAGS =  $(MED2_LIBS) $(HDF5_LIBS)
 
 
 UIPY_FILES =  MeshCutDialog.py
-BUILT_SOURCES = $(UIPY_FILES)
-bin_SCRIPTS = $(UIPY_FILES) meshcut_plugin.py
-clean-local:
-	rm -f $(UIPY_FILES)
-EXTRA_DIST += MeshCutDialog.ui meshcut_plugin.py
+
+if SMESH_ENABLE_GUI
+  dist_salomescript_SCRIPTS   = meshcut_plugin.py
+  nodist_salomescript_SCRIPTS = $(UIPY_FILES)
+endif
+
+CLEANFILES = $(UIPY_FILES)
+
+EXTRA_DIST += $(UIPY_FILES:%.py=%.ui)
 
 %.py : %.ui
-	pyuic4 $< -o $@
+	$(PYUIC) $< -o $@
