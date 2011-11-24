@@ -1689,16 +1689,17 @@ bool StdMeshers_PrismAsBlock::GetLayersTransformation(vector<gp_Trsf> & trsf) co
     for ( int iE = 0; iE < nbEdgesInWires.front(); ++iE, ++edgeIt )
     {
       if ( BRep_Tool::Degenerated( *edgeIt )) continue;
-      const TParam2ColumnMap& u2colMap =
+      const TParam2ColumnMap* u2colMap =
         GetParam2ColumnMap( myHelper->GetMeshDS()->ShapeToIndex( *edgeIt ), isReverse );
+      if ( !u2colMap ) return false;
       isReverse = ( edgeIt->Orientation() == TopAbs_REVERSED );
-      double f = u2colMap.begin()->first, l = u2colMap.rbegin()->first;
+      double f = u2colMap->begin()->first, l = u2colMap->rbegin()->first;
       if ( isReverse ) swap ( f, l );
       const int nbCol = 5;
       for ( int i = 0; i < nbCol; ++i )
       {
         double u = f + i/double(nbCol) * ( l - f );
-        const TNodeColumn* col = & getColumn( & u2colMap, u )->second;
+        const TNodeColumn* col = & getColumn( u2colMap, u )->second;
         if ( columns.empty() || col != columns.back() )
           columns.push_back( col );
       }
