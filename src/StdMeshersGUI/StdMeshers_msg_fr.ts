@@ -140,6 +140,10 @@
         <translation>Longueur maximale</translation>
     </message>
     <message>
+        <source>SMESH_CARTESIAN_PARAMS_HYPOTHESIS</source>
+        <translation>Paramètres de Body Fitting</translation>
+    </message>
+    <message>
         <source>SMESH_USE_PREESTIMATED_LENGTH</source>
         <translation>Utiliser la longueur pré-estimée</translation>
     </message>
@@ -166,6 +170,10 @@
     </message>
     <message>
         <source>SMESH_MAX_LENGTH_TITLE</source>
+        <translation>Construction de l&apos;hypothèse</translation>
+    </message>
+    <message>
+        <source>SMESH_CARTESIAN_PARAMS_TITLE</source>
         <translation>Construction de l&apos;hypothèse</translation>
     </message>
     <message>
@@ -433,6 +441,44 @@
     <message>
         <source>EDIT</source>
         <translation>Editer</translation>
+    </message>
+</context>
+<context>
+    <name>StdMeshersGUI_CartesianParamCreator</name>
+    <message>
+        <source>THRESHOLD</source>
+        <translation>Seuil</translation>
+    </message>
+    <message>
+        <source>AXIS_X</source>
+        <translation>Axe X</translation>
+    </message>
+    <message>
+        <source>AXIS_Y</source>
+        <translation>Axe Y</translation>
+    </message>
+    <message>
+        <source>AXIS_Z</source>
+        <translation>Axe Z</translation>
+    </message>
+</context>
+<context>
+    <name>StdMeshersGUI::GridAxisTab</name>
+    <message>
+        <source>GRID_DEF_MODE</source>
+        <translation>Mode de définition</translation>
+    </message>
+    <message>
+        <source>SPACING</source>
+        <translation>Espacement</translation>
+    </message>
+    <message>
+        <source>INSERT</source>
+        <translation>Insérer</translation>
+    </message>
+    <message>
+        <source>COORD_STEP</source>
+        <translation>Pas</translation>
     </message>
 </context>
 </TS>
