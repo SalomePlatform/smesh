@@ -35,7 +35,9 @@ salomeinclude_HEADERS = \
 	SMESH_PreviewActorsCollection.h \
 	SMESH_ExtractGeometry.h \
 	SMESH_FaceOrientationFilter.h \
-	SMESH_ScalarBarActor.h
+	SMESH_ScalarBarActor.h \
+	SMESH_NodeLabelActor.h \
+	SMESH_CellLabelActor.h
 
 # Libraries targets
 
@@ -48,7 +50,9 @@ dist_libSMESHObject_la_SOURCES = \
 	SMESH_ExtractGeometry.cxx \
 	SMESH_ActorUtils.cxx \
 	SMESH_FaceOrientationFilter.cxx \
-	SMESH_ScalarBarActor.cxx
+	SMESH_ScalarBarActor.cxx \
+	SMESH_NodeLabelActor.cxx \
+	SMESH_CellLabelActor.cxx 
 
 libSMESHObject_la_CPPFLAGS = \
         $(QT_INCLUDES) \

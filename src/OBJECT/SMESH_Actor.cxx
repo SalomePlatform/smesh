@@ -28,11 +28,12 @@
 #include "SMESH_ActorDef.h"
 #include "SMESH_ActorUtils.h"
 #include "SMESH_DeviceActor.h"
+#include "SMESH_NodeLabelActor.h"
+#include "SMESH_CellLabelActor.h"
 #include "SMESH_ObjectDef.h"
 #include "SMESH_ControlsDef.hxx"
 #include "SMDS_UnstructuredGrid.hxx"
 #include "SMESH_ScalarBarActor.h"
-#include "VTKViewer_CellCenters.h"
 #include "VTKViewer_ExtractUnstructuredGrid.h"
 #include "VTKViewer_FramedTextActor.h"
 #include "SALOME_InteractiveObject.hxx"
@@ -67,10 +68,7 @@
 #include <vtkActor2D.h>
 #include <vtkProperty2D.h>
 #include <vtkPolyData.h>
-#include <vtkMaskPoints.h>
 #include <vtkTextProperty.h>
-#include <vtkLabeledDataMapper.h>
-#include <vtkSelectVisiblePoints.h>
 
 #include <vtkLookupTable.h>
 
@@ -121,7 +119,8 @@ SMESH_Actor* SMESH_Actor::New(TVisualObjPtr theVisualObj,
 
 SMESH_ActorDef::SMESH_ActorDef()
 {
-  if(MYDEBUG) MESSAGE("SMESH_ActorDef - "<<this);
+  if(MYDEBUG) MESSAGE("SMESH_ActorDef - "<<this);  
+  myBaseActor = SMESH_DeviceActor::New();
 
   myTimeStamp = vtkTimeStamp::New();
 
@@ -158,7 +157,8 @@ SMESH_ActorDef::SMESH_ActorDef()
   bfc = Qtx::mainColorToSecondary(ffc, delta);
   myBackSurfaceProp->SetColor( bfc.red() / 255. , bfc.green() / 255. , bfc.blue() / 255. );
 
-  my2DActor = SMESH_DeviceActor::New();
+  my2DActor = SMESH_CellLabelActor::New();
+  my2DActor->SetStoreGemetryMapping(true);
   my2DActor->SetUserMatrix(aMatrix);
   my2DActor->PickableOff();
   my2DActor->SetProperty(mySurfaceProp);
@@ -193,7 +193,8 @@ SMESH_ActorDef::SMESH_ActorDef()
   aFilter->RegisterCellsWithType(VTK_QUADRATIC_TRIANGLE);
   aFilter->RegisterCellsWithType(VTK_QUADRATIC_QUAD);
 
-  my3DActor = SMESH_DeviceActor::New();
+  my3DActor = SMESH_CellLabelActor::New();
+  my3DActor->SetStoreGemetryMapping(true);
   my3DActor->SetUserMatrix(aMatrix);
   my3DActor->PickableOff();
   my3DActor->SetProperty(mySurfaceProp);
@@ -246,7 +247,8 @@ SMESH_ActorDef::SMESH_ActorDef()
   myEdgeProp->SetColor(anRGB[0],anRGB[1],anRGB[2]);
   myEdgeProp->SetLineWidth(aLineWidth);
 
-  my1DActor = SMESH_DeviceActor::New();
+  my1DActor = SMESH_CellLabelActor::New();
+  my1DActor->SetStoreGemetryMapping(true);
   my1DActor->SetUserMatrix(aMatrix);
   my1DActor->PickableOff();
   my1DActor->SetHighlited(true);
@@ -291,9 +293,9 @@ SMESH_ActorDef::SMESH_ActorDef()
   my0DProp->SetColor(anRGB[0],anRGB[1],anRGB[2]);
   my0DProp->SetPointSize(aElem0DSize);
 
-  my0DActor = SMESH_DeviceActor::New();
+  my0DActor = SMESH_CellLabelActor::New();
   my0DActor->SetUserMatrix(aMatrix);
-  my0DActor->SetStoreClippingMapping(true);
+  my0DActor->SetStoreGemetryMapping(true);
   my0DActor->PickableOff();
   my0DActor->SetVisibility(false);
   my0DActor->SetProperty(my0DProp);
@@ -331,7 +333,7 @@ SMESH_ActorDef::SMESH_ActorDef()
   SMESH::GetColor( "SMESH", "node_color", anRGB[0], anRGB[1], anRGB[2], QColor( 255, 0, 0 ) );
   myNodeProp->SetColor(anRGB[0],anRGB[1],anRGB[2]);
 
-  myNodeActor = SMESH_DeviceActor::New();
+  myNodeActor = SMESH_NodeLabelActor::New();
   myNodeActor->SetUserMatrix(aMatrix);
   myNodeActor->SetStoreClippingMapping(true);
   myNodeActor->PickableOff();
@@ -363,11 +365,9 @@ SMESH_ActorDef::SMESH_ActorDef()
   //Definition of Pickable and Highlitable engines
   //----------------------------------------------
 
-  myBaseActor = SMESH_DeviceActor::New();
   myBaseActor->SetUserMatrix(aMatrix);
   myBaseActor->SetStoreGemetryMapping(true);
   myBaseActor->GetProperty()->SetOpacity(0.0);
-
   myPickableActor = myBaseActor;
 
   myHighlightProp = vtkProperty::New();
@@ -430,92 +430,12 @@ SMESH_ActorDef::SMESH_ActorDef()
   if( !mgr )
     return;
 
-  //Definition of points numbering pipeline
-  //---------------------------------------
-  myPointsNumDataSet = vtkUnstructuredGrid::New();
-
-  myPtsMaskPoints = vtkMaskPoints::New();
-  myPtsMaskPoints->SetInput(myPointsNumDataSet);
-  myPtsMaskPoints->SetOnRatio(1);
-
-  myPtsSelectVisiblePoints = vtkSelectVisiblePoints::New();
-  myPtsSelectVisiblePoints->SetInput(myPtsMaskPoints->GetOutput());
-  myPtsSelectVisiblePoints->SelectInvisibleOff();
-  myPtsSelectVisiblePoints->SetTolerance(0.1);
-    
-  myPtsLabeledDataMapper = vtkLabeledDataMapper::New();
-  myPtsLabeledDataMapper->SetInput(myPtsSelectVisiblePoints->GetOutput());
-#if (VTK_XVERSION < 0x050200)
-  myPtsLabeledDataMapper->SetLabelFormat("%g");
-#endif
-  myPtsLabeledDataMapper->SetLabelModeToLabelScalars();
-    
-  vtkTextProperty* aPtsTextProp = vtkTextProperty::New();
-  aPtsTextProp->SetFontFamilyToTimes();
-  static int aPointsFontSize = 10;
-  aPtsTextProp->SetFontSize(aPointsFontSize);
-  aPtsTextProp->SetBold(1);
-  aPtsTextProp->SetItalic(0);
-  aPtsTextProp->SetShadow(0);
-  myPtsLabeledDataMapper->SetLabelTextProperty(aPtsTextProp);
-  aPtsTextProp->Delete();
-  
   myEntityMode = eAllEntity;
-
-  myIsPointsLabeled = false;
-
-  myPointLabels = vtkActor2D::New();
-  myPointLabels->SetMapper(myPtsLabeledDataMapper);
-  myPointLabels->GetProperty()->SetColor(1,1,1);
-  myPointLabels->SetVisibility(myIsPointsLabeled);
-
-
-  //Definition of cells numbering pipeline
-  //---------------------------------------
-  myCellsNumDataSet = vtkUnstructuredGrid::New();
-
-  myCellCenters = VTKViewer_CellCenters::New();
-  myCellCenters->SetInput(myCellsNumDataSet);
-
-  myClsMaskPoints = vtkMaskPoints::New();
-  myClsMaskPoints->SetInput(myCellCenters->GetOutput());
-  myClsMaskPoints->SetOnRatio(1);
-    
-  myClsSelectVisiblePoints = vtkSelectVisiblePoints::New();
-  myClsSelectVisiblePoints->SetInput(myClsMaskPoints->GetOutput());
-  myClsSelectVisiblePoints->SelectInvisibleOff();
-  myClsSelectVisiblePoints->SetTolerance(0.1);
-    
-  myClsLabeledDataMapper = vtkLabeledDataMapper::New();
-  myClsLabeledDataMapper->SetInput(myClsSelectVisiblePoints->GetOutput());
-#if (VTK_XVERSION < 0x050200)
-  myClsLabeledDataMapper->SetLabelFormat("%g");
-#endif
-  myClsLabeledDataMapper->SetLabelModeToLabelScalars();
-    
-  vtkTextProperty* aClsTextProp = vtkTextProperty::New();
-  aClsTextProp->SetFontFamilyToTimes();
-  static int aCellsFontSize = 12;
-  aClsTextProp->SetFontSize(aCellsFontSize);
-  aClsTextProp->SetBold(1);
-  aClsTextProp->SetItalic(0);
-  aClsTextProp->SetShadow(0);
-  myClsLabeledDataMapper->SetLabelTextProperty(aClsTextProp);
-  aClsTextProp->Delete();
-    
-  myIsCellsLabeled = false;
-
-  myCellsLabels = vtkActor2D::New();
-  myCellsLabels->SetMapper(myClsLabeledDataMapper);
-  myCellsLabels->GetProperty()->SetColor(0,1,0);
-  myCellsLabels->SetVisibility(myIsCellsLabeled);
-
+  
   // Clipping planes
   myImplicitBoolean = vtkImplicitBoolean::New();
   myImplicitBoolean->SetOperationTypeToIntersection();
   
-
-
   //Quadratic 2D elements representation
   //-----------------------------------------------------------------------------
   int aQuadratic2DMode = mgr->integerValue( "SMESH", "quadratic_mode", 0);
@@ -596,49 +516,8 @@ SMESH_ActorDef::~SMESH_ActorDef()
   myNodeActor->Delete();
   myBaseActor->Delete();
 
-  myNodeExtActor->Delete();
-  
+  myNodeExtActor->Delete();  
   myHighlitableActor->Delete();
-
-  //Deleting of points numbering pipeline
-  //---------------------------------------
-  myPointsNumDataSet->Delete();
-
-  // commented: porting to vtk 5.0
-  //  myPtsLabeledDataMapper->RemoveAllInputs();
-  myPtsLabeledDataMapper->Delete();
-
-  // commented: porting to vtk 5.0
-  //  myPtsSelectVisiblePoints->UnRegisterAllOutputs();
-  myPtsSelectVisiblePoints->Delete();
-
-  // commented: porting to vtk 5.0
-  //  myPtsMaskPoints->UnRegisterAllOutputs();
-  myPtsMaskPoints->Delete();
-
-  myPointLabels->Delete();
-
-
-  //Deleting of cells numbering pipeline
-  //---------------------------------------
-  myCellsNumDataSet->Delete();
-
-  myClsLabeledDataMapper->RemoveAllInputs();
-  myClsLabeledDataMapper->Delete();
-
-  // commented: porting to vtk 5.0
-  //  myClsSelectVisiblePoints->UnRegisterAllOutputs();
-  myClsSelectVisiblePoints->Delete();
-
-  // commented: porting to vtk 5.0
-  //  myClsMaskPoints->UnRegisterAllOutputs();
-  myClsMaskPoints->Delete();
-
-  // commented: porting to vtk 5.0
-  //  myCellCenters->UnRegisterAllOutputs();
-  myCellCenters->Delete();
-
-  myCellsLabels->Delete();
 
   myImplicitBoolean->Delete();
 
@@ -648,61 +527,50 @@ SMESH_ActorDef::~SMESH_ActorDef()
 
 void SMESH_ActorDef::SetPointsLabeled( bool theIsPointsLabeled )
 {    
-  vtkUnstructuredGrid* aGrid = GetUnstructuredGrid();
-    
-  myIsPointsLabeled = theIsPointsLabeled && aGrid->GetNumberOfPoints();
+  if(myNodeActor) {
+    myNodeActor->SetPointsLabeled(theIsPointsLabeled);
+    SetRepresentation(GetRepresentation());
+    myTimeStamp->Modified();
+  }
+}
 
-  if ( myIsPointsLabeled )
-  {
-    myPointsNumDataSet->ShallowCopy(aGrid);
-    vtkDataSet *aDataSet = myPointsNumDataSet;
-    
-    int aNbElem = aDataSet->GetNumberOfPoints();
-    
-    vtkIntArray *anArray = vtkIntArray::New();
-    anArray->SetNumberOfValues( aNbElem );
-    
-    for ( vtkIdType anId = 0; anId < aNbElem; anId++ )
-    {
-      int aSMDSId = myVisualObj->GetNodeObjId( anId );
-      anArray->SetValue( anId, aSMDSId );
-    }
-    
-    aDataSet->GetPointData()->SetScalars( anArray );
-    anArray->Delete();
-    myPtsMaskPoints->SetInput( aDataSet );
-    myPointLabels->SetVisibility( GetVisibility() );
-  }
-  else
-  {
-    myPointLabels->SetVisibility( false );
-  }
-  SetRepresentation(GetRepresentation());
+bool SMESH_ActorDef::GetPointsLabeled() {
+  return myNodeActor && myNodeActor->GetPointsLabeled();
+}
+
+void SMESH_ActorDef::SetCellsLabeled(bool theIsCellsLabeled)
+{
+  if(my3DActor)
+    my3DActor->SetCellsLabeled(theIsCellsLabeled);
+
+  if(my2DActor)
+    my2DActor->SetCellsLabeled(theIsCellsLabeled);
+
+  if(my1DActor)
+    my1DActor->SetCellsLabeled(theIsCellsLabeled);
+
+  if(my0DActor)
+    my0DActor->SetCellsLabeled(theIsCellsLabeled);
+  
   myTimeStamp->Modified();
 }
 
 
-void SMESH_ActorDef::SetCellsLabeled(bool theIsCellsLabeled)
-{
-  vtkUnstructuredGrid* aGrid = GetUnstructuredGrid();
-  myIsCellsLabeled = theIsCellsLabeled && aGrid->GetNumberOfPoints();
-  if(myIsCellsLabeled){
-    myCellsNumDataSet->ShallowCopy(aGrid);
-    vtkDataSet *aDataSet = myCellsNumDataSet;
-    int aNbElem = aDataSet->GetNumberOfCells();
-    vtkIntArray *anArray = vtkIntArray::New();
-    anArray->SetNumberOfValues(aNbElem);
-    for(int anId = 0; anId < aNbElem; anId++){
-      int aSMDSId = myVisualObj->GetElemObjId(anId);
-      anArray->SetValue(anId,aSMDSId);
-    }
-    aDataSet->GetCellData()->SetScalars(anArray);
-    myCellCenters->SetInput(aDataSet);
-    myCellsLabels->SetVisibility(GetVisibility());
-  }else{
-    myCellsLabels->SetVisibility(false);
-  }
-  myTimeStamp->Modified();
+bool SMESH_ActorDef::GetCellsLabeled() {
+  bool result = false;
+  if(my3DActor)
+    result = result || my3DActor->GetCellsLabeled();
+
+  if(my2DActor)
+    result = result || my2DActor->GetCellsLabeled();
+
+  if(my1DActor)
+    result = result || my1DActor->GetCellsLabeled();
+
+  if(my0DActor)
+    result = result || my0DActor->GetCellsLabeled();
+
+  return result;
 }
 
 
@@ -993,31 +861,22 @@ SetControlMode(eControl theMode,
 
 
 void SMESH_ActorDef::AddToRender(vtkRenderer* theRenderer){
-  theRenderer->AddActor(myNodeActor);
-  theRenderer->AddActor(myBaseActor);
-  
+  theRenderer->AddActor(myBaseActor);  
   theRenderer->AddActor(myNodeExtActor);
+  theRenderer->AddActor(my1DExtActor);
 
   my3DActor->AddToRender(theRenderer);
   my3DExtActor->AddToRender(theRenderer);
   my2DActor->AddToRender(theRenderer);
   my2DExtActor->AddToRender(theRenderer);
-
-  theRenderer->AddActor(my1DActor);
-  theRenderer->AddActor(my1DExtActor);
-
-  theRenderer->AddActor(my0DActor);
+  myNodeActor->AddToRender(theRenderer);
+  my1DActor->AddToRender(theRenderer);
+  my0DActor->AddToRender(theRenderer);
   //theRenderer->AddActor(my0DExtActor);
 
   theRenderer->AddActor(myHighlitableActor);
   
   theRenderer->AddActor2D(myScalarBarActor);
-
-  myPtsSelectVisiblePoints->SetRenderer(theRenderer);
-  myClsSelectVisiblePoints->SetRenderer(theRenderer);
-
-  theRenderer->AddActor2D(myPointLabels);
-  theRenderer->AddActor2D(myCellsLabels);
 
   // the superclass' method should be called at the end
   // (in particular, for correct work of selection)
@@ -1027,27 +886,25 @@ void SMESH_ActorDef::AddToRender(vtkRenderer* theRenderer){
 void SMESH_ActorDef::RemoveFromRender(vtkRenderer* theRenderer){
   SALOME_Actor::RemoveFromRender(theRenderer);
 
-  theRenderer->RemoveActor(myNodeActor);
   theRenderer->RemoveActor(myBaseActor);
 
   theRenderer->RemoveActor(myNodeExtActor);
 
   theRenderer->RemoveActor(myHighlitableActor);
 
-  theRenderer->RemoveActor(my0DActor);
   //theRenderer->RemoveActor(my0DExtActor);
 
-  theRenderer->RemoveActor(my1DActor);
   theRenderer->RemoveActor(my1DExtActor);
 
   my2DActor->RemoveFromRender(theRenderer);
   my2DExtActor->RemoveFromRender(theRenderer);
   my3DActor->RemoveFromRender(theRenderer);
   my3DExtActor->RemoveFromRender(theRenderer);
+  myNodeActor->RemoveFromRender(theRenderer);
+  my0DActor->RemoveFromRender(theRenderer);
+  my1DActor->RemoveFromRender(theRenderer);
 
   theRenderer->RemoveActor(myScalarBarActor);
-  theRenderer->RemoveActor(myPointLabels);
-  theRenderer->RemoveActor(myCellsLabels);
 }
 
 
@@ -1306,8 +1163,6 @@ void SMESH_ActorDef::SetVisibility(int theMode, bool theIsUpdateRepersentation){
   my3DExtActor->VisibilityOff();
   
   myScalarBarActor->VisibilityOff();
-  myPointLabels->VisibilityOff();
-  myCellsLabels->VisibilityOff();
   
   if(GetVisibility()){
     if(theIsUpdateRepersentation)
@@ -1362,13 +1217,21 @@ void SMESH_ActorDef::SetVisibility(int theMode, bool theIsUpdateRepersentation){
       my3DActor->VisibilityOn();
     }
     
-    if(myIsPointsLabeled){ 
-      myPointLabels->VisibilityOn();
+    if(myNodeActor->GetPointsLabeled()){ 
       myNodeActor->VisibilityOn();
     }
 
-    if(myIsCellsLabeled) 
-      myCellsLabels->VisibilityOn();
+    if(my0DActor)
+      my0DActor->UpdateLabels();
+    
+    if(my1DActor)
+      my1DActor->UpdateLabels();
+    
+    if(my2DActor)
+      my2DActor->UpdateLabels();
+    
+    if(my3DActor)
+      my3DActor->UpdateLabels();    
   } 
 #ifndef DISABLE_PLOT2DVIEWER
   else
@@ -1622,7 +1485,7 @@ void SMESH_ActorDef::SetPointRepresentation(bool theIsPointsVisible){
 }
 
 bool SMESH_ActorDef::GetPointRepresentation(){ 
-  return myIsPointsVisible || myIsPointsLabeled;
+  return myIsPointsVisible || myNodeActor->GetPointsLabeled();
 }
 
 
@@ -1729,12 +1592,22 @@ void SMESH_ActorDef::Update(){
     if (anObjTime > aTime)
       SetControlMode(GetControlMode(),false);
   }
-  if(myIsPointsLabeled){
-    SetPointsLabeled(myIsPointsLabeled);
-  }
-  if(myIsCellsLabeled){
-    SetCellsLabeled(myIsCellsLabeled);
-  }
+
+  if(myNodeActor)
+    myNodeActor->UpdateLabels();
+
+  if(my0DActor)
+    my0DActor->UpdateLabels();
+  
+  if(my1DActor)
+    my1DActor->UpdateLabels();
+  
+  if(my2DActor)
+    my2DActor->UpdateLabels();
+
+  if(my3DActor)
+    my3DActor->UpdateLabels();
+  
   if(myIsFacesOriented){
     SetFacesOriented(myIsFacesOriented);
   }
@@ -1929,6 +1802,7 @@ SMESH_ActorDef::AddClippingPlane(vtkPlane* thePlane)
     myCippingPlaneCont.push_back(thePlane);
     if(!IsImplicitFunctionUsed())
       SetImplicitFunctionUsed(true);
+    myNodeActor->UpdateLabels();
   }
   return myCippingPlaneCont.size();
 }
@@ -1941,6 +1815,7 @@ RemoveAllClippingPlanes()
   myImplicitBoolean->GetFunction()->Modified(); // VTK bug
   myCippingPlaneCont.clear();
   SetImplicitFunctionUsed(false);
+  myNodeActor->UpdateLabels();
 }
 
 vtkIdType
