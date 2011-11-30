@@ -2073,11 +2073,17 @@ void SMESH_subMesh::NotifyListenersOnEvent( const int         event,
 {
   map< EventListener*, EventListenerData* >::iterator l_d = myEventListeners.begin();
   for ( ; l_d != myEventListeners.end(); ++l_d )
-    if ( (*l_d).first->myBusySM.insert( this ).second )
+  {
+    std::pair< EventListener*, EventListenerData* > li_da = *l_d; /* copy to enable removal
+                                                                     of a listener from
+                                                                     myEventListeners by
+                                                                     its ProcessEvent() */
+    if ( li_da.first->myBusySM.insert( this ).second )
     {
-      l_d->first->ProcessEvent( event, eventType, this, l_d->second, hyp );
-      l_d->first->myBusySM.erase( this );
+      li_da.first->ProcessEvent( event, eventType, this, li_da.second, hyp );
+      li_da.first->myBusySM.erase( this );
     }
+  }
 }
 
 //================================================================================
