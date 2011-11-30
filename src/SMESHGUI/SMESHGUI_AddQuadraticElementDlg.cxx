@@ -359,8 +359,6 @@ static int LastPentahedronIds[] =  {1,2,0,4,5,3,3,4,5};
 static int FirstHexahedronIds[] = {0,1,2,3,4,5,6,7,0,1,2,3};
 static int LastHexahedronIds[] =  {1,2,3,0,5,6,7,4,4,5,6,7};
 
-
-
 /*!
   \class BusyLocker
   \brief Simple 'busy state' flag locker.
@@ -419,7 +417,8 @@ SMESHGUI_AddQuadraticElementDlg::SMESHGUI_AddQuadraticElementDlg( SMESHGUI* theM
     mySMESHGUI( theModule ),
     mySelectionMgr( SMESH::GetSelectionMgr( theModule ) ),
     myType( theType ),
-    myBusy( false )
+    myBusy( false ),
+    myIsEditCorners( false )
 {
   setModal( false );
   setAttribute( Qt::WA_DeleteOnClose, true );
@@ -518,6 +517,7 @@ SMESHGUI_AddQuadraticElementDlg::SMESHGUI_AddQuadraticElementDlg( SMESHGUI* theM
   TextLabel_GroupName = new QLabel( tr( "SMESH_GROUP" ), GroupGroups );
   ComboBox_GroupName = new QComboBox( GroupGroups );
   ComboBox_GroupName->setEditable( true );
+  ComboBox_GroupName->setInsertPolicy( QComboBox::NoInsert );
 
   GroupGroupsLayout->addWidget( TextLabel_GroupName );
   GroupGroupsLayout->addWidget( ComboBox_GroupName, 1 );
@@ -733,7 +733,7 @@ void SMESHGUI_AddQuadraticElementDlg::ClickOnApply()
       if ( aGroupName == aName && ( i == ComboBox_GroupName->currentIndex() || idx == 0 ) )
         idx = i;
     }
-    if ( idx > 0 ) {
+    if ( idx > 0 && idx < myGroups.count() ) {
       SMESH::SMESH_GroupOnGeom_var aGeomGroup = SMESH::SMESH_GroupOnGeom::_narrow( myGroups[idx-1] );
       if ( !aGeomGroup->_is_nil() ) {
         int res = SUIT_MessageBox::question( this, tr( "SMESH_WRN_WARNING" ),
