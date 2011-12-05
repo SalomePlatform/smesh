@@ -129,6 +129,9 @@ bool SMESH_HypoFilter::IsAssignedToPredicate::IsOk(const SMESH_Hypothesis* aHyp,
 bool SMESH_HypoFilter::IsMoreLocalThanPredicate::IsOk(const SMESH_Hypothesis* aHyp,
                                                       const TopoDS_Shape&     aShape) const
 {
+  if ( aShape.IsSame( _shapeToMesh ))
+    return false; // aHyp is global
+
   if ( SMESH_MesherHelper::IsSubShape( aShape, /*mainShape=*/_shape ))
     return true;
 
@@ -293,9 +296,10 @@ SMESH_HypoPredicate* SMESH_HypoFilter::IsApplicableTo(const TopoDS_Shape& theSha
 //purpose  : 
 //=======================================================================
 
-SMESH_HypoPredicate* SMESH_HypoFilter::IsMoreLocalThan(const TopoDS_Shape& theShape)
+SMESH_HypoPredicate* SMESH_HypoFilter::IsMoreLocalThan(const TopoDS_Shape& theShape,
+                                                       const TopoDS_Shape& theShapeToMesh)
 {
-  return new IsMoreLocalThanPredicate( theShape );
+  return new IsMoreLocalThanPredicate( theShape, theShapeToMesh);
 }
 
 //=======================================================================

@@ -2,7 +2,7 @@
 
 \page mesh_infos_page Mesh Information
 
-The user can obtain an information about the selected mesh object
+The user can obtain information about the selected mesh object
 (mesh, sub-mesh or group) using <b>Mesh Information</b> dialog box.
 
 To view the <b>Mesh Information</b>, select your mesh, sub-mesh or
@@ -14,12 +14,12 @@ in the toolbar.
 <center><em>"Mesh Information" button</em></center>
 
 The <b>Mesh Information</b> dialog box provides three tab pages:
-- <b>\ref advanced_mesh_infos_anchor "Base Info"</b> - to show base information about selected mesh
-object
-- <b>\ref mesh_element_info_anchor "Element Info"</b> - to show detail information about selected mesh
-node or element.
+- <b>\ref advanced_mesh_infos_anchor "Base Info"</b> - to show base
+information about the selected mesh object
+- <b>\ref mesh_element_info_anchor "Element Info"</b> - to show
+detailed information about the selected mesh node or element.
 - <b>\ref mesh_addition_info_anchor "Additional Info"</b> - to show additional information available
-for selected mesh, sub-mesh or group object.
+for the selected mesh, sub-mesh or group object.
 
 \anchor advanced_mesh_infos_anchor
 <h2>Base Information</h2>
@@ -56,7 +56,7 @@ The <b>Additional Info</b> tab page of the dialog box provides an
 additional information on the selected object: mesh, sub-mesh or
 group.
 
-For mesh object, the following information is shown:
+For a mesh object, the following information is shown:
 - Name
 - Type: based on geomerty, imported, standalone
 - Shape (if mesh is based on geometry)
@@ -68,7 +68,7 @@ For mesh object, the following information is shown:
 <center><em>"Additional Info" page, mesh information</em></center>
 <br>
 
-For sub-mesh object, the following information is shown:
+For a sub-mesh object, the following information is shown:
 - Name
 - Parent mesh
 - Shape
@@ -77,7 +77,7 @@ For sub-mesh object, the following information is shown:
 <center><em>"Additional Info" page, sub-mesh information</em></center>
 <br>
 
-For group object, the following information is shown:
+For a group object, the following information is shown:
 - Name
 - Parent mesh
 - Type: standalone, group on geometry, group on filter
@@ -90,12 +90,12 @@ For group object, the following information is shown:
 <center><em>"Additional Info" page, group information</em></center>
 <br>
 
-\note For the performance reasons, number of underlying nodes is
+\note For the performance reasons, the number of underlying nodes is
 computed only by demand. For this, the user should press the "Compute"
-button (see picture). Also, number of underlying nodes is
+button (see picture). Also, the number of underlying nodes is
 automatically calculated if the size of the group does not exceed
-limit set via the preferences - "Mesh information" group,
-"Automatic nodes compute limit" item (zero value means no limit).
+the "Automatic nodes compute limit" set via the  "Mesh information"
+preferences (zero value means no limit).
 
 In case you get <b>Mesh Information</b> via a TUI script, the information is
 displayed in the Python Console. 

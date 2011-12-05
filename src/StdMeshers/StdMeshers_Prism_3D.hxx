@@ -148,15 +148,18 @@ public:
    * \brief Return TParam2ColumnMap for a base edge
     * \param baseEdgeID - base edge SMESHDS Index
     * \param isReverse - columns in-block orientation
-    * \retval const TParam2ColumnMap& - map
+    * \retval const TParam2ColumnMap* - map
    */
-  const TParam2ColumnMap& GetParam2ColumnMap(const int baseEdgeID,
+  const TParam2ColumnMap* GetParam2ColumnMap(const int baseEdgeID,
                                              bool &    isReverse) const
   {
-    std::pair< TParam2ColumnMap*, bool > col_frw =
-      myShapeIndex2ColumnMap.find( baseEdgeID )->second;
+    std::map< int, std::pair< TParam2ColumnMap*, bool > >::const_iterator i_mo =
+      myShapeIndex2ColumnMap.find( baseEdgeID );
+    if ( i_mo == myShapeIndex2ColumnMap.end() ) return 0;
+
+    const std::pair< TParam2ColumnMap*, bool >& col_frw = i_mo->second;
     isReverse = !col_frw.second;
-    return * col_frw.first;
+    return col_frw.first;
   }
 
   /*!

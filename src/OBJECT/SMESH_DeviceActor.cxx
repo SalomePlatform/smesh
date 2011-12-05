@@ -626,7 +626,7 @@ void
 SMESH_DeviceActor
 ::SetFacesOriented(bool theIsFacesOriented) 
 {
-  if ( vtkDataSet* aDataSet = myPassFilter[ 1 ]->GetOutput() )
+  if ( vtkDataSet* aDataSet = myTransformFilter->GetOutput() )
   {
     myIsFacesOriented = theIsFacesOriented;
     if( theIsFacesOriented )

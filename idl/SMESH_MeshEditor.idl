@@ -1031,7 +1031,8 @@ module SMESH
      * \return TRUE if operation has been completed successfully, FALSE otherwise
      */
     boolean DoubleNodesOnGroupBoundaries( in ListOfGroups theDomains,
-                                          in boolean createJointElems );
+                                          in boolean createJointElems ) 
+      raises (SALOME::SALOME_Exception);
 
     /*!
      * \brief Double nodes on some external faces and create flat elements.

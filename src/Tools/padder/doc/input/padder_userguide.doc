@@ -1,0 +1,139 @@
+/*!
+
+\page padder_userguide_page Use the padder SMESH Plugin
+
+-# \ref S1_PADDER
+-# \ref S2_PADDER
+-# \ref S3_PADDER
+
+\section S1_PADDER The PADDER Algorithm
+
+PADDER is an algorithm that creates a set of particules called a "discrete mesh".
+The particules are characterized by a location in space and a weight that can be considered
+as the radius of a sphere whose center is the location of the particule.
+
+Discrete meshes are typically used to modelize civil components in rapid dynamic
+computation problems (seisms, chocs). These components consists in concrete parts
+embedding steal bares for reinforcement. These parts are input to the algorithm
+as standard finite elements meshes. The cells of theses meshes drive the location
+and sizing of particules.
+
+In the med representation, a discrete mesh is described as MED_BALL elements.
+A MED_BALL element is defined by a location and a radius.
+
+\section S2_PADDER The PADDER SALOME plugin
+
+The PADDER algoritm is integrated in the module SMESH as a SALOME
+plugin. This section illustrates how to use this plugin to create a
+discrete mesh.
+
+In this example, we suppose that two standard meshes (Finite Elements
+Meshes) have been created and publish in the study to modelize the
+concrete part (here with the name "concrete") and the steal bars part
+(here with the name "ferrail"):
+
+\image html SMESH_spadder_start.png
+
+The PADDER plugin can be invoked from the SMESH plugins menu, as
+illustrated on the figure below:
+
+\image html SMESH_spadder_menu.png
+
+When you clic on the "PADDER mesher" item, the graphical interface of
+the PADDER plugin appears:
+
+\image html SMESH_spadder_plugindialog_start.png
+
+This interface invites you to specify input data by pressing the button
+"Input". This command opens the Input dialog box to specify the list
+of meshes and the type of the selected meshes (to be choosen between
+"concrete" or "steelbar" using the combobox on the right side of the
+input line):
+
+\image html SMESH_spadder_inputdialog_start.png
+
+In the figure below, the mesh with name "concrete" has been selected
+in the study and added in the list of input file as a "concrete
+mesh". You have to input the mesh in the dialog using the rounded
+arrow icon, then specify a group name (the name of the group of
+MED_BALL created for this mesh in the resulting mesh), and finnaly
+clic on the "Add" icon:
+
+\image html SMESH_spadder_inputdialog_concrete.png
+
+Then, the mesh with name "ferrail" is selected and added to the list
+as a "steelbar mesh":
+
+\image html SMESH_spadder_inputdialog_steelbar.png
+
+The input dialog box can be validated toreturn to the main plugin
+interface. The "Compute" button is now enable, indicating that the
+problem is ready to be computed:
+
+\image html SMESH_spadder_plugindialog_compute_ready.png
+
+The command "Compute" start the job. The progression can be requested
+using the command "Refresh". In the figure below, the job is still
+running:
+
+\image html SMESH_spadder_plugindialog_compute_running.png
+
+Finally, the job is finished and the result is ready to be published
+in the SALOME study:
+
+\image html SMESH_spadder_plugindialog_compute_finished.png
+
+Clic on the command "Publish" to explicitly import the resulting med
+file in SMESH and published the resulting mesh in the SALOME study:
+
+\image html SMESH_spadder_plugindialog_published.png
+
+Note that this mesh contains one group for each of the input mesh. A
+group with the name specified in the input dialog has been defined for
+the set of MED_BALL created from the corresponding input mesh:
+
+\image html SMESH_spadder_end.png
+
+\section S3_PADDER Configuring the plugin
+
+The configuration of the plugin consists in specifying the location of
+the padder executable program for each of the SALOME resource (at
+least for the localhost resource). This specification is done in the
+file padder.cfg, located in the plugin installation folder
+(i.e. <SMESH_ROOT_DIR>/plugins):
+
+\code
+# This section specify the configurations to be used respectively for
+# the local execution and the remote execution. The value for 'local'
+# and 'remote' keys must be the name of a configuration section in
+# this file. The default key must specify a value between "local" or
+# "remote" to indicate the user preference. 
+[resources]
+local   = localhost
+remote  = nepal
+
+[preferences]
+defaultres = local
+
+# The following sections defines the available configurations.
+# The name of the section can be choosen arbitrary. But the value of
+# the resname key MUST be the name of a SALOME resource defined in the
+# catalog of resources (CatalogResources.xml).
+
+# For each section:
+# - resname : the name of the SALOME resource to be used in this configuration
+# - binpath : the path to the padder executable program on this resource
+# - envpath : the path to the environment file on this resource
+[localhost]
+resname = localhost
+binpath = /home/.programs/salome/workspace/V6_4_BR/SMESH/install/share/salome/resources/smesh/padderexe/padder.exe
+envpath = /home/.programs/salome/workspace/V6_4_BR/SMESH/install/share/salome/resources/smesh/padderexe/envPadder.sh
+
+[nepal]
+resname = nepal@nepal
+binpath = /usr/local/bin/padder.exe
+envpath = /usr/local/share/envPadder.sh
+\endcode
+
+*/
+

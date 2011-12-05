@@ -1,0 +1,8 @@
+#!/bin/sh
+# This script defines the shell extension required for executing the
+# padder executable program on the localhost (for test purposes)
+
+MED_ROOT="@MED2HOME@"
+HDF_ROOT="@HDF5HOME@"
+CGAL_ROOT="/usr"
+export LD_LIBRARY_PATH="$MED_ROOT/lib:$HDF_ROOT/lib:$CGAL_ROOT/lib:$LD_LIBRARY_PATH"

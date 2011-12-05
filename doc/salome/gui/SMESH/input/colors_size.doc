@@ -9,11 +9,11 @@ parameters:
 <ul>
 <li><b>Elements</b></li>
 <ul>
-<li><b>Surface color</b> - color of surface of elements (seen in Shading mode).</li>
-<li><b>Back surface color</b> - color of interior surface of elements. Use slider to select this color. This color 
-generated on base of the <b>Surface color</b> by changing it's brightness and saturation.</li>
-<li><b>Outline color</b> - color of borders of elements.</li>
-<li><b>Wireframe color</b> - color of borders of elements in wireframe mode.</li>
+<li><b>Surface color</b> - surface color of elements (seen in Shading mode).</li>
+<li><b>Back surface color</b> - interior surface color of elements. Use slider to select this color 
+generated on base of the <b>Surface color</b> by changing its brightness and saturation.</li>
+<li><b>Outline color</b> - color of element borders.</li>
+<li><b>Wireframe color</b> - color of element borders in wireframe mode.</li>
 <li><b>0D slements</b> - color of 0D elements.</li>
 <li><b>Size of 0D slements</b> - size of 0D elements.</li>
 <li><b>Width</b> - width of lines (edges and borders of elements).</li>

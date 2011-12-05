@@ -184,7 +184,7 @@ latex_documents = [
 
 # The name of an image file (relative to this directory) to place at the top of
 # the title page.
-latex_logo = '../salome/tui/images/head.png'
+latex_logo = '@srcdir@/../salome/tui/images/head.png'
 
 # For "manual" documents, if this is true, then toplevel headings are parts,
 # not chapters.

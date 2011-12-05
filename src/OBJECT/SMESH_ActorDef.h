@@ -61,17 +61,14 @@ class vtkMergeFilter;
 class vtkPolyData;
 class vtkMapper;
 class vtkActor2D;
-class vtkMaskPoints;
-class vtkLabeledDataMapper;
-class vtkSelectVisiblePoints;
 class vtkLookupTable;
 class vtkPlane;
 class vtkImplicitBoolean;
 class vtkTimeStamp;
 
-class VTKViewer_CellCenters;
-
 class SMESH_DeviceActor;
+class SMESH_NodeLabelActor;
+class SMESH_CellLabelActor;
 class SMESH_ScalarBarActor;
 
 #ifndef DISABLE_PLOT2DVIEWER
@@ -167,10 +164,10 @@ class SMESH_ActorDef : public SMESH_Actor
   virtual void UnShrink(); 
 
   virtual void SetPointsLabeled(bool theIsPointsLabeled);
-  virtual bool GetPointsLabeled(){ return myIsPointsLabeled;}
+  virtual bool GetPointsLabeled();
 
   virtual void SetCellsLabeled(bool theIsCellsLabeled);
-  virtual bool GetCellsLabeled(){ return myIsCellsLabeled;}
+  virtual bool GetCellsLabeled();
 
   virtual void SetFacesOriented(bool theIsFacesOriented);
   virtual bool GetFacesOriented();
@@ -232,7 +229,7 @@ class SMESH_ActorDef : public SMESH_Actor
   vtkProperty* myNodeProp;
 
   SMESH_DeviceActor* myBaseActor;
-  SMESH_DeviceActor* myNodeActor;
+  SMESH_NodeLabelActor* myNodeActor;
   SMESH_DeviceActor* myPickableActor;
 
   vtkProperty* myHighlightProp;
@@ -244,9 +241,9 @@ class SMESH_ActorDef : public SMESH_Actor
   eControl myControlMode;
   SMESH::Controls::FunctorPtr myFunctor;
   vtkProperty* my2DExtProp;
-  SMESH_DeviceActor* my2DActor;
+  SMESH_CellLabelActor* my2DActor;
   SMESH_DeviceActor* my2DExtActor;
-  SMESH_DeviceActor* my3DActor;
+  SMESH_CellLabelActor* my3DActor;
   SMESH_DeviceActor* my3DExtActor;
   SMESH_DeviceActor* myControlActor;
 
@@ -254,12 +251,12 @@ class SMESH_ActorDef : public SMESH_Actor
   SMESH_DeviceActor* myNodeExtActor;
 
   vtkProperty* my1DProp;
-  SMESH_DeviceActor* my1DActor;
+  SMESH_CellLabelActor* my1DActor;
   vtkProperty* my1DExtProp;
   SMESH_DeviceActor* my1DExtActor;
 
   vtkProperty* my0DProp;
-  SMESH_DeviceActor* my0DActor;
+  SMESH_CellLabelActor* my0DActor;
   vtkProperty* my0DExtProp;
   SMESH_DeviceActor* my0DExtActor;
 
@@ -270,21 +267,6 @@ class SMESH_ActorDef : public SMESH_Actor
   bool myIsShrinkable;
   bool myIsShrunk;
   
-  bool myIsPointsLabeled;
-  vtkUnstructuredGrid* myPointsNumDataSet;
-  vtkActor2D *myPointLabels;
-  vtkMaskPoints* myPtsMaskPoints;
-  vtkLabeledDataMapper* myPtsLabeledDataMapper;
-  vtkSelectVisiblePoints* myPtsSelectVisiblePoints;
-
-  bool myIsCellsLabeled;
-  vtkUnstructuredGrid* myCellsNumDataSet;
-  vtkActor2D *myCellsLabels;
-  vtkMaskPoints* myClsMaskPoints;
-  VTKViewer_CellCenters* myCellCenters;
-  vtkLabeledDataMapper* myClsLabeledDataMapper;
-  vtkSelectVisiblePoints* myClsSelectVisiblePoints;
-
   vtkImplicitBoolean* myImplicitBoolean;
   typedef TVTKSmartPtr<vtkPlane> TPlanePtr;
   typedef std::vector<TPlanePtr> TCippingPlaneCont;

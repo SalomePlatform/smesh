@@ -130,6 +130,7 @@ Examples of Python scripts for all Mesh operations are available by
 the following links:
 
 - \subpage tui_creating_meshes_page
+- \subpage tui_cartesian_algo
 - \subpage tui_viewing_meshes_page
 - \subpage tui_defining_hypotheses_page
 - \subpage tui_quality_controls_page

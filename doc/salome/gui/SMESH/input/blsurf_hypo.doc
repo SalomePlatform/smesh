@@ -96,8 +96,8 @@ not sewed faces.
   <li>"PreCAD" is an auxiliary CAD pre-processing module which has 
   two main goals:
   <ul>
-    <li> Complete missing or inadequate CAD-description.</li>
-    <li>Perform topology reconstruction and speciﬁc geometry 
+    <li> Complete missing or inadequate CAD descriptions.</li>
+    <li> Perform topology reconstruction and specific geometry 
     enhancement for mesh generation.</li>
   </ul>
   This module requires a specific licence.
@@ -105,15 +105,15 @@ not sewed faces.
   The following PreCAD options are the most significant and important ones:
   <ul>
   <li><b>Merge Edges</b> - allows PreCAD to optimize the geometry by merging some
-  edges. Default is 0.</li>
+  edges. This option is 0 by default.</li>
   <li><b>Remove nano edges</b> - allows PreCAD to optimize the geometry by removing 
-  the nano edges whenever possible. Default is 0.</li>
+  the nano edges whenever possible. This option is 0 by default.</li>
   <li><b>Nano edge length</b> - gives the length below which an edge is considered as nano 
   for the topology processing. See also the \b remove_nano_edges option. If unset, PreCAD
   default value is \f$\mathrm{diag} \times 10^{-5}\f$.</li>
   <li><b>Discard input topology</b> - computes the CAD topology from scratch, 
   without considering the toplogical information contained in the original CAD
-  (Useful for iges files). Default is 0.</li>
+  (Useful for iges files). This option is 0 by default.</li>
   </ul>
   </li>
 </ul>
@@ -208,29 +208,34 @@ files. Default is 1.</li>
 The following PreCAD options are commonly usable. 
 <ul>
 <li>\b closed_geometry (int) - describes whether the working geometry 
-should be closed or not. When activated, this option helps PreCAD to treat 
-the most dirtiest geometries. Default is 0.</li>
+should be closed or not. When activated, this option helps PreCAD to process 
+the dirtiest geometries. By default this option is 0.</li>
 <li>\b debug (int) - If debug = 1 PreCAD will be very verbose and will output 
-some intermediate ﬁles in the working directory. Default is 0.</li>
-<li>\b eps_nano_relative (real) -  Same as \b eps_nano but given in relatively to 
-the diagonal of the box bounding the geometry. Default is \f$10^{-5}\f$.</li>
+some intermediate files in the working directory. By default this
+option is 0.</li>
+<li>\b eps_nano_relative (real) -  the same as \b eps_nano, but relatively to 
+the diagonal of the box bounding the geometry. By default this option is \f$10^{-5}\f$.</li>
 <li>\b eps_sewing (real) - tolerance of the assembly. It rarely requires to be tuned. 
-Default is \f$\mathrm{diag} \times 5 \cdot 10^{-4}\f$.</li>
-<li>\b eps_sewing_relative (real) -  Same as \b eps_nano but given in relatively to 
-the diagonal of the box bounding the geometry. Default is \f$5 \cdot 10^{-4}\f$.</li>
+By default this option is \f$\mathrm{diag} \times 5 \cdot 10^{-4}\f$.</li>
+<li>\b eps_sewing_relative (real) -  the same as \b eps_nano but relatively to 
+the diagonal of the box bounding the geometry. By default this option is \f$5 \cdot 10^{-4}\f$.</li>
 <li>\b manifold_geometry (int) - describes whether the working geometry should be manifold or not.
-When activated, this option helps PreCAD to treat the most dirtiest geometries. Default is 0.</li>
-<li>\b create_tag_collision (int) - creates some new tags from original ones in case 
-of collision (entity merge or association for example). Default is 0.</li>
-<li>\b periodic_tolerance (real) - deﬁnes the maximum distance error accepted between 
-two sets of periodic entities. Default is \f$\mathrm{diag} \times 10^{-5}\f$.</li>
-<li>\b periodic_tolerance_relative (real) -  Same as \b periodic_tolerance but in relative
-unit. Default is \f$10^{-5}\f$.</li>
-<li>\b periodic_split_tolerance (real) - This periodicity processing related option deﬁnes 
+When activated, this option helps PreCAD to process the dirtiest
+geometries. By default this option is 0.</li>
+<li>\b create_tag_collision (int) - creates new tags from original ones in case 
+of collision (entity merge or association for example). By default
+this option is 0.</li>
+<li>\b periodic_tolerance (real) - defines the maximum distance error accepted between 
+two sets of periodic entities. By default this option is \f$\mathrm{diag} \times 10^{-5}\f$.</li>
+<li>\b periodic_tolerance_relative (real) -  the same as \b
+periodic_tolerance but in a relative unit. Bu default this option is \f$10^{-5}\f$.</li>
+<li>\b periodic_split_tolerance (real) - This periodicity processing related option defines 
 the minimum distance between a CAD point and an imprinted point. It allows to indirectly 
-control the number of points and small edges created. Default is \f$\mathrm{diag} \times 10^{-4}\f$.</li>
-<li>\b periodic_split_tolerance_relative (real -  Same as \b periodic_split_tolerance but in
-relative unit. Default is \f$10^{-4}\f$.</li>
+control the number of created points and small edges. By default this
+option is \f$\mathrm{diag} \times 10^{-4}\f$.</li>
+<li>\b periodic_split_tolerance_relative (real -  the same as \b
+periodic_split_tolerance but in a relative unit. By default this
+option is \f$10^{-4}\f$.</li>
 </ul>
 
 \n

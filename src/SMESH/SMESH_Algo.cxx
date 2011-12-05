@@ -438,7 +438,7 @@ bool SMESH_Algo::GetSortedNodesOnEdge(const SMESHDS_Mesh*                   theM
         return false;
       const SMDS_EdgePosition* epos =
         static_cast<const SMDS_EdgePosition*>(node->GetPosition());
-      theNodes.insert( make_pair( epos->GetUParameter(), node ));
+      theNodes.insert( theNodes.end(), make_pair( epos->GetUParameter(), node ));
       //MESSAGE("U " << epos->GetUParameter() << " ID " << node->GetID());
       ++nbNodes;
     }

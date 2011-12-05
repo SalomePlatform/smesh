@@ -1,0 +1,40 @@
+<document>
+  <section name="launch">
+    <!-- SALOME launching parameters -->
+    <parameter name="gui"        value="yes"/>
+    <parameter name="splash"     value="yes"/>
+    <parameter name="file"       value="no"/>
+    <parameter name="key"        value="no"/>
+    <parameter name="interp"     value="no"/>
+    <parameter name="logger"     value="no"/>
+    <parameter name="xterm"      value="no"/>
+    <parameter name="portkill"   value="no"/>
+    <parameter name="killall"    value="no"/>
+    <parameter name="noexcepthandler"  value="no"/>
+    <parameter name="modules"    value="KERNEL,MED,GUI,GEOM,SMESH,JOBMANAGER,VISU,YACS"/>
+    <parameter name="pyModules"  value=""/>
+    <parameter name="embedded"   value="SalomeAppEngine,study,cppContainer,registry,moduleCatalog"/>
+    <parameter name="standalone" value="pyContainer"/>
+  </section>
+  <section name="SMESH">
+    <parameter name="plugins" value="NETGENPlugin,GHS3DPlugin,BLSURFPlugin"/>
+  </section>
+  <section name="splash" >
+    <!-- Splash screen settings. This only works when using a SALOME application, -->
+    <!-- where the file appli-splashscreen.jpg has been copy into. -->
+    <parameter name="image"             value="${SMESH_ROOT_DIR}/share/salome/resources/smesh/appligen/appli-splashscreen.jpg" />
+    <parameter name="constant_info"     value="%A [ %V ]" />
+    <parameter name="text_colors"       value="#eeeeff|#555555" />
+    <parameter name="hide_on_click"     value="no" />
+    <parameter name="show_progress"     value="yes" />
+    <parameter name="show_message"      value="yes" />
+    <parameter name="show_percents"     value="yes" />
+    <parameter name="margin"            value="40" />
+    <parameter name="progress_width"    value="20" />
+    <parameter name="progress_flags"    value="bottom,left_to_right" />
+    <parameter name="opacity"           value="0.70" />
+    <parameter name="font"              value="Tahoma,12,normal" />
+    <parameter name="alignment"         value="top,left" />
+    <parameter name="progress_colors"   value="#3b3e5d|#d14949|v" />
+  </section>
+</document>

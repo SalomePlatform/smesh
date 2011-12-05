@@ -1,0 +1,31 @@
+#!/bin/sh
+# 
+# This script installs or updates a SALOME application for testing the
+# PADDER plugin for SMESH. The application is installed in the
+# directory ./appli. The configuration file is supposed to be adapted
+# to your own environment (see config_appli.xml).
+#
+# To run this script, you should have first configure your
+# shell with the SALOME environment, i.e. source the files
+# prerequis.sh and envSalome.sh (or equivalent) that fit
+# your configuration. You can alternatively customize the env.sh file
+# to fit your SALOME environment and let the script do the job (see
+# source below).
+#
+# (gboulant - 3/2/2011)
+#
+
+here=$(dirname $0)
+
+#
+# Run the appli_gen.py
+#
+APPLIDIR="./appli"
+@KERNEL_ROOT_DIR@/bin/salome/appli_gen.py --prefix=$APPLIDIR --config=$here/config_appli.xml
+
+#
+# Copy customized configuration files in the application
+#
+cp $here/SalomeApp.xml $APPLIDIR/.
+cp $here/CatalogResources.xml $APPLIDIR/.
+cp @prefix@/plugins/envPlugins.sh $APPLIDIR/env.d/.

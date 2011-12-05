@@ -128,6 +128,7 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
 
   const bool includeSelf = true;
   const bool complexShapeFirst = true;
+  const int  globalAlgoDim = 100;
 
   SMESH_subMeshIteratorPtr smIt;
 
@@ -214,19 +215,30 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
         if ( algo->SupportSubmeshes() )
         {
           // reload sub-meshes from shDim2sm into smWithAlgoSupportingSubmeshes
+          // so that more local algos to go first
           if ( prevShapeDim != aShapeDim )
           {
             prevShapeDim = aShapeDim;
             for ( shDim2smIt = shDim2sm.rbegin(); shDim2smIt != shDim2sm.rend(); ++shDim2smIt )
-              smWithAlgoSupportingSubmeshes.push_front( shDim2smIt->second );
+              if ( shDim2smIt->first == globalAlgoDim )
+                smWithAlgoSupportingSubmeshes.push_back( shDim2smIt->second );
+              else
+                smWithAlgoSupportingSubmeshes.push_front( shDim2smIt->second );
             shDim2sm.clear();
           }
           // add smToCompute to shDim2sm map
-          aShapeDim = GetShapeDim( algoShape );
-          if ( algoShape.ShapeType() == TopAbs_COMPOUND )
+          if ( algoShape.IsSame( aMesh.GetShapeToMesh() ))
           {
-            TopoDS_Iterator it( algoShape );
-            aShapeDim += GetShapeDim( it.Value() );
+            aShapeDim = globalAlgoDim; // to compute last
+          }
+          else
+          {
+            aShapeDim = GetShapeDim( algoShape );
+            if ( algoShape.ShapeType() == TopAbs_COMPOUND )
+            {
+              TopoDS_Iterator it( algoShape );
+              aShapeDim += GetShapeDim( it.Value() );
+            }
           }
           shDim2sm.insert( make_pair( aShapeDim, smToCompute ));
         }
@@ -248,7 +260,10 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
     }
     // reload sub-meshes from shDim2sm into smWithAlgoSupportingSubmeshes
     for ( shDim2smIt = shDim2sm.rbegin(); shDim2smIt != shDim2sm.rend(); ++shDim2smIt )
-      smWithAlgoSupportingSubmeshes.push_front( shDim2smIt->second );
+      if ( shDim2smIt->first == globalAlgoDim )
+        smWithAlgoSupportingSubmeshes.push_back( shDim2smIt->second );
+      else
+        smWithAlgoSupportingSubmeshes.push_front( shDim2smIt->second );
 
     // ------------------------------------------------------------
     // sort list of submeshes according to mesh order
@@ -289,7 +304,7 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
         SMESH_HypoFilter filter( SMESH_HypoFilter::IsAlgo() );
         filter
           .And( SMESH_HypoFilter::IsApplicableTo( aSubShape ))
-          .And( SMESH_HypoFilter::IsMoreLocalThan( algoShape ));
+          .And( SMESH_HypoFilter::IsMoreLocalThan( algoShape, aMesh.GetShapeToMesh() ));
 
         if ( SMESH_Algo* subAlgo = (SMESH_Algo*) aMesh.GetHypothesis( aSubShape, filter, true )) {
           SMESH_Hypothesis::Hypothesis_Status status;
@@ -501,7 +516,7 @@ bool SMESH_Gen::Evaluate(SMESH_Mesh &          aMesh,
         SMESH_HypoFilter filter( SMESH_HypoFilter::IsAlgo() );
         filter
           .And( SMESH_HypoFilter::IsApplicableTo( aSubShape ))
-          .And( SMESH_HypoFilter::IsMoreLocalThan( algoShape ));
+          .And( SMESH_HypoFilter::IsMoreLocalThan( algoShape, aMesh.GetShapeToMesh() ));
 
         if ( SMESH_Algo* subAlgo = (SMESH_Algo*) aMesh.GetHypothesis( aSubShape, filter, true )) {
           SMESH_Hypothesis::Hypothesis_Status status;

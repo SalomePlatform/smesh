@@ -2549,7 +2549,7 @@ void SMESH_Mesh_i::PrepareForWriting (const char* file, bool overwrite)
 }
 
 string SMESH_Mesh_i::PrepareMeshNameAndGroups(const char* file,
-					      CORBA::Boolean overwrite)
+                                              CORBA::Boolean overwrite)
 {
   // Perform Export
   PrepareForWriting(file, overwrite);
@@ -2595,7 +2595,7 @@ void SMESH_Mesh_i::ExportToMEDX (const char* file,
   throw(SALOME::SALOME_Exception)
 {
   Unexpect aCatch(SALOME_SalomeException);
-  string aMeshName = PrepareMeshNameAndGroups(file, true);
+  string aMeshName = PrepareMeshNameAndGroups(file, overwrite);
   TPythonDump() << _this() << ".ExportToMEDX( r'"
                 << file << "', " << auto_groups << ", " << theVersion << ", " << overwrite << " )";
 

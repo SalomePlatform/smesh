@@ -3557,10 +3557,6 @@ Please, create VTK viewer and try again</translation>
         <translation>Wireframe color</translation>
     </message>
     <message>
-        <source>PREF_GROUP_SELECTION</source>
-        <translation>Selection</translation>
-    </message>            
-    <message>
         <source>PREF_SELECTION</source>
         <translation>Selection color</translation>
     </message>
@@ -5486,21 +5482,6 @@ It is impossible to read point coordinates from file</translation>
     <message>
         <source>CAPTION</source>
         <translation>Union of two triangles</translation>
-    </message>
-</context>
-<context>
-    <name>SMESHGUI_WhatIsDlg</name>
-    <message>
-        <source>ENTITY_TYPE</source>
-        <translation>Element type</translation>
-    </message>
-    <message>
-        <source>GRAVITY_CENTER</source>
-        <translation>Gravity center</translation>
-    </message>
-    <message>
-        <source>CONNECTED_ELEMENTS</source>
-        <translation>Connected With Elements</translation>
     </message>
 </context>
 <context>

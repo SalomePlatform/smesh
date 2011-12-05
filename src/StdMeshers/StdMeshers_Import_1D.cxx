@@ -303,14 +303,16 @@ namespace // INTERNAL STUFF
     // set listener to hear events of the submesh computed by "Import" algo
     importSub->SetEventListener( get(), new _ListenerData(srcHyp), importSub );
 
-    // set a listener to hear events of the source mesh
+    // set listeners to hear events of the source mesh
     SMESH_subMesh* smToNotify = importSub;
-    SMESH_subMesh* smToListen = srcMesh->GetSubMeshContaining(1);
-    SMESH_subMeshEventListenerData* data = new _ListenerData(srcHyp, LISTEN_SRC_MESH);
-    data->mySubMeshes.push_back( smToNotify );
-    importSub->SetEventListener( get(), data, smToListen );
-
-    // remeber the submesh importSub and its sub-submeshes
+    vector<SMESH_subMesh*> smToListen = srcHyp->GetSourceSubMeshes( srcMesh );
+    for ( size_t i = 0; i < smToListen.size(); ++i )
+    {
+      SMESH_subMeshEventListenerData* data = new _ListenerData(srcHyp, LISTEN_SRC_MESH);
+      data->mySubMeshes.push_back( smToNotify );
+      importSub->SetEventListener( get(), data, smToListen[i] );
+    }
+    // remember the submesh importSub and its sub-submeshes
     _ImportData* iData = _Listener::getImportData( srcMesh, importSub->GetFather());
     iData->trackHypParams( importSub, srcHyp );
     iData->addComputed( importSub );
@@ -370,11 +372,11 @@ namespace // INTERNAL STUFF
           // clear the rest submeshes
           if ( !d->_computedSubM.empty() )
           {
-            set< SMESH_subMesh*, _SubLess> subs;
-            subs.swap( d->_computedSubM ); // avoid recursion via events
-            while ( !subs.empty() )
+            d->_computedSubM.clear();
+            set< SMESH_subMesh*, _SubLess>::iterator sub = d->_subM.begin();
+            for ( ; sub != d->_subM.end(); ++sub )
             {
-              SMESH_subMesh* subM = *subs.begin(); subs.erase( subs.begin() );
+              SMESH_subMesh* subM = *sub;
               _ListenerData* hypData = (_ListenerData*) subM->GetEventListenerData( get() );
               if ( hypData )
                 d->removeGroups( sm, hypData->_srcHyp );

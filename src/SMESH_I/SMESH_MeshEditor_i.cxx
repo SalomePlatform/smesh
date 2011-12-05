@@ -5673,6 +5673,7 @@ CORBA::Boolean SMESH_MeshEditor_i::Make2DMeshFrom3D()
 
 CORBA::Boolean SMESH_MeshEditor_i::DoubleNodesOnGroupBoundaries( const SMESH::ListOfGroups& theDomains,
                                                                  CORBA::Boolean createJointElems )
+  throw (SALOME::SALOME_Exception)
 {
   initData();
 
@@ -5686,8 +5687,10 @@ CORBA::Boolean SMESH_MeshEditor_i::DoubleNodesOnGroupBoundaries( const SMESH::Li
   for ( int i = 0, n = theDomains.length(); i < n; i++ )
   {
     SMESH::SMESH_GroupBase_var aGrp = theDomains[ i ];
-    if ( !CORBA::is_nil( aGrp ) && ( aGrp->GetType() != SMESH::NODE ) )
+    if ( !CORBA::is_nil( aGrp ) /*&& ( aGrp->GetType() != SMESH::NODE )*/ )
     {
+      if ( aGrp->GetType() != SMESH::VOLUME )
+        THROW_SALOME_CORBA_EXCEPTION("Not a volume group", SALOME::BAD_PARAM);
       TIDSortedElemSet domain;
       domain.clear();
       domains.push_back(domain);

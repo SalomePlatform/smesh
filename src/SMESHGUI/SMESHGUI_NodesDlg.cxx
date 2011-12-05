@@ -297,6 +297,7 @@ SMESHGUI_NodesDlg::SMESHGUI_NodesDlg( SMESHGUI* theModule ):
   TextLabel_GroupName = new QLabel( tr( "SMESH_GROUP" ), GroupGroups );
   ComboBox_GroupName = new QComboBox( GroupGroups );
   ComboBox_GroupName->setEditable( true );
+  ComboBox_GroupName->setInsertPolicy( QComboBox::NoInsert );
 
   GroupGroupsLayout->addWidget( TextLabel_GroupName );
   GroupGroupsLayout->addWidget( ComboBox_GroupName, 1 );
@@ -456,7 +457,7 @@ bool SMESHGUI_NodesDlg::ClickOnApply()
       if ( aGroupName == aName && ( i == ComboBox_GroupName->currentIndex() || idx == 0 ) )
         idx = i;
     }
-    if ( idx > 0 ) {
+    if ( idx > 0 && idx < myGroups.count() ) {
       SMESH::SMESH_GroupOnGeom_var aGeomGroup = SMESH::SMESH_GroupOnGeom::_narrow( myGroups[idx-1] );
       if ( !aGeomGroup->_is_nil() ) {
         int res = SUIT_MessageBox::question( this, tr( "SMESH_WRN_WARNING" ),

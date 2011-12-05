@@ -23,6 +23,9 @@
 //  Author : Nicolas REJNERI, Open CASCADE S.A.S.
 
 #include <Standard_math.hxx>  // E.A. must be included before Python.h to fix compilation on windows
+#ifdef HAVE_FINITE
+#undef HAVE_FINITE            // VSR: avoid compilation warning on Linux : "HAVE_FINITE" redefined
+#endif
 #include "Python.h"
 //  SMESH includes
 #include "SMESHGUI.h"
@@ -49,7 +52,6 @@
 #include "SMESHGUI_Hypotheses.h"
 #include "SMESHGUI_Make2DFrom3DOp.h"
 #include "SMESHGUI_MakeNodeAtPointDlg.h"
-//#include "SMESHGUI_MeshInfosDlg.h"
 #include "SMESHGUI_Measurements.h"
 #include "SMESHGUI_MeshInfo.h"
 #include "SMESHGUI_MeshOp.h"
@@ -68,12 +70,10 @@
 #include "SMESHGUI_SewingDlg.h"
 #include "SMESHGUI_SingleEditDlg.h"
 #include "SMESHGUI_SmoothingDlg.h"
-//#include "SMESHGUI_StandardMeshInfosDlg.h"
 #include "SMESHGUI_SymmetryDlg.h"
 #include "SMESHGUI_TranslationDlg.h"
 #include "SMESHGUI_ScaleDlg.h"
 #include "SMESHGUI_TransparencyDlg.h"
-//#include "SMESHGUI_WhatIsDlg.h"
 #include "SMESHGUI_DuplicateNodesDlg.h"
 #include "SMESHGUI_CopyMeshDlg.h"
 
@@ -527,14 +527,14 @@
       QMap<QString, SMESH::MED_VERSION> aFilterMap;
       //QString v21 (aMesh->GetVersionString(SMESH::MED_V2_1, 2));
       if ( isMED ) {
-	QString v22 (aMesh->GetVersionString(SMESH::MED_V2_2, 2));
-	//aFilterMap.insert( QObject::tr( "MED_VX_FILES_FILTER" ).arg( v21 ) + " (*.med)", SMESH::MED_V2_1 );
-	aFilterMap.insert( QObject::tr( "MED_VX_FILES_FILTER" ).arg( v22 ) + " (*.med)", SMESH::MED_V2_2 );
+        QString v22 (aMesh->GetVersionString(SMESH::MED_V2_2, 2));
+        //aFilterMap.insert( QObject::tr( "MED_VX_FILES_FILTER" ).arg( v21 ) + " (*.med)", SMESH::MED_V2_1 );
+        aFilterMap.insert( QObject::tr( "MED_VX_FILES_FILTER" ).arg( v22 ) + " (*.med)", SMESH::MED_V2_2 );
       }
       else { // isSAUV
-	aFilterMap.insert("All files (*)", SMESH::MED_V2_1 );
-	aFilterMap.insert("SAUV files (*.sauv)", SMESH::MED_V2_2 );
-	aFilterMap.insert("SAUV files (*.sauve)", SMESH::MED_V2_1 );
+        aFilterMap.insert("All files (*)", SMESH::MED_V2_1 );
+        aFilterMap.insert("SAUV files (*.sauv)", SMESH::MED_V2_2 );
+        aFilterMap.insert("SAUV files (*.sauve)", SMESH::MED_V2_1 );
       }
 
       QStringList filters;
@@ -680,14 +680,14 @@
           }
         }
         else if ( isSAUV )
-	{
-	  for( aMeshIter = aMeshList.begin(); aMeshIter != aMeshList.end(); aMeshIter++ )
-	  {
-	    SMESH::SMESH_Mesh_var aMeshItem = SMESH::SMESH_Mesh::_narrow( (*aMeshIter).first );
-	    if( !aMeshItem->_is_nil() )
-	      aMeshItem->ExportSAUV( aFilename.toLatin1().data(), toCreateGroups );
-	  }
-	}
+        {
+          for( aMeshIter = aMeshList.begin(); aMeshIter != aMeshList.end(); aMeshIter++ )
+          {
+            SMESH::SMESH_Mesh_var aMeshItem = SMESH::SMESH_Mesh::_narrow( (*aMeshIter).first );
+            if( !aMeshItem->_is_nil() )
+              aMeshItem->ExportSAUV( aFilename.toLatin1().data(), toCreateGroups );
+          }
+        }
         else if ( isDAT )
         {
           if ( aMeshOrGroup->_is_equivalent( aMesh ))
@@ -2736,38 +2736,6 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       }
       break;
     }
-    /*
-  case 902:                                     // STANDARD MESH INFOS
-    {
-      EmitSignalDeactivateDialog();
-      LightApp_SelectionMgr *aSel = SMESHGUI::selectionMgr();
-      SALOME_ListIO selected;
-      if( aSel )
-        aSel->selectedObjects( selected );
-
-      if ( selected.Extent() > 1 ) { // a dlg for each IO
-        SALOME_ListIO IOs;
-        SALOME_ListIteratorOfListIO It (selected);
-        for ( ; It.More(); It.Next() ) {
-          IOs.Clear();
-          IOs.Append( It.Value() );
-          aSel->setSelectedObjects( IOs );
-          ( new SMESHGUI_StandardMeshInfosDlg( this ) )->show();
-        }
-        // restore selection
-        aSel->setSelectedObjects( selected );
-      }
-      else
-        ( new SMESHGUI_StandardMeshInfosDlg( this ) )->show();
-      break;
-    }
-  case 903:                                     // WHAT IS
-    {
-      EmitSignalDeactivateDialog();
-      ( new SMESHGUI_WhatIsDlg( this ) )->show();
-      break;
-    }
-    */
 
   case 904:                                     // FIND ELEM
     {

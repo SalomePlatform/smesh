@@ -261,13 +261,26 @@ namespace
    */
   //================================================================================
 
-  bool beginsAtSide( const _FaceGrid& sideGrid1, const _FaceGrid& sideGrid2 )
+  bool beginsAtSide( const _FaceGrid&     sideGrid1,
+                     const _FaceGrid&     sideGrid2,
+                     SMESH_ProxyMesh::Ptr proxymesh )
   {
-    const SMDS_MeshNode* n00 = (sideGrid1._u2nodesMap.begin()->second)[0];
     const TNodeColumn& col0  = sideGrid2._u2nodesMap.begin()->second;
     const TNodeColumn& col1  = sideGrid2._u2nodesMap.rbegin()->second;
-    return ( n00 == col0.front() || n00 == col0.back() ||
-             n00 == col1.front() || n00 == col1.back() );
+    const SMDS_MeshNode* n00 = col0.front();
+    const SMDS_MeshNode* n01 = col0.back();
+    const SMDS_MeshNode* n10 = col1.front();
+    const SMDS_MeshNode* n11 = col1.back();
+    const SMDS_MeshNode* n = (sideGrid1._u2nodesMap.begin()->second)[0];
+    if ( proxymesh )
+    {
+      n00 = proxymesh->GetProxyNode( n00 );
+      n10 = proxymesh->GetProxyNode( n10 );
+      n01 = proxymesh->GetProxyNode( n01 );
+      n11 = proxymesh->GetProxyNode( n11 );
+      n   = proxymesh->GetProxyNode( n );
+    }
+    return ( n == n00 || n == n01 || n == n10 || n == n11 );
   }
 }
 
@@ -433,12 +446,12 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh &         aMesh,
 
   // Orient loaded grids of cube sides along axis of the unitary cube coord system
   bool isReverse[6];
-  isReverse[B_BOTTOM] = beginsAtSide( aCubeSide[B_BOTTOM], aCubeSide[B_RIGHT ] );
-  isReverse[B_TOP   ] = beginsAtSide( aCubeSide[B_TOP   ], aCubeSide[B_RIGHT ] );
-  isReverse[B_FRONT ] = beginsAtSide( aCubeSide[B_FRONT ], aCubeSide[B_RIGHT ] );
-  isReverse[B_BACK  ] = beginsAtSide( aCubeSide[B_BACK  ], aCubeSide[B_RIGHT ] );
-  isReverse[B_LEFT  ] = beginsAtSide( aCubeSide[B_LEFT  ], aCubeSide[B_BACK  ] );
-  isReverse[B_RIGHT ] = beginsAtSide( aCubeSide[B_RIGHT ], aCubeSide[B_BACK  ] );
+  isReverse[B_BOTTOM] = beginsAtSide( aCubeSide[B_BOTTOM], aCubeSide[B_RIGHT ], proxymesh );
+  isReverse[B_TOP   ] = beginsAtSide( aCubeSide[B_TOP   ], aCubeSide[B_RIGHT ], proxymesh );
+  isReverse[B_FRONT ] = beginsAtSide( aCubeSide[B_FRONT ], aCubeSide[B_RIGHT ], proxymesh );
+  isReverse[B_BACK  ] = beginsAtSide( aCubeSide[B_BACK  ], aCubeSide[B_RIGHT ], proxymesh );
+  isReverse[B_LEFT  ] = beginsAtSide( aCubeSide[B_LEFT  ], aCubeSide[B_BACK  ], proxymesh );
+  isReverse[B_RIGHT ] = beginsAtSide( aCubeSide[B_RIGHT ], aCubeSide[B_BACK  ], proxymesh );
   for ( int i = 0; i < 6; ++i )
   {
     aCubeSide[i]._columns.resize( aCubeSide[i]._u2nodesMap.size() );

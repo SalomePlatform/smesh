@@ -384,6 +384,17 @@ Handle(_pyCommand) _pyGen::AddCommand( const TCollection_AsciiString& theCommand
     aCommand->SetArg( 2, Type );
     aCommand->SetArg( 3, Compare );
 
+    if ( Type == "SMESH.FT_ElemGeomType" && Threshold.IsIntegerValue() )
+    {
+      // set SMESH.GeometryType instead of a numerical Threshold
+      const char* types[SMESH::Geom_POLYHEDRA+1] = {
+        "Geom_POINT", "Geom_EDGE", "Geom_TRIANGLE", "Geom_QUADRANGLE", "Geom_POLYGON",
+        "Geom_TETRA", "Geom_PYRAMID", "Geom_HEXA", "Geom_PENTA", "Geom_POLYHEDRA"
+      };
+      int iGeom = Threshold.IntegerValue();
+      if ( -1 < iGeom && iGeom < SMESH::Geom_POLYHEDRA+1 )
+        Threshold = SMESH + types[ iGeom ];
+    }
     if ( ThresholdStr.Length() != 2 ) // not '' or ""
       aCommand->SetArg( 4, ThresholdStr );
     else if ( ThresholdID.Length() != 2 )
@@ -980,6 +991,14 @@ void _pyMesh::Process( const Handle(_pyCommand)& theCommand )
   else if ( method == "CreateGroupFromFilter" ) // --> GroupOnFilter()
   {
     theCommand->SetMethod( "GroupOnFilter" );
+    Handle(_pyGroup) group = new _pyGroup( theCommand );
+    theGen->AddObject( group );
+
+    // GroupOnFilter(typ, name, aFilter0x4743dc0 -> aFilter_1)
+    _pyID filterID = theCommand->GetArg(3);
+    Handle(_pyObject) filter = theGen->FindObject( filterID );
+    if ( !filter.IsNull() && filter->IsKind(STANDARD_TYPE(_pyFilter)))
+      filter->Process( theCommand );
   }
   // ----------------------------------------------------------------------
   else if ( method == "GetIdsFromFilter" )
@@ -1278,7 +1297,8 @@ void _pyMeshEditor::Process( const Handle(_pyCommand)& theCommand)
       "SewBorderToSide","SewSideElements","ChangeElemNodes","GetLastCreatedNodes",
       "GetLastCreatedElems",
       "MirrorMakeMesh","MirrorObjectMakeMesh","TranslateMakeMesh",
-      "TranslateObjectMakeMesh","RotateMakeMesh","RotateObjectMakeMesh","MakeBoundaryMesh"
+      "TranslateObjectMakeMesh","RotateMakeMesh","RotateObjectMakeMesh","MakeBoundaryMesh",
+      "MakeBoundaryElements"
       ,"" }; // <- mark of the end
     sameMethods.Insert( names );
   }
@@ -1649,6 +1669,16 @@ Handle(_pyHypothesis) _pyHypothesis::NewHypothesis( const Handle(_pyCommand)& th
     hyp = new _pyLayerDistributionHypo( theCreationCmd, "Get3DHypothesis" );
     hyp->SetConvMethodAndType( "LayerDistribution", "RadialPrism_3D");
   }
+  // Cartesian 3D ---------
+  else if ( hypType == "Cartesian_3D" ) {
+    algo->SetConvMethodAndType( "BodyFitted", hypType.ToCString());
+  }
+  else if ( hypType == "CartesianParameters3D" ) {
+    hyp = new _pyComplexParamHypo( theCreationCmd );
+    hyp->SetConvMethodAndType( "SetGrid", "Cartesian_3D");
+    for ( int iArg = 0; iArg < 4; ++iArg )
+      hyp->myArgs.Append("[]");
+  }
 
   return algo->IsValid() ? algo : hyp;
 }
@@ -1819,12 +1849,44 @@ void _pyHypothesis::Assign( const Handle(_pyHypothesis)& theOther,
 //================================================================================
 /*!
  * \brief Remember hypothesis parameter values
-  * \param theCommand - The called hypothesis method
+ * \param theCommand - The called hypothesis method
  */
 //================================================================================
 
 void _pyComplexParamHypo::Process( const Handle(_pyCommand)& theCommand)
 {
+  if ( GetAlgoType() == "Cartesian_3D" )
+  {
+    // CartesianParameters3D hyp
+
+    if ( theCommand->GetMethod() == "SetSizeThreshold" )
+    {
+      myArgs( 4 ) = theCommand->GetArg( 1 );
+      myArgCommands.push_back( theCommand );
+      return;
+    }
+    if ( theCommand->GetMethod() == "SetGrid" ||
+         theCommand->GetMethod() == "SetGridSpacing" )
+    {
+      TCollection_AsciiString axis = theCommand->GetArg( theCommand->GetNbArgs() );
+      int iArg = 1 + ( axis.Value(1) - '0' );
+      if ( theCommand->GetMethod() == "SetGrid" )
+      {
+        myArgs( iArg ) = theCommand->GetArg( 1 );
+      }
+      else
+      {
+        myArgs( iArg ) = "[ ";
+        myArgs( iArg ) += theCommand->GetArg( 1 );
+        myArgs( iArg ) += ", ";
+        myArgs( iArg ) += theCommand->GetArg( 2 );
+        myArgs( iArg ) += "]";
+      }
+      myArgCommands.push_back( theCommand );
+      return;
+    }
+  }
+
   if( theCommand->GetMethod() == "SetLength" )
   {
     // NOW it becomes OBSOLETE
@@ -2771,6 +2833,14 @@ void _pyGroup::Process( const Handle(_pyCommand)& theCommand)
     makeGroupCmd->SetArg( 2, idSource );
     // set new name of a filter
     filter->Process( makeGroupCmd );
+  }
+  else if ( theCommand->GetMethod() == "SetFilter" )
+  {
+    // set new name of a filter
+    _pyID filterID = theCommand->GetArg(1);
+    Handle(_pyObject) filter = theGen->FindObject( filterID );
+    if ( !filter.IsNull() )
+      filter->Process( theCommand );
   }
 }
 

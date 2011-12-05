@@ -3,9 +3,9 @@
 \page import_algos_page Use Existing Elements Algorithms
 
 \n <em>Use Existing Elements </em>algorithms allow to define the mesh of a geometrical
-object by the importing suitably located mesh elements from another
-mesh. The mesh elements to import from the other mesh are to be contained in
-groups. If several groups are used to mesh one geometry, validity of
+object by importing suitably located mesh elements from another
+mesh. The mesh elements to import from the other mesh should be contained in
+groups. If several groups are used to mesh the same geometry, validity of
 nodal connectivity of result mesh must be assured by connectivity of
 the source mesh; no geometrical checks are performed to merge
 different nodes at same locations.
@@ -32,9 +32,9 @@ In this dialog box you can define
 <ul>
 <li>The \b Name of the algorithm. </li>
 <li>The <b>Groups of Edges</b> to import 1D elements from.
-<li>The <b>To copy mesh</b> checkbox is to import not only the edges of
-the selected <b>Groups of Edges</b> but to copy the whole source
-mesh. In this case <b>To copy groups</b>, if checked, forces creating
+<li><b>To copy mesh</b> checkbox allows to import not only the edges of
+the selected <b>Groups of Edges</b>, but the whole source
+mesh. In this case <b>To copy groups</b> checkbox allows to create
 the same groups as in the imported source mesh.</li>
 </ul>
 
@@ -52,10 +52,10 @@ The following dialog box will appear:
 In this dialog box you can define 
 <ul>
 <li>The \b Name of the algorithm. </li>
-<li>The <b>Groups of Faces</b> to import 2D elements from.
-<li>The <b>To copy mesh</b> checkbox is to import not only the faces of
-the selected <b>Groups of Faces</b> but to copy the whole source
-mesh. In this case <b>To copy groups</b>, if checked, forces creating
+<li>The <b>Groups of Edges</b> to import 1D elements from.
+<li><b>To copy mesh</b> checkbox allows to import not only the edges of
+the selected <b>Groups of Edges</b>, but the whole source
+mesh. In this case <b>To copy groups</b> checkbox allows to create
 the same groups as in the imported source mesh.</li>
 </ul>
 

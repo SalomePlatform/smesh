@@ -25,6 +25,7 @@
 # source path
 #
 SUBDIRS = salome docutils
+#SUBDIRS = salome
 
 usr_docs:
 	(cd salome && $(MAKE) $(AM_MAKEFLAGS) usr_docs)

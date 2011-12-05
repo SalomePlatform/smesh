@@ -165,7 +165,8 @@
     </message>
     <message>
         <source>SMESH_FACES_WO_LAYERS</source>
-        <translation>Faces without layers</translation>
+        <translation>Faces without layers
+(inlets and oulets)</translation>
     </message>
     <message>
         <source>SMESH_MAX_LENGTH_TITLE</source>

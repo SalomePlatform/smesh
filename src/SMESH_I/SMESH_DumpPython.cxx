@@ -708,19 +708,27 @@ namespace {
     const TCollection_AsciiString allowedChars =
       "qwertyuioplkjhgfdsazxcvbnmQWERTYUIOPLKJHGFDSAZXCVBNM0987654321_";
     bool isValidName = true;
-    int p=1; // replace not allowed chars with underscore
+    int nbUnderscore = 0;
+    int p=1; // replace not allowed chars by underscore
     while (p <= aName.Length() &&
            (p = aName.FirstLocationNotInSet(allowedChars, p, aName.Length())))
     {
       if ( p == 1 || p == aName.Length() || aName.Value(p-1) == '_')
         aName.Remove( p, 1 ); // remove double _ and from the start and the end
       else
-        aName.SetValue(p, '_');
+        aName.SetValue(p, '_'), nbUnderscore++;
       isValidName = false;
     }
     if ( aName.IsIntegerValue() ) { // aName must not start with a digit
       aName.Insert( 1, 'a' );
       isValidName = false;
+    }
+    // shorten names like CartesianParameters3D_400_400_400_1000000_1
+    if ( aName.Length() > 20 && nbUnderscore > 2 )
+    {
+      p = aName.Location( "_", 20, aName.Length());
+      if ( p > 1 )
+        aName.Trunc( p-1 );
     }
     return isValidName;
   }

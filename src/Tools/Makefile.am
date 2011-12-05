@@ -25,6 +25,4 @@
 #
 include $(top_srcdir)/adm_local/unix/make_common_starter.am
 
-SUBDIRS = MeshCut
-
-DIST_SUBDIRS = 	MeshCut
+SUBDIRS = MeshCut padder

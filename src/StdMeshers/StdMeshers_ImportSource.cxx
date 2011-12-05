@@ -26,7 +26,7 @@
 //
 #include "StdMeshers_ImportSource.hxx"
 
-#include "SMESHDS_GroupBase.hxx"
+#include "SMESHDS_GroupOnGeom.hxx"
 #include "SMESHDS_Mesh.hxx"
 #include "SMESH_Algo.hxx"
 #include "SMESH_Gen.hxx"
@@ -256,6 +256,51 @@ std::vector<SMESH_Mesh*> StdMeshers_ImportSource1D::GetSourceMeshes() const
     }
   }
   return meshes;
+}
+
+//================================================================================
+/*!
+ * \brief Return submeshes whose events affect the target mesh
+ */
+//================================================================================
+
+std::vector<SMESH_subMesh*>
+StdMeshers_ImportSource1D::GetSourceSubMeshes(const SMESH_Mesh* srcMesh) const
+{
+  if ( !srcMesh->HasShapeToMesh() )
+    return vector<SMESH_subMesh*>(1, srcMesh->GetSubMeshContaining(1));
+
+  set<int> shapeIDs;
+  const vector<SMESH_Group*>& groups = GetGroups();
+  const SMESHDS_Mesh * srcMeshDS = srcMesh->GetMeshDS();
+  for ( size_t i = 0; i < groups.size(); ++i )
+  {
+    SMESHDS_GroupBase * grDS = groups[i]->GetGroupDS();
+    if ( grDS->GetMesh() != srcMeshDS )
+      continue;
+    if ( SMESHDS_GroupOnGeom* gog = dynamic_cast<SMESHDS_GroupOnGeom*>( grDS ))
+    {
+      shapeIDs.insert( srcMeshDS->ShapeToIndex( gog->GetShape() ));
+    }
+    else
+    {
+      SMDS_ElemIteratorPtr elIt = grDS->GetElements();
+      while ( elIt->more() )
+        shapeIDs.insert( elIt->next()->getshapeId() );
+    }
+  }
+  if ( !shapeIDs.empty() && *shapeIDs.begin() < 1 )
+  {
+    shapeIDs.erase( shapeIDs.begin() );
+    shapeIDs.insert( 1 );
+  }
+
+  vector<SMESH_subMesh*> smVec( shapeIDs.size());
+  set<int>::iterator sID = shapeIDs.begin();
+  for ( int i = 0; sID != shapeIDs.end(); ++sID, ++i )
+    smVec[i] = srcMesh->GetSubMeshContaining( *sID );
+
+  return smVec;
 }
 
 //=============================================================================

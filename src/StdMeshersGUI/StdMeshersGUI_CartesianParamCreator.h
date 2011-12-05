@@ -125,7 +125,8 @@ public:
   StdMeshersGUI_CartesianParamCreator( const QString& aHypType );
   virtual ~StdMeshersGUI_CartesianParamCreator();
 
-  virtual bool checkParams( QString& ) const;
+  virtual bool    checkParams( QString& ) const;
+  virtual QString helpPage() const;
 
 protected:
   virtual QFrame*  buildFrame();

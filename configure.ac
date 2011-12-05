@@ -24,7 +24,7 @@
 # Modified by : Alexander BORODIN (OCN) - autotools usage
 # Created from configure.in.base
 #
-AC_INIT([Salome2 Project SMESH module], [6.3.1], [webmaster.salome@opencascade.com], [SalomeSMESH])
+AC_INIT([Salome2 Project SMESH module], [6.4.0], [webmaster.salome@opencascade.com], [SalomeSMESH])
 AC_CONFIG_AUX_DIR(adm_local/unix/config_files)
 AC_CANONICAL_HOST
 AC_CANONICAL_TARGET
@@ -304,6 +304,22 @@ if test "${gui_ok}" = "yes"; then
 
     echo
     echo ---------------------------------------------
+    echo testing sip
+    echo ---------------------------------------------
+    echo
+
+    CHECK_SIP
+
+    echo
+    echo ---------------------------------------------
+    echo testing pyqt
+    echo ---------------------------------------------
+    echo
+
+    CHECK_PYQT
+
+    echo
+    echo ---------------------------------------------
     echo Testing qwt
     echo ---------------------------------------------
     echo
@@ -365,6 +381,14 @@ echo testing sphinx
 echo ---------------------------------------------
 echo
 CHECK_SPHINX
+
+echo
+echo ---------------------------------------------
+echo testing libxm
+echo ---------------------------------------------
+echo
+dnl Check the libxml that will be required to use the SALOME launcher
+CHECK_LIBXML
 
 echo
 echo ---------------------------------------------
@@ -520,6 +544,25 @@ AC_OUTPUT([ \
   src/SMESH_PY/Makefile \
   src/Tools/Makefile \
   src/Tools/MeshCut/Makefile \
+  src/Tools/padder/Makefile \
+  src/Tools/padder/meshjob/Makefile \
+  src/Tools/padder/meshjob/idl/Makefile \
+  src/Tools/padder/meshjob/impl/Makefile \
+  src/Tools/padder/spadderpy/Makefile \
+  src/Tools/padder/spadderpy/padder.cfg \
+  src/Tools/padder/spadderpy/gui/Makefile \
+  src/Tools/padder/spadderpy/plugin/Makefile \
+  src/Tools/padder/spadderpy/plugin/envPlugins.sh \
+  src/Tools/padder/resources/Makefile \
+  src/Tools/padder/resources/appligen/Makefile \
+  src/Tools/padder/resources/appligen/appligen.sh \
+  src/Tools/padder/resources/appligen/config_appli.xml \
+  src/Tools/padder/resources/padderexe/Makefile \
+  src/Tools/padder/resources/padderexe/envPadder.sh \
+  src/Tools/padder/unittests/Makefile \
+  src/Tools/padder/unittests/autotest.sh \
+  src/Tools/padder/doc/Makefile \
+  src/Tools/padder/doc/doxyfile \
   resources/Makefile \
   resources/SMESHCatalog.xml \
   resources/SalomeApp.xml \

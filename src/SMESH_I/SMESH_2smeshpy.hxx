@@ -467,7 +467,7 @@ DEFINE_STANDARD_HANDLE (_pyGroup, _pyObject);
 
 // -------------------------------------------------------------------------------------
 /*!
- * \brief A filter
+ * \brief A filter sets a human readable name to self
  */
 // -------------------------------------------------------------------------------------
 class _pyFilter:  public _pyObject

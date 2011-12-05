@@ -90,7 +90,7 @@
 #include <gp_XY.hxx>
 #include <gp_XYZ.hxx>
 
-#include <math.h>
+#include <cmath>
 
 #include <map>
 #include <set>

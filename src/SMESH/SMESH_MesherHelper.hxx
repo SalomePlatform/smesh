@@ -461,7 +461,7 @@ public:
                                      const SMDS_MeshNode* n2,
                                      const bool force3d);
   /*!
-   * \brief Return index and type of the shape to set a medium node on
+   * \brief Return index and type of the shape (EDGE or FACE only) to set a medium node on
    */
   std::pair<int, TopAbs_ShapeEnum> GetMediumPos(const SMDS_MeshNode* n1,
                                                 const SMDS_MeshNode* n2);

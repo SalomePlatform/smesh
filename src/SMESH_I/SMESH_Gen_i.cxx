@@ -297,7 +297,7 @@ SMESH_Gen_i::SMESH_Gen_i( CORBA::ORB_ptr            orb,
     SALOME::Session_var session = SALOME::Session::_narrow( obj ) ;
     if ( !session->_is_nil() )
     {
-      CORBA::String_var s_host = session->getHostname();
+      CORBA::String_var str_host = session->getHostname();
       CORBA::Long        s_pid = session->getPID();
       string my_host = Kernel_Utils::GetHostname();
 #ifdef WNT
@@ -305,7 +305,7 @@ SMESH_Gen_i::SMESH_Gen_i( CORBA::ORB_ptr            orb,
 #else
       long    my_pid = (long) getpid();
 #endif
-      SetEmbeddedMode( s_pid == my_pid && my_host == s_host.in() );
+      SetEmbeddedMode( s_pid == my_pid && my_host == str_host.in() );
     }
   }
 }

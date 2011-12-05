@@ -19,7 +19,7 @@
 
 include $(top_srcdir)/adm_local/unix/make_common_starter.am
 
-salomepypkgdir = $(salomepythondir)/salome/smesh
+salomepypkgdir = $(smeshpypkgdir)
 salomepypkg_PYTHON = \
 	__init__.py        \
 	smeshstudytools.py
