@@ -1015,24 +1015,27 @@ const SMDS_MeshNode* SMESH_MesherHelper::GetMediumNode(const SMDS_MeshNode* n1,
   }
   else if ( pos.second == TopAbs_EDGE )
   {
-    if ( n1->GetPosition()->GetTypeOfPosition()==SMDS_TOP_EDGE &&
-         n2->GetPosition()->GetTypeOfPosition()==SMDS_TOP_EDGE &&
+    const SMDS_PositionPtr Pos1 = n1->GetPosition();
+    const SMDS_PositionPtr Pos2 = n2->GetPosition();
+    if ( Pos1->GetTypeOfPosition()==SMDS_TOP_EDGE &&
+         Pos2->GetTypeOfPosition()==SMDS_TOP_EDGE &&
          n1->getshapeId() != n2->getshapeId() )
+    {
       // issue 0021006
       return getMediumNodeOnComposedWire(n1,n2,force3d);
-    
+    }
     E = TopoDS::Edge(meshDS->IndexToShape( edgeID = pos.first ));
     u[0] = GetNodeU(E,n1,n2, force3d ? 0 : &uvOK[0]);
     u[1] = GetNodeU(E,n2,n1, force3d ? 0 : &uvOK[1]);
   }
 
-  if(!force3d)
+  if ( !force3d & uvOK[0] && uvOK[1] )
   {
     // we try to create medium node using UV parameters of
     // nodes, else - medium between corresponding 3d points
     if( ! F.IsNull() )
     {
-      if ( uvOK[0] && uvOK[1] )
+      //if ( uvOK[0] && uvOK[1] )
       {
         if ( IsDegenShape( n1->getshapeId() )) {
           if ( myParIndex & U_periodic ) uv[0].SetCoord( 1, uv[1].Coord( 1 ));
