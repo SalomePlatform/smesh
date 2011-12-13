@@ -712,20 +712,24 @@ void SMESHGUI_TranslationDlg::SelectionIntoArgument()
     return;
 
   Handle(SALOME_InteractiveObject) IO = aList.First();
-  myMesh = SMESH::GetMeshByIO(IO);
-  if (myMesh->_is_nil())
+  SMESH::SMESH_Mesh_var aMesh = SMESH::GetMeshByIO(IO);
+  if (aMesh->_is_nil())
     return;
 
-  myActor = SMESH::FindActorByObject(myMesh);
-  if (!myActor)
-    myActor = SMESH::FindActorByEntry(IO->getEntry());
+  SMESH_Actor* anActor = SMESH::FindActorByObject(aMesh);
+  if (!anActor)
+    anActor = SMESH::FindActorByEntry(IO->getEntry());
 
-  if (!myActor && !CheckBoxMesh->isChecked())
+  if (!anActor && !CheckBoxMesh->isChecked())
       return;
 
   int aNbUnits = 0;
 
-  if (myEditCurrentArgument == (QWidget*)LineEditElements) {
+  if (myEditCurrentArgument == (QWidget*)LineEditElements)
+  {
+    myMesh = aMesh;
+    myActor = anActor;
+
     myElementsId = "";
 
     // MakeGroups is available if there are groups and "Copy"
@@ -745,46 +749,6 @@ void SMESHGUI_TranslationDlg::SelectionIntoArgument()
       }
       else
         return;
-        // get IDs from mesh
-        /*
-        SMDS_Mesh* aSMDSMesh = myActor->GetObject()->GetMesh();
-        if (!aSMDSMesh)
-          return;
-
-        for (int i = aSMDSMesh->MinElementID(); i <= aSMDSMesh->MaxElementID(); i++) {
-          const SMDS_MeshElement * e = aSMDSMesh->FindElement(i);
-          if (e) {
-            myElementsId += QString(" %1").arg(i);
-            aNbUnits++;
-          }
-        }
-      } else if (!SMESH::IObjectToInterface<SMESH::SMESH_subMesh>(IO)->_is_nil()) { //SUBMESH
-        // get submesh
-        SMESH::SMESH_subMesh_var aSubMesh = SMESH::IObjectToInterface<SMESH::SMESH_subMesh>(IO);
-
-        // get IDs from submesh
-        SMESH::long_array_var anElementsIds = new SMESH::long_array;
-        anElementsIds = aSubMesh->GetElementsId();
-        for (int i = 0; i < anElementsIds->length(); i++) {
-          myElementsId += QString(" %1").arg(anElementsIds[i]);
-        }
-        aNbUnits = anElementsIds->length();
-      } else { // GROUP
-        // get smesh group
-        SMESH::SMESH_GroupBase_var aGroup =
-          SMESH::IObjectToInterface<SMESH::SMESH_GroupBase>(IO);
-        if (aGroup->_is_nil())
-          return;
-
-        // get IDs from smesh group
-        SMESH::long_array_var anElementsIds = new SMESH::long_array;
-        anElementsIds = aGroup->GetListOfID();
-        for (int i = 0; i < anElementsIds->length(); i++) {
-          myElementsId += QString(" %1").arg(anElementsIds[i]);
-        }
-        aNbUnits = anElementsIds->length();
-      }
-        */
     } else {
       aNbUnits = SMESH::GetNameOfSelectedElements(mySelector, IO, aString);
       myElementsId = aString;
@@ -798,7 +762,7 @@ void SMESHGUI_TranslationDlg::SelectionIntoArgument()
     if (aNbUnits != 1)
       return;
 
-    SMDS_Mesh* aMesh =  myActor->GetObject()->GetMesh();
+    SMDS_Mesh* aMesh =  anActor->GetObject()->GetMesh();
     if (!aMesh)
       return;
 
