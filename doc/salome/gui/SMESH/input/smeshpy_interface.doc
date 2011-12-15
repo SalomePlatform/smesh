@@ -140,6 +140,7 @@ the following links:
 - \subpage tui_transforming_meshes_page
 - \subpage tui_notebook_smesh_page
 - \subpage tui_measurements_page
-- \subpage tui_generate_flat_elements_page 
+- \subpage tui_generate_flat_elements_page
+- \subpage tui_work_on_objects_from_gui
 
 */
