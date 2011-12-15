@@ -125,6 +125,7 @@ SMESH_ActorDef::SMESH_ActorDef()
   myTimeStamp = vtkTimeStamp::New();
 
   myIsPointsVisible = false;
+  myIsEntityModeCache = false;
 
   myIsShrinkable = false;
   myIsShrunk = false;
@@ -431,6 +432,7 @@ SMESH_ActorDef::SMESH_ActorDef()
     return;
 
   myEntityMode = eAllEntity;
+  myEntityModeCache = eAllEntity;
   
   // Clipping planes
   myImplicitBoolean = vtkImplicitBoolean::New();
@@ -827,29 +829,48 @@ SetControlMode(eControl theMode,
       }
     }
 
-    if(theCheckEntityMode){
-      if(myControlActor == my1DActor)
+    if(theCheckEntityMode) {
+      if(myControlActor == my1DActor) {
+        if (!myIsEntityModeCache){
+          myEntityModeCache = GetEntityMode();
+          myIsEntityModeCache=true;
+        } 
         SetEntityMode(eEdges);
-      else if(myControlActor == my2DActor){
-        switch(myControlMode){
+      }
+      else if(myControlActor == my2DActor) {
+        switch(myControlMode) {
         case eLength2D:
         case eFreeEdges:
         case eFreeFaces:
         case eMultiConnection2D:
-          //SetEntityMode(eEdges);
+          if (!myIsEntityModeCache){
+            myEntityModeCache = GetEntityMode();
+            myIsEntityModeCache=true;
+	  } 
           SetEntityMode(eFaces);
           break;
         default:
+          if (!myIsEntityModeCache){
+            myEntityModeCache = GetEntityMode();
+            myIsEntityModeCache=true;
+	  }
           SetEntityMode(eFaces);
         }
-      }else if(myControlActor == my3DActor)
+      }else if(myControlActor == my3DActor) {
+        if (!myIsEntityModeCache){
+            myEntityModeCache = GetEntityMode();
+            myIsEntityModeCache=true;
+	} 
         SetEntityMode(eVolumes);
+    }
     }
 
   }
   else {
-    if(theCheckEntityMode)
-      myEntityMode = eAllEntity;
+    if(theCheckEntityMode){
+      myEntityMode = myEntityModeCache;
+      myIsEntityModeCache = false;
+    }
     myFunctor.reset();
   }
 
@@ -857,6 +878,7 @@ SetControlMode(eControl theMode,
 
   myTimeStamp->Modified();
   Modified();
+  Update();
 }
 
 
@@ -1611,6 +1633,11 @@ void SMESH_ActorDef::Update(){
   if(myIsFacesOriented){
     SetFacesOriented(myIsFacesOriented);
   }
+    
+  if(myVisualObj->GetEntitiesFlag()) {
+    myEntityMode |= myVisualObj->GetEntitiesState();
+  }
+  
   SetEntityMode(GetEntityMode());
   SetVisibility(GetVisibility());
   

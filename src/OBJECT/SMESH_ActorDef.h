@@ -262,6 +262,8 @@ class SMESH_ActorDef : public SMESH_Actor
 
   unsigned int myEntityMode;
   unsigned int myEntityState;
+  unsigned int myEntityModeCache;
+  bool myIsEntityModeCache;
   bool myIsPointsVisible;
 
   bool myIsShrinkable;

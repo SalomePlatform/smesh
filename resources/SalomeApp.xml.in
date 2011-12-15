@@ -72,6 +72,7 @@
     <parameter name="DisplayMode"                  value="true" />
     <parameter name="auto_update"                  value="true" />
     <parameter name="update_limit"                 value="500000" />
+    <parameter name="display_entity"               value="true" />
     <parameter name="display_mode"                 value="1"    />
     <parameter name="auto_groups"                  value="false"/>
     <parameter name="show_result_notification"     value="2"/>
