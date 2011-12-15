@@ -75,6 +75,9 @@ public:
   virtual vtkIdType GetNodeVTKId( int theObjID ) = 0;
   virtual vtkIdType GetElemObjId( int theVTKID ) = 0;
   virtual vtkIdType GetElemVTKId( int theObjID ) = 0;
+  virtual void              ClearEntitiesFlags() = 0;
+  virtual bool              GetEntitiesFlag() = 0;
+  virtual unsigned int      GetEntitiesState() = 0;
 };
 
 typedef boost::shared_ptr<SMESH_VisualObj> TVisualObjPtr;

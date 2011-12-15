@@ -136,6 +136,8 @@ SMESH_VisualObjDef::SMESH_VisualObjDef()
   MESSAGE("---------------------------------------------SMESH_VisualObjDef::SMESH_VisualObjDef");
   myGrid = vtkUnstructuredGrid::New();
   myLocalGrid = false;
+  ClearEntitiesFlags();
+  SMESH::GetEntitiesFromObject(NULL);
 }
 SMESH_VisualObjDef::~SMESH_VisualObjDef()
 {
@@ -275,6 +277,7 @@ void SMESH_VisualObjDef::buildPrs(bool buildGrid)
             GetMesh()->compactMesh();
           }
         vtkUnstructuredGrid *theGrid = GetMesh()->getGrid();
+	updateEntitiesFlags();
         myGrid->ShallowCopy(theGrid);
         //MESSAGE(myGrid->GetReferenceCount());
         //MESSAGE( "Update - myGrid->GetNumberOfCells() = "<<myGrid->GetNumberOfCells() );
@@ -598,6 +601,7 @@ vtkUnstructuredGrid* SMESH_VisualObjDef::GetUnstructuredGrid()
   if ( !myLocalGrid && !GetMesh()->isCompacted() )
   {
     GetMesh()->compactMesh();
+	updateEntitiesFlags();
     vtkUnstructuredGrid *theGrid = GetMesh()->getGrid();
     myGrid->ShallowCopy(theGrid);
   }
@@ -617,6 +621,62 @@ bool SMESH_VisualObjDef::IsValid() const
          GetNbEntities(SMDSAbs_Edge) > 0      || 
          GetNbEntities(SMDSAbs_Face) > 0      ||
          GetNbEntities(SMDSAbs_Volume) > 0 ;
+}
+
+//=================================================================================
+// function : updateEntitiesFlags
+// purpose  : Update entities flags
+//=================================================================================
+void SMESH_VisualObjDef::updateEntitiesFlags() {
+
+	unsigned int tmp = myEntitiesState;
+	ClearEntitiesFlags();
+
+	map<SMDSAbs_ElementType,int> entities = SMESH::GetEntitiesFromObject(this);
+	
+
+	if( myEntitiesCache[SMDSAbs_0DElement] != 0 ||  myEntitiesCache[SMDSAbs_0DElement] >= entities[SMDSAbs_0DElement] )
+		myEntitiesState &= ~SMESH_Actor::e0DElements;
+
+	if( myEntitiesCache[SMDSAbs_Edge] != 0 || myEntitiesCache[SMDSAbs_Edge] >= entities[SMDSAbs_Edge] )
+		myEntitiesState &= ~SMESH_Actor::eEdges; 
+
+	if( myEntitiesCache[SMDSAbs_Face] != 0 || myEntitiesCache[SMDSAbs_Face] >= entities[SMDSAbs_Face] )
+		myEntitiesState &= ~SMESH_Actor::eFaces; 
+
+	if( myEntitiesCache[SMDSAbs_Volume] != 0 || myEntitiesCache[SMDSAbs_Volume] >= entities[SMDSAbs_Volume] )
+		myEntitiesState &= ~SMESH_Actor::eVolumes;
+
+	if( tmp != myEntitiesState ) {
+		myEntitiesFlag = true;
+	}
+	
+	myEntitiesCache = entities;
+}
+
+//=================================================================================
+// function : ClearEntitiesFlags
+// purpose  : Clear the entities flags
+//=================================================================================
+void SMESH_VisualObjDef::ClearEntitiesFlags() {
+	myEntitiesState = SMESH_Actor::eAllEntity;
+	myEntitiesFlag = false;
+}
+
+//=================================================================================
+// function : GetEntitiesFlag
+// purpose  : Return the entities flag
+//=================================================================================
+bool SMESH_VisualObjDef::GetEntitiesFlag() {
+	return myEntitiesFlag;
+}
+
+//=================================================================================
+// function : GetEntitiesState
+// purpose  : Return the entities state
+//=================================================================================
+unsigned int SMESH_VisualObjDef::GetEntitiesState() {
+	return myEntitiesState;
 }
 
 /*

@@ -41,8 +41,10 @@
 #include "utilities.h"
 
 #include <vtkUnstructuredGrid.h>
+#include <vtkCellType.h>
 #include <vtkXMLUnstructuredGridWriter.h>
 #include <vtkUnstructuredGridWriter.h>
+#include <vtkUnsignedCharArray.h>
 
 //#ifdef _DEBUG_
 //static int MYDEBUG = 1;
@@ -154,6 +156,20 @@ namespace SMESH
       Qtx::stringToBiColor(str,color,delta);
     }
   }
+
+  std::map<SMDSAbs_ElementType,int> GetEntitiesFromObject(SMESH_VisualObj *theObject) {
+    std::map<SMDSAbs_ElementType,int> entities;
+	entities.insert(std::pair<SMDSAbs_ElementType,int>(SMDSAbs_0DElement,
+		theObject ? theObject->GetNbEntities(SMDSAbs_0DElement) : 0));
+    entities.insert(std::pair<SMDSAbs_ElementType,int>(SMDSAbs_Edge,
+		theObject ? theObject->GetNbEntities(SMDSAbs_Edge) : 0));
+    entities.insert(std::pair<SMDSAbs_ElementType,int>(SMDSAbs_Face,
+		theObject ? theObject->GetNbEntities(SMDSAbs_Face) : 0));
+    entities.insert(std::pair<SMDSAbs_ElementType,int>(SMDSAbs_Volume,
+		theObject ? theObject->GetNbEntities(SMDSAbs_Volume) : 0));
+    return entities;
+  }
+  
 
 
 #ifndef DISABLE_PLOT2DVIEWER

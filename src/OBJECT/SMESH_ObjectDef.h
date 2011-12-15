@@ -32,6 +32,7 @@
 #include "SMESH_Controls.hxx"
 #include "SMESH_Object.h"
 #include "SMESH_Client.hxx"
+#include "SMESH_Actor.h"
 
 // IDL Headers
 #include <SALOMEconfig.h>
@@ -44,7 +45,6 @@
 class vtkPoints;
 class SALOME_ExtractUnstructuredGrid;
 
-class SMESH_Actor;
 class SMDS_MeshNode;
 class SMDS_MeshElement;
 
@@ -85,13 +85,17 @@ public:
   virtual vtkIdType         GetElemObjId( int theVTKID );
   virtual vtkIdType         GetElemVTKId( int theObjID );
   
+  virtual void              ClearEntitiesFlags();
+  virtual bool              GetEntitiesFlag();
+  virtual unsigned int      GetEntitiesState();
+  
 protected:
 
   void                      createPoints( vtkPoints* );
   void                      buildPrs(bool buildGrid = false);
   void                      buildNodePrs();
   void                      buildElemPrs();
-  
+  void                      updateEntitiesFlags();
 //private:
 
   TMapOfIds                 mySMDS2VTKNodes;
@@ -100,7 +104,11 @@ protected:
   TMapOfIds                 myVTK2SMDSElems;
   bool                      myLocalGrid;
 
+  bool                      myEntitiesFlag;
+  unsigned int              myEntitiesState;
+
   vtkUnstructuredGrid*      myGrid;
+  std::map<SMDSAbs_ElementType,int> myEntitiesCache;
 };
 
 
