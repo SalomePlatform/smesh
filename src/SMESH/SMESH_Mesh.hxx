@@ -252,6 +252,8 @@ public:
   
   int NbQuadrangles(SMDSAbs_ElementOrder order = ORDER_ANY) const throw(SALOME_Exception);
 
+  int NbBiQuadQuadrangles() const throw(SALOME_Exception);
+  
   int NbPolygons() const throw(SALOME_Exception);
   
   int NbVolumes(SMDSAbs_ElementOrder order = ORDER_ANY) const throw(SALOME_Exception);
@@ -260,9 +262,13 @@ public:
   
   int NbHexas(SMDSAbs_ElementOrder order = ORDER_ANY) const throw(SALOME_Exception);
   
+  int NbTriQuadraticHexas() const throw(SALOME_Exception);
+  
   int NbPyramids(SMDSAbs_ElementOrder order = ORDER_ANY) const throw(SALOME_Exception);
 
   int NbPrisms(SMDSAbs_ElementOrder order = ORDER_ANY) const throw(SALOME_Exception);
+  
+  int NbHexagonalPrisms() const throw(SALOME_Exception);
   
   int NbPolyhedrons() const throw(SALOME_Exception);
   

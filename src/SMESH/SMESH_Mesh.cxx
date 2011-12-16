@@ -1389,6 +1389,18 @@ int SMESH_Mesh::NbQuadrangles(SMDSAbs_ElementOrder order) const throw(SALOME_Exc
 
 //================================================================================
 /*!
+ * \brief Return number of biquadratic quadrangles in the mesh
+ */
+//================================================================================
+
+int SMESH_Mesh::NbBiQuadQuadrangles() const throw(SALOME_Exception)
+{
+  Unexpect aCatch(SalomeException);
+  return _myMeshDS->GetMeshInfo().NbBiQuadQuadrangles();
+}
+
+//================================================================================
+/*!
  * \brief Return the number of polygonal faces in the mesh
  */
 //================================================================================
@@ -1437,6 +1449,18 @@ int SMESH_Mesh::NbHexas(SMDSAbs_ElementOrder order) const throw(SALOME_Exception
 
 //================================================================================
 /*!
+ * \brief  Return number of triquadratic hexahedrons in the mesh
+ */
+//================================================================================
+
+int SMESH_Mesh::NbTriQuadraticHexas() const throw(SALOME_Exception)
+{
+  Unexpect aCatch(SalomeException);
+  return _myMeshDS->GetMeshInfo().NbTriQuadHexas();
+}
+
+//================================================================================
+/*!
  * \brief  Return number of pyramids of given order in the mesh
  */
 //================================================================================
@@ -1457,6 +1481,18 @@ int SMESH_Mesh::NbPrisms(SMDSAbs_ElementOrder order) const throw(SALOME_Exceptio
 {
   Unexpect aCatch(SalomeException);
   return _myMeshDS->GetMeshInfo().NbPrisms(order);
+}
+
+//================================================================================
+/*!
+ * \brief  Return number of hexagonal prisms in the mesh
+ */
+//================================================================================
+
+int SMESH_Mesh::NbHexagonalPrisms() const throw(SALOME_Exception)
+{
+  Unexpect aCatch(SalomeException);
+  return _myMeshDS->GetMeshInfo().NbHexPrisms();
 }
 
 //================================================================================
