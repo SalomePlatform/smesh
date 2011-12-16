@@ -2265,6 +2265,12 @@ class Mesh:
     def NbQuadranglesOfOrder(self, elementOrder):
         return self.mesh.NbQuadranglesOfOrder(elementOrder)
 
+    ## Returns the number of biquadratic quadrangles in the mesh
+    #  @return an integer value
+    #  @ingroup l1_meshinfo
+    def NbBiQuadQuadrangles(self):
+        return self.mesh.NbBiQuadQuadrangles()
+
     ## Returns the number of polygons in the mesh
     #  @return an integer value
     #  @ingroup l1_meshinfo
@@ -2313,6 +2319,12 @@ class Mesh:
     def NbHexasOfOrder(self, elementOrder):
         return self.mesh.NbHexasOfOrder(elementOrder)
 
+    ## Returns the number of triquadratic hexahedrons in the mesh
+    #  @return an integer value
+    #  @ingroup l1_meshinfo
+    def NbTriQuadraticHexas(self):
+        return self.mesh.NbTriQuadraticHexas()
+
     ## Returns the number of pyramids in the mesh
     #  @return an integer value
     #  @ingroup l1_meshinfo
@@ -2340,6 +2352,12 @@ class Mesh:
     #  @ingroup l1_meshinfo
     def NbPrismsOfOrder(self, elementOrder):
         return self.mesh.NbPrismsOfOrder(elementOrder)
+
+    ## Returns the number of hexagonal prisms in the mesh
+    #  @return an integer value
+    #  @ingroup l1_meshinfo
+    def NbHexagonalPrisms(self):
+        return self.mesh.NbHexagonalPrisms()
 
     ## Returns the number of polyhedrons in the mesh
     #  @return an integer value
