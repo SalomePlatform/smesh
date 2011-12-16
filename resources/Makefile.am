@@ -36,6 +36,7 @@ dist_salomeres_DATA = \
 	mesh_area.png \
 	mesh_aspect.png \
 	mesh_aspect_3d.png \
+	mesh_biquad_quadrangle.png \
 	mesh_clear.png \
 	mesh_compute.png \
 	mesh_diagonal.png \
@@ -65,6 +66,7 @@ dist_salomeres_DATA = \
 	mesh_line_n.png \
 	mesh_line.png \
 	mesh_move_node.png \
+	mesh_octahedron.png \
 	mesh_orientation.png \
 	mesh.png \
 	mesh_polygon.png \
@@ -102,6 +104,7 @@ dist_salomeres_DATA = \
 	mesh_tree_importedmesh.png \
 	mesh_tree_mesh_warn.png \
 	mesh_triangle_n.png \
+	mesh_triquad_hexahedron.png \
 	mesh_triangle.png \
 	mesh_update.png \
 	mesh_vertex_n.png \
@@ -149,6 +152,7 @@ dist_salomeres_DATA = \
 	select1.png \
 	StdMeshers.xml \
 	mesh_pattern.png \
+	mesh_pentahedron.png \
 	pattern_sample_2d.png \
 	pattern_sample_3D.png \
 	mesh_add.png \

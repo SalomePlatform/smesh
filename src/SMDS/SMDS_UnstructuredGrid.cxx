@@ -372,73 +372,83 @@ void SMDS_UnstructuredGrid::BuildDownwardConnectivity(bool withEdges)
 
   // --- create SMDS_Downward structures (in _downArray vector[vtkCellType])
 
-  _downArray.resize(VTK_MAXTYPE + 1, 0); // --- max. type value = VTK_QUADRATIC_PYRAMID
+  _downArray.resize(VTK_MAXTYPE + 1, 0);
 
-  _downArray[VTK_LINE] = new SMDS_DownEdge(this);
-  _downArray[VTK_QUADRATIC_EDGE] = new SMDS_DownQuadEdge(this);
-  _downArray[VTK_TRIANGLE] = new SMDS_DownTriangle(this);
-  _downArray[VTK_QUADRATIC_TRIANGLE] = new SMDS_DownQuadTriangle(this);
-  _downArray[VTK_QUAD] = new SMDS_DownQuadrangle(this);
-  _downArray[VTK_QUADRATIC_QUAD] = new SMDS_DownQuadQuadrangle(this);
-  _downArray[VTK_TETRA] = new SMDS_DownTetra(this);
-  _downArray[VTK_QUADRATIC_TETRA] = new SMDS_DownQuadTetra(this);
-  _downArray[VTK_PYRAMID] = new SMDS_DownPyramid(this);
-  _downArray[VTK_QUADRATIC_PYRAMID] = new SMDS_DownQuadPyramid(this);
-  _downArray[VTK_WEDGE] = new SMDS_DownPenta(this);
-  _downArray[VTK_QUADRATIC_WEDGE] = new SMDS_DownQuadPenta(this);
-  _downArray[VTK_HEXAHEDRON] = new SMDS_DownHexa(this);
-  _downArray[VTK_QUADRATIC_HEXAHEDRON] = new SMDS_DownQuadHexa(this);
+  _downArray[VTK_LINE]                    = new SMDS_DownEdge(this);
+  _downArray[VTK_QUADRATIC_EDGE]          = new SMDS_DownQuadEdge(this);
+  _downArray[VTK_TRIANGLE]                = new SMDS_DownTriangle(this);
+  _downArray[VTK_QUADRATIC_TRIANGLE]      = new SMDS_DownQuadTriangle(this);
+  _downArray[VTK_QUAD]                    = new SMDS_DownQuadrangle(this);
+  _downArray[VTK_QUADRATIC_QUAD]          = new SMDS_DownQuadQuadrangle(this);
+  _downArray[VTK_BIQUADRATIC_QUAD]        = new SMDS_DownQuadQuadrangle(this);
+  _downArray[VTK_TETRA]                   = new SMDS_DownTetra(this);
+  _downArray[VTK_QUADRATIC_TETRA]         = new SMDS_DownQuadTetra(this);
+  _downArray[VTK_PYRAMID]                 = new SMDS_DownPyramid(this);
+  _downArray[VTK_QUADRATIC_PYRAMID]       = new SMDS_DownQuadPyramid(this);
+  _downArray[VTK_WEDGE]                   = new SMDS_DownPenta(this);
+  _downArray[VTK_QUADRATIC_WEDGE]         = new SMDS_DownQuadPenta(this);
+  _downArray[VTK_HEXAHEDRON]              = new SMDS_DownHexa(this);
+  _downArray[VTK_QUADRATIC_HEXAHEDRON]    = new SMDS_DownQuadHexa(this);
+  _downArray[VTK_TRIQUADRATIC_HEXAHEDRON] = new SMDS_DownQuadHexa(this);
+  _downArray[VTK_HEXAGONAL_PRISM]         = new SMDS_DownPenta(this);
 
   // --- get detailed info of number of cells of each type, allocate SMDS_downward structures
 
   const SMDS_MeshInfo &meshInfo = _mesh->GetMeshInfo();
 
-  int nbLinTetra = meshInfo.NbTetras(ORDER_LINEAR);
-  int nbQuadTetra = meshInfo.NbTetras(ORDER_QUADRATIC);
-  int nbLinPyra = meshInfo.NbPyramids(ORDER_LINEAR);
-  int nbQuadPyra = meshInfo.NbPyramids(ORDER_QUADRATIC);
-  int nbLinPrism = meshInfo.NbPrisms(ORDER_LINEAR);
-  int nbQuadPrism = meshInfo.NbPrisms(ORDER_QUADRATIC);
-  int nbLinHexa = meshInfo.NbHexas(ORDER_LINEAR);
-  int nbQuadHexa = meshInfo.NbHexas(ORDER_QUADRATIC);
+  int nbLinTetra  = meshInfo.NbTetras  (ORDER_LINEAR);
+  int nbQuadTetra = meshInfo.NbTetras  (ORDER_QUADRATIC);
+  int nbLinPyra   = meshInfo.NbPyramids(ORDER_LINEAR);
+  int nbQuadPyra  = meshInfo.NbPyramids(ORDER_QUADRATIC);
+  int nbLinPrism  = meshInfo.NbPrisms  (ORDER_LINEAR);
+  int nbQuadPrism = meshInfo.NbPrisms  (ORDER_QUADRATIC);
+  int nbLinHexa   = meshInfo.NbHexas   (ORDER_LINEAR);
+  int nbQuadHexa  = meshInfo.NbHexas   (ORDER_QUADRATIC);
+  int nbHexPrism  = meshInfo.NbHexPrisms();
 
-  int nbLineGuess = int((4.0 / 3.0) * nbLinTetra + 2 * nbLinPrism + 2.5 * nbLinPyra + 3 * nbLinHexa);
+  int nbLineGuess     = int((4.0 / 3.0) * nbLinTetra + 2 * nbLinPrism + 2.5 * nbLinPyra + 3 * nbLinHexa);
   int nbQuadEdgeGuess = int((4.0 / 3.0) * nbQuadTetra + 2 * nbQuadPrism + 2.5 * nbQuadPyra + 3 * nbQuadHexa);
-  int nbLinTriaGuess = 2 * nbLinTetra + nbLinPrism + 2 * nbLinPyra;
+  int nbLinTriaGuess  = 2 * nbLinTetra + nbLinPrism + 2 * nbLinPyra;
   int nbQuadTriaGuess = 2 * nbQuadTetra + nbQuadPrism + 2 * nbQuadPyra;
-  int nbLinQuadGuess = int((2.0 / 3.0) * nbLinPrism + (1.0 / 2.0) * nbLinPyra + 3 * nbLinHexa);
+  int nbLinQuadGuess  = int((2.0 / 3.0) * nbLinPrism + (1.0 / 2.0) * nbLinPyra + 3 * nbLinHexa);
   int nbQuadQuadGuess = int((2.0 / 3.0) * nbQuadPrism + (1.0 / 2.0) * nbQuadPyra + 3 * nbQuadHexa);
 
-  int GuessSize[VTK_QUADRATIC_TETRA];
-  GuessSize[VTK_LINE] = nbLineGuess;
-  GuessSize[VTK_QUADRATIC_EDGE] = nbQuadEdgeGuess;
-  GuessSize[VTK_TRIANGLE] = nbLinTriaGuess;
-  GuessSize[VTK_QUADRATIC_TRIANGLE] = nbQuadTriaGuess;
-  GuessSize[VTK_QUAD] = nbLinQuadGuess;
-  GuessSize[VTK_QUADRATIC_QUAD] = nbQuadQuadGuess;
-  GuessSize[VTK_TETRA] = nbLinTetra;
-  GuessSize[VTK_QUADRATIC_TETRA] = nbQuadTetra;
-  GuessSize[VTK_PYRAMID] = nbLinPyra;
-  GuessSize[VTK_QUADRATIC_PYRAMID] = nbQuadPyra;
-  GuessSize[VTK_WEDGE] = nbLinPrism;
-  GuessSize[VTK_QUADRATIC_WEDGE] = nbQuadPrism;
-  GuessSize[VTK_HEXAHEDRON] = nbLinHexa;
-  GuessSize[VTK_QUADRATIC_HEXAHEDRON] = nbQuadHexa;
+  int GuessSize[VTK_MAXTYPE];
+  GuessSize[VTK_LINE]                    = nbLineGuess;
+  GuessSize[VTK_QUADRATIC_EDGE]          = nbQuadEdgeGuess;
+  GuessSize[VTK_TRIANGLE]                = nbLinTriaGuess;
+  GuessSize[VTK_QUADRATIC_TRIANGLE]      = nbQuadTriaGuess;
+  GuessSize[VTK_QUAD]                    = nbLinQuadGuess;
+  GuessSize[VTK_QUADRATIC_QUAD]          = nbQuadQuadGuess;
+  GuessSize[VTK_BIQUADRATIC_QUAD]        = nbQuadQuadGuess;
+  GuessSize[VTK_TETRA]                   = nbLinTetra;
+  GuessSize[VTK_QUADRATIC_TETRA]         = nbQuadTetra;
+  GuessSize[VTK_PYRAMID]                 = nbLinPyra;
+  GuessSize[VTK_QUADRATIC_PYRAMID]       = nbQuadPyra;
+  GuessSize[VTK_WEDGE]                   = nbLinPrism;
+  GuessSize[VTK_QUADRATIC_WEDGE]         = nbQuadPrism;
+  GuessSize[VTK_HEXAHEDRON]              = nbLinHexa;
+  GuessSize[VTK_QUADRATIC_HEXAHEDRON]    = nbQuadHexa;
+  GuessSize[VTK_TRIQUADRATIC_HEXAHEDRON] = nbQuadHexa;
+  GuessSize[VTK_HEXAGONAL_PRISM]         = nbHexPrism;
 
-  _downArray[VTK_LINE]->allocate(nbLineGuess);
-  _downArray[VTK_QUADRATIC_EDGE]->allocate(nbQuadEdgeGuess);
-  _downArray[VTK_TRIANGLE]->allocate(nbLinTriaGuess);
-  _downArray[VTK_QUADRATIC_TRIANGLE]->allocate(nbQuadTriaGuess);
-  _downArray[VTK_QUAD]->allocate(nbLinQuadGuess);
-  _downArray[VTK_QUADRATIC_QUAD]->allocate(nbQuadQuadGuess);
-  _downArray[VTK_TETRA]->allocate(nbLinTetra);
-  _downArray[VTK_QUADRATIC_TETRA]->allocate(nbQuadTetra);
-  _downArray[VTK_PYRAMID]->allocate(nbLinPyra);
-  _downArray[VTK_QUADRATIC_PYRAMID]->allocate(nbQuadPyra);
-  _downArray[VTK_WEDGE]->allocate(nbLinPrism);
-  _downArray[VTK_QUADRATIC_WEDGE]->allocate(nbQuadPrism);
-  _downArray[VTK_HEXAHEDRON]->allocate(nbLinHexa);
-  _downArray[VTK_QUADRATIC_HEXAHEDRON]->allocate(nbQuadHexa);
+  _downArray[VTK_LINE]                   ->allocate(nbLineGuess);
+  _downArray[VTK_QUADRATIC_EDGE]         ->allocate(nbQuadEdgeGuess);
+  _downArray[VTK_TRIANGLE]               ->allocate(nbLinTriaGuess);
+  _downArray[VTK_QUADRATIC_TRIANGLE]     ->allocate(nbQuadTriaGuess);
+  _downArray[VTK_QUAD]                   ->allocate(nbLinQuadGuess);
+  _downArray[VTK_QUADRATIC_QUAD]         ->allocate(nbQuadQuadGuess);
+  _downArray[VTK_BIQUADRATIC_QUAD]       ->allocate(nbQuadQuadGuess);
+  _downArray[VTK_TETRA]                  ->allocate(nbLinTetra);
+  _downArray[VTK_QUADRATIC_TETRA]        ->allocate(nbQuadTetra);
+  _downArray[VTK_PYRAMID]                ->allocate(nbLinPyra);
+  _downArray[VTK_QUADRATIC_PYRAMID]      ->allocate(nbQuadPyra);
+  _downArray[VTK_WEDGE]                  ->allocate(nbLinPrism);
+  _downArray[VTK_QUADRATIC_WEDGE]        ->allocate(nbQuadPrism);
+  _downArray[VTK_HEXAHEDRON]             ->allocate(nbLinHexa);
+  _downArray[VTK_QUADRATIC_HEXAHEDRON]   ->allocate(nbQuadHexa);
+  _downArray[VTK_TRIQUADRATIC_HEXAHEDRON]->allocate(nbQuadHexa);
+  _downArray[VTK_HEXAGONAL_PRISM]        ->allocate(nbHexPrism);
 
   // --- iteration on vtkUnstructuredGrid cells, only faces
   //     for each vtk face:

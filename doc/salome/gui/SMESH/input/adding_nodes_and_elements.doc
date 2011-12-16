@@ -13,6 +13,7 @@
 <li>\ref adding_polygons_anchor "Polygons"</li>
 <li>\ref adding_tetrahedrons_anchor "Tetrahedrons"</li>
 <li>\ref adding_hexahedrons_anchor "Hexahedrons"</li>
+<li>\ref adding_octahedrons_anchor "Hexagonal prism"</li>
 <li>\ref adding_polyhedrons_anchor "Polyhedrons"</li>
 </ul>
 
@@ -146,6 +147,16 @@ by selecting them in the 3D viewer with pressed Shift button and click
 the \b Apply or <b>Apply and Close</b> button. Your hexahedron will be created:
 
 \image html image71.jpg
+
+<br>
+\anchor adding_octahedrons_anchor
+<h2>Adding hexagonal prism</h2>
+
+In the Add Hexagonal Prism dialog box specify the nodes which will
+form your hexagonal prism by selecting them in the 3D viewer with pressed Shift button and click
+the \b Apply or <b>Apply and Close</b> button. Your hexagonal prism will be created:
+
+\image html image_octa12.png
 
 <br>
 \anchor adding_polyhedrons_anchor
