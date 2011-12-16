@@ -35,6 +35,27 @@ public:
   virtual bool ChangeNodes(const SMDS_MeshNode* nodes[], const int nbNodes)= 0;
   virtual bool vtkOrder(const SMDS_MeshNode* nodes[], const int nbNodes) {return true; }
 
+  static VTKCellType        toVtkType (SMDSAbs_EntityType vtkType);
+  static SMDSAbs_EntityType toSmdsType(VTKCellType vtkType);
+
+  static const std::vector<int>& toVtkOrder(VTKCellType vtkType);
+  static const std::vector<int>& toVtkOrder(SMDSAbs_EntityType smdsType);
+  static const std::vector<int>& fromVtkOrder(VTKCellType vtkType);
+  static const std::vector<int>& fromVtkOrder(SMDSAbs_EntityType smdsType);
+
+  static const std::vector<int>& reverseSmdsOrder(SMDSAbs_EntityType smdsType);
+  static const std::vector<int>& interlacedSmdsOrder(SMDSAbs_EntityType smdsType);
+
+  template< class VECT >
+    static void applyInterlace( const std::vector<int>& interlace, VECT & data)
+  {
+    if ( interlace.empty() ) return;
+    VECT tmpData( data.size() );
+    for ( size_t i = 0; i < data.size(); ++i )
+      tmpData[i] = data[ interlace[i] ];
+    data.swap( tmpData );
+  }
+
   static int nbCells;
 
 protected:
