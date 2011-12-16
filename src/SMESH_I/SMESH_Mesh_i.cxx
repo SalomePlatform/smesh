@@ -4331,9 +4331,9 @@ SMESH::submesh_array_array* SMESH_Mesh_i::GetMeshOrder()
     removeDimHyps(dimHypListArr);
     
     // now, minimise the number of concurrent groups
-    // Here we assume that lists of submhes can has same submesh
+    // Here we assume that lists of submeshes can have same submesh
     // in case of multi-dimension algorithms, as result
-    //  list with common submesh have to be union into one list
+    //  list with common submesh has to be united into one list
     int listIndx = 0;
     TListOfListOfInt::iterator listIt = anOrder.begin();
     for(; listIt != anOrder.end(); listIt++, listIndx++ )
@@ -4341,7 +4341,7 @@ SMESH::submesh_array_array* SMESH_Mesh_i::GetMeshOrder()
   }
   // convert submesh ids into interface instances
   //  and dump command into python
-  convertMeshOrder( anOrder, aResult, true );
+  convertMeshOrder( anOrder, aResult, false );
 
   return aResult._retn();
 }
