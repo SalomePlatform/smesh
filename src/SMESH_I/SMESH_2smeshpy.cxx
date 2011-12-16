@@ -203,13 +203,15 @@ SMESH_2smeshpy::ConvertScript(const TCollection_AsciiString& theScript,
 
 _pyGen::_pyGen(Resource_DataMapOfAsciiStringAsciiString& theEntry2AccessorMethod,
                Resource_DataMapOfAsciiStringAsciiString& theObjectNames)
-  : _pyObject( new _pyCommand( TPythonDump::SMESHGenName(), 0 )),
+  : _pyObject( new _pyCommand( "", 0 )),
     myNbCommands( 0 ),
     myID2AccessorMethod( theEntry2AccessorMethod ),
     myObjectNames( theObjectNames ),
     myNbFilters( 0 )
 {
   // make that GetID() to return TPythonDump::SMESHGenName()
+  GetCreationCmd()->Clear();
+  GetCreationCmd()->GetString() = TPythonDump::SMESHGenName();
   GetCreationCmd()->GetString() += "=";
 }
 
@@ -841,6 +843,7 @@ Handle(_pyObject) _pyGen::FindObject( const _pyID& theObjID )  const
 
 bool _pyGen::IsDead(const _pyID& theObjID) const
 {
+  if ( theObjID.IsEmpty() ) return false;
   const bool hasStudyName = myObjectNames.IsBound( theObjID );
   return !hasStudyName;
 }
