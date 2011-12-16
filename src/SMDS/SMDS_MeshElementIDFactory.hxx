@@ -49,7 +49,6 @@ public:
   virtual void ReleaseID(int ID, int vtkId = -1);
   SMDS_ElemIteratorPtr elementsIterator() const;
   virtual void Clear();
-  int GetVtkCellType(int SMDSType);
 
 protected:
   void updateMinMax() const;
@@ -58,8 +57,6 @@ protected:
     if (id > myMax) myMax = id;
     if (id < myMin) myMin = id;
   }
-
-  std::vector<int> myVtkCellTypes;
 
 };
 

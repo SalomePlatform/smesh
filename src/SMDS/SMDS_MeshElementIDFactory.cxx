@@ -49,34 +49,6 @@ using namespace std;
 SMDS_MeshElementIDFactory::SMDS_MeshElementIDFactory():
   SMDS_MeshNodeIDFactory()
 {
-//    myIDElements.clear();
-//    myVtkIndex.clear();
-    myVtkCellTypes.clear();
-    myVtkCellTypes.reserve(SMDSEntity_Last);
-    myVtkCellTypes[SMDSEntity_Node]            = VTK_VERTEX;
-    myVtkCellTypes[SMDSEntity_0D]              = VTK_VERTEX;
-    myVtkCellTypes[SMDSEntity_Edge]            = VTK_LINE;
-    myVtkCellTypes[SMDSEntity_Quad_Edge]       = VTK_QUADRATIC_EDGE;
-    myVtkCellTypes[SMDSEntity_Triangle]        = VTK_TRIANGLE;
-    myVtkCellTypes[SMDSEntity_Quad_Triangle]   = VTK_QUADRATIC_TRIANGLE;
-    myVtkCellTypes[SMDSEntity_Quadrangle]      = VTK_QUAD;
-    myVtkCellTypes[SMDSEntity_Quad_Quadrangle] = VTK_QUADRATIC_TRIANGLE;
-    myVtkCellTypes[SMDSEntity_Polygon]         = VTK_POLYGON;
-    myVtkCellTypes[SMDSEntity_Quad_Polygon]    = VTK_POLYGON; // -PR- verifer
-    myVtkCellTypes[SMDSEntity_Tetra]           = VTK_TETRA;
-    myVtkCellTypes[SMDSEntity_Quad_Tetra]      = VTK_QUADRATIC_TETRA;
-    myVtkCellTypes[SMDSEntity_Pyramid]         = VTK_PYRAMID;
-    myVtkCellTypes[SMDSEntity_Quad_Pyramid]    = VTK_CONVEX_POINT_SET;
-    myVtkCellTypes[SMDSEntity_Hexa]            = VTK_HEXAHEDRON;
-    myVtkCellTypes[SMDSEntity_Quad_Hexa]       = VTK_QUADRATIC_HEXAHEDRON;
-    myVtkCellTypes[SMDSEntity_Penta]           = VTK_WEDGE;
-    myVtkCellTypes[SMDSEntity_Quad_Penta]      = VTK_QUADRATIC_WEDGE;
-//#ifdef VTK_HAVE_POLYHEDRON
-    myVtkCellTypes[SMDSEntity_Polyhedra]       = VTK_POLYHEDRON;
-//#else
-//    myVtkCellTypes[SMDSEntity_Polyhedra]       = VTK_CONVEX_POINT_SET;
-//#endif
-    myVtkCellTypes[SMDSEntity_Quad_Polyhedra]  = VTK_CONVEX_POINT_SET;
 }
 
 int SMDS_MeshElementIDFactory::SetInVtkGrid(SMDS_MeshElement * elem)
@@ -208,10 +180,4 @@ void SMDS_MeshElementIDFactory::Clear()
   myMesh->myCellIdVtkToSmds.clear();
   myMin = myMax = 0;
   SMDS_MeshIDFactory::Clear();
-}
-
-int SMDS_MeshElementIDFactory::GetVtkCellType(int SMDSType)
-{
-    assert((SMDSType >=0) && (SMDSType< SMDSEntity_Last));
-    return myVtkCellTypes[SMDSType];
 }
