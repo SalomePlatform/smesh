@@ -57,6 +57,7 @@ enum SMDSAbs_GeometryType
     SMDSGeom_PYRAMID,
     SMDSGeom_HEXA,
     SMDSGeom_PENTA,
+    SMDSGeom_HEXAGONAL_PRISM,
     SMDSGeom_POLYHEDRA,
   };
 
@@ -80,6 +81,7 @@ enum SMDSAbs_EntityType {
   SMDSEntity_Quad_Triangle,
   SMDSEntity_Quadrangle,
   SMDSEntity_Quad_Quadrangle,
+  SMDSEntity_BiQuad_Quadrangle,
   SMDSEntity_Polygon,
   SMDSEntity_Quad_Polygon,
   SMDSEntity_Tetra,
@@ -88,8 +90,10 @@ enum SMDSAbs_EntityType {
   SMDSEntity_Quad_Pyramid,
   SMDSEntity_Hexa,
   SMDSEntity_Quad_Hexa,
+  SMDSEntity_TriQuad_Hexa,
   SMDSEntity_Penta,
   SMDSEntity_Quad_Penta,
+  SMDSEntity_Hexagonal_Prism,
   SMDSEntity_Polyhedra,
   SMDSEntity_Quad_Polyhedra,
   SMDSEntity_Last
