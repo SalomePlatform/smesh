@@ -51,16 +51,21 @@ class SMDS_EXPORT SMDS_VolumeTool
 {
  public:
 
-  enum VolumeType { UNKNOWN = -1, TETRA = 0, PYRAM, PENTA, HEXA, QUAD_TETRA,
-                    QUAD_PYRAM, QUAD_PENTA, QUAD_HEXA, POLYHEDA };
+  enum VolumeType { UNKNOWN = -1, TETRA = 0, PYRAM, PENTA, HEXA,
+                    HEX_PRISM, QUAD_TETRA, QUAD_PYRAM, QUAD_PENTA, QUAD_HEXA,
+                    POLYHEDA, NB_VOLUME_TYPES }; // to keep synchronised with GetSize()!
 
   SMDS_VolumeTool ();
   ~SMDS_VolumeTool ();
-  SMDS_VolumeTool (const SMDS_MeshElement* theVolume);
+  SMDS_VolumeTool (const SMDS_MeshElement* theVolume,
+                   const bool              ignoreCentralNodes=true);
 
-  bool Set (const SMDS_MeshElement* theVolume);
+  bool Set (const SMDS_MeshElement* theVolume,
+            const bool              ignoreCentralNodes=true);
   // Set volume.
-  // Return false if theVolume is not of type SMDSAbs_Volume
+  // Return false if theVolume is not of type SMDSAbs_Volume.
+  // ignoreCentralNodes makes skip nodes at face centers when returning
+  // nodes of faces of SMDSEntity_TriQuad_Hexa
 
   const SMDS_MeshVolume* Element() const;
   // return element
@@ -126,6 +131,9 @@ class SMDS_EXPORT SMDS_VolumeTool
   // -------------
   // info on faces
   // -------------
+  // For all elements, 0-th face is bottom based on the first nodes.
+  // For prismatic elements (tetra,hexa,prisms), 1-th face is a top one.
+  // For all elements, side faces follow order of bottom nodes
 
   void SetExternalNormal ();
   // Node order in faces  will be so that faces normals are external.
@@ -141,15 +149,17 @@ class SMDS_EXPORT SMDS_VolumeTool
   // Return the array of face nodes indices
   // To comfort link iteration, the array
   // length == NbFaceNodes( faceIndex ) + 1 and
-  // the last node index == the first one.
-  // NOTE: for the quadratic volume, node indoces are in the order the nodes encounter
+  // the last node index == the first one, except for
+  // SMDSEntity_TriQuad_Hexa at ignoreCentralNodes==false.
+  // NOTE: for the quadratic volume, node indices are in the order the nodes encounter
   // in face boundary and not the order they are in the mesh face
 
   const SMDS_MeshNode** GetFaceNodes( int faceIndex ) const;
   // Return the array of face nodes.
   // To comfort link iteration, the array
   // length == NbFaceNodes( faceIndex ) + 1 and
-  // the last node == the first one.
+  // the last node == the first one, except for
+  // SMDSEntity_TriQuad_Hexa at ignoreCentralNodes==false.
   // NOTE: for the quadratic volume, nodes are in the order they encounter in face boundary
   // and not the order they are in the mesh face
   // WARNING: do not modify the array, some methods
@@ -179,6 +189,9 @@ class SMDS_EXPORT SMDS_VolumeTool
   int GetOppFaceIndex( int faceIndex ) const;
   // Return index of the opposite face if it exists, else -1.
 
+  int GetCenterNodeIndex( int faceIndex ) const;
+  // Return index of the node located at face center of a quadratic element like HEX27
+
   int GetFaceIndex( const std::set<const SMDS_MeshNode*>& theFaceNodes ) const;
   // Return index of a face formed by theFaceNodes.
   // Return -1 if a face not found
@@ -207,10 +220,11 @@ class SMDS_EXPORT SMDS_VolumeTool
   // To comfort link iteration, the array
   // length == NbFaceNodes( faceIndex ) + 1 and
   // the last node index == the first one.
+  // Nodes at face centers of SMDSEntity_TriQuad_Hexa are ignored
 
-  static int NbFaceNodes(VolumeType type,
-                         int        faceIndex );
+  static int NbFaceNodes(VolumeType type, int faceIndex );
   // Return number of nodes in the array of face nodes
+  // Nodes at face centers of SMDSEntity_TriQuad_Hexa are ignored
 
   static int NbCornerNodes(VolumeType type);
   // Useful to know nb of corner nodes of a quadratic volume
@@ -221,6 +235,7 @@ private:
 
   const SMDS_MeshElement* myVolume;
   const SMDS_VtkVolume*   myPolyedre;
+  bool                    myIgnoreCentralNodes;
 
   bool                    myVolForward;
   int                     myNbFaces;
@@ -229,6 +244,11 @@ private:
   std::vector< int >      myPolyIndices;
 
   mutable bool                    myExternalFaces;
+
+  mutable const int*              myAllFacesNodeIndices_F;
+  mutable const int*              myAllFacesNodeIndices_RE;
+  mutable const int*              myAllFacesNbNodes;
+  mutable int                     myMaxFaceNbNodes;
 
   mutable int                     myCurFace;
   mutable int                     myFaceNbNodes;
