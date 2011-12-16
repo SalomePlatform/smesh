@@ -2436,12 +2436,13 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CopyMesh(SMESH::SMESH_IDSource_ptr meshPart,
 
   // 3. Get elements to copy
 
-  SMDS_ElemIteratorPtr srcElemIt;
+  SMDS_ElemIteratorPtr srcElemIt; SMDS_NodeIteratorPtr srcNodeIt;
   TIDSortedElemSet srcElems;
   SMESH::array_of_ElementType_var srcElemTypes = meshPart->GetTypes();
   if ( SMESH::DownCast<SMESH_Mesh_i*>( meshPart ))
   {
     srcElemIt = srcMeshDS->elementsIterator();
+    srcNodeIt = srcMeshDS->nodesIterator();
   }
   else
   {
@@ -2512,6 +2513,23 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CopyMesh(SMESH::SMESH_IDSource_ptr meshPart,
 
       if ( toCopyGroups && !toKeepIDs )
         e2eMapByType[ elem->GetType() ].insert( make_pair( elem, newElem ));
+    }
+  }
+
+  // 4(b). Copy free nodes
+
+  if ( srcNodeIt && srcMeshDS->NbNodes() != newMeshDS->NbNodes() )
+  {
+    while ( srcNodeIt->more() )
+    {
+      nSrc = srcNodeIt->next();
+      if ( nSrc->NbInverseElements() == 0 )
+      {
+        if ( toKeepIDs )
+          nTgt = newMeshDS->AddNodeWithID( nSrc->X(), nSrc->Y(), nSrc->Z(), nSrc->GetID());
+        else
+          n2nMap[ nSrc ] = newMeshDS->AddNode( nSrc->X(), nSrc->Y(), nSrc->Z() );
+      }
     }
   }
 
