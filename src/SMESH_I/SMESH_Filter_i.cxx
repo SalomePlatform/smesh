@@ -34,7 +34,6 @@
 #include "SMDS_MeshNode.hxx"
 #include "SMDS_MeshElement.hxx"
 #include "SMDS_ElemIterator.hxx"
-#include "SMDS_VolumeTool.hxx"
 
 #include "SMESHDS_Mesh.hxx"
 
