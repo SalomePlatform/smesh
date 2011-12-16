@@ -226,6 +226,24 @@ void SMESHDS_Script::AddVolume(int NewID,
 }
 
 //=======================================================================
+//function : 
+//purpose  : 
+//=======================================================================
+void SMESHDS_Script::AddVolume(int NewVolID, int idnode1, int idnode2, int idnode3,
+                               int idnode4, int idnode5, int idnode6, int idnode7, int idnode8,
+                               int idnode9, int idnode10, int idnode11, int idnode12)
+{
+  if(myIsEmbeddedMode){
+    myIsModified = true;
+    return;
+  }
+  getCommand(SMESHDS_AddHexagonalPrism)->AddVolume(NewVolID,
+                                                   idnode1, idnode2, idnode3, idnode4,
+                                                   idnode5, idnode6, idnode7, idnode8,
+                                                   idnode9, idnode10, idnode11, idnode12);
+}
+
+//=======================================================================
 //function : AddPolygonalFace
 //purpose  : 
 //=======================================================================
@@ -421,6 +439,21 @@ void SMESHDS_Script::AddFace(int NewFaceID, int n1, int n2, int n3, int n4,
 }
 
 //=======================================================================
+//function : AddFace
+//purpose  : 
+//=======================================================================
+void SMESHDS_Script::AddFace(int NewFaceID, int n1, int n2, int n3, int n4,
+                             int n12, int n23, int n34, int n41, int nCenter)
+{
+  if(myIsEmbeddedMode){
+    myIsModified = true;
+    return;
+  }
+  getCommand(SMESHDS_AddBiQuadQuadrangle)->AddFace(NewFaceID, n1, n2, n3, n4,
+                                                   n12, n23, n34, n41, nCenter);
+}
+
+//=======================================================================
 //function : AddVolume
 //purpose  : 
 //=======================================================================
@@ -492,5 +525,30 @@ void SMESHDS_Script::AddVolume(int NewVolID, int n1, int n2, int n3,
                                                    n12, n23, n34, n41,
                                                    n56, n67, n78, n85,
                                                    n15, n26, n37, n48);
+}
+
+//=======================================================================
+//function : AddVolume
+//purpose  : 
+//=======================================================================
+void SMESHDS_Script::AddVolume(int NewVolID, int n1, int n2, int n3,
+                               int n4, int n5, int n6, int n7, int n8,
+                               int n12, int n23, int n34, int n41,
+                               int n56, int n67, int n78, int n85,
+                               int n15, int n26, int n37, int n48,
+                               int n1234,int n1256,int n2367,int n3478,
+                               int n1458,int n5678,int nCenter)
+{
+  if(myIsEmbeddedMode){
+    myIsModified = true;
+    return;
+  }
+  getCommand(SMESHDS_AddTriQuadHexa)->AddVolume(NewVolID, n1, n2, n3, n4,
+                                                n5, n6, n7, n8,
+                                                n12, n23, n34, n41,
+                                                n56, n67, n78, n85,
+                                                n15, n26, n37, n48,
+                                                n1234, n1256, n2367, n3478,
+                                                n1458, n5678, nCenter);
 }
 

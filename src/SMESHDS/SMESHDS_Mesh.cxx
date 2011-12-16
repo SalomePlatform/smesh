@@ -587,6 +587,81 @@ SMDS_MeshVolume* SMESHDS_Mesh::AddVolume(const SMDS_MeshNode * n1,
   return anElem;
 }
 
+
+//=======================================================================
+//function :AddVolume
+//purpose  : add hexagonal prism
+//=======================================================================
+SMDS_MeshVolume* SMESHDS_Mesh::AddVolumeWithID(int n1, int n2, int n3, int n4,
+                                               int n5, int n6, int n7, int n8,
+                                               int n9, int n10, int n11, int n12,
+                                               int ID)
+{
+  SMDS_MeshVolume *anElem= SMDS_Mesh::AddVolumeWithID(n1, n2, n3, n4, n5, n6, n7, n8, n9, n10, n11, n12, ID);
+  if(anElem) myScript->AddVolume(ID, n1, n2, n3, n4, n5, n6, n7, n8, n9, n10, n11, n12);
+  return anElem;
+}
+
+SMDS_MeshVolume* SMESHDS_Mesh::AddVolumeWithID(const SMDS_MeshNode * n1,
+                                               const SMDS_MeshNode * n2,
+                                               const SMDS_MeshNode * n3,
+                                               const SMDS_MeshNode * n4,
+                                               const SMDS_MeshNode * n5,
+                                               const SMDS_MeshNode * n6,
+                                               const SMDS_MeshNode * n7,
+                                               const SMDS_MeshNode * n8, 
+                                               const SMDS_MeshNode * n9, 
+                                               const SMDS_MeshNode * n10, 
+                                               const SMDS_MeshNode * n11, 
+                                               const SMDS_MeshNode * n12, 
+                                               int ID)
+{
+  return AddVolumeWithID(n1->GetID(), 
+                         n2->GetID(),
+                         n3->GetID(),
+                         n4->GetID(),
+                         n5->GetID(),
+                         n6->GetID(),
+                         n7->GetID(),
+                         n8->GetID(),
+                         n9->GetID(),
+                         n10->GetID(),
+                         n11->GetID(),
+                         n12->GetID(),
+                         ID);
+}
+
+SMDS_MeshVolume* SMESHDS_Mesh::AddVolume(const SMDS_MeshNode * n1,
+                                         const SMDS_MeshNode * n2,
+                                         const SMDS_MeshNode * n3,
+                                         const SMDS_MeshNode * n4,
+                                         const SMDS_MeshNode * n5,
+                                         const SMDS_MeshNode * n6,
+                                         const SMDS_MeshNode * n7,
+                                         const SMDS_MeshNode * n8, 
+                                         const SMDS_MeshNode * n9, 
+                                         const SMDS_MeshNode * n10, 
+                                         const SMDS_MeshNode * n11, 
+                                         const SMDS_MeshNode * n12)
+{
+  SMDS_MeshVolume *anElem = SMDS_Mesh::AddVolume(n1, n2, n3, n4, n5, n6, n7, n8, n9, n10, n11, n12);
+  if(anElem) myScript->AddVolume(anElem->GetID(), 
+                                 n1->GetID(),
+                                 n2->GetID(),
+                                 n3->GetID(),
+                                 n4->GetID(),
+                                 n5->GetID(),
+                                 n6->GetID(),
+                                 n7->GetID(),
+                                 n8->GetID(),
+                                 n9->GetID(),
+                                 n10->GetID(),
+                                 n11->GetID(),
+                                 n12->GetID());
+  return anElem;
+}
+
+
 //=======================================================================
 //function : AddPolygonalFace
 //purpose  : 
@@ -1517,6 +1592,62 @@ SMDS_MeshFace* SMESHDS_Mesh::AddFaceWithID(const SMDS_MeshNode * n1,
 
 
 //=======================================================================
+//function : AddFace
+//purpose  : 
+//=======================================================================
+SMDS_MeshFace* SMESHDS_Mesh::AddFace(const SMDS_MeshNode * n1,
+                                     const SMDS_MeshNode * n2,
+                                     const SMDS_MeshNode * n3,
+                                     const SMDS_MeshNode * n4,
+                                     const SMDS_MeshNode * n12,
+                                     const SMDS_MeshNode * n23,
+                                     const SMDS_MeshNode * n34,
+                                     const SMDS_MeshNode * n41, 
+                                     const SMDS_MeshNode * nCenter)
+{
+  SMDS_MeshFace *anElem = SMDS_Mesh::AddFace(n1,n2,n3,n4,n12,n23,n34,n41,nCenter);
+  if(anElem) myScript->AddFace(anElem->GetID(), 
+                               n1->GetID(), n2->GetID(), n3->GetID(), n4->GetID(),
+                               n12->GetID(), n23->GetID(), n34->GetID(), n41->GetID(),
+                               nCenter->GetID());
+  return anElem;
+}
+
+//=======================================================================
+//function : AddFaceWithID
+//purpose  : 
+//=======================================================================
+SMDS_MeshFace* SMESHDS_Mesh::AddFaceWithID(int n1, int n2, int n3, int n4,
+                                           int n12,int n23,int n34,int n41,
+                                           int nCenter, int ID)
+{
+  SMDS_MeshFace *anElem = SMDS_Mesh::AddFaceWithID(n1,n2,n3,n4,n12,n23,n34,n41,nCenter,ID);
+  if(anElem) myScript->AddFace(ID,n1,n2,n3,n4,n12,n23,n34,n41,nCenter);
+  return anElem;
+}
+
+//=======================================================================
+//function : AddFaceWithID
+//purpose  : 
+//=======================================================================
+SMDS_MeshFace* SMESHDS_Mesh::AddFaceWithID(const SMDS_MeshNode * n1,
+                                           const SMDS_MeshNode * n2,
+                                           const SMDS_MeshNode * n3,
+                                           const SMDS_MeshNode * n4,
+                                           const SMDS_MeshNode * n12,
+                                           const SMDS_MeshNode * n23,
+                                           const SMDS_MeshNode * n34, 
+                                           const SMDS_MeshNode * n41, 
+                                           const SMDS_MeshNode * nCenter, 
+                                           int ID)
+{
+  return AddFaceWithID(n1->GetID(), n2->GetID(), n3->GetID(), n4->GetID(),
+                       n12->GetID(), n23->GetID(), n34->GetID(), n41->GetID(),
+                       nCenter->GetID(), ID);
+}
+
+
+//=======================================================================
 //function : AddVolume
 //purpose  : 
 //=======================================================================
@@ -1728,7 +1859,7 @@ SMDS_MeshVolume* SMESHDS_Mesh::AddVolumeWithID(const SMDS_MeshNode * n1,
 
 //=======================================================================
 //function : AddVolume
-//purpose  : 
+//purpose  : add quadratic hexahedron
 //=======================================================================
 SMDS_MeshVolume* SMESHDS_Mesh::AddVolume(const SMDS_MeshNode * n1,
                                          const SMDS_MeshNode * n2, 
@@ -1816,6 +1947,117 @@ SMDS_MeshVolume* SMESHDS_Mesh::AddVolumeWithID(const SMDS_MeshNode * n1,
                          n56->GetID(), n67->GetID(), n78->GetID(), n85->GetID(),
                          n15->GetID(), n26->GetID(), n37->GetID(), n48->GetID(),
                          ID);
+}
+
+//=======================================================================
+//function : AddVolume
+//purpose  : add tri-quadratic hexahedron of 27 nodes
+//=======================================================================
+
+SMDS_MeshVolume* SMESHDS_Mesh::AddVolume(const SMDS_MeshNode * n1,
+                                         const SMDS_MeshNode * n2, 
+                                         const SMDS_MeshNode * n3,
+                                         const SMDS_MeshNode * n4,
+                                         const SMDS_MeshNode * n5, 
+                                         const SMDS_MeshNode * n6, 
+                                         const SMDS_MeshNode * n7,
+                                         const SMDS_MeshNode * n8, 
+                                         const SMDS_MeshNode * n12,
+                                         const SMDS_MeshNode * n23,
+                                         const SMDS_MeshNode * n34,
+                                         const SMDS_MeshNode * n41, 
+                                         const SMDS_MeshNode * n56,
+                                         const SMDS_MeshNode * n67,
+                                         const SMDS_MeshNode * n78,
+                                         const SMDS_MeshNode * n85, 
+                                         const SMDS_MeshNode * n15,
+                                         const SMDS_MeshNode * n26,
+                                         const SMDS_MeshNode * n37,
+                                         const SMDS_MeshNode * n48, 
+                                         const SMDS_MeshNode * n1234,
+                                         const SMDS_MeshNode * n1256,
+                                         const SMDS_MeshNode * n2367,
+                                         const SMDS_MeshNode * n3478,
+                                         const SMDS_MeshNode * n1458,
+                                         const SMDS_MeshNode * n5678,
+                                         const SMDS_MeshNode * nCenter)
+{
+  SMDS_MeshVolume *anElem = SMDS_Mesh::AddVolume(n1,n2,n3,n4,n5,n6,n7,n8,
+                                                 n12,n23,n34,n41,
+                                                 n56,n67,n78,n85,
+                                                 n15,n26,n37,n48,
+                                                 n1234,n1256,n2367,n3478,n1458,n5678,nCenter);
+  if(anElem)
+    myScript->AddVolume(anElem->GetID(), n1->GetID(), n2->GetID(),
+                        n3->GetID(), n4->GetID(), n5->GetID(),
+                        n6->GetID(), n7->GetID(), n8->GetID(),
+                        n12->GetID(), n23->GetID(), n34->GetID(), n41->GetID(),
+                        n56->GetID(), n67->GetID(), n78->GetID(), n85->GetID(),
+                        n15->GetID(), n26->GetID(), n37->GetID(), n48->GetID(),
+                        n1234->GetID(),n1256->GetID(),n2367->GetID(),n3478->GetID(),
+                        n1458->GetID(),n5678->GetID(),nCenter->GetID());
+  return anElem;
+}
+
+SMDS_MeshVolume* SMESHDS_Mesh::AddVolumeWithID(int n1, int n2, int n3, int n4,
+                                               int n5, int n6, int n7, int n8,
+                                               int n12,int n23,int n34,int n41,
+                                               int n56,int n67,int n78,int n85,
+                                               int n15,int n26,int n37,int n48,
+                                               int n1234,int n1256,int n2367,int n3478,
+                                               int n1458,int n5678,int nCenter,
+                                               int ID)
+{
+  SMDS_MeshVolume *anElem = SMDS_Mesh::AddVolumeWithID(n1,n2,n3,n4,n5,n6,n7,n8,
+                                                       n12,n23,n34,n41,
+                                                       n56,n67,n78,n85,
+                                                       n15,n26,n37,n48,
+                                                       n1234, n1256, n2367, n3478,
+                                                       n1458, n5678, nCenter,
+                                                       ID);
+  if(anElem) myScript->AddVolume(ID,n1,n2,n3,n4,n5,n6,n7,n8,n12,n23,n34,n41,
+                                 n56,n67,n78,n85,n15,n26,n37,n48,
+                                 n1234, n1256, n2367, n3478,
+                                 n1458, n5678, nCenter);
+  return anElem;
+}
+
+SMDS_MeshVolume* SMESHDS_Mesh::AddVolumeWithID(const SMDS_MeshNode * n1,
+                                               const SMDS_MeshNode * n2,
+                                               const SMDS_MeshNode * n3,
+                                               const SMDS_MeshNode * n4,
+                                               const SMDS_MeshNode * n5, 
+                                               const SMDS_MeshNode * n6, 
+                                               const SMDS_MeshNode * n7,
+                                               const SMDS_MeshNode * n8, 
+                                               const SMDS_MeshNode * n12,
+                                               const SMDS_MeshNode * n23,
+                                               const SMDS_MeshNode * n34,
+                                               const SMDS_MeshNode * n41, 
+                                               const SMDS_MeshNode * n56,
+                                               const SMDS_MeshNode * n67,
+                                               const SMDS_MeshNode * n78,
+                                               const SMDS_MeshNode * n85, 
+                                               const SMDS_MeshNode * n15,
+                                               const SMDS_MeshNode * n26,
+                                               const SMDS_MeshNode * n37,
+                                               const SMDS_MeshNode * n48, 
+                                               const SMDS_MeshNode * n1234,
+                                               const SMDS_MeshNode * n1256,
+                                               const SMDS_MeshNode * n2367,
+                                               const SMDS_MeshNode * n3478,
+                                               const SMDS_MeshNode * n1458,
+                                               const SMDS_MeshNode * n5678,
+                                               const SMDS_MeshNode * nCenter,
+                                               int ID)
+{
+  return AddVolumeWithID(n1->GetID(), n2->GetID(), n3->GetID(), n4->GetID(),
+                         n5->GetID(), n6->GetID(), n7->GetID(), n8->GetID(),
+                         n12->GetID(), n23->GetID(), n34->GetID(), n41->GetID(),
+                         n56->GetID(), n67->GetID(), n78->GetID(), n85->GetID(),
+                         n15->GetID(), n26->GetID(), n37->GetID(), n48->GetID(),
+                         n1234->GetID(),n1256->GetID(),n2367->GetID(),n3478->GetID(),
+                         n1458->GetID(),n5678->GetID(),nCenter->GetID(), ID);
 }
 
 void SMESHDS_Mesh::compactMesh()

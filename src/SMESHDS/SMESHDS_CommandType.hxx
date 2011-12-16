@@ -27,8 +27,6 @@
 #ifndef _SMESHDS_CommandType_HeaderFile
 #define _SMESHDS_CommandType_HeaderFile
 
-//#include <Standard_PrimitiveTypes.hxx>
-
 enum SMESHDS_CommandType { 
   SMESHDS_AddNode,
   SMESHDS_AddEdge,
@@ -56,7 +54,10 @@ enum SMESHDS_CommandType {
   SMESHDS_AddQuadPentahedron,
   SMESHDS_AddQuadHexahedron,
   // special type for 0D elements
-  SMESHDS_Add0DElement
+  SMESHDS_Add0DElement,
+  SMESHDS_AddBiQuadQuadrangle,
+  SMESHDS_AddTriQuadHexa,
+  SMESHDS_AddHexagonalPrism
 };
 
 

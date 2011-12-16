@@ -52,6 +52,9 @@ class SMESHDS_EXPORT SMESHDS_Command
                 int idnode4, int idnode5, int idnode6);
         void AddVolume(int NewVolID, int idnode1, int idnode2, int idnode3,
                 int idnode4, int idnode5, int idnode6, int idnode7, int idnode8);
+        void AddVolume(int NewVolID, int idnode1, int idnode2, int idnode3,
+                       int idnode4, int idnode5, int idnode6, int idnode7, int idnode8,
+                       int idnode9, int idnode10, int idnode11, int idnode12);
         void AddPolygonalFace (const int        ElementID,
                                std::vector<int> nodes_ids);
         void AddPolyhedralVolume (const int        ElementID,
@@ -63,6 +66,8 @@ class SMESHDS_EXPORT SMESHDS_Command
                      int n12, int n23, int n31);
         void AddFace(int NewFaceID, int n1, int n2, int n3, int n4,
                      int n12, int n23, int n34, int n41);
+        void AddFace(int NewFaceID, int n1, int n2, int n3, int n4,
+                     int n12, int n23, int n34, int n41, int nCenter);
         void AddVolume(int NewVolID, int n1, int n2, int n3, int n4,
                        int n12, int n23, int n31, int n14, int n24, int n34);
         void AddVolume(int NewVolID, int n1, int n2, int n3, int n4, int n5,
@@ -74,10 +79,17 @@ class SMESHDS_EXPORT SMESHDS_Command
                        int n45, int n56, int n64,
                        int n14, int n25, int n36);
         void AddVolume(int NewVolID, int n1, int n2, int n3, int n4,
-                       int n5, int n6, int n7, int n8,
+                       int n5,  int n6,  int n7,  int n8,
                        int n12, int n23, int n34, int n41,
                        int n56, int n67, int n78, int n85,
                        int n15, int n26, int n37, int n48);
+        void AddVolume(int NewVolID, int n1, int n2, int n3, int n4,
+                       int n5,  int n6,  int n7,  int n8,
+                       int n12, int n23, int n34, int n41,
+                       int n56, int n67, int n78, int n85,
+                       int n15, int n26, int n37, int n48,
+                       int n1234,int n1256,int n2367,int n3478,
+                       int n1458,int n5678,int nCenter);
         
         void MoveNode(int NewNodeID, double x, double y, double z);
         void RemoveNode(int NodeID);
