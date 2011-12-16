@@ -1359,7 +1359,7 @@ SMDS_MeshFace* SMESH_MesherHelper::AddPolygonalFace (const vector<const SMDS_Mes
     for ( int i = 0; i < nodes.size(); ++i )
     {
       const SMDS_MeshNode* n1 = nodes[i];
-      const SMDS_MeshNode* n2 = nodes[(i+1)/nodes.size()];
+      const SMDS_MeshNode* n2 = nodes[(i+1)%nodes.size()];
       const SMDS_MeshNode* n12 = GetMediumNode(n1,n2,force3d);
       newNodes.push_back( n1 );
       newNodes.push_back( n12 );
