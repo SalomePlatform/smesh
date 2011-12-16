@@ -75,7 +75,8 @@ Driver_Mesh::Status Driver_Mesh::addMessage(const std::string& msg,
   myErrorMessages.push_back( msg );
 
   MESSAGE(msg);
+#ifdef _DEBUG_
   cout << msg << endl;
-
+#endif
   return isFatal ? DRS_FAIL : DRS_WARN_SKIP_ELEM;
 }
