@@ -35,7 +35,7 @@
 #include <Resource_DataMapOfAsciiStringAsciiString.hxx>
 
 #include "SMESH_Gen_i.hxx"
-/* SALOME headers that include CORBA headers that include windows.h 
+/* SALOME headers that include CORBA headers that include windows.h
  * that defines GetObject symbol as GetObjectA should stand before SALOME headers
  * that declare methods named GetObject - to apply the same rules of GetObject renaming
  * and thus to avoid mess with GetObject symbol on Windows */
@@ -134,7 +134,7 @@ SMESH_2smeshpy::ConvertScript(const TCollection_AsciiString& theScript,
   // split theScript into separate commands
 
   SMESH_NoteBook * aNoteBook = new SMESH_NoteBook();
-  
+
   int from = 1, end = theScript.Length(), to;
   while ( from < end && ( to = theScript.Location( "\n", from, end )))
   {
@@ -143,13 +143,13 @@ SMESH_2smeshpy::ConvertScript(const TCollection_AsciiString& theScript,
         aNoteBook->AddCommand( theScript.SubString( from, to - 1 ));
       from = to + 1;
   }
-  
+
   aNoteBook->ReplaceVariables();
 
   TCollection_AsciiString aNoteScript = aNoteBook->GetResultScript();
   delete aNoteBook;
   aNoteBook = 0;
-  
+
   // split theScript into separate commands
   from = 1, end = aNoteScript.Length();
   while ( from < end && ( to = aNoteScript.Location( "\n", from, end )))
@@ -175,7 +175,7 @@ SMESH_2smeshpy::ConvertScript(const TCollection_AsciiString& theScript,
       if ( (*cmd)->SetDependentCmdsAfter() )
         orderChanges = true;
   } while ( orderChanges );
-  
+
   // concat commands back into a script
   TCollection_AsciiString aScript;
   for ( cmd = theGen->GetCommands().begin(); cmd != theGen->GetCommands().end(); ++cmd )
@@ -258,20 +258,22 @@ Handle(_pyCommand) _pyGen::AddCommand( const TCollection_AsciiString& theCommand
   map< _pyID, Handle(_pyMesh) >::iterator id_mesh = myMeshes.find( objID );
   if ( id_mesh != myMeshes.end() )
   {
+    id_mesh->second->AddProcessedCmd( aCommand );
+
     // check for mesh editor object
     if ( aCommand->GetMethod() == "GetMeshEditor" ) { // MeshEditor creation
       _pyID editorID = aCommand->GetResultValue();
       Handle(_pyMeshEditor) editor = new _pyMeshEditor( aCommand );
       myMeshEditors.insert( make_pair( editorID, editor ));
       return aCommand;
-    } 
+    }
     // check for SubMesh objects
     else if ( aCommand->GetMethod() == "GetSubMesh" ) { // SubMesh creation
       _pyID subMeshID = aCommand->GetResultValue();
       Handle(_pySubMesh) subMesh = new _pySubMesh( aCommand );
       myObjects.insert( make_pair( subMeshID, subMesh ));
     }
-    
+
     id_mesh->second->Process( aCommand );
     return aCommand;
   }
@@ -281,12 +283,15 @@ Handle(_pyCommand) _pyGen::AddCommand( const TCollection_AsciiString& theCommand
   if ( id_editor != myMeshEditors.end() )
   {
     id_editor->second->Process( aCommand );
+    id_editor->second->AddProcessedCmd( aCommand );
     TCollection_AsciiString processedCommand = aCommand->GetString();
+
     // some commands of SMESH_MeshEditor create meshes
     if ( aCommand->GetMethod().Search("MakeMesh") != -1 ) {
-      Handle(_pyMesh) mesh = new _pyMesh( aCommand, aCommand->GetResultValue() );
+      _pyID meshID = aCommand->GetResultValue();
+      Handle(_pyMesh) mesh = new _pyMesh( aCommand, meshID );
       aCommand->GetString() = processedCommand; // discard changes made by _pyMesh
-      myMeshes.insert( make_pair( mesh->GetID(), mesh ));
+      myMeshes.insert( make_pair( meshID, mesh ));
     }
     if ( aCommand->GetMethod() == "MakeBoundaryMesh") {
       _pyID meshID = aCommand->GetResultValue(0);
@@ -304,6 +309,7 @@ Handle(_pyCommand) _pyGen::AddCommand( const TCollection_AsciiString& theCommand
   for ( ; hyp != myHypos.end(); ++hyp )
     if ( !(*hyp)->IsAlgo() && objID == (*hyp)->GetID() ) {
       (*hyp)->Process( aCommand );
+      (*hyp)->AddProcessedCmd( aCommand );
       return aCommand;
     }
 
@@ -325,6 +331,7 @@ Handle(_pyCommand) _pyGen::AddCommand( const TCollection_AsciiString& theCommand
   map< _pyID, Handle(_pyObject) >::iterator id_obj = myObjects.find( objID );
   if ( id_obj != myObjects.end() ) {
     id_obj->second->Process( aCommand );
+    id_obj->second->AddProcessedCmd( aCommand );
     return aCommand;
   }
 
@@ -389,7 +396,8 @@ Handle(_pyCommand) _pyGen::AddCommand( const TCollection_AsciiString& theCommand
       // set SMESH.GeometryType instead of a numerical Threshold
       const char* types[SMESH::Geom_POLYHEDRA+1] = {
         "Geom_POINT", "Geom_EDGE", "Geom_TRIANGLE", "Geom_QUADRANGLE", "Geom_POLYGON",
-        "Geom_TETRA", "Geom_PYRAMID", "Geom_HEXA", "Geom_PENTA", "Geom_POLYHEDRA"
+        "Geom_TETRA", "Geom_PYRAMID", "Geom_HEXA", "Geom_PENTA", "Geom_HEXAGONAL_PRISM",
+        "Geom_POLYHEDRA"
       };
       int iGeom = Threshold.IntegerValue();
       if ( -1 < iGeom && iGeom < SMESH::Geom_POLYHEDRA+1 )
@@ -824,7 +832,19 @@ Handle(_pyObject) _pyGen::FindObject( const _pyID& theObjID )  const
   std::map< _pyID, Handle(_pyObject) >::const_iterator id_obj = myObjects.find( theObjID );
   return ( id_obj == myObjects.end() ) ? Handle(_pyObject)() : id_obj->second;
 }
-  
+
+//================================================================================
+/*!
+ * \brief Returns true if an object is removed from study
+ */
+//================================================================================
+
+bool _pyGen::IsDead(const _pyID& theObjID) const
+{
+  const bool hasStudyName = myObjectNames.IsBound( theObjID );
+  return !hasStudyName;
+}
+
 //================================================================================
 /*!
  * \brief Find out type of geom group
@@ -1190,7 +1210,7 @@ void _pyMesh::Flush()
     // try to convert
     if ( algo->Addition2Creation( addCmd, this->GetID() )) // OK
     {
-      // wrapped algo is created atfer mesh creation
+      // wrapped algo is created after mesh creation
       GetCreationCmd()->AddDependantCmd( addCmd );
 
       if ( isLocalAlgo ) {
@@ -1685,6 +1705,24 @@ Handle(_pyHypothesis) _pyHypothesis::NewHypothesis( const Handle(_pyCommand)& th
 
 //================================================================================
 /*!
+ * \brief Returns true if addition of this hypothesis to a given mesh can be
+ *        wrapped into hypothesis creation
+ */
+//================================================================================
+
+bool _pyHypothesis::IsWrappable(const _pyID& theMesh) const
+{
+  if ( !myIsWrapped && myMesh == theMesh && !IsRemovedFromStudy() )
+  {
+    Handle(_pyObject) pyMesh = theGen->FindObject( myMesh );
+    if ( !pyMesh.IsNull() && !pyMesh->IsRemovedFromStudy() )
+      return true;
+  }
+  return false;
+}
+
+//================================================================================
+/*!
  * \brief Convert the command adding a hypothesis to mesh into a smesh command
   * \param theCmd - The command like mesh.AddHypothesis( geom, hypo )
   * \param theAlgo - The algo that can create this hypo
@@ -1889,7 +1927,7 @@ void _pyComplexParamHypo::Process( const Handle(_pyCommand)& theCommand)
 
   if( theCommand->GetMethod() == "SetLength" )
   {
-    // NOW it becomes OBSOLETE
+    // NOW it is OBSOLETE
     // ex: hyp.SetLength(start, 1)
     //     hyp.SetLength(end,   0)
     ASSERT(( theCommand->GetArg( 2 ).IsIntegerValue() ));
@@ -2724,6 +2762,19 @@ bool _pyCommand::AddAccessorMethod( _pyID theObjectID, const char* theAcsMethod 
     beg = afterEnd; // is a part - next search
   }
   return added;
+}
+
+//================================================================================
+/*!
+ * \brief Creates pyObject
+ */
+//================================================================================
+
+_pyObject::_pyObject(const Handle(_pyCommand)& theCreationCmd)
+  : myCreationCmd(theCreationCmd), myNbCalls(0), myIsRemoved(false)
+{
+  if ( !theCreationCmd.IsNull() && !theCreationCmd->IsEmpty() )
+    myIsRemoved = theGen->IsDead( theCreationCmd->GetResultValue() );
 }
 
 //================================================================================

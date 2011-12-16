@@ -154,15 +154,19 @@ class _pyObject: public Standard_Transient
 {
   Handle(_pyCommand) myCreationCmd;
   int                myNbCalls;
+  bool               myIsRemoved, myIsProtected;
+  std::list< Handle(_pyCommand) > myProcessedCmds;
 public:
-  _pyObject(const Handle(_pyCommand)& theCreationCmd)
-    : myCreationCmd(theCreationCmd), myNbCalls(0) {}
+  _pyObject(const Handle(_pyCommand)& theCreationCmd);
   const _pyID& GetID() { return myCreationCmd->GetResultValue(); }
   static _pyID FatherID(const _pyID & childID);
   const Handle(_pyCommand)& GetCreationCmd() { return myCreationCmd; }
   int GetNbCalls() const { return myNbCalls; }
+  bool IsRemovedFromStudy() const { return myIsRemoved; }
   void  SetCreationCmd( Handle(_pyCommand) cmd ) { myCreationCmd = cmd; }
   int GetCommandNb() { return myCreationCmd->GetOrderNb(); }
+  void AddProcessedCmd( const Handle(_pyCommand) & cmd )
+  { if ( !cmd.IsNull() ) myProcessedCmds.push_back( cmd ); }
   virtual void Process(const Handle(_pyCommand) & theCommand) { myNbCalls++; }
   virtual void Flush() = 0;
   virtual const char* AccessorMethod() const;
@@ -200,6 +204,7 @@ public:
   _pyID GenerateNewID( const _pyID& theID );
   void AddObject( Handle(_pyObject)& theObj );
   Handle(_pyObject) FindObject( const _pyID& theObjID ) const;
+  bool IsDead(const _pyID& theObjID) const;
 
 private:
   void setNeighbourCommand( Handle(_pyCommand)& theCmd,
@@ -319,7 +324,7 @@ public:
   { return myType2CreationMethod.find( algoType ) != myType2CreationMethod.end(); }
   const TCollection_AsciiString& GetCreationMethod(const TCollection_AsciiString& algoType) const
   { return myType2CreationMethod.find( algoType )->second; }
-  virtual bool IsWrappable(const _pyID& theMesh) { return !myIsWrapped && myMesh == theMesh; }
+  virtual bool IsWrappable(const _pyID& theMesh) const;
   virtual bool Addition2Creation( const Handle(_pyCommand)& theAdditionCmd,
                                   const _pyID&              theMesh);
   static Handle(_pyHypothesis) NewHypothesis( const Handle(_pyCommand)& theCreationCmd);
