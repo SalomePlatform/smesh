@@ -1620,6 +1620,7 @@ static QList<int> geomTypes( const int theType )
     typeIds.append( SMESH::Geom_PYRAMID );
     typeIds.append( SMESH::Geom_HEXA );
     typeIds.append( SMESH::Geom_PENTA );
+    typeIds.append( SMESH::Geom_HEXAGONAL_PRISM );
     typeIds.append( SMESH::Geom_POLYHEDRA );
   }
   return typeIds;

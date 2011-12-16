@@ -93,6 +93,11 @@ namespace
         cgTypes   [SMDSEntity_Quad_Quadrangle] = CGNS_ENUMV( QUAD_8 );
       }
       {
+        static int ids[] = { 0,3,2,1,7,6,5,4,8 };
+        interlaces[SMDSEntity_BiQuad_Quadrangle] = ids;
+        cgTypes   [SMDSEntity_BiQuad_Quadrangle] = CGNS_ENUMV( QUAD_9 );
+      }
+      {
         static int ids[] = { 0, 2, 1, 3 };
         interlaces[SMDSEntity_Tetra] = ids;
         cgTypes   [SMDSEntity_Tetra] = CGNS_ENUMV( TETRA_4 );
@@ -133,8 +138,15 @@ namespace
         cgTypes   [SMDSEntity_Quad_Hexa] = CGNS_ENUMV( HEXA_20 );
       }
       {
-        cgTypes[SMDSEntity_Polygon]   = CGNS_ENUMV( NGON_n );
-        cgTypes[SMDSEntity_Polyhedra] = CGNS_ENUMV( NFACE_n );
+        static int ids[] = { 0,3,2,1,4,7,6,5,11,10,9,8,12,15,14,13,19,18,17,16,
+                             20, 24,23,22,21, 25};
+        interlaces[SMDSEntity_TriQuad_Hexa] = ids;
+        cgTypes   [SMDSEntity_TriQuad_Hexa] = CGNS_ENUMV( HEXA_27 );
+      }
+      {
+        cgTypes[SMDSEntity_Polygon]         = CGNS_ENUMV( NGON_n );
+        cgTypes[SMDSEntity_Polyhedra]       = CGNS_ENUMV( NFACE_n );
+        cgTypes[SMDSEntity_Hexagonal_Prism] = CGNS_ENUMV( NFACE_n );
       }
     }
     cgType  = cgTypes[ smType ];
@@ -353,7 +365,8 @@ Driver_Mesh::Status DriverCGNS_Write::Perform()
       }
       while ( elem && elem->GetEntityType() == elemType );
 
-    else if ( elemType == SMDSEntity_Polyhedra ) // POLYHEDRA
+    else if ( elemType == SMDSEntity_Polyhedra ||
+              elemType == SMDSEntity_Hexagonal_Prism) // POLYHEDRA
     {
       // to save polyhedrons after all
       const SMDS_MeshInfo& meshInfo = myMesh->GetMeshInfo();
@@ -374,7 +387,7 @@ Driver_Mesh::Status DriverCGNS_Write::Perform()
   // Write polyhedral volumes
   // -------------------------
 
-  if ( myMesh->GetMeshInfo().NbPolyhedrons() > 0 )
+  if ( myMesh->GetMeshInfo().NbElements() != cgID ) // polyhedra or hexagonal prisms remain
   {
     // the polyhedron (NFACE_n) is described as a set of signed face IDs,
     // so first we are to write all polygones (NGON_n) bounding polyhedrons
@@ -398,7 +411,9 @@ Driver_Mesh::Status DriverCGNS_Write::Perform()
     while ( elemIt->more() )
     {
       elem = elemIt->next();
-      if ( elem->GetEntityType() == SMDSEntity_Polyhedra )
+      SMDSAbs_EntityType type = elem->GetEntityType();
+      if ( type == SMDSEntity_Polyhedra ||
+           type == SMDSEntity_Hexagonal_Prism )
       {
         ++nbPolyhTreated;
         vol.Set( elem );

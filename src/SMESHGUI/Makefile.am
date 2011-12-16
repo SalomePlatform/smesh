@@ -272,7 +272,7 @@ libSMESH_la_LDFLAGS  = \
 	$(GUI_LDFLAGS) -lSalomePrs -lsuit -lSUITApp -lCAM -lstd \
 	$(GEOM_LDFLAGS) -lGEOMBase -lGEOMFiltersSelection -lGEOMObject \
 	$(PYTHON_LIBS)
-	
+
 # resources files
 nodist_salomeres_DATA= \
 	SMESH_images.qm \

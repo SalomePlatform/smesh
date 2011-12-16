@@ -977,12 +977,36 @@ Please enter correct values and try again</translation>
         </translation>
     </message>
     <message>
+        <source>SMESH_ADD_OCTA</source>
+        <translation>Add hexagonal prism</translation>
+    </message>
+    <message>
+        <source>SMESH_ADD_OCTA_TITLE</source>
+        <translation>Add Hexagonal Prism</translation>
+    </message>
+    <message>
         <source>SMESH_ADD_POLYGON</source>
         <translation>Add polygon</translation>
     </message>
     <message>
         <source>SMESH_ADD_POLYGON_TITLE</source>
-        <translation>Add polygon</translation>
+        <translation>Add Polygon</translation>
+    </message>
+    <message>
+        <source>SMESH_ADD_PENTA</source>
+        <translation>Add pentahedron</translation>
+    </message>
+    <message>
+        <source>SMESH_ADD_PENTA_TITLE</source>
+        <translation>Add Pentahedron</translation>
+    </message>
+    <message>
+        <source>SMESH_ADD_PYRAMID</source>
+        <translation>Add pyramid</translation>
+    </message>
+    <message>
+        <source>SMESH_ADD_PYRAMID_TITLE</source>
+        <translation>Add Pyramid</translation>
     </message>
     <message>
         <source>SMESH_ADD_QUADRANGLE</source>
@@ -1001,12 +1025,20 @@ Please enter correct values and try again</translation>
         <translation>Add Quadratic Hexahedron</translation>
     </message>
     <message>
+        <source>SMESH_ADD_TRIQUADRATIC_HEXAHEDRON_TITLE</source>
+        <translation>Add TriQuadratic Hexahedron</translation>
+    </message>
+    <message>
         <source>SMESH_ADD_QUADRATIC_PENTAHEDRON_TITLE</source>
         <translation>Add Quadratic Pentahedron</translation>
     </message>
     <message>
         <source>SMESH_ADD_QUADRATIC_PYRAMID_TITLE</source>
         <translation>Add Quadratic Pyramid</translation>
+    </message>
+    <message>
+        <source>SMESH_ADD_BIQUADRATIC_QUADRANGLE_TITLE</source>
+        <translation>Add BiQuadratic Quadrangle</translation>
     </message>
     <message>
         <source>SMESH_ADD_QUADRATIC_QUADRANGLE_TITLE</source>
@@ -1388,8 +1420,8 @@ Overwrite the file?</translation>
     </message>
     <message>
         <source>SMESH_EXPORT_UNV</source>
-        <translation>During export mesh with name - &quot;%1&quot; to UNV
-       pyramid&apos;s elements will be missed</translation>
+        <translation>During export mesh with name &quot;%1&quot; to UNV
+       pyramids, hexagonal prisms, polygons and polyhedra elements will be missed</translation>
     </message>
     <message>
         <source>SMESH_EXTRUSION</source>
@@ -1859,6 +1891,18 @@ Check algorithm documentation for supported geometry</translation>
         <translation>Operation failed</translation>
     </message>
     <message>
+        <source>SMESH_OCTA</source>
+        <translation>Hexagonal prism</translation>
+    </message>
+    <message>
+        <source>TOP_OCTA</source>
+        <translation>Hexagonal prism</translation>
+    </message>
+    <message>
+        <source>MEN_OCTA</source>
+        <translation>Hexagonal prism</translation>
+    </message>
+    <message>
         <source>SMESH_ORIENTATION</source>
         <translation>Orientation</translation>
     </message>
@@ -1873,6 +1917,18 @@ Check algorithm documentation for supported geometry</translation>
     <message>
         <source>SMESH_PARAMETERS</source>
         <translation>Parameters</translation>
+    </message>
+    <message>
+        <source>SMESH_PENTA</source>
+        <translation>Pentahedron</translation>
+    </message>
+    <message>
+        <source>TOP_PENTA</source>
+        <translation>Pentahedron</translation>
+    </message>
+    <message>
+        <source>MEN_PENTA</source>
+        <translation>Pentahedron</translation>
     </message>
     <message>
         <source>SMESH_PLANE</source>
@@ -1947,6 +2003,14 @@ Check algorithm documentation for supported geometry</translation>
         <translation>Pyramid</translation>
     </message>
     <message>
+        <source>MEN_PYRAMID</source>
+        <translation>Pyramid</translation>
+    </message>
+    <message>
+        <source>TOP_PYRAMID</source>
+        <translation>Pyramid</translation>
+    </message>
+    <message>
         <source>SMESH_QUADRANGLE</source>
         <translation>Quadrangle</translation>
     </message>
@@ -1959,6 +2023,18 @@ Check algorithm documentation for supported geometry</translation>
         <translation>Quadratic Hexahedron</translation>
     </message>
     <message>
+        <source>SMESH_TRIQUADRATIC_HEXAHEDRON</source>
+        <translation>TriQuadratic Hexahedron</translation>
+    </message>
+    <message>
+        <source>TOP_TRIQUADRATIC_HEXAHEDRON</source>
+        <translation>TriQuadratic Hexahedron</translation>
+    </message>
+    <message>
+        <source>MEN_TRIQUADRATIC_HEXAHEDRON</source>
+        <translation>TriQuadratic Hexahedron</translation>
+    </message>
+    <message>
         <source>SMESH_QUADRATIC_PENTAHEDRON</source>
         <translation>Quadratic Pentahedron</translation>
     </message>
@@ -1969,6 +2045,18 @@ Check algorithm documentation for supported geometry</translation>
     <message>
         <source>SMESH_QUADRATIC_QUADRANGLE</source>
         <translation>Quadratic Quadrangle</translation>
+    </message>
+    <message>
+        <source>SMESH_BIQUADRATIC_QUADRANGLE</source>
+        <translation>BiQuadratic Quadrangle</translation>
+    </message>
+    <message>
+        <source>MEN_BIQUADRATIC_QUADRANGLE</source>
+        <translation>BiQuadratic Quadrangle</translation>
+    </message>
+    <message>
+        <source>TOP_BIQUADRATIC_QUADRANGLE</source>
+        <translation>BiQuadratic Quadrangle</translation>
     </message>
     <message>
         <source>SMESH_QUADRATIC_TETRAHEDRON</source>
@@ -3788,6 +3876,10 @@ Please, create VTK viewer and try again</translation>
         <translation>Add Quadratic Hexahedron</translation>
     </message>
     <message>
+        <source>SMESH_ADD_TRIQUADRATIC_HEXAHEDRON</source>
+        <translation>Add TriQuadratic Hexahedron</translation>
+    </message>
+    <message>
         <source>SMESH_ADD_QUADRATIC_PENTAHEDRON</source>
         <translation>Add Quadratic Pentahedron</translation>
     </message>
@@ -3800,6 +3892,10 @@ Please, create VTK viewer and try again</translation>
         <translation>Add Quadratic Quadrangle</translation>
     </message>
     <message>
+        <source>SMESH_ADD_BIQUADRATIC_QUADRANGLE</source>
+        <translation>Add BiQuadratic Quadrangle</translation>
+    </message>
+    <message>
         <source>SMESH_ADD_QUADRATIC_TETRAHEDRON</source>
         <translation>Add Quadratic Tetrahedron</translation>
     </message>
@@ -3810,6 +3906,14 @@ Please, create VTK viewer and try again</translation>
     <message>
         <source>SMESH_CORNER_NODES</source>
         <translation>Corner Nodes:</translation>
+    </message>
+    <message>
+        <source>SMESH_MIDFACE_NODES</source>
+        <translation>Mid-face Nodes:</translation>
+    </message>
+    <message>
+        <source>SMESH_CENTER_NODE</source>
+        <translation>Center Node:</translation>
     </message>
     <message>
         <source>SMESH_FIRST</source>
@@ -4717,6 +4821,10 @@ Please enter correct value and try again</translation>
     </message>
     <message>
         <source>GEOM_TYPE_9</source>
+        <translation>Hexagonal prism</translation>
+    </message>
+    <message>
+        <source>GEOM_TYPE_10</source>
         <translation>Polyhedra</translation>
     </message>
 </context>
@@ -5801,6 +5909,10 @@ as they are of improper type:
         <translation>Prisms:</translation>
     </message>
     <message>
+        <source>HEX_PRISMS_LAB</source>
+        <translation>Hexagonal Prisms:</translation>
+    </message>
+    <message>
         <source>POLYHEDRONS_LAB</source>
         <translation>Polyhedrons:</translation>
     </message>
@@ -5949,6 +6061,10 @@ as they are of improper type:
     <message>
         <source>PRISM</source>
         <translation>Prism</translation>
+    </message>
+    <message>
+        <source>HEX_PRISM</source>
+        <translation>Hexagonal Prism</translation>
     </message>
     <message>
         <source>POLYHEDRON</source>

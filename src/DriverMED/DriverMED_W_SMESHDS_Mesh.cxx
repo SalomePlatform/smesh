@@ -215,36 +215,6 @@ namespace{
   };
   typedef boost::shared_ptr<TCoordHelper> TCoordHelperPtr;
 
-
-  //-------------------------------------------------------
-  /*!
-   * \brief Class helping to use either SMDS_0DElementIterator,
-   * SMDS_EdgeIterator, SMDS_FaceIterator or SMDS_VolumeIterator
-   * in the same code
-   */
-  //-------------------------------------------------------
-  struct TElemIterator
-  {
-    virtual const SMDS_MeshElement* next() = 0;
-    virtual ~TElemIterator() {}
-  };
-  typedef boost::shared_ptr<TElemIterator> PElemIterator;
-
-  template< class SMDSIteratorPtr > class TypedElemIterator: public TElemIterator
-  {
-    SMDSIteratorPtr myItPtr;
-  public:
-    TypedElemIterator(SMDSIteratorPtr it): myItPtr(it) {}
-    virtual const SMDS_MeshElement* next() {
-      if ( myItPtr->more() ) return myItPtr->next();
-      else                   return 0;
-    }
-  };
-  typedef TypedElemIterator< SMDS_0DElementIteratorPtr > T0DElementIterator;
-  typedef TypedElemIterator< SMDS_EdgeIteratorPtr > TEdgeIterator;
-  typedef TypedElemIterator< SMDS_FaceIteratorPtr > TFaceIterator;
-  typedef TypedElemIterator< SMDS_VolumeIteratorPtr > TVolumeIterator;
-
   //-------------------------------------------------------
   /*!
    * \brief Structure describing element type
@@ -263,7 +233,6 @@ namespace{
 
 
   typedef NCollection_DataMap< Standard_Address, int > TElemFamilyMap;
-  //typedef map<const SMDS_MeshElement *, int> TElemFamilyMap;
 
   //================================================================================
   /*!
@@ -573,9 +542,14 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
                                             nbElemInfo.NbQuadrangles( ORDER_LINEAR ),
                                             SMDSAbs_Face));
     aTElemTypeDatas.push_back( TElemTypeData(anEntity,
-                                            eQUAD8,
-                                            nbElemInfo.NbQuadrangles( ORDER_QUADRATIC ),
-                                            SMDSAbs_Face));
+                                             eQUAD8,
+                                             nbElemInfo.NbQuadrangles( ORDER_QUADRATIC ) -
+                                             nbElemInfo.NbBiQuadQuadrangles(),
+                                             SMDSAbs_Face));
+    aTElemTypeDatas.push_back( TElemTypeData(anEntity,
+                                             eQUAD9,
+                                             nbElemInfo.NbBiQuadQuadrangles(),
+                                             SMDSAbs_Face));
     if ( polyTypesSupported ) {
       aTElemTypeDatas.push_back( TElemTypeData(anEntity,
                                                ePOLYGONE,
@@ -620,10 +594,18 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
                                              SMDSAbs_Volume));
     aTElemTypeDatas.push_back( TElemTypeData(anEntity,
                                              eHEXA20,
-                                             nbElemInfo.NbHexas( ORDER_QUADRATIC ),
+                                             nbElemInfo.NbHexas( ORDER_QUADRATIC )-
+                                             nbElemInfo.NbTriQuadHexas(),
+                                             SMDSAbs_Volume));
+    aTElemTypeDatas.push_back( TElemTypeData(anEntity,
+                                             eHEXA27,
+                                             nbElemInfo.NbTriQuadHexas(),
+                                             SMDSAbs_Volume));
+    aTElemTypeDatas.push_back( TElemTypeData(anEntity,
+                                             eOCTA12,
+                                             nbElemInfo.NbHexPrisms(),
                                              SMDSAbs_Volume));
     if ( polyTypesSupported ) {
-      //MESSAGE("polyTypesSupported");
       aTElemTypeDatas.push_back( TElemTypeData(anEntity,
                                                ePOLYEDRE,
                                                nbElemInfo.NbPolyhedrons(),
@@ -645,32 +627,29 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
       if ( aElemTypeData->_nbElems == 0 )
         continue;
 
-      // iterator on elements of a current type
-      PElemIterator elemIterator;
       int defaultFamilyId = 0;
       switch ( aElemTypeData->_smdsType ) {
       case SMDSAbs_0DElement:
-        elemIterator = PElemIterator( new T0DElementIterator( myMesh->elements0dIterator() ));
         defaultFamilyId = my0DElementsDefaultFamilyId;
         break;
       case SMDSAbs_Edge:
-        elemIterator = PElemIterator( new TEdgeIterator( myMesh->edgesIterator() ));
         defaultFamilyId = myEdgesDefaultFamilyId;
         break;
       case SMDSAbs_Face:
-        elemIterator = PElemIterator( new TFaceIterator( myMesh->facesIterator() ));
         defaultFamilyId = myFacesDefaultFamilyId;
         break;
       case SMDSAbs_Volume:
-        elemIterator = PElemIterator( new TVolumeIterator( myMesh->volumesIterator() ));
         defaultFamilyId = myVolumesDefaultFamilyId;
         break;
       default:
         continue;
       }
+
+      // iterator on elements of a current type
+      SMDS_ElemIteratorPtr elemIterator = myMesh->elementsIterator( aElemTypeData->_smdsType );
+      if ( !elemIterator->more()) continue;
       int iElem = 0;
 
-      //cout << " Treat type " << aElemTypeData->_geomType << " nb = " <<aElemTypeData->_nbElems<< endl;
       // Treat POLYGONs
       // ---------------
       if ( aElemTypeData->_geomType == ePOLYGONE )
@@ -726,11 +705,6 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
             if ( ++iElem == aPolygoneInfo->GetNbElem() )
               break;
           }
-          //       if(TInt aNbElems = aPolygoneElemNums.size())
-          //         // add one element in connectivities,
-          //         // referenced by the last element in indices
-          //         aPolygoneConn.push_back(0);
-          //cout << " SetPolygoneInfo(aPolygoneInfo)" << endl;
           myMed->SetPolygoneInfo(aPolygoneInfo);
         }
 
@@ -740,7 +714,6 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
       // ----------------
       else if (aElemTypeData->_geomType == ePOLYEDRE )
       {
-        //MESSAGE("_geomType == ePOLYEDRE");
         if ( nbPolyhedronNodes == 0 ) {
           // Count nb of nodes
           while ( const SMDS_MeshElement* anElem = elemIterator->next() ) {
@@ -752,9 +725,6 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
                 break;
             }
           }
-          //MESSAGE("nbPolyhedronNodes=" << nbPolyhedronNodes);
-          //MESSAGE("nbPolyhedronFaces=" << nbPolyhedronFaces);
-          //MESSAGE("_nbElems="<< aElemTypeData->_nbElems);
         }
         else {
           // Store in med file
@@ -781,17 +751,14 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
               continue;
             if ( !aPolyedre->IsPoly() )
               continue;
-            //MESSAGE("index[" << iElem << "]=" << index[iElem] << " iElem=" << iElem);
             // index
             TInt aNbFaces = aPolyedre->NbFaces();
             index[ iElem+1 ] = index[ iElem ] + aNbFaces;
-            //MESSAGE("index[" << iElem+1 << "]=" << index[iElem+1] << " iElem=" << iElem);
 
             // face index
             for (TInt f = 1; f <= aNbFaces; ++f, ++iFace ) {
               int aNbFaceNodes = aPolyedre->NbFaceNodes( f );
               faces[ iFace+1 ] = faces[ iFace ] + aNbFaceNodes;
-              //MESSAGE("faces[" << iFace+1 << "]=" << faces[iFace+1] << " iFace=" << iFace);
             }
             // connectivity
             SMDS_ElemIteratorPtr nodeIt = anElem->nodesIterator();
@@ -799,10 +766,8 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
               const SMDS_MeshElement* aNode = nodeIt->next();
 #ifdef _EDF_NODE_IDS_
               conn[ iNode ] = aNodeIdMap[aNode->GetID()];
-              //MESSAGE("conn["<< iNode << "]=" << conn[iNode] << " aNode->GetID()=" << aNode->GetID());
 #else
               conn[ iNode ] = aNode->GetID();
-              //MESSAGE("conn["<< iNode << "]=" << conn[iNode]);
 #endif
               ++iNode;
             }
@@ -816,7 +781,6 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
             if ( ++iElem == aPolyhInfo->GetNbElem() )
               break;
           }
-          //cout << " SetPolyedreInfo(aPolyhInfo )" << endl;
           myMed->SetPolyedreInfo(aPolyhInfo);
         }
       } // if (aElemTypeData->_geomType == ePOLYEDRE )
@@ -869,7 +833,6 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
             break;
         }
         // store data in a file
-        //cout << " SetCellInfo(aCellInfo)" << endl;
         myMed->SetCellInfo(aCellInfo);
       }
 

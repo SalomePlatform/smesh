@@ -466,7 +466,7 @@ double MaxElementLength2D::GetValue( long theElementId )
         aVal = Max(L1,Max(L2,L3));
         break;
       }
-      else if( len == 8 ) { // quadratic quadrangles
+      else if( len == 8 || len == 9 ) { // quadratic quadrangles
         double L1 = getDistance(P( 1 ),P( 2 )) + getDistance(P( 2 ),P( 3 ));
         double L2 = getDistance(P( 3 ),P( 4 )) + getDistance(P( 4 ),P( 5 ));
         double L3 = getDistance(P( 5 ),P( 6 )) + getDistance(P( 6 ),P( 7 ));
@@ -573,6 +573,12 @@ double MaxElementLength3D::GetValue( long theElementId )
         aVal = Max(aVal,Max(Max(D1,D2),Max(D3,D4)));
         break;
       }
+      else if( len == 12 ) { // hexagonal prism
+        for ( int i1 = 1; i1 < 12; ++i1 )
+          for ( int i2 = i1+1; i1 <= 12; ++i1 )
+            aVal = Max( aVal, getDistance(P( i1 ),P( i2 )));
+        break;
+      }
       else if( len == 10 ) { // quadratic tetras
         double L1 = getDistance(P( 1 ),P( 5 )) + getDistance(P( 5 ),P( 2 ));
         double L2 = getDistance(P( 2 ),P( 6 )) + getDistance(P( 6 ),P( 3 ));
@@ -610,7 +616,7 @@ double MaxElementLength3D::GetValue( long theElementId )
         aVal = Max(aVal,Max(Max(L7,L8),L9));
         break;
       }
-      else if( len == 20 ) { // quadratic hexas
+      else if( len == 20 || len == 27 ) { // quadratic hexas
         double L1 = getDistance(P( 1 ),P( 9 )) + getDistance(P( 9 ),P( 2 ));
         double L2 = getDistance(P( 2 ),P( 10 )) + getDistance(P( 10 ),P( 3 ));
         double L3 = getDistance(P( 3 ),P( 11 )) + getDistance(P( 11 ),P( 4 ));
@@ -805,7 +811,7 @@ double AspectRatio::GetValue( const TSequenceOfXYZ& P )
       return 0.;
     return alpha * L * C1 / C2;
   }
-  else if( nbNodes == 8 ){ // nbNodes==8 - quadratic quadrangle
+  else if( nbNodes == 8 || nbNodes == 9 ) { // nbNodes==8 - quadratic quadrangle
     // Compute lengths of the sides
     std::vector< double > aLen (4);
     aLen[0] = getDistance( P(1), P(3) );
@@ -855,9 +861,10 @@ double AspectRatio::GetValue( const TSequenceOfXYZ& P )
 double AspectRatio::GetBadRate( double Value, int /*nbNodes*/ ) const
 {
   // the aspect ratio is in the range [1.0,infinity]
+  // < 1.0 = very bad, zero area
   // 1.0 = good
   // infinity = bad
-  return Value / 1000.;
+  return ( Value < 0.9 ) ? 1000 : Value / 1000.;
 }
 
 SMDSAbs_ElementType AspectRatio::GetType() const
@@ -966,10 +973,11 @@ double AspectRatio3D::GetValue( const TSequenceOfXYZ& P )
     else if(nbNodes==13) nbNodes=5; // quadratic pyramid
     else if(nbNodes==15) nbNodes=6; // quadratic pentahedron
     else if(nbNodes==20) nbNodes=8; // quadratic hexahedron
+    else if(nbNodes==27) nbNodes=8; // quadratic hexahedron
     else return aQuality;
   }
 
-  switch(nbNodes){
+  switch(nbNodes) {
   case 4:{
     double aLen[6] = {
       getDistance(P( 1 ),P( 2 )), // a
@@ -1187,7 +1195,22 @@ double AspectRatio3D::GetValue( const TSequenceOfXYZ& P )
     }
     break;
   }
-  }
+  case 12:
+    {
+      gp_XYZ aXYZ[8] = {P( 1 ),P( 2 ),P( 4 ),P( 5 ),P( 7 ),P( 8 ),P( 10 ),P( 11 )};
+      aQuality = std::max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[8])),aQuality);
+    }
+    {
+      gp_XYZ aXYZ[8] = {P( 2 ),P( 3 ),P( 5 ),P( 6 ),P( 8 ),P( 9 ),P( 11 ),P( 12 )};
+      aQuality = std::max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[8])),aQuality);
+    }
+    {
+      gp_XYZ aXYZ[8] = {P( 3 ),P( 4 ),P( 6 ),P( 1 ),P( 9 ),P( 10 ),P( 12 ),P( 7 )};
+      aQuality = std::max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[8])),aQuality);
+    }
+    break;
+  } // switch(nbNodes)
+
   if ( nbNodes > 4 ) {
     // avaluate aspect ratio of quadranle faces
     AspectRatio aspect2D;
@@ -1417,7 +1440,7 @@ SMDSAbs_ElementType Area::GetType() const
 
 /*
   Class       : Length
-  Description : Functor for calculating length off edge
+  Description : Functor for calculating length of edge
 */
 double Length::GetValue( const TSequenceOfXYZ& P )
 {
@@ -2112,17 +2135,13 @@ bool FreeEdges::IsFreeEdge( const SMDS_MeshNode** theNodes, const int theFaceId 
   TColStd_MapOfInteger aMap;
   for ( int i = 0; i < 2; i++ )
   {
-    SMDS_ElemIteratorPtr anElemIter = theNodes[ i ]->GetInverseElementIterator();
+    SMDS_ElemIteratorPtr anElemIter = theNodes[ i ]->GetInverseElementIterator(SMDSAbs_Face);
     while( anElemIter->more() )
     {
-      const SMDS_MeshElement* anElem = anElemIter->next();
-      if ( anElem != 0 && anElem->GetType() == SMDSAbs_Face )
+      if ( const SMDS_MeshElement* anElem = anElemIter->next())
       {
-        int anId = anElem->GetID();
-
-        if ( i == 0 )
-          aMap.Add( anId );
-        else if ( aMap.Contains( anId ) && anId != theFaceId )
+        const int anId = anElem->GetID();
+        if ( anId != theFaceId && !aMap.Add( anId ))
           return false;
       }
     }
@@ -2147,7 +2166,7 @@ bool FreeEdges::IsSatisfy( long theId )
   else {
     anIter = aFace->nodesIterator();
   }
-  if ( anIter == 0 )
+  if ( !anIter )
     return false;
 
   int i = 0, nbNodes = aFace->NbNodes();
@@ -2225,14 +2244,11 @@ void FreeEdges::GetBoreders(TBorders& theBorders)
       long anId = aNode->GetID();
       Border aBorder(anElemId,aNodeId[1],anId);
       aNodeId[1] = anId;
-      //std::cout<<aBorder.myPntId[0]<<"; "<<aBorder.myPntId[1]<<"; "<<aBorder.myElemId<<endl;
       UpdateBorders(aBorder,aRegistry,theBorders);
     }
     Border aBorder(anElemId,aNodeId[0],aNodeId[1]);
-    //std::cout<<aBorder.myPntId[0]<<"; "<<aBorder.myPntId[1]<<"; "<<aBorder.myElemId<<endl;
     UpdateBorders(aBorder,aRegistry,theBorders);
   }
-  //std::cout<<"theBorders.size() = "<<theBorders.size()<<endl;
 }
 
 
@@ -2498,7 +2514,7 @@ bool ElemGeomType::IsSatisfy( long theId )
     if ( myGeomType == SMDSGeom_TRIANGLE )
       isOk = (!anElem->IsPoly() && (anElem->IsQuadratic() ? aNbNode == 6 : aNbNode == 3));
     else if ( myGeomType == SMDSGeom_QUADRANGLE )
-      isOk = (!anElem->IsPoly() && (anElem->IsQuadratic() ? aNbNode == 8 : aNbNode == 4));
+      isOk = (!anElem->IsPoly() && (anElem->IsQuadratic() ? ( aNbNode == 8 || aNbNode == 9 ) : aNbNode == 4));
     else if ( myGeomType == SMDSGeom_POLYGON )
       isOk = anElem->IsPoly();
     break;
@@ -2511,7 +2527,9 @@ bool ElemGeomType::IsSatisfy( long theId )
     else if ( myGeomType == SMDSGeom_PENTA )
       isOk = (!anElem->IsPoly() && (anElem->IsQuadratic() ? aNbNode == 15 : aNbNode == 6));
     else if ( myGeomType == SMDSGeom_HEXA )
-      isOk = (!anElem->IsPoly() && (anElem->IsQuadratic() ? aNbNode == 20 : aNbNode == 8));
+      isOk = (!anElem->IsPoly() && (anElem->IsQuadratic() ? ( aNbNode == 20 || aNbNode == 27 ): aNbNode == 8));
+    else if ( myGeomType == SMDSGeom_HEXAGONAL_PRISM )
+      isOk = (anElem->GetEntityType() == SMDSEntity_Hexagonal_Prism );
      else if ( myGeomType == SMDSGeom_POLYHEDRA )
       isOk = anElem->IsPoly();
     break;

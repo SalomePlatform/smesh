@@ -157,43 +157,19 @@ namespace SMESH
 
     typedef std::vector<vtkIdType> TVTKIds;
     void SetPosition (SMESH_Actor* theActor,
-                      vtkIdType theType,
-                      const TVTKIds& theIds)
+                      vtkIdType    theType,
+                      TVTKIds&     theIds)
     {
       vtkUnstructuredGrid *aGrid = theActor->GetUnstructuredGrid();
       myGrid->SetPoints(aGrid->GetPoints());
-
-      const int* aConn = NULL;
-      switch (theType) {
-      case VTK_TETRA:
-        {
-          static int anIds[] = {0,2,1,3};
-          aConn = anIds;
-          break;
-        }
-      case VTK_PYRAMID:
-        {
-          static int anIds[] = {0,3,2,1,4};
-          aConn = anIds;
-          break;
-        }
-      case VTK_HEXAHEDRON:
-        {
-          static int anIds[] = {0,3,2,1,4,7,6,5};
-          aConn = anIds;
-          break;
-        }
-      }
-
       myGrid->Reset();
-      vtkIdList *anIds = vtkIdList::New();
 
-      if(aConn)
-        for (int i = 0, iEnd = theIds.size(); i < iEnd; i++)
-          anIds->InsertId(i,theIds[aConn[i]]);
-      else
-        for (int i = 0, iEnd = theIds.size(); i < iEnd; i++)
-          anIds->InsertId(i,theIds[i]);
+      const std::vector<int>& interlace = SMDS_MeshCell::toVtkOrder( VTKCellType( theType ));
+      SMDS_MeshCell::applyInterlace( interlace, theIds );
+
+      vtkIdList *anIds = vtkIdList::New();
+      for (int i = 0, iEnd = theIds.size(); i < iEnd; i++)
+        anIds->InsertId(i,theIds[i]);
 
       myGrid->InsertNextCell(theType,anIds);
       anIds->Delete();
@@ -238,9 +214,8 @@ namespace SMESH
 // function : SMESHGUI_AddMeshElementDlg()
 // purpose  : constructor
 //=================================================================================
-SMESHGUI_AddMeshElementDlg::SMESHGUI_AddMeshElementDlg( SMESHGUI* theModule,
-                                                        SMDSAbs_ElementType ElementType,
-                                                        int nbNodes )
+SMESHGUI_AddMeshElementDlg::SMESHGUI_AddMeshElementDlg( SMESHGUI*          theModule,
+                                                        SMDSAbs_EntityType ElementType)
   : QDialog( SMESH::GetDesktop( theModule ) ),
     mySMESHGUI( theModule ),
     mySelectionMgr( SMESH::GetSelectionMgr( theModule ) ),
@@ -254,62 +229,72 @@ SMESHGUI_AddMeshElementDlg::SMESHGUI_AddMeshElementDlg( SMESHGUI* theModule,
   myIsPoly = false;
   mySimulation = new SMESH::TElementSimulation (anApp);
   mySelector = (SMESH::GetViewWindow( mySMESHGUI ))->GetSelector();
+  myGeomType = ElementType;
+  myElementType = SMDSAbs_Volume;
 
   // verify nb nodes and type
-  myNbNodes = nbNodes;
-  myElementType = ElementType;
-  switch (ElementType) {
-  case SMDSAbs_0DElement:
-    if (myNbNodes != 1)
-      myNbNodes = 1;
-    break;
-  case SMDSAbs_Face:
-    //     if (myNbNodes != 3 && myNbNodes != 4)
-    //       myNbNodes = 3;
-    //     break;
-  case SMDSAbs_Volume:
-    //     if (myNbNodes != 4 && myNbNodes != 8) //(nbNodes < 4 || nbNodes > 8 || nbNodes == 7)
-    //       myNbNodes = 4;
-    break;
-  default:
-    myElementType = SMDSAbs_Edge;
-    myNbNodes = 2;
-  }
-
   QString elemName;
-  if (myNbNodes == 1) {
+  switch ( myGeomType ) {
+  case SMDSEntity_0D:
+    myNbNodes = 1;
+    myElementType = SMDSAbs_0DElement;
     elemName = "ELEM0D";
     myHelpFileName = "adding_nodes_and_elements_page.html#adding_0delems_anchor";
-  }
-  else if (myNbNodes == 2) {
+    break;
+  case SMDSEntity_Edge:
+    myNbNodes = 2;
+    myElementType = SMDSAbs_Edge;
     elemName = "EDGE";
     myHelpFileName = "adding_nodes_and_elements_page.html#adding_edges_anchor";
-  }
-  else if (myNbNodes == 3) {
+    break;
+  case SMDSEntity_Triangle:
+    myNbNodes = 3;
     elemName = "TRIANGLE";
+    myElementType = SMDSAbs_Face;
     myHelpFileName = "adding_nodes_and_elements_page.html#adding_triangles_anchor";
-  }
-  else if (myNbNodes == 4) {
-    if (myElementType == SMDSAbs_Face) {
-      elemName = "QUADRANGLE";
-      myHelpFileName = "adding_nodes_and_elements_page.html#adding_quadrangles_anchor";
-    }
-    else {
-      elemName = "TETRAS";
-      myHelpFileName = "adding_nodes_and_elements_page.html#adding_tetrahedrons_anchor";
-    }
-  }
-  else if (myNbNodes == 8) {
-    elemName = "HEXAS";
-    myHelpFileName = "adding_nodes_and_elements_page.html#adding_hexahedrons_anchor";
-  }
-  else if (myElementType == SMDSAbs_Face) {
+    break;
+  case SMDSEntity_Quadrangle:
+    myNbNodes = 4;
+    myElementType = SMDSAbs_Face;
+    elemName = "QUADRANGLE";
+    myHelpFileName = "adding_nodes_and_elements_page.html#adding_quadrangles_anchor";
+    break;
+  case SMDSEntity_Polygon:
+    myNbNodes = 0;
+    myElementType = SMDSAbs_Face;
     elemName = "POLYGON";
     myIsPoly = true;
     myHelpFileName = "adding_nodes_and_elements_page.html#adding_polygons_anchor";
-  }
-  else if (myElementType == SMDSAbs_Volume) {
-    myHelpFileName = "adding_nodes_and_elements_page.html#adding_polyhedrons_anchor";
+    break;
+  case SMDSEntity_Tetra:
+    myNbNodes = 4;
+    elemName = "TETRAS";
+    myHelpFileName = "adding_nodes_and_elements_page.html#adding_tetrahedrons_anchor";
+    break;
+  case SMDSEntity_Pyramid:
+    myNbNodes = 5;
+    elemName = "PYRAMID";
+    myHelpFileName = "adding_nodes_and_elements_page.html#adding_pyramids_anchor";
+    break;
+  case SMDSEntity_Hexa:
+    myNbNodes = 8;
+    elemName = "HEXAS";
+    myHelpFileName = "adding_nodes_and_elements_page.html#adding_hexahedrons_anchor";
+    break;
+  case SMDSEntity_Penta:
+    myNbNodes = 6;
+    elemName = "PENTA";
+    myHelpFileName = "adding_nodes_and_elements_page.html#adding_pentahedrons_anchor";
+    break;
+  case SMDSEntity_Hexagonal_Prism:
+    myNbNodes = 12;
+    elemName = "OCTA";
+    myHelpFileName = "adding_nodes_and_elements_page.html#adding_octahedrons_anchor";
+    break;
+  default:
+    myNbNodes = 2;
+    elemName = "EDGE";
+    myHelpFileName = "adding_nodes_and_elements_page.html#adding_edges_anchor";
   }
 
   QString iconName      = tr(QString("ICON_DLG_%1").arg(elemName).toLatin1().data());
@@ -351,11 +336,9 @@ SMESHGUI_AddMeshElementDlg::SMESHGUI_AddMeshElementDlg( SMESHGUI* theModule,
   SelectButtonC1A1 = new QPushButton(GroupC1);
   SelectButtonC1A1->setIcon(image1);
   LineEditC1A1 = new QLineEdit(GroupC1);
-  //  LineEditC1A1->setReadOnly(true);
-  if (!myIsPoly)
-    LineEditC1A1->setValidator(new SMESHGUI_IdValidator(this, myNbNodes));
+  LineEditC1A1->setValidator(new SMESHGUI_IdValidator(this, myIsPoly ? 1000 : myNbNodes));
 
-  Reverse = myElementType == SMDSAbs_Face ? new QCheckBox(tr("SMESH_REVERSE"), GroupC1) : 0;
+  Reverse = (myElementType == SMDSAbs_Face || myElementType == SMDSAbs_Volume ) ? new QCheckBox(tr("SMESH_REVERSE"), GroupC1) : 0;
 
   GroupC1Layout->addWidget(TextLabelC1A1,    0, 0);
   GroupC1Layout->addWidget(SelectButtonC1A1, 0, 1);
@@ -478,12 +461,16 @@ void SMESHGUI_AddMeshElementDlg::ClickOnApply()
     myBusy = true;
     SMESH::long_array_var anArrayOfIndices = new SMESH::long_array;
     anArrayOfIndices->length(myNbNodes);
-    bool reverse = (Reverse && Reverse->isChecked());
     QStringList aListId = myEditCurrentArgument->text().split(" ", QString::SkipEmptyParts);
-    for (int i = 0; i < aListId.count(); i++)
-      if (reverse)
-        anArrayOfIndices[i] = aListId[ myNbNodes - i - 1 ].toInt();
-      else
+    const std::vector<int>& revIndex = SMDS_MeshCell::reverseSmdsOrder( myGeomType );
+    if ( Reverse && Reverse->isChecked() && !revIndex.empty() )
+      for (int i = 0; i < aListId.count(); i++)
+        anArrayOfIndices[i] = aListId[ revIndex[i] ].toInt();
+    else if ( Reverse && Reverse->isChecked() && revIndex.empty() ) // polygon
+      for (int i = 0; i < aListId.count(); i++)
+        anArrayOfIndices[i] = aListId[ aListId.count()-1 - i ].toInt();
+    else
+      for (int i = 0; i < aListId.count(); i++)
         anArrayOfIndices[i] = aListId[ i ].toInt();
 
     bool addToGroup = GroupGroups->isChecked();
@@ -517,16 +504,14 @@ void SMESHGUI_AddMeshElementDlg::ClickOnApply()
       anElemId = aMeshEditor->Add0DElement(anArrayOfIndices[0]); break;
     case SMDSAbs_Edge:
       anElemId = aMeshEditor->AddEdge(anArrayOfIndices.inout()); break;
-    case SMDSAbs_Face: {
-      if(myIsPoly)
+    case SMDSAbs_Face:
+      if ( myIsPoly )
         anElemId = aMeshEditor->AddPolygonalFace(anArrayOfIndices.inout());
       else
         anElemId = aMeshEditor->AddFace(anArrayOfIndices.inout());
       break;
-    }
-    case SMDSAbs_Volume:
+    default:
       anElemId = aMeshEditor->AddVolume(anArrayOfIndices.inout()); break;
-    default: break;
     }
 
     if ( anElemId != -1 && addToGroup && !aGroupName.isEmpty() ) {
@@ -785,24 +770,15 @@ void SMESHGUI_AddMeshElementDlg::displaySimulation()
       anIds.push_back(myActor->GetObject()->GetNodeVTKId(aListId[ i ].toInt()));
 
     if (Reverse && Reverse->isChecked())
-      reverse(anIds.begin(),anIds.end());
-
-    vtkIdType aType = 0;
-    if (myIsPoly)
-      switch ( myElementType ) {
-      case SMDSAbs_Face  : aType = VTK_POLYGON; break;
-      default: return;
-      }
-    else {
-      switch (myNbNodes) {
-      case 2: aType = VTK_LINE; break;
-      case 3: aType = VTK_TRIANGLE; break;
-      case 4: aType = myElementType == SMDSAbs_Face ? VTK_QUAD : VTK_TETRA; break;
-      case 8: aType = VTK_HEXAHEDRON; break;
-      default: return;
-      }
+    {
+      const std::vector<int>& i = SMDS_MeshCell::reverseSmdsOrder( myGeomType );
+      if ( i.empty() ) // polygon
+        std::reverse( anIds.begin(), anIds.end() );
+      else
+        SMDS_MeshCell::applyInterlace( i, anIds );
     }
 
+    vtkIdType aType = SMDS_MeshCell::toVtkType( myGeomType );
     mySimulation->SetPosition(myActor,aType,anIds);
     SMESH::UpdateView();
   }

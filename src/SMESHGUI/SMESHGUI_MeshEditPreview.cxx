@@ -123,6 +123,7 @@ vtkIdType getCellType( const SMDSAbs_ElementType theType,
     else if ( theNbNodes == 4 )   return VTK_QUAD;
     else if ( theNbNodes == 6 )   return VTK_QUADRATIC_TRIANGLE;
     else if ( theNbNodes == 8 )   return VTK_QUADRATIC_QUAD;
+    else if ( theNbNodes == 9 )   return VTK_BIQUADRATIC_QUAD;
     else return VTK_EMPTY_CELL;
 
   case SMDSAbs_Volume:
@@ -131,18 +132,11 @@ vtkIdType getCellType( const SMDSAbs_ElementType theType,
     else if ( theNbNodes == 5 )   return VTK_PYRAMID;
     else if ( theNbNodes == 6 )   return VTK_WEDGE;
     else if ( theNbNodes == 8 )   return VTK_HEXAHEDRON;
-    else if ( theNbNodes == 10 )  {
-      return VTK_QUADRATIC_TETRA;
-    }
-    else if ( theNbNodes == 20 )  {
-      return VTK_QUADRATIC_HEXAHEDRON;
-    }
-    else if ( theNbNodes==15  )  {
-      return VTK_QUADRATIC_WEDGE;
-    }
-    else if ( theNbNodes==13  )  {
-      return VTK_CONVEX_POINT_SET;
-    }
+    else if ( theNbNodes == 10 )  return VTK_QUADRATIC_TETRA;
+    else if ( theNbNodes == 20 )  return VTK_QUADRATIC_HEXAHEDRON;
+    else if ( theNbNodes == 27 )  return VTK_TRIQUADRATIC_HEXAHEDRON;
+    else if ( theNbNodes == 15  ) return VTK_QUADRATIC_WEDGE;
+    else if ( theNbNodes == 13  ) return VTK_QUADRATIC_PYRAMID;//VTK_CONVEX_POINT_SET;
     else return VTK_EMPTY_CELL;
 
   default: return VTK_EMPTY_CELL;

@@ -660,6 +660,10 @@ CORBA::Long SMESH_MeshEditor_i::AddFace(const SMESH::long_array & IDsOfNodes)
     elem = GetMeshDS()->AddFace(nodes[0], nodes[1], nodes[2], nodes[3],
                                 nodes[4], nodes[5], nodes[6], nodes[7]);
   }
+  else if (NbNodes == 9) {
+    elem = GetMeshDS()->AddFace(nodes[0], nodes[1], nodes[2], nodes[3],
+                                nodes[4], nodes[5], nodes[6], nodes[7], nodes[8] );
+  }
   else if (NbNodes > 2) {
     elem = GetMeshDS()->AddPolygonalFace(nodes);
   }
@@ -722,6 +726,9 @@ CORBA::Long SMESH_MeshEditor_i::AddVolume(const SMESH::long_array & IDsOfNodes)
   case 10:elem = GetMeshDS()->AddVolume(n[0],n[1],n[2],n[3],n[4],n[5],
                                         n[6],n[7],n[8],n[9]);
     break;
+  case 12:elem = GetMeshDS()->AddVolume(n[0],n[1],n[2],n[3],n[4],n[5],
+                                        n[6],n[7],n[8],n[9],n[10],n[11]);
+    break;
   case 13:elem = GetMeshDS()->AddVolume(n[0],n[1],n[2],n[3],n[4],n[5],n[6],
                                         n[7],n[8],n[9],n[10],n[11],n[12]);
     break;
@@ -731,6 +738,11 @@ CORBA::Long SMESH_MeshEditor_i::AddVolume(const SMESH::long_array & IDsOfNodes)
   case 20:elem = GetMeshDS()->AddVolume(n[0],n[1],n[2],n[3],n[4],n[5],n[6],n[7],
                                         n[8],n[9],n[10],n[11],n[12],n[13],n[14],
                                         n[15],n[16],n[17],n[18],n[19]);
+    break;
+  case 27:elem = GetMeshDS()->AddVolume(n[0],n[1],n[2],n[3],n[4],n[5],n[6],n[7],
+                                        n[8],n[9],n[10],n[11],n[12],n[13],n[14],
+                                        n[15],n[16],n[17],n[18],n[19],
+                                        n[20],n[21],n[22],n[23],n[24],n[25],n[26]);
     break;
   }
 

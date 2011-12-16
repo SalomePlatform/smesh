@@ -65,7 +65,7 @@ class SMESHGUI_EXPORT SMESHGUI_AddMeshElementDlg : public QDialog
   Q_OBJECT
 
 public:
-  SMESHGUI_AddMeshElementDlg( SMESHGUI*, SMDSAbs_ElementType = SMDSAbs_Edge, int = 2 );
+  SMESHGUI_AddMeshElementDlg( SMESHGUI*, SMDSAbs_EntityType = SMDSEntity_Edge );
   ~SMESHGUI_AddMeshElementDlg();
   
 private:
@@ -88,6 +88,7 @@ private:
   
   QLineEdit*                  myEditCurrentArgument;   /* Current  LineEdit */
   
+  SMDSAbs_EntityType          myGeomType;
   int                         myElementType;
   int                         myNbNodes;
   bool                        myIsPoly;

@@ -1122,12 +1122,12 @@ bool SMESHGUI_GroupDlg::onApply()
           case 1: anActor->SetEdgeColor( aColor.R, aColor.G, aColor.B ); break;
           case 2:
           case 3: 
-	    {
-	      QColor c;
-	      int delta;
-	      SMESH::GetColor("SMESH", "fill_color", c , delta, "0,170,255|-100");
-	      anActor->SetSufaceColor( aColor.R, aColor.G, aColor.B, delta ); break;	      
-	    }
+            {
+              QColor c;
+              int delta;
+              SMESH::GetColor("SMESH", "fill_color", c , delta, "0,170,255|-100");
+              anActor->SetSufaceColor( aColor.R, aColor.G, aColor.B, delta ); break;          
+            }
           }
         }
     }

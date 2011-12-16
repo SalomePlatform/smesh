@@ -71,7 +71,10 @@ module SMESH
       ADD_QUADPYRAMID,
       ADD_QUADPENTAHEDRON,
       ADD_QUADHEXAHEDRON,
-      ADD_ELEM0D
+      ADD_ELEM0D,
+      ADD_BIQUAD_QUADRANGLE,
+      ADD_TRIQUAD_HEXA,
+      ADD_HEXAGONAL_PRISM
     };
 
   struct log_block
@@ -134,6 +137,7 @@ module SMESH
     Geom_PYRAMID,
     Geom_HEXA,
     Geom_PENTA,
+    Geom_HEXAGONAL_PRISM,
     Geom_POLYHEDRA
   };
   
@@ -161,6 +165,7 @@ module SMESH
     Entity_Quad_Triangle,
     Entity_Quadrangle,
     Entity_Quad_Quadrangle,
+    Entity_BiQuad_Quadrangle,
     Entity_Polygon,
     Entity_Quad_Polygon,
     Entity_Tetra,
@@ -169,8 +174,10 @@ module SMESH
     Entity_Quad_Pyramid,
     Entity_Hexa,
     Entity_Quad_Hexa,
+    Entity_TriQuad_Hexa,
     Entity_Penta,
     Entity_Quad_Penta,
+    Entity_Hexagonal_Prism,
     Entity_Polyhedra,
     Entity_Quad_Polyhedra,
     Entity_Last
@@ -683,6 +690,9 @@ module SMESH
     long NbQuadranglesOfOrder(in ElementOrder order)
       raises (SALOME::SALOME_Exception);
 
+    long NbBiQuadQuadrangles()
+      raises (SALOME::SALOME_Exception);
+
     long NbPolygons()
       raises (SALOME::SALOME_Exception);
 
@@ -704,6 +714,9 @@ module SMESH
     long NbHexasOfOrder(in ElementOrder order)
       raises (SALOME::SALOME_Exception);
 
+    long NbTriQuadraticHexas()
+      raises (SALOME::SALOME_Exception);
+
     long NbPyramids()
       raises (SALOME::SALOME_Exception);
 
@@ -714,6 +727,9 @@ module SMESH
       raises (SALOME::SALOME_Exception);
 
     long NbPrismsOfOrder(in ElementOrder order)
+      raises (SALOME::SALOME_Exception);
+
+    long NbHexagonalPrisms()
       raises (SALOME::SALOME_Exception);
 
     long NbPolyhedrons()

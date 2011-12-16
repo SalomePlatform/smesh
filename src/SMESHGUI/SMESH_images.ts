@@ -144,12 +144,24 @@
             <translation>mesh_vertex.png</translation>
         </message>
         <message>
+            <source>ICON_DLG_OCTA</source>
+            <translation>mesh_octahedron.png</translation>
+        </message>
+        <message>
+            <source>ICON_DLG_PENTA</source>
+            <translation>mesh_pentahedron.png</translation>
+        </message>
+        <message>
             <source>ICON_DLG_POLYGON</source>
             <translation>mesh_polygon.png</translation>
         </message>
         <message>
             <source>ICON_DLG_POLYHEDRON</source>
             <translation>mesh_polyhedron.png</translation>
+        </message>
+        <message>
+            <source>ICON_DLG_PYRAMID</source>
+            <translation>mesh_pyramid.png</translation>
         </message>
         <message>
             <source>ICON_DLG_QUADRANGLE</source>
@@ -164,6 +176,10 @@
             <translation>mesh_quad_hexahedron.png</translation>
         </message>
         <message>
+            <source>ICON_DLG_TRIQUADRATIC_HEXAHEDRON</source>
+            <translation>mesh_triquad_hexahedron.png</translation>
+        </message>
+        <message>
             <source>ICON_DLG_QUADRATIC_PENTAHEDRON</source>
             <translation>mesh_quad_pentahedron.png</translation>
         </message>
@@ -174,6 +190,10 @@
         <message>
             <source>ICON_DLG_QUADRATIC_QUADRANGLE</source>
             <translation>mesh_quad_quadrangle.png</translation>
+        </message>
+        <message>
+            <source>ICON_DLG_BIQUADRATIC_QUADRANGLE</source>
+            <translation>mesh_biquad_quadrangle.png</translation>
         </message>
         <message>
             <source>ICON_DLG_QUADRATIC_TETRAHEDRON</source>

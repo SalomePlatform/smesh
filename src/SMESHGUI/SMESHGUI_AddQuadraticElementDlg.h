@@ -29,6 +29,7 @@
 
 // SMESH includes
 #include "SMESH_SMESHGUI.hxx"
+#include "SMDSAbs_ElementType.hxx"
 
 // Qt includes
 #include <QDialog>
@@ -38,6 +39,7 @@
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
 
 class QComboBox;
+class QFrame;
 class QGroupBox;
 class QLabel;
 class QLineEdit;
@@ -55,9 +57,6 @@ namespace SMESH
   struct TElementSimulation;
 }
 
-enum { QUAD_EDGE, QUAD_TRIANGLE, QUAD_QUADRANGLE, QUAD_TETRAHEDRON, 
-       QUAD_PYRAMID, QUAD_PENTAHEDRON, QUAD_HEXAHEDRON };
-
 //=================================================================================
 // class    : SMESHGUI_AddQuadraticElementDlg
 // purpose  :
@@ -67,7 +66,7 @@ class SMESHGUI_EXPORT SMESHGUI_AddQuadraticElementDlg : public QDialog
   Q_OBJECT
 
 public:
-  SMESHGUI_AddQuadraticElementDlg( SMESHGUI*, const int );
+  SMESHGUI_AddQuadraticElementDlg( SMESHGUI*, const SMDSAbs_EntityType );
   ~SMESHGUI_AddQuadraticElementDlg();
   
 private:
@@ -88,6 +87,8 @@ private:
   SMESHGUI*                   mySMESHGUI;       /* Current SMESHGUI object */
   LightApp_SelectionMgr*      mySelectionMgr;   /* User shape selection */
   int                         myNbCorners;      /* The required number of corners */
+  int                         myNbMidFaceNodes;
+  int                         myNbCenterNodes;
   bool                        myBusy;
   SVTK_Selector*              mySelector;
   
@@ -97,15 +98,21 @@ private:
   QString                     myEntry;
   GrpList                     myGroups;
   
-  int                         myType;
-  bool                        myIsEditCorners;
+  SMDSAbs_EntityType          myGeomType;
+  QLineEdit*                  myCurrentLineEdit;
   
   QGroupBox*                  GroupConstructors;
   QRadioButton*               myRadioButton1;
   
   QGroupBox*                  GroupArguments;
+  QPushButton*                myCornerSelectButton;
   QLineEdit*                  myCornerNodes;
-  QPushButton*                mySelectButton;
+  QLabel*                     myMidFaceLabel;
+  QPushButton*                myMidFaceSelectButton;
+  QLineEdit*                  myMidFaceNodes;
+  QLabel*                     myCenterLabel;
+  QPushButton*                myCenterSelectButton;
+  QLineEdit*                  myCenterNode;
   QTableWidget*               myTable;
   QCheckBox*                  myReverseCB;
   
@@ -131,7 +138,7 @@ private slots:
   void                        ClickOnCancel();
   void                        ClickOnApply();
   void                        ClickOnHelp();
-  void                        SetEditCorners();
+  void                        SetCurrentSelection();
   void                        SelectionIntoArgument();
   void                        DeactivateActiveDialog();
   void                        ActivateThisDialog();

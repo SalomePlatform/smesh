@@ -80,6 +80,7 @@ class SMESHGUI_EXPORT SMESHGUI_MeshInfo : public QFrame
     i3DHexahedrons,
     i3DPyramids,
     i3DPrisms,
+    i3DHexaPrisms,
     i3DPolyhedrons,
     i3DEnd,
     iElementsEnd   = i3DEnd

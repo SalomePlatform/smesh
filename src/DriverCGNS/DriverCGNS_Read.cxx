@@ -438,6 +438,10 @@ namespace
   {
     return mesh->AddFaceWithID( ids[0],ids[3],ids[2],ids[1],ids[7],ids[6],ids[5],ids[4], ID );
   }
+  SMDS_MeshElement* add_QUAD_9(cgsize_t* ids, SMESHDS_Mesh* mesh, int ID)
+  {
+    return mesh->AddFaceWithID( ids[0],ids[3],ids[2],ids[1],ids[7],ids[6],ids[5],ids[4],ids[8], ID);
+  }
   SMDS_MeshElement* add_TETRA_4(cgsize_t* ids, SMESHDS_Mesh* mesh, int ID)
   {
     return mesh->AddVolumeWithID( ids[0], ids[2], ids[1], ids[3], ID );
@@ -475,6 +479,13 @@ namespace
                                   ids[5],ids[11],ids[10],ids[9],ids[8],ids[12],ids[15],
                                   ids[14],ids[13],ids[19],ids[18],ids[17],ids[16], ID );
   }
+  SMDS_MeshElement* add_HEXA_27(cgsize_t* ids, SMESHDS_Mesh* mesh, int ID)
+  {
+    return mesh->AddVolumeWithID( ids[0],ids[3],ids[2],ids[1],ids[4],ids[7],ids[6],
+                                  ids[5],ids[11],ids[10],ids[9],ids[8],ids[12],ids[15],
+                                  ids[14],ids[13],ids[19],ids[18],ids[17],ids[16],
+                                  ids[20],ids[24],ids[23],ids[22],ids[21],ids[25],ids[26], ID );
+  }
   SMDS_MeshElement* add_NGON(cgsize_t* ids, SMESHDS_Mesh* mesh, int ID)
   {
     vector<int> idVec( ids[0] );
@@ -504,7 +515,7 @@ namespace
       funVec[ CGNS_ENUMV( TRI_6    )] = add_TRI_6   ;
       funVec[ CGNS_ENUMV( QUAD_4   )] = add_QUAD_4  ;
       funVec[ CGNS_ENUMV( QUAD_8   )] = add_QUAD_8  ;
-      funVec[ CGNS_ENUMV( QUAD_9   )] = add_QUAD_8  ;
+      funVec[ CGNS_ENUMV( QUAD_9   )] = add_QUAD_9  ;
       funVec[ CGNS_ENUMV( TETRA_4  )] = add_TETRA_4 ;
       funVec[ CGNS_ENUMV( TETRA_10 )] = add_TETRA_10;
       funVec[ CGNS_ENUMV( PYRA_5   )] = add_PYRA_5  ;
@@ -515,7 +526,7 @@ namespace
       funVec[ CGNS_ENUMV( PENTA_18 )] = add_PENTA_15;
       funVec[ CGNS_ENUMV( HEXA_8   )] = add_HEXA_8  ;
       funVec[ CGNS_ENUMV( HEXA_20  )] = add_HEXA_20 ;
-      funVec[ CGNS_ENUMV( HEXA_27  )] = add_HEXA_20 ;
+      funVec[ CGNS_ENUMV( HEXA_27  )] = add_HEXA_27 ;
       funVec[ CGNS_ENUMV( NGON_n   )] = add_NGON    ;
     }
     return &funVec[0];
