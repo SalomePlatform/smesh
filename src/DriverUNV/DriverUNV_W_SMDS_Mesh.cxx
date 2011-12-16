@@ -119,6 +119,7 @@ Driver_Mesh::Status DriverUNV_W_SMDS_Mesh::Perform()
         SMDS_FaceIteratorPtr anIter = myMesh->facesIterator();
         for(; anIter->more();){
           const SMDS_MeshFace* anElem = anIter->next();
+          if ( anElem->IsPoly() ) continue;
           TElementLab aLabel = anElem->GetID();
           int aNbNodes = anElem->NbNodes();
           TRecord aRec;
@@ -142,6 +143,10 @@ Driver_Mesh::Status DriverUNV_W_SMDS_Mesh::Perform()
           case 8:
             aRec.fe_descriptor_id = 45;
             break;
+          case 9:
+            aRec.fe_descriptor_id = 45;
+            aRec.node_labels.resize( 8 );
+            break;
           default:
             continue;
           }
@@ -162,17 +167,18 @@ Driver_Mesh::Status DriverUNV_W_SMDS_Mesh::Perform()
           SMDS_ElemIteratorPtr aNodesIter;
           aNodesIter = anElem->nodesIteratorToUNV();
           if ( anElem->IsPoly() ) {
-            MESSAGE("anElem->IsPoly");
-            if ( const SMDS_VtkVolume* ph =
-                 dynamic_cast<const SMDS_VtkVolume*> (anElem))
-            {
-              aNbNodes = ph->NbUniqueNodes();
-              aNodesIter = ph->uniqueNodesIterator();
-            }
+            continue;
+            // MESSAGE("anElem->IsPoly");
+            // if ( const SMDS_VtkVolume* ph =
+            //      dynamic_cast<const SMDS_VtkVolume*> (anElem))
+            // {
+            //   aNbNodes = ph->NbUniqueNodes();
+            //   aNodesIter = ph->uniqueNodesIterator();
+            // }
           }
 
           int anId = -1;
-          switch(aNbNodes){
+          switch(aNbNodes) {
           case 4: {
             anId = 111;
             break;
@@ -197,8 +203,10 @@ Driver_Mesh::Status DriverUNV_W_SMDS_Mesh::Perform()
             anId = 113;
             break;
           }
-          case 20: {
+          case 20:
+          case 27: {
             anId = 116;
+            aNbNodes = 20;
             break;
           }
           default:
@@ -208,7 +216,7 @@ Driver_Mesh::Status DriverUNV_W_SMDS_Mesh::Perform()
             TRecord aRec;
             aRec.fe_descriptor_id = anId;
             aRec.node_labels.reserve(aNbNodes);
-            for(; aNodesIter->more();){
+            for(; aNodesIter->more() && aRec.node_labels.size() < aNbNodes; ) {
               const SMDS_MeshElement* aNode = aNodesIter->next();
               aRec.node_labels.push_back(aNode->GetID());
             }
