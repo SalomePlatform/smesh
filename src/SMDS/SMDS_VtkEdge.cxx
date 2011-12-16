@@ -134,8 +134,10 @@ vtkIdType SMDS_VtkEdge::GetVtkType() const
 const SMDS_MeshNode*
 SMDS_VtkEdge::GetNode(const int ind) const
 {
-  // TODO optimize !!
-  return SMDS_MeshElement::GetNode(ind);
+  vtkUnstructuredGrid* grid = SMDS_Mesh::_meshList[myMeshId]->getGrid();
+  vtkIdType npts, *pts;
+  grid->GetCellPoints( this->myVtkID, npts, pts );
+  return SMDS_Mesh::_meshList[myMeshId]->FindNodeVtk( pts[ ind ]);
 }
 
 bool SMDS_VtkEdge::IsQuadratic() const

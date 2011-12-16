@@ -32,7 +32,7 @@ SMDS_VtkFace::SMDS_VtkFace()
 {
 }
 
-SMDS_VtkFace::SMDS_VtkFace(std::vector<vtkIdType> nodeIds, SMDS_Mesh* mesh)
+SMDS_VtkFace::SMDS_VtkFace(const std::vector<vtkIdType>& nodeIds, SMDS_Mesh* mesh)
 {
   init(nodeIds, mesh);
 }
@@ -41,7 +41,7 @@ SMDS_VtkFace::~SMDS_VtkFace()
 {
 }
 
-void SMDS_VtkFace::init(std::vector<vtkIdType> nodeIds, SMDS_Mesh* mesh)
+void SMDS_VtkFace::init(const std::vector<vtkIdType>& nodeIds, SMDS_Mesh* mesh)
 {
   SMDS_MeshFace::init();
   vtkUnstructuredGrid* grid = mesh->getGrid();
@@ -61,21 +61,24 @@ void SMDS_VtkFace::init(std::vector<vtkIdType> nodeIds, SMDS_Mesh* mesh)
     case 8:
       aType = VTK_QUADRATIC_QUAD;
       break;
+    case 9:
+      aType = VTK_BIQUADRATIC_QUAD;
+      break;
     default:
       aType = VTK_POLYGON;
       break;
   }
-  myVtkID = grid->InsertNextLinkedCell(aType, nodeIds.size(), &nodeIds[0]);
+  myVtkID = grid->InsertNextLinkedCell(aType, nodeIds.size(), (vtkIdType*) &nodeIds[0]);
   mesh->setMyModified();
   //MESSAGE("SMDS_VtkFace::init myVtkID " << myVtkID);
 }
 
-void SMDS_VtkFace::initPoly(std::vector<vtkIdType> nodeIds, SMDS_Mesh* mesh)
+void SMDS_VtkFace::initPoly(const std::vector<vtkIdType>& nodeIds, SMDS_Mesh* mesh)
 {
   SMDS_MeshFace::init();
   vtkUnstructuredGrid* grid = mesh->getGrid();
   myMeshId = mesh->getMeshId();
-  myVtkID = grid->InsertNextLinkedCell(VTK_POLYGON, nodeIds.size(), &nodeIds[0]);
+  myVtkID = grid->InsertNextLinkedCell(VTK_POLYGON, nodeIds.size(), (vtkIdType*) &nodeIds[0]);
   mesh->setMyModified();
 }
 
@@ -117,6 +120,7 @@ int SMDS_VtkFace::NbEdges() const
       break;
     case VTK_QUAD:
     case VTK_QUADRATIC_QUAD:
+    case VTK_BIQUADRATIC_QUAD:
       nbEdges = 4;
       break;
     case VTK_POLYGON:
@@ -147,7 +151,10 @@ int SMDS_VtkFace::NbNodes() const
 const SMDS_MeshNode*
 SMDS_VtkFace::GetNode(const int ind) const
 {
-  return SMDS_MeshElement::GetNode(ind); // --- a optimiser !
+  vtkUnstructuredGrid* grid = SMDS_Mesh::_meshList[myMeshId]->getGrid();
+  vtkIdType npts, *pts;
+  grid->GetCellPoints( this->myVtkID, npts, pts );
+  return SMDS_Mesh::_meshList[myMeshId]->FindNodeVtk( pts[ ind ]);
 }
 
 bool SMDS_VtkFace::IsQuadratic() const
@@ -159,6 +166,7 @@ bool SMDS_VtkFace::IsQuadratic() const
   {
     case VTK_QUADRATIC_TRIANGLE:
     case VTK_QUADRATIC_QUAD:
+    case VTK_BIQUADRATIC_QUAD:
       return true;
       break;
     default:
@@ -184,6 +192,7 @@ bool SMDS_VtkFace::IsMediumNode(const SMDS_MeshNode* node) const
       rankFirstMedium = 3; // medium nodes are of rank 3,4,5
       break;
     case VTK_QUADRATIC_QUAD:
+    case VTK_BIQUADRATIC_QUAD:
       rankFirstMedium = 4; // medium nodes are of rank 4,5,6,7
       break;
     default:
@@ -212,29 +221,21 @@ bool SMDS_VtkFace::IsMediumNode(const SMDS_MeshNode* node) const
   return false;
 }
 
+int SMDS_VtkFace::NbCornerNodes() const
+{
+  vtkUnstructuredGrid* grid = SMDS_Mesh::_meshList[myMeshId]->getGrid();
+  int       nbPoints = grid->GetCell(myVtkID)->GetNumberOfPoints();
+  vtkIdType aVtkType = grid->GetCellType(myVtkID);
+  if ( aVtkType != VTK_POLYGON )
+    return nbPoints <= 4 ? nbPoints : nbPoints / 2;
+  return nbPoints;
+}
+
 SMDSAbs_EntityType SMDS_VtkFace::GetEntityType() const
 {
   vtkUnstructuredGrid* grid = SMDS_Mesh::_meshList[myMeshId]->getGrid();
   vtkIdType aVtkType = grid->GetCellType(this->myVtkID);
-  SMDSAbs_EntityType aType = SMDSEntity_Polygon;
-  switch (aVtkType)
-  {
-    case VTK_TRIANGLE:
-      aType = SMDSEntity_Triangle;
-      break;
-    case VTK_QUAD:
-      aType = SMDSEntity_Quadrangle;
-      break;
-    case VTK_QUADRATIC_TRIANGLE:
-      aType = SMDSEntity_Quad_Triangle;
-      break;
-    case VTK_QUADRATIC_QUAD:
-      aType = SMDSEntity_Quad_Quadrangle;
-      break;
-    default:
-      aType = SMDSEntity_Polygon;
-  }
-  return aType;
+  return SMDS_MeshCell::toSmdsType( VTKCellType( aVtkType ));
 }
 
 vtkIdType SMDS_VtkFace::GetVtkType() const

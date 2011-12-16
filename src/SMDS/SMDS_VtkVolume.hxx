@@ -30,11 +30,12 @@ class SMDS_EXPORT SMDS_VtkVolume: public SMDS_MeshVolume
 {
 public:
   SMDS_VtkVolume();
-  SMDS_VtkVolume(std::vector<vtkIdType> nodeIds, SMDS_Mesh* mesh);
+  SMDS_VtkVolume(const std::vector<vtkIdType>& nodeIds, SMDS_Mesh* mesh);
   ~SMDS_VtkVolume();
-  void init(std::vector<vtkIdType> nodeIds, SMDS_Mesh* mesh);
+  void init(const std::vector<vtkIdType>& nodeIds, SMDS_Mesh* mesh);
 //#ifdef VTK_HAVE_POLYHEDRON
-  void initPoly(std::vector<vtkIdType> nodeIds, std::vector<int> nbNodesPerFace, SMDS_Mesh* mesh);
+  void initPoly(const std::vector<vtkIdType>& nodeIds,
+                const std::vector<int>& nbNodesPerFace, SMDS_Mesh* mesh);
 //#endif
   virtual bool ChangeNodes(const SMDS_MeshNode* nodes[], const int nbNodes);
   virtual bool vtkOrder(const SMDS_MeshNode* nodes[], const int nbNodes);
@@ -57,14 +58,15 @@ public:
   virtual bool IsQuadratic() const;
   virtual bool IsPoly() const;
   virtual bool IsMediumNode(const SMDS_MeshNode* node) const;
+  virtual int  NbCornerNodes() const;
   static void gravityCenter(SMDS_UnstructuredGrid* grid,
-                            vtkIdType *nodeIds,
+                            const vtkIdType *nodeIds,
                             int nbNodes,
                             double* result);
   static bool isForward(double* a,double* b,double* c,double* d);
   int NbUniqueNodes() const;
   SMDS_ElemIteratorPtr uniqueNodesIterator() const;
-  const std::vector<int> GetQuantities() const;
+  std::vector<int> GetQuantities() const;
 
   virtual SMDS_ElemIteratorPtr elementsIterator(SMDSAbs_ElementType type) const;
   virtual SMDS_ElemIteratorPtr nodesIteratorToUNV() const;

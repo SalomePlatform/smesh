@@ -30,10 +30,10 @@ class SMDS_EXPORT SMDS_VtkFace: public SMDS_MeshFace
 {
 public:
   SMDS_VtkFace();
-  SMDS_VtkFace(std::vector<vtkIdType> nodeIds, SMDS_Mesh* mesh);
+  SMDS_VtkFace(const std::vector<vtkIdType>& nodeIds, SMDS_Mesh* mesh);
   ~SMDS_VtkFace();
-  void init(std::vector<vtkIdType> nodeIds, SMDS_Mesh* mesh);
-  void initPoly(std::vector<vtkIdType> nodeIds, SMDS_Mesh* mesh);
+  void init(const std::vector<vtkIdType>& nodeIds, SMDS_Mesh* mesh);
+  void initPoly(const std::vector<vtkIdType>& nodeIds, SMDS_Mesh* mesh);
   bool ChangeNodes(const SMDS_MeshNode* nodes[], const int nbNodes);
   void ChangeApex(SMDS_MeshNode* node); // to use only for tmp triangles
   void Print(std::ostream & OS) const;
@@ -47,6 +47,7 @@ public:
   virtual bool IsQuadratic() const;
   virtual bool IsPoly() const;
   virtual bool IsMediumNode(const SMDS_MeshNode* node) const;
+  virtual int  NbCornerNodes() const;
 
   virtual SMDS_ElemIteratorPtr elementsIterator(SMDSAbs_ElementType type) const;
   virtual SMDS_ElemIteratorPtr nodesIteratorToUNV() const;

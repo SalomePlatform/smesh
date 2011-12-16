@@ -30,7 +30,7 @@ SMDS_VtkVolume::SMDS_VtkVolume()
 {
 }
 
-SMDS_VtkVolume::SMDS_VtkVolume(std::vector<vtkIdType> nodeIds, SMDS_Mesh* mesh)
+SMDS_VtkVolume::SMDS_VtkVolume(const std::vector<vtkIdType>& nodeIds, SMDS_Mesh* mesh)
 {
   init(nodeIds, mesh);
 }
@@ -38,16 +38,19 @@ SMDS_VtkVolume::SMDS_VtkVolume(std::vector<vtkIdType> nodeIds, SMDS_Mesh* mesh)
  * typed used are vtk types (@see vtkCellType.h)
  * see GetEntityType() for conversion in SMDS type (@see SMDSAbs_ElementType.hxx)
  */
-void SMDS_VtkVolume::init(std::vector<vtkIdType> nodeIds, SMDS_Mesh* mesh)
+void SMDS_VtkVolume::init(const std::vector<vtkIdType>& nodeIds, SMDS_Mesh* mesh)
 {
   SMDS_MeshVolume::init();
   vtkUnstructuredGrid* grid = mesh->getGrid();
   myMeshId = mesh->getMeshId();
   vtkIdType aType = VTK_TETRA;
-  switch (nodeIds.size())
+  switch (nodeIds.size()) // cases are in order of usage frequency
   {
     case 4:
       aType = VTK_TETRA;
+      break;
+    case 8:
+      aType = VTK_HEXAHEDRON;
       break;
     case 5:
       aType = VTK_PYRAMID;
@@ -55,11 +58,11 @@ void SMDS_VtkVolume::init(std::vector<vtkIdType> nodeIds, SMDS_Mesh* mesh)
     case 6:
       aType = VTK_WEDGE;
       break;
-    case 8:
-      aType = VTK_HEXAHEDRON;
-      break;
     case 10:
       aType = VTK_QUADRATIC_TETRA;
+      break;
+    case 20:
+      aType = VTK_QUADRATIC_HEXAHEDRON;
       break;
     case 13:
       aType = VTK_QUADRATIC_PYRAMID;
@@ -67,28 +70,32 @@ void SMDS_VtkVolume::init(std::vector<vtkIdType> nodeIds, SMDS_Mesh* mesh)
     case 15:
       aType = VTK_QUADRATIC_WEDGE;
       break;
-    case 20:
-      aType = VTK_QUADRATIC_HEXAHEDRON;
+    case 12:
+      aType = VTK_HEXAGONAL_PRISM;
+      break;
+    case 27:
+      aType = VTK_TRIQUADRATIC_HEXAHEDRON;
       break;
     default:
       aType = VTK_HEXAHEDRON;
       break;
   }
-  myVtkID = grid->InsertNextLinkedCell(aType, nodeIds.size(), &nodeIds[0]);
+  myVtkID = grid->InsertNextLinkedCell(aType, nodeIds.size(), (vtkIdType *) &nodeIds[0]);
   mesh->setMyModified();
   //MESSAGE("SMDS_VtkVolume::init myVtkID " << myVtkID);
 }
 
 //#ifdef VTK_HAVE_POLYHEDRON
-void SMDS_VtkVolume::initPoly(std::vector<vtkIdType> nodeIds, std::vector<int> nbNodesPerFace, SMDS_Mesh* mesh)
+void SMDS_VtkVolume::initPoly(const std::vector<vtkIdType>& nodeIds,
+                              const std::vector<int>&       nbNodesPerFace,
+                              SMDS_Mesh*                    mesh)
 {
   SMDS_MeshVolume::init();
   //MESSAGE("SMDS_VtkVolume::initPoly");
   SMDS_UnstructuredGrid* grid = mesh->getGrid();
-  double center[3];
-  this->gravityCenter(grid, &nodeIds[0], nodeIds.size(), &center[0]);
+  //double center[3];
+  //this->gravityCenter(grid, &nodeIds[0], nodeIds.size(), &center[0]);
   vector<vtkIdType> ptIds;
-  ptIds.clear();
   vtkIdType nbFaces = nbNodesPerFace.size();
   int k = 0;
   for (int i = 0; i < nbFaces; i++)
@@ -99,7 +106,7 @@ void SMDS_VtkVolume::initPoly(std::vector<vtkIdType> nodeIds, std::vector<int> n
       // - either the user should care of order of nodes or
       // - the user should use a service method arranging nodes if he
       //   don't want or can't to do it by him-self
-      // The method below works OK only with planar faces
+      // The method below works OK only with planar faces and convex polyhedrones
       //
       // double a[3];
       // double b[3];
@@ -109,7 +116,7 @@ void SMDS_VtkVolume::initPoly(std::vector<vtkIdType> nodeIds, std::vector<int> n
       // grid->GetPoints()->GetPoint(nodeIds[k + 2], c);
       // bool isFaceForward = this->isForward(a, b, c, center);
       //MESSAGE("isFaceForward " << i << " " << isFaceForward);
-      vtkIdType *facePts = &nodeIds[k];
+      const vtkIdType *facePts = &nodeIds[k];
       //if (isFaceForward)
         for (int n = 0; n < nf; n++)
           ptIds.push_back(facePts[n]);
@@ -155,45 +162,13 @@ bool SMDS_VtkVolume::vtkOrder(const SMDS_MeshNode* nodes[], const int nbNodes)
     }
   vtkUnstructuredGrid* grid = SMDS_Mesh::_meshList[myMeshId]->getGrid();
   vtkIdType aVtkType = grid->GetCellType(this->myVtkID);
-  switch (aVtkType)
+  const std::vector<int>& interlace = SMDS_MeshCell::toVtkOrder( VTKCellType( aVtkType ));
+  if ( !interlace.empty() )
   {
-    case VTK_TETRA:
-      this->exchange(nodes, 1, 2);
-      break;
-    case VTK_QUADRATIC_TETRA:
-      this->exchange(nodes, 1, 2);
-      this->exchange(nodes, 4, 6);
-      this->exchange(nodes, 8, 9);
-      break;
-    case VTK_PYRAMID:
-      this->exchange(nodes, 1, 3);
-      break;
-    case VTK_WEDGE:
-      break;
-    case VTK_QUADRATIC_PYRAMID:
-      this->exchange(nodes, 1, 3);
-      this->exchange(nodes, 5, 8);
-      this->exchange(nodes, 6, 7);
-      this->exchange(nodes, 10, 12);
-      break;
-    case VTK_QUADRATIC_WEDGE:
-      break;
-    case VTK_HEXAHEDRON:
-      this->exchange(nodes, 1, 3);
-      this->exchange(nodes, 5, 7);
-      break;
-    case VTK_QUADRATIC_HEXAHEDRON:
-      this->exchange(nodes, 1, 3);
-      this->exchange(nodes, 5, 7);
-      this->exchange(nodes, 8, 11);
-      this->exchange(nodes, 9, 10);
-      this->exchange(nodes, 12, 15);
-      this->exchange(nodes, 13, 14);
-      this->exchange(nodes, 17, 19);
-      break;
-    case VTK_POLYHEDRON:
-    default:
-      break;
+    ASSERT( interlace.size() == nbNodes );
+    std::vector<const SMDS_MeshNode*> initNodes( nodes, nodes+nbNodes );
+    for ( size_t i = 0; i < interlace.size(); ++i )
+      nodes[i] = initNodes[ interlace[i] ];
   }
   return true;
 }
@@ -226,6 +201,7 @@ int SMDS_VtkVolume::NbFaces() const
       break;
     case VTK_HEXAHEDRON:
     case VTK_QUADRATIC_HEXAHEDRON:
+    case VTK_TRIQUADRATIC_HEXAHEDRON:
       nbFaces = 6;
       break;
     case VTK_POLYHEDRON:
@@ -236,6 +212,9 @@ int SMDS_VtkVolume::NbFaces() const
         nbFaces = nFaces;
         break;
       }
+    case VTK_HEXAGONAL_PRISM:
+      nbFaces = 8;
+      break;
     default:
       MESSAGE("invalid volume type")
       ;
@@ -291,6 +270,7 @@ int SMDS_VtkVolume::NbEdges() const
       break;
     case VTK_HEXAHEDRON:
     case VTK_QUADRATIC_HEXAHEDRON:
+    case VTK_TRIQUADRATIC_HEXAHEDRON:
       nbEdges = 12;
       break;
     case VTK_POLYHEDRON:
@@ -309,6 +289,9 @@ int SMDS_VtkVolume::NbEdges() const
         nbEdges = nbEdges / 2;
         break;
       }
+    case VTK_HEXAGONAL_PRISM:
+      nbEdges = 18;
+      break;
     default:
       MESSAGE("invalid volume type")
       ;
@@ -380,7 +363,7 @@ const SMDS_MeshNode* SMDS_VtkVolume::GetFaceNode(const int face_ind, const int n
 /*! polyhedron only,
  *  return number of nodes for each face
  */
-const std::vector<int> SMDS_VtkVolume::GetQuantities() const
+std::vector<int> SMDS_VtkVolume::GetQuantities() const
 {
   vector<int> quantities;
   quantities.clear();
@@ -443,8 +426,12 @@ SMDSAbs_ElementType SMDS_VtkVolume::GetType() const
  */
 const SMDS_MeshNode* SMDS_VtkVolume::GetNode(const int ind) const
 {
-  // TODO optimize if possible (vtkCellIterator)
-  return SMDS_MeshElement::GetNode(ind);
+  vtkUnstructuredGrid* grid = SMDS_Mesh::_meshList[myMeshId]->getGrid();
+  vtkIdType aVtkType = grid->GetCellType(this->myVtkID);
+  vtkIdType npts, *pts;
+  grid->GetCellPoints( this->myVtkID, npts, pts );
+  const std::vector<int>& interlace = SMDS_MeshCell::fromVtkOrder( VTKCellType( aVtkType ));
+  return SMDS_Mesh::_meshList[myMeshId]->FindNodeVtk( pts[ interlace.empty() ? ind : interlace[ind]] );
 }
 
 bool SMDS_VtkVolume::IsQuadratic() const
@@ -458,6 +445,7 @@ bool SMDS_VtkVolume::IsQuadratic() const
     case VTK_QUADRATIC_PYRAMID:
     case VTK_QUADRATIC_WEDGE:
     case VTK_QUADRATIC_HEXAHEDRON:
+    case VTK_TRIQUADRATIC_HEXAHEDRON:
       return true;
       break;
     default:
@@ -489,6 +477,7 @@ bool SMDS_VtkVolume::IsMediumNode(const SMDS_MeshNode* node) const
       rankFirstMedium = 6; // medium nodes are of rank 6 to 14
       break;
     case VTK_QUADRATIC_HEXAHEDRON:
+    case VTK_TRIQUADRATIC_HEXAHEDRON:
       rankFirstMedium = 8; // medium nodes are of rank 8 to 19
       break;
     default:
@@ -513,6 +502,23 @@ bool SMDS_VtkVolume::IsMediumNode(const SMDS_MeshNode* node) const
   MESSAGE("= IsMediumNode: node does not belong to this element =");
   MESSAGE("======================================================");
   return false;
+}
+
+int SMDS_VtkVolume::NbCornerNodes() const
+{
+  vtkUnstructuredGrid* grid = SMDS_Mesh::_meshList[myMeshId]->getGrid();
+  int            nbN = grid->GetCell(myVtkID)->GetNumberOfPoints();
+  vtkIdType aVtkType = grid->GetCellType(myVtkID);
+  switch (aVtkType)
+  {
+  case VTK_QUADRATIC_TETRA:         return 4;
+  case VTK_QUADRATIC_PYRAMID:       return 5;
+  case VTK_QUADRATIC_WEDGE:         return 6;
+  case VTK_QUADRATIC_HEXAHEDRON:
+  case VTK_TRIQUADRATIC_HEXAHEDRON: return 8;
+  default:;
+  }
+  return nbN;
 }
 
 SMDSAbs_EntityType SMDS_VtkVolume::GetEntityType() const
@@ -547,6 +553,12 @@ SMDSAbs_EntityType SMDS_VtkVolume::GetEntityType() const
     case VTK_QUADRATIC_HEXAHEDRON:
       aType = SMDSEntity_Quad_Hexa;
       break;
+    case VTK_TRIQUADRATIC_HEXAHEDRON:
+      aType = SMDSEntity_TriQuad_Hexa;
+      break;
+    case VTK_HEXAGONAL_PRISM:
+      aType = SMDSEntity_Hexagonal_Prism;
+      break;
 //#ifdef VTK_HAVE_POLYHEDRON
     case VTK_POLYHEDRON:
       aType = SMDSEntity_Polyhedra;
@@ -566,7 +578,10 @@ vtkIdType SMDS_VtkVolume::GetVtkType() const
   return aType;
 }
 
-void SMDS_VtkVolume::gravityCenter(SMDS_UnstructuredGrid* grid, vtkIdType *nodeIds, int nbNodes, double* result)
+void SMDS_VtkVolume::gravityCenter(SMDS_UnstructuredGrid* grid,
+                                   const vtkIdType *      nodeIds,
+                                   int                    nbNodes,
+                                   double*                result)
 {
   for (int j = 0; j < 3; j++)
     result[j] = 0;

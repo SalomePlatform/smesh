@@ -23,76 +23,21 @@
 SMDS_VtkCellIterator::SMDS_VtkCellIterator(SMDS_Mesh* mesh, int vtkCellId, SMDSAbs_EntityType aType) :
   _mesh(mesh), _cellId(vtkCellId), _index(0), _type(aType)
 {
-  //MESSAGE("SMDS_VtkCellIterator " << _type);
-  _vtkIdList = vtkIdList::New();
   vtkUnstructuredGrid* grid = _mesh->getGrid();
-  grid->GetCellPoints(_cellId, _vtkIdList);
-  _nbNodes = _vtkIdList->GetNumberOfIds();
-  switch (_type)
+  _vtkIdList = vtkIdList::New();
+  const std::vector<int>& interlace = SMDS_MeshCell::fromVtkOrder( aType );
+  if ( interlace.empty() )
   {
-    case SMDSEntity_Tetra:
-      {
-        this->exchange(1, 2);
-        break;
-      }
-    case SMDSEntity_Pyramid:
-      {
-        this->exchange(1, 3);
-        break;
-      }
-    case SMDSEntity_Penta:
-      {
-        //this->exchange(1, 2);
-        //this->exchange(4, 5);
-        break;
-      }
-    case SMDSEntity_Hexa:
-      {
-        this->exchange(1, 3);
-        this->exchange(5, 7);
-        break;
-      }
-    case SMDSEntity_Quad_Tetra:
-      {
-        this->exchange(1, 2);
-        this->exchange(4, 6);
-        this->exchange(8, 9);
-        break;
-      }
-    case SMDSEntity_Quad_Pyramid:
-      {
-        this->exchange(1, 3);
-        this->exchange(5, 8);
-        this->exchange(6, 7);
-        this->exchange(10, 12);
-        break;
-      }
-    case SMDSEntity_Quad_Penta:
-      {
-        //this->exchange(1, 2);
-        //this->exchange(4, 5);
-        //this->exchange(6, 8);
-        //this->exchange(9, 11);
-        //this->exchange(13, 14);
-        break;
-      }
-    case SMDSEntity_Quad_Hexa:
-      {
-        MESSAGE("SMDS_VtkCellIterator Quad_Hexa");
-        this->exchange(1, 3);
-        this->exchange(5, 7);
-        this->exchange(8, 11);
-        this->exchange(9, 10);
-        this->exchange(12, 15);
-        this->exchange(13, 14);
-        this->exchange(17, 19);
-        break;
-      }
-    case SMDSEntity_Polyhedra:
-      MESSAGE("SMDS_VtkCellIterator Polyhedra (iterate on actual nodes)");
-      break;
-    default:
-      break;
+    grid->GetCellPoints(_cellId, _vtkIdList);
+    _nbNodes = _vtkIdList->GetNumberOfIds();
+  }
+  else
+  {
+    vtkIdType npts, *pts;
+    grid->GetCellPoints( _cellId, npts, pts );
+    _vtkIdList->SetNumberOfIds( _nbNodes = npts );
+    for (int i = 0; i < _nbNodes; i++)
+      _vtkIdList->SetId(i, pts[interlace[i]]);
   }
 }
 
@@ -142,9 +87,11 @@ SMDS_VtkCellIteratorToUNV::SMDS_VtkCellIteratorToUNV(SMDS_Mesh* mesh, int vtkCel
         break;
       }
     case SMDSEntity_Quad_Quadrangle:
+    case SMDSEntity_BiQuad_Quadrangle:
       {
         static int id[] = { 0, 4, 1, 5, 2, 6, 3, 7 };
         ids = id;
+        _nbNodes = 8;
         break;
       }
     case SMDSEntity_Quad_Tetra:
@@ -172,9 +119,11 @@ SMDS_VtkCellIteratorToUNV::SMDS_VtkCellIteratorToUNV(SMDS_Mesh* mesh, int vtkCel
         break;
       }
     case SMDSEntity_Quad_Hexa:
+    case SMDSEntity_TriQuad_Hexa:
       {
         static int id[] = { 0, 8, 1, 9, 2, 10, 3, 11, 16, 17, 18, 19, 4, 12, 5, 13, 6, 14, 7, 15 };
         ids = id;
+        _nbNodes = 20;
         break;
       }
     case SMDSEntity_Polygon:
@@ -183,15 +132,18 @@ SMDS_VtkCellIteratorToUNV::SMDS_VtkCellIteratorToUNV(SMDS_Mesh* mesh, int vtkCel
     case SMDSEntity_Quad_Polyhedra:
     default:
       {
-        static int id[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24,
-                            25, 26, 27, 28, 29 };
-        ids = id;
-        break;
+        // static int id[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24,
+        //                     25, 26, 27, 28, 29 };
+        // ids = id;
+        // break;
       }
   }
-  //MESSAGE("_nbNodes " << _nbNodes);
-  for (int i = 0; i < _nbNodes; i++)
-    _vtkIdList->SetId(i, pts[ids[i]]);
+  if ( ids )
+    for (int i = 0; i < _nbNodes; i++)
+      _vtkIdList->SetId(i, pts[ids[i]]);
+  else
+    for (int i = 0; i < _nbNodes; i++)
+      _vtkIdList->SetId(i, pts[i]);
 }
 
 SMDS_VtkCellIteratorToUNV::~SMDS_VtkCellIteratorToUNV()
