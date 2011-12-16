@@ -47,6 +47,10 @@ using namespace std;
 // Node indices in faces depending on volume orientation
 // making most faces normals external
 // ======================================================
+// For all elements, 0-th face is bottom based on the first nodes.
+// For prismatic elements (tetra,hexa,prisms), 1-th face is a top one.
+// For all elements, side faces follow order of bottom nodes
+// ======================================================
 
 /*
 //           N3
@@ -67,11 +71,6 @@ static int Tetra_F [4][4] = { // FORWARD == EXTERNAL
   { 0, 3, 1, 0 },
   { 1, 3, 2, 1 },
   { 0, 2, 3, 0 }}; 
-static int Tetra_R [4][4] = { // REVERSED
-  { 0, 1, 2, 0 },             // All faces but a bottom have external normals
-  { 0, 1, 3, 0 },
-  { 1, 2, 3, 1 },
-  { 0, 3, 2, 0 }};
 static int Tetra_RE [4][4] = { // REVERSED -> FORWARD (EXTERNAL)
   { 0, 2, 1, 0 },              // All faces have external normals
   { 0, 1, 3, 0 },
@@ -87,13 +86,8 @@ static int Pyramid_F [5][5] = { // FORWARD == EXTERNAL
   { 0, 4, 1, 0, 4 },
   { 1, 4, 2, 1, 4 },
   { 2, 4, 3, 2, 4 },
-  { 3, 4, 0, 3, 4 }}; 
-static int Pyramid_R [5][5] = { // REVERSED
-  { 0, 1, 2, 3, 0 },            // All faces but a bottom have external normals
-  { 0, 1, 4, 0, 4 },
-  { 1, 2, 4, 1, 4 },
-  { 2, 3, 4, 2, 4 },
-  { 3, 0, 4, 3, 4 }}; 
+  { 3, 4, 0, 3, 4 }
+}; 
 static int Pyramid_RE [5][5] = { // REVERSED -> FORWARD (EXTERNAL)
   { 0, 3, 2, 1, 0 },             // All faces but a bottom have external normals
   { 0, 1, 4, 0, 4 },
@@ -118,29 +112,17 @@ static int Pyramid_nbN [] = { 4, 3, 3, 3, 3 };
 //    N0 +---------+ N2
 */
 static int Penta_F [5][5] = { // FORWARD
-  { 0, 1, 2, 0, 0 },          // Top face has an internal normal, other - external
-  { 3, 4, 5, 3, 3 },          // 0 is bottom, 1 is top face
-  { 0, 2, 5, 3, 0 },
+  { 0, 1, 2, 0, 0 },          // All faces have external normals
+  { 3, 5, 4, 3, 3 },          // 0 is bottom, 1 is top face
+  { 0, 3, 4, 1, 0 },
   { 1, 4, 5, 2, 1 },
-  { 0, 3, 4, 1, 0 }}; 
-static int Penta_R [5][5] = { // REVERSED
-  { 0, 1, 2, 0, 0 },          // Bottom face has an internal normal, other - external
-  { 3, 4, 5, 3, 3 },          // 0 is bottom, 1 is top face
-  { 0, 3, 5, 2, 0 },
-  { 1, 2, 5, 4, 1 },
-  { 0, 1, 4, 3, 0 }}; 
-static int Penta_FE [5][5] = { // FORWARD -> EXTERNAL
-  { 0, 1, 2, 0, 0 },
-  { 3, 5, 4, 3, 3 },
-  { 0, 2, 5, 3, 0 },
-  { 1, 4, 5, 2, 1 },
-  { 0, 3, 4, 1, 0 }}; 
+  { 0, 2, 5, 3, 0 }}; 
 static int Penta_RE [5][5] = { // REVERSED -> EXTERNAL
   { 0, 2, 1, 0, 0 },
   { 3, 4, 5, 3, 3 },
-  { 0, 3, 5, 2, 0 },
+  { 0, 1, 4, 3, 0 },
   { 1, 2, 5, 4, 1 },
-  { 0, 1, 4, 3, 0 }}; 
+  { 0, 3, 5, 2, 0 }}; 
 static int Penta_nbN [] = { 3, 3, 4, 4, 4 };
 
 /*
@@ -159,34 +141,57 @@ static int Penta_nbN [] = { 3, 3, 4, 4, 4 };
 //     N0+----------+N3
 */
 static int Hexa_F [6][5] = { // FORWARD
-  { 0, 1, 2, 3, 0 },         // opposite faces are neighbouring,
-  { 4, 5, 6, 7, 4 },         // odd face(1,3,5) normal is internal, even(0,2,4) - external
-  { 1, 0, 4, 5, 1 },         // same index nodes of opposite faces are linked
-  { 2, 3, 7, 6, 2 }, 
-  { 0, 3, 7, 4, 0 }, 
-  { 1, 2, 6, 5, 1 }};
-// static int Hexa_R [6][5] = { // REVERSED
-//   { 0, 3, 2, 1, 0 },         // opposite faces are neighbouring,
-//   { 4, 7, 6, 5, 4 },         // odd face(1,3,5) normal is external, even(0,2,4) - internal
-//   { 1, 5, 4, 0, 1 },         // same index nodes of opposite faces are linked
-//   { 2, 6, 7, 3, 2 }, 
-//   { 0, 4, 7, 3, 0 }, 
-//   { 1, 5, 6, 2, 1 }};
-static int Hexa_FE [6][5] = { // FORWARD -> EXTERNAL
-  { 0, 1, 2, 3, 0 } ,         // opposite faces are neighbouring,
-  { 4, 7, 6, 5, 4 },          // all face normals are external,
-  { 0, 4, 5, 1, 0 },          // links in opposite faces: 0-0, 1-3, 2-2, 3-1
+  { 0, 1, 2, 3, 0 },
+  { 4, 7, 6, 5, 4 },          // all face normals are external
+  { 0, 4, 5, 1, 0 },
+  { 1, 5, 6, 2, 1 },
   { 3, 2, 6, 7, 3 }, 
-  { 0, 3, 7, 4, 0 },
-  { 1, 5, 6, 2, 1 }};
+  { 0, 3, 7, 4, 0 }};
 static int Hexa_RE [6][5] = { // REVERSED -> EXTERNAL
-  { 0, 3, 2, 1, 0 },          // opposite faces are neighbouring,
-  { 4, 5, 6, 7, 4 },          // all face normals are external,
-  { 0, 1, 5, 4, 0 },          // links in opposite faces: 0-0, 1-3, 2-2, 3-1
+  { 0, 3, 2, 1, 0 },
+  { 4, 5, 6, 7, 4 },          // all face normals are external
+  { 0, 1, 5, 4, 0 },
+  { 1, 2, 6, 5, 1 },
   { 3, 7, 6, 2, 3 }, 
-  { 0, 4, 7, 3, 0 },
-  { 1, 2, 6, 5, 1 }};
+  { 0, 4, 7, 3, 0 }};
 static int Hexa_nbN [] = { 4, 4, 4, 4, 4, 4 };
+
+/*   
+//      N8 +------+ N9
+//        /        \
+//       /          \
+//   N7 +            + N10
+//       \          /
+//        \        /
+//      N6 +------+ N11
+//                             HEXAGONAL PRISM
+//      N2 +------+ N3
+//        /        \
+//       /          \
+//   N1 +            + N4
+//       \          /
+//        \        /
+//      N0 +------+ N5
+*/
+static int HexPrism_F [8][7] = { // FORWARD
+  { 0, 1, 2, 3, 4, 5, 0 },
+  { 6,11,10, 9, 8, 7, 6 },
+  { 0, 6, 7, 1, 0, 0, 0 },
+  { 1, 7, 8, 2, 1, 1, 1 },
+  { 2, 8, 9, 3, 2, 2, 2 },
+  { 3, 9,10, 4, 3, 3, 3 },
+  { 4,10,11, 5, 4, 4, 4 },
+  { 5,11, 6, 0, 5, 5, 5 }}; 
+static int HexPrism_RE [8][7] = { // REVERSED -> EXTERNAL
+  { 0, 5, 4, 3, 2, 1, 0 },
+  { 6,11,10, 9, 8, 7, 6 },
+  { 0, 6, 7, 1, 0, 0, 0 },
+  { 1, 7, 8, 2, 1, 1, 1 },
+  { 2, 8, 9, 3, 2, 2, 2 },
+  { 3, 9,10, 4, 3, 3, 3 },
+  { 4,10,11, 5, 4, 4, 4 },
+  { 5,11, 6, 0, 5, 5, 5 }}; 
+static int HexPrism_nbN [] = { 6, 6, 4, 4, 4, 4, 4, 4 };
 
 
 /*
@@ -203,18 +208,13 @@ static int Hexa_nbN [] = { 4, 4, 4, 4, 4, 4 };
 //           +
 //           N2
 */
-static int QuadTetra_F [4][7] = { // FORWARD == EXTERNAL
+static int QuadTetra_F [4][7] = { // FORWARD
   { 0, 4, 1, 5, 2, 6, 0 },        // All faces have external normals
   { 0, 7, 3, 8, 1, 4, 0 },
   { 1, 8, 3, 9, 2, 5, 1 },
   { 0, 6, 2, 9, 3, 7, 0 }}; 
-static int QuadTetra_R [4][7] = { // REVERSED
-  { 0, 4, 1, 5, 2, 6, 0 },        // All faces but a bottom have external normals
-  { 0, 4, 1, 8, 3, 7, 0 },
-  { 1, 5, 2, 9, 3, 8, 1 },
-  { 0, 7, 3, 9, 2, 6, 0 }};
 static int QuadTetra_RE [4][7] = { // REVERSED -> FORWARD (EXTERNAL)
-  { 0, 6, 2, 5, 1, 4, 0 },              // All faces have external normals
+  { 0, 6, 2, 5, 1, 4, 0 },         // All faces have external normals
   { 0, 4, 1, 8, 3, 7, 0 },
   { 1, 5, 2, 9, 3, 8, 1 },
   { 0, 7, 3, 9, 2, 6, 0 }};
@@ -241,18 +241,12 @@ static int QuadTetra_nbN [] = { 6, 6, 6, 6 };
 //       |         |
 //      0+----+----+3
 //            8
-static int QuadPyram_F [5][9] = {  // FORWARD == EXTERNAL
+static int QuadPyram_F [5][9] = {  // FORWARD
   { 0, 5, 1, 6, 2, 7, 3, 8, 0 },   // All faces have external normals
   { 0, 9, 4, 10,1, 5, 0, 4, 4 },
   { 1, 10,4, 11,2, 6, 1, 4, 4 },
   { 2, 11,4, 12,3, 7, 2, 4, 4 },
   { 3, 12,4, 9, 0, 8, 3, 4, 4 }}; 
-static int QuadPyram_R [5][9] = {  // REVERSED
-  { 0, 5, 1, 6, 2, 7, 3, 8, 0 },   // All faces but a bottom have external normals
-  { 0, 5, 1, 10,4, 9, 0, 4, 4 },
-  { 1, 6, 2, 11,4, 10,1, 4, 4 },
-  { 2, 7, 3, 12,4, 11,2, 4, 4 },
-  { 3, 8, 0, 9, 4, 12,3, 4, 4 }}; 
 static int QuadPyram_RE [5][9] = { // REVERSED -> FORWARD (EXTERNAL)
   { 0, 8, 3, 7, 2, 6, 1, 5, 0 },   // All faces but a bottom have external normals
   { 0, 5, 1, 10,4, 9, 0, 4, 4 },
@@ -272,9 +266,6 @@ static int QuadPyram_nbN [] = { 8, 6, 6, 6, 6 };
 //       |    |    |
 //       |    +13  |                QUADRATIC
 //       |    |    |                PENTAHEDRON
-//       |    |    |
-//       |    |    |
-//       |    |    |
 //     12+    |    +14
 //       |    |    |
 //       |    |    |
@@ -287,29 +278,17 @@ static int QuadPyram_nbN [] = { 8, 6, 6, 6, 6 };
 //            8
 */
 static int QuadPenta_F [5][9] = {  // FORWARD
-  { 0, 6, 1, 7, 2, 8, 0, 0, 0 },   // Top face has an internal normal, other - external
-  { 3, 9, 4, 10,5, 11,3, 3, 3 },   // 0 is bottom, 1 is top face
-  { 0, 8, 2, 14,5, 11,3, 12,0 },
-  { 1, 13,4, 10,5, 14,2, 7, 1 },
-  { 0, 12,3, 9, 4, 13,1, 6, 0 }}; 
-static int QuadPenta_R [5][9] = { // REVERSED
-  { 0, 6, 1, 7, 2, 8, 0, 0, 0 },  // Bottom face has an internal normal, other - external
-  { 3, 9, 4, 10,5, 11,3, 3, 3 },  // 0 is bottom, 1 is top face
-  { 0, 12,3, 11,5, 14,2, 8, 0 },
-  { 1, 7, 2, 14,5, 10,4, 13,1 },
-  { 0, 6, 1, 13,4, 9, 3, 12,0 }}; 
-static int QuadPenta_FE [5][9] = { // FORWARD -> EXTERNAL
   { 0, 6, 1, 7, 2, 8, 0, 0, 0 },
   { 3,11, 5, 10,4, 9, 3, 3, 3 },
-  { 0, 8, 2, 14,5, 11,3, 12,0 },
+  { 0, 12,3, 9, 4, 13,1, 6, 0 },
   { 1, 13,4, 10,5, 14,2, 7, 1 },
-  { 0, 12,3, 9, 4, 13,1, 6, 0 }}; 
+  { 0, 8, 2, 14,5, 11,3, 12,0 }}; 
 static int QuadPenta_RE [5][9] = { // REVERSED -> EXTERNAL
   { 0, 8, 2, 7, 1, 6, 0, 0, 0 },
   { 3, 9, 4, 10,5, 11,3, 3, 3 },
-  { 0, 12,3, 11,5, 14,2, 8, 0 },
+  { 0, 6, 1, 13,4, 9, 3, 12,0 },
   { 1, 7, 2, 14,5, 10,4, 13,1 },
-  { 0, 6, 1, 13,4, 9, 3, 12,0 }}; 
+  { 0, 12,3, 11,5, 14,2, 8, 0 }}; 
 static int QuadPenta_nbN [] = { 6, 6, 8, 8, 8 };
 
 /*
@@ -336,34 +315,36 @@ static int QuadPenta_nbN [] = { 6, 6, 8, 8, 8 };
 //             11
 */
 static int QuadHexa_F [6][9] = {  // FORWARD
-  { 0, 8, 1, 9, 2, 10,3, 11,0 },  // opposite faces are neighbouring,
-  { 4, 12,5, 13,6, 14,7, 15,4 },  // odd face(1,3,5) normal is internal, even(0,2,4) - external
-  { 1, 8, 0, 16,4, 12,5, 17,1 },  // same index nodes of opposite faces are linked
-  { 2, 10,3, 19,7, 14,6, 18,2 }, 
-  { 0, 11,3, 19,7, 15,4, 16,0 }, 
-  { 1, 9, 2, 18,6, 13,5, 17,1 }};
-// static int Hexa_R [6][5] = { // REVERSED
-//   { 0, 3, 2, 1, 0 },         // opposite faces are neighbouring,
-//   { 4, 7, 6, 5, 4 },         // odd face(1,3,5) normal is external, even(0,2,4) - internal
-//   { 1, 5, 4, 0, 1 },         // same index nodes of opposite faces are linked
-//   { 2, 6, 7, 3, 2 }, 
-//   { 0, 4, 7, 3, 0 }, 
-//   { 1, 5, 6, 2, 1 }};
-static int QuadHexa_FE [6][9] = {  // FORWARD -> EXTERNAL
-  { 0, 8, 1, 9, 2, 10,3, 11,0 },   // opposite faces are neighbouring,
-  { 4, 15,7, 14,6, 13,5, 12,4 },   // all face normals are external,
-  { 0, 16,4, 12,5, 17,1, 8, 0 },   // links in opposite faces: 0-0, 1-3, 2-2, 3-1
+  { 0, 8, 1, 9, 2, 10,3, 11,0 },   // all face normals are external,
+  { 4, 15,7, 14,6, 13,5, 12,4 },
+  { 0, 16,4, 12,5, 17,1, 8, 0 },
+  { 1, 17,5, 13,6, 18,2, 9, 1 },
   { 3, 10,2, 18,6, 14,7, 19,3 }, 
-  { 0, 11,3, 19,7, 15,4, 16,0 },
-  { 1, 17,5, 13,6, 18,2, 9, 1 }};
+  { 0, 11,3, 19,7, 15,4, 16,0 }};
 static int QuadHexa_RE [6][9] = {  // REVERSED -> EXTERNAL
-  { 0, 11,3, 10,2, 9, 1, 8, 0 },   // opposite faces are neighbouring,
-  { 4, 12,5, 13,6, 14,7, 15,4 },   // all face normals are external,
-  { 0, 8, 1, 17,5, 12,4, 16,0 },   // links in opposite faces: 0-0, 1-3, 2-2, 3-1
+  { 0, 11,3, 10,2, 9, 1, 8, 0 },   // all face normals are external
+  { 4, 12,5, 13,6, 14,7, 15,4 },
+  { 0, 8, 1, 17,5, 12,4, 16,0 },
+  { 1, 9, 2, 18,6, 13,5, 17,1 },
   { 3, 19,7, 14,6, 18,2, 10,3 }, 
-  { 0, 16,4, 15,7, 19,3, 11,0 },
-  { 1, 9, 2, 18,6, 13,5, 17,1 }};
+  { 0, 16,4, 15,7, 19,3, 11,0 }};
 static int QuadHexa_nbN [] = { 8, 8, 8, 8, 8, 8 };
+
+static int TriQuadHexa_F [6][9] = {  // FORWARD
+  { 0, 8, 1, 9, 2, 10,3, 11, 20 },   // all face normals are external
+  { 4, 15,7, 14,6, 13,5, 12, 25 },
+  { 0, 16,4, 12,5, 17,1, 8,  21 },
+  { 1, 17,5, 13,6, 18,2, 9,  22 },
+  { 3, 10,2, 18,6, 14,7, 19, 23 }, 
+  { 0, 11,3, 19,7, 15,4, 16, 24 }};
+static int TriQuadHexa_RE [6][9] = {  // REVERSED -> EXTERNAL
+  { 0, 11,3, 10,2, 9, 1, 8,  20 },   // opposite faces are neighbouring,
+  { 4, 12,5, 13,6, 14,7, 15, 25 },   // all face normals are external
+  { 0, 8, 1, 17,5, 12,4, 16, 21 },
+  { 1, 9, 2, 18,6, 13,5, 17, 22 },
+  { 3, 19,7, 14,6, 18,2, 10, 23 }, 
+  { 0, 16,4, 15,7, 19,3, 11, 24 }};
+static int TriQuadHexa_nbN [] = { 9, 9, 9, 9, 9, 9 };
 
 
 // ========================================================
@@ -380,6 +361,7 @@ struct XYZ {
   XYZ( const XYZ& other )             { x = other.x; y = other.y; z = other.z; }
   XYZ( const SMDS_MeshNode* n )       { x = n->X(); y = n->Y(); z = n->Z(); }
   inline XYZ operator-( const XYZ& other );
+  inline XYZ operator+( const XYZ& other );
   inline XYZ Crossed( const XYZ& other );
   inline double Dot( const XYZ& other );
   inline double Magnitude();
@@ -387,6 +369,9 @@ struct XYZ {
 };
 inline XYZ XYZ::operator-( const XYZ& Right ) {
   return XYZ(x - Right.x, y - Right.y, z - Right.z);
+}
+inline XYZ XYZ::operator+( const XYZ& Right ) {
+  return XYZ(x + Right.x, y + Right.y, z + Right.z);
 }
 inline XYZ XYZ::Crossed( const XYZ& Right ) {
   return XYZ (y * Right.z - z * Right.y,
@@ -402,7 +387,29 @@ inline double XYZ::Magnitude() {
 inline double XYZ::SquareMagnitude() {
   return (x * x + y * y + z * z);
 }
-}
+
+  //================================================================================
+  /*!
+   * \brief Return linear type corresponding to a quadratic one
+   */
+  //================================================================================
+
+  SMDS_VolumeTool::VolumeType quadToLinear(SMDS_VolumeTool::VolumeType quadType)
+  {
+    SMDS_VolumeTool::VolumeType linType = SMDS_VolumeTool::VolumeType( int(quadType)-4 );
+    const int nbCornersByQuad = SMDS_VolumeTool::NbCornerNodes( quadType );
+    if ( SMDS_VolumeTool::NbCornerNodes( linType ) == nbCornersByQuad )
+      return linType;
+
+    int iLin = 0;
+    for ( ; iLin < SMDS_VolumeTool::NB_VOLUME_TYPES; ++iLin )
+      if ( SMDS_VolumeTool::NbCornerNodes( SMDS_VolumeTool::VolumeType( iLin )) == nbCornersByQuad)
+        return SMDS_VolumeTool::VolumeType( iLin );
+
+    return SMDS_VolumeTool::UNKNOWN;
+  }
+
+} // namespace
 
 //=======================================================================
 //function : SMDS_VolumeTool
@@ -410,19 +417,10 @@ inline double XYZ::SquareMagnitude() {
 //=======================================================================
 
 SMDS_VolumeTool::SMDS_VolumeTool ()
-     : myVolume( 0 ),
-       myPolyedre( 0 ),
-       myVolForward( true ),
-       myNbFaces( 0 ),
-       myVolumeNbNodes( 0 ),
-       myVolumeNodes( NULL ),
-       myExternalFaces( false ),
-       myFaceNbNodes( 0 ),
-       myCurFace( -1 ),
-       myFaceNodeIndices( NULL ),
-       myFaceNodes( NULL )
+  : myVolumeNodes( NULL ),
+    myFaceNodes( NULL )
 {
-  //MESSAGE("******************************************************** SMDS_VolumeToo");
+  Set( 0 );
 }
 
 //=======================================================================
@@ -430,21 +428,12 @@ SMDS_VolumeTool::SMDS_VolumeTool ()
 //purpose  : 
 //=======================================================================
 
-SMDS_VolumeTool::SMDS_VolumeTool (const SMDS_MeshElement* theVolume)
-     : myVolume( 0 ),
-       myPolyedre( 0 ),
-       myVolForward( true ),
-       myNbFaces( 0 ),
-       myVolumeNbNodes( 0 ),
-       myVolumeNodes( NULL ),
-       myExternalFaces( false ),
-       myFaceNbNodes( 0 ),
-       myCurFace( -1 ),
-       myFaceNodeIndices( NULL ),
-       myFaceNodes( NULL )
+SMDS_VolumeTool::SMDS_VolumeTool (const SMDS_MeshElement* theVolume,
+                                  const bool              ignoreCentralNodes)
+  : myVolumeNodes( NULL ),
+    myFaceNodes( NULL )
 {
-  //MESSAGE("******************************************************** SMDS_VolumeToo");
-  Set( theVolume );
+  Set( theVolume, ignoreCentralNodes );
 }
 
 //=======================================================================
@@ -466,10 +455,13 @@ SMDS_VolumeTool::~SMDS_VolumeTool()
 //purpose  : Set volume to iterate on
 //=======================================================================
 
-bool SMDS_VolumeTool::Set (const SMDS_MeshElement* theVolume)
+bool SMDS_VolumeTool::Set (const SMDS_MeshElement* theVolume,
+                           const bool              ignoreCentralNodes)
 {
+  // reset fields
   myVolume = 0;
   myPolyedre = 0;
+  myIgnoreCentralNodes = ignoreCentralNodes;
 
   myVolForward = true;
   myNbFaces = 0;
@@ -478,68 +470,60 @@ bool SMDS_VolumeTool::Set (const SMDS_MeshElement* theVolume)
     delete [] myVolumeNodes;
     myVolumeNodes = NULL;
   }
+  myPolyIndices.clear();
 
   myExternalFaces = false;
-  myFaceNbNodes = 0;
+
+  myAllFacesNodeIndices_F  = 0;
+  //myAllFacesNodeIndices_FE = 0;
+  myAllFacesNodeIndices_RE = 0;
+  myAllFacesNbNodes        = 0;
 
   myCurFace = -1;
+  myFaceNbNodes = 0;
   myFaceNodeIndices = NULL;
   if (myFaceNodes != NULL) {
     delete [] myFaceNodes;
     myFaceNodes = NULL;
   }
 
-  if ( theVolume && theVolume->GetType() == SMDSAbs_Volume )
+  // set volume data
+  if ( !theVolume || theVolume->GetType() != SMDSAbs_Volume )
+    return false;
+
+  myVolume = theVolume;
+  if (myVolume->IsPoly())
+    myPolyedre = dynamic_cast<const SMDS_VtkVolume*>( myVolume );
+
+  myNbFaces = theVolume->NbFaces();
+  myVolumeNbNodes = theVolume->NbNodes();
+
+  // set nodes
+  int iNode = 0;
+  myVolumeNodes = new const SMDS_MeshNode* [myVolumeNbNodes];
+  SMDS_ElemIteratorPtr nodeIt = myVolume->nodesIterator();
+  while ( nodeIt->more() )
+    myVolumeNodes[ iNode++ ] = static_cast<const SMDS_MeshNode*>( nodeIt->next() );
+
+  // check validity
+  if ( !setFace(0) )
+    return ( myVolume = 0 );
+
+  if ( !myPolyedre )
   {
-    myVolume = theVolume;
-
-    myNbFaces = theVolume->NbFaces();
-    myVolumeNbNodes = theVolume->NbNodes();
-
-    // set volume nodes
-    int iNode = 0;
-    myVolumeNodes = new const SMDS_MeshNode* [myVolumeNbNodes];
-    SMDS_ElemIteratorPtr nodeIt = myVolume->nodesIterator();
-    while ( nodeIt->more() ) {
-      myVolumeNodes[ iNode++ ] = static_cast<const SMDS_MeshNode*>( nodeIt->next() );
-    }
-
-    if (myVolume->IsPoly()) {
-      myPolyedre = dynamic_cast<const SMDS_VtkVolume*>( myVolume );
-      if (!myPolyedre) {
-        MESSAGE("Warning: bad volumic element");
-        return false;
-      }
-    }
-    else {
-      switch ( myVolumeNbNodes ) {
-      case 4:
-      case 5:
-      case 6:
-      case 8:
-      case 10:
-      case 13:
-      case 15:
-      case 20: {
-        // define volume orientation
-        XYZ botNormal;
-        GetFaceNormal( 0, botNormal.x, botNormal.y, botNormal.z );
-        const SMDS_MeshNode* botNode = myVolumeNodes[ 0 ];
-        int topNodeIndex = myVolume->NbCornerNodes() - 1;
-        while ( !IsLinked( 0, topNodeIndex, /*ignoreMediumNodes=*/true )) --topNodeIndex;
-        const SMDS_MeshNode* topNode = myVolumeNodes[ topNodeIndex ];
-        XYZ upDir (topNode->X() - botNode->X(),
-                   topNode->Y() - botNode->Y(),
-                   topNode->Z() - botNode->Z() );
-        myVolForward = ( botNormal.Dot( upDir ) < 0 );
-        break;
-      }
-      default:
-        break;
-      }
-    }
+    // define volume orientation
+    XYZ botNormal;
+    GetFaceNormal( 0, botNormal.x, botNormal.y, botNormal.z );
+    const SMDS_MeshNode* botNode = myVolumeNodes[ 0 ];
+    int topNodeIndex = myVolume->NbCornerNodes() - 1;
+    while ( !IsLinked( 0, topNodeIndex, /*ignoreMediumNodes=*/true )) --topNodeIndex;
+    const SMDS_MeshNode* topNode = myVolumeNodes[ topNodeIndex ];
+    XYZ upDir (topNode->X() - botNode->X(),
+               topNode->Y() - botNode->Y(),
+               topNode->Z() - botNode->Z() );
+    myVolForward = ( botNormal.Dot( upDir ) < 0 );
   }
-  return ( myVolume != 0 );
+  return true;
 }
 
 //=======================================================================
@@ -581,6 +565,12 @@ void SMDS_VolumeTool::Inverse ()
     SWAP_NODES( myVolumeNodes, 1, 3 );
     SWAP_NODES( myVolumeNodes, 5, 7 );
     break;
+  case 12:
+    SWAP_NODES( myVolumeNodes, 1, 5 );
+    SWAP_NODES( myVolumeNodes, 2, 4 );
+    SWAP_NODES( myVolumeNodes, 7, 11 );
+    SWAP_NODES( myVolumeNodes, 8, 10 );
+    break;
 
   case 10:
     SWAP_NODES( myVolumeNodes, 1, 2 );
@@ -609,6 +599,17 @@ void SMDS_VolumeTool::Inverse ()
     SWAP_NODES( myVolumeNodes, 13, 14 );
     SWAP_NODES( myVolumeNodes, 17, 19 );
     break;
+  case 27:
+    SWAP_NODES( myVolumeNodes, 1, 3 );
+    SWAP_NODES( myVolumeNodes, 5, 7 );
+    SWAP_NODES( myVolumeNodes, 8, 11 );
+    SWAP_NODES( myVolumeNodes, 9, 10 );
+    SWAP_NODES( myVolumeNodes, 12, 15 );
+    SWAP_NODES( myVolumeNodes, 13, 14 );
+    SWAP_NODES( myVolumeNodes, 17, 19 );
+    SWAP_NODES( myVolumeNodes, 21, 24 );
+    SWAP_NODES( myVolumeNodes, 22, 23 );
+    break;
   default:;
   }
 }
@@ -623,26 +624,18 @@ SMDS_VolumeTool::VolumeType SMDS_VolumeTool::GetVolumeType() const
   if ( myPolyedre )
     return POLYHEDA;
 
-  if ( myVolume ) {
-//    static const VolumeType types[] = {
-//      TETRA,     // myVolumeNbNodes = 4
-//      PYRAM,     // myVolumeNbNodes = 5
-//      PENTA,     // myVolumeNbNodes = 6
-//      UNKNOWN,   // myVolumeNbNodes = 7
-//      HEXA       // myVolumeNbNodes = 8
-//    };
-//    return types[ myVolumeNbNodes - 4 ];
-    switch(myVolumeNbNodes) {
-    case 4: return TETRA; break;
-    case 5: return PYRAM; break;
-    case 6: return PENTA; break;
-    case 8: return HEXA; break;
-    case 10: return QUAD_TETRA; break;
-    case 13: return QUAD_PYRAM; break;
-    case 15: return QUAD_PENTA; break;
-    case 20: return QUAD_HEXA; break;
-    default: break;
-    }
+  switch( myVolumeNbNodes ) {
+  case 4: return TETRA;
+  case 5: return PYRAM;
+  case 6: return PENTA;
+  case 8: return HEXA;
+  case 12: return HEX_PRISM;
+  case 10: return QUAD_TETRA;
+  case 13: return QUAD_PYRAM;
+  case 15: return QUAD_PENTA;
+  case 20: return QUAD_HEXA;
+  case 27: return QUAD_HEXA;
+  default: break;
   }
 
   return UNKNOWN;
@@ -700,34 +693,31 @@ double SMDS_VolumeTool::GetSize() const
     if ( !myPolyedre )
       return 0.;
 
-    SMDS_Mesh *mesh = SMDS_Mesh::_meshList[myPolyedre->getMeshId()];
     // split a polyhedron into tetrahedrons
 
+    int saveCurFace = myCurFace;
     SMDS_VolumeTool* me = const_cast< SMDS_VolumeTool* > ( this );
-    XYZ baryCenter;
-    me->GetBaryCenter(baryCenter.x, baryCenter.y, baryCenter.z);
-    SMDS_MeshNode *bcNode = mesh->AddNode( baryCenter.x, baryCenter.y, baryCenter.z );
-
     for ( int f = 0; f < NbFaces(); ++f )
     {
-      bool externalFace = me->IsFaceExternal( f ); // it calls setFace()
-      for ( int n = 2; n < myFaceNbNodes; ++n )
+      me->setFace( f );
+      XYZ area (0,0,0), p1( myFaceNodes[0] );
+      for ( int n = 0; n < myFaceNbNodes; ++n )
       {
-        double Vn = getTetraVolume( myFaceNodes[ 0 ],
-                                    myFaceNodes[ n-1 ],
-                                    myFaceNodes[ n ],
-                                    bcNode );
-///         cout <<"++++   " << Vn << "   nodes " <<myFaceNodes[ 0 ]->GetID() << " " <<myFaceNodes[ n-1 ]->GetID() << " " <<myFaceNodes[ n ]->GetID() << "        < " << V << endl;
-        V += externalFace ? -Vn : Vn;
+        XYZ p2( myFaceNodes[ n+1 ]);
+        area = area + p1.Crossed( p2 );
+        p1 = p2;
       }
+      V += p1.Dot( area );
     }
-    mesh->RemoveNode(bcNode);
+    V /= 6;
+    if ( saveCurFace > -1 && saveCurFace != myCurFace )
+      me->setFace( myCurFace );
   }
   else 
   {
     const static int ind[] = {
-      0, 1, 3, 6, 11, 19, 32, 46, 66};
-    const static int vtab[][4] = {
+      0, 1, 3, 6, 11, 23, 31, 44, 58, 78 };
+    const static int vtab[][4] = { // decomposition into tetra in the order of enum VolumeType
       // tetrahedron
       { 0, 1, 2, 3 },
       // pyramid
@@ -743,6 +733,22 @@ double SMDS_VolumeTool::GetSize() const
       { 1, 3, 6, 2 },
       { 4, 6, 3, 7 },
       { 1, 4, 6, 3 },
+      // hexagonal prism
+      { 0, 1, 2, 7 },
+      { 0, 7, 8, 6 },
+      { 2, 7, 8, 0 },
+
+      { 0, 3, 4, 9 },
+      { 0, 9, 10, 6 },
+      { 4, 9, 10, 0 },
+
+      { 0, 3, 4, 9 },
+      { 0, 9, 10, 6 },
+      { 4, 9, 10, 0 },
+
+      { 0, 4, 5, 10 },
+      { 0, 10, 11, 6 },
+      { 5, 10, 11, 0 },
 
       // quadratic tetrahedron
       { 0, 4, 6, 7 },
@@ -925,7 +931,7 @@ const int* SMDS_VolumeTool::GetFaceNodesIndices( int faceIndex ) const
   if ( !setFace( faceIndex ))
     return 0;
 
-  if (myVolume->IsPoly())
+  if (myPolyedre)
   {
     SMDS_VolumeTool* me = const_cast< SMDS_VolumeTool* > ( this );
     me->myPolyIndices.resize( myFaceNbNodes + 1 );
@@ -948,9 +954,7 @@ bool SMDS_VolumeTool::GetFaceNodes (int                        faceIndex,
     return false;
 
   theFaceNodes.clear();
-  int iNode, nbNode = myFaceNbNodes;
-  for ( iNode = 0; iNode < nbNode; iNode++ )
-    theFaceNodes.insert( myFaceNodes[ iNode ]);
+  theFaceNodes.insert( myFaceNodes, myFaceNodes + myFaceNbNodes );
 
   return true;
 }
@@ -975,26 +979,29 @@ bool SMDS_VolumeTool::IsFaceExternal( int faceIndex ) const
     return true;
   }
 
-  switch ( myVolumeNbNodes ) {
-  case 4:
-  case 5:
-  case 10:
-  case 13:
-    // only the bottom of a reversed tetrahedron can be internal
-    return ( myVolForward || faceIndex != 0 );
-  case 6:
-  case 15:
-    // in a forward pentahedron, the top is internal, in a reversed one - bottom
-    return ( myVolForward ? faceIndex != 1 : faceIndex != 0 );
-  case 8:
-  case 20: {
-    // in a forward hexahedron, even face normal is external, odd - internal
-    bool odd = faceIndex % 2;
-    return ( myVolForward ? !odd : odd );
-  }
-  default:;
-  }
-  return false;
+  // switch ( myVolumeNbNodes ) {
+  // case 4:
+  // case 5:
+  // case 10:
+  // case 13:
+  //   // only the bottom of a reversed tetrahedron can be internal
+  //   return ( myVolForward || faceIndex != 0 );
+  // case 6:
+  // case 15:
+  // case 12:
+  //   // in a forward prism, the top is internal, in a reversed one - bottom
+  //   return ( myVolForward ? faceIndex != 1 : faceIndex != 0 );
+  // case 8:
+  // case 20:
+  // case 27: {
+  //   // in a forward hexahedron, even face normal is external, odd - internal
+  //   bool odd = faceIndex % 2;
+  //   return ( myVolForward ? !odd : odd );
+  // }
+  // default:;
+  // }
+  // return false;
+  return true;
 }
 
 //=======================================================================
@@ -1019,9 +1026,7 @@ bool SMDS_VolumeTool::GetFaceNormal (int faceIndex, double & X, double & Y, doub
     XYZ p4 ( myFaceNodes[3] );
     XYZ aVec14( p4 - p1 );
     XYZ cross2 = aVec13.Crossed( aVec14 );
-    cross.x += cross2.x;
-    cross.y += cross2.y;
-    cross.z += cross2.z;    
+    cross = cross + cross2;
   }
 
   double size = cross.Magnitude();
@@ -1086,6 +1091,26 @@ double SMDS_VolumeTool::GetFaceArea( int faceIndex ) const
   return area;
 }
 
+//================================================================================
+/*!
+ * \brief Return index of the node located at face center of a quadratic element like HEX27
+ */
+//================================================================================
+
+int SMDS_VolumeTool::GetCenterNodeIndex( int faceIndex ) const
+{
+  if ( myAllFacesNbNodes && myVolumeNbNodes == 27 ) // classic element with 27 nodes
+  {
+    switch ( faceIndex ) {
+    case 0: return 20;
+    case 1: return 25;
+    default:
+      return faceIndex + 19;
+    }
+  }
+  return -1;
+}
+
 //=======================================================================
 //function : GetOppFaceIndex
 //purpose  : Return index of the opposite face if it exists, else -1.
@@ -1094,19 +1119,37 @@ double SMDS_VolumeTool::GetFaceArea( int faceIndex ) const
 int SMDS_VolumeTool::GetOppFaceIndex( int faceIndex ) const
 {
   int ind = -1;
-  if (myVolume->IsPoly()) {
+  if (myPolyedre) {
     MESSAGE("Warning: attempt to obtain opposite face on polyhedral volume");
     return ind;
   }
 
+  const int nbHoriFaces = 2;
+
   if ( faceIndex >= 0 && faceIndex < NbFaces() ) {
     switch ( myVolumeNbNodes ) {
     case 6:
+    case 15:
       if ( faceIndex == 0 || faceIndex == 1 )
         ind = 1 - faceIndex;
         break;
     case 8:
-      ind = faceIndex + ( faceIndex % 2 ? -1 : 1 );
+    case 12:
+      if ( faceIndex <= 1 ) // top or bottom
+        ind = 1 - faceIndex;
+      else {
+        const int nbSideFaces = myAllFacesNbNodes[0];
+        ind = ( faceIndex - nbHoriFaces + nbSideFaces/2 ) % nbSideFaces + nbHoriFaces;
+      }
+      break;
+    case 20:
+    case 27:
+      if ( faceIndex <= 1 ) // top or bottom
+        ind = 1 - faceIndex;
+      else {
+        const int nbSideFaces = myAllFacesNbNodes[0] / 2;
+        ind = ( faceIndex - nbHoriFaces + nbSideFaces/2 ) % nbSideFaces + nbHoriFaces;
+      }
       break;
     default:;
     }
@@ -1155,12 +1198,13 @@ bool SMDS_VolumeTool::IsLinked (const SMDS_MeshNode* theNode1,
   }
 
   // find nodes indices
-  int i1 = -1, i2 = -1;
-  for ( int i = 0; i < myVolumeNbNodes; i++ ) {
+  int i1 = -1, i2 = -1, nbFound = 0;
+  for ( int i = 0; i < myVolumeNbNodes && nbFound < 2; i++ )
+  {
     if ( myVolumeNodes[ i ] == theNode1 )
-      i1 = i;
+      i1 = i, ++nbFound;
     else if ( myVolumeNodes[ i ] == theNode2 )
-      i2 = i;
+      i2 = i, ++nbFound;
   }
   return IsLinked( i1, i2 );
 }
@@ -1186,25 +1230,25 @@ bool SMDS_VolumeTool::IsLinked (const int theNode1Index,
   if ( minInd < 0 || maxInd > myVolumeNbNodes - 1 || maxInd == minInd )
     return false;
 
-  SMDSAbs_EntityType type = myVolume->GetEntityType();
+  VolumeType type = GetVolumeType();
   if ( myVolume->IsQuadratic() )
   {
     int firstMediumInd = myVolume->NbCornerNodes();
     if ( minInd >= firstMediumInd )
-      return false; // medium nodes are not linked
+      return false; // both nodes are medium - not linked
     if ( maxInd < firstMediumInd ) // both nodes are corners
     {
       if ( theIgnoreMediumNodes )
-        type = SMDSAbs_EntityType( int(type)-1 ); // check linkage of corner nodes
+        type = quadToLinear(type); // to check linkage of corner nodes only
       else
         return false; // corner nodes are not linked directly in a quadratic cell
     }
   }
 
   switch ( type ) {
-  case SMDSEntity_Tetra:
+  case TETRA:
     return true;
-  case SMDSEntity_Hexa:
+  case HEXA:
     switch ( maxInd - minInd ) {
     case 1: return minInd != 3;
     case 3: return minInd == 0 || minInd == 4;
@@ -1212,7 +1256,7 @@ bool SMDS_VolumeTool::IsLinked (const int theNode1Index,
     default:;
     }
     break;
-  case SMDSEntity_Pyramid:
+  case PYRAM:
     if ( maxInd == 4 )
       return true;
     switch ( maxInd - minInd ) {
@@ -1221,7 +1265,7 @@ bool SMDS_VolumeTool::IsLinked (const int theNode1Index,
     default:;
     }
     break;
-  case SMDSEntity_Penta:
+  case PENTA:
     switch ( maxInd - minInd ) {
     case 1: return minInd != 2;
     case 2: return minInd == 0 || minInd == 3;
@@ -1229,7 +1273,7 @@ bool SMDS_VolumeTool::IsLinked (const int theNode1Index,
     default:;
     }
     break;
-  case SMDSEntity_Quad_Tetra:
+  case QUAD_TETRA:
     {
       switch ( minInd ) {
       case 0: if( maxInd==4 ||  maxInd==6 ||  maxInd==7 ) return true;
@@ -1240,7 +1284,7 @@ bool SMDS_VolumeTool::IsLinked (const int theNode1Index,
       }
       break;
     }
-  case SMDSEntity_Quad_Hexa:
+  case QUAD_HEXA:
     {
       switch ( minInd ) {
       case 0: if( maxInd==8 ||  maxInd==11 ||  maxInd==16 ) return true;
@@ -1255,7 +1299,7 @@ bool SMDS_VolumeTool::IsLinked (const int theNode1Index,
       }
       break;
     }
-  case SMDSEntity_Quad_Pyramid:
+  case QUAD_PYRAM:
     {
       switch ( minInd ) {
       case 0: if( maxInd==5 ||  maxInd==8 ||  maxInd==9 ) return true;
@@ -1267,7 +1311,7 @@ bool SMDS_VolumeTool::IsLinked (const int theNode1Index,
       }
       break;
     }
-  case SMDSEntity_Quad_Penta:
+  case QUAD_PENTA:
     {
       switch ( minInd ) {
       case 0: if( maxInd==6 ||  maxInd==8 ||  maxInd==12 ) return true;
@@ -1279,6 +1323,13 @@ bool SMDS_VolumeTool::IsLinked (const int theNode1Index,
       default:;
       }
       break;
+    }
+  case HEX_PRISM:
+    {
+      const int diff = maxInd-minInd;
+      if ( diff > 6  ) return false;// not linked top and bottom
+      if ( diff == 6 ) return true; // linked top and bottom
+      return diff == 1 || diff == 7;
     }
   default:;
   }
@@ -1312,7 +1363,6 @@ int SMDS_VolumeTool::GetNodeIndex(const SMDS_MeshNode* theNode) const
 int SMDS_VolumeTool::GetAllExistingFaces(vector<const SMDS_MeshElement*> & faces) const
 {
   faces.clear();
-  faces.reserve( NbFaces() );
   for ( int iF = 0; iF < NbFaces(); ++iF ) {
     const SMDS_MeshFace* face = 0;
     const SMDS_MeshNode** nodes = GetFaceNodes( iF );
@@ -1347,7 +1397,7 @@ int SMDS_VolumeTool::GetAllExistingEdges(vector<const SMDS_MeshElement*> & edges
 {
   edges.clear();
   edges.reserve( myVolumeNbNodes * 2 );
-  for ( int i = 0; i < myVolumeNbNodes; ++i ) {
+  for ( int i = 0; i < myVolumeNbNodes-1; ++i ) {
     for ( int j = i + 1; j < myVolumeNbNodes; ++j ) {
       if ( IsLinked( i, j )) {
         const SMDS_MeshElement* edge =
@@ -1417,7 +1467,7 @@ bool SMDS_VolumeTool::IsFreeFace( int faceIndex, const SMDS_MeshElement** otherV
   const SMDS_MeshNode** nodes = GetFaceNodes( faceIndex );
   const int nbFaceNodes = myFaceNbNodes;
 
-  // evaluate nb of face nodes shared by other volume
+  // evaluate nb of face nodes shared by other volumes
   int maxNbShared = -1;
   typedef map< const SMDS_MeshElement*, int > TElemIntMap;
   TElemIntMap volNbShared;
@@ -1583,7 +1633,8 @@ bool SMDS_VolumeTool::setFace( int faceIndex ) const
     myFaceNodes = NULL;
   }
 
-  if (myVolume->IsPoly()) {
+  if (myVolume->IsPoly())
+  {
     if (!myPolyedre) {
       MESSAGE("Warning: bad volumic element");
       return false;
@@ -1608,68 +1659,94 @@ bool SMDS_VolumeTool::setFace( int faceIndex ) const
       myExternalFaces = true;
     }
   }
-  else {
-    // choose face node indices
-    switch ( myVolumeNbNodes ) {
-    case 4:
-      myFaceNbNodes = Tetra_nbN[ faceIndex ];
-      if ( myExternalFaces )
-        myFaceNodeIndices = myVolForward ? Tetra_F[ faceIndex ] : Tetra_RE[ faceIndex ];
-      else
-        myFaceNodeIndices = myVolForward ? Tetra_F[ faceIndex ] : Tetra_R[ faceIndex ];
-      break;
-    case 5:
-      myFaceNbNodes = Pyramid_nbN[ faceIndex ];
-      if ( myExternalFaces )
-        myFaceNodeIndices = myVolForward ? Pyramid_F[ faceIndex ] : Pyramid_RE[ faceIndex ];
-      else
-        myFaceNodeIndices = myVolForward ? Pyramid_F[ faceIndex ] : Pyramid_R[ faceIndex ];
-      break;
-    case 6:
-      myFaceNbNodes = Penta_nbN[ faceIndex ];
-      if ( myExternalFaces )
-        myFaceNodeIndices = myVolForward ? Penta_FE[ faceIndex ] : Penta_RE[ faceIndex ];
-      else
-        myFaceNodeIndices = myVolForward ? Penta_F[ faceIndex ] : Penta_R[ faceIndex ];
-      break;
-    case 8:
-      myFaceNbNodes = Hexa_nbN[ faceIndex ];
-      if ( myExternalFaces )
-        myFaceNodeIndices = myVolForward ? Hexa_FE[ faceIndex ] : Hexa_RE[ faceIndex ];
-      else
-        myFaceNodeIndices = Hexa_F[ faceIndex ];
-      break;
-    case 10:
-      myFaceNbNodes = QuadTetra_nbN[ faceIndex ];
-      if ( myExternalFaces )
-        myFaceNodeIndices = myVolForward ? QuadTetra_F[ faceIndex ] : QuadTetra_RE[ faceIndex ];
-      else
-        myFaceNodeIndices = myVolForward ? QuadTetra_F[ faceIndex ] : QuadTetra_R[ faceIndex ];
-      break;
-    case 13:
-      myFaceNbNodes = QuadPyram_nbN[ faceIndex ];
-      if ( myExternalFaces )
-        myFaceNodeIndices = myVolForward ? QuadPyram_F[ faceIndex ] : QuadPyram_RE[ faceIndex ];
-      else
-        myFaceNodeIndices = myVolForward ? QuadPyram_F[ faceIndex ] : QuadPyram_R[ faceIndex ];
-      break;
-    case 15:
-      myFaceNbNodes = QuadPenta_nbN[ faceIndex ];
-      if ( myExternalFaces )
-        myFaceNodeIndices = myVolForward ? QuadPenta_FE[ faceIndex ] : QuadPenta_RE[ faceIndex ];
-      else
-        myFaceNodeIndices = myVolForward ? QuadPenta_F[ faceIndex ] : QuadPenta_R[ faceIndex ];
-      break;
-    case 20:
-      myFaceNbNodes = QuadHexa_nbN[ faceIndex ];
-      if ( myExternalFaces )
-        myFaceNodeIndices = myVolForward ? QuadHexa_FE[ faceIndex ] : QuadHexa_RE[ faceIndex ];
-      else
-        myFaceNodeIndices = QuadHexa_F[ faceIndex ];
-      break;
-    default:
-      return false;
+  else
+  {
+    if ( !myAllFacesNodeIndices_F )
+    {
+      // choose data for an element type
+      switch ( myVolumeNbNodes ) {
+      case 4:
+        myAllFacesNodeIndices_F  = &Tetra_F [0][0];
+        //myAllFacesNodeIndices_FE = &Tetra_F [0][0];
+        myAllFacesNodeIndices_RE = &Tetra_RE[0][0];
+        myAllFacesNbNodes        = Tetra_nbN;
+        myMaxFaceNbNodes         = sizeof(Tetra_F[0])/sizeof(Tetra_F[0][0]);
+        break;
+      case 5:
+        myAllFacesNodeIndices_F  = &Pyramid_F [0][0];
+        //myAllFacesNodeIndices_FE = &Pyramid_F [0][0];
+        myAllFacesNodeIndices_RE = &Pyramid_RE[0][0];
+        myAllFacesNbNodes        = Pyramid_nbN;
+        myMaxFaceNbNodes         = sizeof(Pyramid_F[0])/sizeof(Pyramid_F[0][0]);
+        break;
+      case 6:
+        myAllFacesNodeIndices_F  = &Penta_F [0][0];
+        //myAllFacesNodeIndices_FE = &Penta_FE[0][0];
+        myAllFacesNodeIndices_RE = &Penta_RE[0][0];
+        myAllFacesNbNodes        = Penta_nbN;
+        myMaxFaceNbNodes         = sizeof(Penta_F[0])/sizeof(Penta_F[0][0]);
+        break;
+      case 8:
+        myAllFacesNodeIndices_F  = &Hexa_F [0][0];
+        ///myAllFacesNodeIndices_FE = &Hexa_FE[0][0];
+        myAllFacesNodeIndices_RE = &Hexa_RE[0][0];
+        myAllFacesNbNodes        = Hexa_nbN;
+        myMaxFaceNbNodes         = sizeof(Hexa_F[0])/sizeof(Hexa_F[0][0]);
+        break;
+      case 10:
+        myAllFacesNodeIndices_F  = &QuadTetra_F [0][0];
+        //myAllFacesNodeIndices_FE = &QuadTetra_F [0][0];
+        myAllFacesNodeIndices_RE = &QuadTetra_RE[0][0];
+        myAllFacesNbNodes        = QuadTetra_nbN;
+        myMaxFaceNbNodes         = sizeof(QuadTetra_F[0])/sizeof(QuadTetra_F[0][0]);
+        break;
+      case 13:
+        myAllFacesNodeIndices_F  = &QuadPyram_F [0][0];
+        //myAllFacesNodeIndices_FE = &QuadPyram_F [0][0];
+        myAllFacesNodeIndices_RE = &QuadPyram_RE[0][0];
+        myAllFacesNbNodes        = QuadPyram_nbN;
+        myMaxFaceNbNodes         = sizeof(QuadPyram_F[0])/sizeof(QuadPyram_F[0][0]);
+        break;
+      case 15:
+        myAllFacesNodeIndices_F  = &QuadPenta_F [0][0];
+        //myAllFacesNodeIndices_FE = &QuadPenta_FE[0][0];
+        myAllFacesNodeIndices_RE = &QuadPenta_RE[0][0];
+        myAllFacesNbNodes        = QuadPenta_nbN;
+        myMaxFaceNbNodes         = sizeof(QuadPenta_F[0])/sizeof(QuadPenta_F[0][0]);
+        break;
+      case 20:
+      case 27:
+        myAllFacesNodeIndices_F  = &QuadHexa_F [0][0];
+        //myAllFacesNodeIndices_FE = &QuadHexa_FE[0][0];
+        myAllFacesNodeIndices_RE = &QuadHexa_RE[0][0];
+        myAllFacesNbNodes        = QuadHexa_nbN;
+        myMaxFaceNbNodes         = sizeof(QuadHexa_F[0])/sizeof(QuadHexa_F[0][0]);
+        if ( !myIgnoreCentralNodes && myVolumeNbNodes == 27 )
+        {
+          myAllFacesNodeIndices_F  = &TriQuadHexa_F [0][0];
+          //myAllFacesNodeIndices_FE = &TriQuadHexa_FE[0][0];
+          myAllFacesNodeIndices_RE = &TriQuadHexa_RE[0][0];
+          myAllFacesNbNodes        = TriQuadHexa_nbN;
+          myMaxFaceNbNodes         = sizeof(TriQuadHexa_F[0])/sizeof(TriQuadHexa_F[0][0]);
+        }
+        break;
+      case 12:
+        myAllFacesNodeIndices_F  = &HexPrism_F [0][0];
+        //myAllFacesNodeIndices_FE = &HexPrism_FE[0][0];
+        myAllFacesNodeIndices_RE = &HexPrism_RE[0][0];
+        myAllFacesNbNodes        = HexPrism_nbN;
+        myMaxFaceNbNodes         = sizeof(HexPrism_F[0])/sizeof(HexPrism_F[0][0]);
+        break;
+      default:
+        return false;
+      }
     }
+    myFaceNbNodes = myAllFacesNbNodes[ faceIndex ];
+    // if ( myExternalFaces )
+    //   myFaceNodeIndices = (int*)( myVolForward ? myAllFacesNodeIndices_FE + faceIndex*myMaxFaceNbNodes : myAllFacesNodeIndices_RE + faceIndex*myMaxFaceNbNodes );
+    // else
+    //   myFaceNodeIndices = (int*)( myAllFacesNodeIndices_F + faceIndex*myMaxFaceNbNodes );
+    myFaceNodeIndices = (int*)( myVolForward ? myAllFacesNodeIndices_F + faceIndex*myMaxFaceNbNodes : myAllFacesNodeIndices_RE + faceIndex*myMaxFaceNbNodes );
 
     // set face nodes
     myFaceNodes = new const SMDS_MeshNode* [myFaceNbNodes + 1];
@@ -1698,7 +1775,9 @@ SMDS_VolumeTool::VolumeType SMDS_VolumeTool::GetType(int nbNodes)
   case 10: return QUAD_TETRA;
   case 13: return QUAD_PYRAM;
   case 15: return QUAD_PENTA;
-  case 20: return QUAD_HEXA;
+  case 20:
+  case 27: return QUAD_HEXA;
+  case 12: return HEX_PRISM;
   default:return UNKNOWN;
   }
 }
@@ -1719,7 +1798,8 @@ int SMDS_VolumeTool::NbFaces( VolumeType type )
   case QUAD_PENTA: return 5;
   case HEXA      :
   case QUAD_HEXA : return 6;
-  default:    return 0;
+  case HEX_PRISM : return 8;
+  default:         return 0;
   }
 }
 
@@ -1742,7 +1822,8 @@ int SMDS_VolumeTool::NbCornerNodes(VolumeType type)
   case QUAD_PENTA: return 6;
   case HEXA      :
   case QUAD_HEXA : return 8;
-  default:    return 0;
+  case HEX_PRISM : return 12;
+  default:         return 0;
   }
   return 0;
 }
@@ -1763,12 +1844,14 @@ const int* SMDS_VolumeTool::GetFaceNodesIndices(VolumeType type,
   switch ( type ) {
   case TETRA: return Tetra_F[ faceIndex ];
   case PYRAM: return Pyramid_F[ faceIndex ];
-  case PENTA: return external ? Penta_FE[ faceIndex ] : Penta_F[ faceIndex ];
-  case HEXA:  return external ? Hexa_FE[ faceIndex ] : Hexa_F[ faceIndex ];
+  case PENTA: return external ? Penta_F[ faceIndex ] : Penta_F[ faceIndex ];
+  case HEXA:  return external ? Hexa_F[ faceIndex ] : Hexa_F[ faceIndex ];
   case QUAD_TETRA: return QuadTetra_F[ faceIndex ];
   case QUAD_PYRAM: return QuadPyram_F[ faceIndex ];
-  case QUAD_PENTA: return external ? QuadPenta_FE[ faceIndex ] : QuadPenta_F[ faceIndex ];
-  case QUAD_HEXA:  return external ? QuadHexa_FE[ faceIndex ] : QuadHexa_F[ faceIndex ];
+  case QUAD_PENTA: return external ? QuadPenta_F[ faceIndex ] : QuadPenta_F[ faceIndex ];
+    // what about SMDSEntity_TriQuad_Hexa?
+  case QUAD_HEXA:  return external ? QuadHexa_F[ faceIndex ] : QuadHexa_F[ faceIndex ];
+  case HEX_PRISM:  return external ? HexPrism_F[ faceIndex ] : HexPrism_F[ faceIndex ];
   default:;
   }
   return 0;
@@ -1790,14 +1873,16 @@ int SMDS_VolumeTool::NbFaceNodes(VolumeType type,
   case QUAD_TETRA: return QuadTetra_nbN[ faceIndex ];
   case QUAD_PYRAM: return QuadPyram_nbN[ faceIndex ];
   case QUAD_PENTA: return QuadPenta_nbN[ faceIndex ];
+    // what about SMDSEntity_TriQuad_Hexa?
   case QUAD_HEXA:  return QuadHexa_nbN[ faceIndex ];
+  case HEX_PRISM:  return HexPrism_nbN[ faceIndex ];
   default:;
   }
   return 0;
 }
 
 //=======================================================================
-//function : Get
+//function : Element
 //purpose  : return element
 //=======================================================================
 
