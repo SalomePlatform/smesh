@@ -15,14 +15,13 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
-//
 
 //  SMESH SMESH : implementaion of SMESH idl descriptions
 // File      : StdMeshers_CompositeHexa_3D.cxx
 // Module    : SMESH
 // Created   : Tue Nov 25 11:04:59 2008
 // Author    : Edward AGAPOV (eap)
-//
+
 #include "StdMeshers_CompositeHexa_3D.hxx"
 
 #include "SMDS_Mesh.hxx"
@@ -800,7 +799,7 @@ bool _QuadFaceGrid::AddContinuousFace( const _QuadFaceGrid& other )
     int iMyCommon;
     if ( mySides.Contain( otherSide, &iMyCommon ) ) {
       // check if normals of two faces are collinear at all vertices of a otherSide
-      const double angleTol = PI / 180 / 2;
+      const double angleTol = M_PI / 180. / 2.;
       int iV, nbV = otherSide.NbVertices(), nbCollinear = 0;
       for ( iV = 0; iV < nbV; ++iV )
       {

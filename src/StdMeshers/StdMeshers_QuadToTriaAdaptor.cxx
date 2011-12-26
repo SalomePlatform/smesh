@@ -15,13 +15,12 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
-//
 
 // File      : StdMeshers_QuadToTriaAdaptor.cxx
 // Module    : SMESH
 // Created   : Wen May 07 16:37:07 2008
 // Author    : Sergey KUUL (skl)
-//
+
 #include "StdMeshers_QuadToTriaAdaptor.hxx"
 
 #include "SMDS_SetIterator.hxx"
@@ -110,7 +109,7 @@ namespace
 
     // Check angle between normals
     double angle = nI.Angle( nJ );
-    bool tooClose = ( angle < 15 * PI180 );
+    bool tooClose = ( angle < 15. * M_PI / 180. );
 
     // Check if pyramids collide
     if ( !tooClose && baI * baJ > 0 )
@@ -1214,8 +1213,8 @@ bool StdMeshers_QuadToTriaAdaptor::Compute2ndPart(SMESH_Mesh&                   
             gp_Vec VI2(PCj,Pint);
             double ang1 = fabs(VN1.Angle(VI1));
             double ang2 = fabs(VN2.Angle(VI2));
-            double coef1 = 0.5 - (( ang1<PI/3 ) ? cos(ang1)*0.25 : 0 );
-            double coef2 = 0.5 - (( ang2<PI/3 ) ? cos(ang2)*0.25 : 0 ); // cos(ang2) ?
+            double coef1 = 0.5 - (( ang1 < M_PI/3. ) ? cos(ang1)*0.25 : 0 );
+            double coef2 = 0.5 - (( ang2 < M_PI/3. ) ? cos(ang2)*0.25 : 0 ); // cos(ang2) ?
 //             double coef2 = 0.5;
 //             if(ang2<PI/3)
 //               coef2 -= cos(ang1)*0.25;
@@ -1279,4 +1278,3 @@ bool StdMeshers_QuadToTriaAdaptor::Compute2ndPart(SMESH_Mesh&                   
 
   return true;
 }
-

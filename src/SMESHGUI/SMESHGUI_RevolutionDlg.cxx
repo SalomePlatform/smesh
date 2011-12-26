@@ -18,13 +18,12 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
-//
 
 // SMESH SMESHGUI : GUI for SMESH component
 // File   : SMESHGUI_RevolutionDlg.cxx
 // Author : Michael ZORIN, Open CASCADE S.A.S.
 // SMESH includes
-//
+
 #include "SMESHGUI_RevolutionDlg.h"
 
 #include "SMESHGUI.h"
@@ -498,7 +497,7 @@ bool SMESHGUI_RevolutionDlg::ClickOnApply()
     anAxis.vy = SpinBox_DY->GetValue();
     anAxis.vz = SpinBox_DZ->GetValue();
 
-    double anAngle = (SpinBox_Angle->GetValue())*PI/180;
+    double anAngle = (SpinBox_Angle->GetValue())*M_PI/180.;
     long aNbSteps = (long)SpinBox_NbSteps->value();
     double aTolerance = SpinBox_Tolerance->GetValue();
 
@@ -1061,8 +1060,8 @@ void SMESHGUI_RevolutionDlg::onDisplaySimulation(bool toDisplayPreview)
       anAxis.vx = SpinBox_DX->GetValue();
       anAxis.vy = SpinBox_DY->GetValue();
       anAxis.vz = SpinBox_DZ->GetValue();
-      
-      double anAngle = (SpinBox_Angle->GetValue())*PI/180;
+
+      double anAngle = (SpinBox_Angle->GetValue())*M_PI/180.;
       long aNbSteps = (long)SpinBox_NbSteps->value();
       double aTolerance = SpinBox_Tolerance->GetValue();
       

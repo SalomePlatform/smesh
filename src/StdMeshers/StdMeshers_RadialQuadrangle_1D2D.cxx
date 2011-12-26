@@ -15,14 +15,13 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
-//
 
 //  SMESH SMESH : implementaion of SMESH idl descriptions
 // File      : StdMeshers_RadialQuadrangle_1D2D.cxx
 // Module    : SMESH
 // Created   : Fri Oct 20 11:37:07 2006
 // Author    : Edward AGAPOV (eap)
-//
+
 #include "StdMeshers_RadialQuadrangle_1D2D.hxx"
 
 #include "StdMeshers_NumberOfLayers.hxx"
@@ -479,8 +478,8 @@ bool StdMeshers_RadialQuadrangle_1D2D::Compute(SMESH_Mesh&         aMesh,
       for(; itn != theNodes.end(); itn++ ) {
         CNodes.push_back( (*itn).second );
         double ang = (*itn).first - fang;
-        if( ang>PI ) ang = ang - 2*PI;
-        if( ang<-PI ) ang = ang + 2*PI;
+        if( ang>M_PI ) ang = ang - 2.*M_PI;
+        if( ang<-M_PI ) ang = ang + 2.*M_PI;
         Angles.Append( ang ); 
       }
     }
@@ -528,7 +527,7 @@ bool StdMeshers_RadialQuadrangle_1D2D::Compute(SMESH_Mesh&         aMesh,
     // a segment of line
     double fp, lp;
     Handle(Geom_Circle) aCirc = Handle(Geom_Circle)::DownCast( getCurve( CircEdge, &fp, &lp ));
-    if( fabs(fabs(lp-fp)-PI) > Precision::Confusion() ) {
+    if( fabs(fabs(lp-fp)-M_PI) > Precision::Confusion() ) {
       // not half of circle
       return error(COMPERR_BAD_SHAPE);
     }
@@ -552,8 +551,8 @@ bool StdMeshers_RadialQuadrangle_1D2D::Compute(SMESH_Mesh&         aMesh,
     for(; itn != theNodes.end(); itn++ ) {
       CNodes.push_back( (*itn).second );
       double ang = (*itn).first - fang;
-      if( ang>PI ) ang = ang - 2*PI;
-      if( ang<-PI ) ang = ang + 2*PI;
+      if( ang>M_PI ) ang = ang - 2.*M_PI;
+      if( ang<-M_PI ) ang = ang + 2.*M_PI;
       Angles.Append( ang );
     }
     const SMDS_MeshNode* NF = theNodes.begin()->second;
@@ -690,8 +689,8 @@ bool StdMeshers_RadialQuadrangle_1D2D::Compute(SMESH_Mesh&         aMesh,
     for(; itn != theNodes.end(); itn++ ) {
       CNodes.push_back( (*itn).second );
       double ang = (*itn).first - fang;
-      if( ang>PI ) ang = ang - 2*PI;
-      if( ang<-PI ) ang = ang + 2*PI;
+      if( ang>M_PI ) ang = ang - 2.*M_PI;
+      if( ang<-M_PI ) ang = ang + 2.*M_PI;
       Angles.Append( ang );
     }
     P1 = gp_Pnt( NF->X(), NF->Y(), NF->Z() );
@@ -1148,7 +1147,7 @@ bool StdMeshers_RadialQuadrangle_1D2D::Evaluate(SMESH_Mesh& aMesh,
     // a segment of line
     double fp, lp;
     Handle(Geom_Circle) aCirc = Handle(Geom_Circle)::DownCast( getCurve( CircEdge, &fp, &lp ));
-    if( fabs(fabs(lp-fp)-PI) > Precision::Confusion() ) {
+    if( fabs(fabs(lp-fp)-M_PI) > Precision::Confusion() ) {
       // not half of circle
       return error(COMPERR_BAD_SHAPE);
     }
@@ -1286,4 +1285,3 @@ bool StdMeshers_RadialQuadrangle_1D2D::Evaluate(SMESH_Mesh& aMesh,
   return false;
 
 }
-

@@ -18,12 +18,11 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
-//
 
 // File   : SMESHGUI_MultiEditDlg.cxx
 // Author : Sergey LITONIN, Open CASCADE S.A.S.
 // SMESH includes
-//
+
 #include "SMESHGUI_MultiEditDlg.h"
 
 #include "SMESHGUI.h"
@@ -1207,7 +1206,7 @@ bool SMESHGUI_UnionOfTrianglesDlg::process (SMESH::SMESH_MeshEditor_ptr theEdito
                                             SMESH::SMESH_IDSource_ptr   obj)
 {
   SMESH::NumericalFunctor_var aCriterion = getNumericalFunctor();
-  double aMaxAngle = myMaxAngleSpin->GetValue() * PI / 180.0;
+  double aMaxAngle = myMaxAngleSpin->GetValue() * M_PI / 180.0;
   bool ok;
   if ( CORBA::is_nil( obj ))
     ok = theEditor->TriToQuad(theIds, aCriterion, aMaxAngle);

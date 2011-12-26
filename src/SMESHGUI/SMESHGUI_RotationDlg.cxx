@@ -416,7 +416,7 @@ bool SMESHGUI_RotationDlg::ClickOnApply()
     anAxis.vy = SpinBox_DY->GetValue();
     anAxis.vz = SpinBox_DZ->GetValue();
 
-    double anAngle = (SpinBox_Angle->GetValue())*PI/180;
+    double anAngle = (SpinBox_Angle->GetValue())*M_PI/180.;
 
     QStringList aParameters;
     aParameters << SpinBox_X->text();
@@ -1087,7 +1087,7 @@ void SMESHGUI_RotationDlg::onDisplaySimulation( bool toDisplayPreview ) {
       anAxis.vx = SpinBox_DX->GetValue();
       anAxis.vy = SpinBox_DY->GetValue();
       anAxis.vz = SpinBox_DZ->GetValue();
-      double anAngle = (SpinBox_Angle->GetValue())*PI/180;
+      double anAngle = (SpinBox_Angle->GetValue())*M_PI/180.;
       
       try {
         SUIT_OverrideCursor aWaitCursor;

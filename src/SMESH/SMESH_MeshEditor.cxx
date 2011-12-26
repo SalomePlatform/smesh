@@ -2071,7 +2071,7 @@ double getAngle(const SMDS_MeshElement * tr1,
                 const SMDS_MeshNode *    n1,
                 const SMDS_MeshNode *    n2)
 {
-  double angle = 2*PI; // bad angle
+  double angle = 2. * M_PI; // bad angle
 
   // get normals
   SMESH::Controls::TSequenceOfXYZ P1, P2;
@@ -6459,7 +6459,7 @@ void SMESH_ElementSearcherImpl::findOuterBoundary(const SMDS_MeshElement* outerF
             continue;
           gp_Vec dirInF = gp_Vec( fNorm ) ^ n1n2;
           double angle = dirInOF.AngleWithRef( dirInF, n1n2 );
-          if ( angle < 0 ) angle += 2*PI;
+          if ( angle < 0 ) angle += 2. * M_PI;
           angle2Face.insert( make_pair( angle, *face ));
         }
         if ( !angle2Face.empty() )

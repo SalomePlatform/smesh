@@ -18,13 +18,12 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
-//
 
 //  SMESH SMESH : implementaion of SMESH idl descriptions
 //  File   : StdMeshers_AutomaticLength.cxx
 //  Author : Edward AGAPOV, OCC
 //  Module : SMESH
-//
+
 #include "StdMeshers_AutomaticLength.hxx"
 
 #include "SMESH_Mesh.hxx"
@@ -117,7 +116,7 @@ namespace {
    */
   //================================================================================
 
-  const double a14divPI = 14. / PI;
+  const double a14divPI = 14. / M_PI;
 
   inline double segLength(double S0, double edgeLen, double minLen )
   {
@@ -399,5 +398,3 @@ bool StdMeshers_AutomaticLength::SetParametersByDefaults(const TDefaults&  /*the
 
 //   return true;
 }
-
-

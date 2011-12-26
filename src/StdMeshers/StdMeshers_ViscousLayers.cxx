@@ -15,7 +15,6 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
-//
 
 // File      : StdMeshers_ViscousLayers.cxx
 // Created   : Wed Dec  1 15:15:34 2010
@@ -2508,8 +2507,8 @@ bool _ViscousBuilder::smoothAnalyticEdge( _SolidData&           data,
       gp_Vec2d vec1( center, uv1 );
       double uLast = vec0.Angle( vec1 ); // -PI - +PI
       double uMidl = vec0.Angle( vecM );
-      if ( uLast < 0 ) uLast += 2*PI; // 0.0 - 2*PI
-      if ( uMidl < 0 ) uMidl += 2*PI;
+      if ( uLast < 0 ) uLast += 2.*M_PI; // 0.0 - 2*PI
+      if ( uMidl < 0 ) uMidl += 2.*M_PI;
       const bool sense = ( uMidl < uLast );
       const double radius = 0.5 * ( vec0.Magnitude() + vec1.Magnitude() );
 

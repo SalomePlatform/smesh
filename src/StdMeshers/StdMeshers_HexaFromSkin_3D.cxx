@@ -15,12 +15,11 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
-//
 
 // File      : StdMeshers_HexaFromSkin_3D.cxx
 // Created   : Wed Jan 27 12:28:07 2010
 // Author    : Edward AGAPOV (eap)
-//
+
 #include "StdMeshers_HexaFromSkin_3D.hxx"
 
 #include "SMDS_VolumeOfNodes.hxx"
@@ -749,7 +748,7 @@ namespace
           // compute angle of (sideIDir projection to pln) and (X dir of pln)
           gp_Vec2d sideIDirProj( sideIDir * pln.XDirection(), sideIDir * pln.YDirection());
           double angle = sideIDirProj.Angle( gp::DX2d() );
-          if ( angle < 0 ) angle += 2 * PI; // angle [0-2*PI]
+          if ( angle < 0 ) angle += 2. * M_PI; // angle [0-2*PI]
           angleOfSide.insert( make_pair( angle, sideI ));
           _DUMP_("  "<< sideI << " - side dir ("
                  << sideIDir.X() << ", " << sideIDir.Y() << ", " << sideIDir.Z() << ")"
@@ -758,8 +757,8 @@ namespace
         if ( nbLoadedSides == 1 )
         {
           double angF = angleOfSide.begin()->first, angL = angleOfSide.rbegin()->first;
-          if ( angF > PI ) angF = 2*PI - angF;
-          if ( angL > PI ) angL = 2*PI - angL;
+          if ( angF > M_PI ) angF = 2.*M_PI - angF;
+          if ( angL > M_PI ) angL = 2.*M_PI - angL;
           foundSide = angF < angL ? angleOfSide.begin()->second : angleOfSide.rbegin()->second;
         }
         else
@@ -1204,4 +1203,3 @@ bool StdMeshers_HexaFromSkin_3D::Compute(SMESH_Mesh&, const TopoDS_Shape&)
 {
   return error("Algorithm can't work with geometrical shapes");
 }
-

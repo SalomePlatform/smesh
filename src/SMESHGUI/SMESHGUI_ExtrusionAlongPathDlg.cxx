@@ -18,13 +18,12 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
-//
 
 // SMESH SMESHGUI : GUI for SMESH component
 // File   : SMESHGUI_ExtrusionAlongPathDlg.cxx
 // Author : Vadim SANDLER, Open CASCADE S.A.S.
 // SMESH includes
-//
+
 #include "SMESHGUI_ExtrusionAlongPathDlg.h"
 
 #include "SMESHGUI.h"
@@ -1412,7 +1411,7 @@ SMESH::double_array_var SMESHGUI_ExtrusionAlongPathDlg::getAngles() {
     int j = 0;
     for (int i = 0; i < myAnglesList.count(); i++) {
       double angle = myAnglesList[i];
-      anAngles[ j++ ] = angle*PI/180;
+      anAngles[ j++ ] = angle*M_PI/180.;
     }
     anAngles->length(j);
   }
