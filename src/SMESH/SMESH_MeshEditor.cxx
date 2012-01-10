@@ -24,16 +24,13 @@
 // Created   : Mon Apr 12 16:10:22 2004
 // Author    : Edward AGAPOV (eap)
 
-#define CHRONODEF
 #include "SMESH_MeshEditor.hxx"
 
 #include "SMDS_FaceOfNodes.hxx"
 #include "SMDS_VolumeTool.hxx"
 #include "SMDS_EdgePosition.hxx"
-#include "SMDS_PolyhedralVolumeOfNodes.hxx"
 #include "SMDS_FacePosition.hxx"
 #include "SMDS_SpacePosition.hxx"
-//#include "SMDS_QuadraticFaceOfNodes.hxx"
 #include "SMDS_MeshGroup.hxx"
 #include "SMDS_LinearEdge.hxx"
 #include "SMDS_Downward.hxx"
@@ -5599,6 +5596,7 @@ SMESH_MeshEditor::Transform (TIDSortedElemSet & theElems,
 
   // Replicate or reverse elements
 
+  std::vector<int> iForw;
   for ( itElem = theElems.begin(); itElem != theElems.end(); itElem++ )
   {
     const SMDS_MeshElement* elem = *itElem;
@@ -5700,7 +5698,9 @@ SMESH_MeshEditor::Transform (TIDSortedElemSet & theElems,
 
     // Regular elements
 
-    const std::vector<int>& i = SMDS_MeshCell::reverseSmdsOrder( elem->GetEntityType() );
+    while ( iForw.size() < nbNodes ) iForw.push_back( iForw.size() );
+    const std::vector<int>& iRev = SMDS_MeshCell::reverseSmdsOrder( elem->GetEntityType() );
+    const std::vector<int>& i = needReverse ? iRev : iForw;
 
     // find transformed nodes
     vector<const SMDS_MeshNode*> nodes(nbNodes);
