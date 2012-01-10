@@ -1,8 +1,8 @@
 /*!
 
-\page deleting_groups_page Deleting Groups
+\page deleting_groups_page Deleting groups with content
 
-\n To delete a group in the <b>Main Menu</b> select <b>Mesh -> Delete Groups</b> and
+\n To delete groups and their content in the <b>Main Menu</b> select <b>Modification -> Remove -> Delete groups with Contents</b> and
 select one or several groups you wish to delete in the 3D viewer or in
 the Object Browser.
 \n The selected groups will be listed in <b>Delete groups with contents</b>

@@ -297,7 +297,7 @@
     </message>
     <message>
         <source>MEN_DEL_GROUP</source>
-        <translation>Supprimer les groupes</translation>
+        <translation>Supprimer les groupes et leur contenu</translation>
     </message>
     <message>
         <source>MEN_FACE_ORIENTATION</source>
@@ -2417,7 +2417,7 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>STB_DEL_GROUP</source>
-        <translation>Supprimer les groupes</translation>
+        <translation>Supprimer les groupes et leur contenu</translation>
     </message>
     <message>
         <source>STB_FACE_ORIENTATION</source>
@@ -2977,7 +2977,7 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>TOP_DEL_GROUP</source>
-        <translation>Supprimer les groupes</translation>
+        <translation>Supprimer les groupes et leur contenu</translation>
     </message>
     <message>
         <source>TOP_FACE_ORIENTATION</source>

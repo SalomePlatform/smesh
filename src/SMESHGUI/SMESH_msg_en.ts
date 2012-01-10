@@ -297,7 +297,7 @@
     </message>
     <message>
         <source>MEN_DEL_GROUP</source>
-        <translation>Delete Groups</translation>
+        <translation>Delete Groups with Contents</translation>
     </message>
     <message>
         <source>MEN_FACE_ORIENTATION</source>
@@ -2505,7 +2505,7 @@ Please check preferences of Mesh module.
     </message>
     <message>
         <source>STB_DEL_GROUP</source>
-        <translation>Delete Groups</translation>
+        <translation>Delete Groups with Contents</translation>
     </message>
     <message>
         <source>STB_FACE_ORIENTATION</source>
@@ -3065,7 +3065,7 @@ Please check preferences of Mesh module.
     </message>
     <message>
         <source>TOP_DEL_GROUP</source>
-        <translation>Delete Groups</translation>
+        <translation>Delete Groups with Contents</translation>
     </message>
     <message>
         <source>TOP_FACE_ORIENTATION</source>
