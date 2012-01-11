@@ -9032,13 +9032,14 @@ int SMESH_MeshEditor::convertElemToQuadratic(SMESHDS_SubMesh *   theSm,
 
     // get elem data needed to re-create it
     //
-    int id = elem->GetID();
-    int nbNodes = elem->NbNodes();
-    SMDSAbs_ElementType aType = elem->GetType();
+    const int id                        = elem->GetID();
+    const int nbNodes                   = elem->NbNodes();
+    const SMDSAbs_ElementType aType     = elem->GetType();
+    const SMDSAbs_EntityType  aGeomType = elem->GetEntityType();
     nodes.assign(elem->begin_nodes(), elem->end_nodes());
-    if ( elem->GetEntityType() == SMDSEntity_Polyhedra )
+    if ( aGeomType == SMDSEntity_Polyhedra )
       nbNodeInFaces = static_cast<const SMDS_VtkVolume* >( elem )->GetQuantities();
-    else if ( elem->GetEntityType() == SMDSEntity_Hexagonal_Prism )
+    else if ( aGeomType == SMDSEntity_Hexagonal_Prism )
       volumeToPolyhedron( elem, nodes, nbNodeInFaces );
 
     // remove a linear element
@@ -9071,7 +9072,7 @@ int SMESH_MeshEditor::convertElemToQuadratic(SMESHDS_SubMesh *   theSm,
       }
     case SMDSAbs_Volume :
       {
-        switch( elem->GetEntityType() )
+        switch( aGeomType )
         {
         case SMDSEntity_Tetra:
           NewElem = theHelper.AddVolume(nodes[0], nodes[1], nodes[2], nodes[3], id, theForce3d);
@@ -9099,8 +9100,6 @@ int SMESH_MeshEditor::convertElemToQuadratic(SMESHDS_SubMesh *   theSm,
     if( NewElem )
       theSm->AddElement( NewElem );
   }
-//  if (!GetMeshDS()->isCompacted())
-//    GetMeshDS()->compactMesh();
   return nbElem;
 }
 
@@ -9199,8 +9198,7 @@ void SMESH_MeshEditor::ConvertToQuadratic(const bool theForce3d)
       switch ( type )
       {
       case SMDSEntity_Tetra:
-        NewVolume = aHelper.AddVolume(nodes[0], nodes[1], nodes[2],
-                                      nodes[3], id, theForce3d );
+        NewVolume = aHelper.AddVolume(nodes[0], nodes[1], nodes[2], nodes[3], id, theForce3d );
         break;
       case SMDSEntity_Hexa:
         NewVolume = aHelper.AddVolume(nodes[0], nodes[1], nodes[2], nodes[3],
@@ -9243,7 +9241,7 @@ void SMESH_MeshEditor::ConvertToQuadratic(const bool        theForce3d,
   if ( theElements.empty() ) return;
 
   // we believe that all theElements are of the same type
-  SMDSAbs_ElementType elemType = (*theElements.begin())->GetType();
+  const SMDSAbs_ElementType elemType = (*theElements.begin())->GetType();
   
   // get all nodes shared by theElements
   TIDSortedNodeSet allNodes;
@@ -9320,8 +9318,8 @@ void SMESH_MeshEditor::ConvertToQuadratic(const bool        theForce3d,
     if( elem->IsQuadratic() || elem->NbNodes() < 2 || elem->IsPoly() )
       continue;
 
-    int id = elem->GetID();
-    SMDSAbs_ElementType type = elem->GetType();
+    const int id                   = elem->GetID();
+    const SMDSAbs_ElementType type = elem->GetType();
     vector<const SMDS_MeshNode *> nodes ( elem->begin_nodes(), elem->end_nodes());
 
     if ( !smDS || !smDS->Contains( elem ))
@@ -9331,7 +9329,7 @@ void SMESH_MeshEditor::ConvertToQuadratic(const bool        theForce3d,
     SMDS_MeshElement * newElem = 0;
     switch( nodes.size() )
     {
-    case 4: // cases for most multiple element types go first (for optimization)
+    case 4: // cases for most frequently used element types go first (for optimization)
       if ( type == SMDSAbs_Volume )
         newElem = helper.AddVolume(nodes[0], nodes[1], nodes[2], nodes[3], id, theForce3d);
       else
