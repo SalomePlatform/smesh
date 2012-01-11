@@ -235,9 +235,9 @@ private:
 class _pyMesh: public _pyObject
 {
   std::list< Handle(_pyHypothesis) > myHypos;
-  std::list< Handle(_pyCommand) > myAddHypCmds;
-  std::list< Handle(_pySubMesh) > mySubmeshes;
-  bool                            myHasEditor;
+  std::list< Handle(_pyCommand) >    myAddHypCmds;
+  std::list< Handle(_pySubMesh) >    mySubmeshes;
+  bool                               myHasEditor;
 public:
   _pyMesh(const Handle(_pyCommand) creationCmd);
   _pyMesh(const Handle(_pyCommand) theCreationCmd, const TCollection_AsciiString & id);
@@ -295,12 +295,11 @@ protected:
   _pyID   myGeom,   myMesh;
   // a hypothesis can be used and created by different algos by different methods
   std::map<TCollection_AsciiString, TCollection_AsciiString > myType2CreationMethod;
-  //TCollection_AsciiString       myCreationMethod, myType;
   TColStd_SequenceOfAsciiString myArgs;           // creation arguments
   TColStd_SequenceOfAsciiString myArgMethods;     // hypo methods setting myArgs
   TColStd_SequenceOfInteger     myNbArgsByMethod; // nb args set by each method
-  std::list<Handle(_pyCommand)>  myArgCommands;
-  std::list<Handle(_pyCommand)>  myUnknownCommands;
+  std::list<Handle(_pyCommand)> myArgCommands;
+  std::list<Handle(_pyCommand)> myUnknownCommands;
 public:
   _pyHypothesis(const Handle(_pyCommand)& theCreationCmd);
   void SetConvMethodAndType(const char* creationMethod, const char* type)
