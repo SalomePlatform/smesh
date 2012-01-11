@@ -243,7 +243,7 @@ Handle(_pyCommand) _pyGen::AddCommand( const TCollection_AsciiString& theCommand
   MESSAGE ( "## COM " << myNbCommands << ": "<< aCommand->GetString() );
 #endif
 
-  _pyID objID = aCommand->GetObject();
+  const _pyID& objID = aCommand->GetObject();
 
   if ( objID.IsEmpty() )
     return aCommand;
@@ -251,7 +251,8 @@ Handle(_pyCommand) _pyGen::AddCommand( const TCollection_AsciiString& theCommand
   // Find an object to process theCommand
 
   // SMESH_Gen method?
-  if ( objID == this->GetID() || objID == SMESH_2smeshpy::GenName()) {
+  if ( objID == this->GetID() || objID == SMESH_2smeshpy::GenName())
+  {
     this->Process( aCommand );
     return aCommand;
   }
@@ -831,8 +832,22 @@ void _pyGen::AddObject( Handle(_pyObject)& theObj )
 
 Handle(_pyObject) _pyGen::FindObject( const _pyID& theObjID )  const
 {
-  std::map< _pyID, Handle(_pyObject) >::const_iterator id_obj = myObjects.find( theObjID );
-  return ( id_obj == myObjects.end() ) ? Handle(_pyObject)() : id_obj->second;
+  {
+    map< _pyID, Handle(_pyObject) >::const_iterator id_obj = myObjects.find( theObjID );
+    if ( id_obj != myObjects.end() )
+      return id_obj->second;
+  }
+  {
+    map< _pyID, Handle(_pyMesh) >::const_iterator id_obj = myMeshes.find( theObjID );
+    if ( id_obj != myMeshes.end() )
+      return id_obj->second;
+  }
+  {
+    map< _pyID, Handle(_pyMeshEditor) >::const_iterator id_obj = myMeshEditors.find( theObjID );
+    if ( id_obj != myMeshEditors.end() )
+      return id_obj->second;
+  }
+  return Handle(_pyObject)();
 }
 
 //================================================================================
