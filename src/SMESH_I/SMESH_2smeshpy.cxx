@@ -865,69 +865,7 @@ bool _pyGen::IsDead(const _pyID& theObjID) const
 
 //================================================================================
 /*!
- * \brief Find out type of geom group
-  * \param grpID - The geom group entry
-  * \retval int - The type
- */
-//================================================================================
-
-// static bool sameGroupType( const _pyID&                   grpID,
-//                            const TCollection_AsciiString& theType)
-// {
-//   // define group type as smesh.Mesh.Group() does
-//   int type = -1;
-//   SALOMEDS::Study_var study = SMESH_Gen_i::GetSMESHGen()->GetCurrentStudy();
-//   SALOMEDS::SObject_var aSObj = study->FindObjectID( grpID.ToCString() );
-//   if ( !aSObj->_is_nil() ) {
-//     GEOM::GEOM_Object_var aGeomObj = GEOM::GEOM_Object::_narrow( aSObj->GetObject() );
-//     if ( !aGeomObj->_is_nil() ) {
-//       switch ( aGeomObj->GetShapeType() ) {
-//       case GEOM::VERTEX: type = SMESH::NODE; break;
-//       case GEOM::EDGE:   type = SMESH::EDGE; break;
-//       case GEOM::FACE:   type = SMESH::FACE; break;
-//       case GEOM::SOLID:
-//       case GEOM::SHELL:  type = SMESH::VOLUME; break;
-//       case GEOM::COMPOUND: {
-//         GEOM::GEOM_Gen_ptr aGeomGen = SMESH_Gen_i::GetSMESHGen()->GetGeomEngine();
-//         if ( !aGeomGen->_is_nil() ) {
-//           GEOM::GEOM_IGroupOperations_var aGrpOp =
-//             aGeomGen->GetIGroupOperations( study->StudyId() );
-//           if ( !aGrpOp->_is_nil() ) {
-//             switch ( aGrpOp->GetType( aGeomObj )) {
-//             case TopAbs_VERTEX: type = SMESH::NODE; break;
-//             case TopAbs_EDGE:   type = SMESH::EDGE; break;
-//             case TopAbs_FACE:   type = SMESH::FACE; break;
-//             case TopAbs_SOLID:  type = SMESH::VOLUME; break;
-//             default:;
-//             }
-//           }
-//         }
-//       }
-//       default:;
-//       }
-//     }
-//   }
-//   if ( type < 0 ) {
-//     MESSAGE("Type of the group " << grpID << " not found");
-//     return false;
-//   }
-//   if ( theType.IsIntegerValue() )
-//     return type == theType.IntegerValue();
-
-//   switch ( type ) {
-//   case SMESH::NODE:   return theType.Location( "NODE", 1, theType.Length() );
-//   case SMESH::EDGE:   return theType.Location( "EDGE", 1, theType.Length() );
-//   case SMESH::FACE:   return theType.Location( "FACE", 1, theType.Length() );
-//   case SMESH::VOLUME: return theType.Location( "VOLUME", 1, theType.Length() );
-//   default:;
-//   }
-//   return false;
-// }
-
-//================================================================================
-/*!
- * \brief
-  * \param theCreationCmd -
+ * \brief Mesh created by SMESH_Gen
  */
 //================================================================================
 
@@ -936,29 +874,25 @@ _pyMesh::_pyMesh(const Handle(_pyCommand) theCreationCmd)
 {
   // convert my creation command
   Handle(_pyCommand) creationCmd = GetCreationCmd();
-  //TCollection_AsciiString str = creationCmd->GetMethod();
-//   if(str != "CreateMeshesFromUNV" &&
-//      str != "CreateMeshesFromMED" &&
-//      str != "CreateMeshesFromSTL")
   creationCmd->SetObject( SMESH_2smeshpy::SmeshpyName() );
   creationCmd->SetMethod( "Mesh" );
 
-  theGen->SetAccessorMethod( GetID(), "GetMesh()" );
+  theGen->SetAccessorMethod( GetID(), _pyMesh::AccessorMethod() );
 }
 
 //================================================================================
 /*!
- * \brief
-  * \param theCreationCmd -
+ * \brief Mesh created by SMESH_MeshEditor
  */
 //================================================================================
+
 _pyMesh::_pyMesh(const Handle(_pyCommand) theCreationCmd, const TCollection_AsciiString& id):
   _pyObject(theCreationCmd), myHasEditor(false)
 {
   // convert my creation command
   Handle(_pyCommand) creationCmd = GetCreationCmd();
   creationCmd->SetObject( SMESH_2smeshpy::SmeshpyName() );
-  theGen->SetAccessorMethod( id, "GetMesh()" );
+  theGen->SetAccessorMethod( id, _pyMesh::AccessorMethod() );
 }
 
 //================================================================================
@@ -991,6 +925,12 @@ void _pyMesh::Process( const Handle(_pyCommand)& theCommand )
       subMesh->SetCreator( this );
       mySubmeshes.push_back( subMesh );
     }
+  }
+  else if ( method == "RemoveSubMesh" ) { // move submesh creation before its removal
+    Handle(_pySubMesh) subMesh = theGen->FindSubMesh( theCommand->GetArg(1) );
+    if ( !subMesh.IsNull() )
+      subMesh->Process( theCommand );
+    AddMeshAccess( theCommand );
   }
   // ----------------------------------------------------------------------
   else if ( method == "AddHypothesis" ) { // mesh.AddHypothesis(geom, HYPO )
@@ -1205,7 +1145,7 @@ void _pyMesh::Flush()
     // check and create new algorithm instance if it is already wrapped
     if ( algo->IsWrapped() ) {
       _pyID localAlgoID = theGen->GenerateNewID( algoID );
-      TCollection_AsciiString aNewCmdStr = localAlgoID +
+      TCollection_AsciiString aNewCmdStr = addCmd->GetIndentation() + localAlgoID +
         TCollection_AsciiString( " = " ) + theGen->GetID() +
         TCollection_AsciiString( ".CreateHypothesis( \"" ) + algo->GetAlgoType() +
         TCollection_AsciiString( "\" )" );
@@ -2846,7 +2786,7 @@ void _pySubMesh::Process( const Handle(_pyCommand)& theCommand )
 
 //================================================================================
 /*!
- * \brief Clear creation command if no commands invoked
+ * \brief Move creation command depending on invoked commands
  */
 //================================================================================
 
