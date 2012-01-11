@@ -7145,15 +7145,13 @@ void SMESH_MeshEditor::MergeNodes (TListOfListOfNodes & theGroupsOfNodes)
           }
         }
         // BUG 0020185: end
-        iRepl[ nbRepl++ ] = iCur;
       }
       curNodes[ iCur ] = n;
       bool isUnique = nodeSet.insert( n ).second;
-      if ( isUnique ) {
+      if ( isUnique )
         uniqueNodes[ iUnique++ ] = n;
-        if ( nbRepl && iRepl[ nbRepl-1 ] == iCur )
-          --nbRepl; // n do not stick to a node of the elem
-      }
+      else
+        iRepl[ nbRepl++ ] = iCur;
       iCur++;
     }
 
