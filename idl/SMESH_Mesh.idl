@@ -201,7 +201,7 @@ module SMESH
     HYP_NOTCONFORM,   // not conform mesh is produced appling a hypothesis
     HYP_ALREADY_EXIST,// such hypothesis already exist
     HYP_BAD_DIM,      // bad dimension
-    HYP_BAD_SUBSHAPE, // shape is neither the main one, nor its subshape, nor a group
+    HYP_BAD_SUBSHAPE, // shape is neither the main one, nor its sub-shape, nor a group
     HYP_BAD_GEOMETRY, // geometry mismatches algorithm's expectation
     HYP_NEED_SHAPE    // algorithm can work on shape only
   };
@@ -326,9 +326,9 @@ module SMESH
       raises (SALOME::SALOME_Exception);
 
     /*!
-     * Get the subMesh object associated to a subShape. The subMesh object
+     * Get the subMesh object associated to a Sub-shape. The subMesh object
      * gives access to nodes and elements IDs.
-     * SubMesh will be used instead of SubShape in a next idl version to
+     * SubMesh will be used instead of Sub-shape in a next idl version to
      * adress a specific subMesh...
      */
     SMESH_subMesh GetSubMesh(in GEOM::GEOM_Object aSubObject, in string name)
@@ -464,20 +464,20 @@ module SMESH
       raises (SALOME::SALOME_Exception);
 
     /*!
-     * Add hypothesis to the mesh, under a particular subShape
+     * Add hypothesis to the mesh, under a particular Sub-shape
      * (or the main shape itself)
      * The Add method is only used to prepare the build of the mesh and store
      * the algorithms and associated parameters.
      * Actual job of mesh the shape is done by MESH_Gen.
      * @params
-     * - aSubShape : subShape obtained by a shape explode in GEOM
+     * - aSubShape : sub-shape obtained by a shape explode in GEOM
      *   (or main shape)
      * - anHyp : hypothesis object
      * @return
-     * - OK if the hypothesis is compatible with the subShape
-     *   (and all previous hypothesis on the subShape)
-     * - NOK if the hypothesis is not compatible with the subShape
-     *   (or one previous hypothesis on the subShape)
+     * - OK if the hypothesis is compatible with the sub-shape
+     *   (and all previous hypothesis on the sub-shape)
+     * - NOK if the hypothesis is not compatible with the sub-shape
+     *   (or one previous hypothesis on the sub-shape)
      * raises exception if hypothesis has not been created
      */
     Hypothesis_Status AddHypothesis(in GEOM::GEOM_Object aSubObject,
@@ -497,7 +497,7 @@ module SMESH
 //       raises (SALOME::SALOME_Exception);
 
     /*!
-     * Get the list of hypothesis added on a subShape
+     * Get the list of hypothesis added on a sub-shape
      */
     ListOfHypothesis GetHypothesisList(in GEOM::GEOM_Object aSubObject)
       raises (SALOME::SALOME_Exception);

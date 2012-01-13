@@ -1043,6 +1043,6 @@ SMDS_MeshVolume* SMDS_UnstructuredGrid::extrudeVolumeFromFace(int vtkVolId,
 
   SMDS_MeshVolume *vol = _mesh->AddVolumeFromVtkIds(orderedNodes);
 
-  // TODO update subshape list of elements and nodes
+  // TODO update sub-shape list of elements and nodes
   return vol;
 }

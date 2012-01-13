@@ -106,7 +106,7 @@ module SMESH
     short   code;       // ComputeErrorName or, if negative, algo specific code
     string  comment;    // textual problem description
     string  algoName;
-    short   subShapeID; // id of subshape of a shape to mesh
+    short   subShapeID; // id of sub-shape of a shape to mesh
     boolean hasBadMesh; // there are elements preventing computation available for visualization
   };
   typedef sequence<ComputeError> compute_error_array;
@@ -278,7 +278,7 @@ module SMESH
 
     /*!
      * Mesh a subShape.
-     * First, verify list of hypothesis associated with the subShape,
+     * First, verify list of hypothesis associated with the Sub-shape,
      * return NOK if hypothesis are not sufficient
      */
     boolean Compute( in SMESH_Mesh        theMesh,
@@ -307,7 +307,7 @@ module SMESH
 
     /*!
      * Calculate Mesh as preview till indicated dimension
-     * First, verify list of hypothesis associated with the subShape.
+     * First, verify list of hypothesis associated with the Sub-shape.
      * Return mesh preview structure
      */
     MeshPreviewStruct Precompute( in SMESH_Mesh        theMesh,
@@ -333,14 +333,14 @@ module SMESH
       raises ( SALOME::SALOME_Exception );
 
     /*!
-     * Return mesh elements preventing computation of a subshape
+     * Return mesh elements preventing computation of a sub-shape
      */
     MeshPreviewStruct GetBadInputElements( in SMESH_Mesh theMesh,
                                            in short      theSubShapeID )
       raises ( SALOME::SALOME_Exception );
 
     /*!
-     * Return indeces of faces, edges and vertices of given subshapes
+     * Return indeces of faces, edges and vertices of given sub-shapes
      * within theMainObject
      */
     long_array GetSubShapesId( in GEOM::GEOM_Object theMainObject,

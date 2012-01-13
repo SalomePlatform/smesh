@@ -776,10 +776,10 @@ protected:
   ObjectPool<SMDS_VtkFace>* myFacePool;
   ObjectPool<SMDS_VtkEdge>* myEdgePool;
 
-  //! SMDS_MeshNodes refer to vtk nodes (vtk id = index in myNodes),store reference to this mesh, and subshape
+  //! SMDS_MeshNodes refer to vtk nodes (vtk id = index in myNodes),store reference to this mesh, and sub-shape
   SetOfNodes             myNodes;
 
-  //! SMDS_MeshCells refer to vtk cells (vtk id != index in myCells),store reference to this mesh, and subshape
+  //! SMDS_MeshCells refer to vtk cells (vtk id != index in myCells),store reference to this mesh, and sub-shape
   SetOfCells             myCells;
 
   //! for cells only: index = ID for SMDS users, value = ID in vtkUnstructuredGrid
