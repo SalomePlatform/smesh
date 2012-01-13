@@ -132,7 +132,7 @@ failure is provided.
 
 \image html meshcomputationfail.png
 
-After you select the error, <b>Show Subshape</b> button allows
+After you select the error, <b>Show Sub-shape</b> button allows
 visualizing the geometrical entity that causes it.
 
 \image html failed_computation.png "Example of the invalid input mesh"
@@ -144,7 +144,7 @@ computation reporting. There are the following possibilities: always
 show information box, only if an error occurs or never. 
 By default, the information box is always shown after mesh computation operation.
 
-<b>Publish Subshape</b> button publishes the subshape, whose meshing
+<b>Publish Sub-shape</b> button publishes the sub-shape, whose meshing
 failed, in GEOM component as a child of the mesh geometry, which
 allows analyzing the problem geometry and creating a submesh on it in
 order to locally tune hypotheses.
@@ -171,7 +171,7 @@ evaluation will be displayed in the following information box:
 <li>
 If the mesh contains concurrent submeshes, it is possible to change
 the priority of their computation, i.e. to change the priority of
-applying algorithms to the shared subshapes of the Mesh shape.</li>
+applying algorithms to the shared sub-shapes of the Mesh shape.</li>
 
 <em>To change submesh priority:</em>
 
@@ -205,7 +205,7 @@ is:
 <li><i>2D</i> Netgen 1D-2D with Hypothesis <b>Netgen Simple parameters</b>
 (Number of Segments = 12)</li>
 </ul>
-The submeshes become concurrent if they share subshapes that can be meshed 
+The submeshes become concurrent if they share sub-shapes that can be meshed 
 with different algorithms (or different hypothesises).
 In the example, we have three submeshes with concurrent algorithms,
 because they have different hypotheses. 

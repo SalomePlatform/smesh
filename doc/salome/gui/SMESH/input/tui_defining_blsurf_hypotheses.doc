@@ -14,7 +14,7 @@ import BLSURFPlugin
 box = geompy.MakeBoxDXDYDZ(200., 200., 200.)
 geompy.addToStudy(box, "box")
 
-# get subshapes
+# get sub-shapes
 Face_1   = geompy.SubShapeAllSorted(box, geompy.ShapeType["FACE"])[0]
 Edge_1   = geompy.SubShapeAllSorted(box, geompy.ShapeType["EDGE"])[0]
 Vertex_1 = geompy.SubShapeAllSorted(box, geompy.ShapeType["VERTEX"])[0]
