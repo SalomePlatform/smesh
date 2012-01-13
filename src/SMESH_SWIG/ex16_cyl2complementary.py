@@ -100,6 +100,7 @@ d_element[10] = MakeCut(d_element[10], c_cyl)
 # --------
 
 piece = RemoveExtraEdges(MakeCompound(d_element))
+piece = MakeGlueFaces(piece, 1e-07)
 
 # Add piece in study
 # ------------------
