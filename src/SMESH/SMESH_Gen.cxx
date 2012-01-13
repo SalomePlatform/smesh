@@ -135,7 +135,7 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
   if ( anUpward ) // is called from below code here
   {
     // -----------------------------------------------
-    // mesh all the subshapes starting from vertices
+    // mesh all the sub-shapes starting from vertices
     // -----------------------------------------------
     smIt = sm->getDependsOnIterator(includeSelf, !complexShapeFirst);
     while ( smIt->more() )
@@ -341,7 +341,7 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
       }
     }
     // -----------------------------------------------
-    // mesh the rest subshapes starting from vertices
+    // mesh the rest sub-shapes starting from vertices
     // -----------------------------------------------
     ret = Compute( aMesh, aShape, /*anUpward=*/true, aDim, aShapesId );
   }
@@ -432,7 +432,7 @@ bool SMESH_Gen::Evaluate(SMESH_Mesh &          aMesh,
 
   if ( anUpward ) { // is called from below code here
     // -----------------------------------------------
-    // mesh all the subshapes starting from vertices
+    // mesh all the sub-shapes starting from vertices
     // -----------------------------------------------
     smIt = sm->getDependsOnIterator(includeSelf, !complexShapeFirst);
     while ( smIt->more() ) {
@@ -538,7 +538,7 @@ bool SMESH_Gen::Evaluate(SMESH_Mesh &          aMesh,
     }
 
     // -----------------------------------------------
-    // mesh the rest subshapes starting from vertices
+    // mesh the rest sub-shapes starting from vertices
     // -----------------------------------------------
     ret = Evaluate( aMesh, aShape, aResMap, /*anUpward=*/true, aShapesId );
   }

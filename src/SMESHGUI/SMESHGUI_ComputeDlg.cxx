@@ -359,7 +359,7 @@ namespace SMESH
   }
   // -----------------------------------------------------------------------
   /*!
-   * \brief Return SO of a subshape
+   * \brief Return SO of a sub-shape
    */
   _PTR(SObject) getSubShapeSO( int subShapeID, GEOM::GEOM_Object_var aMainShape)
   {
@@ -384,7 +384,7 @@ namespace SMESH
   }
   // -----------------------------------------------------------------------
   /*!
-   * \brief Return subshape by ID
+   * \brief Return sub-shape by ID
    */
   GEOM::GEOM_Object_ptr getSubShape( int subShapeID, GEOM::GEOM_Object_var aMainShape)
   {
@@ -422,7 +422,7 @@ namespace SMESH
   }
   // -----------------------------------------------------------------------
   /*!
-   * \brief Return text describing a subshape
+   * \brief Return text describing a sub-shape
    */
   QString shapeText(int subShapeID, GEOM::GEOM_Object_var aMainShape )
   {
@@ -1072,7 +1072,7 @@ void SMESHGUI_BaseComputeOp::stopOperation()
 
 //================================================================================
 /*!
- * \brief publish selected subshape
+ * \brief publish selected sub-shape
  */
 //================================================================================
 

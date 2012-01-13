@@ -124,7 +124,7 @@ void Controls::BelongToGeom::init()
 {
   if (!myMeshDS || myShape.IsNull()) return;
 
-  // is subshape of main shape?
+  // is sub-shape of main shape?
   TopoDS_Shape aMainShape = myMeshDS->ShapeToMesh();
   if (aMainShape.IsNull()) {
     myIsSubshape = false;
@@ -280,7 +280,7 @@ void Controls::LyingOnGeom::init()
 {
   if (!myMeshDS || myShape.IsNull()) return;
 
-  // is subshape of main shape?
+  // is sub-shape of main shape?
   TopoDS_Shape aMainShape = myMeshDS->ShapeToMesh();
   if (aMainShape.IsNull()) {
     myIsSubshape = false;

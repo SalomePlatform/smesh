@@ -415,7 +415,7 @@ bool StdMeshers_CompositeHexa_3D::Compute(SMESH_Mesh&         theMesh,
   // ----------------------------
   // Add internal nodes of a box
   // ----------------------------
-  // projection points of internal nodes on box subshapes by which
+  // projection points of internal nodes on box sub-shapes by which
   // coordinates of internal nodes are computed
   vector<gp_XYZ> pointsOnShapes( SMESH_Block::ID_Shell );
 

@@ -509,7 +509,7 @@ namespace // INTERNAL STUFF
   {
     // To get SMESH_subMesh corresponding to srcMeshDS we need to have a shape
     // for which SMESHDS_Mesh::IsGroupOfSubShapes() returns true.
-    // And this shape must be different from subshapes of the main shape.
+    // And this shape must be different from sub-shapes of the main shape.
     // So we create a compound containing
     // 1) some sub-shapes of SMESH_Mesh::PseudoShape() corresponding to
     //    srcMeshDS->GetPersistentId()

@@ -777,7 +777,7 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
   SMESHDS_Mesh * meshDS = theMesh.GetMeshDS();
 
   // ---------------------------
-  // Make subshapes association
+  // Make sub-shapes association
   // ---------------------------
 
   TopoDS_Face tgtFace = TopoDS::Face( theShape.Oriented(TopAbs_FORWARD));
@@ -1117,7 +1117,7 @@ bool StdMeshers_Projection_2D::Evaluate(SMESH_Mesh&         theMesh,
     srcMesh = tgtMesh;
 
   // ---------------------------
-  // Make subshapes association
+  // Make sub-shapes association
   // ---------------------------
 
   TopoDS_Face tgtFace = TopoDS::Face( theShape.Oriented(TopAbs_FORWARD));

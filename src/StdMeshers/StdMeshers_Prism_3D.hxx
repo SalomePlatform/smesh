@@ -94,7 +94,7 @@ struct TNode
  * \brief Tool analyzing and giving access to a prism geometry 
  *  treating it like a block, i.e. the four side faces are
  *  emulated by division/uniting of missing/excess faces.
- *  It also manage associations between block subshapes and a mesh.
+ *  It also manage associations between block sub-shapes and a mesh.
  */
 // ===============================================================
 
@@ -207,7 +207,7 @@ public:
 
   /*!
    * \brief Return in-block ID of a shape
-    * \param shape - block subshape
+    * \param shape - block sub-shape
     * \retval int - ID or zero if the shape has no ID
    */
   int ShapeID(const TopoDS_Shape& shape) const
@@ -440,7 +440,7 @@ private:
   bool projectBottomToTop();
 
   /*!
-   * \brief Set projection coordinates of a node to a face and it's subshapes
+   * \brief Set projection coordinates of a node to a face and it's sub-shapes
     * \param faceID - the face given by in-block ID
     * \param params - node normalized parameters
     * \retval bool - is a success

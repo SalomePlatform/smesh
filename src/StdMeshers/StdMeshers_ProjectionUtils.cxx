@@ -379,7 +379,7 @@ namespace {
 
 //=======================================================================
 /*!
- * \brief Looks for association of all subshapes of two shapes
+ * \brief Looks for association of all sub-shapes of two shapes
  * \param theShape1 - shape 1
  * \param theMesh1 - mesh built on shape 1
  * \param theShape2 - shape 2
@@ -448,7 +448,7 @@ bool StdMeshers_ProjectionUtils::FindSubShapeAssociation(const TopoDS_Shape& the
 
   if ( partner ) // Same shape with different location
   {
-    // recursively associate all subshapes of theShape1 and theShape2
+    // recursively associate all sub-shapes of theShape1 and theShape2
     typedef list< pair< TopoDS_Shape, TopoDS_Shape > > TShapePairsList;
     TShapePairsList shapesQueue( 1, make_pair( theShape1, theShape2 ));
     TShapePairsList::iterator s1_s2 = shapesQueue.begin();
@@ -556,7 +556,7 @@ bool StdMeshers_ProjectionUtils::FindSubShapeAssociation(const TopoDS_Shape& the
       if ( edge2.IsNull() )
         RETURN_BAD_RESULT("GetEdgeByVertices() failed");
 
-      // build map of edge to faces if shapes are not subshapes of main ones
+      // build map of edge to faces if shapes are not sub-shapes of main ones
       bool isSubOfMain = false;
       if ( SMESHDS_SubMesh * sm = theMesh1->GetMeshDS()->MeshElements( theShape1 ))
         isSubOfMain = !sm->IsComplexSubmesh();
@@ -619,7 +619,7 @@ bool StdMeshers_ProjectionUtils::FindSubShapeAssociation(const TopoDS_Shape& the
 
       TopTools_MapOfShape boundEdges;
 
-      // association of face subshapes and neighbour faces
+      // association of face sub-shapes and neighbour faces
       list< pair < TopoDS_Face, TopoDS_Edge > > FE1, FE2;
       list< pair < TopoDS_Face, TopoDS_Edge > >::iterator fe1, fe2;
       FE1.push_back( make_pair( TopoDS::Face( F1 ), edge1 ));
@@ -1582,7 +1582,7 @@ StdMeshers_ProjectionUtils::GetPropagationEdge( SMESH_Mesh*        aMesh,
     * \param mesh1 - mesh containing elements on the first face
     * \param face2 - the second face
     * \param mesh2 - mesh containing elements on the second face
-    * \param assocMap - map associating subshapes of the faces
+    * \param assocMap - map associating sub-shapes of the faces
     * \param node1To2Map - map containing found matching nodes
     * \retval bool - is a success
    */
@@ -1638,7 +1638,7 @@ FindMatchingNodesOnFaces( const TopoDS_Face&     face1,
     TopoDS_Edge e1 = TopoDS::Edge( assocMap( e2 ));
     if ( !helper1.IsSubShape( e1, face1 ))
       RETURN_BAD_RESULT("Wrong association, edge " << meshDS1->ShapeToIndex( e1 ) <<
-                        " isn't a subshape of face " << meshDS1->ShapeToIndex( face1 ));
+                        " isn't a sub-shape of face " << meshDS1->ShapeToIndex( face1 ));
     // check that there are nodes on edges
     SMESHDS_SubMesh * eSM1 = meshDS1->MeshElements( e1 );
     SMESHDS_SubMesh * eSM2 = meshDS2->MeshElements( e2 );
@@ -1904,10 +1904,10 @@ FindMatchingNodesOnFaces( const TopoDS_Face&     face1,
 
 //================================================================================
   /*!
-   * \brief Return any subshape of a face belonging to the outer wire
+   * \brief Return any sub-shape of a face belonging to the outer wire
     * \param face - the face
-    * \param type - type of subshape to return
-    * \retval TopoDS_Shape - the found subshape
+    * \param type - type of sub-shape to return
+    * \retval TopoDS_Shape - the found sub-shape
    */
 //================================================================================
 
@@ -2004,9 +2004,9 @@ bool StdMeshers_ProjectionUtils::MakeComputed(SMESH_subMesh * sm, const int iter
 
 //================================================================================
 /*!
- * \brief Count nb of subshapes
+ * \brief Count nb of sub-shapes
  * \param shape - the shape
- * \param type - the type of subshapes to count
+ * \param type - the type of sub-shapes to count
  * \retval int - the calculated number
  */
 //================================================================================
@@ -2136,7 +2136,7 @@ void StdMeshers_ProjectionUtils::SetEventListener(SMESH_subMesh* subMesh,
       if ( srcShapeSM->GetSubMeshDS() &&
            srcShapeSM->GetSubMeshDS()->IsComplexSubmesh() )
       {  // source shape is a group
-        TopExp_Explorer it(srcShapeSM->GetSubShape(), // explore the group into subshapes...
+        TopExp_Explorer it(srcShapeSM->GetSubShape(), // explore the group into sub-shapes...
                            subMesh->GetSubShape().ShapeType()); // ...of target shape type
         for (; it.More(); it.Next())
         {

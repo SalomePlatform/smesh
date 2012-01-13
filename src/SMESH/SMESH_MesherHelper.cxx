@@ -114,7 +114,7 @@ bool SMESH_MesherHelper::IsQuadraticSubMesh(const TopoDS_Shape& aSh)
 {
   SMESHDS_Mesh* meshDS = GetMeshDS();
   // we can create quadratic elements only if all elements
-  // created on subshapes of given shape are quadratic
+  // created on sub-shapes of given shape are quadratic
   // also we have to fill myTLinkNodeMap
   myCreateQuadratic = true;
   mySeamShapeIds.clear();
@@ -279,7 +279,7 @@ void SMESH_MesherHelper::SetSubShape(const TopoDS_Shape& aSh)
 //function : GetNodeUVneedInFaceNode
 //purpose  : Check if inFaceNode argument is necessary for call GetNodeUV(F,..)
 //           Return true if the face is periodic.
-//           If F is Null, answer about subshape set through IsQuadraticSubMesh() or
+//           If F is Null, answer about sub-shape set through IsQuadraticSubMesh() or
 //           * SetSubShape()
 //=======================================================================
 

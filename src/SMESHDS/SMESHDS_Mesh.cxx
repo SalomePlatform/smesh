@@ -973,7 +973,7 @@ void SMESHDS_Mesh::ClearMesh()
 //================================================================================
 /*!
  * \brief return submesh by shape
-  * \param shape - the subshape
+  * \param shape - the sub-shape
   * \retval SMESHDS_SubMesh* - the found submesh
   *
  * search of submeshes is optimized
@@ -995,8 +995,8 @@ SMESHDS_SubMesh* SMESHDS_Mesh::getSubmesh( const TopoDS_Shape & shape )
 
 //================================================================================
 /*!
- * \brief return submesh by subshape index
-  * \param Index - the subshape index
+ * \brief return submesh by sub-shape index
+  * \param Index - the sub-shape index
   * \retval SMESHDS_SubMesh* - the found submesh
  * search of submeshes is optimized
  */
@@ -1149,7 +1149,7 @@ TopoDS_Shape SMESHDS_Mesh::ShapeToMesh() const
 
 //=======================================================================
 //function : IsGroupOfSubShapes
-//purpose  : return true if at least one subshape of theShape is a subshape
+//purpose  : return true if at least one sub-shape of theShape is a sub-shape
 //           of myShape or theShape == myShape
 //=======================================================================
 

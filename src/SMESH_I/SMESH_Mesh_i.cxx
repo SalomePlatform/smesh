@@ -512,7 +512,7 @@ SMESH_Hypothesis::Hypothesis_Status
   if(MYDEBUG) MESSAGE("addHypothesis");
 
   if (CORBA::is_nil(aSubShapeObject) && HasShapeToMesh())
-    THROW_SALOME_CORBA_EXCEPTION("bad subShape reference",
+    THROW_SALOME_CORBA_EXCEPTION("bad Sub-shape reference",
                                  SALOME::BAD_PARAM);
 
   SMESH::SMESH_Hypothesis_var myHyp = SMESH::SMESH_Hypothesis::_narrow(anHyp);
@@ -594,10 +594,10 @@ SMESH_Mesh_i::removeHypothesis(GEOM::GEOM_Object_ptr       aSubShapeObject,
                                SMESH::SMESH_Hypothesis_ptr anHyp)
 {
   if(MYDEBUG) MESSAGE("removeHypothesis()");
-  // **** proposer liste de subShape (selection multiple)
+  // **** proposer liste de sub-shape (selection multiple)
 
   if (CORBA::is_nil(aSubShapeObject) && HasShapeToMesh())
-    THROW_SALOME_CORBA_EXCEPTION("bad subShape reference", SALOME::BAD_PARAM);
+    THROW_SALOME_CORBA_EXCEPTION("bad Sub-shape reference", SALOME::BAD_PARAM);
 
   SMESH::SMESH_Hypothesis_var myHyp = SMESH::SMESH_Hypothesis::_narrow(anHyp);
   if (CORBA::is_nil(myHyp))
@@ -615,7 +615,7 @@ SMESH_Mesh_i::removeHypothesis(GEOM::GEOM_Object_ptr       aSubShapeObject,
 
     int hypId = myHyp->GetId();
     status = _impl->RemoveHypothesis(myLocSubShape, hypId);
-//     if ( !SMESH_Hypothesis::IsStatusFatal(status) ) EAP: hyp can be used on many subshapes
+//     if ( !SMESH_Hypothesis::IsStatusFatal(status) ) EAP: hyp can be used on many sub-shapes
 //       _mapHypo.erase( hypId );
   }
   catch(SALOME_Exception & S_ex)
@@ -638,7 +638,7 @@ throw(SALOME::SALOME_Exception)
   Unexpect aCatch(SALOME_SalomeException);
   if (MYDEBUG) MESSAGE("GetHypothesisList");
   if (_impl->HasShapeToMesh() && CORBA::is_nil(aSubShapeObject))
-    THROW_SALOME_CORBA_EXCEPTION("bad subShape reference", SALOME::BAD_PARAM);
+    THROW_SALOME_CORBA_EXCEPTION("bad Sub-shape reference", SALOME::BAD_PARAM);
 
   SMESH::ListOfHypothesis_var aList = new SMESH::ListOfHypothesis();
 
@@ -713,7 +713,7 @@ SMESH::SMESH_subMesh_ptr SMESH_Mesh_i::GetSubMesh(GEOM::GEOM_Object_ptr aSubShap
   Unexpect aCatch(SALOME_SalomeException);
   MESSAGE("SMESH_Mesh_i::GetSubMesh");
   if (CORBA::is_nil(aSubShapeObject))
-    THROW_SALOME_CORBA_EXCEPTION("bad subShape reference",
+    THROW_SALOME_CORBA_EXCEPTION("bad Sub-shape reference",
                                  SALOME::BAD_PARAM);
 
   SMESH::SMESH_subMesh_var subMesh;
@@ -4107,7 +4107,7 @@ class SMESH_DimHyp
     }
   }
 
-  //! Check sharing of sub shapes
+  //! Check sharing of sub-shapes
   static bool isShareSubShapes(const TopTools_MapOfShape& theToCheck,
                                const TopTools_MapOfShape& theToFind,
                                const TopAbs_ShapeEnum     theType)
@@ -4118,7 +4118,7 @@ class SMESH_DimHyp
       const TopoDS_Shape aSubSh = anItr.Key();
       // check for case when concurrent dimensions are same
       isShared = theToFind.Contains( aSubSh );
-      // check for subshape with concurrent dimension
+      // check for sub-shape with concurrent dimension
       TopExp_Explorer anExp( aSubSh, theType );
       for ( ; !isShared && anExp.More(); anExp.Next() )
         isShared = theToFind.Contains( anExp.Current() );
@@ -4138,11 +4138,11 @@ class SMESH_DimHyp
   }
 
   
-  //! Check if subshape hypotheses are concurrent
+  //! Check if sub-shape hypotheses are concurrent
   bool IsConcurrent(const SMESH_DimHyp* theOther) const
   {
     if ( _subMesh == theOther->_subMesh )
-      return false; // same subshape - should not be
+      return false; // same sub-shape - should not be
 
     // if ( <own dim of either of submeshes> == <concurrent dim> &&
     //      any of the two submeshes is not on COMPOUND shape )
@@ -4291,7 +4291,7 @@ SMESH::submesh_array_array* SMESH_Mesh_i::GetMeshOrder()
           // hyp it-self is algo
           anAlgo = (SMESH_Algo*)dynamic_cast<const SMESH_Algo*>(hyp);
         else {
-          // try to find algorithm with help of subshapes
+          // try to find algorithm with help of sub-shapes
           TopExp_Explorer anExp( aSubMeshShape, shapeTypeByDim(hyp->GetDim()) );
           for ( ; !anAlgo && anExp.More(); anExp.Next() )
             anAlgo = mesh.GetGen()->GetAlgo( mesh, anExp.Current() );

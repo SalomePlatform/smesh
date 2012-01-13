@@ -264,12 +264,12 @@ bool StdMeshers_Projection_3D::Compute(SMESH_Mesh& aMesh, const TopoDS_Shape& aS
     TopExp::Vertices( TopoDS::Edge( exp.Current() ), tgtV000, tgtV100 );
 
     if ( !shape2ShapeMap.IsBound( tgtV000 ) || !shape2ShapeMap.IsBound( tgtV100 ))
-      return error("Association of subshapes failed" );
+      return error("Association of sub-shapes failed" );
     srcV000 = TopoDS::Vertex( shape2ShapeMap( tgtV000 ));
     srcV100 = TopoDS::Vertex( shape2ShapeMap( tgtV100 ));
     if ( !SMESH_MesherHelper::IsSubShape( srcV000, srcShell ) ||
          !SMESH_MesherHelper::IsSubShape( srcV100, srcShell ))
-      return error("Incorrect association of subshapes" );
+      return error("Incorrect association of sub-shapes" );
   }
 
   // Load 2 SMESH_Block's with src and tgt shells
@@ -277,20 +277,20 @@ bool StdMeshers_Projection_3D::Compute(SMESH_Mesh& aMesh, const TopoDS_Shape& aS
   SMESH_Block srcBlock, tgtBlock;
   TopTools_IndexedMapOfOrientedShape scrShapes, tgtShapes;
   if ( !tgtBlock.LoadBlockShapes( tgtShell, tgtV000, tgtV100, tgtShapes ))
-    return error(COMPERR_BAD_SHAPE, "Can't detect block subshapes. Not a block?");
+    return error(COMPERR_BAD_SHAPE, "Can't detect block sub-shapes. Not a block?");
 
   if ( !srcBlock.LoadBlockShapes( srcShell, srcV000, srcV100, scrShapes ))
-    return error(COMPERR_BAD_SHAPE, "Can't detect block subshapes. Not a block?");
+    return error(COMPERR_BAD_SHAPE, "Can't detect block sub-shapes. Not a block?");
 
   // Find matching nodes of src and tgt shells
 
   TNodeNodeMap src2tgtNodeMap;
   for ( int fId = SMESH_Block::ID_FirstF; fId < SMESH_Block::ID_Shell; ++fId )
   {
-    // Corresponding subshapes
+    // Corresponding sub-shapes
     TopoDS_Face srcFace = TopoDS::Face( scrShapes( fId ));
     TopoDS_Face tgtFace = TopoDS::Face( tgtShapes( fId ));
-    if ( _sourceHypo->HasVertexAssociation() ) { // associate face subshapes
+    if ( _sourceHypo->HasVertexAssociation() ) { // associate face sub-shapes
       shape2ShapeMap.Clear();
       vector< int > edgeIdVec;
       SMESH_Block::GetFaceEdgesIDs( fId, edgeIdVec );

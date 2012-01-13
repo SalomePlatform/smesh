@@ -3890,7 +3890,7 @@ void SMESH_Pattern::clearMesh(SMESH_Mesh* theMesh) const
 //           coordinates computed by either of Apply...() methods
 // WARNING : StdMeshers_Projection_... relies on MakeMesh() behavior: that
 //           it does not care of nodes and elements already existing on
-//           subshapes. DO NOT MERGE them or modify also StdMeshers_Projection_..
+//           sub-shapes. DO NOT MERGE them or modify also StdMeshers_Projection_..
 //=======================================================================
 
 bool SMESH_Pattern::MakeMesh(SMESH_Mesh* theMesh,

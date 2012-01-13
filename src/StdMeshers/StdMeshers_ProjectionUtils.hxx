@@ -57,7 +57,7 @@ class StdMeshers_ProjectionUtils
   typedef std::map<const SMDS_MeshNode*, const SMDS_MeshNode*> TNodeNodeMap;
 
   /*!
-   * \brief Looks for association of all subshapes of two shapes
+   * \brief Looks for association of all sub-shapes of two shapes
     * \param theShape1 - shape 1
     * \param theMesh1 - mesh built on shape 1
     * \param theShape2 - shape 2
@@ -148,7 +148,7 @@ class StdMeshers_ProjectionUtils
     * \param mesh1 - mesh containing elements on the first face
     * \param face2 - the second face
     * \param mesh2 - mesh containing elements on the second face
-    * \param assocMap - map associating subshapes of the faces
+    * \param assocMap - map associating sub-shapes of the faces
     * \param nodeIn2OutMap - map containing found matching nodes
     * \retval bool - is a success
    */
@@ -159,10 +159,10 @@ class StdMeshers_ProjectionUtils
                                         const TShapeShapeMap & assocMap,
                                         TNodeNodeMap &         nodeIn2OutMap);
   /*!
-   * \brief Return any subshape of a face belonging to the outer wire
+   * \brief Return any sub-shape of a face belonging to the outer wire
     * \param face - the face
-    * \param type - type of subshape to return
-    * \retval TopoDS_Shape - the found subshape
+    * \param type - type of sub-shape to return
+    * \retval TopoDS_Shape - the found sub-shape
    */
   static TopoDS_Shape OuterShape( const TopoDS_Face& face,
                                   TopAbs_ShapeEnum   type);
@@ -176,9 +176,9 @@ class StdMeshers_ProjectionUtils
   static bool MakeComputed(SMESH_subMesh * sm, const int iterationNb = 0);
 
   /*!
-   * \brief Count nb of subshapes
+   * \brief Count nb of sub-shapes
     * \param shape - the shape
-    * \param type - the type of subshapes to count
+    * \param type - the type of sub-shapes to count
     * \param ignoreSame - if true, use map not to count same shapes, esle use explorer
     * \retval int - the calculated number
    */

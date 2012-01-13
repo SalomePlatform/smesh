@@ -450,7 +450,7 @@ def TreatHypoStatus(status, hypName, geomName, isAlgo):
     elif status == HYP_CONCURENT :
         reason = "there are concurrent hypotheses on sub-shapes"
     elif status == HYP_BAD_SUBSHAPE :
-        reason = "the shape is neither the main one, nor its subshape, nor a valid group"
+        reason = "the shape is neither the main one, nor its sub-shape, nor a valid group"
     elif status == HYP_BAD_GEOMETRY:
         reason = "geometry mismatches the expectation of the algorithm"
     elif status == HYP_HIDDEN_ALGO:
@@ -1245,7 +1245,7 @@ class Mesh:
         self.mesh = self.smeshpyD.CreateMesh(geom)
 
     ## Returns true if the hypotheses are defined well
-    #  @param theSubObject a subshape of a mesh shape
+    #  @param theSubObject a sub-shape of a mesh shape
     #  @return True or False
     #  @ingroup l2_construct
     def IsReadyToCompute(self, theSubObject):
@@ -1253,7 +1253,7 @@ class Mesh:
 
     ## Returns errors of hypotheses definition.
     #  The list of errors is empty if everything is OK.
-    #  @param theSubObject a subshape of a mesh shape
+    #  @param theSubObject a sub-shape of a mesh shape
     #  @return a list of errors
     #  @ingroup l2_construct
     def GetAlgoState(self, theSubObject):
@@ -1287,12 +1287,12 @@ class Mesh:
     ## Creates a segment discretization 1D algorithm.
     #  If the optional \a algo parameter is not set, this algorithm is REGULAR.
     #  \n If the optional \a geom parameter is not set, this algorithm is global.
-    #  Otherwise, this algorithm defines a submesh based on \a geom subshape.
+    #  Otherwise, this algorithm defines a submesh based on \a geom sub-shape.
     #  @param algo the type of the required algorithm. Possible values are:
     #     - smesh.REGULAR,
     #     - smesh.PYTHON for discretization via a python function,
     #     - smesh.COMPOSITE for meshing a set of edges on one face side as a whole.
-    #  @param geom If defined is the subshape to be meshed
+    #  @param geom If defined is the sub-shape to be meshed
     #  @return an instance of Mesh_Segment or Mesh_Segment_Python, or Mesh_CompositeSegment class
     #  @ingroup l3_algos_basic
     def Segment(self, algo=REGULAR, geom=0):
@@ -1312,7 +1312,7 @@ class Mesh:
 
     ## Creates 1D algorithm importing segments conatined in groups of other mesh.
     #  If the optional \a geom parameter is not set, this algorithm is global.
-    #  Otherwise, this algorithm defines a submesh based on \a geom subshape.
+    #  Otherwise, this algorithm defines a submesh based on \a geom sub-shape.
     #  @param geom If defined the subshape is to be meshed
     #  @return an instance of Mesh_UseExistingElements class
     #  @ingroup l3_algos_basic
@@ -1322,7 +1322,7 @@ class Mesh:
     ## Creates 2D algorithm importing faces conatined in groups of other mesh.
     #  If the optional \a geom parameter is not set, this algorithm is global.
     #  Otherwise, this algorithm defines a submesh based on \a geom subshape.
-    #  @param geom If defined the subshape is to be meshed
+    #  @param geom If defined the sub-shape is to be meshed
     #  @return an instance of Mesh_UseExistingElements class
     #  @ingroup l3_algos_basic
     def UseExisting2DElements(self, geom=0):
@@ -1332,8 +1332,8 @@ class Mesh:
     #  The added nodes and segments must be bound to edges and vertices by
     #  SetNodeOnVertex(), SetNodeOnEdge() and SetMeshElementOnShape()
     #  If the optional \a geom parameter is not set, this algorithm is global.
-    #  \n Otherwise, this algorithm defines a submesh based on \a geom subshape.
-    #  @param geom the subshape to be manually meshed
+    #  \n Otherwise, this algorithm defines a submesh based on \a geom sub-shape.
+    #  @param geom the sub-shape to be manually meshed
     #  @return StdMeshers_UseExisting_1D algorithm that generates nothing
     #  @ingroup l3_algos_basic
     def UseExistingSegments(self, geom=0):
@@ -1344,8 +1344,8 @@ class Mesh:
     #  The added nodes and faces must be bound to geom faces by SetNodeOnFace()
     #  and SetMeshElementOnShape()
     #  If the optional \a geom parameter is not set, this algorithm is global.
-    #  \n Otherwise, this algorithm defines a submesh based on \a geom subshape.
-    #  @param geom the subshape to be manually meshed
+    #  \n Otherwise, this algorithm defines a submesh based on \a geom sub-shape.
+    #  @param geom the sub-shape to be manually meshed
     #  @return StdMeshers_UseExisting_2D algorithm that generates nothing
     #  @ingroup l3_algos_basic
     def UseExistingFaces(self, geom=0):
@@ -1354,9 +1354,9 @@ class Mesh:
 
     ## Creates a triangle 2D algorithm for faces.
     #  If the optional \a geom parameter is not set, this algorithm is global.
-    #  \n Otherwise, this algorithm defines a submesh based on \a geom subshape.
+    #  \n Otherwise, this algorithm defines a submesh based on \a geom sub-shape.
     #  @param algo values are: smesh.MEFISTO || smesh.NETGEN_1D2D || smesh.NETGEN_2D || smesh.BLSURF
-    #  @param geom If defined, the subshape to be meshed (GEOM_Object)
+    #  @param geom If defined, the sub-shape to be meshed (GEOM_Object)
     #  @return an instance of Mesh_Triangle algorithm
     #  @ingroup l3_algos_basic
     def Triangle(self, algo=MEFISTO, geom=0):
@@ -1368,8 +1368,8 @@ class Mesh:
 
     ## Creates a quadrangle 2D algorithm for faces.
     #  If the optional \a geom parameter is not set, this algorithm is global.
-    #  \n Otherwise, this algorithm defines a submesh based on \a geom subshape.
-    #  @param geom If defined, the subshape to be meshed (GEOM_Object)
+    #  \n Otherwise, this algorithm defines a submesh based on \a geom sub-shape.
+    #  @param geom If defined, the sub-shape to be meshed (GEOM_Object)
     #  @param algo values are: smesh.QUADRANGLE || smesh.RADIAL_QUAD
     #  @return an instance of Mesh_Quadrangle algorithm
     #  @ingroup l3_algos_basic
@@ -1382,9 +1382,9 @@ class Mesh:
     ## Creates a tetrahedron 3D algorithm for solids.
     #  The parameter \a algo permits to choose the algorithm: NETGEN or GHS3D
     #  If the optional \a geom parameter is not set, this algorithm is global.
-    #  \n Otherwise, this algorithm defines a submesh based on \a geom subshape.
+    #  \n Otherwise, this algorithm defines a submesh based on \a geom sub-shape.
     #  @param algo values are: smesh.NETGEN, smesh.GHS3D, smesh.GHS3DPRL, smesh.FULL_NETGEN
-    #  @param geom If defined, the subshape to be meshed (GEOM_Object)
+    #  @param geom If defined, the sub-shape to be meshed (GEOM_Object)
     #  @return an instance of Mesh_Tetrahedron algorithm
     #  @ingroup l3_algos_basic
     def Tetrahedron(self, algo=NETGEN, geom=0):
@@ -1397,9 +1397,9 @@ class Mesh:
 
     ## Creates a hexahedron 3D algorithm for solids.
     #  If the optional \a geom parameter is not set, this algorithm is global.
-    #  \n Otherwise, this algorithm defines a submesh based on \a geom subshape.
+    #  \n Otherwise, this algorithm defines a submesh based on \a geom sub-shape.
     #  @param algo possible values are: smesh.Hexa, smesh.Hexotic
-    #  @param geom If defined, the subshape to be meshed (GEOM_Object)
+    #  @param geom If defined, the sub-shape to be meshed (GEOM_Object)
     #  @return an instance of Mesh_Hexahedron algorithm
     #  @ingroup l3_algos_basic
     def Hexahedron(self, algo=Hexa, geom=0):
@@ -1417,8 +1417,8 @@ class Mesh:
 
     ## Creates a projection 1D algorithm for edges.
     #  If the optional \a geom parameter is not set, this algorithm is global.
-    #  Otherwise, this algorithm defines a submesh based on \a geom subshape.
-    #  @param geom If defined, the subshape to be meshed
+    #  Otherwise, this algorithm defines a submesh based on \a geom sub-shape.
+    #  @param geom If defined, the sub-shape to be meshed
     #  @return an instance of Mesh_Projection1D algorithm
     #  @ingroup l3_algos_proj
     def Projection1D(self, geom=0):
@@ -1426,8 +1426,8 @@ class Mesh:
 
     ## Creates a projection 1D-2D algorithm for faces.
     #  If the optional \a geom parameter is not set, this algorithm is global.
-    #  Otherwise, this algorithm defines a submesh based on \a geom subshape.
-    #  @param geom If defined, the subshape to be meshed
+    #  Otherwise, this algorithm defines a submesh based on \a geom sub-shape.
+    #  @param geom If defined, the sub-shape to be meshed
     #  @return an instance of Mesh_Projection2D algorithm
     #  @ingroup l3_algos_proj
     def Projection1D2D(self, geom=0):
@@ -1435,8 +1435,8 @@ class Mesh:
 
     ## Creates a projection 2D algorithm for faces.
     #  If the optional \a geom parameter is not set, this algorithm is global.
-    #  Otherwise, this algorithm defines a submesh based on \a geom subshape.
-    #  @param geom If defined, the subshape to be meshed
+    #  Otherwise, this algorithm defines a submesh based on \a geom sub-shape.
+    #  @param geom If defined, the sub-shape to be meshed
     #  @return an instance of Mesh_Projection2D algorithm
     #  @ingroup l3_algos_proj
     def Projection2D(self, geom=0):
@@ -1444,8 +1444,8 @@ class Mesh:
 
     ## Creates a projection 3D algorithm for solids.
     #  If the optional \a geom parameter is not set, this algorithm is global.
-    #  Otherwise, this algorithm defines a submesh based on \a geom subshape.
-    #  @param geom If defined, the subshape to be meshed
+    #  Otherwise, this algorithm defines a submesh based on \a geom sub-shape.
+    #  @param geom If defined, the sub-shape to be meshed
     #  @return an instance of Mesh_Projection3D algorithm
     #  @ingroup l3_algos_proj
     def Projection3D(self, geom=0):
@@ -1453,8 +1453,8 @@ class Mesh:
 
     ## Creates a 3D extrusion (Prism 3D) or RadialPrism 3D algorithm for solids.
     #  If the optional \a geom parameter is not set, this algorithm is global.
-    #  Otherwise, this algorithm defines a submesh based on \a geom subshape.
-    #  @param geom If defined, the subshape to be meshed
+    #  Otherwise, this algorithm defines a submesh based on \a geom sub-shape.
+    #  @param geom If defined, the sub-shape to be meshed
     #  @return an instance of Mesh_Prism3D or Mesh_RadialPrism3D algorithm
     #  @ingroup l3_algos_radialp l3_algos_3dextr
     def Prism(self, geom=0):
@@ -1471,12 +1471,12 @@ class Mesh:
     #  3D structured Cartesian mesh in the internal part of a solid shape
     #  and polyhedral volumes near the shape boundary.
     #  If the optional \a geom parameter is not set, this algorithm is global.
-    #  Otherwise, this algorithm defines a submesh based on \a geom subshape.
+    #  Otherwise, this algorithm defines a submesh based on \a geom sub-shape.
     #  The algorithm does not support submeshes.
     #  Generally usage of this algorithm as a local one is useless since
-    #  it does not discretize 1D and 2D subshapes in a usual way acceptable
+    #  it does not discretize 1D and 2D sub-shapes in a usual way acceptable
     #  for other algorithms.
-    #  @param geom If defined, the subshape to be meshed
+    #  @param geom If defined, the sub-shape to be meshed
     #  @return an instance of Mesh_Cartesian_3D algorithm
     #  @ingroup l3_algos_basic
     def BodyFitted(self, geom=0):
@@ -1731,7 +1731,7 @@ class Mesh:
 
     ## Unassigns a hypothesis
     #  @param hyp a hypothesis to unassign
-    #  @param geom a subshape of mesh geometry
+    #  @param geom a sub-shape of mesh geometry
     #  @return SMESH.Hypothesis_Status
     #  @ingroup l2_hypotheses
     def RemoveHypothesis(self, hyp, geom=0):
@@ -1745,7 +1745,7 @@ class Mesh:
         return status
 
     ## Gets the list of hypotheses added on a geometry
-    #  @param geom a subshape of mesh geometry
+    #  @param geom a sub-shape of mesh geometry
     #  @return the sequence of SMESH_Hypothesis
     #  @ingroup l2_hypotheses
     def GetHypothesisList(self, geom):
@@ -2406,8 +2406,8 @@ class Mesh:
         return self.mesh.GetElementGeomType(id)
 
     ## Returns the list of submesh elements IDs
-    #  @param Shape a geom object(subshape) IOR
-    #         Shape must be the subshape of a ShapeToMesh()
+    #  @param Shape a geom object(sub-shape) IOR
+    #         Shape must be the sub-shape of a ShapeToMesh()
     #  @return the list of integer values
     #  @ingroup l1_meshinfo
     def GetSubMeshElementsId(self, Shape):
@@ -2418,8 +2418,8 @@ class Mesh:
         return self.mesh.GetSubMeshElementsId(ShapeID)
 
     ## Returns the list of submesh nodes IDs
-    #  @param Shape a geom object(subshape) IOR
-    #         Shape must be the subshape of a ShapeToMesh()
+    #  @param Shape a geom object(sub-shape) IOR
+    #         Shape must be the sub-shape of a ShapeToMesh()
     #  @param all If true, gives all nodes of submesh elements, otherwise gives only submesh nodes
     #  @return the list of integer values
     #  @ingroup l1_meshinfo
@@ -2431,8 +2431,8 @@ class Mesh:
         return self.mesh.GetSubMeshNodesId(ShapeID, all)
 
     ## Returns type of elements on given shape
-    #  @param Shape a geom object(subshape) IOR
-    #         Shape must be a subshape of a ShapeToMesh()
+    #  @param Shape a geom object(sub-shape) IOR
+    #         Shape must be a sub-shape of a ShapeToMesh()
     #  @return element type
     #  @ingroup l1_meshinfo
     def GetSubMeshElementType(self, Shape):

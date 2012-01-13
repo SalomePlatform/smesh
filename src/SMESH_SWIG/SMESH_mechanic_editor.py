@@ -95,25 +95,25 @@ Id_mechanic = geompy.addToStudy( mechanic, "mechanic" )
 # ---- explode on faces
 SubFaceL = geompy.SubShapeAllSorted(mechanic, geompy.ShapeType["FACE"])
 
-# ---- add a face sub shape in study to be meshed different
+# ---- add a face sub-shape in study to be meshed different
 sub_face1 = SubFaceL[0]
 name      = geompy.SubShapeName( sub_face1, mechanic )
 
 Id_SubFace1 = geompy.addToStudyInFather( mechanic, sub_face1, name )
 
-# ---- add a face sub shape in study to be meshed different
+# ---- add a face sub-shape in study to be meshed different
 sub_face2 = SubFaceL[4]
 name      = geompy.SubShapeName( sub_face2, mechanic )
 
 Id_SubFace2 = geompy.addToStudyInFather( mechanic, sub_face2, name )
 
-# ---- add a face sub shape in study to be meshed different
+# ---- add a face sub-shape in study to be meshed different
 sub_face3 = SubFaceL[5]
 name      = geompy.SubShapeName( sub_face3, mechanic )
 
 Id_SubFace3 = geompy.addToStudyInFather( mechanic, sub_face3, name )
 
-# ---- add a face sub shape in study to be meshed different
+# ---- add a face sub-shape in study to be meshed different
 sub_face4 = SubFaceL[10]
 name      = geompy.SubShapeName( sub_face4, mechanic )
 

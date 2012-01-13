@@ -172,7 +172,7 @@ bool StdMeshers_RadialPrism_3D::Compute(SMESH_Mesh& aMesh, const TopoDS_Shape& a
     return error(COMPERR_BAD_SHAPE, SMESH_Comment("Must be 2 shells but not ")<<nbShells);
 
   // ----------------------------------
-  // Associate subshapes of the shells
+  // Associate sub-shapes of the shells
   // ----------------------------------
 
   TAssocTool::TShapeShapeMap shape2ShapeMap;
@@ -190,7 +190,7 @@ bool StdMeshers_RadialPrism_3D::Compute(SMESH_Mesh& aMesh, const TopoDS_Shape& a
 
   for ( exp.Init( outerShell, TopAbs_FACE ); exp.More(); exp.Next() )
   {
-    // Corresponding subshapes
+    // Corresponding sub-shapes
     TopoDS_Face outFace = TopoDS::Face( exp.Current() );
     TopoDS_Face inFace;
     if ( !shape2ShapeMap.IsBound( outFace )) {
@@ -418,7 +418,7 @@ bool StdMeshers_RadialPrism_3D::Evaluate(SMESH_Mesh& aMesh,
     return false;
   }
 
-  // Associate subshapes of the shells
+  // Associate sub-shapes of the shells
   TAssocTool::TShapeShapeMap shape2ShapeMap;
   if ( !TAssocTool::FindSubShapeAssociation( outerShell, &aMesh,
                                              innerShell, &aMesh,

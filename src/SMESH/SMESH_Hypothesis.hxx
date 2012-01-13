@@ -61,7 +61,7 @@ public:
     HYP_NOTCONFORM,   // not conform mesh is produced appling a hypothesis
     HYP_ALREADY_EXIST,// such hypothesis already exist
     HYP_BAD_DIM,      // bad dimension
-    HYP_BAD_SUBSHAPE, // shape is neither the main one, nor its subshape, nor a group
+    HYP_BAD_SUBSHAPE, // shape is neither the main one, nor its sub-shape, nor a group
     HYP_BAD_GEOMETRY, // shape geometry mismatches algorithm's expectation
     HYP_NEED_SHAPE    // algorithm can work on shape only
   };

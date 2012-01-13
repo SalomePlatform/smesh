@@ -284,8 +284,8 @@ namespace {
   /*!
    * \brief creates a filter for selection of shapes of given dimension
     * \param dim - dimension
-    * \param subShapeType - required type of subshapes, number of which must be \a nbSubShapes
-    * \param nbSubShapes - number of subshapes of given type
+    * \param subShapeType - required type of sub-shapes, number of which must be \a nbSubShapes
+    * \param nbSubShapes - number of sub-shapes of given type
     * \param closed - required closeness flag of a shape
     * \retval SUIT_SelectionFilter* - created filter
    */

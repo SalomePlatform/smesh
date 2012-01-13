@@ -385,7 +385,7 @@ bool StdMeshers_Prism_3D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& theSh
 
   myHelper->IsQuadraticSubMesh( theShape );
 
-  // Analyse mesh and geomerty to find block subshapes and submeshes
+  // Analyse mesh and geomerty to find block sub-shapes and submeshes
   if ( !myBlock.Init( myHelper, theShape ))
     return error( myBlock.GetError());
 
@@ -984,7 +984,7 @@ bool StdMeshers_Prism_3D::projectBottomToTop()
 
 //================================================================================
 /*!
- * \brief Set projection coordinates of a node to a face and it's subshapes
+ * \brief Set projection coordinates of a node to a face and it's sub-shapes
  * \param faceID - the face given by in-block ID
  * \param params - node normalized parameters
  * \retval bool - is a success
@@ -2211,9 +2211,9 @@ TopoDS_Edge StdMeshers_PrismAsBlock::TSideFace::GetEdge(const int iEdge) const
 
 //================================================================================
 /*!
- * \brief Fill block subshapes
+ * \brief Fill block sub-shapes
   * \param shapeMap - map to fill in
-  * \retval int - nb inserted subshapes
+  * \retval int - nb inserted sub-shapes
  */
 //================================================================================
 

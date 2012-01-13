@@ -1336,8 +1336,8 @@ void StdMeshers_Penta_3D::CheckData()
     iNb=aM.Extent();
     if (iNb!=iNbEx[i]){
       MESSAGE("StdMeshers_Penta_3D::CheckData() ");
-      myErrorStatus->myName=4; // number of subshape is not compatible
-      myErrorStatus->myComment="Wrong number of subshapes of a block";
+      myErrorStatus->myName=4; // number of sub-shape is not compatible
+      myErrorStatus->myComment="Wrong number of sub-shapes of a block";
       return;
     }
   }
@@ -1649,7 +1649,7 @@ SMESH_ComputeErrorPtr StdMeshers_SMESHBlock::GetError() const
   case 3: text = "Internal error of StdMeshers_Penta_3D"; break; 
   case 4: text = "Can't compute normalized parameters of a point inside a block"; break;
   case 5: text = "Can't compute coordinates by normalized parameters inside a block"; break;
-  case 6: text = "Can't detect block subshapes. Not a block?"; break;
+  case 6: text = "Can't detect block sub-shapes. Not a block?"; break;
   }
   if (!text.empty())
     err->myName = myErrorStatus;

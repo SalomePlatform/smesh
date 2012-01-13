@@ -528,7 +528,7 @@ SMESH_Hypothesis::Hypothesis_Status
 
   SMESH_Hypothesis::Hypothesis_Status ret = subMesh->AlgoStateEngine(event, anHyp);
 
-  // subShapes
+  // sub-shapes
   if (!SMESH_Hypothesis::IsStatusFatal(ret) &&
       anHyp->GetDim() <= SMESH_Gen::GetShapeDim(aSubShape)) // is added on father
   {
@@ -602,7 +602,7 @@ SMESH_Hypothesis::Hypothesis_Status
       subMesh->CheckConcurentHypothesis( anHyp->GetType() ) != SMESH_Hypothesis::HYP_OK)
     ret = SMESH_Hypothesis::HYP_CONCURENT;
 
-  // subShapes
+  // sub-shapes
   if (!SMESH_Hypothesis::IsStatusFatal(ret) &&
       anHyp->GetDim() <= SMESH_Gen::GetShapeDim(aSubShape)) // is removed from father
   {
@@ -884,7 +884,7 @@ throw(SALOME_Exception)
 }
 //================================================================================
 /*!
- * \brief Return submeshes of groups containing the given subshape
+ * \brief Return submeshes of groups containing the given sub-shape
  */
 //================================================================================
 

@@ -65,7 +65,7 @@
     </message>
     <message>
         <source>COL_SHAPE_HEADER</source>
-        <translation>SubShape</translation>
+        <translation>Sub-shape</translation>
     </message>
     <message>
         <source>COMPERR_ALGO_FAILED</source>
@@ -1539,7 +1539,7 @@ add the exported data to its contents?</translation>
     </message>
     <message>
         <source>SMESH_HYP_11</source>
-        <translation>Shape is neither the main one, nor its subshape, nor a valid group</translation>
+        <translation>Shape is neither the main one, nor its sub-shape, nor a valid group</translation>
     </message>
     <message>
         <source>SMESH_HYP_12</source>
@@ -4002,11 +4002,11 @@ Please, create VTK viewer and try again</translation>
     </message>
     <message>
         <source>PUBLISH_SHAPE</source>
-        <translation>Publish SubShape</translation>
+        <translation>Publish Sub-shape</translation>
     </message>
     <message>
         <source>SHOW_SHAPE</source>
-        <translation>Show SubShape</translation>
+        <translation>Show Sub-shape</translation>
     </message>
     <message>
         <source>SHOW_BAD_MESH</source>
@@ -5106,7 +5106,7 @@ Please specify it and try again</translation>
     </message>
     <message>
         <source>INVALID_SUBSHAPE</source>
-        <translation>Geometry object is not a subshape of the shape to mesh</translation>
+        <translation>Geometry object is not a sub-shape of the shape to mesh</translation>
     </message>
     <message>
         <source>MESH_IS_NOT_DEFINED</source>

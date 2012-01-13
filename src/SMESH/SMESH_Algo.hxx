@@ -120,7 +120,7 @@ public:
     *
     * Algorithms that !NeedDescretBoundary() || !OnlyUnaryInput() are
     * to set SMESH_ComputeError returned by SMESH_submesh::GetComputeError()
-    * to report problematic subshapes
+    * to report problematic sub-shapes
    */
   virtual bool Compute(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape) = 0;
 

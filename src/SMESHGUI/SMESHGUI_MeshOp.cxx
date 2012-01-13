@@ -306,7 +306,7 @@ SUIT_SelectionFilter* SMESHGUI_MeshOp::createFilter( const int theId ) const
 
 //================================================================================
 /*!
- * \brief check if selected shape is a subshape of the shape to mesh
+ * \brief check if selected shape is a sub-shape of the shape to mesh
   * \retval bool - check result
  */
 //================================================================================
@@ -916,7 +916,7 @@ void SMESHGUI_MeshOp::existingHyps( const int theDim,
 //================================================================================
 /*!
  * \brief If create or edit a submesh, return a hypothesis holding parameters used
- *        to mesh a subshape
+ *        to mesh a sub-shape
   * \param aHypType - The hypothesis type name
   * \param aServerLib - Server library name
   * \param hypData - The structure holding the hypothesis type etc.
@@ -1788,7 +1788,7 @@ bool SMESHGUI_MeshOp::createSubMesh( QString& theMess, QStringList& theEntryList
     }
   }
 
-  // deselect geometry: next submesh should be created on other subshape
+  // deselect geometry: next submesh should be created on other sub-shape
   myDlg->clearSelection( SMESHGUI_MeshDlg::Geom );
   selectObject( _PTR(SObject)() );
   selectionDone();

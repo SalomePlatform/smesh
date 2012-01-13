@@ -556,7 +556,7 @@ const char* StdMeshersGUI_SubShapeSelectorWdg::GetMainShapeEntry()
 
 //=================================================================================
 // function : GetCorrectedListOfIds
-// purpose  : Called to convert the list of IDs from subshape IDs to main shape IDs
+// purpose  : Called to convert the list of IDs from sub-shape IDs to main shape IDs
 //=================================================================================
 QList<int> StdMeshersGUI_SubShapeSelectorWdg::GetCorrectedListOfIDs( bool fromSubshapeToMainshape )
 {
@@ -571,7 +571,7 @@ QList<int> StdMeshersGUI_SubShapeSelectorWdg::GetCorrectedListOfIDs( bool fromSu
   TopExp::MapShapes(myGeomShape, aGeomMap);
   TopExp::MapShapes(myMainShape, aMainMap);
 
-  if ( fromSubshapeToMainshape ) { // convert indexes from subshape to mainshape
+  if ( fromSubshapeToMainshape ) { // convert indexes from sub-shape to mainshape
     int size = myListOfIDs.size();
     for (int i = 0; i < size; i++) {
       TopoDS_Shape aSubShape = aGeomMap.FindKey( myListOfIDs.at(i) );
@@ -579,7 +579,7 @@ QList<int> StdMeshersGUI_SubShapeSelectorWdg::GetCorrectedListOfIDs( bool fromSu
       aList.append( index );
     }
     myIsNotCorrected = false;
-  } else { // convert indexes from main shape to subshape
+  } else { // convert indexes from main shape to sub-shape
     int size = mySelectedIDs.size();
     for (int i = 0; i < size; i++) {
       TopoDS_Shape aSubShape = aMainMap.FindKey( mySelectedIDs.at(i) );

@@ -4680,7 +4680,7 @@ SMESH_MeshEditor::ExtrusionAlongTrack (TIDSortedElemSet &   theElements,
   list<SMESH_MeshEditor_PathPoint> fullList;
 
   const TopoDS_Shape& aS = theTrack->GetSubShape();
-  // Sub shape for the Pattern must be an Edge or Wire
+  // Sub-shape for the Pattern must be an Edge or Wire
   if( aS.ShapeType() == TopAbs_EDGE ) {
     aTrackEdge = TopoDS::Edge( aS );
     // the Edge must not be degenerated
@@ -4970,7 +4970,7 @@ SMESH_MeshEditor::ExtrusionAlongTrack (TIDSortedElemSet &   theElements,
     }
     fullList.push_back(PP1);
     
-  } // Sub shape for the Pattern must be an Edge or Wire
+  } // Sub-shape for the Pattern must be an Edge or Wire
   else if( aS.ShapeType() == TopAbs_EDGE ) {
     aTrackEdge = TopoDS::Edge( aS );
     // the Edge must not be degenerated

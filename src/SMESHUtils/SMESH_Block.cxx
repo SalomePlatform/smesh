@@ -67,7 +67,7 @@ using namespace std;
 //================================================================================
 /*!
  * \brief Set edge data
-  * \param edgeID - block subshape ID
+  * \param edgeID - block sub-shape ID
   * \param curve - edge geometry
   * \param isForward - is curve orientation coincides with edge orientation in the block
  */
@@ -87,7 +87,7 @@ void SMESH_Block::TEdge::Set( const int edgeID, Adaptor3d_Curve* curve, const bo
 //================================================================================
 /*!
  * \brief Set coordinates of nodes at edge ends to work with mesh block
-  * \param edgeID - block subshape ID
+  * \param edgeID - block sub-shape ID
   * \param node1 - coordinates of node with lower ID
   * \param node2 - coordinates of node with upper ID
  */
@@ -143,7 +143,7 @@ SMESH_Block::TEdge::~TEdge()
 //================================================================================
 /*!
  * \brief Set face data
-  * \param faceID - block subshape ID
+  * \param faceID - block sub-shape ID
   * \param S - face surface geometry
   * \param c2d - 4 pcurves in the order as returned by GetFaceEdgesIDs(faceID)
   * \param isForward - orientation of pcurves comparing with block edge direction
@@ -180,7 +180,7 @@ void SMESH_Block::TFace::Set( const int          faceID,
 //================================================================================
 /*!
  * \brief Set face data to work with mesh block
-  * \param faceID - block subshape ID
+  * \param faceID - block sub-shape ID
   * \param edgeU0 - filled data of edge u0 = GetFaceEdgesIDs(faceID)[ 0 ]
   * \param edgeU1 - filled data of edge u1 = GetFaceEdgesIDs(faceID)[ 1 ]
  */
@@ -373,7 +373,7 @@ bool SMESH_Block::ShellPoint( const gp_XYZ& theParams, gp_XYZ& thePoint ) const
 //=======================================================================
 //function : ShellPoint
 //purpose  : computes coordinates of a point in shell by points on sub-shapes;
-//           thePointOnShape[ subShapeID ] must be a point on a subShape
+//           thePointOnShape[ subShapeID ] must be a point on a sub-shape
 //=======================================================================
 
 bool SMESH_Block::ShellPoint(const gp_XYZ&         theParams,
@@ -1505,7 +1505,7 @@ bool SMESH_Block::FindBlockShapes(const TopoDS_Shell&         theShell,
 //================================================================================
 /*!
  * \brief Initialize block geometry with shapes from theShapeIDMap
-  * \param theShapeIDMap - map of block subshapes
+  * \param theShapeIDMap - map of block sub-shapes
   * \retval bool - is a success
  */
 //================================================================================
@@ -1554,11 +1554,11 @@ bool SMESH_Block::LoadBlockShapes(const TopTools_IndexedMapOfOrientedShape& theS
  * \brief Load face geometry
   * \param theFace - face
   * \param theFaceID - face in-block ID
-  * \param theShapeIDMap - map of block subshapes
+  * \param theShapeIDMap - map of block sub-shapes
   * \retval bool - is a success
  * 
  * It is enough to compute params or coordinates on the face.
- * Face subshapes must be loaded into theShapeIDMap before
+ * Face sub-shapes must be loaded into theShapeIDMap before
  */
 //================================================================================
 
@@ -1590,7 +1590,7 @@ bool SMESH_Block::LoadFace(const TopoDS_Face& theFace,
  * \brief/ Insert theShape into theShapeIDMap with theShapeID
   * \param theShape - shape to insert
   * \param theShapeID - shape in-block ID
-  * \param theShapeIDMap - map of block subshapes
+  * \param theShapeIDMap - map of block sub-shapes
  */
 //================================================================================
 

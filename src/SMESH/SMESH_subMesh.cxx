@@ -187,7 +187,7 @@ SMESH_Algo* SMESH_subMesh::GetAlgo() const
 
 //================================================================================
 /*!
- * \brief Allow algo->Compute() if a subshape of lower dim is meshed but
+ * \brief Allow algo->Compute() if a sub-shape of lower dim is meshed but
  *        none mesh entity is bound to it (PAL13615, 2nd part)
  */
 //================================================================================
@@ -790,7 +790,7 @@ SMESH_Hypothesis::Hypothesis_Status
       break;
     case REMOVE_ALGO: {        // perhaps a father algo applies ?
       algo = GetAlgo();
-      if (algo == NULL)  // no more algo applying on subShape...
+      if (algo == NULL)  // no more algo applying on sub-shape...
       {
         SetAlgoState(NO_ALGO);
       }
@@ -904,7 +904,7 @@ SMESH_Hypothesis::Hypothesis_Status
     }
     case REMOVE_ALGO: {         // perhaps a father algo applies ?
       algo = GetAlgo();
-      if (algo == NULL)   // no more algo applying on subShape...
+      if (algo == NULL)   // no more algo applying on sub-shape...
       {
         SetAlgoState(NO_ALGO);
       }
@@ -1754,7 +1754,7 @@ bool SMESH_subMesh::CheckComputeError(SMESH_Algo* theAlgo, const TopoDS_Shape& t
 
       // Show error
       SMESH_Comment text;
-      text << theAlgo->GetName() << " failed on subshape #" << _Id << " with error ";
+      text << theAlgo->GetName() << " failed on sub-shape #" << _Id << " with error ";
       if (_computeError->IsCommon() )
         text << _computeError->CommonName();
       else
@@ -2229,7 +2229,7 @@ SMESH_subMeshIteratorPtr SMESH_subMesh::getDependsOnIterator(const bool includeS
 
 //================================================================================
 /*!
- * \brief  Find common submeshes (based on shared subshapes with other
+ * \brief  Find common submeshes (based on shared sub-shapes with other
   * \param theOther submesh to check
   * \param theSetOfCommon set of common submesh
  */
