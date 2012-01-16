@@ -402,10 +402,11 @@ namespace
     if ( _intPoints.size() < 2 ) return;
 
     set< Transition > tranSet;
-    multiset< IntersectionPoint >::iterator ip2 = _intPoints.begin(), ip1 = ip2++;
-    for ( ; ip2 != _intPoints.end(); ip1 = ip2++ )
+    multiset< IntersectionPoint >::iterator ip1, ip2 = _intPoints.begin();
+    while ( ip2 != _intPoints.end() )
     {
       tranSet.clear();
+      ip1 = ip2++;
       while ( ip2->_paramOnLine - ip1->_paramOnLine <= tol  && ip2 != _intPoints.end())
       {
         tranSet.insert( ip1->_transition );
@@ -426,7 +427,7 @@ namespace
   }
   //================================================================================
   /*
-   * Return "is OUT" state for nodes before the given intersention point
+   * Return "is OUT" state for nodes before the given intersection point
    */
   bool GridLine::GetIsOutBefore( multiset< IntersectionPoint >::iterator ip, bool prevIsOut )
   {
