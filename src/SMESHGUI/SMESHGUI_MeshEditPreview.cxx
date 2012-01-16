@@ -73,6 +73,11 @@ SMESHGUI_MeshEditPreview::SMESHGUI_MeshEditPreview(SVTK_ViewWindow* theViewWindo
   myPreviewActor->VisibilityOn();
   myPreviewActor->PickableOff();
 
+  vtkFloatingPointType aFactor,aUnits;
+  myPreviewActor->SetResolveCoincidentTopology(true);
+  myPreviewActor->GetPolygonOffsetParameters(aFactor,aUnits);
+  myPreviewActor->SetPolygonOffsetParameters(aFactor,0.2*aUnits);
+
   vtkFloatingPointType anRGB[3];
   SMESH::GetColor( "SMESH", "selection_element_color", anRGB[0], anRGB[1], anRGB[2], QColor( 0, 170, 255 ) );
   SetColor( anRGB[0], anRGB[1], anRGB[2] );
