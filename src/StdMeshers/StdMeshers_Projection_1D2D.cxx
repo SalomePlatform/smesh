@@ -37,7 +37,53 @@
 
 using namespace std;
 
-//#define RETURN_BAD_RESULT(msg) { MESSAGE(")-: Error: " << msg); return false; }
+namespace
+{
+  // --------------------------------------------------------------------------------
+  /*!
+   * \brief an event listener updating submehses of EDGEs according to
+   *        events on the target FACE submesh
+   */
+  struct EventProparatorToEdges : public SMESH_subMeshEventListener
+  {
+    EventProparatorToEdges(): SMESH_subMeshEventListener(/*isDeletable=*/false,
+                                                         "Projection_1D2D::EventProparatorToEdges")
+    {}
+    static EventProparatorToEdges* Instance() { static EventProparatorToEdges E; return &E; }
+
+    static void Set(SMESH_subMesh* faceSubMesh)
+    {
+      SMESH_subMeshEventListenerData* edgeSubMeshes =
+        new SMESH_subMeshEventListenerData(/*isDeletable=*/true);
+      SMESH_Mesh* mesh = faceSubMesh->GetFather();
+      TopExp_Explorer eExp( faceSubMesh->GetSubShape(), TopAbs_EDGE );
+      for ( ; eExp.More(); eExp.Next() )
+        edgeSubMeshes->mySubMeshes.push_back( mesh->GetSubMesh( eExp.Current() ));
+
+      // set a listener
+      faceSubMesh->SetEventListener( Instance(), edgeSubMeshes, faceSubMesh );
+    }
+  };
+  // --------------------------------------------------------------------------------
+  /*!
+   * \brief Structure used to temporary remove EventProparatorToEdges from faceSubMesh
+   *  in order to prevent propagation of CLEAN event from FACE to EDGEs during 
+   *  StdMeshers_Projection_1D2D::Compute(). The CLEAN event is emmited by Pattern mapper
+   * and causes removal of faces generated on adjacent FACEs.
+   */
+  struct UnsetterOfEventProparatorToEdges
+  {
+    SMESH_subMesh* _faceSubMesh;
+    UnsetterOfEventProparatorToEdges( SMESH_subMesh* faceSubMesh ):_faceSubMesh(faceSubMesh)
+    {
+      faceSubMesh->DeleteEventListener( EventProparatorToEdges::Instance() );
+    }
+    ~UnsetterOfEventProparatorToEdges()
+    {
+      EventProparatorToEdges::Set(_faceSubMesh);
+    }
+  };
+}
 
 //=======================================================================
 //function : StdMeshers_Projection_1D2D
@@ -49,6 +95,7 @@ StdMeshers_Projection_1D2D::StdMeshers_Projection_1D2D(int hypId, int studyId, S
 {
   _name = "Projection_1D2D";
   _requireDescretBoundary = false;
+  _supportSubmeshes = true;
 }
 
 //=======================================================================
@@ -58,6 +105,8 @@ StdMeshers_Projection_1D2D::StdMeshers_Projection_1D2D(int hypId, int studyId, S
 
 bool StdMeshers_Projection_1D2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& theShape)
 {
+  UnsetterOfEventProparatorToEdges eventBarrier( theMesh.GetSubMesh( theShape ));
+
   if ( !StdMeshers_Projection_2D::Compute(theMesh, theShape))
     return false;
 
@@ -81,7 +130,18 @@ bool StdMeshers_Projection_1D2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape
   {
     vector<const SMDS_MeshNode*> nodes = wires[ iWire ]->GetOrderedNodes();
     if ( nodes.empty() )
-      return error("No nodes found on a wire");
+      return error("Wrong nodes on a wire");
+
+    // check that all nodes are shared by faces generated on F
+    for ( size_t i = 0; i < nodes.size(); ++i )
+    {
+      SMDS_ElemIteratorPtr fIt = nodes[i]->GetInverseElementIterator(SMDSAbs_Face);
+      bool faceFound = false;
+      while ( !faceFound && fIt->more() )
+        faceFound = ( helper.GetSubShapeID() == fIt->next()->getshapeId() );
+      if ( !faceFound )
+        return error("The existing 1D mesh mismatches the generated 2D mesh");
+    }
 
     const bool checkExisting = wires[ iWire ]->NbSegments();
 
@@ -185,32 +245,20 @@ bool StdMeshers_Projection_1D2D::Evaluate(SMESH_Mesh&         theMesh,
 //=======================================================================
 //function : SetEventListener
 //purpose  : Sets a default event listener to submesh of the source face.
-//           whenSetToFaceSubMesh - submesh where algo is set
+//           faceSubMesh - submesh where algo is set
 // After being set, event listener is notified on each event of a submesh.
 // This method is called when a submesh gets HYP_OK algo_state.
 // Arranges that CLEAN event is translated from source submesh to
-// the whenSetToFaceSubMesh submesh.
+// the faceSubMesh submesh.
 //=======================================================================
 
-void StdMeshers_Projection_1D2D::SetEventListener(SMESH_subMesh* whenSetToFaceSubMesh)
+void StdMeshers_Projection_1D2D::SetEventListener(SMESH_subMesh* faceSubMesh)
 {
   // set a listener of events on a source submesh
-  StdMeshers_Projection_2D::SetEventListener(whenSetToFaceSubMesh);
+  StdMeshers_Projection_2D::SetEventListener(faceSubMesh);
 
   // set a listener to the target FACE submesh in order to update submehses
   // of EDGEs according to events on the target FACE submesh
-
-  // fill a listener data with submeshes of EDGEs
-  SMESH_subMeshEventListenerData* data =
-    new SMESH_subMeshEventListenerData(/*isDeletable=*/true);
-  SMESH_Mesh* mesh = whenSetToFaceSubMesh->GetFather();
-  TopExp_Explorer eExp( whenSetToFaceSubMesh->GetSubShape(), TopAbs_EDGE );
-  for ( ; eExp.More(); eExp.Next() )
-    data->mySubMeshes.push_back( mesh->GetSubMesh( eExp.Current() ));
-
-  // set a listener
-  SMESH_subMeshEventListener* listener =
-    new SMESH_subMeshEventListener(/*isDeletable=*/true);
-  whenSetToFaceSubMesh->SetEventListener( listener, data, whenSetToFaceSubMesh );
+  EventProparatorToEdges::Set( faceSubMesh );
 }
 
