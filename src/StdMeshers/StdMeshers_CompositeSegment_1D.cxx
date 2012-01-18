@@ -150,7 +150,9 @@ namespace {
 
   struct VertexNodesRestoringListener : public SMESH_subMeshEventListener
   {
-    VertexNodesRestoringListener():SMESH_subMeshEventListener(0) // won't be deleted by submesh
+    VertexNodesRestoringListener():
+      SMESH_subMeshEventListener(0, // won't be deleted by submesh
+                                 "StdMeshers_CompositeSegment_1D::VertexNodesRestoringListener")
     {}
   /*!
    * \brief Restore nodes on internal vertices of a complex side

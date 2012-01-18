@@ -169,7 +169,8 @@ namespace {
     SMESH_Mesh* myMesh;
     string      myMeshPartIOR;
     //!< Constructor
-    TSearchersDeleter(): SMESH_subMeshEventListener( false ), // won't be deleted by submesh
+    TSearchersDeleter(): SMESH_subMeshEventListener( false, // won't be deleted by submesh
+                                                     "SMESH_MeshEditor_i::TSearchersDeleter"),
                          myMesh(0) {}
     //!< Delete theNodeSearcher
     static void Delete()

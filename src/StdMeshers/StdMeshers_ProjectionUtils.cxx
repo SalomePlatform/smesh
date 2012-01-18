@@ -2069,8 +2069,8 @@ namespace {
 
   struct HypModifWaiter: SMESH_subMeshEventListener
   {
-    HypModifWaiter():SMESH_subMeshEventListener(0){} // won't be deleted by submesh
-
+    HypModifWaiter():SMESH_subMeshEventListener(false,// won't be deleted by submesh
+                                                "StdMeshers_ProjectionUtils::HypModifWaiter") {}
     void ProcessEvent(const int event, const int eventType, SMESH_subMesh* subMesh,
                       EventListenerData*, const SMESH_Hypothesis*)
     {
@@ -2102,7 +2102,8 @@ namespace {
   //================================================================================
 
   SMESH_subMeshEventListener* GetSrcSubMeshListener() {
-    static SMESH_subMeshEventListener srcListener(0); // won't be deleted by submesh
+    static SMESH_subMeshEventListener srcListener(false, // won't be deleted by submesh
+                                                  "StdMeshers_ProjectionUtils::SrcSubMeshListener");
     return &srcListener;
   }
 }

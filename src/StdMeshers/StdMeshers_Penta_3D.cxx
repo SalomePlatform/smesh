@@ -849,7 +849,8 @@ void StdMeshers_Penta_3D::MakeMeshOnFxy1()
   // assure that mesh on the top face will be cleaned when it is cleaned
   // on the bottom face
   SMESH_subMesh* volSM = pMesh->GetSubMesh( myTool->GetSubShape() );
-  volSM->SetEventListener( new SMESH_subMeshEventListener(true),
+  volSM->SetEventListener( new SMESH_subMeshEventListener(true, // deletable by SMESH_subMesh
+                                                          "StdMeshers_Penta_3D"),
                            SMESH_subMeshEventListenerData::MakeData( aSubMesh1 ),
                            aSubMesh0 ); // translate CLEAN event of aSubMesh0 to aSubMesh1
 }

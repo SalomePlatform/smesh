@@ -122,7 +122,9 @@ namespace VISCOUS
    */
   class _SrinkShapeListener : SMESH_subMeshEventListener
   {
-    _SrinkShapeListener(): SMESH_subMeshEventListener(/*isDeletable=*/false) {}
+    _SrinkShapeListener()
+      : SMESH_subMeshEventListener(/*isDeletable=*/false,
+                                   "StdMeshers_ViscousLayers::_SrinkShapeListener") {}
     static SMESH_subMeshEventListener* Get() { static _SrinkShapeListener l; return &l; }
   public:
     virtual void ProcessEvent(const int                       event,
@@ -162,7 +164,9 @@ namespace VISCOUS
    */
   class _ViscousListener : SMESH_subMeshEventListener
   {
-    _ViscousListener(): SMESH_subMeshEventListener(/*isDeletable=*/false) {}
+    _ViscousListener():
+      SMESH_subMeshEventListener(/*isDeletable=*/false,
+                                 "StdMeshers_ViscousLayers::_ViscousListener") {}
     static SMESH_subMeshEventListener* Get() { static _ViscousListener l; return &l; }
   public:
     virtual void ProcessEvent(const int                       event,

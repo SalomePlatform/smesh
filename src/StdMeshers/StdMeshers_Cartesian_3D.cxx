@@ -1714,15 +1714,16 @@ namespace
 {
   /*!
    * \brief Event listener setting/unsetting _alwaysComputed flag to
-   *        submeshes of inferior levels to avoid their computing
+   *        submeshes of inferior levels to prevent their computing
    */
   struct _EventListener : public SMESH_subMeshEventListener
   {
     string _algoName;
 
     _EventListener(const string& algoName):
-      SMESH_subMeshEventListener(/*isDeletable=*/true), _algoName(algoName) {}
-
+      SMESH_subMeshEventListener(/*isDeletable=*/true,"StdMeshers_Cartesian_3D::_EventListener"),
+      _algoName(algoName)
+    {}
     // --------------------------------------------------------------------------------
     // setting/unsetting _alwaysComputed flag to submeshes of inferior levels
     //

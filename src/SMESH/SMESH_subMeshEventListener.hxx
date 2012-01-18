@@ -47,8 +47,16 @@ class SMESH_EXPORT SMESH_subMeshEventListener
   bool myIsDeletable; //!< if true, it will be deleted by SMESH_subMesh
   mutable std::set<SMESH_subMesh*> myBusySM; //!< to avoid infinite recursion via events
   friend class SMESH_subMesh;
-public:
-  SMESH_subMeshEventListener(bool isDeletable):myIsDeletable(isDeletable) {}
+#ifdef _DEBUG_
+  const char* myName; //!< identifier used for debug
+#endif
+
+ public:
+  SMESH_subMeshEventListener(bool isDeletable, const char* name) :myIsDeletable(isDeletable)
+#ifdef _DEBUG_
+    ,myName(name)
+#endif
+  {}
   bool IsDeletable() const { return myIsDeletable; }
   /*!
    * \brief Do something on a certain event

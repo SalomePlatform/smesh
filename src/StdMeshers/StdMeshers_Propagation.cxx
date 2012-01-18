@@ -449,7 +449,8 @@ namespace {
   //================================================================================
 
   PropagationMgr::PropagationMgr()
-    : SMESH_subMeshEventListener( false ) // won't be deleted by submesh
+    : SMESH_subMeshEventListener( false, // won't be deleted by submesh
+                                  "StdMeshers_Propagation::PropagationMgr")
   {}
   //================================================================================
   /*!

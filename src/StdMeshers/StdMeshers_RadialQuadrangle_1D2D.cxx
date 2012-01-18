@@ -146,7 +146,8 @@ namespace
    */
   class TEdgeMarker : public SMESH_subMeshEventListener
   {
-    TEdgeMarker(): SMESH_subMeshEventListener(/*isDeletable=*/false) {}
+    TEdgeMarker(): SMESH_subMeshEventListener(/*isDeletable=*/false,
+                                              "StdMeshers_RadialQuadrangle_1D2D::TEdgeMarker") {}
   public:
     //!<  Return static listener
     static SMESH_subMeshEventListener* getListener()

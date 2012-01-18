@@ -246,7 +246,8 @@ namespace // INTERNAL STUFF
     typedef map< SMESH_Mesh*, list< _ImportData > > TMesh2ImpData;
     TMesh2ImpData _tgtMesh2ImportData;
 
-    _Listener():SMESH_subMeshEventListener(/*isDeletable=*/false){}
+    _Listener():SMESH_subMeshEventListener(/*isDeletable=*/false,
+                                           "StdMeshers_Import_1D::_Listener") {}
 
   public:
     // return poiter to a static listener
