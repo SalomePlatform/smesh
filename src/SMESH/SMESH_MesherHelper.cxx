@@ -948,8 +948,8 @@ std::pair<int, TopAbs_ShapeEnum> SMESH_MesherHelper::GetMediumPos(const SMDS_Mes
     {
       TopoDS_Shape V1 = GetSubShapeByNode( n1, GetMeshDS() );
       TopoDS_Shape V2 = GetSubShapeByNode( n2, GetMeshDS() );
-      shape = GetCommonAncestor( V1, V2, *myMesh, TopAbs_FACE );
-      if ( shape.IsNull() ) shape = GetCommonAncestor( V1, V2, *myMesh, TopAbs_EDGE );
+      shape = GetCommonAncestor( V1, V2, *myMesh, TopAbs_EDGE );
+      if ( shape.IsNull() ) shape = GetCommonAncestor( V1, V2, *myMesh, TopAbs_FACE );
     }
     else // VERTEX and EDGE
     {
