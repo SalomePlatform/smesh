@@ -196,8 +196,7 @@ namespace {
     // only by faces created by mapper
     //if ( is1DComputed )
     {
-      SMDS_ElemIteratorPtr invEdge = node->GetInverseElementIterator(SMDSAbs_Edge);
-      bool isOld = invEdge->more();
+      bool isOld = node->NbInverseElements(SMDSAbs_Edge) > 0;
       return isOld;
     }
     // else
@@ -224,7 +223,7 @@ namespace {
     void Release() { sm = 0; } // mesh will not be removed
     static void Clean( SMESH_subMesh* sm, bool withSub=true )
     {
-      if ( !sm ) return;
+      if ( !sm || !sm->GetSubMeshDS() ) return;
       // PAL16567, 18920. Remove face nodes as well
 //       switch ( sm->GetSubShape().ShapeType() ) {
 //       case TopAbs_VERTEX:
@@ -936,9 +935,10 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
   {
     SMESH_subMesh*     sm = smIt->next();
     SMESHDS_SubMesh* smDS = sm->GetSubMeshDS();
-
-    if ( !is1DComputed && sm->GetSubShape().ShapeType() == TopAbs_EDGE )
+    if ( !sm->IsMeshComputed() )
       break;
+    //if ( !is1DComputed && sm->GetSubShape().ShapeType() == TopAbs_EDGE )
+    //break;
 
     // Sort new and old nodes of a submesh separately
 
@@ -996,8 +996,7 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
         continue;
 
       if ( u2nodesMaps[ OLD_NODES ].size() == 0           &&
-           sm->GetSubShape().ShapeType() == TopAbs_VERTEX &&
-           !is1DComputed                                    )
+           sm->GetSubShape().ShapeType() == TopAbs_VERTEX )
         // old nodes are optional on vertices in the case of 1D-2D projection
         continue;
 
