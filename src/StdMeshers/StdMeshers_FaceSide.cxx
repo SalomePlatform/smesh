@@ -257,45 +257,46 @@ const vector<UVPtStruct>& StdMeshers_FaceSide::GetUVPtStruct(bool   isXConst,
       }
 
       // Put internal nodes
-      SMESHDS_SubMesh* sm = meshDS->MeshElements( myEdge[i] );
-      if ( !sm ) continue;
-      vector< pair< double, const SMDS_MeshNode*> > u2nodeVec;
-      u2nodeVec.reserve( sm->NbNodes() );
-      SMDS_NodeIteratorPtr nItr = sm->GetNodes();
-      double paramSize = myLast[i] - myFirst[i];
-      double r = myNormPar[i] - prevNormPar;
-      if ( !myIsUniform[i] )
-        while ( nItr->more() )
-        {
-          const SMDS_MeshNode* node = nItr->next();
-          if ( myIgnoreMediumNodes && SMESH_MeshEditor::IsMedium( node, SMDSAbs_Edge ))
-            continue;
-          double u = helper.GetNodeU( myEdge[i], node, 0, &paramOK );
-          double aLenU = GCPnts_AbscissaPoint::Length
-            ( const_cast<GeomAdaptor_Curve&>( myC3dAdaptor[i]), myFirst[i], u );
-          if ( myEdgeLength[i] < aLenU ) // nonregression test "3D_mesh_NETGEN/G6"
+      if ( SMESHDS_SubMesh* sm = meshDS->MeshElements( myEdge[i] ))
+      {
+        vector< pair< double, const SMDS_MeshNode*> > u2nodeVec;
+        u2nodeVec.reserve( sm->NbNodes() );
+        SMDS_NodeIteratorPtr nItr = sm->GetNodes();
+        double paramSize = myLast[i] - myFirst[i];
+        double r = myNormPar[i] - prevNormPar;
+        if ( !myIsUniform[i] )
+          while ( nItr->more() )
           {
-            u2nodeVec.clear();
-            break;
+            const SMDS_MeshNode* node = nItr->next();
+            if ( myIgnoreMediumNodes && SMESH_MeshEditor::IsMedium( node, SMDSAbs_Edge ))
+              continue;
+            double u = helper.GetNodeU( myEdge[i], node, 0, &paramOK );
+            double aLenU = GCPnts_AbscissaPoint::Length
+              ( const_cast<GeomAdaptor_Curve&>( myC3dAdaptor[i]), myFirst[i], u );
+            if ( myEdgeLength[i] < aLenU ) // nonregression test "3D_mesh_NETGEN/G6"
+            {
+              u2nodeVec.clear();
+              break;
+            }
+            double normPar = prevNormPar + r*aLenU/myEdgeLength[i];
+            u2nodeVec.push_back( make_pair( normPar, node ));
           }
-          double normPar = prevNormPar + r*aLenU/myEdgeLength[i];
-          u2nodeVec.push_back( make_pair( normPar, node ));
-        }
-      nItr = sm->GetNodes();
-      if ( u2nodeVec.empty() )
-        while ( nItr->more() )
-        {
-          const SMDS_MeshNode* node = nItr->next();
-          if ( myIgnoreMediumNodes && SMESH_MeshEditor::IsMedium( node, SMDSAbs_Edge ))
-            continue;
-          double u = helper.GetNodeU( myEdge[i], node, 0, &paramOK );
+        nItr = sm->GetNodes();
+        if ( u2nodeVec.empty() )
+          while ( nItr->more() )
+          {
+            const SMDS_MeshNode* node = nItr->next();
+            if ( myIgnoreMediumNodes && SMESH_MeshEditor::IsMedium( node, SMDSAbs_Edge ))
+              continue;
+            double u = helper.GetNodeU( myEdge[i], node, 0, &paramOK );
 
-          // paramSize is signed so orientation is taken into account
-          double normPar = prevNormPar + r * ( u - myFirst[i] ) / paramSize;
-          u2nodeVec.push_back( make_pair( normPar, node ));
-        }
-      for ( size_t j = 0; j < u2nodeVec.size(); ++j )
+            // paramSize is signed so orientation is taken into account
+            double normPar = prevNormPar + r * ( u - myFirst[i] ) / paramSize;
+            u2nodeVec.push_back( make_pair( normPar, node ));
+          }
+        for ( size_t j = 0; j < u2nodeVec.size(); ++j )
         u2node.insert( u2node.end(), u2nodeVec[j] );
+      }
 
       // Put 2nd vertex node for a last edge
       if ( i+1 == myEdge.size() ) {
@@ -450,21 +451,22 @@ std::vector<const SMDS_MeshNode*> StdMeshers_FaceSide::GetOrderedNodes() const
       }
 
       // Put internal nodes
-      SMESHDS_SubMesh* sm = meshDS->MeshElements( myEdge[i] );
-      if ( !sm ) continue;
-      SMDS_NodeIteratorPtr nItr = sm->GetNodes();
-      double paramSize = myLast[i] - myFirst[i];
-      double r = myNormPar[i] - prevNormPar;
-      while ( nItr->more() )
+      if ( SMESHDS_SubMesh* sm = meshDS->MeshElements( myEdge[i] ))
       {
-        const SMDS_MeshNode* node = nItr->next();
-        if ( myIgnoreMediumNodes && SMESH_MeshEditor::IsMedium( node, SMDSAbs_Edge ))
+        SMDS_NodeIteratorPtr nItr = sm->GetNodes();
+        double paramSize = myLast[i] - myFirst[i];
+        double r = myNormPar[i] - prevNormPar;
+        while ( nItr->more() )
+        {
+          const SMDS_MeshNode* node = nItr->next();
+          if ( myIgnoreMediumNodes && SMESH_MeshEditor::IsMedium( node, SMDSAbs_Edge ))
             continue;
-        double u = helper.GetNodeU( myEdge[i], node, 0, &paramOK );
+          double u = helper.GetNodeU( myEdge[i], node, 0, &paramOK );
 
-        // paramSize is signed so orientation is taken into account
-        double normPar = prevNormPar + r * ( u - myFirst[i] ) / paramSize;
-        u2node.insert( u2node.end(), make_pair( normPar, node ));
+          // paramSize is signed so orientation is taken into account
+          double normPar = prevNormPar + r * ( u - myFirst[i] ) / paramSize;
+          u2node.insert( u2node.end(), make_pair( normPar, node ));
+        }
       }
 
       // Put 2nd vertex node for a last edge
