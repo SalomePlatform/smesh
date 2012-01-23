@@ -412,6 +412,54 @@
         <translation>Find Element by Point</translation>
     </message>
     <message>
+        <source>MEN_EQUAL_NODE</source>
+        <translation>Double nodes</translation>
+    </message>
+    <message>
+        <source>STB_EQUAL_NODE</source>
+        <translation>Double nodes</translation>
+    </message>
+    <message>
+        <source>TOP_EQUAL_NODE</source>
+        <translation>Double nodes</translation>
+    </message>
+    <message>
+        <source>MEN_EQUAL_EDGE</source>
+        <translation>Double edges</translation>
+    </message>
+    <message>
+        <source>STB_EQUAL_EDGE</source>
+        <translation>Double edges</translation>
+    </message>
+    <message>
+        <source>TOP_EQUAL_EDGE</source>
+        <translation>Double edges</translation>
+    </message>
+    <message>
+        <source>MEN_EQUAL_FACE</source>
+        <translation>Double faces</translation>
+    </message>
+    <message>
+        <source>STB_EQUAL_FACE</source>
+        <translation>Double faces</translation>
+    </message>
+    <message>
+        <source>TOP_EQUAL_FACE</source>
+        <translation>Double faces</translation>
+    </message>
+    <message>
+        <source>MEN_EQUAL_VOLUME</source>
+        <translation>Double volumes</translation>
+    </message>
+    <message>
+        <source>STB_EQUAL_VOLUME</source>
+        <translation>Double volumes</translation>
+    </message>
+    <message>
+        <source>TOP_EQUAL_VOLUME</source>
+        <translation>Double volumes</translation>
+    </message>
+    <message>
         <source>MEN_BARE_BORDER_VOLUME</source>
         <translation>Volumes with bare border</translation>
     </message>

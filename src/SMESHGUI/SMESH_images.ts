@@ -484,6 +484,22 @@
             <translation>over_constrained_face.png</translation>
         </message>
         <message>
+            <source>ICON_EQUAL_NODE</source>
+            <translation>mesh_equal_node.png</translation>
+        </message>
+        <message>
+            <source>ICON_EQUAL_EDGE</source>
+            <translation>mesh_equal_edge.png</translation>
+        </message>
+        <message>
+            <source>ICON_EQUAL_FACE</source>
+            <translation>mesh_equal_face.png</translation>
+        </message>
+        <message>
+            <source>ICON_EQUAL_VOLUME</source>
+            <translation>mesh_equal_volume.png</translation>
+        </message>
+        <message>
             <source>ICON_WARP</source>
             <translation>mesh_wrap.png</translation>
         </message>
