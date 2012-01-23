@@ -51,6 +51,10 @@ dist_salomeres_DATA = \
 	advanced_mesh_info.png \
 	standard_mesh_info.png \
 	mesh_elem_info.png \
+	mesh_equal_edge.png \
+	mesh_equal_face.png \
+	mesh_equal_node.png \
+	mesh_equal_volume.png \
 	mesh_whatis.png \
 	mesh_init.png \
 	mesh_length.png \
