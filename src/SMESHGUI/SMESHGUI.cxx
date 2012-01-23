@@ -1340,7 +1340,7 @@
       Handle(SALOME_InteractiveObject) anIO = selected.First();
       if(!anIO.IsNull()){
         SMESH_Actor::eControl aControl = SMESH_Actor::eNone;
-        if(SMESH_Actor *anActor = SMESH::FindActorByEntry(anIO->getEntry())){
+        if(SMESH_Actor *anActor = SMESH::FindActorByEntry(anIO->getEntry())) {
           switch ( theCommandID ){
           case 6001:
             aControl = SMESH_Actor::eLength;
@@ -1408,7 +1408,20 @@
           case 6027:
             aControl = SMESH_Actor::eOverConstrainedFace;
             break;
+          case 6028:
+            aControl = SMESH_Actor::eCoincidentNodes;
+            break;
+          case 6029:
+            aControl = SMESH_Actor::eCoincidentElems1D;
+            break;
+          case 6030:
+            aControl = SMESH_Actor:: eCoincidentElems2D;
+            break;
+          case 6031:
+            aControl = SMESH_Actor::eCoincidentElems3D;
+            break;
           }
+            
           anActor->SetControlMode(aControl);
           anActor->GetScalarBarActor()->SetTitle( functorToString( anActor->GetFunctor() ).toLatin1().constData() );
           SMESH::RepaintCurrentView();
@@ -3187,6 +3200,10 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
   case 6025:
   case 6026:
   case 6027:
+  case 6028:
+  case 6029:
+  case 6030:
+  case 6031:
     if ( vtkwnd ) {
 
       LightApp_SelectionMgr* mgr = selectionMgr();
@@ -3434,12 +3451,16 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction( 6001, "LENGTH",          "ICON_LENGTH",        0, true );
   createSMESHAction( 6002, "FREE_EDGE",       "ICON_FREE_EDGE",     0, true );
   createSMESHAction( 6021, "FREE_FACES",      "ICON_FREE_FACES",    0, true );
-  createSMESHAction( 6022, "MAX_ELEMENT_LENGTH_2D", "ICON_MAX_ELEMENT_LENGTH_2D", 0, true );
-  createSMESHAction( 6023, "MAX_ELEMENT_LENGTH_3D", "ICON_MAX_ELEMENT_LENGTH_3D", 0, true );
-  createSMESHAction( 6024, "BARE_BORDER_VOLUME","ICON_BARE_BORDER_VOLUME", 0, true );
-  createSMESHAction( 6025, "BARE_BORDER_FACE","ICON_BARE_BORDER_FACE", 0, true );
+  createSMESHAction( 6022, "MAX_ELEMENT_LENGTH_2D",  "ICON_MAX_ELEMENT_LENGTH_2D",   0, true );
+  createSMESHAction( 6023, "MAX_ELEMENT_LENGTH_3D",  "ICON_MAX_ELEMENT_LENGTH_3D",   0, true );
+  createSMESHAction( 6024, "BARE_BORDER_VOLUME",     "ICON_BARE_BORDER_VOLUME",      0, true );
+  createSMESHAction( 6025, "BARE_BORDER_FACE",       "ICON_BARE_BORDER_FACE",        0, true );
   createSMESHAction( 6026, "OVER_CONSTRAINED_VOLUME","ICON_OVER_CONSTRAINED_VOLUME", 0, true );
-  createSMESHAction( 6027, "OVER_CONSTRAINED_FACE","ICON_OVER_CONSTRAINED_FACE", 0, true );
+  createSMESHAction( 6027, "OVER_CONSTRAINED_FACE",  "ICON_OVER_CONSTRAINED_FACE",   0, true );
+  createSMESHAction( 6028, "EQUAL_NODE",      "ICON_EQUAL_NODE",    0, true );
+  createSMESHAction( 6029, "EQUAL_EDGE",      "ICON_EQUAL_EDGE",    0, true );
+  createSMESHAction( 6030, "EQUAL_FACE",      "ICON_EQUAL_FACE",    0, true );
+  createSMESHAction( 6031, "EQUAL_VOLUME",    "ICON_EQUAL_VOLUME",  0, true );
   createSMESHAction( 6003, "FREE_BORDER",     "ICON_FREE_EDGE_2D",  0, true );
   createSMESHAction( 6004, "CONNECTION",      "ICON_CONNECTION",    0, true );
   createSMESHAction( 6005, "FREE_NODE",       "ICON_FREE_NODE",     0, true );
@@ -3619,10 +3640,12 @@ void SMESHGUI::initialize( CAM_Application* app )
   createMenu( separator(), meshId, -1 );
 
   createMenu( 6005, nodeId, -1 );
+  createMenu( 6028, nodeId, -1 );
   createMenu( 6002, edgeId, -1 );
   createMenu( 6003, edgeId, -1 );
   createMenu( 6001, edgeId, -1 );
   createMenu( 6004, edgeId, -1 );
+  createMenu( 6029, edgeId, -1 );
   createMenu( 6021, faceId, -1 );
   createMenu( 6025, faceId, -1 );
   createMenu( 6027, faceId, -1 );
@@ -3635,11 +3658,13 @@ void SMESHGUI::initialize( CAM_Application* app )
   createMenu( 6015, faceId, -1 );
   createMenu( 6016, faceId, -1 );
   createMenu( 6022, faceId, -1 );
+  createMenu( 6030, faceId, -1 );
   createMenu( 6017, volumeId, -1 );
   createMenu( 6009, volumeId, -1 );
   createMenu( 6023, volumeId, -1 );
   createMenu( 6024, volumeId, -1 );
   createMenu( 6026, volumeId, -1 );
+  createMenu( 6031, volumeId, -1 );
 
   createMenu( 4000, addId, -1 );
   createMenu( 4009, addId, -1 );
@@ -3734,11 +3759,13 @@ void SMESHGUI::initialize( CAM_Application* app )
   createTool( separator(), meshTb );
 
   createTool( 6005, ctrlTb );
+  createTool( 6028, ctrlTb );
   createTool( separator(), ctrlTb );
   createTool( 6002, ctrlTb );
   createTool( 6003, ctrlTb );
   createTool( 6001, ctrlTb );
   createTool( 6004, ctrlTb );
+  createTool( 6029, ctrlTb );
   createTool( separator(), ctrlTb );
   createTool( 6021, ctrlTb );
   createTool( 6025, ctrlTb );
@@ -3752,12 +3779,14 @@ void SMESHGUI::initialize( CAM_Application* app )
   createTool( 6015, ctrlTb );
   createTool( 6016, ctrlTb );
   createTool( 6022, ctrlTb );
+  createTool( 6030, ctrlTb );
   createTool( separator(), ctrlTb );
   createTool( 6017, ctrlTb );
   createTool( 6009, ctrlTb );
   createTool( 6023, ctrlTb );
   createTool( 6024, ctrlTb );
   createTool( 6026, ctrlTb );
+  createTool( 6031, ctrlTb );
   createTool( separator(), ctrlTb );
 
   createTool( 4000, addRemTb );
@@ -4045,6 +4074,10 @@ void SMESHGUI::initialize( CAM_Application* app )
   popupMgr()->setRule( action( 6005 ), aMeshInVtkHasNodes, QtxPopupMgr::VisibleRule );
   popupMgr()->setRule( action( 6005 ), "controlMode = 'eFreeNodes'", QtxPopupMgr::ToggleRule );
 
+  popupMgr()->insert ( action( 6028 ), aSubId, -1 ); // EQUAL_NODE
+  popupMgr()->setRule( action( 6028 ), aMeshInVtkHasNodes, QtxPopupMgr::VisibleRule );
+  popupMgr()->setRule( action( 6028 ), "controlMode = 'eCoincidentNodes'", QtxPopupMgr::ToggleRule);
+
   aSubId = popupMgr()->insert( tr( "MEN_EDGE_CTRL" ), anId, -1 ); // EDGE CONTROLS
 
   popupMgr()->insert( action( 6002 ), aSubId, -1 ); // FREE_EDGE
@@ -4062,6 +4095,9 @@ void SMESHGUI::initialize( CAM_Application* app )
   popupMgr()->insert( action( 6004 ), aSubId, -1 ); // CONNECTION
   popupMgr()->setRule( action( 6004 ), aMeshInVtkHasEdges, QtxPopupMgr::VisibleRule );
   popupMgr()->setRule( action( 6004 ), "controlMode = 'eMultiConnection'", QtxPopupMgr::ToggleRule );
+  popupMgr()->insert ( action( 6029 ), aSubId, -1 ); // EQUAL_EDGE
+  popupMgr()->setRule( action( 6029 ), aMeshInVtkHasEdges, QtxPopupMgr::VisibleRule );
+  popupMgr()->setRule( action( 6029 ), "controlMode = 'eCoincidentElems1D'", QtxPopupMgr::ToggleRule);
 
   aSubId = popupMgr()->insert( tr( "MEN_FACE_CTRL" ), anId, -1 ); // FACE CONTROLS
 
@@ -4113,6 +4149,9 @@ void SMESHGUI::initialize( CAM_Application* app )
   popupMgr()->insert ( action( 6027 ), aSubId, -1 ); // OVER_CONSTRAINED_FACE
   popupMgr()->setRule( action( 6027 ), aMeshInVtkHasFaces, QtxPopupMgr::VisibleRule );
   popupMgr()->setRule( action( 6027 ), "controlMode = 'eOverConstrainedFace'", QtxPopupMgr::ToggleRule );
+  popupMgr()->insert ( action( 6030 ), aSubId, -1 ); // EQUAL_FACE
+  popupMgr()->setRule( action( 6030 ), aMeshInVtkHasFaces, QtxPopupMgr::VisibleRule );
+  popupMgr()->setRule( action( 6030 ), "controlMode = 'eCoincidentElems2D'", QtxPopupMgr::ToggleRule );
 
   aSubId = popupMgr()->insert( tr( "MEN_VOLUME_CTRL" ), anId, -1 ); // VOLUME CONTROLS
 
@@ -4135,6 +4174,10 @@ void SMESHGUI::initialize( CAM_Application* app )
   popupMgr()->insert ( action( 6026 ), aSubId, -1 ); // OVER_CONSTRAINED_VOLUME
   popupMgr()->setRule( action( 6026 ), aMeshInVtkHasVolumes, QtxPopupMgr::VisibleRule );
   popupMgr()->setRule( action( 6026 ), "controlMode = 'eOverConstrainedVolume'", QtxPopupMgr::ToggleRule );
+
+  popupMgr()->insert ( action( 6031 ), aSubId, -1 ); // EQUAL_VOLUME
+  popupMgr()->setRule( action( 6031 ), aMeshInVtkHasVolumes, QtxPopupMgr::VisibleRule );
+  popupMgr()->setRule( action( 6031 ), "controlMode = 'eCoincidentElems3D'", QtxPopupMgr::ToggleRule );
 
   popupMgr()->insert( separator(), anId, -1 );
 
