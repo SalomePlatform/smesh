@@ -46,11 +46,13 @@ libSMESHControls_la_CPPFLAGS = \
 	$(BOOST_CPPFLAGS) \
 	$(KERNEL_CXXFLAGS) \
 	-I$(srcdir)/../SMDS \
-	-I$(srcdir)/../SMESHDS
+	-I$(srcdir)/../SMESHDS \
+	-I$(srcdir)/../SMESHUtils
 
 libSMESHControls_la_LDFLAGS = \
 	../SMDS/libSMDS.la \
 	../SMESHDS/libSMESHDS.la \
+	../SMESHUtils/libSMESHUtils.la \
 	$(CAS_LDPATH) -lTKernel -lTKBRep -lTKG3d -lTKTopAlgo -lTKGeomBase -lTKGeomAlgo \
 	$(VTK_LIBS)
 
