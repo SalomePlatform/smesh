@@ -691,6 +691,22 @@ SetControlMode(eControl theMode,
       myFunctor.reset(new SMESH::Controls::FreeFaces());
       myControlActor = my2DActor;
       break;
+    case eCoincidentNodes:
+      myFunctor.reset(new SMESH::Controls::CoincidentNodes());
+      myControlActor = myNodeActor;
+      break;
+    case eCoincidentElems1D:
+      myFunctor.reset(new SMESH::Controls::CoincidentElements1D());
+      myControlActor = my1DActor;
+      break;
+    case eCoincidentElems2D:
+      myFunctor.reset(new SMESH::Controls::CoincidentElements2D());
+      myControlActor = my2DActor;
+      break;
+    case eCoincidentElems3D:
+      myFunctor.reset(new SMESH::Controls::CoincidentElements3D());
+      myControlActor = my3DActor;
+      break;
     case eBareBorderFace:
       myFunctor.reset(new SMESH::Controls::BareBorderFace());
       myControlActor = my2DActor;
@@ -809,19 +825,23 @@ SetControlMode(eControl theMode,
       myControlMode = theMode;
       switch(myControlMode){
       case eFreeNodes:
+      case eCoincidentNodes:
         myNodeExtActor->SetExtControlMode(myFunctor);
         break;
       case eFreeEdges:
       case eFreeBorders:
+      case eCoincidentElems1D:
         my1DExtActor->SetExtControlMode(myFunctor);
         break;
       case eFreeFaces:
       case eBareBorderFace:
       case eOverConstrainedFace:
+      case eCoincidentElems2D:
         my2DExtActor->SetExtControlMode(myFunctor);
         break;
       case eBareBorderVolume:
       case eOverConstrainedVolume:
+      case eCoincidentElems3D:
         my3DExtActor->SetExtControlMode(myFunctor);
         break;
       case eLength2D:

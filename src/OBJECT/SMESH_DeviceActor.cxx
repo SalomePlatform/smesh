@@ -489,6 +489,10 @@ SMESH_DeviceActor
        dynamic_cast<BareBorderVolume     *>(theFunctor.get()) ||
        dynamic_cast<BareBorderFace       *>(theFunctor.get()) ||
        dynamic_cast<OverConstrainedVolume*>(theFunctor.get()) ||
+       dynamic_cast<CoincidentNodes      *>(theFunctor.get()) ||
+       dynamic_cast<CoincidentElements1D *>(theFunctor.get()) ||
+       dynamic_cast<CoincidentElements2D *>(theFunctor.get()) ||
+       dynamic_cast<CoincidentElements3D *>(theFunctor.get()) ||
        dynamic_cast<OverConstrainedFace  *>(theFunctor.get()))
   {
     Predicate* aFreePredicate = dynamic_cast<Predicate*>(theFunctor.get());
