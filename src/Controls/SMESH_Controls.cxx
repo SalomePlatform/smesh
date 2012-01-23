@@ -65,6 +65,8 @@
 #include "SMESHDS_Mesh.hxx"
 #include "SMESHDS_GroupBase.hxx"
 
+#include "SMESH_OctreeNode.hxx"
+
 #include <vtkMeshQuality.h>
 
 /*
@@ -2088,6 +2090,128 @@ bool OverConstrainedFace::IsSatisfy(long theElementId )
     }
   return false;
 }
+
+/*
+  Class       : CoincidentNodes
+  Description : Predicate of Coincident nodes
+*/
+
+CoincidentNodes::CoincidentNodes()
+{
+  myToler = 1e-5;
+}
+
+bool CoincidentNodes::IsSatisfy( long theElementId )
+{
+  return myCoincidentIDs.Contains( theElementId );
+}
+
+SMDSAbs_ElementType CoincidentNodes::GetType() const
+{
+  return SMDSAbs_Node;
+}
+
+void CoincidentNodes::SetMesh( const SMDS_Mesh*  theMesh, TIDSortedNodeSet* nodesToCheck )
+{
+  TIDSortedNodeSet allNodes;
+  if ( !nodesToCheck )
+  {
+    nodesToCheck = &allNodes;
+    SMDS_NodeIteratorPtr nIt = theMesh->nodesIterator(/*idInceasingOrder=*/true);
+    while ( nIt->more() )
+      allNodes.insert( allNodes.end(), nIt->next() );
+  }
+
+  list< list< const SMDS_MeshNode*> > nodeGroups;
+  SMESH_OctreeNode::FindCoincidentNodes ( *nodesToCheck, &nodeGroups, myToler );
+
+  myCoincidentIDs.Clear();
+  list< list< const SMDS_MeshNode*> >::iterator groupIt = nodeGroups.begin();
+  for ( ; groupIt != nodeGroups.end(); ++groupIt )
+  {
+    list< const SMDS_MeshNode*>& coincNodes = *groupIt;
+    list< const SMDS_MeshNode*>::iterator n = coincNodes.begin();
+    for ( ; n != coincNodes.end(); ++n )
+      myCoincidentIDs.Add( (*n)->GetID() );
+  }
+}
+
+/*
+  Class       : CoincidentElements
+  Description : Predicate of Coincident Elements
+  Note        : This class is suitable only for visualization of Coincident Elements
+*/
+
+CoincidentElements::CoincidentElements()
+{
+  myMesh = 0;
+  myElemsToCheck = 0;
+}
+
+void CoincidentElements::SetMesh( const SMDS_Mesh* theMesh, TIDSortedElemSet* elemsToCheck )
+{
+  myMesh = theMesh;
+
+  myCoincidentIDs.Clear();
+  myElemsToCheck = elemsToCheck;
+
+  if ( myElemsToCheck )
+  {
+    TColStd_MapOfInteger coincidentIDs;
+    TIDSortedElemSet::iterator elem = myElemsToCheck->begin();
+    for ( ; elem != myElemsToCheck->end(); ++elem )
+      if ( IsSatisfy( (*elem)->GetID() ))
+        coincidentIDs.Add( (*elem)->GetID() );
+
+    myCoincidentIDs = coincidentIDs;
+    if ( myCoincidentIDs.IsEmpty() )
+      myCoincidentIDs.Add( -1 ); // mark that analysis is already performed
+
+    myElemsToCheck = 0; // not needed anymore
+  }
+}
+
+bool CoincidentElements::IsSatisfy( long theElementId )
+{
+  if ( !myCoincidentIDs.IsEmpty() )
+    return myCoincidentIDs.Contains( theElementId );
+
+  if ( !myMesh ) return false;
+
+  if ( const SMDS_MeshElement* e = myMesh->FindElement( theElementId ))
+  {
+    if ( e->GetType() != GetType() ) return false;
+    set< const SMDS_MeshNode* > elemNodes( e->begin_nodes(), e->end_nodes() );
+    SMDS_ElemIteratorPtr invIt = (*elemNodes.begin())->GetInverseElementIterator( GetType() );
+    while ( invIt->more() )
+    {
+      const SMDS_MeshElement* e2 = invIt->next();
+      if ( e2 == e || e2->NbNodes() != (int)elemNodes.size() ) continue;
+      if ( myElemsToCheck && !myElemsToCheck->count( e2 )) continue;
+
+      bool sameNodes = true;
+      for ( size_t i = 0; i < elemNodes.size() && sameNodes; ++i )
+        sameNodes = ( elemNodes.count( e2->GetNode( i )));
+      if ( sameNodes )
+        return true;
+    }
+  }
+  return false;
+}
+
+SMDSAbs_ElementType CoincidentElements1D::GetType() const
+{
+  return SMDSAbs_Edge;
+}
+SMDSAbs_ElementType CoincidentElements2D::GetType() const
+{
+  return SMDSAbs_Face;
+}
+SMDSAbs_ElementType CoincidentElements3D::GetType() const
+{
+  return SMDSAbs_Volume;
+}
+
 
 /*
   Class       : FreeBorders

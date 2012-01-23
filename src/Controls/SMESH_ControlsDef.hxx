@@ -43,6 +43,7 @@
 
 #include "SMDSAbs_ElementType.hxx"
 #include "SMDS_MeshNode.hxx"
+#include "SMESH_TypeDefs.hxx"
 
 #include "SMESH_Controls.hxx"
 
@@ -116,10 +117,8 @@ namespace SMESH{
       void  SetPrecision( const long thePrecision );
       double Round( const double & value );
       
-      bool GetPoints(const int theId,
-                     TSequenceOfXYZ& theRes) const;
-      static bool GetPoints(const SMDS_MeshElement* theElem,
-                            TSequenceOfXYZ& theRes);
+      bool GetPoints(const int theId, TSequenceOfXYZ& theRes) const;
+      static bool GetPoints(const SMDS_MeshElement* theElem, TSequenceOfXYZ& theRes);
     protected:
       const SMDS_Mesh*        myMesh;
       const SMDS_MeshElement* myCurrElement;
@@ -319,6 +318,55 @@ namespace SMESH{
     /*
       PREDICATES
     */
+    /*
+      Class       : CoincidentNodes
+      Description : Predicate of Coincident Nodes
+      Note        : This class is suitable only for visualization of Coincident Nodes
+    */
+    class SMESHCONTROLS_EXPORT CoincidentNodes: public Predicate {
+    public:
+      CoincidentNodes();
+      void SetTolerance (const double theToler)  { myToler = theToler; }
+      void SetMesh( const SMDS_Mesh* theMesh, TIDSortedNodeSet* nodesToCheck );
+      virtual void SetMesh( const SMDS_Mesh* theMesh ) { SetMesh( theMesh, 0 ); }
+      virtual bool IsSatisfy( long theElementId );
+      virtual SMDSAbs_ElementType GetType() const;
+
+    private:
+      TColStd_MapOfInteger myCoincidentIDs;
+      double               myToler;
+    };
+   
+    /*
+      Class       : CoincidentElements
+      Description : Predicate of Coincident Elements
+      Note        : This class is suitable only for visualization of Coincident Elements
+    */
+    class SMESHCONTROLS_EXPORT CoincidentElements: public Predicate {
+    public:
+      CoincidentElements();
+      void SetMesh( const SMDS_Mesh* theMesh, TIDSortedElemSet* elemsToCheck );
+      virtual void SetMesh( const SMDS_Mesh* theMesh ) { SetMesh( theMesh, 0 ); }
+      virtual bool IsSatisfy( long theElementId );
+
+    private:
+      const SMDS_Mesh*     myMesh;
+      TIDSortedElemSet*    myElemsToCheck;
+      TColStd_MapOfInteger myCoincidentIDs;
+    };
+    class SMESHCONTROLS_EXPORT CoincidentElements1D: public CoincidentElements {
+    public:
+      virtual SMDSAbs_ElementType GetType() const;
+    };
+    class SMESHCONTROLS_EXPORT CoincidentElements2D: public CoincidentElements {
+    public:
+      virtual SMDSAbs_ElementType GetType() const;
+    };
+    class SMESHCONTROLS_EXPORT CoincidentElements3D: public CoincidentElements {
+    public:
+      virtual SMDSAbs_ElementType GetType() const;
+    };
+
     /*
       Class       : FreeBorders
       Description : Predicate for free borders
