@@ -34,9 +34,11 @@ salomeinclude_HEADERS = \
 
 # not-exported (internal) files
 EXTRA_DIST += \
+	UNV164_Structure.hxx \
 	UNV2411_Structure.hxx \
 	UNV2412_Structure.hxx \
 	UNV2417_Structure.hxx \
+	UNV2420_Structure.hxx \
 	UNV_Utilities.hxx
 
 # Libraries targets
@@ -45,8 +47,10 @@ dist_libMeshDriverUNV_la_SOURCES = \
 	DriverUNV_R_SMDS_Mesh.cxx \
 	DriverUNV_W_SMDS_Mesh.cxx \
 	UNV_Utilities.cxx \
+	UNV164_Structure.cxx \
 	UNV2411_Structure.cxx \
 	UNV2412_Structure.cxx \
+	UNV2420_Structure.cxx \
 	UNV2417_Structure.cxx
 
 # Executables targets
