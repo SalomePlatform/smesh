@@ -842,9 +842,32 @@ int SMESH_SubMeshObj::GetElemDimension( const int theObjId )
 // function : UpdateFunctor
 // purpose  : Update functor in accordance with current mesh
 //=================================================================================
+
 void SMESH_SubMeshObj::UpdateFunctor( const SMESH::Controls::FunctorPtr& theFunctor )
 {
-  theFunctor->SetMesh( myMeshObj->GetMesh() );
+  if ( SMESH::Controls::CoincidentNodes* cn =
+       dynamic_cast<SMESH::Controls::CoincidentNodes*>(theFunctor.get()) )
+  {
+    TEntityList theResList;
+    GetEntities( SMDSAbs_Node, theResList );
+    TIDSortedNodeSet nodeSet;
+    TEntityList::iterator e = theResList.begin();
+    for ( ; e != theResList.end(); ++e )
+      nodeSet.insert( nodeSet.end(), (const SMDS_MeshNode* ) *e );
+    cn->SetMesh( myMeshObj->GetMesh(), &nodeSet );
+  }
+  else if ( SMESH::Controls::CoincidentElements* ce =
+            dynamic_cast<SMESH::Controls::CoincidentElements*>(theFunctor.get()) )
+  {
+    TEntityList theResList;
+    GetEntities( ce->GetType(), theResList );
+    TIDSortedElemSet elemSet( theResList.begin(), theResList.end() );
+    ce->SetMesh( myMeshObj->GetMesh(), &elemSet );
+  }
+  else
+  {
+    theFunctor->SetMesh( myMeshObj->GetMesh() );
+  }
 }
 
 //=================================================================================
@@ -853,7 +876,7 @@ void SMESH_SubMeshObj::UpdateFunctor( const SMESH::Controls::FunctorPtr& theFunc
 //=================================================================================
 bool SMESH_SubMeshObj::Update( int theIsClear )
 {
-        MESSAGE("SMESH_SubMeshObj::Update " << this)
+  MESSAGE("SMESH_SubMeshObj::Update " << this)
   bool changed = myMeshObj->Update( theIsClear );
   buildPrs(true);
   return changed;
