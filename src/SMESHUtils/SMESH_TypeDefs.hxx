@@ -45,7 +45,7 @@ typedef std::map<const SMDS_MeshNode*, const SMDS_MeshNode*> TNodeNodeMap;
 typedef std::set< const SMDS_MeshElement*, TIDCompare >      TIDSortedElemSet;
 typedef std::set< const SMDS_MeshNode*,    TIDCompare >      TIDSortedNodeSet;
 
-typedef pair< const SMDS_MeshNode*, const SMDS_MeshNode* >   NLink;
+typedef std::pair< const SMDS_MeshNode*, const SMDS_MeshNode* >   NLink;
 
 
 namespace SMESHUtils
