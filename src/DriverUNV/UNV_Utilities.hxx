@@ -36,6 +36,8 @@
 namespace UNV{
   using namespace std;
 
+  const size_t theMaxLineLen = 80;
+
   class MESHDRIVERUNV_EXPORT PrefixPrinter{
     static int myCounter;
   public:
@@ -57,6 +59,7 @@ namespace UNV{
     
     std::string olds, news;
     
+    in_file.seekg(0);
     while(true){
       in_file >> olds >> news;
       /*
@@ -68,7 +71,10 @@ namespace UNV{
         in_file >> news;
       }
       if(in_file.eof())
+      {
+        in_file.clear();
         return false;
+      }
       if (news == ds_name)
         return true;
     }
@@ -113,6 +119,25 @@ namespace UNV{
     return (olds == "    -1");
   }
 
+  /*!
+   * \brief reads a whole line
+   *  \param in_stream - source stream
+   *  \param next - if true, first reads the current line up to the end
+   *  which is necessary after reading using >> operator
+   *  \retval std::string - the result line
+   */
+  inline std::string read_line(std::ifstream& in_stream, const bool next=true)
+  {
+    char line[theMaxLineLen];
+    in_stream.getline( line, theMaxLineLen );
+    if ( next )
+      in_stream.getline( line, theMaxLineLen );
+
+    std::string resLine = line;
+    if ( resLine.size() > 0 && resLine[ resLine.size()-1 ] == '\r' )
+      resLine.resize( resLine.size()-1 );
+    return line;
+  }
 };
 
 
