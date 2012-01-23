@@ -183,12 +183,14 @@ using namespace UNV2412;
 static string _label_dataset = "2412";
 
 UNV2412::TRecord::TRecord():
+  label(-1),
+  fe_descriptor_id(-1),
   phys_prop_tab_num(2),
   mat_prop_tab_num(1),
   color(7),
   beam_orientation(0),
-  beam_fore_end(0),
-  beam_aft_end(0)
+  beam_fore_end(1), // default values
+  beam_aft_end(1) // default values
 {}
 
 void UNV2412::Read(std::ifstream& in_stream, TDataSet& theDataSet)
@@ -203,16 +205,15 @@ void UNV2412::Read(std::ifstream& in_stream, TDataSet& theDataSet)
   if(!beginning_of_dataset(in_stream,_label_dataset))
     EXCEPTION(runtime_error,"ERROR: Could not find "<<_label_dataset<<" dataset!");
 
-  TElementLab aLabel;
-  for(; !in_stream.eof();){
-    in_stream >> aLabel ;
-    if(aLabel == -1){
+  TRecord aRec;
+  while( !in_stream.eof())
+  {
+    in_stream >> aRec.label ;
+    if (aRec.label == -1)
       // end of dataset is reached
       break;
-    }
     
     int n_nodes;
-    TRecord aRec;
     in_stream>>aRec.fe_descriptor_id;
     in_stream>>aRec.phys_prop_tab_num;
     in_stream>>aRec.mat_prop_tab_num;
@@ -226,12 +227,11 @@ void UNV2412::Read(std::ifstream& in_stream, TDataSet& theDataSet)
     }
 
     aRec.node_labels.resize(n_nodes);
-    for(int j=0; j < n_nodes; j++){
+    for(int j=0; j < n_nodes; j++)
       // read node labels
       in_stream>>aRec.node_labels[j];             
-    }
 
-    theDataSet.insert(TDataSet::value_type(aLabel,aRec));
+    theDataSet.push_back(aRec);
   }
 
 }
@@ -249,17 +249,18 @@ void UNV2412::Write(std::ofstream& out_stream, const TDataSet& theDataSet)
   out_stream<<"  "<<_label_dataset<<"\n";
 
   TDataSet::const_iterator anIter = theDataSet.begin();
-  for(; anIter != theDataSet.end(); anIter++){
-    const TElementLab& aLabel = anIter->first;
-    const TRecord& aRec = anIter->second;
-    out_stream<<std::setw(10)<<aLabel;  /* element ID */
+  for(; anIter != theDataSet.end(); anIter++)
+  {
+    const TRecord& aRec = *anIter;
+    out_stream<<std::setw(10)<<aRec.label;  /* element ID */
     out_stream<<std::setw(10)<<aRec.fe_descriptor_id;  /* type of element */
     out_stream<<std::setw(10)<<aRec.phys_prop_tab_num;
     out_stream<<std::setw(10)<<aRec.mat_prop_tab_num;
     out_stream<<std::setw(10)<<aRec.color;
     out_stream<<std::setw(10)<<aRec.node_labels.size()<<std::endl;  /* No. of nodes per element */
 
-    if(IsBeam(aRec.fe_descriptor_id)){
+    if(IsBeam(aRec.fe_descriptor_id))
+    {
       out_stream<<std::setw(10)<<aRec.beam_orientation;
       out_stream<<std::setw(10)<<aRec.beam_fore_end;
       out_stream<<std::setw(10)<<aRec.beam_aft_end<<std::endl;

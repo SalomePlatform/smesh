@@ -25,18 +25,19 @@
 
 #include "SMESH_DriverUNV.hxx"
 
-#include <map>
 #include <vector>
-#include <fstream>      
-
+#include <fstream>
 
 namespace UNV2412{
   
   typedef std::vector<int> TNodeLabels; // Nodal connectivities
+  typedef int TElementLab; // type of element label
 
-  struct MESHDRIVERUNV_EXPORT TRecord{
+  struct MESHDRIVERUNV_EXPORT TRecord
+  {
     TRecord();
 
+    TElementLab label;
     int fe_descriptor_id;  // FE descriptor id
     int phys_prop_tab_num;  // physical property table number
     int mat_prop_tab_num;  // material property table number
@@ -49,8 +50,7 @@ namespace UNV2412{
     int beam_aft_end;  // beam  aft-end cross section number
   };
   
-  typedef int TElementLab; // type of element label
-  typedef std::map<TElementLab,TRecord> TDataSet;
+  typedef std::vector<TRecord> TDataSet;
 
   MESHDRIVERUNV_EXPORT void
     Read(std::ifstream& in_stream, TDataSet& theDataSet);

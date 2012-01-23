@@ -33,8 +33,8 @@ using namespace UNV2411;
 static string _label_dataset = "2411";
 
 UNV2411::TRecord::TRecord():
-  exp_coord_sys_num(0),
-  disp_coord_sys_num(0),
+  exp_coord_sys_num(1),
+  disp_coord_sys_num(1),
   color(11)//(0) -  0019936: EDF 794 SMESH : Export UNV : Node color and group id
 {}
 
@@ -54,16 +54,16 @@ void UNV2411::Read(std::ifstream& in_stream, TDataSet& theDataSet)
    * always 3 coordinates in the UNV file, no matter
    * which dimensionality libMesh is in
    */
-  TNodeLab aLabel;
   std::string num_buf;
-  for(; !in_stream.eof();){
-    in_stream >> aLabel ;
-    if(aLabel == -1){
+  while ( !in_stream.eof() )
+  {
+    TRecord aRec;
+    in_stream >> aRec.label ;
+    if ( aRec.label == -1 ) {
       // end of dataset is reached
       break;
     }
 
-    TRecord aRec;
     in_stream>>aRec.exp_coord_sys_num;
     in_stream>>aRec.disp_coord_sys_num;
     in_stream>>aRec.color;
@@ -77,7 +77,7 @@ void UNV2411::Read(std::ifstream& in_stream, TDataSet& theDataSet)
       aRec.coord[d] = D_to_e(num_buf);
     }
 
-    theDataSet.insert(TDataSet::value_type(aLabel,aRec));
+    theDataSet.push_back(aRec);
   }
 }
 
@@ -94,12 +94,12 @@ void UNV2411::Write(std::ofstream& out_stream, const TDataSet& theDataSet)
   out_stream<<"  "<<_label_dataset<<"\n";
 
   TDataSet::const_iterator anIter = theDataSet.begin();
-  for(; anIter != theDataSet.end(); anIter++){
-    const TNodeLab& aLabel = anIter->first;
-    const TRecord& aRec = anIter->second;
+  for(; anIter != theDataSet.end(); anIter++)
+  {
+    const TRecord& aRec = *anIter;
     char buf[78];
     sprintf(buf, "%10d%10d%10d%10d\n", 
-            aLabel,
+            aRec.label,
             aRec.exp_coord_sys_num,
             aRec.disp_coord_sys_num,
             aRec.color);

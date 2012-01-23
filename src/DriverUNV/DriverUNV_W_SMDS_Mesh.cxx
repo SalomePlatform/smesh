@@ -32,9 +32,11 @@
 
 #include "utilities.h"
 
+#include "UNV164_Structure.hxx"
 #include "UNV2411_Structure.hxx"
 #include "UNV2412_Structure.hxx"
 #include "UNV2417_Structure.hxx"
+#include "UNV2420_Structure.hxx"
 #include "UNV_Utilities.hxx"
 
 #include <Basics_Utils.hxx>
@@ -64,6 +66,10 @@ Driver_Mesh::Status DriverUNV_W_SMDS_Mesh::Perform()
   Status aResult = DRS_OK;
   std::ofstream out_stream(myFile.c_str());
   try{
+
+    UNV164::Write( out_stream ); // unit system
+    UNV2420::Write( out_stream, myMeshName ); // Coordinate system
+
     {
       using namespace UNV2411;
       TDataSet aDataSet2411;
@@ -71,14 +77,15 @@ Driver_Mesh::Status DriverUNV_W_SMDS_Mesh::Perform()
       //-----------------------------------
       MESSAGE("Perform - myMesh->NbNodes() = "<<myMesh->NbNodes());
       SMDS_NodeIteratorPtr aNodesIter = myMesh->nodesIterator();
-      for(; aNodesIter->more();){
+      TRecord aRec;
+      while ( aNodesIter->more() )
+      {
         const SMDS_MeshNode* aNode = aNodesIter->next();
-        TRecord aRec;
+        aRec.label    = aNode->GetID();
         aRec.coord[0] = aNode->X();
         aRec.coord[1] = aNode->Y();
         aRec.coord[2] = aNode->Z();
-        const TNodeLab& aLabel = aNode->GetID();
-        aDataSet2411.insert(TDataSet::value_type(aLabel,aRec));
+        aDataSet2411.push_back( aRec );
       }
       MESSAGE("Perform - aDataSet2411.size() = "<<aDataSet2411.size());
       UNV2411::Write(out_stream,aDataSet2411);
@@ -92,11 +99,12 @@ Driver_Mesh::Status DriverUNV_W_SMDS_Mesh::Perform()
       MESSAGE("Perform - myMesh->NbEdges() = "<<myMesh->NbEdges());
       if(myMesh->NbEdges()){
         SMDS_EdgeIteratorPtr anIter = myMesh->edgesIterator();
-        for(; anIter->more();){
+        while( anIter->more() )
+        {
           const SMDS_MeshEdge* anElem = anIter->next();
-          TElementLab aLabel = anElem->GetID();
           int aNbNodes = anElem->NbNodes();
           TRecord aRec;
+          aRec.label = anElem->GetID();
           aRec.node_labels.reserve(aNbNodes);
           SMDS_ElemIteratorPtr aNodesIter;
           aNodesIter = anElem->nodesIteratorToUNV();
@@ -105,24 +113,27 @@ Driver_Mesh::Status DriverUNV_W_SMDS_Mesh::Perform()
           } else {
             aRec.fe_descriptor_id = 11;
           }
-          for(; aNodesIter->more();){
+          while( aNodesIter->more())
+          {
             const SMDS_MeshElement* aNode = aNodesIter->next();
             aRec.node_labels.push_back(aNode->GetID());
           }
-          aDataSet2412.insert(TDataSet::value_type(aLabel,aRec));
+          aDataSet2412.push_back(aRec);
         }
         MESSAGE("Perform - aDataSet2412.size() = "<<aDataSet2412.size());
       }
 
       MESSAGE("Perform - myMesh->NbFaces() = "<<myMesh->NbFaces());
-      if(myMesh->NbFaces()){
+      if ( myMesh->NbFaces() )
+      {
         SMDS_FaceIteratorPtr anIter = myMesh->facesIterator();
-        for(; anIter->more();){
+        while ( anIter->more())
+        {
           const SMDS_MeshFace* anElem = anIter->next();
           if ( anElem->IsPoly() ) continue;
-          TElementLab aLabel = anElem->GetID();
           int aNbNodes = anElem->NbNodes();
           TRecord aRec;
+          aRec.label = anElem->GetID();
           aRec.node_labels.reserve(aNbNodes);
           SMDS_ElemIteratorPtr aNodesIter;
           aNodesIter = anElem->nodesIteratorToUNV();
@@ -150,18 +161,18 @@ Driver_Mesh::Status DriverUNV_W_SMDS_Mesh::Perform()
           default:
             continue;
           }
-          aDataSet2412.insert(TDataSet::value_type(aLabel,aRec));
+          aDataSet2412.push_back(aRec);
         }
         MESSAGE("Perform - aDataSet2412.size() = "<<aDataSet2412.size());
       }
 
       MESSAGE("Perform - myMesh->NbVolumes() = "<<myMesh->NbVolumes());
-      if(myMesh->NbVolumes()){
+      if ( myMesh->NbVolumes() )
+      {
         SMDS_VolumeIteratorPtr anIter = myMesh->volumesIterator();
-        for(; anIter->more();){
+        while ( anIter->more())
+        {
           const SMDS_MeshVolume* anElem = anIter->next();
-          TElementLab aLabel = anElem->GetID();
-
           int aNbNodes = anElem->NbNodes();
           //MESSAGE("aNbNodes="<<aNbNodes);
           SMDS_ElemIteratorPtr aNodesIter;
@@ -214,13 +225,15 @@ Driver_Mesh::Status DriverUNV_W_SMDS_Mesh::Perform()
           }
           if(anId>0){
             TRecord aRec;
+            aRec.label = anElem->GetID();
             aRec.fe_descriptor_id = anId;
             aRec.node_labels.reserve(aNbNodes);
-            for(; aNodesIter->more() && aRec.node_labels.size() < aNbNodes; ) {
+            while ( aNodesIter->more() && aRec.node_labels.size() < aNbNodes )
+            {
               const SMDS_MeshElement* aNode = aNodesIter->next();
               aRec.node_labels.push_back(aNode->GetID());
             }
-            aDataSet2412.insert(TDataSet::value_type(aLabel,aRec));
+            aDataSet2412.push_back(aRec);
           }
         }
         MESSAGE("Perform - aDataSet2412.size() = "<<aDataSet2412.size());
