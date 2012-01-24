@@ -345,11 +345,11 @@ CHECK_HDF5
 
 echo
 echo ---------------------------------------------
-echo testing MED2
+echo testing MED3
 echo ---------------------------------------------
 echo
 
-CHECK_MED2
+CHECK_MED3
 
 echo
 echo ---------------------------------------------
@@ -435,9 +435,9 @@ echo Configure
 if test "${gui_ok}" = "yes"; then
   variables="cc_ok fortran_ok boost_ok lex_yacc_ok python_ok swig_ok threads_ok OpenGL_ok qt_ok vtk_ok hdf5_ok cgns_ok omniORB_ok occ_ok doxygen_ok graphviz_ok sphinx_ok qwt_ok Kernel_ok Geom_ok Med_ok gui_ok"
 elif test "${SalomeGUI_need}" != "no"; then
-  variables="cc_ok fortran_ok boost_ok lex_yacc_ok python_ok swig_ok threads_ok vtk_ok hdf5_ok cgns_ok med2_ok omniORB_ok occ_ok doxygen_ok graphviz_ok sphinx_ok Kernel_ok Geom_ok Med_ok gui_ok"
+  variables="cc_ok fortran_ok boost_ok lex_yacc_ok python_ok swig_ok threads_ok vtk_ok hdf5_ok cgns_ok med3_ok omniORB_ok occ_ok doxygen_ok graphviz_ok sphinx_ok Kernel_ok Geom_ok Med_ok gui_ok"
 else
-  variables="cc_ok fortran_ok boost_ok lex_yacc_ok python_ok swig_ok threads_ok vtk_ok hdf5_ok cgns_ok med2_ok omniORB_ok occ_ok doxygen_ok graphviz_ok sphinx_ok Kernel_ok Geom_ok Med_ok"
+  variables="cc_ok fortran_ok boost_ok lex_yacc_ok python_ok swig_ok threads_ok vtk_ok hdf5_ok cgns_ok med3_ok omniORB_ok occ_ok doxygen_ok graphviz_ok sphinx_ok Kernel_ok Geom_ok Med_ok"
 fi
 
 for var in $variables

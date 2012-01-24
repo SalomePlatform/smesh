@@ -38,9 +38,9 @@ MeshCut_SOURCES = \
   MeshCut_Cas.cxx \
   MeshCut_DC.cxx
 
-MeshCut_CPPFLAGS =  $(MED2_INCLUDES)
+MeshCut_CPPFLAGS =  $(MED3_INCLUDES)
 
-MeshCut_LDFLAGS =  $(MED2_LIBS) $(HDF5_LIBS)
+MeshCut_LDFLAGS =  $(MED3_LIBS) $(HDF5_LIBS)
 
 
 
