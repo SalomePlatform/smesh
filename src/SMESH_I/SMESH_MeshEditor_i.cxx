@@ -94,7 +94,7 @@ namespace {
       myPreviewType = previewElements;
     }
     //!< Destructor
-    virtual ~TPreviewMesh() { delete _myMeshDS; }
+    virtual ~TPreviewMesh() { delete _myMeshDS; _myMeshDS = 0; }
     //!< Copy a set of elements
     void Copy(const TIDSortedElemSet & theElements,
               TIDSortedElemSet&        theCopyElements,
