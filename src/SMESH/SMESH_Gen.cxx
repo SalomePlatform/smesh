@@ -102,7 +102,7 @@ SMESH_Mesh* SMESH_Gen::CreateMesh(int theStudyId, bool theIsEmbeddedMode)
                                      this,
                                      theIsEmbeddedMode,
                                      aStudyContext->myDocument);
-  aStudyContext->mapMesh[_localId] = aMesh;
+  aStudyContext->mapMesh[_localId-1] = aMesh;
 
   return aMesh;
 }
