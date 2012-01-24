@@ -85,10 +85,9 @@ SMESHDS_Mesh *SMESHDS_Document::GetMesh(int MeshID)
 //=======================================================================
 void SMESHDS_Document::RemoveMesh(int MeshID)
 {
-        map<int,SMESHDS_Mesh*>::iterator it=myMeshes.find(MeshID);
-        if (it==myMeshes.end())
-                MESSAGE("SMESHDS_Document::RemoveMesh : ID not found"); 
-        myMeshes.erase(it);
+  map<int,SMESHDS_Mesh*>::iterator it=myMeshes.find(MeshID);
+  if (it!=myMeshes.end())
+    myMeshes.erase(it);
 }
 
 //=======================================================================
@@ -97,7 +96,7 @@ void SMESHDS_Document::RemoveMesh(int MeshID)
 //=======================================================================
 void SMESHDS_Document::AddHypothesis(SMESHDS_Hypothesis * H)
 {
-        myHypothesis[H->GetID()]=H;
+  myHypothesis[H->GetID()]=H;
 }
 
 //=======================================================================
