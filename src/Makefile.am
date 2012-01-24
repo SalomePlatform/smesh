@@ -32,8 +32,8 @@ endif
 SUBDIRS = \
 	SMDS \
 	SMESHDS \
-	Controls \
 	SMESHUtils \
+	Controls \
 	Driver \
 	DriverMED \
 	DriverDAT \
