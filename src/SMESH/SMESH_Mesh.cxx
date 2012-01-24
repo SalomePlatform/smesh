@@ -66,6 +66,9 @@
 
 #include "Utils_ExceptHandlers.hxx"
 
+#include <boost/thread/thread.hpp>
+#include <boost/bind.hpp>
+
 using namespace std;
 
 // maximum stored group name length in MED file
@@ -116,14 +119,29 @@ SMESH_Mesh::SMESH_Mesh(int               theLocalId,
 //================================================================================
 
 SMESH_Mesh::SMESH_Mesh():
-  _groupId( 0 ), _nbSubShapes( 0 )
+  _id(-1),
+  _studyId(-1),
+  _idDoc(-1),
+  _groupId( 0 ),
+  _nbSubShapes( 0 ),
+  _isShapeToMesh( false ),
+  _myDocument( 0 ),
+  _myMeshDS( 0 ),
+  _gen( 0 ),
+  _isAutoColor( false ),
+  _isModified( false ),
+  _shapeDiagonal( 0.0 ),
+  _rmGroupCallUp( 0 )
 {
-  _myMeshDS      = 0;
-  _isShapeToMesh = false;
-  _isAutoColor   = false;
-  _isModified    = false;
-  _shapeDiagonal = 0.0;
-  _rmGroupCallUp = 0;
+}
+
+namespace
+{
+  void deleteMeshDS(SMESHDS_Mesh* meshDS)
+  {
+    //cout << "deleteMeshDS( " << meshDS << endl;
+    delete meshDS;
+  }
 }
 
 //=============================================================================
@@ -149,8 +167,27 @@ SMESH_Mesh::~SMESH_Mesh()
   }
   _mapGroup.clear();
 
+  // delete sub-meshes
+  map <int, SMESH_subMesh*>::iterator sm = _mapSubMesh.begin();
+  for ( ; sm != _mapSubMesh.end(); ++sm )
+    delete sm->second;
+  _mapSubMesh.clear();
+
   if ( _rmGroupCallUp) delete _rmGroupCallUp;
   _rmGroupCallUp = 0;
+
+  // remove self from studyContext
+  if ( _gen )
+  {
+    StudyContextStruct * studyContext = _gen->GetStudyContext( _studyId );
+    studyContext->mapMesh.erase( _id );
+  }
+  if ( _myDocument )
+    _myDocument->RemoveMesh( _id );
+
+  if ( _myMeshDS )
+    // delete _myMeshDS, in a thread in order not to block closing a study with large meshes
+    boost::thread aThread(boost::bind( & deleteMeshDS, _myMeshDS ));
 }
 
 //=============================================================================
