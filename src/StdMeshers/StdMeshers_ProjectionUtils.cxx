@@ -307,11 +307,7 @@ namespace {
     if ( gr1It.Value().ShapeType() == TopAbs_FACE )
     {
       // find a boundary edge of group1 to start from
-      TopoDS_Shape bndEdge;
-      TopExp_Explorer edgeExp1( theGroup1, TopAbs_EDGE );
-      for ( ; bndEdge.IsNull() && edgeExp1.More(); edgeExp1.Next())
-        if ( HERE::IsBoundaryEdge( TopoDS::Edge( edgeExp1.Current()), theGroup1, theMesh ))
-          bndEdge = edgeExp1.Current();
+      TopoDS_Shape bndEdge = StdMeshers_ProjectionUtils::GetBoundaryEdge( theGroup1, theMesh );
       if ( bndEdge.IsNull() )
         return false;
 
@@ -373,6 +369,48 @@ namespace {
     gp_Pnt2d v1UV = BRep_Tool::Parameters( VV[vIndex], face);
     double dist2d = v1UV.Distance( uv );
     return dist2d < tol2d;
+  }
+
+  //================================================================================
+  /*!
+   * \brief Returns an EDGE suitable for search of initial vertex association
+   */
+  //================================================================================
+
+  TopoDS_Shape getOuterEdge( const TopoDS_Shape theShape1, SMESH_Mesh& mesh )
+  {
+    TopoDS_Shape edge;
+    if ( theShape1.ShapeType() == TopAbs_COMPOUND )
+    {
+      TopoDS_Iterator it( theShape1 );
+      if ( it.Value().ShapeType() == TopAbs_FACE ) // group of FACEs
+      {
+        // look for a boundary EDGE of a group
+        edge = StdMeshers_ProjectionUtils::GetBoundaryEdge( theShape1, mesh );
+        if ( !edge.IsNull() )
+          return edge;
+      }
+    }
+    edge = theShape1;
+    TopExp_Explorer expF( theShape1, TopAbs_FACE ), expE;
+    if ( expF.More() ) {
+      for ( ; expF.More(); expF.Next() ) {
+        edge.Nullify();
+        TopoDS_Shape wire =
+          StdMeshers_ProjectionUtils::OuterShape( TopoDS::Face( expF.Current() ), TopAbs_WIRE );
+        for ( expE.Init( wire, TopAbs_EDGE ); edge.IsNull() && expE.More(); expE.Next() )
+          if ( !SMESH_MesherHelper::IsClosedEdge( TopoDS::Edge( expE.Current() )))
+            edge = expE.Current();
+        if ( !edge.IsNull() )
+          break;
+      }
+    } else if (edge.ShapeType() != TopAbs_EDGE) { // no faces
+      edge.Nullify();
+      for ( expE.Init( theShape1, TopAbs_EDGE ); edge.IsNull() && expE.More(); expE.Next() )
+        if ( !SMESH_MesherHelper::IsClosedEdge( TopoDS::Edge( expE.Current() )))
+          edge = expE.Current();
+    }
+    return edge;
   }
 
 } // namespace
@@ -1012,15 +1050,8 @@ bool StdMeshers_ProjectionUtils::FindSubShapeAssociation(const TopoDS_Shape& the
       if ( AssocGroupsByPropagation( theShape1, theShape2, *theMesh1, theMap ))
         return true;
 
-      // find a boundary edge for theShape1
-      TopoDS_Edge E;
-      for(TopExp_Explorer exp(theShape1, TopAbs_EDGE); exp.More(); exp.Next() ) {
-        E = TopoDS::Edge( exp.Current() );
-        if ( IsBoundaryEdge( E, theShape1, *theMesh1 ))
-          break;
-        else
-          E.Nullify();
-      }
+      // find a boundary edge of theShape1
+      TopoDS_Edge E = GetBoundaryEdge( theShape1, *theMesh1 );
       if ( E.IsNull() )
         break; // try by vertex closeness
 
@@ -1078,8 +1109,8 @@ bool StdMeshers_ProjectionUtils::FindSubShapeAssociation(const TopoDS_Shape& the
   default:;
   }
 
-  // Find association by closeness of vertices
-  // ------------------------------------------
+  // 4.b) Find association by closeness of vertices
+  // ----------------------------------------------
 
   TopTools_IndexedMapOfShape vMap1, vMap2;
   TopExp::MapShapes( theShape1, TopAbs_VERTEX, vMap1 );
@@ -1146,24 +1177,7 @@ bool StdMeshers_ProjectionUtils::FindSubShapeAssociation(const TopoDS_Shape& the
   // Find 2 closest vertices
 
   // get 2 linked vertices of shape 1 not belonging to an inner wire of a face
-  TopoDS_Shape edge = theShape1;
-  TopExp_Explorer expF( theShape1, TopAbs_FACE ), expE;
-  if ( expF.More() ) {
-    for ( ; expF.More(); expF.Next() ) {
-      edge.Nullify();
-      TopoDS_Shape wire = OuterShape( TopoDS::Face( expF.Current() ), TopAbs_WIRE );
-      for ( expE.Init( wire, TopAbs_EDGE ); edge.IsNull() && expE.More(); expE.Next() )
-        if ( !SMESH_MesherHelper::IsClosedEdge( TopoDS::Edge( expE.Current() )))
-          edge = expE.Current();
-      if ( !edge.IsNull() )
-        break;
-    }
-  } else if (edge.ShapeType() != TopAbs_EDGE) { // no faces
-    edge.Nullify();
-    for ( expE.Init( theShape1, TopAbs_EDGE ); edge.IsNull() && expE.More(); expE.Next() )
-      if ( !SMESH_MesherHelper::IsClosedEdge( TopoDS::Edge( expE.Current() )))
-        edge = expE.Current();
-  }
+  TopoDS_Shape edge = getOuterEdge( theShape1, *theMesh1 );
   if ( edge.IsNull() || edge.ShapeType() != TopAbs_EDGE )
     RETURN_BAD_RESULT("Edge not found");
 
@@ -2030,33 +2044,35 @@ int StdMeshers_ProjectionUtils::Count(const TopoDS_Shape&    shape,
 
 //================================================================================
 /*!
- * \brief Return true if edge is a boundary of edgeContainer
+ * \brief Return a boundary EDGE of edgeContainer
  */
 //================================================================================
 
-bool StdMeshers_ProjectionUtils::IsBoundaryEdge(const TopoDS_Edge&  edge,
-                                                const TopoDS_Shape& edgeContainer,
-                                                SMESH_Mesh&         mesh)
+TopoDS_Edge StdMeshers_ProjectionUtils::GetBoundaryEdge(const TopoDS_Shape& edgeContainer,
+                                                        const SMESH_Mesh&   mesh)
 {
   TopTools_IndexedMapOfShape facesOfEdgeContainer, facesNearEdge;
   TopExp::MapShapes( edgeContainer, TopAbs_FACE, facesOfEdgeContainer );
 
-  const TopTools_ListOfShape& EAncestors = mesh.GetAncestors(edge);
-  TopTools_ListIteratorOfListOfShape itea(EAncestors);
-  for(; itea.More(); itea.Next()) {
-    if( itea.Value().ShapeType() == TopAbs_FACE &&
-        facesOfEdgeContainer.Contains( itea.Value() ))
+  if ( !facesOfEdgeContainer.IsEmpty() ) 
+    for ( TopExp_Explorer exp(edgeContainer, TopAbs_EDGE); exp.More(); exp.Next() )
     {
-      facesNearEdge.Add( itea.Value() );
-      if ( facesNearEdge.Extent() > 1 )
-        return false;
+      const TopoDS_Edge& edge = TopoDS::Edge( exp.Current() );
+      facesNearEdge.Clear();
+      PShapeIteratorPtr faceIt = SMESH_MesherHelper::GetAncestors( edge, mesh, TopAbs_FACE );
+      while ( const TopoDS_Shape* face = faceIt->next() )
+        if ( facesOfEdgeContainer.Contains( *face ))
+          if ( facesNearEdge.Add( *face ) and facesNearEdge.Extent() > 1 )
+            break;
+      if ( facesNearEdge.Extent() == 1 )
+        return edge;
     }
-  }
-  return ( facesNearEdge.Extent() == 1 );
+
+  return TopoDS_Edge();
 }
 
 
-namespace {
+namespace { // Definition of event listeners
 
   SMESH_subMeshEventListener* GetSrcSubMeshListener();
 
