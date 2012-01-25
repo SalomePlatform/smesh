@@ -807,9 +807,9 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
       return error(COMPERR_BAD_INPUT_MESH,"Source mesh not computed");
   }
 
-  // --------------------------
-  // Simple cases of projection
-  // --------------------------
+  // ===========
+  // Projection
+  // ===========
 
   // find out if EDGEs are meshed or not
   bool is1DComputed = false;
@@ -822,231 +822,243 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
       is1DComputed = sm->IsMeshComputed();
   }
 
-  // try to project from same face with different location
-  if ( projectPartner( tgtFace, srcFace, tgtMesh, srcMesh, shape2ShapeMap ))
-    return true;
+  bool done = false;
 
-  if ( projectBy2DSimilarity( tgtFace, srcFace, tgtMesh, srcMesh, shape2ShapeMap, is1DComputed ))
-    return true;
+  if ( !done )
+  {
+    // try to project from the same face with different location
+    done = projectPartner( tgtFace, srcFace, tgtMesh, srcMesh, shape2ShapeMap );
+  }
+  if ( !done )
+  {
+    // projection in case if the faces are similar in 2D space
+    done = projectBy2DSimilarity( tgtFace, srcFace, tgtMesh, srcMesh, shape2ShapeMap, is1DComputed);
+  }
 
-  // --------------------
-  // Prepare to mapping 
-  // --------------------
+  if ( !done )
+  {
+    // --------------------
+    // Prepare to mapping 
+    // --------------------
 
-  SMESH_MesherHelper helper( theMesh );
-  helper.SetSubShape( tgtFace );
+    SMESH_MesherHelper helper( theMesh );
+    helper.SetSubShape( tgtFace );
 
-  // Check if node projection to a face is needed
-  Bnd_B2d uvBox;
-  SMDS_ElemIteratorPtr faceIt = srcSubMesh->GetSubMeshDS()->GetElements();
-  int nbFaceNodes = 0;
-  for ( ; nbFaceNodes < 3 && faceIt->more();  ) {
-    const SMDS_MeshElement* face = faceIt->next();
-    SMDS_ElemIteratorPtr nodeIt = face->nodesIterator();
-    while ( nodeIt->more() ) {
-      const SMDS_MeshNode* node = static_cast<const SMDS_MeshNode*>( nodeIt->next() );
-      if ( node->GetPosition()->GetTypeOfPosition() == SMDS_TOP_FACE ) {
-        nbFaceNodes++;
-        uvBox.Add( helper.GetNodeUV( srcFace, node ));
+    // Check if node projection to a face is needed
+    Bnd_B2d uvBox;
+    SMDS_ElemIteratorPtr faceIt = srcSubMesh->GetSubMeshDS()->GetElements();
+    int nbFaceNodes = 0;
+    for ( ; nbFaceNodes < 3 && faceIt->more();  ) {
+      const SMDS_MeshElement* face = faceIt->next();
+      SMDS_ElemIteratorPtr nodeIt = face->nodesIterator();
+      while ( nodeIt->more() ) {
+        const SMDS_MeshNode* node = static_cast<const SMDS_MeshNode*>( nodeIt->next() );
+        if ( node->GetPosition()->GetTypeOfPosition() == SMDS_TOP_FACE ) {
+          nbFaceNodes++;
+          uvBox.Add( helper.GetNodeUV( srcFace, node ));
+        }
       }
     }
-  }
-  const bool toProjectNodes =
-    ( nbFaceNodes > 0 && ( uvBox.IsVoid() || uvBox.SquareExtent() < DBL_MIN ));
+    const bool toProjectNodes =
+      ( nbFaceNodes > 0 && ( uvBox.IsVoid() || uvBox.SquareExtent() < DBL_MIN ));
 
-  // Load pattern from the source face
-  SMESH_Pattern mapper;
-  mapper.Load( srcMesh, srcFace, toProjectNodes );
-  if ( mapper.GetErrorCode() != SMESH_Pattern::ERR_OK )
-    return error(COMPERR_BAD_INPUT_MESH,"Can't load mesh pattern from the source face");
+    // Load pattern from the source face
+    SMESH_Pattern mapper;
+    mapper.Load( srcMesh, srcFace, toProjectNodes );
+    if ( mapper.GetErrorCode() != SMESH_Pattern::ERR_OK )
+      return error(COMPERR_BAD_INPUT_MESH,"Can't load mesh pattern from the source face");
 
-  // Find the first target vertex corresponding to first vertex of the <mapper>
-  // and <theReverse> flag needed to call mapper.Apply()
+    // Find the first target vertex corresponding to first vertex of the <mapper>
+    // and <theReverse> flag needed to call mapper.Apply()
 
-  TopoDS_Vertex srcV1 = TopoDS::Vertex( mapper.GetSubShape( 1 ));
-  if ( srcV1.IsNull() )
-    RETURN_BAD_RESULT("Mesh is not bound to the face");
-  if ( !shape2ShapeMap.IsBound( srcV1 ))
-    RETURN_BAD_RESULT("Not associated vertices, srcV1 " << srcV1.TShape().operator->() );
-  TopoDS_Vertex tgtV1 = TopoDS::Vertex( shape2ShapeMap( srcV1 ));
+    TopoDS_Vertex srcV1 = TopoDS::Vertex( mapper.GetSubShape( 1 ));
+    if ( srcV1.IsNull() )
+      RETURN_BAD_RESULT("Mesh is not bound to the face");
+    if ( !shape2ShapeMap.IsBound( srcV1 ))
+      RETURN_BAD_RESULT("Not associated vertices, srcV1 " << srcV1.TShape().operator->() );
+    TopoDS_Vertex tgtV1 = TopoDS::Vertex( shape2ShapeMap( srcV1 ));
 
-  if ( !SMESH_MesherHelper::IsSubShape( srcV1, srcFace ))
-    RETURN_BAD_RESULT("Wrong srcV1 " << srcV1.TShape().operator->());
-  if ( !SMESH_MesherHelper::IsSubShape( tgtV1, tgtFace ))
-    RETURN_BAD_RESULT("Wrong tgtV1 " << tgtV1.TShape().operator->());
+    if ( !SMESH_MesherHelper::IsSubShape( srcV1, srcFace ))
+      RETURN_BAD_RESULT("Wrong srcV1 " << srcV1.TShape().operator->());
+    if ( !SMESH_MesherHelper::IsSubShape( tgtV1, tgtFace ))
+      RETURN_BAD_RESULT("Wrong tgtV1 " << tgtV1.TShape().operator->());
 
-  // try to find out orientation by order of edges
-  bool reverse = false;
-  list< TopoDS_Edge > tgtEdges, srcEdges;
-  list< int > nbEdgesInWires;
-  SMESH_Block::GetOrderedEdges( tgtFace, tgtV1, tgtEdges, nbEdgesInWires);
-  SMESH_Block::GetOrderedEdges( srcFace, srcV1, srcEdges, nbEdgesInWires);
-  if ( nbEdgesInWires.front() > 1 ) // possible to find out
-  {
-    TopoDS_Edge srcE1 = srcEdges.front(), tgtE1 = tgtEdges.front();
-    TopoDS_Shape srcE1bis = shape2ShapeMap( tgtE1 );
-    reverse = ( ! srcE1.IsSame( srcE1bis ));
-  }
-  else if ( nbEdgesInWires.front() == 1 )
-  {
-    // TODO::Compare orientation of curves in a sole edge
-    //RETURN_BAD_RESULT("Not implemented case");
-  }
-  else
-  {
-    RETURN_BAD_RESULT("Bad result from SMESH_Block::GetOrderedEdges()");
-  }
-
-  // --------------------
-  // Perform 2D mapping 
-  // --------------------
-
-  // Compute mesh on a target face
-
-  mapper.Apply( tgtFace, tgtV1, reverse );
-  if ( mapper.GetErrorCode() != SMESH_Pattern::ERR_OK )
-    return error("Can't apply source mesh pattern to the face");
-
-  // Create the mesh
-
-  const bool toCreatePolygons = false, toCreatePolyedrs = false;
-  mapper.MakeMesh( tgtMesh, toCreatePolygons, toCreatePolyedrs );
-  if ( mapper.GetErrorCode() != SMESH_Pattern::ERR_OK )
-    return error("Can't make mesh by source mesh pattern");
-
-  // it will remove mesh built by pattern mapper on edges and vertices
-  // in failure case
-  MeshCleaner cleaner( tgtSubMesh );
-
-  SMESH_MeshEditor editor( tgtMesh );
-
-  // -------------------------------------------------------------------------
-  // mapper doesn't take care of nodes already existing on edges and vertices,
-  // so we must merge nodes created by it with existing ones 
-  // -------------------------------------------------------------------------
-
-  SMESH_MeshEditor::TListOfListOfNodes groupsOfNodes;
-
-  // Make groups of nodes to merge
-
-  // loop on edge and vertex submeshes of a target face
-  smIt = tgtSubMesh->getDependsOnIterator(/*includeSelf=*/false,/*complexShapeFirst=*/false);
-  while ( smIt->more() )
-  {
-    SMESH_subMesh*     sm = smIt->next();
-    SMESHDS_SubMesh* smDS = sm->GetSubMeshDS();
-    if ( !sm->IsMeshComputed() )
-      break;
-    //if ( !is1DComputed && sm->GetSubShape().ShapeType() == TopAbs_EDGE )
-    //break;
-
-    // Sort new and old nodes of a submesh separately
-
-    bool isSeam = helper.IsRealSeam( sm->GetId() );
-
-    enum { NEW_NODES = 0, OLD_NODES };
-    map< double, const SMDS_MeshNode* > u2nodesMaps[2], u2nodesOnSeam;
-    map< double, const SMDS_MeshNode* >::iterator u_oldNode, u_newNode, u_newOnSeam, newEnd;
-    set< const SMDS_MeshNode* > seamNodes;
-
-    // mapper puts on a seam edge nodes from 2 edges
-    if ( isSeam && ! getBoundaryNodes ( sm, tgtFace, u2nodesOnSeam, seamNodes ))
-      RETURN_BAD_RESULT("getBoundaryNodes() failed");
-
-    SMDS_NodeIteratorPtr nIt = smDS->GetNodes();
-    while ( nIt->more() )
+    // try to find out orientation by order of edges
+    bool reverse = false;
+    list< TopoDS_Edge > tgtEdges, srcEdges;
+    list< int > nbEdgesInWires;
+    SMESH_Block::GetOrderedEdges( tgtFace, tgtV1, tgtEdges, nbEdgesInWires);
+    SMESH_Block::GetOrderedEdges( srcFace, srcV1, srcEdges, nbEdgesInWires);
+    if ( nbEdgesInWires.front() > 1 ) // possible to find out
     {
-      const SMDS_MeshNode* node = nIt->next();
-      bool isOld = isOldNode( node );
-
-      if ( !isOld && isSeam ) { // new node on a seam edge
-        if ( seamNodes.find( node ) != seamNodes.end())
-          continue; // node is already in the map
-      }
-
-      // sort nodes on edges by their position
-      map< double, const SMDS_MeshNode* > & pos2nodes = u2nodesMaps[isOld ? OLD_NODES : NEW_NODES];
-      switch ( node->GetPosition()->GetTypeOfPosition() )
-      {
-      case  SMDS_TOP_VERTEX: {
-        if ( !is1DComputed && !pos2nodes.empty() )
-          u2nodesMaps[isOld ? NEW_NODES : OLD_NODES].insert( make_pair( 0, node ));
-        else
-          pos2nodes.insert( make_pair( 0, node ));
-        break;
-      }
-      case  SMDS_TOP_EDGE:   {
-        const SMDS_EdgePosition* pos =
-          static_cast<const SMDS_EdgePosition*>(node->GetPosition());
-        pos2nodes.insert( make_pair( pos->GetUParameter(), node ));
-        break;
-      }
-      default:
-        RETURN_BAD_RESULT("Wrong node position type: "<<
-                          node->GetPosition()->GetTypeOfPosition());
-      }
+      TopoDS_Edge srcE1 = srcEdges.front(), tgtE1 = tgtEdges.front();
+      TopoDS_Shape srcE1bis = shape2ShapeMap( tgtE1 );
+      reverse = ( ! srcE1.IsSame( srcE1bis ));
     }
-    if ( u2nodesMaps[ NEW_NODES ].size() != u2nodesMaps[ OLD_NODES ].size() )
+    else if ( nbEdgesInWires.front() == 1 )
     {
-      if ( u2nodesMaps[ NEW_NODES ].size() == 0         &&
-           sm->GetSubShape().ShapeType() == TopAbs_EDGE &&
-           helper.IsDegenShape( sm->GetId() )             )
-        // NPAL15894 (tt88bis.py) - project mesh built by NETGEN_1d_2D that
-        // does not make segments/nodes on degenerated edges
-        continue;
-
-      if ( u2nodesMaps[ OLD_NODES ].size() == 0           &&
-           sm->GetSubShape().ShapeType() == TopAbs_VERTEX )
-        // old nodes are optional on vertices in the case of 1D-2D projection
-        continue;
-
-      RETURN_BAD_RESULT("Different nb of old and new nodes on shape #"<< sm->GetId() <<" "<<
-                        u2nodesMaps[ OLD_NODES ].size() << " != " <<
-                        u2nodesMaps[ NEW_NODES ].size());
+      // TODO::Compare orientation of curves in a sole edge
+      //RETURN_BAD_RESULT("Not implemented case");
     }
-    if ( isSeam && u2nodesMaps[ OLD_NODES ].size() != u2nodesOnSeam.size() ) {
-      RETURN_BAD_RESULT("Different nb of old and seam nodes " <<
-                        u2nodesMaps[ OLD_NODES ].size() << " != " << u2nodesOnSeam.size());
+    else
+    {
+      RETURN_BAD_RESULT("Bad result from SMESH_Block::GetOrderedEdges()");
     }
+
+    // --------------------
+    // Perform 2D mapping 
+    // --------------------
+
+    // Compute mesh on a target face
+
+    mapper.Apply( tgtFace, tgtV1, reverse );
+    if ( mapper.GetErrorCode() != SMESH_Pattern::ERR_OK )
+      return error("Can't apply source mesh pattern to the face");
+
+    // Create the mesh
+
+    const bool toCreatePolygons = false, toCreatePolyedrs = false;
+    mapper.MakeMesh( tgtMesh, toCreatePolygons, toCreatePolyedrs );
+    if ( mapper.GetErrorCode() != SMESH_Pattern::ERR_OK )
+      return error("Can't make mesh by source mesh pattern");
+
+    // it will remove mesh built by pattern mapper on edges and vertices
+    // in failure case
+    MeshCleaner cleaner( tgtSubMesh );
+
+    // -------------------------------------------------------------------------
+    // mapper doesn't take care of nodes already existing on edges and vertices,
+    // so we must merge nodes created by it with existing ones 
+    // -------------------------------------------------------------------------
+
+    SMESH_MeshEditor::TListOfListOfNodes groupsOfNodes;
+
     // Make groups of nodes to merge
-    u_oldNode = u2nodesMaps[ OLD_NODES ].begin(); 
-    u_newNode = u2nodesMaps[ NEW_NODES ].begin();
-    newEnd    = u2nodesMaps[ NEW_NODES ].end();
-    u_newOnSeam = u2nodesOnSeam.begin();
-    for ( ; u_newNode != newEnd; ++u_newNode, ++u_oldNode ) {
-      groupsOfNodes.push_back( list< const SMDS_MeshNode* >() );
-      groupsOfNodes.back().push_back( u_oldNode->second );
-      groupsOfNodes.back().push_back( u_newNode->second );
-      if ( isSeam )
-        groupsOfNodes.back().push_back( (u_newOnSeam++)->second );
+
+    // loop on edge and vertex submeshes of a target face
+    smIt = tgtSubMesh->getDependsOnIterator(/*includeSelf=*/false,/*complexShapeFirst=*/false);
+    while ( smIt->more() )
+    {
+      SMESH_subMesh*     sm = smIt->next();
+      SMESHDS_SubMesh* smDS = sm->GetSubMeshDS();
+      if ( !sm->IsMeshComputed() )
+        break;
+      //if ( !is1DComputed && sm->GetSubShape().ShapeType() == TopAbs_EDGE )
+      //break;
+
+      // Sort new and old nodes of a submesh separately
+
+      bool isSeam = helper.IsRealSeam( sm->GetId() );
+
+      enum { NEW_NODES = 0, OLD_NODES };
+      map< double, const SMDS_MeshNode* > u2nodesMaps[2], u2nodesOnSeam;
+      map< double, const SMDS_MeshNode* >::iterator u_oldNode, u_newNode, u_newOnSeam, newEnd;
+      set< const SMDS_MeshNode* > seamNodes;
+
+      // mapper puts on a seam edge nodes from 2 edges
+      if ( isSeam && ! getBoundaryNodes ( sm, tgtFace, u2nodesOnSeam, seamNodes ))
+        RETURN_BAD_RESULT("getBoundaryNodes() failed");
+
+      SMDS_NodeIteratorPtr nIt = smDS->GetNodes();
+      while ( nIt->more() )
+      {
+        const SMDS_MeshNode* node = nIt->next();
+        bool isOld = isOldNode( node );
+
+        if ( !isOld && isSeam ) { // new node on a seam edge
+          if ( seamNodes.find( node ) != seamNodes.end())
+            continue; // node is already in the map
+        }
+
+        // sort nodes on edges by their position
+        map< double, const SMDS_MeshNode* > & pos2nodes = u2nodesMaps[isOld ? OLD_NODES : NEW_NODES];
+        switch ( node->GetPosition()->GetTypeOfPosition() )
+        {
+        case  SMDS_TOP_VERTEX: {
+          if ( !is1DComputed && !pos2nodes.empty() )
+            u2nodesMaps[isOld ? NEW_NODES : OLD_NODES].insert( make_pair( 0, node ));
+          else
+            pos2nodes.insert( make_pair( 0, node ));
+          break;
+        }
+        case  SMDS_TOP_EDGE:   {
+          const SMDS_EdgePosition* pos =
+            static_cast<const SMDS_EdgePosition*>(node->GetPosition());
+          pos2nodes.insert( make_pair( pos->GetUParameter(), node ));
+          break;
+        }
+        default:
+          RETURN_BAD_RESULT("Wrong node position type: "<<
+                            node->GetPosition()->GetTypeOfPosition());
+        }
+      }
+      if ( u2nodesMaps[ NEW_NODES ].size() != u2nodesMaps[ OLD_NODES ].size() )
+      {
+        if ( u2nodesMaps[ NEW_NODES ].size() == 0         &&
+             sm->GetSubShape().ShapeType() == TopAbs_EDGE &&
+             helper.IsDegenShape( sm->GetId() )             )
+          // NPAL15894 (tt88bis.py) - project mesh built by NETGEN_1d_2D that
+          // does not make segments/nodes on degenerated edges
+          continue;
+
+        if ( u2nodesMaps[ OLD_NODES ].size() == 0           &&
+             sm->GetSubShape().ShapeType() == TopAbs_VERTEX )
+          // old nodes are optional on vertices in the case of 1D-2D projection
+          continue;
+
+        RETURN_BAD_RESULT("Different nb of old and new nodes on shape #"<< sm->GetId() <<" "<<
+                          u2nodesMaps[ OLD_NODES ].size() << " != " <<
+                          u2nodesMaps[ NEW_NODES ].size());
+      }
+      if ( isSeam && u2nodesMaps[ OLD_NODES ].size() != u2nodesOnSeam.size() ) {
+        RETURN_BAD_RESULT("Different nb of old and seam nodes " <<
+                          u2nodesMaps[ OLD_NODES ].size() << " != " << u2nodesOnSeam.size());
+      }
+      // Make groups of nodes to merge
+      u_oldNode = u2nodesMaps[ OLD_NODES ].begin(); 
+      u_newNode = u2nodesMaps[ NEW_NODES ].begin();
+      newEnd    = u2nodesMaps[ NEW_NODES ].end();
+      u_newOnSeam = u2nodesOnSeam.begin();
+      for ( ; u_newNode != newEnd; ++u_newNode, ++u_oldNode ) {
+        groupsOfNodes.push_back( list< const SMDS_MeshNode* >() );
+        groupsOfNodes.back().push_back( u_oldNode->second );
+        groupsOfNodes.back().push_back( u_newNode->second );
+        if ( isSeam )
+          groupsOfNodes.back().push_back( (u_newOnSeam++)->second );
+      }
     }
-  }
 
-  // Merge
+    // Merge
 
-  int nbFaceBeforeMerge = tgtSubMesh->GetSubMeshDS()->NbElements();
-  editor.MergeNodes( groupsOfNodes );
-  int nbFaceAtferMerge = tgtSubMesh->GetSubMeshDS()->NbElements();
-  if ( nbFaceBeforeMerge != nbFaceAtferMerge )
-    return error(COMPERR_BAD_INPUT_MESH, "Probably invalid node parameters on geom faces");
+    SMESH_MeshEditor editor( tgtMesh );
+    int nbFaceBeforeMerge = tgtSubMesh->GetSubMeshDS()->NbElements();
+    editor.MergeNodes( groupsOfNodes );
+    int nbFaceAtferMerge = tgtSubMesh->GetSubMeshDS()->NbElements();
+    if ( nbFaceBeforeMerge != nbFaceAtferMerge )
+      return error(COMPERR_BAD_INPUT_MESH, "Probably invalid node parameters on geom faces");
 
-  // ----------------------------------------------------------------
-  // The mapper can't create quadratic elements, so convert if needed
-  // ----------------------------------------------------------------
+    // ----------------------------------------------------------------
+    // The mapper can't create quadratic elements, so convert if needed
+    // ----------------------------------------------------------------
 
-  faceIt = srcSubMesh->GetSubMeshDS()->GetElements();
-  bool srcIsQuad = faceIt->next()->IsQuadratic();
-  faceIt = tgtSubMesh->GetSubMeshDS()->GetElements();
-  bool tgtIsQuad = faceIt->next()->IsQuadratic();
-  if ( srcIsQuad && !tgtIsQuad )
-  {
-    TIDSortedElemSet tgtFaces;
-    faceIt = tgtSubMesh->GetSubMeshDS()->GetElements();
-    while ( faceIt->more() )
-      tgtFaces.insert( tgtFaces.end(), faceIt->next() );
+    faceIt         = srcSubMesh->GetSubMeshDS()->GetElements();
+    bool srcIsQuad = faceIt->next()->IsQuadratic();
+    faceIt         = tgtSubMesh->GetSubMeshDS()->GetElements();
+    bool tgtIsQuad = faceIt->next()->IsQuadratic();
+    if ( srcIsQuad && !tgtIsQuad )
+    {
+      TIDSortedElemSet tgtFaces;
+      faceIt = tgtSubMesh->GetSubMeshDS()->GetElements();
+      while ( faceIt->more() )
+        tgtFaces.insert( tgtFaces.end(), faceIt->next() );
 
-    editor.ConvertToQuadratic(/*theForce3d=*/false, tgtFaces);
-  }
+      editor.ConvertToQuadratic(/*theForce3d=*/false, tgtFaces);
+    }
+
+    cleaner.Release(); // not to remove mesh
+
+  } // end of projection using Pattern mapping
+
 
   // ---------------------------
   // Check elements orientation
@@ -1084,6 +1096,7 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
   // Fix orientation
   if ( SMESH_Algo::IsReversedSubMesh( face, meshDS ))
   {
+    SMESH_MeshEditor editor( tgtMesh );
     SMDS_ElemIteratorPtr eIt = meshDS->MeshElements( face )->GetElements();
     while ( eIt->more() ) {
       const SMDS_MeshElement* e = eIt->next();
@@ -1091,8 +1104,6 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
         RETURN_BAD_RESULT("Pb of SMESH_MeshEditor::Reorient()");
     }
   }
-
-  cleaner.Release(); // do not remove mesh
 
   return true;
 }
