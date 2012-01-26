@@ -845,29 +845,7 @@ int SMESH_SubMeshObj::GetElemDimension( const int theObjId )
 
 void SMESH_SubMeshObj::UpdateFunctor( const SMESH::Controls::FunctorPtr& theFunctor )
 {
-  if ( SMESH::Controls::CoincidentNodes* cn =
-       dynamic_cast<SMESH::Controls::CoincidentNodes*>(theFunctor.get()) )
-  {
-    TEntityList theResList;
-    GetEntities( SMDSAbs_Node, theResList );
-    TIDSortedNodeSet nodeSet;
-    TEntityList::iterator e = theResList.begin();
-    for ( ; e != theResList.end(); ++e )
-      nodeSet.insert( nodeSet.end(), (const SMDS_MeshNode* ) *e );
-    cn->SetMesh( myMeshObj->GetMesh(), &nodeSet );
-  }
-  else if ( SMESH::Controls::CoincidentElements* ce =
-            dynamic_cast<SMESH::Controls::CoincidentElements*>(theFunctor.get()) )
-  {
-    TEntityList theResList;
-    GetEntities( ce->GetType(), theResList );
-    TIDSortedElemSet elemSet( theResList.begin(), theResList.end() );
-    ce->SetMesh( myMeshObj->GetMesh(), &elemSet );
-  }
-  else
-  {
-    theFunctor->SetMesh( myMeshObj->GetMesh() );
-  }
+  theFunctor->SetMesh( myMeshObj->GetMesh() );
 }
 
 //=================================================================================
@@ -985,8 +963,11 @@ static int getPointers( const SMDSAbs_ElementType            theRequestType,
 //=================================================================================
 int SMESH_GroupObj::GetNbEntities( const SMDSAbs_ElementType theType) const
 {
-  if(SMDSAbs_ElementType(myGroupServer->GetType()) == theType){
+  if(SMDSAbs_ElementType(myGroupServer->GetType()) == theType) {
     return myGroupServer->Size();
+  }
+  if ( theType == SMDSAbs_Node ) {
+    return myGroupServer->GetNumberOfNodes();
   }
   return 0;
 }
@@ -1047,7 +1028,7 @@ int SMESH_subMeshObj::GetNbEntities( const SMDSAbs_ElementType theType) const
   {
     case SMDSAbs_Node:
     {
-      return mySubMeshServer->GetNumberOfNodes( false );
+      return mySubMeshServer->GetNumberOfNodes( /*all=*/true );
     }
     break;
     case SMDSAbs_0DElement:
