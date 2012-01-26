@@ -1645,17 +1645,11 @@ bool StdMeshers_Cartesian_3D::Compute(SMESH_Mesh &         theMesh,
       }
       // make other sub-shapes computed
       setSubmeshesComputed( theMesh, theShape );
-      return true;
     }
 
     // remove free nodes
     if ( SMESHDS_SubMesh * smDS = meshDS->MeshElements( helper.GetSubShapeID() ))
     {
-      // grid nodes
-      for ( size_t i = 0; i < grid._nodes.size(); ++i )
-        if ( grid._nodes[i] && grid._nodes[i]->NbInverseElements() == 0 )
-          meshDS->RemoveFreeNode( grid._nodes[i], smDS, /*fromGroups=*/false );
-
       // intersection nodes
       for ( int iDir = 0; iDir < 3; ++iDir )
       {
@@ -1665,10 +1659,18 @@ bool StdMeshers_Cartesian_3D::Compute(SMESH_Mesh &         theMesh,
           multiset< IntersectionPoint >::iterator ip = lines[i]._intPoints.begin();
           for ( ; ip != lines[i]._intPoints.end(); ++ip )
             if ( ip->_node && ip->_node->NbInverseElements() == 0 )
-              meshDS->RemoveFreeNode( grid._nodes[i], smDS, /*fromGroups=*/false );
+              meshDS->RemoveFreeNode( ip->_node, smDS, /*fromGroups=*/false );
         }
       }
+
+      // grid nodes
+      for ( size_t i = 0; i < grid._nodes.size(); ++i )
+        if ( !grid._isBndNode[i] ) // nodes on boundary are already removed
+          if ( grid._nodes[i] && grid._nodes[i]->NbInverseElements() == 0 )
+            meshDS->RemoveFreeNode( grid._nodes[i], smDS, /*fromGroups=*/false );
     }
+
+    return nbAdded;
 
     // TODO: evalute time
 
