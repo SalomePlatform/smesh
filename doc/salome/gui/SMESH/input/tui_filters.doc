@@ -318,6 +318,63 @@ print "Over-constrained faces:", ids
 
 \sa \ref tui_over_constrained_faces
 
+\section filter_double_elements Double edges, Double faces, Double volumes
+
+filter mesh elements basing on the same set of nodes:
+- element type is either \a smesh.EGDE, \a smesh.FACE or \a smesh.VOLUME
+- functor type is either \a smesh.FT_EqualEdges, \a
+          smesh.FT_EqualFaces or \a smesh.FT_EqualVolumes, 
+- threshold value is not required
+
+\code
+from smesh import *
+# make a mesh on a box
+box = geompy.MakeBoxDXDYDZ(100,100,100)
+mesh = Mesh( box, "Box" )
+mesh.Segment().NumberOfSegments(10)
+mesh.Quadrangle()
+mesh.Hexahedron()
+mesh.Compute()
+# copy all elements with translation and Merge nodes
+mesh.TranslateObject( mesh, MakeDirStruct( 10,0,0), Copy=True )
+mesh.MergeNodes( mesh.FindCoincidentNodes(1e-7) )
+# create filters to find equal elements
+equalEdgesFilter   = GetFilter(SMESH.EDGE, FT_EqualEdges)
+equalFacesFilter   = GetFilter(SMESH.FACE, FT_EqualFaces)
+equalVolumesFilter = GetFilter(SMESH.VOLUME, FT_EqualVolumes)
+# get equal elements
+print "Number of equal edges:",   len( mesh.GetIdsFromFilter( equalEdgesFilter ))
+print "Number of equal faces:",   len( mesh.GetIdsFromFilter( equalFacesFilter ))
+print "Number of equal volumes:", len( mesh.GetIdsFromFilter( equalVolumesFilter ))
+\endcode
+
+
+\section tui_double_nodes_control Double nodes
+
+filters mesh nodes which are coincident with other nodes (within a given tolerance):
+- element type is \a smesh.NODE
+- functor type is \a smesh.FT_EqualNodes
+- threshold value is not required
+- default tolerance is 1.0e-7
+
+\code
+from smesh import *
+# make a mesh on a box
+box = geompy.MakeBoxDXDYDZ(100,100,100)
+mesh = Mesh( box, "Box" )
+mesh.Segment().NumberOfSegments(10)
+mesh.Quadrangle()
+mesh.Hexahedron()
+mesh.Compute()
+# copy all elements with translation
+mesh.TranslateObject( mesh, MakeDirStruct( 10,0,0), Copy=True )
+# create filters to find nodes equal within tolerance of 1e-5
+filter = GetFilter(SMESH.NODE, FT_EqualNodes, Tolerance=1e-5)
+# get equal nodes
+print "Number of equal nodes:", len( mesh.GetIdsFromFilter( filter ))
+\endcode
+
+
 \section filter_borders_multiconnection Borders at multi-connection
 
 Filter border 1D mesh elements (edges) according to the specified number of

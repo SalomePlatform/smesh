@@ -1,0 +1,14 @@
+/*!
+
+\page double_elements_page Double edge, Double faces and Double volumes
+
+These mesh quality controls highlight the mesh elements basing on the same set of nodes.
+
+\image html double_faces.png
+
+In this picture some faces are coincident after copying all elements
+with translation with subsequent Merge of nodes.
+
+\sa A sample TUI Script of a \ref filter_double_elements "Filters of Double Elements".
+
+*/

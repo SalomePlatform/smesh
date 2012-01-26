@@ -106,11 +106,24 @@ specified arbitrary surface within a given <b>Tolerance</b>.
 </li>
 </ul>
 
+Additional criteria to select mesh <b>Nodes</b> are the following:
+<ul><li>
+<b>Free nodes</b> selects nodes belonging to none mesh element.
+</li><li>
+<b>Double nodes</b> selects node coincident with other nodes 
+(within a given <b>Tolerance</b>). 
+See also \ref tui_double_nodes_control "Double Nodes quality control".
+</li>
+</ul>
+
 Additional criteria to select mesh <b>Edges</b> are the following:
 <ul><li>
 <b>Free Borders</b> selects free 1D mesh elements, i.e. edges belonging to 
 one face only. See also a
 \ref free_borders_page "Free Borders quality control".
+</li><li>
+<b>Double edges</b> selects 1D mesh elements basing on the same set of nodes.
+See also \ref filter_double_elements "Double Elements quality control".
 </li><li>
 <b>Borders at Multi-Connections</b> selects edges belonging to several faces.
 The number of faces should be more, less or equal (within a given <b>Tolerance</b>)
@@ -155,6 +168,9 @@ one element of mesh only. See also a
 \ref free_edges_page "Free Edges quality control".
 </li><li>
 <b>Free faces</b> selects 2D mesh elements wich belong to less than two volumes.
+</li><li>
+<b>Double faces</b> selects 2D mesh elements basing on the same set of nodes.
+See also \ref filter_double_elements "Double Elements quality control".
 </li><li>
 <b>Faces with bare border</b> selects 2D mesh elements having a free border without an edge on it.
 See also \ref bare_border_faces_page "Bare border faces quality control".
@@ -201,6 +217,9 @@ Additional criteria to select mesh <b>Volumes</b> are the following:
 diagonals with a value of length, which is more, less or equal
 (within a given <b>Tolerance</b>) to the predefined <b>Threshold Value</b>. See also a
 \ref max_element_length_3d_page "Element Diameter 3D quality control".
+</li><li>
+<b>Double volumes</b> selects 3D mesh elements basing on the same set of nodes.
+See also \ref filter_double_elements "Double Elements quality control".
 </li><li>
 <b>Bad oriented volume</b> selects mesh volumes, which are incorrectly oriented from
 the point of view of MED convention.
