@@ -883,6 +883,14 @@
       type = QObject::tr( "OVER_CONSTRAINED_VOLUME" );
     else if ( dynamic_cast< SMESH::Controls::OverConstrainedFace* >( f.get() ) )
       type = QObject::tr( "OVER_CONSTRAINED_FACE" );
+    else if ( dynamic_cast< SMESH::Controls::CoincidentNodes* >( f.get() ) )
+      type = QObject::tr( "EQUAL_NODE" );
+    else if ( dynamic_cast< SMESH::Controls::CoincidentElements1D* >( f.get() ) )
+      type = QObject::tr( "EQUAL_EDGE" );
+    else if ( dynamic_cast< SMESH::Controls::CoincidentElements2D* >( f.get() ) )
+      type = QObject::tr( "EQUAL_FACE" );
+    else if ( dynamic_cast< SMESH::Controls::CoincidentElements3D* >( f.get() ) )
+      type = QObject::tr( "EQUAL_VOLUME" );
     return type;
   }
 
