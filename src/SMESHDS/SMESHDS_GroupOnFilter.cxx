@@ -149,6 +149,7 @@ void SMESHDS_GroupOnFilter::update() const
     me->myElements.clear();
     if ( myPredicate )
     {
+      myPredicate->SetMesh( GetMesh() ); // hope myPredicate updates self here if necessary
       me->myElements.reserve( GetMesh()->GetMeshInfo().NbElements(GetType()));
       SMDS_ElemIteratorPtr elIt = GetMesh()->elementsIterator(GetType());
       while ( elIt->more() )
@@ -157,7 +158,8 @@ void SMESHDS_GroupOnFilter::update() const
         if ( myPredicate->IsSatisfy( e->GetID() ))
           me->myElements.push_back( e );
       }
-      me->myElements.resize( myElements.size() );
+      vector< const SMDS_MeshElement*> elems( me->myElements.begin(), me->myElements.end() );
+      me->myElements.swap( elems );
     }
     me->setChanged( false );
   }
