@@ -629,6 +629,57 @@ namespace SMESH
   
   
   /*
+    Class       : EqualNodes_i
+    Description : Predicate for equal nodes
+  */
+  class SMESH_I_EXPORT EqualNodes_i: public virtual POA_SMESH::EqualNodes,
+                                     public virtual Predicate_i
+  {
+  public:
+    EqualNodes_i();
+    FunctorType                     GetFunctorType();
+    void                            SetTolerance( double );
+    double                          GetTolerance();
+
+  private:
+    Controls::CoincidentNodesPtr myCoincidentNodesPtr;
+  };
+  /*
+    Class       : EqualEdges_i
+    Description : Predicate for equal edges
+  */
+  class SMESH_I_EXPORT EqualEdges_i: public virtual POA_SMESH::EqualEdges,
+                                     public virtual Predicate_i
+  {
+  public:
+    EqualEdges_i();
+    FunctorType                     GetFunctorType();
+  };
+  /*
+    Class       : EqualFaces_i
+    Description : Predicate for equal Faces
+  */
+  class SMESH_I_EXPORT EqualFaces_i: public virtual POA_SMESH::EqualFaces,
+                                     public virtual Predicate_i
+  {
+  public:
+    EqualFaces_i();
+    FunctorType                     GetFunctorType();
+  };
+  /*
+    Class       : EqualVolumes_i
+    Description : Predicate for equal Volumes
+  */
+  class SMESH_I_EXPORT EqualVolumes_i: public virtual POA_SMESH::EqualVolumes,
+                                       public virtual Predicate_i
+  {
+  public:
+    EqualVolumes_i();
+    FunctorType                     GetFunctorType();
+  };
+  
+  
+  /*
     Class       : RangeOfIds_i
     Description : Predicate for Range of Ids
   */
@@ -1016,7 +1067,12 @@ namespace SMESH
     FreeEdges_ptr             CreateFreeEdges();
     FreeNodes_ptr             CreateFreeNodes();
     FreeFaces_ptr             CreateFreeFaces();
-    
+
+    EqualNodes_ptr            CreateEqualNodes();
+    EqualEdges_ptr            CreateEqualEdges();
+    EqualFaces_ptr            CreateEqualFaces();
+    EqualVolumes_ptr          CreateEqualVolumes();
+
     RangeOfIds_ptr            CreateRangeOfIds();
     BadOrientedVolume_ptr     CreateBadOrientedVolume();
     BareBorderFace_ptr        CreateBareBorderFace();

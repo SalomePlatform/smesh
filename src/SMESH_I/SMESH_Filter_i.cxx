@@ -1433,6 +1433,77 @@ FunctorType FreeNodes_i::GetFunctorType()
 }
 
 /*
+  Class       : EqualNodes_i
+  Description : Predicate for Equal nodes
+*/
+EqualNodes_i::EqualNodes_i()
+{
+  myCoincidentNodesPtr.reset(new Controls::CoincidentNodes());
+  myFunctorPtr = myPredicatePtr = myCoincidentNodesPtr;
+}
+
+FunctorType EqualNodes_i::GetFunctorType()
+{
+  return SMESH::FT_EqualNodes;
+}
+
+void EqualNodes_i::SetTolerance( double tol )
+{
+  myCoincidentNodesPtr->SetTolerance( tol );
+}
+
+double EqualNodes_i::GetTolerance()
+{
+  return myCoincidentNodesPtr->GetTolerance();
+}
+
+/*
+  Class       : EqualEdges_i
+  Description : Predicate for Equal Edges
+*/
+EqualEdges_i::EqualEdges_i()
+{
+  myPredicatePtr.reset(new Controls::CoincidentElements1D());
+  myFunctorPtr = myPredicatePtr;
+}
+
+FunctorType EqualEdges_i::GetFunctorType()
+{
+  return SMESH::FT_EqualEdges;
+}
+
+/*
+  Class       : EqualFaces_i
+  Description : Predicate for Equal Faces
+*/
+EqualFaces_i::EqualFaces_i()
+{
+  myPredicatePtr.reset(new Controls::CoincidentElements2D());
+  myFunctorPtr = myPredicatePtr;
+}
+
+FunctorType EqualFaces_i::GetFunctorType()
+{
+  return SMESH::FT_EqualFaces;
+}
+
+/*
+  Class       : EqualVolumes_i
+  Description : Predicate for Equal Volumes
+*/
+EqualVolumes_i::EqualVolumes_i()
+{
+  myPredicatePtr.reset(new Controls::CoincidentElements3D());
+  myFunctorPtr = myPredicatePtr;
+}
+
+FunctorType EqualVolumes_i::GetFunctorType()
+{
+  return SMESH::FT_EqualVolumes;
+}
+
+
+/*
   Class       : RangeOfIds_i
   Description : Predicate for Range of Ids.
                 Range may be specified with two ways.
@@ -2085,6 +2156,36 @@ FreeNodes_ptr FilterManager_i::CreateFreeNodes()
   return anObj._retn();
 }
 
+EqualNodes_ptr FilterManager_i::CreateEqualNodes()
+{
+  SMESH::EqualNodes_i* aServant = new SMESH::EqualNodes_i();
+  SMESH::EqualNodes_var anObj = aServant->_this();
+  TPythonDump()<<aServant<<" = "<<this<<".CreateEqualNodes()";
+  return anObj._retn();
+}
+
+EqualEdges_ptr FilterManager_i::CreateEqualEdges()
+{
+  SMESH::EqualEdges_i* aServant = new SMESH::EqualEdges_i();
+  SMESH::EqualEdges_var anObj = aServant->_this();
+  TPythonDump()<<aServant<<" = "<<this<<".CreateEqualEdges()";
+  return anObj._retn();
+}
+EqualFaces_ptr FilterManager_i::CreateEqualFaces()
+{
+  SMESH::EqualFaces_i* aServant = new SMESH::EqualFaces_i();
+  SMESH::EqualFaces_var anObj = aServant->_this();
+  TPythonDump()<<aServant<<" = "<<this<<".CreateEqualFaces()";
+  return anObj._retn();
+}
+EqualVolumes_ptr FilterManager_i::CreateEqualVolumes()
+{
+  SMESH::EqualVolumes_i* aServant = new SMESH::EqualVolumes_i();
+  SMESH::EqualVolumes_var anObj = aServant->_this();
+  TPythonDump()<<aServant<<" = "<<this<<".CreateEqualVolumes()";
+  return anObj._retn();
+}
+
 RangeOfIds_ptr FilterManager_i::CreateRangeOfIds()
 {
   SMESH::RangeOfIds_i* aServant = new SMESH::RangeOfIds_i();
@@ -2510,6 +2611,14 @@ static inline bool getCriteria( Predicate_i*                thePred,
   case FT_FreeFaces:
   case FT_LinearOrQuadratic:
   case FT_FreeNodes:
+  case FT_EqualEdges:
+  case FT_EqualFaces:
+  case FT_EqualVolumes:
+  case FT_BadOrientedVolume:
+  case FT_BareBorderVolume:
+  case FT_BareBorderFace:
+  case FT_OverConstrainedVolume:
+  case FT_OverConstrainedFace:
     {
       CORBA::ULong i = theCriteria->length();
       theCriteria->length( i + 1 );
@@ -2589,6 +2698,20 @@ static inline bool getCriteria( Predicate_i*                thePred,
 
       return true;
     }
+  case FT_EqualNodes:
+    {
+      EqualNodes_i* aPred = dynamic_cast<EqualNodes_i*>( thePred );
+
+      CORBA::ULong i = theCriteria->length();
+      theCriteria->length( i + 1 );
+
+      theCriteria[ i ] = createCriterion();
+
+      theCriteria[ i ].Type          = FT_EqualNodes;
+      theCriteria[ i ].Tolerance     = aPred->GetTolerance();
+
+      return true;
+    }
   case FT_RangeOfIds:
     {
       RangeOfIds_i* aPred = dynamic_cast<RangeOfIds_i*>( thePred );
@@ -2600,76 +2723,6 @@ static inline bool getCriteria( Predicate_i*                thePred,
 
       theCriteria[ i ].Type          = FT_RangeOfIds;
       theCriteria[ i ].ThresholdStr  = aPred->GetRangeStr();
-      theCriteria[ i ].TypeOfElement = aPred->GetElementType();
-
-      return true;
-    }
-  case FT_BadOrientedVolume:
-    {
-      BadOrientedVolume_i* aPred = dynamic_cast<BadOrientedVolume_i*>( thePred );
-
-      CORBA::ULong i = theCriteria->length();
-      theCriteria->length( i + 1 );
-
-      theCriteria[ i ] = createCriterion();
-
-      theCriteria[ i ].Type          = FT_BadOrientedVolume;
-      theCriteria[ i ].TypeOfElement = aPred->GetElementType();
-
-      return true;
-    }
-  case FT_BareBorderVolume:
-    {
-      BareBorderVolume_i* aPred = dynamic_cast<BareBorderVolume_i*>( thePred );
-
-      CORBA::ULong i = theCriteria->length();
-      theCriteria->length( i + 1 );
-
-      theCriteria[ i ] = createCriterion();
-
-      theCriteria[ i ].Type          = FT_BareBorderVolume;
-      theCriteria[ i ].TypeOfElement = aPred->GetElementType();
-
-      return true;
-    }
-  case FT_BareBorderFace:
-    {
-      BareBorderFace_i* aPred = dynamic_cast<BareBorderFace_i*>( thePred );
-
-      CORBA::ULong i = theCriteria->length();
-      theCriteria->length( i + 1 );
-
-      theCriteria[ i ] = createCriterion();
-
-      theCriteria[ i ].Type          = FT_BareBorderFace;
-      theCriteria[ i ].TypeOfElement = aPred->GetElementType();
-
-      return true;
-    }
-  case FT_OverConstrainedVolume:
-    {
-      OverConstrainedVolume_i* aPred = dynamic_cast<OverConstrainedVolume_i*>( thePred );
-
-      CORBA::ULong i = theCriteria->length();
-      theCriteria->length( i + 1 );
-
-      theCriteria[ i ] = createCriterion();
-
-      theCriteria[ i ].Type          = FT_OverConstrainedVolume;
-      theCriteria[ i ].TypeOfElement = aPred->GetElementType();
-
-      return true;
-    }
-  case FT_OverConstrainedFace:
-    {
-      OverConstrainedFace_i* aPred = dynamic_cast<OverConstrainedFace_i*>( thePred );
-
-      CORBA::ULong i = theCriteria->length();
-      theCriteria->length( i + 1 );
-
-      theCriteria[ i ] = createCriterion();
-
-      theCriteria[ i ].Type          = FT_OverConstrainedFace;
       theCriteria[ i ].TypeOfElement = aPred->GetElementType();
 
       return true;
@@ -2872,6 +2925,22 @@ CORBA::Boolean Filter_i::SetCriteria( const SMESH::Filter::Criteria& theCriteria
         break;
       case SMESH::FT_FreeNodes:
         aPredicate = aFilterMgr->CreateFreeNodes();
+        break;
+      case SMESH::FT_EqualNodes:
+        {
+          SMESH::EqualNodes_ptr pred = aFilterMgr->CreateEqualNodes();
+          pred->SetTolerance( aTolerance );
+          aPredicate = pred;
+          break;
+        }
+      case SMESH::FT_EqualEdges:
+        aPredicate = aFilterMgr->CreateEqualEdges();
+        break;
+      case SMESH::FT_EqualFaces:
+        aPredicate = aFilterMgr->CreateEqualFaces();
+        break;
+      case SMESH::FT_EqualVolumes:
+        aPredicate = aFilterMgr->CreateEqualVolumes();
         break;
       case SMESH::FT_BelongToGeom:
         {
@@ -3194,8 +3263,12 @@ static inline LDOMString toString( CORBA::Long theType )
     case FT_FreeEdges       : return "Free edges";
     case FT_FreeFaces       : return "Free faces";
     case FT_FreeNodes       : return "Free nodes";
+    case FT_EqualNodes      : return "Equal nodes";
+    case FT_EqualEdges      : return "Equal edges";
+    case FT_EqualFaces      : return "Equal faces";
+    case FT_EqualVolumes    : return "Equal volumes";
     case FT_MultiConnection : return "Borders at multi-connections";
-    case FT_MultiConnection2D: return "Borders at multi-connections 2D";
+    case FT_MultiConnection2D:return "Borders at multi-connections 2D";
     case FT_Length          : return "Length";
     case FT_Length2D        : return "Length 2D";
     case FT_LessThan        : return "Less than";
@@ -3236,6 +3309,10 @@ static inline SMESH::FunctorType toFunctorType( const LDOMString& theStr )
   else if ( theStr.equals( "Free edges"                   ) ) return FT_FreeEdges;
   else if ( theStr.equals( "Free faces"                   ) ) return FT_FreeFaces;
   else if ( theStr.equals( "Free nodes"                   ) ) return FT_FreeNodes;
+  else if ( theStr.equals( "Equal nodes"                  ) ) return FT_EqualNodes;
+  else if ( theStr.equals( "Equal edges"                  ) ) return FT_EqualEdges;
+  else if ( theStr.equals( "Equal faces"                  ) ) return FT_EqualFaces;
+  else if ( theStr.equals( "Equal volumes"                ) ) return FT_EqualVolumes;
   else if ( theStr.equals( "Borders at multi-connections" ) ) return FT_MultiConnection;
   //  else if ( theStr.equals( "Borders at multi-connections 2D" ) ) return FT_MultiConnection2D;
   else if ( theStr.equals( "Length"                       ) ) return FT_Length;
@@ -3779,13 +3856,13 @@ string_array* FilterLibrary_i::GetAllNames()
 static const char** getFunctNames()
 {
   static const char* functName[ SMESH::FT_Undefined + 1 ] = {
-    // If this line doesn't compile, this means that enum FunctorType has changed and
-    // it's necessary to update this array accordingly (refer to SMESH_Filter.idl)
+    // IT's necessary to update this array according to enum FunctorType (SMESH_Filter.idl)
     // The order is IMPORTANT !!!
     "FT_AspectRatio", "FT_AspectRatio3D", "FT_Warping", "FT_MinimumAngle",
     "FT_Taper", "FT_Skew", "FT_Area", "FT_Volume3D", "FT_MaxElementLength2D",
     "FT_MaxElementLength3D", "FT_FreeBorders", "FT_FreeEdges", "FT_FreeNodes",
-    "FT_FreeFaces", "FT_MultiConnection", "FT_MultiConnection2D", "FT_Length",
+    "FT_FreeFaces","FT_EqualNodes","FT_EqualEdges","FT_EqualFaces","FT_EqualVolumes",
+    "FT_MultiConnection", "FT_MultiConnection2D", "FT_Length",
     "FT_Length2D", "FT_BelongToGeom", "FT_BelongToPlane", "FT_BelongToCylinder",
     "FT_BelongToGenSurface", "FT_LyingOnGeom", "FT_RangeOfIds", "FT_BadOrientedVolume",
     "FT_BareBorderVolume", "FT_BareBorderFace", "FT_OverConstrainedVolume",
