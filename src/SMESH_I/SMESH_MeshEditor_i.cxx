@@ -531,12 +531,14 @@ CORBA::Long SMESH_MeshEditor_i::RemoveOrphanNodes()
   for ( int i = 0; i < seq.size(); i++ )
     IdList.push_back( seq[i] );
 
-  bool ret = anEditor.Remove( IdList, true );
+  int nbNodesBefore = myMesh->NbNodes();
+  anEditor.Remove( IdList, true );
   myMesh->GetMeshDS()->Modified();
   if ( IdList.size() )
     myMesh->SetIsModified( true );
+  int nbNodesAfter = myMesh->NbNodes();
 
-  return ret;
+  return nbNodesBefore - nbNodesAfter;
 }
 
 //=============================================================================
