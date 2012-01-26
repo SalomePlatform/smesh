@@ -53,6 +53,10 @@ module SMESH
     FT_FreeEdges,
     FT_FreeNodes,
     FT_FreeFaces,
+    FT_EqualNodes,
+    FT_EqualEdges,
+    FT_EqualFaces,
+    FT_EqualVolumes,
     FT_MultiConnection,
     FT_MultiConnection2D,
     FT_Length,
@@ -192,6 +196,31 @@ module SMESH
    * Verify whether a mesh face has only one border shared with other faces
    */
   interface OverConstrainedFace: Predicate {};
+
+  /*!
+   * Logical functor (predicate) "Equal Nodes".
+   * Verify whether there is another mesh node with same coordinates
+   */
+  interface EqualNodes: Predicate 
+  {
+    void    SetTolerance( in double theToler );
+    double  GetTolerance();
+  };
+  /*!
+   * Logical functor (predicate) "Equal Edges".
+   * Verify whether there is another mesh edge basing on the same nodes
+   */
+  interface EqualEdges: Predicate {};
+  /*!
+   * Logical functor (predicate) "Equal Faces".
+   * Verify whether there is another mesh face basing on the same nodes
+   */
+  interface EqualFaces: Predicate {};
+  /*!
+   * Logical functor (predicate) "Equal Volumes".
+   * Verify whether there is another mesh volumes basing on the same nodes
+   */
+  interface EqualVolumes: Predicate {};
 
   /*!
    * Logical functor (predicate) "Belong To Geometry".
@@ -526,6 +555,11 @@ module SMESH
     FreeEdges         CreateFreeEdges();
     FreeNodes         CreateFreeNodes();
     FreeFaces         CreateFreeFaces();
+
+    EqualNodes        CreateEqualNodes();
+    EqualEdges        CreateEqualEdges();
+    EqualFaces        CreateEqualFaces();
+    EqualVolumes      CreateEqualVolumes();
 
     RangeOfIds        CreateRangeOfIds();
 

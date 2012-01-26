@@ -872,21 +872,21 @@ SetControlMode(eControl theMode,
           if (!myIsEntityModeCache){
             myEntityModeCache = GetEntityMode();
             myIsEntityModeCache=true;
-	  } 
+          } 
           SetEntityMode(eFaces);
           break;
         default:
           if (!myIsEntityModeCache){
             myEntityModeCache = GetEntityMode();
             myIsEntityModeCache=true;
-	  }
+          }
           SetEntityMode(eFaces);
         }
       }else if(myControlActor == my3DActor) {
         if (!myIsEntityModeCache){
             myEntityModeCache = GetEntityMode();
             myIsEntityModeCache=true;
-	} 
+        } 
         SetEntityMode(eVolumes);
     }
     }
@@ -1219,24 +1219,27 @@ void SMESH_ActorDef::SetVisibility(int theMode, bool theIsUpdateRepersentation){
     if(myControlMode != eNone){
       switch(myControlMode){
       case eFreeNodes:
+      case eCoincidentNodes:
         myNodeExtActor->VisibilityOn();
         break;
       case eFreeEdges:
       case eFreeBorders:
+      case eCoincidentElems1D:
+      case eLength2D:
+      case eMultiConnection2D:
         my1DExtActor->VisibilityOn();
         break;
       case eFreeFaces:
       case eBareBorderFace:
       case eOverConstrainedFace:
+      case eCoincidentElems2D:
         my2DExtActor->VisibilityOn();
         break;
       case eBareBorderVolume:
       case eOverConstrainedVolume:
+      case eCoincidentElems3D:
         my3DExtActor->VisibilityOn();
         break;
-      case eLength2D:
-      case eMultiConnection2D:
-        my1DExtActor->VisibilityOn();
       default:
         if(myControlActor->GetUnstructuredGrid()->GetNumberOfCells())
           myScalarBarActor->VisibilityOn();

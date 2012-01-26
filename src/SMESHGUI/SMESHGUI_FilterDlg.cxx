@@ -1351,7 +1351,8 @@ void SMESHGUI_FilterTable::SetCriterion (const int                       theRow,
       theCriterion.Type    == SMESH::FT_BelongToGenSurface ||
       theCriterion.Type    == SMESH::FT_BelongToGeom ||
       theCriterion.Type    == SMESH::FT_LyingOnGeom ||
-      theCriterion.Type    == SMESH::FT_CoplanarFaces)
+      theCriterion.Type    == SMESH::FT_CoplanarFaces ||
+      theCriterion.Type    == SMESH::FT_EqualNodes)
   {
     QTableWidgetItem* anItem = aTable->item(theRow, 0);
     if (!myAddWidgets.contains(anItem))
@@ -1534,6 +1535,7 @@ const char* SMESHGUI_FilterTable::getPrecision( const int aType )
   case SMESH::FT_BelongToCylinder:
   case SMESH::FT_BelongToGenSurface:
   case SMESH::FT_LyingOnGeom:
+  case SMESH::FT_EqualNodes:
     retval = "len_tol_precision"; break;
   case SMESH::FT_Length:
   case SMESH::FT_Length2D:
@@ -1729,15 +1731,19 @@ void SMESHGUI_FilterTable::onCriterionChanged (const int row, const int col, con
     aTable->blockSignals( isSignalsBlocked );
   }
 
-  if ((aType == SMESH::NODE && aCriterionType == SMESH::FT_FreeNodes ) ||
-      (aType == SMESH::EDGE && aCriterionType == SMESH::FT_FreeBorders ) ||
-      (aType == SMESH::FACE && (aCriterionType == SMESH::FT_BareBorderFace ||
-                                aCriterionType == SMESH::FT_OverConstrainedFace ||
-                                aCriterionType == SMESH::FT_FreeEdges ||
-                                aCriterionType == SMESH::FT_FreeFaces)) ||
-      (aType == SMESH::VOLUME && (aCriterionType == SMESH::FT_BadOrientedVolume ||
+  if ((aType == SMESH::NODE && (aCriterionType == SMESH::FT_FreeNodes               ||
+                                aCriterionType == SMESH::FT_EqualNodes ))           ||
+      (aType == SMESH::EDGE && (aCriterionType == SMESH::FT_FreeBorders             ||
+                                aCriterionType == SMESH::FT_EqualEdges ))           ||
+      (aType == SMESH::FACE && (aCriterionType == SMESH::FT_BareBorderFace          ||
+                                aCriterionType == SMESH::FT_OverConstrainedFace     ||
+                                aCriterionType == SMESH::FT_FreeEdges               ||
+                                aCriterionType == SMESH::FT_FreeFaces               ||
+                                aCriterionType == SMESH::FT_EqualFaces))            ||
+      (aType == SMESH::VOLUME && (aCriterionType == SMESH::FT_BadOrientedVolume     ||
                                   aCriterionType == SMESH::FT_OverConstrainedVolume ||
-                                  aCriterionType == SMESH::FT_BareBorderVolume)) ||
+                                  aCriterionType == SMESH::FT_BareBorderVolume      ||
+                                  aCriterionType == SMESH::FT_EqualVolumes ))       ||
       aCriterionType == SMESH::FT_LinearOrQuadratic ||
       aCriterionType == SMESH::FT_GroupColor ||
       aCriterionType == SMESH::FT_ElemGeomType ||
@@ -1980,6 +1986,7 @@ const QMap<int, QString>& SMESHGUI_FilterTable::getCriteria (const int theType) 
       aCriteria[ SMESH::FT_LyingOnGeom        ] = tr("LYING_ON_GEOM");
       aCriteria[ SMESH::FT_FreeNodes          ] = tr("FREE_NODES");
       aCriteria[ SMESH::FT_GroupColor         ] = tr("GROUP_COLOR");
+      aCriteria[ SMESH::FT_EqualNodes         ] = tr("EQUAL_NODE");
     }
     return aCriteria;
   }
@@ -2000,6 +2007,7 @@ const QMap<int, QString>& SMESHGUI_FilterTable::getCriteria (const int theType) 
       aCriteria[ SMESH::FT_LinearOrQuadratic  ] = tr("LINEAR");
       aCriteria[ SMESH::FT_GroupColor         ] = tr("GROUP_COLOR");
       aCriteria[ SMESH::FT_ElemGeomType       ] = tr("GEOM_TYPE");
+      aCriteria[ SMESH::FT_EqualEdges         ] = tr("EQUAL_EDGE");
     }
     return aCriteria;
   }
@@ -2031,6 +2039,7 @@ const QMap<int, QString>& SMESHGUI_FilterTable::getCriteria (const int theType) 
       aCriteria[ SMESH::FT_GroupColor         ] = tr("GROUP_COLOR");
       aCriteria[ SMESH::FT_ElemGeomType       ] = tr("GEOM_TYPE");
       aCriteria[ SMESH::FT_CoplanarFaces      ] = tr("COPLANAR_FACES");
+      aCriteria[ SMESH::FT_EqualFaces         ] = tr("EQUAL_FACE");
     }
     return aCriteria;
   }
@@ -2051,6 +2060,7 @@ const QMap<int, QString>& SMESHGUI_FilterTable::getCriteria (const int theType) 
       aCriteria[ SMESH::FT_LinearOrQuadratic    ] = tr("LINEAR");
       aCriteria[ SMESH::FT_GroupColor           ] = tr("GROUP_COLOR");
       aCriteria[ SMESH::FT_ElemGeomType         ] = tr("GEOM_TYPE");
+      aCriteria[ SMESH::FT_EqualVolumes         ] = tr("EQUAL_VOLUME");
     }
     return aCriteria;
   }

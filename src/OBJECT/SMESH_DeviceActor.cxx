@@ -489,19 +489,18 @@ SMESH_DeviceActor
        dynamic_cast<BareBorderVolume     *>(theFunctor.get()) ||
        dynamic_cast<BareBorderFace       *>(theFunctor.get()) ||
        dynamic_cast<OverConstrainedVolume*>(theFunctor.get()) ||
-       dynamic_cast<CoincidentNodes      *>(theFunctor.get()) ||
        dynamic_cast<CoincidentElements1D *>(theFunctor.get()) ||
        dynamic_cast<CoincidentElements2D *>(theFunctor.get()) ||
        dynamic_cast<CoincidentElements3D *>(theFunctor.get()) ||
        dynamic_cast<OverConstrainedFace  *>(theFunctor.get()))
   {
-    Predicate* aFreePredicate = dynamic_cast<Predicate*>(theFunctor.get());
+    Predicate* aPredicate = dynamic_cast<Predicate*>(theFunctor.get());
     myExtractUnstructuredGrid->SetModeOfChanging(VTKViewer_ExtractUnstructuredGrid::eAdding);
     vtkUnstructuredGrid* aGrid = myVisualObj->GetUnstructuredGrid();
     vtkIdType aNbCells = aGrid->GetNumberOfCells();
     for( vtkIdType i = 0; i < aNbCells; i++ ){
       vtkIdType anObjId = myVisualObj->GetElemObjId(i);
-      if(aFreePredicate->IsSatisfy(anObjId))
+      if(aPredicate->IsSatisfy(anObjId))
         myExtractUnstructuredGrid->RegisterCell(i);
     }
     if(!myExtractUnstructuredGrid->IsCellsRegistered())
@@ -557,13 +556,15 @@ SMESH_DeviceActor
     SetUnstructuredGrid(aDataSet);
     aDataSet->Delete();
   }
-  else if(FreeNodes* aFreeNodes = dynamic_cast<FreeNodes*>(theFunctor.get()))
+  else if(dynamic_cast<FreeNodes      *>(theFunctor.get()) ||
+          dynamic_cast<CoincidentNodes*>(theFunctor.get()))
   {
+    Predicate* aPredicate = dynamic_cast<Predicate*>(theFunctor.get());
     myExtractUnstructuredGrid->SetModeOfChanging(VTKViewer_ExtractUnstructuredGrid::eAdding);
     vtkIdType aNbNodes = myVisualObj->GetNbEntities(SMDSAbs_Node);
     for( vtkIdType i = 0; i < aNbNodes; i++ ){
       vtkIdType anObjId = myVisualObj->GetNodeObjId(i);
-      if(aFreeNodes->IsSatisfy(anObjId))
+      if(aPredicate->IsSatisfy(anObjId))
         myExtractUnstructuredGrid->RegisterCell(i);
     }
     if(!myExtractUnstructuredGrid->IsCellsRegistered())

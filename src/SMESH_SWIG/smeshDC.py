@@ -901,10 +901,11 @@ class smeshDC(SMESH._objref_SMESH_Gen):
                 print "Error: The threshold value should be of SALOMEDS.Color type"
                 return None
             pass
-        elif CritType in [FT_FreeBorders, FT_FreeEdges, FT_BadOrientedVolume, FT_FreeNodes,
-                          FT_FreeFaces, FT_LinearOrQuadratic,
+        elif CritType in [FT_FreeBorders, FT_FreeEdges, FT_FreeNodes, FT_FreeFaces,
+                          FT_LinearOrQuadratic, FT_BadOrientedVolume,
                           FT_BareBorderFace, FT_BareBorderVolume,
-                          FT_OverConstrainedFace, FT_OverConstrainedVolume]:
+                          FT_OverConstrainedFace, FT_OverConstrainedVolume,
+                          FT_EqualNodes,FT_EqualEdges,FT_EqualFaces,FT_EqualVolumes ]:
             # At this point the treshold is unnecessary
             if aTreshold ==  FT_LogicalNOT:
                 aCriterion.UnaryOp = self.EnumToLong(FT_LogicalNOT)
@@ -940,7 +941,7 @@ class smeshDC(SMESH._objref_SMESH_Gen):
     #  @param Treshold the threshold value (range of id ids as string, shape, numeric)
     #  @param UnaryOp  FT_LogicalNOT or FT_Undefined
     #  @param Tolerance the tolerance used by FT_BelongToGeom, FT_BelongToSurface,
-    #         FT_LyingOnGeom, FT_CoplanarFaces criteria
+    #         FT_LyingOnGeom, FT_CoplanarFaces and FT_EqualNodes criteria
     #  @return SMESH_Filter
     #
     #  <a href="../tui_filters_page.html#tui_filters">Example of Filters usage</a>
