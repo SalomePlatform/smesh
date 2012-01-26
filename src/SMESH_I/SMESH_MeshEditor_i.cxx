@@ -3003,11 +3003,19 @@ SMESH_MeshEditor_i::mirror(TIDSortedElemSet &                  theElements,
       anEditor.Transform (*workElements, aTrsf, theCopy, theMakeGroups, theTargetMesh);
 
   if(theCopy || myPreviewMode)
-    storeResult(anEditor);
-  else
+    storeResult(anEditor); // store preview data or new elements
+
+  if ( !myPreviewMode )
   {
-    myMesh->SetIsModified( true );
-    myMesh->GetMeshDS()->Modified();
+    if ( theTargetMesh )
+    {
+      theTargetMesh->GetMeshDS()->Modified();
+    }
+    else
+    {
+      myMesh->GetMeshDS()->Modified();
+      myMesh->SetIsModified( true );
+    }
   }
   return theMakeGroups ? getGroups(groupIds.get()) : 0;
 }
@@ -3259,10 +3267,18 @@ SMESH_MeshEditor_i::translate(TIDSortedElemSet        & theElements,
 
   if(theCopy || myPreviewMode)
     storeResult(anEditor);
-  else
+
+  if ( !myPreviewMode )
   {
-    myMesh->GetMeshDS()->Modified();
-    myMesh->SetIsModified( true );
+    if ( theTargetMesh )
+    {
+      theTargetMesh->GetMeshDS()->Modified();
+    }
+    else
+    {
+      myMesh->GetMeshDS()->Modified();
+      myMesh->SetIsModified( true );
+    }
   }
 
   return theMakeGroups ? getGroups(groupIds.get()) : 0;
@@ -3501,10 +3517,18 @@ SMESH_MeshEditor_i::rotate(TIDSortedElemSet &        theElements,
 
   if(theCopy || myPreviewMode)
     storeResult(anEditor);
-  else
+
+  if ( !myPreviewMode )
   {
-    myMesh->GetMeshDS()->Modified();
-    myMesh->SetIsModified( true );
+    if ( theTargetMesh )
+    {
+      theTargetMesh->GetMeshDS()->Modified();
+    }
+    else
+    {
+      myMesh->GetMeshDS()->Modified();
+      myMesh->SetIsModified( true );
+    }
   }
 
   return theMakeGroups ? getGroups(groupIds.get()) : 0;
@@ -3772,11 +3796,20 @@ SMESH_MeshEditor_i::scale(SMESH::SMESH_IDSource_ptr  theObject,
 
   if(theCopy || myPreviewMode )
     storeResult(anEditor);
-  else
+
+  if ( !myPreviewMode )
   {
-    myMesh->GetMeshDS()->Modified();
-    myMesh->SetIsModified( true );
+    if ( theTargetMesh )
+    {
+      theTargetMesh->GetMeshDS()->Modified();
+    }
+    else
+    {
+      myMesh->GetMeshDS()->Modified();
+      myMesh->SetIsModified( true );
+    }
   }
+
   return theMakeGroups ? getGroups(groupIds.get()) : 0;
 }
 
@@ -4120,6 +4153,8 @@ void SMESH_MeshEditor_i::MergeEqualElements()
 
   ::SMESH_MeshEditor anEditor( myMesh );
   anEditor.MergeEqualElements();
+
+  myMesh->GetMeshDS()->Modified();
 
   TPythonDump() << this << ".MergeEqualElements()";
 }
