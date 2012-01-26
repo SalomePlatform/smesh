@@ -96,6 +96,21 @@ namespace SMESH{
       std::vector<gp_XYZ> myArray;
     };
 
+    /*!
+     * \brief Class used to detect mesh modification: IsMeshModified() returns
+     * true if a mesh has changed since last calling IsMeshModified()
+     */
+    class SMESHCONTROLS_EXPORT TMeshModifTracer
+    {
+      unsigned long    myMeshModifTime;
+      const SMDS_Mesh* myMesh;
+    public:
+      TMeshModifTracer();
+      void SetMesh( const SMDS_Mesh* theMesh );
+      const SMDS_Mesh* GetMesh() const { return myMesh; }
+      bool IsMeshModified();
+    };
+
     /*
       Class       : NumericalFunctor
       Description : Root of all Functors returning numeric value
@@ -326,16 +341,19 @@ namespace SMESH{
     class SMESHCONTROLS_EXPORT CoincidentNodes: public Predicate {
     public:
       CoincidentNodes();
-      void SetTolerance (const double theToler)  { myToler = theToler; }
-      void SetMesh( const SMDS_Mesh* theMesh, TIDSortedNodeSet* nodesToCheck );
-      virtual void SetMesh( const SMDS_Mesh* theMesh ) { SetMesh( theMesh, 0 ); }
+      virtual void SetMesh( const SMDS_Mesh* theMesh );
       virtual bool IsSatisfy( long theElementId );
       virtual SMDSAbs_ElementType GetType() const;
 
+      void SetTolerance (const double theToler)  { myToler = theToler; }
+      double GetTolerance () const { return myToler; }
+
     private:
-      TColStd_MapOfInteger myCoincidentIDs;
       double               myToler;
+      TColStd_MapOfInteger myCoincidentIDs;
+      TMeshModifTracer     myMeshModifTracer;
     };
+    typedef boost::shared_ptr<CoincidentNodes> CoincidentNodesPtr;
    
     /*
       Class       : CoincidentElements
@@ -345,14 +363,11 @@ namespace SMESH{
     class SMESHCONTROLS_EXPORT CoincidentElements: public Predicate {
     public:
       CoincidentElements();
-      void SetMesh( const SMDS_Mesh* theMesh, TIDSortedElemSet* elemsToCheck );
-      virtual void SetMesh( const SMDS_Mesh* theMesh ) { SetMesh( theMesh, 0 ); }
+      virtual void SetMesh( const SMDS_Mesh* theMesh );
       virtual bool IsSatisfy( long theElementId );
 
     private:
-      const SMDS_Mesh*     myMesh;
-      TIDSortedElemSet*    myElemsToCheck;
-      TColStd_MapOfInteger myCoincidentIDs;
+      const SMDS_Mesh* myMesh;
     };
     class SMESHCONTROLS_EXPORT CoincidentElements1D: public CoincidentElements {
     public:
@@ -456,7 +471,6 @@ namespace SMESH{
       virtual bool IsSatisfy( long theElementId );
     protected:
       const SMDS_Mesh* myMesh;
-      std::vector< const SMDS_MeshNode* > myLinkNodes;
     };
     typedef boost::shared_ptr<OverConstrainedFace> OverConstrainedFacePtr;
 
@@ -796,7 +810,7 @@ namespace SMESH{
       void    process (const SMDS_MeshElement* theElem);
 
     private:
-      const SMDS_Mesh*      myMesh;
+      TMeshModifTracer      myMeshModifTracer;
       TColStd_MapOfInteger  myIds;
       SMDSAbs_ElementType   myType;
       TopoDS_Shape          myShape;
@@ -904,13 +918,13 @@ namespace SMESH{
       long                 GetFace() const                         { return myFaceID; }
       void                 SetTolerance (const double theToler)    { myToler = theToler; }
       double               GetTolerance () const                   { return myToler; }
-      virtual void         SetMesh( const SMDS_Mesh* theMesh )     { myMesh = theMesh; }
       virtual              SMDSAbs_ElementType GetType() const     { return SMDSAbs_Face; }
 
+      virtual void         SetMesh( const SMDS_Mesh* theMesh );
       virtual bool         IsSatisfy( long theElementId );
 
     private:
-      const SMDS_Mesh*     myMesh;
+      TMeshModifTracer     myMeshModifTracer;
       long                 myFaceID;
       double               myToler;
       std::set< long >     myCoplanarIDs;

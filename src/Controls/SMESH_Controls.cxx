@@ -2025,10 +2025,11 @@ bool BareBorderFace::IsSatisfy(long theElementId )
         }
         if ( !isShared )
         {
-          myLinkNodes.resize( 2 + face->IsQuadratic());
+          const int iQuad = face->IsQuadratic();
+          myLinkNodes.resize( 2 + iQuad);
           myLinkNodes[0] = n1;
           myLinkNodes[1] = n2;
-          if ( face->IsQuadratic() )
+          if ( iQuad )
             myLinkNodes[2] = face->GetNode( i+nbN );
           ok = !myMesh->FindElement( myLinkNodes, SMDSAbs_Edge, /*noMedium=*/false);
         }
@@ -2111,28 +2112,28 @@ SMDSAbs_ElementType CoincidentNodes::GetType() const
   return SMDSAbs_Node;
 }
 
-void CoincidentNodes::SetMesh( const SMDS_Mesh*  theMesh, TIDSortedNodeSet* nodesToCheck )
+void CoincidentNodes::SetMesh( const SMDS_Mesh* theMesh )
 {
-  TIDSortedNodeSet allNodes;
-  if ( !nodesToCheck )
+  myMeshModifTracer.SetMesh( theMesh );
+  if ( myMeshModifTracer.IsMeshModified() )
   {
-    nodesToCheck = &allNodes;
+    TIDSortedNodeSet nodesToCheck;
     SMDS_NodeIteratorPtr nIt = theMesh->nodesIterator(/*idInceasingOrder=*/true);
     while ( nIt->more() )
-      allNodes.insert( allNodes.end(), nIt->next() );
-  }
+      nodesToCheck.insert( nodesToCheck.end(), nIt->next() );
 
-  list< list< const SMDS_MeshNode*> > nodeGroups;
-  SMESH_OctreeNode::FindCoincidentNodes ( *nodesToCheck, &nodeGroups, myToler );
+    list< list< const SMDS_MeshNode*> > nodeGroups;
+    SMESH_OctreeNode::FindCoincidentNodes ( nodesToCheck, &nodeGroups, myToler );
 
-  myCoincidentIDs.Clear();
-  list< list< const SMDS_MeshNode*> >::iterator groupIt = nodeGroups.begin();
-  for ( ; groupIt != nodeGroups.end(); ++groupIt )
-  {
-    list< const SMDS_MeshNode*>& coincNodes = *groupIt;
-    list< const SMDS_MeshNode*>::iterator n = coincNodes.begin();
-    for ( ; n != coincNodes.end(); ++n )
-      myCoincidentIDs.Add( (*n)->GetID() );
+    myCoincidentIDs.Clear();
+    list< list< const SMDS_MeshNode*> >::iterator groupIt = nodeGroups.begin();
+    for ( ; groupIt != nodeGroups.end(); ++groupIt )
+    {
+      list< const SMDS_MeshNode*>& coincNodes = *groupIt;
+      list< const SMDS_MeshNode*>::iterator n = coincNodes.begin();
+      for ( ; n != coincNodes.end(); ++n )
+        myCoincidentIDs.Add( (*n)->GetID() );
+    }
   }
 }
 
@@ -2145,37 +2146,15 @@ void CoincidentNodes::SetMesh( const SMDS_Mesh*  theMesh, TIDSortedNodeSet* node
 CoincidentElements::CoincidentElements()
 {
   myMesh = 0;
-  myElemsToCheck = 0;
 }
 
-void CoincidentElements::SetMesh( const SMDS_Mesh* theMesh, TIDSortedElemSet* elemsToCheck )
+void CoincidentElements::SetMesh( const SMDS_Mesh* theMesh )
 {
   myMesh = theMesh;
-
-  myCoincidentIDs.Clear();
-  myElemsToCheck = elemsToCheck;
-
-  if ( myElemsToCheck )
-  {
-    TColStd_MapOfInteger coincidentIDs;
-    TIDSortedElemSet::iterator elem = myElemsToCheck->begin();
-    for ( ; elem != myElemsToCheck->end(); ++elem )
-      if ( IsSatisfy( (*elem)->GetID() ))
-        coincidentIDs.Add( (*elem)->GetID() );
-
-    myCoincidentIDs = coincidentIDs;
-    if ( myCoincidentIDs.IsEmpty() )
-      myCoincidentIDs.Add( -1 ); // mark that analysis is already performed
-
-    myElemsToCheck = 0; // not needed anymore
-  }
 }
 
 bool CoincidentElements::IsSatisfy( long theElementId )
 {
-  if ( !myCoincidentIDs.IsEmpty() )
-    return myCoincidentIDs.Contains( theElementId );
-
   if ( !myMesh ) return false;
 
   if ( const SMDS_MeshElement* e = myMesh->FindElement( theElementId ))
@@ -2187,7 +2166,6 @@ bool CoincidentElements::IsSatisfy( long theElementId )
     {
       const SMDS_MeshElement* e2 = invIt->next();
       if ( e2 == e || e2->NbNodes() != (int)elemNodes.size() ) continue;
-      if ( myElemsToCheck && !myElemsToCheck->count( e2 )) continue;
 
       bool sameNodes = true;
       for ( size_t i = 0; i < elemNodes.size() && sameNodes; ++i )
@@ -2688,26 +2666,29 @@ SMDSAbs_GeometryType ElemGeomType::GetGeomType() const
 //================================================================================
 
 CoplanarFaces::CoplanarFaces()
-  : myMesh(0), myFaceID(0), myToler(0)
+  : myFaceID(0), myToler(0)
 {
 }
-bool CoplanarFaces::IsSatisfy( long theElementId )
+void CoplanarFaces::SetMesh( const SMDS_Mesh* theMesh )
 {
-  if ( myCoplanarIDs.empty() )
+  myMeshModifTracer.SetMesh( theMesh );
+  if ( myMeshModifTracer.IsMeshModified() )
   {
     // Build a set of coplanar face ids
 
-    if ( !myMesh || !myFaceID || !myToler )
-      return false;
+    myCoplanarIDs.clear();
 
-    const SMDS_MeshElement* face = myMesh->FindElement( myFaceID );
+    if ( !myMeshModifTracer.GetMesh() || !myFaceID || !myToler )
+      return;
+
+    const SMDS_MeshElement* face = myMeshModifTracer.GetMesh()->FindElement( myFaceID );
     if ( !face || face->GetType() != SMDSAbs_Face )
-      return false;
+      return;
 
     bool normOK;
     gp_Vec myNorm = getNormale( static_cast<const SMDS_MeshFace*>(face), &normOK );
     if (!normOK)
-      return false;
+      return;
 
     const double radianTol = myToler * M_PI / 180.;
     typedef SMDS_StdIterator< const SMDS_MeshElement*, SMDS_ElemIteratorPtr > TFaceIt;
@@ -2736,6 +2717,9 @@ bool CoplanarFaces::IsSatisfy( long theElementId )
       faceQueue.pop_front();
     }
   }
+}
+bool CoplanarFaces::IsSatisfy( long theElementId )
+{
   return myCoplanarIDs.count( theElementId );
 }
 
@@ -3713,7 +3697,7 @@ bool ElementsOnSurface::isOnSurface( const SMDS_MeshNode* theNode )
 */
 
 ElementsOnShape::ElementsOnShape()
-  : myMesh(0),
+  : //myMesh(0),
     myType(SMDSAbs_All),
     myToler(Precision::Confusion()),
     myAllNodesFlag(false)
@@ -3727,10 +3711,9 @@ ElementsOnShape::~ElementsOnShape()
 
 void ElementsOnShape::SetMesh (const SMDS_Mesh* theMesh)
 {
-  if (myMesh != theMesh) {
-    myMesh = theMesh;
+  myMeshModifTracer.SetMesh( theMesh );
+  if ( myMeshModifTracer.IsMeshModified())
     SetShape(myShape, myType);
-  }
 }
 
 bool ElementsOnShape::IsSatisfy (long theElementId)
@@ -3771,7 +3754,9 @@ void ElementsOnShape::SetShape (const TopoDS_Shape&       theShape,
   myShape = theShape;
   myIds.Clear();
 
-  if (myMesh == 0) return;
+  const SMDS_Mesh* myMesh = myMeshModifTracer.GetMesh();
+  
+  if ( !myMesh ) return;
 
   switch (myType)
   {
@@ -3800,7 +3785,7 @@ void ElementsOnShape::SetShape (const TopoDS_Shape&       theShape,
 
 void ElementsOnShape::addShape (const TopoDS_Shape& theShape)
 {
-  if (theShape.IsNull() || myMesh == 0)
+  if (theShape.IsNull() || myMeshModifTracer.GetMesh() == 0)
     return;
 
   if (!myShapesMap.Add(theShape)) return;
@@ -3861,6 +3846,7 @@ void ElementsOnShape::addShape (const TopoDS_Shape& theShape)
 
 void ElementsOnShape::process()
 {
+  const SMDS_Mesh* myMesh = myMeshModifTracer.GetMesh();
   if (myShape.IsNull() || myMesh == 0)
     return;
 
@@ -4018,4 +4004,25 @@ void TSequenceOfXYZ::push_back(const gp_XYZ& v)
 TSequenceOfXYZ::size_type TSequenceOfXYZ::size() const
 {
   return myArray.size();
+}
+
+TMeshModifTracer::TMeshModifTracer():
+  myMeshModifTime(0), myMesh(0)
+{
+}
+void TMeshModifTracer::SetMesh( const SMDS_Mesh* theMesh )
+{
+  if ( theMesh != myMesh )
+    myMeshModifTime = 0;
+  myMesh = theMesh;
+}
+bool TMeshModifTracer::IsMeshModified()
+{
+  bool modified = false;
+  if ( myMesh )
+  {
+    modified = ( myMeshModifTime != myMesh->GetMTime() );
+    myMeshModifTime = myMesh->GetMTime();
+  }
+  return modified;
 }
