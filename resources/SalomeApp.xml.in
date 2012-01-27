@@ -51,6 +51,7 @@
     <parameter name="selection_width"              value="5"/>
     <parameter name="highlight_width"              value="5"/>
     <parameter name="controls_precision"           value="0"/>
+    <parameter name="equal_nodes_tolerance"        value="1e-7"/>
     <parameter name="scalar_bar_horizontal_height" value="0.08"/>
     <parameter name="scalar_bar_horizontal_width"  value="0.8" />
     <parameter name="scalar_bar_horizontal_x"      value="0.1"/>
