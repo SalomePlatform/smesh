@@ -2,7 +2,10 @@
 
 \page double_nodes_control_page Double nodes
 
-This mesh quality control highlights the nodes which are coincident with other nodes (within a given tolerance). 
+This mesh quality control highlights the nodes which are coincident
+with other nodes (within a given tolerance). Distance at which two
+nodes are considered coincident is defined by "Quality Controls/Double
+nodes tolerance" preference.
 
 \image html double_nodes.png
 
