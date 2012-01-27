@@ -4486,6 +4486,11 @@ void SMESHGUI::createPreferences()
   int prec = addPreference( tr( "PREF_PRECISION_VALUE" ), qaGroup, LightApp_Preferences::IntSpin, "SMESH", "controls_precision" );
   setPreferenceProperty( prec, "min", 0 );
   setPreferenceProperty( prec, "max", 16 );
+  int doubleNodesTol = addPreference( tr( "PREF_EQUAL_NODES_TOL" ), qaGroup, LightApp_Preferences::DblSpin, "SMESH", "equal_nodes_tolerance" );
+  setPreferenceProperty( doubleNodesTol, "precision", 10 );
+  setPreferenceProperty( doubleNodesTol, "min", 0.0000000001 );
+  setPreferenceProperty( doubleNodesTol, "max", 1000000.0 );
+  setPreferenceProperty( doubleNodesTol, "step", 0.0000001 );
 
   int dispgroup = addPreference( tr( "PREF_DISPLAY_MODE" ), genTab );
   setPreferenceProperty( dispgroup, "columns", 2 );

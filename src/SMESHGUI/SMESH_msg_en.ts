@@ -3885,6 +3885,10 @@ Please, create VTK viewer and try again</translation>
         <translation>Number of digits after point</translation>
     </message>
     <message>
+        <source>PREF_EQUAL_NODES_TOL</source>
+        <translation>Double nodes tolerance</translation>
+    </message>
+    <message>
         <source>PREF_RENUMBER</source>
         <translation>Automatic renumbering</translation>
     </message>
