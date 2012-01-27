@@ -692,9 +692,14 @@ SetControlMode(eControl theMode,
       myControlActor = my2DActor;
       break;
     case eCoincidentNodes:
-      myFunctor.reset(new SMESH::Controls::CoincidentNodes());
-      myControlActor = myNodeActor;
-      break;
+      {
+        SMESH::Controls::CoincidentNodes* cn = new SMESH::Controls::CoincidentNodes();
+        double tol = mgr->doubleValue( "SMESH", "equal_nodes_tolerance", 1e-7 );
+        cn->SetTolerance( tol );
+        myFunctor.reset(cn);
+        myControlActor = myNodeActor;
+        break;
+      }
     case eCoincidentElems1D:
       myFunctor.reset(new SMESH::Controls::CoincidentElements1D());
       myControlActor = my1DActor;
