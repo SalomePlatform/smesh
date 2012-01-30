@@ -298,6 +298,10 @@ QString SMESHGUI_Selection::controlMode( int ind ) const
     case SMESH_Actor::eBareBorderVolume:      mode = "eBareBorderVolume";      break;
     case SMESH_Actor::eOverConstrainedFace:   mode = "eOverConstrainedFace";   break;
     case SMESH_Actor::eOverConstrainedVolume: mode = "eOverConstrainedVolume"; break;
+    case SMESH_Actor::eCoincidentNodes:       mode = "eCoincidentNodes";       break;
+    case SMESH_Actor::eCoincidentElems1D:     mode = "eCoincidentElems1D";     break;
+    case SMESH_Actor::eCoincidentElems2D:     mode = "eCoincidentElems2D";     break;
+    case SMESH_Actor::eCoincidentElems3D:     mode = "eCoincidentElems3D";     break;
     default:break;
     }
   }
