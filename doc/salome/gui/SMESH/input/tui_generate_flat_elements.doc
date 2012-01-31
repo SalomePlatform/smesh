@@ -30,14 +30,19 @@ Cylinder_2 = geompy.MakeCylinder(Vertex_1, OX, 100, 400)
 Vertex_2 = geompy.MakeVertex(-200, -200, -200)
 Vertex_3 = geompy.MakeVertex(250, 200, 200)
 Box_1 = geompy.MakeBoxTwoPnt(Vertex_2, Vertex_3)
-Cut_1 = geompy.MakeCut(Cylinder_2, Cylinder_1)
-Partition_2 = geompy.MakePartition([Cut_1], [Box_1], [], [], geompy.ShapeType["SOLID"], 0, [], 0)
-Fuse_1 = geompy.MakeFuse(Partition_2, Cylinder_1)
-Partition_1 = geompy.MakePartition([Fuse_1], [Cylinder_1], [], [], geompy.ShapeType["SOLID"], 0, [], 0)
-[Solid_1,Solid_2,Solid_3] = geompy.SubShapes(Partition_1, [53, 2, 30])
-[Face_1,Face_2] = geompy.SubShapes(Partition_1, [37, 20])
+Fuse_1 = geompy.MakeFuse(Cylinder_1, Cylinder_2)
+Partition_1 = geompy.MakePartition([Fuse_1], [Cylinder_1, Box_1], [], [], geompy.ShapeType["SOLID"], 0, [], 0)
+[Solid_1,Solid_2] = geompy.GetShapesOnShape(Cylinder_1, Partition_1, geompy.ShapeType["SOLID"], geompy.GEOM.ST_IN)
+[Solid_3,Solid_4] = geompy.GetShapesOnShape(Cylinder_2, Partition_1, geompy.ShapeType["SOLID"], geompy.GEOM.ST_IN)
+Vertex_4 = geompy.MakeVertex(450, 0, 0)
+Vertex_5 = geompy.MakeVertex(500, 0, 0)
+Vertex_6 = geompy.MakeVertex(550, 0, 0)
+vec1 = geompy.MakeVector(Vertex_4, Vertex_5)
+vec2 = geompy.MakeVector(Vertex_5, Vertex_6)
+[Face_1] = geompy.GetShapesOnPlane(Partition_1, geompy.ShapeType["FACE"], vec1, geompy.GEOM.ST_ON)
+[Face_2] = geompy.GetShapesOnPlane(Partition_1, geompy.ShapeType["FACE"], vec2, geompy.GEOM.ST_ON)
 
-# meshing (linear tetrahedrons are here, but other elements are OK)
+# meshing (we have linear tetrahedrons here, but other elements are OK)
 
 Mesh_1 = smesh.Mesh(Partition_1)
 BLSURF = Mesh_1.Triangle(algo=smesh.BLSURF)
@@ -54,18 +59,19 @@ isDone = Mesh_1.Compute()
 Solid_1_1 = Mesh_1.GroupOnGeom(Solid_1,'Solid_1',SMESH.VOLUME)
 Solid_2_1 = Mesh_1.GroupOnGeom(Solid_2,'Solid_2',SMESH.VOLUME)
 Solid_3_1 = Mesh_1.GroupOnGeom(Solid_3,'Solid_3',SMESH.VOLUME)
+Solid_4_1 = Mesh_1.GroupOnGeom(Solid_4,'Solid_4',SMESH.VOLUME)
 Face_1_1 = Mesh_1.GroupOnGeom(Face_1,'Face_1',SMESH.FACE)
 Face_2_1 = Mesh_1.GroupOnGeom(Face_2,'Face_2',SMESH.FACE)
 
 \endcode
 
-\n Here, the 3 groups of volumes [Solid_1_1, Solid_2_1, Solid_3_1] constitute a partition of the mesh.
+\n Here, the 4 groups of volumes [Solid_1_1, Solid_2_1, Solid_3_1, Solid_4_1] constitute a partition of the mesh.
 The flat elements on group boundaries and on faces are built with the following code.
 \n If the last argument (Boolean) in DoubleNodesOnGroupBoundaries is set to 1,
 the flat elements are built, otherwise, there is only a duplication of the nodes.
 
 \code
-Mesh_1.DoubleNodesOnGroupBoundaries([Solid_1_1, Solid_2_1, Solid_3_1], 1)
+Mesh_1.DoubleNodesOnGroupBoundaries([Solid_1_1, Solid_2_1, Solid_3_1, Solid_4_1], 1)
 
 Mesh_1.CreateFlatElementsOnFacesGroups([Face_1_1, Face_2_1])
 \endcode
