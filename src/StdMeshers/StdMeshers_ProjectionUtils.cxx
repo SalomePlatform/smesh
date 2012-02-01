@@ -2062,7 +2062,7 @@ TopoDS_Edge StdMeshers_ProjectionUtils::GetBoundaryEdge(const TopoDS_Shape& edge
       PShapeIteratorPtr faceIt = SMESH_MesherHelper::GetAncestors( edge, mesh, TopAbs_FACE );
       while ( const TopoDS_Shape* face = faceIt->next() )
         if ( facesOfEdgeContainer.Contains( *face ))
-          if ( facesNearEdge.Add( *face ) and facesNearEdge.Extent() > 1 )
+          if ( facesNearEdge.Add( *face ) && facesNearEdge.Extent() > 1 )
             break;
       if ( facesNearEdge.Extent() == 1 )
         return edge;

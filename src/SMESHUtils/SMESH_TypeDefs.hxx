@@ -36,6 +36,7 @@
 #include <map>
 #include <list>
 #include <set>
+#include <cassert>
 
 typedef std::map<const SMDS_MeshElement*,
                  std::list<const SMDS_MeshElement*> >        TElemOfElemListMap;
