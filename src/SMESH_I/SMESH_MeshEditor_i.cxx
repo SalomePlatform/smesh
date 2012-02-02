@@ -5739,8 +5739,8 @@ CORBA::Boolean SMESH_MeshEditor_i::DoubleNodesOnGroupBoundaries( const SMESH::Li
     SMESH::SMESH_GroupBase_var aGrp = theDomains[ i ];
     if ( !CORBA::is_nil( aGrp ) /*&& ( aGrp->GetType() != SMESH::NODE )*/ )
     {
-      if ( aGrp->GetType() != SMESH::VOLUME )
-        THROW_SALOME_CORBA_EXCEPTION("Not a volume group", SALOME::BAD_PARAM);
+//      if ( aGrp->GetType() != SMESH::VOLUME )
+//        THROW_SALOME_CORBA_EXCEPTION("Not a volume group", SALOME::BAD_PARAM);
       TIDSortedElemSet domain;
       domain.clear();
       domains.push_back(domain);

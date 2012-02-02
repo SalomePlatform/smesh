@@ -568,6 +568,11 @@ public:
   virtual SMDS_MeshVolume* AddVolumeFromVtkIdsWithID(const std::vector<vtkIdType>& vtkNodeIds,
                                                      const int ID);
 
+  virtual SMDS_MeshFace* AddFaceFromVtkIds(const std::vector<vtkIdType>& vtkNodeIds);
+
+  virtual SMDS_MeshFace* AddFaceFromVtkIdsWithID(const std::vector<vtkIdType>& vtkNodeIds,
+                                                     const int ID);
+
   virtual void RemoveElement(const SMDS_MeshElement *        elem,
                              std::list<const SMDS_MeshElement *>& removedElems,
                              std::list<const SMDS_MeshElement *>& removedNodes,

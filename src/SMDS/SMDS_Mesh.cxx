@@ -1507,6 +1507,53 @@ SMDS_MeshVolume* SMDS_Mesh::AddVolumeFromVtkIdsWithID(const std::vector<vtkIdTyp
   return volvtk;
 }
 
+SMDS_MeshFace* SMDS_Mesh::AddFaceFromVtkIds(const std::vector<vtkIdType>& vtkNodeIds)
+{
+  int ID = myElementIDFactory->GetFreeID();
+  SMDS_MeshFace * f = SMDS_Mesh::AddFaceFromVtkIdsWithID(vtkNodeIds, ID);
+  if (f == NULL) myElementIDFactory->ReleaseID(ID);
+  return f;
+}
+
+SMDS_MeshFace* SMDS_Mesh::AddFaceFromVtkIdsWithID(const std::vector<vtkIdType>& vtkNodeIds, const int ID)
+{
+  SMDS_VtkFace *facevtk = myFacePool->getNew();
+  facevtk->init(vtkNodeIds, this);
+  if (!this->registerElement(ID,facevtk))
+    {
+      this->myGrid->GetCellTypesArray()->SetValue(facevtk->getVtkId(), VTK_EMPTY_CELL);
+      myFacePool->destroy(facevtk);
+      return 0;
+    }
+  adjustmyCellsCapacity(ID);
+  myCells[ID] = facevtk;
+  vtkIdType aVtkType = facevtk->GetVtkType();
+  switch (aVtkType)
+  {
+    case VTK_TRIANGLE:
+      myInfo.myNbTriangles++;
+      break;
+    case VTK_QUAD:
+      myInfo.myNbQuadrangles++;
+      break;
+    case VTK_QUADRATIC_TRIANGLE:
+      myInfo.myNbQuadTriangles++;
+      break;
+    case VTK_QUADRATIC_QUAD:
+      myInfo.myNbQuadQuadrangles++;
+      break;
+    case VTK_BIQUADRATIC_QUAD:
+      myInfo.myNbBiQuadQuadrangles++;
+      break;
+    case VTK_POLYGON:
+      myInfo.myNbPolygons++;
+      break;
+     default:
+      myInfo.myNbPolygons++;
+  }
+  return facevtk;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 /// Registers element with the given ID, maintains inverse connections
 ///////////////////////////////////////////////////////////////////////////////

@@ -48,6 +48,7 @@
 
 class SMDS_Downward;
 class SMDS_Mesh;
+class SMDS_MeshCell;
 class SMDS_MeshVolume;
 
 class SMDS_EXPORT SMDS_CellLinks: public vtkCellLinks
@@ -86,11 +87,11 @@ public:
   int GetParentVolumes(int* volVtkIds, int downId, unsigned char downType);
   void GetNodeIds(std::set<int>& nodeSet, int downId, unsigned char downType);
   void ModifyCellNodes(int vtkVolId, std::map<int, int> localClonedNodeIds);
-  int getOrderedNodesOfFace(int vtkVolId, std::vector<vtkIdType>& orderedNodes);
+  int getOrderedNodesOfFace(int vtkVolId, int& dim, std::vector<vtkIdType>& orderedNodes);
   void BuildLinks();
-  SMDS_MeshVolume* extrudeVolumeFromFace(int vtkVolId, int domain1, int domain2, std::set<int>& originalNodes,
-                                         std::map<int, std::map<int, int> >& nodeDomains,
-                                         std::map<int, std::map<long,int> >& nodeQuadDomains);
+  SMDS_MeshCell* extrudeVolumeFromFace(int vtkVolId, int domain1, int domain2, std::set<int>& originalNodes,
+                                       std::map<int, std::map<int, int> >& nodeDomains,
+                                       std::map<int, std::map<long,int> >& nodeQuadDomains);
   vtkCellLinks* GetLinks()
   {
     return Links;

@@ -929,15 +929,17 @@ void SMDS_UnstructuredGrid::ModifyCellNodes(int vtkVolId, std::map<int, int> loc
  * @param orderedNodes list of nodes to reorder (in out)
  * @return size of the list
  */
-int SMDS_UnstructuredGrid::getOrderedNodesOfFace(int vtkVolId, std::vector<vtkIdType>& orderedNodes)
+int SMDS_UnstructuredGrid::getOrderedNodesOfFace(int vtkVolId, int& dim, std::vector<vtkIdType>& orderedNodes)
 {
   int vtkType = this->GetCellType(vtkVolId);
-  int cellDim = SMDS_Downward::getCellDimension(vtkType);
-  if (cellDim != 3)
-    return 0;
-  SMDS_Down3D *downvol = static_cast<SMDS_Down3D*> (_downArray[vtkType]);
-  int downVolId = this->_cellIdToDownId[vtkVolId];
-  downvol->getOrderedNodesOfFace(downVolId, orderedNodes);
+  dim = SMDS_Downward::getCellDimension(vtkType);
+  if (dim == 3)
+    {
+      SMDS_Down3D *downvol = static_cast<SMDS_Down3D*> (_downArray[vtkType]);
+      int downVolId = this->_cellIdToDownId[vtkVolId];
+      downvol->getOrderedNodesOfFace(downVolId, orderedNodes);
+    }
+  // else nothing to do;
   return orderedNodes.size();
 }
 
@@ -970,7 +972,7 @@ void SMDS_UnstructuredGrid::BuildLinks()
  * @param nodeDomains: map(original id --> map(domain --> duplicated node id))
  * @return ok if success.
  */
-SMDS_MeshVolume* SMDS_UnstructuredGrid::extrudeVolumeFromFace(int vtkVolId,
+SMDS_MeshCell* SMDS_UnstructuredGrid::extrudeVolumeFromFace(int vtkVolId,
                                                   int domain1,
                                                   int domain2,
                                                   std::set<int>& originalNodes,
@@ -984,65 +986,89 @@ SMDS_MeshVolume* SMDS_UnstructuredGrid::extrudeVolumeFromFace(int vtkVolId,
   for (; it != originalNodes.end(); ++it)
     orderedOriginals.push_back(*it);
 
-  int nbNodes = this->getOrderedNodesOfFace(vtkVolId, orderedOriginals);
+  int dim = 0;
+  int nbNodes = this->getOrderedNodesOfFace(vtkVolId, dim, orderedOriginals);
   vector<vtkIdType> orderedNodes;
 
+  bool isQuadratic = false;
   switch (orderedOriginals.size())
   {
     case 3:
-    case 4:
-      for (int i = 0; i < nbNodes; i++)
-        orderedNodes.push_back(nodeDomains[orderedOriginals[i]][domain1]);
-      for (int i = 0; i < nbNodes; i++)
-        orderedNodes.push_back(nodeDomains[orderedOriginals[i]][domain2]);
+      if (dim == 2)
+        isQuadratic = true;
       break;
     case 6:
     case 8:
-      {
-        long dom1 = domain1;
-        long dom2 = domain2;
-        long dom1_2; // for nodeQuadDomains
-        if (domain1 < domain2)
-          dom1_2 = dom1 + INT_MAX * dom2;
-        else
-          dom1_2 = dom2 + INT_MAX * dom1;
-        //cerr << "dom1=" << dom1 << " dom2=" << dom2 << " dom1_2=" << dom1_2 << endl;
-        int ima = orderedOriginals.size();
-        int mid = orderedOriginals.size() / 2;
-        //cerr << "ima=" << ima << " mid=" << mid << endl;
-        for (int i = 0; i < mid; i++)
-          orderedNodes.push_back(nodeDomains[orderedOriginals[i]][domain1]);
-        for (int i = 0; i < mid; i++)
-          orderedNodes.push_back(nodeDomains[orderedOriginals[i]][domain2]);
-        for (int i = mid; i < ima; i++)
-          orderedNodes.push_back(nodeDomains[orderedOriginals[i]][domain1]);
-        for (int i = mid; i < ima; i++)
-          orderedNodes.push_back(nodeDomains[orderedOriginals[i]][domain2]);
-        for (int i = 0; i < mid; i++)
-          {
-            int oldId = orderedOriginals[i];
-            int newId;
-            if (nodeQuadDomains.count(oldId) && nodeQuadDomains[oldId].count(dom1_2))
-              newId = nodeQuadDomains[oldId][dom1_2];
-            else
-              {
-                double *coords = this->GetPoint(oldId);
-                SMDS_MeshNode *newNode = _mesh->AddNode(coords[0], coords[1], coords[2]);
-                newId = newNode->getVtkId();
-                std::map<long, int> emptyMap;
-                nodeQuadDomains[oldId] = emptyMap;
-                nodeQuadDomains[oldId][dom1_2] = newId;
-              }
-            orderedNodes.push_back(newId);
-          }
-      }
+      isQuadratic = true;
       break;
     default:
-      ASSERT(0);
+      isQuadratic = false;
+      break;
   }
 
-  SMDS_MeshVolume *vol = _mesh->AddVolumeFromVtkIds(orderedNodes);
+  if (isQuadratic)
+    {
+      long dom1 = domain1;
+      long dom2 = domain2;
+      long dom1_2; // for nodeQuadDomains
+      if (domain1 < domain2)
+        dom1_2 = dom1 + INT_MAX * dom2;
+      else
+        dom1_2 = dom2 + INT_MAX * dom1;
+      //cerr << "dom1=" << dom1 << " dom2=" << dom2 << " dom1_2=" << dom1_2 << endl;
+      int ima = orderedOriginals.size();
+      int mid = orderedOriginals.size() / 2;
+      //cerr << "ima=" << ima << " mid=" << mid << endl;
+      for (int i = 0; i < mid; i++)
+        orderedNodes.push_back(nodeDomains[orderedOriginals[i]][domain1]);
+      for (int i = 0; i < mid; i++)
+        orderedNodes.push_back(nodeDomains[orderedOriginals[i]][domain2]);
+      for (int i = mid; i < ima; i++)
+        orderedNodes.push_back(nodeDomains[orderedOriginals[i]][domain1]);
+      for (int i = mid; i < ima; i++)
+        orderedNodes.push_back(nodeDomains[orderedOriginals[i]][domain2]);
+      for (int i = 0; i < mid; i++)
+        {
+          int oldId = orderedOriginals[i];
+          int newId;
+          if (nodeQuadDomains.count(oldId) && nodeQuadDomains[oldId].count(dom1_2))
+            newId = nodeQuadDomains[oldId][dom1_2];
+          else
+            {
+              double *coords = this->GetPoint(oldId);
+              SMDS_MeshNode *newNode = _mesh->AddNode(coords[0], coords[1], coords[2]);
+              newId = newNode->getVtkId();
+              std::map<long, int> emptyMap;
+              nodeQuadDomains[oldId] = emptyMap;
+              nodeQuadDomains[oldId][dom1_2] = newId;
+            }
+          orderedNodes.push_back(newId);
+        }
+    }
+  else
+    {
+      for (int i = 0; i < nbNodes; i++)
+        orderedNodes.push_back(nodeDomains[orderedOriginals[i]][domain1]);
+      if (dim == 3)
+        for (int i = 0; i < nbNodes; i++)
+          orderedNodes.push_back(nodeDomains[orderedOriginals[i]][domain2]);
+      else
+        for (int i = nbNodes-1; i >= 0; i--)
+          orderedNodes.push_back(nodeDomains[orderedOriginals[i]][domain2]);
+
+    }
+
+  if (dim == 3)
+    {
+      SMDS_MeshVolume *vol = _mesh->AddVolumeFromVtkIds(orderedNodes);
+      return vol;
+    }
+  else if (dim == 2)
+    {
+      SMDS_MeshFace *face = _mesh->AddFaceFromVtkIds(orderedNodes);
+      return face;
+    }
 
   // TODO update sub-shape list of elements and nodes
-  return vol;
+  return 0;
 }
