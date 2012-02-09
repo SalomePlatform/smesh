@@ -283,6 +283,7 @@ SMESH_Gen_i::SMESH_Gen_i( CORBA::ORB_ptr            orb,
   myIsEmbeddedMode = false;
   myShapeReader = NULL;  // shape reader
   mySMESHGen = this;
+  myIsHistoricalPythonDump = true;
 
   // set it in standalone mode only
   //OSD::SetSignal( true );
@@ -803,6 +804,46 @@ void SMESH_Gen_i::SetDefaultNbSegments(CORBA::Long theNbSegments)
     myGen.SetDefaultNbSegments( int(theNbSegments) );
   else
     THROW_SALOME_CORBA_EXCEPTION( "non-positive number of segments", SALOME::BAD_PARAM );
+}
+
+//=============================================================================
+/*!
+  Set an option value
+*/
+//=============================================================================
+
+void SMESH_Gen_i::SetOption(const char* name, const char* value)
+{
+  if ( name && value &&
+       strcmp(name, "historical_python_dump") == 0 &&
+       strlen( value ) > 0 )
+  {
+    myIsHistoricalPythonDump = ( value[0] == '1' || toupper(value[0]) == 'T' ); // 1 || true
+
+    // update preferences in case if SetOption() is invoked from python console
+    CORBA::Object_var obj = SMESH_Gen_i::GetNS()->Resolve( "/Kernel/Session" );
+    SALOME::Session_var session = SALOME::Session::_narrow( obj );
+    if ( !CORBA::is_nil( session ) ) {
+      string msg("preferences:SMESH:historical_python_dump:");
+      msg += myIsHistoricalPythonDump ? "true" : "false";
+      session->emitMessageOneWay(msg.c_str());
+    }
+  }
+}
+
+//=============================================================================
+/*!
+  Return an option value
+*/
+//=============================================================================
+
+char* SMESH_Gen_i::GetOption(const char* name)
+{
+  if ( name && strcmp(name, "historical_python_dump") == 0 )
+  {
+    return CORBA::string_dup( myIsHistoricalPythonDump ? "true" : "false" );
+  }
+  return CORBA::string_dup( "" );
 }
 
 //=============================================================================
@@ -3793,6 +3834,8 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
     return false;
   }
 
+  TPythonDump pd; // prevent dump during loading
+
   DriverMED_R_SMESHDS_Mesh myReader;
   myReader.SetFile( meshfile.ToCString() );
 
@@ -4771,6 +4814,8 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
   // Remove temporary files created from the stream
   if ( !isMultiFile )
     SALOMEDS_Tool::RemoveTemporaryFiles( tmpDir.ToCString(), aFileSeq.in(), true );
+
+  pd << ""; // prevent optimizing pd out
 
   INFOS( "SMESH_Gen_i::Load completed" );
   return true;

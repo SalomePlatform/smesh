@@ -213,6 +213,15 @@ public:
    */
   void SetDefaultNbSegments(CORBA::Long theNbSegments) throw ( SALOME::SALOME_Exception );
 
+  /*!
+    Set an option value
+  */
+  virtual void  SetOption(const char*, const char*);
+  /*!
+    Return an option value
+  */
+  virtual char* GetOption(const char*);
+
   // Create empty mesh on a shape
   SMESH::SMESH_Mesh_ptr CreateMesh( GEOM::GEOM_Object_ptr theShapeObject )
     throw ( SALOME::SALOME_Exception );
@@ -439,6 +448,7 @@ public:
                                            Resource_DataMapOfAsciiStringAsciiString& theNames,
                                            bool isPublished,
                                            bool isMultiFile,
+                                           bool isHistoricalDump,
                                            bool& aValidScript,
                                            const TCollection_AsciiString& theSavedTrace);
 
@@ -580,6 +590,7 @@ private:
 
   // Dump Python: trace of API methods calls
   std::map < int, Handle(TColStd_HSequenceOfAsciiString) > myPythonScripts;
+  bool                                                     myIsHistoricalPythonDump;
 };
 
 
