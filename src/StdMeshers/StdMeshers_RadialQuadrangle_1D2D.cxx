@@ -427,7 +427,6 @@ void StdMeshers_RadialQuadrangle_1D2D::SubmeshRestored(SMESH_subMesh* faceSubMes
 bool StdMeshers_RadialQuadrangle_1D2D::Compute(SMESH_Mesh&         aMesh,
                                                const TopoDS_Shape& aShape)
 {
-  TopExp_Explorer exp;
   SMESHDS_Mesh * meshDS = aMesh.GetMeshDS();
 
   myHelper = new SMESH_MesherHelper( aMesh );
@@ -490,8 +489,7 @@ bool StdMeshers_RadialQuadrangle_1D2D::Compute(SMESH_Mesh&         aMesh,
     if ( !computeLayerPositions(P0,P1))
       return false;
 
-    exp.Init( CircEdge, TopAbs_VERTEX );
-    TopoDS_Vertex V1 = TopoDS::Vertex( exp.Current() );
+    TopoDS_Vertex V1 = myHelper->IthVertex(0, CircEdge );
     gp_Pnt2d p2dV = BRep_Tool::Parameters( V1, TopoDS::Face(aShape) );
 
     NC = meshDS->AddNode(P0.X(), P0.Y(), P0.Z());
@@ -698,6 +696,15 @@ bool StdMeshers_RadialQuadrangle_1D2D::Compute(SMESH_Mesh&         aMesh,
     gp_Pnt P2( NL->X(), NL->Y(), NL->Z() );
     P0 = aCirc->Location();
 
+    // make P1 belong to LinEdge1
+    TopoDS_Vertex V1 = myHelper->IthVertex( 0, LinEdge1 );
+    TopoDS_Vertex V2 = myHelper->IthVertex( 1, LinEdge1 );
+    gp_Pnt PE1 = BRep_Tool::Pnt(V1);
+    gp_Pnt PE2 = BRep_Tool::Pnt(V2);
+    if( ( P1.Distance(PE1) > Precision::Confusion() ) &&
+        ( P1.Distance(PE2) > Precision::Confusion() ) )
+      std::swap( LinEdge1, LinEdge2 );
+
     bool linEdge1Computed, linEdge2Computed;
     if ( !computeLayerPositions(P0,P1,LinEdge1,&linEdge1Computed))
       return false;
@@ -706,23 +713,12 @@ bool StdMeshers_RadialQuadrangle_1D2D::Compute(SMESH_Mesh&         aMesh,
     Nodes2.resize( myLayerPositions.size()+1 );
 
     // check that both linear edges have same hypotheses
-    if ( !computeLayerPositions(P0,P1,LinEdge2, &linEdge2Computed))
+    if ( !computeLayerPositions(P0,P2,LinEdge2, &linEdge2Computed))
          return false;
     if ( Nodes1.size() != myLayerPositions.size()+1 )
       return error("Different hypotheses apply to radial edges");
 
-    exp.Init( LinEdge1, TopAbs_VERTEX );
-    TopoDS_Vertex V1 = TopoDS::Vertex( exp.Current() );
-    exp.Next();
-    TopoDS_Vertex V2 = TopoDS::Vertex( exp.Current() );
-    gp_Pnt PE1 = BRep_Tool::Pnt(V1);
-    gp_Pnt PE2 = BRep_Tool::Pnt(V2);
-    if( ( P1.Distance(PE1) > Precision::Confusion() ) &&
-        ( P1.Distance(PE2) > Precision::Confusion() ) )
-    {
-      std::swap( LinEdge1, LinEdge2 );
-      std::swap( linEdge1Computed, linEdge2Computed );
-    }
+    // find the central vertex
     TopoDS_Vertex VC = V2;
     if( ( P1.Distance(PE1) > Precision::Confusion() ) &&
         ( P2.Distance(PE1) > Precision::Confusion() ) )
