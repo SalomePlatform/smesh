@@ -540,6 +540,16 @@ class smeshDC(SMESH._objref_SMESH_Gen):
     def DumpPython(self, theStudy, theIsPublished=True, theIsMultiFile=True):
         return SMESH._objref_SMESH_Gen.DumpPython(self, theStudy, theIsPublished, theIsMultiFile)
 
+    ## Set mode of DumpPython(), \a historical or \a snapshot.
+    # In the \a historical mode, the Python Dump script includes all commands
+    # performed by SMESH engine. In the \a snapshot mode, commands
+    # relating to objects removed from the Study are excluded from the script
+    # as well as commands not influencing the current state of meshes
+    def SetDumpPythonHistorical(self, isHistorical):
+        if isHistorical: val = "true"
+        else:            val = "false"
+        SMESH._objref_SMESH_Gen.SetOption(self, "historical_python_dump", val)
+
     ## Sets the current study and Geometry component
     #  @ingroup l1_auxiliary
     def init_smesh(self,theStudy,geompyD):
