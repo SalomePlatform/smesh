@@ -153,7 +153,14 @@ protected:
   //!< event listeners to notify
   std::map< EventListener*, EventListenerData* >           myEventListeners;
   //!< event listeners to delete when HYP_OK algo_state is lost
-  std::list< std::pair< SMESH_subMesh*, EventListener* > > myOwnListeners;
+  struct OwnListenerData {
+    SMESH_subMesh* mySubMesh;
+    int            myMeshID; // id of mySubMesh->GetFather()
+    int            mySubMeshID;
+    EventListener* myListener;
+    OwnListenerData( SMESH_subMesh* sm=0, EventListener* el=0);
+  };
+  std::list< OwnListenerData > myOwnListeners;
 
   /*!
    * \brief Sets an event listener and its data to a submesh

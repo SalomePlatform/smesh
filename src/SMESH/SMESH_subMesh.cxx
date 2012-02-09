@@ -1994,12 +1994,24 @@ SMESH_Hypothesis::Hypothesis_Status
 
 //================================================================================
 /*!
+ * \brief Constructor of OwnListenerData
+ */
+//================================================================================
+
+SMESH_subMesh::OwnListenerData::OwnListenerData( SMESH_subMesh* sm, EventListener* el):
+  mySubMesh( sm ),
+  myMeshID( sm ? sm->GetFather()->GetId() : -1 ),
+  mySubMeshID( sm ? sm->GetId() : -1 ),
+  myListener( el )
+{
+}
+
+//================================================================================
+/*!
  * \brief Sets an event listener and its data to a submesh
  * \param listener - the listener to store
  * \param data - the listener data to store
  * \param where - the submesh to store the listener and it's data
- * \param deleteListener - if true then the listener will be deleted as
- *        it is removed from where submesh
  * 
  * It remembers the submesh where it puts the listener in order to delete
  * them when HYP_OK algo_state is lost
@@ -2013,7 +2025,7 @@ void SMESH_subMesh::SetEventListener(EventListener*     listener,
 {
   if ( listener && where ) {
     where->SetEventListener( listener, data );
-    myOwnListeners.push_back( make_pair( where, listener ));
+    myOwnListeners.push_back( OwnListenerData( where, listener ));
   }
 }
 
@@ -2112,9 +2124,15 @@ void SMESH_subMesh::DeleteEventListener(EventListener* listener)
 
 void SMESH_subMesh::DeleteOwnListeners()
 {
-  list< pair< SMESH_subMesh*, EventListener* > >::iterator sm_l;
-  for ( sm_l = myOwnListeners.begin(); sm_l != myOwnListeners.end(); ++sm_l)
-    sm_l->first->DeleteEventListener( sm_l->second );
+  list< OwnListenerData >::iterator d;
+  for ( d = myOwnListeners.begin(); d != myOwnListeners.end(); ++d )
+  {
+    if ( !_father->MeshExists( d->myMeshID ))
+      continue;
+    if ( _father->GetId() == d->myMeshID && !_father->GetSubMeshContaining( d->mySubMeshID ))
+      continue;
+    d->mySubMesh->DeleteEventListener( d->myListener );
+  }
   myOwnListeners.clear();
 }
 
