@@ -85,6 +85,7 @@
     <parameter name="max_angle"                    value="2"/>
     <parameter name="documentation"                value="smesh_help"/>
     <parameter name="preview_actor_chunk_size"     value="100" />
+    <parameter name="historical_python_dump"       value="true" />
     <!-- Input field precisions -->
     <parameter name="def_precision"                value="3"  />
     <parameter name="length_precision"             value="-6"  />
