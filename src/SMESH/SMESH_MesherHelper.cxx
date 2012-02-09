@@ -1695,7 +1695,7 @@ bool SMESH_MesherHelper::LoadNodeColumns(TParam2ColumnMap &            theParam2
     double f, l;
     BRep_Tool::Range( *edge, f, l );
     if ( edge->Orientation() == TopAbs_REVERSED ) std::swap( f, l );
-    const double coeff = 1. / ( l - f ) / length[iE] / fullLen;
+    const double coeff = 1. / ( l - f ) * length[iE] / fullLen;
     const double prevPar = theParam2ColumnMap.empty() ? 0 : theParam2ColumnMap.rbegin()->first;
     map< double, const SMDS_MeshNode*>::iterator u_n = sortedBaseNodes.begin();
     for ( ; u_n != sortedBaseNodes.end(); u_n++ )
