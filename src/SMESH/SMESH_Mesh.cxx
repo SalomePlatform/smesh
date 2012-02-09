@@ -170,7 +170,10 @@ SMESH_Mesh::~SMESH_Mesh()
   // delete sub-meshes
   map <int, SMESH_subMesh*>::iterator sm = _mapSubMesh.begin();
   for ( ; sm != _mapSubMesh.end(); ++sm )
+  {
     delete sm->second;
+    sm->second = 0;
+  }
   _mapSubMesh.clear();
 
   if ( _rmGroupCallUp) delete _rmGroupCallUp;
@@ -184,10 +187,22 @@ SMESH_Mesh::~SMESH_Mesh()
   }
   if ( _myDocument )
     _myDocument->RemoveMesh( _id );
+  _myDocument = 0;
 
   if ( _myMeshDS )
     // delete _myMeshDS, in a thread in order not to block closing a study with large meshes
     boost::thread aThread(boost::bind( & deleteMeshDS, _myMeshDS ));
+}
+
+//================================================================================
+/*!
+ * \brief Return true if a mesh with given id exists
+ */
+//================================================================================
+
+bool SMESH_Mesh::MeshExists( int meshId ) const
+{
+  return _myDocument ? _myDocument->GetMesh( meshId ) : false;
 }
 
 //=============================================================================

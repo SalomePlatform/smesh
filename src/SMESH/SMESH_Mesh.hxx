@@ -147,6 +147,8 @@ public:
   
   int GetId() const          { return _id; }
   
+  bool MeshExists( int meshId ) const;
+  
   SMESHDS_Mesh * GetMeshDS() { return _myMeshDS; }
   
   const SMESHDS_Mesh * GetMeshDS() const { return _myMeshDS; }
