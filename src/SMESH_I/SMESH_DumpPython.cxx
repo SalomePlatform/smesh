@@ -571,8 +571,8 @@ Engines::TMPFile* SMESH_Gen_i::DumpPython (CORBA::Object_ptr theStudy,
 
   // Add trace of API methods calls and replace study entries by names
   TCollection_AsciiString aScript;
-  aScript += DumpPython_impl(aStudy, aMap, aMapNames,
-                             isPublished, isMultiFile, isValidScript, aSavedTrace);
+  aScript += DumpPython_impl(aStudy, aMap, aMapNames, isPublished, isMultiFile,
+                             myIsHistoricalPythonDump, isValidScript, aSavedTrace);
 
   int aLen = aScript.Length();
   unsigned char* aBuffer = new unsigned char[aLen+1];
@@ -714,7 +714,7 @@ namespace {
            (p = aName.FirstLocationNotInSet(allowedChars, p, aName.Length())))
     {
       if ( p == 1 || p == aName.Length() || aName.Value(p-1) == '_')
-        aName.Remove( p, 1 ); // remove double _ and from the start and the end
+        aName.Remove( p, 1 ); // remove double _ from the start and the end
       else
         aName.SetValue(p, '_'), nbUnderscore++;
       isValidName = false;
@@ -745,6 +745,7 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
                          Resource_DataMapOfAsciiStringAsciiString& theNames,
                          bool isPublished,
                          bool isMultiFile,
+                         bool isHistoricalDump,
                          bool& aValidScript,
                          const TCollection_AsciiString& theSavedTrace)
 {
@@ -812,13 +813,15 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
   // Some objects are wrapped with python classes and
   // Resource_DataMapOfAsciiStringAsciiString holds methods returning wrapped objects
   Resource_DataMapOfAsciiStringAsciiString anEntry2AccessorMethod;
-  aScript = SMESH_2smeshpy::ConvertScript( aScript, anEntry2AccessorMethod, theObjectNames );
+  if ( !getenv("NO_2smeshpy_conversion"))
+    aScript = SMESH_2smeshpy::ConvertScript( aScript, anEntry2AccessorMethod,
+                                             theObjectNames, theStudy, isHistoricalDump );
 
   // Find entries to be replaced by names
   Handle(TColStd_HSequenceOfInteger) aSeq = FindEntries(aScript);
   Standard_Integer aLen = aSeq->Length();
 
-  if (aLen == 0)
+  if (aLen == 0 && isMultiFile)
     return aScript;
 
   // Replace entries by the names
@@ -828,7 +831,7 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
   Standard_Integer objectCounter = 0, aStart = 1, aScriptLength = aScript.Length();
   TCollection_AsciiString anUpdatedScript, anEntry, aName, aBaseName("smeshObj_");
 
-  // Collect names of GEOM objects to exclude same names for SMESH objects
+  // Collect names of GEOM objects to exclude same names of SMESH objects
   GEOM::string_array_var aGeomNames = geom->GetAllDumpNames();
   int ign = 0, nbgn = aGeomNames->length();
   for (; ign < nbgn; ign++) {
@@ -896,7 +899,7 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
   anUpdatedScript.Insert ( 1, initPart );
 
   // add final part of aScript
-  if (aSeq->Value(aLen) < aScriptLength)
+  if (aLen && aSeq->Value(aLen) < aScriptLength)
     anUpdatedScript += aScript.SubString(aSeq->Value(aLen) + 1, aScriptLength);
 
   // Remove removed objects

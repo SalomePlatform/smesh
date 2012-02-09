@@ -37,6 +37,8 @@
 #include <list>
 #include <map>
 
+#include CORBA_SERVER_HEADER(SALOMEDS)
+
 // ===========================================================================================
 /*!
  * This file was created in order to respond to requirement of bug PAL10494:
@@ -75,6 +77,7 @@ DEFINE_STANDARD_HANDLE (_pyObject    ,Standard_Transient);
 DEFINE_STANDARD_HANDLE (_pyGen       ,_pyObject);
 DEFINE_STANDARD_HANDLE (_pyMesh      ,_pyObject);
 DEFINE_STANDARD_HANDLE (_pySubMesh   ,_pyObject);
+DEFINE_STANDARD_HANDLE (_pyGroup     ,_pySubMesh);
 DEFINE_STANDARD_HANDLE (_pyMeshEditor,_pyObject);
 DEFINE_STANDARD_HANDLE (_pyHypothesis,_pyObject);
 DEFINE_STANDARD_HANDLE (_pyAlgorithm ,_pyHypothesis);
@@ -111,6 +114,8 @@ public:
   TCollection_AsciiString & GetString() { return myString; }
   int GetOrderNb() const { return myOrderNb; }
   void SetOrderNb( int theNb ) { myOrderNb = theNb; }
+  typedef void* TAddr;
+  TAddr GetAddress() const { return (void*) this; }
   int Length() { return myString.Length(); }
   void Clear() { myString.Clear(); myBegPos.Clear(); myArgs.Clear(); }
   bool IsEmpty() const { return myString.IsEmpty(); }
@@ -122,6 +127,8 @@ public:
   const TCollection_AsciiString & GetMethod();
   const TCollection_AsciiString & GetArg( int index );
   int GetNbArgs() { FindAllArgs(); return myArgs.Length(); }
+  bool MethodStartsFrom(const TCollection_AsciiString& beg)
+  { GetMethod(); return ( myMeth.Location( beg, 1, myMeth.Length() ) == 1 ); }
   //Handle(TColStd_HSequenceOfAsciiString) GetArgs();
   void SetResultValue( const TCollection_AsciiString& theResult )
   { GetResultValue(); SetPart( RESULT_IND, theResult, myRes ); }
@@ -131,10 +138,13 @@ public:
   { GetMethod(); SetPart( METHOD_IND, theMethod, myMeth ); }
   void SetArg( int index, const TCollection_AsciiString& theArg);
   void RemoveArgs();
+  void Comment();
   static bool SkipSpaces( const TCollection_AsciiString & theSring, int & thePos );
   static TCollection_AsciiString GetWord( const TCollection_AsciiString & theSring,
                                           int & theStartPos, const bool theForward,
                                           const bool dotIsWord = false);
+  static bool IsStudyEntry( const TCollection_AsciiString& str );
+  static std::list< _pyID > GetStudyEntries( const TCollection_AsciiString& str );
   void AddDependantCmd( Handle(_pyCommand) cmd, bool prepend = false)
   { if (prepend) myDependentCmds.push_front( cmd ); else myDependentCmds.push_back( cmd ); }
   bool SetDependentCmdsAfter() const;
@@ -152,26 +162,54 @@ public:
 
 class _pyObject: public Standard_Transient
 {
-  Handle(_pyCommand) myCreationCmd;
-  int                myNbCalls;
-  bool               myIsRemoved, myIsProtected;
+protected:
+  _pyID                           myID;
+  Handle(_pyCommand)              myCreationCmd;
   std::list< Handle(_pyCommand) > myProcessedCmds;
+  bool                            myIsPublished;
+
+  void setID(const _pyID& theID);
 public:
-  _pyObject(const Handle(_pyCommand)& theCreationCmd);
-  const _pyID& GetID() { return myCreationCmd->GetResultValue(); }
+  _pyObject(const Handle(_pyCommand)& theCreationCmd, const _pyID& theID=_pyID());
+  const _pyID& GetID() { return myID.IsEmpty() ? myCreationCmd->GetResultValue() : myID; }
   static _pyID FatherID(const _pyID & childID);
   const Handle(_pyCommand)& GetCreationCmd() { return myCreationCmd; }
-  int GetNbCalls() const { return myNbCalls; }
-  bool IsRemovedFromStudy() const { return myIsRemoved; }
-  void  SetCreationCmd( Handle(_pyCommand) cmd ) { myCreationCmd = cmd; }
+  int GetNbCalls() const { return myProcessedCmds.size(); }
+  bool IsInStudy() const { return myIsPublished; }
+  virtual void SetRemovedFromStudy(const bool isRemoved) { myIsPublished = !isRemoved; }
+  void SetCreationCmd( Handle(_pyCommand) cmd ) { myCreationCmd = cmd; }
   int GetCommandNb() { return myCreationCmd->GetOrderNb(); }
   void AddProcessedCmd( const Handle(_pyCommand) & cmd )
-  { if ( !cmd.IsNull() ) myProcessedCmds.push_back( cmd ); }
-  virtual void Process(const Handle(_pyCommand) & theCommand) { myNbCalls++; }
+  { if (myProcessedCmds.empty() || myProcessedCmds.back()!=cmd) myProcessedCmds.push_back( cmd );}
+  std::list< Handle(_pyCommand) >& GetProcessedCmds() { return myProcessedCmds; }
+  virtual void Process(const Handle(_pyCommand) & cmd) { AddProcessedCmd(cmd); }
   virtual void Flush() = 0;
   virtual const char* AccessorMethod() const;
+  virtual bool CanClear() { return !myIsPublished; }
+  virtual void ClearCommands();
+  virtual void Free() {}
 
   DEFINE_STANDARD_RTTI (_pyObject)
+};
+
+// -------------------------------------------------------------------------------------
+/*!
+ * \brief Data used to restore cleared Compute() command of an exported mesh
+ * when an imported mesh is created
+ */
+// -------------------------------------------------------------------------------------
+struct ExportedMeshData
+{
+  Handle(_pyMesh)         myMesh;
+  Handle(_pyCommand)      myLastComputeCmd;
+  TCollection_AsciiString myLastComputeCmdString;
+  ExportedMeshData() {}
+  ExportedMeshData( const Handle(_pyMesh)& mesh, Handle(_pyCommand) computeCmd):
+    myMesh( mesh ), myLastComputeCmd( computeCmd )
+  {
+    if ( !myLastComputeCmd.IsNull())
+      myLastComputeCmdString = myLastComputeCmd->GetString();
+  }
 };
 
 // -------------------------------------------------------------------------------------
@@ -184,27 +222,41 @@ class _pyGen: public _pyObject
 {
 public:
   _pyGen(Resource_DataMapOfAsciiStringAsciiString& theEntry2AccessorMethod,
-         Resource_DataMapOfAsciiStringAsciiString& theObjectNames);
+         Resource_DataMapOfAsciiStringAsciiString& theObjectNames,
+         SALOMEDS::Study_ptr&                      theStudy,
+         const bool                                theToKeepAllCommands);
   Handle(_pyCommand) AddCommand( const TCollection_AsciiString& theCommand );
-  void Process( const Handle(_pyCommand)& theCommand );
-  void Flush();
-  Handle(_pyHypothesis) FindHyp( const _pyID& theHypID );
-  Handle(_pyHypothesis) FindAlgo( const _pyID& theGeom, const _pyID& theMesh,
-                                  const Handle(_pyHypothesis)& theHypothesis);
-  Handle(_pySubMesh) FindSubMesh( const _pyID& theSubMeshID );
   void ExchangeCommands( Handle(_pyCommand) theCmd1, Handle(_pyCommand) theCmd2 );
   void SetCommandAfter( Handle(_pyCommand) theCmd, Handle(_pyCommand) theAfterCmd );
   void SetCommandBefore( Handle(_pyCommand) theCmd, Handle(_pyCommand) theBeforeCmd );
   Handle(_pyCommand)& GetLastCommand();
   std::list< Handle(_pyCommand) >& GetCommands() { return myCommands; }
-  void SetAccessorMethod(const _pyID& theID, const char* theMethod );
-  bool AddMeshAccessorMethod( Handle(_pyCommand) theCmd ) const;
-  bool AddAlgoAccessorMethod( Handle(_pyCommand) theCmd ) const;
-  const char* AccessorMethod() const;
+
   _pyID GenerateNewID( const _pyID& theID );
   void AddObject( Handle(_pyObject)& theObj );
   Handle(_pyObject) FindObject( const _pyID& theObjID ) const;
-  bool IsDead(const _pyID& theObjID) const;
+  Handle(_pySubMesh) FindSubMesh( const _pyID& theSubMeshID );
+  Handle(_pyHypothesis) FindHyp( const _pyID& theHypID );
+  Handle(_pyHypothesis) FindAlgo( const _pyID& theGeom, const _pyID& theMesh,
+                                  const Handle(_pyHypothesis)& theHypothesis);
+
+  void SetAccessorMethod(const _pyID& theID, const char* theMethod );
+  bool AddMeshAccessorMethod( Handle(_pyCommand) theCmd ) const;
+  bool AddAlgoAccessorMethod( Handle(_pyCommand) theCmd ) const;
+  virtual const char* AccessorMethod() const;
+
+  bool IsGeomObject(const _pyID& theObjID) const;
+  bool IsNotPublished(const _pyID& theObjID) const;
+  bool IsToKeepAllCommands() const { return myToKeepAllCommands; }
+  void AddExportedMesh(const TCollection_AsciiString& file, const ExportedMeshData& mesh )
+  { myFile2ExportedMesh[ file ] = mesh; }
+  ExportedMeshData& FindExportedMesh( const TCollection_AsciiString& file )
+  { return myFile2ExportedMesh[ file ]; }
+
+  virtual void Process( const Handle(_pyCommand)& theCommand );
+  virtual void Flush();
+  virtual void ClearCommands();
+  virtual void Free();
 
 private:
   void setNeighbourCommand( Handle(_pyCommand)& theCmd,
@@ -222,6 +274,10 @@ private:
   Resource_DataMapOfAsciiStringAsciiString& myObjectNames;
   Handle(_pyCommand)                       myLastCommand;
   int                                      myNbFilters;
+  bool                                     myToKeepAllCommands;
+  SALOMEDS::Study_var                      myStudy;
+  int                                      myGeomIDNb, myGeomIDIndex;
+  std::map< TCollection_AsciiString, ExportedMeshData > myFile2ExportedMesh;
 
   DEFINE_STANDARD_RTTI (_pyGen)
 };
@@ -237,15 +293,29 @@ class _pyMesh: public _pyObject
   std::list< Handle(_pyHypothesis) > myHypos;
   std::list< Handle(_pyCommand) >    myAddHypCmds;
   std::list< Handle(_pySubMesh) >    mySubmeshes;
-  bool                               myHasEditor;
+  std::list< Handle(_pyGroup) >      myGroups;
+  std::list< Handle(_pyMeshEditor)>  myEditors;
+  //d::list< Handle(_pyMesh) >       myFatherMeshes; // this mesh depends on
+  std::list< Handle(_pyMesh) >       myChildMeshes; // depending on me
+  bool                               myGeomNotInStudy;
+  Handle(_pyCommand)                 myLastComputeCmd;
 public:
   _pyMesh(const Handle(_pyCommand) creationCmd);
-  _pyMesh(const Handle(_pyCommand) theCreationCmd, const TCollection_AsciiString & id);
+  _pyMesh(const Handle(_pyCommand) theCreationCmd, const _pyID & id);
   const _pyID& GetGeom() { return GetCreationCmd()->GetArg(1); }
-  void Process( const Handle(_pyCommand)& theCommand);
-  void Flush();
-  const char* AccessorMethod() const { return _pyMesh_ACCESS_METHOD; }
+  void AddGroup( const Handle(_pyGroup)& g ) { myGroups.push_back( g ); }
+  void AddEditor( const Handle(_pyMeshEditor)& e ) { myEditors.push_back( e ); }
+  bool IsNotGeomPublished() { return myGeomNotInStudy; }
+  virtual void Process( const Handle(_pyCommand)& theCommand);
+  virtual void Flush();
+  virtual void SetRemovedFromStudy(const bool isRemoved);
+  virtual bool CanClear();
+  virtual void ClearCommands();
+  virtual void Free() { /*myFatherMeshes.clear();*/ myChildMeshes.clear(); }
+  virtual const char* AccessorMethod() const { return _pyMesh_ACCESS_METHOD; }
 private:
+  void addFatherMesh( const Handle(_pyMesh)& mesh );
+  void addFatherMesh( const _pyID& meshID );
   static bool NeedMeshAccess( const Handle(_pyCommand)& theCommand );
   static void AddMeshAccess( const Handle(_pyCommand)& theCommand )
   { theCommand->SetObject( theCommand->GetObject() + "." _pyMesh_ACCESS_METHOD ); }
@@ -265,8 +335,10 @@ class _pyMeshEditor: public _pyObject
   TCollection_AsciiString myCreationCmdStr;
 public:
   _pyMeshEditor(const Handle(_pyCommand)& theCreationCmd);
-  void Process( const Handle(_pyCommand)& theCommand);
+  _pyID GetMesh() const { return myMesh; }
+  virtual void Process( const Handle(_pyCommand)& theCommand);
   virtual void Flush() {}
+  virtual bool CanClear();
 
   DEFINE_STANDARD_RTTI (_pyMesh)
 };
@@ -300,6 +372,15 @@ protected:
   TColStd_SequenceOfInteger     myNbArgsByMethod; // nb args set by each method
   std::list<Handle(_pyCommand)> myArgCommands;
   std::list<Handle(_pyCommand)> myUnknownCommands;
+  std::list<Handle(_pyObject) > myReferredObjs;
+  // maps used to clear commands setting parameters if result of setting is not
+  // used (no mesh.Compute()) or discared (e.g. by mesh.Clear())
+  std::map<TCollection_AsciiString, std::list<Handle(_pyCommand)> > myMeth2Commands;
+  std::map< _pyCommand::TAddr, std::list<Handle(_pyCommand) > >     myComputeAddr2Cmds;
+  std::list<Handle(_pyCommand) >                                    myComputeCmds;
+  void rememberCmdOfParameter( const Handle(_pyCommand) & cmd );
+  bool isCmdUsedForCompute( const Handle(_pyCommand) & cmd,
+                            _pyCommand::TAddr avoidComputeAddr=NULL ) const;
 public:
   _pyHypothesis(const Handle(_pyCommand)& theCreationCmd);
   void SetConvMethodAndType(const char* creationMethod, const char* type)
@@ -323,14 +404,24 @@ public:
   { return myType2CreationMethod.find( algoType ) != myType2CreationMethod.end(); }
   const TCollection_AsciiString& GetCreationMethod(const TCollection_AsciiString& algoType) const
   { return myType2CreationMethod.find( algoType )->second; }
+  static Handle(_pyHypothesis) NewHypothesis( const Handle(_pyCommand)& theCreationCmd);
+
   virtual bool IsWrappable(const _pyID& theMesh) const;
   virtual bool Addition2Creation( const Handle(_pyCommand)& theAdditionCmd,
                                   const _pyID&              theMesh);
-  static Handle(_pyHypothesis) NewHypothesis( const Handle(_pyCommand)& theCreationCmd);
-  void Process( const Handle(_pyCommand)& theCommand);
-  void Flush();
+  virtual void Process( const Handle(_pyCommand)& theCommand);
+  virtual void Flush();
+  virtual void Free() { myReferredObjs.clear(); }
   virtual void Assign( const Handle(_pyHypothesis)& theOther,
                        const _pyID&                 theMesh );
+  virtual bool CanClear();
+  virtual void ClearCommands();
+  virtual bool GetReferredMeshesAndGeom( std::list< Handle(_pyMesh) >& meshes );
+
+  void MeshComputed    ( const Handle(_pyCommand)& theComputeCommand );
+  void ComputeDiscarded( const Handle(_pyCommand)& theComputeCommand );
+  //void ComputeSaved    ( const Handle(_pyCommand)& theComputeCommand );
+
 
   DEFINE_STANDARD_RTTI (_pyHypothesis)
 };
@@ -346,7 +437,7 @@ public:
   _pyAlgorithm(const Handle(_pyCommand)& theCreationCmd);
   virtual bool Addition2Creation( const Handle(_pyCommand)& theAdditionCmd,
                                   const _pyID&              theMesh);
-  const char* AccessorMethod() const { return "GetAlgorithm()"; }
+  virtual const char* AccessorMethod() const { return "GetAlgorithm()"; }
   virtual bool IsWrappable(const _pyID& theMesh) { return !myIsWrapped; }
 
   DEFINE_STANDARD_RTTI (_pyAlgorithm)
@@ -361,8 +452,8 @@ class _pyComplexParamHypo: public _pyHypothesis
 {
 public:
   _pyComplexParamHypo(const Handle(_pyCommand)& theCreationCmd): _pyHypothesis(theCreationCmd) {}
-  void Process( const Handle(_pyCommand)& theCommand);
-  void Flush();
+  virtual void Process( const Handle(_pyCommand)& theCommand);
+  virtual void Flush();
 
   DEFINE_STANDARD_RTTI (_pyComplexParamHypo)
 };
@@ -380,10 +471,11 @@ class _pyLayerDistributionHypo: public _pyHypothesis
 public:
   _pyLayerDistributionHypo(const Handle(_pyCommand)& theCreationCmd, const char* algoMethod):
     _pyHypothesis(theCreationCmd), myAlgoMethod((char*)algoMethod) {}
-  void Process( const Handle(_pyCommand)& theCommand);
-  void Flush();
-  bool Addition2Creation( const Handle(_pyCommand)& theAdditionCmd,
-                          const _pyID&              theMesh);
+  virtual void Process( const Handle(_pyCommand)& theCommand);
+  virtual void Flush();
+  virtual bool Addition2Creation( const Handle(_pyCommand)& theAdditionCmd,
+                                  const _pyID&              theMesh);
+  virtual void Free() { my1dHyp.Nullify(); }
 
   DEFINE_STANDARD_RTTI (_pyLayerDistributionHypo)
 };
@@ -443,31 +535,33 @@ DEFINE_STANDARD_HANDLE (_pySelfEraser, _pyObject);
 // -------------------------------------------------------------------------------------
 class _pySubMesh:  public _pyObject
 {
+  Handle(_pyObject) myCreator;
+  Handle(_pyMesh) myMesh;
 public:
-  _pySubMesh(const Handle(_pyCommand)& theCreationCmd):_pyObject(theCreationCmd) {}
-  void Process( const Handle(_pyCommand)& theCommand);
+  _pySubMesh(const Handle(_pyCommand)& theCreationCmd);
+  virtual void Process( const Handle(_pyCommand)& theCommand);
   virtual void Flush();
+  virtual Handle(_pyMesh) GetMesh() { return myMesh; }
+  virtual void Free() { myCreator.Nullify(); myMesh.Nullify(); }
   void SetCreator( const Handle(_pyObject)& theCreator ) { myCreator = theCreator; }
 
   DEFINE_STANDARD_RTTI (_pySubMesh)
-private:
-  Handle(_pyObject) myCreator;
 };
 // -------------------------------------------------------------------------------------
 /*!
  * \brief To convert creation of a group by filter
  */
 // -------------------------------------------------------------------------------------
-class _pyGroup:  public _pyObject
+class _pyGroup:  public _pySubMesh
 {
 public:
-  _pyGroup(const Handle(_pyCommand)& theCreationCmd):_pyObject(theCreationCmd) {}
-  void Process( const Handle(_pyCommand)& theCommand);
+  _pyGroup(const Handle(_pyCommand)& theCreationCmd, const _pyID & id=_pyID())
+    :_pySubMesh(theCreationCmd) { setID( id ); }
+  virtual void Process( const Handle(_pyCommand)& theCommand);
   virtual void Flush() {}
 
   DEFINE_STANDARD_RTTI (_pyGroup)
 };
-DEFINE_STANDARD_HANDLE (_pyGroup, _pyObject);
 
 // -------------------------------------------------------------------------------------
 /*!
@@ -477,10 +571,14 @@ DEFINE_STANDARD_HANDLE (_pyGroup, _pyObject);
 class _pyFilter:  public _pyObject
 {
   _pyID myNewID;
+  std::list< Handle(_pyObject) > myUsers;
 public:
   _pyFilter(const Handle(_pyCommand)& theCreationCmd, const _pyID& newID="");
-  void Process( const Handle(_pyCommand)& theCommand);
+  void AddUser( const Handle(_pyObject)& user) { myUsers.push_back( user ); }
+  virtual void Process( const Handle(_pyCommand)& theCommand);
   virtual void Flush();
+  virtual bool CanClear();
+  virtual void Free() { myUsers.clear(); }
   const _pyID& GetNewID() const { return myNewID; }
 
   DEFINE_STANDARD_RTTI (_pyFilter)

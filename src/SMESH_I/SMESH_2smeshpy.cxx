@@ -33,6 +33,7 @@
 #include "SMESH_Filter_i.hxx"
 
 #include <Resource_DataMapOfAsciiStringAsciiString.hxx>
+#include <Resource_DataMapIteratorOfDataMapOfAsciiStringAsciiString.hxx>
 
 #include "SMESH_Gen_i.hxx"
 /* SALOME headers that include CORBA headers that include windows.h
@@ -112,6 +113,65 @@ namespace {
       return find( name ) != end();
     }
   };
+
+  //================================================================================
+  /*!
+   * \brief Returns a mesh by object
+   */
+  //================================================================================
+
+  Handle(_pyMesh) ObjectToMesh( const Handle( _pyObject )& obj )
+  {
+    if ( !obj.IsNull() )
+    {
+      if ( obj->IsKind( STANDARD_TYPE( _pyMesh )))
+        return Handle(_pyMesh)::DownCast( obj );
+      else if ( obj->IsKind( STANDARD_TYPE( _pySubMesh )))
+        return Handle(_pySubMesh)::DownCast( obj )->GetMesh();
+      else if ( obj->IsKind( STANDARD_TYPE( _pyGroup )))
+        return Handle(_pyGroup)::DownCast( obj )->GetMesh();
+    }
+    return Handle(_pyMesh)();
+  }
+
+  //================================================================================
+  /*!
+   * \brief Check if objects used as args have been created by previous commands
+   */
+  //================================================================================
+
+  void CheckObjectPresence( const Handle(_pyCommand)& cmd, set<_pyID> & presentObjects)
+  {
+    for ( int iArg = cmd->GetNbArgs(); iArg; --iArg )
+    {
+      const _pyID& arg = cmd->GetArg( iArg );
+      if ( arg.IsEmpty() || arg.Value( 1 ) == '"' || arg.Value( 1 ) == '\'' )
+        continue;
+      list< _pyID > idList = cmd->GetStudyEntries( arg );
+      list< _pyID >::iterator id = idList.begin();
+      for ( ; id != idList.end(); ++id )
+        if ( !theGen->IsGeomObject( *id ) && !presentObjects.count( *id ))
+        {
+          cmd->Comment();
+          cmd->GetString() += " ### " ;
+          cmd->GetString() += *id + " has not been yet created";
+          return;
+        }
+    }
+    const _pyID& obj = cmd->GetObject();
+    if ( !obj.IsEmpty() && cmd->IsStudyEntry( obj ) && !presentObjects.count( obj ))
+    {
+      cmd->Comment();
+      cmd->GetString() += " ### not created object" ;
+    }
+    const _pyID& result = cmd->GetResultValue();
+    if ( result.IsEmpty() || result.Value( 1 ) == '"' || result.Value( 1 ) == '\'' )
+      return;
+    list< _pyID > idList = cmd->GetStudyEntries( result );
+    list< _pyID >::iterator id = idList.begin();
+    for ( ; id != idList.end(); ++id )
+      presentObjects.insert( *id );
+  }
 }
 
 //================================================================================
@@ -119,17 +179,21 @@ namespace {
  * \brief Convert python script using commands of smesh.py
   * \param theScript - Input script
   * \retval TCollection_AsciiString - Convertion result
+  * \param theToKeepAllCommands - to keep all commands or
+  *        to exclude commands relating to objects removed from study
   *
   * Class SMESH_2smeshpy declared in SMESH_PythonDump.hxx
  */
 //================================================================================
 
 TCollection_AsciiString
-SMESH_2smeshpy::ConvertScript(const TCollection_AsciiString& theScript,
+SMESH_2smeshpy::ConvertScript(const TCollection_AsciiString&            theScript,
                               Resource_DataMapOfAsciiStringAsciiString& theEntry2AccessorMethod,
-                              Resource_DataMapOfAsciiStringAsciiString& theObjectNames)
+                              Resource_DataMapOfAsciiStringAsciiString& theObjectNames,
+                              SALOMEDS::Study_ptr&                      theStudy,
+                              const bool                                theToKeepAllCommands)
 {
-  theGen = new _pyGen( theEntry2AccessorMethod, theObjectNames );
+  theGen = new _pyGen( theEntry2AccessorMethod, theObjectNames, theStudy, theToKeepAllCommands );
 
   // split theScript into separate commands
 
@@ -166,6 +230,9 @@ SMESH_2smeshpy::ConvertScript(const TCollection_AsciiString& theScript,
   MESSAGE_BEGIN ( std::endl << " ######## RESULT ######## " << std::endl<< std::endl );
 #endif
 
+  // clean commmands of removed objects depending on myIsPublished flag
+  theGen->ClearCommands();
+
   // reorder commands after conversion
   list< Handle(_pyCommand) >::iterator cmd;
   bool orderChanges;
@@ -177,19 +244,23 @@ SMESH_2smeshpy::ConvertScript(const TCollection_AsciiString& theScript,
   } while ( orderChanges );
 
   // concat commands back into a script
-  TCollection_AsciiString aScript;
+  TCollection_AsciiString aScript, aPrevCmd;
+  set<_pyID> createdObjects;
   for ( cmd = theGen->GetCommands().begin(); cmd != theGen->GetCommands().end(); ++cmd )
   {
 #ifdef DUMP_CONVERSION
     MESSAGE_ADD ( "## COM " << (*cmd)->GetOrderNb() << ": "<< (*cmd)->GetString() << std::endl );
 #endif
-    if ( !(*cmd)->IsEmpty() ) {
+    if ( !(*cmd)->IsEmpty() && aPrevCmd != (*cmd)->GetString()) {
+      CheckObjectPresence( *cmd, createdObjects );
+      aPrevCmd = (*cmd)->GetString();
       aScript += "\n";
-      aScript += (*cmd)->GetString();
+      aScript += aPrevCmd;
     }
   }
   aScript += "\n";
 
+  theGen->Free();
   theGen.Nullify();
 
   return aScript;
@@ -202,17 +273,49 @@ SMESH_2smeshpy::ConvertScript(const TCollection_AsciiString& theScript,
 //================================================================================
 
 _pyGen::_pyGen(Resource_DataMapOfAsciiStringAsciiString& theEntry2AccessorMethod,
-               Resource_DataMapOfAsciiStringAsciiString& theObjectNames)
+               Resource_DataMapOfAsciiStringAsciiString& theObjectNames,
+               SALOMEDS::Study_ptr&                      theStudy,
+               const bool                                theToKeepAllCommands)
   : _pyObject( new _pyCommand( "", 0 )),
     myNbCommands( 0 ),
     myID2AccessorMethod( theEntry2AccessorMethod ),
     myObjectNames( theObjectNames ),
-    myNbFilters( 0 )
+    myNbFilters( 0 ),
+    myToKeepAllCommands( theToKeepAllCommands ),
+    myStudy( SALOMEDS::Study::_duplicate( theStudy )),
+    myGeomIDNb(0), myGeomIDIndex(-1)
 {
   // make that GetID() to return TPythonDump::SMESHGenName()
   GetCreationCmd()->Clear();
   GetCreationCmd()->GetString() = TPythonDump::SMESHGenName();
   GetCreationCmd()->GetString() += "=";
+
+  // Find 1st digit of study entry by which a GEOM object differs from a SMESH object
+  if ( !theObjectNames.IsEmpty() && !CORBA::is_nil( theStudy ))
+  {
+    // find a GEOM entry
+    _pyID geomID;
+    SALOMEDS::SComponent_var geomComp = theStudy->FindComponent("GEOM");
+    if ( geomComp->_is_nil() ) return;
+    CORBA::String_var entry = geomComp->GetID();
+    geomID = entry.in();
+
+    // find a SMESH entry
+    _pyID smeshID;
+    Resource_DataMapIteratorOfDataMapOfAsciiStringAsciiString e2n( theObjectNames );
+    for ( ; e2n.More() && smeshID.IsEmpty(); e2n.Next() )
+      if ( _pyCommand::IsStudyEntry( e2n.Key() ))
+        smeshID = e2n.Key();
+
+    // find 1st difference between smeshID and geomID
+    if ( !geomID.IsEmpty() && !smeshID.IsEmpty() )
+      for ( int i = 1; i <= geomID.Length() && i <= smeshID.Length(); ++i )
+        if ( geomID.Value( i ) != smeshID.Value( i ))
+        {
+          myGeomIDNb = geomID.Value( i );
+          myGeomIDIndex = i;
+        }
+  }
 }
 
 //================================================================================
@@ -261,7 +364,7 @@ Handle(_pyCommand) _pyGen::AddCommand( const TCollection_AsciiString& theCommand
   map< _pyID, Handle(_pyMesh) >::iterator id_mesh = myMeshes.find( objID );
   if ( id_mesh != myMeshes.end() )
   {
-    id_mesh->second->AddProcessedCmd( aCommand );
+    //id_mesh->second->AddProcessedCmd( aCommand );
 
     // check for mesh editor object
     if ( aCommand->GetMethod() == "GetMeshEditor" ) { // MeshEditor creation
@@ -278,6 +381,7 @@ Handle(_pyCommand) _pyGen::AddCommand( const TCollection_AsciiString& theCommand
     }
 
     id_mesh->second->Process( aCommand );
+    id_mesh->second->AddProcessedCmd( aCommand );
     return aCommand;
   }
 
@@ -285,28 +389,62 @@ Handle(_pyCommand) _pyGen::AddCommand( const TCollection_AsciiString& theCommand
   map< _pyID, Handle(_pyMeshEditor) >::iterator id_editor = myMeshEditors.find( objID );
   if ( id_editor != myMeshEditors.end() )
   {
+    const TCollection_AsciiString& method = aCommand->GetMethod();
+
+    // some commands of SMESH_MeshEditor create meshes and groups
+    _pyID meshID, groups;
+    if ( method.Search("MakeMesh") != -1 )
+      meshID = aCommand->GetResultValue();
+    else if ( method == "MakeBoundaryMesh")
+      meshID = aCommand->GetResultValue(1);
+    else if ( method == "MakeBoundaryElements")
+      meshID = aCommand->GetResultValue(2);
+
+    if ( method.Search("MakeGroups") != -1  ||
+         method == "ExtrusionAlongPathX"    ||
+         method == "ExtrusionAlongPathObjX" ||
+         method == "DoubleNodeGroupNew"     ||
+         method == "DoubleNodeGroupsNew"    ||
+         method == "DoubleNodeElemGroupNew" ||
+         method == "DoubleNodeElemGroupsNew" )
+      groups = aCommand->GetResultValue();
+    else if ( method == "MakeBoundaryMesh" )
+      groups = aCommand->GetResultValue(2);
+    else if ( method == "MakeBoundaryElements")
+      groups = aCommand->GetResultValue(3);
+
     id_editor->second->Process( aCommand );
     id_editor->second->AddProcessedCmd( aCommand );
-    TCollection_AsciiString processedCommand = aCommand->GetString();
 
-    // some commands of SMESH_MeshEditor create meshes
-    if ( aCommand->GetMethod().Search("MakeMesh") != -1 ) {
-      _pyID meshID = aCommand->GetResultValue();
+    if ( !meshID.IsEmpty() &&
+         !myMeshes.count( meshID ) &&
+         aCommand->IsStudyEntry( meshID ))
+    {
+      TCollection_AsciiString processedCommand = aCommand->GetString();
       Handle(_pyMesh) mesh = new _pyMesh( aCommand, meshID );
-      aCommand->GetString() = processedCommand; // discard changes made by _pyMesh
       myMeshes.insert( make_pair( meshID, mesh ));
+      aCommand->Clear();
+      aCommand->GetString() = processedCommand; // discard changes made by _pyMesh
     }
-    if ( aCommand->GetMethod() == "MakeBoundaryMesh") {
-      _pyID meshID = aCommand->GetResultValue(0);
-      if ( !myMeshes.count( meshID ) )
-      {
-        Handle(_pyMesh) mesh = new _pyMesh( aCommand, meshID );
-        aCommand->GetString() = processedCommand; // discard changes made by _pyMesh
-        myMeshes.insert( make_pair( meshID, mesh ));
-      }
+    if ( !groups.IsEmpty() )
+    {
+      if ( !aCommand->IsStudyEntry( meshID ))
+        meshID = id_editor->second->GetMesh();
+      Handle(_pyMesh) mesh = myMeshes[ meshID ];
+
+      list< _pyID > idList = aCommand->GetStudyEntries( groups );
+      list< _pyID >::iterator grID = idList.begin();
+      for ( ; grID != idList.end(); ++grID )
+        if ( !myObjects.count( *grID ))
+        {
+          Handle(_pyGroup) group = new _pyGroup( aCommand, *grID );
+          AddObject( group );
+          if ( !mesh.IsNull() ) mesh->AddGroup( group );
+        }
     }
     return aCommand;
-  }
+  } // SMESH_MeshEditor methods
+
   // SMESH_Hypothesis method?
   list< Handle(_pyHypothesis) >::iterator hyp = myHypos.begin();
   for ( ; hyp != myHypos.end(); ++hyp )
@@ -472,8 +610,10 @@ void _pyGen::Process( const Handle(_pyCommand)& theCommand )
   {
     for(int ind = 0;ind<theCommand->GetNbResultValues();ind++)
     {
-      Handle(_pyMesh) mesh = new _pyMesh( theCommand, theCommand->GetResultValue(ind));
-      myMeshes.insert( make_pair( theCommand->GetResultValue(ind), mesh ));
+      const _pyID& meshID = theCommand->GetResultValue(ind+1);
+      if ( !theCommand->IsStudyEntry( meshID ) ) continue;
+      Handle(_pyMesh) mesh = new _pyMesh( theCommand, theCommand->GetResultValue(ind+1));
+      myMeshes.insert( make_pair( mesh->GetID(), mesh ));
     }
   }
 
@@ -501,7 +641,8 @@ void _pyGen::Process( const Handle(_pyCommand)& theCommand )
     if ( id_mesh != myMeshes.end() ) {
       theCommand->SetObject( meshID );
       theCommand->RemoveArgs();
-      id_mesh->second->Flush();
+      id_mesh->second->Process( theCommand );
+      id_mesh->second->AddProcessedCmd( theCommand );
       return;
     }
   }
@@ -516,6 +657,7 @@ void _pyGen::Process( const Handle(_pyCommand)& theCommand )
       _pyID geom = theCommand->GetArg( 2 );
       theCommand->RemoveArgs();
       theCommand->SetArg( 1, geom );
+      id_mesh->second->AddProcessedCmd( theCommand );
       return;
     }
   }
@@ -529,9 +671,8 @@ void _pyGen::Process( const Handle(_pyCommand)& theCommand )
     if ( !myObjects.insert( make_pair( obj->GetID(), obj )).second )
       theCommand->Clear(); // already created
   }
-
   // Concatenate( [mesh1, ...], ... )
-  if ( method == "Concatenate" || method == "ConcatenateWithGroups")
+  else if ( method == "Concatenate" || method == "ConcatenateWithGroups")
   {
     if ( method == "ConcatenateWithGroups" ) {
       theCommand->SetMethod( "Concatenate" );
@@ -540,6 +681,14 @@ void _pyGen::Process( const Handle(_pyCommand)& theCommand )
     Handle(_pyMesh) mesh = new _pyMesh( theCommand, theCommand->GetResultValue() );
     myMeshes.insert( make_pair( mesh->GetID(), mesh ));
     AddMeshAccessorMethod( theCommand );
+  }
+  else if ( method == "SetName" ) // SetName(obj,name)
+  {
+    // store theCommand as one of object commands to erase it along with the object
+    const _pyID& objID = theCommand->GetArg( 1 );
+    Handle(_pyObject) obj = FindObject( objID );
+    if ( !obj.IsNull() )
+      obj->AddProcessedCmd( theCommand );
   }
 
   // Replace name of SMESH_Gen
@@ -569,16 +718,36 @@ void _pyGen::Process( const Handle(_pyCommand)& theCommand )
 
 void _pyGen::Flush()
 {
-  // create empty command
+  // create an empty command
   myLastCommand = new _pyCommand();
 
-  map< _pyID, Handle(_pyMesh) >::iterator id_mesh = myMeshes.begin();
-  for ( ; id_mesh != myMeshes.end(); ++id_mesh )
+  map< _pyID, Handle(_pyMesh) >::iterator id_mesh;
+  map< _pyID, Handle(_pyObject) >::iterator id_obj;
+  list< Handle(_pyHypothesis) >::iterator hyp;
+
+  if ( IsToKeepAllCommands() ) // historical dump
+  {
+    // set myIsPublished = true to all objects
+    for ( id_mesh = myMeshes.begin(); id_mesh != myMeshes.end(); ++id_mesh )
+      id_mesh->second->SetRemovedFromStudy( false );
+    for ( hyp = myHypos.begin(); hyp != myHypos.end(); ++hyp )
+      (*hyp)->SetRemovedFromStudy( false );
+    for ( id_obj = myObjects.begin(); id_obj != myObjects.end(); ++id_obj )
+      id_obj->second->SetRemovedFromStudy( false );
+  }
+  // set myIsPublished = false to all objects depending on
+  // meshes built on a removed geometry
+  for ( id_mesh = myMeshes.begin(); id_mesh != myMeshes.end(); ++id_mesh )
+    if ( id_mesh->second->IsNotGeomPublished() )
+      id_mesh->second->SetRemovedFromStudy( true );
+
+  // Flush meshes
+  for ( id_mesh = myMeshes.begin(); id_mesh != myMeshes.end(); ++id_mesh )
     if ( ! id_mesh->second.IsNull() )
       id_mesh->second->Flush();
 
-  list< Handle(_pyHypothesis) >::iterator hyp = myHypos.begin();
-  for ( ; hyp != myHypos.end(); ++hyp )
+  // Flush hyps
+  for ( hyp = myHypos.begin(); hyp != myHypos.end(); ++hyp )
     if ( !hyp->IsNull() ) {
       (*hyp)->Flush();
       // smeshgen.CreateHypothesis() --> smesh.smesh.CreateHypothesis()
@@ -586,13 +755,67 @@ void _pyGen::Flush()
         (*hyp)->GetCreationCmd()->SetObject( SMESH_2smeshpy::GenName() );
     }
 
-  map< _pyID, Handle(_pyObject) >::iterator id_obj = myObjects.begin();
-  for ( ; id_obj != myObjects.end(); ++id_obj )
+  // Flush other objects
+  for ( id_obj = myObjects.begin(); id_obj != myObjects.end(); ++id_obj )
     if ( ! id_obj->second.IsNull() )
       id_obj->second->Flush();
 
   myLastCommand->SetOrderNb( ++myNbCommands );
   myCommands.push_back( myLastCommand );
+}
+
+//================================================================================
+/*!
+ * \brief Clean commmands of removed objects depending on myIsPublished flag
+ */
+//================================================================================
+
+void _pyGen::ClearCommands()
+{
+  map< _pyID, Handle(_pyMesh) >::iterator id_mesh = myMeshes.begin();
+  for ( ; id_mesh != myMeshes.end(); ++id_mesh )
+    id_mesh->second->ClearCommands();
+
+  list< Handle(_pyHypothesis) >::iterator hyp = myHypos.begin();
+  for ( ; hyp != myHypos.end(); ++hyp )
+    if ( !hyp->IsNull() )
+      (*hyp)->ClearCommands();
+
+  map< _pyID, Handle(_pyObject) >::iterator id_obj = myObjects.begin();
+  for ( ; id_obj != myObjects.end(); ++id_obj )
+    id_obj->second->ClearCommands();
+}
+
+//================================================================================
+/*!
+ * \brief Release mutual handles of objects
+ */
+//================================================================================
+
+void _pyGen::Free()
+{
+  map< _pyID, Handle(_pyMesh) >::iterator id_mesh = myMeshes.begin();
+  for ( ; id_mesh != myMeshes.end(); ++id_mesh )
+    id_mesh->second->Free();
+  myMeshes.clear();
+
+  map< _pyID, Handle(_pyMeshEditor) >::iterator id_ed = myMeshEditors.begin();
+  for ( ; id_ed != myMeshEditors.end(); ++id_ed )
+    id_ed->second->Free();
+  myMeshEditors.clear();
+
+  map< _pyID, Handle(_pyObject) >::iterator id_obj = myObjects.begin();
+  for ( ; id_obj != myObjects.end(); ++id_obj )
+    id_obj->second->Free();
+  myObjects.clear();
+
+  list< Handle(_pyHypothesis) >::iterator hyp = myHypos.begin();
+  for ( ; hyp != myHypos.end(); ++hyp )
+    if ( !hyp->IsNull() )
+      (*hyp)->Free();
+  myHypos.clear();
+
+  myFile2ExportedMesh.clear();
 }
 
 //================================================================================
@@ -821,7 +1044,16 @@ _pyID _pyGen::GenerateNewID( const _pyID& theID )
 
 void _pyGen::AddObject( Handle(_pyObject)& theObj )
 {
-  myObjects.insert( make_pair( theObj->GetID(), theObj ));
+  if ( theObj.IsNull() ) return;
+
+  if ( theObj->IsKind( STANDARD_TYPE( _pyMesh )))
+    myMeshes.insert( make_pair( theObj->GetID(), Handle(_pyMesh)::DownCast( theObj )));
+
+  else if ( theObj->IsKind( STANDARD_TYPE( _pyMeshEditor )))
+    myMeshEditors.insert( make_pair( theObj->GetID(), Handle(_pyMeshEditor)::DownCast( theObj )));
+
+  else
+    myObjects.insert( make_pair( theObj->GetID(), theObj ));
 }
 
 //================================================================================
@@ -842,25 +1074,52 @@ Handle(_pyObject) _pyGen::FindObject( const _pyID& theObjID )  const
     if ( id_obj != myMeshes.end() )
       return id_obj->second;
   }
-  {
-    map< _pyID, Handle(_pyMeshEditor) >::const_iterator id_obj = myMeshEditors.find( theObjID );
-    if ( id_obj != myMeshEditors.end() )
-      return id_obj->second;
-  }
+  // {
+  //   map< _pyID, Handle(_pyMeshEditor) >::const_iterator id_obj = myMeshEditors.find( theObjID );
+  //   if ( id_obj != myMeshEditors.end() )
+  //     return id_obj->second;
+  // }
   return Handle(_pyObject)();
 }
 
 //================================================================================
 /*!
- * \brief Returns true if an object is removed from study
+ * \brief Check if a study entry is under GEOM component
  */
 //================================================================================
 
-bool _pyGen::IsDead(const _pyID& theObjID) const
+bool _pyGen::IsGeomObject(const _pyID& theObjID) const
+{
+  if ( myGeomIDNb )
+  {
+    return ( myGeomIDIndex <= theObjID.Length() &&
+             int( theObjID.Value( myGeomIDIndex )) == myGeomIDNb);
+  }
+  return false;
+}
+
+//================================================================================
+/*!
+ * \brief Returns true if an object is not present in a study
+ */
+//================================================================================
+
+bool _pyGen::IsNotPublished(const _pyID& theObjID) const
 {
   if ( theObjID.IsEmpty() ) return false;
-  const bool hasStudyName = myObjectNames.IsBound( theObjID );
-  return !hasStudyName;
+
+  if ( myObjectNames.IsBound( theObjID ))
+    return false; // SMESH object is in study
+
+  // either the SMESH object is not in study or it is a GEOM object
+  if ( IsGeomObject( theObjID ))
+  {
+    SALOMEDS::SObject_var so = myStudy->FindObjectID( theObjID.ToCString() );
+    if ( so->_is_nil() ) return true;
+    CORBA::Object_var obj = so->GetObject();
+    return CORBA::is_nil( obj );
+  }
+  return true; // SMESH object not in study
 }
 
 //================================================================================
@@ -870,13 +1129,15 @@ bool _pyGen::IsDead(const _pyID& theObjID) const
 //================================================================================
 
 _pyMesh::_pyMesh(const Handle(_pyCommand) theCreationCmd)
-  : _pyObject(theCreationCmd), myHasEditor(false)
+  : _pyObject( theCreationCmd ), myGeomNotInStudy( false )
 {
-  // convert my creation command
+  if ( theCreationCmd->GetMethod() == "CreateMesh" && theGen->IsNotPublished( GetGeom() ))
+    myGeomNotInStudy = true;
+
+  // convert my creation command --> smeshpy.Mesh(...)
   Handle(_pyCommand) creationCmd = GetCreationCmd();
   creationCmd->SetObject( SMESH_2smeshpy::SmeshpyName() );
   creationCmd->SetMethod( "Mesh" );
-
   theGen->SetAccessorMethod( GetID(), _pyMesh::AccessorMethod() );
 }
 
@@ -886,13 +1147,56 @@ _pyMesh::_pyMesh(const Handle(_pyCommand) theCreationCmd)
  */
 //================================================================================
 
-_pyMesh::_pyMesh(const Handle(_pyCommand) theCreationCmd, const TCollection_AsciiString& id):
-  _pyObject(theCreationCmd), myHasEditor(false)
+_pyMesh::_pyMesh(const Handle(_pyCommand) theCreationCmd, const _pyID& meshId):
+  _pyObject(theCreationCmd,meshId), myGeomNotInStudy(false )
 {
+  if ( theCreationCmd->MethodStartsFrom( "CreateMeshesFrom" ))
+  {
+    // this mesh depends on the exported mesh
+    const TCollection_AsciiString& file = theCreationCmd->GetArg( 1 );
+    if ( !file.IsEmpty() )
+    {
+      ExportedMeshData& exportData = theGen->FindExportedMesh( file );
+      addFatherMesh( exportData.myMesh );
+      if ( !exportData.myLastComputeCmd.IsNull() )
+      {
+        // restore cleared Compute() by which the exported mesh was generated
+        exportData.myLastComputeCmd->GetString() = exportData.myLastComputeCmdString;
+        // protect that Compute() cmd from clearing
+        if ( exportData.myMesh->myLastComputeCmd == exportData.myLastComputeCmd )
+          exportData.myMesh->myLastComputeCmd.Nullify();
+      }
+    }
+  }
+  else if ( theCreationCmd->MethodStartsFrom( "Concatenate" ))
+  {
+    // this mesh depends on concatenated meshes
+    const TCollection_AsciiString& meshIDs = theCreationCmd->GetArg( 1 );
+    list< _pyID > idList = theCreationCmd->GetStudyEntries( meshIDs );
+    list< _pyID >::iterator meshID = idList.begin();
+    for ( ; meshID != idList.end(); ++meshID )
+      addFatherMesh( *meshID );
+  }
+  else if ( theCreationCmd->GetMethod() == "CopyMesh" )
+  {
+    // this mesh depends on a copied IdSource
+    const _pyID& objID = theCreationCmd->GetArg( 1 );
+    addFatherMesh( objID );
+  }
+  else if ( theCreationCmd->GetMethod().Search("MakeMesh") != -1 ||
+            theCreationCmd->GetMethod() == "MakeBoundaryMesh" ||
+            theCreationCmd->GetMethod() == "MakeBoundaryElements" )
+  {
+    // this mesh depends on a source mesh
+    // (theCreationCmd is already Process()ed by _pyMeshEditor)
+    const _pyID& meshID = theCreationCmd->GetObject();
+    addFatherMesh( meshID );
+  }
+    
   // convert my creation command
   Handle(_pyCommand) creationCmd = GetCreationCmd();
   creationCmd->SetObject( SMESH_2smeshpy::SmeshpyName() );
-  theGen->SetAccessorMethod( id, _pyMesh::AccessorMethod() );
+  theGen->SetAccessorMethod( meshId, _pyMesh::AccessorMethod() );
 }
 
 //================================================================================
@@ -917,9 +1221,63 @@ void _pyMesh::Process( const Handle(_pyCommand)& theCommand )
   //     --> in Mesh.ExportMED( f, auto_groups, version )
   // 5. etc
 
-  const TCollection_AsciiString method = theCommand->GetMethod();
+  const TCollection_AsciiString& method = theCommand->GetMethod();
   // ----------------------------------------------------------------------
-  if ( method == "GetSubMesh" ) { // collect submeshes of the mesh
+  if ( method == "Compute" ) // in snapshot mode, clear the previous Compute()
+  {
+    if ( !theGen->IsToKeepAllCommands() ) // !historical
+    {
+      list< Handle(_pyHypothesis) >::iterator hyp;
+      if ( !myLastComputeCmd.IsNull() )
+      {
+        for ( hyp = myHypos.begin(); hyp != myHypos.end(); ++hyp )
+          (*hyp)->ComputeDiscarded( myLastComputeCmd );
+
+        myLastComputeCmd->Clear();
+      }
+      myLastComputeCmd = theCommand;
+
+      for ( hyp = myHypos.begin(); hyp != myHypos.end(); ++hyp )
+        (*hyp)->MeshComputed( myLastComputeCmd );
+    }
+    Flush();
+  }
+  // ----------------------------------------------------------------------
+  else if ( method == "Clear" ) // in snapshot mode, clear all previous commands
+  {
+    if ( !theGen->IsToKeepAllCommands() ) // !historical
+    {
+      int untilCmdNb =
+        myChildMeshes.empty() ? 0 : myChildMeshes.back()->GetCreationCmd()->GetOrderNb();
+      // list< Handle(_pyCommand) >::reverse_iterator cmd = myProcessedCmds.rbegin();
+      // for ( ; cmd != myProcessedCmds.rend() && (*cmd)->GetOrderNb() > untilCmdNb; ++cmd )
+      //   (*cmd)->Clear();
+      if ( !myLastComputeCmd.IsNull() )
+      {
+        list< Handle(_pyHypothesis) >::iterator hyp;
+        for ( hyp = myHypos.begin(); hyp != myHypos.end(); ++hyp )
+          (*hyp)->ComputeDiscarded( myLastComputeCmd );
+
+        myLastComputeCmd->Clear();
+      }
+
+      list< Handle(_pyMeshEditor)>::iterator e = myEditors.begin();
+      for ( ; e != myEditors.end(); ++e )
+      {
+        list< Handle(_pyCommand)>& cmds = (*e)->GetProcessedCmds();
+        list< Handle(_pyCommand) >::reverse_iterator cmd = cmds.rbegin();
+        for ( ; cmd != cmds.rend() && (*cmd)->GetOrderNb() > untilCmdNb; ++cmd )
+          if ( !(*cmd)->IsEmpty() )
+          {
+            if ( (*cmd)->GetStudyEntries( (*cmd)->GetResultValue() ).empty() ) // no object created
+              (*cmd)->Clear();
+          }
+      }
+      myLastComputeCmd = theCommand; // to clear Clear() the same way as Compute()
+    }
+  }
+  // ----------------------------------------------------------------------
+  else if ( method == "GetSubMesh" ) { // collect submeshes of the mesh
     Handle(_pySubMesh) subMesh = theGen->FindSubMesh( theCommand->GetResultValue() );
     if ( !subMesh.IsNull() ) {
       subMesh->SetCreator( this );
@@ -945,6 +1303,14 @@ void _pyMesh::Process( const Handle(_pyCommand)& theCommand )
     }
   }
   // ----------------------------------------------------------------------
+  else if ( method == "CreateGroup" ) // CreateGroup() --> CreateEmptyGroup()
+  {
+    theCommand->SetMethod( "CreateEmptyGroup" );
+    Handle(_pyGroup) group = new _pyGroup( theCommand );
+    myGroups.push_back( group );
+    theGen->AddObject( group );
+  }
+  // ----------------------------------------------------------------------
   else if ( method == "CreateGroupFromGEOM" ) {// (type, name, grp)
     _pyID grp = theCommand->GetArg( 3 );
     // VSR 24/12/2010. PAL21106: always use GroupOnGeom() function on dump
@@ -964,64 +1330,59 @@ void _pyMesh::Process( const Handle(_pyCommand)& theCommand )
       theCommand->SetArg( 2, name );
       theCommand->SetArg( 3, type );
     //}
+    Handle(_pyGroup) group = new _pyGroup( theCommand );
+    myGroups.push_back( group );
+    theGen->AddObject( group );
   }
   // ----------------------------------------------------------------------
   else if ( method == "CreateGroupFromFilter" ) // --> GroupOnFilter()
   {
     theCommand->SetMethod( "GroupOnFilter" );
     Handle(_pyGroup) group = new _pyGroup( theCommand );
+    myGroups.push_back( group );
     theGen->AddObject( group );
 
     // GroupOnFilter(typ, name, aFilter0x4743dc0 -> aFilter_1)
     _pyID filterID = theCommand->GetArg(3);
-    Handle(_pyObject) filter = theGen->FindObject( filterID );
-    if ( !filter.IsNull() && filter->IsKind(STANDARD_TYPE(_pyFilter)))
+    Handle(_pyFilter) filter = Handle(_pyFilter)::DownCast( theGen->FindObject( filterID ));
+    if ( !filter.IsNull())
+    {
       filter->Process( theCommand );
+      filter->AddUser( group );
+    }
   }
   // ----------------------------------------------------------------------
-  else if ( method == "GetIdsFromFilter" )
+  else if ( theCommand->MethodStartsFrom( "Export" ))
   {
-    // GetIdsFromFilter( aFilter0x4743dc0) -> GetIdsFromFilter( aFilter_1)
-    _pyID filterID = theCommand->GetArg(1);
-    Handle(_pyObject) filter = theGen->FindObject( filterID );
-    if ( !filter.IsNull() && filter->IsKind(STANDARD_TYPE(_pyFilter)))
-      filter->Process( theCommand );
-  }
-  // ----------------------------------------------------------------------
-  else if ( method == "CreateGroup" ) // CreateGroup() --> CreateEmptyGroup()
-  {
-    theCommand->SetMethod( "CreateEmptyGroup" );
-    Handle(_pyGroup) group = new _pyGroup( theCommand );
-    theGen->AddObject( group );
-  }
-  // ----------------------------------------------------------------------
-  else if ( method == "ExportToMED" ||   // ExportToMED()  --> ExportMED()
-            method == "ExportToMEDX" ) { // ExportToMEDX() --> ExportMED()
-    theCommand->SetMethod( "ExportMED" );
-  }
-  // ----------------------------------------------------------------------
-  else if ( method == "ExportCGNS" )
-  { // ExportCGNS(part, ...) -> ExportCGNS(..., part)
-    _pyID partID = theCommand->GetArg( 1 );
-    int nbArgs = theCommand->GetNbArgs();
-    for ( int i = 2; i <= nbArgs; ++i )
-      theCommand->SetArg( i-1, theCommand->GetArg( i ));
-    theCommand->SetArg( nbArgs, partID );
-  }
-  // ----------------------------------------------------------------------
-  else if ( method.Location( "ExportPartTo", 1, method.Length() ) == 1 )
-  { // ExportPartTo*(part, ...) -> Export*(..., part)
-    //
-    // remove "PartTo" from the method
-    TCollection_AsciiString newMethod = method;
-    newMethod.Remove( 7, 6 );
-    theCommand->SetMethod( newMethod );
-    // make the 1st arg be the last one
-    _pyID partID = theCommand->GetArg( 1 );
-    int nbArgs = theCommand->GetNbArgs();
-    for ( int i = 2; i <= nbArgs; ++i )
-      theCommand->SetArg( i-1, theCommand->GetArg( i ));
-    theCommand->SetArg( nbArgs, partID );
+    if ( method == "ExportToMED" ||   // ExportToMED()  --> ExportMED()
+         method == "ExportToMEDX" ) { // ExportToMEDX() --> ExportMED()
+      theCommand->SetMethod( "ExportMED" );
+    }
+    else if ( method == "ExportCGNS" )
+    { // ExportCGNS(part, ...) -> ExportCGNS(..., part)
+      _pyID partID = theCommand->GetArg( 1 );
+      int nbArgs = theCommand->GetNbArgs();
+      for ( int i = 2; i <= nbArgs; ++i )
+        theCommand->SetArg( i-1, theCommand->GetArg( i ));
+      theCommand->SetArg( nbArgs, partID );
+    }
+    else if ( theCommand->MethodStartsFrom( "ExportPartTo" ))
+    { // ExportPartTo*(part, ...) -> Export*(..., part)
+      //
+      // remove "PartTo" from the method
+      TCollection_AsciiString newMethod = method;
+      newMethod.Remove( 7, 6 );
+      theCommand->SetMethod( newMethod );
+      // make the 1st arg be the last one
+      _pyID partID = theCommand->GetArg( 1 );
+      int nbArgs = theCommand->GetNbArgs();
+      for ( int i = 2; i <= nbArgs; ++i )
+        theCommand->SetArg( i-1, theCommand->GetArg( i ));
+      theCommand->SetArg( nbArgs, partID );
+    }
+    // remember file name
+    theGen->AddExportedMesh( theCommand->GetArg( 1 ),
+                             ExportedMeshData( this, myLastComputeCmd ));
   }
   // ----------------------------------------------------------------------
   else if ( method == "RemoveHypothesis" ) // (geom, hyp)
@@ -1057,25 +1418,36 @@ void _pyMesh::Process( const Handle(_pyCommand)& theCommand )
     myHypos.remove( hyp );
   }
   // check for SubMesh order commands
-  else if ( theCommand->GetMethod() == "GetMeshOrder" ||
-            theCommand->GetMethod() == "SetMeshOrder" )
+  else if ( method == "GetMeshOrder" || method == "SetMeshOrder" )
   {
     // make commands GetSubMesh() returning sub-meshes be before using sub-meshes
     // by GetMeshOrder() and SetMeshOrder(), since by defalut GetSubMesh()
     // commands are moved at the end of the script
-    const bool isArg = theCommand->GetMethod() == "SetMeshOrder";
-    const TCollection_AsciiString& cmdStr = theCommand->GetString();
-    int begPos = (/*isArg ? cmdStr.Search( "(" ) :*/ cmdStr.Search( "[" )) + 1;
-    int endPos = (isArg ? cmdStr.Search( ")" ) : cmdStr.Search( "=" )) - 1;
-    if ( begPos != -1 && begPos < endPos && endPos <= cmdStr.Length() ) {
-      TCollection_AsciiString aSubStr = cmdStr.SubString( begPos, endPos );
-      Standard_Integer index = 1;
-      TCollection_AsciiString anIDStr = aSubStr.Token("\t ,[]", index++);
-      while ( !anIDStr.IsEmpty() ) {
-        Handle(_pySubMesh) subMesh = theGen->FindSubMesh( anIDStr );
-        if ( !subMesh.IsNull() )
-          subMesh->Process( theCommand ); // it moves GetSubMesh() before theCommand
-        anIDStr = aSubStr.Token("\t ,[]", index++);
+    TCollection_AsciiString subIDs =
+      ( method == "SetMeshOrder" ) ? theCommand->GetArg(1) : theCommand->GetResultValue();
+    list< _pyID > idList = theCommand->GetStudyEntries( subIDs );
+    list< _pyID >::iterator subID = idList.begin();
+    for ( ; subID != idList.end(); ++subID )
+    {
+      Handle(_pySubMesh) subMesh = theGen->FindSubMesh( *subID );
+      if ( !subMesh.IsNull() )
+        subMesh->Process( theCommand ); // it moves GetSubMesh() before theCommand
+    }
+  }
+  // update list of groups
+  else if ( method == "GetGroups" )
+  {
+    TCollection_AsciiString grIDs = theCommand->GetResultValue();
+    list< _pyID > idList = theCommand->GetStudyEntries( grIDs );
+    list< _pyID >::iterator grID = idList.begin();
+    for ( ; grID != idList.end(); ++grID )
+    {
+      Handle(_pyObject) obj = theGen->FindObject( *grID );
+      if ( obj.IsNull() )
+      {
+        Handle(_pyGroup) group = new _pyGroup( theCommand, *grID );
+        theGen->AddObject( group );
+        myGroups.push_back( group );
       }
     }
   }
@@ -1129,6 +1501,23 @@ bool _pyMesh::NeedMeshAccess( const Handle(_pyCommand)& theCommand )
 
 void _pyMesh::Flush()
 {
+  {
+    // get the meshes this mesh depends on via hypotheses
+    list< Handle(_pyMesh) > fatherMeshes;
+    list< Handle(_pyHypothesis) >::iterator hyp = myHypos.begin();
+    for ( ; hyp != myHypos.end(); ++hyp )
+      if ( ! (*hyp)->GetReferredMeshesAndGeom( fatherMeshes ))
+        myGeomNotInStudy = true;
+
+    list< Handle(_pyMesh) >::iterator m = fatherMeshes.begin();
+    for ( ; m != fatherMeshes.end(); ++m )
+      addFatherMesh( *m );
+    // if ( removedGeom )
+    //     SetRemovedFromStudy(); // as reffered geometry not in study
+  }
+  if ( myGeomNotInStudy )
+    return;
+
   list < Handle(_pyCommand) >::iterator cmd;
 
   // try to convert algo addition like this:
@@ -1218,19 +1607,124 @@ void _pyMesh::Flush()
     }
   }
 
-  // sm = mesh.GetSubMesh(geom, name) --> sm = mesh.GetMesh().GetSubMesh(geom, name)
-//   for ( cmd = mySubmeshes.begin(); cmd != mySubmeshes.end(); ++cmd ) {
-//     Handle(_pyCommand) subCmd = *cmd;
-//     if ( subCmd->GetNbArgs() > 0 )
-//       AddMeshAccess( subCmd );
-//   }
   myAddHypCmds.clear();
   mySubmeshes.clear();
 
   // flush hypotheses
   list< Handle(_pyHypothesis) >::iterator hyp = myHypos.begin();
-  for ( ; hyp != myHypos.end(); ++hyp )
+  for ( hyp = myHypos.begin(); hyp != myHypos.end(); ++hyp )
     (*hyp)->Flush();
+}
+
+//================================================================================
+/*!
+ * \brief Sets myIsPublished of me and of all objects depending on me.
+ */
+//================================================================================
+
+void _pyMesh::SetRemovedFromStudy(const bool isRemoved)
+{
+  _pyObject::SetRemovedFromStudy(isRemoved);
+
+  list< Handle(_pySubMesh) >::iterator sm = mySubmeshes.begin();
+  for ( ; sm != mySubmeshes.end(); ++sm )
+    (*sm)->SetRemovedFromStudy(isRemoved);
+
+  list< Handle(_pyGroup) >::iterator gr = myGroups.begin();
+  for ( ; gr != myGroups.end(); ++gr )
+    (*gr)->SetRemovedFromStudy(isRemoved);
+
+  list< Handle(_pyMesh) >::iterator m = myChildMeshes.begin();
+  for ( ; m != myChildMeshes.end(); ++m )
+    (*m)->SetRemovedFromStudy(isRemoved);
+
+  list< Handle(_pyMeshEditor)>::iterator e = myEditors.begin();
+  for ( ; e != myEditors.end(); ++e )
+    (*e)->SetRemovedFromStudy(isRemoved);
+}
+
+//================================================================================
+/*!
+ * \brief Return true if none of myChildMeshes is in study
+ */
+//================================================================================
+
+bool _pyMesh::CanClear()
+{
+  if ( IsInStudy() )
+    return false;
+
+  list< Handle(_pyMesh) >::iterator m = myChildMeshes.begin();
+  for ( ; m != myChildMeshes.end(); ++m )
+    if ( !(*m)->CanClear() )
+      return false;
+
+  return true;
+}
+
+//================================================================================
+/*!
+ * \brief Clear my commands and commands of mesh editor
+ */
+//================================================================================
+
+void _pyMesh::ClearCommands()
+{
+  if ( !CanClear() )
+  {
+    if ( !IsInStudy() )
+    {
+      // mark all sub-objects as not removed, except child meshes
+      list< Handle(_pyMesh) > children;
+      children.swap( myChildMeshes );
+      SetRemovedFromStudy( false );
+      children.swap( myChildMeshes );
+    }
+    return;
+  }
+  _pyObject::ClearCommands();
+
+  list< Handle(_pySubMesh) >::iterator sm = mySubmeshes.begin();
+  for ( ; sm != mySubmeshes.end(); ++sm )
+    (*sm)->ClearCommands();
+  
+  list< Handle(_pyGroup) >::iterator gr = myGroups.begin();
+  for ( ; gr != myGroups.end(); ++gr )
+    (*gr)->ClearCommands();
+
+  list< Handle(_pyMeshEditor)>::iterator e = myEditors.begin();
+  for ( ; e != myEditors.end(); ++e )
+    (*e)->ClearCommands();
+}
+
+//================================================================================
+/*!
+ * \brief Add a father mesh by ID
+ */
+//================================================================================
+
+void _pyMesh::addFatherMesh( const _pyID& meshID )
+{
+  if ( !meshID.IsEmpty() )
+    addFatherMesh( Handle(_pyMesh)::DownCast( theGen->FindObject( meshID )));
+}
+
+//================================================================================
+/*!
+ * \brief Add a father mesh
+ */
+//================================================================================
+
+void _pyMesh::addFatherMesh( const Handle(_pyMesh)& mesh )
+{
+  if ( !mesh.IsNull() )
+  {
+    //myFatherMeshes.push_back( mesh );
+    mesh->myChildMeshes.push_back( this );
+
+    // protect last Compute() from clearing by the next Compute()
+    mesh->myLastComputeCmd.Nullify();
+  }
 }
 
 //================================================================================
@@ -1245,6 +1739,10 @@ _pyMeshEditor::_pyMeshEditor(const Handle(_pyCommand)& theCreationCmd):
   myMesh = theCreationCmd->GetObject();
   myCreationCmdStr = theCreationCmd->GetString();
   theCreationCmd->Clear();
+
+  Handle(_pyMesh) mesh = ObjectToMesh( theGen->FindObject( myMesh ));
+  if ( !mesh.IsNull() )
+    mesh->AddEditor( this );
 }
 
 //================================================================================
@@ -1387,6 +1885,18 @@ void _pyMeshEditor::Process( const Handle(_pyCommand)& theCommand)
       myCreationCmdStr.Clear();
     }
   }
+}
+
+//================================================================================
+/*!
+ * \brief Return true if my mesh can be removed
+ */
+//================================================================================
+
+bool _pyMeshEditor::CanClear()
+{
+  Handle(_pyMesh) mesh = ObjectToMesh( theGen->FindObject( myMesh ));
+  return mesh.IsNull() ? true : mesh->CanClear();
 }
 
 //================================================================================
@@ -1594,7 +2104,7 @@ Handle(_pyHypothesis) _pyHypothesis::NewHypothesis( const Handle(_pyCommand)& th
     hyp->SetConvMethodAndType( "Parameters", "GHS3D_3D");
   }
   // Hexa_3D ---------
-  else if ( hypType == "BLSURF" ) {
+  else if ( hypType == "Hexa_3D" ) {
     algo->SetConvMethodAndType( "Hexahedron", hypType.ToCString());
   }
   // Repetitive Projection_1D ---------
@@ -1617,6 +2127,7 @@ Handle(_pyHypothesis) _pyHypothesis::NewHypothesis( const Handle(_pyCommand)& th
   }
   else if ( hypType == "ProjectionSource2D" ) {
     hyp->SetConvMethodAndType( "SourceFace", "Projection_2D");
+    hyp->SetConvMethodAndType( "SourceFace", "Projection_1D2D");
     hyp->AddArgMethod( "SetSourceFace");
     hyp->AddArgMethod( "SetSourceMesh");
     hyp->AddArgMethod( "SetVertexAssociation", 4 );
@@ -1670,10 +2181,10 @@ Handle(_pyHypothesis) _pyHypothesis::NewHypothesis( const Handle(_pyCommand)& th
 
 bool _pyHypothesis::IsWrappable(const _pyID& theMesh) const
 {
-  if ( !myIsWrapped && myMesh == theMesh && !IsRemovedFromStudy() )
+  if ( !myIsWrapped && myMesh == theMesh && IsInStudy() )
   {
     Handle(_pyObject) pyMesh = theGen->FindObject( myMesh );
-    if ( !pyMesh.IsNull() && !pyMesh->IsRemovedFromStudy() )
+    if ( !pyMesh.IsNull() && pyMesh->IsInStudy() )
       return true;
   }
   return false;
@@ -1754,6 +2265,7 @@ bool _pyHypothesis::Addition2Creation( const Handle(_pyCommand)& theCmd,
 void _pyHypothesis::Process( const Handle(_pyCommand)& theCommand)
 {
   ASSERT( !myIsAlgo );
+  rememberCmdOfParameter( theCommand );
   // set args
   int nbArgs = 0;
   for ( int i = 1; i <= myArgMethods.Length(); ++i ) {
@@ -1844,6 +2356,215 @@ void _pyHypothesis::Assign( const Handle(_pyHypothesis)& theOther,
 
 //================================================================================
 /*!
+ * \brief Analyze my erasability depending on myReferredObjs
+ */
+//================================================================================
+
+bool _pyHypothesis::CanClear()
+{
+  if ( IsInStudy() )
+  {
+    list< Handle(_pyObject) >::iterator obj = myReferredObjs.begin();
+    for ( ; obj != myReferredObjs.end(); ++obj )
+      if ( (*obj)->CanClear() )
+        return true;
+    return false;
+  }
+  return true;
+}
+
+//================================================================================
+/*!
+ * \brief Clear my commands depending on usage by meshes
+ */
+//================================================================================
+
+void _pyHypothesis::ClearCommands()
+{
+  if ( !theGen->IsToKeepAllCommands() )
+  {
+    bool isUsed = false;
+    int lastComputeOrder = 0;
+    list<Handle(_pyCommand) >::iterator cmd = myComputeCmds.begin();
+    for ( ; cmd != myComputeCmds.end(); ++cmd )
+      if ( ! (*cmd)->IsEmpty() )
+      {
+        isUsed = true;
+        if ( (*cmd)->GetOrderNb() > lastComputeOrder )
+          lastComputeOrder = (*cmd)->GetOrderNb();
+      }
+    if ( !isUsed )
+    {
+      SetRemovedFromStudy( true );
+    }
+    else
+    {
+      // clear my commands invoked after lastComputeOrder
+      map<TCollection_AsciiString, list< Handle(_pyCommand) > >::iterator m2c;
+      for ( m2c = myMeth2Commands.begin(); m2c != myMeth2Commands.end(); ++m2c )
+      {
+        list< Handle(_pyCommand)> & cmds = m2c->second;
+        if ( !cmds.empty() && cmds.back()->GetOrderNb() > lastComputeOrder )
+          cmds.back()->Clear();
+      }
+    }
+  }
+  _pyObject::ClearCommands();
+}
+
+//================================================================================
+/*!
+ * \brief Find arguments that are objects like mesh, group, geometry
+ *  \param meshes - referred meshes (directly or indirrectly)
+ *  \retval bool - false if a referred geometry is not in the study
+ */
+//================================================================================
+
+bool _pyHypothesis::GetReferredMeshesAndGeom( list< Handle(_pyMesh) >& meshes )
+{
+  if ( IsAlgo() ) return true;
+
+  bool geomPublished = true;
+  TColStd_SequenceOfAsciiString args; args = myArgs;
+
+  list<Handle(_pyCommand)>::iterator cmd = myUnknownCommands.begin();
+  for ( ; cmd != myUnknownCommands.end(); ++cmd ) {
+    for ( int nb = (*cmd)->GetNbArgs(); nb; --nb )
+      args.Append( (*cmd)->GetArg( nb ));
+  }
+
+  for ( int i = 1; i <= args.Length(); ++i )
+  {
+    list< _pyID > idList = _pyCommand::GetStudyEntries( args( i ));
+    list< _pyID >::iterator id = idList.begin();
+    for ( ; id != idList.end(); ++id )
+    {
+      Handle(_pyObject) obj = theGen->FindObject( *id );
+      if ( obj.IsNull() )
+      {
+        if ( theGen->IsGeomObject( *id ) && theGen->IsNotPublished( *id ))
+          geomPublished = false;
+      }
+      else
+      {
+        myReferredObjs.push_back( obj );
+        Handle(_pyMesh) mesh = ObjectToMesh( obj );
+        if ( !mesh.IsNull() )
+          meshes.push_back( mesh );
+      }
+    }
+  }
+  return geomPublished;
+}
+
+//================================================================================
+/*!
+ * \brief Remember theCommand setting a parameter
+ */
+//================================================================================
+
+void _pyHypothesis::rememberCmdOfParameter( const Handle(_pyCommand) & theCommand )
+{
+  // not to clear commands setting different parameters via one method
+  // by passing parameter names like e.g. SetOption("size", "0.2")
+  int quotePos = theCommand->GetString().FirstLocationInSet( "'\"", 1, theCommand->Length() );
+  if ( !quotePos )
+  {
+    // parameters are discriminated by method name
+    list< Handle(_pyCommand)>& cmds = myMeth2Commands[ theCommand->GetMethod() ];
+    if ( !cmds.empty() && !isCmdUsedForCompute( cmds.back() ))
+    {
+      cmds.back()->Clear(); // previous parameter value has not been used
+      cmds.back() = theCommand;
+    }
+    else
+    {
+      cmds.push_back( theCommand );
+    }
+  }
+}
+
+//================================================================================
+/*!
+ * \brief Return true if a setting parameter command ha been used to compute mesh
+ */
+//================================================================================
+
+bool _pyHypothesis::isCmdUsedForCompute( const Handle(_pyCommand) & cmd,
+                                         _pyCommand::TAddr          avoidComputeAddr ) const
+{
+  bool isUsed = false;
+  map< _pyCommand::TAddr, list<Handle(_pyCommand) > >::const_iterator addr2cmds =
+    myComputeAddr2Cmds.begin();
+  for ( ; addr2cmds != myComputeAddr2Cmds.end() && !isUsed; ++addr2cmds )
+  {
+    if ( addr2cmds->first == avoidComputeAddr ) continue;
+    const list<Handle(_pyCommand)> & cmds = addr2cmds->second;
+    isUsed = ( std::find( cmds.begin(), cmds.end(), cmd ) != cmds.end() );
+  }
+  return isUsed;
+}
+
+//================================================================================
+/*!
+ * \brief Save commands setting parameters as they are used for a mesh computation
+ */
+//================================================================================
+
+void _pyHypothesis::MeshComputed( const Handle(_pyCommand)& theComputeCmd )
+{
+  myComputeCmds.push_back( theComputeCmd );
+  list<Handle(_pyCommand)>& savedCmds = myComputeAddr2Cmds[ theComputeCmd->GetAddress() ];
+
+  map<TCollection_AsciiString, list< Handle(_pyCommand) > >::iterator m2c;
+  for ( m2c = myMeth2Commands.begin(); m2c != myMeth2Commands.end(); ++m2c )
+    savedCmds.push_back( m2c->second.back() );
+}
+
+//================================================================================
+/*!
+ * \brief Clear commands setting parameters as a mesh computed using them is cleared
+ */
+//================================================================================
+
+void _pyHypothesis::ComputeDiscarded( const Handle(_pyCommand)& theComputeCmd )
+{
+  list<Handle(_pyCommand)>& savedCmds = myComputeAddr2Cmds[ theComputeCmd->GetAddress() ];
+
+  list<Handle(_pyCommand)>::iterator cmd = savedCmds.begin();
+  for ( ; cmd != savedCmds.end(); ++cmd )
+  {
+    // check if a cmd has been used to compute another mesh
+    if ( isCmdUsedForCompute( *cmd, theComputeCmd->GetAddress() ))
+      continue;
+    // check if a cmd is a sole command setting its parameter;
+    // don't use method name for search as it can change
+    map<TCollection_AsciiString, list<Handle(_pyCommand)> >::iterator
+      m2cmds = myMeth2Commands.begin();
+    for ( ; m2cmds != myMeth2Commands.end(); ++m2cmds )
+    {
+      list< Handle(_pyCommand)>& cmds = m2cmds->second;
+      list< Handle(_pyCommand)>::iterator cmdIt = std::find( cmds.begin(), cmds.end(), *cmd );
+      if ( cmdIt != cmds.end() )
+      {
+        if ( cmds.back() != *cmd )
+        {
+          cmds.erase( cmdIt );
+          (*cmd)->Clear();
+        }
+        break;
+      }
+    }
+  }
+  myComputeAddr2Cmds.erase( theComputeCmd->GetAddress() );
+}
+// void _pyHypothesis::ComputeSaved( const Handle(_pyCommand)& theComputeCommand )
+// {
+// }
+
+
+//================================================================================
+/*!
  * \brief Remember hypothesis parameter values
  * \param theCommand - The called hypothesis method
  */
@@ -1879,6 +2600,7 @@ void _pyComplexParamHypo::Process( const Handle(_pyCommand)& theCommand)
         myArgs( iArg ) += "]";
       }
       myArgCommands.push_back( theCommand );
+      rememberCmdOfParameter( theCommand );
       return;
     }
   }
@@ -2241,12 +2963,20 @@ const TCollection_AsciiString & _pyCommand::GetResultValue()
 {
   if ( GetBegPos( RESULT_IND ) == UNKNOWN )
   {
-    int begPos = myString.Location( "=", 1, Length() );
-    if ( begPos )
-      myRes = GetWord( myString, begPos, false );
-    else
-      begPos = EMPTY;
-    SetBegPos( RESULT_IND, begPos );
+    SetBegPos( RESULT_IND, EMPTY );
+    int begPos, endPos = myString.Location( "=", 1, Length() );
+    if ( endPos )
+    {
+      begPos = 1;
+      while ( begPos < endPos && isblank( myString.Value( begPos ))) ++begPos;
+      if ( begPos < endPos )
+      {
+        SetBegPos( RESULT_IND, begPos );
+        --endPos;
+        while ( begPos < endPos && isblank( myString.Value( endPos ))) --endPos;
+        myRes = myString.SubString( begPos, endPos );
+      }
+    }
   }
   return myRes;
 }
@@ -2398,7 +3128,7 @@ const TCollection_AsciiString & _pyCommand::GetArg( int index )
     // we are at or before '(', skip it if present
     if ( pos > 0 ) {
       while ( pos <= Length() && myString.Value( pos ) != '(' ) ++pos;
-      if ( myString.Value( pos ) != '(' )
+      if ( pos > Length() )
         pos = 0;
     }
     if ( pos < 1 ) {
@@ -2519,10 +3249,11 @@ TCollection_AsciiString _pyCommand::GetWord( const TCollection_AsciiString & the
       return theEmptyString; // no word found
     beg = end - 1;
     char endChar = theString.Value( end );
-    if ( endChar == '"' || endChar == '\'' ) {
+    if ( endChar == '"' || endChar == '\'' || endChar == ']') {
+      char begChar = ( endChar == ']' ) ? '[' : endChar;
       // beg is at the corresponding quoting mark
       while ( beg > 1 &&
-              ( theString.Value( beg ) != endChar || theString.Value( beg-1 ) == '\\'))
+              ( theString.Value( beg ) != begChar || theString.Value( beg-1 ) == '\\'))
         --beg;
     }
     else {
@@ -2534,6 +3265,52 @@ TCollection_AsciiString _pyCommand::GetWord( const TCollection_AsciiString & the
   theStartPos = beg;
   //cout << theString << " ---- " << beg << " - " << end << endl;
   return theString.SubString( beg, end );
+}
+
+//================================================================================
+/*!
+ * \brief Returns true if the string looks like a study entry
+ */
+//================================================================================
+
+bool _pyCommand::IsStudyEntry( const TCollection_AsciiString& str )
+{
+  if ( str.Length() < 5 ) return false;
+
+  int nbColons = 0, isColon;
+  for ( int i = 1; i <= str.Length(); ++i )
+  {
+    char c = str.Value(i);
+    if (!( isColon = (c == ':')) && ( c < '0' || c > '9' ))
+      return false;
+    nbColons += isColon;
+  }
+  return nbColons > 2 && str.Length()-nbColons > 2;
+}
+
+//================================================================================
+/*!
+ * \brief Finds entries in a sting
+ */
+//================================================================================
+
+std::list< _pyID > _pyCommand::GetStudyEntries( const TCollection_AsciiString& str )
+{
+  std::list< _pyID > resList;
+  int pos = 0;
+  while ( ++pos <= str.Length() )
+  {
+    if ( !isdigit( str.Value( pos ))) continue;
+    if ( pos != 1 && ( isalpha( str.Value( pos-1 ) || str.Value( pos-1 ) == ':'))) continue;
+
+    int end = pos;
+    while ( ++end <= str.Length() && ( isdigit( str.Value( end )) || str.Value( end ) == ':' ));
+    _pyID entry = str.SubString( pos, end-1 );
+    pos = end;
+    if ( IsStudyEntry( entry ))
+      resList.push_back( entry );
+  }
+  return resList;
 }
 
 //================================================================================
@@ -2659,6 +3436,30 @@ void _pyCommand::RemoveArgs()
 
 //================================================================================
 /*!
+ * \brief Comment a python command
+ */
+//================================================================================
+
+void _pyCommand::Comment()
+{
+  if ( IsEmpty() ) return;
+
+  int i = 1;
+  while ( i <= Length() && isblank( myString.Value(i) )) ++i;
+  if ( i <= Length() )
+  {
+    myString.Insert( i, "#" );
+    for ( int iPart = 0; iPart < myBegPos.Length(); ++iPart )
+    {
+      int begPos = GetBegPos( iPart );
+      if ( begPos != UNKNOWN )
+        SetBegPos( iPart, begPos + 1 );
+    }
+  }
+}
+
+//================================================================================
+/*!
  * \brief Set dependent commands after this one
  */
 //================================================================================
@@ -2728,11 +3529,41 @@ bool _pyCommand::AddAccessorMethod( _pyID theObjectID, const char* theAcsMethod 
  */
 //================================================================================
 
-_pyObject::_pyObject(const Handle(_pyCommand)& theCreationCmd)
-  : myCreationCmd(theCreationCmd), myNbCalls(0), myIsRemoved(false)
+_pyObject::_pyObject(const Handle(_pyCommand)& theCreationCmd, const _pyID& theID)
+  : myID(theID), myCreationCmd(theCreationCmd), myIsPublished(false)
 {
-  if ( !theCreationCmd.IsNull() && !theCreationCmd->IsEmpty() )
-    myIsRemoved = theGen->IsDead( theCreationCmd->GetResultValue() );
+  setID( theID );
+}
+
+//================================================================================
+/*!
+ * \brief Set up myID and myIsPublished
+ */
+//================================================================================
+
+void _pyObject::setID(const _pyID& theID)
+{
+  myID = theID;
+  myIsPublished = !theGen->IsNotPublished( GetID() );
+}
+
+//================================================================================
+/*!
+ * \brief Clear myCreationCmd and myProcessedCmds
+ */
+//================================================================================
+
+void _pyObject::ClearCommands()
+{
+  if ( !CanClear() )
+    return;
+
+  if ( !myCreationCmd.IsNull() )
+    myCreationCmd->Clear();
+
+  list< Handle(_pyCommand) >::iterator cmd = myProcessedCmds.begin();
+  for ( ; cmd != myProcessedCmds.end(); ++cmd )
+    (*cmd)->Clear();
 }
 
 //================================================================================
@@ -2774,6 +3605,18 @@ void _pySelfEraser::Flush()
 
 //================================================================================
 /*!
+ * \brief _pySubMesh constructor
+ */
+//================================================================================
+
+_pySubMesh::_pySubMesh(const Handle(_pyCommand)& theCreationCmd):
+  _pyObject(theCreationCmd)
+{
+  myMesh = ObjectToMesh( theGen->FindObject( theCreationCmd->GetObject() ));
+}
+
+//================================================================================
+/*!
  * \brief count invoked commands
  */
 //================================================================================
@@ -2811,12 +3654,13 @@ void _pyGroup::Process( const Handle(_pyCommand)& theCommand)
   // group = mesh.CreateEmptyGroup( elemType, groupName )
   // aFilter.SetMesh(mesh)
   // nbAdd = group.AddFrom( aFilter )
+  Handle(_pyFilter) filter;
   if ( theCommand->GetMethod() == "AddFrom" )
   {
     _pyID idSource = theCommand->GetArg(1);
     // check if idSource is a filter
-    Handle(_pyObject) filter = theGen->FindObject( idSource );
-    if ( filter.IsNull() || !filter->IsKind(STANDARD_TYPE(_pyFilter)))
+    filter = Handle(_pyFilter)::DownCast( theGen->FindObject( idSource ));
+    if ( filter.IsNull() )
       return;
     // find aFilter.SetMesh(mesh) to clear it, it should be just before theCommand
     list< Handle(_pyCommand) >::reverse_iterator cmdIt = theGen->GetCommands().rbegin();
@@ -2825,7 +3669,7 @@ void _pyGroup::Process( const Handle(_pyCommand)& theCommand)
     {
       const Handle(_pyCommand)& setMeshCmd = *(++cmdIt);
       if ((setMeshCmd->GetObject() == idSource ||
-           setMeshCmd->GetObject() == Handle(_pyFilter)::DownCast(filter)->GetNewID() )
+           setMeshCmd->GetObject() == filter->GetNewID() )
           &&
           setMeshCmd->GetMethod() == "SetMesh")
       {
@@ -2847,10 +3691,13 @@ void _pyGroup::Process( const Handle(_pyCommand)& theCommand)
   {
     // set new name of a filter
     _pyID filterID = theCommand->GetArg(1);
-    Handle(_pyObject) filter = theGen->FindObject( filterID );
+    filter = Handle(_pyFilter)::DownCast( theGen->FindObject( filterID ));
     if ( !filter.IsNull() )
       filter->Process( theCommand );
   }
+
+  if ( !filter.IsNull() )
+    filter->AddUser( this );
 }
 
 //================================================================================
@@ -2894,7 +3741,7 @@ void _pyFilter::Process( const Handle(_pyCommand)& theCommand)
   // Convert the following set of commands into smesh.GetFilterFromCriteria(criteria)
   // aFilter0x2aaab0487080 = aFilterManager.CreateFilter()
   // aFilter0x2aaab0487080.SetCriteria(aCriteria)
-  if ( GetNbCalls() == 0 && // none method was called before SetCriteria()
+  if ( GetNbCalls() == 1 && // none method was called before this SetCriteria() call
        theCommand->GetMethod() == "SetCriteria")
   {
     // aFilter.SetCriteria(aCriteria) ->
@@ -2925,4 +3772,20 @@ void _pyFilter::Flush()
 {
   if ( !myNewID.IsEmpty() && !GetCreationCmd()->IsEmpty() )
     GetCreationCmd()->SetResultValue( myNewID );
+}
+
+//================================================================================
+/*!
+ * \brief Return true if all my users can be cleared
+ */
+//================================================================================
+
+bool _pyFilter::CanClear()
+{
+  list< Handle(_pyObject) >::iterator obj = myUsers.begin();
+  for ( ; obj != myUsers.end(); ++obj )
+    if ( !(*obj)->CanClear() )
+      return false;
+
+  return true;
 }
