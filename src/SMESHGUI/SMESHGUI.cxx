@@ -1713,6 +1713,11 @@ LightApp_Module( "SMESH" )
     myComponentSMESH->SetBoundaryBoxSegmentation( nbSeg );
     nbSeg = aResourceMgr->integerValue( "SMESH", "nb_segments_per_edge", 15 );
     myComponentSMESH->SetDefaultNbSegments( nbSeg );
+    if ( aResourceMgr->hasValue( "SMESH", "historical_python_dump" ))
+    {
+      QString val = aResourceMgr->stringValue( "SMESH", "historical_python_dump" );
+      myComponentSMESH->SetOption( "historical_python_dump", val.toLatin1().constData() );
+    }
   }
 
   myActiveDialogBox = 0;
@@ -4607,6 +4612,9 @@ void SMESHGUI::createPreferences()
   setPreferenceProperty( chunkSize, "max",  1000 );
   setPreferenceProperty( chunkSize, "step", 50 );
 
+  int pyDumpGroup = addPreference( tr( "PREF_PYTHON_DUMP" ), genTab );
+  addPreference( tr( "PREF_HISTOTICAL_PYTHON_DUMP" ), pyDumpGroup, LightApp_Preferences::Bool, "SMESH", "historical_python_dump" );
+
   // Mesh tab ------------------------------------------------------------------------
   int meshTab = addPreference( tr( "PREF_TAB_MESH" ) );
   int nodeGroup = addPreference( tr( "PREF_GROUP_NODES" ), meshTab );
@@ -4859,6 +4867,10 @@ void SMESHGUI::preferencesChanged( const QString& sect, const QString& name )
     else if ( name == "nb_segments_per_edge" ) {
       int nbSeg = aResourceMgr->integerValue( "SMESH", "nb_segments_per_edge", 15 );
       myComponentSMESH->SetDefaultNbSegments( nbSeg );
+    }
+    else if ( name == "historical_python_dump" ) {
+      QString val = aResourceMgr->stringValue( "SMESH", "historical_python_dump" );
+      myComponentSMESH->SetOption( "historical_python_dump", val.toLatin1().constData() );
     }
 
     if(aWarning.size() != 0){

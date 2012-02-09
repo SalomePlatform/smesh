@@ -3897,6 +3897,14 @@ Please, create VTK viewer and try again</translation>
         <translation>Shrink coef.</translation>
     </message>
     <message>
+        <source>PREF_PYTHON_DUMP</source>
+        <translation>Python Dump</translation>
+    </message>
+    <message>
+        <source>PREF_HISTOTICAL_PYTHON_DUMP</source>
+        <translation>Historical python dump</translation>
+    </message>
+    <message>
         <source>PREF_TAB_GENERAL</source>
         <translation>General</translation>
     </message>
