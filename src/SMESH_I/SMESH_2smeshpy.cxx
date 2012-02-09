@@ -1549,6 +1549,10 @@ void _pyMesh::Flush()
         algo = newAlgo;
         // set algorithm creation
         theGen->SetCommandBefore( newCmd, addCmd );
+        myHypos.push_back( newAlgo );
+        if ( !myLastComputeCmd.IsNull() &&
+             newCmd->GetOrderNb() == myLastComputeCmd->GetOrderNb() + 1)
+          newAlgo->MeshComputed( myLastComputeCmd );
       }
       else
         newCmd->Clear();
