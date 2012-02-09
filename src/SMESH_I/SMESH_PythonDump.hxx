@@ -52,12 +52,16 @@ public:
    * \param theScript - Input script
    * \param theEntry2AccessorMethod - The returning method names to access to
    *        objects wrapped with python class
+   * \param theHistoricalDump - true means to keep all commands, false means
+   *        to exclude commands relating to objects removed from study
    * \retval TCollection_AsciiString - Convertion result
    */
   static TCollection_AsciiString
-  ConvertScript(const TCollection_AsciiString& theScript,
+  ConvertScript(const TCollection_AsciiString&            theScript,
                 Resource_DataMapOfAsciiStringAsciiString& theEntry2AccessorMethod,
-                Resource_DataMapOfAsciiStringAsciiString& theObjectNames);
+                Resource_DataMapOfAsciiStringAsciiString& theObjectNames,
+                SALOMEDS::Study_ptr&                      theStudy,
+                const bool                                theHistoricalDump);
 
   /*!
    * \brief Return the name of the python file wrapping IDL API
