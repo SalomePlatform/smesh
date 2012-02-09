@@ -1460,9 +1460,12 @@ bool StdMeshers_PrismAsBlock::Init(SMESH_MesherHelper* helper,
         int nbSplit = i_nb->second;
         vector< double > params;
         splitParams( nbSplit, &myParam2ColumnMaps[ iE ], params );
-        bool isForward = ( edgeIt->Orientation() == TopAbs_FORWARD );
+        const bool isForward =
+          StdMeshers_PrismAsBlock::IsForwardEdge( myHelper->GetMeshDS(),
+                                                  myParam2ColumnMaps[iE],
+                                                  *edgeIt, SMESH_Block::ID_Fx0z );
         for ( int i = 0; i < nbSplit; ++i ) {
-          double f = ( isForward ? params[ i ] : params[ nbSplit - i-1 ]);
+          double f = ( isForward ? params[ i ]   : params[ nbSplit - i-1 ]);
           double l = ( isForward ? params[ i+1 ] : params[ nbSplit - i ]);
           TSideFace* comp = new TSideFace( myHelper, wallFaceIds[ iSide ],
                                            *faceIt, *edgeIt,
@@ -1753,7 +1756,7 @@ bool StdMeshers_PrismAsBlock::GetLayersTransformation(vector<gp_Trsf> & trsf) co
   * \param columnsMap - node columns map of side face
   * \param bottomEdge - the bootom edge
   * \param sideFaceID - side face in-block ID
-  * \retval bool - true if orientation coinside with in-block froward orientation
+  * \retval bool - true if orientation coinside with in-block forward orientation
  */
 //================================================================================
 
