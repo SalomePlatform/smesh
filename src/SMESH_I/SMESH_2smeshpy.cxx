@@ -544,7 +544,9 @@ Handle(_pyCommand) _pyGen::AddCommand( const TCollection_AsciiString& theCommand
       if ( -1 < iGeom && iGeom < SMESH::Geom_POLYHEDRA+1 )
         Threshold = SMESH + types[ iGeom ];
     }
-    if ( ThresholdStr.Length() != 2 ) // not '' or ""
+    if ( ThresholdID.Length() != 2 && ThresholdStr.Length() != 2) // not '' or ""
+      aCommand->SetArg( 4, ThresholdID.SubString( 2, ThresholdID.Length()-1 )); // shape entry
+    else if ( ThresholdStr.Length() != 2 )
       aCommand->SetArg( 4, ThresholdStr );
     else if ( ThresholdID.Length() != 2 )
       aCommand->SetArg( 4, ThresholdID );
