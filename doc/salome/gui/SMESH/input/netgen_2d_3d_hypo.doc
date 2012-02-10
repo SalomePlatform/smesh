@@ -21,7 +21,7 @@ algorithms </em></center>
 - <b>Name</b> - allows to define the name for the algorithm (Netgen
 2D (or 3D) Parameters by default).
 - <b>Max Size</b> - maximum linear dimensions for mesh cells.
-- <b>Max Size</b> - minimum linear dimensions for mesh cells. It is
+- <b>Min Size</b> - minimum linear dimensions for mesh cells. It is
 ignored if it is more than <b>Max Size</b>.
 - <b>Second Order</b> - if this box is checked in, the algorithm will
 create second order nodes on the mesh, which actually will become
