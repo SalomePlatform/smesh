@@ -3490,9 +3490,10 @@ class Mesh:
     #  @param StepVector vector or DirStruct, defining the direction and value of extrusion for one step (the total extrusion length will be NbOfSteps * ||StepVector||)
     #  @param NbOfSteps the number of steps
     #  @param MakeGroups forces the generation of new groups from existing ones
+    #  @param IsNodes is True if elements with given ids are nodes
     #  @return the list of created groups (SMESH_GroupBase) if MakeGroups=True, empty list otherwise
     #  @ingroup l2_modif_extrurev
-    def ExtrusionSweep(self, IDsOfElements, StepVector, NbOfSteps, MakeGroups=False):
+    def ExtrusionSweep(self, IDsOfElements, StepVector, NbOfSteps, MakeGroups=False, IsNodes = False):
         if IDsOfElements == []:
             IDsOfElements = self.GetElementsId()
         if ( isinstance( StepVector, geompyDC.GEOM._objref_GEOM_Object)):
@@ -3502,8 +3503,14 @@ class Mesh:
         Parameters = StepVectorParameters + var_separator + Parameters
         self.mesh.SetParameters(Parameters)
         if MakeGroups:
-            return self.editor.ExtrusionSweepMakeGroups(IDsOfElements, StepVector, NbOfSteps)
-        self.editor.ExtrusionSweep(IDsOfElements, StepVector, NbOfSteps)
+            if(IsNodes):
+                return self.editor.ExtrusionSweepMakeGroups0D(IDsOfElements, StepVector, NbOfSteps)
+            else:
+                return self.editor.ExtrusionSweepMakeGroups(IDsOfElements, StepVector, NbOfSteps)
+        if(IsNodes):
+            self.editor.ExtrusionSweep0D(IDsOfElements, StepVector, NbOfSteps)
+        else:
+            self.editor.ExtrusionSweep(IDsOfElements, StepVector, NbOfSteps)
         return []
 
     ## Generates new elements by extrusion of the elements with given ids
@@ -3533,9 +3540,10 @@ class Mesh:
     #  @param StepVector vector, defining the direction and value of extrusion for one step (the total extrusion length will be NbOfSteps * ||StepVector||)
     #  @param NbOfSteps the number of steps
     #  @param MakeGroups forces the generation of new groups from existing ones
+    #  @param  IsNodes is True if elements which belong to the object are nodes
     #  @return list of created groups (SMESH_GroupBase) if MakeGroups=True, empty list otherwise
     #  @ingroup l2_modif_extrurev
-    def ExtrusionSweepObject(self, theObject, StepVector, NbOfSteps, MakeGroups=False):
+    def ExtrusionSweepObject(self, theObject, StepVector, NbOfSteps, MakeGroups=False, IsNodes=False):
         if ( isinstance( theObject, Mesh )):
             theObject = theObject.GetMesh()
         if ( isinstance( StepVector, geompyDC.GEOM._objref_GEOM_Object)):
@@ -3545,8 +3553,14 @@ class Mesh:
         Parameters = StepVectorParameters + var_separator + Parameters
         self.mesh.SetParameters(Parameters)
         if MakeGroups:
-            return self.editor.ExtrusionSweepObjectMakeGroups(theObject, StepVector, NbOfSteps)
-        self.editor.ExtrusionSweepObject(theObject, StepVector, NbOfSteps)
+            if(IsNodes):
+                return self.editor.ExtrusionSweepObject0DMakeGroups(theObject, StepVector, NbOfSteps)
+            else:
+                return self.editor.ExtrusionSweepObjectMakeGroups(theObject, StepVector, NbOfSteps)
+        if(IsNodes):
+            self.editor.ExtrusionSweepObject0D(IDsOfElements, StepVector, NbOfSteps)
+        else:
+            self.editor.ExtrusionSweepObject(theObject, StepVector, NbOfSteps)
         return []
 
     ## Generates new elements by extrusion of the elements which belong to the object

@@ -97,6 +97,7 @@ SMESHGUI_ExtrusionDlg::SMESHGUI_ExtrusionDlg (SMESHGUI* theModule)
   QPixmap image0 (SMESH::GetResourceMgr( mySMESHGUI )->loadPixmap("SMESH", tr("ICON_DLG_EDGE")));
   QPixmap image1 (SMESH::GetResourceMgr( mySMESHGUI )->loadPixmap("SMESH", tr("ICON_DLG_TRIANGLE")));
   QPixmap image2 (SMESH::GetResourceMgr( mySMESHGUI )->loadPixmap("SMESH", tr("ICON_SELECT")));
+  QPixmap image3 (SMESH::GetResourceMgr( mySMESHGUI )->loadPixmap("SMESH", tr("ICON_DLG_NODE")));
 
   setModal( false );
   setAttribute( Qt::WA_DeleteOnClose, true );
@@ -114,16 +115,20 @@ SMESHGUI_ExtrusionDlg::SMESHGUI_ExtrusionDlg (SMESHGUI* theModule)
   ConstructorsBoxLayout->setSpacing(SPACING);
   ConstructorsBoxLayout->setMargin(MARGIN);
 
+  RadioButton0= new QRadioButton(ConstructorsBox);
+  RadioButton0->setIcon(image3);
   RadioButton1= new QRadioButton(ConstructorsBox);
   RadioButton1->setIcon(image0);
   RadioButton2= new QRadioButton(ConstructorsBox);
   RadioButton2->setIcon(image1);
 
+  ConstructorsBoxLayout->addWidget(RadioButton0);
   ConstructorsBoxLayout->addWidget(RadioButton1);
   ConstructorsBoxLayout->addWidget(RadioButton2);
 
-  GroupConstructors->addButton(RadioButton1, 0);
-  GroupConstructors->addButton(RadioButton2, 1);
+  GroupConstructors->addButton(RadioButton0, 0);
+  GroupConstructors->addButton(RadioButton1, 1);
+  GroupConstructors->addButton(RadioButton2, 2);
 
   /***************************************************************/
   GroupButtons = new QGroupBox(this);
@@ -150,7 +155,7 @@ SMESHGUI_ExtrusionDlg::SMESHGUI_ExtrusionDlg (SMESHGUI* theModule)
   GroupButtonsLayout->addWidget(buttonHelp);
 
   /***************************************************************/
-  GroupArguments = new QGroupBox(tr("EXTRUSION_1D"), this);
+  GroupArguments = new QGroupBox(tr("EXTRUSION_0D"), this);
   QGridLayout* GroupArgumentsLayout = new QGridLayout(GroupArguments);
   GroupArgumentsLayout->setSpacing(SPACING);
   GroupArgumentsLayout->setMargin(MARGIN);
@@ -266,7 +271,7 @@ SMESHGUI_ExtrusionDlg::SMESHGUI_ExtrusionDlg (SMESHGUI* theModule)
   SpinBox_NbSteps->setRange(1, 999999);
   SpinBox_VDist->RangeStepAndValidator(0, COORD_MAX, 10.0, "length_precision");
 
-  RadioButton1->setChecked(true);
+  RadioButton0->setChecked(true);
   RadioButton3->setChecked(true);
   MakeGroupsCheck->setChecked(true);
 
@@ -427,26 +432,38 @@ void SMESHGUI_ExtrusionDlg::ConstructorsClicked (int constructorId)
   switch (constructorId) {
   case 0:
     {
-      GroupArguments->setTitle(tr("EXTRUSION_1D"));
+      GroupArguments->setTitle(tr("EXTRUSION_0D"));
       if (!CheckBoxMesh->isChecked())
-        {
-          LineEditElements->clear();
-          myIDs.clear();
-          if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
-            aViewWindow->SetSelectionMode(EdgeSelection);
-        }
+      {
+        LineEditElements->clear();
+        myIDs.clear();
+        if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+          aViewWindow->SetSelectionMode(NodeSelection);
+      }
       break;
     }
   case 1:
     {
+      GroupArguments->setTitle(tr("EXTRUSION_1D"));
+      if (!CheckBoxMesh->isChecked())
+      {
+        LineEditElements->clear();
+        myIDs.clear();
+        if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+          aViewWindow->SetSelectionMode(EdgeSelection);
+      }
+      break;
+    }
+  case 2:
+    {
       GroupArguments->setTitle(tr("EXTRUSION_2D"));
       if (!CheckBoxMesh->isChecked())
-        {
-          LineEditElements->clear();
-          myIDs.clear();
-          if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
-            aViewWindow->SetSelectionMode(FaceSelection);
-        }
+      {
+        LineEditElements->clear();
+        myIDs.clear();
+        if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+          aViewWindow->SetSelectionMode(FaceSelection);
+      }
       break;
     }
   }
@@ -550,27 +567,61 @@ bool SMESHGUI_ExtrusionDlg::ClickOnApply()
       SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditor();
 
       if ( MakeGroupsCheck->isEnabled() && MakeGroupsCheck->isChecked() ) {
-        if( CheckBoxMesh->isChecked() ) {
-          if( GetConstructorId() == 0 )
-            SMESH::ListOfGroups_var groups = 
-              aMeshEditor->ExtrusionSweepObject1DMakeGroups(mySelectedObject, aVector, aNbSteps);
-          else
-            SMESH::ListOfGroups_var groups = 
-              aMeshEditor->ExtrusionSweepObject2DMakeGroups(mySelectedObject, aVector, aNbSteps);
-        }
+        if( CheckBoxMesh->isChecked() ) 
+          switch (GetConstructorId() ) {
+            case 0:
+              {
+                SMESH::ListOfGroups_var groups = 
+                  aMeshEditor->ExtrusionSweepObject0DMakeGroups(mySelectedObject, aVector, aNbSteps);
+                break;
+              }
+            case 1:
+              {
+                SMESH::ListOfGroups_var groups = 
+                  aMeshEditor->ExtrusionSweepObject1DMakeGroups(mySelectedObject, aVector, aNbSteps);
+                break;
+              }
+            case 2:
+              {
+                SMESH::ListOfGroups_var groups = 
+                  aMeshEditor->ExtrusionSweepObject2DMakeGroups(mySelectedObject, aVector, aNbSteps);
+                break;
+              }
+          }
         else
-          SMESH::ListOfGroups_var groups = 
-            aMeshEditor->ExtrusionSweepMakeGroups(myElementsId.inout(), aVector, aNbSteps);
+        {
+          SMESH::ListOfGroups_var groups;
+          if (GetConstructorId() == 0)
+            groups = aMeshEditor->ExtrusionSweepMakeGroups0D(myElementsId.inout(), aVector, aNbSteps);
+          else
+            groups = aMeshEditor->ExtrusionSweepMakeGroups(myElementsId.inout(), aVector, aNbSteps);
+        }
+
       }
       else {
-        if( CheckBoxMesh->isChecked() ) {
-          if( GetConstructorId() == 0 )
-            aMeshEditor->ExtrusionSweepObject1D(mySelectedObject, aVector, aNbSteps);
-          else
-            aMeshEditor->ExtrusionSweepObject2D(mySelectedObject, aVector, aNbSteps);
+        if( CheckBoxMesh->isChecked() ) 
+          switch( GetConstructorId() ) {
+            case 0:
+              {
+              aMeshEditor->ExtrusionSweepObject0D(mySelectedObject, aVector, aNbSteps);
+                break;
+              }
+            case 1:
+              {
+              aMeshEditor->ExtrusionSweepObject1D(mySelectedObject, aVector, aNbSteps);
+                break;
+              }
+            case 2:
+              {
+              aMeshEditor->ExtrusionSweepObject2D(mySelectedObject, aVector, aNbSteps);
+                break;
+          }
         }
         else
-          aMeshEditor->ExtrusionSweep(myElementsId.inout(), aVector, aNbSteps);
+          if (GetConstructorId() == 0)
+            aMeshEditor->ExtrusionSweep0D(myElementsId.inout(), aVector, aNbSteps);
+          else
+            aMeshEditor->ExtrusionSweep(myElementsId.inout(), aVector, aNbSteps);
       }
 
       myMesh->SetParameters( aParameters.join(":").toLatin1().constData() );
@@ -660,9 +711,28 @@ void SMESHGUI_ExtrusionDlg::onTextChange (const QString& theNewText)
     if (send == LineEditElements)
     {
       SMDS_Mesh* aMesh = myActor ? myActor->GetObject()->GetMesh() : 0;
-      SMESH::ElementType SMESHType = GetConstructorId() ? SMESH::FACE : SMESH::EDGE;
-      SMDSAbs_ElementType SMDSType = GetConstructorId() ? SMDSAbs_Face: SMDSAbs_Edge;
-
+      SMESH::ElementType SMESHType;
+      SMDSAbs_ElementType SMDSType;
+      switch (GetConstructorId()) {
+      case 0:
+        {
+          SMESHType = SMESH::NODE;
+          SMDSType = SMDSAbs_Node;
+          break;
+        }
+      case 1:
+        {
+          SMESHType = SMESH::EDGE;
+          SMDSType = SMDSAbs_Edge;
+          break;		  
+        }
+      case 2:
+        {
+          SMESHType = SMESH::FACE;
+          SMDSType = SMDSAbs_Face;
+          break;
+        }
+      }
       myElementsId = new SMESH::long_array;
       myElementsId->length( aListId.count() );
       TColStd_MapOfInteger newIndices;
@@ -827,16 +897,26 @@ void SMESHGUI_ExtrusionDlg::SetEditCurrentArgument()
       mySelectionMgr->installFilter(myMeshOrSubMeshOrGroupFilter);
     } else {
       int aConstructorId = GetConstructorId();
-      if (aConstructorId == 0)
-        {
-          if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
-            aViewWindow->SetSelectionMode(EdgeSelection);
-        }
-      else if (aConstructorId == 1)
-        {
-          if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+      switch(aConstructorId) {
+          case 0:
+          {   
+            if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+              aViewWindow->SetSelectionMode(NodeSelection);
+            break;
+          }
+          case 1:
+          {
+            if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+              aViewWindow->SetSelectionMode(EdgeSelection);
+            break;
+          }
+          case 2:
+          {
+            if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
             aViewWindow->SetSelectionMode(FaceSelection);
-        }
+            break;
+          }
+      }
     }
   }
   else if (send == SelectVectorButton){
@@ -949,17 +1029,26 @@ void SMESHGUI_ExtrusionDlg::onSelectMesh (bool toSelectMesh)
     LineEditElements->setValidator(0);
   } else {
     int aConstructorId = GetConstructorId();
-    if (aConstructorId == 0)
-      {
-        if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
-          aViewWindow->SetSelectionMode(EdgeSelection);
-      }
-    else if (aConstructorId == 1)
-      {
-        if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
-          aViewWindow->SetSelectionMode(FaceSelection);
-      }
-
+    switch(aConstructorId) {
+      case 0:
+        {
+          if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+            aViewWindow->SetSelectionMode(NodeSelection);
+          break;
+        }
+      case 1:
+        {
+          if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+            aViewWindow->SetSelectionMode(EdgeSelection);
+          break;
+        }
+      case 2:
+        {
+          if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+            aViewWindow->SetSelectionMode(FaceSelection);
+          break;
+        }
+    }
     LineEditElements->setReadOnly(false);
     LineEditElements->setValidator(myIdValidator);
     onTextChange(LineEditElements->text());
@@ -1011,11 +1100,29 @@ void SMESHGUI_ExtrusionDlg::setFilters()
   if ( !myFilterDlg )
   {
     QList<int> types;  
+    types.append( SMESH::NODE );
     types.append( SMESH::EDGE );
     types.append( SMESH::FACE );
     myFilterDlg = new SMESHGUI_FilterDlg( mySMESHGUI, types );
   }
-  myFilterDlg->Init( GetConstructorId() ? SMESH::FACE : SMESH::EDGE );
+  switch( GetConstructorId() ){
+    case 0: 
+      {
+      myFilterDlg->Init( SMESH::NODE );
+        break;
+      }
+    case 1:
+      {
+      myFilterDlg->Init( SMESH::EDGE );
+        break;
+      }
+    case 2:
+      {
+      myFilterDlg->Init( SMESH::FACE );
+        break;
+      }
+  }
+  
 
   myFilterDlg->SetSelection();
   myFilterDlg->SetMesh( myMesh );
@@ -1072,13 +1179,29 @@ void SMESHGUI_ExtrusionDlg::onDisplaySimulation( bool toDisplayPreview ) {
         SUIT_OverrideCursor aWaitCursor;
         SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditPreviewer();
         if( CheckBoxMesh->isChecked() ) {
-          if( GetConstructorId() == 0 )
-            aMeshEditor->ExtrusionSweepObject1D(mySelectedObject, aVector, aNbSteps);
-          else
-            aMeshEditor->ExtrusionSweepObject2D(mySelectedObject, aVector, aNbSteps);
+          switch (GetConstructorId()) {
+            case 0:
+              {
+                aMeshEditor->ExtrusionSweepObject0D(mySelectedObject, aVector, aNbSteps);
+				        break;
+              }
+            case 1:
+              {
+                aMeshEditor->ExtrusionSweepObject1D(mySelectedObject, aVector, aNbSteps);
+				        break;
+              }
+            case 2:
+              {
+                aMeshEditor->ExtrusionSweepObject2D(mySelectedObject, aVector, aNbSteps);
+				        break;
+              }
+          }
         }
         else
-          aMeshEditor->ExtrusionSweep(myElementsId.inout(), aVector, aNbSteps);
+          if(GetConstructorId() == 0)
+            aMeshEditor->ExtrusionSweep0D(myElementsId.inout(), aVector, aNbSteps);
+          else
+            aMeshEditor->ExtrusionSweep(myElementsId.inout(), aVector, aNbSteps);
         
         SMESH::MeshPreviewStruct_var aMeshPreviewStruct = aMeshEditor->GetPreviewData();
         mySimulation->SetData(aMeshPreviewStruct._retn());

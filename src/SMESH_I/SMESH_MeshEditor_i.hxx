@@ -212,9 +212,17 @@ public:
   void ExtrusionSweep(const SMESH::long_array & IDsOfElements,
                       const SMESH::DirStruct &  StepVector,
                       CORBA::Long               NbOfSteps);
+  void ExtrusionSweep0D(const SMESH::long_array & IDsOfElements,
+                      const SMESH::DirStruct &  StepVector,
+                      CORBA::Long               NbOfSteps);
+
   void ExtrusionSweepObject(SMESH::SMESH_IDSource_ptr theObject,
                             const SMESH::DirStruct &  StepVector,
                             CORBA::Long               NbOfSteps);
+
+  void ExtrusionSweepObject0D(SMESH::SMESH_IDSource_ptr theObject,
+                              const SMESH::DirStruct &  StepVector,
+                              CORBA::Long               NbOfSteps);
   void ExtrusionSweepObject1D(SMESH::SMESH_IDSource_ptr theObject,
                               const SMESH::DirStruct &  StepVector,
                               CORBA::Long               NbOfSteps);
@@ -315,6 +323,10 @@ public:
   SMESH::ListOfGroups* ExtrusionSweepMakeGroups(const SMESH::long_array& IDsOfElements,
                                                 const SMESH::DirStruct&  StepVector,
                                                 CORBA::Long              NbOfSteps);
+  SMESH::ListOfGroups* ExtrusionSweepMakeGroups0D(const SMESH::long_array& IDsOfElements,
+                                                const SMESH::DirStruct&  StepVector,
+                                                CORBA::Long              NbOfSteps);
+
   SMESH::ListOfGroups* AdvancedExtrusionMakeGroups(const SMESH::long_array& IDsOfElements,
                                                    const SMESH::DirStruct&  StepVector,
                                                    CORBA::Long              NbOfSteps,
@@ -323,6 +335,9 @@ public:
   SMESH::ListOfGroups* ExtrusionSweepObjectMakeGroups(SMESH::SMESH_IDSource_ptr Object,
                                                       const SMESH::DirStruct&   StepVector,
                                                       CORBA::Long               NbOfSteps);
+  SMESH::ListOfGroups* ExtrusionSweepObject0DMakeGroups(SMESH::SMESH_IDSource_ptr Object,
+                                                        const SMESH::DirStruct&   StepVector,
+                                                        CORBA::Long               NbOfSteps);
   SMESH::ListOfGroups* ExtrusionSweepObject1DMakeGroups(SMESH::SMESH_IDSource_ptr Object,
                                                         const SMESH::DirStruct&   StepVector,
                                                         CORBA::Long               NbOfSteps);

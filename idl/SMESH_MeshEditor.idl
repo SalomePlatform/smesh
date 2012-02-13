@@ -389,10 +389,25 @@ module SMESH
                         in DirStruct       StepVector,
                         in long            NbOfSteps);
     /*!
+     * \brief Genarate dim+1 elements by extrusion of elements along vector
+     * \param IDsOfElements - elements to sweep
+     * \param StepVector - vector giving direction and distance of an extrusion step
+     * \param NbOfSteps - number of elements to generate from one element
+     */
+    void ExtrusionSweep0D(in long_array    IDsOfElements,
+                        in DirStruct       StepVector,
+                        in long            NbOfSteps);
+    /*!
      * \brief Same as previous but additionally create groups of elements
      *  generated from elements belonging to preexisting groups
      */
     ListOfGroups ExtrusionSweepMakeGroups(in long_array      IDsOfElements,
+                                          in DirStruct       StepVector,
+                                          in long            NbOfSteps);
+   /*!
+     * \brief Same as previous but elements are nodes
+     */
+    ListOfGroups ExtrusionSweepMakeGroups0D(in long_array      IDsOfElements,
                                           in DirStruct       StepVector,
                                           in long            NbOfSteps);
    /*!
@@ -423,6 +438,13 @@ module SMESH
     ListOfGroups ExtrusionSweepObjectMakeGroups(in SMESH_IDSource  theObject,
                                                 in DirStruct       StepVector,
                                                 in long            NbOfSteps);
+
+    void ExtrusionSweepObject0D(in SMESH_IDSource theObject,
+                                in DirStruct      StepVector,
+                                in long           NbOfSteps);
+    ListOfGroups ExtrusionSweepObject0DMakeGroups(in SMESH_IDSource theObject,
+                                                  in DirStruct      StepVector,
+                                                  in long           NbOfSteps);
 
     void ExtrusionSweepObject1D(in SMESH_IDSource theObject,
                                 in DirStruct      StepVector,

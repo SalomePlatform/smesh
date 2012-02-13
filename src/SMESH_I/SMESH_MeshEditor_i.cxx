@@ -111,8 +111,12 @@ namespace {
         if ( type == theAvoidType ||
              ( theSelectType != SMDSAbs_All && type != theSelectType ))
           continue;
-
-        if ( const SMDS_MeshElement* anElemCopy = Copy( anElem ))
+        const SMDS_MeshElement* anElemCopy;
+        if ( type == SMDSAbs_Node)
+          anElemCopy = Copy( cast2Node(anElem) );
+        else
+          anElemCopy = Copy( anElem );
+        if ( anElemCopy )
           theCopyElements.insert( theCopyElements.end(), anElemCopy );
       }
     }
@@ -1887,9 +1891,17 @@ SMESH_MeshEditor_i::extrusionSweep(const SMESH::long_array & theIDsOfElements,
     gp_Vec stepVec( P->x, P->y, P->z );
 
     TIDSortedElemSet* workElements = & elements;
-    TPreviewMesh      tmpMesh( SMDSAbs_Face );
-    SMESH_Mesh*       mesh = myMesh;
-    
+
+    SMDSAbs_ElementType aType = SMDSAbs_Face;
+    ::SMESH_MeshEditor::ExtrusionFlags aFlag = ::SMESH_MeshEditor::ExtrusionFlags::EXTRUSION_FLAG_BOUNDARY;
+    if (theElementType == SMDSAbs_Node)
+    {
+      aType = SMDSAbs_Edge;
+      aFlag = ::SMESH_MeshEditor::ExtrusionFlags::EXTRUSION_FLAG_SEW;
+    }
+    TPreviewMesh      tmpMesh( aType );
+    SMESH_Mesh* mesh = myMesh;
+
     if ( myPreviewMode ) {
       SMDSAbs_ElementType select = SMDSAbs_All, avoid = SMDSAbs_Volume;
       tmpMesh.Copy( elements, copyElements, select, avoid );
@@ -1900,8 +1912,8 @@ SMESH_MeshEditor_i::extrusionSweep(const SMESH::long_array & theIDsOfElements,
 
     TElemOfElemListMap aHystory;
     ::SMESH_MeshEditor anEditor( mesh );
-    ::SMESH_MeshEditor::PGroupIDs groupIds =
-        anEditor.ExtrusionSweep (*workElements, stepVec, theNbOfSteps, aHystory, theMakeGroups);
+    ::SMESH_MeshEditor::PGroupIDs groupIds = 
+        anEditor.ExtrusionSweep (*workElements, stepVec, theNbOfSteps, aHystory, theMakeGroups, aFlag);
 
     myMesh->GetMeshDS()->Modified();
     storeResult(anEditor);
@@ -1931,6 +1943,21 @@ void SMESH_MeshEditor_i::ExtrusionSweep(const SMESH::long_array & theIDsOfElemen
   }
 }
 
+//=======================================================================
+//function : ExtrusionSweep0D
+//purpose  :
+//=======================================================================
+
+void SMESH_MeshEditor_i::ExtrusionSweep0D(const SMESH::long_array & theIDsOfElements,
+                                        const SMESH::DirStruct &  theStepVector,
+                                        CORBA::Long               theNbOfSteps)
+{
+  extrusionSweep (theIDsOfElements, theStepVector, theNbOfSteps, false, SMDSAbs_Node );
+  if (!myPreviewMode) {
+    TPythonDump() << this << ".ExtrusionSweep0D( "
+                  << theIDsOfElements << ", " << theStepVector <<", " << theNbOfSteps << " )";
+  }
+}
 
 //=======================================================================
 //function : ExtrusionSweepObject
@@ -1945,6 +1972,23 @@ void SMESH_MeshEditor_i::ExtrusionSweepObject(SMESH::SMESH_IDSource_ptr theObjec
   extrusionSweep (anElementsId, theStepVector, theNbOfSteps, false );
   if (!myPreviewMode) {
     TPythonDump() << this << ".ExtrusionSweepObject( "
+                  << theObject << ", " << theStepVector << ", " << theNbOfSteps << " )";
+  }
+}
+
+//=======================================================================
+//function : ExtrusionSweepObject0D
+//purpose  :
+//=======================================================================
+
+void SMESH_MeshEditor_i::ExtrusionSweepObject0D(SMESH::SMESH_IDSource_ptr theObject,
+                                                const SMESH::DirStruct &  theStepVector,
+                                                CORBA::Long               theNbOfSteps)
+{
+  SMESH::long_array_var anElementsId = theObject->GetIDs();
+  extrusionSweep (anElementsId, theStepVector, theNbOfSteps, false, SMDSAbs_Node );
+  if ( !myPreviewMode ) {
+    TPythonDump() << this << ".ExtrusionSweepObject0D( "
                   << theObject << ", " << theStepVector << ", " << theNbOfSteps << " )";
   }
 }
@@ -2006,6 +2050,28 @@ SMESH_MeshEditor_i::ExtrusionSweepMakeGroups(const SMESH::long_array& theIDsOfEl
 }
 
 //=======================================================================
+//function : ExtrusionSweepMakeGroups0D
+//purpose  :
+//=======================================================================
+
+SMESH::ListOfGroups*
+SMESH_MeshEditor_i::ExtrusionSweepMakeGroups0D(const SMESH::long_array& theIDsOfElements,
+                                             const SMESH::DirStruct&  theStepVector,
+                                             CORBA::Long              theNbOfSteps)
+{
+  TPythonDump aPythonDump; // it is here to prevent dump of GetGroups()
+
+  SMESH::ListOfGroups* aGroups = extrusionSweep(theIDsOfElements, theStepVector, theNbOfSteps, true,SMDSAbs_Node);
+
+  if (!myPreviewMode) {
+    DumpGroupsList(aPythonDump, aGroups);
+    aPythonDump << this << ".ExtrusionSweepMakeGroups0D( " << theIDsOfElements
+                << ", " << theStepVector <<", " << theNbOfSteps << " )";
+  }
+  return aGroups;
+}
+
+//=======================================================================
 //function : ExtrusionSweepObjectMakeGroups
 //purpose  :
 //=======================================================================
@@ -2023,6 +2089,29 @@ SMESH_MeshEditor_i::ExtrusionSweepObjectMakeGroups(SMESH::SMESH_IDSource_ptr the
   if (!myPreviewMode) {
     DumpGroupsList(aPythonDump, aGroups);
     aPythonDump << this << ".ExtrusionSweepObjectMakeGroups( " << theObject
+                << ", " << theStepVector << ", " << theNbOfSteps << " )";
+  }
+  return aGroups;
+}
+
+//=======================================================================
+//function : ExtrusionSweepObject0DMakeGroups
+//purpose  :
+//=======================================================================
+
+SMESH::ListOfGroups*
+SMESH_MeshEditor_i::ExtrusionSweepObject0DMakeGroups(SMESH::SMESH_IDSource_ptr theObject,
+                                                     const SMESH::DirStruct&   theStepVector,
+                                                     CORBA::Long               theNbOfSteps)
+{
+  TPythonDump aPythonDump; // it is here to prevent dump of GetGroups()
+
+  SMESH::long_array_var anElementsId = theObject->GetIDs();
+  SMESH::ListOfGroups * aGroups = extrusionSweep(anElementsId, theStepVector,
+                                                 theNbOfSteps, true, SMDSAbs_Node);
+  if (!myPreviewMode) {
+    DumpGroupsList(aPythonDump, aGroups);
+    aPythonDump << this << ".ExtrusionSweepObject0DMakeGroups( " << theObject
                 << ", " << theStepVector << ", " << theNbOfSteps << " )";
   }
   return aGroups;

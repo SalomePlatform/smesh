@@ -99,6 +99,7 @@ private:
   // widgets
   QGroupBox*                       ConstructorsBox;
   QButtonGroup*                    GroupConstructors;
+  QRadioButton*                    RadioButton0;
   QRadioButton*                    RadioButton1;
   QRadioButton*                    RadioButton2;
   QRadioButton*                    RadioButton3;

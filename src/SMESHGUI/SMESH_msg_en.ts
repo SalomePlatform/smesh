@@ -4326,6 +4326,10 @@ Please select a group and try again</translation>
         <translation>Can&apos;t get tangent for one of the path nodes</translation>
     </message>
     <message>
+        <source>EXTRUSION_0D</source>
+        <translation>Extrusion of 0D elements</translation>
+    </message>
+    <message>
         <source>EXTRUSION_1D</source>
         <translation>Extrusion of 1D elements</translation>
     </message>
