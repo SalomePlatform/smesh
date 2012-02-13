@@ -37,7 +37,8 @@
 #include <list>
 #include <map>
 
-#include CORBA_SERVER_HEADER(SALOMEDS)
+#include <SALOMEconfig.h>
+#include CORBA_CLIENT_HEADER(SALOMEDS)
 
 // ===========================================================================================
 /*!
