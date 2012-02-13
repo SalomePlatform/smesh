@@ -1893,11 +1893,11 @@ SMESH_MeshEditor_i::extrusionSweep(const SMESH::long_array & theIDsOfElements,
     TIDSortedElemSet* workElements = & elements;
 
     SMDSAbs_ElementType aType = SMDSAbs_Face;
-    ::SMESH_MeshEditor::ExtrusionFlags aFlag = ::SMESH_MeshEditor::ExtrusionFlags::EXTRUSION_FLAG_BOUNDARY;
+    //::SMESH_MeshEditor::ExtrusionFlags aFlag = ::SMESH_MeshEditor::ExtrusionFlags::EXTRUSION_FLAG_BOUNDARY;
     if (theElementType == SMDSAbs_Node)
     {
       aType = SMDSAbs_Edge;
-      aFlag = ::SMESH_MeshEditor::ExtrusionFlags::EXTRUSION_FLAG_SEW;
+      //aFlag = ::SMESH_MeshEditor::ExtrusionFlags::EXTRUSION_FLAG_SEW;
     }
     TPreviewMesh      tmpMesh( aType );
     SMESH_Mesh* mesh = myMesh;
@@ -1913,7 +1913,7 @@ SMESH_MeshEditor_i::extrusionSweep(const SMESH::long_array & theIDsOfElements,
     TElemOfElemListMap aHystory;
     ::SMESH_MeshEditor anEditor( mesh );
     ::SMESH_MeshEditor::PGroupIDs groupIds = 
-        anEditor.ExtrusionSweep (*workElements, stepVec, theNbOfSteps, aHystory, theMakeGroups, aFlag);
+        anEditor.ExtrusionSweep (*workElements, stepVec, theNbOfSteps, aHystory, theMakeGroups);
 
     myMesh->GetMeshDS()->Modified();
     storeResult(anEditor);
