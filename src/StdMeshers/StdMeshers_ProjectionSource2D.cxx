@@ -28,6 +28,7 @@
 #include "StdMeshers_ProjectionSource2D.hxx"
 
 #include "SMESH_Mesh.hxx"
+#include "StdMeshers_ProjectionUtils.hxx"
 
 #include "utilities.h"
 
@@ -103,17 +104,27 @@ void StdMeshers_ProjectionSource2D::SetVertexAssociation(const TopoDS_Shape& sou
   throw ( SALOME_Exception )
 {
   if ( sourceVertex1.IsNull() != targetVertex1.IsNull() ||
-       sourceVertex2.IsNull() != targetVertex2.IsNull() ||
-       sourceVertex1.IsNull() != targetVertex2.IsNull() )
-    throw SALOME_Exception(LOCALIZED("Two or none pairs of vertices must be provided"));
+       sourceVertex2.IsNull() != targetVertex2.IsNull() )
+    throw SALOME_Exception(LOCALIZED("Vertices must be provided in couples"));
 
-  if ( !sourceVertex1.IsNull() ) {
+  if ( sourceVertex1.IsNull() != sourceVertex2.IsNull() )
+  {
+    // possibly there is only 1 vertex in the face
+    if ( !_sourceFace.IsNull() &&
+         StdMeshers_ProjectionUtils::Count( _sourceFace, TopAbs_VERTEX, /*ignoreSame=*/true) != 1 )
+      throw SALOME_Exception(LOCALIZED("Two or none pairs of vertices must be provided"));
+  }
+
+  if ( !sourceVertex1.IsNull() )
     if ( sourceVertex1.ShapeType() != TopAbs_VERTEX ||
-         sourceVertex2.ShapeType() != TopAbs_VERTEX ||
-         targetVertex1.ShapeType() != TopAbs_VERTEX ||
+         targetVertex1.ShapeType() != TopAbs_VERTEX )
+      throw SALOME_Exception(LOCALIZED("Wrong shape type"));
+
+  if ( !sourceVertex2.IsNull() )
+    if ( sourceVertex2.ShapeType() != TopAbs_VERTEX ||
          targetVertex2.ShapeType() != TopAbs_VERTEX )
       throw SALOME_Exception(LOCALIZED("Wrong shape type"));
-  }
+
 
   if ( !_sourceVertex1.IsSame( sourceVertex1 ) ||
        !_sourceVertex2.IsSame( sourceVertex2 ) ||
