@@ -29,6 +29,7 @@
 #include <SMESHGUI_SpinBox.h>
 #include <SMESHGUI_HypothesesUtils.h>
 #include <SMESHGUI_Utils.h>
+#include <SMESHGUI_GEOMGenUtils.h>
 
 #include <SMESH_TypeFilter.hxx>
 #include <SMESH_NumberFilter.hxx>
@@ -391,7 +392,8 @@ bool StdMeshersGUI_StdHypothesisCreator::checkParams( QString& msg ) const
     ok = ( w->IsObjectSelected() );
     if ( !ok ) w->SetObject( CORBA::Object::_nil() );
     int nbAssocVert = ( hypType() == "ProjectionSource1D" ? 1 : 2 );
-    for ( int i = 0; ok && i < nbAssocVert; i += 2)
+    int nbNonEmptyAssoc = 0;
+    for ( int i = 0; ok && i < nbAssocVert*2; i += 2)
     {
       QString srcV, tgtV;
       StdMeshersGUI_ObjectReferenceParamWdg* w1 =
@@ -406,8 +408,26 @@ bool StdMeshersGUI_StdHypothesisCreator::checkParams( QString& msg ) const
         w1->SetObject( CORBA::Object::_nil() );
         w2->SetObject( CORBA::Object::_nil() );
       }
+      nbNonEmptyAssoc += !srcV.isEmpty();
     }
+    if ( ok && nbNonEmptyAssoc == 1 && nbAssocVert == 2 )
+    {
+      // only one pair of VERTEXes is given for a FACE,
+      // then the FACE must have only one VERTEX
+      GEOM::GEOM_Object_var face = w->GetObject< GEOM::GEOM_Object >();
 
+      GEOM::GEOM_Gen_var geomGen = SMESH::GetGEOMGen();
+      _PTR(Study)         aStudy = SMESH::GetActiveStudyDocument();
+      GEOM::GEOM_IShapesOperations_var shapeOp;
+      if ( !geomGen->_is_nil() && aStudy )
+        shapeOp = geomGen->GetIShapesOperations( aStudy->StudyId() );
+      if ( !shapeOp->_is_nil() )
+      {
+        GEOM::ListOfLong_var vertices =
+          shapeOp->GetAllSubShapesIDs (face, GEOM::VERTEX, /*isSorted=*/false);
+        ok = ( vertices->length() == 1 );
+      }
+    }
     // Uninstall filters of StdMeshersGUI_ObjectReferenceParamWdg
     if ( ok )
       deactivateObjRefParamWdg( customWidgets() );
@@ -424,14 +444,7 @@ bool StdMeshersGUI_StdHypothesisCreator::checkParams( QString& msg ) const
       widget< StdMeshersGUI_LayerDistributionParamWdg >( 0 );
     ok = ( w && w->IsOk() );
   }
-  else if ( hypType() == "QuadrangleParams" )
-  {
-    //StdMeshersGUI_SubShapeSelectorWdg* w =
-    //  widget< StdMeshersGUI_SubShapeSelectorWdg >( 0 );
-    //ok = ( w->GetListSize() > 0 );
-    //StdMeshersGUI_QuadrangleParamWdg* w =
-    //  widget< StdMeshersGUI_QuadrangleParamWdg >( 1 );
-  }
+
   return ok;
 }
 
