@@ -4699,19 +4699,11 @@ void SMESHGUI::createPreferences()
 
   addPreference( tr( "PREF_OBJECT_COLOR" ), selGroup, LightApp_Preferences::Color, "SMESH", "selection_object_color" );
   addPreference( tr( "PREF_ELEMENT_COLOR" ), selGroup, LightApp_Preferences::Color, "SMESH", "selection_element_color" );
-  int selW = addPreference( tr( "PREF_WIDTH" ), selGroup, LightApp_Preferences::IntSpin, "SMESH", "selection_width" );
-
-  setPreferenceProperty( selW, "min", 1 );
-  setPreferenceProperty( selW, "max", 5 );
 
   int preGroup = addPreference( tr( "PREF_GROUP_PRESELECTION" ), selTab );
   setPreferenceProperty( preGroup, "columns", 2 );
 
   addPreference( tr( "PREF_HIGHLIGHT_COLOR" ), preGroup, LightApp_Preferences::Color, "SMESH", "highlight_color" );
-  int preW = addPreference( tr( "PREF_WIDTH" ), preGroup, LightApp_Preferences::IntSpin, "SMESH", "highlight_width" );
-
-  setPreferenceProperty( preW, "min", 1 );
-  setPreferenceProperty( preW, "max", 5 );
 
   int precSelGroup = addPreference( tr( "PREF_GROUP_PRECISION" ), selTab );
   setPreferenceProperty( precSelGroup, "columns", 2 );
@@ -4814,7 +4806,7 @@ void SMESHGUI::preferencesChanged( const QString& sect, const QString& name )
     std::string aWarning;
     SUIT_ResourceMgr* aResourceMgr = SMESH::GetResourceMgr(this);
     if( name=="selection_object_color" || name=="selection_element_color" ||
-        name=="selection_width" || name=="highlight_color" || name=="highlight_width" ||
+        name=="highlight_color" ||
         name=="selection_precision_node" || name=="selection_precision_element" ||
         name=="selection_precision_object")
       SMESH::UpdateSelectionProp( this );

@@ -896,16 +896,11 @@ namespace SMESH
            aSelColor = mgr->colorValue( "SMESH", "selection_element_color", Qt::yellow ),
            aPreColor = mgr->colorValue( "SMESH", "highlight_color", Qt::cyan );
 
-    int SW = mgr->integerValue( "SMESH", "selection_width", 5 ),
-        PW = mgr->integerValue( "SMESH", "highlight_width", 5 );
-
-    // adjust highlight_width to the width of mesh entities
     int aElem0DSize = mgr->integerValue("SMESH", "elem0d_size", 5);
     int aLineWidth  = mgr->integerValue("SMESH", "element_width", 1);
     int maxSize = aElem0DSize;
     if (aElem0DSize > maxSize) maxSize = aElem0DSize;
     if (aLineWidth > maxSize) maxSize = aLineWidth;
-    if (PW < maxSize + 2) PW = maxSize + 2;
 
     double SP1 = mgr->doubleValue( "SMESH", "selection_precision_node", 0.025 ),
            SP2 = mgr->doubleValue( "SMESH", "selection_precision_element", 0.001 ),
@@ -917,16 +912,14 @@ namespace SMESH
         // mesh element selection
         aVtkView->SetSelectionProp(aSelColor.red()/255.,
                                    aSelColor.green()/255.,
-                                   aSelColor.blue()/255.,
-                                   SW );
+                                   aSelColor.blue()/255.);
         // tolerances
         aVtkView->SetSelectionTolerance(SP1, SP2, SP3);
 
         // pre-selection
         aVtkView->SetPreselectionProp(aPreColor.red()/255.,
                                       aPreColor.green()/255.,
-                                      aPreColor.blue()/255.,
-                                      PW);
+                                      aPreColor.blue()/255.);
         // update actors
         vtkRenderer* aRenderer = aVtkView->getRenderer();
         VTK::ActorCollectionCopy aCopy(aRenderer->GetActors());

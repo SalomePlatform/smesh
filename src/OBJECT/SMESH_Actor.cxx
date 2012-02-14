@@ -376,7 +376,7 @@ SMESH_ActorDef::SMESH_ActorDef()
   myBaseActor->SetStoreGemetryMapping(true);
   myBaseActor->GetProperty()->SetOpacity(0.0);
   myPickableActor = myBaseActor;
-
+  
   myHighlightProp = vtkProperty::New();
   myHighlightProp->SetAmbient(1.0);
   myHighlightProp->SetDiffuse(0.0);
@@ -384,6 +384,7 @@ SMESH_ActorDef::SMESH_ActorDef()
   SMESH::GetColor( "SMESH", "selection_object_color", anRGB[0], anRGB[1], anRGB[2], QColor( 255, 255, 255 ) );
   myHighlightProp->SetColor(anRGB[0],anRGB[1],anRGB[2]);
   myHighlightProp->SetPointSize(aElem0DSize); // ??
+  myHighlightProp->SetLineWidth(aLineWidth);
   myHighlightProp->SetRepresentation(1);
 
   myOutLineProp = vtkProperty::New();
@@ -393,6 +394,7 @@ SMESH_ActorDef::SMESH_ActorDef()
   SMESH::GetColor( "SMESH", "outline_color", anRGB[0], anRGB[1], anRGB[2], QColor( 0, 70, 0 ) );
   myOutLineProp->SetColor(anRGB[0],anRGB[1],anRGB[2]);
   myOutLineProp->SetPointSize(aElem0DSize); // ??
+  myOutLineProp->SetLineWidth(aLineWidth);
   myOutLineProp->SetRepresentation(1);
 
   myPreselectProp = vtkProperty::New();
@@ -402,6 +404,7 @@ SMESH_ActorDef::SMESH_ActorDef()
   SMESH::GetColor( "SMESH", "highlight_color", anRGB[0], anRGB[1], anRGB[2], QColor( 0, 255, 255 ) );
   myPreselectProp->SetColor(anRGB[0],anRGB[1],anRGB[2]);
   myPreselectProp->SetPointSize(aElem0DSize); // ??
+  myPreselectProp->SetLineWidth(aLineWidth);
   myPreselectProp->SetRepresentation(1);
 
   myHighlitableActor = SMESH_DeviceActor::New();
@@ -1812,8 +1815,11 @@ void SMESH_ActorDef::SetLineWidth(vtkFloatingPointType theVal){
   myEdgeProp->SetLineWidth(theVal);
 
   my1DProp->SetLineWidth(theVal + aLineWidthInc);
-  my1DExtProp->SetLineWidth(theVal + aLineWidthInc);
-
+  my1DExtProp->SetLineWidth(theVal + aLineWidthInc);    
+  my2DExtProp->SetLineWidth(theVal + aLineWidthInc);
+  myOutLineProp->SetLineWidth(theVal);
+  myHighlightProp->SetLineWidth(theVal);
+  myPreselectProp->SetLineWidth(theVal);
   Modified();
 }
 
