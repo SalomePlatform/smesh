@@ -741,7 +741,11 @@ void SMESHGUI_ExtrusionDlg::onTextChange (const QString& theNewText)
         bool validId = false;
         if ( id > 0 ) {
           if ( aMesh ) {
-            const SMDS_MeshElement * e = aMesh->FindElement( id );
+            const SMDS_MeshElement * e;
+            if (SMDSType == SMDSAbs_Node)
+              e = aMesh->FindNode( id ); 
+            else
+              e = aMesh->FindElement( id );
             validId = ( e && e->GetType() == SMDSType );
           } else {
             validId = ( myMesh->GetElementType( id, true ) == SMESHType );
