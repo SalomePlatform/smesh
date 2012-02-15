@@ -412,6 +412,70 @@
         <translation>Trouver un élément par un point</translation>
     </message>
     <message>
+        <source>EQUAL_NODE</source>
+        <translation>Nœuds en double</translation>
+    </message>
+    <message>
+        <source>MEN_EQUAL_NODE</source>
+        <translation>Nœuds en double</translation>
+    </message>
+    <message>
+        <source>STB_EQUAL_NODE</source>
+        <translation>Nœuds en double</translation>
+    </message>
+    <message>
+        <source>TOP_EQUAL_NODE</source>
+        <translation>Nœuds en double</translation>
+    </message>
+    <message>
+        <source>EQUAL_EDGE</source>
+        <translation>Arêtes en double</translation>
+    </message>
+    <message>
+        <source>MEN_EQUAL_EDGE</source>
+        <translation>Arêtes en double</translation>
+    </message>
+    <message>
+        <source>STB_EQUAL_EDGE</source>
+        <translation>Arêtes en double</translation>
+    </message>
+    <message>
+        <source>TOP_EQUAL_EDGE</source>
+        <translation>Arêtes en double</translation>
+    </message>
+    <message>
+        <source>EQUAL_FACE</source>
+        <translation>Faces en double</translation>
+    </message>
+    <message>
+        <source>MEN_EQUAL_FACE</source>
+        <translation>Faces en double</translation>
+    </message>
+    <message>
+        <source>STB_EQUAL_FACE</source>
+        <translation>Faces en double</translation>
+    </message>
+    <message>
+        <source>TOP_EQUAL_FACE</source>
+        <translation>Faces en double</translation>
+    </message>
+    <message>
+        <source>EQUAL_VOLUME</source>
+        <translation>Volumes en double</translation>
+    </message>
+    <message>
+        <source>MEN_EQUAL_VOLUME</source>
+        <translation>Volumes en double</translation>
+    </message>
+    <message>
+        <source>STB_EQUAL_VOLUME</source>
+        <translation>Volumes en double</translation>
+    </message>
+    <message>
+        <source>TOP_EQUAL_VOLUME</source>
+        <translation>Volumes en double</translation>
+    </message>
+    <message>
         <source>MEN_BARE_BORDER_VOLUME</source>
         <translation>Volumes avec éléments de peau 2D manquants</translation>
     </message>
@@ -977,12 +1041,36 @@ Merci de les corriger, puis essayez de nouveau</translation>
         </translation>
     </message>
     <message>
+        <source>SMESH_ADD_OCTA</source>
+        <translation>Ajouter un prisme hexagonale</translation>
+    </message>
+    <message>
+        <source>SMESH_ADD_OCTA_TITLE</source>
+        <translation>Ajouter un prisme hexagonale</translation>
+    </message>
+    <message>
         <source>SMESH_ADD_POLYGON</source>
         <translation>Ajouter un polygone</translation>
     </message>
     <message>
         <source>SMESH_ADD_POLYGON_TITLE</source>
         <translation>Ajouter un polygone</translation>
+    </message>
+    <message>
+        <source>SMESH_ADD_PENTA</source>
+        <translation>Ajouter un pentaèdre</translation>
+    </message>
+    <message>
+        <source>SMESH_ADD_PENTA_TITLE</source>
+        <translation>Ajouter un pentaèdre</translation>
+    </message>
+    <message>
+        <source>SMESH_ADD_PYRAMID</source>
+        <translation>Ajouter une pyramide</translation>
+    </message>
+    <message>
+        <source>SMESH_ADD_PYRAMID_TITLE</source>
+        <translation>Ajouter une pyramide</translation>
     </message>
     <message>
         <source>SMESH_ADD_QUADRANGLE</source>
@@ -1001,12 +1089,20 @@ Merci de les corriger, puis essayez de nouveau</translation>
         <translation>Ajouter un hexaèdre quadratique</translation>
     </message>
     <message>
+        <source>SMESH_ADD_TRIQUADRATIC_HEXAHEDRON_TITLE</source>
+        <translation>Ajouter un hexaèdre triquadratique</translation>
+    </message>
+    <message>
         <source>SMESH_ADD_QUADRATIC_PENTAHEDRON_TITLE</source>
         <translation>Ajouter un pentaèdre quadratique</translation>
     </message>
     <message>
         <source>SMESH_ADD_QUADRATIC_PYRAMID_TITLE</source>
         <translation>Ajouter une pyramide quadratique</translation>
+    </message>
+    <message>
+        <source>SMESH_ADD_BIQUADRATIC_QUADRANGLE_TITLE</source>
+        <translation>Ajouter un quadrangle biquadratique</translation>
     </message>
     <message>
         <source>SMESH_ADD_QUADRATIC_QUADRANGLE_TITLE</source>
@@ -1859,6 +1955,18 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie suppo
         <translation>L&apos;opération n&apos;a pas abouti</translation>
     </message>
     <message>
+        <source>SMESH_OCTA</source>
+        <translation>Prisme héxagonal</translation>
+    </message>
+    <message>
+        <source>TOP_OCTA</source>
+        <translation>Prisme héxagonal</translation>
+    </message>
+    <message>
+        <source>MEN_OCTA</source>
+        <translation>Prisme héxagonal</translation>
+    </message>
+    <message>
         <source>SMESH_ORIENTATION</source>
         <translation>Orientation</translation>
     </message>
@@ -1873,6 +1981,18 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie suppo
     <message>
         <source>SMESH_PARAMETERS</source>
         <translation>Paramètres</translation>
+    </message>
+    <message>
+        <source>SMESH_PENTA</source>
+        <translation>Pentahèdre</translation>
+    </message>
+    <message>
+        <source>TOP_PENTA</source>
+        <translation>Pentahèdre</translation>
+    </message>
+    <message>
+        <source>MEN_PENTA</source>
+        <translation>Pentahèdre</translation>
     </message>
     <message>
         <source>SMESH_PLANE</source>
@@ -1947,6 +2067,14 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie suppo
         <translation>Pyramide</translation>
     </message>
     <message>
+        <source>MEN_PYRAMID</source>
+        <translation>Pyramide</translation>
+    </message>
+    <message>
+        <source>TOP_PYRAMID</source>
+        <translation>Pyramide</translation>
+    </message>
+    <message>
         <source>SMESH_QUADRANGLE</source>
         <translation>Quadrangle</translation>
     </message>
@@ -1959,16 +2087,40 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie suppo
         <translation>Hexaèdre quadratique</translation>
     </message>
     <message>
+        <source>SMESH_TRIQUADRATIC_HEXAHEDRON</source>
+        <translation>Hexaèdre triquadratique</translation>
+    </message>
+    <message>
+        <source>TOP_TRIQUADRATIC_HEXAHEDRON</source>
+        <translation>Hexaèdre triquadratique</translation>
+    </message>
+    <message>
+        <source>MEN_TRIQUADRATIC_HEXAHEDRON</source>
+        <translation>Hexaèdre triquadratique</translation>
+    </message>
+    <message>
         <source>SMESH_QUADRATIC_PENTAHEDRON</source>
         <translation>Pentaèdre quadratique</translation>
     </message>
     <message>
         <source>SMESH_QUADRATIC_PYRAMID</source>
-        <translation>Pyramide quadratique </translation>
+        <translation>Pyramide quadratique</translation>
     </message>
     <message>
         <source>SMESH_QUADRATIC_QUADRANGLE</source>
-        <translation>Quadrangle quadratique </translation>
+        <translation>Quadrangle quadratique</translation>
+    </message>
+    <message>
+        <source>SMESH_BIQUADRATIC_QUADRANGLE</source>
+        <translation>Quadrangle biquadratique</translation>
+    </message>
+    <message>
+        <source>MEN_BIQUADRATIC_QUADRANGLE</source>
+        <translation>Quadrangle biquadratique</translation>
+    </message>
+    <message>
+        <source>TOP_BIQUADRATIC_QUADRANGLE</source>
+        <translation>Quadrangle biquadratique</translation>
     </message>
     <message>
         <source>SMESH_QUADRATIC_TETRAHEDRON</source>
@@ -3733,12 +3885,24 @@ Ouvrez une fenêtre VTK et essayez de nouveau</translation>
         <translation>Nombre de chiffres après la virgule</translation>
     </message>
     <message>
+        <source>PREF_EQUAL_NODES_TOL</source>
+        <translation>Tolérance des nœuds doubles</translation>
+    </message>
+    <message>
         <source>PREF_RENUMBER</source>
         <translation>Renuméroter automatiquement</translation>
     </message>
     <message>
         <source>PREF_SHRINK_COEFF</source>
         <translation>Coefficient de contraction</translation>
+    </message>
+    <message>
+        <source>PREF_PYTHON_DUMP</source>
+        <translation>Dump Python</translation>
+    </message>
+    <message>
+        <source>PREF_HISTORICAL_PYTHON_DUMP</source>
+        <translation>Dump Python historique</translation>
     </message>
     <message>
         <source>PREF_TAB_GENERAL</source>
@@ -3788,6 +3952,10 @@ Ouvrez une fenêtre VTK et essayez de nouveau</translation>
         <translation>Ajouter un hexaèdre quadratique</translation>
     </message>
     <message>
+        <source>SMESH_ADD_TRIQUADRATIC_HEXAHEDRON</source>
+        <translation>Ajouter un hexaèdre triquadratique</translation>
+    </message>
+    <message>
         <source>SMESH_ADD_QUADRATIC_PENTAHEDRON</source>
         <translation>Ajouter un pentaèdre quadratique</translation>
     </message>
@@ -3800,6 +3968,10 @@ Ouvrez une fenêtre VTK et essayez de nouveau</translation>
         <translation>Ajouter un quadrangle quadratique</translation>
     </message>
     <message>
+        <source>SMESH_ADD_BIQUADRATIC_QUADRANGLE</source>
+        <translation>Ajouter un quadrangle biquadratique</translation>
+    </message>
+    <message>
         <source>SMESH_ADD_QUADRATIC_TETRAHEDRON</source>
         <translation>Ajouter un tétraèdre quadratique</translation>
     </message>
@@ -3810,6 +3982,14 @@ Ouvrez une fenêtre VTK et essayez de nouveau</translation>
     <message>
         <source>SMESH_CORNER_NODES</source>
         <translation>Nœuds angulaires:</translation>
+    </message>
+    <message>
+        <source>SMESH_MIDFACE_NODES</source>
+        <translation>Nœuds à mi-face :</translation>
+    </message>
+    <message>
+        <source>SMESH_CENTER_NODE</source>
+        <translation>Nœud central:</translation>
     </message>
     <message>
         <source>SMESH_FIRST</source>
@@ -4717,7 +4897,11 @@ Entrez une valeur correcte et essayez de nouveau</translation>
     </message>
     <message>
         <source>GEOM_TYPE_9</source>
-        <translation>Polyèdres</translation>
+        <translation>Prisme héxagonal</translation>
+    </message>
+    <message>
+        <source>GEOM_TYPE_10</source>
+        <translation>Polyhèdre</translation>
     </message>
 </context>
 <context>
@@ -5801,6 +5985,10 @@ en raison de leurs types incompatibles:
         <translation>Prismes:</translation>
     </message>
     <message>
+        <source>HEX_PRISMS_LAB</source>
+        <translation>Prismes hexagonaux:</translation>
+    </message>
+    <message>
         <source>POLYHEDRONS_LAB</source>
         <translation>Polyhédrons:</translation>
     </message>
@@ -5949,6 +6137,10 @@ en raison de leurs types incompatibles:
     <message>
         <source>PRISM</source>
         <translation>Prisme</translation>
+    </message>
+    <message>
+        <source>HEX_PRISM</source>
+        <translation>Prisme hexagonal</translation>
     </message>
     <message>
         <source>POLYHEDRON</source>

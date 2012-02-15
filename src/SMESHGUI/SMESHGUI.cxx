@@ -4613,7 +4613,7 @@ void SMESHGUI::createPreferences()
   setPreferenceProperty( chunkSize, "step", 50 );
 
   int pyDumpGroup = addPreference( tr( "PREF_PYTHON_DUMP" ), genTab );
-  addPreference( tr( "PREF_HISTOTICAL_PYTHON_DUMP" ), pyDumpGroup, LightApp_Preferences::Bool, "SMESH", "historical_python_dump" );
+  addPreference( tr( "PREF_HISTORICAL_PYTHON_DUMP" ), pyDumpGroup, LightApp_Preferences::Bool, "SMESH", "historical_python_dump" );
 
   // Mesh tab ------------------------------------------------------------------------
   int meshTab = addPreference( tr( "PREF_TAB_MESH" ) );

@@ -3901,7 +3901,7 @@ Please, create VTK viewer and try again</translation>
         <translation>Python Dump</translation>
     </message>
     <message>
-        <source>PREF_HISTOTICAL_PYTHON_DUMP</source>
+        <source>PREF_HISTORICAL_PYTHON_DUMP</source>
         <translation>Historical python dump</translation>
     </message>
     <message>
