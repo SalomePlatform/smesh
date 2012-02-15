@@ -2296,9 +2296,8 @@ void _pyHypothesis::Process( const Handle(_pyCommand)& theCommand)
 
 void _pyHypothesis::Flush()
 {
-  if ( IsWrapped() ) {
-  }
-  else {
+  if ( !IsAlgo() )
+  {
     list < Handle(_pyCommand) >::iterator cmd = myArgCommands.begin();
     for ( ; cmd != myArgCommands.end(); ++cmd ) {
       // Add access to a wrapped mesh
