@@ -26,7 +26,7 @@ The following dialog common for line and planar elements will appear:
 
 <li>In this dialog:
 <ul>
-<li>select the type of elements which will be extruded (1D or 2D),</li>
+<li>select the type of elements which will be extruded (0D, 1D or 2D),</li>
 <li>specify the IDs of the elements which will be extruded:
 <ul>
 <li><b>Select the whole mesh, submesh or group</b> activating this
