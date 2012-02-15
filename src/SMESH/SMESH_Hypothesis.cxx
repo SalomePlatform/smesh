@@ -52,6 +52,8 @@ SMESH_Hypothesis::SMESH_Hypothesis(int hypId,
   _shapeType = 0; // to be set by algo with TopAbs_Enum
   _param_algo_dim = -1; // to be set by algo parameter
   _parameters = string();
+  _lastParameters = string();
+  _libName = string();
 }
 
 //=============================================================================
