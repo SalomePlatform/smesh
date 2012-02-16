@@ -3558,7 +3558,7 @@ class Mesh:
             else:
                 return self.editor.ExtrusionSweepObjectMakeGroups(theObject, StepVector, NbOfSteps)
         if(IsNodes):
-            self.editor.ExtrusionSweepObject0D(IDsOfElements, StepVector, NbOfSteps)
+            self.editor.ExtrusionSweepObject0D(theObject, StepVector, NbOfSteps)
         else:
             self.editor.ExtrusionSweepObject(theObject, StepVector, NbOfSteps)
         return []
