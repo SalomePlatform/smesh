@@ -5817,9 +5817,9 @@ SMESH_MeshEditor::generateGroups(const SMESH_SequenceOfElemPtr& nodeGens,
           if ( resElem != sourceElem )
             resultElems.push_back( resElem );
       // do not generate element groups from node ones
-      if ( sourceElem->GetType() == SMDSAbs_Node &&
-           elems( iElem )->GetType() != SMDSAbs_Node )
-        continue;
+//      if ( sourceElem->GetType() == SMDSAbs_Node &&
+//           elems( iElem )->GetType() != SMDSAbs_Node )
+//        continue;
 
       // add resultElems to groups made by ones the sourceElem belongs to
       list< TOldNewGroup >::iterator gOldNew, gLast = groupsOldNew.end();
