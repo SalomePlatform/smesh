@@ -1808,19 +1808,36 @@ void _pyMeshEditor::Process( const Handle(_pyCommand)& theCommand)
     if( pos != -1)
     {
       isPyMeshMethod = true;
+      bool is0DmethId = ( method == "ExtrusionSweepMakeGroups0D" ), 
+           is0DmethObj =( method == "ExtrusionSweepObject0DMakeGroups");
 
       // 1. Remove "MakeGroups" from the Command
       TCollection_AsciiString aMethod = theCommand->GetMethod();
       int nbArgsToAdd = diffLastTwoArgsMethods.Contains(aMethod) ? 2 : 1;
+      
+      if(is0DmethObj)
+        pos = pos-2;  //Remove "0D" from the Command too
       aMethod.Trunc(pos-1);
       theCommand->SetMethod(aMethod);
 
       // 2. And add last "True" argument(s)
       while(nbArgsToAdd--)
         theCommand->SetArg(theCommand->GetNbArgs()+1,"True");
+      if( is0DmethId || is0DmethObj )
+        theCommand->SetArg(theCommand->GetNbArgs()+1,"True");
     }
   }
 
+  // ExtrusionSweep0D() -> ExtrusionSweep()
+  // ExtrusionSweepObject0D() -> ExtrusionSweepObject()
+  if ( !isPyMeshMethod && ( method == "ExtrusionSweep0D"  ||
+                            method == "ExtrusionSweepObject0D" ))
+  {
+    isPyMeshMethod=true;
+    theCommand->SetMethod( method.SubString( 1, method.Length()-2));
+    theCommand->SetArg(theCommand->GetNbArgs()+1,"False");  //sets flag "MakeGroups = False"
+    theCommand->SetArg(theCommand->GetNbArgs()+1,"True");  //sets flag "IsNode = True"
+  }
   // set "ExtrusionAlongPathX()" instead of "ExtrusionAlongPathObjX()"
   if ( !isPyMeshMethod && method == "ExtrusionAlongPathObjX")
   {
@@ -2973,12 +2990,12 @@ const TCollection_AsciiString & _pyCommand::GetResultValue()
     if ( endPos )
     {
       begPos = 1;
-      while ( begPos < endPos && isblank( myString.Value( begPos ))) ++begPos;
+      while ( begPos < endPos && isspace( myString.Value( begPos ))) ++begPos;
       if ( begPos < endPos )
       {
         SetBegPos( RESULT_IND, begPos );
         --endPos;
-        while ( begPos < endPos && isblank( myString.Value( endPos ))) --endPos;
+        while ( begPos < endPos && isspace( myString.Value( endPos ))) --endPos;
         myRes = myString.SubString( begPos, endPos );
       }
     }
@@ -3450,7 +3467,7 @@ void _pyCommand::Comment()
   if ( IsEmpty() ) return;
 
   int i = 1;
-  while ( i <= Length() && isblank( myString.Value(i) )) ++i;
+  while ( i <= Length() && isspace( myString.Value(i) )) ++i;
   if ( i <= Length() )
   {
     myString.Insert( i, "#" );
