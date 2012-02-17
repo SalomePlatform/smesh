@@ -1808,8 +1808,8 @@ void _pyMeshEditor::Process( const Handle(_pyCommand)& theCommand)
     if( pos != -1)
     {
       isPyMeshMethod = true;
-      bool is0DmethId = ( method == "ExtrusionSweepMakeGroups0D" ), 
-           is0DmethObj =( method == "ExtrusionSweepObject0DMakeGroups");
+      bool is0DmethId  = ( method == "ExtrusionSweepMakeGroups0D" );
+      bool is0DmethObj = ( method == "ExtrusionSweepObject0DMakeGroups");
 
       // 1. Remove "MakeGroups" from the Command
       TCollection_AsciiString aMethod = theCommand->GetMethod();
@@ -2288,7 +2288,8 @@ bool _pyHypothesis::Addition2Creation( const Handle(_pyCommand)& theCmd,
 void _pyHypothesis::Process( const Handle(_pyCommand)& theCommand)
 {
   ASSERT( !myIsAlgo );
-  rememberCmdOfParameter( theCommand );
+  if ( !theGen->IsToKeepAllCommands() )
+    rememberCmdOfParameter( theCommand );
   // set args
   int nbArgs = 0;
   for ( int i = 1; i <= myArgMethods.Length(); ++i ) {
@@ -2487,22 +2488,34 @@ bool _pyHypothesis::GetReferredMeshesAndGeom( list< Handle(_pyMesh) >& meshes )
 
 void _pyHypothesis::rememberCmdOfParameter( const Handle(_pyCommand) & theCommand )
 {
-  // not to clear commands setting different parameters via one method
+  // parameters are discriminated by method name
+  TCollection_AsciiString method = theCommand->GetMethod();
+
+  // discriminate commands setting different parameters via one method
   // by passing parameter names like e.g. SetOption("size", "0.2")
-  int quotePos = theCommand->GetString().FirstLocationInSet( "'\"", 1, theCommand->Length() );
-  if ( !quotePos )
+  if ( theCommand->GetString().FirstLocationInSet( "'\"", 1, theCommand->Length() ) &&
+       theCommand->GetNbArgs() > 1 )
   {
-    // parameters are discriminated by method name
-    list< Handle(_pyCommand)>& cmds = myMeth2Commands[ theCommand->GetMethod() ];
-    if ( !cmds.empty() && !isCmdUsedForCompute( cmds.back() ))
+    // mangle method by appending a 1st textual arg (what if it's a variable name?!!!)
+    for ( int iArg = 1; iArg <= theCommand->GetNbArgs(); ++iArg )
     {
-      cmds.back()->Clear(); // previous parameter value has not been used
-      cmds.back() = theCommand;
+      const TCollection_AsciiString& arg = theCommand->GetArg( iArg );
+      if ( arg.Value(1) != '\"' && arg.Value(1) != '\'' ) continue;
+      if ( !isalpha( arg.Value(2))) continue;
+      method += arg;
+      break;
     }
-    else
-    {
-      cmds.push_back( theCommand );
-    }
+  }
+  // parameters are discriminated by method name
+  list< Handle(_pyCommand)>& cmds = myMeth2Commands[ theCommand->GetMethod() ];
+  if ( !cmds.empty() && !isCmdUsedForCompute( cmds.back() ))
+  {
+    cmds.back()->Clear(); // previous parameter value has not been used
+    cmds.back() = theCommand;
+  }
+  else
+  {
+    cmds.push_back( theCommand );
   }
 }
 
