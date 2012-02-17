@@ -105,7 +105,7 @@ SMESHGUI_Preferences_ColorDlg::SMESHGUI_Preferences_ColorDlg( SMESHGUI* theModul
   QLabel* TextLabel_Width = new QLabel( tr( "Width" ), ButtonGroup1 );
   SpinBox_Width = new SalomeApp_IntSpinBox( ButtonGroup1 );
   SpinBox_Width->setAcceptNames( false ); // No Notebook variables allowed
-  SpinBox_Width->setRange( 0, 5 );
+  SpinBox_Width->setRange( 1, 5 );
   SpinBox_Width->setSingleStep( 1 );
   SpinBox_Width->setSizePolicy( QSizePolicy( QSizePolicy::Expanding, QSizePolicy::Fixed ) );
   SpinBox_Width->setButtonSymbols( QSpinBox::PlusMinus );
