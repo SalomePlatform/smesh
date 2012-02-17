@@ -4300,10 +4300,10 @@ SMESH::submesh_array_array* SMESH_Mesh_i::GetMeshOrder()
           continue; // no assigned algorithm to current submesh
 
         int dim = anAlgo->GetDim(); // top concurrent dimension (see comment to SMESH_DimHyp)
-        // the submesh can concurrent at <dim> (or lower dims if !anAlgo->NeedDescretBoundary())
+        // the submesh can concurrent at <dim> (or lower dims if !anAlgo->NeedDiscreteBoundary())
 
         // create instance of dimension-hypothesis for found concurrent dimension(s) and algorithm
-        for ( int j = anAlgo->NeedDescretBoundary() ? dim : 1, jn = dim; j <= jn; j++ )
+        for ( int j = anAlgo->NeedDiscreteBoundary() ? dim : 1, jn = dim; j <= jn; j++ )
           addDimHypInstance( j, aSubMeshShape, anAlgo, sm, hypList, dimHypListArr );
       }
     } // end iterations on submesh

@@ -118,7 +118,7 @@ public:
     * \param aShape - the shape
     * \retval bool - is a success
     *
-    * Algorithms that !NeedDescretBoundary() || !OnlyUnaryInput() are
+    * Algorithms that !NeedDiscreteBoundary() || !OnlyUnaryInput() are
     * to set SMESH_ComputeError returned by SMESH_submesh::GetComputeError()
     * to report problematic sub-shapes
    */
@@ -219,14 +219,14 @@ public:
   // an input temporary shape that is neither MainShape nor
   // its child.
 
-  bool NeedDescretBoundary() const { return _requireDescretBoundary; }
+  bool NeedDiscreteBoundary() const { return _requireDiscreteBoundary; }
   // 3 - is a Dim-1 mesh prerequisite
 
   bool NeedShape() const { return _requireShape; }
   // 4 - is shape existance required
 
   bool SupportSubmeshes() const { return _supportSubmeshes; }
-  // 5 - whether supports submeshes if !NeedDescretBoundary()
+  // 5 - whether supports submeshes if !NeedDiscreteBoundary()
 
 
 public:
@@ -367,9 +367,9 @@ protected:
   // in what turn and with what input shape.
   // These fields must be redefined if necessary by each descendant at constructor.
   bool _onlyUnaryInput;         // mesh one shape of GetDim() at once. Default TRUE
-  bool _requireDescretBoundary; // GetDim()-1 mesh must be present. Default TRUE
+  bool _requireDiscreteBoundary; // GetDim()-1 mesh must be present. Default TRUE
   bool _requireShape;           // work with GetDim()-1 mesh bound to geom only. Default TRUE
-  bool _supportSubmeshes;       // if !_requireDescretBoundary. Default FALSE
+  bool _supportSubmeshes;       // if !_requireDiscreteBoundary. Default FALSE
 
   // quadratic mesh creation required,
   // is usually set trough SMESH_MesherHelper::IsQuadraticSubMesh()

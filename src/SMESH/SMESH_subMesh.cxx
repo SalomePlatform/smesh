@@ -651,7 +651,7 @@ SMESH_Hypothesis::Hypothesis_Status
       filter.Or( SMESH_HypoFilter::HasType( algo->GetType()+1 ));
       filter.Or( SMESH_HypoFilter::HasType( algo->GetType()+2 ));
       if ( SMESH_Algo * curAlgo = (SMESH_Algo*) _father->GetHypothesis( _subShape, filter, true ))
-        needFullClean = ( !curAlgo->NeedDescretBoundary() );
+        needFullClean = ( !curAlgo->NeedDiscreteBoundary() );
     }
   }
 
@@ -681,7 +681,7 @@ SMESH_Hypothesis::Hypothesis_Status
     if (event == REMOVE_ALGO)
     {
       algo = dynamic_cast<SMESH_Algo*> (anHyp);
-      if (!algo->NeedDescretBoundary())
+      if (!algo->NeedDiscreteBoundary())
       {
         // clean all mesh in the tree of the current submesh;
         // we must perform it now because later
@@ -968,7 +968,7 @@ SMESH_Hypothesis::Hypothesis_Status
       // IPAL21346. Edges not removed when Netgen 1d-2d is removed from a SOLID.
       // CLEAN was not called at event REMOVE_ALGO because the algo is not applicable to SOLID.
       algo = dynamic_cast<SMESH_Algo*> (anHyp);
-      if (!algo->NeedDescretBoundary())
+      if (!algo->NeedDiscreteBoundary())
         needFullClean = true;
 
       algo = GetAlgo();
@@ -1012,12 +1012,12 @@ SMESH_Hypothesis::Hypothesis_Status
     TopTools_ListIteratorOfListOfShape it( _father->GetAncestors( _subShape ));
     for ( ; ( ret == SMESH_Hypothesis::HYP_OK && it.More()); it.Next() ) {
       if ( SMESH_Algo* upperAlgo = gen->GetAlgo( *_father, it.Value() ))
-        if ( !upperAlgo->NeedDescretBoundary() && !upperAlgo->SupportSubmeshes())
+        if ( !upperAlgo->NeedDiscreteBoundary() && !upperAlgo->SupportSubmeshes())
           ret = SMESH_Hypothesis::HYP_HIDDEN_ALGO;
     }
     // is algo hiding?
     if ( ret == SMESH_Hypothesis::HYP_OK &&
-         !algo->NeedDescretBoundary()    &&
+         !algo->NeedDiscreteBoundary()    &&
          !algo->SupportSubmeshes()) {
       TopoDS_Shape algoAssignedTo, otherAssignedTo;
       gen->GetAlgo( *_father, _subShape, &algoAssignedTo );
@@ -1072,9 +1072,9 @@ bool SMESH_subMesh::IsConform(const SMESH_Algo* theAlgo)
   // Suppose that theAlgo is applicable to _subShape, do not check it here
   //if ( !IsApplicableHypotesis( theAlgo )) return false;
 
-  // check only algo that doesn't NeedDescretBoundary(): because mesh made
+  // check only algo that doesn't NeedDiscreteBoundary(): because mesh made
   // on a sub-shape will be ignored by theAlgo
-  if ( theAlgo->NeedDescretBoundary() ||
+  if ( theAlgo->NeedDiscreteBoundary() ||
        !theAlgo->OnlyUnaryInput() ) // all adjacent shapes will be meshed by this algo?
     return true;
 
@@ -1103,7 +1103,7 @@ bool SMESH_subMesh::IsConform(const SMESH_Algo* theAlgo)
       // check algo attached to smAdjacent
       SMESH_Algo * algo = gen->GetAlgo((*_father), adjacent);
       if (algo &&
-          !algo->NeedDescretBoundary() &&
+          !algo->NeedDiscreteBoundary() &&
           algo->OnlyUnaryInput())
         return false; // NOT CONFORM MESH WILL BE PRODUCED
     }
@@ -1300,7 +1300,7 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
     {
     case MODIF_ALGO_STATE:
       algo = GetAlgo();
-      if (algo && !algo->NeedDescretBoundary())
+      if (algo && !algo->NeedDiscreteBoundary())
         CleanDependsOn(); // clean sub-meshes with event CLEAN
       if ( _algoState == HYP_OK )
         _computeState = READY_TO_COMPUTE;
@@ -1342,7 +1342,7 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
       algo = GetAlgo();
       if (algo)
       {
-        if (!algo->NeedDescretBoundary())
+        if (!algo->NeedDiscreteBoundary())
           CleanDependsOn(); // clean sub-meshes with event CLEAN
         if ( _algoState == HYP_OK )
           _computeState = READY_TO_COMPUTE;
@@ -1368,12 +1368,12 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
             shape = GetCollection( gen, algo, subComputed );
           else
             subComputed = SubMeshesComputed();
-          ret = ( algo->NeedDescretBoundary() ? subComputed :
+          ret = ( algo->NeedDiscreteBoundary() ? subComputed :
                   algo->SupportSubmeshes() ? true :
                   ( !subComputed || _father->IsNotConformAllowed() ));
           if (!ret) {
             _computeState = FAILED_TO_COMPUTE;
-            if ( !algo->NeedDescretBoundary() )
+            if ( !algo->NeedDiscreteBoundary() )
               _computeError =
                 SMESH_ComputeError::New(COMPERR_BAD_INPUT_MESH,
                                         "Unexpected computed submesh",algo);
@@ -1535,7 +1535,7 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
     case MODIF_ALGO_STATE:
       ComputeStateEngine( CLEAN );
       algo = GetAlgo();
-      if (algo && !algo->NeedDescretBoundary())
+      if (algo && !algo->NeedDiscreteBoundary())
         CleanDependsOn(); // clean sub-meshes with event CLEAN
       break;
     case COMPUTE:               // nothing to do
@@ -1587,7 +1587,7 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
       if ( !IsEmpty() )
         ComputeStateEngine( CLEAN );
       algo = GetAlgo();
-      if (algo && !algo->NeedDescretBoundary())
+      if (algo && !algo->NeedDiscreteBoundary())
         CleanDependsOn(); // clean sub-meshes with event CLEAN
       if (_algoState == HYP_OK)
         _computeState = READY_TO_COMPUTE;
@@ -1675,7 +1675,7 @@ bool SMESH_subMesh::Evaluate(MapShapeNbElems& aResMap)
     ret = algo->CheckHypothesis((*_father), _subShape, hyp_status);
     if (!ret) return false;
 
-    if (_father->HasShapeToMesh() && algo->NeedDescretBoundary())
+    if (_father->HasShapeToMesh() && algo->NeedDiscreteBoundary())
     {
       // check submeshes needed
       bool subMeshEvaluated = true;
@@ -1717,7 +1717,7 @@ bool SMESH_subMesh::CheckComputeError(SMESH_Algo* theAlgo, const TopoDS_Shape& t
   if ( !theShape.IsNull() )
   {
     // Check state of submeshes
-    if ( !theAlgo->NeedDescretBoundary())
+    if ( !theAlgo->NeedDiscreteBoundary())
     {
       SMESH_subMeshIteratorPtr smIt = getDependsOnIterator(false,false);
       while ( smIt->more() )

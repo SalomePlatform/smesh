@@ -181,7 +181,7 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
   else
   {
     // -----------------------------------------------------------------
-    // apply algos that DO NOT require descretized boundaries and DO NOT
+    // apply algos that DO NOT require Discreteized boundaries and DO NOT
     // support submeshes, starting from the most complex shapes
     // and collect submeshes with algos that DO support submeshes
     // -----------------------------------------------------------------
@@ -210,7 +210,7 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
         continue;
 
       SMESH_Algo* algo = GetAlgo( aMesh, aSubShape, &algoShape );
-      if ( algo && !algo->NeedDescretBoundary() )
+      if ( algo && !algo->NeedDiscreteBoundary() )
       {
         if ( algo->SupportSubmeshes() )
         {
@@ -272,7 +272,7 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
 
     // ------------------------------------------------------------
     // compute submeshes under shapes with algos that DO NOT require
-    // descretized boundaries and DO support submeshes
+    // Discreteized boundaries and DO support submeshes
     // ------------------------------------------------------------
     list< SMESH_subMesh* >::iterator subIt, subEnd;
     subIt  = smWithAlgoSupportingSubmeshes.begin();
@@ -315,7 +315,7 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
       }
     }
     // ----------------------------------------------------------
-    // apply the algos that do not require descretized boundaries
+    // apply the algos that do not require Discreteized boundaries
     // ----------------------------------------------------------
     for ( subIt = smWithAlgoSupportingSubmeshes.begin(); subIt != subEnd; ++subIt )
     {
@@ -456,7 +456,7 @@ bool SMESH_Gen::Evaluate(SMESH_Mesh &          aMesh,
   }
   else {
     // -----------------------------------------------------------------
-    // apply algos that DO NOT require descretized boundaries and DO NOT
+    // apply algos that DO NOT require Discreteized boundaries and DO NOT
     // support submeshes, starting from the most complex shapes
     // and collect submeshes with algos that DO support submeshes
     // -----------------------------------------------------------------
@@ -469,7 +469,7 @@ bool SMESH_Gen::Evaluate(SMESH_Mesh &          aMesh,
       if ( aShapeDim < 1 ) break;
       
       SMESH_Algo* algo = GetAlgo( aMesh, aSubShape );
-      if ( algo && !algo->NeedDescretBoundary() ) {
+      if ( algo && !algo->NeedDiscreteBoundary() ) {
         if ( algo->SupportSubmeshes() ) {
           smWithAlgoSupportingSubmeshes.push_front( smToCompute );
         }
@@ -488,7 +488,7 @@ bool SMESH_Gen::Evaluate(SMESH_Mesh &          aMesh,
 
     // ------------------------------------------------------------
     // compute submeshes under shapes with algos that DO NOT require
-    // descretized boundaries and DO support submeshes
+    // Discreteized boundaries and DO support submeshes
     // ------------------------------------------------------------
     list< SMESH_subMesh* >::iterator subIt, subEnd;
     subIt  = smWithAlgoSupportingSubmeshes.begin();
@@ -527,7 +527,7 @@ bool SMESH_Gen::Evaluate(SMESH_Mesh &          aMesh,
       }
     }
     // ----------------------------------------------------------
-    // apply the algos that do not require descretized boundaries
+    // apply the algos that do not require Discreteized boundaries
     // ----------------------------------------------------------
     for ( subIt = smWithAlgoSupportingSubmeshes.begin(); subIt != subEnd; ++subIt )
     {
@@ -598,7 +598,7 @@ static bool checkConformIgnoredAlgos(SMESH_Mesh&               aMesh,
               << " <" << algo->GetName() << "> is hidden by global <"
               << aGlobIgnoAlgo->GetName() << ">");
       }
-      else if ( !algo->NeedDescretBoundary() && !isGlobal)
+      else if ( !algo->NeedDiscreteBoundary() && !isGlobal)
       {
         // local algo is not hidden and hides algos on sub-shapes
         if (checkConform && !aSubMesh->IsConform( algo ))
@@ -712,9 +712,9 @@ static bool checkMissing(SMESH_Gen*                aGen,
   ASSERT (algo);
   bool isTopLocalAlgo =
     ( aTopAlgoDim <= algo->GetDim() && !aGen->IsGlobalHypothesis( algo, aMesh ));
-  if (!algo->NeedDescretBoundary() || isTopLocalAlgo)
+  if (!algo->NeedDiscreteBoundary() || isTopLocalAlgo)
   {
-    bool checkNoAlgo2 = ( algo->NeedDescretBoundary() );
+    bool checkNoAlgo2 = ( algo->NeedDiscreteBoundary() );
     SMESH_subMeshIteratorPtr itsub = aSubMesh->getDependsOnIterator( /*includeSelf=*/false,
                                                                      /*complexShapeFirst=*/false);
     while ( itsub->more() )
@@ -797,7 +797,7 @@ bool SMESH_Gen::GetAlgoState(SMESH_Mesh&               theMesh,
 
   // --------------------------------------------------------
   // info on algos that will be ignored because of ones that
-  // don't NeedDescretBoundary() attached to super-shapes,
+  // don't NeedDiscreteBoundary() attached to super-shapes,
   // check that a conform mesh will be produced
   // --------------------------------------------------------
 
@@ -808,7 +808,7 @@ bool SMESH_Gen::GetAlgoState(SMESH_Mesh&               theMesh,
   for (dim = 3; dim > 0; dim--)
   {
     if (aGlobAlgoArr[ dim ] &&
-        !aGlobAlgoArr[ dim ]->NeedDescretBoundary())
+        !aGlobAlgoArr[ dim ]->NeedDiscreteBoundary())
     {
       aGlobIgnoAlgo = aGlobAlgoArr[ dim ];
       break;

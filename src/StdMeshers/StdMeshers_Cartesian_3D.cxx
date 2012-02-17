@@ -81,7 +81,7 @@ StdMeshers_Cartesian_3D::StdMeshers_Cartesian_3D(int hypId, int studyId, SMESH_G
   _compatibleHypothesis.push_back("CartesianParameters3D");
 
   _onlyUnaryInput = false;         // to mesh all SOLIDs at once
-  _requireDescretBoundary = false; // 2D mesh not needed
+  _requireDiscreteBoundary = false; // 2D mesh not needed
   _supportSubmeshes = false;       // do not use any existing mesh
 }
 

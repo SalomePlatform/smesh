@@ -80,7 +80,7 @@ SMESH_Algo::SMESH_Algo (int hypId, int studyId, SMESH_Gen * gen)
 {
   gen->_mapAlgo[hypId] = this;
 
-  _onlyUnaryInput = _requireDescretBoundary = _requireShape = true;
+  _onlyUnaryInput = _requireDiscreteBoundary = _requireShape = true;
   _quadraticMesh = _supportSubmeshes = false;
   _error = COMPERR_OK;
 }

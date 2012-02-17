@@ -78,7 +78,7 @@ StdMeshers_RadialQuadrangle_1D2D::StdMeshers_RadialQuadrangle_1D2D(int hypId,
   _compatibleHypothesis.push_back("NumberOfLayers2D");
   myNbLayerHypo = 0;
   myDistributionHypo = 0;
-  _requireDescretBoundary = false;
+  _requireDiscreteBoundary = false;
   _supportSubmeshes = true;
 }
 

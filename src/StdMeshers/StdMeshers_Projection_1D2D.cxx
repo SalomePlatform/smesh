@@ -94,7 +94,7 @@ StdMeshers_Projection_1D2D::StdMeshers_Projection_1D2D(int hypId, int studyId, S
   :StdMeshers_Projection_2D(hypId, studyId, gen)
 {
   _name = "Projection_1D2D";
-  _requireDescretBoundary = false;
+  _requireDiscreteBoundary = false;
   _supportSubmeshes = true;
 }
 
