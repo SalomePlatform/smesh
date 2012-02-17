@@ -244,6 +244,7 @@ at your own risk.
 \n\n Integer variables:
 <ul>
 <li>    addsurf_ivertex</li>
+<li>    anisotropic    </li>
 <li>    background     </li>
 <li>    coiter         </li>
 <li>    communication  </li>
@@ -265,15 +266,16 @@ at your own risk.
 </ul>
 Real variables:
 <ul>
-<li>    addsurf_angle  </li>
-<li>    addsurf_R      </li>
-<li>    addsurf_H      </li>
-<li>    addsurf_FG     </li>
-<li>    addsurf_r      </li>
-<li>    addsurf_PA     </li>
-<li>    angle_compcurv </li>
-<li>    angle_ridge    </li>
-<li>    eps_pardom     </li>
+<li>    addsurf_angle    </li>
+<li>    addsurf_R        </li>
+<li>    addsurf_H        </li>
+<li>    addsurf_FG       </li>
+<li>    addsurf_r        </li>
+<li>    addsurf_PA       </li>
+<li>    angle_compcurv   </li>
+<li>    angle_ridge      </li>
+<li>    anisotropic_ratio</li>
+<li>    eps_pardom       </li>
 </ul>
 String variables:
 <ul>
