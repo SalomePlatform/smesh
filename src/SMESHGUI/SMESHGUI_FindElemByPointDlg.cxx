@@ -453,9 +453,6 @@ void SMESHGUI_FindElemByPointOp::onSelectionDone()
   if ( !myMeshIO.IsNull() && myMeshIO->hasEntry() )
     oldMeshEntry = myMeshIO->getEntry();
 
-  myDlg->myMeshName->setText("");
-  myMeshIO.Nullify();
-
   try {
     SALOME_ListIO aList;
     selectionMgr()->selectedObjects(aList, SVTK_Viewer::Type());
@@ -464,13 +461,16 @@ void SMESHGUI_FindElemByPointOp::onSelectionDone()
       Handle(SALOME_InteractiveObject) anIO = aList.First();
       _PTR(SObject) pObj = studyDS()->FindObjectID(anIO->getEntry());
       CORBA::Object_var anObj = SMESH::IObjectToObject( anIO );
-      myMeshOrPart = SMESH::SMESH_IDSource::_narrow(anObj);
-      if ( pObj && !myMeshOrPart->_is_nil() )
+      newMeshEntry = anIO->getEntry();
+      SMESH::SMESH_IDSource_var aMeshOrPart = SMESH::SMESH_IDSource::_narrow(anObj);
+      if ( pObj && !aMeshOrPart->_is_nil() && oldMeshEntry != newMeshEntry )
       {
+        myMeshOrPart = aMeshOrPart;
+        myMeshIO.Nullify();
         myMeshIO = anIO;
         std::string name = pObj->GetName();
+        myDlg->myMeshName->setText("");
         myDlg->myMeshName->setText( QString( name.c_str() ).trimmed() );
-        newMeshEntry = anIO->getEntry();
         SMESH::array_of_ElementType_var  types = myMeshOrPart->GetTypes();
         myDlg->setTypes( types );
       }
