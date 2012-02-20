@@ -2423,13 +2423,13 @@ void _pyHypothesis::ClearCommands()
     else
     {
       // clear my commands invoked after lastComputeOrder
-      map<TCollection_AsciiString, list< Handle(_pyCommand) > >::iterator m2c;
-      for ( m2c = myMeth2Commands.begin(); m2c != myMeth2Commands.end(); ++m2c )
-      {
-        list< Handle(_pyCommand)> & cmds = m2c->second;
-        if ( !cmds.empty() && cmds.back()->GetOrderNb() > lastComputeOrder )
-          cmds.back()->Clear();
-      }
+      // map<TCollection_AsciiString, list< Handle(_pyCommand) > >::iterator m2c;
+      // for ( m2c = myMeth2Commands.begin(); m2c != myMeth2Commands.end(); ++m2c )
+      // {
+      //   list< Handle(_pyCommand)> & cmds = m2c->second;
+      //   if ( !cmds.empty() && cmds.back()->GetOrderNb() > lastComputeOrder )
+      //     cmds.back()->Clear();
+      // }
     }
   }
   _pyObject::ClearCommands();
