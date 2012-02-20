@@ -972,3 +972,11 @@ int SMESH_DeviceActor::GetMarkerTexture()
 {
   return myMapper->GetMarkerTexture();
 }
+
+void SMESH_DeviceActor::SetCoincident3DAllowed(bool theFlag) {
+  myGeomFilter->SetAppendCoincident3D(theFlag);
+}
+
+bool SMESH_DeviceActor::IsCoincident3DAllowed() const {
+  return myGeomFilter->GetAppendCoincident3D();
+}

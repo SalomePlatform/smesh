@@ -203,6 +203,7 @@ SMESH_ActorDef::SMESH_ActorDef()
   my3DActor->SetProperty(mySurfaceProp);
   my3DActor->SetBackfaceProperty(myBackSurfaceProp);
   my3DActor->SetRepresentation(SMESH_DeviceActor::eSurface);
+  my3DActor->SetCoincident3DAllowed(true);
   aFilter = my3DActor->GetExtractUnstructuredGrid();
   aFilter->SetModeOfChanging(VTKViewer_ExtractUnstructuredGrid::eAdding);
   aFilter->RegisterCellsWithType(VTK_TETRA);
@@ -228,6 +229,7 @@ SMESH_ActorDef::SMESH_ActorDef()
   my3DExtActor->SetProperty(my2DExtProp);
   my3DExtActor->SetBackfaceProperty(my2DExtProp);
   my3DExtActor->SetRepresentation(SMESH_DeviceActor::eSurface);
+  my3DExtActor->SetCoincident3DAllowed(true);
   aFilter = my3DExtActor->GetExtractUnstructuredGrid();
   aFilter->SetModeOfChanging(VTKViewer_ExtractUnstructuredGrid::eAdding);
   aFilter->RegisterCellsWithType(VTK_TETRA);
@@ -411,6 +413,7 @@ SMESH_ActorDef::SMESH_ActorDef()
   myHighlitableActor->SetUserMatrix(aMatrix);
   myHighlitableActor->PickableOff();
   myHighlitableActor->SetRepresentation(SMESH_DeviceActor::eWireframe);
+  myHighlitableActor->SetCoincident3DAllowed(true);
 
   aMatrix->Delete();
 

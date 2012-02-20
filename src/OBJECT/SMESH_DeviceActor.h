@@ -130,6 +130,14 @@ class SMESHOBJECT_EXPORT SMESH_DeviceActor: public vtkLODActor{
   bool IsHighlited() { return myIsHighlited;}
   void SetHighlited(bool theIsHighlited);
 
+  virtual
+  void
+  SetCoincident3DAllowed(bool theIsFeatureEdgesAllowed);
+
+  virtual
+  bool 
+  IsCoincident3DAllowed() const;
+
   virtual void Render(vtkRenderer *, vtkMapper *);
 
   void SetImplicitFunctionUsed(bool theIsImplicitFunctionUsed);
