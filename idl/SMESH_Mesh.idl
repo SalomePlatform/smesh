@@ -280,6 +280,12 @@ module SMESH
      * Returns the mesh
      */
     SMESH_Mesh GetMesh();
+
+    /*!
+     * Returns false if GetMeshInfo() returns incorrect information that may
+     * happen if mesh data is not yet fully loaded from the file of study.
+     */
+    boolean IsMeshInfoCorrect();
   };
 
   interface SMESH_Group;
@@ -305,6 +311,18 @@ module SMESH
      * to know if a returned shape 
      */
     GEOM::GEOM_Object GetShapeToMesh()
+      raises (SALOME::SALOME_Exception);
+
+    /*!
+     * Return false if the mesh is not yet fully loaded from the study file
+     */
+    boolean IsLoaded()
+      raises (SALOME::SALOME_Exception);
+
+    /*!
+     * Load full mesh data from the study file
+     */
+    void Load()
       raises (SALOME::SALOME_Exception);
 
     /*!
