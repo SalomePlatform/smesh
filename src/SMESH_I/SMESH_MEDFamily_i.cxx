@@ -102,7 +102,7 @@ SMESH_MEDFamily_i::SMESH_MEDFamily_i(int identifier, SMESH_subMesh_i* sm,
 CORBA::Long SMESH_MEDFamily_i::getIdentifier()      
 throw (SALOME::SALOME_Exception)
 {
-  if (_subMeshDS==NULL)
+  if (_subMesh==NULL)
     THROW_SALOME_CORBA_EXCEPTION("No associated Family",\
                                  SALOME::INTERNAL_ERROR); 
   return _identifier;
@@ -116,7 +116,7 @@ throw (SALOME::SALOME_Exception)
 CORBA::Long SMESH_MEDFamily_i::getNumberOfAttributes() 
 throw (SALOME::SALOME_Exception)
 {
-  if (_subMeshDS==NULL)
+  if (_subMesh==NULL)
     THROW_SALOME_CORBA_EXCEPTION("No associated Family",\
                                  SALOME::INTERNAL_ERROR);
   return _numberOfAttribute;
@@ -129,7 +129,7 @@ throw (SALOME::SALOME_Exception)
 SALOME_TYPES::ListOfLong*  SMESH_MEDFamily_i::getAttributesIdentifiers() 
 throw (SALOME::SALOME_Exception)
 {
-  if (_subMeshDS==NULL)
+  if (_subMesh==NULL)
     THROW_SALOME_CORBA_EXCEPTION("No associated Family",\
                                  SALOME::INTERNAL_ERROR);
   if (_numberOfAttribute == 0)
@@ -156,7 +156,7 @@ throw (SALOME::SALOME_Exception)
 CORBA::Long SMESH_MEDFamily_i::getAttributeIdentifier(CORBA::Long i) 
   throw (SALOME::SALOME_Exception)
 {    
-  if (_subMeshDS==NULL)
+  if (_subMesh==NULL)
     THROW_SALOME_CORBA_EXCEPTION("No associated Family",\
                                  SALOME::INTERNAL_ERROR);
   MESSAGE("Les familles SMESH n ont pas d attribut");
@@ -179,7 +179,7 @@ CORBA::Long SMESH_MEDFamily_i::getAttributeIdentifier(CORBA::Long i)
 SALOME_TYPES::ListOfLong*  SMESH_MEDFamily_i::getAttributesValues() 
   throw (SALOME::SALOME_Exception)
 {
-  if (_subMeshDS==NULL)
+  if (_subMesh==NULL)
     THROW_SALOME_CORBA_EXCEPTION("No associated Family",\
                                  SALOME::INTERNAL_ERROR);
 
@@ -206,7 +206,7 @@ SALOME_TYPES::ListOfLong*  SMESH_MEDFamily_i::getAttributesValues()
 CORBA::Long  SMESH_MEDFamily_i::getAttributeValue(CORBA::Long i) 
   throw (SALOME::SALOME_Exception)
 {   
-  if (_subMeshDS==NULL)
+  if (_subMesh==NULL)
     THROW_SALOME_CORBA_EXCEPTION("No associated Family",\
                                  SALOME::INTERNAL_ERROR);
   if (_numberOfAttribute == 0)
@@ -227,7 +227,7 @@ CORBA::Long  SMESH_MEDFamily_i::getAttributeValue(CORBA::Long i)
 SALOME_TYPES::ListOfString * SMESH_MEDFamily_i::getAttributesDescriptions() 
   throw (SALOME::SALOME_Exception)
 {
-  if (_subMeshDS==NULL)
+  if (_subMesh==NULL)
     THROW_SALOME_CORBA_EXCEPTION("No associated Family",\
                                  SALOME::INTERNAL_ERROR);
   if (_numberOfAttribute == 0)
@@ -251,7 +251,7 @@ SALOME_TYPES::ListOfString * SMESH_MEDFamily_i::getAttributesDescriptions()
 char *  SMESH_MEDFamily_i::getAttributeDescription( CORBA::Long i) 
   throw (SALOME::SALOME_Exception)
 {   
-  if (_subMeshDS==NULL)
+  if (_subMesh==NULL)
     THROW_SALOME_CORBA_EXCEPTION("No associated Family",\
                                  SALOME::INTERNAL_ERROR);
   if (_numberOfAttribute == 0)

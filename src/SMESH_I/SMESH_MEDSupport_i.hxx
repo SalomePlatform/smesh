@@ -40,6 +40,7 @@
 
 #include "SMESH_MEDSupport_i.hxx"
 #include "SALOME_GenericObj_i.hh"
+class SMESH_subMesh;
 class SMESH_subMesh_i;
 
 class SMESH_I_EXPORT SMESH_MEDSupport_i:
@@ -98,10 +99,9 @@ class SMESH_I_EXPORT SMESH_MEDSupport_i:
         void createSeq() throw(SALOME::SALOME_Exception);
 
   public: //public field
-        const SMESHDS_SubMesh * _subMeshDS;
-        ::SMESH_subMesh_i * _subMesh_i;
+        SMESH_subMesh_i * _subMesh_i;
+        ::SMESH_subMesh * _subMesh;
 
-        SMESHDS_Mesh * _meshDS;
         std::string _name;
         std::string _description;
         bool _isOnAllElements;
