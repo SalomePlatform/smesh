@@ -108,7 +108,7 @@ SMESH_Mesh::SMESH_Mesh(int               theLocalId,
   _isAutoColor   = false;
   _isModified    = false;
   _shapeDiagonal = 0.0;
-  _rmGroupCallUp = 0;
+  _callUp = 0;
   _myMeshDS->ShapeToMesh( PseudoShape() );
 }
 
@@ -131,7 +131,7 @@ SMESH_Mesh::SMESH_Mesh():
   _isAutoColor( false ),
   _isModified( false ),
   _shapeDiagonal( 0.0 ),
-  _rmGroupCallUp( 0 )
+  _callUp( 0 )
 {
 }
 
@@ -176,8 +176,8 @@ SMESH_Mesh::~SMESH_Mesh()
   }
   _mapSubMesh.clear();
 
-  if ( _rmGroupCallUp) delete _rmGroupCallUp;
-  _rmGroupCallUp = 0;
+  if ( _callUp) delete _callUp;
+  _callUp = 0;
 
   // remove self from studyContext
   if ( _gen )
@@ -324,6 +324,18 @@ double SMESH_Mesh::GetShapeDiagonalSize() const
     const_cast<SMESH_Mesh*>(this)->_shapeDiagonal = GetShapeDiagonalSize( GetShapeToMesh() );
 
   return _shapeDiagonal;
+}
+
+//================================================================================
+/*!
+ * \brief Load mesh from study file
+ */
+//================================================================================
+
+void SMESH_Mesh::Load()
+{
+  if (_callUp)
+    _callUp->Load();
 }
 
 //=======================================================================
@@ -1043,6 +1055,9 @@ void SMESH_Mesh::NotifySubMeshesHypothesisModification(const SMESH_Hypothesis* h
   if ( !GetMeshDS()->IsUsedHypothesis( hyp ))
     return;
 
+  if (_callUp)
+    _callUp->HypothesisModified();
+
   const SMESH_Algo *foundAlgo = 0;
   SMESH_HypoFilter algoKind, compatibleHypoKind;
   list <const SMESHDS_Hypothesis * > usedHyps;
@@ -1684,15 +1699,15 @@ list<int> SMESH_Mesh::GetGroupIds() const
 
 //================================================================================
 /*!
- * \brief Set a caller of RemoveGroup() at level of CORBA API implementation.
+ * \brief Set a caller of methods at level of CORBA API implementation.
  * The set upCaller will be deleted by SMESH_Mesh
  */
 //================================================================================
 
-void SMESH_Mesh::SetRemoveGroupCallUp( TRmGroupCallUp* upCaller )
+void SMESH_Mesh::SetCallUp( TCallUp* upCaller )
 {
-  if ( _rmGroupCallUp ) delete _rmGroupCallUp;
-  _rmGroupCallUp = upCaller;
+  if ( _callUp ) delete _callUp;
+  _callUp = upCaller;
 }
 
 //=============================================================================
@@ -1708,8 +1723,8 @@ bool SMESH_Mesh::RemoveGroup (const int theGroupID)
   GetMeshDS()->RemoveGroup( _mapGroup[theGroupID]->GetGroupDS() );
   delete _mapGroup[theGroupID];
   _mapGroup.erase (theGroupID);
-  if (_rmGroupCallUp)
-    _rmGroupCallUp->RemoveGroup( theGroupID );
+  if (_callUp)
+    _callUp->RemoveGroup( theGroupID );
   return true;
 }
 

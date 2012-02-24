@@ -99,10 +99,13 @@ public:
   static const TopoDS_Solid& PseudoShape();
 
   /*!
+   * \brief Load mesh from study file
+   */
+  void Load();
+  /*!
    * \brief Remove all nodes and elements
    */
   void Clear();
-
   /*!
    * \brief Remove all nodes and elements of indicated shape
    */
@@ -295,12 +298,14 @@ public:
 
   SMESH_Group* ConvertToStandalone ( int theGroupID );
 
-  struct TRmGroupCallUp
+  struct TCallUp // callback from SMESH to SMESH_I level
   {
     virtual void RemoveGroup (const int theGroupID)=0;
-    virtual ~TRmGroupCallUp() {}
+    virtual void HypothesisModified ()=0;
+    virtual void Load ()=0;
+    virtual ~TCallUp() {}
   };
-  void SetRemoveGroupCallUp( TRmGroupCallUp * upCaller );
+  void SetCallUp( TCallUp * upCaller );
 
   bool SynchronizeGroups();
 
@@ -351,10 +356,11 @@ protected:
 
   TListOfListOfInt           _mySubMeshOrder;
 
-  // Struct calling RemoveGroup at CORBA API implementation level, used
-  // to make an upper level be consistent with a lower one when group removal
-  // is invoked by hyp modification 
-  TRmGroupCallUp*            _rmGroupCallUp;
+  // Struct calling methods at CORBA API implementation level, used to
+  // 1) make an upper level be consistent with a lower one when group removal
+  // is invoked by hyp modification (issue 0020918)
+  // 2) to forget not loaded mesh data at hyp modification
+  TCallUp*                    _callUp;
 
 protected:
   SMESH_Mesh();
