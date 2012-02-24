@@ -137,13 +137,24 @@ int SMESHDS_GroupOnFilter::GetTic() const
 
 //================================================================================
 /*!
+ * \brief Return false if update() is needed
+ */
+//================================================================================
+
+bool SMESHDS_GroupOnFilter::IsUpToDate() const
+{
+  return !( myMeshModifTime < GetMesh()->GetMTime() );
+}
+
+//================================================================================
+/*!
  * \brief Updates myElements if necessary
  */
 //================================================================================
 
 void SMESHDS_GroupOnFilter::update() const
 {
-  if ( myMeshModifTime < GetMesh()->GetMTime() )
+  if ( !IsUpToDate() )
   {
     SMESHDS_GroupOnFilter* me = const_cast<SMESHDS_GroupOnFilter*>( this );
     me->myElements.clear();

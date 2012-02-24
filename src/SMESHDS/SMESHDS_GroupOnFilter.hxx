@@ -58,6 +58,8 @@ class SMESHDS_EXPORT SMESHDS_GroupOnFilter: public SMESHDS_GroupBase
 
   virtual int GetTic() const;
 
+  bool IsUpToDate() const;
+
  private:
 
   void update() const;
