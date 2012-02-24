@@ -45,6 +45,7 @@
 class SMESH_Gen_i;
 class SMESH_GroupBase_i;
 class SMESH_subMesh_i;
+class SMESH_PreMeshInfo;
 
 #include <map>
 
@@ -69,6 +70,12 @@ public:
     throw (SALOME::SALOME_Exception);
 
   GEOM::GEOM_Object_ptr GetShapeToMesh()
+    throw (SALOME::SALOME_Exception);
+
+  CORBA::Boolean IsLoaded()
+    throw (SALOME::SALOME_Exception);
+
+  void Load()
     throw (SALOME::SALOME_Exception);
 
   void Clear()
@@ -390,7 +397,7 @@ public:
 
   SMESH::SMESH_subMesh_ptr createSubMesh( GEOM::GEOM_Object_ptr theSubShapeObject );
 
-  void removeSubMesh(SMESH::SMESH_subMesh_ptr theSubMesh,
+  bool removeSubMesh(SMESH::SMESH_subMesh_ptr theSubMesh,
                      GEOM::GEOM_Object_ptr theSubShapeObject );
 
   SMESH::SMESH_GroupBase_ptr createGroup(SMESH::ElementType        theElemType,
@@ -405,6 +412,11 @@ public:
 
   const std::map<int, SMESH::SMESH_GroupBase_ptr>& getGroups() { return _mapGroups; }
   // return an existing group object.
+
+  void onHypothesisModified();
+  // callback from _impl to forget not loaded mesh data (issue 0021208)
+
+  void checkMeshLoaded();
 
   /*!
    * \brief Update hypotheses assigned to geom groups if the latter change
@@ -575,13 +587,17 @@ public:
    * Returns self
    */
   virtual SMESH::SMESH_Mesh_ptr GetMesh();
-
+  /*!
+   * Returns false if GetMeshInfo() returns incorrect information that may
+   * happen if mesh data is not yet fully loaded from the file of study.
+   */
+  bool IsMeshInfoCorrect();
 
   std::map<int, SMESH_subMesh_i*> _mapSubMesh_i; //NRI
   std::map<int, ::SMESH_subMesh*> _mapSubMesh;   //NRI
 
 private:
-  std::string PrepareMeshNameAndGroups( const char* file, CORBA::Boolean overwrite );
+  std::string prepareMeshNameAndGroups( const char* file, CORBA::Boolean overwrite );
 
   /*!
    * Check and correct names of mesh groups
@@ -597,21 +613,25 @@ private:
 
 private:
 
-  static int myIdGenerator;
-  ::SMESH_Mesh* _impl;  // :: force no namespace here
-  SMESH_Gen_i* _gen_i;
-  int _id;          // id given by creator (unique within the creator instance)
-  int _studyId;
+  static int    _idGenerator;
+  ::SMESH_Mesh* _impl;        // :: force no namespace here
+  SMESH_Gen_i*  _gen_i;
+  int           _id;          // id given by creator (unique within the creator instance)
+  int           _studyId;
   std::map<int, SMESH::SMESH_subMesh_ptr>    _mapSubMeshIor;
   std::map<int, SMESH::SMESH_GroupBase_ptr>  _mapGroups;
   std::map<int, SMESH::SMESH_Hypothesis_ptr> _mapHypo;
-  SALOME_MED::MedFileInfo_var myFileInfo;
+  SALOME_MED::MedFileInfo_var _medFileInfo;
+  SMESH_PreMeshInfo*          _preMeshInfo; // mesh info before full loading from study file
+
+  SMESH_PreMeshInfo* & changePreMeshInfo() { return _preMeshInfo; }
+  friend class SMESH_PreMeshInfo;
 
 private:
 
   // Data used to track changes of GEOM groups
   struct TGeomGroupData {
-    // keep study entry and not ior because GEOM_Object actually changes if
+    // keep study entry but not ior because GEOM_Object actually changes if
     // number of items in a group varies (1) <-> (>1)
     std::string       _groupEntry;
     std::set<int>     _indices; // indices of group items within group's main shape
