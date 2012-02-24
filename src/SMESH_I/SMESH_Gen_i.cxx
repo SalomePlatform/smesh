@@ -78,6 +78,7 @@
 #include "SMESH_Algo_i.hxx"
 #include "SMESH_Group_i.hxx"
 #include "SMESH_PythonDump.hxx"
+#include "SMESH_PreMeshInfo.hxx"
 
 #include "SMESHDS_Document.hxx"
 #include "SMESHDS_Group.hxx"
@@ -284,6 +285,7 @@ SMESH_Gen_i::SMESH_Gen_i( CORBA::ORB_ptr            orb,
   myShapeReader = NULL;  // shape reader
   mySMESHGen = this;
   myIsHistoricalPythonDump = true;
+  myToForgetMeshDataOnHypModif = false;
 
   // set it in standalone mode only
   //OSD::SetSignal( true );
@@ -814,19 +816,29 @@ void SMESH_Gen_i::SetDefaultNbSegments(CORBA::Long theNbSegments)
 
 void SMESH_Gen_i::SetOption(const char* name, const char* value)
 {
-  if ( name && value &&
-       strcmp(name, "historical_python_dump") == 0 &&
-       strlen( value ) > 0 )
+  if ( name && value && strlen( value ) > 0 )
   {
-    myIsHistoricalPythonDump = ( value[0] == '1' || toupper(value[0]) == 'T' ); // 1 || true
+    string msgToGUI; 
+    if ( strcmp(name, "historical_python_dump") == 0 )
+    {
+      myIsHistoricalPythonDump = ( value[0] == '1' || toupper(value[0]) == 'T' ); // 1 || true
+      msgToGUI = "preferences:SMESH:historical_python_dump:";
+      msgToGUI += myIsHistoricalPythonDump ? "true" : "false";
+    }
+    else if ( strcmp(name, "forget_mesh_on_hyp_modif") == 0 )
+    {
+      myToForgetMeshDataOnHypModif = ( value[0] == '1' || toupper(value[0]) == 'T' ); // 1 || true
+      msgToGUI = "preferences:SMESH:forget_mesh_on_hyp_modif:";
+      msgToGUI += myToForgetMeshDataOnHypModif ? "true" : "false";
+    }
 
     // update preferences in case if SetOption() is invoked from python console
-    CORBA::Object_var obj = SMESH_Gen_i::GetNS()->Resolve( "/Kernel/Session" );
-    SALOME::Session_var session = SALOME::Session::_narrow( obj );
-    if ( !CORBA::is_nil( session ) ) {
-      string msg("preferences:SMESH:historical_python_dump:");
-      msg += myIsHistoricalPythonDump ? "true" : "false";
-      session->emitMessageOneWay(msg.c_str());
+    if ( !msgToGUI.empty() )
+    {
+      CORBA::Object_var obj = SMESH_Gen_i::GetNS()->Resolve( "/Kernel/Session" );
+      SALOME::Session_var session = SALOME::Session::_narrow( obj );
+      if ( !CORBA::is_nil( session ) )
+        session->emitMessageOneWay(msgToGUI.c_str());
     }
   }
 }
@@ -839,9 +851,16 @@ void SMESH_Gen_i::SetOption(const char* name, const char* value)
 
 char* SMESH_Gen_i::GetOption(const char* name)
 {
-  if ( name && strcmp(name, "historical_python_dump") == 0 )
+  if ( name )
   {
-    return CORBA::string_dup( myIsHistoricalPythonDump ? "true" : "false" );
+    if ( strcmp(name, "historical_python_dump") == 0 )
+    {
+      return CORBA::string_dup( myIsHistoricalPythonDump ? "true" : "false" );
+    }
+    if ( strcmp(name, "forget_mesh_on_hyp_modif") == 0 )
+    {
+      return CORBA::string_dup( myToForgetMeshDataOnHypModif ? "true" : "false" );
+    }
   }
   return CORBA::string_dup( "" );
 }
@@ -2790,6 +2809,7 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
         if ( !CORBA::is_nil( anObject ) ) {
           SMESH::SMESH_Mesh_var myMesh = SMESH::SMESH_Mesh::_narrow( anObject ) ;
           if ( !myMesh->_is_nil() ) {
+            myMesh->Load(); // load from study file if not yet done
             TPythonDump pd; // not to dump GetGroups()
             SMESH::ListOfGroups_var groups = myMesh->GetGroups();
             pd << ""; // to avoid optimizing pd out
@@ -3455,6 +3475,9 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
               // Flush current mesh information into MED file
               myWriter.Perform();
 
+              // save info on nb of elements
+              SMESH_PreMeshInfo::SaveToFile( myImpl, id, aFile );
+
               // maybe a shape was deleted in the study
               if ( !shapeRefFound && !mySMESHDSMesh->ShapeToMesh().IsNull() && hasShape) {
                 TopoDS_Shape nullShape;
@@ -3738,33 +3761,6 @@ void SMESH_Gen_i::loadGeomData( SALOMEDS::SComponent_ptr theCompRoot )
   SALOMEDS::StudyBuilder_var aStudyBuilder = aStudy->NewBuilder();
   aStudyBuilder->LoadWith( theCompRoot, GetGeomEngine() );
 }
-//=============================================================================
-/*!
- * \brief Creates SMDS_Position according to shape type
- */
-//=============================================================================
-
-class PositionCreator {
-public:
-  SMDS_PositionPtr MakePosition(const TopAbs_ShapeEnum type) {
-    return (this->*myFuncTable[ type ])();
-  }
-  PositionCreator() {
-    myFuncTable.resize( (size_t) TopAbs_SHAPE, & PositionCreator::defaultPosition );
-    myFuncTable[ TopAbs_SOLID  ] = & PositionCreator::volumePosition;
-    myFuncTable[ TopAbs_FACE   ] = & PositionCreator::facePosition;
-    myFuncTable[ TopAbs_EDGE   ] = & PositionCreator::edgePosition;
-    myFuncTable[ TopAbs_VERTEX ] = & PositionCreator::vertexPosition;
-  }
-private:
-  SMDS_PositionPtr edgePosition()    const { return SMDS_PositionPtr( new SMDS_EdgePosition  ); }
-  SMDS_PositionPtr facePosition()    const { return SMDS_PositionPtr( new SMDS_FacePosition  ); }
-  SMDS_PositionPtr volumePosition()  const { return SMDS_PositionPtr( new SMDS_SpacePosition ); }
-  SMDS_PositionPtr vertexPosition()  const { return SMDS_PositionPtr( new SMDS_VertexPosition); }
-  SMDS_PositionPtr defaultPosition() const { return SMDS_SpacePosition::originSpacePosition();  }
-  typedef SMDS_PositionPtr (PositionCreator:: * FmakePos)() const;
-  vector<FmakePos> myFuncTable;
-};
 
 //=============================================================================
 /*!
@@ -3836,8 +3832,8 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
 
   TPythonDump pd; // prevent dump during loading
 
-  DriverMED_R_SMESHDS_Mesh myReader;
-  myReader.SetFile( meshfile.ToCString() );
+  // DriverMED_R_SMESHDS_Mesh myReader;
+  // myReader.SetFile( meshfile.ToCString() );
 
   // For PAL13473 ("Repetitive mesh") implementation.
   // New dependencies between SMESH objects are established:
@@ -4150,7 +4146,7 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
           }
         }
       }
-    }
+    } // reading MESHes
 
     // As all object that can be referred by hypothesis are created,
     // we can restore hypothesis data
@@ -4170,8 +4166,8 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
     {
       aTopGroup                   = meshi_group->second;
       SMESH_Mesh_i* myNewMeshImpl = meshi_group->first;
-      ::SMESH_Mesh& myLocMesh     = myNewMeshImpl->GetImpl();
-      SMESHDS_Mesh* mySMESHDSMesh = myLocMesh.GetMeshDS();
+      //::SMESH_Mesh& myLocMesh     = myNewMeshImpl->GetImpl();
+      //SMESHDS_Mesh* mySMESHDSMesh = myLocMesh.GetMeshDS();
 
       GEOM::GEOM_Object_var aShapeObject = myNewMeshImpl->GetShapeToMesh();
       bool hasData = false;
@@ -4192,9 +4188,9 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
         aDataset->CloseOnDisk();
         if ( strcmp( strHasData, "1") == 0 ) {
           // read mesh data from MED file
-          myReader.SetMesh( mySMESHDSMesh );
-          myReader.SetMeshId( id );
-          myReader.Perform();
+          // myReader.SetMesh( mySMESHDSMesh );
+          // myReader.SetMeshId( id );
+          // myReader.Perform();
           hasData = true;
         }
       }
@@ -4218,9 +4214,7 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
             char* refFromFile = new char[ size ];
             aDataset->ReadFromDisk( refFromFile );
             aDataset->CloseOnDisk();
-
             // san - it is impossible to recover applied algorithms using their entries within Load() method
-
             //SALOMEDS::SObject_var hypSO = myCurrentStudy->FindObjectID( refFromFile );
             //CORBA::Object_var hypObject = SObjectToObject( hypSO );
             int id = atoi( refFromFile );
@@ -4256,9 +4250,7 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
             char* refFromFile = new char[ size ];
             aDataset->ReadFromDisk( refFromFile );
             aDataset->CloseOnDisk();
-
             // san - it is impossible to recover applied hypotheses using their entries within Load() method
-
             //SALOMEDS::SObject_var hypSO = myCurrentStudy->FindObjectID( refFromFile );
             //CORBA::Object_var hypObject = SObjectToObject( hypSO );
             int id = atoi( refFromFile );
@@ -4277,7 +4269,7 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
         aGroup->CloseOnDisk();
       }
 
-      // --> try to find submeshes containers for each type of submesh
+      // --> try to find SUB-MESHES containers for each type of submesh
       for ( int j = GetSubMeshOnVertexTag(); j <= GetSubMeshOnCompoundTag(); j++ ) {
         char name_meshgroup[ 30 ];
         if ( j == GetSubMeshOnVertexTag() )
@@ -4414,224 +4406,20 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
                     }
                   }
                 }
-                // close "applied hypotheses" HDF group
+                // close "APPLIED HYPOTHESES" hdf group
                 aSubSubGroup->CloseOnDisk();
               }
 
-              // close submesh HDF group
+              // close SUB-MESH hdf group
               aSubGroup->CloseOnDisk();
             }
           }
-          // close submeshes containers HDF group
+          // close SUB-MESHES containers hdf group
           aGroup->CloseOnDisk();
         }
       }
 
-      if(hasData) {
-
-        // Read sub-meshes
-        // ----------------
-        if(MYDEBUG) MESSAGE("Create all sub-meshes");
-        bool submeshesInFamilies = ( ! aTopGroup->ExistInternalObject( "Submeshes" ));
-        if ( submeshesInFamilies ) // from MED
-        {
-          // old way working before fix of PAL 12992
-          myReader.CreateAllSubMeshes();
-        }
-        else
-        {
-          // open a group
-          aGroup = new HDFgroup( "Submeshes", aTopGroup );
-          aGroup->OpenOnDisk();
-
-          int maxID = Max( mySMESHDSMesh->MaxSubMeshIndex(), mySMESHDSMesh->MaxShapeIndex() );
-          vector< SMESHDS_SubMesh * > subMeshes( maxID + 1, (SMESHDS_SubMesh*) 0 );
-          vector< TopAbs_ShapeEnum  > smType   ( maxID + 1, TopAbs_SHAPE );
-
-          PositionCreator aPositionCreator;
-
-          SMDS_NodeIteratorPtr nIt = mySMESHDSMesh->nodesIterator();
-          SMDS_ElemIteratorPtr eIt = mySMESHDSMesh->elementsIterator();
-          for ( int isNode = 0; isNode < 2; ++isNode )
-          {
-            string aDSName( isNode ? "Node Submeshes" : "Element Submeshes");
-            if ( aGroup->ExistInternalObject( (char*) aDSName.c_str() ))
-            {
-              aDataset = new HDFdataset( (char*) aDSName.c_str(), aGroup );
-              aDataset->OpenOnDisk();
-              // read submesh IDs for all elements sorted by ID
-              int nbElems = aDataset->GetSize();
-              int* smIDs = new int [ nbElems ];
-              aDataset->ReadFromDisk( smIDs );
-              aDataset->CloseOnDisk();
-
-              // get elements sorted by ID
-              TIDSortedElemSet elemSet;
-              if ( isNode )
-                while ( nIt->more() ) elemSet.insert( nIt->next() );
-              else
-                while ( eIt->more() ) elemSet.insert( eIt->next() );
-              //ASSERT( elemSet.size() == nbElems ); -- issue 20182
-              // -- Most probably a bad study was saved when there were
-              // not fixed bugs in SMDS_MeshInfo
-              if ( elemSet.size() < nbElems ) {
-#ifdef _DEBUG_
-                cout << "SMESH_Gen_i::Load(), warning: Node position data is invalid" << endl;
-#endif
-                nbElems = elemSet.size();
-              }
-              // add elements to submeshes
-              TIDSortedElemSet::iterator iE = elemSet.begin();
-              for ( int i = 0; i < nbElems; ++i, ++iE )
-              {
-                int smID = smIDs[ i ];
-                if ( smID == 0 ) continue;
-                const SMDS_MeshElement* elem = *iE;
-                if( smID > maxID ) {
-                  // corresponding subshape no longer exists: maybe geom group has been edited
-                  if ( myNewMeshImpl->HasShapeToMesh() )
-                    mySMESHDSMesh->RemoveElement( elem );
-                  continue;
-                }
-                // get or create submesh
-                SMESHDS_SubMesh* & sm = subMeshes[ smID ];
-                if ( ! sm ) {
-                  sm = mySMESHDSMesh->NewSubMesh( smID );
-                  smType[ smID ] = mySMESHDSMesh->IndexToShape( smID ).ShapeType();
-                }
-                // add
-                if ( isNode ) {
-                  SMDS_PositionPtr pos = aPositionCreator.MakePosition( smType[ smID ]);
-                  SMDS_MeshNode* node = const_cast<SMDS_MeshNode*>( static_cast<const SMDS_MeshNode*>( elem ));
-                  node->SetPosition( pos );
-                  sm->AddNode( node );
-                } else {
-                  sm->AddElement( elem );
-                }
-              }
-              delete [] smIDs;
-            }
-          }
-        } // end reading submeshes
-
-        // Read node positions on sub-shapes (SMDS_Position)
-
-        if ( aTopGroup->ExistInternalObject( "Node Positions" ))
-        {
-          // There are 5 datasets to read:
-          // "Nodes on Edges" - ID of node on edge
-          // "Edge positions" - U parameter on node on edge
-          // "Nodes on Faces" - ID of node on face
-          // "Face U positions" - U parameter of node on face
-          // "Face V positions" - V parameter of node on face
-          const char* aEid_DSName = "Nodes on Edges";
-          const char* aEu_DSName  = "Edge positions";
-          const char* aFu_DSName  = "Face U positions";
-          //char* aFid_DSName = "Nodes on Faces";
-          //char* aFv_DSName  = "Face V positions";
-
-          // data to retrieve
-          int nbEids = 0, nbFids = 0;
-          int *aEids = 0, *aFids  = 0;
-          double *aEpos = 0, *aFupos = 0, *aFvpos = 0;
-
-          // open a group
-          aGroup = new HDFgroup( "Node Positions", aTopGroup );
-          aGroup->OpenOnDisk();
-
-          // loop on 5 data sets
-          int aNbObjects = aGroup->nInternalObjects();
-          for ( int i = 0; i < aNbObjects; i++ )
-          {
-            // identify dataset
-            char aDSName[ HDF_NAME_MAX_LEN+1 ];
-            aGroup->InternalObjectIndentify( i, aDSName );
-            // read data
-            aDataset = new HDFdataset( aDSName, aGroup );
-            aDataset->OpenOnDisk();
-            if ( aDataset->GetType() == HDF_FLOAT64 ) // Positions
-            {
-              double* pos = new double [ aDataset->GetSize() ];
-              aDataset->ReadFromDisk( pos );
-              // which one?
-              if ( strncmp( aDSName, aEu_DSName, strlen( aEu_DSName )) == 0 )
-                aEpos = pos;
-              else if ( strncmp( aDSName, aFu_DSName, strlen( aFu_DSName )) == 0 )
-                aFupos = pos;
-              else
-                aFvpos = pos;
-            }
-            else // NODE IDS
-            {
-              int aSize = aDataset->GetSize();
-
-              // for reading files, created from 18.07.2005 till 10.10.2005
-              if (aDataset->GetType() == HDF_STRING)
-                aSize /= sizeof(int);
-
-              int* ids = new int [aSize];
-              aDataset->ReadFromDisk( ids );
-              // on face or nodes?
-              if ( strncmp( aDSName, aEid_DSName, strlen( aEid_DSName )) == 0 ) {
-                aEids = ids;
-                nbEids = aSize;
-              }
-              else {
-                aFids = ids;
-                nbFids = aSize;
-              }
-            }
-            aDataset->CloseOnDisk();
-          } // loop on 5 datasets
-
-          // Set node positions on edges or faces
-          for ( int onFace = 0; onFace < 2; onFace++ )
-          {
-            int nbNodes = ( onFace ? nbFids : nbEids );
-            if ( nbNodes == 0 ) continue;
-            int* aNodeIDs = ( onFace ? aFids : aEids );
-            double* aUPos = ( onFace ? aFupos : aEpos );
-            double* aVPos = ( onFace ? aFvpos : 0 );
-            // loop on node IDs
-            for ( int iNode = 0; iNode < nbNodes; iNode++ )
-            {
-              const SMDS_MeshNode* node = mySMESHDSMesh->FindNode( aNodeIDs[ iNode ]);
-              if ( !node ) continue; // maybe removed while Loading() if geometry changed
-              SMDS_PositionPtr aPos = node->GetPosition();
-              ASSERT( aPos );
-              if ( onFace ) {
-                // ASSERT( aPos->GetTypeOfPosition() == SMDS_TOP_FACE );-- issue 20182
-                // -- Most probably a bad study was saved when there were
-                // not fixed bugs in SMDS_MeshInfo
-                if ( aPos->GetTypeOfPosition() == SMDS_TOP_FACE ) {
-                  SMDS_FacePosition* fPos = const_cast<SMDS_FacePosition*>
-                    ( static_cast<const SMDS_FacePosition*>( aPos ));
-                  fPos->SetUParameter( aUPos[ iNode ]);
-                  fPos->SetVParameter( aVPos[ iNode ]);
-                }
-              }
-              else {
-                // ASSERT( aPos->GetTypeOfPosition() == SMDS_TOP_EDGE );-- issue 20182
-                if ( aPos->GetTypeOfPosition() == SMDS_TOP_EDGE ) {
-                  SMDS_EdgePosition* fPos = const_cast<SMDS_EdgePosition*>
-                    ( static_cast<const SMDS_EdgePosition*>( aPos ));
-                  fPos->SetUParameter( aUPos[ iNode ]);
-                }
-              }
-            }
-          }
-          if ( aEids ) delete [] aEids;
-          if ( aFids ) delete [] aFids;
-          if ( aEpos ) delete [] aEpos;
-          if ( aFupos ) delete [] aFupos;
-          if ( aFvpos ) delete [] aFvpos;
-
-          aGroup->CloseOnDisk();
-
-        } // if ( aTopGroup->ExistInternalObject( "Node Positions" ) )
-      } // if ( hasData )
-
-      // try to get groups
+      // try to get GROUPS
       for ( int ii = GetNodeGroupsTag(); ii <= Get0DElementsGroupsTag(); ii++ ) {
         char name_group[ 30 ];
         if ( ii == GetNodeGroupsTag() )
@@ -4751,16 +4539,25 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
               }
 
               // Fill group with contents from MED file
-              SMESHDS_Group* aGrp = dynamic_cast<SMESHDS_Group*>( aGroupBaseDS );
-              if ( aGrp )
-                myReader.GetGroup( aGrp );
+              // SMESHDS_Group* aGrp = dynamic_cast<SMESHDS_Group*>( aGroupBaseDS );
+              // if ( aGrp )
+              //   myReader.GetGroup( aGrp );
             }
           }
           aGroup->CloseOnDisk();
         }
+      } // reading GROUPs
+
+      // instead of reading mesh data, we read only brief information of all
+      // objects: mesh, groups, sub-meshes (issue 0021208 )
+      if ( hasData )
+      {
+        SMESH_PreMeshInfo::LoadFromFile( myNewMeshImpl, id,
+                                         meshfile.ToCString(), filename.ToCString(),
+                                         !isMultiFile );
       }
 
-      // read submeh order if any
+      // read Sub-Mesh ORDER if any
       if( aTopGroup->ExistInternalObject( "Mesh Order" ) ) {
         aDataset = new HDFdataset( "Mesh Order", aTopGroup );
         aDataset->OpenOnDisk();
@@ -4787,7 +4584,7 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
       hyp->UpdateAsMeshesRestored();
     }
 
-    // notify algos on completed restoration
+    // notify algos on completed restoration to set sub-mesh event listeners
     for ( meshi_group = meshGroupList.begin(); meshi_group != meshGroupList.end(); ++meshi_group )
     {
       SMESH_Mesh_i* myNewMeshImpl = meshi_group->first;
@@ -4812,8 +4609,8 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
   delete aFile;
 
   // Remove temporary files created from the stream
-  if ( !isMultiFile )
-    SALOMEDS_Tool::RemoveTemporaryFiles( tmpDir.ToCString(), aFileSeq.in(), true );
+  // if ( !isMultiFile )
+  //   SALOMEDS_Tool::RemoveTemporaryFiles( tmpDir.ToCString(), aFileSeq.in(), true );
 
   pd << ""; // prevent optimizing pd out
 
@@ -4873,8 +4670,9 @@ void SMESH_Gen_i::Close( SALOMEDS::SComponent_ptr theComponent )
   if(MYDEBUG) MESSAGE( "SMESH_Gen_i::Close" );
 
   // set correct current study
-  if (theComponent->GetStudy()->StudyId() != GetCurrentStudyID())
-    SetCurrentStudy(theComponent->GetStudy());
+  SALOMEDS::Study_var study = theComponent->GetStudy();
+  if ( study->StudyId() != GetCurrentStudyID())
+    SetCurrentStudy( study );
 
   // Clear study contexts data
   int studyId = GetCurrentStudyID();
@@ -4900,6 +4698,9 @@ void SMESH_Gen_i::Close( SALOMEDS::SComponent_ptr theComponent )
 //     delete context->myDocument;
 //     context->myDocument = 0;
 //   }
+
+  // remove the tmp files meshes are loaded from
+  SMESH_PreMeshInfo::RemoveStudyFiles_TMP_METHOD( theComponent );
 
   myCurrentStudy = SALOMEDS::Study::_nil();
   return;
