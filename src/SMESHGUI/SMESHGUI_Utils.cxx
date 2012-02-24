@@ -315,9 +315,12 @@ namespace SMESH
               SObjectToInterface<SMESH::SMESH_GroupOnFilter>( aSObj1 );
             const bool isGroupOnFilter = !gof->_is_nil();
 
-            SMESH::array_of_ElementType_var elemTypes = idSrc->GetTypes();
-            const bool isEmpty = ( elemTypes->length() == 0 );
-
+            bool isEmpty = false;
+            if ( !isGroupOnFilter ) // GetTypes() can be very long on isGroupOnFilter!
+            {
+              SMESH::array_of_ElementType_var elemTypes = idSrc->GetTypes();
+              isEmpty = ( elemTypes->length() == 0 );
+            }
             if ( isEmpty )
               aPixmap->SetPixMap("ICON_SMESH_TREE_MESH_WARN");
             else if ( objType != GROUP )
