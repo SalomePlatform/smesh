@@ -40,6 +40,7 @@
 #include "SMESH_Mesh_i.hxx"
 
 class SMESH_Gen_i;
+class SMESH_PreMeshInfo;
 
 class SMESH_I_EXPORT SMESH_subMesh_i:
   public virtual POA_SMESH::SMESH_subMesh,
@@ -65,9 +66,6 @@ public:
   SMESH::long_array* GetElementsByType( SMESH::ElementType theElemType )
     throw (SALOME::SALOME_Exception);
   
-  //for omniORB conflict compilation
-  /*SMESH::ElementType GetElementType( const CORBA::Long id, const bool iselem )
-    throw (SALOME::SALOME_Exception);*/
   SMESH::ElementType GetElementType( CORBA::Long id, bool iselem )
     throw (SALOME::SALOME_Exception);
   
@@ -80,7 +78,7 @@ public:
   GEOM::GEOM_Object_ptr GetSubShape()
     throw (SALOME::SALOME_Exception);
 
-  CORBA::Long GetId();   
+  CORBA::Long GetId();
 
   SALOME_MED::FAMILY_ptr GetFamily()
     throw (SALOME::SALOME_Exception);
@@ -106,17 +104,27 @@ public:
   /*!
    * Returns the mesh
    */
-  SMESH::SMESH_Mesh_ptr GetMesh();
+  virtual SMESH::SMESH_Mesh_ptr GetMesh();
+  /*!
+   * Returns false if GetMeshInfo() returns incorrect information that may
+   * happen if mesh data is not yet fully loaded from the file of study.
+   */
+  virtual bool IsMeshInfoCorrect();
 
-
-  SMESH_Mesh_i* _mesh_i; //NRI
 
 protected:
-  void changeLocalId(int localId) { _localId = localId; }
-  SMESH_Gen_i* _gen_i;
-  int _localId;
 
+  SMESH_Gen_i*  _gen_i;
+  int           _localId;
+  SMESH_Mesh_i* _mesh_i; //NRI
+
+  void changeLocalId(int localId) { _localId = localId; }
   friend void SMESH_Mesh_i::CheckGeomGroupModif();
+
+  SMESH_PreMeshInfo* _preMeshInfo; // mesh info before full loading from study file
+
+  SMESH_PreMeshInfo* & changePreMeshInfo() { return _preMeshInfo; }
+  friend class SMESH_PreMeshInfo;
 };
 
 #endif

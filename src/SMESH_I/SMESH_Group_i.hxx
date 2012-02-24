@@ -41,6 +41,7 @@
 
 class SMESH_Group;
 class SMESHDS_GroupBase;
+class SMESH_PreMeshInfo;
 
 // ===========
 // Group Base
@@ -67,7 +68,8 @@ class SMESH_I_EXPORT SMESH_GroupBase_i:
   SMESH::long_array* GetNodeIDs();
   CORBA::Long GetNumberOfNodes();
   CORBA::Boolean IsNodeInfoAvailable(); // for gui
-  SMESH::SMESH_Mesh_ptr GetMesh();
+
+  virtual SMESH::SMESH_Mesh_ptr GetMesh();
 
   /*!
    * Returns statistic of mesh elements
@@ -84,6 +86,11 @@ class SMESH_I_EXPORT SMESH_GroupBase_i:
    * Inherited from SMESH_IDSource interface
    */
   virtual SMESH::array_of_ElementType* GetTypes();
+  /*!
+   * Returns false if GetMeshInfo() returns incorrect information that may
+   * happen if mesh data is not yet fully loaded from the file of study.
+   */
+  virtual bool IsMeshInfoCorrect();
 
   // Internal C++ interface
   int GetLocalID() const { return myLocalID; }
@@ -96,6 +103,12 @@ class SMESH_I_EXPORT SMESH_GroupBase_i:
 
   void SetColorNumber(CORBA::Long color);
   CORBA::Long GetColorNumber();
+
+protected:
+
+  SMESH_PreMeshInfo* & changePreMeshInfo() { return myPreMeshInfo; }
+  SMESH_PreMeshInfo* myPreMeshInfo; // mesh info before full loading from study file
+  friend class SMESH_PreMeshInfo;
 
 private:
   SMESH_Mesh_i* myMeshServant;

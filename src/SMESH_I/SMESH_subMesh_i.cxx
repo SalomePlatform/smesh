@@ -24,11 +24,11 @@
 //  File   : SMESH_subMesh_i.cxx
 //  Author : Paul RASCLE, EDF
 //  Module : SMESH
-//  $Header$
 //
 #include "SMESH_subMesh_i.hxx"
 #include "SMESH_Gen_i.hxx"
 #include "SMESH_Mesh_i.hxx"
+#include "SMESH_PreMeshInfo.hxx"
 
 #include "Utils_CorbaException.hxx"
 #include "utilities.h"
@@ -50,7 +50,7 @@ SMESH_subMesh_i::SMESH_subMesh_i()
      : SALOME::GenericObj_i( PortableServer::POA::_nil() )
 {
   MESSAGE("SMESH_subMesh_i::SMESH_subMesh_i default, not for use");
-    ASSERT(0);
+  ASSERT(0);
 }
 
 //=============================================================================
@@ -65,11 +65,10 @@ SMESH_subMesh_i::SMESH_subMesh_i( PortableServer::POA_ptr thePOA,
                                   int                     localId )
      : SALOME::GenericObj_i( thePOA )
 {
-  MESSAGE("SMESH_subMesh_i::SMESH_subMesh_i");
   _gen_i = gen_i;
   _mesh_i = mesh_i;
   _localId = localId;
-  // ****
+  _preMeshInfo = NULL;
 }
 //=============================================================================
 /*!
@@ -80,7 +79,8 @@ SMESH_subMesh_i::SMESH_subMesh_i( PortableServer::POA_ptr thePOA,
 SMESH_subMesh_i::~SMESH_subMesh_i()
 {
   MESSAGE("SMESH_subMesh_i::~SMESH_subMesh_i");
-  // ****
+  if ( _preMeshInfo ) delete _preMeshInfo;
+  _preMeshInfo = NULL;
 }
 
 //=======================================================================
@@ -162,7 +162,10 @@ CORBA::Long SMESH_subMesh_i::GetNumberOfElements()
   throw (SALOME::SALOME_Exception)
 {
   Unexpect aCatch(SALOME_SalomeException);
-  MESSAGE("SMESH_subMesh_i::GetNumberOfElements");
+
+  if ( _preMeshInfo )
+    return _preMeshInfo->NbElements();
+
   if ( _mesh_i->_mapSubMesh.find( _localId ) == _mesh_i->_mapSubMesh.end() )
     return 0;
 
@@ -192,10 +195,15 @@ CORBA::Long SMESH_subMesh_i::GetNumberOfNodes(CORBA::Boolean all)
   throw (SALOME::SALOME_Exception)
 {
   Unexpect aCatch(SALOME_SalomeException);
-  MESSAGE("SMESH_subMesh_i::GetNumberOfNodes");
+
   if ( _mesh_i->_mapSubMesh.find( _localId ) == _mesh_i->_mapSubMesh.end() )
     return 0;
 
+  if ( _preMeshInfo )
+  {
+    if ( all ) return _preMeshInfo->NbNodes();
+    else _preMeshInfo->FullLoadFromFile();
+  }
   ::SMESH_subMesh* aSubMesh = _mesh_i->_mapSubMesh[_localId];
   SMESHDS_SubMesh* aSubMeshDS = aSubMesh->GetSubMeshDS();
 
@@ -258,11 +266,14 @@ SMESH::long_array* SMESH_subMesh_i::GetElementsId()
   throw (SALOME::SALOME_Exception)
 {
   Unexpect aCatch(SALOME_SalomeException);
-  MESSAGE("SMESH_subMesh_i::GetElementsId");
+
   SMESH::long_array_var aResult = new SMESH::long_array();
 
   if ( _mesh_i->_mapSubMesh.find( _localId ) == _mesh_i->_mapSubMesh.end() )
     return aResult._retn();
+
+  if ( _preMeshInfo )
+    _preMeshInfo->FullLoadFromFile();
 
   ::SMESH_subMesh* aSubMesh = _mesh_i->_mapSubMesh[_localId];
   SMESHDS_SubMesh* aSubMeshDS = aSubMesh->GetSubMeshDS();
@@ -305,11 +316,14 @@ SMESH::long_array* SMESH_subMesh_i::GetElementsByType( SMESH::ElementType theEle
     throw (SALOME::SALOME_Exception)
 {
   Unexpect aCatch(SALOME_SalomeException);
-  MESSAGE("SMESH_subMesh_i::GetElementsByType");
+
   SMESH::long_array_var aResult = new SMESH::long_array();
 
   if ( _mesh_i->_mapSubMesh.find( _localId ) == _mesh_i->_mapSubMesh.end() )
     return aResult._retn();
+
+  if ( _preMeshInfo )
+    _preMeshInfo->FullLoadFromFile();
 
   ::SMESH_subMesh* aSubMesh = _mesh_i->_mapSubMesh[_localId];
   SMESHDS_SubMesh* aSubMeshDS = aSubMesh->GetSubMeshDS();
@@ -413,7 +427,7 @@ SMESH::long_array* SMESH_subMesh_i::GetNodesId()
   throw (SALOME::SALOME_Exception)
 {
   Unexpect aCatch(SALOME_SalomeException);
-  MESSAGE("SMESH_subMesh_i::GetNodesId");
+
   SMESH::long_array_var aResult = GetElementsByType( SMESH::NODE );
   return aResult._retn();
 }
@@ -428,7 +442,6 @@ SMESH::SMESH_Mesh_ptr SMESH_subMesh_i::GetFather()
   throw (SALOME::SALOME_Exception)
 {
   Unexpect aCatch(SALOME_SalomeException);
-  MESSAGE("SMESH_subMesh_i::GetFather");
   return _mesh_i->_this();
 }
 
@@ -440,7 +453,6 @@ SMESH::SMESH_Mesh_ptr SMESH_subMesh_i::GetFather()
   
 CORBA::Long SMESH_subMesh_i::GetId()
 {
-  MESSAGE("SMESH_subMesh_i::GetId");
   return _localId;
 }
 
@@ -482,6 +494,8 @@ SALOME_MED::FAMILY_ptr SMESH_subMesh_i::GetFamily()
   throw (SALOME::SALOME_Exception)
 {
   Unexpect aCatch(SALOME_SalomeException);
+  if ( _preMeshInfo )
+    _preMeshInfo->FullLoadFromFile();
   SALOME_MED::MESH_var MEDMesh = GetFather()->GetMEDMesh();
 
   SALOME_MED::Family_array_var families = 
@@ -502,8 +516,7 @@ SALOME_MED::FAMILY_ptr SMESH_subMesh_i::GetFamily()
 //=============================================================================
 SMESH::long_array* SMESH_subMesh_i::GetIDs()
 {
-  SMESH::long_array_var aResult = GetElementsId();
-  return aResult._retn();
+  return GetElementsId();
 }
 
 //=============================================================================
@@ -514,6 +527,8 @@ SMESH::long_array* SMESH_subMesh_i::GetIDs()
 SMESH::ElementType SMESH_subMesh_i::GetElementType( const CORBA::Long id, const bool iselem )
   throw (SALOME::SALOME_Exception)
 {
+  if ( _preMeshInfo )
+    _preMeshInfo->FullLoadFromFile();
   return GetFather()->GetElementType( id, iselem );
 }
 
@@ -527,6 +542,9 @@ SMESH::ElementType SMESH_subMesh_i::GetElementType( const CORBA::Long id, const 
 //=============================================================================
 SMESH::long_array* SMESH_subMesh_i::GetMeshInfo()
 {
+  if ( _preMeshInfo )
+    return _preMeshInfo->GetMeshInfo();
+
   SMESH::long_array_var aRes = new SMESH::long_array();
   aRes->length(SMESH::Entity_Last);
   for (int i = SMESH::Entity_Node; i < SMESH::Entity_Last; i++)
@@ -554,6 +572,9 @@ SMESH::long_array* SMESH_subMesh_i::GetMeshInfo()
 
 SMESH::array_of_ElementType* SMESH_subMesh_i::GetTypes()
 {
+  if ( _preMeshInfo )
+    return _preMeshInfo->GetTypes();
+
   SMESH::array_of_ElementType_var types = new SMESH::array_of_ElementType;
 
   ::SMESH_subMesh* aSubMesh = _mesh_i->_mapSubMesh[_localId];
@@ -591,4 +612,15 @@ SMESH::array_of_ElementType* SMESH_subMesh_i::GetTypes()
 SMESH::SMESH_Mesh_ptr SMESH_subMesh_i::GetMesh()
 {
   return GetFather();
+}
+
+//=======================================================================
+//function : IsMeshInfoCorrect
+//purpose  : * Returns false if GetMeshInfo() returns incorrect information that may
+//           * happen if mesh data is not yet fully loaded from the file of study.
+//=======================================================================
+
+bool SMESH_subMesh_i::IsMeshInfoCorrect()
+{
+  return _preMeshInfo ? _preMeshInfo->IsMeshInfoCorrect() : true;
 }

@@ -37,6 +37,7 @@
 #include "SMESH_Group.hxx"
 #include "SMESH_Mesh_i.hxx"
 #include "SMESH_PythonDump.hxx"
+#include "SMESH_PreMeshInfo.hxx"
 
 #include CORBA_SERVER_HEADER(SMESH_Filter)
 
@@ -57,7 +58,8 @@ SMESH_GroupBase_i::SMESH_GroupBase_i( PortableServer::POA_ptr thePOA,
   myMeshServant( theMeshServant ), 
   myLocalID( theLocalID ),
   myNbNodes(-1),
-  myGroupDSTic(0)
+  myGroupDSTic(0),
+  myPreMeshInfo(NULL)
 {
   // PAL7962: san -- To ensure correct mapping of servant and correct reference counting in GenericObj_i,
   // servant activation is performed by SMESH_Mesh_i::createGroup()
@@ -102,6 +104,8 @@ SMESH_GroupBase_i::~SMESH_GroupBase_i()
   MESSAGE("~SMESH_GroupBase_i; this = "<<this );
   if ( myMeshServant )
     myMeshServant->removeGroup(myLocalID);
+
+  if ( myPreMeshInfo ) delete myPreMeshInfo; myPreMeshInfo = NULL;
 }
 
 //=======================================================================
@@ -209,6 +213,9 @@ SMESH::ElementType SMESH_GroupBase_i::GetType()
 
 CORBA::Long SMESH_GroupBase_i::Size()
 {
+  if ( myPreMeshInfo )
+    return GetType() == SMESH::NODE ? myPreMeshInfo->NbNodes() : myPreMeshInfo->NbElements();
+
   SMESHDS_GroupBase* aGroupDS = GetGroupDS();
   if (aGroupDS)
     return aGroupDS->Extent();
@@ -224,6 +231,9 @@ CORBA::Long SMESH_GroupBase_i::Size()
 
 CORBA::Boolean SMESH_GroupBase_i::IsEmpty()
 {
+  if ( myPreMeshInfo )
+    return Size() == 0;
+
   SMESHDS_GroupBase* aGroupDS = GetGroupDS();
   if (aGroupDS)
     return aGroupDS->IsEmpty();
@@ -239,6 +249,9 @@ CORBA::Boolean SMESH_GroupBase_i::IsEmpty()
 
 void SMESH_Group_i::Clear()
 {
+  if ( myPreMeshInfo )
+    myPreMeshInfo->FullLoadFromFile();
+
   // Update Python script
   TPythonDump() << _this() << ".Clear()";
 
@@ -259,6 +272,9 @@ void SMESH_Group_i::Clear()
 
 CORBA::Boolean SMESH_GroupBase_i::Contains( CORBA::Long theID )
 {
+  if ( myPreMeshInfo )
+    myPreMeshInfo->FullLoadFromFile();
+
   SMESHDS_GroupBase* aGroupDS = GetGroupDS();
   if (aGroupDS)
     return aGroupDS->Contains(theID);
@@ -274,6 +290,9 @@ CORBA::Boolean SMESH_GroupBase_i::Contains( CORBA::Long theID )
 
 CORBA::Long SMESH_Group_i::Add( const SMESH::long_array& theIDs )
 {
+  if ( myPreMeshInfo )
+    myPreMeshInfo->FullLoadFromFile();
+
   // Update Python script
   TPythonDump() << "nbAdd = " << _this() << ".Add( " << theIDs << " )";
 
@@ -300,6 +319,9 @@ CORBA::Long SMESH_Group_i::Add( const SMESH::long_array& theIDs )
 
 CORBA::Long SMESH_Group_i::Remove( const SMESH::long_array& theIDs )
 {
+  if ( myPreMeshInfo )
+    myPreMeshInfo->FullLoadFromFile();
+
   // Update Python script
   TPythonDump() << "nbDel = " << _this() << ".Remove( " << theIDs << " )";
 
@@ -328,8 +350,8 @@ typedef bool (SMESHDS_Group::*TFunChangeGroup)(const int);
 
 CORBA::Long 
 ChangeByPredicate( SMESH::Predicate_i* thePredicate,
-                   SMESHDS_GroupBase* theGroupBase,
-                   TFunChangeGroup theFun)
+                   SMESHDS_GroupBase*  theGroupBase,
+                   TFunChangeGroup     theFun)
 {
   CORBA::Long aNb = 0;
   if(SMESHDS_Group* aGroupDS = dynamic_cast<SMESHDS_Group*>(theGroupBase)){
@@ -350,6 +372,9 @@ CORBA::Long
 SMESH_Group_i::
 AddByPredicate( SMESH::Predicate_ptr thePredicate )
 {
+  if ( myPreMeshInfo )
+    myPreMeshInfo->FullLoadFromFile();
+
   if(SMESH::Predicate_i* aPredicate = SMESH::GetPredicate(thePredicate)){
     TPythonDump()<<_this()<<".AddByPredicate("<<aPredicate<<")";
     return ChangeByPredicate(aPredicate,GetGroupDS(),&SMESHDS_Group::Add);
@@ -361,6 +386,9 @@ CORBA::Long
 SMESH_Group_i::
 RemoveByPredicate( SMESH::Predicate_ptr thePredicate )
 {
+  if ( myPreMeshInfo )
+    myPreMeshInfo->FullLoadFromFile();
+
   if(SMESH::Predicate_i* aPredicate = SMESH::GetPredicate(thePredicate)){
     TPythonDump()<<_this()<<".RemoveByPredicate("<<aPredicate<<")";
     return ChangeByPredicate(aPredicate,GetGroupDS(),&SMESHDS_Group::Remove);
@@ -370,6 +398,9 @@ RemoveByPredicate( SMESH::Predicate_ptr thePredicate )
 
 CORBA::Long SMESH_Group_i::AddFrom( SMESH::SMESH_IDSource_ptr theSource )
 {
+  if ( myPreMeshInfo )
+    myPreMeshInfo->FullLoadFromFile();
+
   TPythonDump pd;
   long nbAdd = 0;
   SMESHDS_Group* aGroupDS = dynamic_cast<SMESHDS_Group*>( GetGroupDS() );
@@ -410,6 +441,9 @@ CORBA::Long SMESH_Group_i::AddFrom( SMESH::SMESH_IDSource_ptr theSource )
 
 CORBA::Long SMESH_GroupBase_i::GetID( CORBA::Long theIndex )
 {
+  if ( myPreMeshInfo )
+    myPreMeshInfo->FullLoadFromFile();
+
   SMESHDS_GroupBase* aGroupDS = GetGroupDS();
   if (aGroupDS)
     return aGroupDS->GetID(theIndex);
@@ -425,6 +459,9 @@ CORBA::Long SMESH_GroupBase_i::GetID( CORBA::Long theIndex )
 
 SMESH::long_array* SMESH_GroupBase_i::GetListOfID()
 {
+  if ( myPreMeshInfo )
+    myPreMeshInfo->FullLoadFromFile();
+
   SMESH::long_array_var aRes = new SMESH::long_array();
   SMESHDS_GroupBase* aGroupDS = GetGroupDS();
   if (aGroupDS) {
@@ -468,6 +505,9 @@ CORBA::Long SMESH_GroupBase_i::GetNumberOfNodes()
   if ( GetType() == SMESH::NODE )
     return Size();
 
+  if ( myPreMeshInfo )
+    myPreMeshInfo->FullLoadFromFile();
+
   if ( SMESHDS_GroupBase* g = GetGroupDS())
   {
     if ( myNbNodes < 0 || g->GetTic() != myGroupDSTic )
@@ -491,6 +531,8 @@ CORBA::Boolean SMESH_GroupBase_i::IsNodeInfoAvailable()
 {
   if ( GetType() == SMESH::NODE/* || Size() < 100000 */)
     return true;
+  if ( myPreMeshInfo )
+    return false;
   if ( SMESHDS_GroupBase* g = GetGroupDS())
     return ( myNbNodes > -1 && g->GetTic() == myGroupDSTic);
   return false;
@@ -506,6 +548,9 @@ SMESH::long_array* SMESH_GroupBase_i::GetNodeIDs()
 {
   if ( GetType() == SMESH::NODE )
     return GetListOfID();
+
+  if ( myPreMeshInfo )
+    myPreMeshInfo->FullLoadFromFile();
 
   SMESH::long_array_var aRes = new SMESH::long_array();
   if ( SMESHDS_GroupBase* g = GetGroupDS())
@@ -631,33 +676,23 @@ void SMESH_GroupBase_i::SetColorNumber(CORBA::Long color)
 //=============================================================================
 SMESH::long_array* SMESH_GroupBase_i::GetMeshInfo()
 {
+  if ( myPreMeshInfo )
+    return myPreMeshInfo->GetMeshInfo();
+
   SMESH::long_array_var aRes = new SMESH::long_array();
   aRes->length(SMESH::Entity_Last);
   for (int i = SMESH::Entity_Node; i < SMESH::Entity_Last; i++)
     aRes[i] = 0;
 
-  SMESHDS_GroupBase* aGrpDS = GetGroupDS();
-  if ( !aGrpDS )
-    return aRes._retn();
-  if ( GetType() == NODE )
-    aRes[ SMESH::Entity_Node ] = aGrpDS->Extent();
-  else
-    SMESH_Mesh_i::CollectMeshInfo( aGrpDS->GetElements(), aRes);
+  if ( SMESHDS_GroupBase* g = GetGroupDS())
+  {
+    if ( g->GetType() == SMDSAbs_Node || ( myNbNodes > -1 && g->GetTic() == myGroupDSTic))
+      aRes[ SMDSEntity_Node ] = GetNumberOfNodes();
 
-//   SMDS_ElemIteratorPtr it = aGrpDS->GetElements();
-//   if ( it->more() )
-//   {
-//     cout << "START" << endl;
-//     set< const SMDS_MeshElement* > nodes;
-//     const SMDS_MeshElement* e = it->next();
-//     for ( int i = 0; i < 1000000; ++i)
-//     {
-//       SMDS_ElemIteratorPtr it = e->nodesIterator();
-//       nodes.insert( e + i );
-//     }
-//     cout << "END "<< nodes.size() << endl;
-//   }
- 
+    if ( g->GetType() != SMDSAbs_Node )
+      SMESH_Mesh_i::CollectMeshInfo( g->GetElements(), aRes);
+  }
+
   return aRes._retn();
 }
 
@@ -668,8 +703,7 @@ SMESH::long_array* SMESH_GroupBase_i::GetMeshInfo()
 
 SMESH::long_array* SMESH_GroupBase_i::GetIDs()
 {
-  SMESH::long_array_var aResult = GetListOfID();
-  return aResult._retn();
+  return GetListOfID();
 }
 
 //=======================================================================
@@ -680,13 +714,23 @@ SMESH::long_array* SMESH_GroupBase_i::GetIDs()
 SMESH::array_of_ElementType* SMESH_GroupBase_i::GetTypes()
 {
   SMESH::array_of_ElementType_var types = new SMESH::array_of_ElementType;
-  if ( SMESHDS_GroupBase* ds = GetGroupDS() )
-    if ( !ds->IsEmpty() )
-    {
-      types->length( 1 );
-      types[0] = GetType();
-    }
+  if ( !IsEmpty() )
+  {
+    types->length( 1 );
+    types[0] = GetType();
+  }
   return types._retn();
+}
+
+//=======================================================================
+//function : IsMeshInfoCorrect
+//purpose  : * Returns false if GetMeshInfo() returns incorrect information that may
+//           * happen if mesh data is not yet fully loaded from the file of study.
+//=======================================================================
+
+bool SMESH_GroupBase_i::IsMeshInfoCorrect()
+{
+  return myPreMeshInfo ? myPreMeshInfo->IsMeshInfoCorrect() : true;
 }
 
 //================================================================================
@@ -714,6 +758,9 @@ SMESH_PredicatePtr SMESH_GroupOnFilter_i::GetPredicate( SMESH::Filter_ptr filter
 
 void SMESH_GroupOnFilter_i::SetFilter(SMESH::Filter_ptr theFilter)
 {
+  if ( myPreMeshInfo )
+    myPreMeshInfo->FullLoadFromFile();
+
   if ( ! myFilter->_is_nil() )
     myFilter->UnRegister();
 
@@ -838,6 +885,12 @@ SMESH::Filter_ptr SMESH_GroupOnFilter_i::StringToFilter(const std::string& thePe
   return filter._retn();
 }
 
+//================================================================================
+/*!
+ * \brief Destructor of SMESH_GroupOnFilter_i
+ */
+//================================================================================
+
 SMESH_GroupOnFilter_i::~SMESH_GroupOnFilter_i()
 {
   if ( ! myFilter->_is_nil() )
@@ -847,8 +900,17 @@ SMESH_GroupOnFilter_i::~SMESH_GroupOnFilter_i()
   }
 }
 
+//================================================================================
+/*!
+ * \brief Method calleds when a predicate of myFilter changes
+ */
+//================================================================================
+
 void SMESH_GroupOnFilter_i::PredicateChanged()
 {
+  if ( myPreMeshInfo )
+    myPreMeshInfo->FullLoadFromFile();
+
   if ( SMESHDS_GroupOnFilter* grDS = dynamic_cast< SMESHDS_GroupOnFilter*>( GetGroupDS() ))
     grDS->SetPredicate( GetPredicate( myFilter ));
 }
