@@ -1179,7 +1179,8 @@ void SMESH_PreMeshInfo::ForgetAllData() const
 
 void SMESH_PreMeshInfo::ForgetOrLoad() const
 {
-  if ( SMESH_Gen_i::GetSMESHGen()->ToForgetMeshDataOnHypModif() )
+  if ( SMESH_Gen_i::GetSMESHGen()->ToForgetMeshDataOnHypModif() &&
+       _mesh->HasShapeToMesh())
     ForgetAllData();
   else
     FullLoadFromFile();
