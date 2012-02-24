@@ -203,6 +203,8 @@ public:
                                                             CORBA::Boolean        byMesh)
     throw ( SALOME::SALOME_Exception );
 
+  // Preferences
+  // ------------
   /*!
    * Sets number of segments per diagonal of boundary box of geometry by which
    * default segment length of appropriate 1D hypotheses is defined
@@ -221,6 +223,12 @@ public:
     Return an option value
   */
   virtual char* GetOption(const char*);
+
+  /*!
+   * To load full mesh data from study at hyp modification or not
+   */
+  bool ToForgetMeshDataOnHypModif() const { return myToForgetMeshDataOnHypModif; }
+
 
   // Create empty mesh on a shape
   SMESH::SMESH_Mesh_ptr CreateMesh( GEOM::GEOM_Object_ptr theShapeObject )
@@ -577,7 +585,7 @@ private:
   static SALOME_NamingService*   myNS;          // Naming Service
   static SALOME_LifeCycleCORBA*  myLCC;         // Life Cycle CORBA
   static SMESH_Gen_i*            mySMESHGen;    // Point to last created instance of the class
-  ::SMESH_Gen               myGen;              // SMESH_Gen local implementation
+  ::SMESH_Gen                    myGen;         // SMESH_Gen local implementation
 
   // hypotheses managing
   map<string, GenericHypothesisCreator_i*> myHypCreatorMap;
@@ -587,6 +595,9 @@ private:
   GEOM_Client*              myShapeReader;      // Shape reader
   SALOMEDS::Study_var       myCurrentStudy;     // Current study
   CORBA::Boolean            myIsEmbeddedMode;   // Current mode
+
+  // To load full mesh data from study at hyp modification or not
+  bool myToForgetMeshDataOnHypModif;
 
   // Dump Python: trace of API methods calls
   std::map < int, Handle(TColStd_HSequenceOfAsciiString) > myPythonScripts;
