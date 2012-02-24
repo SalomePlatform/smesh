@@ -973,6 +973,7 @@ namespace SMESH
     virtual SMESH::long_array*           GetMeshInfo();
     virtual SMESH::array_of_ElementType* GetTypes();
     virtual SMESH::SMESH_Mesh_ptr        GetMesh();
+    virtual bool                         IsMeshInfoCorrect() { return true; }
 
     /*!
      * \brief Object notified on change of predicate

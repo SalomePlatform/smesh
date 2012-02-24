@@ -434,6 +434,7 @@ struct _IDSource : public POA_SMESH::SMESH_IDSource
   SMESH::long_array* GetIDs()      { return new SMESH::long_array( _ids ); }
   SMESH::long_array* GetMeshInfo() { return 0; }
   SMESH::SMESH_Mesh_ptr GetMesh()  { return SMESH::SMESH_Mesh::_duplicate( _mesh ); }
+  bool IsMeshInfoCorrect()         { return true; }
   SMESH::array_of_ElementType* GetTypes()
   {
     SMESH::array_of_ElementType_var types = new SMESH::array_of_ElementType;
