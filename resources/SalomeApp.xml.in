@@ -79,6 +79,7 @@
     <parameter name="info_groups_nodes_limit"      value="100000"/>
     <parameter name="segmentation"                 value="10"/>
     <parameter name="nb_segments_per_edge"         value="15"/>
+    <parameter name="forget_mesh_on_hyp_modif"     value="false"/>
     <parameter name="quadratic_mode"               value="0"/>
     <parameter name="max_angle"                    value="2"/>
     <parameter name="documentation"                value="smesh_help"/>
