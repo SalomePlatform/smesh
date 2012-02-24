@@ -109,7 +109,7 @@ class SMESH_EXPORT SMESH_subMesh
 #ifdef WITH_SMESH_CANCEL_COMPUTE
     COMPUTE_CANCELED,
 #endif
-    CLEAN, SUBMESH_COMPUTED, SUBMESH_RESTORED,
+    CLEAN, SUBMESH_COMPUTED, SUBMESH_RESTORED, SUBMESH_LOADED,
     MESH_ENTITY_REMOVED, CHECK_COMPUTE_STATE
     };
   enum event_type
@@ -151,7 +151,8 @@ class SMESH_EXPORT SMESH_subMesh
 protected:
 
   //!< event listeners to notify
-  std::map< EventListener*, EventListenerData* >           myEventListeners;
+  std::map< EventListener*, EventListenerData* > _eventListeners;
+
   //!< event listeners to delete when HYP_OK algo_state is lost
   struct OwnListenerData {
     SMESH_subMesh* mySubMesh;
@@ -160,7 +161,7 @@ protected:
     EventListener* myListener;
     OwnListenerData( SMESH_subMesh* sm=0, EventListener* el=0);
   };
-  std::list< OwnListenerData > myOwnListeners;
+  std::list< OwnListenerData >                    _ownListeners;
 
   /*!
    * \brief Sets an event listener and its data to a submesh
@@ -169,7 +170,7 @@ protected:
    * 
    * After being set, event listener is notified on each event of a submesh.
    */
-  void SetEventListener(EventListener* listener, EventListenerData* data);
+  void setEventListener(EventListener* listener, EventListenerData* data);
 
   /*!
    * \brief Notify stored event listeners on the occured event
@@ -177,16 +178,22 @@ protected:
    * \param eventType - algo_event or compute_event
    * \param hyp - hypothesis, if eventType is algo_event
    */
-  void NotifyListenersOnEvent( const int         event,
+  void notifyListenersOnEvent( const int         event,
                                const event_type  eventType,
                                SMESH_Hypothesis* hyp = 0);
 
   /*!
    * \brief Delete event listeners depending on algo of this submesh
    */
-  void DeleteOwnListeners();
+  void deleteOwnListeners();
 
-  // ==================================================================
+  /*!
+   * \brief loads dependent meshes on SUBMESH_LOADED event
+   */
+  void loadDependentMeshes();
+
+  // END: Members to track non hierarchical dependencies between submeshes
+  // =====================================================================
 
 public:
 
@@ -252,32 +259,30 @@ public:
 
 protected:
   // ==================================================================
-  void InsertDependence(const TopoDS_Shape aSubShape);
+  void insertDependence(const TopoDS_Shape aSubShape);
 
-  bool SubMeshesComputed();
+  bool subMeshesComputed();
+  //bool SubMeshesReady();
 
-  bool SubMeshesReady();
-
-  void RemoveSubMeshElementsAndNodes();
-  void UpdateDependantsState(const compute_event theEvent);
-  void UpdateSubMeshState(const compute_state theState);
-  void CleanDependants();
-  void CleanDependsOn();
-  void SetAlgoState(int state);
+  void removeSubMeshElementsAndNodes();
+  void updateDependantsState(const compute_event theEvent);
+  void updateSubMeshState(const compute_state theState);
+  void cleanDependants();
+  void cleanDependsOn();
+  void setAlgoState(int state);
 
   /*!
    * \brief Return a shape containing all sub-shapes of the MainShape that can be
    * meshed at once along with _subShape
    */
-  TopoDS_Shape GetCollection(SMESH_Gen * theGen,
+  TopoDS_Shape getCollection(SMESH_Gen * theGen,
                              SMESH_Algo* theAlgo,
                              bool &      theSubComputed);
-
   /*!
    * \brief Update compute_state by _computeError
     * \retval bool - false if there are errors
    */
-  bool CheckComputeError(SMESH_Algo* theAlgo, const TopoDS_Shape& theShape=TopoDS_Shape());
+  bool checkComputeError(SMESH_Algo* theAlgo, const TopoDS_Shape& theShape=TopoDS_Shape());
 
   /*!
    * \brief Return a hypothesis attached to theShape.
@@ -286,7 +291,7 @@ protected:
    * is returned; else an applicable ones having theHypType
    * is returned
    */
-  const SMESH_Hypothesis* GetSimilarAttached(const TopoDS_Shape&      theShape,
+  const SMESH_Hypothesis* getSimilarAttached(const TopoDS_Shape&      theShape,
                                              const SMESH_Hypothesis * theHyp,
                                              const int                theHypType = 0);
   // 
