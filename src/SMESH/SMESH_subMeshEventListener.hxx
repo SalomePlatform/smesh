@@ -87,8 +87,10 @@ struct SMESH_subMeshEventListenerData
 {
   bool myIsDeletable; //!< if true, it will be deleted by SMESH_subMesh
   int myType;         //!< to recognize data type
-  std::list<SMESH_subMesh*> mySubMeshes; //!< generally: submeshes depending
-                                         // on the one storing this data
+  std::list<SMESH_subMesh*> mySubMeshes; /* generally: submeshes depending
+                                            on the one storing this data;
+                                            !! they are used to track intermesh
+                                            dependencies at mesh loading as well !! */
 public:
   SMESH_subMeshEventListenerData(bool isDeletable):myIsDeletable(isDeletable) {}
   virtual ~SMESH_subMeshEventListenerData() {}
