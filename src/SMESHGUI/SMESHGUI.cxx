@@ -1713,11 +1713,14 @@ LightApp_Module( "SMESH" )
     myComponentSMESH->SetBoundaryBoxSegmentation( nbSeg );
     nbSeg = aResourceMgr->integerValue( "SMESH", "nb_segments_per_edge", 15 );
     myComponentSMESH->SetDefaultNbSegments( nbSeg );
-    if ( aResourceMgr->hasValue( "SMESH", "historical_python_dump" ))
-    {
-      QString val = aResourceMgr->stringValue( "SMESH", "historical_python_dump" );
-      myComponentSMESH->SetOption( "historical_python_dump", val.toLatin1().constData() );
-    }
+
+    const char* options[] = { "historical_python_dump", "forget_mesh_on_hyp_modif" };
+    for ( size_t i = 0; i < sizeof(options)/sizeof(char*); ++i )
+      if ( aResourceMgr->hasValue( "SMESH", options[i] ))
+      {
+        QString val = aResourceMgr->stringValue( "SMESH", options[i] );
+        myComponentSMESH->SetOption( options[i], val.toLatin1().constData() );
+      }
   }
 
   myActiveDialogBox = 0;
@@ -4579,6 +4582,11 @@ void SMESHGUI::createPreferences()
   setPreferenceProperty( nbSeg, "min", 1 );
   setPreferenceProperty( nbSeg, "max", 10000000 );
 
+  int loadGroup = addPreference( tr( "SMESH_PREF_MESH_LOADING" ), genTab );
+  addPreference( tr( "PREF_FORGET_MESH_AT_HYP_MODIF" ), loadGroup, LightApp_Preferences::Bool,
+                 "SMESH", "forget_mesh_on_hyp_modif" );
+
+
   // Quantities with individual precision settings
   int precGroup = addPreference( tr( "SMESH_PREF_GROUP_PRECISION" ), genTab );
   setPreferenceProperty( precGroup, "columns", 2 );
@@ -4860,9 +4868,10 @@ void SMESHGUI::preferencesChanged( const QString& sect, const QString& name )
       int nbSeg = aResourceMgr->integerValue( "SMESH", "nb_segments_per_edge", 15 );
       myComponentSMESH->SetDefaultNbSegments( nbSeg );
     }
-    else if ( name == "historical_python_dump" ) {
-      QString val = aResourceMgr->stringValue( "SMESH", "historical_python_dump" );
-      myComponentSMESH->SetOption( "historical_python_dump", val.toLatin1().constData() );
+    else if ( name == "historical_python_dump" ||
+              name == "forget_mesh_on_hyp_modif") {
+      QString val = aResourceMgr->stringValue( "SMESH", name );
+      myComponentSMESH->SetOption( name.toLatin1().constData(), val.toLatin1().constData() );
     }
 
     if(aWarning.size() != 0){
