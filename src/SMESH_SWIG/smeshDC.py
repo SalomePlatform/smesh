@@ -820,7 +820,7 @@ class smeshDC(SMESH._objref_SMESH_Gen):
     #  @param elementType the type of elements(NODE, EDGE, FACE, VOLUME)
     #  @param CritType the type of criterion (FT_Taper, FT_Area, FT_RangeOfIds, FT_LyingOnGeom etc.)
     #  @param Compare  belongs to {FT_LessThan, FT_MoreThan, FT_EqualTo}
-    #  @param Treshold the threshold value (range of ids as string, shape, numeric)
+    #  @param Threshold the threshold value (range of ids as string, shape, numeric)
     #  @param UnaryOp  FT_LogicalNOT or FT_Undefined
     #  @param BinaryOp a binary logical operation FT_LogicalAND, FT_LogicalOR or
     #                  FT_Undefined (must be for the last criterion of all criteria)
@@ -833,7 +833,7 @@ class smeshDC(SMESH._objref_SMESH_Gen):
     def GetCriterion(self,elementType,
                      CritType,
                      Compare = FT_EqualTo,
-                     Treshold="",
+                     Threshold="",
                      UnaryOp=FT_Undefined,
                      BinaryOp=FT_Undefined,
                      Tolerance=1e-07):
@@ -844,7 +844,7 @@ class smeshDC(SMESH._objref_SMESH_Gen):
         aCriterion.Type = self.EnumToLong(CritType)
         aCriterion.Tolerance = Tolerance
 
-        aTreshold = Treshold
+        aThreshold = Threshold
 
         if Compare in [FT_LessThan, FT_MoreThan, FT_EqualTo]:
             aCriterion.Compare = self.EnumToLong(Compare)
@@ -856,57 +856,57 @@ class smeshDC(SMESH._objref_SMESH_Gen):
             aCriterion.Compare = self.EnumToLong(FT_MoreThan)
         elif Compare != FT_Undefined:
             aCriterion.Compare = self.EnumToLong(FT_EqualTo)
-            aTreshold = Compare
+            aThreshold = Compare
 
         if CritType in [FT_BelongToGeom,     FT_BelongToPlane, FT_BelongToGenSurface,
                         FT_BelongToCylinder, FT_LyingOnGeom]:
-            # Checks the treshold
-            if isinstance(aTreshold, geompyDC.GEOM._objref_GEOM_Object):
-                aCriterion.ThresholdStr = GetName(aTreshold)
-                aCriterion.ThresholdID = salome.ObjectToID(aTreshold)
+            # Checks the Threshold
+            if isinstance(aThreshold, geompyDC.GEOM._objref_GEOM_Object):
+                aCriterion.ThresholdStr = GetName(aThreshold)
+                aCriterion.ThresholdID = salome.ObjectToID(aThreshold)
             else:
-                print "Error: The treshold should be a shape."
+                print "Error: The Threshold should be a shape."
                 return None
             if isinstance(UnaryOp,float):
                 aCriterion.Tolerance = UnaryOp
                 UnaryOp = FT_Undefined
                 pass
         elif CritType == FT_RangeOfIds:
-            # Checks the treshold
-            if isinstance(aTreshold, str):
-                aCriterion.ThresholdStr = aTreshold
+            # Checks the Threshold
+            if isinstance(aThreshold, str):
+                aCriterion.ThresholdStr = aThreshold
             else:
-                print "Error: The treshold should be a string."
+                print "Error: The Threshold should be a string."
                 return None
         elif CritType == FT_CoplanarFaces:
-            # Checks the treshold
-            if isinstance(aTreshold, int):
-                aCriterion.ThresholdID = "%s"%aTreshold
-            elif isinstance(aTreshold, str):
-                ID = int(aTreshold)
+            # Checks the Threshold
+            if isinstance(aThreshold, int):
+                aCriterion.ThresholdID = "%s"%aThreshold
+            elif isinstance(aThreshold, str):
+                ID = int(aThreshold)
                 if ID < 1:
-                    raise ValueError, "Invalid ID of mesh face: '%s'"%aTreshold
-                aCriterion.ThresholdID = aTreshold
+                    raise ValueError, "Invalid ID of mesh face: '%s'"%aThreshold
+                aCriterion.ThresholdID = aThreshold
             else:
                 raise ValueError,\
-                      "The treshold should be an ID of mesh face and not '%s'"%aTreshold
+                      "The Threshold should be an ID of mesh face and not '%s'"%aThreshold
         elif CritType == FT_ElemGeomType:
-            # Checks the treshold
+            # Checks the Threshold
             try:
-                aCriterion.Threshold = self.EnumToLong(aTreshold)
-                assert( aTreshold in SMESH.GeometryType._items )
+                aCriterion.Threshold = self.EnumToLong(aThreshold)
+                assert( aThreshold in SMESH.GeometryType._items )
             except:
-                if isinstance(aTreshold, int):
-                    aCriterion.Threshold = aTreshold
+                if isinstance(aThreshold, int):
+                    aCriterion.Threshold = aThreshold
                 else:
-                    print "Error: The treshold should be an integer or SMESH.GeometryType."
+                    print "Error: The Threshold should be an integer or SMESH.GeometryType."
                     return None
                 pass
             pass
         elif CritType == FT_GroupColor:
-            # Checks the treshold
+            # Checks the Threshold
             try:
-                aCriterion.ThresholdStr = self.ColorToString(aTreshold)
+                aCriterion.ThresholdStr = self.ColorToString(aThreshold)
             except:
                 print "Error: The threshold value should be of SALOMEDS.Color type"
                 return None
@@ -916,25 +916,25 @@ class smeshDC(SMESH._objref_SMESH_Gen):
                           FT_BareBorderFace, FT_BareBorderVolume,
                           FT_OverConstrainedFace, FT_OverConstrainedVolume,
                           FT_EqualNodes,FT_EqualEdges,FT_EqualFaces,FT_EqualVolumes ]:
-            # At this point the treshold is unnecessary
-            if aTreshold ==  FT_LogicalNOT:
+            # At this point the Threshold is unnecessary
+            if aThreshold ==  FT_LogicalNOT:
                 aCriterion.UnaryOp = self.EnumToLong(FT_LogicalNOT)
-            elif aTreshold in [FT_LogicalAND, FT_LogicalOR]:
-                aCriterion.BinaryOp = aTreshold
+            elif aThreshold in [FT_LogicalAND, FT_LogicalOR]:
+                aCriterion.BinaryOp = aThreshold
         else:
-            # Check treshold
+            # Check Threshold
             try:
-                aTreshold = float(aTreshold)
-                aCriterion.Threshold = aTreshold
+                aThreshold = float(aThreshold)
+                aCriterion.Threshold = aThreshold
             except:
-                print "Error: The treshold should be a number."
+                print "Error: The Threshold should be a number."
                 return None
 
-        if Treshold ==  FT_LogicalNOT or UnaryOp ==  FT_LogicalNOT:
+        if Threshold ==  FT_LogicalNOT or UnaryOp ==  FT_LogicalNOT:
             aCriterion.UnaryOp = self.EnumToLong(FT_LogicalNOT)
 
-        if Treshold in [FT_LogicalAND, FT_LogicalOR]:
-            aCriterion.BinaryOp = self.EnumToLong(Treshold)
+        if Threshold in [FT_LogicalAND, FT_LogicalOR]:
+            aCriterion.BinaryOp = self.EnumToLong(Threshold)
 
         if UnaryOp in [FT_LogicalAND, FT_LogicalOR]:
             aCriterion.BinaryOp = self.EnumToLong(UnaryOp)
@@ -948,7 +948,7 @@ class smeshDC(SMESH._objref_SMESH_Gen):
     #  @param elementType the type of elements in the group
     #  @param CritType the type of criterion ( FT_Taper, FT_Area, FT_RangeOfIds, FT_LyingOnGeom etc. )
     #  @param Compare  belongs to {FT_LessThan, FT_MoreThan, FT_EqualTo}
-    #  @param Treshold the threshold value (range of id ids as string, shape, numeric)
+    #  @param Threshold the threshold value (range of id ids as string, shape, numeric)
     #  @param UnaryOp  FT_LogicalNOT or FT_Undefined
     #  @param Tolerance the tolerance used by FT_BelongToGeom, FT_BelongToSurface,
     #         FT_LyingOnGeom, FT_CoplanarFaces and FT_EqualNodes criteria
@@ -959,10 +959,10 @@ class smeshDC(SMESH._objref_SMESH_Gen):
     def GetFilter(self,elementType,
                   CritType=FT_Undefined,
                   Compare=FT_EqualTo,
-                  Treshold="",
+                  Threshold="",
                   UnaryOp=FT_Undefined,
                   Tolerance=1e-07):
-        aCriterion = self.GetCriterion(elementType, CritType, Compare, Treshold, UnaryOp, FT_Undefined,Tolerance)
+        aCriterion = self.GetCriterion(elementType, CritType, Compare, Threshold, UnaryOp, FT_Undefined,Tolerance)
         aFilterMgr = self.CreateFilterManager()
         aFilter = aFilterMgr.CreateFilter()
         aCriteria = []
@@ -1948,7 +1948,7 @@ class Mesh:
     #  @param elementType the type of elements in the group
     #  @param CritType the type of criterion( FT_Taper, FT_Area, FT_RangeOfIds, FT_LyingOnGeom etc. )
     #  @param Compare belongs to {FT_LessThan, FT_MoreThan, FT_EqualTo}
-    #  @param Treshold the threshold value (range of id ids as string, shape, numeric)
+    #  @param Threshold the threshold value (range of id ids as string, shape, numeric)
     #  @param UnaryOp FT_LogicalNOT or FT_Undefined
     #  @param Tolerance the tolerance used by FT_BelongToGeom, FT_BelongToSurface,
     #         FT_LyingOnGeom, FT_CoplanarFaces criteria
@@ -1959,10 +1959,10 @@ class Mesh:
                   elementType,
                   CritType=FT_Undefined,
                   Compare=FT_EqualTo,
-                  Treshold="",
+                  Threshold="",
                   UnaryOp=FT_Undefined,
                   Tolerance=1e-07):
-        aCriterion = self.smeshpyD.GetCriterion(elementType, CritType, Compare, Treshold, UnaryOp, FT_Undefined,Tolerance)
+        aCriterion = self.smeshpyD.GetCriterion(elementType, CritType, Compare, Threshold, UnaryOp, FT_Undefined,Tolerance)
         group = self.MakeGroupByCriterion(groupName, aCriterion)
         return group
 
