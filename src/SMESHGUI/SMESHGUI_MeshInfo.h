@@ -111,8 +111,12 @@ private:
   void     setFontAttributes( QWidget*, int, bool = true );
   void     setFieldsVisible( int, int, bool );
 
+private slots:
+  void loadMesh();
+
 private:
-  iwlist   myWidgets;
+  iwlist       myWidgets;
+  QPushButton* myLoadBtn;
 };
 
 class SMESHGUI_EXPORT SMESHGUI_ElemInfo : public QWidget
@@ -208,6 +212,7 @@ class GrpComputor: public QObject
 
 public:
   GrpComputor( SMESH::SMESH_GroupBase_ptr, QTreeWidgetItem*, QObject* );
+  QTreeWidgetItem* getItem() { return myItem; }
 
 public slots:
   void compute();
@@ -229,6 +234,8 @@ public:
 
   void             showInfo( SMESH::SMESH_IDSource_ptr );
   //  void             clear();
+private slots:
+  void             changeLoadToCompute();
 
 private:
   QTreeWidgetItem* createItem( QTreeWidgetItem* = 0, int = 0 );

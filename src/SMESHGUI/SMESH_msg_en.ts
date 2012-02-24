@@ -3689,6 +3689,14 @@ Please, create VTK viewer and try again</translation>
         <translation>Default Number of Segments</translation>
     </message>
     <message>
+        <source>SMESH_PREF_MESH_LOADING</source>
+        <translation>Mesh loading</translation>
+    </message>
+    <message>
+        <source>PREF_FORGET_MESH_AT_HYP_MODIF</source>
+        <translation>No mesh loading from study file at hypothesis modification</translation>
+    </message>
+    <message>
         <source>PREF_AUTO_UPDATE</source>
         <translation>Automatic update</translation>
     </message>
@@ -6028,6 +6036,10 @@ as they are of improper type:
         <source>OBJECT_GROUP_0DELEMS</source>
         <translation>Group of 0D elements</translation>
     </message>
+    <message>
+        <source>BUT_LOAD_MESH</source>
+        <translation>Load mesh from server</translation>
+    </message>
 </context>
 <context>
     <name>SMESHGUI_MeshInfoDlg</name>
@@ -6274,6 +6286,10 @@ as they are of improper type:
         <translation>Compute</translation>
     </message>
     <message>
+        <source>LOAD</source>
+        <translation>Load</translation>
+    </message>
+    <message>
         <source>MESH_ON_GEOMETRY</source>
         <translation>Based on geometry</translation>
     </message>
@@ -6428,6 +6444,13 @@ as they are of improper type:
     <message>
         <source>NB_ELEMENTS</source>
         <translation>elements</translation>
+    </message>
+</context>
+<context>
+    <name>SMESHGUI_MeshLoadingProgress</name>
+    <message>
+        <source>MESH_LOAD_PROGRESS_TITLE</source>
+        <translation>Mesh Loading</translation>
     </message>
 </context>
 <context>

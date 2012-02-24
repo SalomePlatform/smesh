@@ -182,6 +182,10 @@ SMESHGUI_MeshInfo::SMESHGUI_MeshInfo( QWidget* parent )
   myWidgets[21] << a3DHexPriLab << a3DHexPriTotal;
   myWidgets[22] << a3DPolLab << a3DPolTotal;
 
+  myLoadBtn = new QPushButton( tr( "BUT_LOAD_MESH" ), this );
+  myLoadBtn->setAutoDefault( true );
+  connect( myLoadBtn, SIGNAL( clicked() ), this, SLOT( loadMesh() ) );
+  
   setFontAttributes( aNameLab,   Bold );
   setFontAttributes( aObjLab,    Bold );
   setFontAttributes( aNodesLab,  Bold );
@@ -254,11 +258,12 @@ SMESHGUI_MeshInfo::SMESHGUI_MeshInfo( QWidget* parent )
   l->addWidget( a3DHexPriTotal, 21, 1 );
   l->addWidget( a3DPolLab,   22, 0 );
   l->addWidget( a3DPolTotal, 22, 1 );
+  l->addWidget( myLoadBtn,   23, 1, 1, 3 );
   l->setColumnStretch( 0, 0 );
   l->setColumnStretch( 1, 5 );
   l->setColumnStretch( 2, 5 );
   l->setColumnStretch( 3, 5 );
-  l->setRowStretch( 22, 5 );
+  l->setRowStretch( 23, 5 );
 
   clear();
 }
@@ -315,49 +320,156 @@ void SMESHGUI_MeshInfo::showInfo( SMESH::SMESH_IDSource_ptr obj )
       myWidgets[iObject][iSingle]->setProperty( "text", objType );
     }
     SMESH::long_array_var info = obj->GetMeshInfo();
-    myWidgets[iNodes][iTotal]->setProperty( "text", QString::number( info[SMDSEntity_Node] ) );
-    myWidgets[i0D][iTotal]->setProperty( "text", QString::number( info[SMDSEntity_0D] ) );
+    myWidgets[iNodes][iTotal] ->setProperty( "text", QString::number( info[SMDSEntity_Node] ) );
+    myWidgets[i0D][iTotal]    ->setProperty( "text", QString::number( info[SMDSEntity_0D] ) );
     long nbEdges = info[SMDSEntity_Edge] + info[SMDSEntity_Quad_Edge];
-    myWidgets[i1D][iTotal]->setProperty( "text", QString::number( nbEdges ) );
-    myWidgets[i1D][iLinear]->setProperty( "text", QString::number( info[SMDSEntity_Edge] ) );
+    myWidgets[i1D][iTotal]    ->setProperty( "text", QString::number( nbEdges ) );
+    myWidgets[i1D][iLinear]   ->setProperty( "text", QString::number( info[SMDSEntity_Edge] ) );
     myWidgets[i1D][iQuadratic]->setProperty( "text", QString::number( info[SMDSEntity_Quad_Edge] ) );
     long nbTriangles   = info[SMDSEntity_Triangle]   + info[SMDSEntity_Quad_Triangle];
     long nbQuadrangles = info[SMDSEntity_Quadrangle] + info[SMDSEntity_Quad_Quadrangle] + info[SMDSEntity_BiQuad_Quadrangle];
     long nb2DLinear    = info[SMDSEntity_Triangle] + info[SMDSEntity_Quadrangle] + info[SMDSEntity_Polygon];
     long nb2DQuadratic = info[SMDSEntity_Quad_Triangle] + info[SMDSEntity_Quad_Quadrangle] + info[SMDSEntity_BiQuad_Quadrangle];
-    myWidgets[i2D][iTotal]->setProperty( "text", QString::number( nb2DLinear + nb2DQuadratic ) );
-    myWidgets[i2D][iLinear]->setProperty( "text", QString::number( nb2DLinear ) );
-    myWidgets[i2D][iQuadratic]->setProperty( "text", QString::number( nb2DQuadratic ) );
-    myWidgets[i2DTriangles][iTotal]->setProperty( "text", QString::number( nbTriangles ) );
-    myWidgets[i2DTriangles][iLinear]->setProperty( "text", QString::number( info[SMDSEntity_Triangle] ) );
-    myWidgets[i2DTriangles][iQuadratic]->setProperty( "text", QString::number( info[SMDSEntity_Quad_Triangle] ) );
-    myWidgets[i2DQuadrangles][iTotal]->setProperty( "text", QString::number( nbQuadrangles ) );
-    myWidgets[i2DQuadrangles][iLinear]->setProperty( "text", QString::number( info[SMDSEntity_Quadrangle] ) );
+    myWidgets[i2D][iTotal]               ->setProperty( "text", QString::number( nb2DLinear + nb2DQuadratic ) );
+    myWidgets[i2D][iLinear]              ->setProperty( "text", QString::number( nb2DLinear ) );
+    myWidgets[i2D][iQuadratic]           ->setProperty( "text", QString::number( nb2DQuadratic ) );
+    myWidgets[i2DTriangles][iTotal]      ->setProperty( "text", QString::number( nbTriangles ) );
+    myWidgets[i2DTriangles][iLinear]     ->setProperty( "text", QString::number( info[SMDSEntity_Triangle] ) );
+    myWidgets[i2DTriangles][iQuadratic]  ->setProperty( "text", QString::number( info[SMDSEntity_Quad_Triangle] ) );
+    myWidgets[i2DQuadrangles][iTotal]    ->setProperty( "text", QString::number( nbQuadrangles ) );
+    myWidgets[i2DQuadrangles][iLinear]   ->setProperty( "text", QString::number( info[SMDSEntity_Quadrangle] ) );
     myWidgets[i2DQuadrangles][iQuadratic]->setProperty( "text", QString::number( info[SMDSEntity_Quad_Quadrangle] + info[SMDSEntity_BiQuad_Quadrangle] ));
-    myWidgets[i2DPolygons][iTotal]->setProperty( "text", QString::number( info[SMDSEntity_Polygon] ) );
+    myWidgets[i2DPolygons][iTotal]       ->setProperty( "text", QString::number( info[SMDSEntity_Polygon] ) );
     long nbTetrahedrons = info[SMDSEntity_Tetra]   + info[SMDSEntity_Quad_Tetra];
     long nbHexahedrons  = info[SMDSEntity_Hexa]    + info[SMDSEntity_Quad_Hexa] + info[SMDSEntity_TriQuad_Hexa];
     long nbPyramids     = info[SMDSEntity_Pyramid] + info[SMDSEntity_Quad_Pyramid];
     long nbPrisms       = info[SMDSEntity_Penta]   + info[SMDSEntity_Quad_Penta];
     long nb3DLinear     = info[SMDSEntity_Tetra] + info[SMDSEntity_Hexa] + info[SMDSEntity_Pyramid] + info[SMDSEntity_Penta] + info[SMDSEntity_Polyhedra] + info[SMDSEntity_Hexagonal_Prism];
     long nb3DQuadratic  = info[SMDSEntity_Quad_Tetra] + info[SMDSEntity_Quad_Hexa] + info[SMDSEntity_TriQuad_Hexa] + info[SMDSEntity_Quad_Pyramid] + info[SMDSEntity_Quad_Penta];
-    myWidgets[i3D][iTotal]->setProperty( "text", QString::number( nb3DLinear + nb3DQuadratic ) );
-    myWidgets[i3D][iLinear]->setProperty( "text", QString::number( nb3DLinear ) );
-    myWidgets[i3D][iQuadratic]->setProperty( "text", QString::number( nb3DQuadratic ) );
-    myWidgets[i3DTetrahedrons][iTotal]->setProperty( "text", QString::number( nbTetrahedrons ) );
-    myWidgets[i3DTetrahedrons][iLinear]->setProperty( "text", QString::number( info[SMDSEntity_Tetra] ) );
+    myWidgets[i3D][iTotal]                ->setProperty( "text", QString::number( nb3DLinear + nb3DQuadratic ) );
+    myWidgets[i3D][iLinear]               ->setProperty( "text", QString::number( nb3DLinear ) );
+    myWidgets[i3D][iQuadratic]            ->setProperty( "text", QString::number( nb3DQuadratic ) );
+    myWidgets[i3DTetrahedrons][iTotal]    ->setProperty( "text", QString::number( nbTetrahedrons ) );
+    myWidgets[i3DTetrahedrons][iLinear]   ->setProperty( "text", QString::number( info[SMDSEntity_Tetra] ) );
     myWidgets[i3DTetrahedrons][iQuadratic]->setProperty( "text", QString::number( info[SMDSEntity_Quad_Tetra] ) );
-    myWidgets[i3DHexahedrons][iTotal]->setProperty( "text", QString::number( nbHexahedrons ) );
-    myWidgets[i3DHexahedrons][iLinear]->setProperty( "text", QString::number( info[SMDSEntity_Hexa] ) );
-    myWidgets[i3DHexahedrons][iQuadratic]->setProperty( "text", QString::number( info[SMDSEntity_Quad_Hexa] + info[SMDSEntity_TriQuad_Hexa] ) );
-    myWidgets[i3DPyramids][iTotal]->setProperty( "text", QString::number( nbPyramids ) );
-    myWidgets[i3DPyramids][iLinear]->setProperty( "text", QString::number( info[SMDSEntity_Pyramid] ) );
-    myWidgets[i3DPyramids][iQuadratic]->setProperty( "text", QString::number( info[SMDSEntity_Quad_Pyramid] ) );
-    myWidgets[i3DPrisms][iTotal]->setProperty( "text", QString::number( nbPrisms ) );
-    myWidgets[i3DPrisms][iLinear]->setProperty( "text", QString::number( info[SMDSEntity_Penta] ) );
-    myWidgets[i3DPrisms][iQuadratic]->setProperty( "text", QString::number( info[SMDSEntity_Quad_Penta] ) );
-    myWidgets[i3DHexaPrisms][iTotal]->setProperty( "text", QString::number( info[SMDSEntity_Hexagonal_Prism] ) );
-    myWidgets[i3DPolyhedrons][iTotal]->setProperty( "text", QString::number( info[SMDSEntity_Polyhedra] ) );
+    myWidgets[i3DHexahedrons][iTotal]     ->setProperty( "text", QString::number( nbHexahedrons ) );
+    myWidgets[i3DHexahedrons][iLinear]    ->setProperty( "text", QString::number( info[SMDSEntity_Hexa] ) );
+    myWidgets[i3DHexahedrons][iQuadratic] ->setProperty( "text", QString::number( info[SMDSEntity_Quad_Hexa] + info[SMDSEntity_TriQuad_Hexa] ) );
+    myWidgets[i3DPyramids][iTotal]        ->setProperty( "text", QString::number( nbPyramids ) );
+    myWidgets[i3DPyramids][iLinear]       ->setProperty( "text", QString::number( info[SMDSEntity_Pyramid] ) );
+    myWidgets[i3DPyramids][iQuadratic]    ->setProperty( "text", QString::number( info[SMDSEntity_Quad_Pyramid] ) );
+    myWidgets[i3DPrisms][iTotal]          ->setProperty( "text", QString::number( nbPrisms ) );
+    myWidgets[i3DPrisms][iLinear]         ->setProperty( "text", QString::number( info[SMDSEntity_Penta] ) );
+    myWidgets[i3DPrisms][iQuadratic]      ->setProperty( "text", QString::number( info[SMDSEntity_Quad_Penta] ) );
+    myWidgets[i3DHexaPrisms][iTotal]      ->setProperty( "text", QString::number( info[SMDSEntity_Hexagonal_Prism] ) );
+    myWidgets[i3DPolyhedrons][iTotal]     ->setProperty( "text", QString::number( info[SMDSEntity_Polyhedra] ) );
+
+    // before full loading from study file, type of elements in a sub-mesh can't be defined
+    // in some cases
+    bool infoOK = obj->IsMeshInfoCorrect();
+    myLoadBtn->setVisible( !infoOK );
+    if ( !infoOK )
+    {
+      // two options:
+      // 1. Type of 2D or 3D elements is unknown but their nb is OK (for a sub-mesh)
+      // 2. No info at all (for a group on geom or filter)
+      bool hasAnyInfo = false;
+      for ( size_t i = 0; i < info->length() && !hasAnyInfo; ++i )
+        hasAnyInfo = info[i];
+      if ( hasAnyInfo ) // believe it is a sub-mesh
+      {
+        if ( nb2DLinear + nb2DQuadratic > 0 )
+        {
+          myWidgets[i2D][iLinear]              ->setProperty( "text", "?" );
+          myWidgets[i2D][iQuadratic]           ->setProperty( "text", "?" );
+          myWidgets[i2DTriangles][iTotal]      ->setProperty( "text", "?" );
+          myWidgets[i2DTriangles][iLinear]     ->setProperty( "text", "?" );
+          myWidgets[i2DTriangles][iQuadratic]  ->setProperty( "text", "?" );
+          myWidgets[i2DQuadrangles][iTotal]    ->setProperty( "text", "?" );
+          myWidgets[i2DQuadrangles][iLinear]   ->setProperty( "text", "?" );
+          myWidgets[i2DQuadrangles][iQuadratic]->setProperty( "text", "?" );
+          myWidgets[i2DPolygons][iTotal]       ->setProperty( "text", "?" );
+        }
+        else if ( nb3DLinear + nb3DQuadratic > 0 )
+        {
+          myWidgets[i3D][iLinear]               ->setProperty( "text", "?" );
+          myWidgets[i3D][iQuadratic]            ->setProperty( "text", "?" );
+          myWidgets[i3DTetrahedrons][iTotal]    ->setProperty( "text", "?" );
+          myWidgets[i3DTetrahedrons][iLinear]   ->setProperty( "text", "?" );
+          myWidgets[i3DTetrahedrons][iQuadratic]->setProperty( "text", "?" );
+          myWidgets[i3DHexahedrons][iTotal]     ->setProperty( "text", "?" );
+          myWidgets[i3DHexahedrons][iLinear]    ->setProperty( "text", "?" );
+          myWidgets[i3DHexahedrons][iQuadratic] ->setProperty( "text", "?" );
+          myWidgets[i3DPyramids][iTotal]        ->setProperty( "text", "?" );
+          myWidgets[i3DPyramids][iLinear]       ->setProperty( "text", "?" );
+          myWidgets[i3DPyramids][iQuadratic]    ->setProperty( "text", "?" );
+          myWidgets[i3DPrisms][iTotal]          ->setProperty( "text", "?" );
+          myWidgets[i3DPrisms][iLinear]         ->setProperty( "text", "?" );
+          myWidgets[i3DPrisms][iQuadratic]      ->setProperty( "text", "?" );
+          myWidgets[i3DHexaPrisms][iTotal]      ->setProperty( "text", "?" );
+          myWidgets[i3DPolyhedrons][iTotal]     ->setProperty( "text", "?" );
+        }
+      }
+      else
+      {
+        myWidgets[iNodes][iTotal]             ->setProperty( "text", "?" );
+        myWidgets[i0D][iTotal]                ->setProperty( "text", "?" );
+        myWidgets[i1D][iTotal]                ->setProperty( "text", "?" );
+        myWidgets[i1D][iLinear]               ->setProperty( "text", "?" );
+        myWidgets[i1D][iQuadratic]            ->setProperty( "text", "?" );
+        myWidgets[i2D][iTotal]                ->setProperty( "text", "?" );
+        myWidgets[i2D][iLinear]               ->setProperty( "text", "?" );
+        myWidgets[i2D][iQuadratic]            ->setProperty( "text", "?" );
+        myWidgets[i2DTriangles][iTotal]       ->setProperty( "text", "?" );
+        myWidgets[i2DTriangles][iLinear]      ->setProperty( "text", "?" );
+        myWidgets[i2DTriangles][iQuadratic]   ->setProperty( "text", "?" );
+        myWidgets[i2DQuadrangles][iTotal]     ->setProperty( "text", "?" );
+        myWidgets[i2DQuadrangles][iLinear]    ->setProperty( "text", "?" );
+        myWidgets[i2DQuadrangles][iQuadratic] ->setProperty( "text", "?" );
+        myWidgets[i2DPolygons][iTotal]        ->setProperty( "text", "?" );
+        myWidgets[i3D][iTotal]                ->setProperty( "text", "?" );
+        myWidgets[i3D][iLinear]               ->setProperty( "text", "?" );
+        myWidgets[i3D][iQuadratic]            ->setProperty( "text", "?" );
+        myWidgets[i3DTetrahedrons][iTotal]    ->setProperty( "text", "?" );
+        myWidgets[i3DTetrahedrons][iLinear]   ->setProperty( "text", "?" );
+        myWidgets[i3DTetrahedrons][iQuadratic]->setProperty( "text", "?" );
+        myWidgets[i3DHexahedrons][iTotal]     ->setProperty( "text", "?" );
+        myWidgets[i3DHexahedrons][iLinear]    ->setProperty( "text", "?" );
+        myWidgets[i3DHexahedrons][iQuadratic] ->setProperty( "text", "?" );
+        myWidgets[i3DPyramids][iTotal]        ->setProperty( "text", "?" );
+        myWidgets[i3DPyramids][iLinear]       ->setProperty( "text", "?" );
+        myWidgets[i3DPyramids][iQuadratic]    ->setProperty( "text", "?" );
+        myWidgets[i3DPrisms][iTotal]          ->setProperty( "text", "?" );
+        myWidgets[i3DPrisms][iLinear]         ->setProperty( "text", "?" );
+        myWidgets[i3DPrisms][iQuadratic]      ->setProperty( "text", "?" );
+        myWidgets[i3DHexaPrisms][iTotal]      ->setProperty( "text", "?" );
+        myWidgets[i3DPolyhedrons][iTotal]     ->setProperty( "text", "?" );
+      }
+    }
+  }
+}
+
+/*!
+  \brief Load mesh from a study file
+*/
+void SMESHGUI_MeshInfo::loadMesh()
+{
+  SUIT_OverrideCursor wc;
+
+  SALOME_ListIO selected;
+  SMESHGUI::selectionMgr()->selectedObjects( selected );
+
+  if ( selected.Extent() == 1 ) {
+    Handle(SALOME_InteractiveObject) IO = selected.First();
+    SMESH::SMESH_IDSource_var obj = SMESH::IObjectToInterface<SMESH::SMESH_IDSource>( IO );
+    if ( !CORBA::is_nil( obj ) ) {
+      SMESH::SMESH_Mesh_var mesh = obj->GetMesh();
+      if ( !mesh->_is_nil() )
+      {
+        mesh->Load();
+        showInfo( obj );
+      }
+    }
   }
 }
 
@@ -1207,9 +1319,11 @@ GrpComputor::GrpComputor( SMESH::SMESH_GroupBase_ptr grp, QTreeWidgetItem* item,
 void GrpComputor::compute()
 {
   if ( !CORBA::is_nil( myGroup ) && myItem ) {
+    QTreeWidgetItem* item = myItem;
+    myItem = 0;
     int nbNodes = myGroup->GetNumberOfNodes();
-    myItem->treeWidget()->removeItemWidget( myItem, 1 );
-    myItem->setText( 1, QString::number( nbNodes ) );
+    item->treeWidget()->removeItemWidget( item, 1 );
+    item->setText( 1, QString::number( nbNodes ));
   }
 }
 
@@ -1511,17 +1625,36 @@ void SMESHGUI_AddInfo::groupInfo( SMESH::SMESH_GroupBase_ptr grp, QTreeWidgetIte
     QTreeWidgetItem* nodesItem = createItem( parent, Bold );
     nodesItem->setText( 0, tr( "NB_NODES" ) );
     int nbNodesLimit = SMESHGUI::resourceMgr()->integerValue( "SMESH", "info_groups_nodes_limit", 100000 );
-    bool hasNodes = grp->IsNodeInfoAvailable();
-    if ( hasNodes || nbNodesLimit <= 0 || grp->Size() <= nbNodesLimit ) {
+    SMESH::SMESH_Mesh_var mesh = grp->GetMesh();
+    bool meshLoaded = mesh->IsLoaded();
+    bool toShowNodes = ( grp->IsNodeInfoAvailable() || nbNodesLimit <= 0 || grp->Size() <= nbNodesLimit );
+    if ( toShowNodes && meshLoaded ) {
       // already calculated and up-to-date
       nodesItem->setText( 1, QString::number( grp->GetNumberOfNodes() ) );
     }
     else {
-      QPushButton* btn = new QPushButton( tr( "COMPUTE" ), this );
+      QPushButton* btn = new QPushButton( tr( meshLoaded ? "COMPUTE" : "LOAD"), this );
       setItemWidget( nodesItem, 1, btn );
       GrpComputor* comp = new GrpComputor( grp, nodesItem, this ); 
       connect( btn, SIGNAL( clicked() ), comp, SLOT( compute() ) );
       myComputors.append( comp );
+      if ( !meshLoaded )
+        connect( btn, SIGNAL( clicked() ), this, SLOT( changeLoadToCompute() ) );
+    }
+  }
+}
+
+/*!
+ * \brief Change button label of "nb underlying node" group from "Load" to "Compute"
+ */
+void SMESHGUI_AddInfo::changeLoadToCompute()
+{
+  for ( int i = 0; i < myComputors.count(); ++i )
+  {
+    if ( QTreeWidgetItem* item = myComputors[i]->getItem() )
+    {
+      if ( QPushButton* btn = qobject_cast<QPushButton*>( itemWidget ( item, 1 )))
+        btn->setText( tr("COMPUTE"));
     }
   }
 }
@@ -1638,7 +1771,7 @@ void SMESHGUI_MeshInfoDlg::showInfo( const Handle(SALOME_InteractiveObject)& IO 
   if ( !CORBA::is_nil( obj ) ) {
     myBaseInfo->showInfo( obj );
     myAddInfo->showInfo( obj );
-    
+
     myActor = SMESH::FindActorByEntry( IO->getEntry() );
     SVTK_Selector* selector = SMESH::GetViewWindow()->GetSelector();
     QString ID;
