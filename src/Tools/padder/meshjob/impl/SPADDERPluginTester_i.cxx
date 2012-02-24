@@ -35,10 +35,10 @@ using namespace std;
  * Constructor for component "SPADDER" instance
  */
 SPADDERPluginTester_i::SPADDERPluginTester_i(CORBA::ORB_ptr orb,
-					     PortableServer::POA_ptr poa,
-					     PortableServer::ObjectId * contId,
-					     const char *instanceName,
-					     const char *interfaceName)
+                                             PortableServer::POA_ptr poa,
+                                             PortableServer::ObjectId * contId,
+                                             const char *instanceName,
+                                             const char *interfaceName)
   : Engines_Component_i(orb, poa, contId, instanceName, interfaceName)
 {
   LOG("Activating SPADDERPluginTester_i::SPADDERPluginTester object");
@@ -143,10 +143,10 @@ bool SPADDERPluginTester_i::testsmesh(CORBA::Long studyId)
 extern "C"
 {
   PortableServer::ObjectId * SPADDERPluginTesterEngine_factory( CORBA::ORB_ptr orb,
-								PortableServer::POA_ptr poa,
-								PortableServer::ObjectId * contId,
-								const char *instanceName,
-								const char *interfaceName)
+                                                                PortableServer::POA_ptr poa,
+                                                                PortableServer::ObjectId * contId,
+                                                                const char *instanceName,
+                                                                const char *interfaceName)
   {
     MESSAGE("PortableServer::ObjectId * SPADDERPluginTesterEngine_factory()");
     SPADDERPluginTester_i * myEngine = new SPADDERPluginTester_i(orb, poa, contId, instanceName, interfaceName);
