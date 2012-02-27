@@ -66,7 +66,7 @@ SMESHGUI_Preferences_ColorDlg::SMESHGUI_Preferences_ColorDlg( SMESHGUI* theModul
     mySMESHGUI( theModule )
 {
   setModal( true );
-  setWindowTitle( tr( "Display settings (color, line width, shrink size, ...)" ) );
+  setWindowTitle( tr( "Properties (color, line width, shrink size, ...)" ) );
   setSizeGripEnabled( true );
 
   // -------------------------------

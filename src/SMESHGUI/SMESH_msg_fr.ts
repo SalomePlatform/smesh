@@ -928,8 +928,8 @@
         <translation>Eclater en tétraèdres</translation>
     </message>
     <message>
-        <source>Display settings (color, line width, shrink size, ...)</source>
-        <translation>Paramètres d&apos;affichage (couleur, épaisseur des traits, taille des éléments réduits, ...)</translation>
+        <source>Properties (color, line width, shrink size, ...)</source>
+        <translation>Propriétés (couleur, épaisseur des traits, taille des éléments réduits, ...)</translation>
     </message>
     <message>
         <source>Elements</source>
