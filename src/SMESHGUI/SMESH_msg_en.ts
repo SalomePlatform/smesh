@@ -4405,6 +4405,10 @@ Please select a group and try again</translation>
 <context>
     <name>SMESHGUI_ExtrusionDlg</name>
     <message>
+        <source>EXTRUSION_0D</source>
+        <translation>Extrusion of nodes</translation>
+    </message>
+    <message>
         <source>EXTRUSION_1D</source>
         <translation>Extrusion of 1D elements</translation>
     </message>

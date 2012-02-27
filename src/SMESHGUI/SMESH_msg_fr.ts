@@ -4393,6 +4393,10 @@ Choisissez un groupe et essayez de nouveau</translation>
 <context>
     <name>SMESHGUI_ExtrusionDlg</name>
     <message>
+        <source>EXTRUSION_0D</source>
+        <translation>Extrusion de noeuds</translation>
+    </message>
+    <message>
         <source>EXTRUSION_1D</source>
         <translation>Extrusion des éléments 1D</translation>
     </message>
