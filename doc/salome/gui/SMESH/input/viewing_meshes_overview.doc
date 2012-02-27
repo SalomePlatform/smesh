@@ -40,8 +40,7 @@ of quadratic edges as broken <b>lines</b> or as <b>arcs</b></li>
 faces of the selected mesh. The orientation vector is shown for each 2D mesh element 
 and for each free face of a 3D mesh element. the vector direction is calculated by 
 the first three nodes of the face produced by vectors n1-n2 and n1-n3.</li> 
-<li>\subpage colors_size_page "Colors / Size" - allows to select color and size of
-meshes.</li>
+<li>\subpage colors_size_page "Display settings" - allows to define several display settings, including color of elements, shrink size, ....</li>
 <li>\subpage transparency_page "Transparency" - allows to change the
 transparency of mesh elements.</li>
 <li>\ref quality_page "Controls" - graphically

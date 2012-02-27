@@ -33,7 +33,7 @@ The following limitations on the use of variables still exist:
      values (indices of nodes) are correctly applied, but they are not restored
      after "Update study" operation.
 <li> \ref clipping_page "Clipping" dialog box.
-<li> <b>Colors / Size</b> dialog box.
+<li> <b>Display settings</b> dialog box.
 </ul>
 
 Our <b>TUI Scripts</b> provide you with useful examples of 
