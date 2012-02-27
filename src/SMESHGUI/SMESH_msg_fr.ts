@@ -205,7 +205,7 @@
     </message>
     <message>
         <source>MEN_COLORS</source>
-        <translation>Couleurs / Taille</translation>
+        <translation>Paramètres d&apos;affichage</translation>
     </message>
     <message>
         <source>MEN_COMPUTE</source>
@@ -926,6 +926,78 @@
     <message>
         <source>STB_SPLIT_TO_TETRA</source>
         <translation>Eclater en tétraèdres</translation>
+    </message>
+    <message>
+        <source>Display settings (color, line width, shrink size, ...)</source>
+        <translation>Paramètres d&apos;affichage (couleur, épaisseur des traits, taille des éléments réduits, ...)</translation>
+    </message>
+    <message>
+        <source>Elements</source>
+        <translation>Eléments</translation>
+    </message>
+    <message>
+        <source>Surface color</source>
+        <translation>Couleur de surface</translation>
+    </message>
+    <message>
+        <source>Back surface color</source>
+        <translation>Couleur arrière</translation>
+    </message>
+    <message>
+        <source>Outline color</source>
+        <translation>Couleur de contour</translation>
+    </message>
+    <message>
+        <source>Wireframe color</source>
+        <translation>Couleur en mode fil de fer</translation>
+    </message>
+    <message>
+        <source>0D elements</source>
+        <translation>Eléments 0D</translation>
+    </message>
+    <message>
+        <source>Size of 0D elements</source>
+        <translation>Taille des éléments 0D</translation>
+    </message>
+    <message>
+        <source>Line width</source>
+        <translation>Epaisseur des traits</translation>
+    </message>
+    <message>
+        <source>Shrink coef.</source>
+        <translation>Coef. de contraction</translation>
+    </message>
+    <message>
+        <source>Nodes</source>
+        <translation>Nœuds</translation>
+    </message>
+    <message>
+        <source>Color</source>
+        <translation>Couleur</translation>
+    </message>
+    <message>
+        <source>Marker</source>
+        <translation>Marqueur</translation>
+    </message>
+    <message>
+        <source>Orientation of faces</source>
+        <translation>Orientation des faces</translation>
+    </message>
+    <message>
+        <source>Scale</source>
+        <translation>Facteur d'échelle</translation>
+    </message>
+    <message>
+        <source>3D vectors</source>
+        <translation>Vecteurs 3D</translation>
+    </message>
+    <message>
+        <source>&amp;Cancel</source>
+        <translation>&amp;Annuler</translation>
+    </message>
+    <message>
+        <source>&amp;Help</source>
+        <translation>Ai&amp;de</translation>
     </message>
     <message>
         <source>MESHERS_FILE_CANT_OPEN</source>
@@ -2497,7 +2569,7 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>STB_COLORS</source>
-        <translation>Couleurs / Taille</translation>
+        <translation>Paramètres d&apos;affichage</translation>
     </message>
     <message>
         <source>STB_COMPUTE</source>
@@ -3057,7 +3129,7 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>TOP_COLORS</source>
-        <translation>Couleurs / Taille</translation>
+        <translation>Paramètres d&apos;affichage</translation>
     </message>
     <message>
         <source>TOP_COMPUTE</source>
@@ -3687,6 +3759,14 @@ Ouvrez une fenêtre VTK et essayez de nouveau</translation>
     <message>
         <source>PREF_NB_SEGMENTS</source>
         <translation>Nombre de segments par défaut</translation>
+    </message>
+    <message>
+        <source>SMESH_PREF_MESH_LOADING</source>
+        <translation>Chargement de maillage</translation>
+    </message>
+    <message>
+        <source>PREF_FORGET_MESH_AT_HYP_MODIF</source>
+        <translation>Ne pas charger le maillage du fichier d'étude à la modification d'une hypothèse</translation>
     </message>
     <message>
         <source>PREF_AUTO_UPDATE</source>

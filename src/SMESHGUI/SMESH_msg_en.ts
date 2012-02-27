@@ -205,7 +205,7 @@
     </message>
     <message>
         <source>MEN_COLORS</source>
-        <translation>Colors / Size</translation>
+        <translation>Display settings</translation>
     </message>
     <message>
         <source>MEN_COMPUTE</source>
@@ -2497,7 +2497,7 @@ Please check preferences of Mesh module.
     </message>
     <message>
         <source>STB_COLORS</source>
-        <translation>Colors / Size</translation>
+        <translation>Display settings</translation>
     </message>
     <message>
         <source>STB_COMPUTE</source>
@@ -3057,7 +3057,7 @@ Please check preferences of Mesh module.
     </message>
     <message>
         <source>TOP_COLORS</source>
-        <translation>Colors / Size</translation>
+        <translation>Display settings</translation>
     </message>
     <message>
         <source>TOP_COMPUTE</source>

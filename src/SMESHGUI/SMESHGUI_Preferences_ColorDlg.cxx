@@ -66,7 +66,7 @@ SMESHGUI_Preferences_ColorDlg::SMESHGUI_Preferences_ColorDlg( SMESHGUI* theModul
     mySMESHGUI( theModule )
 {
   setModal( true );
-  setWindowTitle( tr( "Preferences - Set Color" ) );
+  setWindowTitle( tr( "Display settings (color, line width, shrink size, ...)" ) );
   setSizeGripEnabled( true );
 
   // -------------------------------
@@ -83,7 +83,7 @@ SMESHGUI_Preferences_ColorDlg::SMESHGUI_Preferences_ColorDlg( SMESHGUI* theModul
   QLabel* TextLabel_Fill = new QLabel( tr( "Surface color" ), ButtonGroup1 );
 
   toolSurfColor = new QtxBiColorTool(ButtonGroup1);
-  toolSurfColor->setText("Back surface color");
+  toolSurfColor->setText( tr( "Back surface color" ));
 
   QLabel* TextLabel_Outline = new QLabel( tr( "Outline color" ), ButtonGroup1 );
   btnOutlineColor = new QtxColorButton( ButtonGroup1 );
@@ -102,7 +102,7 @@ SMESHGUI_Preferences_ColorDlg::SMESHGUI_Preferences_ColorDlg( SMESHGUI* theModul
   SpinBox_0DElements_Size->setSizePolicy( QSizePolicy( QSizePolicy::Expanding, QSizePolicy::Fixed ) );
   SpinBox_0DElements_Size->setButtonSymbols( QSpinBox::PlusMinus );
 
-  QLabel* TextLabel_Width = new QLabel( tr( "Width" ), ButtonGroup1 );
+  QLabel* TextLabel_Width = new QLabel( tr( "Line width" ), ButtonGroup1 );
   SpinBox_Width = new SalomeApp_IntSpinBox( ButtonGroup1 );
   SpinBox_Width->setAcceptNames( false ); // No Notebook variables allowed
   SpinBox_Width->setRange( 1, 5 );

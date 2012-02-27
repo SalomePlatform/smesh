@@ -2145,7 +2145,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
 
   case 1134: // Clipping
   case 1133: // Tranparency
-  case 1132: // Colors / Size
+  case 1132: // Display preferences (colors, shrink size, line width, ...)
 
     // Display Mode
   case 215: // Nodes
