@@ -1255,6 +1255,10 @@ class Mesh:
     def SetShape(self, geom):
         self.mesh = self.smeshpyD.CreateMesh(geom)
 
+    ## Loads mesh from the study after opening the study
+    def Load(self):
+        self.mesh.Load()
+
     ## Returns true if the hypotheses are defined well
     #  @param theSubObject a sub-shape of a mesh shape
     #  @return True or False
@@ -6182,7 +6186,7 @@ class Mesh_Projection1D(Mesh_Algorithm):
                               UseExisting=0)
                               #UseExisting=UseExisting, CompareMethod=self.CompareSourceEdge)
         hyp.SetSourceEdge( edge )
-        if not mesh is None and isinstance(mesh, Mesh):
+        if isinstance(mesh, Mesh):
             mesh = mesh.GetMesh()
         hyp.SetSourceMesh( mesh )
         hyp.SetVertexAssociation( srcV, tgtV )
@@ -6278,7 +6282,7 @@ class Mesh_Projection3D(Mesh_Algorithm):
                               UseExisting=0)
                               #UseExisting=UseExisting, CompareMethod=self.CompareSourceShape3D)
         hyp.SetSource3DShape( solid )
-        if not mesh is None and isinstance(mesh, Mesh):
+        if isinstance(mesh, Mesh):
             mesh = mesh.GetMesh()
         hyp.SetSourceMesh( mesh )
         if srcV1 and srcV2 and tgtV1 and tgtV2:
