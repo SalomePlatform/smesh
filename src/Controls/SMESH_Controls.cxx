@@ -2161,11 +2161,12 @@ bool CoincidentElements::IsSatisfy( long theElementId )
   {
     if ( e->GetType() != GetType() ) return false;
     set< const SMDS_MeshNode* > elemNodes( e->begin_nodes(), e->end_nodes() );
+    const int nbNodes = e->NbNodes();
     SMDS_ElemIteratorPtr invIt = (*elemNodes.begin())->GetInverseElementIterator( GetType() );
     while ( invIt->more() )
     {
       const SMDS_MeshElement* e2 = invIt->next();
-      if ( e2 == e || e2->NbNodes() != (int)elemNodes.size() ) continue;
+      if ( e2 == e || e2->NbNodes() != nbNodes ) continue;
 
       bool sameNodes = true;
       for ( size_t i = 0; i < elemNodes.size() && sameNodes; ++i )
