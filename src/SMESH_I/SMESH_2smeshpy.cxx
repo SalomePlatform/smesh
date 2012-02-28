@@ -2404,34 +2404,34 @@ bool _pyHypothesis::CanClear()
 
 void _pyHypothesis::ClearCommands()
 {
-  if ( !theGen->IsToKeepAllCommands() )
-  {
-    bool isUsed = false;
-    int lastComputeOrder = 0;
-    list<Handle(_pyCommand) >::iterator cmd = myComputeCmds.begin();
-    for ( ; cmd != myComputeCmds.end(); ++cmd )
-      if ( ! (*cmd)->IsEmpty() )
-      {
-        isUsed = true;
-        if ( (*cmd)->GetOrderNb() > lastComputeOrder )
-          lastComputeOrder = (*cmd)->GetOrderNb();
-      }
-    if ( !isUsed )
-    {
-      SetRemovedFromStudy( true );
-    }
-    else
-    {
-      // clear my commands invoked after lastComputeOrder
-      // map<TCollection_AsciiString, list< Handle(_pyCommand) > >::iterator m2c;
-      // for ( m2c = myMeth2Commands.begin(); m2c != myMeth2Commands.end(); ++m2c )
-      // {
-      //   list< Handle(_pyCommand)> & cmds = m2c->second;
-      //   if ( !cmds.empty() && cmds.back()->GetOrderNb() > lastComputeOrder )
-      //     cmds.back()->Clear();
-      // }
-    }
-  }
+  // if ( !theGen->IsToKeepAllCommands() )
+  // {
+  //   bool isUsed = false;
+  //   int lastComputeOrder = 0;
+  //   list<Handle(_pyCommand) >::iterator cmd = myComputeCmds.begin();
+  //   for ( ; cmd != myComputeCmds.end(); ++cmd )
+  //     if ( ! (*cmd)->IsEmpty() )
+  //     {
+  //       isUsed = true;
+  //       if ( (*cmd)->GetOrderNb() > lastComputeOrder )
+  //         lastComputeOrder = (*cmd)->GetOrderNb();
+  //     }
+  //   if ( !isUsed )
+  //   {
+  //     SetRemovedFromStudy( true );
+  //   }
+  //   else
+  //   {
+  //     // clear my commands invoked after lastComputeOrder
+  //     // map<TCollection_AsciiString, list< Handle(_pyCommand) > >::iterator m2c;
+  //     // for ( m2c = myMeth2Commands.begin(); m2c != myMeth2Commands.end(); ++m2c )
+  //     // {
+  //     //   list< Handle(_pyCommand)> & cmds = m2c->second;
+  //     //   if ( !cmds.empty() && cmds.back()->GetOrderNb() > lastComputeOrder )
+  //     //     cmds.back()->Clear();
+  //     // }
+  //   }
+  // }
   _pyObject::ClearCommands();
 }
 
