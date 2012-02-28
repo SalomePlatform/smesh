@@ -5440,6 +5440,36 @@ class Mesh_Triangle(Mesh_Algorithm):
             AssureGeomPublished( self.mesh, theFace )
             return self.params.UnsetEnforcedVertices(theFace)
 
+    ## To tell BLSURF to add a node on internal vertices
+    #  @param toEnforceInternalVertices : boolean; if True the internal vertices are added as enforced vertices
+    #  @ingroup l3_hypos_blsurf
+    def SetInternalEnforcedVertexAllFaces(self, toEnforceInternalVertices):
+        if self.Parameters():
+            #  Parameter of BLSURF algo
+            return self.params.SetInternalEnforcedVertexAllFaces(toEnforceInternalVertices)
+
+    ## To know if BLSURF will add a node on internal vertices
+    #  @ingroup l3_hypos_blsurf
+    def GetInternalEnforcedVertexAllFaces(self):
+        if self.Parameters():
+            #  Parameter of BLSURF algo
+            return self.params.GetInternalEnforcedVertexAllFaces()
+
+    ## To define a group for the nodes of internal vertices
+    #  @param groupName : string; name of the group
+    #  @ingroup l3_hypos_blsurf
+    def SetInternalEnforcedVertexAllFacesGroup(self, groupName):
+        if self.Parameters():
+            #  Parameter of BLSURF algo
+            return self.params.SetInternalEnforcedVertexAllFacesGroup(groupName)
+
+    ## To get the group name of the nodes of internal vertices
+    #  @ingroup l3_hypos_blsurf
+    def GetInternalEnforcedVertexAllFacesGroup(self):
+        if self.Parameters():
+            #  Parameter of BLSURF algo
+            return self.params.GetInternalEnforcedVertexAllFacesGroup()
+
     ## Attractors (BLSURF)
 
     ## Sets an attractor on the chosen face. The mesh size will decrease exponentially with the distance from theAttractor, following the rule h(d) = theEndSize - (theEndSize - theStartSize) * exp [ - ( d / theInfluenceDistance ) ^ 2 ] 
