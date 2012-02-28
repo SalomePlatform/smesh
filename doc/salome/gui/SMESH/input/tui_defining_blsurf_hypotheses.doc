@@ -4,7 +4,7 @@
 
 \anchor tui_blsurf
 <h2>Construction of Mesh using BLSurf algorithm</h2>
-
+<h3>Basic hypothesis</h3>
 \code
 import geompy
 import smesh
@@ -22,7 +22,8 @@ Vertex_1 = geompy.SubShapeAllSorted(box, geompy.ShapeType["VERTEX"])[0]
 Face_2   = geompy.SubShapeAllSorted(box,    geompy.ShapeType["FACE"])[5]
 Wire_1   = geompy.SubShapeAllSorted(Face_2, geompy.ShapeType["WIRE"])[0]
 
-# /!\ Geom object with sizemaps on them must be published in study
+# Geom object with sizemaps can be unpublished in study.
+# They will then be automatically published.
 geompy.addToStudyInFather(box,Face_1, "Face_1")
 geompy.addToStudyInFather(box,Edge_1, "Edge_1")
 geompy.addToStudyInFather(box,Vertex_1, "Vertex_1")
@@ -36,6 +37,11 @@ blsurfMesh = smesh.Mesh(box,"box: BLSurf mesh")
 # create a BLSurf algorithm for faces
 algo2d = blsurfMesh.Triangle(algo=smesh.BLSURF)
 
+# End of script
+\endcode
+
+<h3>Adding sizemaps</h3>
+\code
 # optional - set physical mesh to 2 = Size Map
 algo2d.SetPhysicalMesh( 2 )
 
@@ -51,6 +57,12 @@ algo2d.SetSizeMap(Vertex_1, 'def f(): return 2' )
 
 # compute the mesh
 blsurfMesh.Compute()
+
+# End of script
+\endcode
+
+<h3>Adding enforced vertices</h3>
+\code
 
 # Add enforced vertex for Face_1 on (50, 50, 50)
 # The projection coordinates will be (50, 50, 0)
@@ -82,6 +94,12 @@ algo2d.UnsetEnforcedVertices(Face_1)
 # compute the mesh
 blsurfMesh.Compute()
 
+# End of script
+
+\endcode
+
+<h3>Adding an attractor</h3>
+\code
 
 # Add an attractor on Face_2, which shape is Wire_1
 
@@ -99,6 +117,40 @@ blsurfMesh.Compute()
 
 # End of script
 
+\endcode
+
+<h3>Using internal vertices</h3>
+\code
+
+# Creating a geometry containing internal vertices
+Face_3 = geompy.MakeFaceHW(1, 1, 1)
+Vertex_2 = geompy.MakeVertex(0.2, 0.2, 0)
+Partition_1 = geompy.MakePartition([Face_3, Vertex_2], [], [], [], geompy.ShapeType["FACE"], 0, [], 0)
+OX = geompy.MakeVectorDXDYDZ(1, 0, 0)
+OY = geompy.MakeVectorDXDYDZ(0, 1, 0)
+Multi_Translation_1 = geompy.MakeMultiTranslation2D(Partition_1, OX, 1, 10, OY, 1, 10)
+geompy.addToStudy( Face_3, 'Face_3' )
+geompy.addToStudy( Vertex_2, 'Vertex_2' )
+geompy.addToStudy( Partition_1, 'Partition_1' )
+geompy.addToStudy( OX, 'OX' )
+geompy.addToStudy( OY, 'OY' )
+geompy.addToStudy( Multi_Translation_1, 'Multi-Translation_1' )
+
+# The mesh on the geometry with internal vertices
+blsurfMesh_internal = smesh.Mesh(Multi_Translation_1, "blsurfMesh_internal")
+algo2d = blsurfMesh_internal.Triangle(algo=smesh.BLSURF)
+algo2d.SetPhySize( 0.1 )
+
+# Allows BLSURF to take into account internal vertices
+algo2d.SetInternalEnforcedVertexAllFaces( True )
+
+# Add the created nodes into a group
+algo2d.SetInternalEnforcedVertexAllFacesGroup( "my group" )
+
+# compute the mesh
+blsurfMesh_internal.Compute()
+
+# End of script
 \endcode
 
 */
