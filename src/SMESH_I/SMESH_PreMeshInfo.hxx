@@ -28,7 +28,7 @@
 #define __SMESH_PreMeshInfo_HXX__
 
 #include "SMDS_MeshInfo.hxx"
-
+#include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
 #include CORBA_SERVER_HEADER(SALOMEDS)
 
