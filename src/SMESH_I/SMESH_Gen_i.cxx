@@ -1615,6 +1615,7 @@ CORBA::Boolean SMESH_Gen_i::Compute( SMESH::SMESH_Mesh_ptr theMesh,
   try {
     // get mesh servant
     SMESH_Mesh_i* meshServant = dynamic_cast<SMESH_Mesh_i*>( GetServant( theMesh ).in() );
+    meshServant->Load();
     ASSERT( meshServant );
     if ( meshServant ) {
       // NPAL16168: "geometrical group edition from a submesh don't modifiy mesh computation"
@@ -1700,6 +1701,7 @@ SMESH::MeshPreviewStruct* SMESH_Gen_i::Precompute( SMESH::SMESH_Mesh_ptr theMesh
   try {
     // get mesh servant
     SMESH_Mesh_i* meshServant = dynamic_cast<SMESH_Mesh_i*>( GetServant( theMesh ).in() );
+    meshServant->Load();
     ASSERT( meshServant );
     if ( meshServant ) {
       // NPAL16168: "geometrical group edition from a submesh don't modifiy mesh computation"
