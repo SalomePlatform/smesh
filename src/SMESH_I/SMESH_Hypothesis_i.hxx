@@ -24,7 +24,6 @@
 //  File   : SMESH_Hypothesis_i.hxx
 //  Author : Paul RASCLE, EDF
 //  Module : SMESH
-//  $Header$
 //
 #ifndef _SMESH_HYPOTHESIS_I_HXX_
 #define _SMESH_HYPOTHESIS_I_HXX_
@@ -38,6 +37,11 @@
 #include "SALOME_GenericObj_i.hh"
 
 #include "SMESH_Gen.hxx"
+
+#include <map>
+#include <string>
+
+class TCollection_AsciiString;
 
 // ======================================================
 // Generic hypothesis
@@ -66,6 +70,14 @@ public:
   // Get unique id of hypothesis
   CORBA::Long GetId();
   
+  // Set the variable parameter; method is a name of method setting this parameter.
+  // This method must be called by the hypothesis creator just before calling hyp->method()
+  void SetVarParameter (const char* parameter, const char* method);
+
+  // Return the variable parameter used for Hypothesis creation by name of method
+  // setting this parameter
+  char* GetVarParameter (const char* methodName);
+
   // Set list of parameters  separated by ":" symbol, used for Hypothesis creation
   void SetParameters (const char* theParameters);
   
@@ -94,7 +106,24 @@ public:
   virtual void  UpdateAsMeshesRestored(); // for hyps needing full data restored
 
 protected:
-  ::SMESH_Hypothesis* myBaseImpl;    // base hypothesis implementation
+  ::SMESH_Hypothesis*          myBaseImpl;    // base hypothesis implementation
+
+  std::map< std::string, std::string > myMethod2VarParams; // variable parameters
+
+
+ public:
+  // Methods for backward compatibility of notebook variables
+  
+  // restore myMethod2VarParams by parameters stored in an old study
+  virtual void setOldParameters (const char* theParameters);
+
+  // method used to convert variable parameters stored in an old study
+  // into myMethod2VarParams. It should return a method name for an index of
+  // variable parameters. Index is countered from zero
+  virtual std::string getMethodOfParameter(const int paramIndex, int nbVars) const { return ""; }
+
+  // method intended to remove explicit treatment of Netgen hypotheses from SMESH_NoteBook
+  virtual int getParamIndex(const TCollection_AsciiString& method, int nbVars) const { return -1; }
 };
 
 // ======================================================

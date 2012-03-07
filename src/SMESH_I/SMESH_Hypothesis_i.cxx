@@ -24,7 +24,6 @@
 //  File   : SMESH_Hypothesis_i.cxx
 //  Author : Paul RASCLE, EDF
 //  Module : SMESH
-//  $Header$
 //
 #include <iostream>
 #include <sstream>
@@ -139,6 +138,78 @@ bool SMESH_Hypothesis_i::IsPublished(){
   return res;
 }
 
+//================================================================================
+/*!
+ * \brief Set the pramIndex-th parameter
+ */
+//================================================================================
+
+void SMESH_Hypothesis_i::SetVarParameter (const char* theParameter,
+                                          const char* theMethod)
+{
+  if ( SMESH_Gen_i *gen = SMESH_Gen_i::GetSMESHGen() )
+  {
+    gen->UpdateParameters(theParameter);
+
+    const std::vector< std::string >& pars = gen->GetLastParameters();
+    if ( !pars.empty() )
+      myMethod2VarParams[ theMethod ] = pars[0];
+  }
+}
+
+//================================================================================
+/*!
+ * \brief Return the pramIndex-th variable parameter used for Hypothesis creation
+ */
+//================================================================================
+
+char* SMESH_Hypothesis_i::GetVarParameter (const char* theMethod)
+{
+  if ( myMethod2VarParams.count("needs update by old study"))
+  {
+    // restore myMethod2VarParams by old study
+    myMethod2VarParams.clear();
+    if ( SMESH_Gen_i* gen = SMESH_Gen_i::GetSMESHGen() )
+    {
+      CORBA::String_var oldparVar = gen->GetParameters( _this() );
+      setOldParameters( oldparVar.in() );
+    }
+  }
+  std::map< std::string, std::string >::iterator meth_param = myMethod2VarParams.find( theMethod );
+  if ( meth_param != myMethod2VarParams.end() )
+    return CORBA::string_dup( meth_param->second.c_str() );
+
+  return CORBA::string_dup("");
+}
+
+//================================================================================
+/*!
+ * \brief Restore myMethod2VarParams by parameters stored in an old study
+ */
+//================================================================================
+
+void SMESH_Hypothesis_i::setOldParameters (const char* theParameters)
+{
+  if ( SMESH_Gen_i* gen = SMESH_Gen_i::GetSMESHGen() )
+  {
+    TCollection_AsciiString aOldParameters(theParameters);
+    int pos = aOldParameters.SearchFromEnd("|");
+    if ( pos >= 0 ) aOldParameters = aOldParameters.Split(pos);
+    pos = aOldParameters.SearchFromEnd(";*=");
+    if ( pos >= 0 ) aOldParameters.Split(pos-1);
+    gen->UpdateParameters( aOldParameters.ToCString() );
+
+    myMethod2VarParams.clear();
+    const std::vector< std::string >& pars = gen->GetLastParameters();
+    for ( size_t i = 0; i < pars.size(); ++i )
+    {
+      std::string meth = getMethodOfParameter( i, pars.size() );
+      myMethod2VarParams[ meth ] = pars[i];
+    }
+    gen->UpdateParameters(""); // clear params
+  }
+}
+
 //=============================================================================
 /*!
  *  SMESH_Hypothesis_i::SetParameters()
@@ -148,14 +219,15 @@ bool SMESH_Hypothesis_i::IsPublished(){
 void SMESH_Hypothesis_i::SetParameters(const char* theParameters)
 {
   SMESH_Gen_i *gen = SMESH_Gen_i::GetSMESHGen();
-  char * aParameters = CORBA::string_dup(theParameters);
+  //char * aParameters = CORBA::string_dup(theParameters);
   if(gen){
-    if(IsPublished()) {
-      SMESH_Gen_i::GetSMESHGen()->UpdateParameters(SMESH::SMESH_Hypothesis::_narrow(_this()),aParameters);
-    }
-    else {
-      myBaseImpl->SetParameters(gen->ParseParameters(aParameters));
-    }
+    gen->UpdateParameters(theParameters);
+    // if(IsPublished()) {
+    //   SMESH_Gen_i::GetSMESHGen()->UpdateParameters(SMESH::SMESH_Hypothesis::_narrow(_this()),aParameters);
+    // }
+    // else {
+    //   myBaseImpl->SetParameters(gen->ParseParameters(aParameters));
+    // }
   }
 }
 
@@ -231,9 +303,10 @@ void SMESH_Hypothesis_i::SetLastParameters(const char* theParameters)
 //=============================================================================
 void SMESH_Hypothesis_i::ClearParameters()
 {
-  if(!IsPublished()) {
-    myBaseImpl->ClearParameters();
-  }
+  myMethod2VarParams.clear();
+  // if(!IsPublished()) {
+  //   myBaseImpl->ClearParameters();
+  // }
 }
 
 //=============================================================================
@@ -246,7 +319,6 @@ void SMESH_Hypothesis_i::ClearParameters()
 
 ::SMESH_Hypothesis* SMESH_Hypothesis_i::GetImpl()
 {
-  //MESSAGE( "SMESH_Hypothesis_i::GetImpl" );
   return myBaseImpl;
 }
 
@@ -260,8 +332,18 @@ void SMESH_Hypothesis_i::ClearParameters()
 
 char* SMESH_Hypothesis_i::SaveTo()
 {
-  MESSAGE( "SMESH_Hypothesis_i::SaveTo" );
   std::ostringstream os;
+
+  // assure that parameters are loaded from an old study
+  CORBA::String_var p = GetVarParameter("");
+
+  os << "VARS " << myMethod2VarParams.size()  << " ";
+  std::map< std::string, std::string >::iterator meth_param = myMethod2VarParams.begin();
+  for ( ; meth_param != myMethod2VarParams.end(); ++meth_param )
+    os << meth_param->first << " "
+       << meth_param->second.size() << " "
+       << meth_param->second << " ";
+
   myBaseImpl->SaveTo( os );
   return CORBA::string_dup( os.str().c_str() );
 }
@@ -276,9 +358,33 @@ char* SMESH_Hypothesis_i::SaveTo()
 
 void SMESH_Hypothesis_i::LoadFrom( const char* theStream )
 {
-  MESSAGE( "SMESH_Hypothesis_i::LoadFrom" );
   std::istringstream is( theStream );
+  if ( strncmp( theStream, "VARS", 4 ) == 0 )
+  {
+    int nbVars, len;
+    char str[256];
+    std::string meth;
+    is >> str >> nbVars;
+    for ( int i = 0; i < nbVars; ++i )
+    {
+      is >> meth >> len;
+      if ( len < 256 )
+      {
+        is.get( str, len + 2 ); // 2 - to read at least 1 white space
+        if ( len > 0 )
+          myMethod2VarParams[ meth ] = std::string( str+1, len );
+      }
+    }
+  }
+  else
+  {
+    // we can't restore myMethod2VarParams by old study here because SObject
+    // isn't yet bound to _this()
+    myMethod2VarParams["needs update by old study"] = "yes";
+  }
+
   myBaseImpl->LoadFrom( is );
+
   // let listeners know about loading (issue 0020918)
   myBaseImpl->NotifySubMeshesHypothesisModification();
 }
