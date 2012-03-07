@@ -21,13 +21,10 @@
 //  File   : StdMeshers_NumberOfLayers2D_i.cxx
 //  Author : Edward AGAPOV
 //  Module : SMESH
-//  $Header$
 //
 #include "StdMeshers_NumberOfLayers2D_i.hxx"
 
 #include "utilities.h"
-
-//using namespace std;
 
 //=============================================================================
 /*!
@@ -89,4 +86,3 @@ CORBA::Boolean StdMeshers_NumberOfLayers2D_i::IsDimSupported( SMESH::Dimension t
 {
   return type == SMESH::DIM_2D;
 }
-

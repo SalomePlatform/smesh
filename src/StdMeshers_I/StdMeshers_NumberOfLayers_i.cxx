@@ -24,7 +24,6 @@
 //  File   : StdMeshers_NumberOfLayers_i.cxx
 //  Author : Edward AGAPOV
 //  Module : SMESH
-//  $Header$
 //
 #include "StdMeshers_NumberOfLayers_i.hxx"
 #include "SMESH_Gen_i.hxx"
@@ -90,7 +89,7 @@ void StdMeshers_NumberOfLayers_i::SetNumberOfLayers(CORBA::Long numberOfLayers)
     THROW_SALOME_CORBA_EXCEPTION( S_ex.what(), SALOME::BAD_PARAM );
   }
   // Update Python script
-  SMESH::TPythonDump() << _this() << ".SetNumberOfLayers( " << numberOfLayers << " )";
+  SMESH::TPythonDump() << _this() << ".SetNumberOfLayers( " << SMESH::TVar(numberOfLayers) << " )";
 }
 
 //=============================================================================
@@ -134,3 +133,13 @@ CORBA::Boolean StdMeshers_NumberOfLayers_i::IsDimSupported( SMESH::Dimension typ
   return type == SMESH::DIM_3D;
 }
 
+//================================================================================
+/*!
+ * \brief Return method name corresponding to index of variable parameter
+ */
+//================================================================================
+
+std::string StdMeshers_NumberOfLayers_i::getMethodOfParameter(const int, int) const
+{
+  return "SetNumberOfLayers";
+}

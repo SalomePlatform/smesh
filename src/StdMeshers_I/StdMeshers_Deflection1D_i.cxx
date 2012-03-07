@@ -93,7 +93,7 @@ void StdMeshers_Deflection1D_i::SetDeflection( CORBA::Double theValue )
   }
 
   // Update Python script
-  SMESH::TPythonDump() << _this() << ".SetDeflection( " << theValue << " )";
+  SMESH::TPythonDump() << _this() << ".SetDeflection( " << SMESH::TVar(theValue) << " )";
 }
 
 //=============================================================================
@@ -139,3 +139,14 @@ CORBA::Boolean StdMeshers_Deflection1D_i::IsDimSupported( SMESH::Dimension type 
   return type == SMESH::DIM_1D;
 }
 
+//================================================================================
+/*!
+ * \brief Return method name corresponding to index of variable parameter
+ */
+//================================================================================
+
+std::string StdMeshers_Deflection1D_i::getMethodOfParameter(const int paramIndex,
+                                                            int       /*nbVars*/) const
+{
+  return "SetDeflection";
+}

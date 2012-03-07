@@ -151,7 +151,7 @@ void StdMeshers_CartesianParameters3D_i::SetSizeThreshold(CORBA::Double threshol
   }
 
   // Update Python script
-  SMESH::TPythonDump() << _this() << ".SetSizeThreshold( " << threshold << " )";
+  SMESH::TPythonDump() << _this() << ".SetSizeThreshold( " << SMESH::TVar(threshold) << " )";
 }
 
 //=============================================================================

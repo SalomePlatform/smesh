@@ -85,7 +85,9 @@ public:
 
   //Get Object Entry
   char* GetObjectEntry();
+
+ protected:
+  virtual std::string getMethodOfParameter(const int paramIndex, int nbVars) const;
 };
 
 #endif
-

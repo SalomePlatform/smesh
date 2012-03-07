@@ -84,7 +84,7 @@ void StdMeshers_MaxLength_i::SetLength( CORBA::Double theLength )
   }
 
   // Update Python script
-  SMESH::TPythonDump() << _this() << ".SetLength( " << theLength << " )";
+  SMESH::TPythonDump() << _this() << ".SetLength( " << SMESH::TVar(theLength) << " )";
 }
 
 //=============================================================================
@@ -200,4 +200,15 @@ CORBA::Boolean StdMeshers_MaxLength_i::HavePreestimatedLength()
 CORBA::Boolean StdMeshers_MaxLength_i::IsDimSupported( SMESH::Dimension type )
 {
   return type == SMESH::DIM_1D;
+}
+
+//================================================================================
+/*!
+ * \brief Return method name corresponding to index of variable parameter
+ */
+//================================================================================
+
+std::string StdMeshers_MaxLength_i::getMethodOfParameter(const int, int) const
+{
+  return "SetLength";
 }

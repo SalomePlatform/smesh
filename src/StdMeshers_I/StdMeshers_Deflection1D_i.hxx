@@ -25,7 +25,6 @@
 //           Moved here from SMESH_LocalLength_i.hxx
 //  Author : Paul RASCLE, EDF
 //  Module : SMESH
-//  $Header$
 //
 #ifndef _SMESH_Deflection1D_I_HXX_
 #define _SMESH_Deflection1D_I_HXX_
@@ -66,7 +65,9 @@ public:
   
   // Verify whether hypothesis supports given entity type 
   CORBA::Boolean IsDimSupported( SMESH::Dimension type );
+
+ protected:
+  virtual std::string getMethodOfParameter(const int paramIndex, int nbVars) const;
 };
 
 #endif
-

@@ -21,13 +21,10 @@
 //  File   : StdMeshers_LayerDistribution2D_i.cxx
 //  Author : Edward AGAPOV
 //  Module : SMESH
-//  $Header$
 //
 #include "StdMeshers_LayerDistribution2D_i.hxx"
 
 #include "utilities.h"
-
-//using namespace std;
 
 //=============================================================================
 /*!

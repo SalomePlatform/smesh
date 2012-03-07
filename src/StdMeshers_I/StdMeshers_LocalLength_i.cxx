@@ -25,7 +25,6 @@
 //           Moved here from SMESH_LocalLength_i.cxx
 //  Author : Paul RASCLE, EDF
 //  Module : SMESH
-//  $Header$
 //
 #include "StdMeshers_LocalLength_i.hxx"
 #include "SMESH_Gen_i.hxx"
@@ -93,7 +92,7 @@ void StdMeshers_LocalLength_i::SetLength( CORBA::Double theLength )
   }
 
   // Update Python script
-  SMESH::TPythonDump() << _this() << ".SetLength( " << theLength << " )";
+  SMESH::TPythonDump() << _this() << ".SetLength( " << SMESH::TVar(theLength) << " )";
 }
 
 //=============================================================================
@@ -117,7 +116,7 @@ void StdMeshers_LocalLength_i::SetPrecision( CORBA::Double thePrecision )
   }
 
   // Update Python script
-  SMESH::TPythonDump() << _this() << ".SetPrecision( " << thePrecision << " )";
+  SMESH::TPythonDump() << _this() << ".SetPrecision( " << SMESH::TVar(thePrecision) << " )";
 }
 
 //=============================================================================
@@ -173,4 +172,10 @@ CORBA::Double StdMeshers_LocalLength_i::GetPrecision()
 CORBA::Boolean StdMeshers_LocalLength_i::IsDimSupported( SMESH::Dimension type )
 {
   return type == SMESH::DIM_1D;
+}
+
+std::string StdMeshers_LocalLength_i::getMethodOfParameter(const int paramIndex,
+                                                           int       /*nbVars*/) const
+{
+  return paramIndex == 0 ? "SetLength" : "SetPrecision";
 }

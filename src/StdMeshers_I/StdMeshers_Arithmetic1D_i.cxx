@@ -24,7 +24,6 @@
 //  File   : StdMeshers_Arithmetic1D_i.cxx
 //  Author : Damien COQUERET, OCC
 //  Module : SMESH
-//  $Header$
 //
 #include "StdMeshers_Arithmetic1D_i.hxx"
 #include "SMESH_Gen_i.hxx"
@@ -95,7 +94,8 @@ void StdMeshers_Arithmetic1D_i::SetLength(CORBA::Double theLength,
 
   // Update Python script
   SMESH::TPythonDump()
-    << _this() << ( theIsStart ? ".SetStartLength( " : ".SetEndLength( " ) << theLength << " )";
+    << _this() << ( theIsStart ? ".SetStartLength( " : ".SetEndLength( " )
+    << SMESH::TVar(theLength) << " )";
 }
 
 //=============================================================================
@@ -259,3 +259,14 @@ CORBA::Boolean StdMeshers_Arithmetic1D_i::IsDimSupported( SMESH::Dimension type 
   return type == SMESH::DIM_1D;
 }
 
+//================================================================================
+/*!
+ * \brief Return method name corresponding to index of variable parameter
+ */
+//================================================================================
+
+std::string StdMeshers_Arithmetic1D_i::getMethodOfParameter(const int paramIndex,
+                                                            int       nbVars) const
+{
+  return paramIndex == 0 ? "SetStartLength" : "SetEndLength";
+}

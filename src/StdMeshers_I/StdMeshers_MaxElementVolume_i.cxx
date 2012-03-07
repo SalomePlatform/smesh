@@ -25,7 +25,6 @@
 //           Moved here from SMESH_MaxElementVolume_i.cxx
 //  Author : Paul RASCLE, EDF
 //  Module : SMESH
-//  $Header$
 //
 #include "StdMeshers_MaxElementVolume_i.hxx"
 #include "SMESH_Gen_i.hxx"
@@ -94,7 +93,7 @@ void StdMeshers_MaxElementVolume_i::SetMaxElementVolume( CORBA::Double theVolume
   }
 
   // Update Python script
-  SMESH::TPythonDump() << _this() << ".SetMaxElementVolume( " << theVolume << " )";
+  SMESH::TPythonDump() << _this() << ".SetMaxElementVolume( " << SMESH::TVar(theVolume) << " )";
 }
 
 //=============================================================================
@@ -140,3 +139,13 @@ CORBA::Boolean StdMeshers_MaxElementVolume_i::IsDimSupported( SMESH::Dimension t
   return type == SMESH::DIM_3D;
 }
 
+//================================================================================
+/*!
+ * \brief Return method name corresponding to index of variable parameter
+ */
+//================================================================================
+
+std::string StdMeshers_MaxElementVolume_i::getMethodOfParameter(const int, int) const
+{
+  return "SetMaxElementVolume";
+}

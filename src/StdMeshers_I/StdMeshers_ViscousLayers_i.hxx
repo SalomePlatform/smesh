@@ -67,15 +67,8 @@ class STDMESHERS_I_EXPORT StdMeshers_ViscousLayers_i:
   // Verify whether hypothesis supports given entity type 
   CORBA::Boolean IsDimSupported( SMESH::Dimension type );
 
-  // Redefined Persistence
-//   virtual char* SaveTo();
-//   virtual void  LoadFrom( const char* theStream );
-//   virtual void  UpdateAsMeshesRestored();
-
- private:
-  //SMESH::string_array_var _groupEntries;
-  //std::vector< std::string > _groupIDs;
+ protected:
+  virtual std::string getMethodOfParameter(const int paramIndex, int nbVars) const;
 };
 
 #endif
-

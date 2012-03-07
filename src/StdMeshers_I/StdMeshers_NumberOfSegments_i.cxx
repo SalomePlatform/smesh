@@ -25,7 +25,6 @@
 //           Moved here from SMESH_NumberOfSegments_i.cxx
 //  Author : Paul RASCLE, EDF
 //  Module : SMESH
-//  $Header$
 //
 #include "StdMeshers_NumberOfSegments_i.hxx"
 #include "SMESH_Gen_i.hxx"
@@ -146,7 +145,7 @@ void StdMeshers_NumberOfSegments_i::SetNumberOfSegments( CORBA::Long theSegments
   }
 
   // Update Python script
-  SMESH::TPythonDump() << _this() << ".SetNumberOfSegments( " << theSegmentsNumber << " )";
+  SMESH::TPythonDump() << _this() << ".SetNumberOfSegments( " << SMESH::TVar(theSegmentsNumber) << " )";
 }
 
 //=============================================================================
@@ -305,7 +304,7 @@ void StdMeshers_NumberOfSegments_i::SetScaleFactor( CORBA::Double theScaleFactor
   try {
     this->GetImpl()->SetScaleFactor( theScaleFactor );
     // Update Python script
-    SMESH::TPythonDump() << _this() << ".SetScaleFactor( " << theScaleFactor << " )";
+    SMESH::TPythonDump() << _this() << ".SetScaleFactor( " << SMESH::TVar(theScaleFactor) << " )";
   }
   catch ( SALOME_Exception& S_ex ) {
     THROW_SALOME_CORBA_EXCEPTION( S_ex.what(),
@@ -490,3 +489,13 @@ CORBA::Boolean StdMeshers_NumberOfSegments_i::IsDimSupported( SMESH::Dimension t
   return type == SMESH::DIM_1D;
 }
 
+//================================================================================
+/*!
+ * \brief Return method name corresponding to index of variable parameter
+ */
+//================================================================================
+
+std::string StdMeshers_NumberOfSegments_i::getMethodOfParameter(const int paramIndex, int ) const
+{
+  return paramIndex == 0 ? "SetNumberOfSegments" : "SetScaleFactor";
+}

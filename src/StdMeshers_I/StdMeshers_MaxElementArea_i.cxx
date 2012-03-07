@@ -25,7 +25,6 @@
 //           Moved here from SMESH_MaxElementArea_i.cxx
 //  Author : Paul RASCLE, EDF
 //  Module : SMESH
-//  $Header$
 //
 #include "StdMeshers_MaxElementArea_i.hxx"
 #include "SMESH_Gen_i.hxx"
@@ -94,7 +93,7 @@ void StdMeshers_MaxElementArea_i::SetMaxElementArea( CORBA::Double theArea )
   }
 
   // Update Python script
-  SMESH::TPythonDump() << _this() << ".SetMaxElementArea( " << theArea << " )";
+  SMESH::TPythonDump() << _this() << ".SetMaxElementArea( " << SMESH::TVar(theArea) << " )";
 }
 
 //=============================================================================
@@ -140,3 +139,14 @@ CORBA::Boolean StdMeshers_MaxElementArea_i::IsDimSupported( SMESH::Dimension typ
   return type == SMESH::DIM_2D;
 }
 
+//================================================================================
+/*!
+ * \brief Return method name corresponding to index of variable parameter
+ */
+//================================================================================
+
+std::string StdMeshers_MaxElementArea_i::getMethodOfParameter(const int paramIndex,
+                                                              int       /*nbVars*/) const
+{
+  return "SetMaxElementArea";
+}

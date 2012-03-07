@@ -25,7 +25,6 @@
 //           Moved here from SMESH_NumberOfSegments_i.hxx
 //  Author : Paul RASCLE, EDF
 //  Module : SMESH
-//  $Header$
 //
 #ifndef _SMESH_NUMBEROFSEGMENTS_I_HXX_
 #define _SMESH_NUMBEROFSEGMENTS_I_HXX_
@@ -117,6 +116,9 @@ public:
 
   //Get Object Entry
   char* GetObjectEntry();
+
+ protected:
+  virtual std::string getMethodOfParameter(const int paramIndex, int nbVars) const;
 };
 
 #endif

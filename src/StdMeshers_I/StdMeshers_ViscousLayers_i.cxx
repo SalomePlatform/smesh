@@ -29,7 +29,6 @@
 #include "SMESH_Gen.hxx"
 #include "SMESH_Gen_i.hxx"
 #include "SMESH_PythonDump.hxx"
-//#include "StdMeshers_ObjRefUlils.hxx"
 
 #include "Utils_CorbaException.hxx"
 #include "utilities.h"
@@ -118,7 +117,7 @@ throw ( SALOME::SALOME_Exception )
   if ( thickness < 1e-100 )
     THROW_SALOME_CORBA_EXCEPTION( "Invalid thickness", SALOME::BAD_PARAM );
   GetImpl()->SetTotalThickness(thickness);
-  SMESH::TPythonDump() << _this() << ".SetTotalThickness( " << thickness << " )";
+  SMESH::TPythonDump() << _this() << ".SetTotalThickness( " << SMESH::TVar(thickness) << " )";
 }
 
 //================================================================================
@@ -145,7 +144,7 @@ throw ( SALOME::SALOME_Exception )
   if ( nb < 1 )
     THROW_SALOME_CORBA_EXCEPTION( "Invalid number of layers", SALOME::BAD_PARAM );
   GetImpl()->SetNumberLayers( nb );
-  SMESH::TPythonDump() << _this() << ".SetNumberLayers( " << nb << " )";
+  SMESH::TPythonDump() << _this() << ".SetNumberLayers( " << SMESH::TVar(nb) << " )";
 }
 
 //================================================================================
@@ -172,7 +171,7 @@ throw ( SALOME::SALOME_Exception )
   if ( factor < 1 )
     THROW_SALOME_CORBA_EXCEPTION( "Invalid stretch factor, it must be >= 1.0", SALOME::BAD_PARAM );
   GetImpl()->SetStretchFactor(factor);
-  SMESH::TPythonDump() << _this() << ".SetStretchFactor( " << factor << " )";
+  SMESH::TPythonDump() << _this() << ".SetStretchFactor( " << SMESH::TVar(factor) << " )";
 }
 
 //================================================================================
@@ -213,3 +212,20 @@ CORBA::Boolean StdMeshers_ViscousLayers_i::IsDimSupported( SMESH::Dimension type
   return type == SMESH::DIM_3D;
 }
 
+//================================================================================
+/*!
+ * \brief Return method name corresponding to index of variable parameter
+ */
+//================================================================================
+
+std::string StdMeshers_ViscousLayers_i::getMethodOfParameter(const int paramIndex, int ) const
+{
+  // order of methods was defined by StdMeshersGUI_StdHypothesisCreator::storeParams()
+  switch ( paramIndex )
+  {
+  case 0: return "SetTotalThickness";
+  case 1: return "SetNumberLayers";
+  case 2: return "SetStretchFactor";
+  }
+  return "";
+}

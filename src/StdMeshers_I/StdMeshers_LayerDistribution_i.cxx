@@ -24,7 +24,6 @@
 //  File   : StdMeshers_LayerDistribution_i.cxx
 //  Author : Edward AGAPOV
 //  Module : SMESH
-//  $Header$
 //
 #include "StdMeshers_LayerDistribution_i.hxx"
 #include "SMESH_Gen_i.hxx"
@@ -169,9 +168,9 @@ char* StdMeshers_LayerDistribution_i::SaveTo()
   else {
     os << hyp1D->GetName() << " "
        << hyp1D->GetLibName() << " "
-       << hyp1D_i->SaveTo();
+       << hyp1D_i->SaveTo() << " ";
   }
-  //myBaseImpl->SaveTo( os );
+  os << SMESH_Hypothesis_i::SaveTo();  // to have a mark of storage version ("VARS...")
 
   return CORBA::string_dup( os.str().c_str() );
 }
@@ -201,11 +200,14 @@ void StdMeshers_LayerDistribution_i::LoadFrom( const char* theStream )
         gen->CreateHypothesis( typeName.c_str(), libName.c_str() );
       SMESH_Hypothesis_i* hyp1D_i = SMESH::DownCast< SMESH_Hypothesis_i*>( hyp1D );
       if ( hyp1D_i ) {
-        hyp1D_i->LoadFrom( & theStream[ is.tellg() ]);
+        hyp1D_i->LoadFrom( & theStream[ (streamoff) is.tellg()+1 ]);
         this->GetImpl()->SetLayerDistribution( hyp1D_i->GetImpl() );
         myHyp = hyp1D;
         // as hyp1D is not published, its ID changes
         //SMESH::TPythonDump() << _this() << ".SetLayerDistribution( " << hyp1D << " )";
+
+        // restore a mark of storage version ("VARS...")
+        SMESH_Hypothesis_i::LoadFrom( & theStream[ (streamoff)is.tellg()+1 ]);
       }
     }
     catch (...) {
@@ -214,3 +216,14 @@ void StdMeshers_LayerDistribution_i::LoadFrom( const char* theStream )
   }
 }
 
+//================================================================================
+/*!
+ * \brief Restore myMethod2VarParams by parameters stored in an old study
+ */
+//================================================================================
+
+void StdMeshers_LayerDistribution_i::setOldParameters (const char* theParameters)
+{
+  if ( SMESH_Hypothesis_i* hyp1D_i = SMESH::DownCast< SMESH_Hypothesis_i*>( myHyp ))
+    hyp1D_i->setOldParameters( theParameters );
+}

@@ -77,6 +77,9 @@ public:
   
   // Verify whether hypothesis supports given entity type 
   CORBA::Boolean IsDimSupported( SMESH::Dimension type );
+
+ protected:
+  virtual std::string getMethodOfParameter(const int paramIndex, int nbVars) const;
 };
 
 #endif

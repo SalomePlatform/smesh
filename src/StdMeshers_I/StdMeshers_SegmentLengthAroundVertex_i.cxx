@@ -23,7 +23,6 @@
 //  SMESH SMESH_I : idl implementation based on 'SMESH' unit's calsses
 //  File   : StdMeshers_SegmentLengthAroundVertex_i.cxx
 //  Module : SMESH
-//  $Header$
 //
 #include "StdMeshers_SegmentLengthAroundVertex_i.hxx"
 #include "SMESH_Gen.hxx"
@@ -91,7 +90,7 @@ void StdMeshers_SegmentLengthAroundVertex_i::SetLength( CORBA::Double theLength 
   }
 
   // Update Python script
-  SMESH::TPythonDump() << _this() << ".SetLength( " << theLength << " )";
+  SMESH::TPythonDump() << _this() << ".SetLength( " << SMESH::TVar(theLength) << " )";
 }
 
 //=============================================================================
@@ -138,3 +137,13 @@ CORBA::Boolean StdMeshers_SegmentLengthAroundVertex_i::IsDimSupported( SMESH::Di
   return type == SMESH::DIM_1D;
 }
 
+//================================================================================
+/*!
+ * \brief Return method name corresponding to index of variable parameter
+ */
+//================================================================================
+
+std::string StdMeshers_SegmentLengthAroundVertex_i::getMethodOfParameter(const int, int ) const
+{
+  return "SetLength";
+}

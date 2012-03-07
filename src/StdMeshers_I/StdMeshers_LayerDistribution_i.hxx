@@ -24,7 +24,6 @@
 //  File   : StdMeshers_LayerDistribution_i.hxx
 //  Author : Edward AGAPOV
 //  Module : SMESH
-//  $Header$
 //
 #ifndef _SMESH_LayerDistribution_I_HXX_
 #define _SMESH_LayerDistribution_I_HXX_
@@ -80,9 +79,12 @@ public:
   virtual char* SaveTo();
   virtual void  LoadFrom( const char* theStream );
 
+protected:
+  // restore myMethod2VarParams by parameters stored in an old study
+  virtual void setOldParameters (const char* theParameters);
+  
 private:
   SMESH::SMESH_Hypothesis_var myHyp;
 };
 
 #endif
-

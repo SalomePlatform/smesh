@@ -23,7 +23,6 @@
 //  SMESH SMESH_I : idl implementation based on 'SMESH' unit's calsses
 //  File   : StdMeshers_SegmentLengthAroundVertex_i.hxx
 //  Module : SMESH
-//  $Header$
 //
 #ifndef _SMESH_SegmentLengthAroundVertex_I_HXX_
 #define _SMESH_SegmentLengthAroundVertex_I_HXX_
@@ -64,6 +63,9 @@ public:
   
   // Verify whether hypothesis supports given entity type 
   CORBA::Boolean IsDimSupported( SMESH::Dimension type );
+
+ protected:
+  virtual std::string getMethodOfParameter(const int paramIndex, int nbVars) const;
 };
 
 #endif

@@ -25,7 +25,6 @@
 //           Moved here from SMESH_LocalLength_i.cxx
 //  Author : Paul RASCLE, EDF
 //  Module : SMESH
-//  $Header$
 //
 #include "StdMeshers_StartEndLength_i.hxx"
 #include "SMESH_Gen_i.hxx"
@@ -96,7 +95,8 @@ void StdMeshers_StartEndLength_i::SetLength(CORBA::Double theLength,
 
   // Update Python script
   SMESH::TPythonDump() <<
-    _this() << ( theIsStart ? ".SetStartLength( " : ".SetEndLength( " ) << theLength << " )";
+    _this() << ( theIsStart ? ".SetStartLength( " : ".SetEndLength( " ) <<
+    SMESH::TVar(theLength) << " )";
 }
 
 //=============================================================================
@@ -257,3 +257,14 @@ CORBA::Boolean StdMeshers_StartEndLength_i::IsDimSupported( SMESH::Dimension typ
   return type == SMESH::DIM_1D;
 }
 
+//================================================================================
+/*!
+ * \brief Return method name corresponding to index of variable parameter
+ */
+//================================================================================
+
+std::string StdMeshers_StartEndLength_i::getMethodOfParameter(const int paramIndex,
+                                                              int       /*nbVars*/) const
+{
+  return paramIndex == 0 ? "SetStartLength" : "SetEndLength";
+}

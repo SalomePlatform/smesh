@@ -21,7 +21,6 @@
 //  File   : StdMeshers_LayerDistribution2D_i.hxx
 //  Author : Edward AGAPOV
 //  Module : SMESH
-//  $Header$
 //
 #ifndef _SMESH_LayerDistribution2D_I_HXX_
 #define _SMESH_LayerDistribution2D_I_HXX_
