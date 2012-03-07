@@ -99,6 +99,7 @@
 #include <SalomeApp_Study.h>
 #include <SalomeApp_Application.h>
 #include <SalomeApp_CheckFileDlg.h>
+#include <SalomeApp_DataObject.h>
 
 #include <LightApp_DataOwner.h>
 #include <LightApp_Preferences.h>
@@ -5971,16 +5972,20 @@ bool SMESHGUI::renameAllowed( const QString& entry) const {
   if( !anApp )
     return false;
 
-  _PTR(Study) aStudy = SMESH::GetActiveStudyDocument(); //Document OCAF de l'etude active
-  if( !aStudy )
+  SalomeApp_Study* appStudy = dynamic_cast<SalomeApp_Study*>( anApp->activeStudy() );
+  if( !appStudy )
     return false;
 
-  bool appRes = SalomeApp_Module::renameAllowed(entry);
-  if( !appRes )
+  SalomeApp_DataObject* obj = dynamic_cast<SalomeApp_DataObject*>(appStudy->findObjectByEntry(entry));
+  
+  if(!obj)
+    return false;
+
+  if(appStudy->isComponent(entry) || obj->isReference())
     return false;
 
   // check type to prevent renaming of inappropriate objects
-  int aType = SMESHGUI_Selection::type(qPrintable(entry), aStudy);
+  int aType = SMESHGUI_Selection::type(qPrintable(entry), SMESH::GetActiveStudyDocument());
   if (aType == MESH || aType == GROUP ||
       aType == SUBMESH || aType == SUBMESH_COMPOUND ||
       aType == SUBMESH_SOLID || aType == SUBMESH_FACE ||
@@ -6002,14 +6007,23 @@ bool SMESHGUI::renameObject( const QString& entry, const QString& name) {
   SalomeApp_Application* anApp = dynamic_cast<SalomeApp_Application*>( application() );
   if( !anApp )
     return false;
+    
+  SalomeApp_Study* appStudy = dynamic_cast<SalomeApp_Study*>( anApp->activeStudy() );
 
-  _PTR(Study) aStudy = SMESH::GetActiveStudyDocument(); //Document OCAF de l'etude active
-  if( !aStudy )
+  if(!appStudy)
     return false;
+  
+  _PTR(Study) aStudy = appStudy->studyDS();
+  
+  if(!aStudy)
+    return false;
+  
+  bool aLocked = (_PTR(AttributeStudyProperties)(appStudy->studyDS()->GetProperties()))->IsLocked();
+  if ( aLocked ) {
+    SUIT_MessageBox::warning ( anApp->desktop(), QObject::tr("WRN_WARNING"), QObject::tr("WRN_STUDY_LOCKED") );
+    return false;
+  }
 
-  bool appRes = SalomeApp_Module::renameObject(entry,name);
-  if( !appRes )
-    return false;
 
   _PTR(SObject) obj = aStudy->FindObjectID( qPrintable(entry) );
   _PTR(GenericAttribute) anAttr;
@@ -6018,7 +6032,7 @@ bool SMESHGUI::renameObject( const QString& entry, const QString& name) {
     if ( obj->FindAttribute(anAttr, "AttributeName") ) {
       aName = anAttr;
       // check type to prevent renaming of inappropriate objects
-      int aType = SMESHGUI_Selection::type( qPrintable(entry), aStudy );
+      int aType = SMESHGUI_Selection::type( qPrintable(entry), SMESH::GetActiveStudyDocument() );
       if (aType == MESH || aType == GROUP ||
           aType == SUBMESH || aType == SUBMESH_COMPOUND ||
           aType == SUBMESH_SOLID || aType == SUBMESH_FACE ||
