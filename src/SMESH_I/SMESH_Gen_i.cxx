@@ -123,6 +123,7 @@
 
 using namespace std;
 using SMESH::TPythonDump;
+using SMESH::TVar;
 
 #define NUM_TMP_FILES 2
 
@@ -2425,7 +2426,7 @@ SMESH_Gen_i::ConcatenateCommon(const SMESH::mesh_array& theMeshesArray,
   aPythonDump << "], ";
   aPythonDump << theUniteIdenticalGroups << ", "
               << theMergeNodesAndElements << ", "
-              << theMergeTolerance << ")";
+              << TVar( theMergeTolerance ) << ")";
 
   delete pPythonDump; // enable python dump from GetGroups()
 

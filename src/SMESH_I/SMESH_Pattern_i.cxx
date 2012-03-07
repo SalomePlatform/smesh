@@ -24,7 +24,6 @@
 // File      : SMESH_Pattern_i.cxx
 // Created   : Fri Aug 20 16:15:49 2004
 // Author    : Edward AGAPOV (eap)
-//  $Header: 
 //
 #include "SMESH_Pattern_i.hxx"
 
@@ -47,6 +46,7 @@
 #include <set>
 
 using SMESH::TPythonDump;
+using SMESH::TVar;
 
 //=======================================================================
 //function : dumpErrorCode
@@ -318,7 +318,7 @@ SMESH::point_array*
   // Update Python script
   TPythonDump() << "pattern.ApplyToMeshFaces( " << theMesh << ".GetMesh(), "
                 << theFacesIDs << ", "
-                << theNodeIndexOnKeyPoint1 << ", " << theReverse << " )";
+                << TVar( theNodeIndexOnKeyPoint1 ) << ", " << theReverse << " )";
 
   return points._retn();
 }
@@ -363,7 +363,7 @@ SMESH::point_array*
   // Update Python script
   TPythonDump() << "pattern.ApplyToHexahedrons( " << theMesh << ".GetMesh(), "
                 << theVolumesIDs << ", "
-                << theNode000Index << ", " << theNode001Index << " )";
+                << TVar(theNode000Index) << ", " << TVar(theNode001Index) << " )";
 
   return points._retn();
 }
