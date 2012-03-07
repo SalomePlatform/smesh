@@ -380,6 +380,8 @@ bool SMESHGUI_SmoothingDlg::ClickOnApply()
       SUIT_OverrideCursor aWaitCursor;
       SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditor();
 
+      myMesh->SetParameters( aParameters.join(":").toLatin1().constData() );
+
       if ( CheckBoxParametric->isChecked() ) {
         if(CheckBoxMesh->isChecked())
           aResult = aMeshEditor->SmoothParametricObject(mySelectedObject, aNodesId.inout(),
@@ -396,8 +398,6 @@ bool SMESHGUI_SmoothingDlg::ClickOnApply()
           aResult = aMeshEditor->Smooth(anElementsId.inout(), aNodesId.inout(),
                                         anIterationLimit, aMaxAspectRatio, aMethod);
       }
-
-      myMesh->SetParameters( aParameters.join(":").toLatin1().constData() );
 
     } catch (...) {
     }

@@ -1205,6 +1205,11 @@ bool SMESHGUI_UnionOfTrianglesDlg::process (SMESH::SMESH_MeshEditor_ptr theEdito
                                             const SMESH::long_array&    theIds,
                                             SMESH::SMESH_IDSource_ptr   obj)
 {
+  {
+    QStringList aParameters;
+    aParameters << myMaxAngleSpin->text();
+    myMesh->SetParameters( aParameters.join(":").toLatin1().constData() );
+  }
   SMESH::NumericalFunctor_var aCriterion = getNumericalFunctor();
   double aMaxAngle = myMaxAngleSpin->GetValue() * M_PI / 180.0;
   bool ok;
@@ -1212,11 +1217,6 @@ bool SMESHGUI_UnionOfTrianglesDlg::process (SMESH::SMESH_MeshEditor_ptr theEdito
     ok = theEditor->TriToQuad(theIds, aCriterion, aMaxAngle);
   else
     ok = theEditor->TriToQuadObject(obj, aCriterion, aMaxAngle);
-  if( ok ) {
-    QStringList aParameters;
-    aParameters << myMaxAngleSpin->text();
-    myMesh->SetParameters( aParameters.join(":").toLatin1().constData() );
-  }
   return ok;
 }
 

@@ -475,6 +475,9 @@ bool SMESHGUI_ScaleDlg::ClickOnApply()
     try {
       SUIT_OverrideCursor aWaitCursor;
       SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditor();
+
+      myMesh->SetParameters( aParameters.join(":").toLatin1().constData() );
+
       SMESH::SMESH_IDSource_var obj;
       if ( CheckBoxMesh->isChecked() )
         obj = mySelectedObject;
@@ -485,8 +488,6 @@ bool SMESHGUI_ScaleDlg::ClickOnApply()
 
       case MOVE_ELEMS_BUTTON:
         aMeshEditor->Scale(obj, aPoint, aScaleFact, false);
-        if( !myMesh->_is_nil())
-          myMesh->SetParameters( aParameters.join(":").toLatin1().constData() );
         break;
 
       case COPY_ELEMS_BUTTON:
@@ -495,8 +496,6 @@ bool SMESHGUI_ScaleDlg::ClickOnApply()
             aMeshEditor->ScaleMakeGroups(obj, aPoint, aScaleFact);
         else 
           aMeshEditor->Scale(obj, aPoint, aScaleFact, true);
-        if( !myMesh->_is_nil())
-          myMesh->SetParameters( aParameters.join(":").toLatin1().constData() );
         break;
 
       case MAKE_MESH_BUTTON: {
@@ -504,7 +503,6 @@ bool SMESHGUI_ScaleDlg::ClickOnApply()
           aMeshEditor->ScaleMakeMesh(obj, aPoint, aScaleFact, makeGroups,
                                      LineEditNewMesh->text().toLatin1().data());
         if (!mesh->_is_nil()) {
-          mesh->SetParameters(aParameters.join(":").toLatin1().constData());
           if( _PTR(SObject) aSObject = SMESH::ObjectToSObject( mesh ) )
             anEntryList.append( aSObject->GetID().c_str() );
 #ifdef WITHGENERICOBJ

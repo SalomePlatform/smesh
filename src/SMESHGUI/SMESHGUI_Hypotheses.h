@@ -81,9 +81,11 @@ protected:
     QString   myName;
     QVariant  myValue;
     bool      isVariable;
+    QString   myText;
     StdParam(){
       isVariable = false;
     }
+    const char* text() const { return myText.toLatin1().constData(); }
   };
 
   typedef QList<StdParam>      ListOfStdParams;
@@ -95,6 +97,7 @@ protected:
   const ListOfWidgets&         widgets() const;
   ListOfWidgets&               changeWidgets();
   QtxDialog*                   dlg() const;
+  QString                      getVariableName(const char* methodName) const;
 
   virtual QFrame*              buildFrame() = 0;
           QFrame*              buildStdFrame();

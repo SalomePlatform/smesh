@@ -533,55 +533,11 @@ bool SMESHGUI_ExtrusionAlongPathDlg::ClickOnApply()
 
   try {
     SUIT_OverrideCursor wc;
-    SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditor();
-    //if ( LinearAnglesCheck->isChecked() ) {
-    //  anAngles = aMeshEditor->LinearAnglesVariation( myPathMesh, myPathShape, anAngles );
-    //}
 
+    SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditor();
     SMESH::SMESH_MeshEditor::Extrusion_Error retVal;
-    /*
-    if ( MakeGroupsCheck->isEnabled() && MakeGroupsCheck->isChecked() ) {
-      if( MeshCheck->isChecked() ) {
-        if( GetConstructorId() == 0 )
-          SMESH::ListOfGroups_var groups = 
-            aMeshEditor->ExtrusionAlongPathObject1DMakeGroups(myIDSource, myPathMesh,
-                                                              myPathShape, aNodeStart,
-                                                              AnglesGrp->isChecked(), anAngles,
-                                                              BasePointGrp->isChecked(), aBasePoint, retVal);
-        else
-          SMESH::ListOfGroups_var groups = 
-            aMeshEditor->ExtrusionAlongPathObject2DMakeGroups(myIDSource, myPathMesh,
-                                                              myPathShape, aNodeStart,
-                                                              AnglesGrp->isChecked(), anAngles,
-                                                              BasePointGrp->isChecked(), aBasePoint, retVal);
-      }
-      else
-        SMESH::ListOfGroups_var groups = 
-          aMeshEditor->ExtrusionAlongPathMakeGroups(anElementsId, myPathMesh,
-                                                    myPathShape, aNodeStart,
-                                                    AnglesGrp->isChecked(), anAngles,
-                                                    BasePointGrp->isChecked(), aBasePoint, retVal);
-    }
-    else {
-      if( MeshCheck->isChecked() ) {
-        if( GetConstructorId() == 0 )
-          retVal = aMeshEditor->ExtrusionAlongPathObject1D(myIDSource, myPathMesh,
-                                                           myPathShape, aNodeStart,
-                                                           AnglesGrp->isChecked(), anAngles,
-                                                           BasePointGrp->isChecked(), aBasePoint);
-        else
-          retVal = aMeshEditor->ExtrusionAlongPathObject2D(myIDSource, myPathMesh,
-                                                           myPathShape, aNodeStart,
-                                                           AnglesGrp->isChecked(), anAngles,
-                                                           BasePointGrp->isChecked(), aBasePoint);
-      }
-      else
-        retVal = aMeshEditor->ExtrusionAlongPath(anElementsId, myPathMesh,
-                                                 myPathShape, aNodeStart,
-                                                 AnglesGrp->isChecked(), anAngles,
-                                                 BasePointGrp->isChecked(), aBasePoint);
-    }
-    */
+
+    myMesh->SetParameters( aParameters.join(":").toLatin1().constData() );
 
     bool NeedGroups = ( MakeGroupsCheck->isEnabled() && MakeGroupsCheck->isChecked() );
     SMESH::ElementType ElemType = SMESH::FACE;
@@ -603,10 +559,6 @@ bool SMESHGUI_ExtrusionAlongPathDlg::ClickOnApply()
     }
 
 
-    if( retVal == SMESH::SMESH_MeshEditor::EXTR_OK )
-      myMesh->SetParameters( aParameters.join(":").toLatin1().constData() );
-
-    //wc.stop();
     wc.suspend();
     switch (retVal) {
     case SMESH::SMESH_MeshEditor::EXTR_NO_ELEMENTS:

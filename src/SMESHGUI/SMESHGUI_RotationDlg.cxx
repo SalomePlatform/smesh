@@ -433,14 +433,15 @@ bool SMESHGUI_RotationDlg::ClickOnApply()
     try {
       SUIT_OverrideCursor aWaitCursor;
       SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditor();
+
+      myMesh->SetParameters(aParameters.join(":").toLatin1().constData());
+
       switch ( actionButton ) {
       case MOVE_ELEMS_BUTTON:
         if(CheckBoxMesh->isChecked())
           aMeshEditor->RotateObject(mySelectedObject, anAxis, anAngle, false);
         else
             aMeshEditor->Rotate(anElementsId, anAxis, anAngle, false);
-        if( !myMesh->_is_nil())
-          myMesh->SetParameters( aParameters.join(":").toLatin1().constData() );
         break;
       case COPY_ELEMS_BUTTON:
         if ( makeGroups ) {
@@ -456,8 +457,6 @@ bool SMESHGUI_RotationDlg::ClickOnApply()
           else
             aMeshEditor->Rotate(anElementsId, anAxis, anAngle, true);
         }
-        if( !myMesh->_is_nil())
-          myMesh->SetParameters( aParameters.join(":").toLatin1().constData() );
         break;
       case MAKE_MESH_BUTTON: {
         SMESH::SMESH_Mesh_var mesh;
@@ -468,7 +467,6 @@ bool SMESHGUI_RotationDlg::ClickOnApply()
           mesh = aMeshEditor->RotateMakeMesh(anElementsId, anAxis, anAngle, makeGroups,
                                              LineEditNewMesh->text().toLatin1().data());
         if (!mesh->_is_nil()) {
-          mesh->SetParameters(aParameters.join(":").toLatin1().constData());
           if( _PTR(SObject) aSObject = SMESH::ObjectToSObject( mesh ) )
             anEntryList.append( aSObject->GetID().c_str() );
 #ifdef WITHGENERICOBJ

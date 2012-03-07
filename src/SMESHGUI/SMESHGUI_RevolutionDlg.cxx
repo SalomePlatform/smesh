@@ -519,6 +519,8 @@ bool SMESHGUI_RevolutionDlg::ClickOnApply()
       SUIT_OverrideCursor aWaitCursor;
       SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditor();
       
+      myMesh->SetParameters( aParameters.join(":").toLatin1().constData() );
+
       if ( MakeGroupsCheck->isEnabled() && MakeGroupsCheck->isChecked() ) {
         if( CheckBoxMesh->isChecked() ) {
           if( GetConstructorId() == 0 )
@@ -546,7 +548,6 @@ bool SMESHGUI_RevolutionDlg::ClickOnApply()
           aMeshEditor->RotationSweep(anElementsId.inout(), anAxis, anAngle, aNbSteps, aTolerance);
       }
 
-      myMesh->SetParameters( aParameters.join(":").toLatin1().constData() );
     } catch (...) {
     }
 

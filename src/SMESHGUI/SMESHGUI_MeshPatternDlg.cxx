@@ -468,6 +468,13 @@ bool SMESHGUI_MeshPatternDlg::onApply()
     erasePreview();
 
     if (isRefine()) { // Refining existing mesh elements
+      {
+        QStringList aParameters;
+        aParameters << myNode1->text();
+        if(myType == Type_3d )
+          aParameters << myNode2->text();
+        myMesh->SetParameters( aParameters.join(":").toLatin1().constData() );
+      }
       QList<int> ids;
       getIds(ids);
       SMESH::long_array_var varIds = new SMESH::long_array();
@@ -478,12 +485,6 @@ bool SMESHGUI_MeshPatternDlg::onApply()
       myType == Type_2d
         ? myPattern->ApplyToMeshFaces  (myMesh, varIds, getNode(false), myReverseChk->isChecked())
         : myPattern->ApplyToHexahedrons(myMesh, varIds, getNode(false), getNode(true));
-
-      QStringList aParameters;
-      aParameters << myNode1->text();
-      if(myType == Type_3d )
-        aParameters << myNode2->text();
-      myMesh->SetParameters( aParameters.join(":").toLatin1().constData() );
 
     } else { // Applying a pattern to geometrical object
       if (myType == Type_2d)

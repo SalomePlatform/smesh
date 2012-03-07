@@ -552,10 +552,11 @@ bool SMESHGUI_ExtrusionDlg::ClickOnApply()
       aParameters << SpinBox_Dy->text();
       aParameters << SpinBox_Dz->text();
     } else if ( RadioButton4->isChecked() ) {
-      aParameters << SpinBox_Vx->text();
-      aParameters << SpinBox_Vy->text();
-      aParameters << SpinBox_Vz->text();
-      aParameters << SpinBox_VDist->text();
+      // only 3 coords in a python dump command :(
+      // aParameters << SpinBox_Vx->text();
+      // aParameters << SpinBox_Vy->text();
+      // aParameters << SpinBox_Vz->text();
+      // aParameters << SpinBox_VDist->text();
     }
 
     long aNbSteps = (long)SpinBox_NbSteps->value();
@@ -565,6 +566,8 @@ bool SMESHGUI_ExtrusionDlg::ClickOnApply()
     try {
       SUIT_OverrideCursor aWaitCursor;
       SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditor();
+
+      myMesh->SetParameters( aParameters.join(":").toLatin1().constData() );
 
       if ( MakeGroupsCheck->isEnabled() && MakeGroupsCheck->isChecked() ) {
         if( CheckBoxMesh->isChecked() ) 
@@ -623,8 +626,6 @@ bool SMESHGUI_ExtrusionDlg::ClickOnApply()
           else
             aMeshEditor->ExtrusionSweep(myElementsId.inout(), aVector, aNbSteps);
       }
-
-      myMesh->SetParameters( aParameters.join(":").toLatin1().constData() );
 
     } catch (...) {
     }
@@ -724,7 +725,7 @@ void SMESHGUI_ExtrusionDlg::onTextChange (const QString& theNewText)
         {
           SMESHType = SMESH::EDGE;
           SMDSType = SMDSAbs_Edge;
-          break;		  
+          break;                  
         }
       case 2:
         {
@@ -1187,17 +1188,17 @@ void SMESHGUI_ExtrusionDlg::onDisplaySimulation( bool toDisplayPreview ) {
             case 0:
               {
                 aMeshEditor->ExtrusionSweepObject0D(mySelectedObject, aVector, aNbSteps);
-				        break;
+                                        break;
               }
             case 1:
               {
                 aMeshEditor->ExtrusionSweepObject1D(mySelectedObject, aVector, aNbSteps);
-				        break;
+                                        break;
               }
             case 2:
               {
                 aMeshEditor->ExtrusionSweepObject2D(mySelectedObject, aVector, aNbSteps);
-				        break;
+                                        break;
               }
           }
         }

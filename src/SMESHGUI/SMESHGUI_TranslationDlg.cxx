@@ -480,26 +480,23 @@ bool SMESHGUI_TranslationDlg::ClickOnApply()
       anElementsId[i] = aListElementsId[i].toInt();
 
     SMESH::DirStruct aVector;
+    QStringList aParameters;
     if (GetConstructorId() == 0) {
       aVector.PS.x = SpinBox2_1->GetValue() - SpinBox1_1->GetValue();
       aVector.PS.y = SpinBox2_2->GetValue() - SpinBox1_2->GetValue();
       aVector.PS.z = SpinBox2_3->GetValue() - SpinBox1_3->GetValue();
+      // not supported so far
+      // aParameters << QString("%1 - %2").arg( SpinBox2_1->text() ).arg( SpinBox1_1->text() );
+      // aParameters << QString("%1 - %2").arg( SpinBox2_2->text() ).arg( SpinBox1_2->text() );
+      // aParameters << QString("%1 - %2").arg( SpinBox2_3->text() ).arg( SpinBox1_3->text() );
     } else if (GetConstructorId() == 1) {
       aVector.PS.x = SpinBox1_1->GetValue();
       aVector.PS.y = SpinBox1_2->GetValue();
       aVector.PS.z = SpinBox1_3->GetValue();
+      aParameters << SpinBox1_1->text();
+      aParameters << SpinBox1_2->text();
+      aParameters << SpinBox1_3->text();
     }
-
-    QStringList aParameters;
-    aParameters << SpinBox1_1->text();
-    if (GetConstructorId() == 0)
-      aParameters << SpinBox2_1->text();
-    aParameters << SpinBox1_2->text();
-    if (GetConstructorId() == 0)
-      aParameters << SpinBox2_2->text();
-    aParameters << SpinBox1_3->text();
-    if (GetConstructorId() == 0)
-      aParameters << SpinBox2_3->text();
 
     int actionButton = ActionGroup->checkedId();
     bool makeGroups = ( MakeGroupsCheck->isEnabled() && MakeGroupsCheck->isChecked() );
@@ -507,14 +504,15 @@ bool SMESHGUI_TranslationDlg::ClickOnApply()
     try {
       SUIT_OverrideCursor aWaitCursor;
       SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditor();
+
+      myMesh->SetParameters(aParameters.join(":").toLatin1().constData());
+
       switch ( actionButton ) {
       case MOVE_ELEMS_BUTTON:
         if(CheckBoxMesh->isChecked())
           aMeshEditor->TranslateObject(mySelectedObject, aVector, false);
         else
           aMeshEditor->Translate(anElementsId, aVector, false);
-        if( !myMesh->_is_nil())
-          myMesh->SetParameters( aParameters.join(":").toLatin1().constData() );
         break;
       case COPY_ELEMS_BUTTON:
         if ( makeGroups ) {
@@ -530,10 +528,8 @@ bool SMESHGUI_TranslationDlg::ClickOnApply()
           else
             aMeshEditor->Translate(anElementsId, aVector, true);
         }
-        if( !myMesh->_is_nil())
-          myMesh->SetParameters( aParameters.join(":").toLatin1().constData() );
         break;
-      case MAKE_MESH_BUTTON:
+      case MAKE_MESH_BUTTON: {
         SMESH::SMESH_Mesh_var mesh;
         if (CheckBoxMesh->isChecked())
           mesh = aMeshEditor->TranslateObjectMakeMesh(mySelectedObject, aVector, makeGroups,
@@ -541,8 +537,6 @@ bool SMESHGUI_TranslationDlg::ClickOnApply()
         else
           mesh = aMeshEditor->TranslateMakeMesh(anElementsId, aVector, makeGroups,
                                                 LineEditNewMesh->text().toLatin1().data());
-        if (!mesh->_is_nil()) {
-          mesh->SetParameters(aParameters.join(":").toLatin1().constData());
           if( _PTR(SObject) aSObject = SMESH::ObjectToSObject( mesh ) )
             anEntryList.append( aSObject->GetID().c_str() );
 #ifdef WITHGENERICOBJ

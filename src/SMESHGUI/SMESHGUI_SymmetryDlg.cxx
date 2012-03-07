@@ -498,6 +498,8 @@ bool SMESHGUI_SymmetryDlg::ClickOnApply()
       SUIT_OverrideCursor aWaitCursor;
       SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditor();
 
+      myMesh->SetParameters(aParameters.join(":").toLatin1().constData());
+
       switch ( actionButton ) {
       case MOVE_ELEMS_BUTTON: {
         if(CheckBoxMesh->isChecked())
@@ -505,8 +507,6 @@ bool SMESHGUI_SymmetryDlg::ClickOnApply()
         else
           aMeshEditor->Mirror(anElementsId, aMirror, aMirrorType, false );
 
-        if( !myMesh->_is_nil())
-          myMesh->SetParameters( aParameters.join(":").toLatin1().constData() );
         break;
       }
       case COPY_ELEMS_BUTTON: {
@@ -523,8 +523,6 @@ bool SMESHGUI_SymmetryDlg::ClickOnApply()
           else
             aMeshEditor->Mirror(anElementsId, aMirror, aMirrorType, true);
         }
-        if( !myMesh->_is_nil())
-          myMesh->SetParameters( aParameters.join(":").toLatin1().constData() );
         break;
         }
       case MAKE_MESH_BUTTON: {
@@ -535,8 +533,6 @@ bool SMESHGUI_SymmetryDlg::ClickOnApply()
         else
           mesh = aMeshEditor->MirrorMakeMesh(anElementsId, aMirror, aMirrorType, makeGroups,
                                              LineEditNewMesh->text().toLatin1().data());
-        if (!mesh->_is_nil()) {
-          mesh->SetParameters(aParameters.join(":").toLatin1().constData());
           if( _PTR(SObject) aSObject = SMESH::ObjectToSObject( mesh ) )
             anEntryList.append( aSObject->GetID().c_str() );
 #ifdef WITHGENERICOBJ
@@ -547,7 +543,6 @@ bool SMESHGUI_SymmetryDlg::ClickOnApply()
 #endif
         }
         break;
-      }
       }
     } catch (...) {
     }

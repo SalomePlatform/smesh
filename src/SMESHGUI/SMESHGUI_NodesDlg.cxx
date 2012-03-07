@@ -100,8 +100,8 @@ namespace SMESH
     try {
       _PTR(SObject) aSobj = SMESH::FindSObject( theMesh );
       SMESH::SMESH_MeshEditor_var aMeshEditor = theMesh->GetMeshEditor();
-      aNodeId = aMeshEditor->AddNode( x, y, z );
       theMesh->SetParameters( theParameters.join(":").toLatin1().constData() );
+      aNodeId = aMeshEditor->AddNode( x, y, z );
       _PTR(Study) aStudy = GetActiveStudyDocument();
       CORBA::Long anId = aStudy->StudyId();
       if (TVisualObjPtr aVisualObj = SMESH::GetVisualObj( anId, aSobj->GetID().c_str() ) ) {

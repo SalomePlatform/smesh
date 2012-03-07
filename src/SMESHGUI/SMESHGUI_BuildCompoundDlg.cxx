@@ -295,12 +295,16 @@ bool SMESHGUI_BuildCompoundDlg::ClickOnApply()
 
   SMESH::SMESH_Mesh_var aCompoundMesh;
 
-  if (!myMesh->_is_nil()) {
+  if (!myMesh->_is_nil())
+  {
     QStringList aParameters;
     aParameters << (CheckBoxMerge->isChecked() ? SpinBoxTol->text() : QString(" "));
+
     QStringList anEntryList;
     try {
       SUIT_OverrideCursor aWaitCursor;
+
+      myMeshArray[0]->SetParameters( aParameters.join(":").toLatin1().constData() );
 
       SMESH::SMESH_Gen_var aSMESHGen = SMESHGUI::GetSMESHGen();
       // concatenate meshes
@@ -314,8 +318,6 @@ bool SMESHGUI_BuildCompoundDlg::ClickOnApply()
                                                !(ComboBoxUnion->currentIndex()),
                                                CheckBoxMerge->isChecked(),
                                                SpinBoxTol->GetValue());
-
-      aCompoundMesh->SetParameters( aParameters.join(":").toLatin1().constData() );
 
       _PTR(SObject) aSO = SMESH::FindSObject( aCompoundMesh );
       if( aSO ) {

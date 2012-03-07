@@ -429,6 +429,10 @@ bool SMESHGUI_MakeNodeAtPointOp::onApply()
     return false;
   }
 
+  QStringList aParameters;
+  aParameters << myDlg->myX->text();
+  aParameters << myDlg->myY->text();
+  aParameters << myDlg->myZ->text();
 
   try {
     SMESH::SMESH_Mesh_var aMesh = SMESH::GetMeshByIO(myMeshActor->getIO());
@@ -440,6 +444,8 @@ bool SMESHGUI_MakeNodeAtPointOp::onApply()
     SMESH::SMESH_MeshEditor_var aMeshEditor = aMesh->GetMeshEditor();
     if (aMeshEditor->_is_nil())
       return true;
+
+    aMesh->SetParameters( aParameters.join(":").toLatin1().constData() );
 
     bool ok;
     int anId = myDlg->myId->text().toInt( &ok );
@@ -455,12 +461,6 @@ bool SMESHGUI_MakeNodeAtPointOp::onApply()
 
     if (aResult)
     {
-      QStringList aParameters;
-      aParameters << myDlg->myX->text();
-      aParameters << myDlg->myY->text();
-      aParameters << myDlg->myZ->text();
-      aMesh->SetParameters( aParameters.join(":").toLatin1().constData() );
-
       myDlg->myCurrentX->SetValue(0);
       myDlg->myCurrentY->SetValue(0);
       myDlg->myCurrentZ->SetValue(0);

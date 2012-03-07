@@ -332,18 +332,20 @@ bool SMESHGUI_GenericHypothesisCreator::getStdParamFromDlg( ListOfStdParams& par
     {
       SalomeApp_IntSpinBox* sb = ( SalomeApp_IntSpinBox* )( *anIt );
       item.myValue = sb->value();
+      item.myText = sb->text();
       params.append( item );
     }
     else if( (*anIt)->inherits( "SalomeApp_DoubleSpinBox" ) )
     {
       SalomeApp_DoubleSpinBox* sb = ( SalomeApp_DoubleSpinBox* )( *anIt );
       item.myValue = sb->value();
+      item.myText = sb->text();
       params.append( item );
     }
     else if( (*anIt)->inherits( "QLineEdit" ) )
     {
       QLineEdit* line = ( QLineEdit* )( *anIt );
-      item.myValue = line->text();
+      item.myValue = item.myText = line->text();
       params.append( item );
     }
     else if ( getParamFromCustomWidget( item, *anIt ))
@@ -356,6 +358,16 @@ bool SMESHGUI_GenericHypothesisCreator::getStdParamFromDlg( ListOfStdParams& par
   return res;
 }
 
+QString SMESHGUI_GenericHypothesisCreator::getVariableName(const char* methodName) const
+{
+  SMESH::SMESH_Hypothesis_var h = hypothesis();
+  if ( !h->_is_nil() )
+  {
+    CORBA::String_var aVaribaleName = h->GetVarParameter( methodName );
+    return QString( aVaribaleName.in() );
+  }
+  return QString();
+}
 
 QStringList SMESHGUI_GenericHypothesisCreator::getVariablesFromDlg() const
 {
