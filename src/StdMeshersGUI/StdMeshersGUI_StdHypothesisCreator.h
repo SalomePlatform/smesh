@@ -60,7 +60,7 @@ protected:
   virtual QWidget* getWidgetForParam( int paramIndex ) const;
   virtual ListOfWidgets* customWidgets() const;
   virtual void     onReject();
-  virtual bool     initVariableName(SMESH::ListOfParameters_var theParameters, StdParam& theParams, int order) const;
+  bool             initVariableName(SMESH::SMESH_Hypothesis_var theHyp, StdParam& theParams, const char* theMethod) const;
 
   virtual void     valueChanged( QWidget* );
 

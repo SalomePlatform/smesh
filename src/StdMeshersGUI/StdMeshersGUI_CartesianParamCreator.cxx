@@ -632,7 +632,11 @@ void StdMeshersGUI_CartesianParamCreator::retrieveParams() const
   if( myName )
     myName->setText( hypName() );
 
-  myThreshold->setValue( h->GetSizeThreshold() );
+  QString varName = getVariableName( "SetSizeThreshold" );
+  if ( !varName.isEmpty() )
+    myThreshold->setValue( h->GetSizeThreshold() );
+  else
+    myThreshold->setText( varName );
 
   for ( int ax = 0; ax < 3; ++ax )
   {
@@ -663,6 +667,7 @@ QString StdMeshersGUI_CartesianParamCreator::storeParams() const
     if( isCreation() )
       SMESH::SetName( SMESH::FindSObject( h ), myName->text().toLatin1().constData() );
 
+    h->SetVarParameter( myThreshold->text().toLatin1().constData(), "SetSizeThreshold" );
     h->SetSizeThreshold( myThreshold->text().toDouble() );
 
     for ( int ax = 0; ax < 3; ++ax )

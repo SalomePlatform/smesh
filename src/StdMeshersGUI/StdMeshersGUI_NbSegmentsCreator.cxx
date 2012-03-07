@@ -317,17 +317,17 @@ bool StdMeshersGUI_NbSegmentsCreator::readParamsFromHypo( NbSegmentsHypothesisDa
   h_data.myName = hypName();
 
   h_data.myNbSeg = (int) h->GetNumberOfSegments();
-  
-  SMESH::ListOfParameters_var aParameters = h->GetLastParameters();
 
-  h_data.myNbSegVarName  = (aParameters->length() > 0) ? QString(aParameters[0].in()) : QString("");
+  CORBA::String_var aVaribaleName = h->GetVarParameter( "SetNumberOfSegments" );
+  h_data.myNbSegVarName = aVaribaleName.in();
 
   int distr = (int) h->GetDistrType();
   h_data.myDistrType = distr;
   h_data.myScale = distr==1 ? h->GetScaleFactor() : 1.0;
   
-  if(distr==1){
-    h_data.myScaleVarName  = (aParameters->length() > 1) ? QString(aParameters[1].in()) : QString("");
+  if(distr==1) {
+    aVaribaleName = h->GetVarParameter( "SetScaleFactor" );
+    h_data.myScaleVarName = aVaribaleName.in();
   }
   else 
     h_data.myScaleVarName = QString("");
@@ -364,16 +364,14 @@ bool StdMeshersGUI_NbSegmentsCreator::storeParamsToHypo( const NbSegmentsHypothe
     if( isCreation() )
       SMESH::SetName( SMESH::FindSObject( h ), h_data.myName.toLatin1().data() );
 
-    QStringList aVariablesList;
-    aVariablesList.append(h_data.myNbSegVarName);
-
+    h->SetVarParameter( h_data.myNbSegVarName.toLatin1().constData(), "SetNumberOfSegments" );
     h->SetNumberOfSegments( h_data.myNbSeg );
     int distr = h_data.myDistrType;
     h->SetDistrType( distr );
     
     if( distr==1 ) {
+      h->SetVarParameter( h_data.myScaleVarName.toLatin1().constData(), "SetScaleFactor" );
       h->SetScaleFactor( h_data.myScale );
-      aVariablesList.append(h_data.myScaleVarName);
     }
     if( distr==2 || distr==3 )
       h->SetConversionMode( h_data.myConv );
@@ -391,8 +389,6 @@ bool StdMeshersGUI_NbSegmentsCreator::storeParamsToHypo( const NbSegmentsHypothe
     //setting of function must follow after setConversionMode, because otherwise
     //the function will be checked with old conversion mode, so that it may occurs
     //unexpected errors for user
-
-    h->SetParameters(aVariablesList.join(":").toLatin1().constData());
   }
   catch(const SALOME::SALOME_Exception& ex)
   {
