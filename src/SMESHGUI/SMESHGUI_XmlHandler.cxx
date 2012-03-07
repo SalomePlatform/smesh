@@ -191,6 +191,13 @@ bool SMESHGUI_XmlHandler::startElement (const QString&, const QString&,
       }
     }
   }
+  else if ( qName == "python-wrap" ||
+            qName == "algo"        ||
+            qName == "hypo"         )
+  {
+    // elements used in SMESH_2smeshpy
+    return true;
+  }
   else
   {
     // error
