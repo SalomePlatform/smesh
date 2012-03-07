@@ -23,7 +23,6 @@
 //  Created   : Thu Oct 21 17:24:06 2004
 //  Author    : Edward AGAPOV (eap)
 //  Module    : SMESH
-//  $Header   : $
 
 #include "SMESH_Gen_i.hxx"
 
@@ -42,10 +41,10 @@
 
 #ifdef _DEBUG_
 static int MYDEBUG = 0;
-static int VARIABLE_DEBUG = 0;
+//static int VARIABLE_DEBUG = 0;
 #else
 static int MYDEBUG = 0;
-static int VARIABLE_DEBUG = 0;
+//static int VARIABLE_DEBUG = 0;
 #endif
 
 //=============================================================================
@@ -910,76 +909,104 @@ bool SMESH_Gen_i::RemoveHypothesisFromShape(SALOMEDS::Study_ptr         theStudy
 //function : UpdateParameters
 //purpose  : 
 //=======================================================================
-void SMESH_Gen_i::UpdateParameters(CORBA::Object_ptr theObject, const char* theParameters)
+void SMESH_Gen_i::UpdateParameters(/*CORBA::Object_ptr theObject,*/ const char* theParameters)
 {
-
-  if(VARIABLE_DEBUG)
-    cout<<"UpdateParameters : "<<theParameters<<endl;
   SALOMEDS::Study_ptr aStudy = GetCurrentStudy();
-  if(aStudy->_is_nil() || CORBA::is_nil(theObject)) 
+  if ( aStudy->_is_nil() )
     return;
-
-  SALOMEDS::SObject_var aSObj =  ObjectToSObject(aStudy,theObject);
-  if(aSObj->_is_nil())  
-    return;
-
-  SALOMEDS::StudyBuilder_var aStudyBuilder = aStudy->NewBuilder();
-
-  SALOMEDS::GenericAttribute_var aFindAttr;
-  bool hasAttr = aSObj->FindAttribute(aFindAttr, "AttributeString");
-  if(VARIABLE_DEBUG)
-    cout<<"Find Attribute "<<hasAttr<<endl;
-
-  SALOMEDS::GenericAttribute_var anAttr;
-  anAttr = aStudyBuilder->FindOrCreateAttribute( aSObj, "AttributeString");
-  SALOMEDS::AttributeString_var aStringAttr = SALOMEDS::AttributeString::_narrow(anAttr);
-
-  CORBA::String_var oldparVar = aStringAttr->Value();
-  CORBA::String_var inpparVar = ParseParameters(theParameters);
-  TCollection_AsciiString aNewParams;
-  TCollection_AsciiString aOldParameters(oldparVar.inout());
-  TCollection_AsciiString anInputParams(inpparVar.inout());
-  if(!hasAttr)
-    aNewParams = anInputParams;
-  else 
-    {
-      int pos = aOldParameters.SearchFromEnd("|");
-      if(pos==-1) pos = 0;
-      TCollection_AsciiString previousParamFull(aOldParameters.Split(pos));
-      TCollection_AsciiString previousParam(previousParamFull);
-      TCollection_AsciiString theRepet("1");
-      pos = previousParam.SearchFromEnd(";*=");
-      if(pos >= 0)
-        {
-          theRepet = previousParam.Split(pos+2);
-          pos = pos-1;
-          if(pos==-1) pos = 0;
-          previousParam.Split(pos);
-        }
-      if(previousParam == anInputParams)
-        {
-          theRepet = theRepet.IntegerValue()+1;
-          aNewParams = aOldParameters + previousParam + ";*=" + theRepet;
-        }
-      else
-        {
-          aNewParams = aOldParameters + previousParamFull + "|" + anInputParams;
-        }
-    }
-
-  if(VARIABLE_DEBUG)
+  myLastParameters.clear();
+  int pos = 0, prevPos = 0, len = strlen( theParameters );
+  //if ( len == 0 ) return;
+  while ( pos <= len )
   {
-    cout<<"Input Parameters : "<<anInputParams<<endl;
-    cout<<"Old Parameters : "<<aOldParameters<<endl;
-    cout<<"New Parameters : "<<aNewParams<<endl;
+    if ( pos == len || theParameters[pos] == ':' )
+    {
+      if ( prevPos < pos )
+      {
+        string val(theParameters + prevPos, theParameters + pos );
+        if ( !aStudy->IsVariable( val.c_str() ))
+          val.clear();
+        myLastParameters.push_back( val );
+      }
+      else
+      {
+        myLastParameters.push_back("");
+      }
+      prevPos = pos+1;
+    }
+    ++pos;
   }
+  return;
 
-  aStringAttr->SetValue( aNewParams.ToCString() );
+  // OLD VARIANT
+
+  // if(VARIABLE_DEBUG)
+  //   cout<<"UpdateParameters : "<<theParameters<<endl;
+  // //SALOMEDS::Study_ptr aStudy = GetCurrentStudy();
+  // if(aStudy->_is_nil() || CORBA::is_nil(theObject)) 
+  //   return;
+
+  // SALOMEDS::SObject_var aSObj =  ObjectToSObject(aStudy,theObject);
+  // if(aSObj->_is_nil())  
+  //   return;
+
+  // SALOMEDS::StudyBuilder_var aStudyBuilder = aStudy->NewBuilder();
+
+  // SALOMEDS::GenericAttribute_var aFindAttr;
+  // bool hasAttr = aSObj->FindAttribute(aFindAttr, "AttributeString");
+  // if(VARIABLE_DEBUG)
+  //   cout<<"Find Attribute "<<hasAttr<<endl;
+
+  // SALOMEDS::GenericAttribute_var anAttr;
+  // anAttr = aStudyBuilder->FindOrCreateAttribute( aSObj, "AttributeString");
+  // SALOMEDS::AttributeString_var aStringAttr = SALOMEDS::AttributeString::_narrow(anAttr);
+
+  // CORBA::String_var oldparVar = aStringAttr->Value();
+  // CORBA::String_var inpparVar = ParseParameters(theParameters);
+  // TCollection_AsciiString aNewParams;
+  // TCollection_AsciiString aOldParameters(oldparVar.inout());
+  // TCollection_AsciiString anInputParams(inpparVar.inout());
+  // if(!hasAttr)
+  //   aNewParams = anInputParams;
+  // else 
+  //   {
+  //     int pos = aOldParameters.SearchFromEnd("|");
+  //     if(pos==-1) pos = 0;
+  //     TCollection_AsciiString previousParamFull(aOldParameters.Split(pos));
+  //     TCollection_AsciiString previousParam(previousParamFull);
+  //     TCollection_AsciiString theRepet("1");
+  //     pos = previousParam.SearchFromEnd(";*=");
+  //     if(pos >= 0)
+  //       {
+  //         theRepet = previousParam.Split(pos+2);
+  //         pos = pos-1;
+  //         if(pos==-1) pos = 0;
+  //         previousParam.Split(pos);
+  //       }
+  //     if(previousParam == anInputParams)
+  //       {
+  //         theRepet = theRepet.IntegerValue()+1;
+  //         aNewParams = aOldParameters + previousParam + ";*=" + theRepet;
+  //       }
+  //     else
+  //       {
+  //         aNewParams = aOldParameters + previousParamFull + "|" + anInputParams;
+  //       }
+  //   }
+
+  // if(VARIABLE_DEBUG)
+  // {
+  //   cout<<"Input Parameters : "<<anInputParams<<endl;
+  //   cout<<"Old Parameters : "<<aOldParameters<<endl;
+  //   cout<<"New Parameters : "<<aNewParams<<endl;
+  // }
+
+  // aStringAttr->SetValue( aNewParams.ToCString() );
 }
 
 //=======================================================================
 //function : ParseParameters
-//purpose  : 
+//purpose  : Replace variables by their values
 //=======================================================================
 char* SMESH_Gen_i::ParseParameters(const char* theParameters)
 {
