@@ -24,6 +24,7 @@
 #include "SMESH_NoteBook.hxx"
 #include "SMESH_Gen_i.hxx"
 #include "SMESH_PythonDump.hxx"
+#include "SMESH_Hypothesis_i.hxx"
 
 #include <Resource_DataMapOfAsciiStringAsciiString.hxx>
 #include <TColStd_SequenceOfAsciiString.hxx>
@@ -41,7 +42,21 @@ static int MYDEBUG = 0;
 using namespace std;
 
 
-void SetVariable(Handle(_pyCommand) theCommand,const SMESH_ObjectStates* theStates, int position, int theArgNb);
+namespace
+{
+  /*!
+   *  Set variable of the SMESH_ObjectStates from position to the _pyCommand
+   *  method as nbArg argument
+   */
+  void SetVariable(Handle(_pyCommand) theCommand,
+                   const SMESH_ObjectStates* theStates,
+                   int position, int theArgNb)
+  {
+    if(theStates->GetCurrectState().size() > position)
+      if(!theStates->GetCurrectState().at(position).IsEmpty())
+        theCommand->SetArg(theArgNb,theStates->GetCurrectState().at(position));
+  }
+}
 
 //================================================================================
 /*!
@@ -229,7 +244,7 @@ void SMESH_NoteBook::ReplaceVariables()
       cout<<"Object : "<< aObject<<endl;
       cout<<"Result : "<< aResultValue<<endl;
     }
-    
+
     // check if method modifies the object itself
     TVariablesMap::const_iterator it = _objectMap.find(aObject);
     if(it == _objectMap.end()) // check if method returns a new object
@@ -248,13 +263,14 @@ void SMESH_NoteBook::ReplaceVariables()
          aMethod.IsEqual("ApplyToHexahedrons"))
         it = _objectMap.find(aCmd->GetArg(1));
     }
-    
+
     if(it != _objectMap.end()) {
       if(MYDEBUG)
         cout << "Found object : " << (*it).first << endl;
       SMESH_ObjectStates *aStates = (*it).second;
       // Case for LocalLength hypothesis
-      if(aStates->GetObjectType().IsEqual("LocalLength") && aStates->GetCurrectState().size() >= 2) {
+      if(aStates->GetObjectType().IsEqual("LocalLength") && aStates->GetCurrectState().size() >= 2)
+      {
         if(aMethod.IsEqual("SetLength")) {
           if(!aStates->GetCurrectState().at(0).IsEmpty() )
             aCmd->SetArg(1,aStates->GetCurrectState().at(0));
@@ -326,57 +342,6 @@ void SMESH_NoteBook::ReplaceVariables()
           aStates->IncrementState();
         }
       }
-
-      // Case for NETGEN_Parameters_2D or NETGEN_Parameters_2D hypothesis
-      else if(aStates->GetObjectType().IsEqual("NETGEN_Parameters_2D") ||
-              aStates->GetObjectType().IsEqual("NETGEN_Parameters")){
-        if(aMethod == "SetMaxSize" && aStates->GetCurrectState().size() >= 1) {
-          if(!aStates->GetCurrectState().at(0).IsEmpty() )
-            aCmd->SetArg(1,aStates->GetCurrectState().at(0));
-          aStates->IncrementState();
-        }
-        else if(aMethod == "SetGrowthRate" && aStates->GetCurrectState().size() >= 2) {
-          if(!aStates->GetCurrectState().at(1).IsEmpty() )
-            aCmd->SetArg(1,aStates->GetCurrectState().at(1));
-          aStates->IncrementState();
-        }
-        else if(aMethod == "SetNbSegPerEdge" && aStates->GetCurrectState().size() >= 3) {
-          if(!aStates->GetCurrectState().at(2).IsEmpty() )
-            aCmd->SetArg(1,aStates->GetCurrectState().at(2));
-          aStates->IncrementState();
-        } 
-        else if(aMethod == "SetNbSegPerRadius" && aStates->GetCurrectState().size() >= 4) {
-          if(!aStates->GetCurrectState().at(3).IsEmpty() )
-            aCmd->SetArg(1,aStates->GetCurrectState().at(3));
-          aStates->IncrementState();
-        } 
-      }
-
-      // Case for NETGEN_SimpleParameters_3D or NETGEN_SimpleParameters_2D hypothesis
-      else if(aStates->GetObjectType().IsEqual("NETGEN_SimpleParameters_3D") ||
-              aStates->GetObjectType().IsEqual("NETGEN_SimpleParameters_2D")){
-
-        if((aMethod == "SetNumberOfSegments" || aMethod == "SetLocalLength") && 
-           aStates->GetCurrectState().size() >= 1) {
-          if(!aStates->GetCurrectState().at(0).IsEmpty() )
-            aCmd->SetArg(1,aStates->GetCurrectState().at(0));
-          aStates->IncrementState();
-        }
-        else if(aMethod == "SetMaxElementArea" && aStates->GetCurrectState().size() >= 2) {
-          if(!aStates->GetCurrectState().at(1).IsEmpty() )
-            aCmd->SetArg(1,aStates->GetCurrectState().at(1));
-          aStates->IncrementState();
-        }
-        else if(aMethod == "SetMaxElementVolume" && aStates->GetCurrectState().size() >= 3) {
-          if(!aStates->GetCurrectState().at(2).IsEmpty() )
-            aCmd->SetArg(1,aStates->GetCurrectState().at(2));
-          aStates->IncrementState();
-        }
-        else if(aMethod == "LengthFromEdges" || aMethod == "LengthFromFaces"){
-          aStates->IncrementState();
-        }
-      }
-      
       // Case for NumberOfLayers hypothesis
       else if(aStates->GetObjectType().IsEqual("NumberOfLayers")){
         if(aMethod == "SetNumberOfLayers" && aStates->GetCurrectState().size() >= 1) {
@@ -619,6 +584,79 @@ void SMESH_NoteBook::ReplaceVariables()
               aCmd->SetArg(anArgIndex+j, aCurrentState.at(j));
           aStates->IncrementState();
         }
+      } // if ( aStates->GetObjectType().IsEqual("Mesh"))
+
+      // Case for NETGEN_Parameters_2D or NETGEN_Parameters_2D hypothesis
+      // else if(aStates->GetObjectType().IsEqual("NETGEN_Parameters_2D") ||
+      //         aStates->GetObjectType().IsEqual("NETGEN_Parameters")){
+      //   if(aMethod == "SetMaxSize" && aStates->GetCurrectState().size() >= 1) {
+      //     if(!aStates->GetCurrectState().at(0).IsEmpty() )
+      //       aCmd->SetArg(1,aStates->GetCurrectState().at(0));
+      //     aStates->IncrementState();
+      //   }
+      //   else if(aMethod == "SetGrowthRate" && aStates->GetCurrectState().size() >= 2) {
+      //     if(!aStates->GetCurrectState().at(1).IsEmpty() )
+      //       aCmd->SetArg(1,aStates->GetCurrectState().at(1));
+      //     aStates->IncrementState();
+      //   }
+      //   else if(aMethod == "SetNbSegPerEdge" && aStates->GetCurrectState().size() >= 3) {
+      //     if(!aStates->GetCurrectState().at(2).IsEmpty() )
+      //       aCmd->SetArg(1,aStates->GetCurrectState().at(2));
+      //     aStates->IncrementState();
+      //   }
+      //   else if(aMethod == "SetNbSegPerRadius" && aStates->GetCurrectState().size() >= 4) {
+      //     if(!aStates->GetCurrectState().at(3).IsEmpty() )
+      //       aCmd->SetArg(1,aStates->GetCurrectState().at(3));
+      //     aStates->IncrementState();
+      //   }
+      // }
+
+      // // Case for NETGEN_SimpleParameters_3D or NETGEN_SimpleParameters_2D hypothesis
+      // else if(aStates->GetObjectType().IsEqual("NETGEN_SimpleParameters_3D") ||
+      //         aStates->GetObjectType().IsEqual("NETGEN_SimpleParameters_2D")) {
+
+      //   if((aMethod == "SetNumberOfSegments" || aMethod == "SetLocalLength") && 
+      //      aStates->GetCurrectState().size() >= 1) {
+      //     if(!aStates->GetCurrectState().at(0).IsEmpty() )
+      //       aCmd->SetArg(1,aStates->GetCurrectState().at(0));
+      //     aStates->IncrementState();
+      //   }
+      //   else if(aMethod == "SetMaxElementArea" && aStates->GetCurrectState().size() >= 2) {
+      //     if(!aStates->GetCurrectState().at(1).IsEmpty() )
+      //       aCmd->SetArg(1,aStates->GetCurrectState().at(1));
+      //     aStates->IncrementState();
+      //   }
+      //   else if(aMethod == "SetMaxElementVolume" && aStates->GetCurrectState().size() >= 3) {
+      //     if(!aStates->GetCurrectState().at(2).IsEmpty() )
+      //       aCmd->SetArg(1,aStates->GetCurrectState().at(2));
+      //     aStates->IncrementState();
+      //   }
+      //   else if(aMethod == "LengthFromEdges" || aMethod == "LengthFromFaces"){
+      //     aStates->IncrementState();
+      //   }
+      // }
+
+      else
+      {
+        // treat Netgen hypotheses;
+        // this (and above) code can work wrong since nb of states can differ from nb of
+        // dumped calls due to the fix of
+        // issue 0021364:: Dump of netgen parameters has duplicate lines
+        SMESH_Gen_i *aGen = SMESH_Gen_i::GetSMESHGen();
+        SALOMEDS::Study_ptr aStudy = aGen->GetCurrentStudy();
+        SALOMEDS::SObject_var sobj = aStudy->FindObjectID( (*it).first.ToCString() );
+        CORBA::Object_var      obj = aGen->SObjectToObject( sobj );
+        if ( SMESH_Hypothesis_i* h = SMESH::DownCast< SMESH_Hypothesis_i*>( obj ))
+        {
+          TState aCurrentState = aStates->GetCurrectState();
+          int argIndex = h->getParamIndex( aMethod, aCurrentState.size() );
+          if ( 0 <= argIndex && argIndex < aCurrentState.size() &&
+               !aCurrentState[argIndex].IsEmpty() )
+            aCmd->SetArg( 1, aCurrentState[argIndex] );
+
+          if ( argIndex >= 0 )
+            aStates->IncrementState();
+        }
       }
     }
     else {
@@ -664,31 +702,32 @@ void SMESH_NoteBook::InitObjectMap()
         cout<<"aParameters : "<<aParameters<<endl;
       }      
       TCollection_AsciiString anObjType;
-      CORBA::Object_var anObject = SMESH_Gen_i::SObjectToObject(aSObject);
+      CORBA::Object_var       anObject = SMESH_Gen_i::SObjectToObject(aSObject);
       SMESH::SMESH_Hypothesis_var aHyp = SMESH::SMESH_Hypothesis::_narrow(anObject);
+      SMESH::SMESH_Mesh_var      aMesh = SMESH::SMESH_Mesh::_narrow(anObject);
       if(!aHyp->_is_nil()) {
-        anObjType = TCollection_AsciiString(aHyp->GetName());
+        CORBA::String_var hypName = aHyp->GetName();
+        anObjType = hypName.in();
       }
-      else if(SMESH::SMESH_Mesh_var aMesh = SMESH::SMESH_Mesh::_narrow(anObject)) {
-        anObjType = TCollection_AsciiString("Mesh");
+      else if (!aMesh->_is_nil() ) {
+        anObjType = "Mesh";
       }
       if(MYDEBUG)
         cout<<"The object Type : "<<anObjType<<endl;
       SMESH_ObjectStates *aState = NULL;
-      if(anObjType == "LayerDistribution") {
+      if(anObjType == "LayerDistribution")
         aState = new LayerDistributionStates();
-      }
       else
         aState = new  SMESH_ObjectStates(anObjType);
-      
+
       for(int i = 0; i < aSections->length(); i++) {
         TState aVars;
         SALOMEDS::ListOfStrings aListOfVars = aSections[i];
         for(int j = 0;j<aListOfVars.length();j++) {
           TCollection_AsciiString aVar(aListOfVars[j].in());
           if(!aVar.IsEmpty() && aStudy->IsVariable(aVar.ToCString())) {
-            aVar.InsertBefore(1,"\"");
-            aVar.InsertAfter(aVar.Length(),"\"");
+            aVar.InsertBefore(1,            SMESH::TVar::Quote() );
+            aVar.InsertAfter(aVar.Length(), SMESH::TVar::Quote() );
           }
           aVars.push_back(aVar);
           if(MYDEBUG) {
@@ -697,7 +736,15 @@ void SMESH_NoteBook::InitObjectMap()
         }
         aState->AddState(aVars);
       }
-      _objectMap.insert(pair<TCollection_AsciiString,SMESH_ObjectStates*>(TCollection_AsciiString(aSObject->GetID()),aState));
+      if ( aState->GetAllStates().empty() )
+      {
+        delete aState;
+      }
+      else
+      {
+        CORBA::String_var objID = aSObject->GetID();
+        _objectMap.insert( make_pair(TCollection_AsciiString( objID.in() ), aState ));
+      }
     }
   }
 }
@@ -848,14 +895,3 @@ bool SMESH_NoteBook::GetReal(const TCollection_AsciiString& theVarName, double& 
   return ok;
 }
 
-
-/*!
- *  Set variable of the SMESH_ObjectStates from position to the _pyCommand
- *  method as nbArg argument
- */
-void SetVariable(Handle(_pyCommand) theCommand, const SMESH_ObjectStates* theStates, int position, int theArgNb)
-{
-  if(theStates->GetCurrectState().size() > position)
-    if(!theStates->GetCurrectState().at(position).IsEmpty())
-      theCommand->SetArg(theArgNb,theStates->GetCurrectState().at(position));
-}

@@ -23,6 +23,10 @@
 #ifndef SMESH_NoteBook_HeaderFile
 #define SMESH_NoteBook_HeaderFile
 
+// All this stuff is obsolete since issue 0021308:
+// "Remove hard-coded dependency of the external mesh plugins from the SMESH module"
+// is implemented (Mar 2012). It is kept for backward compatibility only.
+
 #include <TCollection_AsciiString.hxx>
 #include <Resource_DataMapOfAsciiStringAsciiString.hxx>
  
@@ -33,7 +37,7 @@ class _pyCommand;
 
 typedef std::vector<TCollection_AsciiString>  TState;
 typedef std::vector<TState>                   TAllStates;
-typedef TCollection_AsciiString _pyID;
+typedef TCollection_AsciiString               _pyID;
 
 class SMESH_ObjectStates{
   
