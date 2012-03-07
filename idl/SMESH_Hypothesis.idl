@@ -22,7 +22,6 @@
 
 //  File   : SMESH_Hypothesis.idl
 //  Author : Paul RASCLE, EDF
-//  $Header$
 //
 #ifndef _SMESH_HYPOTHESIS_IDL_
 #define _SMESH_HYPOTHESIS_IDL_
@@ -59,6 +58,22 @@ module SMESH
      * Get the internal Id 
      */
     long GetId();
+
+    /*!
+     *  Set the variable parameter
+     *  \param parameter is a string containing the notebook variable
+     *         used for Hypothesis creation
+     *  \param method is a name of Hypothesis method setting this parameter
+     *
+     *  This method must be called before calling method()
+     */
+    void SetVarParameter (in string parameter, in string method);
+
+    /*!
+     *  Return the variable parameter used for Hypothesis creation by name of method
+     *  setting this parameter
+     */
+    string GetVarParameter (in string methodName);
 
     /*!
      *  Set list of parameters
