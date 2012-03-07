@@ -36,12 +36,30 @@ import geompy
 import smeshDC
 from smeshDC import *
 
+# get instance of class smeshDC
 smesh = salome.lcc.FindOrLoadComponent("FactoryServer", "SMESH")
 smesh.init_smesh(salome.myStudy,geompy.geom)
 
-# Export the methods of smeshD
+# load plugins
+from smeshDC import Mesh, algoCreator
+for pluginName in os.environ["SMESH_MeshersList"].split(":"):
+
+  pluginName += "DC"
+  exec("from %s import *" % pluginName )
+  exec("import %s" % pluginName )
+  plugin = eval(pluginName)
+
+  # add methods creating algorithms to Mesh
+  for k in dir(plugin):
+    if k[0] == '_':continue
+    algo = getattr(plugin,k)
+    if type( algo ).__name__ == 'classobj' and hasattr( algo, "meshMethod"):
+      if not hasattr( Mesh, algo.meshMethod ):
+        setattr( Mesh, algo.meshMethod, algoCreator())
+      getattr( Mesh, algo.meshMethod ).add( algo )
+
+# Export the methods of smeshDC
 for k in dir(smesh):
   if k[0] == '_':continue
   globals()[k]=getattr(smesh,k)
 del k
-
