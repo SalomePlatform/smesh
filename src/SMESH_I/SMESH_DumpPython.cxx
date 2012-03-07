@@ -51,8 +51,17 @@ namespace SMESH
 
   size_t TPythonDump::myCounter = 0;
 
+  TVar::TVar(CORBA::Double value):myVals(1) { myVals[0] = SMESH_Comment(value); }
+  TVar::TVar(CORBA::Long   value):myVals(1) { myVals[0] = SMESH_Comment(value); }
+  TVar::TVar(CORBA::Short  value):myVals(1) { myVals[0] = SMESH_Comment(value); }
+  TVar::TVar(const SMESH::double_array& value):myVals(value.length())
+  {
+    for ( size_t i = 0; i < value.length(); i++)
+      myVals[i] = SMESH_Comment(value[i]);
+  }
+
   TPythonDump::
-  TPythonDump()
+  TPythonDump():myVarsCounter(0)
   {
     ++myCounter;
   }
@@ -67,8 +76,42 @@ namespace SMESH
       if(!aStudy->_is_nil() && !aCollection.IsEmpty()){
         aSMESHGen->AddToPythonScript(aStudy->StudyId(),aCollection);
         if(MYDEBUG) MESSAGE(aString);
+        aSMESHGen->UpdateParameters(""); // prevent misuse of already treated variables
       }
     }
+  }
+
+  TPythonDump& //!< to store a variable value
+  TPythonDump::
+  operator<<(const TVar& theVarValue)
+  {
+    if ( theVarValue.myVals.empty() ) return *this;
+
+    const std::vector< std::string >& varNames = SMESH_Gen_i::GetSMESHGen()->GetLastParameters();
+    if ( theVarValue.myVals.size() > 1 )
+    {
+      myStream << "[ ";
+      for ( size_t i = 1; i <= theVarValue.myVals.size(); ++i )
+      {
+        if ( myVarsCounter < varNames.size() && !varNames[ myVarsCounter ].empty() )
+          myStream << TVar::Quote() << varNames[ myVarsCounter ] << TVar::Quote();
+        else
+          myStream << theVarValue.myVals[i-1];
+        if ( i < theVarValue.myVals.size() )
+          myStream << ", ";
+        ++myVarsCounter;
+      }
+      myStream << " ]";
+    }
+    else
+    {
+      if ( myVarsCounter < varNames.size() && !varNames[ myVarsCounter ].empty() )
+        myStream << TVar::Quote() << varNames[ myVarsCounter ] << TVar::Quote();
+      else
+        myStream << theVarValue.myVals[0];
+      ++myVarsCounter;
+    }
+    return *this;
   }
 
   TPythonDump&
@@ -375,23 +418,32 @@ namespace SMESH
 
   TPythonDump& TPythonDump::operator<<(const SMESH::AxisStruct & theAxis)
   {
-    myStream << "SMESH.AxisStruct( "
-             << theAxis.x  << ", "
-             << theAxis.y  << ", "
-             << theAxis.z  << ", "
-             << theAxis.vx << ", "
-             << theAxis.vy << ", "
-             << theAxis.vz << " )";
+    *this << "SMESH.AxisStruct( "
+          << TVar( theAxis.x  ) << ", "
+          << TVar( theAxis.y  ) << ", "
+          << TVar( theAxis.z  ) << ", "
+          << TVar( theAxis.vx ) << ", "
+          << TVar( theAxis.vy ) << ", "
+          << TVar( theAxis.vz ) << " )";
     return *this;
   }
 
   TPythonDump& TPythonDump::operator<<(const SMESH::DirStruct & theDir)
   {
     const SMESH::PointStruct & P = theDir.PS;
-    myStream << "SMESH.DirStruct( SMESH.PointStruct ( "
-             << P.x  << ", "
-             << P.y  << ", "
-             << P.z  << " ))";
+    *this << "SMESH.DirStruct( SMESH.PointStruct ( "
+          << TVar( P.x ) << ", "
+          << TVar( P.y ) << ", "
+          << TVar( P.z ) << " ))";
+    return *this;
+  }
+
+  TPythonDump& TPythonDump::operator<<(const SMESH::PointStruct & P)
+  {
+    *this << "SMESH.PointStruct ( "
+          << TVar( P.x ) << ", "
+          << TVar( P.y ) << ", "
+          << TVar( P.z ) << " )";
     return *this;
   }
 
@@ -816,6 +868,13 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
   if ( !getenv("NO_2smeshpy_conversion"))
     aScript = SMESH_2smeshpy::ConvertScript( aScript, anEntry2AccessorMethod,
                                              theObjectNames, theStudy, isHistoricalDump );
+
+  // Replace characters used instead of quote marks to quote notebook variables
+  {
+    int pos = 1;
+    while (( pos = aScript.Location( 1, SMESH::TVar::Quote(), pos, aScript.Length() )))
+      aScript.SetValue( pos, '"' );
+  }
 
   // Find entries to be replaced by names
   Handle(TColStd_HSequenceOfInteger) aSeq = FindEntries(aScript);

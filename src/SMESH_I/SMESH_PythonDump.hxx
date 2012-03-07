@@ -30,6 +30,7 @@
 #include CORBA_SERVER_HEADER(SALOMEDS)
 
 #include <sstream>
+#include <vector>
 
 class SMESH_Gen_i;
 class SMESH_MeshEditor_i;
@@ -65,7 +66,7 @@ public:
 
   /*!
    * \brief Return the name of the python file wrapping IDL API
-    * \retval TCollection_AsciiString - The file name
+    * \retval const char* - the file name
    */
   static const char* SmeshpyName() { return "smesh"; }
   static const char* GenName() { return "smesh"; }
@@ -79,19 +80,43 @@ namespace SMESH
   class Functor_i;
   class Measurements_i;
 
-// ===========================================================================================
-/*!
- * \brief Utility helping in storing SMESH engine calls as python commands
- */
-// ===========================================================================================
+  // ===========================================================================================
+  /*!
+   * \brief Object used to make TPythonDump know that its held value can be a varible
+   *
+   * TPythonDump substitute TVar with names of notebook variables if any.
+   */
+  // ===========================================================================================
+
+  struct SMESH_I_EXPORT TVar
+  {
+    std::vector< std::string > myVals;
+    TVar(CORBA::Double value);
+    TVar(CORBA::Long   value);
+    TVar(CORBA::Short  value);
+    TVar(const SMESH::double_array& value);
+    // string used to temporary quote variable names in order
+    // not to confuse variables with string arguments
+    static char Quote() { return '$'; }
+  };
+
+  // ===========================================================================================
+  /*!
+   * \brief Utility helping in storing SMESH engine calls as python commands
+   */
+  // ===========================================================================================
 
   class SMESH_I_EXPORT TPythonDump
   {
     std::ostringstream myStream;
-    static size_t myCounter;
+    static size_t      myCounter;
+    int                myVarsCounter; // counts stored TVar's
   public:
     TPythonDump();
     virtual ~TPythonDump();
+
+    TPythonDump&
+    operator<<(const TVar& theVariableValue);
 
     TPythonDump&
     operator<<(long int theArg);
@@ -167,6 +192,9 @@ namespace SMESH
 
     TPythonDump&
     operator<<(const SMESH::DirStruct & theDir);
+
+    TPythonDump&
+    operator<<(const SMESH::PointStruct & P);
 
     TPythonDump&
     operator<<(const TCollection_AsciiString & theArg);
