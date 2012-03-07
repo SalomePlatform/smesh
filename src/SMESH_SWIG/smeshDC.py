@@ -94,75 +94,11 @@ import geompyDC
 import SMESH # This is necessary for back compatibility
 from   SMESH import *
 
-import StdMeshers
-
 import SALOME
 import SALOMEDS
 
-# import NETGENPlugin module if possible
-noNETGENPlugin = 0
-try:
-    import NETGENPlugin
-except ImportError:
-    noNETGENPlugin = 1
-    pass
-
-# import GHS3DPlugin module if possible
-noGHS3DPlugin = 0
-try:
-    import GHS3DPlugin
-except ImportError:
-    noGHS3DPlugin = 1
-    pass
-
-# import GHS3DPRLPlugin module if possible
-noGHS3DPRLPlugin = 0
-try:
-    import GHS3DPRLPlugin
-except ImportError:
-    noGHS3DPRLPlugin = 1
-    pass
-
-# import HexoticPlugin module if possible
-noHexoticPlugin = 0
-try:
-    import HexoticPlugin
-except ImportError:
-    noHexoticPlugin = 1
-    pass
-
-# import BLSURFPlugin module if possible
-noBLSURFPlugin = 0
-try:
-    import BLSURFPlugin
-except ImportError:
-    noBLSURFPlugin = 1
-    pass
-
 ## @addtogroup l1_auxiliary
 ## @{
-
-# Types of algorithms
-REGULAR    = 1
-PYTHON     = 2
-COMPOSITE  = 3
-SOLE       = 0
-SIMPLE     = 1
-
-MEFISTO       = 3
-NETGEN        = 4
-GHS3D         = 5
-FULL_NETGEN   = 6
-NETGEN_2D     = 7
-NETGEN_1D2D   = NETGEN
-NETGEN_1D2D3D = FULL_NETGEN
-NETGEN_FULL   = FULL_NETGEN
-Hexa    = 8
-Hexotic = 9
-BLSURF  = 10
-GHS3DPRL = 11
-QUADRANGLE = 0
-RADIAL_QUAD = 1
 
 # MirrorType enumeration
 POINT = SMESH_MeshEditor.POINT
@@ -173,26 +109,6 @@ PLANE = SMESH_MeshEditor.PLANE
 LAPLACIAN_SMOOTH = SMESH_MeshEditor.LAPLACIAN_SMOOTH
 CENTROIDAL_SMOOTH = SMESH_MeshEditor.CENTROIDAL_SMOOTH
 
-# Fineness enumeration (for NETGEN)
-VeryCoarse = 0
-Coarse     = 1
-Moderate   = 2
-Fine       = 3
-VeryFine   = 4
-Custom     = 5
-
-# Optimization level of GHS3D
-# V3.1
-None_Optimization, Light_Optimization, Medium_Optimization, Strong_Optimization = 0,1,2,3
-# V4.1 (partialy redefines V3.1). Issue 0020574
-None_Optimization, Light_Optimization, Standard_Optimization, StandardPlus_Optimization, Strong_Optimization = 0,1,2,3,4
-
-# Topology treatment way of BLSURF
-FromCAD, PreProcess, PreProcessPlus, PreCAD = 0,1,2,3
-
-# Element size flag of BLSURF
-DefaultSize, DefaultGeom, BLSURF_Custom, SizeMap = 0,0,1,2
-
 PrecisionConfusion = 1e-07
 
 # TopAbs_State enumeration
@@ -201,196 +117,62 @@ PrecisionConfusion = 1e-07
 # Methods of splitting a hexahedron into tetrahedra
 Hex_5Tet, Hex_6Tet, Hex_24Tet = 1, 2, 3
 
-# import items of enum QuadType
-for e in StdMeshers.QuadType._items: exec('%s = StdMeshers.%s'%(e,e))
-
 ## Converts an angle from degrees to radians
 def DegreesToRadians(AngleInDegrees):
     from math import pi
     return AngleInDegrees * pi / 180.0
 
+import salome_notebook
+notebook = salome_notebook.notebook
 # Salome notebook variable separator
 var_separator = ":"
 
-# Parametrized substitute for PointStruct
-class PointStructStr:
-
-    x = 0
-    y = 0
-    z = 0
-    xStr = ""
-    yStr = ""
-    zStr = ""
-
-    def __init__(self, xStr, yStr, zStr):
-        self.xStr = xStr
-        self.yStr = yStr
-        self.zStr = zStr
-        if isinstance(xStr, str) and notebook.isVariable(xStr):
-            self.x = notebook.get(xStr)
-        else:
-            self.x = xStr
-        if isinstance(yStr, str) and notebook.isVariable(yStr):
-            self.y = notebook.get(yStr)
-        else:
-            self.y = yStr
-        if isinstance(zStr, str) and notebook.isVariable(zStr):
-            self.z = notebook.get(zStr)
-        else:
-            self.z = zStr
-
-# Parametrized substitute for PointStruct (with 6 parameters)
-class PointStructStr6:
-
-    x1 = 0
-    y1 = 0
-    z1 = 0
-    x2 = 0
-    y2 = 0
-    z2 = 0
-    xStr1 = ""
-    yStr1 = ""
-    zStr1 = ""
-    xStr2 = ""
-    yStr2 = ""
-    zStr2 = ""
-
-    def __init__(self, x1Str, x2Str, y1Str, y2Str, z1Str, z2Str):
-        self.x1Str = x1Str
-        self.x2Str = x2Str
-        self.y1Str = y1Str
-        self.y2Str = y2Str
-        self.z1Str = z1Str
-        self.z2Str = z2Str
-        if isinstance(x1Str, str) and notebook.isVariable(x1Str):
-            self.x1 = notebook.get(x1Str)
-        else:
-            self.x1 = x1Str
-        if isinstance(x2Str, str) and notebook.isVariable(x2Str):
-            self.x2 = notebook.get(x2Str)
-        else:
-            self.x2 = x2Str
-        if isinstance(y1Str, str) and notebook.isVariable(y1Str):
-            self.y1 = notebook.get(y1Str)
-        else:
-            self.y1 = y1Str
-        if isinstance(y2Str, str) and notebook.isVariable(y2Str):
-            self.y2 = notebook.get(y2Str)
-        else:
-            self.y2 = y2Str
-        if isinstance(z1Str, str) and notebook.isVariable(z1Str):
-            self.z1 = notebook.get(z1Str)
-        else:
-            self.z1 = z1Str
-        if isinstance(z2Str, str) and notebook.isVariable(z2Str):
-            self.z2 = notebook.get(z2Str)
-        else:
-            self.z2 = z2Str
-
-# Parametrized substitute for AxisStruct
-class AxisStructStr:
-
-    x = 0
-    y = 0
-    z = 0
-    dx = 0
-    dy = 0
-    dz = 0
-    xStr = ""
-    yStr = ""
-    zStr = ""
-    dxStr = ""
-    dyStr = ""
-    dzStr = ""
-
-    def __init__(self, xStr, yStr, zStr, dxStr, dyStr, dzStr):
-        self.xStr = xStr
-        self.yStr = yStr
-        self.zStr = zStr
-        self.dxStr = dxStr
-        self.dyStr = dyStr
-        self.dzStr = dzStr
-        if isinstance(xStr, str) and notebook.isVariable(xStr):
-            self.x = notebook.get(xStr)
-        else:
-            self.x = xStr
-        if isinstance(yStr, str) and notebook.isVariable(yStr):
-            self.y = notebook.get(yStr)
-        else:
-            self.y = yStr
-        if isinstance(zStr, str) and notebook.isVariable(zStr):
-            self.z = notebook.get(zStr)
-        else:
-            self.z = zStr
-        if isinstance(dxStr, str) and notebook.isVariable(dxStr):
-            self.dx = notebook.get(dxStr)
-        else:
-            self.dx = dxStr
-        if isinstance(dyStr, str) and notebook.isVariable(dyStr):
-            self.dy = notebook.get(dyStr)
-        else:
-            self.dy = dyStr
-        if isinstance(dzStr, str) and notebook.isVariable(dzStr):
-            self.dz = notebook.get(dzStr)
-        else:
-            self.dz = dzStr
-
-# Parametrized substitute for DirStruct
-class DirStructStr:
-
-    def __init__(self, pointStruct):
-        self.pointStruct = pointStruct
-
-# Returns list of variable values from salome notebook
-def ParsePointStruct(Point):
-    Parameters = 2*var_separator
-    if isinstance(Point, PointStructStr):
-        Parameters = str(Point.xStr) + var_separator + str(Point.yStr) + var_separator + str(Point.zStr)
-        Point = PointStruct(Point.x, Point.y, Point.z)
-    return Point, Parameters
-
-# Returns list of variable values from salome notebook
-def ParseDirStruct(Dir):
-    Parameters = 2*var_separator
-    if isinstance(Dir, DirStructStr):
-        pntStr = Dir.pointStruct
-        if isinstance(pntStr, PointStructStr6):
-            Parameters = str(pntStr.x1Str) + var_separator + str(pntStr.x2Str) + var_separator
-            Parameters += str(pntStr.y1Str) + var_separator + str(pntStr.y2Str) + var_separator
-            Parameters += str(pntStr.z1Str) + var_separator + str(pntStr.z2Str)
-            Point = PointStruct(pntStr.x2 - pntStr.x1, pntStr.y2 - pntStr.y1, pntStr.z2 - pntStr.z1)
-        else:
-            Parameters = str(pntStr.xStr) + var_separator + str(pntStr.yStr) + var_separator + str(pntStr.zStr)
-            Point = PointStruct(pntStr.x, pntStr.y, pntStr.z)
-        Dir = DirStruct(Point)
-    return Dir, Parameters
-
-# Returns list of variable values from salome notebook
-def ParseAxisStruct(Axis):
-    Parameters = 5*var_separator
-    if isinstance(Axis, AxisStructStr):
-        Parameters = str(Axis.xStr) + var_separator + str(Axis.yStr) + var_separator + str(Axis.zStr) + var_separator
-        Parameters += str(Axis.dxStr) + var_separator + str(Axis.dyStr) + var_separator + str(Axis.dzStr)
-        Axis = AxisStruct(Axis.x, Axis.y, Axis.z, Axis.dx, Axis.dy, Axis.dz)
-    return Axis, Parameters
-
-## Return list of variable values from salome notebook
-def ParseAngles(list):
+## Return list of variable values from salome notebook.
+#  The last argument, if is callable, is used to modify values got from notebook
+def ParseParameters(*args):
     Result = []
     Parameters = ""
-    for parameter in list:
-        if isinstance(parameter,str) and notebook.isVariable(parameter):
-            Result.append(DegreesToRadians(notebook.get(parameter)))
-            pass
-        else:
-            Result.append(parameter)
-            pass
+    varModifFun=None
+    if args and callable( args[-1] ):
+        args, varModifFun = args[:-1], args[-1]
+    for parameter in args:
 
-        Parameters = Parameters + str(parameter)
-        Parameters = Parameters + var_separator
+        Parameters += str(parameter) + var_separator
+
+        if isinstance(parameter,str):
+            # check if there is an inexistent variable name
+            if not notebook.isVariable(parameter):
+                raise ValueError, "Variable with name '" + parameter + "' doesn't exist!!!"
+            parameter = notebook.get(parameter)
+            if varModifFun:
+                parameter = varModifFun(parameter)
+                pass
+            pass
+        Result.append(parameter)
+
         pass
-    Parameters = Parameters[:len(Parameters)-1]
-    return Result, Parameters
+    Parameters = Parameters[:-1]
+    Result.append( Parameters )
+    return Result
+
+# Parse parameters converting variables to radians
+def ParseAngles(*args):
+    return ParseParameters( *( args + (DegreesToRadians, )))
+
+# Substitute PointStruct.__init__() to create SMESH.PointStruct using notebook variables.
+# Parameters are stored in PointStruct.parameters attribute
+def __initPointStruct(point,*args):
+    point.x, point.y, point.z, point.parameters = ParseParameters(*args)
+    pass
+SMESH.PointStruct.__init__ = __initPointStruct
+
+# Substitute AxisStruct.__init__() to create SMESH.AxisStruct using notebook variables.
+# Parameters are stored in AxisStruct.parameters attribute
+def __initAxisStruct(ax,*args):
+    ax.x, ax.y, ax.z, ax.vx, ax.vy, ax.vz, ax.parameters = ParseParameters(*args)
+    pass
+SMESH.AxisStruct.__init__ = __initAxisStruct
+
 
 def IsEqual(val1, val2, tol=PrecisionConfusion):
     if abs(val1 - val2) < tol:
@@ -470,25 +252,6 @@ def TreatHypoStatus(status, hypName, geomName, isAlgo):
     else:
         print hypName, "was not assigned:", reason
         pass
-
-## Check meshing plugin availability
-def CheckPlugin(plugin):
-    if plugin == NETGEN and noNETGENPlugin:
-        print "Warning: NETGENPlugin module unavailable"
-        return False
-    elif plugin == GHS3D and noGHS3DPlugin:
-        print "Warning: GHS3DPlugin module unavailable"
-        return False
-    elif plugin == GHS3DPRL and noGHS3DPRLPlugin:
-        print "Warning: GHS3DPRLPlugin module unavailable"
-        return False
-    elif plugin == Hexotic and noHexoticPlugin:
-        print "Warning: HexoticPlugin module unavailable"
-        return False
-    elif plugin == BLSURF and noBLSURFPlugin:
-        print "Warning: BLSURFPlugin module unavailable"
-        return False
-    return True
 
 ## Private method. Add geom (sub-shape of the main shape) into the study if not yet there
 def AssureGeomPublished(mesh, geom, name=''):
@@ -746,17 +509,18 @@ class smeshDC(SMESH._objref_SMESH_Gen):
     #  @param allGroups forces creation of groups of all elements
     def Concatenate( self, meshes, uniteIdenticalGroups,
                      mergeNodesAndElements = False, mergeTolerance = 1e-5, allGroups = False):
-        mergeTolerance,Parameters = geompyDC.ParseParameters(mergeTolerance)
+        if not meshes: return None
         for i,m in enumerate(meshes):
             if isinstance(m, Mesh):
                 meshes[i] = m.GetMesh()
+        mergeTolerance,Parameters = ParseParameters(mergeTolerance)
+        meshes[0].SetParameters(Parameters)
         if allGroups:
             aSmeshMesh = SMESH._objref_SMESH_Gen.ConcatenateWithGroups(
                 self,meshes,uniteIdenticalGroups,mergeNodesAndElements,mergeTolerance)
         else:
             aSmeshMesh = SMESH._objref_SMESH_Gen.Concatenate(
                 self,meshes,uniteIdenticalGroups,mergeNodesAndElements,mergeTolerance)
-        aSmeshMesh.SetParameters(Parameters)
         aMesh = Mesh(self, self.geompyD, aSmeshMesh)
         return aMesh
 
@@ -1026,7 +790,21 @@ class smeshDC(SMESH._objref_SMESH_Gen):
     #  @param theLibName mesh plug-in library name
     #  @return created hypothesis instance
     def CreateHypothesis(self, theHType, theLibName="libStdMeshersEngine.so"):
-        return SMESH._objref_SMESH_Gen.CreateHypothesis(self, theHType, theLibName )
+        hyp = SMESH._objref_SMESH_Gen.CreateHypothesis(self, theHType, theLibName )
+
+        if isinstance( hyp, SMESH._objref_SMESH_Algo ):
+            return hyp
+
+        # wrap hypothesis methods
+        #print "HYPOTHESIS", theHType
+        for meth_name in dir( hyp.__class__ ):
+            if not meth_name.startswith("Get") and \
+               not meth_name in dir ( SMESH._objref_SMESH_Hypothesis ):
+                method = getattr ( hyp.__class__, meth_name )
+                if callable(method):
+                    setattr( hyp, meth_name, hypMethodWrapper( hyp, method ))
+
+        return hyp
 
     ## Gets the mesh statistic
     #  @return dictionary "element type" - "count of elements"
@@ -1206,6 +984,12 @@ class Mesh:
 
         self.editor = self.mesh.GetMeshEditor()
 
+        # set self to algoCreator's
+        for attrName in dir(self):
+            attr = getattr( self, attrName )
+            if isinstance( attr, algoCreator ):
+                setattr( self, attrName, attr.copy( self ))
+
     ## Initializes the Mesh object from an instance of SMESH_Mesh interface
     #  @param theMesh a SMESH_Mesh object
     #  @ingroup l2_construct
@@ -1298,204 +1082,6 @@ class Mesh:
         else:
             return 0;
         pass
-
-    ## Creates a segment discretization 1D algorithm.
-    #  If the optional \a algo parameter is not set, this algorithm is REGULAR.
-    #  \n If the optional \a geom parameter is not set, this algorithm is global.
-    #  Otherwise, this algorithm defines a submesh based on \a geom sub-shape.
-    #  @param algo the type of the required algorithm. Possible values are:
-    #     - smesh.REGULAR,
-    #     - smesh.PYTHON for discretization via a python function,
-    #     - smesh.COMPOSITE for meshing a set of edges on one face side as a whole.
-    #  @param geom If defined is the sub-shape to be meshed
-    #  @return an instance of Mesh_Segment or Mesh_Segment_Python, or Mesh_CompositeSegment class
-    #  @ingroup l3_algos_basic
-    def Segment(self, algo=REGULAR, geom=0):
-        ## if Segment(geom) is called by mistake
-        if isinstance( algo, geompyDC.GEOM._objref_GEOM_Object):
-            algo, geom = geom, algo
-            if not algo: algo = REGULAR
-            pass
-        if algo == REGULAR:
-            return Mesh_Segment(self,  geom)
-        elif algo == PYTHON:
-            return Mesh_Segment_Python(self, geom)
-        elif algo == COMPOSITE:
-            return Mesh_CompositeSegment(self, geom)
-        else:
-            return Mesh_Segment(self, geom)
-
-    ## Creates 1D algorithm importing segments conatined in groups of other mesh.
-    #  If the optional \a geom parameter is not set, this algorithm is global.
-    #  Otherwise, this algorithm defines a submesh based on \a geom sub-shape.
-    #  @param geom If defined the subshape is to be meshed
-    #  @return an instance of Mesh_UseExistingElements class
-    #  @ingroup l3_algos_basic
-    def UseExisting1DElements(self, geom=0):
-        return Mesh_UseExistingElements(1,self, geom)
-
-    ## Creates 2D algorithm importing faces conatined in groups of other mesh.
-    #  If the optional \a geom parameter is not set, this algorithm is global.
-    #  Otherwise, this algorithm defines a submesh based on \a geom subshape.
-    #  @param geom If defined the sub-shape is to be meshed
-    #  @return an instance of Mesh_UseExistingElements class
-    #  @ingroup l3_algos_basic
-    def UseExisting2DElements(self, geom=0):
-        return Mesh_UseExistingElements(2,self, geom)
-
-    ## Enables creation of nodes and segments usable by 2D algoritms.
-    #  The added nodes and segments must be bound to edges and vertices by
-    #  SetNodeOnVertex(), SetNodeOnEdge() and SetMeshElementOnShape()
-    #  If the optional \a geom parameter is not set, this algorithm is global.
-    #  \n Otherwise, this algorithm defines a submesh based on \a geom sub-shape.
-    #  @param geom the sub-shape to be manually meshed
-    #  @return StdMeshers_UseExisting_1D algorithm that generates nothing
-    #  @ingroup l3_algos_basic
-    def UseExistingSegments(self, geom=0):
-        algo = Mesh_UseExisting(1,self,geom)
-        return algo.GetAlgorithm()
-
-    ## Enables creation of nodes and faces usable by 3D algoritms.
-    #  The added nodes and faces must be bound to geom faces by SetNodeOnFace()
-    #  and SetMeshElementOnShape()
-    #  If the optional \a geom parameter is not set, this algorithm is global.
-    #  \n Otherwise, this algorithm defines a submesh based on \a geom sub-shape.
-    #  @param geom the sub-shape to be manually meshed
-    #  @return StdMeshers_UseExisting_2D algorithm that generates nothing
-    #  @ingroup l3_algos_basic
-    def UseExistingFaces(self, geom=0):
-        algo = Mesh_UseExisting(2,self,geom)
-        return algo.GetAlgorithm()
-
-    ## Creates a triangle 2D algorithm for faces.
-    #  If the optional \a geom parameter is not set, this algorithm is global.
-    #  \n Otherwise, this algorithm defines a submesh based on \a geom sub-shape.
-    #  @param algo values are: smesh.MEFISTO || smesh.NETGEN_1D2D || smesh.NETGEN_2D || smesh.BLSURF
-    #  @param geom If defined, the sub-shape to be meshed (GEOM_Object)
-    #  @return an instance of Mesh_Triangle algorithm
-    #  @ingroup l3_algos_basic
-    def Triangle(self, algo=MEFISTO, geom=0):
-        ## if Triangle(geom) is called by mistake
-        if (isinstance(algo, geompyDC.GEOM._objref_GEOM_Object)):
-            geom = algo
-            algo = MEFISTO
-        return Mesh_Triangle(self, algo, geom)
-
-    ## Creates a quadrangle 2D algorithm for faces.
-    #  If the optional \a geom parameter is not set, this algorithm is global.
-    #  \n Otherwise, this algorithm defines a submesh based on \a geom sub-shape.
-    #  @param geom If defined, the sub-shape to be meshed (GEOM_Object)
-    #  @param algo values are: smesh.QUADRANGLE || smesh.RADIAL_QUAD
-    #  @return an instance of Mesh_Quadrangle algorithm
-    #  @ingroup l3_algos_basic
-    def Quadrangle(self, geom=0, algo=QUADRANGLE):
-        if algo==RADIAL_QUAD:
-            return Mesh_RadialQuadrangle1D2D(self,geom)
-        else:
-            return Mesh_Quadrangle(self, geom)
-
-    ## Creates a tetrahedron 3D algorithm for solids.
-    #  The parameter \a algo permits to choose the algorithm: NETGEN or GHS3D
-    #  If the optional \a geom parameter is not set, this algorithm is global.
-    #  \n Otherwise, this algorithm defines a submesh based on \a geom sub-shape.
-    #  @param algo values are: smesh.NETGEN, smesh.GHS3D, smesh.GHS3DPRL, smesh.FULL_NETGEN
-    #  @param geom If defined, the sub-shape to be meshed (GEOM_Object)
-    #  @return an instance of Mesh_Tetrahedron algorithm
-    #  @ingroup l3_algos_basic
-    def Tetrahedron(self, algo=NETGEN, geom=0):
-        ## if Tetrahedron(geom) is called by mistake
-        if ( isinstance( algo, geompyDC.GEOM._objref_GEOM_Object)):
-            algo, geom = geom, algo
-            if not algo: algo = NETGEN
-            pass
-        return Mesh_Tetrahedron(self,  algo, geom)
-
-    ## Creates a hexahedron 3D algorithm for solids.
-    #  If the optional \a geom parameter is not set, this algorithm is global.
-    #  \n Otherwise, this algorithm defines a submesh based on \a geom sub-shape.
-    #  @param algo possible values are: smesh.Hexa, smesh.Hexotic
-    #  @param geom If defined, the sub-shape to be meshed (GEOM_Object)
-    #  @return an instance of Mesh_Hexahedron algorithm
-    #  @ingroup l3_algos_basic
-    def Hexahedron(self, algo=Hexa, geom=0):
-        ## if Hexahedron(geom, algo) or Hexahedron(geom) is called by mistake
-        if ( isinstance(algo, geompyDC.GEOM._objref_GEOM_Object) ):
-            if   geom in [Hexa, Hexotic]: algo, geom = geom, algo
-            elif geom == 0:               algo, geom = Hexa, algo
-        return Mesh_Hexahedron(self, algo, geom)
-
-    ## Deprecated, used only for compatibility!
-    #  @return an instance of Mesh_Netgen algorithm
-    #  @ingroup l3_algos_basic
-    def Netgen(self, is3D, geom=0):
-        return Mesh_Netgen(self,  is3D, geom)
-
-    ## Creates a projection 1D algorithm for edges.
-    #  If the optional \a geom parameter is not set, this algorithm is global.
-    #  Otherwise, this algorithm defines a submesh based on \a geom sub-shape.
-    #  @param geom If defined, the sub-shape to be meshed
-    #  @return an instance of Mesh_Projection1D algorithm
-    #  @ingroup l3_algos_proj
-    def Projection1D(self, geom=0):
-        return Mesh_Projection1D(self,  geom)
-
-    ## Creates a projection 1D-2D algorithm for faces.
-    #  If the optional \a geom parameter is not set, this algorithm is global.
-    #  Otherwise, this algorithm defines a submesh based on \a geom sub-shape.
-    #  @param geom If defined, the sub-shape to be meshed
-    #  @return an instance of Mesh_Projection2D algorithm
-    #  @ingroup l3_algos_proj
-    def Projection1D2D(self, geom=0):
-        return Mesh_Projection2D(self,  geom, "Projection_1D2D")
-
-    ## Creates a projection 2D algorithm for faces.
-    #  If the optional \a geom parameter is not set, this algorithm is global.
-    #  Otherwise, this algorithm defines a submesh based on \a geom sub-shape.
-    #  @param geom If defined, the sub-shape to be meshed
-    #  @return an instance of Mesh_Projection2D algorithm
-    #  @ingroup l3_algos_proj
-    def Projection2D(self, geom=0):
-        return Mesh_Projection2D(self,  geom, "Projection_2D")
-
-    ## Creates a projection 3D algorithm for solids.
-    #  If the optional \a geom parameter is not set, this algorithm is global.
-    #  Otherwise, this algorithm defines a submesh based on \a geom sub-shape.
-    #  @param geom If defined, the sub-shape to be meshed
-    #  @return an instance of Mesh_Projection3D algorithm
-    #  @ingroup l3_algos_proj
-    def Projection3D(self, geom=0):
-        return Mesh_Projection3D(self,  geom)
-
-    ## Creates a 3D extrusion (Prism 3D) or RadialPrism 3D algorithm for solids.
-    #  If the optional \a geom parameter is not set, this algorithm is global.
-    #  Otherwise, this algorithm defines a submesh based on \a geom sub-shape.
-    #  @param geom If defined, the sub-shape to be meshed
-    #  @return an instance of Mesh_Prism3D or Mesh_RadialPrism3D algorithm
-    #  @ingroup l3_algos_radialp l3_algos_3dextr
-    def Prism(self, geom=0):
-        shape = geom
-        if shape==0:
-            shape = self.geom
-        nbSolids = len( self.geompyD.SubShapeAll( shape, geompyDC.ShapeType["SOLID"] ))
-        nbShells = len( self.geompyD.SubShapeAll( shape, geompyDC.ShapeType["SHELL"] ))
-        if nbSolids == 0 or nbSolids == nbShells:
-            return Mesh_Prism3D(self,  geom)
-        return Mesh_RadialPrism3D(self,  geom)
-
-    ## Creates a "Body Fitted" 3D algorithm for solids, which generates
-    #  3D structured Cartesian mesh in the internal part of a solid shape
-    #  and polyhedral volumes near the shape boundary.
-    #  If the optional \a geom parameter is not set, this algorithm is global.
-    #  Otherwise, this algorithm defines a submesh based on \a geom sub-shape.
-    #  The algorithm does not support submeshes.
-    #  Generally usage of this algorithm as a local one is useless since
-    #  it does not discretize 1D and 2D sub-shapes in a usual way acceptable
-    #  for other algorithms.
-    #  @param geom If defined, the sub-shape to be meshed
-    #  @return an instance of Mesh_Cartesian_3D algorithm
-    #  @ingroup l3_algos_basic
-    def BodyFitted(self, geom=0):
-        return Mesh_Cartesian_3D(self,  geom)
 
     ## Evaluates size of prospective mesh on a shape
     #  @return a list where i-th element is a number of elements of i-th SMESH.EntityType
@@ -1683,6 +1269,7 @@ class Mesh:
             self.Triangle().LengthFromEdges()
             pass
         if dim > 2 :
+            from NETGENPluginDC import NETGEN
             self.Tetrahedron(NETGEN)
             pass
         return self.Compute()
@@ -2687,7 +2274,7 @@ class Mesh:
     #  @return Id of the new node
     #  @ingroup l2_modif_add
     def AddNode(self, x, y, z):
-        x,y,z,Parameters = geompyDC.ParseParameters(x,y,z)
+        x,y,z,Parameters = ParseParameters(x,y,z)
         self.mesh.SetParameters(Parameters)
         return self.editor.AddNode( x, y, z)
 
@@ -2851,7 +2438,7 @@ class Mesh:
     #  @return True if succeed else False
     #  @ingroup l2_modif_movenode
     def MoveNode(self, NodeID, x, y, z):
-        x,y,z,Parameters = geompyDC.ParseParameters(x,y,z)
+        x,y,z,Parameters = ParseParameters(x,y,z)
         self.mesh.SetParameters(Parameters)
         return self.editor.MoveNode(NodeID, x, y, z)
 
@@ -2864,7 +2451,7 @@ class Mesh:
     #  @return the ID of a node
     #  @ingroup l2_modif_throughp
     def MoveClosestNodeToPoint(self, x, y, z, NodeID):
-        x,y,z,Parameters = geompyDC.ParseParameters(x,y,z)
+        x,y,z,Parameters = ParseParameters(x,y,z)
         self.mesh.SetParameters(Parameters)
         return self.editor.MoveClosestNodeToPoint(x, y, z, NodeID)
 
@@ -2957,12 +2544,10 @@ class Mesh:
         flag = False
         if isinstance(MaxAngle,str):
             flag = True
-        MaxAngle,Parameters = geompyDC.ParseParameters(MaxAngle)
-        if flag:
-            MaxAngle = DegreesToRadians(MaxAngle)
-        if IDsOfElements == []:
-            IDsOfElements = self.GetElementsId()
+        MaxAngle,Parameters = ParseAngles(MaxAngle)
         self.mesh.SetParameters(Parameters)
+        if not IDsOfElements:
+            IDsOfElements = self.GetElementsId()
         Functor = 0
         if ( isinstance( theCriterion, SMESH._objref_NumericalFunctor ) ):
             Functor = theCriterion
@@ -2978,6 +2563,8 @@ class Mesh:
     #  @return TRUE in case of success, FALSE otherwise.
     #  @ingroup l2_modif_unitetri
     def TriToQuadObject (self, theObject, theCriterion, MaxAngle):
+        MaxAngle,Parameters = ParseAngles(MaxAngle)
+        self.mesh.SetParameters(Parameters)
         if ( isinstance( theObject, Mesh )):
             theObject = theObject.GetMesh()
         return self.editor.TriToQuadObject(theObject, self.smeshpyD.GetFunctor(theCriterion), MaxAngle)
@@ -3198,7 +2785,7 @@ class Mesh:
                MaxNbOfIterations, MaxAspectRatio, Method):
         if IDsOfElements == []:
             IDsOfElements = self.GetElementsId()
-        MaxNbOfIterations,MaxAspectRatio,Parameters = geompyDC.ParseParameters(MaxNbOfIterations,MaxAspectRatio)
+        MaxNbOfIterations,MaxAspectRatio,Parameters = ParseParameters(MaxNbOfIterations,MaxAspectRatio)
         self.mesh.SetParameters(Parameters)
         return self.editor.Smooth(IDsOfElements, IDsOfFixedNodes,
                                   MaxNbOfIterations, MaxAspectRatio, Method)
@@ -3232,7 +2819,7 @@ class Mesh:
                          MaxNbOfIterations, MaxAspectRatio, Method):
         if IDsOfElements == []:
             IDsOfElements = self.GetElementsId()
-        MaxNbOfIterations,MaxAspectRatio,Parameters = geompyDC.ParseParameters(MaxNbOfIterations,MaxAspectRatio)
+        MaxNbOfIterations,MaxAspectRatio,Parameters = ParseParameters(MaxNbOfIterations,MaxAspectRatio)
         self.mesh.SetParameters(Parameters)
         return self.editor.SmoothParametric(IDsOfElements, IDsOfFixedNodes,
                                             MaxNbOfIterations, MaxAspectRatio, Method)
@@ -3359,22 +2946,16 @@ class Mesh:
     #  @ingroup l2_modif_extrurev
     def RotationSweep(self, IDsOfElements, Axis, AngleInRadians, NbOfSteps, Tolerance,
                       MakeGroups=False, TotalAngle=False):
-        flag = False
-        if isinstance(AngleInRadians,str):
-            flag = True
-        AngleInRadians,AngleParameters = geompyDC.ParseParameters(AngleInRadians)
-        if flag:
-            AngleInRadians = DegreesToRadians(AngleInRadians)
         if IDsOfElements == []:
             IDsOfElements = self.GetElementsId()
         if ( isinstance( Axis, geompyDC.GEOM._objref_GEOM_Object)):
             Axis = self.smeshpyD.GetAxisStruct(Axis)
-        Axis,AxisParameters = ParseAxisStruct(Axis)
+        AngleInRadians,AngleParameters = ParseAngles(AngleInRadians)
+        NbOfSteps,Tolerance,Parameters = ParseParameters(NbOfSteps,Tolerance)
+        Parameters = Axis.parameters + var_separator + AngleParameters + var_separator + Parameters
+        self.mesh.SetParameters(Parameters)
         if TotalAngle and NbOfSteps:
             AngleInRadians /= NbOfSteps
-        NbOfSteps,Tolerance,Parameters = geompyDC.ParseParameters(NbOfSteps,Tolerance)
-        Parameters = AxisParameters + var_separator + AngleParameters + var_separator + Parameters
-        self.mesh.SetParameters(Parameters)
         if MakeGroups:
             return self.editor.RotationSweepMakeGroups(IDsOfElements, Axis,
                                                        AngleInRadians, NbOfSteps, Tolerance)
@@ -3395,22 +2976,16 @@ class Mesh:
     #  @ingroup l2_modif_extrurev
     def RotationSweepObject(self, theObject, Axis, AngleInRadians, NbOfSteps, Tolerance,
                             MakeGroups=False, TotalAngle=False):
-        flag = False
-        if isinstance(AngleInRadians,str):
-            flag = True
-        AngleInRadians,AngleParameters = geompyDC.ParseParameters(AngleInRadians)
-        if flag:
-            AngleInRadians = DegreesToRadians(AngleInRadians)
         if ( isinstance( theObject, Mesh )):
             theObject = theObject.GetMesh()
         if ( isinstance( Axis, geompyDC.GEOM._objref_GEOM_Object)):
             Axis = self.smeshpyD.GetAxisStruct(Axis)
-        Axis,AxisParameters = ParseAxisStruct(Axis)
+        AngleInRadians,AngleParameters = ParseAngles(AngleInRadians)
+        NbOfSteps,Tolerance,Parameters = ParseParameters(NbOfSteps,Tolerance)
+        Parameters = Axis.parameters + var_separator + AngleParameters + var_separator + Parameters
+        self.mesh.SetParameters(Parameters)
         if TotalAngle and NbOfSteps:
             AngleInRadians /= NbOfSteps
-        NbOfSteps,Tolerance,Parameters = geompyDC.ParseParameters(NbOfSteps,Tolerance)
-        Parameters = AxisParameters + var_separator + AngleParameters + var_separator + Parameters
-        self.mesh.SetParameters(Parameters)
         if MakeGroups:
             return self.editor.RotationSweepObjectMakeGroups(theObject, Axis, AngleInRadians,
                                                              NbOfSteps, Tolerance)
@@ -3431,22 +3006,16 @@ class Mesh:
     #  @ingroup l2_modif_extrurev
     def RotationSweepObject1D(self, theObject, Axis, AngleInRadians, NbOfSteps, Tolerance,
                               MakeGroups=False, TotalAngle=False):
-        flag = False
-        if isinstance(AngleInRadians,str):
-            flag = True
-        AngleInRadians,AngleParameters = geompyDC.ParseParameters(AngleInRadians)
-        if flag:
-            AngleInRadians = DegreesToRadians(AngleInRadians)
         if ( isinstance( theObject, Mesh )):
             theObject = theObject.GetMesh()
         if ( isinstance( Axis, geompyDC.GEOM._objref_GEOM_Object)):
             Axis = self.smeshpyD.GetAxisStruct(Axis)
-        Axis,AxisParameters = ParseAxisStruct(Axis)
+        AngleInRadians,AngleParameters = ParseAngles(AngleInRadians)
+        NbOfSteps,Tolerance,Parameters = ParseParameters(NbOfSteps,Tolerance)
+        Parameters = Axis.parameters + var_separator + AngleParameters + var_separator + Parameters
+        self.mesh.SetParameters(Parameters)
         if TotalAngle and NbOfSteps:
             AngleInRadians /= NbOfSteps
-        NbOfSteps,Tolerance,Parameters = geompyDC.ParseParameters(NbOfSteps,Tolerance)
-        Parameters = AxisParameters + var_separator + AngleParameters + var_separator + Parameters
-        self.mesh.SetParameters(Parameters)
         if MakeGroups:
             return self.editor.RotationSweepObject1DMakeGroups(theObject, Axis, AngleInRadians,
                                                                NbOfSteps, Tolerance)
@@ -3467,22 +3036,16 @@ class Mesh:
     #  @ingroup l2_modif_extrurev
     def RotationSweepObject2D(self, theObject, Axis, AngleInRadians, NbOfSteps, Tolerance,
                               MakeGroups=False, TotalAngle=False):
-        flag = False
-        if isinstance(AngleInRadians,str):
-            flag = True
-        AngleInRadians,AngleParameters = geompyDC.ParseParameters(AngleInRadians)
-        if flag:
-            AngleInRadians = DegreesToRadians(AngleInRadians)
         if ( isinstance( theObject, Mesh )):
             theObject = theObject.GetMesh()
         if ( isinstance( Axis, geompyDC.GEOM._objref_GEOM_Object)):
             Axis = self.smeshpyD.GetAxisStruct(Axis)
-        Axis,AxisParameters = ParseAxisStruct(Axis)
+        AngleInRadians,AngleParameters = ParseAngles(AngleInRadians)
+        NbOfSteps,Tolerance,Parameters = ParseParameters(NbOfSteps,Tolerance)
+        Parameters = Axis.parameters + var_separator + AngleParameters + var_separator + Parameters
+        self.mesh.SetParameters(Parameters)
         if TotalAngle and NbOfSteps:
             AngleInRadians /= NbOfSteps
-        NbOfSteps,Tolerance,Parameters = geompyDC.ParseParameters(NbOfSteps,Tolerance)
-        Parameters = AxisParameters + var_separator + AngleParameters + var_separator + Parameters
-        self.mesh.SetParameters(Parameters)
         if MakeGroups:
             return self.editor.RotationSweepObject2DMakeGroups(theObject, Axis, AngleInRadians,
                                                              NbOfSteps, Tolerance)
@@ -3502,9 +3065,8 @@ class Mesh:
             IDsOfElements = self.GetElementsId()
         if ( isinstance( StepVector, geompyDC.GEOM._objref_GEOM_Object)):
             StepVector = self.smeshpyD.GetDirStruct(StepVector)
-        StepVector,StepVectorParameters = ParseDirStruct(StepVector)
-        NbOfSteps,Parameters = geompyDC.ParseParameters(NbOfSteps)
-        Parameters = StepVectorParameters + var_separator + Parameters
+        NbOfSteps,Parameters = ParseParameters(NbOfSteps)
+        Parameters = StepVector.PS.parameters + var_separator + Parameters
         self.mesh.SetParameters(Parameters)
         if MakeGroups:
             if(IsNodes):
@@ -3552,9 +3114,8 @@ class Mesh:
             theObject = theObject.GetMesh()
         if ( isinstance( StepVector, geompyDC.GEOM._objref_GEOM_Object)):
             StepVector = self.smeshpyD.GetDirStruct(StepVector)
-        StepVector,StepVectorParameters = ParseDirStruct(StepVector)
-        NbOfSteps,Parameters = geompyDC.ParseParameters(NbOfSteps)
-        Parameters = StepVectorParameters + var_separator + Parameters
+        NbOfSteps,Parameters = ParseParameters(NbOfSteps)
+        Parameters = StepVector.PS.parameters + var_separator + Parameters
         self.mesh.SetParameters(Parameters)
         if MakeGroups:
             if(IsNodes):
@@ -3580,9 +3141,8 @@ class Mesh:
             theObject = theObject.GetMesh()
         if ( isinstance( StepVector, geompyDC.GEOM._objref_GEOM_Object)):
             StepVector = self.smeshpyD.GetDirStruct(StepVector)
-        StepVector,StepVectorParameters = ParseDirStruct(StepVector)
-        NbOfSteps,Parameters = geompyDC.ParseParameters(NbOfSteps)
-        Parameters = StepVectorParameters + var_separator + Parameters
+        NbOfSteps,Parameters = ParseParameters(NbOfSteps)
+        Parameters = StepVector.PS.parameters + var_separator + Parameters
         self.mesh.SetParameters(Parameters)
         if MakeGroups:
             return self.editor.ExtrusionSweepObject1DMakeGroups(theObject, StepVector, NbOfSteps)
@@ -3602,9 +3162,8 @@ class Mesh:
             theObject = theObject.GetMesh()
         if ( isinstance( StepVector, geompyDC.GEOM._objref_GEOM_Object)):
             StepVector = self.smeshpyD.GetDirStruct(StepVector)
-        StepVector,StepVectorParameters = ParseDirStruct(StepVector)
-        NbOfSteps,Parameters = geompyDC.ParseParameters(NbOfSteps)
-        Parameters = StepVectorParameters + var_separator + Parameters
+        NbOfSteps,Parameters = ParseParameters(NbOfSteps)
+        Parameters = StepVector.PS.parameters + var_separator + Parameters
         self.mesh.SetParameters(Parameters)
         if MakeGroups:
             return self.editor.ExtrusionSweepObject2DMakeGroups(theObject, StepVector, NbOfSteps)
@@ -3634,12 +3193,11 @@ class Mesh:
     def ExtrusionAlongPathX(self, Base, Path, NodeStart,
                             HasAngles, Angles, LinearVariation,
                             HasRefPoint, RefPoint, MakeGroups, ElemType):
-        Angles,AnglesParameters = ParseAngles(Angles)
-        RefPoint,RefPointParameters = ParsePointStruct(RefPoint)
         if ( isinstance( RefPoint, geompyDC.GEOM._objref_GEOM_Object)):
             RefPoint = self.smeshpyD.GetPointStruct(RefPoint)
             pass
-        Parameters = AnglesParameters + var_separator + RefPointParameters
+        Angles,AnglesParameters = ParseAngles(Angles)
+        Parameters = AnglesParameters + var_separator + RefPoint.parameters
         self.mesh.SetParameters(Parameters)
 
         if (isinstance(Path, Mesh)): Path = Path.GetMesh()
@@ -3682,8 +3240,6 @@ class Mesh:
     def ExtrusionAlongPath(self, IDsOfElements, PathMesh, PathShape, NodeStart,
                            HasAngles, Angles, HasRefPoint, RefPoint,
                            MakeGroups=False, LinearVariation=False):
-        Angles,AnglesParameters = ParseAngles(Angles)
-        RefPoint,RefPointParameters = ParsePointStruct(RefPoint)
         if IDsOfElements == []:
             IDsOfElements = self.GetElementsId()
         if ( isinstance( RefPoint, geompyDC.GEOM._objref_GEOM_Object)):
@@ -3691,11 +3247,12 @@ class Mesh:
             pass
         if ( isinstance( PathMesh, Mesh )):
             PathMesh = PathMesh.GetMesh()
+        Angles,AnglesParameters = ParseAngles(Angles)
+        Parameters = AnglesParameters + var_separator + RefPoint.parameters
+        self.mesh.SetParameters(Parameters)
         if HasAngles and Angles and LinearVariation:
             Angles = self.editor.LinearAnglesVariation( PathMesh, PathShape, Angles )
             pass
-        Parameters = AnglesParameters + var_separator + RefPointParameters
-        self.mesh.SetParameters(Parameters)
         if MakeGroups:
             return self.editor.ExtrusionAlongPathMakeGroups(IDsOfElements, PathMesh,
                                                             PathShape, NodeStart, HasAngles,
@@ -3725,19 +3282,18 @@ class Mesh:
     def ExtrusionAlongPathObject(self, theObject, PathMesh, PathShape, NodeStart,
                                  HasAngles, Angles, HasRefPoint, RefPoint,
                                  MakeGroups=False, LinearVariation=False):
-        Angles,AnglesParameters = ParseAngles(Angles)
-        RefPoint,RefPointParameters = ParsePointStruct(RefPoint)
         if ( isinstance( theObject, Mesh )):
             theObject = theObject.GetMesh()
         if ( isinstance( RefPoint, geompyDC.GEOM._objref_GEOM_Object)):
             RefPoint = self.smeshpyD.GetPointStruct(RefPoint)
         if ( isinstance( PathMesh, Mesh )):
             PathMesh = PathMesh.GetMesh()
+        Angles,AnglesParameters = ParseAngles(Angles)
+        Parameters = AnglesParameters + var_separator + RefPoint.parameters
+        self.mesh.SetParameters(Parameters)
         if HasAngles and Angles and LinearVariation:
             Angles = self.editor.LinearAnglesVariation( PathMesh, PathShape, Angles )
             pass
-        Parameters = AnglesParameters + var_separator + RefPointParameters
-        self.mesh.SetParameters(Parameters)
         if MakeGroups:
             return self.editor.ExtrusionAlongPathObjectMakeGroups(theObject, PathMesh,
                                                                   PathShape, NodeStart, HasAngles,
@@ -3768,19 +3324,18 @@ class Mesh:
     def ExtrusionAlongPathObject1D(self, theObject, PathMesh, PathShape, NodeStart,
                                    HasAngles, Angles, HasRefPoint, RefPoint,
                                    MakeGroups=False, LinearVariation=False):
-        Angles,AnglesParameters = ParseAngles(Angles)
-        RefPoint,RefPointParameters = ParsePointStruct(RefPoint)
         if ( isinstance( theObject, Mesh )):
             theObject = theObject.GetMesh()
         if ( isinstance( RefPoint, geompyDC.GEOM._objref_GEOM_Object)):
             RefPoint = self.smeshpyD.GetPointStruct(RefPoint)
         if ( isinstance( PathMesh, Mesh )):
             PathMesh = PathMesh.GetMesh()
+        Angles,AnglesParameters = ParseAngles(Angles)
+        Parameters = AnglesParameters + var_separator + RefPoint.parameters
+        self.mesh.SetParameters(Parameters)
         if HasAngles and Angles and LinearVariation:
             Angles = self.editor.LinearAnglesVariation( PathMesh, PathShape, Angles )
             pass
-        Parameters = AnglesParameters + var_separator + RefPointParameters
-        self.mesh.SetParameters(Parameters)
         if MakeGroups:
             return self.editor.ExtrusionAlongPathObject1DMakeGroups(theObject, PathMesh,
                                                                     PathShape, NodeStart, HasAngles,
@@ -3811,19 +3366,18 @@ class Mesh:
     def ExtrusionAlongPathObject2D(self, theObject, PathMesh, PathShape, NodeStart,
                                    HasAngles, Angles, HasRefPoint, RefPoint,
                                    MakeGroups=False, LinearVariation=False):
-        Angles,AnglesParameters = ParseAngles(Angles)
-        RefPoint,RefPointParameters = ParsePointStruct(RefPoint)
         if ( isinstance( theObject, Mesh )):
             theObject = theObject.GetMesh()
         if ( isinstance( RefPoint, geompyDC.GEOM._objref_GEOM_Object)):
             RefPoint = self.smeshpyD.GetPointStruct(RefPoint)
         if ( isinstance( PathMesh, Mesh )):
             PathMesh = PathMesh.GetMesh()
+        Angles,AnglesParameters = ParseAngles(Angles)
+        Parameters = AnglesParameters + var_separator + RefPoint.parameters
+        self.mesh.SetParameters(Parameters)
         if HasAngles and Angles and LinearVariation:
             Angles = self.editor.LinearAnglesVariation( PathMesh, PathShape, Angles )
             pass
-        Parameters = AnglesParameters + var_separator + RefPointParameters
-        self.mesh.SetParameters(Parameters)
         if MakeGroups:
             return self.editor.ExtrusionAlongPathObject2DMakeGroups(theObject, PathMesh,
                                                                     PathShape, NodeStart, HasAngles,
@@ -3846,8 +3400,7 @@ class Mesh:
             IDsOfElements = self.GetElementsId()
         if ( isinstance( Mirror, geompyDC.GEOM._objref_GEOM_Object)):
             Mirror = self.smeshpyD.GetAxisStruct(Mirror)
-        Mirror,Parameters = ParseAxisStruct(Mirror)
-        self.mesh.SetParameters(Parameters)
+        self.mesh.SetParameters(Mirror.parameters)
         if Copy and MakeGroups:
             return self.editor.MirrorMakeGroups(IDsOfElements, Mirror, theMirrorType)
         self.editor.Mirror(IDsOfElements, Mirror, theMirrorType, Copy)
@@ -3867,10 +3420,9 @@ class Mesh:
             IDsOfElements = self.GetElementsId()
         if ( isinstance( Mirror, geompyDC.GEOM._objref_GEOM_Object)):
             Mirror = self.smeshpyD.GetAxisStruct(Mirror)
-        Mirror,Parameters = ParseAxisStruct(Mirror)
+        mesh.SetParameters(Mirror.parameters)
         mesh = self.editor.MirrorMakeMesh(IDsOfElements, Mirror, theMirrorType,
                                           MakeGroups, NewMeshName)
-        mesh.SetParameters(Parameters)
         return Mesh(self.smeshpyD,self.geompyD,mesh)
 
     ## Creates a symmetrical copy of the object
@@ -3887,8 +3439,7 @@ class Mesh:
             theObject = theObject.GetMesh()
         if ( isinstance( Mirror, geompyDC.GEOM._objref_GEOM_Object)):
             Mirror = self.smeshpyD.GetAxisStruct(Mirror)
-        Mirror,Parameters = ParseAxisStruct(Mirror)
-        self.mesh.SetParameters(Parameters)
+        self.mesh.SetParameters(Mirror.parameters)
         if Copy and MakeGroups:
             return self.editor.MirrorObjectMakeGroups(theObject, Mirror, theMirrorType)
         self.editor.MirrorObject(theObject, Mirror, theMirrorType, Copy)
@@ -3908,10 +3459,9 @@ class Mesh:
             theObject = theObject.GetMesh()
         if (isinstance(Mirror, geompyDC.GEOM._objref_GEOM_Object)):
             Mirror = self.smeshpyD.GetAxisStruct(Mirror)
-        Mirror,Parameters = ParseAxisStruct(Mirror)
+        self.mesh.SetParameters(Mirror.parameters)
         mesh = self.editor.MirrorObjectMakeMesh(theObject, Mirror, theMirrorType,
                                                 MakeGroups, NewMeshName)
-        mesh.SetParameters(Parameters)
         return Mesh( self.smeshpyD,self.geompyD,mesh )
 
     ## Translates the elements
@@ -3926,8 +3476,7 @@ class Mesh:
             IDsOfElements = self.GetElementsId()
         if ( isinstance( Vector, geompyDC.GEOM._objref_GEOM_Object)):
             Vector = self.smeshpyD.GetDirStruct(Vector)
-        Vector,Parameters = ParseDirStruct(Vector)
-        self.mesh.SetParameters(Parameters)
+        self.mesh.SetParameters(Vector.PS.parameters)
         if Copy and MakeGroups:
             return self.editor.TranslateMakeGroups(IDsOfElements, Vector)
         self.editor.Translate(IDsOfElements, Vector, Copy)
@@ -3945,9 +3494,8 @@ class Mesh:
             IDsOfElements = self.GetElementsId()
         if ( isinstance( Vector, geompyDC.GEOM._objref_GEOM_Object)):
             Vector = self.smeshpyD.GetDirStruct(Vector)
-        Vector,Parameters = ParseDirStruct(Vector)
+        self.mesh.SetParameters(Vector.PS.parameters)
         mesh = self.editor.TranslateMakeMesh(IDsOfElements, Vector, MakeGroups, NewMeshName)
-        mesh.SetParameters(Parameters)
         return Mesh ( self.smeshpyD, self.geompyD, mesh )
 
     ## Translates the object
@@ -3962,8 +3510,7 @@ class Mesh:
             theObject = theObject.GetMesh()
         if ( isinstance( Vector, geompyDC.GEOM._objref_GEOM_Object)):
             Vector = self.smeshpyD.GetDirStruct(Vector)
-        Vector,Parameters = ParseDirStruct(Vector)
-        self.mesh.SetParameters(Parameters)
+        self.mesh.SetParameters(Vector.PS.parameters)
         if Copy and MakeGroups:
             return self.editor.TranslateObjectMakeGroups(theObject, Vector)
         self.editor.TranslateObject(theObject, Vector, Copy)
@@ -3981,9 +3528,8 @@ class Mesh:
             theObject = theObject.GetMesh()
         if (isinstance(Vector, geompyDC.GEOM._objref_GEOM_Object)):
             Vector = self.smeshpyD.GetDirStruct(Vector)
-        Vector,Parameters = ParseDirStruct(Vector)
+        self.mesh.SetParameters(Vector.PS.parameters)
         mesh = self.editor.TranslateObjectMakeMesh(theObject, Vector, MakeGroups, NewMeshName)
-        mesh.SetParameters(Parameters)
         return Mesh( self.smeshpyD, self.geompyD, mesh )
 
 
@@ -4003,8 +3549,7 @@ class Mesh:
         if ( isinstance( theObject, list )):
             theObject = self.GetIDSource(theObject, SMESH.ALL)
 
-        thePoint, Parameters = ParsePointStruct(thePoint)
-        self.mesh.SetParameters(Parameters)
+        self.mesh.SetParameters(thePoint.parameters)
 
         if Copy and MakeGroups:
             return self.editor.ScaleMakeGroups(theObject, thePoint, theScaleFact)
@@ -4024,9 +3569,9 @@ class Mesh:
         if ( isinstance( theObject, list )):
             theObject = self.GetIDSource(theObject,SMESH.ALL)
 
+        self.mesh.SetParameters(thePoint.parameters)
         mesh = self.editor.ScaleMakeMesh(theObject, thePoint, theScaleFact,
                                          MakeGroups, NewMeshName)
-        #mesh.SetParameters(Parameters)
         return Mesh( self.smeshpyD, self.geompyD, mesh )
 
 
@@ -4040,18 +3585,12 @@ class Mesh:
     #  @return list of created groups (SMESH_GroupBase) if MakeGroups=True, empty list otherwise
     #  @ingroup l2_modif_trsf
     def Rotate (self, IDsOfElements, Axis, AngleInRadians, Copy, MakeGroups=False):
-        flag = False
-        if isinstance(AngleInRadians,str):
-            flag = True
-        AngleInRadians,Parameters = geompyDC.ParseParameters(AngleInRadians)
-        if flag:
-            AngleInRadians = DegreesToRadians(AngleInRadians)
         if IDsOfElements == []:
             IDsOfElements = self.GetElementsId()
         if ( isinstance( Axis, geompyDC.GEOM._objref_GEOM_Object)):
             Axis = self.smeshpyD.GetAxisStruct(Axis)
-        Axis,AxisParameters = ParseAxisStruct(Axis)
-        Parameters = AxisParameters + var_separator + Parameters
+        AngleInRadians,Parameters = ParseAngles(AngleInRadians)
+        Parameters = Axis.parameters + var_separator + Parameters
         self.mesh.SetParameters(Parameters)
         if Copy and MakeGroups:
             return self.editor.RotateMakeGroups(IDsOfElements, Axis, AngleInRadians)
@@ -4067,21 +3606,15 @@ class Mesh:
     #  @return instance of Mesh class
     #  @ingroup l2_modif_trsf
     def RotateMakeMesh (self, IDsOfElements, Axis, AngleInRadians, MakeGroups=0, NewMeshName=""):
-        flag = False
-        if isinstance(AngleInRadians,str):
-            flag = True
-        AngleInRadians,Parameters = geompyDC.ParseParameters(AngleInRadians)
-        if flag:
-            AngleInRadians = DegreesToRadians(AngleInRadians)
         if IDsOfElements == []:
             IDsOfElements = self.GetElementsId()
         if ( isinstance( Axis, geompyDC.GEOM._objref_GEOM_Object)):
             Axis = self.smeshpyD.GetAxisStruct(Axis)
-        Axis,AxisParameters = ParseAxisStruct(Axis)
-        Parameters = AxisParameters + var_separator + Parameters
+        AngleInRadians,Parameters = ParseAngles(AngleInRadians)
+        Parameters = Axis.parameters + var_separator + Parameters
+        self.mesh.SetParameters(Parameters)
         mesh = self.editor.RotateMakeMesh(IDsOfElements, Axis, AngleInRadians,
                                           MakeGroups, NewMeshName)
-        mesh.SetParameters(Parameters)
         return Mesh( self.smeshpyD, self.geompyD, mesh )
 
     ## Rotates the object
@@ -4093,18 +3626,12 @@ class Mesh:
     #  @return list of created groups (SMESH_GroupBase) if MakeGroups=True, empty list otherwise
     #  @ingroup l2_modif_trsf
     def RotateObject (self, theObject, Axis, AngleInRadians, Copy, MakeGroups=False):
-        flag = False
-        if isinstance(AngleInRadians,str):
-            flag = True
-        AngleInRadians,Parameters = geompyDC.ParseParameters(AngleInRadians)
-        if flag:
-            AngleInRadians = DegreesToRadians(AngleInRadians)
         if (isinstance(theObject, Mesh)):
             theObject = theObject.GetMesh()
         if (isinstance(Axis, geompyDC.GEOM._objref_GEOM_Object)):
             Axis = self.smeshpyD.GetAxisStruct(Axis)
-        Axis,AxisParameters = ParseAxisStruct(Axis)
-        Parameters = AxisParameters + ":" + Parameters
+        AngleInRadians,Parameters = ParseAngles(AngleInRadians)
+        Parameters = Axis.parameters + ":" + Parameters
         self.mesh.SetParameters(Parameters)
         if Copy and MakeGroups:
             return self.editor.RotateObjectMakeGroups(theObject, Axis, AngleInRadians)
@@ -4120,21 +3647,15 @@ class Mesh:
     #  @return instance of Mesh class
     #  @ingroup l2_modif_trsf
     def RotateObjectMakeMesh(self, theObject, Axis, AngleInRadians, MakeGroups=0,NewMeshName=""):
-        flag = False
-        if isinstance(AngleInRadians,str):
-            flag = True
-        AngleInRadians,Parameters = geompyDC.ParseParameters(AngleInRadians)
-        if flag:
-            AngleInRadians = DegreesToRadians(AngleInRadians)
         if (isinstance( theObject, Mesh )):
             theObject = theObject.GetMesh()
         if (isinstance(Axis, geompyDC.GEOM._objref_GEOM_Object)):
             Axis = self.smeshpyD.GetAxisStruct(Axis)
-        Axis,AxisParameters = ParseAxisStruct(Axis)
-        Parameters = AxisParameters + ":" + Parameters
+        AngleInRadians,Parameters = ParseAngles(AngleInRadians)
+        Parameters = Axis.parameters + ":" + Parameters
         mesh = self.editor.RotateObjectMakeMesh(theObject, Axis, AngleInRadians,
                                                        MakeGroups, NewMeshName)
-        mesh.SetParameters(Parameters)
+        self.mesh.SetParameters(Parameters)
         return Mesh( self.smeshpyD, self.geompyD, mesh )
 
     ## Finds groups of ajacent nodes within Tolerance.
@@ -4741,2264 +4262,95 @@ class Mesh_Algorithm:
                 raise TypeError, "Item must be either an edge or tuple (edge 1st_vertex_of_edge)"
         return resList
 
-# Public class: Mesh_Segment
-# --------------------------
-
-## Class to define a segment 1D algorithm for discretization
-#
-#  More details.
-#  @ingroup l3_algos_basic
-class Mesh_Segment(Mesh_Algorithm):
-
-    ## Private constructor.
-    def __init__(self, mesh, geom=0):
-        Mesh_Algorithm.__init__(self)
-        self.Create(mesh, geom, "Regular_1D")
-
-    ## Defines "LocalLength" hypothesis to cut an edge in several segments with the same length
-    #  @param l for the length of segments that cut an edge
-    #  @param UseExisting if ==true - searches for an  existing hypothesis created with
-    #                    the same parameters, else (default) - creates a new one
-    #  @param p precision, used for calculation of the number of segments.
-    #           The precision should be a positive, meaningful value within the range [0,1].
-    #           In general, the number of segments is calculated with the formula:
-    #           nb = ceil((edge_length / l) - p)
-    #           Function ceil rounds its argument to the higher integer.
-    #           So, p=0 means rounding of (edge_length / l) to the higher integer,
-    #               p=0.5 means rounding of (edge_length / l) to the nearest integer,
-    #               p=1 means rounding of (edge_length / l) to the lower integer.
-    #           Default value is 1e-07.
-    #  @return an instance of StdMeshers_LocalLength hypothesis
-    #  @ingroup l3_hypos_1dhyps
-    def LocalLength(self, l, UseExisting=0, p=1e-07):
-        hyp = self.Hypothesis("LocalLength", [l,p], UseExisting=UseExisting,
-                              CompareMethod=self.CompareLocalLength)
-        hyp.SetLength(l)
-        hyp.SetPrecision(p)
-        return hyp
-
-    ## Private method
-    ## Checks if the given "LocalLength" hypothesis has the same parameters as the given arguments
-    def CompareLocalLength(self, hyp, args):
-        if IsEqual(hyp.GetLength(), args[0]):
-            return IsEqual(hyp.GetPrecision(), args[1])
-        return False
-
-    ## Defines "MaxSize" hypothesis to cut an edge into segments not longer than given value
-    #  @param length is optional maximal allowed length of segment, if it is omitted
-    #                the preestimated length is used that depends on geometry size
-    #  @param UseExisting if ==true - searches for an existing hypothesis created with
-    #                     the same parameters, else (default) - create a new one
-    #  @return an instance of StdMeshers_MaxLength hypothesis
-    #  @ingroup l3_hypos_1dhyps
-    def MaxSize(self, length=0.0, UseExisting=0):
-        hyp = self.Hypothesis("MaxLength", [length], UseExisting=UseExisting)
-        if length > 0.0:
-            # set given length
-            hyp.SetLength(length)
-        if not UseExisting:
-            # set preestimated length
-            gen = self.mesh.smeshpyD
-            initHyp = gen.GetHypothesisParameterValues("MaxLength", "libStdMeshersEngine.so",
-                                                       self.mesh.GetMesh(), self.mesh.GetShape(),
-                                                       False) # <- byMesh
-            preHyp = initHyp._narrow(StdMeshers.StdMeshers_MaxLength)
-            if preHyp:
-                hyp.SetPreestimatedLength( preHyp.GetPreestimatedLength() )
-                pass
-            pass
-        hyp.SetUsePreestimatedLength( length == 0.0 )
-        return hyp
-
-    ## Defines "NumberOfSegments" hypothesis to cut an edge in a fixed number of segments
-    #  @param n for the number of segments that cut an edge
-    #  @param s for the scale factor (optional)
-    #  @param reversedEdges is a list of edges to mesh using reversed orientation.
-    #                       A list item can also be a tuple (edge 1st_vertex_of_edge)
-    #  @param UseExisting if ==true - searches for an existing hypothesis created with
-    #                     the same parameters, else (default) - create a new one
-    #  @return an instance of StdMeshers_NumberOfSegments hypothesis
-    #  @ingroup l3_hypos_1dhyps
-    def NumberOfSegments(self, n, s=[], reversedEdges=[], UseExisting=0):
-        if not isinstance(reversedEdges,list): #old version script, before adding reversedEdges
-            reversedEdges, UseExisting = [], reversedEdges
-        entry = self.MainShapeEntry()
-        reversedEdgeInd = self.ReversedEdgeIndices(reversedEdges)
-        if s == []:
-            hyp = self.Hypothesis("NumberOfSegments", [n, reversedEdgeInd, entry],
-                                  UseExisting=UseExisting,
-                                  CompareMethod=self.CompareNumberOfSegments)
-        else:
-            hyp = self.Hypothesis("NumberOfSegments", [n,s, reversedEdgeInd, entry],
-                                  UseExisting=UseExisting,
-                                  CompareMethod=self.CompareNumberOfSegments)
-            hyp.SetDistrType( 1 )
-            hyp.SetScaleFactor(s)
-        hyp.SetNumberOfSegments(n)
-        hyp.SetReversedEdges( reversedEdgeInd )
-        hyp.SetObjectEntry( entry )
-        return hyp
-
-    ## Private method
-    ## Checks if the given "NumberOfSegments" hypothesis has the same parameters as the given arguments
-    def CompareNumberOfSegments(self, hyp, args):
-        if hyp.GetNumberOfSegments() == args[0]:
-            if len(args) == 3:
-                if hyp.GetReversedEdges() == args[1]:
-                    if not args[1] or hyp.GetObjectEntry() == args[2]:
-                        return True
-            else:
-                if hyp.GetReversedEdges() == args[2]:
-                    if not args[2] or hyp.GetObjectEntry() == args[3]:
-                        if hyp.GetDistrType() == 1:
-                            if IsEqual(hyp.GetScaleFactor(), args[1]):
-                                return True
-        return False
-
-    ## Defines "Arithmetic1D" hypothesis to cut an edge in several segments with increasing arithmetic length
-    #  @param start defines the length of the first segment
-    #  @param end   defines the length of the last  segment
-    #  @param reversedEdges is a list of edges to mesh using reversed orientation.
-    #                       A list item can also be a tuple (edge 1st_vertex_of_edge)
-    #  @param UseExisting if ==true - searches for an existing hypothesis created with
-    #                     the same parameters, else (default) - creates a new one
-    #  @return an instance of StdMeshers_Arithmetic1D hypothesis
-    #  @ingroup l3_hypos_1dhyps
-    def Arithmetic1D(self, start, end, reversedEdges=[], UseExisting=0):
-        if not isinstance(reversedEdges,list): #old version script, before adding reversedEdges
-            reversedEdges, UseExisting = [], reversedEdges
-        reversedEdgeInd = self.ReversedEdgeIndices(reversedEdges)
-        entry = self.MainShapeEntry()
-        hyp = self.Hypothesis("Arithmetic1D", [start, end, reversedEdgeInd, entry],
-                              UseExisting=UseExisting,
-                              CompareMethod=self.CompareArithmetic1D)
-        hyp.SetStartLength(start)
-        hyp.SetEndLength(end)
-        hyp.SetReversedEdges( reversedEdgeInd )
-        hyp.SetObjectEntry( entry )
-        return hyp
-
-    ## Private method
-    ## Check if the given "Arithmetic1D" hypothesis has the same parameters as the given arguments
-    def CompareArithmetic1D(self, hyp, args):
-        if IsEqual(hyp.GetLength(1), args[0]):
-            if IsEqual(hyp.GetLength(0), args[1]):
-                if hyp.GetReversedEdges() == args[2]:
-                    if not args[2] or hyp.GetObjectEntry() == args[3]:
-                        return True
-        return False
-
-
-    ## Defines "FixedPoints1D" hypothesis to cut an edge using parameter
-    # on curve from 0 to 1 (additionally it is neecessary to check
-    # orientation of edges and create list of reversed edges if it is
-    # needed) and sets numbers of segments between given points (default
-    # values are equals 1
-    #  @param points defines the list of parameters on curve
-    #  @param nbSegs defines the list of numbers of segments
-    #  @param reversedEdges is a list of edges to mesh using reversed orientation.
-    #                       A list item can also be a tuple (edge 1st_vertex_of_edge)
-    #  @param UseExisting if ==true - searches for an existing hypothesis created with
-    #                     the same parameters, else (default) - creates a new one
-    #  @return an instance of StdMeshers_Arithmetic1D hypothesis
-    #  @ingroup l3_hypos_1dhyps
-    def FixedPoints1D(self, points, nbSegs=[1], reversedEdges=[], UseExisting=0):
-        if not isinstance(reversedEdges,list): #old version script, before adding reversedEdges
-            reversedEdges, UseExisting = [], reversedEdges
-        reversedEdgeInd = self.ReversedEdgeIndices(reversedEdges)
-        entry = self.MainShapeEntry()
-        hyp = self.Hypothesis("FixedPoints1D", [points, nbSegs, reversedEdgeInd, entry],
-                              UseExisting=UseExisting,
-                              CompareMethod=self.CompareFixedPoints1D)
-        hyp.SetPoints(points)
-        hyp.SetNbSegments(nbSegs)
-        hyp.SetReversedEdges(reversedEdgeInd)
-        hyp.SetObjectEntry(entry)
-        return hyp
-
-    ## Private method
-    ## Check if the given "FixedPoints1D" hypothesis has the same parameters
-    ## as the given arguments
-    def CompareFixedPoints1D(self, hyp, args):
-        if hyp.GetPoints() == args[0]:
-            if hyp.GetNbSegments() == args[1]:
-                if hyp.GetReversedEdges() == args[2]:
-                    if not args[2] or hyp.GetObjectEntry() == args[3]:
-                        return True
-        return False
-
-
-
-    ## Defines "StartEndLength" hypothesis to cut an edge in several segments with increasing geometric length
-    #  @param start defines the length of the first segment
-    #  @param end   defines the length of the last  segment
-    #  @param reversedEdges is a list of edges to mesh using reversed orientation.
-    #                       A list item can also be a tuple (edge 1st_vertex_of_edge)
-    #  @param UseExisting if ==true - searches for an existing hypothesis created with
-    #                     the same parameters, else (default) - creates a new one
-    #  @return an instance of StdMeshers_StartEndLength hypothesis
-    #  @ingroup l3_hypos_1dhyps
-    def StartEndLength(self, start, end, reversedEdges=[], UseExisting=0):
-        if not isinstance(reversedEdges,list): #old version script, before adding reversedEdges
-            reversedEdges, UseExisting = [], reversedEdges
-        reversedEdgeInd = self.ReversedEdgeIndices(reversedEdges)
-        entry = self.MainShapeEntry()
-        hyp = self.Hypothesis("StartEndLength", [start, end, reversedEdgeInd, entry],
-                              UseExisting=UseExisting,
-                              CompareMethod=self.CompareStartEndLength)
-        hyp.SetStartLength(start)
-        hyp.SetEndLength(end)
-        hyp.SetReversedEdges( reversedEdgeInd )
-        hyp.SetObjectEntry( entry )
-        return hyp
-
-    ## Check if the given "StartEndLength" hypothesis has the same parameters as the given arguments
-    def CompareStartEndLength(self, hyp, args):
-        if IsEqual(hyp.GetLength(1), args[0]):
-            if IsEqual(hyp.GetLength(0), args[1]):
-                if hyp.GetReversedEdges() == args[2]:
-                    if not args[2] or hyp.GetObjectEntry() == args[3]:
-                        return True
-        return False
-
-    ## Defines "Deflection1D" hypothesis
-    #  @param d for the deflection
-    #  @param UseExisting if ==true - searches for an existing hypothesis created with
-    #                     the same parameters, else (default) - create a new one
-    #  @ingroup l3_hypos_1dhyps
-    def Deflection1D(self, d, UseExisting=0):
-        hyp = self.Hypothesis("Deflection1D", [d], UseExisting=UseExisting,
-                              CompareMethod=self.CompareDeflection1D)
-        hyp.SetDeflection(d)
-        return hyp
-
-    ## Check if the given "Deflection1D" hypothesis has the same parameters as the given arguments
-    def CompareDeflection1D(self, hyp, args):
-        return IsEqual(hyp.GetDeflection(), args[0])
-
-    ## Defines "Propagation" hypothesis that propagates all other hypotheses on all other edges that are at
-    #  the opposite side in case of quadrangular faces
-    #  @ingroup l3_hypos_additi
-    def Propagation(self):
-        return self.Hypothesis("Propagation", UseExisting=1, CompareMethod=self.CompareEqualHyp)
-
-    ## Defines "AutomaticLength" hypothesis
-    #  @param fineness for the fineness [0-1]
-    #  @param UseExisting if ==true - searches for an existing hypothesis created with the
-    #                     same parameters, else (default) - create a new one
-    #  @ingroup l3_hypos_1dhyps
-    def AutomaticLength(self, fineness=0, UseExisting=0):
-        hyp = self.Hypothesis("AutomaticLength",[fineness],UseExisting=UseExisting,
-                              CompareMethod=self.CompareAutomaticLength)
-        hyp.SetFineness( fineness )
-        return hyp
-
-    ## Checks if the given "AutomaticLength" hypothesis has the same parameters as the given arguments
-    def CompareAutomaticLength(self, hyp, args):
-        return IsEqual(hyp.GetFineness(), args[0])
-
-    ## Defines "SegmentLengthAroundVertex" hypothesis
-    #  @param length for the segment length
-    #  @param vertex for the length localization: the vertex index [0,1] | vertex object.
-    #         Any other integer value means that the hypothesis will be set on the
-    #         whole 1D shape, where Mesh_Segment algorithm is assigned.
-    #  @param UseExisting if ==true - searches for an  existing hypothesis created with
-    #                   the same parameters, else (default) - creates a new one
-    #  @ingroup l3_algos_segmarv
-    def LengthNearVertex(self, length, vertex=0, UseExisting=0):
-        import types
-        store_geom = self.geom
-        if type(vertex) is types.IntType:
-            if vertex == 0 or vertex == 1:
-                vertex = self.mesh.geompyD.ExtractShapes(self.geom, geompyDC.ShapeType["VERTEX"],True)[vertex]
-                self.geom = vertex
-                pass
-            pass
-        else:
-            self.geom = vertex
-            pass
-        ### 0D algorithm
-        if self.geom is None:
-            raise RuntimeError, "Attemp to create SegmentAroundVertex_0D algoritm on None shape"
-        AssureGeomPublished( self.mesh, self.geom )
-        name = GetName(self.geom)
-
-        algo = self.FindAlgorithm("SegmentAroundVertex_0D", self.mesh.smeshpyD)
-        if algo is None:
-            algo = self.mesh.smeshpyD.CreateHypothesis("SegmentAroundVertex_0D", "libStdMeshersEngine.so")
-            pass
-        status = self.mesh.mesh.AddHypothesis(self.geom, algo)
-        TreatHypoStatus(status, "SegmentAroundVertex_0D", name, True)
-        ###
-        hyp = self.Hypothesis("SegmentLengthAroundVertex", [length], UseExisting=UseExisting,
-                              CompareMethod=self.CompareLengthNearVertex)
-        self.geom = store_geom
-        hyp.SetLength( length )
-        return hyp
-
-    ## Checks if the given "LengthNearVertex" hypothesis has the same parameters as the given arguments
-    #  @ingroup l3_algos_segmarv
-    def CompareLengthNearVertex(self, hyp, args):
-        return IsEqual(hyp.GetLength(), args[0])
-
-    ## Defines "QuadraticMesh" hypothesis, forcing construction of quadratic edges.
-    #  If the 2D mesher sees that all boundary edges are quadratic,
-    #  it generates quadratic faces, else it generates linear faces using
-    #  medium nodes as if they are vertices.
-    #  The 3D mesher generates quadratic volumes only if all boundary faces
-    #  are quadratic, else it fails.
-    #
-    #  @ingroup l3_hypos_additi
-    def QuadraticMesh(self):
-        hyp = self.Hypothesis("QuadraticMesh", UseExisting=1, CompareMethod=self.CompareEqualHyp)
-        return hyp
-
-# Public class: Mesh_CompositeSegment
-# --------------------------
-
-## Defines a segment 1D algorithm for discretization
-#
-#  @ingroup l3_algos_basic
-class Mesh_CompositeSegment(Mesh_Segment):
-
-    ## Private constructor.
-    def __init__(self, mesh, geom=0):
-        self.Create(mesh, geom, "CompositeSegment_1D")
-
-
-# Public class: Mesh_Segment_Python
-# ---------------------------------
-
-## Defines a segment 1D algorithm for discretization with python function
-#
-#  @ingroup l3_algos_basic
-class Mesh_Segment_Python(Mesh_Segment):
-
-    ## Private constructor.
-    def __init__(self, mesh, geom=0):
-        import Python1dPlugin
-        self.Create(mesh, geom, "Python_1D", "libPython1dEngine.so")
-
-    ## Defines "PythonSplit1D" hypothesis
-    #  @param n for the number of segments that cut an edge
-    #  @param func for the python function that calculates the length of all segments
-    #  @param UseExisting if ==true - searches for the existing hypothesis created with
-    #                     the same parameters, else (default) - creates a new one
-    #  @ingroup l3_hypos_1dhyps
-    def PythonSplit1D(self, n, func, UseExisting=0):
-        hyp = self.Hypothesis("PythonSplit1D", [n], "libPython1dEngine.so",
-                              UseExisting=UseExisting, CompareMethod=self.ComparePythonSplit1D)
-        hyp.SetNumberOfSegments(n)
-        hyp.SetPythonLog10RatioFunction(func)
-        return hyp
-
-    ## Checks if the given "PythonSplit1D" hypothesis has the same parameters as the given arguments
-    def ComparePythonSplit1D(self, hyp, args):
-        #if hyp.GetNumberOfSegments() == args[0]:
-        #    if hyp.GetPythonLog10RatioFunction() == args[1]:
-        #        return True
-        return False
-
-# Public class: Mesh_Triangle
-# ---------------------------
-
-## Defines a triangle 2D algorithm
-#
-#  @ingroup l3_algos_basic
-class Mesh_Triangle(Mesh_Algorithm):
-
-    # default values
-    algoType = 0
-    params = 0
-
-    _angleMeshS = 8
-    _gradation  = 1.1
-
-    ## Private constructor.
-    def __init__(self, mesh, algoType, geom=0):
-        Mesh_Algorithm.__init__(self)
-
-        if algoType == MEFISTO:
-            self.Create(mesh, geom, "MEFISTO_2D")
-            pass
-        elif algoType == BLSURF:
-            CheckPlugin(BLSURF)
-            self.Create(mesh, geom, "BLSURF", "libBLSURFEngine.so")
-            #self.SetPhysicalMesh() - PAL19680
-        elif algoType == NETGEN:
-            CheckPlugin(NETGEN)
-            self.Create(mesh, geom, "NETGEN_2D", "libNETGENEngine.so")
-            pass
-        elif algoType == NETGEN_2D:
-            CheckPlugin(NETGEN)
-            self.Create(mesh, geom, "NETGEN_2D_ONLY", "libNETGENEngine.so")
-            pass
-
-        self.algoType = algoType
-
-    ## Defines "MaxElementArea" hypothesis basing on the definition of the maximum area of each triangle
-    #  @param area for the maximum area of each triangle
-    #  @param UseExisting if ==true - searches for an  existing hypothesis created with the
-    #                     same parameters, else (default) - creates a new one
-    #
-    #  Only for algoType == MEFISTO || NETGEN_2D
-    #  @ingroup l3_hypos_2dhyps
-    def MaxElementArea(self, area, UseExisting=0):
-        if self.algoType == MEFISTO or self.algoType == NETGEN_2D:
-            hyp = self.Hypothesis("MaxElementArea", [area], UseExisting=UseExisting,
-                                  CompareMethod=self.CompareMaxElementArea)
-        elif self.algoType == NETGEN:
-            hyp = self.Parameters(SIMPLE)
-        hyp.SetMaxElementArea(area)
-        return hyp
-
-    ## Checks if the given "MaxElementArea" hypothesis has the same parameters as the given arguments
-    def CompareMaxElementArea(self, hyp, args):
-        return IsEqual(hyp.GetMaxElementArea(), args[0])
-
-    ## Defines "LengthFromEdges" hypothesis to build triangles
-    #  based on the length of the edges taken from the wire
-    #
-    #  Only for algoType == MEFISTO || NETGEN_2D
-    #  @ingroup l3_hypos_2dhyps
-    def LengthFromEdges(self):
-        if self.algoType == MEFISTO or self.algoType == NETGEN_2D:
-            hyp = self.Hypothesis("LengthFromEdges", UseExisting=1, CompareMethod=self.CompareEqualHyp)
-            return hyp
-        elif self.algoType == NETGEN:
-            hyp = self.Parameters(SIMPLE)
-            hyp.LengthFromEdges()
-            return hyp
-
-    ## Sets a way to define size of mesh elements to generate.
-    #  @param thePhysicalMesh is: DefaultSize, BLSURF_Custom or SizeMap.
-    #  @ingroup l3_hypos_blsurf
-    def SetPhysicalMesh(self, thePhysicalMesh=DefaultSize):
-        if self.Parameters():
-            # Parameter of BLSURF algo
-            self.params.SetPhysicalMesh(thePhysicalMesh)
-
-    ## Sets size of mesh elements to generate.
-    #  @ingroup l3_hypos_blsurf
-    def SetPhySize(self, theVal):
-        if self.Parameters():
-            # Parameter of BLSURF algo
-            self.params.SetPhySize(theVal)
-
-    ## Sets lower boundary of mesh element size (PhySize).
-    #  @ingroup l3_hypos_blsurf
-    def SetPhyMin(self, theVal=-1):
-        if self.Parameters():
-            #  Parameter of BLSURF algo
-            self.params.SetPhyMin(theVal)
-
-    ## Sets upper boundary of mesh element size (PhySize).
-    #  @ingroup l3_hypos_blsurf
-    def SetPhyMax(self, theVal=-1):
-        if self.Parameters():
-            #  Parameter of BLSURF algo
-            self.params.SetPhyMax(theVal)
-
-    ## Sets a way to define maximum angular deflection of mesh from CAD model.
-    #  @param theGeometricMesh is: 0 (None) or 1 (Custom)
-    #  @ingroup l3_hypos_blsurf
-    def SetGeometricMesh(self, theGeometricMesh=0):
-        if self.Parameters():
-            #  Parameter of BLSURF algo
-            if self.params.GetPhysicalMesh() == 0: theGeometricMesh = 1
-            self.params.SetGeometricMesh(theGeometricMesh)
-
-    ## Sets angular deflection (in degrees) of a mesh face from CAD surface.
-    #  @ingroup l3_hypos_blsurf
-    def SetAngleMeshS(self, theVal=_angleMeshS):
-        if self.Parameters():
-            #  Parameter of BLSURF algo
-            if self.params.GetGeometricMesh() == 0: theVal = self._angleMeshS
-            self.params.SetAngleMeshS(theVal)
-
-    ## Sets angular deflection (in degrees) of a mesh edge from CAD curve.
-    #  @ingroup l3_hypos_blsurf
-    def SetAngleMeshC(self, theVal=_angleMeshS):
-        if self.Parameters():
-            #  Parameter of BLSURF algo
-            if self.params.GetGeometricMesh() == 0: theVal = self._angleMeshS
-            self.params.SetAngleMeshC(theVal)
-
-    ## Sets lower boundary of mesh element size computed to respect angular deflection.
-    #  @ingroup l3_hypos_blsurf
-    def SetGeoMin(self, theVal=-1):
-        if self.Parameters():
-            #  Parameter of BLSURF algo
-            self.params.SetGeoMin(theVal)
-
-    ## Sets upper boundary of mesh element size computed to respect angular deflection.
-    #  @ingroup l3_hypos_blsurf
-    def SetGeoMax(self, theVal=-1):
-        if self.Parameters():
-            #  Parameter of BLSURF algo
-            self.params.SetGeoMax(theVal)
-
-    ## Sets maximal allowed ratio between the lengths of two adjacent edges.
-    #  @ingroup l3_hypos_blsurf
-    def SetGradation(self, theVal=_gradation):
-        if self.Parameters():
-            #  Parameter of BLSURF algo
-            if self.params.GetGeometricMesh() == 0: theVal = self._gradation
-            self.params.SetGradation(theVal)
-
-    ## Sets topology usage way.
-    # @param way defines how mesh conformity is assured <ul>
-    # <li>FromCAD - mesh conformity is assured by conformity of a shape</li>
-    # <li>PreProcess or PreProcessPlus - by pre-processing a CAD model</li>
-    # <li>PreCAD - by pre-processing with PreCAD a CAD model</li></ul>
-    #  @ingroup l3_hypos_blsurf
-    def SetTopology(self, way):
-        if self.Parameters():
-            #  Parameter of BLSURF algo
-            self.params.SetTopology(way)
-
-    ## To respect geometrical edges or not.
-    #  @ingroup l3_hypos_blsurf
-    def SetDecimesh(self, toIgnoreEdges=False):
-        if self.Parameters():
-            #  Parameter of BLSURF algo
-            self.params.SetDecimesh(toIgnoreEdges)
-
-    ## Sets verbosity level in the range 0 to 100.
-    #  @ingroup l3_hypos_blsurf
-    def SetVerbosity(self, level):
-        if self.Parameters():
-            #  Parameter of BLSURF algo
-            self.params.SetVerbosity(level)
-
-    ## To optimize merges edges.
-    #  @ingroup l3_hypos_blsurf
-    def SetPreCADMergeEdges(self, toMergeEdges=False):
-        if self.Parameters():
-            #  Parameter of BLSURF algo
-            self.params.SetPreCADMergeEdges(toMergeEdges)
-
-    ## To remove nano edges.
-    #  @ingroup l3_hypos_blsurf
-    def SetPreCADRemoveNanoEdges(self, toRemoveNanoEdges=False):
-        if self.Parameters():
-            #  Parameter of BLSURF algo
-            self.params.SetPreCADRemoveNanoEdges(toRemoveNanoEdges)
-
-    ## To compute topology from scratch
-    #  @ingroup l3_hypos_blsurf
-    def SetPreCADDiscardInput(self, toDiscardInput=False):
-        if self.Parameters():
-            #  Parameter of BLSURF algo
-            self.params.SetPreCADDiscardInput(toDiscardInput)
-
-    ## Sets the length below which an edge is considered as nano 
-    #  for the topology processing.
-    #  @ingroup l3_hypos_blsurf
-    def SetPreCADEpsNano(self, epsNano):
-        if self.Parameters():
-            #  Parameter of BLSURF algo
-            self.params.SetPreCADEpsNano(epsNano)
-
-    ## Sets advanced option value.
-    #  @ingroup l3_hypos_blsurf
-    def SetOptionValue(self, optionName, level):
-        if self.Parameters():
-            #  Parameter of BLSURF algo
-            self.params.SetOptionValue(optionName,level)
-
-    ## Sets advanced PreCAD option value.
-    #  Keyword arguments:
-    #  optionName: name of the option
-    #  optionValue: value of the option
-    #  @ingroup l3_hypos_blsurf
-    def SetPreCADOptionValue(self, optionName, optionValue):
-        if self.Parameters():
-            #  Parameter of BLSURF algo
-            self.params.SetPreCADOptionValue(optionName,optionValue)
-
-    ## Sets GMF file for export at computation
-    #  @ingroup l3_hypos_blsurf
-    def SetGMFFile(self, fileName):
-        if self.Parameters():
-            #  Parameter of BLSURF algo
-            self.params.SetGMFFile(fileName)
-
-    ## Enforced vertices (BLSURF)
-
-    ## To get all the enforced vertices
-    #  @ingroup l3_hypos_blsurf
-    def GetAllEnforcedVertices(self):
-        if self.Parameters():
-            #  Parameter of BLSURF algo
-            return self.params.GetAllEnforcedVertices()
-
-    ## To get all the enforced vertices sorted by face (or group, compound)
-    #  @ingroup l3_hypos_blsurf
-    def GetAllEnforcedVerticesByFace(self):
-        if self.Parameters():
-            #  Parameter of BLSURF algo
-            return self.params.GetAllEnforcedVerticesByFace()
-
-    ## To get all the enforced vertices sorted by coords of input vertices
-    #  @ingroup l3_hypos_blsurf
-    def GetAllEnforcedVerticesByCoords(self):
-        if self.Parameters():
-            #  Parameter of BLSURF algo
-            return self.params.GetAllEnforcedVerticesByCoords()
-
-    ## To get all the coords of input vertices sorted by face (or group, compound)
-    #  @ingroup l3_hypos_blsurf
-    def GetAllCoordsByFace(self):
-        if self.Parameters():
-            #  Parameter of BLSURF algo
-            return self.params.GetAllCoordsByFace()
-
-    ## To get all the enforced vertices on a face (or group, compound)
-    #  @param theFace : GEOM face (or group, compound) on which to define an enforced vertex
-    #  @ingroup l3_hypos_blsurf
-    def GetEnforcedVertices(self, theFace):
-        if self.Parameters():
-            #  Parameter of BLSURF algo
-            AssureGeomPublished( self.mesh, theFace )
-            return self.params.GetEnforcedVertices(theFace)
-
-    ## To clear all the enforced vertices
-    #  @ingroup l3_hypos_blsurf
-    def ClearAllEnforcedVertices(self):
-        if self.Parameters():
-            #  Parameter of BLSURF algo
-            return self.params.ClearAllEnforcedVertices()
-
-    ## To set an enforced vertex on a face (or group, compound) given the coordinates of a point. If the point is not on the face, it will projected on it. If there is no projection, no enforced vertex is created.
-    #  @param theFace      : GEOM face (or group, compound) on which to define an enforced vertex
-    #  @param x            : x coordinate
-    #  @param y            : y coordinate
-    #  @param z            : z coordinate
-    #  @param vertexName   : name of the enforced vertex
-    #  @param groupName    : name of the group
-    #  @ingroup l3_hypos_blsurf
-    def SetEnforcedVertex(self, theFace, x, y, z, vertexName = "", groupName = ""):
-        if self.Parameters():
-            #  Parameter of BLSURF algo
-            AssureGeomPublished( self.mesh, theFace )
-            if vertexName == "":
-              if groupName == "":
-                return self.params.SetEnforcedVertex(theFace, x, y, z)
-              else:
-                return self.params.SetEnforcedVertexWithGroup(theFace, x, y, z, groupName)
-            else:
-              if groupName == "":
-                return self.params.SetEnforcedVertexNamed(theFace, x, y, z, vertexName)
-              else:
-                return self.params.SetEnforcedVertexNamedWithGroup(theFace, x, y, z, vertexName, groupName)
-
-    ## To set an enforced vertex on a face (or group, compound) given a GEOM vertex, group or compound.
-    #  @param theFace      : GEOM face (or group, compound) on which to define an enforced vertex
-    #  @param theVertex    : GEOM vertex (or group, compound) to be projected on theFace.
-    #  @param groupName    : name of the group
-    #  @ingroup l3_hypos_blsurf
-    def SetEnforcedVertexGeom(self, theFace, theVertex, groupName = ""):
-        if self.Parameters():
-            #  Parameter of BLSURF algo
-            AssureGeomPublished( self.mesh, theFace )
-            AssureGeomPublished( self.mesh, theVertex )
-            if groupName == "":
-              return self.params.SetEnforcedVertexGeom(theFace, theVertex)
-            else:
-              return self.params.SetEnforcedVertexGeomWithGroup(theFace, theVertex,groupName)
-
-    ## To remove an enforced vertex on a given GEOM face (or group, compound) given the coordinates.
-    #  @param theFace      : GEOM face (or group, compound) on which to remove the enforced vertex
-    #  @param x            : x coordinate
-    #  @param y            : y coordinate
-    #  @param z            : z coordinate
-    #  @ingroup l3_hypos_blsurf
-    def UnsetEnforcedVertex(self, theFace, x, y, z):
-        if self.Parameters():
-            #  Parameter of BLSURF algo
-            AssureGeomPublished( self.mesh, theFace )
-            return self.params.UnsetEnforcedVertex(theFace, x, y, z)
-
-    ## To remove an enforced vertex on a given GEOM face (or group, compound) given a GEOM vertex, group or compound.
-    #  @param theFace      : GEOM face (or group, compound) on which to remove the enforced vertex
-    #  @param theVertex    : GEOM vertex (or group, compound) to remove.
-    #  @ingroup l3_hypos_blsurf
-    def UnsetEnforcedVertexGeom(self, theFace, theVertex):
-        if self.Parameters():
-            #  Parameter of BLSURF algo
-            AssureGeomPublished( self.mesh, theFace )
-            AssureGeomPublished( self.mesh, theVertex )
-            return self.params.UnsetEnforcedVertexGeom(theFace, theVertex)
-
-    ## To remove all enforced vertices on a given face.
-    #  @param theFace      : face (or group/compound of faces) on which to remove all enforced vertices
-    #  @ingroup l3_hypos_blsurf
-    def UnsetEnforcedVertices(self, theFace):
-        if self.Parameters():
-            #  Parameter of BLSURF algo
-            AssureGeomPublished( self.mesh, theFace )
-            return self.params.UnsetEnforcedVertices(theFace)
-
-    ## To tell BLSURF to add a node on internal vertices
-    #  @param toEnforceInternalVertices : boolean; if True the internal vertices are added as enforced vertices
-    #  @ingroup l3_hypos_blsurf
-    def SetInternalEnforcedVertexAllFaces(self, toEnforceInternalVertices):
-        if self.Parameters():
-            #  Parameter of BLSURF algo
-            return self.params.SetInternalEnforcedVertexAllFaces(toEnforceInternalVertices)
-
-    ## To know if BLSURF will add a node on internal vertices
-    #  @ingroup l3_hypos_blsurf
-    def GetInternalEnforcedVertexAllFaces(self):
-        if self.Parameters():
-            #  Parameter of BLSURF algo
-            return self.params.GetInternalEnforcedVertexAllFaces()
-
-    ## To define a group for the nodes of internal vertices
-    #  @param groupName : string; name of the group
-    #  @ingroup l3_hypos_blsurf
-    def SetInternalEnforcedVertexAllFacesGroup(self, groupName):
-        if self.Parameters():
-            #  Parameter of BLSURF algo
-            return self.params.SetInternalEnforcedVertexAllFacesGroup(groupName)
-
-    ## To get the group name of the nodes of internal vertices
-    #  @ingroup l3_hypos_blsurf
-    def GetInternalEnforcedVertexAllFacesGroup(self):
-        if self.Parameters():
-            #  Parameter of BLSURF algo
-            return self.params.GetInternalEnforcedVertexAllFacesGroup()
-
-    ## Attractors (BLSURF)
-
-    ## Sets an attractor on the chosen face. The mesh size will decrease exponentially with the distance from theAttractor, following the rule h(d) = theEndSize - (theEndSize - theStartSize) * exp [ - ( d / theInfluenceDistance ) ^ 2 ] 
-    #  @param theFace      : face on which the attractor will be defined
-    #  @param theAttractor : geometrical object from which the mesh size "h" decreases exponentially   
-    #  @param theStartSize : mesh size on theAttractor      
-    #  @param theEndSize   : maximum size that will be reached on theFace                                                     
-    #  @param theInfluenceDistance : influence of the attractor ( the size grow slower on theFace if it's high)                                                      
-    #  @param theConstantSizeDistance : distance until which the mesh size will be kept constant on theFace                                                      
-    #  @ingroup l3_hypos_blsurf
-    def SetAttractorGeom(self, theFace, theAttractor, theStartSize, theEndSize, theInfluenceDistance, theConstantSizeDistance):
-        if self.Parameters():
-            #  Parameter of BLSURF algo
-            AssureGeomPublished( self.mesh, theFace )
-            AssureGeomPublished( self.mesh, theAttractor )
-            self.params.SetAttractorGeom(theFace, theAttractor, theStartSize, theEndSize, theInfluenceDistance, theConstantSizeDistance)
-
-    ## Unsets an attractor on the chosen face. 
-    #  @param theFace      : face on which the attractor has to be removed                               
-    #  @ingroup l3_hypos_blsurf
-    def UnsetAttractorGeom(self, theFace):
-        if self.Parameters():
-            #  Parameter of BLSURF algo
-            AssureGeomPublished( self.mesh, theFace )
-            self.params.SetAttractorGeom(theFace)
-
-    ## Size maps (BLSURF)
-
-    ## To set a size map on a face, edge or vertex (or group, compound) given Python function.
-    #  If theObject is a face, the function can be: def f(u,v): return u+v
-    #  If theObject is an edge, the function can be: def f(t): return t/2
-    #  If theObject is a vertex, the function can be: def f(): return 10
-    #  @param theObject   : GEOM face, edge or vertex (or group, compound) on which to define a size map
-    #  @param theSizeMap  : Size map defined as a string
-    #  @ingroup l3_hypos_blsurf
-    def SetSizeMap(self, theObject, theSizeMap):
-        if self.Parameters():
-            #  Parameter of BLSURF algo
-            AssureGeomPublished( self.mesh, theObject )
-            return self.params.SetSizeMap(theObject, theSizeMap)
-
-    ## To remove a size map defined on a face, edge or vertex (or group, compound)
-    #  @param theObject   : GEOM face, edge or vertex (or group, compound) on which to define a size map
-    #  @ingroup l3_hypos_blsurf
-    def UnsetSizeMap(self, theObject):
-        if self.Parameters():
-            #  Parameter of BLSURF algo
-            AssureGeomPublished( self.mesh, theObject )
-            return self.params.UnsetSizeMap(theObject)
-
-    ## To remove all the size maps
-    #  @ingroup l3_hypos_blsurf
-    def ClearSizeMaps(self):
-        if self.Parameters():
-            #  Parameter of BLSURF algo
-            return self.params.ClearSizeMaps()
-
-
-    ## Sets QuadAllowed flag.
-    #  Only for algoType == NETGEN(NETGEN_1D2D) || NETGEN_2D || BLSURF
-    #  @ingroup l3_hypos_netgen l3_hypos_blsurf
-    def SetQuadAllowed(self, toAllow=True):
-        if self.algoType == NETGEN_2D:
-            if not self.params:
-                # use simple hyps
-                hasSimpleHyps = False
-                simpleHyps = ["QuadranglePreference","LengthFromEdges","MaxElementArea"]
-                for hyp in self.mesh.GetHypothesisList( self.geom ):
-                    if hyp.GetName() in simpleHyps:
-                        hasSimpleHyps = True
-                        if hyp.GetName() == "QuadranglePreference":
-                            if not toAllow: # remove QuadranglePreference
-                                self.mesh.RemoveHypothesis( self.geom, hyp )
-                                pass
-                            return
-                        pass
-                    pass
-                if hasSimpleHyps:
-                    if toAllow: # add QuadranglePreference
-                        self.Hypothesis("QuadranglePreference", UseExisting=1, CompareMethod=self.CompareEqualHyp)
-                        pass
-                    return
-                pass
-            pass
-        if self.Parameters():
-            self.params.SetQuadAllowed(toAllow)
-            return
-
-    ## Defines hypothesis having several parameters
-    #
-    #  @ingroup l3_hypos_netgen
-    def Parameters(self, which=SOLE):
-        if not self.params:
-            if self.algoType == NETGEN:
-                if which == SIMPLE:
-                    self.params = self.Hypothesis("NETGEN_SimpleParameters_2D", [],
-                                                  "libNETGENEngine.so", UseExisting=0)
-                else:
-                    self.params = self.Hypothesis("NETGEN_Parameters_2D", [],
-                                                  "libNETGENEngine.so", UseExisting=0)
-            elif self.algoType == MEFISTO:
-                print "Mefisto algo support no multi-parameter hypothesis"
-            elif self.algoType == NETGEN_2D:
-                self.params = self.Hypothesis("NETGEN_Parameters_2D_ONLY", [],
-                                              "libNETGENEngine.so", UseExisting=0)
-            elif self.algoType == BLSURF:
-                self.params = self.Hypothesis("BLSURF_Parameters", [],
-                                              "libBLSURFEngine.so", UseExisting=0)
-            else:
-                print "Mesh_Triangle with algo type %s does not have such a parameter, check algo type"%self.algoType
-        return self.params
-
-    ## Sets MaxSize
-    #
-    #  Only for algoType == NETGEN
-    #  @ingroup l3_hypos_netgen
-    def SetMaxSize(self, theSize):
-        if self.Parameters():
-            self.params.SetMaxSize(theSize)
-
-    ## Sets SecondOrder flag
-    #
-    #  Only for algoType == NETGEN
-    #  @ingroup l3_hypos_netgen
-    def SetSecondOrder(self, theVal):
-        if self.Parameters():
-            self.params.SetSecondOrder(theVal)
-
-    ## Sets Optimize flag
-    #
-    #  Only for algoType == NETGEN
-    #  @ingroup l3_hypos_netgen
-    def SetOptimize(self, theVal):
-        if self.Parameters():
-            self.params.SetOptimize(theVal)
-
-    ## Sets Fineness
-    #  @param theFineness is:
-    #  VeryCoarse, Coarse, Moderate, Fine, VeryFine or Custom
-    #
-    #  Only for algoType == NETGEN
-    #  @ingroup l3_hypos_netgen
-    def SetFineness(self, theFineness):
-        if self.Parameters():
-            self.params.SetFineness(theFineness)
-
-    ## Sets GrowthRate
-    #
-    #  Only for algoType == NETGEN
-    #  @ingroup l3_hypos_netgen
-    def SetGrowthRate(self, theRate):
-        if self.Parameters():
-            self.params.SetGrowthRate(theRate)
-
-    ## Sets NbSegPerEdge
-    #
-    #  Only for algoType == NETGEN
-    #  @ingroup l3_hypos_netgen
-    def SetNbSegPerEdge(self, theVal):
-        if self.Parameters():
-            self.params.SetNbSegPerEdge(theVal)
-
-    ## Sets NbSegPerRadius
-    #
-    #  Only for algoType == NETGEN
-    #  @ingroup l3_hypos_netgen
-    def SetNbSegPerRadius(self, theVal):
-        if self.Parameters():
-            self.params.SetNbSegPerRadius(theVal)
-
-    ## Sets number of segments overriding value set by SetLocalLength()
-    #
-    #  Only for algoType == NETGEN
-    #  @ingroup l3_hypos_netgen
-    def SetNumberOfSegments(self, theVal):
-        self.Parameters(SIMPLE).SetNumberOfSegments(theVal)
-
-    ## Sets number of segments overriding value set by SetNumberOfSegments()
-    #
-    #  Only for algoType == NETGEN
-    #  @ingroup l3_hypos_netgen
-    def SetLocalLength(self, theVal):
-        self.Parameters(SIMPLE).SetLocalLength(theVal)
-
-    pass
-
-
-# Public class: Mesh_Quadrangle
-# -----------------------------
-
-## Defines a quadrangle 2D algorithm
-#
-#  @ingroup l3_algos_basic
-class Mesh_Quadrangle(Mesh_Algorithm):
-
-    params=0
-
-    ## Private constructor.
-    def __init__(self, mesh, geom=0):
-        Mesh_Algorithm.__init__(self)
-        self.Create(mesh, geom, "Quadrangle_2D")
-        return
-
-    ## Defines "QuadrangleParameters" hypothesis
-    #  @param quadType defines the algorithm of transition between differently descretized
-    #                  sides of a geometrical face:
-    #  - QUAD_STANDARD - both triangles and quadrangles are possible in the transition
-    #                    area along the finer meshed sides.
-    #  - QUAD_TRIANGLE_PREF - only triangles are built in the transition area along the
-    #                    finer meshed sides.
-    #  - QUAD_QUADRANGLE_PREF - only quadrangles are built in the transition area along
-    #                    the finer meshed sides, iff the total quantity of segments on
-    #                    all four sides of the face is even (divisible by 2).
-    #  - QUAD_QUADRANGLE_PREF_REVERSED - same as QUAD_QUADRANGLE_PREF but the transition
-    #                    area is located along the coarser meshed sides.
-    #  - QUAD_REDUCED - only quadrangles are built and the transition between the sides
-    #                    is made gradually, layer by layer. This type has a limitation on
-    #                    the number of segments: one pair of opposite sides must have the
-    #                    same number of segments, the other pair must have an even difference
-    #                    between the numbers of segments on the sides.
-    #  @param triangleVertex: vertex of a trilateral geometrical face, around which triangles
-    #                  will be created while other elements will be quadrangles.
-    #                  Vertex can be either a GEOM_Object or a vertex ID within the
-    #                  shape to mesh
-    #  @param UseExisting: if ==true - searches for the existing hypothesis created with
-    #                  the same parameters, else (default) - creates a new one
-    #  @ingroup l3_hypos_quad
-    def QuadrangleParameters(self, quadType=StdMeshers.QUAD_STANDARD, triangleVertex=0, UseExisting=0):
-        vertexID = triangleVertex
-        if isinstance( triangleVertex, geompyDC.GEOM._objref_GEOM_Object ):
-            vertexID = self.mesh.geompyD.GetSubShapeID( self.mesh.geom, triangleVertex )
-        if not self.params:
-            compFun = lambda hyp,args: \
-                      hyp.GetQuadType() == args[0] and \
-                      ( hyp.GetTriaVertex()==args[1] or ( hyp.GetTriaVertex()<1 and args[1]<1))
-            self.params = self.Hypothesis("QuadrangleParams", [quadType,vertexID],
-                                          UseExisting = UseExisting, CompareMethod=compFun)
-            pass
-        if self.params.GetQuadType() != quadType:
-            self.params.SetQuadType(quadType)
-        if vertexID > 0:
-            self.params.SetTriaVertex( vertexID )
-        return self.params
-
-    ## Defines "QuadrangleParams" hypothesis with a type of quadrangulation that only
-    #   quadrangles are built in the transition area along the finer meshed sides,
-    #   iff the total quantity of segments on all four sides of the face is even.
-    #  @param reversed if True, transition area is located along the coarser meshed sides.
-    #  @param UseExisting: if ==true - searches for the existing hypothesis created with
-    #                  the same parameters, else (default) - creates a new one
-    #  @ingroup l3_hypos_quad
-    def QuadranglePreference(self, reversed=False, UseExisting=0):
-        if reversed:
-            return self.QuadrangleParameters(QUAD_QUADRANGLE_PREF_REVERSED,UseExisting=UseExisting)
-        return self.QuadrangleParameters(QUAD_QUADRANGLE_PREF,UseExisting=UseExisting)
-
-    ## Defines "QuadrangleParams" hypothesis with a type of quadrangulation that only
-    #   triangles are built in the transition area along the finer meshed sides.
-    #  @param UseExisting: if ==true - searches for the existing hypothesis created with
-    #                  the same parameters, else (default) - creates a new one
-    #  @ingroup l3_hypos_quad
-    def TrianglePreference(self, UseExisting=0):
-        return self.QuadrangleParameters(QUAD_TRIANGLE_PREF,UseExisting=UseExisting)
-
-    ## Defines "QuadrangleParams" hypothesis with a type of quadrangulation that only
-    #   quadrangles are built and the transition between the sides is made gradually,
-    #   layer by layer. This type has a limitation on the number of segments: one pair
-    #   of opposite sides must have the same number of segments, the other pair must
-    #   have an even difference between the numbers of segments on the sides.
-    #  @param UseExisting: if ==true - searches for the existing hypothesis created with
-    #                  the same parameters, else (default) - creates a new one
-    #  @ingroup l3_hypos_quad
-    def Reduced(self, UseExisting=0):
-        return self.QuadrangleParameters(QUAD_REDUCED,UseExisting=UseExisting)
-
-    ## Defines "QuadrangleParams" hypothesis with QUAD_STANDARD type of quadrangulation
-    #  @param vertex: vertex of a trilateral geometrical face, around which triangles
-    #                 will be created while other elements will be quadrangles.
-    #                 Vertex can be either a GEOM_Object or a vertex ID within the
-    #                 shape to mesh
-    #  @param UseExisting: if ==true - searches for the existing hypothesis created with
-    #                   the same parameters, else (default) - creates a new one
-    #  @ingroup l3_hypos_quad
-    def TriangleVertex(self, vertex, UseExisting=0):
-        return self.QuadrangleParameters(QUAD_STANDARD,vertex,UseExisting)
-
-
-# Public class: Mesh_Tetrahedron
-# ------------------------------
-
-## Defines a tetrahedron 3D algorithm
-#
-#  @ingroup l3_algos_basic
-class Mesh_Tetrahedron(Mesh_Algorithm):
-
-    params = 0
-    algoType = 0
-
-    ## Private constructor.
-    def __init__(self, mesh, algoType, geom=0):
-        Mesh_Algorithm.__init__(self)
-
-        if algoType == NETGEN:
-            CheckPlugin(NETGEN)
-            self.Create(mesh, geom, "NETGEN_3D", "libNETGENEngine.so")
-            pass
-
-        elif algoType == FULL_NETGEN:
-            CheckPlugin(NETGEN)
-            self.Create(mesh, geom, "NETGEN_2D3D", "libNETGENEngine.so")
-            pass
-
-        elif algoType == GHS3D:
-            CheckPlugin(GHS3D)
-            self.Create(mesh, geom, "GHS3D_3D" , "libGHS3DEngine.so")
-            pass
-
-        elif algoType == GHS3DPRL:
-            CheckPlugin(GHS3DPRL)
-            self.Create(mesh, geom, "GHS3DPRL_3D" , "libGHS3DPRLEngine.so")
-            pass
-
-        self.algoType = algoType
-
-    ## Defines "MaxElementVolume" hypothesis to give the maximun volume of each tetrahedron
-    #  @param vol for the maximum volume of each tetrahedron
-    #  @param UseExisting if ==true - searches for the existing hypothesis created with
-    #                   the same parameters, else (default) - creates a new one
-    #  @ingroup l3_hypos_maxvol
-    def MaxElementVolume(self, vol, UseExisting=0):
-        if self.algoType == NETGEN:
-            hyp = self.Hypothesis("MaxElementVolume", [vol], UseExisting=UseExisting,
-                                  CompareMethod=self.CompareMaxElementVolume)
-            hyp.SetMaxElementVolume(vol)
-            return hyp
-        elif self.algoType == FULL_NETGEN:
-            self.Parameters(SIMPLE).SetMaxElementVolume(vol)
-        return None
-
-    ## Checks if the given "MaxElementVolume" hypothesis has the same parameters as the given arguments
-    def CompareMaxElementVolume(self, hyp, args):
-        return IsEqual(hyp.GetMaxElementVolume(), args[0])
-
-    ## Defines hypothesis having several parameters
-    #
-    #  @ingroup l3_hypos_netgen
-    def Parameters(self, which=SOLE):
-        if not self.params:
-
-            if self.algoType == FULL_NETGEN:
-                if which == SIMPLE:
-                    self.params = self.Hypothesis("NETGEN_SimpleParameters_3D", [],
-                                                  "libNETGENEngine.so", UseExisting=0)
-                else:
-                    self.params = self.Hypothesis("NETGEN_Parameters", [],
-                                                  "libNETGENEngine.so", UseExisting=0)
-
-            elif self.algoType == NETGEN:
-                self.params = self.Hypothesis("NETGEN_Parameters_3D", [],
-                                              "libNETGENEngine.so", UseExisting=0)
-
-            elif self.algoType == GHS3D:
-                self.params = self.Hypothesis("GHS3D_Parameters", [],
-                                              "libGHS3DEngine.so", UseExisting=0)
-
-            elif self.algoType == GHS3DPRL:
-                self.params = self.Hypothesis("GHS3DPRL_Parameters", [],
-                                              "libGHS3DPRLEngine.so", UseExisting=0)
-            else:
-                print "Warning: %s supports no multi-parameter hypothesis"%self.algo.GetName()
-
-        return self.params
-
-    ## Sets MaxSize
-    #  Parameter of FULL_NETGEN and NETGEN
-    #  @ingroup l3_hypos_netgen
-    def SetMaxSize(self, theSize):
-        self.Parameters().SetMaxSize(theSize)
-
-    ## Sets SecondOrder flag
-    #  Parameter of FULL_NETGEN
-    #  @ingroup l3_hypos_netgen
-    def SetSecondOrder(self, theVal):
-        self.Parameters().SetSecondOrder(theVal)
-
-    ## Sets Optimize flag
-    #  Parameter of FULL_NETGEN and NETGEN
-    #  @ingroup l3_hypos_netgen
-    def SetOptimize(self, theVal):
-        self.Parameters().SetOptimize(theVal)
-
-    ## Sets Fineness
-    #  @param theFineness is:
-    #  VeryCoarse, Coarse, Moderate, Fine, VeryFine or Custom
-    #  Parameter of FULL_NETGEN
-    #  @ingroup l3_hypos_netgen
-    def SetFineness(self, theFineness):
-        self.Parameters().SetFineness(theFineness)
-
-    ## Sets GrowthRate
-    #  Parameter of FULL_NETGEN
-    #  @ingroup l3_hypos_netgen
-    def SetGrowthRate(self, theRate):
-        self.Parameters().SetGrowthRate(theRate)
-
-    ## Sets NbSegPerEdge
-    #  Parameter of FULL_NETGEN
-    #  @ingroup l3_hypos_netgen
-    def SetNbSegPerEdge(self, theVal):
-        self.Parameters().SetNbSegPerEdge(theVal)
-
-    ## Sets NbSegPerRadius
-    #  Parameter of FULL_NETGEN
-    #  @ingroup l3_hypos_netgen
-    def SetNbSegPerRadius(self, theVal):
-        self.Parameters().SetNbSegPerRadius(theVal)
-
-    ## Sets number of segments overriding value set by SetLocalLength()
-    #  Only for algoType == NETGEN_FULL
-    #  @ingroup l3_hypos_netgen
-    def SetNumberOfSegments(self, theVal):
-        self.Parameters(SIMPLE).SetNumberOfSegments(theVal)
-
-    ## Sets number of segments overriding value set by SetNumberOfSegments()
-    #  Only for algoType == NETGEN_FULL
-    #  @ingroup l3_hypos_netgen
-    def SetLocalLength(self, theVal):
-        self.Parameters(SIMPLE).SetLocalLength(theVal)
-
-    ## Defines "MaxElementArea" parameter of NETGEN_SimpleParameters_3D hypothesis.
-    #  Overrides value set by LengthFromEdges()
-    #  Only for algoType == NETGEN_FULL
-    #  @ingroup l3_hypos_netgen
-    def MaxElementArea(self, area):
-        self.Parameters(SIMPLE).SetMaxElementArea(area)
-
-    ## Defines "LengthFromEdges" parameter of NETGEN_SimpleParameters_3D hypothesis
-    #  Overrides value set by MaxElementArea()
-    #  Only for algoType == NETGEN_FULL
-    #  @ingroup l3_hypos_netgen
-    def LengthFromEdges(self):
-        self.Parameters(SIMPLE).LengthFromEdges()
-
-    ## Defines "LengthFromFaces" parameter of NETGEN_SimpleParameters_3D hypothesis
-    #  Overrides value set by MaxElementVolume()
-    #  Only for algoType == NETGEN_FULL
-    #  @ingroup l3_hypos_netgen
-    def LengthFromFaces(self):
-        self.Parameters(SIMPLE).LengthFromFaces()
-
-    ## To mesh "holes" in a solid or not. Default is to mesh.
-    #  @ingroup l3_hypos_ghs3dh
-    def SetToMeshHoles(self, toMesh):
-        #  Parameter of GHS3D
-        if self.Parameters():
-            self.params.SetToMeshHoles(toMesh)
-
-    ## Set Optimization level:
-    #   None_Optimization, Light_Optimization, Standard_Optimization, StandardPlus_Optimization,
-    #   Strong_Optimization.
-    # Default is Standard_Optimization
-    #  @ingroup l3_hypos_ghs3dh
-    def SetOptimizationLevel(self, level):
-        #  Parameter of GHS3D
-        if self.Parameters():
-            self.params.SetOptimizationLevel(level)
-
-    ## Maximal size of memory to be used by the algorithm (in Megabytes).
-    #  @ingroup l3_hypos_ghs3dh
-    def SetMaximumMemory(self, MB):
-        #  Advanced parameter of GHS3D
-        if self.Parameters():
-            self.params.SetMaximumMemory(MB)
-
-    ## Initial size of memory to be used by the algorithm (in Megabytes) in
-    #  automatic memory adjustment mode.
-    #  @ingroup l3_hypos_ghs3dh
-    def SetInitialMemory(self, MB):
-        #  Advanced parameter of GHS3D
-        if self.Parameters():
-            self.params.SetInitialMemory(MB)
-
-    ## Path to working directory.
-    #  @ingroup l3_hypos_ghs3dh
-    def SetWorkingDirectory(self, path):
-        #  Advanced parameter of GHS3D
-        if self.Parameters():
-            self.params.SetWorkingDirectory(path)
-
-    ## To keep working files or remove them. Log file remains in case of errors anyway.
-    #  @ingroup l3_hypos_ghs3dh
-    def SetKeepFiles(self, toKeep):
-        #  Advanced parameter of GHS3D and GHS3DPRL
-        if self.Parameters():
-            self.params.SetKeepFiles(toKeep)
-
-    ## To set verbose level [0-10]. <ul>
-    #<li> 0 - no standard output,
-    #<li> 2 - prints the data, quality statistics of the skin and final meshes and
-    #     indicates when the final mesh is being saved. In addition the software
-    #     gives indication regarding the CPU time.
-    #<li>10 - same as 2 plus the main steps in the computation, quality statistics
-    #     histogram of the skin mesh, quality statistics histogram together with
-    #     the characteristics of the final mesh.</ul>
-    #  @ingroup l3_hypos_ghs3dh
-    def SetVerboseLevel(self, level):
-        #  Advanced parameter of GHS3D
-        if self.Parameters():
-            self.params.SetVerboseLevel(level)
-
-    ## To create new nodes.
-    #  @ingroup l3_hypos_ghs3dh
-    def SetToCreateNewNodes(self, toCreate):
-        #  Advanced parameter of GHS3D
-        if self.Parameters():
-            self.params.SetToCreateNewNodes(toCreate)
-
-    ## To use boundary recovery version which tries to create mesh on a very poor
-    #  quality surface mesh.
-    #  @ingroup l3_hypos_ghs3dh
-    def SetToUseBoundaryRecoveryVersion(self, toUse):
-        #  Advanced parameter of GHS3D
-        if self.Parameters():
-            self.params.SetToUseBoundaryRecoveryVersion(toUse)
-
-    ## Applies finite-element correction by replacing overconstrained elements where
-    #  it is possible. The process is cutting first the overconstrained edges and
-    #  second the overconstrained facets. This insure that no edges have two boundary
-    #  vertices and that no facets have three boundary vertices.
-    #  @ingroup l3_hypos_ghs3dh
-    def SetFEMCorrection(self, toUseFem):
-        #  Advanced parameter of GHS3D
-        if self.Parameters():
-            self.params.SetFEMCorrection(toUseFem)
-
-    ## To removes initial central point.
-    #  @ingroup l3_hypos_ghs3dh
-    def SetToRemoveCentralPoint(self, toRemove):
-        #  Advanced parameter of GHS3D
-        if self.Parameters():
-            self.params.SetToRemoveCentralPoint(toRemove)
-
-    ## To set an enforced vertex.
-    #  @param x            : x coordinate
-    #  @param y            : y coordinate
-    #  @param z            : z coordinate
-    #  @param size         : size of 1D element around enforced vertex
-    #  @param vertexName   : name of the enforced vertex
-    #  @param groupName    : name of the group
-    #  @ingroup l3_hypos_ghs3dh
-    def SetEnforcedVertex(self, x, y, z, size, vertexName = "", groupName = ""):
-        #  Advanced parameter of GHS3D
-        if self.Parameters():
-          if vertexName == "":
-            if groupName == "":
-              return self.params.SetEnforcedVertex(x, y, z, size)
-            else:
-              return self.params.SetEnforcedVertexWithGroup(x, y, z, size, groupName)
-          else:
-            if groupName == "":
-              return self.params.SetEnforcedVertexNamed(x, y, z, size, vertexName)
-            else:
-              return self.params.SetEnforcedVertexNamedWithGroup(x, y, z, size, vertexName, groupName)
-
-    ## To set an enforced vertex given a GEOM vertex, group or compound.
-    #  @param theVertex    : GEOM vertex (or group, compound) to be projected on theFace.
-    #  @param size         : size of 1D element around enforced vertex
-    #  @param groupName    : name of the group
-    #  @ingroup l3_hypos_ghs3dh
-    def SetEnforcedVertexGeom(self, theVertex, size, groupName = ""):
-        AssureGeomPublished( self.mesh, theVertex )
-        #  Advanced parameter of GHS3D
-        if self.Parameters():
-          if groupName == "":
-            return self.params.SetEnforcedVertexGeom(theVertex, size)
-          else:
-            return self.params.SetEnforcedVertexGeomWithGroup(theVertex, size, groupName)
-
-    ## To remove an enforced vertex.
-    #  @param x            : x coordinate
-    #  @param y            : y coordinate
-    #  @param z            : z coordinate
-    #  @ingroup l3_hypos_ghs3dh
-    def RemoveEnforcedVertex(self, x, y, z):
-        #  Advanced parameter of GHS3D
-        if self.Parameters():
-          return self.params.RemoveEnforcedVertex(x, y, z)
-
-    ## To remove an enforced vertex given a GEOM vertex, group or compound.
-    #  @param theVertex    : GEOM vertex (or group, compound) to be projected on theFace.
-    #  @ingroup l3_hypos_ghs3dh
-    def RemoveEnforcedVertexGeom(self, theVertex):
-        AssureGeomPublished( self.mesh, theVertex )
-        #  Advanced parameter of GHS3D
-        if self.Parameters():
-          return self.params.RemoveEnforcedVertexGeom(theVertex)
-
-    ## To set an enforced mesh with given size and add the enforced elements in the group "groupName".
-    #  @param theSource    : source mesh which provides constraint elements/nodes
-    #  @param elementType  : SMESH.ElementType (NODE, EDGE or FACE)
-    #  @param size         : size of elements around enforced elements. Unused if -1.
-    #  @param groupName    : group in which enforced elements will be added. Unused if "".
-    #  @ingroup l3_hypos_ghs3dh
-    def SetEnforcedMesh(self, theSource, elementType, size = -1, groupName = ""):
-        #  Advanced parameter of GHS3D
-        if self.Parameters():
-          if size >= 0:
-            if groupName != "":
-              return self.params.SetEnforcedMesh(theSource, elementType)
-            else:
-              return self.params.SetEnforcedMeshWithGroup(theSource, elementType, groupName)
-          else:
-            if groupName != "":
-              return self.params.SetEnforcedMeshSize(theSource, elementType, size)
-            else:
-              return self.params.SetEnforcedMeshSizeWithGroup(theSource, elementType, size, groupName)
-
-    ## Sets command line option as text.
-    #  @ingroup l3_hypos_ghs3dh
-    def SetTextOption(self, option):
-        #  Advanced parameter of GHS3D
-        if self.Parameters():
-            self.params.SetTextOption(option)
-
-    ## Sets MED files name and path.
-    def SetMEDName(self, value):
-        if self.Parameters():
-            self.params.SetMEDName(value)
-
-    ## Sets the number of partition of the initial mesh
-    def SetNbPart(self, value):
-        if self.Parameters():
-            self.params.SetNbPart(value)
-
-    ## When big mesh, start tepal in background
-    def SetBackground(self, value):
-        if self.Parameters():
-            self.params.SetBackground(value)
-
-# Public class: Mesh_Hexahedron
-# ------------------------------
-
-## Defines a hexahedron 3D algorithm
-#
-#  @ingroup l3_algos_basic
-class Mesh_Hexahedron(Mesh_Algorithm):
-
-    params = 0
-    algoType = 0
-
-    ## Private constructor.
-    def __init__(self, mesh, algoType=Hexa, geom=0):
-        Mesh_Algorithm.__init__(self)
-
-        self.algoType = algoType
-
-        if algoType == Hexa:
-            self.Create(mesh, geom, "Hexa_3D")
-            pass
-
-        elif algoType == Hexotic:
-            CheckPlugin(Hexotic)
-            self.Create(mesh, geom, "Hexotic_3D", "libHexoticEngine.so")
-            pass
-
-    ## Defines "MinMaxQuad" hypothesis to give three hexotic parameters
-    #  @ingroup l3_hypos_hexotic
-    def MinMaxQuad(self, min=3, max=8, quad=True):
-        self.params = self.Hypothesis("Hexotic_Parameters", [], "libHexoticEngine.so",
-                                      UseExisting=0)
-        self.params.SetHexesMinLevel(min)
-        self.params.SetHexesMaxLevel(max)
-        self.params.SetHexoticQuadrangles(quad)
-        return self.params
-
-# Deprecated, only for compatibility!
-# Public class: Mesh_Netgen
-# ------------------------------
-
-## Defines a NETGEN-based 2D or 3D algorithm
-#  that needs no discrete boundary (i.e. independent)
-#
-#  This class is deprecated, only for compatibility!
-#
-#  More details.
-#  @ingroup l3_algos_basic
-class Mesh_Netgen(Mesh_Algorithm):
-
-    is3D = 0
-
-    ## Private constructor.
-    def __init__(self, mesh, is3D, geom=0):
-        Mesh_Algorithm.__init__(self)
-
-        CheckPlugin(NETGEN)
-
-        self.is3D = is3D
-        if is3D:
-            self.Create(mesh, geom, "NETGEN_2D3D", "libNETGENEngine.so")
-            pass
-
-        else:
-            self.Create(mesh, geom, "NETGEN_2D", "libNETGENEngine.so")
-            pass
-
-    ## Defines the hypothesis containing parameters of the algorithm
-    def Parameters(self):
-        if self.is3D:
-            hyp = self.Hypothesis("NETGEN_Parameters", [],
-                                  "libNETGENEngine.so", UseExisting=0)
-        else:
-            hyp = self.Hypothesis("NETGEN_Parameters_2D", [],
-                                  "libNETGENEngine.so", UseExisting=0)
-        return hyp
-
-# Public class: Mesh_Projection1D
-# ------------------------------
-
-## Defines a projection 1D algorithm
-#  @ingroup l3_algos_proj
-#
-class Mesh_Projection1D(Mesh_Algorithm):
-
-    ## Private constructor.
-    def __init__(self, mesh, geom=0):
-        Mesh_Algorithm.__init__(self)
-        self.Create(mesh, geom, "Projection_1D")
-
-    ## Defines "Source Edge" hypothesis, specifying a meshed edge, from where
-    #  a mesh pattern is taken, and, optionally, the association of vertices
-    #  between the source edge and a target edge (to which a hypothesis is assigned)
-    #  @param edge from which nodes distribution is taken
-    #  @param mesh from which nodes distribution is taken (optional)
-    #  @param srcV a vertex of \a edge to associate with \a tgtV (optional)
-    #  @param tgtV a vertex of \a the edge to which the algorithm is assigned,
-    #  to associate with \a srcV (optional)
-    #  @param UseExisting if ==true - searches for the existing hypothesis created with
-    #                     the same parameters, else (default) - creates a new one
-    def SourceEdge(self, edge, mesh=None, srcV=None, tgtV=None, UseExisting=0):
-        AssureGeomPublished( self.mesh, edge )
-        AssureGeomPublished( self.mesh, srcV )
-        AssureGeomPublished( self.mesh, tgtV )
-        hyp = self.Hypothesis("ProjectionSource1D", [edge,mesh,srcV,tgtV],
-                              UseExisting=0)
-                              #UseExisting=UseExisting, CompareMethod=self.CompareSourceEdge)
-        hyp.SetSourceEdge( edge )
-        if isinstance(mesh, Mesh):
-            mesh = mesh.GetMesh()
-        hyp.SetSourceMesh( mesh )
-        hyp.SetVertexAssociation( srcV, tgtV )
-        return hyp
-
-    ## Checks if the given "SourceEdge" hypothesis has the same parameters as the given arguments
-    #def CompareSourceEdge(self, hyp, args):
-    #    # it does not seem to be useful to reuse the existing "SourceEdge" hypothesis
-    #    return False
-
-
-# Public class: Mesh_Projection2D
-# ------------------------------
-
-## Defines a projection 2D algorithm
-#  @ingroup l3_algos_proj
-#
-class Mesh_Projection2D(Mesh_Algorithm):
-
-    ## Private constructor.
-    def __init__(self, mesh, geom=0, algoName="Projection_2D"):
-        Mesh_Algorithm.__init__(self)
-        self.Create(mesh, geom, algoName)
-
-    ## Defines "Source Face" hypothesis, specifying a meshed face, from where
-    #  a mesh pattern is taken, and, optionally, the association of vertices
-    #  between the source face and the target face (to which a hypothesis is assigned)
-    #  @param face from which the mesh pattern is taken
-    #  @param mesh from which the mesh pattern is taken (optional)
-    #  @param srcV1 a vertex of \a face to associate with \a tgtV1 (optional)
-    #  @param tgtV1 a vertex of \a the face to which the algorithm is assigned,
-    #               to associate with \a srcV1 (optional)
-    #  @param srcV2 a vertex of \a face to associate with \a tgtV1 (optional)
-    #  @param tgtV2 a vertex of \a the face to which the algorithm is assigned,
-    #               to associate with \a srcV2 (optional)
-    #  @param UseExisting if ==true - forces the search for the existing hypothesis created with
-    #                     the same parameters, else (default) - forces the creation a new one
-    #
-    #  Note: all association vertices must belong to one edge of a face
-    def SourceFace(self, face, mesh=None, srcV1=None, tgtV1=None,
-                   srcV2=None, tgtV2=None, UseExisting=0):
-        for geom in [ face, srcV1, tgtV1, srcV2, tgtV2 ]:
-            AssureGeomPublished( self.mesh, geom )
-        hyp = self.Hypothesis("ProjectionSource2D", [face,mesh,srcV1,tgtV1,srcV2,tgtV2],
-                              UseExisting=0)
-                              #UseExisting=UseExisting, CompareMethod=self.CompareSourceFace)
-        hyp.SetSourceFace( face )
-        if isinstance(mesh, Mesh):
-            mesh = mesh.GetMesh()
-        hyp.SetSourceMesh( mesh )
-        hyp.SetVertexAssociation( srcV1, srcV2, tgtV1, tgtV2 )
-        return hyp
-
-    ## Checks if the given "SourceFace" hypothesis has the same parameters as the given arguments
-    #def CompareSourceFace(self, hyp, args):
-    #    # it does not seem to be useful to reuse the existing "SourceFace" hypothesis
-    #    return False
-
-# Public class: Mesh_Projection3D
-# ------------------------------
-
-## Defines a projection 3D algorithm
-#  @ingroup l3_algos_proj
-#
-class Mesh_Projection3D(Mesh_Algorithm):
-
-    ## Private constructor.
-    def __init__(self, mesh, geom=0):
-        Mesh_Algorithm.__init__(self)
-        self.Create(mesh, geom, "Projection_3D")
-
-    ## Defines the "Source Shape 3D" hypothesis, specifying a meshed solid, from where
-    #  the mesh pattern is taken, and, optionally, the  association of vertices
-    #  between the source and the target solid  (to which a hipothesis is assigned)
-    #  @param solid from where the mesh pattern is taken
-    #  @param mesh from where the mesh pattern is taken (optional)
-    #  @param srcV1 a vertex of \a solid to associate with \a tgtV1 (optional)
-    #  @param tgtV1 a vertex of \a the solid where the algorithm is assigned,
-    #  to associate with \a srcV1 (optional)
-    #  @param srcV2 a vertex of \a solid to associate with \a tgtV1 (optional)
-    #  @param tgtV2 a vertex of \a the solid to which the algorithm is assigned,
-    #  to associate with \a srcV2 (optional)
-    #  @param UseExisting - if ==true - searches for the existing hypothesis created with
-    #                     the same parameters, else (default) - creates a new one
-    #
-    #  Note: association vertices must belong to one edge of a solid
-    def SourceShape3D(self, solid, mesh=0, srcV1=0, tgtV1=0,
-                      srcV2=0, tgtV2=0, UseExisting=0):
-        for geom in [ solid, srcV1, tgtV1, srcV2, tgtV2 ]:
-            AssureGeomPublished( self.mesh, geom )
-        hyp = self.Hypothesis("ProjectionSource3D",
-                              [solid,mesh,srcV1,tgtV1,srcV2,tgtV2],
-                              UseExisting=0)
-                              #UseExisting=UseExisting, CompareMethod=self.CompareSourceShape3D)
-        hyp.SetSource3DShape( solid )
-        if isinstance(mesh, Mesh):
-            mesh = mesh.GetMesh()
-        hyp.SetSourceMesh( mesh )
-        if srcV1 and srcV2 and tgtV1 and tgtV2:
-            hyp.SetVertexAssociation( srcV1, srcV2, tgtV1, tgtV2 )
-        #elif srcV1 or srcV2 or tgtV1 or tgtV2:
-        return hyp
-
-    ## Checks if the given "SourceShape3D" hypothesis has the same parameters as given arguments
-    #def CompareSourceShape3D(self, hyp, args):
-    #    # seems to be not really useful to reuse existing "SourceShape3D" hypothesis
-    #    return False
-
-
-# Public class: Mesh_Prism
-# ------------------------
-
-## Defines a 3D extrusion algorithm
-#  @ingroup l3_algos_3dextr
-#
-class Mesh_Prism3D(Mesh_Algorithm):
-
-    ## Private constructor.
-    def __init__(self, mesh, geom=0):
-        Mesh_Algorithm.__init__(self)
-        self.Create(mesh, geom, "Prism_3D")
-
-# Public class: Mesh_RadialPrism
-# -------------------------------
-
-## Defines a Radial Prism 3D algorithm
-#  @ingroup l3_algos_radialp
-#
-class Mesh_RadialPrism3D(Mesh_Algorithm):
-
-    ## Private constructor.
-    def __init__(self, mesh, geom=0):
-        Mesh_Algorithm.__init__(self)
-        self.Create(mesh, geom, "RadialPrism_3D")
-
-        self.distribHyp = self.Hypothesis("LayerDistribution", UseExisting=0)
-        self.nbLayers = None
-
-    ## Return 3D hypothesis holding the 1D one
-    def Get3DHypothesis(self):
-        return self.distribHyp
-
-    ## Private method creating a 1D hypothesis and storing it in the LayerDistribution
-    #  hypothesis. Returns the created hypothesis
-    def OwnHypothesis(self, hypType, args=[], so="libStdMeshersEngine.so"):
-        #print "OwnHypothesis",hypType
-        if not self.nbLayers is None:
-            self.mesh.GetMesh().RemoveHypothesis( self.geom, self.nbLayers )
-            self.mesh.GetMesh().AddHypothesis( self.geom, self.distribHyp )
-        study = self.mesh.smeshpyD.GetCurrentStudy() # prevents publishing own 1D hypothesis
-        self.mesh.smeshpyD.SetCurrentStudy( None )
-        hyp = self.mesh.smeshpyD.CreateHypothesis(hypType, so)
-        self.mesh.smeshpyD.SetCurrentStudy( study ) # enables publishing
-        self.distribHyp.SetLayerDistribution( hyp )
-        return hyp
-
-    ## Defines "NumberOfLayers" hypothesis, specifying the number of layers of
-    #  prisms to build between the inner and outer shells
-    #  @param n number of layers
-    #  @param UseExisting if ==true - searches for the existing hypothesis created with
-    #                     the same parameters, else (default) - creates a new one
-    def NumberOfLayers(self, n, UseExisting=0):
-        self.mesh.GetMesh().RemoveHypothesis( self.geom, self.distribHyp )
-        self.nbLayers = self.Hypothesis("NumberOfLayers", [n], UseExisting=UseExisting,
-                                        CompareMethod=self.CompareNumberOfLayers)
-        self.nbLayers.SetNumberOfLayers( n )
-        return self.nbLayers
-
-    ## Checks if the given "NumberOfLayers" hypothesis has the same parameters as the given arguments
-    def CompareNumberOfLayers(self, hyp, args):
-        return IsEqual(hyp.GetNumberOfLayers(), args[0])
-
-    ## Defines "LocalLength" hypothesis, specifying the segment length
-    #  to build between the inner and the outer shells
-    #  @param l the length of segments
-    #  @param p the precision of rounding
-    def LocalLength(self, l, p=1e-07):
-        hyp = self.OwnHypothesis("LocalLength", [l,p])
-        hyp.SetLength(l)
-        hyp.SetPrecision(p)
-        return hyp
-
-    ## Defines "NumberOfSegments" hypothesis, specifying the number of layers of
-    #  prisms to build between the inner and the outer shells.
-    #  @param n the number of layers
-    #  @param s the scale factor (optional)
-    def NumberOfSegments(self, n, s=[]):
-        if s == []:
-            hyp = self.OwnHypothesis("NumberOfSegments", [n])
-        else:
-            hyp = self.OwnHypothesis("NumberOfSegments", [n,s])
-            hyp.SetDistrType( 1 )
-            hyp.SetScaleFactor(s)
-        hyp.SetNumberOfSegments(n)
-        return hyp
-
-    ## Defines "Arithmetic1D" hypothesis, specifying the distribution of segments
-    #  to build between the inner and the outer shells with a length that changes in arithmetic progression
-    #  @param start  the length of the first segment
-    #  @param end    the length of the last  segment
-    def Arithmetic1D(self, start, end ):
-        hyp = self.OwnHypothesis("Arithmetic1D", [start, end])
-        hyp.SetLength(start, 1)
-        hyp.SetLength(end  , 0)
-        return hyp
-
-    ## Defines "StartEndLength" hypothesis, specifying distribution of segments
-    #  to build between the inner and the outer shells as geometric length increasing
-    #  @param start for the length of the first segment
-    #  @param end   for the length of the last  segment
-    def StartEndLength(self, start, end):
-        hyp = self.OwnHypothesis("StartEndLength", [start, end])
-        hyp.SetLength(start, 1)
-        hyp.SetLength(end  , 0)
-        return hyp
-
-    ## Defines "AutomaticLength" hypothesis, specifying the number of segments
-    #  to build between the inner and outer shells
-    #  @param fineness defines the quality of the mesh within the range [0-1]
-    def AutomaticLength(self, fineness=0):
-        hyp = self.OwnHypothesis("AutomaticLength")
-        hyp.SetFineness( fineness )
-        return hyp
-
-# Public class: Mesh_RadialQuadrangle1D2D
-# -------------------------------
-
-## Defines a Radial Quadrangle 1D2D algorithm
-#  @ingroup l2_algos_radialq
-#
-class Mesh_RadialQuadrangle1D2D(Mesh_Algorithm):
-
-    ## Private constructor.
-    def __init__(self, mesh, geom=0):
-        Mesh_Algorithm.__init__(self)
-        self.Create(mesh, geom, "RadialQuadrangle_1D2D")
-
-        self.distribHyp = None #self.Hypothesis("LayerDistribution2D", UseExisting=0)
-        self.nbLayers = None
-
-    ## Return 2D hypothesis holding the 1D one
-    def Get2DHypothesis(self):
-        return self.distribHyp
-
-    ## Private method creating a 1D hypothesis and storing it in the LayerDistribution
-    #  hypothesis. Returns the created hypothesis
-    def OwnHypothesis(self, hypType, args=[], so="libStdMeshersEngine.so"):
-        #print "OwnHypothesis",hypType
-        if self.nbLayers:
-            self.mesh.GetMesh().RemoveHypothesis( self.geom, self.nbLayers )
-        if self.distribHyp is None:
-            self.distribHyp = self.Hypothesis("LayerDistribution2D", UseExisting=0)
-        else:
-            self.mesh.GetMesh().AddHypothesis( self.geom, self.distribHyp )
-        study = self.mesh.smeshpyD.GetCurrentStudy() # prevents publishing own 1D hypothesis
-        self.mesh.smeshpyD.SetCurrentStudy( None )
-        hyp = self.mesh.smeshpyD.CreateHypothesis(hypType, so)
-        self.mesh.smeshpyD.SetCurrentStudy( study ) # enables publishing
-        self.distribHyp.SetLayerDistribution( hyp )
-        return hyp
-
-    ## Defines "NumberOfLayers" hypothesis, specifying the number of layers
-    #  @param n number of layers
-    #  @param UseExisting if ==true - searches for the existing hypothesis created with
-    #                     the same parameters, else (default) - creates a new one
-    def NumberOfLayers(self, n, UseExisting=0):
-        if self.distribHyp:
-            self.mesh.GetMesh().RemoveHypothesis( self.geom, self.distribHyp )
-        self.nbLayers = self.Hypothesis("NumberOfLayers2D", [n], UseExisting=UseExisting,
-                                        CompareMethod=self.CompareNumberOfLayers)
-        self.nbLayers.SetNumberOfLayers( n )
-        return self.nbLayers
-
-    ## Checks if the given "NumberOfLayers" hypothesis has the same parameters as the given arguments
-    def CompareNumberOfLayers(self, hyp, args):
-        return IsEqual(hyp.GetNumberOfLayers(), args[0])
-
-    ## Defines "LocalLength" hypothesis, specifying the segment length
-    #  @param l the length of segments
-    #  @param p the precision of rounding
-    def LocalLength(self, l, p=1e-07):
-        hyp = self.OwnHypothesis("LocalLength", [l,p])
-        hyp.SetLength(l)
-        hyp.SetPrecision(p)
-        return hyp
-
-    ## Defines "NumberOfSegments" hypothesis, specifying the number of layers
-    #  @param n the number of layers
-    #  @param s the scale factor (optional)
-    def NumberOfSegments(self, n, s=[]):
-        if s == []:
-            hyp = self.OwnHypothesis("NumberOfSegments", [n])
-        else:
-            hyp = self.OwnHypothesis("NumberOfSegments", [n,s])
-            hyp.SetDistrType( 1 )
-            hyp.SetScaleFactor(s)
-        hyp.SetNumberOfSegments(n)
-        return hyp
-
-    ## Defines "Arithmetic1D" hypothesis, specifying the distribution of segments
-    #  with a length that changes in arithmetic progression
-    #  @param start  the length of the first segment
-    #  @param end    the length of the last  segment
-    def Arithmetic1D(self, start, end ):
-        hyp = self.OwnHypothesis("Arithmetic1D", [start, end])
-        hyp.SetLength(start, 1)
-        hyp.SetLength(end  , 0)
-        return hyp
-
-    ## Defines "StartEndLength" hypothesis, specifying distribution of segments
-    #  as geometric length increasing
-    #  @param start for the length of the first segment
-    #  @param end   for the length of the last  segment
-    def StartEndLength(self, start, end):
-        hyp = self.OwnHypothesis("StartEndLength", [start, end])
-        hyp.SetLength(start, 1)
-        hyp.SetLength(end  , 0)
-        return hyp
-
-    ## Defines "AutomaticLength" hypothesis, specifying the number of segments
-    #  @param fineness defines the quality of the mesh within the range [0-1]
-    def AutomaticLength(self, fineness=0):
-        hyp = self.OwnHypothesis("AutomaticLength")
-        hyp.SetFineness( fineness )
-        return hyp
-
-
-# Public class: Mesh_UseExistingElements
-# --------------------------------------
-## Defines a Radial Quadrangle 1D2D algorithm
-#  @ingroup l3_algos_basic
-#
-class Mesh_UseExistingElements(Mesh_Algorithm):
-
-    def __init__(self, dim, mesh, geom=0):
-        if dim == 1:
-            self.Create(mesh, geom, "Import_1D")
-        else:
-            self.Create(mesh, geom, "Import_1D2D")
-        return
-
-    ## Defines "Source edges" hypothesis, specifying groups of edges to import
-    #  @param groups list of groups of edges
-    #  @param toCopyMesh if True, the whole mesh \a groups belong to is imported
-    #  @param toCopyGroups if True, all groups of the mesh \a groups belong to are imported
-    #  @param UseExisting if ==true - searches for the existing hypothesis created with
-    #                     the same parameters, else (default) - creates a new one
-    def SourceEdges(self, groups, toCopyMesh=False, toCopyGroups=False, UseExisting=False):
-        if self.algo.GetName() != "Import_1D":
-            raise ValueError, "algoritm dimension mismatch"
-        for group in groups:
-            AssureGeomPublished( self.mesh, group )
-        hyp = self.Hypothesis("ImportSource1D", [groups, toCopyMesh, toCopyGroups],
-                              UseExisting=UseExisting, CompareMethod=self._compareHyp)
-        hyp.SetSourceEdges(groups)
-        hyp.SetCopySourceMesh(toCopyMesh, toCopyGroups)
-        return hyp
-
-    ## Defines "Source faces" hypothesis, specifying groups of faces to import
-    #  @param groups list of groups of faces
-    #  @param toCopyMesh if True, the whole mesh \a groups belong to is imported
-    #  @param toCopyGroups if True, all groups of the mesh \a groups belong to are imported
-    #  @param UseExisting if ==true - searches for the existing hypothesis created with
-    #                     the same parameters, else (default) - creates a new one
-    def SourceFaces(self, groups, toCopyMesh=False, toCopyGroups=False, UseExisting=False):
-        if self.algo.GetName() == "Import_1D":
-            raise ValueError, "algoritm dimension mismatch"
-        for group in groups:
-            AssureGeomPublished( self.mesh, group )
-        hyp = self.Hypothesis("ImportSource2D", [groups, toCopyMesh, toCopyGroups],
-                              UseExisting=UseExisting, CompareMethod=self._compareHyp)
-        hyp.SetSourceFaces(groups)
-        hyp.SetCopySourceMesh(toCopyMesh, toCopyGroups)
-        return hyp
-
-    def _compareHyp(self,hyp,args):
-        if hasattr( hyp, "GetSourceEdges"):
-            entries = hyp.GetSourceEdges()
-        else:
-            entries = hyp.GetSourceFaces()
-        groups = args[0]
-        toCopyMesh,toCopyGroups = hyp.GetCopySourceMesh()
-        if len(entries)==len(groups) and toCopyMesh==args[1] and toCopyGroups==args[2]:
-            entries2 = []
-            study = self.mesh.smeshpyD.GetCurrentStudy()
-            if study:
-                for g in groups:
-                    ior  = salome.orb.object_to_string(g)
-                    sobj = study.FindObjectIOR(ior)
-                    if sobj: entries2.append( sobj.GetID() )
-                    pass
-                pass
-            entries.sort()
-            entries2.sort()
-            return entries == entries2
-        return False
-
-# Public class: Mesh_Cartesian_3D
-# --------------------------------------
-## Defines a Body Fitting 3D algorithm
-#  @ingroup l3_algos_basic
-#
-class Mesh_Cartesian_3D(Mesh_Algorithm):
-
-    def __init__(self, mesh, geom=0):
-        self.Create(mesh, geom, "Cartesian_3D")
-        self.hyp = None
-        return
-
-    ## Defines "Body Fitting parameters" hypothesis
-    #  @param xGridDef is definition of the grid along the X asix.
-    #  It can be in either of two following forms:
-    #  - Explicit coordinates of nodes, e.g. [-1.5, 0.0, 3.1] or range( -100,200,10)
-    #  - Functions f(t) defining grid spacing at each point on grid axis. If there are
-    #    several functions, they must be accompanied by relative coordinates of
-    #    points dividing the whole shape into ranges where the functions apply; points
-    #    coodrinates should vary within (0.0, 1.0) range. Parameter \a t of the spacing
-    #    function f(t) varies from 0.0 to 1.0 witin a shape range. 
-    #    Examples:
-    #    - "10.5" - defines a grid with a constant spacing
-    #    - [["1", "1+10*t", "11"] [0.1, 0.6]] - defines different spacing in 3 ranges.
-    #  @param yGridDef defines the grid along the Y asix the same way as \a xGridDef does
-    #  @param zGridDef defines the grid along the Z asix the same way as \a xGridDef does
-    #  @param sizeThreshold (> 1.0) defines a minimal size of a polyhedron so that
-    #         a polyhedron of size less than hexSize/sizeThreshold is not created
-    #  @param UseExisting if ==true - searches for the existing hypothesis created with
-    #                     the same parameters, else (default) - creates a new one
-    def SetGrid(self, xGridDef, yGridDef, zGridDef, sizeThreshold=4.0, UseExisting=False):
-        if not self.hyp:
-            self.hyp = self.Hypothesis("CartesianParameters3D",
-                                       [xGridDef, yGridDef, zGridDef, sizeThreshold],
-                                       UseExisting=UseExisting, CompareMethod=self._compareHyp)
-        if not self.mesh.IsUsedHypothesis( self.hyp, self.geom ):
-            self.mesh.AddHypothesis( self.hyp, self.geom )
-
-        for axis, gridDef in enumerate( [xGridDef, yGridDef, zGridDef]):
-            if not gridDef: raise ValueError, "Empty grid definition"
-            if isinstance( gridDef, str ):
-                self.hyp.SetGridSpacing( [gridDef], [], axis )
-            elif isinstance( gridDef[0], str ):
-                self.hyp.SetGridSpacing( gridDef, [], axis )
-            elif isinstance( gridDef[0], int ) or \
-                 isinstance( gridDef[0], float ):
-                self.hyp.SetGrid(gridDef, axis )
-            else:
-                self.hyp.SetGridSpacing( gridDef[0], gridDef[1], axis )
-        self.hyp.SetSizeThreshold( sizeThreshold )
-        return self.hyp
-
-    def _compareHyp(self,hyp,args):
-        # not implemented yet
-        return False
-
-# Public class: Mesh_UseExisting
-# -------------------------------
-class Mesh_UseExisting(Mesh_Algorithm):
-
-    def __init__(self, dim, mesh, geom=0):
-        if dim == 1:
-            self.Create(mesh, geom, "UseExisting_1D")
-        else:
-            self.Create(mesh, geom, "UseExisting_2D")
-
-
-import salome_notebook
-notebook = salome_notebook.notebook
-
-##Return values of the notebook variables
-def ParseParameters(last, nbParams,nbParam, value):
-    result = None
-    strResult = ""
-    counter = 0
-    listSize = len(last)
-    for n in range(0,nbParams):
-        if n+1 != nbParam:
-            if counter < listSize:
-                strResult = strResult + last[counter]
-            else:
-                strResult = strResult + ""
-        else:
-            if isinstance(value, str):
-                if notebook.isVariable(value):
-                    result = notebook.get(value)
-                    strResult=strResult+value
-                else:
-                    raise RuntimeError, "Variable with name '" + value + "' doesn't exist!!!"
-            else:
-                strResult=strResult+str(value)
-                result = value
-        if nbParams - 1 != counter:
-            strResult=strResult+var_separator #":"
-        counter = counter+1
-    return result, strResult
-
-#Wrapper class for StdMeshers_LocalLength hypothesis
-class LocalLength(StdMeshers._objref_StdMeshers_LocalLength):
-
-    ## Set Length parameter value
-    #  @param length numerical value or name of variable from notebook
-    def SetLength(self, length):
-        length,parameters = ParseParameters(StdMeshers._objref_StdMeshers_LocalLength.GetLastParameters(self),2,1,length)
-        StdMeshers._objref_StdMeshers_LocalLength.SetParameters(self,parameters)
-        StdMeshers._objref_StdMeshers_LocalLength.SetLength(self,length)
-
-   ## Set Precision parameter value
-   #  @param precision numerical value or name of variable from notebook
-    def SetPrecision(self, precision):
-        precision,parameters = ParseParameters(StdMeshers._objref_StdMeshers_LocalLength.GetLastParameters(self),2,2,precision)
-        StdMeshers._objref_StdMeshers_LocalLength.SetParameters(self,parameters)
-        StdMeshers._objref_StdMeshers_LocalLength.SetPrecision(self, precision)
-
-#Registering the new proxy for LocalLength
-omniORB.registerObjref(StdMeshers._objref_StdMeshers_LocalLength._NP_RepositoryId, LocalLength)
-
-
-#Wrapper class for StdMeshers_LayerDistribution hypothesis
-class LayerDistribution(StdMeshers._objref_StdMeshers_LayerDistribution):
-
-    def SetLayerDistribution(self, hypo):
-        StdMeshers._objref_StdMeshers_LayerDistribution.SetParameters(self,hypo.GetParameters())
-        hypo.ClearParameters();
-        StdMeshers._objref_StdMeshers_LayerDistribution.SetLayerDistribution(self,hypo)
-
-#Registering the new proxy for LayerDistribution
-omniORB.registerObjref(StdMeshers._objref_StdMeshers_LayerDistribution._NP_RepositoryId, LayerDistribution)
-
-#Wrapper class for StdMeshers_SegmentLengthAroundVertex hypothesis
-class SegmentLengthAroundVertex(StdMeshers._objref_StdMeshers_SegmentLengthAroundVertex):
-
-    ## Set Length parameter value
-    #  @param length numerical value or name of variable from notebook
-    def SetLength(self, length):
-        length,parameters = ParseParameters(StdMeshers._objref_StdMeshers_SegmentLengthAroundVertex.GetLastParameters(self),1,1,length)
-        StdMeshers._objref_StdMeshers_SegmentLengthAroundVertex.SetParameters(self,parameters)
-        StdMeshers._objref_StdMeshers_SegmentLengthAroundVertex.SetLength(self,length)
-
-#Registering the new proxy for SegmentLengthAroundVertex
-omniORB.registerObjref(StdMeshers._objref_StdMeshers_SegmentLengthAroundVertex._NP_RepositoryId, SegmentLengthAroundVertex)
-
-
-#Wrapper class for StdMeshers_Arithmetic1D hypothesis
-class Arithmetic1D(StdMeshers._objref_StdMeshers_Arithmetic1D):
-
-    ## Set Length parameter value
-    #  @param length   numerical value or name of variable from notebook
-    #  @param isStart  true is length is Start Length, otherwise false
-    def SetLength(self, length, isStart):
-        nb = 2
-        if isStart:
-            nb = 1
-        length,parameters = ParseParameters(StdMeshers._objref_StdMeshers_Arithmetic1D.GetLastParameters(self),2,nb,length)
-        StdMeshers._objref_StdMeshers_Arithmetic1D.SetParameters(self,parameters)
-        StdMeshers._objref_StdMeshers_Arithmetic1D.SetLength(self,length,isStart)
-
-#Registering the new proxy for Arithmetic1D
-omniORB.registerObjref(StdMeshers._objref_StdMeshers_Arithmetic1D._NP_RepositoryId, Arithmetic1D)
-
-#Wrapper class for StdMeshers_Deflection1D hypothesis
-class Deflection1D(StdMeshers._objref_StdMeshers_Deflection1D):
-
-    ## Set Deflection parameter value
-    #  @param deflection numerical value or name of variable from notebook
-    def SetDeflection(self, deflection):
-        deflection,parameters = ParseParameters(StdMeshers._objref_StdMeshers_Deflection1D.GetLastParameters(self),1,1,deflection)
-        StdMeshers._objref_StdMeshers_Deflection1D.SetParameters(self,parameters)
-        StdMeshers._objref_StdMeshers_Deflection1D.SetDeflection(self,deflection)
-
-#Registering the new proxy for Deflection1D
-omniORB.registerObjref(StdMeshers._objref_StdMeshers_Deflection1D._NP_RepositoryId, Deflection1D)
-
-#Wrapper class for StdMeshers_StartEndLength hypothesis
-class StartEndLength(StdMeshers._objref_StdMeshers_StartEndLength):
-
-    ## Set Length parameter value
-    #  @param length  numerical value or name of variable from notebook
-    #  @param isStart true is length is Start Length, otherwise false
-    def SetLength(self, length, isStart):
-        nb = 2
-        if isStart:
-            nb = 1
-        length,parameters = ParseParameters(StdMeshers._objref_StdMeshers_StartEndLength.GetLastParameters(self),2,nb,length)
-        StdMeshers._objref_StdMeshers_StartEndLength.SetParameters(self,parameters)
-        StdMeshers._objref_StdMeshers_StartEndLength.SetLength(self,length,isStart)
-
-#Registering the new proxy for StartEndLength
-omniORB.registerObjref(StdMeshers._objref_StdMeshers_StartEndLength._NP_RepositoryId, StartEndLength)
-
-#Wrapper class for StdMeshers_MaxElementArea hypothesis
-class MaxElementArea(StdMeshers._objref_StdMeshers_MaxElementArea):
-
-    ## Set Max Element Area parameter value
-    #  @param area  numerical value or name of variable from notebook
-    def SetMaxElementArea(self, area):
-        area ,parameters = ParseParameters(StdMeshers._objref_StdMeshers_MaxElementArea.GetLastParameters(self),1,1,area)
-        StdMeshers._objref_StdMeshers_MaxElementArea.SetParameters(self,parameters)
-        StdMeshers._objref_StdMeshers_MaxElementArea.SetMaxElementArea(self,area)
-
-#Registering the new proxy for MaxElementArea
-omniORB.registerObjref(StdMeshers._objref_StdMeshers_MaxElementArea._NP_RepositoryId, MaxElementArea)
-
-
-#Wrapper class for StdMeshers_MaxElementVolume hypothesis
-class MaxElementVolume(StdMeshers._objref_StdMeshers_MaxElementVolume):
-
-    ## Set Max Element Volume parameter value
-    #  @param volume numerical value or name of variable from notebook
-    def SetMaxElementVolume(self, volume):
-        volume ,parameters = ParseParameters(StdMeshers._objref_StdMeshers_MaxElementVolume.GetLastParameters(self),1,1,volume)
-        StdMeshers._objref_StdMeshers_MaxElementVolume.SetParameters(self,parameters)
-        StdMeshers._objref_StdMeshers_MaxElementVolume.SetMaxElementVolume(self,volume)
-
-#Registering the new proxy for MaxElementVolume
-omniORB.registerObjref(StdMeshers._objref_StdMeshers_MaxElementVolume._NP_RepositoryId, MaxElementVolume)
-
-
-#Wrapper class for StdMeshers_NumberOfLayers hypothesis
-class NumberOfLayers(StdMeshers._objref_StdMeshers_NumberOfLayers):
-
-    ## Set Number Of Layers parameter value
-    #  @param nbLayers  numerical value or name of variable from notebook
-    def SetNumberOfLayers(self, nbLayers):
-        nbLayers ,parameters = ParseParameters(StdMeshers._objref_StdMeshers_NumberOfLayers.GetLastParameters(self),1,1,nbLayers)
-        StdMeshers._objref_StdMeshers_NumberOfLayers.SetParameters(self,parameters)
-        StdMeshers._objref_StdMeshers_NumberOfLayers.SetNumberOfLayers(self,nbLayers)
-
-#Registering the new proxy for NumberOfLayers
-omniORB.registerObjref(StdMeshers._objref_StdMeshers_NumberOfLayers._NP_RepositoryId, NumberOfLayers)
-
-#Wrapper class for StdMeshers_NumberOfSegments hypothesis
-class NumberOfSegments(StdMeshers._objref_StdMeshers_NumberOfSegments):
-
-    ## Set Number Of Segments parameter value
-    #  @param nbSeg numerical value or name of variable from notebook
-    def SetNumberOfSegments(self, nbSeg):
-        lastParameters = StdMeshers._objref_StdMeshers_NumberOfSegments.GetLastParameters(self)
-        nbSeg , parameters = ParseParameters(lastParameters,1,1,nbSeg)
-        StdMeshers._objref_StdMeshers_NumberOfSegments.SetParameters(self,parameters)
-        StdMeshers._objref_StdMeshers_NumberOfSegments.SetNumberOfSegments(self,nbSeg)
-
-    ## Set Scale Factor parameter value
-    #  @param factor numerical value or name of variable from notebook
-    def SetScaleFactor(self, factor):
-        factor, parameters = ParseParameters(StdMeshers._objref_StdMeshers_NumberOfSegments.GetLastParameters(self),2,2,factor)
-        StdMeshers._objref_StdMeshers_NumberOfSegments.SetParameters(self,parameters)
-        StdMeshers._objref_StdMeshers_NumberOfSegments.SetScaleFactor(self,factor)
-
-#Registering the new proxy for NumberOfSegments
-omniORB.registerObjref(StdMeshers._objref_StdMeshers_NumberOfSegments._NP_RepositoryId, NumberOfSegments)
-
-if not noNETGENPlugin:
-    #Wrapper class for NETGENPlugin_Hypothesis hypothesis
-    class NETGENPlugin_Hypothesis(NETGENPlugin._objref_NETGENPlugin_Hypothesis):
-
-        ## Set Max Size parameter value
-        #  @param maxsize numerical value or name of variable from notebook
-        def SetMaxSize(self, maxsize):
-            lastParameters = NETGENPlugin._objref_NETGENPlugin_Hypothesis.GetLastParameters(self)
-            maxsize, parameters = ParseParameters(lastParameters,4,1,maxsize)
-            NETGENPlugin._objref_NETGENPlugin_Hypothesis.SetParameters(self,parameters)
-            NETGENPlugin._objref_NETGENPlugin_Hypothesis.SetMaxSize(self,maxsize)
-
-        ## Set Growth Rate parameter value
-        #  @param value  numerical value or name of variable from notebook
-        def SetGrowthRate(self, value):
-            lastParameters = NETGENPlugin._objref_NETGENPlugin_Hypothesis.GetLastParameters(self)
-            value, parameters = ParseParameters(lastParameters,4,2,value)
-            NETGENPlugin._objref_NETGENPlugin_Hypothesis.SetParameters(self,parameters)
-            NETGENPlugin._objref_NETGENPlugin_Hypothesis.SetGrowthRate(self,value)
-
-        ## Set Number of Segments per Edge parameter value
-        #  @param value  numerical value or name of variable from notebook
-        def SetNbSegPerEdge(self, value):
-            lastParameters = NETGENPlugin._objref_NETGENPlugin_Hypothesis.GetLastParameters(self)
-            value, parameters = ParseParameters(lastParameters,4,3,value)
-            NETGENPlugin._objref_NETGENPlugin_Hypothesis.SetParameters(self,parameters)
-            NETGENPlugin._objref_NETGENPlugin_Hypothesis.SetNbSegPerEdge(self,value)
-
-        ## Set Number of Segments per Radius parameter value
-        #  @param value  numerical value or name of variable from notebook
-        def SetNbSegPerRadius(self, value):
-            lastParameters = NETGENPlugin._objref_NETGENPlugin_Hypothesis.GetLastParameters(self)
-            value, parameters = ParseParameters(lastParameters,4,4,value)
-            NETGENPlugin._objref_NETGENPlugin_Hypothesis.SetParameters(self,parameters)
-            NETGENPlugin._objref_NETGENPlugin_Hypothesis.SetNbSegPerRadius(self,value)
-
-    #Registering the new proxy for NETGENPlugin_Hypothesis
-    omniORB.registerObjref(NETGENPlugin._objref_NETGENPlugin_Hypothesis._NP_RepositoryId, NETGENPlugin_Hypothesis)
-
-
-    #Wrapper class for NETGENPlugin_Hypothesis_2D hypothesis
-    class NETGENPlugin_Hypothesis_2D(NETGENPlugin_Hypothesis,NETGENPlugin._objref_NETGENPlugin_Hypothesis_2D):
-        pass
-
-    #Registering the new proxy for NETGENPlugin_Hypothesis_2D
-    omniORB.registerObjref(NETGENPlugin._objref_NETGENPlugin_Hypothesis_2D._NP_RepositoryId, NETGENPlugin_Hypothesis_2D)
-
-    #Wrapper class for NETGENPlugin_SimpleHypothesis_2D hypothesis
-    class NETGEN_SimpleParameters_2D(NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_2D):
-
-        ## Set Number of Segments parameter value
-        #  @param nbSeg numerical value or name of variable from notebook
-        def SetNumberOfSegments(self, nbSeg):
-            lastParameters = NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_2D.GetLastParameters(self)
-            nbSeg, parameters = ParseParameters(lastParameters,2,1,nbSeg)
-            NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_2D.SetParameters(self,parameters)
-            NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_2D.SetNumberOfSegments(self, nbSeg)
-
-        ## Set Local Length parameter value
-        #  @param length numerical value or name of variable from notebook
-        def SetLocalLength(self, length):
-            lastParameters = NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_2D.GetLastParameters(self)
-            length, parameters = ParseParameters(lastParameters,2,1,length)
-            NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_2D.SetParameters(self,parameters)
-            NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_2D.SetLocalLength(self, length)
-
-        ## Set Max Element Area parameter value
-        #  @param area numerical value or name of variable from notebook
-        def SetMaxElementArea(self, area):
-            lastParameters = NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_2D.GetLastParameters(self)
-            area, parameters = ParseParameters(lastParameters,2,2,area)
-            NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_2D.SetParameters(self,parameters)
-            NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_2D.SetMaxElementArea(self, area)
-
-        def LengthFromEdges(self):
-            lastParameters = NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_2D.GetLastParameters(self)
-            value = 0;
-            value, parameters = ParseParameters(lastParameters,2,2,value)
-            NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_2D.SetParameters(self,parameters)
-            NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_2D.LengthFromEdges(self)
-
-    #Registering the new proxy for NETGEN_SimpleParameters_2D
-    omniORB.registerObjref(NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_2D._NP_RepositoryId, NETGEN_SimpleParameters_2D)
-
-
-    #Wrapper class for NETGENPlugin_SimpleHypothesis_3D hypothesis
-    class NETGEN_SimpleParameters_3D(NETGEN_SimpleParameters_2D,NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_3D):
-        ## Set Max Element Volume parameter value
-        #  @param volume numerical value or name of variable from notebook
-        def SetMaxElementVolume(self, volume):
-            lastParameters = NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_3D.GetLastParameters(self)
-            volume, parameters = ParseParameters(lastParameters,3,3,volume)
-            NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_3D.SetParameters(self,parameters)
-            NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_3D.SetMaxElementVolume(self, volume)
-
-        def LengthFromFaces(self):
-            lastParameters = NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_3D.GetLastParameters(self)
-            value = 0;
-            value, parameters = ParseParameters(lastParameters,3,3,value)
-            NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_3D.SetParameters(self,parameters)
-            NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_3D.LengthFromFaces(self)
-
-    #Registering the new proxy for NETGEN_SimpleParameters_3D
-    omniORB.registerObjref(NETGENPlugin._objref_NETGENPlugin_SimpleHypothesis_3D._NP_RepositoryId, NETGEN_SimpleParameters_3D)
-
-    pass # if not noNETGENPlugin:
 
 class Pattern(SMESH._objref_SMESH_Pattern):
 
     def ApplyToMeshFaces(self, theMesh, theFacesIDs, theNodeIndexOnKeyPoint1, theReverse):
-        flag = False
-        if isinstance(theNodeIndexOnKeyPoint1,str):
-            flag = True
-        theNodeIndexOnKeyPoint1,Parameters = geompyDC.ParseParameters(theNodeIndexOnKeyPoint1)
-        if flag:
-            theNodeIndexOnKeyPoint1 -= 1
+        decrFun = lambda i: i-1
+        theNodeIndexOnKeyPoint1,Parameters = ParseParameters(theNodeIndexOnKeyPoint1, decrFun)
         theMesh.SetParameters(Parameters)
         return SMESH._objref_SMESH_Pattern.ApplyToMeshFaces( self, theMesh, theFacesIDs, theNodeIndexOnKeyPoint1, theReverse )
 
     def ApplyToHexahedrons(self, theMesh, theVolumesIDs, theNode000Index, theNode001Index):
-        flag0 = False
-        flag1 = False
-        if isinstance(theNode000Index,str):
-            flag0 = True
-        if isinstance(theNode001Index,str):
-            flag1 = True
-        theNode000Index,theNode001Index,Parameters = geompyDC.ParseParameters(theNode000Index,theNode001Index)
-        if flag0:
-            theNode000Index -= 1
-        if flag1:
-            theNode001Index -= 1
+        decrFun = lambda i: i-1
+        theNode000Index,theNode001Index,Parameters = ParseParameters(theNode000Index,theNode001Index, decrFun)
         theMesh.SetParameters(Parameters)
         return SMESH._objref_SMESH_Pattern.ApplyToHexahedrons( self, theMesh, theVolumesIDs, theNode000Index, theNode001Index )
 
 #Registering the new proxy for Pattern
 omniORB.registerObjref(SMESH._objref_SMESH_Pattern._NP_RepositoryId, Pattern)
+
+
+
+
+
+## Private class used to bind methods creating algorithms to the class Mesh
+#
+class algoCreator:
+    def __init__(self):
+        self.mesh = None
+        self.defaultAlgoType = ""
+        self.algoTypeToClass = {}
+
+    # Stores a python class of algorithm
+    def add(self, algoClass):
+        if type( algoClass ).__name__ == 'classobj' and \
+           hasattr( algoClass, "algoType"):
+            self.algoTypeToClass[ algoClass.algoType ] = algoClass
+            if not self.defaultAlgoType and \
+               hasattr( algoClass, "isDefault") and algoClass.isDefault:
+                self.defaultAlgoType = algoClass.algoType
+            #print "Add",algoClass.algoType, "dflt",self.defaultAlgoType
+
+    # creates a copy of self and assign mesh to the copy
+    def copy(self, mesh):
+        other = algoCreator()
+        other.defaultAlgoType = self.defaultAlgoType
+        other.algoTypeToClass  = self.algoTypeToClass
+        other.mesh = mesh
+        return other
+
+    # creates an instance of algorithm
+    def __call__(self,algo="",geom=0,*args):
+        algoType = self.defaultAlgoType
+        for arg in args + (algo,):
+            if isinstance( arg, geompyDC.GEOM._objref_GEOM_Object ):
+                geom = arg
+            if isinstance( arg, str ) and arg:
+                algoType = arg
+        if not algoType and self.algoTypeToClass:
+            algoType = self.algoTypeToClass.keys()[0]
+        if self.algoTypeToClass.has_key( algoType ):
+            #print "Create algo",algoType
+            return self.algoTypeToClass[ algoType ]( self.mesh, geom )
+        raise RuntimeError, "No class found for algo type" % algoType
+        return None
+
+# Private class used to substitute and store variable parameters of hypotheses.
+class hypMethodWrapper:
+    def __init__(self, hyp, method):
+        self.hyp    = hyp
+        self.method = method
+        #print "REBIND:", method.__name__
+        return
+
+    # call a method of hypothesis with calling SetVarParameter() before
+    def __call__(self,*args):
+        if not args:
+            return self.method( self.hyp, *args ) # hypothesis method with no args
+
+        #print "MethWrapper.__call__",self.method.__name__, args
+        try:
+            parsed = ParseParameters(*args)     # replace variables with their values
+            self.hyp.SetVarParameter( parsed[-1], self.method.__name__ )
+            result = self.method( self.hyp, *parsed[:-1] ) # call hypothesis method
+        except omniORB.CORBA.BAD_PARAM: # raised by hypothesis method call
+            # maybe there is a replaced string arg which is not variable
+            result = self.method( self.hyp, *args )
+        except ValueError, detail: # raised by ParseParameters()
+            try:
+                result = self.method( self.hyp, *args )
+            except omniORB.CORBA.BAD_PARAM:
+                raise ValueError, detail # wrong variable name
+
+        return result
