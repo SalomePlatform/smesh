@@ -36,6 +36,7 @@
 
 #include <list>
 #include <map>
+#include <vector>
 
 #include <SALOMEconfig.h>
 #include CORBA_CLIENT_HEADER(SALOMEDS)
@@ -51,9 +52,6 @@
  * 
  * Everything here is for internal usage by SMESH_2smeshpy::ConvertScript()
  * declared in SMESH_PythonDump.hxx
- *
- * See comments to _pyHypothesis class to know how to assure convertion of a new
- * type of hypothesis
  */
 // ===========================================================================================
 
@@ -72,18 +70,21 @@ class _pyMesh;
 class _pySubMesh;
 class _pyHypothesis;
 class _pyAlgorithm;
+class _pyHypothesisReader;
 
-DEFINE_STANDARD_HANDLE (_pyCommand   ,Standard_Transient);
-DEFINE_STANDARD_HANDLE (_pyObject    ,Standard_Transient);
-DEFINE_STANDARD_HANDLE (_pyGen       ,_pyObject);
-DEFINE_STANDARD_HANDLE (_pyMesh      ,_pyObject);
-DEFINE_STANDARD_HANDLE (_pySubMesh   ,_pyObject);
-DEFINE_STANDARD_HANDLE (_pyGroup     ,_pySubMesh);
-DEFINE_STANDARD_HANDLE (_pyMeshEditor,_pyObject);
-DEFINE_STANDARD_HANDLE (_pyHypothesis,_pyObject);
-DEFINE_STANDARD_HANDLE (_pyAlgorithm ,_pyHypothesis);
+DEFINE_STANDARD_HANDLE (_pyCommand         ,Standard_Transient);
+DEFINE_STANDARD_HANDLE (_pyObject          ,Standard_Transient);
+DEFINE_STANDARD_HANDLE (_pyHypothesisReader,Standard_Transient);
+DEFINE_STANDARD_HANDLE (_pyGen             ,_pyObject);
+DEFINE_STANDARD_HANDLE (_pyMesh            ,_pyObject);
+DEFINE_STANDARD_HANDLE (_pySubMesh         ,_pyObject);
+DEFINE_STANDARD_HANDLE (_pyGroup           ,_pySubMesh);
+DEFINE_STANDARD_HANDLE (_pyMeshEditor      ,_pyObject);
+DEFINE_STANDARD_HANDLE (_pyHypothesis      ,_pyObject);
+DEFINE_STANDARD_HANDLE (_pyAlgorithm       ,_pyHypothesis);
 
 typedef TCollection_AsciiString _pyID;
+typedef TCollection_AsciiString _AString;
 
 // ===========================================================
 /*!
@@ -95,24 +96,23 @@ typedef TCollection_AsciiString _pyID;
 class _pyCommand: public Standard_Transient
 {
   int                             myOrderNb;            //!< position within the script
-  TCollection_AsciiString         myString;             //!< command text
-  TCollection_AsciiString         myRes, myObj, myMeth; //!< found parts of command
+  _AString                        myString;             //!< command text
+  _AString                        myRes, myObj, myMeth; //!< found parts of command
   TColStd_SequenceOfAsciiString   myArgs;               //!< found arguments
   TColStd_SequenceOfInteger       myBegPos;             //!< where myRes, myObj, ... begin
   std::list< Handle(_pyCommand) > myDependentCmds; //!< commands that sould follow me in the script
 
   enum { UNKNOWN=-1, EMPTY=0, RESULT_IND, OBJECT_IND, METHOD_IND, ARG1_IND };
-  int GetBegPos( int thePartIndex );
+  int  GetBegPos( int thePartIndex );
   void SetBegPos( int thePartIndex, int thePosition );
-  void SetPart( int thePartIndex, const TCollection_AsciiString& theNewPart,
-                TCollection_AsciiString& theOldPart);
+  void SetPart( int thePartIndex, const _AString& theNewPart, _AString& theOldPart);
   void FindAllArgs() { GetArg(1); }
 
 public:
   _pyCommand() {};
-  _pyCommand( const TCollection_AsciiString& theString, int theNb )
+  _pyCommand( const _AString& theString, int theNb=-1 )
     : myString( theString ), myOrderNb( theNb ) {};
-  TCollection_AsciiString & GetString() { return myString; }
+  _AString & GetString() { return myString; }
   int GetOrderNb() const { return myOrderNb; }
   void SetOrderNb( int theNb ) { myOrderNb = theNb; }
   typedef void* TAddr;
@@ -120,32 +120,30 @@ public:
   int Length() { return myString.Length(); }
   void Clear() { myString.Clear(); myBegPos.Clear(); myArgs.Clear(); }
   bool IsEmpty() const { return myString.IsEmpty(); }
-  TCollection_AsciiString GetIndentation();
-  const TCollection_AsciiString & GetResultValue();
+  _AString GetIndentation();
+  const _AString & GetResultValue();
   const int GetNbResultValues();
-  const TCollection_AsciiString & GetResultValue(int res);
-  const TCollection_AsciiString & GetObject();
-  const TCollection_AsciiString & GetMethod();
-  const TCollection_AsciiString & GetArg( int index );
+  const _AString & GetResultValue(int res);
+  const _AString & GetObject();
+  const _AString & GetMethod();
+  const _AString & GetArg( int index );
   int GetNbArgs() { FindAllArgs(); return myArgs.Length(); }
-  bool MethodStartsFrom(const TCollection_AsciiString& beg)
+  bool MethodStartsFrom(const _AString& beg)
   { GetMethod(); return ( myMeth.Location( beg, 1, myMeth.Length() ) == 1 ); }
-  //Handle(TColStd_HSequenceOfAsciiString) GetArgs();
-  void SetResultValue( const TCollection_AsciiString& theResult )
+  void SetResultValue( const _AString& theResult )
   { GetResultValue(); SetPart( RESULT_IND, theResult, myRes ); }
-  void SetObject(const TCollection_AsciiString& theObject)
+  void SetObject(const _AString& theObject)
   { GetObject(); SetPart( OBJECT_IND, theObject, myObj ); }
-  void SetMethod(const TCollection_AsciiString& theMethod)
+  void SetMethod(const _AString& theMethod)
   { GetMethod(); SetPart( METHOD_IND, theMethod, myMeth ); }
-  void SetArg( int index, const TCollection_AsciiString& theArg);
+  void SetArg( int index, const _AString& theArg);
   void RemoveArgs();
   void Comment();
-  static bool SkipSpaces( const TCollection_AsciiString & theSring, int & thePos );
-  static TCollection_AsciiString GetWord( const TCollection_AsciiString & theSring,
-                                          int & theStartPos, const bool theForward,
-                                          const bool dotIsWord = false);
-  static bool IsStudyEntry( const TCollection_AsciiString& str );
-  static std::list< _pyID > GetStudyEntries( const TCollection_AsciiString& str );
+  static bool SkipSpaces( const _AString & theSring, int & thePos );
+  static _AString GetWord( const _AString & theSring, int & theStartPos,
+                           const bool theForward, const bool dotIsWord = false);
+  static bool IsStudyEntry( const _AString& str );
+  static std::list< _pyID > GetStudyEntries( const _AString& str );
   void AddDependantCmd( Handle(_pyCommand) cmd, bool prepend = false)
   { if (prepend) myDependentCmds.push_front( cmd ); else myDependentCmds.push_back( cmd ); }
   bool SetDependentCmdsAfter() const;
@@ -201,9 +199,9 @@ public:
 // -------------------------------------------------------------------------------------
 struct ExportedMeshData
 {
-  Handle(_pyMesh)         myMesh;
-  Handle(_pyCommand)      myLastComputeCmd;
-  TCollection_AsciiString myLastComputeCmdString;
+  Handle(_pyMesh)    myMesh;
+  Handle(_pyCommand) myLastComputeCmd;
+  _AString           myLastComputeCmdString;
   ExportedMeshData() {}
   ExportedMeshData( const Handle(_pyMesh)& mesh, Handle(_pyCommand) computeCmd):
     myMesh( mesh ), myLastComputeCmd( computeCmd )
@@ -226,7 +224,7 @@ public:
          Resource_DataMapOfAsciiStringAsciiString& theObjectNames,
          SALOMEDS::Study_ptr&                      theStudy,
          const bool                                theToKeepAllCommands);
-  Handle(_pyCommand) AddCommand( const TCollection_AsciiString& theCommand );
+  Handle(_pyCommand) AddCommand( const _AString& theCommand );
   void ExchangeCommands( Handle(_pyCommand) theCmd1, Handle(_pyCommand) theCmd2 );
   void SetCommandAfter( Handle(_pyCommand) theCmd, Handle(_pyCommand) theAfterCmd );
   void SetCommandBefore( Handle(_pyCommand) theCmd, Handle(_pyCommand) theBeforeCmd );
@@ -249,15 +247,17 @@ public:
   bool IsGeomObject(const _pyID& theObjID) const;
   bool IsNotPublished(const _pyID& theObjID) const;
   bool IsToKeepAllCommands() const { return myToKeepAllCommands; }
-  void AddExportedMesh(const TCollection_AsciiString& file, const ExportedMeshData& mesh )
+  void AddExportedMesh(const _AString& file, const ExportedMeshData& mesh )
   { myFile2ExportedMesh[ file ] = mesh; }
-  ExportedMeshData& FindExportedMesh( const TCollection_AsciiString& file )
+  ExportedMeshData& FindExportedMesh( const _AString& file )
   { return myFile2ExportedMesh[ file ]; }
 
   virtual void Process( const Handle(_pyCommand)& theCommand );
   virtual void Flush();
   virtual void ClearCommands();
   virtual void Free();
+
+  Handle( _pyHypothesisReader ) GetHypothesisReader() const;
 
 private:
   void setNeighbourCommand( Handle(_pyCommand)& theCmd,
@@ -278,7 +278,8 @@ private:
   bool                                     myToKeepAllCommands;
   SALOMEDS::Study_var                      myStudy;
   int                                      myGeomIDNb, myGeomIDIndex;
-  std::map< TCollection_AsciiString, ExportedMeshData > myFile2ExportedMesh;
+  std::map< _AString, ExportedMeshData >   myFile2ExportedMesh;
+  Handle( _pyHypothesisReader )            myHypReader;
 
   DEFINE_STANDARD_RTTI (_pyGen)
 };
@@ -332,8 +333,8 @@ private:
 // -------------------------------------------------------------------------------------
 class _pyMeshEditor: public _pyObject
 {
-  _pyID myMesh;
-  TCollection_AsciiString myCreationCmdStr;
+  _pyID    myMesh;
+  _AString myCreationCmdStr;
 public:
   _pyMeshEditor(const Handle(_pyCommand)& theCreationCmd);
   _pyID GetMesh() const { return myMesh; }
@@ -347,64 +348,62 @@ public:
 // -------------------------------------------------------------------------------------
 /*!
  * \brief Root class for hypothesis
- *
- * HOWTO assure convertion of a new type of hypothesis
- * In _pyHypothesis::NewHypothesis():
- * 1. add a case for the name of the new hypothesis
- * 2. use SetConvMethodAndType() to set
- *    . for algo: algorithm name and method of Mesh creating the algo
- *    . for hypo: name of the algorithm and method creating the hypothesis
- * 3. append to myArgMethods interface methods setting param values in the
- *    order they are used when creation method is called. If arguments of
- *    the creation method can't be easily got from calls of hypothesis methods, you are
- *    to derive a specific class from _pyHypothesis that would redefine Process(),
- *    see _pyComplexParamHypo for example
  */
 // -------------------------------------------------------------------------------------
 class _pyHypothesis: public _pyObject
 {
+  friend class _pyHypothesisReader;
 protected:
   bool    myIsAlgo, myIsWrapped;
   _pyID   myGeom,   myMesh;
-  // a hypothesis can be used and created by different algos by different methods
-  std::map<TCollection_AsciiString, TCollection_AsciiString > myType2CreationMethod;
-  TColStd_SequenceOfAsciiString myArgs;           // creation arguments
-  TColStd_SequenceOfAsciiString myArgMethods;     // hypo methods setting myArgs
-  TColStd_SequenceOfInteger     myNbArgsByMethod; // nb args set by each method
+  struct CreationMethod {
+    _AString              myMethod; // method of algo or mesh creating a hyp
+    // myArgNb(i)-th arg of myArgMethods(i) of hyp becomes an i-th arg of myAlgoMethod
+    std::vector<_AString> myArgMethods;
+    std::vector<int>      myArgNb; // arg nb countered from 1
+    std::vector<_AString> myArgs; // creation arguments
+  };
+  void setCreationArg( const int argNb, const _AString& arg );
+  // a hypothesis can be created by different algos by different methods
+  typedef std::map<_AString, CreationMethod > TType2CrMethod;
+  TType2CrMethod                myAlgoType2CreationMethod;
+  CreationMethod*               myCurCrMethod; // used for adding to myAlgoType2CreationMethod
   std::list<Handle(_pyCommand)> myArgCommands;
-  std::list<Handle(_pyCommand)> myUnknownCommands;
+  std::list<Handle(_pyCommand)> myUnusedCommands;
   std::list<Handle(_pyObject) > myReferredObjs;
-  // maps used to clear commands setting parameters if result of setting is not
-  // used (no mesh.Compute()) or discared (e.g. by mesh.Clear())
-  std::map<TCollection_AsciiString, std::list<Handle(_pyCommand)> > myMeth2Commands;
-  std::map< _pyCommand::TAddr, std::list<Handle(_pyCommand) > >     myComputeAddr2Cmds;
-  std::list<Handle(_pyCommand) >                                    myComputeCmds;
+  // maps used to clear commands setting parameters if result of setting is
+  // discared (e.g. by mesh.Clear())
+  std::map<_AString, std::list<Handle(_pyCommand)> >            myMeth2Commands;
+  std::map< _pyCommand::TAddr, std::list<Handle(_pyCommand) > > myComputeAddr2Cmds;
+  std::list<Handle(_pyCommand) >                                myComputeCmds;
   void rememberCmdOfParameter( const Handle(_pyCommand) & cmd );
   bool isCmdUsedForCompute( const Handle(_pyCommand) & cmd,
                             _pyCommand::TAddr avoidComputeAddr=NULL ) const;
 public:
   _pyHypothesis(const Handle(_pyCommand)& theCreationCmd);
-  void SetConvMethodAndType(const char* creationMethod, const char* type)
-  { myType2CreationMethod[ (char*)type ] = (char*)creationMethod; }
-  void AddArgMethod(const char* method, const int nbArgs = 1)
-  { myArgMethods.Append( (char*)method ); myNbArgsByMethod.Append( nbArgs ); }
-  const TColStd_SequenceOfAsciiString& GetArgs() const { return myArgs; }
+  void SetConvMethodAndType(const _AString& creationMethod, const _AString& type)
+  { myCurCrMethod = &myAlgoType2CreationMethod[ type ];
+    myCurCrMethod->myMethod = creationMethod; }
+  void AddArgMethod(const _AString& method, const int argNb = 1)
+  { myCurCrMethod->myArgMethods.push_back( method );
+    myCurCrMethod->myArgNb.push_back( argNb ); }
+  //const TColStd_SequenceOfAsciiString& GetArgs() const { return myArgs; }
   const std::list<Handle(_pyCommand)>& GetArgCommands() const { return myArgCommands; }
   void ClearAllCommands();
   virtual bool IsAlgo() const { return myIsAlgo; }
-  bool IsValid() const { return !myType2CreationMethod.empty(); }
+  bool IsValid() const { return !myAlgoType2CreationMethod.empty(); }
   bool IsWrapped() const { return myIsWrapped; }
   const _pyID & GetGeom() const { return myGeom; }
   void SetMesh( const _pyID& theMeshId) { if ( myMesh.IsEmpty() ) myMesh = theMeshId; }
   const _pyID & GetMesh() const { return myMesh; }
-  const TCollection_AsciiString& GetAlgoType() const
-  { return myType2CreationMethod.begin()->first; }
-  const TCollection_AsciiString& GetAlgoCreationMethod() const
-  { return myType2CreationMethod.begin()->second; }
-  bool CanBeCreatedBy(const TCollection_AsciiString& algoType ) const
-  { return myType2CreationMethod.find( algoType ) != myType2CreationMethod.end(); }
-  const TCollection_AsciiString& GetCreationMethod(const TCollection_AsciiString& algoType) const
-  { return myType2CreationMethod.find( algoType )->second; }
+  const _AString& GetAlgoType() const
+  { return myAlgoType2CreationMethod.begin()->first; }
+  const _AString& GetAlgoCreationMethod() const
+  { return myAlgoType2CreationMethod.begin()->second.myMethod; }
+  bool CanBeCreatedBy(const _AString& algoType ) const
+  { return myAlgoType2CreationMethod.find( algoType ) != myAlgoType2CreationMethod.end(); }
+  const _AString& GetCreationMethod(const _AString& algoType)
+  { return ( myCurCrMethod = & myAlgoType2CreationMethod[ algoType ])->myMethod; }
   static Handle(_pyHypothesis) NewHypothesis( const Handle(_pyCommand)& theCreationCmd);
 
   virtual bool IsWrappable(const _pyID& theMesh) const;
@@ -468,7 +467,7 @@ DEFINE_STANDARD_HANDLE (_pyComplexParamHypo, _pyHypothesis);
 class _pyLayerDistributionHypo: public _pyHypothesis
 {
   Handle(_pyHypothesis) my1dHyp;
-  TCollection_AsciiString myAlgoMethod;
+  _AString              myAlgoMethod;
 public:
   _pyLayerDistributionHypo(const Handle(_pyCommand)& theCreationCmd, const char* algoMethod):
     _pyHypothesis(theCreationCmd), myAlgoMethod((char*)algoMethod) {}
@@ -585,5 +584,20 @@ public:
   DEFINE_STANDARD_RTTI (_pyFilter)
 };
 DEFINE_STANDARD_HANDLE (_pyFilter, _pyObject);
+
+// -------------------------------------------------------------------------------------
+/*!
+ * \brief Class reading _pyHypothesis'es from resource files of mesher Plugins
+ */
+// -------------------------------------------------------------------------------------
+class _pyHypothesisReader: public Standard_Transient
+{
+  std::map<_AString, Handle(_pyHypothesis)> myType2Hyp;
+public:
+  _pyHypothesisReader();
+  Handle(_pyHypothesis) GetHypothesis(const _AString&           hypType,
+                                      const Handle(_pyCommand)& creationCmd) const;
+  DEFINE_STANDARD_RTTI (_pyHypothesisReader)
+};
 
 #endif
