@@ -3097,7 +3097,7 @@ const TCollection_AsciiString & _pyCommand::GetArg( int index )
 
       if ( separatorStack.back().Location( chr, 1, separatorStack.back().Length()))
       {
-        if ( separatorStack.size() == 1 ) // ',' dividing args or a terminal ')' found
+        if ( separatorStack.size() == 1 ) // a comma dividing args or a terminal ')' found
         {
           while ( pos-1 >= prevPos && isspace( myString.Value( prevPos )))
             ++prevPos;
@@ -3107,8 +3107,11 @@ const TCollection_AsciiString & _pyCommand::GetArg( int index )
             arg.RightAdjust(); // remove spaces
             arg.LeftAdjust();
           }
-          SetBegPos( ARG1_IND + myArgs.Length(), prevPos );
-          myArgs.Append( arg );
+          if ( !arg.IsEmpty() || chr == ',' )
+          {
+            SetBegPos( ARG1_IND + myArgs.Length(), prevPos );
+            myArgs.Append( arg );
+          }
           if ( chr == ')' )
             break;
           prevPos = pos+1;
@@ -3612,32 +3615,33 @@ void _pyGroup::Process( const Handle(_pyCommand)& theCommand)
     _pyID idSource = theCommand->GetArg(1);
     // check if idSource is a filter
     filter = Handle(_pyFilter)::DownCast( theGen->FindObject( idSource ));
-    if ( filter.IsNull() )
-      return;
-    // find aFilter.SetMesh(mesh) to clear it, it should be just before theCommand
-    list< Handle(_pyCommand) >::reverse_iterator cmdIt = theGen->GetCommands().rbegin();
-    while ( *cmdIt != theCommand ) ++cmdIt;
-    while ( (*cmdIt)->GetOrderNb() != 1 )
+    if ( !filter.IsNull() )
     {
-      const Handle(_pyCommand)& setMeshCmd = *(++cmdIt);
-      if ((setMeshCmd->GetObject() == idSource ||
-           setMeshCmd->GetObject() == filter->GetNewID() )
-          &&
-          setMeshCmd->GetMethod() == "SetMesh")
+      // find aFilter.SetMesh(mesh) to clear it, it should be just before theCommand
+      list< Handle(_pyCommand) >::reverse_iterator cmdIt = theGen->GetCommands().rbegin();
+      while ( *cmdIt != theCommand ) ++cmdIt;
+      while ( (*cmdIt)->GetOrderNb() != 1 )
       {
-        setMeshCmd->Clear();
-        break;
+        const Handle(_pyCommand)& setMeshCmd = *(++cmdIt);
+        if ((setMeshCmd->GetObject() == idSource ||
+             setMeshCmd->GetObject() == filter->GetNewID() )
+            &&
+            setMeshCmd->GetMethod() == "SetMesh")
+        {
+          setMeshCmd->Clear();
+          break;
+        }
       }
+      // replace 3 commands by one
+      theCommand->Clear();
+      const Handle(_pyCommand)& makeGroupCmd = GetCreationCmd();
+      TCollection_AsciiString name = makeGroupCmd->GetArg( 2 );
+      makeGroupCmd->SetMethod( "MakeGroupByFilter" );
+      makeGroupCmd->SetArg( 1, name );
+      makeGroupCmd->SetArg( 2, idSource );
+      // set new name of a filter
+      filter->Process( makeGroupCmd );
     }
-    // replace 3 commands by one
-    theCommand->Clear();
-    const Handle(_pyCommand)& makeGroupCmd = GetCreationCmd();
-    TCollection_AsciiString name = makeGroupCmd->GetArg( 2 );
-    makeGroupCmd->SetMethod( "MakeGroupByFilter" );
-    makeGroupCmd->SetArg( 1, name );
-    makeGroupCmd->SetArg( 2, idSource );
-    // set new name of a filter
-    filter->Process( makeGroupCmd );
   }
   else if ( theCommand->GetMethod() == "SetFilter" )
   {
@@ -3650,6 +3654,8 @@ void _pyGroup::Process( const Handle(_pyCommand)& theCommand)
 
   if ( !filter.IsNull() )
     filter->AddUser( this );
+
+  theGen->AddMeshAccessorMethod( theCommand );
 }
 
 //================================================================================
