@@ -783,7 +783,7 @@ class smeshDC(SMESH._objref_SMESH_Gen):
         elif theCriterion == FT_Length2D:
             return aFilterMgr.CreateLength2D()
         else:
-            print "Error: given parameter is not numerucal functor type."
+            print "Error: given parameter is not numerical functor type."
 
     ## Creates hypothesis
     #  @param theHType mesh hypothesis type (string)
