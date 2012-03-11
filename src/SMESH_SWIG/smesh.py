@@ -47,7 +47,8 @@ for pluginName in os.environ["SMESH_MeshersList"].split(":"):
   pluginName += "DC"
   try:
     exec("from %s import *" % pluginName )
-  except:
+  except Exception, e:
+    print "Exception while loading %s: %s" % ( pluginName, e )
     continue
   exec("import %s" % pluginName )
   plugin = eval(pluginName)
