@@ -34,23 +34,37 @@ def set_env(args):
         os.environ["SALOME_StdMeshersResources"] \
         = os.environ["SMESH_ROOT_DIR"]+"/share/"+salome_subdir+"/resources/smesh"
         pass
-    if args.has_key("SMESH_plugins"):
-	plugin_list = []
-        for plugin in args["SMESH_plugins"]:
-            plugin_root = ""
-            if os.environ.has_key(plugin+"_ROOT_DIR"):
-                plugin_root = os.environ[plugin+"_ROOT_DIR"]
-            else:
-                # workaround to avoid modifications of existing environment
-                if os.environ.has_key(plugin.upper()+"_ROOT_DIR"):
-                    plugin_root = os.environ[plugin.upper()+"_ROOT_DIR"]
-                    pass
-                pass
-            if plugin_root != "":
+
+    # find plugins
+    plugin_list = []
+    resource_path_list = []
+    for env_var in os.environ.keys():
+        value = os.environ[env_var]
+        if env_var[-9:] == "_ROOT_DIR" and value:
+            plugin_root = value
+            plugin = env_var[:-9] # plugin name may have wrong case
+
+            # look for NAMEOFPlugin.xml file among resource files
+            resource_dir = plugin_root+"/share/"+salome_subdir+"/resources/"+plugin.lower()
+            if not os.access( resource_dir, os.F_OK ): continue
+            for resource_file in os.listdir( resource_dir ):
+                if not resource_file.endswith( ".xml") or \
+                   resource_file.lower() != plugin.lower() + ".xml":
+                    continue
+                # use "resources" attribute of "meshers-group" as name of plugin in a right case
+                from xml.dom.minidom import parse
+                xml_doc = parse( os.path.join( resource_dir, resource_file ))
+                meshers_nodes = xml_doc.getElementsByTagName("meshers-group")
+                if not meshers_nodes or not meshers_nodes[0].hasAttribute("resources"): continue
+                plugin = meshers_nodes[0].getAttribute("resources")
+                if plugin in plugin_list: continue
+
+                # add paths of plugin
 		plugin_list.append(plugin)
                 if not os.environ.has_key("SALOME_"+plugin+"Resources"):
-                    os.environ["SALOME_"+plugin+"Resources"] \
-                    = plugin_root+"/share/"+salome_subdir+"/resources/"+plugin.lower()
+                    resource_path = plugin_root+"/share/"+salome_subdir+"/resources/"+plugin.lower()
+                    os.environ["SALOME_"+plugin+"Resources"] = resource_path
+                    resource_path_list.append( resource_path )
                     add_path(os.path.join(plugin_root,get_lib_dir(),python_version, "site-packages",salome_subdir), "PYTHONPATH")
                     add_path(os.path.join(plugin_root,get_lib_dir(),salome_subdir), "PYTHONPATH")
                     
@@ -63,7 +77,8 @@ def set_env(args):
                         add_path(os.path.join(plugin_root,"bin",salome_subdir), "PATH")
                         pass
                     pass
-                pass
-            pass
-	plugin_list.append("StdMeshers")
-	os.environ["SMESH_MeshersList"] = ":".join(plugin_list)
+                break
+    plugin_list.append("StdMeshers")
+    os.environ["SMESH_MeshersList"] = ":".join(plugin_list)
+    os.environ["SalomeAppConfig"] = os.environ["SalomeAppConfig"] + ":" + ":".join(resource_path_list)
+
