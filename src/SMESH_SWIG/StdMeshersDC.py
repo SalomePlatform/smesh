@@ -44,7 +44,7 @@ for e in StdMeshers.QuadType._items: exec('%s = StdMeshers.%s'%(e,e))
 #  calling Mesh.Segment(geom=0)
 #
 #  @ingroup l3_algos_basic
-class Mesh_Segment(Mesh_Algorithm):
+class StdMeshersDC_Segment(Mesh_Algorithm):
 
     meshMethod = "Segment"
     algoType   = REGULAR
@@ -318,7 +318,7 @@ class Mesh_Segment(Mesh_Algorithm):
 #  It is created by calling Mesh.Segment(COMPOSITE,geom=0)
 #
 #  @ingroup l3_algos_basic
-class Mesh_CompositeSegment(Mesh_Segment):
+class StdMeshersDC_CompositeSegment(StdMeshersDC_Segment):
 
     meshMethod = "Segment"
     algoType   = COMPOSITE
@@ -336,7 +336,7 @@ class Mesh_CompositeSegment(Mesh_Segment):
 #  It is created by calling Mesh.Segment(PYTHON,geom=0)
 #
 #  @ingroup l3_algos_basic
-class Mesh_Segment_Python(Mesh_Algorithm):
+class StdMeshersDC_Segment_Python(Mesh_Algorithm):
 
     meshMethod = "Segment"
     algoType   = PYTHON
@@ -367,7 +367,7 @@ class Mesh_Segment_Python(Mesh_Algorithm):
 #  It is created by calling Mesh.Triangle(MEFISTO,geom=0)
 #
 #  @ingroup l3_algos_basic
-class Mesh_Triangle_MEFISTO(Mesh_Algorithm):
+class StdMeshersDC_Triangle_MEFISTO(Mesh_Algorithm):
 
     meshMethod = "Triangle"
     algoType   = MEFISTO
@@ -406,7 +406,7 @@ class Mesh_Triangle_MEFISTO(Mesh_Algorithm):
 #  It is created by calling Mesh.Quadrangle(geom=0)
 #
 #  @ingroup l3_algos_basic
-class Mesh_Quadrangle(Mesh_Algorithm):
+class StdMeshersDC_Quadrangle(Mesh_Algorithm):
 
     meshMethod = "Quadrangle"
     algoType   = QUADRANGLE
@@ -512,7 +512,7 @@ class Mesh_Quadrangle(Mesh_Algorithm):
 #  It is created by calling Mesh.Hexahedron(geom=0)
 #
 #  @ingroup l3_algos_basic
-class Mesh_Hexahedron(Mesh_Algorithm):
+class StdMeshersDC_Hexahedron(Mesh_Algorithm):
 
     meshMethod = "Hexahedron"
     algoType   = Hexa
@@ -531,7 +531,7 @@ class Mesh_Hexahedron(Mesh_Algorithm):
 #  It is created by calling Mesh.Projection1D(geom=0)
 #  @ingroup l3_algos_proj
 #
-class Mesh_Projection1D(Mesh_Algorithm):
+class StdMeshersDC_Projection1D(Mesh_Algorithm):
 
     meshMethod = "Projection1D"
     algoType   = "Projection_1D"
@@ -575,7 +575,7 @@ class Mesh_Projection1D(Mesh_Algorithm):
 #  It is created by calling Mesh.Projection2D(geom=0)
 #  @ingroup l3_algos_proj
 #
-class Mesh_Projection2D(Mesh_Algorithm):
+class StdMeshersDC_Projection2D(Mesh_Algorithm):
 
     meshMethod = "Projection2D"
     algoType   = "Projection_2D"
@@ -625,14 +625,14 @@ class Mesh_Projection2D(Mesh_Algorithm):
 #
 #  @ingroup l3_algos_proj
 
-class Mesh_Projection1D2D(Mesh_Projection2D):
+class StdMeshersDC_Projection1D2D(StdMeshersDC_Projection2D):
 
     meshMethod = "Projection1D2D"
     algoType   = "Projection_1D2D"
 
     ## Private constructor.
     def __init__(self, mesh, geom=0):
-        Mesh_Projection2D.__init__(self, mesh, geom)
+        StdMeshersDC_Projection2D.__init__(self, mesh, geom)
 
 # Public class: Mesh_Projection3D
 # ------------------------------
@@ -642,7 +642,7 @@ class Mesh_Projection1D2D(Mesh_Projection2D):
 #
 #  @ingroup l3_algos_proj
 #
-class Mesh_Projection3D(Mesh_Algorithm):
+class StdMeshersDC_Projection3D(Mesh_Algorithm):
 
     meshMethod = "Projection3D"
     algoType   = "Projection_3D"
@@ -695,7 +695,7 @@ class Mesh_Projection3D(Mesh_Algorithm):
 #
 #  @ingroup l3_algos_3dextr
 #
-class Mesh_Prism3D(Mesh_Algorithm):
+class StdMeshersDC_Prism3D(Mesh_Algorithm):
 
     meshMethod = "Prism"
     algoType   = "Prism_3D"
@@ -832,7 +832,7 @@ class Mesh_Prism3D(Mesh_Algorithm):
 #  It is created by calling Mesh.Quadrangle(RADIAL_QUAD,geom=0)
 #
 #  @ingroup l2_algos_radialq
-class Mesh_RadialQuadrangle1D2D(Mesh_Algorithm):
+class StdMeshersDC_RadialQuadrangle1D2D(Mesh_Algorithm):
 
     meshMethod = "Quadrangle"
     algoType   = RADIAL_QUAD
@@ -936,7 +936,7 @@ class Mesh_RadialQuadrangle1D2D(Mesh_Algorithm):
 #  It is created by calling Mesh.UseExisting1DElements(geom=0)
 #
 #  @ingroup l3_algos_basic
-class Mesh_UseExistingElements_1D(Mesh_Algorithm):
+class StdMeshersDC_UseExistingElements_1D(Mesh_Algorithm):
 
     meshMethod = "UseExisting1DElements"
     algoType   = "Import_1D"
@@ -970,7 +970,7 @@ class Mesh_UseExistingElements_1D(Mesh_Algorithm):
 #  It is created by calling Mesh.UseExisting2DElements(geom=0)
 #
 #  @ingroup l3_algos_basic
-class Mesh_UseExistingElements_1D2D(Mesh_Algorithm):
+class StdMeshersDC_UseExistingElements_1D2D(Mesh_Algorithm):
 
     meshMethod = "UseExisting2DElements"
     algoType   = "Import_1D2D"
@@ -1005,7 +1005,7 @@ class Mesh_UseExistingElements_1D2D(Mesh_Algorithm):
 #  It is created by calling Mesh.BodyFitted(geom=0)
 #
 #  @ingroup l3_algos_basic
-class Mesh_Cartesian_3D(Mesh_Algorithm):
+class StdMeshersDC_Cartesian_3D(Mesh_Algorithm):
 
     meshMethod = "BodyFitted"
     algoType   = "Cartesian_3D"
@@ -1065,7 +1065,7 @@ class Mesh_Cartesian_3D(Mesh_Algorithm):
 #
 #  @ingroup l3_algos_basic
 
-class Mesh_UseExisting_1D(Mesh_Algorithm):
+class StdMeshersDC_UseExisting_1D(Mesh_Algorithm):
 
     meshMethod = "UseExistingSegments"
     algoType   = "UseExisting_1D"
@@ -1082,7 +1082,7 @@ class Mesh_UseExisting_1D(Mesh_Algorithm):
 #
 #  @ingroup l3_algos_basic
 
-class Mesh_UseExisting_2D(Mesh_Algorithm):
+class StdMeshersDC_UseExisting_2D(Mesh_Algorithm):
 
     meshMethod = "UseExistingFaces"
     algoType   = "UseExisting_2D"
