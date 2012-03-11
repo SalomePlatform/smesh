@@ -195,7 +195,7 @@ mesh.SplitQuadObject(submesh2, 1)
 #2 cutting of triangles of the group
 FacesTriToQuad = [ 2391, 2824, 2825, 2826, 2827, 2828, 2832, 2833, 2834, 2835, 2836, 2837, 2838, 2839, 2841, 2844, 2845, 2847, 2854, 2861, 2863, 2922, 2923, 2924, 2925, 2926, 2927, 2928, 2929, 2930, 2931, 2932, 2933, 2934, 2935, 2936, 2937, 2938, 2940, 2941, 2946, 2951, 2970, 2971, 2972, 2973, 2974, 2975, 2976, 2977, 2978, 2979, 2980, 2981, 2982, 2983, 2984, 2985 ]
 GroupTriToQuad = mesh.MakeGroupByIds("Group of faces (quad)", smesh.FACE, FacesTriToQuad)
-mesh.TriToQuadObject(GroupTriToQuad, None , 1.57)
+mesh.TriToQuadObject(GroupTriToQuad, smesh.FT_AspectRatio , 1.57)
 
 #3 extrusion of the group
 point = smesh.PointStruct(0, 0, 5)
