@@ -37,7 +37,7 @@
 #include <vtkPointData.h>
 #include <vtkProperty2D.h>
 #include <vtkRenderer.h>
-#include <vtkPolyData.h>
+#include <vtkUnstructuredGrid.h>
 
 vtkStandardNewMacro(SMESH_NodeLabelActor);
 
@@ -47,7 +47,7 @@ vtkStandardNewMacro(SMESH_NodeLabelActor);
 SMESH_NodeLabelActor::SMESH_NodeLabelActor() {
   //Definition of points numbering pipeline
   //---------------------------------------
-  myPointsNumDataSet = vtkPolyData::New();
+  myPointsNumDataSet = vtkUnstructuredGrid::New();
 
   myPtsMaskPoints = vtkMaskPoints::New();
   myPtsMaskPoints->SetInput(myPointsNumDataSet);
@@ -114,7 +114,7 @@ SMESH_NodeLabelActor::~SMESH_NodeLabelActor() {
 
 void SMESH_NodeLabelActor::SetPointsLabeled(bool theIsPointsLabeled) {
   myTransformFilter->Update();
-  vtkDataSet* aGrid = vtkPolyData::SafeDownCast(myTransformFilter->GetOutput());
+  vtkDataSet* aGrid = vtkUnstructuredGrid::SafeDownCast(myTransformFilter->GetOutput());
 
   if(!aGrid)
     return;
@@ -124,7 +124,7 @@ void SMESH_NodeLabelActor::SetPointsLabeled(bool theIsPointsLabeled) {
   if ( myIsPointsLabeled )
   {
     myPointsNumDataSet->ShallowCopy(aGrid);
-    vtkDataSet *aDataSet = myPointsNumDataSet;
+    vtkUnstructuredGrid *aDataSet = myPointsNumDataSet;
     
     int aNbElem = aDataSet->GetNumberOfPoints();
     
@@ -133,7 +133,7 @@ void SMESH_NodeLabelActor::SetPointsLabeled(bool theIsPointsLabeled) {
     
     for ( vtkIdType anId = 0; anId < aNbElem; anId++ )
     {
-      int aSMDSId = GetNodeObjId( anId );
+      int aSMDSId = myVisualObj->GetNodeObjId( anId );
       anArray->SetValue( anId, aSMDSId );
     }
     

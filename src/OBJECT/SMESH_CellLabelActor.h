@@ -32,7 +32,7 @@ class vtkSelectVisiblePoints;
 class vtkLabeledDataMapper;
 class vtkActor2D;
 class vtkMaskPoints;
-class vtkPolyData;
+class vtkUnstructuredGrid;
 
 class VTKViewer_CellCenters;
 
@@ -65,7 +65,7 @@ protected:
   ~SMESH_CellLabelActor();
 
   bool myIsCellsLabeled;
-  vtkPolyData* myCellsNumDataSet;
+  vtkUnstructuredGrid* myCellsNumDataSet;
   vtkActor2D *myCellsLabels;
   vtkMaskPoints* myClsMaskPoints;
   VTKViewer_CellCenters* myCellCenters;

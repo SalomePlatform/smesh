@@ -240,17 +240,17 @@ SMESH_DeviceActor
     myPassFilter[ anId + 1]->SetInput( myPassFilter[ anId ]->GetOutput() );
     
     anId++; // 1
-    myGeomFilter->SetInput( myPassFilter[ anId ]->GetOutput() );
+    myTransformFilter->SetInput( myPassFilter[ anId ]->GetOutput() );
 
     anId++; // 2
-    myPassFilter[ anId ]->SetInput( myGeomFilter->GetOutput() ); 
+    myPassFilter[ anId ]->SetInput( myTransformFilter->GetOutput() );
     myPassFilter[ anId + 1 ]->SetInput( myPassFilter[ anId ]->GetOutput() );
 
     anId++; // 3
-    myTransformFilter->SetInput( myPassFilter[ anId ]->GetPolyDataOutput() );
+    myGeomFilter->SetInput( myPassFilter[ anId ]->GetOutput() );
 
     anId++; // 4
-    myPassFilter[ anId ]->SetInput( myTransformFilter->GetOutput() );
+    myPassFilter[ anId ]->SetInput( myGeomFilter->GetOutput() ); 
     myPassFilter[ anId + 1 ]->SetInput( myPassFilter[ anId ]->GetOutput() );
 
     anId++; // 5

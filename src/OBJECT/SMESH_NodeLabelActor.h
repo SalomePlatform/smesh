@@ -32,7 +32,7 @@ class vtkSelectVisiblePoints;
 class vtkLabeledDataMapper;
 class vtkActor2D;
 class vtkMaskPoints;
-class vtkPolyData;
+class vtkUnstructuredGrid;
 
 
 class SMESHOBJECT_EXPORT SMESH_NodeLabelActor : public SMESH_DeviceActor {
@@ -63,7 +63,7 @@ protected:
   ~SMESH_NodeLabelActor();
   
   bool myIsPointsLabeled;
-  vtkPolyData* myPointsNumDataSet;
+  vtkUnstructuredGrid* myPointsNumDataSet;
   vtkActor2D *myPointLabels;
   vtkMaskPoints* myPtsMaskPoints;
   vtkLabeledDataMapper* myPtsLabeledDataMapper;

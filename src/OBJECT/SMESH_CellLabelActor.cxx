@@ -38,7 +38,7 @@
 #include <vtkPointData.h>
 #include <vtkProperty2D.h>
 #include <vtkRenderer.h>
-#include <vtkPolyData.h>
+#include <vtkUnstructuredGrid.h>
 #include <vtkCellData.h>
 
 vtkStandardNewMacro(SMESH_CellLabelActor);
@@ -49,7 +49,7 @@ vtkStandardNewMacro(SMESH_CellLabelActor);
 SMESH_CellLabelActor::SMESH_CellLabelActor() {
     //Definition of cells numbering pipeline
   //---------------------------------------
-  myCellsNumDataSet = vtkPolyData::New();
+  myCellsNumDataSet = vtkUnstructuredGrid::New();
 
   myCellCenters = VTKViewer_CellCenters::New();
   myCellCenters->SetInput(myCellsNumDataSet);
@@ -125,19 +125,19 @@ SMESH_CellLabelActor::~SMESH_CellLabelActor() {
 
 void SMESH_CellLabelActor::SetCellsLabeled(bool theIsCellsLabeled) {
   myTransformFilter->Update();
-  vtkPolyData* aGrid = vtkPolyData::SafeDownCast(myTransformFilter->GetOutput());
+  vtkUnstructuredGrid* aGrid = vtkUnstructuredGrid::SafeDownCast(myTransformFilter->GetOutput());
   if(!aGrid)
     return;
 
   myIsCellsLabeled = theIsCellsLabeled && aGrid->GetNumberOfPoints();
   if(myIsCellsLabeled){
     myCellsNumDataSet->ShallowCopy(aGrid);
-    vtkDataSet *aDataSet = myCellsNumDataSet;
+    vtkUnstructuredGrid *aDataSet = myCellsNumDataSet;
     int aNbElem = aDataSet->GetNumberOfCells();
     vtkIntArray *anArray = vtkIntArray::New();
     anArray->SetNumberOfValues(aNbElem);
     for(int anId = 0; anId < aNbElem; anId++){
-      int aSMDSId = GetElemObjId(anId);
+      int aSMDSId = myVisualObj->GetElemObjId(anId);
       anArray->SetValue(anId,aSMDSId);
     }
     aDataSet->GetCellData()->SetScalars(anArray);
