@@ -71,6 +71,11 @@ void SMESHDS_SubMesh::AddElement(const SMDS_MeshElement * ME)
 {
   if (!IsComplexSubmesh())
     {
+      if ( ME->GetType() == SMDSAbs_Node )
+      {
+        AddNode( static_cast< const SMDS_MeshNode* >( ME ));
+        return;
+      }
       //MESSAGE("in " << myIndex << " AddElement "<< ME->GetID());
       int oldShapeId = ME->getshapeId();
       if ( oldShapeId > 0 )
@@ -160,7 +165,7 @@ void SMESHDS_SubMesh::AddNode(const SMDS_MeshNode * N)
         {
 //           MESSAGE("========== AddNode already belonging to other subShape " << N->GetID());
           // OK for vertex nodes
-          //this->getParent()->UnSetNodeOnShape(N);
+          throw SALOME_Exception(LOCALIZED("add node in subshape already belonging to a subshape"));
         }
       SMDS_MeshNode* node = (SMDS_MeshNode*)(N);
       node->setShapeId(myIndex);
