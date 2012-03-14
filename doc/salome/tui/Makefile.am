@@ -28,14 +28,6 @@ EXTRA_DIST += input images static/doxygen.css static/footer.html
 tuidocdir = $(docdir)/tui/SMESH
 tuidoc_DATA = images/head.png images/smeshscreen.png
 
-dist_doc_DATA = \
-	extra/AddNetgenInSalome2.pdf	\
-	extra/AddNetgenInSalome2.ps	\
-	extra/AddNetgenInSalome2.sxw	\
-	extra/PluginMeshers.html
-
-EXTRA_DIST += extra/PluginMeshers.txt
-
 dev_docs: doxyfile
 	echo "Running doxygen in directory: "`pwd`; \
 	$(DOXYGEN) $<;
