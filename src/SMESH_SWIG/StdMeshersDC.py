@@ -46,7 +46,9 @@ for e in StdMeshers.QuadType._items: exec('%s = StdMeshers.%s'%(e,e))
 #  @ingroup l3_algos_basic
 class StdMeshersDC_Segment(Mesh_Algorithm):
 
+    ## Name of method of class Mesh creating an instance of this class
     meshMethod = "Segment"
+    ## Name of algorithm type
     algoType   = REGULAR
     isDefault  = True
 
@@ -320,7 +322,9 @@ class StdMeshersDC_Segment(Mesh_Algorithm):
 #  @ingroup l3_algos_basic
 class StdMeshersDC_CompositeSegment(StdMeshersDC_Segment):
 
+    ## Name of method of class Mesh creating an instance of this class
     meshMethod = "Segment"
+    ## Name of algorithm type
     algoType   = COMPOSITE
     isDefault  = False
 
@@ -338,7 +342,9 @@ class StdMeshersDC_CompositeSegment(StdMeshersDC_Segment):
 #  @ingroup l3_algos_basic
 class StdMeshersDC_Segment_Python(Mesh_Algorithm):
 
+    ## Name of method of class Mesh creating an instance of this class
     meshMethod = "Segment"
+    ## Name of algorithm type
     algoType   = PYTHON
 
     ## Private constructor.
@@ -369,7 +375,9 @@ class StdMeshersDC_Segment_Python(Mesh_Algorithm):
 #  @ingroup l3_algos_basic
 class StdMeshersDC_Triangle_MEFISTO(Mesh_Algorithm):
 
+    ## Name of method of class Mesh creating an instance of this class
     meshMethod = "Triangle"
+    ## Name of algorithm type
     algoType   = MEFISTO
     isDefault  = True
 
@@ -408,7 +416,9 @@ class StdMeshersDC_Triangle_MEFISTO(Mesh_Algorithm):
 #  @ingroup l3_algos_basic
 class StdMeshersDC_Quadrangle(Mesh_Algorithm):
 
+    ## Name of method of class Mesh creating an instance of this class
     meshMethod = "Quadrangle"
+    ## Name of algorithm type
     algoType   = QUADRANGLE
     isDefault  = True
 
@@ -514,7 +524,9 @@ class StdMeshersDC_Quadrangle(Mesh_Algorithm):
 #  @ingroup l3_algos_basic
 class StdMeshersDC_Hexahedron(Mesh_Algorithm):
 
+    ## Name of method of class Mesh creating an instance of this class
     meshMethod = "Hexahedron"
+    ## Name of algorithm type
     algoType   = Hexa
     isDefault  = True
 
@@ -533,7 +545,9 @@ class StdMeshersDC_Hexahedron(Mesh_Algorithm):
 #
 class StdMeshersDC_Projection1D(Mesh_Algorithm):
 
+    ## Name of method of class Mesh creating an instance of this class
     meshMethod = "Projection1D"
+    ## Name of algorithm type
     algoType   = "Projection_1D"
     isDefault  = True
 
@@ -577,7 +591,9 @@ class StdMeshersDC_Projection1D(Mesh_Algorithm):
 #
 class StdMeshersDC_Projection2D(Mesh_Algorithm):
 
+    ## Name of method of class Mesh creating an instance of this class
     meshMethod = "Projection2D"
+    ## Name of algorithm type
     algoType   = "Projection_2D"
     isDefault  = True
 
@@ -627,7 +643,9 @@ class StdMeshersDC_Projection2D(Mesh_Algorithm):
 
 class StdMeshersDC_Projection1D2D(StdMeshersDC_Projection2D):
 
+    ## Name of method of class Mesh creating an instance of this class
     meshMethod = "Projection1D2D"
+    ## Name of algorithm type
     algoType   = "Projection_1D2D"
 
     ## Private constructor.
@@ -644,7 +662,9 @@ class StdMeshersDC_Projection1D2D(StdMeshersDC_Projection2D):
 #
 class StdMeshersDC_Projection3D(Mesh_Algorithm):
 
+    ## Name of method of class Mesh creating an instance of this class
     meshMethod = "Projection3D"
+    ## Name of algorithm type
     algoType   = "Projection_3D"
 
     ## Private constructor.
@@ -697,7 +717,9 @@ class StdMeshersDC_Projection3D(Mesh_Algorithm):
 #
 class StdMeshersDC_Prism3D(Mesh_Algorithm):
 
+    ## Name of method of class Mesh creating an instance of this class
     meshMethod = "Prism"
+    ## Name of algorithm type
     algoType   = "Prism_3D"
 
     ## Private constructor.
@@ -834,7 +856,9 @@ class StdMeshersDC_Prism3D(Mesh_Algorithm):
 #  @ingroup l2_algos_radialq
 class StdMeshersDC_RadialQuadrangle1D2D(Mesh_Algorithm):
 
+    ## Name of method of class Mesh creating an instance of this class
     meshMethod = "Quadrangle"
+    ## Name of algorithm type
     algoType   = RADIAL_QUAD
 
     ## Private constructor.
@@ -938,7 +962,9 @@ class StdMeshersDC_RadialQuadrangle1D2D(Mesh_Algorithm):
 #  @ingroup l3_algos_basic
 class StdMeshersDC_UseExistingElements_1D(Mesh_Algorithm):
 
+    ## Name of method of class Mesh creating an instance of this class
     meshMethod = "UseExisting1DElements"
+    ## Name of algorithm type
     algoType   = "Import_1D"
     isDefault  = True
 
@@ -972,7 +998,9 @@ class StdMeshersDC_UseExistingElements_1D(Mesh_Algorithm):
 #  @ingroup l3_algos_basic
 class StdMeshersDC_UseExistingElements_1D2D(Mesh_Algorithm):
 
+    ## Name of method of class Mesh creating an instance of this class
     meshMethod = "UseExisting2DElements"
+    ## Name of algorithm type
     algoType   = "Import_1D2D"
     isDefault  = True
 
@@ -1007,7 +1035,9 @@ class StdMeshersDC_UseExistingElements_1D2D(Mesh_Algorithm):
 #  @ingroup l3_algos_basic
 class StdMeshersDC_Cartesian_3D(Mesh_Algorithm):
 
+    ## Name of method of class Mesh creating an instance of this class
     meshMethod = "BodyFitted"
+    ## Name of algorithm type
     algoType   = "Cartesian_3D"
     isDefault  = True
 
@@ -1067,7 +1097,9 @@ class StdMeshersDC_Cartesian_3D(Mesh_Algorithm):
 
 class StdMeshersDC_UseExisting_1D(Mesh_Algorithm):
 
+    ## Name of method of class Mesh creating an instance of this class
     meshMethod = "UseExistingSegments"
+    ## Name of algorithm type
     algoType   = "UseExisting_1D"
 
     def __init__(self, mesh, geom=0):
@@ -1084,7 +1116,9 @@ class StdMeshersDC_UseExisting_1D(Mesh_Algorithm):
 
 class StdMeshersDC_UseExisting_2D(Mesh_Algorithm):
 
+    ## Name of method of class Mesh creating an instance of this class
     meshMethod = "UseExistingFaces"
+    ## Name of algorithm type
     algoType   = "UseExisting_2D"
 
     def __init__(self, mesh, geom=0):

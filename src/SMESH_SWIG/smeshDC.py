@@ -3994,7 +3994,17 @@ class Mesh:
 
 ## The mother class to define algorithm, it is not recommended to use it directly.
 #
-#  More details.
+#  For each meshing algorithm, a python class inheriting from class Mesh_Algorithm
+#  should be defined. This descendant class sould have two attributes defining the way
+# it is created by class Mesh (see e.g. class StdMeshersDC_Segment in StdMeshersDC.py).
+# - meshMethod attribute defines name of method of class Mesh by calling which the
+#   python class of algorithm is created. E.g. if in class MyPlugin_Algorithm
+#   meshMethod = "MyAlgorithm", then an instance of MyPlugin_Algorithm is created
+#   by the following code: my_algo = mesh.MyAlgorithm()
+# - algoType defines name of algorithm type and is used mostly to discriminate
+#   algorithms that are created by the same method of class Mesh. E.g. if
+#   MyPlugin_Algorithm.algoType = "MyPLUGIN" then it's creation code can be:
+#   my_algo = mesh.MyAlgorithm(algo="MyPLUGIN")
 #  @ingroup l2_algorithms
 class Mesh_Algorithm:
     #  @class Mesh_Algorithm
