@@ -342,23 +342,24 @@ void SMESH_PreMeshInfo::hdf2meshInfo( const std::string& name,
     HDFdataset* dataset = new HDFdataset( name.c_str(), hdfGroup );
     dataset->OpenOnDisk();
 
-    // hdf_size datasetSize[ 1 ];
-    // HDFarray *array = new HDFarray(dataset);
-    // array->GetDim( datasetSize );
-    int size = dataset->GetSize();
+    // // hdf_size datasetSize[ 1 ];
+    // // HDFarray *array = new HDFarray(dataset);
+    // // array->GetDim( datasetSize );
+    // int size = dataset->GetSize();
 
-    int info[ SMDSEntity_Last * 2 ];
-    dataset->ReadFromDisk( info );
+    vector<int> info( SMDSEntity_Last * 2, 0 );
+    dataset->ReadFromDisk( &info[0] );
     dataset->CloseOnDisk();
 
     const Tmed2smeshElemTypeMap& med2smesh = med2smeshElemTypeMap();
     Tmed2smeshElemTypeMap::const_iterator me2sme, me2smeEnd = med2smesh.end();
-    for ( int i = 0; i < size /**datasetSize*/;  )
+    for ( size_t i = 0; i < info.size(); )
     {
       int medType = info[i++];
       int nbElems = info[i++];
+      if ( !nbElems ) break;
       me2sme = med2smesh.find( (MED::EGeometrieElement) medType );
-      if ( me2sme != me2smeEnd && nbElems )
+      if ( me2sme != me2smeEnd )
         setNb( me2sme->second, nbElems );
     }
   }
