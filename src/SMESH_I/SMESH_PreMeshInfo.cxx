@@ -358,7 +358,7 @@ void SMESH_PreMeshInfo::hdf2meshInfo( const std::string& name,
       int medType = info[i++];
       int nbElems = info[i++];
       me2sme = med2smesh.find( (MED::EGeometrieElement) medType );
-      if ( me2sme != me2smeEnd )
+      if ( me2sme != me2smeEnd && nbElems )
         setNb( me2sme->second, nbElems );
     }
   }
