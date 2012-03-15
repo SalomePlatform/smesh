@@ -132,6 +132,7 @@ var_separator = ":"
 def ParseParameters(*args):
     Result = []
     Parameters = ""
+    hasVariables = False
     varModifFun=None
     if args and callable( args[-1] ):
         args, varModifFun = args[:-1], args[-1]
@@ -144,6 +145,7 @@ def ParseParameters(*args):
             if not notebook.isVariable(parameter):
                 raise ValueError, "Variable with name '" + parameter + "' doesn't exist!!!"
             parameter = notebook.get(parameter)
+            hasVariables = True
             if varModifFun:
                 parameter = varModifFun(parameter)
                 pass
@@ -153,6 +155,7 @@ def ParseParameters(*args):
         pass
     Parameters = Parameters[:-1]
     Result.append( Parameters )
+    Result.append( hasVariables )
     return Result
 
 # Parse parameters converting variables to radians
@@ -162,14 +165,14 @@ def ParseAngles(*args):
 # Substitute PointStruct.__init__() to create SMESH.PointStruct using notebook variables.
 # Parameters are stored in PointStruct.parameters attribute
 def __initPointStruct(point,*args):
-    point.x, point.y, point.z, point.parameters = ParseParameters(*args)
+    point.x, point.y, point.z, point.parameters,hasVars = ParseParameters(*args)
     pass
 SMESH.PointStruct.__init__ = __initPointStruct
 
 # Substitute AxisStruct.__init__() to create SMESH.AxisStruct using notebook variables.
 # Parameters are stored in AxisStruct.parameters attribute
 def __initAxisStruct(ax,*args):
-    ax.x, ax.y, ax.z, ax.vx, ax.vy, ax.vz, ax.parameters = ParseParameters(*args)
+    ax.x, ax.y, ax.z, ax.vx, ax.vy, ax.vz, ax.parameters,hasVars = ParseParameters(*args)
     pass
 SMESH.AxisStruct.__init__ = __initAxisStruct
 
@@ -513,7 +516,7 @@ class smeshDC(SMESH._objref_SMESH_Gen):
         for i,m in enumerate(meshes):
             if isinstance(m, Mesh):
                 meshes[i] = m.GetMesh()
-        mergeTolerance,Parameters = ParseParameters(mergeTolerance)
+        mergeTolerance,Parameters,hasVars = ParseParameters(mergeTolerance)
         meshes[0].SetParameters(Parameters)
         if allGroups:
             aSmeshMesh = SMESH._objref_SMESH_Gen.ConcatenateWithGroups(
@@ -2274,8 +2277,8 @@ class Mesh:
     #  @return Id of the new node
     #  @ingroup l2_modif_add
     def AddNode(self, x, y, z):
-        x,y,z,Parameters = ParseParameters(x,y,z)
-        self.mesh.SetParameters(Parameters)
+        x,y,z,Parameters,hasVars = ParseParameters(x,y,z)
+        if hasVars: self.mesh.SetParameters(Parameters)
         return self.editor.AddNode( x, y, z)
 
     ## Creates a 0D element on a node with given number.
@@ -2438,8 +2441,8 @@ class Mesh:
     #  @return True if succeed else False
     #  @ingroup l2_modif_movenode
     def MoveNode(self, NodeID, x, y, z):
-        x,y,z,Parameters = ParseParameters(x,y,z)
-        self.mesh.SetParameters(Parameters)
+        x,y,z,Parameters,hasVars = ParseParameters(x,y,z)
+        if hasVars: self.mesh.SetParameters(Parameters)
         return self.editor.MoveNode(NodeID, x, y, z)
 
     ## Finds the node closest to a point and moves it to a point location
@@ -2451,8 +2454,8 @@ class Mesh:
     #  @return the ID of a node
     #  @ingroup l2_modif_throughp
     def MoveClosestNodeToPoint(self, x, y, z, NodeID):
-        x,y,z,Parameters = ParseParameters(x,y,z)
-        self.mesh.SetParameters(Parameters)
+        x,y,z,Parameters,hasVars = ParseParameters(x,y,z)
+        if hasVars: self.mesh.SetParameters(Parameters)
         return self.editor.MoveClosestNodeToPoint(x, y, z, NodeID)
 
     ## Finds the node closest to a point
@@ -2785,7 +2788,7 @@ class Mesh:
                MaxNbOfIterations, MaxAspectRatio, Method):
         if IDsOfElements == []:
             IDsOfElements = self.GetElementsId()
-        MaxNbOfIterations,MaxAspectRatio,Parameters = ParseParameters(MaxNbOfIterations,MaxAspectRatio)
+        MaxNbOfIterations,MaxAspectRatio,Parameters,hasVars = ParseParameters(MaxNbOfIterations,MaxAspectRatio)
         self.mesh.SetParameters(Parameters)
         return self.editor.Smooth(IDsOfElements, IDsOfFixedNodes,
                                   MaxNbOfIterations, MaxAspectRatio, Method)
@@ -2819,7 +2822,7 @@ class Mesh:
                          MaxNbOfIterations, MaxAspectRatio, Method):
         if IDsOfElements == []:
             IDsOfElements = self.GetElementsId()
-        MaxNbOfIterations,MaxAspectRatio,Parameters = ParseParameters(MaxNbOfIterations,MaxAspectRatio)
+        MaxNbOfIterations,MaxAspectRatio,Parameters,hasVars = ParseParameters(MaxNbOfIterations,MaxAspectRatio)
         self.mesh.SetParameters(Parameters)
         return self.editor.SmoothParametric(IDsOfElements, IDsOfFixedNodes,
                                             MaxNbOfIterations, MaxAspectRatio, Method)
@@ -2951,7 +2954,7 @@ class Mesh:
         if ( isinstance( Axis, geompyDC.GEOM._objref_GEOM_Object)):
             Axis = self.smeshpyD.GetAxisStruct(Axis)
         AngleInRadians,AngleParameters = ParseAngles(AngleInRadians)
-        NbOfSteps,Tolerance,Parameters = ParseParameters(NbOfSteps,Tolerance)
+        NbOfSteps,Tolerance,Parameters,hasVars = ParseParameters(NbOfSteps,Tolerance)
         Parameters = Axis.parameters + var_separator + AngleParameters + var_separator + Parameters
         self.mesh.SetParameters(Parameters)
         if TotalAngle and NbOfSteps:
@@ -2981,7 +2984,7 @@ class Mesh:
         if ( isinstance( Axis, geompyDC.GEOM._objref_GEOM_Object)):
             Axis = self.smeshpyD.GetAxisStruct(Axis)
         AngleInRadians,AngleParameters = ParseAngles(AngleInRadians)
-        NbOfSteps,Tolerance,Parameters = ParseParameters(NbOfSteps,Tolerance)
+        NbOfSteps,Tolerance,Parameters,hasVars = ParseParameters(NbOfSteps,Tolerance)
         Parameters = Axis.parameters + var_separator + AngleParameters + var_separator + Parameters
         self.mesh.SetParameters(Parameters)
         if TotalAngle and NbOfSteps:
@@ -3011,7 +3014,7 @@ class Mesh:
         if ( isinstance( Axis, geompyDC.GEOM._objref_GEOM_Object)):
             Axis = self.smeshpyD.GetAxisStruct(Axis)
         AngleInRadians,AngleParameters = ParseAngles(AngleInRadians)
-        NbOfSteps,Tolerance,Parameters = ParseParameters(NbOfSteps,Tolerance)
+        NbOfSteps,Tolerance,Parameters,hasVars = ParseParameters(NbOfSteps,Tolerance)
         Parameters = Axis.parameters + var_separator + AngleParameters + var_separator + Parameters
         self.mesh.SetParameters(Parameters)
         if TotalAngle and NbOfSteps:
@@ -3041,7 +3044,7 @@ class Mesh:
         if ( isinstance( Axis, geompyDC.GEOM._objref_GEOM_Object)):
             Axis = self.smeshpyD.GetAxisStruct(Axis)
         AngleInRadians,AngleParameters = ParseAngles(AngleInRadians)
-        NbOfSteps,Tolerance,Parameters = ParseParameters(NbOfSteps,Tolerance)
+        NbOfSteps,Tolerance,Parameters,hasVars = ParseParameters(NbOfSteps,Tolerance)
         Parameters = Axis.parameters + var_separator + AngleParameters + var_separator + Parameters
         self.mesh.SetParameters(Parameters)
         if TotalAngle and NbOfSteps:
@@ -3065,7 +3068,7 @@ class Mesh:
             IDsOfElements = self.GetElementsId()
         if ( isinstance( StepVector, geompyDC.GEOM._objref_GEOM_Object)):
             StepVector = self.smeshpyD.GetDirStruct(StepVector)
-        NbOfSteps,Parameters = ParseParameters(NbOfSteps)
+        NbOfSteps,Parameters,hasVars = ParseParameters(NbOfSteps)
         Parameters = StepVector.PS.parameters + var_separator + Parameters
         self.mesh.SetParameters(Parameters)
         if MakeGroups:
@@ -3114,7 +3117,7 @@ class Mesh:
             theObject = theObject.GetMesh()
         if ( isinstance( StepVector, geompyDC.GEOM._objref_GEOM_Object)):
             StepVector = self.smeshpyD.GetDirStruct(StepVector)
-        NbOfSteps,Parameters = ParseParameters(NbOfSteps)
+        NbOfSteps,Parameters,hasVars = ParseParameters(NbOfSteps)
         Parameters = StepVector.PS.parameters + var_separator + Parameters
         self.mesh.SetParameters(Parameters)
         if MakeGroups:
@@ -3141,7 +3144,7 @@ class Mesh:
             theObject = theObject.GetMesh()
         if ( isinstance( StepVector, geompyDC.GEOM._objref_GEOM_Object)):
             StepVector = self.smeshpyD.GetDirStruct(StepVector)
-        NbOfSteps,Parameters = ParseParameters(NbOfSteps)
+        NbOfSteps,Parameters,hasVars = ParseParameters(NbOfSteps)
         Parameters = StepVector.PS.parameters + var_separator + Parameters
         self.mesh.SetParameters(Parameters)
         if MakeGroups:
@@ -3162,7 +3165,7 @@ class Mesh:
             theObject = theObject.GetMesh()
         if ( isinstance( StepVector, geompyDC.GEOM._objref_GEOM_Object)):
             StepVector = self.smeshpyD.GetDirStruct(StepVector)
-        NbOfSteps,Parameters = ParseParameters(NbOfSteps)
+        NbOfSteps,Parameters,hasVars = ParseParameters(NbOfSteps)
         Parameters = StepVector.PS.parameters + var_separator + Parameters
         self.mesh.SetParameters(Parameters)
         if MakeGroups:
@@ -4277,13 +4280,13 @@ class Pattern(SMESH._objref_SMESH_Pattern):
 
     def ApplyToMeshFaces(self, theMesh, theFacesIDs, theNodeIndexOnKeyPoint1, theReverse):
         decrFun = lambda i: i-1
-        theNodeIndexOnKeyPoint1,Parameters = ParseParameters(theNodeIndexOnKeyPoint1, decrFun)
+        theNodeIndexOnKeyPoint1,Parameters,hasVars = ParseParameters(theNodeIndexOnKeyPoint1, decrFun)
         theMesh.SetParameters(Parameters)
         return SMESH._objref_SMESH_Pattern.ApplyToMeshFaces( self, theMesh, theFacesIDs, theNodeIndexOnKeyPoint1, theReverse )
 
     def ApplyToHexahedrons(self, theMesh, theVolumesIDs, theNode000Index, theNode001Index):
         decrFun = lambda i: i-1
-        theNode000Index,theNode001Index,Parameters = ParseParameters(theNode000Index,theNode001Index, decrFun)
+        theNode000Index,theNode001Index,Parameters,hasVars = ParseParameters(theNode000Index,theNode001Index, decrFun)
         theMesh.SetParameters(Parameters)
         return SMESH._objref_SMESH_Pattern.ApplyToHexahedrons( self, theMesh, theVolumesIDs, theNode000Index, theNode001Index )
 
@@ -4352,8 +4355,8 @@ class hypMethodWrapper:
         #print "MethWrapper.__call__",self.method.__name__, args
         try:
             parsed = ParseParameters(*args)     # replace variables with their values
-            self.hyp.SetVarParameter( parsed[-1], self.method.__name__ )
-            result = self.method( self.hyp, *parsed[:-1] ) # call hypothesis method
+            self.hyp.SetVarParameter( parsed[-2], self.method.__name__ )
+            result = self.method( self.hyp, *parsed[:-2] ) # call hypothesis method
         except omniORB.CORBA.BAD_PARAM: # raised by hypothesis method call
             # maybe there is a replaced string arg which is not variable
             result = self.method( self.hyp, *args )
