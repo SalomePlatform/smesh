@@ -137,6 +137,8 @@ public :
   virtual void                    createPreferences();
   virtual void                    preferencesChanged( const QString&, const QString& );
 
+  virtual void                    message( const QString& );
+
   virtual void                    update( const int );
 
   static SALOMEDS::Color          getUniqueColor( const QList<SALOMEDS::Color>& );
@@ -157,7 +159,6 @@ public slots:
   virtual bool                    activateModule( SUIT_Study* );
   virtual void                    studyClosed( SUIT_Study* );
   void                            onViewClosed( SUIT_ViewWindow* );
-
 
 private slots:
   void                            OnGUIEvent();

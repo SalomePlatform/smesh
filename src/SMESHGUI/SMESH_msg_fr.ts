@@ -3729,6 +3729,14 @@ avec le paramètre &apos;%1&apos; des préférences du module Mesh.</translation
         <source>SMESH_PLUGINS_OTHER</source>
         <translation>Extensions SMESH</translation>
     </message>
+    <message>
+        <source>MESH_LOADING_MSG</source>
+        <translation type="unfinished">Loading mesh %0 in progress</translation>
+    </message>
+    <message>
+        <source>MESH_LOADING_MSG_FINISHED</source>
+        <translation type="unfinished">Mesh %0 loading done</translation>
+    </message>
 </context>
 <context>
     <name>SMESHGUI_GroupDlg</name>

@@ -139,6 +139,7 @@
 
 // Qt includes
 // #define       INCLUDE_MENUITEM_DEF // VSR commented ????????
+#include <QApplication>
 #include <QMenu>
 #include <QTextStream>
 
@@ -5944,6 +5945,35 @@ void SMESHGUI::onViewClosed( SUIT_ViewWindow* pview ) {
   //Crear all Plot2d Viewers if need.
   SMESH::ClearPlot2Viewers(pview);
 #endif
+}
+
+void SMESHGUI::message( const QString& msg )
+{
+  // dispatch message
+  QStringList data = msg.split("/");
+  if ( data.count() > 0 ) {
+    if ( data.first() == "mesh_loading" ) {
+      // get mesh entry
+      QString entry = data.count() > 1 ? data[1] : QString();
+      if ( entry.isEmpty() )
+	return;
+      // get study
+      _PTR(Study) study = dynamic_cast<SalomeApp_Study*>( application()->activeStudy() )->studyDS();
+      // get mesh name
+      _PTR(SObject) obj = study->FindObjectID( entry.toLatin1().constData() );
+      QString name;
+      if ( obj )
+	name = obj->GetName().c_str();
+      if ( name.isEmpty() )
+	return;
+      
+      if ( data.last() == "stop" )
+	application()->putInfo( tr( "MESH_LOADING_MSG_FINISHED" ).arg( name ) );
+      else
+	application()->putInfo( tr( "MESH_LOADING_MSG" ).arg( name ) );
+      QApplication::processEvents();
+    }
+  }
 }
 
 /*!

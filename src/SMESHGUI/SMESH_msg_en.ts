@@ -3657,6 +3657,14 @@ Input value precision can be adjusted using
         <source>SMESH_PLUGINS_OTHER</source>
         <translation>SMESH plugins</translation>
     </message>
+    <message>
+        <source>MESH_LOADING_MSG</source>
+        <translation>Loading mesh %0 in progress</translation>
+    </message>
+    <message>
+        <source>MESH_LOADING_MSG_FINISHED</source>
+        <translation>Mesh %0 loading done</translation>
+    </message>
 </context>
 <context>
     <name>SMESHGUI_GroupDlg</name>
