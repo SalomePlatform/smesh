@@ -821,13 +821,13 @@ void SMESH_Gen_i::SetOption(const char* name, const char* value)
     if ( strcmp(name, "historical_python_dump") == 0 )
     {
       myIsHistoricalPythonDump = ( value[0] == '1' || toupper(value[0]) == 'T' ); // 1 || true
-      msgToGUI = "preferences:SMESH:historical_python_dump:";
+      msgToGUI = "preferences/SMESH/historical_python_dump/";
       msgToGUI += myIsHistoricalPythonDump ? "true" : "false";
     }
     else if ( strcmp(name, "forget_mesh_on_hyp_modif") == 0 )
     {
       myToForgetMeshDataOnHypModif = ( value[0] == '1' || toupper(value[0]) == 'T' ); // 1 || true
-      msgToGUI = "preferences:SMESH:forget_mesh_on_hyp_modif:";
+      msgToGUI = "preferences/SMESH/forget_mesh_on_hyp_modif/";
       msgToGUI += myToForgetMeshDataOnHypModif ? "true" : "false";
     }
 
