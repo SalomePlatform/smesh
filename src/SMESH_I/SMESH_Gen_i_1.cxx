@@ -916,7 +916,7 @@ void SMESH_Gen_i::UpdateParameters(/*CORBA::Object_ptr theObject,*/ const char* 
     return;
   myLastParameters.clear();
   int pos = 0, prevPos = 0, len = strlen( theParameters );
-  //if ( len == 0 ) return;
+  if ( len == 0 ) return;
   while ( pos <= len )
   {
     if ( pos == len || theParameters[pos] == ':' )
