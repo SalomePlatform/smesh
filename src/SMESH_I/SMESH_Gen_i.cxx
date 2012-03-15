@@ -45,12 +45,6 @@
 #include <TCollection_AsciiString.hxx>
 #include <OSD.hxx>
 
-#include "Utils_CorbaException.hxx"
-
-#include "utilities.h"
-#include <fstream>
-#include <stdio.h>
-
 #ifdef WNT
  #include <windows.h>
  #include <process.h>
@@ -70,23 +64,7 @@
  #define UnLoadLib( handle ) dlclose( handle );
 #endif
 
-#include <HDFOI.hxx>
-
 #include "SMESH_Gen_i.hxx"
-#include "SMESH_Mesh_i.hxx"
-#include "SMESH_Hypothesis_i.hxx"
-#include "SMESH_Algo_i.hxx"
-#include "SMESH_Group_i.hxx"
-#include "SMESH_PythonDump.hxx"
-#include "SMESH_PreMeshInfo.hxx"
-
-#include "SMESHDS_Document.hxx"
-#include "SMESHDS_Group.hxx"
-#include "SMESHDS_GroupOnGeom.hxx"
-#include "SMESH_Mesh.hxx"
-#include "SMESH_Hypothesis.hxx"
-#include "SMESH_Group.hxx"
-#include "SMESH_MeshEditor.hxx"
 
 #include "SMDS_EdgePosition.hxx"
 #include "SMDS_FacePosition.hxx"
@@ -94,6 +72,20 @@
 #include "SMDS_SetIterator.hxx"
 #include "SMDS_SpacePosition.hxx"
 #include "SMDS_VertexPosition.hxx"
+#include "SMESHDS_Document.hxx"
+#include "SMESHDS_Group.hxx"
+#include "SMESHDS_GroupOnGeom.hxx"
+#include "SMESH_Algo_i.hxx"
+#include "SMESH_File.hxx"
+#include "SMESH_Group.hxx"
+#include "SMESH_Group_i.hxx"
+#include "SMESH_Hypothesis.hxx"
+#include "SMESH_Hypothesis_i.hxx"
+#include "SMESH_Mesh.hxx"
+#include "SMESH_MeshEditor.hxx"
+#include "SMESH_Mesh_i.hxx"
+#include "SMESH_PreMeshInfo.hxx"
+#include "SMESH_PythonDump.hxx"
 
 #include CORBA_SERVER_HEADER(SMESH_Group)
 #include CORBA_SERVER_HEADER(SMESH_Filter)
@@ -104,22 +96,28 @@
 #ifdef WITH_CGNS
 #include "DriverCGNS_Read.hxx"
 #endif
+#include "memoire.h"
 
-#include "SALOMEDS_Tool.hxx"
-#include "SALOME_NamingService.hxx"
-#include "SALOME_LifeCycleCORBA.hxx"
-#include "Utils_SINGLETON.hxx"
-#include "OpUtil.hxx"
+#include <GEOM_Client.hxx>
+
+#include <Basics_Utils.hxx>
+#include <HDFOI.hxx>
+#include <OpUtil.hxx>
+#include <SALOMEDS_Tool.hxx>
+#include <SALOME_Container_i.hxx>
+#include <SALOME_LifeCycleCORBA.hxx>
+#include <SALOME_NamingService.hxx>
+#include <Utils_CorbaException.hxx>
+#include <Utils_ExceptHandlers.hxx>
+#include <Utils_SINGLETON.hxx>
+#include <utilities.h>
 
 #include CORBA_CLIENT_HEADER(SALOME_ModuleCatalog)
 #include CORBA_CLIENT_HEADER(SALOME_Session)
 
-#include "GEOM_Client.hxx"
-#include "Utils_ExceptHandlers.hxx"
-#include "memoire.h"
-#include "Basics_Utils.hxx"
-
 #include <map>
+#include <fstream>
+#include <cstdio>
 
 using namespace std;
 using SMESH::TPythonDump;
@@ -4612,9 +4610,24 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
   delete aFile;
 
   // Remove temporary files created from the stream
-  // if ( !isMultiFile )
-  //   SALOMEDS_Tool::RemoveTemporaryFiles( tmpDir.ToCString(), aFileSeq.in(), true );
-
+  if ( !isMultiFile )
+  {
+    SMESH_File meshFile( meshfile.ToCString() );
+    if ( !meshFile ) // no meshfile exists
+    {
+      SALOMEDS_Tool::RemoveTemporaryFiles( tmpDir.ToCString(), aFileSeq.in(), true );
+    }
+    else
+    {
+      Engines::Container_var container = GetContainerRef();
+      if ( Engines_Container_i* container_i = SMESH::DownCast<Engines_Container_i*>( container ))
+      {
+        container_i->registerTemporaryFile( filename.ToCString() );
+        container_i->registerTemporaryFile( meshfile.ToCString() );
+        container_i->registerTemporaryFile( tmpDir.ToCString() );
+      }
+    }
+  }
   pd << ""; // prevent optimizing pd out
 
   INFOS( "SMESH_Gen_i::Load completed" );
