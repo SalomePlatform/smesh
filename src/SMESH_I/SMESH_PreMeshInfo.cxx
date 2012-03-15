@@ -149,7 +149,7 @@ namespace
         if ( !meshSO->_is_nil() && !_session->_is_nil() )
         {
           CORBA::String_var meshEntry = meshSO->GetID();
-          _messagePrefix = "mesh_loading/";
+          _messagePrefix = "SMESH/mesh_loading/";
           _messagePrefix += meshEntry.in();
 
           string msgToGUI = _messagePrefix + "/";
