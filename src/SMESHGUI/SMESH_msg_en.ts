@@ -3659,7 +3659,7 @@ Input value precision can be adjusted using
     </message>
     <message>
         <source>MESH_LOADING_MSG</source>
-        <translation>Loading mesh %0 in progress</translation>
+        <translation>Loading mesh %0 in progress, please wait...</translation>
     </message>
     <message>
         <source>MESH_LOADING_MSG_FINISHED</source>
