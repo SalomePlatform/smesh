@@ -11459,6 +11459,8 @@ int SMESH_MeshEditor::MakeBoundaryMesh(const TIDSortedElemSet& elements,
   SMESH_MeshEditor tgtEditor2( tgtEditor.GetMesh() );
   presentEditor = toAddExistingBondary ? &tgtEditor : &tgtEditor2;
 
+  SMESH_MesherHelper helper( *myMesh );
+  const TopAbs_ShapeEnum missShapeType = ( missType==SMDSAbs_Face ? TopAbs_FACE : TopAbs_EDGE );
   SMDS_VolumeTool vTool;
   TIDSortedElemSet avoidSet;
   const TIDSortedElemSet emptySet, *elemSet = aroundElements ? &elements : &emptySet;
@@ -11592,8 +11594,37 @@ int SMESH_MeshEditor::MakeBoundaryMesh(const TIDSortedElemSet& elements,
                                                                    missType,
                                                                    /*noMedium=*/false))
           continue;
-        tgtEditor.AddElement(nodes, missType, !iQuad && nodes.size()/(iQuad+1)>4);
+        SMDS_MeshElement* elem = 
+          tgtEditor.AddElement(nodes, missType, !iQuad && nodes.size()/(iQuad+1)>4);
         ++nbAddedBnd;
+
+        // try to set a new element to a shape
+        if ( myMesh->HasShapeToMesh() )
+        {
+          bool ok = true;
+          set< pair<TopAbs_ShapeEnum, int > > mediumShapes;
+          const int nbN = nodes.size() / (iQuad+1 );
+          for ( inode = 0; inode < nbN && ok; ++inode )
+          {
+            pair<int, TopAbs_ShapeEnum> i_stype =
+              helper.GetMediumPos( nodes[inode], nodes[(inode+1)%nbN]);
+            if (( ok = ( i_stype.first > 0 && i_stype.second >= TopAbs_FACE )))
+              mediumShapes.insert( make_pair ( i_stype.second, i_stype.first ));
+          }
+          if ( ok && mediumShapes.size() > 1 )
+          {
+            set< pair<TopAbs_ShapeEnum, int > >::iterator stype_i = mediumShapes.begin();
+            pair<TopAbs_ShapeEnum, int> stype_i_0 = *stype_i;
+            for ( ++stype_i; stype_i != mediumShapes.end() && ok; ++stype_i )
+            {
+              if (( ok = ( stype_i->first != stype_i_0.first )))
+                ok = helper.IsSubShape( aMesh->IndexToShape( stype_i->second ),
+                                        aMesh->IndexToShape( stype_i_0.second ));
+            }
+          }
+          if ( ok && mediumShapes.begin()->first == missShapeType )
+            aMesh->SetMeshElementOnShape( elem, mediumShapes.begin()->second );
+        }
       }
 
     // ----------------------------------
