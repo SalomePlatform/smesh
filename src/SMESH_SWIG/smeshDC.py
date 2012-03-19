@@ -3423,7 +3423,7 @@ class Mesh:
             IDsOfElements = self.GetElementsId()
         if ( isinstance( Mirror, geompyDC.GEOM._objref_GEOM_Object)):
             Mirror = self.smeshpyD.GetAxisStruct(Mirror)
-        mesh.SetParameters(Mirror.parameters)
+        self.mesh.SetParameters(Mirror.parameters)
         mesh = self.editor.MirrorMakeMesh(IDsOfElements, Mirror, theMirrorType,
                                           MakeGroups, NewMeshName)
         return Mesh(self.smeshpyD,self.geompyD,mesh)
