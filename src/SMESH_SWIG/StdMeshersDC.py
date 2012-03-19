@@ -19,6 +19,7 @@
 #
 
 from smesh import Mesh_Algorithm, AssureGeomPublished, IsEqual, ParseParameters
+from smesh import GetName, TreatHypoStatus
 from smeshDC import Mesh
 
 import StdMeshers
