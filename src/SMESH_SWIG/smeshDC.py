@@ -2547,7 +2547,7 @@ class Mesh:
         flag = False
         if isinstance(MaxAngle,str):
             flag = True
-        MaxAngle,Parameters = ParseAngles(MaxAngle)
+        MaxAngle,Parameters,hasVars = ParseAngles(MaxAngle)
         self.mesh.SetParameters(Parameters)
         if not IDsOfElements:
             IDsOfElements = self.GetElementsId()
@@ -2566,7 +2566,7 @@ class Mesh:
     #  @return TRUE in case of success, FALSE otherwise.
     #  @ingroup l2_modif_unitetri
     def TriToQuadObject (self, theObject, theCriterion, MaxAngle):
-        MaxAngle,Parameters = ParseAngles(MaxAngle)
+        MaxAngle,Parameters,hasVars = ParseAngles(MaxAngle)
         self.mesh.SetParameters(Parameters)
         if ( isinstance( theObject, Mesh )):
             theObject = theObject.GetMesh()
@@ -2953,7 +2953,7 @@ class Mesh:
             IDsOfElements = self.GetElementsId()
         if ( isinstance( Axis, geompyDC.GEOM._objref_GEOM_Object)):
             Axis = self.smeshpyD.GetAxisStruct(Axis)
-        AngleInRadians,AngleParameters = ParseAngles(AngleInRadians)
+        AngleInRadians,AngleParameters,hasVars = ParseAngles(AngleInRadians)
         NbOfSteps,Tolerance,Parameters,hasVars = ParseParameters(NbOfSteps,Tolerance)
         Parameters = Axis.parameters + var_separator + AngleParameters + var_separator + Parameters
         self.mesh.SetParameters(Parameters)
@@ -2983,7 +2983,7 @@ class Mesh:
             theObject = theObject.GetMesh()
         if ( isinstance( Axis, geompyDC.GEOM._objref_GEOM_Object)):
             Axis = self.smeshpyD.GetAxisStruct(Axis)
-        AngleInRadians,AngleParameters = ParseAngles(AngleInRadians)
+        AngleInRadians,AngleParameters,hasVars = ParseAngles(AngleInRadians)
         NbOfSteps,Tolerance,Parameters,hasVars = ParseParameters(NbOfSteps,Tolerance)
         Parameters = Axis.parameters + var_separator + AngleParameters + var_separator + Parameters
         self.mesh.SetParameters(Parameters)
@@ -3013,7 +3013,7 @@ class Mesh:
             theObject = theObject.GetMesh()
         if ( isinstance( Axis, geompyDC.GEOM._objref_GEOM_Object)):
             Axis = self.smeshpyD.GetAxisStruct(Axis)
-        AngleInRadians,AngleParameters = ParseAngles(AngleInRadians)
+        AngleInRadians,AngleParameters,hasVars = ParseAngles(AngleInRadians)
         NbOfSteps,Tolerance,Parameters,hasVars = ParseParameters(NbOfSteps,Tolerance)
         Parameters = Axis.parameters + var_separator + AngleParameters + var_separator + Parameters
         self.mesh.SetParameters(Parameters)
@@ -3043,7 +3043,7 @@ class Mesh:
             theObject = theObject.GetMesh()
         if ( isinstance( Axis, geompyDC.GEOM._objref_GEOM_Object)):
             Axis = self.smeshpyD.GetAxisStruct(Axis)
-        AngleInRadians,AngleParameters = ParseAngles(AngleInRadians)
+        AngleInRadians,AngleParameters,hasVars = ParseAngles(AngleInRadians)
         NbOfSteps,Tolerance,Parameters,hasVars = ParseParameters(NbOfSteps,Tolerance)
         Parameters = Axis.parameters + var_separator + AngleParameters + var_separator + Parameters
         self.mesh.SetParameters(Parameters)
@@ -3199,7 +3199,7 @@ class Mesh:
         if ( isinstance( RefPoint, geompyDC.GEOM._objref_GEOM_Object)):
             RefPoint = self.smeshpyD.GetPointStruct(RefPoint)
             pass
-        Angles,AnglesParameters = ParseAngles(Angles)
+        Angles,AnglesParameters,hasVars = ParseAngles(Angles)
         Parameters = AnglesParameters + var_separator + RefPoint.parameters
         self.mesh.SetParameters(Parameters)
 
@@ -3250,7 +3250,7 @@ class Mesh:
             pass
         if ( isinstance( PathMesh, Mesh )):
             PathMesh = PathMesh.GetMesh()
-        Angles,AnglesParameters = ParseAngles(Angles)
+        Angles,AnglesParameters,hasVars = ParseAngles(Angles)
         Parameters = AnglesParameters + var_separator + RefPoint.parameters
         self.mesh.SetParameters(Parameters)
         if HasAngles and Angles and LinearVariation:
@@ -3291,7 +3291,7 @@ class Mesh:
             RefPoint = self.smeshpyD.GetPointStruct(RefPoint)
         if ( isinstance( PathMesh, Mesh )):
             PathMesh = PathMesh.GetMesh()
-        Angles,AnglesParameters = ParseAngles(Angles)
+        Angles,AnglesParameters,hasVars = ParseAngles(Angles)
         Parameters = AnglesParameters + var_separator + RefPoint.parameters
         self.mesh.SetParameters(Parameters)
         if HasAngles and Angles and LinearVariation:
@@ -3333,7 +3333,7 @@ class Mesh:
             RefPoint = self.smeshpyD.GetPointStruct(RefPoint)
         if ( isinstance( PathMesh, Mesh )):
             PathMesh = PathMesh.GetMesh()
-        Angles,AnglesParameters = ParseAngles(Angles)
+        Angles,AnglesParameters,hasVars = ParseAngles(Angles)
         Parameters = AnglesParameters + var_separator + RefPoint.parameters
         self.mesh.SetParameters(Parameters)
         if HasAngles and Angles and LinearVariation:
@@ -3375,7 +3375,7 @@ class Mesh:
             RefPoint = self.smeshpyD.GetPointStruct(RefPoint)
         if ( isinstance( PathMesh, Mesh )):
             PathMesh = PathMesh.GetMesh()
-        Angles,AnglesParameters = ParseAngles(Angles)
+        Angles,AnglesParameters,hasVars = ParseAngles(Angles)
         Parameters = AnglesParameters + var_separator + RefPoint.parameters
         self.mesh.SetParameters(Parameters)
         if HasAngles and Angles and LinearVariation:
@@ -3592,7 +3592,7 @@ class Mesh:
             IDsOfElements = self.GetElementsId()
         if ( isinstance( Axis, geompyDC.GEOM._objref_GEOM_Object)):
             Axis = self.smeshpyD.GetAxisStruct(Axis)
-        AngleInRadians,Parameters = ParseAngles(AngleInRadians)
+        AngleInRadians,Parameters,hasVars = ParseAngles(AngleInRadians)
         Parameters = Axis.parameters + var_separator + Parameters
         self.mesh.SetParameters(Parameters)
         if Copy and MakeGroups:
@@ -3613,7 +3613,7 @@ class Mesh:
             IDsOfElements = self.GetElementsId()
         if ( isinstance( Axis, geompyDC.GEOM._objref_GEOM_Object)):
             Axis = self.smeshpyD.GetAxisStruct(Axis)
-        AngleInRadians,Parameters = ParseAngles(AngleInRadians)
+        AngleInRadians,Parameters,hasVars = ParseAngles(AngleInRadians)
         Parameters = Axis.parameters + var_separator + Parameters
         self.mesh.SetParameters(Parameters)
         mesh = self.editor.RotateMakeMesh(IDsOfElements, Axis, AngleInRadians,
@@ -3633,7 +3633,7 @@ class Mesh:
             theObject = theObject.GetMesh()
         if (isinstance(Axis, geompyDC.GEOM._objref_GEOM_Object)):
             Axis = self.smeshpyD.GetAxisStruct(Axis)
-        AngleInRadians,Parameters = ParseAngles(AngleInRadians)
+        AngleInRadians,Parameters,hasVars = ParseAngles(AngleInRadians)
         Parameters = Axis.parameters + ":" + Parameters
         self.mesh.SetParameters(Parameters)
         if Copy and MakeGroups:
@@ -3654,7 +3654,7 @@ class Mesh:
             theObject = theObject.GetMesh()
         if (isinstance(Axis, geompyDC.GEOM._objref_GEOM_Object)):
             Axis = self.smeshpyD.GetAxisStruct(Axis)
-        AngleInRadians,Parameters = ParseAngles(AngleInRadians)
+        AngleInRadians,Parameters,hasVars = ParseAngles(AngleInRadians)
         Parameters = Axis.parameters + ":" + Parameters
         mesh = self.editor.RotateObjectMakeMesh(theObject, Axis, AngleInRadians,
                                                        MakeGroups, NewMeshName)
