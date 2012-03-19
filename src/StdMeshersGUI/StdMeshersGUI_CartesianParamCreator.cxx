@@ -633,7 +633,7 @@ void StdMeshersGUI_CartesianParamCreator::retrieveParams() const
     myName->setText( hypName() );
 
   QString varName = getVariableName( "SetSizeThreshold" );
-  if ( !varName.isEmpty() )
+  if ( varName.isEmpty() )
     myThreshold->setValue( h->GetSizeThreshold() );
   else
     myThreshold->setText( varName );
