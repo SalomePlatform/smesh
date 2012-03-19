@@ -3783,7 +3783,12 @@ _pyHypothesisReader::_pyHypothesisReader()
       rootDirVar += "_ROOT_DIR";
 
       const char* rootDir = getenv( rootDirVar.c_str() );
-      if ( !rootDir || strlen(rootDir) == 0 ) continue;
+      if ( !rootDir || strlen(rootDir) == 0 )
+      {
+        rootDirVar = plugin + "_ROOT_DIR"; // HexoticPLUGIN_ROOT_DIR
+        rootDir = getenv( rootDirVar.c_str() );
+        if ( !rootDir || strlen(rootDir) == 0 ) continue;
+      }
 
       // get a separator from rootDir
       for ( pos = strlen( rootDir )-1; pos >= 0 && sep.empty(); --pos )
