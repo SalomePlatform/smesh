@@ -4326,7 +4326,7 @@ class algoCreator:
     # creates an instance of algorithm
     def __call__(self,algo="",geom=0,*args):
         algoType = self.defaultAlgoType
-        for arg in args + (algo,):
+        for arg in args + (algo,geom):
             if isinstance( arg, geompyDC.GEOM._objref_GEOM_Object ):
                 geom = arg
             if isinstance( arg, str ) and arg:
