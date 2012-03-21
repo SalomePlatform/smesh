@@ -38,10 +38,20 @@
 
 #include <BRepAdaptor_Surface.hxx>
 #include <BRepBndLib.hxx>
+#include <BRepBuilderAPI_Copy.hxx>
 #include <BRepTools.hxx>
 #include <BRep_Tool.hxx>
 #include <Bnd_Box.hxx>
 #include <ElSLib.hxx>
+#include <Geom2d_BSplineCurve.hxx>
+#include <Geom2d_BezierCurve.hxx>
+#include <Geom2d_TrimmedCurve.hxx>
+#include <Geom_BSplineCurve.hxx>
+#include <Geom_BSplineSurface.hxx>
+#include <Geom_BezierCurve.hxx>
+#include <Geom_BezierSurface.hxx>
+#include <Geom_RectangularTrimmedSurface.hxx>
+#include <Geom_TrimmedCurve.hxx>
 #include <IntAna_IntConicQuad.hxx>
 #include <IntAna_IntLinTorus.hxx>
 #include <IntAna_Quadric.hxx>
@@ -51,10 +61,12 @@
 #include <Precision.hxx>
 #include <TopExp.hxx>
 #include <TopExp_Explorer.hxx>
+#include <TopLoc_Location.hxx>
 #include <TopTools_MapIteratorOfMapOfShape.hxx>
 #include <TopTools_MapOfShape.hxx>
 #include <TopoDS.hxx>
 #include <TopoDS_Face.hxx>
+#include <TopoDS_TShape.hxx>
 #include <gp_Cone.hxx>
 #include <gp_Cylinder.hxx>
 #include <gp_Lin.hxx>
@@ -63,9 +75,15 @@
 #include <gp_Sphere.hxx>
 #include <gp_Torus.hxx>
 
+//#undef WITH_TBB
+#ifdef WITH_TBB
+#include <tbb/parallel_for.h>
+//#include <tbb/enumerable_thread_specific.h>
+#endif
+
 using namespace std;
 
-#define _MY_DEBUG_
+//#define _MY_DEBUG_
 
 //=============================================================================
 /*!
@@ -80,9 +98,9 @@ StdMeshers_Cartesian_3D::StdMeshers_Cartesian_3D(int hypId, int studyId, SMESH_G
   _shapeType = (1 << TopAbs_SOLID);       // 1 bit /shape type
   _compatibleHypothesis.push_back("CartesianParameters3D");
 
-  _onlyUnaryInput = false;         // to mesh all SOLIDs at once
+  _onlyUnaryInput = false;          // to mesh all SOLIDs at once
   _requireDiscreteBoundary = false; // 2D mesh not needed
-  _supportSubmeshes = false;       // do not use any existing mesh
+  _supportSubmeshes = false;        // do not use any existing mesh
 }
 
 //=============================================================================
@@ -127,6 +145,7 @@ namespace
     Trans_OUT     = IntCurveSurface_Out,
     Trans_APEX
   };
+  // --------------------------------------------------------------------------
   /*!
    * \brief Data of intersection between a GridLine and a TopoDS_Face
    */
@@ -135,6 +154,7 @@ namespace
     double                       _paramOnLine;
     mutable Transition           _transition;
     mutable const SMDS_MeshNode* _node;
+    mutable size_t               _indexOnLine;
 
     IntersectionPoint(): _node(0) {}
     bool operator< ( const IntersectionPoint& o ) const { return _paramOnLine < o._paramOnLine; }
@@ -154,7 +174,7 @@ namespace
   };
   // --------------------------------------------------------------------------
   /*!
-   * \brief Iterator on the grid lines in one direction
+   * \brief Iterator on the parallel grid lines of one direction
    */
   struct LineIndexer
   {
@@ -186,7 +206,7 @@ namespace
         _curInd[_iVar1] = 0, ++_curInd[_iVar2];
     }
     bool More() const { return _curInd[_iVar2] < _size[_iVar2]; }
-    size_t LineIndex () const { return _curInd[_iVar1] + _curInd[_iVar2]* _size[_iVar1]; }
+    size_t LineIndex   () const { return _curInd[_iVar1] + _curInd[_iVar2]* _size[_iVar1]; }
     size_t LineIndex10 () const { return (_curInd[_iVar1] + 1 ) + _curInd[_iVar2]* _size[_iVar1]; }
     size_t LineIndex01 () const { return _curInd[_iVar1] + (_curInd[_iVar2] + 1 )* _size[_iVar1]; }
     size_t LineIndex11 () const { return (_curInd[_iVar1] + 1 ) + (_curInd[_iVar2] + 1 )* _size[_iVar1]; }
@@ -200,12 +220,16 @@ namespace
   struct Grid
   {
     vector< double >   _coords[3]; // coordinates of grid nodes
-    vector< GridLine > _lines [3]; // in 3 directions
+    vector< GridLine > _lines [3]; //  in 3 directions
     double             _tol, _minCellSize;
 
     vector< const SMDS_MeshNode* > _nodes; // mesh nodes at grid nodes
     vector< bool >                 _isBndNode; // is mesh node at intersection with geometry
 
+    size_t CellIndex( size_t i, size_t j, size_t k ) const
+    {
+      return i + j*(_coords[0].size()-1) + k*(_coords[0].size()-1)*(_coords[1].size()-1);
+    }
     size_t NodeIndex( size_t i, size_t j, size_t k ) const
     {
       return i + j*_coords[0].size() + k*_coords[0].size()*_coords[1].size();
@@ -259,6 +283,7 @@ namespace
       }
       return _surfaceInt;
     }
+    bool IsThreadSafe() const;
   };
   // --------------------------------------------------------------------------
   /*!
@@ -313,7 +338,7 @@ namespace
 
       _Node(const SMDS_MeshNode* n=0, const IntersectionPoint* ip=0):_node(n), _intPoint(ip) {} 
       const SMDS_MeshNode* Node() const { return _intPoint ? _intPoint->_node : _node; }
-      bool IsCorner() const { return _node; }
+      //bool IsCorner() const { return _node; }
     };
     // --------------------------------------------------------------------------------
     struct _Link // link connecting two _Node's
@@ -323,6 +348,7 @@ namespace
       vector< _Link > _splits;
       vector< _Face*> _faces;
       const GridLine* _line;
+      _Link(): _line(0) {}
     };
     // --------------------------------------------------------------------------------
     struct _OrientedLink
@@ -346,38 +372,83 @@ namespace
       vector< _Link >         _polyLinks; // links added to close a polygonal face
     };
     // --------------------------------------------------------------------------------
+    struct _volumeDef // holder of nodes of a volume mesh element
+    {
+      vector< const SMDS_MeshNode* > _nodes;
+      vector< int >                  _quantities;
+      typedef boost::shared_ptr<_volumeDef> Ptr;
+      void set( const vector< const SMDS_MeshNode* >& nodes,
+                const vector< int > quant = vector< int >() )
+      { _nodes = nodes; _quantities = quant; }
+      // static Ptr New( const vector< const SMDS_MeshNode* >& nodes,
+      //                 const vector< int > quant = vector< int >() )
+      // {
+      //   _volumeDef* def = new _volumeDef;
+      //   def->_nodes = nodes;
+      //   def->_quantities = quant;
+      //   return Ptr( def );
+      // }
+    };
+
+    // topology of a hexahedron
     int   _nodeShift[8];
     _Node _hexNodes[8];
     _Link _hexLinks[12];
     _Face _hexQuads[6];
 
+    // faces resulted from hexahedron intersection
     vector< _Face > _polygons;
 
-    Grid* _grid;
-    LineIndexer _lineInd[3];
+    // computed volume elements
+    //vector< _volumeDef::Ptr > _volumeDefs;
+    _volumeDef _volumeDefs;
 
-    double _sizeThreshold, _sideLength[3];
-
-    int _nbCornerNodes, _nbIntNodes, _nbBndNodes;
+    Grid*       _grid;
+    double      _sizeThreshold, _sideLength[3];
+    int         _nbCornerNodes, _nbIntNodes, _nbBndNodes;
+    int         _origNodeInd; // index of _hexNodes[0] node within the _grid
+    size_t      _i,_j,_k;
 
   public:
     Hexahedron(const double sizeThreshold, Grid* grid);
-    void Init( size_t i, size_t j, size_t k );
     int MakeElements(SMESH_MesherHelper& helper);
+    void ComputeElements();
+    void Init() { init( _i, _j, _k ); }
+
   private:
+    Hexahedron(const Hexahedron& other );
+    void init( size_t i, size_t j, size_t k );
+    void init( size_t i );
+    int  addElements(SMESH_MesherHelper& helper);
     bool isInHole() const;
     bool checkPolyhedronSize() const;
-    bool addHexa (SMESH_MesherHelper& helper);
-    bool addTetra(SMESH_MesherHelper& helper);
-    bool addPenta(SMESH_MesherHelper& helper);
-    bool addPyra (SMESH_MesherHelper& helper);
+    bool addHexa ();
+    bool addTetra();
+    bool addPenta();
+    bool addPyra ();
   };
  
+#ifdef WITH_TBB
+  // --------------------------------------------------------------------------
+  /*!
+   * \brief Hexahedron computing volumes in one thread
+   */
+  struct ParallelHexahedron
+  {
+    vector< Hexahedron* >& _hexVec;
+    vector<int>&           _index;
+    ParallelHexahedron( vector< Hexahedron* >& hv, vector<int>& ind): _hexVec(hv), _index(ind) {}
+    void operator() ( const tbb::blocked_range<size_t>& r ) const
+    {
+      for ( size_t i = r.begin(); i != r.end(); ++i )
+        if ( Hexahedron* hex = _hexVec[ _index[i]] )
+          hex->ComputeElements();
+    }
+  };
   // --------------------------------------------------------------------------
   /*!
    * \brief Structure intersecting certain nb of faces with GridLine's in one thread
    */
-#ifdef WITH_TBB
   struct ParallelIntersector
   {
     vector< FaceGridIntersector >& _faceVec;
@@ -385,9 +456,10 @@ namespace
     void operator() ( const tbb::blocked_range<size_t>& r ) const
     {
       for ( size_t i = r.begin(); i != r.end(); ++i )
-        _faceVec[i]->Intersect();
+        _faceVec[i].Intersect();
     }
   };
+
 #endif
   //=============================================================================
   // Implementation of internal utils
@@ -580,6 +652,7 @@ namespace
             double xyz[3] = { _coords[0][ li.I() ], _coords[1][ li.J() ], _coords[2][ li.K() ]};
             xyz[ li._iConst ] += ip->_paramOnLine;
             ip->_node = helper.AddNode( xyz[0], xyz[1], xyz[2] );
+            ip->_indexOnLine = nodeCoord-coord0-1;
           }
           // create a mesh node at ip concident with a grid node
           else
@@ -592,7 +665,8 @@ namespace
               _nodes[ nodeIndex ] = helper.AddNode( xyz[0], xyz[1], xyz[2] );
               _isBndNode[ nodeIndex ] = true;
             }
-            ip->_node = _nodes[ nodeIndex ];
+            //ip->_node = _nodes[ nodeIndex ];
+            ip->_indexOnLine = nodeCoord-coord0;
             if ( ++nodeCoord < coordEnd )
               nodeParam = *nodeCoord - *coord0;
           }
@@ -984,18 +1058,70 @@ namespace
       addIntPoint(/*toClassify=*/false);
     }
   }
+  //================================================================================
+  /*
+   * check if its face can be safely intersected in a thread
+   */
+  bool FaceGridIntersector::IsThreadSafe() const
+  {
+    // check surface
+    TopLoc_Location loc;
+    Handle(Geom_Surface) surf = BRep_Tool::Surface( _face, loc );
+    Handle(Geom_RectangularTrimmedSurface) ts =
+      Handle(Geom_RectangularTrimmedSurface)::DownCast( surf );
+    while( !ts.IsNull() ) {
+      surf = ts->BasisSurface();
+      ts = Handle(Geom_RectangularTrimmedSurface)::DownCast(surf);
+    }
+    if ( surf->IsKind( STANDARD_TYPE(Geom_BSplineSurface )) ||
+         surf->IsKind( STANDARD_TYPE(Geom_BezierSurface )))
+      return false;
 
+    double f, l;
+    TopExp_Explorer exp( _face, TopAbs_EDGE );
+    for ( ; exp.More(); exp.Next() )
+    {
+      const TopoDS_Edge& e = TopoDS::Edge( exp.Current() );
+      // check 3d curve
+      {
+        Handle(Geom_Curve) c = BRep_Tool::Curve( e, loc, f, l);
+        if ( !c.IsNull() )
+        {
+          Handle(Geom_TrimmedCurve) tc = Handle(Geom_TrimmedCurve)::DownCast(c);
+          while( !tc.IsNull() ) {
+            c = tc->BasisCurve();
+            tc = Handle(Geom_TrimmedCurve)::DownCast(c);
+          }
+          if ( c->IsKind( STANDARD_TYPE(Geom_BSplineCurve )) ||
+               c->IsKind( STANDARD_TYPE(Geom_BezierCurve )))
+            return false;
+        }
+      }
+      // check 2d curve
+      {
+        Handle(Geom2d_Curve) c2 = BRep_Tool::CurveOnSurface( e, surf, loc, f, l);
+        if ( !c2.IsNull() )
+        {
+          Handle(Geom2d_TrimmedCurve) tc = Handle(Geom2d_TrimmedCurve)::DownCast(c2);
+          while( !tc.IsNull() ) {
+            c2 = tc->BasisCurve();
+            tc = Handle(Geom2d_TrimmedCurve)::DownCast(c2);
+          }
+          if ( c2->IsKind( STANDARD_TYPE(Geom2d_BSplineCurve )) ||
+               c2->IsKind( STANDARD_TYPE(Geom2d_BezierCurve )))
+            return false;
+        }
+      }
+    }
+    return true;
+  }
   //================================================================================
   /*!
    * \brief Creates topology of the hexahedron
    */
   Hexahedron::Hexahedron(const double sizeThreshold, Grid* grid)
-    : _grid( grid ), _sizeThreshold(sizeThreshold)
+    : _grid( grid ), _sizeThreshold( sizeThreshold ), _nbIntNodes(0)
   {
-    _lineInd[0] = grid->GetLineIndexer( 0 );
-    _lineInd[1] = grid->GetLineIndexer( 1 );
-    _lineInd[2] = grid->GetLineIndexer( 2 );
-
     _polygons.reserve(100); // to avoid reallocation;
 
     //set nodes shift within grid->_nodes from the node 000 
@@ -1046,7 +1172,7 @@ namespace
       for ( int i = 0; i < 4; ++i )
       {
         bool revLink = revFace;
-        if ( i > 1 ) // to reverse u1 and v0
+        if ( i > 1 ) // reverse links u1 and v0
           revLink = !revLink;
         _OrientedLink& link = revFace ? *revLinkIt++ : *frwLinkIt++;
         link = _OrientedLink( & _hexLinks[ SMESH_Block::ShapeIndex( idVec[interlace[i]] )],
@@ -1056,61 +1182,79 @@ namespace
   }
   //================================================================================
   /*!
+   * \brief Copy constructor
+   */
+  Hexahedron::Hexahedron( const Hexahedron& other )
+    :_grid( other._grid ), _sizeThreshold( other._sizeThreshold ), _nbIntNodes(0)
+  {
+    _polygons.reserve(100); // to avoid reallocation;
+
+    for ( int i = 0; i < 8; ++i )
+      _nodeShift[i] = other._nodeShift[i];
+
+    for ( int i = 0; i < 12; ++i )
+    {
+      const _Link& srcLink = other._hexLinks[ i ];
+      _Link&       tgtLink = this->_hexLinks[ i ];
+      tgtLink._nodes[0] = _hexNodes + ( srcLink._nodes[0] - other._hexNodes );
+      tgtLink._nodes[1] = _hexNodes + ( srcLink._nodes[1] - other._hexNodes );
+      tgtLink._intNodes.reserve( 10 ); // to avoid reallocation
+      tgtLink._splits.reserve( 10 );
+    }
+
+    for ( int i = 0; i < 6; ++i )
+    {
+      const _Face& srcQuad = other._hexQuads[ i ];
+      _Face&       tgtQuad = this->_hexQuads[ i ];
+      tgtQuad._links.resize(4);
+      for ( int j = 0; j < 4; ++j )
+      {
+        const _OrientedLink& srcLink = srcQuad._links[ j ];
+        _OrientedLink&       tgtLink = tgtQuad._links[ j ];
+        tgtLink._reverse = srcLink._reverse;
+        tgtLink._link    = _hexLinks + ( srcLink._link - other._hexLinks );
+      }
+    }
+  }
+  
+  //================================================================================
+  /*!
    * \brief Initializes its data by given grid cell
    */
-  void Hexahedron::Init( size_t i, size_t j, size_t k )
+  void Hexahedron::init( size_t i, size_t j, size_t k )
   {
     // set nodes of grid to nodes of the hexahedron and
     // count nodes at hexahedron corners located IN and ON geometry
-    _nbCornerNodes = _nbIntNodes = _nbBndNodes = 0;
-    size_t i000 = _grid->NodeIndex( i,j,k );
+    _nbCornerNodes = _nbBndNodes = 0;
+    _origNodeInd   = _grid->NodeIndex( i,j,k );
     for ( int iN = 0; iN < 8; ++iN )
     {
-      _nbCornerNodes += bool(( _hexNodes[iN]._node = _grid->_nodes[ i000 + _nodeShift[iN] ]));
-      _nbBndNodes += _grid->_isBndNode[ i000 + _nodeShift[iN] ];
+      _hexNodes[iN]._node = _grid->_nodes[ _origNodeInd + _nodeShift[iN] ];
+      _nbCornerNodes += bool( _hexNodes[iN]._node );
+      _nbBndNodes    += _grid->_isBndNode[ _origNodeInd + _nodeShift[iN] ];
     }
-    // set intersection nodes from GridLine's to hexahedron links
-    int linkID = 0;
-    _Link split;
-    IntersectionPoint curIntPnt;
-    size_t ijk[3] = { i, j, k };
-    for ( int iDir = 0; iDir < 3; ++iDir )
+
+    _sideLength[0] = _grid->_coords[0][i+1] - _grid->_coords[0][i];
+    _sideLength[1] = _grid->_coords[1][j+1] - _grid->_coords[1][j];
+    _sideLength[2] = _grid->_coords[2][k+1] - _grid->_coords[2][k];
+
+    if ( _nbCornerNodes < 8 && _nbIntNodes + _nbCornerNodes > 3)
     {
-      _lineInd[ iDir ].SetIJK( i,j,k );
-      size_t lineIndex[4] = {
-        _lineInd[ iDir ].LineIndex(),
-        _lineInd[ iDir ].LineIndex10(),
-        _lineInd[ iDir ].LineIndex01(),
-        _lineInd[ iDir ].LineIndex11()
-      };
-      const vector<double>& coords = _grid->_coords[ iDir ];
-      double nodeParam1 = coords[ ijk[ iDir ]    ] - coords[0] + _grid->_tol;
-      double nodeParam2 = coords[ ijk[ iDir ] + 1] - coords[0] - _grid->_tol;
-      _sideLength[ iDir ] = nodeParam2 - nodeParam1 + 2 * _grid->_tol;      
-      for ( int iL = 0; iL < 4; ++iL  )
+      _Link split;
+      // create sub-links (_splits) by splitting links with _intNodes
+      for ( int iLink = 0; iLink < 12; ++iLink )
       {
-        GridLine& line = _grid->_lines[ iDir ][ lineIndex[ iL ]];
-        _Link&    link = _hexLinks[ linkID++ ];
-        link._line = &line;
-        link._intNodes.clear();
+        _Link& link = _hexLinks[ iLink ];
         link._splits.clear();
         split._nodes[ 0 ] = link._nodes[0];
-        curIntPnt._paramOnLine = nodeParam1;
-        multiset< IntersectionPoint >::const_iterator ip = line._intPoints.lower_bound( curIntPnt );
-        while ( ip != line._intPoints.end() &&
-                ip->_paramOnLine <= nodeParam2 &&
-                ip->_node )
+        for ( size_t i = 0; i < link._intNodes.size(); ++ i )
         {
-          link._intNodes.push_back( _Node( 0, &(*ip) ));
-          ++_nbIntNodes;
-          ++ip;
-          // create sub-links (_splits) by splitting a link with _intNodes
           if ( split._nodes[ 0 ]->Node() )
           {
-            split._nodes[ 1 ] = &link._intNodes.back();
+            split._nodes[ 1 ] = &link._intNodes[i];
             link._splits.push_back( split );
           }
-          split._nodes[ 0 ] = &link._intNodes.back();
+          split._nodes[ 0 ] = &link._intNodes[i];
         }
         if ( link._nodes[ 1 ]->Node() && split._nodes[ 0 ]->Node() )
         {
@@ -1120,28 +1264,33 @@ namespace
       }
     }
   }
+  //================================================================================
+  /*!
+   * \brief Initializes its data by given grid cell (countered from zero)
+   */
+  void Hexahedron::init( size_t iCell )
+  {
+    size_t iNbCell = _grid->_coords[0].size() - 1;
+    size_t jNbCell = _grid->_coords[1].size() - 1;
+    _i = iCell % iNbCell;
+    _j = ( iCell % ( iNbCell * jNbCell )) / iNbCell;
+    _k = iCell / iNbCell / jNbCell;
+    init( _i, _j, _k );
+  }
 
   //================================================================================
   /*!
-   * \brief Creates mesh volumes
+   * \brief Compute mesh volumes resulted from intersection of the Hexahedron
    */
-  int Hexahedron::MakeElements(SMESH_MesherHelper& helper)
+  void Hexahedron::ComputeElements()
   {
-    int nbAddedVols = 0;
-    if ( _nbCornerNodes == 8 && _nbIntNodes == 0 && _nbBndNodes < _nbCornerNodes )
-    {
-      // order of _hexNodes is defined by enum SMESH_Block::TShapeID
-      helper.AddVolume( _hexNodes[0].Node(), _hexNodes[2].Node(),
-                        _hexNodes[3].Node(), _hexNodes[1].Node(),
-                        _hexNodes[4].Node(), _hexNodes[6].Node(),
-                        _hexNodes[7].Node(), _hexNodes[5].Node() );
-      return 1;
-    }
+    Init();
+
     if ( _nbCornerNodes + _nbIntNodes < 4 )
-      return nbAddedVols;
+      return;
 
     if ( _nbBndNodes == _nbCornerNodes && isInHole() )
-      return nbAddedVols;
+      return;
 
     _polygons.clear();
 
@@ -1156,7 +1305,7 @@ namespace
     _Link polyLink;
     polyLink._faces.reserve( 1 );
 
-    for ( int iF = 0; iF < 6; ++iF ) // loop on 6 sides on a hexahedron
+    for ( int iF = 0; iF < 6; ++iF ) // loop on 6 sides of a hexahedron
     {
       const _Face& quad = _hexQuads[ iF ] ;
 
@@ -1189,18 +1338,6 @@ namespace
           }
           polygon._links.push_back( split );
           nodes.push_back( n );
-
-          // if ( n->IsCorner() )
-          //   ++nbCorners;
-          // if ( n->_intPoint )
-          // {
-          //   if ( n->_intPoint->_transition == Trans_IN )
-          //     ++nbIn;
-          //   else if ( n->_intPoint->_transition == Trans_OUT )
-          //     ++nbOut;
-          //   else
-          //     ++nbIn, ++nbOut;
-          // }
         }
       }
       if ( polygon._links.size() > 1 )
@@ -1242,7 +1379,7 @@ namespace
     }
     // make closed chains of free links
     int nbFreeLinks = freeLinks.size();
-    if ( 0 < nbFreeLinks && nbFreeLinks < 3 ) return nbAddedVols;
+    if ( 0 < nbFreeLinks && nbFreeLinks < 3 ) return;
     while ( nbFreeLinks > 0 )
     {
       nodes.clear();
@@ -1277,7 +1414,7 @@ namespace
       nbFreeLinks -= polygon._links.size();
 
       if ( curNode != nodes.front() || polygon._links.size() < 3 )
-        return nbAddedVols; // closed polygon not found -> invalid polyhedron
+        return; // closed polygon not found -> invalid polyhedron
 
       quantities.push_back( nodes.size() );
       for ( size_t i = 0; i < nodes.size(); ++i )
@@ -1294,33 +1431,186 @@ namespace
     }
 
     if ( ! checkPolyhedronSize() )
-      return nbAddedVols;
+    {
+      return;
+    }
 
     // create a classic cell if possible
     const int nbNodes = _nbCornerNodes + _nbIntNodes;
-    if (      nbNodes == 8 && _polygons.size() == 6 && addHexa ( helper ))
-      ++nbAddedVols;
-    else if ( nbNodes == 4 && _polygons.size() == 4 && addTetra( helper ))
-      ++nbAddedVols;
-    else if ( nbNodes == 6 && _polygons.size() == 5 && addPenta( helper ))
-      ++nbAddedVols;
-    else if ( nbNodes == 5 && _polygons.size() == 5 && addPyra ( helper ))
-      ++nbAddedVols;
-    else
+    bool isClassicElem = false;
+    if (      nbNodes == 8 && _polygons.size() == 6 ) isClassicElem = addHexa();
+    else if ( nbNodes == 4 && _polygons.size() == 4 ) isClassicElem = addTetra();
+    else if ( nbNodes == 6 && _polygons.size() == 5 ) isClassicElem = addPenta();
+    else if ( nbNodes == 5 && _polygons.size() == 5 ) isClassicElem = addPyra ();
+    if ( !isClassicElem )
+      _volumeDefs.set( polyhedraNodes, quantities );
+  }
+  //================================================================================
+  /*!
+   * \brief Create elements in the mesh
+   */
+  int Hexahedron::MakeElements(SMESH_MesherHelper& helper)
+  {
+    SMESHDS_Mesh* mesh = helper.GetMeshDS();
+
+    size_t nbCells[3] = { _grid->_coords[0].size() - 1,
+                          _grid->_coords[1].size() - 1,
+                          _grid->_coords[2].size() - 1 };
+    const size_t nbGridCells = nbCells[0] *nbCells [1] * nbCells[2];
+    vector< Hexahedron* > intersectedHex( nbGridCells, 0 );
+    int nbIntHex = 0;
+
+    // set intersection nodes from GridLine's to links of intersectedHex
+    int i,j,k, iDirOther[3][2] = {{ 1,2 },{ 0,2 },{ 0,1 }};
+    for ( int iDir = 0; iDir < 3; ++iDir )
     {
-      ++nbAddedVols;
-      helper.AddPolyhedralVolume( polyhedraNodes, quantities );
+      int dInd[4][3] = { {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0} };
+      dInd[1][ iDirOther[iDir][0] ] = -1;
+      dInd[2][ iDirOther[iDir][1] ] = -1;
+      dInd[3][ iDirOther[iDir][0] ] = -1; dInd[3][ iDirOther[iDir][1] ] = -1;
+      // loop on GridLine's parallel to iDir
+      LineIndexer lineInd = _grid->GetLineIndexer( iDir );
+      for ( ; lineInd.More(); ++lineInd )
+      {
+        GridLine& line = _grid->_lines[ iDir ][ lineInd.LineIndex() ];
+        multiset< IntersectionPoint >::const_iterator ip = line._intPoints.begin();
+        for ( ; ip != line._intPoints.end(); ++ip )
+        {
+          lineInd.SetIndexOnLine( ip->_indexOnLine );
+          for ( int iL = 0; iL < 4; ++iL ) // loop on 4 cells sharing a link
+          {
+            i = int(lineInd.I()) + dInd[iL][0];
+            j = int(lineInd.J()) + dInd[iL][1];
+            k = int(lineInd.K()) + dInd[iL][2];
+            if ( i < 0 || i >= nbCells[0] ||
+                 j < 0 || j >= nbCells[1] ||
+                 k < 0 || k >= nbCells[2] ) continue;
+
+            const size_t hexIndex = _grid->CellIndex( i,j,k );
+            Hexahedron *& hex = intersectedHex[ hexIndex ];
+            if ( !hex)
+            {
+              hex = new Hexahedron( *this );
+              hex->_i = i;
+              hex->_j = j;
+              hex->_k = k;
+              ++nbIntHex;
+            }
+            const int iLink = iL + iDir * 4;
+            hex->_hexLinks[iLink]._line = &line;
+            if ( ip->_node )
+            {
+              hex->_hexLinks[iLink]._intNodes.push_back( _Node( 0, &(*ip) ));
+              hex->_nbIntNodes++;
+            }
+          }
+        }
+      }
     }
-    return nbAddedVols;
+
+    // add not split hexadrons to the mesh
+    int nbAdded = 0;
+    vector<int> intHexInd( nbIntHex );
+    nbIntHex = 0;
+    for ( size_t i = 0; i < intersectedHex.size(); ++i )
+    {
+      Hexahedron * hex = intersectedHex[ i ];
+      if ( hex )
+      {
+        intHexInd[ nbIntHex++ ] = i;
+        if ( hex->_nbIntNodes > 0 ) continue;
+        init( hex->_i, hex->_j, hex->_k );
+      }
+      else
+      {    
+        init( i );
+      }
+      if ( _nbCornerNodes == 8 && ( _nbBndNodes < _nbCornerNodes || !isInHole() ))
+      {
+        // order of _hexNodes is defined by enum SMESH_Block::TShapeID
+        SMDS_MeshElement* el =
+          mesh->AddVolume( _hexNodes[0].Node(), _hexNodes[2].Node(),
+                           _hexNodes[3].Node(), _hexNodes[1].Node(),
+                           _hexNodes[4].Node(), _hexNodes[6].Node(),
+                           _hexNodes[7].Node(), _hexNodes[5].Node() );
+        mesh->SetMeshElementOnShape( el, helper.GetSubShapeID() );
+        ++nbAdded;
+        if ( hex )
+        {
+          delete hex;
+          intersectedHex[ i ] = 0;
+          --nbIntHex;
+        }
+      }
+    }
+
+    // add elements resulted from hexadron intersection
+#ifdef WITH_TBB
+    intHexInd.resize( nbIntHex );
+    tbb::parallel_for ( tbb::blocked_range<size_t>( 0, nbIntHex ),
+                        ParallelHexahedron( intersectedHex, intHexInd ),
+                        tbb::simple_partitioner());
+    for ( size_t i = 0; i < intHexInd.size(); ++i )
+      if ( Hexahedron * hex = intersectedHex[ intHexInd[ i ]] )
+        nbAdded += hex->addElements( helper );
+#else
+    for ( size_t i = 0; i < intHexInd.size(); ++i )
+      if ( Hexahedron * hex = intersectedHex[ intHexInd[ i ]] )
+      {
+        hex->ComputeElements();
+        nbAdded += hex->addElements( helper );
+      }
+#endif
+
+    for ( size_t i = 0; i < intersectedHex.size(); ++i )
+      if ( intersectedHex[ i ] )
+        delete intersectedHex[ i ];
+
+    return nbAdded;
   }
 
+  //================================================================================
+  /*!
+   * \brief Adds computed elements to the mesh
+   */
+  int Hexahedron::addElements(SMESH_MesherHelper& helper)
+  {
+    // add elements resulted from hexahedron intersection
+    //for ( size_t i = 0; i < _volumeDefs.size(); ++i )
+    {
+      vector< const SMDS_MeshNode* >& nodes = _volumeDefs._nodes;
+      
+      if ( !_volumeDefs._quantities.empty() )
+      {
+        helper.AddPolyhedralVolume( nodes, _volumeDefs._quantities );
+      }
+      else
+      {
+        switch ( nodes.size() )
+        {
+        case 8: helper.AddVolume( nodes[0],nodes[1],nodes[2],nodes[3],
+                                  nodes[4],nodes[5],nodes[6],nodes[7] );
+          break;
+        case 4: helper.AddVolume( nodes[0],nodes[1],nodes[2],nodes[3] );
+          break;
+        case 6: helper.AddVolume( nodes[0],nodes[1],nodes[2],nodes[3], nodes[4],nodes[5] );
+          break;
+        case 5:
+          helper.AddVolume( nodes[0],nodes[1],nodes[2],nodes[3],nodes[4] );
+          break;
+        }
+      }
+    }
+
+    return 1;//(int) _volumeDefs.size();
+  }
   //================================================================================
   /*!
    * \brief Return true if the element is in a hole
    */
   bool Hexahedron::isInHole() const
   {
-    const int ijk[3] = { _lineInd[0].I(), _lineInd[0].J(), _lineInd[0].K() };
+    const int ijk[3] = { _i, _j, _k };
     IntersectionPoint curIntPnt;
 
     for ( int iDir = 0; iDir < 3; ++iDir )
@@ -1331,6 +1621,7 @@ namespace
       for ( int i = 0; i < 4 && allLinksOut; ++i )
       {
         const _Link& link = _hexLinks[ linkID++ ];
+        if ( !link._line ) return false;
         if ( link._splits.empty() ) continue;
         // check transition of the first node of a link
         const IntersectionPoint* firstIntPnt = 0;
@@ -1386,7 +1677,7 @@ namespace
   /*!
    * \brief Tries to create a hexahedron
    */
-  bool Hexahedron::addHexa(SMESH_MesherHelper& helper)
+  bool Hexahedron::addHexa()
   {
     if ( _polygons[0]._links.size() != 4 ||
          _polygons[1]._links.size() != 4 ||
@@ -1418,15 +1709,15 @@ namespace
         }
     }
     if ( nbN == 8 )
-      helper.AddVolume( nodes[0],nodes[1],nodes[2],nodes[3],
-                        nodes[4],nodes[5],nodes[6],nodes[7] );
-    return ( nbN == 8 );
+      _volumeDefs.set( vector< const SMDS_MeshNode* >( nodes, nodes+8 ));
+
+    return nbN == 8;
   }
   //================================================================================
   /*!
    * \brief Tries to create a tetrahedron
    */
-  bool Hexahedron::addTetra(SMESH_MesherHelper& helper)
+  bool Hexahedron::addTetra()
   {
     const SMDS_MeshNode* nodes[4];
     nodes[0] = _polygons[0]._links[0].FirstNode()->Node();
@@ -1442,7 +1733,7 @@ namespace
       if ( tria->_links[i]._link == link )
       {
         nodes[3] = tria->_links[(i+1)%3].LastNode()->Node();
-        helper.AddVolume( nodes[0],nodes[1],nodes[2],nodes[3] );
+        _volumeDefs.set( vector< const SMDS_MeshNode* >( nodes, nodes+4 ));
         return true;
       }
 
@@ -1452,7 +1743,7 @@ namespace
   /*!
    * \brief Tries to create a pentahedron
    */
-  bool Hexahedron::addPenta(SMESH_MesherHelper& helper)
+  bool Hexahedron::addPenta()
   {
     // find a base triangular face
     int iTri = -1;
@@ -1486,7 +1777,7 @@ namespace
         }
     }
     if ( nbN == 6 )
-      helper.AddVolume( nodes[0],nodes[1],nodes[2],nodes[3], nodes[4],nodes[5] );
+      _volumeDefs.set( vector< const SMDS_MeshNode* >( nodes, nodes+6 ));
 
     return ( nbN == 6 );
   }
@@ -1494,7 +1785,7 @@ namespace
   /*!
    * \brief Tries to create a pyramid
    */
-  bool Hexahedron::addPyra(SMESH_MesherHelper& helper)
+  bool Hexahedron::addPyra()
   {
     // find a base quadrangle
     int iQuad = -1;
@@ -1520,7 +1811,7 @@ namespace
       if ( tria->_links[i]._link == link )
       {
         nodes[4] = tria->_links[(i+1)%3].LastNode()->Node();
-        helper.AddVolume( nodes[0],nodes[1],nodes[2],nodes[3],nodes[4] );
+        _volumeDefs.set( vector< const SMDS_MeshNode* >( nodes, nodes+5 ));
         return true;
       }
 
@@ -1554,8 +1845,8 @@ bool StdMeshers_Cartesian_3D::Compute(SMESH_Mesh &         theMesh,
   // - skip a cell, if it is too small according to the size threshold
   // - add a hexahedron in the mesh, if all nodes are inside
   // - add a polyhedron in the mesh, if some nodes are inside and some outside
-
-  try {
+  try
+  {
     Grid grid;
 
     TopTools_MapOfShape faceMap;
@@ -1595,8 +1886,21 @@ bool StdMeshers_Cartesian_3D::Compute(SMESH_Mesh &         theMesh,
             return error("The grid doesn't enclose the geometry");
     }
 
-    // Intersection of grid lines with the geometry boundary.
 #ifdef WITH_TBB
+    { // copy partner faces and curves of not thread-safe types
+      set< const Standard_Transient* > tshapes;
+      BRepBuilderAPI_Copy copier;
+      for ( size_t i = 0; i < facesItersectors.size(); ++i )
+      {
+        if ( !facesItersectors[i].IsThreadSafe() &&
+             !tshapes.insert((const Standard_Transient*) facesItersectors[i]._face.TShape() ).second )
+        {
+          copier.Perform( facesItersectors[i]._face );
+          facesItersectors[i]._face = TopoDS::Face( copier );
+        }
+      }
+    }
+    // Intersection of grid lines with the geometry boundary.
     tbb::parallel_for ( tbb::blocked_range<size_t>( 0, facesItersectors.size() ),
                         ParallelIntersector( facesItersectors ),
                         tbb::simple_partitioner());
@@ -1619,15 +1923,9 @@ bool StdMeshers_Cartesian_3D::Compute(SMESH_Mesh &         theMesh,
     // create nodes on the geometry
     grid.ComputeNodes(helper);
 
+    // create volume elements
     Hexahedron hex( _hyp->GetSizeThreshold(), &grid );
-    int nbAdded = 0;
-    for ( size_t k = 1; k < zCoords.size(); ++k )
-      for ( size_t j = 1; j < yCoords.size(); ++j )
-        for ( size_t i = 1; i < xCoords.size(); ++i )
-        {
-          hex.Init( i-1, j-1, k-1 );
-          nbAdded += hex.MakeElements( helper );
-        }
+    int nbAdded = hex.MakeElements( helper );
 
     SMESHDS_Mesh* meshDS = theMesh.GetMeshDS();
     if ( nbAdded > 0 )
@@ -1662,7 +1960,6 @@ bool StdMeshers_Cartesian_3D::Compute(SMESH_Mesh &         theMesh,
               meshDS->RemoveFreeNode( ip->_node, smDS, /*fromGroups=*/false );
         }
       }
-
       // grid nodes
       for ( size_t i = 0; i < grid._nodes.size(); ++i )
         if ( !grid._isBndNode[i] ) // nodes on boundary are already removed
@@ -1671,8 +1968,6 @@ bool StdMeshers_Cartesian_3D::Compute(SMESH_Mesh &         theMesh,
     }
 
     return nbAdded;
-
-    // TODO: evalute time
 
   }
   // SMESH_ComputeError is not caught at SMESH_submesh level for an unknown reason
