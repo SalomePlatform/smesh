@@ -158,3 +158,8 @@ libStdMeshers_la_LDFLAGS  = \
 	../MEFISTO2/libMEFISTO2D.la \
 	$(KERNEL_LDFLAGS) -lSALOMELocalTrace -lOpUtil \
 	$(CAS_LDPATH) -lTKAdvTools -lTKTopAlgo -lTKG3d
+
+if WITH_TBB
+  libStdMeshers_la_CPPFLAGS += $(TBB_INCLUDES)
+  libStdMeshers_la_LDFLAGS  += $(TBB_LIBS)
+endif
