@@ -42,16 +42,17 @@ public:
   friend class SMDS_VtkFace;
 
   void Print(std::ostream & OS) const;
-  double X() const;
+  double X() const; // ! NOT thread safe methods !
   double Y() const;
   double Z() const;
-  SMDS_ElemIteratorPtr GetInverseElementIterator(SMDSAbs_ElementType type=SMDSAbs_All) const;
-  int NbInverseElements(SMDSAbs_ElementType type=SMDSAbs_All) const;
+  void   GetXYZ(double xyx[3]) const; // thread safe getting coords
+  SMDS_ElemIteratorPtr    GetInverseElementIterator(SMDSAbs_ElementType type=SMDSAbs_All) const;
+  int                     NbInverseElements(SMDSAbs_ElementType type=SMDSAbs_All) const;
   const SMDS_PositionPtr& GetPosition() const;
-  SMDSAbs_ElementType GetType() const;
-  virtual vtkIdType GetVtkType() const;
-  SMDSAbs_EntityType  GetEntityType() const {return SMDSEntity_Node;}
-  int NbNodes() const;
+  SMDSAbs_ElementType     GetType() const;
+  virtual vtkIdType       GetVtkType() const;
+  SMDSAbs_EntityType      GetEntityType() const {return SMDSEntity_Node;}
+  int                     NbNodes() const;
 
   friend bool operator<(const SMDS_MeshNode& e1, const SMDS_MeshNode& e2);
 

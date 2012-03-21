@@ -289,6 +289,15 @@ double SMDS_MeshNode::Z() const
   return coord[2];
 }
 
+//================================================================================
+/*!
+ * \brief thread safe getting coords
+ */
+void SMDS_MeshNode::GetXYZ(double xyz[3]) const
+{
+  return SMDS_Mesh::_meshList[myMeshId]->getGrid()->GetPoint(myVtkID,xyz);
+}
+
 //* resize the vtkPoints structure every SMDS_Mesh::chunkSize points
 void SMDS_MeshNode::setXYZ(double x, double y, double z)
 {
