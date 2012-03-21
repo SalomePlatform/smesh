@@ -1237,7 +1237,7 @@ void SMESHGUI_ExtrusionDlg::getExtrusionVector(SMESH::DirStruct& aVector) {
     
     
     aNormale /= aNormale.Modulus();
-    long aVDist = (long)SpinBox_VDist->value();
+    double aVDist = (double)SpinBox_VDist->value();
     
     aVector.PS.x = aNormale.X()*aVDist;
     aVector.PS.y = aNormale.Y()*aVDist;
