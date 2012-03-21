@@ -183,6 +183,100 @@ namespace {
     for ( ; id != idList.end(); ++id )
       presentObjects.insert( *id );
   }
+
+  //================================================================================
+  /*!
+   * \brief Fix SMESH::FunctorType arguments of SMESH::Filter::Criterion()
+   */
+  //================================================================================
+
+  void fixFunctorType( TCollection_AsciiString& Type,
+                       TCollection_AsciiString& Compare,
+                       TCollection_AsciiString& UnaryOp,
+                       TCollection_AsciiString& BinaryOp )
+  {
+    // The problem is that dumps of old studies created using filters becomes invalid
+    // when new items are inserted in the enum SMESH::FunctorType since values
+    // of this enum are dumped as integer values.
+    // This function corrects enum values of old studies given as args (Type,Compare,...)
+    // We can find out how to correct them by value of BinaryOp which can have only two
+    // values: FT_Undefined or FT_LogicalNOT.
+    // Hereafter is the history of the enum SMESH::FunctorType since v3.0.0
+    // where PythonDump appeared
+    // v 3.0.0: FT_Undefined == 25
+    // v 3.1.0: FT_Undefined == 26, new items:
+    //   - FT_Volume3D              = 7
+    // v 4.1.2: FT_Undefined == 27, new items:
+    //   - FT_BelongToGenSurface    = 17
+    // v 5.1.1: FT_Undefined == 33, new items:
+    //   - FT_FreeNodes             = 10
+    //   - FT_FreeFaces             = 11
+    //   - FT_LinearOrQuadratic     = 23
+    //   - FT_GroupColor            = 24
+    //   - FT_ElemGeomType          = 25
+    // v 5.1.5: FT_Undefined == 34, new items:
+    //   - FT_CoplanarFaces         = 26
+    // v 6.2.0: FT_Undefined == 39, new items:
+    //   - FT_MaxElementLength2D    = 8
+    //   - FT_MaxElementLength3D    = 9
+    //   - FT_BareBorderVolume      = 25
+    //   - FT_BareBorderFace        = 26
+    //   - FT_OverConstrainedVolume = 27
+    //   - FT_OverConstrainedFace   = 28
+    // v 6.5.0: FT_Undefined == 43, new items:
+    //   - FT_EqualNodes            = 14
+    //   - FT_EqualEdges            = 15
+    //   - FT_EqualFaces            = 16
+    //   - FT_EqualVolumes          = 17
+
+    typedef map< int, vector< int > > TUndef2newItems;
+    static TUndef2newItems undef2newItems;
+    if ( undef2newItems.empty() )
+    {
+      undef2newItems[ 26 ].push_back( 7 );
+      undef2newItems[ 27 ].push_back( 17 );
+      { int items[] = { 10, 11, 23, 24, 25 };
+        undef2newItems[ 33 ].assign( items, items+5 ); }
+      undef2newItems[ 34 ].push_back( 26 );
+      { int items[] = { 8, 9, 25, 26, 27, 28 };
+        undef2newItems[ 39 ].assign( items, items+6 ); }
+      { int items[] = { 14, 15, 16, 17 };
+        undef2newItems[ 43 ].assign( items, items+4 ); }
+    }
+
+    int iType     = Type.IntegerValue();
+    int iCompare  = Compare.IntegerValue();
+    int iUnaryOp  = UnaryOp.IntegerValue();
+    int iBinaryOp = BinaryOp.IntegerValue();
+
+    // find out integer value of FT_Undefined at the moment of dump
+    int oldUndefined = iBinaryOp;
+    if ( iBinaryOp < iUnaryOp ) // BinaryOp was FT_LogicalNOT
+      oldUndefined += 3;
+
+    // apply history to args
+    TUndef2newItems::const_iterator undef_items =
+      undef2newItems.upper_bound( oldUndefined );
+    if ( undef_items != undef2newItems.end() )
+    {
+      int* pArg[4] = { &iType, &iCompare, &iUnaryOp, &iBinaryOp };
+      for ( ; undef_items != undef2newItems.end(); ++undef_items )
+      {
+        const vector< int > & addedItems = undef_items->second;
+        for ( size_t i = 0; i < addedItems.size(); ++i )
+          for ( int iArg = 0; iArg < 4; ++iArg )
+          {
+            int& arg = *pArg[iArg];
+            if ( arg >= addedItems[i] )
+              arg++;
+          }
+      }
+      Type     = TCollection_AsciiString( iType     );
+      Compare  = TCollection_AsciiString( iCompare  );
+      UnaryOp  = TCollection_AsciiString( iUnaryOp  );
+      BinaryOp = TCollection_AsciiString( iBinaryOp );
+    }
+  }
 }
 
 //================================================================================
@@ -530,6 +624,7 @@ Handle(_pyCommand) _pyGen::AddCommand( const TCollection_AsciiString& theCommand
       Tolerance     = aCommand->GetArg(8),  // double
       TypeOfElement = aCommand->GetArg(9),  // ElementType
       Precision     = aCommand->GetArg(10); // long
+    fixFunctorType( Type, Compare, UnaryOp, BinaryOp );
     Type     = SMESH + SMESH::FunctorTypeToString( SMESH::FunctorType( Type.IntegerValue() ));
     Compare  = SMESH + SMESH::FunctorTypeToString( SMESH::FunctorType( Compare.IntegerValue() ));
     UnaryOp  = SMESH + SMESH::FunctorTypeToString( SMESH::FunctorType( UnaryOp.IntegerValue() ));
