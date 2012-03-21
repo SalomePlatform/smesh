@@ -5956,21 +5956,21 @@ void SMESHGUI::message( const QString& msg )
       // get mesh entry
       QString entry = data.count() > 1 ? data[1] : QString();
       if ( entry.isEmpty() )
-	return;
+        return;
       // get study
       _PTR(Study) study = dynamic_cast<SalomeApp_Study*>( application()->activeStudy() )->studyDS();
       // get mesh name
       _PTR(SObject) obj = study->FindObjectID( entry.toLatin1().constData() );
       QString name;
       if ( obj )
-	name = obj->GetName().c_str();
+        name = obj->GetName().c_str();
       if ( name.isEmpty() )
-	return;
+        return;
       
       if ( data.last() == "stop" )
-	application()->putInfo( tr( "MESH_LOADING_MSG_FINISHED" ).arg( name ) );
+        application()->putInfo( tr( "MESH_LOADING_MSG_FINISHED" ).arg( name ) );
       else
-	application()->putInfo( tr( "MESH_LOADING_MSG" ).arg( name ) );
+        application()->putInfo( tr( "MESH_LOADING_MSG" ).arg( name ) );
       QApplication::processEvents();
     }
   }
