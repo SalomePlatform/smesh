@@ -103,7 +103,9 @@ struct SMESH_TNodeXYZ : public gp_XYZ
     if (e) {
       assert( e->GetType() == SMDSAbs_Node );
       _node = static_cast<const SMDS_MeshNode*>(e);
-      SetCoord( _node->X(), _node->Y(), _node->Z() );
+      double xyz[3];
+      _node->GetXYZ(xyz); // - thread safe gatting coords
+      SetCoord( xyz[0], xyz[1], xyz[2] );
     }
   }
   double Distance(const SMDS_MeshNode* n)       const { return (SMESH_TNodeXYZ( n )-*this).Modulus(); }
