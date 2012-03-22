@@ -268,8 +268,10 @@ std::vector<SMESH_subMesh*>
 StdMeshers_ImportSource1D::GetSourceSubMeshes(const SMESH_Mesh* srcMesh) const
 {
   if ( !srcMesh->HasShapeToMesh() )
-    return vector<SMESH_subMesh*>(1, srcMesh->GetSubMeshContaining(1));
-
+  {
+    SMESH_Mesh* srcM = const_cast< SMESH_Mesh* >( srcMesh );
+    return vector<SMESH_subMesh*>(1, srcM->GetSubMesh( srcM->GetShapeToMesh()));
+  }
   set<int> shapeIDs;
   const vector<SMESH_Group*>& groups = GetGroups();
   const SMESHDS_Mesh * srcMeshDS = srcMesh->GetMeshDS();
