@@ -420,10 +420,14 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
           }
         }
         if ( !nodesOnBoundary )
-          break; // error: free internal link
+        {
+          error("free internal link"); // just for an easier debug
+          break;
+        }
         if ( bndShapes.front().ShapeType() == TopAbs_EDGE &&
              bndShapes.front() != bndShapes.back() )
-          break; // error: link nodes on different geom edges
+          // link nodes on different geom edges
+          return error(COMPERR_BAD_INPUT_MESH, "Source nodes mismatch target vertices");
 
         // find geom edge the link is on
         if ( bndShapes.back().ShapeType() != TopAbs_EDGE )
@@ -433,7 +437,10 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
                                                             bndShapes.front(),
                                                             theMesh, TopAbs_EDGE );
           if ( geomEdge.IsNull() )
-            break; // vertices belong to different edges -> error: free internal link
+          {
+            error("free internal link");
+            break; // vertices belong to different edges
+          }
           bndShapes.push_back( geomEdge );
         }
 
@@ -465,7 +472,7 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
       }
       else if ( nbFaces > 2 )
       {
-        return error( "Non-manifold source mesh");
+        return error( COMPERR_BAD_INPUT_MESH, "Non-manifold source mesh");
       }
     }
     isFaceMeshed = ( link2Nb == linkCount.end() && !linkCount.empty());
@@ -491,12 +498,13 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
         if ( nbEdges < 2 )
           return false; // weird
         if ( nbEdges > 2 )
-          return error( "Source elements overlap one another");
+          return error( COMPERR_BAD_INPUT_MESH, "Source elements overlap one another");
       }
     }
   }
   if ( !isFaceMeshed )
-    return error( "Source elements don't cover totally the geometrical face" );
+    return error( COMPERR_BAD_INPUT_MESH,
+                  "Source elements don't cover totally the geometrical face" );
 
   if ( helper.HasSeam() )
   {
