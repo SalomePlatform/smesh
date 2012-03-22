@@ -347,8 +347,6 @@ namespace
       vector< _Node>  _intNodes; // _Node's at GridLine intersections
       vector< _Link > _splits;
       vector< _Face*> _faces;
-      const GridLine* _line;
-      _Link(): _line(0) {}
     };
     // --------------------------------------------------------------------------------
     struct _OrientedLink
@@ -1223,6 +1221,7 @@ namespace
    */
   void Hexahedron::init( size_t i, size_t j, size_t k )
   {
+    _i = i; _j = j; _k = k;
     // set nodes of grid to nodes of the hexahedron and
     // count nodes at hexahedron corners located IN and ON geometry
     _nbCornerNodes = _nbBndNodes = 0;
@@ -1476,6 +1475,7 @@ namespace
         multiset< IntersectionPoint >::const_iterator ip = line._intPoints.begin();
         for ( ; ip != line._intPoints.end(); ++ip )
         {
+          if ( !ip->_node ) continue;
           lineInd.SetIndexOnLine( ip->_indexOnLine );
           for ( int iL = 0; iL < 4; ++iL ) // loop on 4 cells sharing a link
           {
@@ -1497,12 +1497,8 @@ namespace
               ++nbIntHex;
             }
             const int iLink = iL + iDir * 4;
-            hex->_hexLinks[iLink]._line = &line;
-            if ( ip->_node )
-            {
-              hex->_hexLinks[iLink]._intNodes.push_back( _Node( 0, &(*ip) ));
-              hex->_nbIntNodes++;
-            }
+            hex->_hexLinks[iLink]._intNodes.push_back( _Node( 0, &(*ip) ));
+            hex->_nbIntNodes++;
           }
         }
       }
@@ -1613,23 +1609,29 @@ namespace
     const int ijk[3] = { _i, _j, _k };
     IntersectionPoint curIntPnt;
 
+    // consider a cell to be in a hole if all links in any direction
+    // comes OUT of geometry
     for ( int iDir = 0; iDir < 3; ++iDir )
     {
       const vector<double>& coords = _grid->_coords[ iDir ];
+      LineIndexer               li = _grid->GetLineIndexer( iDir );
+      li.SetIJK( _i,_j,_k );
+      size_t lineIndex[4] = { li.LineIndex  (),
+                              li.LineIndex10(),
+                              li.LineIndex01(),
+                              li.LineIndex11() };
       bool allLinksOut = true;
-      int linkID = iDir * 4;
-      for ( int i = 0; i < 4 && allLinksOut; ++i )
+      for ( int iL = 0; iL < 4 && allLinksOut; ++iL ) // loop on 4 links parallel to iDir
       {
-        const _Link& link = _hexLinks[ linkID++ ];
-        if ( !link._line ) return false;
-        if ( link._splits.empty() ) continue;
+        const _Link& link = _hexLinks[ iL + 4*iDir ];
         // check transition of the first node of a link
         const IntersectionPoint* firstIntPnt = 0;
         if ( link._nodes[0]->Node() ) // 1st node is a hexa corner
         {
           curIntPnt._paramOnLine = coords[ ijk[ iDir ]] - coords[0];
+          const GridLine& line = _grid->_lines[ iDir ][ lineIndex[ iL ]];
           multiset< IntersectionPoint >::const_iterator ip =
-            link._line->_intPoints.upper_bound( curIntPnt );
+            line._intPoints.upper_bound( curIntPnt );
           --ip;
           firstIntPnt = &(*ip);
         }
