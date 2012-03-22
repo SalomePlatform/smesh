@@ -1383,9 +1383,11 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
             break;
           }
         }
-        // compute
-//         cleanDependants(); for "UseExisting_*D" algos
-//         removeSubMeshElementsAndNodes();
+        // Compute
+
+        //cleanDependants(); for "UseExisting_*D" algos
+        //removeSubMeshElementsAndNodes();
+        loadDependentMeshes();
         ret = false;
         _computeState = FAILED_TO_COMPUTE;
         _computeError = SMESH_ComputeError::New(COMPERR_OK,"",algo);
@@ -1638,6 +1640,8 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
         else
           _computeState = NOT_READY;
       break;
+    // case SUBMESH_LOADED:
+    //   break;
     default:
       ASSERT(0);
       break;
