@@ -283,7 +283,7 @@ namespace
       }
       return _surfaceInt;
     }
-    bool IsThreadSafe() const;
+    bool IsThreadSafe(set< const Standard_Transient* >& noSafeTShapes) const;
   };
   // --------------------------------------------------------------------------
   /*!
@@ -1060,8 +1060,10 @@ namespace
   /*
    * check if its face can be safely intersected in a thread
    */
-  bool FaceGridIntersector::IsThreadSafe() const
+  bool FaceGridIntersector::IsThreadSafe(set< const Standard_Transient* >& noSafeTShapes) const
   {
+    bool isSafe = true;
+
     // check surface
     TopLoc_Location loc;
     Handle(Geom_Surface) surf = BRep_Tool::Surface( _face, loc );
@@ -1073,12 +1075,14 @@ namespace
     }
     if ( surf->IsKind( STANDARD_TYPE(Geom_BSplineSurface )) ||
          surf->IsKind( STANDARD_TYPE(Geom_BezierSurface )))
-      return false;
+      if ( !noSafeTShapes.insert((const Standard_Transient*) _face.TShape() ).second )
+        isSafe = false;
 
     double f, l;
     TopExp_Explorer exp( _face, TopAbs_EDGE );
     for ( ; exp.More(); exp.Next() )
     {
+      bool edgeIsSafe = true;
       const TopoDS_Edge& e = TopoDS::Edge( exp.Current() );
       // check 3d curve
       {
@@ -1092,10 +1096,11 @@ namespace
           }
           if ( c->IsKind( STANDARD_TYPE(Geom_BSplineCurve )) ||
                c->IsKind( STANDARD_TYPE(Geom_BezierCurve )))
-            return false;
+            edgeIsSafe = false;
         }
       }
       // check 2d curve
+      if ( edgeIsSafe )
       {
         Handle(Geom2d_Curve) c2 = BRep_Tool::CurveOnSurface( e, surf, loc, f, l);
         if ( !c2.IsNull() )
@@ -1107,11 +1112,13 @@ namespace
           }
           if ( c2->IsKind( STANDARD_TYPE(Geom2d_BSplineCurve )) ||
                c2->IsKind( STANDARD_TYPE(Geom2d_BezierCurve )))
-            return false;
+            edgeIsSafe = false;
         }
       }
+      if ( !edgeIsSafe && !noSafeTShapes.insert((const Standard_Transient*) e.TShape() ).second )
+        isSafe = false;
     }
-    return true;
+    return isSafe;
   }
   //================================================================================
   /*!
@@ -1510,7 +1517,7 @@ namespace
     nbIntHex = 0;
     for ( size_t i = 0; i < intersectedHex.size(); ++i )
     {
-      Hexahedron * hex = intersectedHex[ i ];
+      Hexahedron * & hex = intersectedHex[ i ];
       if ( hex )
       {
         intHexInd[ nbIntHex++ ] = i;
@@ -1537,6 +1544,14 @@ namespace
           intersectedHex[ i ] = 0;
           --nbIntHex;
         }
+      }
+      else if ( _nbCornerNodes > 3  && !hex )
+      {
+        // all intersection of hex with geometry are at grid nodes
+        hex = new Hexahedron( *this );
+        hex->init( i );
+        intHexInd.push_back(0);
+        intHexInd[ nbIntHex++ ] = i;
       }
     }
 
@@ -1620,7 +1635,7 @@ namespace
                               li.LineIndex10(),
                               li.LineIndex01(),
                               li.LineIndex11() };
-      bool allLinksOut = true;
+      bool allLinksOut = true, hasLinks = false;
       for ( int iL = 0; iL < 4 && allLinksOut; ++iL ) // loop on 4 links parallel to iDir
       {
         const _Link& link = _hexLinks[ iL + 4*iDir ];
@@ -1640,10 +1655,13 @@ namespace
           firstIntPnt = link._intNodes[0]._intPoint;
         }
 
-        if ( firstIntPnt && firstIntPnt->_transition == Trans_IN )
-          allLinksOut = false;
+        if ( firstIntPnt )
+        {
+          hasLinks = true;
+          allLinksOut = ( firstIntPnt->_transition == Trans_OUT );
+        }
       }
-      if ( allLinksOut )
+      if ( hasLinks && allLinksOut )
         return true;
     }
     return false;
@@ -1894,8 +1912,7 @@ bool StdMeshers_Cartesian_3D::Compute(SMESH_Mesh &         theMesh,
       BRepBuilderAPI_Copy copier;
       for ( size_t i = 0; i < facesItersectors.size(); ++i )
       {
-        if ( !facesItersectors[i].IsThreadSafe() &&
-             !tshapes.insert((const Standard_Transient*) facesItersectors[i]._face.TShape() ).second )
+        if ( !facesItersectors[i].IsThreadSafe(tshapes) )
         {
           copier.Perform( facesItersectors[i]._face );
           facesItersectors[i]._face = TopoDS::Face( copier );
