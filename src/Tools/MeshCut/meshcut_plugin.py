@@ -20,8 +20,6 @@
 # if you already have plugins defined in a salome_plugins.py file, add this file at the end.
 # if not, copy this file as ${HOME}/Plugins/smesh_plugins.py or ${APPLI}/Plugins/smesh_plugins.py
 
-import salome_pluginsmanager
-
 def MeshCut(context):
   # get context study, studyId, salomeGui
   study = context.study
@@ -31,6 +29,7 @@ def MeshCut(context):
   import os
   import subprocess
   import tempfile
+  from PyQt4 import QtCore
   from PyQt4 import QtGui
   from PyQt4.QtGui import QFileDialog
   from PyQt4.QtGui import QMessageBox
@@ -139,7 +138,3 @@ and T the tolerance.
       pass
     pass
   pass
-
-# register the function in the plugin manager
-salome_pluginsmanager.AddFunction('MeshCut', 'Cut a tetrahedron mesh by a plane', MeshCut)
-

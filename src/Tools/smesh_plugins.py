@@ -23,22 +23,13 @@
 #
 import salome_pluginsmanager
 
-
-def runSpadderPlugin(context):
-    from salome.smesh.spadder.gui import plugindialog
-    from salome.kernel.uiexception import UiException
-    try:
-        dialog=plugindialog.getDialog()
-    except UiException, err:
-        from PyQt4.QtGui import QMessageBox
-        QMessageBox.critical(None,"An error occurs during PADDER configuration",
-                             err.getUIMessage())
-        return
-    
-    dialog.update()    
-    dialog.show()
+from spadderPlugin import runSpadderPlugin
+from meshcut_plugin import MeshCut
 
 salome_pluginsmanager.AddFunction('PADDER mesher',
                                   'Create a mesh with PADDER',
                                   runSpadderPlugin)
 
+salome_pluginsmanager.AddFunction('MeshCut',
+                                  'Cut a tetrahedron mesh by a plane',
+                                  MeshCut)

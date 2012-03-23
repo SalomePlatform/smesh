@@ -1104,11 +1104,13 @@ int main(int argc, char *argv[])
   //  cout << endl;
 
   // Groupes de mailles
-  MAILLAGE2->GM = MAILLAGE1->GM;
+  // MAILLAGE2->GM = MAILLAGE1->GM;
+  MAILLAGE2->GN.clear();
+  MAILLAGE2->GM.clear();
   MAILLAGE2->GM[str_id_GMplus] = GMplus;
   MAILLAGE2->GM[str_id_GMmoins] = GMmoins;
 
-  MAILLAGE2->GN = MAILLAGE1->GN;
+  // MAILLAGE2->GN = MAILLAGE1->GN;
 
   MAILLAGE2->eliminationMailles(TETRA4, cutTetras);
 
