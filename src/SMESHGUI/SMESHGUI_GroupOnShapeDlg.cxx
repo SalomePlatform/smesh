@@ -353,9 +353,9 @@ bool SMESHGUI_GroupOnShapeOp::onApply()
           anEntryList.append( aSObject->GetID().c_str() );
     }
   }
-  SMESHGUI::Modified();
-
   update( UF_ObjBrowser | UF_Model );
+
+  SMESHGUI::Modified();
 
   // Re-init controls to create the next group
   myElemGeoIDs.clear();
@@ -366,6 +366,8 @@ bool SMESHGUI_GroupOnShapeOp::onApply()
   myDlg->myElemGeomBtn->setChecked(false); 
   myDlg->myNodeGeomBtn->setChecked(false);
   myDlg->updateButtons();
+
+  update( UF_ObjBrowser | UF_Model );
 
   if( LightApp_Application* anApp =
       dynamic_cast<LightApp_Application*>( SUIT_Session::session()->activeApplication() ) )
