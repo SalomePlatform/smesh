@@ -4336,7 +4336,7 @@ class algoCreator:
         if self.algoTypeToClass.has_key( algoType ):
             #print "Create algo",algoType
             return self.algoTypeToClass[ algoType ]( self.mesh, geom )
-        raise RuntimeError, "No class found for algo type" % algoType
+        raise RuntimeError, "No class found for algo type %s" % algoType
         return None
 
 # Private class used to substitute and store variable parameters of hypotheses.
