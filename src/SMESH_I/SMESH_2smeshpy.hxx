@@ -233,6 +233,7 @@ public:
 
   _pyID GenerateNewID( const _pyID& theID );
   void AddObject( Handle(_pyObject)& theObj );
+  void SetProxyObject( const _pyID& theID, Handle(_pyObject)& theObj );
   Handle(_pyObject) FindObject( const _pyID& theObjID ) const;
   Handle(_pySubMesh) FindSubMesh( const _pyID& theSubMeshID );
   Handle(_pyHypothesis) FindHyp( const _pyID& theHypID );
@@ -521,7 +522,8 @@ DEFINE_STANDARD_HANDLE (_pySegmentLengthAroundVertexHyp, _pyHypothesis);
 class _pySelfEraser: public _pyObject
 {
 public:
-  _pySelfEraser(const Handle(_pyCommand)& theCreationCmd):_pyObject(theCreationCmd) {}
+  _pySelfEraser(const Handle(_pyCommand)& theCreationCmd)
+    :_pyObject(theCreationCmd) { myIsPublished = true; }
   virtual void Flush();
 
   DEFINE_STANDARD_RTTI (_pySelfEraser)
@@ -549,28 +551,12 @@ public:
 };
 // -------------------------------------------------------------------------------------
 /*!
- * \brief To convert creation of a group by filter
- */
-// -------------------------------------------------------------------------------------
-class _pyGroup:  public _pySubMesh
-{
-public:
-  _pyGroup(const Handle(_pyCommand)& theCreationCmd, const _pyID & id=_pyID())
-    :_pySubMesh(theCreationCmd) { setID( id ); }
-  virtual void Process( const Handle(_pyCommand)& theCommand);
-  virtual void Flush() {}
-
-  DEFINE_STANDARD_RTTI (_pyGroup)
-};
-
-// -------------------------------------------------------------------------------------
-/*!
  * \brief A filter sets a human readable name to self
  */
 // -------------------------------------------------------------------------------------
 class _pyFilter:  public _pyObject
 {
-  _pyID myNewID;
+  _pyID myNewID, myMesh;
   std::list< Handle(_pyObject) > myUsers;
 public:
   _pyFilter(const Handle(_pyCommand)& theCreationCmd, const _pyID& newID="");
@@ -584,6 +570,23 @@ public:
   DEFINE_STANDARD_RTTI (_pyFilter)
 };
 DEFINE_STANDARD_HANDLE (_pyFilter, _pyObject);
+
+// -------------------------------------------------------------------------------------
+/*!
+ * \brief To convert creation of a group by filter
+ */
+// -------------------------------------------------------------------------------------
+class _pyGroup:  public _pySubMesh
+{
+  Handle(_pyFilter) myFilter;
+public:
+  _pyGroup(const Handle(_pyCommand)& theCreationCmd, const _pyID & id=_pyID());
+  virtual void Process( const Handle(_pyCommand)& theCommand);
+  virtual void Flush() {}
+  virtual void Free() { myFilter.Nullify(); }
+
+  DEFINE_STANDARD_RTTI (_pyGroup)
+};
 
 // -------------------------------------------------------------------------------------
 /*!

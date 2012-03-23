@@ -208,13 +208,13 @@ namespace {
     //   - FT_Volume3D              = 7
     // v 4.1.2: FT_Undefined == 27, new items:
     //   - FT_BelongToGenSurface    = 17
-    // v 5.1.1: FT_Undefined == 33, new items:
+    // v 5.1.1: FT_Undefined == 32, new items:
     //   - FT_FreeNodes             = 10
     //   - FT_FreeFaces             = 11
     //   - FT_LinearOrQuadratic     = 23
     //   - FT_GroupColor            = 24
     //   - FT_ElemGeomType          = 25
-    // v 5.1.5: FT_Undefined == 34, new items:
+    // v 5.1.5: FT_Undefined == 33, new items:
     //   - FT_CoplanarFaces         = 26
     // v 6.2.0: FT_Undefined == 39, new items:
     //   - FT_MaxElementLength2D    = 8
@@ -236,8 +236,8 @@ namespace {
       undef2newItems[ 26 ].push_back( 7 );
       undef2newItems[ 27 ].push_back( 17 );
       { int items[] = { 10, 11, 23, 24, 25 };
-        undef2newItems[ 33 ].assign( items, items+5 ); }
-      undef2newItems[ 34 ].push_back( 26 );
+        undef2newItems[ 32 ].assign( items, items+5 ); }
+      undef2newItems[ 33 ].push_back( 26 );
       { int items[] = { 8, 9, 25, 26, 27, 28 };
         undef2newItems[ 39 ].assign( items, items+6 ); }
       { int items[] = { 14, 15, 16, 17 };
@@ -1175,6 +1175,27 @@ void _pyGen::AddObject( Handle(_pyObject)& theObj )
 
 //================================================================================
 /*!
+ * \brief Re-register an object with other ID to make it Process() commands of
+ * other object having this ID
+ */
+//================================================================================
+
+void _pyGen::SetProxyObject( const _pyID& theID, Handle(_pyObject)& theObj )
+{
+  if ( theObj.IsNull() ) return;
+
+  if ( theObj->IsKind( STANDARD_TYPE( _pyMesh )))
+    myMeshes.insert( make_pair( theID, Handle(_pyMesh)::DownCast( theObj )));
+
+  else if ( theObj->IsKind( STANDARD_TYPE( _pyMeshEditor )))
+    myMeshEditors.insert( make_pair( theID, Handle(_pyMeshEditor)::DownCast( theObj )));
+
+  else
+    myObjects.insert( make_pair( theID, theObj ));
+}
+
+//================================================================================
+/*!
  * \brief Finds a _pyObject by ID
  */
 //================================================================================
@@ -1435,53 +1456,13 @@ void _pyMesh::Process( const Handle(_pyCommand)& theCommand )
     }
   }
   // ----------------------------------------------------------------------
-  else if ( method == "CreateGroup" ) // CreateGroup() --> CreateEmptyGroup()
+  else if ( method == "CreateGroup" ||
+            method == "CreateGroupFromGEOM" ||
+            method == "CreateGroupFromFilter" )
   {
-    theCommand->SetMethod( "CreateEmptyGroup" );
     Handle(_pyGroup) group = new _pyGroup( theCommand );
     myGroups.push_back( group );
     theGen->AddObject( group );
-  }
-  // ----------------------------------------------------------------------
-  else if ( method == "CreateGroupFromGEOM" ) {// (type, name, grp)
-    _pyID grp = theCommand->GetArg( 3 );
-    // VSR 24/12/2010. PAL21106: always use GroupOnGeom() function on dump
-    // next if(){...} section is commented
-    //if ( sameGroupType( grp, theCommand->GetArg( 1 )) ) { // --> Group(grp)
-    //  theCommand->SetMethod( "Group" );
-    //  theCommand->RemoveArgs();
-    //  theCommand->SetArg( 1, grp );
-    //}
-    //else {
-    // ------------------------->>>>> GroupOnGeom( grp, name, typ )
-      _pyID type = theCommand->GetArg( 1 );
-      _pyID name = theCommand->GetArg( 2 );
-      theCommand->SetMethod( "GroupOnGeom" );
-      theCommand->RemoveArgs();
-      theCommand->SetArg( 1, grp );
-      theCommand->SetArg( 2, name );
-      theCommand->SetArg( 3, type );
-    //}
-    Handle(_pyGroup) group = new _pyGroup( theCommand );
-    myGroups.push_back( group );
-    theGen->AddObject( group );
-  }
-  // ----------------------------------------------------------------------
-  else if ( method == "CreateGroupFromFilter" ) // --> GroupOnFilter()
-  {
-    theCommand->SetMethod( "GroupOnFilter" );
-    Handle(_pyGroup) group = new _pyGroup( theCommand );
-    myGroups.push_back( group );
-    theGen->AddObject( group );
-
-    // GroupOnFilter(typ, name, aFilter0x4743dc0 -> aFilter_1)
-    _pyID filterID = theCommand->GetArg(3);
-    Handle(_pyFilter) filter = Handle(_pyFilter)::DownCast( theGen->FindObject( filterID ));
-    if ( !filter.IsNull())
-    {
-      filter->Process( theCommand );
-      filter->AddUser( group );
-    }
   }
   // ----------------------------------------------------------------------
   else if ( theCommand->MethodStartsFrom( "Export" ))
@@ -3694,6 +3675,62 @@ void _pySubMesh::Flush()
 
 //================================================================================
 /*!
+ * \brief Creates _pyGroup
+ */
+//================================================================================
+
+_pyGroup::_pyGroup(const Handle(_pyCommand)& theCreationCmd, const _pyID & id)
+  :_pySubMesh(theCreationCmd)
+{
+  if ( !id.IsEmpty() )
+    setID( id );
+
+  const _AString& method = theCreationCmd->GetMethod();
+  if ( method == "CreateGroup" ) // CreateGroup() --> CreateEmptyGroup()
+  {
+    theCreationCmd->SetMethod( "CreateEmptyGroup" );
+  }
+  // ----------------------------------------------------------------------
+  else if ( method == "CreateGroupFromGEOM" ) // (type, name, grp)
+  {
+    _pyID geom = theCreationCmd->GetArg( 3 );
+    // VSR 24/12/2010. PAL21106: always use GroupOnGeom() function on dump
+    // next if(){...} section is commented
+    //if ( sameGroupType( geom, theCreationCmd->GetArg( 1 )) ) { // --> Group(geom)
+    //  theCreationCmd->SetMethod( "Group" );
+    //  theCreationCmd->RemoveArgs();
+    //  theCreationCmd->SetArg( 1, geom );
+    //}
+    //else {
+    // ------------------------->>>>> GroupOnGeom( geom, name, typ )
+      _pyID type = theCreationCmd->GetArg( 1 );
+      _pyID name = theCreationCmd->GetArg( 2 );
+      theCreationCmd->SetMethod( "GroupOnGeom" );
+      theCreationCmd->RemoveArgs();
+      theCreationCmd->SetArg( 1, geom );
+      theCreationCmd->SetArg( 2, name );
+      theCreationCmd->SetArg( 3, type );
+    //}
+  }
+  else if ( method == "CreateGroupFromFilter" )
+  {
+    // -> GroupOnFilter(typ, name, aFilter0x4743dc0 -> aFilter_1)
+    theCreationCmd->SetMethod( "GroupOnFilter" );
+
+    _pyID filterID = theCreationCmd->GetArg(3);
+    Handle(_pyFilter) filter = Handle(_pyFilter)::DownCast( theGen->FindObject( filterID ));
+    if ( !filter.IsNull())
+    {
+      if ( !filter->GetNewID().IsEmpty() )
+        theCreationCmd->SetArg( 3, filter->GetNewID() );
+      filter->AddUser( this );
+    }
+    myFilter = filter;
+  }
+}
+
+//================================================================================
+/*!
  * \brief To convert creation of a group by filter
  */
 //================================================================================
@@ -3731,20 +3768,33 @@ void _pyGroup::Process( const Handle(_pyCommand)& theCommand)
       theCommand->Clear();
       const Handle(_pyCommand)& makeGroupCmd = GetCreationCmd();
       TCollection_AsciiString name = makeGroupCmd->GetArg( 2 );
+      if ( !filter->GetNewID().IsEmpty() )
+        idSource = filter->GetNewID();
       makeGroupCmd->SetMethod( "MakeGroupByFilter" );
       makeGroupCmd->SetArg( 1, name );
       makeGroupCmd->SetArg( 2, idSource );
-      // set new name of a filter
-      filter->Process( makeGroupCmd );
     }
   }
   else if ( theCommand->GetMethod() == "SetFilter" )
   {
-    // set new name of a filter
+    // set new name of a filter or clear the command if the same filter is set
     _pyID filterID = theCommand->GetArg(1);
     filter = Handle(_pyFilter)::DownCast( theGen->FindObject( filterID ));
-    if ( !filter.IsNull() )
-      filter->Process( theCommand );
+    if ( !myFilter.IsNull() && filter == myFilter )
+      theCommand->Clear();
+    else if ( !filter.IsNull() && !filter->GetNewID().IsEmpty() )
+      theCommand->SetArg( 1, filter->GetNewID() );
+    myFilter = filter;
+  }
+  else if ( theCommand->GetMethod() == "GetFilter" )
+  {
+    // GetFilter() returns a filter with other ID, make myFilter process
+    // calls of the returned filter
+    if ( !myFilter.IsNull() )
+    {
+      theGen->SetProxyObject( theCommand->GetResultValue(), myFilter );
+      theCommand->Clear();
+    }
   }
 
   if ( !filter.IsNull() )
@@ -3777,20 +3827,8 @@ void _pyFilter::Process( const Handle(_pyCommand)& theCommand)
     _pyObject::Process(theCommand); // count commands
 
   if ( !myNewID.IsEmpty() )
-  {
-    if ( theCommand->GetObject() == GetID() )
-      theCommand->SetObject( myNewID );
-    else if ( theCommand->GetResultValue() == GetID() )
-      theCommand->SetResultValue( myNewID );
-    else
-      for ( int i = 1, nb = theCommand->GetNbArgs(); i <= nb; ++i )
-        if ( theCommand->GetArg( i ) == GetID() )
-        {
-          theCommand->SetArg( i, myNewID );
-          break;
-        }
-  }
-
+    theCommand->SetObject( myNewID );
+    
   // Convert the following set of commands into smesh.GetFilterFromCriteria(criteria)
   // aFilter0x2aaab0487080 = aFilterManager.CreateFilter()
   // aFilter0x2aaab0487080.SetCriteria(aCriteria)
@@ -3809,8 +3847,12 @@ void _pyFilter::Process( const Handle(_pyCommand)& theCommand)
     // Clear aFilterManager.CreateFilter()
     GetCreationCmd()->Clear();
   }
-  else if ( theCommand->GetMethod() == "SetMesh")
+  else if ( theCommand->GetMethod() == "SetMesh" )
   {
+    if ( myMesh == theCommand->GetArg( 1 ))
+      theCommand->Clear();
+    else
+      myMesh = theCommand->GetArg( 1 );
     theGen->AddMeshAccessorMethod( theCommand );
   }
 }
