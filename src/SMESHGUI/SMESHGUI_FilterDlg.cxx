@@ -1282,7 +1282,10 @@ void SMESHGUI_FilterTable::SetCriterion (const int                       theRow,
 
   ((ComboItem*)aTable->item(theRow, 0))->setValue(theCriterion.Type);
   onCriterionChanged(theRow, 0, aType);
-  ((ComboItem*)aTable->item(theRow, 1))->setValue(theCriterion.Compare);
+  if ( theCriterion.Compare == SMESH::FT_Undefined )
+    ((ComboItem*)aTable->item(theRow, 1))->setValue( SMESH::FT_EqualTo );
+  else
+    ((ComboItem*)aTable->item(theRow, 1))->setValue(theCriterion.Compare);
   ((CheckItem*)aTable->item(theRow, 3))->setChecked(theCriterion.UnaryOp == SMESH::FT_LogicalNOT);
 
   if (theCriterion.BinaryOp != SMESH::FT_Undefined)
