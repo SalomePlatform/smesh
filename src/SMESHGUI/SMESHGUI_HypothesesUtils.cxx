@@ -282,6 +282,7 @@ namespace SMESH
     THypothesisDataMap::ConstIterator anIter;
     for ( anIter = pMap.begin(); anIter != pMap.end(); anIter++ ) {
       HypothesisData* aData = anIter.value();
+      if(!aData || aData->Label.isEmpty()) continue;
       if ( ( theDim < 0 || aData->Dim.contains( theDim ) ) && aData->IsAux == isAux) {
         if (checkGeometry) {
           if (aData->IsNeedGeometry == isNeedGeometry)
