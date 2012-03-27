@@ -25,7 +25,7 @@ algo1D.NumberOfSegments(3)
 algo2D = tetra.Triangle()
 algo2D.MaxElementArea(10.)
 
-algo3D = tetra.Tetrahedron(smesh.NETGEN)
+algo3D = tetra.Tetrahedron()
 algo3D.MaxElementVolume(900.)
 
 # Creation of SubMesh

@@ -44,10 +44,6 @@
 ##     @defgroup l3_hypos_1dhyps 1D Meshing Hypotheses
 ##     @defgroup l3_hypos_2dhyps 2D Meshing Hypotheses
 ##     @defgroup l3_hypos_maxvol Max Element Volume hypothesis
-##     @defgroup l3_hypos_netgen Netgen 2D and 3D hypotheses
-##     @defgroup l3_hypos_ghs3dh GHS3D Parameters hypothesis
-##     @defgroup l3_hypos_blsurf BLSURF Parameters hypothesis
-##     @defgroup l3_hypos_hexotic Hexotic Parameters hypothesis
 ##     @defgroup l3_hypos_quad Quadrangle Parameters hypothesis
 ##     @defgroup l3_hypos_additi Additional Hypotheses
 

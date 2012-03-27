@@ -34,8 +34,8 @@ has been locally defined on the opposite edge.
 
 <h2>Quadrangle Preference</h2>
 
-This additional hypothesis can be used together with Netgen 2D algorithm.
-It allows Netgen 2D to build quadrangular meshes.
+This additional hypothesis can be used together with 2D triangulation algorithms.
+It allows 2D triangulation algorithms to build quadrangular meshes.
 
 <br>
 This hypothesis has one restriction on its work: the total quantity of
@@ -45,7 +45,7 @@ segments on all four sides of the face must be even (divisible by 2).
 <h2>Viscous Layers</h2>
 
 <b>Viscous Layers</b> additional hypothesis can be used together with
-several 3D algorithms: NETGEN 3D, GHS3D and Hexahedron(i,j,k). This
+3D algorithms, Hexahedron(i,j,k) for example. This
 hypothesis allows creation of layers of highly stretched prisms near
 mesh boundary, which is beneficial for high quality viscous
 computations. The prisms constructed on the quadrangular mesh faces are

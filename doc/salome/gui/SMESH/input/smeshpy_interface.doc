@@ -36,21 +36,13 @@ distribution are always available:
 - Hexa(3D)
 - etc...
 
-There are also some algorithms, which can be installed optionally,
-some of them are based on open-source meshers:
-- NETGEN (1D-2D, 2D, 1D-2D-3D, 3D)
-
-... and others are based on commercial meshers:
-- GHS3D (3D)
-- BLSURF (2D)
-
 To add hypotheses, use the interfaces, provided by the assigned
 algorithms.
 
 Below you can see an example of usage of the package smesh for 3d mesh generation. 
 
 \anchor example_3d_mesh
-<h2>Example of 3d mesh generation with NETGEN:</h2>
+<h2>Example of 3d mesh generation:</h2>
 
 \code
 from geompy import * 
@@ -115,7 +107,7 @@ algo2d = tetra.Triangle()
 algo2d.LengthFromEdges() 
 
 # Define 3D hypothesis
-algo3d = tetra.Tetrahedron(smesh.NETGEN) 
+algo3d = tetra.Tetrahedron()
 algo3d.MaxElementVolume(100) 
 
 # Compute the mesh

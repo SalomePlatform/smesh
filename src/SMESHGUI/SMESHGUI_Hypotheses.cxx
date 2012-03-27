@@ -649,8 +649,17 @@ void SMESHGUI_HypothesisDlg::onHelp()
 {
   LightApp_Application* app = (LightApp_Application*)(SUIT_Session::session()->activeApplication());
   if (app) {
-    SMESHGUI* aSMESHGUI = dynamic_cast<SMESHGUI*>( app->activeModule() );
-    app->onHelpContextModule(aSMESHGUI ? app->moduleName(aSMESHGUI->moduleName()) : QString(""), myHelpFileName);
+    QString name = "SMESH";
+    if(myCreator) {
+      QVariant pluginName = myCreator->property( PLUGIN_NAME );
+      if( pluginName.isValid() ) {
+	QString rootDir = pluginName.toString() + "PLUGIN_ROOT_DIR";
+	QString varValue = QString( getenv(rootDir.toLatin1().constData()));
+	if(!varValue.isEmpty())
+	  name = pluginName.toString() + "PLUGIN";
+      }
+    }    
+    app->onHelpContextModule(name, myHelpFileName);
   }
   else {
     QString platform;

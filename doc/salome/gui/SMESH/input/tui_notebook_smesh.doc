@@ -32,15 +32,15 @@ algo1D.NumberOfSegments("NbSegments")
 algo2D = tetra.Triangle()
 algo2D.MaxElementArea("MaxElementArea")
 
-algo3D = tetra.Tetrahedron(smesh.NETGEN)
+algo3D = tetra.Tetrahedron()
 algo3D.MaxElementVolume("MaxElementVolume")
 
 # compute the mesh
 ret = tetra.Compute()
 
 # translate the mesh
-point = smesh.PointStructStr("Offset", 0., 0.)
-vector = smesh.DirStructStr(point) 
+point = smesh.PointStruct("Offset", 0., 0.)
+vector = smesh.DirStruct(point) 
 tetra.TranslateObject(tetra, vector, 0)
 \endcode
 

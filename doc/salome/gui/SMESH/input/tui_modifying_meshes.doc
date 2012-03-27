@@ -936,7 +936,7 @@ Mesh = smesh.Mesh(Sphere)
 Regular_1D = Mesh.Segment()
 Nb_Segments = Regular_1D.NumberOfSegments(5)
 MEFISTO_2D = Mesh.Triangle()
-Tetrahedron_Netgen = Mesh.Tetrahedron(algo=smesh.NETGEN)
+Tetrahedron = Mesh.Tetrahedron()
 
 # compute mesh
 

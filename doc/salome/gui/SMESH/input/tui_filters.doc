@@ -48,7 +48,7 @@ Filter 3D mesh elements (volumes) according to the aspect ratio value:
 \code
 # create mesh with volumes
 from SMESH_mechanic import *
-mesh.Tetrahedron( algo=smesh.NETGEN )
+mesh.Tetrahedron()
 mesh.Compute()
 # get volumes with aspect ratio < 2.0
 filter = smesh.GetFilter(smesh.VOLUME, smesh.FT_AspectRatio3D, smesh.FT_LessThan, 2.0)
@@ -165,7 +165,7 @@ Filter 3D mesh elements (volumes) according to the volume value:
 \code
 # create mesh with volumes
 from SMESH_mechanic import *
-mesh.Tetrahedron( algo=smesh.NETGEN )
+mesh.Tetrahedron()
 mesh.Compute()
 # get volumes faces with volume > 100
 filter = smesh.GetFilter(smesh.VOLUME, smesh.FT_Volume3D, smesh.FT_MoreThan, 100)
@@ -480,7 +480,7 @@ value of its edges and diagonals:
 \code
 # create mesh with volumes
 from SMESH_mechanic import *
-mesh.Tetrahedron( algo=smesh.NETGEN )
+mesh.Tetrahedron()
 mesh.Compute()
 # get all volumes that have elements with length > 10
 filter = smesh.GetFilter(smesh.VOLUME, smesh.FT_MaxElementLength3D, smesh.FT_MoreThan, 10)
@@ -660,7 +660,7 @@ the point of view of MED convention.
 \code
 # create mesh with volumes
 from SMESH_mechanic import *
-mesh.Tetrahedron( algo=smesh.NETGEN )
+mesh.Tetrahedron()
 mesh.Compute()
 # get all badly oriented volumes
 filter = smesh.GetFilter(smesh.VOLUME, smesh.FT_BadOrientedVolume)
@@ -729,7 +729,7 @@ entity type.
 \code
 # create mesh with volumes
 from SMESH_mechanic import *
-mesh.Tetrahedron( algo=smesh.NETGEN )
+mesh.Tetrahedron()
 mesh.Compute()
 # get all triangles, quadrangles, tetrahedrons, pyramids
 filter_tri = smesh.GetFilter(smesh.FACE, smesh.FT_ElemGeomType, smesh.Geom_TRIANGLE)

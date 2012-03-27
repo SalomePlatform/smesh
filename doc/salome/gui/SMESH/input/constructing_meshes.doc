@@ -181,30 +181,30 @@ shows a list of submeshes in the order of their priority.
 There is an example of submesh order modifications of the Mesh created on a Box
 shape. The main Mesh object:
 <ul>
-<li><i>3D</i> <b>Tetrahedron (Netgen)</b> with Hypothesis<b>Max Element Volume</b></li>
+<li><i>1D</i> <b>Wire discretisation</b> with <b>Number of Segments</b>=20</li>
 <li><i>2D</i> <b>Triangle (Mefisto)</b> with Hypothesis<b>Max Element Area</b>
 </li>
-<li><i>1D</i> <b>Wire discretisation</b> with <b>Number of Segments</b>=20</li>
 </ul>
 The first submesh object <b>Submesh_1</b> created on <b>Face_1</b>
 is:
 <ul>
-<li><i>2D</i> Netgen 1D-2D with Hypothesis <b>Netgen Simple parameters</b>
-(Number of Segments = 4)</li>
+<li><i>1D</i> <b>Wire discretisation</b> with <b>Number of Segments</b>=4</li>
+<li><i>2D</i> <b>Triangle (Mefisto)</b> with Hypothesis<b>MaxElementArea</b>=1200</li>
 </ul>
 The second submesh object <b>Submesh_2</b> created on <b>Face_2</b>
 is:
 <ul>
-<li><i>2D</i> Netgen 1D-2D with Hypothesis <b>Netgen Simple parameters</b>
-(Number of Segments = 8)</li>
+<li><i>1D</i> <b>Wire discretisation</b> with <b>Number of Segments</b>=8</li>
+<li><i>2D</i> <b>Triangle (Mefisto)</b> with Hypothesis<b>MaxElementArea</b>=1200</li>
 </ul>
 
 And the last submesh object <b>Submesh_3</b> created on <b>Face_3</b>
 is:
 <ul>
-<li><i>2D</i> Netgen 1D-2D with Hypothesis <b>Netgen Simple parameters</b>
-(Number of Segments = 12)</li>
+<li><i>1D</i> <b>Wire discretisation</b> with <b>Number of Segments</b>=12</li>
+<li><i>2D</i> <b>Triangle (Mefisto)</b> with Hypothesis<b>MaxElementArea</b>=1200</li>
 </ul>
+
 The submeshes become concurrent if they share sub-shapes that can be meshed 
 with different algorithms (or different hypothesises).
 In the example, we have three submeshes with concurrent algorithms,

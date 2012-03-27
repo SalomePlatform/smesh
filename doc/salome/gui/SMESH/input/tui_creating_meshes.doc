@@ -25,7 +25,7 @@ algo1D.NumberOfSegments(7)
 algo2D = tetra.Triangle()
 algo2D.MaxElementArea(800.)
 
-algo3D = tetra.Tetrahedron(smesh.NETGEN)
+algo3D = tetra.Tetrahedron()
 algo3D.MaxElementVolume(900.)
 
 # compute the mesh
@@ -103,31 +103,32 @@ Nb_Segments_1 = Regular_1D.NumberOfSegments(20)
 Nb_Segments_1.SetDistrType( 0 )
 MEFISTO_2D = Mesh_1.Triangle()
 Max_Element_Area_1 = MEFISTO_2D.MaxElementArea(1200)
-Tetrahedron_Netgen = Mesh_1.Tetrahedron(algo=smesh.NETGEN)
-Max_Element_Volume_1 = Tetrahedron_Netgen.MaxElementVolume(40000)
+Tetrahedron = Mesh_1.Tetrahedron()
+Max_Element_Volume_1 = Tetrahedron.MaxElementVolume(40000)
 
 # create submesh and assign algorithms on Face_1
-Netgen_1D_2D = Mesh_1.Triangle(algo=smesh.NETGEN,geom=Face_1)
-SubMesh_1 = Netgen_1D_2D.GetSubMesh()
-NETGEN_2D_Simple_Parameters_1 = Netgen_1D_2D.Parameters(which=smesh.SIMPLE)
-NETGEN_2D_Simple_Parameters_1.SetNumberOfSegments( 4 )
-NETGEN_2D_Simple_Parameters_1.LengthFromEdges()
+Regular_1D_1 = Mesh_1.Segment(geom=Face_1)
+Nb_Segments_2 = Regular_1D_1.NumberOfSegments(4)
+Nb_Segments_2.SetDistrType( 0 )
+MEFISTO_2D_1 = Mesh_1.Triangle(algo=smesh.MEFISTO,geom=Face_1)
+Length_From_Edges_2D = MEFISTO_2D_1.LengthFromEdges()
+SubMesh_1 = MEFISTO_2D_1.GetSubMesh()
 
 # create submesh and assign algorithms on Face_2
-Netgen_1D_2D_1 = Mesh_1.Triangle(algo=smesh.NETGEN,geom=Face_2)
-SubMesh_2 = Netgen_1D_2D_1.GetSubMesh()
-NETGEN_2D_Simple_Parameters_2 = Netgen_1D_2D_1.Parameters(which=smesh.SIMPLE)
-NETGEN_2D_Simple_Parameters_2.SetNumberOfSegments( 8 )
-NETGEN_2D_Simple_Parameters_2.LengthFromEdges()
-smeshObj_1 = smesh.CreateHypothesis('NETGEN_SimpleParameters_2D',
-'NETGENEngine')
+Regular_1D_2 = Mesh_1.Segment(geom=Face_2)
+Nb_Segments_3 = Regular_1D_2.NumberOfSegments(8)
+Nb_Segments_3.SetDistrType( 0 )
+MEFISTO_2D_2 = Mesh_1.Triangle(algo=smesh.MEFISTO,geom=Face_2)
+Length_From_Edges_2D_1 = MEFISTO_2D_2.LengthFromEdges()
+SubMesh_2 = MEFISTO_2D_2.GetSubMesh()
 
 # create submesh and assign algorithms on Face_3
-Netgen_1D_2D_2 = Mesh_1.Triangle(algo=smesh.NETGEN,geom=Face_3)
-SubMesh_3 = Netgen_1D_2D_2.GetSubMesh()
-NETGEN_2D_Simple_Parameters_3 = Netgen_1D_2D_2.Parameters(which=smesh.SIMPLE)
-NETGEN_2D_Simple_Parameters_3.SetNumberOfSegments( 12 )
-NETGEN_2D_Simple_Parameters_3.LengthFromEdges()
+Regular_1D_3 = Mesh_1.Segment(geom=Face_3)
+Nb_Segments_4 = Regular_1D_3.NumberOfSegments(12)
+Nb_Segments_4.SetDistrType( 0 )
+MEFISTO_2D_3 = Mesh_1.Triangle(algo=smesh.MEFISTO,geom=Face_3)
+Length_From_Edges_2D_2 = MEFISTO_2D_3.LengthFromEdges()
+SubMesh_3 = MEFISTO_2D_3.GetSubMesh()
 
 # check exisiting submesh priority order
 [ [ SubMesh_1, SubMesh_3, SubMesh_2 ] ] = Mesh_1.GetMeshOrder()
@@ -223,7 +224,7 @@ algo1D.NumberOfSegments(7)
 algo2D = tetra.Triangle()
 algo2D.MaxElementArea(800.)
 
-algo3D = tetra.Tetrahedron(smesh.NETGEN)
+algo3D = tetra.Tetrahedron()
 algo3D.MaxElementVolume(900.)
 
 # compute the mesh

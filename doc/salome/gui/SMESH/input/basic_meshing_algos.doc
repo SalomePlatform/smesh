@@ -21,7 +21,7 @@ shape of a mesh.</li>
 <li>For meshing of 2D entities (<b>faces</b>):</li>
 
 <ul>
-<li>Triangle meshing algorithms (Mefisto, Netgen 1D-2D and BLSUFR ) - Faces
+<li>Triangle meshing algorithms (Mefisto) - Faces
 are split into triangular elements.</li>
 <li>Quadrangle meshing algorithm (Mapping) - quadrilateral Faces are split into
 quadrangular elements.</li>
@@ -36,8 +36,6 @@ quadrangular elements.</li>
 <ul>
 <li>Hexahedron meshing algorithm (i,j,k) - 6-sided Volumes are split into
 hexahedral (cubic) elements.</li>
-<li>Tetrahedron (Netgen and GHS3D) meshing algorithms - Volumes are split into
-tetrahedral (pyramidal) elements.</li>
 <li>\subpage cartesian_algo_page</li>
 internal parts of Volumes are split into hexahedral elements forming a
 Cartesian grid; polyhedra and other types of elements are generated
@@ -53,13 +51,7 @@ Some of 3D meshing algorithms also can generate 3D meshes from 2D meshes, workin
 geometrical objects. Such algorithms are
 <ul>
 <li>Hexahedron meshing algorithm (i,j,k),</li>
-<li>Tetrahedron (Netgen and GHS3D) meshing algorithms,</li>
-<li>Hexotic.</li>
 </ul>
-
-
-\note BLSURF and GHS3D are commercial meshers and require a
-license to be used within the Mesh module.
 
 There is also a number of more specific algorithms:
 <ul>

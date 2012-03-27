@@ -231,7 +231,7 @@ tetra = smesh.Mesh(cyl, "Cylinder : tetrahedrical mesh")
 # assign algorithms
 algo1D = tetra.Segment()
 algo2D = tetra.Triangle()
-algo3D = tetra.Tetrahedron(smesh.NETGEN)
+algo3D = tetra.Tetrahedron()
 
 # assign 1D and 2D hypotheses
 algo1D.NumberOfSegments(7)
@@ -363,8 +363,8 @@ algo1D = tetra.Segment()
 # create a Mefisto 2D algorithm for faces
 algo2D = tetra.Triangle()
 
-# create a Netgen 3D algorithm for solids
-algo3D = tetra.Tetrahedron(smesh.NETGEN)
+# create a 3D algorithm for solids
+algo3D = tetra.Tetrahedron()
 
 # define hypotheses
 algo1D.Arithmetic1D(1, 4)
@@ -373,17 +373,6 @@ algo2D.LengthFromEdges()
 # compute the mesh
 tetra.Compute()
 
-# 3. Create a tetrahedral mesh on the box with NETGEN_2D3D algorithm
-tetraN = smesh.Mesh(box, "Box : tetrahedrical mesh by NETGEN_2D3D")
-
-# create a Netgen_2D3D algorithm for solids
-algo3D = tetraN.Tetrahedron(smesh.FULL_NETGEN) 
-
-# define hypotheses
-n23_params = algo3D.Parameters()
-
-# compute the mesh
-tetraN.Compute()
 \endcode
 
 <br>
@@ -700,10 +689,10 @@ mesh = Mesh(shape, "CFD")
 
 mesh.Segment().NumberOfSegments( 4 )
 
-mesh.Triangle(NETGEN_2D)
+mesh.Triangle()
 mesh.Quadrangle(face1)
 mesh.Compute()
-algo3D = mesh.Tetrahedron(NETGEN)
+algo3D = mesh.Tetrahedron()
 
 thickness = 20
 numberOfLayers = 10
@@ -718,10 +707,4 @@ mesh.MakeGroup("Prims",VOLUME,FT_ElemGeomType,"=",Geom_PENTA)
 
 \endcode
 
-\n Other meshing algorithms:
-
-<ul>
-<li>\subpage tui_defining_blsurf_hypotheses_page</li>
-<li>\subpage tui_defining_ghs3d_hypotheses_page</li>
-</ul>
 */

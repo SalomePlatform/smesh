@@ -268,13 +268,12 @@ geompy.addToStudy( Plane_2, "Plane_2" )
 import smesh
 
 import StdMeshers
-import NETGENPlugin
 
 Mesh_1 = smesh.Mesh(Partition_1)
 Regular_1D = Mesh_1.Segment()
 Max_Size_1 = Regular_1D.MaxSize(34.641)
 MEFISTO_2D = Mesh_1.Triangle()
-Tetrahedron_Netgen = Mesh_1.Tetrahedron(algo=smesh.NETGEN)
+Tetrahedronn = Mesh_1.Tetrahedron()
 isDone = Mesh_1.Compute()
 
 # create a group of free faces
@@ -285,11 +284,11 @@ aGroup = Mesh_1.CreateEmptyGroup(smesh.FACE, "Free_faces")
 aGroup.Add(aFaceIds)
 
 # print the result
-print "Criterion: Free nodes Nb = ", len(anNodeIds)
+print "Criterion: Free faces Nb = ", len(aFaceIds)
 j = 1
 for i in range(len(aFaceIds)):
   if j > 20: j = 1; print ""
-  print anNodeIds[i],
+  print aFaceIds[i],
   j = j + 1
   pass
 print ""

@@ -57,6 +57,9 @@ class SMESHGUI_GenericHypothesisCreator;
 class SALOMEDSClient_SObject;
 class algo_error_array;
 
+
+#define PLUGIN_NAME "PLUGIN_NAME"
+
 namespace SMESH
 {
   SMESHGUI_EXPORT
