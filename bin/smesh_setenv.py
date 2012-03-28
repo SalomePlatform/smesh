@@ -26,13 +26,13 @@ from setenv import add_path, get_lib_dir, salome_subdir
 
 def set_env(args):
     """Add to the PATH-variables modules specific paths"""
-
+    psep = os.pathsep
     python_version="python%d.%d" % sys.version_info[0:2]
 
 
     if not os.environ.has_key("SALOME_StdMeshersResources"):
         os.environ["SALOME_StdMeshersResources"] \
-        = os.environ["SMESH_ROOT_DIR"]+"/share/"+salome_subdir+"/resources/smesh"
+        = os.path.join(os.environ["SMESH_ROOT_DIR"],"share",salome_subdir,"resources","smesh")
         pass
 
     # find plugins
@@ -45,7 +45,7 @@ def set_env(args):
             plugin = env_var[:-9] # plugin name may have wrong case
 
             # look for NAMEOFPlugin.xml file among resource files
-            resource_dir = plugin_root+"/share/"+salome_subdir+"/resources/"+plugin.lower()
+            resource_dir = os.path.join(plugin_root,"share",salome_subdir,"resources",plugin.lower())
             if not os.access( resource_dir, os.F_OK ): continue
             for resource_file in os.listdir( resource_dir ):
                 if not resource_file.endswith( ".xml") or \
@@ -62,7 +62,7 @@ def set_env(args):
                 # add paths of plugin
 		plugin_list.append(plugin)
                 if not os.environ.has_key("SALOME_"+plugin+"Resources"):
-                    resource_path = plugin_root+"/share/"+salome_subdir+"/resources/"+plugin.lower()
+                    resource_path = os.path.join(plugin_root,"share",salome_subdir,"resources",plugin.lower())
                     os.environ["SALOME_"+plugin+"Resources"] = resource_path
                     resource_path_list.append( resource_path )
                     add_path(os.path.join(plugin_root,get_lib_dir(),python_version, "site-packages",salome_subdir), "PYTHONPATH")
@@ -80,5 +80,5 @@ def set_env(args):
                 break
     plugin_list.append("StdMeshers")
     os.environ["SMESH_MeshersList"] = ":".join(plugin_list)
-    os.environ["SalomeAppConfig"] = os.environ["SalomeAppConfig"] + ":" + ":".join(resource_path_list)
+    os.environ["SalomeAppConfig"] = os.environ["SalomeAppConfig"] + psep + psep.join(resource_path_list)
 

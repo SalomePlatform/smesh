@@ -3934,7 +3934,11 @@ _pyHypothesisReader::_pyHypothesisReader()
           sep = rootDir[pos];
           break;
         }
+#ifdef WNT
+      if (sep.empty() ) sep = "\\";
+#else
       if (sep.empty() ) sep = "/";
+#endif
 
       // get a path to resource file
       string xmlPath = rootDir;
