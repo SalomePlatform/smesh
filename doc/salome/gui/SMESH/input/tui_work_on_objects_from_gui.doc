@@ -5,9 +5,9 @@
 It is sometimes useful to work alternatively in the GUI of SALOME and in the Python Console. To fetch an object from the TUI simply type:
 
 \code
-myMesh_ref = salome.IdToObject("ID")  
+myMesh_ref = salome.IDToObject("ID")  
 // were ID is the number that appears in the object browser in the Entry column 
-// ( If hidden show it by right clicking and checking the checknbox Entry)
+// ( If hidden show it by right clicking and checking the checkbox Entry)
 myMesh = smesh.Mesh(myMesh_ref)
 \endcode
 or 
