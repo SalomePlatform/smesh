@@ -195,9 +195,9 @@ namespace
     typedef void (*TFun)(int& x, int& y);
     TFun _xRevFun, _yRevFun, _swapFun;
     
-    static void lazy(int&, int&) {}
+    static void lazy   (int&, int&) {}
     static void reverse(int& x, int& size) { x = size - x - 1; }
-    static void swap(int& x, int& y) { std::swap(x,y); }
+    static void swap   (int& x, int& y) { std::swap(x,y); }
   };
   //================================================================================
   /*!
@@ -231,7 +231,7 @@ namespace
       return getNode( isXMax ? _index._xSize-1 : 0 , isYMax ? _index._ySize-1 : 0 );
     }
     const SMDS_MeshElement* getCornerFace(const SMDS_MeshNode* cornerNode) const;
-    //!< True if all blocks this side belongs to have beem found
+    //!< True if all blocks this side belongs to have been found
     bool isBound() const { return _nbBlocksExpected <= _nbBlocksFound; }
     //!< Return coordinates of node at XY
     gp_XYZ getXYZ(int x, int y) const { return SMESH_TNodeXYZ( getNode( x, y )); }
@@ -345,10 +345,11 @@ namespace
                              vector<const SMDS_MeshNode*>& verRow1,
                              vector<const SMDS_MeshNode*>& verRow2,
                              bool alongN1N2 );
-    _OrientedBlockSide findBlockSide( EBoxSides startBlockSide,
-                                      EQuadEdge sharedSideEdge1,
-                                      EQuadEdge sharedSideEdge2,
-                                      bool      withGeometricAnalysis);
+    _OrientedBlockSide findBlockSide( EBoxSides           startBlockSide,
+                                      EQuadEdge           sharedSideEdge1,
+                                      EQuadEdge           sharedSideEdge2,
+                                      bool                withGeometricAnalysis,
+                                      set< _BlockSide* >& sidesAround);
     //!< update own data and data of the side bound to block
     void setSideBoundToBlock( _BlockSide& side )
     {
@@ -511,20 +512,25 @@ namespace
       EQuadEdge edgeOfAdj  [4] = { Q_BOTTOM, Q_LEFT, Q_BOTTOM, Q_LEFT };
       // first find all sides detectable w/o advanced analysis,
       // then repeat the search, which then may pass without advanced analysis
+      set< _BlockSide* > sidesAround;
       for ( int advAnalys = 0; advAnalys < 2; ++advAnalys )
       {
+        // try to find 4 sides adjacent to a FRONT side
         for ( int i = 0; (ok || !advAnalys) && i < NB_QUAD_SIDES; ++i )
-          if ( !block._side[i] ) // try to find 4 sides adjacent to front side
-            ok = block.setSide( i, findBlockSide( B_FRONT, edgeOfFront[i],edgeOfAdj[i],advAnalys));
+          if ( !block._side[i] )
+            ok = block.setSide( i, findBlockSide( B_FRONT, edgeOfFront[i], edgeOfAdj[i],
+                                                  advAnalys, sidesAround));
+        // try to find a BACK side by a TOP one
         if ( ok || !advAnalys)
-          if ( !block._side[B_BACK] && block._side[B_TOP] ) // try to find back side by top one
-            ok = block.setSide( B_BACK, findBlockSide( B_TOP, Q_TOP, Q_TOP, advAnalys ));
+          if ( !block._side[B_BACK] && block._side[B_TOP] )
+            ok = block.setSide( B_BACK, findBlockSide( B_TOP, Q_TOP, Q_TOP,
+                                                       advAnalys, sidesAround ));
         if ( !advAnalys ) ok = true;
       }
       ok = block.isValid();
       if ( ok )
       {
-        // check if just found block is same as one of previously found
+        // check if just found block is same as one of previously found blocks
         bool isSame = false;
         for ( int i = 1; i < _blocks.size() && !isSame; ++i )
           isSame = ( block._corners == _blocks[i-1]._corners );
@@ -666,14 +672,75 @@ namespace
 
   //================================================================================
   /*!
+   * \brief Return true if it's possible to make a loop over corner2Sides starting
+   * from the startSide
+   */
+  //================================================================================
+
+  bool isClosedChainOfSides( _BlockSide*                                        startSide,
+                             map< const SMDS_MeshNode*, list< _BlockSide* > > & corner2Sides )
+  {
+    // get start and end nodes
+    const SMDS_MeshNode *n1 = 0, *n2 = 0, *n;
+    for ( int y = 0; y < 2; ++y )
+      for ( int x = 0; x < 2; ++x )
+      {
+        n = startSide->getCornerNode(x,y);
+        if ( !corner2Sides.count( n )) continue;
+        if ( n1 )
+          n2 = n;
+        else
+          n1 = n;
+      }
+    if ( !n2 ) return false;
+
+    map< const SMDS_MeshNode*, list< _BlockSide* > >::iterator
+      c2sides = corner2Sides.find( n1 );
+    if ( c2sides == corner2Sides.end() ) return false;
+
+    int nbChainLinks = 1;
+    n = n1;
+    _BlockSide* prevSide = startSide;
+    while ( n != n2 )
+    {
+      // get the next side sharing n
+      list< _BlockSide* > & sides = c2sides->second;
+      _BlockSide* nextSide = ( sides.back() == prevSide ? sides.front() : sides.back() );
+      if ( nextSide == prevSide ) return false;
+
+      // find the next corner of the nextSide being in corner2Sides
+      n1 = n;
+      n = 0;
+      for ( int y = 0; y < 2 && !n; ++y )
+        for ( int x = 0; x < 2; ++x )
+        {
+          n = nextSide->getCornerNode(x,y);
+          c2sides = corner2Sides.find( n );
+          if ( n == n1 || c2sides == corner2Sides.end() )
+            n = 0;
+          else
+            break;
+        }
+      if ( !n ) return false;
+
+      prevSide = nextSide;
+      nbChainLinks++;
+    }
+
+    return nbChainLinks == NB_QUAD_SIDES;
+  }
+
+  //================================================================================
+  /*!
    * \brief Try to find a block side adjacent to the given side by given edge
    */
   //================================================================================
 
-  _OrientedBlockSide _Skin::findBlockSide( EBoxSides startBlockSide,
-                                           EQuadEdge sharedSideEdge1,
-                                           EQuadEdge sharedSideEdge2,
-                                           bool      withGeometricAnalysis)
+  _OrientedBlockSide _Skin::findBlockSide( EBoxSides           startBlockSide,
+                                           EQuadEdge           sharedSideEdge1,
+                                           EQuadEdge           sharedSideEdge2,
+                                           bool                withGeometricAnalysis,
+                                           set< _BlockSide* >& sidesAround)
   {
     _Block& block = _blocks.back();
     _OrientedBlockSide& side1 = block._side[ startBlockSide ];
@@ -724,45 +791,75 @@ namespace
 
       if ( !foundSide )
       {
-        if ( !withGeometricAnalysis ) return 0;
-
-        // Select one of found sides most close to startBlockSide
-
-        gp_XYZ p1 ( n1->X(),n1->Y(),n1->Z()),  p2 (n2->X(),n2->Y(),n2->Z());
-        gp_Vec p1p2( p1, p2 );
-
-        const SMDS_MeshElement* face1 = side1->getCornerFace( n1 );
-        gp_XYZ p1Op = SMESH_TNodeXYZ( oppositeNode( face1, face1->GetNodeIndex(n1)));
-        gp_Vec side1Dir( p1, p1Op );
-        gp_Ax2 pln( p1, p1p2, side1Dir ); // plane with normal p1p2 and X dir side1Dir
-        _DUMP_("  Select adjacent for "<< side1._side << " - side dir ("
-               << side1Dir.X() << ", " << side1Dir.Y() << ", " << side1Dir.Z() << ")" );
-
-        map < double , _BlockSide* > angleOfSide;
-        for (sideIt = sidesOnEdge.begin(); sideIt != sidesOnEdge.end(); ++sideIt )
+        if ( !withGeometricAnalysis )
         {
-          _BlockSide* sideI = *sideIt;
-          const SMDS_MeshElement* faceI = sideI->getCornerFace( n1 );
-          gp_XYZ p1Op = SMESH_TNodeXYZ( oppositeNode( faceI, faceI->GetNodeIndex(n1)));
-          gp_Vec sideIDir( p1, p1Op );
-          // compute angle of (sideIDir projection to pln) and (X dir of pln)
-          gp_Vec2d sideIDirProj( sideIDir * pln.XDirection(), sideIDir * pln.YDirection());
-          double angle = sideIDirProj.Angle( gp::DX2d() );
-          if ( angle < 0 ) angle += 2. * M_PI; // angle [0-2*PI]
-          angleOfSide.insert( make_pair( angle, sideI ));
-          _DUMP_("  "<< sideI << " - side dir ("
-                 << sideIDir.X() << ", " << sideIDir.Y() << ", " << sideIDir.Z() << ")"
-                 << " angle " << angle);
+          sidesAround.insert( sidesOnEdge.begin(), sidesOnEdge.end() );
+          return 0;
         }
         if ( nbLoadedSides == 1 )
         {
-          double angF = angleOfSide.begin()->first, angL = angleOfSide.rbegin()->first;
-          if ( angF > M_PI ) angF = 2.*M_PI - angF;
-          if ( angL > M_PI ) angL = 2.*M_PI - angL;
-          foundSide = angF < angL ? angleOfSide.begin()->second : angleOfSide.rbegin()->second;
+          // Issue 0021529. There are at least 2 sides by each edge and
+          // position of block gravity center is undefined.
+          // Find a side starting from which we can walk around the startBlockSide
+
+          // fill in corner2Sides
+          map< const SMDS_MeshNode*, list< _BlockSide* > > corner2Sides;
+          for ( sideIt = sidesAround.begin(); sideIt != sidesAround.end(); ++sideIt )
+          {
+            _BlockSide* sideI = *sideIt;
+            corner2Sides[ sideI->getCornerNode(0,0) ].push_back( sideI );
+            corner2Sides[ sideI->getCornerNode(1,0) ].push_back( sideI );
+            corner2Sides[ sideI->getCornerNode(0,1) ].push_back( sideI );
+            corner2Sides[ sideI->getCornerNode(1,1) ].push_back( sideI );
+          }
+          // remove corners of startBlockSide from corner2Sides
+          set<const SMDS_MeshNode*>::iterator nIt = block._corners.begin();
+          for ( ; nIt != block._corners.end(); ++nIt )
+            corner2Sides.erase( *nIt );
+
+          // select a side
+          for ( sideIt = sidesOnEdge.begin(); sideIt != sidesOnEdge.end(); ++sideIt )
+          {
+            if ( isClosedChainOfSides( *sideIt, corner2Sides ))
+            {
+              foundSide = *sideIt;
+              break;
+            }
+          }
+          if ( !foundSide )
+            return 0;
         }
         else
         {
+          // Select one of found sides most close to startBlockSide
+
+          gp_XYZ p1 ( n1->X(),n1->Y(),n1->Z()),  p2 (n2->X(),n2->Y(),n2->Z());
+          gp_Vec p1p2( p1, p2 );
+
+          const SMDS_MeshElement* face1 = side1->getCornerFace( n1 );
+          gp_XYZ p1Op = SMESH_TNodeXYZ( oppositeNode( face1, face1->GetNodeIndex(n1)));
+          gp_Vec side1Dir( p1, p1Op );
+          gp_Ax2 pln( p1, p1p2, side1Dir ); // plane with normal p1p2 and X dir side1Dir
+          _DUMP_("  Select adjacent for "<< side1._side << " - side dir ("
+                 << side1Dir.X() << ", " << side1Dir.Y() << ", " << side1Dir.Z() << ")" );
+
+          map < double , _BlockSide* > angleOfSide;
+          for (sideIt = sidesOnEdge.begin(); sideIt != sidesOnEdge.end(); ++sideIt )
+          {
+            _BlockSide* sideI = *sideIt;
+            const SMDS_MeshElement* faceI = sideI->getCornerFace( n1 );
+            gp_XYZ p1Op = SMESH_TNodeXYZ( oppositeNode( faceI, faceI->GetNodeIndex(n1)));
+            gp_Vec sideIDir( p1, p1Op );
+            // compute angle of (sideIDir projection to pln) and (X dir of pln)
+            gp_Vec2d sideIDirProj( sideIDir * pln.XDirection(), sideIDir * pln.YDirection());
+            double angle = sideIDirProj.Angle( gp::DX2d() );
+            if ( angle < 0 ) angle += 2. * M_PI; // angle [0-2*PI]
+            angleOfSide.insert( make_pair( angle, sideI ));
+            _DUMP_("  "<< sideI << " - side dir ("
+                   << sideIDir.X() << ", " << sideIDir.Y() << ", " << sideIDir.Z() << ")"
+                   << " angle " << angle);
+          }
+
           gp_XYZ gc(0,0,0); // gravity center of already loaded block sides
           for (int i = 0; i < NB_BLOCK_SIDES; ++i )
             if ( block._side[ i ] )
