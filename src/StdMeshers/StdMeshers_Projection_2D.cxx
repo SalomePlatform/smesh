@@ -608,9 +608,16 @@ namespace {
     {
       list< TopoDS_Edge > tgtEdges;
       StdMeshers_FaceSidePtr srcWire = srcWires[iW];
+      TopTools_IndexedMapOfShape edgeMap; // to detect seam edges
       for ( int iE = 0; iE < srcWire->NbEdges(); ++iE )
+      {
         tgtEdges.push_back( TopoDS::Edge( shape2ShapeMap( srcWire->Edge( iE ))));
-
+        // reverse a seam edge encountered for the second time
+        const int oldExtent = edgeMap.Extent();
+        edgeMap.Add( tgtEdges.back() );
+        if ( oldExtent == edgeMap.Extent() )
+          tgtEdges.back().Reverse();
+      }
       tgtWires[ iW ].reset( new StdMeshers_FaceSide( tgtFace, tgtEdges, tgtMesh,
                                                      /*theIsForward = */ true,
                                                      /*theIgnoreMediumNodes = */false));
@@ -941,8 +948,8 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
     {
       SMESH_subMesh*     sm = smIt->next();
       SMESHDS_SubMesh* smDS = sm->GetSubMeshDS();
-      if ( !sm->IsMeshComputed() )
-        break;
+      if ( smDS->NbNodes() == 0 )
+        continue;
       //if ( !is1DComputed && sm->GetSubShape().ShapeType() == TopAbs_EDGE )
       //break;
 
@@ -966,7 +973,7 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
         bool isOld = isOldNode( node );
 
         if ( !isOld && isSeam ) { // new node on a seam edge
-          if ( seamNodes.find( node ) != seamNodes.end())
+          if ( seamNodes.count( node ) )
             continue; // node is already in the map
         }
 
@@ -992,40 +999,56 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
                             node->GetPosition()->GetTypeOfPosition());
         }
       }
-      if ( u2nodesMaps[ NEW_NODES ].size() != u2nodesMaps[ OLD_NODES ].size() )
+      const bool mergeNewToOld =
+        ( u2nodesMaps[ NEW_NODES ].size() == u2nodesMaps[ OLD_NODES ].size() );
+      const bool mergeSeamToNew =
+        ( u2nodesMaps[ NEW_NODES ].size() == u2nodesOnSeam.size() );
+
+      if ( !mergeNewToOld )
       {
-        if ( u2nodesMaps[ NEW_NODES ].size() == 0         &&
-             sm->GetSubShape().ShapeType() == TopAbs_EDGE &&
-             helper.IsDegenShape( sm->GetId() )             )
-          // NPAL15894 (tt88bis.py) - project mesh built by NETGEN_1d_2D that
-          // does not make segments/nodes on degenerated edges
-          continue;
+        // if ( u2nodesMaps[ NEW_NODES ].size() == 0         &&
+        //      sm->GetSubShape().ShapeType() == TopAbs_EDGE &&
+        //      helper.IsDegenShape( sm->GetId() )             )
+        //   // NPAL15894 (tt88bis.py) - project mesh built by NETGEN_1d_2D that
+        //   // does not make segments/nodes on degenerated edges
+        //   continue;
 
-        if ( u2nodesMaps[ OLD_NODES ].size() == 0           &&
-             sm->GetSubShape().ShapeType() == TopAbs_VERTEX )
-          // old nodes are optional on vertices in the case of 1D-2D projection
-          continue;
+        // if ( u2nodesMaps[ OLD_NODES ].size() == 0           &&
+        //      sm->GetSubShape().ShapeType() == TopAbs_VERTEX )
+        //   // old nodes are optional on vertices in the case of 1D-2D projection
+        //   continue;
 
-        RETURN_BAD_RESULT("Different nb of old and new nodes on shape #"<< sm->GetId() <<" "<<
-                          u2nodesMaps[ OLD_NODES ].size() << " != " <<
-                          u2nodesMaps[ NEW_NODES ].size());
+        //RETURN_BAD_RESULT
+        MESSAGE("Different nb of old and new nodes on shape #"<< sm->GetId() <<" "<<
+                u2nodesMaps[ OLD_NODES ].size() << " != " <<
+                u2nodesMaps[ NEW_NODES ].size());
       }
-      if ( isSeam && u2nodesMaps[ OLD_NODES ].size() != u2nodesOnSeam.size() ) {
-        RETURN_BAD_RESULT("Different nb of old and seam nodes " <<
-                          u2nodesMaps[ OLD_NODES ].size() << " != " << u2nodesOnSeam.size());
+      if ( isSeam && !mergeSeamToNew ) {
+        //RETURN_BAD_RESULT
+        MESSAGE("Different nb of old and seam nodes " <<
+                u2nodesMaps[ OLD_NODES ].size() << " != " << u2nodesOnSeam.size());
       }
       // Make groups of nodes to merge
       u_oldNode = u2nodesMaps[ OLD_NODES ].begin(); 
       u_newNode = u2nodesMaps[ NEW_NODES ].begin();
       newEnd    = u2nodesMaps[ NEW_NODES ].end();
       u_newOnSeam = u2nodesOnSeam.begin();
-      for ( ; u_newNode != newEnd; ++u_newNode, ++u_oldNode ) {
-        groupsOfNodes.push_back( list< const SMDS_MeshNode* >() );
-        groupsOfNodes.back().push_back( u_oldNode->second );
-        groupsOfNodes.back().push_back( u_newNode->second );
-        if ( isSeam )
-          groupsOfNodes.back().push_back( (u_newOnSeam++)->second );
-      }
+      if ( mergeNewToOld )
+        for ( ; u_newNode != newEnd; ++u_newNode, ++u_oldNode )
+        {
+          groupsOfNodes.push_back( list< const SMDS_MeshNode* >() );
+          groupsOfNodes.back().push_back( u_oldNode->second );
+          groupsOfNodes.back().push_back( u_newNode->second );
+          if ( mergeSeamToNew )
+            groupsOfNodes.back().push_back( (u_newOnSeam++)->second );
+        }
+      else if ( mergeSeamToNew )
+        for ( ; u_newNode != newEnd; ++u_newNode, ++u_newOnSeam )
+        {
+          groupsOfNodes.push_back( list< const SMDS_MeshNode* >() );
+          groupsOfNodes.back().push_back( u_newNode->second );
+          groupsOfNodes.back().push_back( u_newOnSeam->second );
+        }
     }
 
     // Merge
