@@ -87,21 +87,21 @@ StdMeshers_FaceSide::StdMeshers_FaceSide(const TopoDS_Face& theFace,
                                          const bool         theIgnoreMediumNodes)
 {
   int nbEdges = theEdges.size();
-  myEdge.resize( nbEdges );
-  myEdgeID.resize( nbEdges );
-  myC2d.resize( nbEdges );
+  myEdge.resize      ( nbEdges );
+  myEdgeID.resize    ( nbEdges );
+  myC2d.resize       ( nbEdges );
   myC3dAdaptor.resize( nbEdges );
-  myFirst.resize( nbEdges );
-  myLast.resize( nbEdges );
-  myNormPar.resize( nbEdges );
+  myFirst.resize     ( nbEdges );
+  myLast.resize      ( nbEdges );
+  myNormPar.resize   ( nbEdges );
   myEdgeLength.resize( nbEdges );
-  myIsUniform.resize( nbEdges, true );
-  myLength = 0;
-  myNbPonits = myNbSegments = 0;
-  myMesh = theMesh;
+  myIsUniform.resize ( nbEdges, true );
+  myLength             = 0;
+  myNbPonits           = myNbSegments = 0;
+  myMesh               = theMesh;
   myMissingVertexNodes = false;
-  myIgnoreMediumNodes = theIgnoreMediumNodes;
-  myDefaultPnt2d = gp_Pnt2d( 1e+100, 1e+100 );
+  myIgnoreMediumNodes  = theIgnoreMediumNodes;
+  myDefaultPnt2d       = gp_Pnt2d( 1e+100, 1e+100 );
   if ( nbEdges == 0 ) return;
 
   SMESHDS_Mesh* meshDS = theMesh->GetMeshDS();
@@ -111,7 +111,7 @@ StdMeshers_FaceSide::StdMeshers_FaceSide(const TopoDS_Face& theFace,
   TopoDS_Iterator vExp;
   for ( int index = 0; edge != theEdges.end(); ++index, ++edge )
   {
-    int i = theIsForward ? index : nbEdges - index - 1;
+    int i = theIsForward ? index : nbEdges-index-1;
     myEdgeLength[i] = SMESH_Algo::EdgeLength( *edge );
     if ( myEdgeLength[i] < DBL_MIN ) nbDegen++;
     myLength += myEdgeLength[i];
