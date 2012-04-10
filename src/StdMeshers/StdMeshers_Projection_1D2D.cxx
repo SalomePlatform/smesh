@@ -143,7 +143,7 @@ bool StdMeshers_Projection_1D2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape
         return error("The existing 1D mesh mismatches the generated 2D mesh");
     }
 
-    const bool checkExisting = wires[ iWire ]->NbSegments();
+    const bool checkExisting = ( wires[ iWire ]->NbSegments() || helper.HasSeam() );
 
     if ( _quadraticMesh )
     {
