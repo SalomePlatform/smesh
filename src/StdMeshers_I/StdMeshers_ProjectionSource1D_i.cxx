@@ -24,7 +24,6 @@
 //  File   : StdMeshers_ProjectionSource1D_i.cxx
 //  Author : Edward AGAPOV
 //  Module : SMESH
-//  $Header$
 //
 #include "StdMeshers_ProjectionSource1D_i.hxx"
 
@@ -84,6 +83,8 @@ void StdMeshers_ProjectionSource1D_i::SetSourceEdge(GEOM::GEOM_Object_ptr edge)
   ASSERT( myBaseImpl );
   try {
     this->GetImpl()->SetSourceEdge( StdMeshers_ObjRefUlils::GeomObjectToShape( edge ));
+    CORBA::String_var entry = edge->GetStudyEntry();
+    myShapeEntries[ SRC_EDGE ] = entry.in();
   }
   catch ( SALOME_Exception& S_ex ) {
     THROW_SALOME_CORBA_EXCEPTION( S_ex.what(), SALOME::BAD_PARAM );
@@ -108,6 +109,12 @@ void StdMeshers_ProjectionSource1D_i::SetVertexAssociation(GEOM::GEOM_Object_ptr
     TopoDS_Shape v1 = StdMeshers_ObjRefUlils::GeomObjectToShape( sourceVertex );
     TopoDS_Shape v2 = StdMeshers_ObjRefUlils::GeomObjectToShape( targetVertex );
     this->GetImpl()->SetVertexAssociation( v1, v2 );
+
+    CORBA::String_var entry;
+    entry = sourceVertex->GetStudyEntry();
+    myShapeEntries[ SRC_VERTEX ] = entry.in();
+    entry = targetVertex->GetStudyEntry();
+    myShapeEntries[ TGT_VERTEX ] = entry.in();
   }
   catch ( SALOME_Exception& S_ex ) {
     THROW_SALOME_CORBA_EXCEPTION( S_ex.what(), SALOME::BAD_PARAM );
@@ -172,7 +179,9 @@ SMESH::SMESH_Mesh_ptr StdMeshers_ProjectionSource1D_i::GetSourceMesh()
 GEOM::GEOM_Object_ptr StdMeshers_ProjectionSource1D_i::GetSourceEdge()
 {
   ASSERT( myBaseImpl );
-  return StdMeshers_ObjRefUlils::ShapeToGeomObject( this->GetImpl()->GetSourceEdge() );
+  return StdMeshers_ObjRefUlils::EntryOrShapeToGeomObject
+    ( myShapeEntries[ SRC_EDGE ],
+      this->GetImpl()->GetSourceEdge() );
 }
 
 //=============================================================================
@@ -185,7 +194,9 @@ GEOM::GEOM_Object_ptr StdMeshers_ProjectionSource1D_i::GetSourceEdge()
 GEOM::GEOM_Object_ptr StdMeshers_ProjectionSource1D_i::GetSourceVertex()
 {
   ASSERT( myBaseImpl );
-  return StdMeshers_ObjRefUlils::ShapeToGeomObject( this->GetImpl()->GetSourceVertex() );
+  return StdMeshers_ObjRefUlils::EntryOrShapeToGeomObject
+    ( myShapeEntries[ SRC_VERTEX ],
+      this->GetImpl()->GetSourceVertex() );
 }
 
 //=============================================================================
@@ -198,7 +209,9 @@ GEOM::GEOM_Object_ptr StdMeshers_ProjectionSource1D_i::GetSourceVertex()
 GEOM::GEOM_Object_ptr StdMeshers_ProjectionSource1D_i::GetTargetVertex()
 {
   ASSERT( myBaseImpl );
-  return StdMeshers_ObjRefUlils::ShapeToGeomObject( this->GetImpl()->GetTargetVertex() );
+  return StdMeshers_ObjRefUlils::EntryOrShapeToGeomObject
+    ( myShapeEntries[ TGT_VERTEX ],
+      this->GetImpl()->GetTargetVertex() );
 }
 
 //=============================================================================
@@ -240,12 +253,8 @@ char* StdMeshers_ProjectionSource1D_i::SaveTo()
   ASSERT( myBaseImpl );
   std::ostringstream os;
 
-  TopoDS_Shape s1, s2, s3;
-  GetImpl()->GetStoreParams( s1, s2, s3 );
-
-  StdMeshers_ObjRefUlils::SaveToStream( s1, os );
-  StdMeshers_ObjRefUlils::SaveToStream( s2, os );
-  StdMeshers_ObjRefUlils::SaveToStream( s3, os );
+  for ( int i = 0; i < NB_SHAPES; ++i )
+    StdMeshers_ObjRefUlils::SaveToStream( myShapeEntries[ i ], os );
   StdMeshers_ObjRefUlils::SaveToStream( GetSourceMesh(), os );
 
   myBaseImpl->SaveTo( os );
@@ -265,9 +274,9 @@ void StdMeshers_ProjectionSource1D_i::LoadFrom( const char* theStream )
   ASSERT( myBaseImpl );
   std::istringstream is( theStream );
 
-  TopoDS_Shape s1 = StdMeshers_ObjRefUlils::LoadFromStream( is );
-  TopoDS_Shape s2 = StdMeshers_ObjRefUlils::LoadFromStream( is );
-  TopoDS_Shape s3 = StdMeshers_ObjRefUlils::LoadFromStream( is );
+  TopoDS_Shape shapes[ NB_SHAPES ];
+  for ( int i = 0; i < NB_SHAPES; ++i )
+    shapes[ i ] = StdMeshers_ObjRefUlils::LoadFromStream( is );
   SMESH::SMESH_Mesh_var mesh = 
     StdMeshers_ObjRefUlils::LoadObjectFromStream< SMESH::SMESH_Mesh >( is );
 
@@ -281,8 +290,15 @@ void StdMeshers_ProjectionSource1D_i::LoadFrom( const char* theStream )
   }
 
   myCorbaMesh = SMESH::SMESH_Mesh::_duplicate( mesh );
-  GetImpl()->RestoreParams( s1, s2, s3, meshImpl );
+  GetImpl()->SetSourceMesh       ( meshImpl );
+  GetImpl()->SetSourceEdge       ( shapes[ SRC_EDGE ] );
+  GetImpl()->SetVertexAssociation( shapes[ SRC_VERTEX ],
+                                   shapes[ TGT_VERTEX ]);
 
   myBaseImpl->LoadFrom( is );
+
+  std::istringstream str( theStream );
+  for ( int i = 0; i < NB_SHAPES; ++i )
+    str >> myShapeEntries[ i ];
 }
 

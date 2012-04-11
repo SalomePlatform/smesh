@@ -111,6 +111,11 @@ public:
   virtual void  LoadFrom( const char* theStream );
 
 private:
+  // keep entries because the same shape can be published several times with
+  // different names and in this case a correct name can't be restored by a TopoDS_Shape
+  // kept by ::StdMeshers_ProjectionSource1D
+  enum { SRC_EDGE=0, SRC_VERTEX, TGT_VERTEX, NB_SHAPES };
+  std::string           myShapeEntries[NB_SHAPES];
   SMESH::SMESH_Mesh_var myCorbaMesh;
 };
 

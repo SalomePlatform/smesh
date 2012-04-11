@@ -24,7 +24,6 @@
 //  File   : StdMeshers_ProjectionSource2D_i.hxx
 //  Author : Edward AGAPOV
 //  Module : SMESH
-//  $Header$
 //
 #ifndef _SMESH_ProjectionSource2D_I_HXX_
 #define _SMESH_ProjectionSource2D_I_HXX_
@@ -94,6 +93,7 @@ public:
   /*!
    * Returns the <i>-th source vertex associated with the <i>-th target vertex.
    * Result may be nil if association not set.
+   * Valid indices are 1 and 2
    */
   GEOM::GEOM_Object_ptr GetSourceVertex(CORBA::Long i);
 
@@ -115,8 +115,12 @@ public:
   virtual void  LoadFrom( const char* theStream );
 
 private:
+  // keep entries because the same shape can be published several times with
+  // different names and in this case a correct name can't be restored by a TopoDS_Shape
+  // kept by ::StdMeshers_ProjectionSource2D
+  enum { SRC_FACE=0, SRC_VERTEX1, SRC_VERTEX2, TGT_VERTEX1, TGT_VERTEX2, NB_SHAPES };
+  std::string           myShapeEntries[NB_SHAPES];
   SMESH::SMESH_Mesh_var myCorbaMesh;
 };
 
 #endif
-
