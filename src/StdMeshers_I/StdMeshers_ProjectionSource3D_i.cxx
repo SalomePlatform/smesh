@@ -162,15 +162,10 @@ void StdMeshers_ProjectionSource3D_i::SetVertexAssociation(GEOM::GEOM_Object_ptr
     TopoDS_Shape v4 = StdMeshers_ObjRefUlils::GeomObjectToShape( targetVertex2 );
     this->GetImpl()->SetVertexAssociation( v1, v2, v3, v4 );
 
-    CORBA::String_var entry;
-    entry = sourceVertex1->GetStudyEntry();
-    myShapeEntries[ SRC_VERTEX1 ] = entry.in();
-    entry = sourceVertex2->GetStudyEntry();
-    myShapeEntries[ SRC_VERTEX2 ] = entry.in();
-    entry = targetVertex1->GetStudyEntry();
-    myShapeEntries[ TGT_VERTEX1 ] = entry.in();
-    entry = targetVertex2->GetStudyEntry();
-    myShapeEntries[ TGT_VERTEX2 ] = entry.in();
+    myShapeEntries[ SRC_VERTEX1 ] = StdMeshers_ObjRefUlils::GeomObjectToEntry( sourceVertex1 );
+    myShapeEntries[ SRC_VERTEX2 ] = StdMeshers_ObjRefUlils::GeomObjectToEntry( sourceVertex2 );
+    myShapeEntries[ TGT_VERTEX1 ] = StdMeshers_ObjRefUlils::GeomObjectToEntry( targetVertex1 );
+    myShapeEntries[ TGT_VERTEX2 ] = StdMeshers_ObjRefUlils::GeomObjectToEntry( targetVertex2 );
   }
   catch ( SALOME_Exception& S_ex ) {
     THROW_SALOME_CORBA_EXCEPTION( S_ex.what(), SALOME::BAD_PARAM );

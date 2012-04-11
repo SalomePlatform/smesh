@@ -110,11 +110,8 @@ void StdMeshers_ProjectionSource1D_i::SetVertexAssociation(GEOM::GEOM_Object_ptr
     TopoDS_Shape v2 = StdMeshers_ObjRefUlils::GeomObjectToShape( targetVertex );
     this->GetImpl()->SetVertexAssociation( v1, v2 );
 
-    CORBA::String_var entry;
-    entry = sourceVertex->GetStudyEntry();
-    myShapeEntries[ SRC_VERTEX ] = entry.in();
-    entry = targetVertex->GetStudyEntry();
-    myShapeEntries[ TGT_VERTEX ] = entry.in();
+    myShapeEntries[ SRC_VERTEX ] = StdMeshers_ObjRefUlils::GeomObjectToEntry( sourceVertex );
+    myShapeEntries[ TGT_VERTEX ] = StdMeshers_ObjRefUlils::GeomObjectToEntry( targetVertex );
   }
   catch ( SALOME_Exception& S_ex ) {
     THROW_SALOME_CORBA_EXCEPTION( S_ex.what(), SALOME::BAD_PARAM );
