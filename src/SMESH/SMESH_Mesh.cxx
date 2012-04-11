@@ -26,6 +26,7 @@
 //  Module : SMESH
 //
 #include "SMESH_Mesh.hxx"
+#include "SMESH_MesherHelper.hxx"
 #include "SMESH_subMesh.hxx"
 #include "SMESH_Gen.hxx"
 #include "SMESH_Hypothesis.hxx"
@@ -968,16 +969,26 @@ SMESH_Mesh::GetGroupSubMeshesContaining(const TopoDS_Shape & aSubShape) const
   for ( i_sm = _mapSubMesh.rbegin(); i_sm != _mapSubMesh.rend(); ++i_sm) {
     SMESHDS_SubMesh * ds = i_sm->second->GetSubMeshDS();
     if ( ds && ds->IsComplexSubmesh() ) {
-      TopExp_Explorer exp( i_sm->second->GetSubShape(), aSubShape.ShapeType() );
-      for ( ; exp.More(); exp.Next() ) {
-        if ( aSubShape.IsSame( exp.Current() )) {
-          found.push_back( i_sm->second );
-          break;
-        }
+      if ( SMESH_MesherHelper::IsSubShape( aSubShape, i_sm->second->GetSubShape() ))
+      {
+        found.push_back( i_sm->second );
+        break;
       }
     } else {
-      break;
+      break; // the rest sub-meshes are not those of groups
     }
+  }
+
+  if ( found.empty() ) // maybe the main shape is a COMPOUND (issue 0021530)
+  {
+    if ( SMESH_subMesh * mainSM = GetSubMeshContaining(1))
+      if ( mainSM->GetSubShape().ShapeType() == TopAbs_COMPOUND )
+      {
+        TopoDS_Iterator it( mainSM->GetSubShape() );
+        if ( it.Value().ShapeType() == aSubShape.ShapeType() &&
+             SMESH_MesherHelper::IsSubShape( aSubShape, mainSM->GetSubShape() ))
+          found.push_back( mainSM );
+      }
   }
   return found;
 }
