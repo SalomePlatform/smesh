@@ -1829,7 +1829,7 @@ FindMatchingNodesOnFaces( const TopoDS_Face&     face1,
       notInSet.insert( f2 );
       for ( int i = 0; i < nbNodes; ++i ) {
         const SMDS_MeshNode* n1 = faceToKeep->GetNode( i );
-        const SMDS_MeshNode* n2 = faceToKeep->GetNode( i+1 % nbNodes );
+        const SMDS_MeshNode* n2 = faceToKeep->GetNode(( i+1 ) % nbNodes );
         f1 = SMESH_MeshEditor::FindFaceInSet( n1, n2, inSet, notInSet );
         if ( f1 )
           elems.insert( f1 );
