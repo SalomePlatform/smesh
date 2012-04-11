@@ -66,6 +66,12 @@ public:
   }
 
   /*!
+   * \brief Return GEOM Object by its sytudy entry or TopoDS_Shape
+   */
+  static GEOM::GEOM_Object_ptr EntryOrShapeToGeomObject (const std::string&  theEntry,
+                                                         const TopoDS_Shape& theShape);
+
+  /*!
    * \brief Store the shape in the stream
     * \param theShape - shape to store
     * \param stream - the stream
@@ -77,14 +83,14 @@ public:
     * \param stream - the stream
     * \retval TopoDS_Shape - resulting shape
    */
-  static TopoDS_Shape LoadFromStream( std::istream & stream);
+  static TopoDS_Shape LoadFromStream( std::istream & stream );
 
   /*!
    * \brief Store the CORBA object in the stream
     * \param obj - object to store
     * \param stream - the stream
    */
-  static void SaveToStream( CORBA::Object_ptr obj, std::ostream & stream);
+  static void SaveToStream( CORBA::Object_ptr obj, std::ostream & stream );
 
   /*!
    * \brief Retrieve a CORBA object from the stream 
@@ -107,6 +113,14 @@ public:
     }
     return TInterface::_nil();
   }
+
+  /*!
+   * \brief Store the study entry of object in the stream
+    * \param studyEntry - the study entry
+    * \param stream - the stream
+   */
+  static void SaveToStream( const std::string& studyEntry, std::ostream & stream);
+
 };
 
 #endif

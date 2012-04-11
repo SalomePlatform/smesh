@@ -31,6 +31,33 @@
 
 using namespace std;
 
+//=======================================================================
+//function : EntryOrShapeToGeomObject
+//purpose  :  Return GEOM Object by its sytudy entry or TopoDS_Shape
+//=======================================================================
+
+GEOM::GEOM_Object_ptr
+StdMeshers_ObjRefUlils::EntryOrShapeToGeomObject (const std::string&  theEntry,
+                                                  const TopoDS_Shape& theShape)
+{
+  GEOM::GEOM_Object_var geom = GEOM::GEOM_Object::_nil();
+
+  // try by entry
+  if (SMESH_Gen_i* gen = SMESH_Gen_i::GetSMESHGen()) {
+    SALOMEDS::Study_var study = gen->GetCurrentStudy();
+    if ( ! theEntry.empty() && ! study->_is_nil() ) {
+      SALOMEDS::SObject_var sobj= study->FindObjectID( theEntry.c_str() );
+      CORBA::Object_var obj = gen->SObjectToObject( sobj );
+      geom = GEOM::GEOM_Object::_narrow( obj );
+    }
+  }
+  // try by TopoDS_Shape
+  if ( geom->_is_nil() )
+    geom = ShapeToGeomObject( theShape );
+
+  return geom._retn();
+}
+
 //================================================================================
   /*!
    * \brief Store the shape in the stream
@@ -103,4 +130,18 @@ void StdMeshers_ObjRefUlils::SaveToStream( CORBA::Object_ptr obj,
   }
   if ( ! ok )
     stream << " NULL_OBJECT ";
+}
+
+//=======================================================================
+//function : SaveToStream
+//purpose  : Store the study entry of object in the stream
+//=======================================================================
+
+void StdMeshers_ObjRefUlils::SaveToStream( const std::string& studyEntry,
+                                           std::ostream &     stream)
+{
+  if ( studyEntry.find_first_not_of( ' ' ) == std::string::npos )
+    stream << " NULL_OBJECT ";
+  else
+    stream << " " << studyEntry;
 }
