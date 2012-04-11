@@ -727,7 +727,7 @@ namespace
       nbChainLinks++;
     }
 
-    return nbChainLinks == NB_QUAD_SIDES;
+    return ( n == n2 && nbChainLinks == NB_QUAD_SIDES );
   }
 
   //================================================================================
