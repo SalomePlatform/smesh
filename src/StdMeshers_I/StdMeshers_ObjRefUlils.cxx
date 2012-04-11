@@ -32,6 +32,20 @@
 using namespace std;
 
 //=======================================================================
+//function : GeomObjectToEntry
+//purpose  : Return study entry of GEOM Object
+//=======================================================================
+
+std::string StdMeshers_ObjRefUlils::GeomObjectToEntry(GEOM::GEOM_Object_ptr&  theGeomObject)
+{
+  if ( CORBA::is_nil( theGeomObject ))
+    return "NULL_OBJECT";
+
+  CORBA::String_var entry = theGeomObject->GetStudyEntry();
+  return entry.in();
+}
+
+//=======================================================================
 //function : EntryOrShapeToGeomObject
 //purpose  :  Return GEOM Object by its sytudy entry or TopoDS_Shape
 //=======================================================================

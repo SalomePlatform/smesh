@@ -66,10 +66,16 @@ public:
   }
 
   /*!
-   * \brief Return GEOM Object by its sytudy entry or TopoDS_Shape
+   * \brief Return study entry of GEOM Object
+   */
+  static std::string GeomObjectToEntry(GEOM::GEOM_Object_ptr&  theGeomObject);
+
+  /*!
+   * \brief Return GEOM Object by its study entry or TopoDS_Shape
    */
   static GEOM::GEOM_Object_ptr EntryOrShapeToGeomObject (const std::string&  theEntry,
                                                          const TopoDS_Shape& theShape);
+
 
   /*!
    * \brief Store the shape in the stream
