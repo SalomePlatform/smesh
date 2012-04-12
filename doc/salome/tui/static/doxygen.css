@@ -732,6 +732,12 @@ div.headertitle
 	padding: 5px 5px 5px 10px;
 }
 
+.title {
+        font-size: 150%;
+        font-weight: bold;
+        margin: 10px 2px;
+}
+
 dl
 {
         padding: 0 0 0 10px;
