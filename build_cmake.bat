@@ -1,4 +1,4 @@
-@REM Copyright (C) 2007-2011  CEA/DEN, EDF R&D, OPEN CASCADE
+@REM Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 @REM
 @REM This library is free software; you can redistribute it and/or
 @REM modify it under the terms of the GNU Lesser General Public
