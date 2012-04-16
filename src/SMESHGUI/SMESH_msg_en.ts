@@ -3665,6 +3665,11 @@ Input value precision can be adjusted using
         <source>MESH_LOADING_MSG_FINISHED</source>
         <translation>Mesh %0 loading done</translation>
     </message>
+    <message>
+        <source>DEP_OBJECT</source>
+        <translation>Selected object has been used to create another one.
+It can&apos;t be deleted </translation>
+    </message>
 </context>
 <context>
     <name>SMESHGUI_GroupDlg</name>
