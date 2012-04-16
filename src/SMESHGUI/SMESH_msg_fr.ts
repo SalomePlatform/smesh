@@ -3737,6 +3737,11 @@ avec le paramètre &apos;%1&apos; des préférences du module Mesh.</translation
         <source>MESH_LOADING_MSG_FINISHED</source>
         <translation>Chargement du maillage %0 terminé</translation>
     </message>
+    <message>
+        <source>DEP_OBJECT</source>
+        <translation>L'objet sélectionné a été utilisé pour en créer un autre.
+Il ne peut pas être supprimé.</translation>
+    </message>
 </context>
 <context>
     <name>SMESHGUI_GroupDlg</name>
