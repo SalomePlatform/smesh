@@ -4414,6 +4414,10 @@ Choisissez un groupe et essayez de nouveau</translation>
         <translation>Impossible d&apos;obtenir la tangente pour un des nœuds du chemin</translation>
     </message>
     <message>
+        <source>EXTRUSION_0D</source>
+        <translation>Extrusion des éléments 0D</translation>
+    </message>
+    <message>
         <source>EXTRUSION_1D</source>
         <translation>Extrusion des éléments 1D</translation>
     </message>
@@ -6116,6 +6120,10 @@ en raison de leurs types incompatibles:
         <source>OBJECT_GROUP_0DELEMS</source>
         <translation>Groupe d&apos;éléments 0D</translation>
     </message>
+    <message>
+        <source>BUT_LOAD_MESH</source>
+        <translation>Charger un maillage depuis un serveur</translation>
+    </message>
 </context>
 <context>
     <name>SMESHGUI_MeshInfoDlg</name>
@@ -6362,6 +6370,10 @@ en raison de leurs types incompatibles:
         <translation>Calculer</translation>
     </message>
     <message>
+        <source>LOAD</source>
+        <translation>Charger</translation>
+    </message>
+    <message>
         <source>MESH_ON_GEOMETRY</source>
         <translation>Lié à une géometrie</translation>
     </message>
@@ -6516,6 +6528,13 @@ en raison de leurs types incompatibles:
     <message>
         <source>NB_ELEMENTS</source>
         <translation>éléments</translation>
+    </message>
+</context>
+<context>
+    <name>SMESHGUI_MeshLoadingProgress</name>
+    <message>
+        <source>MESH_LOAD_PROGRESS_TITLE</source>
+        <translation>Chargement du maillage en cours</translation>
     </message>
 </context>
 <context>
