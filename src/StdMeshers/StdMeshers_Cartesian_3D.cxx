@@ -85,6 +85,14 @@ using namespace std;
 
 //#define _MY_DEBUG_
 
+#define ELLIPSOLID_WORKAROUND // remove it as soon as http://tracker.dev.opencascade.org/view.php?id=22809 is solved
+
+#ifdef ELLIPSOLID_WORKAROUND
+#include <BRepIntCurveSurface_Inter.hxx>
+#include <BRepTopAdaptor_TopolTool.hxx>
+#include <BRepAdaptor_HSurface.hxx>
+#endif
+
 //=============================================================================
 /*!
  * Constructor
@@ -246,6 +254,41 @@ namespace
                         const TopoDS_Shape&   shape );
     void ComputeNodes(SMESH_MesherHelper& helper);
   };
+#ifdef ELLIPSOLID_WORKAROUND
+  // --------------------------------------------------------------------------
+  /*!
+   * \brief struct temporary replacing IntCurvesFace_Intersector until
+   *        OCCT bug 0022809 is fixed
+   *        http://tracker.dev.opencascade.org/view.php?id=22809
+   */
+  struct TMP_IntCurvesFace_Intersector
+  {
+    BRepAdaptor_Surface                       _surf;
+    double                                    _tol;
+    BRepIntCurveSurface_Inter                 _intcs;
+    vector<IntCurveSurface_IntersectionPoint> _points;
+    BRepTopAdaptor_TopolTool                  _clsf;
+
+    TMP_IntCurvesFace_Intersector(const TopoDS_Face& face, const double tol)
+      :_surf( face ), _tol( tol ), _clsf( new BRepAdaptor_HSurface(_surf) ) {}
+    Bnd_Box Bounding() const { Bnd_Box b; BRepBndLib::Add (_surf.Face(), b); return b; }
+    void Perform( const gp_Lin& line, const double w0, const double w1 )
+    {
+      _points.clear();
+      for ( _intcs.Init( _surf.Face(), line, _tol ); _intcs.More(); _intcs.Next() )
+        if ( w0 <= _intcs.W() && _intcs.W() <= w1 )
+          _points.push_back( _intcs.Point() );
+    }
+    bool IsDone() const { return true; }
+    int  NbPnt()  const { return _points.size(); }
+    IntCurveSurface_TransitionOnCurve Transition( const int i ) const { return _points[ i-1 ].Transition(); }
+    double       WParameter( const int i ) const { return _points[ i-1 ].W(); }
+    TopAbs_State ClassifyUVPoint(const gp_Pnt2d& p) { return _clsf.Classify( p, _tol ); }
+  };
+#define __IntCurvesFace_Intersector TMP_IntCurvesFace_Intersector
+#else
+#define __IntCurvesFace_Intersector IntCurvesFace_Intersector
+#endif
   // --------------------------------------------------------------------------
   /*!
    * \brief Intersector of TopoDS_Face with all GridLine's
@@ -255,7 +298,7 @@ namespace
     TopoDS_Face _face;
     Grid*       _grid;
     Bnd_Box     _bndBox;
-    IntCurvesFace_Intersector* _surfaceInt;
+    __IntCurvesFace_Intersector* _surfaceInt;
     vector< std::pair< GridLine*, IntersectionPoint > > _intersections;
 
     FaceGridIntersector(): _grid(0), _surfaceInt(0) {}
@@ -272,11 +315,11 @@ namespace
       GetCurveFaceIntersector();
       return _bndBox;
     }
-    IntCurvesFace_Intersector* GetCurveFaceIntersector()
+    __IntCurvesFace_Intersector* GetCurveFaceIntersector()
     {
       if ( !_surfaceInt )
       {
-        _surfaceInt = new IntCurvesFace_Intersector( _face, Precision::PConfusion() );
+        _surfaceInt = new __IntCurvesFace_Intersector( _face, Precision::PConfusion() );
         _bndBox     = _surfaceInt->Bounding();
         if ( _bndBox.IsVoid() )
           BRepBndLib::Add (_face, _bndBox);
@@ -301,7 +344,7 @@ namespace
     gp_Cone     _cone;
     gp_Sphere   _sphere;
     gp_Torus    _torus;
-    IntCurvesFace_Intersector* _surfaceInt;
+    __IntCurvesFace_Intersector* _surfaceInt;
 
     vector< IntersectionPoint > _intPoints;
 
@@ -312,6 +355,7 @@ namespace
     void IntersectWithTorus   (const GridLine& gridLine);
     void IntersectWithSurface (const GridLine& gridLine);
 
+    bool UVIsOnFace() const;
     void addIntPoint(const bool toClassify=true);
     bool isParamOnLineOK( const double linLength )
     {
@@ -879,12 +923,20 @@ namespace
   }
   //================================================================================
   /*
-   * Store an intersection if it is In or ON the face
+   * Return true if (_u,_v) is on the face
+   */
+  bool FaceLineIntersector::UVIsOnFace() const
+  {
+    TopAbs_State state = _surfaceInt->ClassifyUVPoint(gp_Pnt2d( _u,_v ));
+    return ( state == TopAbs_IN || state == TopAbs_ON );
+  }
+  //================================================================================
+  /*
+   * Store an intersection if it is IN or ON the face
    */
   void FaceLineIntersector::addIntPoint(const bool toClassify)
   {
-    TopAbs_State state = toClassify ? _surfaceInt->ClassifyUVPoint(gp_Pnt2d( _u, _v )) : TopAbs_IN;
-    if ( state == TopAbs_IN || state == TopAbs_ON )
+    if ( !toClassify || UVIsOnFace() )
     {
       IntersectionPoint p;
       p._paramOnLine = _w;
@@ -952,8 +1004,7 @@ namespace
       _w = linCone.ParamOnConic( i );
       if ( !isParamOnLineOK( gridLine._length )) continue;
       ElSLib::Parameters(_cone, linCone.Point(i) ,_u,_v);
-      TopAbs_State state = _surfaceInt->ClassifyUVPoint(gp_Pnt2d( _u, _v ));
-      if ( state == TopAbs_IN || state == TopAbs_ON )
+      if ( UVIsOnFace() )
       {
         ElSLib::D1( _u, _v, _cone, P, du, dv );
         norm = du ^ dv;
@@ -1023,8 +1074,7 @@ namespace
       _w = linTorus.ParamOnLine( i );
       if ( !isParamOnLineOK( gridLine._length )) continue;
       linTorus.ParamOnTorus( i, _u,_v );
-      TopAbs_State state = _surfaceInt->ClassifyUVPoint(gp_Pnt2d( _u, _v ));
-      if ( state == TopAbs_IN || state == TopAbs_ON )
+      if ( UVIsOnFace() )
       {
         ElSLib::D1( _u, _v, _torus, P, du, dv );
         norm = du ^ dv;
@@ -1902,8 +1952,13 @@ bool StdMeshers_Cartesian_3D::Compute(SMESH_Mesh &         theMesh,
       if ( gridBox.IsOut( gp_Pnt( x0,y0,z0 )) ||
            gridBox.IsOut( gp_Pnt( x1,y1,z1 )))
         for ( size_t i = 0; i < facesItersectors.size(); ++i )
+        {
           if ( !facesItersectors[i].IsInGrid( gridBox ))
             return error("The grid doesn't enclose the geometry");
+#ifdef ELLIPSOLID_WORKAROUND
+          delete facesItersectors[i]._surfaceInt, facesItersectors[i]._surfaceInt = 0;
+#endif
+        }
     }
 
 #ifdef WITH_TBB
