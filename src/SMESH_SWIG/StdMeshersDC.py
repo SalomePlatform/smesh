@@ -274,6 +274,7 @@ class StdMeshersDC_Segment(Mesh_Algorithm):
         store_geom = self.geom
         if type(vertex) is types.IntType:
             if vertex == 0 or vertex == 1:
+                import geompyDC
                 vertex = self.mesh.geompyD.ExtractShapes(self.geom, geompyDC.ShapeType["VERTEX"],True)[vertex]
                 self.geom = vertex
                 pass
