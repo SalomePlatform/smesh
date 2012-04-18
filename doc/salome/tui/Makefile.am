@@ -42,4 +42,13 @@ install-data-local:
 	fi;
 
 uninstall-local:
-	rm -rf $(DESTDIR)$(docdir)/tui/SMESH
+	@test -d $(DESTDIR)$(tuidocdir) && chmod -R +w $(DESTDIR)$(tuidocdir) ; \
+	for filen in `find $(DESTDIR)$(tuidocdir) -mindepth 1 -maxdepth 1` dummy ; do \
+	  case $${filen} in \
+	    dummy ) ;; \
+	    $(DESTDIR)$(tuidocdir)/docutils ) ;; \
+	    $(DESTDIR)$(tuidocdir)/head.png ) ;; \
+	    $(DESTDIR)$(tuidocdir)/smeshscreen.png ) ;; \
+	    * ) echo "removing $${filen}" && rm -rf $${filen} ;; \
+	  esac ; \
+	done
