@@ -387,7 +387,7 @@ Driver_Mesh::Status DriverCGNS_Write::Perform()
   // Write polyhedral volumes
   // -------------------------
 
-  if ( myMesh->GetMeshInfo().NbElements() != cgID ) // polyhedra or hexagonal prisms remain
+  if ( myMesh->GetMeshInfo().NbElements() > cgID-1 ) // polyhedra or hexagonal prisms remain
   {
     // the polyhedron (NFACE_n) is described as a set of signed face IDs,
     // so first we are to write all polygones (NGON_n) bounding polyhedrons
