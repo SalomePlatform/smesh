@@ -443,6 +443,11 @@ class smeshDC(SMESH._objref_SMESH_Gen):
         self.geompyD=geompyD
         self.SetGeomEngine(geompyD)
         SMESH._objref_SMESH_Gen.SetCurrentStudy(self,theStudy)
+        global notebook
+        if theStudy:
+            notebook = salome_notebook.NoteBook( theStudy )
+        else:
+            notebook = salome_notebook.NoteBook( salome_notebook.PseudoStudyForNoteBook() )
 
     ## Gets the current study
     #  @ingroup l1_auxiliary
