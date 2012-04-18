@@ -3596,8 +3596,8 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction( 501, "MEASURE_MIN_DIST", "ICON_MEASURE_MIN_DIST" );
   createSMESHAction( 502, "MEASURE_BND_BOX",  "ICON_MEASURE_BND_BOX" );
 
-  createSMESHAction( 300, "ERASE" );
-  createSMESHAction( 301, "DISPLAY" );
+  createSMESHAction( 300, "HIDE" );
+  createSMESHAction( 301, "SHOW" );
   createSMESHAction( 302, "DISPLAY_ONLY" );
 
   // ----- create menu --------------
