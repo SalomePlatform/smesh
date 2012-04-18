@@ -948,7 +948,7 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
     {
       SMESH_subMesh*     sm = smIt->next();
       SMESHDS_SubMesh* smDS = sm->GetSubMeshDS();
-      if ( smDS->NbNodes() == 0 )
+      if ( !smDS || smDS->NbNodes() == 0 )
         continue;
       //if ( !is1DComputed && sm->GetSubShape().ShapeType() == TopAbs_EDGE )
       //break;
