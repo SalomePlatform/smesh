@@ -523,7 +523,8 @@ bool SMDS_VolumeTool::Set (const SMDS_MeshElement* theVolume,
                topNode->Z() - botNode->Z() );
     myVolForward = ( botNormal.Dot( upDir ) < 0 );
 
-    myCurFace = -1; // previous setFace(0) didn't take myVolForward into account
+    if ( !myVolForward )
+      myCurFace = -1; // previous setFace(0) didn't take myVolForward into account
   }
   return true;
 }
