@@ -23,6 +23,8 @@ array of dedicated operations;</li>
 \subpage using_notebook_mesh_page "Salome notebook".</li>
 </ul>
 
+Mesh module preferences are described in the \subpage mesh_preferences_page section of SALOME Mesh Help.
+
 Almost all mesh module functionalities are accessible via
 \subpage smeshpy_interface_page "Mesh module Python interface".
 
