@@ -31,6 +31,8 @@ IDL_FILES = MESHJOB.idl
 BUILT_SOURCES += SPADDERPluginTestSK.cc
 IDL_FILES += SPADDERPluginTest.idl
 
+IDL_FILES_PY=$(IDL_FILES:%.idl=%_idl.py)
+
 salomeidl_DATA = $(IDL_FILES) 
 
 lib_LTLIBRARIES = libSalomeIDLSPADDER.la
@@ -81,6 +83,13 @@ install-data-local: $(IDL_FILES)
 	$(OMNIORB_IDL) $(IDLPYFLAGS) -C$(DESTDIR)$(salomepythondir) $$file ; \
 	done
 
+# we want to remove only staff generated for IDL files and nothing more
 uninstall-local:
-	rm -rf $(DESTDIR)$(salomepythondir)/*
+	@for modulen in MESHJOB SPADDERPluginTest  ; do \
+	  test -d $(DESTDIR)$(salomepythondir)/$${modulen} && echo "Removing $(DESTDIR)$(salomepythondir)/$${modulen}" && rm -rf $(DESTDIR)$(salomepythondir)/$${modulen} ; \
+	  test -d $(DESTDIR)$(salomepythondir)/$${modulen}__POA && echo "Removing $(DESTDIR)$(salomepythondir)/$${modulen}__POA" && rm -rf $(DESTDIR)$(salomepythondir)/$${modulen}__POA ; \
+	done ; \
+	for filen in $(IDL_FILES_PY) ; do \
+	  echo "Removing $(DESTDIR)$(salomepythondir)/$${filen}" && rm -f $(DESTDIR)$(salomepythondir)/$${filen}* ; \
+	done
 
