@@ -1017,16 +1017,16 @@ bool SMDS_VolumeTool::GetFaceNormal (int faceIndex, double & X, double & Y, doub
   if ( !setFace( faceIndex ))
     return false;
 
-  XYZ p1 ( myFaceNodes[0] );
-  XYZ p2 ( myFaceNodes[1] );
-  XYZ p3 ( myFaceNodes[2] );
+  const int iQuad = ( myFaceNbNodes > 6 && !myPolyedre ) ? 2 : 1;
+  XYZ p1 ( myFaceNodes[0*iQuad] );
+  XYZ p2 ( myFaceNodes[1*iQuad] );
+  XYZ p3 ( myFaceNodes[2*iQuad] );
   XYZ aVec12( p2 - p1 );
   XYZ aVec13( p3 - p1 );
   XYZ cross = aVec12.Crossed( aVec13 );
 
-  //if ( myFaceNbNodes == 4 ) {
-  if ( myFaceNbNodes >3 ) {
-    XYZ p4 ( myFaceNodes[3] );
+  if ( myFaceNbNodes >3*iQuad ) {
+    XYZ p4 ( myFaceNodes[3*iQuad] );
     XYZ aVec14( p4 - p1 );
     XYZ cross2 = aVec13.Crossed( aVec14 );
     cross = cross + cross2;
