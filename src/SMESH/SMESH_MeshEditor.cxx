@@ -3751,8 +3751,8 @@ void SMESH_MeshEditor::sweepElement(const SMDS_MeshElement*               elem,
         break;
       }
       case SMDSEntity_Quad_Quadrangle: { // sweep Quadratic QUADRANGLE --->
-        if ( nbDouble != 4 ) break;
         if( nbSame == 0 ) {
+          if ( nbDouble != 4 ) break;
           // --->  hexahedron with 20 nodes
           aNewElem = aMesh->AddVolume (prevNod[0], prevNod[1], prevNod[2], prevNod[3],
                                        nextNod[0], nextNod[1], nextNod[2], nextNod[3],
@@ -3767,6 +3767,7 @@ void SMESH_MeshEditor::sweepElement(const SMDS_MeshElement*               elem,
           return;
         }
         else if( nbSame == 2 ) {
+          if ( nbDouble != 2 ) break;
           // --->  2d order Pentahedron with 15 nodes
           int n1,n2,n4,n5;
           if ( prevNod[ iBeforeSame ] == nextNod[ iBeforeSame ] ) {
