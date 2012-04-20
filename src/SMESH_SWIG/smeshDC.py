@@ -256,7 +256,9 @@ def TreatHypoStatus(status, hypName, geomName, isAlgo):
 def AssureGeomPublished(mesh, geom, name=''):
     if not isinstance( geom, geompyDC.GEOM._objref_GEOM_Object ):
         return
-    if not geom.IsSame( mesh.geom ) and not geom.GetStudyEntry():
+    if not geom.IsSame( mesh.geom ) and \
+           not geom.GetStudyEntry() and \
+           mesh.smeshpyD.GetCurrentStudy():
         ## set the study
         studyID = mesh.smeshpyD.GetCurrentStudy()._get_StudyId()
         if studyID != mesh.geompyD.myStudyId:
@@ -965,7 +967,7 @@ class Mesh:
             if isinstance(obj, geompyDC.GEOM._objref_GEOM_Object):
                 self.geom = obj
                 # publish geom of mesh (issue 0021122)
-                if not self.geom.GetStudyEntry():
+                if not self.geom.GetStudyEntry() and smeshpyD.GetCurrentStudy():
                     studyID = smeshpyD.GetCurrentStudy()._get_StudyId()
                     if studyID != geompyD.myStudyId:
                         geompyD.init_geom( smeshpyD.GetCurrentStudy())
@@ -1220,7 +1222,7 @@ class Mesh:
                 print '"' + GetName(self.mesh) + '"',"has not been computed."
                 pass
             pass
-        if salome.sg.hasDesktop():
+        if salome.sg.hasDesktop() and self.mesh.GetStudyId() >= 0:
             smeshgui = salome.ImportComponentGUI("SMESH")
             smeshgui.Init(self.mesh.GetStudyId())
             smeshgui.SetMeshIcon( salome.ObjectToID( self.mesh ), ok, (self.NbNodes()==0) )
@@ -4069,6 +4071,7 @@ class Mesh_Algorithm:
     #  @return SMESH.SMESH_Algo
     def FindAlgorithm (self, algoname, smeshpyD):
         study = smeshpyD.GetCurrentStudy()
+        if not study: return None
         #to do: find component by smeshpyD object, not by its data type
         scomp = study.FindComponent(smeshpyD.ComponentDataType())
         if scomp is not None:
@@ -4207,15 +4210,10 @@ class Mesh_Algorithm:
 
     ## Returns entry of the shape to mesh in the study
     def MainShapeEntry(self):
-        entry = ""
-        if not self.mesh or not self.mesh.GetMesh(): return entry
-        if not self.mesh.GetMesh().HasShapeToMesh(): return entry
-        study = self.mesh.smeshpyD.GetCurrentStudy()
-        ior  = salome.orb.object_to_string( self.mesh.GetShape() )
-        sobj = study.FindObjectIOR(ior)
-        if sobj: entry = sobj.GetID()
-        if not entry: return ""
-        return entry
+        if not self.mesh or not self.mesh.GetMesh(): return ""
+        if not self.mesh.GetMesh().HasShapeToMesh(): return ""
+        shape = self.mesh.GetShape()
+        return shape.GetStudyEntry()
 
     ## Defines "ViscousLayers" hypothesis to give parameters of layers of prisms to build
     #  near mesh boundary. This hypothesis can be used by several 3D algorithms:
