@@ -68,6 +68,7 @@ protected slots:
 private slots:
   void                           onSelectionDone();
   void                           redisplayPreview();
+  void                           onTextChange( const QString& );
 
 private:
   SMESHGUI_MakeNodeAtPointDlg*  myDlg;
