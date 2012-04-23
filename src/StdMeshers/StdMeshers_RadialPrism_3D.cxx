@@ -176,8 +176,8 @@ bool StdMeshers_RadialPrism_3D::Compute(SMESH_Mesh& aMesh, const TopoDS_Shape& a
   // ----------------------------------
 
   TAssocTool::TShapeShapeMap shape2ShapeMap;
-  if ( !TAssocTool::FindSubShapeAssociation( outerShell, &aMesh,
-                                             innerShell, &aMesh,
+  if ( !TAssocTool::FindSubShapeAssociation( innerShell, &aMesh,
+                                             outerShell, &aMesh,
                                              shape2ShapeMap) )
     return error(COMPERR_BAD_SHAPE,"Topology of inner and outer shells seems different" );
 
@@ -193,11 +193,11 @@ bool StdMeshers_RadialPrism_3D::Compute(SMESH_Mesh& aMesh, const TopoDS_Shape& a
     // Corresponding sub-shapes
     TopoDS_Face outFace = TopoDS::Face( exp.Current() );
     TopoDS_Face inFace;
-    if ( !shape2ShapeMap.IsBound( outFace )) {
+    if ( !shape2ShapeMap.IsBound( outFace, /*isOut=*/true )) {
       return error(SMESH_Comment("Corresponding inner face not found for face #" )
                    << meshDS->ShapeToIndex( outFace ));
     } else {
-      inFace = TopoDS::Face( shape2ShapeMap( outFace ));
+      inFace = TopoDS::Face( shape2ShapeMap( outFace, /*isOut=*/true ));
     }
 
     // Find matching nodes of in and out faces

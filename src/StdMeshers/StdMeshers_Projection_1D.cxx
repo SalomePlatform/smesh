@@ -217,7 +217,7 @@ bool StdMeshers_Projection_1D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
   TopoDS_Shape srcShape = _sourceHypo->GetSourceEdge().Oriented(TopAbs_FORWARD);
 
   TAssocTool::TShapeShapeMap shape2ShapeMap;
-  TAssocTool::InitVertexAssociation( _sourceHypo, shape2ShapeMap, tgtEdge );
+  TAssocTool::InitVertexAssociation( _sourceHypo, shape2ShapeMap );
   if ( !TAssocTool::FindSubShapeAssociation( tgtEdge, tgtMesh, srcShape, srcMesh,
                                              shape2ShapeMap) ||
        !shape2ShapeMap.IsBound( tgtEdge ))
@@ -401,7 +401,7 @@ bool StdMeshers_Projection_1D::Evaluate(SMESH_Mesh& theMesh,
   TopoDS_Shape srcShape = _sourceHypo->GetSourceEdge().Oriented(TopAbs_FORWARD);
 
   TAssocTool::TShapeShapeMap shape2ShapeMap;
-  TAssocTool::InitVertexAssociation( _sourceHypo, shape2ShapeMap, tgtEdge );
+  TAssocTool::InitVertexAssociation( _sourceHypo, shape2ShapeMap );
   if ( !TAssocTool::FindSubShapeAssociation( tgtEdge, tgtMesh, srcShape, srcMesh,
                                              shape2ShapeMap) ||
        !shape2ShapeMap.IsBound( tgtEdge ))

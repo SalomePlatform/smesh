@@ -196,7 +196,7 @@ bool StdMeshers_Projection_1D2D::Evaluate(SMESH_Mesh&         theMesh,
 
   typedef StdMeshers_ProjectionUtils SPU;
   SPU::TShapeShapeMap shape2ShapeMap;
-  SPU::InitVertexAssociation( _sourceHypo, shape2ShapeMap, theShape );
+  SPU::InitVertexAssociation( _sourceHypo, shape2ShapeMap );
   if ( !SPU::FindSubShapeAssociation( theShape, &theMesh, srcFace, srcMesh, shape2ShapeMap))
     return error(COMPERR_BAD_SHAPE,"Topology of source and target faces seems different" );
 

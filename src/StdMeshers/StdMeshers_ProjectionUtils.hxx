@@ -46,13 +46,36 @@ class SMESH_subMesh;
 class TopTools_IndexedDataMapOfShapeListOfShape;
 
 /*!
+ * \brief Struct used instead of a sole TopTools_DataMapOfShapeShape to avoid
+ *        problems with bidirectional bindings
+ */
+struct StdMeshers_ShapeShapeBiDirectionMap
+{
+  TopTools_DataMapOfShapeShape _map1to2, _map2to1;
+
+  // convension: s1 - target, s2 - source
+  bool Bind( const TopoDS_Shape& s1, const TopoDS_Shape& s2 )
+  { _map1to2.Bind( s1, s2 ); return _map2to1.Bind( s2, s1 ); }
+  bool IsBound( const TopoDS_Shape& s, const bool isShape2=false ) const 
+  { return (isShape2 ? _map2to1 : _map1to2).IsBound( s ); }
+  bool IsEmpty() const { return _map1to2.IsEmpty(); }
+  int Extent() const { return _map1to2.Extent(); }
+  void Clear() { _map1to2.Clear(); _map2to1.Clear(); }
+  const TopoDS_Shape& operator()( const TopoDS_Shape& s, const bool isShape2=false ) const
+  { // if we get a Standard_NoSuchObject here, it means that the calling code
+    // passes incorrect isShape2
+    return (isShape2 ? _map2to1 : _map1to2)( s );
+  }
+};
+
+/*!
  * \brief Class encapsulating methods common to Projection algorithms
  */
 class StdMeshers_ProjectionUtils
 {
  public:
 
-  typedef TopTools_DataMapOfShapeShape                         TShapeShapeMap;
+  typedef StdMeshers_ShapeShapeBiDirectionMap                  TShapeShapeMap;
   typedef TopTools_IndexedDataMapOfShapeListOfShape            TAncestorMap;
   typedef std::map<const SMDS_MeshNode*, const SMDS_MeshNode*> TNodeNodeMap;
 
@@ -96,21 +119,19 @@ class StdMeshers_ProjectionUtils
     * \param theTargetShape - the shape theHyp assigned to
    */
   static void InitVertexAssociation( const SMESH_Hypothesis* theHyp,
-                                     TShapeShapeMap &        theAssociationMap,
-                                     const TopoDS_Shape&     theTargetShape);
+                                     TShapeShapeMap &        theAssociationMap);
 
   /*!
    * \brief Inserts association theShape1 <-> theShape2 to TShapeShapeMap
-    * \param theShape1 - shape 1
-    * \param theShape2 - shape 2
+    * \param theShape1 - target shape
+    * \param theShape2 - source shape
     * \param theAssociationMap - association map 
     * \param theBidirectional - if false, inserts theShape1 -> theShape2 association
     * \retval bool - true if there was no association for these shapes before
    */
-  static bool InsertAssociation( const TopoDS_Shape& theShape1,
-                                 const TopoDS_Shape& theShape2,
-                                 TShapeShapeMap &    theAssociationMap,
-                                 const bool          theBidirectional=true);
+  static bool InsertAssociation( const TopoDS_Shape& theShape1, // target
+                                 const TopoDS_Shape& theShape2, // source
+                                 TShapeShapeMap &    theAssociationMap);
 
   /*!
    * \brief Finds an edge by its vertices in a main shape of the mesh
