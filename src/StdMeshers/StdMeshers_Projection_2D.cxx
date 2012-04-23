@@ -734,9 +734,11 @@ namespace {
           }
           case SMDS_TOP_EDGE: {
             TopoDS_Shape srcEdge = srcHelper.GetSubShapeByNode( srcNode, srcHelper.GetMeshDS() );
-            TopoDS_Shape tgtEdge = shape2ShapeMap( srcEdge, /*isSrc=*/true );
+            TopoDS_Edge  tgtEdge = TopoDS::Edge( shape2ShapeMap( srcEdge, /*isSrc=*/true ));
+            tgtMeshDS->SetNodeOnEdge( n, TopoDS::Edge( tgtEdge ));
             double U = srcHelper.GetNodeU( TopoDS::Edge( srcEdge ), srcNode );
-            tgtMeshDS->SetNodeOnEdge( n, TopoDS::Edge( tgtEdge ), U);
+            helper.CheckNodeU( tgtEdge, n, U, Precision::PConfusion());
+            n->SetPosition(SMDS_PositionPtr(new SMDS_EdgePosition( U )));
             break;
           }
           case SMDS_TOP_VERTEX: {
