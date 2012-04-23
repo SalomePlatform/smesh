@@ -963,7 +963,7 @@ SMESHGUI_DimGroupDlg::SMESHGUI_DimGroupDlg( SMESHGUI* theModule )
 : SMESHGUI_GroupOpDlg( theModule )
 {
   setWindowTitle( tr( "CREATE_GROUP_OF_UNDERLYING_ELEMS" ) );
-  setHelpFileName( "creating_groups_page.html#gui_create_dim_group" );
+  setHelpFileName( "group_of_underlying_elements_page.html" );
 
   QGroupBox* anArgGrp = getArgGrp();
 
