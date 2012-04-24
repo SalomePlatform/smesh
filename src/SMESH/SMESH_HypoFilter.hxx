@@ -36,9 +36,11 @@
 #include <list>
 #include <string>
 #include <TopoDS_Shape.hxx>
+#include <TopTools_MapOfShape.hxx>
 
 class SMESH_HypoFilter;
 class SMESH_Hypothesis;
+class SMESH_Mesh;
 
 class SMESH_EXPORT SMESH_HypoPredicate {
  public:
@@ -73,7 +75,7 @@ class SMESH_EXPORT SMESH_HypoFilter: public SMESH_HypoPredicate
   static SMESH_HypoPredicate* Is(const SMESH_Hypothesis* theHypo);
   static SMESH_HypoPredicate* IsGlobal(const TopoDS_Shape& theMainShape);
   static SMESH_HypoPredicate* IsMoreLocalThan(const TopoDS_Shape& theShape,
-                                              const TopoDS_Shape& theShapeToMesh);
+                                              const SMESH_Mesh&   theMesh);
   static SMESH_HypoPredicate* HasName(const std::string & theName);
   static SMESH_HypoPredicate* HasDim(const int theDim);
   static SMESH_HypoPredicate* HasType(const int theHypType);
@@ -170,12 +172,15 @@ class SMESH_EXPORT SMESH_HypoFilter: public SMESH_HypoPredicate
   };
         
   struct IsMoreLocalThanPredicate : public SMESH_HypoPredicate {
-    TopoDS_Shape _shape, _shapeToMesh;
+    TopoDS_Shape        _shape;
+    const SMESH_Mesh&   _mesh;
+    TopTools_MapOfShape _preferableShapes;
     IsMoreLocalThanPredicate( const TopoDS_Shape& shape,
-                              const TopoDS_Shape& shapeToMesh )
-      :_shape(shape),_shapeToMesh(shapeToMesh){}
+                              const SMESH_Mesh&   mesh )
+      :_shape(shape),_mesh(mesh) { findPreferable(); }
     bool IsOk(const SMESH_Hypothesis* aHyp,
               const TopoDS_Shape&     aShape) const;
+    void findPreferable();
   };
         
   struct IsAuxiliaryPredicate : public SMESH_HypoPredicate {

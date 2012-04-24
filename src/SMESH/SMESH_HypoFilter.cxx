@@ -121,6 +121,34 @@ bool SMESH_HypoFilter::IsAssignedToPredicate::IsOk(const SMESH_Hypothesis* aHyp,
   return ( !_mainShape.IsNull() && !aShape.IsNull() && _mainShape.IsSame( aShape ));
 }
 
+//================================================================================
+/*!
+ * \brief Finds shapes preferable over _shape due to sub-mesh order
+ */
+//================================================================================
+
+void SMESH_HypoFilter::IsMoreLocalThanPredicate::findPreferable()
+{
+  const int shapeID = _mesh.GetMeshDS()->ShapeToIndex( _shape );
+  const TListOfListOfInt& listOfShapeIDList = _mesh.GetMeshOrder();
+  TListOfListOfInt::const_iterator listsIt = listOfShapeIDList.begin();
+  for ( ; listsIt != listOfShapeIDList.end(); ++listsIt )
+  {
+    const TListOfInt& idList  = *listsIt;
+    TListOfInt::const_iterator idIt =
+      std::find( idList.begin(), idList.end(), shapeID );
+    if ( idIt != idList.end() && *idIt != idList.front() )
+    {
+      for ( ; idIt != idList.end(); --idIt )
+      {
+        const TopoDS_Shape& shape = _mesh.GetMeshDS()->IndexToShape( *idIt );
+        if ( !shape.IsNull())
+          _preferableShapes.Add( shape );
+      }
+    }
+  }
+}
+
 //=======================================================================
 //function : IsMoreLocalThanPredicate::IsOk
 //purpose  : 
@@ -129,7 +157,7 @@ bool SMESH_HypoFilter::IsAssignedToPredicate::IsOk(const SMESH_Hypothesis* aHyp,
 bool SMESH_HypoFilter::IsMoreLocalThanPredicate::IsOk(const SMESH_Hypothesis* aHyp,
                                                       const TopoDS_Shape&     aShape) const
 {
-  if ( aShape.IsSame( _shapeToMesh ))
+  if ( aShape.IsSame( _mesh.GetShapeToMesh() ))
     return false; // aHyp is global
 
   if ( SMESH_MesherHelper::IsSubShape( aShape, /*mainShape=*/_shape ))
@@ -144,6 +172,10 @@ bool SMESH_HypoFilter::IsMoreLocalThanPredicate::IsOk(const SMESH_Hypothesis* aH
           if ( SMESH_MesherHelper::IsSubShape( exp.Current(), /*mainShape=*/_shape ))
             return true;
   }
+
+  if ( _preferableShapes.Contains( aShape ))
+    return true; // issue 21559, Mesh_6
+
   return false;
 }
 
@@ -297,9 +329,9 @@ SMESH_HypoPredicate* SMESH_HypoFilter::IsApplicableTo(const TopoDS_Shape& theSha
 //=======================================================================
 
 SMESH_HypoPredicate* SMESH_HypoFilter::IsMoreLocalThan(const TopoDS_Shape& theShape,
-                                                       const TopoDS_Shape& theShapeToMesh)
+                                                       const SMESH_Mesh&   theMesh)
 {
-  return new IsMoreLocalThanPredicate( theShape, theShapeToMesh);
+  return new IsMoreLocalThanPredicate( theShape, theMesh );
 }
 
 //=======================================================================
