@@ -1181,7 +1181,7 @@ class Mesh:
                 if errText: errText += ". "
                 errText += err.comment
                 if allReasons != "":allReasons += "\n"
-                allReasons += '"%s" failed%s. Error: %s' %(err.algoName, shapeText, errText)
+                allReasons += '-  "%s" failed%s. Error: %s' %(err.algoName, shapeText, errText)
                 pass
 
             # Treat hyp errors
@@ -1212,15 +1212,16 @@ class Mesh:
                              " Revise Mesh.Compute() implementation in smeshDC.py!"
                     pass
                 if allReasons != "":allReasons += "\n"
-                allReasons += reason
+                allReasons += "-  " + reason
                 pass
-            if allReasons != "":
-                print '"' + GetName(self.mesh) + '"',"has not been computed:"
+            if not ok or allReasons != "":
+                msg = '"' + GetName(self.mesh) + '"'
+                if ok: msg += " has been computed with warnings"
+                else:  msg += " has not been computed"
+                if allReasons != "": msg += ":"
+                else:                msg += "."
+                print msg
                 print allReasons
-                ok = False
-            elif not ok:
-                print '"' + GetName(self.mesh) + '"',"has not been computed."
-                pass
             pass
         if salome.sg.hasDesktop() and self.mesh.GetStudyId() >= 0:
             smeshgui = salome.ImportComponentGUI("SMESH")
