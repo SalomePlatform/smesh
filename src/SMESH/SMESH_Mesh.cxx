@@ -904,7 +904,6 @@ SMESH_subMesh *SMESH_Mesh::GetSubMesh(const TopoDS_Shape & aSubShape)
   {
     aSubMesh = new SMESH_subMesh(index, this, _myMeshDS, aSubShape);
     _mapSubMesh[index] = aSubMesh;
-    ClearMeshOrder();
   }
   return aSubMesh;
 }
