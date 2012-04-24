@@ -1804,9 +1804,9 @@ void SMESH_subMesh::updateSubMeshState(const compute_state theState)
 //purpose  :
 //=======================================================================
 
-void SMESH_subMesh::ComputeSubMeshStateEngine(int event)
+void SMESH_subMesh::ComputeSubMeshStateEngine(int event, const bool includeSelf)
 {
-  SMESH_subMeshIteratorPtr smIt = getDependsOnIterator(false,false);
+  SMESH_subMeshIteratorPtr smIt = getDependsOnIterator(includeSelf,false);
   while ( smIt->more() )
     smIt->next()->ComputeStateEngine(event);
 }

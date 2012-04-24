@@ -210,7 +210,7 @@ public:
   void DumpAlgoState(bool isMain);
 
   bool ComputeStateEngine(int event);
-  void ComputeSubMeshStateEngine(int event);
+  void ComputeSubMeshStateEngine(int event, const bool includeSelf=false);
 
   bool Evaluate(MapShapeNbElems& aResMap);
 
