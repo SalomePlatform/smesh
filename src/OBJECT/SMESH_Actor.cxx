@@ -492,9 +492,6 @@ SMESH_ActorDef::~SMESH_ActorDef()
   }
 #endif
 
-  // caught by SMESHGUI::ProcessEvents() static method
-  this->InvokeEvent( SMESH::DeleteActorEvent, NULL );
-
   myScalarBarActor->Delete();
   myLookupTable->Delete();
 
@@ -538,6 +535,17 @@ SMESH_ActorDef::~SMESH_ActorDef()
   myTimeStamp->Delete();
 }
 
+void SMESH_ActorDef::Delete()
+{
+  // This is just to guarantee that the DeleteActorEvent (which was previously invoked
+  // from the actor's destructor) will be thrown before removing the actor's observers,
+  // that is done inside the Superclass::Delete() method but before the destructor itself
+  // (see the issue 0021562: EDF SMESH: clipping and delete mesh clipped leads to crash).
+  // The event is caught by SMESHGUI::ProcessEvents() static method.
+  this->InvokeEvent( SMESH::DeleteActorEvent, NULL );
+
+  Superclass::Delete();
+}
 
 void SMESH_ActorDef::SetPointsLabeled( bool theIsPointsLabeled )
 {    

@@ -84,6 +84,8 @@ class SMESH_ActorDef : public SMESH_Actor
  public:
   vtkTypeMacro(SMESH_ActorDef,SMESH_Actor);
   
+  virtual void Delete();
+
   virtual void ReleaseGraphicsResources(vtkWindow *renWin);
   virtual int RenderOpaqueGeometry(vtkViewport *viewport);
   virtual int RenderTranslucentGeometry(vtkViewport *viewport);
