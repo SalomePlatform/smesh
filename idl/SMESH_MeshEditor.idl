@@ -834,7 +834,6 @@ module SMESH
      */
     boolean DoubleNodeGroup( in SMESH_GroupBase theNodes,
                              in SMESH_GroupBase theModifiedElems );
-
     /*!
      * \brief Creates a hole in a mesh by doubling the nodes of some particular elements.
      * Works as DoubleNodeGroup() described above, but returns a new group with
@@ -857,7 +856,6 @@ module SMESH
      */
     boolean DoubleNodeGroups( in ListOfGroups theNodes,
                               in ListOfGroups theModifiedElems );
-
     /*!
      * \brief Creates a hole in a mesh by doubling the nodes of some particular elements
      * Works as DoubleNodeGroups() described above, but returns a new group with
@@ -912,7 +910,6 @@ module SMESH
     boolean DoubleNodeElemGroup( in SMESH_GroupBase theElems,
                                  in SMESH_GroupBase theNodesNot,
                                  in SMESH_GroupBase theAffectedElems );
-
     /*!
      * \brief Creates a hole in a mesh by doubling the nodes of some particular elements.
      * Works as DoubleNodeElemGroup() described above, but returns a new group with
@@ -927,6 +924,24 @@ module SMESH
     SMESH_Group DoubleNodeElemGroupNew( in SMESH_GroupBase theElems,
                                         in SMESH_GroupBase theNodesNot,
                                         in SMESH_GroupBase theAffectedElems );
+    /*!
+     * \brief Creates a hole in a mesh by doubling the nodes of some particular elements.
+     * Works as DoubleNodeElemGroup() described above, but returns two new groups:
+     * a group of newly created elements and a group of newly created nodes
+     * \param theElems - group of of elements (edges or faces) to be replicated
+     * \param theNodesNot - group of nodes not to replicated
+     * \param theAffectedElems - group of elements to which the replicated nodes
+     *        should be associated to.
+     * \param theElemGroupNeeded - to create group of new elements or not
+     * \param theNodeGroupNeeded - to create group of new nodes or not
+     * \return two new groups of newly created elements (1st) and nodes (2nd)
+     * \sa DoubleNodeElemGroup()
+     */
+    ListOfGroups DoubleNodeElemGroup2New( in SMESH_GroupBase theElems,
+                                          in SMESH_GroupBase theNodesNot,
+                                          in SMESH_GroupBase theAffectedElems,
+                                          in boolean         theElemGroupNeeded,
+                                          in boolean         theNodeGroupNeeded);
 
     /*!
      * \brief Creates a hole in a mesh by doubling the nodes of some particular elements
@@ -940,8 +955,8 @@ module SMESH
      * \sa DoubleNodesInRegion(), DoubleNodeGroupsInRegion()
      */
     boolean DoubleNodeElemGroupInRegion( in SMESH_GroupBase theElems,
-                                     in SMESH_GroupBase theNodesNot,
-                                     in GEOM::GEOM_Object theShape );
+                                         in SMESH_GroupBase theNodesNot,
+                                         in GEOM::GEOM_Object theShape );
 
     /*!
      * \brief Creates a hole in a mesh by doubling the nodes of some particular elements
@@ -956,7 +971,6 @@ module SMESH
     boolean DoubleNodeElemGroups( in ListOfGroups theElems,
                                   in ListOfGroups theNodesNot,
                                   in ListOfGroups theAffectedElems );
-
     /*!
      * \brief Creates a hole in a mesh by doubling the nodes of some particular elements.
      * Works as DoubleNodeElemGroups() described above, but returns a new group with
@@ -971,6 +985,24 @@ module SMESH
     SMESH_Group DoubleNodeElemGroupsNew( in ListOfGroups theElems,
                                          in ListOfGroups theNodesNot,
                                          in ListOfGroups theAffectedElems );
+    /*!
+     * \brief Creates a hole in a mesh by doubling the nodes of some particular elements.
+     * Works as DoubleNodeElemGroups() described above, but returns two new groups:
+     * a group of newly created elements and a group of newly created nodes.
+     * \param theElems - list of groups of elements (edges or faces) to be replicated
+     * \param theNodesNot - list of groups of nodes not to replicated
+     * \param theAffectedElems - group of elements to which the replicated nodes
+     *        should be associated to.
+     * \param theElemGroupNeeded - to create group of new elements or not
+     * \param theNodeGroupNeeded - to create group of new nodes or not
+     * \return two new groups of newly created elements (1st) and nodes (2nd)
+     * \sa DoubleNodeElemGroups()
+     */
+    ListOfGroups DoubleNodeElemGroups2New( in ListOfGroups theElems,
+                                           in ListOfGroups theNodesNot,
+                                           in ListOfGroups theAffectedElems,
+                                           in boolean         theElemGroupNeeded,
+                                           in boolean         theNodeGroupNeeded );
 
     /*!
      * \brief Creates a hole in a mesh by doubling the nodes of some particular elements
