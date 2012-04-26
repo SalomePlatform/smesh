@@ -1244,8 +1244,6 @@ void SMESH_ActorDef::SetVisibility(int theMode, bool theIsUpdateRepersentation){
       case eFreeEdges:
       case eFreeBorders:
       case eCoincidentElems1D:
-      case eLength2D:
-      case eMultiConnection2D:
         my1DExtActor->VisibilityOn();
         break;
       case eFreeFaces:
@@ -1259,6 +1257,9 @@ void SMESH_ActorDef::SetVisibility(int theMode, bool theIsUpdateRepersentation){
       case eCoincidentElems3D:
         my3DExtActor->VisibilityOn();
         break;
+      case eLength2D:
+      case eMultiConnection2D:
+        my1DExtActor->VisibilityOn();
       default:
         if(myControlActor->GetUnstructuredGrid()->GetNumberOfCells())
           myScalarBarActor->VisibilityOn();
