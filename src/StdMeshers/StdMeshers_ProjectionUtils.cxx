@@ -337,7 +337,7 @@ namespace {
           ancestIt.Initialize( theMesh.GetAncestors( edge2 ) );
           for ( ; ancestIt.More() && face2.IsNull(); ancestIt.Next() ) {
             if ( ancestIt.Value().ShapeType() == TopAbs_FACE &&
-                 !theMap.IsBound( ancestIt.Value() ) &&
+                 !theMap.IsBound( ancestIt.Value(), /*is2nd=*/true ) &&
                  subshapes2.Contains( ancestIt.Value() ))
               face2 = ancestIt.Value();
           }
