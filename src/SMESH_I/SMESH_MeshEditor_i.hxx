@@ -659,6 +659,12 @@ public:
   SMESH::SMESH_Group_ptr DoubleNodeElemGroupNew( SMESH::SMESH_GroupBase_ptr theElems,
                                                  SMESH::SMESH_GroupBase_ptr theNodesNot,
                                                  SMESH::SMESH_GroupBase_ptr theAffectedElems );
+
+  SMESH::ListOfGroups*   DoubleNodeElemGroup2New(SMESH::SMESH_GroupBase_ptr theElems,
+                                                 SMESH::SMESH_GroupBase_ptr theNodesNot,
+                                                 SMESH::SMESH_GroupBase_ptr theAffectedElems,
+                                                 CORBA::Boolean             theElemGroupNeeded,
+                                                 CORBA::Boolean             theNodeGroupNeeded);
   
   /*!
    * \brief Creates a hole in a mesh by doubling the nodes of some particular elements
@@ -702,6 +708,11 @@ public:
                                                   const SMESH::ListOfGroups& theNodesNot,
                                                   const SMESH::ListOfGroups& theAffectedElems );
 
+  SMESH::ListOfGroups*   DoubleNodeElemGroups2New(const SMESH::ListOfGroups& theElems,
+                                                  const SMESH::ListOfGroups& theNodesNot,
+                                                  const SMESH::ListOfGroups& theAffectedElems,
+                                                  CORBA::Boolean             theElemGroupNeeded,
+                                                  CORBA::Boolean             theNodeGroupNeeded);
 
   /*!
    * \brief Creates a hole in a mesh by doubling the nodes of some particular elements
