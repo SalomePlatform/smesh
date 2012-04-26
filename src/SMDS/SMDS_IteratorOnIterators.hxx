@@ -46,7 +46,10 @@ protected:
   typename CONTAINER_OF_ITERATORS::iterator _beg, _end;
 public:
   SMDS_IteratorOnIterators(const CONTAINER_OF_ITERATORS& iterators):
-    _iterators( iterators ), _beg( _iterators.begin()), _end(_iterators.end() ) {}
+    _iterators( iterators ), _beg( _iterators.begin()), _end(_iterators.end() )
+  {
+    while ( _beg != _end && !(*_beg)->more()) ++_beg;
+  }
 
   /// Return true iff there are other object in this iterator
   virtual bool more() { return _beg != _end && (*_beg)->more(); }
