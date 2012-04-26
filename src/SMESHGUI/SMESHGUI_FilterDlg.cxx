@@ -3188,7 +3188,7 @@ void SMESHGUI_FilterDlg::filterSource (const int theType,
 
     // filter ids
     SMESH::Predicate_ptr aPred = myFilter[ theType ]->GetPredicate();
-    aPred->SetMesh(myMesh);
+    myFilter[ theType ]->SetMesh(myMesh);
     QList<int>::const_iterator anIter;
     for (anIter = aDialogIds.begin(); anIter != aDialogIds.end(); ++ anIter)
       if (aPred->IsSatisfy(*anIter))
@@ -3261,7 +3261,7 @@ void SMESHGUI_FilterDlg::filterSelectionSource (const int theType,
 
   // Filter entities
   SMESH::Predicate_ptr aPred = myFilter[ theType ]->GetPredicate();
-  aPred->SetMesh(myMesh);
+  myFilter[ theType ]->SetMesh(myMesh);
   TColStd_MapIteratorOfMapOfInteger aResIter(aToBeFiltered);
   for ( ; aResIter.More(); aResIter.Next())
     if (aPred->IsSatisfy(aResIter.Key()))
