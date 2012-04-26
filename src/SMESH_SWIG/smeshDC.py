@@ -3852,12 +3852,20 @@ class Mesh:
     #  @param theAffectedElems - group of elements to which the replicated nodes
     #         should be associated to.
     #  @param theMakeGroup forces the generation of a group containing new elements.
-    #  @return TRUE or a created group if operation has been completed successfully,
+    #  @param theMakeNodeGroup forces the generation of a group containing new nodes.
+    #  @return TRUE or created groups (one or two) if operation has been completed successfully,
     #          FALSE or None otherwise
     #  @ingroup l2_modif_edit
-    def DoubleNodeElemGroup(self, theElems, theNodesNot, theAffectedElems, theMakeGroup=False):
-        if theMakeGroup:
-            return self.editor.DoubleNodeElemGroupNew(theElems, theNodesNot, theAffectedElems)
+    def DoubleNodeElemGroup(self, theElems, theNodesNot, theAffectedElems,
+                             theMakeGroup=False, theMakeNodeGroup=False):
+        if theMakeGroup or theMakeNodeGroup:
+            twoGroups = self.editor.DoubleNodeElemGroup2New(theElems, theNodesNot,
+                                                            theAffectedElems,
+                                                            theMakeGroup, theMakeNodeGroup)
+            if theMakeGroup and theMakeNodeGroup:
+                return twoGroups
+            else:
+                return twoGroups[ int(theMakeNodeGroup) ]
         return self.editor.DoubleNodeElemGroup(theElems, theNodesNot, theAffectedElems)
 
     ## Creates a hole in a mesh by doubling the nodes of some particular elements
@@ -3878,12 +3886,20 @@ class Mesh:
     #  @param theAffectedElems - group of elements to which the replicated nodes
     #         should be associated to.
     #  @param theMakeGroup forces the generation of a group containing new elements.
-    #  @return TRUE or a created group if operation has been completed successfully,
+    #  @param theMakeNodeGroup forces the generation of a group containing new nodes.
+    #  @return TRUE or created groups (one or two) if operation has been completed successfully,
     #          FALSE or None otherwise
     #  @ingroup l2_modif_edit
-    def DoubleNodeElemGroups(self, theElems, theNodesNot, theAffectedElems, theMakeGroup=False):
-        if theMakeGroup:
-            return self.editor.DoubleNodeElemGroupsNew(theElems, theNodesNot, theAffectedElems)
+    def DoubleNodeElemGroups(self, theElems, theNodesNot, theAffectedElems,
+                             theMakeGroup=False, theMakeNodeGroup=False):
+        if theMakeGroup or theMakeNodeGroup:
+            twoGroups = self.editor.DoubleNodeElemGroups2New(theElems, theNodesNot,
+                                                             theAffectedElems,
+                                                             theMakeGroup, theMakeNodeGroup)
+            if theMakeGroup and theMakeNodeGroup:
+                return twoGroups
+            else:
+                return twoGroups[ int(theMakeNodeGroup) ]
         return self.editor.DoubleNodeElemGroups(theElems, theNodesNot, theAffectedElems)
 
     ## Creates a hole in a mesh by doubling the nodes of some particular elements
