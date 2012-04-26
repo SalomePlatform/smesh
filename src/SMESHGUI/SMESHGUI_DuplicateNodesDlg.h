@@ -97,7 +97,8 @@ private:
   QLineEdit*              myLineEdit1;
   QLineEdit*              myLineEdit2;
   QLineEdit*              myLineEdit3;
-  QCheckBox*              myCheckBoxNewGroup;
+  QCheckBox*              myCheckBoxNewElemGroup;
+  QCheckBox*              myCheckBoxNewNodeGroup;
 
   QPushButton*            myButtonOk;
   QPushButton*            myButtonApply;
