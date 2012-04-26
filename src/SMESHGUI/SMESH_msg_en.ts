@@ -1967,6 +1967,10 @@ Check algorithm documentation for supported geometry</translation>
         <translation>Hexagonal prism</translation>
     </message>
     <message>
+        <source>STB_OCTA</source>
+        <translation>Hexagonal prism</translation>
+    </message>
+    <message>
         <source>SMESH_ORIENTATION</source>
         <translation>Orientation</translation>
     </message>
@@ -1992,6 +1996,10 @@ Check algorithm documentation for supported geometry</translation>
     </message>
     <message>
         <source>MEN_PENTA</source>
+        <translation>Pentahedron</translation>
+    </message>
+    <message>
+        <source>STB_PENTA</source>
         <translation>Pentahedron</translation>
     </message>
     <message>
@@ -2075,6 +2083,10 @@ Check algorithm documentation for supported geometry</translation>
         <translation>Pyramid</translation>
     </message>
     <message>
+        <source>STB_PYRAMID</source>
+        <translation>Pyramid</translation>
+    </message>
+    <message>
         <source>SMESH_QUADRANGLE</source>
         <translation>Quadrangle</translation>
     </message>
@@ -2099,6 +2111,10 @@ Check algorithm documentation for supported geometry</translation>
         <translation>TriQuadratic Hexahedron</translation>
     </message>
     <message>
+        <source>STB_TRIQUADRATIC_HEXAHEDRON</source>
+        <translation>TriQuadratic Hexahedron</translation>
+    </message>
+    <message>
         <source>SMESH_QUADRATIC_PENTAHEDRON</source>
         <translation>Quadratic Pentahedron</translation>
     </message>
@@ -2120,6 +2136,10 @@ Check algorithm documentation for supported geometry</translation>
     </message>
     <message>
         <source>TOP_BIQUADRATIC_QUADRANGLE</source>
+        <translation>BiQuadratic Quadrangle</translation>
+    </message>
+    <message>
+        <source>STB_BIQUADRATIC_QUADRANGLE</source>
         <translation>BiQuadratic Quadrangle</translation>
     </message>
     <message>
