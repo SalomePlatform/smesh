@@ -778,6 +778,7 @@ void SMESHGUI_GroupDlg::setSelectionMode (int theMode)
   if (mySelectionMode != theMode) {
     // [PAL10408] mySelectionMgr->clearSelected();
     mySelectionMgr->clearFilters();
+    SMESH::RemoveFilters();
 
     if (myActorsList.count() > 0)
       for (QListIterator<SMESH_Actor*> it( myActorsList ); it.hasNext(); )
