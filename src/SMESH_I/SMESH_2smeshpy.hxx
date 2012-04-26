@@ -123,7 +123,7 @@ public:
   _AString GetIndentation();
   const _AString & GetResultValue();
   const int GetNbResultValues();
-  const _AString & GetResultValue(int res);
+  _AString GetResultValue(int res);
   const _AString & GetObject();
   const _AString & GetMethod();
   const _AString & GetArg( int index );
@@ -582,7 +582,7 @@ class _pyGroup:  public _pySubMesh
 public:
   _pyGroup(const Handle(_pyCommand)& theCreationCmd, const _pyID & id=_pyID());
   virtual void Process( const Handle(_pyCommand)& theCommand);
-  virtual void Flush() {}
+  virtual void Flush();
   virtual void Free() { myFilter.Nullify(); }
 
   DEFINE_STANDARD_RTTI (_pyGroup)
