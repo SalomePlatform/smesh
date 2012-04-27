@@ -429,6 +429,8 @@ void SMESHGUI_ExtrusionDlg::ConstructorsClicked (int constructorId)
 
   hidePreview();
 
+  TextLabelElements->setText(tr( constructorId ? "SMESH_ID_ELEMENTS" : "SMESH_ID_NODES"));
+
   switch (constructorId) {
   case 0:
     {
