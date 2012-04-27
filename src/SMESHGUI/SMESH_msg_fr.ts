@@ -2039,6 +2039,10 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie suppo
         <translation>Prisme héxagonal</translation>
     </message>
     <message>
+        <source>STB_OCTA</source>
+        <translation>Prisme héxagonal</translation>
+    </message>
+    <message>
         <source>SMESH_ORIENTATION</source>
         <translation>Orientation</translation>
     </message>
@@ -2064,6 +2068,10 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie suppo
     </message>
     <message>
         <source>MEN_PENTA</source>
+        <translation>Pentahèdre</translation>
+    </message>
+    <message>
+        <source>STB_PENTA</source>
         <translation>Pentahèdre</translation>
     </message>
     <message>
@@ -2147,6 +2155,10 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie suppo
         <translation>Pyramide</translation>
     </message>
     <message>
+        <source>STB_PYRAMID</source>
+        <translation>Pyramide</translation>
+    </message>
+    <message>
         <source>SMESH_QUADRANGLE</source>
         <translation>Quadrangle</translation>
     </message>
@@ -2171,6 +2183,10 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie suppo
         <translation>Hexaèdre triquadratique</translation>
     </message>
     <message>
+        <source>STB_TRIQUADRATIC_HEXAHEDRON</source>
+        <translation>Hexaèdre triquadratique</translation>
+    </message>
+    <message>
         <source>SMESH_QUADRATIC_PENTAHEDRON</source>
         <translation>Pentaèdre quadratique</translation>
     </message>
@@ -2192,6 +2208,10 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie suppo
     </message>
     <message>
         <source>TOP_BIQUADRATIC_QUADRANGLE</source>
+        <translation>Quadrangle biquadratique</translation>
+    </message>
+    <message>
+        <source>STB_BIQUADRATIC_QUADRANGLE</source>
         <translation>Quadrangle biquadratique</translation>
     </message>
     <message>
