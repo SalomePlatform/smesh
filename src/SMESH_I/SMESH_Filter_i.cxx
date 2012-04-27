@@ -487,21 +487,16 @@ static TopoDS_Shape getShapeByName( const char* theName )
 {
   if ( theName != 0 )
   {
-    SMESH_Gen_i* aSMESHGen = SMESH_Gen_i::GetSMESHGen();
-    SALOMEDS::Study_ptr aStudy = aSMESHGen->GetCurrentStudy();
-    if (!CORBA::is_nil(aStudy))
+    SMESH_Gen_i* aSMESHGen     = SMESH_Gen_i::GetSMESHGen();
+    SALOMEDS::Study_var aStudy = aSMESHGen->GetCurrentStudy();
+    if ( !aStudy->_is_nil() )
     {
-      SALOMEDS::Study::ListOfSObject_var aList =
-        aStudy->FindObjectByName( theName, "GEOM" );
+      SALOMEDS::Study::ListOfSObject_var aList = aStudy->FindObjectByName( theName, "GEOM" );
       if ( aList->length() > 0 )
       {
-        GEOM::GEOM_Object_var aGeomObj = GEOM::GEOM_Object::_narrow( aList[ 0 ]->GetObject() );
-        if ( !aGeomObj->_is_nil() )
-        {
-          GEOM::GEOM_Gen_ptr aGEOMGen = SMESH_Gen_i::GetGeomEngine();
-          TopoDS_Shape aLocShape = aSMESHGen->GetShapeReader()->GetShape( aGEOMGen, aGeomObj );
-          return aLocShape;
-        }
+        SALOMEDS::SObject_var aSObj    = aList[ 0 ].in();
+        GEOM::GEOM_Object_var aGeomObj = GEOM::GEOM_Object::_narrow( aSObj );
+        return aSMESHGen->GeomObjectToShape( aGeomObj );
       }
     }
   }
@@ -510,48 +505,35 @@ static TopoDS_Shape getShapeByName( const char* theName )
 
 static TopoDS_Shape getShapeByID (const char* theID)
 {
-  if (theID != 0 && theID != "") {
-    SMESH_Gen_i* aSMESHGen = SMESH_Gen_i::GetSMESHGen();
-    SALOMEDS::Study_ptr aStudy = aSMESHGen->GetCurrentStudy();
-    if (aStudy != 0) {
+  if ( theID && strlen( theID ) > 0 ) {
+    SMESH_Gen_i*     aSMESHGen = SMESH_Gen_i::GetSMESHGen();
+    SALOMEDS::Study_var aStudy = aSMESHGen->GetCurrentStudy();
+    if ( !aStudy->_is_nil() ) {
       SALOMEDS::SObject_var aSObj = aStudy->FindObjectID(theID);
-      SALOMEDS::GenericAttribute_var anAttr;
-      if (!aSObj->_is_nil() && aSObj->FindAttribute(anAttr, "AttributeIOR")) {
-        SALOMEDS::AttributeIOR_var anIOR = SALOMEDS::AttributeIOR::_narrow(anAttr);
-        CORBA::String_var aVal = anIOR->Value();
-        CORBA::Object_var obj = aStudy->ConvertIORToObject(aVal);
+      if ( !aSObj->_is_nil() ) {
+        CORBA::Object_var obj = aSObj->GetObject();
         GEOM::GEOM_Object_var aGeomObj = GEOM::GEOM_Object::_narrow(obj);
-      
-        if (!aGeomObj->_is_nil()) {
-          GEOM::GEOM_Gen_ptr aGEOMGen = SMESH_Gen_i::GetGeomEngine();
-          TopoDS_Shape aLocShape = aSMESHGen->GetShapeReader()->GetShape( aGEOMGen, aGeomObj );
-          return aLocShape;
-        }
+        return aSMESHGen->GeomObjectToShape( aGeomObj );
       }
     }
   }
   return TopoDS_Shape();
 }
 
-static char* getShapeNameByID (const char* theID)
+static std::string getShapeNameByID (const char* theID)
 {
-  char* aName = (char*)"";
-
-  if (theID != 0 && theID != "") {
-    SMESH_Gen_i* aSMESHGen = SMESH_Gen_i::GetSMESHGen();
-    SALOMEDS::Study_ptr aStudy = aSMESHGen->GetCurrentStudy();
-    if (aStudy != 0) {
-      //SALOMEDS::SObject_var aSObj = aStudy->FindObjectIOR( theID );
+  if ( theID && strlen( theID ) > 0 ) {
+    SMESH_Gen_i*     aSMESHGen = SMESH_Gen_i::GetSMESHGen();
+    SALOMEDS::Study_var aStudy = aSMESHGen->GetCurrentStudy();
+    if ( !aStudy->_is_nil() ) {
       SALOMEDS::SObject_var aSObj = aStudy->FindObjectID(theID);
-      SALOMEDS::GenericAttribute_var anAttr;
-      if (!aSObj->_is_nil() && aSObj->FindAttribute(anAttr, "AttributeName")) {
-        SALOMEDS::AttributeName_var aNameAttr = SALOMEDS::AttributeName::_narrow(anAttr);
-        aName = aNameAttr->Value();
+      if ( !aSObj->_is_nil() ) {
+        CORBA::String_var name = aSObj->GetName();
+        return name.in();
       }
     }
   }
-
-  return aName;
+  return "";
 }
 
 /*
@@ -1064,7 +1046,7 @@ void BelongToGeom_i::SetShape( const char* theID, const char* theName )
   else
     myShapeID = 0;
 
-  if ( myShapeID && strcmp(myShapeName, getShapeNameByID(myShapeID)) == 0 )
+  if ( myShapeID && myShapeName == getShapeNameByID(myShapeID))
     myBelongToGeomPtr->SetGeom( getShapeByID(myShapeID) );
   else
     myBelongToGeomPtr->SetGeom( getShapeByName( myShapeName ) );
@@ -1149,7 +1131,7 @@ void BelongToSurface_i::SetShape( const char* theID,  const char* theName, Eleme
   else
     myShapeID = 0;
   
-  if ( myShapeID && strcmp(myShapeName, getShapeNameByID(myShapeID)) == 0 )
+  if ( myShapeID && myShapeName == getShapeNameByID(myShapeID))
     myElementsOnSurfacePtr->SetSurface( getShapeByID(myShapeID), (SMDSAbs_ElementType)theType );
   else
     myElementsOnSurfacePtr->SetSurface( getShapeByName( myShapeName ), (SMDSAbs_ElementType)theType );
@@ -1319,7 +1301,7 @@ void LyingOnGeom_i::SetShape( const char* theID, const char* theName )
   else
     myShapeID = 0;
   
-  if ( myShapeID && strcmp(myShapeName, getShapeNameByID(myShapeID)) == 0 )
+  if ( myShapeID && myShapeName == getShapeNameByID(myShapeID))
     myLyingOnGeomPtr->SetGeom( getShapeByID(myShapeID) );
   else
     myLyingOnGeomPtr->SetGeom( getShapeByName( myShapeName ) );
