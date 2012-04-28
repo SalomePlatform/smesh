@@ -964,15 +964,17 @@ class Mesh:
         if obj is None:
             obj = 0
         if obj != 0:
+            objHasName = True
             if isinstance(obj, geompyDC.GEOM._objref_GEOM_Object):
                 self.geom = obj
                 # publish geom of mesh (issue 0021122)
                 if not self.geom.GetStudyEntry() and smeshpyD.GetCurrentStudy():
+                    objHasName = False
                     studyID = smeshpyD.GetCurrentStudy()._get_StudyId()
                     if studyID != geompyD.myStudyId:
                         geompyD.init_geom( smeshpyD.GetCurrentStudy())
                         pass
-                    geo_name = "%s_%s"%(self.geom.GetShapeType(), id(self.geom)%100)
+                    geo_name = "%s_%s_for_meshing"%(self.geom.GetShapeType(), id(self.geom)%100)
                     geompyD.addToStudy( self.geom, geo_name )
                 self.mesh = self.smeshpyD.CreateMesh(self.geom)
 
@@ -982,7 +984,7 @@ class Mesh:
             self.mesh = self.smeshpyD.CreateEmptyMesh()
         if name != 0:
             self.smeshpyD.SetName(self.mesh, name)
-        elif obj != 0:
+        elif obj != 0 and objHasName:
             self.smeshpyD.SetName(self.mesh, GetName(obj))
 
         if not self.geom:
@@ -1312,6 +1314,7 @@ class Mesh:
             if not geom:
                 geom = self.mesh.GetShapeToMesh()
             pass
+        AssureGeomPublished( self, geom, "shape for %s" % hyp.GetName())
         status = self.mesh.AddHypothesis(geom, hyp)
         isAlgo = hyp._narrow( SMESH_Algo )
         hyp_name = GetName( hyp )
