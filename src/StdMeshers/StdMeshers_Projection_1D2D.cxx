@@ -232,7 +232,7 @@ bool StdMeshers_Projection_1D2D::Evaluate(SMESH_Mesh&         theMesh,
         if ( aVec.empty() )
           return error(COMPERR_BAD_INPUT_MESH,"Source mesh is wrongly evaluated");
       }
-      TopoDS_Shape tgtEdge = shape2ShapeMap( srcSM->GetSubShape() );
+      TopoDS_Shape tgtEdge = shape2ShapeMap( srcSM->GetSubShape(), /*isSrc=*/true  );
       SMESH_subMesh* tgtSM = theMesh.GetSubMesh( tgtEdge );
       aResMap.insert(std::make_pair(tgtSM,aVec));
     }
