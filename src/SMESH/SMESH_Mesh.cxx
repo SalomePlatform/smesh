@@ -971,7 +971,7 @@ SMESH_Mesh::GetGroupSubMeshesContaining(const TopoDS_Shape & aSubShape) const
       if ( SMESH_MesherHelper::IsSubShape( aSubShape, i_sm->second->GetSubShape() ))
       {
         found.push_back( i_sm->second );
-        break;
+        //break;
       }
     } else {
       break; // the rest sub-meshes are not those of groups
