@@ -221,11 +221,11 @@
     </message>
     <message>
         <source>MEN_CONNECTION</source>
-        <translation>Frontières sur connections multiples</translation>
+        <translation>Frontières sur connexions multiples</translation>
     </message>
     <message>
         <source>MEN_CONNECTION_2D</source>
-        <translation>Frontières sur connections multiples 2D</translation>
+        <translation>Frontières sur connexions multiples 2D</translation>
     </message>
     <message>
         <source>MEN_CONSTRUCT_GROUP</source>
@@ -689,7 +689,7 @@
     </message>
     <message>
         <source>MEN_QUADRATIC_TETRAHEDRON</source>
-        <translation>Tetraèdre quadratique</translation>
+        <translation>Tétraèdre quadratique</translation>
     </message>
     <message>
         <source>MEN_QUADRATIC_TRIANGLE</source>
@@ -985,7 +985,7 @@
     </message>
     <message>
         <source>Scale</source>
-        <translation>Facteur d'échelle</translation>
+        <translation>Facteur d&apos;échelle</translation>
     </message>
     <message>
         <source>3D vectors</source>
@@ -1030,11 +1030,11 @@ Choisissez un maillage et essayez de nouveau</translation>
     </message>
     <message>
         <source>MULTI2D_BORDERS</source>
-        <translation>Frontières sur multi-connections 2D</translation>
+        <translation>Frontières sur multi-connexions 2D</translation>
     </message>
     <message>
         <source>MULTI_BORDERS</source>
-        <translation>Frontières sur multi-connections</translation>
+        <translation>Frontières sur multi-connexions</translation>
     </message>
     <message>
         <source>GROUP_NAME_IS_EMPTY</source>
@@ -1097,7 +1097,7 @@ Merci de les corriger, puis essayez de nouveau</translation>
     </message>
     <message>
         <source>SMESH_ADD_HEXAS_TITLE</source>
-        <translation>Ajouter un hexahèdre</translation>
+        <translation>Ajouter un hexaèdre</translation>
     </message>
     <message>
         <source>SMESH_ADD_HYPOTHESIS</source>
@@ -1105,7 +1105,7 @@ Merci de les corriger, puis essayez de nouveau</translation>
     </message>
     <message>
         <source>SMESH_ADD_HYPOTHESIS_TITLE</source>
-        <translation>Attrbution d&apos;une hypothèse</translation>
+        <translation>Attribution d&apos;une hypothèse</translation>
     </message>
     <message>
         <source>SMESH_ADD_HYP_WRN</source>
@@ -1928,7 +1928,7 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie suppo
     </message>
     <message>
         <source>SMESH_MESHINFO_TETRAS</source>
-        <translation>Tetraèdres</translation>
+        <translation>Tétraèdres</translation>
     </message>
     <message>
         <source>SMESH_MESHINFO_TITLE</source>
@@ -2028,19 +2028,19 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie suppo
     </message>
     <message>
         <source>SMESH_OCTA</source>
-        <translation>Prisme héxagonal</translation>
+        <translation>Prisme hexagonal</translation>
     </message>
     <message>
         <source>TOP_OCTA</source>
-        <translation>Prisme héxagonal</translation>
+        <translation>Prisme hexagonal</translation>
     </message>
     <message>
         <source>MEN_OCTA</source>
-        <translation>Prisme héxagonal</translation>
+        <translation>Prisme hexagonal</translation>
     </message>
     <message>
         <source>STB_OCTA</source>
-        <translation>Prisme héxagonal</translation>
+        <translation>Prisme hexagonal</translation>
     </message>
     <message>
         <source>SMESH_ORIENTATION</source>
@@ -2060,19 +2060,19 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie suppo
     </message>
     <message>
         <source>SMESH_PENTA</source>
-        <translation>Pentahèdre</translation>
+        <translation>Pentaèdre</translation>
     </message>
     <message>
         <source>TOP_PENTA</source>
-        <translation>Pentahèdre</translation>
+        <translation>Pentaèdre</translation>
     </message>
     <message>
         <source>MEN_PENTA</source>
-        <translation>Pentahèdre</translation>
+        <translation>Pentaèdre</translation>
     </message>
     <message>
         <source>STB_PENTA</source>
-        <translation>Pentahèdre</translation>
+        <translation>Pentaèdre</translation>
     </message>
     <message>
         <source>SMESH_PLANE</source>
@@ -2140,7 +2140,7 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie suppo
     </message>
     <message>
         <source>SMESH_PROPERTIES_SCALARBAR</source>
-        <translation>Proprétés de la barre d&apos;échelle</translation>
+        <translation>Propriétés de la barre d&apos;échelle</translation>
     </message>
     <message>
         <source>SMESH_PYRAMID</source>
@@ -2216,7 +2216,7 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie suppo
     </message>
     <message>
         <source>SMESH_QUADRATIC_TETRAHEDRON</source>
-        <translation>Tetraèdre quadratique</translation>
+        <translation>Tétraèdre quadratique</translation>
     </message>
     <message>
         <source>SMESH_QUADRATIC_TRIANGLE</source>
@@ -2605,11 +2605,11 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>STB_CONNECTION</source>
-        <translation>Frontières sur connection multiples</translation>
+        <translation>Frontières sur connexion multiples</translation>
     </message>
     <message>
         <source>STB_CONNECTION_2D</source>
-        <translation>Frontières sur connection multiples 2D</translation>
+        <translation>Frontières sur connexion multiples 2D</translation>
     </message>
     <message>
         <source>STB_CONSTRUCT_GROUP</source>
@@ -3165,11 +3165,11 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>TOP_CONNECTION</source>
-        <translation>Frontières sur connections multiples</translation>
+        <translation>Frontières sur connexions multiples</translation>
     </message>
     <message>
         <source>TOP_CONNECTION_2D</source>
-        <translation>Frontières sur connections multiples 2D</translation>
+        <translation>Frontières sur connexions multiples 2D</translation>
     </message>
     <message>
         <source>TOP_CONSTRUCT_GROUP</source>
@@ -3477,7 +3477,7 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>TOP_REMOVE_ORPHAN_NODES</source>
-        <translation>Supprimer les nœuds ophelins</translation>
+        <translation>Supprimer les nœuds orphelins</translation>
     </message>
     <message>
         <source>TOP_RENAME</source>
@@ -3759,7 +3759,7 @@ avec le paramètre &apos;%1&apos; des préférences du module Mesh.</translation
     </message>
     <message>
         <source>DEP_OBJECT</source>
-        <translation>L'objet sélectionné a été utilisé pour en créer un autre.
+        <translation>L&apos;objet sélectionné a été utilisé pour en créer un autre.
 Il ne peut pas être supprimé.</translation>
     </message>
 </context>
@@ -3768,6 +3768,10 @@ Il ne peut pas être supprimé.</translation>
     <message>
         <source>ALLOW_ELEM_LIST_MODIF</source>
         <translation>Edition manuelle</translation>
+    </message>
+    <message>
+        <source>SELECT_ALL</source>
+        <translation>Sélectionner tout</translation>
     </message>
 </context>
 <context>
@@ -3799,7 +3803,7 @@ Ouvrez une fenêtre VTK et essayez de nouveau</translation>
     </message>
     <message>
         <source>PREF_FORGET_MESH_AT_HYP_MODIF</source>
-        <translation>Ne pas charger le maillage du fichier d'étude à la modification d'une hypothèse</translation>
+        <translation>Ne pas charger le maillage du fichier d&apos;étude à la modification d&apos;une hypothèse</translation>
     </message>
     <message>
         <source>PREF_AUTO_UPDATE</source>
@@ -3828,7 +3832,7 @@ Ouvrez une fenêtre VTK et essayez de nouveau</translation>
     <message>
         <source>PREF_PRE_SELECTION</source>
         <translation>Couleur de pré-sélection</translation>
-    </message>    
+    </message>
     <message>
         <source>PREF_COLOR</source>
         <translation>Couleur</translation>
@@ -4279,7 +4283,7 @@ Indiquez-le et essayez de nouveau</translation>
     </message>
     <message>
         <source>REF_IS_NULL</source>
-        <translation>Aucun maillage valide n&apos;est sélecionné</translation>
+        <translation>Aucun maillage valide n&apos;est sélectionné</translation>
     </message>
 </context>
 <context>
@@ -4468,7 +4472,7 @@ Choisissez un groupe et essayez de nouveau</translation>
     </message>
     <message>
         <source>SELECTED_PATH_IS_NOT_EDGE</source>
-        <translation>Le maillage du chemin doît être du type arête</translation>
+        <translation>Le maillage du chemin doit être du type arête</translation>
     </message>
     <message>
         <source>SMESH_ANGLES</source>
@@ -5018,11 +5022,11 @@ Entrez une valeur correcte et essayez de nouveau</translation>
     </message>
     <message>
         <source>GEOM_TYPE_9</source>
-        <translation>Prisme héxagonal</translation>
+        <translation>Prisme hexagonal</translation>
     </message>
     <message>
         <source>GEOM_TYPE_10</source>
-        <translation>Polyhèdre</translation>
+        <translation>Polyèdre</translation>
     </message>
 </context>
 <context>
@@ -5076,13 +5080,6 @@ Indiquez-les et essayez de nouveau</translation>
     <message>
         <source>UNION_OF_TWO_GROUPS</source>
         <translation>Union de deux groupes</translation>
-    </message>
-</context>
-<context>
-    <name>SMESHGUI_GroupDlg</name>
-    <message>
-        <source>SELECT_ALL</source>
-        <translation>Sélectionner tout</translation>
     </message>
 </context>
 <context>
@@ -5269,7 +5266,7 @@ Indiquez-les et essayez de nouveau</translation>
     <name>SMESHGUI_MeshOp</name>
     <message>
         <source>ALGORITHM_WITHOUT_HYPOTHESIS</source>
-        <translation>L&apos;algorithm pour la dimension %1 est défini mais l&apos;hypothèse ne l&apos;est pas</translation>
+        <translation>L&apos;algorithme pour la dimension %1 est défini mais l&apos;hypothèse ne l&apos;est pas</translation>
     </message>
     <message>
         <source>EDIT_SUBMESH_QUESTION</source>
@@ -5543,7 +5540,7 @@ Il y a trop peu de points dans le fichier </translation>
     </message>
     <message>
         <source>SPLIT_METHOD</source>
-        <translation>Diviser l&apos;héxaèdre</translation>
+        <translation>Diviser l&apos;hexaèdre</translation>
     </message>
     <message>
         <source>SPLIT_HEX_TO_5_TETRA</source>
@@ -6091,11 +6088,11 @@ en raison de leurs types incompatibles:
     </message>
     <message>
         <source>TETRAHEDRONS_LAB</source>
-        <translation>Tétrahédrons:</translation>
+        <translation>Tétraèdres:</translation>
     </message>
     <message>
         <source>HEXAHEDONRS_LAB</source>
-        <translation>Hexahédrons:</translation>
+        <translation>Hexaèdres:</translation>
     </message>
     <message>
         <source>PYRAMIDS_LAB</source>
@@ -6111,7 +6108,7 @@ en raison de leurs types incompatibles:
     </message>
     <message>
         <source>POLYHEDRONS_LAB</source>
-        <translation>Polyhédrons:</translation>
+        <translation>Polyèdres:</translation>
     </message>
     <message>
         <source>OBJECT_MESH</source>
@@ -6154,7 +6151,7 @@ en raison de leurs types incompatibles:
     <name>SMESHGUI_MeshInfoDlg</name>
     <message>
         <source>MESH_INFO</source>
-        <translation>Infiormations de maillage</translation>
+        <translation>Informations de maillage</translation>
     </message>
     <message>
         <source>BASE_INFO</source>
@@ -6245,15 +6242,15 @@ en raison de leurs types incompatibles:
     </message>
     <message>
         <source>POLYGON</source>
-        <translation>Polygône</translation>
+        <translation>Polygone</translation>
     </message>
     <message>
         <source>TETRAHEDRON</source>
-        <translation>Tétrahédron</translation>
+        <translation>Tétraèdre</translation>
     </message>
     <message>
         <source>HEXAHEDRON</source>
-        <translation>Hexahédron</translation>
+        <translation>Hexaèdre</translation>
     </message>
     <message>
         <source>PYRAMID</source>
@@ -6269,7 +6266,7 @@ en raison de leurs types incompatibles:
     </message>
     <message>
         <source>POLYHEDRON</source>
-        <translation>Polyhédron</translation>
+        <translation>Polyèdre</translation>
     </message>
     <message>
         <source>QUADRATIC</source>
@@ -6340,7 +6337,7 @@ en raison de leurs types incompatibles:
     </message>
     <message>
         <source>GROUP_ON_GEOMETRY</source>
-        <translation>Groupe lié à une géometrie</translation>
+        <translation>Groupe lié à une géométrie</translation>
     </message>
     <message>
         <source>GROUP_ON_FILTER</source>
@@ -6400,7 +6397,7 @@ en raison de leurs types incompatibles:
     </message>
     <message>
         <source>MESH_ON_GEOMETRY</source>
-        <translation>Lié à une géometrie</translation>
+        <translation>Lié à une géométrie</translation>
     </message>
     <message>
         <source>MESH_FROM_FILE</source>
