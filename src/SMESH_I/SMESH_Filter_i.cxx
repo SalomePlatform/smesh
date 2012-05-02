@@ -494,8 +494,8 @@ static TopoDS_Shape getShapeByName( const char* theName )
       SALOMEDS::Study::ListOfSObject_var aList = aStudy->FindObjectByName( theName, "GEOM" );
       if ( aList->length() > 0 )
       {
-        SALOMEDS::SObject_var aSObj    = aList[ 0 ].in();
-        GEOM::GEOM_Object_var aGeomObj = GEOM::GEOM_Object::_narrow( aSObj );
+        CORBA::Object_var        anObj = aList[ 0 ]->GetObject();
+        GEOM::GEOM_Object_var aGeomObj = GEOM::GEOM_Object::_narrow( anObj );
         return aSMESHGen->GeomObjectToShape( aGeomObj );
       }
     }
@@ -511,7 +511,7 @@ static TopoDS_Shape getShapeByID (const char* theID)
     if ( !aStudy->_is_nil() ) {
       SALOMEDS::SObject_var aSObj = aStudy->FindObjectID(theID);
       if ( !aSObj->_is_nil() ) {
-        CORBA::Object_var obj = aSObj->GetObject();
+        CORBA::Object_var          obj = aSObj->GetObject();
         GEOM::GEOM_Object_var aGeomObj = GEOM::GEOM_Object::_narrow(obj);
         return aSMESHGen->GeomObjectToShape( aGeomObj );
       }
