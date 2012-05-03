@@ -579,6 +579,7 @@ DEFINE_STANDARD_HANDLE (_pyFilter, _pyObject);
 class _pyGroup:  public _pySubMesh
 {
   Handle(_pyFilter) myFilter;
+  bool              myCanClearCreationCmd;
 public:
   _pyGroup(const Handle(_pyCommand)& theCreationCmd, const _pyID & id=_pyID());
   virtual void Process( const Handle(_pyCommand)& theCommand);

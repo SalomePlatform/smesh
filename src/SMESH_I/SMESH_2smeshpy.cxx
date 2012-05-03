@@ -3700,6 +3700,8 @@ _pyGroup::_pyGroup(const Handle(_pyCommand)& theCreationCmd, const _pyID & id)
   if ( !id.IsEmpty() )
     setID( id );
 
+  myCanClearCreationCmd = true;
+
   const _AString& method = theCreationCmd->GetMethod();
   if ( method == "CreateGroup" ) // CreateGroup() --> CreateEmptyGroup()
   {
@@ -3741,6 +3743,12 @@ _pyGroup::_pyGroup(const Handle(_pyCommand)& theCreationCmd, const _pyID & id)
       filter->AddUser( this );
     }
     myFilter = filter;
+  }
+  else
+  {
+    // theCreationCmd does something else apart from creation of this group
+    // and thus it can't be cleared if this group is removed
+    myCanClearCreationCmd = false;
   }
 }
 
@@ -3829,9 +3837,9 @@ void _pyGroup::Process( const Handle(_pyCommand)& theCommand)
 void _pyGroup::Flush()
 {
   if ( !theGen->IsToKeepAllCommands() &&
-       myCreationCmd && myCreationCmd->MethodStartsFrom("DoubleNode") )
+       myCreationCmd && !myCanClearCreationCmd )
   {
-    myCreationCmd.Nullify();
+    myCreationCmd.Nullify(); // this way myCreationCmd won't be cleared
   }
 }
 
