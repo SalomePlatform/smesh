@@ -28,9 +28,13 @@
 # Preparing the configuration parameters
 #
 import os
+from salome.smesh.spadder.configreader import ConfigReader, printConfig
+
+configReader = ConfigReader()
+defaultConfig = configReader.getDefaultConfig()
+printConfig(defaultConfig)
+
 from salome.smesh import spadder
-pathpadderexe=os.path.join(spadder.getTestDataDir(),"padder.exe")
-pathpadderenv=os.path.join(spadder.getTestDataDir(),"envPadder.sh")
 file_concrete=os.path.join(spadder.getTestDataDir(),"concrete.med")
 file_steelbar=os.path.join(spadder.getTestDataDir(),"ferraill.med")
 
@@ -42,14 +46,13 @@ import MESHJOB
 # the catalog of SPADDER components, then load the component
 # MeshJobManager, and finally configure this component.
 #
-from salome.smesh import spadder
 spadder.loadSpadderCatalog()
 
 salome.salome_init()
 component = salome.lcc.FindOrLoadComponent("FactoryServer","MeshJobManager")
-config = MESHJOB.ConfigParameter(resname="localhost",
-                                 binpath=pathpadderexe,
-                                 envpath=pathpadderenv)
+config = MESHJOB.ConfigParameter(resname=defaultConfig.resname,
+                                 binpath=defaultConfig.binpath,
+                                 envpath=defaultConfig.envpath)
 component.configure("localhost",config)
 
 #
@@ -70,8 +73,7 @@ jobid = component.initialize(meshJobParameterList, "localhost")
 #
 # Start the execution of the job identified by its job id.
 #
-component.start(jobid)
-
+ok=component.start(jobid)
 
 #
 # This part illustrates how you can follow the execution of the job.

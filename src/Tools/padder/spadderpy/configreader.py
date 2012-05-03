@@ -42,7 +42,7 @@ class ConfigReader:
         try:
             smeshpath=os.environ["SMESH_ROOT_DIR"]
         except KeyError, ex:
-            raise AdminException("You should define the variable SALOME_PLUGINS_PATH")
+            raise AdminException("You should define the variable SMESH_ROOT_DIR")
 
         pluginspath = os.path.join(smeshpath,CONFIG_RELPATH)
         filename    = os.path.join(pluginspath,CONFIG_FILENAME)
@@ -85,6 +85,14 @@ class ConfigReader:
             return TYPE_LOCAL
         return defaultType
 
+
+def printConfig(config):
+    print "PADDER CONFIGURATION:"
+    print "\tconfig.resname = %s"%config.resname
+    print "\tconfig.binpath = %s"%config.binpath
+    print "\tconfig.envpath = %s"%config.envpath
+    
+
 #
 # =========================================================================
 # Test runner
@@ -124,9 +132,9 @@ def testsuite():
     unittester.run(moduleName, "TEST_getDefaultConfig_withError")
     
 if __name__ == "__main__":
-    import os, sys
-    pluginspath=os.environ["SALOME_PLUGINS_PATH"]
-    for path in pluginspath.split(":"):
-        sys.path.insert(0,path)
+    #import os, sys
+    #pluginspath=os.environ["SALOME_PLUGINS_PATH"]
+    #for path in pluginspath.split(":"):
+    #    sys.path.insert(0,path)
     
     testsuite()

@@ -428,6 +428,15 @@ CHECK_CGNS
 
 echo
 echo ---------------------------------------------
+echo Testing PADDER library
+echo ---------------------------------------------
+echo
+
+CHECK_CGAL
+CHECK_PADDER
+
+echo
+echo ---------------------------------------------
 echo Testing TBB library
 echo ---------------------------------------------
 echo
@@ -459,6 +468,16 @@ done
 echo
 echo "Default ORB   : $DEFAULT_ORB"
 echo
+
+echo "Optionnal products (for plugins):"
+optional_vars="cgal_ok padder_ok"
+for var in $optional_vars
+do
+   printf "   %10s : " `echo \$var | sed -e "s,_ok,,"`
+   eval echo \$$var
+done
+
+
 
 dnl We don t need to say when we re entering directories if we re using
 dnl GNU make becuase make does it for us.

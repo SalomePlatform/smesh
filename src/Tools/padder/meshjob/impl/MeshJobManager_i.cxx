@@ -250,6 +250,8 @@ CORBA::Long MeshJobManager_i::initialize(const MESHJOB::MeshJobParameterList & m
                                          const char * configId)
 {
   beginService("MeshJobManager_i::initialize");
+  std::cerr << "##################################### initialize" << std::endl;
+  std::cerr << "#####################################" << std::endl;
 
   //
   // We first analyse the CORBA sequence to store data in C++ vectors
@@ -414,7 +416,14 @@ CORBA::Long MeshJobManager_i::initialize(const MESHJOB::MeshJobParameterList & m
 
   int jobId = JOBID_UNDEFINED;
   try {
+    std::cerr << "#####################################" << std::endl;
+    std::cerr << "#####################################" << std::endl;
+    std::cerr << "jobUndef = " << JOBID_UNDEFINED << std::endl;
     jobId = _salomeLauncher->createJob(jobParameters);
+    std::cerr << "#####################################" << std::endl;
+    std::cerr << "#####################################" << std::endl;
+    std::cerr << "#####################################" << std::endl;
+    std::cerr << "jobId = " << jobId << std::endl;
     // We register the datetime tag of this job
     _jobDateTimeMap[jobId]=jobDatetimeTag;
     _jobPathsMap[jobId] = jobPaths;
@@ -442,7 +451,7 @@ bool MeshJobManager_i::start(CORBA::Long jobId) {
     _salomeLauncher->launchJob(jobId);
   }
   catch (const SALOME::SALOME_Exception & ex) {
-    LOG("SALOME Exception in createJob !" <<ex.details.text.in());
+    LOG("SALOME Exception in launchjob !" <<ex.details.text.in());
     //LOG(ex.details.text.in());
     return false;
   }

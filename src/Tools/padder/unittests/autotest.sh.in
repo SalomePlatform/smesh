@@ -30,7 +30,7 @@
 # directory of the SALOME module.
 listfiles="\
     configreader.py \
-    unittests/test_meshJobManager.py \
+    unittests/usecase_meshJobManager.py \
     gui/inputdata.py"
 
 INSTALL_DIR=@prefix@
