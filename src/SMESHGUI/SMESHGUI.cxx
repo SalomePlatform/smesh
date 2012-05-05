@@ -3962,6 +3962,7 @@ void SMESHGUI::initialize( CAM_Application* app )
 #endif
   createPopupItem( 145, OB, mesh_group, multiple_non_empty );   // EXPORT_SAUV
   createPopupItem(  33, OB, mesh_part + " " + hyp_alg );        // DELETE
+  createPopupItem( 813, OB, group );                            // DEL_GROUP with contents
   popupMgr()->insert( separator(), -1, 0 );
 
   // popup for viewer
