@@ -3436,13 +3436,13 @@ void SMESHGUI::initialize( CAM_Application* app )
 
   // ----- create actions --------------
 
-  createSMESHAction(  111, "DAT", "", (Qt::CTRL+Qt::Key_B) );
-  createSMESHAction(  112, "UNV", "", (Qt::CTRL+Qt::Key_U) );
-  createSMESHAction(  113, "MED", "", (Qt::CTRL+Qt::Key_M) );
+  createSMESHAction(  111, "IMPORT_DAT", "", (Qt::CTRL+Qt::Key_B) );
+  createSMESHAction(  112, "IMPORT_UNV", "", (Qt::CTRL+Qt::Key_U) );
+  createSMESHAction(  113, "IMPORT_MED", "", (Qt::CTRL+Qt::Key_M) );
   createSMESHAction(  114, "NUM" );
-  createSMESHAction(  115, "STL" );
-  createSMESHAction(  116, "CGNS" );
-  createSMESHAction(  117, "SAUV" );
+  createSMESHAction(  115, "IMPORT_STL" );
+  createSMESHAction(  116, "IMPORT_CGNS" );
+  createSMESHAction(  117, "IMPORT_SAUV" );
   createSMESHAction(  121, "DAT" );
   createSMESHAction(  122, "MED" );
   createSMESHAction(  123, "UNV" );

@@ -249,7 +249,7 @@
     </message>
     <message>
         <source>MEN_CREATE_GEO_GROUP</source>
-        <translation>Créer les groupes à partir de la géométrie</translation>
+        <translation>Créer des groupes à partir de la géométrie</translation>
     </message>
     <message>
         <source>MEN_CREATE_MESH</source>
@@ -286,6 +286,10 @@
     <message>
         <source>MEN_CUT_GROUP</source>
         <translation>Découpe des groupes</translation>
+    </message>
+    <message>
+        <source>MEN_IMPORT_DAT</source>
+        <translation>Fichier DAT</translation>
     </message>
     <message>
         <source>MEN_DAT</source>
@@ -556,12 +560,24 @@
         <translation>Diamètre des éléments 3D</translation>
     </message>
     <message>
+        <source>MEN_IMPORT_MED</source>
+        <translation>Fichier MED</translation>
+    </message>
+    <message>
         <source>MEN_MED</source>
         <translation>Fichier MED</translation>
     </message>
     <message>
+        <source>MEN_IMPORT_CGNS</source>
+        <translation>Fichier CGNS</translation>
+    </message>
+    <message>
         <source>MEN_CGNS</source>
         <translation>Fichier CGNS</translation>
+    </message>
+    <message>
+        <source>MEN_IMPORT_SAUV</source>
+        <translation>Fichier SAUV (ASCII)</translation>
     </message>
     <message>
         <source>MEN_SAUV</source>
@@ -601,11 +617,11 @@
     </message>
     <message>
         <source>STB_MEASURE_MIN_DIST</source>
-        <translation>Calculate minimum distance between two objects</translation>
+        <translation>Calcule la distance minimum entre deux objets</translation>
     </message>
     <message>
         <source>TOP_MEASURE_MIN_DIST</source>
-        <translation>Minimum distance</translation>
+        <translation>Distance minimum</translation>
     </message>
     <message>
         <source>MEN_MEASURE_BND_BOX</source>
@@ -613,11 +629,11 @@
     </message>
     <message>
         <source>STB_MEASURE_BND_BOX</source>
-        <translation>Calculate bounding box for the selected object(s)</translation>
+        <translation>Calcule la boîte englobante pour le(s) objet(s) sélectionné(s)</translation>
     </message>
     <message>
         <source>TOP_MEASURE_BND_BOX</source>
-        <translation>Bounding box</translation>
+        <translation>Boîte englobante</translation>
     </message>
     <message>
         <source>MEN_MOVE</source>
@@ -801,7 +817,7 @@
     </message>
     <message>
         <source>MEN_SHOW</source>
-        <translation>Visualiser</translation>
+        <translation>Afficher</translation>
     </message>
     <message>
         <source>MEN_SHRINK</source>
@@ -818,6 +834,10 @@
     <message>
         <source>MEN_STD_INFO</source>
         <translation>Informations sur le maillage</translation>
+    </message>
+    <message>
+        <source>MEN_IMPORT_STL</source>
+        <translation>Fichier STL</translation>
     </message>
     <message>
         <source>MEN_STL</source>
@@ -874,6 +894,10 @@
     <message>
         <source>MEN_UNION2</source>
         <translation>Union de deux triangles</translation>
+    </message>
+    <message>
+        <source>MEN_IMPORT_UNV</source>
+        <translation>Fichier UNV</translation>
     </message>
     <message>
         <source>MEN_UNV</source>
@@ -1397,7 +1421,7 @@ ce qui peut faire planter l&apos;application. Voulez-vous continuer la visualisa
     </message>
     <message>
         <source>SMESH_CREATE_GEO_GROUP</source>
-        <translation>Créer les groupes liés à la géométrie</translation>
+        <translation>Créer des groupes liés à la géométrie</translation>
     </message>
     <message>
         <source>SMESH_CREATE_HYPOTHESES</source>
@@ -2549,7 +2573,7 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>STB_ADV_INFO</source>
-        <translation>Monter l&apos;Information de base sur le maillage</translation>
+        <translation>Monter l&apos;information de base sur le maillage</translation>
     </message>
     <message>
         <source>STB_ALL</source>
@@ -2633,7 +2657,7 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>STB_CREATE_GEO_GROUP</source>
-        <translation>Créer les groupes à partir de la géométrie</translation>
+        <translation>Créer des groupes à partir de la géométrie</translation>
     </message>
     <message>
         <source>STB_CREATE_MESH</source>
@@ -2652,8 +2676,12 @@ Vérifiez la limite dans les préférences du module Mesh.
         <translation>Découper les groupes</translation>
     </message>
     <message>
-        <source>STB_DAT</source>
+        <source>STB_IMPORT_DAT</source>
         <translation>Importer un fichier DAT</translation>
+    </message>
+    <message>
+        <source>STB_DAT</source>
+        <translation>Exporter un fichier DAT</translation>
     </message>
     <message>
         <source>STB_DELETE</source>
@@ -2820,12 +2848,36 @@ Vérifiez la limite dans les préférences du module Mesh.
         <translation>Diamètre de l&apos;élément 3D</translation>
     </message>
     <message>
-        <source>STB_MED</source>
+        <source>STB_IMPORT_MED</source>
         <translation>Importer un fichier MED</translation>
     </message>
     <message>
-        <source>STB_SAUV</source>
+        <source>STB_MED</source>
+        <translation>Exporter un fichier MED</translation>
+    </message>
+    <message>
+        <source>STB_IMPORT_STL</source>
+        <translation>Importer un fichier STL</translation>
+    </message>
+    <message>
+        <source>STB_STL</source>
+        <translation>Exporter un fichier STL</translation>
+    </message>
+    <message>
+        <source>STB_IMPORT_CGNS</source>
+        <translation>Importer un fichier CGNS</translation>
+    </message>
+    <message>
+        <source>STB_CGNS</source>
+        <translation>Exporter un fichier CGNS</translation>
+    </message>
+    <message>
+        <source>STB_IMPORT_SAUV</source>
         <translation>Importer un fichier SAUV (ASCII)</translation>
+    </message>
+    <message>
+        <source>STB_SAUV</source>
+        <translation>Exporter un fichier SAUV (ASCII)</translation>
     </message>
     <message>
         <source>STB_MERGE</source>
@@ -2981,7 +3033,7 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>STB_SHOW</source>
-        <translation>Visualiser</translation>
+        <translation>Afficher</translation>
     </message>
     <message>
         <source>STB_SHRINK</source>
@@ -3044,8 +3096,12 @@ Vérifiez la limite dans les préférences du module Mesh.
         <translation>Union de deux triangles</translation>
     </message>
     <message>
-        <source>STB_UNV</source>
+        <source>STB_IMPORT_UNV</source>
         <translation>Importer un fichier UNV</translation>
+    </message>
+    <message>
+        <source>STB_UNV</source>
+        <translation>Exporter un fichier UNV</translation>
     </message>
     <message>
         <source>STB_UN_GROUP</source>
@@ -3193,7 +3249,7 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>TOP_CREATE_GEO_GROUP</source>
-        <translation>Créer les groupes liés à la géométrie</translation>
+        <translation>Créer des groupes liés à la géométrie</translation>
     </message>
     <message>
         <source>TOP_CREATE_MESH</source>
@@ -3212,8 +3268,12 @@ Vérifiez la limite dans les préférences du module Mesh.
         <translation>Découper les groupes</translation>
     </message>
     <message>
-        <source>TOP_DAT</source>
+        <source>TOP_IMPORT_DAT</source>
         <translation>Importer un fichier DAT</translation>
+    </message>
+    <message>
+        <source>TOP_DAT</source>
+        <translation>Exporter un fichier DAT</translation>
     </message>
     <message>
         <source>TOP_DELETE</source>
@@ -3376,12 +3436,36 @@ Vérifiez la limite dans les préférences du module Mesh.
         <translation>Diamètre des éléments 3D</translation>
     </message>
     <message>
-        <source>TOP_MED</source>
+        <source>TOP_IMPORT_MED</source>
         <translation>Importer un fichier MED</translation>
     </message>
     <message>
-        <source>TOP_SAUV</source>
+        <source>TOP_MED</source>
+        <translation>Exporter un fichier MED</translation>
+    </message>
+    <message>
+        <source>TOP_IMPORT_STL</source>
+        <translation>Importer un fichier STL</translation>
+    </message>
+    <message>
+        <source>TOP_STL</source>
+        <translation>Exporter un fichier STL</translation>
+    </message>
+    <message>
+        <source>TOP_IMPORT_CGNS</source>
+        <translation>Importer un fichier CGNS</translation>
+    </message>
+    <message>
+        <source>TOP_CGNS</source>
+        <translation>Exporter un fichier CGNS</translation>
+    </message>
+    <message>
+        <source>TOP_IMPORT_SAUV</source>
         <translation>Importer un fichier SAUV (ASCII)</translation>
+    </message>
+    <message>
+        <source>TOP_SAUV</source>
+        <translation>Exporter un fichier SAUV (ASCII)</translation>
     </message>
     <message>
         <source>TOP_MERGE</source>
@@ -3537,7 +3621,7 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>TOP_SHOW</source>
-        <translation>Visualiser</translation>
+        <translation>Afficher</translation>
     </message>
     <message>
         <source>TOP_SHRINK</source>
@@ -3600,8 +3684,12 @@ Vérifiez la limite dans les préférences du module Mesh.
         <translation>Union de deux triangles</translation>
     </message>
     <message>
-        <source>TOP_UNV</source>
+        <source>TOP_IMPORT_UNV</source>
         <translation>Importer un fichier UNV</translation>
+    </message>
+    <message>
+        <source>TOP_UNV</source>
+        <translation>Exporter un fichier UNV</translation>
     </message>
     <message>
         <source>TOP_UN_GROUP</source>

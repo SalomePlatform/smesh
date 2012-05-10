@@ -288,6 +288,10 @@
         <translation>Cut Groups</translation>
     </message>
     <message>
+        <source>MEN_IMPORT_DAT</source>
+        <translation>DAT File</translation>
+    </message>
+    <message>
         <source>MEN_DAT</source>
         <translation>DAT File</translation>
     </message>
@@ -556,12 +560,24 @@
         <translation>Element Diameter 3D</translation>
     </message>
     <message>
+        <source>MEN_IMPORT_MED</source>
+        <translation>MED file</translation>
+    </message>
+    <message>
         <source>MEN_MED</source>
         <translation>MED file</translation>
     </message>
     <message>
+        <source>MEN_IMPORT_CGNS</source>
+        <translation>CGNS file</translation>
+    </message>
+    <message>
         <source>MEN_CGNS</source>
         <translation>CGNS file</translation>
+    </message>
+    <message>
+        <source>MEN_IMPORT_SAUV</source>
+        <translation>SAUV file</translation>
     </message>
     <message>
         <source>MEN_SAUV</source>
@@ -820,6 +836,10 @@
         <translation>Standard Mesh Infos</translation>
     </message>
     <message>
+        <source>MEN_IMPORT_STL</source>
+        <translation>STL File</translation>
+    </message>
+    <message>
         <source>MEN_STL</source>
         <translation>STL File</translation>
     </message>
@@ -874,6 +894,10 @@
     <message>
         <source>MEN_UNION2</source>
         <translation>Union of Two Triangles</translation>
+    </message>
+    <message>
+        <source>MEN_IMPORT_UNV</source>
+        <translation>UNV File</translation>
     </message>
     <message>
         <source>MEN_UNV</source>
@@ -2561,7 +2585,7 @@ Please check preferences of Mesh module.
     </message>
     <message>
         <source>STB_CREATE_GEO_GROUP</source>
-        <translation>Create Groups from Geometry</translation>
+        <translation>Create Group from Geometry</translation>
     </message>
     <message>
         <source>STB_CREATE_MESH</source>
@@ -2581,6 +2605,10 @@ Please check preferences of Mesh module.
     </message>
     <message>
         <source>STB_DAT</source>
+        <translation>Export DAT file</translation>
+    </message>
+    <message>
+        <source>STB_IMPORT_DAT</source>
         <translation>Import DAT file</translation>
     </message>
     <message>
@@ -2748,12 +2776,36 @@ Please check preferences of Mesh module.
         <translation>Element Diameter 3D</translation>
     </message>
     <message>
-        <source>STB_MED</source>
+        <source>STB_IMPORT_MED</source>
         <translation>Import MED file</translation>
     </message>
     <message>
-        <source>STB_SAUV</source>
+        <source>STB_MED</source>
+        <translation>Export MED file</translation>
+    </message>
+    <message>
+        <source>STB_IMPORT_STL</source>
+        <translation>Import STL file</translation>
+    </message>
+    <message>
+        <source>STB_STL</source>
+        <translation>Export STL file</translation>
+    </message>
+    <message>
+        <source>STB_IMPORT_CGNS</source>
+        <translation>Import CGNS file</translation>
+    </message>
+    <message>
+        <source>STB_CGNS</source>
+        <translation>Export CGNS file</translation>
+    </message>
+    <message>
+        <source>STB_IMPORT_SAUV</source>
         <translation>Import SAUV file</translation>
+    </message>
+    <message>
+        <source>STB_SAUV</source>
+        <translation>Export SAUV file</translation>
     </message>
     <message>
         <source>STB_MERGE</source>
@@ -2972,8 +3024,12 @@ Please check preferences of Mesh module.
         <translation>Union of two triangles</translation>
     </message>
     <message>
-        <source>STB_UNV</source>
+        <source>STB_IMPORT_UNV</source>
         <translation>Import UNV file</translation>
+    </message>
+    <message>
+        <source>STB_UNV</source>
+        <translation>Export UNV file</translation>
     </message>
     <message>
         <source>STB_UN_GROUP</source>
@@ -3140,8 +3196,12 @@ Please check preferences of Mesh module.
         <translation>Cut Groups</translation>
     </message>
     <message>
-        <source>TOP_DAT</source>
+        <source>TOP_IMPORT_DAT</source>
         <translation>Import DAT file</translation>
+    </message>
+    <message>
+        <source>TOP_DAT</source>
+        <translation>Export DAT file</translation>
     </message>
     <message>
         <source>TOP_DELETE</source>
@@ -3304,12 +3364,36 @@ Please check preferences of Mesh module.
         <translation>Element Diameter 3D</translation>
     </message>
     <message>
-        <source>TOP_MED</source>
+        <source>TOP_IMPORT_MED</source>
         <translation>Import MED file</translation>
     </message>
     <message>
-        <source>TOP_SAUV</source>
+        <source>TOP_MED</source>
+        <translation>Export MED file</translation>
+    </message>
+    <message>
+        <source>TOP_IMPORT_STL</source>
+        <translation>Import STL file</translation>
+    </message>
+    <message>
+        <source>TOP_STL</source>
+        <translation>Export STL file</translation>
+    </message>
+    <message>
+        <source>TOP_IMPORT_CGNS</source>
+        <translation>Import CGNS file</translation>
+    </message>
+    <message>
+        <source>TOP_CGNS</source>
+        <translation>Export CGNS file</translation>
+    </message>
+    <message>
+        <source>TOP_IMPORT_SAUV</source>
         <translation>Import SAUV file</translation>
+    </message>
+    <message>
+        <source>TOP_SAUV</source>
+        <translation>Export SAUV file</translation>
     </message>
     <message>
         <source>TOP_MERGE</source>
@@ -3528,8 +3612,12 @@ Please check preferences of Mesh module.
         <translation>Union of two triangles</translation>
     </message>
     <message>
-        <source>TOP_UNV</source>
+        <source>TOP_IMPORT_UNV</source>
         <translation>Import UNV file</translation>
+    </message>
+    <message>
+        <source>TOP_UNV</source>
+        <translation>Export UNV file</translation>
     </message>
     <message>
         <source>TOP_UN_GROUP</source>
