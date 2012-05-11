@@ -1234,7 +1234,8 @@ bool _pyGen::IsGeomObject(const _pyID& theObjID) const
   if ( myGeomIDNb )
   {
     return ( myGeomIDIndex <= theObjID.Length() &&
-             int( theObjID.Value( myGeomIDIndex )) == myGeomIDNb);
+             int( theObjID.Value( myGeomIDIndex )) == myGeomIDNb &&
+             _pyCommand::IsStudyEntry( theObjID ));
   }
   return false;
 }
