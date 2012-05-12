@@ -6585,4 +6585,87 @@ as they are of improper type:
         <translation>%1-%2 from %3 items shown</translation>
     </message>
 </context>
+<context>
+    <name>SMESHGUI_Preferences_ColorDlg</name>
+    <message>
+        <source>DIALOG_TITLE</source>
+        <translation>Properties (color, line width, shrink size, ...)</translation>
+    </message>
+    <message>
+        <source>GRP_ELEMENTS</source>
+        <translation>Elements</translation>
+    </message>
+    <message>
+        <source>SURFACE_COLOR_LBL</source>
+        <translation>Surface color</translation>
+    </message>
+    <message>
+        <source>BACKSURFACE_COLOR_LBL</source>
+        <translation>Back surface color</translation>
+    </message>
+    <message>
+        <source>OUTLINE_COLOR_LBL</source>
+        <translation>Outline color</translation>
+    </message>
+    <message>
+        <source>WIREFRAME_COLOR_LBL</source>
+        <translation>Wireframe color</translation>
+    </message>
+    <message>
+        <source>0D_ELEMENTS_COLOR_LBL</source>
+        <translation>0D elements</translation>
+    </message>
+    <message>
+        <source>0D_ELEMENTS_SIZE_LBL</source>
+        <translation>Size of 0D elements</translation>
+    </message>
+    <message>
+        <source>LINE_WIDTH_LBL</source>
+        <translation>Line width</translation>
+    </message>
+    <message>
+        <source>SHRINK_COEF_LBL</source>
+        <translation>Shrink coef.</translation>
+    </message>
+    <message>
+        <source>GRP_NODES</source>
+        <translation>Nodes</translation>
+    </message>
+    <message>
+        <source>NODES_COLOR_LBL</source>
+        <translation>Color</translation>
+    </message>
+    <message>
+        <source>NODES_MARKER_LBL</source>
+        <translation>Marker</translation>
+    </message>
+    <message>
+        <source>GRP_ORIENTATION</source>
+        <translation>Orientation of faces</translation>
+    </message>
+    <message>
+        <source>ORIENTATION_COLOR_LBL</source>
+        <translation>Color</translation>
+    </message>
+    <message>
+        <source>ORIENTATION_SCALE_LBL</source>
+        <translation>Scale</translation>
+    </message>
+    <message>
+        <source>3D_VECTORS_LBL</source>
+        <translation>3D vectors</translation>
+    </message>
+    <message>
+        <source>GRP_SELECTION</source>
+        <translation>Selection</translation>
+    </message>
+    <message>
+        <source>SELECTION_COLOR_LBL</source>
+        <translation>Selection color</translation>
+    </message>
+    <message>
+        <source>PRESELECTION_COLOR_LBL</source>
+        <translation>Pre-selection color</translation>
+    </message>
+</context>
 </TS>

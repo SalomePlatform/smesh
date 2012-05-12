@@ -66,7 +66,7 @@ SMESHGUI_Preferences_ColorDlg::SMESHGUI_Preferences_ColorDlg( SMESHGUI* theModul
     mySMESHGUI( theModule )
 {
   setModal( true );
-  setWindowTitle( tr( "Properties (color, line width, shrink size, ...)" ) );
+  setWindowTitle( tr( "DIALOG_TITLE" ) );
   setSizeGripEnabled( true );
 
   // -------------------------------
@@ -75,26 +75,26 @@ SMESHGUI_Preferences_ColorDlg::SMESHGUI_Preferences_ColorDlg( SMESHGUI* theModul
   topLayout->setMargin( MARGIN );
 
   // -------------------------------
-  QGroupBox* ButtonGroup1 = new QGroupBox( tr( "Elements" ), this );
+  QGroupBox* ButtonGroup1 = new QGroupBox( tr( "GRP_ELEMENTS" ), this );
   QGridLayout* ButtonGroup1Layout = new QGridLayout( ButtonGroup1 );
   ButtonGroup1Layout->setSpacing( SPACING );
   ButtonGroup1Layout->setMargin( MARGIN );
 
-  QLabel* TextLabel_Fill = new QLabel( tr( "Surface color" ), ButtonGroup1 );
+  QLabel* TextLabel_Fill = new QLabel( tr( "SURFACE_COLOR_LBL" ), ButtonGroup1 );
 
   toolSurfColor = new QtxBiColorTool(ButtonGroup1);
-  toolSurfColor->setText( tr( "Back surface color" ));
+  toolSurfColor->setText( tr( "BACKSURFACE_COLOR_LBL" ));
 
-  QLabel* TextLabel_Outline = new QLabel( tr( "Outline color" ), ButtonGroup1 );
+  QLabel* TextLabel_Outline = new QLabel( tr( "OUTLINE_COLOR_LBL" ), ButtonGroup1 );
   btnOutlineColor = new QtxColorButton( ButtonGroup1 );
 
-  QLabel* TextLabel_Wireframe = new QLabel( tr( "Wireframe color" ), ButtonGroup1 );
+  QLabel* TextLabel_Wireframe = new QLabel( tr( "WIREFRAME_COLOR_LBL" ), ButtonGroup1 );
   btnWireframeColor = new QtxColorButton( ButtonGroup1 );
 
-  QLabel* TextLabel_0DElements_Color = new QLabel( tr( "0D elements" ), ButtonGroup1 );
+  QLabel* TextLabel_0DElements_Color = new QLabel( tr( "0D_ELEMENTS_COLOR_LBL" ), ButtonGroup1 );
   btn0DElementsColor = new QtxColorButton( ButtonGroup1 );
 
-  QLabel* TextLabel_0DElements_Size = new QLabel( tr( "Size of 0D elements" ), ButtonGroup1 );
+  QLabel* TextLabel_0DElements_Size = new QLabel( tr( "0D_ELEMENTS_SIZE_LBL" ), ButtonGroup1 );
   SpinBox_0DElements_Size = new SalomeApp_IntSpinBox( ButtonGroup1 );
   SpinBox_0DElements_Size->setAcceptNames( false ); // No Notebook variables allowed
   SpinBox_0DElements_Size->setRange( 1, 10 );
@@ -102,7 +102,7 @@ SMESHGUI_Preferences_ColorDlg::SMESHGUI_Preferences_ColorDlg( SMESHGUI* theModul
   SpinBox_0DElements_Size->setSizePolicy( QSizePolicy( QSizePolicy::Expanding, QSizePolicy::Fixed ) );
   SpinBox_0DElements_Size->setButtonSymbols( QSpinBox::PlusMinus );
 
-  QLabel* TextLabel_Width = new QLabel( tr( "Line width" ), ButtonGroup1 );
+  QLabel* TextLabel_Width = new QLabel( tr( "LINE_WIDTH_LBL" ), ButtonGroup1 );
   SpinBox_Width = new SalomeApp_IntSpinBox( ButtonGroup1 );
   SpinBox_Width->setAcceptNames( false ); // No Notebook variables allowed
   SpinBox_Width->setRange( 1, 5 );
@@ -110,7 +110,7 @@ SMESHGUI_Preferences_ColorDlg::SMESHGUI_Preferences_ColorDlg( SMESHGUI* theModul
   SpinBox_Width->setSizePolicy( QSizePolicy( QSizePolicy::Expanding, QSizePolicy::Fixed ) );
   SpinBox_Width->setButtonSymbols( QSpinBox::PlusMinus );
 
-  QLabel* TextLabel_ShrinkCoeff = new QLabel( tr( "Shrink coef." ), ButtonGroup1 );
+  QLabel* TextLabel_ShrinkCoeff = new QLabel( tr( "SHRINK_COEF_LBL" ), ButtonGroup1 );
   SpinBox_Shrink = new SalomeApp_IntSpinBox( ButtonGroup1 );
   SpinBox_Shrink->setAcceptNames( false ); // No Notebook variables allowed
   SpinBox_Shrink->setRange( 20, 100 );
@@ -138,15 +138,15 @@ SMESHGUI_Preferences_ColorDlg::SMESHGUI_Preferences_ColorDlg( SMESHGUI* theModul
   ButtonGroup1Layout->addWidget( SpinBox_Shrink,             3, 3 );
 
   // -------------------------------
-  QGroupBox* ButtonGroup2 = new QGroupBox( tr( "Nodes" ), this );
+  QGroupBox* ButtonGroup2 = new QGroupBox( tr( "GRP_NODES" ), this );
   QGridLayout* ButtonGroup2Layout = new QGridLayout( ButtonGroup2 );
   ButtonGroup2Layout->setSpacing( SPACING );
   ButtonGroup2Layout->setMargin( MARGIN );
 
-  QLabel* TextLabel_Nodes_Color = new QLabel( tr( "Color" ), ButtonGroup2 );
+  QLabel* TextLabel_Nodes_Color = new QLabel( tr( "NODES_COLOR_LBL" ), ButtonGroup2 );
   btnNodeColor = new QtxColorButton( ButtonGroup2 );
 
-  QGroupBox* MarkerGroup = new QGroupBox( tr( "Marker" ), ButtonGroup2 );
+  QGroupBox* MarkerGroup = new QGroupBox( tr( "NODES_MARKER_LBL" ), ButtonGroup2 );
   QVBoxLayout* MarkerGroupLayout = new QVBoxLayout( MarkerGroup );
   MarkerGroupLayout->setSpacing( 0 );
   MarkerGroupLayout->setMargin( 0 );
@@ -161,22 +161,22 @@ SMESHGUI_Preferences_ColorDlg::SMESHGUI_Preferences_ColorDlg( SMESHGUI* theModul
   ButtonGroup2Layout->setColumnStretch( 2, 1 );
 
   // -------------------------------
-  QGroupBox* ButtonGroup3 = new QGroupBox( tr( "Orientation of faces" ), this );
+  QGroupBox* ButtonGroup3 = new QGroupBox( tr( "GRP_ORIENTATION" ), this );
   QGridLayout* ButtonGroup3Layout = new QGridLayout( ButtonGroup3 );
   ButtonGroup3Layout->setSpacing( SPACING );
   ButtonGroup3Layout->setMargin( MARGIN );
 
-  QLabel* TextLabel_Orientation_Color = new QLabel( tr( "Color" ), ButtonGroup3 );
+  QLabel* TextLabel_Orientation_Color = new QLabel( tr( "ORIENTATION_COLOR_LBL" ), ButtonGroup3 );
   btnOrientationColor = new QtxColorButton( ButtonGroup3 );
 
-  QLabel* TextLabel_Orientation_Scale = new QLabel( tr( "Scale" ), ButtonGroup3 );
+  QLabel* TextLabel_Orientation_Scale = new QLabel( tr( "ORIENTATION_SCALE_LBL" ), ButtonGroup3 );
   SpinBox_Orientation_Scale = new SMESHGUI_SpinBox( ButtonGroup3 );
   SpinBox_Orientation_Scale->setAcceptNames( false ); // No Notebook variables allowed
   SpinBox_Orientation_Scale->RangeStepAndValidator( .05, .5, .05, "parametric_precision" );
   SpinBox_Orientation_Scale->setSizePolicy( QSizePolicy( QSizePolicy::Expanding, QSizePolicy::Fixed ) );
   SpinBox_Orientation_Scale->setButtonSymbols( QSpinBox::PlusMinus );
 
-  CheckBox_Orientation_3DVectors = new QCheckBox( tr( "3D vectors" ), ButtonGroup3 );
+  CheckBox_Orientation_3DVectors = new QCheckBox( tr( "3D_VECTORS_LBL" ), ButtonGroup3 );
 
   ButtonGroup3Layout->addWidget( TextLabel_Orientation_Color,    0, 0 );
   ButtonGroup3Layout->addWidget( btnOrientationColor,            0, 1 );
@@ -185,15 +185,15 @@ SMESHGUI_Preferences_ColorDlg::SMESHGUI_Preferences_ColorDlg( SMESHGUI* theModul
   ButtonGroup3Layout->addWidget( CheckBox_Orientation_3DVectors, 1, 0, 1, 4 );
 
   // -------------------------------
-  QGroupBox* ButtonGroup4 = new QGroupBox( tr( "Selection" ), this );
+  QGroupBox* ButtonGroup4 = new QGroupBox( tr( "GRP_SELECTION" ), this );
   QGridLayout* ButtonGroup4Layout = new QGridLayout( ButtonGroup4 );
   ButtonGroup3Layout->setSpacing( SPACING );
   ButtonGroup3Layout->setMargin( MARGIN );
   
-  QLabel* TextLabel_Selection_Color = new QLabel( tr( "Selection color" ), ButtonGroup4 );
+  QLabel* TextLabel_Selection_Color = new QLabel( tr( "SELECTION_COLOR_LBL" ), ButtonGroup4 );
   btnSelectionColor = new QtxColorButton( ButtonGroup4 );
   
-  QLabel* TextLabel_Preselection_Color = new QLabel( tr( "Pre-selection color" ), ButtonGroup4 );
+  QLabel* TextLabel_Preselection_Color = new QLabel( tr( "PRESELECTION_COLOR_LBL" ), ButtonGroup4 );
   btnPreselectionColor = new QtxColorButton( ButtonGroup4 );
   
   ButtonGroup4Layout->addWidget( TextLabel_Selection_Color,      0, 0 );
@@ -207,14 +207,14 @@ SMESHGUI_Preferences_ColorDlg::SMESHGUI_Preferences_ColorDlg( SMESHGUI* theModul
   GroupButtonsLayout->setSpacing( SPACING );
   GroupButtonsLayout->setMargin( MARGIN );
 
-  QPushButton* buttonOk = new QPushButton( tr( "&OK" ), GroupButtons );
+  QPushButton* buttonOk = new QPushButton( tr( "SMESH_BUT_OK" ), GroupButtons );
   buttonOk->setAutoDefault( true );
   buttonOk->setDefault( true );
 
-  QPushButton* buttonCancel = new QPushButton( tr( "&Cancel" ), GroupButtons );
+  QPushButton* buttonCancel = new QPushButton( tr( "SMESH_BUT_CANCEL" ), GroupButtons );
   buttonCancel->setAutoDefault( true );
 
-  QPushButton* buttonHelp = new QPushButton( tr( "&Help" ), GroupButtons );
+  QPushButton* buttonHelp = new QPushButton( tr( "SMESH_BUT_HELP" ), GroupButtons );
   buttonHelp->setAutoDefault( true );
 
   GroupButtonsLayout->addWidget( buttonOk );

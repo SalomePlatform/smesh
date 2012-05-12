@@ -952,78 +952,6 @@
         <translation>Eclater en tétraèdres</translation>
     </message>
     <message>
-        <source>Properties (color, line width, shrink size, ...)</source>
-        <translation>Propriétés (couleur, épaisseur des traits, taille des éléments réduits, ...)</translation>
-    </message>
-    <message>
-        <source>Elements</source>
-        <translation>Eléments</translation>
-    </message>
-    <message>
-        <source>Surface color</source>
-        <translation>Couleur de surface</translation>
-    </message>
-    <message>
-        <source>Back surface color</source>
-        <translation>Couleur arrière</translation>
-    </message>
-    <message>
-        <source>Outline color</source>
-        <translation>Couleur de contour</translation>
-    </message>
-    <message>
-        <source>Wireframe color</source>
-        <translation>Couleur en mode fil de fer</translation>
-    </message>
-    <message>
-        <source>0D elements</source>
-        <translation>Eléments 0D</translation>
-    </message>
-    <message>
-        <source>Size of 0D elements</source>
-        <translation>Taille des éléments 0D</translation>
-    </message>
-    <message>
-        <source>Line width</source>
-        <translation>Epaisseur des traits</translation>
-    </message>
-    <message>
-        <source>Shrink coef.</source>
-        <translation>Coef. de contraction</translation>
-    </message>
-    <message>
-        <source>Nodes</source>
-        <translation>Nœuds</translation>
-    </message>
-    <message>
-        <source>Color</source>
-        <translation>Couleur</translation>
-    </message>
-    <message>
-        <source>Marker</source>
-        <translation>Marqueur</translation>
-    </message>
-    <message>
-        <source>Orientation of faces</source>
-        <translation>Orientation des faces</translation>
-    </message>
-    <message>
-        <source>Scale</source>
-        <translation>Facteur d&apos;échelle</translation>
-    </message>
-    <message>
-        <source>3D vectors</source>
-        <translation>Vecteurs 3D</translation>
-    </message>
-    <message>
-        <source>&amp;Cancel</source>
-        <translation>&amp;Annuler</translation>
-    </message>
-    <message>
-        <source>&amp;Help</source>
-        <translation>Ai&amp;de</translation>
-    </message>
-    <message>
         <source>MESHERS_FILE_CANT_OPEN</source>
         <translation>Impossible d&apos;ouvrir le fichier de ressource</translation>
     </message>
@@ -6652,6 +6580,89 @@ en raison de leurs types incompatibles:
     <message>
         <source>X_FROM_Y_ITEMS_SHOWN</source>
         <translation>%1-%2 sur %3 éléments affichés</translation>
+    </message>
+</context>
+<context>
+    <name>SMESHGUI_Preferences_ColorDlg</name>
+    <message>
+        <source>DIALOG_TITLE</source>
+        <translation>Propriétés (couleur, épaisseur des traits, taille des éléments réduits, ...)</translation>
+    </message>
+    <message>
+        <source>GRP_ELEMENTS</source>
+        <translation>Eléments</translation>
+    </message>
+    <message>
+        <source>SURFACE_COLOR_LBL</source>
+        <translation>Couleur de surface</translation>
+    </message>
+    <message>
+        <source>BACKSURFACE_COLOR_LBL</source>
+        <translation>Couleur arrière</translation>
+    </message>
+    <message>
+        <source>OUTLINE_COLOR_LBL</source>
+        <translation>Couleur de contour</translation>
+    </message>
+    <message>
+        <source>WIREFRAME_COLOR_LBL</source>
+        <translation>Couleur en mode fil de fer</translation>
+    </message>
+    <message>
+        <source>0D_ELEMENTS_COLOR_LBL</source>
+        <translation>Eléments 0D</translation>
+    </message>
+    <message>
+        <source>0D_ELEMENTS_SIZE_LBL</source>
+        <translation>Taille des éléments 0D</translation>
+    </message>
+    <message>
+        <source>LINE_WIDTH_LBL</source>
+        <translation>Epaisseur des traits</translation>
+    </message>
+    <message>
+        <source>SHRINK_COEF_LBL</source>
+        <translation>Coef. de contraction</translation>
+    </message>
+    <message>
+        <source>GRP_NODES</source>
+        <translation>Nœuds</translation>
+    </message>
+    <message>
+        <source>NODES_COLOR_LBL</source>
+        <translation>Couleur</translation>
+    </message>
+    <message>
+        <source>NODES_MARKER_LBL</source>
+        <translation>Marqueur</translation>
+    </message>
+    <message>
+        <source>GRP_ORIENTATION</source>
+        <translation>Orientation des faces</translation>
+    </message>
+    <message>
+        <source>ORIENTATION_COLOR_LBL</source>
+        <translation>Couleur</translation>
+    </message>
+    <message>
+        <source>ORIENTATION_SCALE_LBL</source>
+        <translation>Facteur d&apos;échelle</translation>
+    </message>
+    <message>
+        <source>3D_VECTORS_LBL</source>
+        <translation>Vecteurs 3D</translation>
+    </message>
+    <message>
+        <source>GRP_SELECTION</source>
+        <translation>Sélection</translation>
+    </message>
+    <message>
+        <source>SELECTION_COLOR_LBL</source>
+        <translation>Couleur de sélection</translation>
+    </message>
+    <message>
+        <source>PRESELECTION_COLOR_LBL</source>
+        <translation>Couleur de pré-sélection</translation>
     </message>
 </context>
 </TS>
