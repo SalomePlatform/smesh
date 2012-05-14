@@ -28,8 +28,8 @@ object will be displayed in the viewer by default.</li>
 <b>Quality Control</b> diagrams at the necessary level of precision.</li>
 <li><b>Number of digits after point</b> - defines precision for <b>Quality Controls</b>. By default, numbers in <b>Quality Control</b>
 diagrams are presented as integers.</li>
-<li><b>Double nodes tolerance</b> defines maximal distance between two
-mesh nodes at which they are considered coincident by <b>Double nodes</b>
+<li><b>Double nodes tolerance</b> defines the maximal distance between two
+mesh nodes, at which they are considered coincident by <b>Double nodes</b>
 quality control.
 </ul>
 <li><b>Display mode</b> - allows to set Wireframe, Shading, Nodes or Shrink
@@ -84,12 +84,10 @@ number of segments on each edge</li>
 </li></ul>
 <li><b>Mesh loading</b></li>
 <ul>
-<li>If you toggle <b>No mesh loading from study file at hypothesis modification</b>
-  checkbox, then mesh data won't be loaded from the study file
-  provided that your first action on a mesh after study opening is
-  modification of hypotheses. This can save your time by omitting
-  loading data of a large mesh that your are going to recompute with
-  other parameters.</li>
+<li>If <b>No mesh loading from study file at hypothesis modification</b>
+  checkbox is on, the mesh data will not be loaded from the study file
+  when a hypothesis is modified. This allows  saving time by omitting
+  loading data of a large mesh that is planned to be recomputed with other parameters.</li>
 </ul>
 <li><b>Input fields precision</b></li>
 <ul>
@@ -102,12 +100,12 @@ number of segments on each edge</li>
 </ul>
 <li><b>Python Dump</b></li>
 <ul>
-<li><b>Historical python dump</b> checkbox switches Python Dump from
-  \a Historical to \a Snapshot mode and backward. In the \a
-  Historical mode, the Python Dump script includes all commands
-  performed by SMESH engine. In the \a Snapshot mode, commands
-  relating to objects removed from the Study are excluded from the
-  script as well as commands not influencing the current state of meshes.</li>
+<li><b>Historical python dump</b> checkbox allows switching between 
+  \a Historical and \a Snapshot dump mode. In \a
+  Historical mode, Python Dump script includes all commands
+  performed by SMESH engine. In \a Snapshot mode, the commands
+  relating to objects removed from the Study as well as the commands
+  not influencing the current state of meshes are excluded from the script.</li>
 </ul>
 </ul>
 

@@ -2,7 +2,7 @@
 
 \page double_nodes_page Duplicate Nodes
 
-\n This operation allows to duplicate nodes of your mesh that is
+\n This operation allows to duplicate nodes of your mesh, which can be
 useful to emulate a crack in the model.
 Duplication consists in replacement of an existing mesh element by another one.
 Lower level elements of the duplicated ones are cloned automatically. 

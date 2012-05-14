@@ -3,7 +3,7 @@
 \page cartesian_algo_page Body Fitting 3D meshing algorithm
 
 Body Fitting algorithm generates hexahedrons of a Cartesian grid in
-the internal part of geometry and polyhedra and other types of
+the internal part of geometry and polyhedrons and other types of
 elements at the intersection of Cartesian cells with the geometrical
 boundary.
 
@@ -21,7 +21,7 @@ of the geometry boundary. Depending on a result of this check
 <ul>
 <li> skip a cell, if all its nodes are outside </li>
 <li> skip a cell, if it is too small according to <b> Size
-    Threshold </b> paremeter</li>
+    Threshold </b> parameter</li>
 <li> add a hexahedron in the mesh, if all nodes are inside </li>
 <li> add a polyhedron or another cell type in the mesh, if some
 nodes are inside and some outside. </li> 
@@ -55,10 +55,10 @@ This dialog allows to define
     click on a coordinate in the list enables its edition. A grid
     defined by \b Coordinates should enclose the geometry, else the
     algorithm will fail. </li>
-  <li> You can define the \b Spacing of a grid as an algebraic formular 
-    <em>f(t)</em> where \a t is a position along a grid axiz
+  <li> You can define the \b Spacing of a grid as an algebraic formula 
+    <em>f(t)</em> where \a t is a position along a grid axis
     normalized at [0.0,1.0]. The whole range of geometry can be
-    divided into sub-ranges with their own spacing formulars to apply;
+    divided into sub-ranges with their own spacing formulas to apply;
     \a t varies between 0.0 and 1.0 within each sub-range. \b Insert button
     divides a selected range into two ones. \b Delete button adds the
     selected sub-range to the previous one. Double click on a range in
