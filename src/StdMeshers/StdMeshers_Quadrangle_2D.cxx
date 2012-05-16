@@ -2545,22 +2545,19 @@ bool StdMeshers_Quadrangle_2D::ComputeReduced (SMESH_Mesh &        aMesh,
     // maximum number of bottom elements for "tree" simple reduce 4->2
     int max_tree42 = 0;
     // number of rows needed to reduce ncol_bot to ncol_top using simple 4->2 "tree"
-#ifdef WIN32
-    //<cmath> of the MSVC doesn't contain log2
-    int nrows_tree42 = int( log( (double)(ncol_bot / ncol_top) )/log((double)2)  ); // needed to avoid overflow at pow(2)
-#else
-    int nrows_tree42 = int( log2( ncol_bot / ncol_top )); // needed to avoid overflow at pow(2)
-#endif
-
-    if (ncol_top > npair_top * 2 && nrows_tree42 < nrows) {
+    int nrows_tree42 = int( log( (double)(ncol_bot / ncol_top) )/log((double)2)  ); // needed to avoid overflow at pow(2) while computing max_tree42
+    if ( nrows_tree42 < nrows) {
       max_tree42 = npair_top * pow(2.0, nrows + 1);
-      int delta = ncol_bot - int( max_tree42 );
-      for (int irow = 1; irow < nrows; irow++) {
-        int nfour = delta / 4;
-        delta -= nfour * 2;
+      if (ncol_top > npair_top * 2 )
+      {
+        int delta = ncol_bot - int( max_tree42 );
+        for (int irow = 1; irow < nrows; irow++) {
+          int nfour = delta / 4;
+          delta -= nfour * 2;
+        }
+        if (delta <= (ncol_top - npair_top * 2))
+          max_tree42 = ncol_bot;
       }
-      if (delta <= (ncol_top - npair_top * 2))
-        max_tree42 = ncol_bot;
     }
     // maximum number of bottom elements for "tree" simple reduce 3->1
     //int max_tree31 = ncol_top * pow(3.0, nrows);
