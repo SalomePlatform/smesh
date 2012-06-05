@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2011  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -84,6 +84,8 @@ class SMESH_ActorDef : public SMESH_Actor
  public:
   vtkTypeMacro(SMESH_ActorDef,SMESH_Actor);
   
+  virtual void Delete();
+
   virtual void ReleaseGraphicsResources(vtkWindow *renWin);
   virtual int RenderOpaqueGeometry(vtkViewport *viewport);
   virtual int RenderTranslucentGeometry(vtkViewport *viewport);

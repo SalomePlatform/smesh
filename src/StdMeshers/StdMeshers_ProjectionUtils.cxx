@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2011  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -337,7 +337,7 @@ namespace {
           ancestIt.Initialize( theMesh.GetAncestors( edge2 ) );
           for ( ; ancestIt.More() && face2.IsNull(); ancestIt.Next() ) {
             if ( ancestIt.Value().ShapeType() == TopAbs_FACE &&
-                 !theMap.IsBound( ancestIt.Value() ) &&
+                 !theMap.IsBound( ancestIt.Value(), /*is2nd=*/true ) &&
                  subshapes2.Contains( ancestIt.Value() ))
               face2 = ancestIt.Value();
           }
@@ -418,9 +418,9 @@ namespace {
 //=======================================================================
 /*!
  * \brief Looks for association of all sub-shapes of two shapes
- * \param theShape1 - shape 1
+ * \param theShape1 - target shape
  * \param theMesh1 - mesh built on shape 1
- * \param theShape2 - shape 2
+ * \param theShape2 - source shape
  * \param theMesh2 - mesh built on shape 2
  * \param theAssociation - association map to be filled that may
  *                         contain association of one or two pairs of vertices
@@ -474,13 +474,11 @@ bool StdMeshers_ProjectionUtils::FindSubShapeAssociation(const TopoDS_Shape& the
     return FindSubShapeAssociation(group1, theMesh1, group2, theMesh2, theMap );
   }
 
-  bool bidirect = ( !theShape1.IsSame( theShape2 ));
-
   // ============
   // 2) Is partner?
   // ============
   bool partner = theShape1.IsPartner( theShape2 );
-  TopTools_DataMapIteratorOfDataMapOfShapeShape vvIt( theMap );
+  TopTools_DataMapIteratorOfDataMapOfShapeShape vvIt( theMap._map1to2 );
   for ( ; partner && vvIt.More(); vvIt.Next() )
     partner = vvIt.Key().IsPartner( vvIt.Value() );
 
@@ -492,7 +490,7 @@ bool StdMeshers_ProjectionUtils::FindSubShapeAssociation(const TopoDS_Shape& the
     TShapePairsList::iterator s1_s2 = shapesQueue.begin();
     for ( ; s1_s2 != shapesQueue.end(); ++s1_s2 )
     {
-      InsertAssociation( s1_s2->first, s1_s2->second, theMap, bidirect);
+      InsertAssociation( s1_s2->first, s1_s2->second, theMap );
       TopoDS_Iterator s1It( s1_s2->first), s2It( s1_s2->second );
       for ( ; s1It.More(); s1It.Next(), s2It.Next() )
         shapesQueue.push_back( make_pair( s1It.Value(), s2It.Value() ));
@@ -521,8 +519,8 @@ bool StdMeshers_ProjectionUtils::FindSubShapeAssociation(const TopoDS_Shape& the
       int i1 = 0, i2 = 0;
       if ( theMap.IsBound( VV1[ i1 ] )) i1 = 1;
       if ( theMap.IsBound( VV2[ i2 ] )) i2 = 1;
-      InsertAssociation( VV1[ i1 ], VV2[ i2 ], theMap, bidirect);
-      InsertAssociation( theShape1, theShape2, theMap, bidirect );
+      InsertAssociation( VV1[ i1 ], VV2[ i2 ], theMap );
+      InsertAssociation( theShape1, theShape2, theMap );
       return true;
     }
       // ----------------------------------------------------------------------
@@ -561,12 +559,12 @@ bool StdMeshers_ProjectionUtils::FindSubShapeAssociation(const TopoDS_Shape& the
       list< TopoDS_Edge >::iterator eIt2 = edges2.begin();
       for ( ; eIt1 != edges1.end(); ++eIt1, ++eIt2 )
       {
-        InsertAssociation( *eIt1, *eIt2, theMap, bidirect);
+        InsertAssociation( *eIt1, *eIt2, theMap );
         VV1[0] = TopExp::FirstVertex( *eIt1, true );
         VV2[0] = TopExp::FirstVertex( *eIt2, true );
-        InsertAssociation( VV1[0], VV2[0], theMap, bidirect);
+        InsertAssociation( VV1[0], VV2[0], theMap );
       }
-      InsertAssociation( theShape1, theShape2, theMap, bidirect );
+      InsertAssociation( theShape1, theShape2, theMap );
       return true;
     }
       // ----------------------------------------------------------------------
@@ -647,7 +645,7 @@ bool StdMeshers_ProjectionUtils::FindSubShapeAssociation(const TopoDS_Shape& the
       TopExp::Vertices( edge1, VV1[0], VV1[1], true );
       TopExp::Vertices( edge2, VV2[0], VV2[1], true );
       F2 = FF2[ 0 ]; // (F2 !)
-      if ( !VV1[ 0 ].IsSame( theMap( VV2[ 0 ]))) {
+      if ( !VV1[ 0 ].IsSame( theMap( VV2[ 0 ], /*is2=*/true))) {
         edge2.Reverse();
         if ( FF2[ 1 ].IsNull() )
           F2.Reverse();
@@ -674,7 +672,7 @@ bool StdMeshers_ProjectionUtils::FindSubShapeAssociation(const TopoDS_Shape& the
         list< TopoDS_Edge > edges1, edges2;
         int nbE = FindFaceAssociation( face1, VV1, face2, VV2, edges1, edges2 );
         if ( !nbE ) RETURN_BAD_RESULT("FindFaceAssociation() failed");
-        InsertAssociation( face1, face2, theMap, bidirect); // assoc faces
+        InsertAssociation( face1, face2, theMap ); // assoc faces
         MESSAGE("Assoc FACE " << theMesh1->GetMeshDS()->ShapeToIndex( face1 )<<
                 " to "        << theMesh2->GetMeshDS()->ShapeToIndex( face2 ));
         if ( nbE == 2 && (edge1.IsSame( edges1.front())) != (edge2.IsSame( edges2.front())))
@@ -686,12 +684,12 @@ bool StdMeshers_ProjectionUtils::FindSubShapeAssociation(const TopoDS_Shape& the
         for ( ; eIt1 != edges1.end(); ++eIt1, ++eIt2 )
         {
           if ( !boundEdges.Add( *eIt1 )) continue; // already associated
-          InsertAssociation( *eIt1, *eIt2, theMap, bidirect);  // assoc edges
+          InsertAssociation( *eIt1, *eIt2, theMap );  // assoc edges
           MESSAGE("Assoc edge " << theMesh1->GetMeshDS()->ShapeToIndex( *eIt1 )<<
                   " to "        << theMesh2->GetMeshDS()->ShapeToIndex( *eIt2 ));
           VV1[0] = TopExp::FirstVertex( *eIt1, true );
           VV2[0] = TopExp::FirstVertex( *eIt2, true );
-          InsertAssociation( VV1[0], VV2[0], theMap, bidirect); // assoc vertices
+          InsertAssociation( VV1[0], VV2[0], theMap ); // assoc vertices
           MESSAGE("Assoc vertex " << theMesh1->GetMeshDS()->ShapeToIndex( VV1[0] )<<
                   " to "          << theMesh2->GetMeshDS()->ShapeToIndex( VV2[0] ));
 
@@ -704,7 +702,7 @@ bool StdMeshers_ProjectionUtils::FindSubShapeAssociation(const TopoDS_Shape& the
           }
         }
       }
-      InsertAssociation( theShape1, theShape2, theMap, bidirect );
+      InsertAssociation( theShape1, theShape2, theMap );
       return true;
     }
       // ----------------------------------------------------------------------
@@ -826,7 +824,7 @@ bool StdMeshers_ProjectionUtils::FindSubShapeAssociation(const TopoDS_Shape& the
               TShapeShapeMap tmpMap;
               ok = FindSubShapeAssociation( comp[0], theMesh1, comp[1], theMesh2, tmpMap );
               if ( ok ) {
-                TopTools_DataMapIteratorOfDataMapOfShapeShape mapIt( tmpMap );
+                TopTools_DataMapIteratorOfDataMapOfShapeShape mapIt( tmpMap._map1to2 );
                 for ( ; mapIt.More(); mapIt.Next() )
                   theMap.Bind( mapIt.Key(), mapIt.Value());
               }
@@ -885,13 +883,13 @@ bool StdMeshers_ProjectionUtils::FindSubShapeAssociation(const TopoDS_Shape& the
             TopoDS_Edge e1 = TopoDS::Edge( edges1.First() );
             v2e[0].UnBind( V[0] );
             v2e[1].UnBind( V[1] );
-            InsertAssociation( e0, e1, theMap, bidirect );
+            InsertAssociation( e0, e1, theMap );
             MESSAGE("Assoc edge " << theMesh1->GetMeshDS()->ShapeToIndex( e0 )<<
                     " to "        << theMesh2->GetMeshDS()->ShapeToIndex( e1 ));
             V[0] = GetNextVertex( e0, V[0] );
             V[1] = GetNextVertex( e1, V[1] );
             if ( !V[0].IsNull() ) {
-              InsertAssociation( V[0], V[1], theMap, bidirect );
+              InsertAssociation( V[0], V[1], theMap );
               MESSAGE("Assoc vertex " << theMesh1->GetMeshDS()->ShapeToIndex( V[0] )<<
                       " to "          << theMesh2->GetMeshDS()->ShapeToIndex( V[1] ));
             }
@@ -917,9 +915,9 @@ bool StdMeshers_ProjectionUtils::FindSubShapeAssociation(const TopoDS_Shape& the
             } else {
               v1n = v1e1; e1b = edges1.First(); e1n = edges1.Last();
             }
-            InsertAssociation( e0b, e1b, theMap, bidirect );
-            InsertAssociation( e0n, e1n, theMap, bidirect );
-            InsertAssociation( v0n, v1n, theMap, bidirect );
+            InsertAssociation( e0b, e1b, theMap );
+            InsertAssociation( e0n, e1n, theMap );
+            InsertAssociation( v0n, v1n, theMap );
             MESSAGE("Assoc edge " << theMesh1->GetMeshDS()->ShapeToIndex( e0b )<<
                     " to "        << theMesh2->GetMeshDS()->ShapeToIndex( e1b ));
             MESSAGE("Assoc edge " << theMesh1->GetMeshDS()->ShapeToIndex( e0n )<<
@@ -963,14 +961,14 @@ bool StdMeshers_ProjectionUtils::FindSubShapeAssociation(const TopoDS_Shape& the
         TopoDS_Vertex VV1[2], VV2[2];
         TopExp::Vertices( edge1,   VV1[0], VV1[1], true );
         TopExp::Vertices( prpEdge, VV2[0], VV2[1], true );
-        InsertAssociation( VV1[ 0 ], VV2[ 0 ], theMap, bidirect);
-        InsertAssociation( VV1[ 1 ], VV2[ 1 ], theMap, bidirect);
+        InsertAssociation( VV1[ 0 ], VV2[ 0 ], theMap );
+        InsertAssociation( VV1[ 1 ], VV2[ 1 ], theMap );
         if ( VV1[0].IsSame( VV1[1] ) || // one of edges is closed
              VV2[0].IsSame( VV2[1] ) )
         {
-          InsertAssociation( edge1, prpEdge, theMap, bidirect); // insert with a proper orientation
+          InsertAssociation( edge1, prpEdge, theMap ); // insert with a proper orientation
         }
-        InsertAssociation( theShape1, theShape2, theMap, bidirect );
+        InsertAssociation( theShape1, theShape2, theMap );
         return true; // done
       }
     }
@@ -978,10 +976,10 @@ bool StdMeshers_ProjectionUtils::FindSubShapeAssociation(const TopoDS_Shape& the
          SMESH_MesherHelper::IsClosedEdge( edge2 ))
     {
       // TODO: find out a proper orientation (is it possible?)
-      InsertAssociation( edge1, edge2, theMap, bidirect); // insert with a proper orientation
+      InsertAssociation( edge1, edge2, theMap ); // insert with a proper orientation
       InsertAssociation( TopExp::FirstVertex(edge1), TopExp::FirstVertex(edge2),
-                         theMap, bidirect);
-      InsertAssociation( theShape1, theShape2, theMap, bidirect );
+                         theMap );
+      InsertAssociation( theShape1, theShape2, theMap );
       return true; // done
     }
     break; // try by vertex closeness
@@ -1031,12 +1029,12 @@ bool StdMeshers_ProjectionUtils::FindSubShapeAssociation(const TopoDS_Shape& the
         list< TopoDS_Edge >::iterator eIt2 = edges2.begin();
         for ( ; eIt1 != edges1.end(); ++eIt1, ++eIt2 )
         {
-          InsertAssociation( *eIt1, *eIt2, theMap, bidirect);
+          InsertAssociation( *eIt1, *eIt2, theMap );
           VV1[0] = TopExp::FirstVertex( *eIt1, true );
           VV2[0] = TopExp::FirstVertex( *eIt2, true );
-          InsertAssociation( VV1[0], VV2[0], theMap, bidirect);
+          InsertAssociation( VV1[0], VV2[0], theMap );
         }
-        InsertAssociation( theShape1, theShape2, theMap, bidirect );
+        InsertAssociation( theShape1, theShape2, theMap );
         return true;
       }
     }
@@ -1099,8 +1097,8 @@ bool StdMeshers_ProjectionUtils::FindSubShapeAssociation(const TopoDS_Shape& the
         }
       }
       if ( !VV1[1].IsNull() ) {
-        InsertAssociation( VV1[0], VV2[0], theMap, bidirect);
-        InsertAssociation( VV1[1], VV2[1], theMap, bidirect);
+        InsertAssociation( VV1[0], VV2[0], theMap );
+        InsertAssociation( VV1[1], VV2[1], theMap );
         return FindSubShapeAssociation( theShape1, theMesh1, theShape2, theMesh2, theMap);
       }
     }
@@ -1121,9 +1119,9 @@ bool StdMeshers_ProjectionUtils::FindSubShapeAssociation(const TopoDS_Shape& the
     RETURN_BAD_RESULT("Different nb of vertices");
 
   if ( vMap1.Extent() == 1 ) {
-    InsertAssociation( vMap1(1), vMap2(1), theMap, bidirect);
+    InsertAssociation( vMap1(1), vMap2(1), theMap );
     if ( theShape1.ShapeType() == TopAbs_EDGE ) {
-      InsertAssociation( theShape1, theShape2, theMap, bidirect );
+      InsertAssociation( theShape1, theShape2, theMap );
       return true;
     }
     return FindSubShapeAssociation( theShape1, theMesh1, theShape2, theMesh2, theMap);
@@ -1147,8 +1145,8 @@ bool StdMeshers_ProjectionUtils::FindSubShapeAssociation(const TopoDS_Shape& the
       }
       if ( edgeFound )
       {
-        InsertAssociation( VV1[0], VV1[0], theMap, bidirect );
-        InsertAssociation( VV1[1], VV1[1], theMap, bidirect );
+        InsertAssociation( VV1[0], VV1[0], theMap );
+        InsertAssociation( VV1[1], VV1[1], theMap );
         if (FindSubShapeAssociation( theShape1, theMesh1, theShape2, theMesh2, theMap ))
           return true;
       }
@@ -1203,14 +1201,14 @@ bool StdMeshers_ProjectionUtils::FindSubShapeAssociation(const TopoDS_Shape& the
     }
   }
 
-  InsertAssociation( VV1[ 0 ], VV2[ 0 ], theMap, bidirect);
-  InsertAssociation( VV1[ 1 ], VV2[ 1 ], theMap, bidirect);
+  InsertAssociation( VV1[ 0 ], VV2[ 0 ], theMap );
+  InsertAssociation( VV1[ 1 ], VV2[ 1 ], theMap );
   MESSAGE("Initial assoc VERT " << theMesh1->GetMeshDS()->ShapeToIndex( VV1[ 0 ] )<<
           " to "                << theMesh2->GetMeshDS()->ShapeToIndex( VV2[ 0 ] )<<
           "\nand         VERT " << theMesh1->GetMeshDS()->ShapeToIndex( VV1[ 1 ] )<<
           " to "                << theMesh2->GetMeshDS()->ShapeToIndex( VV2[ 1 ] ));
   if ( theShape1.ShapeType() == TopAbs_EDGE ) {
-    InsertAssociation( theShape1, theShape2, theMap, bidirect );
+    InsertAssociation( theShape1, theShape2, theMap );
     return true;
   }
 
@@ -1378,30 +1376,29 @@ int StdMeshers_ProjectionUtils::FindFaceAssociation(const TopoDS_Face&    face1,
 //=======================================================================
 
 void StdMeshers_ProjectionUtils::InitVertexAssociation( const SMESH_Hypothesis* theHyp,
-                                                        TShapeShapeMap &        theAssociationMap,
-                                                        const TopoDS_Shape&     theTargetShape)
+                                                        TShapeShapeMap &        theAssociationMap)
 {
   string hypName = theHyp->GetName();
   if ( hypName == "ProjectionSource1D" ) {
     const StdMeshers_ProjectionSource1D * hyp =
       static_cast<const StdMeshers_ProjectionSource1D*>( theHyp );
     if ( hyp->HasVertexAssociation() )
-      InsertAssociation( hyp->GetSourceVertex(),hyp->GetTargetVertex(),theAssociationMap);
+      InsertAssociation( hyp->GetTargetVertex(),hyp->GetSourceVertex(),theAssociationMap );
   }
   else if ( hypName == "ProjectionSource2D" ) {
     const StdMeshers_ProjectionSource2D * hyp =
       static_cast<const StdMeshers_ProjectionSource2D*>( theHyp );
     if ( hyp->HasVertexAssociation() ) {
-      InsertAssociation( hyp->GetSourceVertex(1),hyp->GetTargetVertex(1),theAssociationMap);
-      InsertAssociation( hyp->GetSourceVertex(2),hyp->GetTargetVertex(2),theAssociationMap);
+      InsertAssociation( hyp->GetTargetVertex(1),hyp->GetSourceVertex(1),theAssociationMap);
+      InsertAssociation( hyp->GetTargetVertex(2),hyp->GetSourceVertex(2),theAssociationMap);
     }
   }
   else if ( hypName == "ProjectionSource3D" ) {
     const StdMeshers_ProjectionSource3D * hyp =
       static_cast<const StdMeshers_ProjectionSource3D*>( theHyp );
     if ( hyp->HasVertexAssociation() ) {
-      InsertAssociation( hyp->GetSourceVertex(1),hyp->GetTargetVertex(1),theAssociationMap);
-      InsertAssociation( hyp->GetSourceVertex(2),hyp->GetTargetVertex(2),theAssociationMap);
+      InsertAssociation( hyp->GetTargetVertex(1),hyp->GetSourceVertex(1),theAssociationMap);
+      InsertAssociation( hyp->GetTargetVertex(2),hyp->GetSourceVertex(2),theAssociationMap);
     }
   }
 }
@@ -1409,24 +1406,21 @@ void StdMeshers_ProjectionUtils::InitVertexAssociation( const SMESH_Hypothesis* 
 //=======================================================================
 /*!
  * \brief Inserts association theShape1 <-> theShape2 to TShapeShapeMap
- * \param theShape1 - shape 1
- * \param theShape2 - shape 2
+ * \param theShape1 - target shape
+ * \param theShape2 - source shape
  * \param theAssociationMap - association map 
  * \retval bool - true if there was no association for these shapes before
  */
 //=======================================================================
 
-bool StdMeshers_ProjectionUtils::InsertAssociation( const TopoDS_Shape& theShape1,
-                                                    const TopoDS_Shape& theShape2,
-                                                    TShapeShapeMap &    theAssociationMap,
-                                                    const bool          theBidirectional)
+bool StdMeshers_ProjectionUtils::InsertAssociation( const TopoDS_Shape& theShape1, // tgt
+                                                    const TopoDS_Shape& theShape2, // src
+                                                    TShapeShapeMap &    theAssociationMap)
 {
   if ( !theShape1.IsNull() && !theShape2.IsNull() ) {
     SHOW_SHAPE(theShape1,"Assoc ");
     SHOW_SHAPE(theShape2," to ");
     bool isNew = ( theAssociationMap.Bind( theShape1, theShape2 ));
-    if ( theBidirectional )
-      theAssociationMap.Bind( theShape2, theShape1 );
     return isNew;
   }
   else {
@@ -1647,9 +1641,9 @@ FindMatchingNodesOnFaces( const TopoDS_Face&     face1,
     TopoDS_Edge e2 = TopoDS::Edge( eE.Current() );
     eE.Next();
     // edge 1
-    if ( !assocMap.IsBound( e2 ))
+    if ( !assocMap.IsBound( e2, /*is2nd=*/true ))
       RETURN_BAD_RESULT("Association not found for edge " << meshDS2->ShapeToIndex( e2 ));
-    TopoDS_Edge e1 = TopoDS::Edge( assocMap( e2 ));
+    TopoDS_Edge e1 = TopoDS::Edge( assocMap( e2, /*is2nd=*/true ));
     if ( !helper1.IsSubShape( e1, face1 ))
       RETURN_BAD_RESULT("Wrong association, edge " << meshDS1->ShapeToIndex( e1 ) <<
                         " isn't a sub-shape of face " << meshDS1->ShapeToIndex( face1 ));
@@ -1691,9 +1685,9 @@ FindMatchingNodesOnFaces( const TopoDS_Face&     face1,
 
   // get 2 matching vertices
   TopoDS_Vertex V2 = TopExp::FirstVertex( TopoDS::Edge( edge2 ));
-  if ( !assocMap.IsBound( V2 ))
+  if ( !assocMap.IsBound( V2, /*is2nd=*/true ))
     RETURN_BAD_RESULT("Association not found for vertex " << meshDS2->ShapeToIndex( V2 ));
-  TopoDS_Vertex V1 = TopoDS::Vertex( assocMap( V2 ));
+  TopoDS_Vertex V1 = TopoDS::Vertex( assocMap( V2, /*is2nd=*/true ));
 
   // nodes on vertices
   const SMDS_MeshNode* vNode1 = SMESH_Algo::VertexNode( V1, meshDS1 );
@@ -1742,9 +1736,9 @@ FindMatchingNodesOnFaces( const TopoDS_Face&     face1,
   {
     // get 2 other matching vertices
     V2 = TopExp::LastVertex( TopoDS::Edge( edge2 ));
-    if ( !assocMap.IsBound( V2 ))
+    if ( !assocMap.IsBound( V2, /*is2nd=*/true ))
       RETURN_BAD_RESULT("Association not found for vertex " << meshDS2->ShapeToIndex( V2 ));
-    V1 = TopoDS::Vertex( assocMap( V2 ));
+    V1 = TopoDS::Vertex( assocMap( V2, /*is2nd=*/true ));
 
     // nodes on vertices
     eNode1[0] = SMESH_Algo::VertexNode( V1, meshDS1 );
@@ -1896,9 +1890,9 @@ FindMatchingNodesOnFaces( const TopoDS_Face&     face1,
 
     // associate matching nodes on the last vertices
     V2 = TopExp::LastVertex( TopoDS::Edge( edge2 ));
-    if ( !assocMap.IsBound( V2 ))
+    if ( !assocMap.IsBound( V2, /*is2nd=*/true ))
       RETURN_BAD_RESULT("Association not found for vertex " << meshDS2->ShapeToIndex( V2 ));
-    V1 = TopoDS::Vertex( assocMap( V2 ));
+    V1 = TopoDS::Vertex( assocMap( V2, /*is2nd=*/true ));
     vNode1 = SMESH_Algo::VertexNode( V1, meshDS1 );
     vNode2 = SMESH_Algo::VertexNode( V2, meshDS2 );
     if ( !vNode1 ) RETURN_BAD_RESULT("No node on vertex #" << meshDS1->ShapeToIndex( V1 ));

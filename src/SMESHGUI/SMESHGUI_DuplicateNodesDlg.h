@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2011  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -97,7 +97,8 @@ private:
   QLineEdit*              myLineEdit1;
   QLineEdit*              myLineEdit2;
   QLineEdit*              myLineEdit3;
-  QCheckBox*              myCheckBoxNewGroup;
+  QCheckBox*              myCheckBoxNewElemGroup;
+  QCheckBox*              myCheckBoxNewNodeGroup;
 
   QPushButton*            myButtonOk;
   QPushButton*            myButtonApply;

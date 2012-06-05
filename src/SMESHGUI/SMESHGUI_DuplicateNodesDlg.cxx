@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2011  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -155,7 +155,8 @@ SMESHGUI_DuplicateNodesDlg::SMESHGUI_DuplicateNodesDlg( SMESHGUI* theModule )
   myLineEdit3 = new QLineEdit(myGroupArguments);
   myLineEdit3->setReadOnly(true);
 
-  myCheckBoxNewGroup = new QCheckBox(tr("CONSTRUCT_NEW_GROUP_NODES"), myGroupArguments);
+  myCheckBoxNewElemGroup = new QCheckBox(tr("CONSTRUCT_NEW_GROUP_ELEMENTS"), myGroupArguments);
+  myCheckBoxNewNodeGroup = new QCheckBox(tr("CONSTRUCT_NEW_GROUP_NODES"), myGroupArguments);
 
   aGroupArgumentsLayout->addWidget(myTextLabel1,    0, 0);
   aGroupArgumentsLayout->addWidget(mySelectButton1, 0, 1);
@@ -166,8 +167,9 @@ SMESHGUI_DuplicateNodesDlg::SMESHGUI_DuplicateNodesDlg( SMESHGUI* theModule )
   aGroupArgumentsLayout->addWidget(myTextLabel3,    2, 0);
   aGroupArgumentsLayout->addWidget(mySelectButton3, 2, 1);
   aGroupArgumentsLayout->addWidget(myLineEdit3,     2, 2);
-  aGroupArgumentsLayout->addWidget(myCheckBoxNewGroup, 3, 0);
-  aGroupArgumentsLayout->setRowStretch(4, 1);
+  aGroupArgumentsLayout->addWidget(myCheckBoxNewElemGroup, 3, 0);
+  aGroupArgumentsLayout->addWidget(myCheckBoxNewNodeGroup, 4, 0);
+  aGroupArgumentsLayout->setRowStretch(5, 1);
   
   // Buttons
   QGroupBox* aGroupButtons = new QGroupBox(this);
@@ -235,7 +237,8 @@ SMESHGUI_DuplicateNodesDlg::~SMESHGUI_DuplicateNodesDlg()
 void SMESHGUI_DuplicateNodesDlg::Init()
 {
   mySMESHGUI->SetActiveDialogBox((QDialog*)this);
-  myCheckBoxNewGroup->setChecked(true);
+  myCheckBoxNewElemGroup->setChecked(true);
+  myCheckBoxNewNodeGroup->setChecked(true);
 
   // Set initial parameters
   myBusy = false;
@@ -287,8 +290,8 @@ void SMESHGUI_DuplicateNodesDlg::onConstructorsClicked (int constructorId)
       myTextLabel1->setText(tr("GROUP_NODES_TO_DUPLICATE"));
       myTextLabel2->setText(tr("GROUP_NODES_TO_REPLACE"));
 
-      // Set checkbox title
-      myCheckBoxNewGroup->setText(tr("CONSTRUCT_NEW_GROUP_NODES"));
+      myCheckBoxNewElemGroup->hide();
+      myCheckBoxNewNodeGroup->show();
       
       // Hide the third field
       myTextLabel3->hide();
@@ -305,8 +308,8 @@ void SMESHGUI_DuplicateNodesDlg::onConstructorsClicked (int constructorId)
       myTextLabel2->setText(tr("GROUP_NODES_NOT_DUPLICATE"));
       myTextLabel3->setText(tr("GROUP_ELEMS_TO_REPLACE"));
       
-      // Set checkbox title
-      myCheckBoxNewGroup->setText(tr("CONSTRUCT_NEW_GROUP_ELEMENTS"));
+      myCheckBoxNewElemGroup->show();
+      myCheckBoxNewNodeGroup->show();
 
       // Show the third field
       myTextLabel3->show();
@@ -331,7 +334,8 @@ bool SMESHGUI_DuplicateNodesDlg::onApply()
 
   BusyLocker lock( myBusy );
  
-  bool toCreateGroup = myCheckBoxNewGroup->isChecked();
+  bool toCreateElemGroup = myCheckBoxNewElemGroup->isChecked();
+  bool toCreateNodeGroup = myCheckBoxNewNodeGroup->isChecked();
   int operationMode = myGroupConstructors->checkedId();
   
   // Apply changes
@@ -352,7 +356,7 @@ bool SMESHGUI_DuplicateNodesDlg::onApply()
       for ( int i = 0; i < myGroups2.count(); i++ )
         g2[i] = myGroups2[i];
 
-      if ( toCreateGroup ) {
+      if ( toCreateNodeGroup ) {
         SMESH::SMESH_GroupBase_var aNewGroup = 
           aMeshEditor->DoubleNodeGroupsNew( g1.in(), g2.in() );
         result = !CORBA::is_nil( aNewGroup );
@@ -375,10 +379,11 @@ bool SMESHGUI_DuplicateNodesDlg::onApply()
 
       for ( int i = 0; i < myGroups3.count(); i++ )
         g3[i] = myGroups3[i];
-      if ( toCreateGroup ) {
-        SMESH::SMESH_GroupBase_ptr aNewGroup = 
-          aMeshEditor->DoubleNodeElemGroupsNew( g1.in(), g2.in(), g3.in() );
-        result = !CORBA::is_nil( aNewGroup );
+      if ( toCreateElemGroup || toCreateNodeGroup ) {
+        SMESH::ListOfGroups_var aNewGroups = 
+          aMeshEditor->DoubleNodeElemGroups2New( g1.in(), g2.in(), g3.in(),
+                                                 toCreateElemGroup, toCreateNodeGroup );
+        result = ( aNewGroups[ !toCreateElemGroup ].in() );
       }
       else {
         result = aMeshEditor->DoubleNodeElemGroups( g1.in(), g2.in(), g3.in() );

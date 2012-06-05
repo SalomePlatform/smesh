@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2011  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -511,7 +511,10 @@ Handle(_pyCommand) _pyGen::AddCommand( const TCollection_AsciiString& theCommand
          method == "DoubleNodeGroupNew"     ||
          method == "DoubleNodeGroupsNew"    ||
          method == "DoubleNodeElemGroupNew" ||
-         method == "DoubleNodeElemGroupsNew" )
+         method == "DoubleNodeElemGroupsNew"||
+         method == "DoubleNodeElemGroup2New"||
+         method == "DoubleNodeElemGroups2New"
+         )
       groups = aCommand->GetResultValue();
     else if ( method == "MakeBoundaryMesh" )
       groups = aCommand->GetResultValue(2);
@@ -718,7 +721,7 @@ void _pyGen::Process( const Handle(_pyCommand)& theCommand )
   {
     for(int ind = 0;ind<theCommand->GetNbResultValues();ind++)
     {
-      const _pyID& meshID = theCommand->GetResultValue(ind+1);
+      _pyID meshID = theCommand->GetResultValue(ind+1);
       if ( !theCommand->IsStudyEntry( meshID ) ) continue;
       Handle(_pyMesh) mesh = new _pyMesh( theCommand, theCommand->GetResultValue(ind+1));
       myMeshes.insert( make_pair( mesh->GetID(), mesh ));
@@ -1231,7 +1234,8 @@ bool _pyGen::IsGeomObject(const _pyID& theObjID) const
   if ( myGeomIDNb )
   {
     return ( myGeomIDIndex <= theObjID.Length() &&
-             int( theObjID.Value( myGeomIDIndex )) == myGeomIDNb);
+             int( theObjID.Value( myGeomIDIndex )) == myGeomIDNb &&
+             _pyCommand::IsStudyEntry( theObjID ));
   }
   return false;
 }
@@ -1962,18 +1966,29 @@ void _pyMeshEditor::Process( const Handle(_pyCommand)& theCommand)
     isPyMeshMethod=true;
     theCommand->SetMethod("FindCoincidentNodesOnPart");
   }
-  // DoubleNodeElemGroupNew() -> DoubleNodeElemGroup()
-  // DoubleNodeGroupNew() -> DoubleNodeGroup()
-  // DoubleNodeGroupsNew() -> DoubleNodeGroups()
-  // DoubleNodeElemGroupsNew() -> DoubleNodeElemGroups()
+  // DoubleNode...New(...) -> DoubleNode...(...,True)
   if ( !isPyMeshMethod && ( method == "DoubleNodeElemGroupNew"  ||
                             method == "DoubleNodeElemGroupsNew" ||
                             method == "DoubleNodeGroupNew"      ||
-                            method == "DoubleNodeGroupsNew"))
+                            method == "DoubleNodeGroupsNew"     ||
+                            method == "DoubleNodeElemGroup2New" ||
+                            method == "DoubleNodeElemGroups2New"))
   {
     isPyMeshMethod=true;
-    theCommand->SetMethod( method.SubString( 1, method.Length()-3));
-    theCommand->SetArg(theCommand->GetNbArgs()+1,"True");
+    const int excessLen = 3 + int( method.Value( method.Length()-3 ) == '2' );
+    theCommand->SetMethod( method.SubString( 1, method.Length()-excessLen));
+    if ( excessLen == 3 )
+    {
+      theCommand->SetArg(theCommand->GetNbArgs()+1,"True");
+    }
+    else if ( theCommand->GetArg(4) == "0" ||
+              theCommand->GetArg(5) == "0" )
+    {
+      // [ nothing, Group ] = DoubleNodeGroup2New(,,,False, True) ->
+      // Group = DoubleNodeGroup2New(,,,False, True)
+      _pyID groupID = theCommand->GetResultValue( 1 + int( theCommand->GetArg(4) == "0"));
+      theCommand->SetResultValue( groupID );
+    }
   }
   // ConvertToQuadraticObject(bool,obj) -> ConvertToQuadratic(bool,obj)
   // ConvertFromQuadraticObject(obj) -> ConvertFromQuadratic(obj)
@@ -3027,22 +3042,25 @@ const int _pyCommand::GetNbResultValues()
 //================================================================================
 /*!
  * \brief Return substring of python command looking like
- *  ResultValue1 , ResultValue1,... = Obj.Meth() with res index
+ *  ResultValue1 , ResultValue2,... = Obj.Meth() with res index
  * \retval const TCollection_AsciiString & - ResultValue with res index substring
  */
 //================================================================================
-const TCollection_AsciiString & _pyCommand::GetResultValue(int res)
+TCollection_AsciiString _pyCommand::GetResultValue(int res)
 {
   int begPos = 1;
-  int Nb=0;
+  if ( SkipSpaces( myString, begPos ) && myString.Value( begPos ) == '[' )
+    ++begPos; // skip [, else the whole list is returned
   int endPos = myString.Location( "=", 1, Length() );
+  int Nb=0;
   while ( begPos < endPos) {
-    myRes = GetWord( myString, begPos, true );
-    begPos = begPos + myRes.Length();
+    _AString result = GetWord( myString, begPos, true );
+    begPos = begPos + result.Length();
     Nb++;
-    if(res == Nb){
-      myRes.RemoveAll('[');myRes.RemoveAll(']');
-      return myRes;
+    if(res == Nb) {
+      result.RemoveAll('[');
+      result.RemoveAll(']');
+      return result;
     }
     if(Nb>res)
       break;
@@ -3350,8 +3368,6 @@ std::list< _pyID > _pyCommand::GetStudyEntries( const TCollection_AsciiString& s
   * \param theString - The string
   * \param thePos - The position to search from and which returns result
   * \retval bool - false if there are only space after thePos in theString
- *
- *
  */
 //================================================================================
 
@@ -3685,6 +3701,8 @@ _pyGroup::_pyGroup(const Handle(_pyCommand)& theCreationCmd, const _pyID & id)
   if ( !id.IsEmpty() )
     setID( id );
 
+  myCanClearCreationCmd = true;
+
   const _AString& method = theCreationCmd->GetMethod();
   if ( method == "CreateGroup" ) // CreateGroup() --> CreateEmptyGroup()
   {
@@ -3726,6 +3744,12 @@ _pyGroup::_pyGroup(const Handle(_pyCommand)& theCreationCmd, const _pyID & id)
       filter->AddUser( this );
     }
     myFilter = filter;
+  }
+  else
+  {
+    // theCreationCmd does something else apart from creation of this group
+    // and thus it can't be cleared if this group is removed
+    myCanClearCreationCmd = false;
   }
 }
 
@@ -3801,6 +3825,23 @@ void _pyGroup::Process( const Handle(_pyCommand)& theCommand)
     filter->AddUser( this );
 
   theGen->AddMeshAccessorMethod( theCommand );
+}
+
+//================================================================================
+/*!
+ * \brief Prevent clearing "DoubleNode...() command if a group created by it is removed
+ * 
+ * 
+ */
+//================================================================================
+
+void _pyGroup::Flush()
+{
+  if ( !theGen->IsToKeepAllCommands() &&
+       myCreationCmd && !myCanClearCreationCmd )
+  {
+    myCreationCmd.Nullify(); // this way myCreationCmd won't be cleared
+  }
 }
 
 //================================================================================

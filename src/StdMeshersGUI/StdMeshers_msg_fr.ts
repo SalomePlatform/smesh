@@ -89,7 +89,7 @@
     </message>
     <message>
         <source>SMESH_FUNC_DOMAIN</source>
-        <translation>Avertissement: La fonction doit ếtre définie sur le segment [0..1]</translation>
+        <translation>Avertissement: La fonction doit être définie sur le segment [0..1]</translation>
     </message>
     <message>
         <source>SMESH_INSERT_ROW</source>
@@ -113,7 +113,7 @@
     </message>
     <message>
         <source>SMESH_LOCAL_LENGTH_HYPOTHESIS</source>
-        <translation>Longueur moyennne</translation>
+        <translation>Longueur moyenne</translation>
     </message>
     <message>
         <source>SMESH_LOCAL_LENGTH_PARAM</source>

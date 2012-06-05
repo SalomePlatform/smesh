@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2011  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -47,6 +47,7 @@
 #include <SALOME_ListIO.hxx>
 #include <SUIT_Desktop.h>
 #include <SVTK_ViewModel.h>
+#include <SVTK_ViewWindow.h>
 #include <SalomeApp_Tools.h>
 #include <SalomeApp_TypeFilter.h>
 #include <SUIT_ResourceMgr.h>
@@ -324,6 +325,10 @@ SMESHGUI_MakeNodeAtPointOp::SMESHGUI_MakeNodeAtPointOp()
   connect(myDlg->myId,SIGNAL (textChanged(const QString&)),SLOT(redisplayPreview()));
   connect(myDlg->myPreviewChkBox,   SIGNAL (toggled(bool)),SLOT(redisplayPreview()));
   connect(myDlg->myAutoSearchChkBox,SIGNAL (toggled(bool)),SLOT(redisplayPreview()));
+
+  // IPAL22913: TC6.5.0: selected in "Move node" dialog box node is not highlighted
+  // note: this slot seems to be lost together with removed obsolete SMESHGUI_MoveNodesDlg class
+  connect(myDlg->myId,SIGNAL (textChanged(const QString&)),SLOT(onTextChange(const QString&)));
 }
 
 //=======================================================================
@@ -715,6 +720,35 @@ void SMESHGUI_MakeNodeAtPointOp::redisplayPreview()
   }
 
   myNoPreview = false;
+}
+
+//================================================================================
+/*!
+ * \brief SLOT called when the node id is manually changed
+ */
+//================================================================================
+
+void SMESHGUI_MakeNodeAtPointOp::onTextChange( const QString& theText )
+{
+  if( myMeshActor )
+  {
+    if( SMDS_Mesh* aMesh = myMeshActor->GetObject()->GetMesh() )
+    {
+      Handle(SALOME_InteractiveObject) anIO = myMeshActor->getIO();
+      SALOME_ListIO aList;
+      aList.Append( anIO );
+      selectionMgr()->setSelectedObjects( aList, false );
+
+      if( const SMDS_MeshNode* aNode = aMesh->FindNode( theText.toInt() ) )
+      {
+        TColStd_MapOfInteger aListInd;
+        aListInd.Add( aNode->GetID() );
+        selector()->AddOrRemoveIndex( anIO, aListInd, false );
+        if( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( SMESHGUI::GetSMESHGUI() ) )
+          aViewWindow->highlight( anIO, true, true );
+      }
+    }
+  }
 }
 
 //================================================================================

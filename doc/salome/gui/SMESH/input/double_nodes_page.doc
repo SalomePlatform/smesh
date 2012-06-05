@@ -2,10 +2,10 @@
 
 \page double_nodes_page Duplicate Nodes
 
-\n This operation allows to duplicate nodes of your mesh.
+\n This operation allows to duplicate nodes of your mesh, which can be
+useful to emulate a crack in the model.
 Duplication consists in replacement of an existing mesh element by another one.
-Lower level elements of the duplicated ones are cloned
-automatically. 
+Lower level elements of the duplicated ones are cloned automatically. 
 
 <em>To duplicate nodes:</em>
 <ol>
@@ -61,10 +61,12 @@ Parameters to be defined in this mode:
 <li><b>Group of elements to replace nodes with new ones</b> (<em>mandatory</em>): the duplicated nodes
  will be associated with these elements.</li>
 <li><b>Construct group with newly created elements</b> option (<em>checked by default</em>): 
- if checked - the group with just created elements will be built.</li>
+ if checked - the group of just created elements will be built.</li>
+<li><b>Construct group with newly created nodes</b> option (<em>checked by default</em>): 
+ if checked - the group of just created nodes will be built.</li>
 </ul>
 
 
-<br><b>See Also</b> a sample TUI Script of a \ref tui_duplicate_nodes "Duplicate nodes" operation.  
+<br><b>See Also</b> a sample TUI Script of a \ref tui_duplicate_nodes "Duplicate nodes" operation.
 
 */

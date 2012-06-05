@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2011  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -428,7 +428,7 @@ namespace {
           // find corresponding point on target shape
           pOK = false;
           gp_Pnt tgtP;
-          const TopoDS_Shape& tgtShape = shape2ShapeMap( srcSM->GetSubShape() );
+          const TopoDS_Shape& tgtShape = shape2ShapeMap( srcSM->GetSubShape(), /*isSrc=*/true );
           if ( tgtShape.ShapeType() == TopAbs_VERTEX )
           {
             tgtP = BRep_Tool::Pnt( TopoDS::Vertex( tgtShape ));
@@ -480,7 +480,7 @@ namespace {
 
     for ( TopExp_Explorer srcEdge( srcFace, TopAbs_EDGE); srcEdge.More(); srcEdge.Next() )
     {
-      const TopoDS_Shape& tgtEdge = shape2ShapeMap( srcEdge.Current() );
+      const TopoDS_Shape& tgtEdge = shape2ShapeMap( srcEdge.Current(), /*isSrc=*/true );
 
       map< double, const SMDS_MeshNode* > srcNodes, tgtNodes;
       if ( !SMESH_Algo::GetSortedNodesOnEdge( srcMesh->GetMeshDS(),
@@ -611,7 +611,7 @@ namespace {
       TopTools_IndexedMapOfShape edgeMap; // to detect seam edges
       for ( int iE = 0; iE < srcWire->NbEdges(); ++iE )
       {
-        tgtEdges.push_back( TopoDS::Edge( shape2ShapeMap( srcWire->Edge( iE ))));
+        tgtEdges.push_back( TopoDS::Edge( shape2ShapeMap( srcWire->Edge( iE ), /*isSrc=*/true)));
         // reverse a seam edge encountered for the second time
         const int oldExtent = edgeMap.Extent();
         edgeMap.Add( tgtEdges.back() );
@@ -734,14 +734,16 @@ namespace {
           }
           case SMDS_TOP_EDGE: {
             TopoDS_Shape srcEdge = srcHelper.GetSubShapeByNode( srcNode, srcHelper.GetMeshDS() );
-            TopoDS_Shape tgtEdge = shape2ShapeMap( srcEdge );
+            TopoDS_Edge  tgtEdge = TopoDS::Edge( shape2ShapeMap( srcEdge, /*isSrc=*/true ));
+            tgtMeshDS->SetNodeOnEdge( n, TopoDS::Edge( tgtEdge ));
             double U = srcHelper.GetNodeU( TopoDS::Edge( srcEdge ), srcNode );
-            tgtMeshDS->SetNodeOnEdge( n, TopoDS::Edge( tgtEdge ), U);
+            helper.CheckNodeU( tgtEdge, n, U, Precision::PConfusion());
+            n->SetPosition(SMDS_PositionPtr(new SMDS_EdgePosition( U )));
             break;
           }
           case SMDS_TOP_VERTEX: {
             TopoDS_Shape srcV = srcHelper.GetSubShapeByNode( srcNode, srcHelper.GetMeshDS() );
-            TopoDS_Shape tgtV = shape2ShapeMap( srcV );
+            TopoDS_Shape tgtV = shape2ShapeMap( srcV, /*isSrc=*/true );
             tgtMeshDS->SetNodeOnVertex( n, TopoDS::Vertex( tgtV ));
             break;
           }
@@ -790,7 +792,7 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
   TopoDS_Shape srcShape = _sourceHypo->GetSourceFace().Oriented(TopAbs_FORWARD);
 
   TAssocTool::TShapeShapeMap shape2ShapeMap;
-  TAssocTool::InitVertexAssociation( _sourceHypo, shape2ShapeMap, tgtFace );
+  TAssocTool::InitVertexAssociation( _sourceHypo, shape2ShapeMap );
   if ( !TAssocTool::FindSubShapeAssociation( tgtFace, tgtMesh, srcShape, srcMesh,
                                              shape2ShapeMap)  ||
        !shape2ShapeMap.IsBound( tgtFace ))
@@ -881,9 +883,9 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
     TopoDS_Vertex srcV1 = TopoDS::Vertex( mapper.GetSubShape( 1 ));
     if ( srcV1.IsNull() )
       RETURN_BAD_RESULT("Mesh is not bound to the face");
-    if ( !shape2ShapeMap.IsBound( srcV1 ))
+    if ( !shape2ShapeMap.IsBound( srcV1, /*isSrc=*/true ))
       RETURN_BAD_RESULT("Not associated vertices, srcV1 " << srcV1.TShape().operator->() );
-    TopoDS_Vertex tgtV1 = TopoDS::Vertex( shape2ShapeMap( srcV1 ));
+    TopoDS_Vertex tgtV1 = TopoDS::Vertex( shape2ShapeMap( srcV1, /*isSrc=*/true ));
 
     if ( !SMESH_MesherHelper::IsSubShape( srcV1, srcFace ))
       RETURN_BAD_RESULT("Wrong srcV1 " << srcV1.TShape().operator->());
@@ -948,7 +950,7 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
     {
       SMESH_subMesh*     sm = smIt->next();
       SMESHDS_SubMesh* smDS = sm->GetSubMeshDS();
-      if ( smDS->NbNodes() == 0 )
+      if ( !smDS || smDS->NbNodes() == 0 )
         continue;
       //if ( !is1DComputed && sm->GetSubShape().ShapeType() == TopAbs_EDGE )
       //break;
@@ -1087,7 +1089,7 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
   // Check elements orientation
   // ---------------------------
 
-  TopoDS_Face face = tgtFace;
+  TopoDS_Face face = TopoDS::Face( theShape );
   if ( !theMesh.IsMainShape( tgtFace ))
   {
     // find the main shape
@@ -1157,7 +1159,7 @@ bool StdMeshers_Projection_2D::Evaluate(SMESH_Mesh&         theMesh,
   TopoDS_Shape srcShape = _sourceHypo->GetSourceFace().Oriented(TopAbs_FORWARD);
 
   TAssocTool::TShapeShapeMap shape2ShapeMap;
-  TAssocTool::InitVertexAssociation( _sourceHypo, shape2ShapeMap, tgtFace );
+  TAssocTool::InitVertexAssociation( _sourceHypo, shape2ShapeMap );
   if ( !TAssocTool::FindSubShapeAssociation( tgtFace, tgtMesh, srcShape, srcMesh,
                                              shape2ShapeMap)  ||
        !shape2ShapeMap.IsBound( tgtFace ))

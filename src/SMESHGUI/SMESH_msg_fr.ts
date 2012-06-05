@@ -221,11 +221,11 @@
     </message>
     <message>
         <source>MEN_CONNECTION</source>
-        <translation>Frontières sur connections multiples</translation>
+        <translation>Frontières sur connexions multiples</translation>
     </message>
     <message>
         <source>MEN_CONNECTION_2D</source>
-        <translation>Frontières sur connections multiples 2D</translation>
+        <translation>Frontières sur connexions multiples 2D</translation>
     </message>
     <message>
         <source>MEN_CONSTRUCT_GROUP</source>
@@ -249,7 +249,7 @@
     </message>
     <message>
         <source>MEN_CREATE_GEO_GROUP</source>
-        <translation>Créer les groupes à partir de la géométrie</translation>
+        <translation>Créer des groupes à partir de la géométrie</translation>
     </message>
     <message>
         <source>MEN_CREATE_MESH</source>
@@ -286,6 +286,10 @@
     <message>
         <source>MEN_CUT_GROUP</source>
         <translation>Découpe des groupes</translation>
+    </message>
+    <message>
+        <source>MEN_IMPORT_DAT</source>
+        <translation>Fichier DAT</translation>
     </message>
     <message>
         <source>MEN_DAT</source>
@@ -556,12 +560,24 @@
         <translation>Diamètre des éléments 3D</translation>
     </message>
     <message>
+        <source>MEN_IMPORT_MED</source>
+        <translation>Fichier MED</translation>
+    </message>
+    <message>
         <source>MEN_MED</source>
         <translation>Fichier MED</translation>
     </message>
     <message>
+        <source>MEN_IMPORT_CGNS</source>
+        <translation>Fichier CGNS</translation>
+    </message>
+    <message>
         <source>MEN_CGNS</source>
         <translation>Fichier CGNS</translation>
+    </message>
+    <message>
+        <source>MEN_IMPORT_SAUV</source>
+        <translation>Fichier SAUV (ASCII)</translation>
     </message>
     <message>
         <source>MEN_SAUV</source>
@@ -601,11 +617,11 @@
     </message>
     <message>
         <source>STB_MEASURE_MIN_DIST</source>
-        <translation>Calculate minimum distance between two objects</translation>
+        <translation>Calcule la distance minimum entre deux objets</translation>
     </message>
     <message>
         <source>TOP_MEASURE_MIN_DIST</source>
-        <translation>Minimum distance</translation>
+        <translation>Distance minimum</translation>
     </message>
     <message>
         <source>MEN_MEASURE_BND_BOX</source>
@@ -613,11 +629,11 @@
     </message>
     <message>
         <source>STB_MEASURE_BND_BOX</source>
-        <translation>Calculate bounding box for the selected object(s)</translation>
+        <translation>Calcule la boîte englobante pour le(s) objet(s) sélectionné(s)</translation>
     </message>
     <message>
         <source>TOP_MEASURE_BND_BOX</source>
-        <translation>Bounding box</translation>
+        <translation>Boîte englobante</translation>
     </message>
     <message>
         <source>MEN_MOVE</source>
@@ -689,7 +705,7 @@
     </message>
     <message>
         <source>MEN_QUADRATIC_TETRAHEDRON</source>
-        <translation>Tetraèdre quadratique</translation>
+        <translation>Tétraèdre quadratique</translation>
     </message>
     <message>
         <source>MEN_QUADRATIC_TRIANGLE</source>
@@ -801,7 +817,7 @@
     </message>
     <message>
         <source>MEN_SHOW</source>
-        <translation>Visualiser</translation>
+        <translation>Afficher</translation>
     </message>
     <message>
         <source>MEN_SHRINK</source>
@@ -818,6 +834,10 @@
     <message>
         <source>MEN_STD_INFO</source>
         <translation>Informations sur le maillage</translation>
+    </message>
+    <message>
+        <source>MEN_IMPORT_STL</source>
+        <translation>Fichier STL</translation>
     </message>
     <message>
         <source>MEN_STL</source>
@@ -876,6 +896,10 @@
         <translation>Union de deux triangles</translation>
     </message>
     <message>
+        <source>MEN_IMPORT_UNV</source>
+        <translation>Fichier UNV</translation>
+    </message>
+    <message>
         <source>MEN_UNV</source>
         <translation>Fichier UNV</translation>
     </message>
@@ -928,78 +952,6 @@
         <translation>Eclater en tétraèdres</translation>
     </message>
     <message>
-        <source>Properties (color, line width, shrink size, ...)</source>
-        <translation>Propriétés (couleur, épaisseur des traits, taille des éléments réduits, ...)</translation>
-    </message>
-    <message>
-        <source>Elements</source>
-        <translation>Eléments</translation>
-    </message>
-    <message>
-        <source>Surface color</source>
-        <translation>Couleur de surface</translation>
-    </message>
-    <message>
-        <source>Back surface color</source>
-        <translation>Couleur arrière</translation>
-    </message>
-    <message>
-        <source>Outline color</source>
-        <translation>Couleur de contour</translation>
-    </message>
-    <message>
-        <source>Wireframe color</source>
-        <translation>Couleur en mode fil de fer</translation>
-    </message>
-    <message>
-        <source>0D elements</source>
-        <translation>Eléments 0D</translation>
-    </message>
-    <message>
-        <source>Size of 0D elements</source>
-        <translation>Taille des éléments 0D</translation>
-    </message>
-    <message>
-        <source>Line width</source>
-        <translation>Epaisseur des traits</translation>
-    </message>
-    <message>
-        <source>Shrink coef.</source>
-        <translation>Coef. de contraction</translation>
-    </message>
-    <message>
-        <source>Nodes</source>
-        <translation>Nœuds</translation>
-    </message>
-    <message>
-        <source>Color</source>
-        <translation>Couleur</translation>
-    </message>
-    <message>
-        <source>Marker</source>
-        <translation>Marqueur</translation>
-    </message>
-    <message>
-        <source>Orientation of faces</source>
-        <translation>Orientation des faces</translation>
-    </message>
-    <message>
-        <source>Scale</source>
-        <translation>Facteur d'échelle</translation>
-    </message>
-    <message>
-        <source>3D vectors</source>
-        <translation>Vecteurs 3D</translation>
-    </message>
-    <message>
-        <source>&amp;Cancel</source>
-        <translation>&amp;Annuler</translation>
-    </message>
-    <message>
-        <source>&amp;Help</source>
-        <translation>Ai&amp;de</translation>
-    </message>
-    <message>
         <source>MESHERS_FILE_CANT_OPEN</source>
         <translation>Impossible d&apos;ouvrir le fichier de ressource</translation>
     </message>
@@ -1030,11 +982,11 @@ Choisissez un maillage et essayez de nouveau</translation>
     </message>
     <message>
         <source>MULTI2D_BORDERS</source>
-        <translation>Frontières sur multi-connections 2D</translation>
+        <translation>Frontières sur multi-connexions 2D</translation>
     </message>
     <message>
         <source>MULTI_BORDERS</source>
-        <translation>Frontières sur multi-connections</translation>
+        <translation>Frontières sur multi-connexions</translation>
     </message>
     <message>
         <source>GROUP_NAME_IS_EMPTY</source>
@@ -1097,7 +1049,7 @@ Merci de les corriger, puis essayez de nouveau</translation>
     </message>
     <message>
         <source>SMESH_ADD_HEXAS_TITLE</source>
-        <translation>Ajouter un hexahèdre</translation>
+        <translation>Ajouter un hexaèdre</translation>
     </message>
     <message>
         <source>SMESH_ADD_HYPOTHESIS</source>
@@ -1105,7 +1057,7 @@ Merci de les corriger, puis essayez de nouveau</translation>
     </message>
     <message>
         <source>SMESH_ADD_HYPOTHESIS_TITLE</source>
-        <translation>Attrbution d&apos;une hypothèse</translation>
+        <translation>Attribution d&apos;une hypothèse</translation>
     </message>
     <message>
         <source>SMESH_ADD_HYP_WRN</source>
@@ -1397,7 +1349,7 @@ ce qui peut faire planter l&apos;application. Voulez-vous continuer la visualisa
     </message>
     <message>
         <source>SMESH_CREATE_GEO_GROUP</source>
-        <translation>Créer les groupes liés à la géométrie</translation>
+        <translation>Créer des groupes liés à la géométrie</translation>
     </message>
     <message>
         <source>SMESH_CREATE_HYPOTHESES</source>
@@ -1928,7 +1880,7 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie suppo
     </message>
     <message>
         <source>SMESH_MESHINFO_TETRAS</source>
-        <translation>Tetraèdres</translation>
+        <translation>Tétraèdres</translation>
     </message>
     <message>
         <source>SMESH_MESHINFO_TITLE</source>
@@ -2028,15 +1980,19 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie suppo
     </message>
     <message>
         <source>SMESH_OCTA</source>
-        <translation>Prisme héxagonal</translation>
+        <translation>Prisme hexagonal</translation>
     </message>
     <message>
         <source>TOP_OCTA</source>
-        <translation>Prisme héxagonal</translation>
+        <translation>Prisme hexagonal</translation>
     </message>
     <message>
         <source>MEN_OCTA</source>
-        <translation>Prisme héxagonal</translation>
+        <translation>Prisme hexagonal</translation>
+    </message>
+    <message>
+        <source>STB_OCTA</source>
+        <translation>Prisme hexagonal</translation>
     </message>
     <message>
         <source>SMESH_ORIENTATION</source>
@@ -2056,15 +2012,19 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie suppo
     </message>
     <message>
         <source>SMESH_PENTA</source>
-        <translation>Pentahèdre</translation>
+        <translation>Pentaèdre</translation>
     </message>
     <message>
         <source>TOP_PENTA</source>
-        <translation>Pentahèdre</translation>
+        <translation>Pentaèdre</translation>
     </message>
     <message>
         <source>MEN_PENTA</source>
-        <translation>Pentahèdre</translation>
+        <translation>Pentaèdre</translation>
+    </message>
+    <message>
+        <source>STB_PENTA</source>
+        <translation>Pentaèdre</translation>
     </message>
     <message>
         <source>SMESH_PLANE</source>
@@ -2132,7 +2092,7 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie suppo
     </message>
     <message>
         <source>SMESH_PROPERTIES_SCALARBAR</source>
-        <translation>Proprétés de la barre d&apos;échelle</translation>
+        <translation>Propriétés de la barre d&apos;échelle</translation>
     </message>
     <message>
         <source>SMESH_PYRAMID</source>
@@ -2144,6 +2104,10 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie suppo
     </message>
     <message>
         <source>TOP_PYRAMID</source>
+        <translation>Pyramide</translation>
+    </message>
+    <message>
+        <source>STB_PYRAMID</source>
         <translation>Pyramide</translation>
     </message>
     <message>
@@ -2171,6 +2135,10 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie suppo
         <translation>Hexaèdre triquadratique</translation>
     </message>
     <message>
+        <source>STB_TRIQUADRATIC_HEXAHEDRON</source>
+        <translation>Hexaèdre triquadratique</translation>
+    </message>
+    <message>
         <source>SMESH_QUADRATIC_PENTAHEDRON</source>
         <translation>Pentaèdre quadratique</translation>
     </message>
@@ -2195,8 +2163,12 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie suppo
         <translation>Quadrangle biquadratique</translation>
     </message>
     <message>
+        <source>STB_BIQUADRATIC_QUADRANGLE</source>
+        <translation>Quadrangle biquadratique</translation>
+    </message>
+    <message>
         <source>SMESH_QUADRATIC_TETRAHEDRON</source>
-        <translation>Tetraèdre quadratique</translation>
+        <translation>Tétraèdre quadratique</translation>
     </message>
     <message>
         <source>SMESH_QUADRATIC_TRIANGLE</source>
@@ -2529,7 +2501,7 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>STB_ADV_INFO</source>
-        <translation>Monter l&apos;Information de base sur le maillage</translation>
+        <translation>Monter l&apos;information de base sur le maillage</translation>
     </message>
     <message>
         <source>STB_ALL</source>
@@ -2585,11 +2557,11 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>STB_CONNECTION</source>
-        <translation>Frontières sur connection multiples</translation>
+        <translation>Frontières sur connexion multiples</translation>
     </message>
     <message>
         <source>STB_CONNECTION_2D</source>
-        <translation>Frontières sur connection multiples 2D</translation>
+        <translation>Frontières sur connexion multiples 2D</translation>
     </message>
     <message>
         <source>STB_CONSTRUCT_GROUP</source>
@@ -2613,7 +2585,7 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>STB_CREATE_GEO_GROUP</source>
-        <translation>Créer les groupes à partir de la géométrie</translation>
+        <translation>Créer des groupes à partir de la géométrie</translation>
     </message>
     <message>
         <source>STB_CREATE_MESH</source>
@@ -2632,8 +2604,12 @@ Vérifiez la limite dans les préférences du module Mesh.
         <translation>Découper les groupes</translation>
     </message>
     <message>
-        <source>STB_DAT</source>
+        <source>STB_IMPORT_DAT</source>
         <translation>Importer un fichier DAT</translation>
+    </message>
+    <message>
+        <source>STB_DAT</source>
+        <translation>Exporter un fichier DAT</translation>
     </message>
     <message>
         <source>STB_DELETE</source>
@@ -2800,12 +2776,36 @@ Vérifiez la limite dans les préférences du module Mesh.
         <translation>Diamètre de l&apos;élément 3D</translation>
     </message>
     <message>
-        <source>STB_MED</source>
+        <source>STB_IMPORT_MED</source>
         <translation>Importer un fichier MED</translation>
     </message>
     <message>
-        <source>STB_SAUV</source>
+        <source>STB_MED</source>
+        <translation>Exporter un fichier MED</translation>
+    </message>
+    <message>
+        <source>STB_IMPORT_STL</source>
+        <translation>Importer un fichier STL</translation>
+    </message>
+    <message>
+        <source>STB_STL</source>
+        <translation>Exporter un fichier STL</translation>
+    </message>
+    <message>
+        <source>STB_IMPORT_CGNS</source>
+        <translation>Importer un fichier CGNS</translation>
+    </message>
+    <message>
+        <source>STB_CGNS</source>
+        <translation>Exporter un fichier CGNS</translation>
+    </message>
+    <message>
+        <source>STB_IMPORT_SAUV</source>
         <translation>Importer un fichier SAUV (ASCII)</translation>
+    </message>
+    <message>
+        <source>STB_SAUV</source>
+        <translation>Exporter un fichier SAUV (ASCII)</translation>
     </message>
     <message>
         <source>STB_MERGE</source>
@@ -2961,7 +2961,7 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>STB_SHOW</source>
-        <translation>Visualiser</translation>
+        <translation>Afficher</translation>
     </message>
     <message>
         <source>STB_SHRINK</source>
@@ -3024,8 +3024,12 @@ Vérifiez la limite dans les préférences du module Mesh.
         <translation>Union de deux triangles</translation>
     </message>
     <message>
-        <source>STB_UNV</source>
+        <source>STB_IMPORT_UNV</source>
         <translation>Importer un fichier UNV</translation>
+    </message>
+    <message>
+        <source>STB_UNV</source>
+        <translation>Exporter un fichier UNV</translation>
     </message>
     <message>
         <source>STB_UN_GROUP</source>
@@ -3145,11 +3149,11 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>TOP_CONNECTION</source>
-        <translation>Frontières sur connections multiples</translation>
+        <translation>Frontières sur connexions multiples</translation>
     </message>
     <message>
         <source>TOP_CONNECTION_2D</source>
-        <translation>Frontières sur connections multiples 2D</translation>
+        <translation>Frontières sur connexions multiples 2D</translation>
     </message>
     <message>
         <source>TOP_CONSTRUCT_GROUP</source>
@@ -3173,7 +3177,7 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>TOP_CREATE_GEO_GROUP</source>
-        <translation>Créer les groupes liés à la géométrie</translation>
+        <translation>Créer des groupes liés à la géométrie</translation>
     </message>
     <message>
         <source>TOP_CREATE_MESH</source>
@@ -3192,8 +3196,12 @@ Vérifiez la limite dans les préférences du module Mesh.
         <translation>Découper les groupes</translation>
     </message>
     <message>
-        <source>TOP_DAT</source>
+        <source>TOP_IMPORT_DAT</source>
         <translation>Importer un fichier DAT</translation>
+    </message>
+    <message>
+        <source>TOP_DAT</source>
+        <translation>Exporter un fichier DAT</translation>
     </message>
     <message>
         <source>TOP_DELETE</source>
@@ -3356,12 +3364,36 @@ Vérifiez la limite dans les préférences du module Mesh.
         <translation>Diamètre des éléments 3D</translation>
     </message>
     <message>
-        <source>TOP_MED</source>
+        <source>TOP_IMPORT_MED</source>
         <translation>Importer un fichier MED</translation>
     </message>
     <message>
-        <source>TOP_SAUV</source>
+        <source>TOP_MED</source>
+        <translation>Exporter un fichier MED</translation>
+    </message>
+    <message>
+        <source>TOP_IMPORT_STL</source>
+        <translation>Importer un fichier STL</translation>
+    </message>
+    <message>
+        <source>TOP_STL</source>
+        <translation>Exporter un fichier STL</translation>
+    </message>
+    <message>
+        <source>TOP_IMPORT_CGNS</source>
+        <translation>Importer un fichier CGNS</translation>
+    </message>
+    <message>
+        <source>TOP_CGNS</source>
+        <translation>Exporter un fichier CGNS</translation>
+    </message>
+    <message>
+        <source>TOP_IMPORT_SAUV</source>
         <translation>Importer un fichier SAUV (ASCII)</translation>
+    </message>
+    <message>
+        <source>TOP_SAUV</source>
+        <translation>Exporter un fichier SAUV (ASCII)</translation>
     </message>
     <message>
         <source>TOP_MERGE</source>
@@ -3457,7 +3489,7 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>TOP_REMOVE_ORPHAN_NODES</source>
-        <translation>Supprimer les nœuds ophelins</translation>
+        <translation>Supprimer les nœuds orphelins</translation>
     </message>
     <message>
         <source>TOP_RENAME</source>
@@ -3517,7 +3549,7 @@ Vérifiez la limite dans les préférences du module Mesh.
     </message>
     <message>
         <source>TOP_SHOW</source>
-        <translation>Visualiser</translation>
+        <translation>Afficher</translation>
     </message>
     <message>
         <source>TOP_SHRINK</source>
@@ -3580,8 +3612,12 @@ Vérifiez la limite dans les préférences du module Mesh.
         <translation>Union de deux triangles</translation>
     </message>
     <message>
-        <source>TOP_UNV</source>
+        <source>TOP_IMPORT_UNV</source>
         <translation>Importer un fichier UNV</translation>
+    </message>
+    <message>
+        <source>TOP_UNV</source>
+        <translation>Exporter un fichier UNV</translation>
     </message>
     <message>
         <source>TOP_UN_GROUP</source>
@@ -3737,12 +3773,21 @@ avec le paramètre &apos;%1&apos; des préférences du module Mesh.</translation
         <source>MESH_LOADING_MSG_FINISHED</source>
         <translation>Chargement du maillage %0 terminé</translation>
     </message>
+    <message>
+        <source>DEP_OBJECT</source>
+        <translation>L&apos;objet sélectionné a été utilisé pour en créer un autre.
+Il ne peut pas être supprimé.</translation>
+    </message>
 </context>
 <context>
     <name>SMESHGUI_GroupDlg</name>
     <message>
         <source>ALLOW_ELEM_LIST_MODIF</source>
         <translation>Edition manuelle</translation>
+    </message>
+    <message>
+        <source>SELECT_ALL</source>
+        <translation>Sélectionner tout</translation>
     </message>
 </context>
 <context>
@@ -3774,7 +3819,7 @@ Ouvrez une fenêtre VTK et essayez de nouveau</translation>
     </message>
     <message>
         <source>PREF_FORGET_MESH_AT_HYP_MODIF</source>
-        <translation>Ne pas charger le maillage du fichier d'étude à la modification d'une hypothèse</translation>
+        <translation>Ne pas charger le maillage du fichier d&apos;étude à la modification d&apos;une hypothèse</translation>
     </message>
     <message>
         <source>PREF_AUTO_UPDATE</source>
@@ -3803,7 +3848,7 @@ Ouvrez une fenêtre VTK et essayez de nouveau</translation>
     <message>
         <source>PREF_PRE_SELECTION</source>
         <translation>Couleur de pré-sélection</translation>
-    </message>    
+    </message>
     <message>
         <source>PREF_COLOR</source>
         <translation>Couleur</translation>
@@ -4254,7 +4299,7 @@ Indiquez-le et essayez de nouveau</translation>
     </message>
     <message>
         <source>REF_IS_NULL</source>
-        <translation>Aucun maillage valide n&apos;est sélecionné</translation>
+        <translation>Aucun maillage valide n&apos;est sélectionné</translation>
     </message>
 </context>
 <context>
@@ -4414,6 +4459,10 @@ Choisissez un groupe et essayez de nouveau</translation>
         <translation>Impossible d&apos;obtenir la tangente pour un des nœuds du chemin</translation>
     </message>
     <message>
+        <source>EXTRUSION_0D</source>
+        <translation>Extrusion des éléments 0D</translation>
+    </message>
+    <message>
         <source>EXTRUSION_1D</source>
         <translation>Extrusion des éléments 1D</translation>
     </message>
@@ -4439,7 +4488,7 @@ Choisissez un groupe et essayez de nouveau</translation>
     </message>
     <message>
         <source>SELECTED_PATH_IS_NOT_EDGE</source>
-        <translation>Le maillage du chemin doît être du type arête</translation>
+        <translation>Le maillage du chemin doit être du type arête</translation>
     </message>
     <message>
         <source>SMESH_ANGLES</source>
@@ -4989,11 +5038,11 @@ Entrez une valeur correcte et essayez de nouveau</translation>
     </message>
     <message>
         <source>GEOM_TYPE_9</source>
-        <translation>Prisme héxagonal</translation>
+        <translation>Prisme hexagonal</translation>
     </message>
     <message>
         <source>GEOM_TYPE_10</source>
-        <translation>Polyhèdre</translation>
+        <translation>Polyèdre</translation>
     </message>
 </context>
 <context>
@@ -5047,13 +5096,6 @@ Indiquez-les et essayez de nouveau</translation>
     <message>
         <source>UNION_OF_TWO_GROUPS</source>
         <translation>Union de deux groupes</translation>
-    </message>
-</context>
-<context>
-    <name>SMESHGUI_GroupDlg</name>
-    <message>
-        <source>SELECT_ALL</source>
-        <translation>Sélectionner tout</translation>
     </message>
 </context>
 <context>
@@ -5240,7 +5282,7 @@ Indiquez-les et essayez de nouveau</translation>
     <name>SMESHGUI_MeshOp</name>
     <message>
         <source>ALGORITHM_WITHOUT_HYPOTHESIS</source>
-        <translation>L&apos;algorithm pour la dimension %1 est défini mais l&apos;hypothèse ne l&apos;est pas</translation>
+        <translation>L&apos;algorithme pour la dimension %1 est défini mais l&apos;hypothèse ne l&apos;est pas</translation>
     </message>
     <message>
         <source>EDIT_SUBMESH_QUESTION</source>
@@ -5514,7 +5556,7 @@ Il y a trop peu de points dans le fichier </translation>
     </message>
     <message>
         <source>SPLIT_METHOD</source>
-        <translation>Diviser l&apos;héxaèdre</translation>
+        <translation>Diviser l&apos;hexaèdre</translation>
     </message>
     <message>
         <source>SPLIT_HEX_TO_5_TETRA</source>
@@ -6062,11 +6104,11 @@ en raison de leurs types incompatibles:
     </message>
     <message>
         <source>TETRAHEDRONS_LAB</source>
-        <translation>Tétrahédrons:</translation>
+        <translation>Tétraèdres:</translation>
     </message>
     <message>
         <source>HEXAHEDONRS_LAB</source>
-        <translation>Hexahédrons:</translation>
+        <translation>Hexaèdres:</translation>
     </message>
     <message>
         <source>PYRAMIDS_LAB</source>
@@ -6082,7 +6124,7 @@ en raison de leurs types incompatibles:
     </message>
     <message>
         <source>POLYHEDRONS_LAB</source>
-        <translation>Polyhédrons:</translation>
+        <translation>Polyèdres:</translation>
     </message>
     <message>
         <source>OBJECT_MESH</source>
@@ -6116,12 +6158,16 @@ en raison de leurs types incompatibles:
         <source>OBJECT_GROUP_0DELEMS</source>
         <translation>Groupe d&apos;éléments 0D</translation>
     </message>
+    <message>
+        <source>BUT_LOAD_MESH</source>
+        <translation>Charger un maillage depuis un serveur</translation>
+    </message>
 </context>
 <context>
     <name>SMESHGUI_MeshInfoDlg</name>
     <message>
         <source>MESH_INFO</source>
-        <translation>Infiormations de maillage</translation>
+        <translation>Informations de maillage</translation>
     </message>
     <message>
         <source>BASE_INFO</source>
@@ -6212,15 +6258,15 @@ en raison de leurs types incompatibles:
     </message>
     <message>
         <source>POLYGON</source>
-        <translation>Polygône</translation>
+        <translation>Polygone</translation>
     </message>
     <message>
         <source>TETRAHEDRON</source>
-        <translation>Tétrahédron</translation>
+        <translation>Tétraèdre</translation>
     </message>
     <message>
         <source>HEXAHEDRON</source>
-        <translation>Hexahédron</translation>
+        <translation>Hexaèdre</translation>
     </message>
     <message>
         <source>PYRAMID</source>
@@ -6236,7 +6282,7 @@ en raison de leurs types incompatibles:
     </message>
     <message>
         <source>POLYHEDRON</source>
-        <translation>Polyhédron</translation>
+        <translation>Polyèdre</translation>
     </message>
     <message>
         <source>QUADRATIC</source>
@@ -6307,7 +6353,7 @@ en raison de leurs types incompatibles:
     </message>
     <message>
         <source>GROUP_ON_GEOMETRY</source>
-        <translation>Groupe lié à une géometrie</translation>
+        <translation>Groupe lié à une géométrie</translation>
     </message>
     <message>
         <source>GROUP_ON_FILTER</source>
@@ -6362,8 +6408,12 @@ en raison de leurs types incompatibles:
         <translation>Calculer</translation>
     </message>
     <message>
+        <source>LOAD</source>
+        <translation>Charger</translation>
+    </message>
+    <message>
         <source>MESH_ON_GEOMETRY</source>
-        <translation>Lié à une géometrie</translation>
+        <translation>Lié à une géométrie</translation>
     </message>
     <message>
         <source>MESH_FROM_FILE</source>
@@ -6519,10 +6569,100 @@ en raison de leurs types incompatibles:
     </message>
 </context>
 <context>
+    <name>SMESHGUI_MeshLoadingProgress</name>
+    <message>
+        <source>MESH_LOAD_PROGRESS_TITLE</source>
+        <translation>Chargement du maillage en cours</translation>
+    </message>
+</context>
+<context>
     <name>StdMeshersGUI_SubShapeSelectorWdg</name>
     <message>
         <source>X_FROM_Y_ITEMS_SHOWN</source>
         <translation>%1-%2 sur %3 éléments affichés</translation>
+    </message>
+</context>
+<context>
+    <name>SMESHGUI_Preferences_ColorDlg</name>
+    <message>
+        <source>DIALOG_TITLE</source>
+        <translation>Propriétés (couleur, épaisseur des traits, taille des éléments réduits, ...)</translation>
+    </message>
+    <message>
+        <source>GRP_ELEMENTS</source>
+        <translation>Eléments</translation>
+    </message>
+    <message>
+        <source>SURFACE_COLOR_LBL</source>
+        <translation>Couleur de surface</translation>
+    </message>
+    <message>
+        <source>BACKSURFACE_COLOR_LBL</source>
+        <translation>Couleur arrière</translation>
+    </message>
+    <message>
+        <source>OUTLINE_COLOR_LBL</source>
+        <translation>Couleur de contour</translation>
+    </message>
+    <message>
+        <source>WIREFRAME_COLOR_LBL</source>
+        <translation>Couleur en mode fil de fer</translation>
+    </message>
+    <message>
+        <source>0D_ELEMENTS_COLOR_LBL</source>
+        <translation>Eléments 0D</translation>
+    </message>
+    <message>
+        <source>0D_ELEMENTS_SIZE_LBL</source>
+        <translation>Taille des éléments 0D</translation>
+    </message>
+    <message>
+        <source>LINE_WIDTH_LBL</source>
+        <translation>Epaisseur des traits</translation>
+    </message>
+    <message>
+        <source>SHRINK_COEF_LBL</source>
+        <translation>Coef. de contraction</translation>
+    </message>
+    <message>
+        <source>GRP_NODES</source>
+        <translation>Nœuds</translation>
+    </message>
+    <message>
+        <source>NODES_COLOR_LBL</source>
+        <translation>Couleur</translation>
+    </message>
+    <message>
+        <source>NODES_MARKER_LBL</source>
+        <translation>Marqueur</translation>
+    </message>
+    <message>
+        <source>GRP_ORIENTATION</source>
+        <translation>Orientation des faces</translation>
+    </message>
+    <message>
+        <source>ORIENTATION_COLOR_LBL</source>
+        <translation>Couleur</translation>
+    </message>
+    <message>
+        <source>ORIENTATION_SCALE_LBL</source>
+        <translation>Facteur d&apos;échelle</translation>
+    </message>
+    <message>
+        <source>3D_VECTORS_LBL</source>
+        <translation>Vecteurs 3D</translation>
+    </message>
+    <message>
+        <source>GRP_SELECTION</source>
+        <translation>Sélection</translation>
+    </message>
+    <message>
+        <source>SELECTION_COLOR_LBL</source>
+        <translation>Couleur de sélection</translation>
+    </message>
+    <message>
+        <source>PRESELECTION_COLOR_LBL</source>
+        <translation>Couleur de pré-sélection</translation>
     </message>
 </context>
 </TS>

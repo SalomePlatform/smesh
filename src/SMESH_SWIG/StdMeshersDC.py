@@ -1,4 +1,4 @@
-# Copyright (C) 2007-2011  CEA/DEN, EDF R&D, OPEN CASCADE
+# Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -15,7 +15,6 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
-#
 #
 
 from smesh import Mesh_Algorithm, AssureGeomPublished, IsEqual, ParseParameters
@@ -275,6 +274,7 @@ class StdMeshersDC_Segment(Mesh_Algorithm):
         store_geom = self.geom
         if type(vertex) is types.IntType:
             if vertex == 0 or vertex == 1:
+                import geompyDC
                 vertex = self.mesh.geompyD.ExtractShapes(self.geom, geompyDC.ShapeType["VERTEX"],True)[vertex]
                 self.geom = vertex
                 pass

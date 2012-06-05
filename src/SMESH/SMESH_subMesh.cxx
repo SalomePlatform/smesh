@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2011  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -18,6 +18,7 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
 
 //  SMESH SMESH : implementaion of SMESH idl descriptions
 //  File   : SMESH_subMesh.cxx
@@ -1803,9 +1804,9 @@ void SMESH_subMesh::updateSubMeshState(const compute_state theState)
 //purpose  :
 //=======================================================================
 
-void SMESH_subMesh::ComputeSubMeshStateEngine(int event)
+void SMESH_subMesh::ComputeSubMeshStateEngine(int event, const bool includeSelf)
 {
-  SMESH_subMeshIteratorPtr smIt = getDependsOnIterator(false,false);
+  SMESH_subMeshIteratorPtr smIt = getDependsOnIterator(includeSelf,false);
   while ( smIt->more() )
     smIt->next()->ComputeStateEngine(event);
 }

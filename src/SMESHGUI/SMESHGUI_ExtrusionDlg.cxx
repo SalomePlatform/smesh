@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2011  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -428,6 +428,8 @@ void SMESHGUI_ExtrusionDlg::ConstructorsClicked (int constructorId)
   disconnect(mySelectionMgr, 0, this, 0);
 
   hidePreview();
+
+  TextLabelElements->setText(tr( constructorId ? "SMESH_ID_ELEMENTS" : "SMESH_ID_NODES"));
 
   switch (constructorId) {
   case 0:

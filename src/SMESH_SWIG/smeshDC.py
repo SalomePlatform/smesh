@@ -1,4 +1,4 @@
-# Copyright (C) 2007-2011  CEA/DEN, EDF R&D, OPEN CASCADE
+# Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -256,7 +256,9 @@ def TreatHypoStatus(status, hypName, geomName, isAlgo):
 def AssureGeomPublished(mesh, geom, name=''):
     if not isinstance( geom, geompyDC.GEOM._objref_GEOM_Object ):
         return
-    if not geom.IsSame( mesh.geom ) and not geom.GetStudyEntry():
+    if not geom.IsSame( mesh.geom ) and \
+           not geom.GetStudyEntry() and \
+           mesh.smeshpyD.GetCurrentStudy():
         ## set the study
         studyID = mesh.smeshpyD.GetCurrentStudy()._get_StudyId()
         if studyID != mesh.geompyD.myStudyId:
@@ -443,6 +445,11 @@ class smeshDC(SMESH._objref_SMESH_Gen):
         self.geompyD=geompyD
         self.SetGeomEngine(geompyD)
         SMESH._objref_SMESH_Gen.SetCurrentStudy(self,theStudy)
+        global notebook
+        if theStudy:
+            notebook = salome_notebook.NoteBook( theStudy )
+        else:
+            notebook = salome_notebook.NoteBook( salome_notebook.PseudoStudyForNoteBook() )
 
     ## Gets the current study
     #  @ingroup l1_auxiliary
@@ -957,15 +964,17 @@ class Mesh:
         if obj is None:
             obj = 0
         if obj != 0:
+            objHasName = True
             if isinstance(obj, geompyDC.GEOM._objref_GEOM_Object):
                 self.geom = obj
                 # publish geom of mesh (issue 0021122)
-                if not self.geom.GetStudyEntry():
+                if not self.geom.GetStudyEntry() and smeshpyD.GetCurrentStudy():
+                    objHasName = False
                     studyID = smeshpyD.GetCurrentStudy()._get_StudyId()
                     if studyID != geompyD.myStudyId:
                         geompyD.init_geom( smeshpyD.GetCurrentStudy())
                         pass
-                    geo_name = "%s_%s"%(self.geom.GetShapeType(), id(self.geom)%100)
+                    geo_name = "%s_%s_for_meshing"%(self.geom.GetShapeType(), id(self.geom)%100)
                     geompyD.addToStudy( self.geom, geo_name )
                 self.mesh = self.smeshpyD.CreateMesh(self.geom)
 
@@ -975,7 +984,7 @@ class Mesh:
             self.mesh = self.smeshpyD.CreateEmptyMesh()
         if name != 0:
             self.smeshpyD.SetName(self.mesh, name)
-        elif obj != 0:
+        elif obj != 0 and objHasName:
             self.smeshpyD.SetName(self.mesh, GetName(obj))
 
         if not self.geom:
@@ -1174,7 +1183,7 @@ class Mesh:
                 if errText: errText += ". "
                 errText += err.comment
                 if allReasons != "":allReasons += "\n"
-                allReasons += '"%s" failed%s. Error: %s' %(err.algoName, shapeText, errText)
+                allReasons += '-  "%s" failed%s. Error: %s' %(err.algoName, shapeText, errText)
                 pass
 
             # Treat hyp errors
@@ -1205,17 +1214,18 @@ class Mesh:
                              " Revise Mesh.Compute() implementation in smeshDC.py!"
                     pass
                 if allReasons != "":allReasons += "\n"
-                allReasons += reason
+                allReasons += "-  " + reason
                 pass
-            if allReasons != "":
-                print '"' + GetName(self.mesh) + '"',"has not been computed:"
+            if not ok or allReasons != "":
+                msg = '"' + GetName(self.mesh) + '"'
+                if ok: msg += " has been computed with warnings"
+                else:  msg += " has not been computed"
+                if allReasons != "": msg += ":"
+                else:                msg += "."
+                print msg
                 print allReasons
-                ok = False
-            elif not ok:
-                print '"' + GetName(self.mesh) + '"',"has not been computed."
-                pass
             pass
-        if salome.sg.hasDesktop():
+        if salome.sg.hasDesktop() and self.mesh.GetStudyId() >= 0:
             smeshgui = salome.ImportComponentGUI("SMESH")
             smeshgui.Init(self.mesh.GetStudyId())
             smeshgui.SetMeshIcon( salome.ObjectToID( self.mesh ), ok, (self.NbNodes()==0) )
@@ -1304,6 +1314,7 @@ class Mesh:
             if not geom:
                 geom = self.mesh.GetShapeToMesh()
             pass
+        AssureGeomPublished( self, geom, "shape for %s" % hyp.GetName())
         status = self.mesh.AddHypothesis(geom, hyp)
         isAlgo = hyp._narrow( SMESH_Algo )
         hyp_name = GetName( hyp )
@@ -3844,12 +3855,20 @@ class Mesh:
     #  @param theAffectedElems - group of elements to which the replicated nodes
     #         should be associated to.
     #  @param theMakeGroup forces the generation of a group containing new elements.
-    #  @return TRUE or a created group if operation has been completed successfully,
+    #  @param theMakeNodeGroup forces the generation of a group containing new nodes.
+    #  @return TRUE or created groups (one or two) if operation has been completed successfully,
     #          FALSE or None otherwise
     #  @ingroup l2_modif_edit
-    def DoubleNodeElemGroup(self, theElems, theNodesNot, theAffectedElems, theMakeGroup=False):
-        if theMakeGroup:
-            return self.editor.DoubleNodeElemGroupNew(theElems, theNodesNot, theAffectedElems)
+    def DoubleNodeElemGroup(self, theElems, theNodesNot, theAffectedElems,
+                             theMakeGroup=False, theMakeNodeGroup=False):
+        if theMakeGroup or theMakeNodeGroup:
+            twoGroups = self.editor.DoubleNodeElemGroup2New(theElems, theNodesNot,
+                                                            theAffectedElems,
+                                                            theMakeGroup, theMakeNodeGroup)
+            if theMakeGroup and theMakeNodeGroup:
+                return twoGroups
+            else:
+                return twoGroups[ int(theMakeNodeGroup) ]
         return self.editor.DoubleNodeElemGroup(theElems, theNodesNot, theAffectedElems)
 
     ## Creates a hole in a mesh by doubling the nodes of some particular elements
@@ -3870,12 +3889,20 @@ class Mesh:
     #  @param theAffectedElems - group of elements to which the replicated nodes
     #         should be associated to.
     #  @param theMakeGroup forces the generation of a group containing new elements.
-    #  @return TRUE or a created group if operation has been completed successfully,
+    #  @param theMakeNodeGroup forces the generation of a group containing new nodes.
+    #  @return TRUE or created groups (one or two) if operation has been completed successfully,
     #          FALSE or None otherwise
     #  @ingroup l2_modif_edit
-    def DoubleNodeElemGroups(self, theElems, theNodesNot, theAffectedElems, theMakeGroup=False):
-        if theMakeGroup:
-            return self.editor.DoubleNodeElemGroupsNew(theElems, theNodesNot, theAffectedElems)
+    def DoubleNodeElemGroups(self, theElems, theNodesNot, theAffectedElems,
+                             theMakeGroup=False, theMakeNodeGroup=False):
+        if theMakeGroup or theMakeNodeGroup:
+            twoGroups = self.editor.DoubleNodeElemGroups2New(theElems, theNodesNot,
+                                                             theAffectedElems,
+                                                             theMakeGroup, theMakeNodeGroup)
+            if theMakeGroup and theMakeNodeGroup:
+                return twoGroups
+            else:
+                return twoGroups[ int(theMakeNodeGroup) ]
         return self.editor.DoubleNodeElemGroups(theElems, theNodesNot, theAffectedElems)
 
     ## Creates a hole in a mesh by doubling the nodes of some particular elements
@@ -4064,6 +4091,7 @@ class Mesh_Algorithm:
     #  @return SMESH.SMESH_Algo
     def FindAlgorithm (self, algoname, smeshpyD):
         study = smeshpyD.GetCurrentStudy()
+        if not study: return None
         #to do: find component by smeshpyD object, not by its data type
         scomp = study.FindComponent(smeshpyD.ComponentDataType())
         if scomp is not None:
@@ -4202,15 +4230,10 @@ class Mesh_Algorithm:
 
     ## Returns entry of the shape to mesh in the study
     def MainShapeEntry(self):
-        entry = ""
-        if not self.mesh or not self.mesh.GetMesh(): return entry
-        if not self.mesh.GetMesh().HasShapeToMesh(): return entry
-        study = self.mesh.smeshpyD.GetCurrentStudy()
-        ior  = salome.orb.object_to_string( self.mesh.GetShape() )
-        sobj = study.FindObjectIOR(ior)
-        if sobj: entry = sobj.GetID()
-        if not entry: return ""
-        return entry
+        if not self.mesh or not self.mesh.GetMesh(): return ""
+        if not self.mesh.GetMesh().HasShapeToMesh(): return ""
+        shape = self.mesh.GetShape()
+        return shape.GetStudyEntry()
 
     ## Defines "ViscousLayers" hypothesis to give parameters of layers of prisms to build
     #  near mesh boundary. This hypothesis can be used by several 3D algorithms:

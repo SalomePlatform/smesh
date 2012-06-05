@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2011  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -522,6 +522,9 @@ bool SMDS_VolumeTool::Set (const SMDS_MeshElement* theVolume,
                topNode->Y() - botNode->Y(),
                topNode->Z() - botNode->Z() );
     myVolForward = ( botNormal.Dot( upDir ) < 0 );
+
+    if ( !myVolForward )
+      myCurFace = -1; // previous setFace(0) didn't take myVolForward into account
   }
   return true;
 }
@@ -1014,16 +1017,16 @@ bool SMDS_VolumeTool::GetFaceNormal (int faceIndex, double & X, double & Y, doub
   if ( !setFace( faceIndex ))
     return false;
 
-  XYZ p1 ( myFaceNodes[0] );
-  XYZ p2 ( myFaceNodes[1] );
-  XYZ p3 ( myFaceNodes[2] );
+  const int iQuad = ( myFaceNbNodes > 6 && !myPolyedre ) ? 2 : 1;
+  XYZ p1 ( myFaceNodes[0*iQuad] );
+  XYZ p2 ( myFaceNodes[1*iQuad] );
+  XYZ p3 ( myFaceNodes[2*iQuad] );
   XYZ aVec12( p2 - p1 );
   XYZ aVec13( p3 - p1 );
   XYZ cross = aVec12.Crossed( aVec13 );
 
-  //if ( myFaceNbNodes == 4 ) {
-  if ( myFaceNbNodes >3 ) {
-    XYZ p4 ( myFaceNodes[3] );
+  if ( myFaceNbNodes >3*iQuad ) {
+    XYZ p4 ( myFaceNodes[3*iQuad] );
     XYZ aVec14( p4 - p1 );
     XYZ cross2 = aVec13.Crossed( aVec14 );
     cross = cross + cross2;

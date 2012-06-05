@@ -106,17 +106,17 @@ specified arbitrary surface within a given <b>Tolerance</b>.
 </li>
 </ul>
 
-Additional criteria to select mesh <b>Nodes</b> are the following:
+The following criteria allow selecting mesh <b>Nodes</b>:
 <ul><li>
-<b>Free nodes</b> selects nodes belonging to none mesh element.
+<b>Free nodes</b> selects nodes not belonging to any mesh element.
 </li><li>
-<b>Double nodes</b> selects node coincident with other nodes 
+<b>Double nodes</b> selects a node coincident with other nodes 
 (within a given <b>Tolerance</b>). 
 See also \ref tui_double_nodes_control "Double Nodes quality control".
 </li>
 </ul>
 
-Additional criteria to select mesh <b>Edges</b> are the following:
+The following criteria allow selecting mesh <b>Edges</b>:
 <ul><li>
 <b>Free Borders</b> selects free 1D mesh elements, i.e. edges belonging to 
 one face only. See also a
@@ -137,7 +137,7 @@ See also a
 </li>
 </ul>
 
-Additional criteria to select mesh <b>Faces</b> are the following:
+The following criteria allow selecting mesh <b>Faces</b>:
 <ul><li>
 <b>Aspect ratio</b> selects 2D mesh elements with an aspect ratio (see also an
 \ref aspect_ratio_page "Aspect Ratio quality control"), which is more, less or equal
@@ -203,7 +203,7 @@ diagonals with a value of length, which is more, less or equal
 </li>
 </ul>
 
-Additional criteria to select mesh <b>Volumes</b> are the following:
+The following criteria allow selecting  mesh <b>Volumes</b>:
 <ul><li>
 <b>Aspect ratio 3D</b> selects 3D mesh elements with an aspect ratio (see also an
 \ref aspect_ratio_3d_page "Aspect Ratio 3D quality control"), which is more, less or equal

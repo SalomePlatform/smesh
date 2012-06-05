@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2011  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -304,7 +304,7 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
         SMESH_HypoFilter filter( SMESH_HypoFilter::IsAlgo() );
         filter
           .And( SMESH_HypoFilter::IsApplicableTo( aSubShape ))
-          .And( SMESH_HypoFilter::IsMoreLocalThan( algoShape, aMesh.GetShapeToMesh() ));
+          .And( SMESH_HypoFilter::IsMoreLocalThan( algoShape, aMesh ));
 
         if ( SMESH_Algo* subAlgo = (SMESH_Algo*) aMesh.GetHypothesis( aSubShape, filter, true )) {
           SMESH_Hypothesis::Hypothesis_Status status;
@@ -516,7 +516,7 @@ bool SMESH_Gen::Evaluate(SMESH_Mesh &          aMesh,
         SMESH_HypoFilter filter( SMESH_HypoFilter::IsAlgo() );
         filter
           .And( SMESH_HypoFilter::IsApplicableTo( aSubShape ))
-          .And( SMESH_HypoFilter::IsMoreLocalThan( algoShape, aMesh.GetShapeToMesh() ));
+          .And( SMESH_HypoFilter::IsMoreLocalThan( algoShape, aMesh ));
 
         if ( SMESH_Algo* subAlgo = (SMESH_Algo*) aMesh.GetHypothesis( aSubShape, filter, true )) {
           SMESH_Hypothesis::Hypothesis_Status status;

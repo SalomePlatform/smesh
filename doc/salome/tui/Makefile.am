@@ -1,4 +1,4 @@
-# Copyright (C) 2007-2011  CEA/DEN, EDF R&D, OPEN CASCADE
+# Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -42,4 +42,13 @@ install-data-local:
 	fi;
 
 uninstall-local:
-	rm -rf $(DESTDIR)$(docdir)/tui/SMESH
+	@test -d $(DESTDIR)$(tuidocdir) && chmod -R +w $(DESTDIR)$(tuidocdir) ; \
+	for filen in `find $(DESTDIR)$(tuidocdir) -mindepth 1 -maxdepth 1` dummy ; do \
+	  case $${filen} in \
+	    dummy ) ;; \
+	    $(DESTDIR)$(tuidocdir)/docutils ) ;; \
+	    $(DESTDIR)$(tuidocdir)/head.png ) ;; \
+	    $(DESTDIR)$(tuidocdir)/smeshscreen.png ) ;; \
+	    * ) echo "removing $${filen}" && rm -rf $${filen} ;; \
+	  esac ; \
+	done

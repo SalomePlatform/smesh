@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2011  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -1579,98 +1579,115 @@
 
     SalomeApp_Application* anApp = dynamic_cast<SalomeApp_Application*>( SUIT_Session::session()->activeApplication() );
 
-      SALOME_ListIteratorOfListIO It(selected);
-      
-      aStudyBuilder->NewCommand();  // There is a transaction
-      for( ; It.More(); It.Next()){ // loop on selected IO's
-        Handle(SALOME_InteractiveObject) IObject = It.Value();
-        if(IObject->hasEntry()) {
-          _PTR(SObject) aSO = aStudy->FindObjectID(IObject->getEntry());
-          
-          // disable removal of "SMESH" component object
-          if(aSO->FindAttribute(anAttr, "AttributeIOR")){
-            anIOR = anAttr;
-            if ( engineIOR() == anIOR->Value().c_str() )
-              continue;
-          }
-          //Check the referenced object
-          _PTR(SObject) aRefSObject;
-          if ( aSO && aSO->ReferencedObject( aRefSObject ) )
-            aSO = aRefSObject; // Delete main Object instead of reference
-          
-          // put the whole hierarchy of sub-objects of the selected SO into a list and
-          // then treat them all starting from the deepest objects (at list back)
-          
-          std::list< _PTR(SObject) > listSO;
-          listSO.push_back( aSO );
-          std::list< _PTR(SObject) >::iterator itSO = listSO.begin();
-          for ( ; itSO != listSO.end(); ++itSO ) {
-            _PTR(ChildIterator) it = aStudy->NewChildIterator( *itSO );
-            for (it->InitEx(false); it->More(); it->Next())
-              listSO.push_back( it->Value() );
-          }
-          
-          // treat SO's in the list starting from the back
-          
-          std::list< _PTR(SObject) >::reverse_iterator ritSO = listSO.rbegin();
-          for ( ; ritSO != listSO.rend(); ++ritSO ) {
-            _PTR(SObject) SO = *ritSO;
-            if ( !SO ) continue;
-            std::string anEntry = SO->GetID();
-            
-            /** Erase graphical object **/
-          if(SO->FindAttribute(anAttr, "AttributeIOR")){
-            ViewManagerList aViewMenegers = anApp->viewManagers();
-            ViewManagerList::const_iterator it = aViewMenegers.begin();
-            for( ; it != aViewMenegers.end(); it++) {         
-              SUIT_ViewManager* vm = *it;
-              int nbSf = vm ? vm->getViewsCount() : 0;
-              if(vm) {
-                QVector<SUIT_ViewWindow*> aViews = vm->getViews();
-                for(int i = 0; i < nbSf; i++){
-                  SUIT_ViewWindow *sf = aViews[i];
-                  if(SMESH_Actor* anActor = SMESH::FindActorByEntry(sf,anEntry.c_str())){
-                    SMESH::RemoveActor(sf,anActor);
-                  }
-                }
+    // Put the whole hierarchy of sub-objects of the selected SO's into a list and
+    // then treat them all starting from the deepest objects (at list back)
+    std::list< _PTR(SObject) > listSO;
+    SALOME_ListIteratorOfListIO It(selected);
+    for( ; It.More(); It.Next()) // loop on selected IO's
+    {
+      Handle(SALOME_InteractiveObject) IObject = It.Value();
+      if(IObject->hasEntry()) {
+        _PTR(SObject) aSO = aStudy->FindObjectID(IObject->getEntry());
+
+        // disable removal of "SMESH" component object
+        if(aSO->FindAttribute(anAttr, "AttributeIOR")){
+          anIOR = anAttr;
+          if ( engineIOR() == anIOR->Value().c_str() )
+            continue;
+        }
+        //Check the referenced object
+        _PTR(SObject) aRefSObject;
+        if ( aSO && aSO->ReferencedObject( aRefSObject ) )
+          aSO = aRefSObject; // Delete main Object instead of reference
+
+        listSO.push_back( aSO );
+        std::list< _PTR(SObject) >::iterator itSO = listSO.begin();
+        for ( ; itSO != listSO.end(); ++itSO ) {
+          _PTR(ChildIterator) it = aStudy->NewChildIterator( *itSO );
+          for (it->InitEx(false); it->More(); it->Next())
+            listSO.push_back( it->Value() );
+        }
+      }
+    }
+    // Check if none of objects to delete is referred from outside
+    std::list< _PTR(SObject) >::reverse_iterator ritSO;
+    for ( ritSO = listSO.rbegin(); ritSO != listSO.rend(); ++ritSO )
+    {
+      _PTR(SObject) SO = *ritSO;
+      if ( !SO ) continue;
+      std::vector<_PTR(SObject)> aReferences = aStudy->FindDependances( *ritSO  );
+      for (size_t i = 0; i < aReferences.size(); i++) {
+        _PTR(SComponent) aComponent = aReferences[i]->GetFatherComponent();
+        std::string type = aComponent->ComponentDataType();
+        if ( type != "SMESH" )
+        {
+          SUIT_MessageBox::warning( anApp->desktop(),
+                                    QObject::tr("WRN_WARNING"),
+                                    QObject::tr("DEP_OBJECT") );
+          return; // outside SMESH, there is an object depending on a SMESH object 
+        }
+      }
+    }
+
+    // Treat SO's in the list starting from the back
+    aStudyBuilder->NewCommand();  // There is a transaction
+    for ( ritSO = listSO.rbegin(); ritSO != listSO.rend(); ++ritSO )
+    {
+      _PTR(SObject) SO = *ritSO;
+      if ( !SO ) continue;
+      std::string anEntry = SO->GetID();
+
+      /** Erase graphical object **/
+      if(SO->FindAttribute(anAttr, "AttributeIOR")){
+        ViewManagerList aViewMenegers = anApp->viewManagers();
+        ViewManagerList::const_iterator it = aViewMenegers.begin();
+        for( ; it != aViewMenegers.end(); it++) {         
+          SUIT_ViewManager* vm = *it;
+          int nbSf = vm ? vm->getViewsCount() : 0;
+          if(vm) {
+            QVector<SUIT_ViewWindow*> aViews = vm->getViews();
+            for(int i = 0; i < nbSf; i++){
+              SUIT_ViewWindow *sf = aViews[i];
+              if(SMESH_Actor* anActor = SMESH::FindActorByEntry(sf,anEntry.c_str())){
+                SMESH::RemoveActor(sf,anActor);
               }
             }
           }
-            /** Remove an object from data structures **/
-            SMESH::SMESH_GroupBase_var aGroup = SMESH::SMESH_GroupBase::_narrow( SMESH::SObjectToObject( SO ));
-            SMESH::SMESH_subMesh_var   aSubMesh = SMESH::SMESH_subMesh::_narrow( SMESH::SObjectToObject( SO ));
-            if ( !aGroup->_is_nil() ) {                          // DELETE GROUP
-              SMESH::SMESH_Mesh_var aMesh = aGroup->GetMesh();
-              aMesh->RemoveGroup( aGroup );
-            }
-            else if ( !aSubMesh->_is_nil() ) {                   // DELETE SUBMESH
-              SMESH::SMESH_Mesh_var aMesh = aSubMesh->GetFather();
-              aMesh->RemoveSubMesh( aSubMesh );
-              
-              _PTR(SObject) aMeshSO = SMESH::FindSObject(aMesh);
-              if (aMeshSO)
-                SMESH::ModifiedMesh(aMeshSO, false, aMesh->NbNodes()==0);
-            }
-            else {
-              IObject = new SALOME_InteractiveObject
-                ( anEntry.c_str(), engineIOR().toLatin1().data(), SO->GetName().c_str() );
-              QString objType = CheckTypeObject(IObject);
-              if ( objType == "Hypothesis" || objType == "Algorithm" ) {// DELETE HYPOTHESIS
-                SMESH::RemoveHypothesisOrAlgorithmOnMesh(IObject);
-                aStudyBuilder->RemoveObjectWithChildren( SO );
-              }
-              else {// default action: remove SObject from the study
-                // san - it's no use opening a transaction here until UNDO/REDO is provided in SMESH
-                //SUIT_Operation *op = new SALOMEGUI_ImportOperation(myActiveStudy);
-                //op->start();
-                aStudyBuilder->RemoveObjectWithChildren( SO );
-                //op->finish();
-              }
-            }
-          } /* listSO back loop */
-        } /* IObject->hasEntry() */
-      } /* more/next */
-    
+        }
+      }
+      /** Remove an object from data structures **/
+      SMESH::SMESH_GroupBase_var aGroup = SMESH::SMESH_GroupBase::_narrow( SMESH::SObjectToObject( SO ));
+      SMESH::SMESH_subMesh_var   aSubMesh = SMESH::SMESH_subMesh::_narrow( SMESH::SObjectToObject( SO ));
+      if ( !aGroup->_is_nil() ) {                          // DELETE GROUP
+        SMESH::SMESH_Mesh_var aMesh = aGroup->GetMesh();
+        aMesh->RemoveGroup( aGroup );
+      }
+      else if ( !aSubMesh->_is_nil() ) {                   // DELETE SUBMESH
+        SMESH::SMESH_Mesh_var aMesh = aSubMesh->GetFather();
+        aMesh->RemoveSubMesh( aSubMesh );
+
+        _PTR(SObject) aMeshSO = SMESH::FindSObject(aMesh);
+        if (aMeshSO)
+          SMESH::ModifiedMesh(aMeshSO, false, aMesh->NbNodes()==0);
+      }
+      else {
+        Handle(SALOME_InteractiveObject) IObject = new SALOME_InteractiveObject
+          ( anEntry.c_str(), engineIOR().toLatin1().data(), SO->GetName().c_str() );
+        QString objType = CheckTypeObject(IObject);
+        if ( objType == "Hypothesis" || objType == "Algorithm" ) {// DELETE HYPOTHESIS
+          SMESH::RemoveHypothesisOrAlgorithmOnMesh(IObject);
+          aStudyBuilder->RemoveObjectWithChildren( SO );
+        }
+        else {// default action: remove SObject from the study
+              // san - it's no use opening a transaction here until UNDO/REDO is provided in SMESH
+              //SUIT_Operation *op = new SALOMEGUI_ImportOperation(myActiveStudy);
+              //op->start();
+          aStudyBuilder->RemoveObjectWithChildren( SO );
+          //op->finish();
+        }
+      }
+    } /* listSO back loop */
+
     aStudyBuilder->CommitCommand();
 
     /* Clear any previous selection */
@@ -1679,7 +1696,7 @@
 
     SMESHGUI::GetSMESHGUI()->updateObjBrowser();
   }
-//}
+//} namespace
 
 extern "C" {
   SMESHGUI_EXPORT CAM_Module* createModule()
@@ -3419,13 +3436,13 @@ void SMESHGUI::initialize( CAM_Application* app )
 
   // ----- create actions --------------
 
-  createSMESHAction(  111, "DAT", "", (Qt::CTRL+Qt::Key_B) );
-  createSMESHAction(  112, "UNV", "", (Qt::CTRL+Qt::Key_U) );
-  createSMESHAction(  113, "MED", "", (Qt::CTRL+Qt::Key_M) );
+  createSMESHAction(  111, "IMPORT_DAT", "", (Qt::CTRL+Qt::Key_B) );
+  createSMESHAction(  112, "IMPORT_UNV", "", (Qt::CTRL+Qt::Key_U) );
+  createSMESHAction(  113, "IMPORT_MED", "", (Qt::CTRL+Qt::Key_M) );
   createSMESHAction(  114, "NUM" );
-  createSMESHAction(  115, "STL" );
-  createSMESHAction(  116, "CGNS" );
-  createSMESHAction(  117, "SAUV" );
+  createSMESHAction(  115, "IMPORT_STL" );
+  createSMESHAction(  116, "IMPORT_CGNS" );
+  createSMESHAction(  117, "IMPORT_SAUV" );
   createSMESHAction(  121, "DAT" );
   createSMESHAction(  122, "MED" );
   createSMESHAction(  123, "UNV" );
@@ -3579,8 +3596,8 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction( 501, "MEASURE_MIN_DIST", "ICON_MEASURE_MIN_DIST" );
   createSMESHAction( 502, "MEASURE_BND_BOX",  "ICON_MEASURE_BND_BOX" );
 
-  createSMESHAction( 300, "ERASE" );
-  createSMESHAction( 301, "DISPLAY" );
+  createSMESHAction( 300, "HIDE" );
+  createSMESHAction( 301, "SHOW" );
   createSMESHAction( 302, "DISPLAY_ONLY" );
 
   // ----- create menu --------------
@@ -3945,6 +3962,7 @@ void SMESHGUI::initialize( CAM_Application* app )
 #endif
   createPopupItem( 145, OB, mesh_group, multiple_non_empty );   // EXPORT_SAUV
   createPopupItem(  33, OB, mesh_part + " " + hyp_alg );        // DELETE
+  createPopupItem( 813, OB, group );                            // DEL_GROUP with contents
   popupMgr()->insert( separator(), -1, 0 );
 
   // popup for viewer

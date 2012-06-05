@@ -322,11 +322,11 @@
     </message>
     <message>
         <source>SMESH_SOURCE_3DSHAPE</source>
-        <translation>3D shape</translation>
+        <translation>Source 3D shape</translation>
     </message>
     <message>
         <source>SMESH_SOURCE_EDGE</source>
-        <translation>Edge</translation>
+        <translation>Source Edge</translation>
     </message>
     <message>
         <source>SMESH_SOURCE_EDGES</source>
@@ -334,7 +334,7 @@
     </message>
     <message>
         <source>SMESH_SOURCE_FACE</source>
-        <translation>Face</translation>
+        <translation>Source Face</translation>
     </message>
     <message>
         <source>SMESH_SOURCE_FACES</source>
@@ -342,7 +342,7 @@
     </message>
     <message>
         <source>SMESH_SOURCE_MESH</source>
-        <translation>Mesh</translation>
+        <translation>Source Mesh</translation>
     </message>
     <message>
         <source>SMESH_COPY_MESH</source>

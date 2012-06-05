@@ -45,7 +45,7 @@ Face quality controls:
 <li>\subpage warping_page "Warping"</li>
 <li>\subpage skew_page "Skew"</li>
 <li>\subpage max_element_length_2d_page "Element Diameter 2D"</li>
-<li>\subpage double_elements_page "Double faces"</li>
+<li>\ref double_elements_page "Double faces"</li>
 </ul>
 
 Volume quality controls:
@@ -55,7 +55,7 @@ Volume quality controls:
 <li>\subpage max_element_length_3d_page "Element Diameter 3D"</li>
 <li>\subpage bare_border_volumes_page "Bare border volumes"</li>
 <li>\subpage over_constrained_volumes_page "Over-constrained volumes"</li>
-<li>\subpage double_elements_page "Double volumes"</li>
+<li>\ref double_elements_page "Double volumes"</li>
 </ul>
 
 To manage the quality controls call pop-up in the VTK viewer and select "Controls" sub-menu

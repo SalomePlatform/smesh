@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2011  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -778,6 +778,7 @@ void SMESHGUI_GroupDlg::setSelectionMode (int theMode)
   if (mySelectionMode != theMode) {
     // [PAL10408] mySelectionMgr->clearSelected();
     mySelectionMgr->clearFilters();
+    SMESH::RemoveFilters();
 
     if (myActorsList.count() > 0)
       for (QListIterator<SMESH_Actor*> it( myActorsList ); it.hasNext(); )

@@ -1,22 +1,23 @@
-//  Copyright (C) 2011  EDF R&D
+// Copyright (C) 2011-2012  EDF R&D
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 // Authors : Guillaume Boulant (EDF) - 01/03/2011
+
 #ifdef WIN32
 #include <winsock2.h>
 #include <windows.h> 
@@ -249,6 +250,8 @@ CORBA::Long MeshJobManager_i::initialize(const MESHJOB::MeshJobParameterList & m
                                          const char * configId)
 {
   beginService("MeshJobManager_i::initialize");
+  std::cerr << "##################################### initialize" << std::endl;
+  std::cerr << "#####################################" << std::endl;
 
   //
   // We first analyse the CORBA sequence to store data in C++ vectors
@@ -413,7 +416,14 @@ CORBA::Long MeshJobManager_i::initialize(const MESHJOB::MeshJobParameterList & m
 
   int jobId = JOBID_UNDEFINED;
   try {
+    std::cerr << "#####################################" << std::endl;
+    std::cerr << "#####################################" << std::endl;
+    std::cerr << "jobUndef = " << JOBID_UNDEFINED << std::endl;
     jobId = _salomeLauncher->createJob(jobParameters);
+    std::cerr << "#####################################" << std::endl;
+    std::cerr << "#####################################" << std::endl;
+    std::cerr << "#####################################" << std::endl;
+    std::cerr << "jobId = " << jobId << std::endl;
     // We register the datetime tag of this job
     _jobDateTimeMap[jobId]=jobDatetimeTag;
     _jobPathsMap[jobId] = jobPaths;
@@ -441,7 +451,7 @@ bool MeshJobManager_i::start(CORBA::Long jobId) {
     _salomeLauncher->launchJob(jobId);
   }
   catch (const SALOME::SALOME_Exception & ex) {
-    LOG("SALOME Exception in createJob !" <<ex.details.text.in());
+    LOG("SALOME Exception in launchjob !" <<ex.details.text.in());
     //LOG(ex.details.text.in());
     return false;
   }

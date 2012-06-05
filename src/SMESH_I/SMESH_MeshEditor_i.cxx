@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2011  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -5257,13 +5257,14 @@ CORBA::Boolean SMESH_MeshEditor_i::DoubleNodeGroup(SMESH::SMESH_GroupBase_ptr th
  * \return a new group with newly created nodes
  * \sa DoubleNodeGroup()
  */
-SMESH::SMESH_Group_ptr SMESH_MeshEditor_i::DoubleNodeGroupNew( SMESH::SMESH_GroupBase_ptr theNodes,
-                                                               SMESH::SMESH_GroupBase_ptr theModifiedElems )
+SMESH::SMESH_Group_ptr
+SMESH_MeshEditor_i::DoubleNodeGroupNew( SMESH::SMESH_GroupBase_ptr theNodes,
+                                        SMESH::SMESH_GroupBase_ptr theModifiedElems )
 {
-  if ( CORBA::is_nil( theNodes ) && theNodes->GetType() != SMESH::NODE )
-    return false;
-
   SMESH::SMESH_Group_var aNewGroup;
+
+  if ( CORBA::is_nil( theNodes ) && theNodes->GetType() != SMESH::NODE )
+    return aNewGroup._retn();
 
   // Duplicate nodes
   SMESH::long_array_var aNodes = theNodes->GetListOfID();
@@ -5278,7 +5279,6 @@ SMESH::SMESH_Group_ptr SMESH_MeshEditor_i::DoubleNodeGroupNew( SMESH::SMESH_Grou
   TPythonDump pyDump; // suppress dump by the next line
 
   bool aResult = DoubleNodes( aNodes, aModifiedElems );
-
   if ( aResult )
   {
     // Create group with newly created nodes
@@ -5288,11 +5288,12 @@ SMESH::SMESH_Group_ptr SMESH_MeshEditor_i::DoubleNodeGroupNew( SMESH::SMESH_Grou
       string aNewName = generateGroupName(anUnindexedName + "_double");
       aNewGroup = myMesh_i->CreateGroup(SMESH::NODE, aNewName.c_str());
       aNewGroup->Add(anIds);
+      pyDump << aNewGroup << " = ";
     }
   }
 
-  pyDump << "createdNodes = " << this << ".DoubleNodeGroupNew( " << theNodes << ", "
-    << theModifiedElems << " )";
+  pyDump << this << ".DoubleNodeGroupNew( " << theNodes << ", "
+         << theModifiedElems << " )";
 
   return aNewGroup._retn();
 }
@@ -5365,8 +5366,9 @@ CORBA::Boolean SMESH_MeshEditor_i::DoubleNodeGroups(const SMESH::ListOfGroups& t
  */
 //================================================================================
 
-SMESH::SMESH_Group_ptr SMESH_MeshEditor_i::DoubleNodeGroupsNew( const SMESH::ListOfGroups& theNodes,
-                                                                const SMESH::ListOfGroups& theModifiedElems )
+SMESH::SMESH_Group_ptr
+SMESH_MeshEditor_i::DoubleNodeGroupsNew( const SMESH::ListOfGroups& theNodes,
+                                         const SMESH::ListOfGroups& theModifiedElems )
 {
   SMESH::SMESH_Group_var aNewGroup;
 
@@ -5383,11 +5385,12 @@ SMESH::SMESH_Group_ptr SMESH_MeshEditor_i::DoubleNodeGroupsNew( const SMESH::Lis
       string aNewName = generateGroupName(anUnindexedName + "_double");
       aNewGroup = myMesh_i->CreateGroup(SMESH::NODE, aNewName.c_str());
       aNewGroup->Add(anIds);
+      pyDump << aNewGroup << " = ";
     }
   }
 
-  pyDump << "createdNodes = " << this << ".DoubleNodeGroupsNew( " << theNodes << ", "
-    << theModifiedElems << " )";
+  pyDump << this << ".DoubleNodeGroupsNew( " << theNodes << ", "
+         << theModifiedElems << " )";
 
   return aNewGroup._retn();
 }
@@ -5531,14 +5534,40 @@ CORBA::Boolean SMESH_MeshEditor_i::DoubleNodeElemGroup(SMESH::SMESH_GroupBase_pt
  * \return a new group with newly created elements
  * \sa DoubleNodeElemGroup()
  */
-SMESH::SMESH_Group_ptr SMESH_MeshEditor_i::DoubleNodeElemGroupNew(SMESH::SMESH_GroupBase_ptr theElems,
-                                                                  SMESH::SMESH_GroupBase_ptr theNodesNot,
-                                                                  SMESH::SMESH_GroupBase_ptr theAffectedElems)
+SMESH::SMESH_Group_ptr
+SMESH_MeshEditor_i::DoubleNodeElemGroupNew(SMESH::SMESH_GroupBase_ptr theElems,
+                                           SMESH::SMESH_GroupBase_ptr theNodesNot,
+                                           SMESH::SMESH_GroupBase_ptr theAffectedElems)
 {
-  if ( CORBA::is_nil( theElems ) && theElems->GetType() == SMESH::NODE )
-    return false;
+  TPythonDump pyDump;
+  SMESH::ListOfGroups_var twoGroups = DoubleNodeElemGroup2New( theElems,
+                                                               theNodesNot,
+                                                               theAffectedElems,
+                                                               true, false );
+  SMESH::SMESH_GroupBase_var baseGroup = twoGroups[0].in();
+  SMESH::SMESH_Group_var     elemGroup = SMESH::SMESH_Group::_narrow( baseGroup );
 
-  SMESH::SMESH_Group_var aNewGroup;
+  pyDump << elemGroup << " = " << this << ".DoubleNodeElemGroupNew( "
+         << theElems         << ", "
+         << theNodesNot      << ", "
+         << theAffectedElems << " )";
+
+  return elemGroup._retn();
+}
+
+SMESH::ListOfGroups*
+SMESH_MeshEditor_i::DoubleNodeElemGroup2New(SMESH::SMESH_GroupBase_ptr theElems,
+                                            SMESH::SMESH_GroupBase_ptr theNodesNot,
+                                            SMESH::SMESH_GroupBase_ptr theAffectedElems,
+                                            CORBA::Boolean             theElemGroupNeeded,
+                                            CORBA::Boolean             theNodeGroupNeeded)
+{
+  SMESH::SMESH_Group_var aNewElemGroup, aNewNodeGroup;
+  SMESH::ListOfGroups_var aTwoGroups = new SMESH::ListOfGroups();
+  aTwoGroups->length( 2 );
+
+  if ( CORBA::is_nil( theElems ) && theElems->GetType() == SMESH::NODE )
+    return aTwoGroups._retn();
 
   initData();
 
@@ -5554,25 +5583,49 @@ SMESH::SMESH_Group_ptr SMESH_MeshEditor_i::DoubleNodeElemGroupNew(SMESH::SMESH_G
   bool aResult = aMeshEditor.DoubleNodes( anElems, aNodes, anAffected );
 
   storeResult( aMeshEditor) ;
+  myMesh->GetMeshDS()->Modified();
 
-  if ( aResult ) {
+  TPythonDump pyDump;
+
+  if ( aResult )
+  {
     myMesh->SetIsModified( true );
 
     // Create group with newly created elements
-    SMESH::long_array_var anIds = GetLastCreatedElems();
-    if (anIds->length() > 0) {
+    CORBA::String_var elemGroupName = theElems->GetName();
+    string aNewName = generateGroupName( string(elemGroupName.in()) + "_double");
+    if ( !aMeshEditor.GetLastCreatedElems().IsEmpty() && theElemGroupNeeded )
+    {
+      SMESH::long_array_var anIds = GetLastCreatedElems();
       SMESH::ElementType aGroupType = myMesh_i->GetElementType(anIds[0], true);
-      string anUnindexedName (theElems->GetName());
-      string aNewName = generateGroupName(anUnindexedName + "_double");
-      aNewGroup = myMesh_i->CreateGroup(aGroupType, aNewName.c_str());
-      aNewGroup->Add(anIds);
+      aNewElemGroup = myMesh_i->CreateGroup(aGroupType, aNewName.c_str());
+      aNewElemGroup->Add(anIds);
+    }
+    if ( !aMeshEditor.GetLastCreatedNodes().IsEmpty() && theNodeGroupNeeded )
+    {
+      SMESH::long_array_var anIds = GetLastCreatedNodes();
+      aNewNodeGroup = myMesh_i->CreateGroup(SMESH::NODE, aNewName.c_str());
+      aNewNodeGroup->Add(anIds);
     }
   }
 
   // Update Python script
-  TPythonDump() << "createdElems = " << this << ".DoubleNodeElemGroupNew( " << theElems << ", "
-    << theNodesNot << ", " << theAffectedElems << " )";
-  return aNewGroup._retn();
+
+  pyDump << "[ ";
+  if ( aNewElemGroup->_is_nil() ) pyDump << "nothing, ";
+  else                            pyDump << aNewElemGroup << ", ";
+  if ( aNewNodeGroup->_is_nil() ) pyDump << "nothing ] = ";
+  else                            pyDump << aNewNodeGroup << " ] = ";
+
+  pyDump << this << ".DoubleNodeElemGroup2New( " << theElems << ", "
+         << theNodesNot        << ", "
+         << theAffectedElems   << ", "
+         << theElemGroupNeeded << ", "
+         << theNodeGroupNeeded <<" )";
+
+  aTwoGroups[0] = aNewElemGroup._retn();
+  aTwoGroups[1] = aNewNodeGroup._retn();
+  return aTwoGroups._retn();
 }
 
 //================================================================================
@@ -5691,11 +5744,37 @@ CORBA::Boolean SMESH_MeshEditor_i::DoubleNodeElemGroups(const SMESH::ListOfGroup
  */
 //================================================================================
 
-SMESH::SMESH_Group_ptr SMESH_MeshEditor_i::DoubleNodeElemGroupsNew(const SMESH::ListOfGroups& theElems,
-                                                                   const SMESH::ListOfGroups& theNodesNot,
-                                                                   const SMESH::ListOfGroups& theAffectedElems)
+SMESH::SMESH_Group_ptr
+SMESH_MeshEditor_i::DoubleNodeElemGroupsNew(const SMESH::ListOfGroups& theElems,
+                                            const SMESH::ListOfGroups& theNodesNot,
+                                            const SMESH::ListOfGroups& theAffectedElems)
 {
-  SMESH::SMESH_Group_var aNewGroup;
+  TPythonDump pyDump;
+  SMESH::ListOfGroups_var twoGroups = DoubleNodeElemGroups2New( theElems,
+                                                                theNodesNot,
+                                                                theAffectedElems,
+                                                                true, false );
+  SMESH::SMESH_GroupBase_var baseGroup = twoGroups[0].in();
+  SMESH::SMESH_Group_var     elemGroup = SMESH::SMESH_Group::_narrow( baseGroup );
+
+  pyDump << elemGroup << " = " << this << ".DoubleNodeElemGroupsNew( "
+         << theElems         << ", "
+         << theNodesNot      << ", "
+         << theAffectedElems << " )";
+
+  return elemGroup._retn();
+}
+
+SMESH::ListOfGroups*
+SMESH_MeshEditor_i::DoubleNodeElemGroups2New(const SMESH::ListOfGroups& theElems,
+                                             const SMESH::ListOfGroups& theNodesNot,
+                                             const SMESH::ListOfGroups& theAffectedElems,
+                                             CORBA::Boolean             theElemGroupNeeded,
+                                             CORBA::Boolean             theNodeGroupNeeded)
+{
+  SMESH::SMESH_Group_var aNewElemGroup, aNewNodeGroup;
+  SMESH::ListOfGroups_var aTwoGroups = new SMESH::ListOfGroups();
+  aTwoGroups->length( 2 );
   
   initData();
 
@@ -5712,24 +5791,46 @@ SMESH::SMESH_Group_ptr SMESH_MeshEditor_i::DoubleNodeElemGroupsNew(const SMESH::
   storeResult( aMeshEditor) ;
 
   myMesh->GetMeshDS()->Modified();
-  if ( aResult ) {
+  TPythonDump pyDump;
+  if ( aResult )
+  {
     myMesh->SetIsModified( true );
 
     // Create group with newly created elements
-    SMESH::long_array_var anIds = GetLastCreatedElems();
-    if (anIds->length() > 0) {
+    CORBA::String_var elemGroupName = theElems[0]->GetName();
+    string aNewName = generateGroupName( string(elemGroupName.in()) + "_double");
+    if ( !aMeshEditor.GetLastCreatedElems().IsEmpty() && theElemGroupNeeded )
+    {
+      SMESH::long_array_var anIds = GetLastCreatedElems();
       SMESH::ElementType aGroupType = myMesh_i->GetElementType(anIds[0], true);
-      string anUnindexedName (theElems[0]->GetName());
-      string aNewName = generateGroupName(anUnindexedName + "_double");
-      aNewGroup = myMesh_i->CreateGroup(aGroupType, aNewName.c_str());
-      aNewGroup->Add(anIds);
+      aNewElemGroup = myMesh_i->CreateGroup(aGroupType, aNewName.c_str());
+      aNewElemGroup->Add(anIds);
+    }
+    if ( !aMeshEditor.GetLastCreatedNodes().IsEmpty() && theNodeGroupNeeded )
+    {
+      SMESH::long_array_var anIds = GetLastCreatedNodes();
+      aNewNodeGroup = myMesh_i->CreateGroup(SMESH::NODE, aNewName.c_str());
+      aNewNodeGroup->Add(anIds);
     }
   }
 
   // Update Python script
-  TPythonDump() << "createdElems = " << this << ".DoubleNodeElemGroupsNew( " << &theElems << ", "
-                << &theNodesNot << ", " << &theAffectedElems << " )";
-  return aNewGroup._retn();
+
+  pyDump << "[ ";
+  if ( aNewElemGroup->_is_nil() ) pyDump << "nothing, ";
+  else                            pyDump << aNewElemGroup << ", ";
+  if ( aNewNodeGroup->_is_nil() ) pyDump << "nothing ] = ";
+  else                            pyDump << aNewNodeGroup << " ] = ";
+
+  pyDump << this << ".DoubleNodeElemGroups2New( " << &theElems << ", "
+         << &theNodesNot       << ", "
+         << &theAffectedElems  << ", "
+         << theElemGroupNeeded << ", "
+         << theNodeGroupNeeded << " )";
+
+  aTwoGroups[0] = aNewElemGroup._retn();
+  aTwoGroups[1] = aNewNodeGroup._retn();
+  return aTwoGroups._retn();
 }
 
 //================================================================================

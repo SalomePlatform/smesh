@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2011  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -904,7 +904,6 @@ SMESH_subMesh *SMESH_Mesh::GetSubMesh(const TopoDS_Shape & aSubShape)
   {
     aSubMesh = new SMESH_subMesh(index, this, _myMeshDS, aSubShape);
     _mapSubMesh[index] = aSubMesh;
-    ClearMeshOrder();
   }
   return aSubMesh;
 }
@@ -972,7 +971,7 @@ SMESH_Mesh::GetGroupSubMeshesContaining(const TopoDS_Shape & aSubShape) const
       if ( SMESH_MesherHelper::IsSubShape( aSubShape, i_sm->second->GetSubShape() ))
       {
         found.push_back( i_sm->second );
-        break;
+        //break;
       }
     } else {
       break; // the rest sub-meshes are not those of groups

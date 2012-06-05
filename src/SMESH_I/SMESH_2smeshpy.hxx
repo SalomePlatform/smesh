@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2011  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -123,7 +123,7 @@ public:
   _AString GetIndentation();
   const _AString & GetResultValue();
   const int GetNbResultValues();
-  const _AString & GetResultValue(int res);
+  _AString GetResultValue(int res);
   const _AString & GetObject();
   const _AString & GetMethod();
   const _AString & GetArg( int index );
@@ -579,10 +579,11 @@ DEFINE_STANDARD_HANDLE (_pyFilter, _pyObject);
 class _pyGroup:  public _pySubMesh
 {
   Handle(_pyFilter) myFilter;
+  bool              myCanClearCreationCmd;
 public:
   _pyGroup(const Handle(_pyCommand)& theCreationCmd, const _pyID & id=_pyID());
   virtual void Process( const Handle(_pyCommand)& theCommand);
-  virtual void Flush() {}
+  virtual void Flush();
   virtual void Free() { myFilter.Nullify(); }
 
   DEFINE_STANDARD_RTTI (_pyGroup)

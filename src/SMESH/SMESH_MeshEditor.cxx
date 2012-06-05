@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2011  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -18,6 +18,7 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
 
 // SMESH SMESH : idl implementation based on 'SMESH' unit's classes
 // File      : SMESH_MeshEditor.cxx
@@ -3750,8 +3751,8 @@ void SMESH_MeshEditor::sweepElement(const SMDS_MeshElement*               elem,
         break;
       }
       case SMDSEntity_Quad_Quadrangle: { // sweep Quadratic QUADRANGLE --->
-        if ( nbDouble != 4 ) break;
         if( nbSame == 0 ) {
+          if ( nbDouble != 4 ) break;
           // --->  hexahedron with 20 nodes
           aNewElem = aMesh->AddVolume (prevNod[0], prevNod[1], prevNod[2], prevNod[3],
                                        nextNod[0], nextNod[1], nextNod[2], nextNod[3],
@@ -3766,6 +3767,7 @@ void SMESH_MeshEditor::sweepElement(const SMDS_MeshElement*               elem,
           return;
         }
         else if( nbSame == 2 ) {
+          if ( nbDouble != 2 ) break;
           // --->  2d order Pentahedron with 15 nodes
           int n1,n2,n4,n5;
           if ( prevNod[ iBeforeSame ] == nextNod[ iBeforeSame ] ) {
@@ -9579,20 +9581,20 @@ SMESH_MeshEditor::SewSideElements (TIDSortedElemSet&    theSide1,
   SMESHDS_Mesh* aMesh = GetMeshDS();
   // TODO algoritm not OK with vtkUnstructuredGrid: 2 meshes can't share nodes
   //SMDS_Mesh aTmpFacesMesh; // try to use the same mesh
-  set<const SMDS_MeshElement*> faceSet1, faceSet2;
+  TIDSortedElemSet             faceSet1, faceSet2;
   set<const SMDS_MeshElement*> volSet1,  volSet2;
   set<const SMDS_MeshNode*>    nodeSet1, nodeSet2;
-  set<const SMDS_MeshElement*> * faceSetPtr[] = { &faceSet1, &faceSet2 };
-  set<const SMDS_MeshElement*>  * volSetPtr[] = { &volSet1,  &volSet2  };
+  TIDSortedElemSet             * faceSetPtr[] = { &faceSet1, &faceSet2 };
+  set<const SMDS_MeshElement*> *  volSetPtr[] = { &volSet1,  &volSet2  };
   set<const SMDS_MeshNode*>    * nodeSetPtr[] = { &nodeSet1, &nodeSet2 };
-  TIDSortedElemSet * elemSetPtr[] = { &theSide1, &theSide2 };
+  TIDSortedElemSet             * elemSetPtr[] = { &theSide1, &theSide2 };
   int iSide, iFace, iNode;
 
   list<const SMDS_MeshElement* > tempFaceList;
   for ( iSide = 0; iSide < 2; iSide++ ) {
     set<const SMDS_MeshNode*>    * nodeSet = nodeSetPtr[ iSide ];
-    TIDSortedElemSet * elemSet = elemSetPtr[ iSide ];
-    set<const SMDS_MeshElement*> * faceSet = faceSetPtr[ iSide ];
+    TIDSortedElemSet             * elemSet = elemSetPtr[ iSide ];
+    TIDSortedElemSet             * faceSet = faceSetPtr[ iSide ];
     set<const SMDS_MeshElement*> * volSet  = volSetPtr [ iSide ];
     set<const SMDS_MeshElement*>::iterator vIt;
     TIDSortedElemSet::iterator eIt;
@@ -9694,16 +9696,8 @@ SMESH_MeshEditor::SewSideElements (TIDSortedElemSet&    theSide1,
           bool isNewFace = setOfFaceNodeSet.insert( faceNodeSet ).second;
           if ( isNewFace ) {
             // no such a face is given but it still can exist, check it
-            if ( nbNodes == 3 ) {
-              aFreeFace = aMesh->FindFace( fNodes[0],fNodes[1],fNodes[2] );
-            }
-            else if ( nbNodes == 4 ) {
-              aFreeFace = aMesh->FindFace( fNodes[0],fNodes[1],fNodes[2],fNodes[3] );
-            }
-            else {
-              vector<const SMDS_MeshNode *> poly_nodes ( fNodes, & fNodes[nbNodes]);
-              aFreeFace = aMesh->FindFace(poly_nodes);
-            }
+            vector<const SMDS_MeshNode *> nodes ( fNodes, fNodes + nbNodes);
+            aFreeFace = aMesh->FindElement( nodes, SMDSAbs_Face, /*noMedium=*/false );
           }
           if ( !aFreeFace ) {
             // create a temporary face
@@ -9720,19 +9714,20 @@ SMESH_MeshEditor::SewSideElements (TIDSortedElemSet&    theSide1,
               //aFreeFace = aTmpFacesMesh.AddPolygonalFace(poly_nodes);
               aFreeFace = aMesh->AddPolygonalFace(poly_nodes);
             }
+            if ( aFreeFace )
+              tempFaceList.push_back( aFreeFace );
           }
-          if ( aFreeFace ) {
+
+          if ( aFreeFace )
             freeFaceList.push_back( aFreeFace );
-            tempFaceList.push_back( aFreeFace );
-          }
 
         } // loop on faces of a volume
 
-        // choose one of several free faces
-        // --------------------------------------
+        // choose one of several free faces of a volume
+        // --------------------------------------------
         if ( freeFaceList.size() > 1 ) {
           // choose a face having max nb of nodes shared by other elems of a side
-          int maxNbNodes = -1/*, nbExcludedFaces = 0*/;
+          int maxNbNodes = -1;
           list<const SMDS_MeshElement* >::iterator fIt = freeFaceList.begin();
           while ( fIt != freeFaceList.end() ) { // loop on free faces
             int nbSharedNodes = 0;
@@ -9743,18 +9738,20 @@ SMESH_MeshEditor::SewSideElements (TIDSortedElemSet&    theSide1,
               SMDS_ElemIteratorPtr invElemIt = n->GetInverseElementIterator();
               while ( invElemIt->more() ) {
                 const SMDS_MeshElement* e = invElemIt->next();
-                if ( faceSet->find( e ) != faceSet->end() )
-                  nbSharedNodes++;
-                if ( elemSet->find( e ) != elemSet->end() )
-                  nbSharedNodes++;
+                nbSharedNodes += faceSet->count( e );
+                nbSharedNodes += elemSet->count( e );
               }
             }
-            if ( nbSharedNodes >= maxNbNodes ) {
+            if ( nbSharedNodes > maxNbNodes ) {
               maxNbNodes = nbSharedNodes;
+              freeFaceList.erase( freeFaceList.begin(), fIt++ );
+            }
+            else if ( nbSharedNodes == maxNbNodes ) {
               fIt++;
             }
-            else
+            else {
               freeFaceList.erase( fIt++ ); // here fIt++ occurs before erase
+            }
           }
           if ( freeFaceList.size() > 1 )
           {
@@ -9855,9 +9852,9 @@ SMESH_MeshEditor::SewSideElements (TIDSortedElemSet&    theSide1,
 
   TNodeNodeMap nReplaceMap; // bind a node to remove to a node to put instead
   if ( theFirstNode1 != theFirstNode2 )
-    nReplaceMap.insert( TNodeNodeMap::value_type( theFirstNode1, theFirstNode2 ));
+    nReplaceMap.insert( make_pair( theFirstNode1, theFirstNode2 ));
   if ( theSecondNode1 != theSecondNode2 )
-    nReplaceMap.insert( TNodeNodeMap::value_type( theSecondNode1, theSecondNode2 ));
+    nReplaceMap.insert( make_pair( theSecondNode1, theSecondNode2 ));
 
   LinkID_Gen aLinkID_Gen( GetMeshDS() );
   set< long > linkIdSet; // links to process
@@ -9870,10 +9867,11 @@ SMESH_MeshEditor::SewSideElements (TIDSortedElemSet&    theSide1,
   // loop on links in linkList; find faces by links and append links
   // of the found faces to linkList
   list< NLink >::iterator linkIt[] = { linkList[0].begin(), linkList[1].begin() } ;
-  for ( ; linkIt[0] != linkList[0].end(); linkIt[0]++, linkIt[1]++ ) {
+  for ( ; linkIt[0] != linkList[0].end(); linkIt[0]++, linkIt[1]++ )
+  {
     NLink link[] = { *linkIt[0], *linkIt[1] };
     long linkID = aLinkID_Gen.GetLinkID( link[0].first, link[0].second );
-    if ( linkIdSet.find( linkID ) == linkIdSet.end() )
+    if ( !linkIdSet.count( linkID ) )
       continue;
 
     // by links, find faces in the face sets,
@@ -9882,120 +9880,37 @@ SMESH_MeshEditor::SewSideElements (TIDSortedElemSet&    theSide1,
     // ---------------------------------------------------------------
 
     const SMDS_MeshElement* face[] = { 0, 0 };
-    //const SMDS_MeshNode* faceNodes[ 2 ][ 5 ];
-    vector<const SMDS_MeshNode*> fnodes1(9);
-    vector<const SMDS_MeshNode*> fnodes2(9);
-    //const SMDS_MeshNode* notLinkNodes[ 2 ][ 2 ] = {{ 0, 0 },{ 0, 0 }} ;
-    vector<const SMDS_MeshNode*> notLinkNodes1(6);
-    vector<const SMDS_MeshNode*> notLinkNodes2(6);
+    vector<const SMDS_MeshNode*> fnodes[2];
     int iLinkNode[2][2];
+    TIDSortedElemSet avoidSet;
     for ( iSide = 0; iSide < 2; iSide++ ) { // loop on 2 sides
       const SMDS_MeshNode* n1 = link[iSide].first;
       const SMDS_MeshNode* n2 = link[iSide].second;
-      set<const SMDS_MeshElement*> * faceSet = faceSetPtr[ iSide ];
-      set< const SMDS_MeshElement* > fMap;
-      for ( int i = 0; i < 2; i++ ) { // loop on 2 nodes of a link
-        const SMDS_MeshNode* n = i ? n1 : n2; // a node of a link
-        SMDS_ElemIteratorPtr fIt = n->GetInverseElementIterator(SMDSAbs_Face);
-        while ( fIt->more() ) { // loop on faces sharing a node
-          const SMDS_MeshElement* f = fIt->next();
-          if (faceSet->find( f ) != faceSet->end() && // f is in face set
-              ! fMap.insert( f ).second ) // f encounters twice
-          {
-            if ( face[ iSide ] ) {
-              MESSAGE( "2 faces per link " );
-              aResult = iSide ? SEW_BAD_SIDE2_NODES : SEW_BAD_SIDE1_NODES;
-              break;
-            }
-            face[ iSide ] = f;
-            faceSet->erase( f );
-            // get face nodes and find ones of a link
-            iNode = 0;
-            int nbl = -1;
-            if(f->IsPoly()) {
-              if(iSide==0) {
-                fnodes1.resize(f->NbNodes()+1);
-                notLinkNodes1.resize(f->NbNodes()-2);
-              }
-              else {
-                fnodes2.resize(f->NbNodes()+1);
-                notLinkNodes2.resize(f->NbNodes()-2);
-              }
-            }
-            if(!f->IsQuadratic()) {
-              SMDS_ElemIteratorPtr nIt = f->nodesIterator();
-              while ( nIt->more() ) {
-                const SMDS_MeshNode* n =
-                  static_cast<const SMDS_MeshNode*>( nIt->next() );
-                if ( n == n1 ) {
-                  iLinkNode[ iSide ][ 0 ] = iNode;
-                }
-                else if ( n == n2 ) {
-                  iLinkNode[ iSide ][ 1 ] = iNode;
-                }
-                //else if ( notLinkNodes[ iSide ][ 0 ] )
-                //  notLinkNodes[ iSide ][ 1 ] = n;
-                //else
-                //  notLinkNodes[ iSide ][ 0 ] = n;
-                else {
-                  nbl++;
-                  if(iSide==0)
-                    notLinkNodes1[nbl] = n;
-                  //notLinkNodes1.push_back(n);
-                  else
-                    notLinkNodes2[nbl] = n;
-                  //notLinkNodes2.push_back(n);
-                }
-                //faceNodes[ iSide ][ iNode++ ] = n;
-                if(iSide==0) {
-                  fnodes1[iNode++] = n;
-                }
-                else {
-                  fnodes2[iNode++] = n;
-                }
-              }
-            }
-            else { // f->IsQuadratic()
-              const SMDS_VtkFace* F =
-                dynamic_cast<const SMDS_VtkFace*>(f);
-              if (!F) throw SALOME_Exception(LOCALIZED("not an SMDS_VtkFace"));
-              // use special nodes iterator
-              SMDS_ElemIteratorPtr anIter = F->interlacedNodesElemIterator();
-              while ( anIter->more() ) {
-                const SMDS_MeshNode* n =
-                  static_cast<const SMDS_MeshNode*>( anIter->next() );
-                if ( n == n1 ) {
-                  iLinkNode[ iSide ][ 0 ] = iNode;
-                }
-                else if ( n == n2 ) {
-                  iLinkNode[ iSide ][ 1 ] = iNode;
-                }
-                else {
-                  nbl++;
-                  if(iSide==0) {
-                    notLinkNodes1[nbl] = n;
-                  }
-                  else {
-                    notLinkNodes2[nbl] = n;
-                  }
-                }
-                if(iSide==0) {
-                  fnodes1[iNode++] = n;
-                }
-                else {
-                  fnodes2[iNode++] = n;
-                }
-              }
-            }
-            //faceNodes[ iSide ][ iNode ] = faceNodes[ iSide ][ 0 ];
-            if(iSide==0) {
-              fnodes1[iNode] = fnodes1[0];
-            }
-            else {
-              fnodes2[iNode] = fnodes1[0];
-            }
-          }
+      //cout << "Side " << iSide << " ";
+      //cout << "L( " << n1->GetID() << ", " << n2->GetID() << " ) " << endl;
+      // find a face by two link nodes
+      face[ iSide ] = FindFaceInSet( n1, n2, *faceSetPtr[ iSide ], avoidSet,
+                                     &iLinkNode[iSide][0], &iLinkNode[iSide][1] );
+      if ( face[ iSide ])
+      {
+        //cout << " F " << face[ iSide]->GetID() <<endl;
+        faceSetPtr[ iSide ]->erase( face[ iSide ]);
+        // put face nodes to fnodes
+        if ( face[ iSide ]->IsQuadratic() )
+        {
+          // use interlaced nodes iterator
+          const SMDS_VtkFace* F = dynamic_cast<const SMDS_VtkFace*>( face[ iSide ]);
+          if (!F) throw SALOME_Exception(LOCALIZED("not an SMDS_VtkFace"));
+          SMDS_ElemIteratorPtr nIter = F->interlacedNodesElemIterator();
+          while ( nIter->more() )
+            fnodes[ iSide ].push_back( cast2Node( nIter->next() ));
         }
+        else
+        {
+          fnodes[ iSide ].assign( face[ iSide ]->begin_nodes(),
+                                  face[ iSide ]->end_nodes() );
+        }
+        fnodes[ iSide ].push_back( fnodes[ iSide ].front());
       }
     }
 
@@ -10008,86 +9923,60 @@ SMESH_MeshEditor::SewSideElements (TIDSortedElemSet&    theSide1,
       else {
         aResult = SEW_TOPO_DIFF_SETS_OF_ELEMENTS;
       }
-      break; // do not return because it s necessary to remove tmp faces
+      break; // do not return because it's necessary to remove tmp faces
     }
 
     // set nodes to merge
     // -------------------
 
     if ( face[0] && face[1] )  {
-      int nbNodes = face[0]->NbNodes();
+      const int nbNodes = face[0]->NbNodes();
       if ( nbNodes != face[1]->NbNodes() ) {
         MESSAGE("Diff nb of face nodes");
         aResult = SEW_TOPO_DIFF_SETS_OF_ELEMENTS;
         break; // do not return because it s necessary to remove tmp faces
       }
-      bool reverse[] = { false, false }; // order of notLinkNodes of quadrangle
-      if ( nbNodes == 3 ) {
-        //nReplaceMap.insert( TNodeNodeMap::value_type
-        //                   ( notLinkNodes[0][0], notLinkNodes[1][0] ));
-        nReplaceMap.insert( TNodeNodeMap::value_type
-                            ( notLinkNodes1[0], notLinkNodes2[0] ));
+      bool reverse[] = { false, false }; // order of nodes in the link
+      for ( iSide = 0; iSide < 2; iSide++ ) { // loop on 2 sides
+        // analyse link orientation in faces
+        int i1 = iLinkNode[ iSide ][ 0 ];
+        int i2 = iLinkNode[ iSide ][ 1 ];
+        reverse[ iSide ] = Abs( i1 - i2 ) == 1 ? i1 > i2 : i2 > i1;
       }
-      else {
-        for ( iSide = 0; iSide < 2; iSide++ ) { // loop on 2 sides
-          // analyse link orientation in faces
-          int i1 = iLinkNode[ iSide ][ 0 ];
-          int i2 = iLinkNode[ iSide ][ 1 ];
-          reverse[ iSide ] = Abs( i1 - i2 ) == 1 ? i1 > i2 : i2 > i1;
-          // if notLinkNodes are the first and the last ones, then
-          // their order does not correspond to the link orientation
-          if (( i1 == 1 && i2 == 2 ) ||
-              ( i1 == 2 && i2 == 1 ))
-            reverse[ iSide ] = !reverse[ iSide ];
-        }
-        if ( reverse[0] == reverse[1] ) {
-          //nReplaceMap.insert( TNodeNodeMap::value_type
-          //                   ( notLinkNodes[0][0], notLinkNodes[1][0] ));
-          //nReplaceMap.insert( TNodeNodeMap::value_type
-          //                   ( notLinkNodes[0][1], notLinkNodes[1][1] ));
-          for(int nn=0; nn<nbNodes-2; nn++) {
-            nReplaceMap.insert( TNodeNodeMap::value_type
-                                ( notLinkNodes1[nn], notLinkNodes2[nn] ));
-          }
-        }
-        else {
-          //nReplaceMap.insert( TNodeNodeMap::value_type
-          //                   ( notLinkNodes[0][0], notLinkNodes[1][1] ));
-          //nReplaceMap.insert( TNodeNodeMap::value_type
-          //                   ( notLinkNodes[0][1], notLinkNodes[1][0] ));
-          for(int nn=0; nn<nbNodes-2; nn++) {
-            nReplaceMap.insert( TNodeNodeMap::value_type
-                                ( notLinkNodes1[nn], notLinkNodes2[nbNodes-3-nn] ));
-          }
-        }
+      int di1 = reverse[0] ? -1 : +1, i1 = iLinkNode[0][1] + di1;
+      int di2 = reverse[1] ? -1 : +1, i2 = iLinkNode[1][1] + di2;
+      for ( int i = nbNodes - 2; i > 0; --i, i1 += di1, i2 += di2 )
+      {
+        nReplaceMap.insert  ( make_pair ( fnodes[0][ ( i1 + nbNodes ) % nbNodes ],
+                                          fnodes[1][ ( i2 + nbNodes ) % nbNodes ]));
       }
 
       // add other links of the faces to linkList
       // -----------------------------------------
 
-      //const SMDS_MeshNode** nodes = faceNodes[ 0 ];
       for ( iNode = 0; iNode < nbNodes; iNode++ )  {
-        //linkID = aLinkID_Gen.GetLinkID( nodes[iNode], nodes[iNode+1] );
-        linkID = aLinkID_Gen.GetLinkID( fnodes1[iNode], fnodes1[iNode+1] );
+        linkID = aLinkID_Gen.GetLinkID( fnodes[0][iNode], fnodes[0][iNode+1] );
         pair< set<long>::iterator, bool > iter_isnew = linkIdSet.insert( linkID );
         if ( !iter_isnew.second ) { // already in a set: no need to process
           linkIdSet.erase( iter_isnew.first );
         }
         else // new in set == encountered for the first time: add
         {
-          //const SMDS_MeshNode* n1 = nodes[ iNode ];
-          //const SMDS_MeshNode* n2 = nodes[ iNode + 1];
-          const SMDS_MeshNode* n1 = fnodes1[ iNode ];
-          const SMDS_MeshNode* n2 = fnodes1[ iNode + 1];
+          const SMDS_MeshNode* n1 = fnodes[0][ iNode ];
+          const SMDS_MeshNode* n2 = fnodes[0][ iNode + 1];
           linkList[0].push_back ( NLink( n1, n2 ));
           linkList[1].push_back ( NLink( nReplaceMap[n1], nReplaceMap[n2] ));
         }
       }
     } // 2 faces found
+
+    if ( faceSetPtr[0]->empty() || faceSetPtr[1]->empty() )
+      break;
+
   } // loop on link lists
 
   if ( aResult == SEW_OK &&
-       ( linkIt[0] != linkList[0].end() ||
+       ( //linkIt[0] != linkList[0].end() ||
          !faceSetPtr[0]->empty() || !faceSetPtr[1]->empty() )) {
     MESSAGE( (linkIt[0] != linkList[0].end()) <<" "<< (faceSetPtr[0]->empty()) <<
              " " << (faceSetPtr[1]->empty()));
@@ -10098,13 +9987,13 @@ SMESH_MeshEditor::SewSideElements (TIDSortedElemSet&    theSide1,
   // 3. Replace nodes in elements of the side 1 and remove replaced nodes
   // ====================================================================
 
-  // delete temporary faces: they are in reverseElements of actual nodes
+  // delete temporary faces
 //  SMDS_FaceIteratorPtr tmpFaceIt = aTmpFacesMesh.facesIterator();
 //  while ( tmpFaceIt->more() )
 //    aTmpFacesMesh.RemoveElement( tmpFaceIt->next() );
-//  list<const SMDS_MeshElement* >::iterator tmpFaceIt = tempFaceList.begin();
-//  for (; tmpFaceIt !=tempFaceList.end(); ++tmpFaceIt)
-//    aMesh->RemoveElement(*tmpFaceIt);
+  list<const SMDS_MeshElement* >::iterator tmpFaceIt = tempFaceList.begin();
+  for (; tmpFaceIt !=tempFaceList.end(); ++tmpFaceIt)
+    aMesh->RemoveElement(*tmpFaceIt);
 
   if ( aResult != SEW_OK)
     return aResult;

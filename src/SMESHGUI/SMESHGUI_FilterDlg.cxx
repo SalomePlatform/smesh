@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2011  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -3188,6 +3188,7 @@ void SMESHGUI_FilterDlg::filterSource (const int theType,
 
     // filter ids
     SMESH::Predicate_ptr aPred = myFilter[ theType ]->GetPredicate();
+    myFilter[ theType ]->SetMesh(myMesh);
     QList<int>::const_iterator anIter;
     for (anIter = aDialogIds.begin(); anIter != aDialogIds.end(); ++ anIter)
       if (aPred->IsSatisfy(*anIter))
@@ -3260,6 +3261,7 @@ void SMESHGUI_FilterDlg::filterSelectionSource (const int theType,
 
   // Filter entities
   SMESH::Predicate_ptr aPred = myFilter[ theType ]->GetPredicate();
+  myFilter[ theType ]->SetMesh(myMesh);
   TColStd_MapIteratorOfMapOfInteger aResIter(aToBeFiltered);
   for ( ; aResIter.More(); aResIter.Next())
     if (aPred->IsSatisfy(aResIter.Key()))

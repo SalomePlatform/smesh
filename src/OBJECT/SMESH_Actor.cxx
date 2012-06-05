@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2011  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -492,9 +492,6 @@ SMESH_ActorDef::~SMESH_ActorDef()
   }
 #endif
 
-  // caught by SMESHGUI::ProcessEvents() static method
-  this->InvokeEvent( SMESH::DeleteActorEvent, NULL );
-
   myScalarBarActor->Delete();
   myLookupTable->Delete();
 
@@ -538,6 +535,17 @@ SMESH_ActorDef::~SMESH_ActorDef()
   myTimeStamp->Delete();
 }
 
+void SMESH_ActorDef::Delete()
+{
+  // This is just to guarantee that the DeleteActorEvent (which was previously invoked
+  // from the actor's destructor) will be thrown before removing the actor's observers,
+  // that is done inside the Superclass::Delete() method but before the destructor itself
+  // (see the issue 0021562: EDF SMESH: clipping and delete mesh clipped leads to crash).
+  // The event is caught by SMESHGUI::ProcessEvents() static method.
+  this->InvokeEvent( SMESH::DeleteActorEvent, NULL );
+
+  Superclass::Delete();
+}
 
 void SMESH_ActorDef::SetPointsLabeled( bool theIsPointsLabeled )
 {    
@@ -1236,8 +1244,6 @@ void SMESH_ActorDef::SetVisibility(int theMode, bool theIsUpdateRepersentation){
       case eFreeEdges:
       case eFreeBorders:
       case eCoincidentElems1D:
-      case eLength2D:
-      case eMultiConnection2D:
         my1DExtActor->VisibilityOn();
         break;
       case eFreeFaces:
@@ -1251,6 +1257,9 @@ void SMESH_ActorDef::SetVisibility(int theMode, bool theIsUpdateRepersentation){
       case eCoincidentElems3D:
         my3DExtActor->VisibilityOn();
         break;
+      case eLength2D:
+      case eMultiConnection2D:
+        my1DExtActor->VisibilityOn();
       default:
         if(myControlActor->GetUnstructuredGrid()->GetNumberOfCells())
           myScalarBarActor->VisibilityOn();

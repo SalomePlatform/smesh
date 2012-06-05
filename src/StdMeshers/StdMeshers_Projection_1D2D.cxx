@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2011  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -196,7 +196,7 @@ bool StdMeshers_Projection_1D2D::Evaluate(SMESH_Mesh&         theMesh,
 
   typedef StdMeshers_ProjectionUtils SPU;
   SPU::TShapeShapeMap shape2ShapeMap;
-  SPU::InitVertexAssociation( _sourceHypo, shape2ShapeMap, theShape );
+  SPU::InitVertexAssociation( _sourceHypo, shape2ShapeMap );
   if ( !SPU::FindSubShapeAssociation( theShape, &theMesh, srcFace, srcMesh, shape2ShapeMap))
     return error(COMPERR_BAD_SHAPE,"Topology of source and target faces seems different" );
 
@@ -232,7 +232,7 @@ bool StdMeshers_Projection_1D2D::Evaluate(SMESH_Mesh&         theMesh,
         if ( aVec.empty() )
           return error(COMPERR_BAD_INPUT_MESH,"Source mesh is wrongly evaluated");
       }
-      TopoDS_Shape tgtEdge = shape2ShapeMap( srcSM->GetSubShape() );
+      TopoDS_Shape tgtEdge = shape2ShapeMap( srcSM->GetSubShape(), /*isSrc=*/true  );
       SMESH_subMesh* tgtSM = theMesh.GetSubMesh( tgtEdge );
       aResMap.insert(std::make_pair(tgtSM,aVec));
     }

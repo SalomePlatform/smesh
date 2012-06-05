@@ -1,21 +1,21 @@
 # -*- coding: iso-8859-1 -*-
-#  Copyright (C) 2011 EDF R&D
+# Copyright (C) 2011-2012  EDF R&D
 #
-#  This library is free software; you can redistribute it and/or
-#  modify it under the terms of the GNU Lesser General Public
-#  License as published by the Free Software Foundation; either
-#  version 2.1 of the License.
+# This library is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 2.1 of the License.
 #
-#  This library is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-#  Lesser General Public License for more details.
+# This library is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
 #
-#  You should have received a copy of the GNU Lesser General Public
-#  License along with this library; if not, write to the Free Software
-#  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+# You should have received a copy of the GNU Lesser General Public
+# License along with this library; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 #
-#  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+# See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 # Author(s): Guillaume Boulant (23/03/2011)
 #
@@ -42,7 +42,7 @@ class ConfigReader:
         try:
             smeshpath=os.environ["SMESH_ROOT_DIR"]
         except KeyError, ex:
-            raise AdminException("You should define the variable SALOME_PLUGINS_PATH")
+            raise AdminException("You should define the variable SMESH_ROOT_DIR")
 
         pluginspath = os.path.join(smeshpath,CONFIG_RELPATH)
         filename    = os.path.join(pluginspath,CONFIG_FILENAME)
@@ -85,6 +85,14 @@ class ConfigReader:
             return TYPE_LOCAL
         return defaultType
 
+
+def printConfig(config):
+    print "PADDER CONFIGURATION:"
+    print "\tconfig.resname = %s"%config.resname
+    print "\tconfig.binpath = %s"%config.binpath
+    print "\tconfig.envpath = %s"%config.envpath
+    
+
 #
 # =========================================================================
 # Test runner
@@ -124,9 +132,9 @@ def testsuite():
     unittester.run(moduleName, "TEST_getDefaultConfig_withError")
     
 if __name__ == "__main__":
-    import os, sys
-    pluginspath=os.environ["SALOME_PLUGINS_PATH"]
-    for path in pluginspath.split(":"):
-        sys.path.insert(0,path)
+    #import os, sys
+    #pluginspath=os.environ["SALOME_PLUGINS_PATH"]
+    #for path in pluginspath.split(":"):
+    #    sys.path.insert(0,path)
     
     testsuite()

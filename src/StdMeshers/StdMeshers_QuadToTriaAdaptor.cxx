@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2011  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -15,6 +15,7 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
 
 // File      : StdMeshers_QuadToTriaAdaptor.cxx
 // Module    : SMESH
@@ -39,6 +40,7 @@
 #include <gp_Pln.hxx>
 
 #include <numeric>
+#include <limits>
 
 using namespace std;
 
@@ -377,30 +379,33 @@ StdMeshers_QuadToTriaAdaptor::~StdMeshers_QuadToTriaAdaptor()
   myElemSearcher=0;
 }
 
-
 //=======================================================================
 //function : FindBestPoint
 //purpose  : Return a point P laying on the line (PC,V) so that triangle
 //           (P, P1, P2) to be equilateral as much as possible
 //           V - normal to (P1,P2,PC)
 //=======================================================================
+
 static gp_Pnt FindBestPoint(const gp_Pnt& P1, const gp_Pnt& P2,
                             const gp_Pnt& PC, const gp_Vec& V)
 {
-  double a = P1.Distance(P2);
-  double b = P1.Distance(PC);
-  double c = P2.Distance(PC);
+  gp_Pnt Pbest = PC;
+  const double a = P1.Distance(P2);
+  const double b = P1.Distance(PC);
+  const double c = P2.Distance(PC);
   if( a < (b+c)/2 )
-    return PC;
+    return Pbest;
   else {
     // find shift along V in order a to became equal to (b+c)/2
-    double shift = sqrt( a*a + (b*b-c*c)*(b*b-c*c)/16/a/a - (b*b+c*c)/2 );
-    gp_Dir aDir(V);
-    gp_Pnt Pbest = PC.XYZ() + aDir.XYZ() * shift;
-    return Pbest;
+    const double Vsize = V.Magnitude();
+    if ( fabs( Vsize ) > std::numeric_limits<double>::min() )
+    {
+      const double shift = sqrt( a*a + (b*b-c*c)*(b*b-c*c)/16/a/a - (b*b+c*c)/2 );
+      Pbest.ChangeCoord() += shift * V.XYZ() / Vsize;
+    }
   }
+  return Pbest;
 }
-
 
 //=======================================================================
 //function : HasIntersection3
@@ -408,6 +413,7 @@ static gp_Pnt FindBestPoint(const gp_Pnt& P1, const gp_Pnt& P2,
 //           find intersection point between triangle (P1,P2,P3)
 //           and segment [PC,P]
 //=======================================================================
+
 static bool HasIntersection3(const gp_Pnt& P, const gp_Pnt& PC, gp_Pnt& Pint,
                              const gp_Pnt& P1, const gp_Pnt& P2, const gp_Pnt& P3)
 {
@@ -477,7 +483,6 @@ static bool HasIntersection3(const gp_Pnt& P, const gp_Pnt& PC, gp_Pnt& Pint,
 
   return false;
 }
-
 
 //=======================================================================
 //function : HasIntersection
@@ -1009,10 +1014,12 @@ bool StdMeshers_QuadToTriaAdaptor::Compute(SMESH_Mesh& aMesh)
     PCbest /= 4;
 
     double height = PC.Distance(PCbest); // pyramid height to precise
-    if(height<1.e-6) {
+    if ( height < 1.e-6 ) {
       // create new PCbest using a bit shift along VNorm
       PCbest = PC.XYZ() + VNorm.XYZ() * 0.001;
       height = PC.Distance(PCbest);
+      if ( height < std::numeric_limits<double>::min() )
+        return false; // batterfly element
     }
 
     // Restrict pyramid height by intersection with other faces

@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2011  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -217,7 +217,7 @@ bool StdMeshers_Projection_1D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
   TopoDS_Shape srcShape = _sourceHypo->GetSourceEdge().Oriented(TopAbs_FORWARD);
 
   TAssocTool::TShapeShapeMap shape2ShapeMap;
-  TAssocTool::InitVertexAssociation( _sourceHypo, shape2ShapeMap, tgtEdge );
+  TAssocTool::InitVertexAssociation( _sourceHypo, shape2ShapeMap );
   if ( !TAssocTool::FindSubShapeAssociation( tgtEdge, tgtMesh, srcShape, srcMesh,
                                              shape2ShapeMap) ||
        !shape2ShapeMap.IsBound( tgtEdge ))
@@ -401,7 +401,7 @@ bool StdMeshers_Projection_1D::Evaluate(SMESH_Mesh& theMesh,
   TopoDS_Shape srcShape = _sourceHypo->GetSourceEdge().Oriented(TopAbs_FORWARD);
 
   TAssocTool::TShapeShapeMap shape2ShapeMap;
-  TAssocTool::InitVertexAssociation( _sourceHypo, shape2ShapeMap, tgtEdge );
+  TAssocTool::InitVertexAssociation( _sourceHypo, shape2ShapeMap );
   if ( !TAssocTool::FindSubShapeAssociation( tgtEdge, tgtMesh, srcShape, srcMesh,
                                              shape2ShapeMap) ||
        !shape2ShapeMap.IsBound( tgtEdge ))

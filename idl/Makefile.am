@@ -1,4 +1,4 @@
-# Copyright (C) 2007-2011  CEA/DEN, EDF R&D, OPEN CASCADE
+# Copyright (C) 2007-2012  CEA/DEN, EDF R&D, OPEN CASCADE
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -34,6 +34,8 @@ BASEIDL_FILES = \
 	SMESH_Pattern.idl \
 	SMESH_MeshEditor.idl \
 	SMESH_Measurements.idl
+
+BASEIDL_FILES_PY=$(BASEIDL_FILES:%.idl=%_idl.py)
 
 # This variable defines the files to be installed
 dist_salomeidl_DATA = $(BASEIDL_FILES)
@@ -108,9 +110,15 @@ install-exec-local: $(BASEIDL_FILES:%=$(top_srcdir)/idl/%)
 	  $(OMNIORB_IDL) $(IDLPYFLAGS) -C$(DESTDIR)$(salomepythondir) $$file ; \
 	done
 
-# uninstall-local removes too much, but it works in distcheck
+# we want to remove only staff generated for IDL files and nothing more
 uninstall-local:
-	rm -rf $(DESTDIR)$(salomepythondir)/*
+	@for modulen in SMESH StdMeshers ; do \
+	  test -d $(DESTDIR)$(salomepythondir)/$${modulen} && echo "Removing $(DESTDIR)$(salomepythondir)/$${modulen}" && rm -rf $(DESTDIR)$(salomepythondir)/$${modulen} ; \
+	  test -d $(DESTDIR)$(salomepythondir)/$${modulen}__POA && echo "Removing $(DESTDIR)$(salomepythondir)/$${modulen}__POA" && rm -rf $(DESTDIR)$(salomepythondir)/$${modulen}__POA ; \
+	done ; \
+	for filen in $(BASEIDL_FILES_PY) ; do \
+	  echo "Removing $(DESTDIR)$(salomepythondir)/$${filen}" && rm -f $(DESTDIR)$(salomepythondir)/$${filen}* ; \
+	done
 
 mostlyclean-local:
 	-rm -f *.hh *.cc .depidl
