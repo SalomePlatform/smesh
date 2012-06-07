@@ -2828,7 +2828,7 @@ struct MYNode_Map_Iterator: public FATHER
   template <typename ELEM=const SMDS_MeshElement*>
   class IdSortedIterator : public SMDS_Iterator<ELEM>
   {
-    const SMDS_MeshElementIDFactory& myIDFact;
+    SMDS_MeshElementIDFactory&       myIDFact;
     int                              myID, myMaxID, myNbFound, myTotalNb;
     SMDSAbs_ElementType              myType;
     ELEM                             myElem;

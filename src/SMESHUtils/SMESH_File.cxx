@@ -36,6 +36,7 @@
 #ifdef WIN32
 #include <io.h>
 #else
+#include <unistd.h>
 #include <sys/mman.h>
 #endif
 

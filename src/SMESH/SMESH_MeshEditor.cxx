@@ -4865,7 +4865,6 @@ SMESH_MeshEditor::ExtrusionAlongTrack (TIDSortedElemSet &   theElements,
     const SMDS_MeshElement* currentElem = NULL;
     int totalNbEdges = theTrack->NbEdges();
     SMDS_ElemIteratorPtr nIt;
-    bool isClosed = false;
 
     //check start node
     if( !theTrack->GetMeshDS()->Contains(theN1) ) {
@@ -4897,7 +4896,6 @@ SMESH_MeshEditor::ExtrusionAlongTrack (TIDSortedElemSet &   theElements,
         //case of the closed mesh
         if(currentNode == theN1) {
           nbEdges++;
-          isClosed = true;
           break;
         }
 
