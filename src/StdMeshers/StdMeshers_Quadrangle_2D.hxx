@@ -23,7 +23,6 @@
 //           Moved here from SMESH_Quadrangle_2D.hxx
 //  Author : Paul RASCLE, EDF
 //  Module : SMESH
-//  $Header$
 
 #ifndef _SMESH_QUADRANGLE_2D_HXX_
 #define _SMESH_QUADRANGLE_2D_HXX_
