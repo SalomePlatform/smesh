@@ -2793,7 +2793,168 @@ bool StdMeshers_Quadrangle_2D::ComputeReduced (SMESH_Mesh &        aMesh,
     int curr_base_len = nb;
     int next_base_len = 0;
 
-    if ( is_tree_42 || is_tree_31 )
+    if ( true )
+    { // ------------------------------------------------------------------
+      // New algorithm implemented by request of IPAL22856
+      // "2D quadrangle mesher of reduced type works wrong"
+      // http://bugtracker.opencascade.com/show_bug.cgi?id=22856
+
+      // the algorithm is following: all reduces are centred in horizontal
+      // direction and are distributed among all rows
+
+      if (ncol_bot > max_tree42) {
+        is_lin_31 = true;
+      }
+      else {
+        if ((ncol_top/3)*3 == ncol_top ) {
+          is_lin_31 = true;
+        }
+        else {
+          is_lin_42 = true;
+        }
+      }
+
+      const int col_top_size  = is_lin_42 ? 2 : 1;
+      const int col_base_size = is_lin_42 ? 4 : 3;
+
+      // Compute nb of "columns" (like in "linear" simple reducing) in all rows
+
+      vector<int> nb_col_by_row;
+
+      int delta_all = nb - nt;
+      int delta_one_col = nrows * 2;
+      int nb_col = delta_all / delta_one_col;
+      int remainder = delta_all - nb_col * delta_one_col;
+      if (remainder > 0) {
+        nb_col++;
+      }
+      if ( nb_col * col_top_size >= nt ) // == "tree" reducing situation
+      {
+        // top row is full (all elements reduced), add "columns" one by one
+        // in rows below until all bottom elements are reduced
+        nb_col = ( nt - 1 ) / col_top_size;
+        nb_col_by_row.resize( nrows, nb_col );
+        int nbrows_not_full = nrows - 1;
+        int cur_top_size = nt - 1;
+        remainder = delta_all - nb_col * delta_one_col;
+        while ( remainder > 0 )
+        {
+          delta_one_col = nbrows_not_full * 2;
+          int nb_col_add = remainder / delta_one_col;
+          cur_top_size += 2 * nb_col_by_row[ nbrows_not_full ];
+          int nb_col_free = cur_top_size / col_top_size - nb_col_by_row[ nbrows_not_full-1 ];
+          if ( nb_col_add > nb_col_free )
+            nb_col_add = nb_col_free;
+          for ( int irow = 0; irow < nbrows_not_full; ++irow )
+            nb_col_by_row[ irow ] += nb_col_add;
+          nbrows_not_full --;
+          remainder -=  nb_col_add * delta_one_col;
+        }
+      }
+      else // == "linear" reducing situation
+      {
+        nb_col_by_row.resize( nrows, nb_col );
+        if (remainder > 0)
+          for ( int irow = remainder / 2; irow < nrows; ++irow )
+            nb_col_by_row[ irow ]--;
+      }
+
+      // Make elements
+
+      PReduceFunction reduceFunction = & ( is_lin_42 ? reduce42 : reduce31 );
+
+      const int reduce_grp_size = is_lin_42 ? 4 : 3;
+
+      for (i = 1; i < nr; i++) // layer by layer
+      {
+        nb_col = nb_col_by_row[ i-1 ];
+        int nb_next = curr_base_len - nb_col * 2;
+        if (nb_next < nt) nb_next = nt;
+
+        const double y = uv_el[ i ].normParam;
+
+        if ( i + 1 == nr ) // top
+        {
+          next_base = uv_et;
+        }
+        else
+        {
+          next_base.clear();
+          next_base.resize( nb_next, nullUVPtStruct );
+          next_base.front() = uv_el[i];
+          next_base.back()  = uv_er[i];
+
+          // compute normalized param u
+          double du = 1. / ( nb_next - 1 );
+          next_base[0].normParam = 0.;
+          for ( j = 1; j < nb_next; ++j )
+            next_base[j].normParam = next_base[j-1].normParam + du;
+        }
+        uv[ UV_L ].SetCoord( next_base.front().u, next_base.front().v );
+        uv[ UV_R ].SetCoord( next_base.back().u,  next_base.back().v );
+
+        int free_left = ( curr_base_len - 1 - nb_col * col_base_size ) / 2;
+        int free_middle = curr_base_len - 1 - nb_col * col_base_size - 2 * free_left;
+
+        // not reduced left elements
+        for (j = 0; j < free_left; j++)
+        {
+          // f (i + 1, j + 1)
+          const SMDS_MeshNode*& Nf = next_base[++next_base_len].node;
+          if ( !Nf )
+            Nf = makeNode( next_base[ next_base_len ], y, quad, uv, myHelper, S );
+
+          myHelper->AddFace(curr_base[ j ].node,
+                            curr_base[ j+1 ].node,
+                            Nf,
+                            next_base[ next_base_len-1 ].node);
+        }
+
+        for (int icol = 1; icol <= nb_col; icol++)
+        {
+          // add "H"
+          reduceFunction( curr_base, next_base, j, next_base_len, quad, uv, y, myHelper, S );
+
+          j += reduce_grp_size;
+
+          // elements in the middle of "columns" added for symmetry
+          if ( free_middle > 0 && ( nb_col % 2 == 0 ) && icol == nb_col / 2 )
+          {
+            for (int imiddle = 1; imiddle <= free_middle; imiddle++) {
+              // f (i + 1, j + imiddle)
+              const SMDS_MeshNode*& Nf = next_base[++next_base_len].node;
+              if ( !Nf )
+                Nf = makeNode( next_base[ next_base_len ], y, quad, uv, myHelper, S );
+
+              myHelper->AddFace(curr_base[ j-1+imiddle ].node,
+                                curr_base[ j  +imiddle ].node,
+                                Nf,
+                                next_base[ next_base_len-1 ].node);
+            }
+            j += free_middle;
+          }
+        }
+
+        // not reduced right elements
+        for (; j < curr_base_len-1; j++) {
+          // f (i + 1, j + 1)
+          const SMDS_MeshNode*& Nf = next_base[++next_base_len].node;
+          if ( !Nf )
+            Nf = makeNode( next_base[ next_base_len ], y, quad, uv, myHelper, S );
+
+          myHelper->AddFace(curr_base[ j ].node,
+                            curr_base[ j+1 ].node,
+                            Nf,
+                            next_base[ next_base_len-1 ].node);
+        }
+
+        curr_base_len = next_base_len + 1;
+        next_base_len = 0;
+        curr_base.swap( next_base );
+      }
+
+    }
+    else if ( is_tree_42 || is_tree_31 )
     {
       // "tree" simple reduce "42": 2->4->8->16->32->...
       //
@@ -3071,6 +3232,7 @@ bool StdMeshers_Quadrangle_2D::ComputeReduced (SMESH_Mesh &        aMesh,
     } // end "linear" simple reduce
 
     else {
+      return false;
     }
   } // end Simple Reduce implementation
 
