@@ -1186,7 +1186,8 @@ const SMDS_MeshNode* SMESH_MesherHelper::getMediumNodeOnComposedWire(const SMDS_
 //purpose  : Creates a node
 //=======================================================================
 
-SMDS_MeshNode* SMESH_MesherHelper::AddNode(double x, double y, double z, int ID)
+SMDS_MeshNode* SMESH_MesherHelper::AddNode(double x, double y, double z, int ID,
+                                           double u, double v)
 {
   SMESHDS_Mesh * meshDS = GetMeshDS();
   SMDS_MeshNode* node = 0;
@@ -1196,11 +1197,11 @@ SMDS_MeshNode* SMESH_MesherHelper::AddNode(double x, double y, double z, int ID)
     node = meshDS->AddNode( x, y, z );
   if ( mySetElemOnShape && myShapeID > 0 ) {
     switch ( myShape.ShapeType() ) {
-    case TopAbs_SOLID:  meshDS->SetNodeInVolume( node, myShapeID); break;
-    case TopAbs_SHELL:  meshDS->SetNodeInVolume( node, myShapeID); break;
-    case TopAbs_FACE:   meshDS->SetNodeOnFace(   node, myShapeID); break;
-    case TopAbs_EDGE:   meshDS->SetNodeOnEdge(   node, myShapeID); break;
-    case TopAbs_VERTEX: meshDS->SetNodeOnVertex( node, myShapeID); break;
+    case TopAbs_SOLID:  meshDS->SetNodeInVolume( node, myShapeID);       break;
+    case TopAbs_SHELL:  meshDS->SetNodeInVolume( node, myShapeID);       break;
+    case TopAbs_FACE:   meshDS->SetNodeOnFace(   node, myShapeID, u, v); break;
+    case TopAbs_EDGE:   meshDS->SetNodeOnEdge(   node, myShapeID, u);    break;
+    case TopAbs_VERTEX: meshDS->SetNodeOnVertex( node, myShapeID);       break;
     default: ;
     }
   }

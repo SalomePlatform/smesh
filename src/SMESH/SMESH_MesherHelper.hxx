@@ -221,7 +221,7 @@ public:
   /*!
    * Creates a node
    */
-  SMDS_MeshNode* AddNode(double x, double y, double z, int ID = 0);
+  SMDS_MeshNode* AddNode(double x, double y, double z, int ID = 0, double u=0., double v=0.);
   /*!
    * Creates quadratic or linear edge
    */
