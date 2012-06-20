@@ -592,6 +592,12 @@ CORBA::Boolean SMESH_Gen_i::IsEmbeddedMode()
 
 void SMESH_Gen_i::SetCurrentStudy( SALOMEDS::Study_ptr theStudy )
 {
+  setCurrentStudy( theStudy );
+}
+
+void SMESH_Gen_i::setCurrentStudy( SALOMEDS::Study_ptr theStudy,
+                                   bool                theStudyIsBeingClosed)
+{
   int curStudyId = GetCurrentStudyID();
   myCurrentStudy = SALOMEDS::Study::_duplicate( theStudy );
   // create study context, if it doesn't exist and set current study
@@ -601,7 +607,7 @@ void SMESH_Gen_i::SetCurrentStudy( SALOMEDS::Study_ptr theStudy )
   }
 
   // myCurrentStudy may be nil
-  if ( !CORBA::is_nil( myCurrentStudy ) ) {
+  if ( !theStudyIsBeingClosed && !CORBA::is_nil( myCurrentStudy ) ) {
     SALOMEDS::StudyBuilder_var aStudyBuilder = myCurrentStudy->NewBuilder();
     if( !myCurrentStudy->FindComponent( "GEOM" )->_is_nil() )
       aStudyBuilder->LoadWith( myCurrentStudy->FindComponent( "GEOM" ), GetGeomEngine() );
@@ -4688,7 +4694,7 @@ void SMESH_Gen_i::Close( SALOMEDS::SComponent_ptr theComponent )
   // set correct current study
   SALOMEDS::Study_var study = theComponent->GetStudy();
   if ( study->StudyId() != GetCurrentStudyID())
-    SetCurrentStudy( study );
+    setCurrentStudy( study, /*IsBeingClosed=*/true );
 
   // Clear study contexts data
   int studyId = GetCurrentStudyID();

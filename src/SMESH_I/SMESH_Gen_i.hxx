@@ -578,6 +578,9 @@ private:
                                                 const char* theCommandNameForPython,
                                                 const char* theFileNameForPython);
 
+  void setCurrentStudy( SALOMEDS::Study_ptr theStudy,
+                        bool                theStudyIsBeingClosed=false);
+
 private:
   static GEOM::GEOM_Gen_var      myGeomGen;
   static CORBA::ORB_var          myOrb;         // ORB reference
