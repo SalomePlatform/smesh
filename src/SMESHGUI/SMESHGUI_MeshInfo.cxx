@@ -59,9 +59,59 @@
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(GEOM_Gen)
 
-const int SPACING  = 6;
-const int MARGIN   = 9;
-const int MAXITEMS = 10;
+const int SPACING      = 6;
+const int MARGIN       = 9;
+const int MAXITEMS     = 10;
+const int GROUPS_ID    = 100;
+const int SUBMESHES_ID = 200;
+
+/*!
+  \class ExtraWidget
+  \internal
+*/
+
+class ExtraWidget : public QWidget
+{
+public:
+  ExtraWidget( QWidget*, bool = false );
+  ~ExtraWidget();
+
+  void updateControls( int, int, int = MAXITEMS );
+
+public:
+  QLabel*      current;
+  QPushButton* prev;
+  QPushButton* next;
+  bool         brief;
+};
+
+ExtraWidget::ExtraWidget( QWidget* parent, bool b ) : QWidget( parent ), brief( b )
+{
+  current = new QLabel( this );
+  current->setAlignment( Qt::AlignRight | Qt::AlignVCenter );
+  prev = new QPushButton( tr( "<<" ), this );
+  next = new QPushButton( tr( ">>" ), this );
+  QHBoxLayout* hbl = new QHBoxLayout( this );
+  hbl->setContentsMargins( 0, SPACING, 0, 0 );
+  hbl->setSpacing( SPACING );
+  hbl->addStretch();
+  hbl->addWidget( current );
+  hbl->addWidget( prev );
+  hbl->addWidget( next );
+}
+
+ExtraWidget::~ExtraWidget()
+{
+}
+
+void ExtraWidget::updateControls( int total, int index, int blockSize )
+{
+  setVisible( total > blockSize );
+  QString format = brief ? QString( "%1-%2 / %3" ) : SMESHGUI_MeshInfoDlg::tr( "X_FROM_Y_ITEMS_SHOWN" );
+  current->setText( format.arg( index*blockSize+1 ).arg( qMin( index*blockSize+blockSize, total ) ).arg( total ) );
+  prev->setEnabled( index > 0 );
+  next->setEnabled( (index+1)*blockSize < total );
+}
 
 /*!
   \class SMESHGUI_MeshInfo
@@ -587,25 +637,14 @@ SMESHGUI_ElemInfo::SMESHGUI_ElemInfo( QWidget* parent )
 : QWidget( parent ), myActor( 0 ), myIsElement( -1 )
 {
   myFrame = new QWidget( this );
-  myExtra = new QWidget( this );
-  myCurrent = new QLabel( "10/43 items shown", myExtra );
-  myCurrent->setAlignment( Qt::AlignRight | Qt::AlignVCenter );
-  myPrev = new QPushButton( tr( "<<" ), myExtra );
-  myNext = new QPushButton( tr( ">>" ), myExtra );
-  QHBoxLayout* hbl = new QHBoxLayout( myExtra );
-  hbl->setContentsMargins( 0, SPACING, 0, 0 );
-  hbl->setSpacing( SPACING );
-  hbl->addStretch();
-  hbl->addWidget( myCurrent );
-  hbl->addWidget( myPrev );
-  hbl->addWidget( myNext );
+  myExtra = new ExtraWidget( this );
   QVBoxLayout* vbl = new QVBoxLayout( this );
   vbl->setMargin( 0 );
   vbl->setSpacing( 0 );
   vbl->addWidget( myFrame );
   vbl->addWidget( myExtra );
-  connect( myPrev, SIGNAL( clicked() ), this, SLOT( showPrevious() ) );
-  connect( myNext, SIGNAL( clicked() ), this, SLOT( showNext() ) );
+  connect( myExtra->prev, SIGNAL( clicked() ), this, SLOT( showPrevious() ) );
+  connect( myExtra->next, SIGNAL( clicked() ), this, SLOT( showNext() ) );
   clear();
 }
 
@@ -794,10 +833,7 @@ void SMESHGUI_ElemInfo::showNext()
 */
 void SMESHGUI_ElemInfo::updateControls()
 {
-  myExtra->setVisible( myIDs.count() > MAXITEMS );
-  myCurrent->setText( tr( "X_FROM_Y_ITEMS_SHOWN" ).arg( myIndex*MAXITEMS+1 ).arg(qMin(myIndex*MAXITEMS+MAXITEMS, myIDs.count())).arg( myIDs.count() ) );
-  myPrev->setEnabled( myIndex > 0 );
-  myNext->setEnabled( (myIndex+1)*MAXITEMS < myIDs.count() );
+  myExtra->updateControls( myIDs.count(), myIndex );
 }
 
 /*!
@@ -1358,8 +1394,9 @@ SMESHGUI_AddInfo::~SMESHGUI_AddInfo()
 */
 void SMESHGUI_AddInfo::showInfo( SMESH::SMESH_IDSource_ptr obj )
 {
+  setProperty( "group_index", 0 );
+  setProperty( "submesh_index",  0 );
   myComputors.clear();
-
   clear();
 
   if ( CORBA::is_nil( obj ) ) return;
@@ -1444,70 +1481,12 @@ void SMESHGUI_AddInfo::meshInfo( SMESH::SMESH_Mesh_ptr mesh, QTreeWidgetItem* pa
   }
   
   // groups
-  SMESH::ListOfGroups_var groups = mesh->GetGroups();
-  QTreeWidgetItem* itemGroups  = 0;
-  QMap<int, QTreeWidgetItem*> grpItems;
-  for ( int i = 0; i < groups->length(); i++ ) {
-    SMESH::SMESH_GroupBase_var grp = groups[i];
-    if ( CORBA::is_nil( grp ) ) continue;
-    _PTR(SObject) grpSObj = SMESH::ObjectToSObject( grp );
-    if ( !grpSObj ) continue;
-
-    int grpType = grp->GetType();
-
-    if ( !itemGroups ) {
-      itemGroups = createItem( parent, Bold | All );
-      itemGroups->setText( 0, tr( "GROUPS" ) );
-    }
-
-    if ( grpItems.find( grpType ) == grpItems.end() ) {
-      grpItems[ grpType ] = createItem( itemGroups, Bold | All );
-      grpItems[ grpType ]->setText( 0, tr( QString( "GROUPS_%1" ).arg( grpType ).toLatin1().constData() ) );
-      itemGroups->insertChild( grpType-1, grpItems[ grpType ] );
-    }
-  
-    // group name
-    QTreeWidgetItem* grpNameItem = createItem( grpItems[ grpType ] );
-    grpNameItem->setText( 0, grpSObj->GetName().c_str() );
-
-    // group info
-    groupInfo( grp.in(), grpNameItem );
-  }
+  myGroups = mesh->GetGroups();
+  showGroups();
 
   // sub-meshes
-  SMESH::submesh_array_var subMeshes = mesh->GetSubMeshes();
-  QTreeWidgetItem* itemSubMeshes = 0;
-  QMap<int, QTreeWidgetItem*> smItems;
-  for ( int i = 0; i < subMeshes->length(); i++ ) {
-    SMESH::SMESH_subMesh_var sm = subMeshes[i];
-    if ( CORBA::is_nil( sm ) ) continue;
-    _PTR(SObject) smSObj = SMESH::ObjectToSObject( sm );
-    if ( !smSObj ) continue;
-    
-    GEOM::GEOM_Object_var gobj = sm->GetSubShape();
-    if ( CORBA::is_nil(gobj ) ) continue;
-    
-    int smType = gobj->GetShapeType();
-    if ( smType == GEOM::COMPSOLID ) smType = GEOM::COMPOUND;
-
-    if ( !itemSubMeshes ) {
-      itemSubMeshes = createItem( parent, Bold | All );
-      itemSubMeshes->setText( 0, tr( "SUBMESHES" ) );
-    }
-         
-    if ( smItems.find( smType ) == smItems.end() ) {
-      smItems[ smType ] = createItem( itemSubMeshes, Bold | All );
-      smItems[ smType ]->setText( 0, tr( QString( "SUBMESHES_%1" ).arg( smType ).toLatin1().constData() ) );
-      itemSubMeshes->insertChild( smType, smItems[ smType ] );
-    }
-    
-    // submesh name
-    QTreeWidgetItem* smNameItem = createItem( smItems[ smType ] );
-    smNameItem->setText( 0, smSObj->GetName().c_str() );
-    
-    // submesh info
-    subMeshInfo( sm.in(), smNameItem );
-  }
+  mySubMeshes = mesh->GetSubMeshes();
+  showSubMeshes();
 }
 
 /*!
@@ -1644,6 +1623,127 @@ void SMESHGUI_AddInfo::groupInfo( SMESH::SMESH_GroupBase_ptr grp, QTreeWidgetIte
   }
 }
 
+void SMESHGUI_AddInfo::showGroups()
+{
+  myComputors.clear();
+
+  QTreeWidgetItem* parent = topLevelItemCount() > 0 ? topLevelItem( 0 ) : 0; // parent should be first top level item
+  if ( !parent ) return;
+
+  int idx = property( "group_index" ).toInt();
+
+  QTreeWidgetItem* itemGroups = 0;
+  for ( int i = 0; i < parent->childCount() && !itemGroups; i++ ) {
+    if ( parent->child( i )->data( 0, Qt::UserRole ).toInt() == GROUPS_ID ) {
+      itemGroups = parent->child( i );
+      ExtraWidget* extra = dynamic_cast<ExtraWidget*>( itemWidget( itemGroups, 1 ) );
+      if ( extra )
+	extra->updateControls( myGroups->length(), idx );
+      while ( itemGroups->childCount() ) delete itemGroups->child( 0 ); // clear child items
+    }
+  }
+
+  QMap<int, QTreeWidgetItem*> grpItems;
+  for ( int i = idx*MAXITEMS ; i < qMin( (idx+1)*MAXITEMS, (int)myGroups->length() ); i++ ) {
+    SMESH::SMESH_GroupBase_var grp = myGroups[i];
+    if ( CORBA::is_nil( grp ) ) continue;
+    _PTR(SObject) grpSObj = SMESH::ObjectToSObject( grp );
+    if ( !grpSObj ) continue;
+
+    int grpType = grp->GetType();
+
+    if ( !itemGroups ) {
+      // create top-level groups container item
+      itemGroups = createItem( parent, Bold | All );
+      itemGroups->setText( 0, tr( "GROUPS" ) );
+      itemGroups->setData( 0, Qt::UserRole, GROUPS_ID );
+
+      // total number of groups > 10, show extra widgets for info browsing
+      if ( myGroups->length() > MAXITEMS ) {
+	ExtraWidget* extra = new ExtraWidget( this, true );
+	connect( extra->prev, SIGNAL( clicked() ), this, SLOT( showPreviousGroups() ) );
+	connect( extra->next, SIGNAL( clicked() ), this, SLOT( showNextGroups() ) );
+	setItemWidget( itemGroups, 1, extra );
+	extra->updateControls( myGroups->length(), idx );
+      }
+    }
+
+    if ( grpItems.find( grpType ) == grpItems.end() ) {
+      grpItems[ grpType ] = createItem( itemGroups, Bold | All );
+      grpItems[ grpType ]->setText( 0, tr( QString( "GROUPS_%1" ).arg( grpType ).toLatin1().constData() ) );
+      itemGroups->insertChild( grpType-1, grpItems[ grpType ] );
+    }
+  
+    // group name
+    QTreeWidgetItem* grpNameItem = createItem( grpItems[ grpType ] );
+    grpNameItem->setText( 0, QString( grpSObj->GetName().c_str() ).trimmed() ); // name is trimmed
+
+    // group info
+    groupInfo( grp.in(), grpNameItem );
+  }
+}
+
+void SMESHGUI_AddInfo::showSubMeshes()
+{
+  QTreeWidgetItem* parent = topLevelItemCount() > 0 ? topLevelItem( 0 ) : 0; // parent should be first top level item
+  if ( !parent ) return;
+
+  int idx = property( "submesh_index" ).toInt();
+
+  QTreeWidgetItem* itemSubMeshes = 0;
+  for ( int i = 0; i < parent->childCount() && !itemSubMeshes; i++ ) {
+    if ( parent->child( i )->data( 0, Qt::UserRole ).toInt() == SUBMESHES_ID ) {
+      itemSubMeshes = parent->child( i );
+      ExtraWidget* extra = dynamic_cast<ExtraWidget*>( itemWidget( itemSubMeshes, 1 ) );
+      if ( extra )
+	extra->updateControls( mySubMeshes->length(), idx );
+      while ( itemSubMeshes->childCount() ) delete itemSubMeshes->child( 0 ); // clear child items
+    }
+  }
+
+  QMap<int, QTreeWidgetItem*> smItems;
+  for ( int i = idx*MAXITEMS ; i < qMin( (idx+1)*MAXITEMS, (int)mySubMeshes->length() ); i++ ) {
+    SMESH::SMESH_subMesh_var sm = mySubMeshes[i];
+    if ( CORBA::is_nil( sm ) ) continue;
+    _PTR(SObject) smSObj = SMESH::ObjectToSObject( sm );
+    if ( !smSObj ) continue;
+    
+    GEOM::GEOM_Object_var gobj = sm->GetSubShape();
+    if ( CORBA::is_nil(gobj ) ) continue;
+    
+    int smType = gobj->GetShapeType();
+    if ( smType == GEOM::COMPSOLID ) smType = GEOM::COMPOUND;
+
+    if ( !itemSubMeshes ) {
+      itemSubMeshes = createItem( parent, Bold | All );
+      itemSubMeshes->setText( 0, tr( "SUBMESHES" ) );
+      itemSubMeshes->setData( 0, Qt::UserRole, SUBMESHES_ID );
+
+      // total number of sub-meshes > 10, show extra widgets for info browsing
+      if ( mySubMeshes->length() > MAXITEMS ) {
+	ExtraWidget* extra = new ExtraWidget( this, true );
+	connect( extra->prev, SIGNAL( clicked() ), this, SLOT( showPreviousSubMeshes() ) );
+	connect( extra->next, SIGNAL( clicked() ), this, SLOT( showNextSubMeshes() ) );
+	setItemWidget( itemSubMeshes, 1, extra );
+	extra->updateControls( mySubMeshes->length(), idx );
+      }
+    }
+         
+    if ( smItems.find( smType ) == smItems.end() ) {
+      smItems[ smType ] = createItem( itemSubMeshes, Bold | All );
+      smItems[ smType ]->setText( 0, tr( QString( "SUBMESHES_%1" ).arg( smType ).toLatin1().constData() ) );
+      itemSubMeshes->insertChild( smType, smItems[ smType ] );
+    }
+    
+    // submesh name
+    QTreeWidgetItem* smNameItem = createItem( smItems[ smType ] );
+    smNameItem->setText( 0, QString( smSObj->GetName().c_str() ).trimmed() ); // name is trimmed
+    
+    // submesh info
+    subMeshInfo( sm.in(), smNameItem );
+  }
+}
+
 /*!
  * \brief Change button label of "nb underlying node" group from "Load" to "Compute"
  */
@@ -1653,10 +1753,38 @@ void SMESHGUI_AddInfo::changeLoadToCompute()
   {
     if ( QTreeWidgetItem* item = myComputors[i]->getItem() )
     {
-      if ( QPushButton* btn = qobject_cast<QPushButton*>( itemWidget ( item, 1 )))
-        btn->setText( tr("COMPUTE"));
+      if ( QPushButton* btn = qobject_cast<QPushButton*>( itemWidget ( item, 1 ) ) )
+        btn->setText( tr("COMPUTE") );
     }
   }
+}
+
+void SMESHGUI_AddInfo::showPreviousGroups()
+{
+  int idx = property( "group_index" ).toInt();
+  setProperty( "group_index", idx-1 );
+  showGroups();
+}
+
+void SMESHGUI_AddInfo::showNextGroups()
+{
+  int idx = property( "group_index" ).toInt();
+  setProperty( "group_index", idx+1 );
+  showGroups();
+}
+
+void SMESHGUI_AddInfo::showPreviousSubMeshes()
+{
+  int idx = property( "submesh_index" ).toInt();
+  setProperty( "submesh_index", idx-1 );
+  showSubMeshes();
+}
+
+void SMESHGUI_AddInfo::showNextSubMeshes()
+{
+  int idx = property( "submesh_index" ).toInt();
+  setProperty( "submesh_index", idx+1 );
+  showSubMeshes();
 }
 
 /*!
@@ -1828,7 +1956,7 @@ void SMESHGUI_MeshInfoDlg::keyPressEvent( QKeyEvent* e )
 */
 void SMESHGUI_MeshInfoDlg::enterEvent( QEvent* )
 {
-  activate();
+  //activate();
 }
 
 /*!

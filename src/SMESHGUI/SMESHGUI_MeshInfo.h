@@ -50,6 +50,8 @@ class SMESH_Actor;
 class SMDS_MeshNode;
 class SMDS_MeshElement;
 
+class ExtraWidget;
+
 class SMESHGUI_EXPORT SMESHGUI_MeshInfo : public QFrame
 {
   Q_OBJECT;
@@ -166,10 +168,7 @@ private:
   QList<long>      myIDs;
   int              myIsElement;
   QWidget*         myFrame;
-  QWidget*         myExtra;
-  QLabel*          myCurrent;
-  QPushButton*     myPrev;
-  QPushButton*     myNext;
+  ExtraWidget*     myExtra;
   int              myIndex;
 };
 
@@ -234,8 +233,13 @@ public:
 
   void             showInfo( SMESH::SMESH_IDSource_ptr );
   //  void             clear();
+
 private slots:
   void             changeLoadToCompute();
+  void             showPreviousGroups();
+  void             showNextGroups();
+  void             showPreviousSubMeshes();
+  void             showNextSubMeshes();
 
 private:
   QTreeWidgetItem* createItem( QTreeWidgetItem* = 0, int = 0 );
@@ -243,8 +247,13 @@ private:
   void             subMeshInfo( SMESH::SMESH_subMesh_ptr, QTreeWidgetItem* );
   void             groupInfo( SMESH::SMESH_GroupBase_ptr, QTreeWidgetItem* );
 
+  void             showGroups();
+  void             showSubMeshes();
+
 private:
-  QList<GrpComputor*> myComputors;
+  QList<GrpComputor*>      myComputors;
+  SMESH::ListOfGroups_var  myGroups;
+  SMESH::submesh_array_var mySubMeshes;
 };
 
 class SMESHGUI_EXPORT SMESHGUI_MeshInfoDlg : public QDialog

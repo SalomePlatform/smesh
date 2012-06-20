@@ -6189,6 +6189,10 @@ en raison de leurs types incompatibles:
         <source>ELEM_MODE</source>
         <translation>Elément</translation>
     </message>
+    <message>
+        <source>X_FROM_Y_ITEMS_SHOWN</source>
+        <translation>%1-%2 sur %3 éléments affichés</translation>
+    </message>
 </context>
 <context>
     <name>SMESHGUI_ElemInfo</name>
@@ -6303,10 +6307,6 @@ en raison de leurs types incompatibles:
     <message>
         <source>VALUE</source>
         <translation>Valeur</translation>
-    </message>
-    <message>
-        <source>X_FROM_Y_ITEMS_SHOWN</source>
-        <translation>%1-%2 sur %3 éléments affichés</translation>
     </message>
 </context>
 <context>

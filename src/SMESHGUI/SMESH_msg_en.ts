@@ -6192,6 +6192,10 @@ as they are of improper type:
         <source>ELEM_MODE</source>
         <translation>Element</translation>
     </message>
+    <message>
+        <source>X_FROM_Y_ITEMS_SHOWN</source>
+        <translation>%1-%2 from %3 items shown</translation>
+    </message>
 </context>
 <context>
     <name>SMESHGUI_ElemInfo</name>
@@ -6306,10 +6310,6 @@ as they are of improper type:
     <message>
         <source>VALUE</source>
         <translation>Value</translation>
-    </message>
-    <message>
-        <source>X_FROM_Y_ITEMS_SHOWN</source>
-        <translation>%1-%2 from %3 items shown</translation>
     </message>
 </context>
 <context>
