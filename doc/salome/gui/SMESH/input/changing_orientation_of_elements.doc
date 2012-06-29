@@ -2,8 +2,7 @@
 
 \page changing_orientation_of_elements_page Changing orientation of elements
 
-\n Orientation of an element is changed by reverting the order of
-nodes of the selected elements.
+\n Orientation of an element is changed by reverting the order of its nodes.
 
 <em>To change orientation of elements:</em>
 <ol>
@@ -11,13 +10,16 @@ nodes of the selected elements.
 <li>In the \b Modification menu select the \b Orientation item or click
 <em>Orientation</em> button in the toolbar.
 
+<center>
 \image html image79.png
-<center><em>"Orientation" button</em></center>
+<em>"Orientation" button</em>
+</center>
 
 The following dialog box will appear:
 
+<center>
 \image html orientaation1.png
-
+</center>
 <ul>
 <li><b>The main list</b> shall contain the elements which will be
 reoriented. You can click on an element in the 3D viewer and it will

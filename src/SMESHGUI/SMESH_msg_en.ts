@@ -408,6 +408,18 @@
         <translation>Find Element by Point</translation>
     </message>
     <message>
+        <source>TOP_REORIENT_2D</source>
+        <translation>Reorient faces by vector</translation>
+    </message>
+    <message>
+        <source>MEN_REORIENT_2D</source>
+        <translation>Reorient faces by vector</translation>
+    </message>
+    <message>
+        <source>STB_REORIENT_2D</source>
+        <translation>Reorient faces by vector</translation>
+    </message>
+    <message>
         <source>TOP_FIND_ELEM</source>
         <translation>Find Element by Point</translation>
     </message>
@@ -6666,6 +6678,64 @@ as they are of improper type:
     <message>
         <source>PRESELECTION_COLOR_LBL</source>
         <translation>Pre-selection color</translation>
+    </message>
+</context>
+<context>
+    <name>SMESHGUI_ReorientFacesDlg</name>
+    <message>
+        <source>CAPTION</source>
+        <translation>Reorient faces by vector</translation>
+    </message>
+    <message>
+        <source>REORIENT_FACES</source>
+        <translation>Reorient</translation>
+    </message>
+    <message>
+        <source>DIRECTION</source>
+        <translation>Direction</translation>
+    </message>
+    <message>
+        <source>OBJECT</source>
+        <translation>Object</translation>
+    </message>
+    <message>
+        <source>POINT</source>
+        <translation>Point</translation>
+    </message>
+    <message>
+        <source>FACE</source>
+        <translation>Face</translation>
+    </message>
+    <message>
+        <source>FACES</source>
+        <translation>Faces</translation>
+    </message>
+    <message>
+        <source>ORIENTATION</source>
+        <translation>Orientation</translation>
+    </message>
+</context>
+<context>
+    <name>SMESHGUI_ReorientFacesOp</name>
+    <message>
+        <source>NO_OBJECT_SELECTED</source>
+        <translation>No object selected</translation>
+    </message>
+    <message>
+        <source>NO_FACES</source>
+        <translation>Object includes no faces</translation>
+    </message>
+    <message>
+        <source>ZERO_SIZE_VECTOR</source>
+        <translation>Zero size vector</translation>
+    </message>
+    <message>
+        <source>INVALID_FACE</source>
+        <translation>Not valid face</translation>
+    </message>
+    <message>
+        <source>NB_REORIENTED</source>
+        <translation>%1 faces reversed</translation>
     </message>
 </context>
 </TS>

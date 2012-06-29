@@ -399,6 +399,18 @@
             <source>ICON_DLG_SCALE_ALONG_AXES</source>
             <translation>scale_along_axes.png</translation>
         </message>
+        <message>
+            <source>ICON_DLG_REORIENT2D_POINT</source>
+            <translation>reorient_faces_point.png</translation>
+        </message>
+        <message>
+            <source>ICON_DLG_REORIENT2D_FACE</source>
+            <translation>reorient_faces_face.png</translation>
+        </message>
+        <message>
+            <source>ICON_REORIENT_2D</source>
+            <translation>reorient_faces_face.png</translation>
+        </message>
 	<message>
             <source>ICON_SMESH_DUPLICATE_NODES</source>
             <translation>mesh_duplicate_nodes.png</translation>
