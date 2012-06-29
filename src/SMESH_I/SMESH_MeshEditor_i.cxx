@@ -296,6 +296,7 @@ namespace {
     else
     {
       arrayToSet( anIDs, theMeshDS, theElemSet, theType);
+      return bool(anIDs->length()) == bool(theElemSet.size());
     }
     return true;
   }
@@ -378,6 +379,24 @@ namespace {
       }
     }
   }
+
+  //================================================================================
+  /*!
+   * \brief Return a string used to detect change of mesh part on which theElementSearcher
+   * is going to be used
+   */
+  //================================================================================
+
+  string getPartIOR( SMESH::SMESH_IDSource_ptr theMeshPart, SMESH::ElementType type)
+  {
+    string partIOR = SMESH_Gen_i::GetORB()->object_to_string( theMeshPart );
+    if ( SMESH_Group_i* group_i = SMESH::DownCast<SMESH_Group_i*>( theMeshPart ))
+      // take into account passible group modification
+      partIOR += SMESH_Comment( ((SMESHDS_Group*)group_i->GetGroupDS())->SMDSGroup().Tic() );
+    partIOR += SMESH_Comment( type );
+    return partIOR;
+  }
+
 }
 
 //=============================================================================
@@ -1127,6 +1146,94 @@ CORBA::Boolean SMESH_MeshEditor_i::ReorientObject(SMESH::SMESH_IDSource_ptr theO
   aTPythonDump << "isDone = " << this << ".ReorientObject( " << theObject << " )";
 
   return isDone;
+}
+
+//=======================================================================
+//function : Reorient2D
+//purpose  : Reorient faces contained in \a the2Dgroup.
+//           the2Dgroup   - the mesh or its part to reorient
+//           theDirection - desired direction of normal of \a theFace
+//           theFace      - ID of face whose orientation is checked.
+//           It can be < 1 then \a thePoint is used to find a face.
+//           thePoint     - is used to find a face if \a theFace < 1.
+//           return number of reoriented elements.
+//=======================================================================
+
+CORBA::Long SMESH_MeshEditor_i::Reorient2D(SMESH::SMESH_IDSource_ptr the2Dgroup,
+                                           const SMESH::DirStruct&   theDirection,
+                                           CORBA::Long               theFace,
+                                           const SMESH::PointStruct& thePoint)
+  throw (SALOME::SALOME_Exception)
+{
+  Unexpect aCatch(SALOME_SalomeException);
+
+  initData(/*deleteSearchers=*/false);
+
+  TIDSortedElemSet elements;
+  if ( !idSourceToSet( the2Dgroup, GetMeshDS(), elements, SMDSAbs_Face, /*emptyIfIsMesh=*/1))
+    THROW_SALOME_CORBA_EXCEPTION("No faces in given group", SALOME::BAD_PARAM);
+
+  ::SMESH_MeshEditor anEditor( myMesh );
+
+  const SMDS_MeshElement* face = 0;
+  if ( theFace > 0 )
+  {
+    face = GetMeshDS()->FindElement( theFace );
+    if ( !face )
+      THROW_SALOME_CORBA_EXCEPTION("Inexistent face given", SALOME::BAD_PARAM);
+    if ( face->GetType() != SMDSAbs_Face )
+      THROW_SALOME_CORBA_EXCEPTION("Wrong element type", SALOME::BAD_PARAM);
+  }
+  else
+  {
+    // create theElementSearcher if needed
+    theSearchersDeleter.Set( myMesh, getPartIOR( the2Dgroup, SMESH::FACE ));
+    if ( !theElementSearcher )
+    {
+      if ( elements.empty() ) // search in the whole mesh
+      {
+        if ( myMesh->NbFaces() == 0 )
+          THROW_SALOME_CORBA_EXCEPTION("No faces in the mesh", SALOME::BAD_PARAM);
+
+        theElementSearcher = anEditor.GetElementSearcher();
+      }
+      else
+      {
+        typedef SMDS_SetIterator<const SMDS_MeshElement*, TIDSortedElemSet::const_iterator > TIter;
+        SMDS_ElemIteratorPtr elemsIt( new TIter( elements.begin(), elements.end() ));
+
+        theElementSearcher = anEditor.GetElementSearcher(elemsIt);
+      }
+    }
+    // find a face
+    gp_Pnt p( thePoint.x, thePoint.y, thePoint.z );
+    face = theElementSearcher->FindClosestTo( p, SMDSAbs_Face );
+
+    if ( !face )
+      THROW_SALOME_CORBA_EXCEPTION("No face found by point", SALOME::INTERNAL_ERROR );
+    if ( !elements.empty() && !elements.count( face ))
+      THROW_SALOME_CORBA_EXCEPTION("Found face is not in the group", SALOME::BAD_PARAM );
+  }
+
+  const SMESH::PointStruct * P = &theDirection.PS;
+  gp_Vec dirVec( P->x, P->y, P->z );
+  if ( dirVec.Magnitude() < std::numeric_limits< double >::min() )
+    THROW_SALOME_CORBA_EXCEPTION("Zero size vector", SALOME::BAD_PARAM);
+
+  int nbReori = anEditor.Reorient2D( elements, dirVec, face );
+  storeResult(anEditor);
+
+  if ( nbReori ) {
+    myMesh->SetIsModified( true );
+    myMesh->GetMeshDS()->Modified();
+  }
+  TPythonDump() << this << ".Reorient2D( "
+                << the2Dgroup << ", "
+                << theDirection << ", "
+                << theFace << ", "
+                << thePoint << " )";
+
+  return nbReori;
 }
 
 //=============================================================================
@@ -4466,15 +4573,9 @@ SMESH_MeshEditor_i::FindAmongElementsByPoint(SMESH::SMESH_IDSource_ptr elementID
   if ( SMESH::DownCast<SMESH_Mesh_i*>( elementIDs )) // elementIDs is the whole mesh 
     return FindElementsByPoint( x,y,z, type );
 
-  string partIOR = SMESH_Gen_i::GetORB()->object_to_string( elementIDs );
-  if ( SMESH_Group_i* group_i = SMESH::DownCast<SMESH_Group_i*>( elementIDs ))
-    // take into account passible group modification
-    partIOR += SMESH_Comment( ((SMESHDS_Group*)group_i->GetGroupDS())->SMDSGroup().Tic() );
-  partIOR += SMESH_Comment( type );
-
   TIDSortedElemSet elements; // elems should live until FindElementsByPoint() finishes
 
-  theSearchersDeleter.Set( myMesh, partIOR );
+  theSearchersDeleter.Set( myMesh, getPartIOR( elementIDs, type ));
   if ( !theElementSearcher )
   {
     // create a searcher from elementIDs

@@ -122,6 +122,19 @@ public:
   CORBA::Boolean DeleteDiag(CORBA::Long NodeID1, CORBA::Long NodeID2);
   CORBA::Boolean Reorient(const SMESH::long_array & IDsOfElements);
   CORBA::Boolean ReorientObject(SMESH::SMESH_IDSource_ptr theObject);
+  /*!
+   * \brief Reorient faces contained in \a the2Dgroup.
+   * \param the2Dgroup - the mesh or its part to reorient
+   * \param theDirection - desired direction of normal of \a theFace
+   * \param theFace - ID of face whose orientation is checked.
+   *        It can be < 1 then \a thePoint is used to find a face.
+   * \param thePoint - is used to find a face if \a theFace < 1.
+   * \return number of reoriented elements.
+   */
+  CORBA::Long Reorient2D(SMESH::SMESH_IDSource_ptr the2Dgroup,
+                         const SMESH::DirStruct&   theDirection,
+                         CORBA::Long               theFace,
+                         const SMESH::PointStruct& thePoint) throw (SALOME::SALOME_Exception);
 
   // Split/Join faces
   CORBA::Boolean TriToQuad       (const SMESH::long_array &   IDsOfElements,
