@@ -76,6 +76,7 @@
 #include "SMESHGUI_TransparencyDlg.h"
 #include "SMESHGUI_DuplicateNodesDlg.h"
 #include "SMESHGUI_CopyMeshDlg.h"
+#include "SMESHGUI_ReorientFacesDlg.h"
 
 #include "SMESHGUI_Utils.h"
 #include "SMESHGUI_MeshUtils.h"
@@ -2327,16 +2328,10 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     break;
   }
 
-  case 701:                                     // COMPUTE MESH
-  case 711:                                     // PRECOMPUTE MESH
-  case 712:                                     // EVALUATE MESH
-  case 713:                                     // MESH ORDER
-    {
-      if (checkLock(aStudy)) break;
-      startOperation( theCommandID );
-    }
-    break;
-
+  case 701: // COMPUTE MESH
+  case 711: // PRECOMPUTE MESH
+  case 712: // EVALUATE MESH
+  case 713: // MESH ORDER
   case 702: // Create mesh
   case 703: // Create sub-mesh
   case 704: // Edit mesh/sub-mesh
@@ -2481,26 +2476,11 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       break;
     }
   case 417: // Convert mesh to quadratic
-    {
-    startOperation( 417 );
-      /*      if (checkLock(aStudy)) break;
-      if (vtkwnd) {
-        EmitSignalDeactivateDialog();
-        new SMESHGUI_ConvToQuadDlg();
-      } else {
-        SUIT_MessageBox::warning(desktop(),
-                               tr("SMESH_WRN_WARNING"), tr("SMESH_WRN_VIEWER_VTK"));
-                               }*/
-      break;
-    }
   case 418: // create 2D mesh from 3D
+  case 420: // Reorient faces
+  case 806: // CREATE GEO GROUP
     {
-      startOperation( 418 );
-      break;
-    }
-  case 806:                                     // CREATE GEO GROUP
-    {
-      startOperation( 806 );
+      startOperation( theCommandID );
       break;
     }
   case 801:                                     // CREATE GROUP
@@ -3558,6 +3538,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction(  417, "CONV_TO_QUAD",    "ICON_CONV_TO_QUAD" );
   createSMESHAction(  418, "2D_FROM_3D",      "ICON_2D_FROM_3D" );
   createSMESHAction(  419, "SPLIT_TO_TETRA",  "ICON_SPLIT_TO_TETRA" );
+  createSMESHAction(  420, "REORIENT_2D",     "ICON_REORIENT_2D" );
   createSMESHAction(  200, "RESET" );
   createSMESHAction(  201, "SCALAR_BAR_PROP" );
   createSMESHAction(  2021, "SAVE_DISTRIBUTION" );
@@ -3748,6 +3729,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createMenu( 407, modifyId, -1 );
   createMenu( 408, modifyId, -1 );
   createMenu( 409, modifyId, -1 );
+  createMenu( 420, modifyId, -1 );
   createMenu( 410, modifyId, -1 );
   createMenu( 411, modifyId, -1 );
   createMenu( 419, modifyId, -1 );
@@ -3869,6 +3851,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createTool( 407, modifyTb );
   createTool( 408, modifyTb );
   createTool( 409, modifyTb );
+  createTool( 420, modifyTb );
   createTool( 410, modifyTb );
   createTool( 411, modifyTb );
   createTool( 419, modifyTb );
@@ -4972,6 +4955,9 @@ LightApp_Operation* SMESHGUI::createOperation( const int id ) const
     case 418: // create 2D mesh as boundary on 3D
       op = new SMESHGUI_Make2DFrom3DOp();
     break;
+    case 420: // Reorient faces
+      op = new SMESHGUI_ReorientFacesOp();
+      break;
     case 701: // Compute mesh
       op = new SMESHGUI_ComputeOp();
     break;
